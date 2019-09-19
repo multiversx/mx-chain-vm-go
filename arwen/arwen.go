@@ -262,7 +262,7 @@ func (host *vmContext) addTxValueToSmartContract(value *big.Int, scAddress []byt
 	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
 }
 
-func NewWasmerInstance(
+func NewArwenVM(
 	blockChainHook vmcommon.BlockchainHook,
 	cryptoHook vmcommon.CryptoHook,
 	vmType []byte,

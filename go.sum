@@ -1,0 +1,9 @@
+github.com/ElrondNetwork/elrond-vm-common v0.0.8 h1:YyJ55gYeCL3e2v+06ZLJrwzkOXPvuSvLm7pBL1qD0Rk=
+github.com/ElrondNetwork/elrond-vm-common v0.0.8/go.mod h1:VqCCN0cX0e4D/KDc7MGNV9ElrOsfnjuJnGvcODVjzbk=
+github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
+github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
+github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
+github.com/urfave/cli v1.20.0/go.mod h1:70zkFmudgCuE/ngEzBv17Jvp/497gISqfk5gWijbERA=
+github.com/wasmerio/go-ext-wasm v0.0.0-20190716093451-605a12aad995 h1:hH06i5qSlTVs6oVdC3oBUFa5PsNnZM1VkDAz0xvuZxo=
+github.com/wasmerio/go-ext-wasm v0.0.0-20190716093451-605a12aad995/go.mod h1:B0C/D0a2vNos7Y3IxQhMpGOY9PCuCKfLvfry33a1cKA=
