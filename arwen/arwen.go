@@ -89,6 +89,10 @@ func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInpu
 		return nil, err
 	}
 
+	if nonce > 0 {
+		nonce -= 1
+	}
+
 	address, err := host.blockChainHook.NewAddress(input.CallerAddr, nonce, host.vmType)
 	if err != nil {
 		return nil, err
