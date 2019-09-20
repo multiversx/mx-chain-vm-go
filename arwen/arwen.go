@@ -22,8 +22,8 @@ const (
 )
 
 var (
-	vmContextCounter int
-	vmContextMap     = map[int]HostContext{}
+	vmContextCounter uint8
+	vmContextMap     = map[uint8]HostContext{}
 	vmContextMapMu   sync.Mutex
 )
 
@@ -33,12 +33,12 @@ func addHostContext(ctx HostContext) int {
 	vmContextCounter++
 	vmContextMap[id] = ctx
 	vmContextMapMu.Unlock()
-	return id
+	return int(id)
 }
 
 func removeHostContext(idx int) {
 	vmContextMapMu.Lock()
-	delete(vmContextMap, idx)
+	delete(vmContextMap, uint8(idx))
 	vmContextMapMu.Unlock()
 }
 
@@ -46,7 +46,7 @@ func getHostContext(pointer unsafe.Pointer) HostContext {
 	var idx = *(*int)(pointer)
 
 	vmContextMapMu.Lock()
-	ctx := vmContextMap[idx]
+	ctx := vmContextMap[uint8(idx)]
 	vmContextMapMu.Unlock()
 
 	return ctx
@@ -74,7 +74,8 @@ type vmContext struct {
 
 	outputAccounts map[string]*vmcommon.OutputAccount
 
-	output []byte
+	output     []byte
+	returnCode vmcommon.ReturnCode
 
 	selfDestruct map[string][]byte
 }
@@ -96,20 +97,26 @@ func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInpu
 	host.scAddress = address
 	host.addTxValueToSmartContract(input.CallValue, address)
 
-	// execution and compile
 	instance, err := wasmer.NewInstanceWithImports(input.ContractCode, host.imports)
 	if err != nil {
-		return nil, err
+		fmt.Println("arwen Error: ", err.Error())
+		return host.createVMOutputInCaseOfError(vmcommon.ContractInvalid), nil
 	}
 
 	idContext := addHostContext(host)
 	instance.SetContextData(unsafe.Pointer(&idContext))
 
+	result := make([]byte, 0)
 	init := instance.Exports["init"]
-
-	result, err := init()
-	if err != nil {
-		return nil, err
+	if init != nil {
+		out, err := init()
+		if err != nil {
+			fmt.Println("arwen Error", err.Error())
+			return host.createVMOutputInCaseOfError(vmcommon.FunctionWrongSignature), nil
+		}
+		if out.GetType() != wasmer.TypeVoid {
+			result = []byte(out.String())
+		}
 	}
 
 	gasLeft := input.GasProvided.Int64()
@@ -132,12 +139,12 @@ func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInpu
 
 	removeHostContext(idContext)
 
-	vmOutput := host.createVMOutput([]byte(result.String()), gasLeft)
-
-	host.initInternalValues()
+	vmOutput := host.createVMOutput(result, gasLeft)
 
 	return vmOutput, err
 }
+
+var ErrInitFuncCalledInRun = errors.New("it is not allowed to call init in run")
 
 func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	host.initInternalValues()
@@ -147,30 +154,45 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 
 	host.addTxValueToSmartContract(input.CallValue, input.RecipientAddr)
 
-	//TODO: add execution here
-	// execution and compile
 	gasLeft := input.GasProvided.Int64()
 	contract := host.GetCode(host.scAddress)
+
 	instance, err := wasmer.NewInstanceWithImports(contract, host.imports)
 	if err != nil {
-		return nil, err
+		fmt.Println("arwen Error", err.Error())
+		return host.createVMOutputInCaseOfError(vmcommon.ContractInvalid), nil
 	}
+
+	defer instance.Close()
 
 	idContext := addHostContext(host)
 	instance.SetContextData(unsafe.Pointer(&idContext))
 
-	function := instance.Exports[host.callFunction]
-
-	result, err := function()
-	if err != nil {
-		return nil, err
+	if host.callFunction == "init" {
+		fmt.Println("arwen Error", ErrInitFuncCalledInRun.Error())
+		return host.createVMOutputInCaseOfError(vmcommon.UserError), nil
 	}
 
-	vmOutput := host.createVMOutput([]byte(result.String()), gasLeft)
+	function := instance.Exports[host.callFunction]
+	result, err := function()
+	if err != nil {
+		fmt.Println("arwen Error", err.Error())
+		return host.createVMOutputInCaseOfError(vmcommon.FunctionWrongSignature), nil
+	}
 
-	host.initInternalValues()
+	addOutput := make([]byte, 0)
+	if result.GetType() != wasmer.TypeVoid {
+		addOutput = []byte(result.String())
+	}
+	vmOutput := host.createVMOutput(addOutput, gasLeft)
 
-	return vmOutput, err
+	return vmOutput, nil
+}
+
+func (host *vmContext) createVMOutputInCaseOfError(errCode vmcommon.ReturnCode) *vmcommon.VMOutput {
+	vmOutput := &vmcommon.VMOutput{GasRemaining: big.NewInt(0), GasRefund: big.NewInt(0)}
+	vmOutput.ReturnCode = errCode
+	return vmOutput
 }
 
 // adapt vm output and all saved data from sc run into VM Output
@@ -231,9 +253,11 @@ func (host *vmContext) createVMOutput(output []byte, gasLeft int64) *vmcommon.VM
 		vmOutput.Logs = append(vmOutput.Logs, logEntry)
 	}
 
+	output = append(output, host.output...)
 	vmOutput.ReturnData = append(vmOutput.ReturnData, big.NewInt(0).SetBytes(output))
 	vmOutput.GasRemaining = big.NewInt(gasLeft)
 	vmOutput.GasRefund = big.NewInt(0)
+	vmOutput.ReturnCode = host.returnCode
 
 	return vmOutput
 }
@@ -247,6 +271,7 @@ func (host *vmContext) initInternalValues() {
 	host.output = make([]byte, 0)
 	host.scAddress = make([]byte, 0)
 	host.callFunction = ""
+	host.returnCode = vmcommon.Ok
 }
 
 func (host *vmContext) addTxValueToSmartContract(value *big.Int, scAddress []byte) {
@@ -283,6 +308,10 @@ func NewArwenVM(
 	context.initInternalValues()
 
 	return context, nil
+}
+
+func (host *vmContext) SignalUserError() {
+	host.returnCode = vmcommon.UserError
 }
 
 func (host *vmContext) Arguments() []*big.Int {
@@ -337,7 +366,9 @@ func (host *vmContext) SetStorage(addr []byte, key []byte, value []byte) int32 {
 	}
 
 	oldValue := host.storageUpdate[strAdr][string(key)]
-	host.storageUpdate[strAdr][string(key)] = value
+	length := len(value)
+	host.storageUpdate[strAdr][string(key)] = make([]byte, length)
+	copy(host.storageUpdate[strAdr][string(key)][:length], value[:length])
 
 	if bytes.Equal(oldValue, value) {
 		return int32(StorageUnchanged)
@@ -422,7 +453,7 @@ func (host *vmContext) GetVMInput() vmcommon.VMInput {
 	return host.vmInput
 }
 
-func (host *vmContext) GetBlockHash(number int64) []byte {
+func (host *vmContext) BlockHash(number int64) []byte {
 	block, err := host.blockChainHook.GetBlockhash(big.NewInt(number))
 
 	if err != nil {
@@ -433,7 +464,7 @@ func (host *vmContext) GetBlockHash(number int64) []byte {
 	return block
 }
 
-func (host *vmContext) EmitLog(addr []byte, topics [][]byte, data []byte) {
+func (host *vmContext) WriteLog(addr []byte, topics [][]byte, data []byte) {
 	if len(topics) != len(data) {
 		return
 	}
