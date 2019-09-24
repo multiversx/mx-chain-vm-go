@@ -1,7 +1,7 @@
 package arwen
 
 import (
-	"github.com/wasmerio/go-ext-wasm/wasmer"
+	"github.com/ElrondNetwork/go-ext-wasm/wasmer"
 )
 
 const addressLen = 32

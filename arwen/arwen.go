@@ -9,7 +9,7 @@ import (
 	"unsafe"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/wasmerio/go-ext-wasm/wasmer"
+	"github.com/ElrondNetwork/go-ext-wasm/wasmer"
 )
 
 type StorageStatus int
