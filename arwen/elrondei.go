@@ -3,7 +3,6 @@ package arwen
 // // Declare the function signatures (see [cgo](https://golang.org/cmd/cgo/)).
 //
 // #include <stdlib.h>
-//
 // extern void getOwner(void *context, int32_t resultOffset);
 // extern void getExternalBalance(void *context, int32_t addressOffset, int32_t resultOffset);
 // extern int32_t blockHash(void *context, long long nonce, int32_t resultOffset);
@@ -307,7 +306,7 @@ func storageStore(context unsafe.Pointer, keyOffset int32, dataOffset int32, dat
 	key := loadBytes(instCtx.Memory(), keyOffset, hashLen)
 	data := loadBytes(instCtx.Memory(), dataOffset, dataLength)
 
-	fmt.Println("storageStore key: " + string(key) + " value: " + string(data))
+	fmt.Println("storageStore key: "+string(key)+" value: ", big.NewInt(0).SetBytes(data))
 	return hostContext.SetStorage(hostContext.GetSCAddress(), key, data)
 }
 
@@ -325,7 +324,7 @@ func storageLoad(context unsafe.Pointer, keyOffset int32, dataOffset int32) int3
 		return -1
 	}
 
-	fmt.Println("storageLoad key: " + string(key) + " value: " + string(data))
+	fmt.Println("storageLoad key: "+string(key)+" value: ", big.NewInt(0).SetBytes(data))
 	return int32(len(data))
 }
 
@@ -366,7 +365,7 @@ func getCaller(context unsafe.Pointer, resultOffset int32) {
 	if err != nil {
 		fmt.Println("getCaller error: " + err.Error())
 	}
-	fmt.Println("getCaller " + hex.EncodeToString(caller))
+	fmt.Println("getCaller " + string(caller))
 }
 
 //export getCallValue
@@ -431,7 +430,7 @@ func finish(context unsafe.Pointer, pointer int32, length int32) {
 	hostContext := getHostContext(instCtx.Data())
 
 	data := loadBytes(instCtx.Memory(), pointer, length)
-	fmt.Println("finish: " + string(data))
+	fmt.Println("finish: ", big.NewInt(0).SetBytes(data))
 	hostContext.Finish(data)
 }
 

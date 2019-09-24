@@ -270,7 +270,7 @@ func (host *vmContext) createVMOutput(output []byte, gasLeft int64) *vmcommon.VM
 }
 
 func displayVMOutput(output *vmcommon.VMOutput) {
-	fmt.Println("Resulted VM Output: ")
+	fmt.Println("=============Resulted VM Output=============")
 	fmt.Println("RetunCode: ", output.ReturnCode)
 	fmt.Println("ReturnData: ", output.ReturnData)
 	fmt.Println("GasRemaining: ", output.GasRemaining)
@@ -297,7 +297,7 @@ func displayVMOutput(output *vmcommon.VMOutput) {
 		}
 
 		for _, storageUpdate := range outputAccount.StorageUpdates {
-			fmt.Println("           Storage update key: " + string(storageUpdate.Offset) + " value: " + string(storageUpdate.Data))
+			fmt.Println("           Storage update key: "+string(storageUpdate.Offset)+" value: ", big.NewInt(0).SetBytes(storageUpdate.Data))
 		}
 	}
 
@@ -309,6 +309,7 @@ func displayVMOutput(output *vmcommon.VMOutput) {
 		}
 		fmt.Println("Topics end")
 	}
+	fmt.Println("============================================")
 }
 
 func (host *vmContext) initInternalValues() {
