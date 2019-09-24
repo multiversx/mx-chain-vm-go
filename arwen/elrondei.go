@@ -3,6 +3,10 @@ package arwen
 // // Declare the function signatures (see [cgo](https://golang.org/cmd/cgo/)).
 //
 // #include <stdlib.h>
+// typedef unsigned char uint8_t;
+// typedef int int32_t;
+// typedef int uint32_t;
+// typedef unsigned long long uint64_t;
 // extern void getOwner(void *context, int32_t resultOffset);
 // extern void getExternalBalance(void *context, int32_t addressOffset, int32_t resultOffset);
 // extern int32_t blockHash(void *context, long long nonce, int32_t resultOffset);
