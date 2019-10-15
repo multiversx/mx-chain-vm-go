@@ -189,7 +189,10 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 	if result.GetType() != wasmer.TypeVoid {
 		addOutput = []byte(result.String())
 	}
+
 	vmOutput := host.createVMOutput(addOutput, gasLeft)
+	globalDebuggingTrace.PutVMOutput(host.scAddress, vmOutput)
+	displayVMOutput(vmOutput)
 
 	return vmOutput, nil
 }
@@ -263,8 +266,6 @@ func (host *vmContext) createVMOutput(output []byte, gasLeft int64) *vmcommon.VM
 	vmOutput.GasRemaining = big.NewInt(gasLeft)
 	vmOutput.GasRefund = big.NewInt(0)
 	vmOutput.ReturnCode = host.returnCode
-
-	displayVMOutput(vmOutput)
 
 	return vmOutput
 }
