@@ -1,6 +1,8 @@
 package arwen
 
 import (
+	"math/big"
+
 	"github.com/ElrondNetwork/go-ext-wasm/wasmer"
 )
 
@@ -30,4 +32,17 @@ func storeBytes(to *wasmer.Memory, offset int32, data []byte) error {
 	copy(memoryData[offset:offset+length], data)
 
 	return nil
+}
+
+func convertReturnValue(wasmValue wasmer.Value) *big.Int {
+	switch wasmValue.GetType() {
+	case wasmer.TypeVoid:
+		return big.NewInt(0)
+	case wasmer.TypeI32:
+		return big.NewInt(wasmValue.ToI64())
+	case wasmer.TypeI64:
+		return big.NewInt(wasmValue.ToI64())
+	}
+
+	panic("unsupported return type")
 }

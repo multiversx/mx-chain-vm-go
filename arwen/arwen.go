@@ -111,7 +111,7 @@ func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInpu
 	idContext := addHostContext(host)
 	instance.SetContextData(unsafe.Pointer(&idContext))
 
-	result := make([]byte, 0)
+	var result []byte
 	init := instance.Exports["init"]
 	if init != nil {
 		out, err := init()
@@ -119,9 +119,8 @@ func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInpu
 			fmt.Println("arwen Error", err.Error())
 			return host.createVMOutputInCaseOfError(vmcommon.FunctionWrongSignature), nil
 		}
-		if out.GetType() != wasmer.TypeVoid {
-			result = []byte(out.String())
-		}
+		convertedResult := convertReturnValue(out)
+		result = convertedResult.Bytes()
 	}
 
 	gasLeft := input.GasProvided.Int64()
@@ -185,11 +184,8 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 		return host.createVMOutputInCaseOfError(vmcommon.FunctionWrongSignature), nil
 	}
 
-	addOutput := make([]byte, 0)
-	if result.GetType() != wasmer.TypeVoid {
-		addOutput = []byte(result.String())
-	}
-	vmOutput := host.createVMOutput(addOutput, gasLeft)
+	convertedResult := convertReturnValue(result)
+	vmOutput := host.createVMOutput(convertedResult.Bytes(), gasLeft)
 
 	return vmOutput, nil
 }
@@ -293,7 +289,7 @@ func displayVMOutput(output *vmcommon.VMOutput) {
 			fmt.Println("           Nonce change to : ", outputAccount.Nonce)
 		}
 		if len(outputAccount.Code) > 0 {
-			fmt.Println("           Code change to : ", outputAccount.Code)
+			fmt.Println("           Code change to : [", len(outputAccount.Code), " bytes]")
 		}
 
 		for _, storageUpdate := range outputAccount.StorageUpdates {
