@@ -10,29 +10,29 @@ import (
 	"path/filepath"
 )
 
-// DebuggingTrace represents a temporary storage used for data useful in debugging a smart contract.
-type DebuggingTrace struct {
+// Trace represents a temporary storage used for data useful in debugging a smart contract.
+type Trace struct {
 }
 
-var globalDebuggingTrace = DebuggingTrace{}
+var globalTrace = Trace{}
 
 // PutVMOutput saves the VMOutput to a json file.
-func (trace *DebuggingTrace) PutVMOutput(scAddress []byte, vmOutput *vmcommon.VMOutput) {
+func (trace *Trace) PutVMOutput(scAddress []byte, vmOutput *vmcommon.VMOutput) {
 	scAddressEncoded := hex.EncodeToString(scAddress)
 	fileName := fmt.Sprintf("%s.json", scAddressEncoded)
 	path := trace.createTracePath(fileName)
-	fmt.Printf("DebuggingTrace.PutVMOutput: save to file %s\n", path)
+	fmt.Printf("Trace.PutVMOutput: save to file %s\n", path)
 
 	serialized, _ := json.MarshalIndent(vmOutput, "", "\t")
 	err := ioutil.WriteFile(path, serialized, 0644)
 
 	if err != nil {
-		fmt.Printf("DebuggingTrace.PutVMOutput: could not save file, %s\n", err.Error())
+		fmt.Printf("Trace.PutVMOutput: could not save file, %s\n", err.Error())
 	}
 }
 
-func (trace *DebuggingTrace) createTracePath(fileName string) string {
-	folder := filepath.Join(".", "debuggingTrace")
+func (trace *Trace) createTracePath(fileName string) string {
+	folder := filepath.Join(".", "Trace")
 	os.MkdirAll(folder, os.ModePerm)
 
 	path := filepath.Join(folder, fileName)

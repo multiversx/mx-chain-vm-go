@@ -191,7 +191,7 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 	}
 
 	vmOutput := host.createVMOutput(addOutput, gasLeft)
-	globalDebuggingTrace.PutVMOutput(host.scAddress, vmOutput)
+	globalTrace.PutVMOutput(host.scAddress, vmOutput)
 	displayVMOutput(vmOutput)
 
 	return vmOutput, nil
