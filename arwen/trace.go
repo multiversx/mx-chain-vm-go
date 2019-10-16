@@ -53,6 +53,8 @@ func saveToJSON(parentFolder string, fileNamePrefix string, value interface{}) {
 
 	if err != nil {
 		log.Printf("trace.saveToJSON: could not save file %s. %s\n", path, err.Error())
+	} else {
+		log.Printf("trace.saveToJSON: saved file %s\n", path)
 	}
 }
 
