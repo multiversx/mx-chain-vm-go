@@ -27,6 +27,10 @@ package arwen
 // extern void finish(void* context, int32_t dataOffset, int32_t length);
 // extern long long getBlockTimestamp(void *context);
 // extern void signalError(void* context);
+// extern int32_t bigInsert(void* context, int32_t smallValue);
+// extern void bigAdd(void* context, int32_t destination, int32_t op1, int32_t op2);
+// extern void bigSub(void* context, int32_t destination, int32_t op1, int32_t op2);
+// extern void debugPrintBig(void* context, int32_t value);
 import "C"
 
 import (
@@ -38,6 +42,8 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/go-ext-wasm/wasmer"
 )
+
+type bigIntHandle = int32
 
 type HostContext interface {
 	Arguments() []*big.Int
@@ -57,6 +63,11 @@ type HostContext interface {
 	Transfer(destination []byte, sender []byte, value *big.Int, input []byte, gas int64) (gasLeft int64, err error)
 	Finish(data []byte)
 	SignalUserError()
+
+	BigInsert(smallValue int64) bigIntHandle
+	BigAdd(destination, op1, op2 bigIntHandle)
+	BigSub(destination, op1, _op2 bigIntHandle)
+	DebugPrintBig(value bigIntHandle)
 }
 
 func ElrondEImports() (*wasmer.Imports, error) {
@@ -158,6 +169,26 @@ func ElrondEImports() (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("signalError", signalError, C.signalError)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigInsert", bigInsert, C.bigInsert)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigAdd", bigAdd, C.bigAdd)
+	if err != nil {
+		return nil, err
+	}
+
+	// imports, err = imports.Append("bigSub", bigSub, C.bigSub)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	imports, err = imports.Append("debugPrintBig", debugPrintBig, C.debugPrintBig)
 	if err != nil {
 		return nil, err
 	}
@@ -445,4 +476,32 @@ func getBlockTimestamp(context unsafe.Pointer) int64 {
 
 	fmt.Println("getBlockTimestamp ", hostContext.GetVMInput().Header.Timestamp.Int64())
 	return hostContext.GetVMInput().Header.Timestamp.Int64()
+}
+
+//export bigInsert
+func bigInsert(context unsafe.Pointer, smallValue int32) int32 {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := getHostContext(instCtx.Data())
+	return hostContext.BigInsert(int64(smallValue))
+}
+
+//export bigAdd
+func bigAdd(context unsafe.Pointer, destination, op1, op2 int32) {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := getHostContext(instCtx.Data())
+	hostContext.BigAdd(destination, op1, op2)
+}
+
+//export bigSub
+func bigSub(context unsafe.Pointer, destination, op1, op2 int32) {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := getHostContext(instCtx.Data())
+	hostContext.BigSub(destination, op1, op2)
+}
+
+//export debugPrintBig
+func debugPrintBig(context unsafe.Pointer, handle int32) {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := getHostContext(instCtx.Data())
+	hostContext.DebugPrintBig(handle)
 }

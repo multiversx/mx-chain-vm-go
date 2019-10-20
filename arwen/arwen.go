@@ -11,6 +11,7 @@ import (
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/go-ext-wasm/wasmer"
+	mbig "github.com/ElrondNetwork/managed-big-int"
 )
 
 type StorageStatus int
@@ -69,6 +70,9 @@ type vmContext struct {
 	vmType       []byte
 	callFunction string
 	scAddress    []byte
+
+	bigIntHandles   []mbig.BigIntHandle
+	bigIntContainer *mbig.BigIntContainer
 
 	logs          map[string]logTopicsData
 	storageUpdate map[string](map[string][]byte)
@@ -309,6 +313,7 @@ func displayVMOutput(output *vmcommon.VMOutput) {
 }
 
 func (host *vmContext) initInternalValues() {
+	host.initBigIntContainer()
 	host.storageUpdate = make(map[string]map[string][]byte, 0)
 	host.logs = make(map[string]logTopicsData, 0)
 	host.selfDestruct = make(map[string][]byte)
