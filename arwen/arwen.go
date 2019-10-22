@@ -447,21 +447,24 @@ func (host *vmContext) getBalanceFromBlockChain(addr []byte) *big.Int {
 	return balance
 }
 
-func (host *vmContext) GetBalance(addr []byte) []byte {
+func (host *vmContext) LoadBalance(addr []byte, destination BigIntHandle) {
 	strAdr := string(addr)
 	if _, ok := host.outputAccounts[strAdr]; ok {
-		return host.outputAccounts[strAdr].Balance.Bytes()
+		balance := host.outputAccounts[strAdr].Balance
+		host.bigUpdate(destination, balance)
+		return
 	}
 
 	balance, err := host.blockChainHook.GetBalance(addr)
 	if err != nil {
 		fmt.Printf("GetBalance returned with error %s \n", err.Error())
-		return nil
+		host.bigUpdate(destination, big.NewInt(0))
 	}
 
 	host.outputAccounts[strAdr] = &vmcommon.OutputAccount{Balance: big.NewInt(0).Set(balance), Address: addr}
 
-	return balance.Bytes()
+	host.bigUpdate(destination, balance)
+	fmt.Printf("getExternalBalance address: %s balance: %d\n", hex.EncodeToString(addr), balance)
 }
 
 func (host *vmContext) GetCodeSize(addr []byte) int {

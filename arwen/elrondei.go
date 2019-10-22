@@ -8,7 +8,7 @@ package arwen
 // typedef int uint32_t;
 // typedef unsigned long long uint64_t;
 // extern void getOwner(void *context, int32_t resultOffset);
-// extern void getExternalBalance(void *context, int32_t addressOffset, int32_t resultOffset);
+// extern void loadBalance(void *context, int32_t addressOffset, int32_t result);
 // extern int32_t blockHash(void *context, long long nonce, int32_t resultOffset);
 // extern int32_t transfer(void *context, long long gasLimit, int32_t dstOffset, int32_t sndOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
 // extern int32_t getArgument(void *context, int32_t id, int32_t argOffset);
@@ -43,15 +43,19 @@ import (
 	"github.com/ElrondNetwork/go-ext-wasm/wasmer"
 )
 
-type bigIntHandle = int32
+// BigIntHandle is the type we use to represent a reference to a big int in the host.
+type BigIntHandle = int32
 
+// HostContext abstracts away the blockchain functionality from wasmer.
 type HostContext interface {
 	Arguments() []*big.Int
 	Function() string
 	AccountExists(addr []byte) bool
 	GetStorage(addr []byte, key []byte) []byte
 	SetStorage(addr []byte, key []byte, value []byte) int32
-	GetBalance(addr []byte) []byte
+	//GetStorage(addr []byte, key []byte) BigIntHandle
+	//SetStorage(addr []byte, key []byte, BigIntHandle)
+	LoadBalance(addr []byte, destination BigIntHandle)
 	GetCodeSize(addr []byte) int
 	BlockHash(nonce int64) []byte
 	GetCodeHash(addr []byte) []byte
@@ -64,10 +68,10 @@ type HostContext interface {
 	Finish(data []byte)
 	SignalUserError()
 
-	BigInsert(smallValue int64) bigIntHandle
-	BigAdd(destination, op1, op2 bigIntHandle)
-	BigSub(destination, op1, _op2 bigIntHandle)
-	DebugPrintBig(value bigIntHandle)
+	BigInsertInt64(smallValue int64) BigIntHandle
+	BigAdd(destination, op1, op2 BigIntHandle)
+	BigSub(destination, op1, _op2 BigIntHandle)
+	DebugPrintBig(value BigIntHandle)
 }
 
 func ElrondEImports() (*wasmer.Imports, error) {
@@ -78,7 +82,7 @@ func ElrondEImports() (*wasmer.Imports, error) {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getExternalBalance", getExternalBalance, C.getExternalBalance)
+	imports, err = imports.Append("loadBalance", loadBalance, C.loadBalance)
 	if err != nil {
 		return nil, err
 	}
@@ -220,19 +224,13 @@ func signalError(context unsafe.Pointer) {
 	fmt.Println("signalError called")
 }
 
-//export getExternalBalance
-func getExternalBalance(context unsafe.Pointer, addressOffset int32, resultOffset int32) {
+//export loadBalance
+func loadBalance(context unsafe.Pointer, addressOffset int32, result int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := getHostContext(instCtx.Data())
 
 	address := loadBytes(instCtx.Memory(), addressOffset, addressLen)
-	balance := hostContext.GetBalance(address)
-
-	err := storeBytes(instCtx.Memory(), resultOffset, balance)
-	if err != nil {
-		fmt.Println("getExternalBalance error: " + err.Error())
-	}
-	fmt.Println("getExternalBalance address: " + hex.EncodeToString(address) + " balance: " + big.NewInt(0).SetBytes(balance).String())
+	hostContext.LoadBalance(address, result)
 }
 
 //export blockHash
@@ -482,7 +480,7 @@ func getBlockTimestamp(context unsafe.Pointer) int64 {
 func bigInsert(context unsafe.Pointer, smallValue int32) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := getHostContext(instCtx.Data())
-	return hostContext.BigInsert(int64(smallValue))
+	return hostContext.BigInsertInt64(int64(smallValue))
 }
 
 //export bigAdd
