@@ -27,6 +27,14 @@ func (host *vmContext) BigUpdate(destination BigIntHandle, newValue *big.Int) {
 	host.bigIntContainer.Update(host.bigIntHandles[destination], newValue)
 }
 
+func (host *vmContext) BigGetBytes(destination BigIntHandle) []byte {
+	return host.bigIntContainer.GetBytes(host.bigIntHandles[destination])
+}
+
+func (host *vmContext) BigSetBytes(destination BigIntHandle, bytes []byte) {
+	host.bigIntContainer.SetBytes(host.bigIntHandles[destination], bytes)
+}
+
 func (host *vmContext) BigAdd(destination, op1, op2 BigIntHandle) {
 	host.bigIntHandles[destination] = host.bigIntContainer.Add(
 		host.bigIntHandles[destination],
