@@ -161,7 +161,9 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 	gasLeft := input.GasProvided.Int64()
 	contract := host.GetCode(host.scAddress)
 
-	instance, err := wasmer.NewInstanceWithImports(contract, host.imports)
+	fmt.Printf("Gas provided: %d\n", gasLeft)
+
+	instance, err := wasmer.NewMeteredInstanceWithImports(contract, host.imports, uint64(gasLeft))
 	if err != nil {
 		fmt.Println("arwen Error", err.Error())
 		return host.createVMOutputInCaseOfError(vmcommon.ContractInvalid), nil
@@ -183,6 +185,11 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 		fmt.Println("arwen Error", err.Error())
 		return host.createVMOutputInCaseOfError(vmcommon.FunctionWrongSignature), nil
 	}
+
+	gasLeft = gasLeft - int64(instance.GetPointsUsed())
+
+	fmt.Printf("Wasmer reports %d points used.\n", instance.GetPointsUsed())
+	fmt.Printf("Gas left: %d\n", gasLeft)
 
 	addOutput := make([]byte, 0)
 	if result.GetType() != wasmer.TypeVoid {
