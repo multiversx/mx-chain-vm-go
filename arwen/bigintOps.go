@@ -23,7 +23,7 @@ func (host *vmContext) BigInsertInt64(smallValue int64) BigIntHandle {
 	return host.bigInsert(big.NewInt(smallValue))
 }
 
-func (host *vmContext) bigUpdate(destination BigIntHandle, newValue *big.Int) {
+func (host *vmContext) BigUpdate(destination BigIntHandle, newValue *big.Int) {
 	host.bigIntContainer.Update(host.bigIntHandles[destination], newValue)
 }
 

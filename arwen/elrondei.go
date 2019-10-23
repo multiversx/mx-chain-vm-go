@@ -12,6 +12,7 @@ package arwen
 // extern int32_t blockHash(void *context, long long nonce, int32_t resultOffset);
 // extern int32_t transfer(void *context, long long gasLimit, int32_t dstOffset, int32_t sndOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
 // extern int32_t getArgument(void *context, int32_t id, int32_t argOffset);
+// extern void loadArgumentAsBig(void *context, int32_t id, int32_t destination);
 // extern long long getArgumentAsInt64(void *context, int32_t id);
 // extern int32_t getFunction(void *context, int32_t functionOffset);
 // extern int32_t getNumArguments(void *context);
@@ -69,6 +70,7 @@ type HostContext interface {
 	SignalUserError()
 
 	BigInsertInt64(smallValue int64) BigIntHandle
+	BigUpdate(destination BigIntHandle, newValue *big.Int)
 	BigAdd(destination, op1, op2 BigIntHandle)
 	BigSub(destination, op1, _op2 BigIntHandle)
 	DebugPrintBig(value BigIntHandle)
@@ -97,12 +99,17 @@ func ElrondEImports() (*wasmer.Imports, error) {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getArgumentAsInt64", getArgumentAsInt64, C.getArgumentAsInt64)
+	imports, err = imports.Append("getArgument", getArgument, C.getArgument)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getArgument", getArgument, C.getArgument)
+	imports, err = imports.Append("loadArgumentAsBig", loadArgumentAsBig, C.loadArgumentAsBig)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getArgumentAsInt64", getArgumentAsInt64, C.getArgumentAsInt64)
 	if err != nil {
 		return nil, err
 	}
@@ -287,8 +294,24 @@ func getArgument(context unsafe.Pointer, id int32, argOffset int32) int32 {
 		return -1
 	}
 
-	fmt.Println("getArgument value: " + hex.EncodeToString(args[id].Bytes()))
+	fmt.Printf("argument #%d (bytes): %s\n", id, hex.EncodeToString(args[id].Bytes()))
 	return int32(len(args[id].Bytes()))
+}
+
+//export loadArgumentAsBig
+func loadArgumentAsBig(context unsafe.Pointer, id int32, destination int32) {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := getHostContext(instCtx.Data())
+
+	args := hostContext.Arguments()
+	if int32(len(args)) <= id {
+		fmt.Println("getArgument id invalid")
+		return
+	}
+
+	hostContext.BigUpdate(destination, args[id])
+
+	fmt.Printf("argument #%d (big int): %d\n", id, args[id])
 }
 
 //export getArgumentAsInt64
@@ -302,7 +325,7 @@ func getArgumentAsInt64(context unsafe.Pointer, id int32) int64 {
 		return -1
 	}
 
-	fmt.Println("getArgument value: ", args[id].Int64())
+	fmt.Printf("argument #%d (int64): %d\n", id, args[id].Int64())
 	return args[id].Int64()
 }
 
