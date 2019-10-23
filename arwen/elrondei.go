@@ -379,7 +379,7 @@ func getCallValueAsInt64(context unsafe.Pointer) int64 {
 func logMessage(context unsafe.Pointer, pointer int32, length int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	log := loadBytes(instCtx.Memory(), pointer, length)
-	fmt.Println("%s", string(log))
+	fmt.Println(string(log))
 }
 
 //export writeLog
