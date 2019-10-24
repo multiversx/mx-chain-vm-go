@@ -163,7 +163,7 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 
 	fmt.Printf("Gas provided: %d\n", gasLeft)
 
-	instance, err := wasmer.NewMeteredInstanceWithImports(contract, host.imports, uint64(gasLeft))
+	instance, err := wasmer.NewMeteredInstanceWithImports(contract, host.imports, uint64(gasLeft), "uniform_one")
 	if err != nil {
 		fmt.Println("arwen Error", err.Error())
 		return host.createVMOutputInCaseOfError(vmcommon.ContractInvalid), nil
