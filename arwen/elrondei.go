@@ -39,6 +39,9 @@ package arwen
 // extern int32_t bigIntByteLength(void* context, int32_t reference);
 // extern int32_t bigIntGetBytes(void* context, int32_t reference);
 // extern void bigIntSetBytes(void* context, int32_t destination, int32_t byteOffset, int32_t byteLength);
+// extern int32_t bigIntIsInt64(void* context, int32_t reference);
+// extern long long bigIntGetInt64(void* context, int32_t reference);
+// extern void bigIntSetInt64(void* context, int32_t destination, long long value);
 // extern void bigIntAdd(void* context, int32_t destination, int32_t op1, int32_t op2);
 // extern void bigIntSub(void* context, int32_t destination, int32_t op1, int32_t op2);
 // extern void bigIntMul(void* context, int32_t destination, int32_t op1, int32_t op2);
@@ -87,6 +90,9 @@ type HostContext interface {
 	BigGetBytes(reference BigIntHandle) []byte
 	GetNextAllocMemIndex(allocSize int32, totalMemSize int32) (newIndex int32)
 	BigSetBytes(destination BigIntHandle, bytes []byte)
+	BigIsInt64(destination BigIntHandle) bool
+	BigGetInt64(destination BigIntHandle) int64
+	BigSetInt64(destination BigIntHandle, value int64)
 	BigAdd(destination, op1, op2 BigIntHandle)
 	BigSub(destination, op1, op2 BigIntHandle)
 	BigMul(destination, op1, op2 BigIntHandle)
@@ -220,6 +226,21 @@ func ElrondEImports() (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("bigIntSetBytes", bigIntSetBytes, C.bigIntSetBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntIsInt64", bigIntIsInt64, C.bigIntIsInt64)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntGetInt64", bigIntGetInt64, C.bigIntGetInt64)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntSetInt64", bigIntSetInt64, C.bigIntSetInt64)
 	if err != nil {
 		return nil, err
 	}
@@ -582,6 +603,30 @@ func bigIntSetBytes(context unsafe.Pointer, destination int32, byteOffset int32,
 
 	bytes := loadBytes(instCtx.Memory(), byteOffset, byteLength)
 	hostContext.BigSetBytes(destination, bytes)
+}
+
+//export bigIntIsInt64
+func bigIntIsInt64(context unsafe.Pointer, destination int32) int32 {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := getHostContext(instCtx.Data())
+	if hostContext.BigIsInt64(destination) {
+		return 1
+	}
+	return 0
+}
+
+//export bigIntGetInt64
+func bigIntGetInt64(context unsafe.Pointer, destination int32) int64 {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := getHostContext(instCtx.Data())
+	return hostContext.BigGetInt64(destination)
+}
+
+//export bigIntSetInt64
+func bigIntSetInt64(context unsafe.Pointer, destination int32, value int64) {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := getHostContext(instCtx.Data())
+	hostContext.BigSetInt64(destination, value)
 }
 
 //export bigIntAdd
