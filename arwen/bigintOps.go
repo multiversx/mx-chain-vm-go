@@ -69,6 +69,14 @@ func (host *vmContext) BigSub(destination, op1, op2 BigIntHandle) {
 	)
 }
 
+func (host *vmContext) ReturnBigInt(reference BigIntHandle) {
+	host.returnData = host.bigIntContainer.Get(host.bigIntHandles[reference])
+}
+
+func (host *vmContext) ReturnInt32(value int32) {
+	host.returnData = big.NewInt(int64(value))
+}
+
 func (host *vmContext) DebugPrintBig(value BigIntHandle) {
 	bi := host.bigIntContainer.GetUnsafe(host.bigIntHandles[value])
 	fmt.Printf(">>> Big Int: %d\n", bi)

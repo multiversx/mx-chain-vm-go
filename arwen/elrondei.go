@@ -27,7 +27,6 @@ package arwen
 // extern long long getCallValueAsInt64(void *context);
 // extern void logMessage(void *context, int32_t pointer, int32_t length);
 // extern void writeLog(void *context, int32_t pointer, int32_t length, int32_t topicPtr, int32_t numTopics);
-// extern void finish(void* context, int32_t dataOffset, int32_t length);
 // extern long long getBlockTimestamp(void *context);
 // extern void signalError(void* context);
 // extern int32_t bigInsert(void* context, int32_t smallValue);
@@ -36,6 +35,8 @@ package arwen
 // extern void bigSetBytes(void* context, int32_t destination, int32_t byteOffset, int32_t byteLength);
 // extern void bigAdd(void* context, int32_t destination, int32_t op1, int32_t op2);
 // extern void bigSub(void* context, int32_t destination, int32_t op1, int32_t op2);
+// extern void returnBigInt(void* context, int32_t reference);
+// extern void returnInt32(void* context, int32_t value);
 // extern void debugPrintBig(void* context, int32_t value);
 // extern void debugPrintInt32(void* context, int32_t value);
 import "C"
@@ -70,7 +71,6 @@ type HostContext interface {
 	GetSCAddress() []byte
 	WriteLog(addr []byte, topics [][]byte, data []byte)
 	Transfer(destination []byte, sender []byte, value *big.Int, input []byte, gas int64) (gasLeft int64, err error)
-	Finish(data []byte)
 	SignalUserError()
 
 	BigInsertInt64(smallValue int64) BigIntHandle
@@ -81,6 +81,8 @@ type HostContext interface {
 	BigSetBytes(destination BigIntHandle, bytes []byte)
 	BigAdd(destination, op1, op2 BigIntHandle)
 	BigSub(destination, op1, _op2 BigIntHandle)
+	ReturnBigInt(reference BigIntHandle)
+	ReturnInt32(value int32)
 	DebugPrintBig(value BigIntHandle)
 }
 
@@ -187,11 +189,6 @@ func ElrondEImports() (*wasmer.Imports, error) {
 		return nil, err
 	}
 
-	imports, err = imports.Append("finish", finish, C.finish)
-	if err != nil {
-		return nil, err
-	}
-
 	imports, err = imports.Append("getBlockTimestamp", getBlockTimestamp, C.getBlockTimestamp)
 	if err != nil {
 		return nil, err
@@ -228,6 +225,16 @@ func ElrondEImports() (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("bigSub", bigSub, C.bigSub)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("returnBigInt", returnBigInt, C.returnBigInt)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("returnInt32", returnInt32, C.returnInt32)
 	if err != nil {
 		return nil, err
 	}
@@ -544,16 +551,6 @@ func writeLog(context unsafe.Pointer, pointer int32, length int32, topicPtr int3
 	hostContext.WriteLog(hostContext.GetSCAddress(), topics, log)
 }
 
-//export finish
-func finish(context unsafe.Pointer, pointer int32, length int32) {
-	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := getHostContext(instCtx.Data())
-
-	data := loadBytes(instCtx.Memory(), pointer, length)
-	fmt.Println("finish: ", big.NewInt(0).SetBytes(data))
-	hostContext.Finish(data)
-}
-
 //export getBlockTimestamp
 func getBlockTimestamp(context unsafe.Pointer) int64 {
 	instCtx := wasmer.IntoInstanceContext(context)
@@ -614,6 +611,20 @@ func bigSub(context unsafe.Pointer, destination, op1, op2 int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := getHostContext(instCtx.Data())
 	hostContext.BigSub(destination, op1, op2)
+}
+
+//export returnBigInt
+func returnBigInt(context unsafe.Pointer, reference int32) {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := getHostContext(instCtx.Data())
+	hostContext.ReturnBigInt(reference)
+}
+
+//export returnInt32
+func returnInt32(context unsafe.Pointer, value int32) {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := getHostContext(instCtx.Data())
+	hostContext.ReturnInt32(value)
 }
 
 //export debugPrintBig

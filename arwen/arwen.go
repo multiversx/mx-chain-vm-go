@@ -80,7 +80,7 @@ type vmContext struct {
 
 	outputAccounts map[string]*vmcommon.OutputAccount
 
-	output     []byte
+	returnData *big.Int
 	returnCode vmcommon.ReturnCode
 
 	selfDestruct map[string][]byte
@@ -259,8 +259,12 @@ func (host *vmContext) createVMOutput(output []byte, gasLeft int64) *vmcommon.VM
 		vmOutput.Logs = append(vmOutput.Logs, logEntry)
 	}
 
-	output = append(output, host.output...)
-	vmOutput.ReturnData = append(vmOutput.ReturnData, big.NewInt(0).SetBytes(output))
+	if host.returnData != nil {
+		vmOutput.ReturnData = []*big.Int{host.returnData}
+	} else {
+		vmOutput.ReturnData = []*big.Int{}
+	}
+
 	vmOutput.GasRemaining = big.NewInt(gasLeft)
 	vmOutput.GasRefund = big.NewInt(0)
 	vmOutput.ReturnCode = host.returnCode
@@ -320,9 +324,9 @@ func (host *vmContext) initInternalValues() {
 	host.selfDestruct = make(map[string][]byte)
 	host.vmInput = vmcommon.VMInput{}
 	host.outputAccounts = make(map[string]*vmcommon.OutputAccount, 0)
-	host.output = make([]byte, 0)
 	host.scAddress = make([]byte, 0)
 	host.callFunction = ""
+	host.returnData = nil
 	host.returnCode = vmcommon.Ok
 }
 
@@ -380,10 +384,6 @@ func (host *vmContext) SelfDestruct(addr []byte, beneficiary []byte) {
 
 func (host *vmContext) GetSCAddress() []byte {
 	return host.scAddress
-}
-
-func (host *vmContext) Finish(data []byte) {
-	host.output = append(host.output, data...)
 }
 
 func (host *vmContext) AccountExists(addr []byte) bool {
