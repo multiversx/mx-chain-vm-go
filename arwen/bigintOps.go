@@ -69,6 +69,21 @@ func (host *vmContext) BigSub(destination, op1, op2 BigIntHandle) {
 	)
 }
 
+func (host *vmContext) BigMul(destination, op1, op2 BigIntHandle) {
+	host.bigIntHandles[destination] = host.bigIntContainer.Mul(
+		host.bigIntHandles[destination],
+		host.bigIntHandles[op1],
+		host.bigIntHandles[op2],
+	)
+}
+
+func (host *vmContext) BigCmp(op1, op2 BigIntHandle) int {
+	return host.bigIntContainer.Cmp(
+		host.bigIntHandles[op1],
+		host.bigIntHandles[op2],
+	)
+}
+
 func (host *vmContext) ReturnBigInt(reference BigIntHandle) {
 	host.returnData = host.bigIntContainer.Get(host.bigIntHandles[reference])
 }
