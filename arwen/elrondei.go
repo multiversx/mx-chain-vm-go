@@ -31,9 +31,13 @@ package arwen
 // extern long long getBlockTimestamp(void *context);
 // extern void signalError(void* context);
 // extern int32_t bigInsert(void* context, int32_t smallValue);
+// extern int32_t bigByteLength(void* context, int32_t reference);
+// extern int32_t bigGetBytes(void* context, int32_t reference);
+// extern void bigSetBytes(void* context, int32_t destination, int32_t byteOffset, int32_t byteLength);
 // extern void bigAdd(void* context, int32_t destination, int32_t op1, int32_t op2);
 // extern void bigSub(void* context, int32_t destination, int32_t op1, int32_t op2);
 // extern void debugPrintBig(void* context, int32_t value);
+// extern void debugPrintInt32(void* context, int32_t value);
 import "C"
 
 import (
@@ -71,7 +75,9 @@ type HostContext interface {
 
 	BigInsertInt64(smallValue int64) BigIntHandle
 	BigUpdate(destination BigIntHandle, newValue *big.Int)
-	BigGetBytes(destination BigIntHandle) []byte
+	BigByteLength(reference BigIntHandle) int32
+	BigGetBytes(reference BigIntHandle) []byte
+	GetNextAllocMemIndex(allocSize int32, totalMemSize int32) (newIndex int32)
 	BigSetBytes(destination BigIntHandle, bytes []byte)
 	BigAdd(destination, op1, op2 BigIntHandle)
 	BigSub(destination, op1, _op2 BigIntHandle)
@@ -201,6 +207,21 @@ func ElrondEImports() (*wasmer.Imports, error) {
 		return nil, err
 	}
 
+	imports, err = imports.Append("bigByteLength", bigByteLength, C.bigByteLength)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigGetBytes", bigGetBytes, C.bigGetBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigSetBytes", bigSetBytes, C.bigSetBytes)
+	if err != nil {
+		return nil, err
+	}
+
 	imports, err = imports.Append("bigAdd", bigAdd, C.bigAdd)
 	if err != nil {
 		return nil, err
@@ -212,6 +233,11 @@ func ElrondEImports() (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("debugPrintBig", debugPrintBig, C.debugPrintBig)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("debugPrintInt32", debugPrintInt32, C.debugPrintInt32)
 	if err != nil {
 		return nil, err
 	}
@@ -544,6 +570,38 @@ func bigInsert(context unsafe.Pointer, smallValue int32) int32 {
 	return hostContext.BigInsertInt64(int64(smallValue))
 }
 
+//export bigByteLength
+func bigByteLength(context unsafe.Pointer, reference int32) int32 {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := getHostContext(instCtx.Data())
+	return hostContext.BigByteLength(reference)
+}
+
+//export bigGetBytes
+func bigGetBytes(context unsafe.Pointer, reference int32) int32 {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := getHostContext(instCtx.Data())
+
+	bytes := hostContext.BigGetBytes(reference)
+	newIndex := hostContext.GetNextAllocMemIndex(int32(len(bytes)), int32(instCtx.Memory().Length()))
+
+	err := storeBytes(instCtx.Memory(), newIndex, bytes)
+	if err != nil {
+		fmt.Println("bigGetBytes error: " + err.Error())
+	}
+
+	return newIndex
+}
+
+//export bigSetBytes
+func bigSetBytes(context unsafe.Pointer, destination int32, byteOffset int32, byteLength int32) {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := getHostContext(instCtx.Data())
+
+	bytes := loadBytes(instCtx.Memory(), byteOffset, byteLength)
+	hostContext.BigSetBytes(destination, bytes)
+}
+
 //export bigAdd
 func bigAdd(context unsafe.Pointer, destination, op1, op2 int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
@@ -563,4 +621,9 @@ func debugPrintBig(context unsafe.Pointer, handle int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := getHostContext(instCtx.Data())
 	hostContext.DebugPrintBig(handle)
+}
+
+//export debugPrintInt32
+func debugPrintInt32(context unsafe.Pointer, value int32) {
+	fmt.Printf(">>> Int32: %d\n", value)
 }
