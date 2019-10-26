@@ -71,9 +71,8 @@ type vmContext struct {
 	callFunction string
 	scAddress    []byte
 
-	bigIntHandles     []mbig.BigIntHandle
-	bigIntContainer   *mbig.BigIntContainer
-	nextAllocMemIndex int32
+	bigIntHandles   []mbig.BigIntHandle
+	bigIntContainer *mbig.BigIntContainer
 
 	logs          map[string]logTopicsData
 	storageUpdate map[string](map[string][]byte)

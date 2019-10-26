@@ -37,7 +37,7 @@ package arwen
 //
 // extern int32_t bigIntNew(void* context, int32_t smallValue);
 // extern int32_t bigIntByteLength(void* context, int32_t reference);
-// extern int32_t bigIntGetBytes(void* context, int32_t reference);
+// extern int32_t bigIntGetBytes(void* context, int32_t reference, int32_t byteOffset);
 // extern void bigIntSetBytes(void* context, int32_t destination, int32_t byteOffset, int32_t byteLength);
 // extern int32_t bigIntIsInt64(void* context, int32_t reference);
 // extern long long bigIntGetInt64(void* context, int32_t reference);
@@ -47,9 +47,10 @@ package arwen
 // extern void bigIntMul(void* context, int32_t destination, int32_t op1, int32_t op2);
 // extern int32_t bigIntCmp(void* context, int32_t op1, int32_t op2);
 //
-// extern void logMessage(void *context, int32_t pointer, int32_t length);
 // extern void debugPrintBigInt(void* context, int32_t value);
 // extern void debugPrintInt32(void* context, int32_t value);
+// extern void debugPrintBytes(void* context, int32_t byteOffset, int32_t byteLength);
+// extern void debugPrintString(void* context, int32_t byteOffset, int32_t byteLength);
 import "C"
 
 import (
@@ -88,7 +89,6 @@ type HostContext interface {
 	BigUpdate(destination BigIntHandle, newValue *big.Int)
 	BigByteLength(reference BigIntHandle) int32
 	BigGetBytes(reference BigIntHandle) []byte
-	GetNextAllocMemIndex(allocSize int32, totalMemSize int32) (newIndex int32)
 	BigSetBytes(destination BigIntHandle, bytes []byte)
 	BigIsInt64(destination BigIntHandle) bool
 	BigGetInt64(destination BigIntHandle) int64
@@ -97,6 +97,7 @@ type HostContext interface {
 	BigSub(destination, op1, op2 BigIntHandle)
 	BigMul(destination, op1, op2 BigIntHandle)
 	BigCmp(op1, op2 BigIntHandle) int
+
 	ReturnBigInt(reference BigIntHandle)
 	ReturnInt32(value int32)
 	DebugPrintBig(value BigIntHandle)
@@ -190,11 +191,6 @@ func ElrondEImports() (*wasmer.Imports, error) {
 		return nil, err
 	}
 
-	imports, err = imports.Append("logMessage", logMessage, C.logMessage)
-	if err != nil {
-		return nil, err
-	}
-
 	imports, err = imports.Append("writeLog", writeLog, C.writeLog)
 	if err != nil {
 		return nil, err
@@ -281,6 +277,16 @@ func ElrondEImports() (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("debugPrintInt32", debugPrintInt32, C.debugPrintInt32)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("debugPrintBytes", debugPrintBytes, C.debugPrintBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("debugPrintString", debugPrintString, C.debugPrintString)
 	if err != nil {
 		return nil, err
 	}
@@ -581,19 +587,18 @@ func bigIntByteLength(context unsafe.Pointer, reference int32) int32 {
 }
 
 //export bigIntGetBytes
-func bigIntGetBytes(context unsafe.Pointer, reference int32) int32 {
+func bigIntGetBytes(context unsafe.Pointer, reference int32, byteOffset int32) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := getHostContext(instCtx.Data())
 
 	bytes := hostContext.BigGetBytes(reference)
-	newIndex := hostContext.GetNextAllocMemIndex(int32(len(bytes)), int32(instCtx.Memory().Length()))
 
-	err := storeBytes(instCtx.Memory(), newIndex, bytes)
+	err := storeBytes(instCtx.Memory(), byteOffset, bytes)
 	if err != nil {
 		fmt.Println("bigIntGetBytes error: " + err.Error())
 	}
 
-	return newIndex
+	return int32(len(bytes))
 }
 
 //export bigIntSetBytes
@@ -671,13 +676,6 @@ func returnInt32(context unsafe.Pointer, value int32) {
 	hostContext.ReturnInt32(value)
 }
 
-//export logMessage
-func logMessage(context unsafe.Pointer, pointer int32, length int32) {
-	instCtx := wasmer.IntoInstanceContext(context)
-	log := loadBytes(instCtx.Memory(), pointer, length)
-	fmt.Println("logMessage: " + string(log))
-}
-
 //export debugPrintBigInt
 func debugPrintBigInt(context unsafe.Pointer, handle int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
@@ -688,4 +686,18 @@ func debugPrintBigInt(context unsafe.Pointer, handle int32) {
 //export debugPrintInt32
 func debugPrintInt32(context unsafe.Pointer, value int32) {
 	fmt.Printf(">>> Int32: %d\n", value)
+}
+
+//export debugPrintBytes
+func debugPrintBytes(context unsafe.Pointer, byteOffset int32, byteLength int32) {
+	instCtx := wasmer.IntoInstanceContext(context)
+	bytes := loadBytes(instCtx.Memory(), byteOffset, byteLength)
+	fmt.Printf(">>> Bytes: %s\n", hex.EncodeToString(bytes))
+}
+
+//export debugPrintString
+func debugPrintString(context unsafe.Pointer, byteOffset int32, byteLength int32) {
+	instCtx := wasmer.IntoInstanceContext(context)
+	bytes := loadBytes(instCtx.Memory(), byteOffset, byteLength)
+	fmt.Printf(">>> String: \"%s\"\n", string(bytes))
 }

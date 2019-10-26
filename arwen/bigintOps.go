@@ -8,7 +8,6 @@ import (
 )
 
 func (host *vmContext) initBigIntContainer() {
-	host.nextAllocMemIndex = -1
 	host.bigIntHandles = nil
 	host.bigIntContainer = mbig.NewBigIntContainer()
 }
@@ -34,19 +33,6 @@ func (host *vmContext) BigByteLength(reference BigIntHandle) int32 {
 
 func (host *vmContext) BigGetBytes(reference BigIntHandle) []byte {
 	return host.bigIntContainer.GetBytes(host.bigIntHandles[reference])
-}
-
-func (host *vmContext) GetNextAllocMemIndex(allocSize int32, totalMemSize int32) (newIndex int32) {
-	if host.nextAllocMemIndex == -1 {
-		// first allocation
-		// to be sure that we don't overwrite anything in memory,
-		// we start allocating immediately beyond the current memory size
-		// and force it to grow
-		host.nextAllocMemIndex = totalMemSize
-	}
-	newIndex = host.nextAllocMemIndex
-	host.nextAllocMemIndex += allocSize
-	return
 }
 
 func (host *vmContext) BigSetBytes(destination BigIntHandle, bytes []byte) {
