@@ -301,7 +301,7 @@ func displayVMOutput(output *vmcommon.VMOutput) {
 		}
 
 		for _, storageUpdate := range outputAccount.StorageUpdates {
-			fmt.Println("           Storage update key: "+hex.EncodeToString(storageUpdate.Offset)+" value: ", big.NewInt(0).SetBytes(storageUpdate.Data))
+			fmt.Println("           Storage update key: "+hex.EncodeToString(storageUpdate.Offset)+" value: ", hex.EncodeToString(storageUpdate.Data))
 		}
 	}
 
@@ -543,21 +543,16 @@ func (host *vmContext) WriteLog(addr []byte, topics [][]byte, data []byte) {
 
 var ErrInvalidTransfer = errors.New("invalid sender")
 
-// Transfer handles any necessary value transfer required and takes
+// SendTransaction handles any necessary value transfer required and takes
 // the necessary steps to create accounts and reverses the state in case of an
 // execution error or failed value transfer.
-func (host *vmContext) Transfer(destination []byte, sender []byte, value *big.Int, input []byte, gas int64,
+func (host *vmContext) SendTransaction(destination []byte, value *big.Int, input []byte, gas int64,
 ) (gasLeft int64, err error) {
 
-	//TODO: should this be kept, or there are other use cases where a sender can be somebody else
-	if !bytes.Equal(sender, host.GetSCAddress()) {
-		return 0, ErrInvalidTransfer
-	}
-
-	senderAcc, ok := host.outputAccounts[string(sender)]
+	senderAcc, ok := host.outputAccounts[string(host.scAddress)]
 	if !ok {
 		senderAcc = &vmcommon.OutputAccount{
-			Address:      sender,
+			Address:      host.scAddress,
 			BalanceDelta: big.NewInt(0),
 		}
 		host.outputAccounts[string(senderAcc.Address)] = senderAcc

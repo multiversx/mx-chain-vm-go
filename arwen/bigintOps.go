@@ -27,6 +27,10 @@ func (host *vmContext) BigUpdate(destination BigIntHandle, newValue *big.Int) {
 	host.bigIntContainer.Update(host.bigIntHandles[destination], newValue)
 }
 
+func (host *vmContext) BigGet(reference BigIntHandle) *big.Int {
+	return host.bigIntContainer.Get(host.bigIntHandles[reference])
+}
+
 func (host *vmContext) BigByteLength(reference BigIntHandle) int32 {
 	return int32(host.bigIntContainer.ByteLen(host.bigIntHandles[reference]))
 }

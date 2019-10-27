@@ -21,7 +21,7 @@ package arwen
 // extern int32_t loadBlockHash(void *context, long long nonce, int32_t resultOffset);
 // extern long long getBlockTimestamp(void *context);
 //
-// extern int32_t transfer(void *context, long long gasLimit, int32_t dstOffset, int32_t sndOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
+// extern int32_t sendTransaction(void *context, long long gasLimit, int32_t dstOffset, int32_t valueRef, int32_t dataOffset, int32_t dataLength);
 //
 // extern int32_t storageStoreAsBytes(void *context, int32_t keyOffset, int32_t dataOffset, int32_t dataLength);
 // extern int32_t storageLoadAsBytes(void *context, int32_t keyOffset, int32_t dataOffset);
@@ -82,11 +82,12 @@ type HostContext interface {
 	GetVMInput() vmcommon.VMInput
 	GetSCAddress() []byte
 	WriteLog(addr []byte, topics [][]byte, data []byte)
-	Transfer(destination []byte, sender []byte, value *big.Int, input []byte, gas int64) (gasLeft int64, err error)
+	SendTransaction(destination []byte, value *big.Int, input []byte, gas int64) (gasLeft int64, err error)
 	SignalUserError()
 
 	BigInsertInt64(smallValue int64) BigIntHandle
 	BigUpdate(destination BigIntHandle, newValue *big.Int)
+	BigGet(reference BigIntHandle) *big.Int
 	BigByteLength(reference BigIntHandle) int32
 	BigGetBytes(reference BigIntHandle) []byte
 	BigSetBytes(destination BigIntHandle, bytes []byte)
@@ -121,7 +122,7 @@ func ElrondEImports() (*wasmer.Imports, error) {
 		return nil, err
 	}
 
-	imports, err = imports.Append("transfer", transfer, C.transfer)
+	imports, err = imports.Append("sendTransaction", sendTransaction, C.sendTransaction)
 	if err != nil {
 		return nil, err
 	}
@@ -342,25 +343,28 @@ func loadBlockHash(context unsafe.Pointer, nonce int64, resultOffset int32) int3
 	return 0
 }
 
-//export transfer
-func transfer(context unsafe.Pointer, gasLimit int64, sndOffset int32, destOffset int32, valueOffset int32, dataOffset int32, length int32) int32 {
+//export sendTransaction
+func sendTransaction(context unsafe.Pointer, gasLimit int64, destOffset int32, valueRef int32, dataOffset int32, dataLength int32) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := getHostContext(instCtx.Data())
 
-	send := loadBytes(instCtx.Memory(), sndOffset, addressLen)
 	dest := loadBytes(instCtx.Memory(), destOffset, addressLen)
-	value := loadBytes(instCtx.Memory(), valueOffset, balanceLen)
-	data := loadBytes(instCtx.Memory(), dataOffset, length)
+	value := hostContext.BigGet(valueRef)
+	data := loadBytes(instCtx.Memory(), dataOffset, dataLength)
 
-	fmt.Println("transfer send: " + hex.EncodeToString(send) + " dest: " + hex.EncodeToString(dest) + " value: " + string(value) + " data: " + string(data))
+	fmt.Printf("sendTransaction to: %s value: %d data: %s\n",
+		hex.EncodeToString(dest),
+		value,
+		data,
+	)
 
-	_, err := hostContext.Transfer(dest, send, big.NewInt(0).SetBytes(value), data, gasLimit)
+	_, err := hostContext.SendTransaction(dest, value, data, gasLimit)
 	if err != nil {
-		fmt.Println("transfer error: " + err.Error())
+		fmt.Println("sendTransaction error: " + err.Error())
 		return 1
 	}
 
-	fmt.Println("transfer succeed")
+	fmt.Println("sendTransaction succeed")
 	return 0
 }
 
@@ -449,7 +453,7 @@ func storageStoreAsBytes(context unsafe.Pointer, keyOffset int32, dataOffset int
 	key := loadBytes(instCtx.Memory(), keyOffset, hashLen)
 	data := loadBytes(instCtx.Memory(), dataOffset, dataLength)
 
-	fmt.Printf("storageStoreAsBytes key: %s  value (bytes): %d\n", hex.EncodeToString(key), big.NewInt(0).SetBytes(data))
+	fmt.Printf("storageStoreAsBytes key: %s  value (bytes): %s\n", hex.EncodeToString(key), hex.EncodeToString(data))
 	return hostContext.SetStorage(hostContext.GetSCAddress(), key, data)
 }
 
@@ -467,7 +471,7 @@ func storageLoadAsBytes(context unsafe.Pointer, keyOffset int32, dataOffset int3
 		return -1
 	}
 
-	fmt.Println("storageLoadAsBytes key: "+string(key)+" value: ", big.NewInt(0).SetBytes(data))
+	fmt.Printf("storageLoadAsBytes key: %s  value (bytes): %s\n", hex.EncodeToString(key), hex.EncodeToString(data))
 	return int32(len(data))
 }
 
@@ -479,7 +483,7 @@ func storageStoreAsBigInt(context unsafe.Pointer, keyOffset int32, source int32)
 	key := loadBytes(instCtx.Memory(), keyOffset, hashLen)
 	bytes := hostContext.BigGetBytes(source)
 
-	fmt.Printf("storageStoreAsBytes key: %s  value (big int): %d\n", hex.EncodeToString(key), big.NewInt(0).SetBytes(bytes))
+	fmt.Printf("storageStoreAsBytes key: %s  value (big int): %s\n", hex.EncodeToString(key), hex.EncodeToString(bytes))
 	return hostContext.SetStorage(hostContext.GetSCAddress(), key, bytes)
 }
 
@@ -493,7 +497,7 @@ func storageLoadAsBigInt(context unsafe.Pointer, keyOffset int32, destination in
 
 	hostContext.BigSetBytes(destination, bytes)
 
-	fmt.Printf("storageLoadAsBytes key: %s  value (big int): %d\n", hex.EncodeToString(key), big.NewInt(0).SetBytes(bytes))
+	fmt.Printf("storageLoadAsBytes key: %s  value (big int): %s\n", hex.EncodeToString(key), hex.EncodeToString(bytes))
 	return int32(len(bytes))
 }
 
@@ -505,7 +509,7 @@ func storageStoreAsInt64(context unsafe.Pointer, keyOffset int32, value int64) i
 	key := loadBytes(instCtx.Memory(), keyOffset, hashLen)
 	data := big.NewInt(value)
 
-	fmt.Println("storageStoreAsInt64 key: "+string(key)+"value: ", data.Int64())
+	fmt.Printf("storageStoreAsInt64 key: %s  value (int64): %x\n", hex.EncodeToString(key), data.Int64())
 	return hostContext.SetStorage(hostContext.GetSCAddress(), key, data.Bytes())
 }
 
@@ -518,7 +522,7 @@ func storageLoadAsInt64(context unsafe.Pointer, keyOffset int32) int64 {
 	data := hostContext.GetStorage(hostContext.GetSCAddress(), key)
 
 	bigInt := big.NewInt(0).SetBytes(data)
-	fmt.Println("storageLoadAsInt64 "+string(key)+" value: ", bigInt.Int64())
+	fmt.Printf("storageLoadAsInt64 key: %s  value (int64): %x\n", hex.EncodeToString(key), bigInt.Int64())
 
 	return bigInt.Int64()
 }

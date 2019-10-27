@@ -15,7 +15,9 @@ func loadBytes(from *wasmer.Memory, offset int32, length int32) []byte {
 		return from.Data()[offset:]
 	}
 
-	return from.Data()[offset : offset+length]
+	result := make([]byte, length, length)
+	copy(result, from.Data()[offset:offset+length]) // make a copy to protect wasm memory from accidental changes
+	return result
 }
 
 func storeBytes(to *wasmer.Memory, offset int32, data []byte) error {
