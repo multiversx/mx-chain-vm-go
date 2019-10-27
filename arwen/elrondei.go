@@ -18,6 +18,7 @@ package arwen
 // extern void loadCaller(void *context, int32_t resultOffset);
 // extern void loadCallValue(void *context, int32_t destination);
 // extern void loadBalance(void *context, int32_t addressOffset, int32_t result);
+// extern long long getGasLeft(void *context);
 // extern int32_t loadBlockHash(void *context, long long nonce, int32_t resultOffset);
 // extern long long getBlockTimestamp(void *context);
 //
@@ -113,6 +114,11 @@ func ElrondEImports() (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("loadBalance", loadBalance, C.loadBalance)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getGasLeft", getGasLeft, C.getGasLeft)
 	if err != nil {
 		return nil, err
 	}
@@ -326,6 +332,12 @@ func loadBalance(context unsafe.Pointer, addressOffset int32, result int32) {
 
 	address := loadBytes(instCtx.Memory(), addressOffset, addressLen)
 	hostContext.LoadBalance(address, result)
+}
+
+//export getGasLeft
+func getGasLeft(context unsafe.Pointer) int64 {
+	// TODO: implement
+	return 100000
 }
 
 //export loadBlockHash
