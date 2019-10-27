@@ -4,6 +4,8 @@ github.com/ElrondNetwork/go-ext-wasm v0.0.2 h1:ofGBMny3hjgGU4758u7oCoeu090DISmRc
 github.com/ElrondNetwork/go-ext-wasm v0.0.2/go.mod h1:+OQYLOaYAxbnkA5WWbiya03JsQng7wg8jKwlJNyQb68=
 github.com/ElrondNetwork/managed-big-int v0.0.2 h1:zFpHA1P7ahcvIyQp/F1GdbYbnG+K/jtVcKnO72t7SKA=
 github.com/ElrondNetwork/managed-big-int v0.0.2/go.mod h1:ek0/KEISc8xJWvZ7nyD29Th0BhiaNUfHegJzgwCO/Sc=
+github.com/ElrondNetwork/managed-big-int v0.0.3 h1:8t7XzMnBXQDtmpIRvyLNuYN4U7YqCU2h8hFEEnPwbN8=
+github.com/ElrondNetwork/managed-big-int v0.0.3/go.mod h1:ek0/KEISc8xJWvZ7nyD29Th0BhiaNUfHegJzgwCO/Sc=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
