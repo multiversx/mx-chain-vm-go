@@ -2,10 +2,11 @@ package arwen
 
 import (
 	"bytes"
+	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/common"
 	"math/big"
-	"sync"
 	"unsafe"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -20,37 +21,6 @@ const (
 	StorageAdded     StorageStatus = 3
 	StorageDeleted   StorageStatus = 4
 )
-
-var (
-	vmContextCounter uint8
-	vmContextMap     = map[uint8]HostContext{}
-	vmContextMapMu   sync.Mutex
-)
-
-func addHostContext(ctx HostContext) int {
-	vmContextMapMu.Lock()
-	id := vmContextCounter
-	vmContextCounter++
-	vmContextMap[id] = ctx
-	vmContextMapMu.Unlock()
-	return int(id)
-}
-
-func removeHostContext(idx int) {
-	vmContextMapMu.Lock()
-	delete(vmContextMap, uint8(idx))
-	vmContextMapMu.Unlock()
-}
-
-func getHostContext(pointer unsafe.Pointer) HostContext {
-	var idx = *(*int)(pointer)
-
-	vmContextMapMu.Lock()
-	ctx := vmContextMap[uint8(idx)]
-	vmContextMapMu.Unlock()
-
-	return ctx
-}
 
 type logTopicsData struct {
 	topics [][]byte
@@ -531,4 +501,44 @@ func (host *vmContext) Transfer(destination []byte, sender []byte, value *big.In
 	gasLeft = gas - 1
 
 	return gasLeft, err
+}
+
+// The input data are method arguments in chunks of 32 bytes.
+func (host *vmContext) createETHCreateInput(input *vmcommon.ContractCreateInput) []byte {
+	newInput := make([]byte, 0)
+	for _, arg := range input.Arguments {
+		currInput := make([]byte, hashLen)
+		copy(currInput[hashLen-len(arg.Bytes()):], arg.Bytes())
+
+		newInput = append(newInput, currInput...)
+	}
+
+	return newInput
+}
+
+// The first four bytes is the method selector. The rest of the input data are method arguments in chunks of 32 bytes.
+// The method selector is the kecccak256 hash of the method signature.
+func (host *vmContext) createETHCallInput(input *vmcommon.ContractCallInput) []byte {
+	newInput := make([]byte, 0)
+
+	hashOfFunction, err := host.cryptoHook.Keccak256(input.Function)
+	if err != nil {
+		return nil
+	}
+
+	methodSelectors, err := hex.DecodeString(hashOfFunction)
+	if err != nil {
+		return nil
+	}
+
+	newInput = append(newInput, methodSelectors[0:4]...)
+
+	for _, arg := range input.Arguments {
+		currInput := make([]byte, hashLen)
+		copy(currInput[hashLen-len(arg.Bytes()):], arg.Bytes())
+
+		newInput = append(newInput, currInput...)
+	}
+
+	return newInput
 }
