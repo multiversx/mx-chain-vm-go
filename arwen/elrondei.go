@@ -672,7 +672,7 @@ func bigIntCmp(context unsafe.Pointer, op1, op2 int32) int32 {
 	return int32(hostContext.BigCmp(op1, op2))
 }
 
-//export returnBigInt
+//export bigIntFinish
 func bigIntFinish(context unsafe.Pointer, reference int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := getHostContext(instCtx.Data())
