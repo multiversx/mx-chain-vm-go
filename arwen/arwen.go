@@ -50,6 +50,22 @@ type vmContext struct {
 	selfDestruct map[string][]byte
 }
 
+func (host *vmContext) CallData() []byte {
+	panic("implement me")
+}
+
+func (host *vmContext) UseGas(gas int64) {
+	panic("implement me")
+}
+
+func (host *vmContext) GasLeft() int64 {
+	panic("implement me")
+}
+
+func (host *vmContext) BlockGasLimit() int64 {
+	panic("implement me")
+}
+
 func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (*vmcommon.VMOutput, error) {
 	host.initInternalValues()
 	host.vmInput = input.VMInput

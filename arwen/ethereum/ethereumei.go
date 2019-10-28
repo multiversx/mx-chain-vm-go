@@ -449,14 +449,6 @@ func log(context unsafe.Pointer, dataOffset int32, length int32, numberOfTopics 
 	hostContext.WriteLog(hostContext.GetSCAddress(), topicsData, data)
 }
 
-//export getBlockNumber
-func getBlockNumber(context unsafe.Pointer) int64 {
-	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetHostContext(instCtx.Data())
-
-	return hostContext.BlockNonce()
-}
-
 //export getTxOrigin
 func getTxOrigin(context unsafe.Pointer, resultOffset int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
@@ -494,12 +486,22 @@ func selfDestruct(context unsafe.Pointer, addressOffset int32) {
 	hostContext.SelfDestruct(address, hostContext.GetVMInput().CallerAddr)
 }
 
+//export getBlockNumber
+func getBlockNumber(context unsafe.Pointer) int64 {
+	//instCtx := wasmer.IntoInstanceContext(context)
+	//hostContext := arwen.GetHostContext(instCtx.Data())
+
+	//TODO: implement
+	return 0 //hostContext.BlockNonce()
+}
+
 //export getBlockTimestamp
 func getBlockTimestamp(context unsafe.Pointer) int64 {
-	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetHostContext(instCtx.Data())
+	//instCtx := wasmer.IntoInstanceContext(context)
+	//hostContext := arwen.GetHostContext(instCtx.Data())
 
-	return hostContext.BlockTimeStamp()
+	//return hostContext.BlockTimeStamp()
+	return 0
 }
 
 //export getReturnDataSize
