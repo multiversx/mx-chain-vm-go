@@ -2,7 +2,6 @@ package arwen
 
 import (
 	"bytes"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"math/big"
@@ -79,7 +78,7 @@ type vmContext struct {
 
 	outputAccounts map[string]*vmcommon.OutputAccount
 
-	returnData *big.Int
+	returnData []*big.Int
 	returnCode vmcommon.ReturnCode
 
 	selfDestruct map[string][]byte
@@ -258,62 +257,18 @@ func (host *vmContext) createVMOutput(output []byte, gasLeft int64) *vmcommon.VM
 		vmOutput.Logs = append(vmOutput.Logs, logEntry)
 	}
 
-	if host.returnData != nil {
-		vmOutput.ReturnData = []*big.Int{host.returnData}
-	} else {
-		vmOutput.ReturnData = []*big.Int{}
+	if len(host.returnData) > 0 {
+		vmOutput.ReturnData = append(vmOutput.ReturnData, host.returnData...)
+	}
+	if len(output) > 0 {
+		vmOutput.ReturnData = append(vmOutput.ReturnData, big.NewInt(0).SetBytes(output))
 	}
 
 	vmOutput.GasRemaining = big.NewInt(gasLeft)
 	vmOutput.GasRefund = big.NewInt(0)
 	vmOutput.ReturnCode = host.returnCode
 
-	displayVMOutput(vmOutput)
-
 	return vmOutput
-}
-
-func displayVMOutput(output *vmcommon.VMOutput) {
-	fmt.Println("=============Resulted VM Output=============")
-	fmt.Println("RetunCode: ", output.ReturnCode)
-	fmt.Println("ReturnData: ", output.ReturnData)
-	fmt.Println("GasRemaining: ", output.GasRemaining)
-	fmt.Println("GasRefund: ", output.GasRefund)
-
-	for id, touchedAccount := range output.TouchedAccounts {
-		fmt.Println("Touched account ", id, ": "+hex.EncodeToString(touchedAccount))
-	}
-
-	for id, deletedAccount := range output.DeletedAccounts {
-		fmt.Println("Deleted account ", id, ": "+hex.EncodeToString(deletedAccount))
-	}
-
-	for id, outputAccount := range output.OutputAccounts {
-		fmt.Println("Output account ", id, ": "+hex.EncodeToString(outputAccount.Address))
-		if outputAccount.BalanceDelta != nil {
-			fmt.Println("           Balance change with : ", outputAccount.BalanceDelta)
-		}
-		if outputAccount.Nonce != 0 {
-			fmt.Println("           Nonce change to : ", outputAccount.Nonce)
-		}
-		if len(outputAccount.Code) > 0 {
-			fmt.Println("           Code change to : [", len(outputAccount.Code), " bytes]")
-		}
-
-		for _, storageUpdate := range outputAccount.StorageUpdates {
-			fmt.Println("           Storage update key: "+hex.EncodeToString(storageUpdate.Offset)+" value: ", hex.EncodeToString(storageUpdate.Data))
-		}
-	}
-
-	for _, log := range output.Logs {
-		fmt.Println("Log address: " + hex.EncodeToString(log.Address) + " data: " + string(log.Data))
-		fmt.Println("Topics started: ")
-		for _, topic := range log.Topics {
-			fmt.Print(topic, " ")
-		}
-		fmt.Println("Topics end")
-	}
-	fmt.Println("============================================")
 }
 
 func (host *vmContext) initInternalValues() {
@@ -365,6 +320,10 @@ func NewArwenVM(
 	return context, nil
 }
 
+func (host *vmContext) Finish(data []byte) {
+	host.returnData = append(host.returnData, big.NewInt(0).SetBytes(data))
+}
+
 func (host *vmContext) SignalUserError() {
 	host.returnCode = vmcommon.UserError
 }
@@ -375,10 +334,6 @@ func (host *vmContext) Arguments() []*big.Int {
 
 func (host *vmContext) Function() string {
 	return host.callFunction
-}
-
-func (host *vmContext) SelfDestruct(addr []byte, beneficiary []byte) {
-	panic("implement me")
 }
 
 func (host *vmContext) GetSCAddress() []byte {
@@ -447,24 +402,21 @@ func (host *vmContext) getBalanceFromBlockChain(addr []byte) *big.Int {
 	return balance
 }
 
-func (host *vmContext) LoadBalance(addr []byte, destination BigIntHandle) {
+func (host *vmContext) GetBalance(addr []byte) []byte {
 	strAdr := string(addr)
 	if _, ok := host.outputAccounts[strAdr]; ok {
 		balance := host.outputAccounts[strAdr].Balance
-		host.BigUpdate(destination, balance)
-		return
+		return balance.Bytes()
 	}
 
 	balance, err := host.blockChainHook.GetBalance(addr)
 	if err != nil {
 		fmt.Printf("GetBalance returned with error %s \n", err.Error())
-		host.BigUpdate(destination, big.NewInt(0))
+		return big.NewInt(0).Bytes()
 	}
 
 	host.outputAccounts[strAdr] = &vmcommon.OutputAccount{Balance: big.NewInt(0).Set(balance), Address: addr}
-
-	host.BigUpdate(destination, balance)
-	fmt.Printf("getExternalBalance address: %s balance: %d\n", hex.EncodeToString(addr), balance)
+	return balance.Bytes()
 }
 
 func (host *vmContext) GetCodeSize(addr []byte) int {
@@ -499,7 +451,7 @@ func (host *vmContext) GetCode(addr []byte) []byte {
 	return code
 }
 
-func (host *vmContext) Selfdestruct(addr []byte, beneficiary []byte) {
+func (host *vmContext) SelfDestruct(addr []byte, beneficiary []byte) {
 	host.selfDestruct[string(addr)] = beneficiary
 }
 
@@ -543,16 +495,20 @@ func (host *vmContext) WriteLog(addr []byte, topics [][]byte, data []byte) {
 
 var ErrInvalidTransfer = errors.New("invalid sender")
 
-// SendTransaction handles any necessary value transfer required and takes
+// Transfer handles any necessary value transfer required and takes
 // the necessary steps to create accounts and reverses the state in case of an
 // execution error or failed value transfer.
-func (host *vmContext) SendTransaction(destination []byte, value *big.Int, input []byte, gas int64,
+func (host *vmContext) Transfer(destination []byte, sender []byte, value *big.Int, input []byte, gas int64,
 ) (gasLeft int64, err error) {
+	//TODO: should this be kept, or there are other use cases where a sender can be somebody else
+	if !bytes.Equal(sender, host.GetSCAddress()) {
+		return 0, ErrInvalidTransfer
+	}
 
-	senderAcc, ok := host.outputAccounts[string(host.scAddress)]
+	senderAcc, ok := host.outputAccounts[string(sender)]
 	if !ok {
 		senderAcc = &vmcommon.OutputAccount{
-			Address:      host.scAddress,
+			Address:      sender,
 			BalanceDelta: big.NewInt(0),
 		}
 		host.outputAccounts[string(senderAcc.Address)] = senderAcc

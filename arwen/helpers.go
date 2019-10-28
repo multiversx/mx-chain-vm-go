@@ -11,12 +11,13 @@ const hashLen = 32
 const balanceLen = 32
 
 func loadBytes(from *wasmer.Memory, offset int32, length int32) []byte {
+	result := make([]byte, length)
 	if from.Length() < uint32(offset+length) {
-		return from.Data()[offset:]
+		copy(result, from.Data()[offset:])
+		return result
 	}
 
-	result := make([]byte, length, length)
-	copy(result, from.Data()[offset:offset+length]) // make a copy to protect wasm memory from accidental changes
+	copy(result, from.Data()[offset:offset+length])
 	return result
 }
 
