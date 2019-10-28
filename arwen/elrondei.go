@@ -5,8 +5,6 @@ package arwen
 // #include <stdlib.h>
 // typedef unsigned char uint8_t;
 // typedef int int32_t;
-// typedef int uint32_t;
-// typedef unsigned long long uint64_t;
 //
 // extern void getOwner(void *context, int32_t resultOffset);
 // extern void getExternalBalance(void *context, int32_t addressOffset, int32_t resultOffset);
