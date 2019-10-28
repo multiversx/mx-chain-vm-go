@@ -1,9 +1,13 @@
 github.com/ElrondNetwork/elrond-vm-common v0.0.8 h1:YyJ55gYeCL3e2v+06ZLJrwzkOXPvuSvLm7pBL1qD0Rk=
 github.com/ElrondNetwork/elrond-vm-common v0.0.8/go.mod h1:VqCCN0cX0e4D/KDc7MGNV9ElrOsfnjuJnGvcODVjzbk=
-github.com/ElrondNetwork/go-ext-wasm v0.0.0-20190923181727-2aed5e4238f5 h1:XUFbny/dhk55M2RCLTrwCFjcUUwufPvrejxN3The5Sg=
-github.com/ElrondNetwork/go-ext-wasm v0.0.0-20190923181727-2aed5e4238f5/go.mod h1:+OQYLOaYAxbnkA5WWbiya03JsQng7wg8jKwlJNyQb68=
-github.com/ElrondNetwork/go-ext-wasm v0.0.0-20190925123949-4d1ee31f62f6/go.mod h1:+OQYLOaYAxbnkA5WWbiya03JsQng7wg8jKwlJNyQb68=
+github.com/ElrondNetwork/elrond-vm-common v0.0.9 h1:Ff8vEJSKChRfmp+TVo7AgciRkMXjL4+TbNin6LQ7xKw=
+github.com/ElrondNetwork/elrond-vm-common v0.0.9/go.mod h1:VqCCN0cX0e4D/KDc7MGNV9ElrOsfnjuJnGvcODVjzbk=
+github.com/ElrondNetwork/go-ext-wasm v0.0.2 h1:ofGBMny3hjgGU4758u7oCoeu090DISmRc+uTiQj4Tkw=
 github.com/ElrondNetwork/go-ext-wasm v0.0.2/go.mod h1:+OQYLOaYAxbnkA5WWbiya03JsQng7wg8jKwlJNyQb68=
+github.com/ElrondNetwork/go-ext-wasm v0.0.3 h1:wEARvDZU6wlZmUWchSSyjELtvQli8DttPozg/P9wUzM=
+github.com/ElrondNetwork/go-ext-wasm v0.0.3/go.mod h1:+OQYLOaYAxbnkA5WWbiya03JsQng7wg8jKwlJNyQb68=
+github.com/ElrondNetwork/managed-big-int v0.0.3 h1:8t7XzMnBXQDtmpIRvyLNuYN4U7YqCU2h8hFEEnPwbN8=
+github.com/ElrondNetwork/managed-big-int v0.0.3/go.mod h1:ek0/KEISc8xJWvZ7nyD29Th0BhiaNUfHegJzgwCO/Sc=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
