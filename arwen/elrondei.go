@@ -573,7 +573,7 @@ func bigIntgetCallValue(context unsafe.Pointer, destination int32) {
 	hostContext.BigUpdate(destination, hostContext.GetVMInput().CallValue)
 }
 
-//export getExternalBalance
+//export bigIntgetExternalBalance
 func bigIntgetExternalBalance(context unsafe.Pointer, addressOffset int32, result int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := getHostContext(instCtx.Data())
@@ -672,7 +672,7 @@ func bigIntCmp(context unsafe.Pointer, op1, op2 int32) int32 {
 	return int32(hostContext.BigCmp(op1, op2))
 }
 
-//export returnBigInt
+//export bigIntFinish
 func bigIntFinish(context unsafe.Pointer, reference int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := getHostContext(instCtx.Data())
