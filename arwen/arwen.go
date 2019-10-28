@@ -2,6 +2,7 @@ package arwen
 
 import (
 	"bytes"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"math/big"
@@ -194,6 +195,49 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 	displayVMOutput(vmOutput)
 
 	return vmOutput, nil
+}
+
+func displayVMOutput(output *vmcommon.VMOutput) {
+	fmt.Println("=============Resulted VM Output=============")
+	fmt.Println("RetunCode: ", output.ReturnCode)
+	fmt.Println("ReturnData: ", output.ReturnData)
+	fmt.Println("GasRemaining: ", output.GasRemaining)
+	fmt.Println("GasRefund: ", output.GasRefund)
+
+	for id, touchedAccount := range output.TouchedAccounts {
+		fmt.Println("Touched account ", id, ": "+hex.EncodeToString(touchedAccount))
+	}
+
+	for id, deletedAccount := range output.DeletedAccounts {
+		fmt.Println("Deleted account ", id, ": "+hex.EncodeToString(deletedAccount))
+	}
+
+	for id, outputAccount := range output.OutputAccounts {
+		fmt.Println("Output account ", id, ": "+hex.EncodeToString(outputAccount.Address))
+		if outputAccount.BalanceDelta != nil {
+			fmt.Println("           Balance change with : ", outputAccount.BalanceDelta)
+		}
+		if outputAccount.Nonce != 0 {
+			fmt.Println("           Nonce change to : ", outputAccount.Nonce)
+		}
+		if len(outputAccount.Code) > 0 {
+			fmt.Println("           Code change to : [", len(outputAccount.Code), " bytes]")
+		}
+
+		for _, storageUpdate := range outputAccount.StorageUpdates {
+			fmt.Println("           Storage update key: "+hex.EncodeToString(storageUpdate.Offset)+" value: ", hex.EncodeToString(storageUpdate.Data))
+		}
+	}
+
+	for _, log := range output.Logs {
+		fmt.Println("Log address: " + hex.EncodeToString(log.Address) + " data: " + string(log.Data))
+		fmt.Println("Topics started: ")
+		for _, topic := range log.Topics {
+			fmt.Print(topic, " ")
+		}
+		fmt.Println("Topics end")
+	}
+	fmt.Println("============================================")
 }
 
 func (host *vmContext) createVMOutputInCaseOfError(errCode vmcommon.ReturnCode) *vmcommon.VMOutput {

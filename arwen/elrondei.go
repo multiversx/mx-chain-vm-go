@@ -47,9 +47,16 @@ package arwen
 // extern void bigIntgetArgument(void *context, int32_t id, int32_t destination);
 // extern void bigIntgetCallValue(void *context, int32_t destination);
 // extern void bigIntgetExternalBalance(void *context, int32_t addressOffset, int32_t result);
+//
+// extern void debugPrintBigInt(void* context, int32_t value);
+// extern void debugPrintInt64(void* context, long long value);
+// extern void debugPrintBytes(void* context, int32_t byteOffset, int32_t byteLength);
+// extern void debugPrintString(void* context, int32_t byteOffset, int32_t byteLength);
 import "C"
 
 import (
+	"encoding/hex"
+	"fmt"
 	"math/big"
 	"unsafe"
 
@@ -283,6 +290,26 @@ func ElrondEImports() (*wasmer.Imports, error) {
 		return nil, err
 	}
 
+	imports, err = imports.Append("debugPrintBigInt", debugPrintBigInt, C.debugPrintBigInt)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("debugPrintInt32", debugPrintInt32, C.debugPrintInt32)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("debugPrintBytes", debugPrintBytes, C.debugPrintBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("debugPrintString", debugPrintString, C.debugPrintString)
+	if err != nil {
+		return nil, err
+	}
+
 	return imports, nil
 }
 
@@ -294,7 +321,11 @@ func getOwner(context unsafe.Pointer, resultOffset int32) {
 	hostContext := getHostContext(instCtx.Data())
 
 	owner := hostContext.GetSCAddress()
-	_ = storeBytes(instCtx.Memory(), resultOffset, owner)
+	err := storeBytes(instCtx.Memory(), resultOffset, owner)
+	if err != nil {
+		fmt.Println("loadOwner error: " + err.Error())
+	}
+	fmt.Println("loadOwner " + hex.EncodeToString(owner))
 }
 
 //export signalError
@@ -303,6 +334,7 @@ func signalError(context unsafe.Pointer) {
 	hostContext := getHostContext(instCtx.Data())
 
 	hostContext.SignalUserError()
+	fmt.Println("signalError called")
 }
 
 //export getExternalBalance
@@ -312,12 +344,18 @@ func getExternalBalance(context unsafe.Pointer, addressOffset int32, resultOffse
 
 	address := loadBytes(instCtx.Memory(), addressOffset, addressLen)
 	balance := hostContext.GetBalance(address)
-	_ = storeBytes(instCtx.Memory(), resultOffset, balance)
+	err := storeBytes(instCtx.Memory(), resultOffset, balance)
+	if err != nil {
+		fmt.Println("getExternalBalance error: " + err.Error())
+	}
+
+	fmt.Println("getExternalBalance address: " + hex.EncodeToString(address) + " balance: " + big.NewInt(0).SetBytes(balance).String())
 }
 
 //export getGasLeft
 func getGasLeft(context unsafe.Pointer) int64 {
 	// TODO: implement
+	fmt.Println("getGasLeft ", 100000)
 	return 100000
 }
 
@@ -329,9 +367,11 @@ func getBlockHash(context unsafe.Pointer, nonce int64, resultOffset int32) int32
 	hash := hostContext.BlockHash(nonce)
 	err := storeBytes(instCtx.Memory(), resultOffset, hash)
 	if err != nil {
+		fmt.Println("blockHash error: " + err.Error())
 		return 1
 	}
 
+	fmt.Println("blockHash " + hex.EncodeToString(hash))
 	return 0
 }
 
@@ -347,9 +387,11 @@ func transfer(context unsafe.Pointer, gasLimit int64, sndOffset int32, destOffse
 
 	_, err := hostContext.Transfer(dest, send, big.NewInt(0).SetBytes(value), data, gasLimit)
 	if err != nil {
+		fmt.Println("transfer error: " + err.Error())
 		return 1
 	}
 
+	fmt.Println("transfer succeed")
 	return 0
 }
 
@@ -360,14 +402,17 @@ func getArgument(context unsafe.Pointer, id int32, argOffset int32) int32 {
 
 	args := hostContext.Arguments()
 	if int32(len(args)) <= id {
+		fmt.Println("getArgument id invalid")
 		return -1
 	}
 
 	err := storeBytes(instCtx.Memory(), argOffset, args[id].Bytes())
 	if err != nil {
+		fmt.Println("getArgument error " + err.Error())
 		return -1
 	}
 
+	fmt.Println("getArgument value: " + hex.EncodeToString(args[id].Bytes()))
 	return int32(len(args[id].Bytes()))
 }
 
@@ -379,9 +424,11 @@ func getFunction(context unsafe.Pointer, functionOffset int32) int32 {
 	function := hostContext.Function()
 	err := storeBytes(instCtx.Memory(), functionOffset, []byte(function))
 	if err != nil {
+		fmt.Println("getFunction error: ", err.Error())
 		return -1
 	}
 
+	fmt.Println("getFunction name: " + function)
 	return int32(len(function))
 }
 
@@ -390,6 +437,7 @@ func getNumArguments(context unsafe.Pointer) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := getHostContext(instCtx.Data())
 
+	fmt.Println("getNumArguments ", len(hostContext.Arguments()))
 	return int32(len(hostContext.Arguments()))
 }
 
@@ -401,6 +449,7 @@ func storageStore(context unsafe.Pointer, keyOffset int32, dataOffset int32, dat
 	key := loadBytes(instCtx.Memory(), keyOffset, hashLen)
 	data := loadBytes(instCtx.Memory(), dataOffset, dataLength)
 
+	fmt.Println("storageStore key: "+string(key)+" value: ", big.NewInt(0).SetBytes(data))
 	return hostContext.SetStorage(hostContext.GetSCAddress(), key, data)
 }
 
@@ -414,9 +463,11 @@ func storageLoad(context unsafe.Pointer, keyOffset int32, dataOffset int32) int3
 
 	err := storeBytes(instCtx.Memory(), dataOffset, data)
 	if err != nil {
+		fmt.Println("storageLoad error: " + err.Error())
 		return -1
 	}
 
+	fmt.Println("storageLoad key: "+string(key)+" value: ", big.NewInt(0).SetBytes(data))
 	return int32(len(data))
 }
 
@@ -427,8 +478,11 @@ func getCaller(context unsafe.Pointer, resultOffset int32) {
 
 	caller := hostContext.GetVMInput().CallerAddr
 
-	_ = storeBytes(instCtx.Memory(), resultOffset, caller)
-
+	err := storeBytes(instCtx.Memory(), resultOffset, caller)
+	if err != nil {
+		fmt.Println("getCaller error: " + err.Error())
+	}
+	fmt.Println("getCaller " + string(caller))
 }
 
 //export getCallValue
@@ -445,9 +499,11 @@ func getCallValue(context unsafe.Pointer, resultOffset int32) int32 {
 
 	err := storeBytes(instCtx.Memory(), resultOffset, invBytes)
 	if err != nil {
+		fmt.Println("getCallValue error " + err.Error())
 		return -1
 	}
 
+	fmt.Println("getCallValue ", hostContext.GetVMInput().CallValue)
 	return int32(length)
 }
 
@@ -459,10 +515,13 @@ func writeLog(context unsafe.Pointer, pointer int32, length int32, topicPtr int3
 	log := loadBytes(instCtx.Memory(), pointer, length)
 
 	topics := make([][]byte, numTopics)
+	fmt.Println("writeLog: ")
 	for i := int32(0); i < numTopics; i++ {
 		topics[i] = loadBytes(instCtx.Memory(), topicPtr+i*hashLen, hashLen)
+		fmt.Println("topics: " + string(topics[i]))
 	}
 
+	fmt.Print("log: " + string(log))
 	hostContext.WriteLog(hostContext.GetSCAddress(), topics, log)
 }
 
@@ -471,6 +530,7 @@ func getBlockTimestamp(context unsafe.Pointer) int64 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := getHostContext(instCtx.Data())
 
+	fmt.Println("getBlockTimestamp ", hostContext.GetVMInput().Header.Timestamp.Int64())
 	return hostContext.GetVMInput().Header.Timestamp.Int64()
 }
 
@@ -480,6 +540,7 @@ func finish(context unsafe.Pointer, pointer int32, length int32) {
 	hostContext := getHostContext(instCtx.Data())
 
 	data := loadBytes(instCtx.Memory(), pointer, length)
+	fmt.Println("finish: ", big.NewInt(0).SetBytes(data))
 	hostContext.Finish(data)
 }
 
@@ -490,9 +551,11 @@ func int64getArgument(context unsafe.Pointer, id int32) int64 {
 
 	args := hostContext.Arguments()
 	if int32(len(args)) <= id {
+		fmt.Println("getArgument id invalid")
 		return -1
 	}
 
+	fmt.Println("getArgument value: ", args[id].Int64())
 	return args[id].Int64()
 }
 
@@ -504,6 +567,7 @@ func int64storageStore(context unsafe.Pointer, keyOffset int32, value int64) int
 	key := loadBytes(instCtx.Memory(), keyOffset, hashLen)
 	data := big.NewInt(value)
 
+	fmt.Println("storageStoreAsInt64 key: "+string(key)+"value: ", data.Int64())
 	return hostContext.SetStorage(hostContext.GetSCAddress(), key, data.Bytes())
 }
 
@@ -516,6 +580,7 @@ func int64storageLoad(context unsafe.Pointer, keyOffset int32) int64 {
 	data := hostContext.GetStorage(hostContext.GetSCAddress(), key)
 
 	bigInt := big.NewInt(0).SetBytes(data)
+	fmt.Println("storageLoadAsInt64 "+string(key)+" value: ", bigInt.Int64())
 
 	return bigInt.Int64()
 }
@@ -525,6 +590,7 @@ func int64finish(context unsafe.Pointer, value int64) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := getHostContext(instCtx.Data())
 
+	fmt.Println("int64finish ", value)
 	hostContext.Finish(big.NewInt(0).SetInt64(value).Bytes())
 }
 
@@ -535,10 +601,12 @@ func bigIntgetArgument(context unsafe.Pointer, id int32, destination int32) {
 
 	args := hostContext.Arguments()
 	if int32(len(args)) <= id {
+		fmt.Println("bigIntgetArgument id invalid")
 		return
 	}
 
 	hostContext.BigUpdate(destination, args[id])
+	fmt.Println("bigIntgetArgument ", args[id].String())
 }
 
 //export bigIntstorageStore
@@ -549,6 +617,7 @@ func bigIntstorageStore(context unsafe.Pointer, keyOffset int32, source int32) i
 	key := loadBytes(instCtx.Memory(), keyOffset, hashLen)
 	bytes := hostContext.BigGetBytes(source)
 
+	fmt.Println("bigIntstorageStore key: "+string(key)+"value: ", bytes)
 	return hostContext.SetStorage(hostContext.GetSCAddress(), key, bytes)
 }
 
@@ -562,6 +631,7 @@ func bigIntstorageLoad(context unsafe.Pointer, keyOffset int32, destination int3
 
 	hostContext.BigSetBytes(destination, bytes)
 
+	fmt.Println("bigIntstorageLoad key: "+string(key)+"value: ", bytes)
 	return int32(len(bytes))
 }
 
@@ -571,9 +641,10 @@ func bigIntgetCallValue(context unsafe.Pointer, destination int32) {
 	hostContext := getHostContext(instCtx.Data())
 
 	hostContext.BigUpdate(destination, hostContext.GetVMInput().CallValue)
+	fmt.Println("bigIntgetCallValue ", hostContext.GetVMInput().CallValue.String())
 }
 
-//export getExternalBalance
+//export bigIntgetExternalBalance
 func bigIntgetExternalBalance(context unsafe.Pointer, addressOffset int32, result int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := getHostContext(instCtx.Data())
@@ -581,19 +652,24 @@ func bigIntgetExternalBalance(context unsafe.Pointer, addressOffset int32, resul
 	address := loadBytes(instCtx.Memory(), addressOffset, addressLen)
 	balance := hostContext.GetBalance(address)
 	hostContext.BigUpdate(result, big.NewInt(0).SetBytes(balance))
+	fmt.Println("bigIntgetExternalBalance ", big.NewInt(0).SetBytes(balance).String())
 }
 
 //export bigIntNew
-func bigIntNew(context unsafe.Pointer, smallValue int32) int32 {
+func bigIntNew(context unsafe.Pointer, smallValue int64) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := getHostContext(instCtx.Data())
-	return hostContext.BigInsertInt64(int64(smallValue))
+
+	fmt.Println("bigIntNew ", smallValue)
+	return hostContext.BigInsertInt64(smallValue)
 }
 
 //export bigIntByteLength
 func bigIntByteLength(context unsafe.Pointer, reference int32) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := getHostContext(instCtx.Data())
+
+	fmt.Println("bigIntByteLength ", hostContext.BigByteLength(reference))
 	return hostContext.BigByteLength(reference)
 }
 
@@ -608,6 +684,7 @@ func bigIntGetBytes(context unsafe.Pointer, reference int32, byteOffset int32) i
 	if err != nil {
 	}
 
+	fmt.Println("bigIntGetBytes ", hostContext.BigGetBytes(reference))
 	return int32(len(bytes))
 }
 
@@ -618,6 +695,8 @@ func bigIntSetBytes(context unsafe.Pointer, destination int32, byteOffset int32,
 
 	bytes := loadBytes(instCtx.Memory(), byteOffset, byteLength)
 	hostContext.BigSetBytes(destination, bytes)
+
+	fmt.Println("bigIntSetBytes ", bytes)
 }
 
 //export bigIntIsInt64
@@ -625,8 +704,10 @@ func bigIntIsInt64(context unsafe.Pointer, destination int32) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := getHostContext(instCtx.Data())
 	if hostContext.BigIsInt64(destination) {
+		fmt.Println("bigIntIsInt64 true")
 		return 1
 	}
+	fmt.Println("bigIntIsInt64 false")
 	return 0
 }
 
@@ -634,6 +715,8 @@ func bigIntIsInt64(context unsafe.Pointer, destination int32) int32 {
 func bigIntGetInt64(context unsafe.Pointer, destination int32) int64 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := getHostContext(instCtx.Data())
+
+	fmt.Println("bigIntGetInt64 ", hostContext.BigGetInt64(destination))
 	return hostContext.BigGetInt64(destination)
 }
 
@@ -642,6 +725,8 @@ func bigIntSetInt64(context unsafe.Pointer, destination int32, value int64) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := getHostContext(instCtx.Data())
 	hostContext.BigSetInt64(destination, value)
+
+	fmt.Println("bigIntSetInt64 ", destination, " ", value)
 }
 
 //export bigIntAdd
@@ -649,6 +734,8 @@ func bigIntAdd(context unsafe.Pointer, destination, op1, op2 int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := getHostContext(instCtx.Data())
 	hostContext.BigAdd(destination, op1, op2)
+
+	fmt.Println("bigIntAdd ", hostContext.BigGet(op1), "+", hostContext.BigGet(op2), "=", hostContext.BigGet(destination))
 }
 
 //export bigIntSub
@@ -656,6 +743,8 @@ func bigIntSub(context unsafe.Pointer, destination, op1, op2 int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := getHostContext(instCtx.Data())
 	hostContext.BigSub(destination, op1, op2)
+
+	fmt.Println("bigIntSub ", hostContext.BigGet(op1), "-", hostContext.BigGet(op2), "=", hostContext.BigGet(destination))
 }
 
 //export bigIntMul
@@ -663,12 +752,16 @@ func bigIntMul(context unsafe.Pointer, destination, op1, op2 int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := getHostContext(instCtx.Data())
 	hostContext.BigMul(destination, op1, op2)
+
+	fmt.Println("bigIntMul ", hostContext.BigGet(op1), "*", hostContext.BigGet(op2), "=", hostContext.BigGet(destination))
 }
 
 //export bigIntCmp
 func bigIntCmp(context unsafe.Pointer, op1, op2 int32) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := getHostContext(instCtx.Data())
+
+	fmt.Println("bigIntCmp ", hostContext.BigGet(op1), ",", hostContext.BigGet(op2))
 	return int32(hostContext.BigCmp(op1, op2))
 }
 
@@ -679,4 +772,33 @@ func bigIntFinish(context unsafe.Pointer, reference int32) {
 
 	output := hostContext.BigGetBytes(reference)
 	hostContext.Finish(output)
+
+	fmt.Println("bigIntFinish ", hostContext.BigGet(reference))
+}
+
+//export debugPrintBigInt
+func debugPrintBigInt(context unsafe.Pointer, handle int32) {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := getHostContext(instCtx.Data())
+	output := hostContext.BigGetBytes(handle)
+	fmt.Printf(">>> BigInt: %s\n", big.NewInt(0).SetBytes(output).String())
+}
+
+//export debugPrintInt64
+func debugPrintInt32(context unsafe.Pointer, value int64) {
+	fmt.Printf(">>> Int64: %d\n", value)
+}
+
+//export debugPrintBytes
+func debugPrintBytes(context unsafe.Pointer, byteOffset int32, byteLength int32) {
+	instCtx := wasmer.IntoInstanceContext(context)
+	bytes := loadBytes(instCtx.Memory(), byteOffset, byteLength)
+	fmt.Printf(">>> Bytes: %s\n", hex.EncodeToString(bytes))
+}
+
+//export debugPrintString
+func debugPrintString(context unsafe.Pointer, byteOffset int32, byteLength int32) {
+	instCtx := wasmer.IntoInstanceContext(context)
+	bytes := loadBytes(instCtx.Memory(), byteOffset, byteLength)
+	fmt.Printf(">>> String: \"%s\"\n", string(bytes))
 }
