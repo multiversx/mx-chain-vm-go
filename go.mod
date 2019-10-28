@@ -7,5 +7,3 @@ require (
 	github.com/ElrondNetwork/go-ext-wasm v0.0.2
 	github.com/ElrondNetwork/managed-big-int v0.0.3
 )
-
-// replace github.com/ElrondNetwork/managed-big-int => ../managed-big-int

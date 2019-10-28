@@ -1,7 +1,6 @@
 package arwen
 
 import (
-	"fmt"
 	"math/big"
 
 	mbig "github.com/ElrondNetwork/managed-big-int"
@@ -89,14 +88,5 @@ func (host *vmContext) BigCmp(op1, op2 BigIntHandle) int {
 }
 
 func (host *vmContext) ReturnBigInt(reference BigIntHandle) {
-	host.returnData = host.bigIntContainer.Get(host.bigIntHandles[reference])
-}
-
-func (host *vmContext) ReturnInt32(value int32) {
-	host.returnData = big.NewInt(int64(value))
-}
-
-func (host *vmContext) DebugPrintBig(value BigIntHandle) {
-	bi := host.bigIntContainer.GetUnsafe(host.bigIntHandles[value])
-	fmt.Printf(">>> Big Int: %d\n", bi)
+	host.returnData = append(host.returnData, host.bigIntContainer.Get(host.bigIntHandles[reference]))
 }
