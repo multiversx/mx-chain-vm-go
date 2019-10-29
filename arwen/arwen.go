@@ -180,7 +180,12 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 		return host.createVMOutputInCaseOfError(vmcommon.UserError), nil
 	}
 
-	function := instance.Exports[host.callFunction]
+	function, ok := instance.Exports[host.callFunction]
+	if !ok {
+		fmt.Println("arwen Error", "Function not found")
+		return host.createVMOutputInCaseOfError(vmcommon.FunctionNotFound), nil
+	}
+
 	result, err := function()
 	if err != nil {
 		fmt.Println("arwen Error", err.Error())
