@@ -23,7 +23,9 @@ func (host *vmContext) BigInsertInt64(smallValue int64) BigIntHandle {
 }
 
 func (host *vmContext) BigUpdate(destination BigIntHandle, newValue *big.Int) {
-	host.bigIntContainer.Update(host.bigIntHandles[destination], newValue)
+	host.bigIntHandles[destination] = host.bigIntContainer.Update(
+		host.bigIntHandles[destination],
+		newValue)
 }
 
 func (host *vmContext) BigGet(reference BigIntHandle) *big.Int {
@@ -39,7 +41,9 @@ func (host *vmContext) BigGetBytes(reference BigIntHandle) []byte {
 }
 
 func (host *vmContext) BigSetBytes(destination BigIntHandle, bytes []byte) {
-	host.bigIntContainer.SetBytes(host.bigIntHandles[destination], bytes)
+	host.bigIntHandles[destination] = host.bigIntContainer.SetBytes(
+		host.bigIntHandles[destination],
+		bytes)
 }
 
 func (host *vmContext) BigIsInt64(destination BigIntHandle) bool {
