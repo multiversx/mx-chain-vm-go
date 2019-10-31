@@ -8,17 +8,17 @@ import (
 	"unsafe"
 )
 
-const addressLen = 32
-const hashLen = 32
-const balanceLen = 32
+const AddressLen = 32
+const HashLen = 32
+const BalanceLen = 32
 
 var (
 	vmContextCounter uint8
-	vmContextMap     map[uint8]*vmContext
+	vmContextMap     map[uint8]VMContext
 	vmContextMapMu   sync.Mutex
 )
 
-func addHostContext(ctx *vmContext) int {
+func AddHostContext(ctx VMContext) int {
 	vmContextMapMu.Lock()
 	id := vmContextCounter
 	vmContextCounter++
@@ -27,20 +27,10 @@ func addHostContext(ctx *vmContext) int {
 	return int(id)
 }
 
-func removeHostContext(idx int) {
+func RemoveHostContext(idx int) {
 	vmContextMapMu.Lock()
 	delete(vmContextMap, uint8(idx))
 	vmContextMapMu.Unlock()
-}
-
-func GetHostContext(pointer unsafe.Pointer) HostContext {
-	var idx = *(*int)(pointer)
-
-	vmContextMapMu.Lock()
-	ctx := vmContextMap[uint8(idx)]
-	vmContextMapMu.Unlock()
-
-	return ctx
 }
 
 func GetEthContext(pointer unsafe.Pointer) EthContext {
@@ -50,7 +40,27 @@ func GetEthContext(pointer unsafe.Pointer) EthContext {
 	ctx := vmContextMap[uint8(idx)]
 	vmContextMapMu.Unlock()
 
-	return ctx
+	return ctx.EthContext()
+}
+
+func GetErdContext(pointer unsafe.Pointer) HostContext {
+	var idx = *(*int)(pointer)
+
+	vmContextMapMu.Lock()
+	ctx := vmContextMap[uint8(idx)]
+	vmContextMapMu.Unlock()
+
+	return ctx.CoreContext()
+}
+
+func GetBigIntContext(pointer unsafe.Pointer) BigIntContext {
+	var idx = *(*int)(pointer)
+
+	vmContextMapMu.Lock()
+	ctx := vmContextMap[uint8(idx)]
+	vmContextMapMu.Unlock()
+
+	return ctx.BigInContext()
 }
 
 func LoadBytes(from *wasmer.Memory, offset int32, length int32) []byte {
@@ -80,7 +90,7 @@ func StoreBytes(to *wasmer.Memory, offset int32, data []byte) error {
 	return nil
 }
 
-func convertReturnValue(wasmValue wasmer.Value) *big.Int {
+func ConvertReturnValue(wasmValue wasmer.Value) *big.Int {
 	switch wasmValue.GetType() {
 	case wasmer.TypeVoid:
 		return big.NewInt(0)

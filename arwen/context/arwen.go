@@ -1,17 +1,18 @@
-package arwen
+package context
 
 import (
 	"bytes"
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/common"
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/elrondapi"
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/ethapi"
 	"math/big"
 	"unsafe"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/go-ext-wasm/wasmer"
-	mbig "github.com/ElrondNetwork/managed-big-int"
 )
 
 type StorageStatus int
@@ -30,6 +31,7 @@ type logTopicsData struct {
 
 // vmContext implements evmc.HostContext interface.
 type vmContext struct {
+	BigIntContainer
 	blockChainHook vmcommon.BlockchainHook
 	cryptoHook     vmcommon.CryptoHook
 	imports        *wasmer.Imports
@@ -40,41 +42,48 @@ type vmContext struct {
 	callFunction string
 	scAddress    []byte
 
-	bigIntContainer BigIntContainer
-
-	logs          map[string]logTopicsData
-	storageUpdate map[string](map[string][]byte)
-
+	logs           map[string]logTopicsData
+	storageUpdate  map[string](map[string][]byte)
 	outputAccounts map[string]*vmcommon.OutputAccount
-
-	returnData []*big.Int
-	returnCode vmcommon.ReturnCode
+	returnData     []*big.Int
+	returnCode     vmcommon.ReturnCode
 
 	selfDestruct map[string][]byte
+	ethInput     []byte
 }
 
-func (host *vmContext) CallData() []byte {
-	panic("implement me")
-}
+func NewArwenVM(
+	blockChainHook vmcommon.BlockchainHook,
+	cryptoHook vmcommon.CryptoHook,
+	vmType []byte,
+) (*vmContext, error) {
 
-func (host *vmContext) UseGas(gas int64) {
-	panic("implement me")
-}
+	imports, err := elrondapi.ElrondEImports()
+	if err != nil {
+		return nil, err
+	}
 
-func (host *vmContext) GasLeft() int64 {
-	panic("implement me")
-}
+	imports, err = elrondapi.BigIntImports(imports)
+	if err != nil {
+		return nil, err
+	}
 
-func (host *vmContext) BlockGasLimit() int64 {
-	panic("implement me")
-}
+	imports, err = ethapi.EthereumImports(imports)
+	if err != nil {
+		return nil, err
+	}
 
-func (host *vmContext) BlockChainHook() vmcommon.BlockchainHook {
-	return host.blockChainHook
-}
+	context := &vmContext{
+		BigIntContainer: NewBigIntContainer(),
+		blockChainHook:  blockChainHook,
+		cryptoHook:      cryptoHook,
+		vmType:          vmType,
+		imports:         imports,
+	}
 
-func (host *vmContext) BigIntContainer() BigIntContainer {
-	return host.bigIntContainer
+	context.initInternalValues()
+
+	return context, nil
 }
 
 func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (*vmcommon.VMOutput, error) {
@@ -104,7 +113,7 @@ func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInpu
 		return host.createVMOutputInCaseOfError(vmcommon.ContractInvalid), nil
 	}
 
-	idContext := addHostContext(host)
+	idContext := arwen.AddHostContext(host)
 	instance.SetContextData(unsafe.Pointer(&idContext))
 
 	var result []byte
@@ -115,7 +124,7 @@ func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInpu
 			fmt.Println("arwen Error", err.Error())
 			return host.createVMOutputInCaseOfError(vmcommon.FunctionWrongSignature), nil
 		}
-		convertedResult := convertReturnValue(out)
+		convertedResult := arwen.ConvertReturnValue(out)
 		result = convertedResult.Bytes()
 	}
 
@@ -137,14 +146,12 @@ func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInpu
 		newSCAcc.Code = input.ContractCode
 	}
 
-	removeHostContext(idContext)
+	arwen.RemoveHostContext(idContext)
 
 	vmOutput := host.createVMOutput(result, gasLeft)
 
 	return vmOutput, err
 }
-
-var ErrInitFuncCalledInRun = errors.New("it is not allowed to call init in run")
 
 func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	host.initInternalValues()
@@ -165,7 +172,7 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 
 	defer instance.Close()
 
-	idContext := addHostContext(host)
+	idContext := arwen.AddHostContext(host)
 	instance.SetContextData(unsafe.Pointer(&idContext))
 
 	if host.callFunction == "init" {
@@ -185,7 +192,7 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 		return host.createVMOutputInCaseOfError(vmcommon.FunctionWrongSignature), nil
 	}
 
-	convertedResult := convertReturnValue(result)
+	convertedResult := arwen.ConvertReturnValue(result)
 	gasLeft = gasLeft - int64(instance.GetPointsUsed())
 	vmOutput := host.createVMOutput(convertedResult.Bytes(), gasLeft)
 
@@ -271,7 +278,7 @@ func (host *vmContext) createVMOutput(output []byte, gasLeft int64) *vmcommon.VM
 }
 
 func (host *vmContext) initInternalValues() {
-	host.initBigIntContainer()
+	host.Clean()
 	host.storageUpdate = make(map[string]map[string][]byte, 0)
 	host.logs = make(map[string]logTopicsData, 0)
 	host.selfDestruct = make(map[string][]byte)
@@ -281,6 +288,7 @@ func (host *vmContext) initInternalValues() {
 	host.callFunction = ""
 	host.returnData = nil
 	host.returnCode = vmcommon.Ok
+	host.ethInput = nil
 }
 
 func (host *vmContext) addTxValueToSmartContract(value *big.Int, scAddress []byte) {
@@ -296,27 +304,16 @@ func (host *vmContext) addTxValueToSmartContract(value *big.Int, scAddress []byt
 	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
 }
 
-func NewArwenVM(
-	blockChainHook vmcommon.BlockchainHook,
-	cryptoHook vmcommon.CryptoHook,
-	vmType []byte,
-) (*vmContext, error) {
+func (host *vmContext) EthContext() arwen.EthContext {
+	return host
+}
 
-	imports, err := ElrondEImports()
-	if err != nil {
-		return nil, err
-	}
+func (host *vmContext) CoreContext() arwen.HostContext {
+	return host
+}
 
-	context := &vmContext{
-		blockChainHook: blockChainHook,
-		cryptoHook:     cryptoHook,
-		vmType:         vmType,
-		imports:        imports,
-	}
-
-	context.initInternalValues()
-
-	return context, nil
+func (host *vmContext) BigInContext() arwen.BigIntContext {
+	return host
 }
 
 func (host *vmContext) Finish(data []byte) {
@@ -418,13 +415,13 @@ func (host *vmContext) GetBalance(addr []byte) []byte {
 	return balance.Bytes()
 }
 
-func (host *vmContext) GetCodeSize(addr []byte) int {
+func (host *vmContext) GetCodeSize(addr []byte) int32 {
 	code, err := host.blockChainHook.GetCode(addr)
 	if err != nil {
 		fmt.Printf("GetCodeSize returned with error %s \n", err.Error())
 	}
 
-	return len(code)
+	return int32(len(code))
 }
 
 func (host *vmContext) GetCodeHash(addr []byte) []byte {
@@ -533,39 +530,51 @@ func (host *vmContext) Transfer(destination []byte, sender []byte, value *big.In
 	return gasLeft, err
 }
 
-// The input data are method arguments in chunks of 32 bytes.
-func (host *vmContext) createETHCreateInput(input *vmcommon.ContractCreateInput) []byte {
-	newInput := make([]byte, 0)
-	for _, arg := range input.Arguments {
-		currInput := make([]byte, hashLen)
-		copy(currInput[hashLen-len(arg.Bytes()):], arg.Bytes())
-
-		newInput = append(newInput, currInput...)
+func (host *vmContext) CallData() []byte {
+	if host.ethInput == nil {
+		host.ethInput = host.createETHCallInput()
 	}
+	return host.ethInput
+}
 
-	return newInput
+func (host *vmContext) UseGas(gas int64) {
+	panic("implement me")
+}
+
+func (host *vmContext) GasLeft() int64 {
+	panic("implement me")
+}
+
+func (host *vmContext) BlockGasLimit() int64 {
+	panic("implement me")
+}
+
+func (host *vmContext) BlockChainHook() vmcommon.BlockchainHook {
+	return host.blockChainHook
 }
 
 // The first four bytes is the method selector. The rest of the input data are method arguments in chunks of 32 bytes.
 // The method selector is the kecccak256 hash of the method signature.
-func (host *vmContext) createETHCallInput(input *vmcommon.ContractCallInput) []byte {
+func (host *vmContext) createETHCallInput() []byte {
 	newInput := make([]byte, 0)
 
-	hashOfFunction, err := host.cryptoHook.Keccak256(input.Function)
-	if err != nil {
-		return nil
+	if len(host.callFunction) > 0 {
+		hashOfFunction, err := host.cryptoHook.Keccak256(host.callFunction)
+		if err != nil {
+			return nil
+		}
+
+		methodSelectors, err := hex.DecodeString(hashOfFunction)
+		if err != nil {
+			return nil
+		}
+
+		newInput = append(newInput, methodSelectors[0:4]...)
 	}
 
-	methodSelectors, err := hex.DecodeString(hashOfFunction)
-	if err != nil {
-		return nil
-	}
-
-	newInput = append(newInput, methodSelectors[0:4]...)
-
-	for _, arg := range input.Arguments {
-		currInput := make([]byte, hashLen)
-		copy(currInput[hashLen-len(arg.Bytes()):], arg.Bytes())
+	for _, arg := range host.vmInput.Arguments {
+		currInput := make([]byte, arwen.HashLen)
+		copy(currInput[arwen.HashLen-len(arg.Bytes()):], arg.Bytes())
 
 		newInput = append(newInput, currInput...)
 	}

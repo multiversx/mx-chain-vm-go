@@ -1,4 +1,4 @@
-package ethereum
+package ethapi
 
 // // Declare the function signatures (see [cgo](https://golang.org/cmd/cgo/)).
 //
@@ -6,18 +6,16 @@ package ethereum
 // typedef unsigned char u8;
 // typedef int i32;
 // typedef int i32ptr;
-// typedef unsigned int u32;
-// typedef unsigned long long u64;
-// typedef long long i64;
-// extern void useGas(void *context, i64 gas);
+// extern void useGas(void *context, long long  gas);
 // extern void getAddress(void *context, i32ptr resultOffset);
-// extern void getExternalBalance(void *context, i32ptr addressOffset, resultOffset i32ptr);
-// extern i32 getBlockHash(void *context, i64 number, i32ptr resultOffset);
-// extern i32 call(void *context, i64 gas, i32ptr addressOffset, i32ptr valueOffset, i32ptr dataOffset, i32 dataLength);
+// extern void getExternalBalance(void *context, i32ptr addressOffset, i32ptr resultOffset);
+// extern i32 getBlockHash(void *context, long long number, i32ptr resultOffset);
+// extern i32 call(void *context, long long gas, i32ptr addressOffset, i32ptr valueOffset, i32ptr dataOffset, i32 dataLength);
 // extern i32 getCallDataSize(void *context);
-// extern i32 callCode(void *context, i64 gas, i32ptr addressOffset, i32ptr valueOffset, i32ptr dataOffset, i32 dataLength);
-// extern i32 callDelegate(void *context, i64 gas, i32ptr addressOffset, i32ptr dataOffset, i32 dataLength);
-// extern i32 callStatic(void *context, i64 gas, i32ptr addressOffset, i32ptr dataOffset, i32 dataLength);
+// extern void callDataCopy(void *context, i32ptr resultsOffset, i32ptr dataOffset, i32 length);
+// extern i32 callCode(void *context, long long gas, i32ptr addressOffset, i32ptr valueOffset, i32ptr dataOffset, i32 dataLength);
+// extern i32 callDelegate(void *context, long long gas, i32ptr addressOffset, i32ptr dataOffset, i32 dataLength);
+// extern i32 callStatic(void *context, long long gas, i32ptr addressOffset, i32ptr dataOffset, i32 dataLength);
 // extern void storageStore(void *context, i32ptr pathOffset, i32ptr valueOffset);
 // extern void storageLoad(void *context, i32ptr pathOffset, i32ptr resultOffset);
 // extern void getCaller(void *context, i32ptr resultOffset);
@@ -29,18 +27,18 @@ package ethereum
 // extern void getBlockDifficulty(void *context, i32ptr resultOffset);
 // extern void externalCodeCopy(void *context, i32ptr addressOffset, i32ptr resultOffset, i32 codeOffset, i32 length);
 // extern i32 getExternalCodeSize(void *context, i32ptr addressOffset);
-// extern i64 getGasLeft(void *context);
-// extern i64 getBlockGasLimit(void *context);
+// extern long long getGasLeft(void *context);
+// extern long long getBlockGasLimit(void *context);
 // extern void getTxGasPrice(void *context, i32ptr valueOffset);
-// extern void log(void *context, i32ptr dataOffset, i32 length, i32 numberOftopics, i32ptr topic1, i32ptr topic2, i32ptr topic3, i32ptr topic 4);
-// extern i64 getBlockNumber(void *context);
+// extern void logTopics(void *context, i32ptr dataOffset, i32 length, i32 numberOftopics, i32ptr topic1, i32ptr topic2, i32ptr topic3, i32ptr topic4);
+// extern long long getBlockNumber(void *context);
 // extern void getTxOrigin(void *context, i32ptr resultOffset);
 // extern void finish(void *context, i32ptr dataOffset, i32 length);
 // extern void revert(void *context, i32ptr dataOffset, i32 length);
 // extern i32 getReturnDataSize(void *context);
-// extern void getReturnDataCopy(void *context, i32ptr resultOffset, i32 dataOffset, i32 length);
+// extern void returnDataCopy(void *context, i32ptr resultOffset, i32 dataOffset, i32 length);
 // extern void selfDestruct(void *context, i32ptr addressOffset);
-// extern i64 getBlockTimestamp(void *context);
+// extern long long getBlockTimestamp(void *context);
 import "C"
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -49,12 +47,7 @@ import (
 	"unsafe"
 )
 
-const addressLen = 32
-const hashLen = 32
-const balanceLen = 32
-
-func EthereumImports() (*wasmer.Imports, error) {
-	imports := wasmer.NewImports()
+func EthereumImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	imports = imports.Namespace("ethereum")
 
 	imports, err := imports.Append("useGas", useGas, C.useGas)
@@ -137,7 +130,7 @@ func EthereumImports() (*wasmer.Imports, error) {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getBlockCoinBase", getBlockCoinbase, C.getBlockCoinBase)
+	imports, err = imports.Append("getBlockCoinbase", getBlockCoinbase, C.getBlockCoinbase)
 	if err != nil {
 		return nil, err
 	}
@@ -177,7 +170,7 @@ func EthereumImports() (*wasmer.Imports, error) {
 		return nil, err
 	}
 
-	imports, err = imports.Append("log", log, C.log)
+	imports, err = imports.Append("logTopics", logTopics, C.logTopics)
 	if err != nil {
 		return nil, err
 	}
@@ -236,7 +229,7 @@ func useGas(context unsafe.Pointer, useGas int64) {
 //export getAddress
 func getAddress(context unsafe.Pointer, resultOffset int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetHostContext(instCtx.Data())
+	hostContext := arwen.GetEthContext(instCtx.Data())
 
 	_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, hostContext.GetSCAddress())
 }
@@ -244,9 +237,9 @@ func getAddress(context unsafe.Pointer, resultOffset int32) {
 //export getExternalBalance
 func getExternalBalance(context unsafe.Pointer, addressOffset int32, resultOffset int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetHostContext(instCtx.Data())
+	hostContext := arwen.GetEthContext(instCtx.Data())
 
-	address := arwen.LoadBytes(instCtx.Memory(), addressOffset, addressLen)
+	address := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
 	balance := hostContext.GetBalance(address)
 
 	err := arwen.StoreBytes(instCtx.Memory(), resultOffset, balance)
@@ -255,22 +248,27 @@ func getExternalBalance(context unsafe.Pointer, addressOffset int32, resultOffse
 }
 
 //export getBlockHash
-func getBlockHash(context unsafe.Pointer, number int64, resultOffset int32) {
+func getBlockHash(context unsafe.Pointer, number int64, resultOffset int32) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetHostContext(instCtx.Data())
+	hostContext := arwen.GetEthContext(instCtx.Data())
 
 	hash := hostContext.BlockHash(number)
 	_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, hash)
+
+	if len(hash) == 0 {
+		return 0
+	}
+	return 1
 }
 
 //export call
 func call(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueOffset int32, dataOffset int32, dataLength int32) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetHostContext(instCtx.Data())
+	hostContext := arwen.GetEthContext(instCtx.Data())
 
 	send := hostContext.GetVMInput().CallerAddr
-	dest := arwen.LoadBytes(instCtx.Memory(), addressOffset, addressLen)
-	value := arwen.LoadBytes(instCtx.Memory(), valueOffset, balanceLen)
+	dest := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
+	value := arwen.LoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
 	data := arwen.LoadBytes(instCtx.Memory(), dataOffset, dataLength)
 
 	_, err := hostContext.Transfer(dest, send, big.NewInt(0).SetBytes(value), data, gasLimit)
@@ -301,10 +299,10 @@ func getCallDataSize(context unsafe.Pointer) int32 {
 //export storageStore
 func storageStore(context unsafe.Pointer, pathOffset int32, valueOffset int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetHostContext(instCtx.Data())
+	hostContext := arwen.GetEthContext(instCtx.Data())
 
-	key := arwen.LoadBytes(instCtx.Memory(), pathOffset, hashLen)
-	data := arwen.LoadBytes(instCtx.Memory(), valueOffset, hashLen)
+	key := arwen.LoadBytes(instCtx.Memory(), pathOffset, arwen.HashLen)
+	data := arwen.LoadBytes(instCtx.Memory(), valueOffset, arwen.HashLen)
 
 	_ = hostContext.SetStorage(hostContext.GetSCAddress(), key, data)
 }
@@ -312,13 +310,13 @@ func storageStore(context unsafe.Pointer, pathOffset int32, valueOffset int32) {
 //export storageLoad
 func storageLoad(context unsafe.Pointer, pathOffset int32, resultOffset int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetHostContext(instCtx.Data())
+	hostContext := arwen.GetEthContext(instCtx.Data())
 
-	key := arwen.LoadBytes(instCtx.Memory(), pathOffset, hashLen)
+	key := arwen.LoadBytes(instCtx.Memory(), pathOffset, arwen.HashLen)
 	data := hostContext.GetStorage(hostContext.GetSCAddress(), key)
 
-	currInput := make([]byte, hashLen)
-	copy(currInput[hashLen-len(data):], data)
+	currInput := make([]byte, arwen.HashLen)
+	copy(currInput[arwen.HashLen-len(data):], data)
 
 	_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, currInput)
 }
@@ -326,7 +324,7 @@ func storageLoad(context unsafe.Pointer, pathOffset int32, resultOffset int32) {
 //export getCaller
 func getCaller(context unsafe.Pointer, resultOffset int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetHostContext(instCtx.Data())
+	hostContext := arwen.GetEthContext(instCtx.Data())
 
 	caller := hostContext.GetVMInput().CallerAddr
 
@@ -336,9 +334,9 @@ func getCaller(context unsafe.Pointer, resultOffset int32) {
 }
 
 //export getCallValue
-func getCallValue(context unsafe.Pointer, resultOffset int32) int32 {
+func getCallValue(context unsafe.Pointer, resultOffset int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetHostContext(instCtx.Data())
+	hostContext := arwen.GetEthContext(instCtx.Data())
 
 	value := hostContext.GetVMInput().CallValue.Bytes()
 	length := len(value)
@@ -347,18 +345,13 @@ func getCallValue(context unsafe.Pointer, resultOffset int32) int32 {
 		invBytes[length-i-1] = value[i]
 	}
 
-	err := arwen.StoreBytes(instCtx.Memory(), resultOffset, invBytes)
-	if err != nil {
-		return -1
-	}
-
-	return int32(length)
+	_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, invBytes)
 }
 
-//export copyCode
+//export codeCopy
 func codeCopy(context unsafe.Pointer, resultOffset int32, codeOffset int32, length int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetHostContext(instCtx.Data())
+	hostContext := arwen.GetEthContext(instCtx.Data())
 
 	scAddress := hostContext.GetSCAddress()
 	code := hostContext.GetCode(scAddress)
@@ -371,7 +364,7 @@ func codeCopy(context unsafe.Pointer, resultOffset int32, codeOffset int32, leng
 //export getCodeSize
 func getCodeSize(context unsafe.Pointer) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetHostContext(instCtx.Data())
+	hostContext := arwen.GetEthContext(instCtx.Data())
 
 	return int32(hostContext.GetCodeSize(hostContext.GetSCAddress()))
 }
@@ -379,9 +372,9 @@ func getCodeSize(context unsafe.Pointer) int32 {
 //export externalCodeCopy
 func externalCodeCopy(context unsafe.Pointer, addressOffset int32, resultOffset int32, codeOffset int32, length int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetHostContext(instCtx.Data())
+	hostContext := arwen.GetEthContext(instCtx.Data())
 
-	dest := arwen.LoadBytes(instCtx.Memory(), addressOffset, addressLen)
+	dest := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
 	code := hostContext.GetCode(dest)
 
 	if int32(len(code)) > codeOffset+length {
@@ -392,9 +385,9 @@ func externalCodeCopy(context unsafe.Pointer, addressOffset int32, resultOffset 
 //export getExternalCodeSize
 func getExternalCodeSize(context unsafe.Pointer, addressOffset int32) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetHostContext(instCtx.Data())
+	hostContext := arwen.GetEthContext(instCtx.Data())
 
-	dest := arwen.LoadBytes(instCtx.Memory(), addressOffset, addressLen)
+	dest := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
 
 	return int32(hostContext.GetCodeSize(dest))
 }
@@ -418,7 +411,7 @@ func getBlockGasLimit(context unsafe.Pointer) int64 {
 //export getTxGasPrice
 func getTxGasPrice(context unsafe.Pointer, valueOffset int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetHostContext(instCtx.Data())
+	hostContext := arwen.GetEthContext(instCtx.Data())
 
 	gasPrice := hostContext.GetVMInput().GasPrice
 
@@ -428,10 +421,10 @@ func getTxGasPrice(context unsafe.Pointer, valueOffset int32) {
 	_ = arwen.StoreBytes(instCtx.Memory(), valueOffset, gasU128)
 }
 
-//export log
-func log(context unsafe.Pointer, dataOffset int32, length int32, numberOfTopics int32, topic1 int32, topic2 int32, topic3 int32, topic4 int32) {
+//export logTopics
+func logTopics(context unsafe.Pointer, dataOffset int32, length int32, numberOfTopics int32, topic1 int32, topic2 int32, topic3 int32, topic4 int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetHostContext(instCtx.Data())
+	hostContext := arwen.GetEthContext(instCtx.Data())
 
 	data := arwen.LoadBytes(instCtx.Memory(), dataOffset, length)
 
@@ -443,7 +436,7 @@ func log(context unsafe.Pointer, dataOffset int32, length int32, numberOfTopics 
 
 	topicsData := make([][]byte, numberOfTopics)
 	for i := int32(0); i < numberOfTopics; i++ {
-		topicsData[i] = arwen.LoadBytes(instCtx.Memory(), topics[i], hashLen)
+		topicsData[i] = arwen.LoadBytes(instCtx.Memory(), topics[i], arwen.HashLen)
 	}
 
 	hostContext.WriteLog(hostContext.GetSCAddress(), topicsData, data)
@@ -452,24 +445,24 @@ func log(context unsafe.Pointer, dataOffset int32, length int32, numberOfTopics 
 //export getTxOrigin
 func getTxOrigin(context unsafe.Pointer, resultOffset int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetHostContext(instCtx.Data())
+	hostContext := arwen.GetEthContext(instCtx.Data())
 
 	_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, hostContext.GetVMInput().CallerAddr)
 }
 
 //export finish
-func finish(context unsafe.Pointer, resultOffset int32) {
+func finish(context unsafe.Pointer, resultOffset int32, length int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetHostContext(instCtx.Data())
+	hostContext := arwen.GetEthContext(instCtx.Data())
 
-	data := arwen.LoadBytes(instCtx.Memory(), resultOffset, hashLen)
+	data := arwen.LoadBytes(instCtx.Memory(), resultOffset, length)
 	hostContext.Finish(data)
 }
 
 //export revert
 func revert(context unsafe.Pointer, dataOffset int32, length int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetHostContext(instCtx.Data())
+	hostContext := arwen.GetEthContext(instCtx.Data())
 
 	data := arwen.LoadBytes(instCtx.Memory(), dataOffset, length)
 	hostContext.Finish(data)
@@ -479,9 +472,9 @@ func revert(context unsafe.Pointer, dataOffset int32, length int32) {
 //export selfDestruct
 func selfDestruct(context unsafe.Pointer, addressOffset int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetHostContext(instCtx.Data())
+	hostContext := arwen.GetEthContext(instCtx.Data())
 
-	address := arwen.LoadBytes(instCtx.Memory(), addressOffset, hashLen)
+	address := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.HashLen)
 
 	hostContext.SelfDestruct(address, hostContext.GetVMInput().CallerAddr)
 }
@@ -489,7 +482,7 @@ func selfDestruct(context unsafe.Pointer, addressOffset int32) {
 //export getBlockNumber
 func getBlockNumber(context unsafe.Pointer) int64 {
 	//instCtx := wasmer.IntoInstanceContext(context)
-	//hostContext := arwen.GetHostContext(instCtx.Data())
+	//hostContext := arwen.arwen.GetEthContext(instCtx.Data())
 
 	//TODO: implement
 	return 0 //hostContext.BlockNonce()
@@ -498,7 +491,7 @@ func getBlockNumber(context unsafe.Pointer) int64 {
 //export getBlockTimestamp
 func getBlockTimestamp(context unsafe.Pointer) int64 {
 	//instCtx := wasmer.IntoInstanceContext(context)
-	//hostContext := arwen.GetHostContext(instCtx.Data())
+	//hostContext := arwen.arwen.GetEthContext(instCtx.Data())
 
 	//return hostContext.BlockTimeStamp()
 	return 0

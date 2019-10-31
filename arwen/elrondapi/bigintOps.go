@@ -1,6 +1,12 @@
-package arwen
+package elrondapi
 
-// extern int32_t bigIntNew(void* context, int32_t smallValue);
+// // Declare the function signatures (see [cgo](https://golang.org/cmd/cgo/)).
+//
+// #include <stdlib.h>
+// typedef unsigned char uint8_t;
+// typedef int int32_t;
+//
+// extern int32_t bigIntNew(void* context, long long smallValue);
 // extern int32_t bigIntByteLength(void* context, int32_t reference);
 // extern int32_t bigIntGetBytes(void* context, int32_t reference, int32_t byteOffset);
 // extern void bigIntSetBytes(void* context, int32_t destination, int32_t byteOffset, int32_t byteLength);
@@ -20,13 +26,12 @@ package arwen
 import "C"
 
 import (
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/go-ext-wasm/wasmer"
 	"unsafe"
 )
 
-func BigIntImports() (*wasmer.Imports, error) {
-	imports := wasmer.NewImports()
-
+func BigIntImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	imports, err := imports.Append("bigIntNew", bigIntNew, C.bigIntNew)
 	if err != nil {
 		return nil, err
@@ -118,24 +123,24 @@ func BigIntImports() (*wasmer.Imports, error) {
 //export bigIntgetArgument
 func bigIntgetArgument(context unsafe.Pointer, id int32, destination int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := GetHostContext(instCtx.Data())
+	hostContext := arwen.GetBigIntContext(instCtx.Data())
 
 	args := hostContext.Arguments()
 	if int32(len(args)) <= id {
 		return
 	}
 
-	value := hostContext.BigIntContainer().GetOne(destination)
+	value := hostContext.GetOne(destination)
 	value.Set(args[id])
 }
 
 //export bigIntstorageStore
 func bigIntstorageStore(context unsafe.Pointer, keyOffset int32, source int32) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := GetHostContext(instCtx.Data())
+	hostContext := arwen.GetBigIntContext(instCtx.Data())
 
-	key := LoadBytes(instCtx.Memory(), keyOffset, hashLen)
-	value := hostContext.BigIntContainer().GetOne(source)
+	key := arwen.LoadBytes(instCtx.Memory(), keyOffset, arwen.HashLen)
+	value := hostContext.GetOne(source)
 	bytes := value.Bytes()
 
 	return hostContext.SetStorage(hostContext.GetSCAddress(), key, bytes)
@@ -144,12 +149,12 @@ func bigIntstorageStore(context unsafe.Pointer, keyOffset int32, source int32) i
 //export bigIntstorageLoad
 func bigIntstorageLoad(context unsafe.Pointer, keyOffset int32, destination int32) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := GetHostContext(instCtx.Data())
+	hostContext := arwen.GetBigIntContext(instCtx.Data())
 
-	key := LoadBytes(instCtx.Memory(), keyOffset, hashLen)
+	key := arwen.LoadBytes(instCtx.Memory(), keyOffset, arwen.HashLen)
 	bytes := hostContext.GetStorage(hostContext.GetSCAddress(), key)
 
-	value := hostContext.BigIntContainer().GetOne(destination)
+	value := hostContext.GetOne(destination)
 	value.SetBytes(bytes)
 
 	return int32(len(bytes))
@@ -158,37 +163,38 @@ func bigIntstorageLoad(context unsafe.Pointer, keyOffset int32, destination int3
 //export bigIntgetCallValue
 func bigIntgetCallValue(context unsafe.Pointer, destination int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := GetHostContext(instCtx.Data())
+	hostContext := arwen.GetBigIntContext(instCtx.Data())
 
-	value := hostContext.BigIntContainer().GetOne(destination)
+	value := hostContext.GetOne(destination)
 	value.Set(hostContext.GetVMInput().CallValue)
 }
 
 //export bigIntgetExternalBalance
 func bigIntgetExternalBalance(context unsafe.Pointer, addressOffset int32, result int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := GetHostContext(instCtx.Data())
+	hostContext := arwen.GetBigIntContext(instCtx.Data())
 
-	address := LoadBytes(instCtx.Memory(), addressOffset, addressLen)
+	address := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
 	balance := hostContext.GetBalance(address)
-	value := hostContext.BigIntContainer().GetOne(result)
+	value := hostContext.GetOne(result)
 
 	value.SetBytes(balance)
 }
 
 //export bigIntNew
-func bigIntNew(context unsafe.Pointer, smallValue int32) int32 {
+func bigIntNew(context unsafe.Pointer, smallValue int64) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := GetHostContext(instCtx.Data())
-	return hostContext.BigInsertInt64(int64(smallValue))
+	hostContext := arwen.GetBigIntContext(instCtx.Data())
+
+	return hostContext.Put(smallValue)
 }
 
 //export bigIntByteLength
 func bigIntByteLength(context unsafe.Pointer, reference int32) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := GetHostContext(instCtx.Data())
+	hostContext := arwen.GetBigIntContext(instCtx.Data())
 
-	value := hostContext.BigIntContainer().GetOne(reference)
+	value := hostContext.GetOne(reference)
 
 	return int32(len(value.Bytes()))
 }
@@ -196,11 +202,11 @@ func bigIntByteLength(context unsafe.Pointer, reference int32) int32 {
 //export bigIntGetBytes
 func bigIntGetBytes(context unsafe.Pointer, reference int32, byteOffset int32) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := GetHostContext(instCtx.Data())
+	hostContext := arwen.GetBigIntContext(instCtx.Data())
 
-	bytes := hostContext.BigIntContainer().GetOne(reference).Bytes()
+	bytes := hostContext.GetOne(reference).Bytes()
 
-	err := StoreBytes(instCtx.Memory(), byteOffset, bytes)
+	err := arwen.StoreBytes(instCtx.Memory(), byteOffset, bytes)
 	if err != nil {
 	}
 
@@ -210,20 +216,20 @@ func bigIntGetBytes(context unsafe.Pointer, reference int32, byteOffset int32) i
 //export bigIntSetBytes
 func bigIntSetBytes(context unsafe.Pointer, destination int32, byteOffset int32, byteLength int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := GetHostContext(instCtx.Data())
+	hostContext := arwen.GetBigIntContext(instCtx.Data())
 
-	bytes := LoadBytes(instCtx.Memory(), byteOffset, byteLength)
+	bytes := arwen.LoadBytes(instCtx.Memory(), byteOffset, byteLength)
 
-	value := hostContext.BigIntContainer().GetOne(destination)
+	value := hostContext.GetOne(destination)
 	value.SetBytes(bytes)
 }
 
 //export bigIntIsInt64
 func bigIntIsInt64(context unsafe.Pointer, destination int32) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := GetHostContext(instCtx.Data())
+	hostContext := arwen.GetBigIntContext(instCtx.Data())
 
-	value := hostContext.BigIntContainer().GetOne(destination)
+	value := hostContext.GetOne(destination)
 	if value.IsInt64() {
 		return 1
 	}
@@ -233,62 +239,62 @@ func bigIntIsInt64(context unsafe.Pointer, destination int32) int32 {
 //export bigIntGetInt64
 func bigIntGetInt64(context unsafe.Pointer, destination int32) int64 {
 	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := GetHostContext(instCtx.Data())
+	hostContext := arwen.GetBigIntContext(instCtx.Data())
 
-	value := hostContext.BigIntContainer().GetOne(destination)
+	value := hostContext.GetOne(destination)
 	return value.Int64()
 }
 
 //export bigIntSetInt64
 func bigIntSetInt64(context unsafe.Pointer, destination int32, value int64) {
 	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := GetHostContext(instCtx.Data())
+	hostContext := arwen.GetBigIntContext(instCtx.Data())
 
-	dest := hostContext.BigIntContainer().GetOne(destination)
+	dest := hostContext.GetOne(destination)
 	dest.SetInt64(value)
 }
 
 //export bigIntAdd
 func bigIntAdd(context unsafe.Pointer, destination, op1, op2 int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := GetHostContext(instCtx.Data())
+	hostContext := arwen.GetBigIntContext(instCtx.Data())
 
-	dest, a, b := hostContext.BigIntContainer().GetThree(destination, op1, op2)
+	dest, a, b := hostContext.GetThree(destination, op1, op2)
 	dest.Add(a, b)
 }
 
 //export bigIntSub
 func bigIntSub(context unsafe.Pointer, destination, op1, op2 int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := GetHostContext(instCtx.Data())
+	hostContext := arwen.GetBigIntContext(instCtx.Data())
 
-	dest, a, b := hostContext.BigIntContainer().GetThree(destination, op1, op2)
+	dest, a, b := hostContext.GetThree(destination, op1, op2)
 	dest.Sub(a, b)
 }
 
 //export bigIntMul
 func bigIntMul(context unsafe.Pointer, destination, op1, op2 int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := GetHostContext(instCtx.Data())
+	hostContext := arwen.GetBigIntContext(instCtx.Data())
 
-	dest, a, b := hostContext.BigIntContainer().GetThree(destination, op1, op2)
+	dest, a, b := hostContext.GetThree(destination, op1, op2)
 	dest.Mul(a, b)
 }
 
 //export bigIntCmp
 func bigIntCmp(context unsafe.Pointer, op1, op2 int32) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := GetHostContext(instCtx.Data())
+	hostContext := arwen.GetBigIntContext(instCtx.Data())
 
-	a, b := hostContext.BigIntContainer().GetTwo(op1, op2)
+	a, b := hostContext.GetTwo(op1, op2)
 	return int32(a.Cmp(b))
 }
 
 //export bigIntFinish
 func bigIntFinish(context unsafe.Pointer, reference int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := GetHostContext(instCtx.Data())
+	hostContext := arwen.GetBigIntContext(instCtx.Data())
 
-	value := hostContext.BigIntContainer().GetOne(reference)
+	value := hostContext.GetOne(reference)
 	hostContext.Finish(value.Bytes())
 }

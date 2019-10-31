@@ -1,4 +1,4 @@
-package arwen
+package context
 
 import (
 	"math/big"
@@ -21,6 +21,16 @@ func (b *bigIntContainer) Clean() {
 	b.mutex.Lock()
 	b.mappedValues = make(map[int32]*big.Int)
 	b.mutex.Unlock()
+}
+
+func (b *bigIntContainer) Put(value int64) int32 {
+	b.mutex.Lock()
+	b.mutex.Unlock()
+
+	newIndex := int32(len(b.mappedValues))
+	b.mappedValues[newIndex] = big.NewInt(value)
+
+	return newIndex
 }
 
 func (b *bigIntContainer) GetOne(id int32) *big.Int {
