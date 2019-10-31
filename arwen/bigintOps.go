@@ -1,96 +1,294 @@
 package arwen
 
-import (
-	"math/big"
+// extern int32_t bigIntNew(void* context, int32_t smallValue);
+// extern int32_t bigIntByteLength(void* context, int32_t reference);
+// extern int32_t bigIntGetBytes(void* context, int32_t reference, int32_t byteOffset);
+// extern void bigIntSetBytes(void* context, int32_t destination, int32_t byteOffset, int32_t byteLength);
+// extern int32_t bigIntIsInt64(void* context, int32_t reference);
+// extern long long bigIntGetInt64(void* context, int32_t reference);
+// extern void bigIntSetInt64(void* context, int32_t destination, long long value);
+// extern void bigIntAdd(void* context, int32_t destination, int32_t op1, int32_t op2);
+// extern void bigIntSub(void* context, int32_t destination, int32_t op1, int32_t op2);
+// extern void bigIntMul(void* context, int32_t destination, int32_t op1, int32_t op2);
+// extern int32_t bigIntCmp(void* context, int32_t op1, int32_t op2);
+// extern void bigIntFinish(void* context, int32_t reference);
+// extern int32_t bigIntstorageStore(void *context, int32_t keyOffset, int32_t source);
+// extern int32_t bigIntstorageLoad(void *context, int32_t keyOffset, int32_t destination);
+// extern void bigIntgetArgument(void *context, int32_t id, int32_t destination);
+// extern void bigIntgetCallValue(void *context, int32_t destination);
+// extern void bigIntgetExternalBalance(void *context, int32_t addressOffset, int32_t result);
+import "C"
 
-	mbig "github.com/ElrondNetwork/managed-big-int"
+import (
+	"github.com/ElrondNetwork/go-ext-wasm/wasmer"
+	"unsafe"
 )
 
-func (host *vmContext) initBigIntContainer() {
-	host.bigIntHandles = nil
-	host.bigIntContainer = mbig.NewBigIntContainer()
+func BigIntImports() (*wasmer.Imports, error) {
+	imports := wasmer.NewImports()
+
+	imports, err := imports.Append("bigIntNew", bigIntNew, C.bigIntNew)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntByteLength", bigIntByteLength, C.bigIntByteLength)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntGetBytes", bigIntGetBytes, C.bigIntGetBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntSetBytes", bigIntSetBytes, C.bigIntSetBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntIsInt64", bigIntIsInt64, C.bigIntIsInt64)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntGetInt64", bigIntGetInt64, C.bigIntGetInt64)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntSetInt64", bigIntSetInt64, C.bigIntSetInt64)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntAdd", bigIntAdd, C.bigIntAdd)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntSub", bigIntSub, C.bigIntSub)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntMul", bigIntMul, C.bigIntMul)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntCmp", bigIntCmp, C.bigIntCmp)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntFinish", bigIntFinish, C.bigIntFinish)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntstorageStore", bigIntstorageStore, C.bigIntstorageStore)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntstorageLoad", bigIntstorageLoad, C.bigIntstorageLoad)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntgetArgument", bigIntgetArgument, C.bigIntgetArgument)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntgetCallValue", bigIntgetCallValue, C.bigIntgetCallValue)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntgetExternalBalance", bigIntgetExternalBalance, C.bigIntgetExternalBalance)
+	if err != nil {
+		return nil, err
+	}
+
+	return imports, nil
 }
 
-func (host *vmContext) bigInsert(bi *big.Int) BigIntHandle {
-	handler := host.bigIntContainer.Insert(bi)
-	newIndex := BigIntHandle(len(host.bigIntHandles))
-	host.bigIntHandles = append(host.bigIntHandles, handler)
-	return newIndex
+//export bigIntgetArgument
+func bigIntgetArgument(context unsafe.Pointer, id int32, destination int32) {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := GetHostContext(instCtx.Data())
+
+	args := hostContext.Arguments()
+	if int32(len(args)) <= id {
+		return
+	}
+
+	value := hostContext.BigIntContainer().GetOne(destination)
+	value.Set(args[id])
 }
 
-func (host *vmContext) BigInsertInt64(smallValue int64) BigIntHandle {
-	return host.bigInsert(big.NewInt(smallValue))
+//export bigIntstorageStore
+func bigIntstorageStore(context unsafe.Pointer, keyOffset int32, source int32) int32 {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := GetHostContext(instCtx.Data())
+
+	key := LoadBytes(instCtx.Memory(), keyOffset, hashLen)
+	value := hostContext.BigIntContainer().GetOne(source)
+	bytes := value.Bytes()
+
+	return hostContext.SetStorage(hostContext.GetSCAddress(), key, bytes)
 }
 
-func (host *vmContext) BigUpdate(destination BigIntHandle, newValue *big.Int) {
-	host.bigIntHandles[destination] = host.bigIntContainer.Update(
-		host.bigIntHandles[destination],
-		newValue)
+//export bigIntstorageLoad
+func bigIntstorageLoad(context unsafe.Pointer, keyOffset int32, destination int32) int32 {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := GetHostContext(instCtx.Data())
+
+	key := LoadBytes(instCtx.Memory(), keyOffset, hashLen)
+	bytes := hostContext.GetStorage(hostContext.GetSCAddress(), key)
+
+	value := hostContext.BigIntContainer().GetOne(destination)
+	value.SetBytes(bytes)
+
+	return int32(len(bytes))
 }
 
-func (host *vmContext) BigGet(reference BigIntHandle) *big.Int {
-	return host.bigIntContainer.Get(host.bigIntHandles[reference])
+//export bigIntgetCallValue
+func bigIntgetCallValue(context unsafe.Pointer, destination int32) {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := GetHostContext(instCtx.Data())
+
+	value := hostContext.BigIntContainer().GetOne(destination)
+	value.Set(hostContext.GetVMInput().CallValue)
 }
 
-func (host *vmContext) BigByteLength(reference BigIntHandle) int32 {
-	return int32(host.bigIntContainer.ByteLen(host.bigIntHandles[reference]))
+//export bigIntgetExternalBalance
+func bigIntgetExternalBalance(context unsafe.Pointer, addressOffset int32, result int32) {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := GetHostContext(instCtx.Data())
+
+	address := LoadBytes(instCtx.Memory(), addressOffset, addressLen)
+	balance := hostContext.GetBalance(address)
+	value := hostContext.BigIntContainer().GetOne(result)
+
+	value.SetBytes(balance)
 }
 
-func (host *vmContext) BigGetBytes(reference BigIntHandle) []byte {
-	return host.bigIntContainer.GetBytes(host.bigIntHandles[reference])
+//export bigIntNew
+func bigIntNew(context unsafe.Pointer, smallValue int32) int32 {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := GetHostContext(instCtx.Data())
+	return hostContext.BigInsertInt64(int64(smallValue))
 }
 
-func (host *vmContext) BigSetBytes(destination BigIntHandle, bytes []byte) {
-	host.bigIntHandles[destination] = host.bigIntContainer.SetBytes(
-		host.bigIntHandles[destination],
-		bytes)
+//export bigIntByteLength
+func bigIntByteLength(context unsafe.Pointer, reference int32) int32 {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := GetHostContext(instCtx.Data())
+
+	value := hostContext.BigIntContainer().GetOne(reference)
+
+	return int32(len(value.Bytes()))
 }
 
-func (host *vmContext) BigIsInt64(destination BigIntHandle) bool {
-	return host.bigIntContainer.IsInt64(host.bigIntHandles[destination])
+//export bigIntGetBytes
+func bigIntGetBytes(context unsafe.Pointer, reference int32, byteOffset int32) int32 {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := GetHostContext(instCtx.Data())
+
+	bytes := hostContext.BigIntContainer().GetOne(reference).Bytes()
+
+	err := StoreBytes(instCtx.Memory(), byteOffset, bytes)
+	if err != nil {
+	}
+
+	return int32(len(bytes))
 }
 
-func (host *vmContext) BigGetInt64(destination BigIntHandle) int64 {
-	return host.bigIntContainer.ToInt64(host.bigIntHandles[destination])
+//export bigIntSetBytes
+func bigIntSetBytes(context unsafe.Pointer, destination int32, byteOffset int32, byteLength int32) {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := GetHostContext(instCtx.Data())
+
+	bytes := LoadBytes(instCtx.Memory(), byteOffset, byteLength)
+
+	value := hostContext.BigIntContainer().GetOne(destination)
+	value.SetBytes(bytes)
 }
 
-func (host *vmContext) BigSetInt64(destination BigIntHandle, value int64) {
-	host.bigIntHandles[destination] = host.bigIntContainer.SetInt64(
-		host.bigIntHandles[destination],
-		value)
+//export bigIntIsInt64
+func bigIntIsInt64(context unsafe.Pointer, destination int32) int32 {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := GetHostContext(instCtx.Data())
+
+	value := hostContext.BigIntContainer().GetOne(destination)
+	if value.IsInt64() {
+		return 1
+	}
+	return 0
 }
 
-func (host *vmContext) BigAdd(destination, op1, op2 BigIntHandle) {
-	host.bigIntHandles[destination] = host.bigIntContainer.Add(
-		host.bigIntHandles[destination],
-		host.bigIntHandles[op1],
-		host.bigIntHandles[op2],
-	)
+//export bigIntGetInt64
+func bigIntGetInt64(context unsafe.Pointer, destination int32) int64 {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := GetHostContext(instCtx.Data())
+
+	value := hostContext.BigIntContainer().GetOne(destination)
+	return value.Int64()
 }
 
-func (host *vmContext) BigSub(destination, op1, op2 BigIntHandle) {
-	host.bigIntHandles[destination] = host.bigIntContainer.Sub(
-		host.bigIntHandles[destination],
-		host.bigIntHandles[op1],
-		host.bigIntHandles[op2],
-	)
+//export bigIntSetInt64
+func bigIntSetInt64(context unsafe.Pointer, destination int32, value int64) {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := GetHostContext(instCtx.Data())
+
+	dest := hostContext.BigIntContainer().GetOne(destination)
+	dest.SetInt64(value)
 }
 
-func (host *vmContext) BigMul(destination, op1, op2 BigIntHandle) {
-	host.bigIntHandles[destination] = host.bigIntContainer.Mul(
-		host.bigIntHandles[destination],
-		host.bigIntHandles[op1],
-		host.bigIntHandles[op2],
-	)
+//export bigIntAdd
+func bigIntAdd(context unsafe.Pointer, destination, op1, op2 int32) {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := GetHostContext(instCtx.Data())
+
+	dest, a, b := hostContext.BigIntContainer().GetThree(destination, op1, op2)
+	dest.Add(a, b)
 }
 
-func (host *vmContext) BigCmp(op1, op2 BigIntHandle) int {
-	return host.bigIntContainer.Cmp(
-		host.bigIntHandles[op1],
-		host.bigIntHandles[op2],
-	)
+//export bigIntSub
+func bigIntSub(context unsafe.Pointer, destination, op1, op2 int32) {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := GetHostContext(instCtx.Data())
+
+	dest, a, b := hostContext.BigIntContainer().GetThree(destination, op1, op2)
+	dest.Sub(a, b)
 }
 
-func (host *vmContext) ReturnBigInt(reference BigIntHandle) {
-	host.returnData = append(host.returnData, host.bigIntContainer.Get(host.bigIntHandles[reference]))
+//export bigIntMul
+func bigIntMul(context unsafe.Pointer, destination, op1, op2 int32) {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := GetHostContext(instCtx.Data())
+
+	dest, a, b := hostContext.BigIntContainer().GetThree(destination, op1, op2)
+	dest.Mul(a, b)
+}
+
+//export bigIntCmp
+func bigIntCmp(context unsafe.Pointer, op1, op2 int32) int32 {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := GetHostContext(instCtx.Data())
+
+	a, b := hostContext.BigIntContainer().GetTwo(op1, op2)
+	return int32(a.Cmp(b))
+}
+
+//export bigIntFinish
+func bigIntFinish(context unsafe.Pointer, reference int32) {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := GetHostContext(instCtx.Data())
+
+	value := hostContext.BigIntContainer().GetOne(reference)
+	hostContext.Finish(value.Bytes())
 }

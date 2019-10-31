@@ -40,8 +40,7 @@ type vmContext struct {
 	callFunction string
 	scAddress    []byte
 
-	bigIntHandles   []mbig.BigIntHandle
-	bigIntContainer *mbig.BigIntContainer
+	bigIntContainer BigIntContainer
 
 	logs          map[string]logTopicsData
 	storageUpdate map[string](map[string][]byte)
@@ -68,6 +67,14 @@ func (host *vmContext) GasLeft() int64 {
 
 func (host *vmContext) BlockGasLimit() int64 {
 	panic("implement me")
+}
+
+func (host *vmContext) BlockChainHook() vmcommon.BlockchainHook {
+	return host.blockChainHook
+}
+
+func (host *vmContext) BigIntContainer() BigIntContainer {
+	return host.bigIntContainer
 }
 
 func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (*vmcommon.VMOutput, error) {

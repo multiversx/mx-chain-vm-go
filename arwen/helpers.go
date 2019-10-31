@@ -65,7 +65,6 @@ func LoadBytes(from *wasmer.Memory, offset int32, length int32) []byte {
 }
 
 func StoreBytes(to *wasmer.Memory, offset int32, data []byte) error {
-	var memoryData = to.Data()
 	length := int32(len(data))
 
 	if to.Length() < uint32(offset+length) {

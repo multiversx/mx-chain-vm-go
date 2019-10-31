@@ -22,6 +22,8 @@ type HostContext interface {
 	WriteLog(addr []byte, topics [][]byte, data []byte)
 	Transfer(destination []byte, sender []byte, value *big.Int, input []byte, gas int64) (gasLeft int64, err error)
 	Finish(data []byte)
+	BlockChainHook() vmcommon.BlockchainHook
+	BigIntContainer() BigIntContainer
 	SignalUserError()
 }
 
@@ -30,4 +32,12 @@ type EthContext interface {
 	UseGas(gas int64)
 	GasLeft() int64
 	BlockGasLimit() int64
+}
+
+type BigIntContainer interface {
+	Clean()
+	GetOne(id int32) *big.Int
+	GetTwo(id1, id2 int32) (*big.Int, *big.Int)
+	GetThree(id1, id2, id3 int32) (*big.Int, *big.Int, *big.Int)
+	IsInterfaceNil() bool
 }
