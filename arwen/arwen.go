@@ -11,6 +11,7 @@ import (
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/go-ext-wasm/wasmer"
+	mbig "github.com/ElrondNetwork/managed-big-int"
 )
 
 type StorageStatus int
@@ -39,12 +40,15 @@ type vmContext struct {
 	callFunction string
 	scAddress    []byte
 
+	bigIntHandles   []mbig.BigIntHandle
+	bigIntContainer *mbig.BigIntContainer
+
 	logs          map[string]logTopicsData
 	storageUpdate map[string](map[string][]byte)
 
 	outputAccounts map[string]*vmcommon.OutputAccount
 
-	output     []byte
+	returnData []*big.Int
 	returnCode vmcommon.ReturnCode
 
 	selfDestruct map[string][]byte
@@ -96,7 +100,7 @@ func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInpu
 	idContext := addHostContext(host)
 	instance.SetContextData(unsafe.Pointer(&idContext))
 
-	result := make([]byte, 0)
+	var result []byte
 	init := instance.Exports["init"]
 	if init != nil {
 		out, err := init()
@@ -104,9 +108,8 @@ func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInpu
 			fmt.Println("arwen Error", err.Error())
 			return host.createVMOutputInCaseOfError(vmcommon.FunctionWrongSignature), nil
 		}
-		if out.GetType() != wasmer.TypeVoid {
-			result = []byte(out.String())
-		}
+		convertedResult := convertReturnValue(out)
+		result = convertedResult.Bytes()
 	}
 
 	gasLeft := input.GasProvided.Int64()
@@ -147,7 +150,7 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 	gasLeft := input.GasProvided.Int64()
 	contract := host.GetCode(host.scAddress)
 
-	instance, err := wasmer.NewInstanceWithImports(contract, host.imports)
+	instance, err := wasmer.NewMeteredInstanceWithImports(contract, host.imports, uint64(gasLeft), "uniform_one")
 	if err != nil {
 		fmt.Println("arwen Error", err.Error())
 		return host.createVMOutputInCaseOfError(vmcommon.ContractInvalid), nil
@@ -163,18 +166,21 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 		return host.createVMOutputInCaseOfError(vmcommon.UserError), nil
 	}
 
-	function := instance.Exports[host.callFunction]
+	function, ok := instance.Exports[host.callFunction]
+	if !ok {
+		fmt.Println("arwen Error", "Function not found")
+		return host.createVMOutputInCaseOfError(vmcommon.FunctionNotFound), nil
+	}
+
 	result, err := function()
 	if err != nil {
 		fmt.Println("arwen Error", err.Error())
 		return host.createVMOutputInCaseOfError(vmcommon.FunctionWrongSignature), nil
 	}
 
-	addOutput := make([]byte, 0)
-	if result.GetType() != wasmer.TypeVoid {
-		addOutput = []byte(result.String())
-	}
-	vmOutput := host.createVMOutput(addOutput, gasLeft)
+	convertedResult := convertReturnValue(result)
+	gasLeft = gasLeft - int64(instance.GetPointsUsed())
+	vmOutput := host.createVMOutput(convertedResult.Bytes(), gasLeft)
 
 	return vmOutput, nil
 }
@@ -243,8 +249,13 @@ func (host *vmContext) createVMOutput(output []byte, gasLeft int64) *vmcommon.VM
 		vmOutput.Logs = append(vmOutput.Logs, logEntry)
 	}
 
-	output = append(output, host.output...)
-	vmOutput.ReturnData = append(vmOutput.ReturnData, big.NewInt(0).SetBytes(output))
+	if len(host.returnData) > 0 {
+		vmOutput.ReturnData = append(vmOutput.ReturnData, host.returnData...)
+	}
+	if len(output) > 0 {
+		vmOutput.ReturnData = append(vmOutput.ReturnData, big.NewInt(0).SetBytes(output))
+	}
+
 	vmOutput.GasRemaining = big.NewInt(gasLeft)
 	vmOutput.GasRefund = big.NewInt(0)
 	vmOutput.ReturnCode = host.returnCode
@@ -253,14 +264,15 @@ func (host *vmContext) createVMOutput(output []byte, gasLeft int64) *vmcommon.VM
 }
 
 func (host *vmContext) initInternalValues() {
+	host.initBigIntContainer()
 	host.storageUpdate = make(map[string]map[string][]byte, 0)
 	host.logs = make(map[string]logTopicsData, 0)
 	host.selfDestruct = make(map[string][]byte)
 	host.vmInput = vmcommon.VMInput{}
 	host.outputAccounts = make(map[string]*vmcommon.OutputAccount, 0)
-	host.output = make([]byte, 0)
 	host.scAddress = make([]byte, 0)
 	host.callFunction = ""
+	host.returnData = nil
 	host.returnCode = vmcommon.Ok
 }
 
@@ -300,6 +312,10 @@ func NewArwenVM(
 	return context, nil
 }
 
+func (host *vmContext) Finish(data []byte) {
+	host.returnData = append(host.returnData, big.NewInt(0).SetBytes(data))
+}
+
 func (host *vmContext) SignalUserError() {
 	host.returnCode = vmcommon.UserError
 }
@@ -312,16 +328,8 @@ func (host *vmContext) Function() string {
 	return host.callFunction
 }
 
-func (host *vmContext) SelfDestruct(addr []byte, beneficiary []byte) {
-	panic("implement me")
-}
-
 func (host *vmContext) GetSCAddress() []byte {
 	return host.scAddress
-}
-
-func (host *vmContext) Finish(data []byte) {
-	host.output = append(host.output, data...)
 }
 
 func (host *vmContext) AccountExists(addr []byte) bool {
@@ -389,17 +397,17 @@ func (host *vmContext) getBalanceFromBlockChain(addr []byte) *big.Int {
 func (host *vmContext) GetBalance(addr []byte) []byte {
 	strAdr := string(addr)
 	if _, ok := host.outputAccounts[strAdr]; ok {
-		return host.outputAccounts[strAdr].Balance.Bytes()
+		balance := host.outputAccounts[strAdr].Balance
+		return balance.Bytes()
 	}
 
 	balance, err := host.blockChainHook.GetBalance(addr)
 	if err != nil {
 		fmt.Printf("GetBalance returned with error %s \n", err.Error())
-		return nil
+		return big.NewInt(0).Bytes()
 	}
 
 	host.outputAccounts[strAdr] = &vmcommon.OutputAccount{Balance: big.NewInt(0).Set(balance), Address: addr}
-
 	return balance.Bytes()
 }
 
@@ -435,7 +443,7 @@ func (host *vmContext) GetCode(addr []byte) []byte {
 	return code
 }
 
-func (host *vmContext) Selfdestruct(addr []byte, beneficiary []byte) {
+func (host *vmContext) SelfDestruct(addr []byte, beneficiary []byte) {
 	host.selfDestruct[string(addr)] = beneficiary
 }
 
@@ -484,7 +492,6 @@ var ErrInvalidTransfer = errors.New("invalid sender")
 // execution error or failed value transfer.
 func (host *vmContext) Transfer(destination []byte, sender []byte, value *big.Int, input []byte, gas int64,
 ) (gasLeft int64, err error) {
-
 	//TODO: should this be kept, or there are other use cases where a sender can be somebody else
 	if !bytes.Equal(sender, host.GetSCAddress()) {
 		return 0, ErrInvalidTransfer

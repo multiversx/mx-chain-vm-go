@@ -1,6 +1,8 @@
 package arwen
 
 import (
+	"math/big"
+
 	"github.com/ElrondNetwork/go-ext-wasm/wasmer"
 	"sync"
 	"unsafe"
@@ -52,11 +54,14 @@ func GetEthContext(pointer unsafe.Pointer) EthContext {
 }
 
 func LoadBytes(from *wasmer.Memory, offset int32, length int32) []byte {
+	result := make([]byte, length)
 	if from.Length() < uint32(offset+length) {
-		return from.Data()[offset:]
+		copy(result, from.Data()[offset:])
+		return result
 	}
 
-	return from.Data()[offset : offset+length]
+	copy(result, from.Data()[offset:offset+length])
+	return result
 }
 
 func StoreBytes(to *wasmer.Memory, offset int32, data []byte) error {
@@ -70,7 +75,21 @@ func StoreBytes(to *wasmer.Memory, offset int32, data []byte) error {
 		}
 	}
 
+	var memoryData = to.Data()
 	copy(memoryData[offset:offset+length], data)
 
 	return nil
+}
+
+func convertReturnValue(wasmValue wasmer.Value) *big.Int {
+	switch wasmValue.GetType() {
+	case wasmer.TypeVoid:
+		return big.NewInt(0)
+	case wasmer.TypeI32:
+		return big.NewInt(wasmValue.ToI64())
+	case wasmer.TypeI64:
+		return big.NewInt(wasmValue.ToI64())
+	}
+
+	panic("unsupported return type")
 }
