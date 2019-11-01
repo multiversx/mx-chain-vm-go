@@ -3,7 +3,6 @@ package context
 import (
 	"bytes"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/elrondapi"
@@ -515,8 +514,6 @@ func (host *vmContext) WriteLog(addr []byte, topics [][]byte, data []byte) {
 
 	host.logs[strAdr] = currLogs
 }
-
-var ErrInvalidTransfer = errors.New("invalid sender")
 
 // Transfer handles any necessary value transfer required and takes
 // the necessary steps to create accounts and reverses the state in case of an

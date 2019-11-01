@@ -199,6 +199,7 @@ func blockHash(context unsafe.Pointer, nonce int64, resultOffset int32) int32 {
 	gasToUse := hostContext.GasSchedule().ElrondAPICost.GetBlockHash
 	hostContext.UseGas(gasToUse)
 
+	//TODO: change blockchain hook to treat actual nonce - not the offset.
 	hash := hostContext.BlockHash(nonce)
 	err := arwen.StoreBytes(instCtx.Memory(), resultOffset, hash)
 	if err != nil {
