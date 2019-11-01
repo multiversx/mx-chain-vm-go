@@ -186,6 +186,7 @@ func blockHash(context unsafe.Pointer, nonce int64, resultOffset int32) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetErdContext(instCtx.Data())
 
+	//TODO: change blockchain hook to treat actual nonce - not the offset.
 	hash := hostContext.BlockHash(nonce)
 	err := arwen.StoreBytes(instCtx.Memory(), resultOffset, hash)
 	if err != nil {

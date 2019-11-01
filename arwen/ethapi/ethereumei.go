@@ -6,39 +6,39 @@ package ethapi
 // typedef unsigned char u8;
 // typedef int i32;
 // typedef int i32ptr;
-// extern void useGas(void *context, long long  gas);
-// extern void getAddress(void *context, i32ptr resultOffset);
-// extern void getExternalBalance(void *context, i32ptr addressOffset, i32ptr resultOffset);
-// extern i32 getBlockHash(void *context, long long number, i32ptr resultOffset);
-// extern i32 call(void *context, long long gas, i32ptr addressOffset, i32ptr valueOffset, i32ptr dataOffset, i32 dataLength);
-// extern i32 getCallDataSize(void *context);
-// extern void callDataCopy(void *context, i32ptr resultsOffset, i32ptr dataOffset, i32 length);
-// extern i32 callCode(void *context, long long gas, i32ptr addressOffset, i32ptr valueOffset, i32ptr dataOffset, i32 dataLength);
-// extern i32 callDelegate(void *context, long long gas, i32ptr addressOffset, i32ptr dataOffset, i32 dataLength);
-// extern i32 callStatic(void *context, long long gas, i32ptr addressOffset, i32ptr dataOffset, i32 dataLength);
-// extern void storageStore(void *context, i32ptr pathOffset, i32ptr valueOffset);
-// extern void storageLoad(void *context, i32ptr pathOffset, i32ptr resultOffset);
-// extern void getCaller(void *context, i32ptr resultOffset);
-// extern void getCallValue(void *context, i32ptr resultOffset);
-// extern void codeCopy(void *context, i32ptr resultOffset, i32 codeOffset, i32 length);
-// extern i32 getCodeSize(void *context);
-// extern void getBlockCoinbase(void *context, i32ptr resultOffset);
-// extern i32 create(void *context, i32ptr valueoffset, i32ptr dataOffset, i32 length, i32ptr resultsOffset);
-// extern void getBlockDifficulty(void *context, i32ptr resultOffset);
-// extern void externalCodeCopy(void *context, i32ptr addressOffset, i32ptr resultOffset, i32 codeOffset, i32 length);
-// extern i32 getExternalCodeSize(void *context, i32ptr addressOffset);
-// extern long long getGasLeft(void *context);
-// extern long long getBlockGasLimit(void *context);
-// extern void getTxGasPrice(void *context, i32ptr valueOffset);
-// extern void logTopics(void *context, i32ptr dataOffset, i32 length, i32 numberOftopics, i32ptr topic1, i32ptr topic2, i32ptr topic3, i32ptr topic4);
-// extern long long getBlockNumber(void *context);
-// extern void getTxOrigin(void *context, i32ptr resultOffset);
-// extern void finish(void *context, i32ptr dataOffset, i32 length);
-// extern void revert(void *context, i32ptr dataOffset, i32 length);
-// extern i32 getReturnDataSize(void *context);
-// extern void returnDataCopy(void *context, i32ptr resultOffset, i32 dataOffset, i32 length);
-// extern void selfDestruct(void *context, i32ptr addressOffset);
-// extern long long getBlockTimestamp(void *context);
+// extern void ethuseGas(void *context, long long  gas);
+// extern void ethgetAddress(void *context, i32ptr resultOffset);
+// extern void ethgetExternalBalance(void *context, i32ptr addressOffset, i32ptr resultOffset);
+// extern i32 ethgetBlockHash(void *context, long long number, i32ptr resultOffset);
+// extern i32 ethcall(void *context, long long gas, i32ptr addressOffset, i32ptr valueOffset, i32ptr dataOffset, i32 dataLength);
+// extern i32 ethgetCallDataSize(void *context);
+// extern void ethcallDataCopy(void *context, i32ptr resultsOffset, i32ptr dataOffset, i32 length);
+// extern i32 ethcallCode(void *context, long long gas, i32ptr addressOffset, i32ptr valueOffset, i32ptr dataOffset, i32 dataLength);
+// extern i32 ethcallDelegate(void *context, long long gas, i32ptr addressOffset, i32ptr dataOffset, i32 dataLength);
+// extern i32 ethcallStatic(void *context, long long gas, i32ptr addressOffset, i32ptr dataOffset, i32 dataLength);
+// extern void ethstorageStore(void *context, i32ptr pathOffset, i32ptr valueOffset);
+// extern void ethstorageLoad(void *context, i32ptr pathOffset, i32ptr resultOffset);
+// extern void ethgetCaller(void *context, i32ptr resultOffset);
+// extern void ethgetCallValue(void *context, i32ptr resultOffset);
+// extern void ethcodeCopy(void *context, i32ptr resultOffset, i32 codeOffset, i32 length);
+// extern i32 ethgetCodeSize(void *context);
+// extern void ethgetBlockCoinbase(void *context, i32ptr resultOffset);
+// extern i32 ethcreate(void *context, i32ptr valueoffset, i32ptr dataOffset, i32 length, i32ptr resultsOffset);
+// extern void ethgetBlockDifficulty(void *context, i32ptr resultOffset);
+// extern void ethexternalCodeCopy(void *context, i32ptr addressOffset, i32ptr resultOffset, i32 codeOffset, i32 length);
+// extern i32 ethgetExternalCodeSize(void *context, i32ptr addressOffset);
+// extern long long ethgetGasLeft(void *context);
+// extern long long ethgetBlockGasLimit(void *context);
+// extern void ethgetTxGasPrice(void *context, i32ptr valueOffset);
+// extern void ethlogTopics(void *context, i32ptr dataOffset, i32 length, i32 numberOftopics, i32ptr topic1, i32ptr topic2, i32ptr topic3, i32ptr topic4);
+// extern long long ethgetBlockNumber(void *context);
+// extern void ethgetTxOrigin(void *context, i32ptr resultOffset);
+// extern void ethfinish(void *context, i32ptr dataOffset, i32 length);
+// extern void ethrevert(void *context, i32ptr dataOffset, i32 length);
+// extern i32 ethgetReturnDataSize(void *context);
+// extern void ethreturnDataCopy(void *context, i32ptr resultOffset, i32 dataOffset, i32 length);
+// extern void ethselfDestruct(void *context, i32ptr addressOffset);
+// extern long long ethgetBlockTimestamp(void *context);
 import "C"
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -50,167 +50,167 @@ import (
 func EthereumImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	imports = imports.Namespace("ethereum")
 
-	imports, err := imports.Append("useGas", useGas, C.useGas)
+	imports, err := imports.Append("useGas", ethuseGas, C.ethuseGas)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getAddress", getAddress, C.getAddress)
+	imports, err = imports.Append("getAddress", ethgetAddress, C.ethgetAddress)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getExternalBalance", getExternalBalance, C.getExternalBalance)
+	imports, err = imports.Append("getExternalBalance", ethgetExternalBalance, C.ethgetExternalBalance)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getBlockHash", getBlockHash, C.getBlockHash)
+	imports, err = imports.Append("getBlockHash", ethgetBlockHash, C.ethgetBlockHash)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("call", call, C.call)
+	imports, err = imports.Append("call", ethcall, C.ethcall)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("callDataCopy", callDataCopy, C.callDataCopy)
+	imports, err = imports.Append("callDataCopy", ethcallDataCopy, C.ethcallDataCopy)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getCallDataSize", getCallDataSize, C.getCallDataSize)
+	imports, err = imports.Append("getCallDataSize", ethgetCallDataSize, C.ethgetCallDataSize)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("callCode", callCode, C.callCode)
+	imports, err = imports.Append("callCode", ethcallCode, C.ethcallCode)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("callDelegate", callDelegate, C.callDelegate)
+	imports, err = imports.Append("callDelegate", ethcallDelegate, C.ethcallDelegate)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("callStatic", callStatic, C.callStatic)
+	imports, err = imports.Append("callStatic", ethcallStatic, C.ethcallStatic)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("storageStore", storageStore, C.storageStore)
+	imports, err = imports.Append("storageStore", ethstorageStore, C.ethstorageStore)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("storageLoad", storageLoad, C.storageLoad)
+	imports, err = imports.Append("storageLoad", ethstorageLoad, C.ethstorageLoad)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getCaller", getCaller, C.getCaller)
+	imports, err = imports.Append("getCaller", ethgetCaller, C.ethgetCaller)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getCallValue", getCallValue, C.getCallValue)
+	imports, err = imports.Append("getCallValue", ethgetCallValue, C.ethgetCallValue)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("codeCopy", codeCopy, C.codeCopy)
+	imports, err = imports.Append("codeCopy", ethcodeCopy, C.ethcodeCopy)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getCodeSize", getCodeSize, C.getCodeSize)
+	imports, err = imports.Append("getCodeSize", ethgetCodeSize, C.ethgetCodeSize)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getBlockCoinbase", getBlockCoinbase, C.getBlockCoinbase)
+	imports, err = imports.Append("getBlockCoinbase", ethgetBlockCoinbase, C.ethgetBlockCoinbase)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("create", create, C.create)
+	imports, err = imports.Append("create", ethcreate, C.ethcreate)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getBlockDifficulty", getBlockDifficulty, C.getBlockDifficulty)
+	imports, err = imports.Append("getBlockDifficulty", ethgetBlockDifficulty, C.ethgetBlockDifficulty)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("externalCodeCopy", externalCodeCopy, C.externalCodeCopy)
+	imports, err = imports.Append("externalCodeCopy", ethexternalCodeCopy, C.ethexternalCodeCopy)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getExternalCodeSize", getExternalCodeSize, C.getExternalCodeSize)
+	imports, err = imports.Append("getExternalCodeSize", ethgetExternalCodeSize, C.ethgetExternalCodeSize)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getGasLeft", getGasLeft, C.getGasLeft)
+	imports, err = imports.Append("getGasLeft", ethgetGasLeft, C.ethgetGasLeft)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getBlockGasLimit", getBlockGasLimit, C.getBlockGasLimit)
+	imports, err = imports.Append("getBlockGasLimit", ethgetBlockGasLimit, C.ethgetBlockGasLimit)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getTxGasPrice", getTxGasPrice, C.getTxGasPrice)
+	imports, err = imports.Append("getTxGasPrice", ethgetTxGasPrice, C.ethgetTxGasPrice)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("logTopics", logTopics, C.logTopics)
+	imports, err = imports.Append("logTopics", ethlogTopics, C.ethlogTopics)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getBlockNumber", getBlockNumber, C.getBlockNumber)
+	imports, err = imports.Append("getBlockNumber", ethgetBlockNumber, C.ethgetBlockNumber)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getTxOrigin", getTxOrigin, C.getTxOrigin)
+	imports, err = imports.Append("getTxOrigin", ethgetTxOrigin, C.ethgetTxOrigin)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("finish", finish, C.finish)
+	imports, err = imports.Append("finish", ethfinish, C.ethfinish)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("revert", revert, C.revert)
+	imports, err = imports.Append("revert", ethrevert, C.ethrevert)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getReturnDataSize", getReturnDataSize, C.getReturnDataSize)
+	imports, err = imports.Append("getReturnDataSize", ethgetReturnDataSize, C.ethgetReturnDataSize)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("returnDataCopy", returnDataCopy, C.returnDataCopy)
+	imports, err = imports.Append("returnDataCopy", ethreturnDataCopy, C.ethreturnDataCopy)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("selfDestruct", selfDestruct, C.selfDestruct)
+	imports, err = imports.Append("selfDestruct", ethselfDestruct, C.ethselfDestruct)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getBlockTimestamp", getBlockTimestamp, C.getBlockTimestamp)
+	imports, err = imports.Append("getBlockTimestamp", ethgetBlockTimestamp, C.ethgetBlockTimestamp)
 	if err != nil {
 		return nil, err
 	}
@@ -218,24 +218,24 @@ func EthereumImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	return imports, nil
 }
 
-//export useGas
-func useGas(context unsafe.Pointer, useGas int64) {
+//export ethuseGas
+func ethuseGas(context unsafe.Pointer, useGas int64) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
 	ethContext.UseGas(useGas)
 }
 
-//export getAddress
-func getAddress(context unsafe.Pointer, resultOffset int32) {
+//export ethgetAddress
+func ethgetAddress(context unsafe.Pointer, resultOffset int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetEthContext(instCtx.Data())
 
 	_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, hostContext.GetSCAddress())
 }
 
-//export getExternalBalance
-func getExternalBalance(context unsafe.Pointer, addressOffset int32, resultOffset int32) {
+//export ethgetExternalBalance
+func ethgetExternalBalance(context unsafe.Pointer, addressOffset int32, resultOffset int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetEthContext(instCtx.Data())
 
@@ -247,8 +247,8 @@ func getExternalBalance(context unsafe.Pointer, addressOffset int32, resultOffse
 	}
 }
 
-//export getBlockHash
-func getBlockHash(context unsafe.Pointer, number int64, resultOffset int32) int32 {
+//export ethgetBlockHash
+func ethgetBlockHash(context unsafe.Pointer, number int64, resultOffset int32) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetEthContext(instCtx.Data())
 
@@ -261,8 +261,8 @@ func getBlockHash(context unsafe.Pointer, number int64, resultOffset int32) int3
 	return 1
 }
 
-//export call
-func call(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueOffset int32, dataOffset int32, dataLength int32) int32 {
+//export ethcall
+func ethcall(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueOffset int32, dataOffset int32, dataLength int32) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetEthContext(instCtx.Data())
 
@@ -279,8 +279,8 @@ func call(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueOffs
 	return 0
 }
 
-//export callDataCopy
-func callDataCopy(context unsafe.Pointer, resultOffset int32, dataOffset int32, length int32) {
+//export ethcallDataCopy
+func ethcallDataCopy(context unsafe.Pointer, resultOffset int32, dataOffset int32, length int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
@@ -288,16 +288,16 @@ func callDataCopy(context unsafe.Pointer, resultOffset int32, dataOffset int32, 
 	_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, callData[dataOffset:dataOffset+length])
 }
 
-//export getCallDataSize
-func getCallDataSize(context unsafe.Pointer) int32 {
+//export ethgetCallDataSize
+func ethgetCallDataSize(context unsafe.Pointer) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
 	return int32(len(ethContext.CallData()))
 }
 
-//export storageStore
-func storageStore(context unsafe.Pointer, pathOffset int32, valueOffset int32) {
+//export ethstorageStore
+func ethstorageStore(context unsafe.Pointer, pathOffset int32, valueOffset int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetEthContext(instCtx.Data())
 
@@ -307,8 +307,8 @@ func storageStore(context unsafe.Pointer, pathOffset int32, valueOffset int32) {
 	_ = hostContext.SetStorage(hostContext.GetSCAddress(), key, data)
 }
 
-//export storageLoad
-func storageLoad(context unsafe.Pointer, pathOffset int32, resultOffset int32) {
+//export ethstorageLoad
+func ethstorageLoad(context unsafe.Pointer, pathOffset int32, resultOffset int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetEthContext(instCtx.Data())
 
@@ -321,8 +321,8 @@ func storageLoad(context unsafe.Pointer, pathOffset int32, resultOffset int32) {
 	_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, currInput)
 }
 
-//export getCaller
-func getCaller(context unsafe.Pointer, resultOffset int32) {
+//export ethgetCaller
+func ethgetCaller(context unsafe.Pointer, resultOffset int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetEthContext(instCtx.Data())
 
@@ -333,8 +333,8 @@ func getCaller(context unsafe.Pointer, resultOffset int32) {
 	}
 }
 
-//export getCallValue
-func getCallValue(context unsafe.Pointer, resultOffset int32) {
+//export ethgetCallValue
+func ethgetCallValue(context unsafe.Pointer, resultOffset int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetEthContext(instCtx.Data())
 
@@ -348,8 +348,8 @@ func getCallValue(context unsafe.Pointer, resultOffset int32) {
 	_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, invBytes)
 }
 
-//export codeCopy
-func codeCopy(context unsafe.Pointer, resultOffset int32, codeOffset int32, length int32) {
+//export ethcodeCopy
+func ethcodeCopy(context unsafe.Pointer, resultOffset int32, codeOffset int32, length int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetEthContext(instCtx.Data())
 
@@ -361,16 +361,16 @@ func codeCopy(context unsafe.Pointer, resultOffset int32, codeOffset int32, leng
 	}
 }
 
-//export getCodeSize
-func getCodeSize(context unsafe.Pointer) int32 {
+//export ethgetCodeSize
+func ethgetCodeSize(context unsafe.Pointer) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetEthContext(instCtx.Data())
 
 	return int32(hostContext.GetCodeSize(hostContext.GetSCAddress()))
 }
 
-//export externalCodeCopy
-func externalCodeCopy(context unsafe.Pointer, addressOffset int32, resultOffset int32, codeOffset int32, length int32) {
+//export ethexternalCodeCopy
+func ethexternalCodeCopy(context unsafe.Pointer, addressOffset int32, resultOffset int32, codeOffset int32, length int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetEthContext(instCtx.Data())
 
@@ -382,8 +382,8 @@ func externalCodeCopy(context unsafe.Pointer, addressOffset int32, resultOffset 
 	}
 }
 
-//export getExternalCodeSize
-func getExternalCodeSize(context unsafe.Pointer, addressOffset int32) int32 {
+//export ethgetExternalCodeSize
+func ethgetExternalCodeSize(context unsafe.Pointer, addressOffset int32) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetEthContext(instCtx.Data())
 
@@ -392,24 +392,24 @@ func getExternalCodeSize(context unsafe.Pointer, addressOffset int32) int32 {
 	return int32(hostContext.GetCodeSize(dest))
 }
 
-//export getGasLeft
-func getGasLeft(context unsafe.Pointer) int64 {
+//export ethgetGasLeft
+func ethgetGasLeft(context unsafe.Pointer) int64 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
 	return ethContext.GasLeft()
 }
 
-//export getBlockGasLimit
-func getBlockGasLimit(context unsafe.Pointer) int64 {
+//export ethgetBlockGasLimit
+func ethgetBlockGasLimit(context unsafe.Pointer) int64 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
 	return ethContext.BlockGasLimit()
 }
 
-//export getTxGasPrice
-func getTxGasPrice(context unsafe.Pointer, valueOffset int32) {
+//export ethgetTxGasPrice
+func ethgetTxGasPrice(context unsafe.Pointer, valueOffset int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetEthContext(instCtx.Data())
 
@@ -421,8 +421,8 @@ func getTxGasPrice(context unsafe.Pointer, valueOffset int32) {
 	_ = arwen.StoreBytes(instCtx.Memory(), valueOffset, gasU128)
 }
 
-//export logTopics
-func logTopics(context unsafe.Pointer, dataOffset int32, length int32, numberOfTopics int32, topic1 int32, topic2 int32, topic3 int32, topic4 int32) {
+//export ethlogTopics
+func ethlogTopics(context unsafe.Pointer, dataOffset int32, length int32, numberOfTopics int32, topic1 int32, topic2 int32, topic3 int32, topic4 int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetEthContext(instCtx.Data())
 
@@ -442,16 +442,16 @@ func logTopics(context unsafe.Pointer, dataOffset int32, length int32, numberOfT
 	hostContext.WriteLog(hostContext.GetSCAddress(), topicsData, data)
 }
 
-//export getTxOrigin
-func getTxOrigin(context unsafe.Pointer, resultOffset int32) {
+//export ethgetTxOrigin
+func ethgetTxOrigin(context unsafe.Pointer, resultOffset int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetEthContext(instCtx.Data())
 
 	_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, hostContext.GetVMInput().CallerAddr)
 }
 
-//export finish
-func finish(context unsafe.Pointer, resultOffset int32, length int32) {
+//export ethfinish
+func ethfinish(context unsafe.Pointer, resultOffset int32, length int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetEthContext(instCtx.Data())
 
@@ -459,8 +459,8 @@ func finish(context unsafe.Pointer, resultOffset int32, length int32) {
 	hostContext.Finish(data)
 }
 
-//export revert
-func revert(context unsafe.Pointer, dataOffset int32, length int32) {
+//export ethrevert
+func ethrevert(context unsafe.Pointer, dataOffset int32, length int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetEthContext(instCtx.Data())
 
@@ -469,8 +469,8 @@ func revert(context unsafe.Pointer, dataOffset int32, length int32) {
 	hostContext.SignalUserError()
 }
 
-//export selfDestruct
-func selfDestruct(context unsafe.Pointer, addressOffset int32) {
+//export ethselfDestruct
+func ethselfDestruct(context unsafe.Pointer, addressOffset int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetEthContext(instCtx.Data())
 
@@ -479,8 +479,8 @@ func selfDestruct(context unsafe.Pointer, addressOffset int32) {
 	hostContext.SelfDestruct(address, hostContext.GetVMInput().CallerAddr)
 }
 
-//export getBlockNumber
-func getBlockNumber(context unsafe.Pointer) int64 {
+//export ethgetBlockNumber
+func ethgetBlockNumber(context unsafe.Pointer) int64 {
 	//instCtx := wasmer.IntoInstanceContext(context)
 	//hostContext := arwen.arwen.GetEthContext(instCtx.Data())
 
@@ -488,8 +488,8 @@ func getBlockNumber(context unsafe.Pointer) int64 {
 	return 0 //hostContext.BlockNonce()
 }
 
-//export getBlockTimestamp
-func getBlockTimestamp(context unsafe.Pointer) int64 {
+//export ethgetBlockTimestamp
+func ethgetBlockTimestamp(context unsafe.Pointer) int64 {
 	//instCtx := wasmer.IntoInstanceContext(context)
 	//hostContext := arwen.arwen.GetEthContext(instCtx.Data())
 
@@ -497,47 +497,47 @@ func getBlockTimestamp(context unsafe.Pointer) int64 {
 	return 0
 }
 
-//export getReturnDataSize
-func getReturnDataSize(context unsafe.Pointer) int32 {
+//export ethgetReturnDataSize
+func ethgetReturnDataSize(context unsafe.Pointer) int32 {
 	//TODO: implement
 	return 0
 }
 
-//export returnDataCopy
-func returnDataCopy(context unsafe.Pointer, resultOffset int32, dataOffset int32, length int32) {
+//export ethreturnDataCopy
+func ethreturnDataCopy(context unsafe.Pointer, resultOffset int32, dataOffset int32, length int32) {
 	//TODO: implement
 }
 
-//export getBlockCoinbase
-func getBlockCoinbase(context unsafe.Pointer, resultOffset int32) {
+//export ethgetBlockCoinbase
+func ethgetBlockCoinbase(context unsafe.Pointer, resultOffset int32) {
 	//TODO: implement
 }
 
-//export getBlockDifficulty
-func getBlockDifficulty(context unsafe.Pointer, resultOffset int32) {
+//export ethgetBlockDifficulty
+func ethgetBlockDifficulty(context unsafe.Pointer, resultOffset int32) {
 	//TODO: implement
 }
 
-//export callCode
-func callCode(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueOffset int32, dataOffset int32, dataLength int32) int32 {
-	//TODO: implement
-	return 0
-}
-
-//export callDelegate
-func callDelegate(context unsafe.Pointer, gasLimit int64, addressOffset int32, dataOffset int32, dataLength int32) int32 {
+//export ethcallCode
+func ethcallCode(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueOffset int32, dataOffset int32, dataLength int32) int32 {
 	//TODO: implement
 	return 0
 }
 
-//export callStatic
-func callStatic(context unsafe.Pointer, gasLimit int64, addressOffset int32, dataOffset int32, dataLength int32) int32 {
+//export ethcallDelegate
+func ethcallDelegate(context unsafe.Pointer, gasLimit int64, addressOffset int32, dataOffset int32, dataLength int32) int32 {
 	//TODO: implement
 	return 0
 }
 
-//export create
-func create(context unsafe.Pointer, valueOffset int32, dataOffset int32, length int32, resultOffset int32) int32 {
+//export ethcallStatic
+func ethcallStatic(context unsafe.Pointer, gasLimit int64, addressOffset int32, dataOffset int32, dataLength int32) int32 {
+	//TODO: implement
+	return 0
+}
+
+//export ethcreate
+func ethcreate(context unsafe.Pointer, valueOffset int32, dataOffset int32, length int32, resultOffset int32) int32 {
 	//TODO: implement
 	return 0
 }

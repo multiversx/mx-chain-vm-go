@@ -206,9 +206,7 @@ func bigIntGetBytes(context unsafe.Pointer, reference int32, byteOffset int32) i
 
 	bytes := hostContext.GetOne(reference).Bytes()
 
-	err := arwen.StoreBytes(instCtx.Memory(), byteOffset, bytes)
-	if err != nil {
-	}
+	_ = arwen.StoreBytes(instCtx.Memory(), byteOffset, bytes)
 
 	return int32(len(bytes))
 }
