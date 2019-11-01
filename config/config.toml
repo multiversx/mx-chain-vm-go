@@ -1,0 +1,231 @@
+# GeneralSettings section of the node
+[GeneralSettings]
+   # DestinationShardAsObserver represents the desired shard when running as observer
+   # value will be given as string. For example: "0", "1", "15", "metachain"
+   DestinationShardAsObserver = "0"
+
+   # NetworkID will be used for network versions
+   NetworkID = "undefined"
+
+   # StatusPollingIntervalSec represents the no of seconds between multiple polling for the status for AppStatusHandler
+   StatusPollingIntervalSec = 2
+
+   # NodeDisplayName represents the friendly name a user can pick for his node in the status monitor
+   NodeDisplayName = ""
+
+[Explorer]
+    Enabled = false
+    IndexerURL = "http://localhost:9200"
+
+[MiniBlocksStorage]
+    [MiniBlocksStorage.Cache]
+        Size = 100
+        Type = "LRU"
+    [MiniBlocksStorage.DB]
+        FilePath = "MiniBlocks"
+        Type = "LvlDBSerial"
+        BatchDelaySeconds = 30
+        MaxBatchSize = 1
+        MaxOpenFiles = 10
+
+[PeerBlockBodyStorage]
+    [PeerBlockBodyStorage.Cache]
+        Size = 1000
+        Type = "LRU"
+    [PeerBlockBodyStorage.DB]
+        FilePath = "PeerBlocks"
+        Type = "LvlDBSerial"
+        BatchDelaySeconds = 30
+        MaxBatchSize = 6
+        MaxOpenFiles = 10
+
+[BlockHeaderStorage]
+    [BlockHeaderStorage.Cache]
+        Size = 1000
+        Type = "LRU"
+    [BlockHeaderStorage.DB]
+        FilePath = "BlockHeaders"
+        Type = "LvlDBSerial"
+        BatchDelaySeconds = 30
+        MaxBatchSize = 1
+        MaxOpenFiles = 10
+
+[ShardDataStorage]
+    [ShardDataStorage.Cache]
+        Size = 1000
+        Type = "LRU"
+    [ShardDataStorage.DB]
+        FilePath = "ShardData"
+        Type = "LvlDBSerial"
+        BatchDelaySeconds = 30
+        MaxBatchSize = 30
+        MaxOpenFiles = 10
+
+[PeerDataStorage]
+    [PeerDataStorage.Cache]
+        Size = 1000
+        Type = "LRU"
+    [PeerDataStorage.DB]
+        FilePath = "PeerData"
+        Type = "LvlDBSerial"
+        BatchDelaySeconds = 30
+        MaxBatchSize = 30
+        MaxOpenFiles = 10
+
+[MetaBlockStorage]
+    [MetaBlockStorage.Cache]
+        Size = 1000
+        Type = "LRU"
+    [MetaBlockStorage.DB]
+        FilePath = "MetaBlock"
+        Type = "LvlDBSerial"
+        BatchDelaySeconds = 30
+        MaxBatchSize = 1
+        MaxOpenFiles = 10
+
+[TxStorage]
+    [TxStorage.Cache]
+        Size = 250000
+        Type = "LRU"
+    [TxStorage.DB]
+        FilePath = "Transactions"
+        Type = "LvlDBSerial"
+        BatchDelaySeconds = 15
+        MaxBatchSize = 45000
+        MaxOpenFiles = 10
+
+[UnsignedTransactionStorage]
+    [UnsignedTransactionStorage.Cache]
+        Size = 100000
+        Type = "LRU"
+    [UnsignedTransactionStorage.DB]
+        FilePath = "UnsignedTransactions"
+        Type = "LvlDBSerial"
+        BatchDelaySeconds = 15
+        MaxBatchSize = 45000
+        MaxOpenFiles = 10
+
+[ShardHdrNonceHashStorage]
+    [ShardHdrNonceHashStorage.Cache]
+        Size = 1000
+        Type = "LRU"
+    [ShardHdrNonceHashStorage.DB]
+        FilePath = "ShardHdrHashNonce"
+        Type = "LvlDBSerial"
+        BatchDelaySeconds = 30
+        MaxBatchSize = 1
+        MaxOpenFiles = 10
+
+[MetaHdrNonceHashStorage]
+    [MetaHdrNonceHashStorage.Cache]
+        Size = 1000
+        Type = "LRU"
+    [MetaHdrNonceHashStorage.DB]
+        FilePath = "MetaHdrHashNonce"
+        Type = "LvlDBSerial"
+        BatchDelaySeconds = 30
+        MaxBatchSize = 1
+        MaxOpenFiles = 10
+
+[AccountsTrieStorage]
+    [AccountsTrieStorage.Cache]
+        Size = 100000
+        Type = "LRU"
+    [AccountsTrieStorage.DB]
+        FilePath = "AccountsTrie"
+        Type = "LvlDBSerial"
+        BatchDelaySeconds = 15
+        MaxBatchSize = 45000
+        MaxOpenFiles = 10
+
+[BadBlocksCache]
+    Size = 1000
+    Type = "LRU"
+
+[TxBlockBodyDataPool]
+    Size = 100
+    Type = "LRU"
+
+[StateBlockBodyDataPool]
+    Size = 1000
+    Type = "LRU"
+
+[PeerBlockBodyDataPool]
+    Size = 1000
+    Type = "LRU"
+
+[BlockHeaderDataPool]
+    Size = 1000
+    Type = "LRU"
+
+[BlockHeaderNoncesDataPool]
+    Size = 1000
+    Type = "LRU"
+
+[MetaHeaderNoncesDataPool]
+    Size = 1000
+    Type = "LRU"
+
+[TxDataPool]
+    Size = 250000
+    Type = "FIFOSharded"
+    Shards = 16
+
+[UnsignedTransactionDataPool]
+    Size = 100000
+    Type = "LRU"
+
+[ShardHeadersDataPool]
+    Size = 1000
+    Type = "LRU"
+
+[MiniBlockHeaderHashesDataPool]
+    Size = 1000
+    Type = "LRU"
+
+[MetaBlockBodyDataPool]
+    Size = 1000
+    Type = "LRU"
+
+[Logger]
+    Path = "logs"
+    StackTraceDepth = 2
+
+[Address]
+    Length = 32
+    Prefix = "0x"
+
+[Hasher]
+   Type = "blake2b"
+
+[MultisigHasher]
+   Type = "blake2b"
+
+[Marshalizer]
+   Type = "json"
+
+# ResourceStats, if enabled, will output in a folder called "stats"
+# resource statistics. For example: number of active go routines, memory allocation, number of GC sweeps, etc.
+# RefreshIntervalInSec will tell how often a new line containing stats should be added in stats file
+[ResourceStats]
+   Enabled = true
+   RefreshIntervalInSec = 30
+
+# Heartbeat, if enabled, will output a heartbeat singal once x seconds,
+# where x in [MinTimeToWaitBetweenBroadcastsInSec, MaxTimeToWaitBetweenBroadcastsInSec)
+[Heartbeat]
+   Enabled = true
+   MinTimeToWaitBetweenBroadcastsInSec = 20
+   MaxTimeToWaitBetweenBroadcastsInSec = 25
+   DurationInSecToConsiderUnresponsive = 60
+
+# Consensus type which will be used (the current implementation can manage "bn" and "bls")
+# When consensus type is "bls" the multisig hasher type should be "blake2b"
+[Consensus]
+   Type = "bls"
+
+[NTPConfig]
+   Host = "time.google.com"
+   Port = 123
+   Timeout = 0  # Setting 0 means 'use default value'
+   Version = 0  # Setting 0 means 'use default value'

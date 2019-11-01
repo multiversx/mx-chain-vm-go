@@ -9,7 +9,7 @@ package elrondapi
 // extern void getOwner(void *context, int32_t resultOffset);
 // extern void getExternalBalance(void *context, int32_t addressOffset, int32_t resultOffset);
 // extern int32_t blockHash(void *context, long long nonce, int32_t resultOffset);
-// extern int32_t transfer(void *context, long long gasLimit, int32_t dstOffset, int32_t sndOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
+// extern int32_t transferValue(void *context, long long gasLimit, int32_t dstOffset, int32_t sndOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
 // extern int32_t getArgument(void *context, int32_t id, int32_t argOffset);
 // extern int32_t getFunction(void *context, int32_t functionOffset);
 // extern int32_t getNumArguments(void *context);
@@ -50,12 +50,12 @@ func ElrondEImports() (*wasmer.Imports, error) {
 		return nil, err
 	}
 
-	imports, err = imports.Append("blockHash", blockHash, C.blockHash)
+	imports, err = imports.Append("getBlockHash", blockHash, C.blockHash)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("transfer", transfer, C.transfer)
+	imports, err = imports.Append("transferValue", transferValue, C.transferValue)
 	if err != nil {
 		return nil, err
 	}
@@ -90,17 +90,17 @@ func ElrondEImports() (*wasmer.Imports, error) {
 		return nil, err
 	}
 
-	imports, err = imports.Append("callValue", callValue, C.callValue)
+	imports, err = imports.Append("getCallValue", callValue, C.callValue)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("writeLog", writeLog, C.writeLog)
+	imports, err = imports.Append("log", writeLog, C.writeLog)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("returnData", returnData, C.returnData)
+	imports, err = imports.Append("finish", returnData, C.returnData)
 	if err != nil {
 		return nil, err
 	}
@@ -145,8 +145,10 @@ func ElrondEImports() (*wasmer.Imports, error) {
 
 //export getGasLeft
 func getGasLeft(context unsafe.Pointer) int64 {
-	//TODO implement
-	return 10000
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := arwen.GetErdContext(instCtx.Data())
+
+	return int64(hostContext.GasLeft())
 }
 
 //export getOwner
@@ -195,8 +197,8 @@ func blockHash(context unsafe.Pointer, nonce int64, resultOffset int32) int32 {
 	return 0
 }
 
-//export transfer
-func transfer(context unsafe.Pointer, gasLimit int64, sndOffset int32, destOffset int32, valueOffset int32, dataOffset int32, length int32) int32 {
+//export transferValue
+func transferValue(context unsafe.Pointer, gasLimit int64, sndOffset int32, destOffset int32, valueOffset int32, dataOffset int32, length int32) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetErdContext(instCtx.Data())
 

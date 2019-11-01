@@ -170,7 +170,7 @@ func EthereumImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 		return nil, err
 	}
 
-	imports, err = imports.Append("logTopics", logTopics, C.logTopics)
+	imports, err = imports.Append("log", logTopics, C.logTopics)
 	if err != nil {
 		return nil, err
 	}
@@ -223,7 +223,7 @@ func useGas(context unsafe.Pointer, useGas int64) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
-	ethContext.UseGas(useGas)
+	ethContext.UseGas(uint64(useGas))
 }
 
 //export getAddress
@@ -397,7 +397,7 @@ func getGasLeft(context unsafe.Pointer) int64 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
-	return ethContext.GasLeft()
+	return int64(ethContext.GasLeft())
 }
 
 //export getBlockGasLimit
@@ -405,7 +405,7 @@ func getBlockGasLimit(context unsafe.Pointer) int64 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
-	return ethContext.BlockGasLimit()
+	return int64(ethContext.BlockGasLimit())
 }
 
 //export getTxGasPrice

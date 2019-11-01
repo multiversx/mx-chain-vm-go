@@ -8,9 +8,9 @@ import (
 type EthContext interface {
 	GetSCAddress() []byte
 	CallData() []byte
-	UseGas(gas int64)
-	GasLeft() int64
-	BlockGasLimit() int64
+	UseGas(gas uint64)
+	GasLeft() uint64
+	BlockGasLimit() uint64
 	GetBalance(addr []byte) []byte
 	BlockHash(nonce int64) []byte
 	GetVMInput() vmcommon.VMInput
@@ -26,6 +26,8 @@ type EthContext interface {
 }
 
 type HostContext interface {
+	UseGas(gas uint64)
+	GasLeft() uint64
 	Function() string
 	Arguments() []*big.Int
 	GetStorage(addr []byte, key []byte) []byte
@@ -42,6 +44,8 @@ type HostContext interface {
 }
 
 type BigIntContext interface {
+	UseGas(gas uint64)
+	GasLeft() uint64
 	Put(value int64) int32
 	GetOne(id int32) *big.Int
 	GetTwo(id1, id2 int32) (*big.Int, *big.Int)
