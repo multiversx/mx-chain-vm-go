@@ -1,11 +1,13 @@
 package arwen
 
 import (
+	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"math/big"
 )
 
 type EthContext interface {
+	GasSchedule() *config.GasCost
 	GetSCAddress() []byte
 	CallData() []byte
 	UseGas(gas uint64)
@@ -26,6 +28,7 @@ type EthContext interface {
 }
 
 type HostContext interface {
+	GasSchedule() *config.GasCost
 	UseGas(gas uint64)
 	GasLeft() uint64
 	Function() string
@@ -44,6 +47,7 @@ type HostContext interface {
 }
 
 type BigIntContext interface {
+	GasSchedule() *config.GasCost
 	UseGas(gas uint64)
 	GasLeft() uint64
 	Put(value int64) int32

@@ -132,6 +132,9 @@ func bigIntgetArgument(context unsafe.Pointer, id int32, destination int32) {
 
 	value := hostContext.GetOne(destination)
 	value.Set(args[id])
+
+	gasToUse := hostContext.GasSchedule().BigIntAPICost.BigIntGetArgument
+	hostContext.UseGas(gasToUse)
 }
 
 //export bigIntstorageStore
@@ -142,6 +145,10 @@ func bigIntstorageStore(context unsafe.Pointer, keyOffset int32, source int32) i
 	key := arwen.LoadBytes(instCtx.Memory(), keyOffset, arwen.HashLen)
 	value := hostContext.GetOne(source)
 	bytes := value.Bytes()
+
+	gasToUse := hostContext.GasSchedule().BigIntAPICost.BigIntStorageStore
+	gasToUse += hostContext.GasSchedule().BaseOperationCost.StorePerByte * uint64(len(bytes))
+	hostContext.UseGas(gasToUse)
 
 	return hostContext.SetStorage(hostContext.GetSCAddress(), key, bytes)
 }
@@ -157,6 +164,10 @@ func bigIntstorageLoad(context unsafe.Pointer, keyOffset int32, destination int3
 	value := hostContext.GetOne(destination)
 	value.SetBytes(bytes)
 
+	gasToUse := hostContext.GasSchedule().BigIntAPICost.BigIntStorageLoad
+	gasToUse += hostContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(bytes))
+	hostContext.UseGas(gasToUse)
+
 	return int32(len(bytes))
 }
 
@@ -167,6 +178,9 @@ func bigIntgetCallValue(context unsafe.Pointer, destination int32) {
 
 	value := hostContext.GetOne(destination)
 	value.Set(hostContext.GetVMInput().CallValue)
+
+	gasToUse := hostContext.GasSchedule().BigIntAPICost.BigIntGetCallValue
+	hostContext.UseGas(gasToUse)
 }
 
 //export bigIntgetExternalBalance
@@ -179,12 +193,18 @@ func bigIntgetExternalBalance(context unsafe.Pointer, addressOffset int32, resul
 	value := hostContext.GetOne(result)
 
 	value.SetBytes(balance)
+
+	gasToUse := hostContext.GasSchedule().BigIntAPICost.BigIntGetExternalBalance
+	hostContext.UseGas(gasToUse)
 }
 
 //export bigIntNew
 func bigIntNew(context unsafe.Pointer, smallValue int64) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetBigIntContext(instCtx.Data())
+
+	gasToUse := hostContext.GasSchedule().BigIntAPICost.BigIntNew
+	hostContext.UseGas(gasToUse)
 
 	return hostContext.Put(smallValue)
 }
@@ -196,6 +216,9 @@ func bigIntByteLength(context unsafe.Pointer, reference int32) int32 {
 
 	value := hostContext.GetOne(reference)
 
+	gasToUse := hostContext.GasSchedule().BigIntAPICost.BigIntByteLength
+	hostContext.UseGas(gasToUse)
+
 	return int32(len(value.Bytes()))
 }
 
@@ -206,9 +229,11 @@ func bigIntGetBytes(context unsafe.Pointer, reference int32, byteOffset int32) i
 
 	bytes := hostContext.GetOne(reference).Bytes()
 
-	err := arwen.StoreBytes(instCtx.Memory(), byteOffset, bytes)
-	if err != nil {
-	}
+	_ = arwen.StoreBytes(instCtx.Memory(), byteOffset, bytes)
+
+	gasToUse := hostContext.GasSchedule().BigIntAPICost.BigIntGetBytes
+	gasToUse += hostContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(bytes))
+	hostContext.UseGas(gasToUse)
 
 	return int32(len(bytes))
 }
@@ -222,12 +247,19 @@ func bigIntSetBytes(context unsafe.Pointer, destination int32, byteOffset int32,
 
 	value := hostContext.GetOne(destination)
 	value.SetBytes(bytes)
+
+	gasToUse := hostContext.GasSchedule().BigIntAPICost.BigIntSetBytes
+	gasToUse += hostContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(bytes))
+	hostContext.UseGas(gasToUse)
 }
 
 //export bigIntIsInt64
 func bigIntIsInt64(context unsafe.Pointer, destination int32) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetBigIntContext(instCtx.Data())
+
+	gasToUse := hostContext.GasSchedule().BigIntAPICost.BigIntIsInt64
+	hostContext.UseGas(gasToUse)
 
 	value := hostContext.GetOne(destination)
 	if value.IsInt64() {
@@ -241,6 +273,9 @@ func bigIntGetInt64(context unsafe.Pointer, destination int32) int64 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetBigIntContext(instCtx.Data())
 
+	gasToUse := hostContext.GasSchedule().BigIntAPICost.BigIntGetInt64
+	hostContext.UseGas(gasToUse)
+
 	value := hostContext.GetOne(destination)
 	return value.Int64()
 }
@@ -252,6 +287,9 @@ func bigIntSetInt64(context unsafe.Pointer, destination int32, value int64) {
 
 	dest := hostContext.GetOne(destination)
 	dest.SetInt64(value)
+
+	gasToUse := hostContext.GasSchedule().BigIntAPICost.BigIntSetInt64
+	hostContext.UseGas(gasToUse)
 }
 
 //export bigIntAdd
@@ -261,6 +299,9 @@ func bigIntAdd(context unsafe.Pointer, destination, op1, op2 int32) {
 
 	dest, a, b := hostContext.GetThree(destination, op1, op2)
 	dest.Add(a, b)
+
+	gasToUse := hostContext.GasSchedule().BigIntAPICost.BigIntAdd
+	hostContext.UseGas(gasToUse)
 }
 
 //export bigIntSub
@@ -270,6 +311,9 @@ func bigIntSub(context unsafe.Pointer, destination, op1, op2 int32) {
 
 	dest, a, b := hostContext.GetThree(destination, op1, op2)
 	dest.Sub(a, b)
+
+	gasToUse := hostContext.GasSchedule().BigIntAPICost.BigIntSub
+	hostContext.UseGas(gasToUse)
 }
 
 //export bigIntMul
@@ -279,12 +323,18 @@ func bigIntMul(context unsafe.Pointer, destination, op1, op2 int32) {
 
 	dest, a, b := hostContext.GetThree(destination, op1, op2)
 	dest.Mul(a, b)
+
+	gasToUse := hostContext.GasSchedule().BigIntAPICost.BigIntMul
+	hostContext.UseGas(gasToUse)
 }
 
 //export bigIntCmp
 func bigIntCmp(context unsafe.Pointer, op1, op2 int32) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetBigIntContext(instCtx.Data())
+
+	gasToUse := hostContext.GasSchedule().BigIntAPICost.BigIntCmp
+	hostContext.UseGas(gasToUse)
 
 	a, b := hostContext.GetTwo(op1, op2)
 	return int32(a.Cmp(b))
@@ -297,4 +347,8 @@ func bigIntFinish(context unsafe.Pointer, reference int32) {
 
 	value := hostContext.GetOne(reference)
 	hostContext.Finish(value.Bytes())
+
+	gasToUse := hostContext.GasSchedule().BigIntAPICost.BigIntFinish
+	gasToUse += hostContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(value.Bytes()))
+	hostContext.UseGas(gasToUse)
 }

@@ -71,6 +71,7 @@ type BigIntAPICost struct {
 	BigIntSetBytes           uint64
 	BigIntIsInt64            uint64
 	BigIntGetInt64           uint64
+	BigIntSetInt64           uint64
 	BigIntAdd                uint64
 	BigIntSub                uint64
 	BigIntMul                uint64
@@ -81,4 +82,11 @@ type BigIntAPICost struct {
 	BigIntGetArgument        uint64
 	BigIntGetCallValue       uint64
 	BigIntGetExternalBalance uint64
+}
+
+type GasCost struct {
+	BaseOperationCost BaseOperationCost
+	BigIntAPICost     BigIntAPICost
+	EthAPICost        EthAPICost
+	ElrondAPICost     ElrondAPICost
 }
