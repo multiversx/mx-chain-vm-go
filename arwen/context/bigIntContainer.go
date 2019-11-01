@@ -25,10 +25,18 @@ func (b *bigIntContainer) Clean() {
 
 func (b *bigIntContainer) Put(value int64) int32 {
 	b.mutex.Lock()
-	b.mutex.Unlock()
 
 	newIndex := int32(len(b.mappedValues))
+	for {
+		if _, ok := b.mappedValues[newIndex]; !ok {
+			break
+		}
+		newIndex++
+	}
+
 	b.mappedValues[newIndex] = big.NewInt(value)
+
+	b.mutex.Unlock()
 
 	return newIndex
 }
