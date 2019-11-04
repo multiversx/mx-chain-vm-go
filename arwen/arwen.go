@@ -165,7 +165,8 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 	gasLeft := input.GasProvided.Int64()
 	contract := host.GetCode(host.scAddress)
 
-	instance, err := wasmer.NewMeteredInstanceWithImports(contract, host.imports, uint64(gasLeft), "uniform_one")
+	opcode_costs := opcode_costs_uniform_value(2)
+	instance, err := wasmer.NewMeteredInstanceWithImports(contract, host.imports, uint64(gasLeft), opcode_costs)
 	if err != nil {
 		fmt.Println("arwen Error", err.Error())
 		return host.createVMOutputInCaseOfError(vmcommon.ContractInvalid), nil
@@ -193,6 +194,14 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 	vmOutput := host.createVMOutput(convertedResult.Bytes(), gasLeft)
 
 	return vmOutput, nil
+}
+
+func opcode_costs_uniform_value(value uint32) *[wasmer.OPCODE_COUNT]uint32 {
+	opcode_costs := [wasmer.OPCODE_COUNT]uint32{}
+	for i := 0; i < wasmer.OPCODE_COUNT; i++ {
+		opcode_costs[i] = value
+	}
+	return &opcode_costs
 }
 
 func (host *vmContext) createVMOutputInCaseOfError(errCode vmcommon.ReturnCode) *vmcommon.VMOutput {
