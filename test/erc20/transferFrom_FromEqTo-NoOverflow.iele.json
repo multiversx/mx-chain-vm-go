@@ -11,10 +11,10 @@
                 "nonce": "0x00",
                 "balance": "0x00",
                 "storage": {
-                    "0x020000000000000000000000000000000000000000000000000000000000000007a94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000": "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff5",
-                    "0x010000000000000000000000000000000000000000000000000000000000000007": "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff5",
-                    "0x010000000000000000000000000000000000000000000000000000000000000002": "0x0a",
-                    "0x00": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+                    "0x020777777777777777777777777717778697c15331677e6ebf0b000000000000": "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff5",
+                    "0x0100777777777777777777770777777777777777777777777717777777777777": "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff5",
+                    "0x0100020000000000000000000000000000000000000000000000000000000000": "0x0a",
+                    "0x0000000000000000000000000000000000000000000000000000000000000000": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
                 },
                 "code": "wrc20_arwen.wasm"
             }
@@ -33,7 +33,7 @@
                                 "address": "0x1000000000000000000000000000000000000000000000000000000000000000",
                                 "topics": [
                                     "0xf099cd8bde557814842a3121e8ddfd433a539b8c9f14bf31ebf108d12e6196e9",
-                                    "0x07",
+                                    "0x7777777777777777777707777777777777777777777777177777777777771234",
                                     "0x02"
                                 ],
                                 "data": "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff5"
@@ -50,7 +50,7 @@
                         "value": "0x00",
                         "to": "0x1000000000000000000000000000000000000000000000000000000000000000",
                         "arguments": [
-                            "0x07",
+                            "0x7777777777777777777707777777777777777777777777177777777777771234",
                             "0x02",
                             "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff5"
                         ],
@@ -84,8 +84,8 @@
                 "nonce": "0x00",
                 "balance": "0x00",
                 "storage": {
-                    "0x010000000000000000000000000000000000000000000000000000000000000002": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
-                    "0x00": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+                    "0x0100020000000000000000000000000000000000000000000000000000000000": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                    "0x0000000000000000000000000000000000000000000000000000000000000000": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
                 },
                 "code": "wrc20_arwen.wasm"
             }

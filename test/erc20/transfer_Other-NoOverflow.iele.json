@@ -12,7 +12,7 @@
                 "balance": "0x00",
                 "storage": {
                     "0x0100a94f5374fce5edbc8e2a8697c15331677e6ebf0b00000000000000000000": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
-                    "0x00": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+                    "0x0000000000000000000000000000000000000000000000000000000000000000": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
                 },
                 "code": "wrc20_arwen.wasm"
             }
@@ -81,8 +81,8 @@
                 "nonce": "0x00",
                 "balance": "0x00",
                 "storage": {
-                    "0x010000000000000000000000000000000000000000000000000000000000000002": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
-                    "0x00": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+                    "0x0100020000000000000000000000000000000000000000000000000000000000": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                    "0x0000000000000000000000000000000000000000000000000000000000000000": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
                 },
                 "code": "wrc20_arwen.wasm"
             }
