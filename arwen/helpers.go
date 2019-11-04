@@ -4,23 +4,77 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/go-ext-wasm/wasmer"
+	"sync"
+	"unsafe"
 )
 
-const addressLen = 32
-const hashLen = 32
-const balanceLen = 32
+const AddressLen = 32
+const HashLen = 32
+const BalanceLen = 32
 
-func loadBytes(from *wasmer.Memory, offset int32, length int32) []byte {
+var (
+	vmContextCounter uint8
+	vmContextMap     map[uint8]VMContext
+	vmContextMapMu   sync.Mutex
+)
+
+func AddHostContext(ctx VMContext) int {
+	vmContextMapMu.Lock()
+	id := vmContextCounter
+	vmContextCounter++
+	vmContextMap[id] = ctx
+	vmContextMapMu.Unlock()
+	return int(id)
+}
+
+func RemoveHostContext(idx int) {
+	vmContextMapMu.Lock()
+	delete(vmContextMap, uint8(idx))
+	vmContextMapMu.Unlock()
+}
+
+func GetEthContext(pointer unsafe.Pointer) EthContext {
+	var idx = *(*int)(pointer)
+
+	vmContextMapMu.Lock()
+	ctx := vmContextMap[uint8(idx)]
+	vmContextMapMu.Unlock()
+
+	return ctx.EthContext()
+}
+
+func GetErdContext(pointer unsafe.Pointer) HostContext {
+	var idx = *(*int)(pointer)
+
+	vmContextMapMu.Lock()
+	ctx := vmContextMap[uint8(idx)]
+	vmContextMapMu.Unlock()
+
+	return ctx.CoreContext()
+}
+
+func GetBigIntContext(pointer unsafe.Pointer) BigIntContext {
+	var idx = *(*int)(pointer)
+
+	vmContextMapMu.Lock()
+	ctx := vmContextMap[uint8(idx)]
+	vmContextMapMu.Unlock()
+
+	return ctx.BigInContext()
+}
+
+func LoadBytes(from *wasmer.Memory, offset int32, length int32) []byte {
+	result := make([]byte, length)
 	if from.Length() < uint32(offset+length) {
-		return from.Data()[offset:]
+		copy(result, from.Data()[offset:])
+		return result
 	}
 
-	result := make([]byte, length, length)
-	copy(result, from.Data()[offset:offset+length]) // make a copy to protect wasm memory from accidental changes
+	copy(result, from.Data()[offset:offset+length])
 	return result
 }
 
-func storeBytes(to *wasmer.Memory, offset int32, data []byte) error {
+func StoreBytes(to *wasmer.Memory, offset int32, data []byte) error {
 	length := int32(len(data))
 
 	if to.Length() < uint32(offset+length) {
@@ -36,7 +90,7 @@ func storeBytes(to *wasmer.Memory, offset int32, data []byte) error {
 	return nil
 }
 
-func convertReturnValue(wasmValue wasmer.Value) *big.Int {
+func ConvertReturnValue(wasmValue wasmer.Value) *big.Int {
 	switch wasmValue.GetType() {
 	case wasmer.TypeVoid:
 		return big.NewInt(0)

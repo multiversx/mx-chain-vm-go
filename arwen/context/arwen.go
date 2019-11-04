@@ -1,17 +1,17 @@
-package arwen
+package context
 
 import (
 	"bytes"
 	"encoding/hex"
-	"errors"
 	"fmt"
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/elrondapi"
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/ethapi"
 	"math/big"
-	"sync"
 	"unsafe"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/go-ext-wasm/wasmer"
-	mbig "github.com/ElrondNetwork/managed-big-int"
 )
 
 type StorageStatus int
@@ -23,37 +23,6 @@ const (
 	StorageDeleted   StorageStatus = 4
 )
 
-var (
-	vmContextCounter uint8
-	vmContextMap     = map[uint8]HostContext{}
-	vmContextMapMu   sync.Mutex
-)
-
-func addHostContext(ctx HostContext) int {
-	vmContextMapMu.Lock()
-	id := vmContextCounter
-	vmContextCounter++
-	vmContextMap[id] = ctx
-	vmContextMapMu.Unlock()
-	return int(id)
-}
-
-func removeHostContext(idx int) {
-	vmContextMapMu.Lock()
-	delete(vmContextMap, uint8(idx))
-	vmContextMapMu.Unlock()
-}
-
-func getHostContext(pointer unsafe.Pointer) HostContext {
-	var idx = *(*int)(pointer)
-
-	vmContextMapMu.Lock()
-	ctx := vmContextMap[uint8(idx)]
-	vmContextMapMu.Unlock()
-
-	return ctx
-}
-
 type logTopicsData struct {
 	topics [][]byte
 	data   []byte
@@ -61,6 +30,7 @@ type logTopicsData struct {
 
 // vmContext implements evmc.HostContext interface.
 type vmContext struct {
+	BigIntContainer
 	blockChainHook vmcommon.BlockchainHook
 	cryptoHook     vmcommon.CryptoHook
 	imports        *wasmer.Imports
@@ -71,18 +41,48 @@ type vmContext struct {
 	callFunction string
 	scAddress    []byte
 
-	bigIntHandles   []mbig.BigIntHandle
-	bigIntContainer *mbig.BigIntContainer
-
-	logs          map[string]logTopicsData
-	storageUpdate map[string](map[string][]byte)
-
+	logs           map[string]logTopicsData
+	storageUpdate  map[string](map[string][]byte)
 	outputAccounts map[string]*vmcommon.OutputAccount
-
-	returnData *big.Int
-	returnCode vmcommon.ReturnCode
+	returnData     []*big.Int
+	returnCode     vmcommon.ReturnCode
 
 	selfDestruct map[string][]byte
+	ethInput     []byte
+}
+
+func NewArwenVM(
+	blockChainHook vmcommon.BlockchainHook,
+	cryptoHook vmcommon.CryptoHook,
+	vmType []byte,
+) (*vmContext, error) {
+
+	imports, err := elrondapi.ElrondEImports()
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = elrondapi.BigIntImports(imports)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = ethapi.EthereumImports(imports)
+	if err != nil {
+		return nil, err
+	}
+
+	context := &vmContext{
+		BigIntContainer: NewBigIntContainer(),
+		blockChainHook:  blockChainHook,
+		cryptoHook:      cryptoHook,
+		vmType:          vmType,
+		imports:         imports,
+	}
+
+	context.initInternalValues()
+
+	return context, nil
 }
 
 func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (*vmcommon.VMOutput, error) {
@@ -112,7 +112,7 @@ func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInpu
 		return host.createVMOutputInCaseOfError(vmcommon.ContractInvalid), nil
 	}
 
-	idContext := addHostContext(host)
+	idContext := arwen.AddHostContext(host)
 	instance.SetContextData(unsafe.Pointer(&idContext))
 
 	var result []byte
@@ -123,7 +123,7 @@ func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInpu
 			fmt.Println("arwen Error", err.Error())
 			return host.createVMOutputInCaseOfError(vmcommon.FunctionWrongSignature), nil
 		}
-		convertedResult := convertReturnValue(out)
+		convertedResult := arwen.ConvertReturnValue(out)
 		result = convertedResult.Bytes()
 	}
 
@@ -145,14 +145,12 @@ func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInpu
 		newSCAcc.Code = input.ContractCode
 	}
 
-	removeHostContext(idContext)
+	arwen.RemoveHostContext(idContext)
 
 	vmOutput := host.createVMOutput(result, gasLeft)
 
 	return vmOutput, err
 }
-
-var ErrInitFuncCalledInRun = errors.New("it is not allowed to call init in run")
 
 func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	host.initInternalValues()
@@ -174,7 +172,7 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 
 	defer instance.Close()
 
-	idContext := addHostContext(host)
+	idContext := arwen.AddHostContext(host)
 	instance.SetContextData(unsafe.Pointer(&idContext))
 
 	if host.callFunction == "init" {
@@ -182,14 +180,19 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 		return host.createVMOutputInCaseOfError(vmcommon.UserError), nil
 	}
 
-	function := instance.Exports[host.callFunction]
+	function, ok := instance.Exports[host.callFunction]
+	if !ok {
+		fmt.Println("arwen Error", "Function not found")
+		return host.createVMOutputInCaseOfError(vmcommon.FunctionNotFound), nil
+	}
+
 	result, err := function()
 	if err != nil {
 		fmt.Println("arwen Error", err.Error())
 		return host.createVMOutputInCaseOfError(vmcommon.FunctionWrongSignature), nil
 	}
 
-	convertedResult := convertReturnValue(result)
+	convertedResult := arwen.ConvertReturnValue(result)
 	gasLeft = gasLeft - int64(instance.GetPointsUsed())
 	vmOutput := host.createVMOutput(convertedResult.Bytes(), gasLeft)
 
@@ -268,66 +271,22 @@ func (host *vmContext) createVMOutput(output []byte, gasLeft int64) *vmcommon.VM
 		vmOutput.Logs = append(vmOutput.Logs, logEntry)
 	}
 
-	if host.returnData != nil {
-		vmOutput.ReturnData = []*big.Int{host.returnData}
-	} else {
-		vmOutput.ReturnData = []*big.Int{}
+	if len(host.returnData) > 0 {
+		vmOutput.ReturnData = append(vmOutput.ReturnData, host.returnData...)
+	}
+	if len(output) > 0 {
+		vmOutput.ReturnData = append(vmOutput.ReturnData, big.NewInt(0).SetBytes(output))
 	}
 
 	vmOutput.GasRemaining = big.NewInt(gasLeft)
 	vmOutput.GasRefund = big.NewInt(0)
 	vmOutput.ReturnCode = host.returnCode
 
-	displayVMOutput(vmOutput)
-
 	return vmOutput
 }
 
-func displayVMOutput(output *vmcommon.VMOutput) {
-	fmt.Println("=============Resulted VM Output=============")
-	fmt.Println("RetunCode: ", output.ReturnCode)
-	fmt.Println("ReturnData: ", output.ReturnData)
-	fmt.Println("GasRemaining: ", output.GasRemaining)
-	fmt.Println("GasRefund: ", output.GasRefund)
-
-	for id, touchedAccount := range output.TouchedAccounts {
-		fmt.Println("Touched account ", id, ": "+hex.EncodeToString(touchedAccount))
-	}
-
-	for id, deletedAccount := range output.DeletedAccounts {
-		fmt.Println("Deleted account ", id, ": "+hex.EncodeToString(deletedAccount))
-	}
-
-	for id, outputAccount := range output.OutputAccounts {
-		fmt.Println("Output account ", id, ": "+hex.EncodeToString(outputAccount.Address))
-		if outputAccount.BalanceDelta != nil {
-			fmt.Println("           Balance change with : ", outputAccount.BalanceDelta)
-		}
-		if outputAccount.Nonce != 0 {
-			fmt.Println("           Nonce change to : ", outputAccount.Nonce)
-		}
-		if len(outputAccount.Code) > 0 {
-			fmt.Println("           Code change to : [", len(outputAccount.Code), " bytes]")
-		}
-
-		for _, storageUpdate := range outputAccount.StorageUpdates {
-			fmt.Println("           Storage update key: "+hex.EncodeToString(storageUpdate.Offset)+" value: ", hex.EncodeToString(storageUpdate.Data))
-		}
-	}
-
-	for _, log := range output.Logs {
-		fmt.Println("Log address: " + hex.EncodeToString(log.Address) + " data: " + string(log.Data))
-		fmt.Println("Topics started: ")
-		for _, topic := range log.Topics {
-			fmt.Print(topic, " ")
-		}
-		fmt.Println("Topics end")
-	}
-	fmt.Println("============================================")
-}
-
 func (host *vmContext) initInternalValues() {
-	host.initBigIntContainer()
+	host.Clean()
 	host.storageUpdate = make(map[string]map[string][]byte, 0)
 	host.logs = make(map[string]logTopicsData, 0)
 	host.selfDestruct = make(map[string][]byte)
@@ -337,6 +296,7 @@ func (host *vmContext) initInternalValues() {
 	host.callFunction = ""
 	host.returnData = nil
 	host.returnCode = vmcommon.Ok
+	host.ethInput = nil
 }
 
 func (host *vmContext) addTxValueToSmartContract(value *big.Int, scAddress []byte) {
@@ -352,27 +312,20 @@ func (host *vmContext) addTxValueToSmartContract(value *big.Int, scAddress []byt
 	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
 }
 
-func NewArwenVM(
-	blockChainHook vmcommon.BlockchainHook,
-	cryptoHook vmcommon.CryptoHook,
-	vmType []byte,
-) (*vmContext, error) {
+func (host *vmContext) EthContext() arwen.EthContext {
+	return host
+}
 
-	imports, err := ElrondEImports()
-	if err != nil {
-		return nil, err
-	}
+func (host *vmContext) CoreContext() arwen.HostContext {
+	return host
+}
 
-	context := &vmContext{
-		blockChainHook: blockChainHook,
-		cryptoHook:     cryptoHook,
-		vmType:         vmType,
-		imports:        imports,
-	}
+func (host *vmContext) BigInContext() arwen.BigIntContext {
+	return host
+}
 
-	context.initInternalValues()
-
-	return context, nil
+func (host *vmContext) Finish(data []byte) {
+	host.returnData = append(host.returnData, big.NewInt(0).SetBytes(data))
 }
 
 func (host *vmContext) SignalUserError() {
@@ -385,10 +338,6 @@ func (host *vmContext) Arguments() []*big.Int {
 
 func (host *vmContext) Function() string {
 	return host.callFunction
-}
-
-func (host *vmContext) SelfDestruct(addr []byte, beneficiary []byte) {
-	panic("implement me")
 }
 
 func (host *vmContext) GetSCAddress() []byte {
@@ -457,33 +406,30 @@ func (host *vmContext) getBalanceFromBlockChain(addr []byte) *big.Int {
 	return balance
 }
 
-func (host *vmContext) LoadBalance(addr []byte, destination BigIntHandle) {
+func (host *vmContext) GetBalance(addr []byte) []byte {
 	strAdr := string(addr)
 	if _, ok := host.outputAccounts[strAdr]; ok {
 		balance := host.outputAccounts[strAdr].Balance
-		host.BigUpdate(destination, balance)
-		return
+		return balance.Bytes()
 	}
 
 	balance, err := host.blockChainHook.GetBalance(addr)
 	if err != nil {
 		fmt.Printf("GetBalance returned with error %s \n", err.Error())
-		host.BigUpdate(destination, big.NewInt(0))
+		return big.NewInt(0).Bytes()
 	}
 
 	host.outputAccounts[strAdr] = &vmcommon.OutputAccount{Balance: big.NewInt(0).Set(balance), Address: addr}
-
-	host.BigUpdate(destination, balance)
-	fmt.Printf("getExternalBalance address: %s balance: %d\n", hex.EncodeToString(addr), balance)
+	return balance.Bytes()
 }
 
-func (host *vmContext) GetCodeSize(addr []byte) int {
+func (host *vmContext) GetCodeSize(addr []byte) int32 {
 	code, err := host.blockChainHook.GetCode(addr)
 	if err != nil {
 		fmt.Printf("GetCodeSize returned with error %s \n", err.Error())
 	}
 
-	return len(code)
+	return int32(len(code))
 }
 
 func (host *vmContext) GetCodeHash(addr []byte) []byte {
@@ -509,7 +455,7 @@ func (host *vmContext) GetCode(addr []byte) []byte {
 	return code
 }
 
-func (host *vmContext) Selfdestruct(addr []byte, beneficiary []byte) {
+func (host *vmContext) SelfDestruct(addr []byte, beneficiary []byte) {
 	host.selfDestruct[string(addr)] = beneficiary
 }
 
@@ -551,18 +497,20 @@ func (host *vmContext) WriteLog(addr []byte, topics [][]byte, data []byte) {
 	host.logs[strAdr] = currLogs
 }
 
-var ErrInvalidTransfer = errors.New("invalid sender")
-
-// SendTransaction handles any necessary value transfer required and takes
+// Transfer handles any necessary value transfer required and takes
 // the necessary steps to create accounts and reverses the state in case of an
 // execution error or failed value transfer.
-func (host *vmContext) SendTransaction(destination []byte, value *big.Int, input []byte, gas int64,
+func (host *vmContext) Transfer(destination []byte, sender []byte, value *big.Int, input []byte, gas int64,
 ) (gasLeft int64, err error) {
+	//TODO: should this be kept, or there are other use cases where a sender can be somebody else
+	if !bytes.Equal(sender, host.GetSCAddress()) {
+		return 0, ErrInvalidTransfer
+	}
 
-	senderAcc, ok := host.outputAccounts[string(host.scAddress)]
+	senderAcc, ok := host.outputAccounts[string(sender)]
 	if !ok {
 		senderAcc = &vmcommon.OutputAccount{
-			Address:      host.scAddress,
+			Address:      sender,
 			BalanceDelta: big.NewInt(0),
 		}
 		host.outputAccounts[string(senderAcc.Address)] = senderAcc
@@ -586,4 +534,56 @@ func (host *vmContext) SendTransaction(destination []byte, value *big.Int, input
 	gasLeft = gas - 1
 
 	return gasLeft, err
+}
+
+func (host *vmContext) CallData() []byte {
+	if host.ethInput == nil {
+		host.ethInput = host.createETHCallInput()
+	}
+	return host.ethInput
+}
+
+func (host *vmContext) UseGas(gas int64) {
+	panic("implement me")
+}
+
+func (host *vmContext) GasLeft() int64 {
+	panic("implement me")
+}
+
+func (host *vmContext) BlockGasLimit() int64 {
+	panic("implement me")
+}
+
+func (host *vmContext) BlockChainHook() vmcommon.BlockchainHook {
+	return host.blockChainHook
+}
+
+// The first four bytes is the method selector. The rest of the input data are method arguments in chunks of 32 bytes.
+// The method selector is the kecccak256 hash of the method signature.
+func (host *vmContext) createETHCallInput() []byte {
+	newInput := make([]byte, 0)
+
+	if len(host.callFunction) > 0 {
+		hashOfFunction, err := host.cryptoHook.Keccak256(host.callFunction)
+		if err != nil {
+			return nil
+		}
+
+		methodSelectors, err := hex.DecodeString(hashOfFunction)
+		if err != nil {
+			return nil
+		}
+
+		newInput = append(newInput, methodSelectors[0:4]...)
+	}
+
+	for _, arg := range host.vmInput.Arguments {
+		currInput := make([]byte, arwen.HashLen)
+		copy(currInput[arwen.HashLen-len(arg.Bytes()):], arg.Bytes())
+
+		newInput = append(newInput, currInput...)
+	}
+
+	return newInput
 }
