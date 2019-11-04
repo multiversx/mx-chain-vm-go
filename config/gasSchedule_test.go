@@ -29,3 +29,29 @@ func TestDecode(t *testing.T) {
 
 	fmt.Printf("%+v\n", op)
 }
+
+func TestDecode_ArwenGas(t *testing.T) {
+	gasMap := make(map[string]uint64)
+	gasMap["StorePerByte"] = 4
+	gasMap["GetOwner"] = 4
+	gasMap["GetExternalBalance"] = 4
+	gasMap["BigIntByteLength"] = 4
+
+	bigIntOp := &BigIntAPICost{}
+	err := mapstructure.Decode(gasMap, bigIntOp)
+	assert.Nil(t, err)
+
+	fmt.Printf("%+v\n", bigIntOp)
+
+	erdOp := &ElrondAPICost{}
+	err = mapstructure.Decode(gasMap, erdOp)
+	assert.Nil(t, err)
+
+	fmt.Printf("%+v\n", erdOp)
+
+	ethOp := &EthAPICost{}
+	err = mapstructure.Decode(gasMap, ethOp)
+	assert.Nil(t, err)
+
+	fmt.Printf("%+v\n", ethOp)
+}
