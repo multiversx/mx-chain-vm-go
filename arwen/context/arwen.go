@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
+	"math/big"
+	"unsafe"
+
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/elrondapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/ethapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	"math/big"
-	"unsafe"
-
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/go-ext-wasm/wasmer"
 )
