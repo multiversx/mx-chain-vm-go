@@ -8,20 +8,12 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/elrondapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/ethapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	"github.com/urfave/cli"
 	"math/big"
 	"unsafe"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/go-ext-wasm/wasmer"
 )
-
-// gasCostFile defines a flag for the path to the preferences toml configuration file
-var gasCostFile = cli.StringFlag{
-	Name:  "gasCost",
-	Usage: "The gas cost configuration file to load",
-	Value: "../config/config.toml",
-}
 
 type StorageStatus int
 
@@ -69,6 +61,7 @@ func NewArwenVM(
 	cryptoHook vmcommon.CryptoHook,
 	vmType []byte,
 	blockGasLimit uint64,
+	gasSchedule map[string]uint64,
 ) (*vmContext, error) {
 
 	imports, err := elrondapi.ElrondEImports()
@@ -86,6 +79,11 @@ func NewArwenVM(
 		return nil, err
 	}
 
+	gasCostConfig, err := config.CreateGasConfig(gasSchedule)
+	if err != nil {
+		return nil, err
+	}
+
 	context := &vmContext{
 		BigIntContainer: NewBigIntContainer(),
 		blockChainHook:  blockChainHook,
@@ -93,14 +91,10 @@ func NewArwenVM(
 		vmType:          vmType,
 		imports:         imports,
 		blockGasLimit:   blockGasLimit,
+		gasCostConfig:   gasCostConfig,
 	}
 
 	context.initInternalValues()
-
-	context.gasCostConfig, err = loadGasMeteringConfig(gasCostFile.Value)
-	if err != nil {
-		return nil, err
-	}
 
 	return context, nil
 }
@@ -611,14 +605,4 @@ func (host *vmContext) createETHCallInput() []byte {
 	}
 
 	return newInput
-}
-
-func loadGasMeteringConfig(filepath string) (*config.GasCost, error) {
-	cfg := &config.GasCost{}
-	err := config.LoadTomlFile(cfg, filepath)
-	if err != nil {
-		return nil, err
-	}
-
-	return cfg, nil
 }
