@@ -26,6 +26,11 @@ type ElrondAPICost struct {
 	Int64StorageStore  uint64
 	Int64StorageLoad   uint64
 	Int64Finish        uint64
+	GetStateRootHash   uint64
+	GetBlockNonce      uint64
+	GetBlockEpoch      uint64
+	GetBlockRound      uint64
+	GetBlockRandomSeed uint64
 }
 
 type EthAPICost struct {

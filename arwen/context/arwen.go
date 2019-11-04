@@ -37,7 +37,7 @@ type logTopicsData struct {
 	data   []byte
 }
 
-// vmContext implements evmc.HostContext interface.
+// vmContext implements HostContext interface.
 type vmContext struct {
 	BigIntContainer
 	blockChainHook vmcommon.BlockchainHook
