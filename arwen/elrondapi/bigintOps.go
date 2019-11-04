@@ -125,6 +125,9 @@ func bigIntgetArgument(context unsafe.Pointer, id int32, destination int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetBigIntContext(instCtx.Data())
 
+	gasToUse := hostContext.GasSchedule().BigIntAPICost.BigIntGetArgument
+	hostContext.UseGas(gasToUse)
+
 	args := hostContext.Arguments()
 	if int32(len(args)) <= id {
 		return
@@ -132,9 +135,6 @@ func bigIntgetArgument(context unsafe.Pointer, id int32, destination int32) {
 
 	value := hostContext.GetOne(destination)
 	value.Set(args[id])
-
-	gasToUse := hostContext.GasSchedule().BigIntAPICost.BigIntGetArgument
-	hostContext.UseGas(gasToUse)
 }
 
 //export bigIntstorageStore
