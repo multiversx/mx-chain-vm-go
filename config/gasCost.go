@@ -89,9 +89,15 @@ type BigIntAPICost struct {
 	BigIntGetExternalBalance uint64
 }
 
+type CryptoAPICost struct {
+	SHA256    uint64
+	Keccak256 uint64
+}
+
 type GasCost struct {
 	BaseOperationCost BaseOperationCost
 	BigIntAPICost     BigIntAPICost
 	EthAPICost        EthAPICost
 	ElrondAPICost     ElrondAPICost
+	CryptoAPICost     CryptoAPICost
 }

@@ -63,8 +63,15 @@ type BigIntContext interface {
 	Finish(data []byte)
 }
 
+type CryptoContext interface {
+	GasSchedule() *config.GasCost
+	UseGas(gas uint64)
+	CryptoHooks() vmcommon.CryptoHook
+}
+
 type VMContext interface {
 	EthContext() EthContext
 	CoreContext() HostContext
 	BigInContext() BigIntContext
+	CryptoContext() CryptoContext
 }

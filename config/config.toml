@@ -77,3 +77,7 @@
     BigIntGetArgument        = 10
     BigIntGetCallValue       = 10
     BigIntGetExternalBalance = 10
+
+[CryptoAPICost]
+    SHA256    = 10
+    Keccak256 = 10

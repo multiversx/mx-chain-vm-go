@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/elrondapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/ethapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
@@ -82,6 +83,11 @@ func NewArwenVM(
 	}
 
 	imports, err = ethapi.EthereumImports(imports)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = crypto.CryptoImports(imports)
 	if err != nil {
 		return nil, err
 	}
@@ -340,6 +346,14 @@ func (host *vmContext) CoreContext() arwen.HostContext {
 
 func (host *vmContext) BigInContext() arwen.BigIntContext {
 	return host
+}
+
+func (host *vmContext) CryptoContext() arwen.CryptoContext {
+	return host
+}
+
+func (host *vmContext) CryptoHooks() vmcommon.CryptoHook {
+	return host.cryptoHook
 }
 
 func (host *vmContext) Finish(data []byte) {
