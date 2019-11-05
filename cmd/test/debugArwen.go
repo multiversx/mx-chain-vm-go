@@ -10,10 +10,9 @@ import (
 
 func main() {
 
-	//debugArwenTest("erc20/create.iele.json")
-	//debugArwenTest("erc20/balanceOf_Caller.iele.json")
-	//debugArwenTest("erc20/transfer_Caller-EntireBalance.iele.json")
-	debugArwenTest("dummy/dummy1.wasm.json")
+	debugArwenTest("erc20/create.json")
+	//debugArwenTest("erc20/balanceOf_Caller.json")
+	//debugArwenTest("erc20/transfer_Caller-EntireBalance.json")
 
 }
 
