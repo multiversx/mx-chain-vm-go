@@ -42,9 +42,10 @@ package elrondapi
 import "C"
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"math/big"
 	"unsafe"
+
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 
 	"github.com/ElrondNetwork/go-ext-wasm/wasmer"
 )

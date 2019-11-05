@@ -3,9 +3,10 @@ package arwen
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/go-ext-wasm/wasmer"
 	"sync"
 	"unsafe"
+
+	"github.com/ElrondNetwork/go-ext-wasm/wasmer"
 )
 
 const AddressLen = 32
@@ -22,6 +23,9 @@ func AddHostContext(ctx VMContext) int {
 	vmContextMapMu.Lock()
 	id := vmContextCounter
 	vmContextCounter++
+	if vmContextMap == nil {
+		vmContextMap = make(map[uint8]VMContext)
+	}
 	vmContextMap[id] = ctx
 	vmContextMapMu.Unlock()
 	return int(id)

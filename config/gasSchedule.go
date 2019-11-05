@@ -15,13 +15,18 @@ func CreateGasConfig(gasMap map[string]uint64) (*GasCost, error) {
 		return nil, err
 	}
 
+	err = checkForZeroUint64Fields(*baseOps)
+	if err != nil {
+		return nil, err
+	}
+
 	elrondOps := &ElrondAPICost{}
 	err = mapstructure.Decode(gasMap, elrondOps)
 	if err != nil {
 		return nil, err
 	}
 
-	err = checkForZeroUint64Fields(elrondOps)
+	err = checkForZeroUint64Fields(*elrondOps)
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +37,7 @@ func CreateGasConfig(gasMap map[string]uint64) (*GasCost, error) {
 		return nil, err
 	}
 
-	err = checkForZeroUint64Fields(bigIntOps)
+	err = checkForZeroUint64Fields(*bigIntOps)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +48,7 @@ func CreateGasConfig(gasMap map[string]uint64) (*GasCost, error) {
 		return nil, err
 	}
 
-	err = checkForZeroUint64Fields(ethOps)
+	err = checkForZeroUint64Fields(*ethOps)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +59,7 @@ func CreateGasConfig(gasMap map[string]uint64) (*GasCost, error) {
 		return nil, err
 	}
 
-	err = checkForZeroUint64Fields(cryptOps)
+	err = checkForZeroUint64Fields(*cryptOps)
 	if err != nil {
 		return nil, err
 	}

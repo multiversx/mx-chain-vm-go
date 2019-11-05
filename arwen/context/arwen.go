@@ -10,7 +10,6 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/elrondapi"
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/ethapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/go-ext-wasm/wasmer"
@@ -75,10 +74,11 @@ func NewArwenVM(
 		return nil, err
 	}
 
-	imports, err = ethapi.EthereumImports(imports)
-	if err != nil {
-		return nil, err
-	}
+	// TODO: fix wasmer namespace conflicts, then uncomment
+	// imports, err = ethapi.EthereumImports(imports)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	imports, err = crypto.CryptoImports(imports)
 	if err != nil {
@@ -212,6 +212,11 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 	if err != nil {
 		fmt.Println("arwen Error", err.Error())
 		return host.createVMOutputInCaseOfError(vmcommon.FunctionWrongSignature), nil
+	}
+
+	if host.returnCode != vmcommon.Ok {
+		// user error: signalError()
+		return host.createVMOutputInCaseOfError(host.returnCode), nil
 	}
 
 	convertedResult := arwen.ConvertReturnValue(result)
