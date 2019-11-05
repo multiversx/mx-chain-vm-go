@@ -13,7 +13,7 @@ func main() {
 	//debugArwenTest("erc20/create.iele.json")
 	//debugArwenTest("erc20/balanceOf_Caller.iele.json")
 	//debugArwenTest("erc20/transfer_Caller-EntireBalance.iele.json")
-	debugArwenTest("erc20/transferFrom_Exploratory-MultipleTransfersSucceed.iele.json")
+	debugArwenTest("dummy/dummy1.wasm.json")
 
 }
 
