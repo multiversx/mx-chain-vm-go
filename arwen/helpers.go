@@ -67,6 +67,16 @@ func GetBigIntContext(pointer unsafe.Pointer) BigIntContext {
 	return ctx.BigInContext()
 }
 
+func GetCryptoContext(pointer unsafe.Pointer) CryptoContext {
+	var idx = *(*int)(pointer)
+
+	vmContextMapMu.Lock()
+	ctx := vmContextMap[uint8(idx)]
+	vmContextMapMu.Unlock()
+
+	return ctx.CryptoContext()
+}
+
 func LoadBytes(from *wasmer.Memory, offset int32, length int32) []byte {
 	result := make([]byte, length)
 	if from.Length() < uint32(offset+length) {

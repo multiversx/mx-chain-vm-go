@@ -29,7 +29,10 @@ type arwenTestExecutor struct {
 func newArwenTestExecutor() *arwenTestExecutor {
 	world := worldhook.NewMock()
 	world.EnableMockAddressGeneration()
-	vm, err := arwen.NewArwenVM(world, cryptohook.KryptoHookMockInstance, TestVMType)
+
+	blockGasLimit := uint64(10000000)
+	gasSchedule := make(map[string]uint64)
+	vm, err := arwen.NewArwenVM(world, cryptohook.KryptoHookMockInstance, TestVMType, blockGasLimit, gasSchedule)
 	if err != nil {
 		panic(err)
 	}
