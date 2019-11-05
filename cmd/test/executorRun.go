@@ -31,7 +31,7 @@ func newArwenTestExecutor() *arwenTestExecutor {
 	world.EnableMockAddressGeneration()
 
 	blockGasLimit := uint64(10000000)
-	gasSchedule := make(map[string]uint64)
+	gasSchedule := getDummyGasSchedule()
 	vm, err := arwen.NewArwenVM(world, cryptohook.KryptoHookMockInstance, TestVMType, blockGasLimit, gasSchedule)
 	if err != nil {
 		panic(err)
