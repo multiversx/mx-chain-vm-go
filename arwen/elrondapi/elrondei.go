@@ -21,7 +21,19 @@ package elrondapi
 // extern void returnData(void* context, int32_t dataOffset, int32_t length);
 // extern void signalError(void* context);
 // extern long long getGasLeft(void *context);
+//
 // extern long long getBlockTimestamp(void *context);
+// extern long long getBlockNonce(void *context);
+// extern long long getBlockRound(void *context);
+// extern long long getBlockEpoch(void *context);
+// extern void getBlockRandomSeed(void *context, int32_t resultOffset);
+// extern void getStateRootHash(void *context, int32_t resultOffset);
+//
+// extern long long getPrevBlockTimestamp(void *context);
+// extern long long getPrevBlockNonce(void *context);
+// extern long long getPrevBlockRound(void *context);
+// extern long long getPrevBlockEpoch(void *context);
+// extern void getPrevBlockRandomSeed(void *context, int32_t resultOffset);
 //
 // extern long long int64getArgument(void *context, int32_t id);
 // extern int32_t int64storageStore(void *context, int32_t keyOffset, long long value);
@@ -111,6 +123,56 @@ func ElrondEImports() (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("getBlockTimestamp", getBlockTimestamp, C.getBlockTimestamp)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getBlockNonce", getBlockNonce, C.getBlockNonce)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getBlockRound", getBlockRound, C.getBlockRound)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getBlockEpoch", getBlockEpoch, C.getBlockEpoch)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getBlockRandomSeed", getBlockRandomSeed, C.getBlockRandomSeed)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getStateRootHash", getStateRootHash, C.getStateRootHash)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getPrevBlockTimestamp", getPrevBlockTimestamp, C.getPrevBlockTimestamp)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getPrevBlockNonce", getPrevBlockNonce, C.getPrevBlockNonce)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getPrevBlockRound", getPrevBlockRound, C.getPrevBlockRound)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getPrevBlockEpoch", getPrevBlockEpoch, C.getPrevBlockEpoch)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getPrevBlockRandomSeed", getPrevBlockRandomSeed, C.getPrevBlockRandomSeed)
 	if err != nil {
 		return nil, err
 	}
@@ -379,6 +441,119 @@ func getBlockTimestamp(context unsafe.Pointer) int64 {
 	hostContext.UseGas(gasToUse)
 
 	return int64(hostContext.BlockChainHook().CurrentTimeStamp())
+}
+
+//export getBlockNonce
+func getBlockNonce(context unsafe.Pointer) int64 {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := arwen.GetErdContext(instCtx.Data())
+
+	gasToUse := hostContext.GasSchedule().ElrondAPICost.GetBlockNonce
+	hostContext.UseGas(gasToUse)
+
+	return int64(hostContext.BlockChainHook().CurrentNonce())
+}
+
+//export getBlockRound
+func getBlockRound(context unsafe.Pointer) int64 {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := arwen.GetErdContext(instCtx.Data())
+
+	gasToUse := hostContext.GasSchedule().ElrondAPICost.GetBlockRound
+	hostContext.UseGas(gasToUse)
+
+	return int64(hostContext.BlockChainHook().CurrentRound())
+}
+
+//export getBlockEpoch
+func getBlockEpoch(context unsafe.Pointer) int64 {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := arwen.GetErdContext(instCtx.Data())
+
+	gasToUse := hostContext.GasSchedule().ElrondAPICost.GetBlockEpoch
+	hostContext.UseGas(gasToUse)
+
+	return int64(hostContext.BlockChainHook().CurrentEpoch())
+}
+
+//export getBlockRandomSeed
+func getBlockRandomSeed(context unsafe.Pointer, pointer int32) {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := arwen.GetErdContext(instCtx.Data())
+
+	gasToUse := hostContext.GasSchedule().ElrondAPICost.GetBlockRandomSeed
+	hostContext.UseGas(gasToUse)
+
+	randomSeed := hostContext.BlockChainHook().CurrentRandomSeed()
+	_ = arwen.StoreBytes(instCtx.Memory(), pointer, randomSeed)
+}
+
+//export getStateRootHash
+func getStateRootHash(context unsafe.Pointer, pointer int32) {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := arwen.GetErdContext(instCtx.Data())
+
+	gasToUse := hostContext.GasSchedule().ElrondAPICost.GetStateRootHash
+	hostContext.UseGas(gasToUse)
+
+	stateRootHash := hostContext.BlockChainHook().GetStateRootHash()
+	_ = arwen.StoreBytes(instCtx.Memory(), pointer, stateRootHash)
+}
+
+//export getPrevBlockTimestamp
+func getPrevBlockTimestamp(context unsafe.Pointer) int64 {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := arwen.GetErdContext(instCtx.Data())
+
+	gasToUse := hostContext.GasSchedule().ElrondAPICost.GetBlockTimeStamp
+	hostContext.UseGas(gasToUse)
+
+	return int64(hostContext.BlockChainHook().LastTimeStamp())
+}
+
+//export getPrevBlockNonce
+func getPrevBlockNonce(context unsafe.Pointer) int64 {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := arwen.GetErdContext(instCtx.Data())
+
+	gasToUse := hostContext.GasSchedule().ElrondAPICost.GetBlockNonce
+	hostContext.UseGas(gasToUse)
+
+	return int64(hostContext.BlockChainHook().LastNonce())
+}
+
+//export getPrevBlockRound
+func getPrevBlockRound(context unsafe.Pointer) int64 {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := arwen.GetErdContext(instCtx.Data())
+
+	gasToUse := hostContext.GasSchedule().ElrondAPICost.GetBlockRound
+	hostContext.UseGas(gasToUse)
+
+	return int64(hostContext.BlockChainHook().LastRound())
+}
+
+//export getPrevBlockEpoch
+func getPrevBlockEpoch(context unsafe.Pointer) int64 {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := arwen.GetErdContext(instCtx.Data())
+
+	gasToUse := hostContext.GasSchedule().ElrondAPICost.GetBlockEpoch
+	hostContext.UseGas(gasToUse)
+
+	return int64(hostContext.BlockChainHook().LastEpoch())
+}
+
+//export getPrevBlockRandomSeed
+func getPrevBlockRandomSeed(context unsafe.Pointer, pointer int32) {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := arwen.GetErdContext(instCtx.Data())
+
+	gasToUse := hostContext.GasSchedule().ElrondAPICost.GetBlockRandomSeed
+	hostContext.UseGas(gasToUse)
+
+	randomSeed := hostContext.BlockChainHook().LastRandomSeed()
+	_ = arwen.StoreBytes(instCtx.Memory(), pointer, randomSeed)
 }
 
 //export returnData

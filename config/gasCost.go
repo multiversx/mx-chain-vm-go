@@ -26,6 +26,11 @@ type ElrondAPICost struct {
 	Int64StorageStore  uint64
 	Int64StorageLoad   uint64
 	Int64Finish        uint64
+	GetStateRootHash   uint64
+	GetBlockNonce      uint64
+	GetBlockEpoch      uint64
+	GetBlockRound      uint64
+	GetBlockRandomSeed uint64
 }
 
 type EthAPICost struct {
@@ -84,9 +89,15 @@ type BigIntAPICost struct {
 	BigIntGetExternalBalance uint64
 }
 
+type CryptoAPICost struct {
+	SHA256    uint64
+	Keccak256 uint64
+}
+
 type GasCost struct {
 	BaseOperationCost BaseOperationCost
 	BigIntAPICost     BigIntAPICost
 	EthAPICost        EthAPICost
 	ElrondAPICost     ElrondAPICost
+	CryptoAPICost     CryptoAPICost
 }
