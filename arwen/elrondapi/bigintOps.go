@@ -32,7 +32,7 @@ import (
 )
 
 func BigIntImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
-	imports = imports.Namespace("bigint")
+	imports = imports.Namespace("env")
 
 	imports, err := imports.Append("bigIntNew", bigIntNew, C.bigIntNew)
 	if err != nil {
