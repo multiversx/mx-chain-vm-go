@@ -19,7 +19,7 @@ import (
 var TestVMType = []byte{0, 0}
 
 const ignoreGas = true
-const ignoreAllLogs = true
+const ignoreAllLogs = false
 
 type arwenTestExecutor struct {
 	world *worldhook.BlockchainHookMock

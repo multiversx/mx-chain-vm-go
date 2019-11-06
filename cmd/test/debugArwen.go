@@ -9,9 +9,9 @@ import (
 )
 
 func main() {
-	debugArwenTest("erc20/create.json")
+	//debugArwenTest("erc20/create.json")
 	//debugArwenTest("erc20/balanceOf_Caller.json")
-	//debugArwenTest("erc20/transfer_Caller-EntireBalance.json")
+	debugArwenTest("erc20/transfer_Other-AllowanceIrrelevant.json")
 }
 
 func getTestRoot() string {

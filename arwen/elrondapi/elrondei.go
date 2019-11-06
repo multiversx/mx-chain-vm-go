@@ -109,7 +109,7 @@ func ElrondEImports() (*wasmer.Imports, error) {
 		return nil, err
 	}
 
-	imports, err = imports.Append("log", writeLog, C.writeLog)
+	imports, err = imports.Append("writeLog", writeLog, C.writeLog)
 	if err != nil {
 		return nil, err
 	}

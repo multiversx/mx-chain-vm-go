@@ -9,9 +9,10 @@ import (
 var excludedTests = []string{}
 
 func TestArwenTests(t *testing.T) {
-	err := controller.RunAllIeleTestsInDirectory(
+	err := controller.RunAllJSONTestsInDirectory(
 		getTestRoot(),
 		"erc20",
+		".json",
 		excludedTests,
 		newArwenTestExecutor())
 
