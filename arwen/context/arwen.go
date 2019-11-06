@@ -227,14 +227,6 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 	return vmOutput, nil
 }
 
-func opcode_costs_uniform_value(value uint32) *[wasmer.OPCODE_COUNT]uint32 {
-	opcode_costs := [wasmer.OPCODE_COUNT]uint32{}
-	for i := 0; i < wasmer.OPCODE_COUNT; i++ {
-		opcode_costs[i] = value
-	}
-	return &opcode_costs
-}
-
 func (host *vmContext) createVMOutputInCaseOfError(errCode vmcommon.ReturnCode) *vmcommon.VMOutput {
 	vmOutput := &vmcommon.VMOutput{GasRemaining: big.NewInt(0), GasRefund: big.NewInt(0)}
 	vmOutput.ReturnCode = errCode
