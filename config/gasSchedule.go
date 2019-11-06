@@ -64,12 +64,24 @@ func CreateGasConfig(gasMap map[string]uint64) (*GasCost, error) {
 		return nil, err
 	}
 
+	opcodeCosts := &WASMOpcodeCost{}
+	err = mapstructure.Decode(gasMap, opcodeCosts)
+	if err != nil {
+		return nil, err
+	}
+
+	err = checkForZeroUint64Fields(*opcodeCosts)
+	if err != nil {
+		return nil, err
+	}
+
 	gasCost := &GasCost{
 		BaseOperationCost: *baseOps,
 		BigIntAPICost:     *bigIntOps,
 		EthAPICost:        *ethOps,
 		ElrondAPICost:     *elrondOps,
 		CryptoAPICost:     *cryptOps,
+		WASMOpcodeCost:    *opcodeCosts,
 	}
 
 	return gasCost, nil
