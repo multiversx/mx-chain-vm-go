@@ -17,6 +17,7 @@ import (
 )
 
 func CryptoImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
+	imports = imports.Namespace("env")
 	imports, err := imports.Append("sha256", sha256, C.sha256)
 	if err != nil {
 		return nil, err

@@ -52,6 +52,7 @@ import (
 
 func ElrondEImports() (*wasmer.Imports, error) {
 	imports := wasmer.NewImports()
+	imports = imports.Namespace("env")
 
 	imports, err := imports.Append("getOwner", getOwner, C.getOwner)
 	if err != nil {
