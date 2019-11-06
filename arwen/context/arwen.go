@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/elrondapi"
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/ethapi"
 	"math/big"
 	"unsafe"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/crypto"
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/elrondapi"
+	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/go-ext-wasm/wasmer"
 )
@@ -28,12 +29,13 @@ type logTopicsData struct {
 	data   []byte
 }
 
-// vmContext implements evmc.HostContext interface.
+// vmContext implements HostContext interface.
 type vmContext struct {
 	BigIntContainer
 	blockChainHook vmcommon.BlockchainHook
 	cryptoHook     vmcommon.CryptoHook
 	imports        *wasmer.Imports
+	instance       wasmer.Instance
 
 	vmInput vmcommon.VMInput
 
@@ -47,14 +49,19 @@ type vmContext struct {
 	returnData     []*big.Int
 	returnCode     vmcommon.ReturnCode
 
-	selfDestruct map[string][]byte
-	ethInput     []byte
+	selfDestruct  map[string][]byte
+	ethInput      []byte
+	blockGasLimit uint64
+
+	gasCostConfig *config.GasCost
 }
 
 func NewArwenVM(
 	blockChainHook vmcommon.BlockchainHook,
 	cryptoHook vmcommon.CryptoHook,
 	vmType []byte,
+	blockGasLimit uint64,
+	gasSchedule map[string]uint64,
 ) (*vmContext, error) {
 
 	imports, err := elrondapi.ElrondEImports()
@@ -67,7 +74,18 @@ func NewArwenVM(
 		return nil, err
 	}
 
-	imports, err = ethapi.EthereumImports(imports)
+	// TODO: fix wasmer namespace conflicts, then uncomment
+	// imports, err = ethapi.EthereumImports(imports)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	imports, err = crypto.CryptoImports(imports)
+	if err != nil {
+		return nil, err
+	}
+
+	gasCostConfig, err := config.CreateGasConfig(gasSchedule)
 	if err != nil {
 		return nil, err
 	}
@@ -78,6 +96,8 @@ func NewArwenVM(
 		cryptoHook:      cryptoHook,
 		vmType:          vmType,
 		imports:         imports,
+		blockGasLimit:   blockGasLimit,
+		gasCostConfig:   gasCostConfig,
 	}
 
 	context.initInternalValues()
@@ -106,17 +126,19 @@ func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInpu
 	host.scAddress = address
 	host.addTxValueToSmartContract(input.CallValue, address)
 
-	instance, err := wasmer.NewInstanceWithImports(input.ContractCode, host.imports)
+	host.instance, err = wasmer.NewInstanceWithImports(input.ContractCode, host.imports)
 	if err != nil {
 		fmt.Println("arwen Error: ", err.Error())
 		return host.createVMOutputInCaseOfError(vmcommon.ContractInvalid), nil
 	}
 
+	defer host.instance.Close()
+
 	idContext := arwen.AddHostContext(host)
-	instance.SetContextData(unsafe.Pointer(&idContext))
+	host.instance.SetContextData(unsafe.Pointer(&idContext))
 
 	var result []byte
-	init := instance.Exports["init"]
+	init := host.instance.Exports["init"]
 	if init != nil {
 		out, err := init()
 		if err != nil {
@@ -163,24 +185,25 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 	gasLeft := input.GasProvided.Int64()
 	contract := host.GetCode(host.scAddress)
 
+	var err error
 	opcode_costs := opcode_costs_uniform_value(2)
-	instance, err := wasmer.NewMeteredInstanceWithImports(contract, host.imports, uint64(gasLeft), opcode_costs)
+	host.instance, err = wasmer.NewMeteredInstanceWithImports(contract, host.imports, uint64(gasLeft), opcode_costs)
 	if err != nil {
 		fmt.Println("arwen Error", err.Error())
 		return host.createVMOutputInCaseOfError(vmcommon.ContractInvalid), nil
 	}
 
-	defer instance.Close()
+	defer host.instance.Close()
 
 	idContext := arwen.AddHostContext(host)
-	instance.SetContextData(unsafe.Pointer(&idContext))
+	host.instance.SetContextData(unsafe.Pointer(&idContext))
 
 	if host.callFunction == "init" {
 		fmt.Println("arwen Error", ErrInitFuncCalledInRun.Error())
 		return host.createVMOutputInCaseOfError(vmcommon.UserError), nil
 	}
 
-	function, ok := instance.Exports[host.callFunction]
+	function, ok := host.instance.Exports[host.callFunction]
 	if !ok {
 		fmt.Println("arwen Error", "Function not found")
 		return host.createVMOutputInCaseOfError(vmcommon.FunctionNotFound), nil
@@ -192,8 +215,13 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 		return host.createVMOutputInCaseOfError(vmcommon.FunctionWrongSignature), nil
 	}
 
+	if host.returnCode != vmcommon.Ok {
+		// user error: signalError()
+		return host.createVMOutputInCaseOfError(host.returnCode), nil
+	}
+
 	convertedResult := arwen.ConvertReturnValue(result)
-	gasLeft = gasLeft - int64(instance.GetPointsUsed())
+	gasLeft = gasLeft - int64(host.instance.GetPointsUsed())
 	vmOutput := host.createVMOutput(convertedResult.Bytes(), gasLeft)
 
 	return vmOutput, nil
@@ -312,6 +340,10 @@ func (host *vmContext) addTxValueToSmartContract(value *big.Int, scAddress []byt
 	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
 }
 
+func (host *vmContext) GasSchedule() *config.GasCost {
+	return host.gasCostConfig
+}
+
 func (host *vmContext) EthContext() arwen.EthContext {
 	return host
 }
@@ -322,6 +354,14 @@ func (host *vmContext) CoreContext() arwen.HostContext {
 
 func (host *vmContext) BigInContext() arwen.BigIntContext {
 	return host
+}
+
+func (host *vmContext) CryptoContext() arwen.CryptoContext {
+	return host
+}
+
+func (host *vmContext) CryptoHooks() vmcommon.CryptoHook {
+	return host.cryptoHook
 }
 
 func (host *vmContext) Finish(data []byte) {
@@ -543,16 +583,23 @@ func (host *vmContext) CallData() []byte {
 	return host.ethInput
 }
 
-func (host *vmContext) UseGas(gas int64) {
-	panic("implement me")
+func (host *vmContext) UseGas(gas uint64) {
+	currGas := host.instance.GetPointsUsed()
+	if currGas > gas {
+		currGas = currGas - gas
+	} else {
+		currGas = 0
+	}
+
+	host.instance.SetPointsUsed(currGas)
 }
 
-func (host *vmContext) GasLeft() int64 {
-	panic("implement me")
+func (host *vmContext) GasLeft() uint64 {
+	return host.instance.GetPointsUsed()
 }
 
-func (host *vmContext) BlockGasLimit() int64 {
-	panic("implement me")
+func (host *vmContext) BlockGasLimit() uint64 {
+	return host.blockGasLimit
 }
 
 func (host *vmContext) BlockChainHook() vmcommon.BlockchainHook {
