@@ -8,8 +8,8 @@ package elrondapi
 //
 // extern int32_t bigIntNew(void* context, long long smallValue);
 // extern int32_t bigIntByteLength(void* context, int32_t reference);
-// extern int32_t bigIntBytesToMemory(void* context, int32_t reference, int32_t byteOffset);
-// extern void bigIntBytesFromMemory(void* context, int32_t destination, int32_t byteOffset, int32_t byteLength);
+// extern int32_t bigIntGetBytes(void* context, int32_t reference, int32_t byteOffset);
+// extern void bigIntSetBytes(void* context, int32_t destination, int32_t byteOffset, int32_t byteLength);
 // extern int32_t bigIntIsInt64(void* context, int32_t reference);
 // extern long long bigIntGetInt64(void* context, int32_t reference);
 // extern void bigIntSetInt64(void* context, int32_t destination, long long value);
@@ -45,12 +45,12 @@ func BigIntImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntBytesToMemory", bigIntBytesToMemory, C.bigIntBytesToMemory)
+	imports, err = imports.Append("bigIntGetBytes", bigIntGetBytes, C.bigIntGetBytes)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntBytesFromMemory", bigIntBytesFromMemory, C.bigIntBytesFromMemory)
+	imports, err = imports.Append("bigIntSetBytes", bigIntSetBytes, C.bigIntSetBytes)
 	if err != nil {
 		return nil, err
 	}
@@ -225,8 +225,8 @@ func bigIntByteLength(context unsafe.Pointer, reference int32) int32 {
 	return int32(len(value.Bytes()))
 }
 
-//export bigIntBytesToMemory
-func bigIntBytesToMemory(context unsafe.Pointer, reference int32, byteOffset int32) int32 {
+//export bigIntGetBytes
+func bigIntGetBytes(context unsafe.Pointer, reference int32, byteOffset int32) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetBigIntContext(instCtx.Data())
 
@@ -241,8 +241,8 @@ func bigIntBytesToMemory(context unsafe.Pointer, reference int32, byteOffset int
 	return int32(len(bytes))
 }
 
-//export bigIntBytesFromMemory
-func bigIntBytesFromMemory(context unsafe.Pointer, destination int32, byteOffset int32, byteLength int32) {
+//export bigIntSetBytes
+func bigIntSetBytes(context unsafe.Pointer, destination int32, byteOffset int32, byteLength int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetBigIntContext(instCtx.Data())
 
