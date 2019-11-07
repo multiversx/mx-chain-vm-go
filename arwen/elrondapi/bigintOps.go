@@ -8,8 +8,8 @@ package elrondapi
 //
 // extern int32_t bigIntNew(void* context, long long smallValue);
 // extern int32_t bigIntByteLength(void* context, int32_t reference);
-// extern int32_t bigIntGetBytes(void* context, int32_t reference, int32_t byteOffset);
-// extern void bigIntSetBytes(void* context, int32_t destination, int32_t byteOffset, int32_t byteLength);
+// extern int32_t bigIntBytesToMemory(void* context, int32_t reference, int32_t byteOffset);
+// extern void bigIntBytesFromMemory(void* context, int32_t destination, int32_t byteOffset, int32_t byteLength);
 // extern int32_t bigIntIsInt64(void* context, int32_t reference);
 // extern long long bigIntGetInt64(void* context, int32_t reference);
 // extern void bigIntSetInt64(void* context, int32_t destination, long long value);
@@ -18,17 +18,18 @@ package elrondapi
 // extern void bigIntMul(void* context, int32_t destination, int32_t op1, int32_t op2);
 // extern int32_t bigIntCmp(void* context, int32_t op1, int32_t op2);
 // extern void bigIntFinish(void* context, int32_t reference);
-// extern int32_t bigIntstorageStore(void *context, int32_t keyOffset, int32_t source);
-// extern int32_t bigIntstorageLoad(void *context, int32_t keyOffset, int32_t destination);
-// extern void bigIntgetArgument(void *context, int32_t id, int32_t destination);
-// extern void bigIntgetCallValue(void *context, int32_t destination);
-// extern void bigIntgetExternalBalance(void *context, int32_t addressOffset, int32_t result);
+// extern int32_t bigIntStorageStore(void *context, int32_t keyOffset, int32_t source);
+// extern int32_t bigIntStorageLoad(void *context, int32_t keyOffset, int32_t destination);
+// extern void bigIntGetArgument(void *context, int32_t id, int32_t destination);
+// extern void bigIntGetCallValue(void *context, int32_t destination);
+// extern void bigIntGetExternalBalance(void *context, int32_t addressOffset, int32_t result);
 import "C"
 
 import (
+	"unsafe"
+
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/go-ext-wasm/wasmer"
-	"unsafe"
 )
 
 func BigIntImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
@@ -44,12 +45,12 @@ func BigIntImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntGetBytes", bigIntGetBytes, C.bigIntGetBytes)
+	imports, err = imports.Append("bigIntBytesToMemory", bigIntBytesToMemory, C.bigIntBytesToMemory)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntSetBytes", bigIntSetBytes, C.bigIntSetBytes)
+	imports, err = imports.Append("bigIntBytesFromMemory", bigIntBytesFromMemory, C.bigIntBytesFromMemory)
 	if err != nil {
 		return nil, err
 	}
@@ -94,27 +95,27 @@ func BigIntImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntstorageStore", bigIntstorageStore, C.bigIntstorageStore)
+	imports, err = imports.Append("bigIntStorageStore", bigIntStorageStore, C.bigIntStorageStore)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntstorageLoad", bigIntstorageLoad, C.bigIntstorageLoad)
+	imports, err = imports.Append("bigIntStorageLoad", bigIntStorageLoad, C.bigIntStorageLoad)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntgetArgument", bigIntgetArgument, C.bigIntgetArgument)
+	imports, err = imports.Append("bigIntGetArgument", bigIntGetArgument, C.bigIntGetArgument)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntgetCallValue", bigIntgetCallValue, C.bigIntgetCallValue)
+	imports, err = imports.Append("bigIntGetCallValue", bigIntGetCallValue, C.bigIntGetCallValue)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntgetExternalBalance", bigIntgetExternalBalance, C.bigIntgetExternalBalance)
+	imports, err = imports.Append("bigIntGetExternalBalance", bigIntGetExternalBalance, C.bigIntGetExternalBalance)
 	if err != nil {
 		return nil, err
 	}
@@ -122,8 +123,8 @@ func BigIntImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	return imports, nil
 }
 
-//export bigIntgetArgument
-func bigIntgetArgument(context unsafe.Pointer, id int32, destination int32) {
+//export bigIntGetArgument
+func bigIntGetArgument(context unsafe.Pointer, id int32, destination int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetBigIntContext(instCtx.Data())
 
@@ -139,8 +140,8 @@ func bigIntgetArgument(context unsafe.Pointer, id int32, destination int32) {
 	value.Set(args[id])
 }
 
-//export bigIntstorageStore
-func bigIntstorageStore(context unsafe.Pointer, keyOffset int32, source int32) int32 {
+//export bigIntStorageStore
+func bigIntStorageStore(context unsafe.Pointer, keyOffset int32, source int32) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetBigIntContext(instCtx.Data())
 
@@ -155,8 +156,8 @@ func bigIntstorageStore(context unsafe.Pointer, keyOffset int32, source int32) i
 	return hostContext.SetStorage(hostContext.GetSCAddress(), key, bytes)
 }
 
-//export bigIntstorageLoad
-func bigIntstorageLoad(context unsafe.Pointer, keyOffset int32, destination int32) int32 {
+//export bigIntStorageLoad
+func bigIntStorageLoad(context unsafe.Pointer, keyOffset int32, destination int32) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetBigIntContext(instCtx.Data())
 
@@ -173,8 +174,8 @@ func bigIntstorageLoad(context unsafe.Pointer, keyOffset int32, destination int3
 	return int32(len(bytes))
 }
 
-//export bigIntgetCallValue
-func bigIntgetCallValue(context unsafe.Pointer, destination int32) {
+//export bigIntGetCallValue
+func bigIntGetCallValue(context unsafe.Pointer, destination int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetBigIntContext(instCtx.Data())
 
@@ -185,8 +186,8 @@ func bigIntgetCallValue(context unsafe.Pointer, destination int32) {
 	hostContext.UseGas(gasToUse)
 }
 
-//export bigIntgetExternalBalance
-func bigIntgetExternalBalance(context unsafe.Pointer, addressOffset int32, result int32) {
+//export bigIntGetExternalBalance
+func bigIntGetExternalBalance(context unsafe.Pointer, addressOffset int32, result int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetBigIntContext(instCtx.Data())
 
@@ -224,8 +225,8 @@ func bigIntByteLength(context unsafe.Pointer, reference int32) int32 {
 	return int32(len(value.Bytes()))
 }
 
-//export bigIntGetBytes
-func bigIntGetBytes(context unsafe.Pointer, reference int32, byteOffset int32) int32 {
+//export bigIntBytesToMemory
+func bigIntBytesToMemory(context unsafe.Pointer, reference int32, byteOffset int32) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetBigIntContext(instCtx.Data())
 
@@ -240,8 +241,8 @@ func bigIntGetBytes(context unsafe.Pointer, reference int32, byteOffset int32) i
 	return int32(len(bytes))
 }
 
-//export bigIntSetBytes
-func bigIntSetBytes(context unsafe.Pointer, destination int32, byteOffset int32, byteLength int32) {
+//export bigIntBytesFromMemory
+func bigIntBytesFromMemory(context unsafe.Pointer, destination int32, byteOffset int32, byteLength int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetBigIntContext(instCtx.Data())
 
