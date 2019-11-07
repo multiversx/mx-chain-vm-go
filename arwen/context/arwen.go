@@ -507,10 +507,6 @@ func (host *vmContext) BlockHash(number int64) []byte {
 }
 
 func (host *vmContext) WriteLog(addr []byte, topics [][]byte, data []byte) {
-	if len(topics) != len(data) {
-		return
-	}
-
 	strAdr := string(addr)
 
 	if _, ok := host.logs[strAdr]; !ok {
