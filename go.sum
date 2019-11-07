@@ -1,9 +1,9 @@
 github.com/ElrondNetwork/elrond-vm-common v0.0.9 h1:Ff8vEJSKChRfmp+TVo7AgciRkMXjL4+TbNin6LQ7xKw=
 github.com/ElrondNetwork/elrond-vm-common v0.0.9/go.mod h1:VqCCN0cX0e4D/KDc7MGNV9ElrOsfnjuJnGvcODVjzbk=
-github.com/ElrondNetwork/elrond-vm-util v0.0.5 h1:Ry84MAgvSbkZkQCgTrDT19xeKIg+5nB1HcehLCgfTBU=
-github.com/ElrondNetwork/elrond-vm-util v0.0.5/go.mod h1:dpR1oCiP5isV9PPcVu2gEQ+GS7DF9BqtsG1juCATmvc=
-github.com/ElrondNetwork/go-ext-wasm v0.0.5 h1:DjXOa9lAeQW8lgceKUg7NIA9L1iiIV29x3+MNM9BbRU=
-github.com/ElrondNetwork/go-ext-wasm v0.0.5/go.mod h1:wlns4D0OzJP+q/cLweFz1rGpoZOG8LbGYX2jD31HCgw=
+github.com/ElrondNetwork/elrond-vm-util v0.0.6 h1:+F0UBUt9WT2l/HHFg9SxmXdoM6PU/gXe/xtJ3gt6YhA=
+github.com/ElrondNetwork/elrond-vm-util v0.0.6/go.mod h1:dpR1oCiP5isV9PPcVu2gEQ+GS7DF9BqtsG1juCATmvc=
+github.com/ElrondNetwork/go-ext-wasm v0.0.7 h1:GZJXG9xCeK1oQZDyLXvSf1i4QeYpG0lxrXqSQEnfd8Y=
+github.com/ElrondNetwork/go-ext-wasm v0.0.7/go.mod h1:wlns4D0OzJP+q/cLweFz1rGpoZOG8LbGYX2jD31HCgw=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/mitchellh/mapstructure v1.1.2 h1:fmNYVwqnSfB9mZU6OS2O6GsXM+wcskZDuKQzvN1EDeE=

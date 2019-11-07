@@ -19,7 +19,7 @@ import (
 var TestVMType = []byte{0, 0}
 
 const ignoreGas = true
-const ignoreAllLogs = true
+const ignoreAllLogs = false
 
 type arwenTestExecutor struct {
 	world *worldhook.BlockchainHookMock
@@ -183,28 +183,6 @@ func (te *arwenTestExecutor) Run(test *ij.Test) error {
 			// check empty logs, this seems to be the value
 			if blResult.IgnoreLogs || ignoreAllLogs {
 				// nothing, ignore
-			} else if len(blResult.LogHash) > 0 {
-				// for the old tests we only check if the logs are empty or not
-				if blResult.LogHash == "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347" {
-					if len(output.Logs) != 0 {
-						return fmt.Errorf("empty logs expected. Found: %v", blResult.LogHash)
-					}
-				} else {
-					if len(output.Logs) == 0 {
-						return fmt.Errorf("non-empty logs expected")
-					}
-					for _, log := range output.Logs {
-						if !bytes.Equal(log.Address, tx.To) {
-							return fmt.Errorf("log address mismatch. Want: %s. Got: %s",
-								hex.EncodeToString(tx.To), hex.EncodeToString(log.Address))
-						}
-					}
-				}
-				// blResult.LogHash = ""
-				// blResult.Logs = nil
-				// for _, outLog := range output.Logs {
-				// 	blResult.Logs = append(blResult.Logs, convertLogToTestFormat(outLog))
-				// }
 			} else {
 				// this is the real log check
 				if len(blResult.Logs) != len(output.Logs) {
@@ -232,9 +210,7 @@ func (te *arwenTestExecutor) Run(test *ij.Test) error {
 							ij.LogToString(testLog), ij.LogToString(convertLogToTestFormat(outLog)))
 					}
 				}
-
 			}
-
 		}
 	}
 
