@@ -55,3 +55,23 @@ func TestDecode_ArwenGas(t *testing.T) {
 
 	fmt.Printf("%+v\n", ethOp)
 }
+
+func TestDecode_ZeroGasCostError(t *testing.T) {
+	gasMap := make(map[string]uint64)
+	gasMap = FillGasMapWithWASMOpcodeValues(gasMap, 1)
+
+	wasmCosts := &WASMOpcodeCost{}
+	err := mapstructure.Decode(gasMap, wasmCosts)
+	assert.Nil(t, err)
+
+	err = checkForZeroUint64Fields(*wasmCosts)
+	assert.Nil(t, err)
+
+	gasMap["BrIf"] = 0
+	wasmCosts = &WASMOpcodeCost{}
+	err = mapstructure.Decode(gasMap, wasmCosts)
+	assert.Nil(t, err)
+
+	err = checkForZeroUint64Fields(*wasmCosts)
+	assert.Error(t, err)
+}
