@@ -22,8 +22,9 @@ const ignoreGas = true
 const ignoreAllLogs = false
 
 type arwenTestExecutor struct {
-	world *worldhook.BlockchainHookMock
-	vm    vmi.VMExecutionHandler
+	world     *worldhook.BlockchainHookMock
+	vm        vmi.VMExecutionHandler
+	erc20Path string
 }
 
 func newArwenTestExecutor() *arwenTestExecutor {
@@ -42,12 +43,22 @@ func newArwenTestExecutor() *arwenTestExecutor {
 	}
 }
 
+func (te *arwenTestExecutor) setErc20Path(erc20Path string) *arwenTestExecutor {
+	te.erc20Path = erc20Path
+	return te
+}
+
 // ProcessCode takes the contract file path, assembles it and yields the bytecode.
 func (te *arwenTestExecutor) ProcessCode(testPath string, value string) (string, error) {
 	if len(value) == 0 {
 		return "", nil
 	}
-	fullPath := filepath.Join(testPath, value)
+	var fullPath string
+	if value == "wrc20_arwen.wasm" && te.erc20Path != "" {
+		fullPath = te.erc20Path
+	} else {
+		fullPath = filepath.Join(testPath, value)
+	}
 	scCode, err := ioutil.ReadFile(fullPath)
 	if err != nil {
 		return "", err
