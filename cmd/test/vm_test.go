@@ -10,13 +10,16 @@ import (
 var excludedTests = []string{}
 
 func TestErc20FromC(t *testing.T) {
-	erc20Path := filepath.Join(getTestRoot(), "contracts/erc20-c.wasm")
+	testExec := newArwenTestExecutor().replaceCode(
+		"erc20.wasm",
+		filepath.Join(getTestRoot(), "contracts/erc20-c.wasm"))
+
 	err := controller.RunAllJSONTestsInDirectory(
 		getTestRoot(),
 		"erc20",
 		".json",
 		excludedTests,
-		newArwenTestExecutor().setErc20Path(erc20Path))
+		testExec)
 
 	if err != nil {
 		t.Error(err)
@@ -24,13 +27,16 @@ func TestErc20FromC(t *testing.T) {
 }
 
 func TestErc20FromRustDebug(t *testing.T) {
-	erc20Path := filepath.Join(getTestRoot(), "contracts/erc20-rust-debug.wasm")
+	testExec := newArwenTestExecutor().replaceCode(
+		"erc20.wasm",
+		filepath.Join(getTestRoot(), "contracts/erc20-rust-debug.wasm"))
+
 	err := controller.RunAllJSONTestsInDirectory(
 		getTestRoot(),
 		"erc20",
 		".json",
 		excludedTests,
-		newArwenTestExecutor().setErc20Path(erc20Path))
+		testExec)
 
 	if err != nil {
 		t.Error(err)
@@ -38,13 +44,16 @@ func TestErc20FromRustDebug(t *testing.T) {
 }
 
 func TestErc20FromRustRelease(t *testing.T) {
-	erc20Path := filepath.Join(getTestRoot(), "contracts/erc20-rust-release.wasm")
+	testExec := newArwenTestExecutor().replaceCode(
+		"erc20.wasm",
+		filepath.Join(getTestRoot(), "contracts/erc20-rust-release.wasm"))
+
 	err := controller.RunAllJSONTestsInDirectory(
 		getTestRoot(),
 		"erc20",
 		".json",
 		excludedTests,
-		newArwenTestExecutor().setErc20Path(erc20Path))
+		testExec)
 
 	if err != nil {
 		t.Error(err)

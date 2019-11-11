@@ -11,7 +11,7 @@
                 "nonce": "0x00",
                 "balance": "0x00",
                 "storage": {},
-                "code": "wrc20_arwen.wasm"
+                "code": "erc20.wasm"
             }
         },
         "blocks": [
@@ -65,7 +65,7 @@
                 "nonce": "0x00",
                 "balance": "0x00",
                 "storage": {},
-                "code": "wrc20_arwen.wasm"
+                "code": "erc20.wasm"
             }
         }
     }

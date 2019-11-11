@@ -22,9 +22,9 @@ const ignoreGas = true
 const ignoreAllLogs = false
 
 type arwenTestExecutor struct {
-	world     *worldhook.BlockchainHookMock
-	vm        vmi.VMExecutionHandler
-	erc20Path string
+	world                    *worldhook.BlockchainHookMock
+	vm                       vmi.VMExecutionHandler
+	contractPathReplacements map[string]string
 }
 
 func newArwenTestExecutor() *arwenTestExecutor {
@@ -38,13 +38,14 @@ func newArwenTestExecutor() *arwenTestExecutor {
 		panic(err)
 	}
 	return &arwenTestExecutor{
-		world: world,
-		vm:    vm,
+		world:                    world,
+		vm:                       vm,
+		contractPathReplacements: make(map[string]string),
 	}
 }
 
-func (te *arwenTestExecutor) setErc20Path(erc20Path string) *arwenTestExecutor {
-	te.erc20Path = erc20Path
+func (te *arwenTestExecutor) replaceCode(pathInTest, actualPath string) *arwenTestExecutor {
+	te.contractPathReplacements[pathInTest] = actualPath
 	return te
 }
 
@@ -54,8 +55,8 @@ func (te *arwenTestExecutor) ProcessCode(testPath string, value string) (string,
 		return "", nil
 	}
 	var fullPath string
-	if value == "wrc20_arwen.wasm" && te.erc20Path != "" {
-		fullPath = te.erc20Path
+	if replacement, shouldReplace := te.contractPathReplacements[value]; shouldReplace {
+		fullPath = replacement
 	} else {
 		fullPath = filepath.Join(testPath, value)
 	}
