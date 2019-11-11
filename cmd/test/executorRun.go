@@ -12,7 +12,7 @@ import (
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	worldhook "github.com/ElrondNetwork/elrond-vm-util/mock-hook-blockchain"
 	cryptohook "github.com/ElrondNetwork/elrond-vm-util/mock-hook-crypto"
-	ij "github.com/ElrondNetwork/elrond-vm-util/test-util/ielejson"
+	ij "github.com/ElrondNetwork/elrond-vm-util/test-util/vmtestjson"
 )
 
 // TestVMType is the VM type argument we use in tests.

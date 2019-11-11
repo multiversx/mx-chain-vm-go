@@ -14,7 +14,7 @@ func main() {
 	}
 	jsonTestPath := os.Args[1]
 
-	err := controller.RunSingleIeleTest(
+	err := controller.RunSingleJSONTest(
 		jsonTestPath,
 		newArwenTestExecutor())
 
@@ -36,7 +36,7 @@ func getTestRoot() string {
 
 func debugArwenTest(testFile string) {
 	arwenTestRoot := getTestRoot()
-	err := controller.RunSingleIeleTest(
+	err := controller.RunSingleJSONTest(
 		filepath.Join(arwenTestRoot, testFile),
 		newArwenTestExecutor())
 
