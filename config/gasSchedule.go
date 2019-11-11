@@ -91,7 +91,7 @@ func checkForZeroUint64Fields(arg interface{}) error {
 	v := reflect.ValueOf(arg)
 	for i := 0; i < v.NumField(); i++ {
 		field := v.Field(i)
-		if field.Kind() != reflect.Uint64 {
+		if field.Kind() != reflect.Uint64 && field.Kind() != reflect.Uint32 {
 			continue
 		}
 		if field.Uint() == 0 {
