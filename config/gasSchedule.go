@@ -96,7 +96,7 @@ func checkForZeroUint64Fields(arg interface{}) error {
 		}
 		if field.Uint() == 0 {
 			name := v.Type().Field(i).Name
-			return errors.New(fmt.Sprintf("field %s has the value 0", name))
+			return errors.New(fmt.Sprintf("Gas cost for operation %s has been set to 0 or is not set.", name))
 		}
 	}
 
