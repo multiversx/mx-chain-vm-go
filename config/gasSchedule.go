@@ -103,6 +103,23 @@ func checkForZeroUint64Fields(arg interface{}) error {
 	return nil
 }
 
+func MakeGasMap(value uint64) map[string]uint64 {
+	gasMap := make(map[string]uint64)
+	gasMap = FillGasMap(gasMap, value)
+	return gasMap
+}
+
+func FillGasMap(gasMap map[string]uint64, value uint64) map[string]uint64 {
+	gasMap = FillGasMap_BaseOperationCosts(gasMap, 1)
+	gasMap = FillGasMap_ElrondAPICosts(gasMap, 1)
+	gasMap = FillGasMap_EthereumAPICosts(gasMap, 1)
+	gasMap = FillGasMap_BigIntAPICosts(gasMap, 1)
+	gasMap = FillGasMap_CryptoAPICosts(gasMap, 1)
+	gasMap = FillGasMap_WASMOpcodeValues(gasMap, 1)
+
+	return gasMap
+}
+
 func FillGasMap_BaseOperationCosts(gasMap map[string]uint64, value uint64) map[string]uint64 {
 	gasMap["StorePerByte"] = value
 	gasMap["DataCopyPerByte"] = value
