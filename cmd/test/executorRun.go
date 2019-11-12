@@ -12,7 +12,7 @@ import (
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	worldhook "github.com/ElrondNetwork/elrond-vm-util/mock-hook-blockchain"
 	cryptohook "github.com/ElrondNetwork/elrond-vm-util/mock-hook-crypto"
-	ij "github.com/ElrondNetwork/elrond-vm-util/test-util/ielejson"
+	ij "github.com/ElrondNetwork/elrond-vm-util/test-util/vmtestjson"
 )
 
 // TestVMType is the VM type argument we use in tests.
@@ -22,8 +22,9 @@ const ignoreGas = true
 const ignoreAllLogs = false
 
 type arwenTestExecutor struct {
-	world *worldhook.BlockchainHookMock
-	vm    vmi.VMExecutionHandler
+	world                    *worldhook.BlockchainHookMock
+	vm                       vmi.VMExecutionHandler
+	contractPathReplacements map[string]string
 }
 
 func newArwenTestExecutor() *arwenTestExecutor {
@@ -37,9 +38,15 @@ func newArwenTestExecutor() *arwenTestExecutor {
 		panic(err)
 	}
 	return &arwenTestExecutor{
-		world: world,
-		vm:    vm,
+		world:                    world,
+		vm:                       vm,
+		contractPathReplacements: make(map[string]string),
 	}
+}
+
+func (te *arwenTestExecutor) replaceCode(pathInTest, actualPath string) *arwenTestExecutor {
+	te.contractPathReplacements[pathInTest] = actualPath
+	return te
 }
 
 // ProcessCode takes the contract file path, assembles it and yields the bytecode.
@@ -47,7 +54,12 @@ func (te *arwenTestExecutor) ProcessCode(testPath string, value string) (string,
 	if len(value) == 0 {
 		return "", nil
 	}
-	fullPath := filepath.Join(testPath, value)
+	var fullPath string
+	if replacement, shouldReplace := te.contractPathReplacements[value]; shouldReplace {
+		fullPath = replacement
+	} else {
+		fullPath = filepath.Join(testPath, value)
+	}
 	scCode, err := ioutil.ReadFile(fullPath)
 	if err != nil {
 		return "", err

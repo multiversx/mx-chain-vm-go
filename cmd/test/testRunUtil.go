@@ -7,7 +7,7 @@ import (
 	worldhook "github.com/ElrondNetwork/elrond-vm-util/mock-hook-blockchain"
 
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
-	ij "github.com/ElrondNetwork/elrond-vm-util/test-util/ielejson"
+	ij "github.com/ElrondNetwork/elrond-vm-util/test-util/vmtestjson"
 )
 
 // for nicer error messages
