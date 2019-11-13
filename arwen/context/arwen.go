@@ -36,6 +36,7 @@ type vmContext struct {
 	blockChainHook vmcommon.BlockchainHook
 	cryptoHook     vmcommon.CryptoHook
 	imports        *wasmer.Imports
+	importObject   wasmer.ImportObject
 	instance       wasmer.Instance
 
 	vmInput vmcommon.VMInput
@@ -90,12 +91,18 @@ func NewArwenVM(
 		return nil, err
 	}
 
+	importObject, err := wasmer.NewImportObject(imports)
+	if err != nil {
+		return nil, err
+	}
+
 	context := &vmContext{
 		BigIntContainer: NewBigIntContainer(),
 		blockChainHook:  blockChainHook,
 		cryptoHook:      cryptoHook,
 		vmType:          vmType,
 		imports:         imports,
+		importObject:    importObject,
 		blockGasLimit:   blockGasLimit,
 		gasCostConfig:   gasCostConfig,
 	}
@@ -187,7 +194,7 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 
 	var err error
 	opcode_costs := host.GasSchedule().WASMOpcodeCost.ToOpcodeCostsArray()
-	host.instance, err = wasmer.NewMeteredInstanceWithImports(contract, host.imports, uint64(gasLeft), &opcode_costs)
+	host.instance, err = wasmer.NewMeteredInstanceWithImportObject(contract, &host.importObject, uint64(gasLeft), &opcode_costs)
 	if err != nil {
 		fmt.Println("arwen Error", err.Error())
 		return host.createVMOutputInCaseOfError(vmcommon.ContractInvalid), nil
