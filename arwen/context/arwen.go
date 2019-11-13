@@ -205,8 +205,12 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 
 	function, ok := host.instance.Exports[host.callFunction]
 	if !ok {
-		fmt.Println("arwen Error", "Function not found")
-		return host.createVMOutputInCaseOfError(vmcommon.FunctionNotFound), nil
+		if host.isEthContractCall() {
+			function, _ = host.instance.Exports["main"]
+		} else {
+			fmt.Println("arwen Error", "Function not found")
+			return host.createVMOutputInCaseOfError(vmcommon.FunctionNotFound), nil
+		}
 	}
 
 	result, err := function()
@@ -231,6 +235,13 @@ func (host *vmContext) createVMOutputInCaseOfError(errCode vmcommon.ReturnCode) 
 	vmOutput := &vmcommon.VMOutput{GasRemaining: big.NewInt(0), GasRefund: big.NewInt(0)}
 	vmOutput.ReturnCode = errCode
 	return vmOutput
+}
+
+func (host *vmContext) isEthContractCall() bool {
+	exports := host.instance.Exports
+	hasSingleExport := len(exports) == 1
+	_, hasExportedMain := exports["main"]
+	return hasSingleExport && hasExportedMain
 }
 
 // adapt vm output and all saved data from sc run into VM Output
