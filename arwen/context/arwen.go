@@ -176,6 +176,7 @@ func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInpu
 
 	arwen.RemoveHostContext(idContext)
 
+	gasLeft = gasLeft - int64(host.instance.GetPointsUsed())
 	vmOutput := host.createVMOutput(result, gasLeft)
 
 	return vmOutput, err
