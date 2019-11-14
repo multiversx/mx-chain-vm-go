@@ -200,7 +200,7 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 		return host.createVMOutputInCaseOfError(vmcommon.ContractInvalid), nil
 	}
 
-	defer host.instance.Close()
+	defer host.instance.Clean()
 
 	idContext := arwen.AddHostContext(host)
 	host.instance.SetContextData(unsafe.Pointer(&idContext))
