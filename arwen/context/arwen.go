@@ -56,6 +56,7 @@ type vmContext struct {
 	blockGasLimit uint64
 
 	gasCostConfig *config.GasCost
+	opcodeCosts   [wasmer.OPCODE_COUNT]uint32
 }
 
 func NewArwenVM(
@@ -105,6 +106,7 @@ func NewArwenVM(
 		importObject:    importObject,
 		blockGasLimit:   blockGasLimit,
 		gasCostConfig:   gasCostConfig,
+		opcodeCosts:     gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray(),
 	}
 
 	context.initInternalValues()
@@ -137,8 +139,12 @@ func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInpu
 	// take out contract creation gas
 	gasLeft = gasLeft - int64(len(input.ContractCode))
 
-	opcode_costs := host.GasSchedule().WASMOpcodeCost.ToOpcodeCostsArray()
-	host.instance, err = wasmer.NewMeteredInstanceWithImportObject(input.ContractCode, &host.importObject, uint64(gasLeft), &opcode_costs)
+	host.instance, err = wasmer.NewMeteredInstanceWithImportObject(
+		input.ContractCode,
+		&host.importObject,
+		uint64(gasLeft),
+		&host.opcodeCosts)
+
 	if err != nil {
 		fmt.Println("arwen Error: ", err.Error())
 		return host.createVMOutputInCaseOfError(vmcommon.ContractInvalid), nil
@@ -194,8 +200,12 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 	contract := host.GetCode(host.scAddress)
 
 	var err error
-	opcode_costs := host.GasSchedule().WASMOpcodeCost.ToOpcodeCostsArray()
-	host.instance, err = wasmer.NewMeteredInstanceWithImportObject(contract, &host.importObject, uint64(gasLeft), &opcode_costs)
+	host.instance, err = wasmer.NewMeteredInstanceWithImportObject(
+		contract,
+		&host.importObject,
+		uint64(gasLeft),
+		&host.opcodeCosts)
+
 	if err != nil {
 		fmt.Println("arwen Error", err.Error())
 		return host.createVMOutputInCaseOfError(vmcommon.ContractInvalid), nil
