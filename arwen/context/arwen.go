@@ -133,7 +133,9 @@ func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInpu
 	host.scAddress = address
 	host.addTxValueToSmartContract(input.CallValue, address)
 
-	host.instance, err = wasmer.NewInstanceWithImports(input.ContractCode, host.imports)
+	gasLeft := input.GasProvided.Int64()
+	opcode_costs := host.GasSchedule().WASMOpcodeCost.ToOpcodeCostsArray()
+	host.instance, err = wasmer.NewMeteredInstanceWithImportObject(input.ContractCode, &host.importObject, uint64(gasLeft), &opcode_costs)
 	if err != nil {
 		fmt.Println("arwen Error: ", err.Error())
 		return host.createVMOutputInCaseOfError(vmcommon.ContractInvalid), nil
@@ -155,8 +157,6 @@ func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInpu
 		convertedResult := arwen.ConvertReturnValue(out)
 		result = convertedResult.Bytes()
 	}
-
-	gasLeft := input.GasProvided.Int64()
 
 	// take out contract creation gas
 	gasLeft = gasLeft - int64(len(input.ContractCode))
