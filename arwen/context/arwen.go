@@ -36,7 +36,6 @@ type vmContext struct {
 	blockChainHook vmcommon.BlockchainHook
 	cryptoHook     vmcommon.CryptoHook
 	imports        *wasmer.Imports
-	importObject   wasmer.ImportObject
 	instance       wasmer.Instance
 
 	vmInput vmcommon.VMInput
@@ -92,10 +91,7 @@ func NewArwenVM(
 		return nil, err
 	}
 
-	importObject, err := wasmer.NewImportObject(imports)
-	if err != nil {
-		return nil, err
-	}
+	opcodeCosts := gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray()
 
 	context := &vmContext{
 		BigIntContainer: NewBigIntContainer(),
@@ -103,13 +99,15 @@ func NewArwenVM(
 		cryptoHook:      cryptoHook,
 		vmType:          vmType,
 		imports:         imports,
-		importObject:    importObject,
 		blockGasLimit:   blockGasLimit,
 		gasCostConfig:   gasCostConfig,
-		opcodeCosts:     gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray(),
+		opcodeCosts:     opcodeCosts,
 	}
 
 	context.initInternalValues()
+
+	wasmer.SetImports(context.imports)
+	wasmer.SetOpcodeCosts(&context.opcodeCosts)
 
 	return context, nil
 }
@@ -139,11 +137,7 @@ func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInpu
 	// take out contract creation gas
 	gasLeft = gasLeft - int64(len(input.ContractCode))
 
-	host.instance, err = wasmer.NewMeteredInstanceWithImportObject(
-		input.ContractCode,
-		&host.importObject,
-		uint64(gasLeft),
-		&host.opcodeCosts)
+	host.instance, err = wasmer.NewMeteredInstance(input.ContractCode, uint64(gasLeft))
 
 	if err != nil {
 		fmt.Println("arwen Error: ", err.Error())
@@ -200,11 +194,7 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 	contract := host.GetCode(host.scAddress)
 
 	var err error
-	host.instance, err = wasmer.NewMeteredInstanceWithImportObject(
-		contract,
-		&host.importObject,
-		uint64(gasLeft),
-		&host.opcodeCosts)
+	host.instance, err = wasmer.NewMeteredInstance(contract, uint64(gasLeft))
 
 	if err != nil {
 		fmt.Println("arwen Error", err.Error())
