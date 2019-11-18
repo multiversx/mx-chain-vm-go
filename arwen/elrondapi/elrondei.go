@@ -9,7 +9,7 @@ package elrondapi
 // extern void getOwner(void *context, int32_t resultOffset);
 // extern void getExternalBalance(void *context, int32_t addressOffset, int32_t resultOffset);
 // extern int32_t blockHash(void *context, long long nonce, int32_t resultOffset);
-// extern int32_t transferValue(void *context, long long gasLimit, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
+// extern int32_t transferValue(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
 // extern int32_t getArgument(void *context, int32_t id, int32_t argOffset);
 // extern int32_t getFunction(void *context, int32_t functionOffset);
 // extern int32_t getNumArguments(void *context);
@@ -22,7 +22,11 @@ package elrondapi
 // extern void signalError(void* context);
 // extern long long getGasLeft(void *context);
 //
-//
+// extern i32 ethcallCode(void *context, long long gas, i32ptr addressOffset, i32ptr valueOffset, i32ptr dataOffset, i32 dataLength);
+// extern i32 ethcallDelegate(void *context, long long gas, i32ptr addressOffset, i32ptr dataOffset, i32 dataLength);
+// extern i32 ethcallStatic(void *context, long long gas, i32ptr addressOffset, i32ptr dataOffset, i32 dataLength);
+// extern i32 ethcreate(void *context, i32ptr valueoffset, i32ptr dataOffset, i32 length, i32ptr resultsOffset);
+// extern i32 ethcall(void *context, long long gas, i32ptr addressOffset, i32ptr valueOffset, i32ptr dataOffset, i32 dataLength);
 //
 // extern long long getBlockTimestamp(void *context);
 // extern long long getBlockNonce(void *context);
@@ -276,7 +280,7 @@ func blockHash(context unsafe.Pointer, nonce int64, resultOffset int32) int32 {
 }
 
 //export transferValue
-func transferValue(context unsafe.Pointer, gasLimit int64, destOffset int32, valueOffset int32, dataOffset int32, length int32) int32 {
+func transferValue(context unsafe.Pointer, destOffset int32, valueOffset int32, dataOffset int32, length int32) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetErdContext(instCtx.Data())
 
@@ -289,10 +293,7 @@ func transferValue(context unsafe.Pointer, gasLimit int64, destOffset int32, val
 	gasToUse += hostContext.GasSchedule().BaseOperationCost.StorePerByte * uint64(length)
 	hostContext.UseGas(gasToUse)
 
-	_, err := hostContext.Transfer(dest, send, big.NewInt(0).SetBytes(value), data, gasLimit)
-	if err != nil {
-		return 1
-	}
+	hostContext.Transfer(dest, send, big.NewInt(0).SetBytes(value), data)
 
 	return 0
 }

@@ -41,11 +41,12 @@ package ethapi
 // extern long long ethgetBlockTimestamp(void *context);
 import "C"
 import (
+	"math/big"
+	"unsafe"
+
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/go-ext-wasm/wasmer"
-	"math/big"
-	"unsafe"
 )
 
 func EthereumImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
@@ -630,10 +631,7 @@ func ethcall(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueO
 	}
 
 	bigIntVal := big.NewInt(0).SetBytes(value)
-	_, err := ethContext.Transfer(dest, send, bigIntVal, nil, gasLimit)
-	if err != nil {
-		return 1
-	}
+	ethContext.Transfer(dest, send, bigIntVal, nil)
 
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
@@ -646,7 +644,7 @@ func ethcall(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueO
 		RecipientAddr: dest,
 		Function:      "main",
 	}
-	err = ethContext.ExecuteOnDestContext(contractCallInput)
+	err := ethContext.ExecuteOnDestContext(contractCallInput)
 	if err != nil {
 		return 1
 	}
@@ -672,6 +670,7 @@ func ethcallCode(context unsafe.Pointer, gasLimit int64, addressOffset int32, va
 		return 1
 	}
 
+	ethContext.Transfer(dest, send, big.NewInt(0).SetBytes(value), nil)
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallerAddr:  send,
@@ -710,6 +709,7 @@ func ethcallDelegate(context unsafe.Pointer, gasLimit int64, addressOffset int32
 		return 1
 	}
 
+	ethContext.Transfer(address, sender, value, nil)
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallerAddr:  sender,
@@ -747,6 +747,8 @@ func ethcallStatic(context unsafe.Pointer, gasLimit int64, addressOffset int32, 
 	if ethContext.GasLeft() < uint64(gasLimit) {
 		return 1
 	}
+
+	ethContext.Transfer(address, sender, value, nil)
 
 	ethContext.SetReadOnly(true)
 	contractCallInput := &vmcommon.ContractCallInput{

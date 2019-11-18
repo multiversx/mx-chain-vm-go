@@ -25,7 +25,7 @@ type EthContext interface {
 	WriteLog(addr []byte, topics [][]byte, data []byte)
 	SelfDestruct(addr []byte, beneficiary []byte)
 	BlockChainHook() vmcommon.BlockchainHook
-	Transfer(destination []byte, sender []byte, value *big.Int, input []byte, gas int64) (gasLeft int64, err error)
+	Transfer(destination []byte, sender []byte, value *big.Int, input []byte)
 	ReturnData() [][]byte
 
 	SetReadOnly(readOnly bool)
@@ -47,7 +47,7 @@ type HostContext interface {
 	GetVMInput() vmcommon.VMInput
 	GetSCAddress() []byte
 	WriteLog(addr []byte, topics [][]byte, data []byte)
-	Transfer(destination []byte, sender []byte, value *big.Int, input []byte, gas int64) (gasLeft int64, err error)
+	Transfer(destination []byte, sender []byte, value *big.Int, input []byte)
 	Finish(data []byte)
 	BlockChainHook() vmcommon.BlockchainHook
 	SignalUserError()
