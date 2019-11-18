@@ -624,21 +624,7 @@ func (host *vmContext) CreateNewContract(input *vmcommon.ContractCreateInput) ([
 	return nil, nil
 }
 
-func (host *vmContext) ExecuteOnSameContext(input *vmcommon.ContractCallInput) error {
-	currVmInput := host.vmInput
-	currScAddress := host.scAddress
-	currCallFunction := host.callFunction
-
-	defer func() {
-		host.vmInput = currVmInput
-		host.scAddress = currScAddress
-		host.callFunction = currCallFunction
-	}()
-
-	host.vmInput = input.VMInput
-	host.scAddress = input.RecipientAddr
-	host.callFunction = input.Function
-
+func (host *vmContext) execute(input *vmcommon.ContractCallInput) error {
 	gasLeft := input.GasProvided
 	contract := host.GetCode(host.scAddress)
 
@@ -647,7 +633,12 @@ func (host *vmContext) ExecuteOnSameContext(input *vmcommon.ContractCallInput) e
 		return err
 	}
 
-	defer newInstance.Clean()
+	oldInstance := host.instance
+	host.instance = newInstance
+	defer func() {
+		host.instance = oldInstance
+		newInstance.Clean()
+	}()
 
 	idContext := arwen.AddHostContext(host)
 	newInstance.SetContextData(unsafe.Pointer(&idContext))
@@ -677,8 +668,70 @@ func (host *vmContext) ExecuteOnSameContext(input *vmcommon.ContractCallInput) e
 	return nil
 }
 
+func (host *vmContext) ExecuteOnSameContext(input *vmcommon.ContractCallInput) error {
+	currVmInput := host.vmInput
+	currScAddress := host.scAddress
+	currCallFunction := host.callFunction
+
+	host.vmInput = input.VMInput
+	host.scAddress = input.RecipientAddr
+	host.callFunction = input.Function
+
+	err := host.execute(input)
+
+	host.vmInput = currVmInput
+	host.scAddress = currScAddress
+	host.callFunction = currCallFunction
+
+	return err
+}
+
+func (host *vmContext) copyToNewContext() *vmContext {
+	newContext := vmContext{
+		BigIntContainer: host.BigIntContainer,
+		logs:            host.logs,
+		readOnly:        host.readOnly,
+		storageUpdate:   host.storageUpdate,
+		outputAccounts:  host.outputAccounts,
+		returnData:      host.returnData,
+		returnCode:      host.returnCode,
+		selfDestruct:    host.selfDestruct,
+	}
+
+	return &newContext
+}
+
+func (host *vmContext) copyFromContext(currContext *vmContext) {
+	host.BigIntContainer = currContext.BigIntContainer
+	host.logs = currContext.logs
+	host.readOnly = currContext.readOnly
+	host.storageUpdate = currContext.storageUpdate
+	host.outputAccounts = currContext.outputAccounts
+	host.returnData = currContext.returnData
+	host.returnCode = currContext.returnCode
+	host.selfDestruct = currContext.selfDestruct
+}
+
 func (host *vmContext) ExecuteOnDestContext(input *vmcommon.ContractCallInput) error {
-	panic("implement me")
+	currVmInput := host.vmInput
+	currScAddress := host.scAddress
+	currCallFunction := host.callFunction
+
+	currContext := host.copyToNewContext()
+
+	host.vmInput = input.VMInput
+	host.scAddress = input.RecipientAddr
+	host.callFunction = input.Function
+
+	host.initInternalValues()
+	err := host.execute(input)
+
+	host.copyFromContext(currContext)
+	host.vmInput = currVmInput
+	host.scAddress = currScAddress
+	host.callFunction = currCallFunction
+
+	return err
 }
 
 // The first four bytes is the method selector. The rest of the input data are method arguments in chunks of 32 bytes.
