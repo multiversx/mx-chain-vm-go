@@ -51,6 +51,11 @@ type HostContext interface {
 	Finish(data []byte)
 	BlockChainHook() vmcommon.BlockchainHook
 	SignalUserError()
+
+	SetReadOnly(readOnly bool)
+	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
+	ExecuteOnSameContext(input *vmcommon.ContractCallInput) error
+	ExecuteOnDestContext(input *vmcommon.ContractCallInput) error
 }
 
 type BigIntContext interface {
