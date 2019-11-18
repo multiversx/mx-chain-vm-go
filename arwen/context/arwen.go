@@ -205,9 +205,13 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 		return host.createVMOutputInCaseOfError(vmcommon.ContractInvalid), nil
 	}
 
-	defer host.instance.Clean()
-
 	idContext := arwen.AddHostContext(host)
+
+	defer func() {
+		host.instance.Clean()
+		arwen.RemoveHostContext(idContext)
+	}()
+
 	host.instance.SetContextData(unsafe.Pointer(&idContext))
 
 	if host.callFunction == "init" {
@@ -468,8 +472,33 @@ func (host *vmContext) GetBalance(addr []byte) []byte {
 		return big.NewInt(0).Bytes()
 	}
 
-	host.outputAccounts[strAdr] = &vmcommon.OutputAccount{Balance: big.NewInt(0).Set(balance), Address: addr}
+	host.outputAccounts[strAdr] = &vmcommon.OutputAccount{
+		Balance:      big.NewInt(0).Set(balance),
+		BalanceDelta: big.NewInt(0),
+		Address:      addr,
+	}
+
 	return balance.Bytes()
+}
+
+func (host *vmContext) GetNonce(addr []byte) uint64 {
+	strAdr := string(addr)
+	if _, ok := host.outputAccounts[strAdr]; ok {
+		return host.outputAccounts[strAdr].Nonce
+	}
+
+	nonce, err := host.blockChainHook.GetNonce(addr)
+	if err != nil {
+		fmt.Printf("GetNonce returned with error %s \n", err.Error())
+	}
+
+	host.outputAccounts[strAdr] = &vmcommon.OutputAccount{BalanceDelta: big.NewInt(0), Address: addr, Nonce: nonce}
+	return nonce
+}
+
+func (host *vmContext) increaseNonce(addr []byte) {
+	nonce := host.GetNonce(addr)
+	host.outputAccounts[string(addr)].Nonce = nonce + 1
 }
 
 func (host *vmContext) GetCodeSize(addr []byte) int32 {
@@ -621,7 +650,77 @@ func (host *vmContext) CreateNewContract(input *vmcommon.ContractCreateInput) ([
 		return nil, ErrInvalidCallOnReadOnlyMode
 	}
 
-	return nil, nil
+	currVmInput := host.vmInput
+	currScAddress := host.scAddress
+	currCallFunction := host.callFunction
+
+	defer func() {
+		host.vmInput = currVmInput
+		host.scAddress = currScAddress
+		host.callFunction = currCallFunction
+	}()
+
+	host.vmInput = input.VMInput
+
+	nonce := host.GetNonce(input.CallerAddr)
+
+	address, err := host.blockChainHook.NewAddress(input.CallerAddr, nonce, host.vmType)
+	if err != nil {
+		return nil, err
+	}
+
+	host.increaseNonce(input.CallerAddr)
+	host.scAddress = address
+
+	gasLeft := input.GasProvided
+	gasLeft = gasLeft - uint64(len(input.ContractCode))
+
+	newInstance, err := wasmer.NewMeteredInstance(input.ContractCode, gasLeft)
+	if err != nil {
+		fmt.Println("arwen Error: ", err.Error())
+		return nil, err
+	}
+
+	idContext := arwen.AddHostContext(host)
+	oldInstance := host.instance
+	host.instance = newInstance
+	defer func() {
+		host.instance = oldInstance
+		newInstance.Clean()
+		arwen.RemoveHostContext(idContext)
+	}()
+
+	host.instance.SetContextData(unsafe.Pointer(&idContext))
+
+	var result []byte
+	init := host.instance.Exports["init"]
+	if init != nil {
+		out, err := init()
+		if err != nil {
+			fmt.Println("arwen Error", err.Error())
+			return nil, err
+		}
+		convertedResult := arwen.ConvertReturnValue(out)
+		result = convertedResult.Bytes()
+		host.Finish(result)
+	}
+
+	newSCAcc, ok := host.outputAccounts[string(address)]
+	if !ok {
+		host.outputAccounts[string(address)] = &vmcommon.OutputAccount{
+			Address:        address,
+			Nonce:          0,
+			BalanceDelta:   big.NewInt(0),
+			StorageUpdates: nil,
+			Code:           input.ContractCode,
+		}
+	} else {
+		newSCAcc.Code = input.ContractCode
+	}
+
+	gasLeft = gasLeft - host.instance.GetPointsUsed()
+
+	return address, nil
 }
 
 func (host *vmContext) execute(input *vmcommon.ContractCallInput) error {
@@ -630,17 +729,25 @@ func (host *vmContext) execute(input *vmcommon.ContractCallInput) error {
 
 	newInstance, err := wasmer.NewMeteredInstance(contract, gasLeft)
 	if err != nil {
+		host.UseGas(input.GasProvided)
 		return err
 	}
 
+	idContext := arwen.AddHostContext(host)
 	oldInstance := host.instance
 	host.instance = newInstance
 	defer func() {
 		host.instance = oldInstance
+		if err != nil {
+			host.UseGas(input.GasProvided)
+		} else {
+			host.UseGas(newInstance.GetPointsUsed())
+		}
+
 		newInstance.Clean()
+		arwen.RemoveHostContext(idContext)
 	}()
 
-	idContext := arwen.AddHostContext(host)
 	newInstance.SetContextData(unsafe.Pointer(&idContext))
 
 	if host.callFunction == "init" {
@@ -663,7 +770,6 @@ func (host *vmContext) execute(input *vmcommon.ContractCallInput) error {
 
 	convertedResult := arwen.ConvertReturnValue(result)
 	host.Finish(convertedResult.Bytes())
-	host.UseGas(newInstance.GetPointsUsed())
 
 	return nil
 }
@@ -732,6 +838,10 @@ func (host *vmContext) ExecuteOnDestContext(input *vmcommon.ContractCallInput) e
 	host.callFunction = currCallFunction
 
 	return err
+}
+
+func (host *vmContext) ReturnData() [][]byte {
+	return host.returnData
 }
 
 // The first four bytes is the method selector. The rest of the input data are method arguments in chunks of 32 bytes.

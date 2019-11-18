@@ -42,6 +42,7 @@ package ethapi
 import "C"
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/go-ext-wasm/wasmer"
 	"math/big"
 	"unsafe"
@@ -552,13 +553,40 @@ func ethgetBlockTimestamp(context unsafe.Pointer) int64 {
 
 //export ethgetReturnDataSize
 func ethgetReturnDataSize(context unsafe.Pointer) int32 {
-	//TODO: implement
-	return 0
+	instCtx := wasmer.IntoInstanceContext(context)
+	ethContext := arwen.GetEthContext(instCtx.Data())
+
+	gasToUse := ethContext.GasSchedule().EthAPICost.GetReturnDataSize
+	ethContext.UseGas(gasToUse)
+
+	returnData := ethContext.ReturnData()
+	size := int32(0)
+	for _, data := range returnData {
+		size += int32(len(data))
+	}
+
+	return size
 }
 
 //export ethreturnDataCopy
 func ethreturnDataCopy(context unsafe.Pointer, resultOffset int32, dataOffset int32, length int32) {
-	//TODO: implement
+	instCtx := wasmer.IntoInstanceContext(context)
+	ethContext := arwen.GetEthContext(instCtx.Data())
+
+	gasToUse := ethContext.GasSchedule().EthAPICost.ReturnDataCopy
+	ethContext.UseGas(gasToUse)
+
+	returnData := ethContext.ReturnData()
+	ethReturnData := make([]byte, 0)
+	for _, data := range returnData {
+		ethReturnData = append(ethReturnData, data...)
+	}
+
+	if int32(len(ethReturnData)) < dataOffset+length {
+		return
+	}
+
+	_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, ethReturnData[dataOffset:dataOffset+length])
 }
 
 //export ethgetBlockCoinbase
@@ -607,7 +635,18 @@ func ethcall(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueO
 		return 1
 	}
 
-	err = ethContext.ExecuteOnDestContext(dest, send, bigIntVal, uint64(gasLimit), data)
+	contractCallInput := &vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			CallerAddr:  send,
+			Arguments:   [][]byte{data},
+			CallValue:   bigIntVal,
+			GasPrice:    0,
+			GasProvided: uint64(gasLimit),
+		},
+		RecipientAddr: dest,
+		Function:      "main",
+	}
+	err = ethContext.ExecuteOnDestContext(contractCallInput)
 	if err != nil {
 		return 1
 	}
@@ -633,7 +672,18 @@ func ethcallCode(context unsafe.Pointer, gasLimit int64, addressOffset int32, va
 		return 1
 	}
 
-	err := ethContext.ExecuteOnSameContext(dest, send, big.NewInt(0).SetBytes(value), uint64(gasLimit), data)
+	contractCallInput := &vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			CallerAddr:  send,
+			Arguments:   [][]byte{data},
+			CallValue:   big.NewInt(0).SetBytes(value),
+			GasPrice:    0,
+			GasProvided: uint64(gasLimit),
+		},
+		RecipientAddr: dest,
+		Function:      "main",
+	}
+	err := ethContext.ExecuteOnSameContext(contractCallInput)
 	if err != nil {
 		return 1
 	}
@@ -650,7 +700,6 @@ func ethcallDelegate(context unsafe.Pointer, gasLimit int64, addressOffset int32
 	sender := ethContext.GetVMInput().CallerAddr
 
 	address := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.HashLen)
-	code := ethContext.GetCode(address)
 	data := arwen.LoadBytes(instCtx.Memory(), dataOffset, dataLength)
 
 	gasToUse := ethContext.GasSchedule().EthAPICost.CallDelegate
@@ -661,7 +710,18 @@ func ethcallDelegate(context unsafe.Pointer, gasLimit int64, addressOffset int32
 		return 1
 	}
 
-	err := ethContext.ExecuteOnSameContext(code, sender, value, uint64(gasLimit), data)
+	contractCallInput := &vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			CallerAddr:  sender,
+			Arguments:   [][]byte{data},
+			CallValue:   value,
+			GasPrice:    0,
+			GasProvided: uint64(gasLimit),
+		},
+		RecipientAddr: address,
+		Function:      "main",
+	}
+	err := ethContext.ExecuteOnSameContext(contractCallInput)
 	if err != nil {
 		return 1
 	}
@@ -675,7 +735,6 @@ func ethcallStatic(context unsafe.Pointer, gasLimit int64, addressOffset int32, 
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
 	address := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.HashLen)
-	code := ethContext.GetCode(address)
 	data := arwen.LoadBytes(instCtx.Memory(), dataOffset, dataLength)
 
 	value := ethContext.GetVMInput().CallValue
@@ -690,7 +749,18 @@ func ethcallStatic(context unsafe.Pointer, gasLimit int64, addressOffset int32, 
 	}
 
 	ethContext.SetReadOnly(true)
-	err := ethContext.ExecuteOnSameContext(code, sender, value, uint64(gasLimit), data)
+	contractCallInput := &vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			CallerAddr:  sender,
+			Arguments:   [][]byte{data},
+			CallValue:   value,
+			GasPrice:    0,
+			GasProvided: uint64(gasLimit),
+		},
+		RecipientAddr: address,
+		Function:      "main",
+	}
+	err := ethContext.ExecuteOnSameContext(contractCallInput)
 	ethContext.SetReadOnly(false)
 	if err != nil {
 		return 1
@@ -713,7 +783,17 @@ func ethcreate(context unsafe.Pointer, valueOffset int32, dataOffset int32, leng
 	ethContext.UseGas(gasToUse)
 	gasLimit := ethContext.GasLeft()
 
-	newAddress, err := ethContext.CreateNewContract(sender, big.NewInt(0).SetBytes(value), gasLimit, data)
+	contractCreate := &vmcommon.ContractCreateInput{
+		VMInput: vmcommon.VMInput{
+			CallerAddr:  sender,
+			Arguments:   nil,
+			CallValue:   big.NewInt(0).SetBytes(value),
+			GasPrice:    0,
+			GasProvided: gasLimit,
+		},
+		ContractCode: data,
+	}
+	newAddress, err := ethContext.CreateNewContract(contractCreate)
 	if err != nil {
 		return 1
 	}

@@ -26,6 +26,7 @@ type EthContext interface {
 	SelfDestruct(addr []byte, beneficiary []byte)
 	BlockChainHook() vmcommon.BlockchainHook
 	Transfer(destination []byte, sender []byte, value *big.Int, input []byte, gas int64) (gasLeft int64, err error)
+	ReturnData() [][]byte
 
 	SetReadOnly(readOnly bool)
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
