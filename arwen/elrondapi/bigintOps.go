@@ -137,7 +137,8 @@ func bigIntGetArgument(context unsafe.Pointer, id int32, destination int32) {
 	}
 
 	value := hostContext.GetOne(destination)
-	value.Set(args[id])
+
+	value.SetBytes(args[id])
 }
 
 //export bigIntStorageStore

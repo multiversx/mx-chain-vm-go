@@ -9,7 +9,7 @@ package elrondapi
 // extern void getOwner(void *context, int32_t resultOffset);
 // extern void getExternalBalance(void *context, int32_t addressOffset, int32_t resultOffset);
 // extern int32_t blockHash(void *context, long long nonce, int32_t resultOffset);
-// extern int32_t transferValue(void *context, long long gasLimit, int32_t dstOffset, int32_t sndOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
+// extern int32_t transferValue(void *context, long long gasLimit, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
 // extern int32_t getArgument(void *context, int32_t id, int32_t argOffset);
 // extern int32_t getFunction(void *context, int32_t functionOffset);
 // extern int32_t getNumArguments(void *context);
@@ -21,6 +21,8 @@ package elrondapi
 // extern void returnData(void* context, int32_t dataOffset, int32_t length);
 // extern void signalError(void* context);
 // extern long long getGasLeft(void *context);
+//
+//
 //
 // extern long long getBlockTimestamp(void *context);
 // extern long long getBlockNonce(void *context);
@@ -274,11 +276,11 @@ func blockHash(context unsafe.Pointer, nonce int64, resultOffset int32) int32 {
 }
 
 //export transferValue
-func transferValue(context unsafe.Pointer, gasLimit int64, sndOffset int32, destOffset int32, valueOffset int32, dataOffset int32, length int32) int32 {
+func transferValue(context unsafe.Pointer, gasLimit int64, destOffset int32, valueOffset int32, dataOffset int32, length int32) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetErdContext(instCtx.Data())
 
-	send := arwen.LoadBytes(instCtx.Memory(), sndOffset, arwen.AddressLen)
+	send := hostContext.GetSCAddress()
 	dest := arwen.LoadBytes(instCtx.Memory(), destOffset, arwen.AddressLen)
 	value := arwen.LoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
 	data := arwen.LoadBytes(instCtx.Memory(), dataOffset, length)
@@ -308,12 +310,12 @@ func getArgument(context unsafe.Pointer, id int32, argOffset int32) int32 {
 		return -1
 	}
 
-	err := arwen.StoreBytes(instCtx.Memory(), argOffset, args[id].Bytes())
+	err := arwen.StoreBytes(instCtx.Memory(), argOffset, args[id])
 	if err != nil {
 		return -1
 	}
 
-	return int32(len(args[id].Bytes()))
+	return int32(len(args[id]))
 }
 
 //export getFunction
@@ -584,7 +586,8 @@ func int64getArgument(context unsafe.Pointer, id int32) int64 {
 		return -1
 	}
 
-	return args[id].Int64()
+	argBigInt := big.NewInt(0).SetBytes(args[id])
+	return argBigInt.Int64()
 }
 
 //export int64storageStore
