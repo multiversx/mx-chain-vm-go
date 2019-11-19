@@ -23,6 +23,11 @@
     Int64StorageStore  = 10
     Int64StorageLoad   = 10
     Int64Finish        = 10
+    ExecuteOnSameContext = 10
+    ExecuteOnDestContext = 10
+    DelegateExecution    = 10
+    ExecuteReadOnly      = 10
+    CreateContract       = 10
 
 [EthAPICost]
     UseGas              = 10

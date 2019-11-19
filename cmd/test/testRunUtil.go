@@ -51,15 +51,6 @@ func convertLogToTestFormat(outputLog *vmi.LogEntry) *ij.LogEntry {
 	return &testLog
 }
 
-func convertBlockHeader(testBlh *ij.BlockHeader) *vmi.SCCallHeader {
-	return &vmi.SCCallHeader{
-		Beneficiary: testBlh.Beneficiary,
-		Number:      testBlh.Number,
-		GasLimit:    testBlh.GasLimit,
-		Timestamp:   testBlh.UnixTimestamp,
-	}
-}
-
 var zero = big.NewInt(0)
 
 func zeroIfNil(i *big.Int) *big.Int {

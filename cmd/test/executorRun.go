@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 
 	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen/context"
+	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	worldhook "github.com/ElrondNetwork/elrond-vm-util/mock-hook-blockchain"
 	cryptohook "github.com/ElrondNetwork/elrond-vm-util/mock-hook-crypto"
@@ -32,7 +33,7 @@ func newArwenTestExecutor() *arwenTestExecutor {
 	world.EnableMockAddressGeneration()
 
 	blockGasLimit := uint64(10000000)
-	gasSchedule := getDummyGasSchedule()
+	gasSchedule := config.MakeGasMap(1)
 	vm, err := arwen.NewArwenVM(world, cryptohook.KryptoHookMockInstance, TestVMType, blockGasLimit, gasSchedule)
 	if err != nil {
 		panic(err)
@@ -91,6 +92,10 @@ func (te *arwenTestExecutor) Run(test *ij.Test) error {
 				return beforeErr
 			}
 
+			arguments := make([][]byte, len(tx.Arguments))
+			for i, arg := range tx.Arguments {
+				arguments[i] = append(arguments[i], arg.Bytes()...)
+			}
 			var output *vmi.VMOutput
 
 			if tx.IsCreate {
@@ -98,11 +103,10 @@ func (te *arwenTestExecutor) Run(test *ij.Test) error {
 					ContractCode: []byte(tx.AssembledCode),
 					VMInput: vmi.VMInput{
 						CallerAddr:  tx.From,
-						Arguments:   tx.Arguments,
+						Arguments:   arguments,
 						CallValue:   tx.Value,
-						GasPrice:    tx.GasPrice,
-						GasProvided: tx.GasLimit,
-						Header:      convertBlockHeader(block.BlockHeader),
+						GasPrice:    tx.GasPrice.Uint64(),
+						GasProvided: tx.GasLimit.Uint64(),
 					},
 				}
 
@@ -117,11 +121,10 @@ func (te *arwenTestExecutor) Run(test *ij.Test) error {
 					Function:      tx.Function,
 					VMInput: vmi.VMInput{
 						CallerAddr:  tx.From,
-						Arguments:   tx.Arguments,
+						Arguments:   arguments,
 						CallValue:   tx.Value,
-						GasPrice:    tx.GasPrice,
-						GasProvided: tx.GasLimit,
-						Header:      convertBlockHeader(block.BlockHeader),
+						GasPrice:    tx.GasPrice.Uint64(),
+						GasProvided: tx.GasLimit.Uint64(),
 					},
 				}
 
@@ -162,15 +165,20 @@ func (te *arwenTestExecutor) Run(test *ij.Test) error {
 				return fmt.Errorf("result code mismatch. Tx #%d. Want: %d. Have: %d", txIndex, expectedStatus, int(output.ReturnCode))
 			}
 
+			asBigIntList := make([]*big.Int, len(output.ReturnData))
+			for i, data := range output.ReturnData {
+				asBigIntList[i] = big.NewInt(0).SetBytes(data)
+			}
+
 			// check result
 			if len(output.ReturnData) != len(blResult.Out) {
 				return fmt.Errorf("result length mismatch. Tx #%d. Want: %s. Have: %s",
-					txIndex, resultAsString(blResult.Out), resultAsString(output.ReturnData))
+					txIndex, resultAsString(blResult.Out), resultAsString(asBigIntList))
 			}
 			for i, expected := range blResult.Out {
-				if expected.Cmp(output.ReturnData[i]) != 0 {
+				if expected.Cmp(big.NewInt(0).SetBytes(output.ReturnData[i])) != 0 {
 					return fmt.Errorf("result mismatch. Tx #%d. Want: %s. Have: %s",
-						txIndex, resultAsString(blResult.Out), resultAsString(output.ReturnData))
+						txIndex, resultAsString(blResult.Out), resultAsString(asBigIntList))
 				}
 			}
 
