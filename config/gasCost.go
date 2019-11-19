@@ -38,8 +38,7 @@ type ElrondAPICost struct {
 	DelegateExecution    uint64
 	ExecuteReadOnly      uint64
 	CreateContract       uint64
-	ReturnDataCopy       uint64
-	ReturnDataSize       uint64
+	GetReturnData        uint64
 	GetNumReturnData     uint64
 	GetReturnDataSize    uint64
 }

@@ -986,7 +986,7 @@ func getReturnData(context unsafe.Pointer, resultId int32, dataOffset int32) int
 	instCtx := wasmer.IntoInstanceContext(context)
 	erdContext := arwen.GetErdContext(instCtx.Data())
 
-	gasToUse := erdContext.GasSchedule().ElrondAPICost.ReturnDataCopy
+	gasToUse := erdContext.GasSchedule().ElrondAPICost.GetReturnData
 	erdContext.UseGas(gasToUse)
 
 	returnData := erdContext.ReturnData()
