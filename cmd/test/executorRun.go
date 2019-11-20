@@ -92,6 +92,10 @@ func (te *arwenTestExecutor) Run(test *ij.Test) error {
 				return beforeErr
 			}
 
+			arguments := make([][]byte, len(tx.Arguments))
+			for i, arg := range tx.Arguments {
+				arguments[i] = append(arguments[i], arg.ToBytes()...)
+			}
 			var output *vmi.VMOutput
 
 			if tx.IsCreate {
@@ -99,7 +103,7 @@ func (te *arwenTestExecutor) Run(test *ij.Test) error {
 					ContractCode: []byte(tx.AssembledCode),
 					VMInput: vmi.VMInput{
 						CallerAddr:  tx.From,
-						Arguments:   tx.Arguments,
+						Arguments:   arguments,
 						CallValue:   tx.Value,
 						GasPrice:    tx.GasPrice,
 						GasProvided: tx.GasLimit,
@@ -117,7 +121,7 @@ func (te *arwenTestExecutor) Run(test *ij.Test) error {
 					Function:      tx.Function,
 					VMInput: vmi.VMInput{
 						CallerAddr:  tx.From,
-						Arguments:   tx.Arguments,
+						Arguments:   arguments,
 						CallValue:   tx.Value,
 						GasPrice:    tx.GasPrice,
 						GasProvided: tx.GasLimit,

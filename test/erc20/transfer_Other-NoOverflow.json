@@ -49,7 +49,7 @@
                         "to": "0x1000000000000000000000000000000000000000000000000000000000000000",
                         "arguments": [
                             "0x0200000000000000000000000000000000000000000000000000000000000000",
-                            "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+                            "+0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
                         ],
                         "contractCode": "",
                         "gasPrice": "0x01",
