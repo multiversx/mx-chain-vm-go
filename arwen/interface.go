@@ -51,6 +51,7 @@ type HostContext interface {
 	Finish(data []byte)
 	BlockChainHook() vmcommon.BlockchainHook
 	SignalUserError()
+	ReturnData() [][]byte
 
 	SetReadOnly(readOnly bool)
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)

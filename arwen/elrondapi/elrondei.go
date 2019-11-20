@@ -28,6 +28,10 @@ package elrondapi
 // extern int32_t executeReadOnly(void *context, long long gas, int32_t addressOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t createContract(void *context, int32_t valueOffset, int32_t codeOffset, int32_t length, int32_t resultOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 //
+// extern int32_t getNumReturnData(void *context);
+// extern int32_t getReturnDataSize(void *context, int32_t resultId);
+// extern int32_t getReturnData(void *context, int32_t resultId, int32_t dataOffset);
+//
 // extern long long getBlockTimestamp(void *context);
 // extern long long getBlockNonce(void *context);
 // extern long long getBlockRound(void *context);
@@ -211,6 +215,21 @@ func ElrondEImports() (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("executeReadOnly", executeReadOnly, C.executeReadOnly)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getNumReturnData", getNumReturnData, C.getNumReturnData)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getReturnDataSize", getReturnDataSize, C.getReturnDataSize)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getReturnData", getReturnData, C.getReturnData)
 	if err != nil {
 		return nil, err
 	}
@@ -940,4 +959,49 @@ func createContract(
 	_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, newAddress)
 
 	return 0
+}
+
+//export getNumReturnData
+func getNumReturnData(context unsafe.Pointer) int32 {
+	instCtx := wasmer.IntoInstanceContext(context)
+	ethContext := arwen.GetEthContext(instCtx.Data())
+
+	gasToUse := ethContext.GasSchedule().ElrondAPICost.GetNumReturnData
+	ethContext.UseGas(gasToUse)
+
+	returnData := ethContext.ReturnData()
+	return int32(len(returnData))
+}
+
+//export getReturnDataSize
+func getReturnDataSize(context unsafe.Pointer, resultId int32) int32 {
+	instCtx := wasmer.IntoInstanceContext(context)
+	erdContext := arwen.GetErdContext(instCtx.Data())
+
+	gasToUse := erdContext.GasSchedule().ElrondAPICost.GetReturnDataSize
+	erdContext.UseGas(gasToUse)
+
+	returnData := erdContext.ReturnData()
+	if int32(len(returnData)) >= resultId {
+		return 0
+	}
+
+	return int32(len(returnData[resultId]))
+}
+
+//export getReturnData
+func getReturnData(context unsafe.Pointer, resultId int32, dataOffset int32) int32 {
+	instCtx := wasmer.IntoInstanceContext(context)
+	erdContext := arwen.GetErdContext(instCtx.Data())
+
+	gasToUse := erdContext.GasSchedule().ElrondAPICost.GetReturnData
+	erdContext.UseGas(gasToUse)
+
+	returnData := erdContext.ReturnData()
+	if int32(len(returnData)) >= resultId {
+		return 0
+	}
+
+	_ = arwen.StoreBytes(instCtx.Memory(), dataOffset, returnData[resultId])
+	return int32(len(returnData[resultId]))
 }
