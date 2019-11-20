@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 
 	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen/context"
+	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	worldhook "github.com/ElrondNetwork/elrond-vm-util/mock-hook-blockchain"
 	cryptohook "github.com/ElrondNetwork/elrond-vm-util/mock-hook-crypto"
@@ -32,7 +33,7 @@ func newArwenTestExecutor() *arwenTestExecutor {
 	world.EnableMockAddressGeneration()
 
 	blockGasLimit := uint64(10000000)
-	gasSchedule := getDummyGasSchedule()
+	gasSchedule := config.MakeGasMap(1)
 	vm, err := arwen.NewArwenVM(world, cryptohook.KryptoHookMockInstance, TestVMType, blockGasLimit, gasSchedule)
 	if err != nil {
 		panic(err)
@@ -102,7 +103,6 @@ func (te *arwenTestExecutor) Run(test *ij.Test) error {
 						CallValue:   tx.Value,
 						GasPrice:    tx.GasPrice,
 						GasProvided: tx.GasLimit,
-						Header:      convertBlockHeader(block.BlockHeader),
 					},
 				}
 
@@ -121,7 +121,6 @@ func (te *arwenTestExecutor) Run(test *ij.Test) error {
 						CallValue:   tx.Value,
 						GasPrice:    tx.GasPrice,
 						GasProvided: tx.GasLimit,
-						Header:      convertBlockHeader(block.BlockHeader),
 					},
 				}
 
@@ -165,12 +164,12 @@ func (te *arwenTestExecutor) Run(test *ij.Test) error {
 			// check result
 			if len(output.ReturnData) != len(blResult.Out) {
 				return fmt.Errorf("result length mismatch. Tx #%d. Want: %s. Have: %s",
-					txIndex, resultAsString(blResult.Out), resultAsString(output.ReturnData))
+					txIndex, ij.ResultAsString(blResult.Out), ij.ResultAsString(output.ReturnData))
 			}
 			for i, expected := range blResult.Out {
-				if expected.Cmp(output.ReturnData[i]) != 0 {
+				if !ij.ResultEqual(expected, output.ReturnData[i]) {
 					return fmt.Errorf("result mismatch. Tx #%d. Want: %s. Have: %s",
-						txIndex, resultAsString(blResult.Out), resultAsString(output.ReturnData))
+						txIndex, ij.ResultAsString(blResult.Out), ij.ResultAsString(output.ReturnData))
 				}
 			}
 

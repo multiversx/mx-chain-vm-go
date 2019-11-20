@@ -29,6 +29,7 @@ import (
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 	"github.com/ElrondNetwork/go-ext-wasm/wasmer"
 )
 
@@ -137,7 +138,8 @@ func bigIntGetArgument(context unsafe.Pointer, id int32, destination int32) {
 	}
 
 	value := hostContext.GetOne(destination)
-	value.Set(args[id])
+
+	twos.SetBytes(value, args[id])
 }
 
 //export bigIntStorageStore

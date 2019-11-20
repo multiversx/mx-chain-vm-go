@@ -41,10 +41,12 @@ package ethapi
 // extern long long ethgetBlockTimestamp(void *context);
 import "C"
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/go-ext-wasm/wasmer"
 	"math/big"
 	"unsafe"
+
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/go-ext-wasm/wasmer"
 )
 
 func EthereumImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
@@ -269,28 +271,6 @@ func ethgetBlockHash(context unsafe.Pointer, number int64, resultOffset int32) i
 	return 1
 }
 
-//export ethcall
-func ethcall(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueOffset int32, dataOffset int32, dataLength int32) int32 {
-	instCtx := wasmer.IntoInstanceContext(context)
-	ethContext := arwen.GetEthContext(instCtx.Data())
-
-	send := ethContext.GetVMInput().CallerAddr
-	dest := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
-	value := arwen.LoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
-	data := arwen.LoadBytes(instCtx.Memory(), dataOffset, dataLength)
-
-	gasToUse := ethContext.GasSchedule().EthAPICost.Call
-	gasToUse += ethContext.GasSchedule().BaseOperationCost.StorePerByte * uint64(len(data))
-	ethContext.UseGas(gasToUse)
-
-	_, err := ethContext.Transfer(dest, send, big.NewInt(0).SetBytes(value), data, gasLimit)
-	if err != nil {
-		return 1
-	}
-
-	return 0
-}
-
 //export ethcallDataCopy
 func ethcallDataCopy(context unsafe.Pointer, resultOffset int32, dataOffset int32, length int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
@@ -464,9 +444,10 @@ func ethgetTxGasPrice(context unsafe.Pointer, valueOffset int32) {
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
 	gasPrice := ethContext.GetVMInput().GasPrice
+	gasBigInt := big.NewInt(0).SetUint64(gasPrice)
 
 	gasU128 := make([]byte, 16)
-	copy(gasU128[16-len(gasPrice.Bytes()):], gasPrice.Bytes())
+	copy(gasU128[16-len(gasBigInt.Bytes()):], gasBigInt.Bytes())
 
 	_ = arwen.StoreBytes(instCtx.Memory(), valueOffset, gasU128)
 
@@ -551,63 +532,275 @@ func ethselfDestruct(context unsafe.Pointer, addressOffset int32) {
 
 //export ethgetBlockNumber
 func ethgetBlockNumber(context unsafe.Pointer) int64 {
-	//instCtx := wasmer.IntoInstanceContext(context)
-	//ethContext := arwen.arwen.GetEthContext(instCtx.Data())
+	instCtx := wasmer.IntoInstanceContext(context)
+	ethContext := arwen.GetEthContext(instCtx.Data())
 
-	//TODO: implement
-	return 0 //ethContext.BlockNonce()
+	gasToUse := ethContext.GasSchedule().EthAPICost.GetBlockNumber
+	ethContext.UseGas(gasToUse)
+
+	return int64(ethContext.BlockChainHook().CurrentNonce())
 }
 
 //export ethgetBlockTimestamp
 func ethgetBlockTimestamp(context unsafe.Pointer) int64 {
-	//instCtx := wasmer.IntoInstanceContext(context)
-	//ethContext := arwen.arwen.GetEthContext(instCtx.Data())
+	instCtx := wasmer.IntoInstanceContext(context)
+	ethContext := arwen.GetEthContext(instCtx.Data())
 
-	//return ethContext.BlockTimeStamp()
-	return 0
+	gasToUse := ethContext.GasSchedule().EthAPICost.GetBlockTimeStamp
+	ethContext.UseGas(gasToUse)
+
+	return int64(ethContext.BlockChainHook().CurrentTimeStamp())
 }
 
 //export ethgetReturnDataSize
 func ethgetReturnDataSize(context unsafe.Pointer) int32 {
-	//TODO: implement
-	return 0
+	instCtx := wasmer.IntoInstanceContext(context)
+	ethContext := arwen.GetEthContext(instCtx.Data())
+
+	gasToUse := ethContext.GasSchedule().EthAPICost.GetReturnDataSize
+	ethContext.UseGas(gasToUse)
+
+	returnData := ethContext.ReturnData()
+	size := int32(0)
+	for _, data := range returnData {
+		size += int32(len(data))
+	}
+
+	return size
 }
 
 //export ethreturnDataCopy
 func ethreturnDataCopy(context unsafe.Pointer, resultOffset int32, dataOffset int32, length int32) {
-	//TODO: implement
+	instCtx := wasmer.IntoInstanceContext(context)
+	ethContext := arwen.GetEthContext(instCtx.Data())
+
+	gasToUse := ethContext.GasSchedule().EthAPICost.ReturnDataCopy
+	ethContext.UseGas(gasToUse)
+
+	returnData := ethContext.ReturnData()
+	ethReturnData := make([]byte, 0)
+	for _, data := range returnData {
+		ethReturnData = append(ethReturnData, data...)
+	}
+
+	if int32(len(ethReturnData)) < dataOffset+length {
+		return
+	}
+
+	_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, ethReturnData[dataOffset:dataOffset+length])
 }
 
 //export ethgetBlockCoinbase
 func ethgetBlockCoinbase(context unsafe.Pointer, resultOffset int32) {
-	//TODO: implement
+	instCtx := wasmer.IntoInstanceContext(context)
+	ethContext := arwen.GetEthContext(instCtx.Data())
+
+	gasToUse := ethContext.GasSchedule().EthAPICost.GetBlockCoinbase
+	ethContext.UseGas(gasToUse)
+
+	_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, ethContext.BlockChainHook().CurrentRandomSeed())
 }
 
 //export ethgetBlockDifficulty
 func ethgetBlockDifficulty(context unsafe.Pointer, resultOffset int32) {
-	//TODO: implement
+	instCtx := wasmer.IntoInstanceContext(context)
+	ethContext := arwen.GetEthContext(instCtx.Data())
+
+	gasToUse := ethContext.GasSchedule().EthAPICost.GetBlockCoinbase
+	ethContext.UseGas(gasToUse)
+
+	_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, ethContext.BlockChainHook().CurrentRandomSeed())
+}
+
+//export ethcall
+func ethcall(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueOffset int32, dataOffset int32, dataLength int32) int32 {
+	instCtx := wasmer.IntoInstanceContext(context)
+	ethContext := arwen.GetEthContext(instCtx.Data())
+
+	send := ethContext.GetSCAddress()
+	dest := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
+	value := arwen.LoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
+	data := arwen.LoadBytes(instCtx.Memory(), dataOffset, dataLength)
+
+	gasToUse := ethContext.GasSchedule().EthAPICost.Call
+	gasToUse += ethContext.GasSchedule().BaseOperationCost.StorePerByte * uint64(len(data))
+	ethContext.UseGas(gasToUse)
+
+	if ethContext.GasLeft() < uint64(gasLimit) {
+		return 1
+	}
+
+	bigIntVal := big.NewInt(0).SetBytes(value)
+	ethContext.Transfer(dest, send, bigIntVal, nil)
+
+	contractCallInput := &vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			CallerAddr:  send,
+			Arguments:   [][]byte{data},
+			CallValue:   bigIntVal,
+			GasPrice:    0,
+			GasProvided: uint64(gasLimit),
+		},
+		RecipientAddr: dest,
+		Function:      "main",
+	}
+	err := ethContext.ExecuteOnDestContext(contractCallInput)
+	if err != nil {
+		return 1
+	}
+
+	return 0
 }
 
 //export ethcallCode
 func ethcallCode(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueOffset int32, dataOffset int32, dataLength int32) int32 {
-	//TODO: implement
+	instCtx := wasmer.IntoInstanceContext(context)
+	ethContext := arwen.GetEthContext(instCtx.Data())
+
+	send := ethContext.GetSCAddress()
+	dest := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
+	value := arwen.LoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
+	data := arwen.LoadBytes(instCtx.Memory(), dataOffset, dataLength)
+
+	gasToUse := ethContext.GasSchedule().EthAPICost.CallCode
+	gasToUse += ethContext.GasSchedule().BaseOperationCost.StorePerByte * uint64(len(data))
+	ethContext.UseGas(gasToUse)
+
+	if ethContext.GasLeft() < uint64(gasLimit) {
+		return 1
+	}
+
+	ethContext.Transfer(dest, send, big.NewInt(0).SetBytes(value), nil)
+	contractCallInput := &vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			CallerAddr:  send,
+			Arguments:   [][]byte{data},
+			CallValue:   big.NewInt(0).SetBytes(value),
+			GasPrice:    0,
+			GasProvided: uint64(gasLimit),
+		},
+		RecipientAddr: dest,
+		Function:      "main",
+	}
+	err := ethContext.ExecuteOnSameContext(contractCallInput)
+	if err != nil {
+		return 1
+	}
+
 	return 0
 }
 
 //export ethcallDelegate
 func ethcallDelegate(context unsafe.Pointer, gasLimit int64, addressOffset int32, dataOffset int32, dataLength int32) int32 {
-	//TODO: implement
+	instCtx := wasmer.IntoInstanceContext(context)
+	ethContext := arwen.GetEthContext(instCtx.Data())
+
+	value := ethContext.GetVMInput().CallValue
+	sender := ethContext.GetVMInput().CallerAddr
+
+	address := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.HashLen)
+	data := arwen.LoadBytes(instCtx.Memory(), dataOffset, dataLength)
+
+	gasToUse := ethContext.GasSchedule().EthAPICost.CallDelegate
+	gasToUse += ethContext.GasSchedule().BaseOperationCost.StorePerByte * uint64(len(data))
+	ethContext.UseGas(gasToUse)
+
+	if ethContext.GasLeft() < uint64(gasLimit) {
+		return 1
+	}
+
+	ethContext.Transfer(address, sender, value, nil)
+	contractCallInput := &vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			CallerAddr:  sender,
+			Arguments:   [][]byte{data},
+			CallValue:   value,
+			GasPrice:    0,
+			GasProvided: uint64(gasLimit),
+		},
+		RecipientAddr: address,
+		Function:      "main",
+	}
+	err := ethContext.ExecuteOnSameContext(contractCallInput)
+	if err != nil {
+		return 1
+	}
+
 	return 0
 }
 
 //export ethcallStatic
 func ethcallStatic(context unsafe.Pointer, gasLimit int64, addressOffset int32, dataOffset int32, dataLength int32) int32 {
-	//TODO: implement
+	instCtx := wasmer.IntoInstanceContext(context)
+	ethContext := arwen.GetEthContext(instCtx.Data())
+
+	address := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.HashLen)
+	data := arwen.LoadBytes(instCtx.Memory(), dataOffset, dataLength)
+
+	value := ethContext.GetVMInput().CallValue
+	sender := ethContext.GetVMInput().CallerAddr
+
+	gasToUse := ethContext.GasSchedule().EthAPICost.CallStatic
+	gasToUse += ethContext.GasSchedule().BaseOperationCost.StorePerByte * uint64(len(data))
+	ethContext.UseGas(gasToUse)
+
+	if ethContext.GasLeft() < uint64(gasLimit) {
+		return 1
+	}
+
+	ethContext.Transfer(address, sender, value, nil)
+
+	ethContext.SetReadOnly(true)
+	contractCallInput := &vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			CallerAddr:  sender,
+			Arguments:   [][]byte{data},
+			CallValue:   value,
+			GasPrice:    0,
+			GasProvided: uint64(gasLimit),
+		},
+		RecipientAddr: address,
+		Function:      "main",
+	}
+	err := ethContext.ExecuteOnSameContext(contractCallInput)
+	ethContext.SetReadOnly(false)
+	if err != nil {
+		return 1
+	}
+
 	return 0
 }
 
 //export ethcreate
 func ethcreate(context unsafe.Pointer, valueOffset int32, dataOffset int32, length int32, resultOffset int32) int32 {
-	//TODO: implement
+	instCtx := wasmer.IntoInstanceContext(context)
+	ethContext := arwen.GetEthContext(instCtx.Data())
+
+	sender := ethContext.GetSCAddress()
+	value := arwen.LoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
+	data := arwen.LoadBytes(instCtx.Memory(), dataOffset, length)
+
+	gasToUse := ethContext.GasSchedule().EthAPICost.Create
+	gasToUse += ethContext.GasSchedule().BaseOperationCost.StorePerByte * uint64(len(data))
+	ethContext.UseGas(gasToUse)
+	gasLimit := ethContext.GasLeft()
+
+	contractCreate := &vmcommon.ContractCreateInput{
+		VMInput: vmcommon.VMInput{
+			CallerAddr:  sender,
+			Arguments:   nil,
+			CallValue:   big.NewInt(0).SetBytes(value),
+			GasPrice:    0,
+			GasProvided: gasLimit,
+		},
+		ContractCode: data,
+	}
+	newAddress, err := ethContext.CreateNewContract(contractCreate)
+	if err != nil {
+		return 1
+	}
+
+	_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, newAddress)
+
 	return 0
 }

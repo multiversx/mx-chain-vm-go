@@ -153,6 +153,14 @@ func FillGasMap_ElrondAPICosts(gasMap map[string]uint64, value uint64) map[strin
 	gasMap["GetBlockEpoch"] = value
 	gasMap["GetBlockRound"] = value
 	gasMap["GetBlockRandomSeed"] = value
+	gasMap["ExecuteOnSameContext"] = value
+	gasMap["ExecuteOnDestContext"] = value
+	gasMap["DelegateExecution"] = value
+	gasMap["ExecuteReadOnly"] = value
+	gasMap["CreateContract"] = value
+	gasMap["GetReturnData"] = value
+	gasMap["GetNumReturnData"] = value
+	gasMap["GetReturnDataSize"] = value
 
 	return gasMap
 }

@@ -16,7 +16,6 @@ type EthContext interface {
 	GetBalance(addr []byte) []byte
 	BlockHash(nonce int64) []byte
 	GetVMInput() vmcommon.VMInput
-	Transfer(destination []byte, sender []byte, value *big.Int, input []byte, gas int64) (gasLeft int64, err error)
 	GetStorage(addr []byte, key []byte) []byte
 	SetStorage(addr []byte, key []byte, value []byte) int32
 	GetCode(addr []byte) []byte
@@ -25,6 +24,14 @@ type EthContext interface {
 	Finish(data []byte)
 	WriteLog(addr []byte, topics [][]byte, data []byte)
 	SelfDestruct(addr []byte, beneficiary []byte)
+	BlockChainHook() vmcommon.BlockchainHook
+	Transfer(destination []byte, sender []byte, value *big.Int, input []byte)
+	ReturnData() [][]byte
+
+	SetReadOnly(readOnly bool)
+	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
+	ExecuteOnSameContext(input *vmcommon.ContractCallInput) error
+	ExecuteOnDestContext(input *vmcommon.ContractCallInput) error
 }
 
 type HostContext interface {
@@ -32,7 +39,7 @@ type HostContext interface {
 	UseGas(gas uint64)
 	GasLeft() uint64
 	Function() string
-	Arguments() []*big.Int
+	Arguments() [][]byte
 	GetStorage(addr []byte, key []byte) []byte
 	SetStorage(addr []byte, key []byte, value []byte) int32
 	GetBalance(addr []byte) []byte
@@ -40,10 +47,16 @@ type HostContext interface {
 	GetVMInput() vmcommon.VMInput
 	GetSCAddress() []byte
 	WriteLog(addr []byte, topics [][]byte, data []byte)
-	Transfer(destination []byte, sender []byte, value *big.Int, input []byte, gas int64) (gasLeft int64, err error)
+	Transfer(destination []byte, sender []byte, value *big.Int, input []byte)
 	Finish(data []byte)
 	BlockChainHook() vmcommon.BlockchainHook
 	SignalUserError()
+	ReturnData() [][]byte
+
+	SetReadOnly(readOnly bool)
+	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
+	ExecuteOnSameContext(input *vmcommon.ContractCallInput) error
+	ExecuteOnDestContext(input *vmcommon.ContractCallInput) error
 }
 
 type BigIntContext interface {
@@ -54,7 +67,7 @@ type BigIntContext interface {
 	GetOne(id int32) *big.Int
 	GetTwo(id1, id2 int32) (*big.Int, *big.Int)
 	GetThree(id1, id2, id3 int32) (*big.Int, *big.Int, *big.Int)
-	Arguments() []*big.Int
+	Arguments() [][]byte
 	GetStorage(addr []byte, key []byte) []byte
 	SetStorage(addr []byte, key []byte, value []byte) int32
 	GetVMInput() vmcommon.VMInput

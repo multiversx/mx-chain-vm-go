@@ -9,7 +9,7 @@ package elrondapi
 // extern void getOwner(void *context, int32_t resultOffset);
 // extern void getExternalBalance(void *context, int32_t addressOffset, int32_t resultOffset);
 // extern int32_t blockHash(void *context, long long nonce, int32_t resultOffset);
-// extern int32_t transferValue(void *context, long long gasLimit, int32_t dstOffset, int32_t sndOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
+// extern int32_t transferValue(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
 // extern int32_t getArgument(void *context, int32_t id, int32_t argOffset);
 // extern int32_t getFunction(void *context, int32_t functionOffset);
 // extern int32_t getNumArguments(void *context);
@@ -21,6 +21,16 @@ package elrondapi
 // extern void returnData(void* context, int32_t dataOffset, int32_t length);
 // extern void signalError(void* context);
 // extern long long getGasLeft(void *context);
+//
+// extern int32_t executeOnDestContext(void *context, long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern int32_t executeOnSameContext(void *context, long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern int32_t delegateExecution(void *context, long long gas, int32_t addressOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern int32_t executeReadOnly(void *context, long long gas, int32_t addressOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern int32_t createContract(void *context, int32_t valueOffset, int32_t codeOffset, int32_t length, int32_t resultOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+//
+// extern int32_t getNumReturnData(void *context);
+// extern int32_t getReturnDataSize(void *context, int32_t resultId);
+// extern int32_t getReturnData(void *context, int32_t resultId, int32_t dataOffset);
 //
 // extern long long getBlockTimestamp(void *context);
 // extern long long getBlockNonce(void *context);
@@ -46,7 +56,7 @@ import (
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/go-ext-wasm/wasmer"
 )
 
@@ -184,6 +194,46 @@ func ElrondEImports() (*wasmer.Imports, error) {
 		return nil, err
 	}
 
+	imports, err = imports.Append("executeOnDestContext", executeOnDestContext, C.executeOnDestContext)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("executeOnSameContext", executeOnSameContext, C.executeOnSameContext)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("delegateExecution", delegateExecution, C.delegateExecution)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("createContract", createContract, C.createContract)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("executeReadOnly", executeReadOnly, C.executeReadOnly)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getNumReturnData", getNumReturnData, C.getNumReturnData)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getReturnDataSize", getReturnDataSize, C.getReturnDataSize)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getReturnData", getReturnData, C.getReturnData)
+	if err != nil {
+		return nil, err
+	}
+
 	imports, err = imports.Append("int64getArgument", int64getArgument, C.int64getArgument)
 	if err != nil {
 		return nil, err
@@ -274,11 +324,11 @@ func blockHash(context unsafe.Pointer, nonce int64, resultOffset int32) int32 {
 }
 
 //export transferValue
-func transferValue(context unsafe.Pointer, gasLimit int64, sndOffset int32, destOffset int32, valueOffset int32, dataOffset int32, length int32) int32 {
+func transferValue(context unsafe.Pointer, destOffset int32, valueOffset int32, dataOffset int32, length int32) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetErdContext(instCtx.Data())
 
-	send := arwen.LoadBytes(instCtx.Memory(), sndOffset, arwen.AddressLen)
+	send := hostContext.GetSCAddress()
 	dest := arwen.LoadBytes(instCtx.Memory(), destOffset, arwen.AddressLen)
 	value := arwen.LoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
 	data := arwen.LoadBytes(instCtx.Memory(), dataOffset, length)
@@ -287,10 +337,7 @@ func transferValue(context unsafe.Pointer, gasLimit int64, sndOffset int32, dest
 	gasToUse += hostContext.GasSchedule().BaseOperationCost.StorePerByte * uint64(length)
 	hostContext.UseGas(gasToUse)
 
-	_, err := hostContext.Transfer(dest, send, big.NewInt(0).SetBytes(value), data, gasLimit)
-	if err != nil {
-		return 1
-	}
+	hostContext.Transfer(dest, send, big.NewInt(0).SetBytes(value), data)
 
 	return 0
 }
@@ -308,12 +355,20 @@ func getArgument(context unsafe.Pointer, id int32, argOffset int32) int32 {
 		return -1
 	}
 
-	err := arwen.StoreBytes(instCtx.Memory(), argOffset, args[id].Bytes())
+	// this endpoint interprets arguments as unsigned positive ints, so it removes leading zeros
+	// this solution is temporary
+	// TODO: replace with left-aligned fixed width arguments for addresses
+	arg := args[id]
+	for len(arg) > 0 && arg[0] == 0 {
+		arg = arg[1:]
+	}
+
+	err := arwen.StoreBytes(instCtx.Memory(), argOffset, arg)
 	if err != nil {
 		return -1
 	}
 
-	return int32(len(args[id].Bytes()))
+	return int32(len(args[id]))
 }
 
 //export getFunction
@@ -584,7 +639,8 @@ func int64getArgument(context unsafe.Pointer, id int32) int64 {
 		return -1
 	}
 
-	return args[id].Int64()
+	argBigInt := big.NewInt(0).SetBytes(args[id])
+	return argBigInt.Int64()
 }
 
 //export int64storageStore
@@ -626,4 +682,326 @@ func int64finish(context unsafe.Pointer, value int64) {
 
 	gasToUse := hostContext.GasSchedule().ElrondAPICost.Int64Finish
 	hostContext.UseGas(gasToUse)
+}
+
+//export executeOnSameContext
+func executeOnSameContext(
+	context unsafe.Pointer,
+	gasLimit int64,
+	addressOffset int32,
+	valueOffset int32,
+	functionOffset int32,
+	functionLength int32,
+	numArguments int32,
+	argumentsLengthOffset int32,
+	dataOffset int32,
+) int32 {
+	instCtx := wasmer.IntoInstanceContext(context)
+	ethContext := arwen.GetEthContext(instCtx.Data())
+
+	send := ethContext.GetSCAddress()
+	dest := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
+	value := arwen.LoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
+	function, data, actualLen := getArgumentsFromMemory(context, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
+
+	gasToUse := ethContext.GasSchedule().ElrondAPICost.ExecuteOnSameContext
+	gasToUse += ethContext.GasSchedule().BaseOperationCost.StorePerByte * uint64(actualLen)
+	ethContext.UseGas(gasToUse)
+
+	if ethContext.GasLeft() < uint64(gasLimit) {
+		return 1
+	}
+
+	bigIntVal := big.NewInt(0).SetBytes(value)
+	ethContext.Transfer(dest, send, bigIntVal, nil)
+
+	contractCallInput := &vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			CallerAddr:  send,
+			Arguments:   data,
+			CallValue:   bigIntVal,
+			GasPrice:    0,
+			GasProvided: uint64(gasLimit),
+		},
+		RecipientAddr: dest,
+		Function:      function,
+	}
+	err := ethContext.ExecuteOnDestContext(contractCallInput)
+	if err != nil {
+		return 1
+	}
+
+	return 0
+}
+
+//export executeOnDestContext
+func executeOnDestContext(
+	context unsafe.Pointer,
+	gasLimit int64,
+	addressOffset int32,
+	valueOffset int32,
+	functionOffset int32,
+	functionLength int32,
+	numArguments int32,
+	argumentsLengthOffset int32,
+	dataOffset int32,
+) int32 {
+	instCtx := wasmer.IntoInstanceContext(context)
+	ethContext := arwen.GetEthContext(instCtx.Data())
+
+	send := ethContext.GetSCAddress()
+	dest := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
+	value := arwen.LoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
+	function, data, actualLen := getArgumentsFromMemory(context, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
+
+	gasToUse := ethContext.GasSchedule().ElrondAPICost.ExecuteOnDestContext
+	gasToUse += ethContext.GasSchedule().BaseOperationCost.StorePerByte * uint64(actualLen)
+	ethContext.UseGas(gasToUse)
+
+	if ethContext.GasLeft() < uint64(gasLimit) {
+		return 1
+	}
+
+	ethContext.Transfer(dest, send, big.NewInt(0).SetBytes(value), nil)
+	contractCallInput := &vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			CallerAddr:  send,
+			Arguments:   data,
+			CallValue:   big.NewInt(0).SetBytes(value),
+			GasPrice:    0,
+			GasProvided: uint64(gasLimit),
+		},
+		RecipientAddr: dest,
+		Function:      function,
+	}
+	err := ethContext.ExecuteOnSameContext(contractCallInput)
+	if err != nil {
+		return 1
+	}
+
+	return 0
+}
+
+func getArgumentsFromMemory(
+	context unsafe.Pointer,
+	functionOffset int32,
+	functionLength int32,
+	numArguments int32,
+	argumentsLengthOffset int32,
+	dataOffset int32,
+) (string, [][]byte, int32) {
+	instCtx := wasmer.IntoInstanceContext(context)
+	argumentsLengthData := arwen.LoadBytes(instCtx.Memory(), argumentsLengthOffset, numArguments*4)
+
+	currOffset := dataOffset
+	data := make([][]byte, numArguments)
+	for i := int32(0); i < numArguments; i++ {
+		currArgLenData := argumentsLengthData[i*4 : i*4+4]
+		actualLen := dataToInt32(currArgLenData)
+
+		data[i] = arwen.LoadBytes(instCtx.Memory(), currOffset, actualLen)
+		currOffset += actualLen
+	}
+
+	function := arwen.LoadBytes(instCtx.Memory(), functionOffset, functionLength)
+
+	return string(function), data, currOffset - dataOffset
+}
+
+//export delegateExecution
+func delegateExecution(
+	context unsafe.Pointer,
+	gasLimit int64,
+	addressOffset int32,
+	functionOffset int32,
+	functionLength int32,
+	numArguments int32,
+	argumentsLengthOffset int32,
+	dataOffset int32,
+) int32 {
+	instCtx := wasmer.IntoInstanceContext(context)
+	erdContext := arwen.GetErdContext(instCtx.Data())
+
+	address := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.HashLen)
+	function, data, actualLen := getArgumentsFromMemory(context, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
+
+	value := erdContext.GetVMInput().CallValue
+	sender := erdContext.GetVMInput().CallerAddr
+
+	gasToUse := erdContext.GasSchedule().ElrondAPICost.DelegateExecution
+	gasToUse += erdContext.GasSchedule().BaseOperationCost.StorePerByte * uint64(actualLen)
+	erdContext.UseGas(gasToUse)
+
+	if erdContext.GasLeft() < uint64(gasLimit) {
+		return 1
+	}
+
+	erdContext.Transfer(address, sender, value, nil)
+	contractCallInput := &vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			CallerAddr:  sender,
+			Arguments:   data,
+			CallValue:   value,
+			GasPrice:    0,
+			GasProvided: uint64(gasLimit),
+		},
+		RecipientAddr: address,
+		Function:      function,
+	}
+	err := erdContext.ExecuteOnSameContext(contractCallInput)
+	if err != nil {
+		return 1
+	}
+
+	return 0
+}
+
+func dataToInt32(data []byte) int32 {
+	actualLen := int32(0)
+	for i := len(data) - 1; i >= 0; i-- {
+		actualLen = (actualLen << 8) + int32(data[i])
+	}
+
+	return actualLen
+}
+
+//export executeReadOnly
+func executeReadOnly(
+	context unsafe.Pointer,
+	gasLimit int64,
+	addressOffset int32,
+	functionOffset int32,
+	functionLength int32,
+	numArguments int32,
+	argumentsLengthOffset int32,
+	dataOffset int32,
+) int32 {
+	instCtx := wasmer.IntoInstanceContext(context)
+	erdContext := arwen.GetErdContext(instCtx.Data())
+
+	address := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.HashLen)
+	function, data, actualLen := getArgumentsFromMemory(context, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
+
+	value := erdContext.GetVMInput().CallValue
+	sender := erdContext.GetVMInput().CallerAddr
+
+	gasToUse := erdContext.GasSchedule().ElrondAPICost.ExecuteReadOnly
+	gasToUse += erdContext.GasSchedule().BaseOperationCost.StorePerByte * uint64(actualLen)
+	erdContext.UseGas(gasToUse)
+
+	if erdContext.GasLeft() < uint64(gasLimit) {
+		return 1
+	}
+
+	erdContext.Transfer(address, sender, value, nil)
+
+	erdContext.SetReadOnly(true)
+	contractCallInput := &vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			CallerAddr:  sender,
+			Arguments:   data,
+			CallValue:   value,
+			GasPrice:    0,
+			GasProvided: uint64(gasLimit),
+		},
+		RecipientAddr: address,
+		Function:      function,
+	}
+	err := erdContext.ExecuteOnSameContext(contractCallInput)
+	erdContext.SetReadOnly(false)
+	if err != nil {
+		return 1
+	}
+
+	return 0
+}
+
+//export createContract
+func createContract(
+	context unsafe.Pointer,
+	valueOffset int32,
+	codeOffset int32,
+	length int32,
+	resultOffset int32,
+	numArguments int32,
+	argumentsLengthOffset int32,
+	dataOffset int32,
+) int32 {
+	instCtx := wasmer.IntoInstanceContext(context)
+	erdContext := arwen.GetErdContext(instCtx.Data())
+
+	sender := erdContext.GetSCAddress()
+	value := arwen.LoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
+	code := arwen.LoadBytes(instCtx.Memory(), codeOffset, length)
+
+	_, data, actualLen := getArgumentsFromMemory(context, 0, 0, numArguments, argumentsLengthOffset, dataOffset)
+
+	gasToUse := erdContext.GasSchedule().ElrondAPICost.CreateContract
+	gasToUse += erdContext.GasSchedule().BaseOperationCost.StorePerByte * (uint64(len(code)) + uint64(actualLen))
+	erdContext.UseGas(gasToUse)
+	gasLimit := erdContext.GasLeft()
+
+	contractCreate := &vmcommon.ContractCreateInput{
+		VMInput: vmcommon.VMInput{
+			CallerAddr:  sender,
+			Arguments:   data,
+			CallValue:   big.NewInt(0).SetBytes(value),
+			GasPrice:    0,
+			GasProvided: gasLimit,
+		},
+		ContractCode: code,
+	}
+	newAddress, err := erdContext.CreateNewContract(contractCreate)
+	if err != nil {
+		return 1
+	}
+
+	_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, newAddress)
+
+	return 0
+}
+
+//export getNumReturnData
+func getNumReturnData(context unsafe.Pointer) int32 {
+	instCtx := wasmer.IntoInstanceContext(context)
+	ethContext := arwen.GetEthContext(instCtx.Data())
+
+	gasToUse := ethContext.GasSchedule().ElrondAPICost.GetNumReturnData
+	ethContext.UseGas(gasToUse)
+
+	returnData := ethContext.ReturnData()
+	return int32(len(returnData))
+}
+
+//export getReturnDataSize
+func getReturnDataSize(context unsafe.Pointer, resultId int32) int32 {
+	instCtx := wasmer.IntoInstanceContext(context)
+	erdContext := arwen.GetErdContext(instCtx.Data())
+
+	gasToUse := erdContext.GasSchedule().ElrondAPICost.GetReturnDataSize
+	erdContext.UseGas(gasToUse)
+
+	returnData := erdContext.ReturnData()
+	if int32(len(returnData)) >= resultId {
+		return 0
+	}
+
+	return int32(len(returnData[resultId]))
+}
+
+//export getReturnData
+func getReturnData(context unsafe.Pointer, resultId int32, dataOffset int32) int32 {
+	instCtx := wasmer.IntoInstanceContext(context)
+	erdContext := arwen.GetErdContext(instCtx.Data())
+
+	gasToUse := erdContext.GasSchedule().ElrondAPICost.GetReturnData
+	erdContext.UseGas(gasToUse)
+
+	returnData := erdContext.ReturnData()
+	if int32(len(returnData)) >= resultId {
+		return 0
+	}
+
+	_ = arwen.StoreBytes(instCtx.Memory(), dataOffset, returnData[resultId])
+	return int32(len(returnData[resultId]))
 }
