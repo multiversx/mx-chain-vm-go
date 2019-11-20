@@ -137,9 +137,13 @@ func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInpu
 	host.scAddress = address
 	host.addTxValueToSmartContract(input.CallValue, address)
 
-	gasLeft := input.GasProvided
-	// take out contract creation gas
-	gasLeft = gasLeft - uint64(len(input.ContractCode))
+	initialCreateCost := host.GasSchedule().ElrondAPICost.CreateContract +
+		uint64(len(input.ContractCode))*host.GasSchedule().BaseOperationCost.StorePerByte
+	if input.GasProvided < initialCreateCost {
+		return host.createVMOutputInCaseOfError(vmcommon.OutOfGas), nil
+	}
+
+	gasLeft := input.GasProvided - initialCreateCost
 
 	host.instance, err = wasmer.NewMeteredInstance(input.ContractCode, gasLeft)
 
@@ -689,7 +693,7 @@ func (host *vmContext) CreateNewContract(input *vmcommon.ContractCreateInput) ([
 
 	totalGasConsumed := uint64(len(input.ContractCode))
 	gasLeft := input.GasProvided
-	gasLeft = gasLeft - uint64(len(input.ContractCode))
+	gasLeft = gasLeft - uint64(len(input.ContractCode))*host.GasSchedule().BaseOperationCost.StorePerByte
 
 	newInstance, err := wasmer.NewMeteredInstance(input.ContractCode, gasLeft)
 	if err != nil {

@@ -780,7 +780,6 @@ func ethcreate(context unsafe.Pointer, valueOffset int32, dataOffset int32, leng
 	data := arwen.LoadBytes(instCtx.Memory(), dataOffset, length)
 
 	gasToUse := ethContext.GasSchedule().EthAPICost.Create
-	gasToUse += ethContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(data))
 	ethContext.UseGas(gasToUse)
 	gasLimit := ethContext.GasLeft()
 

@@ -355,15 +355,7 @@ func getArgument(context unsafe.Pointer, id int32, argOffset int32) int32 {
 		return -1
 	}
 
-	// this endpoint interprets arguments as unsigned positive ints, so it removes leading zeros
-	// this solution is temporary
-	// TODO: replace with left-aligned fixed width arguments for addresses
-	arg := args[id]
-	for len(arg) > 0 && arg[0] == 0 {
-		arg = arg[1:]
-	}
-
-	err := arwen.StoreBytes(instCtx.Memory(), argOffset, arg)
+	err := arwen.StoreBytes(instCtx.Memory(), argOffset, args[id])
 	if err != nil {
 		return -1
 	}
@@ -936,7 +928,7 @@ func createContract(
 	_, data, actualLen := getArgumentsFromMemory(context, 0, 0, numArguments, argumentsLengthOffset, dataOffset)
 
 	gasToUse := erdContext.GasSchedule().ElrondAPICost.CreateContract
-	gasToUse += erdContext.GasSchedule().BaseOperationCost.DataCopyPerByte * (uint64(len(code)) + uint64(actualLen))
+	gasToUse += erdContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
 	erdContext.UseGas(gasToUse)
 	gasLimit := erdContext.GasLeft()
 
