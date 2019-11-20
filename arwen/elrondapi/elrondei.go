@@ -336,7 +336,15 @@ func getArgument(context unsafe.Pointer, id int32, argOffset int32) int32 {
 		return -1
 	}
 
-	err := arwen.StoreBytes(instCtx.Memory(), argOffset, args[id])
+	// this endpoint interprets arguments as unsigned positive ints, so it removes leading zeros
+	// this solution is temporary
+	// TODO: replace with left-aligned fixed width arguments for addresses
+	arg := args[id]
+	for len(arg) > 0 && arg[0] == 0 {
+		arg = arg[1:]
+	}
+
+	err := arwen.StoreBytes(instCtx.Memory(), argOffset, arg)
 	if err != nil {
 		return -1
 	}

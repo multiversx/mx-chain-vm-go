@@ -1,26 +1,14 @@
 package main
 
 import (
-	"fmt"
 	"math/big"
 
+	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 	worldhook "github.com/ElrondNetwork/elrond-vm-util/mock-hook-blockchain"
 
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	ij "github.com/ElrondNetwork/elrond-vm-util/test-util/vmtestjson"
 )
-
-// for nicer error messages
-func resultAsString(result []*big.Int) string {
-	str := "["
-	for i, res := range result {
-		str += fmt.Sprintf("0x%x", res)
-		if i < len(result)-1 {
-			str += ", "
-		}
-	}
-	return str + "]"
-}
 
 func convertAccount(testAcct *ij.Account) *worldhook.Account {
 	storage := make(map[string][]byte)
@@ -49,6 +37,14 @@ func convertLogToTestFormat(outputLog *vmi.LogEntry) *ij.LogEntry {
 		Data:    outputLog.Data,
 	}
 	return &testLog
+}
+
+func convertArgument(arg *big.Int) []byte {
+	if arg.Sign() >= 0 {
+		return arg.Bytes()
+	}
+
+	return twos.ToBytes(arg)
 }
 
 var zero = big.NewInt(0)
