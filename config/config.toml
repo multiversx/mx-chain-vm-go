@@ -23,11 +23,19 @@
     Int64StorageStore  = 10
     Int64StorageLoad   = 10
     Int64Finish        = 10
+    GetStateRootHash   = 10
+    GetBlockNonce      = 10
+    GetBlockEpoch      = 10
+    GetBlockRound      = 10
+    GetBlockRandomSeed = 10
     ExecuteOnSameContext = 10
     ExecuteOnDestContext = 10
     DelegateExecution    = 10
     ExecuteReadOnly      = 10
     CreateContract       = 10
+    GetReturnData        = 10
+    GetNumReturnData     = 10
+    GetReturnDataSize    = 10
 
 [EthAPICost]
     UseGas              = 10
