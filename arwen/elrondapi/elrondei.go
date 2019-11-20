@@ -334,7 +334,7 @@ func transferValue(context unsafe.Pointer, destOffset int32, valueOffset int32, 
 	data := arwen.LoadBytes(instCtx.Memory(), dataOffset, length)
 
 	gasToUse := hostContext.GasSchedule().ElrondAPICost.TransferValue
-	gasToUse += hostContext.GasSchedule().BaseOperationCost.StorePerByte * uint64(length)
+	gasToUse += hostContext.GasSchedule().BaseOperationCost.PersistPerByte * uint64(length)
 	hostContext.UseGas(gasToUse)
 
 	hostContext.Transfer(dest, send, big.NewInt(0).SetBytes(value), data)
@@ -400,7 +400,6 @@ func storageStore(context unsafe.Pointer, keyOffset int32, dataOffset int32, dat
 	data := arwen.LoadBytes(instCtx.Memory(), dataOffset, dataLength)
 
 	gasToUse := hostContext.GasSchedule().ElrondAPICost.StorageStore
-	gasToUse += hostContext.GasSchedule().BaseOperationCost.StorePerByte * uint64(dataLength)
 	hostContext.UseGas(gasToUse)
 
 	return hostContext.SetStorage(hostContext.GetSCAddress(), key, data)
@@ -477,7 +476,7 @@ func writeLog(context unsafe.Pointer, pointer int32, length int32, topicPtr int3
 	hostContext.WriteLog(hostContext.GetSCAddress(), topics, log)
 
 	gasToUse := hostContext.GasSchedule().ElrondAPICost.Log
-	gasToUse += hostContext.GasSchedule().BaseOperationCost.StorePerByte * uint64(numTopics*arwen.HashLen+length)
+	gasToUse += hostContext.GasSchedule().BaseOperationCost.PersistPerByte * uint64(numTopics*arwen.HashLen+length)
 	hostContext.UseGas(gasToUse)
 }
 
@@ -614,7 +613,7 @@ func returnData(context unsafe.Pointer, pointer int32, length int32) {
 	hostContext.Finish(data)
 
 	gasToUse := hostContext.GasSchedule().ElrondAPICost.Finish
-	gasToUse += hostContext.GasSchedule().BaseOperationCost.StorePerByte * uint64(length)
+	gasToUse += hostContext.GasSchedule().BaseOperationCost.PersistPerByte * uint64(length)
 	hostContext.UseGas(gasToUse)
 }
 
@@ -697,7 +696,7 @@ func executeOnSameContext(
 	function, data, actualLen := getArgumentsFromMemory(context, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 
 	gasToUse := ethContext.GasSchedule().ElrondAPICost.ExecuteOnSameContext
-	gasToUse += ethContext.GasSchedule().BaseOperationCost.StorePerByte * uint64(actualLen)
+	gasToUse += ethContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
 	ethContext.UseGas(gasToUse)
 
 	if ethContext.GasLeft() < uint64(gasLimit) {
@@ -747,7 +746,7 @@ func executeOnDestContext(
 	function, data, actualLen := getArgumentsFromMemory(context, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 
 	gasToUse := ethContext.GasSchedule().ElrondAPICost.ExecuteOnDestContext
-	gasToUse += ethContext.GasSchedule().BaseOperationCost.StorePerByte * uint64(actualLen)
+	gasToUse += ethContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
 	ethContext.UseGas(gasToUse)
 
 	if ethContext.GasLeft() < uint64(gasLimit) {
@@ -821,7 +820,7 @@ func delegateExecution(
 	sender := erdContext.GetVMInput().CallerAddr
 
 	gasToUse := erdContext.GasSchedule().ElrondAPICost.DelegateExecution
-	gasToUse += erdContext.GasSchedule().BaseOperationCost.StorePerByte * uint64(actualLen)
+	gasToUse += erdContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
 	erdContext.UseGas(gasToUse)
 
 	if erdContext.GasLeft() < uint64(gasLimit) {
@@ -878,7 +877,7 @@ func executeReadOnly(
 	sender := erdContext.GetVMInput().CallerAddr
 
 	gasToUse := erdContext.GasSchedule().ElrondAPICost.ExecuteReadOnly
-	gasToUse += erdContext.GasSchedule().BaseOperationCost.StorePerByte * uint64(actualLen)
+	gasToUse += erdContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
 	erdContext.UseGas(gasToUse)
 
 	if erdContext.GasLeft() < uint64(gasLimit) {
@@ -929,7 +928,7 @@ func createContract(
 	_, data, actualLen := getArgumentsFromMemory(context, 0, 0, numArguments, argumentsLengthOffset, dataOffset)
 
 	gasToUse := erdContext.GasSchedule().ElrondAPICost.CreateContract
-	gasToUse += erdContext.GasSchedule().BaseOperationCost.StorePerByte * (uint64(len(code)) + uint64(actualLen))
+	gasToUse += erdContext.GasSchedule().BaseOperationCost.DataCopyPerByte * (uint64(len(code)) + uint64(actualLen))
 	erdContext.UseGas(gasToUse)
 	gasLimit := erdContext.GasLeft()
 
