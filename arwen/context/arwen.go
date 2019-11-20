@@ -137,9 +137,13 @@ func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInpu
 	host.scAddress = address
 	host.addTxValueToSmartContract(input.CallValue, address)
 
-	gasLeft := input.GasProvided
-	// take out contract creation gas
-	gasLeft = gasLeft - uint64(len(input.ContractCode))
+	initialCreateCost := host.GasSchedule().ElrondAPICost.CreateContract +
+		uint64(len(input.ContractCode))*host.GasSchedule().BaseOperationCost.StorePerByte
+	if input.GasProvided < initialCreateCost {
+		return host.createVMOutputInCaseOfError(vmcommon.OutOfGas), nil
+	}
+
+	gasLeft := input.GasProvided - initialCreateCost
 
 	host.instance, err = wasmer.NewMeteredInstance(input.ContractCode, gasLeft)
 
@@ -429,6 +433,7 @@ func (host *vmContext) SetStorage(addr []byte, key []byte, value []byte) int32 {
 	}
 
 	oldValue := host.storageUpdate[strAdr][string(key)]
+	lengthOldValue := len(oldValue)
 	length := len(value)
 	host.storageUpdate[strAdr][string(key)] = make([]byte, length)
 	copy(host.storageUpdate[strAdr][string(key)][:length], value[:length])
@@ -439,10 +444,22 @@ func (host *vmContext) SetStorage(addr []byte, key []byte, value []byte) int32 {
 
 	zero := []byte{}
 	if bytes.Equal(oldValue, zero) {
+		useGas := host.GasSchedule().BaseOperationCost.StorePerByte * uint64(length)
+		host.UseGas(useGas)
 		return int32(StorageAdded)
 	}
 	if bytes.Equal(value, zero) {
+		freeGas := host.GasSchedule().BaseOperationCost.StorePerByte * uint64(lengthOldValue)
+		host.FreeGas(freeGas)
 		return int32(StorageDeleted)
+	}
+	if length < lengthOldValue {
+		useGas := host.GasSchedule().BaseOperationCost.StorePerByte * uint64(lengthOldValue-length)
+		host.UseGas(useGas)
+	}
+	if length > lengthOldValue {
+		freeGas := host.GasSchedule().BaseOperationCost.StorePerByte * uint64(length-lengthOldValue)
+		host.FreeGas(freeGas)
 	}
 
 	return int32(StorageModified)
@@ -623,6 +640,13 @@ func (host *vmContext) UseGas(gas uint64) {
 	host.instance.SetPointsUsed(currGas)
 }
 
+func (host *vmContext) FreeGas(gas uint64) {
+	currGas := host.instance.GetPointsUsed()
+	currGas = currGas + gas
+
+	host.instance.SetPointsUsed(currGas)
+}
+
 func (host *vmContext) GasLeft() uint64 {
 	return host.instance.GetPointsUsed()
 }
@@ -667,8 +691,9 @@ func (host *vmContext) CreateNewContract(input *vmcommon.ContractCreateInput) ([
 	host.increaseNonce(input.CallerAddr)
 	host.scAddress = address
 
+	totalGasConsumed := uint64(len(input.ContractCode))
 	gasLeft := input.GasProvided
-	gasLeft = gasLeft - uint64(len(input.ContractCode))
+	gasLeft = gasLeft - uint64(len(input.ContractCode))*host.GasSchedule().BaseOperationCost.StorePerByte
 
 	newInstance, err := wasmer.NewMeteredInstance(input.ContractCode, gasLeft)
 	if err != nil {
@@ -681,6 +706,7 @@ func (host *vmContext) CreateNewContract(input *vmcommon.ContractCreateInput) ([
 	host.instance = newInstance
 	defer func() {
 		host.instance = oldInstance
+		host.UseGas(totalGasConsumed)
 		newInstance.Clean()
 		arwen.RemoveHostContext(idContext)
 	}()
@@ -713,7 +739,7 @@ func (host *vmContext) CreateNewContract(input *vmcommon.ContractCreateInput) ([
 		newSCAcc.Code = input.ContractCode
 	}
 
-	gasLeft = gasLeft - host.instance.GetPointsUsed()
+	totalGasConsumed = input.GasProvided - newInstance.GetPointsUsed()
 
 	return address, nil
 }

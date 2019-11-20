@@ -176,7 +176,6 @@ func bigIntStorageStore(context unsafe.Pointer, keyOffset int32, source int32) i
 	bytes := value.Bytes()
 
 	gasToUse := hostContext.GasSchedule().BigIntAPICost.BigIntStorageStore
-	gasToUse += hostContext.GasSchedule().BaseOperationCost.StorePerByte * uint64(len(bytes))
 	hostContext.UseGas(gasToUse)
 
 	return hostContext.SetStorage(hostContext.GetSCAddress(), key, bytes)
@@ -378,6 +377,6 @@ func bigIntFinish(context unsafe.Pointer, reference int32) {
 	hostContext.Finish(value.Bytes())
 
 	gasToUse := hostContext.GasSchedule().BigIntAPICost.BigIntFinish
-	gasToUse += hostContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(value.Bytes()))
+	gasToUse += hostContext.GasSchedule().BaseOperationCost.PersistPerByte * uint64(len(value.Bytes()))
 	hostContext.UseGas(gasToUse)
 }
