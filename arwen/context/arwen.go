@@ -206,11 +206,10 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 
 	host.addTxValueToSmartContract(input.CallValue, input.RecipientAddr)
 
-	gasLeft := input.GasProvided
 	contract := host.GetCode(host.scAddress)
 
 	var err error
-	host.instance, err = wasmer.NewMeteredInstance(contract, gasLeft)
+	host.instance, err = wasmer.NewMeteredInstance(contract, input.GasProvided)
 
 	if err != nil {
 		fmt.Println("arwen Error", err.Error())
@@ -249,7 +248,6 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 	}
 
 	convertedResult := arwen.ConvertReturnValue(result)
-	gasLeft = gasLeft - host.instance.GetPointsUsed()
 	vmOutput := host.createVMOutput(convertedResult.Bytes())
 
 	return vmOutput, nil
