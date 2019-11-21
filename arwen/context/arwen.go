@@ -240,7 +240,9 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 
 	result, err := function()
 	if err != nil {
-		fmt.Println("arwen Error", err.Error())
+		strError, _ := wasmer.GetLastError()
+
+		fmt.Println("arwen Error", err.Error(), strError)
 		return host.createVMOutputInCaseOfError(vmcommon.FunctionWrongSignature), nil
 	}
 
@@ -440,6 +442,10 @@ func (host *vmContext) SetStorage(addr []byte, key []byte, value []byte) int32 {
 	if _, ok := host.storageUpdate[strAdr]; !ok {
 		host.storageUpdate[strAdr] = make(map[string][]byte, 0)
 	}
+	if _, ok := host.storageUpdate[strAdr][string(key)]; !ok {
+		oldValue := host.GetStorage(addr, key)
+		host.storageUpdate[strAdr][string(key)] = oldValue
+	}
 
 	oldValue := host.storageUpdate[strAdr][string(key)]
 	lengthOldValue := len(oldValue)
@@ -448,6 +454,8 @@ func (host *vmContext) SetStorage(addr []byte, key []byte, value []byte) int32 {
 	copy(host.storageUpdate[strAdr][string(key)][:length], value[:length])
 
 	if bytes.Equal(oldValue, value) {
+		useGas := host.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(length)
+		host.UseGas(useGas)
 		return int32(StorageUnchanged)
 	}
 
@@ -463,13 +471,13 @@ func (host *vmContext) SetStorage(addr []byte, key []byte, value []byte) int32 {
 		return int32(StorageDeleted)
 	}
 	if length < lengthOldValue {
-		freeGas := host.GasSchedule().BaseOperationCost.StorePerByte * uint64(length-lengthOldValue)
+		freeGas := host.GasSchedule().BaseOperationCost.StorePerByte * uint64(lengthOldValue-length)
 		host.FreeGas(freeGas)
 		useGas := host.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(lengthOldValue)
 		host.UseGas(useGas)
 	}
 	if length > lengthOldValue {
-		useGas := host.GasSchedule().BaseOperationCost.StorePerByte * uint64(lengthOldValue-length)
+		useGas := host.GasSchedule().BaseOperationCost.StorePerByte * uint64(length-lengthOldValue)
 		host.UseGas(useGas)
 		useGas = host.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(lengthOldValue)
 		host.UseGas(useGas)
