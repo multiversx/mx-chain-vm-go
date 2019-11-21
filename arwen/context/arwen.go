@@ -157,7 +157,7 @@ func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInpu
 	host.instance.SetContextData(unsafe.Pointer(&idContext))
 
 	var result []byte
-	init := host.instance.Exports["init"]
+	init := host.getInitFunction()
 	if init != nil {
 		out, err := init()
 		if err != nil {
@@ -198,6 +198,16 @@ func (host *vmContext) computeInitialCreateCost(input *vmcommon.ContractCreateIn
 	return initialCreateCost
 }
 
+func (host *vmContext) getInitFunction() func(...interface{}) (wasmer.Value, error) {
+	init, ok := host.instance.Exports[arwen.InitFunctionName]
+
+	if !ok {
+		init, ok = host.instance.Exports[arwen.InitFunctionNameEth]
+	}
+
+	return init
+}
+
 func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	host.initInternalValues()
 	host.vmInput = input.VMInput
@@ -225,7 +235,7 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 
 	host.instance.SetContextData(unsafe.Pointer(&idContext))
 
-	if host.callFunction == "init" {
+	if host.callFunction == arwen.InitFunctionName {
 		fmt.Println("arwen Error", ErrInitFuncCalledInRun.Error())
 		return host.createVMOutputInCaseOfError(vmcommon.UserError), nil
 	}
@@ -720,7 +730,7 @@ func (host *vmContext) CreateNewContract(input *vmcommon.ContractCreateInput) ([
 	host.instance.SetContextData(unsafe.Pointer(&idContext))
 
 	var result []byte
-	init := host.instance.Exports["init"]
+	init := host.getInitFunction()
 	if init != nil {
 		out, err := init()
 		if err != nil {
@@ -777,7 +787,7 @@ func (host *vmContext) execute(input *vmcommon.ContractCallInput) error {
 
 	newInstance.SetContextData(unsafe.Pointer(&idContext))
 
-	if host.callFunction == "init" {
+	if host.callFunction == arwen.InitFunctionName {
 		return ErrInitFuncCalledInRun
 	}
 
