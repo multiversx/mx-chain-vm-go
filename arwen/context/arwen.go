@@ -137,15 +137,14 @@ func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInpu
 	host.scAddress = address
 	host.addTxValueToSmartContract(input.CallValue, address)
 
-	initialCreateCost := host.GasSchedule().ElrondAPICost.CreateContract +
-		uint64(len(input.ContractCode))*host.GasSchedule().BaseOperationCost.StorePerByte
+	initialCreateCost := host.computeInitialCreateCost(input)
+
 	if input.GasProvided < initialCreateCost {
 		return host.createVMOutputInCaseOfError(vmcommon.OutOfGas), nil
 	}
 
-	gasLeft := input.GasProvided - initialCreateCost
-
-	host.instance, err = wasmer.NewMeteredInstance(input.ContractCode, gasLeft)
+	host.vmInput.GasProvided -= initialCreateCost
+	host.instance, err = wasmer.NewMeteredInstance(input.ContractCode, host.vmInput.GasProvided)
 
 	if err != nil {
 		fmt.Println("arwen Error: ", err.Error())
@@ -184,10 +183,19 @@ func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInpu
 
 	arwen.RemoveHostContext(idContext)
 
-	gasLeft = gasLeft - host.instance.GetPointsUsed()
-	vmOutput := host.createVMOutput(result, gasLeft)
+	vmOutput := host.createVMOutput(result)
 
 	return vmOutput, err
+}
+
+func (host *vmContext) computeInitialCreateCost(input *vmcommon.ContractCreateInput) uint64 {
+	storePerByteCost := host.GasSchedule().BaseOperationCost.StorePerByte
+	createCost := host.GasSchedule().ElrondAPICost.CreateContract
+
+	codeLength := uint64(len(input.ContractCode))
+	storageCost := codeLength * storePerByteCost
+	initialCreateCost := createCost + storageCost
+	return initialCreateCost
 }
 
 func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
@@ -198,11 +206,10 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 
 	host.addTxValueToSmartContract(input.CallValue, input.RecipientAddr)
 
-	gasLeft := input.GasProvided
 	contract := host.GetCode(host.scAddress)
 
 	var err error
-	host.instance, err = wasmer.NewMeteredInstance(contract, gasLeft)
+	host.instance, err = wasmer.NewMeteredInstance(contract, input.GasProvided)
 
 	if err != nil {
 		fmt.Println("arwen Error", err.Error())
@@ -241,8 +248,7 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 	}
 
 	convertedResult := arwen.ConvertReturnValue(result)
-	gasLeft = gasLeft - host.instance.GetPointsUsed()
-	vmOutput := host.createVMOutput(convertedResult.Bytes(), gasLeft)
+	vmOutput := host.createVMOutput(convertedResult.Bytes())
 
 	return vmOutput, nil
 }
@@ -254,7 +260,7 @@ func (host *vmContext) createVMOutputInCaseOfError(errCode vmcommon.ReturnCode) 
 }
 
 // adapt vm output and all saved data from sc run into VM Output
-func (host *vmContext) createVMOutput(output []byte, gasLeft uint64) *vmcommon.VMOutput {
+func (host *vmContext) createVMOutput(output []byte) *vmcommon.VMOutput {
 	vmOutput := &vmcommon.VMOutput{}
 	// save storage updates
 	outAccs := make(map[string]*vmcommon.OutputAccount, 0)
@@ -318,7 +324,7 @@ func (host *vmContext) createVMOutput(output []byte, gasLeft uint64) *vmcommon.V
 		vmOutput.ReturnData = append(vmOutput.ReturnData, output)
 	}
 
-	vmOutput.GasRemaining = big.NewInt(0).SetUint64(gasLeft)
+	vmOutput.GasRemaining = big.NewInt(0).SetUint64(host.GasLeft())
 	vmOutput.GasRefund = big.NewInt(0)
 	vmOutput.ReturnCode = host.returnCode
 
@@ -648,7 +654,7 @@ func (host *vmContext) FreeGas(gas uint64) {
 }
 
 func (host *vmContext) GasLeft() uint64 {
-	return host.instance.GetPointsUsed()
+	return host.vmInput.GasProvided - host.instance.GetPointsUsed()
 }
 
 func (host *vmContext) BlockGasLimit() uint64 {
