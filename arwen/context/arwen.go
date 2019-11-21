@@ -54,6 +54,7 @@ type vmContext struct {
 	selfDestruct  map[string][]byte
 	ethInput      []byte
 	blockGasLimit uint64
+	refund        uint64
 
 	gasCostConfig *config.GasCost
 	opcodeCosts   [wasmer.OPCODE_COUNT]uint32
@@ -151,9 +152,12 @@ func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInpu
 		return host.createVMOutputInCaseOfError(vmcommon.ContractInvalid), nil
 	}
 
-	defer host.instance.Clean()
-
 	idContext := arwen.AddHostContext(host)
+	defer func() {
+		arwen.RemoveHostContext(idContext)
+		host.instance.Clean()
+	}()
+
 	host.instance.SetContextData(unsafe.Pointer(&idContext))
 
 	var result []byte
@@ -180,8 +184,6 @@ func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInpu
 	} else {
 		newSCAcc.Code = input.ContractCode
 	}
-
-	arwen.RemoveHostContext(idContext)
 
 	vmOutput := host.createVMOutput(result)
 
@@ -325,7 +327,7 @@ func (host *vmContext) createVMOutput(output []byte) *vmcommon.VMOutput {
 	}
 
 	vmOutput.GasRemaining = big.NewInt(0).SetUint64(host.GasLeft())
-	vmOutput.GasRefund = big.NewInt(0)
+	vmOutput.GasRefund = big.NewInt(0).SetUint64(host.refund)
 	vmOutput.ReturnCode = host.returnCode
 
 	return vmOutput
@@ -344,6 +346,7 @@ func (host *vmContext) initInternalValues() {
 	host.returnCode = vmcommon.Ok
 	host.ethInput = nil
 	host.readOnly = false
+	host.refund = 0
 }
 
 func (host *vmContext) addTxValueToSmartContract(value *big.Int, scAddress []byte) {
@@ -460,12 +463,16 @@ func (host *vmContext) SetStorage(addr []byte, key []byte, value []byte) int32 {
 		return int32(StorageDeleted)
 	}
 	if length < lengthOldValue {
-		useGas := host.GasSchedule().BaseOperationCost.StorePerByte * uint64(lengthOldValue-length)
+		freeGas := host.GasSchedule().BaseOperationCost.StorePerByte * uint64(length-lengthOldValue)
+		host.FreeGas(freeGas)
+		useGas := host.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(lengthOldValue)
 		host.UseGas(useGas)
 	}
 	if length > lengthOldValue {
-		freeGas := host.GasSchedule().BaseOperationCost.StorePerByte * uint64(length-lengthOldValue)
-		host.FreeGas(freeGas)
+		useGas := host.GasSchedule().BaseOperationCost.StorePerByte * uint64(lengthOldValue-length)
+		host.UseGas(useGas)
+		useGas = host.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(lengthOldValue)
+		host.UseGas(useGas)
 	}
 
 	return int32(StorageModified)
@@ -636,21 +643,12 @@ func (host *vmContext) CallData() []byte {
 }
 
 func (host *vmContext) UseGas(gas uint64) {
-	currGas := host.instance.GetPointsUsed()
-	if currGas > gas {
-		currGas = currGas - gas
-	} else {
-		currGas = 0
-	}
-
+	currGas := host.instance.GetPointsUsed() + gas
 	host.instance.SetPointsUsed(currGas)
 }
 
 func (host *vmContext) FreeGas(gas uint64) {
-	currGas := host.instance.GetPointsUsed()
-	currGas = currGas + gas
-
-	host.instance.SetPointsUsed(currGas)
+	host.refund += gas
 }
 
 func (host *vmContext) GasLeft() uint64 {
@@ -836,13 +834,34 @@ func (host *vmContext) copyToNewContext() *vmContext {
 
 func (host *vmContext) copyFromContext(currContext *vmContext) {
 	host.BigIntContainer = currContext.BigIntContainer
-	host.logs = currContext.logs
 	host.readOnly = currContext.readOnly
-	host.storageUpdate = currContext.storageUpdate
-	host.outputAccounts = currContext.outputAccounts
-	host.returnData = currContext.returnData
 	host.returnCode = currContext.returnCode
-	host.selfDestruct = currContext.selfDestruct
+	host.returnData = append(host.returnData, currContext.returnData...)
+	host.refund += currContext.refund
+	host.returnCode = currContext.returnCode
+
+	for key, log := range currContext.logs {
+		host.logs[key] = log
+	}
+
+	for key, storageUpdate := range currContext.storageUpdate {
+		if _, ok := host.storageUpdate[key]; !ok {
+			host.storageUpdate[key] = storageUpdate
+			continue
+		}
+
+		for internKey, internStore := range storageUpdate {
+			host.storageUpdate[key][internKey] = internStore
+		}
+	}
+
+	host.outputAccounts = currContext.outputAccounts
+	host.returnData = append(host.returnData, currContext.returnData...)
+	host.returnCode = currContext.returnCode
+
+	for key, selfDestruct := range currContext.selfDestruct {
+		host.selfDestruct[key] = selfDestruct
+	}
 }
 
 func (host *vmContext) ExecuteOnDestContext(input *vmcommon.ContractCallInput) error {
