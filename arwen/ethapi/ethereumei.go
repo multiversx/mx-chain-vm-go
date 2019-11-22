@@ -332,7 +332,7 @@ func ethgetCaller(context unsafe.Pointer, resultOffset int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
-	caller := truncateToEthAddress(ethContext.GetVMInput().CallerAddr)
+	caller := convertToEthAddress(ethContext.GetVMInput().CallerAddr)
 	_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, caller)
 	
 	gasToUse := ethContext.GasSchedule().EthAPICost.GetCaller
@@ -344,7 +344,8 @@ func ethgetCallValue(context unsafe.Pointer, resultOffset int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
-	value := ethContext.GetVMInput().CallValue.Bytes()
+	value := converToEthU128(ethContext.GetVMInput().CallValue.Bytes())
+
 	length := len(value)
 	invBytes := make([]byte, length)
 	for i := 0; i < length; i++ {
@@ -484,7 +485,7 @@ func ethgetTxOrigin(context unsafe.Pointer, resultOffset int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
-	caller := truncateToEthAddress(ethContext.GetVMInput().CallerAddr)
+	caller := convertToEthAddress(ethContext.GetVMInput().CallerAddr)
 	_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, caller)
 
 	gasToUse := ethContext.GasSchedule().EthAPICost.GetTxOrigin
@@ -817,7 +818,24 @@ func ethcreate(context unsafe.Pointer, valueOffset int32, dataOffset int32, leng
 	return 0
 }
 
-func truncateToEthAddress(address []byte) []byte {
+// https://ewasm.readthedocs.io/en/mkdocs/eth_interface/#data-types
+func convertToEthAddress(address []byte) []byte {
 	ethAddress := address[arwen.AddressLen-arwen.AddressLenEth:arwen.AddressLen]
 	return ethAddress
+}
+
+// converToEthU128 adds zero-left-padding up to a total of 16 bytes
+// If the input data is larger than 16 bytes, an array of 16 zeros is returned
+func converToEthU128(data []byte) []byte {
+	const noBytes = 16
+
+	result := make([]byte, noBytes)
+	length := len(data)
+
+	if length > noBytes {
+		return result
+	}
+
+	copy(result[noBytes-length:], data)
+	return result
 }
