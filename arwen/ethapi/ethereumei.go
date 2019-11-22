@@ -627,7 +627,7 @@ func ethcall(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueO
 	value := arwen.LoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
 	data := arwen.LoadBytes(instCtx.Memory(), dataOffset, dataLength)
 
-	if erdContext.HasLessGasLeft(gasLimit) {
+	if ethContext.HasLessGasLeft(gasLimit) {
 		return 1
 	}
 
@@ -667,7 +667,7 @@ func ethcallCode(context unsafe.Pointer, gasLimit int64, addressOffset int32, va
 	value := arwen.LoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
 	data := arwen.LoadBytes(instCtx.Memory(), dataOffset, dataLength)
 
-	if erdContext.HasLessGasLeft(gasLimit) {
+	if ethContext.HasLessGasLeft(gasLimit) {
 		return 1
 	}
 
@@ -706,7 +706,7 @@ func ethcallDelegate(context unsafe.Pointer, gasLimit int64, addressOffset int32
 	address := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.HashLen)
 	data := arwen.LoadBytes(instCtx.Memory(), dataOffset, dataLength)
 
-	if erdContext.HasLessGasLeft(gasLimit) {
+	if ethContext.HasLessGasLeft(gasLimit) {
 		return 1
 	}
 
@@ -745,7 +745,7 @@ func ethcallStatic(context unsafe.Pointer, gasLimit int64, addressOffset int32, 
 	value := ethContext.GetVMInput().CallValue
 	sender := ethContext.GetVMInput().CallerAddr
 
-	if erdContext.HasLessGasLeft(gasLimit) {
+	if ethContext.HasLessGasLeft(gasLimit) {
 		return 1
 	}
 
