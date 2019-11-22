@@ -627,13 +627,13 @@ func ethcall(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueO
 	value := arwen.LoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
 	data := arwen.LoadBytes(instCtx.Memory(), dataOffset, dataLength)
 
+	if erdContext.HasLessGasLeft(gasLimit) {
+		return 1
+	}
+
 	gasToUse := ethContext.GasSchedule().EthAPICost.Call
 	gasToUse += ethContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(data))
 	ethContext.UseGas(gasToUse)
-
-	if ethContext.GasLeft() < uint64(gasLimit) {
-		return 1
-	}
 
 	bigIntVal := big.NewInt(0).SetBytes(value)
 	ethContext.Transfer(dest, send, bigIntVal, nil)
@@ -667,13 +667,13 @@ func ethcallCode(context unsafe.Pointer, gasLimit int64, addressOffset int32, va
 	value := arwen.LoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
 	data := arwen.LoadBytes(instCtx.Memory(), dataOffset, dataLength)
 
+	if erdContext.HasLessGasLeft(gasLimit) {
+		return 1
+	}
+
 	gasToUse := ethContext.GasSchedule().EthAPICost.CallCode
 	gasToUse += ethContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(data))
 	ethContext.UseGas(gasToUse)
-
-	if ethContext.GasLeft() < uint64(gasLimit) {
-		return 1
-	}
 
 	ethContext.Transfer(dest, send, big.NewInt(0).SetBytes(value), nil)
 	contractCallInput := &vmcommon.ContractCallInput{
@@ -706,13 +706,13 @@ func ethcallDelegate(context unsafe.Pointer, gasLimit int64, addressOffset int32
 	address := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.HashLen)
 	data := arwen.LoadBytes(instCtx.Memory(), dataOffset, dataLength)
 
+	if erdContext.HasLessGasLeft(gasLimit) {
+		return 1
+	}
+
 	gasToUse := ethContext.GasSchedule().EthAPICost.CallDelegate
 	gasToUse += ethContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(data))
 	ethContext.UseGas(gasToUse)
-
-	if ethContext.GasLeft() < uint64(gasLimit) {
-		return 1
-	}
 
 	ethContext.Transfer(address, sender, value, nil)
 	contractCallInput := &vmcommon.ContractCallInput{
@@ -745,13 +745,13 @@ func ethcallStatic(context unsafe.Pointer, gasLimit int64, addressOffset int32, 
 	value := ethContext.GetVMInput().CallValue
 	sender := ethContext.GetVMInput().CallerAddr
 
+	if erdContext.HasLessGasLeft(gasLimit) {
+		return 1
+	}
+
 	gasToUse := ethContext.GasSchedule().EthAPICost.CallStatic
 	gasToUse += ethContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(data))
 	ethContext.UseGas(gasToUse)
-
-	if ethContext.GasLeft() < uint64(gasLimit) {
-		return 1
-	}
 
 	if IsAddressForPredefinedContract(address) {
 		err := CallPredefinedContract(context, address, data)

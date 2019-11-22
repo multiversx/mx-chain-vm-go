@@ -12,6 +12,7 @@ type EthContext interface {
 	CallData() []byte
 	UseGas(gas uint64)
 	GasLeft() uint64
+	HasLessGasLeft(int64) bool
 	BlockGasLimit() uint64
 	GetBalance(addr []byte) []byte
 	BlockHash(nonce int64) []byte
@@ -39,6 +40,7 @@ type HostContext interface {
 	GasSchedule() *config.GasCost
 	UseGas(gas uint64)
 	GasLeft() uint64
+	HasLessGasLeft(int64) bool
 	Function() string
 	Arguments() [][]byte
 	GetStorage(addr []byte, key []byte) []byte
