@@ -3,10 +3,11 @@ package config
 import "github.com/ElrondNetwork/go-ext-wasm/wasmer"
 
 type BaseOperationCost struct {
-	StorePerByte      uint64
-	ReleaseGasPerByte uint64
-	DataCopyPerByte   uint64
-	PersistPerByte    uint64
+	StorePerByte    uint64
+	ReleasePerByte  uint64
+	DataCopyPerByte uint64
+	PersistPerByte  uint64
+	CompilePerByte  uint64
 }
 
 type ElrondAPICost struct {

@@ -138,13 +138,16 @@ func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInpu
 	host.scAddress = address
 	host.addTxValueToSmartContract(input.CallValue, address)
 
-	initialCreateCost := host.computeInitialCreateCost(input)
-
-	if input.GasProvided < initialCreateCost {
+	host.vmInput.GasProvided, err = host.deductInitialCodeCost(
+		input.GasProvided,
+		input.ContractCode,
+		host.GasSchedule().ElrondAPICost.CreateContract,
+		host.GasSchedule().BaseOperationCost.StorePerByte,
+	)
+	if err != nil {
 		return host.createVMOutputInCaseOfError(vmcommon.OutOfGas), nil
 	}
 
-	host.vmInput.GasProvided -= initialCreateCost
 	host.instance, err = wasmer.NewMeteredInstance(input.ContractCode, host.vmInput.GasProvided)
 
 	if err != nil {
@@ -183,14 +186,21 @@ func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInpu
 	return vmOutput, err
 }
 
-func (host *vmContext) computeInitialCreateCost(input *vmcommon.ContractCreateInput) uint64 {
-	storePerByteCost := host.GasSchedule().BaseOperationCost.StorePerByte
-	createCost := host.GasSchedule().ElrondAPICost.CreateContract
+func (host *vmContext) deductInitialCodeCost(
+	gasProvided uint64,
+	code []byte,
+	baseCost uint64,
+	costPerByte uint64,
+) (uint64, error) {
+	codeLength := uint64(len(code))
+	codeCost := codeLength * costPerByte
+	initialCost := baseCost + codeCost
 
-	codeLength := uint64(len(input.ContractCode))
-	storageCost := codeLength * storePerByteCost
-	initialCreateCost := createCost + storageCost
-	return initialCreateCost
+	if initialCost > gasProvided {
+		return 0, ErrNotEnoughGas
+	}
+
+	return gasProvided - initialCost, nil
 }
 
 func (host *vmContext) callInitFunction() (bool, []byte, error) {
@@ -227,7 +237,17 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 	contract := host.GetCode(host.scAddress)
 
 	var err error
-	host.instance, err = wasmer.NewMeteredInstance(contract, input.GasProvided)
+	host.vmInput.GasProvided, err = host.deductInitialCodeCost(
+		input.GasProvided,
+		contract,
+		0,
+		host.GasSchedule().BaseOperationCost.CompilePerByte,
+	)
+	if err != nil {
+		return host.createVMOutputInCaseOfError(vmcommon.OutOfGas), nil
+	}
+
+	host.instance, err = wasmer.NewMeteredInstance(contract, host.vmInput.GasProvided)
 
 	if err != nil {
 		fmt.Println("arwen Error", err.Error())
@@ -711,9 +731,7 @@ func (host *vmContext) CreateNewContract(input *vmcommon.ContractCreateInput) ([
 	}()
 
 	host.vmInput = input.VMInput
-
 	nonce := host.GetNonce(input.CallerAddr)
-
 	address, err := host.blockChainHook.NewAddress(input.CallerAddr, nonce, host.vmType)
 	if err != nil {
 		return nil, err
@@ -723,9 +741,20 @@ func (host *vmContext) CreateNewContract(input *vmcommon.ContractCreateInput) ([
 	host.increaseNonce(input.CallerAddr)
 	host.scAddress = address
 
-	totalGasConsumed := uint64(len(input.ContractCode))
-	gasLeft := input.GasProvided
-	gasLeft = gasLeft - uint64(len(input.ContractCode))*host.GasSchedule().BaseOperationCost.StorePerByte
+	totalGasConsumed := input.GasProvided
+	defer func() {
+		host.UseGas(totalGasConsumed)
+	}()
+
+	gasLeft, err := host.deductInitialCodeCost(
+		input.GasProvided,
+		input.ContractCode,
+		0, // create cost was elrady taken care of. as it is different for ethereum and elrond
+		host.GasSchedule().BaseOperationCost.StorePerByte,
+	)
+	if err != nil {
+		return nil, err
+	}
 
 	newInstance, err := wasmer.NewMeteredInstance(input.ContractCode, gasLeft)
 	if err != nil {
@@ -738,7 +767,6 @@ func (host *vmContext) CreateNewContract(input *vmcommon.ContractCreateInput) ([
 	host.instance = newInstance
 	defer func() {
 		host.instance = oldInstance
-		host.UseGas(totalGasConsumed)
 		newInstance.Clean()
 		arwen.RemoveHostContext(idContext)
 	}()
@@ -767,14 +795,28 @@ func (host *vmContext) CreateNewContract(input *vmcommon.ContractCreateInput) ([
 		newSCAcc.Code = input.ContractCode
 	}
 
-	totalGasConsumed = input.GasProvided - newInstance.GetPointsUsed()
+	totalGasConsumed = input.GasProvided - gasLeft - newInstance.GetPointsUsed()
 
 	return address, nil
 }
 
 func (host *vmContext) execute(input *vmcommon.ContractCallInput) error {
-	gasLeft := input.GasProvided
 	contract := host.GetCode(host.scAddress)
+	totalGasConsumed := input.GasProvided
+
+	defer func() {
+		host.UseGas(totalGasConsumed)
+	}()
+
+	gasLeft, err := host.deductInitialCodeCost(
+		input.GasProvided,
+		contract,
+		0, // create cost was elrady taken care of. as it is different for ethereum and elrond
+		host.GasSchedule().BaseOperationCost.StorePerByte,
+	)
+	if err != nil {
+		return err
+	}
 
 	newInstance, err := wasmer.NewMeteredInstance(contract, gasLeft)
 	if err != nil {
@@ -787,12 +829,6 @@ func (host *vmContext) execute(input *vmcommon.ContractCallInput) error {
 	host.instance = newInstance
 	defer func() {
 		host.instance = oldInstance
-		if err != nil {
-			host.UseGas(input.GasProvided)
-		} else {
-			host.UseGas(newInstance.GetPointsUsed())
-		}
-
 		newInstance.Clean()
 		arwen.RemoveHostContext(idContext)
 	}()
@@ -819,6 +855,8 @@ func (host *vmContext) execute(input *vmcommon.ContractCallInput) error {
 
 	convertedResult := arwen.ConvertReturnValue(result)
 	host.Finish(convertedResult.Bytes())
+
+	totalGasConsumed = input.GasProvided - gasLeft - newInstance.GetPointsUsed()
 
 	return nil
 }
