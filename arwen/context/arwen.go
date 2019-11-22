@@ -464,11 +464,7 @@ func (host *vmContext) GetStorage(addr []byte, key []byte) []byte {
 		}
 	}
 
-	hash, err := host.blockChainHook.GetStorageData(addr, key)
-	if err != nil {
-		fmt.Printf("GetStorage returned with error %s \n", err.Error())
-	}
-
+	hash, _ := host.blockChainHook.GetStorageData(addr, key)
 	return hash
 }
 
@@ -950,6 +946,10 @@ func (host *vmContext) ExecuteOnDestContext(input *vmcommon.ContractCallInput) e
 
 func (host *vmContext) ReturnData() [][]byte {
 	return host.returnData
+}
+
+func (host *vmContext) ClearReturnData() {
+	host.returnData = make([][]byte, 1)
 }
 
 // The first four bytes is the method selector. The rest of the input data are method arguments in chunks of 32 bytes.

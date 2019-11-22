@@ -495,6 +495,7 @@ func ethfinish(context unsafe.Pointer, resultOffset int32, length int32) {
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
 	data := arwen.LoadBytes(instCtx.Memory(), resultOffset, length)
+	ethContext.ClearReturnData()
 	ethContext.Finish(data)
 
 	gasToUse := ethContext.GasSchedule().EthAPICost.Finish
@@ -508,6 +509,7 @@ func ethrevert(context unsafe.Pointer, dataOffset int32, length int32) {
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
 	data := arwen.LoadBytes(instCtx.Memory(), dataOffset, length)
+	ethContext.ClearReturnData()
 	ethContext.Finish(data)
 	ethContext.SignalUserError()
 
@@ -745,6 +747,15 @@ func ethcallStatic(context unsafe.Pointer, gasLimit int64, addressOffset int32, 
 
 	if ethContext.GasLeft() < uint64(gasLimit) {
 		return 1
+	}
+
+	if IsAddressForPredefinedContract(address) {
+		err := CallPredefinedContract(context, address, data)
+		if err != nil {
+			return 1
+		}
+	
+		return 0
 	}
 
 	ethContext.Transfer(address, sender, value, nil)
