@@ -40,7 +40,8 @@ func CallPredefinedContract(ctx unsafe.Pointer, address []byte, data []byte) err
 		return fmt.Errorf("erroneous EEI system contract call: %s", err.Error())
 	}
 
-	ethCtx.PutReturnData(returnData)
+	ethCtx.ClearReturnData()
+	ethCtx.Finish(returnData)
 	return nil
 }
 

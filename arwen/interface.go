@@ -27,7 +27,7 @@ type EthContext interface {
 	BlockChainHook() vmcommon.BlockchainHook
 	Transfer(destination []byte, sender []byte, value *big.Int, input []byte)
 	ReturnData() [][]byte
-	PutReturnData([]byte)
+	ClearReturnData()
 
 	SetReadOnly(readOnly bool)
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
@@ -53,7 +53,6 @@ type HostContext interface {
 	BlockChainHook() vmcommon.BlockchainHook
 	SignalUserError()
 	ReturnData() [][]byte
-	PutReturnData([]byte)
 
 	SetReadOnly(readOnly bool)
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)

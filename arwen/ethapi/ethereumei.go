@@ -495,6 +495,7 @@ func ethfinish(context unsafe.Pointer, resultOffset int32, length int32) {
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
 	data := arwen.LoadBytes(instCtx.Memory(), resultOffset, length)
+	ethContext.ClearReturnData()
 	ethContext.Finish(data)
 
 	gasToUse := ethContext.GasSchedule().EthAPICost.Finish
@@ -508,6 +509,7 @@ func ethrevert(context unsafe.Pointer, dataOffset int32, length int32) {
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
 	data := arwen.LoadBytes(instCtx.Memory(), dataOffset, length)
+	ethContext.ClearReturnData()
 	ethContext.Finish(data)
 	ethContext.SignalUserError()
 
