@@ -332,9 +332,9 @@ func ethgetCaller(context unsafe.Pointer, resultOffset int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
-	caller := ethContext.GetVMInput().CallerAddr
-
+	caller := truncateToEthAddress(ethContext.GetVMInput().CallerAddr)
 	_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, caller)
+	
 	gasToUse := ethContext.GasSchedule().EthAPICost.GetCaller
 	ethContext.UseGas(gasToUse)
 }
@@ -484,7 +484,9 @@ func ethgetTxOrigin(context unsafe.Pointer, resultOffset int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
-	_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, ethContext.GetVMInput().CallerAddr)
+	caller := truncateToEthAddress(ethContext.GetVMInput().CallerAddr)
+	_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, caller)
+
 	gasToUse := ethContext.GasSchedule().EthAPICost.GetTxOrigin
 	ethContext.UseGas(gasToUse)
 }
@@ -523,7 +525,8 @@ func ethselfDestruct(context unsafe.Pointer, addressOffset int32) {
 
 	address := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.HashLen)
 
-	ethContext.SelfDestruct(address, ethContext.GetVMInput().CallerAddr)
+	caller := ethContext.GetVMInput().CallerAddr
+	ethContext.SelfDestruct(address, caller)
 
 	gasToUse := ethContext.GasSchedule().EthAPICost.SelfDestruct
 	ethContext.UseGas(gasToUse)
@@ -801,4 +804,9 @@ func ethcreate(context unsafe.Pointer, valueOffset int32, dataOffset int32, leng
 	_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, newAddress)
 
 	return 0
+}
+
+func truncateToEthAddress(address []byte) []byte {
+	ethAddress := address[arwen.AddressLen-arwen.AddressLenEth:arwen.AddressLen]
+	return ethAddress
 }
