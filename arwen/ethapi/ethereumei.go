@@ -747,6 +747,15 @@ func ethcallStatic(context unsafe.Pointer, gasLimit int64, addressOffset int32, 
 		return 1
 	}
 
+	if IsAddressForPredefinedContract(address) {
+		err := CallPredefinedContract(context, address, data)
+		if err != nil {
+			return 1
+		}
+	
+		return 0
+	}
+
 	ethContext.Transfer(address, sender, value, nil)
 
 	ethContext.SetReadOnly(true)
