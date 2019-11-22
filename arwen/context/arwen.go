@@ -464,11 +464,7 @@ func (host *vmContext) GetStorage(addr []byte, key []byte) []byte {
 		}
 	}
 
-	hash, err := host.blockChainHook.GetStorageData(addr, key)
-	if err != nil {
-		fmt.Printf("GetStorage returned with error %s \n", err.Error())
-	}
-
+	hash, _ := host.blockChainHook.GetStorageData(addr, key)
 	return hash
 }
 
