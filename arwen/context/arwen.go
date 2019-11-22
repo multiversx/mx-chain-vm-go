@@ -138,7 +138,7 @@ func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInpu
 	host.scAddress = address
 	host.addTxValueToSmartContract(input.CallValue, address)
 
-	host.vmInput.GasProvided, err = host.computeInitialCodeCost(
+	host.vmInput.GasProvided, err = host.deductInitialCodeCost(
 		input.GasProvided,
 		input.ContractCode,
 		host.GasSchedule().ElrondAPICost.CreateContract,
@@ -193,7 +193,7 @@ func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInpu
 	return vmOutput, err
 }
 
-func (host *vmContext) computeInitialCodeCost(
+func (host *vmContext) deductInitialCodeCost(
 	gasProvided uint64,
 	code []byte,
 	baseCost uint64,
@@ -221,7 +221,7 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 	contract := host.GetCode(host.scAddress)
 
 	var err error
-	host.vmInput.GasProvided, err = host.computeInitialCodeCost(
+	host.vmInput.GasProvided, err = host.deductInitialCodeCost(
 		input.GasProvided,
 		contract,
 		0,
@@ -726,7 +726,7 @@ func (host *vmContext) CreateNewContract(input *vmcommon.ContractCreateInput) ([
 		host.UseGas(totalGasConsumed)
 	}()
 
-	gasLeft, err := host.computeInitialCodeCost(
+	gasLeft, err := host.deductInitialCodeCost(
 		input.GasProvided,
 		input.ContractCode,
 		0, // create cost was elrady taken care of. as it is different for ethereum and elrond
@@ -792,7 +792,7 @@ func (host *vmContext) execute(input *vmcommon.ContractCallInput) error {
 		host.UseGas(totalGasConsumed)
 	}()
 
-	gasLeft, err := host.computeInitialCodeCost(
+	gasLeft, err := host.deductInitialCodeCost(
 		input.GasProvided,
 		contract,
 		0, // create cost was elrady taken care of. as it is different for ethereum and elrond
