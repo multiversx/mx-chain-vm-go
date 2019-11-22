@@ -949,7 +949,7 @@ func (host *vmContext) ReturnData() [][]byte {
 }
 
 func (host *vmContext) ClearReturnData() {
-	host.returnData = make([][]byte, 1)
+	host.returnData = make([][]byte, 0)
 }
 
 // The first four bytes is the method selector. The rest of the input data are method arguments in chunks of 32 bytes.
