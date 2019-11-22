@@ -699,6 +699,10 @@ func (host *vmContext) GasLeft() uint64 {
 	return host.vmInput.GasProvided - host.instance.GetPointsUsed()
 }
 
+func (host *vmContext) HasLessGasLeft(value int64) bool {
+	return host.GasLeft() < uint64(value)
+}
+
 func (host *vmContext) BlockGasLimit() uint64 {
 	return host.blockGasLimit
 }
@@ -949,7 +953,7 @@ func (host *vmContext) ReturnData() [][]byte {
 }
 
 func (host *vmContext) ClearReturnData() {
-	host.returnData = make([][]byte, 1)
+	host.returnData = make([][]byte, 0)
 }
 
 // The first four bytes is the method selector. The rest of the input data are method arguments in chunks of 32 bytes.
