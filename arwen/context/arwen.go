@@ -160,16 +160,9 @@ func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInpu
 
 	host.instance.SetContextData(unsafe.Pointer(&idContext))
 
-	var result []byte
-	init := host.instance.Exports["init"]
-	if init != nil {
-		out, err := init()
-		if err != nil {
-			fmt.Println("arwen Error", err.Error())
-			return host.createVMOutputInCaseOfError(vmcommon.FunctionWrongSignature), nil
-		}
-		convertedResult := arwen.ConvertReturnValue(out)
-		result = convertedResult.Bytes()
+	_, result, err := host.callInitFunction()
+	if err != nil {
+		return host.createVMOutputInCaseOfError(vmcommon.FunctionWrongSignature), nil
 	}
 
 	newSCAcc, ok := host.outputAccounts[string(address)]
@@ -200,6 +193,29 @@ func (host *vmContext) computeInitialCreateCost(input *vmcommon.ContractCreateIn
 	return initialCreateCost
 }
 
+func (host *vmContext) callInitFunction() (bool, []byte, error) {
+	init, ok := host.instance.Exports[arwen.InitFunctionName]
+
+	if !ok {
+		init, ok = host.instance.Exports[arwen.InitFunctionNameEth]
+	}
+
+	if !ok {
+		// There's no initialization function, don't do anything.
+		return false, nil, nil
+	}
+
+	out, err := init()
+	if err != nil {
+		fmt.Println("arwen.callInitFunction() error:", err.Error())
+		return true, nil, err
+	}
+
+	convertedResult := arwen.ConvertReturnValue(out)
+	result := convertedResult.Bytes()
+	return true, result, nil
+}
+
 func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	host.initInternalValues()
 	host.vmInput = input.VMInput
@@ -227,7 +243,7 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 
 	host.instance.SetContextData(unsafe.Pointer(&idContext))
 
-	if host.callFunction == "init" {
+	if host.isInitFunctionCalled() {
 		fmt.Println("arwen Error", ErrInitFuncCalledInRun.Error())
 		return host.createVMOutputInCaseOfError(vmcommon.UserError), nil
 	}
@@ -255,6 +271,10 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 	vmOutput := host.createVMOutput(convertedResult.Bytes())
 
 	return vmOutput, nil
+}
+
+func (host *vmContext) isInitFunctionCalled() bool {
+	return host.callFunction == arwen.InitFunctionName || host.callFunction == arwen.InitFunctionNameEth
 }
 
 func (host *vmContext) createVMOutputInCaseOfError(errCode vmcommon.ReturnCode) *vmcommon.VMOutput {
@@ -725,16 +745,12 @@ func (host *vmContext) CreateNewContract(input *vmcommon.ContractCreateInput) ([
 
 	host.instance.SetContextData(unsafe.Pointer(&idContext))
 
-	var result []byte
-	init := host.instance.Exports["init"]
-	if init != nil {
-		out, err := init()
-		if err != nil {
-			fmt.Println("arwen Error", err.Error())
-			return nil, err
-		}
-		convertedResult := arwen.ConvertReturnValue(out)
-		result = convertedResult.Bytes()
+	initCalled, result, err := host.callInitFunction()
+	if err != nil {
+		return nil, err
+	}
+
+	if initCalled {
 		host.Finish(result)
 	}
 
@@ -783,7 +799,7 @@ func (host *vmContext) execute(input *vmcommon.ContractCallInput) error {
 
 	newInstance.SetContextData(unsafe.Pointer(&idContext))
 
-	if host.callFunction == "init" {
+	if host.isInitFunctionCalled() {
 		return ErrInitFuncCalledInRun
 	}
 
