@@ -695,10 +695,6 @@ func executeOnSameContext(
 	value := arwen.LoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
 	function, data, actualLen := getArgumentsFromMemory(context, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 
-	if erdContext.HasLessGasLeft(gasLimit) {
-		return 1
-	}
-
 	gasToUse := erdContext.GasSchedule().ElrondAPICost.ExecuteOnSameContext
 	gasToUse += erdContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
 	erdContext.UseGas(gasToUse)
@@ -712,7 +708,7 @@ func executeOnSameContext(
 			Arguments:   data,
 			CallValue:   bigIntVal,
 			GasPrice:    0,
-			GasProvided: uint64(gasLimit),
+			GasProvided: erdContext.BoundGasLimit(gasLimit),
 		},
 		RecipientAddr: dest,
 		Function:      function,
@@ -745,10 +741,6 @@ func executeOnDestContext(
 	value := arwen.LoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
 	function, data, actualLen := getArgumentsFromMemory(context, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 
-	if erdContext.HasLessGasLeft(gasLimit) {
-		return 1
-	}
-
 	gasToUse := erdContext.GasSchedule().ElrondAPICost.ExecuteOnDestContext
 	gasToUse += erdContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
 	erdContext.UseGas(gasToUse)
@@ -760,7 +752,7 @@ func executeOnDestContext(
 			Arguments:   data,
 			CallValue:   big.NewInt(0).SetBytes(value),
 			GasPrice:    0,
-			GasProvided: uint64(gasLimit),
+			GasProvided: erdContext.BoundGasLimit(gasLimit),
 		},
 		RecipientAddr: dest,
 		Function:      function,
@@ -819,10 +811,6 @@ func delegateExecution(
 	value := erdContext.GetVMInput().CallValue
 	sender := erdContext.GetVMInput().CallerAddr
 
-	if erdContext.HasLessGasLeft(gasLimit) {
-		return 1
-	}
-
 	gasToUse := erdContext.GasSchedule().ElrondAPICost.DelegateExecution
 	gasToUse += erdContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
 	erdContext.UseGas(gasToUse)
@@ -834,7 +822,7 @@ func delegateExecution(
 			Arguments:   data,
 			CallValue:   value,
 			GasPrice:    0,
-			GasProvided: uint64(gasLimit),
+			GasProvided: erdContext.BoundGasLimit(gasLimit),
 		},
 		RecipientAddr: address,
 		Function:      function,
@@ -876,10 +864,6 @@ func executeReadOnly(
 	value := erdContext.GetVMInput().CallValue
 	sender := erdContext.GetVMInput().CallerAddr
 
-	if erdContext.HasLessGasLeft(gasLimit) {
-		return 1
-	}
-
 	gasToUse := erdContext.GasSchedule().ElrondAPICost.ExecuteReadOnly
 	gasToUse += erdContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
 	erdContext.UseGas(gasToUse)
@@ -893,7 +877,7 @@ func executeReadOnly(
 			Arguments:   data,
 			CallValue:   value,
 			GasPrice:    0,
-			GasProvided: uint64(gasLimit),
+			GasProvided: erdContext.BoundGasLimit(gasLimit),
 		},
 		RecipientAddr: address,
 		Function:      function,
