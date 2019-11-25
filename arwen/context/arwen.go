@@ -699,8 +699,15 @@ func (host *vmContext) GasLeft() uint64 {
 	return host.vmInput.GasProvided - host.instance.GetPointsUsed()
 }
 
-func (host *vmContext) HasLessGasLeft(value int64) bool {
-	return host.GasLeft() < uint64(value)
+func (host *vmContext) BoundGasLimit(value int64) uint64 {
+	gasLeft := host.GasLeft()
+	limit := uint64(value)
+
+	if gasLeft < limit {
+		return gasLeft
+	} else {
+		return limit
+	}
 }
 
 func (host *vmContext) BlockGasLimit() uint64 {

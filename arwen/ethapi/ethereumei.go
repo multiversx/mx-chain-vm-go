@@ -627,10 +627,6 @@ func ethcall(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueO
 	value := arwen.LoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
 	data := arwen.LoadBytes(instCtx.Memory(), dataOffset, dataLength)
 
-	if ethContext.HasLessGasLeft(gasLimit) {
-		return 1
-	}
-
 	gasToUse := ethContext.GasSchedule().EthAPICost.Call
 	gasToUse += ethContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(data))
 	ethContext.UseGas(gasToUse)
@@ -644,7 +640,7 @@ func ethcall(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueO
 			Arguments:   [][]byte{data},
 			CallValue:   bigIntVal,
 			GasPrice:    0,
-			GasProvided: uint64(gasLimit),
+			GasProvided: ethContext.BoundGasLimit(gasLimit),
 		},
 		RecipientAddr: dest,
 		Function:      "main",
@@ -667,10 +663,6 @@ func ethcallCode(context unsafe.Pointer, gasLimit int64, addressOffset int32, va
 	value := arwen.LoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
 	data := arwen.LoadBytes(instCtx.Memory(), dataOffset, dataLength)
 
-	if ethContext.HasLessGasLeft(gasLimit) {
-		return 1
-	}
-
 	gasToUse := ethContext.GasSchedule().EthAPICost.CallCode
 	gasToUse += ethContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(data))
 	ethContext.UseGas(gasToUse)
@@ -682,7 +674,7 @@ func ethcallCode(context unsafe.Pointer, gasLimit int64, addressOffset int32, va
 			Arguments:   [][]byte{data},
 			CallValue:   big.NewInt(0).SetBytes(value),
 			GasPrice:    0,
-			GasProvided: uint64(gasLimit),
+			GasProvided: ethContext.BoundGasLimit(gasLimit),
 		},
 		RecipientAddr: dest,
 		Function:      "main",
@@ -706,10 +698,6 @@ func ethcallDelegate(context unsafe.Pointer, gasLimit int64, addressOffset int32
 	address := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.HashLen)
 	data := arwen.LoadBytes(instCtx.Memory(), dataOffset, dataLength)
 
-	if ethContext.HasLessGasLeft(gasLimit) {
-		return 1
-	}
-
 	gasToUse := ethContext.GasSchedule().EthAPICost.CallDelegate
 	gasToUse += ethContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(data))
 	ethContext.UseGas(gasToUse)
@@ -721,7 +709,7 @@ func ethcallDelegate(context unsafe.Pointer, gasLimit int64, addressOffset int32
 			Arguments:   [][]byte{data},
 			CallValue:   value,
 			GasPrice:    0,
-			GasProvided: uint64(gasLimit),
+			GasProvided: ethContext.BoundGasLimit(gasLimit),
 		},
 		RecipientAddr: address,
 		Function:      "main",
@@ -745,10 +733,6 @@ func ethcallStatic(context unsafe.Pointer, gasLimit int64, addressOffset int32, 
 	value := ethContext.GetVMInput().CallValue
 	sender := ethContext.GetVMInput().CallerAddr
 
-	if ethContext.HasLessGasLeft(gasLimit) {
-		return 1
-	}
-
 	gasToUse := ethContext.GasSchedule().EthAPICost.CallStatic
 	gasToUse += ethContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(data))
 	ethContext.UseGas(gasToUse)
@@ -771,7 +755,7 @@ func ethcallStatic(context unsafe.Pointer, gasLimit int64, addressOffset int32, 
 			Arguments:   [][]byte{data},
 			CallValue:   value,
 			GasPrice:    0,
-			GasProvided: uint64(gasLimit),
+			GasProvided: ethContext.BoundGasLimit(gasLimit),
 		},
 		RecipientAddr: address,
 		Function:      "main",
