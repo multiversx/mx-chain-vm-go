@@ -1,6 +1,7 @@
 package arwen
 
 import (
+	"fmt"
 	"math/big"
 
 	"sync"
@@ -118,4 +119,41 @@ func ConvertReturnValue(wasmValue wasmer.Value) *big.Int {
 	}
 
 	panic("unsupported return type")
+}
+
+func GuardedMakeByteSlice2D(length int32) ([][]byte, error) {
+	if length < 0 {
+		return nil, fmt.Errorf("GuardedMakeByteSlice2D: negative length (%d)", length)
+	}
+
+	result := make([][]byte, length)
+	return result, nil
+}
+
+func GuardedLoadBytes(from *wasmer.Memory, offset int32, length int32) ([]byte, error) {
+	memoryView := from.Data()
+	memoryLength := from.Length()
+	requestedEnd := uint32(offset + length)
+	isOffsetTooSmall := offset < 0
+	isOffsetTooLarge := uint32(offset) > memoryLength
+	isRequestedEndTooLarge := requestedEnd > memoryLength
+	isLengthNegative := length < 0
+
+	if isOffsetTooSmall || isOffsetTooLarge {
+		return nil, fmt.Errorf("GuardedLoadBytes: bad bounds")
+	}
+
+	if isLengthNegative {
+		return nil, fmt.Errorf("GuardedLoadBytes: negative length")
+	}
+
+	result := make([]byte, length)
+
+	if isRequestedEndTooLarge {
+		copy(result, memoryView[offset:])
+	} else {
+		copy(result, memoryView[offset:requestedEnd])
+	}
+
+	return result, nil
 }

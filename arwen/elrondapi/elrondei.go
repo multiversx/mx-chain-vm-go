@@ -466,11 +466,21 @@ func writeLog(context unsafe.Pointer, pointer int32, length int32, topicPtr int3
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetErdContext(instCtx.Data())
 
-	log := arwen.LoadBytes(instCtx.Memory(), pointer, length)
+	log, err := arwen.GuardedLoadBytes(instCtx.Memory(), pointer, length)
+	if withFault(err, context) {
+		return
+	}
 
-	topics := make([][]byte, numTopics)
+	topics, err := arwen.GuardedMakeByteSlice2D(numTopics)
+	if withFault(err, context) {
+		return
+	}
+
 	for i := int32(0); i < numTopics; i++ {
-		topics[i] = arwen.LoadBytes(instCtx.Memory(), topicPtr+i*arwen.HashLen, arwen.HashLen)
+		topics[i], err = arwen.GuardedLoadBytes(instCtx.Memory(), topicPtr+i*arwen.HashLen, arwen.HashLen)
+		if withFault(err, context) {
+			return
+		}
 	}
 
 	hostContext.WriteLog(hostContext.GetSCAddress(), topics, log)
@@ -979,4 +989,17 @@ func getReturnData(context unsafe.Pointer, resultId int32, dataOffset int32) int
 
 	_ = arwen.StoreBytes(instCtx.Memory(), dataOffset, returnData[resultId])
 	return int32(len(returnData[resultId]))
+}
+
+func withFault(err error, context unsafe.Pointer) bool {
+	if err != nil {
+		instCtx := wasmer.IntoInstanceContext(context)
+		hostContext := arwen.GetErdContext(instCtx.Data())
+		hostContext.SignalUserError()
+		hostContext.UseGas(hostContext.GasLeft())
+
+		return true
+	}
+
+	return false
 }
