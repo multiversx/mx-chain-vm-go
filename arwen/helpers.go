@@ -157,3 +157,35 @@ func GuardedLoadBytes(from *wasmer.Memory, offset int32, length int32) ([]byte, 
 
 	return result, nil
 }
+
+func GuardedStoreBytes(to *wasmer.Memory, offset int32, data []byte) error {
+	memoryView := to.Data()
+	memoryLength := to.Length()
+	dataLength := int32(len(data))
+	requestedEnd := uint32(offset + dataLength)
+	isOffsetTooSmall := offset < 0
+	isNewPageNecessary := requestedEnd > memoryLength
+
+	if isOffsetTooSmall {
+		return fmt.Errorf("GuardedStoreBytes: bad lower bounds")
+	}
+
+	if isNewPageNecessary {
+		err := to.Grow(1)
+		if err != nil {
+			return err
+		}
+
+		memoryView = to.Data()
+		memoryLength = to.Length()
+	}
+
+	isRequestedEndTooLarge := requestedEnd > memoryLength
+
+	if isRequestedEndTooLarge {
+		return fmt.Errorf("GuardedStoreBytes: bad upper bounds")
+	}
+
+	copy(memoryView[offset:requestedEnd], data)
+	return nil
+}

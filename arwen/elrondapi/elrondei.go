@@ -274,7 +274,10 @@ func getOwner(context unsafe.Pointer, resultOffset int32) {
 	hostContext := arwen.GetErdContext(instCtx.Data())
 
 	owner := hostContext.GetSCAddress()
-	_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, owner)
+	err := arwen.GuardedStoreBytes(instCtx.Memory(), resultOffset, owner)
+	if withFault(err, context) {
+		return
+	}
 
 	gasToUse := hostContext.GasSchedule().ElrondAPICost.GetOwner
 	hostContext.UseGas(gasToUse)
