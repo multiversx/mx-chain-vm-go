@@ -603,12 +603,12 @@ func (host *vmContext) GetCodeSize(addr []byte) int32 {
 func (host *vmContext) GetCodeHash(addr []byte) []byte {
 	code, err := host.blockChainHook.GetCode(addr)
 	if err != nil {
-		fmt.Printf("GetCodeSize returned with error %s \n", err.Error())
+		fmt.Printf("GetCodeHash returned with error %s \n", err.Error())
 	}
 
 	codeHash, err := host.cryptoHook.Keccak256(string(code))
 	if err != nil {
-		fmt.Printf("GetCodeSize returned with error %s \n", err.Error())
+		fmt.Printf("GetCodeHash/Keccak256 returned with error %s \n", err.Error())
 	}
 
 	return []byte(codeHash)
@@ -617,7 +617,7 @@ func (host *vmContext) GetCodeHash(addr []byte) []byte {
 func (host *vmContext) GetCode(addr []byte) []byte {
 	code, err := host.blockChainHook.GetCode(addr)
 	if err != nil {
-		fmt.Printf("GetCodeSize returned with error %s \n", err.Error())
+		fmt.Printf("GetCode returned with error %s \n", err.Error())
 	}
 
 	return code
