@@ -344,7 +344,7 @@ func ethgetCallValue(context unsafe.Pointer, resultOffset int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
-	value := converToEthU128(ethContext.GetVMInput().CallValue.Bytes())
+	value := convertToEthU128(ethContext.GetVMInput().CallValue.Bytes())
 
 	length := len(value)
 	invBytes := make([]byte, length)
@@ -808,9 +808,9 @@ func convertToEthAddress(address []byte) []byte {
 	return ethAddress
 }
 
-// converToEthU128 adds zero-left-padding up to a total of 16 bytes
+// convertToEthU128 adds zero-left-padding up to a total of 16 bytes
 // If the input data is larger than 16 bytes, an array of 16 zeros is returned
-func converToEthU128(data []byte) []byte {
+func convertToEthU128(data []byte) []byte {
 	const noBytes = 16
 
 	result := make([]byte, noBytes)
