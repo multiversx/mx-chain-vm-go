@@ -1073,7 +1073,7 @@ func getReturnDataSize(context unsafe.Pointer, resultId int32) int32 {
 	erdContext.UseGas(gasToUse)
 
 	returnData := erdContext.ReturnData()
-	if int32(len(returnData)) >= resultId {
+	if resultId >= int32(len(returnData)) {
 		return 0
 	}
 
@@ -1089,7 +1089,7 @@ func getReturnData(context unsafe.Pointer, resultId int32, dataOffset int32) int
 	erdContext.UseGas(gasToUse)
 
 	returnData := erdContext.ReturnData()
-	if int32(len(returnData)) >= resultId {
+	if resultId >= int32(len(returnData)) {
 		return 0
 	}
 
