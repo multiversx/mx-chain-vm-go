@@ -158,6 +158,30 @@ func GuardedLoadBytes(from *wasmer.Memory, offset int32, length int32) ([]byte, 
 	return result, nil
 }
 
+func GuardedGetBytesSlice(data []byte, offset int32, length int32) ([]byte, error) {
+	dataLength := uint32(len(data))
+	isOffsetTooSmall := offset < 0
+	isOffsetTooLarge := uint32(offset) > dataLength
+	requestedEnd := uint32(offset + length)
+	isRequestedEndTooLarge := requestedEnd > dataLength
+	isLengthNegative := length < 0
+
+	if isOffsetTooSmall || isOffsetTooLarge {
+		return nil, fmt.Errorf("GuardedGetBytesSlice: bad bounds")
+	}
+
+	if isRequestedEndTooLarge {
+		return nil, fmt.Errorf("GuardedGetBytesSlice: bad bounds")
+	}
+
+	if isLengthNegative {
+		return nil, fmt.Errorf("GuardedGetBytesSlice: negative length")
+	}
+
+	result := data[offset : offset+length]
+	return result, nil
+}
+
 func GuardedStoreBytes(to *wasmer.Memory, offset int32, data []byte) error {
 	memoryView := to.Data()
 	memoryLength := to.Length()

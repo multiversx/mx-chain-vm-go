@@ -234,7 +234,10 @@ func ethgetAddress(context unsafe.Pointer, resultOffset int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
-	_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, ethContext.GetSCAddress())
+	err := arwen.GuardedStoreBytes(instCtx.Memory(), resultOffset, ethContext.GetSCAddress())
+	if withFault(err, context) {
+		return
+	}
 
 	gasToUse := ethContext.GasSchedule().EthAPICost.GetAddress
 	ethContext.UseGas(gasToUse)
@@ -245,10 +248,17 @@ func ethgetExternalBalance(context unsafe.Pointer, addressOffset int32, resultOf
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
-	address := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
+	address, err := arwen.GuardedLoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
+	if withFault(err, context) {
+		return
+	}
+
 	balance := ethContext.GetBalance(address)
 
-	_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, balance)
+	err = arwen.StoreBytes(instCtx.Memory(), resultOffset, balance)
+	if withFault(err, context) {
+		return
+	}
 
 	gasToUse := ethContext.GasSchedule().EthAPICost.GetExternalBalance
 	ethContext.UseGas(gasToUse)
@@ -260,7 +270,10 @@ func ethgetBlockHash(context unsafe.Pointer, number int64, resultOffset int32) i
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
 	hash := ethContext.BlockHash(number)
-	_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, hash)
+	err := arwen.StoreBytes(instCtx.Memory(), resultOffset, hash)
+	if withFault(err, context) {
+		return 0
+	}
 
 	gasToUse := ethContext.GasSchedule().EthAPICost.GetBlockHash
 	ethContext.UseGas(gasToUse)
@@ -268,6 +281,7 @@ func ethgetBlockHash(context unsafe.Pointer, number int64, resultOffset int32) i
 	if len(hash) == 0 {
 		return 0
 	}
+
 	return 1
 }
 
@@ -277,7 +291,10 @@ func ethcallDataCopy(context unsafe.Pointer, resultOffset int32, dataOffset int3
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
 	callData := ethContext.CallData()
-	_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, callData[dataOffset:dataOffset+length])
+	err := arwen.StoreBytes(instCtx.Memory(), resultOffset, callData[dataOffset:dataOffset+length])
+	if withFault(err, context) {
+		return
+	}
 
 	gasToUse := ethContext.GasSchedule().EthAPICost.CallDataCopy
 	gasToUse += ethContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(length)
@@ -300,8 +317,15 @@ func ethstorageStore(context unsafe.Pointer, pathOffset int32, valueOffset int32
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
-	key := arwen.LoadBytes(instCtx.Memory(), pathOffset, arwen.HashLen)
-	data := arwen.LoadBytes(instCtx.Memory(), valueOffset, arwen.HashLen)
+	key, err := arwen.GuardedLoadBytes(instCtx.Memory(), pathOffset, arwen.HashLen)
+	if withFault(err, context) {
+		return
+	}
+
+	data, err := arwen.GuardedLoadBytes(instCtx.Memory(), valueOffset, arwen.HashLen)
+	if withFault(err, context) {
+		return
+	}
 
 	_ = ethContext.SetStorage(ethContext.GetSCAddress(), key, data)
 
@@ -314,13 +338,20 @@ func ethstorageLoad(context unsafe.Pointer, pathOffset int32, resultOffset int32
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
-	key := arwen.LoadBytes(instCtx.Memory(), pathOffset, arwen.HashLen)
+	key, err := arwen.GuardedLoadBytes(instCtx.Memory(), pathOffset, arwen.HashLen)
+	if withFault(err, context) {
+		return
+	}
+
 	data := ethContext.GetStorage(ethContext.GetSCAddress(), key)
 
 	currInput := make([]byte, arwen.HashLen)
 	copy(currInput[arwen.HashLen-len(data):], data)
 
-	_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, currInput)
+	err = arwen.GuardedStoreBytes(instCtx.Memory(), resultOffset, currInput)
+	if withFault(err, context) {
+		return
+	}
 
 	gasToUse := ethContext.GasSchedule().EthAPICost.StorageLoad
 	gasToUse += ethContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(data))
@@ -333,8 +364,11 @@ func ethgetCaller(context unsafe.Pointer, resultOffset int32) {
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
 	caller := convertToEthAddress(ethContext.GetVMInput().CallerAddr)
-	_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, caller)
-	
+	err := arwen.GuardedStoreBytes(instCtx.Memory(), resultOffset, caller)
+	if withFault(err, context) {
+		return
+	}
+
 	gasToUse := ethContext.GasSchedule().EthAPICost.GetCaller
 	ethContext.UseGas(gasToUse)
 }
@@ -352,7 +386,10 @@ func ethgetCallValue(context unsafe.Pointer, resultOffset int32) {
 		invBytes[length-i-1] = value[i]
 	}
 
-	_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, invBytes)
+	err := arwen.GuardedStoreBytes(instCtx.Memory(), resultOffset, invBytes)
+	if withFault(err, context) {
+		return
+	}
 
 	gasToUse := ethContext.GasSchedule().EthAPICost.GetCallValue
 	ethContext.UseGas(gasToUse)
@@ -366,8 +403,14 @@ func ethcodeCopy(context unsafe.Pointer, resultOffset int32, codeOffset int32, l
 	scAddress := ethContext.GetSCAddress()
 	code := ethContext.GetCode(scAddress)
 
-	if int32(len(code)) > codeOffset+length {
-		_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, code[codeOffset:codeOffset+length])
+	codeSlice, err := arwen.GuardedGetBytesSlice(code, codeOffset, length)
+	if withFault(err, context) {
+		return
+	}
+
+	err = arwen.GuardedStoreBytes(instCtx.Memory(), resultOffset, codeSlice)
+	if withFault(err, context) {
+		return
 	}
 
 	gasToUse := ethContext.GasSchedule().EthAPICost.CodeCopy
@@ -391,11 +434,21 @@ func ethexternalCodeCopy(context unsafe.Pointer, addressOffset int32, resultOffs
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
-	dest := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
+	dest, err := arwen.GuardedLoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
+	if withFault(err, context) {
+		return
+	}
+
 	code := ethContext.GetCode(dest)
 
-	if int32(len(code)) > codeOffset+length {
-		_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, code[codeOffset:codeOffset+length])
+	codeSlice, err := arwen.GuardedGetBytesSlice(code, codeOffset, length)
+	if withFault(err, context) {
+		return
+	}
+
+	err = arwen.GuardedStoreBytes(instCtx.Memory(), resultOffset, codeSlice)
+	if withFault(err, context) {
+		return
 	}
 
 	gasToUse := ethContext.GasSchedule().EthAPICost.ExternalCodeCopy
@@ -408,7 +461,10 @@ func ethgetExternalCodeSize(context unsafe.Pointer, addressOffset int32) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
-	dest := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
+	dest, err := arwen.GuardedLoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
+	if withFault(err, context) {
+		return 0
+	}
 
 	gasToUse := ethContext.GasSchedule().EthAPICost.GetExternalCodeSize
 	ethContext.UseGas(gasToUse)
@@ -449,7 +505,10 @@ func ethgetTxGasPrice(context unsafe.Pointer, valueOffset int32) {
 	gasU128 := make([]byte, 16)
 	copy(gasU128[16-len(gasBigInt.Bytes()):], gasBigInt.Bytes())
 
-	_ = arwen.StoreBytes(instCtx.Memory(), valueOffset, gasU128)
+	err := arwen.GuardedStoreBytes(instCtx.Memory(), valueOffset, gasU128)
+	if withFault(err, context) {
+		return
+	}
 
 	gasToUse := ethContext.GasSchedule().EthAPICost.GetTxGasPrice
 	ethContext.UseGas(gasToUse)
@@ -460,7 +519,10 @@ func ethlogTopics(context unsafe.Pointer, dataOffset int32, length int32, number
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
-	data := arwen.LoadBytes(instCtx.Memory(), dataOffset, length)
+	data, err := arwen.GuardedLoadBytes(instCtx.Memory(), dataOffset, length)
+	if withFault(err, context) {
+		return
+	}
 
 	topics := make([]int32, 0)
 	topics = append(topics, topic1)
@@ -468,9 +530,16 @@ func ethlogTopics(context unsafe.Pointer, dataOffset int32, length int32, number
 	topics = append(topics, topic3)
 	topics = append(topics, topic4)
 
-	topicsData := make([][]byte, numberOfTopics)
+	topicsData, err := arwen.GuardedMakeByteSlice2D(numberOfTopics)
+	if withFault(err, context) {
+		return
+	}
+
 	for i := int32(0); i < numberOfTopics; i++ {
-		topicsData[i] = arwen.LoadBytes(instCtx.Memory(), topics[i], arwen.HashLen)
+		topicsData[i], err = arwen.GuardedLoadBytes(instCtx.Memory(), topics[i], arwen.HashLen)
+		if withFault(err, context) {
+			return
+		}
 	}
 
 	ethContext.WriteLog(ethContext.GetSCAddress(), topicsData, data)
@@ -486,7 +555,10 @@ func ethgetTxOrigin(context unsafe.Pointer, resultOffset int32) {
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
 	caller := convertToEthAddress(ethContext.GetVMInput().CallerAddr)
-	_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, caller)
+	err := arwen.GuardedStoreBytes(instCtx.Memory(), resultOffset, caller)
+	if withFault(err, context) {
+		return
+	}
 
 	gasToUse := ethContext.GasSchedule().EthAPICost.GetTxOrigin
 	ethContext.UseGas(gasToUse)
@@ -497,7 +569,11 @@ func ethfinish(context unsafe.Pointer, resultOffset int32, length int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
-	data := arwen.LoadBytes(instCtx.Memory(), resultOffset, length)
+	data, err := arwen.GuardedLoadBytes(instCtx.Memory(), resultOffset, length)
+	if withFault(err, context) {
+		return
+	}
+
 	ethContext.ClearReturnData()
 	ethContext.Finish(data)
 
@@ -511,7 +587,11 @@ func ethrevert(context unsafe.Pointer, dataOffset int32, length int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
-	data := arwen.LoadBytes(instCtx.Memory(), dataOffset, length)
+	data, err := arwen.GuardedLoadBytes(instCtx.Memory(), dataOffset, length)
+	if withFault(err, context) {
+		return
+	}
+
 	ethContext.ClearReturnData()
 	ethContext.Finish(data)
 	ethContext.SignalUserError()
@@ -526,7 +606,10 @@ func ethselfDestruct(context unsafe.Pointer, addressOffset int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
-	address := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.HashLen)
+	address, err := arwen.GuardedLoadBytes(instCtx.Memory(), addressOffset, arwen.HashLen)
+	if withFault(err, context) {
+		return
+	}
 
 	caller := ethContext.GetVMInput().CallerAddr
 	ethContext.SelfDestruct(address, caller)
@@ -592,7 +675,13 @@ func ethreturnDataCopy(context unsafe.Pointer, resultOffset int32, dataOffset in
 		return
 	}
 
-	_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, ethReturnData[dataOffset:dataOffset+length])
+	returnDataSlice, err := arwen.GuardedGetBytesSlice(ethReturnData, dataOffset, length)
+	if withFault(err, context) {
+		return
+	}
+
+	err = arwen.GuardedStoreBytes(instCtx.Memory(), resultOffset, returnDataSlice)
+	withFault(err, context)
 }
 
 //export ethgetBlockCoinbase
@@ -603,7 +692,9 @@ func ethgetBlockCoinbase(context unsafe.Pointer, resultOffset int32) {
 	gasToUse := ethContext.GasSchedule().EthAPICost.GetBlockCoinbase
 	ethContext.UseGas(gasToUse)
 
-	_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, ethContext.BlockChainHook().CurrentRandomSeed())
+	randomSeed := ethContext.BlockChainHook().CurrentRandomSeed()
+	err := arwen.StoreBytes(instCtx.Memory(), resultOffset, randomSeed)
+	withFault(err, context)
 }
 
 //export ethgetBlockDifficulty
@@ -614,7 +705,9 @@ func ethgetBlockDifficulty(context unsafe.Pointer, resultOffset int32) {
 	gasToUse := ethContext.GasSchedule().EthAPICost.GetBlockCoinbase
 	ethContext.UseGas(gasToUse)
 
-	_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, ethContext.BlockChainHook().CurrentRandomSeed())
+	randomSeed := ethContext.BlockChainHook().CurrentRandomSeed()
+	err := arwen.StoreBytes(instCtx.Memory(), resultOffset, randomSeed)
+	withFault(err, context)
 }
 
 //export ethcall
@@ -623,9 +716,20 @@ func ethcall(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueO
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
 	send := ethContext.GetSCAddress()
-	dest := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
-	value := arwen.LoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
-	data := arwen.LoadBytes(instCtx.Memory(), dataOffset, dataLength)
+	dest, err := arwen.GuardedLoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
+	if withFault(err, context) {
+		return 1
+	}
+
+	value, err := arwen.GuardedLoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
+	if withFault(err, context) {
+		return 1
+	}
+
+	data, err := arwen.GuardedLoadBytes(instCtx.Memory(), dataOffset, dataLength)
+	if withFault(err, context) {
+		return 1
+	}
 
 	gasToUse := ethContext.GasSchedule().EthAPICost.Call
 	gasToUse += ethContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(data))
@@ -645,7 +749,8 @@ func ethcall(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueO
 		RecipientAddr: dest,
 		Function:      "main",
 	}
-	err := ethContext.ExecuteOnDestContext(contractCallInput)
+	
+	err = ethContext.ExecuteOnDestContext(contractCallInput)
 	if err != nil {
 		return 1
 	}
@@ -659,15 +764,27 @@ func ethcallCode(context unsafe.Pointer, gasLimit int64, addressOffset int32, va
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
 	send := ethContext.GetSCAddress()
-	dest := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
-	value := arwen.LoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
-	data := arwen.LoadBytes(instCtx.Memory(), dataOffset, dataLength)
+	dest, err := arwen.GuardedLoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
+	if withFault(err, context) {
+		return 1
+	}
+
+	value, err := arwen.GuardedLoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
+	if withFault(err, context) {
+		return 1
+	}
+
+	data, err := arwen.GuardedLoadBytes(instCtx.Memory(), dataOffset, dataLength)
+	if withFault(err, context) {
+		return 1
+	}
 
 	gasToUse := ethContext.GasSchedule().EthAPICost.CallCode
 	gasToUse += ethContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(data))
 	ethContext.UseGas(gasToUse)
 
 	ethContext.Transfer(dest, send, big.NewInt(0).SetBytes(value), nil)
+	
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallerAddr:  send,
@@ -679,7 +796,8 @@ func ethcallCode(context unsafe.Pointer, gasLimit int64, addressOffset int32, va
 		RecipientAddr: dest,
 		Function:      "main",
 	}
-	err := ethContext.ExecuteOnSameContext(contractCallInput)
+
+	err = ethContext.ExecuteOnSameContext(contractCallInput)
 	if err != nil {
 		return 1
 	}
@@ -822,4 +940,17 @@ func convertToEthU128(data []byte) []byte {
 
 	copy(result[noBytes-length:], data)
 	return result
+}
+
+func withFault(err error, context unsafe.Pointer) bool {
+	if err != nil {
+		instCtx := wasmer.IntoInstanceContext(context)
+		hostContext := arwen.GetEthContext(instCtx.Data())
+		hostContext.SignalUserError()
+		hostContext.UseGas(hostContext.GasLeft())
+
+		return true
+	}
+
+	return false
 }
