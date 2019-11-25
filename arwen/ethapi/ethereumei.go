@@ -727,7 +727,7 @@ func ethcallStatic(context unsafe.Pointer, gasLimit int64, addressOffset int32, 
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
-	address := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.EthAddressLen)
+	address := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLenEth)
 	data := arwen.LoadBytes(instCtx.Memory(), dataOffset, dataLength)
 
 	value := ethContext.GetVMInput().CallValue
