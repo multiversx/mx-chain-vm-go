@@ -305,9 +305,7 @@ func (host *vmContext) createVMOutputInCaseOfError(errCode vmcommon.ReturnCode) 
 
 func (host *vmContext) getFunctionToCall() (func(...interface{}) (wasmer.Value, error), error) {
 	exports := host.instance.Exports
-
 	function, ok := exports[host.callFunction]
-
 	if !ok {
 		function, ok = exports["main"]
 	}
@@ -990,8 +988,8 @@ func (host *vmContext) createETHCallInput() []byte {
 	}
 
 	for _, arg := range host.vmInput.Arguments {
-		paddedArg := make([]byte, arwen.HashLen)
-		copy(paddedArg[arwen.HashLen-len(arg):], arg)
+		paddedArg := make([]byte, arwen.ArgumentLenEth)
+		copy(paddedArg[arwen.ArgumentLenEth-len(arg):], arg)
 		newInput = append(newInput, paddedArg...)
 	}
 

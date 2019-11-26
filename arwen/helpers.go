@@ -13,6 +13,7 @@ import (
 const AddressLen = 32
 const AddressLenEth = 20
 const HashLen = 32
+const ArgumentLenEth = 32
 const BalanceLen = 32
 const InitFunctionName = "init"
 const InitFunctionNameEth = "solidity.ctor"
