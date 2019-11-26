@@ -36,7 +36,7 @@ func sha256(context unsafe.Pointer, dataOffset int32, length int32, resultOffset
 	instCtx := wasmer.IntoInstanceContext(context)
 	cryptoContext := arwen.GetCryptoContext(instCtx.Data())
 
-	data, err := arwen.GuardedLoadBytes(instCtx.Memory(), dataOffset, length)
+	data, err := arwen.LoadBytes(instCtx.Memory(), dataOffset, length)
 	if withFault(err, context) {
 		return 1
 	}
@@ -46,7 +46,7 @@ func sha256(context unsafe.Pointer, dataOffset int32, length int32, resultOffset
 		return 1
 	}
 
-	err = arwen.GuardedStoreBytes(instCtx.Memory(), resultOffset, []byte(result))
+	err = arwen.StoreBytes(instCtx.Memory(), resultOffset, []byte(result))
 	if withFault(err, context) {
 		return 1
 	}
@@ -62,7 +62,7 @@ func keccak256(context unsafe.Pointer, dataOffset int32, length int32, resultOff
 	instCtx := wasmer.IntoInstanceContext(context)
 	cryptoContext := arwen.GetCryptoContext(instCtx.Data())
 
-	data, err := arwen.GuardedLoadBytes(instCtx.Memory(), dataOffset, length)
+	data, err := arwen.LoadBytes(instCtx.Memory(), dataOffset, length)
 	if withFault(err, context) {
 		return 1
 	}
@@ -72,7 +72,7 @@ func keccak256(context unsafe.Pointer, dataOffset int32, length int32, resultOff
 		return 1
 	}
 
-	err = arwen.GuardedStoreBytes(instCtx.Memory(), resultOffset, []byte(result))
+	err = arwen.StoreBytes(instCtx.Memory(), resultOffset, []byte(result))
 	if withFault(err, context) {
 		return 1
 	}

@@ -274,7 +274,7 @@ func getOwner(context unsafe.Pointer, resultOffset int32) {
 	hostContext := arwen.GetErdContext(instCtx.Data())
 
 	owner := hostContext.GetSCAddress()
-	err := arwen.GuardedStoreBytes(instCtx.Memory(), resultOffset, owner)
+	err := arwen.StoreBytes(instCtx.Memory(), resultOffset, owner)
 	if withFault(err, context) {
 		return
 	}
@@ -299,14 +299,14 @@ func getExternalBalance(context unsafe.Pointer, addressOffset int32, resultOffse
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetErdContext(instCtx.Data())
 
-	address, err := arwen.GuardedLoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
+	address, err := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
 	if withFault(err, context) {
 		return
 	}
 
 	balance := hostContext.GetBalance(address)
 
-	err = arwen.GuardedStoreBytes(instCtx.Memory(), resultOffset, balance)
+	err = arwen.StoreBytes(instCtx.Memory(), resultOffset, balance)
 	if withFault(err, context) {
 		return
 	}
@@ -325,7 +325,7 @@ func blockHash(context unsafe.Pointer, nonce int64, resultOffset int32) int32 {
 
 	//TODO: change blockchain hook to treat actual nonce - not the offset.
 	hash := hostContext.BlockHash(nonce)
-	err := arwen.GuardedStoreBytes(instCtx.Memory(), resultOffset, hash)
+	err := arwen.StoreBytes(instCtx.Memory(), resultOffset, hash)
 	if withFault(err, context) {
 		return 1
 	}
@@ -339,17 +339,17 @@ func transferValue(context unsafe.Pointer, destOffset int32, valueOffset int32, 
 	hostContext := arwen.GetErdContext(instCtx.Data())
 
 	send := hostContext.GetSCAddress()
-	dest, err := arwen.GuardedLoadBytes(instCtx.Memory(), destOffset, arwen.AddressLen)
+	dest, err := arwen.LoadBytes(instCtx.Memory(), destOffset, arwen.AddressLen)
 	if withFault(err, context) {
 		return 1
 	}
 
-	value, err := arwen.GuardedLoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
+	value, err := arwen.LoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
 	if withFault(err, context) {
 		return 1
 	}
 
-	data, err := arwen.GuardedLoadBytes(instCtx.Memory(), dataOffset, length)
+	data, err := arwen.LoadBytes(instCtx.Memory(), dataOffset, length)
 	if withFault(err, context) {
 		return 1
 	}
@@ -376,7 +376,7 @@ func getArgument(context unsafe.Pointer, id int32, argOffset int32) int32 {
 		return -1
 	}
 
-	err := arwen.GuardedStoreBytes(instCtx.Memory(), argOffset, args[id])
+	err := arwen.StoreBytes(instCtx.Memory(), argOffset, args[id])
 	if withFault(err, context) {
 		return -1
 	}
@@ -393,7 +393,7 @@ func getFunction(context unsafe.Pointer, functionOffset int32) int32 {
 	hostContext.UseGas(gasToUse)
 
 	function := hostContext.Function()
-	err := arwen.GuardedStoreBytes(instCtx.Memory(), functionOffset, []byte(function))
+	err := arwen.StoreBytes(instCtx.Memory(), functionOffset, []byte(function))
 	if withFault(err, context) {
 		return -1
 	}
@@ -417,12 +417,12 @@ func storageStore(context unsafe.Pointer, keyOffset int32, dataOffset int32, dat
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetErdContext(instCtx.Data())
 
-	key, err := arwen.GuardedLoadBytes(instCtx.Memory(), keyOffset, arwen.HashLen)
+	key, err := arwen.LoadBytes(instCtx.Memory(), keyOffset, arwen.HashLen)
 	if withFault(err, context) {
 		return -1
 	}
 
-	data, err := arwen.GuardedLoadBytes(instCtx.Memory(), dataOffset, dataLength)
+	data, err := arwen.LoadBytes(instCtx.Memory(), dataOffset, dataLength)
 	if withFault(err, context) {
 		return -1
 	}
@@ -438,7 +438,7 @@ func storageLoad(context unsafe.Pointer, keyOffset int32, dataOffset int32) int3
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetErdContext(instCtx.Data())
 
-	key, err := arwen.GuardedLoadBytes(instCtx.Memory(), keyOffset, arwen.HashLen)
+	key, err := arwen.LoadBytes(instCtx.Memory(), keyOffset, arwen.HashLen)
 	if withFault(err, context) {
 		return -1
 	}
@@ -449,7 +449,7 @@ func storageLoad(context unsafe.Pointer, keyOffset int32, dataOffset int32) int3
 	gasToUse += hostContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(data))
 	hostContext.UseGas(gasToUse)
 
-	err = arwen.GuardedStoreBytes(instCtx.Memory(), dataOffset, data)
+	err = arwen.StoreBytes(instCtx.Memory(), dataOffset, data)
 	if withFault(err, context) {
 		return -1
 	}
@@ -464,7 +464,7 @@ func getCaller(context unsafe.Pointer, resultOffset int32) {
 
 	caller := hostContext.GetVMInput().CallerAddr
 
-	err := arwen.GuardedStoreBytes(instCtx.Memory(), resultOffset, caller)
+	err := arwen.StoreBytes(instCtx.Memory(), resultOffset, caller)
 	if withFault(err, context) {
 		return
 	}
@@ -488,7 +488,7 @@ func callValue(context unsafe.Pointer, resultOffset int32) int32 {
 	gasToUse := hostContext.GasSchedule().ElrondAPICost.GetCallValue
 	hostContext.UseGas(gasToUse)
 
-	err := arwen.GuardedStoreBytes(instCtx.Memory(), resultOffset, invBytes)
+	err := arwen.StoreBytes(instCtx.Memory(), resultOffset, invBytes)
 	if withFault(err, context) {
 		return -1
 	}
@@ -501,7 +501,7 @@ func writeLog(context unsafe.Pointer, pointer int32, length int32, topicPtr int3
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetErdContext(instCtx.Data())
 
-	log, err := arwen.GuardedLoadBytes(instCtx.Memory(), pointer, length)
+	log, err := arwen.LoadBytes(instCtx.Memory(), pointer, length)
 	if withFault(err, context) {
 		return
 	}
@@ -512,7 +512,7 @@ func writeLog(context unsafe.Pointer, pointer int32, length int32, topicPtr int3
 	}
 
 	for i := int32(0); i < numTopics; i++ {
-		topics[i], err = arwen.GuardedLoadBytes(instCtx.Memory(), topicPtr+i*arwen.HashLen, arwen.HashLen)
+		topics[i], err = arwen.LoadBytes(instCtx.Memory(), topicPtr+i*arwen.HashLen, arwen.HashLen)
 		if withFault(err, context) {
 			return
 		}
@@ -578,7 +578,7 @@ func getBlockRandomSeed(context unsafe.Pointer, pointer int32) {
 	hostContext.UseGas(gasToUse)
 
 	randomSeed := hostContext.BlockChainHook().CurrentRandomSeed()
-	err := arwen.GuardedStoreBytes(instCtx.Memory(), pointer, randomSeed)
+	err := arwen.StoreBytes(instCtx.Memory(), pointer, randomSeed)
 	withFault(err, context)
 }
 
@@ -591,7 +591,7 @@ func getStateRootHash(context unsafe.Pointer, pointer int32) {
 	hostContext.UseGas(gasToUse)
 
 	stateRootHash := hostContext.BlockChainHook().GetStateRootHash()
-	err := arwen.GuardedStoreBytes(instCtx.Memory(), pointer, stateRootHash)
+	err := arwen.StoreBytes(instCtx.Memory(), pointer, stateRootHash)
 	withFault(err, context)
 }
 
@@ -648,7 +648,7 @@ func getPrevBlockRandomSeed(context unsafe.Pointer, pointer int32) {
 	hostContext.UseGas(gasToUse)
 
 	randomSeed := hostContext.BlockChainHook().LastRandomSeed()
-	err := arwen.GuardedStoreBytes(instCtx.Memory(), pointer, randomSeed)
+	err := arwen.StoreBytes(instCtx.Memory(), pointer, randomSeed)
 	withFault(err, context)
 }
 
@@ -657,7 +657,7 @@ func returnData(context unsafe.Pointer, pointer int32, length int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetErdContext(instCtx.Data())
 
-	data, err := arwen.GuardedLoadBytes(instCtx.Memory(), pointer, length)
+	data, err := arwen.LoadBytes(instCtx.Memory(), pointer, length)
 	if withFault(err, context) {
 		return
 	}
@@ -691,7 +691,7 @@ func int64storageStore(context unsafe.Pointer, keyOffset int32, value int64) int
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetErdContext(instCtx.Data())
 
-	key, err := arwen.GuardedLoadBytes(instCtx.Memory(), keyOffset, arwen.HashLen)
+	key, err := arwen.LoadBytes(instCtx.Memory(), keyOffset, arwen.HashLen)
 	if withFault(err, context) {
 		return -1
 	}
@@ -709,7 +709,7 @@ func int64storageLoad(context unsafe.Pointer, keyOffset int32) int64 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetErdContext(instCtx.Data())
 
-	key, err := arwen.GuardedLoadBytes(instCtx.Memory(), keyOffset, arwen.HashLen)
+	key, err := arwen.LoadBytes(instCtx.Memory(), keyOffset, arwen.HashLen)
 	if withFault(err, context) {
 		return 0
 	}
@@ -751,12 +751,12 @@ func executeOnSameContext(
 	erdContext := arwen.GetErdContext(instCtx.Data())
 
 	send := erdContext.GetSCAddress()
-	dest, err := arwen.GuardedLoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
+	dest, err := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
 	if withFault(err, context) {
 		return 1
 	}
 
-	value, err := arwen.GuardedLoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
+	value, err := arwen.LoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
 	if withFault(err, context) {
 		return 1
 	}
@@ -806,12 +806,12 @@ func executeOnDestContext(
 	erdContext := arwen.GetErdContext(instCtx.Data())
 
 	send := erdContext.GetSCAddress()
-	dest, err := arwen.GuardedLoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
+	dest, err := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
 	if withFault(err, context) {
 		return 1
 	}
 
-	value, err := arwen.GuardedLoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
+	value, err := arwen.LoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
 	if withFault(err, context) {
 		return 1
 	}
@@ -853,7 +853,7 @@ func getArgumentsFromMemory(
 	dataOffset int32,
 ) (string, [][]byte, int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
-	argumentsLengthData, err := arwen.GuardedLoadBytes(instCtx.Memory(), argumentsLengthOffset, numArguments*4)
+	argumentsLengthData, err := arwen.LoadBytes(instCtx.Memory(), argumentsLengthOffset, numArguments*4)
 	if withFault(err, context) {
 		return "", nil, 0
 	}
@@ -868,7 +868,7 @@ func getArgumentsFromMemory(
 		currArgLenData := argumentsLengthData[i*4 : i*4+4]
 		actualLen := dataToInt32(currArgLenData)
 
-		data[i], err = arwen.GuardedLoadBytes(instCtx.Memory(), currOffset, actualLen)
+		data[i], err = arwen.LoadBytes(instCtx.Memory(), currOffset, actualLen)
 		if withFault(err, context) {
 			return "", nil, 0
 		}
@@ -876,7 +876,7 @@ func getArgumentsFromMemory(
 		currOffset += actualLen
 	}
 
-	function, err := arwen.GuardedLoadBytes(instCtx.Memory(), functionOffset, functionLength)
+	function, err := arwen.LoadBytes(instCtx.Memory(), functionOffset, functionLength)
 	if withFault(err, context) {
 		return "", nil, 0
 	}
@@ -898,7 +898,7 @@ func delegateExecution(
 	instCtx := wasmer.IntoInstanceContext(context)
 	erdContext := arwen.GetErdContext(instCtx.Data())
 
-	address, err := arwen.GuardedLoadBytes(instCtx.Memory(), addressOffset, arwen.HashLen)
+	address, err := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.HashLen)
 	if withFault(err, context) {
 		return 1
 	}
@@ -957,7 +957,7 @@ func executeReadOnly(
 	instCtx := wasmer.IntoInstanceContext(context)
 	erdContext := arwen.GetErdContext(instCtx.Data())
 
-	address, err := arwen.GuardedLoadBytes(instCtx.Memory(), addressOffset, arwen.HashLen)
+	address, err := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.HashLen)
 	if withFault(err, context) {
 		return 1
 	}
@@ -1011,12 +1011,12 @@ func createContract(
 	erdContext := arwen.GetErdContext(instCtx.Data())
 
 	sender := erdContext.GetSCAddress()
-	value, err := arwen.GuardedLoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
+	value, err := arwen.LoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
 	if withFault(err, context) {
 		return 1
 	}
 
-	code, err := arwen.GuardedLoadBytes(instCtx.Memory(), codeOffset, length)
+	code, err := arwen.LoadBytes(instCtx.Memory(), codeOffset, length)
 	if withFault(err, context) {
 		return 1
 	}
@@ -1044,7 +1044,7 @@ func createContract(
 		return 1
 	}
 
-	err = arwen.GuardedStoreBytes(instCtx.Memory(), resultOffset, newAddress)
+	err = arwen.StoreBytes(instCtx.Memory(), resultOffset, newAddress)
 	if withFault(err, context) {
 		return 1
 	}
@@ -1093,7 +1093,7 @@ func getReturnData(context unsafe.Pointer, resultId int32, dataOffset int32) int
 		return 0
 	}
 
-	err := arwen.GuardedStoreBytes(instCtx.Memory(), dataOffset, returnData[resultId])
+	err := arwen.StoreBytes(instCtx.Memory(), dataOffset, returnData[resultId])
 	if withFault(err, context) {
 		return 0
 	}

@@ -234,7 +234,7 @@ func ethgetAddress(context unsafe.Pointer, resultOffset int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
-	err := arwen.GuardedStoreBytes(instCtx.Memory(), resultOffset, ethContext.GetSCAddress())
+	err := arwen.StoreBytes(instCtx.Memory(), resultOffset, ethContext.GetSCAddress())
 	if withFault(err, context) {
 		return
 	}
@@ -248,14 +248,14 @@ func ethgetExternalBalance(context unsafe.Pointer, addressOffset int32, resultOf
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
-	address, err := arwen.GuardedLoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
+	address, err := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
 	if withFault(err, context) {
 		return
 	}
 
 	balance := ethContext.GetBalance(address)
 
-	err = arwen.GuardedStoreBytes(instCtx.Memory(), resultOffset, balance)
+	err = arwen.StoreBytes(instCtx.Memory(), resultOffset, balance)
 	if withFault(err, context) {
 		return
 	}
@@ -270,7 +270,7 @@ func ethgetBlockHash(context unsafe.Pointer, number int64, resultOffset int32) i
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
 	hash := ethContext.BlockHash(number)
-	err := arwen.GuardedStoreBytes(instCtx.Memory(), resultOffset, hash)
+	err := arwen.StoreBytes(instCtx.Memory(), resultOffset, hash)
 	if withFault(err, context) {
 		return 0
 	}
@@ -291,7 +291,7 @@ func ethcallDataCopy(context unsafe.Pointer, resultOffset int32, dataOffset int3
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
 	callData := ethContext.CallData()
-	err := arwen.GuardedStoreBytes(instCtx.Memory(), resultOffset, callData[dataOffset:dataOffset+length])
+	err := arwen.StoreBytes(instCtx.Memory(), resultOffset, callData[dataOffset:dataOffset+length])
 	if withFault(err, context) {
 		return
 	}
@@ -317,12 +317,12 @@ func ethstorageStore(context unsafe.Pointer, pathOffset int32, valueOffset int32
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
-	key, err := arwen.GuardedLoadBytes(instCtx.Memory(), pathOffset, arwen.HashLen)
+	key, err := arwen.LoadBytes(instCtx.Memory(), pathOffset, arwen.HashLen)
 	if withFault(err, context) {
 		return
 	}
 
-	data, err := arwen.GuardedLoadBytes(instCtx.Memory(), valueOffset, arwen.HashLen)
+	data, err := arwen.LoadBytes(instCtx.Memory(), valueOffset, arwen.HashLen)
 	if withFault(err, context) {
 		return
 	}
@@ -338,7 +338,7 @@ func ethstorageLoad(context unsafe.Pointer, pathOffset int32, resultOffset int32
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
-	key, err := arwen.GuardedLoadBytes(instCtx.Memory(), pathOffset, arwen.HashLen)
+	key, err := arwen.LoadBytes(instCtx.Memory(), pathOffset, arwen.HashLen)
 	if withFault(err, context) {
 		return
 	}
@@ -348,7 +348,7 @@ func ethstorageLoad(context unsafe.Pointer, pathOffset int32, resultOffset int32
 	currInput := make([]byte, arwen.HashLen)
 	copy(currInput[arwen.HashLen-len(data):], data)
 
-	err = arwen.GuardedStoreBytes(instCtx.Memory(), resultOffset, currInput)
+	err = arwen.StoreBytes(instCtx.Memory(), resultOffset, currInput)
 	if withFault(err, context) {
 		return
 	}
@@ -364,7 +364,7 @@ func ethgetCaller(context unsafe.Pointer, resultOffset int32) {
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
 	caller := convertToEthAddress(ethContext.GetVMInput().CallerAddr)
-	err := arwen.GuardedStoreBytes(instCtx.Memory(), resultOffset, caller)
+	err := arwen.StoreBytes(instCtx.Memory(), resultOffset, caller)
 	if withFault(err, context) {
 		return
 	}
@@ -386,7 +386,7 @@ func ethgetCallValue(context unsafe.Pointer, resultOffset int32) {
 		invBytes[length-i-1] = value[i]
 	}
 
-	err := arwen.GuardedStoreBytes(instCtx.Memory(), resultOffset, invBytes)
+	err := arwen.StoreBytes(instCtx.Memory(), resultOffset, invBytes)
 	if withFault(err, context) {
 		return
 	}
@@ -408,7 +408,7 @@ func ethcodeCopy(context unsafe.Pointer, resultOffset int32, codeOffset int32, l
 		return
 	}
 
-	err = arwen.GuardedStoreBytes(instCtx.Memory(), resultOffset, codeSlice)
+	err = arwen.StoreBytes(instCtx.Memory(), resultOffset, codeSlice)
 	if withFault(err, context) {
 		return
 	}
@@ -434,7 +434,7 @@ func ethexternalCodeCopy(context unsafe.Pointer, addressOffset int32, resultOffs
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
-	dest, err := arwen.GuardedLoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
+	dest, err := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
 	if withFault(err, context) {
 		return
 	}
@@ -446,7 +446,7 @@ func ethexternalCodeCopy(context unsafe.Pointer, addressOffset int32, resultOffs
 		return
 	}
 
-	err = arwen.GuardedStoreBytes(instCtx.Memory(), resultOffset, codeSlice)
+	err = arwen.StoreBytes(instCtx.Memory(), resultOffset, codeSlice)
 	if withFault(err, context) {
 		return
 	}
@@ -461,7 +461,7 @@ func ethgetExternalCodeSize(context unsafe.Pointer, addressOffset int32) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
-	dest, err := arwen.GuardedLoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
+	dest, err := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
 	if withFault(err, context) {
 		return 0
 	}
@@ -505,7 +505,7 @@ func ethgetTxGasPrice(context unsafe.Pointer, valueOffset int32) {
 	gasU128 := make([]byte, 16)
 	copy(gasU128[16-len(gasBigInt.Bytes()):], gasBigInt.Bytes())
 
-	err := arwen.GuardedStoreBytes(instCtx.Memory(), valueOffset, gasU128)
+	err := arwen.StoreBytes(instCtx.Memory(), valueOffset, gasU128)
 	if withFault(err, context) {
 		return
 	}
@@ -519,7 +519,7 @@ func ethlogTopics(context unsafe.Pointer, dataOffset int32, length int32, number
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
-	data, err := arwen.GuardedLoadBytes(instCtx.Memory(), dataOffset, length)
+	data, err := arwen.LoadBytes(instCtx.Memory(), dataOffset, length)
 	if withFault(err, context) {
 		return
 	}
@@ -536,7 +536,7 @@ func ethlogTopics(context unsafe.Pointer, dataOffset int32, length int32, number
 	}
 
 	for i := int32(0); i < numberOfTopics; i++ {
-		topicsData[i], err = arwen.GuardedLoadBytes(instCtx.Memory(), topics[i], arwen.HashLen)
+		topicsData[i], err = arwen.LoadBytes(instCtx.Memory(), topics[i], arwen.HashLen)
 		if withFault(err, context) {
 			return
 		}
@@ -555,7 +555,7 @@ func ethgetTxOrigin(context unsafe.Pointer, resultOffset int32) {
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
 	caller := convertToEthAddress(ethContext.GetVMInput().CallerAddr)
-	err := arwen.GuardedStoreBytes(instCtx.Memory(), resultOffset, caller)
+	err := arwen.StoreBytes(instCtx.Memory(), resultOffset, caller)
 	if withFault(err, context) {
 		return
 	}
@@ -569,7 +569,7 @@ func ethfinish(context unsafe.Pointer, resultOffset int32, length int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
-	data, err := arwen.GuardedLoadBytes(instCtx.Memory(), resultOffset, length)
+	data, err := arwen.LoadBytes(instCtx.Memory(), resultOffset, length)
 	if withFault(err, context) {
 		return
 	}
@@ -587,7 +587,7 @@ func ethrevert(context unsafe.Pointer, dataOffset int32, length int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
-	data, err := arwen.GuardedLoadBytes(instCtx.Memory(), dataOffset, length)
+	data, err := arwen.LoadBytes(instCtx.Memory(), dataOffset, length)
 	if withFault(err, context) {
 		return
 	}
@@ -606,7 +606,7 @@ func ethselfDestruct(context unsafe.Pointer, addressOffset int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
-	address, err := arwen.GuardedLoadBytes(instCtx.Memory(), addressOffset, arwen.HashLen)
+	address, err := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.HashLen)
 	if withFault(err, context) {
 		return
 	}
@@ -680,7 +680,7 @@ func ethreturnDataCopy(context unsafe.Pointer, resultOffset int32, dataOffset in
 		return
 	}
 
-	err = arwen.GuardedStoreBytes(instCtx.Memory(), resultOffset, returnDataSlice)
+	err = arwen.StoreBytes(instCtx.Memory(), resultOffset, returnDataSlice)
 	withFault(err, context)
 }
 
@@ -693,7 +693,7 @@ func ethgetBlockCoinbase(context unsafe.Pointer, resultOffset int32) {
 	ethContext.UseGas(gasToUse)
 
 	randomSeed := ethContext.BlockChainHook().CurrentRandomSeed()
-	err := arwen.GuardedStoreBytes(instCtx.Memory(), resultOffset, randomSeed)
+	err := arwen.StoreBytes(instCtx.Memory(), resultOffset, randomSeed)
 	withFault(err, context)
 }
 
@@ -706,7 +706,7 @@ func ethgetBlockDifficulty(context unsafe.Pointer, resultOffset int32) {
 	ethContext.UseGas(gasToUse)
 
 	randomSeed := ethContext.BlockChainHook().CurrentRandomSeed()
-	err := arwen.GuardedStoreBytes(instCtx.Memory(), resultOffset, randomSeed)
+	err := arwen.StoreBytes(instCtx.Memory(), resultOffset, randomSeed)
 	withFault(err, context)
 }
 
@@ -716,17 +716,17 @@ func ethcall(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueO
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
 	send := ethContext.GetSCAddress()
-	dest, err := arwen.GuardedLoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
+	dest, err := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
 	if withFault(err, context) {
 		return 1
 	}
 
-	value, err := arwen.GuardedLoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
+	value, err := arwen.LoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
 	if withFault(err, context) {
 		return 1
 	}
 
-	data, err := arwen.GuardedLoadBytes(instCtx.Memory(), dataOffset, dataLength)
+	data, err := arwen.LoadBytes(instCtx.Memory(), dataOffset, dataLength)
 	if withFault(err, context) {
 		return 1
 	}
@@ -764,17 +764,17 @@ func ethcallCode(context unsafe.Pointer, gasLimit int64, addressOffset int32, va
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
 	send := ethContext.GetSCAddress()
-	dest, err := arwen.GuardedLoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
+	dest, err := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
 	if withFault(err, context) {
 		return 1
 	}
 
-	value, err := arwen.GuardedLoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
+	value, err := arwen.LoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
 	if withFault(err, context) {
 		return 1
 	}
 
-	data, err := arwen.GuardedLoadBytes(instCtx.Memory(), dataOffset, dataLength)
+	data, err := arwen.LoadBytes(instCtx.Memory(), dataOffset, dataLength)
 	if withFault(err, context) {
 		return 1
 	}
@@ -813,12 +813,12 @@ func ethcallDelegate(context unsafe.Pointer, gasLimit int64, addressOffset int32
 	value := ethContext.GetVMInput().CallValue
 	sender := ethContext.GetVMInput().CallerAddr
 
-	address, err := arwen.GuardedLoadBytes(instCtx.Memory(), addressOffset, arwen.HashLen)
+	address, err := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.HashLen)
 	if withFault(err, context) {
 		return 1
 	}
 
-	data, err := arwen.GuardedLoadBytes(instCtx.Memory(), dataOffset, dataLength)
+	data, err := arwen.LoadBytes(instCtx.Memory(), dataOffset, dataLength)
 	if withFault(err, context) {
 		return 1
 	}
@@ -854,12 +854,12 @@ func ethcallStatic(context unsafe.Pointer, gasLimit int64, addressOffset int32, 
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
-	address, err := arwen.GuardedLoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLenEth)
+	address, err := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLenEth)
 	if withFault(err, context) {
 		return 1
 	}
 
-	data, err := arwen.GuardedLoadBytes(instCtx.Memory(), dataOffset, dataLength)
+	data, err := arwen.LoadBytes(instCtx.Memory(), dataOffset, dataLength)
 	if withFault(err, context) {
 		return 1
 	}
@@ -912,12 +912,12 @@ func ethcreate(context unsafe.Pointer, valueOffset int32, dataOffset int32, leng
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
 	sender := ethContext.GetSCAddress()
-	value, err := arwen.GuardedLoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
+	value, err := arwen.LoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
 	if withFault(err, context) {
 		return 1
 	}
 
-	data, err := arwen.GuardedLoadBytes(instCtx.Memory(), dataOffset, length)
+	data, err := arwen.LoadBytes(instCtx.Memory(), dataOffset, length)
 	if withFault(err, context) {
 		return 1
 	}
@@ -942,7 +942,7 @@ func ethcreate(context unsafe.Pointer, valueOffset int32, dataOffset int32, leng
 		return 1
 	}
 
-	err = arwen.GuardedStoreBytes(instCtx.Memory(), resultOffset, newAddress)
+	err = arwen.StoreBytes(instCtx.Memory(), resultOffset, newAddress)
 	if withFault(err, context) {
 		return 1
 	}

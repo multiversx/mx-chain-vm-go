@@ -171,7 +171,7 @@ func bigIntStorageStore(context unsafe.Pointer, keyOffset int32, source int32) i
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetBigIntContext(instCtx.Data())
 
-	key, err := arwen.GuardedLoadBytes(instCtx.Memory(), keyOffset, arwen.HashLen)
+	key, err := arwen.LoadBytes(instCtx.Memory(), keyOffset, arwen.HashLen)
 	if withFault(err, context) {
 		return 0
 	}
@@ -190,7 +190,7 @@ func bigIntStorageLoad(context unsafe.Pointer, keyOffset int32, destination int3
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetBigIntContext(instCtx.Data())
 
-	key, err := arwen.GuardedLoadBytes(instCtx.Memory(), keyOffset, arwen.HashLen)
+	key, err := arwen.LoadBytes(instCtx.Memory(), keyOffset, arwen.HashLen)
 	if withFault(err, context) {
 		return 0
 	}
@@ -224,7 +224,7 @@ func bigIntGetExternalBalance(context unsafe.Pointer, addressOffset int32, resul
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetBigIntContext(instCtx.Data())
 
-	address, err := arwen.GuardedLoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
+	address, err := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
 	if withFault(err, context) {
 		return
 	}
@@ -269,7 +269,7 @@ func bigIntGetBytes(context unsafe.Pointer, reference int32, byteOffset int32) i
 
 	bytes := hostContext.GetOne(reference).Bytes()
 
-	err := arwen.GuardedStoreBytes(instCtx.Memory(), byteOffset, bytes)
+	err := arwen.StoreBytes(instCtx.Memory(), byteOffset, bytes)
 	if withFault(err, context) {
 		return 0
 	}
@@ -286,7 +286,7 @@ func bigIntSetBytes(context unsafe.Pointer, destination int32, byteOffset int32,
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetBigIntContext(instCtx.Data())
 
-	bytes, err := arwen.GuardedLoadBytes(instCtx.Memory(), byteOffset, byteLength)
+	bytes, err := arwen.LoadBytes(instCtx.Memory(), byteOffset, byteLength)
 	if withFault(err, context) {
 		return
 	}
