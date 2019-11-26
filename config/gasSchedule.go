@@ -8,9 +8,9 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-func CreateGasConfig(gasMap map[string]uint64) (*GasCost, error) {
+func CreateGasConfig(gasMap map[string]map[string]uint64) (*GasCost, error) {
 	baseOps := &BaseOperationCost{}
-	err := mapstructure.Decode(gasMap, baseOps)
+	err := mapstructure.Decode(gasMap["BaseOperationCost"], baseOps)
 	if err != nil {
 		return nil, err
 	}
@@ -21,7 +21,7 @@ func CreateGasConfig(gasMap map[string]uint64) (*GasCost, error) {
 	}
 
 	elrondOps := &ElrondAPICost{}
-	err = mapstructure.Decode(gasMap, elrondOps)
+	err = mapstructure.Decode(gasMap["ElrondAPICost"], elrondOps)
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +32,7 @@ func CreateGasConfig(gasMap map[string]uint64) (*GasCost, error) {
 	}
 
 	bigIntOps := &BigIntAPICost{}
-	err = mapstructure.Decode(gasMap, bigIntOps)
+	err = mapstructure.Decode(gasMap["BigIntAPICost"], bigIntOps)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +43,7 @@ func CreateGasConfig(gasMap map[string]uint64) (*GasCost, error) {
 	}
 
 	ethOps := &EthAPICost{}
-	err = mapstructure.Decode(gasMap, ethOps)
+	err = mapstructure.Decode(gasMap["EthAPICost"], ethOps)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +54,7 @@ func CreateGasConfig(gasMap map[string]uint64) (*GasCost, error) {
 	}
 
 	cryptOps := &CryptoAPICost{}
-	err = mapstructure.Decode(gasMap, cryptOps)
+	err = mapstructure.Decode(gasMap["CryptoAPICost"], cryptOps)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +65,7 @@ func CreateGasConfig(gasMap map[string]uint64) (*GasCost, error) {
 	}
 
 	opcodeCosts := &WASMOpcodeCost{}
-	err = mapstructure.Decode(gasMap, opcodeCosts)
+	err = mapstructure.Decode(gasMap["WASMOpcodeCost"], opcodeCosts)
 	if err != nil {
 		return nil, err
 	}
@@ -103,24 +103,25 @@ func checkForZeroUint64Fields(arg interface{}) error {
 	return nil
 }
 
-func MakeGasMap(value uint64) map[string]uint64 {
-	gasMap := make(map[string]uint64)
+func MakeGasMap(value uint64) map[string]map[string]uint64 {
+	gasMap := make(map[string]map[string]uint64)
 	gasMap = FillGasMap(gasMap, value)
 	return gasMap
 }
 
-func FillGasMap(gasMap map[string]uint64, value uint64) map[string]uint64 {
-	gasMap = FillGasMap_BaseOperationCosts(gasMap, value)
-	gasMap = FillGasMap_ElrondAPICosts(gasMap, value)
-	gasMap = FillGasMap_EthereumAPICosts(gasMap, value)
-	gasMap = FillGasMap_BigIntAPICosts(gasMap, value)
-	gasMap = FillGasMap_CryptoAPICosts(gasMap, value)
-	gasMap = FillGasMap_WASMOpcodeValues(gasMap, value)
+func FillGasMap(gasMap map[string]map[string]uint64, value uint64) map[string]map[string]uint64 {
+	gasMap["BaseOperationCost"] = FillGasMap_BaseOperationCosts(value)
+	gasMap["ElrondAPICost"] = FillGasMap_ElrondAPICosts(value)
+	gasMap["EthAPICost"] = FillGasMap_EthereumAPICosts(value)
+	gasMap["BigIntAPICost"] = FillGasMap_BigIntAPICosts(value)
+	gasMap["CryptoAPICost"] = FillGasMap_CryptoAPICosts(value)
+	gasMap["WASMOpcodeCost"] = FillGasMap_WASMOpcodeValues(value)
 
 	return gasMap
 }
 
-func FillGasMap_BaseOperationCosts(gasMap map[string]uint64, value uint64) map[string]uint64 {
+func FillGasMap_BaseOperationCosts(value uint64) map[string]uint64 {
+	gasMap := make(map[string]uint64)
 	gasMap["StorePerByte"] = value
 	gasMap["DataCopyPerByte"] = value
 	gasMap["ReleasePerByte"] = value
@@ -130,7 +131,8 @@ func FillGasMap_BaseOperationCosts(gasMap map[string]uint64, value uint64) map[s
 	return gasMap
 }
 
-func FillGasMap_ElrondAPICosts(gasMap map[string]uint64, value uint64) map[string]uint64 {
+func FillGasMap_ElrondAPICosts(value uint64) map[string]uint64 {
+	gasMap := make(map[string]uint64)
 	gasMap["GetOwner"] = value
 	gasMap["GetExternalBalance"] = value
 	gasMap["GetBlockHash"] = value
@@ -168,7 +170,8 @@ func FillGasMap_ElrondAPICosts(gasMap map[string]uint64, value uint64) map[strin
 	return gasMap
 }
 
-func FillGasMap_EthereumAPICosts(gasMap map[string]uint64, value uint64) map[string]uint64 {
+func FillGasMap_EthereumAPICosts(value uint64) map[string]uint64 {
+	gasMap := make(map[string]uint64)
 	gasMap["UseGas"] = value
 	gasMap["GetAddress"] = value
 	gasMap["GetExternalBalance"] = value
@@ -206,7 +209,8 @@ func FillGasMap_EthereumAPICosts(gasMap map[string]uint64, value uint64) map[str
 	return gasMap
 }
 
-func FillGasMap_BigIntAPICosts(gasMap map[string]uint64, value uint64) map[string]uint64 {
+func FillGasMap_BigIntAPICosts(value uint64) map[string]uint64 {
+	gasMap := make(map[string]uint64)
 	gasMap["BigIntNew"] = value
 	gasMap["BigIntByteLength"] = value
 	gasMap["BigIntGetBytes"] = value
@@ -228,14 +232,16 @@ func FillGasMap_BigIntAPICosts(gasMap map[string]uint64, value uint64) map[strin
 	return gasMap
 }
 
-func FillGasMap_CryptoAPICosts(gasMap map[string]uint64, value uint64) map[string]uint64 {
+func FillGasMap_CryptoAPICosts(value uint64) map[string]uint64 {
+	gasMap := make(map[string]uint64)
 	gasMap["SHA256"] = value
 	gasMap["Keccak256"] = value
 
 	return gasMap
 }
 
-func FillGasMap_WASMOpcodeValues(gasMap map[string]uint64, value uint64) map[string]uint64 {
+func FillGasMap_WASMOpcodeValues(value uint64) map[string]uint64 {
+	gasMap := make(map[string]uint64)
 	gasMap["Unreachable"] = value
 	gasMap["Nop"] = value
 	gasMap["Block"] = value

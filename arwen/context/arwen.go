@@ -65,7 +65,7 @@ func NewArwenVM(
 	cryptoHook vmcommon.CryptoHook,
 	vmType []byte,
 	blockGasLimit uint64,
-	gasSchedule map[string]uint64,
+	gasSchedule map[string]map[string]uint64,
 ) (*vmContext, error) {
 
 	imports, err := elrondapi.ElrondEImports()
@@ -522,18 +522,9 @@ func (host *vmContext) SetStorage(addr []byte, key []byte, value []byte) int32 {
 		host.FreeGas(freeGas)
 		return int32(StorageDeleted)
 	}
-	if length < lengthOldValue {
-		freeGas := host.GasSchedule().BaseOperationCost.StorePerByte * uint64(lengthOldValue-length)
-		host.FreeGas(freeGas)
-		useGas := host.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(lengthOldValue)
-		host.UseGas(useGas)
-	}
-	if length > lengthOldValue {
-		useGas := host.GasSchedule().BaseOperationCost.StorePerByte * uint64(length-lengthOldValue)
-		host.UseGas(useGas)
-		useGas = host.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(lengthOldValue)
-		host.UseGas(useGas)
-	}
+
+	useGas := host.GasSchedule().BaseOperationCost.PersistPerByte * uint64(length)
+	host.UseGas(useGas)
 
 	return int32(StorageModified)
 }
