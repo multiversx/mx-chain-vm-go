@@ -36,7 +36,10 @@ func sha256(context unsafe.Pointer, dataOffset int32, length int32, resultOffset
 	instCtx := wasmer.IntoInstanceContext(context)
 	cryptoContext := arwen.GetCryptoContext(instCtx.Data())
 
-	data := arwen.LoadBytes(instCtx.Memory(), dataOffset, length)
+	data, err := arwen.LoadBytes(instCtx.Memory(), dataOffset, length)
+	if withFault(err, context) {
+		return 1
+	}
 
 	result, err := cryptoContext.CryptoHooks().Sha256(string(data))
 	if err != nil {
@@ -44,7 +47,7 @@ func sha256(context unsafe.Pointer, dataOffset int32, length int32, resultOffset
 	}
 
 	err = arwen.StoreBytes(instCtx.Memory(), resultOffset, []byte(result))
-	if err != nil {
+	if withFault(err, context) {
 		return 1
 	}
 
@@ -59,7 +62,10 @@ func keccak256(context unsafe.Pointer, dataOffset int32, length int32, resultOff
 	instCtx := wasmer.IntoInstanceContext(context)
 	cryptoContext := arwen.GetCryptoContext(instCtx.Data())
 
-	data := arwen.LoadBytes(instCtx.Memory(), dataOffset, length)
+	data, err := arwen.LoadBytes(instCtx.Memory(), dataOffset, length)
+	if withFault(err, context) {
+		return 1
+	}
 
 	result, err := cryptoContext.CryptoHooks().Keccak256(string(data))
 	if err != nil {
@@ -67,7 +73,7 @@ func keccak256(context unsafe.Pointer, dataOffset int32, length int32, resultOff
 	}
 
 	err = arwen.StoreBytes(instCtx.Memory(), resultOffset, []byte(result))
-	if err != nil {
+	if withFault(err, context) {
 		return 1
 	}
 
@@ -75,4 +81,17 @@ func keccak256(context unsafe.Pointer, dataOffset int32, length int32, resultOff
 	cryptoContext.UseGas(gasToUse)
 
 	return 0
+}
+
+func withFault(err error, context unsafe.Pointer) bool {
+	if err != nil {
+		instCtx := wasmer.IntoInstanceContext(context)
+		hostContext := arwen.GetCryptoContext(instCtx.Data())
+		hostContext.SignalUserError()
+		hostContext.UseGas(hostContext.GasLeft())
+
+		return true
+	}
+
+	return false
 }

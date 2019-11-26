@@ -268,9 +268,9 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 		return host.createVMOutputInCaseOfError(vmcommon.UserError), nil
 	}
 
-	function, ok := host.instance.Exports[host.callFunction]
-	if !ok {
-		fmt.Println("arwen Error", "Function not found")
+	function, err := host.getFunctionToCall()
+	if err != nil {
+		fmt.Println("arwen Error", err.Error())
 		return host.createVMOutputInCaseOfError(vmcommon.FunctionNotFound), nil
 	}
 
@@ -301,6 +301,20 @@ func (host *vmContext) createVMOutputInCaseOfError(errCode vmcommon.ReturnCode) 
 	vmOutput := &vmcommon.VMOutput{GasRemaining: big.NewInt(0), GasRefund: big.NewInt(0)}
 	vmOutput.ReturnCode = errCode
 	return vmOutput
+}
+
+func (host *vmContext) getFunctionToCall() (func(...interface{}) (wasmer.Value, error), error) {
+	exports := host.instance.Exports
+	function, ok := exports[host.callFunction]
+	if !ok {
+		function, ok = exports["main"]
+	}
+
+	if !ok {
+		return nil, ErrFuncNotFound
+	}
+
+	return function, nil
 }
 
 // adapt vm output and all saved data from sc run into VM Output
@@ -578,12 +592,12 @@ func (host *vmContext) GetCodeSize(addr []byte) int32 {
 func (host *vmContext) GetCodeHash(addr []byte) []byte {
 	code, err := host.blockChainHook.GetCode(addr)
 	if err != nil {
-		fmt.Printf("GetCodeSize returned with error %s \n", err.Error())
+		fmt.Printf("GetCodeHash returned with error %s \n", err.Error())
 	}
 
 	codeHash, err := host.cryptoHook.Keccak256(string(code))
 	if err != nil {
-		fmt.Printf("GetCodeSize returned with error %s \n", err.Error())
+		fmt.Printf("GetCodeHash/Keccak256 returned with error %s \n", err.Error())
 	}
 
 	return []byte(codeHash)
@@ -592,7 +606,7 @@ func (host *vmContext) GetCodeHash(addr []byte) []byte {
 func (host *vmContext) GetCode(addr []byte) []byte {
 	code, err := host.blockChainHook.GetCode(addr)
 	if err != nil {
-		fmt.Printf("GetCodeSize returned with error %s \n", err.Error())
+		fmt.Printf("GetCode returned with error %s \n", err.Error())
 	}
 
 	return code
@@ -974,7 +988,9 @@ func (host *vmContext) createETHCallInput() []byte {
 	}
 
 	for _, arg := range host.vmInput.Arguments {
-		newInput = append(newInput, arg...)
+		paddedArg := make([]byte, arwen.ArgumentLenEth)
+		copy(paddedArg[arwen.ArgumentLenEth-len(arg):], arg)
+		newInput = append(newInput, paddedArg...)
 	}
 
 	return newInput

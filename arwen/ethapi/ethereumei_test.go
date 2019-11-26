@@ -15,18 +15,18 @@ func Test_convertToEthAddress(t *testing.T) {
 	assert.Equal(t, expectedResult, result)
 }
 
-func Test_converToEthU128(t *testing.T) {
+func Test_convertToEthU128(t *testing.T) {
 	data, _ := hex.DecodeString("aa")
 	expectedResult, _ := hex.DecodeString("000000000000000000000000000000aa")
 
-	result := converToEthU128(data)
+	result := convertToEthU128(data)
 	assert.Equal(t, expectedResult, result)
 }
 
-func Test_converToEthU128_whenLargeData(t *testing.T) {
+func Test_convertToEthU128_whenLargeData(t *testing.T) {
 	data, _ := hex.DecodeString("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
 	expectedResult, _ := hex.DecodeString("00000000000000000000000000000000")
 
-	result := converToEthU128(data)
+	result := convertToEthU128(data)
 	assert.Equal(t, expectedResult, result)
 }

@@ -274,7 +274,10 @@ func getOwner(context unsafe.Pointer, resultOffset int32) {
 	hostContext := arwen.GetErdContext(instCtx.Data())
 
 	owner := hostContext.GetSCAddress()
-	_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, owner)
+	err := arwen.StoreBytes(instCtx.Memory(), resultOffset, owner)
+	if withFault(err, context) {
+		return
+	}
 
 	gasToUse := hostContext.GasSchedule().ElrondAPICost.GetOwner
 	hostContext.UseGas(gasToUse)
@@ -296,10 +299,17 @@ func getExternalBalance(context unsafe.Pointer, addressOffset int32, resultOffse
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetErdContext(instCtx.Data())
 
-	address := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
+	address, err := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
+	if withFault(err, context) {
+		return
+	}
+
 	balance := hostContext.GetBalance(address)
 
-	_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, balance)
+	err = arwen.StoreBytes(instCtx.Memory(), resultOffset, balance)
+	if withFault(err, context) {
+		return
+	}
 
 	gasToUse := hostContext.GasSchedule().ElrondAPICost.GetExternalBalance
 	hostContext.UseGas(gasToUse)
@@ -316,7 +326,7 @@ func blockHash(context unsafe.Pointer, nonce int64, resultOffset int32) int32 {
 	//TODO: change blockchain hook to treat actual nonce - not the offset.
 	hash := hostContext.BlockHash(nonce)
 	err := arwen.StoreBytes(instCtx.Memory(), resultOffset, hash)
-	if err != nil {
+	if withFault(err, context) {
 		return 1
 	}
 
@@ -329,9 +339,20 @@ func transferValue(context unsafe.Pointer, destOffset int32, valueOffset int32, 
 	hostContext := arwen.GetErdContext(instCtx.Data())
 
 	send := hostContext.GetSCAddress()
-	dest := arwen.LoadBytes(instCtx.Memory(), destOffset, arwen.AddressLen)
-	value := arwen.LoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
-	data := arwen.LoadBytes(instCtx.Memory(), dataOffset, length)
+	dest, err := arwen.LoadBytes(instCtx.Memory(), destOffset, arwen.AddressLen)
+	if withFault(err, context) {
+		return 1
+	}
+
+	value, err := arwen.LoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
+	if withFault(err, context) {
+		return 1
+	}
+
+	data, err := arwen.LoadBytes(instCtx.Memory(), dataOffset, length)
+	if withFault(err, context) {
+		return 1
+	}
 
 	gasToUse := hostContext.GasSchedule().ElrondAPICost.TransferValue
 	gasToUse += hostContext.GasSchedule().BaseOperationCost.PersistPerByte * uint64(length)
@@ -356,7 +377,7 @@ func getArgument(context unsafe.Pointer, id int32, argOffset int32) int32 {
 	}
 
 	err := arwen.StoreBytes(instCtx.Memory(), argOffset, args[id])
-	if err != nil {
+	if withFault(err, context) {
 		return -1
 	}
 
@@ -373,7 +394,7 @@ func getFunction(context unsafe.Pointer, functionOffset int32) int32 {
 
 	function := hostContext.Function()
 	err := arwen.StoreBytes(instCtx.Memory(), functionOffset, []byte(function))
-	if err != nil {
+	if withFault(err, context) {
 		return -1
 	}
 
@@ -396,8 +417,15 @@ func storageStore(context unsafe.Pointer, keyOffset int32, dataOffset int32, dat
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetErdContext(instCtx.Data())
 
-	key := arwen.LoadBytes(instCtx.Memory(), keyOffset, arwen.HashLen)
-	data := arwen.LoadBytes(instCtx.Memory(), dataOffset, dataLength)
+	key, err := arwen.LoadBytes(instCtx.Memory(), keyOffset, arwen.HashLen)
+	if withFault(err, context) {
+		return -1
+	}
+
+	data, err := arwen.LoadBytes(instCtx.Memory(), dataOffset, dataLength)
+	if withFault(err, context) {
+		return -1
+	}
 
 	gasToUse := hostContext.GasSchedule().ElrondAPICost.StorageStore
 	hostContext.UseGas(gasToUse)
@@ -410,15 +438,19 @@ func storageLoad(context unsafe.Pointer, keyOffset int32, dataOffset int32) int3
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetErdContext(instCtx.Data())
 
-	key := arwen.LoadBytes(instCtx.Memory(), keyOffset, arwen.HashLen)
+	key, err := arwen.LoadBytes(instCtx.Memory(), keyOffset, arwen.HashLen)
+	if withFault(err, context) {
+		return -1
+	}
+
 	data := hostContext.GetStorage(hostContext.GetSCAddress(), key)
 
 	gasToUse := hostContext.GasSchedule().ElrondAPICost.StorageLoad
 	gasToUse += hostContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(data))
 	hostContext.UseGas(gasToUse)
 
-	err := arwen.StoreBytes(instCtx.Memory(), dataOffset, data)
-	if err != nil {
+	err = arwen.StoreBytes(instCtx.Memory(), dataOffset, data)
+	if withFault(err, context) {
 		return -1
 	}
 
@@ -432,7 +464,10 @@ func getCaller(context unsafe.Pointer, resultOffset int32) {
 
 	caller := hostContext.GetVMInput().CallerAddr
 
-	_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, caller)
+	err := arwen.StoreBytes(instCtx.Memory(), resultOffset, caller)
+	if withFault(err, context) {
+		return
+	}
 
 	gasToUse := hostContext.GasSchedule().ElrondAPICost.GetCaller
 	hostContext.UseGas(gasToUse)
@@ -454,7 +489,7 @@ func callValue(context unsafe.Pointer, resultOffset int32) int32 {
 	hostContext.UseGas(gasToUse)
 
 	err := arwen.StoreBytes(instCtx.Memory(), resultOffset, invBytes)
-	if err != nil {
+	if withFault(err, context) {
 		return -1
 	}
 
@@ -466,11 +501,21 @@ func writeLog(context unsafe.Pointer, pointer int32, length int32, topicPtr int3
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetErdContext(instCtx.Data())
 
-	log := arwen.LoadBytes(instCtx.Memory(), pointer, length)
+	log, err := arwen.LoadBytes(instCtx.Memory(), pointer, length)
+	if withFault(err, context) {
+		return
+	}
 
-	topics := make([][]byte, numTopics)
+	topics, err := arwen.GuardedMakeByteSlice2D(numTopics)
+	if withFault(err, context) {
+		return
+	}
+
 	for i := int32(0); i < numTopics; i++ {
-		topics[i] = arwen.LoadBytes(instCtx.Memory(), topicPtr+i*arwen.HashLen, arwen.HashLen)
+		topics[i], err = arwen.LoadBytes(instCtx.Memory(), topicPtr+i*arwen.HashLen, arwen.HashLen)
+		if withFault(err, context) {
+			return
+		}
 	}
 
 	hostContext.WriteLog(hostContext.GetSCAddress(), topics, log)
@@ -533,7 +578,8 @@ func getBlockRandomSeed(context unsafe.Pointer, pointer int32) {
 	hostContext.UseGas(gasToUse)
 
 	randomSeed := hostContext.BlockChainHook().CurrentRandomSeed()
-	_ = arwen.StoreBytes(instCtx.Memory(), pointer, randomSeed)
+	err := arwen.StoreBytes(instCtx.Memory(), pointer, randomSeed)
+	withFault(err, context)
 }
 
 //export getStateRootHash
@@ -545,7 +591,8 @@ func getStateRootHash(context unsafe.Pointer, pointer int32) {
 	hostContext.UseGas(gasToUse)
 
 	stateRootHash := hostContext.BlockChainHook().GetStateRootHash()
-	_ = arwen.StoreBytes(instCtx.Memory(), pointer, stateRootHash)
+	err := arwen.StoreBytes(instCtx.Memory(), pointer, stateRootHash)
+	withFault(err, context)
 }
 
 //export getPrevBlockTimestamp
@@ -601,7 +648,8 @@ func getPrevBlockRandomSeed(context unsafe.Pointer, pointer int32) {
 	hostContext.UseGas(gasToUse)
 
 	randomSeed := hostContext.BlockChainHook().LastRandomSeed()
-	_ = arwen.StoreBytes(instCtx.Memory(), pointer, randomSeed)
+	err := arwen.StoreBytes(instCtx.Memory(), pointer, randomSeed)
+	withFault(err, context)
 }
 
 //export returnData
@@ -609,7 +657,11 @@ func returnData(context unsafe.Pointer, pointer int32, length int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetErdContext(instCtx.Data())
 
-	data := arwen.LoadBytes(instCtx.Memory(), pointer, length)
+	data, err := arwen.LoadBytes(instCtx.Memory(), pointer, length)
+	if withFault(err, context) {
+		return
+	}
+
 	hostContext.Finish(data)
 
 	gasToUse := hostContext.GasSchedule().ElrondAPICost.Finish
@@ -639,7 +691,11 @@ func int64storageStore(context unsafe.Pointer, keyOffset int32, value int64) int
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetErdContext(instCtx.Data())
 
-	key := arwen.LoadBytes(instCtx.Memory(), keyOffset, arwen.HashLen)
+	key, err := arwen.LoadBytes(instCtx.Memory(), keyOffset, arwen.HashLen)
+	if withFault(err, context) {
+		return -1
+	}
+
 	data := big.NewInt(value)
 
 	gasToUse := hostContext.GasSchedule().ElrondAPICost.Int64StorageStore
@@ -653,7 +709,11 @@ func int64storageLoad(context unsafe.Pointer, keyOffset int32) int64 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetErdContext(instCtx.Data())
 
-	key := arwen.LoadBytes(instCtx.Memory(), keyOffset, arwen.HashLen)
+	key, err := arwen.LoadBytes(instCtx.Memory(), keyOffset, arwen.HashLen)
+	if withFault(err, context) {
+		return 0
+	}
+
 	data := hostContext.GetStorage(hostContext.GetSCAddress(), key)
 
 	bigInt := big.NewInt(0).SetBytes(data)
@@ -691,8 +751,16 @@ func executeOnSameContext(
 	erdContext := arwen.GetErdContext(instCtx.Data())
 
 	send := erdContext.GetSCAddress()
-	dest := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
-	value := arwen.LoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
+	dest, err := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
+	if withFault(err, context) {
+		return 1
+	}
+
+	value, err := arwen.LoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
+	if withFault(err, context) {
+		return 1
+	}
+
 	function, data, actualLen := getArgumentsFromMemory(context, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 
 	gasToUse := erdContext.GasSchedule().ElrondAPICost.ExecuteOnSameContext
@@ -713,7 +781,8 @@ func executeOnSameContext(
 		RecipientAddr: dest,
 		Function:      function,
 	}
-	err := erdContext.ExecuteOnDestContext(contractCallInput)
+
+	err = erdContext.ExecuteOnDestContext(contractCallInput)
 	if err != nil {
 		return 1
 	}
@@ -737,8 +806,16 @@ func executeOnDestContext(
 	erdContext := arwen.GetErdContext(instCtx.Data())
 
 	send := erdContext.GetSCAddress()
-	dest := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
-	value := arwen.LoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
+	dest, err := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
+	if withFault(err, context) {
+		return 1
+	}
+
+	value, err := arwen.LoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
+	if withFault(err, context) {
+		return 1
+	}
+
 	function, data, actualLen := getArgumentsFromMemory(context, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 
 	gasToUse := erdContext.GasSchedule().ElrondAPICost.ExecuteOnDestContext
@@ -746,6 +823,7 @@ func executeOnDestContext(
 	erdContext.UseGas(gasToUse)
 
 	erdContext.Transfer(dest, send, big.NewInt(0).SetBytes(value), nil)
+
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallerAddr:  send,
@@ -757,7 +835,8 @@ func executeOnDestContext(
 		RecipientAddr: dest,
 		Function:      function,
 	}
-	err := erdContext.ExecuteOnDestContext(contractCallInput)
+
+	err = erdContext.ExecuteOnDestContext(contractCallInput)
 	if err != nil {
 		return 1
 	}
@@ -774,19 +853,33 @@ func getArgumentsFromMemory(
 	dataOffset int32,
 ) (string, [][]byte, int32) {
 	instCtx := wasmer.IntoInstanceContext(context)
-	argumentsLengthData := arwen.LoadBytes(instCtx.Memory(), argumentsLengthOffset, numArguments*4)
+	argumentsLengthData, err := arwen.LoadBytes(instCtx.Memory(), argumentsLengthOffset, numArguments*4)
+	if withFault(err, context) {
+		return "", nil, 0
+	}
 
 	currOffset := dataOffset
-	data := make([][]byte, numArguments)
+	data, err := arwen.GuardedMakeByteSlice2D(numArguments)
+	if withFault(err, context) {
+		return "", nil, 0
+	}
+
 	for i := int32(0); i < numArguments; i++ {
 		currArgLenData := argumentsLengthData[i*4 : i*4+4]
 		actualLen := dataToInt32(currArgLenData)
 
-		data[i] = arwen.LoadBytes(instCtx.Memory(), currOffset, actualLen)
+		data[i], err = arwen.LoadBytes(instCtx.Memory(), currOffset, actualLen)
+		if withFault(err, context) {
+			return "", nil, 0
+		}
+
 		currOffset += actualLen
 	}
 
-	function := arwen.LoadBytes(instCtx.Memory(), functionOffset, functionLength)
+	function, err := arwen.LoadBytes(instCtx.Memory(), functionOffset, functionLength)
+	if withFault(err, context) {
+		return "", nil, 0
+	}
 
 	return string(function), data, currOffset - dataOffset
 }
@@ -805,7 +898,11 @@ func delegateExecution(
 	instCtx := wasmer.IntoInstanceContext(context)
 	erdContext := arwen.GetErdContext(instCtx.Data())
 
-	address := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.HashLen)
+	address, err := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.HashLen)
+	if withFault(err, context) {
+		return 1
+	}
+
 	function, data, actualLen := getArgumentsFromMemory(context, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 
 	value := erdContext.GetVMInput().CallValue
@@ -816,6 +913,7 @@ func delegateExecution(
 	erdContext.UseGas(gasToUse)
 
 	erdContext.Transfer(address, sender, value, nil)
+
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallerAddr:  sender,
@@ -827,7 +925,8 @@ func delegateExecution(
 		RecipientAddr: address,
 		Function:      function,
 	}
-	err := erdContext.ExecuteOnSameContext(contractCallInput)
+
+	err = erdContext.ExecuteOnSameContext(contractCallInput)
 	if err != nil {
 		return 1
 	}
@@ -858,7 +957,11 @@ func executeReadOnly(
 	instCtx := wasmer.IntoInstanceContext(context)
 	erdContext := arwen.GetErdContext(instCtx.Data())
 
-	address := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.HashLen)
+	address, err := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.HashLen)
+	if withFault(err, context) {
+		return 1
+	}
+
 	function, data, actualLen := getArgumentsFromMemory(context, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 
 	value := erdContext.GetVMInput().CallValue
@@ -871,6 +974,7 @@ func executeReadOnly(
 	erdContext.Transfer(address, sender, value, nil)
 
 	erdContext.SetReadOnly(true)
+
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallerAddr:  sender,
@@ -882,7 +986,8 @@ func executeReadOnly(
 		RecipientAddr: address,
 		Function:      function,
 	}
-	err := erdContext.ExecuteOnSameContext(contractCallInput)
+
+	err = erdContext.ExecuteOnSameContext(contractCallInput)
 	erdContext.SetReadOnly(false)
 	if err != nil {
 		return 1
@@ -906,8 +1011,15 @@ func createContract(
 	erdContext := arwen.GetErdContext(instCtx.Data())
 
 	sender := erdContext.GetSCAddress()
-	value := arwen.LoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
-	code := arwen.LoadBytes(instCtx.Memory(), codeOffset, length)
+	value, err := arwen.LoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
+	if withFault(err, context) {
+		return 1
+	}
+
+	code, err := arwen.LoadBytes(instCtx.Memory(), codeOffset, length)
+	if withFault(err, context) {
+		return 1
+	}
 
 	_, data, actualLen := getArgumentsFromMemory(context, 0, 0, numArguments, argumentsLengthOffset, dataOffset)
 
@@ -926,12 +1038,16 @@ func createContract(
 		},
 		ContractCode: code,
 	}
+
 	newAddress, err := erdContext.CreateNewContract(contractCreate)
 	if err != nil {
 		return 1
 	}
 
-	_ = arwen.StoreBytes(instCtx.Memory(), resultOffset, newAddress)
+	err = arwen.StoreBytes(instCtx.Memory(), resultOffset, newAddress)
+	if withFault(err, context) {
+		return 1
+	}
 
 	return 0
 }
@@ -957,7 +1073,7 @@ func getReturnDataSize(context unsafe.Pointer, resultId int32) int32 {
 	erdContext.UseGas(gasToUse)
 
 	returnData := erdContext.ReturnData()
-	if int32(len(returnData)) >= resultId {
+	if resultId >= int32(len(returnData)) {
 		return 0
 	}
 
@@ -973,10 +1089,27 @@ func getReturnData(context unsafe.Pointer, resultId int32, dataOffset int32) int
 	erdContext.UseGas(gasToUse)
 
 	returnData := erdContext.ReturnData()
-	if int32(len(returnData)) >= resultId {
+	if resultId >= int32(len(returnData)) {
 		return 0
 	}
 
-	_ = arwen.StoreBytes(instCtx.Memory(), dataOffset, returnData[resultId])
+	err := arwen.StoreBytes(instCtx.Memory(), dataOffset, returnData[resultId])
+	if withFault(err, context) {
+		return 0
+	}
+
 	return int32(len(returnData[resultId]))
+}
+
+func withFault(err error, context unsafe.Pointer) bool {
+	if err != nil {
+		instCtx := wasmer.IntoInstanceContext(context)
+		hostContext := arwen.GetErdContext(instCtx.Data())
+		hostContext.SignalUserError()
+		hostContext.UseGas(hostContext.GasLeft())
+
+		return true
+	}
+
+	return false
 }

@@ -1,6 +1,7 @@
 package arwen
 
 import (
+	"fmt"
 	"math/big"
 
 	"sync"
@@ -12,6 +13,7 @@ import (
 const AddressLen = 32
 const AddressLenEth = 20
 const HashLen = 32
+const ArgumentLenEth = 32
 const BalanceLen = 32
 const InitFunctionName = "init"
 const InitFunctionNameEth = "solidity.ctor"
@@ -80,33 +82,6 @@ func GetCryptoContext(pointer unsafe.Pointer) CryptoContext {
 	return ctx.CryptoContext()
 }
 
-func LoadBytes(from *wasmer.Memory, offset int32, length int32) []byte {
-	result := make([]byte, length)
-	if from.Length() < uint32(offset+length) {
-		copy(result, from.Data()[offset:])
-		return result
-	}
-
-	copy(result, from.Data()[offset:offset+length])
-	return result
-}
-
-func StoreBytes(to *wasmer.Memory, offset int32, data []byte) error {
-	length := int32(len(data))
-
-	if to.Length() < uint32(offset+length) {
-		err := to.Grow(1)
-		if err != nil {
-			return err
-		}
-	}
-
-	var memoryData = to.Data()
-	copy(memoryData[offset:offset+length], data)
-
-	return nil
-}
-
 func ConvertReturnValue(wasmValue wasmer.Value) *big.Int {
 	switch wasmValue.GetType() {
 	case wasmer.TypeVoid:
@@ -118,4 +93,97 @@ func ConvertReturnValue(wasmValue wasmer.Value) *big.Int {
 	}
 
 	panic("unsupported return type")
+}
+
+func GuardedMakeByteSlice2D(length int32) ([][]byte, error) {
+	if length < 0 {
+		return nil, fmt.Errorf("GuardedMakeByteSlice2D: negative length (%d)", length)
+	}
+
+	result := make([][]byte, length)
+	return result, nil
+}
+
+func LoadBytes(from *wasmer.Memory, offset int32, length int32) ([]byte, error) {
+	memoryView := from.Data()
+	memoryLength := from.Length()
+	requestedEnd := uint32(offset + length)
+	isOffsetTooSmall := offset < 0
+	isOffsetTooLarge := uint32(offset) > memoryLength
+	isRequestedEndTooLarge := requestedEnd > memoryLength
+	isLengthNegative := length < 0
+
+	if isOffsetTooSmall || isOffsetTooLarge {
+		return nil, fmt.Errorf("LoadBytes: bad bounds")
+	}
+
+	if isLengthNegative {
+		return nil, fmt.Errorf("LoadBytes: negative length")
+	}
+
+	result := make([]byte, length)
+
+	if isRequestedEndTooLarge {
+		copy(result, memoryView[offset:])
+	} else {
+		copy(result, memoryView[offset:requestedEnd])
+	}
+
+	return result, nil
+}
+
+func GuardedGetBytesSlice(data []byte, offset int32, length int32) ([]byte, error) {
+	dataLength := uint32(len(data))
+	isOffsetTooSmall := offset < 0
+	isOffsetTooLarge := uint32(offset) > dataLength
+	requestedEnd := uint32(offset + length)
+	isRequestedEndTooLarge := requestedEnd > dataLength
+	isLengthNegative := length < 0
+
+	if isOffsetTooSmall || isOffsetTooLarge {
+		return nil, fmt.Errorf("GuardedGetBytesSlice: bad bounds")
+	}
+
+	if isRequestedEndTooLarge {
+		return nil, fmt.Errorf("GuardedGetBytesSlice: bad bounds")
+	}
+
+	if isLengthNegative {
+		return nil, fmt.Errorf("GuardedGetBytesSlice: negative length")
+	}
+
+	result := data[offset : offset+length]
+	return result, nil
+}
+
+func StoreBytes(to *wasmer.Memory, offset int32, data []byte) error {
+	memoryView := to.Data()
+	memoryLength := to.Length()
+	dataLength := int32(len(data))
+	requestedEnd := uint32(offset + dataLength)
+	isOffsetTooSmall := offset < 0
+	isNewPageNecessary := requestedEnd > memoryLength
+
+	if isOffsetTooSmall {
+		return fmt.Errorf("StoreBytes: bad lower bounds")
+	}
+
+	if isNewPageNecessary {
+		err := to.Grow(1)
+		if err != nil {
+			return err
+		}
+
+		memoryView = to.Data()
+		memoryLength = to.Length()
+	}
+
+	isRequestedEndTooLarge := requestedEnd > memoryLength
+
+	if isRequestedEndTooLarge {
+		return fmt.Errorf("StoreBytes: bad upper bounds")
+	}
+
+	copy(memoryView[offset:requestedEnd], data)
+	return nil
 }
