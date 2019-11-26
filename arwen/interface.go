@@ -82,7 +82,9 @@ type BigIntContext interface {
 type CryptoContext interface {
 	GasSchedule() *config.GasCost
 	UseGas(gas uint64)
+	GasLeft() uint64
 	CryptoHooks() vmcommon.CryptoHook
+	SignalUserError()
 }
 
 type VMContext interface {

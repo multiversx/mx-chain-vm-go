@@ -81,33 +81,6 @@ func GetCryptoContext(pointer unsafe.Pointer) CryptoContext {
 	return ctx.CryptoContext()
 }
 
-func LoadBytes(from *wasmer.Memory, offset int32, length int32) []byte {
-	result := make([]byte, length)
-	if from.Length() < uint32(offset+length) {
-		copy(result, from.Data()[offset:])
-		return result
-	}
-
-	copy(result, from.Data()[offset:offset+length])
-	return result
-}
-
-func StoreBytes(to *wasmer.Memory, offset int32, data []byte) error {
-	length := int32(len(data))
-
-	if to.Length() < uint32(offset+length) {
-		err := to.Grow(1)
-		if err != nil {
-			return err
-		}
-	}
-
-	var memoryData = to.Data()
-	copy(memoryData[offset:offset+length], data)
-
-	return nil
-}
-
 func ConvertReturnValue(wasmValue wasmer.Value) *big.Int {
 	switch wasmValue.GetType() {
 	case wasmer.TypeVoid:

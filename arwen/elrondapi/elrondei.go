@@ -1044,7 +1044,7 @@ func createContract(
 		return 1
 	}
 
-	err = arwen.StoreBytes(instCtx.Memory(), resultOffset, newAddress)
+	err = arwen.GuardedStoreBytes(instCtx.Memory(), resultOffset, newAddress)
 	if withFault(err, context) {
 		return 1
 	}
@@ -1093,7 +1093,7 @@ func getReturnData(context unsafe.Pointer, resultId int32, dataOffset int32) int
 		return 0
 	}
 
-	err := arwen.StoreBytes(instCtx.Memory(), dataOffset, returnData[resultId])
+	err := arwen.GuardedStoreBytes(instCtx.Memory(), dataOffset, returnData[resultId])
 	if withFault(err, context) {
 		return 0
 	}

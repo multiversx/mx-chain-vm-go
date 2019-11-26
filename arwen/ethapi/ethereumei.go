@@ -255,7 +255,7 @@ func ethgetExternalBalance(context unsafe.Pointer, addressOffset int32, resultOf
 
 	balance := ethContext.GetBalance(address)
 
-	err = arwen.StoreBytes(instCtx.Memory(), resultOffset, balance)
+	err = arwen.GuardedStoreBytes(instCtx.Memory(), resultOffset, balance)
 	if withFault(err, context) {
 		return
 	}
@@ -270,7 +270,7 @@ func ethgetBlockHash(context unsafe.Pointer, number int64, resultOffset int32) i
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
 	hash := ethContext.BlockHash(number)
-	err := arwen.StoreBytes(instCtx.Memory(), resultOffset, hash)
+	err := arwen.GuardedStoreBytes(instCtx.Memory(), resultOffset, hash)
 	if withFault(err, context) {
 		return 0
 	}
@@ -291,7 +291,7 @@ func ethcallDataCopy(context unsafe.Pointer, resultOffset int32, dataOffset int3
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
 	callData := ethContext.CallData()
-	err := arwen.StoreBytes(instCtx.Memory(), resultOffset, callData[dataOffset:dataOffset+length])
+	err := arwen.GuardedStoreBytes(instCtx.Memory(), resultOffset, callData[dataOffset:dataOffset+length])
 	if withFault(err, context) {
 		return
 	}
@@ -693,7 +693,7 @@ func ethgetBlockCoinbase(context unsafe.Pointer, resultOffset int32) {
 	ethContext.UseGas(gasToUse)
 
 	randomSeed := ethContext.BlockChainHook().CurrentRandomSeed()
-	err := arwen.StoreBytes(instCtx.Memory(), resultOffset, randomSeed)
+	err := arwen.GuardedStoreBytes(instCtx.Memory(), resultOffset, randomSeed)
 	withFault(err, context)
 }
 
@@ -706,7 +706,7 @@ func ethgetBlockDifficulty(context unsafe.Pointer, resultOffset int32) {
 	ethContext.UseGas(gasToUse)
 
 	randomSeed := ethContext.BlockChainHook().CurrentRandomSeed()
-	err := arwen.StoreBytes(instCtx.Memory(), resultOffset, randomSeed)
+	err := arwen.GuardedStoreBytes(instCtx.Memory(), resultOffset, randomSeed)
 	withFault(err, context)
 }
 
