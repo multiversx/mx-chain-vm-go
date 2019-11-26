@@ -291,7 +291,12 @@ func ethcallDataCopy(context unsafe.Pointer, resultOffset int32, dataOffset int3
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
 	callData := ethContext.CallData()
-	err := arwen.StoreBytes(instCtx.Memory(), resultOffset, callData[dataOffset:dataOffset+length])
+	callDataSlice, err := arwen.GuardedGetBytesSlice(callData, dataOffset, length)
+	if withFault(err, context) {
+		return
+	}
+
+	err := arwen.StoreBytes(instCtx.Memory(), resultOffset, callDataSlice)
 	if withFault(err, context) {
 		return
 	}
