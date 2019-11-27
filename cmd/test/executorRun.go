@@ -187,7 +187,7 @@ func (te *arwenTestExecutor) Run(test *ij.Test) error {
 
 			// check gas
 			if !ignoreGas && test.CheckGas && blResult.Gas != nil {
-				if blResult.Gas.Cmp(output.GasRemaining) != 0 {
+				if blResult.Gas.Cmp(big.NewInt(0).SetUint64(output.GasRemaining)) != 0 {
 					return fmt.Errorf("result gas mismatch. Want: %d (0x%x). Got: %d (0x%x)",
 						blResult.Gas, blResult.Gas, output.GasRemaining, output.GasRemaining)
 				}
@@ -215,7 +215,7 @@ func (te *arwenTestExecutor) Run(test *ij.Test) error {
 							ij.LogToString(testLog), ij.LogToString(convertLogToTestFormat(outLog)))
 					}
 					for ti := range outLog.Topics {
-						if outLog.Topics[ti].Cmp(testLog.Topics[ti]) != 0 {
+						if !bytes.Equal(outLog.Topics[ti], testLog.Topics[ti].Bytes()) {
 							return fmt.Errorf("bad log topic. Want:\n%s\nGot:\n%s",
 								ij.LogToString(testLog), ij.LogToString(convertLogToTestFormat(outLog)))
 						}
