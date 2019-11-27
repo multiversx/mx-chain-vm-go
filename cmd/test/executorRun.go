@@ -26,6 +26,7 @@ type arwenTestExecutor struct {
 	world                    *worldhook.BlockchainHookMock
 	vm                       vmi.VMExecutionHandler
 	contractPathReplacements map[string]string
+	checkGas                 bool
 }
 
 func newArwenTestExecutor() *arwenTestExecutor {
@@ -42,6 +43,7 @@ func newArwenTestExecutor() *arwenTestExecutor {
 		world:                    world,
 		vm:                       vm,
 		contractPathReplacements: make(map[string]string),
+		checkGas:                 false,
 	}
 }
 
@@ -186,8 +188,8 @@ func (te *arwenTestExecutor) Run(test *ij.Test) error {
 			}
 
 			// check gas
-			if !ignoreGas && test.CheckGas && blResult.Gas != nil {
-				if blResult.Gas.Cmp(output.GasRemaining) != 0 {
+			if te.checkGas && test.CheckGas && blResult.CheckGas {
+				if blResult.Gas != output.GasRemaining {
 					return fmt.Errorf("result gas mismatch. Want: %d (0x%x). Got: %d (0x%x)",
 						blResult.Gas, blResult.Gas, output.GasRemaining, output.GasRemaining)
 				}
@@ -215,7 +217,7 @@ func (te *arwenTestExecutor) Run(test *ij.Test) error {
 							ij.LogToString(testLog), ij.LogToString(convertLogToTestFormat(outLog)))
 					}
 					for ti := range outLog.Topics {
-						if outLog.Topics[ti].Cmp(testLog.Topics[ti]) != 0 {
+						if !bytes.Equal(outLog.Topics[ti], testLog.Topics[ti]) {
 							return fmt.Errorf("bad log topic. Want:\n%s\nGot:\n%s",
 								ij.LogToString(testLog), ij.LogToString(convertLogToTestFormat(outLog)))
 						}
