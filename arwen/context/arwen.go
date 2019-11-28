@@ -608,13 +608,9 @@ func (host *vmContext) GetCode(addr []byte) ([]byte, error) {
 	code, err := host.blockChainHook.GetCode(addr)
 	if err != nil {
 		fmt.Printf("GetCode returned with error %s \n", err.Error())
-		return nil, err
-	}
-	if code == nil {
-		return nil, fmt.Errorf("contract not found")
 	}
 
-	return code, nil
+	return code, err
 }
 
 func (host *vmContext) SelfDestruct(addr []byte, beneficiary []byte) {
