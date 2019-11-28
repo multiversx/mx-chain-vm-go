@@ -580,18 +580,19 @@ func (host *vmContext) GetCodeSize(addr []byte) (int32, error) {
 	return result, nil
 }
 
-func (host *vmContext) GetCodeHash(addr []byte) []byte {
+func (host *vmContext) GetCodeHash(addr []byte) ([]byte, error) {
 	code, err := host.blockChainHook.GetCode(addr)
 	if err != nil {
-		fmt.Printf("GetCodeHash returned with error %s \n", err.Error())
+		return nil, err
 	}
 
 	codeHash, err := host.cryptoHook.Keccak256(string(code))
 	if err != nil {
-		fmt.Printf("GetCodeHash/Keccak256 returned with error %s \n", err.Error())
+		return nil, err
 	}
 
-	return []byte(codeHash)
+	result := []byte(codeHash)
+	return result, nil
 }
 
 func (host *vmContext) GetCode(addr []byte) ([]byte, error) {
