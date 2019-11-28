@@ -296,7 +296,7 @@ func ethcallDataCopy(context unsafe.Pointer, resultOffset int32, dataOffset int3
 		return
 	}
 
-	err := arwen.StoreBytes(instCtx.Memory(), resultOffset, callDataSlice)
+	err = arwen.StoreBytes(instCtx.Memory(), resultOffset, callDataSlice)
 	if withFault(err, context) {
 		return
 	}
@@ -754,7 +754,7 @@ func ethcall(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueO
 		RecipientAddr: dest,
 		Function:      "main",
 	}
-	
+
 	err = ethContext.ExecuteOnDestContext(contractCallInput)
 	if err != nil {
 		return 1
@@ -881,7 +881,7 @@ func ethcallStatic(context unsafe.Pointer, gasLimit int64, addressOffset int32, 
 		if err != nil {
 			return 1
 		}
-	
+
 		return 0
 	}
 
@@ -957,7 +957,7 @@ func ethcreate(context unsafe.Pointer, valueOffset int32, dataOffset int32, leng
 
 // https://ewasm.readthedocs.io/en/mkdocs/eth_interface/#data-types
 func convertToEthAddress(address []byte) []byte {
-	ethAddress := address[arwen.AddressLen-arwen.AddressLenEth:arwen.AddressLen]
+	ethAddress := address[arwen.AddressLen-arwen.AddressLenEth : arwen.AddressLen]
 	return ethAddress
 }
 
