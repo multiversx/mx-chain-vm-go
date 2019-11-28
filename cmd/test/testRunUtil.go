@@ -33,9 +33,10 @@ func convertAccount(testAcct *ij.Account) *worldhook.Account {
 func convertLogToTestFormat(outputLog *vmi.LogEntry) *ij.LogEntry {
 	testLog := ij.LogEntry{
 		Address: outputLog.Address,
-		Topics:  outputLog.Topics,
 		Data:    outputLog.Data,
+		Topics:  outputLog.Topics,
 	}
+
 	return &testLog
 }
 
