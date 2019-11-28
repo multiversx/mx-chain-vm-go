@@ -528,17 +528,6 @@ func (host *vmContext) SetStorage(addr []byte, key []byte, value []byte) int32 {
 	return int32(StorageModified)
 }
 
-func (host *vmContext) getBalanceFromBlockChain(addr []byte) *big.Int {
-	balance, err := host.blockChainHook.GetBalance(addr)
-
-	if err != nil {
-		fmt.Printf("GetBalance returned with error %s \n", err.Error())
-		return big.NewInt(0)
-	}
-
-	return balance
-}
-
 func (host *vmContext) GetBalance(addr []byte) []byte {
 	strAdr := string(addr)
 	if _, ok := host.outputAccounts[strAdr]; ok {
