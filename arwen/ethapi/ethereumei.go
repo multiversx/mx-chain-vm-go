@@ -406,7 +406,10 @@ func ethcodeCopy(context unsafe.Pointer, resultOffset int32, codeOffset int32, l
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
 	scAddress := ethContext.GetSCAddress()
-	code := ethContext.GetCode(scAddress)
+	code, err := ethContext.GetCode(scAddress)
+	if withFault(err, context) {
+		return
+	}
 
 	codeSlice, err := arwen.GuardedGetBytesSlice(code, codeOffset, length)
 	if withFault(err, context) {
@@ -431,7 +434,12 @@ func ethgetCodeSize(context unsafe.Pointer) int32 {
 	gasToUse := ethContext.GasSchedule().EthAPICost.GetCodeSize
 	ethContext.UseGas(gasToUse)
 
-	return ethContext.GetCodeSize(ethContext.GetSCAddress())
+	codeSize, err := ethContext.GetCodeSize(ethContext.GetSCAddress())
+	if withFault(err, context) {
+		return 0
+	}
+
+	return codeSize
 }
 
 //export ethexternalCodeCopy
@@ -444,7 +452,10 @@ func ethexternalCodeCopy(context unsafe.Pointer, addressOffset int32, resultOffs
 		return
 	}
 
-	code := ethContext.GetCode(dest)
+	code, err := ethContext.GetCode(dest)
+	if withFault(err, context) {
+		return
+	}
 
 	codeSlice, err := arwen.GuardedGetBytesSlice(code, codeOffset, length)
 	if withFault(err, context) {
@@ -474,7 +485,12 @@ func ethgetExternalCodeSize(context unsafe.Pointer, addressOffset int32) int32 {
 	gasToUse := ethContext.GasSchedule().EthAPICost.GetExternalCodeSize
 	ethContext.UseGas(gasToUse)
 
-	return ethContext.GetCodeSize(dest)
+	codeSize, err := ethContext.GetCodeSize(dest)
+	if withFault(err, context) {
+		return 0
+	}
+
+	return codeSize
 }
 
 //export ethgetGasLeft

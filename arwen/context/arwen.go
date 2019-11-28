@@ -234,9 +234,12 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 
 	host.addTxValueToSmartContract(input.CallValue, input.RecipientAddr)
 
-	contract := host.GetCode(host.scAddress)
+	contract, err := host.GetCode(host.scAddress)
+	if err != nil {
+		fmt.Println("arwen Error", err.Error())
+		return host.createVMOutputInCaseOfError(vmcommon.ContractInvalid), nil
+	}
 
-	var err error
 	host.vmInput.GasProvided, err = host.deductInitialCodeCost(
 		input.GasProvided,
 		contract,
@@ -525,17 +528,6 @@ func (host *vmContext) SetStorage(addr []byte, key []byte, value []byte) int32 {
 	return int32(StorageModified)
 }
 
-func (host *vmContext) getBalanceFromBlockChain(addr []byte) *big.Int {
-	balance, err := host.blockChainHook.GetBalance(addr)
-
-	if err != nil {
-		fmt.Printf("GetBalance returned with error %s \n", err.Error())
-		return big.NewInt(0)
-	}
-
-	return balance
-}
-
 func (host *vmContext) GetBalance(addr []byte) []byte {
 	strAdr := string(addr)
 	if _, ok := host.outputAccounts[strAdr]; ok {
@@ -578,36 +570,33 @@ func (host *vmContext) increaseNonce(addr []byte) {
 	host.outputAccounts[string(addr)].Nonce = nonce + 1
 }
 
-func (host *vmContext) GetCodeSize(addr []byte) int32 {
+func (host *vmContext) GetCodeSize(addr []byte) (int32, error) {
 	code, err := host.blockChainHook.GetCode(addr)
 	if err != nil {
-		fmt.Printf("GetCodeSize returned with error %s \n", err.Error())
+		return 0, err
 	}
 
-	return int32(len(code))
+	result := int32(len(code))
+	return result, nil
 }
 
-func (host *vmContext) GetCodeHash(addr []byte) []byte {
+func (host *vmContext) GetCodeHash(addr []byte) ([]byte, error) {
 	code, err := host.blockChainHook.GetCode(addr)
 	if err != nil {
-		fmt.Printf("GetCodeHash returned with error %s \n", err.Error())
+		return nil, err
 	}
 
 	codeHash, err := host.cryptoHook.Keccak256(string(code))
 	if err != nil {
-		fmt.Printf("GetCodeHash/Keccak256 returned with error %s \n", err.Error())
+		return nil, err
 	}
 
-	return []byte(codeHash)
+	result := []byte(codeHash)
+	return result, nil
 }
 
-func (host *vmContext) GetCode(addr []byte) []byte {
-	code, err := host.blockChainHook.GetCode(addr)
-	if err != nil {
-		fmt.Printf("GetCode returned with error %s \n", err.Error())
-	}
-
-	return code
+func (host *vmContext) GetCode(addr []byte) ([]byte, error) {
+	return host.blockChainHook.GetCode(addr)
 }
 
 func (host *vmContext) SelfDestruct(addr []byte, beneficiary []byte) {
@@ -816,7 +805,11 @@ func (host *vmContext) CreateNewContract(input *vmcommon.ContractCreateInput) ([
 }
 
 func (host *vmContext) execute(input *vmcommon.ContractCallInput) error {
-	contract := host.GetCode(host.scAddress)
+	contract, err := host.GetCode(host.scAddress)
+	if err != nil {
+		return err
+	}
+
 	totalGasConsumed := input.GasProvided
 
 	defer func() {
