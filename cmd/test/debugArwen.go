@@ -14,9 +14,12 @@ func main() {
 	}
 	jsonTestPath := os.Args[1]
 
+	testExec := newArwenTestExecutor().replaceCode(
+		"erc20.wasm",
+		filepath.Join(getTestRoot(), "contracts/erc20-c.wasm"))
 	err := controller.RunSingleJSONTest(
 		jsonTestPath,
-		newArwenTestExecutor())
+		testExec)
 
 	if err == nil {
 		fmt.Println("SUCCESS")
@@ -32,17 +35,4 @@ func getTestRoot() string {
 	}
 	arwenTestRoot := filepath.Join(exePath, "../../test")
 	return arwenTestRoot
-}
-
-func debugArwenTest(testFile string) {
-	arwenTestRoot := getTestRoot()
-	err := controller.RunSingleJSONTest(
-		filepath.Join(arwenTestRoot, testFile),
-		newArwenTestExecutor())
-
-	if err == nil {
-		fmt.Println("SUCCESS")
-	} else {
-		fmt.Printf("ERROR: %s\n", err.Error())
-	}
 }

@@ -623,6 +623,10 @@ func (host *vmContext) GetVMInput() vmcommon.VMInput {
 }
 
 func (host *vmContext) BlockHash(number int64) []byte {
+	if number < 0 {
+		fmt.Printf("BlockHash nonce cannot be negative\n")
+		return nil
+	}
 	block, err := host.blockChainHook.GetBlockhash(uint64(number))
 
 	if err != nil {
