@@ -434,7 +434,12 @@ func ethgetCodeSize(context unsafe.Pointer) int32 {
 	gasToUse := ethContext.GasSchedule().EthAPICost.GetCodeSize
 	ethContext.UseGas(gasToUse)
 
-	return ethContext.GetCodeSize(ethContext.GetSCAddress())
+	codeSize, err := ethContext.GetCodeSize(ethContext.GetSCAddress())
+	if withFault(err, context) {
+		return 0
+	}
+
+	return codeSize
 }
 
 //export ethexternalCodeCopy
@@ -480,7 +485,12 @@ func ethgetExternalCodeSize(context unsafe.Pointer, addressOffset int32) int32 {
 	gasToUse := ethContext.GasSchedule().EthAPICost.GetExternalCodeSize
 	ethContext.UseGas(gasToUse)
 
-	return ethContext.GetCodeSize(dest)
+	codeSize, err := ethContext.GetCodeSize(dest)
+	if withFault(err, context) {
+		return 0
+	}
+
+	return codeSize
 }
 
 //export ethgetGasLeft

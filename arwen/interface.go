@@ -20,7 +20,7 @@ type EthContext interface {
 	GetStorage(addr []byte, key []byte) []byte
 	SetStorage(addr []byte, key []byte, value []byte) int32
 	GetCode(addr []byte) ([]byte, error)
-	GetCodeSize(addr []byte) int32
+	GetCodeSize(addr []byte) (int32, error)
 	SignalUserError()
 	Finish(data []byte)
 	WriteLog(addr []byte, topics [][]byte, data []byte)

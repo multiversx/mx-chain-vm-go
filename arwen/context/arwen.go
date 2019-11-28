@@ -581,13 +581,14 @@ func (host *vmContext) increaseNonce(addr []byte) {
 	host.outputAccounts[string(addr)].Nonce = nonce + 1
 }
 
-func (host *vmContext) GetCodeSize(addr []byte) int32 {
+func (host *vmContext) GetCodeSize(addr []byte) (int32, error) {
 	code, err := host.blockChainHook.GetCode(addr)
 	if err != nil {
-		fmt.Printf("GetCodeSize returned with error %s \n", err.Error())
+		return 0, err
 	}
 
-	return int32(len(code))
+	result := int32(len(code))
+	return result, nil
 }
 
 func (host *vmContext) GetCodeHash(addr []byte) []byte {
@@ -605,12 +606,7 @@ func (host *vmContext) GetCodeHash(addr []byte) []byte {
 }
 
 func (host *vmContext) GetCode(addr []byte) ([]byte, error) {
-	code, err := host.blockChainHook.GetCode(addr)
-	if err != nil {
-		fmt.Printf("GetCode returned with error %s \n", err.Error())
-	}
-
-	return code, err
+	return host.blockChainHook.GetCode(addr)
 }
 
 func (host *vmContext) SelfDestruct(addr []byte, beneficiary []byte) {
