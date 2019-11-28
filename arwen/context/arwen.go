@@ -234,9 +234,12 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 
 	host.addTxValueToSmartContract(input.CallValue, input.RecipientAddr)
 
-	contract := host.GetCode(host.scAddress)
+	contract, err := host.GetCode(host.scAddress)
+	if err != nil {
+		fmt.Println("arwen Error", err.Error())
+		return host.createVMOutputInCaseOfError(vmcommon.ContractInvalid), nil
+	}
 
-	var err error
 	host.vmInput.GasProvided, err = host.deductInitialCodeCost(
 		input.GasProvided,
 		contract,
@@ -601,13 +604,17 @@ func (host *vmContext) GetCodeHash(addr []byte) []byte {
 	return []byte(codeHash)
 }
 
-func (host *vmContext) GetCode(addr []byte) []byte {
+func (host *vmContext) GetCode(addr []byte) ([]byte, error) {
 	code, err := host.blockChainHook.GetCode(addr)
 	if err != nil {
 		fmt.Printf("GetCode returned with error %s \n", err.Error())
+		return nil, err
+	}
+	if code == nil {
+		return nil, fmt.Errorf("contract not found")
 	}
 
-	return code
+	return code, nil
 }
 
 func (host *vmContext) SelfDestruct(addr []byte, beneficiary []byte) {
@@ -816,7 +823,11 @@ func (host *vmContext) CreateNewContract(input *vmcommon.ContractCreateInput) ([
 }
 
 func (host *vmContext) execute(input *vmcommon.ContractCallInput) error {
-	contract := host.GetCode(host.scAddress)
+	contract, err := host.GetCode(host.scAddress)
+	if err != nil {
+		return err
+	}
+
 	totalGasConsumed := input.GasProvided
 
 	defer func() {

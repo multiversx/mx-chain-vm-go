@@ -19,7 +19,7 @@ type EthContext interface {
 	GetVMInput() vmcommon.VMInput
 	GetStorage(addr []byte, key []byte) []byte
 	SetStorage(addr []byte, key []byte, value []byte) int32
-	GetCode(addr []byte) []byte
+	GetCode(addr []byte) ([]byte, error)
 	GetCodeSize(addr []byte) int32
 	SignalUserError()
 	Finish(data []byte)

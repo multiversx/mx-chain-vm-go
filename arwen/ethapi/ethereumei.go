@@ -406,7 +406,10 @@ func ethcodeCopy(context unsafe.Pointer, resultOffset int32, codeOffset int32, l
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
 	scAddress := ethContext.GetSCAddress()
-	code := ethContext.GetCode(scAddress)
+	code, err := ethContext.GetCode(scAddress)
+	if withFault(err, context) {
+		return
+	}
 
 	codeSlice, err := arwen.GuardedGetBytesSlice(code, codeOffset, length)
 	if withFault(err, context) {
@@ -444,7 +447,10 @@ func ethexternalCodeCopy(context unsafe.Pointer, addressOffset int32, resultOffs
 		return
 	}
 
-	code := ethContext.GetCode(dest)
+	code, err := ethContext.GetCode(dest)
+	if withFault(err, context) {
+		return
+	}
 
 	codeSlice, err := arwen.GuardedGetBytesSlice(code, codeOffset, length)
 	if withFault(err, context) {
