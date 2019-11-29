@@ -187,3 +187,12 @@ func StoreBytes(to *wasmer.Memory, offset int32, data []byte) error {
 	copy(memoryView[offset:requestedEnd], data)
 	return nil
 }
+
+func InverseBytes(data []byte) []byte {
+	length := len(data)
+	invBytes := make([]byte, length)
+	for i := 0; i < length; i++ {
+		invBytes[length-i-1] = data[i]
+	}
+	return invBytes
+}

@@ -358,7 +358,9 @@ func transferValue(context unsafe.Pointer, gasLimit int64, destOffset int32, val
 	gasToUse += hostContext.GasSchedule().BaseOperationCost.PersistPerByte * uint64(length)
 	hostContext.UseGas(gasToUse)
 
-	hostContext.Transfer(dest, send, hostContext.BoundGasLimit(gasLimit), big.NewInt(0).SetBytes(value), data)
+	invBytes := arwen.InverseBytes(value)
+
+	hostContext.Transfer(dest, send, hostContext.BoundGasLimit(gasLimit), big.NewInt(0).SetBytes(invBytes), data)
 
 	return 0
 }
@@ -479,11 +481,7 @@ func callValue(context unsafe.Pointer, resultOffset int32) int32 {
 	hostContext := arwen.GetErdContext(instCtx.Data())
 
 	value := hostContext.GetVMInput().CallValue.Bytes()
-	length := len(value)
-	invBytes := make([]byte, length)
-	for i := 0; i < length; i++ {
-		invBytes[length-i-1] = value[i]
-	}
+	invBytes := arwen.InverseBytes(value)
 
 	gasToUse := hostContext.GasSchedule().ElrondAPICost.GetCallValue
 	hostContext.UseGas(gasToUse)
@@ -493,7 +491,7 @@ func callValue(context unsafe.Pointer, resultOffset int32) int32 {
 		return -1
 	}
 
-	return int32(length)
+	return int32(len(value))
 }
 
 //export writeLog
@@ -767,7 +765,8 @@ func executeOnSameContext(
 	gasToUse += erdContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
 	erdContext.UseGas(gasToUse)
 
-	bigIntVal := big.NewInt(0).SetBytes(value)
+	invBytes := arwen.InverseBytes(value)
+	bigIntVal := big.NewInt(0).SetBytes(invBytes)
 	erdContext.Transfer(dest, send, 0, bigIntVal, nil)
 
 	contractCallInput := &vmcommon.ContractCallInput{
@@ -822,7 +821,8 @@ func executeOnDestContext(
 	gasToUse += erdContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
 	erdContext.UseGas(gasToUse)
 
-	erdContext.Transfer(dest, send, 0, big.NewInt(0).SetBytes(value), nil)
+	invBytes := arwen.InverseBytes(value)
+	erdContext.Transfer(dest, send, 0, big.NewInt(0).SetBytes(invBytes), nil)
 
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
