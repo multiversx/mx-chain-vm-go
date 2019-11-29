@@ -9,7 +9,7 @@ package elrondapi
 // extern void getOwner(void *context, int32_t resultOffset);
 // extern void getExternalBalance(void *context, int32_t addressOffset, int32_t resultOffset);
 // extern int32_t blockHash(void *context, long long nonce, int32_t resultOffset);
-// extern int32_t transferValue(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
+// extern int32_t transferValue(void *context, long long gas, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
 // extern int32_t getArgument(void *context, int32_t id, int32_t argOffset);
 // extern int32_t getFunction(void *context, int32_t functionOffset);
 // extern int32_t getNumArguments(void *context);
@@ -334,7 +334,7 @@ func blockHash(context unsafe.Pointer, nonce int64, resultOffset int32) int32 {
 }
 
 //export transferValue
-func transferValue(context unsafe.Pointer, destOffset int32, valueOffset int32, dataOffset int32, length int32) int32 {
+func transferValue(context unsafe.Pointer, gasLimit int64, destOffset int32, valueOffset int32, dataOffset int32, length int32) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetErdContext(instCtx.Data())
 
@@ -358,7 +358,7 @@ func transferValue(context unsafe.Pointer, destOffset int32, valueOffset int32, 
 	gasToUse += hostContext.GasSchedule().BaseOperationCost.PersistPerByte * uint64(length)
 	hostContext.UseGas(gasToUse)
 
-	hostContext.Transfer(dest, send, big.NewInt(0).SetBytes(value), data)
+	hostContext.Transfer(dest, send, hostContext.BoundGasLimit(gasLimit), big.NewInt(0).SetBytes(value), data)
 
 	return 0
 }
@@ -768,7 +768,7 @@ func executeOnSameContext(
 	erdContext.UseGas(gasToUse)
 
 	bigIntVal := big.NewInt(0).SetBytes(value)
-	erdContext.Transfer(dest, send, bigIntVal, nil)
+	erdContext.Transfer(dest, send, 0, bigIntVal, nil)
 
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
@@ -822,7 +822,7 @@ func executeOnDestContext(
 	gasToUse += erdContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
 	erdContext.UseGas(gasToUse)
 
-	erdContext.Transfer(dest, send, big.NewInt(0).SetBytes(value), nil)
+	erdContext.Transfer(dest, send, 0, big.NewInt(0).SetBytes(value), nil)
 
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
@@ -912,7 +912,7 @@ func delegateExecution(
 	gasToUse += erdContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
 	erdContext.UseGas(gasToUse)
 
-	erdContext.Transfer(address, sender, value, nil)
+	erdContext.Transfer(address, sender, 0, value, nil)
 
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
@@ -971,7 +971,7 @@ func executeReadOnly(
 	gasToUse += erdContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
 	erdContext.UseGas(gasToUse)
 
-	erdContext.Transfer(address, sender, value, nil)
+	erdContext.Transfer(address, sender, 0, value, nil)
 
 	erdContext.SetReadOnly(true)
 
