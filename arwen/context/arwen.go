@@ -117,7 +117,20 @@ func NewArwenVM(
 	return context, nil
 }
 
-func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (*vmcommon.VMOutput, error) {
+func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error) {
+	try := func() {
+		vmOutput, err = host.doRunSmartContractCreate(input)
+	}
+
+	catch := func(caught error) {
+		err = caught
+	}
+
+	arwen.TryCatch(try, catch, "arwen.RunSmartContractCreate")
+	return
+}
+
+func (host *vmContext) doRunSmartContractCreate(input *vmcommon.ContractCreateInput) (*vmcommon.VMOutput, error) {
 	host.initInternalValues()
 	host.vmInput = input.VMInput
 
@@ -226,7 +239,20 @@ func (host *vmContext) callInitFunction() (bool, []byte, error) {
 	return true, result, nil
 }
 
-func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
+	try := func() {
+		vmOutput, err = host.doRunSmartContractCall(input)
+	}
+
+	catch := func(caught error) {
+		err = caught
+	}
+
+	arwen.TryCatch(try, catch, "arwen.RunSmartContractCall")
+	return
+}
+
+func (host *vmContext) doRunSmartContractCall(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	host.initInternalValues()
 	host.vmInput = input.VMInput
 	host.scAddress = input.RecipientAddr
