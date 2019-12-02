@@ -756,8 +756,9 @@ func ethcall(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueO
 	gasToUse += ethContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(data))
 	ethContext.UseGas(gasToUse)
 
-	bigIntVal := big.NewInt(0).SetBytes(value)
-	ethContext.Transfer(dest, send, bigIntVal, nil)
+	invBytes := arwen.InverseBytes(value)
+	bigIntVal := big.NewInt(0).SetBytes(invBytes)
+	ethContext.Transfer(dest, send, 0, bigIntVal, nil)
 
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
@@ -804,7 +805,8 @@ func ethcallCode(context unsafe.Pointer, gasLimit int64, addressOffset int32, va
 	gasToUse += ethContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(data))
 	ethContext.UseGas(gasToUse)
 
-	ethContext.Transfer(dest, send, big.NewInt(0).SetBytes(value), nil)
+	invBytes := arwen.InverseBytes(value)
+	ethContext.Transfer(dest, send, 0, big.NewInt(0).SetBytes(invBytes), nil)
 
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
@@ -848,7 +850,7 @@ func ethcallDelegate(context unsafe.Pointer, gasLimit int64, addressOffset int32
 	gasToUse += ethContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(data))
 	ethContext.UseGas(gasToUse)
 
-	ethContext.Transfer(address, sender, value, nil)
+	ethContext.Transfer(address, sender, 0, value, nil)
 
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
@@ -901,7 +903,7 @@ func ethcallStatic(context unsafe.Pointer, gasLimit int64, addressOffset int32, 
 		return 0
 	}
 
-	ethContext.Transfer(address, sender, value, nil)
+	ethContext.Transfer(address, sender, 0, value, nil)
 
 	ethContext.SetReadOnly(true)
 

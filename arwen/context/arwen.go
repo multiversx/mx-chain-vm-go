@@ -358,6 +358,8 @@ func (host *vmContext) createVMOutput(output []byte) *vmcommon.VMOutput {
 		if len(outAcc.Data) > 0 {
 			outAccs[addr].Data = outAcc.Data
 		}
+
+		outAccs[addr].GasLimit = outAcc.GasLimit
 	}
 
 	// save to the output finally
@@ -652,7 +654,7 @@ func (host *vmContext) WriteLog(addr []byte, topics [][]byte, data []byte) {
 // Transfer handles any necessary value transfer required and takes
 // the necessary steps to create accounts and reverses the state in case of an
 // execution error or failed value transfer.
-func (host *vmContext) Transfer(destination []byte, sender []byte, value *big.Int, input []byte) {
+func (host *vmContext) Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte) {
 	senderAcc, ok := host.outputAccounts[string(sender)]
 	if !ok {
 		senderAcc = &vmcommon.OutputAccount{
@@ -674,6 +676,7 @@ func (host *vmContext) Transfer(destination []byte, sender []byte, value *big.In
 	senderAcc.BalanceDelta = big.NewInt(0).Sub(senderAcc.BalanceDelta, value)
 	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
 	destAcc.Data = append(destAcc.Data, input...)
+	destAcc.GasLimit = gasLimit
 }
 
 func (host *vmContext) CallData() []byte {
@@ -741,7 +744,7 @@ func (host *vmContext) CreateNewContract(input *vmcommon.ContractCreateInput) ([
 		return nil, err
 	}
 
-	host.Transfer(address, input.CallerAddr, input.CallValue, nil)
+	host.Transfer(address, input.CallerAddr, 0, input.CallValue, nil)
 	host.increaseNonce(input.CallerAddr)
 	host.scAddress = address
 

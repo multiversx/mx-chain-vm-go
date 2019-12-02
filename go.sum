@@ -6,6 +6,8 @@ github.com/ElrondNetwork/elrond-vm-common v0.1.2 h1:QsCxMTrMqtOvjrnvkzGIVgG9s/jv
 github.com/ElrondNetwork/elrond-vm-common v0.1.2/go.mod h1:ZakxPST/Wt8umnRtA9gobcy3Dw2bywxwkC54P5VhO9g=
 github.com/ElrondNetwork/elrond-vm-common v0.1.3 h1:b9KnmIDQx1Warrf2Hn9wtv5H2zMT0Qvq+bxulc++PUw=
 github.com/ElrondNetwork/elrond-vm-common v0.1.3/go.mod h1:ZakxPST/Wt8umnRtA9gobcy3Dw2bywxwkC54P5VhO9g=
+github.com/ElrondNetwork/elrond-vm-common v0.1.4 h1:bBkALg70U/tLXXRhoTTWT50QN7DSyq4VuJd7aiVWuQA=
+github.com/ElrondNetwork/elrond-vm-common v0.1.4/go.mod h1:ZakxPST/Wt8umnRtA9gobcy3Dw2bywxwkC54P5VhO9g=
 github.com/ElrondNetwork/elrond-vm-util v0.0.9 h1:382+8DovbVgDraAnuNt4v7/UyWVNED1+1mX59hCuX1g=
 github.com/ElrondNetwork/elrond-vm-util v0.0.9/go.mod h1:iIniCNE+6dPLTKagN2mO4zH3obT7bPYQKBO30GQNSlQ=
 github.com/ElrondNetwork/elrond-vm-util v0.1.0 h1:G6zKk2A89H7/Zm1DBdxP5rSlJFFMcuAMDu/etn753Hc=
