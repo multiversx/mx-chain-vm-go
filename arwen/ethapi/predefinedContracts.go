@@ -19,12 +19,14 @@ var contractsMap = map[string]func(unsafe.Pointer, []byte) ([]byte, error){
 	"0000000000000000000000000000000000000009": keccak256,
 }
 
+// IsAddressForPredefinedContract returns whether the address is recognized as a eth "precompiled contract" (predefined contract)
 func IsAddressForPredefinedContract(address []byte) bool {
 	contractKey := hex.EncodeToString(address)
 	_, ok := contractsMap[contractKey]
 	return ok
 }
 
+// CallPredefinedContract executes a predefined contract specified by address
 func CallPredefinedContract(ctx unsafe.Pointer, address []byte, data []byte) error {
 	instCtx := wasmer.IntoInstanceContext(ctx)
 	ethCtx := arwen.GetEthContext(instCtx.Data())
@@ -56,11 +58,13 @@ func sha2(context unsafe.Pointer, data []byte) ([]byte, error) {
 }
 
 func ripemd160(context unsafe.Pointer, data []byte) ([]byte, error) {
-	return nil, fmt.Errorf("EEI system contract not implemented: ripemd160")
+	instCtx := wasmer.IntoInstanceContext(context)
+	cryptoCtx := arwen.GetCryptoContext(instCtx.Data())
+	return cryptoCtx.CryptoHooks().Ripemd160(data)
 }
 
 func identity(context unsafe.Pointer, data []byte) ([]byte, error) {
-	return nil, fmt.Errorf("EEI system contract not implemented: identity")
+	return data, nil
 }
 
 func keccak256(context unsafe.Pointer, data []byte) ([]byte, error) {
