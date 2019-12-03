@@ -52,14 +52,7 @@ func ecrecover(context unsafe.Pointer, data []byte) ([]byte, error) {
 func sha2(context unsafe.Pointer, data []byte) ([]byte, error) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	cryptoCtx := arwen.GetCryptoContext(instCtx.Data())
-
-	resultString, err := cryptoCtx.CryptoHooks().Sha256(string(data))
-	if err != nil {
-		return nil, err
-	}
-
-	result, _ := hex.DecodeString(resultString)
-	return result, nil
+	return cryptoCtx.CryptoHooks().Sha256(data)
 }
 
 func ripemd160(context unsafe.Pointer, data []byte) ([]byte, error) {
@@ -73,12 +66,5 @@ func identity(context unsafe.Pointer, data []byte) ([]byte, error) {
 func keccak256(context unsafe.Pointer, data []byte) ([]byte, error) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	cryptoCtx := arwen.GetCryptoContext(instCtx.Data())
-
-	resultString, err := cryptoCtx.CryptoHooks().Keccak256(string(data))
-	if err != nil {
-		return nil, err
-	}
-
-	result, _ := hex.DecodeString(resultString)
-	return result, nil
+	return cryptoCtx.CryptoHooks().Keccak256(data)
 }

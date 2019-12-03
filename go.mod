@@ -10,3 +10,5 @@ require (
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/stretchr/testify v1.4.0
 )
+
+replace github.com/ElrondNetwork/elrond-vm-common => github.com/ElrondNetwork/elrond-vm-common v0.0.0-20191203115206-691b00a6e76a

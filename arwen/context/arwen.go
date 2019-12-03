@@ -2,7 +2,6 @@ package context
 
 import (
 	"bytes"
-	"encoding/hex"
 	"fmt"
 	"math/big"
 	"unsafe"
@@ -614,13 +613,7 @@ func (host *vmContext) GetCodeHash(addr []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	codeHash, err := host.cryptoHook.Keccak256(string(code))
-	if err != nil {
-		return nil, err
-	}
-
-	result := []byte(codeHash)
-	return result, nil
+	return host.cryptoHook.Keccak256(code)
 }
 
 func (host *vmContext) GetCode(addr []byte) ([]byte, error) {
@@ -999,17 +992,12 @@ func (host *vmContext) createETHCallInput() []byte {
 	newInput := make([]byte, 0)
 
 	if len(host.callFunction) > 0 {
-		hashOfFunction, err := host.cryptoHook.Keccak256(host.callFunction)
+		hashOfFunction, err := host.cryptoHook.Keccak256([]byte(host.callFunction))
 		if err != nil {
 			return nil
 		}
 
-		methodSelectors, err := hex.DecodeString(hashOfFunction)
-		if err != nil {
-			return nil
-		}
-
-		newInput = append(newInput, methodSelectors[0:4]...)
+		newInput = append(newInput, hashOfFunction[0:4]...)
 	}
 
 	for _, arg := range host.vmInput.Arguments {

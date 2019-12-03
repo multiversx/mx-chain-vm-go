@@ -1,5 +1,6 @@
 github.com/ElrondNetwork/big-int-util v0.0.5 h1:e/9kK++9ZH/SdIYqLSUPRFYrDZmDWDgff3/7SCydq5I=
 github.com/ElrondNetwork/big-int-util v0.0.5/go.mod h1:96viBvoTXLjZOhEvE0D+QnAwg1IJLPAK6GVHMbC7Aw4=
+github.com/ElrondNetwork/elrond-vm-common v0.0.0-20191203115206-691b00a6e76a h1:/hGeyqQxE0E92BkMDs/1E6vRqJMA4nVhwSFol1dNopk=
 github.com/ElrondNetwork/elrond-vm-common v0.0.0-20191203115206-691b00a6e76a/go.mod h1:ZakxPST/Wt8umnRtA9gobcy3Dw2bywxwkC54P5VhO9g=
 github.com/ElrondNetwork/elrond-vm-common v0.0.9 h1:Ff8vEJSKChRfmp+TVo7AgciRkMXjL4+TbNin6LQ7xKw=
 github.com/ElrondNetwork/elrond-vm-common v0.0.9/go.mod h1:VqCCN0cX0e4D/KDc7MGNV9ElrOsfnjuJnGvcODVjzbk=

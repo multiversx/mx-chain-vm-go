@@ -41,12 +41,12 @@ func sha256(context unsafe.Pointer, dataOffset int32, length int32, resultOffset
 		return 1
 	}
 
-	result, err := cryptoContext.CryptoHooks().Sha256(string(data))
+	result, err := cryptoContext.CryptoHooks().Sha256(data)
 	if err != nil {
 		return 1
 	}
 
-	err = arwen.StoreBytes(instCtx.Memory(), resultOffset, []byte(result))
+	err = arwen.StoreBytes(instCtx.Memory(), resultOffset, result)
 	if withFault(err, context) {
 		return 1
 	}
@@ -67,12 +67,12 @@ func keccak256(context unsafe.Pointer, dataOffset int32, length int32, resultOff
 		return 1
 	}
 
-	result, err := cryptoContext.CryptoHooks().Keccak256(string(data))
+	result, err := cryptoContext.CryptoHooks().Keccak256(data)
 	if err != nil {
 		return 1
 	}
 
-	err = arwen.StoreBytes(instCtx.Memory(), resultOffset, []byte(result))
+	err = arwen.StoreBytes(instCtx.Memory(), resultOffset, result)
 	if withFault(err, context) {
 		return 1
 	}
