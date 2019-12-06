@@ -22,6 +22,8 @@ package elrondapi
 // extern void signalError(void* context);
 // extern long long getGasLeft(void *context);
 //
+// extern void abortExecution(void *context);
+//
 // extern int32_t executeOnDestContext(void *context, long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t executeOnSameContext(void *context, long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t delegateExecution(void *context, long long gas, int32_t addressOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
@@ -194,6 +196,11 @@ func ElrondEImports() (*wasmer.Imports, error) {
 		return nil, err
 	}
 
+	imports, err = imports.Append("abortExecution", abortExecution, C.abortExecution)
+	if err != nil {
+		return nil, err
+	}
+
 	imports, err = imports.Append("executeOnDestContext", executeOnDestContext, C.executeOnDestContext)
 	if err != nil {
 		return nil, err
@@ -292,6 +299,14 @@ func signalError(context unsafe.Pointer) {
 
 	gasToUse := hostContext.GasSchedule().ElrondAPICost.SignalError
 	hostContext.UseGas(gasToUse)
+}
+
+//export abortExecution
+func abortExecution(context unsafe.Pointer) {
+	instCtx := wasmer.IntoInstanceContext(context)
+	hostContext := arwen.GetErdContext(instCtx.Data())
+
+	hostContext.SetRuntimeBreakpointValue(1)
 }
 
 //export getExternalBalance

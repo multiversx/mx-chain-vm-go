@@ -177,6 +177,11 @@ func (host *vmContext) doRunSmartContractCreate(input *vmcommon.ContractCreateIn
 
 	_, result, err := host.callInitFunction()
 	if err != nil {
+		breakpointValue := host.GetRuntimeBreakpointValue()
+		if breakpointValue != BreakpointNone {
+			return host.createVMOutputInCaseOfBreakpoint(breakpointValue), nil
+		}
+
 		return host.createVMOutputInCaseOfError(vmcommon.FunctionWrongSignature), nil
 	}
 
@@ -304,6 +309,11 @@ func (host *vmContext) doRunSmartContractCall(input *vmcommon.ContractCallInput)
 
 	result, err := function()
 	if err != nil {
+		breakpointValue := host.GetRuntimeBreakpointValue()
+		if breakpointValue != BreakpointNone {
+			return host.createVMOutputInCaseOfBreakpoint(breakpointValue), nil
+		}
+
 		strError, _ := wasmer.GetLastError()
 
 		fmt.Println("arwen Error", err.Error(), strError)
@@ -329,6 +339,10 @@ func (host *vmContext) createVMOutputInCaseOfError(errCode vmcommon.ReturnCode) 
 	vmOutput := &vmcommon.VMOutput{GasRemaining: 0, GasRefund: big.NewInt(0)}
 	vmOutput.ReturnCode = errCode
 	return vmOutput
+}
+
+func (host *vmContext) createVMOutputInCaseOfBreakpoint(breakpointValue BreakpointValue) (*vmcommon.VMOutput, error) {
+	return host.createVMOutputInCaseOfError(vmcommon.UserError), ErrUnhandledRuntimeBreakpoint
 }
 
 func (host *vmContext) getFunctionToCall() (func(...interface{}) (wasmer.Value, error), error) {
@@ -431,6 +445,7 @@ func (host *vmContext) initInternalValues() {
 	host.ethInput = nil
 	host.readOnly = false
 	host.refund = 0
+	host.SetRuntimeBreakpointValue(BreakpointNone)
 }
 
 func (host *vmContext) addTxValueToSmartContract(value *big.Int, scAddress []byte) {
@@ -496,6 +511,14 @@ func (host *vmContext) AccountExists(addr []byte) bool {
 		fmt.Printf("Account exsits returned with error %s \n", err.Error())
 	}
 	return exists
+}
+
+func (host *vmContext) SetRuntimeBreakpointValue(value BreakpointValue) {
+	host.instance.SetBreakpointValue(uint64(value))
+}
+
+func (host *vmContext) GetRuntimeBreakpointValue() BreakpointValue {
+	return BreakpointValue(host.instance.GetBreakpointValue())
 }
 
 func (host *vmContext) GetStorage(addr []byte, key []byte) []byte {
