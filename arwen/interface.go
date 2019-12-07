@@ -67,7 +67,7 @@ type HostContext interface {
 	ReturnData() [][]byte
 
 	SetRuntimeBreakpointValue(value BreakpointValue)
-	GetRuntimeBreakpointValue()
+	GetRuntimeBreakpointValue() BreakpointValue
 
 	SetReadOnly(readOnly bool)
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)

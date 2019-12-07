@@ -6,7 +6,7 @@ import (
 	"math/big"
 	"unsafe"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/elrondapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/ethapi"
@@ -178,7 +178,7 @@ func (host *vmContext) doRunSmartContractCreate(input *vmcommon.ContractCreateIn
 	_, result, err := host.callInitFunction()
 	if err != nil {
 		breakpointValue := host.GetRuntimeBreakpointValue()
-		if breakpointValue != BreakpointNone {
+		if breakpointValue != arwen.BreakpointNone {
 			return host.createVMOutputInCaseOfBreakpoint(breakpointValue), nil
 		}
 
@@ -310,7 +310,7 @@ func (host *vmContext) doRunSmartContractCall(input *vmcommon.ContractCallInput)
 	result, err := function()
 	if err != nil {
 		breakpointValue := host.GetRuntimeBreakpointValue()
-		if breakpointValue != BreakpointNone {
+		if breakpointValue != arwen.BreakpointNone {
 			return host.createVMOutputInCaseOfBreakpoint(breakpointValue), nil
 		}
 
@@ -341,8 +341,9 @@ func (host *vmContext) createVMOutputInCaseOfError(errCode vmcommon.ReturnCode) 
 	return vmOutput
 }
 
-func (host *vmContext) createVMOutputInCaseOfBreakpoint(breakpointValue BreakpointValue) (*vmcommon.VMOutput, error) {
-	return host.createVMOutputInCaseOfError(vmcommon.UserError), ErrUnhandledRuntimeBreakpoint
+func (host *vmContext) createVMOutputInCaseOfBreakpoint(breakpointValue arwen.BreakpointValue) *vmcommon.VMOutput {
+	// A breakpoint should not remain unhandled.
+	return host.createVMOutputInCaseOfError(vmcommon.UserError)
 }
 
 func (host *vmContext) getFunctionToCall() (func(...interface{}) (wasmer.Value, error), error) {
@@ -445,7 +446,7 @@ func (host *vmContext) initInternalValues() {
 	host.ethInput = nil
 	host.readOnly = false
 	host.refund = 0
-	host.SetRuntimeBreakpointValue(BreakpointNone)
+	host.SetRuntimeBreakpointValue(arwen.BreakpointNone)
 }
 
 func (host *vmContext) addTxValueToSmartContract(value *big.Int, scAddress []byte) {
@@ -513,12 +514,12 @@ func (host *vmContext) AccountExists(addr []byte) bool {
 	return exists
 }
 
-func (host *vmContext) SetRuntimeBreakpointValue(value BreakpointValue) {
+func (host *vmContext) SetRuntimeBreakpointValue(value arwen.BreakpointValue) {
 	host.instance.SetBreakpointValue(uint64(value))
 }
 
-func (host *vmContext) GetRuntimeBreakpointValue() BreakpointValue {
-	return BreakpointValue(host.instance.GetBreakpointValue())
+func (host *vmContext) GetRuntimeBreakpointValue() arwen.BreakpointValue {
+	return arwen.BreakpointValue(host.instance.GetBreakpointValue())
 }
 
 func (host *vmContext) GetStorage(addr []byte, key []byte) []byte {
