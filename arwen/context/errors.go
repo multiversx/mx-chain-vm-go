@@ -13,5 +13,3 @@ var ErrFuncNotFound = errors.New("function not found")
 var ErrReturnCodeNotOk = errors.New("return not is not ok")
 
 var ErrNotEnoughGas = errors.New("not enough gas")
-
-var ErrUnhandledRuntimeBreakpoint = errors.New("unhandled runtime breakpoint")
