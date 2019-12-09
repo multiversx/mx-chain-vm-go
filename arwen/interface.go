@@ -6,6 +6,16 @@ import (
 	"math/big"
 )
 
+type BreakpointValue uint64
+
+const (
+	BreakpointNone        BreakpointValue = 0
+	BreakpointAbort       BreakpointValue = 1
+	BreakpointAsyncCall   BreakpointValue = 2
+	BreakpointSignalError BreakpointValue = 3
+	BreakpointOutOfGas    BreakpointValue = 4
+)
+
 type EthContext interface {
 	GasSchedule() *config.GasCost
 	GetSCAddress() []byte
@@ -55,6 +65,9 @@ type HostContext interface {
 	BlockChainHook() vmcommon.BlockchainHook
 	SignalUserError()
 	ReturnData() [][]byte
+
+	SetRuntimeBreakpointValue(value BreakpointValue)
+	GetRuntimeBreakpointValue() BreakpointValue
 
 	SetReadOnly(readOnly bool)
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)

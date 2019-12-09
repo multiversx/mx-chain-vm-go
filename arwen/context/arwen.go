@@ -6,7 +6,7 @@ import (
 	"math/big"
 	"unsafe"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/elrondapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/ethapi"
@@ -431,6 +431,7 @@ func (host *vmContext) initInternalValues() {
 	host.ethInput = nil
 	host.readOnly = false
 	host.refund = 0
+	host.SetRuntimeBreakpointValue(arwen.BreakpointNone)
 }
 
 func (host *vmContext) addTxValueToSmartContract(value *big.Int, scAddress []byte) {
@@ -496,6 +497,14 @@ func (host *vmContext) AccountExists(addr []byte) bool {
 		fmt.Printf("Account exsits returned with error %s \n", err.Error())
 	}
 	return exists
+}
+
+func (host *vmContext) SetRuntimeBreakpointValue(value arwen.BreakpointValue) {
+	host.instance.SetBreakpointValue(uint64(value))
+}
+
+func (host *vmContext) GetRuntimeBreakpointValue() arwen.BreakpointValue {
+	return arwen.BreakpointValue(host.instance.GetBreakpointValue())
 }
 
 func (host *vmContext) GetStorage(addr []byte, key []byte) []byte {
