@@ -177,11 +177,6 @@ func (host *vmContext) doRunSmartContractCreate(input *vmcommon.ContractCreateIn
 
 	_, result, err := host.callInitFunction()
 	if err != nil {
-		breakpointValue := host.GetRuntimeBreakpointValue()
-		if breakpointValue != arwen.BreakpointNone {
-			return host.createVMOutputInCaseOfBreakpoint(breakpointValue), nil
-		}
-
 		return host.createVMOutputInCaseOfError(vmcommon.FunctionWrongSignature), nil
 	}
 
@@ -309,11 +304,6 @@ func (host *vmContext) doRunSmartContractCall(input *vmcommon.ContractCallInput)
 
 	result, err := function()
 	if err != nil {
-		breakpointValue := host.GetRuntimeBreakpointValue()
-		if breakpointValue != arwen.BreakpointNone {
-			return host.createVMOutputInCaseOfBreakpoint(breakpointValue), nil
-		}
-
 		strError, _ := wasmer.GetLastError()
 
 		fmt.Println("arwen Error", err.Error(), strError)
@@ -339,11 +329,6 @@ func (host *vmContext) createVMOutputInCaseOfError(errCode vmcommon.ReturnCode) 
 	vmOutput := &vmcommon.VMOutput{GasRemaining: 0, GasRefund: big.NewInt(0)}
 	vmOutput.ReturnCode = errCode
 	return vmOutput
-}
-
-func (host *vmContext) createVMOutputInCaseOfBreakpoint(breakpointValue arwen.BreakpointValue) *vmcommon.VMOutput {
-	// A breakpoint should not remain unhandled.
-	return host.createVMOutputInCaseOfError(vmcommon.UserError)
 }
 
 func (host *vmContext) getFunctionToCall() (func(...interface{}) (wasmer.Value, error), error) {
