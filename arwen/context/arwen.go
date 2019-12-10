@@ -176,6 +176,7 @@ func (host *vmContext) doRunSmartContractCreate(input *vmcommon.ContractCreateIn
 	host.instance.SetContextData(unsafe.Pointer(&idContext))
 
 	_, result, err := host.callInitFunction()
+
 	if err != nil {
 		return host.createVMOutputInCaseOfError(vmcommon.FunctionWrongSignature), nil
 	}
@@ -303,6 +304,11 @@ func (host *vmContext) doRunSmartContractCall(input *vmcommon.ContractCallInput)
 	}
 
 	result, err := function()
+
+	if host.reachedBreakpoint(err) {
+		return host.handleBreakpoint(result, err)
+	}
+
 	if err != nil {
 		strError, _ := wasmer.GetLastError()
 
