@@ -9,7 +9,7 @@ package elrondapi
 // extern void getOwner(void *context, int32_t resultOffset);
 // extern void getExternalBalance(void *context, int32_t addressOffset, int32_t resultOffset);
 // extern int32_t blockHash(void *context, long long nonce, int32_t resultOffset);
-// extern int32_t transferValue(void *context, long long gas, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
+// extern int32_t transferValue(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
 // extern int32_t getArgument(void *context, int32_t id, int32_t argOffset);
 // extern int32_t getFunction(void *context, int32_t functionOffset);
 // extern int32_t getNumArguments(void *context);
@@ -27,6 +27,7 @@ package elrondapi
 // extern int32_t delegateExecution(void *context, long long gas, int32_t addressOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t executeReadOnly(void *context, long long gas, int32_t addressOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t createContract(void *context, int32_t valueOffset, int32_t codeOffset, int32_t length, int32_t resultOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern int32_t asyncCall(void *context, long long gas, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
 //
 // extern int32_t getNumReturnData(void *context);
 // extern int32_t getReturnDataSize(void *context, int32_t resultId);
@@ -334,7 +335,7 @@ func blockHash(context unsafe.Pointer, nonce int64, resultOffset int32) int32 {
 }
 
 //export transferValue
-func transferValue(context unsafe.Pointer, gasLimit int64, destOffset int32, valueOffset int32, dataOffset int32, length int32) int32 {
+func transferValue(context unsafe.Pointer, destOffset int32, valueOffset int32, dataOffset int32, length int32) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetErdContext(instCtx.Data())
 
@@ -360,7 +361,7 @@ func transferValue(context unsafe.Pointer, gasLimit int64, destOffset int32, val
 
 	invBytes := arwen.InverseBytes(value)
 
-	hostContext.Transfer(dest, send, hostContext.BoundGasLimit(gasLimit), big.NewInt(0).SetBytes(invBytes), data)
+	hostContext.Transfer(dest, send, 0, big.NewInt(0).SetBytes(invBytes), data)
 
 	return 0
 }
@@ -397,6 +398,8 @@ func asyncCall(context unsafe.Pointer, gasLimit int64, destOffset int32, valueOf
 	// in the handler for BreakpointAsyncCall.
 	invBytes := arwen.InverseBytes(value)
 	erdContext.Transfer(dest, send, erdContext.BoundGasLimit(gasLimit), big.NewInt(0).SetBytes(invBytes), data)
+
+	erdContext.SetAsyncCallDest(dest)
 
 	// Instruct Wasmer to interrupt the execution of the caller SC.
 	erdContext.SetRuntimeBreakpointValue(arwen.BreakpointAsyncCall)

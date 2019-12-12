@@ -21,15 +21,18 @@ func (host *vmContext) handleBreakpoint(result wasmer.Value, err error) (*vmcomm
 }
 
 func (host *vmContext) handleAsyncCallBreakpoint(result wasmer.Value, err error) (*vmcommon.VMOutput, error) {
-	// TODO decide whether the call was intra-Shard or cross-Shard
-	// TODO if cross-Shard, do nothing
-	// TODO if intra-Shard, execute on destination context, after resetting the breakpoint value
 	host.SetRuntimeBreakpointValue(arwen.BreakpointNone)
 
 	convertedResult := arwen.ConvertReturnValue(result)
 	callerSCVmOutput := host.createVMOutput(convertedResult.Bytes())
 
-	calledSCCode := host.GetCode
+	sender := host.GetSCAddress()
+	dest := host.asyncCallDest
+
+	calledSCCode, err := host.GetCode(dest)
+	if err != nil || len(calledSCCode) == 0 {
+		return callerSCVmOutput, nil
+	}
 
 	return nil, nil
 }

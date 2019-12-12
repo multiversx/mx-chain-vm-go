@@ -57,6 +57,8 @@ type vmContext struct {
 
 	gasCostConfig *config.GasCost
 	opcodeCosts   [wasmer.OPCODE_COUNT]uint32
+
+	asyncCallDest []byte
 }
 
 func NewArwenVM(
@@ -685,6 +687,10 @@ func (host *vmContext) WriteLog(addr []byte, topics [][]byte, data []byte) {
 	host.logs[strAdr] = currLogs
 }
 
+func (host *vmContext) SetAsyncCallDest(dest []byte) {
+	host.asyncCallDest = dest
+}
+
 // Transfer handles any necessary value transfer required and takes
 // the necessary steps to create accounts and reverses the state in case of an
 // execution error or failed value transfer.
@@ -709,7 +715,7 @@ func (host *vmContext) Transfer(destination []byte, sender []byte, gasLimit uint
 
 	senderAcc.BalanceDelta = big.NewInt(0).Sub(senderAcc.BalanceDelta, value)
 	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
-	destAcc.Data = append(destAcc.Data, input...)
+	destAcc.Data = input
 	destAcc.GasLimit = gasLimit
 }
 
