@@ -69,7 +69,7 @@ type HostContext interface {
 	SetRuntimeBreakpointValue(value BreakpointValue)
 	GetRuntimeBreakpointValue() BreakpointValue
 
-	SetAsyncCallDest(dest []byte)
+	SetAsyncCallInfo(dest []byte, value []byte, gasLimit uint64, data []byte)
 
 	SetReadOnly(readOnly bool)
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)

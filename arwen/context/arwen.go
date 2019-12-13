@@ -58,7 +58,12 @@ type vmContext struct {
 	gasCostConfig *config.GasCost
 	opcodeCosts   [wasmer.OPCODE_COUNT]uint32
 
-	asyncCallDest []byte
+	asyncCallDest       []byte
+	asyncCallData       []byte
+	asyncCallGasLimit   uint64
+	asyncCallValueBytes []byte
+
+	argParser ArgumentsParser
 }
 
 func NewArwenVM(
@@ -94,6 +99,11 @@ func NewArwenVM(
 		return nil, err
 	}
 
+	argParser, err := vmcommon.NewAtArgumentParser()
+	if err != nil {
+		return nil, err
+	}
+
 	opcodeCosts := gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray()
 
 	context := &vmContext{
@@ -105,6 +115,7 @@ func NewArwenVM(
 		blockGasLimit:   blockGasLimit,
 		gasCostConfig:   gasCostConfig,
 		opcodeCosts:     opcodeCosts,
+		argParser:       argParser,
 	}
 
 	context.initInternalValues()
@@ -308,7 +319,7 @@ func (host *vmContext) doRunSmartContractCall(input *vmcommon.ContractCallInput)
 	result, err := function()
 
 	if host.reachedBreakpoint(err) {
-		return host.handleBreakpoint(result, err)
+		vmOutput, err = host.handleBreakpoint(result, err)
 	}
 
 	if err != nil {
@@ -323,6 +334,7 @@ func (host *vmContext) doRunSmartContractCall(input *vmcommon.ContractCallInput)
 		return host.createVMOutputInCaseOfError(host.returnCode), nil
 	}
 
+	// TODO only create vmOutput if not created by breakpoint handler
 	convertedResult := arwen.ConvertReturnValue(result)
 	vmOutput := host.createVMOutput(convertedResult.Bytes())
 
@@ -687,8 +699,11 @@ func (host *vmContext) WriteLog(addr []byte, topics [][]byte, data []byte) {
 	host.logs[strAdr] = currLogs
 }
 
-func (host *vmContext) SetAsyncCallDest(dest []byte) {
+func (host *vmContext) SetAsyncCallInfo(dest []byte, value []byte, gasLimit uint64, data []byte) {
 	host.asyncCallDest = dest
+	host.asyncCallData = data
+	host.asyncCallGasLimit = gasLimit
+	host.asyncCallValueBytes = value
 }
 
 // Transfer handles any necessary value transfer required and takes
@@ -715,7 +730,9 @@ func (host *vmContext) Transfer(destination []byte, sender []byte, gasLimit uint
 
 	senderAcc.BalanceDelta = big.NewInt(0).Sub(senderAcc.BalanceDelta, value)
 	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
-	destAcc.Data = input
+	destAcc.Data = append(destAcc.Data, input...)
+
+	// TODO set gasLimit or accumulate gasLimit?
 	destAcc.GasLimit = gasLimit
 }
 

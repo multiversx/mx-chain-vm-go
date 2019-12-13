@@ -367,7 +367,7 @@ func transferValue(context unsafe.Pointer, destOffset int32, valueOffset int32, 
 }
 
 //export asyncCall
-func asyncCall(context unsafe.Pointer, gasLimit int64, destOffset int32, valueOffset int32, dataOffset int32, length int32) int32 {
+func asyncCall(context unsafe.Pointer, destOffset int32, valueOffset int32, dataOffset int32, length int32) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	erdContext := arwen.GetErdContext(instCtx.Data())
 
@@ -393,13 +393,16 @@ func asyncCall(context unsafe.Pointer, gasLimit int64, destOffset int32, valueOf
 	gasToUse += erdContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(length)
 	erdContext.UseGas(gasToUse)
 
+	// TODO verify if gasLimit is large enough for sender call, destination call and callback call
+	// TODO get remaining gas left, instead of gasLimit
+
 	// Set up the async call as if it is not known whether the called SC
 	// is in the same shard with the caller or not. This will be later resolved
 	// in the handler for BreakpointAsyncCall.
-	invBytes := arwen.InverseBytes(value)
-	erdContext.Transfer(dest, send, erdContext.BoundGasLimit(gasLimit), big.NewInt(0).SetBytes(invBytes), data)
+	invValueBytes := arwen.InverseBytes(value)
+	erdContext.Transfer(dest, send, erdContext.BoundGasLimit(gasLimit), big.NewInt(0).SetBytes(invValueBytes), data)
 
-	erdContext.SetAsyncCallDest(dest)
+	erdContext.SetAsyncCallInfo(dest, invValueBytes, data)
 
 	// Instruct Wasmer to interrupt the execution of the caller SC.
 	erdContext.SetRuntimeBreakpointValue(arwen.BreakpointAsyncCall)
