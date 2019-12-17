@@ -27,7 +27,7 @@ package elrondapi
 // extern int32_t delegateExecution(void *context, long long gas, int32_t addressOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t executeReadOnly(void *context, long long gas, int32_t addressOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t createContract(void *context, int32_t valueOffset, int32_t codeOffset, int32_t length, int32_t resultOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
-// extern int32_t asyncCall(void *context, long long gas, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
+// extern int32_t asyncCall(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
 //
 // extern int32_t getNumReturnData(void *context);
 // extern int32_t getReturnDataSize(void *context, int32_t resultId);
@@ -394,15 +394,15 @@ func asyncCall(context unsafe.Pointer, destOffset int32, valueOffset int32, data
 	erdContext.UseGas(gasToUse)
 
 	// TODO verify if gasLimit is large enough for sender call, destination call and callback call
-	// TODO get remaining gas left, instead of gasLimit
+	gasLimit := erdContext.GasLeft()
 
 	// Set up the async call as if it is not known whether the called SC
 	// is in the same shard with the caller or not. This will be later resolved
 	// in the handler for BreakpointAsyncCall.
 	invValueBytes := arwen.InverseBytes(value)
-	erdContext.Transfer(dest, send, erdContext.BoundGasLimit(gasLimit), big.NewInt(0).SetBytes(invValueBytes), data)
+	erdContext.Transfer(dest, send, gasLimit, big.NewInt(0).SetBytes(invValueBytes), data)
 
-	erdContext.SetAsyncCallInfo(dest, invValueBytes, data)
+	erdContext.SetAsyncCallInfo(dest, invValueBytes, gasLimit, data)
 
 	// Instruct Wasmer to interrupt the execution of the caller SC.
 	erdContext.SetRuntimeBreakpointValue(arwen.BreakpointAsyncCall)

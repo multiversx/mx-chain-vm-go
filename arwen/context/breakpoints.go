@@ -27,62 +27,133 @@ func (host *vmContext) handleAsyncCallBreakpoint(result wasmer.Value, err error)
 
 	convertedResult := arwen.ConvertReturnValue(result)
 	senderVMOutput := host.createVMOutput(convertedResult.Bytes())
-
-	dest := host.asyncCallDest
+	intermediaryVMOutput := senderVMOutput
 
 	// If SC code is not found, it means this is either a cross-shard call or a wrong call.
+	dest := host.asyncCallDest
 	calledSCCode, err := host.GetCode(dest)
 	if err != nil || len(calledSCCode) == 0 {
-		return senderVMOutput, nil
+		// TODO detect same Shard call - this makes the empty calledSCCode an error
+		// if intraShard {
+		//   vmOutputWithError := createVMOutputInCaseOfBreakpointError(err)
+		//   return mergeTwoVMOutputs(intermediaryVMOutput, vmOutputWithError)
+		// }
+		return intermediaryVMOutput, nil
 	}
 
 	// Start calling the destination SC, synchronously.
+	destinationCallInput, err := host.createDestinationContractCallInput()
+	if err != nil {
+		vmOutputWithError := createVMOutputInCaseOfBreakpointError(err)
+		return mergeTwoVMOutputs(intermediaryVMOutput, vmOutputWithError), nil
+	}
+
+	destinationVMOutput, err := host.executeOnNewContextAndGetVMOutput(destinationCallInput)
+	intermediaryVMOutput = mergeTwoVMOutputs(intermediaryVMOutput, destinationVMOutput)
+	// TODO handle this error properly
+	// TODO pass error to the SC callback (append as argument)
+	// TODO consume remaining gas
+	if err != nil {
+		vmOutputWithError := createVMOutputInCaseOfBreakpointError(err)
+		return mergeTwoVMOutputs(intermediaryVMOutput, vmOutputWithError), nil
+	}
+
+	callbackCallInput, err := host.createCallbackContractCallInput(destinationVMOutput)
+	// TODO handle this error properly
+	if err != nil {
+		vmOutputWithError := createVMOutputInCaseOfBreakpointError(err)
+		return mergeTwoVMOutputs(intermediaryVMOutput, vmOutputWithError), nil
+	}
+
+	callbackVMOutput, err := host.executeOnNewContextAndGetVMOutput(callbackCallInput)
+	finalVMOutput := mergeTwoVMOutputs(intermediaryVMOutput, callbackVMOutput)
+	// TODO handle this error properly
+	if err != nil {
+		vmOutputWithError := createVMOutputInCaseOfBreakpointError(err)
+		return mergeTwoVMOutputs(finalVMOutput, vmOutputWithError), nil
+	}
+
+	return finalVMOutput, nil
+}
+
+func (host *vmContext) createDestinationContractCallInput() (*vmcommon.ContractCallInput, error) {
 	sender := host.GetSCAddress()
+	dest := host.asyncCallDest
 	valueBytes := host.asyncCallValueBytes
 	data := host.asyncCallData
 	gasLimit := host.asyncCallGasLimit
 
-	err = host.argParser.ParseData(string(data))
+	err := host.argParser.ParseData(string(data))
 	if err != nil {
-		return createVMOutputInCaseOfBreakpointError(err), nil
+		return nil, err
 	}
 
 	function, err := host.argParser.GetFunction()
 	if err != nil {
-		return createVMOutputInCaseOfBreakpointError(err), nil
+		return nil, err
 	}
 
 	arguments, err := host.argParser.GetArguments()
 	if err != nil {
-		return createVMOutputInCaseOfBreakpointError(err), nil
+		return nil, err
 	}
 
-	destinationCallInput := &vmcommon.ContractCallInput{
+	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallerAddr:  sender,
 			Arguments:   arguments,
 			CallValue:   big.NewInt(0).SetBytes(valueBytes),
 			GasPrice:    0,
-			GasProvided: host.BoundGasLimit(int64(gasLimit)),
+			GasProvided: gasLimit,
 		},
 		RecipientAddr: dest,
 		Function:      function,
 	}
 
-	destinationVMOutput, err := host.executeOnNewContextAndGetVMOutput(destinationCallInput)
+	return contractCallInput, nil
+}
 
-	if err != nil {
-		return createVMOutputInCaseOfBreakpointError(err), nil
+func (host *vmContext) createCallbackContractCallInput(destinationVMOutput *vmcommon.VMOutput) (*vmcommon.ContractCallInput, error) {
+	arguments := destinationVMOutput.ReturnData
+	gasLimit := destinationVMOutput.GasRemaining
+	function := "callback"
+
+	// Calculate what length would the Data field have, were it of the
+	// form "callback@arg1@arg4...
+	dataLength := len(function) + 1
+	for i, element := range arguments {
+		if len(element) == 0 {
+			continue
+		}
+		if i != 0 && dataLength > 0 {
+			dataLength += 1
+		}
+		dataLength += len(element)
 	}
 
+	// TODO define gas cost specific to async calls - asyncCall should cost more
+	// than ExecuteOnDestContext, especially cross-shard async calls
+	gasToUse := host.GasSchedule().ElrondAPICost.ExecuteOnDestContext
+	gasToUse += host.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(dataLength)
+	gasLimit -= gasToUse
+
+	sender := host.asyncCallDest
+	dest := host.GetSCAddress()
+
 	// Return to the sender SC, calling its callback() method.
-	callbackCallInput := &vmcommon.ContractCallInput{}
+	contractCallInput := &vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			CallerAddr:  sender,
+			Arguments:   arguments,
+			CallValue:   big.NewInt(0),
+			GasPrice:    0,
+			GasProvided: gasLimit,
+		},
+		RecipientAddr: dest,
+		Function:      function,
+	}
 
-	var callbackVMOutput *vmcommon.VMOutput
-
-	mergedVMOutput := mergeVMOutputs(senderVMOutput, destinationVMOutput, callbackVMOutput)
-
-	return mergedVMOutput, nil
+	return contractCallInput, nil
 }
 
 func (host *vmContext) executeOnNewContextAndGetVMOutput(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
@@ -116,7 +187,114 @@ func (host *vmContext) executeOnNewContextAndGetVMOutput(input *vmcommon.Contrac
 }
 
 func mergeVMOutputs(sender *vmcommon.VMOutput, destination *vmcommon.VMOutput, callback *vmcommon.VMOutput) *vmcommon.VMOutput {
-	return nil
+	vmOutput := &vmcommon.VMOutput{}
+	vmOutput = mergeTwoVMOutputs(vmOutput, sender)
+	vmOutput = mergeTwoVMOutputs(vmOutput, destination)
+	vmOutput = mergeTwoVMOutputs(vmOutput, callback)
+	return vmOutput
+}
+
+func mergeTwoVMOutputs(leftVMOutput *vmcommon.VMOutput, rightVMOutput *vmcommon.VMOutput) *vmcommon.VMOutput {
+	mergedVMOutput := &vmcommon.VMOutput{}
+
+	leftOutputAccounts := convertAccountsSliceToAccountsMap(leftVMOutput.OutputAccounts)
+	rightOutputAccounts := convertAccountsSliceToAccountsMap(rightVMOutput.OutputAccounts)
+	mergedOutputAccounts := mergeOutputAccountMaps(leftOutputAccounts, rightOutputAccounts)
+	mergedVMOutput.OutputAccounts = convertAccountsMapToAccountsSlice(mergedOutputAccounts)
+
+	mergedVMOutput.Logs = make([]*vmcommon.LogEntry, 0)
+	mergedVMOutput.Logs = append(mergedVMOutput.Logs, leftVMOutput.Logs...)
+	mergedVMOutput.Logs = append(mergedVMOutput.Logs, rightVMOutput.Logs...)
+
+	mergedVMOutput.ReturnData = make([][]byte, 0)
+	mergedVMOutput.ReturnData = append(mergedVMOutput.ReturnData, leftVMOutput.ReturnData...)
+	mergedVMOutput.ReturnData = append(mergedVMOutput.ReturnData, rightVMOutput.ReturnData...)
+
+	// TODO merge DeletedAccounts and TouchedAccounts as well?
+
+	mergedVMOutput.GasRemaining = rightVMOutput.GasRemaining
+	mergedVMOutput.GasRefund = rightVMOutput.GasRefund
+	mergedVMOutput.ReturnCode = rightVMOutput.ReturnCode
+	mergedVMOutput.ReturnMessage = rightVMOutput.ReturnMessage
+
+	return mergedVMOutput
+}
+
+func convertAccountsSliceToAccountsMap(outputAccountsSlice []*vmcommon.OutputAccount) map[string]*vmcommon.OutputAccount {
+	outputAccountsMap := make(map[string]*vmcommon.OutputAccount)
+
+	for _, account := range outputAccountsSlice {
+		address := string(account.Address)
+		outputAccountsMap[address] = account
+	}
+
+	return outputAccountsMap
+}
+
+func convertAccountsMapToAccountsSlice(outputAccountsMap map[string]*vmcommon.OutputAccount) []*vmcommon.OutputAccount {
+	outputAccountsSlice := make([]*vmcommon.OutputAccount, len(outputAccountsMap))
+	i := 0
+	for _, account := range outputAccountsMap {
+		outputAccountsSlice[i] = account
+	}
+
+	return outputAccountsSlice
+}
+
+func mergeOutputAccountMaps(leftMap map[string]*vmcommon.OutputAccount, rightMap map[string]*vmcommon.OutputAccount) map[string]*vmcommon.OutputAccount {
+	mergedAccountsMap := make(map[string]*vmcommon.OutputAccount)
+
+	for addr, account := range leftMap {
+		if _, ok := mergedAccountsMap[addr]; !ok {
+			mergedAccountsMap[addr] = &vmcommon.OutputAccount{}
+		}
+		mergedAccountsMap[addr] = mergeOutputAccounts(mergedAccountsMap[addr], account)
+	}
+
+	for addr, account := range rightMap {
+		if _, ok := mergedAccountsMap[addr]; !ok {
+			mergedAccountsMap[addr] = &vmcommon.OutputAccount{}
+		}
+		mergedAccountsMap[addr] = mergeOutputAccounts(mergedAccountsMap[addr], account)
+	}
+
+	return mergedAccountsMap
+}
+
+func mergeOutputAccounts(leftAccount *vmcommon.OutputAccount, rightAccount *vmcommon.OutputAccount) *vmcommon.OutputAccount {
+	// mergedAccount ← leftAccount ← rightAccount
+	mergedAccount := &vmcommon.OutputAccount{}
+
+	mergedAccount.Address = leftAccount.Address
+	mergedAccount.BalanceDelta = big.NewInt(0).Add(leftAccount.BalanceDelta, rightAccount.BalanceDelta)
+
+	if leftAccount.Nonce > 0 {
+		mergedAccount.Nonce = leftAccount.Nonce
+		if rightAccount.Nonce > mergedAccount.Nonce {
+			mergedAccount.Nonce = rightAccount.Nonce
+		}
+	}
+
+	if len(rightAccount.Code) > 0 {
+		mergedAccount.Code = rightAccount.Code
+	} else if len(leftAccount.Code) > 0 {
+		mergedAccount.Code = leftAccount.Code
+	}
+
+	if len(rightAccount.Data) > 0 {
+		mergedAccount.Data = rightAccount.Data
+	} else if len(leftAccount.Data) > 0 {
+		mergedAccount.Data = leftAccount.Data
+	}
+
+	if leftAccount.GasLimit > 0 {
+		mergedAccount.GasLimit = leftAccount.GasLimit
+		if rightAccount.GasLimit > mergedAccount.GasLimit {
+			mergedAccount.GasLimit = rightAccount.GasLimit
+		}
+	}
+
+	return mergedAccount
 }
 
 func createVMOutputInCaseOfBreakpointError(err error) *vmcommon.VMOutput {

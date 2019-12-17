@@ -148,6 +148,7 @@ func (host *vmContext) doRunSmartContractCreate(input *vmcommon.ContractCreateIn
 
 	nonce, err := host.blockChainHook.GetNonce(input.CallerAddr)
 	if err != nil {
+		fmt.Println("arwen Error:", err.Error())
 		return nil, err
 	}
 
@@ -157,6 +158,7 @@ func (host *vmContext) doRunSmartContractCreate(input *vmcommon.ContractCreateIn
 
 	address, err := host.blockChainHook.NewAddress(input.CallerAddr, nonce, host.vmType)
 	if err != nil {
+		fmt.Println("arwen Error:", err.Error())
 		return nil, err
 	}
 
@@ -170,6 +172,7 @@ func (host *vmContext) doRunSmartContractCreate(input *vmcommon.ContractCreateIn
 		host.GasSchedule().BaseOperationCost.StorePerByte,
 	)
 	if err != nil {
+		fmt.Println("arwen Error: out of gas")
 		return host.createVMOutputInCaseOfError(vmcommon.OutOfGas), nil
 	}
 
@@ -188,7 +191,9 @@ func (host *vmContext) doRunSmartContractCreate(input *vmcommon.ContractCreateIn
 
 	host.instance.SetContextData(unsafe.Pointer(&idContext))
 
+  fmt.Println("Arwen: about to call init()")
 	_, result, err := host.callInitFunction()
+  fmt.Println("Arwen: SmartContract init() called")
 
 	if err != nil {
 		return host.createVMOutputInCaseOfError(vmcommon.FunctionWrongSignature), nil
@@ -208,6 +213,8 @@ func (host *vmContext) doRunSmartContractCreate(input *vmcommon.ContractCreateIn
 	}
 
 	vmOutput := host.createVMOutput(result)
+
+  fmt.Println("Arwen: SmartContract deployed successfully")
 
 	return vmOutput, err
 }
@@ -293,7 +300,7 @@ func (host *vmContext) doRunSmartContractCall(input *vmcommon.ContractCallInput)
 
 	if err != nil {
 		fmt.Println("arwen Error", err.Error())
-		return host.createVMOutputInCaseOfError(vmcommon.ContractInvalid), nil
+		return host.createVMOutputInCaseOfErrorWithMessage(vmcommon.ContractInvalid, err.Error()), nil
 	}
 
 	idContext := arwen.AddHostContext(host)
@@ -307,8 +314,10 @@ func (host *vmContext) doRunSmartContractCall(input *vmcommon.ContractCallInput)
 
 	if host.isInitFunctionCalled() {
 		fmt.Println("arwen Error", ErrInitFuncCalledInRun.Error())
-		return host.createVMOutputInCaseOfError(vmcommon.UserError), nil
+		return host.createVMOutputInCaseOfErrorWithMessage(vmcommon.ExecutionFailed, ErrInitFuncCalledInRun.Error()), nil
 	}
+
+	fmt.Println("arwen function to call", host.callFunction)
 
 	function, err := host.getFunctionToCall()
 	if err != nil {
@@ -318,25 +327,31 @@ func (host *vmContext) doRunSmartContractCall(input *vmcommon.ContractCallInput)
 
 	result, err := function()
 
+	var vmOutput *vmcommon.VMOutput
 	if host.reachedBreakpoint(err) {
 		vmOutput, err = host.handleBreakpoint(result, err)
 	}
 
 	if err != nil {
-		strError, _ := wasmer.GetLastError()
+		if err == ErrUnhandledRuntimeBreakpoint {
+			return host.createVMOutputInCaseOfErrorWithMessage(vmcommon.ExecutionFailed, ErrUnhandledRuntimeBreakpoint.Error()), nil
+		}
 
+		strError, _ := wasmer.GetLastError()
 		fmt.Println("arwen Error", err.Error(), strError)
-		return host.createVMOutputInCaseOfError(vmcommon.FunctionWrongSignature), nil
+		return host.createVMOutputInCaseOfErrorWithMessage(vmcommon.ExecutionFailed, strError), nil
 	}
 
+	// TODO this will override the VMOutput created by breakpoints
 	if host.returnCode != vmcommon.Ok {
 		// user error: signalError()
 		return host.createVMOutputInCaseOfError(host.returnCode), nil
 	}
 
-	// TODO only create vmOutput if not created by breakpoint handler
-	convertedResult := arwen.ConvertReturnValue(result)
-	vmOutput := host.createVMOutput(convertedResult.Bytes())
+	if vmOutput == nil {
+		convertedResult := arwen.ConvertReturnValue(result)
+		vmOutput = host.createVMOutput(convertedResult.Bytes())
+	}
 
 	return vmOutput, nil
 }
@@ -348,6 +363,14 @@ func (host *vmContext) isInitFunctionCalled() bool {
 func (host *vmContext) createVMOutputInCaseOfError(errCode vmcommon.ReturnCode) *vmcommon.VMOutput {
 	vmOutput := &vmcommon.VMOutput{GasRemaining: 0, GasRefund: big.NewInt(0)}
 	vmOutput.ReturnCode = errCode
+	vmOutput.ReturnMessage = string(errCode)
+	return vmOutput
+}
+
+func (host *vmContext) createVMOutputInCaseOfErrorWithMessage(errCode vmcommon.ReturnCode, errMessage string) *vmcommon.VMOutput {
+	vmOutput := &vmcommon.VMOutput{GasRemaining: 0, GasRefund: big.NewInt(0)}
+	vmOutput.ReturnCode = errCode
+	vmOutput.ReturnMessage = errMessage
 	return vmOutput
 }
 

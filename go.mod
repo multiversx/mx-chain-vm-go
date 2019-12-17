@@ -10,3 +10,7 @@ require (
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/stretchr/testify v1.4.0
 )
+
+replace github.com/ElrondNetwork/elrond-vm-common v0.1.6 => ../elrond-vm-common
+
+replace github.com/ElrondNetwork/go-ext-wasm v0.1.1 => ../vm-development/go-ext-wasm
