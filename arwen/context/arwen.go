@@ -161,7 +161,7 @@ func (host *vmContext) doRunSmartContractCreate(input *vmcommon.ContractCreateIn
 		return host.createVMOutputInCaseOfError(vmcommon.OutOfGas), nil
 	}
 
-	host.instance, err = wasmer.NewMeteredInstance(input.ContractCode, host.vmInput.GasProvided)
+	err = host.createMeteredWasmerInstance(input.ContractCode)
 
 	if err != nil {
 		fmt.Println("arwen Error: ", err.Error())
@@ -276,7 +276,7 @@ func (host *vmContext) doRunSmartContractCall(input *vmcommon.ContractCallInput)
 		return host.createVMOutputInCaseOfError(vmcommon.OutOfGas), nil
 	}
 
-	host.instance, err = wasmer.NewMeteredInstance(contract, host.vmInput.GasProvided)
+	err = host.createMeteredWasmerInstance(contract)
 
 	if err != nil {
 		fmt.Println("arwen Error", err.Error())
@@ -320,6 +320,13 @@ func (host *vmContext) doRunSmartContractCall(input *vmcommon.ContractCallInput)
 	vmOutput := host.createVMOutput(convertedResult.Bytes())
 
 	return vmOutput, nil
+}
+
+func (host *vmContext) createMeteredWasmerInstance(contract []byte) error {
+	var err error
+	host.instance, err = wasmer.NewMeteredInstance(contract, host.vmInput.GasProvided)
+	host.SetRuntimeBreakpointValue(arwen.BreakpointNone)
+	return err
 }
 
 func (host *vmContext) isInitFunctionCalled() bool {
@@ -454,7 +461,6 @@ func (host *vmContext) initInternalValues() {
 	host.ethInput = nil
 	host.readOnly = false
 	host.refund = 0
-	host.SetRuntimeBreakpointValue(arwen.BreakpointNone)
 }
 
 func (host *vmContext) addTxValueToSmartContract(value *big.Int, scAddress []byte) {
