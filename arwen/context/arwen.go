@@ -317,23 +317,24 @@ func (host *vmContext) doRunSmartContractCall(input *vmcommon.ContractCallInput)
 		return host.createVMOutputInCaseOfErrorWithMessage(vmcommon.ExecutionFailed, ErrInitFuncCalledInRun.Error()), nil
 	}
 
-	fmt.Println("arwen function to call", host.callFunction)
-
 	function, err := host.getFunctionToCall()
 	if err != nil {
 		fmt.Println("arwen Error", err.Error())
 		return host.createVMOutputInCaseOfError(vmcommon.FunctionNotFound), nil
 	}
 
+  fmt.Println("Arwen: about to call ", host.callFunction)
 	result, err := function()
 
 	var vmOutput *vmcommon.VMOutput
 	if host.reachedBreakpoint(err) {
+    fmt.Println("Arwen: Wasmer Breakpoint reached")
 		vmOutput, err = host.handleBreakpoint(result, err)
 	}
 
 	if err != nil {
 		if err == ErrUnhandledRuntimeBreakpoint {
+      fmt.Println("arwen Error", err.Error(), ErrUnhandledRuntimeBreakpoint.Error())
 			return host.createVMOutputInCaseOfErrorWithMessage(vmcommon.ExecutionFailed, ErrUnhandledRuntimeBreakpoint.Error()), nil
 		}
 
@@ -342,16 +343,22 @@ func (host *vmContext) doRunSmartContractCall(input *vmcommon.ContractCallInput)
 		return host.createVMOutputInCaseOfErrorWithMessage(vmcommon.ExecutionFailed, strError), nil
 	}
 
-	// TODO this will override the VMOutput created by breakpoints
+  // TODO this will override the VMOutput created by breakpoint handlers, if
+  // the handlers didn't change the value of host.returnCode to vmcommon.Ok
 	if host.returnCode != vmcommon.Ok {
 		// user error: signalError()
+
+    fmt.Println("Arwen: host.returnCode != vmcommon.Ok")
 		return host.createVMOutputInCaseOfError(host.returnCode), nil
 	}
 
 	if vmOutput == nil {
+    fmt.Println("Arwen: createVMOutput")
 		convertedResult := arwen.ConvertReturnValue(result)
 		vmOutput = host.createVMOutput(convertedResult.Bytes())
 	}
+
+  fmt.Println("Arwen: finished doRunSmartContractCall")
 
 	return vmOutput, nil
 }
