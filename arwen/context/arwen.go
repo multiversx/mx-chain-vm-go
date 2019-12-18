@@ -176,7 +176,7 @@ func (host *vmContext) doRunSmartContractCreate(input *vmcommon.ContractCreateIn
 		return host.createVMOutputInCaseOfError(vmcommon.OutOfGas), nil
 	}
 
-	host.instance, err = wasmer.NewMeteredInstance(input.ContractCode, host.vmInput.GasProvided)
+	err = host.createMeteredWasmerInstance(input.ContractCode)
 
 	if err != nil {
 		fmt.Println("arwen Error: ", err.Error())
@@ -191,9 +191,9 @@ func (host *vmContext) doRunSmartContractCreate(input *vmcommon.ContractCreateIn
 
 	host.instance.SetContextData(unsafe.Pointer(&idContext))
 
-  fmt.Println("Arwen: about to call init()")
+	fmt.Println("Arwen: about to call init()")
 	_, result, err := host.callInitFunction()
-  fmt.Println("Arwen: SmartContract init() called")
+	fmt.Println("Arwen: SmartContract init() called")
 
 	if err != nil {
 		return host.createVMOutputInCaseOfError(vmcommon.FunctionWrongSignature), nil
@@ -214,7 +214,7 @@ func (host *vmContext) doRunSmartContractCreate(input *vmcommon.ContractCreateIn
 
 	vmOutput := host.createVMOutput(result)
 
-  fmt.Println("Arwen: SmartContract deployed successfully")
+	fmt.Println("Arwen: SmartContract deployed successfully")
 
 	return vmOutput, err
 }
@@ -296,7 +296,7 @@ func (host *vmContext) doRunSmartContractCall(input *vmcommon.ContractCallInput)
 		return host.createVMOutputInCaseOfError(vmcommon.OutOfGas), nil
 	}
 
-	host.instance, err = wasmer.NewMeteredInstance(contract, host.vmInput.GasProvided)
+	err = host.createMeteredWasmerInstance(contract)
 
 	if err != nil {
 		fmt.Println("arwen Error", err.Error())
@@ -354,6 +354,13 @@ func (host *vmContext) doRunSmartContractCall(input *vmcommon.ContractCallInput)
 	}
 
 	return vmOutput, nil
+}
+
+func (host *vmContext) createMeteredWasmerInstance(contract []byte) error {
+	var err error
+	host.instance, err = wasmer.NewMeteredInstance(contract, host.vmInput.GasProvided)
+	host.SetRuntimeBreakpointValue(arwen.BreakpointNone)
+	return err
 }
 
 func (host *vmContext) isInitFunctionCalled() bool {
@@ -474,7 +481,6 @@ func (host *vmContext) initInternalValues() {
 	host.ethInput = nil
 	host.readOnly = false
 	host.refund = 0
-	host.SetRuntimeBreakpointValue(arwen.BreakpointNone)
 }
 
 func (host *vmContext) addTxValueToSmartContract(value *big.Int, scAddress []byte) {
