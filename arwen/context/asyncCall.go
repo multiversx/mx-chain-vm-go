@@ -9,8 +9,6 @@ import (
 )
 
 func (host *vmContext) handleAsyncCallBreakpoint(result wasmer.Value, err error) (*vmcommon.VMOutput, error) {
-	host.SetRuntimeBreakpointValue(arwen.BreakpointNone)
-
 	convertedResult := arwen.ConvertReturnValue(result)
 	senderVMOutput := host.createVMOutput(convertedResult.Bytes())
 	intermediaryVMOutput := senderVMOutput
@@ -30,32 +28,28 @@ func (host *vmContext) handleAsyncCallBreakpoint(result wasmer.Value, err error)
 	// Start calling the destination SC, synchronously.
 	destinationCallInput, err := host.createDestinationContractCallInput()
 	if err != nil {
-		vmOutputWithError := createVMOutputInCaseOfBreakpointError(err)
+		vmOutputWithError := host.createVMOutputInCaseOfBreakpointError(err)
 		return mergeTwoVMOutputs(intermediaryVMOutput, vmOutputWithError), nil
 	}
 
 	destinationVMOutput, err := host.executeOnNewContextAndGetVMOutput(destinationCallInput)
-	// TODO handle this error properly
 	// TODO pass error to the SC callback (append as argument)
-	// TODO consume remaining gas
 	if err != nil {
-		vmOutputWithError := createVMOutputInCaseOfBreakpointError(err)
+		vmOutputWithError := host.createVMOutputInCaseOfBreakpointError(err)
 		return mergeTwoVMOutputs(intermediaryVMOutput, vmOutputWithError), nil
 	}
 
 	intermediaryVMOutput = mergeTwoVMOutputs(intermediaryVMOutput, destinationVMOutput)
 
 	callbackCallInput, err := host.createCallbackContractCallInput(destinationVMOutput)
-	// TODO handle this error properly
 	if err != nil {
-		vmOutputWithError := createVMOutputInCaseOfBreakpointError(err)
+		vmOutputWithError := host.createVMOutputInCaseOfBreakpointError(err)
 		return mergeTwoVMOutputs(intermediaryVMOutput, vmOutputWithError), nil
 	}
 
 	callbackVMOutput, err := host.executeOnNewContextAndGetVMOutput(callbackCallInput)
-	// TODO handle this error properly
 	if err != nil {
-		vmOutputWithError := createVMOutputInCaseOfBreakpointError(err)
+		vmOutputWithError := host.createVMOutputInCaseOfBreakpointError(err)
 		return mergeTwoVMOutputs(intermediaryVMOutput, vmOutputWithError), nil
 	}
 	finalVMOutput := mergeTwoVMOutputs(intermediaryVMOutput, callbackVMOutput)
@@ -144,6 +138,8 @@ func (host *vmContext) createCallbackContractCallInput(destinationVMOutput *vmco
 }
 
 func (host *vmContext) executeOnNewContextAndGetVMOutput(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+	host.SetRuntimeBreakpointValue(arwen.BreakpointNone)
+
 	currVmInput := host.vmInput
 	currScAddress := host.scAddress
 	currCallFunction := host.callFunction
@@ -164,13 +160,31 @@ func (host *vmContext) executeOnNewContextAndGetVMOutput(input *vmcommon.Contrac
 	host.scAddress = input.RecipientAddr
 	host.callFunction = input.Function
 
+	// TODO handle out-of-gas
 	err := host.execute(input)
-	if err != nil {
-		return nil, err
+
+	var vmOutput *vmcommon.VMOutput
+	if host.reachedBreakpoint(err) {
+		vmOutput, err = host.handleBreakpoint(wasmer.I32(-1), err)
 	}
 
-	vmOutput := host.createVMOutput(make([]byte, 0))
-	return vmOutput, err
+	if err != nil {
+		if err == ErrUnhandledRuntimeBreakpoint {
+			return host.CreateVMOutputInCaseOfErrorWithMessage(vmcommon.ExecutionFailed, ErrUnhandledRuntimeBreakpoint.Error()), nil
+		}
+
+		strError, _ := wasmer.GetLastError()
+		return host.CreateVMOutputInCaseOfErrorWithMessage(vmcommon.ExecutionFailed, strError), nil
+	}
+
+	// TODO this will override the VMOutput created by breakpoint handlers, if
+	// the handlers didn't change the value of host.returnCode to vmcommon.Ok
+	if host.returnCode != vmcommon.Ok {
+		return host.createVMOutputInCaseOfError(host.returnCode), nil
+	}
+
+	vmOutput = host.createVMOutput(make([]byte, 0))
+	return vmOutput, nil
 }
 
 func mergeVMOutputs(sender *vmcommon.VMOutput, destination *vmcommon.VMOutput, callback *vmcommon.VMOutput) *vmcommon.VMOutput {
@@ -250,7 +264,7 @@ func mergeOutputAccounts(leftAccount *vmcommon.OutputAccount, rightAccount *vmco
 	mergedAccount := &vmcommon.OutputAccount{}
 
 	mergedAccount.Address = leftAccount.Address
-  
+
 	leftDelta := leftAccount.BalanceDelta
 	rightDelta := rightAccount.BalanceDelta
 	if leftDelta == nil {
@@ -278,8 +292,4 @@ func mergeOutputAccounts(leftAccount *vmcommon.OutputAccount, rightAccount *vmco
 	mergedAccount.GasLimit = rightAccount.GasLimit
 
 	return mergedAccount
-}
-
-func createVMOutputInCaseOfBreakpointError(err error) *vmcommon.VMOutput {
-	return nil
 }

@@ -19,3 +19,7 @@ func (host *vmContext) handleBreakpoint(result wasmer.Value, err error) (*vmcomm
 
 	return nil, ErrUnhandledRuntimeBreakpoint
 }
+
+func (host *vmContext) createVMOutputInCaseOfBreakpointError(err error) *vmcommon.VMOutput {
+	return host.CreateVMOutputInCaseOfErrorWithMessage(vmcommon.ExecutionFailed, err.Error())
+}

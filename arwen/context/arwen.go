@@ -273,6 +273,7 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 }
 
 func (host *vmContext) doRunSmartContractCall(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+	host.SetRuntimeBreakpointValue(arwen.BreakpointNone)
 	host.initInternalValues()
 	host.vmInput = input.VMInput
 	host.scAddress = input.RecipientAddr
@@ -284,6 +285,19 @@ func (host *vmContext) doRunSmartContractCall(input *vmcommon.ContractCallInput)
 	if err != nil {
 		fmt.Println("arwen Error", err.Error())
 		return host.createVMOutputInCaseOfError(vmcommon.ContractInvalid), nil
+	}
+
+	// If this call is an asynchronous call, a minimum of 2x the cost of the gas
+	// cost for asynchronous calls must be locked temporarily, to make sure the
+	// callBack has enough gas to be called and executed
+	mustLockMinGasForAsyncCallBack := host.vmInput.CallType == vmcommon.AsynchronousCall
+	if mustLockMinGasForAsyncCallBack {
+		// Only the Elrond API supports asynchronous calls
+		if input.GasProvided < host.GasSchedule().ElrondAPICost.AsyncCallStep {
+			return host.createVMOutputInCaseOfError(vmcommon.OutOfGas), nil
+		}
+
+		input.GasProvided -= 2 * host.GasSchedule().ElrondAPICost.AsyncCallStep
 	}
 
 	host.vmInput.GasProvided, err = host.deductInitialCodeCost(
@@ -300,7 +314,7 @@ func (host *vmContext) doRunSmartContractCall(input *vmcommon.ContractCallInput)
 
 	if err != nil {
 		fmt.Println("arwen Error", err.Error())
-		return host.createVMOutputInCaseOfErrorWithMessage(vmcommon.ContractInvalid, err.Error()), nil
+		return host.CreateVMOutputInCaseOfErrorWithMessage(vmcommon.ContractInvalid, err.Error()), nil
 	}
 
 	idContext := arwen.AddHostContext(host)
@@ -314,7 +328,7 @@ func (host *vmContext) doRunSmartContractCall(input *vmcommon.ContractCallInput)
 
 	if host.isInitFunctionCalled() {
 		fmt.Println("arwen Error", ErrInitFuncCalledInRun.Error())
-		return host.createVMOutputInCaseOfErrorWithMessage(vmcommon.ExecutionFailed, ErrInitFuncCalledInRun.Error()), nil
+		return host.CreateVMOutputInCaseOfErrorWithMessage(vmcommon.ExecutionFailed, ErrInitFuncCalledInRun.Error()), nil
 	}
 
 	function, err := host.getFunctionToCall()
@@ -326,6 +340,12 @@ func (host *vmContext) doRunSmartContractCall(input *vmcommon.ContractCallInput)
   fmt.Println("Arwen: about to call ", host.callFunction)
 	result, err := function()
 
+	// If some gas has been locked before calling the function to reserve it for
+	// the asynchronous callback, it will now be returned
+	if mustLockMinGasForAsyncCallBack {
+		input.GasProvided += 2 * host.GasSchedule().ElrondAPICost.AsyncCallStep
+	}
+
 	var vmOutput *vmcommon.VMOutput
 	if host.reachedBreakpoint(err) {
     fmt.Println("Arwen: Wasmer Breakpoint reached")
@@ -335,12 +355,12 @@ func (host *vmContext) doRunSmartContractCall(input *vmcommon.ContractCallInput)
 	if err != nil {
 		if err == ErrUnhandledRuntimeBreakpoint {
       fmt.Println("arwen Error", err.Error(), ErrUnhandledRuntimeBreakpoint.Error())
-			return host.createVMOutputInCaseOfErrorWithMessage(vmcommon.ExecutionFailed, ErrUnhandledRuntimeBreakpoint.Error()), nil
+			return host.CreateVMOutputInCaseOfErrorWithMessage(vmcommon.ExecutionFailed, ErrUnhandledRuntimeBreakpoint.Error()), nil
 		}
 
 		strError, _ := wasmer.GetLastError()
 		fmt.Println("arwen Error", err.Error(), strError)
-		return host.createVMOutputInCaseOfErrorWithMessage(vmcommon.ExecutionFailed, strError), nil
+		return host.CreateVMOutputInCaseOfErrorWithMessage(vmcommon.ExecutionFailed, strError), nil
 	}
 
   // TODO this will override the VMOutput created by breakpoint handlers, if
@@ -381,7 +401,7 @@ func (host *vmContext) createVMOutputInCaseOfError(errCode vmcommon.ReturnCode) 
 	return vmOutput
 }
 
-func (host *vmContext) createVMOutputInCaseOfErrorWithMessage(errCode vmcommon.ReturnCode, errMessage string) *vmcommon.VMOutput {
+func (host *vmContext) CreateVMOutputInCaseOfErrorWithMessage(errCode vmcommon.ReturnCode, errMessage string) *vmcommon.VMOutput {
 	vmOutput := &vmcommon.VMOutput{GasRemaining: 0, GasRefund: big.NewInt(0)}
 	vmOutput.ReturnCode = errCode
 	vmOutput.ReturnMessage = errMessage
@@ -1003,10 +1023,7 @@ func (host *vmContext) copyToNewContext() *vmContext {
 func (host *vmContext) copyFromContext(currContext *vmContext) {
 	host.BigIntContainer = currContext.BigIntContainer
 	host.readOnly = currContext.readOnly
-	host.returnCode = currContext.returnCode
-	host.returnData = append(host.returnData, currContext.returnData...)
 	host.refund += currContext.refund
-	host.returnCode = currContext.returnCode
 
 	for key, log := range currContext.logs {
 		host.logs[key] = log
