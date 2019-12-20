@@ -49,7 +49,6 @@ func (host *vmContext) handleAsyncCallBreakpoint(result wasmer.Value, err error)
 	}
 
 	destinationVMOutput, err := host.executeOnNewContextAndGetVMOutput(destinationCallInput)
-	intermediaryVMOutput = mergeTwoVMOutputs(intermediaryVMOutput, destinationVMOutput)
 	// TODO handle this error properly
 	// TODO pass error to the SC callback (append as argument)
 	// TODO consume remaining gas
@@ -57,6 +56,8 @@ func (host *vmContext) handleAsyncCallBreakpoint(result wasmer.Value, err error)
 		vmOutputWithError := createVMOutputInCaseOfBreakpointError(err)
 		return mergeTwoVMOutputs(intermediaryVMOutput, vmOutputWithError), nil
 	}
+
+	intermediaryVMOutput = mergeTwoVMOutputs(intermediaryVMOutput, destinationVMOutput)
 
 	callbackCallInput, err := host.createCallbackContractCallInput(destinationVMOutput)
 	// TODO handle this error properly
@@ -66,12 +67,12 @@ func (host *vmContext) handleAsyncCallBreakpoint(result wasmer.Value, err error)
 	}
 
 	callbackVMOutput, err := host.executeOnNewContextAndGetVMOutput(callbackCallInput)
-	finalVMOutput := mergeTwoVMOutputs(intermediaryVMOutput, callbackVMOutput)
 	// TODO handle this error properly
 	if err != nil {
 		vmOutputWithError := createVMOutputInCaseOfBreakpointError(err)
-		return mergeTwoVMOutputs(finalVMOutput, vmOutputWithError), nil
+		return mergeTwoVMOutputs(intermediaryVMOutput, vmOutputWithError), nil
 	}
+	finalVMOutput := mergeTwoVMOutputs(intermediaryVMOutput, callbackVMOutput)
 
 	return finalVMOutput, nil
 }
@@ -116,7 +117,7 @@ func (host *vmContext) createDestinationContractCallInput() (*vmcommon.ContractC
 func (host *vmContext) createCallbackContractCallInput(destinationVMOutput *vmcommon.VMOutput) (*vmcommon.ContractCallInput, error) {
 	arguments := destinationVMOutput.ReturnData
 	gasLimit := destinationVMOutput.GasRemaining
-	function := "callback"
+	function := "callBack"
 
 	// Calculate what length would the Data field have, were it of the
 	// form "callback@arg1@arg4...
@@ -171,18 +172,18 @@ func (host *vmContext) executeOnNewContextAndGetVMOutput(input *vmcommon.Contrac
 		host.callFunction = currCallFunction
 	}()
 
+	host.initInternalValues()
+
 	host.vmInput = input.VMInput
 	host.scAddress = input.RecipientAddr
 	host.callFunction = input.Function
 
-	host.initInternalValues()
-
-	var vmOutput *vmcommon.VMOutput
 	err := host.execute(input)
 	if err != nil {
-		vmOutput = host.createVMOutput(make([]byte, 0))
+		return nil, err
 	}
 
+	vmOutput := host.createVMOutput(make([]byte, 0))
 	return vmOutput, err
 }
 
@@ -202,11 +203,9 @@ func mergeTwoVMOutputs(leftVMOutput *vmcommon.VMOutput, rightVMOutput *vmcommon.
 	mergedOutputAccounts := mergeOutputAccountMaps(leftOutputAccounts, rightOutputAccounts)
 	mergedVMOutput.OutputAccounts = convertAccountsMapToAccountsSlice(mergedOutputAccounts)
 
-	mergedVMOutput.Logs = make([]*vmcommon.LogEntry, 0)
 	mergedVMOutput.Logs = append(mergedVMOutput.Logs, leftVMOutput.Logs...)
 	mergedVMOutput.Logs = append(mergedVMOutput.Logs, rightVMOutput.Logs...)
 
-	mergedVMOutput.ReturnData = make([][]byte, 0)
 	mergedVMOutput.ReturnData = append(mergedVMOutput.ReturnData, leftVMOutput.ReturnData...)
 	mergedVMOutput.ReturnData = append(mergedVMOutput.ReturnData, rightVMOutput.ReturnData...)
 
@@ -236,6 +235,7 @@ func convertAccountsMapToAccountsSlice(outputAccountsMap map[string]*vmcommon.Ou
 	i := 0
 	for _, account := range outputAccountsMap {
 		outputAccountsSlice[i] = account
+		i++
 	}
 
 	return outputAccountsSlice
@@ -245,54 +245,51 @@ func mergeOutputAccountMaps(leftMap map[string]*vmcommon.OutputAccount, rightMap
 	mergedAccountsMap := make(map[string]*vmcommon.OutputAccount)
 
 	for addr, account := range leftMap {
-		if _, ok := mergedAccountsMap[addr]; !ok {
-			mergedAccountsMap[addr] = &vmcommon.OutputAccount{}
-		}
-		mergedAccountsMap[addr] = mergeOutputAccounts(mergedAccountsMap[addr], account)
+		mergedAccountsMap[addr] = account
 	}
 
 	for addr, account := range rightMap {
 		if _, ok := mergedAccountsMap[addr]; !ok {
-			mergedAccountsMap[addr] = &vmcommon.OutputAccount{}
+			mergedAccountsMap[addr] = account
+		} else {
+			mergedAccountsMap[addr] = mergeOutputAccounts(mergedAccountsMap[addr], account)
 		}
-		mergedAccountsMap[addr] = mergeOutputAccounts(mergedAccountsMap[addr], account)
 	}
 
 	return mergedAccountsMap
 }
 
 func mergeOutputAccounts(leftAccount *vmcommon.OutputAccount, rightAccount *vmcommon.OutputAccount) *vmcommon.OutputAccount {
-	// mergedAccount ← leftAccount ← rightAccount
+	// TODO Discuss merging each of the fields of two OutputAccount instances
 	mergedAccount := &vmcommon.OutputAccount{}
 
 	mergedAccount.Address = leftAccount.Address
-	mergedAccount.BalanceDelta = big.NewInt(0).Add(leftAccount.BalanceDelta, rightAccount.BalanceDelta)
+  
+	leftDelta := leftAccount.BalanceDelta
+	rightDelta := rightAccount.BalanceDelta
+	if leftDelta == nil {
+		leftDelta = big.NewInt(0)
+	}
+	if rightDelta == nil {
+		rightDelta = big.NewInt(0)
+	}
+	mergedAccount.BalanceDelta = big.NewInt(0).Add(leftDelta, rightDelta)
 
 	if leftAccount.Nonce > 0 {
 		mergedAccount.Nonce = leftAccount.Nonce
-		if rightAccount.Nonce > mergedAccount.Nonce {
-			mergedAccount.Nonce = rightAccount.Nonce
-		}
 	}
 
-	if len(rightAccount.Code) > 0 {
-		mergedAccount.Code = rightAccount.Code
-	} else if len(leftAccount.Code) > 0 {
-		mergedAccount.Code = leftAccount.Code
+	if rightAccount.Nonce > mergedAccount.Nonce {
+		mergedAccount.Nonce = rightAccount.Nonce
 	}
 
-	if len(rightAccount.Data) > 0 {
-		mergedAccount.Data = rightAccount.Data
-	} else if len(leftAccount.Data) > 0 {
-		mergedAccount.Data = leftAccount.Data
-	}
+	mergedAccount.StorageUpdates = append(mergedAccount.StorageUpdates, leftAccount.StorageUpdates...)
+	mergedAccount.StorageUpdates = append(mergedAccount.StorageUpdates, rightAccount.StorageUpdates...)
 
-	if leftAccount.GasLimit > 0 {
-		mergedAccount.GasLimit = leftAccount.GasLimit
-		if rightAccount.GasLimit > mergedAccount.GasLimit {
-			mergedAccount.GasLimit = rightAccount.GasLimit
-		}
-	}
+	mergedAccount.Code = rightAccount.Code
+	mergedAccount.Data = rightAccount.Data
+
+	mergedAccount.GasLimit = rightAccount.GasLimit
 
 	return mergedAccount
 }

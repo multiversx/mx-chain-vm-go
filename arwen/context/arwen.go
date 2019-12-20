@@ -319,7 +319,7 @@ func (host *vmContext) doRunSmartContractCall(input *vmcommon.ContractCallInput)
 
 	function, err := host.getFunctionToCall()
 	if err != nil {
-		fmt.Println("arwen Error", err.Error())
+		fmt.Println("arwen Error calling function ", host.callFunction, err.Error())
 		return host.createVMOutputInCaseOfError(vmcommon.FunctionNotFound), nil
 	}
 
@@ -789,6 +789,8 @@ func (host *vmContext) FreeGas(gas uint64) {
 }
 
 func (host *vmContext) GasLeft() uint64 {
+	fmt.Printf("host.vmInput.GasProvided: %d\n", host.vmInput.GasProvided)
+	fmt.Printf("host.instance.GetPointsUsed(): %d\n", host.instance.GetPointsUsed())
 	return host.vmInput.GasProvided - host.instance.GetPointsUsed()
 }
 
@@ -1037,11 +1039,12 @@ func (host *vmContext) ExecuteOnDestContext(input *vmcommon.ContractCallInput) e
 
 	currContext := host.copyToNewContext()
 
+	host.initInternalValues()
+
 	host.vmInput = input.VMInput
 	host.scAddress = input.RecipientAddr
 	host.callFunction = input.Function
 
-	host.initInternalValues()
 	err := host.execute(input)
 
 	host.copyFromContext(currContext)

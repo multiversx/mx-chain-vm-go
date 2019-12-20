@@ -85,6 +85,11 @@ func ElrondEImports() (*wasmer.Imports, error) {
 		return nil, err
 	}
 
+	imports, err = imports.Append("asyncCall", asyncCall, C.asyncCall)
+	if err != nil {
+		return nil, err
+	}
+
 	imports, err = imports.Append("getArgument", getArgument, C.getArgument)
 	if err != nil {
 		return nil, err
