@@ -149,7 +149,6 @@ func (host *vmContext) doRunSmartContractCreate(input *vmcommon.ContractCreateIn
 
 	nonce, err := host.blockChainHook.GetNonce(input.CallerAddr)
 	if err != nil {
-		fmt.Println("arwen Error:", err.Error())
 		return nil, err
 	}
 
@@ -159,7 +158,6 @@ func (host *vmContext) doRunSmartContractCreate(input *vmcommon.ContractCreateIn
 
 	address, err := host.blockChainHook.NewAddress(input.CallerAddr, nonce, host.vmType)
 	if err != nil {
-		fmt.Println("arwen Error:", err.Error())
 		return nil, err
 	}
 
@@ -173,7 +171,6 @@ func (host *vmContext) doRunSmartContractCreate(input *vmcommon.ContractCreateIn
 		host.GasSchedule().BaseOperationCost.StorePerByte,
 	)
 	if err != nil {
-		fmt.Println("arwen Error: out of gas")
 		return host.createVMOutputInCaseOfError(vmcommon.OutOfGas), nil
 	}
 
@@ -192,9 +189,7 @@ func (host *vmContext) doRunSmartContractCreate(input *vmcommon.ContractCreateIn
 
 	host.instance.SetContextData(unsafe.Pointer(&idContext))
 
-	fmt.Println("Arwen: about to call init()")
 	_, result, err := host.callInitFunction()
-	fmt.Println("Arwen: SmartContract init() called")
 
 	if err != nil {
 		return host.createVMOutputInCaseOfError(vmcommon.FunctionWrongSignature), nil
@@ -214,9 +209,6 @@ func (host *vmContext) doRunSmartContractCreate(input *vmcommon.ContractCreateIn
 	}
 
 	vmOutput := host.createVMOutput(result)
-
-	fmt.Println("Arwen: SmartContract deployed successfully")
-
 	return vmOutput, err
 }
 
@@ -333,11 +325,10 @@ func (host *vmContext) doRunSmartContractCall(input *vmcommon.ContractCallInput)
 
 	function, err := host.getFunctionToCall()
 	if err != nil {
-		fmt.Println("arwen Error calling function ", host.callFunction, err.Error())
+		fmt.Println("arwen Error", err.Error())
 		return host.createVMOutputInCaseOfError(vmcommon.FunctionNotFound), nil
 	}
 
-  fmt.Println("Arwen: about to call ", host.callFunction)
 	result, err := function()
 
 	// If some gas has been locked before calling the function to reserve it for
@@ -348,13 +339,11 @@ func (host *vmContext) doRunSmartContractCall(input *vmcommon.ContractCallInput)
 
 	var vmOutput *vmcommon.VMOutput
 	if host.reachedBreakpoint(err) {
-    fmt.Println("Arwen: Wasmer Breakpoint reached")
 		vmOutput, err = host.handleBreakpoint(result, err)
 	}
 
 	if err != nil {
 		if err == ErrUnhandledRuntimeBreakpoint {
-      fmt.Println("arwen Error", err.Error(), ErrUnhandledRuntimeBreakpoint.Error())
 			return host.CreateVMOutputInCaseOfErrorWithMessage(vmcommon.ExecutionFailed, ErrUnhandledRuntimeBreakpoint.Error()), nil
 		}
 
@@ -363,22 +352,17 @@ func (host *vmContext) doRunSmartContractCall(input *vmcommon.ContractCallInput)
 		return host.CreateVMOutputInCaseOfErrorWithMessage(vmcommon.ExecutionFailed, strError), nil
 	}
 
-  // TODO this will override the VMOutput created by breakpoint handlers, if
-  // the handlers didn't change the value of host.returnCode to vmcommon.Ok
+	// TODO this will override the VMOutput created by breakpoint handlers, if
+	// the handlers didn't change the value of host.returnCode to vmcommon.Ok
 	if host.returnCode != vmcommon.Ok {
 		// user error: signalError()
-
-    fmt.Println("Arwen: host.returnCode != vmcommon.Ok")
 		return host.createVMOutputInCaseOfError(host.returnCode), nil
 	}
 
 	if vmOutput == nil {
-    fmt.Println("Arwen: createVMOutput")
 		convertedResult := arwen.ConvertReturnValue(result)
 		vmOutput = host.createVMOutput(convertedResult.Bytes())
 	}
-
-  fmt.Println("Arwen: finished doRunSmartContractCall")
 
 	return vmOutput, nil
 }
@@ -831,8 +815,6 @@ func (host *vmContext) FreeGas(gas uint64) {
 }
 
 func (host *vmContext) GasLeft() uint64 {
-	fmt.Printf("host.vmInput.GasProvided: %d\n", host.vmInput.GasProvided)
-	fmt.Printf("host.instance.GetPointsUsed(): %d\n", host.instance.GetPointsUsed())
 	return host.vmInput.GasProvided - host.instance.GetPointsUsed()
 }
 
