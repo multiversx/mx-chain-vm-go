@@ -281,5 +281,6 @@ func mergeOutputAccounts(leftAccount *vmcommon.OutputAccount, rightAccount *vmco
 }
 
 func createVMOutputInCaseOfBreakpointError(err error) *vmcommon.VMOutput {
+	// TODO will be implemented as part of the larger Error Handling feature of Arwen
 	return nil
 }
