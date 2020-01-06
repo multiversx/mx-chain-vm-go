@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"math/big"
-	"sort"
 	"unsafe"
 
 	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -475,29 +474,7 @@ func (host *vmContext) createVMOutput(output []byte) *vmcommon.VMOutput {
 	vmOutput.GasRefund = big.NewInt(0).SetUint64(host.refund)
 	vmOutput.ReturnCode = host.returnCode
 
-	sortVMOutputInsideData(vmOutput)
-
 	return vmOutput
-}
-
-func sortVMOutputInsideData(vmOutput *vmcommon.VMOutput) {
-	sort.Slice(vmOutput.DeletedAccounts, func(i, j int) bool {
-		return bytes.Compare(vmOutput.DeletedAccounts[i], vmOutput.DeletedAccounts[j]) < 0
-	})
-
-	sort.Slice(vmOutput.TouchedAccounts, func(i, j int) bool {
-		return bytes.Compare(vmOutput.TouchedAccounts[i], vmOutput.TouchedAccounts[j]) < 0
-	})
-
-	sort.Slice(vmOutput.OutputAccounts, func(i, j int) bool {
-		return bytes.Compare(vmOutput.OutputAccounts[i].Address, vmOutput.OutputAccounts[j].Address) < 0
-	})
-
-	for _, outAcc := range vmOutput.OutputAccounts {
-		sort.Slice(outAcc.StorageUpdates, func(i, j int) bool {
-			return bytes.Compare(outAcc.StorageUpdates[i].Offset, outAcc.StorageUpdates[j].Offset) < 0
-		})
-	}
 }
 
 func (host *vmContext) initInternalValues() {
