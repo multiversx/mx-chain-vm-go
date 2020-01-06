@@ -274,7 +274,6 @@ func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 }
 
 func (host *vmContext) doRunSmartContractCall(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
-	host.SetRuntimeBreakpointValue(arwen.BreakpointNone)
 	host.initInternalValues()
 	host.vmInput = input.VMInput
 	host.scAddress = input.RecipientAddr
