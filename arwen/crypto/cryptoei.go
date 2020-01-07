@@ -12,7 +12,7 @@ import "C"
 
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/go-ext-wasm/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	"unsafe"
 )
 

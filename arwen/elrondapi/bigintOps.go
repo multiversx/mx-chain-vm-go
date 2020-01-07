@@ -31,7 +31,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
-	"github.com/ElrondNetwork/go-ext-wasm/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 )
 
 func BigIntImports(imports *wasmer.Imports) (*wasmer.Imports, error) {

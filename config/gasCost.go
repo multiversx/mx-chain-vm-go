@@ -1,6 +1,6 @@
 package config
 
-import "github.com/ElrondNetwork/go-ext-wasm/wasmer"
+import "github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 
 type BaseOperationCost struct {
 	StorePerByte    uint64

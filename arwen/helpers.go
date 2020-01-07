@@ -7,7 +7,7 @@ import (
 	"sync"
 	"unsafe"
 
-	"github.com/ElrondNetwork/go-ext-wasm/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 )
 
 const AddressLen = 32

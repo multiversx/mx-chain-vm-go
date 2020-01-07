@@ -57,7 +57,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/go-ext-wasm/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 )
 
 func ElrondEImports() (*wasmer.Imports, error) {

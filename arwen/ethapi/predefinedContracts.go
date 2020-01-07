@@ -6,7 +6,7 @@ import (
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/go-ext-wasm/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 )
 
 // The mapping between system contracts and their addresses is defined here:
