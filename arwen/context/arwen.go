@@ -56,7 +56,6 @@ type vmContext struct {
 	refund        uint64
 
 	gasCostConfig *config.GasCost
-	opcodeCosts   [wasmer.OPCODE_COUNT]uint32
 }
 
 func NewArwenVM(
@@ -101,7 +100,6 @@ func NewArwenVM(
 		vmType:          vmType,
 		blockGasLimit:   blockGasLimit,
 		gasCostConfig:   gasCostConfig,
-		opcodeCosts:     opcodeCosts,
 	}
 
 	context.initInternalValues()
@@ -110,7 +108,7 @@ func NewArwenVM(
 	if err != nil {
 		return nil, err
 	}
-	wasmer.SetOpcodeCosts(&context.opcodeCosts)
+	wasmer.SetOpcodeCosts(&opcodeCosts)
 
 	return context, nil
 }

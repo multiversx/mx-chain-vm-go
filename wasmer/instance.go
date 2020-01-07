@@ -53,10 +53,6 @@ type Instance struct {
 	// The underlying WebAssembly instance.
 	instance *cWasmerInstanceT
 
-	// The imported functions. Use the `NewInstanceWithImports`
-	// constructor to set it.
-	imports *Imports
-
 	// All functions exported by the WebAssembly instance, indexed
 	// by their name as a string. An exported function is a
 	// regular variadic Go closure. Arguments are untyped. Since
@@ -74,11 +70,6 @@ type Instance struct {
 
 	// The exported memory of a WebAssembly instance.
 	Memory *Memory
-}
-
-type ImportObject struct {
-	imports         *Imports
-	c_import_object *cWasmerImportObjectT
 }
 
 func SetImports(imports *Imports) error {
@@ -131,20 +122,17 @@ func NewMeteredInstance(
 			errorMessage = fmt.Sprintf(errorMessage, lastError)
 		}
 
-		var emptyInstance = &Instance{instance: nil, imports: nil, Exports: nil, Memory: nil}
+		var emptyInstance = &Instance{instance: nil, Exports: nil, Memory: nil}
 		return emptyInstance, NewInstanceError(errorMessage)
 	}
 
-	instance, err := newInstanceWithImports(c_instance, nil)
+	instance, err := newInstance(c_instance)
 	return instance, err
 }
 
-func newInstanceWithImports(
-	c_instance *cWasmerInstanceT,
-	imports *Imports,
-) (*Instance, error) {
+func newInstance(c_instance *cWasmerInstanceT) (*Instance, error) {
 
-	var emptyInstance = &Instance{instance: nil, imports: nil, Exports: nil, Memory: nil}
+	var emptyInstance = &Instance{instance: nil, Exports: nil, Memory: nil}
 
 	var wasmExports *cWasmerExportsT
 	var hasMemory = false
@@ -163,10 +151,10 @@ func newInstanceWithImports(
 	}
 
 	if hasMemory == false {
-		return &Instance{instance: c_instance, imports: imports, Exports: exports, Memory: nil}, nil
+		return &Instance{instance: c_instance, Exports: exports, Memory: nil}, nil
 	}
 
-	return &Instance{instance: c_instance, imports: imports, Exports: exports, Memory: &memory}, nil
+	return &Instance{instance: c_instance, Exports: exports, Memory: &memory}, nil
 }
 
 // HasMemory checks whether the instance has at least one exported memory.
@@ -182,17 +170,6 @@ func (instance *Instance) HasMemory() bool {
 // global to the instance.
 func (instance *Instance) SetContextData(data unsafe.Pointer) {
 	cWasmerInstanceContextDataSet(instance.instance, data)
-}
-
-// Close closes/frees an `Instance`.
-func (instance *Instance) Close() {
-	if instance.imports != nil {
-		instance.imports.Close()
-	}
-
-	if instance.instance != nil {
-		cWasmerInstanceDestroy(instance.instance)
-	}
 }
 
 func (instance *Instance) Clean() {
