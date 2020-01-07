@@ -6,16 +6,16 @@ package ethapi
 // typedef unsigned char u8;
 // typedef int i32;
 // typedef int i32ptr;
-// extern void ethuseGas(void *context, long long  gas);
+// extern void ethuseGas(void *context, unsigned long long  gas);
 // extern void ethgetAddress(void *context, i32ptr resultOffset);
 // extern void ethgetExternalBalance(void *context, i32ptr addressOffset, i32ptr resultOffset);
 // extern i32 ethgetBlockHash(void *context, long long number, i32ptr resultOffset);
-// extern i32 ethcall(void *context, long long gas, i32ptr addressOffset, i32ptr valueOffset, i32ptr dataOffset, i32 dataLength);
+// extern i32 ethcall(void *context, unsigned long long gas, i32ptr addressOffset, i32ptr valueOffset, i32ptr dataOffset, i32 dataLength);
 // extern i32 ethgetCallDataSize(void *context);
 // extern void ethcallDataCopy(void *context, i32ptr resultsOffset, i32ptr dataOffset, i32 length);
-// extern i32 ethcallCode(void *context, long long gas, i32ptr addressOffset, i32ptr valueOffset, i32ptr dataOffset, i32 dataLength);
-// extern i32 ethcallDelegate(void *context, long long gas, i32ptr addressOffset, i32ptr dataOffset, i32 dataLength);
-// extern i32 ethcallStatic(void *context, long long gas, i32ptr addressOffset, i32ptr dataOffset, i32 dataLength);
+// extern i32 ethcallCode(void *context, unsigned long long gas, i32ptr addressOffset, i32ptr valueOffset, i32ptr dataOffset, i32 dataLength);
+// extern i32 ethcallDelegate(void *context, unsigned long long gas, i32ptr addressOffset, i32ptr dataOffset, i32 dataLength);
+// extern i32 ethcallStatic(void *context, unsigned long long gas, i32ptr addressOffset, i32ptr dataOffset, i32 dataLength);
 // extern void ethstorageStore(void *context, i32ptr pathOffset, i32ptr valueOffset);
 // extern void ethstorageLoad(void *context, i32ptr pathOffset, i32ptr resultOffset);
 // extern void ethgetCaller(void *context, i32ptr resultOffset);
@@ -27,8 +27,8 @@ package ethapi
 // extern void ethgetBlockDifficulty(void *context, i32ptr resultOffset);
 // extern void ethexternalCodeCopy(void *context, i32ptr addressOffset, i32ptr resultOffset, i32 codeOffset, i32 length);
 // extern i32 ethgetExternalCodeSize(void *context, i32ptr addressOffset);
-// extern long long ethgetGasLeft(void *context);
-// extern long long ethgetBlockGasLimit(void *context);
+// extern unsigned long long ethgetGasLeft(void *context);
+// extern unsigned long long ethgetBlockGasLimit(void *context);
 // extern void ethgetTxGasPrice(void *context, i32ptr valueOffset);
 // extern void ethlogTopics(void *context, i32ptr dataOffset, i32 length, i32 numberOftopics, i32ptr topic1, i32ptr topic2, i32ptr topic3, i32ptr topic4);
 // extern long long ethgetBlockNumber(void *context);
@@ -221,11 +221,11 @@ func EthereumImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 }
 
 //export ethuseGas
-func ethuseGas(context unsafe.Pointer, useGas int64) {
+func ethuseGas(context unsafe.Pointer, useGas uint64) {
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
-	gasToUse := ethContext.GasSchedule().EthAPICost.UseGas + uint64(useGas)
+	gasToUse := ethContext.GasSchedule().EthAPICost.UseGas + useGas
 	ethContext.UseGas(gasToUse)
 }
 
@@ -494,25 +494,25 @@ func ethgetExternalCodeSize(context unsafe.Pointer, addressOffset int32) int32 {
 }
 
 //export ethgetGasLeft
-func ethgetGasLeft(context unsafe.Pointer) int64 {
+func ethgetGasLeft(context unsafe.Pointer) uint64 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
 	gasToUse := ethContext.GasSchedule().EthAPICost.GetGasLeft
 	ethContext.UseGas(gasToUse)
 
-	return int64(ethContext.GasLeft())
+	return ethContext.GasLeft()
 }
 
 //export ethgetBlockGasLimit
-func ethgetBlockGasLimit(context unsafe.Pointer) int64 {
+func ethgetBlockGasLimit(context unsafe.Pointer) uint64 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
 	gasToUse := ethContext.GasSchedule().EthAPICost.GetBlockGasLimit
 	ethContext.UseGas(gasToUse)
 
-	return int64(ethContext.BlockGasLimit())
+	return ethContext.BlockGasLimit()
 }
 
 //export ethgetTxGasPrice
@@ -732,7 +732,7 @@ func ethgetBlockDifficulty(context unsafe.Pointer, resultOffset int32) {
 }
 
 //export ethcall
-func ethcall(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueOffset int32, dataOffset int32, dataLength int32) int32 {
+func ethcall(context unsafe.Pointer, gasLimit uint64, addressOffset int32, valueOffset int32, dataOffset int32, dataLength int32) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
@@ -781,7 +781,7 @@ func ethcall(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueO
 }
 
 //export ethcallCode
-func ethcallCode(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueOffset int32, dataOffset int32, dataLength int32) int32 {
+func ethcallCode(context unsafe.Pointer, gasLimit uint64, addressOffset int32, valueOffset int32, dataOffset int32, dataLength int32) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
@@ -829,7 +829,7 @@ func ethcallCode(context unsafe.Pointer, gasLimit int64, addressOffset int32, va
 }
 
 //export ethcallDelegate
-func ethcallDelegate(context unsafe.Pointer, gasLimit int64, addressOffset int32, dataOffset int32, dataLength int32) int32 {
+func ethcallDelegate(context unsafe.Pointer, gasLimit uint64, addressOffset int32, dataOffset int32, dataLength int32) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
@@ -873,7 +873,7 @@ func ethcallDelegate(context unsafe.Pointer, gasLimit int64, addressOffset int32
 }
 
 //export ethcallStatic
-func ethcallStatic(context unsafe.Pointer, gasLimit int64, addressOffset int32, dataOffset int32, dataLength int32) int32 {
+func ethcallStatic(context unsafe.Pointer, gasLimit uint64, addressOffset int32, dataOffset int32, dataLength int32) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	ethContext := arwen.GetEthContext(instCtx.Data())
 
