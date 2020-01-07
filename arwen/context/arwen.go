@@ -35,7 +35,6 @@ type vmContext struct {
 	BigIntContainer
 	blockChainHook vmcommon.BlockchainHook
 	cryptoHook     vmcommon.CryptoHook
-	imports        *wasmer.Imports
 	instance       *wasmer.Instance
 
 	vmInput vmcommon.VMInput
@@ -100,7 +99,6 @@ func NewArwenVM(
 		blockChainHook:  blockChainHook,
 		cryptoHook:      cryptoHook,
 		vmType:          vmType,
-		imports:         imports,
 		blockGasLimit:   blockGasLimit,
 		gasCostConfig:   gasCostConfig,
 		opcodeCosts:     opcodeCosts,
@@ -108,7 +106,7 @@ func NewArwenVM(
 
 	context.initInternalValues()
 
-	err = wasmer.SetImports(context.imports)
+	err = wasmer.SetImports(imports)
 	if err != nil {
 		return nil, err
 	}
