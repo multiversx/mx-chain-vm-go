@@ -9,7 +9,7 @@ package elrondapi
 // extern void getOwner(void *context, int32_t resultOffset);
 // extern void getExternalBalance(void *context, int32_t addressOffset, int32_t resultOffset);
 // extern int32_t blockHash(void *context, long long nonce, int32_t resultOffset);
-// extern int32_t transferValue(void *context, unsigned long long gas, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
+// extern int32_t transferValue(void *context, long long gas, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
 // extern int32_t getArgument(void *context, int32_t id, int32_t argOffset);
 // extern int32_t getFunction(void *context, int32_t functionOffset);
 // extern int32_t getNumArguments(void *context);
@@ -20,12 +20,12 @@ package elrondapi
 // extern void writeLog(void *context, int32_t pointer, int32_t length, int32_t topicPtr, int32_t numTopics);
 // extern void returnData(void* context, int32_t dataOffset, int32_t length);
 // extern void signalError(void* context);
-// extern unsigned long long getGasLeft(void *context);
+// extern long long getGasLeft(void *context);
 //
-// extern int32_t executeOnDestContext(void *context, unsigned long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
-// extern int32_t executeOnSameContext(void *context, unsigned long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
-// extern int32_t delegateExecution(void *context, unsigned long long gas, int32_t addressOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
-// extern int32_t executeReadOnly(void *context, unsigned long long gas, int32_t addressOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern int32_t executeOnDestContext(void *context, long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern int32_t executeOnSameContext(void *context, long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern int32_t delegateExecution(void *context, long long gas, int32_t addressOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern int32_t executeReadOnly(void *context, long long gas, int32_t addressOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t createContract(void *context, int32_t valueOffset, int32_t codeOffset, int32_t length, int32_t resultOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 //
 // extern int32_t getNumReturnData(void *context);
@@ -258,14 +258,14 @@ func ElrondEImports() (*wasmer.Imports, error) {
 }
 
 //export getGasLeft
-func getGasLeft(context unsafe.Pointer) uint64 {
+func getGasLeft(context unsafe.Pointer) int64 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetErdContext(instCtx.Data())
 
 	gasToUse := hostContext.GasSchedule().ElrondAPICost.GetGasLeft
 	hostContext.UseGas(gasToUse)
 
-	return hostContext.GasLeft()
+	return int64(hostContext.GasLeft())
 }
 
 //export getOwner
@@ -334,7 +334,7 @@ func blockHash(context unsafe.Pointer, nonce int64, resultOffset int32) int32 {
 }
 
 //export transferValue
-func transferValue(context unsafe.Pointer, gasLimit uint64, destOffset int32, valueOffset int32, dataOffset int32, length int32) int32 {
+func transferValue(context unsafe.Pointer, gasLimit int64, destOffset int32, valueOffset int32, dataOffset int32, length int32) int32 {
 	instCtx := wasmer.IntoInstanceContext(context)
 	hostContext := arwen.GetErdContext(instCtx.Data())
 
@@ -736,7 +736,7 @@ func int64finish(context unsafe.Pointer, value int64) {
 //export executeOnSameContext
 func executeOnSameContext(
 	context unsafe.Pointer,
-	gasLimit uint64,
+	gasLimit int64,
 	addressOffset int32,
 	valueOffset int32,
 	functionOffset int32,
@@ -792,7 +792,7 @@ func executeOnSameContext(
 //export executeOnDestContext
 func executeOnDestContext(
 	context unsafe.Pointer,
-	gasLimit uint64,
+	gasLimit int64,
 	addressOffset int32,
 	valueOffset int32,
 	functionOffset int32,
@@ -887,7 +887,7 @@ func getArgumentsFromMemory(
 //export delegateExecution
 func delegateExecution(
 	context unsafe.Pointer,
-	gasLimit uint64,
+	gasLimit int64,
 	addressOffset int32,
 	functionOffset int32,
 	functionLength int32,
@@ -946,7 +946,7 @@ func dataToInt32(data []byte) int32 {
 //export executeReadOnly
 func executeReadOnly(
 	context unsafe.Pointer,
-	gasLimit uint64,
+	gasLimit int64,
 	addressOffset int32,
 	functionOffset int32,
 	functionLength int32,
