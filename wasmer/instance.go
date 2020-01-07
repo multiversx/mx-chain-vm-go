@@ -111,7 +111,7 @@ func SetOpcodeCosts(opcode_costs *[OPCODE_COUNT]uint32) {
 func NewMeteredInstance(
 	bytes []byte,
 	gasLimit uint64,
-) (Instance, error) {
+) (*Instance, error) {
 	var c_instance *cWasmerInstanceT
 
 	var compileResult = cWasmerInstantiateWithMetering(
@@ -131,7 +131,7 @@ func NewMeteredInstance(
 			errorMessage = fmt.Sprintf(errorMessage, lastError)
 		}
 
-		var emptyInstance = Instance{instance: nil, imports: nil, Exports: nil, Memory: nil}
+		var emptyInstance = &Instance{instance: nil, imports: nil, Exports: nil, Memory: nil}
 		return emptyInstance, NewInstanceError(errorMessage)
 	}
 
@@ -142,9 +142,9 @@ func NewMeteredInstance(
 func newInstanceWithImports(
 	c_instance *cWasmerInstanceT,
 	imports *Imports,
-) (Instance, error) {
+) (*Instance, error) {
 
-	var emptyInstance = Instance{instance: nil, imports: nil, Exports: nil, Memory: nil}
+	var emptyInstance = &Instance{instance: nil, imports: nil, Exports: nil, Memory: nil}
 
 	var wasmExports *cWasmerExportsT
 	var hasMemory = false
@@ -163,10 +163,10 @@ func newInstanceWithImports(
 	}
 
 	if hasMemory == false {
-		return Instance{instance: c_instance, imports: imports, Exports: exports, Memory: nil}, nil
+		return &Instance{instance: c_instance, imports: imports, Exports: exports, Memory: nil}, nil
 	}
 
-	return Instance{instance: c_instance, imports: imports, Exports: exports, Memory: &memory}, nil
+	return &Instance{instance: c_instance, imports: imports, Exports: exports, Memory: &memory}, nil
 }
 
 // HasMemory checks whether the instance has at least one exported memory.

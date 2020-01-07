@@ -36,7 +36,7 @@ type vmContext struct {
 	blockChainHook vmcommon.BlockchainHook
 	cryptoHook     vmcommon.CryptoHook
 	imports        *wasmer.Imports
-	instance       wasmer.Instance
+	instance       *wasmer.Instance
 
 	vmInput vmcommon.VMInput
 
@@ -895,6 +895,7 @@ func (host *vmContext) execute(input *vmcommon.ContractCallInput) error {
 	idContext := arwen.AddHostContext(host)
 	oldInstance := host.instance
 	host.instance = newInstance
+	host.SetRuntimeBreakpointValue(arwen.BreakpointNone)
 	defer func() {
 		host.instance = oldInstance
 		newInstance.Clean()
