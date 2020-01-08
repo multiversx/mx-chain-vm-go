@@ -42,6 +42,17 @@ func RemoveHostContext(idx int) {
 	vmContextMapMu.Unlock()
 }
 
+func GetVmContext(context unsafe.Pointer) VMContext {
+	instCtx := wasmer.IntoInstanceContext(context)
+	var idx = *(*int)(instCtx.Data())
+
+	vmContextMapMu.Lock()
+	ctx := vmContextMap[uint8(idx)]
+	vmContextMapMu.Unlock()
+
+	return ctx
+}
+
 func GetEthContext(pointer unsafe.Pointer) EthContext {
 	var idx = *(*int)(pointer)
 

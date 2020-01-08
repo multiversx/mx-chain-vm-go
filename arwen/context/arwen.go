@@ -56,6 +56,14 @@ type vmContext struct {
 	refund        uint64
 
 	gasCostConfig *config.GasCost
+
+	// -- refactored subcontexts
+	blockchainSubcontext arwen.BlockchainSubcontext
+	runtimeSubcontext arwen.RuntimeSubcontext
+	outputSubcontext arwen.OutputSubcontext
+	meteringSubcontext arwen.MeteringSubcontext
+	storageSubcontext arwen.StorageSubcontext
+	bigIntSubcontext arwen.BigIntSubcontext
 }
 
 func NewArwenVM(
@@ -111,6 +119,34 @@ func NewArwenVM(
 	wasmer.SetOpcodeCosts(&opcodeCosts)
 
 	return context, nil
+}
+
+func (host *vmContext) Crypto() vmcommon.CryptoHook {
+	return host.cryptoHook
+}
+
+func (host *vmContext) Blockchain() arwen.BlockchainSubcontext {
+	return host.blockchainSubcontext
+}
+
+func (host *vmContext) Runtime() arwen.RuntimeSubcontext {
+	return host.runtimeSubcontext
+}
+
+func (host *vmContext) Output() arwen.OutputSubcontext {
+	return host.outputSubcontext
+}
+
+func (host *vmContext) Metering() arwen.MeteringSubcontext {
+	return host.meteringSubcontext
+}
+
+func (host *vmContext) Storage() arwen.StorageSubcontext {
+	return host.storageSubcontext
+}
+
+func (host *vmContext) BigInt() arwen.BigIntSubcontext {
+	return host.bigIntSubcontext
 }
 
 func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error) {
