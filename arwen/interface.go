@@ -130,6 +130,9 @@ type BlockchainSubcontext interface {
 }
 
 type RuntimeSubcontext interface {
+	CreateStateCopy() RuntimeSubcontext
+	LoadFromStateCopy(runtime *RuntimeSubcontext)
+	GetVMInput() *vmcommon.VMInput
 	GetSCAddress() []byte
 	Function() string
 	Arguments() [][]byte
@@ -137,11 +140,14 @@ type RuntimeSubcontext interface {
 	SetRuntimeBreakpointValue(value BreakpointValue)
 	GetRuntimeBreakpointValue() BreakpointValue
 	CallData() []byte
+	ReadOnly() bool
 	SetReadOnly(readOnly bool)
 	ExecuteOnSameContext(input *vmcommon.ContractCallInput) error
 	ExecuteOnDestContext(input *vmcommon.ContractCallInput) error
 	SetInstanceContext(instCtx *wasmer.InstanceContext)
 	GetInstanceContext() *wasmer.InstanceContext
+	GetPointsUsed() uint64
+	SetPointsUsed(gasPoints uint64)
 	MemStore(offset int32, data []byte) error 
 	MemLoad(offset int32, length int32) ([]byte, error)
 	Clean()
@@ -149,6 +155,8 @@ type RuntimeSubcontext interface {
 }
 
 type BigIntSubcontext interface {
+	CreateStateCopy() BigIntSubcontext
+	LoadFromStateCopy(bigInt *BigIntSubcontext)
 	Put(value int64) int32
 	GetOne(id int32) *big.Int
 	GetTwo(id1, id2 int32) (*big.Int, *big.Int)
@@ -157,8 +165,15 @@ type BigIntSubcontext interface {
 
 // TODO find better name
 type OutputSubcontext interface {
+	CreateStateCopy() OutputSubcontext
+	LoadFromStateCopy(output *OutputSubcontext)
+	GetOutputAccounts() map[string]*vmcommon.OutputAccount
 	WriteLog(addr []byte, topics [][]byte, data []byte)
 	Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte)
+	SelfDestruct(addr []byte, beneficiary []byte) 
+	GetRefund() uint64
+	SetRefund(refund uint64)
+	ReturnCode() vmcommon.ReturnCode
 	ReturnData() [][]byte
 	ClearReturnData()
 	Finish(data []byte)

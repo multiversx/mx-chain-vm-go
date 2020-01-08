@@ -16,6 +16,7 @@ type Runtime struct {
 	scAddress       []byte
 	callFunction    string
 	vmType          []byte
+	readOnly        bool
 }
 
 func NewRuntimeSubcontext(blockChainHook vmcommon.BlockchainHook) (*Runtime, error) {
@@ -43,6 +44,22 @@ func (runtime *Runtime) InitializeFromInput(input *vmcommon.ContractCallInput) e
 	return nil
 }
 
+func (runtime *Runtime) CreateStateCopy() *Runtime {
+	return &Runtime{
+		vmInput: runtime.vmInput,
+		scAddress: runtime.scAddress,
+		callFunction: runtime.callFunction,
+		readOnly: runtime.readOnly,
+	}
+}
+
+func (runtime *Runtime) LoadFromStateCopy(otherRuntime *Runtime) {
+	runtime.vmInput = otherRuntime.vmInput
+	runtime.scAddress = otherRuntime.scAddress
+	runtime.callFunction = otherRuntime.callFunction
+	runtime.readOnly = otherRuntime.readOnly
+}
+
 func (runtime *Runtime) GetVMInput() *vmcommon.VMInput {
 	return runtime.vmInput
 }
@@ -64,19 +81,31 @@ func (runtime *Runtime) SignalUserError() {
 }
 
 func (runtime *Runtime) SetRuntimeBreakpointValue(value arwen.BreakpointValue) {
-	panic("not implemented")
+	runtime.instance.SetBreakpointValue(uint64(value))
 }
 
 func (runtime *Runtime) GetRuntimeBreakpointValue() arwen.BreakpointValue {
-	panic("not implemented")
+	return arwen.BreakpointValue(runtime.instance.GetBreakpointValue())
+}
+
+func (runtime *Runtime) GetPointsUsed() uint64 {
+	return runtime.instance.GetPointsUsed()
+}
+
+func (runtime *Runtime) SetPointsUsed(gasPoints uint64) {
+	runtime.instance.SetPointsUsed(gasPoints)
 }
 
 func (runtime *Runtime) CallData() []byte {
 	panic("not implemented")
 }
 
+func (runtime *Runtime) ReadOnly() bool {
+	return runtime.readOnly
+}
+
 func (runtime *Runtime) SetReadOnly(readOnly bool) {
-	panic("not implemented")
+	runtime.readOnly = readOnly
 }
 
 func (runtime *Runtime) ExecuteOnSameContext(input *vmcommon.ContractCallInput) error {

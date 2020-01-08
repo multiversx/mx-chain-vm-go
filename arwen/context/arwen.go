@@ -26,11 +26,6 @@ const (
 	StorageDeleted   StorageStatus = 4
 )
 
-type logTopicsData struct {
-	topics [][]byte
-	data   []byte
-}
-
 // vmContext implements HostContext interface.
 type vmContext struct {
 	BigIntContainer
@@ -43,13 +38,6 @@ type vmContext struct {
 	vmType       []byte
 	callFunction string
 	scAddress    []byte
-
-	logs           map[string]logTopicsData
-	readOnly       bool
-	storageUpdate  map[string](map[string][]byte)
-	outputAccounts map[string]*vmcommon.OutputAccount
-	returnData     [][]byte
-	returnCode     vmcommon.ReturnCode
 
 	selfDestruct  map[string][]byte
 	ethInput      []byte
@@ -102,15 +90,6 @@ func NewArwenVM(
 
 	opcodeCosts := gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray()
 
-	metering, err := subcontexts.NewMeteringSubcontext(gasSchedule, blockGasLimit)
-	if err != nil {
-		return nil, err
-	}
-
-	runtime, err := subcontexts.NewRuntimeSubcontext(blockChainHook)
-	if err != nil {
-		return nil, err
-	}
 
 	context := &vmContext{
 		BigIntContainer: NewBigIntContainer(),
@@ -120,8 +99,40 @@ func NewArwenVM(
 		blockGasLimit:   blockGasLimit,
 		gasCostConfig:   gasCostConfig,
 
-		meteringSubcontext: metering,
-		runtimeSubcontext:  runtime,
+		meteringSubcontext:   nil,
+		runtimeSubcontext:    nil,
+		blockchainSubcontext: nil,
+		storageSubcontext: nil,
+	}
+
+	context.blockchainSubcontext, err = subcontexts.NewBlockchainSubcontext(blockChainHook, context)
+	if err != nil {
+		return nil, err
+	}
+
+	context.runtimeSubcontext, err = subcontexts.NewRuntimeSubcontext(blockChainHook)
+	if err != nil {
+		return nil, err
+	}
+
+	context.meteringSubcontext, err = subcontexts.NewMeteringSubcontext(gasSchedule, blockGasLimit, context)
+	if err != nil {
+		return nil, err
+	}
+
+	context.outputSubcontext, err = subcontexts.NewOutputSubcontext()
+	if err != nil {
+		return nil, err
+	}
+
+	context.storageSubcontext, err = subcontexts.NewStorageSubcontext()
+	if err != nil {
+		return nil, err
+	}
+
+	context.bigIntSubcontext, err = subcontexts.NewBigIntSubcontext()
+	if err != nil {
+		return nil, err
 	}
 
 	context.initInternalValues()
@@ -639,48 +650,6 @@ func (host *vmContext) SetStorage(addr []byte, key []byte, value []byte) int32 {
 	return int32(StorageModified)
 }
 
-func (host *vmContext) GetBalance(addr []byte) []byte {
-	strAdr := string(addr)
-	if _, ok := host.outputAccounts[strAdr]; ok {
-		balance := host.outputAccounts[strAdr].Balance
-		return balance.Bytes()
-	}
-
-	balance, err := host.blockChainHook.GetBalance(addr)
-	if err != nil {
-		fmt.Printf("GetBalance returned with error %s \n", err.Error())
-		return big.NewInt(0).Bytes()
-	}
-
-	host.outputAccounts[strAdr] = &vmcommon.OutputAccount{
-		Balance:      big.NewInt(0).Set(balance),
-		BalanceDelta: big.NewInt(0),
-		Address:      addr,
-	}
-
-	return balance.Bytes()
-}
-
-func (host *vmContext) GetNonce(addr []byte) uint64 {
-	strAdr := string(addr)
-	if _, ok := host.outputAccounts[strAdr]; ok {
-		return host.outputAccounts[strAdr].Nonce
-	}
-
-	nonce, err := host.blockChainHook.GetNonce(addr)
-	if err != nil {
-		fmt.Printf("GetNonce returned with error %s \n", err.Error())
-	}
-
-	host.outputAccounts[strAdr] = &vmcommon.OutputAccount{BalanceDelta: big.NewInt(0), Address: addr, Nonce: nonce}
-	return nonce
-}
-
-func (host *vmContext) increaseNonce(addr []byte) {
-	nonce := host.GetNonce(addr)
-	host.outputAccounts[string(addr)].Nonce = nonce + 1
-}
-
 func (host *vmContext) GetCodeSize(addr []byte) (int32, error) {
 	code, err := host.blockChainHook.GetCode(addr)
 	if err != nil {
@@ -704,18 +673,6 @@ func (host *vmContext) GetCode(addr []byte) ([]byte, error) {
 	return host.blockChainHook.GetCode(addr)
 }
 
-func (host *vmContext) SelfDestruct(addr []byte, beneficiary []byte) {
-	if host.readOnly {
-		return
-	}
-
-	host.selfDestruct[string(addr)] = beneficiary
-}
-
-func (host *vmContext) GetVMInput() vmcommon.VMInput {
-	return host.vmInput
-}
-
 func (host *vmContext) BlockHash(number int64) []byte {
 	if number < 0 {
 		fmt.Printf("BlockHash nonce cannot be negative\n")
@@ -729,57 +686,6 @@ func (host *vmContext) BlockHash(number int64) []byte {
 	}
 
 	return block
-}
-
-func (host *vmContext) WriteLog(addr []byte, topics [][]byte, data []byte) {
-	if host.readOnly {
-		return
-	}
-
-	strAdr := string(addr)
-
-	if _, ok := host.logs[strAdr]; !ok {
-		host.logs[strAdr] = logTopicsData{
-			topics: make([][]byte, 0),
-			data:   make([]byte, 0),
-		}
-	}
-
-	currLogs := host.logs[strAdr]
-	for i := 0; i < len(topics); i++ {
-		currLogs.topics = append(currLogs.topics, topics[i])
-	}
-	currLogs.data = append(currLogs.data, data...)
-
-	host.logs[strAdr] = currLogs
-}
-
-// Transfer handles any necessary value transfer required and takes
-// the necessary steps to create accounts and reverses the state in case of an
-// execution error or failed value transfer.
-func (host *vmContext) Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte) {
-	senderAcc, ok := host.outputAccounts[string(sender)]
-	if !ok {
-		senderAcc = &vmcommon.OutputAccount{
-			Address:      sender,
-			BalanceDelta: big.NewInt(0),
-		}
-		host.outputAccounts[string(senderAcc.Address)] = senderAcc
-	}
-
-	destAcc, ok := host.outputAccounts[string(destination)]
-	if !ok {
-		destAcc = &vmcommon.OutputAccount{
-			Address:      destination,
-			BalanceDelta: big.NewInt(0),
-		}
-		host.outputAccounts[string(destAcc.Address)] = destAcc
-	}
-
-	senderAcc.BalanceDelta = big.NewInt(0).Sub(senderAcc.BalanceDelta, value)
-	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
-	destAcc.Data = append(destAcc.Data, input...)
-	destAcc.GasLimit = gasLimit
 }
 
 func (host *vmContext) CallData() []byte {
@@ -821,12 +727,8 @@ func (host *vmContext) BlockChainHook() vmcommon.BlockchainHook {
 	return host.blockChainHook
 }
 
-func (host *vmContext) SetReadOnly(readOnly bool) {
-	host.readOnly = readOnly
-}
-
 func (host *vmContext) CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error) {
-	if host.readOnly {
+	if host.Runtime().ReadOnly() {
 		return nil, ErrInvalidCallOnReadOnlyMode
 	}
 
@@ -847,7 +749,7 @@ func (host *vmContext) CreateNewContract(input *vmcommon.ContractCreateInput) ([
 		return nil, err
 	}
 
-	host.Transfer(address, input.CallerAddr, 0, input.CallValue, nil)
+	host.Output().Transfer(address, input.CallerAddr, 0, input.CallValue, nil)
 	host.increaseNonce(input.CallerAddr)
 	host.scAddress = address
 
@@ -892,9 +794,10 @@ func (host *vmContext) CreateNewContract(input *vmcommon.ContractCreateInput) ([
 		host.Finish(result)
 	}
 
-	newSCAcc, ok := host.outputAccounts[string(address)]
+	outputAccounts := host.Output().GetOutputAccounts()
+	newSCAcc, ok := outputAccounts[string(address)]
 	if !ok {
-		host.outputAccounts[string(address)] = &vmcommon.OutputAccount{
+		outputAccounts[string(address)] = &vmcommon.OutputAccount{
 			Address:        address,
 			Nonce:          0,
 			BalanceDelta:   big.NewInt(0),
@@ -964,7 +867,7 @@ func (host *vmContext) execute(input *vmcommon.ContractCallInput) error {
 		return ErrFunctionRunError
 	}
 
-	if host.returnCode != vmcommon.Ok {
+	if host.Output().ReturnCode() != vmcommon.Ok {
 		return ErrReturnCodeNotOk
 	}
 
@@ -995,57 +898,23 @@ func (host *vmContext) ExecuteOnSameContext(input *vmcommon.ContractCallInput) e
 }
 
 func (host *vmContext) copyToNewContext() *vmContext {
-	newContext := vmContext{
-		BigIntContainer: host.BigIntContainer,
-		logs:            host.logs,
-		readOnly:        host.readOnly,
-		storageUpdate:   host.storageUpdate,
-		outputAccounts:  host.outputAccounts,
-		returnData:      host.returnData,
-		returnCode:      host.returnCode,
-		selfDestruct:    host.selfDestruct,
-	}
-
+	newContext := vmContext{}
+	newContext.bigIntSubcontext = host.bigIntSubcontext.CreateStateCopy()
+	newContext.runtimeSubcontext = host.runtimeSubcontext.CreateStateCopy()
+	newContext.outputSubcontext = host.outputSubcontext.CreateStateCopy()
 	return &newContext
 }
 
-func (host *vmContext) copyFromContext(currContext *vmContext) {
-	host.BigIntContainer = currContext.BigIntContainer
-	host.readOnly = currContext.readOnly
-	host.returnCode = currContext.returnCode
-	host.returnData = append(host.returnData, currContext.returnData...)
-	host.refund += currContext.refund
-	host.returnCode = currContext.returnCode
+func (host *vmContext) copyFromContext2(otherContext *vmContext) {
+}
 
-	for key, log := range currContext.logs {
-		host.logs[key] = log
-	}
-
-	for key, storageUpdate := range currContext.storageUpdate {
-		if _, ok := host.storageUpdate[key]; !ok {
-			host.storageUpdate[key] = storageUpdate
-			continue
-		}
-
-		for internKey, internStore := range storageUpdate {
-			host.storageUpdate[key][internKey] = internStore
-		}
-	}
-
-	host.outputAccounts = currContext.outputAccounts
-	host.returnData = append(host.returnData, currContext.returnData...)
-	host.returnCode = currContext.returnCode
-
-	for key, selfDestruct := range currContext.selfDestruct {
-		host.selfDestruct[key] = selfDestruct
-	}
+func (host *vmContext) copyFromContext(otherContext *vmContext) {
+	host.bigIntSubcontext.LoadFromStateCopy(&otherContext.bigIntSubcontext)
+	host.runtimeSubcontext.LoadFromStateCopy(&otherContext.runtimeSubcontext)
+	host.outputSubcontext.LoadFromStateCopy(&otherContext.outputSubcontext)
 }
 
 func (host *vmContext) ExecuteOnDestContext(input *vmcommon.ContractCallInput) error {
-	currVmInput := host.vmInput
-	currScAddress := host.scAddress
-	currCallFunction := host.callFunction
-
 	currContext := host.copyToNewContext()
 
 	host.vmInput = input.VMInput
@@ -1056,19 +925,8 @@ func (host *vmContext) ExecuteOnDestContext(input *vmcommon.ContractCallInput) e
 	err := host.execute(input)
 
 	host.copyFromContext(currContext)
-	host.vmInput = currVmInput
-	host.scAddress = currScAddress
-	host.callFunction = currCallFunction
 
 	return err
-}
-
-func (host *vmContext) ReturnData() [][]byte {
-	return host.returnData
-}
-
-func (host *vmContext) ClearReturnData() {
-	host.returnData = make([][]byte, 0)
 }
 
 // The first four bytes is the method selector. The rest of the input data are method arguments in chunks of 32 bytes.

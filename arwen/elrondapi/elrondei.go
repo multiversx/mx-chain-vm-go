@@ -259,73 +259,74 @@ func ElrondEImports() (*wasmer.Imports, error) {
 
 //export getGasLeft
 func getGasLeft(context unsafe.Pointer) int64 {
-	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetErdContext(instCtx.Data())
+	metering := arwen.GetMeteringSubcontext(context)
 
-	gasToUse := hostContext.GasSchedule().ElrondAPICost.GetGasLeft
-	hostContext.UseGas(gasToUse)
+	gasToUse := metering.GasSchedule().ElrondAPICost.GetGasLeft
+	metering.UseGas(gasToUse)
 
-	return int64(hostContext.GasLeft())
+	return int64(metering.GasLeft())
 }
 
 //export getOwner
 func getOwner(context unsafe.Pointer, resultOffset int32) {
-	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetErdContext(instCtx.Data())
+	runtime := arwen.GetRuntimeSubcontext(context)
+	metering := arwen.GetMeteringSubcontext(context)
 
-	owner := hostContext.GetSCAddress()
-	err := arwen.StoreBytes(instCtx.Memory(), resultOffset, owner)
+	owner := runtime.GetSCAddress()
+	err := runtime.MemStore(resultOffset, owner)
 	if withFault(err, context) {
 		return
 	}
 
-	gasToUse := hostContext.GasSchedule().ElrondAPICost.GetOwner
-	hostContext.UseGas(gasToUse)
+	gasToUse := metering.GasSchedule().ElrondAPICost.GetOwner
+	metering.UseGas(gasToUse)
 }
 
 //export signalError
 func signalError(context unsafe.Pointer) {
-	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetErdContext(instCtx.Data())
+	runtime := arwen.GetRuntimeSubcontext(context)
+	metering := arwen.GetMeteringSubcontext(context)
 
-	hostContext.SignalUserError()
+	runtime.SignalUserError()
 
-	gasToUse := hostContext.GasSchedule().ElrondAPICost.SignalError
-	hostContext.UseGas(gasToUse)
+	gasToUse := metering.GasSchedule().ElrondAPICost.SignalError
+	metering.UseGas(gasToUse)
 }
 
 //export getExternalBalance
 func getExternalBalance(context unsafe.Pointer, addressOffset int32, resultOffset int32) {
-	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetErdContext(instCtx.Data())
+	blockchain := arwen.GetBlockchainSubcontext(context)
+	runtime := arwen.GetRuntimeSubcontext(context)
+	metering := arwen.GetMeteringSubcontext(context)
 
-	address, err := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
+	address, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
 	if withFault(err, context) {
 		return
 	}
 
-	balance := hostContext.GetBalance(address)
+	balance := blockchain.GetBalance(address)
 
-	err = arwen.StoreBytes(instCtx.Memory(), resultOffset, balance)
+	err = runtime.MemStore(resultOffset, balance)
 	if withFault(err, context) {
 		return
 	}
 
-	gasToUse := hostContext.GasSchedule().ElrondAPICost.GetExternalBalance
-	hostContext.UseGas(gasToUse)
+	gasToUse := metering.GasSchedule().ElrondAPICost.GetExternalBalance
+	metering.UseGas(gasToUse)
 }
 
 //export blockHash
 func blockHash(context unsafe.Pointer, nonce int64, resultOffset int32) int32 {
-	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetErdContext(instCtx.Data())
+	blockchain := arwen.GetBlockchainSubcontext(context)
+	runtime := arwen.GetRuntimeSubcontext(context)
+	metering := arwen.GetMeteringSubcontext(context)
 
-	gasToUse := hostContext.GasSchedule().ElrondAPICost.GetBlockHash
-	hostContext.UseGas(gasToUse)
+	gasToUse := metering.GasSchedule().ElrondAPICost.GetBlockHash
+	metering.UseGas(gasToUse)
 
 	//TODO: change blockchain hook to treat actual nonce - not the offset.
-	hash := hostContext.BlockHash(nonce)
-	err := arwen.StoreBytes(instCtx.Memory(), resultOffset, hash)
+	hash := blockchain.BlockHash(nonce)
+	err := runtime.MemStore(resultOffset, hash)
 	if withFault(err, context) {
 		return 1
 	}
@@ -335,32 +336,34 @@ func blockHash(context unsafe.Pointer, nonce int64, resultOffset int32) int32 {
 
 //export transferValue
 func transferValue(context unsafe.Pointer, gasLimit int64, destOffset int32, valueOffset int32, dataOffset int32, length int32) int32 {
-	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetErdContext(instCtx.Data())
+	runtime := arwen.GetRuntimeSubcontext(context)
+	metering := arwen.GetMeteringSubcontext(context)
+	output := arwen.GetOutputSubcontext(context)
 
-	send := hostContext.GetSCAddress()
-	dest, err := arwen.LoadBytes(instCtx.Memory(), destOffset, arwen.AddressLen)
+	send := runtime.GetSCAddress()
+	dest, err := runtime.MemLoad(destOffset, arwen.AddressLen)
 	if withFault(err, context) {
 		return 1
 	}
 
-	value, err := arwen.LoadBytes(instCtx.Memory(), valueOffset, arwen.BalanceLen)
+	value, err := runtime.MemLoad(valueOffset, arwen.BalanceLen)
 	if withFault(err, context) {
 		return 1
 	}
 
-	data, err := arwen.LoadBytes(instCtx.Memory(), dataOffset, length)
+	data, err := runtime.MemLoad(dataOffset, length)
 	if withFault(err, context) {
 		return 1
 	}
 
-	gasToUse := hostContext.GasSchedule().ElrondAPICost.TransferValue
-	gasToUse += hostContext.GasSchedule().BaseOperationCost.PersistPerByte * uint64(length)
-	hostContext.UseGas(gasToUse)
+	gasToUse := metering.GasSchedule().ElrondAPICost.TransferValue
+	gasToUse += metering.GasSchedule().BaseOperationCost.PersistPerByte * uint64(length)
+	metering.UseGas(gasToUse)
 
 	invBytes := arwen.InverseBytes(value)
-
-	hostContext.Transfer(dest, send, hostContext.BoundGasLimit(gasLimit), big.NewInt(0).SetBytes(invBytes), data)
+	invValue := big.NewInt(0).SetBytes(invBytes)
+	boundGasLimit := metering.BoundGasLimit(gasLimit)
+	output.Transfer(dest, send, boundGasLimit, invValue, data)
 
 	return 0
 }
