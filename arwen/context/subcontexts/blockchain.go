@@ -7,35 +7,35 @@ import (
 type Blockchain struct {
 }
 
-func (b *Blockchain) AccountExists(addr []byte) bool {
+func (blockchain *Blockchain) AccountExists(addr []byte) bool {
 	panic("not implemented")
 }
 
-func (b *Blockchain) GetBalance(addr []byte) []byte {
+func (blockchain *Blockchain) GetBalance(addr []byte) []byte {
 	panic("not implemented")
 }
 
-func (b *Blockchain) GetNonce(addr []byte) uint64 {
+func (blockchain *Blockchain) GetNonce(addr []byte) uint64 {
 	panic("not implemented")
 }
 
-func (b *Blockchain) GetCodeHash(addr []byte) ([]byte, error) {
+func (blockchain *Blockchain) GetCodeHash(addr []byte) ([]byte, error) {
 	panic("not implemented")
 }
 
-func (b *Blockchain) GetCode(addr []byte) ([]byte, error) {
+func (blockchain *Blockchain) GetCode(addr []byte) ([]byte, error) {
 	panic("not implemented")
 }
 
-func (b *Blockchain) SelfDestruct(addr []byte, beneficiary []byte) {
+func (blockchain *Blockchain) SelfDestruct(addr []byte, beneficiary []byte) {
 	panic("not implemented")
 }
 
-func (b *Blockchain) GetVMInput() vmcommon.VMInput {
+func (blockchain *Blockchain) GetVMInput() vmcommon.VMInput {
 	panic("not implemented")
 }
 
-func (b *Blockchain) BlockHash(number int64) []byte {
+func (blockchain *Blockchain) BlockHash(number int64) []byte {
 	panic("not implemented")
 }
 

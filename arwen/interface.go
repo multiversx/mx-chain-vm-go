@@ -1,9 +1,11 @@
 package arwen
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"math/big"
+
+	"github.com/ElrondNetwork/arwen-wasm-vm/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 type BreakpointValue uint64
@@ -138,6 +140,12 @@ type RuntimeSubcontext interface {
 	SetReadOnly(readOnly bool)
 	ExecuteOnSameContext(input *vmcommon.ContractCallInput) error
 	ExecuteOnDestContext(input *vmcommon.ContractCallInput) error
+	SetInstanceContext(instCtx *wasmer.InstanceContext)
+	GetInstanceContext() *wasmer.InstanceContext
+	MemStore(offset int32, data []byte) error 
+	MemLoad(offset int32, length int32) ([]byte, error)
+	Clean()
+	SetInstanceContextId(id int)
 }
 
 type BigIntSubcontext interface {

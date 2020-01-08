@@ -8,6 +8,7 @@ import (
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 const AddressLen = 32
@@ -50,7 +51,37 @@ func GetVmContext(context unsafe.Pointer) VMContext {
 	ctx := vmContextMap[uint8(idx)]
 	vmContextMapMu.Unlock()
 
+	ctx.Runtime().SetInstanceContext(&instCtx)
+
 	return ctx
+}
+
+func GetBlockchainSubcontext(context unsafe.Pointer) BlockchainSubcontext {
+	return GetVmContext(context).Blockchain()
+}
+
+func GetRuntimeSubcontext(context unsafe.Pointer) RuntimeSubcontext {
+	return GetVmContext(context).Runtime()
+}
+
+func GetCryptoSubcontext(context unsafe.Pointer) vmcommon.CryptoHook {
+	return GetVmContext(context).Crypto()
+}
+
+func GetBigIntSubcontext(context unsafe.Pointer) BigIntSubcontext {
+	return GetVmContext(context).BigInt()
+}
+
+func GetOutputSubcontext(context unsafe.Pointer) OutputSubcontext {
+	return GetVmContext(context).Output()
+}
+
+func GetMeteringSubcontext(context unsafe.Pointer) MeteringSubcontext {
+	return GetVmContext(context).Metering()
+}
+
+func GetStorageSubcontext(context unsafe.Pointer) StorageSubcontext {
+	return GetVmContext(context).Storage()
 }
 
 func GetEthContext(pointer unsafe.Pointer) EthContext {

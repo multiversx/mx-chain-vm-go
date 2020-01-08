@@ -8,11 +8,12 @@ import (
 	"unsafe"
 
 	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/context/subcontexts"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/elrondapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/ethapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -59,11 +60,11 @@ type vmContext struct {
 
 	// -- refactored subcontexts
 	blockchainSubcontext arwen.BlockchainSubcontext
-	runtimeSubcontext arwen.RuntimeSubcontext
-	outputSubcontext arwen.OutputSubcontext
-	meteringSubcontext arwen.MeteringSubcontext
-	storageSubcontext arwen.StorageSubcontext
-	bigIntSubcontext arwen.BigIntSubcontext
+	runtimeSubcontext    arwen.RuntimeSubcontext
+	outputSubcontext     arwen.OutputSubcontext
+	meteringSubcontext   arwen.MeteringSubcontext
+	storageSubcontext    arwen.StorageSubcontext
+	bigIntSubcontext     arwen.BigIntSubcontext
 }
 
 func NewArwenVM(
@@ -101,6 +102,16 @@ func NewArwenVM(
 
 	opcodeCosts := gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray()
 
+	metering, err := subcontexts.NewMeteringSubcontext(gasSchedule, blockGasLimit)
+	if err != nil {
+		return nil, err
+	}
+
+	runtime, err := subcontexts.NewRuntimeSubcontext(blockChainHook)
+	if err != nil {
+		return nil, err
+	}
+
 	context := &vmContext{
 		BigIntContainer: NewBigIntContainer(),
 		blockChainHook:  blockChainHook,
@@ -108,6 +119,9 @@ func NewArwenVM(
 		vmType:          vmType,
 		blockGasLimit:   blockGasLimit,
 		gasCostConfig:   gasCostConfig,
+
+		meteringSubcontext: metering,
+		runtimeSubcontext:  runtime,
 	}
 
 	context.initInternalValues()
