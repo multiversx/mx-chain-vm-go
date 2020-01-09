@@ -112,14 +112,8 @@ type CryptoContext interface {
 }
 
 type VMContext interface {
-	EthContext() EthContext
-	CoreContext() HostContext
-	BigInContext() BigIntContext
-	CryptoContext() CryptoContext
-
 	StateStack
 
-	// refactored subcontexts
 	Crypto() vmcommon.CryptoHook
 	Blockchain() BlockchainSubcontext
 	Runtime() RuntimeSubcontext
@@ -136,15 +130,25 @@ type StateStack interface {
 
 type BlockchainSubcontext interface {
 	InitState()
+	NewAddress(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error)
 	AccountExists(addr []byte) bool
 	GetBalance(addr []byte) []byte
 	GetNonce(addr []byte) uint64
+	CurrentEpoch() uint32
+	GetStateRootHash() []byte
+	LastTimeStamp() uint64
+	LastNonce() uint64
+	LastRound() uint64
+	LastEpoch() uint32
+	CurrentRound() uint64
+	CurrentNonce() uint64
+	CurrentTimeStamp() uint64
+	CurrentRandomSeed() []byte
+	LastRandomSeed() []byte
 	IncreaseNonce(addr []byte)
 	GetCodeHash(addr []byte) ([]byte, error)
 	GetCode(addr []byte) ([]byte, error)
 	GetCodeSize(addr []byte) (int32, error)
-	SelfDestruct(addr []byte, beneficiary []byte)
-	GetVMInput() vmcommon.VMInput
 	BlockHash(number int64) []byte
 }
 
@@ -162,6 +166,7 @@ type RuntimeSubcontext interface {
 	CallData() []byte
 	ReadOnly() bool
 	SetReadOnly(readOnly bool)
+	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContext(input *vmcommon.ContractCallInput) error
 	ExecuteOnDestContext(input *vmcommon.ContractCallInput) error
 	SetInstanceContext(instCtx *wasmer.InstanceContext)
@@ -201,6 +206,7 @@ type OutputSubcontext interface {
 	ReturnData() [][]byte
 	ClearReturnData()
 	Finish(data []byte)
+  CreateVMOutput(result []byte) *vmcommon.VMOutput
 }
 
 type MeteringSubcontext interface {

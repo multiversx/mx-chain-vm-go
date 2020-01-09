@@ -1,10 +1,8 @@
 package context
 
 import (
-	"bytes"
 	"fmt"
 	"math/big"
-	"sort"
 	"unsafe"
 
 	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -16,7 +14,6 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
-
 
 // vmContext implements HostContext interface.
 type vmContext struct {
@@ -82,7 +79,6 @@ func NewArwenVM(
 
 	opcodeCosts := gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray()
 
-
 	host := &vmContext{
 		BigIntContainer: NewBigIntContainer(),
 		blockChainHook:  blockChainHook,
@@ -94,13 +90,14 @@ func NewArwenVM(
 		meteringSubcontext:   nil,
 		runtimeSubcontext:    nil,
 		blockchainSubcontext: nil,
-		storageSubcontext: nil,
+		storageSubcontext:    nil,
 	}
 
-	host.blockchainSubcontext, err = subcontexts.NewBlockchainSubcontext(blockChainHook, host)
+  blockchain, err := subcontexts.NewBlockchainSubcontext(blockChainHook, host)
 	if err != nil {
 		return nil, err
 	}
+  host.blockchainSubcontext = blockchain
 
 	host.runtimeSubcontext, err = subcontexts.NewRuntimeSubcontext(blockChainHook)
 	if err != nil {
@@ -244,49 +241,9 @@ func (host *vmContext) doRunSmartContractCreate(input *vmcommon.ContractCreateIn
 		newSCAcc.Code = input.ContractCode
 	}
 
-	vmOutput := host.createVMOutput(result)
+	vmOutput := host.Output().CreateVMOutput(result)
 
 	return vmOutput, err
-}
-
-func (host *vmContext) deductInitialCodeCost(
-	gasProvided uint64,
-	code []byte,
-	baseCost uint64,
-	costPerByte uint64,
-) (uint64, error) {
-	codeLength := uint64(len(code))
-	codeCost := codeLength * costPerByte
-	initialCost := baseCost + codeCost
-
-	if initialCost > gasProvided {
-		return 0, ErrNotEnoughGas
-	}
-
-	return gasProvided - initialCost, nil
-}
-
-func (host *vmContext) callInitFunction() (bool, []byte, error) {
-	init, ok := host.instance.Exports[arwen.InitFunctionName]
-
-	if !ok {
-		init, ok = host.instance.Exports[arwen.InitFunctionNameEth]
-	}
-
-	if !ok {
-		// There's no initialization function, don't do anything.
-		return false, nil, nil
-	}
-
-	out, err := init()
-	if err != nil {
-		fmt.Println("arwen.callInitFunction() error:", err.Error())
-		return true, nil, err
-	}
-
-	convertedResult := arwen.ConvertReturnValue(out)
-	result := convertedResult.Bytes()
-	return true, result, nil
 }
 
 func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
@@ -368,16 +325,9 @@ func (host *vmContext) doRunSmartContractCall(input *vmcommon.ContractCallInput)
 	}
 
 	convertedResult := arwen.ConvertReturnValue(result)
-	vmOutput := host.createVMOutput(convertedResult.Bytes())
+	vmOutput := host.Output().CreateVMOutput(convertedResult.Bytes())
 
 	return vmOutput, nil
-}
-
-func (host *vmContext) createMeteredWasmerInstance(contract []byte) error {
-	var err error
-	host.instance, err = wasmer.NewMeteredInstance(contract, host.vmInput.GasProvided)
-	host.SetRuntimeBreakpointValue(arwen.BreakpointNone)
-	return err
 }
 
 func (host *vmContext) isInitFunctionCalled() bool {
@@ -406,26 +356,19 @@ func (host *vmContext) getFunctionToCall() (func(...interface{}) (wasmer.Value, 
 
 func (host *vmContext) initInternalValues() {
 	host.BigInt().InitState()
-	host.selfDestruct = make(map[string][]byte)
-	host.vmInput = vmcommon.VMInput{}
-	host.outputAccounts = make(map[string]*vmcommon.OutputAccount, 0)
-	host.scAddress = make([]byte, 0)
-	host.callFunction = ""
-	host.returnData = nil
-	host.returnCode = vmcommon.Ok
-	host.ethInput = nil
-	host.readOnly = false
-	host.refund = 0
+	host.Output().InitState()
+	host.Runtime().InitState()
 }
 
 func (host *vmContext) addTxValueToSmartContract(value *big.Int, scAddress []byte) {
-	destAcc, ok := host.outputAccounts[string(scAddress)]
+  outputAccounts := host.Output().GetOutputAccounts()
+	destAcc, ok := outputAccounts[string(scAddress)]
 	if !ok {
 		destAcc = &vmcommon.OutputAccount{
 			Address:      scAddress,
 			BalanceDelta: big.NewInt(0),
 		}
-		host.outputAccounts[string(destAcc.Address)] = destAcc
+		outputAccounts[string(destAcc.Address)] = destAcc
 	}
 
 	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
@@ -438,91 +381,6 @@ func (host *vmContext) CallData() []byte {
 	return host.ethInput
 }
 
-func (host *vmContext) CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error) {
-	if host.Runtime().ReadOnly() {
-		return nil, ErrInvalidCallOnReadOnlyMode
-	}
-
-	currVmInput := host.vmInput
-	currScAddress := host.scAddress
-	currCallFunction := host.callFunction
-
-	defer func() {
-		host.vmInput = currVmInput
-		host.scAddress = currScAddress
-		host.callFunction = currCallFunction
-	}()
-
-	host.vmInput = input.VMInput
-	nonce := host.Blockchain().GetNonce(input.CallerAddr)
-	address, err := host.blockChainHook.NewAddress(input.CallerAddr, nonce, host.vmType)
-	if err != nil {
-		return nil, err
-	}
-
-	host.Output().Transfer(address, input.CallerAddr, 0, input.CallValue, nil)
-	host.Blockchain().IncreaseNonce(input.CallerAddr)
-	host.scAddress = address
-
-	totalGasConsumed := input.GasProvided
-	defer func() {
-		host.Metering().UseGas(totalGasConsumed)
-	}()
-
-	gasLeft, err := host.deductInitialCodeCost(
-		input.GasProvided,
-		input.ContractCode,
-		0, // create cost was elrady taken care of. as it is different for ethereum and elrond
-		host.Metering().GasSchedule().BaseOperationCost.StorePerByte,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	newInstance, err := wasmer.NewMeteredInstance(input.ContractCode, gasLeft)
-	if err != nil {
-		fmt.Println("arwen Error: ", err.Error())
-		return nil, err
-	}
-
-	idContext := arwen.AddHostContext(host)
-	oldInstance := host.instance
-	host.instance = newInstance
-	defer func() {
-		host.instance = oldInstance
-		newInstance.Clean()
-		arwen.RemoveHostContext(idContext)
-	}()
-
-	host.instance.SetContextData(unsafe.Pointer(&idContext))
-
-	initCalled, result, err := host.callInitFunction()
-	if err != nil {
-		return nil, err
-	}
-
-	if initCalled {
-		host.Output().Finish(result)
-	}
-
-	outputAccounts := host.Output().GetOutputAccounts()
-	newSCAcc, ok := outputAccounts[string(address)]
-	if !ok {
-		outputAccounts[string(address)] = &vmcommon.OutputAccount{
-			Address:        address,
-			Nonce:          0,
-			BalanceDelta:   big.NewInt(0),
-			StorageUpdates: nil,
-			Code:           input.ContractCode,
-		}
-	} else {
-		newSCAcc.Code = input.ContractCode
-	}
-
-	totalGasConsumed = input.GasProvided - gasLeft - newInstance.GetPointsUsed()
-
-	return address, nil
-}
 
 func (host *vmContext) execute(input *vmcommon.ContractCallInput) error {
 	contract, err := host.Blockchain().GetCode(host.scAddress)
@@ -624,7 +482,7 @@ func (host *vmContext) PopState() error {
 	if err != nil {
 		return err
 	}
-	
+
 	err = host.outputSubcontext.PopState()
 	if err != nil {
 		return err

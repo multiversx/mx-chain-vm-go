@@ -84,46 +84,6 @@ func GetStorageSubcontext(context unsafe.Pointer) StorageSubcontext {
 	return GetVmContext(context).Storage()
 }
 
-func GetEthContext(pointer unsafe.Pointer) EthContext {
-	var idx = *(*int)(pointer)
-
-	vmContextMapMu.Lock()
-	ctx := vmContextMap[uint8(idx)]
-	vmContextMapMu.Unlock()
-
-	return ctx.EthContext()
-}
-
-func GetErdContext(pointer unsafe.Pointer) HostContext {
-	var idx = *(*int)(pointer)
-
-	vmContextMapMu.Lock()
-	ctx := vmContextMap[uint8(idx)]
-	vmContextMapMu.Unlock()
-
-	return ctx.CoreContext()
-}
-
-func GetBigIntContext(pointer unsafe.Pointer) BigIntContext {
-	var idx = *(*int)(pointer)
-
-	vmContextMapMu.Lock()
-	ctx := vmContextMap[uint8(idx)]
-	vmContextMapMu.Unlock()
-
-	return ctx.BigInContext()
-}
-
-func GetCryptoContext(pointer unsafe.Pointer) CryptoContext {
-	var idx = *(*int)(pointer)
-
-	vmContextMapMu.Lock()
-	ctx := vmContextMap[uint8(idx)]
-	vmContextMapMu.Unlock()
-
-	return ctx.CryptoContext()
-}
-
 func ConvertReturnValue(wasmValue wasmer.Value) *big.Int {
 	switch wasmValue.GetType() {
 	case wasmer.TypeVoid:

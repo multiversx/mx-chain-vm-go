@@ -4,7 +4,6 @@ import (
 	"math/big"
 
 	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	context "github.com/ElrondNetwork/arwen-wasm-vm/arwen/context"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -27,17 +26,23 @@ type Output struct {
 
 func NewOutputSubcontext(host arwen.VMContext) (*Output, error) {
 	output := &Output{
-		outputAccounts: make(map[string]*vmcommon.OutputAccount),
 		host:           host,
 		stateStack:     make([]*Output, 0),
 	}
+
+  output.InitState()
 
 	return output, nil
 }
 
 func (output *Output) InitState() {
-	storage.storageUpdate = make(map[string]map[string][]byte, 0)
-	host.logs = make(map[string]logTopicsData, 0)
+	output.outputAccounts = make(map[string]*vmcommon.OutputAccount, 0)
+	output.logs = make(map[string]LogTopicsData, 0)
+	output.storageUpdate = make(map[string]map[string][]byte, 0)
+	output.selfDestruct = make(map[string][]byte)
+	output.returnData = nil
+	output.returnCode = vmcommon.Ok
+	output.refund = 0
 }
 
 func (output *Output) PushState() {
@@ -57,7 +62,7 @@ func (output *Output) PushState() {
 func (output *Output) PopState() error {
 	stateStackLen := len(output.stateStack)
 	if stateStackLen < 1 {
-		return context.StateStackUnderflow
+		return StateStackUnderflow
 	}
 
 	prevState := output.stateStack[stateStackLen-1]

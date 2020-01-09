@@ -132,182 +132,193 @@ func BigIntImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 
 //export bigIntGetUnsignedArgument
 func bigIntGetUnsignedArgument(context unsafe.Pointer, id int32, destination int32) {
-	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetBigIntContext(instCtx.Data())
+  bigInt := arwen.GetBigIntSubcontext(context)
+  runtime := arwen.GetRuntimeSubcontext(context)
+  metering := arwen.GetMeteringSubcontext(context)
 
-	gasToUse := hostContext.GasSchedule().BigIntAPICost.BigIntGetArgument
-	hostContext.UseGas(gasToUse)
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetArgument
+	metering.UseGas(gasToUse)
 
-	args := hostContext.Arguments()
+	args := runtime.Arguments()
 	if int32(len(args)) <= id {
 		return
 	}
 
-	value := hostContext.GetOne(destination)
+	value := bigInt.GetOne(destination)
 
 	value.SetBytes(args[id])
 }
 
 //export bigIntGetSignedArgument
 func bigIntGetSignedArgument(context unsafe.Pointer, id int32, destination int32) {
-	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetBigIntContext(instCtx.Data())
+  bigInt := arwen.GetBigIntSubcontext(context)
+  runtime := arwen.GetRuntimeSubcontext(context)
+  metering := arwen.GetMeteringSubcontext(context)
 
-	gasToUse := hostContext.GasSchedule().BigIntAPICost.BigIntGetArgument
-	hostContext.UseGas(gasToUse)
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetArgument
+	metering.UseGas(gasToUse)
 
-	args := hostContext.Arguments()
+	args := runtime.Arguments()
 	if int32(len(args)) <= id {
 		return
 	}
 
-	value := hostContext.GetOne(destination)
+	value := bigInt.GetOne(destination)
 
 	twos.SetBytes(value, args[id])
 }
 
 //export bigIntStorageStore
 func bigIntStorageStore(context unsafe.Pointer, keyOffset int32, source int32) int32 {
-	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetBigIntContext(instCtx.Data())
+  bigInt := arwen.GetBigIntSubcontext(context)
+  runtime := arwen.GetRuntimeSubcontext(context)
+  storage := arwen.GetStorageSubcontext(context)
+  metering := arwen.GetMeteringSubcontext(context)
 
-	key, err := arwen.LoadBytes(instCtx.Memory(), keyOffset, arwen.HashLen)
+	key, err := runtime.MemLoad(keyOffset, arwen.HashLen)
 	if withFault(err, context) {
 		return 0
 	}
 
-	value := hostContext.GetOne(source)
+	value := bigInt.GetOne(source)
 	bytes := value.Bytes()
 
-	gasToUse := hostContext.GasSchedule().BigIntAPICost.BigIntStorageStore
-	hostContext.UseGas(gasToUse)
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntStorageStore
+	metering.UseGas(gasToUse)
 
-	return hostContext.SetStorage(hostContext.GetSCAddress(), key, bytes)
+	return storage.SetStorage(runtime.GetSCAddress(), key, bytes)
 }
 
 //export bigIntStorageLoad
 func bigIntStorageLoad(context unsafe.Pointer, keyOffset int32, destination int32) int32 {
-	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetBigIntContext(instCtx.Data())
+  bigInt := arwen.GetBigIntSubcontext(context)
+  runtime := arwen.GetRuntimeSubcontext(context)
+  storage := arwen.GetStorageSubcontext(context)
+  metering := arwen.GetMeteringSubcontext(context)
 
-	key, err := arwen.LoadBytes(instCtx.Memory(), keyOffset, arwen.HashLen)
+	key, err := runtime.MemLoad(keyOffset, arwen.HashLen)
 	if withFault(err, context) {
 		return 0
 	}
 
-	bytes := hostContext.GetStorage(hostContext.GetSCAddress(), key)
+	bytes := storage.GetStorage(runtime.GetSCAddress(), key)
 
-	value := hostContext.GetOne(destination)
+	value := bigInt.GetOne(destination)
 	value.SetBytes(bytes)
 
-	gasToUse := hostContext.GasSchedule().BigIntAPICost.BigIntStorageLoad
-	gasToUse += hostContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(bytes))
-	hostContext.UseGas(gasToUse)
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntStorageLoad
+	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(bytes))
+	metering.UseGas(gasToUse)
 
 	return int32(len(bytes))
 }
 
 //export bigIntGetCallValue
 func bigIntGetCallValue(context unsafe.Pointer, destination int32) {
-	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetBigIntContext(instCtx.Data())
+  bigInt := arwen.GetBigIntSubcontext(context)
+  runtime := arwen.GetRuntimeSubcontext(context)
+  metering := arwen.GetMeteringSubcontext(context)
 
-	value := hostContext.GetOne(destination)
-	value.Set(hostContext.GetVMInput().CallValue)
+	value := bigInt.GetOne(destination)
+	value.Set(runtime.GetVMInput().CallValue)
 
-	gasToUse := hostContext.GasSchedule().BigIntAPICost.BigIntGetCallValue
-	hostContext.UseGas(gasToUse)
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetCallValue
+	metering.UseGas(gasToUse)
 }
 
 //export bigIntGetExternalBalance
 func bigIntGetExternalBalance(context unsafe.Pointer, addressOffset int32, result int32) {
-	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetBigIntContext(instCtx.Data())
+  bigInt := arwen.GetBigIntSubcontext(context)
+  runtime := arwen.GetRuntimeSubcontext(context)
+  blockchain := arwen.GetBlockchainSubcontext(context)
+  metering := arwen.GetMeteringSubcontext(context)
 
-	address, err := arwen.LoadBytes(instCtx.Memory(), addressOffset, arwen.AddressLen)
+	address, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
 	if withFault(err, context) {
 		return
 	}
 
-	balance := hostContext.GetBalance(address)
-	value := hostContext.GetOne(result)
+	balance := blockchain.GetBalance(address)
+	value := bigInt.GetOne(result)
 
 	value.SetBytes(balance)
 
-	gasToUse := hostContext.GasSchedule().BigIntAPICost.BigIntGetExternalBalance
-	hostContext.UseGas(gasToUse)
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetExternalBalance
+	metering.UseGas(gasToUse)
 }
 
 //export bigIntNew
 func bigIntNew(context unsafe.Pointer, smallValue int64) int32 {
-	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetBigIntContext(instCtx.Data())
+  bigInt := arwen.GetBigIntSubcontext(context)
+  metering := arwen.GetMeteringSubcontext(context)
 
-	gasToUse := hostContext.GasSchedule().BigIntAPICost.BigIntNew
-	hostContext.UseGas(gasToUse)
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntNew
+	metering.UseGas(gasToUse)
 
-	return hostContext.Put(smallValue)
+	return bigInt.Put(smallValue)
 }
 
 //export bigIntByteLength
 func bigIntByteLength(context unsafe.Pointer, reference int32) int32 {
-	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetBigIntContext(instCtx.Data())
+  bigInt := arwen.GetBigIntSubcontext(context)
+  metering := arwen.GetMeteringSubcontext(context)
 
-	value := hostContext.GetOne(reference)
+	value := bigInt.GetOne(reference)
 
-	gasToUse := hostContext.GasSchedule().BigIntAPICost.BigIntByteLength
-	hostContext.UseGas(gasToUse)
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntByteLength
+	metering.UseGas(gasToUse)
 
 	return int32(len(value.Bytes()))
 }
 
 //export bigIntGetBytes
 func bigIntGetBytes(context unsafe.Pointer, reference int32, byteOffset int32) int32 {
-	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetBigIntContext(instCtx.Data())
+  bigInt := arwen.GetBigIntSubcontext(context)
+  runtime := arwen.GetRuntimeSubcontext(context)
+  metering := arwen.GetMeteringSubcontext(context)
 
-	bytes := hostContext.GetOne(reference).Bytes()
+	bytes := bigInt.GetOne(reference).Bytes()
 
-	err := arwen.StoreBytes(instCtx.Memory(), byteOffset, bytes)
+	err := runtime.MemStore(byteOffset, bytes)
 	if withFault(err, context) {
 		return 0
 	}
 
-	gasToUse := hostContext.GasSchedule().BigIntAPICost.BigIntGetBytes
-	gasToUse += hostContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(bytes))
-	hostContext.UseGas(gasToUse)
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetBytes
+	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(bytes))
+	metering.UseGas(gasToUse)
 
 	return int32(len(bytes))
 }
 
 //export bigIntSetBytes
 func bigIntSetBytes(context unsafe.Pointer, destination int32, byteOffset int32, byteLength int32) {
-	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetBigIntContext(instCtx.Data())
+  bigInt := arwen.GetBigIntSubcontext(context)
+  runtime := arwen.GetRuntimeSubcontext(context)
+  metering := arwen.GetMeteringSubcontext(context)
 
-	bytes, err := arwen.LoadBytes(instCtx.Memory(), byteOffset, byteLength)
+	bytes, err := runtime.MemLoad(byteOffset, byteLength)
 	if withFault(err, context) {
 		return
 	}
 
-	value := hostContext.GetOne(destination)
+	value := bigInt.GetOne(destination)
 	value.SetBytes(bytes)
 
-	gasToUse := hostContext.GasSchedule().BigIntAPICost.BigIntSetBytes
-	gasToUse += hostContext.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(bytes))
-	hostContext.UseGas(gasToUse)
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSetBytes
+	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(bytes))
+	metering.UseGas(gasToUse)
 }
 
 //export bigIntIsInt64
 func bigIntIsInt64(context unsafe.Pointer, destination int32) int32 {
-	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetBigIntContext(instCtx.Data())
+  bigInt := arwen.GetBigIntSubcontext(context)
+  metering := arwen.GetMeteringSubcontext(context)
 
-	gasToUse := hostContext.GasSchedule().BigIntAPICost.BigIntIsInt64
-	hostContext.UseGas(gasToUse)
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntIsInt64
+	metering.UseGas(gasToUse)
 
-	value := hostContext.GetOne(destination)
+	value := bigInt.GetOne(destination)
 	if value.IsInt64() {
 		return 1
 	}
@@ -316,85 +327,86 @@ func bigIntIsInt64(context unsafe.Pointer, destination int32) int32 {
 
 //export bigIntGetInt64
 func bigIntGetInt64(context unsafe.Pointer, destination int32) int64 {
-	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetBigIntContext(instCtx.Data())
+  bigInt := arwen.GetBigIntSubcontext(context)
+  metering := arwen.GetMeteringSubcontext(context)
 
-	gasToUse := hostContext.GasSchedule().BigIntAPICost.BigIntGetInt64
-	hostContext.UseGas(gasToUse)
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetInt64
+	metering.UseGas(gasToUse)
 
-	value := hostContext.GetOne(destination)
+	value := bigInt.GetOne(destination)
 	return value.Int64()
 }
 
 //export bigIntSetInt64
 func bigIntSetInt64(context unsafe.Pointer, destination int32, value int64) {
-	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetBigIntContext(instCtx.Data())
+  bigInt := arwen.GetBigIntSubcontext(context)
+  metering := arwen.GetMeteringSubcontext(context)
 
-	dest := hostContext.GetOne(destination)
+	dest := bigInt.GetOne(destination)
 	dest.SetInt64(value)
 
-	gasToUse := hostContext.GasSchedule().BigIntAPICost.BigIntSetInt64
-	hostContext.UseGas(gasToUse)
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSetInt64
+	metering.UseGas(gasToUse)
 }
 
 //export bigIntAdd
 func bigIntAdd(context unsafe.Pointer, destination, op1, op2 int32) {
-	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetBigIntContext(instCtx.Data())
+  bigInt := arwen.GetBigIntSubcontext(context)
+  metering := arwen.GetMeteringSubcontext(context)
 
-	dest, a, b := hostContext.GetThree(destination, op1, op2)
+	dest, a, b := bigInt.GetThree(destination, op1, op2)
 	dest.Add(a, b)
 
-	gasToUse := hostContext.GasSchedule().BigIntAPICost.BigIntAdd
-	hostContext.UseGas(gasToUse)
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntAdd
+	metering.UseGas(gasToUse)
 }
 
 //export bigIntSub
 func bigIntSub(context unsafe.Pointer, destination, op1, op2 int32) {
-	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetBigIntContext(instCtx.Data())
+  bigInt := arwen.GetBigIntSubcontext(context)
+  metering := arwen.GetMeteringSubcontext(context)
 
-	dest, a, b := hostContext.GetThree(destination, op1, op2)
+	dest, a, b := bigInt.GetThree(destination, op1, op2)
 	dest.Sub(a, b)
 
-	gasToUse := hostContext.GasSchedule().BigIntAPICost.BigIntSub
-	hostContext.UseGas(gasToUse)
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
+	metering.UseGas(gasToUse)
 }
 
 //export bigIntMul
 func bigIntMul(context unsafe.Pointer, destination, op1, op2 int32) {
-	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetBigIntContext(instCtx.Data())
+  bigInt := arwen.GetBigIntSubcontext(context)
+  metering := arwen.GetMeteringSubcontext(context)
 
-	dest, a, b := hostContext.GetThree(destination, op1, op2)
+	dest, a, b := bigInt.GetThree(destination, op1, op2)
 	dest.Mul(a, b)
 
-	gasToUse := hostContext.GasSchedule().BigIntAPICost.BigIntMul
-	hostContext.UseGas(gasToUse)
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntMul
+	metering.UseGas(gasToUse)
 }
 
 //export bigIntCmp
 func bigIntCmp(context unsafe.Pointer, op1, op2 int32) int32 {
-	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetBigIntContext(instCtx.Data())
+  bigInt := arwen.GetBigIntSubcontext(context)
+  metering := arwen.GetMeteringSubcontext(context)
 
-	gasToUse := hostContext.GasSchedule().BigIntAPICost.BigIntCmp
-	hostContext.UseGas(gasToUse)
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntCmp
+	metering.UseGas(gasToUse)
 
-	a, b := hostContext.GetTwo(op1, op2)
+	a, b := bigInt.GetTwo(op1, op2)
 	return int32(a.Cmp(b))
 }
 
 //export bigIntFinish
 func bigIntFinish(context unsafe.Pointer, reference int32) {
-	instCtx := wasmer.IntoInstanceContext(context)
-	hostContext := arwen.GetBigIntContext(instCtx.Data())
+  bigInt := arwen.GetBigIntSubcontext(context)
+  output := arwen.GetOutputSubcontext(context)
+  metering := arwen.GetMeteringSubcontext(context)
 
-	value := hostContext.GetOne(reference)
-	hostContext.Finish(value.Bytes())
+	value := bigInt.GetOne(reference)
+	output.Finish(value.Bytes())
 
-	gasToUse := hostContext.GasSchedule().BigIntAPICost.BigIntFinish
-	gasToUse += hostContext.GasSchedule().BaseOperationCost.PersistPerByte * uint64(len(value.Bytes()))
-	hostContext.UseGas(gasToUse)
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntFinish
+	gasToUse += metering.GasSchedule().BaseOperationCost.PersistPerByte * uint64(len(value.Bytes()))
+	metering.UseGas(gasToUse)
 }

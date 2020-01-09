@@ -26,6 +26,13 @@ func NewBlockchainSubcontext(
 	return blockchain, nil
 }
 
+func (blockchain *Blockchain) InitState() {
+}
+
+func (blockchain *Blockchain) NewAddress(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error) {
+  return blockchain.blockChainHook.NewAddress(creatorAddress, creatorNonce, vmType)
+}
+
 func (blockchain *Blockchain) AccountExists(addr []byte) bool {
 	exists, err := blockchain.blockChainHook.AccountExists(addr)
 	if err != nil {
@@ -104,14 +111,6 @@ func (blockchain *Blockchain) GetCodeSize(addr []byte) (int32, error) {
 	return result, nil
 }
 
-func (blockchain *Blockchain) SelfDestruct(addr []byte, beneficiary []byte) {
-	panic("not implemented")
-}
-
-func (blockchain *Blockchain) GetVMInput() vmcommon.VMInput {
-	panic("not implemented")
-}
-
 func (blockchain *Blockchain) BlockHash(number int64) []byte {
 	if number < 0 {
 		fmt.Printf("BlockHash nonce cannot be negative\n")
@@ -125,4 +124,48 @@ func (blockchain *Blockchain) BlockHash(number int64) []byte {
 	}
 
 	return block
+}
+
+func (blockchain *Blockchain) CurrentEpoch() uint32 {
+  return blockchain.blockChainHook.CurrentEpoch()
+}
+
+func (blockchain *Blockchain) CurrentNonce() uint64 {
+  return blockchain.blockChainHook.CurrentNonce()
+}
+
+func (blockchain *Blockchain) GetStateRootHash() []byte {
+	return blockchain.blockChainHook.GetStateRootHash()
+}
+
+func (blockchain *Blockchain) LastTimeStamp() uint64 {
+	return blockchain.blockChainHook.LastTimeStamp()
+}
+
+func (blockchain *Blockchain) LastNonce() uint64 {
+	return blockchain.blockChainHook.LastNonce()
+}
+
+func (blockchain *Blockchain) LastRound() uint64 {
+	return blockchain.blockChainHook.LastRound()
+}
+
+func (blockchain *Blockchain) LastEpoch() uint32 {
+	return blockchain.blockChainHook.LastEpoch()
+}
+
+func (blockchain *Blockchain) CurrentRound() uint64 {
+	return blockchain.blockChainHook.CurrentRound()
+}
+
+func (blockchain *Blockchain) CurrentTimeStamp() uint64 {
+	return blockchain.blockChainHook.CurrentTimeStamp()
+}
+
+func (blockchain *Blockchain) LastRandomSeed() []byte {
+	return blockchain.blockChainHook.LastRandomSeed()
+}
+
+func (blockchain *Blockchain) CurrentRandomSeed() []byte {
+  return blockchain.blockChainHook.CurrentRandomSeed()
 }
