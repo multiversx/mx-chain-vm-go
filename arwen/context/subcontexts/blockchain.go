@@ -27,7 +27,11 @@ func NewBlockchainSubcontext(
 }
 
 func (blockchain *Blockchain) AccountExists(addr []byte) bool {
-	panic("not implemented")
+	exists, err := blockchain.blockChainHook.AccountExists(addr)
+	if err != nil {
+		fmt.Printf("Account exsits returned with error %s \n", err.Error())
+	}
+	return exists
 }
 
 func (blockchain *Blockchain) GetBalance(addr []byte) []byte {
@@ -78,11 +82,26 @@ func (blockchain *Blockchain) IncreaseNonce(addr []byte) {
 
 
 func (blockchain *Blockchain) GetCodeHash(addr []byte) ([]byte, error) {
-	panic("not implemented")
+	code, err := blockchain.blockChainHook.GetCode(addr)
+	if err != nil {
+		return nil, err
+	}
+
+	return blockchain.host.Crypto().Keccak256(code)
 }
 
 func (blockchain *Blockchain) GetCode(addr []byte) ([]byte, error) {
-	panic("not implemented")
+	return blockchain.blockChainHook.GetCode(addr)
+}
+
+func (blockchain *Blockchain) GetCodeSize(addr []byte) (int32, error) {
+	code, err := blockchain.blockChainHook.GetCode(addr)
+	if err != nil {
+		return 0, err
+	}
+
+	result := int32(len(code))
+	return result, nil
 }
 
 func (blockchain *Blockchain) SelfDestruct(addr []byte, beneficiary []byte) {
@@ -94,5 +113,16 @@ func (blockchain *Blockchain) GetVMInput() vmcommon.VMInput {
 }
 
 func (blockchain *Blockchain) BlockHash(number int64) []byte {
-	panic("not implemented")
+	if number < 0 {
+		fmt.Printf("BlockHash nonce cannot be negative\n")
+		return nil
+	}
+	block, err := blockchain.blockChainHook.GetBlockhash(uint64(number))
+
+	if err != nil {
+		fmt.Printf("GetBlockHash returned with error %s \n", err.Error())
+		return nil
+	}
+
+	return block
 }

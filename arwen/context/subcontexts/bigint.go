@@ -2,41 +2,51 @@ package subcontexts
 
 import (
 	"math/big"
-	"sync"
+
+	context "github.com/ElrondNetwork/arwen-wasm-vm/arwen/context"
 )
 
 type BigInt struct {
-	mutex        sync.Mutex
 	mappedValues map[int32]*big.Int
+	stateStack   []*BigInt
 }
 
-func NewBigIntSubcontext() *BigInt {
-	return &BigInt{
-		mutex: sync.Mutex{},
+func NewBigIntSubcontext() (*BigInt, error) {
+	bigInt := &BigInt{
 		mappedValues: make(map[int32]*big.Int),
+		stateStack:   make([]*BigInt, 0),
 	}
+
+	return bigInt, nil
 }
 
-func (bigInt *BigInt) CreateStateCopy() *BigInt {
-	return &BigInt{
-		mutex: sync.Mutex{},
+func (bigInt *BigInt) InitState() {
+	b.mappedValues = make(map[int32]*big.Int)
+}
+
+func (bigInt *BigInt) PushState() {
+	newState := &BigInt{
 		mappedValues: bigInt.mappedValues,
 	}
+
+	bigInt.stateStack = append(bigInt.stateStack, newState)
 }
 
-func (bigInt *BigInt) LoadFromStateCopy(otherBigInt *BigInt) {
-	bigInt.mappedValues = otherBigInt.mappedValues
-}
+func (bigInt *BigInt) PopState() error {
+	stateStackLen := len(bigInt.stateStack)
+	if stateStackLen < 1 {
+		return context.StateStackUnderflow
+	}
 
-func (bigInt *BigInt) Clean() {
-	bigInt.mutex.Lock()
-	bigInt.mappedValues = make(map[int32]*big.Int)
-	bigInt.mutex.Unlock()
+	prevState := bigInt.stateStack[stateStackLen-1]
+	bigInt.stateStack = bigInt.stateStack[:stateStackLen-1]
+
+	bigInt.mappedValues = prevState.mappedValues
+
+	return nil
 }
 
 func (bigInt *BigInt) Put(value int64) int32 {
-	bigInt.mutex.Lock()
-
 	newIndex := int32(len(bigInt.mappedValues))
 	for {
 		if _, ok := bigInt.mappedValues[newIndex]; !ok {
@@ -47,15 +57,10 @@ func (bigInt *BigInt) Put(value int64) int32 {
 
 	bigInt.mappedValues[newIndex] = big.NewInt(value)
 
-	bigInt.mutex.Unlock()
-
 	return newIndex
 }
 
 func (bigInt *BigInt) GetOne(id int32) *big.Int {
-	bigInt.mutex.Lock()
-	defer bigInt.mutex.Unlock()
-
 	if _, ok := bigInt.mappedValues[id]; !ok {
 		bigInt.mappedValues[id] = big.NewInt(0)
 	}
@@ -64,9 +69,6 @@ func (bigInt *BigInt) GetOne(id int32) *big.Int {
 }
 
 func (bigInt *BigInt) GetTwo(id1 int32, id2 int32) (*big.Int, *big.Int) {
-	bigInt.mutex.Lock()
-	defer bigInt.mutex.Unlock()
-
 	if _, ok := bigInt.mappedValues[id1]; !ok {
 		bigInt.mappedValues[id1] = big.NewInt(0)
 	}
@@ -79,9 +81,6 @@ func (bigInt *BigInt) GetTwo(id1 int32, id2 int32) (*big.Int, *big.Int) {
 }
 
 func (bigInt *BigInt) GetThree(id1 int32, id2 int32, id3 int32) (*big.Int, *big.Int, *big.Int) {
-	bigInt.mutex.Lock()
-	defer bigInt.mutex.Unlock()
-
 	if _, ok := bigInt.mappedValues[id1]; !ok {
 		bigInt.mappedValues[id1] = big.NewInt(0)
 	}

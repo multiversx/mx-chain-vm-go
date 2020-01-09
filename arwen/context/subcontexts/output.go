@@ -4,6 +4,7 @@ import (
 	"math/big"
 
 	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	context "github.com/ElrondNetwork/arwen-wasm-vm/arwen/context"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -21,19 +22,26 @@ type Output struct {
 	returnCode     vmcommon.ReturnCode
 	selfDestruct   map[string][]byte
 	refund         uint64
+	stateStack     []*Output
 }
 
 func NewOutputSubcontext(host arwen.VMContext) (*Output, error) {
 	output := &Output{
 		outputAccounts: make(map[string]*vmcommon.OutputAccount),
 		host:           host,
+		stateStack:     make([]*Output, 0),
 	}
 
 	return output, nil
 }
 
-func (output *Output) CreateStateCopy() *Output {
-	return &Output{
+func (output *Output) InitState() {
+	storage.storageUpdate = make(map[string]map[string][]byte, 0)
+	host.logs = make(map[string]logTopicsData, 0)
+}
+
+func (output *Output) PushState() {
+	newState := &Output{
 		logs:           output.logs,
 		storageUpdate:  output.storageUpdate,
 		outputAccounts: output.outputAccounts,
@@ -42,13 +50,23 @@ func (output *Output) CreateStateCopy() *Output {
 		selfDestruct:   output.selfDestruct,
 		refund:         output.refund,
 	}
+
+	output.stateStack = append(output.stateStack, newState)
 }
 
-func (output *Output) LoadFromStateCopy(otherOutput *Output) {
-	for key, log := range otherOutput.logs {
+func (output *Output) PopState() error {
+	stateStackLen := len(output.stateStack)
+	if stateStackLen < 1 {
+		return context.StateStackUnderflow
+	}
+
+	prevState := output.stateStack[stateStackLen-1]
+	output.stateStack = output.stateStack[:stateStackLen-1]
+
+	for key, log := range prevState.logs {
 		output.logs[key] = log
 	}
-	for key, storageUpdate := range otherOutput.storageUpdate {
+	for key, storageUpdate := range prevState.storageUpdate {
 		if _, ok := output.storageUpdate[key]; !ok {
 			output.storageUpdate[key] = storageUpdate
 			continue
@@ -59,19 +77,25 @@ func (output *Output) LoadFromStateCopy(otherOutput *Output) {
 		}
 	}
 
-	output.outputAccounts = otherOutput.outputAccounts
-	output.returnData = append(output.returnData, otherOutput.returnData...)
-	output.returnCode = otherOutput.returnCode
+	output.outputAccounts = prevState.outputAccounts
+	output.returnData = append(output.returnData, prevState.returnData...)
+	output.returnCode = prevState.returnCode
 
-	for key, selfDestruct := range otherOutput.selfDestruct {
+	for key, selfDestruct := range prevState.selfDestruct {
 		output.selfDestruct[key] = selfDestruct
 	}
 
-	output.refund += otherOutput.refund
+	output.refund += prevState.refund
+
+	return nil
 }
 
 func (output *Output) GetOutputAccounts() map[string]*vmcommon.OutputAccount {
 	return output.outputAccounts
+}
+
+func (output *Output) GetStorageUpdates() map[string](map[string][]byte) {
+	return output.storageUpdate
 }
 
 func (output *Output) GetRefund() uint64 {
@@ -154,5 +178,78 @@ func (output *Output) SelfDestruct(addr []byte, beneficiary []byte) {
 }
 
 func (output *Output) Finish(data []byte) {
-	panic("not implemented")
+	output.returnData = append(output.returnData, data)
 }
+
+// adapt vm output and all saved data from sc run into VM Output
+func (output *Output) CreateVMOutput(result []byte) *vmcommon.VMOutput {
+	vmOutput := &vmcommon.VMOutput{}
+	// save storage updates
+	outAccs := make(map[string]*vmcommon.OutputAccount, 0)
+	for addr, updates := range output.storageUpdate {
+		if _, ok := outAccs[addr]; !ok {
+			outAccs[addr] = &vmcommon.OutputAccount{Address: []byte(addr)}
+		}
+
+		for key, value := range updates {
+			storageUpdate := &vmcommon.StorageUpdate{
+				Offset: []byte(key),
+				Data:   value,
+			}
+
+			outAccs[addr].StorageUpdates = append(outAccs[addr].StorageUpdates, storageUpdate)
+		}
+	}
+
+	// add balances
+	for addr, outAcc := range output.outputAccounts {
+		if _, ok := outAccs[addr]; !ok {
+			outAccs[addr] = &vmcommon.OutputAccount{}
+		}
+
+		outAccs[addr].Address = outAcc.Address
+		outAccs[addr].BalanceDelta = outAcc.BalanceDelta
+
+		if len(outAcc.Code) > 0 {
+			outAccs[addr].Code = outAcc.Code
+		}
+		if outAcc.Nonce > 0 {
+			outAccs[addr].Nonce = outAcc.Nonce
+		}
+		if len(outAcc.Data) > 0 {
+			outAccs[addr].Data = outAcc.Data
+		}
+
+		outAccs[addr].GasLimit = outAcc.GasLimit
+	}
+
+	// save to the output finally
+	for _, outAcc := range outAccs {
+		vmOutput.OutputAccounts = append(vmOutput.OutputAccounts, outAcc)
+	}
+
+	// save logs
+	for addr, value := range output.logs {
+		logEntry := &vmcommon.LogEntry{
+			Address: []byte(addr),
+			Data:    value.data,
+			Topics:  value.topics,
+		}
+
+		vmOutput.Logs = append(vmOutput.Logs, logEntry)
+	}
+
+	if len(output.returnData) > 0 {
+		vmOutput.ReturnData = append(vmOutput.ReturnData, output.returnData...)
+	}
+	if len(result) > 0 {
+		vmOutput.ReturnData = append(vmOutput.ReturnData, result)
+	}
+
+	vmOutput.GasRemaining = output.host.Metering().GasLeft()
+	vmOutput.GasRefund = big.NewInt(0).SetUint64(output.refund)
+	vmOutput.ReturnCode = output.returnCode
+
+	return vmOutput
+}
+

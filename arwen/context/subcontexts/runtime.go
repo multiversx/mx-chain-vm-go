@@ -4,11 +4,13 @@ import (
 	"unsafe"
 
 	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	context "github.com/ElrondNetwork/arwen-wasm-vm/arwen/context"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 type Runtime struct {
+	host            arwen.VMContext
 	blockChainHook  vmcommon.BlockchainHook
 	instance        *wasmer.Instance
 	instanceContext *wasmer.InstanceContext
@@ -17,14 +19,17 @@ type Runtime struct {
 	callFunction    string
 	vmType          []byte
 	readOnly        bool
+	stateStack      []*Runtime
 }
 
-func NewRuntimeSubcontext(blockChainHook vmcommon.BlockchainHook) (*Runtime, error) {
+func NewRuntimeSubcontext(host arwen.VMContext, blockChainHook vmcommon.BlockchainHook) (*Runtime, error) {
 	runtime := &Runtime{
+		host:            host,
 		blockChainHook:  blockChainHook,
 		instance:        nil,
 		instanceContext: nil,
 		vmInput:         nil,
+		stateStack:      make([]*Runtime, 0),
 	}
 	return runtime, nil
 }
@@ -44,13 +49,32 @@ func (runtime *Runtime) InitializeFromInput(input *vmcommon.ContractCallInput) e
 	return nil
 }
 
-func (runtime *Runtime) CreateStateCopy() *Runtime {
-	return &Runtime{
-		vmInput: runtime.vmInput,
-		scAddress: runtime.scAddress,
+func (runtime *Runtime) PushState() {
+	newState := &Runtime{
+		vmInput:      runtime.vmInput,
+		scAddress:    runtime.scAddress,
 		callFunction: runtime.callFunction,
-		readOnly: runtime.readOnly,
+		readOnly:     runtime.readOnly,
 	}
+
+	runtime.stateStack = append(runtime.stateStack, newState)
+}
+
+func (runtime *Runtime) PopState() error {
+	stateStackLen := len(runtime.stateStack)
+	if stateStackLen < 1 {
+		return context.StateStackUnderflow
+	}
+
+	prevState := runtime.stateStack[stateStackLen-1]
+	runtime.stateStack = runtime.stateStack[:stateStackLen-1]
+
+	runtime.vmInput = prevState.vmInput
+	runtime.scAddress = prevState.scAddress
+	runtime.callFunction = prevState.callFunction
+	runtime.readOnly = prevState.readOnly
+
+	return nil
 }
 
 func (runtime *Runtime) LoadFromStateCopy(otherRuntime *Runtime) {
@@ -65,19 +89,22 @@ func (runtime *Runtime) GetVMInput() *vmcommon.VMInput {
 }
 
 func (runtime *Runtime) GetSCAddress() []byte {
-	panic("not implemented")
+	return runtime.scAddress
 }
 
 func (runtime *Runtime) Function() string {
-	panic("not implemented")
+	return runtime.callFunction
 }
 
 func (runtime *Runtime) Arguments() [][]byte {
-	panic("not implemented")
+	return runtime.vmInput.Arguments
 }
 
 func (runtime *Runtime) SignalUserError() {
-	panic("not implemented")
+	// SignalUserError() remains in Runtime, and won't be moved into Output,
+	// because there will be extra handling added here later, which requires
+	// information from Runtime (e.g. runtime breakpoints)
+	runtime.host.Output().SetReturnCode(vmcommon.UserError)
 }
 
 func (runtime *Runtime) SetRuntimeBreakpointValue(value arwen.BreakpointValue) {

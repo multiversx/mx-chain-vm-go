@@ -36,7 +36,8 @@ func (metering *Metering) GasSchedule() *config.GasCost {
 }
 
 func (metering *Metering) UseGas(gas uint64) {
-	panic("not implemented")
+	gasUsed := metering.host.Runtime().GetPointsUsed() + gas
+	metering.host.Runtime().SetPointsUsed(gasUsed)
 }
 
 func (metering *Metering) FreeGas(gas uint64) {

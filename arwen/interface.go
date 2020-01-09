@@ -8,6 +8,15 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
+type StorageStatus int
+
+const (
+	StorageUnchanged StorageStatus = 0
+	StorageModified  StorageStatus = 1
+	StorageAdded     StorageStatus = 3
+	StorageDeleted   StorageStatus = 4
+)
+
 type BreakpointValue uint64
 
 const (
@@ -108,6 +117,8 @@ type VMContext interface {
 	BigInContext() BigIntContext
 	CryptoContext() CryptoContext
 
+	StateStack
+
 	// refactored subcontexts
 	Crypto() vmcommon.CryptoHook
 	Blockchain() BlockchainSubcontext
@@ -118,20 +129,29 @@ type VMContext interface {
 	Storage() StorageSubcontext
 }
 
+type StateStack interface {
+	PushState()
+	PopState() error
+}
+
 type BlockchainSubcontext interface {
+	InitState()
 	AccountExists(addr []byte) bool
 	GetBalance(addr []byte) []byte
 	GetNonce(addr []byte) uint64
+	IncreaseNonce(addr []byte)
 	GetCodeHash(addr []byte) ([]byte, error)
 	GetCode(addr []byte) ([]byte, error)
+	GetCodeSize(addr []byte) (int32, error)
 	SelfDestruct(addr []byte, beneficiary []byte)
 	GetVMInput() vmcommon.VMInput
 	BlockHash(number int64) []byte
 }
 
 type RuntimeSubcontext interface {
-	CreateStateCopy() RuntimeSubcontext
-	LoadFromStateCopy(runtime *RuntimeSubcontext)
+	StateStack
+
+	InitState()
 	GetVMInput() *vmcommon.VMInput
 	GetSCAddress() []byte
 	Function() string
@@ -148,15 +168,16 @@ type RuntimeSubcontext interface {
 	GetInstanceContext() *wasmer.InstanceContext
 	GetPointsUsed() uint64
 	SetPointsUsed(gasPoints uint64)
-	MemStore(offset int32, data []byte) error 
+	MemStore(offset int32, data []byte) error
 	MemLoad(offset int32, length int32) ([]byte, error)
 	Clean()
 	SetInstanceContextId(id int)
 }
 
 type BigIntSubcontext interface {
-	CreateStateCopy() BigIntSubcontext
-	LoadFromStateCopy(bigInt *BigIntSubcontext)
+	StateStack
+
+	InitState()
 	Put(value int64) int32
 	GetOne(id int32) *big.Int
 	GetTwo(id1, id2 int32) (*big.Int, *big.Int)
@@ -165,21 +186,25 @@ type BigIntSubcontext interface {
 
 // TODO find better name
 type OutputSubcontext interface {
-	CreateStateCopy() OutputSubcontext
-	LoadFromStateCopy(output *OutputSubcontext)
+	StateStack
+
+	InitState()
 	GetOutputAccounts() map[string]*vmcommon.OutputAccount
+	GetStorageUpdates() map[string](map[string][]byte)
 	WriteLog(addr []byte, topics [][]byte, data []byte)
 	Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte)
-	SelfDestruct(addr []byte, beneficiary []byte) 
+	SelfDestruct(addr []byte, beneficiary []byte)
 	GetRefund() uint64
 	SetRefund(refund uint64)
 	ReturnCode() vmcommon.ReturnCode
+	SetReturnCode(returnCode vmcommon.ReturnCode)
 	ReturnData() [][]byte
 	ClearReturnData()
 	Finish(data []byte)
 }
 
 type MeteringSubcontext interface {
+	InitState()
 	GasSchedule() *config.GasCost
 	UseGas(gas uint64)
 	FreeGas(gas uint64)
@@ -189,6 +214,7 @@ type MeteringSubcontext interface {
 }
 
 type StorageSubcontext interface {
+	InitState()
 	GetStorage(addr []byte, key []byte) []byte
 	SetStorage(addr []byte, key []byte, value []byte) int32
 }
