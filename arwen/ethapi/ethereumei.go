@@ -288,10 +288,11 @@ func ethgetBlockHash(context unsafe.Pointer, number int64, resultOffset int32) i
 
 //export ethcallDataCopy
 func ethcallDataCopy(context unsafe.Pointer, resultOffset int32, dataOffset int32, length int32) {
+	host := arwen.GetVmContext(context)
   runtime := arwen.GetRuntimeSubcontext(context)
   metering := arwen.GetMeteringSubcontext(context)
 
-	callData := runtime.CallData()
+	callData := host.EthereumCallData()
 	callDataSlice, err := arwen.GuardedGetBytesSlice(callData, dataOffset, length)
 	if withFault(err, context) {
 		return
@@ -309,13 +310,15 @@ func ethcallDataCopy(context unsafe.Pointer, resultOffset int32, dataOffset int3
 
 //export ethgetCallDataSize
 func ethgetCallDataSize(context unsafe.Pointer) int32 {
-  runtime := arwen.GetRuntimeSubcontext(context)
+  host := arwen.GetVmContext(context)
   metering := arwen.GetMeteringSubcontext(context)
 
 	gasToUse := metering.GasSchedule().EthAPICost.GetCallDataSize
 	metering.UseGas(gasToUse)
 
-	return int32(len(runtime.CallData()))
+
+	callData := host.EthereumCallData()
+	return int32(len(callData))
 }
 
 //export ethstorageStore
@@ -623,7 +626,8 @@ func ethrevert(context unsafe.Pointer, dataOffset int32, length int32) {
 
 	output.ClearReturnData()
 	output.Finish(data)
-	runtime.SignalUserError()
+	// TODO replace this with a breakpoint?
+	runtime.SignalUserError("revert")
 
 	gasToUse := metering.GasSchedule().EthAPICost.Revert
 	gasToUse += metering.GasSchedule().BaseOperationCost.PersistPerByte * uint64(length)
@@ -1021,7 +1025,7 @@ func withFault(err error, context unsafe.Pointer) bool {
 		runtime := arwen.GetRuntimeSubcontext(context)
 		metering := arwen.GetMeteringSubcontext(context)
 
-		runtime.SignalUserError()
+		runtime.SignalUserError(err.Error())
 		metering.UseGas(metering.GasLeft())
 
 		return true

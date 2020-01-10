@@ -148,11 +148,13 @@ func (runtime *Runtime) Arguments() [][]byte {
 	return runtime.vmInput.Arguments
 }
 
-func (runtime *Runtime) SignalUserError() {
+func (runtime *Runtime) SignalUserError(message string) {
 	// SignalUserError() remains in Runtime, and won't be moved into Output,
 	// because there will be extra handling added here later, which requires
 	// information from Runtime (e.g. runtime breakpoints)
 	runtime.host.Output().SetReturnCode(vmcommon.UserError)
+	runtime.host.Output().SetReturnMessage(message)
+	runtime.SetRuntimeBreakpointValue(arwen.BreakpointSignalError)
 }
 
 func (runtime *Runtime) SetRuntimeBreakpointValue(value arwen.BreakpointValue) {
@@ -202,6 +204,7 @@ func (runtime *Runtime) GetInstanceExports() wasmer.ExportsMap {
 func (runtime *Runtime) GetFunctionToCall() (wasmer.ExportedFunctionCallback, error) {
 	exports := runtime.instance.Exports
 	function, ok := exports[runtime.callFunction]
+
 	if !ok {
 		function, ok = exports["main"]
 	}
@@ -211,6 +214,21 @@ func (runtime *Runtime) GetFunctionToCall() (wasmer.ExportedFunctionCallback, er
 	}
 
 	return function, nil
+}
+
+func (runtime *Runtime) GetInitFunction() wasmer.ExportedFunctionCallback {
+	exports := runtime.instance.Exports
+	init, ok := exports[arwen.InitFunctionName]
+
+	if !ok {
+		init, ok = exports[arwen.InitFunctionNameEth]
+	}
+
+	if !ok {
+		init = nil
+	}
+
+	return init
 }
 
 func (runtime *Runtime) MemStore(offset int32, data []byte) error {
@@ -225,4 +243,5 @@ func (runtime *Runtime) MemLoad(offset int32, length int32) ([]byte, error) {
 
 func (runtime *Runtime) CleanInstance() {
 	runtime.instance.Clean()
+	runtime.instance = nil
 }

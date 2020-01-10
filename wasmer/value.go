@@ -70,7 +70,7 @@ func F64(value float64) Value {
 }
 
 // void constructs an empty WebAssembly value.
-func void() Value {
+func Void() Value {
 	return Value{
 		value: 0,
 		ty:    TypeVoid,
@@ -128,4 +128,8 @@ func (value Value) String() string {
 	default:
 		return ""
 	}
+}
+
+func (value Value) IsVoid() bool {
+	return value.ty == TypeVoid
 }

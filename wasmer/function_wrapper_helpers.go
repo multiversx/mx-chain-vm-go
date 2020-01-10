@@ -157,11 +157,11 @@ func convertWasmOutputToValue(
 
 			return F64(*pointer), nil
 		default:
-			return void(), NewExportedFunctionError(exportedFunctionName, "Invalid output type retrieved from function `%s`.")
+			return Void(), NewExportedFunctionError(exportedFunctionName, "Invalid output type retrieved from function `%s`.")
 		}
 	}
 
-	return void(), nil
+	return Void(), nil
 }
 
 func writeInt32ToWasmInputs(wasmInputs []cWasmerValueT, index int, value interface{}, exportedFunctionName string) error {

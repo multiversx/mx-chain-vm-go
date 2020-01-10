@@ -20,6 +20,7 @@ type Output struct {
 	storageUpdate  map[string](map[string][]byte)
 	returnData     [][]byte
 	returnCode     vmcommon.ReturnCode
+	returnMessage  string
 	selfDestruct   map[string][]byte
 	refund         uint64
 	stateStack     []*Output
@@ -43,6 +44,7 @@ func (output *Output) InitState() {
 	output.selfDestruct = make(map[string][]byte)
 	output.returnData = nil
 	output.returnCode = vmcommon.Ok
+	output.returnMessage = ""
 	output.refund = 0
 }
 
@@ -54,6 +56,7 @@ func (output *Output) PushState() {
 		returnData:     output.returnData,
 		returnCode:     output.returnCode,
 		selfDestruct:   output.selfDestruct,
+		returnMessage:  output.returnMessage,
 		refund:         output.refund,
 	}
 
@@ -86,6 +89,7 @@ func (output *Output) PopState() error {
 	output.outputAccounts = prevState.outputAccounts
 	output.returnData = append(output.returnData, prevState.returnData...)
 	output.returnCode = prevState.returnCode
+	output.returnMessage = prevState.returnMessage
 
 	for key, selfDestruct := range prevState.selfDestruct {
 		output.selfDestruct[key] = selfDestruct
@@ -111,6 +115,54 @@ func (output *Output) GetRefund() uint64 {
 func (output *Output) SetRefund(refund uint64) {
 	output.refund = refund
 }
+
+func (output *Output) ReturnData() [][]byte {
+	return output.returnData
+}
+
+func (output *Output) ReturnCode() vmcommon.ReturnCode {
+	return output.returnCode
+}
+
+func (output *Output) SetReturnCode(returnCode vmcommon.ReturnCode) {
+	output.returnCode = returnCode
+}
+
+func (output *Output) ReturnMessage() string {
+	return output.returnMessage
+}
+
+func (output *Output) SetReturnMessage(returnMessage string) {
+	output.returnMessage = returnMessage
+}
+
+func (output *Output) ClearReturnData() {
+	output.returnData = make([][]byte, 0)
+}
+
+func (output *Output) SelfDestruct(addr []byte, beneficiary []byte) {
+	if output.host.Runtime().ReadOnly() {
+		return
+	}
+
+	output.selfDestruct[string(addr)] = beneficiary
+}
+
+func (output *Output) Finish(data []byte) {
+	if len(data) > 0 {
+		output.returnData = append(output.returnData, data)
+	}
+}
+
+func (output *Output) FinishValue(value wasmer.Value) {
+	if !value.IsVoid() {
+		convertedResult := arwen.ConvertReturnValue(value)
+		valueBytes := convertedResult.Bytes()
+
+		output.Finish(valueBytes)
+	}
+}
+
 
 func (output *Output) WriteLog(addr []byte, topics [][]byte, data []byte) {
 	if output.host.Runtime().ReadOnly() {
@@ -163,34 +215,6 @@ func (output *Output) Transfer(destination []byte, sender []byte, gasLimit uint6
 	destAcc.GasLimit = gasLimit
 }
 
-func (output *Output) ReturnData() [][]byte {
-	return output.returnData
-}
-
-func (output *Output) ReturnCode() vmcommon.ReturnCode {
-	return output.returnCode
-}
-
-func (output *Output) SetReturnCode(returnCode vmcommon.ReturnCode) {
-	output.returnCode = returnCode
-}
-
-func (output *Output) ClearReturnData() {
-	output.returnData = make([][]byte, 0)
-}
-
-func (output *Output) SelfDestruct(addr []byte, beneficiary []byte) {
-	if output.host.Runtime().ReadOnly() {
-		return
-	}
-
-	output.selfDestruct[string(addr)] = beneficiary
-}
-
-func (output *Output) Finish(data []byte) {
-	output.returnData = append(output.returnData, data)
-}
-
 func (output *Output) AddTxValueToAccount(address []byte, value *big.Int) {
 	destAcc, ok := output.outputAccounts[string(address)]
 	if !ok {
@@ -205,7 +229,7 @@ func (output *Output) AddTxValueToAccount(address []byte, value *big.Int) {
 }
 
 // adapt vm output and all saved data from sc run into VM Output
-func (output *Output) CreateVMOutput(result []byte) *vmcommon.VMOutput {
+func (output *Output) CreateVMOutput(result wasmer.Value) *vmcommon.VMOutput {
 	vmOutput := &vmcommon.VMOutput{}
 	// save storage updates
 	outAccs := make(map[string]*vmcommon.OutputAccount, 0)
@@ -266,8 +290,10 @@ func (output *Output) CreateVMOutput(result []byte) *vmcommon.VMOutput {
 		vmOutput.ReturnData = append(vmOutput.ReturnData, output.returnData...)
 	}
 
-	if len(result) > 0 {
-		vmOutput.ReturnData = append(vmOutput.ReturnData, result)
+	convertedResult := arwen.ConvertReturnValue(result)
+	resultBytes := convertedResult.Bytes()
+	if len(resultBytes) > 0 {
+		vmOutput.ReturnData = append(vmOutput.ReturnData, resultBytes)
 	}
 
 	vmOutput.GasRemaining = output.host.Metering().GasLeft()
@@ -275,13 +301,6 @@ func (output *Output) CreateVMOutput(result []byte) *vmcommon.VMOutput {
 	vmOutput.ReturnCode = output.returnCode
 
 	return vmOutput
-}
-
-func (output *Output) CreateVMOutputFromValue(result wasmer.Value) *vmcommon.VMOutput {
-	convertedResult := arwen.ConvertReturnValue(result)
-	resultBytes := convertedResult.Bytes()
-
-	return output.CreateVMOutput(resultBytes)
 }
 
 func (output *Output) DeployCode(address []byte, code []byte) {

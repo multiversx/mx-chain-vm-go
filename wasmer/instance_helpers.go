@@ -125,12 +125,12 @@ func createExportedFunctionWrapper(
 	wrapper := func(arguments ...interface{}) (Value, error) {
 		err := validateGivenArguments(exportedFunctionName, arguments, wasmFunctionInputsArity)
 		if err != nil {
-			return void(), err
+			return Void(), err
 		}
 
 		wasmInputs, err := createWasmInputsFromArguments(arguments, wasmFunctionInputsArity, wasmFunctionInputSignatures, exportedFunctionName)
 		if err != nil {
-			return void(), err
+			return Void(), err
 		}
 
 		wasmOutputs, callResult := callWasmFunction(
@@ -142,7 +142,7 @@ func createExportedFunctionWrapper(
 		)
 
 		if callResult != cWasmerOk {
-			return void(), NewExportedFunctionError(exportedFunctionName, "Failed to call the `%s` exported function.")
+			return Void(), NewExportedFunctionError(exportedFunctionName, "Failed to call the `%s` exported function.")
 		}
 
 		value, err := convertWasmOutputToValue(wasmFunctionOutputsArity, wasmOutputs, exportedFunctionName)

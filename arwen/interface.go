@@ -48,6 +48,7 @@ type VMContext interface {
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContext(input *vmcommon.ContractCallInput) error
 	ExecuteOnDestContext(input *vmcommon.ContractCallInput) error
+	EthereumCallData() []byte
 }
 
 type BlockchainSubcontext interface {
@@ -84,12 +85,11 @@ type RuntimeSubcontext interface {
 	GetVMType() []byte
 	Function() string
 	Arguments() [][]byte
-	SignalUserError()
+	SignalUserError(message string)
 	SetRuntimeBreakpointValue(value BreakpointValue)
 	GetRuntimeBreakpointValue() BreakpointValue
 	PushInstance()
 	PopInstance() error
-	CallData() []byte
 	ReadOnly() bool
 	SetReadOnly(readOnly bool)
 	CreateWasmerInstance(contract []byte) error
@@ -97,6 +97,7 @@ type RuntimeSubcontext interface {
 	SetInstanceContext(instCtx *wasmer.InstanceContext)
 	GetInstanceContext() *wasmer.InstanceContext
 	GetInstanceExports() wasmer.ExportsMap
+	GetInitFunction() wasmer.ExportedFunctionCallback 
 	GetFunctionToCall() (wasmer.ExportedFunctionCallback, error) 
 	GetPointsUsed() uint64
 	SetPointsUsed(gasPoints uint64)
@@ -128,11 +129,13 @@ type OutputSubcontext interface {
 	SetRefund(refund uint64)
 	ReturnCode() vmcommon.ReturnCode
 	SetReturnCode(returnCode vmcommon.ReturnCode)
+	ReturnMessage() string
+	SetReturnMessage(message string)
 	ReturnData() [][]byte
 	ClearReturnData()
 	Finish(data []byte)
-  CreateVMOutput(result []byte) *vmcommon.VMOutput
-  CreateVMOutputFromValue(result wasmer.Value) *vmcommon.VMOutput
+	FinishValue(value wasmer.Value)
+  CreateVMOutput(result wasmer.Value) *vmcommon.VMOutput
 	AddTxValueToAccount(address []byte, value *big.Int) 
 	DeployCode(address []byte, code []byte)
 }

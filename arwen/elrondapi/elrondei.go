@@ -287,7 +287,8 @@ func signalError(context unsafe.Pointer) {
 	runtime := arwen.GetRuntimeSubcontext(context)
 	metering := arwen.GetMeteringSubcontext(context)
 
-	runtime.SignalUserError()
+	// TODO replace with a message coming from the SmartContract
+	runtime.SignalUserError("user error")
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.SignalError
 	metering.UseGas(gasToUse)
@@ -1129,7 +1130,7 @@ func withFault(err error, context unsafe.Pointer) bool {
 		runtime := arwen.GetRuntimeSubcontext(context)
 		metering := arwen.GetMeteringSubcontext(context)
 
-		runtime.SignalUserError()
+		runtime.SignalUserError(err.Error())
 		metering.UseGas(metering.GasLeft())
 
 		return true

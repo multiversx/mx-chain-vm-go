@@ -90,7 +90,7 @@ func withFault(err error, context unsafe.Pointer) bool {
 		runtime := arwen.GetRuntimeSubcontext(context)
 		metering := arwen.GetMeteringSubcontext(context)
 
-		runtime.SignalUserError()
+		runtime.SignalUserError(err.Error())
 		metering.UseGas(metering.GasLeft())
 
 		return true

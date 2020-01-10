@@ -199,13 +199,13 @@ func (host *vmContext) doRunSmartContractCreate(input *vmcommon.ContractCreateIn
 		runtime.CleanInstance()
 	}()
 
-	_, result, err := host.callInitFunction()
+	result, err := host.callInitFunction()
 	if err != nil {
+		fmt.Println("arwen.callInitFunction() error:", err.Error())
 		return host.createVMOutputInCaseOfError(vmcommon.FunctionWrongSignature, err.Error()), nil
 	}
 
 	output.DeployCode(address, input.ContractCode)
-
 	vmOutput := output.CreateVMOutput(result)
 
 	return vmOutput, err
@@ -262,32 +262,17 @@ func (host *vmContext) doRunSmartContractCall(input *vmcommon.ContractCallInput)
 		arwen.RemoveHostContext(idContext)
 	}()
 
-	if host.isInitFunctionBeingCalled() {
-		fmt.Println("arwen Error", ErrInitFuncCalledInRun.Error())
-		return host.createVMOutputInCaseOfError(vmcommon.UserError, err.Error()), nil
-	}
-
-	function, err := runtime.GetFunctionToCall()
+	result, returnCode, err := host.callSCMethod()
 	if err != nil {
 		fmt.Println("arwen Error", err.Error())
-		return host.createVMOutputInCaseOfError(vmcommon.FunctionNotFound, err.Error()), nil
+		return host.createVMOutputInCaseOfError(returnCode, err.Error()), nil
 	}
 
-	result, err := function()
-	if err != nil {
-		strError, _ := wasmer.GetLastError()
-
-		fmt.Println("arwen Error", err.Error(), strError)
-		return host.createVMOutputInCaseOfError(vmcommon.FunctionWrongSignature, err.Error()), nil
-	}
-
-	returnCode := output.ReturnCode()
 	if returnCode != vmcommon.Ok {
-		// user error: signalError()
-		return host.createVMOutputInCaseOfError(returnCode, ""), nil
+		return host.createVMOutputInCaseOfError(returnCode, output.ReturnMessage()), nil
 	}
 
-	vmOutput := output.CreateVMOutputFromValue(result)
+	vmOutput := output.CreateVMOutput(result)
 
 	return vmOutput, nil
 }
@@ -342,6 +327,7 @@ func (host *vmContext) CreateNewContract(input *vmcommon.ContractCreateInput) ([
 		metering.GasSchedule().BaseOperationCost.StorePerByte,
 	)
 	if err != nil {
+		output.Transfer(input.CallerAddr, address, 0, input.CallValue, nil)
 		return nil, err
 	}
 
@@ -357,33 +343,20 @@ func (host *vmContext) CreateNewContract(input *vmcommon.ContractCreateInput) ([
 	if err != nil {
 		fmt.Println("arwen Error: ", err.Error())
 		// TODO use all gas here?
+		output.Transfer(input.CallerAddr, address, 0, input.CallValue, nil)
 		return nil, err
 	}
 
 	runtime.SetInstanceContextId(idContext)
 
-	initCalled, result, err := host.callInitFunction()
+	result, err := host.callInitFunction()
 	if err != nil {
+		output.Transfer(input.CallerAddr, address, 0, input.CallValue, nil)
 		return nil, err
 	}
 
-	if initCalled {
-		output.Finish(result)
-	}
-
-	outputAccounts := output.GetOutputAccounts()
-	newSCAcc, ok := outputAccounts[string(address)]
-	if !ok {
-		outputAccounts[string(address)] = &vmcommon.OutputAccount{
-			Address:        address,
-			Nonce:          0,
-			BalanceDelta:   big.NewInt(0),
-			StorageUpdates: nil,
-			Code:           input.ContractCode,
-		}
-	} else {
-		newSCAcc.Code = input.ContractCode
-	}
+	output.DeployCode(address, input.ContractCode)
+	output.FinishValue(result)
 
 	totalGasConsumed = input.GasProvided - gasLeft - runtime.GetPointsUsed()
 
@@ -396,7 +369,7 @@ func (host *vmContext) InitState() {
 	host.Runtime().InitState()
 }
 
-func (host *vmContext) CallData() []byte {
+func (host *vmContext) EthereumCallData() []byte {
 	if host.ethInput == nil {
 		host.ethInput = host.createETHCallInput()
 	}
@@ -405,7 +378,10 @@ func (host *vmContext) CallData() []byte {
 
 func (host *vmContext) execute(input *vmcommon.ContractCallInput) error {
 	runtime := host.Runtime()
-	contract, err := host.Blockchain().GetCode(host.Runtime().GetSCAddress())
+	metering := host.Metering()
+	output := host.Output()
+
+	contract, err := host.Blockchain().GetCode(runtime.GetSCAddress())
 	if err != nil {
 		return err
 	}
@@ -413,14 +389,14 @@ func (host *vmContext) execute(input *vmcommon.ContractCallInput) error {
 	totalGasConsumed := input.GasProvided
 
 	defer func() {
-		host.Metering().UseGas(totalGasConsumed)
+		metering.UseGas(totalGasConsumed)
 	}()
 
 	gasLeft, err := host.deductInitialCodeCost(
 		input.GasProvided,
 		contract,
 		0, // create cost was elrady taken care of. as it is different for ethereum and elrond
-		host.Metering().GasSchedule().BaseOperationCost.StorePerByte,
+		metering.GasSchedule().BaseOperationCost.StorePerByte,
 	)
 	if err != nil {
 		return err
@@ -434,9 +410,9 @@ func (host *vmContext) execute(input *vmcommon.ContractCallInput) error {
 		arwen.RemoveHostContext(idContext)
 	}()
 
-	newInstance, err := wasmer.NewMeteredInstance(contract, gasLeft)
+	err = runtime.CreateWasmerInstanceWithGasLimit(contract, gasLeft)
 	if err != nil {
-		host.Metering().UseGas(input.GasProvided)
+		metering.UseGas(input.GasProvided)
 		return err
 	}
 
@@ -458,25 +434,52 @@ func (host *vmContext) execute(input *vmcommon.ContractCallInput) error {
 		return ErrFunctionRunError
 	}
 
-	if host.Output().ReturnCode() != vmcommon.Ok {
+	if output.ReturnCode() != vmcommon.Ok {
 		return ErrReturnCodeNotOk
 	}
 
 	convertedResult := arwen.ConvertReturnValue(result)
-	host.Output().Finish(convertedResult.Bytes())
+	output.Finish(convertedResult.Bytes())
 
-	totalGasConsumed = input.GasProvided - gasLeft - newInstance.GetPointsUsed()
+	totalGasConsumed = input.GasProvided - gasLeft - runtime.GetPointsUsed()
 
 	return nil
 }
 
-func (host *vmContext) ExecuteOnSameContext(input *vmcommon.ContractCallInput) error {
-	host.Runtime().PushState()
+func (host *vmContext) ExecuteOnDestContext(input *vmcommon.ContractCallInput) error {
+	host.PushState()
+
+	var err error
+	defer func() {
+		popErr := host.PopState()
+		if popErr != nil {
+			err = popErr
+		}
+	}()
+
+	host.InitState()
+
 	host.Runtime().InitStateFromContractCallInput(input)
+	err = host.execute(input)
 
-	err := host.execute(input)
+	return err
+}
 
-	host.Runtime().PopState()
+func (host *vmContext) ExecuteOnSameContext(input *vmcommon.ContractCallInput) error {
+	runtime := host.Runtime()
+	runtime.PushState()
+
+	var err error
+	defer func() {
+		popErr := runtime.PopState()
+		if popErr != nil {
+			err = popErr
+		}
+	}()
+
+	runtime.InitStateFromContractCallInput(input)
+	err = host.execute(input)
+
 	return err
 }
 
@@ -505,47 +508,39 @@ func (host *vmContext) PopState() error {
 	return nil
 }
 
-func (host *vmContext) ExecuteOnDestContext(input *vmcommon.ContractCallInput) error {
-	host.PushState()
-
-	var err error
-	defer func() {
-		popErr := host.PopState()
-		if popErr != nil {
-			err = popErr
+func (host *vmContext) callInitFunction() (wasmer.Value, error) {
+	init := host.Runtime().GetInitFunction()
+	if init != nil {
+		result, err := init()
+		if err != nil {
+			return wasmer.Void(), err
 		}
-	}()
-
-	host.InitState()
-
-	host.Runtime().InitStateFromContractCallInput(input)
-	err = host.execute(input)
-
-	return err
+		return result, nil
+	}
+	return wasmer.Void(), nil
 }
 
-func (host *vmContext) callInitFunction() (bool, []byte, error) {
-	exports := host.Runtime().GetInstanceExports()
-	init, ok := exports[arwen.InitFunctionName]
-
-	if !ok {
-		init, ok = exports[arwen.InitFunctionNameEth]
+func (host *vmContext) callSCMethod() (wasmer.Value, vmcommon.ReturnCode, error) {
+	if host.isInitFunctionBeingCalled() {
+		return wasmer.Void(), vmcommon.UserError, ErrInitFuncCalledInRun
 	}
 
-	if !ok {
-		// There's no initialization function, don't do anything.
-		return false, nil, nil
-	}
+	runtime := host.Runtime()
+	output := host.Output()
 
-	out, err := init()
+	function, err := runtime.GetFunctionToCall()
 	if err != nil {
-		fmt.Println("arwen.callInitFunction() error:", err.Error())
-		return true, nil, err
+		return wasmer.Void(), vmcommon.FunctionNotFound, err
 	}
 
-	convertedResult := arwen.ConvertReturnValue(out)
-	result := convertedResult.Bytes()
-	return true, result, nil
+	result, err := function()
+	if err != nil {
+		strError, _ := wasmer.GetLastError()
+		fmt.Println("wasmer Error", strError)
+		return wasmer.Void(), vmcommon.ExecutionFailed, err
+	}
+
+	return result, output.ReturnCode(), nil
 }
 
 // The first four bytes is the method selector. The rest of the input data are method arguments in chunks of 32 bytes.
