@@ -51,7 +51,7 @@ type VMContext interface {
 }
 
 type BlockchainSubcontext interface {
-	NewAddress(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error)
+	NewAddress(creatorAddress []byte) ([]byte, error)
 	AccountExists(addr []byte) bool
 	GetBalance(addr []byte) []byte
 	GetNonce(addr []byte) (uint64, error)
@@ -132,6 +132,9 @@ type OutputSubcontext interface {
 	ClearReturnData()
 	Finish(data []byte)
   CreateVMOutput(result []byte) *vmcommon.VMOutput
+  CreateVMOutputFromValue(result wasmer.Value) *vmcommon.VMOutput
+	AddTxValueToAccount(address []byte, value *big.Int) 
+	DeployCode(address []byte, code []byte)
 }
 
 type MeteringSubcontext interface {

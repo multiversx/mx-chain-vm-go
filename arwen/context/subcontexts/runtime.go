@@ -47,10 +47,17 @@ func (runtime *Runtime) InitState() {
 }
 
 func (runtime *Runtime) CreateWasmerInstance(contract []byte) error {
+	if runtime.instance != nil {
+		runtime.CleanInstance()
+	}
+
 	var err error
 	runtime.instance, err = wasmer.NewMeteredInstance(contract, runtime.vmInput.GasProvided)
+	if err != nil {
+		return err
+	}
 	runtime.SetRuntimeBreakpointValue(arwen.BreakpointNone)
-	return err
+	return nil
 }
 
 func (runtime *Runtime) CreateWasmerInstanceWithGasLimit(contract []byte, gasLimit uint64) error {
@@ -58,21 +65,6 @@ func (runtime *Runtime) CreateWasmerInstanceWithGasLimit(contract []byte, gasLim
 	runtime.instance, err = wasmer.NewMeteredInstance(contract, gasLimit)
 	runtime.SetRuntimeBreakpointValue(arwen.BreakpointNone)
 	return err
-}
-
-func (runtime *Runtime) InitializeFromInput(input *vmcommon.ContractCallInput) error {
-	runtime.vmInput = &input.VMInput
-	runtime.scAddress = input.RecipientAddr
-	runtime.callFunction = input.Function
-
-	contract, err := runtime.host.Blockchain().GetCode(runtime.scAddress)
-	gasProvided := runtime.vmInput.GasProvided
-	instance, err := wasmer.NewMeteredInstance(contract, gasProvided)
-	if err != nil {
-		return err
-	}
-	runtime.instance = instance
-	return nil
 }
 
 func (runtime *Runtime) InitStateFromContractCallInput(input *vmcommon.ContractCallInput) {

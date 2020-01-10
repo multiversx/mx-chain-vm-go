@@ -26,8 +26,18 @@ func NewBlockchainSubcontext(
 	return blockchain, nil
 }
 
-func (blockchain *Blockchain) NewAddress(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error) {
-  return blockchain.blockChainHook.NewAddress(creatorAddress, creatorNonce, vmType)
+func (blockchain *Blockchain) NewAddress(creatorAddress []byte) ([]byte, error) {
+	nonce, err := blockchain.GetNonce(creatorAddress)
+	if err != nil {
+		return nil, err
+	}
+
+	if nonce > 0 {
+		nonce -= 1
+	}
+
+	vmType := blockchain.host.Runtime().GetVMType()
+  return blockchain.blockChainHook.NewAddress(creatorAddress, nonce, vmType)
 }
 
 func (blockchain *Blockchain) AccountExists(addr []byte) bool {

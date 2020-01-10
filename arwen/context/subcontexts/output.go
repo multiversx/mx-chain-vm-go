@@ -4,6 +4,7 @@ import (
 	"math/big"
 
 	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -26,11 +27,11 @@ type Output struct {
 
 func NewOutputSubcontext(host arwen.VMContext) (*Output, error) {
 	output := &Output{
-		host:           host,
-		stateStack:     make([]*Output, 0),
+		host:       host,
+		stateStack: make([]*Output, 0),
 	}
 
-  output.InitState()
+	output.InitState()
 
 	return output, nil
 }
@@ -190,6 +191,19 @@ func (output *Output) Finish(data []byte) {
 	output.returnData = append(output.returnData, data)
 }
 
+func (output *Output) AddTxValueToAccount(address []byte, value *big.Int) {
+	destAcc, ok := output.outputAccounts[string(address)]
+	if !ok {
+		destAcc = &vmcommon.OutputAccount{
+			Address:      address,
+			BalanceDelta: big.NewInt(0),
+		}
+		output.outputAccounts[string(destAcc.Address)] = destAcc
+	}
+
+	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
+}
+
 // adapt vm output and all saved data from sc run into VM Output
 func (output *Output) CreateVMOutput(result []byte) *vmcommon.VMOutput {
 	vmOutput := &vmcommon.VMOutput{}
@@ -251,6 +265,7 @@ func (output *Output) CreateVMOutput(result []byte) *vmcommon.VMOutput {
 	if len(output.returnData) > 0 {
 		vmOutput.ReturnData = append(vmOutput.ReturnData, output.returnData...)
 	}
+
 	if len(result) > 0 {
 		vmOutput.ReturnData = append(vmOutput.ReturnData, result)
 	}
@@ -262,3 +277,24 @@ func (output *Output) CreateVMOutput(result []byte) *vmcommon.VMOutput {
 	return vmOutput
 }
 
+func (output *Output) CreateVMOutputFromValue(result wasmer.Value) *vmcommon.VMOutput {
+	convertedResult := arwen.ConvertReturnValue(result)
+	resultBytes := convertedResult.Bytes()
+
+	return output.CreateVMOutput(resultBytes)
+}
+
+func (output *Output) DeployCode(address []byte, code []byte) {
+	newSCAcc, ok := output.outputAccounts[string(address)]
+	if !ok {
+		output.outputAccounts[string(address)] = &vmcommon.OutputAccount{
+			Address:        address,
+			Nonce:          0,
+			BalanceDelta:   big.NewInt(0),
+			StorageUpdates: nil,
+			Code:           code,
+		}
+	} else {
+		newSCAcc.Code = code
+	}
+}
