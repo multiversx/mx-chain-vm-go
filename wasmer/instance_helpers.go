@@ -1,6 +1,7 @@
 package wasmer
 
 import (
+	"fmt"
 	"unsafe"
 )
 
@@ -142,7 +143,8 @@ func createExportedFunctionWrapper(
 		)
 
 		if callResult != cWasmerOk {
-			return Void(), NewExportedFunctionError(exportedFunctionName, "Failed to call the `%s` exported function.")
+			message := fmt.Sprintf("Failed to call the `%s` exported function.", exportedFunctionName)
+			return Void(), NewExportedFunctionError(exportedFunctionName, message)
 		}
 
 		value, err := convertWasmOutputToValue(wasmFunctionOutputsArity, wasmOutputs, exportedFunctionName)

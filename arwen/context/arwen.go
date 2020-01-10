@@ -422,6 +422,7 @@ func (host *vmContext) execute(input *vmcommon.ContractCallInput) error {
 		return ErrInitFuncCalledInRun
 	}
 
+	// TODO replace with callSCMethod()?
 	exports := runtime.GetInstanceExports()
 	functionName := runtime.Function()
 	function, ok := exports[functionName]
@@ -534,6 +535,13 @@ func (host *vmContext) callSCMethod() (wasmer.Value, vmcommon.ReturnCode, error)
 	}
 
 	result, err := function()
+	if err != nil {
+		breakpointValue := runtime.GetRuntimeBreakpointValue()
+		if breakpointValue != arwen.BreakpointNone {
+			err = host.handleBreakpoint(breakpointValue, result, err)
+		}
+	}
+
 	if err != nil {
 		strError, _ := wasmer.GetLastError()
 		fmt.Println("wasmer Error", strError)

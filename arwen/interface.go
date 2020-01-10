@@ -24,7 +24,8 @@ const (
 	BreakpointAbort       BreakpointValue = 1
 	BreakpointAsyncCall   BreakpointValue = 2
 	BreakpointSignalError BreakpointValue = 3
-	BreakpointOutOfGas    BreakpointValue = 4
+	BreakpointSignalExit  BreakpointValue = 4
+	BreakpointOutOfGas    BreakpointValue = 5
 )
 
 type StateStack interface {
@@ -32,7 +33,6 @@ type StateStack interface {
 	PushState()
 	PopState() error
 }
-
 
 type VMContext interface {
 	StateStack
@@ -97,8 +97,8 @@ type RuntimeSubcontext interface {
 	SetInstanceContext(instCtx *wasmer.InstanceContext)
 	GetInstanceContext() *wasmer.InstanceContext
 	GetInstanceExports() wasmer.ExportsMap
-	GetInitFunction() wasmer.ExportedFunctionCallback 
-	GetFunctionToCall() (wasmer.ExportedFunctionCallback, error) 
+	GetInitFunction() wasmer.ExportedFunctionCallback
+	GetFunctionToCall() (wasmer.ExportedFunctionCallback, error)
 	GetPointsUsed() uint64
 	SetPointsUsed(gasPoints uint64)
 	MemStore(offset int32, data []byte) error
@@ -135,8 +135,8 @@ type OutputSubcontext interface {
 	ClearReturnData()
 	Finish(data []byte)
 	FinishValue(value wasmer.Value)
-  CreateVMOutput(result wasmer.Value) *vmcommon.VMOutput
-	AddTxValueToAccount(address []byte, value *big.Int) 
+	CreateVMOutput(result wasmer.Value) *vmcommon.VMOutput
+	AddTxValueToAccount(address []byte, value *big.Int)
 	DeployCode(address []byte, code []byte)
 }
 

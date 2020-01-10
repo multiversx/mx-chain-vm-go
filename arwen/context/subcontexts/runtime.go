@@ -1,6 +1,7 @@
 package subcontexts
 
 import (
+	"strconv"
 	"unsafe"
 
 	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -146,6 +147,13 @@ func (runtime *Runtime) Function() string {
 
 func (runtime *Runtime) Arguments() [][]byte {
 	return runtime.vmInput.Arguments
+}
+
+func (runtime *Runtime) SignalExit(exitCode int) {
+	runtime.host.Output().SetReturnCode(vmcommon.Ok)
+	message := strconv.Itoa(exitCode)
+	runtime.host.Output().SetReturnMessage(message)
+	runtime.SetRuntimeBreakpointValue(arwen.BreakpointSignalExit)
 }
 
 func (runtime *Runtime) SignalUserError(message string) {
