@@ -79,8 +79,8 @@ func retrieveExportedMemory(wasmExports *cWasmerExportsT) (Memory, bool, error) 
 	return memory, hasMemory, nil
 }
 
-func retrieveExportedFunctions(c_instance *cWasmerInstanceT, wasmExports *cWasmerExportsT) (map[string]func(...interface{}) (Value, error), error) {
-	var exports = make(map[string]func(...interface{}) (Value, error))
+func retrieveExportedFunctions(c_instance *cWasmerInstanceT, wasmExports *cWasmerExportsT) (ExportsMap, error) {
+	var exports = make(ExportsMap)
 
 	var numberOfExports = int(cWasmerExportsLen(wasmExports))
 

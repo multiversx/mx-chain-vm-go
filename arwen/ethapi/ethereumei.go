@@ -745,6 +745,7 @@ func ethgetBlockDifficulty(context unsafe.Pointer, resultOffset int32) {
 
 //export ethcall
 func ethcall(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueOffset int32, dataOffset int32, dataLength int32) int32 {
+	host := arwen.GetVmContext(context)
   runtime := arwen.GetRuntimeSubcontext(context)
   output := arwen.GetOutputSubcontext(context)
   metering := arwen.GetMeteringSubcontext(context)
@@ -785,7 +786,7 @@ func ethcall(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueO
 		Function:      "main",
 	}
 
-	err = runtime.ExecuteOnDestContext(contractCallInput)
+	err = host.ExecuteOnDestContext(contractCallInput)
 	if err != nil {
 		return 1
 	}
@@ -795,6 +796,7 @@ func ethcall(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueO
 
 //export ethcallCode
 func ethcallCode(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueOffset int32, dataOffset int32, dataLength int32) int32 {
+	host := arwen.GetVmContext(context)
   runtime := arwen.GetRuntimeSubcontext(context)
   output := arwen.GetOutputSubcontext(context)
   metering := arwen.GetMeteringSubcontext(context)
@@ -834,7 +836,7 @@ func ethcallCode(context unsafe.Pointer, gasLimit int64, addressOffset int32, va
 		Function:      "main",
 	}
 
-	err = runtime.ExecuteOnSameContext(contractCallInput)
+	err = host.ExecuteOnSameContext(contractCallInput)
 	if err != nil {
 		return 1
 	}
@@ -844,6 +846,7 @@ func ethcallCode(context unsafe.Pointer, gasLimit int64, addressOffset int32, va
 
 //export ethcallDelegate
 func ethcallDelegate(context unsafe.Pointer, gasLimit int64, addressOffset int32, dataOffset int32, dataLength int32) int32 {
+	host := arwen.GetVmContext(context)
   runtime := arwen.GetRuntimeSubcontext(context)
   output := arwen.GetOutputSubcontext(context)
   metering := arwen.GetMeteringSubcontext(context)
@@ -879,7 +882,7 @@ func ethcallDelegate(context unsafe.Pointer, gasLimit int64, addressOffset int32
 		Function:      "main",
 	}
 
-	err = runtime.ExecuteOnSameContext(contractCallInput)
+	err = host.ExecuteOnSameContext(contractCallInput)
 	if err != nil {
 		return 1
 	}
@@ -889,6 +892,7 @@ func ethcallDelegate(context unsafe.Pointer, gasLimit int64, addressOffset int32
 
 //export ethcallStatic
 func ethcallStatic(context unsafe.Pointer, gasLimit int64, addressOffset int32, dataOffset int32, dataLength int32) int32 {
+	host := arwen.GetVmContext(context)
   runtime := arwen.GetRuntimeSubcontext(context)
   output := arwen.GetOutputSubcontext(context)
   metering := arwen.GetMeteringSubcontext(context)
@@ -935,7 +939,7 @@ func ethcallStatic(context unsafe.Pointer, gasLimit int64, addressOffset int32, 
 		Function:      "main",
 	}
 
-	err = runtime.ExecuteOnSameContext(contractCallInput)
+	err = host.ExecuteOnSameContext(contractCallInput)
 
 	runtime.SetReadOnly(false)
 	if err != nil {
@@ -947,6 +951,7 @@ func ethcallStatic(context unsafe.Pointer, gasLimit int64, addressOffset int32, 
 
 //export ethcreate
 func ethcreate(context unsafe.Pointer, valueOffset int32, dataOffset int32, length int32, resultOffset int32) int32 {
+	host := arwen.GetVmContext(context)
   runtime := arwen.GetRuntimeSubcontext(context)
   metering := arwen.GetMeteringSubcontext(context)
 
@@ -976,7 +981,7 @@ func ethcreate(context unsafe.Pointer, valueOffset int32, dataOffset int32, leng
 		ContractCode: data,
 	}
 
-	newAddress, err := runtime.CreateNewContract(contractCreate)
+	newAddress, err := host.CreateNewContract(contractCreate)
 	if err != nil {
 		return 1
 	}

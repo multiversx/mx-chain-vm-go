@@ -170,6 +170,10 @@ func (output *Output) ReturnCode() vmcommon.ReturnCode {
 	return output.returnCode
 }
 
+func (output *Output) SetReturnCode(returnCode vmcommon.ReturnCode) {
+	output.returnCode = returnCode
+}
+
 func (output *Output) ClearReturnData() {
 	output.returnData = make([][]byte, 0)
 }

@@ -111,6 +111,13 @@ type CryptoContext interface {
 	SignalUserError()
 }
 
+type StateStack interface {
+	InitState()
+	PushState()
+	PopState() error
+}
+
+
 type VMContext interface {
 	StateStack
 
@@ -121,19 +128,17 @@ type VMContext interface {
 	Output() OutputSubcontext
 	Metering() MeteringSubcontext
 	Storage() StorageSubcontext
-}
 
-type StateStack interface {
-	PushState()
-	PopState() error
+	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
+	ExecuteOnSameContext(input *vmcommon.ContractCallInput) error
+	ExecuteOnDestContext(input *vmcommon.ContractCallInput) error
 }
 
 type BlockchainSubcontext interface {
-	InitState()
 	NewAddress(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error)
 	AccountExists(addr []byte) bool
 	GetBalance(addr []byte) []byte
-	GetNonce(addr []byte) uint64
+	GetNonce(addr []byte) (uint64, error)
 	CurrentEpoch() uint32
 	GetStateRootHash() []byte
 	LastTimeStamp() uint64
@@ -155,45 +160,49 @@ type BlockchainSubcontext interface {
 type RuntimeSubcontext interface {
 	StateStack
 
-	InitState()
+	InitStateFromContractCallInput(input *vmcommon.ContractCallInput)
 	GetVMInput() *vmcommon.VMInput
+	SetVMInput(vmInput *vmcommon.VMInput)
 	GetSCAddress() []byte
+	SetSCAddress(scAddress []byte)
+	GetVMType() []byte
 	Function() string
 	Arguments() [][]byte
 	SignalUserError()
 	SetRuntimeBreakpointValue(value BreakpointValue)
 	GetRuntimeBreakpointValue() BreakpointValue
+	PushInstance()
+	PopInstance() error
 	CallData() []byte
 	ReadOnly() bool
 	SetReadOnly(readOnly bool)
-	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
-	ExecuteOnSameContext(input *vmcommon.ContractCallInput) error
-	ExecuteOnDestContext(input *vmcommon.ContractCallInput) error
+	CreateWasmerInstance(contract []byte) error
+	CreateWasmerInstanceWithGasLimit(contract []byte, gasLimit uint64) error
 	SetInstanceContext(instCtx *wasmer.InstanceContext)
 	GetInstanceContext() *wasmer.InstanceContext
+	GetInstanceExports() wasmer.ExportsMap
+	GetFunctionToCall() (wasmer.ExportedFunctionCallback, error) 
 	GetPointsUsed() uint64
 	SetPointsUsed(gasPoints uint64)
 	MemStore(offset int32, data []byte) error
 	MemLoad(offset int32, length int32) ([]byte, error)
-	Clean()
+	CleanInstance()
 	SetInstanceContextId(id int)
 }
 
 type BigIntSubcontext interface {
 	StateStack
 
-	InitState()
 	Put(value int64) int32
 	GetOne(id int32) *big.Int
 	GetTwo(id1, id2 int32) (*big.Int, *big.Int)
 	GetThree(id1, id2, id3 int32) (*big.Int, *big.Int, *big.Int)
 }
 
-// TODO find better name
+// TODO find a better name
 type OutputSubcontext interface {
 	StateStack
 
-	InitState()
 	GetOutputAccounts() map[string]*vmcommon.OutputAccount
 	GetStorageUpdates() map[string](map[string][]byte)
 	WriteLog(addr []byte, topics [][]byte, data []byte)
@@ -210,7 +219,6 @@ type OutputSubcontext interface {
 }
 
 type MeteringSubcontext interface {
-	InitState()
 	GasSchedule() *config.GasCost
 	UseGas(gas uint64)
 	FreeGas(gas uint64)
@@ -220,7 +228,6 @@ type MeteringSubcontext interface {
 }
 
 type StorageSubcontext interface {
-	InitState()
 	GetStorage(addr []byte, key []byte) []byte
 	SetStorage(addr []byte, key []byte, value []byte) int32
 }

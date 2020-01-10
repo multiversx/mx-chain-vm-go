@@ -48,6 +48,9 @@ func (error *ExportedFunctionError) Error() string {
 	return fmt.Sprintf(error.message, error.functionName)
 }
 
+type ExportedFunctionCallback func(...interface{}) (Value, error)
+type ExportsMap map[string]ExportedFunctionCallback
+
 // Instance represents a WebAssembly instance.
 type Instance struct {
 	// The underlying WebAssembly instance.
@@ -66,7 +69,7 @@ type Instance struct {
 	// here). The WebAssembly type is automatically inferred. Note
 	// that the returned value is of kind `Value`, and not a
 	// standard Go type.
-	Exports map[string]func(...interface{}) (Value, error)
+	Exports ExportsMap
 
 	// The exported memory of a WebAssembly instance.
 	Memory *Memory

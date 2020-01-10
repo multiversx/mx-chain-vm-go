@@ -4,6 +4,8 @@ import "errors"
 
 var StateStackUnderflow = errors.New("State stack underflow")
 
-var ErrInvalidCallOnReadOnlyMode = errors.New("operation not permitted in read only mode")
+var InstanceStackUnderflow = errors.New("Instance stack underflow")
 
 var ErrNotEnoughGas = errors.New("not enough gas")
+
+var ErrFuncNotFound = errors.New("function not found")

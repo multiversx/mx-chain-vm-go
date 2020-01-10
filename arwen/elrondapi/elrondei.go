@@ -757,6 +757,7 @@ func executeOnSameContext(
 	argumentsLengthOffset int32,
 	dataOffset int32,
 ) int32 {
+	host := arwen.GetVmContext(context)
   runtime := arwen.GetRuntimeSubcontext(context)
   output := arwen.GetOutputSubcontext(context)
   metering := arwen.GetMeteringSubcontext(context)
@@ -794,7 +795,7 @@ func executeOnSameContext(
 		Function:      function,
 	}
 
-	err = runtime.ExecuteOnDestContext(contractCallInput)
+	err = host.ExecuteOnDestContext(contractCallInput)
 	if err != nil {
 		return 1
 	}
@@ -814,6 +815,7 @@ func executeOnDestContext(
 	argumentsLengthOffset int32,
 	dataOffset int32,
 ) int32 {
+	host := arwen.GetVmContext(context)
   runtime := arwen.GetRuntimeSubcontext(context)
   output := arwen.GetOutputSubcontext(context)
   metering := arwen.GetMeteringSubcontext(context)
@@ -850,7 +852,7 @@ func executeOnDestContext(
 		Function:      function,
 	}
 
-	err = runtime.ExecuteOnDestContext(contractCallInput)
+	err = host.ExecuteOnDestContext(contractCallInput)
 	if err != nil {
 		return 1
 	}
@@ -910,6 +912,7 @@ func delegateExecution(
 	argumentsLengthOffset int32,
 	dataOffset int32,
 ) int32 {
+	host := arwen.GetVmContext(context)
   runtime := arwen.GetRuntimeSubcontext(context)
   output := arwen.GetOutputSubcontext(context)
   metering := arwen.GetMeteringSubcontext(context)
@@ -942,7 +945,7 @@ func delegateExecution(
 		Function:      function,
 	}
 
-	err = runtime.ExecuteOnSameContext(contractCallInput)
+	err = host.ExecuteOnSameContext(contractCallInput)
 	if err != nil {
 		return 1
 	}
@@ -970,6 +973,7 @@ func executeReadOnly(
 	argumentsLengthOffset int32,
 	dataOffset int32,
 ) int32 {
+	host := arwen.GetVmContext(context)
   runtime := arwen.GetRuntimeSubcontext(context)
   output := arwen.GetOutputSubcontext(context)
   metering := arwen.GetMeteringSubcontext(context)
@@ -1004,7 +1008,7 @@ func executeReadOnly(
 		Function:      function,
 	}
 
-	err = runtime.ExecuteOnSameContext(contractCallInput)
+	err = host.ExecuteOnSameContext(contractCallInput)
 	runtime.SetReadOnly(false)
 	if err != nil {
 		return 1
@@ -1024,6 +1028,7 @@ func createContract(
 	argumentsLengthOffset int32,
 	dataOffset int32,
 ) int32 {
+	host := arwen.GetVmContext(context)
   runtime := arwen.GetRuntimeSubcontext(context)
   metering := arwen.GetMeteringSubcontext(context)
 
@@ -1056,7 +1061,7 @@ func createContract(
 		ContractCode: code,
 	}
 
-	newAddress, err := runtime.CreateNewContract(contractCreate)
+	newAddress, err := host.CreateNewContract(contractCreate)
 	if err != nil {
 		return 1
 	}

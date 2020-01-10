@@ -1,8 +1,6 @@
 package subcontexts
 
 import (
-	"fmt"
-	"math/big"
 	"unsafe"
 
 	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -19,14 +17,21 @@ type Runtime struct {
 	callFunction    string
 	vmType          []byte
 	readOnly        bool
-	ethInput        []byte
-	stateStack      []*Runtime
+
+	stateStack    []*Runtime
+	instanceStack []*wasmer.Instance
 }
 
-func NewRuntimeSubcontext(host arwen.VMContext, blockChainHook vmcommon.BlockchainHook) (*Runtime, error) {
+func NewRuntimeSubcontext(
+	host arwen.VMContext,
+	blockChainHook vmcommon.BlockchainHook,
+	vmType []byte,
+) (*Runtime, error) {
 	runtime := &Runtime{
-		host:           host,
-		stateStack:     make([]*Runtime, 0),
+		host:          host,
+		vmType:        vmType,
+		stateStack:    make([]*Runtime, 0),
+		instanceStack: make([]*wasmer.Instance, 0),
 	}
 
 	runtime.InitState()
@@ -38,13 +43,19 @@ func (runtime *Runtime) InitState() {
 	runtime.vmInput = &vmcommon.VMInput{}
 	runtime.scAddress = make([]byte, 0)
 	runtime.callFunction = ""
-	runtime.ethInput = nil
 	runtime.readOnly = false
 }
 
 func (runtime *Runtime) CreateWasmerInstance(contract []byte) error {
 	var err error
 	runtime.instance, err = wasmer.NewMeteredInstance(contract, runtime.vmInput.GasProvided)
+	runtime.SetRuntimeBreakpointValue(arwen.BreakpointNone)
+	return err
+}
+
+func (runtime *Runtime) CreateWasmerInstanceWithGasLimit(contract []byte, gasLimit uint64) error {
+	var err error
+	runtime.instance, err = wasmer.NewMeteredInstance(contract, gasLimit)
 	runtime.SetRuntimeBreakpointValue(arwen.BreakpointNone)
 	return err
 }
@@ -64,6 +75,12 @@ func (runtime *Runtime) InitializeFromInput(input *vmcommon.ContractCallInput) e
 	return nil
 }
 
+func (runtime *Runtime) InitStateFromContractCallInput(input *vmcommon.ContractCallInput) {
+	runtime.vmInput = &input.VMInput
+	runtime.scAddress = input.RecipientAddr
+	runtime.callFunction = input.Function
+}
+
 func (runtime *Runtime) PushState() {
 	newState := &Runtime{
 		vmInput:      runtime.vmInput,
@@ -73,6 +90,25 @@ func (runtime *Runtime) PushState() {
 	}
 
 	runtime.stateStack = append(runtime.stateStack, newState)
+}
+
+func (runtime *Runtime) PushInstance() {
+	runtime.instanceStack = append(runtime.instanceStack, runtime.instance)
+}
+
+func (runtime *Runtime) PopInstance() error {
+	instanceStackLen := len(runtime.instanceStack)
+	if instanceStackLen < 1 {
+		return InstanceStackUnderflow
+	}
+
+	prevInstance := runtime.instanceStack[instanceStackLen-1]
+	runtime.instanceStack = runtime.instanceStack[:instanceStackLen-1]
+
+	runtime.instance.Clean()
+	runtime.instance = prevInstance
+
+	return nil
 }
 
 func (runtime *Runtime) PopState() error {
@@ -92,19 +128,24 @@ func (runtime *Runtime) PopState() error {
 	return nil
 }
 
-func (runtime *Runtime) LoadFromStateCopy(otherRuntime *Runtime) {
-	runtime.vmInput = otherRuntime.vmInput
-	runtime.scAddress = otherRuntime.scAddress
-	runtime.callFunction = otherRuntime.callFunction
-	runtime.readOnly = otherRuntime.readOnly
+func (runtime *Runtime) GetVMType() []byte {
+	return runtime.vmType
 }
 
 func (runtime *Runtime) GetVMInput() *vmcommon.VMInput {
 	return runtime.vmInput
 }
 
+func (runtime *Runtime) SetVMInput(vmInput *vmcommon.VMInput) {
+	runtime.vmInput = vmInput
+}
+
 func (runtime *Runtime) GetSCAddress() []byte {
 	return runtime.scAddress
+}
+
+func (runtime *Runtime) SetSCAddress(scAddress []byte) {
+	runtime.scAddress = scAddress
 }
 
 func (runtime *Runtime) Function() string {
@@ -150,14 +191,6 @@ func (runtime *Runtime) SetReadOnly(readOnly bool) {
 	runtime.readOnly = readOnly
 }
 
-func (runtime *Runtime) ExecuteOnSameContext(input *vmcommon.ContractCallInput) error {
-	panic("not implemented")
-}
-
-func (runtime *Runtime) ExecuteOnDestContext(input *vmcommon.ContractCallInput) error {
-	panic("not implemented")
-}
-
 func (runtime *Runtime) SetInstanceContextId(id int) {
 	runtime.instance.SetContextData(unsafe.Pointer(&id))
 }
@@ -170,6 +203,24 @@ func (runtime *Runtime) GetInstanceContext() *wasmer.InstanceContext {
 	return runtime.instanceContext
 }
 
+func (runtime *Runtime) GetInstanceExports() wasmer.ExportsMap {
+	return runtime.instance.Exports
+}
+
+func (runtime *Runtime) GetFunctionToCall() (wasmer.ExportedFunctionCallback, error) {
+	exports := runtime.instance.Exports
+	function, ok := exports[runtime.callFunction]
+	if !ok {
+		function, ok = exports["main"]
+	}
+
+	if !ok {
+		return nil, ErrFuncNotFound
+	}
+
+	return function, nil
+}
+
 func (runtime *Runtime) MemStore(offset int32, data []byte) error {
 	memory := runtime.instanceContext.Memory()
 	return arwen.StoreBytes(memory, offset, data)
@@ -180,133 +231,6 @@ func (runtime *Runtime) MemLoad(offset int32, length int32) ([]byte, error) {
 	return arwen.LoadBytes(memory, offset, length)
 }
 
-func (runtime *Runtime) Clean() {
+func (runtime *Runtime) CleanInstance() {
 	runtime.instance.Clean()
 }
-
-func (runtime *Runtime) CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error) {
-	if runtime.readOnly {
-		return nil, ErrInvalidCallOnReadOnlyMode
-	}
-
-	currVmInput := runtime.vmInput
-	currScAddress := runtime.scAddress
-	currCallFunction := runtime.callFunction
-
-	defer func() {
-		runtime.vmInput = currVmInput
-		runtime.scAddress = currScAddress
-		runtime.callFunction = currCallFunction
-	}()
-
-	runtime.vmInput = &input.VMInput
-	nonce := runtime.host.Blockchain().GetNonce(input.CallerAddr)
-	address, err := runtime.host.Blockchain().NewAddress(input.CallerAddr, nonce, runtime.vmType)
-	if err != nil {
-		return nil, err
-	}
-
-	runtime.host.Output().Transfer(address, input.CallerAddr, 0, input.CallValue, nil)
-	runtime.host.Blockchain().IncreaseNonce(input.CallerAddr)
-	runtime.scAddress = address
-
-	totalGasConsumed := input.GasProvided
-	defer func() {
-		runtime.host.Metering().UseGas(totalGasConsumed)
-	}()
-
-	gasLeft, err := runtime.deductInitialCodeCost(
-		input.GasProvided,
-		input.ContractCode,
-		0, // create cost was elrady taken care of. as it is different for ethereum and elrond
-		runtime.host.Metering().GasSchedule().BaseOperationCost.StorePerByte,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	newInstance, err := wasmer.NewMeteredInstance(input.ContractCode, gasLeft)
-	if err != nil {
-		fmt.Println("arwen Error: ", err.Error())
-		return nil, err
-	}
-
-	idContext := arwen.AddHostContext(runtime.host)
-	oldInstance := runtime.instance
-	runtime.instance = newInstance
-	defer func() {
-		runtime.instance = oldInstance
-		newInstance.Clean()
-		arwen.RemoveHostContext(idContext)
-	}()
-
-	runtime.instance.SetContextData(unsafe.Pointer(&idContext))
-
-	initCalled, result, err := runtime.callInitFunction()
-	if err != nil {
-		return nil, err
-	}
-
-	if initCalled {
-		runtime.host.Output().Finish(result)
-	}
-
-	outputAccounts := runtime.host.Output().GetOutputAccounts()
-	newSCAcc, ok := outputAccounts[string(address)]
-	if !ok {
-		outputAccounts[string(address)] = &vmcommon.OutputAccount{
-			Address:        address,
-			Nonce:          0,
-			BalanceDelta:   big.NewInt(0),
-			StorageUpdates: nil,
-			Code:           input.ContractCode,
-		}
-	} else {
-		newSCAcc.Code = input.ContractCode
-	}
-
-	totalGasConsumed = input.GasProvided - gasLeft - newInstance.GetPointsUsed()
-
-	return address, nil
-}
-
-func (runtime *Runtime) deductInitialCodeCost(
-	gasProvided uint64,
-	code []byte,
-	baseCost uint64,
-	costPerByte uint64,
-) (uint64, error) {
-	codeLength := uint64(len(code))
-	codeCost := codeLength * costPerByte
-	initialCost := baseCost + codeCost
-
-	if initialCost > gasProvided {
-		return 0, ErrNotEnoughGas
-	}
-
-	return gasProvided - initialCost, nil
-}
-
-func (runtime *Runtime) callInitFunction() (bool, []byte, error) {
-	init, ok := runtime.instance.Exports[arwen.InitFunctionName]
-
-	if !ok {
-		init, ok = runtime.instance.Exports[arwen.InitFunctionNameEth]
-	}
-
-	if !ok {
-		// There's no initialization function, don't do anything.
-		return false, nil, nil
-	}
-
-	out, err := init()
-	if err != nil {
-		fmt.Println("arwen.callInitFunction() error:", err.Error())
-		return true, nil, err
-	}
-
-	convertedResult := arwen.ConvertReturnValue(out)
-	result := convertedResult.Bytes()
-	return true, result, nil
-}
-

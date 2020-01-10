@@ -12,9 +12,9 @@ type Metering struct {
 }
 
 func NewMeteringSubcontext(
+	host arwen.VMContext,
 	gasSchedule map[string]map[string]uint64,
 	blockGasLimit uint64,
-	host arwen.VMContext,
 ) (*Metering, error) {
 
 	gasCostConfig, err := config.CreateGasConfig(gasSchedule)

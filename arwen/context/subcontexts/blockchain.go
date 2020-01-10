@@ -9,13 +9,13 @@ import (
 )
 
 type Blockchain struct {
-	blockChainHook vmcommon.BlockchainHook
 	host           arwen.VMContext
+	blockChainHook vmcommon.BlockchainHook
 }
 
 func NewBlockchainSubcontext(
-	blockChainHook vmcommon.BlockchainHook,
 	host arwen.VMContext,
+	blockChainHook vmcommon.BlockchainHook,
 ) (*Blockchain, error) {
 
 	blockchain := &Blockchain{
@@ -24,9 +24,6 @@ func NewBlockchainSubcontext(
 	}
 
 	return blockchain, nil
-}
-
-func (blockchain *Blockchain) InitState() {
 }
 
 func (blockchain *Blockchain) NewAddress(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error) {
@@ -65,11 +62,11 @@ func (blockchain *Blockchain) GetBalance(addr []byte) []byte {
 	return balance.Bytes()
 }
 
-func (blockchain *Blockchain) GetNonce(addr []byte) uint64 {
+func (blockchain *Blockchain) GetNonce(addr []byte) (uint64, error) {
 	strAdr := string(addr)
 	outputAccounts := blockchain.host.Output().GetOutputAccounts()
 	if _, ok := outputAccounts[strAdr]; ok {
-		return outputAccounts[strAdr].Nonce
+		return outputAccounts[strAdr].Nonce, nil
 	}
 
 	nonce, err := blockchain.blockChainHook.GetNonce(addr)
@@ -78,11 +75,11 @@ func (blockchain *Blockchain) GetNonce(addr []byte) uint64 {
 	}
 
 	outputAccounts[strAdr] = &vmcommon.OutputAccount{BalanceDelta: big.NewInt(0), Address: addr, Nonce: nonce}
-	return nonce
+	return nonce, err
 }
 
 func (blockchain *Blockchain) IncreaseNonce(addr []byte) {
-	nonce := blockchain.GetNonce(addr)
+	nonce, _ := blockchain.GetNonce(addr)
 	outputAccounts := blockchain.host.Output().GetOutputAccounts()
 	outputAccounts[string(addr)].Nonce = nonce + 1
 }
