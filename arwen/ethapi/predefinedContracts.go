@@ -65,5 +65,10 @@ func identity(context unsafe.Pointer, data []byte) ([]byte, error) {
 
 func keccak256(context unsafe.Pointer, data []byte) ([]byte, error) {
   crypto := arwen.GetCryptoSubcontext(context)
-	return crypto.Keccak256(data)
+	result, err := crypto.Keccak256(data)
+	if err != nil {
+		fmt.Printf("Error Keccak256: %s\n", err.Error())
+	}
+	fmt.Printf("Keccak256: %s → %s\n", hex.EncodeToString(data), hex.EncodeToString(result))
+	return result, err
 }
