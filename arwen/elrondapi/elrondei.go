@@ -52,12 +52,13 @@ package elrondapi
 import "C"
 
 import (
+	"fmt"
 	"math/big"
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 func ElrondEImports() (*wasmer.Imports, error) {
@@ -371,8 +372,8 @@ func transferValue(context unsafe.Pointer, gasLimit int64, destOffset int32, val
 
 //export getArgument
 func getArgument(context unsafe.Pointer, id int32, argOffset int32) int32 {
-  runtime := arwen.GetRuntimeSubcontext(context)
-  metering := arwen.GetMeteringSubcontext(context)
+	runtime := arwen.GetRuntimeSubcontext(context)
+	metering := arwen.GetMeteringSubcontext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetArgument
 	metering.UseGas(gasToUse)
@@ -392,8 +393,8 @@ func getArgument(context unsafe.Pointer, id int32, argOffset int32) int32 {
 
 //export getFunction
 func getFunction(context unsafe.Pointer, functionOffset int32) int32 {
-  runtime := arwen.GetRuntimeSubcontext(context)
-  metering := arwen.GetMeteringSubcontext(context)
+	runtime := arwen.GetRuntimeSubcontext(context)
+	metering := arwen.GetMeteringSubcontext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetFunction
 	metering.UseGas(gasToUse)
@@ -409,20 +410,22 @@ func getFunction(context unsafe.Pointer, functionOffset int32) int32 {
 
 //export getNumArguments
 func getNumArguments(context unsafe.Pointer) int32 {
-  runtime := arwen.GetRuntimeSubcontext(context)
-  metering := arwen.GetMeteringSubcontext(context)
+	runtime := arwen.GetRuntimeSubcontext(context)
+	metering := arwen.GetMeteringSubcontext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetNumArguments
 	metering.UseGas(gasToUse)
+
+	fmt.Println("getNumArguments: ", len(runtime.Arguments()))
 
 	return int32(len(runtime.Arguments()))
 }
 
 //export storageStore
 func storageStore(context unsafe.Pointer, keyOffset int32, dataOffset int32, dataLength int32) int32 {
-  runtime := arwen.GetRuntimeSubcontext(context)
-  storage := arwen.GetStorageSubcontext(context)
-  metering := arwen.GetMeteringSubcontext(context)
+	runtime := arwen.GetRuntimeSubcontext(context)
+	storage := arwen.GetStorageSubcontext(context)
+	metering := arwen.GetMeteringSubcontext(context)
 
 	key, err := runtime.MemLoad(keyOffset, arwen.HashLen)
 	if withFault(err, context) {
@@ -442,9 +445,9 @@ func storageStore(context unsafe.Pointer, keyOffset int32, dataOffset int32, dat
 
 //export storageLoad
 func storageLoad(context unsafe.Pointer, keyOffset int32, dataOffset int32) int32 {
-  runtime := arwen.GetRuntimeSubcontext(context)
-  storage := arwen.GetStorageSubcontext(context)
-  metering := arwen.GetMeteringSubcontext(context)
+	runtime := arwen.GetRuntimeSubcontext(context)
+	storage := arwen.GetStorageSubcontext(context)
+	metering := arwen.GetMeteringSubcontext(context)
 
 	key, err := runtime.MemLoad(keyOffset, arwen.HashLen)
 	if withFault(err, context) {
@@ -467,8 +470,8 @@ func storageLoad(context unsafe.Pointer, keyOffset int32, dataOffset int32) int3
 
 //export getCaller
 func getCaller(context unsafe.Pointer, resultOffset int32) {
-  runtime := arwen.GetRuntimeSubcontext(context)
-  metering := arwen.GetMeteringSubcontext(context)
+	runtime := arwen.GetRuntimeSubcontext(context)
+	metering := arwen.GetMeteringSubcontext(context)
 
 	caller := runtime.GetVMInput().CallerAddr
 
@@ -483,8 +486,8 @@ func getCaller(context unsafe.Pointer, resultOffset int32) {
 
 //export callValue
 func callValue(context unsafe.Pointer, resultOffset int32) int32 {
-  runtime := arwen.GetRuntimeSubcontext(context)
-  metering := arwen.GetMeteringSubcontext(context)
+	runtime := arwen.GetRuntimeSubcontext(context)
+	metering := arwen.GetMeteringSubcontext(context)
 
 	value := runtime.GetVMInput().CallValue.Bytes()
 	invBytes := arwen.InverseBytes(value)
@@ -502,9 +505,9 @@ func callValue(context unsafe.Pointer, resultOffset int32) int32 {
 
 //export writeLog
 func writeLog(context unsafe.Pointer, pointer int32, length int32, topicPtr int32, numTopics int32) {
-  runtime := arwen.GetRuntimeSubcontext(context)
-  output := arwen.GetOutputSubcontext(context)
-  metering := arwen.GetMeteringSubcontext(context)
+	runtime := arwen.GetRuntimeSubcontext(context)
+	output := arwen.GetOutputSubcontext(context)
+	metering := arwen.GetMeteringSubcontext(context)
 
 	log, err := runtime.MemLoad(pointer, length)
 	if withFault(err, context) {
@@ -532,8 +535,8 @@ func writeLog(context unsafe.Pointer, pointer int32, length int32, topicPtr int3
 
 //export getBlockTimestamp
 func getBlockTimestamp(context unsafe.Pointer) int64 {
-  blockchain := arwen.GetBlockchainSubcontext(context)
-  metering := arwen.GetMeteringSubcontext(context)
+	blockchain := arwen.GetBlockchainSubcontext(context)
+	metering := arwen.GetMeteringSubcontext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetBlockTimeStamp
 	metering.UseGas(gasToUse)
@@ -543,8 +546,8 @@ func getBlockTimestamp(context unsafe.Pointer) int64 {
 
 //export getBlockNonce
 func getBlockNonce(context unsafe.Pointer) int64 {
-  blockchain := arwen.GetBlockchainSubcontext(context)
-  metering := arwen.GetMeteringSubcontext(context)
+	blockchain := arwen.GetBlockchainSubcontext(context)
+	metering := arwen.GetMeteringSubcontext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetBlockNonce
 	metering.UseGas(gasToUse)
@@ -554,8 +557,8 @@ func getBlockNonce(context unsafe.Pointer) int64 {
 
 //export getBlockRound
 func getBlockRound(context unsafe.Pointer) int64 {
-  blockchain := arwen.GetBlockchainSubcontext(context)
-  metering := arwen.GetMeteringSubcontext(context)
+	blockchain := arwen.GetBlockchainSubcontext(context)
+	metering := arwen.GetMeteringSubcontext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetBlockRound
 	metering.UseGas(gasToUse)
@@ -565,8 +568,8 @@ func getBlockRound(context unsafe.Pointer) int64 {
 
 //export getBlockEpoch
 func getBlockEpoch(context unsafe.Pointer) int64 {
-  blockchain := arwen.GetBlockchainSubcontext(context)
-  metering := arwen.GetMeteringSubcontext(context)
+	blockchain := arwen.GetBlockchainSubcontext(context)
+	metering := arwen.GetMeteringSubcontext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetBlockEpoch
 	metering.UseGas(gasToUse)
@@ -576,9 +579,9 @@ func getBlockEpoch(context unsafe.Pointer) int64 {
 
 //export getBlockRandomSeed
 func getBlockRandomSeed(context unsafe.Pointer, pointer int32) {
-  runtime := arwen.GetRuntimeSubcontext(context)
-  blockchain := arwen.GetBlockchainSubcontext(context)
-  metering := arwen.GetMeteringSubcontext(context)
+	runtime := arwen.GetRuntimeSubcontext(context)
+	blockchain := arwen.GetBlockchainSubcontext(context)
+	metering := arwen.GetMeteringSubcontext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetBlockRandomSeed
 	metering.UseGas(gasToUse)
@@ -590,9 +593,9 @@ func getBlockRandomSeed(context unsafe.Pointer, pointer int32) {
 
 //export getStateRootHash
 func getStateRootHash(context unsafe.Pointer, pointer int32) {
-  runtime := arwen.GetRuntimeSubcontext(context)
-  blockchain := arwen.GetBlockchainSubcontext(context)
-  metering := arwen.GetMeteringSubcontext(context)
+	runtime := arwen.GetRuntimeSubcontext(context)
+	blockchain := arwen.GetBlockchainSubcontext(context)
+	metering := arwen.GetMeteringSubcontext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetStateRootHash
 	metering.UseGas(gasToUse)
@@ -604,8 +607,8 @@ func getStateRootHash(context unsafe.Pointer, pointer int32) {
 
 //export getPrevBlockTimestamp
 func getPrevBlockTimestamp(context unsafe.Pointer) int64 {
-  blockchain := arwen.GetBlockchainSubcontext(context)
-  metering := arwen.GetMeteringSubcontext(context)
+	blockchain := arwen.GetBlockchainSubcontext(context)
+	metering := arwen.GetMeteringSubcontext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetBlockTimeStamp
 	metering.UseGas(gasToUse)
@@ -615,8 +618,8 @@ func getPrevBlockTimestamp(context unsafe.Pointer) int64 {
 
 //export getPrevBlockNonce
 func getPrevBlockNonce(context unsafe.Pointer) int64 {
-  blockchain := arwen.GetBlockchainSubcontext(context)
-  metering := arwen.GetMeteringSubcontext(context)
+	blockchain := arwen.GetBlockchainSubcontext(context)
+	metering := arwen.GetMeteringSubcontext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetBlockNonce
 	metering.UseGas(gasToUse)
@@ -626,8 +629,8 @@ func getPrevBlockNonce(context unsafe.Pointer) int64 {
 
 //export getPrevBlockRound
 func getPrevBlockRound(context unsafe.Pointer) int64 {
-  blockchain := arwen.GetBlockchainSubcontext(context)
-  metering := arwen.GetMeteringSubcontext(context)
+	blockchain := arwen.GetBlockchainSubcontext(context)
+	metering := arwen.GetMeteringSubcontext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetBlockRound
 	metering.UseGas(gasToUse)
@@ -637,8 +640,8 @@ func getPrevBlockRound(context unsafe.Pointer) int64 {
 
 //export getPrevBlockEpoch
 func getPrevBlockEpoch(context unsafe.Pointer) int64 {
-  blockchain := arwen.GetBlockchainSubcontext(context)
-  metering := arwen.GetMeteringSubcontext(context)
+	blockchain := arwen.GetBlockchainSubcontext(context)
+	metering := arwen.GetMeteringSubcontext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetBlockEpoch
 	metering.UseGas(gasToUse)
@@ -648,9 +651,9 @@ func getPrevBlockEpoch(context unsafe.Pointer) int64 {
 
 //export getPrevBlockRandomSeed
 func getPrevBlockRandomSeed(context unsafe.Pointer, pointer int32) {
-  runtime := arwen.GetRuntimeSubcontext(context)
-  blockchain := arwen.GetBlockchainSubcontext(context)
-  metering := arwen.GetMeteringSubcontext(context)
+	runtime := arwen.GetRuntimeSubcontext(context)
+	blockchain := arwen.GetBlockchainSubcontext(context)
+	metering := arwen.GetMeteringSubcontext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetBlockRandomSeed
 	metering.UseGas(gasToUse)
@@ -662,9 +665,9 @@ func getPrevBlockRandomSeed(context unsafe.Pointer, pointer int32) {
 
 //export returnData
 func returnData(context unsafe.Pointer, pointer int32, length int32) {
-  runtime := arwen.GetRuntimeSubcontext(context)
-  output := arwen.GetOutputSubcontext(context)
-  metering := arwen.GetMeteringSubcontext(context)
+	runtime := arwen.GetRuntimeSubcontext(context)
+	output := arwen.GetOutputSubcontext(context)
+	metering := arwen.GetMeteringSubcontext(context)
 
 	data, err := runtime.MemLoad(pointer, length)
 	if withFault(err, context) {
@@ -680,8 +683,8 @@ func returnData(context unsafe.Pointer, pointer int32, length int32) {
 
 //export int64getArgument
 func int64getArgument(context unsafe.Pointer, id int32) int64 {
-  runtime := arwen.GetRuntimeSubcontext(context)
-  metering := arwen.GetMeteringSubcontext(context)
+	runtime := arwen.GetRuntimeSubcontext(context)
+	metering := arwen.GetMeteringSubcontext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64GetArgument
 	metering.UseGas(gasToUse)
@@ -697,9 +700,9 @@ func int64getArgument(context unsafe.Pointer, id int32) int64 {
 
 //export int64storageStore
 func int64storageStore(context unsafe.Pointer, keyOffset int32, value int64) int32 {
-  runtime := arwen.GetRuntimeSubcontext(context)
-  storage := arwen.GetStorageSubcontext(context)
-  metering := arwen.GetMeteringSubcontext(context)
+	runtime := arwen.GetRuntimeSubcontext(context)
+	storage := arwen.GetStorageSubcontext(context)
+	metering := arwen.GetMeteringSubcontext(context)
 
 	key, err := runtime.MemLoad(keyOffset, arwen.HashLen)
 	if withFault(err, context) {
@@ -716,9 +719,9 @@ func int64storageStore(context unsafe.Pointer, keyOffset int32, value int64) int
 
 //export int64storageLoad
 func int64storageLoad(context unsafe.Pointer, keyOffset int32) int64 {
-  runtime := arwen.GetRuntimeSubcontext(context)
-  storage := arwen.GetStorageSubcontext(context)
-  metering := arwen.GetMeteringSubcontext(context)
+	runtime := arwen.GetRuntimeSubcontext(context)
+	storage := arwen.GetStorageSubcontext(context)
+	metering := arwen.GetMeteringSubcontext(context)
 
 	key, err := runtime.MemLoad(keyOffset, arwen.HashLen)
 	if withFault(err, context) {
@@ -737,8 +740,8 @@ func int64storageLoad(context unsafe.Pointer, keyOffset int32) int64 {
 
 //export int64finish
 func int64finish(context unsafe.Pointer, value int64) {
-  output := arwen.GetOutputSubcontext(context)
-  metering := arwen.GetMeteringSubcontext(context)
+	output := arwen.GetOutputSubcontext(context)
+	metering := arwen.GetMeteringSubcontext(context)
 
 	output.Finish(big.NewInt(0).SetInt64(value).Bytes())
 
@@ -759,9 +762,9 @@ func executeOnSameContext(
 	dataOffset int32,
 ) int32 {
 	host := arwen.GetVmContext(context)
-  runtime := arwen.GetRuntimeSubcontext(context)
-  output := arwen.GetOutputSubcontext(context)
-  metering := arwen.GetMeteringSubcontext(context)
+	runtime := arwen.GetRuntimeSubcontext(context)
+	output := arwen.GetOutputSubcontext(context)
+	metering := arwen.GetMeteringSubcontext(context)
 
 	send := runtime.GetSCAddress()
 	dest, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
@@ -817,9 +820,9 @@ func executeOnDestContext(
 	dataOffset int32,
 ) int32 {
 	host := arwen.GetVmContext(context)
-  runtime := arwen.GetRuntimeSubcontext(context)
-  output := arwen.GetOutputSubcontext(context)
-  metering := arwen.GetMeteringSubcontext(context)
+	runtime := arwen.GetRuntimeSubcontext(context)
+	output := arwen.GetOutputSubcontext(context)
+	metering := arwen.GetMeteringSubcontext(context)
 
 	send := runtime.GetSCAddress()
 	dest, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
@@ -869,7 +872,7 @@ func getArgumentsFromMemory(
 	argumentsLengthOffset int32,
 	dataOffset int32,
 ) (string, [][]byte, int32) {
-  runtime := arwen.GetRuntimeSubcontext(context)
+	runtime := arwen.GetRuntimeSubcontext(context)
 
 	argumentsLengthData, err := runtime.MemLoad(argumentsLengthOffset, numArguments*4)
 	if withFault(err, context) {
@@ -914,9 +917,9 @@ func delegateExecution(
 	dataOffset int32,
 ) int32 {
 	host := arwen.GetVmContext(context)
-  runtime := arwen.GetRuntimeSubcontext(context)
-  output := arwen.GetOutputSubcontext(context)
-  metering := arwen.GetMeteringSubcontext(context)
+	runtime := arwen.GetRuntimeSubcontext(context)
+	output := arwen.GetOutputSubcontext(context)
+	metering := arwen.GetMeteringSubcontext(context)
 
 	address, err := runtime.MemLoad(addressOffset, arwen.HashLen)
 	if withFault(err, context) {
@@ -975,9 +978,9 @@ func executeReadOnly(
 	dataOffset int32,
 ) int32 {
 	host := arwen.GetVmContext(context)
-  runtime := arwen.GetRuntimeSubcontext(context)
-  output := arwen.GetOutputSubcontext(context)
-  metering := arwen.GetMeteringSubcontext(context)
+	runtime := arwen.GetRuntimeSubcontext(context)
+	output := arwen.GetOutputSubcontext(context)
+	metering := arwen.GetMeteringSubcontext(context)
 
 	address, err := runtime.MemLoad(addressOffset, arwen.HashLen)
 	if withFault(err, context) {
@@ -1030,8 +1033,8 @@ func createContract(
 	dataOffset int32,
 ) int32 {
 	host := arwen.GetVmContext(context)
-  runtime := arwen.GetRuntimeSubcontext(context)
-  metering := arwen.GetMeteringSubcontext(context)
+	runtime := arwen.GetRuntimeSubcontext(context)
+	metering := arwen.GetMeteringSubcontext(context)
 
 	sender := runtime.GetSCAddress()
 	value, err := runtime.MemLoad(valueOffset, arwen.BalanceLen)
@@ -1077,8 +1080,8 @@ func createContract(
 
 //export getNumReturnData
 func getNumReturnData(context unsafe.Pointer) int32 {
-  output := arwen.GetOutputSubcontext(context)
-  metering := arwen.GetMeteringSubcontext(context)
+	output := arwen.GetOutputSubcontext(context)
+	metering := arwen.GetMeteringSubcontext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetNumReturnData
 	metering.UseGas(gasToUse)
@@ -1089,8 +1092,8 @@ func getNumReturnData(context unsafe.Pointer) int32 {
 
 //export getReturnDataSize
 func getReturnDataSize(context unsafe.Pointer, resultId int32) int32 {
-  output := arwen.GetOutputSubcontext(context)
-  metering := arwen.GetMeteringSubcontext(context)
+	output := arwen.GetOutputSubcontext(context)
+	metering := arwen.GetMeteringSubcontext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetReturnDataSize
 	metering.UseGas(gasToUse)
@@ -1105,9 +1108,9 @@ func getReturnDataSize(context unsafe.Pointer, resultId int32) int32 {
 
 //export getReturnData
 func getReturnData(context unsafe.Pointer, resultId int32, dataOffset int32) int32 {
-  runtime := arwen.GetRuntimeSubcontext(context)
-  output := arwen.GetOutputSubcontext(context)
-  metering := arwen.GetMeteringSubcontext(context)
+	runtime := arwen.GetRuntimeSubcontext(context)
+	output := arwen.GetOutputSubcontext(context)
+	metering := arwen.GetMeteringSubcontext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetReturnData
 	metering.UseGas(gasToUse)
