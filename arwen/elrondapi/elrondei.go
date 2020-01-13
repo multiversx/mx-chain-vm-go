@@ -52,7 +52,6 @@ package elrondapi
 import "C"
 
 import (
-	"fmt"
 	"math/big"
 	"unsafe"
 
@@ -415,8 +414,6 @@ func getNumArguments(context unsafe.Pointer) int32 {
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetNumArguments
 	metering.UseGas(gasToUse)
-
-	fmt.Println("getNumArguments: ", len(runtime.Arguments()))
 
 	return int32(len(runtime.Arguments()))
 }
