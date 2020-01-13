@@ -20,6 +20,7 @@ package elrondapi
 // extern void writeLog(void *context, int32_t pointer, int32_t length, int32_t topicPtr, int32_t numTopics);
 // extern void returnData(void* context, int32_t dataOffset, int32_t length);
 // extern void signalError(void* context);
+// extern void signalExit(void* context, int32_t exitCode);
 // extern long long getGasLeft(void *context);
 //
 // extern int32_t executeOnDestContext(void *context, long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
@@ -130,6 +131,11 @@ func ElrondEImports() (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("signalError", signalError, C.signalError)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("signalExit", signalExit, C.signalExit)
 	if err != nil {
 		return nil, err
 	}
@@ -290,6 +296,18 @@ func signalError(context unsafe.Pointer) {
 	// TODO replace with a message coming from the SmartContract
 	runtime.SignalUserError("user error")
 
+	gasToUse := metering.GasSchedule().ElrondAPICost.SignalError
+	metering.UseGas(gasToUse)
+}
+
+//export signalExit
+func signalExit(context unsafe.Pointer, exitCode int32) {
+	runtime := arwen.GetRuntimeSubcontext(context)
+	metering := arwen.GetMeteringSubcontext(context)
+
+	runtime.SignalExit(int(exitCode))
+
+	// TODO replace with a gas cost specific to SignalExit
 	gasToUse := metering.GasSchedule().ElrondAPICost.SignalError
 	metering.UseGas(gasToUse)
 }

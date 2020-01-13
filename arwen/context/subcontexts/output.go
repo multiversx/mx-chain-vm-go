@@ -299,6 +299,7 @@ func (output *Output) CreateVMOutput(result wasmer.Value) *vmcommon.VMOutput {
 	vmOutput.GasRemaining = output.host.Metering().GasLeft()
 	vmOutput.GasRefund = big.NewInt(0).SetUint64(output.refund)
 	vmOutput.ReturnCode = output.returnCode
+	vmOutput.ReturnMessage = output.returnMessage
 
 	return vmOutput
 }

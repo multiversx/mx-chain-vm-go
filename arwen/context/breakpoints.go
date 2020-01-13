@@ -19,5 +19,9 @@ func (host *vmContext) handleBreakpoint(
 		return nil
 	}
 
+	if breakpointValue == arwen.BreakpointSignalExit {
+		return nil
+	}
+
 	return ErrUnhandledRuntimeBreakpoint
 }

@@ -86,6 +86,7 @@ type RuntimeSubcontext interface {
 	Function() string
 	Arguments() [][]byte
 	SignalUserError(message string)
+	SignalExit(exitCode int)
 	SetRuntimeBreakpointValue(value BreakpointValue)
 	GetRuntimeBreakpointValue() BreakpointValue
 	PushInstance()
