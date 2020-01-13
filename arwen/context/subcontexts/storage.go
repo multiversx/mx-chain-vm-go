@@ -2,8 +2,6 @@ package subcontexts
 
 import (
 	"bytes"
-	"encoding/hex"
-	"fmt"
 
 	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -30,7 +28,6 @@ func (storage *Storage) InitState() {
 }
 
 func (storage *Storage) GetStorage(addr []byte, key []byte) []byte {
-	fmt.Printf("GetStorage %s", hex.EncodeToString(key))
 	storageUpdate := storage.host.Output().GetStorageUpdates()
 	strAdr := string(addr)
 	if _, ok := storageUpdate[strAdr]; ok {
@@ -40,12 +37,10 @@ func (storage *Storage) GetStorage(addr []byte, key []byte) []byte {
 	}
 
 	hash, _ := storage.blockChainHook.GetStorageData(addr, key)
-	fmt.Printf(" :: %s\n", hex.EncodeToString(hash))
 	return hash
 }
 
 func (storage *Storage) SetStorage(addr []byte, key []byte, value []byte) int32 {
-	fmt.Printf("SetStorage %s, value %s\n", hex.EncodeToString(key), hex.EncodeToString(value))
 	if storage.host.Runtime().ReadOnly() {
 		return 0
 	}
@@ -57,7 +52,6 @@ func (storage *Storage) SetStorage(addr []byte, key []byte, value []byte) int32 
 		storageUpdate[strAdr] = make(map[string][]byte, 0)
 	}
 	if _, ok := storageUpdate[strAdr][string(key)]; !ok {
-		fmt.Printf("Ignore ")
 		oldValue := storage.GetStorage(addr, key)
 		storageUpdate[strAdr][string(key)] = oldValue
 	}
