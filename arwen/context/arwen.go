@@ -172,6 +172,7 @@ func (host *vmContext) doRunSmartContractCreate(input *vmcommon.ContractCreateIn
 		return nil, err
 	}
 
+	runtime.SetVMInput(&input.VMInput)
 	runtime.SetSCAddress(address)
 	output.AddTxValueToAccount(address, input.CallValue)
 
