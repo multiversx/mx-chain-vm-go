@@ -196,8 +196,8 @@ func (host *vmContext) doRunSmartContractCreate(input *vmcommon.ContractCreateIn
 	idContext := arwen.AddHostContext(host)
 	runtime.SetInstanceContextId(idContext)
 	defer func() {
-		arwen.RemoveHostContext(idContext)
 		runtime.CleanInstance()
+		arwen.RemoveHostContext(idContext)
 	}()
 
 	result, err := host.callInitFunction()
@@ -368,6 +368,7 @@ func (host *vmContext) InitState() {
 	host.BigInt().InitState()
 	host.Output().InitState()
 	host.Runtime().InitState()
+	host.ethInput = nil
 }
 
 func (host *vmContext) EthereumCallData() []byte {
