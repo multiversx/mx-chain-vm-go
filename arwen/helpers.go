@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math/big"
 
-	"sync"
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
@@ -22,35 +21,27 @@ const InitFunctionNameEth = "solidity.ctor"
 var (
 	vmContextCounter uint8
 	vmContextMap     map[uint8]VMContext
-	vmContextMapMu   sync.Mutex
 )
 
 func AddHostContext(ctx VMContext) int {
-	vmContextMapMu.Lock()
 	id := vmContextCounter
 	vmContextCounter++
 	if vmContextMap == nil {
 		vmContextMap = make(map[uint8]VMContext)
 	}
 	vmContextMap[id] = ctx
-	vmContextMapMu.Unlock()
 	return int(id)
 }
 
 func RemoveHostContext(idx int) {
-	vmContextMapMu.Lock()
 	delete(vmContextMap, uint8(idx))
-	vmContextMapMu.Unlock()
 }
 
 func GetVmContext(context unsafe.Pointer) VMContext {
 	instCtx := wasmer.IntoInstanceContext(context)
 	var idx = *(*int)(instCtx.Data())
 
-	vmContextMapMu.Lock()
 	ctx := vmContextMap[uint8(idx)]
-	vmContextMapMu.Unlock()
-
 	ctx.Runtime().SetInstanceContext(&instCtx)
 
 	return ctx
