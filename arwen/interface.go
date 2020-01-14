@@ -70,6 +70,7 @@ type RuntimeContext interface {
 	StateStack
 
 	InitStateFromContractCallInput(input *vmcommon.ContractCallInput)
+	ArgParser() ArgumentsParser
 	GetVMInput() *vmcommon.VMInput
 	SetVMInput(vmInput *vmcommon.VMInput)
 	GetSCAddress() []byte
@@ -81,6 +82,7 @@ type RuntimeContext interface {
 	SignalExit(exitCode int)
 	SetRuntimeBreakpointValue(value BreakpointValue)
 	GetRuntimeBreakpointValue() BreakpointValue
+	GetAsyncCallInfo() *AsyncCallInfo 
 	SetAsyncCallInfo(dest []byte, value []byte, gasLimit uint64, data []byte)
 	PushInstance()
 	PopInstance() error

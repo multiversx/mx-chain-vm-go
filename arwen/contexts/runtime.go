@@ -23,10 +23,7 @@ type Runtime struct {
 	stateStack    []*Runtime
 	instanceStack []*wasmer.Instance
 
-	asyncCallDest       []byte
-	asyncCallData       []byte
-	asyncCallGasLimit   uint64
-	asyncCallValueBytes []byte
+	asyncCallInfo *arwen.AsyncCallInfo
 
 	argParser arwen.ArgumentsParser
 }
@@ -53,7 +50,8 @@ func (runtime *Runtime) InitState() {
 	runtime.scAddress = make([]byte, 0)
 	runtime.callFunction = ""
 	runtime.readOnly = false
-  runtime.argParser, _ = vmcommon.NewAtArgumentParser()
+	runtime.argParser, _ = vmcommon.NewAtArgumentParser()
+	runtime.asyncCallInfo = nil
 }
 
 func (runtime *Runtime) CreateWasmerInstance(contract []byte) error {
@@ -89,9 +87,28 @@ func (runtime *Runtime) PushState() {
 		scAddress:    runtime.scAddress,
 		callFunction: runtime.callFunction,
 		readOnly:     runtime.readOnly,
+		asyncCallInfo: runtime.asyncCallInfo,
 	}
 
 	runtime.stateStack = append(runtime.stateStack, newState)
+}
+
+func (runtime *Runtime) PopState() error {
+	stateStackLen := len(runtime.stateStack)
+	if stateStackLen < 1 {
+		return arwen.StateStackUnderflow
+	}
+
+	prevState := runtime.stateStack[stateStackLen-1]
+	runtime.stateStack = runtime.stateStack[:stateStackLen-1]
+
+	runtime.vmInput = prevState.vmInput
+	runtime.scAddress = prevState.scAddress
+	runtime.callFunction = prevState.callFunction
+	runtime.readOnly = prevState.readOnly
+	runtime.asyncCallInfo = prevState.asyncCallInfo
+
+	return nil
 }
 
 func (runtime *Runtime) PushInstance() {
@@ -113,21 +130,8 @@ func (runtime *Runtime) PopInstance() error {
 	return nil
 }
 
-func (runtime *Runtime) PopState() error {
-	stateStackLen := len(runtime.stateStack)
-	if stateStackLen < 1 {
-		return arwen.StateStackUnderflow
-	}
-
-	prevState := runtime.stateStack[stateStackLen-1]
-	runtime.stateStack = runtime.stateStack[:stateStackLen-1]
-
-	runtime.vmInput = prevState.vmInput
-	runtime.scAddress = prevState.scAddress
-	runtime.callFunction = prevState.callFunction
-	runtime.readOnly = prevState.readOnly
-
-	return nil
+func (runtime *Runtime) ArgParser() arwen.ArgumentsParser {
+	return runtime.argParser
 }
 
 func (runtime *Runtime) GetVMType() []byte {
@@ -254,10 +258,16 @@ func (runtime *Runtime) GetInitFunction() wasmer.ExportedFunctionCallback {
 }
 
 func (runtime *Runtime) SetAsyncCallInfo(dest []byte, value []byte, gasLimit uint64, data []byte) {
-	runtime.asyncCallDest = dest
-	runtime.asyncCallData = data
-	runtime.asyncCallGasLimit = gasLimit
-	runtime.asyncCallValueBytes = value
+	runtime.asyncCallInfo = &arwen.AsyncCallInfo {
+		Destination: dest,
+		Data: data,
+		GasLimit: gasLimit,
+		ValueBytes: value,
+	}
+}
+
+func (runtime *Runtime) GetAsyncCallInfo() *arwen.AsyncCallInfo {
+	return runtime.asyncCallInfo
 }
 
 func (runtime *Runtime) MemLoad(offset int32, length int32) ([]byte, error) {

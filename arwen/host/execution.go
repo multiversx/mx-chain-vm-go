@@ -77,11 +77,11 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (*
   // If this call is an asynchronous call, a minimum of 2x the cost of the gas
   // cost for asynchronous calls must be locked temporarily, to make sure the
   // callBack has enough gas to be called and executed
-  mustLockMinGasForAsyncCallBack := host.vmInput.CallType == vmcommon.AsynchronousCall
+  mustLockMinGasForAsyncCallBack := runtime.GetVMInput().CallType == vmcommon.AsynchronousCall
   if mustLockMinGasForAsyncCallBack {
 		// Only the Elrond API supports asynchronous calls
 		if input.GasProvided < metering.GasSchedule().ElrondAPICost.AsyncCallStep {
-			return output.CreateVMOutputInCaseOfError(vmcommon.OutOfGas, ErrNotEnoughGas.Error()), nil
+			return output.CreateVMOutputInCaseOfError(vmcommon.OutOfGas, arwen.ErrNotEnoughGas.Error()), nil
 		}
 
 		input.GasProvided -= 2 * metering.GasSchedule().ElrondAPICost.AsyncCallStep
@@ -111,7 +111,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (*
   // If some gas has been locked before calling the function to reserve it for
   // the asynchronous callback, it will now be returned
   if mustLockMinGasForAsyncCallBack {
-		input.GasProvided += 2 * host.GasSchedule().ElrondAPICost.AsyncCallStep
+		input.GasProvided += 2 * metering.GasSchedule().ElrondAPICost.AsyncCallStep
 	}
 
 	if err != nil {

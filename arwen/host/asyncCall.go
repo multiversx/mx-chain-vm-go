@@ -1,86 +1,84 @@
-package context
+package host
 
 import (
 	"math/big"
 
 	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/go-ext-wasm/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 )
 
-func (host *vmContext) handleAsyncCallBreakpoint(result wasmer.Value, err error) (*vmcommon.VMOutput, error) {
-	host.SetRuntimeBreakpointValue(arwen.BreakpointNone)
+func (host *vmHost) handleAsyncCallBreakpoint(result wasmer.Value, err error) (error) {
+	runtime := host.Runtime()
+	output := host.Output()
+	blockchain := host.Blockchain()
 
-	convertedResult := arwen.ConvertReturnValue(result)
-	senderVMOutput := host.createVMOutput(convertedResult.Bytes())
+	runtime.SetRuntimeBreakpointValue(arwen.BreakpointNone)
+
+	senderVMOutput := output.CreateVMOutput(result)
 	intermediaryVMOutput := senderVMOutput
 
 	// If SC code is not found, it means this is either a cross-shard call or a wrong call.
-	dest := host.asyncCallDest
-	calledSCCode, err := host.GetCode(dest)
+	asyncCallInfo := runtime.GetAsyncCallInfo()
+	dest := asyncCallInfo.Destination
+	calledSCCode, err := blockchain.GetCode(dest)
 	if err != nil || len(calledSCCode) == 0 {
 		// TODO detect same Shard call - this makes the empty calledSCCode an error
 		// if intraShard {
 		//   vmOutputWithError := createVMOutputInCaseOfBreakpointError(err)
 		//   return mergeTwoVMOutputs(intermediaryVMOutput, vmOutputWithError)
 		// }
-		return intermediaryVMOutput, nil
+		return err
 	}
 
 	// Start calling the destination SC, synchronously.
 	destinationCallInput, err := host.createDestinationContractCallInput()
 	if err != nil {
-		vmOutputWithError := createVMOutputInCaseOfBreakpointError(err)
-		return mergeTwoVMOutputs(intermediaryVMOutput, vmOutputWithError), nil
+		return err
 	}
 
 	destinationVMOutput, err := host.executeOnNewContextAndGetVMOutput(destinationCallInput)
-	// TODO handle this error properly
 	// TODO pass error to the SC callback (append as argument)
 	// TODO consume remaining gas
 	if err != nil {
-		vmOutputWithError := createVMOutputInCaseOfBreakpointError(err)
-		return mergeTwoVMOutputs(intermediaryVMOutput, vmOutputWithError), nil
+		return err
 	}
-
 	intermediaryVMOutput = mergeTwoVMOutputs(intermediaryVMOutput, destinationVMOutput)
 
 	callbackCallInput, err := host.createCallbackContractCallInput(destinationVMOutput)
 	// TODO handle this error properly
 	if err != nil {
-		vmOutputWithError := createVMOutputInCaseOfBreakpointError(err)
-		return mergeTwoVMOutputs(intermediaryVMOutput, vmOutputWithError), nil
+		return err
 	}
 
 	callbackVMOutput, err := host.executeOnNewContextAndGetVMOutput(callbackCallInput)
 	// TODO handle this error properly
 	if err != nil {
-		vmOutputWithError := createVMOutputInCaseOfBreakpointError(err)
-		return mergeTwoVMOutputs(intermediaryVMOutput, vmOutputWithError), nil
+		return err
 	}
 	finalVMOutput := mergeTwoVMOutputs(intermediaryVMOutput, callbackVMOutput)
 
 	return finalVMOutput, nil
 }
 
-func (host *vmContext) createDestinationContractCallInput() (*vmcommon.ContractCallInput, error) {
-	sender := host.GetSCAddress()
-	dest := host.asyncCallDest
-	valueBytes := host.asyncCallValueBytes
-	data := host.asyncCallData
-	gasLimit := host.asyncCallGasLimit
+func (host *vmHost) createDestinationContractCallInput(
+) (*vmcommon.ContractCallInput, error) {
+	runtime := host.Runtime()
+	sender := runtime.GetSCAddress()
+	asyncCallInfo := runtime.GetAsyncCallInfo()
 
-	err := host.argParser.ParseData(string(data))
+	argParser := runtime.ArgParser()
+	err := argParser.ParseData(string(asyncCallInfo.Data))
 	if err != nil {
 		return nil, err
 	}
 
-	function, err := host.argParser.GetFunction()
+	function, err := argParser.GetFunction()
 	if err != nil {
 		return nil, err
 	}
 
-	arguments, err := host.argParser.GetArguments()
+	arguments, err := argParser.GetArguments()
 	if err != nil {
 		return nil, err
 	}
@@ -89,18 +87,21 @@ func (host *vmContext) createDestinationContractCallInput() (*vmcommon.ContractC
 		VMInput: vmcommon.VMInput{
 			CallerAddr:  sender,
 			Arguments:   arguments,
-			CallValue:   big.NewInt(0).SetBytes(valueBytes),
+			CallValue:   big.NewInt(0).SetBytes(asyncCallInfo.ValueBytes),
 			GasPrice:    0,
-			GasProvided: gasLimit,
+			GasProvided: asyncCallInfo.GasLimit,
 		},
-		RecipientAddr: dest,
+		RecipientAddr: asyncCallInfo.Destination,
 		Function:      function,
 	}
 
 	return contractCallInput, nil
 }
 
-func (host *vmContext) createCallbackContractCallInput(destinationVMOutput *vmcommon.VMOutput) (*vmcommon.ContractCallInput, error) {
+func (host *vmHost) createCallbackContractCallInput(destinationVMOutput *vmcommon.VMOutput) (*vmcommon.ContractCallInput, error) {
+	metering := host.Metering()
+	runtime := host.Runtime()
+
 	arguments := destinationVMOutput.ReturnData
 	gasLimit := destinationVMOutput.GasRemaining
 	function := "callBack"
@@ -120,12 +121,12 @@ func (host *vmContext) createCallbackContractCallInput(destinationVMOutput *vmco
 
 	// TODO define gas cost specific to async calls - asyncCall should cost more
 	// than ExecuteOnDestContext, especially cross-shard async calls
-	gasToUse := host.GasSchedule().ElrondAPICost.ExecuteOnDestContext
-	gasToUse += host.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(dataLength)
+	gasToUse := metering.GasSchedule().ElrondAPICost.ExecuteOnDestContext
+	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(dataLength)
 	gasLimit -= gasToUse
 
-	sender := host.asyncCallDest
-	dest := host.GetSCAddress()
+	sender := runtime.GetAsyncCallInfo().Destination
+	dest := runtime.GetSCAddress()
 
 	// Return to the sender SC, calling its callback() method.
 	contractCallInput := &vmcommon.ContractCallInput{
@@ -143,33 +144,26 @@ func (host *vmContext) createCallbackContractCallInput(destinationVMOutput *vmco
 	return contractCallInput, nil
 }
 
-func (host *vmContext) executeOnNewContextAndGetVMOutput(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
-	currVmInput := host.vmInput
-	currScAddress := host.scAddress
-	currCallFunction := host.callFunction
+func (host *vmHost) executeOnNewContextAndGetVMOutput(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+	host.PushState()
 
-	currContext := host.copyToNewContext()
-
+	var err error
 	defer func() {
-		// Restore the original host context
-		host.copyFromContext(currContext)
-		host.vmInput = currVmInput
-		host.scAddress = currScAddress
-		host.callFunction = currCallFunction
+		popErr := host.PopState()
+		if popErr != nil {
+			err = popErr
+		}
 	}()
 
-	host.initInternalValues()
+	host.InitState()
 
-	host.vmInput = input.VMInput
-	host.scAddress = input.RecipientAddr
-	host.callFunction = input.Function
-
-	err := host.execute(input)
+	host.Runtime().InitStateFromContractCallInput(input)
+	err = host.execute(input)
 	if err != nil {
 		return nil, err
 	}
 
-	vmOutput := host.createVMOutput(make([]byte, 0))
+	vmOutput := host.Output().CreateVMOutput(wasmer.Void())
 	return vmOutput, err
 }
 
@@ -278,9 +272,4 @@ func mergeOutputAccounts(leftAccount *vmcommon.OutputAccount, rightAccount *vmco
 	mergedAccount.GasLimit = rightAccount.GasLimit
 
 	return mergedAccount
-}
-
-func createVMOutputInCaseOfBreakpointError(err error) *vmcommon.VMOutput {
-	// TODO will be implemented as part of the larger Error Handling feature of Arwen
-	return nil
 }

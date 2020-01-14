@@ -12,7 +12,7 @@ func (host *vmHost) handleBreakpoint(
 ) error {
 
 	if breakpointValue == arwen.BreakpointAsyncCall {
-		// return host.handleAsyncCallBreakpoint(result, err)
+		return host.handleAsyncCallBreakpoint(result, err)
 	}
 
 	if breakpointValue == arwen.BreakpointSignalError {
