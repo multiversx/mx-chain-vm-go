@@ -69,6 +69,5 @@ func keccak256(context unsafe.Pointer, data []byte) ([]byte, error) {
 	if err != nil {
 		fmt.Printf("Error Keccak256: %s\n", err.Error())
 	}
-	fmt.Printf("Keccak256: %s → %s\n", hex.EncodeToString(data), hex.EncodeToString(result))
 	return result, err
 }

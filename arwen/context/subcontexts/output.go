@@ -318,3 +318,11 @@ func (output *Output) DeployCode(address []byte, code []byte) {
 		newSCAcc.Code = code
 	}
 }
+
+func (output *Output) CreateVMOutputInCaseOfError(errCode vmcommon.ReturnCode, message string) *vmcommon.VMOutput {
+	vmOutput := &vmcommon.VMOutput{GasRemaining: 0, GasRefund: big.NewInt(0)}
+	vmOutput.ReturnCode = errCode
+	vmOutput.ReturnMessage = message
+	return vmOutput
+}
+

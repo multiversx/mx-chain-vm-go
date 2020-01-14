@@ -3,12 +3,13 @@ package subcontexts
 import (
 	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 type Metering struct {
-	gasSchedule       *config.GasCost
-	blockGasLimit     uint64
-	host arwen.VMContext
+	gasSchedule   *config.GasCost
+	blockGasLimit uint64
+	host          arwen.VMContext
 }
 
 func NewMeteringSubcontext(
@@ -23,9 +24,9 @@ func NewMeteringSubcontext(
 	}
 
 	metering := &Metering{
-		gasSchedule:       gasCostConfig,
-		blockGasLimit:     blockGasLimit,
-		host: host,
+		gasSchedule:   gasCostConfig,
+		blockGasLimit: blockGasLimit,
+		host:          host,
 	}
 
 	return metering, nil
@@ -64,4 +65,51 @@ func (metering *Metering) BoundGasLimit(value int64) uint64 {
 
 func (metering *Metering) BlockGasLimit() uint64 {
 	return metering.blockGasLimit
+}
+
+func (metering *Metering) DeductInitialGasForExecution(input *vmcommon.ContractCallInput, contract []byte) (uint64, error) {
+	remainingGas, err := metering.deductInitialGas(
+		input.GasProvided,
+		contract,
+		0,
+		metering.gasSchedule.BaseOperationCost.CompilePerByte,
+	)
+	return remainingGas, err
+}
+
+func (metering *Metering) DeductInitialGasForDirectDeployment(input *vmcommon.ContractCreateInput) (uint64, error) {
+	remainingGas, err := metering.deductInitialGas(
+		input.GasProvided,
+		input.ContractCode,
+		metering.gasSchedule.ElrondAPICost.CreateContract,
+		metering.gasSchedule.BaseOperationCost.StorePerByte,
+	)
+	return remainingGas, err
+}
+
+func (metering *Metering) DeductInitialGasForIndirectDeployment(input *vmcommon.ContractCreateInput) (uint64, error) {
+	remainingGas, err := metering.deductInitialGas(
+		input.GasProvided,
+		input.ContractCode,
+		0,
+		metering.gasSchedule.BaseOperationCost.StorePerByte,
+	)
+	return remainingGas, err
+}
+
+func (metering *Metering) deductInitialGas(
+	gasProvided uint64,
+	code []byte,
+	baseCost uint64,
+	costPerByte uint64,
+) (uint64, error) {
+	codeLength := uint64(len(code))
+	codeCost := codeLength * costPerByte
+	initialCost := baseCost + codeCost
+
+	if initialCost > gasProvided {
+		return 0, ErrNotEnoughGas
+	}
+
+	return gasProvided - initialCost, nil
 }

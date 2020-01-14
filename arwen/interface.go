@@ -139,6 +139,7 @@ type OutputSubcontext interface {
 	CreateVMOutput(result wasmer.Value) *vmcommon.VMOutput
 	AddTxValueToAccount(address []byte, value *big.Int)
 	DeployCode(address []byte, code []byte)
+	CreateVMOutputInCaseOfError(errCode vmcommon.ReturnCode, message string) *vmcommon.VMOutput
 }
 
 type MeteringSubcontext interface {
@@ -148,6 +149,9 @@ type MeteringSubcontext interface {
 	GasLeft() uint64
 	BoundGasLimit(value int64) uint64
 	BlockGasLimit() uint64
+	DeductInitialGasForExecution(input *vmcommon.ContractCallInput, contract []byte) (uint64, error)
+	DeductInitialGasForDirectDeployment(input *vmcommon.ContractCreateInput) (uint64, error)
+	DeductInitialGasForIndirectDeployment(input *vmcommon.ContractCreateInput) (uint64, error)
 }
 
 type StorageSubcontext interface {
