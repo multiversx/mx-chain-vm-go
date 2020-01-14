@@ -777,9 +777,9 @@ func executeOnSameContext(
 	dataOffset int32,
 ) int32 {
 	host := arwen.GetVmContext(context)
-	runtime := arwen.GetRuntimeContext(context)
-	output := arwen.GetOutputContext(context)
-	metering := arwen.GetMeteringContext(context)
+	runtime := host.Runtime()
+	output := host.Output()
+	metering := host.Metering()
 
 	send := runtime.GetSCAddress()
 	dest, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
@@ -835,9 +835,9 @@ func executeOnDestContext(
 	dataOffset int32,
 ) int32 {
 	host := arwen.GetVmContext(context)
-	runtime := arwen.GetRuntimeContext(context)
-	output := arwen.GetOutputContext(context)
-	metering := arwen.GetMeteringContext(context)
+	runtime := host.Runtime()
+	output := host.Output()
+	metering := host.Metering()
 
 	send := runtime.GetSCAddress()
 	dest, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
@@ -932,9 +932,9 @@ func delegateExecution(
 	dataOffset int32,
 ) int32 {
 	host := arwen.GetVmContext(context)
-	runtime := arwen.GetRuntimeContext(context)
-	output := arwen.GetOutputContext(context)
-	metering := arwen.GetMeteringContext(context)
+	runtime := host.Runtime()
+	output := host.Output()
+	metering := host.Metering()
 
 	address, err := runtime.MemLoad(addressOffset, arwen.HashLen)
 	if withFault(err, context) {
@@ -993,9 +993,9 @@ func executeReadOnly(
 	dataOffset int32,
 ) int32 {
 	host := arwen.GetVmContext(context)
-	runtime := arwen.GetRuntimeContext(context)
-	output := arwen.GetOutputContext(context)
-	metering := arwen.GetMeteringContext(context)
+	runtime := host.Runtime()
+	output := host.Output()
+	metering := host.Metering()
 
 	address, err := runtime.MemLoad(addressOffset, arwen.HashLen)
 	if withFault(err, context) {
@@ -1048,8 +1048,8 @@ func createContract(
 	dataOffset int32,
 ) int32 {
 	host := arwen.GetVmContext(context)
-	runtime := arwen.GetRuntimeContext(context)
-	metering := arwen.GetMeteringContext(context)
+	runtime := host.Runtime()
+	metering := host.Metering()
 
 	sender := runtime.GetSCAddress()
 	value, err := runtime.MemLoad(valueOffset, arwen.BalanceLen)
