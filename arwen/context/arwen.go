@@ -16,7 +16,6 @@ import (
 
 // vmContext implements HostContext interface.
 type vmContext struct {
-	BigIntContainer
 	blockChainHook vmcommon.BlockchainHook
 	cryptoHook     vmcommon.CryptoHook
 
