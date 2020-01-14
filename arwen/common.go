@@ -19,10 +19,3 @@ const (
 	BreakpointSignalExit  BreakpointValue = 4
 	BreakpointOutOfGas    BreakpointValue = 5
 )
-
-type AsyncCallInfo struct {
-	Destination []byte
-	Data        []byte
-	GasLimit    uint64
-	ValueBytes  []byte
-}
