@@ -97,34 +97,6 @@ func GuardedMakeByteSlice2D(length int32) ([][]byte, error) {
 	return result, nil
 }
 
-func LoadBytes(from *wasmer.Memory, offset int32, length int32) ([]byte, error) {
-	memoryView := from.Data()
-	memoryLength := from.Length()
-	requestedEnd := uint32(offset + length)
-	isOffsetTooSmall := offset < 0
-	isOffsetTooLarge := uint32(offset) > memoryLength
-	isRequestedEndTooLarge := requestedEnd > memoryLength
-	isLengthNegative := length < 0
-
-	if isOffsetTooSmall || isOffsetTooLarge {
-		return nil, fmt.Errorf("LoadBytes: bad bounds")
-	}
-
-	if isLengthNegative {
-		return nil, fmt.Errorf("LoadBytes: negative length")
-	}
-
-	result := make([]byte, length)
-
-	if isRequestedEndTooLarge {
-		copy(result, memoryView[offset:])
-	} else {
-		copy(result, memoryView[offset:requestedEnd])
-	}
-
-	return result, nil
-}
-
 func GuardedGetBytesSlice(data []byte, offset int32, length int32) ([]byte, error) {
 	dataLength := uint32(len(data))
 	isOffsetTooSmall := offset < 0
@@ -149,38 +121,6 @@ func GuardedGetBytesSlice(data []byte, offset int32, length int32) ([]byte, erro
 	return result, nil
 }
 
-func StoreBytes(to *wasmer.Memory, offset int32, data []byte) error {
-	memoryView := to.Data()
-	memoryLength := to.Length()
-	dataLength := int32(len(data))
-	requestedEnd := uint32(offset + dataLength)
-	isOffsetTooSmall := offset < 0
-	isNewPageNecessary := requestedEnd > memoryLength
-
-	if isOffsetTooSmall {
-		return fmt.Errorf("StoreBytes: bad lower bounds")
-	}
-
-	if isNewPageNecessary {
-		err := to.Grow(1)
-		if err != nil {
-			return err
-		}
-
-		memoryView = to.Data()
-		memoryLength = to.Length()
-	}
-
-	isRequestedEndTooLarge := requestedEnd > memoryLength
-
-	if isRequestedEndTooLarge {
-		return fmt.Errorf("StoreBytes: bad upper bounds")
-	}
-
-	copy(memoryView[offset:requestedEnd], data)
-	return nil
-}
-
 func InverseBytes(data []byte) []byte {
 	length := len(data)
 	invBytes := make([]byte, length)
@@ -188,26 +128,4 @@ func InverseBytes(data []byte) []byte {
 		invBytes[length-i-1] = data[i]
 	}
 	return invBytes
-}
-
-// TryFunction corresponds to the try() part of a try / catch block
-type TryFunction func()
-
-// CatchFunction corresponds to the catch() part of a try / catch block
-type CatchFunction func(error)
-
-// TryCatch simulates a try/catch block using golang's recover() functionality
-func TryCatch(try TryFunction, catch CatchFunction, catchFallbackMessage string) {
-	defer func() {
-		if r := recover(); r != nil {
-			err, ok := r.(error)
-			if !ok {
-				err = fmt.Errorf("%s, panic: %v", catchFallbackMessage, r)
-			}
-
-			catch(err)
-		}
-	}()
-
-	try()
 }

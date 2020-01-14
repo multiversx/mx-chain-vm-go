@@ -1,6 +1,7 @@
 package subcontexts
 
 import (
+	"fmt"
 	"strconv"
 	"unsafe"
 
@@ -209,6 +210,11 @@ func (runtime *Runtime) GetInstanceExports() wasmer.ExportsMap {
 	return runtime.instance.Exports
 }
 
+func (runtime *Runtime) CleanInstance() {
+	runtime.instance.Clean()
+	runtime.instance = nil
+}
+
 func (runtime *Runtime) GetFunctionToCall() (wasmer.ExportedFunctionCallback, error) {
 	exports := runtime.instance.Exports
 	function, ok := exports[runtime.callFunction]
@@ -239,17 +245,64 @@ func (runtime *Runtime) GetInitFunction() wasmer.ExportedFunctionCallback {
 	return init
 }
 
-func (runtime *Runtime) MemStore(offset int32, data []byte) error {
-	memory := runtime.instanceContext.Memory()
-	return arwen.StoreBytes(memory, offset, data)
-}
-
 func (runtime *Runtime) MemLoad(offset int32, length int32) ([]byte, error) {
 	memory := runtime.instanceContext.Memory()
-	return arwen.LoadBytes(memory, offset, length)
+	memoryView := memory.Data()
+	memoryLength := memory.Length()
+	requestedEnd := uint32(offset + length)
+	isOffsetTooSmall := offset < 0
+	isOffsetTooLarge := uint32(offset) > memoryLength
+	isRequestedEndTooLarge := requestedEnd > memoryLength
+	isLengthNegative := length < 0
+
+	if isOffsetTooSmall || isOffsetTooLarge {
+		return nil, fmt.Errorf("LoadBytes: bad bounds")
+	}
+
+	if isLengthNegative {
+		return nil, fmt.Errorf("LoadBytes: negative length")
+	}
+
+	result := make([]byte, length)
+
+	if isRequestedEndTooLarge {
+		copy(result, memoryView[offset:])
+	} else {
+		copy(result, memoryView[offset:requestedEnd])
+	}
+
+	return result, nil
 }
 
-func (runtime *Runtime) CleanInstance() {
-	runtime.instance.Clean()
-	runtime.instance = nil
+func (runtime *Runtime) MemStore(offset int32, data []byte) error {
+	memory := runtime.instanceContext.Memory()
+	memoryView := memory.Data()
+	memoryLength := memory.Length()
+	dataLength := int32(len(data))
+	requestedEnd := uint32(offset + dataLength)
+	isOffsetTooSmall := offset < 0
+	isNewPageNecessary := requestedEnd > memoryLength
+
+	if isOffsetTooSmall {
+		return fmt.Errorf("StoreBytes: bad lower bounds")
+	}
+
+	if isNewPageNecessary {
+		err := memory.Grow(1)
+		if err != nil {
+			return err
+		}
+
+		memoryView = memory.Data()
+		memoryLength = memory.Length()
+	}
+
+	isRequestedEndTooLarge := requestedEnd > memoryLength
+
+	if isRequestedEndTooLarge {
+		return fmt.Errorf("StoreBytes: bad upper bounds")
+	}
+
+	copy(memoryView[offset:requestedEnd], data)
+	return nil
 }
