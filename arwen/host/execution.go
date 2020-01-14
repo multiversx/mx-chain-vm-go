@@ -1,15 +1,14 @@
-package context
+package host
 
 import (
 	"fmt"
 
-	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/context/subcontexts"
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
-func (host *vmContext) doRunSmartContractCreate(input *vmcommon.ContractCreateInput) (*vmcommon.VMOutput, error) {
+func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput) (*vmcommon.VMOutput, error) {
 	host.InitState()
 
 	blockchain := host.Blockchain()
@@ -58,7 +57,7 @@ func (host *vmContext) doRunSmartContractCreate(input *vmcommon.ContractCreateIn
 	return vmOutput, err
 }
 
-func (host *vmContext) doRunSmartContractCall(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	host.InitState()
 	runtime := host.Runtime()
 	output := host.Output()
@@ -108,7 +107,7 @@ func (host *vmContext) doRunSmartContractCall(input *vmcommon.ContractCallInput)
 	return vmOutput, nil
 }
 
-func (host *vmContext) ExecuteOnDestContext(input *vmcommon.ContractCallInput) error {
+func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) error {
 	host.PushState()
 
 	var err error
@@ -127,7 +126,7 @@ func (host *vmContext) ExecuteOnDestContext(input *vmcommon.ContractCallInput) e
 	return err
 }
 
-func (host *vmContext) ExecuteOnSameContext(input *vmcommon.ContractCallInput) error {
+func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) error {
 	runtime := host.Runtime()
 	runtime.PushState()
 
@@ -145,19 +144,19 @@ func (host *vmContext) ExecuteOnSameContext(input *vmcommon.ContractCallInput) e
 	return err
 }
 
-func (host *vmContext) isInitFunctionBeingCalled() bool {
+func (host *vmHost) isInitFunctionBeingCalled() bool {
 	functionName := host.Runtime().Function()
 	return functionName == arwen.InitFunctionName || functionName == arwen.InitFunctionNameEth
 }
 
-func (host *vmContext) CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error) {
+func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error) {
 	runtime := host.Runtime()
 	blockchain := host.Blockchain()
 	metering := host.Metering()
 	output := host.Output()
 
 	if runtime.ReadOnly() {
-		return nil, ErrInvalidCallOnReadOnlyMode
+		return nil, arwen.ErrInvalidCallOnReadOnlyMode
 	}
 
 	runtime.PushState()
@@ -219,7 +218,7 @@ func (host *vmContext) CreateNewContract(input *vmcommon.ContractCreateInput) ([
 	return address, nil
 }
 
-func (host *vmContext) execute(input *vmcommon.ContractCallInput) error {
+func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 	runtime := host.Runtime()
 	metering := host.Metering()
 	output := host.Output()
@@ -257,7 +256,7 @@ func (host *vmContext) execute(input *vmcommon.ContractCallInput) error {
 	runtime.SetInstanceContextId(idContext)
 
 	if host.isInitFunctionBeingCalled() {
-		return ErrInitFuncCalledInRun
+		return arwen.ErrInitFuncCalledInRun
 	}
 
 	// TODO replace with callSCMethod()?
@@ -265,16 +264,16 @@ func (host *vmContext) execute(input *vmcommon.ContractCallInput) error {
 	functionName := runtime.Function()
 	function, ok := exports[functionName]
 	if !ok {
-		return subcontexts.ErrFuncNotFound
+		return arwen.ErrFuncNotFound
 	}
 
 	result, err := function()
 	if err != nil {
-		return ErrFunctionRunError
+		return arwen.ErrFunctionRunError
 	}
 
 	if output.ReturnCode() != vmcommon.Ok {
-		return ErrReturnCodeNotOk
+		return arwen.ErrReturnCodeNotOk
 	}
 
 	convertedResult := arwen.ConvertReturnValue(result)
@@ -285,14 +284,14 @@ func (host *vmContext) execute(input *vmcommon.ContractCallInput) error {
 	return nil
 }
 
-func (host *vmContext) EthereumCallData() []byte {
+func (host *vmHost) EthereumCallData() []byte {
 	if host.ethInput == nil {
 		host.ethInput = host.createETHCallInput()
 	}
 	return host.ethInput
 }
 
-func (host *vmContext) callInitFunction() (wasmer.Value, error) {
+func (host *vmHost) callInitFunction() (wasmer.Value, error) {
 	init := host.Runtime().GetInitFunction()
 	if init != nil {
 		result, err := init()
@@ -304,9 +303,9 @@ func (host *vmContext) callInitFunction() (wasmer.Value, error) {
 	return wasmer.Void(), nil
 }
 
-func (host *vmContext) callSCMethod() (wasmer.Value, vmcommon.ReturnCode, error) {
+func (host *vmHost) callSCMethod() (wasmer.Value, vmcommon.ReturnCode, error) {
 	if host.isInitFunctionBeingCalled() {
-		return wasmer.Void(), vmcommon.UserError, ErrInitFuncCalledInRun
+		return wasmer.Void(), vmcommon.UserError, arwen.ErrInitFuncCalledInRun
 	}
 
 	runtime := host.Runtime()
@@ -336,7 +335,7 @@ func (host *vmContext) callSCMethod() (wasmer.Value, vmcommon.ReturnCode, error)
 
 // The first four bytes is the method selector. The rest of the input data are method arguments in chunks of 32 bytes.
 // The method selector is the kecccak256 hash of the method signature.
-func (host *vmContext) createETHCallInput() []byte {
+func (host *vmHost) createETHCallInput() []byte {
 	newInput := make([]byte, 0)
 
 	function := host.Runtime().Function()

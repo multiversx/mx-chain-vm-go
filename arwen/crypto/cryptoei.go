@@ -33,8 +33,8 @@ func CryptoImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 
 //export sha256
 func sha256(context unsafe.Pointer, dataOffset int32, length int32, resultOffset int32) int32 {
-	runtime := arwen.GetRuntimeSubcontext(context)
-	crypto := arwen.GetCryptoSubcontext(context)
+	runtime := arwen.GetRuntimeContext(context)
+	crypto := arwen.GetCryptoContext(context)
 
 	data, err := runtime.MemLoad(dataOffset, length)
 	if withFault(err, context) {
@@ -51,7 +51,7 @@ func sha256(context unsafe.Pointer, dataOffset int32, length int32, resultOffset
 		return 1
 	}
 
-	metering := arwen.GetMeteringSubcontext(context)
+	metering := arwen.GetMeteringContext(context)
 	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
 	metering.UseGas(gasToUse)
 
@@ -60,8 +60,8 @@ func sha256(context unsafe.Pointer, dataOffset int32, length int32, resultOffset
 
 //export keccak256
 func keccak256(context unsafe.Pointer, dataOffset int32, length int32, resultOffset int32) int32 {
-	runtime := arwen.GetRuntimeSubcontext(context)
-	crypto := arwen.GetCryptoSubcontext(context)
+	runtime := arwen.GetRuntimeContext(context)
+	crypto := arwen.GetCryptoContext(context)
 
 	data, err := runtime.MemLoad(dataOffset, length)
 	if withFault(err, context) {
@@ -78,7 +78,7 @@ func keccak256(context unsafe.Pointer, dataOffset int32, length int32, resultOff
 		return 1
 	}
 
-	metering := arwen.GetMeteringSubcontext(context)
+	metering := arwen.GetMeteringContext(context)
 	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
 	metering.UseGas(gasToUse)
 
@@ -87,8 +87,8 @@ func keccak256(context unsafe.Pointer, dataOffset int32, length int32, resultOff
 
 func withFault(err error, context unsafe.Pointer) bool {
 	if err != nil {
-		runtime := arwen.GetRuntimeSubcontext(context)
-		metering := arwen.GetMeteringSubcontext(context)
+		runtime := arwen.GetRuntimeContext(context)
+		metering := arwen.GetMeteringContext(context)
 
 		runtime.SignalUserError(err.Error())
 		metering.UseGas(metering.GasLeft())

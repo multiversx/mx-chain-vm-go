@@ -1,17 +1,17 @@
-package subcontexts
+package contexts
 
 import (
 	"fmt"
 	"strconv"
 	"unsafe"
 
-	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 type Runtime struct {
-	host            arwen.VMContext
+	host            arwen.VMHost
 	instance        *wasmer.Instance
 	instanceContext *wasmer.InstanceContext
 	vmInput         *vmcommon.VMInput
@@ -24,8 +24,8 @@ type Runtime struct {
 	instanceStack []*wasmer.Instance
 }
 
-func NewRuntimeSubcontext(
-	host arwen.VMContext,
+func NewRuntimeContext(
+	host arwen.VMHost,
 	blockChainHook vmcommon.BlockchainHook,
 	vmType []byte,
 ) (*Runtime, error) {
@@ -93,7 +93,7 @@ func (runtime *Runtime) PushInstance() {
 func (runtime *Runtime) PopInstance() error {
 	instanceStackLen := len(runtime.instanceStack)
 	if instanceStackLen < 1 {
-		return InstanceStackUnderflow
+		return arwen.InstanceStackUnderflow
 	}
 
 	prevInstance := runtime.instanceStack[instanceStackLen-1]
@@ -108,7 +108,7 @@ func (runtime *Runtime) PopInstance() error {
 func (runtime *Runtime) PopState() error {
 	stateStackLen := len(runtime.stateStack)
 	if stateStackLen < 1 {
-		return StateStackUnderflow
+		return arwen.StateStackUnderflow
 	}
 
 	prevState := runtime.stateStack[stateStackLen-1]
@@ -224,7 +224,7 @@ func (runtime *Runtime) GetFunctionToCall() (wasmer.ExportedFunctionCallback, er
 	}
 
 	if !ok {
-		return nil, ErrFuncNotFound
+		return nil, arwen.ErrFuncNotFound
 	}
 
 	return function, nil

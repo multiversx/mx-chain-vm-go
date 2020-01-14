@@ -1,11 +1,11 @@
-package context
+package host
 
 import (
-	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 )
 
-func (host *vmContext) handleBreakpoint(
+func (host *vmHost) handleBreakpoint(
 	breakpointValue arwen.BreakpointValue,
 	result wasmer.Value,
 	err error,
@@ -23,5 +23,5 @@ func (host *vmContext) handleBreakpoint(
 		return nil
 	}
 
-	return ErrUnhandledRuntimeBreakpoint
+	return arwen.ErrUnhandledRuntimeBreakpoint
 }

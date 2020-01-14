@@ -1,10 +1,9 @@
-package arwen
+package host
 
 import (
 	"fmt"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/context"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,7 +19,7 @@ func Test_TryCatch_WorksWhenNoError(t *testing.T) {
 		catchCalled = true
 	}
 
-	context.TryCatch(try, catch, "message")
+	TryCatch(try, catch, "message")
 
 	assert.True(t, tryCalled)
 	assert.False(t, catchCalled)
@@ -39,7 +38,7 @@ func Test_TryCatch_CatchesRuntimeError(t *testing.T) {
 		caughtError = err
 	}
 
-	context.TryCatch(try, catch, "message")
+	TryCatch(try, catch, "message")
 
 	assert.NotNil(t, caughtError)
 }
@@ -55,7 +54,7 @@ func Test_TryCatch_CatchesCustomError(t *testing.T) {
 		caughtError = err
 	}
 
-	context.TryCatch(try, catch, "!thisMessage!")
+	TryCatch(try, catch, "!thisMessage!")
 
 	assert.NotNil(t, caughtError)
 	assert.Contains(t, caughtError.Error(), "!thisMessage!")
@@ -74,7 +73,7 @@ func Test_TryCatch_CatchesCustomErrorTyped(t *testing.T) {
 		caughtError = err
 	}
 
-	context.TryCatch(try, catch, "!thisMessage!")
+	TryCatch(try, catch, "!thisMessage!")
 
 	assert.NotNil(t, caughtError)
 	assert.Equal(t, customError, caughtError)

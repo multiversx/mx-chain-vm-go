@@ -1,7 +1,9 @@
-package subcontexts
+package contexts
 
 import (
 	"math/big"
+
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 )
 
 type BigInt struct {
@@ -9,7 +11,7 @@ type BigInt struct {
 	stateStack   []*BigInt
 }
 
-func NewBigIntSubcontext() (*BigInt, error) {
+func NewBigIntContext() (*BigInt, error) {
 	bigInt := &BigInt{
 		mappedValues: make(map[int32]*big.Int),
 		stateStack:   make([]*BigInt, 0),
@@ -33,7 +35,7 @@ func (bigInt *BigInt) PushState() {
 func (bigInt *BigInt) PopState() error {
 	stateStackLen := len(bigInt.stateStack)
 	if stateStackLen < 1 {
-		return StateStackUnderflow
+		return arwen.StateStackUnderflow
 	}
 
 	prevState := bigInt.stateStack[stateStackLen-1]

@@ -1,10 +1,10 @@
-package context
+package host
 
 import (
 	"fmt"
 
-	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/context/subcontexts"
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/contexts"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/elrondapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/ethapi"
@@ -19,19 +19,19 @@ type TryFunction func()
 // CatchFunction corresponds to the catch() part of a try / catch block
 type CatchFunction func(error)
 
-// vmContext implements HostContext interface.
-type vmContext struct {
+// vmHost implements HostContext interface.
+type vmHost struct {
 	blockChainHook vmcommon.BlockchainHook
 	cryptoHook     vmcommon.CryptoHook
 
 	ethInput []byte
 
-	blockchainSubcontext arwen.BlockchainSubcontext
-	runtimeSubcontext    arwen.RuntimeSubcontext
-	outputSubcontext     arwen.OutputSubcontext
-	meteringSubcontext   arwen.MeteringSubcontext
-	storageSubcontext    arwen.StorageSubcontext
-	bigIntSubcontext     arwen.BigIntSubcontext
+	blockchainContext arwen.BlockchainContext
+	runtimeContext    arwen.RuntimeContext
+	outputContext     arwen.OutputContext
+	meteringContext   arwen.MeteringContext
+	storageContext    arwen.StorageContext
+	bigIntContext     arwen.BigIntContext
 }
 
 func NewArwenVM(
@@ -40,46 +40,46 @@ func NewArwenVM(
 	vmType []byte,
 	blockGasLimit uint64,
 	gasSchedule map[string]map[string]uint64,
-) (*vmContext, error) {
+) (*vmHost, error) {
 
-	host := &vmContext{
+	host := &vmHost{
 		blockChainHook:       blockChainHook,
 		cryptoHook:           cryptoHook,
-		meteringSubcontext:   nil,
-		runtimeSubcontext:    nil,
-		blockchainSubcontext: nil,
-		storageSubcontext:    nil,
-		bigIntSubcontext:     nil,
+		meteringContext:   nil,
+		runtimeContext:    nil,
+		blockchainContext: nil,
+		storageContext:    nil,
+		bigIntContext:     nil,
 	}
 
 	var err error
 
-	host.blockchainSubcontext, err = subcontexts.NewBlockchainSubcontext(host, blockChainHook)
+	host.blockchainContext, err = contexts.NewBlockchainContext(host, blockChainHook)
 	if err != nil {
 		return nil, err
 	}
 
-	host.runtimeSubcontext, err = subcontexts.NewRuntimeSubcontext(host, blockChainHook, vmType)
+	host.runtimeContext, err = contexts.NewRuntimeContext(host, blockChainHook, vmType)
 	if err != nil {
 		return nil, err
 	}
 
-	host.meteringSubcontext, err = subcontexts.NewMeteringSubcontext(host, gasSchedule, blockGasLimit)
+	host.meteringContext, err = contexts.NewMeteringContext(host, gasSchedule, blockGasLimit)
 	if err != nil {
 		return nil, err
 	}
 
-	host.outputSubcontext, err = subcontexts.NewOutputSubcontext(host)
+	host.outputContext, err = contexts.NewOutputContext(host)
 	if err != nil {
 		return nil, err
 	}
 
-	host.storageSubcontext, err = subcontexts.NewStorageSubcontext(host, blockChainHook)
+	host.storageContext, err = contexts.NewStorageContext(host, blockChainHook)
 	if err != nil {
 		return nil, err
 	}
 
-	host.bigIntSubcontext, err = subcontexts.NewBigIntSubcontext()
+	host.bigIntContext, err = contexts.NewBigIntContext()
 	if err != nil {
 		return nil, err
 	}
@@ -122,59 +122,59 @@ func NewArwenVM(
 	return host, nil
 }
 
-func (host *vmContext) Crypto() vmcommon.CryptoHook {
+func (host *vmHost) Crypto() vmcommon.CryptoHook {
 	return host.cryptoHook
 }
 
-func (host *vmContext) Blockchain() arwen.BlockchainSubcontext {
-	return host.blockchainSubcontext
+func (host *vmHost) Blockchain() arwen.BlockchainContext {
+	return host.blockchainContext
 }
 
-func (host *vmContext) Runtime() arwen.RuntimeSubcontext {
-	return host.runtimeSubcontext
+func (host *vmHost) Runtime() arwen.RuntimeContext {
+	return host.runtimeContext
 }
 
-func (host *vmContext) Output() arwen.OutputSubcontext {
-	return host.outputSubcontext
+func (host *vmHost) Output() arwen.OutputContext {
+	return host.outputContext
 }
 
-func (host *vmContext) Metering() arwen.MeteringSubcontext {
-	return host.meteringSubcontext
+func (host *vmHost) Metering() arwen.MeteringContext {
+	return host.meteringContext
 }
 
-func (host *vmContext) Storage() arwen.StorageSubcontext {
-	return host.storageSubcontext
+func (host *vmHost) Storage() arwen.StorageContext {
+	return host.storageContext
 }
 
-func (host *vmContext) BigInt() arwen.BigIntSubcontext {
-	return host.bigIntSubcontext
+func (host *vmHost) BigInt() arwen.BigIntContext {
+	return host.bigIntContext
 }
 
-func (host *vmContext) InitState() {
+func (host *vmHost) InitState() {
 	host.BigInt().InitState()
 	host.Output().InitState()
 	host.Runtime().InitState()
 	host.ethInput = nil
 }
 
-func (host *vmContext) PushState() {
-	host.bigIntSubcontext.PushState()
-	host.runtimeSubcontext.PushState()
-	host.outputSubcontext.PushState()
+func (host *vmHost) PushState() {
+	host.bigIntContext.PushState()
+	host.runtimeContext.PushState()
+	host.outputContext.PushState()
 }
 
-func (host *vmContext) PopState() error {
-	err := host.bigIntSubcontext.PopState()
+func (host *vmHost) PopState() error {
+	err := host.bigIntContext.PopState()
 	if err != nil {
 		return err
 	}
 
-	err = host.runtimeSubcontext.PopState()
+	err = host.runtimeContext.PopState()
 	if err != nil {
 		return err
 	}
 
-	err = host.outputSubcontext.PopState()
+	err = host.outputContext.PopState()
 	if err != nil {
 		return err
 	}
@@ -182,7 +182,7 @@ func (host *vmContext) PopState() error {
 	return nil
 }
 
-func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error) {
+func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error) {
 	try := func() {
 		vmOutput, err = host.doRunSmartContractCreate(input)
 	}
@@ -195,7 +195,7 @@ func (host *vmContext) RunSmartContractCreate(input *vmcommon.ContractCreateInpu
 	return
 }
 
-func (host *vmContext) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
+func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
 	try := func() {
 		vmOutput, err = host.doRunSmartContractCall(input)
 	}

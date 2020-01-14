@@ -27,7 +27,7 @@ func IsAddressForPredefinedContract(address []byte) bool {
 
 // CallPredefinedContract executes a predefined contract specified by address
 func CallPredefinedContract(context unsafe.Pointer, address []byte, data []byte) error {
-  output := arwen.GetOutputSubcontext(context)
+  output := arwen.GetOutputContext(context)
 
 	contractKey := hex.EncodeToString(address)
 	contract, ok := contractsMap[contractKey]
@@ -50,12 +50,12 @@ func ecrecover(context unsafe.Pointer, data []byte) ([]byte, error) {
 }
 
 func sha2(context unsafe.Pointer, data []byte) ([]byte, error) {
-  crypto := arwen.GetCryptoSubcontext(context)
+  crypto := arwen.GetCryptoContext(context)
 	return crypto.Sha256(data)
 }
 
 func ripemd160(context unsafe.Pointer, data []byte) ([]byte, error) {
-  crypto := arwen.GetCryptoSubcontext(context)
+  crypto := arwen.GetCryptoContext(context)
 	return crypto.Ripemd160(data)
 }
 
@@ -64,7 +64,7 @@ func identity(context unsafe.Pointer, data []byte) ([]byte, error) {
 }
 
 func keccak256(context unsafe.Pointer, data []byte) ([]byte, error) {
-  crypto := arwen.GetCryptoSubcontext(context)
+  crypto := arwen.GetCryptoContext(context)
 	result, err := crypto.Keccak256(data)
 	if err != nil {
 		fmt.Printf("Error Keccak256: %s\n", err.Error())

@@ -1,20 +1,20 @@
-package subcontexts
+package contexts
 
 import (
 	"fmt"
 	"math/big"
 
-	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 type Blockchain struct {
-	host           arwen.VMContext
+	host           arwen.VMHost
 	blockChainHook vmcommon.BlockchainHook
 }
 
-func NewBlockchainSubcontext(
-	host arwen.VMContext,
+func NewBlockchainContext(
+	host arwen.VMHost,
 	blockChainHook vmcommon.BlockchainHook,
 ) (*Blockchain, error) {
 
@@ -37,7 +37,7 @@ func (blockchain *Blockchain) NewAddress(creatorAddress []byte) ([]byte, error) 
 	}
 
 	vmType := blockchain.host.Runtime().GetVMType()
-  return blockchain.blockChainHook.NewAddress(creatorAddress, nonce, vmType)
+	return blockchain.blockChainHook.NewAddress(creatorAddress, nonce, vmType)
 }
 
 func (blockchain *Blockchain) AccountExists(addr []byte) bool {
@@ -94,7 +94,6 @@ func (blockchain *Blockchain) IncreaseNonce(addr []byte) {
 	outputAccounts[string(addr)].Nonce = nonce + 1
 }
 
-
 func (blockchain *Blockchain) GetCodeHash(addr []byte) ([]byte, error) {
 	code, err := blockchain.blockChainHook.GetCode(addr)
 	if err != nil {
@@ -134,11 +133,11 @@ func (blockchain *Blockchain) BlockHash(number int64) []byte {
 }
 
 func (blockchain *Blockchain) CurrentEpoch() uint32 {
-  return blockchain.blockChainHook.CurrentEpoch()
+	return blockchain.blockChainHook.CurrentEpoch()
 }
 
 func (blockchain *Blockchain) CurrentNonce() uint64 {
-  return blockchain.blockChainHook.CurrentNonce()
+	return blockchain.blockChainHook.CurrentNonce()
 }
 
 func (blockchain *Blockchain) GetStateRootHash() []byte {
@@ -174,5 +173,5 @@ func (blockchain *Blockchain) LastRandomSeed() []byte {
 }
 
 func (blockchain *Blockchain) CurrentRandomSeed() []byte {
-  return blockchain.blockChainHook.CurrentRandomSeed()
+	return blockchain.blockChainHook.CurrentRandomSeed()
 }

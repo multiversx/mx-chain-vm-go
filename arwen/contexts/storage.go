@@ -1,19 +1,19 @@
-package subcontexts
+package contexts
 
 import (
 	"bytes"
 
-	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 type Storage struct {
-	host           arwen.VMContext
+	host           arwen.VMHost
 	blockChainHook vmcommon.BlockchainHook
 }
 
-func NewStorageSubcontext(
-	host arwen.VMContext,
+func NewStorageContext(
+	host arwen.VMHost,
 	blockChainHook vmcommon.BlockchainHook,
 ) (*Storage, error) {
 	storage := &Storage{

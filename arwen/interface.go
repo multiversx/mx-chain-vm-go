@@ -34,16 +34,16 @@ type StateStack interface {
 	PopState() error
 }
 
-type VMContext interface {
+type VMHost interface {
 	StateStack
 
 	Crypto() vmcommon.CryptoHook
-	Blockchain() BlockchainSubcontext
-	Runtime() RuntimeSubcontext
-	BigInt() BigIntSubcontext
-	Output() OutputSubcontext
-	Metering() MeteringSubcontext
-	Storage() StorageSubcontext
+	Blockchain() BlockchainContext
+	Runtime() RuntimeContext
+	BigInt() BigIntContext
+	Output() OutputContext
+	Metering() MeteringContext
+	Storage() StorageContext
 
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContext(input *vmcommon.ContractCallInput) error
@@ -51,7 +51,7 @@ type VMContext interface {
 	EthereumCallData() []byte
 }
 
-type BlockchainSubcontext interface {
+type BlockchainContext interface {
 	NewAddress(creatorAddress []byte) ([]byte, error)
 	AccountExists(addr []byte) bool
 	GetBalance(addr []byte) []byte
@@ -74,7 +74,7 @@ type BlockchainSubcontext interface {
 	BlockHash(number int64) []byte
 }
 
-type RuntimeSubcontext interface {
+type RuntimeContext interface {
 	StateStack
 
 	InitStateFromContractCallInput(input *vmcommon.ContractCallInput)
@@ -108,7 +108,7 @@ type RuntimeSubcontext interface {
 	SetInstanceContextId(id int)
 }
 
-type BigIntSubcontext interface {
+type BigIntContext interface {
 	StateStack
 
 	Put(value int64) int32
@@ -118,7 +118,7 @@ type BigIntSubcontext interface {
 }
 
 // TODO find a better name
-type OutputSubcontext interface {
+type OutputContext interface {
 	StateStack
 
 	GetOutputAccounts() map[string]*vmcommon.OutputAccount
@@ -142,7 +142,7 @@ type OutputSubcontext interface {
 	CreateVMOutputInCaseOfError(errCode vmcommon.ReturnCode, message string) *vmcommon.VMOutput
 }
 
-type MeteringSubcontext interface {
+type MeteringContext interface {
 	GasSchedule() *config.GasCost
 	UseGas(gas uint64)
 	FreeGas(gas uint64)
@@ -154,7 +154,7 @@ type MeteringSubcontext interface {
 	DeductInitialGasForIndirectDeployment(input *vmcommon.ContractCreateInput) (uint64, error)
 }
 
-type StorageSubcontext interface {
+type StorageContext interface {
 	GetStorage(addr []byte, key []byte) []byte
 	SetStorage(addr []byte, key []byte, value []byte) int32
 }

@@ -1,7 +1,7 @@
-package subcontexts
+package contexts
 
 import (
-	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -9,11 +9,11 @@ import (
 type Metering struct {
 	gasSchedule   *config.GasCost
 	blockGasLimit uint64
-	host          arwen.VMContext
+	host          arwen.VMHost
 }
 
-func NewMeteringSubcontext(
-	host arwen.VMContext,
+func NewMeteringContext(
+	host arwen.VMHost,
 	gasSchedule map[string]map[string]uint64,
 	blockGasLimit uint64,
 ) (*Metering, error) {
@@ -108,7 +108,7 @@ func (metering *Metering) deductInitialGas(
 	initialCost := baseCost + codeCost
 
 	if initialCost > gasProvided {
-		return 0, ErrNotEnoughGas
+		return 0, arwen.ErrNotEnoughGas
 	}
 
 	return gasProvided - initialCost, nil

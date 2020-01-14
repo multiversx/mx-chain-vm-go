@@ -1,9 +1,9 @@
-package subcontexts
+package contexts
 
 import (
 	"math/big"
 
-	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -14,7 +14,7 @@ type LogTopicsData struct {
 }
 
 type Output struct {
-	host           arwen.VMContext
+	host           arwen.VMHost
 	outputAccounts map[string]*vmcommon.OutputAccount
 	logs           map[string]LogTopicsData
 	storageUpdate  map[string](map[string][]byte)
@@ -26,7 +26,7 @@ type Output struct {
 	stateStack     []*Output
 }
 
-func NewOutputSubcontext(host arwen.VMContext) (*Output, error) {
+func NewOutputContext(host arwen.VMHost) (*Output, error) {
 	output := &Output{
 		host:       host,
 		stateStack: make([]*Output, 0),
@@ -66,7 +66,7 @@ func (output *Output) PushState() {
 func (output *Output) PopState() error {
 	stateStackLen := len(output.stateStack)
 	if stateStackLen < 1 {
-		return StateStackUnderflow
+		return arwen.StateStackUnderflow
 	}
 
 	prevState := output.stateStack[stateStackLen-1]
@@ -162,7 +162,6 @@ func (output *Output) FinishValue(value wasmer.Value) {
 		output.Finish(valueBytes)
 	}
 }
-
 
 func (output *Output) WriteLog(addr []byte, topics [][]byte, data []byte) {
 	if output.host.Runtime().ReadOnly() {
@@ -325,4 +324,3 @@ func (output *Output) CreateVMOutputInCaseOfError(errCode vmcommon.ReturnCode, m
 	vmOutput.ReturnMessage = message
 	return vmOutput
 }
-
