@@ -140,6 +140,9 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) erro
 	host.Runtime().InitStateFromContractCallInput(input)
 	err := host.execute(input)
 
+	// TODO host.PopState() calls outputContext.PopState(), which merges storage
+	// updates, but does NOT merge accounts - it simply copies the old ones over
+	// the new ones; this may be incorrect
 	popErr := host.PopState()
 	if popErr != nil {
 		err = popErr

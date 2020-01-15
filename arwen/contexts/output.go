@@ -14,16 +14,9 @@ type logTopicsData struct {
 }
 
 type outputContext struct {
-	host           arwen.VMHost
-	outputAccounts map[string]*vmcommon.OutputAccount
-	logs           map[string]logTopicsData
-	storageUpdate  map[string](map[string][]byte)
-	returnData     [][]byte
-	returnCode     vmcommon.ReturnCode
-	returnMessage  string
-	selfDestruct   map[string][]byte
-	refund         uint64
-	stateStack     []*outputContext
+	host        arwen.VMHost
+	outputState *outputState
+	stateStack  []*outputContext
 }
 
 func NewOutputContext(host arwen.VMHost) (*outputContext, error) {
@@ -38,14 +31,7 @@ func NewOutputContext(host arwen.VMHost) (*outputContext, error) {
 }
 
 func (context *outputContext) InitState() {
-	context.outputAccounts = make(map[string]*vmcommon.OutputAccount, 0)
-	context.logs = make(map[string]logTopicsData, 0)
-	context.storageUpdate = make(map[string]map[string][]byte, 0)
-	context.selfDestruct = make(map[string][]byte)
-	context.returnData = nil
-	context.returnCode = vmcommon.Ok
-	context.returnMessage = ""
-	context.refund = 0
+	context.outputState = newOutputState()
 }
 
 func (context *outputContext) PushState() {
@@ -76,13 +62,13 @@ func (context *outputContext) PopState() error {
 		context.logs[key] = log
 	}
 	for account, updates := range prevState.storageUpdate {
-		if _, ok := output.storageUpdate[account]; !ok {
-			output.storageUpdate[account] = updates
+		if _, ok := context.storageUpdate[account]; !ok {
+			context.storageUpdate[account] = updates
 			continue
 		}
 
 		for key, value := range updates {
-			output.storageUpdate[account][key] = value
+			context.storageUpdate[account][key] = value
 		}
 	}
 
@@ -91,7 +77,7 @@ func (context *outputContext) PopState() error {
 	context.returnCode = prevState.returnCode
 	context.returnMessage = prevState.returnMessage
 
-	output.refund += prevState.refund
+	context.refund += prevState.refund
 
 	return nil
 }
@@ -105,60 +91,44 @@ func (context *outputContext) GetStorageUpdates() map[string](map[string][]byte)
 }
 
 func (context *outputContext) GetRefund() uint64 {
-	return context.refund
+	return uint64(context.outputState.GasRefund.Int64())
 }
 
 func (context *outputContext) SetRefund(refund uint64) {
-	context.refund = refund
+	context.outputState.GasRefund = big.NewInt(int64(refund))
 }
 
 func (context *outputContext) ReturnData() [][]byte {
-	return context.returnData
+	return context.outputState.ReturnData
 }
 
 func (context *outputContext) ReturnCode() vmcommon.ReturnCode {
-	return context.returnCode
+	return context.outputState.ReturnCode
 }
 
 func (context *outputContext) SetReturnCode(returnCode vmcommon.ReturnCode) {
-	context.returnCode = returnCode
+	context.outputState.ReturnCode = returnCode
 }
 
 func (context *outputContext) ReturnMessage() string {
-	return context.returnMessage
+	return context.outputState.ReturnMessage
 }
 
 func (context *outputContext) SetReturnMessage(returnMessage string) {
-	context.returnMessage = returnMessage
+	context.outputState.ReturnMessage = returnMessage
 }
 
 func (context *outputContext) ClearReturnData() {
-	context.returnData = make([][]byte, 0)
+	context.outputState.ReturnData = make([][]byte, 0)
 }
 
-<<<<<<< HEAD
-func (output *Output) SelfDestruct(addr []byte, beneficiary []byte) {
-	panic("not implemented")
-||||||| merged common ancestors
-func (output *Output) SelfDestruct(addr []byte, beneficiary []byte) {
-	if output.host.Runtime().ReadOnly() {
-		return
-	}
-
-	output.selfDestruct[string(addr)] = beneficiary
-=======
 func (context *outputContext) SelfDestruct(addr []byte, beneficiary []byte) {
-	if context.host.Runtime().ReadOnly() {
-		return
-	}
-
-	context.selfDestruct[string(addr)] = beneficiary
->>>>>>> refactor-vmcontext-and-bindings
+	panic("not implemented")
 }
 
 func (context *outputContext) Finish(data []byte) {
 	if len(data) > 0 {
-		context.returnData = append(context.returnData, data)
+		context.outputState.ReturnData = append(context.outputState.ReturnData, data)
 	}
 }
 
@@ -198,22 +168,22 @@ func (context *outputContext) WriteLog(addr []byte, topics [][]byte, data []byte
 // the necessary steps to create accounts and reverses the state in case of an
 // execution error or failed value transfer.
 func (context *outputContext) Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte) {
-	senderAcc, ok := context.outputAccounts[string(sender)]
+	senderAcc, ok := context.outputState.OutputAccounts[string(sender)]
 	if !ok {
-		senderAcc = &vmcommon.OutputAccount{
+		senderAcc = &outputAccount{
 			Address:      sender,
 			BalanceDelta: big.NewInt(0),
 		}
-		context.outputAccounts[string(senderAcc.Address)] = senderAcc
+		context.outputState.OutputAccounts[string(senderAcc.Address)] = senderAcc
 	}
 
-	destAcc, ok := context.outputAccounts[string(destination)]
+	destAcc, ok := context.outputState.OutputAccounts[string(destination)]
 	if !ok {
-		destAcc = &vmcommon.OutputAccount{
+		destAcc = &outputAccount{
 			Address:      destination,
 			BalanceDelta: big.NewInt(0),
 		}
-		context.outputAccounts[string(destAcc.Address)] = destAcc
+		context.outputState.OutputAccounts[string(destAcc.Address)] = destAcc
 	}
 
 	senderAcc.BalanceDelta = big.NewInt(0).Sub(senderAcc.BalanceDelta, value)
@@ -223,13 +193,13 @@ func (context *outputContext) Transfer(destination []byte, sender []byte, gasLim
 }
 
 func (context *outputContext) AddTxValueToAccount(address []byte, value *big.Int) {
-	destAcc, ok := context.outputAccounts[string(address)]
+	destAcc, ok := context.outputState.OutputAccounts[string(address)]
 	if !ok {
-		destAcc = &vmcommon.OutputAccount{
+		destAcc = &outputAccount{
 			Address:      address,
 			BalanceDelta: big.NewInt(0),
 		}
-		context.outputAccounts[string(destAcc.Address)] = destAcc
+		context.outputState.OutputAccounts[string(destAcc.Address)] = destAcc
 	}
 
 	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
