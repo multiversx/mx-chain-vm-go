@@ -8,74 +8,73 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
-type LogTopicsData struct {
+type logTopicsData struct {
 	topics [][]byte
 	data   []byte
 }
 
-type Output struct {
+type outputContext struct {
 	host           arwen.VMHost
 	outputAccounts map[string]*vmcommon.OutputAccount
-	logs           map[string]LogTopicsData
+	logs           map[string]logTopicsData
 	storageUpdate  map[string](map[string][]byte)
 	returnData     [][]byte
 	returnCode     vmcommon.ReturnCode
 	returnMessage  string
 	selfDestruct   map[string][]byte
 	refund         uint64
-	stateStack     []*Output
+	stateStack     []*outputContext
 }
 
-func NewOutputContext(host arwen.VMHost) (*Output, error) {
-	output := &Output{
+func NewOutputContext(host arwen.VMHost) (*outputContext, error) {
+	context := &outputContext{
 		host:       host,
-		stateStack: make([]*Output, 0),
+		stateStack: make([]*outputContext, 0),
 	}
 
-	output.InitState()
+	context.InitState()
 
-	return output, nil
+	return context, nil
 }
 
-func (output *Output) InitState() {
-	output.outputAccounts = make(map[string]*vmcommon.OutputAccount, 0)
-	output.logs = make(map[string]LogTopicsData, 0)
-	output.storageUpdate = make(map[string]map[string][]byte, 0)
-	output.selfDestruct = make(map[string][]byte)
-	output.returnData = nil
-	output.returnCode = vmcommon.Ok
-	output.returnMessage = ""
-	output.refund = 0
+func (context *outputContext) InitState() {
+	context.outputAccounts = make(map[string]*vmcommon.OutputAccount, 0)
+	context.logs = make(map[string]logTopicsData, 0)
+	context.storageUpdate = make(map[string]map[string][]byte, 0)
+	context.selfDestruct = make(map[string][]byte)
+	context.returnData = nil
+	context.returnCode = vmcommon.Ok
+	context.returnMessage = ""
+	context.refund = 0
 }
 
-func (output *Output) PushState() {
-	newState := &Output{
-		logs:           output.logs,
-		storageUpdate:  output.storageUpdate,
-		outputAccounts: output.outputAccounts,
-		returnData:     output.returnData,
-		returnCode:     output.returnCode,
-		selfDestruct:   output.selfDestruct,
-		returnMessage:  output.returnMessage,
-		refund:         output.refund,
+func (context *outputContext) PushState() {
+	newState := &outputContext{
+		logs:           context.logs,
+		storageUpdate:  context.storageUpdate,
+		outputAccounts: context.outputAccounts,
+		returnData:     context.returnData,
+		returnCode:     context.returnCode,
+		selfDestruct:   context.selfDestruct,
+		returnMessage:  context.returnMessage,
+		refund:         context.refund,
 	}
 
-	output.stateStack = append(output.stateStack, newState)
+	context.stateStack = append(context.stateStack, newState)
 }
 
-func (output *Output) PopState() error {
-	stateStackLen := len(output.stateStack)
+func (context *outputContext) PopState() error {
+	stateStackLen := len(context.stateStack)
 	if stateStackLen < 1 {
 		return arwen.StateStackUnderflow
 	}
 
-	prevState := output.stateStack[stateStackLen-1]
-	output.stateStack = output.stateStack[:stateStackLen-1]
+	prevState := context.stateStack[stateStackLen-1]
+	context.stateStack = context.stateStack[:stateStackLen-1]
 
 	for key, log := range prevState.logs {
-		output.logs[key] = log
+		context.logs[key] = log
 	}
-
 	for account, updates := range prevState.storageUpdate {
 		if _, ok := output.storageUpdate[account]; !ok {
 			output.storageUpdate[account] = updates
@@ -87,118 +86,134 @@ func (output *Output) PopState() error {
 		}
 	}
 
-	output.outputAccounts = prevState.outputAccounts
-	output.returnData = append(output.returnData, prevState.returnData...)
-	output.returnCode = prevState.returnCode
-	output.returnMessage = prevState.returnMessage
+	context.outputAccounts = prevState.outputAccounts
+	context.returnData = append(context.returnData, prevState.returnData...)
+	context.returnCode = prevState.returnCode
+	context.returnMessage = prevState.returnMessage
 
 	output.refund += prevState.refund
 
 	return nil
 }
 
-func (output *Output) GetOutputAccounts() map[string]*vmcommon.OutputAccount {
-	return output.outputAccounts
+func (context *outputContext) GetOutputAccounts() map[string]*vmcommon.OutputAccount {
+	return context.outputAccounts
 }
 
-func (output *Output) GetStorageUpdates() map[string](map[string][]byte) {
-	return output.storageUpdate
+func (context *outputContext) GetStorageUpdates() map[string](map[string][]byte) {
+	return context.storageUpdate
 }
 
-func (output *Output) GetRefund() uint64 {
-	return output.refund
+func (context *outputContext) GetRefund() uint64 {
+	return context.refund
 }
 
-func (output *Output) SetRefund(refund uint64) {
-	output.refund = refund
+func (context *outputContext) SetRefund(refund uint64) {
+	context.refund = refund
 }
 
-func (output *Output) ReturnData() [][]byte {
-	return output.returnData
+func (context *outputContext) ReturnData() [][]byte {
+	return context.returnData
 }
 
-func (output *Output) ReturnCode() vmcommon.ReturnCode {
-	return output.returnCode
+func (context *outputContext) ReturnCode() vmcommon.ReturnCode {
+	return context.returnCode
 }
 
-func (output *Output) SetReturnCode(returnCode vmcommon.ReturnCode) {
-	output.returnCode = returnCode
+func (context *outputContext) SetReturnCode(returnCode vmcommon.ReturnCode) {
+	context.returnCode = returnCode
 }
 
-func (output *Output) ReturnMessage() string {
-	return output.returnMessage
+func (context *outputContext) ReturnMessage() string {
+	return context.returnMessage
 }
 
-func (output *Output) SetReturnMessage(returnMessage string) {
-	output.returnMessage = returnMessage
+func (context *outputContext) SetReturnMessage(returnMessage string) {
+	context.returnMessage = returnMessage
 }
 
-func (output *Output) ClearReturnData() {
-	output.returnData = make([][]byte, 0)
+func (context *outputContext) ClearReturnData() {
+	context.returnData = make([][]byte, 0)
 }
 
+<<<<<<< HEAD
 func (output *Output) SelfDestruct(addr []byte, beneficiary []byte) {
 	panic("not implemented")
+||||||| merged common ancestors
+func (output *Output) SelfDestruct(addr []byte, beneficiary []byte) {
+	if output.host.Runtime().ReadOnly() {
+		return
+	}
+
+	output.selfDestruct[string(addr)] = beneficiary
+=======
+func (context *outputContext) SelfDestruct(addr []byte, beneficiary []byte) {
+	if context.host.Runtime().ReadOnly() {
+		return
+	}
+
+	context.selfDestruct[string(addr)] = beneficiary
+>>>>>>> refactor-vmcontext-and-bindings
 }
 
-func (output *Output) Finish(data []byte) {
+func (context *outputContext) Finish(data []byte) {
 	if len(data) > 0 {
-		output.returnData = append(output.returnData, data)
+		context.returnData = append(context.returnData, data)
 	}
 }
 
-func (output *Output) FinishValue(value wasmer.Value) {
+func (context *outputContext) FinishValue(value wasmer.Value) {
 	if !value.IsVoid() {
 		convertedResult := arwen.ConvertReturnValue(value)
 		valueBytes := convertedResult.Bytes()
 
-		output.Finish(valueBytes)
+		context.Finish(valueBytes)
 	}
 }
 
-func (output *Output) WriteLog(addr []byte, topics [][]byte, data []byte) {
-	if output.host.Runtime().ReadOnly() {
+func (context *outputContext) WriteLog(addr []byte, topics [][]byte, data []byte) {
+	if context.host.Runtime().ReadOnly() {
 		return
 	}
 
 	strAdr := string(addr)
 
-	if _, ok := output.logs[strAdr]; !ok {
-		output.logs[strAdr] = LogTopicsData{
+	if _, ok := context.logs[strAdr]; !ok {
+		context.logs[strAdr] = logTopicsData{
 			topics: make([][]byte, 0),
 			data:   make([]byte, 0),
 		}
 	}
 
-	currLogs := output.logs[strAdr]
+	currLogs := context.logs[strAdr]
 	for i := 0; i < len(topics); i++ {
 		currLogs.topics = append(currLogs.topics, topics[i])
 	}
 	currLogs.data = append(currLogs.data, data...)
 
-	output.logs[strAdr] = currLogs
+	context.logs[strAdr] = currLogs
 }
 
 // Transfer handles any necessary value transfer required and takes
 // the necessary steps to create accounts and reverses the state in case of an
 // execution error or failed value transfer.
-func (output *Output) Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte) {
-	senderAcc, ok := output.outputAccounts[string(sender)]
+func (context *outputContext) Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte) {
+	senderAcc, ok := context.outputAccounts[string(sender)]
 	if !ok {
 		senderAcc = &vmcommon.OutputAccount{
 			Address:      sender,
 			BalanceDelta: big.NewInt(0),
 		}
-		output.outputAccounts[string(senderAcc.Address)] = senderAcc
+		context.outputAccounts[string(senderAcc.Address)] = senderAcc
 	}
 
-	destAcc, ok := output.outputAccounts[string(destination)]
+	destAcc, ok := context.outputAccounts[string(destination)]
 	if !ok {
 		destAcc = &vmcommon.OutputAccount{
 			Address:      destination,
 			BalanceDelta: big.NewInt(0),
 		}
-		output.outputAccounts[string(destAcc.Address)] = destAcc
+		context.outputAccounts[string(destAcc.Address)] = destAcc
 	}
 
 	senderAcc.BalanceDelta = big.NewInt(0).Sub(senderAcc.BalanceDelta, value)
@@ -207,25 +222,25 @@ func (output *Output) Transfer(destination []byte, sender []byte, gasLimit uint6
 	destAcc.GasLimit = gasLimit
 }
 
-func (output *Output) AddTxValueToAccount(address []byte, value *big.Int) {
-	destAcc, ok := output.outputAccounts[string(address)]
+func (context *outputContext) AddTxValueToAccount(address []byte, value *big.Int) {
+	destAcc, ok := context.outputAccounts[string(address)]
 	if !ok {
 		destAcc = &vmcommon.OutputAccount{
 			Address:      address,
 			BalanceDelta: big.NewInt(0),
 		}
-		output.outputAccounts[string(destAcc.Address)] = destAcc
+		context.outputAccounts[string(destAcc.Address)] = destAcc
 	}
 
 	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
 }
 
 // adapt vm output and all saved data from sc run into VM Output
-func (output *Output) CreateVMOutput(result wasmer.Value) *vmcommon.VMOutput {
+func (context *outputContext) CreateVMOutput(result wasmer.Value) *vmcommon.VMOutput {
 	vmOutput := &vmcommon.VMOutput{}
 	// save storage updates
 	outAccs := make(map[string]*vmcommon.OutputAccount, 0)
-	for addr, updates := range output.storageUpdate {
+	for addr, updates := range context.storageUpdate {
 		if _, ok := outAccs[addr]; !ok {
 			outAccs[addr] = &vmcommon.OutputAccount{Address: []byte(addr)}
 		}
@@ -241,7 +256,7 @@ func (output *Output) CreateVMOutput(result wasmer.Value) *vmcommon.VMOutput {
 	}
 
 	// add balances
-	for addr, outAcc := range output.outputAccounts {
+	for addr, outAcc := range context.outputAccounts {
 		if _, ok := outAccs[addr]; !ok {
 			outAccs[addr] = &vmcommon.OutputAccount{}
 		}
@@ -268,7 +283,7 @@ func (output *Output) CreateVMOutput(result wasmer.Value) *vmcommon.VMOutput {
 	}
 
 	// save logs
-	for addr, value := range output.logs {
+	for addr, value := range context.logs {
 		logEntry := &vmcommon.LogEntry{
 			Address: []byte(addr),
 			Data:    value.data,
@@ -278,8 +293,8 @@ func (output *Output) CreateVMOutput(result wasmer.Value) *vmcommon.VMOutput {
 		vmOutput.Logs = append(vmOutput.Logs, logEntry)
 	}
 
-	if len(output.returnData) > 0 {
-		vmOutput.ReturnData = append(vmOutput.ReturnData, output.returnData...)
+	if len(context.returnData) > 0 {
+		vmOutput.ReturnData = append(vmOutput.ReturnData, context.returnData...)
 	}
 
 	convertedResult := arwen.ConvertReturnValue(result)
@@ -288,18 +303,18 @@ func (output *Output) CreateVMOutput(result wasmer.Value) *vmcommon.VMOutput {
 		vmOutput.ReturnData = append(vmOutput.ReturnData, resultBytes)
 	}
 
-	vmOutput.GasRemaining = output.host.Metering().GasLeft()
-	vmOutput.GasRefund = big.NewInt(0).SetUint64(output.refund)
-	vmOutput.ReturnCode = output.returnCode
-	vmOutput.ReturnMessage = output.returnMessage
+	vmOutput.GasRemaining = context.host.Metering().GasLeft()
+	vmOutput.GasRefund = big.NewInt(0).SetUint64(context.refund)
+	vmOutput.ReturnCode = context.returnCode
+	vmOutput.ReturnMessage = context.returnMessage
 
 	return vmOutput
 }
 
-func (output *Output) DeployCode(address []byte, code []byte) {
-	newSCAcc, ok := output.outputAccounts[string(address)]
+func (context *outputContext) DeployCode(address []byte, code []byte) {
+	newSCAcc, ok := context.outputAccounts[string(address)]
 	if !ok {
-		output.outputAccounts[string(address)] = &vmcommon.OutputAccount{
+		context.outputAccounts[string(address)] = &vmcommon.OutputAccount{
 			Address:        address,
 			Nonce:          0,
 			BalanceDelta:   big.NewInt(0),
@@ -311,7 +326,7 @@ func (output *Output) DeployCode(address []byte, code []byte) {
 	}
 }
 
-func (output *Output) CreateVMOutputInCaseOfError(errCode vmcommon.ReturnCode, message string) *vmcommon.VMOutput {
+func (context *outputContext) CreateVMOutputInCaseOfError(errCode vmcommon.ReturnCode, message string) *vmcommon.VMOutput {
 	vmOutput := &vmcommon.VMOutput{GasRemaining: 0, GasRefund: big.NewInt(0)}
 	vmOutput.ReturnCode = errCode
 	vmOutput.ReturnMessage = message

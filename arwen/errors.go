@@ -11,7 +11,7 @@ var ErrReturnCodeNotOk = errors.New("return not is not ok")
 var ErrInvalidCallOnReadOnlyMode = errors.New("operation not permitted in read only mode")
 
 var ErrNotEnoughGas = errors.New("not enough gas")
- 
+
 var ErrUnhandledRuntimeBreakpoint = errors.New("unhandled runtime breakpoint")
 
 var StateStackUnderflow = errors.New("State stack underflow")
