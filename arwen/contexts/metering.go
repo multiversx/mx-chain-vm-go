@@ -6,7 +6,7 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
-type Metering struct {
+type meteringContext struct {
 	gasSchedule   *config.GasCost
 	blockGasLimit uint64
 	host          arwen.VMHost
@@ -16,44 +16,44 @@ func NewMeteringContext(
 	host arwen.VMHost,
 	gasSchedule map[string]map[string]uint64,
 	blockGasLimit uint64,
-) (*Metering, error) {
+) (*meteringContext, error) {
 
 	gasCostConfig, err := config.CreateGasConfig(gasSchedule)
 	if err != nil {
 		return nil, err
 	}
 
-	metering := &Metering{
+	context := &meteringContext{
 		gasSchedule:   gasCostConfig,
 		blockGasLimit: blockGasLimit,
 		host:          host,
 	}
 
-	return metering, nil
+	return context, nil
 }
 
-func (metering *Metering) GasSchedule() *config.GasCost {
-	return metering.gasSchedule
+func (context *meteringContext) GasSchedule() *config.GasCost {
+	return context.gasSchedule
 }
 
-func (metering *Metering) UseGas(gas uint64) {
-	gasUsed := metering.host.Runtime().GetPointsUsed() + gas
-	metering.host.Runtime().SetPointsUsed(gasUsed)
+func (context *meteringContext) UseGas(gas uint64) {
+	gasUsed := context.host.Runtime().GetPointsUsed() + gas
+	context.host.Runtime().SetPointsUsed(gasUsed)
 }
 
-func (metering *Metering) FreeGas(gas uint64) {
-	refund := metering.host.Output().GetRefund() + gas
-	metering.host.Output().SetRefund(refund)
+func (context *meteringContext) FreeGas(gas uint64) {
+	refund := context.host.Output().GetRefund() + gas
+	context.host.Output().SetRefund(refund)
 }
 
-func (metering *Metering) GasLeft() uint64 {
-	gasProvided := metering.host.Runtime().GetVMInput().GasProvided
-	gasUsed := metering.host.Runtime().GetPointsUsed()
+func (context *meteringContext) GasLeft() uint64 {
+	gasProvided := context.host.Runtime().GetVMInput().GasProvided
+	gasUsed := context.host.Runtime().GetPointsUsed()
 	return gasProvided - gasUsed
 }
 
-func (metering *Metering) BoundGasLimit(value int64) uint64 {
-	gasLeft := metering.GasLeft()
+func (context *meteringContext) BoundGasLimit(value int64) uint64 {
+	gasLeft := context.GasLeft()
 	limit := uint64(value)
 
 	if gasLeft < limit {
@@ -63,41 +63,41 @@ func (metering *Metering) BoundGasLimit(value int64) uint64 {
 	}
 }
 
-func (metering *Metering) BlockGasLimit() uint64 {
-	return metering.blockGasLimit
+func (context *meteringContext) BlockGasLimit() uint64 {
+	return context.blockGasLimit
 }
 
-func (metering *Metering) DeductInitialGasForExecution(input *vmcommon.ContractCallInput, contract []byte) (uint64, error) {
-	remainingGas, err := metering.deductInitialGas(
+func (context *meteringContext) DeductInitialGasForExecution(input *vmcommon.ContractCallInput, contract []byte) (uint64, error) {
+	remainingGas, err := context.deductInitialGas(
 		input.GasProvided,
 		contract,
 		0,
-		metering.gasSchedule.BaseOperationCost.CompilePerByte,
+		context.gasSchedule.BaseOperationCost.CompilePerByte,
 	)
 	return remainingGas, err
 }
 
-func (metering *Metering) DeductInitialGasForDirectDeployment(input *vmcommon.ContractCreateInput) (uint64, error) {
-	remainingGas, err := metering.deductInitialGas(
+func (context *meteringContext) DeductInitialGasForDirectDeployment(input *vmcommon.ContractCreateInput) (uint64, error) {
+	remainingGas, err := context.deductInitialGas(
 		input.GasProvided,
 		input.ContractCode,
-		metering.gasSchedule.ElrondAPICost.CreateContract,
-		metering.gasSchedule.BaseOperationCost.StorePerByte,
+		context.gasSchedule.ElrondAPICost.CreateContract,
+		context.gasSchedule.BaseOperationCost.StorePerByte,
 	)
 	return remainingGas, err
 }
 
-func (metering *Metering) DeductInitialGasForIndirectDeployment(input *vmcommon.ContractCreateInput) (uint64, error) {
-	remainingGas, err := metering.deductInitialGas(
+func (context *meteringContext) DeductInitialGasForIndirectDeployment(input *vmcommon.ContractCreateInput) (uint64, error) {
+	remainingGas, err := context.deductInitialGas(
 		input.GasProvided,
 		input.ContractCode,
 		0,
-		metering.gasSchedule.BaseOperationCost.StorePerByte,
+		context.gasSchedule.BaseOperationCost.StorePerByte,
 	)
 	return remainingGas, err
 }
 
-func (metering *Metering) deductInitialGas(
+func (context *meteringContext) deductInitialGas(
 	gasProvided uint64,
 	code []byte,
 	baseCost uint64,

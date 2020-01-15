@@ -43,8 +43,8 @@ func NewArwenVM(
 ) (*vmHost, error) {
 
 	host := &vmHost{
-		blockChainHook:       blockChainHook,
-		cryptoHook:           cryptoHook,
+		blockChainHook:    blockChainHook,
+		cryptoHook:        cryptoHook,
 		meteringContext:   nil,
 		runtimeContext:    nil,
 		blockchainContext: nil,

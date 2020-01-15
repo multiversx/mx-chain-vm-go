@@ -7,7 +7,7 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
-type Storage struct {
+type storageContext struct {
 	host           arwen.VMHost
 	blockChainHook vmcommon.BlockchainHook
 }
@@ -15,20 +15,20 @@ type Storage struct {
 func NewStorageContext(
 	host arwen.VMHost,
 	blockChainHook vmcommon.BlockchainHook,
-) (*Storage, error) {
-	storage := &Storage{
+) (*storageContext, error) {
+	context := &storageContext{
 		host:           host,
 		blockChainHook: blockChainHook,
 	}
 
-	return storage, nil
+	return context, nil
 }
 
-func (storage *Storage) InitState() {
+func (context *storageContext) InitState() {
 }
 
-func (storage *Storage) GetStorage(addr []byte, key []byte) []byte {
-	storageUpdate := storage.host.Output().GetStorageUpdates()
+func (context *storageContext) GetStorage(addr []byte, key []byte) []byte {
+	storageUpdate := context.host.Output().GetStorageUpdates()
 	strAdr := string(addr)
 	if _, ok := storageUpdate[strAdr]; ok {
 		if value, ok := storageUpdate[strAdr][string(key)]; ok {
@@ -36,23 +36,23 @@ func (storage *Storage) GetStorage(addr []byte, key []byte) []byte {
 		}
 	}
 
-	hash, _ := storage.blockChainHook.GetStorageData(addr, key)
-	return hash
+	value, _ := context.blockChainHook.GetStorageData(addr, key)
+	return value
 }
 
-func (storage *Storage) SetStorage(addr []byte, key []byte, value []byte) int32 {
-	if storage.host.Runtime().ReadOnly() {
+func (context *storageContext) SetStorage(addr []byte, key []byte, value []byte) int32 {
+	if context.host.Runtime().ReadOnly() {
 		return 0
 	}
 
 	strAdr := string(addr)
 
-	storageUpdate := storage.host.Output().GetStorageUpdates()
+	storageUpdate := context.host.Output().GetStorageUpdates()
 	if _, ok := storageUpdate[strAdr]; !ok {
 		storageUpdate[strAdr] = make(map[string][]byte, 0)
 	}
 	if _, ok := storageUpdate[strAdr][string(key)]; !ok {
-		oldValue := storage.GetStorage(addr, key)
+		oldValue := context.GetStorage(addr, key)
 		storageUpdate[strAdr][string(key)] = oldValue
 	}
 
@@ -62,7 +62,7 @@ func (storage *Storage) SetStorage(addr []byte, key []byte, value []byte) int32 
 	storageUpdate[strAdr][string(key)] = make([]byte, length)
 	copy(storageUpdate[strAdr][string(key)][:length], value[:length])
 
-	metering := storage.host.Metering()
+	metering := context.host.Metering()
 	if bytes.Equal(oldValue, value) {
 		useGas := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(length)
 		metering.UseGas(useGas)

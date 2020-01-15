@@ -73,8 +73,7 @@ type RuntimeContext interface {
 	PopInstance() error
 	ReadOnly() bool
 	SetReadOnly(readOnly bool)
-	CreateWasmerInstance(contract []byte) error
-	CreateWasmerInstanceWithGasLimit(contract []byte, gasLimit uint64) error
+	CreateWasmerInstance(contract []byte, gasLimit uint64) error
 	SetInstanceContext(instCtx *wasmer.InstanceContext)
 	GetInstanceContext() *wasmer.InstanceContext
 	GetInstanceExports() wasmer.ExportsMap
