@@ -75,14 +75,15 @@ func (output *Output) PopState() error {
 	for key, log := range prevState.logs {
 		output.logs[key] = log
 	}
-	for key, storageUpdate := range prevState.storageUpdate {
-		if _, ok := output.storageUpdate[key]; !ok {
-			output.storageUpdate[key] = storageUpdate
+
+	for account, updates := range prevState.storageUpdate {
+		if _, ok := output.storageUpdate[account]; !ok {
+			output.storageUpdate[account] = updates
 			continue
 		}
 
-		for internKey, internStore := range storageUpdate {
-			output.storageUpdate[key][internKey] = internStore
+		for key, value := range updates {
+			output.storageUpdate[account][key] = value
 		}
 	}
 
@@ -90,10 +91,6 @@ func (output *Output) PopState() error {
 	output.returnData = append(output.returnData, prevState.returnData...)
 	output.returnCode = prevState.returnCode
 	output.returnMessage = prevState.returnMessage
-
-	for key, selfDestruct := range prevState.selfDestruct {
-		output.selfDestruct[key] = selfDestruct
-	}
 
 	output.refund += prevState.refund
 
@@ -141,11 +138,7 @@ func (output *Output) ClearReturnData() {
 }
 
 func (output *Output) SelfDestruct(addr []byte, beneficiary []byte) {
-	if output.host.Runtime().ReadOnly() {
-		return
-	}
-
-	output.selfDestruct[string(addr)] = beneficiary
+	panic("not implemented")
 }
 
 func (output *Output) Finish(data []byte) {
