@@ -135,18 +135,15 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (*
 func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) error {
 	host.PushState()
 
-	var err error
-	defer func() {
-		popErr := host.PopState()
-		if popErr != nil {
-			err = popErr
-		}
-	}()
-
 	host.InitState()
 
 	host.Runtime().InitStateFromContractCallInput(input)
-	err = host.execute(input)
+	err := host.execute(input)
+
+	popErr := host.PopState()
+	if popErr != nil {
+		err = popErr
+	}
 
 	return err
 }
@@ -155,16 +152,13 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) erro
 	runtime := host.Runtime()
 	runtime.PushState()
 
-	var err error
-	defer func() {
-		popErr := runtime.PopState()
-		if popErr != nil {
-			err = popErr
-		}
-	}()
-
 	runtime.InitStateFromContractCallInput(input)
-	err = host.execute(input)
+	err := host.execute(input)
+
+	popErr := runtime.PopState()
+	if popErr != nil {
+		err = popErr
+	}
 
 	return err
 }
@@ -222,7 +216,6 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]by
 	err = runtime.CreateWasmerInstance(input.ContractCode, gasForDeployment)
 	if err != nil {
 		fmt.Println("arwen Error: ", err.Error())
-		// TODO use all gas here?
 		output.Transfer(input.CallerAddr, address, 0, input.CallValue, nil)
 		return nil, err
 	}
