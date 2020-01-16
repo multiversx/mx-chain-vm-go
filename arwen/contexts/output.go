@@ -16,13 +16,13 @@ type logTopicsData struct {
 type outputContext struct {
 	host        arwen.VMHost
 	outputState *outputState
-	stateStack  []*outputContext
+	stateStack  []*outputState
 }
 
 func NewOutputContext(host arwen.VMHost) (*outputContext, error) {
 	context := &outputContext{
 		host:       host,
-		stateStack: make([]*outputContext, 0),
+		stateStack: make([]*outputState, 0),
 	}
 
 	context.InitState()
@@ -35,17 +35,8 @@ func (context *outputContext) InitState() {
 }
 
 func (context *outputContext) PushState() {
-	newState := &outputContext{
-		logs:           context.logs,
-		storageUpdate:  context.storageUpdate,
-		outputAccounts: context.outputAccounts,
-		returnData:     context.returnData,
-		returnCode:     context.returnCode,
-		selfDestruct:   context.selfDestruct,
-		returnMessage:  context.returnMessage,
-		refund:         context.refund,
-	}
-
+	newState := newOutputState()
+  newState.update(context.outputState)
 	context.stateStack = append(context.stateStack, newState)
 }
 
@@ -58,36 +49,21 @@ func (context *outputContext) PopState() error {
 	prevState := context.stateStack[stateStackLen-1]
 	context.stateStack = context.stateStack[:stateStackLen-1]
 
-	for key, log := range prevState.logs {
-		context.logs[key] = log
-	}
-	for account, updates := range prevState.storageUpdate {
-		if _, ok := context.storageUpdate[account]; !ok {
-			context.storageUpdate[account] = updates
-			continue
-		}
-
-		for key, value := range updates {
-			context.storageUpdate[account][key] = value
-		}
-	}
-
-	context.outputAccounts = prevState.outputAccounts
-	context.returnData = append(context.returnData, prevState.returnData...)
-	context.returnCode = prevState.returnCode
-	context.returnMessage = prevState.returnMessage
-
-	context.refund += prevState.refund
+  prevState.update(context.outputState)
+  context.outputState = newOutputState()
+  context.outputState.update(prevState)
 
 	return nil
 }
 
-func (context *outputContext) GetOutputAccounts() map[string]*vmcommon.OutputAccount {
-	return context.outputAccounts
-}
+func (context *outputContext) GetStorageUpdates(address []byte) map[string]*vmcommon.StorageUpdate  {
+  account, ok := context.outputState.OutputAccounts[string(address)]
+  if !ok {
+    account = newOutputAccount(address)
+    context.outputState.OutputAccounts[string(address)] = account
+  }
 
-func (context *outputContext) GetStorageUpdates() map[string](map[string][]byte) {
-	return context.storageUpdate
+  return account.StorageUpdates
 }
 
 func (context *outputContext) GetRefund() uint64 {
@@ -146,22 +122,25 @@ func (context *outputContext) WriteLog(addr []byte, topics [][]byte, data []byte
 		return
 	}
 
+  logs := context.outputState.Logs
+
 	strAdr := string(addr)
 
-	if _, ok := context.logs[strAdr]; !ok {
-		context.logs[strAdr] = logTopicsData{
-			topics: make([][]byte, 0),
-			data:   make([]byte, 0),
+	if _, ok := logs[strAdr]; !ok {
+		logs[strAdr] = &vmcommon.LogEntry{
+      Address: addr,
+			Topics: make([][]byte, 0),
+			Data:   make([]byte, 0),
 		}
 	}
 
-	currLogs := context.logs[strAdr]
+	currLogs := logs[strAdr]
 	for i := 0; i < len(topics); i++ {
-		currLogs.topics = append(currLogs.topics, topics[i])
+		topics = append(currLogs.Topics, topics[i])
 	}
-	currLogs.data = append(currLogs.data, data...)
+	data = append(currLogs.Data, data...)
 
-	context.logs[strAdr] = currLogs
+	logs[strAdr] = currLogs
 }
 
 // Transfer handles any necessary value transfer required and takes
@@ -207,93 +186,17 @@ func (context *outputContext) AddTxValueToAccount(address []byte, value *big.Int
 
 // adapt vm output and all saved data from sc run into VM Output
 func (context *outputContext) CreateVMOutput(result wasmer.Value) *vmcommon.VMOutput {
-	vmOutput := &vmcommon.VMOutput{}
-	// save storage updates
-	outAccs := make(map[string]*vmcommon.OutputAccount, 0)
-	for addr, updates := range context.storageUpdate {
-		if _, ok := outAccs[addr]; !ok {
-			outAccs[addr] = &vmcommon.OutputAccount{Address: []byte(addr)}
-		}
-
-		for key, value := range updates {
-			storageUpdate := &vmcommon.StorageUpdate{
-				Offset: []byte(key),
-				Data:   value,
-			}
-
-			outAccs[addr].StorageUpdates = append(outAccs[addr].StorageUpdates, storageUpdate)
-		}
-	}
-
-	// add balances
-	for addr, outAcc := range context.outputAccounts {
-		if _, ok := outAccs[addr]; !ok {
-			outAccs[addr] = &vmcommon.OutputAccount{}
-		}
-
-		outAccs[addr].Address = outAcc.Address
-		outAccs[addr].BalanceDelta = outAcc.BalanceDelta
-
-		if len(outAcc.Code) > 0 {
-			outAccs[addr].Code = outAcc.Code
-		}
-		if outAcc.Nonce > 0 {
-			outAccs[addr].Nonce = outAcc.Nonce
-		}
-		if len(outAcc.Data) > 0 {
-			outAccs[addr].Data = outAcc.Data
-		}
-
-		outAccs[addr].GasLimit = outAcc.GasLimit
-	}
-
-	// save to the output finally
-	for _, outAcc := range outAccs {
-		vmOutput.OutputAccounts = append(vmOutput.OutputAccounts, outAcc)
-	}
-
-	// save logs
-	for addr, value := range context.logs {
-		logEntry := &vmcommon.LogEntry{
-			Address: []byte(addr),
-			Data:    value.data,
-			Topics:  value.topics,
-		}
-
-		vmOutput.Logs = append(vmOutput.Logs, logEntry)
-	}
-
-	if len(context.returnData) > 0 {
-		vmOutput.ReturnData = append(vmOutput.ReturnData, context.returnData...)
-	}
-
-	convertedResult := arwen.ConvertReturnValue(result)
-	resultBytes := convertedResult.Bytes()
-	if len(resultBytes) > 0 {
-		vmOutput.ReturnData = append(vmOutput.ReturnData, resultBytes)
-	}
-
-	vmOutput.GasRemaining = context.host.Metering().GasLeft()
-	vmOutput.GasRefund = big.NewInt(0).SetUint64(context.refund)
-	vmOutput.ReturnCode = context.returnCode
-	vmOutput.ReturnMessage = context.returnMessage
-
+  vmOutput := context.outputState.ToVMOutput()
 	return vmOutput
 }
 
 func (context *outputContext) DeployCode(address []byte, code []byte) {
-	newSCAcc, ok := context.outputAccounts[string(address)]
+	newSCAcc, ok := context.outputState.OutputAccounts[string(address)]
 	if !ok {
-		context.outputAccounts[string(address)] = &vmcommon.OutputAccount{
-			Address:        address,
-			Nonce:          0,
-			BalanceDelta:   big.NewInt(0),
-			StorageUpdates: nil,
-			Code:           code,
-		}
-	} else {
-		newSCAcc.Code = code
-	}
+    newSCAcc = newOutputAccount(address)
+		context.outputState.OutputAccounts[string(address)] = newSCAcc
+  } 
+  newSCAcc.Code = code
 }
 
 func (context *outputContext) CreateVMOutputInCaseOfError(errCode vmcommon.ReturnCode, message string) *vmcommon.VMOutput {

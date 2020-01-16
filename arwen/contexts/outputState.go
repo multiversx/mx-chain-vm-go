@@ -52,3 +52,26 @@ func (state *outputState) update(otherState *outputState) {
 	state.ReturnCode = otherState.ReturnCode
 	state.ReturnMessage = otherState.ReturnMessage
 }
+
+func (state *outputState) ToVMOutput() *vmcommon.VMOutput {
+  vmOutput := &vmcommon.VMOutput {
+    ReturnData: state.ReturnData,
+    ReturnCode: state.ReturnCode,
+    ReturnMessage: state.ReturnMessage,
+    GasRemaining: state.GasRemaining,
+    GasRefund: state.GasRefund,
+    OutputAccounts: nil,
+    DeletedAccounts: state.DeletedAccounts,
+    TouchedAccounts: state.TouchedAccounts,
+    Logs: nil,
+  }
+
+  vmOutput.OutputAccounts = make([]*vmcommon.OutputAccount, len(state.OutputAccounts))
+  i := 0
+  for _, account := range state.OutputAccounts {
+    vmOutput.OutputAccounts[i] = account.AccountForVMOutput()
+    i++
+  }
+
+  return vmOutput
+}

@@ -27,56 +27,58 @@ func NewStorageContext(
 func (context *storageContext) InitState() {
 }
 
-func (context *storageContext) GetStorage(addr []byte, key []byte) []byte {
-	storageUpdate := context.host.Output().GetStorageUpdates()
-	strAdr := string(addr)
-	if _, ok := storageUpdate[strAdr]; ok {
-		if value, ok := storageUpdate[strAdr][string(key)]; ok {
-			return value
-		}
-	}
+func (context *storageContext) GetStorage(address []byte, key []byte) []byte {
+  storageUpdates := context.host.Output().GetStorageUpdates(address)
+  if storageUpdate, ok := storageUpdates[string(key)]; ok {
+    return storageUpdate.Data
+  }
 
-	value, _ := context.blockChainHook.GetStorageData(addr, key)
+	value, _ := context.blockChainHook.GetStorageData(address, key)
 	return value
 }
 
-func (context *storageContext) SetStorage(addr []byte, key []byte, value []byte) int32 {
+func (context *storageContext) SetStorage(address []byte, key []byte, value []byte) int32 {
 	if context.host.Runtime().ReadOnly() {
 		return 0
 	}
 
-	strAdr := string(addr)
-
-	storageUpdate := context.host.Output().GetStorageUpdates()
-	if _, ok := storageUpdate[strAdr]; !ok {
-		storageUpdate[strAdr] = make(map[string][]byte, 0)
-	}
-	if _, ok := storageUpdate[strAdr][string(key)]; !ok {
-		oldValue := context.GetStorage(addr, key)
-		storageUpdate[strAdr][string(key)] = oldValue
-	}
-
-	oldValue := storageUpdate[strAdr][string(key)]
-	lengthOldValue := len(oldValue)
-	length := len(value)
-	storageUpdate[strAdr][string(key)] = make([]byte, length)
-	copy(storageUpdate[strAdr][string(key)][:length], value[:length])
-
 	metering := context.host.Metering()
+	zero := []byte{}
+  strKey := string(key)
+	length := len(value)
+
+  var oldValue []byte
+	storageUpdates := context.host.Output().GetStorageUpdates(address)
+	if update, ok := storageUpdates[strKey]; !ok {
+		oldValue = context.GetStorage(address, key)
+		storageUpdates[strKey] = &vmcommon.StorageUpdate{
+      Offset: key,
+      Data: oldValue,
+    }
+	} else {
+    oldValue = update.Data
+  }
+
 	if bytes.Equal(oldValue, value) {
 		useGas := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(length)
 		metering.UseGas(useGas)
 		return int32(arwen.StorageUnchanged)
 	}
 
-	zero := []byte{}
+  newUpdate := &vmcommon.StorageUpdate{
+    Offset: key,
+    Data: make([]byte, length),
+  }
+  copy(newUpdate.Data[:length], value[:length])
+	storageUpdates[strKey] = newUpdate
+
 	if bytes.Equal(oldValue, zero) {
 		useGas := metering.GasSchedule().BaseOperationCost.StorePerByte * uint64(length)
 		metering.UseGas(useGas)
 		return int32(arwen.StorageAdded)
 	}
 	if bytes.Equal(value, zero) {
-		freeGas := metering.GasSchedule().BaseOperationCost.StorePerByte * uint64(lengthOldValue)
+		freeGas := metering.GasSchedule().BaseOperationCost.StorePerByte * uint64(len(oldValue))
 		metering.FreeGas(freeGas)
 		return int32(arwen.StorageDeleted)
 	}

@@ -100,11 +100,10 @@ type BigIntContext interface {
 type OutputContext interface {
 	StateStack
 
-	GetOutputAccounts() map[string]*vmcommon.OutputAccount
-	GetStorageUpdates() map[string](map[string][]byte)
-	WriteLog(addr []byte, topics [][]byte, data []byte)
+	GetStorageUpdates(address []byte) map[string]*vmcommon.StorageUpdate
+	WriteLog(address []byte, topics [][]byte, data []byte)
 	Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte)
-	SelfDestruct(addr []byte, beneficiary []byte)
+	SelfDestruct(address []byte, beneficiary []byte)
 	GetRefund() uint64
 	SetRefund(refund uint64)
 	ReturnCode() vmcommon.ReturnCode
@@ -134,6 +133,6 @@ type MeteringContext interface {
 }
 
 type StorageContext interface {
-	GetStorage(addr []byte, key []byte) []byte
-	SetStorage(addr []byte, key []byte, value []byte) int32
+	GetStorage(address []byte, key []byte) []byte
+	SetStorage(address []byte, key []byte, value []byte) int32
 }
