@@ -8,7 +8,7 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
-func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput) (*vmcommon.VMOutput, error) {
+func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, _ error) {
 	host.InitState()
 
 	blockchain := host.Blockchain()
@@ -16,9 +16,8 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	metering := host.Metering()
 	output := host.Output()
 
-	var err error
 	var returnCode vmcommon.ReturnCode
-	var vmOutput *vmcommon.VMOutput
+	var err error
 	defer func() {
 		if err != nil {
 			message := err.Error() + " - " + output.ReturnMessage()
@@ -70,16 +69,15 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	return vmOutput, nil
 }
 
-func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, _ error) {
 	host.InitState()
 	runtime := host.Runtime()
 	output := host.Output()
 	metering := host.Metering()
 	blockchain := host.Blockchain()
 
-	var err error
-	var vmOutput *vmcommon.VMOutput
 	var returnCode vmcommon.ReturnCode
+	var err error
 	defer func() {
 		if err != nil {
 			message := err.Error() + " - " + output.ReturnMessage()
