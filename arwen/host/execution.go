@@ -21,11 +21,9 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	var vmOutput *vmcommon.VMOutput
 	defer func() {
 		if err != nil {
-			vmOutput = output.CreateVMOutputInCaseOfError(returnCode, err.Error())
-			fmt.Printf("Arwen error: %s - %s\n", returnCode, err.Error())
-		} else if returnCode != vmcommon.Ok {
-			vmOutput = output.CreateVMOutputInCaseOfError(returnCode, output.ReturnMessage())
-			fmt.Printf("Arwen error: %s - %s\n", returnCode, returnCode)
+			message := err.Error() + " - " + output.ReturnMessage()
+			vmOutput = output.CreateVMOutputInCaseOfError(returnCode, message)
+			fmt.Printf("Arwen error: %s - %s\n", returnCode, message)
 		}
 	}()
 
@@ -84,11 +82,9 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (*
 	var returnCode vmcommon.ReturnCode
 	defer func() {
 		if err != nil {
-			vmOutput = output.CreateVMOutputInCaseOfError(returnCode, err.Error())
-			fmt.Printf("Arwen error: %s - %s\n", returnCode, err.Error())
-		} else if returnCode != vmcommon.Ok {
-			vmOutput = output.CreateVMOutputInCaseOfError(returnCode, output.ReturnMessage())
-			fmt.Printf("Arwen error: %s - %s\n", returnCode, returnCode)
+			message := err.Error() + " - " + output.ReturnMessage()
+			vmOutput = output.CreateVMOutputInCaseOfError(returnCode, message)
+			fmt.Printf("Arwen error: %s - %s\n", returnCode, message)
 		}
 	}()
 
