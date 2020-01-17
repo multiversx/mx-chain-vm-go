@@ -8,7 +8,7 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
-func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput) (*vmcommon.VMOutput, error) {
+func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput) {
 	host.InitState()
 
 	blockchain := host.Blockchain()
@@ -16,23 +16,20 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	metering := host.Metering()
 	output := host.Output()
 
-	var err error
 	var returnCode vmcommon.ReturnCode
-	var vmOutput *vmcommon.VMOutput
+	var err error
 	defer func() {
 		if err != nil {
-			vmOutput = output.CreateVMOutputInCaseOfError(returnCode, err.Error())
-			fmt.Printf("Arwen error: %s - %s\n", returnCode, err.Error())
-		} else if returnCode != vmcommon.Ok {
-			vmOutput = output.CreateVMOutputInCaseOfError(returnCode, output.ReturnMessage())
-			fmt.Printf("Arwen error: %s - %s\n", returnCode, returnCode)
+			message := err.Error() + " - " + output.ReturnMessage()
+			vmOutput = output.CreateVMOutputInCaseOfError(returnCode, message)
+			fmt.Printf("Arwen error: %s - %s\n", returnCode, message)
 		}
 	}()
 
 	address, err := blockchain.NewAddress(input.CallerAddr)
 	if err != nil {
 		returnCode = vmcommon.ExecutionFailed
-		return vmOutput, nil
+		return vmOutput
 	}
 
 	runtime.SetVMInput(&input.VMInput)
@@ -42,7 +39,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	gasForDeployment, err := metering.DeductInitialGasForDirectDeployment(input)
 	if err != nil {
 		returnCode = vmcommon.OutOfGas
-		return vmOutput, nil
+		return vmOutput
 	}
 
 	vmInput := runtime.GetVMInput()
@@ -50,7 +47,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	err = runtime.CreateWasmerInstance(input.ContractCode, vmInput.GasProvided)
 	if err != nil {
 		returnCode = vmcommon.ContractInvalid
-		return vmOutput, nil
+		return vmOutput
 	}
 
 	idContext := arwen.AddHostContext(host)
@@ -63,32 +60,29 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	result, err := host.callInitFunction()
 	if err != nil {
 		returnCode = vmcommon.FunctionWrongSignature
-		return vmOutput, nil
+		return vmOutput
 	}
 
 	output.DeployCode(address, input.ContractCode)
 	vmOutput = output.CreateVMOutput(result)
 
-	return vmOutput, nil
+	return vmOutput
 }
 
-func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput) {
 	host.InitState()
 	runtime := host.Runtime()
 	output := host.Output()
 	metering := host.Metering()
 	blockchain := host.Blockchain()
 
-	var err error
-	var vmOutput *vmcommon.VMOutput
 	var returnCode vmcommon.ReturnCode
+	var err error
 	defer func() {
 		if err != nil {
-			vmOutput = output.CreateVMOutputInCaseOfError(returnCode, err.Error())
-			fmt.Printf("Arwen error: %s - %s\n", returnCode, err.Error())
-		} else if returnCode != vmcommon.Ok {
-			vmOutput = output.CreateVMOutputInCaseOfError(returnCode, output.ReturnMessage())
-			fmt.Printf("Arwen error: %s - %s\n", returnCode, returnCode)
+			message := err.Error() + " - " + output.ReturnMessage()
+			vmOutput = output.CreateVMOutputInCaseOfError(returnCode, message)
+			fmt.Printf("Arwen error: %s - %s\n", returnCode, message)
 		}
 	}()
 
@@ -98,13 +92,13 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (*
 	contract, err := blockchain.GetCode(runtime.GetSCAddress())
 	if err != nil {
 		returnCode = vmcommon.ContractInvalid
-		return vmOutput, nil
+		return vmOutput
 	}
 
 	gasForExecution, err := metering.DeductInitialGasForExecution(input, contract)
 	if err != nil {
 		returnCode = vmcommon.OutOfGas
-		return vmOutput, nil
+		return vmOutput
 	}
 
 	vmInput := runtime.GetVMInput()
@@ -112,7 +106,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (*
 	err = runtime.CreateWasmerInstance(contract, vmInput.GasProvided)
 	if err != nil {
 		returnCode = vmcommon.ContractInvalid
-		return vmOutput, nil
+		return vmOutput
 	}
 
 	idContext := arwen.AddHostContext(host)
@@ -124,12 +118,12 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (*
 
 	result, returnCode, err := host.callSCMethod()
 	if err != nil {
-		return vmOutput, nil
+		return vmOutput
 	}
 
 	vmOutput = output.CreateVMOutput(result)
 
-	return vmOutput, nil
+	return vmOutput
 }
 
 func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) error {
