@@ -8,7 +8,7 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
-func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, _ error) {
+func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput) {
 	host.InitState()
 
 	blockchain := host.Blockchain()
@@ -29,7 +29,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	address, err := blockchain.NewAddress(input.CallerAddr)
 	if err != nil {
 		returnCode = vmcommon.ExecutionFailed
-		return vmOutput, nil
+		return vmOutput
 	}
 
 	runtime.SetVMInput(&input.VMInput)
@@ -39,7 +39,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	gasForDeployment, err := metering.DeductInitialGasForDirectDeployment(input)
 	if err != nil {
 		returnCode = vmcommon.OutOfGas
-		return vmOutput, nil
+		return vmOutput
 	}
 
 	vmInput := runtime.GetVMInput()
@@ -47,7 +47,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	err = runtime.CreateWasmerInstance(input.ContractCode, vmInput.GasProvided)
 	if err != nil {
 		returnCode = vmcommon.ContractInvalid
-		return vmOutput, nil
+		return vmOutput
 	}
 
 	idContext := arwen.AddHostContext(host)
@@ -60,16 +60,16 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	result, err := host.callInitFunction()
 	if err != nil {
 		returnCode = vmcommon.FunctionWrongSignature
-		return vmOutput, nil
+		return vmOutput
 	}
 
 	output.DeployCode(address, input.ContractCode)
 	vmOutput = output.CreateVMOutput(result)
 
-	return vmOutput, nil
+	return vmOutput
 }
 
-func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, _ error) {
+func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput) {
 	host.InitState()
 	runtime := host.Runtime()
 	output := host.Output()
@@ -92,13 +92,13 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	contract, err := blockchain.GetCode(runtime.GetSCAddress())
 	if err != nil {
 		returnCode = vmcommon.ContractInvalid
-		return vmOutput, nil
+		return vmOutput
 	}
 
 	gasForExecution, err := metering.DeductInitialGasForExecution(input, contract)
 	if err != nil {
 		returnCode = vmcommon.OutOfGas
-		return vmOutput, nil
+		return vmOutput
 	}
 
 	vmInput := runtime.GetVMInput()
@@ -106,7 +106,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	err = runtime.CreateWasmerInstance(contract, vmInput.GasProvided)
 	if err != nil {
 		returnCode = vmcommon.ContractInvalid
-		return vmOutput, nil
+		return vmOutput
 	}
 
 	idContext := arwen.AddHostContext(host)
@@ -118,12 +118,12 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 
 	result, returnCode, err := host.callSCMethod()
 	if err != nil {
-		return vmOutput, nil
+		return vmOutput
 	}
 
 	vmOutput = output.CreateVMOutput(result)
 
-	return vmOutput, nil
+	return vmOutput
 }
 
 func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) error {
