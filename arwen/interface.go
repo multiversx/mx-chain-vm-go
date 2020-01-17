@@ -100,7 +100,9 @@ type BigIntContext interface {
 type OutputContext interface {
 	StateStack
 
-	GetStorageUpdates(address []byte) map[string]*vmcommon.StorageUpdate
+	HasOutputAccount(address []byte) bool
+	GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool)
+	DeleteAccountFromOutput(address []byte)
 	WriteLog(address []byte, topics [][]byte, data []byte)
 	Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte)
 	SelfDestruct(address []byte, beneficiary []byte)
@@ -114,7 +116,7 @@ type OutputContext interface {
 	ClearReturnData()
 	Finish(data []byte)
 	FinishValue(value wasmer.Value)
-	CreateVMOutput(result wasmer.Value) *vmcommon.VMOutput
+	GetVMOutput(result wasmer.Value) *vmcommon.VMOutput
 	AddTxValueToAccount(address []byte, value *big.Int)
 	DeployCode(address []byte, code []byte)
 	CreateVMOutputInCaseOfError(errCode vmcommon.ReturnCode, message string) *vmcommon.VMOutput
@@ -133,6 +135,7 @@ type MeteringContext interface {
 }
 
 type StorageContext interface {
+	GetStorageUpdates(address []byte) map[string]*vmcommon.StorageUpdate
 	GetStorage(address []byte, key []byte) []byte
 	SetStorage(address []byte, key []byte, value []byte) int32
 }

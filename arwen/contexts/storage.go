@@ -24,14 +24,16 @@ func NewStorageContext(
 	return context, nil
 }
 
-func (context *storageContext) InitState() {
+func (context *storageContext) GetStorageUpdates(address []byte) map[string]*vmcommon.StorageUpdate {
+	account, _ := context.host.Output().GetOutputAccount(address)
+	return account.StorageUpdates
 }
 
 func (context *storageContext) GetStorage(address []byte, key []byte) []byte {
-  storageUpdates := context.host.Output().GetStorageUpdates(address)
-  if storageUpdate, ok := storageUpdates[string(key)]; ok {
-    return storageUpdate.Data
-  }
+	storageUpdates := context.GetStorageUpdates(address)
+	if storageUpdate, ok := storageUpdates[string(key)]; ok {
+		return storageUpdate.Data
+	}
 
 	value, _ := context.blockChainHook.GetStorageData(address, key)
 	return value
@@ -44,20 +46,20 @@ func (context *storageContext) SetStorage(address []byte, key []byte, value []by
 
 	metering := context.host.Metering()
 	zero := []byte{}
-  strKey := string(key)
+	strKey := string(key)
 	length := len(value)
 
-  var oldValue []byte
-	storageUpdates := context.host.Output().GetStorageUpdates(address)
+	var oldValue []byte
+	storageUpdates := context.GetStorageUpdates(address)
 	if update, ok := storageUpdates[strKey]; !ok {
 		oldValue = context.GetStorage(address, key)
 		storageUpdates[strKey] = &vmcommon.StorageUpdate{
-      Offset: key,
-      Data: oldValue,
-    }
+			Offset: key,
+			Data:   oldValue,
+		}
 	} else {
-    oldValue = update.Data
-  }
+		oldValue = update.Data
+	}
 
 	if bytes.Equal(oldValue, value) {
 		useGas := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(length)
@@ -65,11 +67,11 @@ func (context *storageContext) SetStorage(address []byte, key []byte, value []by
 		return int32(arwen.StorageUnchanged)
 	}
 
-  newUpdate := &vmcommon.StorageUpdate{
-    Offset: key,
-    Data: make([]byte, length),
-  }
-  copy(newUpdate.Data[:length], value[:length])
+	newUpdate := &vmcommon.StorageUpdate{
+		Offset: key,
+		Data:   make([]byte, length),
+	}
+	copy(newUpdate.Data[:length], value[:length])
 	storageUpdates[strKey] = newUpdate
 
 	if bytes.Equal(oldValue, zero) {

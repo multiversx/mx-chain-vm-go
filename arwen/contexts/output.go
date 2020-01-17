@@ -15,14 +15,14 @@ type logTopicsData struct {
 
 type outputContext struct {
 	host        arwen.VMHost
-	outputState *outputState
-	stateStack  []*outputState
+	outputState *vmcommon.VMOutput
+	stateStack  []*vmcommon.VMOutput
 }
 
 func NewOutputContext(host arwen.VMHost) (*outputContext, error) {
 	context := &outputContext{
 		host:       host,
-		stateStack: make([]*outputState, 0),
+		stateStack: make([]*vmcommon.VMOutput, 0),
 	}
 
 	context.InitState()
@@ -31,12 +31,35 @@ func NewOutputContext(host arwen.VMHost) (*outputContext, error) {
 }
 
 func (context *outputContext) InitState() {
-	context.outputState = newOutputState()
+	context.outputState = newVMOutput()
+}
+
+func newVMOutput() *vmcommon.VMOutput {
+	return &vmcommon.VMOutput{
+		ReturnData:      make([][]byte, 0),
+		ReturnCode:      vmcommon.Ok,
+		ReturnMessage:   "",
+		GasRemaining:    0,
+		GasRefund:       nil,
+		OutputAccounts:  make(map[string]*vmcommon.OutputAccount),
+		DeletedAccounts: make([][]byte, 0),
+		TouchedAccounts: make([][]byte, 0),
+	}
+}
+
+func newVMOutputAccount(address []byte) *vmcommon.OutputAccount {
+	return &vmcommon.OutputAccount{
+		Address:        address,
+		Nonce:          0,
+		BalanceDelta:   big.NewInt(0),
+		StorageUpdates: make(map[string]*vmcommon.StorageUpdate),
+		Logs:           make([]*vmcommon.LogEntry, 0),
+	}
 }
 
 func (context *outputContext) PushState() {
-	newState := newOutputState()
-  newState.update(context.outputState)
+	newState := newVMOutput()
+	mergeVMOutputs(newState, context.outputState)
 	context.stateStack = append(context.stateStack, newState)
 }
 
@@ -46,24 +69,39 @@ func (context *outputContext) PopState() error {
 		return arwen.StateStackUnderflow
 	}
 
+	// Merge the current state into the head of the stateStack,
+	// then pop the head of the stateStack into the current state.
+	// Doing this allows the VM to execute a SmartContract into a context on top
+	// of an existing context (a previous SC) without allowing access to it, but
+	// later merging the output of the two SCs in chronological order.
 	prevState := context.stateStack[stateStackLen-1]
 	context.stateStack = context.stateStack[:stateStackLen-1]
-
-  prevState.update(context.outputState)
-  context.outputState = newOutputState()
-  context.outputState.update(prevState)
+	mergeVMOutputs(prevState, context.outputState)
+	context.outputState = newVMOutput()
+	mergeVMOutputs(context.outputState, prevState)
 
 	return nil
 }
 
-func (context *outputContext) GetStorageUpdates(address []byte) map[string]*vmcommon.StorageUpdate  {
-  account, ok := context.outputState.OutputAccounts[string(address)]
-  if !ok {
-    account = newOutputAccount(address)
-    context.outputState.OutputAccounts[string(address)] = account
-  }
+func (context *outputContext) HasOutputAccount(address []byte) bool {
+	_, exists := context.outputState.OutputAccounts[string(address)]
+	return exists
+}
 
-  return account.StorageUpdates
+func (context *outputContext) GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool) {
+	accountIsNew := false
+	account, ok := context.outputState.OutputAccounts[string(address)]
+	if !ok {
+		account = newVMOutputAccount(address)
+		context.outputState.OutputAccounts[string(address)] = account
+		accountIsNew = true
+	}
+
+	return account, accountIsNew
+}
+
+func (context *outputContext) DeleteAccountFromOutput(address []byte) {
+	delete(context.outputState.OutputAccounts, string(address))
 }
 
 func (context *outputContext) GetRefund() uint64 {
@@ -117,53 +155,30 @@ func (context *outputContext) FinishValue(value wasmer.Value) {
 	}
 }
 
-func (context *outputContext) WriteLog(addr []byte, topics [][]byte, data []byte) {
+func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []byte) {
 	if context.host.Runtime().ReadOnly() {
 		return
 	}
 
-  logs := context.outputState.Logs
+	account, _ := context.GetOutputAccount(address)
 
-	strAdr := string(addr)
-
-	if _, ok := logs[strAdr]; !ok {
-		logs[strAdr] = &vmcommon.LogEntry{
-      Address: addr,
-			Topics: make([][]byte, 0),
-			Data:   make([]byte, 0),
-		}
+	logEntry := &vmcommon.LogEntry{
+		Address: address,
+		Topics:  make([][]byte, 0),
+		Data:    make([]byte, 0),
 	}
+	logEntry.Topics = append(logEntry.Topics, topics...)
+	logEntry.Data = append(logEntry.Data, data...)
 
-	currLogs := logs[strAdr]
-	for i := 0; i < len(topics); i++ {
-		topics = append(currLogs.Topics, topics[i])
-	}
-	data = append(currLogs.Data, data...)
-
-	logs[strAdr] = currLogs
+	account.Logs = append(account.Logs, logEntry)
 }
 
 // Transfer handles any necessary value transfer required and takes
 // the necessary steps to create accounts and reverses the state in case of an
 // execution error or failed value transfer.
 func (context *outputContext) Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte) {
-	senderAcc, ok := context.outputState.OutputAccounts[string(sender)]
-	if !ok {
-		senderAcc = &outputAccount{
-			Address:      sender,
-			BalanceDelta: big.NewInt(0),
-		}
-		context.outputState.OutputAccounts[string(senderAcc.Address)] = senderAcc
-	}
-
-	destAcc, ok := context.outputState.OutputAccounts[string(destination)]
-	if !ok {
-		destAcc = &outputAccount{
-			Address:      destination,
-			BalanceDelta: big.NewInt(0),
-		}
-		context.outputState.OutputAccounts[string(destAcc.Address)] = destAcc
-	}
+	senderAcc, _ := context.GetOutputAccount(sender)
+	destAcc, _ := context.GetOutputAccount(destination)
 
 	senderAcc.BalanceDelta = big.NewInt(0).Sub(senderAcc.BalanceDelta, value)
 	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
@@ -172,31 +187,18 @@ func (context *outputContext) Transfer(destination []byte, sender []byte, gasLim
 }
 
 func (context *outputContext) AddTxValueToAccount(address []byte, value *big.Int) {
-	destAcc, ok := context.outputState.OutputAccounts[string(address)]
-	if !ok {
-		destAcc = &outputAccount{
-			Address:      address,
-			BalanceDelta: big.NewInt(0),
-		}
-		context.outputState.OutputAccounts[string(destAcc.Address)] = destAcc
-	}
-
+	destAcc, _ := context.GetOutputAccount(address)
 	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
 }
 
 // adapt vm output and all saved data from sc run into VM Output
-func (context *outputContext) CreateVMOutput(result wasmer.Value) *vmcommon.VMOutput {
-  vmOutput := context.outputState.ToVMOutput()
-	return vmOutput
+func (context *outputContext) GetVMOutput(result wasmer.Value) *vmcommon.VMOutput {
+	return context.outputState
 }
 
 func (context *outputContext) DeployCode(address []byte, code []byte) {
-	newSCAcc, ok := context.outputState.OutputAccounts[string(address)]
-	if !ok {
-    newSCAcc = newOutputAccount(address)
-		context.outputState.OutputAccounts[string(address)] = newSCAcc
-  } 
-  newSCAcc.Code = code
+	newSCAcc, _ := context.GetOutputAccount(address)
+	newSCAcc.Code = code
 }
 
 func (context *outputContext) CreateVMOutputInCaseOfError(errCode vmcommon.ReturnCode, message string) *vmcommon.VMOutput {
@@ -204,4 +206,61 @@ func (context *outputContext) CreateVMOutputInCaseOfError(errCode vmcommon.Retur
 	vmOutput.ReturnCode = errCode
 	vmOutput.ReturnMessage = message
 	return vmOutput
+}
+
+func mergeVMOutputs(leftOutput *vmcommon.VMOutput, rightOutput *vmcommon.VMOutput) {
+	for address, rightAccount := range rightOutput.OutputAccounts {
+		leftAccount, ok := leftOutput.OutputAccounts[address]
+		if !ok {
+			leftAccount = &vmcommon.OutputAccount{}
+			leftOutput.OutputAccounts[address] = leftAccount
+		}
+		mergeOutputAccounts(leftAccount, rightAccount)
+	}
+
+	// TODO merge DeletedAccounts and TouchedAccounts as well?
+
+	leftOutput.ReturnData = append(leftOutput.ReturnData, rightOutput.ReturnData...)
+	leftOutput.GasRemaining = rightOutput.GasRemaining
+	leftOutput.GasRefund = rightOutput.GasRefund
+	leftOutput.ReturnCode = rightOutput.ReturnCode
+	leftOutput.ReturnMessage = rightOutput.ReturnMessage
+}
+
+func mergeOutputAccounts(
+	leftAccount *vmcommon.OutputAccount,
+	rightAccount *vmcommon.OutputAccount,
+) {
+	leftAccount.Address = rightAccount.Address
+	leftAccount.GasLimit = rightAccount.GasLimit
+	mergeStorageUpdates(leftAccount, rightAccount)
+	leftAccount.Logs = append(leftAccount.Logs, rightAccount.Logs...)
+
+	if leftAccount.BalanceDelta == nil {
+		leftAccount.BalanceDelta = big.NewInt(0)
+	}
+	if rightAccount.BalanceDelta != nil {
+		leftAccount.BalanceDelta = big.NewInt(0).Add(leftAccount.BalanceDelta, rightAccount.BalanceDelta)
+	}
+	if len(rightAccount.Code) > 0 {
+		leftAccount.Code = rightAccount.Code
+	}
+	if len(rightAccount.Data) > 0 {
+		leftAccount.Data = rightAccount.Data
+	}
+	if rightAccount.Nonce > leftAccount.Nonce {
+		leftAccount.Nonce = rightAccount.Nonce
+	}
+}
+
+func mergeStorageUpdates(
+	leftAccount *vmcommon.OutputAccount,
+	rightAccount *vmcommon.OutputAccount,
+) {
+	if leftAccount.StorageUpdates == nil {
+		leftAccount.StorageUpdates = make(map[string]*vmcommon.StorageUpdate)
+	}
+	for key, update := range rightAccount.StorageUpdates {
+		leftAccount.StorageUpdates[key] = update
+	}
 }

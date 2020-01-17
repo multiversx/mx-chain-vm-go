@@ -64,7 +64,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	}
 
 	output.DeployCode(address, input.ContractCode)
-	vmOutput = output.CreateVMOutput(result)
+	vmOutput = output.GetVMOutput(result)
 
 	return vmOutput
 }
@@ -121,7 +121,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 		return vmOutput
 	}
 
-	vmOutput = output.CreateVMOutput(result)
+	vmOutput = output.GetVMOutput(result)
 
 	return vmOutput
 }

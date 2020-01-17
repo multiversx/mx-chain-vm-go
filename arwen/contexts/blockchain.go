@@ -40,58 +40,57 @@ func (context *blockchainContext) NewAddress(creatorAddress []byte) ([]byte, err
 	return context.blockChainHook.NewAddress(creatorAddress, nonce, vmType)
 }
 
-func (context *blockchainContext) AccountExists(addr []byte) bool {
-	exists, err := context.blockChainHook.AccountExists(addr)
+func (context *blockchainContext) AccountExists(address []byte) bool {
+	exists, err := context.blockChainHook.AccountExists(address)
 	if err != nil {
 		fmt.Printf("Account exsits returned with error %s \n", err.Error())
 	}
 	return exists
 }
 
-func (context *blockchainContext) GetBalance(addr []byte) []byte {
-	strAdr := string(addr)
-
-	outputAccounts := context.host.Output().GetOutputAccounts()
-	if _, ok := outputAccounts[strAdr]; ok {
-		balance := outputAccounts[strAdr].Balance
-		return balance.Bytes()
+func (context *blockchainContext) GetBalance(address []byte) []byte {
+	outputAccount, isNew := context.host.Output().GetOutputAccount(address)
+	if !isNew {
+		return outputAccount.Balance.Bytes()
 	}
 
-	balance, err := context.blockChainHook.GetBalance(addr)
+	balance, err := context.blockChainHook.GetBalance(address)
 	if err != nil {
 		fmt.Printf("GetBalance returned with error %s \n", err.Error())
+		if isNew {
+			context.host.Output().DeleteAccountFromOutput(address)
+		}
 		return big.NewInt(0).Bytes()
 	}
 
-	outputAccounts[strAdr] = &vmcommon.OutputAccount{
-		Balance:      big.NewInt(0).Set(balance),
-		BalanceDelta: big.NewInt(0),
-		Address:      addr,
-	}
+	outputAccount.Balance = big.NewInt(0).Set(balance)
 
 	return balance.Bytes()
 }
 
-func (context *blockchainContext) GetNonce(addr []byte) (uint64, error) {
-	strAdr := string(addr)
-	outputAccounts := context.host.Output().GetOutputAccounts()
-	if _, ok := outputAccounts[strAdr]; ok {
-		return outputAccounts[strAdr].Nonce, nil
+func (context *blockchainContext) GetNonce(address []byte) (uint64, error) {
+	outputAccount, isNew := context.host.Output().GetOutputAccount(address)
+	if !isNew {
+		return outputAccount.Nonce, nil
 	}
 
-	nonce, err := context.blockChainHook.GetNonce(addr)
+	nonce, err := context.blockChainHook.GetNonce(address)
 	if err != nil {
 		fmt.Printf("GetNonce returned with error %s \n", err.Error())
+		if isNew {
+			context.host.Output().DeleteAccountFromOutput(address)
+		}
 	}
 
-	outputAccounts[strAdr] = &vmcommon.OutputAccount{BalanceDelta: big.NewInt(0), Address: addr, Nonce: nonce}
+	outputAccount.Nonce = nonce
+
 	return nonce, err
 }
 
-func (context *blockchainContext) IncreaseNonce(addr []byte) {
-	nonce, _ := context.GetNonce(addr)
-	outputAccounts := context.host.Output().GetOutputAccounts()
-	outputAccounts[string(addr)].Nonce = nonce + 1
+func (context *blockchainContext) IncreaseNonce(address []byte) {
+	nonce, _ := context.GetNonce(address)
+	outputAccount, _ := context.host.Output().GetOutputAccount(address)
+	outputAccount.Nonce = nonce + 1
 }
 
 func (context *blockchainContext) GetCodeHash(addr []byte) ([]byte, error) {
