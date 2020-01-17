@@ -1,0 +1,177 @@
+package contexts
+
+import (
+	"fmt"
+	"math/big"
+
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+)
+
+type blockchainContext struct {
+	host           arwen.VMHost
+	blockChainHook vmcommon.BlockchainHook
+}
+
+func NewBlockchainContext(
+	host arwen.VMHost,
+	blockChainHook vmcommon.BlockchainHook,
+) (*blockchainContext, error) {
+
+	context := &blockchainContext{
+		blockChainHook: blockChainHook,
+		host:           host,
+	}
+
+	return context, nil
+}
+
+func (context *blockchainContext) NewAddress(creatorAddress []byte) ([]byte, error) {
+	nonce, err := context.GetNonce(creatorAddress)
+	if err != nil {
+		return nil, err
+	}
+
+	if nonce > 0 {
+		nonce -= 1
+	}
+
+	vmType := context.host.Runtime().GetVMType()
+	return context.blockChainHook.NewAddress(creatorAddress, nonce, vmType)
+}
+
+func (context *blockchainContext) AccountExists(addr []byte) bool {
+	exists, err := context.blockChainHook.AccountExists(addr)
+	if err != nil {
+		fmt.Printf("Account exsits returned with error %s \n", err.Error())
+	}
+	return exists
+}
+
+func (context *blockchainContext) GetBalance(addr []byte) []byte {
+	strAdr := string(addr)
+
+	outputAccounts := context.host.Output().GetOutputAccounts()
+	if _, ok := outputAccounts[strAdr]; ok {
+		balance := outputAccounts[strAdr].Balance
+		return balance.Bytes()
+	}
+
+	balance, err := context.blockChainHook.GetBalance(addr)
+	if err != nil {
+		fmt.Printf("GetBalance returned with error %s \n", err.Error())
+		return big.NewInt(0).Bytes()
+	}
+
+	outputAccounts[strAdr] = &vmcommon.OutputAccount{
+		Balance:      big.NewInt(0).Set(balance),
+		BalanceDelta: big.NewInt(0),
+		Address:      addr,
+	}
+
+	return balance.Bytes()
+}
+
+func (context *blockchainContext) GetNonce(addr []byte) (uint64, error) {
+	strAdr := string(addr)
+	outputAccounts := context.host.Output().GetOutputAccounts()
+	if _, ok := outputAccounts[strAdr]; ok {
+		return outputAccounts[strAdr].Nonce, nil
+	}
+
+	nonce, err := context.blockChainHook.GetNonce(addr)
+	if err != nil {
+		fmt.Printf("GetNonce returned with error %s \n", err.Error())
+	}
+
+	outputAccounts[strAdr] = &vmcommon.OutputAccount{BalanceDelta: big.NewInt(0), Address: addr, Nonce: nonce}
+	return nonce, err
+}
+
+func (context *blockchainContext) IncreaseNonce(addr []byte) {
+	nonce, _ := context.GetNonce(addr)
+	outputAccounts := context.host.Output().GetOutputAccounts()
+	outputAccounts[string(addr)].Nonce = nonce + 1
+}
+
+func (context *blockchainContext) GetCodeHash(addr []byte) ([]byte, error) {
+	code, err := context.blockChainHook.GetCode(addr)
+	if err != nil {
+		return nil, err
+	}
+
+	return context.host.Crypto().Keccak256(code)
+}
+
+func (context *blockchainContext) GetCode(addr []byte) ([]byte, error) {
+	return context.blockChainHook.GetCode(addr)
+}
+
+func (context *blockchainContext) GetCodeSize(addr []byte) (int32, error) {
+	code, err := context.blockChainHook.GetCode(addr)
+	if err != nil {
+		return 0, err
+	}
+
+	result := int32(len(code))
+	return result, nil
+}
+
+func (context *blockchainContext) BlockHash(number int64) []byte {
+	if number < 0 {
+		fmt.Printf("BlockHash nonce cannot be negative\n")
+		return nil
+	}
+
+	block, err := context.blockChainHook.GetBlockhash(uint64(number))
+	if err != nil {
+		fmt.Printf("GetBlockHash returned with error %s \n", err.Error())
+		return nil
+	}
+
+	return block
+}
+
+func (context *blockchainContext) CurrentEpoch() uint32 {
+	return context.blockChainHook.CurrentEpoch()
+}
+
+func (context *blockchainContext) CurrentNonce() uint64 {
+	return context.blockChainHook.CurrentNonce()
+}
+
+func (context *blockchainContext) GetStateRootHash() []byte {
+	return context.blockChainHook.GetStateRootHash()
+}
+
+func (context *blockchainContext) LastTimeStamp() uint64 {
+	return context.blockChainHook.LastTimeStamp()
+}
+
+func (context *blockchainContext) LastNonce() uint64 {
+	return context.blockChainHook.LastNonce()
+}
+
+func (context *blockchainContext) LastRound() uint64 {
+	return context.blockChainHook.LastRound()
+}
+
+func (context *blockchainContext) LastEpoch() uint32 {
+	return context.blockChainHook.LastEpoch()
+}
+
+func (context *blockchainContext) CurrentRound() uint64 {
+	return context.blockChainHook.CurrentRound()
+}
+
+func (context *blockchainContext) CurrentTimeStamp() uint64 {
+	return context.blockChainHook.CurrentTimeStamp()
+}
+
+func (context *blockchainContext) LastRandomSeed() []byte {
+	return context.blockChainHook.LastRandomSeed()
+}
+
+func (context *blockchainContext) CurrentRandomSeed() []byte {
+	return context.blockChainHook.CurrentRandomSeed()
+}

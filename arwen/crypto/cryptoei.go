@@ -12,7 +12,7 @@ import "C"
 
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/go-ext-wasm/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	"unsafe"
 )
 
@@ -33,62 +33,65 @@ func CryptoImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 
 //export sha256
 func sha256(context unsafe.Pointer, dataOffset int32, length int32, resultOffset int32) int32 {
-	instCtx := wasmer.IntoInstanceContext(context)
-	cryptoContext := arwen.GetCryptoContext(instCtx.Data())
+	runtime := arwen.GetRuntimeContext(context)
+	crypto := arwen.GetCryptoContext(context)
 
-	data, err := arwen.LoadBytes(instCtx.Memory(), dataOffset, length)
+	data, err := runtime.MemLoad(dataOffset, length)
 	if withFault(err, context) {
 		return 1
 	}
 
-	result, err := cryptoContext.CryptoHooks().Sha256(data)
+	result, err := crypto.Sha256(data)
 	if err != nil {
 		return 1
 	}
 
-	err = arwen.StoreBytes(instCtx.Memory(), resultOffset, result)
+	err = runtime.MemStore(resultOffset, result)
 	if withFault(err, context) {
 		return 1
 	}
 
-	gasToUse := cryptoContext.GasSchedule().CryptoAPICost.SHA256
-	cryptoContext.UseGas(gasToUse)
+	metering := arwen.GetMeteringContext(context)
+	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
+	metering.UseGas(gasToUse)
 
 	return 0
 }
 
 //export keccak256
 func keccak256(context unsafe.Pointer, dataOffset int32, length int32, resultOffset int32) int32 {
-	instCtx := wasmer.IntoInstanceContext(context)
-	cryptoContext := arwen.GetCryptoContext(instCtx.Data())
+	runtime := arwen.GetRuntimeContext(context)
+	crypto := arwen.GetCryptoContext(context)
 
-	data, err := arwen.LoadBytes(instCtx.Memory(), dataOffset, length)
+	data, err := runtime.MemLoad(dataOffset, length)
 	if withFault(err, context) {
 		return 1
 	}
 
-	result, err := cryptoContext.CryptoHooks().Keccak256(data)
+	result, err := crypto.Keccak256(data)
 	if err != nil {
 		return 1
 	}
 
-	err = arwen.StoreBytes(instCtx.Memory(), resultOffset, result)
+	err = runtime.MemStore(resultOffset, result)
 	if withFault(err, context) {
 		return 1
 	}
 
-	gasToUse := cryptoContext.GasSchedule().CryptoAPICost.SHA256
-	cryptoContext.UseGas(gasToUse)
+	metering := arwen.GetMeteringContext(context)
+	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
+	metering.UseGas(gasToUse)
 
 	return 0
 }
 
 func withFault(err error, context unsafe.Pointer) bool {
 	if err != nil {
-		instCtx := wasmer.IntoInstanceContext(context)
-		hostContext := arwen.GetCryptoContext(instCtx.Data())
-		hostContext.SignalUserError()
-		hostContext.UseGas(hostContext.GasLeft())
+		runtime := arwen.GetRuntimeContext(context)
+		metering := arwen.GetMeteringContext(context)
+
+		runtime.SignalUserError(err.Error())
+		metering.UseGas(metering.GasLeft())
 
 		return true
 	}
