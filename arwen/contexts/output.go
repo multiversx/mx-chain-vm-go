@@ -41,7 +41,7 @@ func newVMOutput() *vmcommon.VMOutput {
 		ReturnCode:      vmcommon.Ok,
 		ReturnMessage:   "",
 		GasRemaining:    0,
-		GasRefund:       nil,
+		GasRefund:       big.NewInt(0),
 		OutputAccounts:  make(map[string]*vmcommon.OutputAccount),
 		DeletedAccounts: make([][]byte, 0),
 		TouchedAccounts: make([][]byte, 0),
