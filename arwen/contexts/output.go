@@ -1,6 +1,7 @@
 package contexts
 
 import (
+	"bytes"
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -44,6 +45,7 @@ func newVMOutput() *vmcommon.VMOutput {
 		OutputAccounts:  make(map[string]*vmcommon.OutputAccount),
 		DeletedAccounts: make([][]byte, 0),
 		TouchedAccounts: make([][]byte, 0),
+		Logs:            make([]*vmcommon.LogEntry, 0),
 	}
 }
 
@@ -53,7 +55,6 @@ func newVMOutputAccount(address []byte) *vmcommon.OutputAccount {
 		Nonce:          0,
 		BalanceDelta:   big.NewInt(0),
 		StorageUpdates: make(map[string]*vmcommon.StorageUpdate),
-		Logs:           make([]*vmcommon.LogEntry, 0),
 	}
 }
 
@@ -160,17 +161,26 @@ func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []b
 		return
 	}
 
-	account, _ := context.GetOutputAccount(address)
+	var currentLogEntry *vmcommon.LogEntry
+	currentLogEntry = nil
 
-	logEntry := &vmcommon.LogEntry{
-		Address: address,
-		Topics:  make([][]byte, 0),
-		Data:    make([]byte, 0),
+	for _, logEntry := range context.outputState.Logs {
+		if bytes.Equal(logEntry.Address, address) {
+			currentLogEntry = logEntry
+		}
 	}
-	logEntry.Topics = append(logEntry.Topics, topics...)
-	logEntry.Data = append(logEntry.Data, data...)
 
-	account.Logs = append(account.Logs, logEntry)
+	if currentLogEntry == nil {
+		currentLogEntry = &vmcommon.LogEntry{
+			Address: address,
+			Topics:  make([][]byte, 0),
+			Data:    make([]byte, 0),
+		}
+		context.outputState.Logs = append(context.outputState.Logs, currentLogEntry)
+	}
+
+	currentLogEntry.Topics = append(currentLogEntry.Topics, topics...)
+	currentLogEntry.Data = append(currentLogEntry.Data, data...)
 }
 
 // Transfer handles any necessary value transfer required and takes
@@ -220,6 +230,7 @@ func mergeVMOutputs(leftOutput *vmcommon.VMOutput, rightOutput *vmcommon.VMOutpu
 
 	// TODO merge DeletedAccounts and TouchedAccounts as well?
 
+	leftOutput.Logs = append(leftOutput.Logs, rightOutput.Logs...)
 	leftOutput.ReturnData = append(leftOutput.ReturnData, rightOutput.ReturnData...)
 	leftOutput.GasRemaining = rightOutput.GasRemaining
 	leftOutput.GasRefund = rightOutput.GasRefund
@@ -234,7 +245,6 @@ func mergeOutputAccounts(
 	leftAccount.Address = rightAccount.Address
 	leftAccount.GasLimit = rightAccount.GasLimit
 	mergeStorageUpdates(leftAccount, rightAccount)
-	leftAccount.Logs = append(leftAccount.Logs, rightAccount.Logs...)
 
 	if leftAccount.BalanceDelta == nil {
 		leftAccount.BalanceDelta = big.NewInt(0)
