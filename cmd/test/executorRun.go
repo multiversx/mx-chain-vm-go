@@ -141,8 +141,15 @@ func (te *arwenTestExecutor) Run(test *ij.Test) error {
 				// subtract call value from sender (this is not reflected in the delta)
 				world.UpdateBalanceWithDelta(tx.From, big.NewInt(0).Neg(tx.Value))
 
+				accountsSlice := make([]*vmi.OutputAccount, len(output.OutputAccounts))
+				i := 0
+				for _, account := range output.OutputAccounts {
+					accountsSlice[i] = account
+					i++
+				}
+
 				// update accounts based on deltas
-				updErr := world.UpdateAccounts(output.OutputAccounts, output.DeletedAccounts)
+				updErr := world.UpdateAccounts(accountsSlice, output.DeletedAccounts)
 				if updErr != nil {
 					return updErr
 				}
