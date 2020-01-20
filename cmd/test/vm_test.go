@@ -26,27 +26,10 @@ func TestErc20FromC(t *testing.T) {
 	}
 }
 
-func TestErc20FromRustDebug(t *testing.T) {
+func TestSimpleCoinFromRust(t *testing.T) {
 	testExec := newArwenTestExecutor().replaceCode(
 		"erc20.wasm",
-		filepath.Join(getTestRoot(), "contracts/erc20-rust-debug.wasm"))
-
-	err := controller.RunAllJSONTestsInDirectory(
-		getTestRoot(),
-		"erc20",
-		".json",
-		excludedTests,
-		testExec)
-
-	if err != nil {
-		t.Error(err)
-	}
-}
-
-func TestErc20FromRustRelease(t *testing.T) {
-	testExec := newArwenTestExecutor().replaceCode(
-		"erc20.wasm",
-		filepath.Join(getTestRoot(), "contracts/erc20-rust-release.wasm"))
+		filepath.Join(getTestRoot(), "contracts/simple-coin-rs.wasm"))
 
 	err := controller.RunAllJSONTestsInDirectory(
 		getTestRoot(),

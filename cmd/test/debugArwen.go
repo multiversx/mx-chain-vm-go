@@ -16,7 +16,7 @@ func main() {
 
 	testExec := newArwenTestExecutor().replaceCode(
 		"erc20.wasm",
-		filepath.Join(getTestRoot(), "contracts/erc20-c.wasm"))
+		filepath.Join(getTestRoot(), "contracts/simple-coin-rs.wasm"))
 	err := controller.RunSingleJSONTest(
 		jsonTestPath,
 		testExec)
