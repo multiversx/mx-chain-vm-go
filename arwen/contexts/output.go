@@ -158,6 +158,7 @@ func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []b
 	for _, logEntry := range context.outputState.Logs {
 		if bytes.Equal(logEntry.Address, address) {
 			currentLogEntry = logEntry
+			break
 		}
 	}
 
