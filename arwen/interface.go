@@ -88,8 +88,7 @@ type RuntimeContext interface {
 	PopInstance() error
 	ReadOnly() bool
 	SetReadOnly(readOnly bool)
-	CreateWasmerInstance(contract []byte) error
-	CreateWasmerInstanceWithGasLimit(contract []byte, gasLimit uint64) error
+	CreateWasmerInstance(contract []byte, gasLimit uint64) error
 	SetInstanceContext(instCtx *wasmer.InstanceContext)
 	GetInstanceContext() *wasmer.InstanceContext
 	GetInstanceExports() wasmer.ExportsMap
@@ -116,11 +115,10 @@ type BigIntContext interface {
 type OutputContext interface {
 	StateStack
 
-	GetOutputAccounts() map[string]*vmcommon.OutputAccount
-	GetStorageUpdates() map[string](map[string][]byte)
-	WriteLog(addr []byte, topics [][]byte, data []byte)
+	GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool)
+	WriteLog(address []byte, topics [][]byte, data []byte)
 	Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte)
-	SelfDestruct(addr []byte, beneficiary []byte)
+	SelfDestruct(address []byte, beneficiary []byte)
 	GetRefund() uint64
 	SetRefund(refund uint64)
 	ReturnCode() vmcommon.ReturnCode
@@ -131,7 +129,7 @@ type OutputContext interface {
 	ClearReturnData()
 	Finish(data []byte)
 	FinishValue(value wasmer.Value)
-	CreateVMOutput(result wasmer.Value) *vmcommon.VMOutput
+	GetVMOutput(result wasmer.Value) *vmcommon.VMOutput
 	AddTxValueToAccount(address []byte, value *big.Int)
 	DeployCode(address []byte, code []byte)
 	CreateVMOutputInCaseOfError(errCode vmcommon.ReturnCode, message string) *vmcommon.VMOutput
@@ -150,6 +148,7 @@ type MeteringContext interface {
 }
 
 type StorageContext interface {
-	GetStorage(addr []byte, key []byte) []byte
-	SetStorage(addr []byte, key []byte, value []byte) int32
+	GetStorageUpdates(address []byte) map[string]*vmcommon.StorageUpdate
+	GetStorage(address []byte, key []byte) []byte
+	SetStorage(address []byte, key []byte, value []byte) int32
 }

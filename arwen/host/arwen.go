@@ -43,8 +43,8 @@ func NewArwenVM(
 ) (*vmHost, error) {
 
 	host := &vmHost{
-		blockChainHook:       blockChainHook,
-		cryptoHook:           cryptoHook,
+		blockChainHook:    blockChainHook,
+		cryptoHook:        cryptoHook,
 		meteringContext:   nil,
 		runtimeContext:    nil,
 		blockchainContext: nil,
@@ -184,7 +184,7 @@ func (host *vmHost) PopState() error {
 
 func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error) {
 	try := func() {
-		vmOutput, err = host.doRunSmartContractCreate(input)
+		vmOutput = host.doRunSmartContractCreate(input)
 	}
 
 	catch := func(caught error) {
@@ -197,7 +197,7 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 
 func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
 	try := func() {
-		vmOutput, err = host.doRunSmartContractCall(input)
+		vmOutput = host.doRunSmartContractCall(input)
 	}
 
 	catch := func(caught error) {

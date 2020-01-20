@@ -7,7 +7,7 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
-type Storage struct {
+type storageContext struct {
 	host           arwen.VMHost
 	blockChainHook vmcommon.BlockchainHook
 }
@@ -15,68 +15,72 @@ type Storage struct {
 func NewStorageContext(
 	host arwen.VMHost,
 	blockChainHook vmcommon.BlockchainHook,
-) (*Storage, error) {
-	storage := &Storage{
+) (*storageContext, error) {
+	context := &storageContext{
 		host:           host,
 		blockChainHook: blockChainHook,
 	}
 
-	return storage, nil
+	return context, nil
 }
 
-func (storage *Storage) InitState() {
+func (context *storageContext) GetStorageUpdates(address []byte) map[string]*vmcommon.StorageUpdate {
+	account, _ := context.host.Output().GetOutputAccount(address)
+	return account.StorageUpdates
 }
 
-func (storage *Storage) GetStorage(addr []byte, key []byte) []byte {
-	storageUpdate := storage.host.Output().GetStorageUpdates()
-	strAdr := string(addr)
-	if _, ok := storageUpdate[strAdr]; ok {
-		if value, ok := storageUpdate[strAdr][string(key)]; ok {
-			return value
-		}
+func (context *storageContext) GetStorage(address []byte, key []byte) []byte {
+	storageUpdates := context.GetStorageUpdates(address)
+	if storageUpdate, ok := storageUpdates[string(key)]; ok {
+		return storageUpdate.Data
 	}
 
-	hash, _ := storage.blockChainHook.GetStorageData(addr, key)
-	return hash
+	value, _ := context.blockChainHook.GetStorageData(address, key)
+	return value
 }
 
-func (storage *Storage) SetStorage(addr []byte, key []byte, value []byte) int32 {
-	if storage.host.Runtime().ReadOnly() {
+func (context *storageContext) SetStorage(address []byte, key []byte, value []byte) int32 {
+	if context.host.Runtime().ReadOnly() {
 		return 0
 	}
 
-	strAdr := string(addr)
-
-	storageUpdate := storage.host.Output().GetStorageUpdates()
-	if _, ok := storageUpdate[strAdr]; !ok {
-		storageUpdate[strAdr] = make(map[string][]byte, 0)
-	}
-	if _, ok := storageUpdate[strAdr][string(key)]; !ok {
-		oldValue := storage.GetStorage(addr, key)
-		storageUpdate[strAdr][string(key)] = oldValue
-	}
-
-	oldValue := storageUpdate[strAdr][string(key)]
-	lengthOldValue := len(oldValue)
+	metering := context.host.Metering()
+	zero := []byte{}
+	strKey := string(key)
 	length := len(value)
-	storageUpdate[strAdr][string(key)] = make([]byte, length)
-	copy(storageUpdate[strAdr][string(key)][:length], value[:length])
 
-	metering := storage.host.Metering()
+	var oldValue []byte
+	storageUpdates := context.GetStorageUpdates(address)
+	if update, ok := storageUpdates[strKey]; !ok {
+		oldValue = context.GetStorage(address, key)
+		storageUpdates[strKey] = &vmcommon.StorageUpdate{
+			Offset: key,
+			Data:   oldValue,
+		}
+	} else {
+		oldValue = update.Data
+	}
+
 	if bytes.Equal(oldValue, value) {
 		useGas := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(length)
 		metering.UseGas(useGas)
 		return int32(arwen.StorageUnchanged)
 	}
 
-	zero := []byte{}
+	newUpdate := &vmcommon.StorageUpdate{
+		Offset: key,
+		Data:   make([]byte, length),
+	}
+	copy(newUpdate.Data[:length], value[:length])
+	storageUpdates[strKey] = newUpdate
+
 	if bytes.Equal(oldValue, zero) {
 		useGas := metering.GasSchedule().BaseOperationCost.StorePerByte * uint64(length)
 		metering.UseGas(useGas)
 		return int32(arwen.StorageAdded)
 	}
 	if bytes.Equal(value, zero) {
-		freeGas := metering.GasSchedule().BaseOperationCost.StorePerByte * uint64(lengthOldValue)
+		freeGas := metering.GasSchedule().BaseOperationCost.StorePerByte * uint64(len(oldValue))
 		metering.FreeGas(freeGas)
 		return int32(arwen.StorageDeleted)
 	}
