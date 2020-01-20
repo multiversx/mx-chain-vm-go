@@ -84,6 +84,7 @@ type EthAPICost struct {
 
 type BigIntAPICost struct {
 	BigIntNew                uint64
+	BigIntClone              uint64
 	BigIntByteLength         uint64
 	BigIntGetBytes           uint64
 	BigIntSetBytes           uint64

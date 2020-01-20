@@ -275,7 +275,7 @@ func bigIntClone(context unsafe.Pointer, reference int32) int32 {
 	bigInt := arwen.GetBigIntContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntNew
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntClone
 	metering.UseGas(gasToUse)
 
 	return bigInt.Clone(reference)

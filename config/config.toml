@@ -77,6 +77,7 @@
 
 [BigIntAPICost]
     BigIntNew                = 10
+    BigIntClone              = 10
     BigIntByteLength         = 10
     BigIntGetBytes           = 10
     BigIntSetBytes           = 10

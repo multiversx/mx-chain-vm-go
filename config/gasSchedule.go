@@ -212,6 +212,7 @@ func FillGasMap_EthereumAPICosts(value uint64) map[string]uint64 {
 func FillGasMap_BigIntAPICosts(value uint64) map[string]uint64 {
 	gasMap := make(map[string]uint64)
 	gasMap["BigIntNew"] = value
+	gasMap["BigIntClone"] = value
 	gasMap["BigIntByteLength"] = value
 	gasMap["BigIntGetBytes"] = value
 	gasMap["BigIntSetBytes"] = value
