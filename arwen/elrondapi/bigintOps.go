@@ -7,6 +7,8 @@ package elrondapi
 // typedef int int32_t;
 //
 // extern int32_t bigIntNew(void* context, long long smallValue);
+// extern int32_t bigIntClone(void* context, int32_t reference);
+// extern void bigIntDestruct(void* context, int32_t reference);
 // extern int32_t bigIntByteLength(void* context, int32_t reference);
 // extern int32_t bigIntGetBytes(void* context, int32_t reference, int32_t byteOffset);
 // extern void bigIntSetBytes(void* context, int32_t destination, int32_t byteOffset, int32_t byteLength);
@@ -38,6 +40,16 @@ func BigIntImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	imports = imports.Namespace("env")
 
 	imports, err := imports.Append("bigIntNew", bigIntNew, C.bigIntNew)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntClone", bigIntClone, C.bigIntClone)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntDestruct", bigIntDestruct, C.bigIntDestruct)
 	if err != nil {
 		return nil, err
 	}
@@ -256,6 +268,23 @@ func bigIntNew(context unsafe.Pointer, smallValue int64) int32 {
 	metering.UseGas(gasToUse)
 
 	return bigInt.Put(smallValue)
+}
+
+//export bigIntClone
+func bigIntClone(context unsafe.Pointer, reference int32) int32 {
+	bigInt := arwen.GetBigIntContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntNew
+	metering.UseGas(gasToUse)
+
+	return bigInt.Clone(reference)
+}
+
+//export bigIntDestruct
+func bigIntDestruct(context unsafe.Pointer, reference int32) {
+	bigInt := arwen.GetBigIntContext(context)
+	bigInt.Destruct(reference)
 }
 
 //export bigIntByteLength

@@ -9,12 +9,14 @@ import (
 type bigIntContext struct {
 	mappedValues map[int32]*big.Int
 	stateStack   []*bigIntContext
+	nextIndex    int32
 }
 
 func NewBigIntContext() (*bigIntContext, error) {
 	context := &bigIntContext{
 		mappedValues: make(map[int32]*big.Int),
 		stateStack:   make([]*bigIntContext, 0),
+		nextIndex:    0,
 	}
 
 	return context, nil
@@ -46,18 +48,33 @@ func (context *bigIntContext) PopState() error {
 	return nil
 }
 
-func (context *bigIntContext) Put(value int64) int32 {
-	newIndex := int32(len(context.mappedValues))
+func (context *bigIntContext) putBigInt(bi *big.Int) int32 {
 	for {
-		if _, ok := context.mappedValues[newIndex]; !ok {
+		if _, ok := context.mappedValues[context.nextIndex]; !ok {
 			break
 		}
-		newIndex++
+		context.nextIndex++
 	}
 
-	context.mappedValues[newIndex] = big.NewInt(value)
-
+	newIndex := context.nextIndex
+	context.mappedValues[newIndex] = bi
+	context.nextIndex++
 	return newIndex
+}
+
+func (context *bigIntContext) Put(value int64) int32 {
+	newIndex := context.putBigInt(big.NewInt(value))
+	return newIndex
+}
+
+func (context *bigIntContext) Clone(id int32) int32 {
+	oldValue := context.GetOne(id)
+	newIndex := context.putBigInt(big.NewInt(0).Set(oldValue))
+	return newIndex
+}
+
+func (context *bigIntContext) Destruct(id int32) {
+	delete(context.mappedValues, id)
 }
 
 func (context *bigIntContext) GetOne(id int32) *big.Int {
