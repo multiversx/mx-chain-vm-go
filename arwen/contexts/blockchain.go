@@ -57,9 +57,6 @@ func (context *blockchainContext) GetBalance(address []byte) []byte {
 	balance, err := context.blockChainHook.GetBalance(address)
 	if err != nil {
 		fmt.Printf("GetBalance returned with error %s \n", err.Error())
-		if isNew {
-			context.host.Output().DeleteAccountFromOutput(address)
-		}
 		return big.NewInt(0).Bytes()
 	}
 
@@ -77,9 +74,6 @@ func (context *blockchainContext) GetNonce(address []byte) (uint64, error) {
 	nonce, err := context.blockChainHook.GetNonce(address)
 	if err != nil {
 		fmt.Printf("GetNonce returned with error %s \n", err.Error())
-		if isNew {
-			context.host.Output().DeleteAccountFromOutput(address)
-		}
 	}
 
 	outputAccount.Nonce = nonce

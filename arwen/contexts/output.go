@@ -84,11 +84,6 @@ func (context *outputContext) PopState() error {
 	return nil
 }
 
-func (context *outputContext) HasOutputAccount(address []byte) bool {
-	_, exists := context.outputState.OutputAccounts[string(address)]
-	return exists
-}
-
 func (context *outputContext) GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool) {
 	accountIsNew := false
 	account, ok := context.outputState.OutputAccounts[string(address)]
@@ -99,10 +94,6 @@ func (context *outputContext) GetOutputAccount(address []byte) (*vmcommon.Output
 	}
 
 	return account, accountIsNew
-}
-
-func (context *outputContext) DeleteAccountFromOutput(address []byte) {
-	delete(context.outputState.OutputAccounts, string(address))
 }
 
 func (context *outputContext) GetRefund() uint64 {

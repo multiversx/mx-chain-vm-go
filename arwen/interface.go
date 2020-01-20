@@ -100,9 +100,7 @@ type BigIntContext interface {
 type OutputContext interface {
 	StateStack
 
-	HasOutputAccount(address []byte) bool
 	GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool)
-	DeleteAccountFromOutput(address []byte)
 	WriteLog(address []byte, topics [][]byte, data []byte)
 	Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte)
 	SelfDestruct(address []byte, beneficiary []byte)
