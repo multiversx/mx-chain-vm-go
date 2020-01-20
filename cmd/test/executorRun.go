@@ -137,13 +137,15 @@ func (te *arwenTestExecutor) Run(test *ij.Test) error {
 				}
 			}
 
-			// subtract call value from sender (this is not reflected in the delta)
-			world.UpdateBalanceWithDelta(tx.From, big.NewInt(0).Neg(tx.Value))
+			if output.ReturnCode == vmi.Ok {
+				// subtract call value from sender (this is not reflected in the delta)
+				world.UpdateBalanceWithDelta(tx.From, big.NewInt(0).Neg(tx.Value))
 
-			// update accounts based on deltas
-			updErr := world.UpdateAccounts(output.OutputAccounts, output.DeletedAccounts)
-			if updErr != nil {
-				return updErr
+				// update accounts based on deltas
+				updErr := world.UpdateAccounts(output.OutputAccounts, output.DeletedAccounts)
+				if updErr != nil {
+					return updErr
+				}
 			}
 
 			blResult := block.Results[txIndex]
