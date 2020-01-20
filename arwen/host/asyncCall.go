@@ -4,32 +4,27 @@ import (
 	"math/big"
 
 	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
-func (host *vmHost) handleAsyncCallBreakpoint(result wasmer.Value, err error) (error) {
+func (host *vmHost) handleAsyncCallBreakpoint(result wasmer.Value, argError error) error {
 	runtime := host.Runtime()
 	output := host.Output()
-	blockchain := host.Blockchain()
-
 	runtime.SetRuntimeBreakpointValue(arwen.BreakpointNone)
 
-	senderVMOutput := output.CreateVMOutput(result)
-	intermediaryVMOutput := senderVMOutput
-
-	// If SC code is not found, it means this is either a cross-shard call or a wrong call.
-	asyncCallInfo := runtime.GetAsyncCallInfo()
-	dest := asyncCallInfo.Destination
-	calledSCCode, err := blockchain.GetCode(dest)
-	if err != nil || len(calledSCCode) == 0 {
-		// TODO detect same Shard call - this makes the empty calledSCCode an error
-		// if intraShard {
-		//   vmOutputWithError := createVMOutputInCaseOfBreakpointError(err)
-		//   return mergeTwoVMOutputs(intermediaryVMOutput, vmOutputWithError)
-		// }
+	// TODO also determine whether caller and callee are in the same Shard, by
+	// account addresses - this makes the empty SC code an error
+	syncCall, err := host.canExecuteSynchronously()
+	if err != nil {
 		return err
 	}
+	if !syncCall {
+		return argError
+	}
+
+	senderVMOutput := output.GetVMOutput(result)
+	intermediaryVMOutput := senderVMOutput
 
 	// Start calling the destination SC, synchronously.
 	destinationCallInput, err := host.createDestinationContractCallInput()
@@ -61,8 +56,17 @@ func (host *vmHost) handleAsyncCallBreakpoint(result wasmer.Value, err error) (e
 	return finalVMOutput, nil
 }
 
-func (host *vmHost) createDestinationContractCallInput(
-) (*vmcommon.ContractCallInput, error) {
+func (host *vmHost) canExecuteSynchronously() (bool, error) {
+	runtime := host.Runtime()
+	blockchain := host.Blockchain()
+	asyncCallInfo := runtime.GetAsyncCallInfo()
+	dest := asyncCallInfo.Destination
+	calledSCCode, err := blockchain.GetCode(dest)
+
+	return len(calledSCCode) != 0, err
+}
+
+func (host *vmHost) createDestinationContractCallInput() (*vmcommon.ContractCallInput, error) {
 	runtime := host.Runtime()
 	sender := runtime.GetSCAddress()
 	asyncCallInfo := runtime.GetAsyncCallInfo()
@@ -244,7 +248,7 @@ func mergeOutputAccounts(leftAccount *vmcommon.OutputAccount, rightAccount *vmco
 	mergedAccount := &vmcommon.OutputAccount{}
 
 	mergedAccount.Address = leftAccount.Address
-  
+
 	leftDelta := leftAccount.BalanceDelta
 	rightDelta := rightAccount.BalanceDelta
 	if leftDelta == nil {
