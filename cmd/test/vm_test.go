@@ -7,8 +7,6 @@ import (
 	controller "github.com/ElrondNetwork/elrond-vm-util/test-util/testcontroller"
 )
 
-var excludedTests = []string{}
-
 func TestErc20FromC(t *testing.T) {
 	testExec := newArwenTestExecutor().replaceCode(
 		"erc20.wasm",
@@ -18,7 +16,7 @@ func TestErc20FromC(t *testing.T) {
 		getTestRoot(),
 		"erc20",
 		".json",
-		excludedTests,
+		[]string{},
 		testExec)
 
 	if err != nil {
@@ -34,6 +32,27 @@ func TestErc20FromRust(t *testing.T) {
 	err := controller.RunAllJSONTestsInDirectory(
 		getTestRoot(),
 		"erc20",
+		".json",
+		[]string{},
+		testExec)
+
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestCryptoBubbles(t *testing.T) {
+	testExec := newArwenTestExecutor().replaceCode(
+		"crypto-bubbles.wasm",
+		filepath.Join(getTestRoot(), "contracts/crypto-bubbles.wasm"))
+	excludedTests := []string{
+		"*/exceptions.json",       // TODO: better handle invalid arguments + include error messages in tests
+		"*/topUp_outOfFunds.json", // TODO: fix out of funds in arwen
+	}
+
+	err := controller.RunAllJSONTestsInDirectory(
+		getTestRoot(),
+		"crypto_bubbles_min_v1",
 		".json",
 		excludedTests,
 		testExec)

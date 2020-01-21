@@ -14,9 +14,13 @@ func main() {
 	}
 	jsonTestPath := os.Args[1]
 
-	testExec := newArwenTestExecutor().replaceCode(
-		"erc20.wasm",
-		filepath.Join(getTestRoot(), "contracts/erc20-c.wasm"))
+	testExec := newArwenTestExecutor().
+		replaceCode(
+			"erc20.wasm",
+			filepath.Join(getTestRoot(), "contracts/simple-coin.wasm")).
+		replaceCode(
+			"crypto-bubbles.wasm",
+			filepath.Join(getTestRoot(), "contracts/crypto-bubbles.wasm"))
 	err := controller.RunSingleJSONTest(
 		jsonTestPath,
 		testExec)
