@@ -168,14 +168,18 @@ func (te *arwenTestExecutor) Run(test *ij.Test) error {
 			}
 
 			// check return code
-			// TODO: check error messages in tests
-			// expectedStatus := 0
-			// if blResult.Status != nil {
-			// 	expectedStatus = int(blResult.Status.Int64())
-			// }
-			// if expectedStatus != int(output.ReturnCode) {
-			// 	return fmt.Errorf("result code mismatch. Tx #%d. Want: %d. Have: %d", txIndex, expectedStatus, int(output.ReturnCode))
-			// }
+			expectedStatus := 0
+			if blResult.Status != nil {
+				expectedStatus = int(blResult.Status.Int64())
+			}
+			if expectedStatus != int(output.ReturnCode) {
+				return fmt.Errorf("result code mismatch. Tx #%d. Want: %d. Have: %d", txIndex, expectedStatus, int(output.ReturnCode))
+			}
+
+			if output.ReturnMessage != blResult.Message {
+				return fmt.Errorf("result message mismatch. Tx #%d. Want: %s. Have: %s",
+					txIndex, blResult.Message, output.ReturnMessage)
+			}
 
 			// check result
 			if len(output.ReturnData) != len(blResult.Out) {
