@@ -19,8 +19,7 @@ package elrondapi
 // extern int32_t callValue(void *context, int32_t resultOffset);
 // extern void writeLog(void *context, int32_t pointer, int32_t length, int32_t topicPtr, int32_t numTopics);
 // extern void returnData(void* context, int32_t dataOffset, int32_t length);
-// extern void signalError(void* context);
-// extern void signalExit(void* context, int32_t exitCode);
+// extern void signalError(void* context, int32_t messageOffset, int32_t messageLength);
 // extern long long getGasLeft(void *context);
 //
 // extern int32_t executeOnDestContext(void *context, long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
@@ -131,11 +130,6 @@ func ElrondEImports() (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("signalError", signalError, C.signalError)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("signalExit", signalExit, C.signalExit)
 	if err != nil {
 		return nil, err
 	}
@@ -289,25 +283,16 @@ func getOwner(context unsafe.Pointer, resultOffset int32) {
 }
 
 //export signalError
-func signalError(context unsafe.Pointer) {
+func signalError(context unsafe.Pointer, messageOffset int32, messageLength int32) {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	// TODO replace with a message coming from the SmartContract
-	runtime.SignalUserError("user error")
+	message, err := runtime.MemLoad(messageOffset, messageLength)
+	if withFault(err, context) {
+		return
+	}
+	runtime.SignalUserError(string(message))
 
-	gasToUse := metering.GasSchedule().ElrondAPICost.SignalError
-	metering.UseGas(gasToUse)
-}
-
-//export signalExit
-func signalExit(context unsafe.Pointer, exitCode int32) {
-	runtime := arwen.GetRuntimeContext(context)
-	metering := arwen.GetMeteringContext(context)
-
-	runtime.SignalExit(int(exitCode))
-
-	// TODO replace with a gas cost specific to SignalExit
 	gasToUse := metering.GasSchedule().ElrondAPICost.SignalError
 	metering.UseGas(gasToUse)
 }
