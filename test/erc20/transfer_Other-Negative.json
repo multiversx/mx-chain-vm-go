@@ -24,7 +24,6 @@
                         "out": [],
                         "status": "0x04",
                         "message": "transfer amount cannot be negative",
-                        "message": "transfer amount cannot be negative",
                         "gas": "",
                         "logs": [],
                         "refund": ""
