@@ -28,7 +28,8 @@
                 "results": [
                     {
                         "out": [],
-                        "status": "104",
+                        "status": "0x04",
+                        "message": "amount to withdraw must be less or equal to balance",
                         "gas": "*",
                         "logs": [],
                         "refund": ""
