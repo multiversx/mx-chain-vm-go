@@ -61,3 +61,20 @@ func TestCryptoBubbles(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+func TestFeaturesFromRust(t *testing.T) {
+	testExec := newArwenTestExecutor().replaceCode(
+		"features.wasm",
+		filepath.Join(getTestRoot(), "contracts/features.wasm"))
+
+	err := controller.RunAllJSONTestsInDirectory(
+		getTestRoot(),
+		"features",
+		".json",
+		[]string{},
+		testExec)
+
+	if err != nil {
+		t.Error(err)
+	}
+}

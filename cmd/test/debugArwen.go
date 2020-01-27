@@ -20,7 +20,10 @@ func main() {
 			filepath.Join(getTestRoot(), "contracts/simple-coin.wasm")).
 		replaceCode(
 			"crypto-bubbles.wasm",
-			filepath.Join(getTestRoot(), "contracts/crypto-bubbles.wasm"))
+			filepath.Join(getTestRoot(), "contracts/crypto-bubbles.wasm")).
+		replaceCode(
+			"features.wasm",
+			filepath.Join(getTestRoot(), "contracts/features.wasm"))
 	err := controller.RunSingleJSONTest(
 		jsonTestPath,
 		testExec)
