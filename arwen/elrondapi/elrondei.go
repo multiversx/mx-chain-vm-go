@@ -10,6 +10,7 @@ package elrondapi
 // extern void getExternalBalance(void *context, int32_t addressOffset, int32_t resultOffset);
 // extern int32_t blockHash(void *context, long long nonce, int32_t resultOffset);
 // extern int32_t transferValue(void *context, long long gas, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
+// extern int32_t getArgumentLength(void *context, int32_t id);
 // extern int32_t getArgument(void *context, int32_t id, int32_t argOffset);
 // extern int32_t getFunction(void *context, int32_t functionOffset);
 // extern int32_t getNumArguments(void *context);
@@ -80,6 +81,11 @@ func ElrondEImports() (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("transferValue", transferValue, C.transferValue)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getArgumentLength", getArgumentLength, C.getArgumentLength)
 	if err != nil {
 		return nil, err
 	}
@@ -372,6 +378,22 @@ func transferValue(context unsafe.Pointer, gasLimit int64, destOffset int32, val
 	return 0
 }
 
+//export getArgumentLength
+func getArgumentLength(context unsafe.Pointer, id int32) int32 {
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.GetArgument
+	metering.UseGas(gasToUse)
+
+	args := runtime.Arguments()
+	if id < 0 || int32(len(args)) <= id {
+		return -1
+	}
+
+	return int32(len(args[id]))
+}
+
 //export getArgument
 func getArgument(context unsafe.Pointer, id int32, argOffset int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
@@ -381,7 +403,7 @@ func getArgument(context unsafe.Pointer, id int32, argOffset int32) int32 {
 	metering.UseGas(gasToUse)
 
 	args := runtime.Arguments()
-	if int32(len(args)) <= id {
+	if id < 0 || int32(len(args)) <= id {
 		return -1
 	}
 
