@@ -15,6 +15,7 @@ package elrondapi
 // extern int32_t getFunction(void *context, int32_t functionOffset);
 // extern int32_t getNumArguments(void *context);
 // extern int32_t storageStore(void *context, int32_t keyOffset, int32_t dataOffset, int32_t dataLength);
+// extern int32_t storageGetValueLength(void *context, int32_t keyOffset);
 // extern int32_t storageLoad(void *context, int32_t keyOffset, int32_t dataOffset);
 // extern void getCaller(void *context, int32_t resultOffset);
 // extern int32_t callValue(void *context, int32_t resultOffset);
@@ -106,6 +107,11 @@ func ElrondEImports() (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("storageStore", storageStore, C.storageStore)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("storageGetValueLength", storageGetValueLength, C.storageGetValueLength)
 	if err != nil {
 		return nil, err
 	}
@@ -463,6 +469,25 @@ func storageStore(context unsafe.Pointer, keyOffset int32, dataOffset int32, dat
 	metering.UseGas(gasToUse)
 
 	return storage.SetStorage(runtime.GetSCAddress(), key, data)
+}
+
+//export storageGetValueLength
+func storageGetValueLength(context unsafe.Pointer, keyOffset int32) int32 {
+	runtime := arwen.GetRuntimeContext(context)
+	storage := arwen.GetStorageContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	key, err := runtime.MemLoad(keyOffset, arwen.HashLen)
+	if withFault(err, context) {
+		return -1
+	}
+
+	data := storage.GetStorage(runtime.GetSCAddress(), key)
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.StorageLoad
+	metering.UseGas(gasToUse)
+
+	return int32(len(data))
 }
 
 //export storageLoad
