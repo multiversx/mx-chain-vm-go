@@ -264,11 +264,10 @@ func (te *arwenTestExecutor) Run(test *ij.Test) error {
 			return fmt.Errorf("bad account address %s", hex.EncodeToString(matchingAcct.Address))
 		}
 
-		// TODO: investigate nonce increase coming from arwen
-		// if matchingAcct.Nonce != postAcct.Nonce {
-		// 	return fmt.Errorf("bad account nonce. Account: %s. Want: %d. Have: %d",
-		// 		hex.EncodeToString(matchingAcct.Address), postAcct.Nonce, matchingAcct.Nonce)
-		// }
+		if matchingAcct.Nonce != postAcct.Nonce {
+			return fmt.Errorf("bad account nonce. Account: %s. Want: %d. Have: %d",
+				hex.EncodeToString(matchingAcct.Address), postAcct.Nonce, matchingAcct.Nonce)
+		}
 
 		if matchingAcct.Balance.Cmp(postAcct.Balance) != 0 {
 			return fmt.Errorf("bad account balance. Account: %s. Want: 0x%x. Have: 0x%x",
