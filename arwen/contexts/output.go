@@ -194,7 +194,7 @@ func (context *outputContext) AddTxValueToAccount(address []byte, value *big.Int
 }
 
 // adapt vm output and all saved data from sc run into VM Output
-func (context *outputContext) GetVMOutput(result wasmer.Value) *vmcommon.VMOutput {
+func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 	context.outputState.GasRemaining = context.host.Metering().GasLeft()
 	return context.outputState
 }

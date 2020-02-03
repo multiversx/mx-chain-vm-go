@@ -789,7 +789,7 @@ func ethcall(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueO
 		Function:      "main",
 	}
 
-	err = host.ExecuteOnDestContext(contractCallInput)
+	_, err = host.ExecuteOnDestContext(contractCallInput)
 	if err != nil {
 		return 1
 	}

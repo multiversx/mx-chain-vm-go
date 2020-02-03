@@ -10,7 +10,6 @@ import (
 
 func (host *vmHost) handleAsyncCallBreakpoint(result wasmer.Value, argError error) error {
 	runtime := host.Runtime()
-	output := host.Output()
 	runtime.SetRuntimeBreakpointValue(arwen.BreakpointNone)
 
 	// TODO also determine whether caller and callee are in the same Shard, by
@@ -23,37 +22,30 @@ func (host *vmHost) handleAsyncCallBreakpoint(result wasmer.Value, argError erro
 		return argError
 	}
 
-	senderVMOutput := output.GetVMOutput(result)
-	intermediaryVMOutput := senderVMOutput
-
 	// Start calling the destination SC, synchronously.
 	destinationCallInput, err := host.createDestinationContractCallInput()
 	if err != nil {
 		return err
 	}
 
-	destinationVMOutput, err := host.executeOnNewContextAndGetVMOutput(destinationCallInput)
+	destinationVMOutput, err := host.ExecuteOnDestContext(destinationCallInput)
 	// TODO pass error to the SC callback (append as argument)
 	// TODO consume remaining gas
 	if err != nil {
 		return err
 	}
-	intermediaryVMOutput = mergeTwoVMOutputs(intermediaryVMOutput, destinationVMOutput)
 
 	callbackCallInput, err := host.createCallbackContractCallInput(destinationVMOutput)
-	// TODO handle this error properly
 	if err != nil {
 		return err
 	}
 
-	callbackVMOutput, err := host.executeOnNewContextAndGetVMOutput(callbackCallInput)
-	// TODO handle this error properly
+	_, err = host.ExecuteOnDestContext(callbackCallInput)
 	if err != nil {
 		return err
 	}
-	finalVMOutput := mergeTwoVMOutputs(intermediaryVMOutput, callbackVMOutput)
 
-	return finalVMOutput, nil
+	return nil
 }
 
 func (host *vmHost) canExecuteSynchronously() (bool, error) {
@@ -146,134 +138,4 @@ func (host *vmHost) createCallbackContractCallInput(destinationVMOutput *vmcommo
 	}
 
 	return contractCallInput, nil
-}
-
-func (host *vmHost) executeOnNewContextAndGetVMOutput(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
-	host.PushState()
-
-	var err error
-	defer func() {
-		popErr := host.PopState()
-		if popErr != nil {
-			err = popErr
-		}
-	}()
-
-	host.InitState()
-
-	host.Runtime().InitStateFromContractCallInput(input)
-	err = host.execute(input)
-	if err != nil {
-		return nil, err
-	}
-
-	vmOutput := host.Output().CreateVMOutput(wasmer.Void())
-	return vmOutput, err
-}
-
-func mergeVMOutputs(sender *vmcommon.VMOutput, destination *vmcommon.VMOutput, callback *vmcommon.VMOutput) *vmcommon.VMOutput {
-	vmOutput := &vmcommon.VMOutput{}
-	vmOutput = mergeTwoVMOutputs(vmOutput, sender)
-	vmOutput = mergeTwoVMOutputs(vmOutput, destination)
-	vmOutput = mergeTwoVMOutputs(vmOutput, callback)
-	return vmOutput
-}
-
-func mergeTwoVMOutputs(leftVMOutput *vmcommon.VMOutput, rightVMOutput *vmcommon.VMOutput) *vmcommon.VMOutput {
-	mergedVMOutput := &vmcommon.VMOutput{}
-
-	leftOutputAccounts := convertAccountsSliceToAccountsMap(leftVMOutput.OutputAccounts)
-	rightOutputAccounts := convertAccountsSliceToAccountsMap(rightVMOutput.OutputAccounts)
-	mergedOutputAccounts := mergeOutputAccountMaps(leftOutputAccounts, rightOutputAccounts)
-	mergedVMOutput.OutputAccounts = convertAccountsMapToAccountsSlice(mergedOutputAccounts)
-
-	mergedVMOutput.Logs = append(mergedVMOutput.Logs, leftVMOutput.Logs...)
-	mergedVMOutput.Logs = append(mergedVMOutput.Logs, rightVMOutput.Logs...)
-
-	mergedVMOutput.ReturnData = append(mergedVMOutput.ReturnData, leftVMOutput.ReturnData...)
-	mergedVMOutput.ReturnData = append(mergedVMOutput.ReturnData, rightVMOutput.ReturnData...)
-
-	// TODO merge DeletedAccounts and TouchedAccounts as well?
-
-	mergedVMOutput.GasRemaining = rightVMOutput.GasRemaining
-	mergedVMOutput.GasRefund = rightVMOutput.GasRefund
-	mergedVMOutput.ReturnCode = rightVMOutput.ReturnCode
-	mergedVMOutput.ReturnMessage = rightVMOutput.ReturnMessage
-
-	return mergedVMOutput
-}
-
-func convertAccountsSliceToAccountsMap(outputAccountsSlice []*vmcommon.OutputAccount) map[string]*vmcommon.OutputAccount {
-	outputAccountsMap := make(map[string]*vmcommon.OutputAccount)
-
-	for _, account := range outputAccountsSlice {
-		address := string(account.Address)
-		outputAccountsMap[address] = account
-	}
-
-	return outputAccountsMap
-}
-
-func convertAccountsMapToAccountsSlice(outputAccountsMap map[string]*vmcommon.OutputAccount) []*vmcommon.OutputAccount {
-	outputAccountsSlice := make([]*vmcommon.OutputAccount, len(outputAccountsMap))
-	i := 0
-	for _, account := range outputAccountsMap {
-		outputAccountsSlice[i] = account
-		i++
-	}
-
-	return outputAccountsSlice
-}
-
-func mergeOutputAccountMaps(leftMap map[string]*vmcommon.OutputAccount, rightMap map[string]*vmcommon.OutputAccount) map[string]*vmcommon.OutputAccount {
-	mergedAccountsMap := make(map[string]*vmcommon.OutputAccount)
-
-	for addr, account := range leftMap {
-		mergedAccountsMap[addr] = account
-	}
-
-	for addr, account := range rightMap {
-		if _, ok := mergedAccountsMap[addr]; !ok {
-			mergedAccountsMap[addr] = account
-		} else {
-			mergedAccountsMap[addr] = mergeOutputAccounts(mergedAccountsMap[addr], account)
-		}
-	}
-
-	return mergedAccountsMap
-}
-
-func mergeOutputAccounts(leftAccount *vmcommon.OutputAccount, rightAccount *vmcommon.OutputAccount) *vmcommon.OutputAccount {
-	// TODO Discuss merging each of the fields of two OutputAccount instances
-	mergedAccount := &vmcommon.OutputAccount{}
-
-	mergedAccount.Address = leftAccount.Address
-
-	leftDelta := leftAccount.BalanceDelta
-	rightDelta := rightAccount.BalanceDelta
-	if leftDelta == nil {
-		leftDelta = big.NewInt(0)
-	}
-	if rightDelta == nil {
-		rightDelta = big.NewInt(0)
-	}
-	mergedAccount.BalanceDelta = big.NewInt(0).Add(leftDelta, rightDelta)
-
-	if leftAccount.Nonce > 0 {
-		mergedAccount.Nonce = leftAccount.Nonce
-	}
-
-	if rightAccount.Nonce > mergedAccount.Nonce {
-		mergedAccount.Nonce = rightAccount.Nonce
-	}
-
-	mergedAccount.StorageUpdates = append(mergedAccount.StorageUpdates, leftAccount.StorageUpdates...)
-	mergedAccount.StorageUpdates = append(mergedAccount.StorageUpdates, rightAccount.StorageUpdates...)
-
-	mergedAccount.Code = rightAccount.Code
-	mergedAccount.Data = rightAccount.Data
-
-	mergedAccount.GasLimit = rightAccount.GasLimit
-
-	return mergedAccount
 }

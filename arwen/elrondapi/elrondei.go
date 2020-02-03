@@ -864,7 +864,7 @@ func executeOnSameContext(
 		Function:      function,
 	}
 
-	err = host.ExecuteOnDestContext(contractCallInput)
+	_, err = host.ExecuteOnDestContext(contractCallInput)
 	if err != nil {
 		return 1
 	}
@@ -921,7 +921,7 @@ func executeOnDestContext(
 		Function:      function,
 	}
 
-	err = host.ExecuteOnDestContext(contractCallInput)
+	_, err = host.ExecuteOnDestContext(contractCallInput)
 	if err != nil {
 		return 1
 	}

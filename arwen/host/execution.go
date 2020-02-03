@@ -64,7 +64,8 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	}
 
 	output.DeployCode(address, input.ContractCode)
-	vmOutput = output.GetVMOutput(result)
+	output.FinishValue(result)
+	vmOutput = output.GetVMOutput()
 
 	return vmOutput
 }
@@ -96,14 +97,14 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	}
 
 	// TODO move into the MeteringContext
-  // If this call is an asynchronous call, a minimum of 2x the cost of the gas
-  // cost for asynchronous calls must be locked temporarily, to make sure the
-  // callBack has enough gas to be called and executed
-  mustLockMinGasForAsyncCallBack := runtime.GetVMInput().CallType == vmcommon.AsynchronousCall
-  if mustLockMinGasForAsyncCallBack {
+	// If this call is an asynchronous call, a minimum of 2x the cost of the gas
+	// cost for asynchronous calls must be locked temporarily, to make sure the
+	// callBack has enough gas to be called and executed
+	mustLockMinGasForAsyncCallBack := runtime.GetVMInput().CallType == vmcommon.AsynchronousCall
+	if mustLockMinGasForAsyncCallBack {
 		// Only the Elrond API supports asynchronous calls
 		if input.GasProvided < metering.GasSchedule().ElrondAPICost.AsyncCallStep {
-			return output.CreateVMOutputInCaseOfError(vmcommon.OutOfGas, arwen.ErrNotEnoughGas.Error()), nil
+			return output.CreateVMOutputInCaseOfError(vmcommon.OutOfGas, arwen.ErrNotEnoughGas.Error())
 		}
 
 		input.GasProvided -= 2 * metering.GasSchedule().ElrondAPICost.AsyncCallStep
@@ -132,9 +133,9 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 
 	result, returnCode, err := host.callSCMethod()
 
-  // If some gas has been locked before calling the function to reserve it for
-  // the asynchronous callback, it will now be returned
-  if mustLockMinGasForAsyncCallBack {
+	// If some gas has been locked before calling the function to reserve it for
+	// the asynchronous callback, it will now be returned
+	if mustLockMinGasForAsyncCallBack {
 		input.GasProvided += 2 * metering.GasSchedule().ElrondAPICost.AsyncCallStep
 	}
 
@@ -142,12 +143,13 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 		return vmOutput
 	}
 
-	vmOutput = output.GetVMOutput(result)
+	output.FinishValue(result)
+	vmOutput = output.GetVMOutput()
 
 	return vmOutput
 }
 
-func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) error {
+func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	host.PushState()
 
 	host.InitState()
@@ -155,12 +157,18 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) erro
 	host.Runtime().InitStateFromContractCallInput(input)
 	err := host.execute(input)
 
+	var vmOutput *vmcommon.VMOutput
+	vmOutput = nil
+	if err == nil {
+		vmOutput = host.Output().GetVMOutput()
+	}
+
 	popErr := host.PopState()
 	if popErr != nil {
 		err = popErr
 	}
 
-	return err
+	return vmOutput, err
 }
 
 func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) error {

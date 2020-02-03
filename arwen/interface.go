@@ -39,7 +39,7 @@ type VMHost interface {
 
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContext(input *vmcommon.ContractCallInput) error
-	ExecuteOnDestContext(input *vmcommon.ContractCallInput) error
+	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
 	EthereumCallData() []byte
 }
 
@@ -82,7 +82,7 @@ type RuntimeContext interface {
 	SignalExit(exitCode int)
 	SetRuntimeBreakpointValue(value BreakpointValue)
 	GetRuntimeBreakpointValue() BreakpointValue
-	GetAsyncCallInfo() *AsyncCallInfo 
+	GetAsyncCallInfo() *AsyncCallInfo
 	SetAsyncCallInfo(dest []byte, value []byte, gasLimit uint64, data []byte)
 	PushInstance()
 	PopInstance() error
@@ -129,7 +129,7 @@ type OutputContext interface {
 	ClearReturnData()
 	Finish(data []byte)
 	FinishValue(value wasmer.Value)
-	GetVMOutput(result wasmer.Value) *vmcommon.VMOutput
+	GetVMOutput() *vmcommon.VMOutput
 	AddTxValueToAccount(address []byte, value *big.Int)
 	DeployCode(address []byte, code []byte)
 	CreateVMOutputInCaseOfError(errCode vmcommon.ReturnCode, message string) *vmcommon.VMOutput
