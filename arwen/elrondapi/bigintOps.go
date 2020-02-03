@@ -404,7 +404,12 @@ func bigIntFinish(context unsafe.Pointer, reference int32) {
 	metering := arwen.GetMeteringContext(context)
 
 	value := bigInt.GetOne(reference)
-	output.Finish(value.Bytes())
+	bigIntBytes := value.Bytes()
+	if len(bigIntBytes) == 0 {
+		// send one byte of "0", otherwise nothing gets saved when we "return 0"
+		bigIntBytes = []byte{0}
+	}
+	output.Finish(bigIntBytes)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntFinish
 	gasToUse += metering.GasSchedule().BaseOperationCost.PersistPerByte * uint64(len(value.Bytes()))
