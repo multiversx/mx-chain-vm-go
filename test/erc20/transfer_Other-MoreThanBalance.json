@@ -23,6 +23,7 @@
                     {
                         "out": [],
                         "status": "0x04",
+                        "message": "insufficient funds",
                         "gas": "",
                         "logs": [],
                         "refund": ""

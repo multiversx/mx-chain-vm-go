@@ -24,6 +24,7 @@
                     {
                         "out": [],
                         "status": "0x04",
+                        "message": "allowance exceeded",
                         "gas": "",
                         "logs": [],
                         "refund": ""

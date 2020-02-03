@@ -10,17 +10,18 @@ package elrondapi
 // extern void getExternalBalance(void *context, int32_t addressOffset, int32_t resultOffset);
 // extern int32_t blockHash(void *context, long long nonce, int32_t resultOffset);
 // extern int32_t transferValue(void *context, long long gas, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
+// extern int32_t getArgumentLength(void *context, int32_t id);
 // extern int32_t getArgument(void *context, int32_t id, int32_t argOffset);
 // extern int32_t getFunction(void *context, int32_t functionOffset);
 // extern int32_t getNumArguments(void *context);
 // extern int32_t storageStore(void *context, int32_t keyOffset, int32_t dataOffset, int32_t dataLength);
+// extern int32_t storageGetValueLength(void *context, int32_t keyOffset);
 // extern int32_t storageLoad(void *context, int32_t keyOffset, int32_t dataOffset);
 // extern void getCaller(void *context, int32_t resultOffset);
 // extern int32_t callValue(void *context, int32_t resultOffset);
 // extern void writeLog(void *context, int32_t pointer, int32_t length, int32_t topicPtr, int32_t numTopics);
 // extern void returnData(void* context, int32_t dataOffset, int32_t length);
-// extern void signalError(void* context);
-// extern void signalExit(void* context, int32_t exitCode);
+// extern void signalError(void* context, int32_t messageOffset, int32_t messageLength);
 // extern long long getGasLeft(void *context);
 //
 // extern int32_t executeOnDestContext(void *context, long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
@@ -85,6 +86,11 @@ func ElrondEImports() (*wasmer.Imports, error) {
 		return nil, err
 	}
 
+	imports, err = imports.Append("getArgumentLength", getArgumentLength, C.getArgumentLength)
+	if err != nil {
+		return nil, err
+	}
+
 	imports, err = imports.Append("getArgument", getArgument, C.getArgument)
 	if err != nil {
 		return nil, err
@@ -101,6 +107,11 @@ func ElrondEImports() (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("storageStore", storageStore, C.storageStore)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("storageGetValueLength", storageGetValueLength, C.storageGetValueLength)
 	if err != nil {
 		return nil, err
 	}
@@ -131,11 +142,6 @@ func ElrondEImports() (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("signalError", signalError, C.signalError)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("signalExit", signalExit, C.signalExit)
 	if err != nil {
 		return nil, err
 	}
@@ -289,25 +295,16 @@ func getOwner(context unsafe.Pointer, resultOffset int32) {
 }
 
 //export signalError
-func signalError(context unsafe.Pointer) {
+func signalError(context unsafe.Pointer, messageOffset int32, messageLength int32) {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	// TODO replace with a message coming from the SmartContract
-	runtime.SignalUserError("user error")
+	message, err := runtime.MemLoad(messageOffset, messageLength)
+	if withFault(err, context) {
+		return
+	}
+	runtime.SignalUserError(string(message))
 
-	gasToUse := metering.GasSchedule().ElrondAPICost.SignalError
-	metering.UseGas(gasToUse)
-}
-
-//export signalExit
-func signalExit(context unsafe.Pointer, exitCode int32) {
-	runtime := arwen.GetRuntimeContext(context)
-	metering := arwen.GetMeteringContext(context)
-
-	runtime.SignalExit(int(exitCode))
-
-	// TODO replace with a gas cost specific to SignalExit
 	gasToUse := metering.GasSchedule().ElrondAPICost.SignalError
 	metering.UseGas(gasToUse)
 }
@@ -387,6 +384,22 @@ func transferValue(context unsafe.Pointer, gasLimit int64, destOffset int32, val
 	return 0
 }
 
+//export getArgumentLength
+func getArgumentLength(context unsafe.Pointer, id int32) int32 {
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.GetArgument
+	metering.UseGas(gasToUse)
+
+	args := runtime.Arguments()
+	if id < 0 || int32(len(args)) <= id {
+		return -1
+	}
+
+	return int32(len(args[id]))
+}
+
 //export getArgument
 func getArgument(context unsafe.Pointer, id int32, argOffset int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
@@ -396,7 +409,7 @@ func getArgument(context unsafe.Pointer, id int32, argOffset int32) int32 {
 	metering.UseGas(gasToUse)
 
 	args := runtime.Arguments()
-	if int32(len(args)) <= id {
+	if id < 0 || int32(len(args)) <= id {
 		return -1
 	}
 
@@ -456,6 +469,25 @@ func storageStore(context unsafe.Pointer, keyOffset int32, dataOffset int32, dat
 	metering.UseGas(gasToUse)
 
 	return storage.SetStorage(runtime.GetSCAddress(), key, data)
+}
+
+//export storageGetValueLength
+func storageGetValueLength(context unsafe.Pointer, keyOffset int32) int32 {
+	runtime := arwen.GetRuntimeContext(context)
+	storage := arwen.GetStorageContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	key, err := runtime.MemLoad(keyOffset, arwen.HashLen)
+	if withFault(err, context) {
+		return -1
+	}
+
+	data := storage.GetStorage(runtime.GetSCAddress(), key)
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.StorageLoad
+	metering.UseGas(gasToUse)
+
+	return int32(len(data))
 }
 
 //export storageLoad
