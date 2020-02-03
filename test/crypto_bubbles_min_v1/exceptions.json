@@ -21,14 +21,16 @@
                 "results": [
                     {
                         "out": [],
-                        "status": "102",
+                        "status": "0x04",
+                        "message": "32 bytes of data expected as argument value",
                         "gas": "*",
                         "logs": [],
                         "refund": ""
                     },                    
                     {
                         "out": [],
-                        "status": "102",
+                        "status": "0x04",
+                        "message": "32 bytes of data expected as argument value",
                         "gas": "*",
                         "logs": [],
                         "refund": ""

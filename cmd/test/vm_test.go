@@ -45,9 +45,7 @@ func TestCryptoBubbles(t *testing.T) {
 	testExec := newArwenTestExecutor().replaceCode(
 		"crypto-bubbles.wasm",
 		filepath.Join(getTestRoot(), "contracts/crypto-bubbles.wasm"))
-	excludedTests := []string{
-		"*/exceptions.json", // TODO: better handle invalid arguments + include error messages in tests
-	}
+	excludedTests := []string{}
 
 	err := controller.RunAllJSONTestsInDirectory(
 		getTestRoot(),
