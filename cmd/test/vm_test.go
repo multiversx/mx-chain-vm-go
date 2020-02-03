@@ -46,8 +46,7 @@ func TestCryptoBubbles(t *testing.T) {
 		"crypto-bubbles.wasm",
 		filepath.Join(getTestRoot(), "contracts/crypto-bubbles.wasm"))
 	excludedTests := []string{
-		"*/exceptions.json",       // TODO: better handle invalid arguments + include error messages in tests
-		"*/topUp_outOfFunds.json", // TODO: fix out of funds in arwen
+		"*/exceptions.json", // TODO: better handle invalid arguments + include error messages in tests
 	}
 
 	err := controller.RunAllJSONTestsInDirectory(
