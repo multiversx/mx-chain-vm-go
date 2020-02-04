@@ -790,7 +790,13 @@ func int64finish(context unsafe.Pointer, value int64) {
 	output := arwen.GetOutputContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	output.Finish(big.NewInt(0).SetInt64(value).Bytes())
+	var valueBytes []byte
+	if value == 0 {
+		valueBytes = []byte{0}
+	} else {
+		valueBytes = big.NewInt(0).SetInt64(value).Bytes()
+	}
+	output.Finish(valueBytes)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64Finish
 	metering.UseGas(gasToUse)
