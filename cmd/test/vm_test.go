@@ -7,8 +7,6 @@ import (
 	controller "github.com/ElrondNetwork/elrond-vm-util/test-util/testcontroller"
 )
 
-var excludedTests = []string{}
-
 func TestErc20FromC(t *testing.T) {
 	testExec := newArwenTestExecutor().replaceCode(
 		"erc20.wasm",
@@ -18,7 +16,7 @@ func TestErc20FromC(t *testing.T) {
 		getTestRoot(),
 		"erc20",
 		".json",
-		excludedTests,
+		[]string{},
 		testExec)
 
 	if err != nil {
@@ -26,14 +24,32 @@ func TestErc20FromC(t *testing.T) {
 	}
 }
 
-func TestErc20FromRustDebug(t *testing.T) {
+func TestErc20FromRust(t *testing.T) {
 	testExec := newArwenTestExecutor().replaceCode(
 		"erc20.wasm",
-		filepath.Join(getTestRoot(), "contracts/erc20-rust-debug.wasm"))
+		filepath.Join(getTestRoot(), "contracts/simple-coin.wasm"))
 
 	err := controller.RunAllJSONTestsInDirectory(
 		getTestRoot(),
 		"erc20",
+		".json",
+		[]string{},
+		testExec)
+
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestCryptoBubbles(t *testing.T) {
+	testExec := newArwenTestExecutor().replaceCode(
+		"crypto-bubbles.wasm",
+		filepath.Join(getTestRoot(), "contracts/crypto-bubbles.wasm"))
+	excludedTests := []string{}
+
+	err := controller.RunAllJSONTestsInDirectory(
+		getTestRoot(),
+		"crypto_bubbles_min_v1",
 		".json",
 		excludedTests,
 		testExec)
@@ -43,16 +59,16 @@ func TestErc20FromRustDebug(t *testing.T) {
 	}
 }
 
-func TestErc20FromRustRelease(t *testing.T) {
+func TestFeaturesFromRust(t *testing.T) {
 	testExec := newArwenTestExecutor().replaceCode(
-		"erc20.wasm",
-		filepath.Join(getTestRoot(), "contracts/erc20-rust-release.wasm"))
+		"features.wasm",
+		filepath.Join(getTestRoot(), "contracts/features.wasm"))
 
 	err := controller.RunAllJSONTestsInDirectory(
 		getTestRoot(),
-		"erc20",
+		"features",
 		".json",
-		excludedTests,
+		[]string{},
 		testExec)
 
 	if err != nil {

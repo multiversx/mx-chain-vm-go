@@ -10,6 +10,7 @@ import (
 
 	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	worldhook "github.com/ElrondNetwork/elrond-vm-util/mock-hook-blockchain"
 	cryptohook "github.com/ElrondNetwork/elrond-vm-util/mock-hook-crypto"
@@ -100,7 +101,21 @@ func (te *arwenTestExecutor) Run(test *ij.Test) error {
 			}
 			var output *vmi.VMOutput
 
-			if tx.IsCreate {
+			sender := world.AcctMap.GetAccount(tx.From)
+			if sender.Balance.Cmp(tx.Value) < 0 {
+				// out of funds is handled by the protocol, so needs to be mocked here
+				output = &vmcommon.VMOutput{
+					ReturnData:      make([][]byte, 0),
+					ReturnCode:      vmcommon.OutOfFunds,
+					ReturnMessage:   "",
+					GasRemaining:    0,
+					GasRefund:       big.NewInt(0),
+					OutputAccounts:  make(map[string]*vmcommon.OutputAccount),
+					DeletedAccounts: make([][]byte, 0),
+					TouchedAccounts: make([][]byte, 0),
+					Logs:            make([]*vmcommon.LogEntry, 0),
+				}
+			} else if tx.IsCreate {
 				input := &vmi.ContractCreateInput{
 					ContractCode: []byte(tx.AssembledCode),
 					VMInput: vmi.VMInput{
@@ -153,19 +168,19 @@ func (te *arwenTestExecutor) Run(test *ij.Test) error {
 				if updErr != nil {
 					return updErr
 				}
+
+				// sum of all balance deltas should equal call value (unless we got an error)
+				sumOfBalanceDeltas := big.NewInt(0)
+				for _, oa := range output.OutputAccounts {
+					sumOfBalanceDeltas = sumOfBalanceDeltas.Add(sumOfBalanceDeltas, oa.BalanceDelta)
+				}
+				if sumOfBalanceDeltas.Cmp(tx.Value) != 0 {
+					return fmt.Errorf("sum of balance deltas should equal call value. Sum of balance deltas: %d (0x%x). Call value: %d (0x%x)",
+						sumOfBalanceDeltas, sumOfBalanceDeltas, tx.Value, tx.Value)
+				}
 			}
 
 			blResult := block.Results[txIndex]
-
-			// sum of all balance deltas should equal call value
-			sumOfBalanceDeltas := big.NewInt(0)
-			for _, oa := range output.OutputAccounts {
-				sumOfBalanceDeltas = sumOfBalanceDeltas.Add(sumOfBalanceDeltas, oa.BalanceDelta)
-			}
-			if sumOfBalanceDeltas.Cmp(tx.Value) != 0 {
-				return fmt.Errorf("sum of balance deltas should equal call value. Sum of balance deltas: %d (0x%x). Call value: %d (0x%x)",
-					sumOfBalanceDeltas, sumOfBalanceDeltas, tx.Value, tx.Value)
-			}
 
 			// check return code
 			expectedStatus := 0
@@ -174,6 +189,11 @@ func (te *arwenTestExecutor) Run(test *ij.Test) error {
 			}
 			if expectedStatus != int(output.ReturnCode) {
 				return fmt.Errorf("result code mismatch. Tx #%d. Want: %d. Have: %d", txIndex, expectedStatus, int(output.ReturnCode))
+			}
+
+			if output.ReturnMessage != blResult.Message {
+				return fmt.Errorf("result message mismatch. Tx #%d. Want: %s. Have: %s",
+					txIndex, blResult.Message, output.ReturnMessage)
 			}
 
 			// check result

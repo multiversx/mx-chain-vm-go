@@ -1,7 +1,6 @@
 package contexts
 
 import (
-	"bytes"
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -152,27 +151,12 @@ func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []b
 		return
 	}
 
-	var currentLogEntry *vmcommon.LogEntry
-	currentLogEntry = nil
-
-	for _, logEntry := range context.outputState.Logs {
-		if bytes.Equal(logEntry.Address, address) {
-			currentLogEntry = logEntry
-			break
-		}
+	newLogEntry := &vmcommon.LogEntry{
+		Address: address,
+		Topics:  topics,
+		Data:    data,
 	}
-
-	if currentLogEntry == nil {
-		currentLogEntry = &vmcommon.LogEntry{
-			Address: address,
-			Topics:  make([][]byte, 0),
-			Data:    make([]byte, 0),
-		}
-		context.outputState.Logs = append(context.outputState.Logs, currentLogEntry)
-	}
-
-	currentLogEntry.Topics = append(currentLogEntry.Topics, topics...)
-	currentLogEntry.Data = append(currentLogEntry.Data, data...)
+	context.outputState.Logs = append(context.outputState.Logs, newLogEntry)
 }
 
 // Transfer handles any necessary value transfer required and takes
