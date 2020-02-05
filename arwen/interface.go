@@ -142,10 +142,10 @@ type MeteringContext interface {
 	GasLeft() uint64
 	BoundGasLimit(value int64) uint64
 	BlockGasLimit() uint64
-	DeductInitialGasForExecution(input *vmcommon.ContractCallInput, contract []byte) (uint64, error)
-	DeductInitialGasForDirectDeployment(input *vmcommon.ContractCreateInput) (uint64, error)
-	DeductInitialGasForIndirectDeployment(input *vmcommon.ContractCreateInput) (uint64, error)
-	LockGasIfAsyncStep() error
+	DeductInitialGasForExecution(contract []byte) error
+	DeductInitialGasForDirectDeployment(input *vmcommon.ContractCreateInput) error
+	DeductInitialGasForIndirectDeployment(input *vmcommon.ContractCreateInput) error
+	DeductAndLockGasIfAsyncStep() error
 	UnlockGasIfAsyncStep()
 }
 

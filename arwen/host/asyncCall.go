@@ -74,13 +74,19 @@ func (host *vmHost) createDestinationContractCallInput() (*vmcommon.ContractCall
 		return nil, err
 	}
 
+	gasLimit := asyncCallInfo.GasLimit - host.Metering().GasSchedule().ElrondAPICost.AsyncCallStep
+	if gasLimit <= 0 {
+		return nil, arwen.ErrNotEnoughGas
+	}
+
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallerAddr:  sender,
 			Arguments:   arguments,
 			CallValue:   big.NewInt(0).SetBytes(asyncCallInfo.ValueBytes),
+			CallType:    vmcommon.AsynchronousCall,
 			GasPrice:    0,
-			GasProvided: asyncCallInfo.GasLimit,
+			GasProvided: gasLimit,
 		},
 		RecipientAddr: asyncCallInfo.Destination,
 		Function:      function,
@@ -97,6 +103,36 @@ func (host *vmHost) createCallbackContractCallInput(destinationVMOutput *vmcommo
 	gasLimit := destinationVMOutput.GasRemaining
 	function := "callBack"
 
+	dataLength := host.computeDataLengthFromArguments(function, arguments)
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.AsyncCallStep
+	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(dataLength)
+	gasLimit -= gasToUse
+	if gasLimit <= 0 {
+		return nil, arwen.ErrNotEnoughGas
+	}
+
+	sender := runtime.GetAsyncCallInfo().Destination
+	dest := runtime.GetSCAddress()
+
+	// Return to the sender SC, calling its callback() method.
+	contractCallInput := &vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			CallerAddr:  sender,
+			Arguments:   arguments,
+			CallValue:   big.NewInt(0),
+			CallType:    vmcommon.AsynchronousCallBack,
+			GasPrice:    0,
+			GasProvided: gasLimit,
+		},
+		RecipientAddr: dest,
+		Function:      function,
+	}
+
+	return contractCallInput, nil
+}
+
+func (host *vmHost) computeDataLengthFromArguments(function string, arguments [][]byte) int {
 	// Calculate what length would the Data field have, were it of the
 	// form "callback@arg1@arg4...
 	dataLength := len(function) + 1
@@ -110,27 +146,5 @@ func (host *vmHost) createCallbackContractCallInput(destinationVMOutput *vmcommo
 		dataLength += len(element)
 	}
 
-	// TODO define gas cost specific to async calls - asyncCall should cost more
-	// than ExecuteOnDestContext, especially cross-shard async calls
-	gasToUse := metering.GasSchedule().ElrondAPICost.ExecuteOnDestContext
-	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(dataLength)
-	gasLimit -= gasToUse
-
-	sender := runtime.GetAsyncCallInfo().Destination
-	dest := runtime.GetSCAddress()
-
-	// Return to the sender SC, calling its callback() method.
-	contractCallInput := &vmcommon.ContractCallInput{
-		VMInput: vmcommon.VMInput{
-			CallerAddr:  sender,
-			Arguments:   arguments,
-			CallValue:   big.NewInt(0),
-			GasPrice:    0,
-			GasProvided: gasLimit,
-		},
-		RecipientAddr: dest,
-		Function:      function,
-	}
-
-	return contractCallInput, nil
+	return dataLength
 }

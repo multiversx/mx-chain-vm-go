@@ -177,7 +177,6 @@ func (context *outputContext) AddTxValueToAccount(address []byte, value *big.Int
 	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
 }
 
-// adapt vm output and all saved data from sc run into VM Output
 func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 	context.outputState.GasRemaining = context.host.Metering().GasLeft()
 	return context.outputState

@@ -33,14 +33,13 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	runtime.SetSCAddress(address)
 	output.AddTxValueToAccount(address, input.CallValue)
 
-	gasForDeployment, err := metering.DeductInitialGasForDirectDeployment(input)
+	err = metering.DeductInitialGasForDirectDeployment(input)
 	if err != nil {
 		returnCode = vmcommon.OutOfGas
 		return vmOutput
 	}
 
 	vmInput := runtime.GetVMInput()
-	vmInput.GasProvided = gasForDeployment
 	err = runtime.CreateWasmerInstance(input.ContractCode, vmInput.GasProvided)
 	if err != nil {
 		returnCode = vmcommon.ContractInvalid
@@ -92,22 +91,20 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 		return vmOutput
 	}
 
-	// If this call is an asynchronous call, a minimum of 2x the cost of the gas
-	// cost for asynchronous calls must be locked temporarily, to make sure the
-	// callBack has enough gas to be called and executed
-	err = metering.LockGasIfAsyncStep()
-	if err != nil {
-		return output.CreateVMOutputInCaseOfError(vmcommon.OutOfGas, arwen.ErrNotEnoughGas.Error())
-	}
+	vmInput := runtime.GetVMInput()
 
-	gasForExecution, err := metering.DeductInitialGasForExecution(input, contract)
+	err = metering.DeductInitialGasForExecution(contract)
 	if err != nil {
 		returnCode = vmcommon.OutOfGas
 		return vmOutput
 	}
 
-	vmInput := runtime.GetVMInput()
-	vmInput.GasProvided = gasForExecution
+	err = metering.DeductAndLockGasIfAsyncStep()
+	if err != nil {
+		returnCode = vmcommon.OutOfGas
+		return vmOutput
+	}
+
 	err = runtime.CreateWasmerInstance(contract, vmInput.GasProvided)
 	if err != nil {
 		returnCode = vmcommon.ContractInvalid
@@ -123,8 +120,6 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 
 	result, returnCode, err := host.callSCMethod()
 
-	// If some gas has been locked before calling the function to reserve it for
-	// the asynchronous callback, it will now be returned
 	metering.UnlockGasIfAsyncStep()
 
 	if err != nil {
@@ -210,7 +205,7 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]by
 		metering.UseGas(totalGasConsumed)
 	}()
 
-	gasForDeployment, err := metering.DeductInitialGasForIndirectDeployment(input)
+	err = metering.DeductInitialGasForIndirectDeployment(input)
 	if err != nil {
 		output.Transfer(input.CallerAddr, address, 0, input.CallValue, nil)
 		return nil, err
@@ -224,6 +219,7 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]by
 		arwen.RemoveHostContext(idContext)
 	}()
 
+	gasForDeployment := runtime.GetVMInput().GasProvided
 	err = runtime.CreateWasmerInstance(input.ContractCode, gasForDeployment)
 	if err != nil {
 		output.Transfer(input.CallerAddr, address, 0, input.CallValue, nil)
@@ -262,7 +258,12 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 		metering.UseGas(totalGasConsumed)
 	}()
 
-	gasForExecution, err := metering.DeductInitialGasForExecution(input, contract)
+	err = metering.DeductInitialGasForExecution(contract)
+	if err != nil {
+		return err
+	}
+
+	err = metering.DeductAndLockGasIfAsyncStep()
 	if err != nil {
 		return err
 	}
@@ -275,6 +276,7 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 		arwen.RemoveHostContext(idContext)
 	}()
 
+	gasForExecution := runtime.GetVMInput().GasProvided
 	err = runtime.CreateWasmerInstance(contract, gasForExecution)
 	if err != nil {
 		metering.UseGas(input.GasProvided)
@@ -306,6 +308,8 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 
 	convertedResult := arwen.ConvertReturnValue(result)
 	output.Finish(convertedResult.Bytes())
+
+	metering.UnlockGasIfAsyncStep()
 
 	totalGasConsumed = input.GasProvided - gasForExecution - runtime.GetPointsUsed()
 

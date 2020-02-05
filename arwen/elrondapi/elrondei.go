@@ -411,14 +411,17 @@ func asyncCall(context unsafe.Pointer, destOffset int32, valueOffset int32, data
 		return 1
 	}
 
-	// TODO define gas cost specific to async calls - asyncCall should cost more
-	// than ExecuteOnDestContext, especially cross-shard async calls
-	gasToUse := metering.GasSchedule().ElrondAPICost.ExecuteOnDestContext
-	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(length)
+	gasSchedule := metering.GasSchedule()
+	gasToUse := gasSchedule.ElrondAPICost.AsyncCallStep
+	gasToUse += gasSchedule.BaseOperationCost.DataCopyPerByte * uint64(length)
 	metering.UseGas(gasToUse)
 
-	// TODO verify if gasLimit is large enough for sender call, destination call and callback call
 	gasLimit := metering.GasLeft()
+
+	minAsyncCallCost := 2*gasSchedule.ElrondAPICost.AsyncCallStep + gasSchedule.ElrondAPICost.AsyncCallbackGasLock
+	if gasLimit < minAsyncCallCost {
+		runtime.SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+	}
 
 	// Set up the async call as if it is not known whether the called SC
 	// is in the same shard with the caller or not. This will be later resolved
