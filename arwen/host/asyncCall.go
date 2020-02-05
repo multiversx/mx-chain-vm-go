@@ -8,7 +8,7 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
-func (host *vmHost) handleAsyncCallBreakpoint(result wasmer.Value, argError error) error {
+func (host *vmHost) handleAsyncCallBreakpoint(result wasmer.Value) error {
 	runtime := host.Runtime()
 	runtime.SetRuntimeBreakpointValue(arwen.BreakpointNone)
 

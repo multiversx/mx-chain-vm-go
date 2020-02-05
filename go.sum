@@ -28,6 +28,7 @@ github.com/ElrondNetwork/elrond-vm-util v0.1.0 h1:G6zKk2A89H7/Zm1DBdxP5rSlJFFMcu
 github.com/ElrondNetwork/elrond-vm-util v0.1.0/go.mod h1:2dLgpzmy1PkmtSVWjM2rEPoQkKv/y7+F2vMsDCRtHmg=
 github.com/ElrondNetwork/elrond-vm-util v0.1.1 h1:npoeG7OibHhNH5OTFvaRpznX8+hICrZNPYmqnM82dM4=
 github.com/ElrondNetwork/elrond-vm-util v0.1.1/go.mod h1:02LPKFh/Z5rbejgW2dazwjWGnsniuLOhRM2JjaOA3Mg=
+github.com/ElrondNetwork/elrond-vm-util v0.1.3 h1:79L9Ea8emQqQDkTS694d1//TBZCC5hOvLNhS1u71CX0=
 github.com/ElrondNetwork/elrond-vm-util v0.1.3/go.mod h1:02LPKFh/Z5rbejgW2dazwjWGnsniuLOhRM2JjaOA3Mg=
 github.com/ElrondNetwork/go-ext-wasm v0.1.0 h1:aSXdg60JLQMSYdQbq0VtqpoyMdFYZqz09BcGiKwGY5U=
 github.com/ElrondNetwork/go-ext-wasm v0.1.0/go.mod h1:wlns4D0OzJP+q/cLweFz1rGpoZOG8LbGYX2jD31HCgw=
