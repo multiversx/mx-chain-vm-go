@@ -12,14 +12,11 @@ func (host *vmHost) handleAsyncCallBreakpoint(result wasmer.Value, argError erro
 	runtime := host.Runtime()
 	runtime.SetRuntimeBreakpointValue(arwen.BreakpointNone)
 
-	// TODO also determine whether caller and callee are in the same Shard, by
-	// account addresses - this makes the empty SC code an error
-	syncCall, err := host.canExecuteSynchronously()
-	if err != nil {
-		return err
-	}
-	if !syncCall {
-		return argError
+	// TODO also determine whether caller and callee are in the same Shard (based
+	// on address?), by account addresses - this would make the empty SC code an
+	// unrecoverable error, so returning nil here will not be appropriate anymore.
+	if !host.canExecuteSynchronously() {
+		return nil
 	}
 
 	// Start calling the destination SC, synchronously.
@@ -29,8 +26,6 @@ func (host *vmHost) handleAsyncCallBreakpoint(result wasmer.Value, argError erro
 	}
 
 	destinationVMOutput, err := host.ExecuteOnDestContext(destinationCallInput)
-	// TODO pass error to the SC callback (append as argument)
-	// TODO consume remaining gas
 	if err != nil {
 		return err
 	}
@@ -48,14 +43,14 @@ func (host *vmHost) handleAsyncCallBreakpoint(result wasmer.Value, argError erro
 	return nil
 }
 
-func (host *vmHost) canExecuteSynchronously() (bool, error) {
+func (host *vmHost) canExecuteSynchronously() bool {
 	runtime := host.Runtime()
 	blockchain := host.Blockchain()
 	asyncCallInfo := runtime.GetAsyncCallInfo()
 	dest := asyncCallInfo.Destination
 	calledSCCode, err := blockchain.GetCode(dest)
 
-	return len(calledSCCode) != 0, err
+	return len(calledSCCode) != 0 && err == nil
 }
 
 func (host *vmHost) createDestinationContractCallInput() (*vmcommon.ContractCallInput, error) {
