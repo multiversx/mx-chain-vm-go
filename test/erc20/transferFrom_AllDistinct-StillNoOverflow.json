@@ -11,9 +11,9 @@
                 "nonce": "0x00",
                 "balance": "0x00",
                 "storage": {
-                    "0x020777777777777777777777777717778697c15331677e6ebf0b000000000000": "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff6",
-                    "0x0100777777777777777777770777777777777777777777777717777777777777": "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff6",
-                    "0x0100020000000000000000000000000000000000000000000000000000000000": "0x0a",
+                    "0xe314ce9b5b28a5927ee30ba28b67ee27ad8779e1101baf4224590c8f1e287891": "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff6",
+                    "0xa3da7395b9df9b4a0ad4ce2fd40d2db4c5b231dbc2a19ce9bafcbc2233dc1b0a": "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff6",
+                    "0xfe1847a18709e94e8938511fd1050153c9f207efa75081b2736362b3d4cf962c": "0x0a",
                     "0x0000000000000000000000000000000000000000000000000000000000000000":  "0x010000000000000000000000000000000000000000000000000000000000000000"
                 },
                 "code": "erc20.wasm"
@@ -23,9 +23,7 @@
             {
                 "results": [
                     {
-                        "out": [
-                            "0x01"
-                        ],
+                        "out": [],
                         "status": "",
                         "gas": "0x0f3f0b",
                         "logs": [
@@ -84,7 +82,7 @@
                 "nonce": "0x00",
                 "balance": "0x00",
                 "storage": {
-                    "0x0100020000000000000000000000000000000000000000000000000000000000": "0x010000000000000000000000000000000000000000000000000000000000000000",
+                    "0xfe1847a18709e94e8938511fd1050153c9f207efa75081b2736362b3d4cf962c": "0x010000000000000000000000000000000000000000000000000000000000000000",
                     "0x0000000000000000000000000000000000000000000000000000000000000000":  "0x010000000000000000000000000000000000000000000000000000000000000000"
                 },
                 "code": "erc20.wasm"
