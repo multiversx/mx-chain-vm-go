@@ -1,8 +1,6 @@
 package host
 
 import (
-	"fmt"
-
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -22,7 +20,6 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 		if err != nil {
 			message := err.Error() + " - " + output.ReturnMessage()
 			vmOutput = output.CreateVMOutputInCaseOfError(returnCode, message)
-			fmt.Printf("Arwen error: %s - %s\n", returnCode, message)
 		}
 	}()
 
@@ -83,7 +80,6 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 		if err != nil {
 			message := err.Error() + " - " + output.ReturnMessage()
 			vmOutput = output.CreateVMOutputInCaseOfError(returnCode, message)
-			fmt.Printf("Arwen error: %s - %s\n", returnCode, message)
 		}
 	}()
 
@@ -230,7 +226,6 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]by
 
 	err = runtime.CreateWasmerInstance(input.ContractCode, gasForDeployment)
 	if err != nil {
-		fmt.Println("arwen Error: ", err.Error())
 		output.Transfer(input.CallerAddr, address, 0, input.CallValue, nil)
 		return nil, err
 	}
@@ -358,8 +353,6 @@ func (host *vmHost) callSCMethod() (wasmer.Value, vmcommon.ReturnCode, error) {
 	}
 
 	if err != nil {
-		strError, _ := wasmer.GetLastError()
-		fmt.Println("wasmer Error", strError)
 		return wasmer.Void(), vmcommon.ExecutionFailed, err
 	}
 
