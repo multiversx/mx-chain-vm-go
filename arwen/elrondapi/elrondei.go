@@ -902,7 +902,7 @@ func executeOnSameContext(
 		Function:      function,
 	}
 
-	_, err = host.ExecuteOnDestContext(contractCallInput)
+	err = host.ExecuteOnSameContext(contractCallInput)
 	if err != nil {
 		return 1
 	}
