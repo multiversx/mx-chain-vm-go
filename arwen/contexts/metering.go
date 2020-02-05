@@ -7,9 +7,10 @@ import (
 )
 
 type meteringContext struct {
-	gasSchedule   *config.GasCost
-	blockGasLimit uint64
-	host          arwen.VMHost
+	gasSchedule           *config.GasCost
+	blockGasLimit         uint64
+	gasLockedForAsyncStep bool
+	host                  arwen.VMHost
 }
 
 func NewMeteringContext(
@@ -24,9 +25,10 @@ func NewMeteringContext(
 	}
 
 	context := &meteringContext{
-		gasSchedule:   gasCostConfig,
-		blockGasLimit: blockGasLimit,
-		host:          host,
+		gasSchedule:           gasCostConfig,
+		blockGasLimit:         blockGasLimit,
+		gasLockedForAsyncStep: false,
+		host:                  host,
 	}
 
 	return context, nil
@@ -60,6 +62,32 @@ func (context *meteringContext) BoundGasLimit(value int64) uint64 {
 		return gasLeft
 	} else {
 		return limit
+	}
+}
+
+func (context *meteringContext) LockGasIfAsyncStep() error {
+	input := context.host.Runtime().GetVMInput()
+
+	mustLockMinGasForAsyncCallBack := input.CallType == vmcommon.AsynchronousCall
+	if mustLockMinGasForAsyncCallBack {
+		// Only the Elrond API supports asynchronous calls
+		if input.GasProvided < context.GasSchedule().ElrondAPICost.AsyncCallStep {
+			return arwen.ErrNotEnoughGas
+		}
+
+		input.GasProvided -= 2 * context.GasSchedule().ElrondAPICost.AsyncCallStep
+		context.gasLockedForAsyncStep = true
+	} else {
+		context.gasLockedForAsyncStep = false
+	}
+
+	return nil
+}
+
+func (context *meteringContext) UnlockGasIfAsyncStep() {
+	if context.gasLockedForAsyncStep {
+		input := context.host.Runtime().GetVMInput()
+		input.GasProvided += 2 * context.GasSchedule().ElrondAPICost.AsyncCallStep
 	}
 }
 
