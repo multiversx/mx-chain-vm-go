@@ -41,7 +41,7 @@ func (context *storageContext) GetStorage(address []byte, key []byte) []byte {
 
 func (context *storageContext) SetStorage(address []byte, key []byte, value []byte) int32 {
 	if context.host.Runtime().ReadOnly() {
-		return 0
+		return int32(arwen.StorageUnchanged)
 	}
 
 	metering := context.host.Metering()
