@@ -99,12 +99,6 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 		return vmOutput
 	}
 
-	err = metering.DeductAndLockGasIfAsyncStep()
-	if err != nil {
-		returnCode = vmcommon.OutOfGas
-		return vmOutput
-	}
-
 	err = runtime.CreateWasmerInstance(contract, vmInput.GasProvided)
 	if err != nil {
 		returnCode = vmcommon.ContractInvalid
@@ -134,37 +128,28 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 
 func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	host.PushState()
+	defer host.PopState()
 
 	host.InitState()
 
 	host.Runtime().InitStateFromContractCallInput(input)
 	err := host.execute(input)
-
-	var vmOutput *vmcommon.VMOutput
-	vmOutput = nil
-	if err == nil {
-		vmOutput = host.Output().GetVMOutput()
+	if err != nil {
+		return nil, err
 	}
 
-	popErr := host.PopState()
-	if popErr != nil {
-		err = popErr
-	}
+	vmOutput := host.Output().GetVMOutput()
 
-	return vmOutput, err
+	return vmOutput, nil
 }
 
 func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) error {
 	runtime := host.Runtime()
 	runtime.PushState()
+	defer runtime.PopState()
 
 	runtime.InitStateFromContractCallInput(input)
 	err := host.execute(input)
-
-	popErr := runtime.PopState()
-	if popErr != nil {
-		err = popErr
-	}
 
 	return err
 }
@@ -259,11 +244,6 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 	}()
 
 	err = metering.DeductInitialGasForExecution(contract)
-	if err != nil {
-		return err
-	}
-
-	err = metering.DeductAndLockGasIfAsyncStep()
 	if err != nil {
 		return err
 	}

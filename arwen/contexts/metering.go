@@ -9,7 +9,7 @@ import (
 type meteringContext struct {
 	gasSchedule           *config.GasCost
 	blockGasLimit         uint64
-	gasLockedForAsyncStep bool
+	gasLockedForAsyncStep uint64
 	host                  arwen.VMHost
 }
 
@@ -27,7 +27,7 @@ func NewMeteringContext(
 	context := &meteringContext{
 		gasSchedule:           gasCostConfig,
 		blockGasLimit:         blockGasLimit,
-		gasLockedForAsyncStep: false,
+		gasLockedForAsyncStep: 0,
 		host:                  host,
 	}
 
@@ -65,36 +65,34 @@ func (context *meteringContext) BoundGasLimit(value int64) uint64 {
 	}
 }
 
-func (context *meteringContext) DeductAndLockGasIfAsyncStep() error {
+// deductAndLockGasIfAsyncStep will deduct the gas for an async step and also lock gas for the callback, if the execution is an asynchronous call
+func (context *meteringContext) deductAndLockGasIfAsyncStep() error {
 	input := context.host.Runtime().GetVMInput()
 
 	if input.CallType == vmcommon.AsynchronousCall {
 		gasSchedule := context.GasSchedule().ElrondAPICost
 
-		input.GasProvided -= gasSchedule.AsyncCallStep
-		if input.GasProvided <= 0 {
+		gasToConsume := gasSchedule.AsyncCallStep
+		gasToLock := gasSchedule.AsyncCallStep + gasSchedule.AsyncCallbackGasLock
+		if input.GasProvided <= gasToConsume+gasToLock {
 			return arwen.ErrNotEnoughGas
 		}
+		input.GasProvided -= gasToConsume + gasToLock
 
-		input.GasProvided -= gasSchedule.AsyncCallStep + gasSchedule.AsyncCallbackGasLock
-		if input.GasProvided <= 0 {
-			return arwen.ErrNotEnoughGas
-		}
-
-		context.gasLockedForAsyncStep = true
+		context.gasLockedForAsyncStep = gasToLock
 	} else {
-		context.gasLockedForAsyncStep = false
+		context.gasLockedForAsyncStep = 0
 	}
 
 	return nil
 }
 
+// UnlockGasIfAsyncStep will restore the previously locked gas, if the execution is an asynchronous call
 func (context *meteringContext) UnlockGasIfAsyncStep() {
-	if context.gasLockedForAsyncStep {
-		gasSchedule := context.GasSchedule().ElrondAPICost
+	if context.gasLockedForAsyncStep != 0 {
 		input := context.host.Runtime().GetVMInput()
-		input.GasProvided += gasSchedule.AsyncCallStep + gasSchedule.AsyncCallbackGasLock
-		context.gasLockedForAsyncStep = false
+		input.GasProvided += context.gasLockedForAsyncStep
+		context.gasLockedForAsyncStep = 0
 	}
 }
 
@@ -108,6 +106,12 @@ func (context *meteringContext) DeductInitialGasForExecution(contract []byte) er
 		0,
 		context.gasSchedule.BaseOperationCost.CompilePerByte,
 	)
+	if err != nil {
+		return err
+	}
+
+	err = context.deductAndLockGasIfAsyncStep()
+
 	return err
 }
 

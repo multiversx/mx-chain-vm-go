@@ -3,7 +3,7 @@ package host
 import (
 	"math/big"
 
-	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -44,6 +44,8 @@ func (host *vmHost) handleAsyncCallBreakpoint(result wasmer.Value) error {
 }
 
 func (host *vmHost) canExecuteSynchronously() bool {
+	// TODO replace with a blockchain hook that verifies if the caller and callee
+	// are in the same Shard.
 	runtime := host.Runtime()
 	blockchain := host.Blockchain()
 	asyncCallInfo := runtime.GetAsyncCallInfo()
@@ -74,10 +76,12 @@ func (host *vmHost) createDestinationContractCallInput() (*vmcommon.ContractCall
 		return nil, err
 	}
 
-	gasLimit := asyncCallInfo.GasLimit - host.Metering().GasSchedule().ElrondAPICost.AsyncCallStep
-	if gasLimit <= 0 {
+	gasLimit := asyncCallInfo.GasLimit
+	gasToUse := host.Metering().GasSchedule().ElrondAPICost.AsyncCallStep
+	if gasLimit <= gasToUse {
 		return nil, arwen.ErrNotEnoughGas
 	}
+	gasLimit -= gasToUse
 
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
@@ -85,7 +89,7 @@ func (host *vmHost) createDestinationContractCallInput() (*vmcommon.ContractCall
 			Arguments:   arguments,
 			CallValue:   big.NewInt(0).SetBytes(asyncCallInfo.ValueBytes),
 			CallType:    vmcommon.AsynchronousCall,
-			GasPrice:    0,
+			GasPrice:    runtime.GetVMInput().GasPrice,
 			GasProvided: gasLimit,
 		},
 		RecipientAddr: asyncCallInfo.Destination,
@@ -107,10 +111,10 @@ func (host *vmHost) createCallbackContractCallInput(destinationVMOutput *vmcommo
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.AsyncCallStep
 	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(dataLength)
-	gasLimit -= gasToUse
-	if gasLimit <= 0 {
+	if gasLimit <= gasToUse {
 		return nil, arwen.ErrNotEnoughGas
 	}
+	gasLimit -= gasToUse
 
 	sender := runtime.GetAsyncCallInfo().Destination
 	dest := runtime.GetSCAddress()
@@ -122,7 +126,7 @@ func (host *vmHost) createCallbackContractCallInput(destinationVMOutput *vmcommo
 			Arguments:   arguments,
 			CallValue:   big.NewInt(0),
 			CallType:    vmcommon.AsynchronousCallBack,
-			GasPrice:    0,
+			GasPrice:    runtime.GetVMInput().GasPrice,
 			GasProvided: gasLimit,
 		},
 		RecipientAddr: dest,
@@ -135,6 +139,8 @@ func (host *vmHost) createCallbackContractCallInput(destinationVMOutput *vmcommo
 func (host *vmHost) computeDataLengthFromArguments(function string, arguments [][]byte) int {
 	// Calculate what length would the Data field have, were it of the
 	// form "callback@arg1@arg4...
+
+	// TODO change this after allowing empty entries in VMCommon.ReturnData
 	dataLength := len(function) + 1
 	for i, element := range arguments {
 		if len(element) == 0 {

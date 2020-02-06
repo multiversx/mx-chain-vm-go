@@ -63,11 +63,8 @@ func (context *outputContext) PushState() {
 	context.stateStack = append(context.stateStack, newState)
 }
 
-func (context *outputContext) PopState() error {
+func (context *outputContext) PopState() {
 	stateStackLen := len(context.stateStack)
-	if stateStackLen < 1 {
-		return arwen.StateStackUnderflow
-	}
 
 	// Merge the current state into the head of the stateStack,
 	// then pop the head of the stateStack into the current state.
@@ -79,8 +76,6 @@ func (context *outputContext) PopState() error {
 	mergeVMOutputs(prevState, context.outputState)
 	context.outputState = newVMOutput()
 	mergeVMOutputs(context.outputState, prevState)
-
-	return nil
 }
 
 func (context *outputContext) GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool) {
@@ -177,6 +172,7 @@ func (context *outputContext) AddTxValueToAccount(address []byte, value *big.Int
 	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
 }
 
+// GetVMOutput updates the current VMOutput and returns it
 func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 	context.outputState.GasRemaining = context.host.Metering().GasLeft()
 	return context.outputState

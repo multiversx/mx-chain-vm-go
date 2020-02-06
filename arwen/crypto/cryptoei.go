@@ -37,7 +37,7 @@ func sha256(context unsafe.Pointer, dataOffset int32, length int32, resultOffset
 	crypto := arwen.GetCryptoContext(context)
 
 	data, err := runtime.MemLoad(dataOffset, length)
-	if withFault(err, context) {
+	if arwen.WithFault(err, context) {
 		return 1
 	}
 
@@ -47,7 +47,7 @@ func sha256(context unsafe.Pointer, dataOffset int32, length int32, resultOffset
 	}
 
 	err = runtime.MemStore(resultOffset, result)
-	if withFault(err, context) {
+	if arwen.WithFault(err, context) {
 		return 1
 	}
 
@@ -64,7 +64,7 @@ func keccak256(context unsafe.Pointer, dataOffset int32, length int32, resultOff
 	crypto := arwen.GetCryptoContext(context)
 
 	data, err := runtime.MemLoad(dataOffset, length)
-	if withFault(err, context) {
+	if arwen.WithFault(err, context) {
 		return 1
 	}
 
@@ -74,7 +74,7 @@ func keccak256(context unsafe.Pointer, dataOffset int32, length int32, resultOff
 	}
 
 	err = runtime.MemStore(resultOffset, result)
-	if withFault(err, context) {
+	if arwen.WithFault(err, context) {
 		return 1
 	}
 
@@ -83,18 +83,4 @@ func keccak256(context unsafe.Pointer, dataOffset int32, length int32, resultOff
 	metering.UseGas(gasToUse)
 
 	return 0
-}
-
-func withFault(err error, context unsafe.Pointer) bool {
-	if err != nil {
-		runtime := arwen.GetRuntimeContext(context)
-		metering := arwen.GetMeteringContext(context)
-
-		runtime.SignalUserError(err.Error())
-		metering.UseGas(metering.GasLeft())
-
-		return true
-	}
-
-	return false
 }

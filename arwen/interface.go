@@ -11,7 +11,7 @@ import (
 type StateStack interface {
 	InitState()
 	PushState()
-	PopState() error
+	PopState()
 }
 
 // ArgumentsParser defines the functionality to parse transaction data into arguments and code for smart contracts
@@ -79,11 +79,11 @@ type RuntimeContext interface {
 	Function() string
 	Arguments() [][]byte
 	SignalUserError(message string)
-	SignalExit(exitCode int)
+	FailExecution(err error)
 	SetRuntimeBreakpointValue(value BreakpointValue)
 	GetRuntimeBreakpointValue() BreakpointValue
 	GetAsyncCallInfo() *AsyncCallInfo
-	SetAsyncCallInfo(dest []byte, value []byte, gasLimit uint64, data []byte)
+	SetAsyncCallInfo(asyncCallInfo *AsyncCallInfo)
 	PushInstance()
 	PopInstance() error
 	ReadOnly() bool
@@ -145,7 +145,6 @@ type MeteringContext interface {
 	DeductInitialGasForExecution(contract []byte) error
 	DeductInitialGasForDirectDeployment(input *vmcommon.ContractCreateInput) error
 	DeductInitialGasForIndirectDeployment(input *vmcommon.ContractCreateInput) error
-	DeductAndLockGasIfAsyncStep() error
 	UnlockGasIfAsyncStep()
 }
 

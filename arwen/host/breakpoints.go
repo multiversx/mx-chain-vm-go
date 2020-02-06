@@ -13,11 +13,12 @@ func (host *vmHost) handleBreakpoint(
 	if breakpointValue == arwen.BreakpointAsyncCall {
 		return host.handleAsyncCallBreakpoint(result)
 	}
-
-	if breakpointValue == arwen.BreakpointSignalError {
-		return nil
+	if breakpointValue == arwen.BreakpointExecutionFailed {
+		return arwen.ErrExecutionFailed
 	}
-
+	if breakpointValue == arwen.BreakpointSignalError {
+		return arwen.ErrSignalError
+	}
 	if breakpointValue == arwen.BreakpointOutOfGas {
 		return arwen.ErrNotEnoughGas
 	}

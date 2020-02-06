@@ -2,7 +2,6 @@ package contexts
 
 import (
 	"fmt"
-	"strconv"
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -82,11 +81,8 @@ func (context *runtimeContext) PushState() {
 	context.stateStack = append(context.stateStack, newState)
 }
 
-func (runtime *runtimeContext) PopState() error {
+func (runtime *runtimeContext) PopState() {
 	stateStackLen := len(runtime.stateStack)
-	if stateStackLen < 1 {
-		return arwen.StateStackUnderflow
-	}
 
 	prevState := runtime.stateStack[stateStackLen-1]
 	runtime.stateStack = runtime.stateStack[:stateStackLen-1]
@@ -96,8 +92,6 @@ func (runtime *runtimeContext) PopState() error {
 	runtime.callFunction = prevState.callFunction
 	runtime.readOnly = prevState.readOnly
 	runtime.asyncCallInfo = prevState.asyncCallInfo
-
-	return nil
 }
 
 func (runtime *runtimeContext) PushInstance() {
@@ -151,11 +145,12 @@ func (context *runtimeContext) Arguments() [][]byte {
 	return context.vmInput.Arguments
 }
 
-func (context *runtimeContext) SignalExit(exitCode int) {
-	context.host.Output().SetReturnCode(vmcommon.Ok)
-	message := strconv.Itoa(exitCode)
-	context.host.Output().SetReturnMessage(message)
-	context.SetRuntimeBreakpointValue(arwen.BreakpointSignalExit)
+func (context *runtimeContext) FailExecution(err error) {
+	context.host.Output().SetReturnCode(vmcommon.ExecutionFailed)
+	if err != nil {
+		context.host.Output().SetReturnMessage(err.Error())
+	}
+	context.SetRuntimeBreakpointValue(arwen.BreakpointExecutionFailed)
 }
 
 func (context *runtimeContext) SignalUserError(message string) {
@@ -242,13 +237,8 @@ func (context *runtimeContext) GetInitFunction() wasmer.ExportedFunctionCallback
 	return init
 }
 
-func (runtime *runtimeContext) SetAsyncCallInfo(dest []byte, value []byte, gasLimit uint64, data []byte) {
-	runtime.asyncCallInfo = &arwen.AsyncCallInfo{
-		Destination: dest,
-		Data:        data,
-		GasLimit:    gasLimit,
-		ValueBytes:  value,
-	}
+func (runtime *runtimeContext) SetAsyncCallInfo(asyncCallInfo *arwen.AsyncCallInfo) {
+	runtime.asyncCallInfo = asyncCallInfo
 }
 
 func (runtime *runtimeContext) GetAsyncCallInfo() *arwen.AsyncCallInfo {
