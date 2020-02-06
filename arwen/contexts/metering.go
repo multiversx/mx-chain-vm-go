@@ -49,6 +49,11 @@ func (context *meteringContext) FreeGas(gas uint64) {
 func (context *meteringContext) GasLeft() uint64 {
 	gasProvided := context.host.Runtime().GetVMInput().GasProvided
 	gasUsed := context.host.Runtime().GetPointsUsed()
+
+	if gasProvided < gasUsed {
+		return 0
+	}
+
 	return gasProvided - gasUsed
 }
 
@@ -58,9 +63,8 @@ func (context *meteringContext) BoundGasLimit(value int64) uint64 {
 
 	if gasLeft < limit {
 		return gasLeft
-	} else {
-		return limit
 	}
+	return limit
 }
 
 func (context *meteringContext) BlockGasLimit() uint64 {

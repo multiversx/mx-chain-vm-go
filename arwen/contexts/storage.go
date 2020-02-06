@@ -45,7 +45,7 @@ func (context *storageContext) SetStorage(address []byte, key []byte, value []by
 	}
 
 	metering := context.host.Metering()
-	zero := []byte{}
+	var zero []byte
 	strKey := string(key)
 	length := len(value)
 

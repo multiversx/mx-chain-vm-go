@@ -1,4 +1,4 @@
-package contexts
+package mock
 
 import (
 	"math/big"
@@ -8,29 +8,22 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
-type logTopicsData struct {
-	topics [][]byte
-	data   []byte
-}
-
-type outputContext struct {
-	host        arwen.VMHost
+type OutputContextMock struct {
 	outputState *vmcommon.VMOutput
 	stateStack  []*vmcommon.VMOutput
 }
 
-func NewOutputContext(host arwen.VMHost) (*outputContext, error) {
-	context := &outputContext{
-		host:       host,
+func NewOutputContextMock() *OutputContextMock {
+	context := &OutputContextMock{
 		stateStack: make([]*vmcommon.VMOutput, 0),
 	}
 
 	context.InitState()
 
-	return context, nil
+	return context
 }
 
-func (context *outputContext) InitState() {
+func (context *OutputContextMock) InitState() {
 	context.outputState = newVMOutput()
 }
 
@@ -58,13 +51,13 @@ func newVMOutputAccount(address []byte) *vmcommon.OutputAccount {
 	}
 }
 
-func (context *outputContext) PushState() {
+func (context *OutputContextMock) PushState() {
 	newState := newVMOutput()
 	mergeVMOutputs(newState, context.outputState)
 	context.stateStack = append(context.stateStack, newState)
 }
 
-func (context *outputContext) PopState() error {
+func (context *OutputContextMock) PopState() error {
 	stateStackLen := len(context.stateStack)
 	if stateStackLen < 1 {
 		return arwen.StateStackUnderflow
@@ -84,7 +77,7 @@ func (context *outputContext) PopState() error {
 	return nil
 }
 
-func (context *outputContext) GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool) {
+func (context *OutputContextMock) GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool) {
 	accountIsNew := false
 	account, ok := context.outputState.OutputAccounts[string(address)]
 	if !ok {
@@ -96,49 +89,49 @@ func (context *outputContext) GetOutputAccount(address []byte) (*vmcommon.Output
 	return account, accountIsNew
 }
 
-func (context *outputContext) GetRefund() uint64 {
+func (context *OutputContextMock) GetRefund() uint64 {
 	return uint64(context.outputState.GasRefund.Int64())
 }
 
-func (context *outputContext) SetRefund(refund uint64) {
+func (context *OutputContextMock) SetRefund(refund uint64) {
 	context.outputState.GasRefund = big.NewInt(int64(refund))
 }
 
-func (context *outputContext) ReturnData() [][]byte {
+func (context *OutputContextMock) ReturnData() [][]byte {
 	return context.outputState.ReturnData
 }
 
-func (context *outputContext) ReturnCode() vmcommon.ReturnCode {
+func (context *OutputContextMock) ReturnCode() vmcommon.ReturnCode {
 	return context.outputState.ReturnCode
 }
 
-func (context *outputContext) SetReturnCode(returnCode vmcommon.ReturnCode) {
+func (context *OutputContextMock) SetReturnCode(returnCode vmcommon.ReturnCode) {
 	context.outputState.ReturnCode = returnCode
 }
 
-func (context *outputContext) ReturnMessage() string {
+func (context *OutputContextMock) ReturnMessage() string {
 	return context.outputState.ReturnMessage
 }
 
-func (context *outputContext) SetReturnMessage(returnMessage string) {
+func (context *OutputContextMock) SetReturnMessage(returnMessage string) {
 	context.outputState.ReturnMessage = returnMessage
 }
 
-func (context *outputContext) ClearReturnData() {
+func (context *OutputContextMock) ClearReturnData() {
 	context.outputState.ReturnData = make([][]byte, 0)
 }
 
-func (context *outputContext) SelfDestruct(_ []byte, _ []byte) {
+func (context *OutputContextMock) SelfDestruct(_ []byte, _ []byte) {
 	panic("not implemented")
 }
 
-func (context *outputContext) Finish(data []byte) {
+func (context *OutputContextMock) Finish(data []byte) {
 	if len(data) > 0 {
 		context.outputState.ReturnData = append(context.outputState.ReturnData, data)
 	}
 }
 
-func (context *outputContext) FinishValue(value wasmer.Value) {
+func (context *OutputContextMock) FinishValue(value wasmer.Value) {
 	if !value.IsVoid() {
 		convertedResult := arwen.ConvertReturnValue(value)
 		valueBytes := convertedResult.Bytes()
@@ -147,11 +140,7 @@ func (context *outputContext) FinishValue(value wasmer.Value) {
 	}
 }
 
-func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []byte) {
-	if context.host.Runtime().ReadOnly() {
-		return
-	}
-
+func (context *OutputContextMock) WriteLog(address []byte, topics [][]byte, data []byte) {
 	newLogEntry := &vmcommon.LogEntry{
 		Address: address,
 		Topics:  topics,
@@ -163,7 +152,7 @@ func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []b
 // Transfer handles any necessary value transfer required and takes
 // the necessary steps to create accounts and reverses the state in case of an
 // execution error or failed value transfer.
-func (context *outputContext) Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte) {
+func (context *OutputContextMock) Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte) {
 	senderAcc, _ := context.GetOutputAccount(sender)
 	destAcc, _ := context.GetOutputAccount(destination)
 
@@ -173,29 +162,26 @@ func (context *outputContext) Transfer(destination []byte, sender []byte, gasLim
 	destAcc.GasLimit = gasLimit
 }
 
-func (context *outputContext) AddTxValueToAccount(address []byte, value *big.Int) {
+func (context *OutputContextMock) AddTxValueToAccount(address []byte, value *big.Int) {
 	destAcc, _ := context.GetOutputAccount(address)
 	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
 }
 
 // adapt vm output and all saved data from sc run into VM Output
-func (context *outputContext) GetVMOutput(_ wasmer.Value) *vmcommon.VMOutput {
-	context.outputState.GasRemaining = context.host.Metering().GasLeft()
+func (context *OutputContextMock) GetVMOutput(_ wasmer.Value) *vmcommon.VMOutput {
 	return context.outputState
 }
 
-func (context *outputContext) DeployCode(address []byte, code []byte) {
+func (context *OutputContextMock) DeployCode(address []byte, code []byte) {
 	newSCAcc, _ := context.GetOutputAccount(address)
 	newSCAcc.Code = code
 }
 
-func (context *outputContext) CreateVMOutputInCaseOfError(errCode vmcommon.ReturnCode, message string) *vmcommon.VMOutput {
-	return &vmcommon.VMOutput{
-		GasRemaining:  0,
-		GasRefund:     big.NewInt(0),
-		ReturnCode:    errCode,
-		ReturnMessage: message,
-	}
+func (context *OutputContextMock) CreateVMOutputInCaseOfError(errCode vmcommon.ReturnCode, message string) *vmcommon.VMOutput {
+	vmOutput := &vmcommon.VMOutput{GasRemaining: 0, GasRefund: big.NewInt(0)}
+	vmOutput.ReturnCode = errCode
+	vmOutput.ReturnMessage = message
+	return vmOutput
 }
 
 func mergeVMOutputs(leftOutput *vmcommon.VMOutput, rightOutput *vmcommon.VMOutput) {
@@ -207,8 +193,6 @@ func mergeVMOutputs(leftOutput *vmcommon.VMOutput, rightOutput *vmcommon.VMOutpu
 		}
 		mergeOutputAccounts(leftAccount, rightAccount)
 	}
-
-	// TODO merge DeletedAccounts and TouchedAccounts as well?
 
 	leftOutput.Logs = append(leftOutput.Logs, rightOutput.Logs...)
 	leftOutput.ReturnData = append(leftOutput.ReturnData, rightOutput.ReturnData...)

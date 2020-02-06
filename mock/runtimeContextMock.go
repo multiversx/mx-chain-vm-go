@@ -1,8 +1,7 @@
-package contexts
+package mock
 
 import (
 	"fmt"
-	"strconv"
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -10,45 +9,39 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
-type runtimeContext struct {
-	host            arwen.VMHost
+type RuntimeContextMock struct {
 	instance        *wasmer.Instance
 	instanceContext *wasmer.InstanceContext
 	vmInput         *vmcommon.VMInput
 	scAddress       []byte
 	callFunction    string
-	vmType          []byte
 	readOnly        bool
 
-	stateStack    []*runtimeContext
+	stateStack    []*RuntimeContextMock
 	instanceStack []*wasmer.Instance
+	pointsUsed    uint64
 }
 
-func NewRuntimeContext(
-	host arwen.VMHost,
-	_ vmcommon.BlockchainHook,
-	vmType []byte,
-) (*runtimeContext, error) {
-	context := &runtimeContext{
-		host:          host,
-		vmType:        vmType,
-		stateStack:    make([]*runtimeContext, 0),
+func NewRuntimeContextMock() *RuntimeContextMock {
+	context := &RuntimeContextMock{
+		stateStack:    make([]*RuntimeContextMock, 0),
 		instanceStack: make([]*wasmer.Instance, 0),
+		pointsUsed:    0,
 	}
 
 	context.InitState()
 
-	return context, nil
+	return context
 }
 
-func (context *runtimeContext) InitState() {
+func (context *RuntimeContextMock) InitState() {
 	context.vmInput = &vmcommon.VMInput{}
 	context.scAddress = make([]byte, 0)
 	context.callFunction = ""
 	context.readOnly = false
 }
 
-func (context *runtimeContext) CreateWasmerInstance(contract []byte, gasLimit uint64) error {
+func (context *RuntimeContextMock) CreateWasmerInstance(contract []byte, gasLimit uint64) error {
 	var err error
 	context.instance, err = wasmer.NewMeteredInstance(contract, gasLimit)
 	if err != nil {
@@ -58,14 +51,14 @@ func (context *runtimeContext) CreateWasmerInstance(contract []byte, gasLimit ui
 	return nil
 }
 
-func (context *runtimeContext) InitStateFromContractCallInput(input *vmcommon.ContractCallInput) {
+func (context *RuntimeContextMock) InitStateFromContractCallInput(input *vmcommon.ContractCallInput) {
 	context.vmInput = &input.VMInput
 	context.scAddress = input.RecipientAddr
 	context.callFunction = input.Function
 }
 
-func (context *runtimeContext) PushState() {
-	newState := &runtimeContext{
+func (context *RuntimeContextMock) PushState() {
+	newState := &RuntimeContextMock{
 		vmInput:      context.vmInput,
 		scAddress:    context.scAddress,
 		callFunction: context.callFunction,
@@ -75,11 +68,11 @@ func (context *runtimeContext) PushState() {
 	context.stateStack = append(context.stateStack, newState)
 }
 
-func (context *runtimeContext) PushInstance() {
+func (context *RuntimeContextMock) PushInstance() {
 	context.instanceStack = append(context.instanceStack, context.instance)
 }
 
-func (context *runtimeContext) PopInstance() error {
+func (context *RuntimeContextMock) PopInstance() error {
 	instanceStackLen := len(context.instanceStack)
 	if instanceStackLen < 1 {
 		return arwen.InstanceStackUnderflow
@@ -94,7 +87,7 @@ func (context *runtimeContext) PopInstance() error {
 	return nil
 }
 
-func (context *runtimeContext) PopState() error {
+func (context *RuntimeContextMock) PopState() error {
 	stateStackLen := len(context.stateStack)
 	if stateStackLen < 1 {
 		return arwen.StateStackUnderflow
@@ -111,123 +104,121 @@ func (context *runtimeContext) PopState() error {
 	return nil
 }
 
-func (context *runtimeContext) GetVMType() []byte {
-	return context.vmType
+func (context *RuntimeContextMock) GetVMType() []byte {
+	return []byte("type")
 }
 
-func (context *runtimeContext) GetVMInput() *vmcommon.VMInput {
+func (context *RuntimeContextMock) GetVMInput() *vmcommon.VMInput {
 	return context.vmInput
 }
 
-func (context *runtimeContext) SetVMInput(vmInput *vmcommon.VMInput) {
+func (context *RuntimeContextMock) SetVMInput(vmInput *vmcommon.VMInput) {
 	context.vmInput = vmInput
 }
 
-func (context *runtimeContext) GetSCAddress() []byte {
+func (context *RuntimeContextMock) GetSCAddress() []byte {
 	return context.scAddress
 }
 
-func (context *runtimeContext) SetSCAddress(scAddress []byte) {
+func (context *RuntimeContextMock) SetSCAddress(scAddress []byte) {
 	context.scAddress = scAddress
 }
 
-func (context *runtimeContext) Function() string {
+func (context *RuntimeContextMock) Function() string {
 	return context.callFunction
 }
 
-func (context *runtimeContext) Arguments() [][]byte {
+func (context *RuntimeContextMock) Arguments() [][]byte {
 	return context.vmInput.Arguments
 }
 
-func (context *runtimeContext) SignalExit(exitCode int) {
-	context.host.Output().SetReturnCode(vmcommon.Ok)
-	message := strconv.Itoa(exitCode)
-	context.host.Output().SetReturnMessage(message)
+func (context *RuntimeContextMock) SignalExit(_ int) {
 	context.SetRuntimeBreakpointValue(arwen.BreakpointSignalExit)
 }
 
-func (context *runtimeContext) SignalUserError(message string) {
+func (context *RuntimeContextMock) SignalUserError(_ string) {
 	// SignalUserError() remains in Runtime, and won't be moved into Output,
 	// because there will be extra handling added here later, which requires
 	// information from Runtime (e.g. runtime breakpoints)
-	context.host.Output().SetReturnCode(vmcommon.UserError)
-	context.host.Output().SetReturnMessage(message)
 	context.SetRuntimeBreakpointValue(arwen.BreakpointSignalError)
 }
 
-func (context *runtimeContext) SetRuntimeBreakpointValue(value arwen.BreakpointValue) {
+func (context *RuntimeContextMock) SetRuntimeBreakpointValue(value arwen.BreakpointValue) {
 	context.instance.SetBreakpointValue(uint64(value))
 }
 
-func (context *runtimeContext) GetRuntimeBreakpointValue() arwen.BreakpointValue {
+func (context *RuntimeContextMock) GetRuntimeBreakpointValue() arwen.BreakpointValue {
 	return arwen.BreakpointValue(context.instance.GetBreakpointValue())
 }
 
-func (context *runtimeContext) GetPointsUsed() uint64 {
-	return context.instance.GetPointsUsed()
+func (context *RuntimeContextMock) GetPointsUsed() uint64 {
+	return context.pointsUsed
 }
 
-func (context *runtimeContext) SetPointsUsed(gasPoints uint64) {
-	context.instance.SetPointsUsed(gasPoints)
+func (context *RuntimeContextMock) SetPointsUsed(gasPoints uint64) {
+	context.pointsUsed = gasPoints
 }
 
-func (context *runtimeContext) ReadOnly() bool {
+func (context *RuntimeContextMock) ReadOnly() bool {
 	return context.readOnly
 }
 
-func (context *runtimeContext) SetReadOnly(readOnly bool) {
+func (context *RuntimeContextMock) SetReadOnly(readOnly bool) {
 	context.readOnly = readOnly
 }
 
-func (context *runtimeContext) SetInstanceContextId(id int) {
+func (context *RuntimeContextMock) SetInstanceContextId(id int) {
 	context.instance.SetContextData(unsafe.Pointer(&id))
 }
 
-func (context *runtimeContext) SetInstanceContext(instCtx *wasmer.InstanceContext) {
+func (context *RuntimeContextMock) SetInstanceContext(instCtx *wasmer.InstanceContext) {
 	context.instanceContext = instCtx
 }
 
-func (context *runtimeContext) GetInstanceContext() *wasmer.InstanceContext {
+func (context *RuntimeContextMock) GetInstanceContext() *wasmer.InstanceContext {
 	return context.instanceContext
 }
 
-func (context *runtimeContext) GetInstanceExports() wasmer.ExportsMap {
+func (context *RuntimeContextMock) GetInstanceExports() wasmer.ExportsMap {
 	return context.instance.Exports
 }
 
-func (context *runtimeContext) CleanInstance() {
+func (context *RuntimeContextMock) CleanInstance() {
 	context.instance.Clean()
 	context.instance = nil
 }
 
-func (context *runtimeContext) GetFunctionToCall() (wasmer.ExportedFunctionCallback, error) {
+func (context *RuntimeContextMock) GetFunctionToCall() (wasmer.ExportedFunctionCallback, error) {
 	exports := context.instance.Exports
-	if function, ok := exports[context.callFunction]; ok {
-		return function, nil
+	function, ok := exports[context.callFunction]
+
+	if !ok {
+		function, ok = exports["main"]
 	}
 
-	if function, ok := exports["main"]; ok {
-		return function, nil
+	if !ok {
+		return nil, arwen.ErrFuncNotFound
 	}
 
-	return nil, arwen.ErrFuncNotFound
+	return function, nil
 }
 
-func (context *runtimeContext) GetInitFunction() wasmer.ExportedFunctionCallback {
+func (context *RuntimeContextMock) GetInitFunction() wasmer.ExportedFunctionCallback {
 	exports := context.instance.Exports
+	init, ok := exports[arwen.InitFunctionName]
 
-	if init, ok := exports[arwen.InitFunctionName]; ok {
-		return init
+	if !ok {
+		init, ok = exports[arwen.InitFunctionNameEth]
 	}
 
-	if init, ok := exports[arwen.InitFunctionNameEth]; ok {
-		return init
+	if !ok {
+		init = nil
 	}
 
-	return nil
+	return init
 }
 
-func (context *runtimeContext) MemLoad(offset int32, length int32) ([]byte, error) {
+func (context *RuntimeContextMock) MemLoad(offset int32, length int32) ([]byte, error) {
 	memory := context.instanceContext.Memory()
 	memoryView := memory.Data()
 	memoryLength := memory.Length()
@@ -254,7 +245,7 @@ func (context *runtimeContext) MemLoad(offset int32, length int32) ([]byte, erro
 	return result, nil
 }
 
-func (context *runtimeContext) MemStore(offset int32, data []byte) error {
+func (context *RuntimeContextMock) MemStore(offset int32, data []byte) error {
 	memory := context.instanceContext.Memory()
 	memoryView := memory.Data()
 	memoryLength := memory.Length()

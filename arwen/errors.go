@@ -14,8 +14,8 @@ var ErrNotEnoughGas = errors.New("not enough gas")
 
 var ErrUnhandledRuntimeBreakpoint = errors.New("unhandled runtime breakpoint")
 
-var StateStackUnderflow = errors.New("State stack underflow")
+var StateStackUnderflow = errors.New("state stack underflow")
 
-var InstanceStackUnderflow = errors.New("Instance stack underflow")
+var InstanceStackUnderflow = errors.New("instance stack underflow")
 
 var ErrFuncNotFound = errors.New("function not found")
