@@ -18,7 +18,10 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	var err error
 	defer func() {
 		if err != nil {
-			message := err.Error() + " - " + output.ReturnMessage()
+			message := output.ReturnMessage()
+			if err != arwen.ErrSignalError {
+				message = err.Error()
+			}
 			vmOutput = output.CreateVMOutputInCaseOfError(returnCode, message)
 		}
 	}()
@@ -77,7 +80,10 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	var err error
 	defer func() {
 		if err != nil {
-			message := err.Error() + " - " + output.ReturnMessage()
+			message := output.ReturnMessage()
+			if err != arwen.ErrSignalError {
+				message = err.Error()
+			}
 			vmOutput = output.CreateVMOutputInCaseOfError(returnCode, message)
 		}
 	}()
@@ -337,10 +343,10 @@ func (host *vmHost) callSCMethod() (wasmer.Value, vmcommon.ReturnCode, error) {
 	}
 
 	if err != nil {
-		return wasmer.Void(), vmcommon.ExecutionFailed, err
+		result = wasmer.Void()
 	}
 
-	return result, output.ReturnCode(), nil
+	return result, output.ReturnCode(), err
 }
 
 // The first four bytes is the method selector. The rest of the input data are method arguments in chunks of 32 bytes.
