@@ -9,7 +9,6 @@ func (host *vmHost) handleBreakpoint(
 	breakpointValue arwen.BreakpointValue,
 	result wasmer.Value,
 ) error {
-
 	if breakpointValue == arwen.BreakpointAsyncCall {
 		return host.handleAsyncCallBreakpoint(result)
 	}

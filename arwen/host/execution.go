@@ -114,11 +114,11 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 
 	result, returnCode, err := host.callSCMethod()
 
-	metering.UnlockGasIfAsyncStep()
-
 	if err != nil {
 		return vmOutput
 	}
+
+	metering.UnlockGasIfAsyncStep()
 
 	output.FinishValue(result)
 	vmOutput = output.GetVMOutput()

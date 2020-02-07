@@ -154,9 +154,6 @@ func (context *runtimeContext) FailExecution(err error) {
 }
 
 func (context *runtimeContext) SignalUserError(message string) {
-	// SignalUserError() remains in runtimeContext, and won't be moved into Output,
-	// because there will be extra handling added here later, which requires
-	// information from runtimeContext (e.g. runtime breakpoints)
 	context.host.Output().SetReturnCode(vmcommon.UserError)
 	context.host.Output().SetReturnMessage(message)
 	context.SetRuntimeBreakpointValue(arwen.BreakpointSignalError)
