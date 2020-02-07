@@ -49,7 +49,7 @@ func (runtime *runtimeContext) InitState() {
 	runtime.scAddress = make([]byte, 0)
 	runtime.callFunction = ""
 	runtime.readOnly = false
-	runtime.argParser, _ = vmcommon.NewAtArgumentParser()
+	runtime.argParser = vmcommon.NewAtArgumentParser()
 	runtime.asyncCallInfo = nil
 }
 
@@ -168,6 +168,18 @@ func (context *runtimeContext) SetRuntimeBreakpointValue(value arwen.BreakpointV
 
 func (context *runtimeContext) GetRuntimeBreakpointValue() arwen.BreakpointValue {
 	return arwen.BreakpointValue(context.instance.GetBreakpointValue())
+}
+
+func (context *runtimeContext) ElrondAPIErrorShouldFailExecution() bool {
+	return true
+}
+
+func (context *runtimeContext) BigIntAPIErrorShouldFailExecution() bool {
+	return true
+}
+
+func (context *runtimeContext) CryptoAPIErrorShouldFailExecution() bool {
+	return true
 }
 
 func (context *runtimeContext) GetPointsUsed() uint64 {

@@ -69,6 +69,7 @@ func (context *meteringContext) BoundGasLimit(value int64) uint64 {
 func (context *meteringContext) deductAndLockGasIfAsyncStep() error {
 	input := context.host.Runtime().GetVMInput()
 
+	context.gasLockedForAsyncStep = 0
 	if input.CallType == vmcommon.AsynchronousCall {
 		gasSchedule := context.GasSchedule().ElrondAPICost
 
@@ -80,8 +81,6 @@ func (context *meteringContext) deductAndLockGasIfAsyncStep() error {
 		input.GasProvided -= gasToConsume + gasToLock
 
 		context.gasLockedForAsyncStep = gasToLock
-	} else {
-		context.gasLockedForAsyncStep = 0
 	}
 
 	return nil
@@ -89,11 +88,9 @@ func (context *meteringContext) deductAndLockGasIfAsyncStep() error {
 
 // UnlockGasIfAsyncStep will restore the previously locked gas, if the execution is an asynchronous call
 func (context *meteringContext) UnlockGasIfAsyncStep() {
-	if context.gasLockedForAsyncStep != 0 {
-		input := context.host.Runtime().GetVMInput()
-		input.GasProvided += context.gasLockedForAsyncStep
-		context.gasLockedForAsyncStep = 0
-	}
+	input := context.host.Runtime().GetVMInput()
+	input.GasProvided += context.gasLockedForAsyncStep
+	context.gasLockedForAsyncStep = 0
 }
 
 func (context *meteringContext) BlockGasLimit() uint64 {
@@ -110,9 +107,7 @@ func (context *meteringContext) DeductInitialGasForExecution(contract []byte) er
 		return err
 	}
 
-	err = context.deductAndLockGasIfAsyncStep()
-
-	return err
+	return context.deductAndLockGasIfAsyncStep()
 }
 
 func (context *meteringContext) DeductInitialGasForDirectDeployment(input *vmcommon.ContractCreateInput) error {

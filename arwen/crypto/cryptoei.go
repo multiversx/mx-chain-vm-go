@@ -37,7 +37,7 @@ func sha256(context unsafe.Pointer, dataOffset int32, length int32, resultOffset
 	crypto := arwen.GetCryptoContext(context)
 
 	data, err := runtime.MemLoad(dataOffset, length)
-	if arwen.WithFault(err, context) {
+	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -47,7 +47,7 @@ func sha256(context unsafe.Pointer, dataOffset int32, length int32, resultOffset
 	}
 
 	err = runtime.MemStore(resultOffset, result)
-	if arwen.WithFault(err, context) {
+	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -64,7 +64,7 @@ func keccak256(context unsafe.Pointer, dataOffset int32, length int32, resultOff
 	crypto := arwen.GetCryptoContext(context)
 
 	data, err := runtime.MemLoad(dataOffset, length)
-	if arwen.WithFault(err, context) {
+	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -74,7 +74,7 @@ func keccak256(context unsafe.Pointer, dataOffset int32, length int32, resultOff
 	}
 
 	err = runtime.MemStore(resultOffset, result)
-	if arwen.WithFault(err, context) {
+	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
 

@@ -100,6 +100,9 @@ type RuntimeContext interface {
 	MemLoad(offset int32, length int32) ([]byte, error)
 	CleanInstance()
 	SetInstanceContextId(id int)
+	ElrondAPIErrorShouldFailExecution() bool
+	CryptoAPIErrorShouldFailExecution() bool
+	BigIntAPIErrorShouldFailExecution() bool
 }
 
 type BigIntContext interface {
@@ -111,7 +114,6 @@ type BigIntContext interface {
 	GetThree(id1, id2, id3 int32) (*big.Int, *big.Int, *big.Int)
 }
 
-// TODO find a better name
 type OutputContext interface {
 	StateStack
 

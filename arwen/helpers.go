@@ -63,13 +63,15 @@ func InverseBytes(data []byte) []byte {
 	return invBytes
 }
 
-func WithFault(err error, context unsafe.Pointer) bool {
+func WithFault(err error, context unsafe.Pointer, failExecution bool) bool {
 	if err != nil {
 		runtime := GetRuntimeContext(context)
 		metering := GetMeteringContext(context)
 
 		metering.UseGas(metering.GasLeft())
-		runtime.FailExecution(err)
+		if failExecution {
+			runtime.FailExecution(err)
+		}
 
 		return true
 	}
