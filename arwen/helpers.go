@@ -37,11 +37,7 @@ func GuardedGetBytesSlice(data []byte, offset int32, length int32) ([]byte, erro
 	isRequestedEndTooLarge := requestedEnd > dataLength
 	isLengthNegative := length < 0
 
-	if isOffsetTooSmall || isOffsetTooLarge {
-		return nil, fmt.Errorf("GuardedGetBytesSlice: bad bounds")
-	}
-
-	if isRequestedEndTooLarge {
+	if isOffsetTooSmall || isOffsetTooLarge || isRequestedEndTooLarge {
 		return nil, fmt.Errorf("GuardedGetBytesSlice: bad bounds")
 	}
 
