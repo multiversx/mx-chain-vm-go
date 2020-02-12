@@ -233,13 +233,13 @@ func ethgetAddress(context unsafe.Pointer, resultOffset int32) {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
+	gasToUse := metering.GasSchedule().EthAPICost.GetAddress
+	metering.UseGas(gasToUse)
+
 	err := runtime.MemStore(resultOffset, runtime.GetSCAddress())
 	if arwen.WithFault(err, context, false) {
 		return
 	}
-
-	gasToUse := metering.GasSchedule().EthAPICost.GetAddress
-	metering.UseGas(gasToUse)
 }
 
 //export ethgetExternalBalance
@@ -247,6 +247,9 @@ func ethgetExternalBalance(context unsafe.Pointer, addressOffset int32, resultOf
 	runtime := arwen.GetRuntimeContext(context)
 	blockchain := arwen.GetBlockchainContext(context)
 	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().EthAPICost.GetExternalBalance
+	metering.UseGas(gasToUse)
 
 	address, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
 	if arwen.WithFault(err, context, false) {
@@ -259,9 +262,6 @@ func ethgetExternalBalance(context unsafe.Pointer, addressOffset int32, resultOf
 	if arwen.WithFault(err, context, false) {
 		return
 	}
-
-	gasToUse := metering.GasSchedule().EthAPICost.GetExternalBalance
-	metering.UseGas(gasToUse)
 }
 
 //export ethgetBlockHash
@@ -270,14 +270,14 @@ func ethgetBlockHash(context unsafe.Pointer, number int64, resultOffset int32) i
 	blockchain := arwen.GetBlockchainContext(context)
 	metering := arwen.GetMeteringContext(context)
 
+	gasToUse := metering.GasSchedule().EthAPICost.GetBlockHash
+	metering.UseGas(gasToUse)
+
 	hash := blockchain.BlockHash(number)
 	err := runtime.MemStore(resultOffset, hash)
 	if arwen.WithFault(err, context, false) {
 		return 0
 	}
-
-	gasToUse := metering.GasSchedule().EthAPICost.GetBlockHash
-	metering.UseGas(gasToUse)
 
 	if len(hash) == 0 {
 		return 0
@@ -292,6 +292,10 @@ func ethcallDataCopy(context unsafe.Pointer, resultOffset int32, dataOffset int3
 	runtime := host.Runtime()
 	metering := host.Metering()
 
+	gasToUse := metering.GasSchedule().EthAPICost.CallDataCopy
+	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(length)
+	metering.UseGas(gasToUse)
+
 	callData := host.EthereumCallData()
 	callDataSlice, err := arwen.GuardedGetBytesSlice(callData, dataOffset, length)
 	if arwen.WithFault(err, context, false) {
@@ -302,10 +306,6 @@ func ethcallDataCopy(context unsafe.Pointer, resultOffset int32, dataOffset int3
 	if arwen.WithFault(err, context, false) {
 		return
 	}
-
-	gasToUse := metering.GasSchedule().EthAPICost.CallDataCopy
-	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(length)
-	metering.UseGas(gasToUse)
 }
 
 //export ethgetCallDataSize
@@ -326,6 +326,9 @@ func ethstorageStore(context unsafe.Pointer, pathOffset int32, valueOffset int32
 	metering := arwen.GetMeteringContext(context)
 	storage := arwen.GetStorageContext(context)
 
+	gasToUse := metering.GasSchedule().EthAPICost.StorageStore
+	metering.UseGas(gasToUse)
+
 	key, err := runtime.MemLoad(pathOffset, arwen.HashLen)
 	if arwen.WithFault(err, context, false) {
 		return
@@ -337,9 +340,6 @@ func ethstorageStore(context unsafe.Pointer, pathOffset int32, valueOffset int32
 	}
 
 	_ = storage.SetStorage(runtime.GetSCAddress(), key, data)
-
-	gasToUse := metering.GasSchedule().EthAPICost.StorageStore
-	metering.UseGas(gasToUse)
 }
 
 //export ethstorageLoad
@@ -348,12 +348,17 @@ func ethstorageLoad(context unsafe.Pointer, pathOffset int32, resultOffset int32
 	metering := arwen.GetMeteringContext(context)
 	storage := arwen.GetStorageContext(context)
 
+	gasToUse := metering.GasSchedule().EthAPICost.StorageLoad
+	metering.UseGas(gasToUse)
+
 	key, err := runtime.MemLoad(pathOffset, arwen.HashLen)
 	if arwen.WithFault(err, context, false) {
 		return
 	}
 
 	data := storage.GetStorage(runtime.GetSCAddress(), key)
+	dataGasToUse := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(data))
+	metering.UseGas(dataGasToUse)
 
 	currInput := make([]byte, arwen.HashLen)
 	copy(currInput[arwen.HashLen-len(data):], data)
@@ -362,10 +367,6 @@ func ethstorageLoad(context unsafe.Pointer, pathOffset int32, resultOffset int32
 	if arwen.WithFault(err, context, false) {
 		return
 	}
-
-	gasToUse := metering.GasSchedule().EthAPICost.StorageLoad
-	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(data))
-	metering.UseGas(gasToUse)
 }
 
 //export ethgetCaller
@@ -373,20 +374,23 @@ func ethgetCaller(context unsafe.Pointer, resultOffset int32) {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
+	gasToUse := metering.GasSchedule().EthAPICost.GetCaller
+	metering.UseGas(gasToUse)
+
 	caller := convertToEthAddress(runtime.GetVMInput().CallerAddr)
 	err := runtime.MemStore(resultOffset, caller)
 	if arwen.WithFault(err, context, false) {
 		return
 	}
-
-	gasToUse := metering.GasSchedule().EthAPICost.GetCaller
-	metering.UseGas(gasToUse)
 }
 
 //export ethgetCallValue
 func ethgetCallValue(context unsafe.Pointer, resultOffset int32) {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().EthAPICost.GetCallValue
+	metering.UseGas(gasToUse)
 
 	value := convertToEthU128(runtime.GetVMInput().CallValue.Bytes())
 
@@ -400,9 +404,6 @@ func ethgetCallValue(context unsafe.Pointer, resultOffset int32) {
 	if arwen.WithFault(err, context, false) {
 		return
 	}
-
-	gasToUse := metering.GasSchedule().EthAPICost.GetCallValue
-	metering.UseGas(gasToUse)
 }
 
 //export ethcodeCopy
@@ -410,6 +411,10 @@ func ethcodeCopy(context unsafe.Pointer, resultOffset int32, codeOffset int32, l
 	runtime := arwen.GetRuntimeContext(context)
 	blockchain := arwen.GetBlockchainContext(context)
 	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().EthAPICost.CodeCopy
+	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(length)
+	metering.UseGas(gasToUse)
 
 	scAddress := runtime.GetSCAddress()
 	code, err := blockchain.GetCode(scAddress)
@@ -426,10 +431,6 @@ func ethcodeCopy(context unsafe.Pointer, resultOffset int32, codeOffset int32, l
 	if arwen.WithFault(err, context, false) {
 		return
 	}
-
-	gasToUse := metering.GasSchedule().EthAPICost.CodeCopy
-	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(length)
-	metering.UseGas(gasToUse)
 }
 
 //export ethgetCodeSize
@@ -455,6 +456,10 @@ func ethexternalCodeCopy(context unsafe.Pointer, addressOffset int32, resultOffs
 	blockchain := arwen.GetBlockchainContext(context)
 	metering := arwen.GetMeteringContext(context)
 
+	gasToUse := metering.GasSchedule().EthAPICost.ExternalCodeCopy
+	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(length)
+	metering.UseGas(gasToUse)
+
 	dest, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
 	if arwen.WithFault(err, context, false) {
 		return
@@ -474,10 +479,6 @@ func ethexternalCodeCopy(context unsafe.Pointer, addressOffset int32, resultOffs
 	if arwen.WithFault(err, context, false) {
 		return
 	}
-
-	gasToUse := metering.GasSchedule().EthAPICost.ExternalCodeCopy
-	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(length)
-	metering.UseGas(gasToUse)
 }
 
 //export ethgetExternalCodeSize
@@ -486,13 +487,13 @@ func ethgetExternalCodeSize(context unsafe.Pointer, addressOffset int32) int32 {
 	blockchain := arwen.GetBlockchainContext(context)
 	metering := arwen.GetMeteringContext(context)
 
+	gasToUse := metering.GasSchedule().EthAPICost.GetExternalCodeSize
+	metering.UseGas(gasToUse)
+
 	dest, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
 	if arwen.WithFault(err, context, false) {
 		return 0
 	}
-
-	gasToUse := metering.GasSchedule().EthAPICost.GetExternalCodeSize
-	metering.UseGas(gasToUse)
 
 	codeSize, err := blockchain.GetCodeSize(dest)
 	if arwen.WithFault(err, context, false) {
@@ -527,6 +528,9 @@ func ethgetTxGasPrice(context unsafe.Pointer, valueOffset int32) {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
+	gasToUse := metering.GasSchedule().EthAPICost.GetTxGasPrice
+	metering.UseGas(gasToUse)
+
 	gasPrice := runtime.GetVMInput().GasPrice
 	gasBigInt := big.NewInt(0).SetUint64(gasPrice)
 
@@ -537,9 +541,6 @@ func ethgetTxGasPrice(context unsafe.Pointer, valueOffset int32) {
 	if arwen.WithFault(err, context, false) {
 		return
 	}
-
-	gasToUse := metering.GasSchedule().EthAPICost.GetTxGasPrice
-	metering.UseGas(gasToUse)
 }
 
 //export ethlogTopics
@@ -547,6 +548,10 @@ func ethlogTopics(context unsafe.Pointer, dataOffset int32, length int32, number
 	runtime := arwen.GetRuntimeContext(context)
 	output := arwen.GetOutputContext(context)
 	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().EthAPICost.Log
+	gasToUse += metering.GasSchedule().BaseOperationCost.PersistPerByte * (4*arwen.HashLen + uint64(length))
+	metering.UseGas(gasToUse)
 
 	data, err := runtime.MemLoad(dataOffset, length)
 	if arwen.WithFault(err, context, false) {
@@ -572,10 +577,6 @@ func ethlogTopics(context unsafe.Pointer, dataOffset int32, length int32, number
 	}
 
 	output.WriteLog(runtime.GetSCAddress(), topicsData, data)
-
-	gasToUse := metering.GasSchedule().EthAPICost.Log
-	gasToUse += metering.GasSchedule().BaseOperationCost.PersistPerByte * (4*arwen.HashLen + uint64(length))
-	metering.UseGas(gasToUse)
 }
 
 //export ethgetTxOrigin
@@ -583,14 +584,14 @@ func ethgetTxOrigin(context unsafe.Pointer, resultOffset int32) {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
+	gasToUse := metering.GasSchedule().EthAPICost.GetTxOrigin
+	metering.UseGas(gasToUse)
+
 	caller := convertToEthAddress(runtime.GetVMInput().CallerAddr)
 	err := runtime.MemStore(resultOffset, caller)
 	if arwen.WithFault(err, context, false) {
 		return
 	}
-
-	gasToUse := metering.GasSchedule().EthAPICost.GetTxOrigin
-	metering.UseGas(gasToUse)
 }
 
 //export ethfinish
@@ -599,6 +600,10 @@ func ethfinish(context unsafe.Pointer, resultOffset int32, length int32) {
 	output := arwen.GetOutputContext(context)
 	metering := arwen.GetMeteringContext(context)
 
+	gasToUse := metering.GasSchedule().EthAPICost.Finish
+	gasToUse += metering.GasSchedule().BaseOperationCost.PersistPerByte * uint64(length)
+	metering.UseGas(gasToUse)
+
 	data, err := runtime.MemLoad(resultOffset, length)
 	if arwen.WithFault(err, context, false) {
 		return
@@ -606,10 +611,6 @@ func ethfinish(context unsafe.Pointer, resultOffset int32, length int32) {
 
 	output.ClearReturnData()
 	output.Finish(data)
-
-	gasToUse := metering.GasSchedule().EthAPICost.Finish
-	gasToUse += metering.GasSchedule().BaseOperationCost.PersistPerByte * uint64(length)
-	metering.UseGas(gasToUse)
 }
 
 //export ethrevert
@@ -618,6 +619,10 @@ func ethrevert(context unsafe.Pointer, dataOffset int32, length int32) {
 	output := arwen.GetOutputContext(context)
 	metering := arwen.GetMeteringContext(context)
 
+	gasToUse := metering.GasSchedule().EthAPICost.Revert
+	gasToUse += metering.GasSchedule().BaseOperationCost.PersistPerByte * uint64(length)
+	metering.UseGas(gasToUse)
+
 	data, err := runtime.MemLoad(dataOffset, length)
 	if arwen.WithFault(err, context, false) {
 		return
@@ -625,10 +630,6 @@ func ethrevert(context unsafe.Pointer, dataOffset int32, length int32) {
 
 	output.ClearReturnData()
 	output.Finish(data)
-
-	gasToUse := metering.GasSchedule().EthAPICost.Revert
-	gasToUse += metering.GasSchedule().BaseOperationCost.PersistPerByte * uint64(length)
-	metering.UseGas(gasToUse)
 
 	runtime.SignalUserError("revert")
 }
@@ -639,6 +640,9 @@ func ethselfDestruct(context unsafe.Pointer, addressOffset int32) {
 	output := arwen.GetOutputContext(context)
 	metering := arwen.GetMeteringContext(context)
 
+	gasToUse := metering.GasSchedule().EthAPICost.SelfDestruct
+	metering.UseGas(gasToUse)
+
 	address, err := runtime.MemLoad(addressOffset, arwen.HashLen)
 	if arwen.WithFault(err, context, false) {
 		return
@@ -646,9 +650,6 @@ func ethselfDestruct(context unsafe.Pointer, addressOffset int32) {
 
 	caller := runtime.GetVMInput().CallerAddr
 	output.SelfDestruct(address, caller)
-
-	gasToUse := metering.GasSchedule().EthAPICost.SelfDestruct
-	metering.UseGas(gasToUse)
 }
 
 //export ethgetBlockNumber
@@ -753,6 +754,17 @@ func ethcall(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueO
 	output := host.Output()
 	metering := host.Metering()
 
+	gasToUse := metering.GasSchedule().EthAPICost.Call
+	metering.UseGas(gasToUse)
+
+	data, err := runtime.MemLoad(dataOffset, dataLength)
+	if arwen.WithFault(err, context, false) {
+		return 1
+	}
+
+	dataGasToUse := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(data))
+	metering.UseGas(dataGasToUse)
+
 	send := runtime.GetSCAddress()
 	dest, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
 	if arwen.WithFault(err, context, false) {
@@ -763,15 +775,6 @@ func ethcall(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueO
 	if arwen.WithFault(err, context, false) {
 		return 1
 	}
-
-	data, err := runtime.MemLoad(dataOffset, dataLength)
-	if arwen.WithFault(err, context, false) {
-		return 1
-	}
-
-	gasToUse := metering.GasSchedule().EthAPICost.Call
-	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(data))
-	metering.UseGas(gasToUse)
 
 	invBytes := arwen.InverseBytes(value)
 	bigIntVal := big.NewInt(0).SetBytes(invBytes)
@@ -804,6 +807,17 @@ func ethcallCode(context unsafe.Pointer, gasLimit int64, addressOffset int32, va
 	output := host.Output()
 	metering := host.Metering()
 
+	gasToUse := metering.GasSchedule().EthAPICost.CallCode
+	metering.UseGas(gasToUse)
+
+	data, err := runtime.MemLoad(dataOffset, dataLength)
+	if arwen.WithFault(err, context, false) {
+		return 1
+	}
+
+	dataGasToUse := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(data))
+	metering.UseGas(dataGasToUse)
+
 	send := runtime.GetSCAddress()
 	dest, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
 	if arwen.WithFault(err, context, false) {
@@ -814,15 +828,6 @@ func ethcallCode(context unsafe.Pointer, gasLimit int64, addressOffset int32, va
 	if arwen.WithFault(err, context, false) {
 		return 1
 	}
-
-	data, err := runtime.MemLoad(dataOffset, dataLength)
-	if arwen.WithFault(err, context, false) {
-		return 1
-	}
-
-	gasToUse := metering.GasSchedule().EthAPICost.CallCode
-	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(data))
-	metering.UseGas(gasToUse)
 
 	invBytes := arwen.InverseBytes(value)
 	output.Transfer(dest, send, 0, big.NewInt(0).SetBytes(invBytes), nil)
@@ -854,6 +859,17 @@ func ethcallDelegate(context unsafe.Pointer, gasLimit int64, addressOffset int32
 	output := host.Output()
 	metering := host.Metering()
 
+	gasToUse := metering.GasSchedule().EthAPICost.CallDelegate
+	metering.UseGas(gasToUse)
+
+	data, err := runtime.MemLoad(dataOffset, dataLength)
+	if arwen.WithFault(err, context, false) {
+		return 1
+	}
+
+	dataGasToUse := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(data))
+	metering.UseGas(dataGasToUse)
+
 	value := runtime.GetVMInput().CallValue
 	sender := runtime.GetVMInput().CallerAddr
 
@@ -861,15 +877,6 @@ func ethcallDelegate(context unsafe.Pointer, gasLimit int64, addressOffset int32
 	if arwen.WithFault(err, context, false) {
 		return 1
 	}
-
-	data, err := runtime.MemLoad(dataOffset, dataLength)
-	if arwen.WithFault(err, context, false) {
-		return 1
-	}
-
-	gasToUse := metering.GasSchedule().EthAPICost.CallDelegate
-	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(data))
-	metering.UseGas(gasToUse)
 
 	output.Transfer(address, sender, 0, value, nil)
 
@@ -900,22 +907,24 @@ func ethcallStatic(context unsafe.Pointer, gasLimit int64, addressOffset int32, 
 	output := host.Output()
 	metering := host.Metering()
 
-	address, err := runtime.MemLoad(addressOffset, arwen.AddressLenEth)
-	if arwen.WithFault(err, context, false) {
-		return 1
-	}
+	gasToUse := metering.GasSchedule().EthAPICost.CallStatic
+	metering.UseGas(gasToUse)
 
 	data, err := runtime.MemLoad(dataOffset, dataLength)
 	if arwen.WithFault(err, context, false) {
 		return 1
 	}
 
+	dataGasToUse := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(data))
+	metering.UseGas(dataGasToUse)
+
+	address, err := runtime.MemLoad(addressOffset, arwen.AddressLenEth)
+	if arwen.WithFault(err, context, false) {
+		return 1
+	}
+
 	value := runtime.GetVMInput().CallValue
 	sender := runtime.GetVMInput().CallerAddr
-
-	gasToUse := metering.GasSchedule().EthAPICost.CallStatic
-	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(data))
-	metering.UseGas(gasToUse)
 
 	if IsAddressForPredefinedContract(address) {
 		err := CallPredefinedContract(context, address, data)
@@ -958,6 +967,9 @@ func ethcreate(context unsafe.Pointer, valueOffset int32, dataOffset int32, leng
 	runtime := host.Runtime()
 	metering := host.Metering()
 
+	gasToUse := metering.GasSchedule().EthAPICost.Create
+	metering.UseGas(gasToUse)
+
 	sender := runtime.GetSCAddress()
 	value, err := runtime.MemLoad(valueOffset, arwen.BalanceLen)
 	if arwen.WithFault(err, context, false) {
@@ -969,17 +981,13 @@ func ethcreate(context unsafe.Pointer, valueOffset int32, dataOffset int32, leng
 		return 1
 	}
 
-	gasToUse := metering.GasSchedule().EthAPICost.Create
-	metering.UseGas(gasToUse)
-	gasLimit := metering.GasLeft()
-
 	contractCreate := &vmcommon.ContractCreateInput{
 		VMInput: vmcommon.VMInput{
 			CallerAddr:  sender,
 			Arguments:   nil,
 			CallValue:   big.NewInt(0).SetBytes(value),
 			GasPrice:    0,
-			GasProvided: gasLimit,
+			GasProvided: metering.GasLeft(),
 		},
 		ContractCode: data,
 	}
