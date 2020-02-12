@@ -237,7 +237,7 @@ func ethgetAddress(context unsafe.Pointer, resultOffset int32) {
 	metering.UseGas(gasToUse)
 
 	err := runtime.MemStore(resultOffset, runtime.GetSCAddress())
-	if arwen.WithFault(err, context, false) {
+	if arwen.WithFault(err, context, true) {
 		return
 	}
 }
@@ -252,14 +252,14 @@ func ethgetExternalBalance(context unsafe.Pointer, addressOffset int32, resultOf
 	metering.UseGas(gasToUse)
 
 	address, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
-	if arwen.WithFault(err, context, false) {
+	if arwen.WithFault(err, context, true) {
 		return
 	}
 
 	balance := blockchain.GetBalance(address)
 
 	err = runtime.MemStore(resultOffset, balance)
-	if arwen.WithFault(err, context, false) {
+	if arwen.WithFault(err, context, true) {
 		return
 	}
 }
@@ -298,12 +298,12 @@ func ethcallDataCopy(context unsafe.Pointer, resultOffset int32, dataOffset int3
 
 	callData := host.EthereumCallData()
 	callDataSlice, err := arwen.GuardedGetBytesSlice(callData, dataOffset, length)
-	if arwen.WithFault(err, context, false) {
+	if arwen.WithFault(err, context, true) {
 		return
 	}
 
 	err = runtime.MemStore(resultOffset, callDataSlice)
-	if arwen.WithFault(err, context, false) {
+	if arwen.WithFault(err, context, true) {
 		return
 	}
 }
@@ -330,12 +330,12 @@ func ethstorageStore(context unsafe.Pointer, pathOffset int32, valueOffset int32
 	metering.UseGas(gasToUse)
 
 	key, err := runtime.MemLoad(pathOffset, arwen.HashLen)
-	if arwen.WithFault(err, context, false) {
+	if arwen.WithFault(err, context, true) {
 		return
 	}
 
 	data, err := runtime.MemLoad(valueOffset, arwen.HashLen)
-	if arwen.WithFault(err, context, false) {
+	if arwen.WithFault(err, context, true) {
 		return
 	}
 
@@ -352,7 +352,7 @@ func ethstorageLoad(context unsafe.Pointer, pathOffset int32, resultOffset int32
 	metering.UseGas(gasToUse)
 
 	key, err := runtime.MemLoad(pathOffset, arwen.HashLen)
-	if arwen.WithFault(err, context, false) {
+	if arwen.WithFault(err, context, true) {
 		return
 	}
 
@@ -364,7 +364,7 @@ func ethstorageLoad(context unsafe.Pointer, pathOffset int32, resultOffset int32
 	copy(currInput[arwen.HashLen-len(data):], data)
 
 	err = runtime.MemStore(resultOffset, currInput)
-	if arwen.WithFault(err, context, false) {
+	if arwen.WithFault(err, context, true) {
 		return
 	}
 }
@@ -379,7 +379,7 @@ func ethgetCaller(context unsafe.Pointer, resultOffset int32) {
 
 	caller := convertToEthAddress(runtime.GetVMInput().CallerAddr)
 	err := runtime.MemStore(resultOffset, caller)
-	if arwen.WithFault(err, context, false) {
+	if arwen.WithFault(err, context, true) {
 		return
 	}
 }
@@ -401,7 +401,7 @@ func ethgetCallValue(context unsafe.Pointer, resultOffset int32) {
 	}
 
 	err := runtime.MemStore(resultOffset, invBytes)
-	if arwen.WithFault(err, context, false) {
+	if arwen.WithFault(err, context, true) {
 		return
 	}
 }
@@ -418,17 +418,17 @@ func ethcodeCopy(context unsafe.Pointer, resultOffset int32, codeOffset int32, l
 
 	scAddress := runtime.GetSCAddress()
 	code, err := blockchain.GetCode(scAddress)
-	if arwen.WithFault(err, context, false) {
+	if arwen.WithFault(err, context, true) {
 		return
 	}
 
 	codeSlice, err := arwen.GuardedGetBytesSlice(code, codeOffset, length)
-	if arwen.WithFault(err, context, false) {
+	if arwen.WithFault(err, context, true) {
 		return
 	}
 
 	err = runtime.MemStore(resultOffset, codeSlice)
-	if arwen.WithFault(err, context, false) {
+	if arwen.WithFault(err, context, true) {
 		return
 	}
 }
@@ -461,22 +461,22 @@ func ethexternalCodeCopy(context unsafe.Pointer, addressOffset int32, resultOffs
 	metering.UseGas(gasToUse)
 
 	dest, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
-	if arwen.WithFault(err, context, false) {
+	if arwen.WithFault(err, context, true) {
 		return
 	}
 
 	code, err := blockchain.GetCode(dest)
-	if arwen.WithFault(err, context, false) {
+	if arwen.WithFault(err, context, true) {
 		return
 	}
 
 	codeSlice, err := arwen.GuardedGetBytesSlice(code, codeOffset, length)
-	if arwen.WithFault(err, context, false) {
+	if arwen.WithFault(err, context, true) {
 		return
 	}
 
 	err = runtime.MemStore(resultOffset, codeSlice)
-	if arwen.WithFault(err, context, false) {
+	if arwen.WithFault(err, context, true) {
 		return
 	}
 }
@@ -538,7 +538,7 @@ func ethgetTxGasPrice(context unsafe.Pointer, valueOffset int32) {
 	copy(gasU128[16-len(gasBigInt.Bytes()):], gasBigInt.Bytes())
 
 	err := runtime.MemStore(valueOffset, gasU128)
-	if arwen.WithFault(err, context, false) {
+	if arwen.WithFault(err, context, true) {
 		return
 	}
 }
@@ -554,7 +554,7 @@ func ethlogTopics(context unsafe.Pointer, dataOffset int32, length int32, number
 	metering.UseGas(gasToUse)
 
 	data, err := runtime.MemLoad(dataOffset, length)
-	if arwen.WithFault(err, context, false) {
+	if arwen.WithFault(err, context, true) {
 		return
 	}
 
@@ -565,13 +565,13 @@ func ethlogTopics(context unsafe.Pointer, dataOffset int32, length int32, number
 	topics = append(topics, topic4)
 
 	topicsData, err := arwen.GuardedMakeByteSlice2D(numberOfTopics)
-	if arwen.WithFault(err, context, false) {
+	if arwen.WithFault(err, context, true) {
 		return
 	}
 
 	for i := int32(0); i < numberOfTopics; i++ {
 		topicsData[i], err = runtime.MemLoad(topics[i], arwen.HashLen)
-		if arwen.WithFault(err, context, false) {
+		if arwen.WithFault(err, context, true) {
 			return
 		}
 	}
@@ -589,7 +589,7 @@ func ethgetTxOrigin(context unsafe.Pointer, resultOffset int32) {
 
 	caller := convertToEthAddress(runtime.GetVMInput().CallerAddr)
 	err := runtime.MemStore(resultOffset, caller)
-	if arwen.WithFault(err, context, false) {
+	if arwen.WithFault(err, context, true) {
 		return
 	}
 }
@@ -605,7 +605,7 @@ func ethfinish(context unsafe.Pointer, resultOffset int32, length int32) {
 	metering.UseGas(gasToUse)
 
 	data, err := runtime.MemLoad(resultOffset, length)
-	if arwen.WithFault(err, context, false) {
+	if arwen.WithFault(err, context, true) {
 		return
 	}
 
@@ -624,7 +624,7 @@ func ethrevert(context unsafe.Pointer, dataOffset int32, length int32) {
 	metering.UseGas(gasToUse)
 
 	data, err := runtime.MemLoad(dataOffset, length)
-	if arwen.WithFault(err, context, false) {
+	if arwen.WithFault(err, context, true) {
 		return
 	}
 
@@ -644,7 +644,7 @@ func ethselfDestruct(context unsafe.Pointer, addressOffset int32) {
 	metering.UseGas(gasToUse)
 
 	address, err := runtime.MemLoad(addressOffset, arwen.HashLen)
-	if arwen.WithFault(err, context, false) {
+	if arwen.WithFault(err, context, true) {
 		return
 	}
 
@@ -711,12 +711,12 @@ func ethreturnDataCopy(context unsafe.Pointer, resultOffset int32, dataOffset in
 	}
 
 	returnDataSlice, err := arwen.GuardedGetBytesSlice(ethReturnData, dataOffset, length)
-	if arwen.WithFault(err, context, false) {
+	if arwen.WithFault(err, context, true) {
 		return
 	}
 
 	err = runtime.MemStore(resultOffset, returnDataSlice)
-	arwen.WithFault(err, context, false)
+	arwen.WithFault(err, context, true)
 }
 
 //export ethgetBlockCoinbase
@@ -730,7 +730,7 @@ func ethgetBlockCoinbase(context unsafe.Pointer, resultOffset int32) {
 
 	randomSeed := blockchain.CurrentRandomSeed()
 	err := runtime.MemStore(resultOffset, randomSeed)
-	arwen.WithFault(err, context, false)
+	arwen.WithFault(err, context, true)
 }
 
 //export ethgetBlockDifficulty
@@ -744,7 +744,7 @@ func ethgetBlockDifficulty(context unsafe.Pointer, resultOffset int32) {
 
 	randomSeed := blockchain.CurrentRandomSeed()
 	err := runtime.MemStore(resultOffset, randomSeed)
-	arwen.WithFault(err, context, false)
+	arwen.WithFault(err, context, true)
 }
 
 //export ethcall

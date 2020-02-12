@@ -68,11 +68,11 @@ func WithFault(err error, context unsafe.Pointer, failExecution bool) bool {
 		return false
 	}
 
-	runtime := GetRuntimeContext(context)
-	metering := GetMeteringContext(context)
-
-	metering.UseGas(metering.GasLeft())
 	if failExecution {
+		runtime := GetRuntimeContext(context)
+		metering := GetMeteringContext(context)
+
+		metering.UseGas(metering.GasLeft())
 		runtime.FailExecution(err)
 	}
 
