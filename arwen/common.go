@@ -4,20 +4,20 @@ type StorageStatus int
 
 const (
 	StorageUnchanged StorageStatus = iota
-	StorageModified  StorageStatus = iota
-	StorageAdded     StorageStatus = iota
-	StorageDeleted   StorageStatus = iota
+	StorageModified
+	StorageAdded
+	StorageDeleted
 )
 
 type BreakpointValue uint64
 
 const (
-	BreakpointNone            BreakpointValue = iota
-	BreakpointExecutionFailed BreakpointValue = iota
-	BreakpointAsyncCall       BreakpointValue = iota
-	BreakpointSignalError     BreakpointValue = iota
-	BreakpointSignalExit      BreakpointValue = iota
-	BreakpointOutOfGas        BreakpointValue = iota
+	BreakpointNone BreakpointValue = iota
+	BreakpointExecutionFailed
+	BreakpointAsyncCall
+	BreakpointSignalError
+	BreakpointSignalExit
+	BreakpointOutOfGas
 )
 
 // AsyncCallInfo contains the information required to handle the asynchronous call of another SmartContract

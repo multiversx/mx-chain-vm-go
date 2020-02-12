@@ -18,8 +18,10 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	var err error
 	defer func() {
 		if err != nil {
-			message := output.ReturnMessage()
-			if err != arwen.ErrSignalError {
+			var message string
+			if err == arwen.ErrSignalError {
+				message = output.ReturnMessage()
+			} else {
 				message = err.Error()
 			}
 			vmOutput = output.CreateVMOutputInCaseOfError(returnCode, message)
@@ -80,8 +82,10 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	var err error
 	defer func() {
 		if err != nil {
-			message := output.ReturnMessage()
-			if err != arwen.ErrSignalError {
+			var message string
+			if err == arwen.ErrSignalError {
+				message = output.ReturnMessage()
+			} else {
 				message = err.Error()
 			}
 			vmOutput = output.CreateVMOutputInCaseOfError(returnCode, message)
