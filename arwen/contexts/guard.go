@@ -5,14 +5,33 @@ import (
 	"unicode"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 )
 
 func (context *runtimeContext) VerifyContractCode() error {
-	if !context.instance.HasMemory() {
+	err := verifyMemoryDeclaration(context.instance)
+	if err != nil {
+		return err
+	}
+
+	err = verifyFunctionsNames(context.instance)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func verifyMemoryDeclaration(instance *wasmer.Instance) error {
+	if !instance.HasMemory() {
 		return arwen.ErrMemoryDeclarationMissing
 	}
 
-	for functionName := range context.instance.Exports {
+	return nil
+}
+
+func verifyFunctionsNames(instance *wasmer.Instance) error {
+	for functionName := range instance.Exports {
 		if !isValidFunctionName(functionName) {
 			return fmt.Errorf("%v: %s", arwen.ErrInvalidFunctionName, functionName)
 		}
