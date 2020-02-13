@@ -74,6 +74,7 @@ type RuntimeContext interface {
 	ReadOnly() bool
 	SetReadOnly(readOnly bool)
 	CreateWasmerInstance(contract []byte, gasLimit uint64) error
+	VerifyContractCode() error
 	SetInstanceContext(instCtx *wasmer.InstanceContext)
 	GetInstanceContext() *wasmer.InstanceContext
 	GetInstanceExports() wasmer.ExportsMap
