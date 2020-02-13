@@ -54,6 +54,10 @@ func (context *runtimeContext) CreateWasmerInstance(contract []byte, gasLimit ui
 	if err != nil {
 		return err
 	}
+	if !context.instance.HasMemory() {
+		return arwen.ErrMemoryDeclarationMissing
+	}
+
 	context.SetRuntimeBreakpointValue(arwen.BreakpointNone)
 	return nil
 }

@@ -19,3 +19,5 @@ var StateStackUnderflow = errors.New("State stack underflow")
 var InstanceStackUnderflow = errors.New("Instance stack underflow")
 
 var ErrFuncNotFound = errors.New("function not found")
+
+var ErrMemoryDeclarationMissing = errors.New("wasm memory declaration missing")
