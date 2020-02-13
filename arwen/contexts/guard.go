@@ -1,8 +1,10 @@
 package contexts
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"fmt"
 	"unicode"
+
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 )
 
 func (context *runtimeContext) VerifyContractCode() error {
@@ -12,7 +14,7 @@ func (context *runtimeContext) VerifyContractCode() error {
 
 	for functionName := range context.instance.Exports {
 		if !isValidFunctionName(functionName) {
-			return arwen.ErrInvalidFunctionName
+			return fmt.Errorf("%v: %s", arwen.ErrInvalidFunctionName, functionName)
 		}
 	}
 
