@@ -707,6 +707,7 @@ func ethreturnDataCopy(context unsafe.Pointer, resultOffset int32, dataOffset in
 	}
 
 	if int32(len(ethReturnData)) < dataOffset+length {
+		arwen.WithFault(arwen.ErrInvalidAPICall, context, true)
 		return
 	}
 

@@ -77,5 +77,4 @@ func WithFault(err error, context unsafe.Pointer, failExecution bool) bool {
 	}
 
 	return true
-
 }

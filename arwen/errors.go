@@ -23,3 +23,5 @@ var ErrFuncNotFound = errors.New("function not found")
 var ErrSignalError = errors.New("error signalled by smartcontract")
 
 var ErrExecutionFailed = errors.New("execution failed")
+
+var ErrInvalidAPICall = errors.New("invalid API call")
