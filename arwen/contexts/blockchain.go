@@ -60,6 +60,8 @@ func (context *blockchainContext) GetBalance(address []byte) []byte {
 		return big.NewInt(0).Bytes()
 	}
 
+	fmt.Printf("GetBalance %s %d\n", string(address), balance.Int64())
+
 	outputAccount.Balance = big.NewInt(0).Set(balance)
 
 	return balance.Bytes()
@@ -88,6 +90,7 @@ func (context *blockchainContext) IncreaseNonce(address []byte) {
 }
 
 func (context *blockchainContext) GetCodeHash(addr []byte) ([]byte, error) {
+	// TODO must get the code from the OutputAccount, if present
 	code, err := context.blockChainHook.GetCode(addr)
 	if err != nil {
 		return nil, err
@@ -97,10 +100,12 @@ func (context *blockchainContext) GetCodeHash(addr []byte) ([]byte, error) {
 }
 
 func (context *blockchainContext) GetCode(addr []byte) ([]byte, error) {
+	// TODO must get the code from the OutputAccount, if present
 	return context.blockChainHook.GetCode(addr)
 }
 
 func (context *blockchainContext) GetCodeSize(addr []byte) (int32, error) {
+	// TODO must get the code from the OutputAccount, if present
 	code, err := context.blockChainHook.GetCode(addr)
 	if err != nil {
 		return 0, err
