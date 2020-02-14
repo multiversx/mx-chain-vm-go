@@ -9,12 +9,14 @@ import (
 )
 
 func (context *runtimeContext) VerifyContractCode() error {
-	err := verifyMemoryDeclaration(context.instance)
+	memoryGuard := newMemoryGuard(context.instance)
+	err := memoryGuard.verifyMemoryDeclaration()
 	if err != nil {
 		return err
 	}
 
-	err = verifyFunctionsNames(context.instance)
+	functionsGuard := newFunctionsGuard(context.instance)
+	err = functionsGuard.verifyFunctionsNames()
 	if err != nil {
 		return err
 	}
@@ -22,17 +24,34 @@ func (context *runtimeContext) VerifyContractCode() error {
 	return nil
 }
 
-func verifyMemoryDeclaration(instance *wasmer.Instance) error {
-	if !instance.HasMemory() {
+type memoryGuard struct {
+	instance *wasmer.Instance
+}
+
+func newMemoryGuard(instance *wasmer.Instance) *memoryGuard {
+	return &memoryGuard{instance: instance}
+}
+
+func (guard *memoryGuard) verifyMemoryDeclaration() error {
+	if !guard.instance.HasMemory() {
 		return arwen.ErrMemoryDeclarationMissing
 	}
 
 	return nil
 }
 
-func verifyFunctionsNames(instance *wasmer.Instance) error {
-	for functionName := range instance.Exports {
-		if !isValidFunctionName(functionName) {
+type functionsGuard struct {
+	instance *wasmer.Instance
+	reserved *ReservedFunctions
+}
+
+func newFunctionsGuard(instance *wasmer.Instance) *functionsGuard {
+	return &functionsGuard{instance: instance, reserved: NewReservedFunctions()}
+}
+
+func (guard *functionsGuard) verifyFunctionsNames() error {
+	for functionName := range guard.instance.Exports {
+		if !guard.isValidFunctionName(functionName) {
 			return fmt.Errorf("%v: %s", arwen.ErrInvalidFunctionName, functionName)
 		}
 	}
@@ -40,18 +59,19 @@ func verifyFunctionsNames(instance *wasmer.Instance) error {
 	return nil
 }
 
-func isValidFunctionName(functionName string) bool {
+func (guard *functionsGuard) isValidFunctionName(functionName string) bool {
 	const maxLengthOfFunctionName = 256
 
 	if len(functionName) == 0 {
 		return false
 	}
-
 	if len(functionName) >= maxLengthOfFunctionName {
 		return false
 	}
-
 	if !isASCIIString(functionName) {
+		return false
+	}
+	if guard.reserved.IsReserved(functionName) {
 		return false
 	}
 

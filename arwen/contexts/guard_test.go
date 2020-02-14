@@ -7,17 +7,21 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestGuard_isValidFunctionName(t *testing.T) {
-	require.True(t, isValidFunctionName("foo"))
-	require.True(t, isValidFunctionName("_"))
-	require.True(t, isValidFunctionName("a"))
-	require.True(t, isValidFunctionName("i"))
+func TestFunctionsGuard_isValidFunctionName(t *testing.T) {
+	guard := newFunctionsGuard(nil)
 
-	require.False(t, isValidFunctionName(""))
-	require.False(t, isValidFunctionName("â"))
-	require.False(t, isValidFunctionName("ș"))
-	require.False(t, isValidFunctionName("Ä"))
+	require.True(t, guard.isValidFunctionName("foo"))
+	require.True(t, guard.isValidFunctionName("_"))
+	require.True(t, guard.isValidFunctionName("a"))
+	require.True(t, guard.isValidFunctionName("i"))
 
-	require.True(t, isValidFunctionName(strings.Repeat("_", 255)))
-	require.False(t, isValidFunctionName(strings.Repeat("_", 256)))
+	require.False(t, guard.isValidFunctionName(""))
+	require.False(t, guard.isValidFunctionName("â"))
+	require.False(t, guard.isValidFunctionName("ș"))
+	require.False(t, guard.isValidFunctionName("Ä"))
+
+	require.False(t, guard.isValidFunctionName("claimDeveloperRewards"))
+
+	require.True(t, guard.isValidFunctionName(strings.Repeat("_", 255)))
+	require.False(t, guard.isValidFunctionName(strings.Repeat("_", 256)))
 }
