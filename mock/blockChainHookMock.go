@@ -27,7 +27,7 @@ type AccountsMap map[string]*Account
 
 type BlockchainHookMock struct {
 	Accounts      AccountsMap
-	Blockhash     []byte
+	BlockHash     []byte
 	LNonce        uint64
 	LRound        uint64
 	CNonce        uint64
@@ -108,6 +108,10 @@ func (b *BlockchainHookMock) GetBalance(address []byte) (*big.Int, error) {
 		return nil, account.Err
 	}
 
+	if account.Exists == false {
+		return nil, ErrAccountDoesntExist
+	}
+
 	return account.Balance, nil
 }
 
@@ -185,7 +189,7 @@ func (b *BlockchainHookMock) GetBlockhash(nonce uint64) ([]byte, error) {
 		return nil, b.Err
 	}
 
-	return b.Blockhash, nil
+	return b.BlockHash, nil
 }
 
 func (b *BlockchainHookMock) LastNonce() uint64 {
