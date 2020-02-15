@@ -215,7 +215,7 @@ func TestBlockchainContext_GetCodeHashAndSize(t *testing.T) {
 	// GetCodeSize: Test success
 	size, err = bcc.GetCodeSize(address)
 	require.Nil(t, err)
-	require.Equal(t, len(expectedCode), size)
+	require.Equal(t, int32(len(expectedCode)), size)
 }
 
 func TestBlockchainContext_NewAddress(t *testing.T) {
@@ -326,8 +326,13 @@ func TestBlockchainContext_BlockHash(t *testing.T) {
 	mockBlockchain := mock.NewBlockchainHookMock()
 	bcc, _ := NewBlockchainContext(host, mockBlockchain)
 
+	mockBlockchain.Err = ErrTestError
+	hash := bcc.BlockHash(42)
+	require.Nil(t, hash)
+	mockBlockchain.Err = nil
+
 	mockBlockchain.BlockHash = []byte("1234fa")
-	hash := bcc.BlockHash(-5)
+	hash = bcc.BlockHash(-5)
 	require.Nil(t, hash)
 
 	mockBlockchain.BlockHash = []byte("1234fb")
@@ -337,4 +342,45 @@ func TestBlockchainContext_BlockHash(t *testing.T) {
 	mockBlockchain.BlockHash = []byte("1234fc")
 	hash = bcc.BlockHash(42)
 	require.Equal(t, []byte("1234fc"), hash)
+}
+
+func TestBlockchainContext_Getters(t *testing.T) {
+	t.Parallel()
+
+	host := &mock.VmHostMock{}
+	mockBlockchain := &mock.BlockchainHookMock{
+		LEpoch: 3,
+		CEpoch: 4,
+
+		LNonce: 90,
+		CNonce: 98,
+
+		LRound: 96,
+		CRound: 99,
+
+		LTimeStamp: 6749,
+		CTimeStamp: 6800,
+
+		StateRootHash: []byte("root hash"),
+		LRandomSeed:   []byte("last random seed"),
+		CRandomSeed:   []byte("current random seed"),
+	}
+
+	bcc, _ := NewBlockchainContext(host, mockBlockchain)
+
+	require.Equal(t, uint32(3), bcc.LastEpoch())
+	require.Equal(t, uint32(4), bcc.CurrentEpoch())
+
+	require.Equal(t, uint64(90), bcc.LastNonce())
+	require.Equal(t, uint64(98), bcc.CurrentNonce())
+
+	require.Equal(t, uint64(96), bcc.LastRound())
+	require.Equal(t, uint64(99), bcc.CurrentRound())
+
+	require.Equal(t, uint64(6749), bcc.LastTimeStamp())
+	require.Equal(t, uint64(6800), bcc.CurrentTimeStamp())
+
+	require.Equal(t, []byte("root hash"), bcc.GetStateRootHash())
+	require.Equal(t, []byte("last random seed"), bcc.LastRandomSeed())
+	require.Equal(t, []byte("current random seed"), bcc.CurrentRandomSeed())
 }
