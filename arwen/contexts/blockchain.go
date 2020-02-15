@@ -76,11 +76,12 @@ func (context *blockchainContext) GetNonce(address []byte) (uint64, error) {
 	nonce, err := context.blockChainHook.GetNonce(address)
 	if err != nil {
 		fmt.Printf("GetNonce returned with error %s \n", err.Error())
+		return 0, err
 	}
 
 	outputAccount.Nonce = nonce
 
-	return nonce, err
+	return nonce, nil
 }
 
 func (context *blockchainContext) IncreaseNonce(address []byte) {
