@@ -163,23 +163,10 @@ func (host *vmHost) PushState() {
 	host.outputContext.PushState()
 }
 
-func (host *vmHost) PopState() error {
-	err := host.bigIntContext.PopState()
-	if err != nil {
-		return err
-	}
-
-	err = host.runtimeContext.PopState()
-	if err != nil {
-		return err
-	}
-
-	err = host.outputContext.PopState()
-	if err != nil {
-		return err
-	}
-
-	return nil
+func (host *vmHost) PopState() {
+	host.bigIntContext.PopState()
+	host.runtimeContext.PopState()
+	host.outputContext.PopState()
 }
 
 func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error) {
