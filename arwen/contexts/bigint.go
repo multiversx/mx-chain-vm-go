@@ -2,8 +2,6 @@ package contexts
 
 import (
 	"math/big"
-
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 )
 
 type bigIntContext struct {
@@ -32,18 +30,12 @@ func (context *bigIntContext) PushState() {
 	context.stateStack = append(context.stateStack, newState)
 }
 
-func (context *bigIntContext) PopState() error {
+func (context *bigIntContext) PopState() {
 	stateStackLen := len(context.stateStack)
-	if stateStackLen < 1 {
-		return arwen.StateStackUnderflow
-	}
-
 	prevState := context.stateStack[stateStackLen-1]
 	context.stateStack = context.stateStack[:stateStackLen-1]
 
 	context.mappedValues = prevState.mappedValues
-
-	return nil
 }
 
 func (context *bigIntContext) Put(value int64) int32 {
