@@ -40,6 +40,8 @@ type ElrondAPICost struct {
 	ExecuteOnDestContext uint64
 	DelegateExecution    uint64
 	ExecuteReadOnly      uint64
+	AsyncCallStep        uint64
+	AsyncCallbackGasLock uint64
 	CreateContract       uint64
 	GetReturnData        uint64
 	GetNumReturnData     uint64
