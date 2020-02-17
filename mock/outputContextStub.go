@@ -10,7 +10,7 @@ import (
 type OutputContextStub struct {
 	InitStateCalled                   func()
 	PushStateCalled                   func()
-	PopStateCalled                    func() error
+	PopStateCalled                    func()
 	GetOutputAccountCalled            func(address []byte) (*vmcommon.OutputAccount, bool)
 	WriteLogCalled                    func(address []byte, topics [][]byte, data []byte)
 	TransferCalled                    func(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte)
@@ -43,11 +43,10 @@ func (o *OutputContextStub) PushState() {
 	}
 }
 
-func (o *OutputContextStub) PopState() error {
+func (o *OutputContextStub) PopState() {
 	if o.PopStateCalled != nil {
-		return o.PopStateCalled()
+		o.PopStateCalled()
 	}
-	return nil
 }
 
 func (o *OutputContextStub) GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool) {

@@ -50,11 +50,7 @@ func (o *OutputContextMock) NewVMOutputAccountFromMockAccount(account *Account) 
 func (o *OutputContextMock) PushState() {
 }
 
-func (o *OutputContextMock) PopState() error {
-	if o.Err != nil {
-		return o.Err
-	}
-	return nil
+func (o *OutputContextMock) PopState() {
 }
 
 func (o *OutputContextMock) GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool) {

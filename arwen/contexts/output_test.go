@@ -4,7 +4,6 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
@@ -55,16 +54,12 @@ func TestOutputContext_PushPopState(t *testing.T) {
 	require.Equal(t, 1, len(outputContext.stateStack))
 	require.Equal(t, 0, len(outputContext.outputState.OutputAccounts))
 
-	err := outputContext.PopState()
+	outputContext.PopState()
 	account, isNew = outputContext.GetOutputAccount(address)
 	require.False(t, isNew)
-	require.Nil(t, err)
 	require.Equal(t, uint64(99), account.Nonce)
 	require.Equal(t, 1, len(outputContext.outputState.OutputAccounts))
 	require.Equal(t, 0, len(outputContext.stateStack))
-
-	err = outputContext.PopState()
-	require.Equal(t, arwen.StateStackUnderflow, err)
 }
 
 func TestOutputContext_GetOutputAccount(t *testing.T) {

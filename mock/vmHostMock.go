@@ -71,6 +71,5 @@ func (host *VmHostMock) PushState() {
 	return
 }
 
-func (host *VmHostMock) PopState() error {
-	return nil
+func (host *VmHostMock) PopState() {
 }
