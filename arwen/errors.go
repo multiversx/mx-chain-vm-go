@@ -19,3 +19,9 @@ var StateStackUnderflow = errors.New("State stack underflow")
 var InstanceStackUnderflow = errors.New("Instance stack underflow")
 
 var ErrFuncNotFound = errors.New("function not found")
+
+var ErrSignalError = errors.New("error signalled by smartcontract")
+
+var ErrExecutionFailed = errors.New("execution failed")
+
+var ErrInvalidAPICall = errors.New("invalid API call")

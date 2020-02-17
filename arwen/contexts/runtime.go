@@ -2,7 +2,6 @@ package contexts
 
 import (
 	"fmt"
-	"strconv"
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -22,6 +21,10 @@ type runtimeContext struct {
 
 	stateStack    []*runtimeContext
 	instanceStack []*wasmer.Instance
+
+	asyncCallInfo *arwen.AsyncCallInfo
+
+	argParser arwen.ArgumentsParser
 }
 
 func NewRuntimeContext(
@@ -41,11 +44,13 @@ func NewRuntimeContext(
 	return context, nil
 }
 
-func (context *runtimeContext) InitState() {
-	context.vmInput = &vmcommon.VMInput{}
-	context.scAddress = make([]byte, 0)
-	context.callFunction = ""
-	context.readOnly = false
+func (runtime *runtimeContext) InitState() {
+	runtime.vmInput = &vmcommon.VMInput{}
+	runtime.scAddress = make([]byte, 0)
+	runtime.callFunction = ""
+	runtime.readOnly = false
+	runtime.argParser = vmcommon.NewAtArgumentParser()
+	runtime.asyncCallInfo = nil
 }
 
 func (context *runtimeContext) CreateWasmerInstance(contract []byte, gasLimit uint64) error {
@@ -66,17 +71,31 @@ func (context *runtimeContext) InitStateFromContractCallInput(input *vmcommon.Co
 
 func (context *runtimeContext) PushState() {
 	newState := &runtimeContext{
-		vmInput:      context.vmInput,
-		scAddress:    context.scAddress,
-		callFunction: context.callFunction,
-		readOnly:     context.readOnly,
+		vmInput:       context.vmInput,
+		scAddress:     context.scAddress,
+		callFunction:  context.callFunction,
+		readOnly:      context.readOnly,
+		asyncCallInfo: context.asyncCallInfo,
 	}
 
 	context.stateStack = append(context.stateStack, newState)
 }
 
-func (context *runtimeContext) PushInstance() {
-	context.instanceStack = append(context.instanceStack, context.instance)
+func (runtime *runtimeContext) PopState() {
+	stateStackLen := len(runtime.stateStack)
+
+	prevState := runtime.stateStack[stateStackLen-1]
+	runtime.stateStack = runtime.stateStack[:stateStackLen-1]
+
+	runtime.vmInput = prevState.vmInput
+	runtime.scAddress = prevState.scAddress
+	runtime.callFunction = prevState.callFunction
+	runtime.readOnly = prevState.readOnly
+	runtime.asyncCallInfo = prevState.asyncCallInfo
+}
+
+func (runtime *runtimeContext) PushInstance() {
+	runtime.instanceStack = append(runtime.instanceStack, runtime.instance)
 }
 
 func (context *runtimeContext) PopInstance() error {
@@ -94,21 +113,8 @@ func (context *runtimeContext) PopInstance() error {
 	return nil
 }
 
-func (context *runtimeContext) PopState() error {
-	stateStackLen := len(context.stateStack)
-	if stateStackLen < 1 {
-		return arwen.StateStackUnderflow
-	}
-
-	prevState := context.stateStack[stateStackLen-1]
-	context.stateStack = context.stateStack[:stateStackLen-1]
-
-	context.vmInput = prevState.vmInput
-	context.scAddress = prevState.scAddress
-	context.callFunction = prevState.callFunction
-	context.readOnly = prevState.readOnly
-
-	return nil
+func (runtime *runtimeContext) ArgParser() arwen.ArgumentsParser {
+	return runtime.argParser
 }
 
 func (context *runtimeContext) GetVMType() []byte {
@@ -139,17 +145,15 @@ func (context *runtimeContext) Arguments() [][]byte {
 	return context.vmInput.Arguments
 }
 
-func (context *runtimeContext) SignalExit(exitCode int) {
-	context.host.Output().SetReturnCode(vmcommon.Ok)
-	message := strconv.Itoa(exitCode)
-	context.host.Output().SetReturnMessage(message)
-	context.SetRuntimeBreakpointValue(arwen.BreakpointSignalExit)
+func (context *runtimeContext) FailExecution(err error) {
+	context.host.Output().SetReturnCode(vmcommon.ExecutionFailed)
+	if err != nil {
+		context.host.Output().SetReturnMessage(err.Error())
+	}
+	context.SetRuntimeBreakpointValue(arwen.BreakpointExecutionFailed)
 }
 
 func (context *runtimeContext) SignalUserError(message string) {
-	// SignalUserError() remains in Runtime, and won't be moved into Output,
-	// because there will be extra handling added here later, which requires
-	// information from Runtime (e.g. runtime breakpoints)
 	context.host.Output().SetReturnCode(vmcommon.UserError)
 	context.host.Output().SetReturnMessage(message)
 	context.SetRuntimeBreakpointValue(arwen.BreakpointSignalError)
@@ -161,6 +165,18 @@ func (context *runtimeContext) SetRuntimeBreakpointValue(value arwen.BreakpointV
 
 func (context *runtimeContext) GetRuntimeBreakpointValue() arwen.BreakpointValue {
 	return arwen.BreakpointValue(context.instance.GetBreakpointValue())
+}
+
+func (context *runtimeContext) ElrondAPIErrorShouldFailExecution() bool {
+	return true
+}
+
+func (context *runtimeContext) BigIntAPIErrorShouldFailExecution() bool {
+	return true
+}
+
+func (context *runtimeContext) CryptoAPIErrorShouldFailExecution() bool {
+	return true
 }
 
 func (context *runtimeContext) GetPointsUsed() uint64 {
@@ -230,8 +246,16 @@ func (context *runtimeContext) GetInitFunction() wasmer.ExportedFunctionCallback
 	return init
 }
 
-func (context *runtimeContext) MemLoad(offset int32, length int32) ([]byte, error) {
-	memory := context.instanceContext.Memory()
+func (runtime *runtimeContext) SetAsyncCallInfo(asyncCallInfo *arwen.AsyncCallInfo) {
+	runtime.asyncCallInfo = asyncCallInfo
+}
+
+func (runtime *runtimeContext) GetAsyncCallInfo() *arwen.AsyncCallInfo {
+	return runtime.asyncCallInfo
+}
+
+func (runtime *runtimeContext) MemLoad(offset int32, length int32) ([]byte, error) {
+	memory := runtime.instanceContext.Memory()
 	memoryView := memory.Data()
 	memoryLength := memory.Length()
 	requestedEnd := uint32(offset + length)

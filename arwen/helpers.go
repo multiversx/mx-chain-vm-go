@@ -3,6 +3,7 @@ package arwen
 import (
 	"fmt"
 	"math/big"
+	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 )
@@ -60,4 +61,20 @@ func InverseBytes(data []byte) []byte {
 		invBytes[length-i-1] = data[i]
 	}
 	return invBytes
+}
+
+func WithFault(err error, context unsafe.Pointer, failExecution bool) bool {
+	if err == nil {
+		return false
+	}
+
+	if failExecution {
+		runtime := GetRuntimeContext(context)
+		metering := GetMeteringContext(context)
+
+		metering.UseGas(metering.GasLeft())
+		runtime.FailExecution(err)
+	}
+
+	return true
 }
