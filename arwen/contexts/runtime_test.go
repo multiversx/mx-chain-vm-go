@@ -1,6 +1,7 @@
 package contexts
 
 import (
+	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"testing"
@@ -36,17 +37,30 @@ func getSCCode(fileName string) []byte {
 }
 
 func TestNewRuntimeContext(t *testing.T) {
-	t.Parallel()
-
 	InitializeWasmer()
 
-	host := &mock.VmHostStub{}
+	host := &mock.VmHostMock{}
 	vmType := []byte("type")
 
-	runtimeContext, err := NewRuntimeContext(host, nil, vmType)
+	runtimeContext, err := NewRuntimeContext(host, vmType)
 	require.Nil(t, err)
 	require.NotNil(t, runtimeContext)
 
+	require.Equal(t, &vmcommon.VMInput{}, runtimeContext.vmInput)
+	require.Equal(t, []byte{}, runtimeContext.scAddress)
+	require.Equal(t, "", runtimeContext.callFunction)
+	require.Equal(t, false, runtimeContext.readOnly)
+	require.NotNil(t, runtimeContext.argParser)
+	require.Nil(t, runtimeContext.asyncCallInfo)
+}
+
+func TestRuntimeContext_NewWasmerInstance(t *testing.T) {
+	InitializeWasmer()
+
+	host := &mock.VmHostMock{}
+	vmType := []byte("type")
+
+	runtimeContext, err := NewRuntimeContext(host, vmType)
 	gasLimit := uint64(100000000)
 	dummy := []byte("contract")
 	err = runtimeContext.CreateWasmerInstance(dummy, gasLimit)
@@ -59,47 +73,46 @@ func TestNewRuntimeContext(t *testing.T) {
 	require.Equal(t, arwen.BreakpointNone, runtimeContext.GetRuntimeBreakpointValue())
 }
 
-func TestRuntimeContext_InitStateFromContractCallInput(t *testing.T) {
-	t.Parallel()
-
-	host := &mock.VmHostStub{}
+func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
+	host := &mock.VmHostMock{}
 	vmType := []byte("type")
-	runtimeContext, _ := NewRuntimeContext(host, nil, vmType)
+	runtimeContext, _ := NewRuntimeContext(host, vmType)
 
-	vmInput := &vmcommon.VMInput{
-		CallerAddr:  []byte("caller"),
-		CallType:    0,
-		GasPrice:    0,
-		GasProvided: 1000,
+	arguments := [][]byte{[]byte("argument 1"), []byte("argument 2")}
+	vmInput := vmcommon.VMInput{
+		CallerAddr: []byte("caller"),
+		Arguments:  arguments,
 	}
-	funcName := "test_func"
-	scAddress := []byte("addr")
-	input := &vmcommon.ContractCallInput{
-		VMInput:       vmcommon.VMInput{},
-		RecipientAddr: nil,
-		Function:      funcName,
+	callInput := &vmcommon.ContractCallInput{
+		VMInput:       vmInput,
+		RecipientAddr: []byte("recipient"),
+		Function:      "test function",
 	}
 
-	runtimeContext.InitStateFromContractCallInput(input)
-	runtimeContext.SetVMInput(vmInput)
-	result := runtimeContext.GetVMInput()
-	require.Equal(t, vmInput, result)
-
-	runtimeContext.SetSCAddress(scAddress)
-	resAddr := runtimeContext.GetSCAddress()
-	require.Equal(t, scAddress, resAddr)
-
-	require.Equal(t, funcName, runtimeContext.Function())
+	runtimeContext.InitStateFromContractCallInput(callInput)
+	require.Equal(t, []byte("caller"), runtimeContext.GetVMInput().CallerAddr)
+	require.Equal(t, []byte("recipient"), runtimeContext.GetSCAddress())
+	require.Equal(t, "test function", runtimeContext.Function())
 	require.Equal(t, vmType, runtimeContext.GetVMType())
+	require.NotNil(t, runtimeContext.ArgParser())
+	require.Equal(t, arguments, runtimeContext.Arguments())
+
+	vmInput2 := vmcommon.VMInput{
+		CallerAddr: []byte("caller2"),
+		Arguments:  arguments,
+	}
+	runtimeContext.SetVMInput(&vmInput2)
+	require.Equal(t, []byte("caller2"), runtimeContext.GetVMInput().CallerAddr)
+
+	runtimeContext.SetSCAddress([]byte("smartcontract"))
+	require.Equal(t, []byte("smartcontract"), runtimeContext.GetSCAddress())
 }
 
 func TestRuntimeContext_PushPopInstance(t *testing.T) {
-	t.Parallel()
-
 	InitializeWasmer()
-	host := &mock.VmHostStub{}
+	host := &mock.VmHostMock{}
 	vmType := []byte("type")
-	runtimeContext, _ := NewRuntimeContext(host, nil, vmType)
+	runtimeContext, _ := NewRuntimeContext(host, vmType)
 
 	gasLimit := uint64(100000000)
 	path := "./../../test/contracts/counter.wasm"
@@ -107,33 +120,32 @@ func TestRuntimeContext_PushPopInstance(t *testing.T) {
 	err := runtimeContext.CreateWasmerInstance(contractCode, gasLimit)
 	require.Nil(t, err)
 
+	instance := runtimeContext.instance
+
 	runtimeContext.PushInstance()
+	runtimeContext.instance = nil
 	require.Equal(t, 1, len(runtimeContext.instanceStack))
 
-	err = runtimeContext.PopInstance()
-	require.Nil(t, err)
-
-	err = runtimeContext.PopInstance()
-	require.Equal(t, arwen.InstanceStackUnderflow, err)
+	runtimeContext.PopInstance()
+	require.NotNil(t, runtimeContext.instance)
+	require.Equal(t, instance, runtimeContext.instance)
+	require.Equal(t, 0, len(runtimeContext.instanceStack))
 }
 
 func TestRuntimeContext_PushPopState(t *testing.T) {
-	t.Parallel()
-
-	host := &mock.VmHostStub{}
+	host := &mock.VmHostMock{}
 	vmType := []byte("type")
-	runtimeContext, _ := NewRuntimeContext(host, nil, vmType)
+	runtimeContext, _ := NewRuntimeContext(host, vmType)
 
-	funcName := "test_func"
-	scAddress := []byte("addr")
-	vmInput := &vmcommon.VMInput{
+	vmInput := vmcommon.VMInput{
 		CallerAddr:  []byte("caller"),
-		CallType:    0,
-		GasPrice:    0,
 		GasProvided: 1000,
 	}
+
+	funcName := "test_func"
+	scAddress := []byte("smartcontract")
 	input := &vmcommon.ContractCallInput{
-		VMInput:       *vmInput,
+		VMInput:       vmInput,
 		RecipientAddr: scAddress,
 		Function:      funcName,
 	}
@@ -147,27 +159,21 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 	runtimeContext.SetVMInput(nil)
 	runtimeContext.SetReadOnly(true)
 
-	err := runtimeContext.PopState()
-	require.Nil(t, err)
+	runtimeContext.PopState()
 
 	//check state was restored correctly
 	require.Equal(t, scAddress, runtimeContext.GetSCAddress())
 	require.Equal(t, funcName, runtimeContext.Function())
-	require.Equal(t, vmInput, runtimeContext.GetVMInput())
+	require.Equal(t, &vmInput, runtimeContext.GetVMInput())
 	require.False(t, runtimeContext.ReadOnly())
 	require.Nil(t, runtimeContext.Arguments())
-
-	err = runtimeContext.PopState()
-	require.Equal(t, arwen.StateStackUnderflow, err)
 }
 
 func TestRuntimeContext_Instance(t *testing.T) {
-	t.Parallel()
-
 	InitializeWasmer()
-	host := &mock.VmHostStub{}
+	host := &mock.VmHostMock{}
 	vmType := []byte("type")
-	runtimeContext, _ := NewRuntimeContext(host, nil, vmType)
+	runtimeContext, _ := NewRuntimeContext(host, vmType)
 
 	gasLimit := uint64(100000000)
 	path := "./../../test/contracts/counter.wasm"
@@ -202,4 +208,21 @@ func TestRuntimeContext_Instance(t *testing.T) {
 
 	runtimeContext.CleanInstance()
 	require.Nil(t, runtimeContext.instance)
+}
+
+func TestRuntimeContext_InstanceMemory(t *testing.T) {
+	InitializeWasmer()
+	host := &mock.VmHostMock{}
+	vmType := []byte("type")
+	runtimeContext, _ := NewRuntimeContext(host, vmType)
+
+	gasLimit := uint64(100000000)
+	path := "./../../test/contracts/counter.wasm"
+	contractCode := getSCCode(path)
+	err := runtimeContext.CreateWasmerInstance(contractCode, gasLimit)
+	require.Nil(t, err)
+
+	memory := runtimeContext.instance.Memory
+	fmt.Printf("memory size: %d\n", memory.Length())
+	fmt.Println(memory.Data())
 }

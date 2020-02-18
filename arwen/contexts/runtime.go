@@ -6,7 +6,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common"
 )
 
 type runtimeContext struct {
@@ -29,7 +29,6 @@ type runtimeContext struct {
 
 func NewRuntimeContext(
 	host arwen.VMHost,
-	_ vmcommon.BlockchainHook,
 	vmType []byte,
 ) (*runtimeContext, error) {
 	context := &runtimeContext{
@@ -44,13 +43,13 @@ func NewRuntimeContext(
 	return context, nil
 }
 
-func (runtime *runtimeContext) InitState() {
-	runtime.vmInput = &vmcommon.VMInput{}
-	runtime.scAddress = make([]byte, 0)
-	runtime.callFunction = ""
-	runtime.readOnly = false
-	runtime.argParser = vmcommon.NewAtArgumentParser()
-	runtime.asyncCallInfo = nil
+func (context *runtimeContext) InitState() {
+	context.vmInput = &vmcommon.VMInput{}
+	context.scAddress = make([]byte, 0)
+	context.callFunction = ""
+	context.readOnly = false
+	context.argParser = vmcommon.NewAtArgumentParser()
+	context.asyncCallInfo = nil
 }
 
 func (context *runtimeContext) CreateWasmerInstance(contract []byte, gasLimit uint64) error {
@@ -81,21 +80,21 @@ func (context *runtimeContext) PushState() {
 	context.stateStack = append(context.stateStack, newState)
 }
 
-func (runtime *runtimeContext) PopState() {
-	stateStackLen := len(runtime.stateStack)
+func (context *runtimeContext) PopState() {
+	stateStackLen := len(context.stateStack)
 
-	prevState := runtime.stateStack[stateStackLen-1]
-	runtime.stateStack = runtime.stateStack[:stateStackLen-1]
+	prevState := context.stateStack[stateStackLen-1]
+	context.stateStack = context.stateStack[:stateStackLen-1]
 
-	runtime.vmInput = prevState.vmInput
-	runtime.scAddress = prevState.scAddress
-	runtime.callFunction = prevState.callFunction
-	runtime.readOnly = prevState.readOnly
-	runtime.asyncCallInfo = prevState.asyncCallInfo
+	context.vmInput = prevState.vmInput
+	context.scAddress = prevState.scAddress
+	context.callFunction = prevState.callFunction
+	context.readOnly = prevState.readOnly
+	context.asyncCallInfo = prevState.asyncCallInfo
 }
 
-func (runtime *runtimeContext) PushInstance() {
-	runtime.instanceStack = append(runtime.instanceStack, runtime.instance)
+func (context *runtimeContext) PushInstance() {
+	context.instanceStack = append(context.instanceStack, context.instance)
 }
 
 func (context *runtimeContext) PopInstance() {
@@ -103,12 +102,14 @@ func (context *runtimeContext) PopInstance() {
 	prevInstance := context.instanceStack[instanceStackLen-1]
 	context.instanceStack = context.instanceStack[:instanceStackLen-1]
 
-	context.instance.Clean()
+	if context.instance != nil {
+		context.instance.Clean()
+	}
 	context.instance = prevInstance
 }
 
-func (runtime *runtimeContext) ArgParser() arwen.ArgumentsParser {
-	return runtime.argParser
+func (context *runtimeContext) ArgParser() arwen.ArgumentsParser {
+	return context.argParser
 }
 
 func (context *runtimeContext) GetVMType() []byte {
@@ -206,6 +207,9 @@ func (context *runtimeContext) GetInstanceExports() wasmer.ExportsMap {
 }
 
 func (context *runtimeContext) CleanInstance() {
+	if context.instance == nil {
+		return
+	}
 	context.instance.Clean()
 	context.instance = nil
 }
@@ -237,16 +241,16 @@ func (context *runtimeContext) GetInitFunction() wasmer.ExportedFunctionCallback
 	return nil
 }
 
-func (runtime *runtimeContext) SetAsyncCallInfo(asyncCallInfo *arwen.AsyncCallInfo) {
-	runtime.asyncCallInfo = asyncCallInfo
+func (context *runtimeContext) SetAsyncCallInfo(asyncCallInfo *arwen.AsyncCallInfo) {
+	context.asyncCallInfo = asyncCallInfo
 }
 
-func (runtime *runtimeContext) GetAsyncCallInfo() *arwen.AsyncCallInfo {
-	return runtime.asyncCallInfo
+func (context *runtimeContext) GetAsyncCallInfo() *arwen.AsyncCallInfo {
+	return context.asyncCallInfo
 }
 
-func (runtime *runtimeContext) MemLoad(offset int32, length int32) ([]byte, error) {
-	memory := runtime.instanceContext.Memory()
+func (context *runtimeContext) MemLoad(offset int32, length int32) ([]byte, error) {
+	memory := context.instanceContext.Memory()
 	memoryView := memory.Data()
 	memoryLength := memory.Length()
 	requestedEnd := uint32(offset + length)

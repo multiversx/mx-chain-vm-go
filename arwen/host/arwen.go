@@ -59,7 +59,7 @@ func NewArwenVM(
 		return nil, err
 	}
 
-	host.runtimeContext, err = contexts.NewRuntimeContext(host, blockChainHook, vmType)
+	host.runtimeContext, err = contexts.NewRuntimeContext(host, vmType)
 	if err != nil {
 		return nil, err
 	}
