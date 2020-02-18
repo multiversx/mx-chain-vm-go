@@ -11,15 +11,9 @@
                 "nonce": "0x00",
                 "balance": "0x00",
                 "storage": {
-                    "0x0000000000000000000000000000000000000000000000000000000000000000": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1234"
+                    "0x0000000000000000000000000000000000000000000000000000000000000000": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb5555"
                 },
                 "code": "alice.wasm"
-            },
-            "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1234": {
-                "nonce": "0x00",
-                "balance": "0x00",
-                "storage": {},
-                "code": "bob.wasm"
             }
         },
         "blocks": [
@@ -36,9 +30,9 @@
                 "transactions": [
                     {
                         "nonce": "0x00",
-                        "function": "messageOtherContract",
+                        "function": "forwardToOtherContract",
                         "gasLimit": "0x1000000000000",
-                        "value": "0x00",
+                        "value": "0x123400",
                         "to": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1234",
                         "arguments": [],
                         "contractCode": "",
@@ -63,7 +57,7 @@
         "postState": {
             "0xa94f5374fce5edbc8e2a8697c15331677e6ebffefefefefefefefefefefe1234": {
                 "nonce": "0x01",
-                "balance": "0xfffffffffff00e8d4a51000",
+                "balance": "0xfffffffffff00e8d492dc00",
                 "storage": {},
                 "code": ""
             },
@@ -71,19 +65,16 @@
                 "nonce": "0x00",
                 "balance": "0x00",
                 "storage": {
-                    "0x0000000000000000000000000000000000000000000000000000000000000000": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1234"
+                    "0x0000000000000000000000000000000000000000000000000000000000000000": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb5555"
                 },
                 "code": "alice.wasm"
             },
-            "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1234": {
+            "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb5555": {
                 "nonce": "0x00",
-                "balance": "0x00",
-                "storage": {
-                    "0x2222222222222222222222222222222222222222222222222222222222222222": "0x46",
-                    "0x3333333333333333333333333333333333333333333333333333333333333333": "0x02"
-                },
-                "code": "bob.wasm",
-                "asyncCallData": "messageMe@46@02"
+                "balance": "0x123400",
+                "storage": {},
+                "code": "",
+                "asyncCallData": "payMe@56"
             }
         }
     }

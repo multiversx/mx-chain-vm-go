@@ -303,6 +303,11 @@ func (te *arwenTestExecutor) Run(test *ij.Test) error {
 				hex.EncodeToString(matchingAcct.Address), postAcct.Code, matchingAcct.Code)
 		}
 
+		if matchingAcct.AsyncCallData != postAcct.AsyncCallData {
+			return fmt.Errorf("bad async call data. Account: %s. Want: [%s]. Have: [%s]",
+				hex.EncodeToString(matchingAcct.Address), postAcct.AsyncCallData, matchingAcct.AsyncCallData)
+		}
+
 		// compare storages
 		allKeys := make(map[string]bool)
 		for k := range postAcct.Storage {

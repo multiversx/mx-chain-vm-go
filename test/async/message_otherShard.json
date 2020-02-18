@@ -11,15 +11,9 @@
                 "nonce": "0x00",
                 "balance": "0x00",
                 "storage": {
-                    "0x0000000000000000000000000000000000000000000000000000000000000000": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1234"
+                    "0x0000000000000000000000000000000000000000000000000000000000000000": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb5555"
                 },
                 "code": "alice.wasm"
-            },
-            "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1234": {
-                "nonce": "0x00",
-                "balance": "0x00",
-                "storage": {},
-                "code": "bob.wasm"
             }
         },
         "blocks": [
@@ -71,18 +65,15 @@
                 "nonce": "0x00",
                 "balance": "0x00",
                 "storage": {
-                    "0x0000000000000000000000000000000000000000000000000000000000000000": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1234"
+                    "0x0000000000000000000000000000000000000000000000000000000000000000": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb5555"
                 },
                 "code": "alice.wasm"
             },
-            "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1234": {
+            "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb5555": {
                 "nonce": "0x00",
                 "balance": "0x00",
-                "storage": {
-                    "0x2222222222222222222222222222222222222222222222222222222222222222": "0x46",
-                    "0x3333333333333333333333333333333333333333333333333333333333333333": "0x02"
-                },
-                "code": "bob.wasm",
+                "storage": {},
+                "code": "",
                 "asyncCallData": "messageMe@46@02"
             }
         }
