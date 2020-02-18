@@ -60,6 +60,7 @@ func (r *RuntimeContextMock) GetVMInput() *vmcommon.VMInput {
 }
 
 func (r *RuntimeContextMock) SetVMInput(vmInput *vmcommon.VMInput) {
+	r.VmInput = vmInput
 }
 
 func (r *RuntimeContextMock) GetSCAddress() []byte {
