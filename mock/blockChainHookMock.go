@@ -3,12 +3,16 @@ package mock
 import (
 	"errors"
 	"math/big"
+
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var ErrAccountDoesntExist = errors.New("account does not exist")
 var ErrCantDetermineAccountExists = errors.New("can't determine whether account exists")
 
 var zero = big.NewInt(0)
+
+var _ vmcommon.BlockchainHook = (*BlockchainHookMock)(nil)
 
 // Account holds the account info
 type Account struct {

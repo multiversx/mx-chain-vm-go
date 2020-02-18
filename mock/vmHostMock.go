@@ -5,6 +5,8 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
+var _ arwen.VMHost = (*VmHostMock)(nil)
+
 type VmHostMock struct {
 	BlockChainHook vmcommon.BlockchainHook
 	CryptoHook     vmcommon.CryptoHook
@@ -55,8 +57,8 @@ func (host *VmHostMock) ExecuteOnSameContext(input *vmcommon.ContractCallInput) 
 	return nil
 }
 
-func (host *VmHostMock) ExecuteOnDestContext(input *vmcommon.ContractCallInput) error {
-	return nil
+func (host *VmHostMock) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+	return nil, nil
 }
 
 func (host *VmHostMock) EthereumCallData() []byte {

@@ -297,7 +297,7 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 	}
 
 	convertedResult := arwen.ConvertReturnValue(result)
-	output.Finish(convertedResult.Bytes())
+	output.Finish(convertedResult)
 
 	metering.UnlockGasIfAsyncStep()
 

@@ -8,6 +8,8 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
+var _ arwen.OutputContext = (*OutputContextMock)(nil)
+
 type OutputContextMock struct {
 	OutputStateMock    *vmcommon.VMOutput
 	ReturnDataMock     [][]byte
@@ -101,9 +103,7 @@ func (o *OutputContextMock) Finish(data []byte) {
 
 func (o *OutputContextMock) FinishValue(value wasmer.Value) {
 	if !value.IsVoid() {
-		convertedResult := arwen.ConvertReturnValue(value)
-		valueBytes := convertedResult.Bytes()
-
+		valueBytes := arwen.ConvertReturnValue(value)
 		o.Finish(valueBytes)
 	}
 }
@@ -117,7 +117,7 @@ func (o *OutputContextMock) Transfer(destination []byte, sender []byte, gasLimit
 func (o *OutputContextMock) AddTxValueToAccount(address []byte, value *big.Int) {
 }
 
-func (o *OutputContextMock) GetVMOutput(_ wasmer.Value) *vmcommon.VMOutput {
+func (o *OutputContextMock) GetVMOutput() *vmcommon.VMOutput {
 	return o.OutputStateMock
 }
 

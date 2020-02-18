@@ -1,6 +1,12 @@
 package mock
 
-import "math/big"
+import (
+	"math/big"
+
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+)
+
+var _ vmcommon.BlockchainHook = (*BlockChainHookStub)(nil)
 
 type BlockChainHookStub struct {
 	AccountExtistsCalled    func(address []byte) (bool, error)

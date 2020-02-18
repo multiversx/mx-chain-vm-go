@@ -135,9 +135,7 @@ func (context *outputContext) Finish(data []byte) {
 
 func (context *outputContext) FinishValue(value wasmer.Value) {
 	if !value.IsVoid() {
-		convertedResult := arwen.ConvertReturnValue(value)
-		valueBytes := convertedResult.Bytes()
-
+		valueBytes := arwen.ConvertReturnValue(value)
 		context.Finish(valueBytes)
 	}
 }
@@ -194,6 +192,9 @@ func (context *outputContext) CreateVMOutputInCaseOfError(errCode vmcommon.Retur
 }
 
 func mergeVMOutputs(leftOutput *vmcommon.VMOutput, rightOutput *vmcommon.VMOutput) {
+	if leftOutput.OutputAccounts == nil {
+		leftOutput.OutputAccounts = make(map[string]*vmcommon.OutputAccount)
+	}
 	for address, rightAccount := range rightOutput.OutputAccounts {
 		leftAccount, ok := leftOutput.OutputAccounts[address]
 		if !ok {
@@ -221,6 +222,9 @@ func mergeOutputAccounts(
 	leftAccount.GasLimit = rightAccount.GasLimit
 	mergeStorageUpdates(leftAccount, rightAccount)
 
+	if rightAccount.Balance != nil {
+		leftAccount.Balance = rightAccount.Balance
+	}
 	if leftAccount.BalanceDelta == nil {
 		leftAccount.BalanceDelta = big.NewInt(0)
 	}

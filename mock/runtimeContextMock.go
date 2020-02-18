@@ -6,6 +6,8 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
+var _ arwen.RuntimeContext = (*RuntimeContextMock)(nil)
+
 type RuntimeContextMock struct {
 	Err                    error
 	VmInput                *vmcommon.VMInput
@@ -17,6 +19,11 @@ type RuntimeContextMock struct {
 	PointsUsed             uint64
 	InstanceCtxId          int
 	MemLoadResult          []byte
+	ArgParserMock          arwen.ArgumentsParser
+	FailCryptoAPI          bool
+	FailElrondAPI          bool
+	FailBigIntAPI          bool
+	AsyncCallInfo          *arwen.AsyncCallInfo
 }
 
 func (r *RuntimeContextMock) InitState() {
@@ -38,18 +45,10 @@ func (r *RuntimeContextMock) PushState() {
 func (r *RuntimeContextMock) PushInstance() {
 }
 
-func (r *RuntimeContextMock) PopInstance() error {
-	if r.Err != nil {
-		return r.Err
-	}
-	return nil
+func (r *RuntimeContextMock) PopInstance() {
 }
 
-func (r *RuntimeContextMock) PopState() error {
-	if r.Err != nil {
-		return r.Err
-	}
-	return nil
+func (r *RuntimeContextMock) PopState() {
 }
 
 func (r *RuntimeContextMock) GetVMType() []byte {
@@ -90,6 +89,10 @@ func (r *RuntimeContextMock) SetRuntimeBreakpointValue(value arwen.BreakpointVal
 
 func (r *RuntimeContextMock) GetRuntimeBreakpointValue() arwen.BreakpointValue {
 	return r.CurrentBreakpointValue
+}
+
+func (r *RuntimeContextMock) ArgParser() arwen.ArgumentsParser {
+	return r.ArgParserMock
 }
 
 func (r *RuntimeContextMock) GetPointsUsed() uint64 {
@@ -150,4 +153,27 @@ func (r *RuntimeContextMock) MemStore(offset int32, data []byte) error {
 		return r.Err
 	}
 	return nil
+}
+
+func (r *RuntimeContextMock) ElrondAPIErrorShouldFailExecution() bool {
+	return r.FailElrondAPI
+}
+
+func (r *RuntimeContextMock) CryptoAPIErrorShouldFailExecution() bool {
+	return r.FailCryptoAPI
+}
+
+func (r *RuntimeContextMock) BigIntAPIErrorShouldFailExecution() bool {
+	return r.FailBigIntAPI
+}
+
+func (r *RuntimeContextMock) FailExecution(err error) {
+}
+
+func (r *RuntimeContextMock) GetAsyncCallInfo() *arwen.AsyncCallInfo {
+	return r.AsyncCallInfo
+}
+
+func (r *RuntimeContextMock) SetAsyncCallInfo(asyncCallInfo *arwen.AsyncCallInfo) {
+	r.AsyncCallInfo = asyncCallInfo
 }

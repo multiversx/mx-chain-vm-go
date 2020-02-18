@@ -3,9 +3,12 @@ package mock
 import (
 	"math/big"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
+
+var _ arwen.OutputContext = (*OutputContextStub)(nil)
 
 type OutputContextStub struct {
 	InitStateCalled                   func()
@@ -25,7 +28,7 @@ type OutputContextStub struct {
 	ClearReturnDataCalled             func()
 	FinishCalled                      func(data []byte)
 	FinishValueCalled                 func(value wasmer.Value)
-	GetVMOutputCalled                 func(result wasmer.Value) *vmcommon.VMOutput
+	GetVMOutputCalled                 func() *vmcommon.VMOutput
 	AddTxValueToAccountCalled         func(address []byte, value *big.Int)
 	DeployCodeCalled                  func(address []byte, code []byte)
 	CreateVMOutputInCaseOfErrorCalled func(errCode vmcommon.ReturnCode, message string) *vmcommon.VMOutput
@@ -137,9 +140,9 @@ func (o *OutputContextStub) FinishValue(value wasmer.Value) {
 	}
 }
 
-func (o *OutputContextStub) GetVMOutput(result wasmer.Value) *vmcommon.VMOutput {
+func (o *OutputContextStub) GetVMOutput() *vmcommon.VMOutput {
 	if o.GetVMOutputCalled != nil {
-		return o.GetVMOutputCalled(result)
+		return o.GetVMOutputCalled()
 	}
 	return nil
 }

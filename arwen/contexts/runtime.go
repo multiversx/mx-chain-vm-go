@@ -98,19 +98,13 @@ func (runtime *runtimeContext) PushInstance() {
 	runtime.instanceStack = append(runtime.instanceStack, runtime.instance)
 }
 
-func (context *runtimeContext) PopInstance() error {
+func (context *runtimeContext) PopInstance() {
 	instanceStackLen := len(context.instanceStack)
-	if instanceStackLen < 1 {
-		return arwen.InstanceStackUnderflow
-	}
-
 	prevInstance := context.instanceStack[instanceStackLen-1]
 	context.instanceStack = context.instanceStack[:instanceStackLen-1]
 
 	context.instance.Clean()
 	context.instance = prevInstance
-
-	return nil
 }
 
 func (runtime *runtimeContext) ArgParser() arwen.ArgumentsParser {

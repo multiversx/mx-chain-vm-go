@@ -30,9 +30,9 @@ func TestNewBlockchainContext(t *testing.T) {
 	host := &mock.VmHostStub{}
 	bcHook := mock.NewBlockchainHookMock()
 
-	bcc, err := NewBlockchainContext(host, bcHook)
+	blockchainContext, err := NewBlockchainContext(host, bcHook)
 	require.Nil(t, err)
-	require.NotNil(t, bcc)
+	require.NotNil(t, blockchainContext)
 }
 
 func TestBlockchainContext_AccountExists(t *testing.T) {
@@ -42,14 +42,14 @@ func TestBlockchainContext_AccountExists(t *testing.T) {
 	mockBlockchain := mock.NewBlockchainHookMock()
 	mockBlockchain.AddAccounts(testAccounts)
 
-	bcc, _ := NewBlockchainContext(host, mockBlockchain)
+	blockchainContext, _ := NewBlockchainContext(host, mockBlockchain)
 
-	require.False(t, bcc.AccountExists([]byte("account_missing")))
-	require.False(t, bcc.AccountExists([]byte("account_faulty")))
-	require.True(t, bcc.AccountExists([]byte("account_old")))
+	require.False(t, blockchainContext.AccountExists([]byte("account_missing")))
+	require.False(t, blockchainContext.AccountExists([]byte("account_faulty")))
+	require.True(t, blockchainContext.AccountExists([]byte("account_old")))
 
 	mockBlockchain.Err = ErrTestError
-	require.False(t, bcc.AccountExists([]byte("account_something")))
+	require.False(t, blockchainContext.AccountExists([]byte("account_something")))
 }
 
 func TestBlockchainContext_GetBalance(t *testing.T) {
@@ -60,7 +60,7 @@ func TestBlockchainContext_GetBalance(t *testing.T) {
 	mockOutput := &mock.OutputContextMock{}
 	host := &mock.VmHostMock{}
 	host.OutputContext = mockOutput
-	bcc, _ := NewBlockchainContext(host, mockBlockchain)
+	blockchainContext, _ := NewBlockchainContext(host, mockBlockchain)
 
 	// Act as if the OutputContext has no OutputAccounts cached
 	// (mockOutput.GetOutputAccount() always returns "is new")
@@ -70,7 +70,7 @@ func TestBlockchainContext_GetBalance(t *testing.T) {
 
 	// Test if error is propagated from BlockchainHook
 	mockBlockchain.Err = ErrTestError
-	balanceBytes := bcc.GetBalance([]byte("account_new_with_money"))
+	balanceBytes := blockchainContext.GetBalance([]byte("account_new_with_money"))
 	value := big.NewInt(0).SetBytes(balanceBytes)
 	require.Equal(t, big.NewInt(0), value)
 	mockBlockchain.Err = nil
@@ -78,7 +78,7 @@ func TestBlockchainContext_GetBalance(t *testing.T) {
 	// Test that an account that doesn't exist will not be updated with any kind
 	// of balance in the OutputAccounts, but GetBalance() must return 0
 	account.Balance = big.NewInt(15)
-	balanceBytes = bcc.GetBalance([]byte("account_missing"))
+	balanceBytes = blockchainContext.GetBalance([]byte("account_missing"))
 	value = big.NewInt(0).SetBytes(balanceBytes)
 	require.Equal(t, big.NewInt(0), value)
 	require.Equal(t, big.NewInt(15), account.Balance)
@@ -86,7 +86,7 @@ func TestBlockchainContext_GetBalance(t *testing.T) {
 	// Test that an account newly cached by the OutputAccounts will have its
 	// Balance updated, if BlockchainHook.GetBalance() is successful
 	account.Balance = big.NewInt(300)
-	balanceBytes = bcc.GetBalance([]byte("account_new_with_money"))
+	balanceBytes = blockchainContext.GetBalance([]byte("account_new_with_money"))
 	value = big.NewInt(0).SetBytes(balanceBytes)
 	require.Equal(t, big.NewInt(1000), value)
 	require.Equal(t, big.NewInt(1000), account.Balance)
@@ -94,7 +94,7 @@ func TestBlockchainContext_GetBalance(t *testing.T) {
 	// Act as if the OutputContext has the requested OutputAccount cached
 	account.Balance = big.NewInt(42)
 	mockOutput.OutputAccountIsNew = false
-	balanceBytes = bcc.GetBalance([]byte("any account"))
+	balanceBytes = blockchainContext.GetBalance([]byte("any account"))
 	value = big.NewInt(0).SetBytes(balanceBytes)
 	require.Equal(t, big.NewInt(42), value)
 
@@ -114,14 +114,14 @@ func TestBlockchainContext_GetNonceAndIncrease(t *testing.T) {
 
 	mockBlockchain := mock.NewBlockchainHookMock()
 	mockBlockchain.AddAccounts(testAccounts)
-	bcc, _ := NewBlockchainContext(host, mockBlockchain)
+	blockchainContext, _ := NewBlockchainContext(host, mockBlockchain)
 
 	// GetNonce: Test if error is propagated from BlockchainHook, and that the
 	// cached OutputAccount doesn't lose its Nonce due to the error.
 	mockOutput.OutputAccountMock = account
 	mockOutput.OutputAccountIsNew = true
 	mockBlockchain.Err = ErrTestError
-	nonce, err := bcc.GetNonce([]byte("any account"))
+	nonce, err := blockchainContext.GetNonce([]byte("any account"))
 	require.Equal(t, ErrTestError, err)
 	require.Equal(t, uint64(0), nonce)
 	require.Equal(t, uint64(3), account.Nonce)
@@ -130,7 +130,7 @@ func TestBlockchainContext_GetNonceAndIncrease(t *testing.T) {
 	// GetNonce: Test requesting the nonce of an Account not yet cached by
 	// OutputAccounts
 	mockOutput.OutputAccountIsNew = true
-	nonce, err = bcc.GetNonce([]byte("account_old"))
+	nonce, err = blockchainContext.GetNonce([]byte("account_old"))
 	require.Equal(t, nil, err)
 	require.Equal(t, uint64(12), nonce)
 	require.Equal(t, uint64(12), account.Nonce)
@@ -139,7 +139,7 @@ func TestBlockchainContext_GetNonceAndIncrease(t *testing.T) {
 	// OutputAccounts
 	account.Nonce = 88
 	mockOutput.OutputAccountIsNew = false
-	nonce, err = bcc.GetNonce([]byte("any account"))
+	nonce, err = blockchainContext.GetNonce([]byte("any account"))
 	require.Nil(t, err)
 	require.Equal(t, uint64(88), nonce)
 
@@ -147,10 +147,10 @@ func TestBlockchainContext_GetNonceAndIncrease(t *testing.T) {
 	// OutputAccounts
 	account.Nonce = 88
 	mockOutput.OutputAccountIsNew = false
-	bcc.IncreaseNonce([]byte("any account"))
-	bcc.IncreaseNonce([]byte("any account"))
-	bcc.IncreaseNonce([]byte("any account"))
-	nonce, err = bcc.GetNonce([]byte("any account"))
+	blockchainContext.IncreaseNonce([]byte("any account"))
+	blockchainContext.IncreaseNonce([]byte("any account"))
+	blockchainContext.IncreaseNonce([]byte("any account"))
+	nonce, err = blockchainContext.GetNonce([]byte("any account"))
 	require.Nil(t, err)
 	require.Equal(t, uint64(91), nonce)
 }
@@ -166,7 +166,7 @@ func TestBlockchainContext_GetCodeHashAndSize(t *testing.T) {
 	host := &mock.VmHostMock{}
 	host.CryptoHook = mockCrypto
 
-	bcc, _ := NewBlockchainContext(host, mockBlockchain)
+	blockchainContext, _ := NewBlockchainContext(host, mockBlockchain)
 
 	address := []byte("account_with_code")
 	expectedCode := []byte("somecode")
@@ -174,19 +174,19 @@ func TestBlockchainContext_GetCodeHashAndSize(t *testing.T) {
 
 	// GetCode: Test if error is propagated from blockchain hook
 	mockBlockchain.Err = ErrTestError
-	code, err := bcc.GetCode(address)
+	code, err := blockchainContext.GetCode(address)
 	require.NotNil(t, err)
 	require.Nil(t, code)
 	mockBlockchain.Err = nil
 
 	// GetCode: Test success
-	code, err = bcc.GetCode(address)
+	code, err = blockchainContext.GetCode(address)
 	require.Nil(t, err)
 	require.Equal(t, expectedCode, code)
 
 	// GetCodeHash: Test if error is propagated from blockchain hook
 	mockBlockchain.Err = ErrTestError
-	codeHash, err := bcc.GetCodeHash(address)
+	codeHash, err := blockchainContext.GetCodeHash(address)
 	require.Equal(t, ErrTestError, err)
 	require.Nil(t, codeHash)
 	mockBlockchain.Err = nil
@@ -194,26 +194,26 @@ func TestBlockchainContext_GetCodeHashAndSize(t *testing.T) {
 	// GetCodeHash: Test if error is propagated from crypto hook
 	mockCrypto.Result = nil
 	mockCrypto.Err = ErrTestError
-	codeHash, err = bcc.GetCodeHash(address)
+	codeHash, err = blockchainContext.GetCodeHash(address)
 	require.Equal(t, ErrTestError, err)
 	require.Nil(t, codeHash)
 
 	// GetCodeHash: Test success
 	mockCrypto.Result = expectedCodeHash
 	mockCrypto.Err = nil
-	codeHash, err = bcc.GetCodeHash(address)
+	codeHash, err = blockchainContext.GetCodeHash(address)
 	require.Equal(t, expectedCodeHash, codeHash)
 	require.Nil(t, err)
 
 	// GetCodeSize: Test if error is propagated from blockchain hook
 	mockBlockchain.Err = ErrTestError
-	size, err := bcc.GetCodeSize(address)
+	size, err := blockchainContext.GetCodeSize(address)
 	require.Equal(t, ErrTestError, err)
 	require.Equal(t, int32(0), size)
 	mockBlockchain.Err = nil
 
 	// GetCodeSize: Test success
-	size, err = bcc.GetCodeSize(address)
+	size, err = blockchainContext.GetCodeSize(address)
 	require.Nil(t, err)
 	require.Equal(t, int32(len(expectedCode)), size)
 }
@@ -235,7 +235,7 @@ func TestBlockchainContext_NewAddress(t *testing.T) {
 	}
 
 	// Test error propagation from GetNonce()
-	bcc, _ := NewBlockchainContext(host, mockBlockchain)
+	blockchainContext, _ := NewBlockchainContext(host, mockBlockchain)
 	creatorAddress := []byte("account_new")
 	creatorAccount := mockBlockchain.Accounts[string(creatorAddress)]
 	creatorOutputAccount := mockOutput.NewVMOutputAccountFromMockAccount(creatorAccount)
@@ -243,7 +243,7 @@ func TestBlockchainContext_NewAddress(t *testing.T) {
 	mockOutput.OutputAccountIsNew = true
 	mockBlockchain.Err = ErrTestError
 
-	address, err := bcc.NewAddress(creatorAddress)
+	address, err := blockchainContext.NewAddress(creatorAddress)
 	require.Equal(t, ErrTestError, err)
 	require.Nil(t, address)
 
@@ -266,9 +266,9 @@ func TestBlockchainContext_NewAddress(t *testing.T) {
 			return []byte("new_address"), nil
 		},
 	}
-	bcc, _ = NewBlockchainContext(host, stubBlockchain)
+	blockchainContext, _ = NewBlockchainContext(host, stubBlockchain)
 
-	address, err = bcc.NewAddress(creatorAddress)
+	address, err = blockchainContext.NewAddress(creatorAddress)
 	require.Nil(t, err)
 	require.Equal(t, []byte("new_address"), address)
 
@@ -289,9 +289,9 @@ func TestBlockchainContext_NewAddress(t *testing.T) {
 			return []byte("new_address"), nil
 		},
 	}
-	bcc, _ = NewBlockchainContext(host, stubBlockchain)
+	blockchainContext, _ = NewBlockchainContext(host, stubBlockchain)
 
-	address, err = bcc.NewAddress(creatorAddress)
+	address, err = blockchainContext.NewAddress(creatorAddress)
 	require.Nil(t, err)
 	require.Equal(t, []byte("new_address"), address)
 
@@ -312,9 +312,9 @@ func TestBlockchainContext_NewAddress(t *testing.T) {
 			return nil, ErrTestError
 		},
 	}
-	bcc, _ = NewBlockchainContext(host, stubBlockchain)
+	blockchainContext, _ = NewBlockchainContext(host, stubBlockchain)
 
-	address, err = bcc.NewAddress(creatorAddress)
+	address, err = blockchainContext.NewAddress(creatorAddress)
 	require.Equal(t, ErrTestError, err)
 	require.Nil(t, address)
 }
@@ -324,23 +324,23 @@ func TestBlockchainContext_BlockHash(t *testing.T) {
 
 	host := &mock.VmHostMock{}
 	mockBlockchain := mock.NewBlockchainHookMock()
-	bcc, _ := NewBlockchainContext(host, mockBlockchain)
+	blockchainContext, _ := NewBlockchainContext(host, mockBlockchain)
 
 	mockBlockchain.Err = ErrTestError
-	hash := bcc.BlockHash(42)
+	hash := blockchainContext.BlockHash(42)
 	require.Nil(t, hash)
 	mockBlockchain.Err = nil
 
 	mockBlockchain.BlockHash = []byte("1234fa")
-	hash = bcc.BlockHash(-5)
+	hash = blockchainContext.BlockHash(-5)
 	require.Nil(t, hash)
 
 	mockBlockchain.BlockHash = []byte("1234fb")
-	hash = bcc.BlockHash(0)
+	hash = blockchainContext.BlockHash(0)
 	require.Equal(t, []byte("1234fb"), hash)
 
 	mockBlockchain.BlockHash = []byte("1234fc")
-	hash = bcc.BlockHash(42)
+	hash = blockchainContext.BlockHash(42)
 	require.Equal(t, []byte("1234fc"), hash)
 }
 
@@ -366,21 +366,21 @@ func TestBlockchainContext_Getters(t *testing.T) {
 		CRandomSeed:   []byte("current random seed"),
 	}
 
-	bcc, _ := NewBlockchainContext(host, mockBlockchain)
+	blockchainContext, _ := NewBlockchainContext(host, mockBlockchain)
 
-	require.Equal(t, uint32(3), bcc.LastEpoch())
-	require.Equal(t, uint32(4), bcc.CurrentEpoch())
+	require.Equal(t, uint32(3), blockchainContext.LastEpoch())
+	require.Equal(t, uint32(4), blockchainContext.CurrentEpoch())
 
-	require.Equal(t, uint64(90), bcc.LastNonce())
-	require.Equal(t, uint64(98), bcc.CurrentNonce())
+	require.Equal(t, uint64(90), blockchainContext.LastNonce())
+	require.Equal(t, uint64(98), blockchainContext.CurrentNonce())
 
-	require.Equal(t, uint64(96), bcc.LastRound())
-	require.Equal(t, uint64(99), bcc.CurrentRound())
+	require.Equal(t, uint64(96), blockchainContext.LastRound())
+	require.Equal(t, uint64(99), blockchainContext.CurrentRound())
 
-	require.Equal(t, uint64(6749), bcc.LastTimeStamp())
-	require.Equal(t, uint64(6800), bcc.CurrentTimeStamp())
+	require.Equal(t, uint64(6749), blockchainContext.LastTimeStamp())
+	require.Equal(t, uint64(6800), blockchainContext.CurrentTimeStamp())
 
-	require.Equal(t, []byte("root hash"), bcc.GetStateRootHash())
-	require.Equal(t, []byte("last random seed"), bcc.LastRandomSeed())
-	require.Equal(t, []byte("current random seed"), bcc.CurrentRandomSeed())
+	require.Equal(t, []byte("root hash"), blockchainContext.GetStateRootHash())
+	require.Equal(t, []byte("last random seed"), blockchainContext.LastRandomSeed())
+	require.Equal(t, []byte("current random seed"), blockchainContext.CurrentRandomSeed())
 }
