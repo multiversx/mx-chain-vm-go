@@ -1,7 +1,6 @@
 package contexts
 
 import (
-	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"testing"
@@ -45,6 +44,33 @@ func TestNewRuntimeContext(t *testing.T) {
 	runtimeContext, err := NewRuntimeContext(host, vmType)
 	require.Nil(t, err)
 	require.NotNil(t, runtimeContext)
+
+	require.Equal(t, &vmcommon.VMInput{}, runtimeContext.vmInput)
+	require.Equal(t, []byte{}, runtimeContext.scAddress)
+	require.Equal(t, "", runtimeContext.callFunction)
+	require.Equal(t, false, runtimeContext.readOnly)
+	require.NotNil(t, runtimeContext.argParser)
+	require.Nil(t, runtimeContext.asyncCallInfo)
+}
+
+func TestRuntimeContext_InitState(t *testing.T) {
+	InitializeWasmer()
+
+	host := &mock.VmHostMock{}
+	vmType := []byte("type")
+
+	runtimeContext, err := NewRuntimeContext(host, vmType)
+	require.Nil(t, err)
+	require.NotNil(t, runtimeContext)
+
+	runtimeContext.vmInput = nil
+	runtimeContext.scAddress = []byte("some address")
+	runtimeContext.callFunction = "a function"
+	runtimeContext.readOnly = true
+	runtimeContext.argParser = nil
+	runtimeContext.asyncCallInfo = &arwen.AsyncCallInfo{}
+
+	runtimeContext.InitState()
 
 	require.Equal(t, &vmcommon.VMInput{}, runtimeContext.vmInput)
 	require.Equal(t, []byte{}, runtimeContext.scAddress)
@@ -210,7 +236,7 @@ func TestRuntimeContext_Instance(t *testing.T) {
 	require.Nil(t, runtimeContext.instance)
 }
 
-func TestRuntimeContext_InstanceMemory(t *testing.T) {
+func TestRuntimeContext_MemLoadStoreOk(t *testing.T) {
 	InitializeWasmer()
 	host := &mock.VmHostMock{}
 	vmType := []byte("type")
@@ -223,6 +249,116 @@ func TestRuntimeContext_InstanceMemory(t *testing.T) {
 	require.Nil(t, err)
 
 	memory := runtimeContext.instance.Memory
-	fmt.Printf("memory size: %d\n", memory.Length())
-	fmt.Println(memory.Data())
+	runtimeContext.instanceContext = wasmer.NewInstanceContext(nil, *memory)
+
+	memContents, err := runtimeContext.MemLoad(10, 10)
+	require.Nil(t, err)
+	require.Equal(t, []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, memContents)
+
+	pageSize := uint32(65536)
+	require.Equal(t, 2*pageSize, memory.Length())
+	memContents = []byte("test data")
+	err = runtimeContext.MemStore(10, memContents)
+	require.Nil(t, err)
+	require.Equal(t, 2*pageSize, memory.Length())
+
+	memContents, err = runtimeContext.MemLoad(10, 10)
+	require.Nil(t, err)
+	require.Equal(t, []byte{'t', 'e', 's', 't', ' ', 'd', 'a', 't', 'a', 0}, memContents)
+}
+
+func TestRuntimeContext_MemLoadCases(t *testing.T) {
+	InitializeWasmer()
+	host := &mock.VmHostMock{}
+	vmType := []byte("type")
+	runtimeContext, _ := NewRuntimeContext(host, vmType)
+
+	gasLimit := uint64(100000000)
+	path := "./../../test/contracts/counter.wasm"
+	contractCode := getSCCode(path)
+	err := runtimeContext.CreateWasmerInstance(contractCode, gasLimit)
+	require.Nil(t, err)
+
+	memory := runtimeContext.instance.Memory
+	runtimeContext.instanceContext = wasmer.NewInstanceContext(nil, *memory)
+
+	var offset int32
+	var length int32
+	// Offset too small
+	offset = -3
+	length = 10
+	memContents, err := runtimeContext.MemLoad(offset, length)
+	require.Equal(t, arwen.ErrMemLoadBadBounds, err)
+	require.Nil(t, memContents)
+
+	// Offset too larget
+	offset = int32(memory.Length() + 1)
+	length = 10
+	memContents, err = runtimeContext.MemLoad(offset, length)
+	require.Equal(t, arwen.ErrMemLoadBadBounds, err)
+	require.Nil(t, memContents)
+
+	// Negative length
+	offset = 10
+	length = -2
+	memContents, err = runtimeContext.MemLoad(offset, length)
+	require.Equal(t, arwen.ErrMemLoadNegativeLength, err)
+	require.Nil(t, memContents)
+
+	// Requested end too large
+	memContents = []byte("test data")
+	offset = int32(memory.Length() - 9)
+	err = runtimeContext.MemStore(offset, memContents)
+	require.Nil(t, err)
+
+	offset = int32(memory.Length() - 9)
+	length = 9
+	memContents, err = runtimeContext.MemLoad(offset, length)
+	require.Nil(t, err)
+	require.Equal(t, []byte("test data"), memContents)
+
+	offset = int32(memory.Length() - 8)
+	length = 9
+	memContents, err = runtimeContext.MemLoad(offset, length)
+	require.Nil(t, err)
+	require.Equal(t, []byte{'e', 's', 't', ' ', 'd', 'a', 't', 'a', 0}, memContents)
+}
+
+func TestRuntimeContext_MemStoreCases(t *testing.T) {
+	InitializeWasmer()
+	host := &mock.VmHostMock{}
+	vmType := []byte("type")
+	runtimeContext, _ := NewRuntimeContext(host, vmType)
+
+	gasLimit := uint64(100000000)
+	path := "./../../test/contracts/counter.wasm"
+	contractCode := getSCCode(path)
+	err := runtimeContext.CreateWasmerInstance(contractCode, gasLimit)
+	require.Nil(t, err)
+
+	pageSize := uint32(65536)
+	memory := runtimeContext.instance.Memory
+	require.Equal(t, 2*pageSize, memory.Length())
+	runtimeContext.instanceContext = wasmer.NewInstanceContext(nil, *memory)
+
+	// Bad lower bounds
+	memContents := []byte("test data")
+	offset := int32(-2)
+	err = runtimeContext.MemStore(offset, memContents)
+	require.Equal(t, arwen.ErrMemStoreBadLowerBounds, err)
+
+	// Memory growth
+	require.Equal(t, 2*pageSize, memory.Length())
+	offset = int32(memory.Length() - 4)
+	err = runtimeContext.MemStore(offset, memContents)
+	require.Nil(t, err)
+	require.Equal(t, 3*pageSize, memory.Length())
+
+	// Bad upper bounds - forcing the Wasmer memory to grow more than a page at a
+	// time is not allowed
+	memContents = make([]byte, pageSize+100)
+	offset = int32(memory.Length() - 50)
+	err = runtimeContext.MemStore(offset, memContents)
+	require.Equal(t, arwen.ErrMemStoreBadUpperBounds, err)
+	require.Equal(t, 4*pageSize, memory.Length())
 }

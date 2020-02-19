@@ -1,12 +1,11 @@
 package contexts
 
 import (
-	"fmt"
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 type runtimeContext struct {
@@ -260,10 +259,10 @@ func (context *runtimeContext) MemLoad(offset int32, length int32) ([]byte, erro
 	isLengthNegative := length < 0
 
 	if isOffsetTooSmall || isOffsetTooLarge {
-		return nil, fmt.Errorf("LoadBytes: bad bounds")
+		return nil, arwen.ErrMemLoadBadBounds
 	}
 	if isLengthNegative {
-		return nil, fmt.Errorf("LoadBytes: negative length")
+		return nil, arwen.ErrMemLoadNegativeLength
 	}
 
 	result := make([]byte, length)
@@ -286,7 +285,7 @@ func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 	isNewPageNecessary := requestedEnd > memoryLength
 
 	if isOffsetTooSmall {
-		return fmt.Errorf("StoreBytes: bad lower bounds")
+		return arwen.ErrMemStoreBadLowerBounds
 	}
 	if isNewPageNecessary {
 		err := memory.Grow(1)
@@ -300,7 +299,7 @@ func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 
 	isRequestedEndTooLarge := requestedEnd > memoryLength
 	if isRequestedEndTooLarge {
-		return fmt.Errorf("StoreBytes: bad upper bounds")
+		return arwen.ErrMemStoreBadUpperBounds
 	}
 
 	copy(memoryView[offset:requestedEnd], data)

@@ -25,3 +25,11 @@ var ErrSignalError = errors.New("error signalled by smartcontract")
 var ErrExecutionFailed = errors.New("execution failed")
 
 var ErrInvalidAPICall = errors.New("invalid API call")
+
+var ErrMemLoadBadBounds = errors.New("LoadBytes: bad bounds")
+
+var ErrMemLoadNegativeLength = errors.New("LoadBytes: negative length")
+
+var ErrMemStoreBadLowerBounds = errors.New("StoreBytes: bad lower bounds")
+
+var ErrMemStoreBadUpperBounds = errors.New("StoreBytes: bad upper bounds")
