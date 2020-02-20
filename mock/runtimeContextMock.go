@@ -92,6 +92,13 @@ func (r *RuntimeContextMock) GetRuntimeBreakpointValue() arwen.BreakpointValue {
 	return r.CurrentBreakpointValue
 }
 
+func (r *RuntimeContextMock) VerifyContractCode() error {
+	if r.Err != nil {
+		return r.Err
+	}
+	return nil
+}
+
 func (r *RuntimeContextMock) ArgParser() arwen.ArgumentsParser {
 	return r.ArgParserMock
 }
