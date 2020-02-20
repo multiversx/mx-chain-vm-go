@@ -1,6 +1,7 @@
 package contexts
 
 import (
+	"errors"
 	"io/ioutil"
 	"path/filepath"
 	"testing"
@@ -234,6 +235,61 @@ func TestRuntimeContext_Instance(t *testing.T) {
 
 	runtimeContext.CleanInstance()
 	require.Nil(t, runtimeContext.instance)
+}
+
+func TestRuntimeContext_Breakpoints(t *testing.T) {
+	mockOutput := &mock.OutputContextMock{}
+	mockOutput.SetReturnMessage("")
+	host := &mock.VmHostMock{
+		OutputContext: mockOutput,
+	}
+	InitializeWasmer()
+	vmType := []byte("type")
+	runtimeContext, _ := NewRuntimeContext(host, vmType)
+	gasLimit := uint64(100000000)
+	path := "./../../test/contracts/counter.wasm"
+	contractCode := getSCCode(path)
+	err := runtimeContext.CreateWasmerInstance(contractCode, gasLimit)
+	require.Nil(t, err)
+
+	// Set and get curent breakpoint value
+	require.Equal(t, arwen.BreakpointNone, runtimeContext.GetRuntimeBreakpointValue())
+	runtimeContext.SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+	require.Equal(t, arwen.BreakpointOutOfGas, runtimeContext.GetRuntimeBreakpointValue())
+
+	runtimeContext.SetRuntimeBreakpointValue(arwen.BreakpointNone)
+	require.Equal(t, arwen.BreakpointNone, runtimeContext.GetRuntimeBreakpointValue())
+
+	// Signal user error
+	mockOutput.SetReturnCode(vmcommon.Ok)
+	mockOutput.SetReturnMessage("")
+	runtimeContext.SetRuntimeBreakpointValue(arwen.BreakpointNone)
+
+	runtimeContext.SignalUserError("something happened")
+	require.Equal(t, arwen.BreakpointSignalError, runtimeContext.GetRuntimeBreakpointValue())
+	require.Equal(t, vmcommon.UserError, mockOutput.ReturnCode())
+	require.Equal(t, "something happened", mockOutput.ReturnMessage())
+
+	// Fail execution
+	mockOutput.SetReturnCode(vmcommon.Ok)
+	mockOutput.SetReturnMessage("")
+	runtimeContext.SetRuntimeBreakpointValue(arwen.BreakpointNone)
+
+	runtimeContext.FailExecution(nil)
+	require.Equal(t, arwen.BreakpointExecutionFailed, runtimeContext.GetRuntimeBreakpointValue())
+	require.Equal(t, vmcommon.ExecutionFailed, mockOutput.ReturnCode())
+	require.Equal(t, "execution failed", mockOutput.ReturnMessage())
+
+	mockOutput.SetReturnCode(vmcommon.Ok)
+	mockOutput.SetReturnMessage("")
+	runtimeContext.SetRuntimeBreakpointValue(arwen.BreakpointNone)
+	require.Equal(t, arwen.BreakpointNone, runtimeContext.GetRuntimeBreakpointValue())
+
+	runtimeError := errors.New("runtime error")
+	runtimeContext.FailExecution(runtimeError)
+	require.Equal(t, arwen.BreakpointExecutionFailed, runtimeContext.GetRuntimeBreakpointValue())
+	require.Equal(t, vmcommon.ExecutionFailed, mockOutput.ReturnCode())
+	require.Equal(t, runtimeError.Error(), mockOutput.ReturnMessage())
 }
 
 func TestRuntimeContext_MemLoadStoreOk(t *testing.T) {

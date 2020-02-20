@@ -141,9 +141,15 @@ func (context *runtimeContext) Arguments() [][]byte {
 
 func (context *runtimeContext) FailExecution(err error) {
 	context.host.Output().SetReturnCode(vmcommon.ExecutionFailed)
+
+	var message string
 	if err != nil {
-		context.host.Output().SetReturnMessage(err.Error())
+		message = err.Error()
+	} else {
+		message = "execution failed"
 	}
+
+	context.host.Output().SetReturnMessage(message)
 	context.SetRuntimeBreakpointValue(arwen.BreakpointExecutionFailed)
 }
 
