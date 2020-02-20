@@ -4,61 +4,68 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/stretchr/testify/require"
 )
 
 func TestNewBigInt(t *testing.T) {
 	t.Parallel()
 
-	bic, err := NewBigIntContext()
+	bigIntContext, err := NewBigIntContext()
 
 	require.Nil(t, err)
-	require.False(t, bic.IsInterfaceNil())
-	require.NotNil(t, bic.mappedValues)
-	require.NotNil(t, bic.stateStack)
+	require.False(t, bigIntContext.IsInterfaceNil())
+	require.NotNil(t, bigIntContext.mappedValues)
+	require.NotNil(t, bigIntContext.stateStack)
+	require.Equal(t, 0, len(bigIntContext.mappedValues))
+	require.Equal(t, 0, len(bigIntContext.stateStack))
 }
 
 func TestBigIntContext_InitPushPopState(t *testing.T) {
 	t.Parallel()
 
-	bic, _ := NewBigIntContext()
-	bic.InitState()
+	bigIntContext, _ := NewBigIntContext()
+	bigIntContext.InitState()
 
-	err := bic.PopState()
-	require.Equal(t, arwen.StateStackUnderflow, err)
+	bigIntContext.PushState()
+	require.Equal(t, 1, len(bigIntContext.stateStack))
 
-	bic.PushState()
-
-	err = bic.PopState()
-	require.Nil(t, err)
+	bigIntContext.PopState()
+	require.Equal(t, 0, len(bigIntContext.stateStack))
 }
 
 func TestBigIntContext_PutGet(t *testing.T) {
 	t.Parallel()
 
-	value1, value2 := int64(100), int64(200)
-	bic, _ := NewBigIntContext()
+	value1, value2, value3 := int64(100), int64(200), int64(-42)
+	bigIntContext, _ := NewBigIntContext()
 
-	index1 := bic.Put(value1)
+	index1 := bigIntContext.Put(value1)
 	require.Equal(t, int32(0), index1)
 
-	index2 := bic.Put(value2)
+	index2 := bigIntContext.Put(value2)
 	require.Equal(t, int32(1), index2)
 
-	bigRes1, bigRes2 := bic.GetOne(index1), bic.GetOne(index2)
+	index3 := bigIntContext.Put(value3)
+	require.Equal(t, int32(2), index3)
+
+	bigRes1, bigRes2 := bigIntContext.GetOne(index1), bigIntContext.GetOne(index2)
 	require.Equal(t, big.NewInt(value1), bigRes1)
 	require.Equal(t, big.NewInt(value2), bigRes2)
 
-	zeroRes := bic.GetOne(123)
+	zeroRes := bigIntContext.GetOne(123)
 	require.Equal(t, big.NewInt(0), zeroRes)
 
-	bigRes1, bigRes2 = bic.GetTwo(index1, index2)
+	bigRes1, bigRes2 = bigIntContext.GetTwo(index1, index2)
 	require.Equal(t, big.NewInt(value1), bigRes1)
 	require.Equal(t, big.NewInt(value2), bigRes2)
 
-	bigRes1, bigRes2, zeroRes = bic.GetThree(index1, index2, 123)
+	bigRes1, bigRes2, zeroRes = bigIntContext.GetThree(index1, index2, 123)
 	require.Equal(t, big.NewInt(value1), bigRes1)
 	require.Equal(t, big.NewInt(value2), bigRes2)
 	require.Equal(t, big.NewInt(0), zeroRes)
+
+	bigRes1, bigRes2, bigRes3 := bigIntContext.GetThree(index1, index2, index3)
+	require.Equal(t, big.NewInt(value1), bigRes1)
+	require.Equal(t, big.NewInt(value2), bigRes2)
+	require.Equal(t, big.NewInt(value3), bigRes3)
 }

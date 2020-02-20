@@ -178,6 +178,13 @@ type InstanceContext struct {
 	memory  Memory
 }
 
+func NewInstanceContext(ctx *cWasmerInstanceContextT, mem Memory) *InstanceContext {
+	return &InstanceContext{
+		context: ctx,
+		memory:  mem,
+	}
+}
+
 // IntoInstanceContext casts the first `context unsafe.Pointer`
 // argument of an imported function into an `InstanceContext`.
 func IntoInstanceContext(instanceContext unsafe.Pointer) InstanceContext {

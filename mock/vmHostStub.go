@@ -8,7 +8,7 @@ import (
 type VmHostStub struct {
 	InitStateCalled func()
 	PushStateCalled func()
-	PopStateCalled  func() error
+	PopStateCalled  func()
 
 	CryptoCalled               func() vmcommon.CryptoHook
 	BlockchainCalled           func() arwen.BlockchainContext
@@ -19,7 +19,7 @@ type VmHostStub struct {
 	StorageCalled              func() arwen.StorageContext
 	CreateNewContractCalled    func(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContextCalled func(input *vmcommon.ContractCallInput) error
-	ExecuteOnDestContextCalled func(input *vmcommon.ContractCallInput) error
+	ExecuteOnDestContextCalled func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
 	EthereumCallDataCalled     func() []byte
 }
 
@@ -35,11 +35,10 @@ func (vhs *VmHostStub) PushState() {
 	}
 }
 
-func (vhs *VmHostStub) PopState() error {
+func (vhs *VmHostStub) PopState() {
 	if vhs.PopStateCalled != nil {
-		return vhs.PopStateCalled()
+		vhs.PopStateCalled()
 	}
-	return nil
 }
 
 func (vhs *VmHostStub) Crypto() vmcommon.CryptoHook {
@@ -105,11 +104,11 @@ func (vhs *VmHostStub) ExecuteOnSameContext(input *vmcommon.ContractCallInput) e
 	return nil
 }
 
-func (vhs *VmHostStub) ExecuteOnDestContext(input *vmcommon.ContractCallInput) error {
+func (vhs *VmHostStub) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	if vhs.ExecuteOnDestContextCalled != nil {
 		return vhs.ExecuteOnDestContextCalled(input)
 	}
-	return nil
+	return nil, nil
 }
 
 func (vhs *VmHostStub) EthereumCallData() []byte {

@@ -11,7 +11,7 @@
                 "nonce": "0x00",
                 "balance": "0x00",
                 "storage": {
-                    "0x0100a94f5374fce5edbc8e2a8697c15331677e6ebf0b00000000000000000000": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                    "0x19efaebcc296cffac396adb4a60d54c05eff43926a6072498a618e943908efe1": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
                     "0x0000000000000000000000000000000000000000000000000000000000000000": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
                 },
                 "code": "erc20.wasm"
@@ -21,9 +21,7 @@
             {
                 "results": [
                     {
-                        "out": [
-                            "0x01"
-                        ],
+                        "out": [],
                         "status": "",
                         "gas": "0x0f2969",
                         "logs": [
@@ -81,7 +79,7 @@
                 "nonce": "0x00",
                 "balance": "0x00",
                 "storage": {
-                    "0x0100020000000000000000000000000000000000000000000000000000000000": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                    "0xfe1847a18709e94e8938511fd1050153c9f207efa75081b2736362b3d4cf962c": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
                     "0x0000000000000000000000000000000000000000000000000000000000000000": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
                 },
                 "code": "erc20.wasm"

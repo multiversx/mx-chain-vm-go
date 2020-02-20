@@ -1,6 +1,7 @@
 package contexts
 
 import (
+	"math/big"
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -13,176 +14,230 @@ import (
 func TestNewMeteringContext(t *testing.T) {
 	t.Parallel()
 
-	host := &mock.VmHostStub{}
-	blockGasLimit := uint64(15000)
-	gasSchedule := config.MakeGasMap(1)
+	host := &mock.VmHostMock{}
 
-	metContext, err := NewMeteringContext(host, gasSchedule, blockGasLimit)
+	meteringContext, err := NewMeteringContext(host, config.MakeGasMap(1), uint64(15000))
 	require.Nil(t, err)
-	require.NotNil(t, metContext)
+	require.NotNil(t, meteringContext)
 }
 
 func TestNewMeteringContext_NilGasSchedule(t *testing.T) {
 	t.Parallel()
 
-	host := &mock.VmHostStub{}
-	blockGasLimit := uint64(15000)
+	host := &mock.VmHostMock{}
 
-	metContext, err := NewMeteringContext(host, nil, blockGasLimit)
+	meteringContext, err := NewMeteringContext(host, nil, uint64(15000))
 	require.NotNil(t, err)
-	require.Nil(t, metContext)
+	require.Nil(t, meteringContext)
 }
 
 func TestMeteringContext_GasSchedule(t *testing.T) {
 	t.Parallel()
 
 	host := &mock.VmHostStub{}
-	blockGasLimit := uint64(15000)
-	gasSchedule := config.MakeGasMap(1)
-	metContext, _ := NewMeteringContext(host, gasSchedule, blockGasLimit)
+	meteringContext, _ := NewMeteringContext(host, config.MakeGasMap(1), uint64(15000))
 
-	gSchedule := metContext.GasSchedule()
-	require.NotNil(t, gSchedule)
+	schedule := meteringContext.GasSchedule()
+	require.NotNil(t, schedule)
 }
 
 func TestMeteringContext_UseGas(t *testing.T) {
 	t.Parallel()
 
-	runtimeMock := mock.NewRuntimeContextMock()
-	host := &mock.VmHostStub{
-		RuntimeCalled: func() arwen.RuntimeContext {
-			return runtimeMock
-		},
+	mockRuntime := &mock.RuntimeContextMock{}
+	vmInput := &vmcommon.VMInput{GasProvided: 0}
+	mockRuntime.SetVMInput(vmInput)
+	host := &mock.VmHostMock{
+		RuntimeContext: mockRuntime,
 	}
-	blockGasLimit := uint64(15000)
-	gasSchedule := config.MakeGasMap(1)
-	metContext, _ := NewMeteringContext(host, gasSchedule, blockGasLimit)
+	meteringContext, _ := NewMeteringContext(host, config.MakeGasMap(1), uint64(15000))
 
 	gas := uint64(1000)
-	metContext.UseGas(gas)
-	require.Equal(t, runtimeMock.GetPointsUsed(), gas)
-
-	gasLeft := metContext.GasLeft()
-	require.Equal(t, uint64(0), gasLeft)
+	meteringContext.UseGas(gas)
+	require.Equal(t, mockRuntime.GetPointsUsed(), gas)
+	require.Equal(t, uint64(0), meteringContext.GasLeft())
 
 	gasProvided := uint64(10000)
-	vmInput := &vmcommon.VMInput{GasProvided: gasProvided}
-	runtimeMock.SetVMInput(vmInput)
+	vmInput = &vmcommon.VMInput{GasProvided: gasProvided}
+	mockRuntime.SetVMInput(vmInput)
+	mockRuntime.SetPointsUsed(0)
+	meteringContext, _ = NewMeteringContext(host, config.MakeGasMap(1), uint64(15000))
 
-	gasLeft = metContext.GasLeft()
-	require.Equal(t, gasProvided-gas, gasLeft)
+	require.Equal(t, gasProvided, meteringContext.GasLeft())
+	meteringContext.UseGas(gas)
+	require.Equal(t, gasProvided-gas, meteringContext.GasLeft())
 }
 
 func TestMeteringContext_FreeGas(t *testing.T) {
 	t.Parallel()
 
-	outputContextMock := mock.NewOutputContextMock()
-	host := &mock.VmHostStub{
-		OutputCalled: func() arwen.OutputContext {
-			return outputContextMock
-		},
+	mockOutput := &mock.OutputContextMock{}
+	host := &mock.VmHostMock{
+		OutputContext: mockOutput,
 	}
 
-	blockGasLimit := uint64(15000)
-	gasSchedule := config.MakeGasMap(1)
-	metContext, _ := NewMeteringContext(host, gasSchedule, blockGasLimit)
+	meteringContext, _ := NewMeteringContext(host, config.MakeGasMap(1), uint64(15000))
 
-	metContext.FreeGas(1000)
-	gas := outputContextMock.GetRefund()
+	mockOutput.GasRefund = big.NewInt(0)
+	meteringContext.FreeGas(1000)
+	gas := mockOutput.GetRefund()
 	require.Equal(t, uint64(1000), gas)
+
+	meteringContext.FreeGas(100)
+	gas = mockOutput.GetRefund()
+	require.Equal(t, uint64(1100), gas)
 }
 
 func TestMeteringContext_BoundGasLimit(t *testing.T) {
 	t.Parallel()
 
-	runtimeMock := mock.NewRuntimeContextMock()
-	host := &mock.VmHostStub{
-		RuntimeCalled: func() arwen.RuntimeContext {
-			return runtimeMock
-		},
+	mockRuntime := &mock.RuntimeContextMock{}
+	host := &mock.VmHostMock{
+		RuntimeContext: mockRuntime,
 	}
 	blockGasLimit := uint64(15000)
-	gasSchedule := config.MakeGasMap(1)
-	metContext, _ := NewMeteringContext(host, gasSchedule, blockGasLimit)
+	meteringContext, _ := NewMeteringContext(host, config.MakeGasMap(1), uint64(15000))
 
 	gasProvided := uint64(10000)
 	vmInput := &vmcommon.VMInput{GasProvided: gasProvided}
-	runtimeMock.SetVMInput(vmInput)
+	mockRuntime.SetVMInput(vmInput)
+	mockRuntime.SetPointsUsed(0)
 
 	gasLimit := 5000
-	limit := metContext.BoundGasLimit(int64(gasLimit))
+	limit := meteringContext.BoundGasLimit(int64(gasLimit))
 	require.Equal(t, uint64(gasLimit), limit)
 
-	blockLimit := metContext.BlockGasLimit()
+	gasLimit = 25000
+	limit = meteringContext.BoundGasLimit(int64(gasLimit))
+	require.Equal(t, meteringContext.GasLeft(), limit)
+
+	blockLimit := meteringContext.BlockGasLimit()
 	require.Equal(t, blockGasLimit, blockLimit)
 }
 
-func TestDeductInitialGasForExecution(t *testing.T) {
+func TestMeteringContext_DeductInitialGasForExecution(t *testing.T) {
 	t.Parallel()
 
+	mockRuntime := &mock.RuntimeContextMock{}
 	gasProvided := uint64(10000)
-	host := &mock.VmHostStub{}
-	blockGasLimit := uint64(15000)
-	gasSchedule := config.MakeGasMap(1)
-	metContext, _ := NewMeteringContext(host, gasSchedule, blockGasLimit)
-
-	contract := []byte("contract")
-	input := &vmcommon.ContractCallInput{
-		VMInput: vmcommon.VMInput{
-			GasProvided: gasProvided,
-		},
+	vmInput := &vmcommon.VMInput{
+		GasProvided: gasProvided,
 	}
 
-	remainingGas, err := metContext.DeductInitialGasForExecution(input, contract)
-	require.Nil(t, err)
-	require.Equal(t, gasProvided-uint64(len(contract)), remainingGas)
+	mockRuntime.SetVMInput(vmInput)
 
-	input.GasProvided = 1
-	remainingGas, err = metContext.DeductInitialGasForExecution(input, contract)
-	require.NotNil(t, err)
-	require.Zero(t, remainingGas)
+	host := &mock.VmHostMock{
+		RuntimeContext: mockRuntime,
+	}
+
+	meteringContext, _ := NewMeteringContext(host, config.MakeGasMap(1), uint64(15000))
+
+	contract := []byte("contract")
+	err := meteringContext.DeductInitialGasForExecution(contract)
+	require.Nil(t, err)
+
+	vmInput.GasProvided = 1
+	err = meteringContext.DeductInitialGasForExecution(contract)
+	require.Equal(t, arwen.ErrNotEnoughGas, err)
 }
 
 func TestDeductInitialGasForDirectDeployment(t *testing.T) {
 	t.Parallel()
-
+	mockRuntime := &mock.RuntimeContextMock{}
 	gasProvided := uint64(10000)
-	host := &mock.VmHostStub{}
-	blockGasLimit := uint64(15000)
-	gasSchedule := config.MakeGasMap(1)
-	metContext, _ := NewMeteringContext(host, gasSchedule, blockGasLimit)
-
-	contracCode := []byte("contractCode")
+	contractCode := []byte("contractCode")
 	input := &vmcommon.ContractCreateInput{
 		VMInput: vmcommon.VMInput{
 			GasProvided: gasProvided,
 		},
-		ContractCode: contracCode,
+		ContractCode: contractCode,
 	}
 
-	remainingGas, err := metContext.DeductInitialGasForDirectDeployment(input)
-	require.Equal(t, gasProvided-uint64(len(contracCode)+1), remainingGas)
+	mockRuntime.SetVMInput(&input.VMInput)
+
+	host := &mock.VmHostMock{
+		RuntimeContext: mockRuntime,
+	}
+
+	meteringContext, _ := NewMeteringContext(host, config.MakeGasMap(1), uint64(15000))
+
+	mockRuntime.SetPointsUsed(0)
+	err := meteringContext.DeductInitialGasForDirectDeployment(input)
 	require.Nil(t, err)
+	remainingGas := meteringContext.GasLeft()
+	require.Equal(t, gasProvided-uint64(len(contractCode))-1, remainingGas)
+
+	input.GasProvided = 2
+	mockRuntime.SetPointsUsed(0)
+	err = meteringContext.DeductInitialGasForDirectDeployment(input)
+	require.Equal(t, arwen.ErrNotEnoughGas, err)
 }
 
 func TestDeductInitialGasForIndirectDeployment(t *testing.T) {
 	t.Parallel()
 
+	mockRuntime := &mock.RuntimeContextMock{}
 	gasProvided := uint64(10000)
-	host := &mock.VmHostStub{}
-	blockGasLimit := uint64(15000)
-	gasSchedule := config.MakeGasMap(1)
-	metContext, _ := NewMeteringContext(host, gasSchedule, blockGasLimit)
-
-	contracCode := []byte("contractCode")
+	contractCode := []byte("contractCode")
 	input := &vmcommon.ContractCreateInput{
 		VMInput: vmcommon.VMInput{
 			GasProvided: gasProvided,
 		},
-		ContractCode: contracCode,
+		ContractCode: contractCode,
 	}
 
-	remainingGas, err := metContext.DeductInitialGasForIndirectDeployment(input)
-	require.Equal(t, gasProvided-uint64(len(contracCode)), remainingGas)
+	mockRuntime.SetVMInput(&input.VMInput)
+
+	host := &mock.VmHostMock{
+		RuntimeContext: mockRuntime,
+	}
+
+	meteringContext, _ := NewMeteringContext(host, config.MakeGasMap(1), uint64(15000))
+
+	mockRuntime.SetPointsUsed(0)
+	err := meteringContext.DeductInitialGasForIndirectDeployment(input)
 	require.Nil(t, err)
+	remainingGas := meteringContext.GasLeft()
+	require.Equal(t, gasProvided-uint64(len(contractCode)), remainingGas)
+
+	input.GasProvided = 2
+	mockRuntime.SetPointsUsed(0)
+	err = meteringContext.DeductInitialGasForDirectDeployment(input)
+	require.Equal(t, arwen.ErrNotEnoughGas, err)
+}
+
+func TestMeteringContext_AsyncCallGasLocking(t *testing.T) {
+	t.Parallel()
+
+	mockRuntime := &mock.RuntimeContextMock{}
+	contractCode := []byte("contractCode")
+	input := &vmcommon.ContractCreateInput{
+		VMInput: vmcommon.VMInput{
+			CallType: vmcommon.AsynchronousCall,
+		},
+		ContractCode: contractCode,
+	}
+
+	mockRuntime.SetVMInput(&input.VMInput)
+	mockRuntime.SetPointsUsed(0)
+
+	host := &mock.VmHostMock{
+		RuntimeContext: mockRuntime,
+	}
+
+	meteringContext, _ := NewMeteringContext(host, config.MakeGasMap(1), uint64(15000))
+
+	input.GasProvided = 2
+	err := meteringContext.deductAndLockGasIfAsyncStep()
+	require.Equal(t, arwen.ErrNotEnoughGas, err)
+
+	gasProvided := uint64(10000)
+	input.GasProvided = gasProvided
+	err = meteringContext.deductAndLockGasIfAsyncStep()
+	require.Nil(t, err)
+	require.Equal(t, uint64(2), meteringContext.gasLockedForAsyncStep)
+	require.Equal(t, gasProvided-3, meteringContext.GasLeft())
+
+	meteringContext.UnlockGasIfAsyncStep()
+	require.Equal(t, gasProvided-1, meteringContext.GasLeft())
 }

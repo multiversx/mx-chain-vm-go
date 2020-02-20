@@ -35,6 +35,8 @@
     ExecuteOnDestContext = 10
     DelegateExecution    = 10
     ExecuteReadOnly      = 10
+    AsyncCallStep        = 10
+    AsyncCallbackGasLock = 10
     CreateContract       = 10
     GetReturnData        = 10
     GetNumReturnData     = 10

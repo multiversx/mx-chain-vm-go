@@ -16,15 +16,15 @@ func TestConvertReturnValue(t *testing.T) {
 
 	wasmI32 := wasmer.I32(value)
 	bigValue := ConvertReturnValue(wasmI32)
-	require.Equal(t, big.NewInt(int64(value)), bigValue)
+	require.Equal(t, big.NewInt(int64(value)).Bytes(), bigValue)
 
 	wasmI64 := wasmer.I64(int64(value))
 	bigValue = ConvertReturnValue(wasmI64)
-	require.Equal(t, big.NewInt(int64(value)), bigValue)
+	require.Equal(t, big.NewInt(int64(value)).Bytes(), bigValue)
 
 	wasmVoid := wasmer.Void()
 	bigValue = ConvertReturnValue(wasmVoid)
-	require.Equal(t, big.NewInt(0), bigValue)
+	require.Equal(t, big.NewInt(0).Bytes(), bigValue)
 
 	defer func() {
 		r := recover()

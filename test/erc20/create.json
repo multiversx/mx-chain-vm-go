@@ -17,6 +17,13 @@
                         "gas": "0x0c4246",
                         "logs": [],
                         "refund": ""
+                    },
+                    {
+                        "out": [ "0x2710" ],
+                        "status": "",
+                        "gas": "0x0c4246",
+                        "logs": [],
+                        "refund": ""
                     }
                 ],
                 "transactions": [
@@ -30,6 +37,19 @@
                             "0x2710"
                         ],
                         "contractCode": "erc20.wasm",
+                        "gasPrice": "0x01",
+                        "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000001234"
+                    },
+                    {
+                        "nonce": "0x00",
+                        "function": "balanceOf",
+                        "gasLimit": "0x100000",
+                        "value": "0x00",
+                        "to": "0x0000000000000000000011111111a94f5374fce5edbc8e2a8697c15331001234",
+                        "arguments": [
+                            "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000001234"
+                        ],
+                        "contractCode": "",
                         "gasPrice": "0x01",
                         "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000001234"
                     }
@@ -50,8 +70,8 @@
         ],
         "postState": {
             "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000001234": {
-                "nonce": "0x01",
-                "balance": "0xe8d4951000",
+                "nonce": "0x02",
+                "balance": "0xe8d4851000",
                 "storage": {},
                 "code": ""
             },
@@ -59,7 +79,7 @@
                 "nonce": "0x00",
                 "balance": "0x00",
                 "storage": {
-                    "0x0100a94f5374fce5edbc8e2a8697c15331677e6ebf0b00000000000000000000": "0x2710",
+                    "0x4f77fb908938adf8ff6a16fc62ebfbe8c8fd55f225233a5faf4ec70dd24a4074": "0x2710",
                     "0x0000000000000000000000000000000000000000000000000000000000000000": "0x2710"
                 },
                 "code": "erc20.wasm"
