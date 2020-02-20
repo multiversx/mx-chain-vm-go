@@ -8,50 +8,27 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 )
 
-func (context *runtimeContext) VerifyContractCode() error {
-	memoryGuard := newMemoryGuard(context.instance)
-	err := memoryGuard.verifyMemoryDeclaration()
-	if err != nil {
-		return err
+type WASMValidator struct {
+	reserved *ReservedFunctions
+}
+
+func NewWASMValidator() *WASMValidator {
+	return &WASMValidator{
+		reserved: NewReservedFunctions(),
 	}
-
-	functionsGuard := newFunctionsGuard(context.instance)
-	err = functionsGuard.verifyFunctionsNames()
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
-type memoryGuard struct {
-	instance *wasmer.Instance
-}
-
-func newMemoryGuard(instance *wasmer.Instance) *memoryGuard {
-	return &memoryGuard{instance: instance}
-}
-
-func (guard *memoryGuard) verifyMemoryDeclaration() error {
-	if !guard.instance.HasMemory() {
+func (validator *WASMValidator) verifyMemoryDeclaration(instance *wasmer.Instance) error {
+	if !instance.HasMemory() {
 		return arwen.ErrMemoryDeclarationMissing
 	}
 
 	return nil
 }
 
-type functionsGuard struct {
-	instance *wasmer.Instance
-	reserved *ReservedFunctions
-}
-
-func newFunctionsGuard(instance *wasmer.Instance) *functionsGuard {
-	return &functionsGuard{instance: instance, reserved: NewReservedFunctions()}
-}
-
-func (guard *functionsGuard) verifyFunctionsNames() error {
-	for functionName := range guard.instance.Exports {
-		if !guard.isValidFunctionName(functionName) {
+func (validator *WASMValidator) verifyFunctionsNames(instance *wasmer.Instance) error {
+	for functionName := range instance.Exports {
+		if !validator.isValidFunctionName(functionName) {
 			return fmt.Errorf("%v: %s", arwen.ErrInvalidFunctionName, functionName)
 		}
 	}
@@ -59,7 +36,7 @@ func (guard *functionsGuard) verifyFunctionsNames() error {
 	return nil
 }
 
-func (guard *functionsGuard) isValidFunctionName(functionName string) bool {
+func (validator *WASMValidator) isValidFunctionName(functionName string) bool {
 	const maxLengthOfFunctionName = 256
 
 	if len(functionName) == 0 {
@@ -71,7 +48,7 @@ func (guard *functionsGuard) isValidFunctionName(functionName string) bool {
 	if !isASCIIString(functionName) {
 		return false
 	}
-	if guard.reserved.IsReserved(functionName) {
+	if validator.reserved.IsReserved(functionName) {
 		return false
 	}
 

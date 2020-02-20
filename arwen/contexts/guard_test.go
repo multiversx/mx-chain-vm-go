@@ -8,20 +8,20 @@ import (
 )
 
 func TestFunctionsGuard_isValidFunctionName(t *testing.T) {
-	guard := newFunctionsGuard(nil)
+	validator := NewWASMValidator()
 
-	require.True(t, guard.isValidFunctionName("foo"))
-	require.True(t, guard.isValidFunctionName("_"))
-	require.True(t, guard.isValidFunctionName("a"))
-	require.True(t, guard.isValidFunctionName("i"))
+	require.True(t, validator.isValidFunctionName("foo"))
+	require.True(t, validator.isValidFunctionName("_"))
+	require.True(t, validator.isValidFunctionName("a"))
+	require.True(t, validator.isValidFunctionName("i"))
 
-	require.False(t, guard.isValidFunctionName(""))
-	require.False(t, guard.isValidFunctionName("â"))
-	require.False(t, guard.isValidFunctionName("ș"))
-	require.False(t, guard.isValidFunctionName("Ä"))
+	require.False(t, validator.isValidFunctionName(""))
+	require.False(t, validator.isValidFunctionName("â"))
+	require.False(t, validator.isValidFunctionName("ș"))
+	require.False(t, validator.isValidFunctionName("Ä"))
 
-	require.False(t, guard.isValidFunctionName("claimDeveloperRewards"))
+	require.False(t, validator.isValidFunctionName("claimDeveloperRewards"))
 
-	require.True(t, guard.isValidFunctionName(strings.Repeat("_", 255)))
-	require.False(t, guard.isValidFunctionName(strings.Repeat("_", 256)))
+	require.True(t, validator.isValidFunctionName(strings.Repeat("_", 255)))
+	require.False(t, validator.isValidFunctionName(strings.Repeat("_", 256)))
 }
