@@ -33,3 +33,7 @@ var ErrMemLoadNegativeLength = errors.New("LoadBytes: negative length")
 var ErrMemStoreBadLowerBounds = errors.New("StoreBytes: bad lower bounds")
 
 var ErrMemStoreBadUpperBounds = errors.New("StoreBytes: bad upper bounds")
+
+var ErrMemoryDeclarationMissing = errors.New("wasm memory declaration missing")
+
+var ErrInvalidFunctionName = errors.New("invalid function name")

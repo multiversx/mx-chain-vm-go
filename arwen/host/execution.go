@@ -51,6 +51,12 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 		return vmOutput
 	}
 
+	err = runtime.VerifyContractCode()
+	if err != nil {
+		returnCode = vmcommon.ContractInvalid
+		return vmOutput
+	}
+
 	idContext := arwen.AddHostContext(host)
 	runtime.SetInstanceContextId(idContext)
 	defer func() {
@@ -202,7 +208,6 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]by
 
 	err = metering.DeductInitialGasForIndirectDeployment(input)
 	if err != nil {
-		output.Transfer(input.CallerAddr, address, 0, input.CallValue, nil)
 		return nil, err
 	}
 
@@ -217,7 +222,11 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]by
 	gasForDeployment := runtime.GetVMInput().GasProvided
 	err = runtime.CreateWasmerInstance(input.ContractCode, gasForDeployment)
 	if err != nil {
-		output.Transfer(input.CallerAddr, address, 0, input.CallValue, nil)
+		return nil, err
+	}
+
+	err = runtime.VerifyContractCode()
+	if err != nil {
 		return nil, err
 	}
 
@@ -225,7 +234,6 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]by
 
 	result, err := host.callInitFunction()
 	if err != nil {
-		output.Transfer(input.CallerAddr, address, 0, input.CallValue, nil)
 		return nil, err
 	}
 
