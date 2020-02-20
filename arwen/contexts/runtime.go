@@ -24,6 +24,7 @@ type runtimeContext struct {
 	asyncCallInfo *arwen.AsyncCallInfo
 
 	argParser arwen.ArgumentsParser
+	validator *WASMValidator
 }
 
 func NewRuntimeContext(
@@ -35,6 +36,7 @@ func NewRuntimeContext(
 		vmType:        vmType,
 		stateStack:    make([]*runtimeContext, 0),
 		instanceStack: make([]*wasmer.Instance, 0),
+		validator:     NewWASMValidator(),
 	}
 
 	context.InitState()
@@ -165,6 +167,20 @@ func (context *runtimeContext) SetRuntimeBreakpointValue(value arwen.BreakpointV
 
 func (context *runtimeContext) GetRuntimeBreakpointValue() arwen.BreakpointValue {
 	return arwen.BreakpointValue(context.instance.GetBreakpointValue())
+}
+
+func (context *runtimeContext) VerifyContractCode() error {
+	err := context.validator.verifyMemoryDeclaration(context.instance)
+	if err != nil {
+		return err
+	}
+
+	err = context.validator.verifyFunctionsNames(context.instance)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (context *runtimeContext) ElrondAPIErrorShouldFailExecution() bool {
