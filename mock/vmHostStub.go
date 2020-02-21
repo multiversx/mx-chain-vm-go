@@ -5,10 +5,13 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
+var _ arwen.VMHost = (*VmHostStub)(nil)
+
 type VmHostStub struct {
-	InitStateCalled func()
-	PushStateCalled func()
-	PopStateCalled  func()
+	InitStateCalled       func()
+	PushStateCalled       func()
+	PopStateCalled        func()
+	ClearStateStackCalled func()
 
 	CryptoCalled               func() vmcommon.CryptoHook
 	BlockchainCalled           func() arwen.BlockchainContext
@@ -38,6 +41,12 @@ func (vhs *VmHostStub) PushState() {
 func (vhs *VmHostStub) PopState() {
 	if vhs.PopStateCalled != nil {
 		vhs.PopStateCalled()
+	}
+}
+
+func (vhs *VmHostStub) ClearStateStack() {
+	if vhs.ClearStateStackCalled != nil {
+		vhs.ClearStateStackCalled()
 	}
 }
 

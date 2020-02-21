@@ -10,7 +10,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/ethapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // TryFunction corresponds to the try() part of a try / catch block
@@ -167,6 +167,13 @@ func (host *vmHost) PopState() {
 	host.bigIntContext.PopState()
 	host.runtimeContext.PopState()
 	host.outputContext.PopState()
+}
+
+func (host *vmHost) ClearStateStack() {
+	host.bigIntContext.ClearStateStack()
+	host.runtimeContext.ClearStateStack()
+	host.runtimeContext.ClearInstanceStack()
+	host.outputContext.ClearStateStack()
 }
 
 func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error) {

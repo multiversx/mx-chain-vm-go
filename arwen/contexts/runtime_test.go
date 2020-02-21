@@ -157,6 +157,11 @@ func TestRuntimeContext_PushPopInstance(t *testing.T) {
 	require.NotNil(t, runtimeContext.instance)
 	require.Equal(t, instance, runtimeContext.instance)
 	require.Equal(t, 0, len(runtimeContext.instanceStack))
+
+	runtimeContext.PushInstance()
+	require.Equal(t, 1, len(runtimeContext.instanceStack))
+	runtimeContext.ClearInstanceStack()
+	require.Equal(t, 0, len(runtimeContext.instanceStack))
 }
 
 func TestRuntimeContext_PushPopState(t *testing.T) {
@@ -194,6 +199,11 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 	require.Equal(t, &vmInput, runtimeContext.GetVMInput())
 	require.False(t, runtimeContext.ReadOnly())
 	require.Nil(t, runtimeContext.Arguments())
+
+	runtimeContext.PushState()
+	require.Equal(t, 1, len(runtimeContext.stateStack))
+	runtimeContext.ClearStateStack()
+	require.Equal(t, 0, len(runtimeContext.stateStack))
 }
 
 func TestRuntimeContext_Instance(t *testing.T) {
@@ -344,21 +354,21 @@ func TestRuntimeContext_MemLoadCases(t *testing.T) {
 	offset = -3
 	length = 10
 	memContents, err := runtimeContext.MemLoad(offset, length)
-	require.Equal(t, arwen.ErrMemLoadBadBounds, err)
+	require.True(t, errors.Is(err, arwen.ErrBadBounds))
 	require.Nil(t, memContents)
 
 	// Offset too larget
 	offset = int32(memory.Length() + 1)
 	length = 10
 	memContents, err = runtimeContext.MemLoad(offset, length)
-	require.Equal(t, arwen.ErrMemLoadBadBounds, err)
+	require.True(t, errors.Is(err, arwen.ErrBadBounds))
 	require.Nil(t, memContents)
 
 	// Negative length
 	offset = 10
 	length = -2
 	memContents, err = runtimeContext.MemLoad(offset, length)
-	require.Equal(t, arwen.ErrMemLoadNegativeLength, err)
+	require.True(t, errors.Is(err, arwen.ErrNegativeLength))
 	require.Nil(t, memContents)
 
 	// Requested end too large
@@ -401,7 +411,7 @@ func TestRuntimeContext_MemStoreCases(t *testing.T) {
 	memContents := []byte("test data")
 	offset := int32(-2)
 	err = runtimeContext.MemStore(offset, memContents)
-	require.Equal(t, arwen.ErrMemStoreBadLowerBounds, err)
+	require.True(t, errors.Is(err, arwen.ErrBadLowerBounds))
 
 	// Memory growth
 	require.Equal(t, 2*pageSize, memory.Length())
@@ -415,6 +425,6 @@ func TestRuntimeContext_MemStoreCases(t *testing.T) {
 	memContents = make([]byte, pageSize+100)
 	offset = int32(memory.Length() - 50)
 	err = runtimeContext.MemStore(offset, memContents)
-	require.Equal(t, arwen.ErrMemStoreBadUpperBounds, err)
+	require.True(t, errors.Is(err, arwen.ErrBadUpperBounds))
 	require.Equal(t, 4*pageSize, memory.Length())
 }

@@ -1,6 +1,7 @@
 package contexts
 
 import (
+	"fmt"
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -94,6 +95,10 @@ func (context *runtimeContext) PopState() {
 	context.asyncCallInfo = prevState.asyncCallInfo
 }
 
+func (context *runtimeContext) ClearStateStack() {
+	context.stateStack = make([]*runtimeContext, 0)
+}
+
 func (context *runtimeContext) PushInstance() {
 	context.instanceStack = append(context.instanceStack, context.instance)
 }
@@ -103,10 +108,12 @@ func (context *runtimeContext) PopInstance() {
 	prevInstance := context.instanceStack[instanceStackLen-1]
 	context.instanceStack = context.instanceStack[:instanceStackLen-1]
 
-	if context.instance != nil {
-		context.instance.Clean()
-	}
+	context.CleanInstance()
 	context.instance = prevInstance
+}
+
+func (context *runtimeContext) ClearInstanceStack() {
+	context.instanceStack = make([]*wasmer.Instance, 0)
 }
 
 func (context *runtimeContext) ArgParser() arwen.ArgumentsParser {
@@ -281,10 +288,10 @@ func (context *runtimeContext) MemLoad(offset int32, length int32) ([]byte, erro
 	isLengthNegative := length < 0
 
 	if isOffsetTooSmall || isOffsetTooLarge {
-		return nil, arwen.ErrMemLoadBadBounds
+		return nil, fmt.Errorf("mem load: %w", arwen.ErrBadBounds)
 	}
 	if isLengthNegative {
-		return nil, arwen.ErrMemLoadNegativeLength
+		return nil, fmt.Errorf("mem load: %w", arwen.ErrNegativeLength)
 	}
 
 	result := make([]byte, length)
@@ -307,7 +314,7 @@ func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 	isNewPageNecessary := requestedEnd > memoryLength
 
 	if isOffsetTooSmall {
-		return arwen.ErrMemStoreBadLowerBounds
+		return arwen.ErrBadLowerBounds
 	}
 	if isNewPageNecessary {
 		err := memory.Grow(1)
@@ -321,7 +328,7 @@ func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 
 	isRequestedEndTooLarge := requestedEnd > memoryLength
 	if isRequestedEndTooLarge {
-		return arwen.ErrMemStoreBadUpperBounds
+		return arwen.ErrBadUpperBounds
 	}
 
 	copy(memoryView[offset:requestedEnd], data)

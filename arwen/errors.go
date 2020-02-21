@@ -1,6 +1,9 @@
 package arwen
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 var ErrInitFuncCalledInRun = errors.New("it is not allowed to call init in run")
 
@@ -26,13 +29,13 @@ var ErrExecutionFailed = errors.New("execution failed")
 
 var ErrInvalidAPICall = errors.New("invalid API call")
 
-var ErrMemLoadBadBounds = errors.New("LoadBytes: bad bounds")
+var ErrBadBounds = errors.New("bad bounds")
 
-var ErrMemLoadNegativeLength = errors.New("LoadBytes: negative length")
+var ErrBadLowerBounds = fmt.Errorf("%w (lower)", ErrBadBounds)
 
-var ErrMemStoreBadLowerBounds = errors.New("StoreBytes: bad lower bounds")
+var ErrBadUpperBounds = fmt.Errorf("%w (upper)", ErrBadBounds)
 
-var ErrMemStoreBadUpperBounds = errors.New("StoreBytes: bad upper bounds")
+var ErrNegativeLength = errors.New("negative length")
 
 var ErrMemoryDeclarationMissing = errors.New("wasm memory declaration missing")
 

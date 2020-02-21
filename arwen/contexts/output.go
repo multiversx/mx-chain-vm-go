@@ -79,6 +79,10 @@ func (context *outputContext) PopState() {
 	mergeVMOutputs(context.outputState, prevState)
 }
 
+func (context *outputContext) ClearStateStack() {
+	context.stateStack = make([]*vmcommon.VMOutput, 0)
+}
+
 func (context *outputContext) GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool) {
 	accountIsNew := false
 	account, ok := context.outputState.OutputAccounts[string(address)]
@@ -123,7 +127,7 @@ func (context *outputContext) ClearReturnData() {
 	context.outputState.ReturnData = make([][]byte, 0)
 }
 
-func (context *outputContext) SelfDestruct(_ []byte, _ []byte) {
+func (context *outputContext) SelfDestruct(address []byte, beneficiary []byte) {
 	panic("not implemented")
 }
 

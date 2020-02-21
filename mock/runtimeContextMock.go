@@ -42,13 +42,19 @@ func (r *RuntimeContextMock) InitStateFromContractCallInput(input *vmcommon.Cont
 func (r *RuntimeContextMock) PushState() {
 }
 
+func (r *RuntimeContextMock) PopState() {
+}
+
+func (r *RuntimeContextMock) ClearStateStack() {
+}
+
 func (r *RuntimeContextMock) PushInstance() {
 }
 
 func (r *RuntimeContextMock) PopInstance() {
 }
 
-func (r *RuntimeContextMock) PopState() {
+func (r *RuntimeContextMock) ClearInstanceStack() {
 }
 
 func (r *RuntimeContextMock) GetVMType() []byte {

@@ -38,6 +38,10 @@ func (context *bigIntContext) PopState() {
 	context.mappedValues = prevState.mappedValues
 }
 
+func (context *bigIntContext) ClearStateStack() {
+	context.stateStack = make([]*bigIntContext, 0)
+}
+
 func (context *bigIntContext) Put(value int64) int32 {
 	newIndex := int32(len(context.mappedValues))
 	for {

@@ -29,7 +29,7 @@ func (validator *WASMValidator) verifyMemoryDeclaration(instance *wasmer.Instanc
 func (validator *WASMValidator) verifyFunctionsNames(instance *wasmer.Instance) error {
 	for functionName := range instance.Exports {
 		if !validator.isValidFunctionName(functionName) {
-			return fmt.Errorf("%v: %s", arwen.ErrInvalidFunctionName, functionName)
+			return fmt.Errorf("%w: %s", arwen.ErrInvalidFunctionName, functionName)
 		}
 	}
 
