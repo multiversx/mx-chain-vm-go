@@ -71,7 +71,6 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	storageContext, _ := NewStorageContext(host, bcHook)
 
 	key := []byte("key")
-	//secondKey := []byte("sKey")
 	value := []byte("value")
 
 	storageStatus := storageContext.SetStorage(address, key, value)
@@ -111,5 +110,4 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	require.Equal(t, int32(arwen.StorageAdded), storageStatus)
 	require.Equal(t, value, storageContext.GetStorage(address, key))
 	require.Len(t, storageContext.GetStorageUpdates(address), 2)
-
 }

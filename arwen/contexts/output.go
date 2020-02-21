@@ -123,7 +123,7 @@ func (context *outputContext) ClearReturnData() {
 	context.outputState.ReturnData = make([][]byte, 0)
 }
 
-func (context *outputContext) SelfDestruct(_ []byte, _ []byte) {
+func (context *outputContext) SelfDestruct(address []byte, beneficiary []byte) {
 	panic("not implemented")
 }
 

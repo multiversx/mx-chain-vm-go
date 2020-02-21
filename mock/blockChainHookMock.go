@@ -63,8 +63,6 @@ func (b *BlockchainHookMock) AddAccounts(accounts []*Account) {
 	}
 }
 
-// TODO NextReturnError()
-
 func (b *BlockchainHookMock) AccountExists(address []byte) (bool, error) {
 	if b.Err != nil {
 		return false, b.Err

@@ -10,8 +10,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var ErrAccountFault = errors.New("account fault")
-var ErrTestError = errors.New("some test error")
+var errAccountFault = errors.New("account fault")
+var errTestError = errors.New("some test error")
 
 var testAccounts = []*mock.Account{
 	{Exists: true, Address: []byte("account_old"), Nonce: 12, Balance: big.NewInt(0)},
@@ -21,16 +21,16 @@ var testAccounts = []*mock.Account{
 	{Exists: true, Address: []byte("account_with_code"), Nonce: 4, Balance: big.NewInt(512), Code: []byte("somecode")},
 	{Exists: true, Address: []byte("account_old_with_money"), Nonce: 56, Balance: big.NewInt(1024)},
 	{Exists: false, Address: []byte("account_missing")},
-	{Exists: true, Address: []byte("account_faulty"), Err: ErrAccountFault},
+	{Exists: true, Address: []byte("account_faulty"), Err: errAccountFault},
 }
 
 func TestNewBlockchainContext(t *testing.T) {
 	t.Parallel()
 
 	host := &mock.VmHostStub{}
-	bcHook := mock.NewBlockchainHookMock()
+	blockchainHook := mock.NewBlockchainHookMock()
 
-	blockchainContext, err := NewBlockchainContext(host, bcHook)
+	blockchainContext, err := NewBlockchainContext(host, blockchainHook)
 	require.Nil(t, err)
 	require.NotNil(t, blockchainContext)
 }
@@ -39,28 +39,28 @@ func TestBlockchainContext_AccountExists(t *testing.T) {
 	t.Parallel()
 
 	host := &mock.VmHostStub{}
-	mockBlockchain := mock.NewBlockchainHookMock()
-	mockBlockchain.AddAccounts(testAccounts)
+	blockchainHook := mock.NewBlockchainHookMock()
+	blockchainHook.AddAccounts(testAccounts)
 
-	blockchainContext, _ := NewBlockchainContext(host, mockBlockchain)
+	blockchainContext, _ := NewBlockchainContext(host, blockchainHook)
 
 	require.False(t, blockchainContext.AccountExists([]byte("account_missing")))
 	require.False(t, blockchainContext.AccountExists([]byte("account_faulty")))
 	require.True(t, blockchainContext.AccountExists([]byte("account_old")))
 
-	mockBlockchain.Err = ErrTestError
+	blockchainHook.Err = errTestError
 	require.False(t, blockchainContext.AccountExists([]byte("account_something")))
 }
 
 func TestBlockchainContext_GetBalance(t *testing.T) {
 	t.Parallel()
 
-	mockBlockchain := mock.NewBlockchainHookMock()
-	mockBlockchain.AddAccounts(testAccounts)
+	blockchainHook := mock.NewBlockchainHookMock()
+	blockchainHook.AddAccounts(testAccounts)
 	mockOutput := &mock.OutputContextMock{}
 	host := &mock.VmHostMock{}
 	host.OutputContext = mockOutput
-	blockchainContext, _ := NewBlockchainContext(host, mockBlockchain)
+	blockchainContext, _ := NewBlockchainContext(host, blockchainHook)
 
 	// Act as if the OutputContext has no OutputAccounts cached
 	// (mockOutput.GetOutputAccount() always returns "is new")
@@ -69,11 +69,11 @@ func TestBlockchainContext_GetBalance(t *testing.T) {
 	mockOutput.OutputAccountIsNew = true
 
 	// Test if error is propagated from BlockchainHook
-	mockBlockchain.Err = ErrTestError
+	blockchainHook.Err = errTestError
 	balanceBytes := blockchainContext.GetBalance([]byte("account_new_with_money"))
 	value := big.NewInt(0).SetBytes(balanceBytes)
 	require.Equal(t, big.NewInt(0), value)
-	mockBlockchain.Err = nil
+	blockchainHook.Err = nil
 
 	// Test that an account that doesn't exist will not be updated with any kind
 	// of balance in the OutputAccounts, but GetBalance() must return 0
@@ -112,20 +112,20 @@ func TestBlockchainContext_GetNonceAndIncrease(t *testing.T) {
 	mockOutput := &mock.OutputContextMock{}
 	host.OutputContext = mockOutput
 
-	mockBlockchain := mock.NewBlockchainHookMock()
-	mockBlockchain.AddAccounts(testAccounts)
-	blockchainContext, _ := NewBlockchainContext(host, mockBlockchain)
+	blockchainHook := mock.NewBlockchainHookMock()
+	blockchainHook.AddAccounts(testAccounts)
+	blockchainContext, _ := NewBlockchainContext(host, blockchainHook)
 
 	// GetNonce: Test if error is propagated from BlockchainHook, and that the
 	// cached OutputAccount doesn't lose its Nonce due to the error.
 	mockOutput.OutputAccountMock = account
 	mockOutput.OutputAccountIsNew = true
-	mockBlockchain.Err = ErrTestError
+	blockchainHook.Err = errTestError
 	nonce, err := blockchainContext.GetNonce([]byte("any account"))
-	require.Equal(t, ErrTestError, err)
+	require.Equal(t, errTestError, err)
 	require.Equal(t, uint64(0), nonce)
 	require.Equal(t, uint64(3), account.Nonce)
-	mockBlockchain.Err = nil
+	blockchainHook.Err = nil
 
 	// GetNonce: Test requesting the nonce of an Account not yet cached by
 	// OutputAccounts
@@ -160,24 +160,24 @@ func TestBlockchainContext_GetCodeHashAndSize(t *testing.T) {
 
 	mockCrypto := &mock.CryptoHookMock{}
 
-	mockBlockchain := mock.NewBlockchainHookMock()
-	mockBlockchain.AddAccounts(testAccounts)
+	blockchainHook := mock.NewBlockchainHookMock()
+	blockchainHook.AddAccounts(testAccounts)
 
 	host := &mock.VmHostMock{}
 	host.CryptoHook = mockCrypto
 
-	blockchainContext, _ := NewBlockchainContext(host, mockBlockchain)
+	blockchainContext, _ := NewBlockchainContext(host, blockchainHook)
 
 	address := []byte("account_with_code")
 	expectedCode := []byte("somecode")
 	expectedCodeHash := []byte("code hash")
 
 	// GetCode: Test if error is propagated from blockchain hook
-	mockBlockchain.Err = ErrTestError
+	blockchainHook.Err = errTestError
 	code, err := blockchainContext.GetCode(address)
 	require.NotNil(t, err)
 	require.Nil(t, code)
-	mockBlockchain.Err = nil
+	blockchainHook.Err = nil
 
 	// GetCode: Test success
 	code, err = blockchainContext.GetCode(address)
@@ -185,17 +185,17 @@ func TestBlockchainContext_GetCodeHashAndSize(t *testing.T) {
 	require.Equal(t, expectedCode, code)
 
 	// GetCodeHash: Test if error is propagated from blockchain hook
-	mockBlockchain.Err = ErrTestError
+	blockchainHook.Err = errTestError
 	codeHash, err := blockchainContext.GetCodeHash(address)
-	require.Equal(t, ErrTestError, err)
+	require.Equal(t, errTestError, err)
 	require.Nil(t, codeHash)
-	mockBlockchain.Err = nil
+	blockchainHook.Err = nil
 
 	// GetCodeHash: Test if error is propagated from crypto hook
 	mockCrypto.Result = nil
-	mockCrypto.Err = ErrTestError
+	mockCrypto.Err = errTestError
 	codeHash, err = blockchainContext.GetCodeHash(address)
-	require.Equal(t, ErrTestError, err)
+	require.Equal(t, errTestError, err)
 	require.Nil(t, codeHash)
 
 	// GetCodeHash: Test success
@@ -206,11 +206,11 @@ func TestBlockchainContext_GetCodeHashAndSize(t *testing.T) {
 	require.Nil(t, err)
 
 	// GetCodeSize: Test if error is propagated from blockchain hook
-	mockBlockchain.Err = ErrTestError
+	blockchainHook.Err = errTestError
 	size, err := blockchainContext.GetCodeSize(address)
-	require.Equal(t, ErrTestError, err)
+	require.Equal(t, errTestError, err)
 	require.Equal(t, int32(0), size)
-	mockBlockchain.Err = nil
+	blockchainHook.Err = nil
 
 	// GetCodeSize: Test success
 	size, err = blockchainContext.GetCodeSize(address)
@@ -223,8 +223,8 @@ func TestBlockchainContext_NewAddress(t *testing.T) {
 
 	mockOutput := &mock.OutputContextMock{}
 
-	mockBlockchain := mock.NewBlockchainHookMock()
-	mockBlockchain.AddAccounts(testAccounts)
+	blockchainHook := mock.NewBlockchainHookMock()
+	blockchainHook.AddAccounts(testAccounts)
 
 	mockRuntime := &mock.RuntimeContextMock{}
 	mockRuntime.VmType = []byte{0xF, 0xF}
@@ -235,30 +235,30 @@ func TestBlockchainContext_NewAddress(t *testing.T) {
 	}
 
 	// Test error propagation from GetNonce()
-	blockchainContext, _ := NewBlockchainContext(host, mockBlockchain)
+	blockchainContext, _ := NewBlockchainContext(host, blockchainHook)
 	creatorAddress := []byte("account_new")
-	creatorAccount := mockBlockchain.Accounts[string(creatorAddress)]
+	creatorAccount := blockchainHook.Accounts[string(creatorAddress)]
 	creatorOutputAccount := mockOutput.NewVMOutputAccountFromMockAccount(creatorAccount)
 	mockOutput.OutputAccountMock = creatorOutputAccount
 	mockOutput.OutputAccountIsNew = true
-	mockBlockchain.Err = ErrTestError
+	blockchainHook.Err = errTestError
 
 	address, err := blockchainContext.NewAddress(creatorAddress)
-	require.Equal(t, ErrTestError, err)
+	require.Equal(t, errTestError, err)
 	require.Nil(t, address)
 
-	mockBlockchain.Err = nil
+	blockchainHook.Err = nil
 
 	// Test if nonce is not deducted if 0, before calling BlockchainHook.NewAddres()
 	creatorAddress = []byte("account_new")
-	creatorAccount = mockBlockchain.Accounts[string(creatorAddress)]
+	creatorAccount = blockchainHook.Accounts[string(creatorAddress)]
 	creatorOutputAccount = mockOutput.NewVMOutputAccountFromMockAccount(creatorAccount)
 	mockOutput.OutputAccountMock = creatorOutputAccount
 	mockOutput.OutputAccountIsNew = true
 
 	expectedCreatorAddres := creatorAddress
 	stubBlockchain := &mock.BlockChainHookStub{
-		GetNonceCalled: mockBlockchain.GetNonce,
+		GetNonceCalled: blockchainHook.GetNonce,
 		NewAddressCalled: func(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error) {
 			require.Equal(t, expectedCreatorAddres, creatorAddress)
 			require.Equal(t, uint64(0), creatorNonce)
@@ -274,14 +274,14 @@ func TestBlockchainContext_NewAddress(t *testing.T) {
 
 	// Test if nonce is correctly deducted if greater than 0, before calling BlockchainHook.NewAddres()
 	creatorAddress = []byte("account_old_with_money")
-	creatorAccount = mockBlockchain.Accounts[string(creatorAddress)]
+	creatorAccount = blockchainHook.Accounts[string(creatorAddress)]
 	creatorOutputAccount = mockOutput.NewVMOutputAccountFromMockAccount(creatorAccount)
 	mockOutput.OutputAccountMock = creatorOutputAccount
 	mockOutput.OutputAccountIsNew = false
 
 	expectedCreatorAddres = creatorAddress
 	stubBlockchain = &mock.BlockChainHookStub{
-		GetNonceCalled: mockBlockchain.GetNonce,
+		GetNonceCalled: blockchainHook.GetNonce,
 		NewAddressCalled: func(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error) {
 			require.Equal(t, expectedCreatorAddres, creatorAddress)
 			require.Equal(t, uint64(55), creatorNonce)
@@ -297,25 +297,25 @@ func TestBlockchainContext_NewAddress(t *testing.T) {
 
 	// Test if error is propagated from Blockchain.NewAddress
 	creatorAddress = []byte("account_with_code")
-	creatorAccount = mockBlockchain.Accounts[string(creatorAddress)]
+	creatorAccount = blockchainHook.Accounts[string(creatorAddress)]
 	creatorOutputAccount = mockOutput.NewVMOutputAccountFromMockAccount(creatorAccount)
 	mockOutput.OutputAccountMock = creatorOutputAccount
 	mockOutput.OutputAccountIsNew = false
 
 	expectedCreatorAddres = creatorAddress
 	stubBlockchain = &mock.BlockChainHookStub{
-		GetNonceCalled: mockBlockchain.GetNonce,
+		GetNonceCalled: blockchainHook.GetNonce,
 		NewAddressCalled: func(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error) {
 			require.Equal(t, expectedCreatorAddres, creatorAddress)
 			require.Equal(t, uint64(3), creatorNonce)
 			require.Equal(t, mockRuntime.VmType, vmType)
-			return nil, ErrTestError
+			return nil, errTestError
 		},
 	}
 	blockchainContext, _ = NewBlockchainContext(host, stubBlockchain)
 
 	address, err = blockchainContext.NewAddress(creatorAddress)
-	require.Equal(t, ErrTestError, err)
+	require.Equal(t, errTestError, err)
 	require.Nil(t, address)
 }
 
@@ -323,23 +323,23 @@ func TestBlockchainContext_BlockHash(t *testing.T) {
 	t.Parallel()
 
 	host := &mock.VmHostMock{}
-	mockBlockchain := mock.NewBlockchainHookMock()
-	blockchainContext, _ := NewBlockchainContext(host, mockBlockchain)
+	blockchainHook := mock.NewBlockchainHookMock()
+	blockchainContext, _ := NewBlockchainContext(host, blockchainHook)
 
-	mockBlockchain.Err = ErrTestError
+	blockchainHook.Err = errTestError
 	hash := blockchainContext.BlockHash(42)
 	require.Nil(t, hash)
-	mockBlockchain.Err = nil
+	blockchainHook.Err = nil
 
-	mockBlockchain.BlockHash = []byte("1234fa")
+	blockchainHook.BlockHash = []byte("1234fa")
 	hash = blockchainContext.BlockHash(-5)
 	require.Nil(t, hash)
 
-	mockBlockchain.BlockHash = []byte("1234fb")
+	blockchainHook.BlockHash = []byte("1234fb")
 	hash = blockchainContext.BlockHash(0)
 	require.Equal(t, []byte("1234fb"), hash)
 
-	mockBlockchain.BlockHash = []byte("1234fc")
+	blockchainHook.BlockHash = []byte("1234fc")
 	hash = blockchainContext.BlockHash(42)
 	require.Equal(t, []byte("1234fc"), hash)
 }
@@ -348,7 +348,7 @@ func TestBlockchainContext_Getters(t *testing.T) {
 	t.Parallel()
 
 	host := &mock.VmHostMock{}
-	mockBlockchain := &mock.BlockchainHookMock{
+	blockchainHook := &mock.BlockchainHookMock{
 		LEpoch: 3,
 		CEpoch: 4,
 
@@ -366,7 +366,7 @@ func TestBlockchainContext_Getters(t *testing.T) {
 		CRandomSeed:   []byte("current random seed"),
 	}
 
-	blockchainContext, _ := NewBlockchainContext(host, mockBlockchain)
+	blockchainContext, _ := NewBlockchainContext(host, blockchainHook)
 
 	require.Equal(t, uint32(3), blockchainContext.LastEpoch())
 	require.Equal(t, uint32(4), blockchainContext.CurrentEpoch())
