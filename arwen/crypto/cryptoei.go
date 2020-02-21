@@ -11,9 +11,10 @@ package crypto
 import "C"
 
 import (
+	"unsafe"
+
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
-	"unsafe"
 )
 
 func CryptoImports(imports *wasmer.Imports) (*wasmer.Imports, error) {

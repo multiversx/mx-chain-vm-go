@@ -53,6 +53,7 @@ func newVMOutputAccount(address []byte) *vmcommon.OutputAccount {
 		Address:        address,
 		Nonce:          0,
 		BalanceDelta:   big.NewInt(0),
+		Balance:        big.NewInt(0),
 		StorageUpdates: make(map[string]*vmcommon.StorageUpdate),
 	}
 }
@@ -122,7 +123,7 @@ func (context *outputContext) ClearReturnData() {
 	context.outputState.ReturnData = make([][]byte, 0)
 }
 
-func (context *outputContext) SelfDestruct(addr []byte, beneficiary []byte) {
+func (context *outputContext) SelfDestruct(address []byte, beneficiary []byte) {
 	panic("not implemented")
 }
 
@@ -134,9 +135,7 @@ func (context *outputContext) Finish(data []byte) {
 
 func (context *outputContext) FinishValue(value wasmer.Value) {
 	if !value.IsVoid() {
-		convertedResult := arwen.ConvertReturnValue(value)
-		valueBytes := convertedResult.Bytes()
-
+		valueBytes := arwen.ConvertReturnValue(value)
 		context.Finish(valueBytes)
 	}
 }
@@ -184,13 +183,18 @@ func (context *outputContext) DeployCode(address []byte, code []byte) {
 }
 
 func (context *outputContext) CreateVMOutputInCaseOfError(errCode vmcommon.ReturnCode, message string) *vmcommon.VMOutput {
-	vmOutput := &vmcommon.VMOutput{GasRemaining: 0, GasRefund: big.NewInt(0)}
-	vmOutput.ReturnCode = errCode
-	vmOutput.ReturnMessage = message
-	return vmOutput
+	return &vmcommon.VMOutput{
+		GasRemaining:  0,
+		GasRefund:     big.NewInt(0),
+		ReturnCode:    errCode,
+		ReturnMessage: message,
+	}
 }
 
 func mergeVMOutputs(leftOutput *vmcommon.VMOutput, rightOutput *vmcommon.VMOutput) {
+	if leftOutput.OutputAccounts == nil {
+		leftOutput.OutputAccounts = make(map[string]*vmcommon.OutputAccount)
+	}
 	for address, rightAccount := range rightOutput.OutputAccounts {
 		leftAccount, ok := leftOutput.OutputAccounts[address]
 		if !ok {
@@ -218,6 +222,9 @@ func mergeOutputAccounts(
 	leftAccount.GasLimit = rightAccount.GasLimit
 	mergeStorageUpdates(leftAccount, rightAccount)
 
+	if rightAccount.Balance != nil {
+		leftAccount.Balance = rightAccount.Balance
+	}
 	if leftAccount.BalanceDelta == nil {
 		leftAccount.BalanceDelta = big.NewInt(0)
 	}
