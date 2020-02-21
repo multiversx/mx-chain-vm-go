@@ -31,9 +31,9 @@ var ErrInvalidAPICall = errors.New("invalid API call")
 
 var ErrBadBounds = errors.New("bad bounds")
 
-var ErrBadLowerBounds = fmt.Errorf("mem store: %w (lower)", ErrBadBounds)
+var ErrBadLowerBounds = fmt.Errorf("%w (lower)", ErrBadBounds)
 
-var ErrBadUpperBounds = fmt.Errorf("mem store: %w (upper)", ErrBadBounds)
+var ErrBadUpperBounds = fmt.Errorf("%w (upper)", ErrBadBounds)
 
 var ErrNegativeLength = errors.New("negative length")
 
