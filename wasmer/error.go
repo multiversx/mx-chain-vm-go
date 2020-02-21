@@ -5,6 +5,9 @@ import (
 	"unsafe"
 )
 
+var ErrFailedInstantiation = errors.New("could not create wasmer instance")
+var ErrFailedCacheImports = errors.New("could not cache imports")
+
 // GetLastError returns the last error message if any, otherwise returns an error.
 func GetLastError() (string, error) {
 	var errorLength = cWasmerLastErrorLength()

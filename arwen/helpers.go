@@ -2,7 +2,9 @@ package arwen
 
 import (
 	"fmt"
+	"io/ioutil"
 	"math/big"
+	"path/filepath"
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
@@ -73,4 +75,15 @@ func WithFault(err error, context unsafe.Pointer, failExecution bool) bool {
 	}
 
 	return true
+}
+
+func GetSCCode(fileName string) []byte {
+	code, _ := ioutil.ReadFile(filepath.Clean(fileName))
+
+	return code
+}
+
+func GetTestSCCode(scName string, prefixToTestSCs string) []byte {
+	pathToSC := prefixToTestSCs + "test/contracts/" + scName + "/" + scName + ".wasm"
+	return GetSCCode(pathToSC)
 }
