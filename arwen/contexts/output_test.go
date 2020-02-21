@@ -63,6 +63,11 @@ func TestOutputContext_PushPopState(t *testing.T) {
 	require.Equal(t, uint64(99), account.Nonce)
 	require.Equal(t, 1, len(outputContext.outputState.OutputAccounts))
 	require.Equal(t, 0, len(outputContext.stateStack))
+
+	outputContext.PushState()
+	require.Equal(t, 1, len(outputContext.stateStack))
+	outputContext.ClearStateStack()
+	require.Equal(t, 0, len(outputContext.stateStack))
 }
 
 func TestOutputContext_GetOutputAccount(t *testing.T) {

@@ -55,6 +55,9 @@ func (o *OutputContextMock) PushState() {
 func (o *OutputContextMock) PopState() {
 }
 
+func (o *OutputContextMock) ClearStateStack() {
+}
+
 func (o *OutputContextMock) GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool) {
 	return o.OutputAccountMock, o.OutputAccountIsNew
 }

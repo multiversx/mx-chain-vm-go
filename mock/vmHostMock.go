@@ -75,3 +75,6 @@ func (host *VmHostMock) PushState() {
 
 func (host *VmHostMock) PopState() {
 }
+
+func (host *VmHostMock) ClearStateStack() {
+}

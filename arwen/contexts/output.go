@@ -79,6 +79,10 @@ func (context *outputContext) PopState() {
 	mergeVMOutputs(context.outputState, prevState)
 }
 
+func (context *outputContext) ClearStateStack() {
+	context.stateStack = make([]*vmcommon.VMOutput, 0)
+}
+
 func (context *outputContext) GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool) {
 	accountIsNew := false
 	account, ok := context.outputState.OutputAccounts[string(address)]

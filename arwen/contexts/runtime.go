@@ -95,6 +95,10 @@ func (context *runtimeContext) PopState() {
 	context.asyncCallInfo = prevState.asyncCallInfo
 }
 
+func (context *runtimeContext) ClearStateStack() {
+	context.stateStack = make([]*runtimeContext, 0)
+}
+
 func (context *runtimeContext) PushInstance() {
 	context.instanceStack = append(context.instanceStack, context.instance)
 }
@@ -106,6 +110,10 @@ func (context *runtimeContext) PopInstance() {
 
 	context.CleanInstance()
 	context.instance = prevInstance
+}
+
+func (context *runtimeContext) ClearInstanceStack() {
+	context.instanceStack = make([]*wasmer.Instance, 0)
 }
 
 func (context *runtimeContext) ArgParser() arwen.ArgumentsParser {

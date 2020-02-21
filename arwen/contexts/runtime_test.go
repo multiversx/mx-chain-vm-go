@@ -157,6 +157,11 @@ func TestRuntimeContext_PushPopInstance(t *testing.T) {
 	require.NotNil(t, runtimeContext.instance)
 	require.Equal(t, instance, runtimeContext.instance)
 	require.Equal(t, 0, len(runtimeContext.instanceStack))
+
+	runtimeContext.PushInstance()
+	require.Equal(t, 1, len(runtimeContext.instanceStack))
+	runtimeContext.ClearInstanceStack()
+	require.Equal(t, 0, len(runtimeContext.instanceStack))
 }
 
 func TestRuntimeContext_PushPopState(t *testing.T) {
@@ -194,6 +199,11 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 	require.Equal(t, &vmInput, runtimeContext.GetVMInput())
 	require.False(t, runtimeContext.ReadOnly())
 	require.Nil(t, runtimeContext.Arguments())
+
+	runtimeContext.PushState()
+	require.Equal(t, 1, len(runtimeContext.stateStack))
+	runtimeContext.ClearStateStack()
+	require.Equal(t, 0, len(runtimeContext.stateStack))
 }
 
 func TestRuntimeContext_Instance(t *testing.T) {

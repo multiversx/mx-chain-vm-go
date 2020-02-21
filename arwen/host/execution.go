@@ -7,6 +7,7 @@ import (
 )
 
 func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput) {
+	host.ClearStateStack()
 	host.InitState()
 
 	blockchain := host.Blockchain()
@@ -78,7 +79,9 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 }
 
 func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput) {
+	host.ClearStateStack()
 	host.InitState()
+
 	runtime := host.Runtime()
 	output := host.Output()
 	metering := host.Metering()

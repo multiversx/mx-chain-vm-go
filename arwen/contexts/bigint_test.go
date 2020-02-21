@@ -31,6 +31,12 @@ func TestBigIntContext_InitPushPopState(t *testing.T) {
 
 	bigIntContext.PopState()
 	require.Equal(t, 0, len(bigIntContext.stateStack))
+
+	bigIntContext.PushState()
+	require.Equal(t, 1, len(bigIntContext.stateStack))
+
+	bigIntContext.ClearStateStack()
+	require.Equal(t, 0, len(bigIntContext.stateStack))
 }
 
 func TestBigIntContext_PutGet(t *testing.T) {
