@@ -85,6 +85,7 @@ func TestRuntimeContext_NewWasmerInstance(t *testing.T) {
 	dummy := []byte{}
 	err = runtimeContext.CreateWasmerInstance(dummy, gasLimit)
 	require.NotNil(t, err)
+	require.True(t, errors.Is(err, wasmer.ErrInvalidBytecode))
 
 	gasLimit = uint64(100000000)
 	dummy = []byte("contract")

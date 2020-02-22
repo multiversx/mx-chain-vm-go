@@ -83,7 +83,7 @@ func newWrappedError(target error) error {
 		lastError = "unknown details"
 	}
 
-	return fmt.Errorf("%w: %s", ErrFailedInstantiation, lastError)
+	return fmt.Errorf("%w: %s", target, lastError)
 }
 
 func SetImports(imports *Imports) error {
@@ -109,6 +109,11 @@ func NewMeteredInstance(
 	gasLimit uint64,
 ) (*Instance, error) {
 	var c_instance *cWasmerInstanceT
+
+	if len(bytes) == 0 {
+		var emptyInstance = &Instance{instance: nil, Exports: nil, Memory: nil}
+		return emptyInstance, newWrappedError(ErrInvalidBytecode)
+	}
 
 	var compileResult = cWasmerInstantiateWithMetering(
 		&c_instance,

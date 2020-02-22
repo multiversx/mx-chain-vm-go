@@ -16,12 +16,15 @@ var defaultVmType = []byte{0xF, 0xF}
 var counterKey = []byte{'m', 'y', 'c', 'o', 'u', 'n', 't', 'e', 'r', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 
 func TestNewArwen(t *testing.T) {
+	t.Parallel()
 	host, err := defaultArwen(t, nil, nil)
 	require.Nil(t, err)
 	require.NotNil(t, host)
 }
 
 func TestExecution_DeployNewAddressErr(t *testing.T) {
+	t.Parallel()
+
 	mockCryptoHook := &mock.CryptoHookMock{}
 	stubBlockchainHook := &mock.BlockchainHookStub{}
 
@@ -48,6 +51,8 @@ func TestExecution_DeployNewAddressErr(t *testing.T) {
 }
 
 func TestExecution_DeployOutOfGas(t *testing.T) {
+	t.Parallel()
+
 	newAddress := []byte("new smartcontract")
 	host := defaultArwenForDeployment(t, 24, newAddress)
 	input := defaultContractCreateInput()
@@ -60,6 +65,8 @@ func TestExecution_DeployOutOfGas(t *testing.T) {
 }
 
 func TestExecution_DeployNotWASM(t *testing.T) {
+	t.Parallel()
+
 	newAddress := []byte("new smartcontract")
 	host := defaultArwenForDeployment(t, 24, newAddress)
 	input := defaultContractCreateInput()
@@ -72,6 +79,8 @@ func TestExecution_DeployNotWASM(t *testing.T) {
 }
 
 func TestExecution_DeployWASM_WithoutMemory(t *testing.T) {
+	t.Parallel()
+
 	newAddress := []byte("new smartcontract")
 	host := defaultArwenForDeployment(t, 24, newAddress)
 	input := defaultContractCreateInput()
@@ -84,6 +93,8 @@ func TestExecution_DeployWASM_WithoutMemory(t *testing.T) {
 }
 
 func TestExecution_DeployWASM_WrongInit(t *testing.T) {
+	t.Parallel()
+
 	newAddress := []byte("new smartcontract")
 	host := defaultArwenForDeployment(t, 24, newAddress)
 	input := defaultContractCreateInput()
@@ -96,6 +107,8 @@ func TestExecution_DeployWASM_WrongInit(t *testing.T) {
 }
 
 func TestExecution_DeployWASM_Successful(t *testing.T) {
+	t.Parallel()
+
 	newAddress := []byte("new smartcontract")
 	host := defaultArwenForDeployment(t, 24, newAddress)
 	input := defaultContractCreateInput()
@@ -117,6 +130,8 @@ func TestExecution_DeployWASM_Successful(t *testing.T) {
 }
 
 func TestExecution_Deploy_DisallowFloatingPoint(t *testing.T) {
+	t.Parallel()
+
 	newAddress := []byte("new smartcontract")
 	host := defaultArwenForDeployment(t, 24, newAddress)
 	input := defaultContractCreateInput()
@@ -131,6 +146,8 @@ func TestExecution_Deploy_DisallowFloatingPoint(t *testing.T) {
 }
 
 func TestExecution_CallGetCodeErr(t *testing.T) {
+	t.Parallel()
+
 	mockCryptoHook := &mock.CryptoHookMock{}
 	stubBlockchainHook := &mock.BlockchainHookStub{}
 
@@ -150,6 +167,8 @@ func TestExecution_CallGetCodeErr(t *testing.T) {
 }
 
 func TestExecution_CallOutOfGas(t *testing.T) {
+	t.Parallel()
+
 	code := arwen.GetTestSCCode("counter", "../../")
 	host, _ := defaultArwenForCall(t, code)
 	input := defaultContractCallInput()
@@ -163,6 +182,8 @@ func TestExecution_CallOutOfGas(t *testing.T) {
 }
 
 func TestExecution_CallWasmerError(t *testing.T) {
+	t.Parallel()
+
 	code := []byte("not WASM")
 	host, _ := defaultArwenForCall(t, code)
 	input := defaultContractCallInput()
@@ -176,6 +197,8 @@ func TestExecution_CallWasmerError(t *testing.T) {
 }
 
 func TestExecution_CallSCMethod(t *testing.T) {
+	t.Parallel()
+
 	code := arwen.GetTestSCCode("counter", "../../")
 	host, _ := defaultArwenForCall(t, code)
 	input := defaultContractCallInput()
@@ -198,6 +221,8 @@ func TestExecution_CallSCMethod(t *testing.T) {
 }
 
 func TestExecution_Call_Successful(t *testing.T) {
+	t.Parallel()
+
 	code := arwen.GetTestSCCode("counter", "../../")
 	host, stubBlockchainHook := defaultArwenForCall(t, code)
 	stubBlockchainHook.GetStorageDataCalled = func(scAddress []byte, key []byte) ([]byte, error) {
@@ -215,6 +240,36 @@ func TestExecution_Call_Successful(t *testing.T) {
 
 	storedBytes := vmOutput.OutputAccounts["smartcontract"].StorageUpdates[string(counterKey)].Data
 	require.Equal(t, big.NewInt(1002).Bytes(), storedBytes)
+}
+
+func TestExecution_Call_Breakpoints(t *testing.T) {
+	t.Parallel()
+
+	code := arwen.GetTestSCCode("breakpoint", "../../")
+	host, _ := defaultArwenForCall(t, code)
+	input := defaultContractCallInput()
+	input.GasProvided = 100000
+	input.Function = "testFunc"
+
+	// Send the number 15 to the SC, causing it to finish with the number 100
+	input.Arguments = [][]byte{[]byte{15}}
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+	require.Equal(t, [][]byte{[]byte{100}}, vmOutput.ReturnData)
+
+	// Send the number 1 to the SC, causing it to exit with ReturnMessage "exit
+	// here" if the breakpoint mechanism works properly, or with the
+	// ReturnMessage "exit later" if the breakpoint mechanism fails to stop the
+	// execution.
+	input.Arguments = [][]byte{[]byte{1}}
+	vmOutput, err = host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.UserError, vmOutput.ReturnCode)
+	require.Len(t, vmOutput.ReturnData, 0)
+	require.Equal(t, "exit here", vmOutput.ReturnMessage)
 }
 
 func defaultArwenForDeployment(t *testing.T, ownerNonce uint64, newAddress []byte) *vmHost {

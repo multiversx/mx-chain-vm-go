@@ -1,19 +1,13 @@
-typedef unsigned char byte;
-typedef unsigned int i32;
-typedef unsigned long long i64;
-
-void signalError(char *msg, int length);
-void int64finish(i64 value);
-i64 int64getArgument(int argumentIndex);
+#include "../elrond/context.h"
 
 void testFunc() {
   i64 arg = int64getArgument(0);
 
   if (arg == 1) {
-    int64finish(98);
-		char msg[] = "exit here";
-    signalError(&msg, 10);
-    int64finish(99);
+    char msg[] = "exit here";
+    signalError(msg, 9);
+    char msg2[] = "exit later";
+    signalError(msg2, 10);
   } else {
     int64finish(100);
   }
