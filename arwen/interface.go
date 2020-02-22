@@ -12,6 +12,7 @@ type StateStack interface {
 	InitState()
 	PushState()
 	PopState()
+	ClearStateStack()
 }
 
 // ArgumentsParser defines the functionality to parse transaction data into arguments and code for smart contracts
@@ -86,6 +87,7 @@ type RuntimeContext interface {
 	SetAsyncCallInfo(asyncCallInfo *AsyncCallInfo)
 	PushInstance()
 	PopInstance()
+	ClearInstanceStack()
 	ReadOnly() bool
 	SetReadOnly(readOnly bool)
 	CreateWasmerInstance(contract []byte, gasLimit uint64) error

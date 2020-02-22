@@ -14,6 +14,7 @@ type OutputContextStub struct {
 	InitStateCalled                   func()
 	PushStateCalled                   func()
 	PopStateCalled                    func()
+	ClearStateStackCalled             func()
 	GetOutputAccountCalled            func(address []byte) (*vmcommon.OutputAccount, bool)
 	WriteLogCalled                    func(address []byte, topics [][]byte, data []byte)
 	TransferCalled                    func(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte)
@@ -49,6 +50,12 @@ func (o *OutputContextStub) PushState() {
 func (o *OutputContextStub) PopState() {
 	if o.PopStateCalled != nil {
 		o.PopStateCalled()
+	}
+}
+
+func (o *OutputContextStub) ClearStateStack() {
+	if o.ClearStateStackCalled != nil {
+		o.ClearStateStackCalled()
 	}
 }
 
