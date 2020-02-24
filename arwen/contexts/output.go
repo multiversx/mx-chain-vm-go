@@ -4,7 +4,6 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -127,18 +126,7 @@ func (context *outputContext) SelfDestruct(addr []byte, beneficiary []byte) {
 }
 
 func (context *outputContext) Finish(data []byte) {
-	if len(data) > 0 {
-		context.outputState.ReturnData = append(context.outputState.ReturnData, data)
-	}
-}
-
-func (context *outputContext) FinishValue(value wasmer.Value) {
-	if !value.IsVoid() {
-		convertedResult := arwen.ConvertReturnValue(value)
-		valueBytes := convertedResult.Bytes()
-
-		context.Finish(valueBytes)
-	}
+	context.outputState.ReturnData = append(context.outputState.ReturnData, data)
 }
 
 func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []byte) {

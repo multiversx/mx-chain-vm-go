@@ -130,7 +130,6 @@ type OutputContext interface {
 	ReturnData() [][]byte
 	ClearReturnData()
 	Finish(data []byte)
-	FinishValue(value wasmer.Value)
 	GetVMOutput() *vmcommon.VMOutput
 	AddTxValueToAccount(address []byte, value *big.Int)
 	DeployCode(address []byte, code []byte)
