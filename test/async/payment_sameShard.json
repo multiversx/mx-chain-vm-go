@@ -26,8 +26,8 @@
             {
                 "results": [
                     {
-                        "out": [],
-                        "status": "",
+                        "out": [ "" ],
+                        "status": "0x00",
                         "gas": "*",
                         "logs": [],
                         "refund": ""
@@ -83,7 +83,7 @@
                     "0x4444444444444444444444444444444444444444444444444444444444444444": "0x123400"
                 },
                 "code": "bob.wasm",
-                "asyncCallData": "payMe@56"
+                "asyncCallData": "payMe@56@"
             }
         }
     }

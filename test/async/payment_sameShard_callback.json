@@ -26,8 +26,8 @@
             {
                 "results": [
                     {
-                        "out": [ "" ],
-                        "status": "",
+                        "out": [ "0x70617943616c6c6261636b", "0x7777" ],
+                        "status": "0x00",
                         "gas": "*",
                         "logs": [],
                         "refund": ""
@@ -36,9 +36,9 @@
                 "transactions": [
                     {
                         "nonce": "0x00",
-                        "function": "messageOtherContract",
+                        "function": "forwardToOtherContractWithCallback",
                         "gasLimit": "0x1000000000000",
-                        "value": "0x00",
+                        "value": "0x123400",
                         "to": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1234",
                         "arguments": [],
                         "contractCode": "",
@@ -63,7 +63,7 @@
         "postState": {
             "0xa94f5374fce5edbc8e2a8697c15331677e6ebffefefefefefefefefefefe1234": {
                 "nonce": "0x01",
-                "balance": "0xfffffffffff00e8d4a51000",
+                "balance": "0xfffffffffff00e8d492dc00",
                 "storage": {},
                 "code": ""
             },
@@ -71,19 +71,20 @@
                 "nonce": "0x00",
                 "balance": "0x00",
                 "storage": {
-                    "0x0000000000000000000000000000000000000000000000000000000000000000": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1234"
+                    "0x0000000000000000000000000000000000000000000000000000000000000000": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1234",
+                    "0x7777777777777777777777777777777777777777777777777777777777777777": "0x7777"
                 },
                 "code": "alice.wasm"
             },
             "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1234": {
                 "nonce": "0x00",
-                "balance": "0x00",
+                "balance": "0x123400",
                 "storage": {
-                    "0x2222222222222222222222222222222222222222222222222222222222222222": "0x46",
-                    "0x3333333333333333333333333333333333333333333333333333333333333333": "0x02"
+                    "0x1111111111111111111111111111111111111111111111111111111111111111": "0x56",
+                    "0x4444444444444444444444444444444444444444444444444444444444444444": "0x123400"
                 },
                 "code": "bob.wasm",
-                "asyncCallData": "messageMe@46@02@"
+                "asyncCallData": "payMeWithResult@56@70617943616c6c6261636b"
             }
         }
     }
