@@ -590,12 +590,11 @@ func callValue(context unsafe.Pointer, resultOffset int32) int32 {
 	metering := arwen.GetMeteringContext(context)
 
 	value := runtime.GetVMInput().CallValue.Bytes()
-	invBytes := arwen.InverseBytes(value)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetCallValue
 	metering.UseGas(gasToUse)
 
-	err := runtime.MemStore(resultOffset, invBytes)
+	err := runtime.MemStore(resultOffset, value)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
@@ -946,8 +945,7 @@ func executeOnDestContext(
 	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
 	metering.UseGas(gasToUse)
 
-	invBytes := arwen.InverseBytes(value)
-	output.Transfer(dest, send, 0, big.NewInt(0).SetBytes(invBytes), nil)
+	output.Transfer(dest, send, 0, big.NewInt(0).SetBytes(value), nil)
 
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
