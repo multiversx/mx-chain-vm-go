@@ -12,6 +12,8 @@ void int64finish(long long value);
 void writeLog(byte *pointer, int length, byte *topicPtr, int numTopics);
 void signalError(char *message, int length);
 
+int executeOnSameContext(long long gas, byte *address, byte *value, byte *function, int functionLength, int numArguments, byte *argumentsLengths, byte *arguments);
+
 // Blockchain-related functions
 long long getBlockTimestamp();
 int getBlockHash(long long nonce, byte *hash);
@@ -20,10 +22,11 @@ int getBlockHash(long long nonce, byte *hash);
 int getNumArguments();
 int getArgument(int argumentIndex, byte *argument);
 long long int64getArgument(int argumentIndex);
+int getArgumentLength(int argumentIndex);
 
 // Account-related functions
 void getExternalBalance(byte *address, byte *balance);
-int transfer(long long gasLimit, byte *destination, byte *sender, byte *value, byte *data, int length);
+int transferValue(byte *destination, byte *value, byte *data, int length);
 
 // Storage-related functions
 int storageStore(byte *key, byte *data, int dataLength);

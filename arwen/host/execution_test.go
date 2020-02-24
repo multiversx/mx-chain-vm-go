@@ -1,7 +1,9 @@
 package host
 
 import (
+	"bytes"
 	"errors"
+	"fmt"
 	"math/big"
 	"testing"
 
@@ -14,6 +16,9 @@ import (
 
 var defaultVmType = []byte{0xF, 0xF}
 var counterKey = []byte{'m', 'y', 'c', 'o', 'u', 'n', 't', 'e', 'r', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+var ErrCodeNotFound = errors.New("code not found")
+var firstAddress = []byte("firstSC.........................")
+var secondAddress = []byte("secondSC........................")
 
 func TestNewArwen(t *testing.T) {
 	t.Parallel()
@@ -242,6 +247,56 @@ func TestExecution_Call_Successful(t *testing.T) {
 	require.Equal(t, big.NewInt(1002).Bytes(), storedBytes)
 }
 
+func TestExecution_ExecuteOnSameContext(t *testing.T) {
+	parentCode := arwen.GetTestSCCode("exec-same-ctx-parent", "../../")
+
+	// Execute the parent SC method "parentFunctionPrepare", which sets storage,
+	// finish data and performs a transfer. This step validates the test to the
+	// actual call to ExecuteOnSameContext().
+	host, _ := defaultArwenForCall(t, parentCode)
+	input := defaultContractCallInput()
+	input.CallerAddr = []byte("user")
+	input.RecipientAddr = firstAddress
+	input.Function = "parentFunctionPrepare"
+	input.GasProvided = 1000000
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	fmt.Println(vmOutput.ReturnMessage)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+
+	expectedVMOutput := expectedVMOutputs("ExecuteOnSameContext_Prepare")
+	require.Equal(t, expectedVMOutput, vmOutput)
+
+	// Call parentFunctionWrongCall() of the parent SC, which will try to call a
+	// non-existing SC.
+	host, _ = defaultArwenForCall(t, parentCode)
+	input = defaultContractCallInput()
+	input.CallerAddr = []byte("user")
+	input.RecipientAddr = firstAddress
+	input.Function = "parentFunctionWrongCall"
+	input.GasProvided = 1000000
+
+	vmOutput, err = host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	expectedVMOutput = expectedVMOutputs("ExecuteOnSameContext_WrongCall")
+	require.Equal(t, expectedVMOutput, vmOutput)
+
+	// TODO verify whether the child can access bigInts of the parent?
+	childCode := arwen.GetTestSCCode("exec-same-ctx-child", "../../")
+	host, _ = defaultArwenForTwoSCs(t, parentCode, childCode)
+	input = defaultContractCallInput()
+	input.CallerAddr = []byte("user")
+	input.RecipientAddr = firstAddress
+	input.Function = "parentFunctionChildCall"
+	input.GasProvided = 1000000
+
+	vmOutput, err = host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	expectedVMOutput = expectedVMOutputs("ExecuteOnSameContext_ChildCall")
+	require.Equal(t, expectedVMOutput, vmOutput)
+}
+
 func TestExecution_Call_Breakpoints(t *testing.T) {
 	t.Parallel()
 
@@ -294,6 +349,115 @@ func defaultArwenForCall(t *testing.T, code []byte) (*vmHost, *mock.BlockchainHo
 	}
 	host, _ := defaultArwen(t, stubBlockchainHook, mockCryptoHook)
 	return host, stubBlockchainHook
+}
+
+func defaultArwenForTwoSCs(t *testing.T, firstCode []byte, secondCode []byte) (*vmHost, *mock.BlockchainHookStub) {
+	mockCryptoHook := &mock.CryptoHookMock{}
+	stubBlockchainHook := &mock.BlockchainHookStub{}
+	stubBlockchainHook.GetCodeCalled = func(scAddress []byte) ([]byte, error) {
+		if bytes.Equal(scAddress, firstAddress) {
+			return firstCode, nil
+		}
+		if bytes.Equal(scAddress, secondAddress) {
+			return secondCode, nil
+		}
+		return nil, ErrCodeNotFound
+	}
+	host, _ := defaultArwen(t, stubBlockchainHook, mockCryptoHook)
+	return host, stubBlockchainHook
+}
+
+func expectedVMOutputs(id string) *vmcommon.VMOutput {
+	parentKeyA := []byte("parentKeyA......................")
+	parentKeyB := []byte("parentKeyB......................")
+	childKey := []byte("childKey........................")
+	parentDataA := []byte("parentDataA")
+	parentDataB := []byte("parentDataB")
+	childData := []byte("childData")
+	parentFinishA := []byte("parentFinishA")
+	parentFinishB := []byte("parentFinishB")
+	childFinish := []byte("childFinish")
+	parentTransferReceiver := []byte("parentTransferReceiver..........")
+	childTransferReceiver := []byte("asdfoottxxwlllllllllllwrraattttt")
+	parentTransferValue := int64(42)
+	parentTransferData := []byte("parentTransferData")
+
+	parentAddress := firstAddress
+	childAddress := secondAddress
+	wrongAddress := []byte("wrongSC.........................")
+
+	if id == "ExecuteOnSameContext_Prepare" {
+		expectedVMOutput := mock.MakeVMOutput()
+		expectedVMOutput.ReturnCode = vmcommon.Ok
+		expectedVMOutput.GasRemaining = 998255
+		mock.AddFinishData(expectedVMOutput, parentFinishA)
+		mock.AddFinishData(expectedVMOutput, parentFinishB)
+		parentAccount := mock.AddNewOutputAccount(
+			expectedVMOutput,
+			parentAddress,
+			-parentTransferValue,
+			nil,
+		)
+		mock.SetStorageUpdate(parentAccount, parentKeyA, parentDataA)
+		mock.SetStorageUpdate(parentAccount, parentKeyB, parentDataB)
+		_ = mock.AddNewOutputAccount(
+			expectedVMOutput,
+			parentTransferReceiver,
+			parentTransferValue,
+			parentTransferData,
+		)
+
+		return expectedVMOutput
+	}
+	if id == "ExecuteOnSameContext_WrongCall" {
+		expectedVMOutput := expectedVMOutputs("ExecuteOnSameContext_Prepare")
+		mock.AddFinishData(expectedVMOutput, []byte("failed"))
+		expectedVMOutput.GasRemaining = 988131
+		parentAccount := expectedVMOutput.OutputAccounts[string(parentAddress)]
+		parentAccount.BalanceDelta = big.NewInt(-141)
+		_ = mock.AddNewOutputAccount(
+			expectedVMOutput,
+			wrongAddress,
+			99, // TODO this is not supposed to happen! this should be 0.
+			nil,
+		)
+		return expectedVMOutput
+	}
+	if id == "ExecuteOnSameContext_ChildCall" {
+		expectedVMOutput := expectedVMOutputs("ExecuteOnSameContext_Prepare")
+		mock.AddFinishData(expectedVMOutput, childFinish)
+		mock.AddFinishData(expectedVMOutput, []byte("success"))
+		expectedVMOutput.GasRemaining = 998206
+		parentAccount := expectedVMOutput.OutputAccounts[string(parentAddress)]
+		parentAccount.BalanceDelta = big.NewInt(-141)
+		childAccount := mock.AddNewOutputAccount(
+			expectedVMOutput,
+			childAddress,
+			3,
+			nil,
+		)
+		mock.SetStorageUpdate(childAccount, childKey, childData)
+		_ = mock.AddNewOutputAccount(
+			expectedVMOutput,
+			childTransferReceiver,
+			96,
+			[]byte("qwerty"),
+		)
+
+		return expectedVMOutput
+	}
+	if id == "Nil" {
+		expectedVMOutput := mock.MakeVMOutput()
+		expectedVMOutput.GasRemaining = 0
+		expectedVMOutput.ReturnData = nil
+		expectedVMOutput.OutputAccounts = nil
+		expectedVMOutput.TouchedAccounts = nil
+		expectedVMOutput.DeletedAccounts = nil
+		expectedVMOutput.Logs = nil
+		return expectedVMOutput
+	}
+
+	return nil
 }
 
 func defaultArwen(t *testing.T, blockchain vmcommon.BlockchainHook, crypto vmcommon.CryptoHook) (*vmHost, error) {
