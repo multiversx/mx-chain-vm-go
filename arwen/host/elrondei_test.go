@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestElrondEI_CallValue(t *testing.T) {
@@ -19,13 +19,13 @@ func TestElrondEI_CallValue(t *testing.T) {
 	input.CallValue = big.NewInt(64)
 
 	vmOutput, err := host.RunSmartContractCall(input)
-	require.Nil(t, err)
-	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
-	require.Len(t, vmOutput.ReturnData, 3)
+	assert.Nil(t, err)
+	assert.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+	assert.Len(t, vmOutput.ReturnData, 3)
 	data := vmOutput.ReturnData
-	require.Equal(t, []byte("ok"), data[0])
-	require.Equal(t, []byte{1, 0, 0, 0}, data[1])
-	require.Equal(t, []byte{64}, data[2])
+	assert.Equal(t, []byte("ok"), data[0])
+	assert.Equal(t, []byte{1, 0, 0, 0}, data[1])
+	assert.Equal(t, []byte{64}, data[2])
 
 	// 4-byte call value
 	host, _ = DefaultTestArwenForCall(t, code)
@@ -35,11 +35,47 @@ func TestElrondEI_CallValue(t *testing.T) {
 	input.CallValue = big.NewInt(0).SetBytes([]byte{64, 12, 16, 99})
 
 	vmOutput, err = host.RunSmartContractCall(input)
-	require.Nil(t, err)
-	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
-	require.Len(t, vmOutput.ReturnData, 3)
+	assert.Nil(t, err)
+	assert.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+	assert.Len(t, vmOutput.ReturnData, 3)
 	data = vmOutput.ReturnData
-	require.Equal(t, []byte("ok"), data[0])
-	require.Equal(t, []byte{4, 0, 0, 0}, data[1])
-	require.Equal(t, []byte{64, 12, 16, 99}, data[2])
+	assert.Equal(t, []byte("ok"), data[0])
+	assert.Equal(t, []byte{4, 0, 0, 0}, data[1])
+	assert.Equal(t, []byte{64, 12, 16, 99}, data[2])
+
+	// BigInt call value
+	host, _ = DefaultTestArwenForCall(t, code)
+	input = DefaultTestContractCallInput()
+	input.GasProvided = 100000
+	input.Function = "test_getCallValue_bigInt_to_Bytes"
+	input.CallValue = big.NewInt(19*256 + 233)
+
+	vmOutput, err = host.RunSmartContractCall(input)
+	assert.Nil(t, err)
+	assert.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+	assert.Len(t, vmOutput.ReturnData, 4)
+	data = vmOutput.ReturnData
+	assert.Equal(t, []byte("ok"), data[0])
+	assert.Equal(t, []byte{2, 0, 0, 0}, data[1])
+	assert.Equal(t, []byte{19, 233}, data[2])
+
+	val12345 := big.NewInt(0).SetBytes(data[3])
+	assert.Equal(t, big.NewInt(12345), val12345)
+}
+
+func TestElrondEI_Int64Argument(t *testing.T) {
+	code := GetTestSCCode("elrondei", "../../")
+	host, _ := DefaultTestArwenForCall(t, code)
+	input := DefaultTestContractCallInput()
+	input.GasProvided = 100000
+	input.Function = "test_getCallValue_Int64Argument"
+	input.Arguments = [][]byte{big.NewInt(12345).Bytes()}
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	assert.Nil(t, err)
+	assert.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+	assert.Len(t, vmOutput.ReturnData, 2)
+	data := vmOutput.ReturnData
+	assert.Equal(t, []byte("ok"), data[0])
+	assert.Equal(t, []byte{57, 48, 0, 0}, data[1])
 }
