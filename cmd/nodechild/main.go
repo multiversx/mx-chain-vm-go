@@ -24,14 +24,17 @@ func beginMessageLoop(reader *bufio.Reader, writer *bufio.Writer) {
 	blockGasLimit := uint64(10000000)
 	gasSchedule := config.MakeGasMap(1)
 
-	host, err := host.NewArwenVM(blockchain, nil, arwenVirtualMachineType, blockGasLimit, gasSchedule)
+	_, err := host.NewArwenVM(blockchain, nil, arwenVirtualMachineType, blockGasLimit, gasSchedule)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	for {
-		command := messenger.WaitContractCommand()
-		fmt.Println("Command", command)
-		fmt.Println(host)
-	}
+	command := messenger.WaitContractCommand()
+	fmt.Println("Received command", command)
+
+	// for {
+	// 	command := messenger.WaitContractCommand()
+	// 	fmt.Println("Command", command)
+	// 	fmt.Println(host)
+	// }
 }

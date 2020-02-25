@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/binary"
 	"os"
 	"sync"
 	"testing"
@@ -22,8 +23,6 @@ func Test_Loop(t *testing.T) {
 	inputOfArwen, err := os.Open(nodeToArwen)
 	require.Nil(t, err)
 
-	outputOfNode.Write([]byte("foo"))
-
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 
@@ -32,9 +31,16 @@ func Test_Loop(t *testing.T) {
 	}()
 
 	go func() {
-		outputOfNode.Write([]byte("foo"))
+		writeUint32(outputOfNode, 3)
+		outputOfNode.Write([]byte("foobar"))
 	}()
 
 	wg.Wait()
 	//time.Sleep(3 * time.Second)
+}
+
+func writeUint32(file *os.File, value uint32) {
+	buffer := make([]byte, 4)
+	binary.LittleEndian.PutUint32(buffer, value)
+	file.Write(buffer)
 }

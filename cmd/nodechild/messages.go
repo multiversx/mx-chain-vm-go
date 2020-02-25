@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/binary"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 
@@ -106,7 +107,21 @@ func (messenger *Messenger) sendMessageLength(marshalizedMessage []byte) error {
 }
 
 func (messenger *Messenger) receive(messageFromNode interface{}) error {
-	// peek until something there... then read length
+	// Wait for the start of a message
+	messenger.blockingPeek(4)
+
+	length, err := messenger.receiveMessageLength()
+	if err != nil {
+		return err
+	}
+
+	// Now read the body of [length]
+	messenger.blockingPeek(length)
+	buffer := make([]byte, length)
+	_, err = io.ReadFull(messenger.reader, buffer)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -115,6 +130,19 @@ func (messenger *Messenger) receiveMessageLength() (int, error) {
 	_, err := io.ReadFull(messenger.reader, buffer)
 	if err != nil {
 		return 0, err
+	}
+
+	length := binary.LittleEndian.Uint32(buffer)
+	return int(length), nil
+}
+
+func (messenger *Messenger) blockingPeek(n int) {
+	fmt.Println("blockingPeek", n)
+	for {
+		_, err := messenger.reader.Peek(n)
+		if err == nil {
+			break
+		}
 	}
 }
 
