@@ -69,7 +69,7 @@ void test_getCallValue_bigInt_to_Bytes() {
 	finish(value, 4);
 }
 
-void test_getCallValue_Int64Argument() {
+void test_int64getArgument() {
 	int numArgs = getNumArguments();
 	if (numArgs != 1) {
 		signalError(msg_unexpected, 10);
@@ -84,4 +84,5 @@ void test_getCallValue_Int64Argument() {
 	}
 
 	finish((byte*)&argument, 4);
+	int64finish(argument);
 }
