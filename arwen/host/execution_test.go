@@ -13,9 +13,6 @@ import (
 )
 
 var counterKey = []byte{'m', 'y', 'c', 'o', 'u', 'n', 't', 'e', 'r', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-var ErrCodeNotFound = errors.New("code not found")
-var firstAddress = []byte("firstSC.........................")
-var secondAddress = []byte("secondSC........................")
 
 func TestNewArwen(t *testing.T) {
 	t.Parallel()

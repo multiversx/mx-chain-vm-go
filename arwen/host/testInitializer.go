@@ -2,17 +2,21 @@ package host
 
 import (
 	"bytes"
+	"errors"
 	"math/big"
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
 
 var defaultVmType = []byte{0xF, 0xF}
+var ErrCodeNotFound = errors.New("code not found")
+var firstAddress = []byte("firstSC.........................")
+var secondAddress = []byte("secondSC........................")
 
 func GetTestSCCode(scName string, prefixToTestSCs string) []byte {
 	pathToSC := prefixToTestSCs + "test/contracts/" + scName + "/" + scName + ".wasm"
