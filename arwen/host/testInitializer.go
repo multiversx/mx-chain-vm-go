@@ -5,6 +5,7 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -12,6 +13,11 @@ import (
 )
 
 var defaultVmType = []byte{0xF, 0xF}
+
+func GetTestSCCode(scName string, prefixToTestSCs string) []byte {
+	pathToSC := prefixToTestSCs + "test/contracts/" + scName + "/" + scName + ".wasm"
+	return arwen.GetSCCode(pathToSC)
+}
 
 func DefaultTestArwenForDeployment(t *testing.T, ownerNonce uint64, newAddress []byte) *vmHost {
 	mockCryptoHook := &mock.CryptoHookMock{}

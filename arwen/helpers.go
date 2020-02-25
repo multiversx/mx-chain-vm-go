@@ -82,8 +82,3 @@ func GetSCCode(fileName string) []byte {
 
 	return code
 }
-
-func GetTestSCCode(scName string, prefixToTestSCs string) []byte {
-	pathToSC := prefixToTestSCs + "test/contracts/" + scName + "/" + scName + ".wasm"
-	return GetSCCode(pathToSC)
-}

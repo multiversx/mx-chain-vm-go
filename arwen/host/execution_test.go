@@ -87,7 +87,7 @@ func TestExecution_DeployWASM_WithoutMemory(t *testing.T) {
 	host := DefaultTestArwenForDeployment(t, 24, newAddress)
 	input := DefaultTestContractCreateInput()
 	input.GasProvided = 1000
-	input.ContractCode = arwen.GetTestSCCode("memoryless", "../../")
+	input.ContractCode = GetTestSCCode("memoryless", "../../")
 	vmOutput, err := host.RunSmartContractCreate(input)
 	require.Nil(t, err)
 	require.NotNil(t, vmOutput)
@@ -101,7 +101,7 @@ func TestExecution_DeployWASM_WrongInit(t *testing.T) {
 	host := DefaultTestArwenForDeployment(t, 24, newAddress)
 	input := DefaultTestContractCreateInput()
 	input.GasProvided = 1000
-	input.ContractCode = arwen.GetTestSCCode("init-wrong", "../../")
+	input.ContractCode = GetTestSCCode("init-wrong", "../../")
 	vmOutput, err := host.RunSmartContractCreate(input)
 	require.Nil(t, err)
 	require.NotNil(t, vmOutput)
@@ -116,7 +116,7 @@ func TestExecution_DeployWASM_Successful(t *testing.T) {
 	input := DefaultTestContractCreateInput()
 	input.CallValue = big.NewInt(88)
 	input.GasProvided = 1000
-	input.ContractCode = arwen.GetTestSCCode("init-correct", "../../")
+	input.ContractCode = GetTestSCCode("init-correct", "../../")
 
 	vmOutput, err := host.RunSmartContractCreate(input)
 	require.Nil(t, err)
@@ -139,7 +139,7 @@ func TestExecution_Deploy_DisallowFloatingPoint(t *testing.T) {
 	input := DefaultTestContractCreateInput()
 	input.CallValue = big.NewInt(88)
 	input.GasProvided = 1000
-	input.ContractCode = arwen.GetTestSCCode("num-with-fp", "../../")
+	input.ContractCode = GetTestSCCode("num-with-fp", "../../")
 
 	vmOutput, err := host.RunSmartContractCreate(input)
 	require.Nil(t, err)
@@ -171,7 +171,7 @@ func TestExecution_CallGetCodeErr(t *testing.T) {
 func TestExecution_CallOutOfGas(t *testing.T) {
 	t.Parallel()
 
-	code := arwen.GetTestSCCode("counter", "../../")
+	code := GetTestSCCode("counter", "../../")
 	host, _ := DefaultTestArwenForCall(t, code)
 	input := DefaultTestContractCallInput()
 	input.Function = "increment"
@@ -201,7 +201,7 @@ func TestExecution_CallWasmerError(t *testing.T) {
 func TestExecution_CallSCMethod(t *testing.T) {
 	t.Parallel()
 
-	code := arwen.GetTestSCCode("counter", "../../")
+	code := GetTestSCCode("counter", "../../")
 	host, _ := DefaultTestArwenForCall(t, code)
 	input := DefaultTestContractCallInput()
 	input.GasProvided = 100000
@@ -225,7 +225,7 @@ func TestExecution_CallSCMethod(t *testing.T) {
 func TestExecution_Call_Successful(t *testing.T) {
 	t.Parallel()
 
-	code := arwen.GetTestSCCode("counter", "../../")
+	code := GetTestSCCode("counter", "../../")
 	host, stubBlockchainHook := DefaultTestArwenForCall(t, code)
 	stubBlockchainHook.GetStorageDataCalled = func(scAddress []byte, key []byte) ([]byte, error) {
 		return big.NewInt(1001).Bytes(), nil
@@ -245,7 +245,7 @@ func TestExecution_Call_Successful(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnSameContext(t *testing.T) {
-	parentCode := arwen.GetTestSCCode("exec-same-ctx-parent", "../../")
+	parentCode := GetTestSCCode("exec-same-ctx-parent", "../../")
 
 	// Execute the parent SC method "parentFunctionPrepare", which sets storage,
 	// finish data and performs a transfer. This step validates the test to the
@@ -280,7 +280,7 @@ func TestExecution_ExecuteOnSameContext(t *testing.T) {
 	require.Equal(t, expectedVMOutput, vmOutput)
 
 	// TODO verify whether the child can access bigInts of the parent?
-	childCode := arwen.GetTestSCCode("exec-same-ctx-child", "../../")
+	childCode := GetTestSCCode("exec-same-ctx-child", "../../")
 	host, _ = DefaultTestArwenForTwoSCs(t, parentCode, childCode)
 	input = DefaultTestContractCallInput()
 	input.CallerAddr = []byte("user")
@@ -297,7 +297,7 @@ func TestExecution_ExecuteOnSameContext(t *testing.T) {
 func TestExecution_Call_Breakpoints(t *testing.T) {
 	t.Parallel()
 
-	code := arwen.GetTestSCCode("breakpoint", "../../")
+	code := GetTestSCCode("breakpoint", "../../")
 	host, _ := DefaultTestArwenForCall(t, code)
 	input := DefaultTestContractCallInput()
 	input.GasProvided = 100000
