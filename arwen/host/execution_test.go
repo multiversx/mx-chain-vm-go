@@ -1,20 +1,17 @@
 package host
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"math/big"
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
 	"github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
 
-var defaultVmType = []byte{0xF, 0xF}
 var counterKey = []byte{'m', 'y', 'c', 'o', 'u', 'n', 't', 'e', 'r', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 var ErrCodeNotFound = errors.New("code not found")
 var firstAddress = []byte("firstSC.........................")
@@ -22,7 +19,7 @@ var secondAddress = []byte("secondSC........................")
 
 func TestNewArwen(t *testing.T) {
 	t.Parallel()
-	host, err := defaultArwen(t, nil, nil)
+	host, err := DefaultTestArwen(t, nil, nil)
 	require.Nil(t, err)
 	require.NotNil(t, host)
 }
@@ -35,8 +32,8 @@ func TestExecution_DeployNewAddressErr(t *testing.T) {
 
 	errNewAddress := errors.New("new address error")
 
-	host, _ := defaultArwen(t, stubBlockchainHook, mockCryptoHook)
-	input := defaultContractCreateInput()
+	host, _ := DefaultTestArwen(t, stubBlockchainHook, mockCryptoHook)
+	input := DefaultTestContractCreateInput()
 	stubBlockchainHook.GetNonceCalled = func(address []byte) (uint64, error) {
 		require.Equal(t, input.CallerAddr, address)
 		return 0, nil
@@ -59,8 +56,8 @@ func TestExecution_DeployOutOfGas(t *testing.T) {
 	t.Parallel()
 
 	newAddress := []byte("new smartcontract")
-	host := defaultArwenForDeployment(t, 24, newAddress)
-	input := defaultContractCreateInput()
+	host := DefaultTestArwenForDeployment(t, 24, newAddress)
+	input := DefaultTestContractCreateInput()
 	input.GasProvided = 8 // default deployment requires 9 units of Gas
 	vmOutput, err := host.RunSmartContractCreate(input)
 	require.Nil(t, err)
@@ -73,8 +70,8 @@ func TestExecution_DeployNotWASM(t *testing.T) {
 	t.Parallel()
 
 	newAddress := []byte("new smartcontract")
-	host := defaultArwenForDeployment(t, 24, newAddress)
-	input := defaultContractCreateInput()
+	host := DefaultTestArwenForDeployment(t, 24, newAddress)
+	input := DefaultTestContractCreateInput()
 	input.GasProvided = 9
 	input.ContractCode = []byte("not WASM")
 	vmOutput, err := host.RunSmartContractCreate(input)
@@ -87,8 +84,8 @@ func TestExecution_DeployWASM_WithoutMemory(t *testing.T) {
 	t.Parallel()
 
 	newAddress := []byte("new smartcontract")
-	host := defaultArwenForDeployment(t, 24, newAddress)
-	input := defaultContractCreateInput()
+	host := DefaultTestArwenForDeployment(t, 24, newAddress)
+	input := DefaultTestContractCreateInput()
 	input.GasProvided = 1000
 	input.ContractCode = arwen.GetTestSCCode("memoryless", "../../")
 	vmOutput, err := host.RunSmartContractCreate(input)
@@ -101,8 +98,8 @@ func TestExecution_DeployWASM_WrongInit(t *testing.T) {
 	t.Parallel()
 
 	newAddress := []byte("new smartcontract")
-	host := defaultArwenForDeployment(t, 24, newAddress)
-	input := defaultContractCreateInput()
+	host := DefaultTestArwenForDeployment(t, 24, newAddress)
+	input := DefaultTestContractCreateInput()
 	input.GasProvided = 1000
 	input.ContractCode = arwen.GetTestSCCode("init-wrong", "../../")
 	vmOutput, err := host.RunSmartContractCreate(input)
@@ -115,8 +112,8 @@ func TestExecution_DeployWASM_Successful(t *testing.T) {
 	t.Parallel()
 
 	newAddress := []byte("new smartcontract")
-	host := defaultArwenForDeployment(t, 24, newAddress)
-	input := defaultContractCreateInput()
+	host := DefaultTestArwenForDeployment(t, 24, newAddress)
+	input := DefaultTestContractCreateInput()
 	input.CallValue = big.NewInt(88)
 	input.GasProvided = 1000
 	input.ContractCode = arwen.GetTestSCCode("init-correct", "../../")
@@ -138,8 +135,8 @@ func TestExecution_Deploy_DisallowFloatingPoint(t *testing.T) {
 	t.Parallel()
 
 	newAddress := []byte("new smartcontract")
-	host := defaultArwenForDeployment(t, 24, newAddress)
-	input := defaultContractCreateInput()
+	host := DefaultTestArwenForDeployment(t, 24, newAddress)
+	input := DefaultTestContractCreateInput()
 	input.CallValue = big.NewInt(88)
 	input.GasProvided = 1000
 	input.ContractCode = arwen.GetTestSCCode("num-with-fp", "../../")
@@ -158,8 +155,8 @@ func TestExecution_CallGetCodeErr(t *testing.T) {
 
 	errGetCode := errors.New("get code error")
 
-	host, _ := defaultArwen(t, stubBlockchainHook, mockCryptoHook)
-	input := defaultContractCallInput()
+	host, _ := DefaultTestArwen(t, stubBlockchainHook, mockCryptoHook)
+	input := DefaultTestContractCallInput()
 	stubBlockchainHook.GetCodeCalled = func(address []byte) ([]byte, error) {
 		return nil, errGetCode
 	}
@@ -175,8 +172,8 @@ func TestExecution_CallOutOfGas(t *testing.T) {
 	t.Parallel()
 
 	code := arwen.GetTestSCCode("counter", "../../")
-	host, _ := defaultArwenForCall(t, code)
-	input := defaultContractCallInput()
+	host, _ := DefaultTestArwenForCall(t, code)
+	input := DefaultTestContractCallInput()
 	input.Function = "increment"
 
 	vmOutput, err := host.RunSmartContractCall(input)
@@ -190,8 +187,8 @@ func TestExecution_CallWasmerError(t *testing.T) {
 	t.Parallel()
 
 	code := []byte("not WASM")
-	host, _ := defaultArwenForCall(t, code)
-	input := defaultContractCallInput()
+	host, _ := DefaultTestArwenForCall(t, code)
+	input := DefaultTestContractCallInput()
 	input.GasProvided = 100000
 	input.Function = "increment"
 
@@ -205,8 +202,8 @@ func TestExecution_CallSCMethod(t *testing.T) {
 	t.Parallel()
 
 	code := arwen.GetTestSCCode("counter", "../../")
-	host, _ := defaultArwenForCall(t, code)
-	input := defaultContractCallInput()
+	host, _ := DefaultTestArwenForCall(t, code)
+	input := DefaultTestContractCallInput()
 	input.GasProvided = 100000
 
 	// Calling init() is forbidden
@@ -229,11 +226,11 @@ func TestExecution_Call_Successful(t *testing.T) {
 	t.Parallel()
 
 	code := arwen.GetTestSCCode("counter", "../../")
-	host, stubBlockchainHook := defaultArwenForCall(t, code)
+	host, stubBlockchainHook := DefaultTestArwenForCall(t, code)
 	stubBlockchainHook.GetStorageDataCalled = func(scAddress []byte, key []byte) ([]byte, error) {
 		return big.NewInt(1001).Bytes(), nil
 	}
-	input := defaultContractCallInput()
+	input := DefaultTestContractCallInput()
 	input.GasProvided = 100000
 	input.Function = "increment"
 
@@ -253,8 +250,8 @@ func TestExecution_ExecuteOnSameContext(t *testing.T) {
 	// Execute the parent SC method "parentFunctionPrepare", which sets storage,
 	// finish data and performs a transfer. This step validates the test to the
 	// actual call to ExecuteOnSameContext().
-	host, _ := defaultArwenForCall(t, parentCode)
-	input := defaultContractCallInput()
+	host, _ := DefaultTestArwenForCall(t, parentCode)
+	input := DefaultTestContractCallInput()
 	input.CallerAddr = []byte("user")
 	input.RecipientAddr = firstAddress
 	input.Function = "parentFunctionPrepare"
@@ -270,8 +267,8 @@ func TestExecution_ExecuteOnSameContext(t *testing.T) {
 
 	// Call parentFunctionWrongCall() of the parent SC, which will try to call a
 	// non-existing SC.
-	host, _ = defaultArwenForCall(t, parentCode)
-	input = defaultContractCallInput()
+	host, _ = DefaultTestArwenForCall(t, parentCode)
+	input = DefaultTestContractCallInput()
 	input.CallerAddr = []byte("user")
 	input.RecipientAddr = firstAddress
 	input.Function = "parentFunctionWrongCall"
@@ -284,8 +281,8 @@ func TestExecution_ExecuteOnSameContext(t *testing.T) {
 
 	// TODO verify whether the child can access bigInts of the parent?
 	childCode := arwen.GetTestSCCode("exec-same-ctx-child", "../../")
-	host, _ = defaultArwenForTwoSCs(t, parentCode, childCode)
-	input = defaultContractCallInput()
+	host, _ = DefaultTestArwenForTwoSCs(t, parentCode, childCode)
+	input = DefaultTestContractCallInput()
 	input.CallerAddr = []byte("user")
 	input.RecipientAddr = firstAddress
 	input.Function = "parentFunctionChildCall"
@@ -301,8 +298,8 @@ func TestExecution_Call_Breakpoints(t *testing.T) {
 	t.Parallel()
 
 	code := arwen.GetTestSCCode("breakpoint", "../../")
-	host, _ := defaultArwenForCall(t, code)
-	input := defaultContractCallInput()
+	host, _ := DefaultTestArwenForCall(t, code)
+	input := DefaultTestContractCallInput()
 	input.GasProvided = 100000
 	input.Function = "testFunc"
 
@@ -327,46 +324,6 @@ func TestExecution_Call_Breakpoints(t *testing.T) {
 	require.Equal(t, "exit here", vmOutput.ReturnMessage)
 }
 
-func defaultArwenForDeployment(t *testing.T, ownerNonce uint64, newAddress []byte) *vmHost {
-	mockCryptoHook := &mock.CryptoHookMock{}
-	stubBlockchainHook := &mock.BlockchainHookStub{}
-	stubBlockchainHook.GetNonceCalled = func(address []byte) (uint64, error) {
-		return 24, nil
-	}
-	stubBlockchainHook.NewAddressCalled = func(creatorAddress []byte, nonce uint64, vmType []byte) ([]byte, error) {
-		return newAddress, nil
-	}
-
-	host, _ := defaultArwen(t, stubBlockchainHook, mockCryptoHook)
-	return host
-}
-
-func defaultArwenForCall(t *testing.T, code []byte) (*vmHost, *mock.BlockchainHookStub) {
-	mockCryptoHook := &mock.CryptoHookMock{}
-	stubBlockchainHook := &mock.BlockchainHookStub{}
-	stubBlockchainHook.GetCodeCalled = func(address []byte) ([]byte, error) {
-		return code, nil
-	}
-	host, _ := defaultArwen(t, stubBlockchainHook, mockCryptoHook)
-	return host, stubBlockchainHook
-}
-
-func defaultArwenForTwoSCs(t *testing.T, firstCode []byte, secondCode []byte) (*vmHost, *mock.BlockchainHookStub) {
-	mockCryptoHook := &mock.CryptoHookMock{}
-	stubBlockchainHook := &mock.BlockchainHookStub{}
-	stubBlockchainHook.GetCodeCalled = func(scAddress []byte) ([]byte, error) {
-		if bytes.Equal(scAddress, firstAddress) {
-			return firstCode, nil
-		}
-		if bytes.Equal(scAddress, secondAddress) {
-			return secondCode, nil
-		}
-		return nil, ErrCodeNotFound
-	}
-	host, _ := defaultArwen(t, stubBlockchainHook, mockCryptoHook)
-	return host, stubBlockchainHook
-}
-
 func expectedVMOutputs(id string) *vmcommon.VMOutput {
 	parentKeyA := []byte("parentKeyA......................")
 	parentKeyB := []byte("parentKeyB......................")
@@ -387,20 +344,20 @@ func expectedVMOutputs(id string) *vmcommon.VMOutput {
 	wrongAddress := []byte("wrongSC.........................")
 
 	if id == "ExecuteOnSameContext_Prepare" {
-		expectedVMOutput := mock.MakeVMOutput()
+		expectedVMOutput := MakeVMOutput()
 		expectedVMOutput.ReturnCode = vmcommon.Ok
 		expectedVMOutput.GasRemaining = 998255
-		mock.AddFinishData(expectedVMOutput, parentFinishA)
-		mock.AddFinishData(expectedVMOutput, parentFinishB)
-		parentAccount := mock.AddNewOutputAccount(
+		AddFinishData(expectedVMOutput, parentFinishA)
+		AddFinishData(expectedVMOutput, parentFinishB)
+		parentAccount := AddNewOutputAccount(
 			expectedVMOutput,
 			parentAddress,
 			-parentTransferValue,
 			nil,
 		)
-		mock.SetStorageUpdate(parentAccount, parentKeyA, parentDataA)
-		mock.SetStorageUpdate(parentAccount, parentKeyB, parentDataB)
-		_ = mock.AddNewOutputAccount(
+		SetStorageUpdate(parentAccount, parentKeyA, parentDataA)
+		SetStorageUpdate(parentAccount, parentKeyB, parentDataB)
+		_ = AddNewOutputAccount(
 			expectedVMOutput,
 			parentTransferReceiver,
 			parentTransferValue,
@@ -411,11 +368,11 @@ func expectedVMOutputs(id string) *vmcommon.VMOutput {
 	}
 	if id == "ExecuteOnSameContext_WrongCall" {
 		expectedVMOutput := expectedVMOutputs("ExecuteOnSameContext_Prepare")
-		mock.AddFinishData(expectedVMOutput, []byte("failed"))
+		AddFinishData(expectedVMOutput, []byte("failed"))
 		expectedVMOutput.GasRemaining = 988131
 		parentAccount := expectedVMOutput.OutputAccounts[string(parentAddress)]
 		parentAccount.BalanceDelta = big.NewInt(-141)
-		_ = mock.AddNewOutputAccount(
+		_ = AddNewOutputAccount(
 			expectedVMOutput,
 			wrongAddress,
 			99, // TODO this is not supposed to happen! this should be 0.
@@ -425,19 +382,19 @@ func expectedVMOutputs(id string) *vmcommon.VMOutput {
 	}
 	if id == "ExecuteOnSameContext_ChildCall" {
 		expectedVMOutput := expectedVMOutputs("ExecuteOnSameContext_Prepare")
-		mock.AddFinishData(expectedVMOutput, childFinish)
-		mock.AddFinishData(expectedVMOutput, []byte("success"))
+		AddFinishData(expectedVMOutput, childFinish)
+		AddFinishData(expectedVMOutput, []byte("success"))
 		expectedVMOutput.GasRemaining = 998206
 		parentAccount := expectedVMOutput.OutputAccounts[string(parentAddress)]
 		parentAccount.BalanceDelta = big.NewInt(-141)
-		childAccount := mock.AddNewOutputAccount(
+		childAccount := AddNewOutputAccount(
 			expectedVMOutput,
 			childAddress,
 			3,
 			nil,
 		)
-		mock.SetStorageUpdate(childAccount, childKey, childData)
-		_ = mock.AddNewOutputAccount(
+		SetStorageUpdate(childAccount, childKey, childData)
+		_ = AddNewOutputAccount(
 			expectedVMOutput,
 			childTransferReceiver,
 			96,
@@ -447,7 +404,7 @@ func expectedVMOutputs(id string) *vmcommon.VMOutput {
 		return expectedVMOutput
 	}
 	if id == "Nil" {
-		expectedVMOutput := mock.MakeVMOutput()
+		expectedVMOutput := MakeVMOutput()
 		expectedVMOutput.GasRemaining = 0
 		expectedVMOutput.ReturnData = nil
 		expectedVMOutput.OutputAccounts = nil
@@ -458,43 +415,4 @@ func expectedVMOutputs(id string) *vmcommon.VMOutput {
 	}
 
 	return nil
-}
-
-func defaultArwen(t *testing.T, blockchain vmcommon.BlockchainHook, crypto vmcommon.CryptoHook) (*vmHost, error) {
-	host, err := NewArwenVM(blockchain, crypto, defaultVmType, uint64(1000), config.MakeGasMap(1))
-	require.Nil(t, err)
-	require.NotNil(t, host)
-	return host, err
-}
-
-func defaultContractCreateInput() *vmcommon.ContractCreateInput {
-	return &vmcommon.ContractCreateInput{
-		VMInput: vmcommon.VMInput{
-			CallerAddr: []byte("caller"),
-			Arguments: [][]byte{
-				[]byte("argument 1"),
-				[]byte("argument 2"),
-			},
-			CallValue:   big.NewInt(0),
-			CallType:    vmcommon.DirectCall,
-			GasPrice:    0,
-			GasProvided: 0,
-		},
-		ContractCode: []byte("contract"),
-	}
-}
-
-func defaultContractCallInput() *vmcommon.ContractCallInput {
-	return &vmcommon.ContractCallInput{
-		VMInput: vmcommon.VMInput{
-			CallerAddr:  []byte("caller"),
-			Arguments:   make([][]byte, 0),
-			CallValue:   big.NewInt(0),
-			CallType:    vmcommon.DirectCall,
-			GasPrice:    0,
-			GasProvided: 0,
-		},
-		RecipientAddr: []byte("smartcontract"),
-		Function:      "function",
-	}
 }
