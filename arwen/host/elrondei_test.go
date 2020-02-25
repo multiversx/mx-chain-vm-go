@@ -64,18 +64,18 @@ func TestElrondEI_CallValue(t *testing.T) {
 	assert.Equal(t, big.NewInt(12345), val12345)
 }
 
-func TestElrondEI_Int64Argument(t *testing.T) {
+func TestElrondEI_int64getArgument(t *testing.T) {
 	code := GetTestSCCode("elrondei", "../../")
 	host, _ := DefaultTestArwenForCall(t, code)
 	input := DefaultTestContractCallInput()
 	input.GasProvided = 100000
-	input.Function = "test_getCallValue_Int64Argument"
+	input.Function = "test_int64getArgument"
 	input.Arguments = [][]byte{big.NewInt(12345).Bytes()}
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	assert.Nil(t, err)
 	assert.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
-	assert.Len(t, vmOutput.ReturnData, 2)
+	assert.Len(t, vmOutput.ReturnData, 3)
 	data := vmOutput.ReturnData
 	assert.Equal(t, []byte("ok"), data[0])
 	assert.Equal(t, []byte{57, 48, 0, 0}, data[1])
@@ -83,4 +83,26 @@ func TestElrondEI_Int64Argument(t *testing.T) {
 	invBytes := arwen.InverseBytes(data[1])
 	val12345 := big.NewInt(0).SetBytes(invBytes)
 	assert.Equal(t, big.NewInt(12345), val12345)
+
+	i64val12345 := big.NewInt(0).SetBytes(data[2])
+	assert.Equal(t, big.NewInt(12345), i64val12345)
+
+	// Take the result of the SC method (the number 12345 as bytes) and feed it
+	// back into the SC method.
+	input.Arguments = [][]byte{data[2]}
+
+	vmOutput, err = host.RunSmartContractCall(input)
+	assert.Nil(t, err)
+	assert.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+	assert.Len(t, vmOutput.ReturnData, 3)
+	data = vmOutput.ReturnData
+	assert.Equal(t, []byte("ok"), data[0])
+	assert.Equal(t, []byte{57, 48, 0, 0}, data[1])
+
+	invBytes = arwen.InverseBytes(data[1])
+	val12345 = big.NewInt(0).SetBytes(invBytes)
+	assert.Equal(t, big.NewInt(12345), val12345)
+
+	i64val12345 = big.NewInt(0).SetBytes(data[2])
+	assert.Equal(t, big.NewInt(12345), i64val12345)
 }
