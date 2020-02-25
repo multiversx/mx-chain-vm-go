@@ -18,6 +18,10 @@ type ContractCommand struct {
 	CallInput   *vmcommon.ContractCallInput
 }
 
+func (command *ContractCommand) String() string {
+	return fmt.Sprintf("Command [%s]", command.Tag)
+}
+
 // HookCallRequest is
 type HookCallRequest struct {
 	Tag       string
@@ -137,7 +141,7 @@ func (messenger *Messenger) receiveMessageLength() (int, error) {
 }
 
 func (messenger *Messenger) blockingPeek(n int) {
-	fmt.Println("blockingPeek", n)
+	fmt.Printf("blockingPeek %d bytes\n", n)
 	for {
 		_, err := messenger.reader.Peek(n)
 		if err == nil {

@@ -28,6 +28,7 @@ func Test_Loop(t *testing.T) {
 
 	go func() {
 		beginMessageLoop(bufio.NewReader(inputOfArwen), bufio.NewWriter(outputOfArwen))
+		wg.Done()
 	}()
 
 	go func() {
@@ -36,11 +37,14 @@ func Test_Loop(t *testing.T) {
 	}()
 
 	wg.Wait()
-	//time.Sleep(3 * time.Second)
 }
 
 func writeUint32(file *os.File, value uint32) {
 	buffer := make([]byte, 4)
 	binary.LittleEndian.PutUint32(buffer, value)
 	file.Write(buffer)
+}
+
+func writeCommand() {
+
 }
