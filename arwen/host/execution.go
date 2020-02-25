@@ -14,6 +14,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	runtime := host.Runtime()
 	metering := host.Metering()
 	output := host.Output()
+	storage := host.Storage()
 
 	var returnCode vmcommon.ReturnCode
 	var err error
@@ -38,6 +39,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	runtime.SetVMInput(&input.VMInput)
 	runtime.SetSCAddress(address)
 	output.AddTxValueToAccount(address, input.CallValue)
+	storage.SetAddress(runtime.GetSCAddress())
 
 	err = metering.DeductInitialGasForDirectDeployment(input)
 	if err != nil {
@@ -86,6 +88,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	output := host.Output()
 	metering := host.Metering()
 	blockchain := host.Blockchain()
+	storage := host.Storage()
 
 	var returnCode vmcommon.ReturnCode
 	var err error
@@ -103,6 +106,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 
 	runtime.InitStateFromContractCallInput(input)
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
+	storage.SetAddress(runtime.GetSCAddress())
 
 	contract, err := blockchain.GetCode(runtime.GetSCAddress())
 	if err != nil {
@@ -152,6 +156,8 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vm
 	host.InitState()
 
 	host.Runtime().InitStateFromContractCallInput(input)
+	host.Storage().SetAddress(host.Runtime().GetSCAddress())
+
 	err := host.execute(input)
 	if err != nil {
 		return nil, err

@@ -521,7 +521,7 @@ func storageStore(context unsafe.Pointer, keyOffset int32, dataOffset int32, dat
 	gasToUse := metering.GasSchedule().ElrondAPICost.StorageStore
 	metering.UseGas(gasToUse)
 
-	return storage.SetStorage(runtime.GetSCAddress(), key, data)
+	return storage.SetStorage(key, data)
 }
 
 //export storageGetValueLength
@@ -535,7 +535,7 @@ func storageGetValueLength(context unsafe.Pointer, keyOffset int32) int32 {
 		return -1
 	}
 
-	data := storage.GetStorage(runtime.GetSCAddress(), key)
+	data := storage.GetStorage(key)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.StorageLoad
 	metering.UseGas(gasToUse)
@@ -554,7 +554,7 @@ func storageLoad(context unsafe.Pointer, keyOffset int32, dataOffset int32) int3
 		return -1
 	}
 
-	data := storage.GetStorage(runtime.GetSCAddress(), key)
+	data := storage.GetStorage(key)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.StorageLoad
 	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(data))
@@ -813,7 +813,7 @@ func int64storageStore(context unsafe.Pointer, keyOffset int32, value int64) int
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64StorageStore
 	metering.UseGas(gasToUse)
 
-	return storage.SetStorage(runtime.GetSCAddress(), key, data.Bytes())
+	return storage.SetStorage(key, data.Bytes())
 }
 
 //export int64storageLoad
@@ -827,7 +827,7 @@ func int64storageLoad(context unsafe.Pointer, keyOffset int32) int64 {
 		return 0
 	}
 
-	data := storage.GetStorage(runtime.GetSCAddress(), key)
+	data := storage.GetStorage(key)
 
 	bigInt := big.NewInt(0).SetBytes(data)
 

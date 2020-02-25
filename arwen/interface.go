@@ -154,7 +154,10 @@ type MeteringContext interface {
 }
 
 type StorageContext interface {
+	StateStack
+
+	SetAddress(address []byte)
 	GetStorageUpdates(address []byte) map[string]*vmcommon.StorageUpdate
-	GetStorage(address []byte, key []byte) []byte
-	SetStorage(address []byte, key []byte, value []byte) int32
+	GetStorage(key []byte) []byte
+	SetStorage(key []byte, value []byte) int32
 }
