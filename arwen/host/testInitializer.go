@@ -3,10 +3,11 @@ package host
 import (
 	"bytes"
 	"errors"
+	"io/ioutil"
 	"math/big"
+	"path/filepath"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
 	"github.com/ElrondNetwork/elrond-vm-common"
@@ -18,9 +19,15 @@ var ErrCodeNotFound = errors.New("code not found")
 var firstAddress = []byte("firstSC.........................")
 var secondAddress = []byte("secondSC........................")
 
+func GetSCCode(fileName string) []byte {
+	code, _ := ioutil.ReadFile(filepath.Clean(fileName))
+
+	return code
+}
+
 func GetTestSCCode(scName string, prefixToTestSCs string) []byte {
 	pathToSC := prefixToTestSCs + "test/contracts/" + scName + "/" + scName + ".wasm"
-	return arwen.GetSCCode(pathToSC)
+	return GetSCCode(pathToSC)
 }
 
 func DefaultTestArwenForDeployment(t *testing.T, ownerNonce uint64, newAddress []byte) *vmHost {
