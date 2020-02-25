@@ -4,6 +4,7 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/assert"
 )
@@ -78,4 +79,8 @@ func TestElrondEI_Int64Argument(t *testing.T) {
 	data := vmOutput.ReturnData
 	assert.Equal(t, []byte("ok"), data[0])
 	assert.Equal(t, []byte{57, 48, 0, 0}, data[1])
+
+	invBytes := arwen.InverseBytes(data[1])
+	val12345 := big.NewInt(0).SetBytes(invBytes)
+	assert.Equal(t, big.NewInt(12345), val12345)
 }
