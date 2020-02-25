@@ -276,7 +276,10 @@ func TestExecution_ExecuteOnSameContext(t *testing.T) {
 	expectedVMOutput = expectedVMOutputs("ExecuteOnSameContext_WrongCall")
 	require.Equal(t, expectedVMOutput, vmOutput)
 
-	// TODO verify whether the child can access bigInts of the parent?
+	// Call parentFunctionChildCall() of the parent SC, which will call the child
+	// SC and pass some arguments using executeOnSameContext().
+	// TODO verify whether the child can access bigInts of the parent? the child
+	// shouldn't
 	childCode := GetTestSCCode("exec-same-ctx-child", "../../")
 	host, _ = DefaultTestArwenForTwoSCs(t, parentCode, childCode)
 	input = DefaultTestContractCallInput()
@@ -380,6 +383,7 @@ func expectedVMOutputs(id string) *vmcommon.VMOutput {
 	if id == "ExecuteOnSameContext_ChildCall" {
 		expectedVMOutput := expectedVMOutputs("ExecuteOnSameContext_Prepare")
 		AddFinishData(expectedVMOutput, childFinish)
+		AddFinishData(expectedVMOutput, []byte("child ok"))
 		AddFinishData(expectedVMOutput, []byte("success"))
 		expectedVMOutput.GasRemaining = 998206
 		parentAccount := expectedVMOutput.OutputAccounts[string(parentAddress)]
