@@ -43,7 +43,7 @@ void parentFunctionWrongCall() {
 			functionName,
 			13,
 			2,
-			executeArgumentsLengths,
+			(byte*)executeArgumentsLengths,
 			executeArgumentsData
 	);
 	finishResult(result);
@@ -60,7 +60,7 @@ void parentFunctionChildCall() {
 			functionName,
 			13,
 			2,
-			executeArgumentsLengths,
+			(byte*)executeArgumentsLengths,
 			executeArgumentsData
 	);
 	finishResult(result);

@@ -388,13 +388,13 @@ func expectedVMOutputs(id string) *vmcommon.VMOutput {
 		expectedVMOutput.GasRemaining = 998206
 		parentAccount := expectedVMOutput.OutputAccounts[string(parentAddress)]
 		parentAccount.BalanceDelta = big.NewInt(-141)
-		childAccount := AddNewOutputAccount(
+		_ = AddNewOutputAccount(
 			expectedVMOutput,
 			childAddress,
 			3,
 			nil,
 		)
-		SetStorageUpdate(childAccount, childKey, childData)
+		SetStorageUpdate(parentAccount, childKey, childData)
 		_ = AddNewOutputAccount(
 			expectedVMOutput,
 			childTransferReceiver,

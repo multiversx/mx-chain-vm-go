@@ -10,8 +10,8 @@ byte childFinish[] = "childFinish";
 
 byte recipient[32]     = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 byte value[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,96};
-byte dataA[11] = {0,0,0,0,0,0,0,0,0,0,0};
-byte dataB[11] = {0,0,0,0,0,0,0,0,0,0,0};
+byte dataA[14] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+byte dataB[14] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 void not_ok() {
 	byte msg[] = "not ok";
@@ -57,21 +57,34 @@ void childFunction() {
 	storageLoad(parentKeyA, dataA);
 	storageLoad(parentKeyB, dataB);
 
-	for (int i = 0; i < 11; i++) {
+	finish(dataA, 11);
+	finish(dataB, 11);
+
+	dataA[5] = 'D';
+
+	for (int i = 0; i < 6; i++) {
+		finish(&dataB[i], 1);
+	}
+	
+	// finish(&dataB[6], 1);
+
+	/*
+	int i;
+	int status = 0;
+	for (i = 0; i < 11; i++) {
 		if (dataA[i] != parentDataA[i]) {
-			byte err[] = "err dataA";
-			finish(err, 9);
-			not_ok();
-			return;
+			status = 1;
+			break;
 		}
 		if (dataB[i] != parentDataB[i]) {
-			byte err[] = "err dataB";
-			finish(err, 9);
-			not_ok();
-			return;
+			status = 2;
+			break;
 		}
 	}
 
-	byte msg[] = "child ok";
-	finish(msg, 8);
+	if (status == 0) {
+		byte msg[] = "child ok";
+		finish(msg, 8);
+	}
+	*/
 }
