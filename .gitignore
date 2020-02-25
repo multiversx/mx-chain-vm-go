@@ -17,3 +17,8 @@
 .vscode
 
 tags
+
+# SmartContract compilation artefacts
+*.hex*
+*.ll
+*.o
