@@ -12,17 +12,21 @@ import (
 )
 
 func main() {
-	reader := bufio.NewReader(os.Stdin)
-	writer := bufio.NewWriter(os.Stdout)
+	doMain(os.Stdin, os.Stdout)
+}
+
+func doMain(input *os.File, output *os.File) {
+	reader := bufio.NewReader(input)
+	writer := bufio.NewWriter(output)
 
 	err := beginMessageLoop(reader, writer)
 	if err != nil {
-		fmt.Println("Error:", err)
+		fmt.Println(err)
 	}
 }
 
 func beginMessageLoop(reader *bufio.Reader, writer *bufio.Writer) error {
-	messenger := NewMessenger(reader, writer)
+	messenger := NewChildMessenger(reader, writer)
 	blockchain := NewBlockchainHookGateway(messenger)
 	arwenVirtualMachineType := []byte{5, 0}
 	blockGasLimit := uint64(10000000)
@@ -34,7 +38,7 @@ func beginMessageLoop(reader *bufio.Reader, writer *bufio.Writer) error {
 	}
 
 	for {
-		command := messenger.WaitContractCommand()
+		command := messenger.ReceiveContractCommand()
 		err := executeCommand(command)
 		if errors.Is(err, ErrCriticalError) {
 			return err

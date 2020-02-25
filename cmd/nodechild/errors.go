@@ -9,4 +9,4 @@ import (
 var ErrCriticalError = errors.New("critical error")
 
 // ErrBadCommandFromNode signals a bad command from node
-var ErrBadCommandFromNode = fmt.Errorf("%w: ", ErrCriticalError)
+var ErrBadCommandFromNode = fmt.Errorf("%w: bad command from node", ErrCriticalError)
