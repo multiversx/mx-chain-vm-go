@@ -33,6 +33,7 @@ func (messenger *NodeMessenger) SendContractRequest(request *ContractRequest) (*
 	if err != nil {
 		return nil, err
 	}
+
 	if response.HasError() {
 		return nil, response.GetError()
 	}

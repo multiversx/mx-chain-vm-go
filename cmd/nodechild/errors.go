@@ -1,12 +1,11 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 )
 
 // ErrCriticalError signals a critical error
-var ErrCriticalError = errors.New("critical error")
+var ErrCriticalError = fmt.Errorf("critical error")
 
 // ErrBadRequestFromNode signals a critical error
 var ErrBadRequestFromNode = fmt.Errorf("%w: bad request from node", ErrCriticalError)

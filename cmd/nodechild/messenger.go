@@ -2,7 +2,9 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/binary"
+	"encoding/gob"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -25,18 +27,17 @@ func NewMessenger(name string, reader *bufio.Reader, writer *bufio.Writer) *Mess
 }
 
 func (messenger *Messenger) send(message interface{}) error {
-	jsonData, err := messenger.marshal(message)
+	dataBytes, err := messenger.marshal(message)
 	if err != nil {
 		return err
 	}
 
-	err = messenger.sendMessageLength(jsonData)
+	err = messenger.sendMessageLength(dataBytes)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("%s: Send: %s\n", messenger.name, jsonData)
-	_, err = messenger.writer.Write(jsonData)
+	_, err = messenger.writer.Write(dataBytes)
 	if err != nil {
 		return err
 	}
@@ -69,8 +70,8 @@ func (messenger *Messenger) receive(message interface{}) error {
 		return err
 	}
 
-	fmt.Printf("%s: Received: %s\n", messenger.name, string(buffer))
-	return nil
+	err = messenger.unmarshal(buffer, message)
+	return err
 }
 
 func (messenger *Messenger) receiveMessageLength() (int, error) {
@@ -96,9 +97,39 @@ func (messenger *Messenger) blockingPeek(n int) {
 }
 
 func (messenger *Messenger) marshal(data interface{}) ([]byte, error) {
+	return marshalJSON(data)
+}
+
+func (messenger *Messenger) unmarshal(dataBytes []byte, data interface{}) error {
+	return unmarshalJSON(dataBytes, data)
+}
+
+func marshalGob(data interface{}) ([]byte, error) {
+	var buffer bytes.Buffer
+	encoder := gob.NewEncoder(&buffer)
+	err := encoder.Encode(data)
+	if err != nil {
+		return nil, err
+	}
+
+	return buffer.Bytes(), nil
+}
+
+func unmarshalGob(dataBytes []byte, data interface{}) error {
+	buffer := bytes.NewBuffer(dataBytes)
+	decoder := gob.NewDecoder(buffer)
+	err := decoder.Decode(data)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func marshalJSON(data interface{}) ([]byte, error) {
 	return json.Marshal(data)
 }
 
-func (messenger *Messenger) unmarshal(jsonData []byte, data interface{}) error {
-	return json.Unmarshal(jsonData, data)
+func unmarshalJSON(dataBytes []byte, data interface{}) error {
+	return json.Unmarshal(dataBytes, data)
 }

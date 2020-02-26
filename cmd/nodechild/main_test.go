@@ -8,6 +8,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -32,8 +33,8 @@ func Test_Loop(t *testing.T) {
 	go func() {
 		node := NewNodeMessenger(bufio.NewReader(files.inputOfNode), bufio.NewWriter(files.outputOfNode))
 		response, err := node.SendContractRequest(&ContractRequest{Tag: "foobar"})
-		require.Nil(t, response)
-		require.Equal(t, ErrCannotSendContractRequest, err)
+		assert.Nil(t, response)
+		assert.Error(t, err, ErrBadRequestFromNode)
 		wg.Done()
 	}()
 
