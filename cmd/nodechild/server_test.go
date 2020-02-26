@@ -19,22 +19,42 @@ type testFiles struct {
 	inputOfNode   *os.File
 }
 
-func Test_Loop(t *testing.T) {
-	files := createTestFiles(t, "foo")
+func TestServer_SendBadRequest(t *testing.T) {
+	nodeFlow := func(node *NodeMessenger) {
+		response, err := node.SendContractRequest(&ContractRequest{Tag: "foobar"})
+		assert.Nil(t, response)
+		assert.Error(t, err, ErrBadRequestFromNode)
+	}
+
+	runServer(t, "foo", nodeFlow)
+}
+
+func TestServer_SendDeployRequest(t *testing.T) {
+	nodeFlow := func(node *NodeMessenger) {
+		response, err := node.SendContractRequest(&ContractRequest{Tag: "Deploy"})
+		assert.Nil(t, response)
+		assert.Error(t, err, ErrBadRequestFromNode)
+	}
+
+	runServer(t, "foo", nodeFlow)
+}
+
+func runServer(t *testing.T, tag string, nodeFlow func(node *NodeMessenger)) {
+	files := createTestFiles(t, tag)
 
 	wg := sync.WaitGroup{}
 	wg.Add(2)
 
 	go func() {
-		doMain(files.inputOfArwen, files.outputOfArwen)
+		server, err := NewServer(files.inputOfArwen, files.outputOfArwen)
+		assert.Nil(t, err)
+		server.Start()
 		wg.Done()
 	}()
 
 	go func() {
 		node := NewNodeMessenger(bufio.NewReader(files.inputOfNode), bufio.NewWriter(files.outputOfNode))
-		response, err := node.SendContractRequest(&ContractRequest{Tag: "foobar"})
-		assert.Nil(t, response)
-		assert.Error(t, err, ErrBadRequestFromNode)
+		nodeFlow(node)
 		wg.Done()
 	}()
 
