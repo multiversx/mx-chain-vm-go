@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	server, err := NewServer(os.Stdin, os.Stdout)
+	server, err := NewChildServer(os.Stdin, os.Stdout)
 	if err != nil {
 		log.Fatal(err)
 	}

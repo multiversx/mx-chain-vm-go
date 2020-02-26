@@ -10,14 +10,14 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 )
 
-// Server is
-type Server struct {
+// ChildServer is
+type ChildServer struct {
 	Messenger *ChildMessenger
 	VMHost    VMHost
 }
 
-// NewServer creates
-func NewServer(input *os.File, output *os.File) (*Server, error) {
+// NewChildServer creates
+func NewChildServer(input *os.File, output *os.File) (*ChildServer, error) {
 	reader := bufio.NewReader(input)
 	writer := bufio.NewWriter(output)
 
@@ -32,14 +32,14 @@ func NewServer(input *os.File, output *os.File) (*Server, error) {
 		return nil, err
 	}
 
-	return &Server{
+	return &ChildServer{
 		Messenger: messenger,
 		VMHost:    host,
 	}, nil
 }
 
 // Start runs the main loop
-func (server *Server) Start() error {
+func (server *ChildServer) Start() error {
 	var endingError error
 	for {
 		request, err := server.Messenger.ReceiveContractRequest()
@@ -66,7 +66,7 @@ func (server *Server) Start() error {
 	return endingError
 }
 
-func (server *Server) executeRequest(request *ContractRequest) (*ContractResponse, error) {
+func (server *ChildServer) executeRequest(request *ContractRequest) (*ContractResponse, error) {
 	fmt.Println("Arwen: executeRequest()", request)
 
 	switch request.Tag {
@@ -83,7 +83,7 @@ func (server *Server) executeRequest(request *ContractRequest) (*ContractRespons
 	return nil, nil
 }
 
-func (server *Server) doRunSmartContractCreate(request *ContractRequest) *ContractResponse {
+func (server *ChildServer) doRunSmartContractCreate(request *ContractRequest) *ContractResponse {
 	fmt.Println("doRunSmartContractCreate")
 	vmOutput, err := server.VMHost.RunSmartContractCreate(request.CreateInput)
 

@@ -21,17 +21,17 @@ type testFiles struct {
 	inputOfNode   *os.File
 }
 
-func TestServer_SendBadRequest(t *testing.T) {
+func TestChildServer_SendBadRequest(t *testing.T) {
 	flow := func(node *NodeMessenger) {
 		response, err := node.SendContractRequest(&ContractRequest{Tag: "foobar"})
 		assert.Nil(t, response)
 		assert.Error(t, err, ErrBadRequestFromNode)
 	}
 
-	runServer(t, "foo", flow)
+	runChildServer(t, "foo", flow)
 }
 
-func TestServer_SendDeployRequest(t *testing.T) {
+func TestChildServer_SendDeployRequest(t *testing.T) {
 	flow := func(node *NodeMessenger) {
 		response, err := node.SendContractRequest(createDeployRequest())
 		assert.Nil(t, response)
@@ -40,7 +40,7 @@ func TestServer_SendDeployRequest(t *testing.T) {
 		assert.Error(t, err, ErrStopPerNodeRequest)
 	}
 
-	runServer(t, "bar", flow)
+	runChildServer(t, "bar", flow)
 }
 
 func createDeployRequest() *ContractRequest {
@@ -59,14 +59,14 @@ func createDeployRequest() *ContractRequest {
 	}
 }
 
-func runServer(t *testing.T, tag string, nodeFlow func(node *NodeMessenger)) {
+func runChildServer(t *testing.T, tag string, nodeFlow func(node *NodeMessenger)) {
 	files := createTestFiles(t, tag)
 
 	wg := sync.WaitGroup{}
 	wg.Add(2)
 
 	go func() {
-		server, err := NewServer(files.inputOfArwen, files.outputOfArwen)
+		server, err := NewChildServer(files.inputOfArwen, files.outputOfArwen)
 		assert.Nil(t, err)
 		server.Start()
 		wg.Done()
