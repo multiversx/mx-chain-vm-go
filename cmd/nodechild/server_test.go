@@ -3,11 +3,13 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math/big"
 	"os"
 	"path/filepath"
 	"sync"
 	"testing"
 
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -31,7 +33,7 @@ func TestServer_SendBadRequest(t *testing.T) {
 
 func TestServer_SendDeployRequest(t *testing.T) {
 	flow := func(node *NodeMessenger) {
-		response, err := node.SendContractRequest(&ContractRequest{Tag: "Deploy"})
+		response, err := node.SendContractRequest(createDeployRequest())
 		assert.Nil(t, response)
 		assert.Error(t, err, ErrBadRequestFromNode)
 		_, err = node.SendContractRequest(&ContractRequest{Tag: "Stop"})
@@ -39,6 +41,22 @@ func TestServer_SendDeployRequest(t *testing.T) {
 	}
 
 	runServer(t, "bar", flow)
+}
+
+func createDeployRequest() *ContractRequest {
+	return &ContractRequest{
+		Tag: "Deploy",
+		CreateInput: &vmcommon.ContractCreateInput{
+			VMInput: vmcommon.VMInput{
+				CallerAddr:  []byte{},
+				Arguments:   [][]byte{},
+				CallValue:   big.NewInt(0),
+				GasPrice:    100000000,
+				GasProvided: 2000000,
+			},
+			ContractCode: []byte{},
+		},
+	}
 }
 
 func runServer(t *testing.T, tag string, nodeFlow func(node *NodeMessenger)) {

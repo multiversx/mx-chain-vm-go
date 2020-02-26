@@ -85,7 +85,7 @@ func (server *Server) executeRequest(request *ContractRequest) (*ContractRespons
 
 func (server *Server) doRunSmartContractCreate(request *ContractRequest) *ContractResponse {
 	fmt.Println("doRunSmartContractCreate")
-	vmOutput, err := server.VMHost.RunSmartContractCreate(nil)
+	vmOutput, err := server.VMHost.RunSmartContractCreate(request.CreateInput)
 
 	return &ContractResponse{
 		Tag:      request.Tag,
