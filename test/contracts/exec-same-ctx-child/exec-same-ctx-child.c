@@ -1,5 +1,9 @@
 #include "../elrond/context.h"
 
+byte bla[] = "bla bla bla bla bla bla bla bla";
+byte dataA[20] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+byte dataB[20] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+// byte dataB[1000] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 byte parentKeyA[] =  "parentKeyA......................";
 byte parentDataA[] = "parentDataA";
 byte parentKeyB[] =  "parentKeyB......................";
@@ -10,8 +14,6 @@ byte childFinish[] = "childFinish";
 
 byte recipient[32]     = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 byte value[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,96};
-byte dataA[14] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-byte dataB[14] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 void not_ok() {
 	byte msg[] = "not ok";
@@ -54,23 +56,24 @@ void childFunction() {
 		not_ok();
 		return;
 	}
-	storageLoad(parentKeyA, dataA);
-	storageLoad(parentKeyB, dataB);
+	i64 slLenA = storageLoad(parentKeyA, dataA);
+	i64 slLenB = storageLoad(parentKeyB, dataB);
 
 	finish(dataA, 11);
+
+	for (int i = 0; i < 11; i++) {
+		finish(&dataA[i], 1);
+	}
+
 	finish(dataB, 11);
 
-	dataA[5] = 'D';
-
-	for (int i = 0; i < 6; i++) {
+	for (int i = 0; i < 11; i++) {
 		finish(&dataB[i], 1);
 	}
 	
-	// finish(&dataB[6], 1);
-
-	/*
 	int i;
 	int status = 0;
+	/*
 	for (i = 0; i < 11; i++) {
 		if (dataA[i] != parentDataA[i]) {
 			status = 1;
@@ -81,10 +84,10 @@ void childFunction() {
 			break;
 		}
 	}
+	*/
 
 	if (status == 0) {
 		byte msg[] = "child ok";
 		finish(msg, 8);
 	}
-	*/
 }

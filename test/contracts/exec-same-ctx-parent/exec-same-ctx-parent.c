@@ -54,7 +54,7 @@ void parentFunctionChildCall() {
 	byte childAddress[] = "secondSC........................";
 	byte functionName[] = "childFunction";
 	int result = executeOnSameContext(
-			20000,
+			200000,
 			childAddress,
 			executeValue,
 			functionName,

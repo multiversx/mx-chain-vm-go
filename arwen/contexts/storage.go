@@ -2,6 +2,7 @@ package contexts
 
 import (
 	"bytes"
+	"fmt"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -48,6 +49,7 @@ func (context *storageContext) ClearStateStack() {
 
 func (context *storageContext) SetAddress(address []byte) {
 	context.address = address
+	fmt.Printf("Storage SetAddress: %s\n", context.address)
 }
 
 func (context *storageContext) GetStorageUpdates(address []byte) map[string]*vmcommon.StorageUpdate {
@@ -56,16 +58,20 @@ func (context *storageContext) GetStorageUpdates(address []byte) map[string]*vmc
 }
 
 func (context *storageContext) GetStorage(key []byte) []byte {
+	fmt.Printf("Storage GetStorage: %s, %s → ", context.address, key)
 	storageUpdates := context.GetStorageUpdates(context.address)
 	if storageUpdate, ok := storageUpdates[string(key)]; ok {
+		fmt.Printf("%s (from StorageUpdates)\n", storageUpdate.Data)
 		return storageUpdate.Data
 	}
 
 	value, _ := context.blockChainHook.GetStorageData(context.address, key)
+	fmt.Printf("%s (from BlockchainHook)\n", value)
 	return value
 }
 
 func (context *storageContext) SetStorage(key []byte, value []byte) int32 {
+	fmt.Printf("Storage SetStorage: %s, %s → %s\n", context.address, key, value)
 	if context.host.Runtime().ReadOnly() {
 		return int32(arwen.StorageUnchanged)
 	}
@@ -90,6 +96,7 @@ func (context *storageContext) SetStorage(key []byte, value []byte) int32 {
 	if bytes.Equal(oldValue, value) {
 		useGas := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(length)
 		metering.UseGas(useGas)
+		fmt.Println("StorageUnchanged")
 		return int32(arwen.StorageUnchanged)
 	}
 
@@ -98,6 +105,7 @@ func (context *storageContext) SetStorage(key []byte, value []byte) int32 {
 		Data:   make([]byte, length),
 	}
 	copy(newUpdate.Data[:length], value[:length])
+	fmt.Printf("StorageUpdate Set: %s\n", value)
 	storageUpdates[strKey] = newUpdate
 
 	if bytes.Equal(oldValue, zero) {

@@ -72,6 +72,8 @@ type Instance struct {
 
 	// The exported memory of a WebAssembly instance.
 	Memory *Memory
+
+	Data unsafe.Pointer
 }
 
 func newWrappedError(target error) error {
@@ -170,6 +172,7 @@ func (instance *Instance) HasMemory() bool {
 // global to the instance.
 func (instance *Instance) SetContextData(data unsafe.Pointer) {
 	cWasmerInstanceContextDataSet(instance.instance, data)
+	instance.Data = data
 }
 
 func (instance *Instance) Clean() {
