@@ -81,7 +81,7 @@
                 "balance": "0x123400",
                 "storage": {
                     "0x1111111111111111111111111111111111111111111111111111111111111111": "0x56",
-                    "0x4444444444444444444444444444444444444444444444444444444444444444": "0x123400"
+                    "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff": "0x123400"
                 },
                 "code": "bob.wasm",
                 "asyncCallData": "payMeWithResult@56@70617943616c6c6261636b"
