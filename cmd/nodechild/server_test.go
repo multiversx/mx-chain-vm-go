@@ -20,23 +20,25 @@ type testFiles struct {
 }
 
 func TestServer_SendBadRequest(t *testing.T) {
-	nodeFlow := func(node *NodeMessenger) {
+	flow := func(node *NodeMessenger) {
 		response, err := node.SendContractRequest(&ContractRequest{Tag: "foobar"})
 		assert.Nil(t, response)
 		assert.Error(t, err, ErrBadRequestFromNode)
 	}
 
-	runServer(t, "foo", nodeFlow)
+	runServer(t, "foo", flow)
 }
 
 func TestServer_SendDeployRequest(t *testing.T) {
-	nodeFlow := func(node *NodeMessenger) {
+	flow := func(node *NodeMessenger) {
 		response, err := node.SendContractRequest(&ContractRequest{Tag: "Deploy"})
 		assert.Nil(t, response)
 		assert.Error(t, err, ErrBadRequestFromNode)
+		_, err = node.SendContractRequest(&ContractRequest{Tag: "Stop"})
+		assert.Error(t, err, ErrStopPerNodeRequest)
 	}
 
-	runServer(t, "foo", nodeFlow)
+	runServer(t, "bar", flow)
 }
 
 func runServer(t *testing.T, tag string, nodeFlow func(node *NodeMessenger)) {

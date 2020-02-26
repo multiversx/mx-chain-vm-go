@@ -7,6 +7,9 @@ import (
 // ErrCriticalError signals a critical error
 var ErrCriticalError = fmt.Errorf("critical error")
 
+// ErrStopPerNodeRequest signals a critical error
+var ErrStopPerNodeRequest = fmt.Errorf("%w: will stop, as node requested", ErrCriticalError)
+
 // ErrBadResponseTag signals a critical error
 var ErrBadResponseTag = fmt.Errorf("%w: bad response tag", ErrCriticalError)
 

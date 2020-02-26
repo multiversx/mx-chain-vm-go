@@ -74,6 +74,8 @@ func (server *Server) executeRequest(request *ContractRequest) (*ContractRespons
 		return server.doRunSmartContractCreate(request), nil
 	case "Call":
 		fmt.Println("Call smart contract")
+	case "Stop":
+		return nil, ErrStopPerNodeRequest
 	default:
 		return nil, ErrBadRequestFromNode
 	}
