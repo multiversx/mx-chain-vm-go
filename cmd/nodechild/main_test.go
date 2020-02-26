@@ -2,45 +2,59 @@ package main
 
 import (
 	"bufio"
-	"encoding/binary"
+	"fmt"
 	"os"
+	"path/filepath"
 	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
-func Test_Loop(t *testing.T) {
-	nodeToArwen := "testdata/node-to-arwen_42"
-	arwenToNode := "testdata/arwen-to-node_42"
+type testFiles struct {
+	outputOfNode  *os.File
+	inputOfArwen  *os.File
+	outputOfArwen *os.File
+	inputOfNode   *os.File
+}
 
-	outputOfNode, err := os.Create(nodeToArwen)
-	require.Nil(t, err)
-	outputOfArwen, err := os.Create(arwenToNode)
-	require.Nil(t, err)
-	_, err = os.Open(arwenToNode) // inputOfNode
-	require.Nil(t, err)
-	inputOfArwen, err := os.Open(nodeToArwen)
-	require.Nil(t, err)
+func Test_Loop(t *testing.T) {
+	files := createTestFiles(t, "foo")
 
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 
 	go func() {
-		beginMessageLoop(bufio.NewReader(inputOfArwen), bufio.NewWriter(outputOfArwen))
+		doMain(files.inputOfArwen, files.outputOfArwen)
+		wg.Done()
 	}()
 
 	go func() {
-		writeUint32(outputOfNode, 3)
-		outputOfNode.Write([]byte("foobar"))
+		node := NewNodeMessenger(bufio.NewReader(files.inputOfNode), bufio.NewWriter(files.outputOfNode))
+		node.SendContractCommand(&ContractCommand{Tag: "stop"})
 	}()
 
 	wg.Wait()
-	//time.Sleep(3 * time.Second)
 }
 
-func writeUint32(file *os.File, value uint32) {
-	buffer := make([]byte, 4)
-	binary.LittleEndian.PutUint32(buffer, value)
-	file.Write(buffer)
+func createTestFiles(t *testing.T, tag string) testFiles {
+	folder := filepath.Join(".", "testdata", "streams")
+	os.MkdirAll(folder, os.ModePerm)
+
+	nodeToArwen := filepath.Join(folder, fmt.Sprintf("node-to-arwen-%s.bin", tag))
+	arwenToNode := filepath.Join(folder, fmt.Sprintf("arwen-to-node-%s.bin", tag))
+
+	files := testFiles{}
+
+	var err error
+	files.outputOfNode, err = os.Create(nodeToArwen)
+	require.Nil(t, err)
+	files.outputOfArwen, err = os.Create(arwenToNode)
+	require.Nil(t, err)
+	files.inputOfNode, err = os.Open(arwenToNode)
+	require.Nil(t, err)
+	files.inputOfArwen, err = os.Open(nodeToArwen)
+	require.Nil(t, err)
+
+	return files
 }

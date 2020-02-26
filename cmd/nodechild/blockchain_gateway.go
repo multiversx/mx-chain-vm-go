@@ -6,11 +6,11 @@ import (
 
 // BlockchainHookGateway is
 type BlockchainHookGateway struct {
-	messenger *Messenger
+	messenger *ChildMessenger
 }
 
 // NewBlockchainHookGateway creates
-func NewBlockchainHookGateway(messenger *Messenger) *BlockchainHookGateway {
+func NewBlockchainHookGateway(messenger *ChildMessenger) *BlockchainHookGateway {
 	return &BlockchainHookGateway{messenger: messenger}
 }
 
