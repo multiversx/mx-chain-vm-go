@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
@@ -26,6 +25,9 @@ func doMain(input *os.File, output *os.File) {
 }
 
 func beginMessageLoop(reader *bufio.Reader, writer *bufio.Writer) error {
+	fmt.Println("Arwen: Begin message loop.")
+	defer fmt.Println("Arwen: End message loop.")
+
 	messenger := NewChildMessenger(reader, writer)
 	blockchain := NewBlockchainHookGateway(messenger)
 	arwenVirtualMachineType := []byte{5, 0}
@@ -34,28 +36,40 @@ func beginMessageLoop(reader *bufio.Reader, writer *bufio.Writer) error {
 
 	_, err := host.NewArwenVM(blockchain, nil, arwenVirtualMachineType, blockGasLimit, gasSchedule)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
+	var endingError error
 	for {
-		command := messenger.ReceiveContractCommand()
-		err := executeCommand(command)
-		if errors.Is(err, ErrCriticalError) {
-			return err
+		request, err := messenger.ReceiveContractRequest()
+		if err != nil {
+			endingError = err
+			break
 		}
+
+		err = executeRequest(request)
+		if errors.Is(err, ErrCriticalError) {
+			endingError = err
+			break
+		}
+
+		fmt.Println("Non critical error:", err)
 	}
+
+	messenger.SendResponseIHaveCriticalError(endingError)
+	return endingError
 }
 
-func executeCommand(command *ContractCommand) error {
-	fmt.Println("executeCommand()", command)
+func executeRequest(request *ContractRequest) error {
+	fmt.Println("Arwen: executeRequest()", request)
 
-	switch command.Tag {
+	switch request.Tag {
 	case "Deploy":
 		fmt.Println("Deploy smart contract")
 	case "Call":
 		fmt.Println("Call smart contract")
 	default:
-		return ErrBadCommandFromNode
+		return ErrBadRequestFromNode
 	}
 
 	return nil

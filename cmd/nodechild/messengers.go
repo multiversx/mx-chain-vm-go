@@ -11,13 +11,15 @@ import (
 
 // Messenger is
 type Messenger struct {
+	name   string
 	reader *bufio.Reader
 	writer *bufio.Writer
 }
 
 // NewMessenger creates
-func NewMessenger(reader *bufio.Reader, writer *bufio.Writer) *Messenger {
+func NewMessenger(name string, reader *bufio.Reader, writer *bufio.Writer) *Messenger {
 	return &Messenger{
+		name:   name,
 		reader: reader,
 		writer: writer,
 	}
@@ -34,6 +36,7 @@ func (messenger *Messenger) send(message interface{}) error {
 		return err
 	}
 
+	fmt.Printf("%s: Send: %s\n", messenger.name, jsonData)
 	_, err = messenger.writer.Write(jsonData)
 	if err != nil {
 		return err
@@ -66,6 +69,8 @@ func (messenger *Messenger) receive(message interface{}) error {
 	if err != nil {
 		return err
 	}
+
+	fmt.Printf("%s: Received: %s\n", messenger.name, string(buffer))
 	return nil
 }
 
@@ -81,13 +86,14 @@ func (messenger *Messenger) receiveMessageLength() (int, error) {
 }
 
 func (messenger *Messenger) blockingPeek(n int) {
-	fmt.Printf("blockingPeek %d bytes\n", n)
+	fmt.Printf("%s: blockingPeek %d bytes\n", messenger.name, n)
 	for {
 		_, err := messenger.reader.Peek(n)
 		if err == nil {
 			break
 		}
 	}
+	fmt.Printf("%s: peeked %d bytes\n", messenger.name, n)
 }
 
 func (messenger *Messenger) marshal(data interface{}) ([]byte, error) {
@@ -106,20 +112,20 @@ type ChildMessenger struct {
 // NewChildMessenger creates
 func NewChildMessenger(reader *bufio.Reader, writer *bufio.Writer) *ChildMessenger {
 	return &ChildMessenger{
-		Messenger: *NewMessenger(reader, writer),
+		Messenger: *NewMessenger("Arwen", reader, writer),
 	}
 }
 
-// ReceiveContractCommand waits
-func (messenger *ChildMessenger) ReceiveContractCommand() *ContractCommand {
-	command := &ContractCommand{}
+// ReceiveContractRequest waits
+func (messenger *ChildMessenger) ReceiveContractRequest() (*ContractRequest, error) {
+	request := &ContractRequest{}
 
-	err := messenger.receive(command)
+	err := messenger.receive(request)
 	if err != nil {
-		log.Fatalf("wait contract command error: %v", err)
+		return nil, err
 	}
 
-	return command
+	return request, nil
 }
 
 // SendHookCallRequest calls
@@ -143,6 +149,13 @@ func (messenger *ChildMessenger) SendHookCallRequest(request *HookCallRequest) *
 	return response
 }
 
+// SendResponseIHaveCriticalError calls
+func (messenger *ChildMessenger) SendResponseIHaveCriticalError(endingError error) error {
+	fmt.Println("Arwen: Sending end message...")
+	err := messenger.send(&Response{ErrorMessage: endingError.Error(), HasCriticalError: true})
+	return err
+}
+
 // NodeMessenger is
 type NodeMessenger struct {
 	Messenger
@@ -151,19 +164,29 @@ type NodeMessenger struct {
 // NewNodeMessenger creates
 func NewNodeMessenger(reader *bufio.Reader, writer *bufio.Writer) *NodeMessenger {
 	return &NodeMessenger{
-		Messenger: *NewMessenger(reader, writer),
+		Messenger: *NewMessenger("Node", reader, writer),
 	}
 }
 
-// SendContractCommand sends
-func (messenger *NodeMessenger) SendContractCommand(command *ContractCommand) {
-	fmt.Println("SendContractCommand...")
+// SendContractRequest sends
+func (messenger *NodeMessenger) SendContractRequest(request *ContractRequest) (*ContractResponse, error) {
+	fmt.Println("Node: Sending contract request...")
 
-	err := messenger.send(command)
+	err := messenger.send(request)
 	if err != nil {
-		log.Fatal("SendContractCommand: cannot send")
+		return nil, ErrCannotSendContractRequest
 	}
 
-	fmt.Println("Command sent:", command)
-	// TODO: wait for response (ContractResponse)
+	fmt.Println("Node: Request sent, waiting for response...")
+
+	response := &ContractResponse{}
+	err = messenger.receive(response)
+	if err != nil {
+		return nil, err
+	}
+	if response.HasError() {
+		return nil, response.GetError()
+	}
+
+	return response, nil
 }

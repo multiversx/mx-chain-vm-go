@@ -8,5 +8,8 @@ import (
 // ErrCriticalError signals a critical error
 var ErrCriticalError = errors.New("critical error")
 
-// ErrBadCommandFromNode signals a bad command from node
-var ErrBadCommandFromNode = fmt.Errorf("%w: bad command from node", ErrCriticalError)
+// ErrBadRequestFromNode signals a critical error
+var ErrBadRequestFromNode = fmt.Errorf("%w: bad request from node", ErrCriticalError)
+
+// ErrCannotSendContractRequest signals a critical error
+var ErrCannotSendContractRequest = fmt.Errorf("%w: cannot send contract request", ErrCriticalError)

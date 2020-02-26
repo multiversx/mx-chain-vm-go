@@ -22,7 +22,7 @@ func Test_Loop(t *testing.T) {
 	files := createTestFiles(t, "foo")
 
 	wg := sync.WaitGroup{}
-	wg.Add(1)
+	wg.Add(2)
 
 	go func() {
 		doMain(files.inputOfArwen, files.outputOfArwen)
@@ -31,7 +31,10 @@ func Test_Loop(t *testing.T) {
 
 	go func() {
 		node := NewNodeMessenger(bufio.NewReader(files.inputOfNode), bufio.NewWriter(files.outputOfNode))
-		node.SendContractCommand(&ContractCommand{Tag: "stop"})
+		response, err := node.SendContractRequest(&ContractRequest{Tag: "foobar"})
+		require.Nil(t, response)
+		require.Equal(t, ErrCannotSendContractRequest, err)
+		wg.Done()
 	}()
 
 	wg.Wait()
