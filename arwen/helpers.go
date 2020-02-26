@@ -8,14 +8,14 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 )
 
-func ConvertReturnValue(wasmValue wasmer.Value) *big.Int {
+func ConvertReturnValue(wasmValue wasmer.Value) []byte {
 	switch wasmValue.GetType() {
 	case wasmer.TypeVoid:
-		return big.NewInt(0)
+		return []byte{}
 	case wasmer.TypeI32:
-		return big.NewInt(wasmValue.ToI64())
+		return big.NewInt(wasmValue.ToI64()).Bytes()
 	case wasmer.TypeI64:
-		return big.NewInt(wasmValue.ToI64())
+		return big.NewInt(wasmValue.ToI64()).Bytes()
 	}
 
 	panic("unsupported return type")
@@ -38,11 +38,7 @@ func GuardedGetBytesSlice(data []byte, offset int32, length int32) ([]byte, erro
 	isRequestedEndTooLarge := requestedEnd > dataLength
 	isLengthNegative := length < 0
 
-	if isOffsetTooSmall || isOffsetTooLarge {
-		return nil, fmt.Errorf("GuardedGetBytesSlice: bad bounds")
-	}
-
-	if isRequestedEndTooLarge {
+	if isOffsetTooSmall || isOffsetTooLarge || isRequestedEndTooLarge {
 		return nil, fmt.Errorf("GuardedGetBytesSlice: bad bounds")
 	}
 
