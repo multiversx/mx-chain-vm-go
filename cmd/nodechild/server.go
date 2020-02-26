@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 )
@@ -14,7 +13,7 @@ import (
 // Server is
 type Server struct {
 	Messenger *ChildMessenger
-	Host      arwen.VMHost
+	VMHost    VMHost
 }
 
 // NewServer creates
@@ -35,7 +34,7 @@ func NewServer(input *os.File, output *os.File) (*Server, error) {
 
 	return &Server{
 		Messenger: messenger,
-		Host:      host,
+		VMHost:    host,
 	}, nil
 }
 
@@ -49,7 +48,7 @@ func (server *Server) Start() error {
 			break
 		}
 
-		err = executeRequest(request)
+		response, err := server.executeRequest(request)
 		if err != nil {
 			if errors.Is(err, ErrCriticalError) {
 				endingError = err
@@ -58,23 +57,37 @@ func (server *Server) Start() error {
 				fmt.Println("Non critical error:", err)
 			}
 		}
+
+		// Successful execution, send response
+		server.Messenger.SendContractResponse(response)
 	}
 
 	server.Messenger.SendResponseIHaveCriticalError(endingError)
 	return endingError
 }
 
-func executeRequest(request *ContractRequest) error {
+func (server *Server) executeRequest(request *ContractRequest) (*ContractResponse, error) {
 	fmt.Println("Arwen: executeRequest()", request)
 
 	switch request.Tag {
 	case "Deploy":
-		fmt.Println("Deploy smart contract")
+		return server.doRunSmartContractCreate(request), nil
 	case "Call":
 		fmt.Println("Call smart contract")
 	default:
-		return ErrBadRequestFromNode
+		return nil, ErrBadRequestFromNode
 	}
 
-	return nil
+	return nil, nil
+}
+
+func (server *Server) doRunSmartContractCreate(request *ContractRequest) *ContractResponse {
+	fmt.Println("doRunSmartContractCreate")
+	vmOutput, err := server.VMHost.RunSmartContractCreate(nil)
+
+	return &ContractResponse{
+		Tag:      request.Tag,
+		VMOutput: vmOutput,
+		Response: Response{ErrorMessage: err.Error(), HasCriticalError: false},
+	}
 }

@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"log"
 )
 
 // ChildMessenger is
@@ -30,25 +29,35 @@ func (messenger *ChildMessenger) ReceiveContractRequest() (*ContractRequest, err
 	return request, nil
 }
 
+// SendContractResponse sends
+func (messenger *ChildMessenger) SendContractResponse(response *ContractResponse) error {
+	err := messenger.send(response)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // SendHookCallRequest calls
-func (messenger *ChildMessenger) SendHookCallRequest(request *HookCallRequest) *HookCallResponse {
+func (messenger *ChildMessenger) SendHookCallRequest(request *HookCallRequest) (*HookCallResponse, error) {
 	response := &HookCallResponse{}
 
 	err := messenger.send(request)
 	if err != nil {
-		log.Fatal("SendHookCallRequest: send receive")
+		return nil, ErrCannotSendHookCallRequest
 	}
 
 	err = messenger.receive(response)
 	if err != nil {
-		log.Fatal("SendHookCallRequest: cannot receive")
+		return nil, ErrCannotReceiveHookCallResponse
 	}
 
 	if response.Tag != request.Tag {
-		log.Fatal("SendHookCallRequest: bad tag")
+		return nil, ErrBadResponseTag
 	}
 
-	return response
+	return response, nil
 }
 
 // SendResponseIHaveCriticalError calls
