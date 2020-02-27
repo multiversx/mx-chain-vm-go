@@ -352,7 +352,7 @@ func (host *vmHost) callSCMethod() (vmcommon.ReturnCode, error) {
 	if err != nil {
 		breakpointValue := runtime.GetRuntimeBreakpointValue()
 		if breakpointValue != arwen.BreakpointNone {
-			err = host.handleBreakpoint(breakpointValue, result)
+			err = host.handleBreakpoint(breakpointValue)
 		}
 	}
 

@@ -4,7 +4,6 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -101,13 +100,6 @@ func (o *OutputContextMock) SelfDestruct(_ []byte, _ []byte) {
 func (o *OutputContextMock) Finish(data []byte) {
 	if len(data) > 0 {
 		o.ReturnDataMock = append(o.ReturnDataMock, data)
-	}
-}
-
-func (o *OutputContextMock) FinishValue(value wasmer.Value) {
-	if !value.IsVoid() {
-		valueBytes := arwen.ConvertReturnValue(value)
-		o.Finish(valueBytes)
 	}
 }
 
