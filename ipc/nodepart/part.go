@@ -76,9 +76,7 @@ func (part *NodePart) handleHookCallRequest(request *common.HookCallRequestOrCon
 
 	fmt.Printf("Node: handleHookCallRequest, %s.%s()\n", hook, function)
 
-	response := &common.HookCallResponse{
-		Tag: request.Tag,
-	}
+	response := &common.HookCallResponse{}
 
 	if hook == "blockchain" {
 		if function == "NewAddress" {
@@ -101,7 +99,7 @@ func (part *NodePart) handleHookCallRequest(request *common.HookCallRequestOrCon
 // Should only be used for tests!
 func (part *NodePart) SendStopSignal() error {
 	request := &common.ContractRequest{
-		Tag: "Stop",
+		Action: "Stop",
 	}
 
 	err := part.Messenger.SendContractRequest(request)

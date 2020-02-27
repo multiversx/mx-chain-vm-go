@@ -13,6 +13,7 @@ import (
 // Messenger is
 type Messenger struct {
 	Name   string
+	Nonce  uint32
 	reader *bufio.Reader
 	writer *bufio.Writer
 }
@@ -27,7 +28,10 @@ func NewMessenger(name string, reader *bufio.Reader, writer *bufio.Writer) *Mess
 }
 
 // Send sends
-func (messenger *Messenger) Send(message interface{}) error {
+func (messenger *Messenger) Send(message Message) error {
+	messenger.Nonce++
+	message.SetNonce(messenger.Nonce)
+
 	dataBytes, err := messenger.marshal(message)
 	if err != nil {
 		return err
@@ -44,6 +48,7 @@ func (messenger *Messenger) Send(message interface{}) error {
 	}
 
 	err = messenger.writer.Flush()
+	fmt.Printf("[MSG %d] %s: SENT message of size %d\n", message.GetNonce(), messenger.Name, len(dataBytes))
 	return err
 }
 
@@ -55,7 +60,7 @@ func (messenger *Messenger) sendMessageLength(marshalizedMessage []byte) error {
 }
 
 // Receive receives
-func (messenger *Messenger) Receive(message interface{}) error {
+func (messenger *Messenger) Receive(message Message) error {
 	fmt.Printf("%s: Receive message...\n", messenger.Name)
 
 	// Wait for the start of a message
@@ -74,9 +79,19 @@ func (messenger *Messenger) Receive(message interface{}) error {
 		return err
 	}
 
-	fmt.Printf("%s: Message [%d bytes] received...\n", messenger.Name, length)
 	err = messenger.unmarshal(buffer, message)
-	return err
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("[MSG %d] %s: RECEIVED message of size %d\n", message.GetNonce(), messenger.Name, length)
+	messageNonce := message.GetNonce()
+	if messageNonce != messenger.Nonce+1 {
+		return ErrInvalidMessageNonce
+	}
+
+	messenger.Nonce = messageNonce
+	return nil
 }
 
 func (messenger *Messenger) receiveMessageLength() (int, error) {

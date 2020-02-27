@@ -27,7 +27,7 @@ type testFiles struct {
 
 func TestArwenPart_SendBadRequest(t *testing.T) {
 	blockchain := &mock.BlockChainHookStub{}
-	response, err := doContractRequest(t, "SendBadRequest", &common.ContractRequest{Tag: "foobar"}, blockchain)
+	response, err := doContractRequest(t, "SendBadRequest", &common.ContractRequest{Action: "foobar"}, blockchain)
 	require.Nil(t, response)
 	require.Error(t, err, common.ErrBadRequestFromNode)
 }
@@ -99,7 +99,7 @@ func createDeployRequest() *common.ContractRequest {
 	code := getSCCode(path)
 
 	return &common.ContractRequest{
-		Tag: "Deploy",
+		Action: "Deploy",
 		CreateInput: &vmcommon.ContractCreateInput{
 			VMInput: vmcommon.VMInput{
 				CallerAddr:  []byte("me"),

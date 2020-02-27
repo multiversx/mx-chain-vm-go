@@ -70,7 +70,7 @@ func (part *ArwenPart) StartLoop() error {
 func (part *ArwenPart) handleContractRequest(request *common.ContractRequest) (*common.HookCallRequestOrContractResponse, error) {
 	fmt.Println("Arwen: handleContractRequest()", request)
 
-	switch request.Tag {
+	switch request.Action {
 	case "Deploy":
 		return part.doRunSmartContractCreate(request), nil
 	case "Call":

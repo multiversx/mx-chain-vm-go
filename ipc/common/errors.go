@@ -7,11 +7,11 @@ import (
 // ErrCriticalError signals a critical error
 var ErrCriticalError = fmt.Errorf("critical error")
 
+// ErrInvalidMessageNonce signals a critical error
+var ErrInvalidMessageNonce = fmt.Errorf("%w: invalid nonce in message", ErrCriticalError)
+
 // ErrStopPerNodeRequest signals a critical error
 var ErrStopPerNodeRequest = fmt.Errorf("%w: will stop, as node requested", ErrCriticalError)
-
-// ErrBadResponseTag signals a critical error
-var ErrBadResponseTag = fmt.Errorf("%w: bad response tag", ErrCriticalError)
 
 // ErrBadRequestFromNode signals a critical error
 var ErrBadRequestFromNode = fmt.Errorf("%w: bad request from node", ErrCriticalError)

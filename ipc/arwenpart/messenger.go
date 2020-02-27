@@ -45,7 +45,6 @@ func (messenger *ChildMessenger) SendContractResponse(response *common.HookCallR
 func (messenger *ChildMessenger) SendHookCallRequest(request *common.HookCallRequestOrContractResponse) (*common.HookCallResponse, error) {
 	fmt.Printf("%s: CallHook [%s.%s()]\n", messenger.Name, request.Hook, request.Function)
 
-	request.Tag = "" // TODO
 	response := &common.HookCallResponse{}
 
 	err := messenger.Send(request)
@@ -56,10 +55,6 @@ func (messenger *ChildMessenger) SendHookCallRequest(request *common.HookCallReq
 	err = messenger.Receive(response)
 	if err != nil {
 		return nil, common.ErrCannotReceiveHookCallResponse
-	}
-
-	if response.Tag != request.Tag {
-		return nil, common.ErrBadResponseTag
 	}
 
 	if response.HasError() {

@@ -7,21 +7,38 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
+// Message is
+type Message interface {
+	GetNonce() uint32
+	SetNonce(nonce uint32)
+}
+
 // ContractRequest is
 type ContractRequest struct {
-	Tag         string
+	Nonce       uint32
+	Action      string
 	CreateInput *vmcommon.ContractCreateInput
 	CallInput   *vmcommon.ContractCallInput
 }
 
+// GetNonce gets
+func (request *ContractRequest) GetNonce() uint32 {
+	return request.Nonce
+}
+
+// SetNonce sets
+func (request *ContractRequest) SetNonce(nonce uint32) {
+	request.Nonce = nonce
+}
+
 func (request *ContractRequest) String() string {
-	return fmt.Sprintf("ContractRequest [%s]", request.Tag)
+	return fmt.Sprintf("ContractRequest [%d]", request.Nonce)
 }
 
 // HookCallRequestOrContractResponse is
 type HookCallRequestOrContractResponse struct {
 	Type             string
-	Tag              string
+	Nonce            uint32
 	Hook             string
 	Function         string
 	Bytes1           []byte
@@ -88,13 +105,23 @@ func (message *HookCallRequestOrContractResponse) GetError() error {
 	return fmt.Errorf(message.ErrorMessage)
 }
 
+// GetNonce gets
+func (message *HookCallRequestOrContractResponse) GetNonce() uint32 {
+	return message.Nonce
+}
+
+// SetNonce sets
+func (message *HookCallRequestOrContractResponse) SetNonce(nonce uint32) {
+	message.Nonce = nonce
+}
+
 func (message *HookCallRequestOrContractResponse) String() string {
 	return fmt.Sprintf("[%s][%s]", message.Type, message.ErrorMessage)
 }
 
 // HookCallResponse is
 type HookCallResponse struct {
-	Tag          string
+	Nonce        uint32
 	ErrorMessage string
 	Bool1        bool
 	Bytes1       []byte
@@ -112,6 +139,16 @@ func (response *HookCallResponse) HasError() bool {
 // GetError returns
 func (response *HookCallResponse) GetError() error {
 	return fmt.Errorf(response.ErrorMessage)
+}
+
+// GetNonce gets
+func (response *HookCallResponse) GetNonce() uint32 {
+	return response.Nonce
+}
+
+// SetNonce sets
+func (response *HookCallResponse) SetNonce(nonce uint32) {
+	response.Nonce = nonce
 }
 
 func (response *HookCallResponse) String() string {
