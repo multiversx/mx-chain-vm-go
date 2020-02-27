@@ -26,7 +26,18 @@ func (messenger *NodeMessenger) SendContractRequest(request *common.ContractRequ
 		return common.ErrCannotSendContractRequest
 	}
 
-	fmt.Printf("Node: %v sent\n", request)
+	fmt.Printf("Node: sent contract request %s\n", request)
+	return nil
+}
+
+// SendHookCallResponse sends
+func (messenger *NodeMessenger) SendHookCallResponse(response *common.HookCallResponse) error {
+	err := messenger.Send(response)
+	if err != nil {
+		return common.ErrCannotSendHookCallResponse
+	}
+
+	fmt.Printf("Node: sent hook call response %s\n", response)
 	return nil
 }
 

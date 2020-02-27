@@ -48,7 +48,12 @@ func (part *NodePart) StartLoop(request *common.ContractRequest) (*common.HookCa
 			message = nil
 			break
 		} else if message.IsHookCallRequest() {
-			part.handleHookCallRequest(message)
+			err := part.handleHookCallRequest(message)
+			if err != nil {
+				endingError = err
+				isCriticalError = true
+				break
+			}
 		} else if message.IsContractResponse() {
 			break
 		} else {
@@ -65,8 +70,24 @@ func (part *NodePart) StartLoop(request *common.ContractRequest) (*common.HookCa
 	return message, endingError
 }
 
-func (part *NodePart) handleHookCallRequest(request *common.HookCallRequestOrContractResponse) {
-	fmt.Println("Node: handleHookCallRequest()", request)
-	panic("TODO")
-	// execute, send response.
+func (part *NodePart) handleHookCallRequest(request *common.HookCallRequestOrContractResponse) error {
+	hook := request.Hook
+	function := request.Function
+
+	fmt.Printf("Node: handleHookCallRequest, %s.%s()\n", hook, function)
+
+	response := &common.HookCallResponse{
+		Tag: request.Tag,
+	}
+
+	if hook == "blockchain" {
+		if function == "NewAddress" {
+			response.Bytes1 = []byte("foo")
+		}
+	} else {
+		panic("unknown hook")
+	}
+
+	err := part.Messenger.SendHookCallResponse(response)
+	return err
 }

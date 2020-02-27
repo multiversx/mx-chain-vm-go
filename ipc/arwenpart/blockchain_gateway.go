@@ -26,7 +26,7 @@ func (blockchain *BlockchainHookGateway) NewAddress(creatorAddress []byte, creat
 		return nil, err
 	}
 
-	return results[0].([]byte), nil
+	return results.Bytes1, nil
 }
 
 // GetBalance forwards

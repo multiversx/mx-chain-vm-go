@@ -42,7 +42,7 @@ func (messenger *ChildMessenger) SendContractResponse(response *common.HookCallR
 }
 
 // CallHook calls
-func (messenger *ChildMessenger) CallHook(hook string, function string, arguments ...interface{}) ([]interface{}, error) {
+func (messenger *ChildMessenger) CallHook(hook string, function string, arguments ...interface{}) (*common.HookCallResponse, error) {
 	fmt.Printf("%s: CallHook [%s.%s()]\n", messenger.Name, hook, function)
 
 	request := common.NewHookCallRequest(hook, function, arguments...)
@@ -52,7 +52,7 @@ func (messenger *ChildMessenger) CallHook(hook string, function string, argument
 		return nil, err
 	}
 
-	return response.Result, nil
+	return response, nil
 }
 
 func (messenger *ChildMessenger) sendHookCallRequest(request *common.HookCallRequestOrContractResponse) (*common.HookCallResponse, error) {

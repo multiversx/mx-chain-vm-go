@@ -22,6 +22,9 @@ var ErrBadMessageFromArwen = fmt.Errorf("%w: bad message from Arwen", ErrCritica
 // ErrCannotSendContractRequest signals a critical error
 var ErrCannotSendContractRequest = fmt.Errorf("%w: cannot send contract request", ErrCriticalError)
 
+// ErrCannotSendHookCallResponse signals a critical error
+var ErrCannotSendHookCallResponse = fmt.Errorf("%w: cannot hook call response", ErrCriticalError)
+
 // ErrCannotSendHookCallRequest signals a critical error
 var ErrCannotSendHookCallRequest = fmt.Errorf("%w: cannot send hook call request", ErrCriticalError)
 

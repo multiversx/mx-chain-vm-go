@@ -2,6 +2,7 @@ package common
 
 import (
 	"fmt"
+	"math/big"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -88,8 +89,13 @@ func (message *HookCallRequestOrContractResponse) String() string {
 // HookCallResponse is
 type HookCallResponse struct {
 	Tag          string
-	Result       []interface{}
 	ErrorMessage string
+	Bool1        bool
+	Bytes1       []byte
+	Bytes2       []byte
+	BigInt1      *big.Int
+	Uint64_1     uint64
+	Uint32_1     uint32
 }
 
 // HasError returns
@@ -100,4 +106,8 @@ func (response *HookCallResponse) HasError() bool {
 // GetError returns
 func (response *HookCallResponse) GetError() error {
 	return fmt.Errorf(response.ErrorMessage)
+}
+
+func (response *HookCallResponse) String() string {
+	return fmt.Sprintf("[%s][%s]", response.Bytes1, response.ErrorMessage)
 }
