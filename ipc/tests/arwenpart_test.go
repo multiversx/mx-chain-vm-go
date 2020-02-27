@@ -2,6 +2,7 @@ package tests
 
 import (
 	"fmt"
+	"io/ioutil"
 	"math/big"
 	"os"
 	"path/filepath"
@@ -31,24 +32,8 @@ func TestArwenPart_SendBadRequest(t *testing.T) {
 
 func TestArwenPart_SendDeployRequest(t *testing.T) {
 	response, err := doContractRequest(t, "SendDeployRequest", createDeployRequest())
-	require.Nil(t, response)
-	require.Error(t, err, common.ErrBadRequestFromNode)
-}
-
-func createDeployRequest() *common.ContractRequest {
-	return &common.ContractRequest{
-		Tag: "Deploy",
-		CreateInput: &vmcommon.ContractCreateInput{
-			VMInput: vmcommon.VMInput{
-				CallerAddr:  []byte("me"),
-				Arguments:   [][]byte{},
-				CallValue:   big.NewInt(0),
-				GasPrice:    100000000,
-				GasProvided: 2000000,
-			},
-			ContractCode: []byte{},
-		},
-	}
+	require.NotNil(t, response)
+	require.Nil(t, err)
 }
 
 func doContractRequest(t *testing.T, tag string, request *common.ContractRequest) (*common.HookCallRequestOrContractResponse, error) {
@@ -70,6 +55,7 @@ func doContractRequest(t *testing.T, tag string, request *common.ContractRequest
 		part, err := nodepart.NewNodePart(files.inputOfNode, files.outputOfNode)
 		assert.Nil(t, err)
 		response, responseError = part.StartLoop(request)
+		part.SendStopSignal()
 		wg.Done()
 	}()
 
@@ -98,4 +84,32 @@ func createTestFiles(t *testing.T, tag string) testFiles {
 	require.Nil(t, err)
 
 	return files
+}
+
+func createDeployRequest() *common.ContractRequest {
+	path := "./../../test/contracts/counter.wasm"
+	code := getSCCode(path)
+
+	return &common.ContractRequest{
+		Tag: "Deploy",
+		CreateInput: &vmcommon.ContractCreateInput{
+			VMInput: vmcommon.VMInput{
+				CallerAddr:  []byte("me"),
+				Arguments:   [][]byte{},
+				CallValue:   big.NewInt(0),
+				GasPrice:    100000000,
+				GasProvided: 2000000,
+			},
+			ContractCode: code,
+		},
+	}
+}
+
+func getSCCode(fileName string) []byte {
+	code, err := ioutil.ReadFile(filepath.Clean(fileName))
+	if err != nil {
+		panic(fmt.Sprintf("Cannot read file [%s].", fileName))
+	}
+
+	return code
 }

@@ -86,5 +86,5 @@ func (part *ArwenPart) handleContractRequest(request *common.ContractRequest) (*
 
 func (part *ArwenPart) doRunSmartContractCreate(request *common.ContractRequest) *common.HookCallRequestOrContractResponse {
 	vmOutput, err := part.VMHost.RunSmartContractCreate(request.CreateInput)
-	return common.NewContractResponse(vmOutput, err.Error())
+	return common.NewContractResponse(vmOutput, err)
 }

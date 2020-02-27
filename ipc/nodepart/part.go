@@ -91,3 +91,19 @@ func (part *NodePart) handleHookCallRequest(request *common.HookCallRequestOrCon
 	err := part.Messenger.SendHookCallResponse(response)
 	return err
 }
+
+// SendStopSignal sends a stop signal to Arwen
+// Should only be used for tests!
+func (part *NodePart) SendStopSignal() error {
+	request := &common.ContractRequest{
+		Tag: "Stop",
+	}
+
+	err := part.Messenger.SendContractRequest(request)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Node: sent stop signal to Arwen.")
+	return nil
+}

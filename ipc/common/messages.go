@@ -41,7 +41,12 @@ func NewHookCallRequest(hook string, function string, arguments ...interface{}) 
 }
 
 // NewContractResponse creates
-func NewContractResponse(vmOutput *vmcommon.VMOutput, errorMessage string) *HookCallRequestOrContractResponse {
+func NewContractResponse(vmOutput *vmcommon.VMOutput, err error) *HookCallRequestOrContractResponse {
+	var errorMessage string
+	if err != nil {
+		errorMessage = err.Error()
+	}
+
 	return &HookCallRequestOrContractResponse{
 		Type:         "ContractResponse",
 		VMOutput:     vmOutput,
