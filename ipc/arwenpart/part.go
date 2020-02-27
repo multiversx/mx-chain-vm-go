@@ -81,6 +81,7 @@ func (part *ArwenPart) handleContractRequest(request *common.ContractRequest) (*
 		return nil, common.ErrBadRequestFromNode
 	}
 
+	// TODO: for Deploy and Call, return the actual errors.
 	return nil, nil
 }
 
