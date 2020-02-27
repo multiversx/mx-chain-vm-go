@@ -21,7 +21,12 @@ func (blockchain *BlockchainHookGateway) AccountExists(address []byte) (bool, er
 
 // NewAddress forwards
 func (blockchain *BlockchainHookGateway) NewAddress(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error) {
-	return nil, nil
+	results, err := blockchain.messenger.CallHook("blockchain", "NewAddress", creatorAddress, creatorNonce, vmType)
+	if err != nil {
+		return nil, err
+	}
+
+	return results[0].([]byte), nil
 }
 
 // GetBalance forwards
