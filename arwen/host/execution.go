@@ -357,7 +357,7 @@ func (host *vmHost) callSCMethod() (vmcommon.ReturnCode, error) {
 	}
 
 	if !result.IsVoid() {
-		err = arwen.ErrFunctionReturnNotVoidError
+		return vmcommon.UserError, arwen.ErrFunctionReturnNotVoidError
 	}
 
 	return output.ReturnCode(), err
