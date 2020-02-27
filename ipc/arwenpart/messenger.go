@@ -41,21 +41,11 @@ func (messenger *ChildMessenger) SendContractResponse(response *common.HookCallR
 	return nil
 }
 
-// CallHook calls
-func (messenger *ChildMessenger) CallHook(hook string, function string, arguments ...interface{}) (*common.HookCallResponse, error) {
-	fmt.Printf("%s: CallHook [%s.%s()]\n", messenger.Name, hook, function)
+// SendHookCallRequest calls
+func (messenger *ChildMessenger) SendHookCallRequest(request *common.HookCallRequestOrContractResponse) (*common.HookCallResponse, error) {
+	fmt.Printf("%s: CallHook [%s.%s()]\n", messenger.Name, request.Hook, request.Function)
 
-	request := common.NewHookCallRequest(hook, function, arguments...)
-	request.Tag = ""
-	response, err := messenger.sendHookCallRequest(request)
-	if err != nil {
-		return nil, err
-	}
-
-	return response, nil
-}
-
-func (messenger *ChildMessenger) sendHookCallRequest(request *common.HookCallRequestOrContractResponse) (*common.HookCallResponse, error) {
+	request.Tag = "" // TODO
 	response := &common.HookCallResponse{}
 
 	err := messenger.Send(request)

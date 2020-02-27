@@ -24,19 +24,20 @@ type HookCallRequestOrContractResponse struct {
 	Tag              string
 	Hook             string
 	Function         string
-	Arguments        []interface{}
+	Bytes1           []byte
+	Bytes2           []byte
+	Uint64_1         uint64
 	VMOutput         *vmcommon.VMOutput
 	ErrorMessage     string
 	HasCriticalError bool
 }
 
 // NewHookCallRequest creates
-func NewHookCallRequest(hook string, function string, arguments ...interface{}) *HookCallRequestOrContractResponse {
+func NewHookCallRequest(hook string, function string) *HookCallRequestOrContractResponse {
 	return &HookCallRequestOrContractResponse{
-		Type:      "HookCallRequest",
-		Hook:      hook,
-		Function:  function,
-		Arguments: arguments,
+		Type:     "HookCallRequest",
+		Hook:     hook,
+		Function: function,
 	}
 }
 

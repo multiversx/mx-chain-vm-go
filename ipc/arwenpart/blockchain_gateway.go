@@ -2,6 +2,8 @@ package arwenpart
 
 import (
 	"math/big"
+
+	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 )
 
 // BlockchainHookGateway is
@@ -21,7 +23,11 @@ func (blockchain *BlockchainHookGateway) AccountExists(address []byte) (bool, er
 
 // NewAddress forwards
 func (blockchain *BlockchainHookGateway) NewAddress(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error) {
-	results, err := blockchain.messenger.CallHook("blockchain", "NewAddress", creatorAddress, creatorNonce, vmType)
+	request := common.NewHookCallRequest("blockchain", "NewAddress")
+	request.Bytes1 = creatorAddress
+	request.Uint64_1 = creatorNonce
+	request.Bytes2 = vmType
+	results, err := blockchain.messenger.SendHookCallRequest(request)
 	if err != nil {
 		return nil, err
 	}

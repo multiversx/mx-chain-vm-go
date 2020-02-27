@@ -12,6 +12,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/arwenpart"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/nodepart"
+	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -25,18 +26,25 @@ type testFiles struct {
 }
 
 func TestArwenPart_SendBadRequest(t *testing.T) {
-	response, err := doContractRequest(t, "SendBadRequest", &common.ContractRequest{Tag: "foobar"})
+	blockchain := &mock.BlockChainHookStub{}
+	response, err := doContractRequest(t, "SendBadRequest", &common.ContractRequest{Tag: "foobar"}, blockchain)
 	require.Nil(t, response)
 	require.Error(t, err, common.ErrBadRequestFromNode)
 }
 
 func TestArwenPart_SendDeployRequest(t *testing.T) {
-	response, err := doContractRequest(t, "SendDeployRequest", createDeployRequest())
+	blockchain := &mock.BlockChainHookStub{}
+	response, err := doContractRequest(t, "SendDeployRequest", createDeployRequest(), blockchain)
 	require.NotNil(t, response)
 	require.Nil(t, err)
 }
 
-func doContractRequest(t *testing.T, tag string, request *common.ContractRequest) (*common.HookCallRequestOrContractResponse, error) {
+func doContractRequest(
+	t *testing.T,
+	tag string,
+	request *common.ContractRequest,
+	blockchain vmcommon.BlockchainHook,
+) (*common.HookCallRequestOrContractResponse, error) {
 	files := createTestFiles(t, tag)
 	var response *common.HookCallRequestOrContractResponse
 	var responseError error
@@ -52,7 +60,7 @@ func doContractRequest(t *testing.T, tag string, request *common.ContractRequest
 	}()
 
 	go func() {
-		part, err := nodepart.NewNodePart(files.inputOfNode, files.outputOfNode)
+		part, err := nodepart.NewNodePart(files.inputOfNode, files.outputOfNode, blockchain)
 		assert.Nil(t, err)
 		response, responseError = part.StartLoop(request)
 		part.SendStopSignal()

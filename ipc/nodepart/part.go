@@ -16,7 +16,7 @@ type NodePart struct {
 }
 
 // NewNodePart creates
-func NewNodePart(input *os.File, output *os.File) (*NodePart, error) {
+func NewNodePart(input *os.File, output *os.File, blockchain vmcommon.BlockchainHook) (*NodePart, error) {
 	reader := bufio.NewReader(input)
 	writer := bufio.NewWriter(output)
 
@@ -24,7 +24,7 @@ func NewNodePart(input *os.File, output *os.File) (*NodePart, error) {
 
 	return &NodePart{
 		Messenger:  messenger,
-		Blockchain: nil,
+		Blockchain: blockchain,
 	}, nil
 }
 
@@ -82,7 +82,12 @@ func (part *NodePart) handleHookCallRequest(request *common.HookCallRequestOrCon
 
 	if hook == "blockchain" {
 		if function == "NewAddress" {
-			response.Bytes1 = []byte("foo")
+			address, err := part.Blockchain.NewAddress(request.Bytes1, request.Uint64_1, request.Bytes2)
+			if err != nil {
+				response.ErrorMessage = err.Error()
+			}
+
+			response.Bytes1 = address
 		}
 	} else {
 		panic("unknown hook")
