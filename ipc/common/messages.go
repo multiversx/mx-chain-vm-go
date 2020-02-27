@@ -6,26 +6,6 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
-// Response is
-type Response struct {
-	ErrorMessage     string
-	HasCriticalError bool
-}
-
-// HasError returns
-func (response *Response) HasError() bool {
-	return response.ErrorMessage != ""
-}
-
-// GetError returns
-func (response *Response) GetError() error {
-	return fmt.Errorf(response.ErrorMessage)
-}
-
-func (response *Response) String() string {
-	return fmt.Sprintf("[%s][%t]", response.ErrorMessage, response.HasCriticalError)
-}
-
 // ContractRequest is
 type ContractRequest struct {
 	Tag         string
@@ -37,28 +17,87 @@ func (request *ContractRequest) String() string {
 	return fmt.Sprintf("ContractRequest [%s]", request.Tag)
 }
 
-// ContractResponse is
-type ContractResponse struct {
-	Tag      string
-	VMOutput *vmcommon.VMOutput
-	Response
+// HookCallRequestOrContractResponse is
+type HookCallRequestOrContractResponse struct {
+	Type             string
+	Tag              string
+	Hook             string
+	Function         string
+	Arguments        []interface{}
+	VMOutput         *vmcommon.VMOutput
+	ErrorMessage     string
+	HasCriticalError bool
 }
 
-func (response *ContractResponse) String() string {
-	return fmt.Sprintf("ContractResponse [%s] [%v]", response.Tag, response.Response)
+// NewHookCallRequest creates
+func NewHookCallRequest(hook string, function string, arguments ...interface{}) *HookCallRequestOrContractResponse {
+	return &HookCallRequestOrContractResponse{
+		Type:      "HookCallRequest",
+		Hook:      hook,
+		Function:  function,
+		Arguments: arguments,
+	}
 }
 
-// HookCallRequest is
-type HookCallRequest struct {
-	Tag       string
-	Hook      string
-	Function  string
-	Arguments []interface{}
+// NewContractResponse creates
+func NewContractResponse(vmOutput *vmcommon.VMOutput, errorMessage string) *HookCallRequestOrContractResponse {
+	return &HookCallRequestOrContractResponse{
+		Type:         "ContractResponse",
+		VMOutput:     vmOutput,
+		ErrorMessage: errorMessage,
+	}
+}
+
+// NewCriticalError creates
+func NewCriticalError(errorMessage string) *HookCallRequestOrContractResponse {
+	return &HookCallRequestOrContractResponse{
+		ErrorMessage:     errorMessage,
+		HasCriticalError: true,
+	}
+}
+
+// IsHookCallRequest gets
+func (message *HookCallRequestOrContractResponse) IsHookCallRequest() bool {
+	return message.Type == "HookCallRequest"
+}
+
+// IsContractResponse gets
+func (message *HookCallRequestOrContractResponse) IsContractResponse() bool {
+	return message.Type == "ContractResponse"
+}
+
+// IsCriticalError returns
+func (message *HookCallRequestOrContractResponse) IsCriticalError() bool {
+	return message.HasCriticalError
+}
+
+// HasError returns
+func (message *HookCallRequestOrContractResponse) HasError() bool {
+	return message.ErrorMessage != ""
+}
+
+// GetError returns
+func (message *HookCallRequestOrContractResponse) GetError() error {
+	return fmt.Errorf(message.ErrorMessage)
+}
+
+func (message *HookCallRequestOrContractResponse) String() string {
+	return fmt.Sprintf("[%s][%s]", message.Type, message.ErrorMessage)
 }
 
 // HookCallResponse is
 type HookCallResponse struct {
-	Tag    string
-	Result []interface{}
-	Response
+	Tag          string
+	Result       []interface{}
+	ErrorMessage string
+}
+
+// HasError returns
+func (response *HookCallResponse) HasError() bool {
+	return response.ErrorMessage != ""
+}
+
+// GetError returns
+func (response *HookCallResponse) GetError() error {
+	return fmt.Errorf(response.ErrorMessage)
 }

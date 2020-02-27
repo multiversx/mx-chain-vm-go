@@ -1,7 +1,6 @@
 package tests
 
 import (
-	"bufio"
 	"fmt"
 	"math/big"
 	"os"
@@ -24,26 +23,16 @@ type testFiles struct {
 	inputOfNode   *os.File
 }
 
-func TestChildServer_SendBadRequest(t *testing.T) {
-	flow := func(node *nodepart.NodeMessenger) {
-		response, err := node.SendContractRequest(&common.ContractRequest{Tag: "foobar"})
-		assert.Nil(t, response)
-		assert.Error(t, err, common.ErrBadRequestFromNode)
-	}
-
-	runChildServer(t, "foo", flow)
+func TestArwenPart_SendBadRequest(t *testing.T) {
+	response, err := doContractRequest(t, "SendBadRequest", &common.ContractRequest{Tag: "foobar"})
+	require.Nil(t, response)
+	require.Error(t, err, common.ErrBadRequestFromNode)
 }
 
-func TestChildServer_SendDeployRequest(t *testing.T) {
-	flow := func(node *nodepart.NodeMessenger) {
-		response, err := node.SendContractRequest(createDeployRequest())
-		assert.Nil(t, response)
-		assert.Error(t, err, common.ErrBadRequestFromNode)
-		_, err = node.SendContractRequest(&common.ContractRequest{Tag: "Stop"})
-		assert.Error(t, err, common.ErrStopPerNodeRequest)
-	}
-
-	runChildServer(t, "bar", flow)
+func TestArwenPart_SendDeployRequest(t *testing.T) {
+	response, err := doContractRequest(t, "SendDeployRequest", createDeployRequest())
+	require.Nil(t, response)
+	require.Error(t, err, common.ErrBadRequestFromNode)
 }
 
 func createDeployRequest() *common.ContractRequest {
@@ -62,26 +51,31 @@ func createDeployRequest() *common.ContractRequest {
 	}
 }
 
-func runChildServer(t *testing.T, tag string, nodeFlow func(node *nodepart.NodeMessenger)) {
+func doContractRequest(t *testing.T, tag string, request *common.ContractRequest) (*common.HookCallRequestOrContractResponse, error) {
 	files := createTestFiles(t, tag)
+	var response *common.HookCallRequestOrContractResponse
+	var responseError error
 
 	wg := sync.WaitGroup{}
 	wg.Add(2)
 
 	go func() {
-		server, err := arwenpart.NewChildServer(files.inputOfArwen, files.outputOfArwen)
+		part, err := arwenpart.NewArwenPart(files.inputOfArwen, files.outputOfArwen)
 		assert.Nil(t, err)
-		server.Start()
+		part.StartLoop()
 		wg.Done()
 	}()
 
 	go func() {
-		node := nodepart.NewNodeMessenger(bufio.NewReader(files.inputOfNode), bufio.NewWriter(files.outputOfNode))
-		nodeFlow(node)
+		part, err := nodepart.NewNodePart(files.inputOfNode, files.outputOfNode)
+		assert.Nil(t, err)
+		response, responseError = part.StartLoop(request)
 		wg.Done()
 	}()
 
 	wg.Wait()
+
+	return response, responseError
 }
 
 func createTestFiles(t *testing.T, tag string) testFiles {

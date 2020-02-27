@@ -11,14 +11,14 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 )
 
-// ChildServer is
-type ChildServer struct {
+// ArwenPart is
+type ArwenPart struct {
 	Messenger *ChildMessenger
 	VMHost    VMHost
 }
 
-// NewChildServer creates
-func NewChildServer(input *os.File, output *os.File) (*ChildServer, error) {
+// NewArwenPart creates
+func NewArwenPart(input *os.File, output *os.File) (*ArwenPart, error) {
 	reader := bufio.NewReader(input)
 	writer := bufio.NewWriter(output)
 
@@ -33,23 +33,23 @@ func NewChildServer(input *os.File, output *os.File) (*ChildServer, error) {
 		return nil, err
 	}
 
-	return &ChildServer{
+	return &ArwenPart{
 		Messenger: messenger,
 		VMHost:    host,
 	}, nil
 }
 
-// Start runs the main loop
-func (server *ChildServer) Start() error {
+// StartLoop runs the main loop
+func (part *ArwenPart) StartLoop() error {
 	var endingError error
 	for {
-		request, err := server.Messenger.ReceiveContractRequest()
+		request, err := part.Messenger.ReceiveContractRequest()
 		if err != nil {
 			endingError = err
 			break
 		}
 
-		response, err := server.executeRequest(request)
+		response, err := part.handleContractRequest(request)
 		if err != nil {
 			if errors.Is(err, common.ErrCriticalError) {
 				endingError = err
@@ -60,19 +60,19 @@ func (server *ChildServer) Start() error {
 		}
 
 		// Successful execution, send response
-		server.Messenger.SendContractResponse(response)
+		part.Messenger.SendContractResponse(response)
 	}
 
-	server.Messenger.SendResponseIHaveCriticalError(endingError)
+	part.Messenger.SendResponseIHaveCriticalError(endingError)
 	return endingError
 }
 
-func (server *ChildServer) executeRequest(request *common.ContractRequest) (*common.ContractResponse, error) {
-	fmt.Println("Arwen: executeRequest()", request)
+func (part *ArwenPart) handleContractRequest(request *common.ContractRequest) (*common.HookCallRequestOrContractResponse, error) {
+	fmt.Println("Arwen: handleContractRequest()", request)
 
 	switch request.Tag {
 	case "Deploy":
-		return server.doRunSmartContractCreate(request), nil
+		return part.doRunSmartContractCreate(request), nil
 	case "Call":
 		fmt.Println("Call smart contract")
 	case "Stop":
@@ -84,12 +84,7 @@ func (server *ChildServer) executeRequest(request *common.ContractRequest) (*com
 	return nil, nil
 }
 
-func (server *ChildServer) doRunSmartContractCreate(request *common.ContractRequest) *common.ContractResponse {
-	vmOutput, err := server.VMHost.RunSmartContractCreate(request.CreateInput)
-
-	return &common.ContractResponse{
-		Tag:      request.Tag,
-		VMOutput: vmOutput,
-		Response: common.Response{ErrorMessage: err.Error(), HasCriticalError: false},
-	}
+func (part *ArwenPart) doRunSmartContractCreate(request *common.ContractRequest) *common.HookCallRequestOrContractResponse {
+	vmOutput, err := part.VMHost.RunSmartContractCreate(request.CreateInput)
+	return common.NewContractResponse(vmOutput, err.Error())
 }

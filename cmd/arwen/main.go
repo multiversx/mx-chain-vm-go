@@ -8,12 +8,12 @@ import (
 )
 
 func main() {
-	server, err := arwenpart.NewChildServer(os.Stdin, os.Stdout)
+	part, err := arwenpart.NewArwenPart(os.Stdin, os.Stdout)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = server.Start()
+	err = part.StartLoop()
 	if err != nil {
 		log.Fatal(err)
 	}

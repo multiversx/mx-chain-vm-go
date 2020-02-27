@@ -32,7 +32,7 @@ func (messenger *ChildMessenger) ReceiveContractRequest() (*common.ContractReque
 }
 
 // SendContractResponse sends
-func (messenger *ChildMessenger) SendContractResponse(response *common.ContractResponse) error {
+func (messenger *ChildMessenger) SendContractResponse(response *common.HookCallRequestOrContractResponse) error {
 	err := messenger.Send(response)
 	if err != nil {
 		return err
@@ -43,14 +43,11 @@ func (messenger *ChildMessenger) SendContractResponse(response *common.ContractR
 
 // CallHook calls
 func (messenger *ChildMessenger) CallHook(hook string, function string, arguments ...interface{}) ([]interface{}, error) {
-	request := &common.HookCallRequest{
-		Tag:       "",
-		Hook:      hook,
-		Function:  function,
-		Arguments: arguments,
-	}
+	fmt.Printf("%s: CallHook [%s.%s()]\n", messenger.Name, hook, function)
 
-	response, err := messenger.SendHookCallRequest(request)
+	request := common.NewHookCallRequest(hook, function, arguments...)
+	request.Tag = ""
+	response, err := messenger.sendHookCallRequest(request)
 	if err != nil {
 		return nil, err
 	}
@@ -58,8 +55,7 @@ func (messenger *ChildMessenger) CallHook(hook string, function string, argument
 	return response.Result, nil
 }
 
-// SendHookCallRequest calls
-func (messenger *ChildMessenger) SendHookCallRequest(request *common.HookCallRequest) (*common.HookCallResponse, error) {
+func (messenger *ChildMessenger) sendHookCallRequest(request *common.HookCallRequestOrContractResponse) (*common.HookCallResponse, error) {
 	response := &common.HookCallResponse{}
 
 	err := messenger.Send(request)
@@ -76,12 +72,16 @@ func (messenger *ChildMessenger) SendHookCallRequest(request *common.HookCallReq
 		return nil, common.ErrBadResponseTag
 	}
 
+	if response.HasError() {
+		return nil, response.GetError()
+	}
+
 	return response, nil
 }
 
 // SendResponseIHaveCriticalError calls
 func (messenger *ChildMessenger) SendResponseIHaveCriticalError(endingError error) error {
 	fmt.Println("Arwen: Sending end message...")
-	err := messenger.Send(&common.Response{ErrorMessage: endingError.Error(), HasCriticalError: true})
+	err := messenger.Send(common.NewCriticalError(endingError.Error()))
 	return err
 }

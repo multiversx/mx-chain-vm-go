@@ -16,6 +16,9 @@ var ErrBadResponseTag = fmt.Errorf("%w: bad response tag", ErrCriticalError)
 // ErrBadRequestFromNode signals a critical error
 var ErrBadRequestFromNode = fmt.Errorf("%w: bad request from node", ErrCriticalError)
 
+// ErrBadMessageFromArwen signals a critical error
+var ErrBadMessageFromArwen = fmt.Errorf("%w: bad message from Arwen", ErrCriticalError)
+
 // ErrCannotSendContractRequest signals a critical error
 var ErrCannotSendContractRequest = fmt.Errorf("%w: cannot send contract request", ErrCriticalError)
 

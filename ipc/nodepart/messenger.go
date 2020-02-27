@@ -20,25 +20,24 @@ func NewNodeMessenger(reader *bufio.Reader, writer *bufio.Writer) *NodeMessenger
 }
 
 // SendContractRequest sends
-func (messenger *NodeMessenger) SendContractRequest(request *common.ContractRequest) (*common.ContractResponse, error) {
-	fmt.Println("Node: Sending contract request...")
-
+func (messenger *NodeMessenger) SendContractRequest(request *common.ContractRequest) error {
 	err := messenger.Send(request)
 	if err != nil {
-		return nil, common.ErrCannotSendContractRequest
+		return common.ErrCannotSendContractRequest
 	}
 
-	fmt.Println("Node: Request sent, waiting for response...")
+	fmt.Printf("Node: %v sent\n", request)
+	return nil
+}
 
-	response := &common.ContractResponse{}
-	err = messenger.Receive(response)
+// ReceiveHookCallRequestOrContractResponse waits
+func (messenger *NodeMessenger) ReceiveHookCallRequestOrContractResponse() (*common.HookCallRequestOrContractResponse, error) {
+	message := &common.HookCallRequestOrContractResponse{}
+
+	err := messenger.Receive(message)
 	if err != nil {
 		return nil, err
 	}
 
-	if response.HasError() {
-		return nil, response.GetError()
-	}
-
-	return response, nil
+	return message, nil
 }
