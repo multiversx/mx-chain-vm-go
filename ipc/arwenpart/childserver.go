@@ -1,4 +1,4 @@
-package main
+package arwenpart
 
 import (
 	"bufio"
@@ -8,6 +8,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 )
 
 // ChildServer is
@@ -50,7 +51,7 @@ func (server *ChildServer) Start() error {
 
 		response, err := server.executeRequest(request)
 		if err != nil {
-			if errors.Is(err, ErrCriticalError) {
+			if errors.Is(err, common.ErrCriticalError) {
 				endingError = err
 				break
 			} else {
@@ -66,7 +67,7 @@ func (server *ChildServer) Start() error {
 	return endingError
 }
 
-func (server *ChildServer) executeRequest(request *ContractRequest) (*ContractResponse, error) {
+func (server *ChildServer) executeRequest(request *common.ContractRequest) (*common.ContractResponse, error) {
 	fmt.Println("Arwen: executeRequest()", request)
 
 	switch request.Tag {
@@ -75,21 +76,21 @@ func (server *ChildServer) executeRequest(request *ContractRequest) (*ContractRe
 	case "Call":
 		fmt.Println("Call smart contract")
 	case "Stop":
-		return nil, ErrStopPerNodeRequest
+		return nil, common.ErrStopPerNodeRequest
 	default:
-		return nil, ErrBadRequestFromNode
+		return nil, common.ErrBadRequestFromNode
 	}
 
 	return nil, nil
 }
 
-func (server *ChildServer) doRunSmartContractCreate(request *ContractRequest) *ContractResponse {
+func (server *ChildServer) doRunSmartContractCreate(request *common.ContractRequest) *common.ContractResponse {
 	fmt.Println("doRunSmartContractCreate")
 	vmOutput, err := server.VMHost.RunSmartContractCreate(request.CreateInput)
 
-	return &ContractResponse{
+	return &common.ContractResponse{
 		Tag:      request.Tag,
 		VMOutput: vmOutput,
-		Response: Response{ErrorMessage: err.Error(), HasCriticalError: false},
+		Response: common.Response{ErrorMessage: err.Error(), HasCriticalError: false},
 	}
 }

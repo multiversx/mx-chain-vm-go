@@ -12,7 +12,7 @@
 
 /arwen/debug
 /cmd/test/test
-/cmd/nodechild/testdata/streams
+/ipc/tests/testdata/streams
 
 # VSCode settings
 .vscode

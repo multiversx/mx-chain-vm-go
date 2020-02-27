@@ -1,4 +1,4 @@
-package main
+package arwenpart
 
 import (
 	"math/big"

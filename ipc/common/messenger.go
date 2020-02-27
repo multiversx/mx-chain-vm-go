@@ -1,4 +1,4 @@
-package main
+package common
 
 import (
 	"bufio"
@@ -26,7 +26,7 @@ func NewMessenger(name string, reader *bufio.Reader, writer *bufio.Writer) *Mess
 	}
 }
 
-func (messenger *Messenger) send(message interface{}) error {
+func (messenger *Messenger) Send(message interface{}) error {
 	dataBytes, err := messenger.marshal(message)
 	if err != nil {
 		return err
@@ -53,7 +53,7 @@ func (messenger *Messenger) sendMessageLength(marshalizedMessage []byte) error {
 	return err
 }
 
-func (messenger *Messenger) receive(message interface{}) error {
+func (messenger *Messenger) Receive(message interface{}) error {
 	// Wait for the start of a message
 	messenger.blockingPeek(4)
 

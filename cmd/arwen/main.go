@@ -3,10 +3,12 @@ package main
 import (
 	"log"
 	"os"
+
+	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/arwenpart"
 )
 
 func main() {
-	server, err := NewChildServer(os.Stdin, os.Stdout)
+	server, err := arwenpart.NewChildServer(os.Stdin, os.Stdout)
 	if err != nil {
 		log.Fatal(err)
 	}

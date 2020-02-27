@@ -1,35 +1,37 @@
-package main
+package nodepart
 
 import (
 	"bufio"
 	"fmt"
+
+	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 )
 
 // NodeMessenger is
 type NodeMessenger struct {
-	Messenger
+	common.Messenger
 }
 
 // NewNodeMessenger creates
 func NewNodeMessenger(reader *bufio.Reader, writer *bufio.Writer) *NodeMessenger {
 	return &NodeMessenger{
-		Messenger: *NewMessenger("Node", reader, writer),
+		Messenger: *common.NewMessenger("Node", reader, writer),
 	}
 }
 
 // SendContractRequest sends
-func (messenger *NodeMessenger) SendContractRequest(request *ContractRequest) (*ContractResponse, error) {
+func (messenger *NodeMessenger) SendContractRequest(request *common.ContractRequest) (*common.ContractResponse, error) {
 	fmt.Println("Node: Sending contract request...")
 
-	err := messenger.send(request)
+	err := messenger.Send(request)
 	if err != nil {
-		return nil, ErrCannotSendContractRequest
+		return nil, common.ErrCannotSendContractRequest
 	}
 
 	fmt.Println("Node: Request sent, waiting for response...")
 
-	response := &ContractResponse{}
-	err = messenger.receive(response)
+	response := &common.ContractResponse{}
+	err = messenger.Receive(response)
 	if err != nil {
 		return nil, err
 	}

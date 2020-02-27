@@ -1,4 +1,4 @@
-package main
+package tests
 
 import (
 	"bufio"
@@ -9,6 +9,9 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/arwenpart"
+	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
+	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/nodepart"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -22,29 +25,29 @@ type testFiles struct {
 }
 
 func TestChildServer_SendBadRequest(t *testing.T) {
-	flow := func(node *NodeMessenger) {
-		response, err := node.SendContractRequest(&ContractRequest{Tag: "foobar"})
+	flow := func(node *nodepart.NodeMessenger) {
+		response, err := node.SendContractRequest(&common.ContractRequest{Tag: "foobar"})
 		assert.Nil(t, response)
-		assert.Error(t, err, ErrBadRequestFromNode)
+		assert.Error(t, err, common.ErrBadRequestFromNode)
 	}
 
 	runChildServer(t, "foo", flow)
 }
 
 func TestChildServer_SendDeployRequest(t *testing.T) {
-	flow := func(node *NodeMessenger) {
+	flow := func(node *nodepart.NodeMessenger) {
 		response, err := node.SendContractRequest(createDeployRequest())
 		assert.Nil(t, response)
-		assert.Error(t, err, ErrBadRequestFromNode)
-		_, err = node.SendContractRequest(&ContractRequest{Tag: "Stop"})
-		assert.Error(t, err, ErrStopPerNodeRequest)
+		assert.Error(t, err, common.ErrBadRequestFromNode)
+		_, err = node.SendContractRequest(&common.ContractRequest{Tag: "Stop"})
+		assert.Error(t, err, common.ErrStopPerNodeRequest)
 	}
 
 	runChildServer(t, "bar", flow)
 }
 
-func createDeployRequest() *ContractRequest {
-	return &ContractRequest{
+func createDeployRequest() *common.ContractRequest {
+	return &common.ContractRequest{
 		Tag: "Deploy",
 		CreateInput: &vmcommon.ContractCreateInput{
 			VMInput: vmcommon.VMInput{
@@ -59,21 +62,21 @@ func createDeployRequest() *ContractRequest {
 	}
 }
 
-func runChildServer(t *testing.T, tag string, nodeFlow func(node *NodeMessenger)) {
+func runChildServer(t *testing.T, tag string, nodeFlow func(node *nodepart.NodeMessenger)) {
 	files := createTestFiles(t, tag)
 
 	wg := sync.WaitGroup{}
 	wg.Add(2)
 
 	go func() {
-		server, err := NewChildServer(files.inputOfArwen, files.outputOfArwen)
+		server, err := arwenpart.NewChildServer(files.inputOfArwen, files.outputOfArwen)
 		assert.Nil(t, err)
 		server.Start()
 		wg.Done()
 	}()
 
 	go func() {
-		node := NewNodeMessenger(bufio.NewReader(files.inputOfNode), bufio.NewWriter(files.outputOfNode))
+		node := nodepart.NewNodeMessenger(bufio.NewReader(files.inputOfNode), bufio.NewWriter(files.outputOfNode))
 		nodeFlow(node)
 		wg.Done()
 	}()
