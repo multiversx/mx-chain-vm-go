@@ -46,6 +46,16 @@ func TestArwenPart_SendCallRequestWhenNoContract(t *testing.T) {
 	require.Nil(t, err)
 }
 
+func TestArwenPart_SendCallRequest(t *testing.T) {
+	blockchain := &mock.BlockChainHookStub{}
+	blockchain.GetCodeCalled = func(address []byte) ([]byte, error) {
+		return getSCCode("./../../test/contracts/counter.wasm"), nil
+	}
+	response, err := doContractRequest(t, "3", createCallRequest("increment"), blockchain)
+	require.NotNil(t, response)
+	require.Nil(t, err)
+}
+
 func doContractRequest(
 	t *testing.T,
 	tag string,
