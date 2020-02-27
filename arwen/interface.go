@@ -5,13 +5,14 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common"
 )
 
 type StateStack interface {
 	InitState()
 	PushState()
 	PopState()
+	ClearStateStack()
 }
 
 // ArgumentsParser defines the functionality to parse transaction data into arguments and code for smart contracts
@@ -85,10 +86,12 @@ type RuntimeContext interface {
 	GetAsyncCallInfo() *AsyncCallInfo
 	SetAsyncCallInfo(asyncCallInfo *AsyncCallInfo)
 	PushInstance()
-	PopInstance() error
+	PopInstance()
+	ClearInstanceStack()
 	ReadOnly() bool
 	SetReadOnly(readOnly bool)
 	CreateWasmerInstance(contract []byte, gasLimit uint64) error
+	VerifyContractCode() error
 	SetInstanceContext(instCtx *wasmer.InstanceContext)
 	GetInstanceContext() *wasmer.InstanceContext
 	GetInstanceExports() wasmer.ExportsMap

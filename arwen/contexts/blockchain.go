@@ -1,7 +1,6 @@
 package contexts
 
 import (
-	"fmt"
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -41,10 +40,7 @@ func (context *blockchainContext) NewAddress(creatorAddress []byte) ([]byte, err
 }
 
 func (context *blockchainContext) AccountExists(address []byte) bool {
-	exists, err := context.blockChainHook.AccountExists(address)
-	if err != nil {
-		fmt.Printf("Account exsits returned with error %s \n", err.Error())
-	}
+	exists, _ := context.blockChainHook.AccountExists(address)
 	return exists
 }
 
@@ -56,7 +52,6 @@ func (context *blockchainContext) GetBalance(address []byte) []byte {
 
 	balance, err := context.blockChainHook.GetBalance(address)
 	if err != nil {
-		fmt.Printf("GetBalance returned with error %s \n", err.Error())
 		return big.NewInt(0).Bytes()
 	}
 
@@ -73,12 +68,12 @@ func (context *blockchainContext) GetNonce(address []byte) (uint64, error) {
 
 	nonce, err := context.blockChainHook.GetNonce(address)
 	if err != nil {
-		fmt.Printf("GetNonce returned with error %s \n", err.Error())
+		return 0, err
 	}
 
 	outputAccount.Nonce = nonce
 
-	return nonce, err
+	return nonce, nil
 }
 
 func (context *blockchainContext) IncreaseNonce(address []byte) {
@@ -88,6 +83,7 @@ func (context *blockchainContext) IncreaseNonce(address []byte) {
 }
 
 func (context *blockchainContext) GetCodeHash(addr []byte) ([]byte, error) {
+	// TODO must get the code from the OutputAccount, if present
 	code, err := context.blockChainHook.GetCode(addr)
 	if err != nil {
 		return nil, err
@@ -97,10 +93,12 @@ func (context *blockchainContext) GetCodeHash(addr []byte) ([]byte, error) {
 }
 
 func (context *blockchainContext) GetCode(addr []byte) ([]byte, error) {
+	// TODO must get the code from the OutputAccount, if present
 	return context.blockChainHook.GetCode(addr)
 }
 
 func (context *blockchainContext) GetCodeSize(addr []byte) (int32, error) {
+	// TODO must get the code from the OutputAccount, if present
 	code, err := context.blockChainHook.GetCode(addr)
 	if err != nil {
 		return 0, err
@@ -112,13 +110,11 @@ func (context *blockchainContext) GetCodeSize(addr []byte) (int32, error) {
 
 func (context *blockchainContext) BlockHash(number int64) []byte {
 	if number < 0 {
-		fmt.Printf("BlockHash nonce cannot be negative\n")
 		return nil
 	}
 
 	block, err := context.blockChainHook.GetBlockhash(uint64(number))
 	if err != nil {
-		fmt.Printf("GetBlockHash returned with error %s \n", err.Error())
 		return nil
 	}
 

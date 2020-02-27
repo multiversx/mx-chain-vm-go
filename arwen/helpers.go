@@ -22,11 +22,7 @@ func GuardedGetBytesSlice(data []byte, offset int32, length int32) ([]byte, erro
 	isRequestedEndTooLarge := requestedEnd > dataLength
 	isLengthNegative := length < 0
 
-	if isOffsetTooSmall || isOffsetTooLarge {
-		return nil, fmt.Errorf("GuardedGetBytesSlice: bad bounds")
-	}
-
-	if isRequestedEndTooLarge {
+	if isOffsetTooSmall || isOffsetTooLarge || isRequestedEndTooLarge {
 		return nil, fmt.Errorf("GuardedGetBytesSlice: bad bounds")
 	}
 
@@ -48,17 +44,17 @@ func InverseBytes(data []byte) []byte {
 }
 
 func WithFault(err error, context unsafe.Pointer, failExecution bool) bool {
-	if err != nil {
+	if err == nil {
+		return false
+	}
+
+	if failExecution {
 		runtime := GetRuntimeContext(context)
 		metering := GetMeteringContext(context)
 
 		metering.UseGas(metering.GasLeft())
-		if failExecution {
-			runtime.FailExecution(err)
-		}
-
-		return true
+		runtime.FailExecution(err)
 	}
 
-	return false
+	return true
 }

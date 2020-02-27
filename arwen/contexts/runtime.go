@@ -25,11 +25,11 @@ type runtimeContext struct {
 	asyncCallInfo *arwen.AsyncCallInfo
 
 	argParser arwen.ArgumentsParser
+	validator *WASMValidator
 }
 
 func NewRuntimeContext(
 	host arwen.VMHost,
-	blockChainHook vmcommon.BlockchainHook,
 	vmType []byte,
 ) (*runtimeContext, error) {
 	context := &runtimeContext{
@@ -37,6 +37,7 @@ func NewRuntimeContext(
 		vmType:        vmType,
 		stateStack:    make([]*runtimeContext, 0),
 		instanceStack: make([]*wasmer.Instance, 0),
+		validator:     NewWASMValidator(),
 	}
 
 	context.InitState()
@@ -44,13 +45,13 @@ func NewRuntimeContext(
 	return context, nil
 }
 
-func (runtime *runtimeContext) InitState() {
-	runtime.vmInput = &vmcommon.VMInput{}
-	runtime.scAddress = make([]byte, 0)
-	runtime.callFunction = ""
-	runtime.readOnly = false
-	runtime.argParser = vmcommon.NewAtArgumentParser()
-	runtime.asyncCallInfo = nil
+func (context *runtimeContext) InitState() {
+	context.vmInput = &vmcommon.VMInput{}
+	context.scAddress = make([]byte, 0)
+	context.callFunction = ""
+	context.readOnly = false
+	context.argParser = vmcommon.NewAtArgumentParser()
+	context.asyncCallInfo = nil
 }
 
 func (context *runtimeContext) CreateWasmerInstance(contract []byte, gasLimit uint64) error {
@@ -81,40 +82,42 @@ func (context *runtimeContext) PushState() {
 	context.stateStack = append(context.stateStack, newState)
 }
 
-func (runtime *runtimeContext) PopState() {
-	stateStackLen := len(runtime.stateStack)
+func (context *runtimeContext) PopState() {
+	stateStackLen := len(context.stateStack)
 
-	prevState := runtime.stateStack[stateStackLen-1]
-	runtime.stateStack = runtime.stateStack[:stateStackLen-1]
+	prevState := context.stateStack[stateStackLen-1]
+	context.stateStack = context.stateStack[:stateStackLen-1]
 
-	runtime.vmInput = prevState.vmInput
-	runtime.scAddress = prevState.scAddress
-	runtime.callFunction = prevState.callFunction
-	runtime.readOnly = prevState.readOnly
-	runtime.asyncCallInfo = prevState.asyncCallInfo
+	context.vmInput = prevState.vmInput
+	context.scAddress = prevState.scAddress
+	context.callFunction = prevState.callFunction
+	context.readOnly = prevState.readOnly
+	context.asyncCallInfo = prevState.asyncCallInfo
 }
 
-func (runtime *runtimeContext) PushInstance() {
-	runtime.instanceStack = append(runtime.instanceStack, runtime.instance)
+func (context *runtimeContext) ClearStateStack() {
+	context.stateStack = make([]*runtimeContext, 0)
 }
 
-func (context *runtimeContext) PopInstance() error {
+func (context *runtimeContext) PushInstance() {
+	context.instanceStack = append(context.instanceStack, context.instance)
+}
+
+func (context *runtimeContext) PopInstance() {
 	instanceStackLen := len(context.instanceStack)
-	if instanceStackLen < 1 {
-		return arwen.InstanceStackUnderflow
-	}
-
 	prevInstance := context.instanceStack[instanceStackLen-1]
 	context.instanceStack = context.instanceStack[:instanceStackLen-1]
 
-	context.instance.Clean()
+	context.CleanInstance()
 	context.instance = prevInstance
-
-	return nil
 }
 
-func (runtime *runtimeContext) ArgParser() arwen.ArgumentsParser {
-	return runtime.argParser
+func (context *runtimeContext) ClearInstanceStack() {
+	context.instanceStack = make([]*wasmer.Instance, 0)
+}
+
+func (context *runtimeContext) ArgParser() arwen.ArgumentsParser {
+	return context.argParser
 }
 
 func (context *runtimeContext) GetVMType() []byte {
@@ -147,9 +150,15 @@ func (context *runtimeContext) Arguments() [][]byte {
 
 func (context *runtimeContext) FailExecution(err error) {
 	context.host.Output().SetReturnCode(vmcommon.ExecutionFailed)
+
+	var message string
 	if err != nil {
-		context.host.Output().SetReturnMessage(err.Error())
+		message = err.Error()
+	} else {
+		message = "execution failed"
 	}
+
+	context.host.Output().SetReturnMessage(message)
 	context.SetRuntimeBreakpointValue(arwen.BreakpointExecutionFailed)
 }
 
@@ -165,6 +174,20 @@ func (context *runtimeContext) SetRuntimeBreakpointValue(value arwen.BreakpointV
 
 func (context *runtimeContext) GetRuntimeBreakpointValue() arwen.BreakpointValue {
 	return arwen.BreakpointValue(context.instance.GetBreakpointValue())
+}
+
+func (context *runtimeContext) VerifyContractCode() error {
+	err := context.validator.verifyMemoryDeclaration(context.instance)
+	if err != nil {
+		return err
+	}
+
+	err = context.validator.verifyFunctionsNames(context.instance)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (context *runtimeContext) ElrondAPIErrorShouldFailExecution() bool {
@@ -212,50 +235,50 @@ func (context *runtimeContext) GetInstanceExports() wasmer.ExportsMap {
 }
 
 func (context *runtimeContext) CleanInstance() {
+	if context.instance == nil {
+		return
+	}
 	context.instance.Clean()
 	context.instance = nil
 }
 
 func (context *runtimeContext) GetFunctionToCall() (wasmer.ExportedFunctionCallback, error) {
 	exports := context.instance.Exports
-	function, ok := exports[context.callFunction]
-
-	if !ok {
-		function, ok = exports["main"]
+	if function, ok := exports[context.callFunction]; ok {
+		return function, nil
 	}
 
-	if !ok {
-		return nil, arwen.ErrFuncNotFound
+	if function, ok := exports["main"]; ok {
+		return function, nil
 	}
 
-	return function, nil
+	return nil, arwen.ErrFuncNotFound
 }
 
 func (context *runtimeContext) GetInitFunction() wasmer.ExportedFunctionCallback {
 	exports := context.instance.Exports
-	init, ok := exports[arwen.InitFunctionName]
 
-	if !ok {
-		init, ok = exports[arwen.InitFunctionNameEth]
+	if init, ok := exports[arwen.InitFunctionName]; ok {
+		return init
 	}
 
-	if !ok {
-		init = nil
+	if init, ok := exports[arwen.InitFunctionNameEth]; ok {
+		return init
 	}
 
-	return init
+	return nil
 }
 
-func (runtime *runtimeContext) SetAsyncCallInfo(asyncCallInfo *arwen.AsyncCallInfo) {
-	runtime.asyncCallInfo = asyncCallInfo
+func (context *runtimeContext) SetAsyncCallInfo(asyncCallInfo *arwen.AsyncCallInfo) {
+	context.asyncCallInfo = asyncCallInfo
 }
 
-func (runtime *runtimeContext) GetAsyncCallInfo() *arwen.AsyncCallInfo {
-	return runtime.asyncCallInfo
+func (context *runtimeContext) GetAsyncCallInfo() *arwen.AsyncCallInfo {
+	return context.asyncCallInfo
 }
 
-func (runtime *runtimeContext) MemLoad(offset int32, length int32) ([]byte, error) {
-	memory := runtime.instanceContext.Memory()
+func (context *runtimeContext) MemLoad(offset int32, length int32) ([]byte, error) {
+	memory := context.instanceContext.Memory()
 	memoryView := memory.Data()
 	memoryLength := memory.Length()
 	requestedEnd := uint32(offset + length)
@@ -265,10 +288,10 @@ func (runtime *runtimeContext) MemLoad(offset int32, length int32) ([]byte, erro
 	isLengthNegative := length < 0
 
 	if isOffsetTooSmall || isOffsetTooLarge {
-		return nil, fmt.Errorf("LoadBytes: bad bounds")
+		return nil, fmt.Errorf("mem load: %w", arwen.ErrBadBounds)
 	}
 	if isLengthNegative {
-		return nil, fmt.Errorf("LoadBytes: negative length")
+		return nil, fmt.Errorf("mem load: %w", arwen.ErrNegativeLength)
 	}
 
 	result := make([]byte, length)
@@ -291,7 +314,7 @@ func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 	isNewPageNecessary := requestedEnd > memoryLength
 
 	if isOffsetTooSmall {
-		return fmt.Errorf("StoreBytes: bad lower bounds")
+		return arwen.ErrBadLowerBounds
 	}
 	if isNewPageNecessary {
 		err := memory.Grow(1)
@@ -305,7 +328,7 @@ func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 
 	isRequestedEndTooLarge := requestedEnd > memoryLength
 	if isRequestedEndTooLarge {
-		return fmt.Errorf("StoreBytes: bad upper bounds")
+		return arwen.ErrBadUpperBounds
 	}
 
 	copy(memoryView[offset:requestedEnd], data)
