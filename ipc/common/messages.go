@@ -32,7 +32,7 @@ func (request *ContractRequest) SetNonce(nonce uint32) {
 }
 
 func (request *ContractRequest) String() string {
-	return fmt.Sprintf("ContractRequest [%d]", request.Nonce)
+	return fmt.Sprintf("ContractRequest [%s]", request.Action)
 }
 
 // HookCallRequestOrContractResponse is

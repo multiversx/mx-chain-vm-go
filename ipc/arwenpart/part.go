@@ -74,7 +74,7 @@ func (part *ArwenPart) handleContractRequest(request *common.ContractRequest) (*
 	case "Deploy":
 		return part.doRunSmartContractCreate(request), nil
 	case "Call":
-		fmt.Println("Call smart contract")
+		return part.doRunSmartContractCall(request), nil
 	case "Stop":
 		return nil, common.ErrStopPerNodeRequest
 	default:
@@ -86,5 +86,10 @@ func (part *ArwenPart) handleContractRequest(request *common.ContractRequest) (*
 
 func (part *ArwenPart) doRunSmartContractCreate(request *common.ContractRequest) *common.HookCallRequestOrContractResponse {
 	vmOutput, err := part.VMHost.RunSmartContractCreate(request.CreateInput)
+	return common.NewContractResponse(vmOutput, err)
+}
+
+func (part *ArwenPart) doRunSmartContractCall(request *common.ContractRequest) *common.HookCallRequestOrContractResponse {
+	vmOutput, err := part.VMHost.RunSmartContractCall(request.CallInput)
 	return common.NewContractResponse(vmOutput, err)
 }

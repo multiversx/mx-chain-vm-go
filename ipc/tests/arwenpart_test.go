@@ -27,14 +27,21 @@ type testFiles struct {
 
 func TestArwenPart_SendBadRequest(t *testing.T) {
 	blockchain := &mock.BlockChainHookStub{}
-	response, err := doContractRequest(t, "SendBadRequest", &common.ContractRequest{Action: "foobar"}, blockchain)
+	response, err := doContractRequest(t, "1", &common.ContractRequest{Action: "foobar"}, blockchain)
 	require.Nil(t, response)
 	require.Error(t, err, common.ErrBadRequestFromNode)
 }
 
 func TestArwenPart_SendDeployRequest(t *testing.T) {
 	blockchain := &mock.BlockChainHookStub{}
-	response, err := doContractRequest(t, "SendDeployRequest", createDeployRequest(), blockchain)
+	response, err := doContractRequest(t, "2", createDeployRequest(), blockchain)
+	require.NotNil(t, response)
+	require.Nil(t, err)
+}
+
+func TestArwenPart_SendCallRequestWhenNoContract(t *testing.T) {
+	blockchain := &mock.BlockChainHookStub{}
+	response, err := doContractRequest(t, "3", createCallRequest("increment"), blockchain)
 	require.NotNil(t, response)
 	require.Nil(t, err)
 }
@@ -120,4 +127,21 @@ func getSCCode(fileName string) []byte {
 	}
 
 	return code
+}
+
+func createCallRequest(function string) *common.ContractRequest {
+	return &common.ContractRequest{
+		Action: "Call",
+		CallInput: &vmcommon.ContractCallInput{
+			VMInput: vmcommon.VMInput{
+				CallerAddr:  []byte("me"),
+				Arguments:   [][]byte{},
+				CallValue:   big.NewInt(0),
+				GasPrice:    100000000,
+				GasProvided: 2000000,
+			},
+			RecipientAddr: []byte("contract"),
+			Function:      function,
+		},
+	}
 }

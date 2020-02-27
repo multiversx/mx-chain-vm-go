@@ -57,7 +57,14 @@ func (blockchain *BlockchainHookGateway) IsCodeEmpty(address []byte) (bool, erro
 
 // GetCode forwards
 func (blockchain *BlockchainHookGateway) GetCode(address []byte) ([]byte, error) {
-	return nil, nil
+	request := common.NewHookCallRequest("blockchain", "GetCode")
+	request.Bytes1 = address
+	results, err := blockchain.messenger.SendHookCallRequest(request)
+	if err != nil {
+		return nil, err
+	}
+
+	return results.Bytes1, nil
 }
 
 // GetBlockhash forwards

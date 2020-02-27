@@ -77,18 +77,23 @@ func (part *NodePart) handleHookCallRequest(request *common.HookCallRequestOrCon
 	fmt.Printf("Node: handleHookCallRequest, %s.%s()\n", hook, function)
 
 	response := &common.HookCallResponse{}
+	var hookError error
 
 	if hook == "blockchain" {
-		if function == "NewAddress" {
-			address, err := part.Blockchain.NewAddress(request.Bytes1, request.Uint64_1, request.Bytes2)
-			if err != nil {
-				response.ErrorMessage = err.Error()
-			}
-
-			response.Bytes1 = address
+		switch function {
+		case "NewAddress":
+			response.Bytes1, hookError = part.Blockchain.NewAddress(request.Bytes1, request.Uint64_1, request.Bytes2)
+		case "GetCode":
+			response.Bytes1, hookError = part.Blockchain.GetCode(request.Bytes1)
+		default:
+			panic(fmt.Sprintf("unknown function hook: %s", function))
 		}
 	} else {
-		panic("unknown hook")
+		panic(fmt.Sprintf("unknown hook: %s", hook))
+	}
+
+	if hookError != nil {
+		response.ErrorMessage = hookError.Error()
 	}
 
 	err := part.Messenger.SendHookCallResponse(response)
