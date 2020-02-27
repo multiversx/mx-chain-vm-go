@@ -12,7 +12,7 @@ import (
 
 // Messenger is
 type Messenger struct {
-	name   string
+	Name   string
 	reader *bufio.Reader
 	writer *bufio.Writer
 }
@@ -20,12 +20,13 @@ type Messenger struct {
 // NewMessenger creates
 func NewMessenger(name string, reader *bufio.Reader, writer *bufio.Writer) *Messenger {
 	return &Messenger{
-		name:   name,
+		Name:   name,
 		reader: reader,
 		writer: writer,
 	}
 }
 
+// Send sends
 func (messenger *Messenger) Send(message interface{}) error {
 	dataBytes, err := messenger.marshal(message)
 	if err != nil {
@@ -53,7 +54,10 @@ func (messenger *Messenger) sendMessageLength(marshalizedMessage []byte) error {
 	return err
 }
 
+// Receive receives
 func (messenger *Messenger) Receive(message interface{}) error {
+	fmt.Printf("%s: Receive message...\n", messenger.Name)
+
 	// Wait for the start of a message
 	messenger.blockingPeek(4)
 
@@ -70,6 +74,7 @@ func (messenger *Messenger) Receive(message interface{}) error {
 		return err
 	}
 
+	fmt.Printf("%s: Message [%d bytes] received...\n", messenger.Name, length)
 	err = messenger.unmarshal(buffer, message)
 	return err
 }
@@ -86,14 +91,12 @@ func (messenger *Messenger) receiveMessageLength() (int, error) {
 }
 
 func (messenger *Messenger) blockingPeek(n int) {
-	fmt.Printf("%s: blockingPeek %d bytes\n", messenger.name, n)
 	for {
 		_, err := messenger.reader.Peek(n)
 		if err == nil {
 			break
 		}
 	}
-	fmt.Printf("%s: peeked %d bytes\n", messenger.name, n)
 }
 
 func (messenger *Messenger) marshal(data interface{}) ([]byte, error) {

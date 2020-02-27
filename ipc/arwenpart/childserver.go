@@ -85,7 +85,6 @@ func (server *ChildServer) executeRequest(request *common.ContractRequest) (*com
 }
 
 func (server *ChildServer) doRunSmartContractCreate(request *common.ContractRequest) *common.ContractResponse {
-	fmt.Println("doRunSmartContractCreate")
 	vmOutput, err := server.VMHost.RunSmartContractCreate(request.CreateInput)
 
 	return &common.ContractResponse{
