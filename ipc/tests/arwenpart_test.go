@@ -40,7 +40,7 @@ func createDeployRequest() *common.ContractRequest {
 		Tag: "Deploy",
 		CreateInput: &vmcommon.ContractCreateInput{
 			VMInput: vmcommon.VMInput{
-				CallerAddr:  []byte{},
+				CallerAddr:  []byte("me"),
 				Arguments:   [][]byte{},
 				CallValue:   big.NewInt(0),
 				GasPrice:    100000000,
