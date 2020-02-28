@@ -50,7 +50,7 @@ func NewArwenDriver(
 func (driver *ArwenDriver) startArwen() error {
 	driver.resetStreams()
 
-	driver.command = exec.Command("~/Desktop/workspace/go/arwen/wasm-vm/cmd/arwen/arwen")
+	driver.command = exec.Command("arwen")
 	// TODO: pass vmType, blockGasLimit and gasSchedule when starting Arwen
 
 	driver.command.ExtraFiles = []*os.File{driver.arwenInputRead, driver.arwenOutputWrite}
@@ -92,7 +92,7 @@ func closeFile(file *os.File) {
 	if file != nil {
 		err := file.Close()
 		if err != nil {
-			fmt.Printf("Cannot close file.\n")
+			fmt.Fprintf(os.Stderr, "Cannot close file.\n")
 		}
 	}
 }
