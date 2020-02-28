@@ -27,31 +27,39 @@ type testFiles struct {
 
 func TestArwenPart_SendBadRequest(t *testing.T) {
 	blockchain := &mock.BlockChainHookStub{}
-	response, err := doContractRequest(t, "1", &common.ContractRequest{Action: "foobar"}, blockchain)
+	cryptoHook := &mock.CryptoHookMock{}
+
+	response, err := doContractRequest(t, "1", &common.ContractRequest{Action: "foobar"}, blockchain, cryptoHook)
 	require.Nil(t, response)
 	require.Error(t, err, common.ErrBadRequestFromNode)
 }
 
 func TestArwenPart_SendDeployRequest(t *testing.T) {
 	blockchain := &mock.BlockChainHookStub{}
-	response, err := doContractRequest(t, "2", createDeployRequest(), blockchain)
+	cryptoHook := &mock.CryptoHookMock{}
+
+	response, err := doContractRequest(t, "2", createDeployRequest(), blockchain, cryptoHook)
 	require.NotNil(t, response)
 	require.Nil(t, err)
 }
 
 func TestArwenPart_SendCallRequestWhenNoContract(t *testing.T) {
 	blockchain := &mock.BlockChainHookStub{}
-	response, err := doContractRequest(t, "3", createCallRequest("increment"), blockchain)
+	cryptoHook := &mock.CryptoHookMock{}
+
+	response, err := doContractRequest(t, "3", createCallRequest("increment"), blockchain, cryptoHook)
 	require.NotNil(t, response)
 	require.Nil(t, err)
 }
 
 func TestArwenPart_SendCallRequest(t *testing.T) {
 	blockchain := &mock.BlockChainHookStub{}
+	cryptoHook := &mock.CryptoHookMock{}
+
 	blockchain.GetCodeCalled = func(address []byte) ([]byte, error) {
 		return getSCCode("./../../test/contracts/counter.wasm"), nil
 	}
-	response, err := doContractRequest(t, "3", createCallRequest("increment"), blockchain)
+	response, err := doContractRequest(t, "3", createCallRequest("increment"), blockchain, cryptoHook)
 	require.NotNil(t, response)
 	require.Nil(t, err)
 }
@@ -61,6 +69,7 @@ func doContractRequest(
 	tag string,
 	request *common.ContractRequest,
 	blockchain vmcommon.BlockchainHook,
+	cryptoHook vmcommon.CryptoHook,
 ) (*common.HookCallRequestOrContractResponse, error) {
 	files := createTestFiles(t, tag)
 	var response *common.HookCallRequestOrContractResponse
@@ -77,7 +86,7 @@ func doContractRequest(
 	}()
 
 	go func() {
-		part, err := nodepart.NewNodePart(files.inputOfNode, files.outputOfNode, blockchain)
+		part, err := nodepart.NewNodePart(files.inputOfNode, files.outputOfNode, blockchain, cryptoHook)
 		assert.Nil(t, err)
 		response, responseError = part.StartLoop(request)
 		part.SendStopSignal()

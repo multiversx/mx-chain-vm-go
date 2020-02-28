@@ -12,11 +12,12 @@ import (
 // NodePart is
 type NodePart struct {
 	Messenger  *NodeMessenger
-	Blockchain vmcommon.BlockchainHook
+	blockchain vmcommon.BlockchainHook
+	cryptoHook vmcommon.CryptoHook
 }
 
 // NewNodePart creates
-func NewNodePart(input *os.File, output *os.File, blockchain vmcommon.BlockchainHook) (*NodePart, error) {
+func NewNodePart(input *os.File, output *os.File, blockchain vmcommon.BlockchainHook, cryptoHook vmcommon.CryptoHook) (*NodePart, error) {
 	reader := bufio.NewReader(input)
 	writer := bufio.NewWriter(output)
 
@@ -24,7 +25,8 @@ func NewNodePart(input *os.File, output *os.File, blockchain vmcommon.Blockchain
 
 	return &NodePart{
 		Messenger:  messenger,
-		Blockchain: blockchain,
+		blockchain: blockchain,
+		cryptoHook: cryptoHook,
 	}, nil
 }
 
@@ -82,9 +84,9 @@ func (part *NodePart) handleHookCallRequest(request *common.HookCallRequestOrCon
 	if hook == "blockchain" {
 		switch function {
 		case "NewAddress":
-			response.Bytes1, hookError = part.Blockchain.NewAddress(request.Bytes1, request.Uint64_1, request.Bytes2)
+			response.Bytes1, hookError = part.blockchain.NewAddress(request.Bytes1, request.Uint64_1, request.Bytes2)
 		case "GetCode":
-			response.Bytes1, hookError = part.Blockchain.GetCode(request.Bytes1)
+			response.Bytes1, hookError = part.blockchain.GetCode(request.Bytes1)
 		default:
 			panic(fmt.Sprintf("unknown function hook: %s", function))
 		}
