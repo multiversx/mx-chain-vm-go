@@ -20,7 +20,7 @@ type ArwenPart struct {
 
 // NewArwenPart creates
 func NewArwenPart(input *os.File, output *os.File) (*ArwenPart, error) {
-	reader := bufio.NewReader(input)
+	reader := bufio.NewReaderSize(input, 8096*16)
 	writer := bufio.NewWriter(output)
 
 	messenger := NewChildMessenger(reader, writer)
@@ -83,15 +83,16 @@ func (part *ArwenPart) handleContractRequest(request *common.ContractRequest) (*
 	}
 
 	// TODO: for Deploy and Call, return the actual errors.
-	return nil, nil
 }
 
 func (part *ArwenPart) doRunSmartContractCreate(request *common.ContractRequest) *common.HookCallRequestOrContractResponse {
 	vmOutput, err := part.VMHost.RunSmartContractCreate(request.CreateInput)
+	fmt.Println("doRunSmartContractCreate done")
 	return common.NewContractResponse(vmOutput, err)
 }
 
 func (part *ArwenPart) doRunSmartContractCall(request *common.ContractRequest) *common.HookCallRequestOrContractResponse {
 	vmOutput, err := part.VMHost.RunSmartContractCall(request.CallInput)
+	fmt.Println("doRunSmartContractCall done")
 	return common.NewContractResponse(vmOutput, err)
 }

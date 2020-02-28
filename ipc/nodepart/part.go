@@ -18,7 +18,7 @@ type NodePart struct {
 
 // NewNodePart creates
 func NewNodePart(input *os.File, output *os.File, blockchain vmcommon.BlockchainHook, cryptoHook vmcommon.CryptoHook) (*NodePart, error) {
-	reader := bufio.NewReader(input)
+	reader := bufio.NewReaderSize(input, 8096*16)
 	writer := bufio.NewWriter(output)
 
 	messenger := NewNodeMessenger(reader, writer)
