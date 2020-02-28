@@ -9,12 +9,13 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // ArwenPart is
 type ArwenPart struct {
 	Messenger *ChildMessenger
-	VMHost    VMHost
+	VMHost    vmcommon.VMExecutionHandler
 }
 
 // NewArwenPart creates
