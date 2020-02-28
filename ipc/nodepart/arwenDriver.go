@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"os/user"
+	"path"
+	"path/filepath"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -43,12 +46,39 @@ func NewArwenDriver(
 		gasSchedule:    gasSchedule,
 	}
 
-	err := driver.startArwen()
+	err := driver.startArwenWithFiles()
 	return driver, err
 }
 
-func (driver *ArwenDriver) startArwen() error {
-	driver.resetStreams()
+func (driver *ArwenDriver) startArwenWithFiles() error {
+	user, _ := user.Current()
+	home := user.HomeDir
+	folder := path.Join(home, "Arwen")
+
+	nodeToArwen := filepath.Join(folder, fmt.Sprintf("node-to-arwen.bin"))
+	arwenToNode := filepath.Join(folder, fmt.Sprintf("arwen-to-node.bin"))
+
+	// Open the files as required
+	nodeToArwenFile, err := os.OpenFile(nodeToArwen, os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+
+	arwenToNodeFile, err := os.Open(arwenToNode)
+	if err != nil {
+		return err
+	}
+
+	driver.part, err = NewNodePart(arwenToNodeFile, nodeToArwenFile, driver.blockchainHook, driver.cryptoHook)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (driver *ArwenDriver) startArwenWithPipes() error {
+	driver.resetPipeStreams()
 
 	driver.command = exec.Command("arwen")
 	// TODO: pass vmType, blockGasLimit and gasSchedule when starting Arwen
@@ -67,7 +97,7 @@ func (driver *ArwenDriver) startArwen() error {
 	return nil
 }
 
-func (driver *ArwenDriver) resetStreams() error {
+func (driver *ArwenDriver) resetPipeStreams() error {
 	closeFile(driver.arwenInputRead)
 	closeFile(driver.arwenInputWrite)
 	closeFile(driver.arwenOutputRead)
@@ -102,7 +132,7 @@ func (driver *ArwenDriver) restartArwenIfNecessary() error {
 		return nil
 	}
 
-	err := driver.startArwen()
+	err := driver.startArwenWithPipes()
 	return err
 }
 

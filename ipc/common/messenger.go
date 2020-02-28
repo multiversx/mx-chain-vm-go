@@ -62,7 +62,6 @@ func (messenger *Messenger) sendMessageLength(marshalizedMessage []byte) error {
 // Receive receives
 func (messenger *Messenger) Receive(message Message) error {
 	fmt.Printf("%s: Receive message...\n", messenger.Name)
-
 	// Wait for the start of a message
 	messenger.blockingPeek(4)
 
@@ -72,8 +71,9 @@ func (messenger *Messenger) Receive(message Message) error {
 	}
 
 	// Now read the body of [length]
-	messenger.blockingPeek(length)
 	buffer := make([]byte, length)
+
+	messenger.blockingPeek(length)
 	_, err = io.ReadFull(messenger.reader, buffer)
 	if err != nil {
 		return err
