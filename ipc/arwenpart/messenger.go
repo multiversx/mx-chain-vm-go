@@ -2,7 +2,6 @@ package arwenpart
 
 import (
 	"bufio"
-	"fmt"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 )
@@ -43,7 +42,7 @@ func (messenger *ChildMessenger) SendContractResponse(response *common.HookCallR
 
 // SendHookCallRequest calls
 func (messenger *ChildMessenger) SendHookCallRequest(request *common.HookCallRequestOrContractResponse) (*common.HookCallResponse, error) {
-	fmt.Printf("%s: CallHook [%s.%s()]\n", messenger.Name, request.Hook, request.Function)
+	common.LogDebug("%s: CallHook [%s.%s()]", messenger.Name, request.Hook, request.Function)
 
 	response := &common.HookCallResponse{}
 
@@ -66,7 +65,7 @@ func (messenger *ChildMessenger) SendHookCallRequest(request *common.HookCallReq
 
 // SendResponseIHaveCriticalError calls
 func (messenger *ChildMessenger) SendResponseIHaveCriticalError(endingError error) error {
-	fmt.Println("Arwen: Sending end message...")
+	common.LogDebug("Arwen: Sending end message...")
 	err := messenger.Send(common.NewCriticalError(endingError.Error()))
 	return err
 }

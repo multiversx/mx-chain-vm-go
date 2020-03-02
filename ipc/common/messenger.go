@@ -6,7 +6,6 @@ import (
 	"encoding/binary"
 	"encoding/gob"
 	"encoding/json"
-	"fmt"
 	"io"
 )
 
@@ -48,7 +47,7 @@ func (messenger *Messenger) Send(message Message) error {
 	}
 
 	err = messenger.writer.Flush()
-	fmt.Printf("[MSG %d] %s: SENT message of size %d\n", message.GetNonce(), messenger.Name, len(dataBytes))
+	LogDebug("[MSG %d] %s: SENT message of size %d", message.GetNonce(), messenger.Name, len(dataBytes))
 	return err
 }
 
@@ -61,7 +60,7 @@ func (messenger *Messenger) sendMessageLength(marshalizedMessage []byte) error {
 
 // Receive receives
 func (messenger *Messenger) Receive(message Message) error {
-	fmt.Printf("%s: Receive message...\n", messenger.Name)
+	LogDebug("%s: Receive message...", messenger.Name)
 	// Wait for the start of a message
 	messenger.blockingPeek(4)
 
@@ -84,7 +83,7 @@ func (messenger *Messenger) Receive(message Message) error {
 		return err
 	}
 
-	fmt.Printf("[MSG %d] %s: RECEIVED message of size %d\n", message.GetNonce(), messenger.Name, length)
+	LogDebug("[MSG %d] %s: RECEIVED message of size %d\n", message.GetNonce(), messenger.Name, length)
 	messageNonce := message.GetNonce()
 	if messageNonce != messenger.Nonce+1 {
 		return ErrInvalidMessageNonce

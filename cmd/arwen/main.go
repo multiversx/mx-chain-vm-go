@@ -7,6 +7,7 @@ import (
 	"os/user"
 	"path"
 	"path/filepath"
+	"syscall"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/arwenpart"
 )
@@ -74,12 +75,19 @@ func mainWithStdPipes() {
 }
 
 func mainWithPipes() {
-	// NewFile returns a new File with the given file descriptor and name.
-	// On Unix systems, if the file descriptor is in non-blocking mode, NewFile will attempt to return a pollable File (one for which the SetDeadline methods work).
+	err := syscall.SetNonblock(3, true)
+	if err != nil {
+		fmt.Println("SetNoblock error")
+		fmt.Println(err)
+		return
+	}
 
-	// A deadline is an absolute time after which I/O operations fail with an error instead of blocking.
-	// The deadline applies to all future and pending I/O, not just the immediately following call to Read or Write.
-	// After a deadline has been exceeded, the connection can be refreshed by setting a deadline in the future.
+	err = syscall.SetNonblock(4, true)
+	if err != nil {
+		fmt.Println("SetNoblock error")
+		fmt.Println(err)
+		return
+	}
 
 	nodeToArwenFile := os.NewFile(3, "/proc/self/fd/3")
 	if nodeToArwenFile == nil {

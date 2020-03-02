@@ -67,7 +67,7 @@ func (part *NodePart) StartLoop(request *common.ContractRequest) (*common.HookCa
 	}
 
 	// If critical error, node should know that Arwen should be reset / restarted.
-	fmt.Println("Node: End loop. IsCriticalError?", isCriticalError)
+	common.LogDebug("Node: End loop. IsCriticalError?", isCriticalError)
 	part.Messenger.Nonce = 0
 	return message, endingError
 }
@@ -76,7 +76,7 @@ func (part *NodePart) handleHookCallRequest(request *common.HookCallRequestOrCon
 	hook := request.Hook
 	function := request.Function
 
-	fmt.Printf("Node: handleHookCallRequest, %s.%s()\n", hook, function)
+	common.LogDebug("Node: handleHookCallRequest, %s.%s()", hook, function)
 
 	response := &common.HookCallResponse{}
 	var hookError error
@@ -118,6 +118,6 @@ func (part *NodePart) SendStopSignal() error {
 		return err
 	}
 
-	fmt.Println("Node: sent stop signal to Arwen.")
+	common.LogDebug("Node: sent stop signal to Arwen.")
 	return nil
 }

@@ -3,7 +3,6 @@ package arwenpart
 import (
 	"bufio"
 	"errors"
-	"fmt"
 	"os"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
@@ -56,7 +55,7 @@ func (part *ArwenPart) StartLoop() error {
 				endingError = err
 				break
 			} else {
-				fmt.Println("Non critical error:", err)
+				common.LogDebug("Non critical error:", err)
 			}
 		}
 
@@ -70,7 +69,7 @@ func (part *ArwenPart) StartLoop() error {
 }
 
 func (part *ArwenPart) handleContractRequest(request *common.ContractRequest) (*common.HookCallRequestOrContractResponse, error) {
-	fmt.Println("Arwen: handleContractRequest()", request)
+	common.LogDebug("Arwen: handleContractRequest()", request)
 
 	switch request.Action {
 	case "Deploy":
@@ -88,12 +87,10 @@ func (part *ArwenPart) handleContractRequest(request *common.ContractRequest) (*
 
 func (part *ArwenPart) doRunSmartContractCreate(request *common.ContractRequest) *common.HookCallRequestOrContractResponse {
 	vmOutput, err := part.VMHost.RunSmartContractCreate(request.CreateInput)
-	fmt.Println("doRunSmartContractCreate done")
 	return common.NewContractResponse(vmOutput, err)
 }
 
 func (part *ArwenPart) doRunSmartContractCall(request *common.ContractRequest) *common.HookCallRequestOrContractResponse {
 	vmOutput, err := part.VMHost.RunSmartContractCall(request.CallInput)
-	fmt.Println("doRunSmartContractCall done")
 	return common.NewContractResponse(vmOutput, err)
 }

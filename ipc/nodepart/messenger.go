@@ -2,7 +2,6 @@ package nodepart
 
 import (
 	"bufio"
-	"fmt"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 )
@@ -26,7 +25,7 @@ func (messenger *NodeMessenger) SendContractRequest(request *common.ContractRequ
 		return common.ErrCannotSendContractRequest
 	}
 
-	fmt.Printf("Node: sent contract request %s\n", request)
+	common.LogDebug("Node: sent contract request %s", request)
 	return nil
 }
 
@@ -37,7 +36,7 @@ func (messenger *NodeMessenger) SendHookCallResponse(response *common.HookCallRe
 		return common.ErrCannotSendHookCallResponse
 	}
 
-	fmt.Printf("Node: sent hook call response %s\n", response)
+	common.LogDebug("Node: sent hook call response %s", response)
 	return nil
 }
 
