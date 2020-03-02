@@ -62,6 +62,7 @@ func (part *ArwenPart) StartLoop() error {
 
 		// Successful execution, send response
 		part.Messenger.SendContractResponse(response)
+		part.Messenger.Nonce = 0
 	}
 
 	part.Messenger.SendResponseIHaveCriticalError(endingError)
