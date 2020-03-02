@@ -12,7 +12,9 @@ import (
 )
 
 func main() {
-	mainWithFiles()
+	//mainWithFiles()
+	//mainWithStdPipes()
+	mainWithPipes()
 }
 
 func mainWithFiles() {
@@ -61,6 +63,35 @@ func mainWithFiles() {
 
 func mainWithStdPipes() {
 	part, err := arwenpart.NewArwenPart(os.Stdin, os.Stdout)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = part.StartLoop()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func mainWithPipes() {
+	// NewFile returns a new File with the given file descriptor and name.
+	// On Unix systems, if the file descriptor is in non-blocking mode, NewFile will attempt to return a pollable File (one for which the SetDeadline methods work).
+
+	// A deadline is an absolute time after which I/O operations fail with an error instead of blocking.
+	// The deadline applies to all future and pending I/O, not just the immediately following call to Read or Write.
+	// After a deadline has been exceeded, the connection can be refreshed by setting a deadline in the future.
+
+	nodeToArwenFile := os.NewFile(3, "/proc/self/fd/3")
+	if nodeToArwenFile == nil {
+		log.Fatal("Cannot create file")
+	}
+
+	arwenToNodeFile := os.NewFile(4, "/proc/self/fd/4")
+	if arwenToNodeFile == nil {
+		log.Fatal("Cannot create file")
+	}
+
+	part, err := arwenpart.NewArwenPart(nodeToArwenFile, arwenToNodeFile)
 	if err != nil {
 		log.Fatal(err)
 	}

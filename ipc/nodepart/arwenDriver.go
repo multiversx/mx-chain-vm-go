@@ -46,7 +46,7 @@ func NewArwenDriver(
 		gasSchedule:    gasSchedule,
 	}
 
-	err := driver.startArwenWithFiles()
+	err := driver.startArwenWithPipes()
 	return driver, err
 }
 
@@ -80,7 +80,13 @@ func (driver *ArwenDriver) startArwenWithFiles() error {
 func (driver *ArwenDriver) startArwenWithPipes() error {
 	driver.resetPipeStreams()
 
-	driver.command = exec.Command("arwen")
+	user, _ := user.Current()
+	home := user.HomeDir
+	executable := path.Join(home, "Arwen", "arwen")
+
+	driver.command = exec.Command(executable)
+	driver.command.Stdout = os.Stdout
+	driver.command.Stderr = os.Stderr
 	// TODO: pass vmType, blockGasLimit and gasSchedule when starting Arwen
 
 	driver.command.ExtraFiles = []*os.File{driver.arwenInputRead, driver.arwenOutputWrite}
