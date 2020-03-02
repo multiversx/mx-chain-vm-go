@@ -46,8 +46,13 @@ func NewArwenDriver(
 		gasSchedule:    gasSchedule,
 	}
 
-	err := driver.startArwenWithPipes()
+	err := driver.startArwen()
 	return driver, err
+}
+
+func (driver *ArwenDriver) startArwen() error {
+	err := driver.startArwenWithPipes()
+	return err
 }
 
 func (driver *ArwenDriver) startArwenWithFiles() error {
@@ -133,17 +138,31 @@ func closeFile(file *os.File) {
 	}
 }
 
+func (driver *ArwenDriver) forceRestartArwen() error {
+	if !driver.command.ProcessState.Exited() {
+		err := driver.command.Process.Kill()
+		if err != nil {
+			return err
+		}
+	}
+
+	err := driver.startArwen()
+	return err
+}
+
 func (driver *ArwenDriver) restartArwenIfNecessary() error {
 	if !driver.command.ProcessState.Exited() {
 		return nil
 	}
 
-	err := driver.startArwenWithPipes()
+	err := driver.startArwen()
 	return err
 }
 
 // RunSmartContractCreate creates
 func (driver *ArwenDriver) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (*vmcommon.VMOutput, error) {
+	// TODO: restart if necessary
+
 	request := &common.ContractRequest{
 		Action:      "Deploy",
 		CreateInput: input,
@@ -159,6 +178,8 @@ func (driver *ArwenDriver) RunSmartContractCreate(input *vmcommon.ContractCreate
 
 // RunSmartContractCall calls
 func (driver *ArwenDriver) RunSmartContractCall(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+	// TODO: restart if necessary
+
 	request := &common.ContractRequest{
 		Action:    "Call",
 		CallInput: input,
