@@ -152,5 +152,5 @@ func (response *HookCallResponse) SetNonce(nonce uint32) {
 }
 
 func (response *HookCallResponse) String() string {
-	return fmt.Sprintf("[%s][%s]", response.Bytes1, response.ErrorMessage)
+	return fmt.Sprintf("[%s]", response.ErrorMessage)
 }

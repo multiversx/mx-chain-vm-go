@@ -87,6 +87,10 @@ func (part *NodePart) handleHookCallRequest(request *common.HookCallRequestOrCon
 			response.Bytes1, hookError = part.blockchain.NewAddress(request.Bytes1, request.Uint64_1, request.Bytes2)
 		case "GetCode":
 			response.Bytes1, hookError = part.blockchain.GetCode(request.Bytes1)
+		case "GetNonce":
+			response.Uint64_1, hookError = part.blockchain.GetNonce(request.Bytes1)
+		case "GetStorageData":
+			response.Bytes1, hookError = part.blockchain.GetStorageData(request.Bytes1, request.Bytes2)
 		default:
 			panic(fmt.Sprintf("unknown function hook: %s", function))
 		}
