@@ -19,7 +19,7 @@ type ArwenPart struct {
 
 // NewArwenPart creates
 func NewArwenPart(input *os.File, output *os.File) (*ArwenPart, error) {
-	reader := bufio.NewReaderSize(input, 8096*16)
+	reader := bufio.NewReaderSize(input, 1024*1024) // TODO: implement "read until payload fully read"
 	writer := bufio.NewWriter(output)
 
 	messenger := NewChildMessenger(reader, writer)

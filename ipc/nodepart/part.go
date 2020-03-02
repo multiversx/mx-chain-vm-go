@@ -2,7 +2,6 @@ package nodepart
 
 import (
 	"bufio"
-	"fmt"
 	"os"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
@@ -18,7 +17,7 @@ type NodePart struct {
 
 // NewNodePart creates
 func NewNodePart(input *os.File, output *os.File, blockchain vmcommon.BlockchainHook, cryptoHook vmcommon.CryptoHook) (*NodePart, error) {
-	reader := bufio.NewReaderSize(input, 8096*16)
+	reader := bufio.NewReaderSize(input, 1024*1024) // TODO: implement "read until payload fully read"
 	writer := bufio.NewWriter(output)
 
 	messenger := NewNodeMessenger(reader, writer)
@@ -92,10 +91,10 @@ func (part *NodePart) handleHookCallRequest(request *common.HookCallRequestOrCon
 		case "GetStorageData":
 			response.Bytes1, hookError = part.blockchain.GetStorageData(request.Bytes1, request.Bytes2)
 		default:
-			panic(fmt.Sprintf("unknown function hook: %s", function))
+			common.LogError("unknown function hook: %s", function)
 		}
 	} else {
-		panic(fmt.Sprintf("unknown hook: %s", hook))
+		common.LogError("unknown hook: %s", hook)
 	}
 
 	if hookError != nil {
