@@ -194,3 +194,13 @@ func (driver *ArwenDriver) RunSmartContractCall(input *vmcommon.ContractCallInpu
 }
 
 // func OnRoundEnded -> triggers Arwen restart.
+
+// Close stops Arwen
+func (driver *ArwenDriver) Close() error {
+	err := driver.command.Process.Kill()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
