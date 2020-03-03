@@ -6,7 +6,6 @@ import (
 	"os/exec"
 	"os/user"
 	"path"
-	"path/filepath"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -51,38 +50,6 @@ func NewArwenDriver(
 }
 
 func (driver *ArwenDriver) startArwen() error {
-	err := driver.startArwenWithPipes()
-	return err
-}
-
-func (driver *ArwenDriver) startArwenWithFiles() error {
-	user, _ := user.Current()
-	home := user.HomeDir
-	folder := path.Join(home, "Arwen")
-
-	nodeToArwen := filepath.Join(folder, fmt.Sprintf("node-to-arwen.bin"))
-	arwenToNode := filepath.Join(folder, fmt.Sprintf("arwen-to-node.bin"))
-
-	// Open the files as required
-	nodeToArwenFile, err := os.OpenFile(nodeToArwen, os.O_APPEND|os.O_WRONLY, 0644)
-	if err != nil {
-		return err
-	}
-
-	arwenToNodeFile, err := os.Open(arwenToNode)
-	if err != nil {
-		return err
-	}
-
-	driver.part, err = NewNodePart(arwenToNodeFile, nodeToArwenFile, driver.blockchainHook, driver.cryptoHook)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (driver *ArwenDriver) startArwenWithPipes() error {
 	driver.resetPipeStreams()
 
 	user, _ := user.Current()
