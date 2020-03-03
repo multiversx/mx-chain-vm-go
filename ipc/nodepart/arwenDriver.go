@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"os/user"
 	"path"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
@@ -52,9 +51,10 @@ func NewArwenDriver(
 func (driver *ArwenDriver) startArwen() error {
 	driver.resetPipeStreams()
 
-	user, _ := user.Current()
-	home := user.HomeDir
-	executable := path.Join(home, "Arwen", "arwen")
+	arwenPath, err := getArwenPath()
+	if err != nil {
+		return err
+	}
 
 	driver.command = exec.Command(executable)
 	driver.command.Stdout = os.Stdout
@@ -73,6 +73,29 @@ func (driver *ArwenDriver) startArwen() error {
 	}
 
 	return nil
+}
+
+func (driver *ArwenDriver) getArwenPath() (string, error) {
+	arwenPath := os.Getenv("ARWEN_PATH")
+	if fileExists(arwenPath) {
+		return arwenPath, nil
+	}
+
+	arwenPath = path.Join(".", "arwen")
+	if fileExists(arwenPath) {
+		return arwenPath, nil
+	}
+
+	return nil, ErrArwenNotFound
+}
+
+func fileExists(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+
+	return !info.IsDir()
 }
 
 func (driver *ArwenDriver) resetPipeStreams() error {

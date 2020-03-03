@@ -7,6 +7,9 @@ import (
 // ErrCriticalError signals a critical error
 var ErrCriticalError = fmt.Errorf("critical error")
 
+// ErrArwenNotFound signals a critical error
+var ErrArwenNotFound = fmt.Errorf("%w: arwen binary not found", ErrCriticalError)
+
 // ErrInvalidMessageNonce signals a critical error
 var ErrInvalidMessageNonce = fmt.Errorf("%w: invalid nonce in message", ErrCriticalError)
 
