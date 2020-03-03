@@ -8,7 +8,6 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
-	"github.com/ElrondNetwork/elrond-go/process/smartContract/hooks"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -25,7 +24,7 @@ func NewArwenPart(input *os.File, output *os.File) (*ArwenPart, error) {
 
 	messenger := NewChildMessenger(reader, writer)
 	blockchain := NewBlockchainHookGateway(messenger)
-	crypto := hooks.NewVMCryptoHook()
+	crypto := NewCryptoHookGateway()
 	arwenVirtualMachineType := []byte{5, 0}
 	blockGasLimit := uint64(10000000)
 	gasSchedule := config.MakeGasMap(1)

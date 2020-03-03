@@ -4,7 +4,10 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
+
+var _ vmcommon.BlockchainHook = (*BlockchainHookGateway)(nil)
 
 // BlockchainHookGateway is
 type BlockchainHookGateway struct {
