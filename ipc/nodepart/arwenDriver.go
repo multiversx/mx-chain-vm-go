@@ -51,18 +51,18 @@ func NewArwenDriver(
 func (driver *ArwenDriver) startArwen() error {
 	driver.resetPipeStreams()
 
-	arwenPath, err := getArwenPath()
+	arwenPath, err := driver.getArwenPath()
 	if err != nil {
 		return err
 	}
 
-	driver.command = exec.Command(executable)
+	driver.command = exec.Command(arwenPath)
 	driver.command.Stdout = os.Stdout
 	driver.command.Stderr = os.Stderr
 	// TODO: pass vmType, blockGasLimit and gasSchedule when starting Arwen
 
 	driver.command.ExtraFiles = []*os.File{driver.arwenInputRead, driver.arwenOutputWrite}
-	err := driver.command.Start()
+	err = driver.command.Start()
 	if err != nil {
 		return err
 	}
@@ -86,7 +86,7 @@ func (driver *ArwenDriver) getArwenPath() (string, error) {
 		return arwenPath, nil
 	}
 
-	return nil, ErrArwenNotFound
+	return "", common.ErrArwenNotFound
 }
 
 func fileExists(filename string) bool {
