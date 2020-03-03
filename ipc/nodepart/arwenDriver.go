@@ -196,3 +196,5 @@ func (driver *ArwenDriver) Close() error {
 
 	return nil
 }
+
+// TODO: Add test for arwen crash. Run Tx, force crash, Run Tx again.

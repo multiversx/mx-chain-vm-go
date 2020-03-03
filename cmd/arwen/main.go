@@ -10,6 +10,8 @@ import (
 )
 
 func main() {
+	// TODO: Use pseudo-blocking (Go) & no peek (but we should have deadlines) or no-blocking, with peek but manual (programmed by us) deadlines.
+	// TODO: Fix buffering - read until payload read.
 	err := syscall.SetNonblock(3, true)
 	if err != nil {
 		fmt.Println("SetNoblock error")

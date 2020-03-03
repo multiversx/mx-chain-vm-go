@@ -80,6 +80,7 @@ func (part *NodePart) handleHookCallRequest(request *common.HookCallRequestOrCon
 	response := &common.HookCallResponse{}
 	var hookError error
 
+	// TODO: Map (Slice, actually) of functions. Enum of functions, with iota.
 	if hook == "blockchain" {
 		switch function {
 		case "NewAddress":
