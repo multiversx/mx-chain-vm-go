@@ -1,7 +1,9 @@
 package nodepart
 
 import (
+	"context"
 	"os"
+	"time"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -30,39 +32,48 @@ func (part *NodePart) StartLoop(request *common.ContractRequest) (*common.HookCa
 	part.Messenger.SendContractRequest(request)
 
 	var endingError error
-	var isCriticalError bool
 	var message *common.HookCallRequestOrContractResponse
+
+	timeout := 2 * time.Second
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	errorChannel := make(chan error, 1)
+
+	select {
+	case <-ctx.Done():
+		part.Messenger.Shutdown()
+		return &common.HookCallRequestOrContractResponse{}, common.ErrArwenTimeout
+	case errorChannel <- ctx.Err():
+		part.Messenger.Shutdown()
+		return &common.HookCallRequestOrContractResponse{}, common.ErrArwenClosed
+	}
 
 	for {
 		message, endingError = part.Messenger.ReceiveHookCallRequestOrContractResponse()
 		if endingError != nil {
-			isCriticalError = true
 			message = nil
 			break
 		} else if message.IsCriticalError() {
 			endingError = message.GetError()
-			isCriticalError = true
 			message = nil
 			break
 		} else if message.IsHookCallRequest() {
 			err := part.handleHookCallRequest(message)
 			if err != nil {
 				endingError = err
-				isCriticalError = true
 				break
 			}
 		} else if message.IsContractResponse() {
 			break
 		} else {
 			endingError = common.ErrBadMessageFromArwen
-			isCriticalError = true
 			message = nil
 			break
 		}
 	}
 
-	// If critical error, node should know that Arwen should be reset / restarted.
-	common.LogDebug("Node: {{{End loop}}}. IsCriticalError? %t %v", isCriticalError, endingError)
+	common.LogDebug("Node: {{{End loop}}}.", endingError)
 	part.Messenger.Nonce = 0
 	return message, endingError
 }
