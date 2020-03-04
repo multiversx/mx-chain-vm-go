@@ -280,7 +280,6 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 	gasForExecution := runtime.GetVMInput().GasProvided
 	err = runtime.CreateWasmerInstance(contract, gasForExecution)
 	if err != nil {
-		metering.UseGas(input.GasProvided)
 		return err
 	}
 
@@ -312,7 +311,8 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 
 	metering.UnlockGasIfAsyncStep()
 
-	totalGasConsumed = input.GasProvided - gasForExecution - runtime.GetPointsUsed()
+	gasConsumedByExecution := runtime.GetPointsUsed()
+	totalGasConsumed = totalGasConsumed - input.GasProvided - gasConsumedByExecution
 
 	return nil
 }
