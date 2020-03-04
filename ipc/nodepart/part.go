@@ -1,9 +1,7 @@
 package nodepart
 
 import (
-	"context"
 	"os"
-	"time"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -33,21 +31,6 @@ func (part *NodePart) StartLoop(request *common.ContractRequest) (*common.HookCa
 
 	var endingError error
 	var message *common.HookCallRequestOrContractResponse
-
-	timeout := 2 * time.Second
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
-
-	errorChannel := make(chan error, 1)
-
-	select {
-	case <-ctx.Done():
-		part.Messenger.Shutdown()
-		return &common.HookCallRequestOrContractResponse{}, common.ErrArwenTimeout
-	case errorChannel <- ctx.Err():
-		part.Messenger.Shutdown()
-		return &common.HookCallRequestOrContractResponse{}, common.ErrArwenClosed
-	}
 
 	for {
 		message, endingError = part.Messenger.ReceiveHookCallRequestOrContractResponse()
