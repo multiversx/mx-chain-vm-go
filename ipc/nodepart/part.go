@@ -66,7 +66,7 @@ func (part *NodePart) StartLoop(request *common.ContractRequest) (*common.HookCa
 	}
 
 	// If critical error, node should know that Arwen should be reset / restarted.
-	common.LogDebug("Node: End loop. IsCriticalError? %t", isCriticalError)
+	common.LogDebug("Node: {{{End loop}}}. IsCriticalError? %t", isCriticalError)
 	part.Messenger.Nonce = 0
 	return message, endingError
 }
