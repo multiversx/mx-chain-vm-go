@@ -62,10 +62,3 @@ func (messenger *ChildMessenger) SendHookCallRequest(request *common.HookCallReq
 
 	return response, nil
 }
-
-// SendResponseIHaveCriticalError calls
-func (messenger *ChildMessenger) SendResponseIHaveCriticalError(endingError error) error {
-	common.LogDebug("Arwen: Sending end message... %v", endingError)
-	err := messenger.Send(common.NewCriticalError(endingError.Error()))
-	return err
-}

@@ -61,7 +61,8 @@ func (part *ArwenPart) StartLoop() error {
 		part.Messenger.Nonce = 0
 	}
 
-	part.Messenger.SendResponseIHaveCriticalError(endingError)
+	part.Messenger.Shutdown()
+	common.LogDebug("Arwen: {{{End loop}}}. Ending error=%v", endingError)
 	return endingError
 }
 

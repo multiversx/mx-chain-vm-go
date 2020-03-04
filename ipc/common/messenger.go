@@ -101,8 +101,16 @@ func (messenger *Messenger) receiveMessageLength() (int, error) {
 
 // Shutdown does
 func (messenger *Messenger) Shutdown() {
-	messenger.reader.Close()
-	messenger.writer.Close()
+	LogDebug("%s:  Messenger:Shutdown", messenger.Name)
+	err := messenger.writer.Close()
+	if err != nil {
+		LogError("Cannot close writer: %v", err)
+	}
+
+	err = messenger.reader.Close()
+	if err != nil {
+		LogError("Cannot close reader: %v", err)
+	}
 }
 
 func (messenger *Messenger) marshal(data interface{}) ([]byte, error) {
