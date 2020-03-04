@@ -1,24 +1,24 @@
 package common
 
 import (
-	"bufio"
 	"bytes"
 	"encoding/binary"
 	"encoding/gob"
 	"encoding/json"
 	"io"
+	"os"
 )
 
 // Messenger is
 type Messenger struct {
 	Name   string
 	Nonce  uint32
-	reader *bufio.Reader
-	writer *bufio.Writer
+	reader *os.File
+	writer *os.File
 }
 
 // NewMessenger creates
-func NewMessenger(name string, reader *bufio.Reader, writer *bufio.Writer) *Messenger {
+func NewMessenger(name string, reader *os.File, writer *os.File) *Messenger {
 	return &Messenger{
 		Name:   name,
 		reader: reader,
@@ -46,7 +46,6 @@ func (messenger *Messenger) Send(message Message) error {
 		return err
 	}
 
-	err = messenger.writer.Flush()
 	LogDebug("[MSG %d] %s: SENT message of size %d", message.GetNonce(), messenger.Name, len(dataBytes))
 	return err
 }
@@ -61,8 +60,6 @@ func (messenger *Messenger) sendMessageLength(marshalizedMessage []byte) error {
 // Receive receives
 func (messenger *Messenger) Receive(message Message) error {
 	LogDebug("%s: Receive message...", messenger.Name)
-	// Wait for the start of a message
-	messenger.blockingPeek(4)
 
 	length, err := messenger.receiveMessageLength()
 	if err != nil {
@@ -71,8 +68,6 @@ func (messenger *Messenger) Receive(message Message) error {
 
 	// Now read the body of [length]
 	buffer := make([]byte, length)
-
-	messenger.blockingPeek(length)
 	_, err = io.ReadFull(messenger.reader, buffer)
 	if err != nil {
 		return err
@@ -102,15 +97,6 @@ func (messenger *Messenger) receiveMessageLength() (int, error) {
 
 	length := binary.LittleEndian.Uint32(buffer)
 	return int(length), nil
-}
-
-func (messenger *Messenger) blockingPeek(n int) {
-	for {
-		_, err := messenger.reader.Peek(n)
-		if err == nil {
-			break
-		}
-	}
 }
 
 func (messenger *Messenger) marshal(data interface{}) ([]byte, error) {

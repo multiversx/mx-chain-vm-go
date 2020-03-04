@@ -1,7 +1,7 @@
 package nodepart
 
 import (
-	"bufio"
+	"os"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 )
@@ -12,7 +12,7 @@ type NodeMessenger struct {
 }
 
 // NewNodeMessenger creates
-func NewNodeMessenger(reader *bufio.Reader, writer *bufio.Writer) *NodeMessenger {
+func NewNodeMessenger(reader *os.File, writer *os.File) *NodeMessenger {
 	return &NodeMessenger{
 		Messenger: *common.NewMessenger("Node", reader, writer),
 	}

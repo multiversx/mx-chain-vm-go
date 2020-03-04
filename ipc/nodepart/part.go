@@ -1,7 +1,6 @@
 package nodepart
 
 import (
-	"bufio"
 	"os"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
@@ -17,10 +16,7 @@ type NodePart struct {
 
 // NewNodePart creates
 func NewNodePart(input *os.File, output *os.File, blockchain vmcommon.BlockchainHook, cryptoHook vmcommon.CryptoHook) (*NodePart, error) {
-	reader := bufio.NewReaderSize(input, 1024*1024) // TODO: implement "read until payload fully read"
-	writer := bufio.NewWriter(output)
-
-	messenger := NewNodeMessenger(reader, writer)
+	messenger := NewNodeMessenger(input, output)
 
 	return &NodePart{
 		Messenger:  messenger,
@@ -66,7 +62,7 @@ func (part *NodePart) StartLoop(request *common.ContractRequest) (*common.HookCa
 	}
 
 	// If critical error, node should know that Arwen should be reset / restarted.
-	common.LogDebug("Node: {{{End loop}}}. IsCriticalError? %t", isCriticalError)
+	common.LogDebug("Node: {{{End loop}}}. IsCriticalError? %t %v", isCriticalError, endingError)
 	part.Messenger.Nonce = 0
 	return message, endingError
 }

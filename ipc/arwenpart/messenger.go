@@ -1,7 +1,7 @@
 package arwenpart
 
 import (
-	"bufio"
+	"os"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 )
@@ -12,7 +12,7 @@ type ChildMessenger struct {
 }
 
 // NewChildMessenger creates
-func NewChildMessenger(reader *bufio.Reader, writer *bufio.Writer) *ChildMessenger {
+func NewChildMessenger(reader *os.File, writer *os.File) *ChildMessenger {
 	return &ChildMessenger{
 		Messenger: *common.NewMessenger("Arwen", reader, writer),
 	}
@@ -65,7 +65,7 @@ func (messenger *ChildMessenger) SendHookCallRequest(request *common.HookCallReq
 
 // SendResponseIHaveCriticalError calls
 func (messenger *ChildMessenger) SendResponseIHaveCriticalError(endingError error) error {
-	common.LogDebug("Arwen: Sending end message...")
+	common.LogDebug("Arwen: Sending end message... %v", endingError)
 	err := messenger.Send(common.NewCriticalError(endingError.Error()))
 	return err
 }

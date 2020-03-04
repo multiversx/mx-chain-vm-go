@@ -1,7 +1,6 @@
 package arwenpart
 
 import (
-	"bufio"
 	"errors"
 	"os"
 
@@ -19,10 +18,7 @@ type ArwenPart struct {
 
 // NewArwenPart creates
 func NewArwenPart(input *os.File, output *os.File) (*ArwenPart, error) {
-	reader := bufio.NewReaderSize(input, 1024*1024) // TODO: implement "read until payload fully read"
-	writer := bufio.NewWriter(output)
-
-	messenger := NewChildMessenger(reader, writer)
+	messenger := NewChildMessenger(input, output)
 	blockchain := NewBlockchainHookGateway(messenger)
 	crypto := NewCryptoHookGateway()
 	arwenVirtualMachineType := []byte{5, 0}
