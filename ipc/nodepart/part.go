@@ -11,17 +11,15 @@ import (
 type NodePart struct {
 	Messenger  *NodeMessenger
 	blockchain vmcommon.BlockchainHook
-	cryptoHook vmcommon.CryptoHook
 }
 
 // NewNodePart creates
-func NewNodePart(input *os.File, output *os.File, blockchain vmcommon.BlockchainHook, cryptoHook vmcommon.CryptoHook) (*NodePart, error) {
+func NewNodePart(input *os.File, output *os.File, blockchain vmcommon.BlockchainHook) (*NodePart, error) {
 	messenger := NewNodeMessenger(input, output)
 
 	return &NodePart{
 		Messenger:  messenger,
 		blockchain: blockchain,
-		cryptoHook: cryptoHook,
 	}, nil
 }
 

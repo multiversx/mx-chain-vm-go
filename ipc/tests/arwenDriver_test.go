@@ -16,9 +16,7 @@ var arwenVirtualMachine = []byte{5, 0}
 
 func TestArwenDriver_StopsArwenOnTimeout(t *testing.T) {
 	blockchain := &mock.BlockChainHookStub{}
-	cryptoHook := &mock.CryptoHookMock{}
-
-	driver, err := nodepart.NewArwenDriver(blockchain, cryptoHook, arwenVirtualMachine, uint64(10000000), config.MakeGasMap(1))
+	driver, err := nodepart.NewArwenDriver(blockchain, arwenVirtualMachine, uint64(10000000), config.MakeGasMap(1))
 	require.Nil(t, err)
 	vmOutput, err := driver.RunSmartContractCall(&vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{

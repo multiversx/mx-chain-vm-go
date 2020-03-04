@@ -16,7 +16,6 @@ var _ vmcommon.VMExecutionHandler = (*ArwenDriver)(nil)
 // ArwenDriver is
 type ArwenDriver struct {
 	blockchainHook vmcommon.BlockchainHook
-	cryptoHook     vmcommon.CryptoHook
 	vmType         []byte
 	blockGasLimit  uint64
 	gasSchedule    map[string]map[string]uint64
@@ -32,14 +31,12 @@ type ArwenDriver struct {
 // NewArwenDriver creates
 func NewArwenDriver(
 	blockchainHook vmcommon.BlockchainHook,
-	cryptoHook vmcommon.CryptoHook,
 	vmType []byte,
 	blockGasLimit uint64,
 	gasSchedule map[string]map[string]uint64,
 ) (*ArwenDriver, error) {
 	driver := &ArwenDriver{
 		blockchainHook: blockchainHook,
-		cryptoHook:     cryptoHook,
 		vmType:         vmType,
 		blockGasLimit:  blockGasLimit,
 		gasSchedule:    gasSchedule,
@@ -68,7 +65,7 @@ func (driver *ArwenDriver) startArwen() error {
 		return err
 	}
 
-	driver.part, err = NewNodePart(driver.arwenOutputRead, driver.arwenInputWrite, driver.blockchainHook, driver.cryptoHook)
+	driver.part, err = NewNodePart(driver.arwenOutputRead, driver.arwenInputWrite, driver.blockchainHook)
 	if err != nil {
 		return err
 	}
