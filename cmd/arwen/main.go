@@ -8,7 +8,6 @@ import (
 )
 
 func main() {
-	// TODO: Use deadlines.
 	nodeToArwenFile := os.NewFile(3, "/proc/self/fd/3")
 	if nodeToArwenFile == nil {
 		log.Fatal("Cannot create file")
@@ -19,6 +18,7 @@ func main() {
 		log.Fatal("Cannot create file")
 	}
 
+	// TODO: pass parameters from arguments (blockGaslimit, map of gas, code vmType)
 	part, err := arwenpart.NewArwenPart(nodeToArwenFile, arwenToNodeFile)
 	if err != nil {
 		log.Fatalf("Cannot create ArwenPart: %v", err)
