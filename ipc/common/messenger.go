@@ -5,7 +5,6 @@ import (
 	"encoding/binary"
 	"encoding/gob"
 	"encoding/json"
-	"fmt"
 	"io"
 	"os"
 	"time"
@@ -96,7 +95,6 @@ func (messenger *Messenger) Receive(message Message, timeout int) error {
 }
 
 func (messenger *Messenger) setReceiveDeadline(timeout int) {
-	fmt.Println("set deadline", timeout)
 	duration := time.Duration(timeout) * time.Millisecond
 	future := time.Now().Add(duration)
 	messenger.reader.SetDeadline(future)

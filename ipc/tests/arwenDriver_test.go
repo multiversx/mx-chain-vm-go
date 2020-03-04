@@ -1,7 +1,6 @@
 package tests
 
 import (
-	"fmt"
 	"math/big"
 	"testing"
 
@@ -18,6 +17,7 @@ func TestArwenDriver_StopsArwenOnTimeout(t *testing.T) {
 	blockchain := &mock.BlockChainHookStub{}
 	driver, err := nodepart.NewArwenDriver(blockchain, arwenVirtualMachine, uint64(10000000), config.MakeGasMap(1))
 	require.Nil(t, err)
+	require.NotNil(t, driver)
 	vmOutput, err := driver.RunSmartContractCall(&vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallerAddr:  []byte("me"),
@@ -30,10 +30,8 @@ func TestArwenDriver_StopsArwenOnTimeout(t *testing.T) {
 		Function:      "foo",
 	})
 
-	fmt.Println("VMoutput", vmOutput)
-	fmt.Println("err", err)
-
-	//wait for the...
+	require.Nil(t, vmOutput)
+	require.NotNil(t, err)
 }
 
 // Test, restarts upon critical error

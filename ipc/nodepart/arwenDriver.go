@@ -140,7 +140,9 @@ func (driver *ArwenDriver) forceRestartArwen() error {
 }
 
 func (driver *ArwenDriver) restartArwenIfNecessary() error {
-	if !driver.command.ProcessState.Exited() {
+	state := driver.command.ProcessState
+	stopped := state != nil && state.Exited()
+	if stopped {
 		return nil
 	}
 
