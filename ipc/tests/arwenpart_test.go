@@ -99,22 +99,12 @@ func doContractRequest(
 }
 
 func createTestFiles(t *testing.T, tag string) testFiles {
-	folder := filepath.Join(".", "testdata", "streams")
-	os.MkdirAll(folder, os.ModePerm)
-
-	nodeToArwen := filepath.Join(folder, fmt.Sprintf("node-to-arwen-%s.bin", tag))
-	arwenToNode := filepath.Join(folder, fmt.Sprintf("arwen-to-node-%s.bin", tag))
-
 	files := testFiles{}
 
 	var err error
-	files.outputOfNode, err = os.Create(nodeToArwen)
+	files.inputOfArwen, files.outputOfNode, err = os.Pipe()
 	require.Nil(t, err)
-	files.outputOfArwen, err = os.Create(arwenToNode)
-	require.Nil(t, err)
-	files.inputOfNode, err = os.Open(arwenToNode)
-	require.Nil(t, err)
-	files.inputOfArwen, err = os.Open(nodeToArwen)
+	files.inputOfNode, files.outputOfArwen, err = os.Pipe()
 	require.Nil(t, err)
 
 	return files
