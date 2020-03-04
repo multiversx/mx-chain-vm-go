@@ -1,7 +1,9 @@
 package nodepart
 
 import (
+	"context"
 	"os"
+	"time"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 )
@@ -43,6 +45,15 @@ func (messenger *NodeMessenger) SendHookCallResponse(response *common.HookCallRe
 // ReceiveHookCallRequestOrContractResponse waits
 func (messenger *NodeMessenger) ReceiveHookCallRequestOrContractResponse() (*common.HookCallRequestOrContractResponse, error) {
 	message := &common.HookCallRequestOrContractResponse{}
+
+	timeout := 1 * time.Second
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	select {
+	case <-ctx.Done():
+		messenger.Shutdown()
+	}
 
 	err := messenger.Receive(message)
 	if err != nil {

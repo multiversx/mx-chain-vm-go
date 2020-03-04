@@ -99,6 +99,12 @@ func (messenger *Messenger) receiveMessageLength() (int, error) {
 	return int(length), nil
 }
 
+// Shutdown does
+func (messenger *Messenger) Shutdown() {
+	messenger.reader.Close()
+	messenger.writer.Close()
+}
+
 func (messenger *Messenger) marshal(data interface{}) ([]byte, error) {
 	return marshalJSON(data)
 }
