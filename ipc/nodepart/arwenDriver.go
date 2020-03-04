@@ -1,6 +1,7 @@
 package nodepart
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -165,7 +166,7 @@ func (driver *ArwenDriver) RunSmartContractCreate(input *vmcommon.ContractCreate
 		// TODO: if critical error, restart.
 	}
 
-	return response.VMOutput, err
+	return response.VMOutput, response.GetError()
 }
 
 // RunSmartContractCall calls
@@ -179,10 +180,13 @@ func (driver *ArwenDriver) RunSmartContractCall(input *vmcommon.ContractCallInpu
 
 	response, err := driver.part.StartLoop(request)
 	if err != nil {
-		// TODO: if critical error, restart.
+		if errors.Is(err, common.ErrCriticalError) {
+			common.LogError("call error: %v", err)
+			return nil, err
+		}
 	}
 
-	return response.VMOutput, err
+	return response.VMOutput, response.GetError()
 }
 
 // func OnRoundEnded -> triggers Arwen restart.

@@ -7,6 +7,12 @@ import (
 // ErrCriticalError signals a critical error
 var ErrCriticalError = fmt.Errorf("critical error")
 
+// ErrArwenTimeout signals a critical error
+var ErrArwenTimeout = fmt.Errorf("%w: arwen timeout", ErrCriticalError)
+
+// ErrArwenClosed signals a critical error
+var ErrArwenClosed = fmt.Errorf("%w: arwen closed", ErrCriticalError)
+
 // ErrArwenNotFound signals a critical error
 var ErrArwenNotFound = fmt.Errorf("%w: arwen binary not found", ErrCriticalError)
 

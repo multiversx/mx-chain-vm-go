@@ -3,6 +3,7 @@ package arwenpart
 import (
 	"errors"
 	"os"
+	"time"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
@@ -85,10 +86,13 @@ func (part *ArwenPart) handleContractRequest(request *common.ContractRequest) (*
 
 func (part *ArwenPart) doRunSmartContractCreate(request *common.ContractRequest) *common.HookCallRequestOrContractResponse {
 	vmOutput, err := part.VMHost.RunSmartContractCreate(request.CreateInput)
+	common.LogDebug("doRunSmartContractCreate, err=%v", err)
 	return common.NewContractResponse(vmOutput, err)
 }
 
 func (part *ArwenPart) doRunSmartContractCall(request *common.ContractRequest) *common.HookCallRequestOrContractResponse {
+	time.Sleep(5 * time.Second)
 	vmOutput, err := part.VMHost.RunSmartContractCall(request.CallInput)
+	common.LogDebug("doRunSmartContractCall, err=%v", err)
 	return common.NewContractResponse(vmOutput, err)
 }
