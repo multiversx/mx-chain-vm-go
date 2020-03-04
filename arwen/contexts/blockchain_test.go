@@ -257,7 +257,7 @@ func TestBlockchainContext_NewAddress(t *testing.T) {
 	mockOutput.OutputAccountIsNew = true
 
 	expectedCreatorAddres := creatorAddress
-	stubBlockchain := &mock.BlockChainHookStub{
+	stubBlockchain := &mock.BlockchainHookStub{
 		GetNonceCalled: blockchainHook.GetNonce,
 		NewAddressCalled: func(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error) {
 			require.Equal(t, expectedCreatorAddres, creatorAddress)
@@ -280,7 +280,7 @@ func TestBlockchainContext_NewAddress(t *testing.T) {
 	mockOutput.OutputAccountIsNew = false
 
 	expectedCreatorAddres = creatorAddress
-	stubBlockchain = &mock.BlockChainHookStub{
+	stubBlockchain = &mock.BlockchainHookStub{
 		GetNonceCalled: blockchainHook.GetNonce,
 		NewAddressCalled: func(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error) {
 			require.Equal(t, expectedCreatorAddres, creatorAddress)
@@ -303,7 +303,7 @@ func TestBlockchainContext_NewAddress(t *testing.T) {
 	mockOutput.OutputAccountIsNew = false
 
 	expectedCreatorAddres = creatorAddress
-	stubBlockchain = &mock.BlockChainHookStub{
+	stubBlockchain = &mock.BlockchainHookStub{
 		GetNonceCalled: blockchainHook.GetNonce,
 		NewAddressCalled: func(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error) {
 			require.Equal(t, expectedCreatorAddres, creatorAddress)
