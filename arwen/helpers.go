@@ -50,6 +50,23 @@ func GuardedGetBytesSlice(data []byte, offset int32, length int32) ([]byte, erro
 	return result, nil
 }
 
+func PadBytesLeft(data []byte, size int) []byte {
+	if data == nil {
+		return nil
+	}
+	if len(data) == 0 {
+		return []byte{}
+	}
+	padSize := size - len(data)
+	if padSize <= 0 {
+		return data
+	}
+
+	paddedBytes := make([]byte, padSize)
+	paddedBytes = append(paddedBytes, data...)
+	return paddedBytes
+}
+
 func InverseBytes(data []byte) []byte {
 	length := len(data)
 	invBytes := make([]byte, length)

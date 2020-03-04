@@ -590,6 +590,7 @@ func callValue(context unsafe.Pointer, resultOffset int32) int32 {
 	metering := arwen.GetMeteringContext(context)
 
 	value := runtime.GetVMInput().CallValue.Bytes()
+	value = arwen.PadBytesLeft(value, arwen.BalanceLen)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetCallValue
 	metering.UseGas(gasToUse)
