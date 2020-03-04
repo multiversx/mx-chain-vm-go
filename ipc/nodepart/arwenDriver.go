@@ -1,7 +1,6 @@
 package nodepart
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -177,7 +176,7 @@ func (driver *ArwenDriver) RunSmartContractCall(input *vmcommon.ContractCallInpu
 
 	response, err := driver.part.StartLoop(request)
 	if err != nil {
-		if errors.Is(err, common.ErrCriticalError) {
+		if common.IsCriticalError(err) {
 			common.LogError("call error: %v", err)
 			return nil, err
 		}

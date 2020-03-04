@@ -1,6 +1,7 @@
 package common
 
 import (
+	"errors"
 	"fmt"
 )
 
@@ -39,3 +40,8 @@ var ErrCannotSendHookCallRequest = fmt.Errorf("%w: cannot send hook call request
 
 // ErrCannotReceiveHookCallResponse signals a critical error
 var ErrCannotReceiveHookCallResponse = fmt.Errorf("%w: cannot receive hook call response", ErrCriticalError)
+
+// IsCriticalError returns whether the error is critical
+func IsCriticalError(err error) bool {
+	return errors.Is(err, ErrCriticalError)
+}

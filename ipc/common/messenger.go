@@ -119,7 +119,8 @@ func (messenger *Messenger) receiveMessageLength() (int, error) {
 
 // Shutdown does
 func (messenger *Messenger) Shutdown() {
-	LogDebug("%s:  Messenger:Shutdown", messenger.Name)
+	LogDebug("%s:  Messenger::Shutdown", messenger.Name)
+
 	err := messenger.writer.Close()
 	if err != nil {
 		LogError("Cannot close writer: %v", err)
@@ -129,6 +130,11 @@ func (messenger *Messenger) Shutdown() {
 	if err != nil {
 		LogError("Cannot close reader: %v", err)
 	}
+}
+
+// EndDialogue resets the nonce
+func (messenger *Messenger) EndDialogue() {
+	messenger.Nonce = 0
 }
 
 func (messenger *Messenger) marshal(data interface{}) ([]byte, error) {

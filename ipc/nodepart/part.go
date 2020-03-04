@@ -57,7 +57,7 @@ func (part *NodePart) StartLoop(request *common.ContractRequest) (*common.HookCa
 	}
 
 	common.LogDebug("Node: {{{End loop}}}.", endingError)
-	part.Messenger.Nonce = 0
+	part.Messenger.EndDialogue()
 	return message, endingError
 }
 

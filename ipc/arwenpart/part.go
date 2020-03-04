@@ -1,7 +1,6 @@
 package arwenpart
 
 import (
-	"errors"
 	"os"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
@@ -21,9 +20,9 @@ func NewArwenPart(input *os.File, output *os.File) (*ArwenPart, error) {
 	messenger := NewChildMessenger(input, output)
 	blockchain := NewBlockchainHookGateway(messenger)
 	crypto := NewCryptoHookGateway()
-	arwenVirtualMachineType := []byte{5, 0}
-	blockGasLimit := uint64(10000000)
-	gasSchedule := config.MakeGasMap(1)
+	arwenVirtualMachineType := []byte{5, 0} // TODO
+	blockGasLimit := uint64(10000000)       // TODO
+	gasSchedule := config.MakeGasMap(1)     // TODO
 
 	host, err := host.NewArwenVM(blockchain, crypto, arwenVirtualMachineType, blockGasLimit, gasSchedule)
 	if err != nil {
@@ -38,32 +37,31 @@ func NewArwenPart(input *os.File, output *os.File) (*ArwenPart, error) {
 
 // StartLoop runs the main loop
 func (part *ArwenPart) StartLoop() error {
-	var endingError error
+	err := part.doLoop()
+	part.Messenger.Shutdown()
+	common.LogError("Arwen: end of loop, err=%v", err)
+	return err
+}
+
+// doLoop ends only when a critical failure takes place
+func (part *ArwenPart) doLoop() error {
 	for {
 		request, err := part.Messenger.ReceiveContractRequest()
 		if err != nil {
-			endingError = err
-			break
+			return err
 		}
 
 		response, err := part.handleContractRequest(request)
 		if err != nil {
-			if errors.Is(err, common.ErrCriticalError) {
-				endingError = err
-				break
-			} else {
-				common.LogDebug("Non critical error:", err)
-			}
+			return err
 		}
 
 		// Successful execution, send response
 		part.Messenger.SendContractResponse(response)
-		part.Messenger.Nonce = 0
+		part.Messenger.EndDialogue()
 	}
 
-	part.Messenger.Shutdown()
-	common.LogDebug("Arwen: {{{End loop}}}. Ending error=%v", endingError)
-	return endingError
+	return nil
 }
 
 func (part *ArwenPart) handleContractRequest(request *common.ContractRequest) (*common.HookCallRequestOrContractResponse, error) {
