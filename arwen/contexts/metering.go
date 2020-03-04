@@ -43,6 +43,14 @@ func (context *meteringContext) UseGas(gas uint64) {
 	context.host.Runtime().SetPointsUsed(gasUsed)
 }
 
+func (context *meteringContext) RestoreGas(gas uint64) {
+	gasUsed := context.host.Runtime().GetPointsUsed()
+	if gas <= gasUsed {
+		gasUsed -= gas
+		context.host.Runtime().SetPointsUsed(gasUsed)
+	}
+}
+
 func (context *meteringContext) FreeGas(gas uint64) {
 	refund := context.host.Output().GetRefund() + gas
 	context.host.Output().SetRefund(refund)
