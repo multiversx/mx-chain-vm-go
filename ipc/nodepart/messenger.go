@@ -50,9 +50,14 @@ func (messenger *NodeMessenger) ReceiveHookCallRequestOrContractResponse() (*com
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
+	errorChannel := make(chan error, 1)
+
 	select {
 	case <-ctx.Done():
+		common.LogError("TIMEOUT ReceiveHookCallRequestOrContractResponse")
 		messenger.Shutdown()
+	case errorChannel <- ctx.Err():
+		common.LogError("READ ERROR ReceiveHookCallRequestOrContractResponse")
 	}
 
 	err := messenger.Receive(message)
