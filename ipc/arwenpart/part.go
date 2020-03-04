@@ -77,8 +77,6 @@ func (part *ArwenPart) handleContractRequest(request *common.ContractRequest) (*
 	default:
 		return nil, common.ErrBadRequestFromNode
 	}
-
-	// TODO: for Deploy and Call, return the actual errors.
 }
 
 func (part *ArwenPart) doRunSmartContractCreate(request *common.ContractRequest) *common.HookCallRequestOrContractResponse {

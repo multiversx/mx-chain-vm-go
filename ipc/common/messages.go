@@ -102,7 +102,6 @@ func (message *HookCallRequestOrContractResponse) HasError() bool {
 
 // GetError returns
 func (message *HookCallRequestOrContractResponse) GetError() error {
-	// TODO: create as critical error if the case.
 	return fmt.Errorf(message.ErrorMessage)
 }
 

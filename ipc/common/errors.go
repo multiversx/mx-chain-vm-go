@@ -45,3 +45,8 @@ var ErrCannotReceiveHookCallResponse = fmt.Errorf("%w: cannot receive hook call 
 func IsCriticalError(err error) bool {
 	return errors.Is(err, ErrCriticalError)
 }
+
+// WrapCriticalError wraps an error
+func WrapCriticalError(err error) error {
+	return fmt.Errorf("%w: %v", ErrCriticalError, err)
+}

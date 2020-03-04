@@ -26,39 +26,44 @@ func NewNodePart(input *os.File, output *os.File, blockchain vmcommon.Blockchain
 // StartLoop runs the main loop
 func (part *NodePart) StartLoop(request *common.ContractRequest) (*common.HookCallRequestOrContractResponse, error) {
 	part.Messenger.SendContractRequest(request)
+	response, err := part.doLoop()
 
-	var endingError error
-	var message *common.HookCallRequestOrContractResponse
+	common.LogDebug("Node: end of loop, err=%v", err)
+	part.Messenger.EndDialogue()
+	return response, err
+}
 
+// doLoop ends when processing the transaction ends or in the case of a critical failure
+// Critical failure = Arwen timeouts or crashes
+// The error result is set only in case of critical failure
+func (part *NodePart) doLoop() (*common.HookCallRequestOrContractResponse, error) {
 	for {
 		// TODO: start with initial timeout, decrement with "time.Since".
 		// TODO: Allow a total max of 1 second (accumulated wait).
-		message, endingError = part.Messenger.ReceiveHookCallRequestOrContractResponse(1000)
-		if endingError != nil {
-			message = nil
-			break
-		} else if message.IsCriticalError() {
-			endingError = message.GetError()
-			message = nil
-			break
-		} else if message.IsHookCallRequest() {
+		message, err := part.Messenger.ReceiveHookCallRequestOrContractResponse(1000)
+		if err != nil {
+			return nil, err
+		}
+
+		if message.IsCriticalError() {
+			return nil, message.GetError()
+		}
+
+		if message.IsHookCallRequest() {
 			err := part.handleHookCallRequest(message)
 			if err != nil {
-				endingError = err
-				break
+				return nil, err
 			}
-		} else if message.IsContractResponse() {
-			break
-		} else {
-			endingError = common.ErrBadMessageFromArwen
-			message = nil
-			break
-		}
-	}
 
-	common.LogDebug("Node: {{{End loop}}}.", endingError)
-	part.Messenger.EndDialogue()
-	return message, endingError
+			continue
+		}
+
+		if message.IsContractResponse() {
+			return message, nil
+		}
+
+		return nil, common.ErrBadMessageFromArwen
+	}
 }
 
 func (part *NodePart) handleHookCallRequest(request *common.HookCallRequestOrContractResponse) error {
