@@ -16,6 +16,10 @@ package elrondapi
 // extern void bigIntAdd(void* context, int32_t destination, int32_t op1, int32_t op2);
 // extern void bigIntSub(void* context, int32_t destination, int32_t op1, int32_t op2);
 // extern void bigIntMul(void* context, int32_t destination, int32_t op1, int32_t op2);
+// extern void bigIntTDiv(void* context, int32_t destination, int32_t op1, int32_t op2);
+// extern void bigIntTMod(void* context, int32_t destination, int32_t op1, int32_t op2);
+// extern void bigIntEDiv(void* context, int32_t destination, int32_t op1, int32_t op2);
+// extern void bigIntEMod(void* context, int32_t destination, int32_t op1, int32_t op2);
 // extern int32_t bigIntCmp(void* context, int32_t op1, int32_t op2);
 // extern void bigIntFinish(void* context, int32_t reference);
 // extern int32_t bigIntStorageStore(void *context, int32_t keyOffset, int32_t source);
@@ -83,6 +87,16 @@ func BigIntImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("bigIntMul", bigIntMul, C.bigIntMul)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntTDiv", bigIntTDiv, C.bigIntTDiv)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntTMod", bigIntTMod, C.bigIntTMod)
 	if err != nil {
 		return nil, err
 	}
@@ -382,6 +396,70 @@ func bigIntMul(context unsafe.Pointer, destination, op1, op2 int32) {
 	dest.Mul(a, b)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntMul
+	metering.UseGas(gasToUse)
+}
+
+//export bigIntTDiv
+func bigIntTDiv(context unsafe.Pointer, destination, op1, op2 int32) {
+	bigInt := arwen.GetBigIntContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	dest, a, b := bigInt.GetThree(destination, op1, op2)
+	if b.Sign() == 0 {
+		runtime := arwen.GetRuntimeContext(context)
+		runtime.SignalUserError("[bigIntTDiv] division by 0")
+	}
+	dest.Quo(a, b) // Quo implements truncated division (like Go)
+
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntMul // TODO: new cost
+	metering.UseGas(gasToUse)
+}
+
+//export bigIntTMod
+func bigIntTMod(context unsafe.Pointer, destination, op1, op2 int32) {
+	bigInt := arwen.GetBigIntContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	dest, a, b := bigInt.GetThree(destination, op1, op2)
+	if b.Sign() == 0 {
+		runtime := arwen.GetRuntimeContext(context)
+		runtime.SignalUserError("[bigIntTMod] division by 0")
+	}
+	dest.Rem(a, b) // Rem implements truncated modulus (like Go)
+
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntMul // TODO: new cost
+	metering.UseGas(gasToUse)
+}
+
+//export bigIntEDiv
+func bigIntEDiv(context unsafe.Pointer, destination, op1, op2 int32) {
+	bigInt := arwen.GetBigIntContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	dest, a, b := bigInt.GetThree(destination, op1, op2)
+	if b.Sign() == 0 {
+		runtime := arwen.GetRuntimeContext(context)
+		runtime.SignalUserError("[bigIntEDiv] division by 0")
+	}
+	dest.Div(a, b) // Div implements Euclidean division (unlike Go)
+
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntMul // TODO: new cost
+	metering.UseGas(gasToUse)
+}
+
+//export bigIntEMod
+func bigIntEMod(context unsafe.Pointer, destination, op1, op2 int32) {
+	bigInt := arwen.GetBigIntContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	dest, a, b := bigInt.GetThree(destination, op1, op2)
+	if b.Sign() == 0 {
+		runtime := arwen.GetRuntimeContext(context)
+		runtime.SignalUserError("[bigIntEMod] division by 0")
+	}
+	dest.Mod(a, b) // Mod implements Euclidean division (unlike Go)
+
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntMul // TODO: new cost
 	metering.UseGas(gasToUse)
 }
 
