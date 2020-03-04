@@ -1,6 +1,7 @@
 package common
 
 import (
+	"io"
 	"os"
 	"testing"
 	"time"
@@ -17,12 +18,12 @@ func TestSetDeadline(t *testing.T) {
 	require.Nil(t, err)
 
 	go func() {
-		time.Sleep(1 * time.Second)
+		time.Sleep(2 * time.Second)
 		w.WriteString("foo")
 	}()
 
 	buff := make([]byte, 100)
-	n, err := r.Read(buff)
+	n, err := io.ReadFull(r, buff) // r.Read(buff)
 	require.Nil(t, err)
 	require.Equal(t, 3, n)
 }

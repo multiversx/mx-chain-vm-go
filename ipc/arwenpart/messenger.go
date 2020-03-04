@@ -22,7 +22,7 @@ func NewChildMessenger(reader *os.File, writer *os.File) *ChildMessenger {
 func (messenger *ChildMessenger) ReceiveContractRequest() (*common.ContractRequest, error) {
 	request := &common.ContractRequest{}
 
-	err := messenger.Receive(request)
+	err := messenger.Receive(request, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +51,7 @@ func (messenger *ChildMessenger) SendHookCallRequest(request *common.HookCallReq
 		return nil, common.ErrCannotSendHookCallRequest
 	}
 
-	err = messenger.Receive(response)
+	err = messenger.Receive(response, 0)
 	if err != nil {
 		return nil, common.ErrCannotReceiveHookCallResponse
 	}

@@ -5,8 +5,10 @@ import (
 	"encoding/binary"
 	"encoding/gob"
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
+	"time"
 )
 
 // Messenger is
@@ -58,8 +60,13 @@ func (messenger *Messenger) sendMessageLength(marshalizedMessage []byte) error {
 }
 
 // Receive receives
-func (messenger *Messenger) Receive(message Message) error {
+func (messenger *Messenger) Receive(message Message, timeout int) error {
 	LogDebug("%s: Receive message...", messenger.Name)
+
+	if timeout != 0 {
+		messenger.setReceiveDeadline(timeout)
+		defer messenger.resetReceiveDeadline()
+	}
 
 	length, err := messenger.receiveMessageLength()
 	if err != nil {
@@ -86,6 +93,17 @@ func (messenger *Messenger) Receive(message Message) error {
 
 	messenger.Nonce = messageNonce
 	return nil
+}
+
+func (messenger *Messenger) setReceiveDeadline(timeout int) {
+	fmt.Println("set deadline", timeout)
+	duration := time.Duration(timeout) * time.Millisecond
+	future := time.Now().Add(duration)
+	messenger.reader.SetDeadline(future)
+}
+
+func (messenger *Messenger) resetReceiveDeadline() {
+	messenger.reader.SetDeadline(time.Time{})
 }
 
 func (messenger *Messenger) receiveMessageLength() (int, error) {

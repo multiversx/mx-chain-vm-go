@@ -33,7 +33,9 @@ func (part *NodePart) StartLoop(request *common.ContractRequest) (*common.HookCa
 	var message *common.HookCallRequestOrContractResponse
 
 	for {
-		message, endingError = part.Messenger.ReceiveHookCallRequestOrContractResponse()
+		// TODO: start with initial timeout, decrement with "time.Since".
+		// TODO: Allow a total max of 1 second (accumulated wait).
+		message, endingError = part.Messenger.ReceiveHookCallRequestOrContractResponse(1000)
 		if endingError != nil {
 			message = nil
 			break

@@ -41,10 +41,10 @@ func (messenger *NodeMessenger) SendHookCallResponse(response *common.HookCallRe
 }
 
 // ReceiveHookCallRequestOrContractResponse waits
-func (messenger *NodeMessenger) ReceiveHookCallRequestOrContractResponse() (*common.HookCallRequestOrContractResponse, error) {
+func (messenger *NodeMessenger) ReceiveHookCallRequestOrContractResponse(timeout int) (*common.HookCallRequestOrContractResponse, error) {
 	message := &common.HookCallRequestOrContractResponse{}
 
-	err := messenger.Receive(message)
+	err := messenger.Receive(message, timeout)
 	if err != nil {
 		return nil, err
 	}
