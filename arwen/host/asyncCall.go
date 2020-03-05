@@ -15,6 +15,7 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 	// on address?), by account addresses - this would make the empty SC code an
 	// unrecoverable error, so returning nil here will not be appropriate anymore.
 	if !host.canExecuteSynchronously() {
+		host.setAsyncCallToDestination()
 		return nil
 	}
 
@@ -52,6 +53,14 @@ func (host *vmHost) canExecuteSynchronously() bool {
 	calledSCCode, err := blockchain.GetCode(dest)
 
 	return len(calledSCCode) != 0 && err == nil
+}
+
+func (host *vmHost) setAsyncCallToDestination() {
+	runtime := host.Runtime()
+	output := host.Output()
+	destination := runtime.GetAsyncCallInfo().Destination
+	destinationAccount, _ := output.GetOutputAccount(destination)
+	destinationAccount.CallType = vmcommon.AsynchronousCall
 }
 
 func (host *vmHost) createDestinationContractCallInput() (*vmcommon.ContractCallInput, error) {

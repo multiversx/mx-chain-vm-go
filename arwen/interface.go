@@ -143,6 +143,7 @@ type MeteringContext interface {
 	GasSchedule() *config.GasCost
 	UseGas(gas uint64)
 	FreeGas(gas uint64)
+	RestoreGas(gas uint64)
 	GasLeft() uint64
 	BoundGasLimit(value int64) uint64
 	BlockGasLimit() uint64

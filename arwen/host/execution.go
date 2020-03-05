@@ -181,19 +181,21 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]by
 	metering := host.Metering()
 	output := host.Output()
 
+	// Use all gas initially. In case of successful deployment, the unused gas
+	// will be restored.
+	initialGasProvided := input.GasProvided
+	metering.UseGas(initialGasProvided)
+
 	if runtime.ReadOnly() {
 		return nil, arwen.ErrInvalidCallOnReadOnlyMode
 	}
 
 	runtime.PushState()
 
-	defer func() {
-		runtime.PopState()
-	}()
-
 	runtime.SetVMInput(&input.VMInput)
 	address, err := blockchain.NewAddress(input.CallerAddr)
 	if err != nil {
+		runtime.PopState()
 		return nil, err
 	}
 
@@ -201,32 +203,29 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]by
 	blockchain.IncreaseNonce(input.CallerAddr)
 	runtime.SetSCAddress(address)
 
-	totalGasConsumed := input.GasProvided
-	defer func() {
-		metering.UseGas(totalGasConsumed)
-	}()
-
 	err = metering.DeductInitialGasForIndirectDeployment(input)
 	if err != nil {
+		runtime.PopState()
 		return nil, err
 	}
 
 	idContext := arwen.AddHostContext(host)
 	runtime.PushInstance()
 
-	defer func() {
-		runtime.PopInstance()
-		arwen.RemoveHostContext(idContext)
-	}()
-
 	gasForDeployment := runtime.GetVMInput().GasProvided
 	err = runtime.CreateWasmerInstance(input.ContractCode, gasForDeployment)
 	if err != nil {
+		runtime.PopInstance()
+		runtime.PopState()
+		arwen.RemoveHostContext(idContext)
 		return nil, err
 	}
 
 	err = runtime.VerifyContractCode()
 	if err != nil {
+		runtime.PopInstance()
+		runtime.PopState()
+		arwen.RemoveHostContext(idContext)
 		return nil, err
 	}
 
@@ -234,13 +233,21 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]by
 
 	err = host.callInitFunction()
 	if err != nil {
+		runtime.PopInstance()
+		runtime.PopState()
+		arwen.RemoveHostContext(idContext)
 		return nil, err
 	}
 
 	output.DeployCode(address, input.ContractCode)
 
-	totalGasConsumed = input.GasProvided - gasForDeployment - runtime.GetPointsUsed()
+	gasToRestoreToCaller := metering.GasLeft()
 
+	runtime.PopInstance()
+	runtime.PopState()
+	arwen.RemoveHostContext(idContext)
+
+	metering.RestoreGas(gasToRestoreToCaller)
 	return address, nil
 }
 
@@ -249,16 +256,19 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 	metering := host.Metering()
 	output := host.Output()
 
+	// Use all gas initially. In case of successful execution, the unused gas
+	// will be restored.
+	initialGasProvided := input.GasProvided
+	metering.UseGas(initialGasProvided)
+
+	if host.isInitFunctionBeingCalled() {
+		return arwen.ErrInitFuncCalledInRun
+	}
+
 	contract, err := host.Blockchain().GetCode(runtime.GetSCAddress())
 	if err != nil {
 		return err
 	}
-
-	totalGasConsumed := input.GasProvided
-
-	defer func() {
-		metering.UseGas(totalGasConsumed)
-	}()
 
 	err = metering.DeductInitialGasForExecution(contract)
 	if err != nil {
@@ -268,34 +278,30 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 	idContext := arwen.AddHostContext(host)
 	runtime.PushInstance()
 
-	defer func() {
-		runtime.PopInstance()
-		arwen.RemoveHostContext(idContext)
-	}()
-
 	gasForExecution := runtime.GetVMInput().GasProvided
 	err = runtime.CreateWasmerInstance(contract, gasForExecution)
 	if err != nil {
-		metering.UseGas(input.GasProvided)
+		runtime.PopInstance()
+		arwen.RemoveHostContext(idContext)
 		return err
 	}
 
 	runtime.SetInstanceContextId(idContext)
-
-	if host.isInitFunctionBeingCalled() {
-		return arwen.ErrInitFuncCalledInRun
-	}
 
 	// TODO replace with callSCMethod()?
 	exports := runtime.GetInstanceExports()
 	functionName := runtime.Function()
 	function, ok := exports[functionName]
 	if !ok {
+		runtime.PopInstance()
+		arwen.RemoveHostContext(idContext)
 		return arwen.ErrFuncNotFound
 	}
 
 	result, err := function()
 	if err != nil {
+		runtime.PopInstance()
+		arwen.RemoveHostContext(idContext)
 		return arwen.ErrFunctionRunError
 	}
 
@@ -304,12 +310,18 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 	}
 
 	if output.ReturnCode() != vmcommon.Ok {
+		runtime.PopInstance()
+		arwen.RemoveHostContext(idContext)
 		return arwen.ErrReturnCodeNotOk
 	}
 
 	metering.UnlockGasIfAsyncStep()
 
-	totalGasConsumed = input.GasProvided - gasForExecution - runtime.GetPointsUsed()
+	gasToRestoreToCaller := metering.GasLeft()
+
+	runtime.PopInstance()
+	metering.RestoreGas(gasToRestoreToCaller)
+	arwen.RemoveHostContext(idContext)
 
 	return nil
 }

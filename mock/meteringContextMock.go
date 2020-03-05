@@ -27,6 +27,9 @@ func (m *MeteringContextMock) UseGas(gas uint64) {
 func (m *MeteringContextMock) FreeGas(gas uint64) {
 }
 
+func (m *MeteringContextMock) RestoreGas(gas uint64) {
+}
+
 func (m *MeteringContextMock) GasLeft() uint64 {
 	return m.GasLeftMock
 }
