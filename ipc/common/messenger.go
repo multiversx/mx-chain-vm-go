@@ -63,8 +63,8 @@ func (messenger *Messenger) Receive(message Message, timeout int) error {
 	LogDebug("%s: Receive message...", messenger.Name)
 
 	if timeout != 0 {
-		messenger.setReceiveDeadline(timeout)
-		defer messenger.resetReceiveDeadline()
+		//messenger.setReceiveDeadline(timeout)
+		//defer messenger.resetReceiveDeadline()
 	}
 
 	length, err := messenger.receiveMessageLength()
