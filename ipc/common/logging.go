@@ -1,20 +1,19 @@
 package common
 
 import (
-	"encoding/json"
 	"fmt"
 )
 
 // LogDebug logs
 func LogDebug(format string, values ...interface{}) {
-	fmt.Printf(format+"\n", values...)
+	//fmt.Printf(format+"\n", values...)
 }
 
 // LogDebugJSON logs
 func LogDebugJSON(message string, value interface{}) {
-	jsonValue, _ := json.MarshalIndent(value, "", "\t")
-	fmt.Println(message)
-	fmt.Println(string(jsonValue))
+	// jsonValue, _ := json.MarshalIndent(value, "", "\t")
+	// fmt.Println(message)
+	// fmt.Println(string(jsonValue))
 }
 
 // LogError logs

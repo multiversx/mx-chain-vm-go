@@ -2,106 +2,97 @@ package common
 
 import (
 	"fmt"
-	"math/big"
-
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
-// Message is
-type Message interface {
+// MessageKind is
+type MessageKind uint32
+
+const (
+	FirstKind MessageKind = iota
+	Stop
+	ContractDeployRequest
+	ContractCallRequest
+	ContractResponse
+	BlockchainAccountExistsRequest
+	BlockchainAccountExistsResponse
+	BlockchainNewAddressRequest
+	BlockchainNewAddressResponse
+	BlockchainGetBalanceRequest
+	BlockchainGetBalanceResponse
+	BlockchainGetNonceRequest
+	BlockchainGetNonceResponse
+	BlockchainGetStorageDataRequest
+	BlockchainGetStorageDataResponse
+	BlockchainIsCodeEmptyRequest
+	BlockchainIsCodeEmptyResponse
+	BlockchainGetCodeRequest
+	BlockchainGetCodeResponse
+	BlockchainGetBlockhashRequest
+	BlockchainGetBlockhashResponse
+	BlockchainLastNonceRequest
+	BlockchainLastNonceResponse
+	BlockchainLastRoundRequest
+	BlockchainLastRoundResponse
+	BlockchainLastTimeStampRequest
+	BlockchainLastTimeStampResponse
+	BlockchainLastRandomSeedRequest
+	BlockchainLastRandomSeedResponse
+	BlockchainLastEpochRequest
+	BlockchainLastEpochResponse
+	BlockchainGetStateRootHashRequest
+	BlockchainGetStateRootHashResponse
+	BlockchainCurrentNonceRequest
+	BlockchainCurrentNonceResponse
+	BlockchainCurrentRoundRequest
+	BlockchainCurrentRoundResponse
+	BlockchainCurrentTimeStampRequest
+	BlockchainCurrentTimeStampResponse
+	BlockchainCurrentRandomSeedRequest
+	BlockchainCurrentRandomSeedResponse
+	BlockchainCurrentEpochRequest
+	BlockchainCurrentEpochResponse
+	LastKind
+)
+
+// MessageHandler is
+type MessageHandler interface {
 	GetNonce() uint32
 	SetNonce(nonce uint32)
+	GetKind() MessageKind
+	SetKind(kind MessageKind)
+	GetError() error
+	SetError(err error)
 }
 
-// ContractRequest is
-type ContractRequest struct {
-	Nonce       uint32
-	Action      string
-	CreateInput *vmcommon.ContractCreateInput
-	CallInput   *vmcommon.ContractCallInput
+// Message is
+type Message struct {
+	DialogueNonce uint32
+	Kind          MessageKind
+	ErrorMessage  string
 }
 
 // GetNonce gets
-func (request *ContractRequest) GetNonce() uint32 {
-	return request.Nonce
+func (message *Message) GetNonce() uint32 {
+	return message.DialogueNonce
 }
 
 // SetNonce sets
-func (request *ContractRequest) SetNonce(nonce uint32) {
-	request.Nonce = nonce
+func (message *Message) SetNonce(nonce uint32) {
+	message.DialogueNonce = nonce
 }
 
-func (request *ContractRequest) String() string {
-	return fmt.Sprintf("ContractRequest [%s]", request.Action)
+// GetKind gets
+func (message *Message) GetKind() MessageKind {
+	return message.Kind
 }
 
-// HookCallRequestOrContractResponse is
-type HookCallRequestOrContractResponse struct {
-	Type             string
-	Nonce            uint32
-	Hook             string
-	Function         string
-	Bytes1           []byte
-	Bytes2           []byte
-	Uint64_1         uint64
-	VMOutput         *vmcommon.VMOutput
-	ErrorMessage     string
-	HasCriticalError bool
+// SetKind sets
+func (message *Message) SetKind(kind MessageKind) {
+	message.Kind = kind
 }
 
-// NewHookCallRequest creates
-func NewHookCallRequest(hook string, function string) *HookCallRequestOrContractResponse {
-	return &HookCallRequestOrContractResponse{
-		Type:     "HookCallRequest",
-		Hook:     hook,
-		Function: function,
-	}
-}
-
-// NewContractResponse creates
-func NewContractResponse(vmOutput *vmcommon.VMOutput, err error) *HookCallRequestOrContractResponse {
-	var errorMessage string
-	if err != nil {
-		errorMessage = err.Error()
-	}
-
-	return &HookCallRequestOrContractResponse{
-		Type:         "ContractResponse",
-		VMOutput:     vmOutput,
-		ErrorMessage: errorMessage,
-	}
-}
-
-// NewCriticalError creates
-func NewCriticalError(errorMessage string) *HookCallRequestOrContractResponse {
-	return &HookCallRequestOrContractResponse{
-		ErrorMessage:     errorMessage,
-		HasCriticalError: true,
-	}
-}
-
-// IsHookCallRequest gets
-func (message *HookCallRequestOrContractResponse) IsHookCallRequest() bool {
-	return message.Type == "HookCallRequest"
-}
-
-// IsContractResponse gets
-func (message *HookCallRequestOrContractResponse) IsContractResponse() bool {
-	return message.Type == "ContractResponse"
-}
-
-// IsCriticalError returns
-func (message *HookCallRequestOrContractResponse) IsCriticalError() bool {
-	return message.HasCriticalError
-}
-
-// HasError returns
-func (message *HookCallRequestOrContractResponse) HasError() bool {
-	return message.ErrorMessage != ""
-}
-
-// GetError returns
-func (message *HookCallRequestOrContractResponse) GetError() error {
+// GetError gets
+func (message *Message) GetError() error {
 	if message.ErrorMessage == "" {
 		return nil
 	}
@@ -109,52 +100,49 @@ func (message *HookCallRequestOrContractResponse) GetError() error {
 	return fmt.Errorf(message.ErrorMessage)
 }
 
-// GetNonce gets
-func (message *HookCallRequestOrContractResponse) GetNonce() uint32 {
-	return message.Nonce
+// SetError sets
+func (message *Message) SetError(err error) {
+	if err != nil {
+		message.ErrorMessage = err.Error()
+	}
 }
 
-// SetNonce sets
-func (message *HookCallRequestOrContractResponse) SetNonce(nonce uint32) {
-	message.Nonce = nonce
+// MessageStop is
+type MessageStop struct {
+	Message
 }
 
-func (message *HookCallRequestOrContractResponse) String() string {
-	return fmt.Sprintf("[%s][%s]", message.Type, message.ErrorMessage)
+// NewMessageStop creates a message
+func NewMessageStop() *MessageStop {
+	message := &MessageStop{}
+	message.Kind = Stop
+	return message
 }
 
-// HookCallResponse is
-type HookCallResponse struct {
-	Nonce        uint32
-	ErrorMessage string
-	Bool1        bool
-	Bytes1       []byte
-	Bytes2       []byte
-	BigInt1      *big.Int
-	Uint64_1     uint64
-	Uint32_1     uint32
+// MessageCallback is a callback
+type MessageCallback func(MessageHandler) (MessageHandler, error)
+
+func noopHandler(message MessageHandler) (MessageHandler, error) {
+	panic("Noop handler called")
 }
 
-// HasError returns
-func (response *HookCallResponse) HasError() bool {
-	return response.ErrorMessage != ""
+// CreateHandlerSlots creates
+func CreateHandlerSlots() []MessageCallback {
+	slots := make([]MessageCallback, LastKind)
+	for i := 0; i < len(slots); i++ {
+		slots[i] = noopHandler
+	}
+
+	return slots
 }
 
-// GetError returns
-func (response *HookCallResponse) GetError() error {
-	return fmt.Errorf(response.ErrorMessage)
+// IsHookCallRequest returns
+func IsHookCallRequest(message MessageHandler) bool {
+	kind := message.GetKind()
+	return kind >= BlockchainAccountExistsRequest && kind <= BlockchainCurrentEpochResponse
 }
 
-// GetNonce gets
-func (response *HookCallResponse) GetNonce() uint32 {
-	return response.Nonce
-}
-
-// SetNonce sets
-func (response *HookCallResponse) SetNonce(nonce uint32) {
-	response.Nonce = nonce
-}
-
-func (response *HookCallResponse) String() string {
-	return fmt.Sprintf("[%s]", response.ErrorMessage)
+// IsContractResponse returns
+func IsContractResponse(message MessageHandler) bool {
+	return message.GetKind() == ContractResponse
 }

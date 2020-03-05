@@ -156,36 +156,30 @@ func (driver *ArwenDriver) restartArwenIfNecessary() error {
 func (driver *ArwenDriver) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (*vmcommon.VMOutput, error) {
 	driver.restartArwenIfNecessary()
 
-	request := &common.ContractRequest{
-		Action:      "Deploy",
-		CreateInput: input,
-	}
-
+	request := common.NewMessageContractDeployRequest(input)
 	response, err := driver.part.StartLoop(request)
 	if err != nil {
 		driver.stopArwen()
 		return nil, common.WrapCriticalError(err)
 	}
 
-	return response.VMOutput, response.GetError()
+	typedResponse := response.(*common.MessageContractResponse)
+	return typedResponse.VMOutput, response.GetError()
 }
 
 // RunSmartContractCall calls
 func (driver *ArwenDriver) RunSmartContractCall(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	driver.restartArwenIfNecessary()
 
-	request := &common.ContractRequest{
-		Action:    "Call",
-		CallInput: input,
-	}
-
+	request := common.NewMessageContractCallRequest(input)
 	response, err := driver.part.StartLoop(request)
 	if err != nil {
 		driver.stopArwen()
 		return nil, common.WrapCriticalError(err)
 	}
 
-	return response.VMOutput, response.GetError()
+	typedResponse := response.(*common.MessageContractResponse)
+	return typedResponse.VMOutput, response.GetError()
 }
 
 // TODO: func OnRoundEnded -> triggers Arwen restart.

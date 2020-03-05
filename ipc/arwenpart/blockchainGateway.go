@@ -27,16 +27,17 @@ func (blockchain *BlockchainHookGateway) AccountExists(address []byte) (bool, er
 
 // NewAddress forwards
 func (blockchain *BlockchainHookGateway) NewAddress(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error) {
-	request := common.NewHookCallRequest("blockchain", "NewAddress")
-	request.Bytes1 = creatorAddress
-	request.Uint64_1 = creatorNonce
-	request.Bytes2 = vmType
-	results, err := blockchain.messenger.SendHookCallRequest(request)
+	request := common.NewMessageBlockchainNewAddressRequest()
+	request.CreatorAddress = creatorAddress
+	request.CreatorNonce = creatorNonce
+	request.VMType = vmType
+	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
 	if err != nil {
 		return nil, err
 	}
 
-	return results.Bytes1, nil
+	response := rawResponse.(*common.MessageBlockchainNewAddressResponse)
+	return response.Address, response.GetError()
 }
 
 // GetBalance forwards
@@ -47,27 +48,29 @@ func (blockchain *BlockchainHookGateway) GetBalance(address []byte) (*big.Int, e
 
 // GetNonce forwards
 func (blockchain *BlockchainHookGateway) GetNonce(address []byte) (uint64, error) {
-	request := common.NewHookCallRequest("blockchain", "GetNonce")
-	request.Bytes1 = address
-	results, err := blockchain.messenger.SendHookCallRequest(request)
+	request := common.NewMessageBlockchainGetNonceRequest()
+	request.Address = address
+	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
 	if err != nil {
 		return 0, err
 	}
 
-	return results.Uint64_1, nil
+	response := rawResponse.(*common.MessageBlockchainGetNonceResponse)
+	return response.Nonce, response.GetError()
 }
 
 // GetStorageData forwards
 func (blockchain *BlockchainHookGateway) GetStorageData(accountAddress []byte, index []byte) ([]byte, error) {
-	request := common.NewHookCallRequest("blockchain", "GetStorageData")
-	request.Bytes1 = accountAddress
-	request.Bytes2 = index
-	results, err := blockchain.messenger.SendHookCallRequest(request)
+	request := common.NewMessageBlockchainGetStorageDataRequest()
+	request.Address = accountAddress
+	request.Index = index
+	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
 	if err != nil {
 		return nil, err
 	}
 
-	return results.Bytes1, nil
+	response := rawResponse.(*common.MessageBlockchainGetStorageDataResponse)
+	return response.Data, response.GetError()
 }
 
 // IsCodeEmpty forwards
@@ -78,14 +81,15 @@ func (blockchain *BlockchainHookGateway) IsCodeEmpty(address []byte) (bool, erro
 
 // GetCode forwards
 func (blockchain *BlockchainHookGateway) GetCode(address []byte) ([]byte, error) {
-	request := common.NewHookCallRequest("blockchain", "GetCode")
-	request.Bytes1 = address
-	results, err := blockchain.messenger.SendHookCallRequest(request)
+	request := common.NewMessageBlockchainGetCodeRequest()
+	request.Address = address
+	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
 	if err != nil {
 		return nil, err
 	}
 
-	return results.Bytes1, nil
+	response := rawResponse.(*common.MessageBlockchainGetCodeResponse)
+	return response.Code, response.GetError()
 }
 
 // GetBlockhash forwards

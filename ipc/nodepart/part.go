@@ -11,20 +11,29 @@ import (
 type NodePart struct {
 	Messenger  *NodeMessenger
 	blockchain vmcommon.BlockchainHook
+	Handlers   []common.MessageCallback
 }
 
 // NewNodePart creates
 func NewNodePart(input *os.File, output *os.File, blockchain vmcommon.BlockchainHook) (*NodePart, error) {
 	messenger := NewNodeMessenger(input, output)
 
-	return &NodePart{
+	part := &NodePart{
 		Messenger:  messenger,
 		blockchain: blockchain,
-	}, nil
+	}
+
+	part.Handlers = common.CreateHandlerSlots()
+	part.Handlers[common.BlockchainNewAddressRequest] = part.handleBlockchainNewAddress
+	part.Handlers[common.BlockchainGetNonceRequest] = part.handleBlockchainGetNonce
+	part.Handlers[common.BlockchainGetStorageDataRequest] = part.handleBlockchainGetStorageData
+	part.Handlers[common.BlockchainGetCodeRequest] = part.handleBlockchainGetCode
+
+	return part, nil
 }
 
 // StartLoop runs the main loop
-func (part *NodePart) StartLoop(request *common.ContractRequest) (*common.HookCallRequestOrContractResponse, error) {
+func (part *NodePart) StartLoop(request common.MessageHandler) (common.MessageHandler, error) {
 	part.Messenger.SendContractRequest(request)
 	response, err := part.doLoop()
 
@@ -36,7 +45,7 @@ func (part *NodePart) StartLoop(request *common.ContractRequest) (*common.HookCa
 // doLoop ends when processing the transaction ends or in the case of a critical failure
 // Critical failure = Arwen timeouts or crashes
 // The error result is set only in case of critical failure
-func (part *NodePart) doLoop() (*common.HookCallRequestOrContractResponse, error) {
+func (part *NodePart) doLoop() (common.MessageHandler, error) {
 	for {
 		// TODO: start with initial timeout, decrement with "time.Since".
 		// TODO: Allow a total max of 1 second (accumulated wait).
@@ -45,11 +54,7 @@ func (part *NodePart) doLoop() (*common.HookCallRequestOrContractResponse, error
 			return nil, err
 		}
 
-		if message.IsCriticalError() {
-			return nil, message.GetError()
-		}
-
-		if message.IsHookCallRequest() {
+		if common.IsHookCallRequest(message) {
 			err := part.handleHookCallRequest(message)
 			if err != nil {
 				return nil, err
@@ -58,7 +63,7 @@ func (part *NodePart) doLoop() (*common.HookCallRequestOrContractResponse, error
 			continue
 		}
 
-		if message.IsContractResponse() {
+		if common.IsContractResponse(message) {
 			return message, nil
 		}
 
@@ -66,47 +71,23 @@ func (part *NodePart) doLoop() (*common.HookCallRequestOrContractResponse, error
 	}
 }
 
-func (part *NodePart) handleHookCallRequest(request *common.HookCallRequestOrContractResponse) error {
-	hook := request.Hook
-	function := request.Function
+func (part *NodePart) handleHookCallRequest(request common.MessageHandler) error {
+	common.LogDebug("Node: handleHookCallRequest [%d]", request.GetKind())
 
-	common.LogDebug("Node: handleHookCallRequest, %s.%s()", hook, function)
-
-	response := &common.HookCallResponse{}
-	var hookError error
-
-	// TODO: Map (Slice, actually) of functions. Enum of functions, with iota.
-	if hook == "blockchain" {
-		switch function {
-		case "NewAddress":
-			response.Bytes1, hookError = part.blockchain.NewAddress(request.Bytes1, request.Uint64_1, request.Bytes2)
-		case "GetCode":
-			response.Bytes1, hookError = part.blockchain.GetCode(request.Bytes1)
-		case "GetNonce":
-			response.Uint64_1, hookError = part.blockchain.GetNonce(request.Bytes1)
-		case "GetStorageData":
-			response.Bytes1, hookError = part.blockchain.GetStorageData(request.Bytes1, request.Bytes2)
-		default:
-			common.LogError("unknown function hook: %s", function)
-		}
-	} else {
-		common.LogError("unknown hook: %s", hook)
+	handler := part.Handlers[request.GetKind()]
+	hookResponse, err := handler(request)
+	if err != nil {
+		return err
 	}
 
-	if hookError != nil {
-		response.ErrorMessage = hookError.Error()
-	}
-
-	err := part.Messenger.SendHookCallResponse(response)
+	err = part.Messenger.SendHookCallResponse(hookResponse)
 	return err
 }
 
 // SendStopSignal sends a stop signal to Arwen
 // Should only be used for tests!
 func (part *NodePart) SendStopSignal() error {
-	request := &common.ContractRequest{
-		Action: "Stop",
-	}
+	request := common.NewMessageStop()
 
 	err := part.Messenger.SendContractRequest(request)
 	if err != nil {
@@ -115,4 +96,36 @@ func (part *NodePart) SendStopSignal() error {
 
 	common.LogDebug("Node: sent stop signal to Arwen.")
 	return nil
+}
+
+func (part *NodePart) handleBlockchainNewAddress(request common.MessageHandler) (common.MessageHandler, error) {
+	typedRequest := request.(*common.MessageBlockchainNewAddressRequest)
+	address, err := part.blockchain.NewAddress(typedRequest.CreatorAddress, typedRequest.CreatorNonce, typedRequest.VMType)
+	response := common.NewMessageBlockchainNewAddressResponse(err)
+	response.Address = address
+	return response, err
+}
+
+func (part *NodePart) handleBlockchainGetNonce(request common.MessageHandler) (common.MessageHandler, error) {
+	typedRequest := request.(*common.MessageBlockchainGetNonceRequest)
+	nonce, err := part.blockchain.GetNonce(typedRequest.Address)
+	response := common.NewMessageBlockchainGetNonceResponse(err)
+	response.Nonce = nonce
+	return response, err
+}
+
+func (part *NodePart) handleBlockchainGetStorageData(request common.MessageHandler) (common.MessageHandler, error) {
+	typedRequest := request.(*common.MessageBlockchainGetStorageDataRequest)
+	data, err := part.blockchain.GetStorageData(typedRequest.Address, typedRequest.Index)
+	response := common.NewMessageBlockchainGetStorageDataResponse(err)
+	response.Data = data
+	return response, err
+}
+
+func (part *NodePart) handleBlockchainGetCode(request common.MessageHandler) (common.MessageHandler, error) {
+	typedRequest := request.(*common.MessageBlockchainGetCodeRequest)
+	code, err := part.blockchain.GetCode(typedRequest.Address)
+	response := common.NewMessageBlockchainGetCodeResponse(err)
+	response.Code = code
+	return response, err
 }

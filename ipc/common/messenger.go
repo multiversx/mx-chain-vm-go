@@ -28,7 +28,7 @@ func NewMessenger(name string, reader *os.File, writer *os.File) *Messenger {
 }
 
 // Send sends
-func (messenger *Messenger) Send(message Message) error {
+func (messenger *Messenger) Send(message MessageHandler) error {
 	messenger.Nonce++
 	message.SetNonce(messenger.Nonce)
 
@@ -37,7 +37,7 @@ func (messenger *Messenger) Send(message Message) error {
 		return err
 	}
 
-	err = messenger.sendMessageLength(dataBytes)
+	err = messenger.sendMessageLengthAndKind(len(dataBytes), message.GetKind())
 	if err != nil {
 		return err
 	}
@@ -51,15 +51,16 @@ func (messenger *Messenger) Send(message Message) error {
 	return err
 }
 
-func (messenger *Messenger) sendMessageLength(marshalizedMessage []byte) error {
-	buffer := make([]byte, 4)
-	binary.LittleEndian.PutUint32(buffer, uint32(len(marshalizedMessage)))
+func (messenger *Messenger) sendMessageLengthAndKind(length int, kind MessageKind) error {
+	buffer := make([]byte, 8)
+	binary.LittleEndian.PutUint32(buffer[0:4], uint32(length))
+	binary.LittleEndian.PutUint32(buffer[4:8], uint32(kind))
 	_, err := messenger.writer.Write(buffer)
 	return err
 }
 
 // Receive receives
-func (messenger *Messenger) Receive(message Message, timeout int) error {
+func (messenger *Messenger) Receive(timeout int) (MessageHandler, error) {
 	LogDebug("%s: Receive message...", messenger.Name)
 
 	if timeout != 0 {
@@ -67,31 +68,33 @@ func (messenger *Messenger) Receive(message Message, timeout int) error {
 		//defer messenger.resetReceiveDeadline()
 	}
 
-	length, err := messenger.receiveMessageLength()
+	length, kind, err := messenger.receiveMessageLengthAndKind()
 	if err != nil {
-		return err
+		return nil, err
 	}
+
+	message := CreateMessage(kind)
 
 	// Now read the body of [length]
 	buffer := make([]byte, length)
 	_, err = io.ReadFull(messenger.reader, buffer)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	err = messenger.unmarshal(buffer, message)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	LogDebug("[MSG %d] %s: RECEIVED message of size %d\n", message.GetNonce(), messenger.Name, length)
 	messageNonce := message.GetNonce()
 	if messageNonce != messenger.Nonce+1 {
-		return ErrInvalidMessageNonce
+		return nil, ErrInvalidMessageNonce
 	}
 
 	messenger.Nonce = messageNonce
-	return nil
+	return message, nil
 }
 
 func (messenger *Messenger) setReceiveDeadline(timeout int) {
@@ -104,15 +107,16 @@ func (messenger *Messenger) resetReceiveDeadline() {
 	messenger.reader.SetDeadline(time.Time{})
 }
 
-func (messenger *Messenger) receiveMessageLength() (int, error) {
-	buffer := make([]byte, 4)
+func (messenger *Messenger) receiveMessageLengthAndKind() (int, MessageKind, error) {
+	buffer := make([]byte, 8)
 	_, err := io.ReadFull(messenger.reader, buffer)
 	if err != nil {
-		return 0, err
+		return 0, FirstKind, err
 	}
 
-	length := binary.LittleEndian.Uint32(buffer)
-	return int(length), nil
+	length := binary.LittleEndian.Uint32(buffer[0:4])
+	kind := MessageKind(binary.LittleEndian.Uint32(buffer[4:8]))
+	return int(length), kind, nil
 }
 
 // Shutdown does

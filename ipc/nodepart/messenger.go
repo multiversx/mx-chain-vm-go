@@ -19,7 +19,7 @@ func NewNodeMessenger(reader *os.File, writer *os.File) *NodeMessenger {
 }
 
 // SendContractRequest sends
-func (messenger *NodeMessenger) SendContractRequest(request *common.ContractRequest) error {
+func (messenger *NodeMessenger) SendContractRequest(request common.MessageHandler) error {
 	err := messenger.Send(request)
 	if err != nil {
 		return common.ErrCannotSendContractRequest
@@ -30,7 +30,7 @@ func (messenger *NodeMessenger) SendContractRequest(request *common.ContractRequ
 }
 
 // SendHookCallResponse sends
-func (messenger *NodeMessenger) SendHookCallResponse(response *common.HookCallResponse) error {
+func (messenger *NodeMessenger) SendHookCallResponse(response common.MessageHandler) error {
 	err := messenger.Send(response)
 	if err != nil {
 		return common.ErrCannotSendHookCallResponse
@@ -41,10 +41,8 @@ func (messenger *NodeMessenger) SendHookCallResponse(response *common.HookCallRe
 }
 
 // ReceiveHookCallRequestOrContractResponse waits
-func (messenger *NodeMessenger) ReceiveHookCallRequestOrContractResponse(timeout int) (*common.HookCallRequestOrContractResponse, error) {
-	message := &common.HookCallRequestOrContractResponse{}
-
-	err := messenger.Receive(message, timeout)
+func (messenger *NodeMessenger) ReceiveHookCallRequestOrContractResponse(timeout int) (common.MessageHandler, error) {
+	message, err := messenger.Receive(timeout)
 	if err != nil {
 		return nil, err
 	}

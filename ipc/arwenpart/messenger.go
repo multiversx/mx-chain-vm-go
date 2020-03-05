@@ -19,19 +19,17 @@ func NewChildMessenger(reader *os.File, writer *os.File) *ChildMessenger {
 }
 
 // ReceiveContractRequest waits
-func (messenger *ChildMessenger) ReceiveContractRequest() (*common.ContractRequest, error) {
-	request := &common.ContractRequest{}
-
-	err := messenger.Receive(request, 0)
+func (messenger *ChildMessenger) ReceiveContractRequest() (common.MessageHandler, error) {
+	message, err := messenger.Receive(0)
 	if err != nil {
 		return nil, err
 	}
 
-	return request, nil
+	return message, nil
 }
 
 // SendContractResponse sends
-func (messenger *ChildMessenger) SendContractResponse(response *common.HookCallRequestOrContractResponse) error {
+func (messenger *ChildMessenger) SendContractResponse(response common.MessageHandler) error {
 	err := messenger.Send(response)
 	if err != nil {
 		return err
@@ -41,23 +39,17 @@ func (messenger *ChildMessenger) SendContractResponse(response *common.HookCallR
 }
 
 // SendHookCallRequest calls
-func (messenger *ChildMessenger) SendHookCallRequest(request *common.HookCallRequestOrContractResponse) (*common.HookCallResponse, error) {
-	common.LogDebug("%s: CallHook [%s.%s()]", messenger.Name, request.Hook, request.Function)
-
-	response := &common.HookCallResponse{}
+func (messenger *ChildMessenger) SendHookCallRequest(request common.MessageHandler) (common.MessageHandler, error) {
+	common.LogDebug("%s: CallHook [%d]", messenger.Name, request.GetKind())
 
 	err := messenger.Send(request)
 	if err != nil {
 		return nil, common.ErrCannotSendHookCallRequest
 	}
 
-	err = messenger.Receive(response, 0)
+	response, err := messenger.Receive(0)
 	if err != nil {
 		return nil, common.ErrCannotReceiveHookCallResponse
-	}
-
-	if response.HasError() {
-		return nil, response.GetError()
 	}
 
 	return response, nil
