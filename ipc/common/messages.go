@@ -102,6 +102,10 @@ func (message *HookCallRequestOrContractResponse) HasError() bool {
 
 // GetError returns
 func (message *HookCallRequestOrContractResponse) GetError() error {
+	if message.ErrorMessage == "" {
+		return nil
+	}
+
 	return fmt.Errorf(message.ErrorMessage)
 }
 
