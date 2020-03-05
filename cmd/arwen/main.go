@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -8,6 +9,8 @@ import (
 )
 
 func main() {
+	fmt.Println("Arwen.main()")
+
 	nodeToArwenFile := os.NewFile(3, "/proc/self/fd/3")
 	if nodeToArwenFile == nil {
 		log.Fatal("Cannot create file")
