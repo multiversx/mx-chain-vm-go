@@ -375,9 +375,19 @@ func (host *vmHost) callSCMethod() (wasmer.Value, error) {
 		}
 	}
 
+	if err == arwen.ErrSignalError {
+		output.SetReturnCode(vmcommon.UserError)
+		return wasmer.Void(), err
+	}
+
+	if err == arwen.ErrNotEnoughGas {
+		output.SetReturnCode(vmcommon.OutOfGas)
+		return wasmer.Void(), err
+	}
+
 	if err != nil {
-		result = wasmer.Void()
 		output.SetReturnCode(vmcommon.ExecutionFailed)
+		return wasmer.Void(), err
 	}
 
 	return result, err

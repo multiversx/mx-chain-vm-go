@@ -1,7 +1,6 @@
 package host
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"math/big"
@@ -32,35 +31,15 @@ func TestSCMem(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 
+	testString := "this is some random string of bytes"
 	expectedData := [][]byte{
-		[]byte("this is some random string of bytes"),
+		[]byte(testString),
 		[]byte{35},
 	}
+	for _, c := range testString {
+		expectedData = append(expectedData, []byte{byte(c)})
+	}
 	require.Equal(t, expectedData, vmOutput.ReturnData)
-}
-
-func TestChild(t *testing.T) {
-	code := GetTestSCCode("exec-same-ctx-child", "../../")
-	host, stubBlockchainHook := DefaultTestArwenForCall(t, code)
-	stubBlockchainHook.GetStorageDataCalled = func(address []byte, key []byte) ([]byte, error) {
-		if bytes.Equal(key, []byte("parentKeyA......................")) {
-			return []byte("parentDataA"), nil
-		}
-		if bytes.Equal(key, []byte("parentKeyB......................")) {
-			return []byte("parentDataB"), nil
-		}
-		return nil, nil
-	}
-	input := DefaultTestContractCallInput()
-	input.GasProvided = 100000
-	input.Function = "childFunction"
-	input.Arguments = [][]byte{
-		[]byte("qwerty"),
-		[]byte("asdff"),
-	}
-	vmOutput, err := host.RunSmartContractCall(input)
-	require.Nil(t, err)
-	require.Equal(t, [][]byte{}, vmOutput.ReturnData)
 }
 
 func TestExecution_DeployNewAddressErr(t *testing.T) {
@@ -284,6 +263,8 @@ func TestExecution_Call_Successful(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnSameContext_Simple(t *testing.T) {
+	t.Skip("test requires Wasmer update")
+
 	parentCode := GetTestSCCode("exec-same-ctx-simple-parent", "../../")
 	childCode := GetTestSCCode("exec-same-ctx-simple-child", "../../")
 	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
@@ -293,7 +274,6 @@ func TestExecution_ExecuteOnSameContext_Simple(t *testing.T) {
 	input.Function = "parentFunctionChildCall"
 	input.GasProvided = 1000000
 
-	fmt.Printf("\nExecuteOnSameContext_ChildCall\n")
 	vmOutput, err := host.RunSmartContractCall(input)
 	fmt.Println(vmOutput.ReturnMessage)
 	require.Nil(t, err)
@@ -303,58 +283,57 @@ func TestExecution_ExecuteOnSameContext_Simple(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnSameContext(t *testing.T) {
+	t.Skip("test requires Wasmer update")
+
 	parentCode := GetTestSCCode("exec-same-ctx-parent", "../../")
 
-	/*
-		// Execute the parent SC method "parentFunctionPrepare", which sets storage,
-		// finish data and performs a transfer. This step validates the test to the
-		// actual call to ExecuteOnSameContext().
-		host, _ := DefaultTestArwenForCall(t, parentCode)
-		input := DefaultTestContractCallInput()
-		input.CallerAddr = []byte("user")
-		input.RecipientAddr = firstAddress
-		input.Function = "parentFunctionPrepare"
-		input.GasProvided = 1000000
-
-		vmOutput, err := host.RunSmartContractCall(input)
-		require.Nil(t, err)
-		fmt.Println(vmOutput.ReturnMessage)
-		require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
-
-		expectedVMOutput := expectedVMOutputs("ExecuteOnSameContext_Prepare")
-		require.Equal(t, expectedVMOutput, vmOutput)
-
-		// Call parentFunctionWrongCall() of the parent SC, which will try to call a
-		// non-existing SC.
-		host, _ = DefaultTestArwenForCall(t, parentCode)
-		input = DefaultTestContractCallInput()
-		input.CallerAddr = []byte("user")
-		input.RecipientAddr = firstAddress
-		input.Function = "parentFunctionWrongCall"
-		input.GasProvided = 1000000
-
-		vmOutput, err = host.RunSmartContractCall(input)
-		require.Nil(t, err)
-		expectedVMOutput = expectedVMOutputs("ExecuteOnSameContext_WrongCall")
-		require.Equal(t, expectedVMOutput, vmOutput)
-
-		// Call parentFunctionChildCall() of the parent SC, which will call the child
-		// SC and pass some arguments using executeOnSameContext().
-		// TODO verify whether the child can access bigInts of the parent? the child
-		// shouldn't
-	*/
-	childCode := GetTestSCCode("exec-same-ctx-child", "../../")
-	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
+	// Execute the parent SC method "parentFunctionPrepare", which sets storage,
+	// finish data and performs a transfer. This step validates the test to the
+	// actual call to ExecuteOnSameContext().
+	host, _ := DefaultTestArwenForCall(t, parentCode)
 	input := DefaultTestContractCallInput()
+	input.CallerAddr = []byte("user")
+	input.RecipientAddr = firstAddress
+	input.Function = "parentFunctionPrepare"
+	input.GasProvided = 1000000
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	fmt.Println(vmOutput.ReturnMessage)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+
+	expectedVMOutput := expectedVMOutputs("ExecuteOnSameContext_Prepare")
+	require.Equal(t, expectedVMOutput, vmOutput)
+
+	// Call parentFunctionWrongCall() of the parent SC, which will try to call a
+	// non-existing SC.
+	host, _ = DefaultTestArwenForCall(t, parentCode)
+	input = DefaultTestContractCallInput()
+	input.CallerAddr = []byte("user")
+	input.RecipientAddr = firstAddress
+	input.Function = "parentFunctionWrongCall"
+	input.GasProvided = 1000000
+
+	vmOutput, err = host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	expectedVMOutput = expectedVMOutputs("ExecuteOnSameContext_WrongCall")
+	require.Equal(t, expectedVMOutput, vmOutput)
+
+	// Call parentFunctionChildCall() of the parent SC, which will call the child
+	// SC and pass some arguments using executeOnSameContext().
+	// TODO verify whether the child can access bigInts of the parent? the child
+	// shouldn't
+	childCode := GetTestSCCode("exec-same-ctx-child", "../../")
+	host, _ = DefaultTestArwenForTwoSCs(t, parentCode, childCode)
+	input = DefaultTestContractCallInput()
 	input.CallerAddr = []byte("user")
 	input.RecipientAddr = firstAddress
 	input.Function = "parentFunctionChildCall"
 	input.GasProvided = 1000000
 
-	fmt.Printf("\nExecuteOnSameContext_ChildCall\n")
-	vmOutput, err := host.RunSmartContractCall(input)
+	vmOutput, err = host.RunSmartContractCall(input)
 	require.Nil(t, err)
-	expectedVMOutput := expectedVMOutputs("ExecuteOnSameContext_ChildCall")
+	expectedVMOutput = expectedVMOutputs("ExecuteOnSameContext_ChildCall")
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 

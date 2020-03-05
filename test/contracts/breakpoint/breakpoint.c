@@ -4,9 +4,9 @@ void testFunc() {
   i64 arg = int64getArgument(0);
 
   if (arg == 1) {
-    char msg[] = "exit here";
+    byte msg[] = "exit here";
     signalError(msg, 9);
-    char msg2[] = "exit later";
+    byte msg2[] = "exit later";
     signalError(msg2, 10);
   } else {
     int64finish(100);

@@ -55,7 +55,6 @@ package elrondapi
 import "C"
 
 import (
-	"fmt"
 	"math/big"
 	"unsafe"
 
@@ -537,7 +536,6 @@ func storageGetValueLength(context unsafe.Pointer, keyOffset int32) int32 {
 	}
 
 	data := storage.GetStorage(key)
-	fmt.Printf("storageGetValueLength: %s → %s (%d)\n", key, data, len(data))
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.StorageLoad
 	metering.UseGas(gasToUse)
@@ -770,10 +768,7 @@ func returnData(context unsafe.Pointer, pointer int32, length int32) {
 	output := arwen.GetOutputContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	fmt.Printf("returnData pointer: %d, length: %d", pointer, length)
-
 	data, err := runtime.MemLoad(pointer, length)
-	fmt.Printf(", data: %s\n", data)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
@@ -908,7 +903,6 @@ func executeOnSameContext(
 		Function:      function,
 	}
 
-	fmt.Printf("\nExecute on same context\n")
 	err = host.ExecuteOnSameContext(contractCallInput)
 	if err != nil {
 		return 1
