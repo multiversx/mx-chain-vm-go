@@ -2,8 +2,6 @@ package contexts
 
 import (
 	"math/big"
-
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 )
 
 type bigIntContext struct {
@@ -32,18 +30,16 @@ func (context *bigIntContext) PushState() {
 	context.stateStack = append(context.stateStack, newState)
 }
 
-func (context *bigIntContext) PopState() error {
+func (context *bigIntContext) PopState() {
 	stateStackLen := len(context.stateStack)
-	if stateStackLen < 1 {
-		return arwen.StateStackUnderflow
-	}
-
 	prevState := context.stateStack[stateStackLen-1]
 	context.stateStack = context.stateStack[:stateStackLen-1]
 
 	context.mappedValues = prevState.mappedValues
+}
 
-	return nil
+func (context *bigIntContext) ClearStateStack() {
+	context.stateStack = make([]*bigIntContext, 0)
 }
 
 func (context *bigIntContext) Put(value int64) int32 {
@@ -69,31 +65,11 @@ func (context *bigIntContext) GetOne(id int32) *big.Int {
 }
 
 func (context *bigIntContext) GetTwo(id1 int32, id2 int32) (*big.Int, *big.Int) {
-	if _, ok := context.mappedValues[id1]; !ok {
-		context.mappedValues[id1] = big.NewInt(0)
-	}
-
-	if _, ok := context.mappedValues[id2]; !ok {
-		context.mappedValues[id2] = big.NewInt(0)
-	}
-
-	return context.mappedValues[id1], context.mappedValues[id2]
+	return context.GetOne(id1), context.GetOne(id2)
 }
 
 func (context *bigIntContext) GetThree(id1 int32, id2 int32, id3 int32) (*big.Int, *big.Int, *big.Int) {
-	if _, ok := context.mappedValues[id1]; !ok {
-		context.mappedValues[id1] = big.NewInt(0)
-	}
-
-	if _, ok := context.mappedValues[id2]; !ok {
-		context.mappedValues[id2] = big.NewInt(0)
-	}
-
-	if _, ok := context.mappedValues[id3]; !ok {
-		context.mappedValues[id3] = big.NewInt(0)
-	}
-
-	return context.mappedValues[id1], context.mappedValues[id2], context.mappedValues[id3]
+	return context.GetOne(id1), context.GetOne(id2), context.GetOne(id3)
 }
 
 func (context *bigIntContext) IsInterfaceNil() bool {

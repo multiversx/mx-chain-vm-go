@@ -5,13 +5,26 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common"
 )
 
 type StateStack interface {
 	InitState()
 	PushState()
-	PopState() error
+	PopState()
+	ClearStateStack()
+}
+
+// ArgumentsParser defines the functionality to parse transaction data into arguments and code for smart contracts
+type ArgumentsParser interface {
+	GetArguments() ([][]byte, error)
+	GetCode() ([]byte, error)
+	GetFunction() (string, error)
+	ParseData(data string) error
+
+	CreateDataFromStorageUpdate(storageUpdates []*vmcommon.StorageUpdate) string
+	GetStorageUpdates(data string) ([]*vmcommon.StorageUpdate, error)
+	IsInterfaceNil() bool
 }
 
 type VMHost interface {
@@ -27,7 +40,7 @@ type VMHost interface {
 
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContext(input *vmcommon.ContractCallInput) error
-	ExecuteOnDestContext(input *vmcommon.ContractCallInput) error
+	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
 	EthereumCallData() []byte
 }
 
@@ -58,6 +71,7 @@ type RuntimeContext interface {
 	StateStack
 
 	InitStateFromContractCallInput(input *vmcommon.ContractCallInput)
+	ArgParser() ArgumentsParser
 	GetVMInput() *vmcommon.VMInput
 	SetVMInput(vmInput *vmcommon.VMInput)
 	GetSCAddress() []byte
@@ -66,14 +80,18 @@ type RuntimeContext interface {
 	Function() string
 	Arguments() [][]byte
 	SignalUserError(message string)
-	SignalExit(exitCode int)
+	FailExecution(err error)
 	SetRuntimeBreakpointValue(value BreakpointValue)
 	GetRuntimeBreakpointValue() BreakpointValue
+	GetAsyncCallInfo() *AsyncCallInfo
+	SetAsyncCallInfo(asyncCallInfo *AsyncCallInfo)
 	PushInstance()
-	PopInstance() error
+	PopInstance()
+	ClearInstanceStack()
 	ReadOnly() bool
 	SetReadOnly(readOnly bool)
 	CreateWasmerInstance(contract []byte, gasLimit uint64) error
+	VerifyContractCode() error
 	SetInstanceContext(instCtx *wasmer.InstanceContext)
 	GetInstanceContext() *wasmer.InstanceContext
 	GetInstanceExports() wasmer.ExportsMap
@@ -85,6 +103,9 @@ type RuntimeContext interface {
 	MemLoad(offset int32, length int32) ([]byte, error)
 	CleanInstance()
 	SetInstanceContextId(id int)
+	ElrondAPIErrorShouldFailExecution() bool
+	CryptoAPIErrorShouldFailExecution() bool
+	BigIntAPIErrorShouldFailExecution() bool
 }
 
 type BigIntContext interface {
@@ -96,7 +117,6 @@ type BigIntContext interface {
 	GetThree(id1, id2, id3 int32) (*big.Int, *big.Int, *big.Int)
 }
 
-// TODO find a better name
 type OutputContext interface {
 	StateStack
 
@@ -114,7 +134,7 @@ type OutputContext interface {
 	ClearReturnData()
 	Finish(data []byte)
 	FinishValue(value wasmer.Value)
-	GetVMOutput(result wasmer.Value) *vmcommon.VMOutput
+	GetVMOutput() *vmcommon.VMOutput
 	AddTxValueToAccount(address []byte, value *big.Int)
 	DeployCode(address []byte, code []byte)
 	CreateVMOutputInCaseOfError(errCode vmcommon.ReturnCode, message string) *vmcommon.VMOutput
@@ -124,12 +144,14 @@ type MeteringContext interface {
 	GasSchedule() *config.GasCost
 	UseGas(gas uint64)
 	FreeGas(gas uint64)
+	RestoreGas(gas uint64)
 	GasLeft() uint64
 	BoundGasLimit(value int64) uint64
 	BlockGasLimit() uint64
-	DeductInitialGasForExecution(input *vmcommon.ContractCallInput, contract []byte) (uint64, error)
-	DeductInitialGasForDirectDeployment(input *vmcommon.ContractCreateInput) (uint64, error)
-	DeductInitialGasForIndirectDeployment(input *vmcommon.ContractCreateInput) (uint64, error)
+	DeductInitialGasForExecution(contract []byte) error
+	DeductInitialGasForDirectDeployment(input *vmcommon.ContractCreateInput) error
+	DeductInitialGasForIndirectDeployment(input *vmcommon.ContractCreateInput) error
+	UnlockGasIfAsyncStep()
 }
 
 type StorageContext interface {

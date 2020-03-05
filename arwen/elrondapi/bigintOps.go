@@ -176,7 +176,7 @@ func bigIntStorageStore(context unsafe.Pointer, keyOffset int32, source int32) i
 	metering := arwen.GetMeteringContext(context)
 
 	key, err := runtime.MemLoad(keyOffset, arwen.HashLen)
-	if withFault(err, context) {
+	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return 0
 	}
 
@@ -197,7 +197,7 @@ func bigIntStorageLoad(context unsafe.Pointer, keyOffset int32, destination int3
 	metering := arwen.GetMeteringContext(context)
 
 	key, err := runtime.MemLoad(keyOffset, arwen.HashLen)
-	if withFault(err, context) {
+	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return 0
 	}
 
@@ -234,7 +234,7 @@ func bigIntGetExternalBalance(context unsafe.Pointer, addressOffset int32, resul
 	metering := arwen.GetMeteringContext(context)
 
 	address, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
-	if withFault(err, context) {
+	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
 
@@ -280,7 +280,7 @@ func bigIntGetBytes(context unsafe.Pointer, reference int32, byteOffset int32) i
 	bytes := bigInt.GetOne(reference).Bytes()
 
 	err := runtime.MemStore(byteOffset, bytes)
-	if withFault(err, context) {
+	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return 0
 	}
 
@@ -298,7 +298,7 @@ func bigIntSetBytes(context unsafe.Pointer, destination int32, byteOffset int32,
 	metering := arwen.GetMeteringContext(context)
 
 	bytes, err := runtime.MemLoad(byteOffset, byteLength)
-	if withFault(err, context) {
+	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
 

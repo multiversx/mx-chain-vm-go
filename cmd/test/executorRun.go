@@ -116,6 +116,7 @@ func (te *arwenTestExecutor) Run(test *ij.Test) error {
 					Logs:            make([]*vmcommon.LogEntry, 0),
 				}
 			} else if tx.IsCreate {
+				// SC create
 				input := &vmi.ContractCreateInput{
 					ContractCode: []byte(tx.AssembledCode),
 					VMInput: vmi.VMInput{
@@ -133,6 +134,14 @@ func (te *arwenTestExecutor) Run(test *ij.Test) error {
 					return err
 				}
 			} else {
+				// SC call
+				recipient := world.AcctMap.GetAccount(tx.To)
+				if recipient == nil {
+					return fmt.Errorf("Tx recipient (address: %s) does not exist", hex.EncodeToString(tx.To))
+				}
+				if len(recipient.Code) == 0 {
+					return fmt.Errorf("Tx recipient (address: %s) is not a smart contract", hex.EncodeToString(tx.To))
+				}
 				input := &vmi.ContractCallInput{
 					RecipientAddr: tx.To,
 					Function:      tx.Function,

@@ -2,7 +2,6 @@ package contexts
 
 import (
 	"fmt"
-	"strconv"
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -22,11 +21,15 @@ type runtimeContext struct {
 
 	stateStack    []*runtimeContext
 	instanceStack []*wasmer.Instance
+
+	asyncCallInfo *arwen.AsyncCallInfo
+
+	argParser arwen.ArgumentsParser
+	validator *WASMValidator
 }
 
 func NewRuntimeContext(
 	host arwen.VMHost,
-	blockChainHook vmcommon.BlockchainHook,
 	vmType []byte,
 ) (*runtimeContext, error) {
 	context := &runtimeContext{
@@ -34,6 +37,7 @@ func NewRuntimeContext(
 		vmType:        vmType,
 		stateStack:    make([]*runtimeContext, 0),
 		instanceStack: make([]*wasmer.Instance, 0),
+		validator:     NewWASMValidator(),
 	}
 
 	context.InitState()
@@ -46,6 +50,8 @@ func (context *runtimeContext) InitState() {
 	context.scAddress = make([]byte, 0)
 	context.callFunction = ""
 	context.readOnly = false
+	context.argParser = vmcommon.NewAtArgumentParser()
+	context.asyncCallInfo = nil
 }
 
 func (context *runtimeContext) CreateWasmerInstance(contract []byte, gasLimit uint64) error {
@@ -66,39 +72,18 @@ func (context *runtimeContext) InitStateFromContractCallInput(input *vmcommon.Co
 
 func (context *runtimeContext) PushState() {
 	newState := &runtimeContext{
-		vmInput:      context.vmInput,
-		scAddress:    context.scAddress,
-		callFunction: context.callFunction,
-		readOnly:     context.readOnly,
+		vmInput:       context.vmInput,
+		scAddress:     context.scAddress,
+		callFunction:  context.callFunction,
+		readOnly:      context.readOnly,
+		asyncCallInfo: context.asyncCallInfo,
 	}
 
 	context.stateStack = append(context.stateStack, newState)
 }
 
-func (context *runtimeContext) PushInstance() {
-	context.instanceStack = append(context.instanceStack, context.instance)
-}
-
-func (context *runtimeContext) PopInstance() error {
-	instanceStackLen := len(context.instanceStack)
-	if instanceStackLen < 1 {
-		return arwen.InstanceStackUnderflow
-	}
-
-	prevInstance := context.instanceStack[instanceStackLen-1]
-	context.instanceStack = context.instanceStack[:instanceStackLen-1]
-
-	context.instance.Clean()
-	context.instance = prevInstance
-
-	return nil
-}
-
-func (context *runtimeContext) PopState() error {
+func (context *runtimeContext) PopState() {
 	stateStackLen := len(context.stateStack)
-	if stateStackLen < 1 {
-		return arwen.StateStackUnderflow
-	}
 
 	prevState := context.stateStack[stateStackLen-1]
 	context.stateStack = context.stateStack[:stateStackLen-1]
@@ -107,8 +92,32 @@ func (context *runtimeContext) PopState() error {
 	context.scAddress = prevState.scAddress
 	context.callFunction = prevState.callFunction
 	context.readOnly = prevState.readOnly
+	context.asyncCallInfo = prevState.asyncCallInfo
+}
 
-	return nil
+func (context *runtimeContext) ClearStateStack() {
+	context.stateStack = make([]*runtimeContext, 0)
+}
+
+func (context *runtimeContext) PushInstance() {
+	context.instanceStack = append(context.instanceStack, context.instance)
+}
+
+func (context *runtimeContext) PopInstance() {
+	instanceStackLen := len(context.instanceStack)
+	prevInstance := context.instanceStack[instanceStackLen-1]
+	context.instanceStack = context.instanceStack[:instanceStackLen-1]
+
+	context.CleanInstance()
+	context.instance = prevInstance
+}
+
+func (context *runtimeContext) ClearInstanceStack() {
+	context.instanceStack = make([]*wasmer.Instance, 0)
+}
+
+func (context *runtimeContext) ArgParser() arwen.ArgumentsParser {
+	return context.argParser
 }
 
 func (context *runtimeContext) GetVMType() []byte {
@@ -139,17 +148,21 @@ func (context *runtimeContext) Arguments() [][]byte {
 	return context.vmInput.Arguments
 }
 
-func (context *runtimeContext) SignalExit(exitCode int) {
-	context.host.Output().SetReturnCode(vmcommon.Ok)
-	message := strconv.Itoa(exitCode)
+func (context *runtimeContext) FailExecution(err error) {
+	context.host.Output().SetReturnCode(vmcommon.ExecutionFailed)
+
+	var message string
+	if err != nil {
+		message = err.Error()
+	} else {
+		message = "execution failed"
+	}
+
 	context.host.Output().SetReturnMessage(message)
-	context.SetRuntimeBreakpointValue(arwen.BreakpointSignalExit)
+	context.SetRuntimeBreakpointValue(arwen.BreakpointExecutionFailed)
 }
 
 func (context *runtimeContext) SignalUserError(message string) {
-	// SignalUserError() remains in Runtime, and won't be moved into Output,
-	// because there will be extra handling added here later, which requires
-	// information from Runtime (e.g. runtime breakpoints)
 	context.host.Output().SetReturnCode(vmcommon.UserError)
 	context.host.Output().SetReturnMessage(message)
 	context.SetRuntimeBreakpointValue(arwen.BreakpointSignalError)
@@ -161,6 +174,32 @@ func (context *runtimeContext) SetRuntimeBreakpointValue(value arwen.BreakpointV
 
 func (context *runtimeContext) GetRuntimeBreakpointValue() arwen.BreakpointValue {
 	return arwen.BreakpointValue(context.instance.GetBreakpointValue())
+}
+
+func (context *runtimeContext) VerifyContractCode() error {
+	err := context.validator.verifyMemoryDeclaration(context.instance)
+	if err != nil {
+		return err
+	}
+
+	err = context.validator.verifyFunctionsNames(context.instance)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (context *runtimeContext) ElrondAPIErrorShouldFailExecution() bool {
+	return true
+}
+
+func (context *runtimeContext) BigIntAPIErrorShouldFailExecution() bool {
+	return true
+}
+
+func (context *runtimeContext) CryptoAPIErrorShouldFailExecution() bool {
+	return true
 }
 
 func (context *runtimeContext) GetPointsUsed() uint64 {
@@ -196,38 +235,46 @@ func (context *runtimeContext) GetInstanceExports() wasmer.ExportsMap {
 }
 
 func (context *runtimeContext) CleanInstance() {
+	if context.instance == nil {
+		return
+	}
 	context.instance.Clean()
 	context.instance = nil
 }
 
 func (context *runtimeContext) GetFunctionToCall() (wasmer.ExportedFunctionCallback, error) {
 	exports := context.instance.Exports
-	function, ok := exports[context.callFunction]
-
-	if !ok {
-		function, ok = exports["main"]
+	if function, ok := exports[context.callFunction]; ok {
+		return function, nil
 	}
 
-	if !ok {
-		return nil, arwen.ErrFuncNotFound
+	if function, ok := exports["main"]; ok {
+		return function, nil
 	}
 
-	return function, nil
+	return nil, arwen.ErrFuncNotFound
 }
 
 func (context *runtimeContext) GetInitFunction() wasmer.ExportedFunctionCallback {
 	exports := context.instance.Exports
-	init, ok := exports[arwen.InitFunctionName]
 
-	if !ok {
-		init, ok = exports[arwen.InitFunctionNameEth]
+	if init, ok := exports[arwen.InitFunctionName]; ok {
+		return init
 	}
 
-	if !ok {
-		init = nil
+	if init, ok := exports[arwen.InitFunctionNameEth]; ok {
+		return init
 	}
 
-	return init
+	return nil
+}
+
+func (context *runtimeContext) SetAsyncCallInfo(asyncCallInfo *arwen.AsyncCallInfo) {
+	context.asyncCallInfo = asyncCallInfo
+}
+
+func (context *runtimeContext) GetAsyncCallInfo() *arwen.AsyncCallInfo {
+	return context.asyncCallInfo
 }
 
 func (context *runtimeContext) MemLoad(offset int32, length int32) ([]byte, error) {
@@ -241,10 +288,10 @@ func (context *runtimeContext) MemLoad(offset int32, length int32) ([]byte, erro
 	isLengthNegative := length < 0
 
 	if isOffsetTooSmall || isOffsetTooLarge {
-		return nil, fmt.Errorf("LoadBytes: bad bounds")
+		return nil, fmt.Errorf("mem load: %w", arwen.ErrBadBounds)
 	}
 	if isLengthNegative {
-		return nil, fmt.Errorf("LoadBytes: negative length")
+		return nil, fmt.Errorf("mem load: %w", arwen.ErrNegativeLength)
 	}
 
 	result := make([]byte, length)
@@ -267,7 +314,7 @@ func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 	isNewPageNecessary := requestedEnd > memoryLength
 
 	if isOffsetTooSmall {
-		return fmt.Errorf("StoreBytes: bad lower bounds")
+		return arwen.ErrBadLowerBounds
 	}
 	if isNewPageNecessary {
 		err := memory.Grow(1)
@@ -281,7 +328,7 @@ func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 
 	isRequestedEndTooLarge := requestedEnd > memoryLength
 	if isRequestedEndTooLarge {
-		return fmt.Errorf("StoreBytes: bad upper bounds")
+		return arwen.ErrBadUpperBounds
 	}
 
 	copy(memoryView[offset:requestedEnd], data)

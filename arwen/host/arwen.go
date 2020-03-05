@@ -10,7 +10,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/ethapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // TryFunction corresponds to the try() part of a try / catch block
@@ -59,7 +59,7 @@ func NewArwenVM(
 		return nil, err
 	}
 
-	host.runtimeContext, err = contexts.NewRuntimeContext(host, blockChainHook, vmType)
+	host.runtimeContext, err = contexts.NewRuntimeContext(host, vmType)
 	if err != nil {
 		return nil, err
 	}
@@ -163,23 +163,17 @@ func (host *vmHost) PushState() {
 	host.outputContext.PushState()
 }
 
-func (host *vmHost) PopState() error {
-	err := host.bigIntContext.PopState()
-	if err != nil {
-		return err
-	}
+func (host *vmHost) PopState() {
+	host.bigIntContext.PopState()
+	host.runtimeContext.PopState()
+	host.outputContext.PopState()
+}
 
-	err = host.runtimeContext.PopState()
-	if err != nil {
-		return err
-	}
-
-	err = host.outputContext.PopState()
-	if err != nil {
-		return err
-	}
-
-	return nil
+func (host *vmHost) ClearStateStack() {
+	host.bigIntContext.ClearStateStack()
+	host.runtimeContext.ClearStateStack()
+	host.runtimeContext.ClearInstanceStack()
+	host.outputContext.ClearStateStack()
 }
 
 func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error) {

@@ -3,13 +3,14 @@ package contexts
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common"
 )
 
 type meteringContext struct {
-	gasSchedule   *config.GasCost
-	blockGasLimit uint64
-	host          arwen.VMHost
+	gasSchedule           *config.GasCost
+	blockGasLimit         uint64
+	gasLockedForAsyncStep uint64
+	host                  arwen.VMHost
 }
 
 func NewMeteringContext(
@@ -24,9 +25,10 @@ func NewMeteringContext(
 	}
 
 	context := &meteringContext{
-		gasSchedule:   gasCostConfig,
-		blockGasLimit: blockGasLimit,
-		host:          host,
+		gasSchedule:           gasCostConfig,
+		blockGasLimit:         blockGasLimit,
+		gasLockedForAsyncStep: 0,
+		host:                  host,
 	}
 
 	return context, nil
@@ -41,6 +43,14 @@ func (context *meteringContext) UseGas(gas uint64) {
 	context.host.Runtime().SetPointsUsed(gasUsed)
 }
 
+func (context *meteringContext) RestoreGas(gas uint64) {
+	gasUsed := context.host.Runtime().GetPointsUsed()
+	if gas <= gasUsed {
+		gasUsed -= gas
+		context.host.Runtime().SetPointsUsed(gasUsed)
+	}
+}
+
 func (context *meteringContext) FreeGas(gas uint64) {
 	refund := context.host.Output().GetRefund() + gas
 	context.host.Output().SetRefund(refund)
@@ -49,6 +59,11 @@ func (context *meteringContext) FreeGas(gas uint64) {
 func (context *meteringContext) GasLeft() uint64 {
 	gasProvided := context.host.Runtime().GetVMInput().GasProvided
 	gasUsed := context.host.Runtime().GetPointsUsed()
+
+	if gasProvided < gasUsed {
+		return 0
+	}
+
 	return gasProvided - gasUsed
 }
 
@@ -58,58 +73,87 @@ func (context *meteringContext) BoundGasLimit(value int64) uint64 {
 
 	if gasLeft < limit {
 		return gasLeft
-	} else {
-		return limit
 	}
+	return limit
+}
+
+// deductAndLockGasIfAsyncStep will deduct the gas for an async step and also lock gas for the callback, if the execution is an asynchronous call
+func (context *meteringContext) deductAndLockGasIfAsyncStep() error {
+	context.gasLockedForAsyncStep = 0
+
+	input := context.host.Runtime().GetVMInput()
+	if input.CallType != vmcommon.AsynchronousCall {
+		return nil
+	}
+
+	gasSchedule := context.GasSchedule().ElrondAPICost
+
+	gasToLock := gasSchedule.AsyncCallStep + gasSchedule.AsyncCallbackGasLock
+	gasToDeduct := gasSchedule.AsyncCallStep + gasToLock
+	if input.GasProvided <= gasToDeduct {
+		return arwen.ErrNotEnoughGas
+	}
+	input.GasProvided -= gasToDeduct
+
+	context.gasLockedForAsyncStep = gasToLock
+
+	return nil
+}
+
+// UnlockGasIfAsyncStep will restore the previously locked gas, if the execution is an asynchronous call
+func (context *meteringContext) UnlockGasIfAsyncStep() {
+	input := context.host.Runtime().GetVMInput()
+	input.GasProvided += context.gasLockedForAsyncStep
+	context.gasLockedForAsyncStep = 0
 }
 
 func (context *meteringContext) BlockGasLimit() uint64 {
 	return context.blockGasLimit
 }
 
-func (context *meteringContext) DeductInitialGasForExecution(input *vmcommon.ContractCallInput, contract []byte) (uint64, error) {
-	remainingGas, err := context.deductInitialGas(
-		input.GasProvided,
-		contract,
-		0,
-		context.gasSchedule.BaseOperationCost.CompilePerByte,
-	)
-	return remainingGas, err
+// DeductInitialGasForExecution deducts gas for compilation and locks gas if the execution is an asynchronous call
+func (context *meteringContext) DeductInitialGasForExecution(contract []byte) error {
+	costPerByte := context.gasSchedule.BaseOperationCost.CompilePerByte
+	err := context.deductInitialGas(contract, 0, costPerByte)
+	if err != nil {
+		return err
+	}
+
+	return context.deductAndLockGasIfAsyncStep()
 }
 
-func (context *meteringContext) DeductInitialGasForDirectDeployment(input *vmcommon.ContractCreateInput) (uint64, error) {
-	remainingGas, err := context.deductInitialGas(
-		input.GasProvided,
+// DeductInitialGasForDirectDeployment deducts gas for the deployment of a contract initiated by a Transaction
+func (context *meteringContext) DeductInitialGasForDirectDeployment(input *vmcommon.ContractCreateInput) error {
+	return context.deductInitialGas(
 		input.ContractCode,
 		context.gasSchedule.ElrondAPICost.CreateContract,
 		context.gasSchedule.BaseOperationCost.StorePerByte,
 	)
-	return remainingGas, err
 }
 
-func (context *meteringContext) DeductInitialGasForIndirectDeployment(input *vmcommon.ContractCreateInput) (uint64, error) {
-	remainingGas, err := context.deductInitialGas(
-		input.GasProvided,
+// DeductInitialGasForIndirectDeployment deducts gas for the deployment of a contract initiated by another SmartContract
+func (context *meteringContext) DeductInitialGasForIndirectDeployment(input *vmcommon.ContractCreateInput) error {
+	return context.deductInitialGas(
 		input.ContractCode,
 		0,
 		context.gasSchedule.BaseOperationCost.StorePerByte,
 	)
-	return remainingGas, err
 }
 
 func (context *meteringContext) deductInitialGas(
-	gasProvided uint64,
 	code []byte,
 	baseCost uint64,
 	costPerByte uint64,
-) (uint64, error) {
+) error {
+	input := context.host.Runtime().GetVMInput()
 	codeLength := uint64(len(code))
 	codeCost := codeLength * costPerByte
 	initialCost := baseCost + codeCost
 
-	if initialCost > gasProvided {
-		return 0, arwen.ErrNotEnoughGas
+	if initialCost > input.GasProvided {
+		return arwen.ErrNotEnoughGas
 	}
 
-	return gasProvided - initialCost, nil
+	input.GasProvided -= initialCost
+	return nil
 }

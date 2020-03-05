@@ -53,6 +53,7 @@ func newVMOutputAccount(address []byte) *vmcommon.OutputAccount {
 		Address:        address,
 		Nonce:          0,
 		BalanceDelta:   big.NewInt(0),
+		Balance:        big.NewInt(0),
 		StorageUpdates: make(map[string]*vmcommon.StorageUpdate),
 	}
 }
@@ -63,11 +64,8 @@ func (context *outputContext) PushState() {
 	context.stateStack = append(context.stateStack, newState)
 }
 
-func (context *outputContext) PopState() error {
+func (context *outputContext) PopState() {
 	stateStackLen := len(context.stateStack)
-	if stateStackLen < 1 {
-		return arwen.StateStackUnderflow
-	}
 
 	// Merge the current state into the head of the stateStack,
 	// then pop the head of the stateStack into the current state.
@@ -79,8 +77,10 @@ func (context *outputContext) PopState() error {
 	mergeVMOutputs(prevState, context.outputState)
 	context.outputState = newVMOutput()
 	mergeVMOutputs(context.outputState, prevState)
+}
 
-	return nil
+func (context *outputContext) ClearStateStack() {
+	context.stateStack = make([]*vmcommon.VMOutput, 0)
 }
 
 func (context *outputContext) GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool) {
@@ -127,7 +127,7 @@ func (context *outputContext) ClearReturnData() {
 	context.outputState.ReturnData = make([][]byte, 0)
 }
 
-func (context *outputContext) SelfDestruct(addr []byte, beneficiary []byte) {
+func (context *outputContext) SelfDestruct(address []byte, beneficiary []byte) {
 	panic("not implemented")
 }
 
@@ -139,9 +139,7 @@ func (context *outputContext) Finish(data []byte) {
 
 func (context *outputContext) FinishValue(value wasmer.Value) {
 	if !value.IsVoid() {
-		convertedResult := arwen.ConvertReturnValue(value)
-		valueBytes := convertedResult.Bytes()
-
+		valueBytes := arwen.ConvertReturnValue(value)
 		context.Finish(valueBytes)
 	}
 }
@@ -177,8 +175,8 @@ func (context *outputContext) AddTxValueToAccount(address []byte, value *big.Int
 	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
 }
 
-// adapt vm output and all saved data from sc run into VM Output
-func (context *outputContext) GetVMOutput(result wasmer.Value) *vmcommon.VMOutput {
+// GetVMOutput updates the current VMOutput and returns it
+func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 	context.outputState.GasRemaining = context.host.Metering().GasLeft()
 	return context.outputState
 }
@@ -189,13 +187,18 @@ func (context *outputContext) DeployCode(address []byte, code []byte) {
 }
 
 func (context *outputContext) CreateVMOutputInCaseOfError(errCode vmcommon.ReturnCode, message string) *vmcommon.VMOutput {
-	vmOutput := &vmcommon.VMOutput{GasRemaining: 0, GasRefund: big.NewInt(0)}
-	vmOutput.ReturnCode = errCode
-	vmOutput.ReturnMessage = message
-	return vmOutput
+	return &vmcommon.VMOutput{
+		GasRemaining:  0,
+		GasRefund:     big.NewInt(0),
+		ReturnCode:    errCode,
+		ReturnMessage: message,
+	}
 }
 
 func mergeVMOutputs(leftOutput *vmcommon.VMOutput, rightOutput *vmcommon.VMOutput) {
+	if leftOutput.OutputAccounts == nil {
+		leftOutput.OutputAccounts = make(map[string]*vmcommon.OutputAccount)
+	}
 	for address, rightAccount := range rightOutput.OutputAccounts {
 		leftAccount, ok := leftOutput.OutputAccounts[address]
 		if !ok {
@@ -223,6 +226,9 @@ func mergeOutputAccounts(
 	leftAccount.GasLimit = rightAccount.GasLimit
 	mergeStorageUpdates(leftAccount, rightAccount)
 
+	if rightAccount.Balance != nil {
+		leftAccount.Balance = rightAccount.Balance
+	}
 	if leftAccount.BalanceDelta == nil {
 		leftAccount.BalanceDelta = big.NewInt(0)
 	}
