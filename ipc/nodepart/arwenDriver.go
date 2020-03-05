@@ -46,6 +46,8 @@ func NewArwenDriver(
 }
 
 func (driver *ArwenDriver) startArwen() error {
+	common.LogDebug("ArwenDriver.startArwen()")
+
 	driver.resetPipeStreams()
 
 	arwenPath, err := driver.getArwenPath()
@@ -142,7 +144,7 @@ func (driver *ArwenDriver) forceRestartArwen() error {
 func (driver *ArwenDriver) restartArwenIfNecessary() error {
 	state := driver.command.ProcessState
 	stopped := state != nil && state.Exited()
-	if stopped {
+	if !stopped {
 		return nil
 	}
 
