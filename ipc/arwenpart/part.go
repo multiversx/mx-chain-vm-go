@@ -60,8 +60,6 @@ func (part *ArwenPart) doLoop() error {
 		part.Messenger.SendContractResponse(response)
 		part.Messenger.EndDialogue()
 	}
-
-	return nil
 }
 
 func (part *ArwenPart) handleContractRequest(request *common.ContractRequest) (*common.HookCallRequestOrContractResponse, error) {
@@ -82,6 +80,7 @@ func (part *ArwenPart) handleContractRequest(request *common.ContractRequest) (*
 func (part *ArwenPart) doRunSmartContractCreate(request *common.ContractRequest) *common.HookCallRequestOrContractResponse {
 	vmOutput, err := part.VMHost.RunSmartContractCreate(request.CreateInput)
 	common.LogDebug("doRunSmartContractCreate, err=%v", err)
+	common.LogDebugJSON("VMOutput", vmOutput)
 	return common.NewContractResponse(vmOutput, err)
 }
 
