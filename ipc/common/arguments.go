@@ -64,5 +64,10 @@ func ParseArguments() (vmType []byte, blockGasLimit uint64, gasSchedule map[stri
 		return
 	}
 
+	errRemoveTemp := os.Remove(gasSchedulePath)
+	if errRemoveTemp != nil {
+		LogError("Could not remoce temporary file: %v", errRemoveTemp)
+	}
+
 	return
 }
