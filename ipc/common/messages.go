@@ -174,10 +174,10 @@ func NewMessageStop() *MessageStop {
 }
 
 // MessageCallback is a callback
-type MessageCallback func(MessageHandler) (MessageHandler, error)
+type MessageCallback func(MessageHandler) MessageHandler
 
-func noopHandler(message MessageHandler) (MessageHandler, error) {
-	panic("Noop handler called")
+func noopHandler(message MessageHandler) MessageHandler {
+	panic("NO-OP handler called")
 }
 
 // CreateHandlerSlots creates
@@ -194,6 +194,11 @@ func CreateHandlerSlots() []MessageCallback {
 func IsHookCallRequest(message MessageHandler) bool {
 	kind := message.GetKind()
 	return kind >= BlockchainAccountExistsRequest && kind <= BlockchainCurrentEpochResponse
+}
+
+// IsStopRequest returns
+func IsStopRequest(message MessageHandler) bool {
+	return message.GetKind() == Stop
 }
 
 // IsContractResponse returns

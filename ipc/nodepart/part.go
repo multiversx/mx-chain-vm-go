@@ -73,12 +73,8 @@ func (part *NodePart) doLoop() (common.MessageHandler, error) {
 
 func (part *NodePart) handleHookCallRequest(request common.MessageHandler) error {
 	handler := part.Handlers[request.GetKind()]
-	hookResponse, err := handler(request)
-	if err != nil {
-		return err
-	}
-
-	err = part.Messenger.SendHookCallResponse(hookResponse)
+	hookResponse := handler(request)
+	err := part.Messenger.SendHookCallResponse(hookResponse)
 	return err
 }
 
@@ -96,34 +92,34 @@ func (part *NodePart) SendStopSignal() error {
 	return nil
 }
 
-func (part *NodePart) handleBlockchainNewAddress(request common.MessageHandler) (common.MessageHandler, error) {
+func (part *NodePart) handleBlockchainNewAddress(request common.MessageHandler) common.MessageHandler {
 	typedRequest := request.(*common.MessageBlockchainNewAddressRequest)
 	address, err := part.blockchain.NewAddress(typedRequest.CreatorAddress, typedRequest.CreatorNonce, typedRequest.VMType)
 	response := common.NewMessageBlockchainNewAddressResponse(err)
 	response.Address = address
-	return response, nil
+	return response
 }
 
-func (part *NodePart) handleBlockchainGetNonce(request common.MessageHandler) (common.MessageHandler, error) {
+func (part *NodePart) handleBlockchainGetNonce(request common.MessageHandler) common.MessageHandler {
 	typedRequest := request.(*common.MessageBlockchainGetNonceRequest)
 	nonce, err := part.blockchain.GetNonce(typedRequest.Address)
 	response := common.NewMessageBlockchainGetNonceResponse(err)
 	response.Nonce = nonce
-	return response, nil
+	return response
 }
 
-func (part *NodePart) handleBlockchainGetStorageData(request common.MessageHandler) (common.MessageHandler, error) {
+func (part *NodePart) handleBlockchainGetStorageData(request common.MessageHandler) common.MessageHandler {
 	typedRequest := request.(*common.MessageBlockchainGetStorageDataRequest)
 	data, err := part.blockchain.GetStorageData(typedRequest.Address, typedRequest.Index)
 	response := common.NewMessageBlockchainGetStorageDataResponse(err)
 	response.Data = data
-	return response, nil
+	return response
 }
 
-func (part *NodePart) handleBlockchainGetCode(request common.MessageHandler) (common.MessageHandler, error) {
+func (part *NodePart) handleBlockchainGetCode(request common.MessageHandler) common.MessageHandler {
 	typedRequest := request.(*common.MessageBlockchainGetCodeRequest)
 	code, err := part.blockchain.GetCode(typedRequest.Address)
 	response := common.NewMessageBlockchainGetCodeResponse(err)
 	response.Code = code
-	return response, nil
+	return response
 }
