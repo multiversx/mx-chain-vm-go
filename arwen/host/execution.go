@@ -305,6 +305,7 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 		return arwen.ErrFunctionRunError
 	}
 
+	// TODO: replace with wrong signature error/return code *before* starting execution
 	if !result.IsVoid() {
 		return arwen.ErrFunctionReturnNotVoidError
 	}
@@ -340,6 +341,7 @@ func (host *vmHost) callInitFunction() error {
 		if err != nil {
 			return err
 		}
+		// TODO: replace with wrong signature error/return code *before* starting execution
 		if !result.IsVoid() {
 			return arwen.ErrFunctionReturnNotVoidError
 		}
@@ -368,6 +370,7 @@ func (host *vmHost) callSCMethod() (vmcommon.ReturnCode, error) {
 		}
 	}
 
+	// TODO: replace with wrong signature error/return code *before* starting executions
 	if !result.IsVoid() {
 		return vmcommon.UserError, arwen.ErrFunctionReturnNotVoidError
 	}
