@@ -54,6 +54,55 @@ const (
 	LastKind
 )
 
+var messageKindNameByID = map[MessageKind]string{}
+
+func init() {
+	messageKindNameByID[FirstKind] = "FirstKind"
+	messageKindNameByID[Stop] = "Stop"
+	messageKindNameByID[ContractDeployRequest] = "ContractDeployRequest"
+	messageKindNameByID[ContractCallRequest] = "ContractCallRequest"
+	messageKindNameByID[ContractResponse] = "ContractResponse"
+	messageKindNameByID[BlockchainAccountExistsRequest] = "BlockchainAccountExistsRequest"
+	messageKindNameByID[BlockchainAccountExistsResponse] = "BlockchainAccountExistsResponse"
+	messageKindNameByID[BlockchainNewAddressRequest] = "BlockchainNewAddressRequest"
+	messageKindNameByID[BlockchainNewAddressResponse] = "BlockchainNewAddressResponse"
+	messageKindNameByID[BlockchainGetBalanceRequest] = "BlockchainGetBalanceRequest"
+	messageKindNameByID[BlockchainGetBalanceResponse] = "BlockchainGetBalanceResponse"
+	messageKindNameByID[BlockchainGetNonceRequest] = "BlockchainGetNonceRequest"
+	messageKindNameByID[BlockchainGetNonceResponse] = "BlockchainGetNonceResponse"
+	messageKindNameByID[BlockchainGetStorageDataRequest] = "BlockchainGetStorageDataRequest"
+	messageKindNameByID[BlockchainGetStorageDataResponse] = "BlockchainGetStorageDataResponse"
+	messageKindNameByID[BlockchainIsCodeEmptyRequest] = "BlockchainIsCodeEmptyRequest"
+	messageKindNameByID[BlockchainIsCodeEmptyResponse] = "BlockchainIsCodeEmptyResponse"
+	messageKindNameByID[BlockchainGetCodeRequest] = "BlockchainGetCodeRequest"
+	messageKindNameByID[BlockchainGetCodeResponse] = "BlockchainGetCodeResponse"
+	messageKindNameByID[BlockchainGetBlockhashRequest] = "BlockchainGetBlockhashRequest"
+	messageKindNameByID[BlockchainGetBlockhashResponse] = "BlockchainGetBlockhashResponse"
+	messageKindNameByID[BlockchainLastNonceRequest] = "BlockchainLastNonceRequest"
+	messageKindNameByID[BlockchainLastNonceResponse] = "BlockchainLastNonceResponse"
+	messageKindNameByID[BlockchainLastRoundRequest] = "BlockchainLastRoundRequest"
+	messageKindNameByID[BlockchainLastRoundResponse] = "BlockchainLastRoundResponse"
+	messageKindNameByID[BlockchainLastTimeStampRequest] = "BlockchainLastTimeStampRequest"
+	messageKindNameByID[BlockchainLastTimeStampResponse] = "BlockchainLastTimeStampResponse"
+	messageKindNameByID[BlockchainLastRandomSeedRequest] = "BlockchainLastRandomSeedRequest"
+	messageKindNameByID[BlockchainLastRandomSeedResponse] = "BlockchainLastRandomSeedResponse"
+	messageKindNameByID[BlockchainLastEpochRequest] = "BlockchainLastEpochRequest"
+	messageKindNameByID[BlockchainLastEpochResponse] = "BlockchainLastEpochResponse"
+	messageKindNameByID[BlockchainGetStateRootHashRequest] = "BlockchainGetStateRootHashRequest"
+	messageKindNameByID[BlockchainGetStateRootHashResponse] = "BlockchainGetStateRootHashResponse"
+	messageKindNameByID[BlockchainCurrentNonceRequest] = "BlockchainCurrentNonceRequest"
+	messageKindNameByID[BlockchainCurrentNonceResponse] = "BlockchainCurrentNonceResponse"
+	messageKindNameByID[BlockchainCurrentRoundRequest] = "BlockchainCurrentRoundRequest"
+	messageKindNameByID[BlockchainCurrentRoundResponse] = "BlockchainCurrentRoundResponse"
+	messageKindNameByID[BlockchainCurrentTimeStampRequest] = "BlockchainCurrentTimeStampRequest"
+	messageKindNameByID[BlockchainCurrentTimeStampResponse] = "BlockchainCurrentTimeStampResponse"
+	messageKindNameByID[BlockchainCurrentRandomSeedRequest] = "BlockchainCurrentRandomSeedRequest"
+	messageKindNameByID[BlockchainCurrentRandomSeedResponse] = "BlockchainCurrentRandomSeedResponse"
+	messageKindNameByID[BlockchainCurrentEpochRequest] = "BlockchainCurrentEpochRequest"
+	messageKindNameByID[BlockchainCurrentEpochResponse] = "BlockchainCurrentEpochResponse"
+	messageKindNameByID[LastKind] = "LastKind"
+}
+
 // MessageHandler is
 type MessageHandler interface {
 	GetNonce() uint32
@@ -108,7 +157,8 @@ func (message *Message) SetError(err error) {
 }
 
 func (message *Message) String() string {
-	return fmt.Sprintf("[kind=%d nonce=%d err=%s]", message.Kind, message.DialogueNonce, message.ErrorMessage)
+	kindName, _ := messageKindNameByID[message.Kind]
+	return fmt.Sprintf("[kind=%s nonce=%d err=%s]", kindName, message.DialogueNonce, message.ErrorMessage)
 }
 
 // MessageStop is
