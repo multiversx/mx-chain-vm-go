@@ -2,6 +2,7 @@ package nodepart
 
 import (
 	"os"
+	"time"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 )
@@ -39,11 +40,13 @@ func (messenger *NodeMessenger) SendHookCallResponse(response common.MessageHand
 }
 
 // ReceiveHookCallRequestOrContractResponse waits
-func (messenger *NodeMessenger) ReceiveHookCallRequestOrContractResponse(timeout int) (common.MessageHandler, error) {
+func (messenger *NodeMessenger) ReceiveHookCallRequestOrContractResponse(timeout int) (common.MessageHandler, int, error) {
+	start := time.Now()
 	message, err := messenger.Receive(timeout)
+	duration := time.Since(start).Milliseconds()
 	if err != nil {
-		return nil, err
+		return nil, int(duration), err
 	}
 
-	return message, nil
+	return message, int(duration), nil
 }

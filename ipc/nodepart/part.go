@@ -46,10 +46,12 @@ func (part *NodePart) StartLoop(request common.MessageHandler) (common.MessageHa
 // Critical failure = Arwen timeouts or crashes
 // The error result is set only in case of critical failure
 func (part *NodePart) doLoop() (common.MessageHandler, error) {
+	const MaxLoopTime = 1000
+	remainingMilliseconds := MaxLoopTime
+
 	for {
-		// TODO: start with initial timeout, decrement with "time.Since".
-		// TODO: Allow a total max of 1 second (accumulated wait).
-		message, err := part.Messenger.ReceiveHookCallRequestOrContractResponse(1000)
+		message, duration, err := part.Messenger.ReceiveHookCallRequestOrContractResponse(remainingMilliseconds)
+		remainingMilliseconds -= duration
 		if err != nil {
 			return nil, err
 		}
