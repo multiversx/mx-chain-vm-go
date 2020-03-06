@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"syscall"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -142,14 +143,26 @@ func (driver *ArwenDriver) forceRestartArwen() error {
 }
 
 func (driver *ArwenDriver) restartArwenIfNecessary() error {
-	state := driver.command.ProcessState
-	stopped := state != nil && state.Exited()
-	if !stopped {
+	if !driver.IsStopped() {
 		return nil
 	}
 
 	err := driver.startArwen()
 	return err
+}
+
+// IsStopped returns
+func (driver *ArwenDriver) IsStopped() bool {
+	pid := driver.command.Process.Pid
+	process, err := os.FindProcess(pid)
+	if err != nil {
+		return true
+	}
+	err = process.Signal(syscall.Signal(0))
+	if err != nil {
+		return true
+	}
+	return false
 }
 
 // RunSmartContractCreate creates
@@ -184,6 +197,8 @@ func (driver *ArwenDriver) RunSmartContractCall(input *vmcommon.ContractCallInpu
 
 // DiagnoseWait calls
 func (driver *ArwenDriver) DiagnoseWait(milliseconds uint32) error {
+	driver.restartArwenIfNecessary()
+
 	request := common.NewMessageDiagnoseWaitRequest(milliseconds)
 	response, err := driver.part.StartLoop(request)
 	if err != nil {
@@ -208,11 +223,10 @@ func (driver *ArwenDriver) Close() error {
 
 func (driver *ArwenDriver) stopArwen() error {
 	err := driver.command.Process.Kill()
+	driver.command.Process.Wait()
 	if err != nil {
 		common.LogError("stopArwen error=%s", err)
 	}
 
 	return err
 }
-
-// TODO: Add test for arwen crash. Run Tx, force crash, Run Tx again.

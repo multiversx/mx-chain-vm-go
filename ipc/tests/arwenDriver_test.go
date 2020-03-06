@@ -26,9 +26,12 @@ func TestArwenDriver_DiagnoseWaitWithTimeout(t *testing.T) {
 	driver, err := nodepart.NewArwenDriver(blockchain, arwenVirtualMachine, uint64(10000000), config.MakeGasMap(1))
 	require.Nil(t, err)
 	require.NotNil(t, driver)
+	require.False(t, driver.IsStopped())
 	err = driver.DiagnoseWait(5000)
 	require.True(t, common.IsCriticalError(err))
 	require.Contains(t, err.Error(), "timeout")
+	require.True(t, driver.IsStopped())
 }
 
 // Test, restarts upon critical error
+// TODO: Add test for arwen crash. Run Tx, force crash, Run Tx again.
