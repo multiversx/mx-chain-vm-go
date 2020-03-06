@@ -1,11 +1,8 @@
 package tests
 
 import (
-	"fmt"
-	"io/ioutil"
 	"math/big"
 	"os"
-	"path/filepath"
 	"sync"
 	"testing"
 
@@ -25,18 +22,10 @@ type testFiles struct {
 	inputOfNode   *os.File
 }
 
-// func TestArwenPart_SendBadRequest(t *testing.T) {
-// 	blockchain := &mock.BlockChainHookStub{}
-
-// 	response, err := doContractRequest(t, "1", &common.ContractRequest{Action: "foobar"}, blockchain)
-// 	require.Nil(t, response)
-// 	require.Error(t, err, common.ErrBadRequestFromNode)
-// }
-
 func TestArwenPart_SendDeployRequest(t *testing.T) {
 	blockchain := &mock.BlockChainHookStub{}
 
-	response, err := doContractRequest(t, "2", createDeployRequest(), blockchain)
+	response, err := doContractRequest(t, "2", createDeployRequest(bytecodeCounter), blockchain)
 	require.NotNil(t, response)
 	require.Nil(t, err)
 }
@@ -53,7 +42,7 @@ func TestArwenPart_SendCallRequest(t *testing.T) {
 	blockchain := &mock.BlockChainHookStub{}
 
 	blockchain.GetCodeCalled = func(address []byte) ([]byte, error) {
-		return getSCCode("./../../test/contracts/counter.wasm"), nil
+		return bytecodeCounter, nil
 	}
 	response, err := doContractRequest(t, "3", createCallRequest("increment"), blockchain)
 	require.NotNil(t, response)
@@ -105,10 +94,7 @@ func createTestFiles(t *testing.T, tag string) testFiles {
 	return files
 }
 
-func createDeployRequest() common.MessageHandler {
-	path := "./../../test/contracts/counter.wasm"
-	code := getSCCode(path)
-
+func createDeployRequest(contractCode []byte) common.MessageHandler {
 	return common.NewMessageContractDeployRequest(&vmcommon.ContractCreateInput{
 		VMInput: vmcommon.VMInput{
 			CallerAddr:  []byte("me"),
@@ -117,17 +103,8 @@ func createDeployRequest() common.MessageHandler {
 			GasPrice:    100000000,
 			GasProvided: 2000000,
 		},
-		ContractCode: code,
+		ContractCode: contractCode,
 	})
-}
-
-func getSCCode(fileName string) []byte {
-	code, err := ioutil.ReadFile(filepath.Clean(fileName))
-	if err != nil {
-		panic(fmt.Sprintf("Cannot read file [%s].", fileName))
-	}
-
-	return code
 }
 
 func createCallRequest(function string) common.MessageHandler {
