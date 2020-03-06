@@ -64,9 +64,8 @@ func (driver *ArwenDriver) startArwen() error {
 	driver.command = exec.Command(arwenPath, arguments...)
 	driver.command.Stdout = os.Stdout
 	driver.command.Stderr = os.Stderr
-	// TODO: gasSchedule when starting Arwen
-
 	driver.command.ExtraFiles = []*os.File{driver.arwenInputRead, driver.arwenOutputWrite}
+
 	err = driver.command.Start()
 	if err != nil {
 		return err
