@@ -18,7 +18,6 @@ void parentFunctionChildCall() {
 	);
 	int64finish(result);
 
-	/*
 	result = executeOnSameContext(
 			200000,
 			childAddress,
@@ -30,7 +29,6 @@ void parentFunctionChildCall() {
 			0
 	);
 	int64finish(result);
-	*/
 	
 	byte msg[] = "parent";
 	finish(msg, 6);

@@ -263,8 +263,6 @@ func TestExecution_Call_Successful(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnSameContext_Simple(t *testing.T) {
-	t.Skip("test requires Wasmer update")
-
 	parentCode := GetTestSCCode("exec-same-ctx-simple-parent", "../../")
 	childCode := GetTestSCCode("exec-same-ctx-simple-child", "../../")
 	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
@@ -279,12 +277,9 @@ func TestExecution_ExecuteOnSameContext_Simple(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 	require.Equal(t, "", vmOutput.ReturnMessage)
-	fmt.Println(vmOutput.ReturnData)
 }
 
 func TestExecution_ExecuteOnSameContext(t *testing.T) {
-	t.Skip("test requires Wasmer update")
-
 	parentCode := GetTestSCCode("exec-same-ctx-parent", "../../")
 
 	// Execute the parent SC method "parentFunctionPrepare", which sets storage,
@@ -426,9 +421,17 @@ func expectedVMOutputs(id string) *vmcommon.VMOutput {
 	if id == "ExecuteOnSameContext_ChildCall" {
 		expectedVMOutput := expectedVMOutputs("ExecuteOnSameContext_Prepare")
 		AddFinishData(expectedVMOutput, childFinish)
+		AddFinishData(expectedVMOutput, parentDataA)
+		for _, c := range parentDataA {
+			AddFinishData(expectedVMOutput, []byte{byte(c)})
+		}
+		AddFinishData(expectedVMOutput, parentDataB)
+		for _, c := range parentDataB {
+			AddFinishData(expectedVMOutput, []byte{byte(c)})
+		}
 		AddFinishData(expectedVMOutput, []byte("child ok"))
 		AddFinishData(expectedVMOutput, []byte("success"))
-		expectedVMOutput.GasRemaining = 998206
+		expectedVMOutput.GasRemaining = 995702
 		parentAccount := expectedVMOutput.OutputAccounts[string(parentAddress)]
 		parentAccount.BalanceDelta = big.NewInt(-141)
 		_ = AddNewOutputAccount(

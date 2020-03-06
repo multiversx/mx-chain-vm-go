@@ -3,7 +3,6 @@
 byte bla[] = "bla bla bla bla bla bla bla bla";
 byte dataA[20] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 byte dataB[20] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-// byte dataB[1000] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 byte parentKeyA[] =  "parentKeyA......................";
 byte parentDataA[] = "parentDataA";
 byte parentKeyB[] =  "parentKeyB......................";
@@ -73,7 +72,6 @@ void childFunction() {
 	
 	int i;
 	int status = 0;
-	/*
 	for (i = 0; i < 11; i++) {
 		if (dataA[i] != parentDataA[i]) {
 			status = 1;
@@ -84,7 +82,6 @@ void childFunction() {
 			break;
 		}
 	}
-	*/
 
 	if (status == 0) {
 		byte msg[] = "child ok";
