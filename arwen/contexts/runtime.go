@@ -218,7 +218,10 @@ func (context *runtimeContext) SetReadOnly(readOnly bool) {
 	context.readOnly = readOnly
 }
 
+var ids []*int
+
 func (context *runtimeContext) SetInstanceContextId(id int) {
+	ids = append(ids, &id)
 	context.instance.SetContextData(unsafe.Pointer(&id))
 }
 
