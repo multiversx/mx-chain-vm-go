@@ -62,7 +62,7 @@ func doContractRequest(
 	wg.Add(2)
 
 	go func() {
-		part, err := arwenpart.NewArwenPart(files.inputOfArwen, files.outputOfArwen)
+		part, err := arwenpart.NewArwenPart(files.inputOfArwen, files.outputOfArwen, []byte{5, 0}, uint64(10000000))
 		assert.Nil(t, err)
 		part.StartLoop()
 		wg.Done()

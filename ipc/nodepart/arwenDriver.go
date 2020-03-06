@@ -56,10 +56,11 @@ func (driver *ArwenDriver) startArwen() error {
 		return err
 	}
 
-	driver.command = exec.Command(arwenPath)
+	arguments := common.PrepareArguments(driver.vmType, driver.blockGasLimit)
+	driver.command = exec.Command(arwenPath, arguments...)
 	driver.command.Stdout = os.Stdout
 	driver.command.Stderr = os.Stderr
-	// TODO: pass vmType, blockGasLimit and gasSchedule when starting Arwen
+	// TODO: gasSchedule when starting Arwen
 
 	driver.command.ExtraFiles = []*os.File{driver.arwenInputRead, driver.arwenOutputWrite}
 	err = driver.command.Start()

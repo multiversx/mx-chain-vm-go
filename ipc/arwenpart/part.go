@@ -18,15 +18,13 @@ type ArwenPart struct {
 }
 
 // NewArwenPart creates
-func NewArwenPart(input *os.File, output *os.File) (*ArwenPart, error) {
+func NewArwenPart(input *os.File, output *os.File, vmType []byte, blockGasLimit uint64) (*ArwenPart, error) {
 	messenger := NewChildMessenger(input, output)
 	blockchain := NewBlockchainHookGateway(messenger)
 	crypto := NewCryptoHookGateway()
-	arwenVirtualMachineType := []byte{5, 0} // TODO
-	blockGasLimit := uint64(10000000)       // TODO
-	gasSchedule := config.MakeGasMap(1)     // TODO
+	gasSchedule := config.MakeGasMap(1) // TODO
 
-	host, err := host.NewArwenVM(blockchain, crypto, arwenVirtualMachineType, blockGasLimit, gasSchedule)
+	host, err := host.NewArwenVM(blockchain, crypto, vmType, blockGasLimit, gasSchedule)
 	if err != nil {
 		return nil, err
 	}

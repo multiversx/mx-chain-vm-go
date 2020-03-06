@@ -29,6 +29,9 @@ func IsCriticalError(err error) bool {
 	return ok
 }
 
+// ErrBadArwenArguments signals a critical error
+var ErrBadArwenArguments = &CriticalError{InnerErr: fmt.Errorf("bad arguments passed to arwen")}
+
 // ErrArwenClosed signals a critical error
 var ErrArwenClosed = &CriticalError{InnerErr: fmt.Errorf("arwen closed")}
 
