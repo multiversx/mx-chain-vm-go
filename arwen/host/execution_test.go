@@ -149,6 +149,40 @@ func TestExecution_DeployWASM_Successful(t *testing.T) {
 	require.Equal(t, big.NewInt(88), vmOutput.OutputAccounts["new smartcontract"].BalanceDelta)
 }
 
+func TestExecution_ManyDeployments(t *testing.T) {
+	ownerNonce := uint64(23)
+	newAddress := "new smartcontract"
+	mockCryptoHook := &mock.CryptoHookMock{}
+	stubBlockchainHook := &mock.BlockchainHookStub{}
+	stubBlockchainHook.GetNonceCalled = func(address []byte) (uint64, error) {
+		return ownerNonce, nil
+	}
+	stubBlockchainHook.NewAddressCalled = func(creatorAddress []byte, nonce uint64, vmType []byte) ([]byte, error) {
+		ownerNonce += 1
+		return []byte(newAddress + " " + string(ownerNonce)), nil
+	}
+
+	host, _ := DefaultTestArwen(t, stubBlockchainHook, mockCryptoHook)
+	input := DefaultTestContractCreateInput()
+	input.CallerAddr = []byte("owner")
+	input.Arguments = make([][]byte, 0)
+	input.CallValue = big.NewInt(88)
+	input.ContractCode = GetTestSCCode("exec-same-ctx-child", "../../")
+
+	numDeployments := 35000
+	for i := 0; i < numDeployments; i++ {
+		input.GasProvided = 100000
+		vmOutput, err := host.RunSmartContractCreate(input)
+		require.Nil(t, err)
+		require.NotNil(t, vmOutput)
+		if vmOutput.ReturnCode != vmcommon.Ok {
+			fmt.Printf("Deployed %d SCs\n", i)
+			fmt.Printf(vmOutput.ReturnMessage)
+		}
+		require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+	}
+}
+
 func TestExecution_Deploy_DisallowFloatingPoint(t *testing.T) {
 	t.Parallel()
 
