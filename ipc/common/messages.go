@@ -173,18 +173,18 @@ func NewMessageStop() *MessageStop {
 	return message
 }
 
-// MessageCallback is a callback
-type MessageCallback func(MessageHandler) MessageHandler
+// MessageReplier is a callback
+type MessageReplier func(MessageHandler) MessageHandler
 
-func noopHandler(message MessageHandler) MessageHandler {
-	panic("NO-OP handler called")
+func noopReplier(message MessageHandler) MessageHandler {
+	panic("NO-OP replier called")
 }
 
-// CreateHandlerSlots creates
-func CreateHandlerSlots() []MessageCallback {
-	slots := make([]MessageCallback, LastKind)
+// CreateReplySlots creates
+func CreateReplySlots() []MessageReplier {
+	slots := make([]MessageReplier, LastKind)
 	for i := 0; i < len(slots); i++ {
-		slots[i] = noopHandler
+		slots[i] = noopReplier
 	}
 
 	return slots

@@ -11,7 +11,7 @@ import (
 type NodePart struct {
 	Messenger  *NodeMessenger
 	blockchain vmcommon.BlockchainHook
-	Handlers   []common.MessageCallback
+	Repliers   []common.MessageReplier
 }
 
 // NewNodePart creates
@@ -23,11 +23,11 @@ func NewNodePart(input *os.File, output *os.File, blockchain vmcommon.Blockchain
 		blockchain: blockchain,
 	}
 
-	part.Handlers = common.CreateHandlerSlots()
-	part.Handlers[common.BlockchainNewAddressRequest] = part.handleBlockchainNewAddress
-	part.Handlers[common.BlockchainGetNonceRequest] = part.handleBlockchainGetNonce
-	part.Handlers[common.BlockchainGetStorageDataRequest] = part.handleBlockchainGetStorageData
-	part.Handlers[common.BlockchainGetCodeRequest] = part.handleBlockchainGetCode
+	part.Repliers = common.CreateReplySlots()
+	part.Repliers[common.BlockchainNewAddressRequest] = part.replyToBlockchainNewAddress
+	part.Repliers[common.BlockchainGetNonceRequest] = part.replyToBlockchainGetNonce
+	part.Repliers[common.BlockchainGetStorageDataRequest] = part.replyToBlockchainGetStorageData
+	part.Repliers[common.BlockchainGetCodeRequest] = part.replyToBlockchainGetCode
 
 	return part, nil
 }
@@ -55,7 +55,7 @@ func (part *NodePart) doLoop() (common.MessageHandler, error) {
 		}
 
 		if common.IsHookCallRequest(message) {
-			err := part.handleHookCallRequest(message)
+			err := part.replyToHookCallRequest(message)
 			if err != nil {
 				return nil, err
 			}
@@ -71,9 +71,9 @@ func (part *NodePart) doLoop() (common.MessageHandler, error) {
 	}
 }
 
-func (part *NodePart) handleHookCallRequest(request common.MessageHandler) error {
-	handler := part.Handlers[request.GetKind()]
-	hookResponse := handler(request)
+func (part *NodePart) replyToHookCallRequest(request common.MessageHandler) error {
+	replier := part.Repliers[request.GetKind()]
+	hookResponse := replier(request)
 	err := part.Messenger.SendHookCallResponse(hookResponse)
 	return err
 }
@@ -92,7 +92,7 @@ func (part *NodePart) SendStopSignal() error {
 	return nil
 }
 
-func (part *NodePart) handleBlockchainNewAddress(request common.MessageHandler) common.MessageHandler {
+func (part *NodePart) replyToBlockchainNewAddress(request common.MessageHandler) common.MessageHandler {
 	typedRequest := request.(*common.MessageBlockchainNewAddressRequest)
 	address, err := part.blockchain.NewAddress(typedRequest.CreatorAddress, typedRequest.CreatorNonce, typedRequest.VMType)
 	response := common.NewMessageBlockchainNewAddressResponse(err)
@@ -100,7 +100,7 @@ func (part *NodePart) handleBlockchainNewAddress(request common.MessageHandler) 
 	return response
 }
 
-func (part *NodePart) handleBlockchainGetNonce(request common.MessageHandler) common.MessageHandler {
+func (part *NodePart) replyToBlockchainGetNonce(request common.MessageHandler) common.MessageHandler {
 	typedRequest := request.(*common.MessageBlockchainGetNonceRequest)
 	nonce, err := part.blockchain.GetNonce(typedRequest.Address)
 	response := common.NewMessageBlockchainGetNonceResponse(err)
@@ -108,7 +108,7 @@ func (part *NodePart) handleBlockchainGetNonce(request common.MessageHandler) co
 	return response
 }
 
-func (part *NodePart) handleBlockchainGetStorageData(request common.MessageHandler) common.MessageHandler {
+func (part *NodePart) replyToBlockchainGetStorageData(request common.MessageHandler) common.MessageHandler {
 	typedRequest := request.(*common.MessageBlockchainGetStorageDataRequest)
 	data, err := part.blockchain.GetStorageData(typedRequest.Address, typedRequest.Index)
 	response := common.NewMessageBlockchainGetStorageDataResponse(err)
@@ -116,7 +116,7 @@ func (part *NodePart) handleBlockchainGetStorageData(request common.MessageHandl
 	return response
 }
 
-func (part *NodePart) handleBlockchainGetCode(request common.MessageHandler) common.MessageHandler {
+func (part *NodePart) replyToBlockchainGetCode(request common.MessageHandler) common.MessageHandler {
 	typedRequest := request.(*common.MessageBlockchainGetCodeRequest)
 	code, err := part.blockchain.GetCode(typedRequest.Address)
 	response := common.NewMessageBlockchainGetCodeResponse(err)

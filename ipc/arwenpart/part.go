@@ -13,7 +13,7 @@ import (
 type ArwenPart struct {
 	Messenger *ChildMessenger
 	VMHost    vmcommon.VMExecutionHandler
-	Handlers  []common.MessageCallback
+	Repliers  []common.MessageReplier
 }
 
 // NewArwenPart creates
@@ -35,9 +35,9 @@ func NewArwenPart(input *os.File, output *os.File) (*ArwenPart, error) {
 		VMHost:    host,
 	}
 
-	part.Handlers = common.CreateHandlerSlots()
-	part.Handlers[common.ContractDeployRequest] = part.handleRunSmartContractCreate
-	part.Handlers[common.ContractCallRequest] = part.handleRunSmartContractCall
+	part.Repliers = common.CreateReplySlots()
+	part.Repliers[common.ContractDeployRequest] = part.replyToRunSmartContractCreate
+	part.Repliers[common.ContractCallRequest] = part.replyToRunSmartContractCall
 
 	return part, nil
 }
@@ -61,7 +61,7 @@ func (part *ArwenPart) doLoop() error {
 			return common.ErrStopPerNodeRequest
 		}
 
-		response := part.handleContractRequest(request)
+		response := part.replyToContractRequest(request)
 
 		// Successful execution, send response
 		part.Messenger.SendContractResponse(response)
@@ -69,19 +69,19 @@ func (part *ArwenPart) doLoop() error {
 	}
 }
 
-func (part *ArwenPart) handleContractRequest(request common.MessageHandler) common.MessageHandler {
-	common.LogDebug("[ARWEN]: handleContractRequest() %v", request)
-	handler := part.Handlers[request.GetKind()]
-	return handler(request)
+func (part *ArwenPart) replyToContractRequest(request common.MessageHandler) common.MessageHandler {
+	common.LogDebug("[ARWEN]: replyToContractRequest() %v", request)
+	replier := part.Repliers[request.GetKind()]
+	return replier(request)
 }
 
-func (part *ArwenPart) handleRunSmartContractCreate(request common.MessageHandler) common.MessageHandler {
+func (part *ArwenPart) replyToRunSmartContractCreate(request common.MessageHandler) common.MessageHandler {
 	typedRequest := request.(*common.MessageContractDeployRequest)
 	vmOutput, err := part.VMHost.RunSmartContractCreate(typedRequest.CreateInput)
 	return common.NewMessageContractResponse(vmOutput, err)
 }
 
-func (part *ArwenPart) handleRunSmartContractCall(request common.MessageHandler) common.MessageHandler {
+func (part *ArwenPart) replyToRunSmartContractCall(request common.MessageHandler) common.MessageHandler {
 	typedRequest := request.(*common.MessageContractCallRequest)
 	vmOutput, err := part.VMHost.RunSmartContractCall(typedRequest.CallInput)
 	return common.NewMessageContractResponse(vmOutput, err)
