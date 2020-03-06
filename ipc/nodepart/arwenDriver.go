@@ -1,10 +1,13 @@
 package nodepart
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path"
+	"strings"
 	"syscall"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
@@ -15,6 +18,7 @@ var _ vmcommon.VMExecutionHandler = (*ArwenDriver)(nil)
 
 // ArwenDriver is
 type ArwenDriver struct {
+	nodeLogger     common.NodeLogger
 	blockchainHook vmcommon.BlockchainHook
 	vmType         []byte
 	blockGasLimit  uint64
@@ -30,12 +34,14 @@ type ArwenDriver struct {
 
 // NewArwenDriver creates
 func NewArwenDriver(
+	nodeLogger common.NodeLogger,
 	blockchainHook vmcommon.BlockchainHook,
 	vmType []byte,
 	blockGasLimit uint64,
 	gasSchedule map[string]map[string]uint64,
 ) (*ArwenDriver, error) {
 	driver := &ArwenDriver{
+		nodeLogger:     nodeLogger,
 		blockchainHook: blockchainHook,
 		vmType:         vmType,
 		blockGasLimit:  blockGasLimit,
@@ -47,7 +53,7 @@ func NewArwenDriver(
 }
 
 func (driver *ArwenDriver) startArwen() error {
-	common.LogInfo("ArwenDriver.startArwen()")
+	driver.nodeLogger.Info("ArwenDriver.startArwen()")
 
 	driver.resetPipeStreams()
 
@@ -62,9 +68,17 @@ func (driver *ArwenDriver) startArwen() error {
 	}
 
 	driver.command = exec.Command(arwenPath, arguments...)
-	driver.command.Stdout = os.Stdout
-	driver.command.Stderr = os.Stderr
 	driver.command.ExtraFiles = []*os.File{driver.arwenInputRead, driver.arwenOutputWrite}
+
+	arwenStdout, err := driver.command.StdoutPipe()
+	if err != nil {
+		return err
+	}
+
+	arwenStderr, err := driver.command.StderrPipe()
+	if err != nil {
+		return err
+	}
 
 	err = driver.command.Start()
 	if err != nil {
@@ -76,12 +90,14 @@ func (driver *ArwenDriver) startArwen() error {
 		return err
 	}
 
+	driver.continuouslyCopyArwenLogs(arwenStdout, arwenStderr)
+
 	return nil
 }
 
 func (driver *ArwenDriver) getArwenPath() (string, error) {
 	arwenPath := os.Getenv("ARWEN_PATH")
-	common.LogInfo("ARWEN_PATH environment variable: %s", arwenPath)
+	driver.nodeLogger.Info("ARWEN_PATH environment variable: %s", arwenPath)
 
 	if fileExists(arwenPath) {
 		return arwenPath, nil
@@ -159,6 +175,8 @@ func (driver *ArwenDriver) IsClosed() bool {
 
 // RunSmartContractCreate creates
 func (driver *ArwenDriver) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (*vmcommon.VMOutput, error) {
+	driver.nodeLogger.Info("RunSmartContractCreate")
+
 	err := driver.restartArwenIfNecessary()
 	if err != nil {
 		return nil, common.WrapCriticalError(err)
@@ -177,6 +195,8 @@ func (driver *ArwenDriver) RunSmartContractCreate(input *vmcommon.ContractCreate
 
 // RunSmartContractCall calls
 func (driver *ArwenDriver) RunSmartContractCall(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+	driver.nodeLogger.Info("RunSmartContractCall")
+
 	err := driver.restartArwenIfNecessary()
 	if err != nil {
 		return nil, common.WrapCriticalError(err)
@@ -226,8 +246,37 @@ func (driver *ArwenDriver) stopArwen() error {
 	err := driver.command.Process.Kill()
 	driver.command.Process.Wait()
 	if err != nil {
-		common.LogError("stopArwen error=%s", err)
+		driver.nodeLogger.Error("stopArwen error=%s", err)
 	}
 
 	return err
+}
+
+func (driver *ArwenDriver) continuouslyCopyArwenLogs(arwenStdout io.Reader, arwenStderr io.Reader) {
+	stdoutReader := bufio.NewReader(arwenStdout)
+	stderrReader := bufio.NewReader(arwenStderr)
+
+	go func() {
+		for {
+			line, err := stdoutReader.ReadString('\n')
+			if err != nil {
+				break
+			}
+
+			line = strings.TrimSpace(line)
+			driver.nodeLogger.Info(line)
+		}
+	}()
+
+	go func() {
+		for {
+			line, err := stderrReader.ReadString('\n')
+			if err != nil {
+				break
+			}
+
+			line = strings.TrimSpace(line)
+			driver.nodeLogger.Error(line)
+		}
+	}()
 }
