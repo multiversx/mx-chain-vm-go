@@ -143,7 +143,7 @@ func (driver *ArwenDriver) forceRestartArwen() error {
 }
 
 func (driver *ArwenDriver) restartArwenIfNecessary() error {
-	if !driver.IsStopped() {
+	if !driver.IsClosed() {
 		return nil
 	}
 
@@ -151,8 +151,8 @@ func (driver *ArwenDriver) restartArwenIfNecessary() error {
 	return err
 }
 
-// IsStopped returns
-func (driver *ArwenDriver) IsStopped() bool {
+// IsClosed returns
+func (driver *ArwenDriver) IsClosed() bool {
 	pid := driver.command.Process.Pid
 	process, err := os.FindProcess(pid)
 	if err != nil {

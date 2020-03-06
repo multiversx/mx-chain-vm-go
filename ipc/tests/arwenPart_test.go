@@ -1,7 +1,6 @@
 package tests
 
 import (
-	"math/big"
 	"os"
 	"sync"
 	"testing"
@@ -95,28 +94,9 @@ func createTestFiles(t *testing.T, tag string) testFiles {
 }
 
 func createDeployRequest(contractCode []byte) common.MessageHandler {
-	return common.NewMessageContractDeployRequest(&vmcommon.ContractCreateInput{
-		VMInput: vmcommon.VMInput{
-			CallerAddr:  []byte("me"),
-			Arguments:   [][]byte{},
-			CallValue:   big.NewInt(0),
-			GasPrice:    100000000,
-			GasProvided: 2000000,
-		},
-		ContractCode: contractCode,
-	})
+	return common.NewMessageContractDeployRequest(createDeployInput(contractCode))
 }
 
 func createCallRequest(function string) common.MessageHandler {
-	return common.NewMessageContractCallRequest(&vmcommon.ContractCallInput{
-		VMInput: vmcommon.VMInput{
-			CallerAddr:  []byte("me"),
-			Arguments:   [][]byte{},
-			CallValue:   big.NewInt(0),
-			GasPrice:    100000000,
-			GasProvided: 2000000,
-		},
-		RecipientAddr: []byte("contract"),
-		Function:      function,
-	})
+	return common.NewMessageContractCallRequest(createCallInput(function))
 }
