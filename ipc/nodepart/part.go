@@ -54,7 +54,7 @@ func (part *NodePart) doLoop() (common.MessageHandler, error) {
 			return nil, err
 		}
 
-		if common.IsHookCallRequest(message) {
+		if common.IsHookCall(message) {
 			err := part.replyToHookCallRequest(message)
 			if err != nil {
 				return nil, err
@@ -64,6 +64,9 @@ func (part *NodePart) doLoop() (common.MessageHandler, error) {
 		}
 
 		if common.IsContractResponse(message) {
+			return message, nil
+		}
+		if common.IsDiagnose(message) {
 			return message, nil
 		}
 

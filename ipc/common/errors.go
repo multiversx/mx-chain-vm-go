@@ -1,52 +1,60 @@
 package common
 
 import (
-	"errors"
 	"fmt"
 )
 
-// ErrCriticalError signals a critical error
-var ErrCriticalError = fmt.Errorf("critical error")
-
-// ErrArwenTimeout signals a critical error
-var ErrArwenTimeout = fmt.Errorf("%w: arwen timeout", ErrCriticalError)
-
-// ErrArwenClosed signals a critical error
-var ErrArwenClosed = fmt.Errorf("%w: arwen closed", ErrCriticalError)
-
-// ErrArwenNotFound signals a critical error
-var ErrArwenNotFound = fmt.Errorf("%w: arwen binary not found", ErrCriticalError)
-
-// ErrInvalidMessageNonce signals a critical error
-var ErrInvalidMessageNonce = fmt.Errorf("%w: invalid nonce in message", ErrCriticalError)
-
-// ErrStopPerNodeRequest signals a critical error
-var ErrStopPerNodeRequest = fmt.Errorf("%w: will stop, as node requested", ErrCriticalError)
-
-// ErrBadRequestFromNode signals a critical error
-var ErrBadRequestFromNode = fmt.Errorf("%w: bad request from node", ErrCriticalError)
-
-// ErrBadMessageFromArwen signals a critical error
-var ErrBadMessageFromArwen = fmt.Errorf("%w: bad message from Arwen", ErrCriticalError)
-
-// ErrCannotSendContractRequest signals a critical error
-var ErrCannotSendContractRequest = fmt.Errorf("%w: cannot send contract request", ErrCriticalError)
-
-// ErrCannotSendHookCallResponse signals a critical error
-var ErrCannotSendHookCallResponse = fmt.Errorf("%w: cannot hook call response", ErrCriticalError)
-
-// ErrCannotSendHookCallRequest signals a critical error
-var ErrCannotSendHookCallRequest = fmt.Errorf("%w: cannot send hook call request", ErrCriticalError)
-
-// ErrCannotReceiveHookCallResponse signals a critical error
-var ErrCannotReceiveHookCallResponse = fmt.Errorf("%w: cannot receive hook call response", ErrCriticalError)
-
-// IsCriticalError returns whether the error is critical
-func IsCriticalError(err error) bool {
-	return errors.Is(err, ErrCriticalError)
+// CriticalError signals a critical error
+type CriticalError struct {
+	InnerErr error
 }
 
 // WrapCriticalError wraps an error
-func WrapCriticalError(err error) error {
-	return fmt.Errorf("%w: %v", ErrCriticalError, err)
+func WrapCriticalError(err error) *CriticalError {
+	return &CriticalError{InnerErr: err}
 }
+
+func (err *CriticalError) Error() string {
+	return fmt.Sprintf("critical error: %v", err.InnerErr)
+}
+
+// Unwrap unwraps
+func (err *CriticalError) Unwrap() error {
+	return err.InnerErr
+}
+
+// IsCriticalError returns whether the error is critical
+func IsCriticalError(err error) bool {
+	_, ok := err.(*CriticalError)
+	return ok
+}
+
+// ErrArwenClosed signals a critical error
+var ErrArwenClosed = &CriticalError{InnerErr: fmt.Errorf("arwen closed")}
+
+// ErrArwenNotFound signals a critical error
+var ErrArwenNotFound = &CriticalError{InnerErr: fmt.Errorf("arwen binary not found")}
+
+// ErrInvalidMessageNonce signals a critical error
+var ErrInvalidMessageNonce = &CriticalError{InnerErr: fmt.Errorf("invalid dialogue nonce")}
+
+// ErrStopPerNodeRequest signals a critical error
+var ErrStopPerNodeRequest = &CriticalError{InnerErr: fmt.Errorf("arwen will stop, as requested")}
+
+// ErrBadRequestFromNode signals a critical error
+var ErrBadRequestFromNode = &CriticalError{InnerErr: fmt.Errorf("bad message from node")}
+
+// ErrBadMessageFromArwen signals a critical error
+var ErrBadMessageFromArwen = &CriticalError{InnerErr: fmt.Errorf("bad message from arwen")}
+
+// ErrCannotSendContractRequest signals a critical error
+var ErrCannotSendContractRequest = &CriticalError{InnerErr: fmt.Errorf("cannot send contract request")}
+
+// ErrCannotSendHookCallResponse signals a critical error
+var ErrCannotSendHookCallResponse = &CriticalError{InnerErr: fmt.Errorf("cannot send hook call response")}
+
+// ErrCannotSendHookCallRequest signals a critical error
+var ErrCannotSendHookCallRequest = &CriticalError{InnerErr: fmt.Errorf("cannot send hook call request")}
+
+// ErrCannotReceiveHookCallResponse signals a critical error
+var ErrCannotReceiveHookCallResponse = &CriticalError{InnerErr: fmt.Errorf("cannot receive hook call response")}

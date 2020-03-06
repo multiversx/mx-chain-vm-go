@@ -91,6 +91,10 @@ func CreateMessage(kind MessageKind) MessageHandler {
 		message = &MessageBlockchainCurrentEpochRequest{}
 	case BlockchainCurrentEpochResponse:
 		message = &MessageBlockchainCurrentEpochResponse{}
+	case DiagnoseWaitRequest:
+		message = &MessageDiagnoseWaitRequest{}
+	case DiagnoseWaitResponse:
+		message = &MessageDiagnoseWaitResponse{}
 	default:
 		panic(fmt.Sprintf("Unknown message kind [%d]", kind))
 	}

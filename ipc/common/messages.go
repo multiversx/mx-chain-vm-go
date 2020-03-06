@@ -51,6 +51,8 @@ const (
 	BlockchainCurrentRandomSeedResponse
 	BlockchainCurrentEpochRequest
 	BlockchainCurrentEpochResponse
+	DiagnoseWaitRequest
+	DiagnoseWaitResponse
 	LastKind
 )
 
@@ -100,6 +102,8 @@ func init() {
 	messageKindNameByID[BlockchainCurrentRandomSeedResponse] = "BlockchainCurrentRandomSeedResponse"
 	messageKindNameByID[BlockchainCurrentEpochRequest] = "BlockchainCurrentEpochRequest"
 	messageKindNameByID[BlockchainCurrentEpochResponse] = "BlockchainCurrentEpochResponse"
+	messageKindNameByID[DiagnoseWaitRequest] = "DiagnoseWaitRequest"
+	messageKindNameByID[DiagnoseWaitResponse] = "DiagnoseWaitResponse"
 	messageKindNameByID[LastKind] = "LastKind"
 }
 
@@ -190,8 +194,8 @@ func CreateReplySlots() []MessageReplier {
 	return slots
 }
 
-// IsHookCallRequest returns
-func IsHookCallRequest(message MessageHandler) bool {
+// IsHookCall returns
+func IsHookCall(message MessageHandler) bool {
 	kind := message.GetKind()
 	return kind >= BlockchainAccountExistsRequest && kind <= BlockchainCurrentEpochResponse
 }
@@ -204,4 +208,10 @@ func IsStopRequest(message MessageHandler) bool {
 // IsContractResponse returns
 func IsContractResponse(message MessageHandler) bool {
 	return message.GetKind() == ContractResponse
+}
+
+// IsDiagnose returns
+func IsDiagnose(message MessageHandler) bool {
+	kind := message.GetKind()
+	return kind >= DiagnoseWaitRequest && kind <= DiagnoseWaitResponse
 }

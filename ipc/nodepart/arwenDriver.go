@@ -182,6 +182,18 @@ func (driver *ArwenDriver) RunSmartContractCall(input *vmcommon.ContractCallInpu
 	return typedResponse.VMOutput, response.GetError()
 }
 
+// DiagnoseWait calls
+func (driver *ArwenDriver) DiagnoseWait(milliseconds uint32) error {
+	request := common.NewMessageDiagnoseWaitRequest(milliseconds)
+	response, err := driver.part.StartLoop(request)
+	if err != nil {
+		driver.stopArwen()
+		return common.WrapCriticalError(err)
+	}
+
+	return response.GetError()
+}
+
 // TODO: func OnRoundEnded -> triggers Arwen restart.
 
 // Close stops Arwen

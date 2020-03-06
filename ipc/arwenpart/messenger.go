@@ -18,8 +18,8 @@ func NewChildMessenger(reader *os.File, writer *os.File) *ChildMessenger {
 	}
 }
 
-// ReceiveContractRequest waits
-func (messenger *ChildMessenger) ReceiveContractRequest() (common.MessageHandler, error) {
+// ReceiveNodeRequest waits
+func (messenger *ChildMessenger) ReceiveNodeRequest() (common.MessageHandler, error) {
 	message, err := messenger.Receive(0)
 	if err != nil {
 		return nil, err
