@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
-	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -18,11 +17,10 @@ type ArwenPart struct {
 }
 
 // NewArwenPart creates
-func NewArwenPart(input *os.File, output *os.File, vmType []byte, blockGasLimit uint64) (*ArwenPart, error) {
+func NewArwenPart(input *os.File, output *os.File, vmType []byte, blockGasLimit uint64, gasSchedule map[string]map[string]uint64) (*ArwenPart, error) {
 	messenger := NewChildMessenger(input, output)
 	blockchain := NewBlockchainHookGateway(messenger)
 	crypto := NewCryptoHookGateway()
-	gasSchedule := config.MakeGasMap(1) // TODO
 
 	host, err := host.NewArwenVM(blockchain, crypto, vmType, blockGasLimit, gasSchedule)
 	if err != nil {

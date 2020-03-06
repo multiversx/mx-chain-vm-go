@@ -5,6 +5,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/arwenpart"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/nodepart"
@@ -62,7 +63,7 @@ func doContractRequest(
 	wg.Add(2)
 
 	go func() {
-		part, err := arwenpart.NewArwenPart(files.inputOfArwen, files.outputOfArwen, []byte{5, 0}, uint64(10000000))
+		part, err := arwenpart.NewArwenPart(files.inputOfArwen, files.outputOfArwen, []byte{5, 0}, uint64(10000000), config.MakeGasMap(1))
 		assert.Nil(t, err)
 		part.StartLoop()
 		wg.Done()

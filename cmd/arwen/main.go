@@ -11,7 +11,7 @@ import (
 func main() {
 	common.LogInfo("Arwen.main()")
 
-	vmType, blockGasLimit, err := common.ParseArguments()
+	vmType, blockGasLimit, gasSchedule, err := common.ParseArguments()
 	if err != nil {
 		log.Fatalf("Bad arguments to Arwen: %v", err)
 	}
@@ -26,7 +26,7 @@ func main() {
 		log.Fatal("Cannot create file")
 	}
 
-	part, err := arwenpart.NewArwenPart(nodeToArwenFile, arwenToNodeFile, vmType, blockGasLimit)
+	part, err := arwenpart.NewArwenPart(nodeToArwenFile, arwenToNodeFile, vmType, blockGasLimit, gasSchedule)
 	if err != nil {
 		log.Fatalf("Cannot create ArwenPart: %v", err)
 	}
