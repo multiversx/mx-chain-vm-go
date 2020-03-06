@@ -1,15 +1,15 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/arwenpart"
+	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 )
 
 func main() {
-	fmt.Println("Arwen.main()")
+	common.LogInfo("Arwen.main()")
 
 	nodeToArwenFile := os.NewFile(3, "/proc/self/fd/3")
 	if nodeToArwenFile == nil {
@@ -32,5 +32,5 @@ func main() {
 		log.Fatalf("Ended Arwen loop: %v", err)
 	}
 
-	fmt.Println("Arwen.main() ended")
+	common.LogInfo("Arwen.main() ended")
 }

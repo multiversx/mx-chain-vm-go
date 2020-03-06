@@ -47,7 +47,7 @@ func NewArwenDriver(
 }
 
 func (driver *ArwenDriver) startArwen() error {
-	common.LogDebug("ArwenDriver.startArwen()")
+	common.LogInfo("ArwenDriver.startArwen()")
 
 	driver.resetPipeStreams()
 
@@ -77,7 +77,7 @@ func (driver *ArwenDriver) startArwen() error {
 
 func (driver *ArwenDriver) getArwenPath() (string, error) {
 	arwenPath := os.Getenv("ARWEN_PATH")
-	common.LogDebug("ARWEN_PATH environment variable: %s", arwenPath)
+	common.LogInfo("ARWEN_PATH environment variable: %s", arwenPath)
 
 	if fileExists(arwenPath) {
 		return arwenPath, nil

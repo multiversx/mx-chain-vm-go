@@ -9,6 +9,11 @@ func LogDebug(format string, values ...interface{}) {
 	//fmt.Printf(format+"\n", values...)
 }
 
+// LogInfo logs
+func LogInfo(format string, values ...interface{}) {
+	fmt.Printf(format+"\n", values...)
+}
+
 // LogDebugJSON logs
 func LogDebugJSON(message string, value interface{}) {
 	// jsonValue, _ := json.MarshalIndent(value, "", "\t")

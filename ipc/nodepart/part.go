@@ -93,7 +93,7 @@ func (part *NodePart) SendStopSignal() error {
 		return err
 	}
 
-	common.LogDebug("Node: sent stop signal to Arwen.")
+	common.LogInfo("Node: sent stop signal to Arwen.")
 	return nil
 }
 
