@@ -47,7 +47,7 @@ func NewArwenPart(input *os.File, output *os.File) (*ArwenPart, error) {
 func (part *ArwenPart) StartLoop() error {
 	err := part.doLoop()
 	part.Messenger.Shutdown()
-	common.LogError("Arwen: end of loop, err=%v", err)
+	common.LogError("[ARWEN]: end of loop, err=%v", err)
 	return err
 }
 
@@ -71,7 +71,7 @@ func (part *ArwenPart) doLoop() error {
 }
 
 func (part *ArwenPart) handleContractRequest(request common.MessageHandler) (common.MessageHandler, error) {
-	common.LogDebug("Arwen: handleContractRequest() %v", request)
+	common.LogDebug("[ARWEN]: handleContractRequest() %v", request)
 	handler := part.Handlers[request.GetKind()]
 	return handler(request)
 }

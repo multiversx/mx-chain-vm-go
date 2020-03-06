@@ -37,7 +37,7 @@ func (part *NodePart) StartLoop(request common.MessageHandler) (common.MessageHa
 	part.Messenger.SendContractRequest(request)
 	response, err := part.doLoop()
 
-	common.LogDebug("Node: end of loop, err=%v", err)
+	common.LogDebug("[NODE]: end of loop, err=%v", err)
 	part.Messenger.EndDialogue()
 	return response, err
 }
@@ -72,8 +72,6 @@ func (part *NodePart) doLoop() (common.MessageHandler, error) {
 }
 
 func (part *NodePart) handleHookCallRequest(request common.MessageHandler) error {
-	common.LogDebug("Node: handleHookCallRequest [%d]", request.GetKind())
-
 	handler := part.Handlers[request.GetKind()]
 	hookResponse, err := handler(request)
 	if err != nil {

@@ -14,7 +14,7 @@ type ChildMessenger struct {
 // NewChildMessenger creates
 func NewChildMessenger(reader *os.File, writer *os.File) *ChildMessenger {
 	return &ChildMessenger{
-		Messenger: *common.NewMessenger("Arwen", reader, writer),
+		Messenger: *common.NewMessenger("ARWEN", reader, writer),
 	}
 }
 
@@ -40,7 +40,7 @@ func (messenger *ChildMessenger) SendContractResponse(response common.MessageHan
 
 // SendHookCallRequest calls
 func (messenger *ChildMessenger) SendHookCallRequest(request common.MessageHandler) (common.MessageHandler, error) {
-	common.LogDebug("%s: CallHook [%d]", messenger.Name, request.GetKind())
+	common.LogDebug("[ARWEN]: CallHook %s", request)
 
 	err := messenger.Send(request)
 	if err != nil {

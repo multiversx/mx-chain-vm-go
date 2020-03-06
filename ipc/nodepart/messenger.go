@@ -14,7 +14,7 @@ type NodeMessenger struct {
 // NewNodeMessenger creates
 func NewNodeMessenger(reader *os.File, writer *os.File) *NodeMessenger {
 	return &NodeMessenger{
-		Messenger: *common.NewMessenger("Node", reader, writer),
+		Messenger: *common.NewMessenger("NODE", reader, writer),
 	}
 }
 
@@ -25,7 +25,6 @@ func (messenger *NodeMessenger) SendContractRequest(request common.MessageHandle
 		return common.ErrCannotSendContractRequest
 	}
 
-	common.LogDebug("Node: sent contract request %s", request)
 	return nil
 }
 
@@ -36,7 +35,6 @@ func (messenger *NodeMessenger) SendHookCallResponse(response common.MessageHand
 		return common.ErrCannotSendHookCallResponse
 	}
 
-	common.LogDebug("Node: sent hook call response %s", response)
 	return nil
 }
 

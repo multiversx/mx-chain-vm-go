@@ -31,4 +31,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Ended Arwen loop: %v", err)
 	}
+
+	fmt.Println("Arwen.main() ended")
 }

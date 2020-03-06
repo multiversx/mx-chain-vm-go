@@ -47,7 +47,7 @@ func (messenger *Messenger) Send(message MessageHandler) error {
 		return err
 	}
 
-	LogDebug("[MSG %d] %s: SENT message of size %d", message.GetNonce(), messenger.Name, len(dataBytes))
+	LogDebug("[%s][#%d]: SENT message of size %d %s", messenger.Name, message.GetNonce(), len(dataBytes), message)
 	return err
 }
 
@@ -61,7 +61,7 @@ func (messenger *Messenger) sendMessageLengthAndKind(length int, kind MessageKin
 
 // Receive receives
 func (messenger *Messenger) Receive(timeout int) (MessageHandler, error) {
-	LogDebug("%s: Receive message...", messenger.Name)
+	LogDebug("[%s]: Receive message...", messenger.Name)
 
 	if timeout != 0 {
 		//messenger.setReceiveDeadline(timeout)
@@ -87,7 +87,7 @@ func (messenger *Messenger) Receive(timeout int) (MessageHandler, error) {
 		return nil, err
 	}
 
-	LogDebug("[MSG %d] %s: RECEIVED message of size %d\n", message.GetNonce(), messenger.Name, length)
+	LogDebug("[%s][#%d]: RECEIVED message of size %d %s", messenger.Name, message.GetNonce(), length, message)
 	messageNonce := message.GetNonce()
 	if messageNonce != messenger.Nonce+1 {
 		return nil, ErrInvalidMessageNonce

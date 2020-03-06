@@ -107,6 +107,10 @@ func (message *Message) SetError(err error) {
 	}
 }
 
+func (message *Message) String() string {
+	return fmt.Sprintf("[kind=%d nonce=%d err=%s]", message.Kind, message.DialogueNonce, message.ErrorMessage)
+}
+
 // MessageStop is
 type MessageStop struct {
 	Message
