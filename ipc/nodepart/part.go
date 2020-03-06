@@ -101,7 +101,7 @@ func (part *NodePart) handleBlockchainNewAddress(request common.MessageHandler) 
 	address, err := part.blockchain.NewAddress(typedRequest.CreatorAddress, typedRequest.CreatorNonce, typedRequest.VMType)
 	response := common.NewMessageBlockchainNewAddressResponse(err)
 	response.Address = address
-	return response, err
+	return response, nil
 }
 
 func (part *NodePart) handleBlockchainGetNonce(request common.MessageHandler) (common.MessageHandler, error) {
@@ -109,7 +109,7 @@ func (part *NodePart) handleBlockchainGetNonce(request common.MessageHandler) (c
 	nonce, err := part.blockchain.GetNonce(typedRequest.Address)
 	response := common.NewMessageBlockchainGetNonceResponse(err)
 	response.Nonce = nonce
-	return response, err
+	return response, nil
 }
 
 func (part *NodePart) handleBlockchainGetStorageData(request common.MessageHandler) (common.MessageHandler, error) {
@@ -117,7 +117,7 @@ func (part *NodePart) handleBlockchainGetStorageData(request common.MessageHandl
 	data, err := part.blockchain.GetStorageData(typedRequest.Address, typedRequest.Index)
 	response := common.NewMessageBlockchainGetStorageDataResponse(err)
 	response.Data = data
-	return response, err
+	return response, nil
 }
 
 func (part *NodePart) handleBlockchainGetCode(request common.MessageHandler) (common.MessageHandler, error) {
@@ -125,5 +125,5 @@ func (part *NodePart) handleBlockchainGetCode(request common.MessageHandler) (co
 	code, err := part.blockchain.GetCode(typedRequest.Address)
 	response := common.NewMessageBlockchainGetCodeResponse(err)
 	response.Code = code
-	return response, err
+	return response, nil
 }
