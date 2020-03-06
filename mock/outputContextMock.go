@@ -98,9 +98,7 @@ func (o *OutputContextMock) SelfDestruct(_ []byte, _ []byte) {
 }
 
 func (o *OutputContextMock) Finish(data []byte) {
-	if len(data) > 0 {
-		o.ReturnDataMock = append(o.ReturnDataMock, data)
-	}
+	o.ReturnDataMock = append(o.ReturnDataMock, data)
 }
 
 func (o *OutputContextMock) WriteLog(address []byte, topics [][]byte, data []byte) {
