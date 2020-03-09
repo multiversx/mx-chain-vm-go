@@ -103,7 +103,12 @@ func (driver *ArwenDriver) getArwenPath() (string, error) {
 		return arwenPath, nil
 	}
 
-	arwenPath = path.Join(".", "arwen")
+	cwd, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+
+	arwenPath = path.Join(cwd, "arwen")
 	if fileExists(arwenPath) {
 		return arwenPath, nil
 	}
