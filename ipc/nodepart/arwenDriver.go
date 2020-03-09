@@ -97,7 +97,7 @@ func (driver *ArwenDriver) startArwen() error {
 
 func (driver *ArwenDriver) getArwenPath() (string, error) {
 	arwenPath := os.Getenv("ARWEN_PATH")
-	driver.nodeLogger.Info("ARWEN_PATH environment variable: %s", arwenPath)
+	driver.nodeLogger.Info("ARWEN_PATH environment variable", "ARWEN_PATH", arwenPath)
 
 	if fileExists(arwenPath) {
 		return arwenPath, nil
