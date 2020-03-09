@@ -68,7 +68,7 @@ func (part *ArwenPart) doLoop() error {
 }
 
 func (part *ArwenPart) replyToNodeRequest(request common.MessageHandler) common.MessageHandler {
-	common.LogDebug("[ARWEN]: replyToNodeRequest() %v", request)
+	common.LogInfo("[ARWEN]: replyToNodeRequest() %v", request)
 	replier := part.Repliers[request.GetKind()]
 	return replier(request)
 }
@@ -82,6 +82,7 @@ func (part *ArwenPart) replyToRunSmartContractCreate(request common.MessageHandl
 func (part *ArwenPart) replyToRunSmartContractCall(request common.MessageHandler) common.MessageHandler {
 	typedRequest := request.(*common.MessageContractCallRequest)
 	vmOutput, err := part.VMHost.RunSmartContractCall(typedRequest.CallInput)
+	common.LogInfo("[ARWEN]: replyToRunSmartContractCall() done")
 	return common.NewMessageContractResponse(vmOutput, err)
 }
 

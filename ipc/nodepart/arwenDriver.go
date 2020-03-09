@@ -200,7 +200,7 @@ func (driver *ArwenDriver) RunSmartContractCreate(input *vmcommon.ContractCreate
 
 // RunSmartContractCall calls
 func (driver *ArwenDriver) RunSmartContractCall(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
-	driver.nodeLogger.Info("RunSmartContractCall")
+	driver.nodeLogger.Info("RunSmartContractCall", "sc", input.RecipientAddr)
 
 	err := driver.restartArwenIfNecessary()
 	if err != nil {
@@ -210,6 +210,7 @@ func (driver *ArwenDriver) RunSmartContractCall(input *vmcommon.ContractCallInpu
 	request := common.NewMessageContractCallRequest(input)
 	response, err := driver.part.StartLoop(request)
 	if err != nil {
+		driver.nodeLogger.Error("RunSmartContractCall", "err", err)
 		driver.stopArwen()
 		return nil, common.WrapCriticalError(err)
 	}
@@ -228,6 +229,7 @@ func (driver *ArwenDriver) DiagnoseWait(milliseconds uint32) error {
 	request := common.NewMessageDiagnoseWaitRequest(milliseconds)
 	response, err := driver.part.StartLoop(request)
 	if err != nil {
+		driver.nodeLogger.Error("RunSmartContractCall", "err", err)
 		driver.stopArwen()
 		return common.WrapCriticalError(err)
 	}
