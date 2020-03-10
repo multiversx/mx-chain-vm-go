@@ -7,6 +7,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestElrondEI_CallValue(t *testing.T) {
@@ -20,13 +21,21 @@ func TestElrondEI_CallValue(t *testing.T) {
 	input.CallValue = big.NewInt(64)
 
 	vmOutput, err := host.RunSmartContractCall(input)
-	assert.Nil(t, err)
+	require.Nil(t, err)
 	assert.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 	assert.Len(t, vmOutput.ReturnData, 3)
+	assert.Equal(t, "", vmOutput.ReturnMessage)
 	data := vmOutput.ReturnData
 	assert.Equal(t, []byte("ok"), data[0])
-	assert.Equal(t, []byte{1, 0, 0, 0}, data[1])
-	assert.Equal(t, []byte{64}, data[2])
+	assert.Equal(t, []byte{32, 0, 0, 0}, data[1])
+	assert.Equal(t,
+		[]byte{
+			0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, 64,
+		},
+		data[2])
 
 	// 4-byte call value
 	host, _ = DefaultTestArwenForCall(t, code)
@@ -41,8 +50,15 @@ func TestElrondEI_CallValue(t *testing.T) {
 	assert.Len(t, vmOutput.ReturnData, 3)
 	data = vmOutput.ReturnData
 	assert.Equal(t, []byte("ok"), data[0])
-	assert.Equal(t, []byte{4, 0, 0, 0}, data[1])
-	assert.Equal(t, []byte{64, 12, 16, 99}, data[2])
+	assert.Equal(t, []byte{32, 0, 0, 0}, data[1])
+	assert.Equal(t,
+		[]byte{
+			0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 0, 64, 12, 16, 99,
+		},
+		data[2])
 
 	// BigInt call value
 	host, _ = DefaultTestArwenForCall(t, code)
@@ -57,8 +73,15 @@ func TestElrondEI_CallValue(t *testing.T) {
 	assert.Len(t, vmOutput.ReturnData, 4)
 	data = vmOutput.ReturnData
 	assert.Equal(t, []byte("ok"), data[0])
-	assert.Equal(t, []byte{2, 0, 0, 0}, data[1])
-	assert.Equal(t, []byte{19, 233}, data[2])
+	assert.Equal(t, []byte{32, 0, 0, 0}, data[1])
+	assert.Equal(t,
+		[]byte{
+			0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 19, 233,
+		},
+		data[2])
 
 	val12345 := big.NewInt(0).SetBytes(data[3])
 	assert.Equal(t, big.NewInt(12345), val12345)
