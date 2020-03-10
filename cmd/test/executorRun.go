@@ -197,8 +197,8 @@ func (te *arwenTestExecutor) Run(test *ij.Test) error {
 				expectedStatus = int(blResult.Status.Int64())
 			}
 			if expectedStatus != int(output.ReturnCode) {
-				return fmt.Errorf("result code mismatch. Tx #%d. Want: %d. Have: %d (%s)",
-					txIndex, expectedStatus, int(output.ReturnCode), output.ReturnCode.String())
+				return fmt.Errorf("result code mismatch. Tx #%d. Want: %d. Have: %d (%s). Message: %s",
+					txIndex, expectedStatus, int(output.ReturnCode), output.ReturnCode.String(), output.ReturnMessage)
 			}
 
 			if output.ReturnMessage != blResult.Message {
