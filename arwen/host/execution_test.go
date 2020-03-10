@@ -167,9 +167,9 @@ func TestExecution_ManyDeployments(t *testing.T) {
 	input.CallerAddr = []byte("owner")
 	input.Arguments = make([][]byte, 0)
 	input.CallValue = big.NewInt(88)
-	input.ContractCode = GetTestSCCode("exec-same-ctx-child", "../../")
+	input.ContractCode = GetTestSCCode("init-correct", "../../")
 
-	numDeployments := 35000
+	numDeployments := 100000
 	for i := 0; i < numDeployments; i++ {
 		input.GasProvided = 100000
 		vmOutput, err := host.RunSmartContractCreate(input)
