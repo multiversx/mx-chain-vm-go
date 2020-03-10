@@ -381,8 +381,7 @@ func transferValue(context unsafe.Pointer, destOffset int32, valueOffset int32, 
 	gasToUse += metering.GasSchedule().BaseOperationCost.PersistPerByte * uint64(length)
 	metering.UseGas(gasToUse)
 
-	invBytes := arwen.InverseBytes(value)
-	output.Transfer(dest, send, 0, big.NewInt(0).SetBytes(invBytes), data)
+	output.Transfer(dest, send, 0, big.NewInt(0).SetBytes(value), data)
 
 	return 0
 }
@@ -425,14 +424,13 @@ func asyncCall(context unsafe.Pointer, destOffset int32, valueOffset int32, data
 	// Set up the async call as if it is not known whether the called SC
 	// is in the same shard with the caller or not. This will be later resolved
 	// in the handler for BreakpointAsyncCall.
-	invValueBytes := arwen.InverseBytes(value)
-	output.Transfer(calledSCAddress, callingSCAddress, gasLimit, big.NewInt(0).SetBytes(invValueBytes), data)
+	output.Transfer(calledSCAddress, callingSCAddress, gasLimit, big.NewInt(0).SetBytes(value), data)
 
 	runtime.SetAsyncCallInfo(&arwen.AsyncCallInfo{
 		Destination: calledSCAddress,
 		Data:        data,
 		GasLimit:    gasLimit,
-		ValueBytes:  invValueBytes,
+		ValueBytes:  value,
 	})
 
 	// Instruct Wasmer to interrupt the execution of the caller SC.
@@ -592,12 +590,12 @@ func callValue(context unsafe.Pointer, resultOffset int32) int32 {
 	metering := arwen.GetMeteringContext(context)
 
 	value := runtime.GetVMInput().CallValue.Bytes()
-	invBytes := arwen.InverseBytes(value)
+	value = arwen.PadBytesLeft(value, arwen.BalanceLen)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetCallValue
 	metering.UseGas(gasToUse)
 
-	err := runtime.MemStore(resultOffset, invBytes)
+	err := runtime.MemStore(resultOffset, value)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
@@ -891,8 +889,7 @@ func executeOnSameContext(
 	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
 	metering.UseGas(gasToUse)
 
-	invBytes := arwen.InverseBytes(value)
-	bigIntVal := big.NewInt(0).SetBytes(invBytes)
+	bigIntVal := big.NewInt(0).SetBytes(value)
 	output.Transfer(dest, send, 0, bigIntVal, nil)
 
 	contractCallInput := &vmcommon.ContractCallInput{
@@ -949,8 +946,7 @@ func executeOnDestContext(
 	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
 	metering.UseGas(gasToUse)
 
-	invBytes := arwen.InverseBytes(value)
-	output.Transfer(dest, send, 0, big.NewInt(0).SetBytes(invBytes), nil)
+	output.Transfer(dest, send, 0, big.NewInt(0).SetBytes(value), nil)
 
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
