@@ -1,6 +1,6 @@
 #include "../elrond/context.h"
 
-const dataLen = 1000;
+const dataLen = 10000;
 byte data[dataLen] = {};
 
 void childFunction() {
