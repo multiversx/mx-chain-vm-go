@@ -197,7 +197,8 @@ func (te *arwenTestExecutor) Run(test *ij.Test) error {
 				expectedStatus = int(blResult.Status.Int64())
 			}
 			if expectedStatus != int(output.ReturnCode) {
-				return fmt.Errorf("result code mismatch. Tx #%d. Want: %d. Have: %d", txIndex, expectedStatus, int(output.ReturnCode))
+				return fmt.Errorf("result code mismatch. Tx #%d. Want: %d. Have: %d (%s)",
+					txIndex, expectedStatus, int(output.ReturnCode), output.ReturnCode.String())
 			}
 
 			if output.ReturnMessage != blResult.Message {
@@ -301,6 +302,11 @@ func (te *arwenTestExecutor) Run(test *ij.Test) error {
 		if !bytes.Equal(matchingAcct.Code, postAcct.Code) {
 			return fmt.Errorf("bad account code. Account: %s. Want: [%s]. Have: [%s]",
 				hex.EncodeToString(matchingAcct.Address), postAcct.Code, matchingAcct.Code)
+		}
+
+		if matchingAcct.AsyncCallData != postAcct.AsyncCallData {
+			return fmt.Errorf("bad async call data. Account: %s. Want: [%s]. Have: [%s]",
+				hex.EncodeToString(matchingAcct.Address), postAcct.AsyncCallData, matchingAcct.AsyncCallData)
 		}
 
 		// compare storages

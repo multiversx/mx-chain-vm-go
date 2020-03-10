@@ -21,12 +21,13 @@ func convertAccount(testAcct *ij.Account) *worldhook.Account {
 	}
 
 	return &worldhook.Account{
-		Exists:  true,
-		Address: testAcct.Address,
-		Nonce:   testAcct.Nonce.Uint64(),
-		Balance: big.NewInt(0).Set(testAcct.Balance),
-		Storage: storage,
-		Code:    []byte(testAcct.Code),
+		Exists:        true,
+		Address:       testAcct.Address,
+		Nonce:         testAcct.Nonce.Uint64(),
+		Balance:       big.NewInt(0).Set(testAcct.Balance),
+		Storage:       storage,
+		Code:          []byte(testAcct.Code),
+		AsyncCallData: testAcct.AsyncCallData,
 	}
 }
 

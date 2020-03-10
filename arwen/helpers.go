@@ -2,24 +2,8 @@ package arwen
 
 import (
 	"fmt"
-	"math/big"
 	"unsafe"
-
-	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 )
-
-func ConvertReturnValue(wasmValue wasmer.Value) *big.Int {
-	switch wasmValue.GetType() {
-	case wasmer.TypeVoid:
-		return big.NewInt(0)
-	case wasmer.TypeI32:
-		return big.NewInt(wasmValue.ToI64())
-	case wasmer.TypeI64:
-		return big.NewInt(wasmValue.ToI64())
-	}
-
-	panic("unsupported return type")
-}
 
 func GuardedMakeByteSlice2D(length int32) ([][]byte, error) {
 	if length < 0 {
@@ -38,11 +22,7 @@ func GuardedGetBytesSlice(data []byte, offset int32, length int32) ([]byte, erro
 	isRequestedEndTooLarge := requestedEnd > dataLength
 	isLengthNegative := length < 0
 
-	if isOffsetTooSmall || isOffsetTooLarge {
-		return nil, fmt.Errorf("GuardedGetBytesSlice: bad bounds")
-	}
-
-	if isRequestedEndTooLarge {
+	if isOffsetTooSmall || isOffsetTooLarge || isRequestedEndTooLarge {
 		return nil, fmt.Errorf("GuardedGetBytesSlice: bad bounds")
 	}
 

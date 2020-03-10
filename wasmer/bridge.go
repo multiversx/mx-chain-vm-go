@@ -1,6 +1,9 @@
 package wasmer
 
-// #cgo LDFLAGS: -Wl,-rpath,${SRCDIR} -L${SRCDIR} -lwasmer_runtime_c_api
+// #cgo LDFLAGS: -Wl,-rpath,${SRCDIR} -lwasmer_runtime_c_api
+// #cgo linux,amd64 LDFLAGS:-L${SRCDIR}/lib/linux/amd64
+// #cgo linux,arm64 LDFLAGS:-L${SRCDIR}/lib/linux/arm64
+// #cgo darwin,amd64 LDFLAGS:-L${SRCDIR}/lib/darwin/amd64
 // #include "./wasmer.h"
 //
 import "C"
@@ -280,6 +283,12 @@ func cWasmerMemoryGrow(memory *cWasmerMemoryT, numberOfPages cUint32T) cWasmerRe
 		(*C.wasmer_memory_t)(memory),
 		(C.uint32_t)(numberOfPages),
 	))
+}
+
+func cWasmerMemoryDestroy(memory *cWasmerMemoryT) {
+	C.wasmer_memory_destroy(
+		(*C.wasmer_memory_t)(memory),
+	)
 }
 
 func cCString(string string) *cChar {

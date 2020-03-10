@@ -94,6 +94,23 @@ func TestFeaturesFromRust(t *testing.T) {
 	}
 }
 
+func TestAsyncCalls(t *testing.T) {
+	testExec := newArwenTestExecutor().replaceCode(
+		"features.wasm",
+		filepath.Join(getTestRoot(), "contracts/features.wasm"))
+
+	err := controller.RunAllJSONTestsInDirectory(
+		getTestRoot(),
+		"async",
+		".json",
+		[]string{},
+		testExec)
+
+	if err != nil {
+		t.Error(err)
+	}
+}
+
 func getTestRoot() string {
 	exePath, err := os.Getwd()
 	if err != nil {

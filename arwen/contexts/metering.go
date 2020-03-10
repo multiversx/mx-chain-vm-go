@@ -3,7 +3,7 @@ package contexts
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common"
 )
 
 type meteringContext struct {
@@ -43,6 +43,14 @@ func (context *meteringContext) UseGas(gas uint64) {
 	context.host.Runtime().SetPointsUsed(gasUsed)
 }
 
+func (context *meteringContext) RestoreGas(gas uint64) {
+	gasUsed := context.host.Runtime().GetPointsUsed()
+	if gas <= gasUsed {
+		gasUsed -= gas
+		context.host.Runtime().SetPointsUsed(gasUsed)
+	}
+}
+
 func (context *meteringContext) FreeGas(gas uint64) {
 	refund := context.host.Output().GetRefund() + gas
 	context.host.Output().SetRefund(refund)
@@ -51,6 +59,11 @@ func (context *meteringContext) FreeGas(gas uint64) {
 func (context *meteringContext) GasLeft() uint64 {
 	gasProvided := context.host.Runtime().GetVMInput().GasProvided
 	gasUsed := context.host.Runtime().GetPointsUsed()
+
+	if gasProvided < gasUsed {
+		return 0
+	}
+
 	return gasProvided - gasUsed
 }
 
@@ -60,9 +73,8 @@ func (context *meteringContext) BoundGasLimit(value int64) uint64 {
 
 	if gasLeft < limit {
 		return gasLeft
-	} else {
-		return limit
 	}
+	return limit
 }
 
 // deductAndLockGasIfAsyncStep will deduct the gas for an async step and also lock gas for the callback, if the execution is an asynchronous call
