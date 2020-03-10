@@ -178,6 +178,10 @@ func (instance *Instance) SetContextData(data unsafe.Pointer) {
 func (instance *Instance) Clean() {
 	if instance.instance != nil {
 		cWasmerInstanceDestroy(instance.instance)
+
+		if instance.Memory != nil {
+			instance.Memory.Destroy()
+		}
 	}
 }
 

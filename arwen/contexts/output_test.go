@@ -4,9 +4,7 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
-	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
@@ -135,21 +133,10 @@ func TestOutputContext_FinishReturnData(t *testing.T) {
 	expectedData = append(expectedData, big.NewInt(1234567).Bytes())
 	require.Equal(t, expectedData, outputContext.ReturnData())
 
-	outputContext.FinishValue(wasmer.I64(99))
-	expectedData = append(expectedData, arwen.ConvertReturnValue(wasmer.I64(99)))
-	require.Equal(t, expectedData, outputContext.ReturnData())
-
-	outputContext.FinishValue(wasmer.I32(87654))
-	expectedData = append(expectedData, arwen.ConvertReturnValue(wasmer.I32(87654)))
-	require.Equal(t, expectedData, outputContext.ReturnData())
-
 	// TODO update this section after modifying Finish to accept empty []byte
 	// slices
 	outputContext.Finish([]byte{})
-	require.Equal(t, expectedData, outputContext.ReturnData())
-
-	// TODO update this section after modifying FinishValue to accept wasmer.Void()
-	outputContext.FinishValue(wasmer.Void())
+	expectedData = append(expectedData, []byte{})
 	require.Equal(t, expectedData, outputContext.ReturnData())
 
 	outputContext.ClearReturnData()

@@ -110,12 +110,21 @@ func MakeGasMap(value uint64) map[string]map[string]uint64 {
 }
 
 func FillGasMap(gasMap map[string]map[string]uint64, value uint64) map[string]map[string]uint64 {
+	gasMap["BuiltInCost"] = FillGasMap_BuiltInCosts(value)
 	gasMap["BaseOperationCost"] = FillGasMap_BaseOperationCosts(value)
 	gasMap["ElrondAPICost"] = FillGasMap_ElrondAPICosts(value)
 	gasMap["EthAPICost"] = FillGasMap_EthereumAPICosts(value)
 	gasMap["BigIntAPICost"] = FillGasMap_BigIntAPICosts(value)
 	gasMap["CryptoAPICost"] = FillGasMap_CryptoAPICosts(value)
 	gasMap["WASMOpcodeCost"] = FillGasMap_WASMOpcodeValues(value)
+
+	return gasMap
+}
+
+func FillGasMap_BuiltInCosts(value uint64) map[string]uint64 {
+	gasMap := make(map[string]uint64)
+	gasMap["ChangeOwnerAddress"] = value
+	gasMap["ClaimDeveloperRewards"] = value
 
 	return gasMap
 }
