@@ -47,7 +47,9 @@ func (context *blockchainContext) AccountExists(address []byte) bool {
 func (context *blockchainContext) GetBalance(address []byte) []byte {
 	outputAccount, isNew := context.host.Output().GetOutputAccount(address)
 	if !isNew {
-		return outputAccount.Balance.Bytes()
+		balance := big.NewInt(0).Add(outputAccount.Balance, outputAccount.BalanceDelta)
+
+		return balance.Bytes()
 	}
 
 	balance, err := context.blockChainHook.GetBalance(address)

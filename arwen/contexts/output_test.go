@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
 
@@ -110,7 +110,6 @@ func TestOutputContext_GettersAndSetters(t *testing.T) {
 
 	outputContext.SetReturnMessage("rockets")
 	require.Equal(t, "rockets", outputContext.ReturnMessage())
-
 }
 
 func TestOutputContext_FinishReturnData(t *testing.T) {
@@ -353,7 +352,8 @@ func TestOutputContext_Transfer(t *testing.T) {
 	outputContext, _ := NewOutputContext(host)
 	outputContext.AddTxValueToAccount(sender, balance)
 
-	outputContext.Transfer(receiver, sender, 54, valueToTransfer, []byte("txdata"))
+	result := outputContext.Transfer(receiver, sender, 54, valueToTransfer, []byte("txdata"))
+	require.Zero(t, result)
 
 	senderAccount, isNew := outputContext.GetOutputAccount(sender)
 	require.False(t, isNew)
@@ -364,6 +364,29 @@ func TestOutputContext_Transfer(t *testing.T) {
 	require.Equal(t, valueToTransfer, destAccount.BalanceDelta)
 	require.Equal(t, uint64(54), destAccount.GasLimit)
 	require.Equal(t, []byte("txdata"), destAccount.Data)
+}
+
+func TestOutputContext_Transfer_Errors(t *testing.T) {
+	t.Parallel()
+
+	sender := []byte("sender")
+	receiver := []byte("receiver")
+	balance := big.NewInt(10000)
+
+	host := &mock.VmHostStub{}
+	outputContext, _ := NewOutputContext(host)
+	outputContext.AddTxValueToAccount(sender, balance)
+
+	// negative transfers are disallowed
+	valueToTransfer := big.NewInt(-1000)
+	result := outputContext.Transfer(receiver, sender, 54, valueToTransfer, []byte("txdata"))
+	require.NotZero(t, result)
+
+	// account must have enough money to transfer
+	valueToTransfer = big.NewInt(50000)
+	result = outputContext.Transfer(receiver, sender, 54, valueToTransfer, []byte("txdata"))
+	require.NotZero(t, result)
+
 }
 
 func TestOutputContext_WriteLog(t *testing.T) {
