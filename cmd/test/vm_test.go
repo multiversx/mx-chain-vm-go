@@ -60,9 +60,7 @@ func TestAdderFromRust(t *testing.T) {
 }
 
 func TestCryptoBubbles(t *testing.T) {
-	testExec := newArwenTestExecutor().replaceCode(
-		"crypto-bubbles.wasm",
-		filepath.Join(getTestRoot(), "contracts/crypto-bubbles.wasm"))
+	testExec := newArwenTestExecutor()
 	excludedTests := []string{}
 
 	err := controller.RunAllJSONTestsInDirectory(
