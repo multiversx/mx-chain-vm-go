@@ -16,11 +16,12 @@ const (
 	OpcodeCallIndirect
 	OpcodeDrop
 	OpcodeSelect
-	OpcodeGetLocal
-	OpcodeSetLocal
-	OpcodeTeeLocal
-	OpcodeGetGlobal
-	OpcodeSetGlobal
+	OpcodeTypedSelect
+	OpcodeLocalGet
+	OpcodeLocalSet
+	OpcodeLocalTee
+	OpcodeGlobalGet
+	OpcodeGlobalSet
 	OpcodeI32Load
 	OpcodeI64Load
 	OpcodeF32Load
@@ -52,6 +53,7 @@ const (
 	OpcodeF64Const
 	OpcodeRefNull
 	OpcodeRefIsNull
+	OpcodeRefFunc
 	OpcodeI32Eqz
 	OpcodeI32Eq
 	OpcodeI32Ne
@@ -151,25 +153,25 @@ const (
 	OpcodeF64Max
 	OpcodeF64Copysign
 	OpcodeI32WrapI64
-	OpcodeI32TruncSF32
-	OpcodeI32TruncUF32
-	OpcodeI32TruncSF64
-	OpcodeI32TruncUF64
-	OpcodeI64ExtendSI32
-	OpcodeI64ExtendUI32
-	OpcodeI64TruncSF32
-	OpcodeI64TruncUF32
-	OpcodeI64TruncSF64
-	OpcodeI64TruncUF64
-	OpcodeF32ConvertSI32
-	OpcodeF32ConvertUI32
-	OpcodeF32ConvertSI64
-	OpcodeF32ConvertUI64
+	OpcodeI32TruncF32S
+	OpcodeI32TruncF32U
+	OpcodeI32TruncF64S
+	OpcodeI32TruncF64U
+	OpcodeI64ExtendI32S
+	OpcodeI64ExtendI32U
+	OpcodeI64TruncF32S
+	OpcodeI64TruncF32U
+	OpcodeI64TruncF64S
+	OpcodeI64TruncF64U
+	OpcodeF32ConvertI32S
+	OpcodeF32ConvertI32U
+	OpcodeF32ConvertI64S
+	OpcodeF32ConvertI64U
 	OpcodeF32DemoteF64
-	OpcodeF64ConvertSI32
-	OpcodeF64ConvertUI32
-	OpcodeF64ConvertSI64
-	OpcodeF64ConvertUI64
+	OpcodeF64ConvertI32S
+	OpcodeF64ConvertI32U
+	OpcodeF64ConvertI64S
+	OpcodeF64ConvertI64U
 	OpcodeF64PromoteF32
 	OpcodeI32ReinterpretF32
 	OpcodeI64ReinterpretF64
@@ -180,14 +182,14 @@ const (
 	OpcodeI64Extend8S
 	OpcodeI64Extend16S
 	OpcodeI64Extend32S
-	OpcodeI32TruncSSatF32
-	OpcodeI32TruncUSatF32
-	OpcodeI32TruncSSatF64
-	OpcodeI32TruncUSatF64
-	OpcodeI64TruncSSatF32
-	OpcodeI64TruncUSatF32
-	OpcodeI64TruncSSatF64
-	OpcodeI64TruncUSatF64
+	OpcodeI32TruncSatF32S
+	OpcodeI32TruncSatF32U
+	OpcodeI32TruncSatF64S
+	OpcodeI32TruncSatF64U
+	OpcodeI64TruncSatF32S
+	OpcodeI64TruncSatF32U
+	OpcodeI64TruncSatF64S
+	OpcodeI64TruncSatF64U
 	OpcodeMemoryInit
 	OpcodeDataDrop
 	OpcodeMemoryCopy
@@ -195,14 +197,15 @@ const (
 	OpcodeTableInit
 	OpcodeElemDrop
 	OpcodeTableCopy
+	OpcodeTableFill
 	OpcodeTableGet
 	OpcodeTableSet
 	OpcodeTableGrow
 	OpcodeTableSize
-	OpcodeWake
-	OpcodeI32Wait
-	OpcodeI64Wait
-	OpcodeFence
+	OpcodeAtomicNotify
+	OpcodeI32AtomicWait
+	OpcodeI64AtomicWait
+	OpcodeAtomicFence
 	OpcodeI32AtomicLoad
 	OpcodeI64AtomicLoad
 	OpcodeI32AtomicLoad8U
@@ -219,53 +222,53 @@ const (
 	OpcodeI64AtomicStore32
 	OpcodeI32AtomicRmwAdd
 	OpcodeI64AtomicRmwAdd
-	OpcodeI32AtomicRmw8UAdd
-	OpcodeI32AtomicRmw16UAdd
-	OpcodeI64AtomicRmw8UAdd
-	OpcodeI64AtomicRmw16UAdd
-	OpcodeI64AtomicRmw32UAdd
+	OpcodeI32AtomicRmw8AddU
+	OpcodeI32AtomicRmw16AddU
+	OpcodeI64AtomicRmw8AddU
+	OpcodeI64AtomicRmw16AddU
+	OpcodeI64AtomicRmw32AddU
 	OpcodeI32AtomicRmwSub
 	OpcodeI64AtomicRmwSub
-	OpcodeI32AtomicRmw8USub
-	OpcodeI32AtomicRmw16USub
-	OpcodeI64AtomicRmw8USub
-	OpcodeI64AtomicRmw16USub
-	OpcodeI64AtomicRmw32USub
+	OpcodeI32AtomicRmw8SubU
+	OpcodeI32AtomicRmw16SubU
+	OpcodeI64AtomicRmw8SubU
+	OpcodeI64AtomicRmw16SubU
+	OpcodeI64AtomicRmw32SubU
 	OpcodeI32AtomicRmwAnd
 	OpcodeI64AtomicRmwAnd
-	OpcodeI32AtomicRmw8UAnd
-	OpcodeI32AtomicRmw16UAnd
-	OpcodeI64AtomicRmw8UAnd
-	OpcodeI64AtomicRmw16UAnd
-	OpcodeI64AtomicRmw32UAnd
+	OpcodeI32AtomicRmw8AndU
+	OpcodeI32AtomicRmw16AndU
+	OpcodeI64AtomicRmw8AndU
+	OpcodeI64AtomicRmw16AndU
+	OpcodeI64AtomicRmw32AndU
 	OpcodeI32AtomicRmwOr
 	OpcodeI64AtomicRmwOr
-	OpcodeI32AtomicRmw8UOr
-	OpcodeI32AtomicRmw16UOr
-	OpcodeI64AtomicRmw8UOr
-	OpcodeI64AtomicRmw16UOr
-	OpcodeI64AtomicRmw32UOr
+	OpcodeI32AtomicRmw8OrU
+	OpcodeI32AtomicRmw16OrU
+	OpcodeI64AtomicRmw8OrU
+	OpcodeI64AtomicRmw16OrU
+	OpcodeI64AtomicRmw32OrU
 	OpcodeI32AtomicRmwXor
 	OpcodeI64AtomicRmwXor
-	OpcodeI32AtomicRmw8UXor
-	OpcodeI32AtomicRmw16UXor
-	OpcodeI64AtomicRmw8UXor
-	OpcodeI64AtomicRmw16UXor
-	OpcodeI64AtomicRmw32UXor
+	OpcodeI32AtomicRmw8XorU
+	OpcodeI32AtomicRmw16XorU
+	OpcodeI64AtomicRmw8XorU
+	OpcodeI64AtomicRmw16XorU
+	OpcodeI64AtomicRmw32XorU
 	OpcodeI32AtomicRmwXchg
 	OpcodeI64AtomicRmwXchg
-	OpcodeI32AtomicRmw8UXchg
-	OpcodeI32AtomicRmw16UXchg
-	OpcodeI64AtomicRmw8UXchg
-	OpcodeI64AtomicRmw16UXchg
-	OpcodeI64AtomicRmw32UXchg
+	OpcodeI32AtomicRmw8XchgU
+	OpcodeI32AtomicRmw16XchgU
+	OpcodeI64AtomicRmw8XchgU
+	OpcodeI64AtomicRmw16XchgU
+	OpcodeI64AtomicRmw32XchgU
 	OpcodeI32AtomicRmwCmpxchg
 	OpcodeI64AtomicRmwCmpxchg
-	OpcodeI32AtomicRmw8UCmpxchg
-	OpcodeI32AtomicRmw16UCmpxchg
-	OpcodeI64AtomicRmw8UCmpxchg
-	OpcodeI64AtomicRmw16UCmpxchg
-	OpcodeI64AtomicRmw32UCmpxchg
+	OpcodeI32AtomicRmw8CmpxchgU
+	OpcodeI32AtomicRmw16CmpxchgU
+	OpcodeI64AtomicRmw8CmpxchgU
+	OpcodeI64AtomicRmw16CmpxchgU
+	OpcodeI64AtomicRmw32CmpxchgU
 	OpcodeV128Load
 	OpcodeV128Store
 	OpcodeV128Const
@@ -333,6 +336,7 @@ const (
 	OpcodeF64x2Ge
 	OpcodeV128Not
 	OpcodeV128And
+	OpcodeV128AndNot
 	OpcodeV128Or
 	OpcodeV128Xor
 	OpcodeV128Bitselect
@@ -348,6 +352,10 @@ const (
 	OpcodeI8x16Sub
 	OpcodeI8x16SubSaturateS
 	OpcodeI8x16SubSaturateU
+	OpcodeI8x16MinS
+	OpcodeI8x16MinU
+	OpcodeI8x16MaxS
+	OpcodeI8x16MaxU
 	OpcodeI8x16Mul
 	OpcodeI16x8Neg
 	OpcodeI16x8AnyTrue
@@ -362,6 +370,10 @@ const (
 	OpcodeI16x8SubSaturateS
 	OpcodeI16x8SubSaturateU
 	OpcodeI16x8Mul
+	OpcodeI16x8MinS
+	OpcodeI16x8MinU
+	OpcodeI16x8MaxS
+	OpcodeI16x8MaxU
 	OpcodeI32x4Neg
 	OpcodeI32x4AnyTrue
 	OpcodeI32x4AllTrue
@@ -371,6 +383,10 @@ const (
 	OpcodeI32x4Add
 	OpcodeI32x4Sub
 	OpcodeI32x4Mul
+	OpcodeI32x4MinS
+	OpcodeI32x4MinU
+	OpcodeI32x4MaxS
+	OpcodeI32x4MaxU
 	OpcodeI64x2Neg
 	OpcodeI64x2AnyTrue
 	OpcodeI64x2AllTrue
@@ -379,6 +395,7 @@ const (
 	OpcodeI64x2ShrU
 	OpcodeI64x2Add
 	OpcodeI64x2Sub
+	OpcodeI64x2Mul
 	OpcodeF32x4Abs
 	OpcodeF32x4Neg
 	OpcodeF32x4Sqrt
@@ -397,18 +414,38 @@ const (
 	OpcodeF64x2Div
 	OpcodeF64x2Min
 	OpcodeF64x2Max
-	OpcodeI32x4TruncSF32x4Sat
-	OpcodeI32x4TruncUF32x4Sat
-	OpcodeI64x2TruncSF64x2Sat
-	OpcodeI64x2TruncUF64x2Sat
-	OpcodeF32x4ConvertSI32x4
-	OpcodeF32x4ConvertUI32x4
-	OpcodeF64x2ConvertSI64x2
-	OpcodeF64x2ConvertUI64x2
+	OpcodeI32x4TruncSatF32x4S
+	OpcodeI32x4TruncSatF32x4U
+	OpcodeI64x2TruncSatF64x2S
+	OpcodeI64x2TruncSatF64x2U
+	OpcodeF32x4ConvertI32x4S
+	OpcodeF32x4ConvertI32x4U
+	OpcodeF64x2ConvertI64x2S
+	OpcodeF64x2ConvertI64x2U
 	OpcodeV8x16Swizzle
 	OpcodeV8x16Shuffle
-	OpcodeI8x16LoadSplat
-	OpcodeI16x8LoadSplat
-	OpcodeI32x4LoadSplat
-	OpcodeI64x2LoadSplat
+	OpcodeV8x16LoadSplat
+	OpcodeV16x8LoadSplat
+	OpcodeV32x4LoadSplat
+	OpcodeV64x2LoadSplat
+	OpcodeI8x16NarrowI16x8S
+	OpcodeI8x16NarrowI16x8U
+	OpcodeI16x8NarrowI32x4S
+	OpcodeI16x8NarrowI32x4U
+	OpcodeI16x8WidenLowI8x16S
+	OpcodeI16x8WidenHighI8x16S
+	OpcodeI16x8WidenLowI8x16U
+	OpcodeI16x8WidenHighI8x16U
+	OpcodeI32x4WidenLowI16x8S
+	OpcodeI32x4WidenHighI16x8S
+	OpcodeI32x4WidenLowI16x8U
+	OpcodeI32x4WidenHighI16x8U
+	OpcodeI16x8Load8x8S
+	OpcodeI16x8Load8x8U
+	OpcodeI32x4Load16x4S
+	OpcodeI32x4Load16x4U
+	OpcodeI64x2Load32x2S
+	OpcodeI64x2Load32x2U
+	OpcodeI8x16RoundingAverageU
+	OpcodeI16x8RoundingAverageU
 )
