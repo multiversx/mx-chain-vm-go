@@ -1,6 +1,9 @@
 package wasmer
 
-// #cgo LDFLAGS: -Wl,-rpath,${SRCDIR} -L${SRCDIR} -lwasmer_runtime_c_api
+// #cgo LDFLAGS: -Wl,-rpath,${SRCDIR} -lwasmer_runtime_c_api
+// #cgo linux,amd64 LDFLAGS:-L${SRCDIR}/lib/linux/amd64
+// #cgo linux,arm64 LDFLAGS:-L${SRCDIR}/lib/linux/arm64
+// #cgo darwin,amd64 LDFLAGS:-L${SRCDIR}/lib/darwin/amd64
 // #include "./wasmer.h"
 //
 import "C"
