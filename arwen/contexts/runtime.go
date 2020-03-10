@@ -113,6 +113,11 @@ func (context *runtimeContext) PopInstance() {
 }
 
 func (context *runtimeContext) ClearInstanceStack() {
+	if len(context.instanceStack) > 0 {
+		for _, instance := range context.instanceStack {
+			instance.Clean()
+		}
+	}
 	context.instanceStack = make([]*wasmer.Instance, 0)
 }
 
