@@ -1,4 +1,6 @@
+
 import collections
+from argparse import ArgumentParser
 
 HookSignature = collections.namedtuple("HookSignature", ["name", "input", "output", "error"], verbose=False, rename=False)
 
@@ -25,7 +27,25 @@ signatures = [
     HookSignature(name="CurrentEpoch", input=[], output=[("result", "uint32")], error=False)
 ]
 
+
 def main():
+    parser = ArgumentParser()
+    subparsers = parser.add_subparsers()
+
+    messages_parser = subparsers.add_parser("messages")
+    messages_parser.set_defaults(func=generate_messages)
+    replies_parser = subparsers.add_parser("replies")
+    replies_parser.set_defaults(func=generate_replies)
+
+    args = parser.parse_args()
+
+    if not hasattr(args, "func"):
+        parser.print_help()
+    else:
+        args.func(args)
+
+
+def generate_messages(args):
     print("package common")
 
     for signature in signatures:
@@ -101,6 +121,42 @@ def get_field_assignments(input_output, error=False):
 
 def my_capitalize(input):
     return input[0].upper() + input[1:]
+
+
+def generate_replies(args):
+    print("package nodepart")
+    print("import \"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common\"")
+
+    for signature in signatures:
+        call_go, output_args = get_call(signature)
+        typedRequest = f"typedRequest := request.(*common.MessageBlockchain{signature.name}Request)\n" if signature.input else ""
+
+        func_go = f"""
+        func (part *NodePart) replyToBlockchain{signature.name}(request common.MessageHandler) common.MessageHandler {{
+            {typedRequest}{call_go}
+            response := common.NewMessageBlockchain{signature.name}Response({output_args})
+            return response
+        }}
+        """
+        print(func_go)       
+
+def get_call(signature):
+    output_args = []
+    call_args = []
+
+    for arg_name, _ in signature.output:
+        output_args.append(arg_name)
+
+    if signature.error:
+        output_args.append(f"err")
+
+    for arg_name, _ in signature.input:
+        call_args.append(f"typedRequest.{my_capitalize(arg_name)}")
+
+    output_args = ", ".join(output_args)
+    call_args = ", ".join(call_args)
+
+    return f"{output_args} := part.blockchain.{signature.name}({call_args})", output_args
 
 
 if __name__ == "__main__":
