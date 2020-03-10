@@ -8,10 +8,10 @@ byte value[32] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 void test_getCallValue_1byte() {
 	int length = getCallValue(value);
-	if (length != 1) {
+	if (length != 32) {
 		signalError(msg_unexpected, 10);
 	}
-	if (value[0] == 64) {
+	if (value[31] == 64) {
 		finish(msg_ok, 2);
 	} else {
 		finish(msg_not_ok, 6);
@@ -23,14 +23,14 @@ void test_getCallValue_1byte() {
 
 void test_getCallValue_4bytes() {
 	int length = getCallValue(value);
-	if (length != 4) {
+	if (length != 32) {
 		signalError(msg_unexpected, 10);
 	}
 	int ok = 0;
-	ok = ok + (value[0] == 64);
-	ok = ok + (value[1] == 12);
-	ok = ok + (value[2] == 16);
-	ok = ok + (value[3] == 99);
+	ok = ok + (value[28] == 64);
+	ok = ok + (value[29] == 12);
+	ok = ok + (value[30] == 16);
+	ok = ok + (value[31] == 99);
 
 	if (ok == 4) {
 		finish(msg_ok, 2);
@@ -44,13 +44,13 @@ void test_getCallValue_4bytes() {
 
 void test_getCallValue_bigInt_to_Bytes() {
 	int length = getCallValue(value);
-	if (length != 2) {
+	if (length != 32) {
 		signalError(msg_unexpected, 10);
 	}
 
 	int ok = 0;
-	ok = ok + (value[0] == 19);
-	ok = ok + (value[1] == 233);
+	ok = ok + (value[30] == 19);
+	ok = ok + (value[31] == 233);
 
 	if (ok == 2) {
 		finish(msg_ok, 2);
@@ -62,11 +62,11 @@ void test_getCallValue_bigInt_to_Bytes() {
 	finish(value, length);
 
 	// Construct the bigInt 12345, on 4 bytes.
-	value[0] = 0;
-	value[1] = 0;
-	value[2] = 48;
-	value[3] = 57;
-	finish(value, 4);
+	value[28] = 0;
+	value[29] = 0;
+	value[30] = 48;
+	value[31] = 57;
+	finish(value, 32);
 }
 
 void test_int64getArgument() {
