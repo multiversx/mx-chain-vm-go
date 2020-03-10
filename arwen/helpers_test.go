@@ -2,39 +2,10 @@ package arwen
 
 import (
 	"bytes"
-	"math/big"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	"github.com/stretchr/testify/require"
 )
-
-func TestConvertReturnValue(t *testing.T) {
-	t.Parallel()
-
-	value := int32(100)
-
-	wasmI32 := wasmer.I32(value)
-	bigValue := ConvertReturnValue(wasmI32)
-	require.Equal(t, big.NewInt(int64(value)).Bytes(), bigValue)
-
-	wasmI64 := wasmer.I64(int64(value))
-	bigValue = ConvertReturnValue(wasmI64)
-	require.Equal(t, big.NewInt(int64(value)).Bytes(), bigValue)
-
-	wasmVoid := wasmer.Void()
-	bigValue = ConvertReturnValue(wasmVoid)
-	require.Equal(t, big.NewInt(0).Bytes(), bigValue)
-
-	defer func() {
-		r := recover()
-		if r == nil {
-			require.Fail(t, "test should panic")
-		}
-	}()
-	wasm := wasmer.F32(0)
-	_ = ConvertReturnValue(wasm)
-}
 
 func TestGuardedMakeByteSlice2D(t *testing.T) {
 	t.Parallel()

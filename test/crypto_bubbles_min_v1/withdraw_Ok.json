@@ -87,7 +87,8 @@
                 "nonce": "0x01",
                 "balance": "0x10",
                 "storage": {},
-                "code": ""
+                "code": "",
+                "asyncCallData": "crypto bubbles"
             }
         }
     }

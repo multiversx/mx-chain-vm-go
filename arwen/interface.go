@@ -133,7 +133,6 @@ type OutputContext interface {
 	ReturnData() [][]byte
 	ClearReturnData()
 	Finish(data []byte)
-	FinishValue(value wasmer.Value)
 	GetVMOutput() *vmcommon.VMOutput
 	AddTxValueToAccount(address []byte, value *big.Int)
 	DeployCode(address []byte, code []byte)
@@ -144,6 +143,7 @@ type MeteringContext interface {
 	GasSchedule() *config.GasCost
 	UseGas(gas uint64)
 	FreeGas(gas uint64)
+	RestoreGas(gas uint64)
 	GasLeft() uint64
 	BoundGasLimit(value int64) uint64
 	BlockGasLimit() uint64

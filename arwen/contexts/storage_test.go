@@ -66,7 +66,7 @@ func TestStorageContext_SetStorage(t *testing.T) {
 		MeteringContext: mockMetering,
 		RuntimeContext:  mockRuntime,
 	}
-	bcHook := &mock.BlockChainHookStub{}
+	bcHook := &mock.BlockchainHookStub{}
 
 	storageContext, _ := NewStorageContext(host, bcHook)
 

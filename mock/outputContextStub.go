@@ -4,7 +4,6 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -28,7 +27,6 @@ type OutputContextStub struct {
 	ReturnDataCalled                  func() [][]byte
 	ClearReturnDataCalled             func()
 	FinishCalled                      func(data []byte)
-	FinishValueCalled                 func(value wasmer.Value)
 	GetVMOutputCalled                 func() *vmcommon.VMOutput
 	AddTxValueToAccountCalled         func(address []byte, value *big.Int)
 	DeployCodeCalled                  func(address []byte, code []byte)
@@ -138,12 +136,6 @@ func (o *OutputContextStub) ClearReturnData() {
 func (o *OutputContextStub) Finish(data []byte) {
 	if o.FinishCalled != nil {
 		o.FinishCalled(data)
-	}
-}
-
-func (o *OutputContextStub) FinishValue(value wasmer.Value) {
-	if o.FinishValueCalled != nil {
-		o.FinishValueCalled(value)
 	}
 }
 

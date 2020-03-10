@@ -9,6 +9,9 @@ var ErrInitFuncCalledInRun = errors.New("it is not allowed to call init in run")
 
 var ErrFunctionRunError = errors.New("function run error")
 
+// TODO: replace with wrong signature error/return code
+var ErrFunctionReturnNotVoidError = errors.New("function return value other than void not allowed")
+
 var ErrReturnCodeNotOk = errors.New("return not is not ok")
 
 var ErrInvalidCallOnReadOnlyMode = errors.New("operation not permitted in read only mode")

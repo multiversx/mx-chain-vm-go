@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -59,9 +60,7 @@ func TestAdderFromRust(t *testing.T) {
 }
 
 func TestCryptoBubbles(t *testing.T) {
-	testExec := newArwenTestExecutor().replaceCode(
-		"crypto-bubbles.wasm",
-		filepath.Join(getTestRoot(), "contracts/crypto-bubbles.wasm"))
+	testExec := newArwenTestExecutor()
 	excludedTests := []string{}
 
 	err := controller.RunAllJSONTestsInDirectory(
@@ -91,4 +90,30 @@ func TestFeaturesFromRust(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+}
+
+func TestAsyncCalls(t *testing.T) {
+	testExec := newArwenTestExecutor().replaceCode(
+		"features.wasm",
+		filepath.Join(getTestRoot(), "contracts/features.wasm"))
+
+	err := controller.RunAllJSONTestsInDirectory(
+		getTestRoot(),
+		"async",
+		".json",
+		[]string{},
+		testExec)
+
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func getTestRoot() string {
+	exePath, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	arwenTestRoot := filepath.Join(exePath, "../../test")
+	return arwenTestRoot
 }
