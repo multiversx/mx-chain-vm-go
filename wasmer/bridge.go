@@ -285,6 +285,12 @@ func cWasmerMemoryGrow(memory *cWasmerMemoryT, numberOfPages cUint32T) cWasmerRe
 	))
 }
 
+func cWasmerMemoryDestroy(memory *cWasmerMemoryT) {
+	C.wasmer_memory_destroy(
+		(*C.wasmer_memory_t)(memory),
+	)
+}
+
 func cCString(string string) *cChar {
 	return (*cChar)(C.CString(string))
 }
