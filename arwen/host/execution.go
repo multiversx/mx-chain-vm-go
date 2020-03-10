@@ -2,7 +2,6 @@ package host
 
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -65,14 +64,13 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 		arwen.RemoveHostContext(idContext)
 	}()
 
-	result, err := host.callInitFunction()
+	err = host.callInitFunction()
 	if err != nil {
 		returnCode = vmcommon.FunctionWrongSignature
 		return vmOutput
 	}
 
 	output.DeployCode(address, input.ContractCode)
-	output.FinishValue(result)
 	vmOutput = output.GetVMOutput()
 
 	return vmOutput
@@ -131,7 +129,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 		arwen.RemoveHostContext(idContext)
 	}()
 
-	result, returnCode, err := host.callSCMethod()
+	returnCode, err = host.callSCMethod()
 
 	if err != nil {
 		return vmOutput
@@ -139,7 +137,6 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 
 	metering.UnlockGasIfAsyncStep()
 
-	output.FinishValue(result)
 	vmOutput = output.GetVMOutput()
 
 	return vmOutput
@@ -234,7 +231,7 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]by
 
 	runtime.SetInstanceContextId(idContext)
 
-	result, err := host.callInitFunction()
+	err = host.callInitFunction()
 	if err != nil {
 		runtime.PopInstance()
 		runtime.PopState()
@@ -243,7 +240,6 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]by
 	}
 
 	output.DeployCode(address, input.ContractCode)
-	output.FinishValue(result)
 
 	gasToRestoreToCaller := metering.GasLeft()
 
@@ -309,14 +305,16 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 		return arwen.ErrFunctionRunError
 	}
 
+	// TODO: replace with wrong signature error/return code *before* starting execution
+	if !result.IsVoid() {
+		return arwen.ErrFunctionReturnNotVoidError
+	}
+
 	if output.ReturnCode() != vmcommon.Ok {
 		runtime.PopInstance()
 		arwen.RemoveHostContext(idContext)
 		return arwen.ErrReturnCodeNotOk
 	}
-
-	convertedResult := arwen.ConvertReturnValue(result)
-	output.Finish(convertedResult)
 
 	metering.UnlockGasIfAsyncStep()
 
@@ -336,21 +334,24 @@ func (host *vmHost) EthereumCallData() []byte {
 	return host.ethInput
 }
 
-func (host *vmHost) callInitFunction() (wasmer.Value, error) {
+func (host *vmHost) callInitFunction() error {
 	init := host.Runtime().GetInitFunction()
 	if init != nil {
 		result, err := init()
 		if err != nil {
-			return wasmer.Void(), err
+			return err
 		}
-		return result, nil
+		// TODO: replace with wrong signature error/return code *before* starting execution
+		if !result.IsVoid() {
+			return arwen.ErrFunctionReturnNotVoidError
+		}
 	}
-	return wasmer.Void(), nil
+	return nil
 }
 
-func (host *vmHost) callSCMethod() (wasmer.Value, vmcommon.ReturnCode, error) {
+func (host *vmHost) callSCMethod() (vmcommon.ReturnCode, error) {
 	if host.isInitFunctionBeingCalled() {
-		return wasmer.Void(), vmcommon.UserError, arwen.ErrInitFuncCalledInRun
+		return vmcommon.UserError, arwen.ErrInitFuncCalledInRun
 	}
 
 	runtime := host.Runtime()
@@ -358,22 +359,23 @@ func (host *vmHost) callSCMethod() (wasmer.Value, vmcommon.ReturnCode, error) {
 
 	function, err := runtime.GetFunctionToCall()
 	if err != nil {
-		return wasmer.Void(), vmcommon.FunctionNotFound, err
+		return vmcommon.FunctionNotFound, err
 	}
 
 	result, err := function()
 	if err != nil {
 		breakpointValue := runtime.GetRuntimeBreakpointValue()
 		if breakpointValue != arwen.BreakpointNone {
-			err = host.handleBreakpoint(breakpointValue, result)
+			err = host.handleBreakpoint(breakpointValue)
 		}
 	}
 
-	if err != nil {
-		result = wasmer.Void()
+	// TODO: replace with wrong signature error/return code *before* starting executions
+	if !result.IsVoid() {
+		return vmcommon.UserError, arwen.ErrFunctionReturnNotVoidError
 	}
 
-	return result, output.ReturnCode(), err
+	return output.ReturnCode(), err
 }
 
 // The first four bytes is the method selector. The rest of the input data are method arguments in chunks of 32 bytes.
