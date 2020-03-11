@@ -45,27 +45,31 @@ func (context *blockchainContext) AccountExists(address []byte) bool {
 }
 
 func (context *blockchainContext) GetBalance(address []byte) []byte {
+	return context.GetBalanceBigInt(address).Bytes()
+}
+
+func (context *blockchainContext) GetBalanceBigInt(address []byte) *big.Int {
 	outputAccount, isNew := context.host.Output().GetOutputAccount(address)
 	if !isNew {
 		if outputAccount.Balance == nil {
 			balance, err := context.blockChainHook.GetBalance(address)
 			if err != nil {
-				return big.NewInt(0).Bytes()
+				return big.NewInt(0)
 			}
 			outputAccount.Balance = balance
 		}
 		balance := big.NewInt(0).Add(outputAccount.Balance, outputAccount.BalanceDelta)
-		return balance.Bytes()
+		return balance
 	}
 
 	balance, err := context.blockChainHook.GetBalance(address)
 	if err != nil {
-		return big.NewInt(0).Bytes()
+		return big.NewInt(0)
 	}
 
-	outputAccount.Balance = big.NewInt(0).Set(balance)
+	outputAccount.Balance = balance
 
-	return balance.Bytes()
+	return balance
 }
 
 func (context *blockchainContext) GetNonce(address []byte) (uint64, error) {

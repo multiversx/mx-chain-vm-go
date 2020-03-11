@@ -381,8 +381,8 @@ func transferValue(context unsafe.Pointer, destOffset int32, valueOffset int32, 
 	gasToUse += metering.GasSchedule().BaseOperationCost.PersistPerByte * uint64(length)
 	metering.UseGas(gasToUse)
 
-	result := output.Transfer(dest, send, 0, big.NewInt(0).SetBytes(value), data)
-	if result != 0 {
+	err = output.Transfer(dest, send, 0, big.NewInt(0).SetBytes(value), data)
+	if err != nil {
 		return 1
 	}
 
@@ -427,21 +427,20 @@ func asyncCall(context unsafe.Pointer, destOffset int32, valueOffset int32, data
 	// Set up the async call as if it is not known whether the called SC
 	// is in the same shard with the caller or not. This will be later resolved
 	// in the handler for BreakpointAsyncCall.
-	result := output.Transfer(calledSCAddress, callingSCAddress, gasLimit, big.NewInt(0).SetBytes(value), data)
-
-	if result == 0 {
-		runtime.SetAsyncCallInfo(&arwen.AsyncCallInfo{
-			Destination: calledSCAddress,
-			Data:        data,
-			GasLimit:    gasLimit,
-			ValueBytes:  value,
-		})
-
-		// Instruct Wasmer to interrupt the execution of the caller SC.
-		runtime.SetRuntimeBreakpointValue(arwen.BreakpointAsyncCall)
-	} else {
-		arwen.WithFault(arwen.ErrFailedTransferDuringAsyncCall, context, true)
+	err = output.Transfer(calledSCAddress, callingSCAddress, gasLimit, big.NewInt(0).SetBytes(value), data)
+	if err != nil {
+		arwen.WithFault(err, context, true)
 	}
+
+	runtime.SetAsyncCallInfo(&arwen.AsyncCallInfo{
+		Destination: calledSCAddress,
+		Data:        data,
+		GasLimit:    gasLimit,
+		ValueBytes:  value,
+	})
+
+	// Instruct Wasmer to interrupt the execution of the caller SC.
+	runtime.SetRuntimeBreakpointValue(arwen.BreakpointAsyncCall)
 }
 
 //export getArgumentLength

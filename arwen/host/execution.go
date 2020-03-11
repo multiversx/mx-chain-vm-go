@@ -376,18 +376,16 @@ func (host *vmHost) callSCMethod() error {
 		}
 	}
 
-	if err == arwen.ErrSignalError {
-		output.SetReturnCode(vmcommon.UserError)
-		return err
-	}
-
-	if err == arwen.ErrNotEnoughGas {
-		output.SetReturnCode(vmcommon.OutOfGas)
-		return err
-	}
-
 	if err != nil {
-		output.SetReturnCode(vmcommon.ExecutionFailed)
+		switch err {
+		case arwen.ErrSignalError:
+			output.SetReturnCode(vmcommon.UserError)
+		case arwen.ErrNotEnoughGas:
+			output.SetReturnCode(vmcommon.OutOfGas)
+		default:
+			output.SetReturnCode(vmcommon.ExecutionFailed)
+		}
+
 		return err
 	}
 
