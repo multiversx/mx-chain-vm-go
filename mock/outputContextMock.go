@@ -23,7 +23,7 @@ type OutputContextMock struct {
 	OutputAccountMock  *vmcommon.OutputAccount
 	OutputAccountIsNew bool
 	Err                error
-	TransferResult     int
+	TransferResult     error
 }
 
 func (o *OutputContextMock) InitState() {
@@ -105,7 +105,7 @@ func (o *OutputContextMock) Finish(data []byte) {
 func (o *OutputContextMock) WriteLog(address []byte, topics [][]byte, data []byte) {
 }
 
-func (o *OutputContextMock) Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte) int {
+func (o *OutputContextMock) Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte) error {
 	return o.TransferResult
 }
 

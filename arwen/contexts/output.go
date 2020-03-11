@@ -150,14 +150,13 @@ func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []b
 // Transfer handles any necessary value transfer required and takes
 // the necessary steps to create accounts and reverses the state in case of an
 // execution error or failed value transfer.
-func (context *outputContext) Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte) int {
-	if value.Cmp(big.NewInt(0)) < 0 {
-		return 1
+func (context *outputContext) Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte) error {
+	if value.Cmp(arwen.Zero) < 0 {
+		return arwen.ErrTransferNegativeValue
 	}
 
-	senderBalance := big.NewInt(0).SetBytes(context.host.Blockchain().GetBalance(sender))
-	if value.Cmp(senderBalance) > 0 {
-		return 1
+	if !context.hasSufficientBalance(sender, value) {
+		return arwen.ErrTransferInsufficientFunds
 	}
 
 	senderAcc, _ := context.GetOutputAccount(sender)
@@ -168,7 +167,15 @@ func (context *outputContext) Transfer(destination []byte, sender []byte, gasLim
 	destAcc.Data = append(destAcc.Data, input...)
 	destAcc.GasLimit = gasLimit
 
-	return 0
+	return nil
+}
+
+func (context *outputContext) hasSufficientBalance(address []byte, value *big.Int) bool {
+	senderBalance := context.host.Blockchain().GetBalanceBigInt(address)
+	if value.Cmp(senderBalance) > 0 {
+		return false
+	}
+	return true
 }
 
 func (context *outputContext) AddTxValueToAccount(address []byte, value *big.Int) {

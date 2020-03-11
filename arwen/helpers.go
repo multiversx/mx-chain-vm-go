@@ -3,9 +3,12 @@ package arwen
 import (
 	"fmt"
 	"io/ioutil"
+	"math/big"
 	"path/filepath"
 	"unsafe"
 )
+
+var Zero = big.NewInt(0)
 
 func GuardedMakeByteSlice2D(length int32) ([][]byte, error) {
 	if length < 0 {

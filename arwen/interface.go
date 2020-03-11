@@ -48,6 +48,7 @@ type BlockchainContext interface {
 	NewAddress(creatorAddress []byte) ([]byte, error)
 	AccountExists(addr []byte) bool
 	GetBalance(addr []byte) []byte
+	GetBalanceBigInt(addr []byte) *big.Int
 	GetNonce(addr []byte) (uint64, error)
 	CurrentEpoch() uint32
 	GetStateRootHash() []byte
@@ -122,7 +123,7 @@ type OutputContext interface {
 
 	GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool)
 	WriteLog(address []byte, topics [][]byte, data []byte)
-	Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte) int
+	Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte) error
 	SelfDestruct(address []byte, beneficiary []byte)
 	GetRefund() uint64
 	SetRefund(refund uint64)
