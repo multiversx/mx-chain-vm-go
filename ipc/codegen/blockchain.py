@@ -43,8 +43,11 @@ def main():
     messages_parser = subparsers.add_parser("messages")
     messages_parser.set_defaults(func=generate_messages)
     
-    replies_parser = subparsers.add_parser("replies")
-    replies_parser.set_defaults(func=generate_replies)
+    repliers_parser = subparsers.add_parser("repliers")
+    repliers_parser.set_defaults(func=generate_repliers)
+
+    reply_slots_parser = subparsers.add_parser("reply-slots")
+    reply_slots_parser.set_defaults(func=generate_reply_slots)
 
     gateway_parser = subparsers.add_parser("gateway")
     gateway_parser.set_defaults(func=generate_gateway)
@@ -135,7 +138,7 @@ def my_capitalize(input):
     return input[0].upper() + input[1:]
 
 
-def generate_replies(args):
+def generate_repliers(args):
     print("package nodepart")
     print("import \"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common\"")
 
@@ -169,6 +172,13 @@ def get_call(signature):
     call_args = ", ".join(call_args)
 
     return f"{output_args} := part.blockchain.{signature.name}({call_args})", output_args
+
+
+def generate_reply_slots(args):
+    print("part.Repliers = common.CreateReplySlots()")
+
+    for signature in signatures:
+        print(f"part.Repliers[common.Blockchain{signature.name}Request] = part.replyToBlockchain{signature.name}")
 
 
 def generate_gateway(args):

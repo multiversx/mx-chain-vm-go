@@ -24,10 +24,25 @@ func NewNodePart(input *os.File, output *os.File, blockchain vmcommon.Blockchain
 	}
 
 	part.Repliers = common.CreateReplySlots()
+	part.Repliers[common.BlockchainAccountExistsRequest] = part.replyToBlockchainAccountExists
 	part.Repliers[common.BlockchainNewAddressRequest] = part.replyToBlockchainNewAddress
+	part.Repliers[common.BlockchainGetBalanceRequest] = part.replyToBlockchainGetBalance
 	part.Repliers[common.BlockchainGetNonceRequest] = part.replyToBlockchainGetNonce
 	part.Repliers[common.BlockchainGetStorageDataRequest] = part.replyToBlockchainGetStorageData
+	part.Repliers[common.BlockchainIsCodeEmptyRequest] = part.replyToBlockchainIsCodeEmpty
 	part.Repliers[common.BlockchainGetCodeRequest] = part.replyToBlockchainGetCode
+	part.Repliers[common.BlockchainGetBlockhashRequest] = part.replyToBlockchainGetBlockhash
+	part.Repliers[common.BlockchainLastNonceRequest] = part.replyToBlockchainLastNonce
+	part.Repliers[common.BlockchainLastRoundRequest] = part.replyToBlockchainLastRound
+	part.Repliers[common.BlockchainLastTimeStampRequest] = part.replyToBlockchainLastTimeStamp
+	part.Repliers[common.BlockchainLastRandomSeedRequest] = part.replyToBlockchainLastRandomSeed
+	part.Repliers[common.BlockchainLastEpochRequest] = part.replyToBlockchainLastEpoch
+	part.Repliers[common.BlockchainGetStateRootHashRequest] = part.replyToBlockchainGetStateRootHash
+	part.Repliers[common.BlockchainCurrentNonceRequest] = part.replyToBlockchainCurrentNonce
+	part.Repliers[common.BlockchainCurrentRoundRequest] = part.replyToBlockchainCurrentRound
+	part.Repliers[common.BlockchainCurrentTimeStampRequest] = part.replyToBlockchainCurrentTimeStamp
+	part.Repliers[common.BlockchainCurrentRandomSeedRequest] = part.replyToBlockchainCurrentRandomSeed
+	part.Repliers[common.BlockchainCurrentEpochRequest] = part.replyToBlockchainCurrentEpoch
 
 	return part, nil
 }
