@@ -7,6 +7,8 @@ import (
 	"github.com/ElrondNetwork/elrond-vm-common"
 )
 
+var zero = big.NewInt(0)
+
 type logTopicsData struct {
 	topics [][]byte
 	data   []byte
@@ -151,7 +153,6 @@ func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []b
 // the necessary steps to create accounts and reverses the state in case of an
 // execution error or failed value transfer.
 func (context *outputContext) Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte) error {
-	zero := big.NewInt(0)
 	if value.Cmp(zero) < 0 {
 		return arwen.ErrTransferNegativeValue
 	}
