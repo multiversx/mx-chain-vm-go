@@ -18,7 +18,7 @@ func NewArwenMessenger(reader *os.File, writer *os.File) *ArwenMessenger {
 	}
 }
 
-// ReceiveNodeRequest waits for a request from node
+// ReceiveNodeRequest waits for a request from Node
 func (messenger *ArwenMessenger) ReceiveNodeRequest() (common.MessageHandler, error) {
 	message, err := messenger.Receive(0)
 	if err != nil {
@@ -28,7 +28,7 @@ func (messenger *ArwenMessenger) ReceiveNodeRequest() (common.MessageHandler, er
 	return message, nil
 }
 
-// SendContractResponse sends a contract response to the node
+// SendContractResponse sends a contract response to the Node
 func (messenger *ArwenMessenger) SendContractResponse(response common.MessageHandler) error {
 	err := messenger.Send(response)
 	if err != nil {

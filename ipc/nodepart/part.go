@@ -7,14 +7,14 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
-// NodePart is
+// NodePart is the endpoint that implements the message loop on Node's side
 type NodePart struct {
 	Messenger  *NodeMessenger
 	blockchain vmcommon.BlockchainHook
 	Repliers   []common.MessageReplier
 }
 
-// NewNodePart creates
+// NewNodePart creates the Node part
 func NewNodePart(input *os.File, output *os.File, blockchain vmcommon.BlockchainHook) (*NodePart, error) {
 	messenger := NewNodeMessenger(input, output)
 

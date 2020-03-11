@@ -1,8 +1,10 @@
 package common
 
-import "fmt"
+import (
+	"fmt"
+)
 
-// CreateMessage creates a message
+// CreateMessage creates a message given its kind
 func CreateMessage(kind MessageKind) MessageHandler {
 	var message MessageHandler
 

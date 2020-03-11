@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-// Messenger is
+// Messenger intermediates communication (message exchange) via pipes
 type Messenger struct {
 	Name   string
 	Nonce  uint32
@@ -18,7 +18,7 @@ type Messenger struct {
 	writer *os.File
 }
 
-// NewMessenger creates
+// NewMessenger creates a new messenger
 func NewMessenger(name string, reader *os.File, writer *os.File) *Messenger {
 	return &Messenger{
 		Name:   name,
@@ -27,7 +27,7 @@ func NewMessenger(name string, reader *os.File, writer *os.File) *Messenger {
 	}
 }
 
-// Send sends
+// Send sends a message over the pipe
 func (messenger *Messenger) Send(message MessageHandler) error {
 	messenger.Nonce++
 	message.SetNonce(messenger.Nonce)
@@ -59,7 +59,7 @@ func (messenger *Messenger) sendMessageLengthAndKind(length int, kind MessageKin
 	return err
 }
 
-// Receive receives
+// Receive receives a message, reads it from the pipe
 func (messenger *Messenger) Receive(timeout int) (MessageHandler, error) {
 	LogDebug("[%s]: Receive message...", messenger.Name)
 
@@ -75,7 +75,7 @@ func (messenger *Messenger) Receive(timeout int) (MessageHandler, error) {
 
 	message := CreateMessage(kind)
 
-	// Now read the body of [length]
+	// Now read the body
 	buffer := make([]byte, length)
 	_, err = io.ReadFull(messenger.reader, buffer)
 	if err != nil {
@@ -119,7 +119,7 @@ func (messenger *Messenger) receiveMessageLengthAndKind() (int, MessageKind, err
 	return int(length), kind, nil
 }
 
-// Shutdown does
+// Shutdown closes the pipes
 func (messenger *Messenger) Shutdown() {
 	LogDebug("%s:  Messenger::Shutdown", messenger.Name)
 
@@ -134,7 +134,7 @@ func (messenger *Messenger) Shutdown() {
 	}
 }
 
-// EndDialogue resets the nonce
+// EndDialogue resets the dialogue nonce
 func (messenger *Messenger) EndDialogue() {
 	messenger.Nonce = 0
 }

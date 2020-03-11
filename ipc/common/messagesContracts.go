@@ -4,7 +4,7 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
-// MessageContractDeployRequest is
+// MessageContractDeployRequest is deploy request message (from Node)
 type MessageContractDeployRequest struct {
 	Message
 	CreateInput *vmcommon.ContractCreateInput
@@ -18,7 +18,7 @@ func NewMessageContractDeployRequest(input *vmcommon.ContractCreateInput) *Messa
 	return message
 }
 
-// MessageContractCallRequest is
+// MessageContractCallRequest is call request message (from Node)
 type MessageContractCallRequest struct {
 	Message
 	CallInput *vmcommon.ContractCallInput
@@ -32,7 +32,7 @@ func NewMessageContractCallRequest(input *vmcommon.ContractCallInput) *MessageCo
 	return message
 }
 
-// MessageContractResponse is
+// MessageContractResponse is a contract response message (from Arwen)
 type MessageContractResponse struct {
 	Message
 	VMOutput *vmcommon.VMOutput

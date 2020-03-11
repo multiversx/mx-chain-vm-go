@@ -1,6 +1,6 @@
 package common
 
-// MessageDiagnoseWaitRequest represents a message
+// MessageDiagnoseWaitRequest is a diagnose request message (from Node)
 type MessageDiagnoseWaitRequest struct {
 	Message
 	Milliseconds uint32
@@ -14,7 +14,7 @@ func NewMessageDiagnoseWaitRequest(milliseconds uint32) *MessageDiagnoseWaitRequ
 	return message
 }
 
-// MessageDiagnoseWaitResponse is
+// MessageDiagnoseWaitResponse is a diagnose response message (from Arwen)
 type MessageDiagnoseWaitResponse struct {
 	Message
 }

@@ -1,6 +1,8 @@
 package nodepart
 
-import "github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
+import (
+	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
+)
 
 func (part *NodePart) replyToBlockchainAccountExists(request common.MessageHandler) common.MessageHandler {
 	typedRequest := request.(*common.MessageBlockchainAccountExistsRequest)
