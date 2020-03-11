@@ -71,7 +71,7 @@ func (part *ArwenPart) doLoop() error {
 }
 
 func (part *ArwenPart) replyToNodeRequest(request common.MessageHandler) common.MessageHandler {
-	part.Logger.Info("[ARWEN]: replyToNodeRequest()", "req", request)
+	part.Logger.Trace("[ARWEN]: replyToNodeRequest()", "req", request)
 	replier := part.Repliers[request.GetKind()]
 	return replier(request)
 }

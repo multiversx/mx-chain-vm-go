@@ -52,7 +52,7 @@ func (messenger *Messenger) Send(message MessageHandler) error {
 		return err
 	}
 
-	messenger.Logger.Debug(fmt.Sprintf("[%s][#%d]: SENT message", messenger.Name, message.GetNonce()), "size", len(dataBytes), "msg", message)
+	messenger.Logger.Trace(fmt.Sprintf("[%s][#%d]: SENT message", messenger.Name, message.GetNonce()), "size", len(dataBytes), "msg", message)
 	return err
 }
 
@@ -66,7 +66,7 @@ func (messenger *Messenger) sendMessageLengthAndKind(length int, kind MessageKin
 
 // Receive receives a message, reads it from the pipe
 func (messenger *Messenger) Receive(timeout int) (MessageHandler, error) {
-	messenger.Logger.Debug(fmt.Sprintf("[%s]: Receive message...", messenger.Name))
+	messenger.Logger.Trace(fmt.Sprintf("[%s]: Receive message...", messenger.Name))
 
 	if timeout != 0 {
 		messenger.setReceiveDeadline(timeout)
@@ -92,7 +92,7 @@ func (messenger *Messenger) Receive(timeout int) (MessageHandler, error) {
 		return nil, err
 	}
 
-	messenger.Logger.Debug(fmt.Sprintf("[%s][#%d]: RECEIVED message", messenger.Name, message.GetNonce()), "size", length, "msg", message)
+	messenger.Logger.Trace(fmt.Sprintf("[%s][#%d]: RECEIVED message", messenger.Name, message.GetNonce()), "size", length, "msg", message)
 	messageNonce := message.GetNonce()
 	if messageNonce != messenger.Nonce+1 {
 		return nil, ErrInvalidMessageNonce

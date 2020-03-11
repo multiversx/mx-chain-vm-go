@@ -270,6 +270,7 @@ func (driver *ArwenDriver) stopArwen() error {
 func (driver *ArwenDriver) continuouslyCopyArwenLogs(arwenStdout io.Reader, arwenStderr io.Reader) {
 	stdoutReader := bufio.NewReader(arwenStdout)
 	stderrReader := bufio.NewReader(arwenStderr)
+	arwenLog := driver.arwenLogRead
 
 	go func() {
 		for {
@@ -292,6 +293,16 @@ func (driver *ArwenDriver) continuouslyCopyArwenLogs(arwenStdout io.Reader, arwe
 
 			line = strings.TrimSpace(line)
 			driver.nodeLogger.Error("ARWEN-ERR", line)
+		}
+	}()
+
+	go func() {
+		for {
+			err := logger.ReceiveLogThroughPipe(driver.nodeLogger, arwenLog)
+			if err != nil {
+				driver.nodeLogger.Error("ReceiveLogThroughPipe error", "err", err)
+				break
+			}
 		}
 	}()
 }

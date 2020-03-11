@@ -41,7 +41,7 @@ func (messenger *ArwenMessenger) SendContractResponse(response common.MessageHan
 
 // SendHookCallRequest makes a hook call (over the pipe) and waits for the response
 func (messenger *ArwenMessenger) SendHookCallRequest(request common.MessageHandler) (common.MessageHandler, error) {
-	messenger.Logger.Debug("[ARWEN]: CallHook %s", request)
+	messenger.Logger.Trace("[ARWEN]: CallHook", request)
 
 	err := messenger.Send(request)
 	if err != nil {
