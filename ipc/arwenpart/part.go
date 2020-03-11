@@ -9,16 +9,16 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
-// ArwenPart is
+// ArwenPart is the endpoint that implements the message loop on Arwen's side
 type ArwenPart struct {
-	Messenger *ChildMessenger
+	Messenger *ArwenMessenger
 	VMHost    vmcommon.VMExecutionHandler
 	Repliers  []common.MessageReplier
 }
 
-// NewArwenPart creates
+// NewArwenPart creates the Arwen part
 func NewArwenPart(input *os.File, output *os.File, vmType []byte, blockGasLimit uint64, gasSchedule map[string]map[string]uint64) (*ArwenPart, error) {
-	messenger := NewChildMessenger(input, output)
+	messenger := NewArwenMessenger(input, output)
 	blockchain := NewBlockchainHookGateway(messenger)
 	crypto := NewCryptoHookGateway()
 

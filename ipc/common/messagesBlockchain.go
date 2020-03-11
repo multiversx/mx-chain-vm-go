@@ -1,6 +1,8 @@
 package common
 
-import "math/big"
+import (
+	"math/big"
+)
 
 // MessageBlockchainAccountExistsRequest represents a request message
 type MessageBlockchainAccountExistsRequest struct {

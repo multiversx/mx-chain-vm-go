@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-// MessageKind is
+// MessageKind is the kind of a message (that is passed between the Node and Arwen)
 type MessageKind uint32
 
 const (

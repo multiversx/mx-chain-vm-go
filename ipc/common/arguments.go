@@ -8,7 +8,7 @@ import (
 	"strconv"
 )
 
-// PrepareArguments prepares
+// PrepareArguments prepares the list of arguments (command line) to be sent by the Node to Arwen when the latter should be started
 func PrepareArguments(vmType []byte, blockGasLimit uint64, gasSchedule map[string]map[string]uint64) ([]string, error) {
 	file, err := ioutil.TempFile("", "gasScheduleToArwen")
 	if err != nil {
@@ -35,7 +35,7 @@ func PrepareArguments(vmType []byte, blockGasLimit uint64, gasSchedule map[strin
 	return arguments, nil
 }
 
-// ParseArguments parses
+// ParseArguments parses the arguments (command line) received by Arwen from the Node
 func ParseArguments() (vmType []byte, blockGasLimit uint64, gasSchedule map[string]map[string]uint64, err error) {
 	arguments := os.Args
 	if len(arguments) != 4 {

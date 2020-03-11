@@ -12,16 +12,17 @@ import (
 
 var _ vmcommon.CryptoHook = (*CryptoHookGateway)(nil)
 
-// CryptoHookGateway is
+// CryptoHookGateway is a copy of the CryptoHook implementation from the node
+// TODO: Remove this implementation and reference ElrondNetwork/common/crypto when it becomes available
 type CryptoHookGateway struct {
 }
 
-// NewCryptoHookGateway creates
+// NewCryptoHookGateway creates a new crypto hook gateway
 func NewCryptoHookGateway() *CryptoHookGateway {
 	return &CryptoHookGateway{}
 }
 
-// Sha256 returns a sha 256 hash of the input string. Should return in hex format.
+// Sha256 returns a sha 256 hash of the input string. Should return in hex format
 func (hook *CryptoHookGateway) Sha256(data []byte) ([]byte, error) {
 	hash := sha256.New()
 	_, err := hash.Write(data)
@@ -33,7 +34,7 @@ func (hook *CryptoHookGateway) Sha256(data []byte) ([]byte, error) {
 	return result, nil
 }
 
-// Keccak256 returns a keccak 256 hash of the input string. Should return in hex format.
+// Keccak256 returns a keccak 256 hash of the input string. Should return in hex format
 func (hook *CryptoHookGateway) Keccak256(data []byte) ([]byte, error) {
 	hash := sha3.NewLegacyKeccak256()
 	_, err := hash.Write(data)

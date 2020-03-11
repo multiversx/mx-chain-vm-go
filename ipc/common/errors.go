@@ -18,7 +18,7 @@ func (err *CriticalError) Error() string {
 	return fmt.Sprintf("critical error: %v", err.InnerErr)
 }
 
-// Unwrap unwraps
+// Unwrap unwraps the inner error
 func (err *CriticalError) Unwrap() error {
 	return err.InnerErr
 }

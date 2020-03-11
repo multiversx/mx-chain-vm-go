@@ -23,7 +23,7 @@ func TestSetDeadline(t *testing.T) {
 	}()
 
 	buff := make([]byte, 100)
-	n, err := io.ReadFull(r, buff) // r.Read(buff)
+	n, err := io.ReadFull(r, buff)
 	require.Nil(t, err)
 	require.Equal(t, 3, n)
 }
