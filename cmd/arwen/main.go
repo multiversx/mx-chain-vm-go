@@ -31,7 +31,6 @@ func main() {
 	}
 
 	arwenLogger := logger.NewPipeLogger(logLevel, logToNodeFile)
-	//arwenLogger = logger.NewDefaultLogger(logLevel)
 	part, err := arwenpart.NewArwenPart(arwenLogger, nodeToArwenFile, arwenToNodeFile, vmType, blockGasLimit, gasSchedule)
 	if err != nil {
 		log.Fatalf("Cannot create ArwenPart: %v", err)
