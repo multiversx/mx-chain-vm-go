@@ -280,7 +280,7 @@ func (driver *ArwenDriver) continuouslyCopyArwenLogs(arwenStdout io.Reader, arwe
 			}
 
 			line = strings.TrimSpace(line)
-			driver.nodeLogger.Info("ARWEN-OUT", line)
+			driver.nodeLogger.Info("ARWEN-OUT", "line", line)
 		}
 	}()
 
@@ -292,7 +292,7 @@ func (driver *ArwenDriver) continuouslyCopyArwenLogs(arwenStdout io.Reader, arwe
 			}
 
 			line = strings.TrimSpace(line)
-			driver.nodeLogger.Error("ARWEN-ERR", line)
+			driver.nodeLogger.Error("ARWEN-ERR", "line", line)
 		}
 	}()
 
