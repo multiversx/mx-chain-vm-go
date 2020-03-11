@@ -82,7 +82,7 @@ func TestOutputContext_GetOutputAccount(t *testing.T) {
 	require.True(t, isNew)
 	require.Equal(t, []byte("account"), account.Address)
 	require.Zero(t, account.Nonce)
-	require.Equal(t, big.NewInt(0), account.BalanceDelta)
+	require.Equal(t, arwen.Zero, account.BalanceDelta)
 	require.Nil(t, account.Balance)
 	require.Zero(t, len(account.StorageUpdates))
 
@@ -385,8 +385,6 @@ func TestOutputContext_Transfer_Errors_And_Checks(t *testing.T) {
 	sender := []byte("sender")
 	receiver := []byte("receiver")
 
-	zero := big.NewInt(0)
-
 	mockBlockchainHook := mock.NewBlockchainHookMock()
 	mockBlockchainHook.AddAccount(&mock.Account{
 		Exists:  true,
@@ -404,21 +402,21 @@ func TestOutputContext_Transfer_Errors_And_Checks(t *testing.T) {
 
 	senderOutputAccount, _ := outputContext.GetOutputAccount(sender)
 	require.Nil(t, senderOutputAccount.Balance)
-	require.Equal(t, zero, senderOutputAccount.BalanceDelta)
+	require.Equal(t, arwen.Zero, senderOutputAccount.BalanceDelta)
 
 	// negative transfers are disallowed
 	valueToTransfer := big.NewInt(-1000)
 	err := outputContext.Transfer(receiver, sender, 54, valueToTransfer, []byte("txdata"))
 	require.Equal(t, arwen.ErrTransferNegativeValue, err)
 	require.Nil(t, senderOutputAccount.Balance)
-	require.Equal(t, zero, senderOutputAccount.BalanceDelta)
+	require.Equal(t, arwen.Zero, senderOutputAccount.BalanceDelta)
 
 	// account must have enough money to transfer
 	valueToTransfer = big.NewInt(5000)
 	err = outputContext.Transfer(receiver, sender, 54, valueToTransfer, []byte("txdata"))
 	require.Equal(t, arwen.ErrTransferInsufficientFunds, err)
 	require.Equal(t, big.NewInt(2000), senderOutputAccount.Balance)
-	require.Equal(t, zero, senderOutputAccount.BalanceDelta)
+	require.Equal(t, arwen.Zero, senderOutputAccount.BalanceDelta)
 
 	senderOutputAccount.BalanceDelta = big.NewInt(4000)
 	valueToTransfer = big.NewInt(5000)
