@@ -2,29 +2,37 @@
 import collections
 from argparse import ArgumentParser
 
-HookSignature = collections.namedtuple("HookSignature", ["name", "input", "output", "error"], verbose=False, rename=False)
+class HookSignature:
+    def __init__(self, name, input, output, error=False, badReturn="nil"):
+        super().__init__()
+        self.name = name
+        self.input = input
+        self.output = output
+        self.error = error
+        self.badReturn = badReturn
+
 
 signatures = [
-    HookSignature(name="AccountExists", input=[("address", "[]byte")], output=[("result", "bool")], error=True),
+    HookSignature(name="AccountExists", input=[("address", "[]byte")], output=[("result", "bool")], error=True, badReturn="false"),
     HookSignature(name="NewAddress", input=[("creatorAddress", "[]byte"), ("creatorNonce", "uint64"), ("vmType", "[]byte")], output=[("result", "[]byte")], error=True),
     HookSignature(name="GetBalance", input=[("address", "[]byte")], output=[("balance", "*big.Int")], error=True),
-    HookSignature(name="GetNonce", input=[("address", "[]byte")], output=[("nonce", "uint64")], error=True),
+    HookSignature(name="GetNonce", input=[("address", "[]byte")], output=[("nonce", "uint64")], error=True, badReturn="0"),
     HookSignature(name="GetStorageData", input=[("address", "[]byte"), ("index", "[]byte")], output=[("data", "[]byte")], error=True),
-    HookSignature(name="IsCodeEmpty", input=[("address", "[]byte")], output=[("result", "bool")], error=True),
+    HookSignature(name="IsCodeEmpty", input=[("address", "[]byte")], output=[("result", "bool")], error=True, badReturn="false"),
     HookSignature(name="GetCode", input=[("address", "[]byte")], output=[("code", "[]byte")], error=True),
     HookSignature(name="GetBlockhash", input=[("nonce", "uint64")], output=[("result", "[]byte")], error=True),
 
-    HookSignature(name="LastNonce", input=[], output=[("result", "uint64")], error=False),
-    HookSignature(name="LastRound", input=[], output=[("result", "uint64")], error=False),
-    HookSignature(name="LastTimeStamp", input=[], output=[("result", "uint64")], error=False),
-    HookSignature(name="LastRandomSeed", input=[], output=[("result", "[]byte")], error=False),
-    HookSignature(name="LastEpoch", input=[], output=[("result", "uint32")], error=False),
-    HookSignature(name="GetStateRootHash", input=[], output=[("result", "[]byte")], error=False),
-    HookSignature(name="CurrentNonce", input=[], output=[("result", "uint64")], error=False),
-    HookSignature(name="CurrentRound", input=[], output=[("result", "uint64")], error=False),
-    HookSignature(name="CurrentTimeStamp", input=[], output=[("result", "uint64")], error=False),
-    HookSignature(name="CurrentRandomSeed", input=[], output=[("result", "[]byte")], error=False),
-    HookSignature(name="CurrentEpoch", input=[], output=[("result", "uint32")], error=False)
+    HookSignature(name="LastNonce", input=[], output=[("result", "uint64")], badReturn="0"),
+    HookSignature(name="LastRound", input=[], output=[("result", "uint64")], badReturn="0"),
+    HookSignature(name="LastTimeStamp", input=[], output=[("result", "uint64")], badReturn="0"),
+    HookSignature(name="LastRandomSeed", input=[], output=[("result", "[]byte")], badReturn="nil"),
+    HookSignature(name="LastEpoch", input=[], output=[("result", "uint32")], badReturn="0"),
+    HookSignature(name="GetStateRootHash", input=[], output=[("result", "[]byte")], badReturn="nil"),
+    HookSignature(name="CurrentNonce", input=[], output=[("result", "uint64")], badReturn="0"),
+    HookSignature(name="CurrentRound", input=[], output=[("result", "uint64")], badReturn="0"),
+    HookSignature(name="CurrentTimeStamp", input=[], output=[("result", "uint64")], badReturn="0"),
+    HookSignature(name="CurrentRandomSeed", input=[], output=[("result", "[]byte")], badReturn="nil"),
+    HookSignature(name="CurrentEpoch", input=[], output=[("result", "uint32")], badReturn="0")
 ]
 
 
@@ -34,8 +42,12 @@ def main():
 
     messages_parser = subparsers.add_parser("messages")
     messages_parser.set_defaults(func=generate_messages)
+    
     replies_parser = subparsers.add_parser("replies")
     replies_parser.set_defaults(func=generate_replies)
+
+    gateway_parser = subparsers.add_parser("gateway")
+    gateway_parser.set_defaults(func=generate_gateway)
 
     args = parser.parse_args()
 
@@ -158,6 +170,79 @@ def get_call(signature):
 
     return f"{output_args} := part.blockchain.{signature.name}({call_args})", output_args
 
+
+def generate_gateway(args):
+    print("""
+package arwenpart
+
+import (
+	"math/big"
+
+	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+)
+
+var _ vmcommon.BlockchainHook = (*BlockchainHookGateway)(nil)
+
+// BlockchainHookGateway forwards requests to the actual hook
+type BlockchainHookGateway struct {
+	messenger *ChildMessenger
+}
+
+// NewBlockchainHookGateway creates a new gateway
+func NewBlockchainHookGateway(messenger *ChildMessenger) *BlockchainHookGateway {
+	return &BlockchainHookGateway{messenger: messenger}
+}
+""")
+
+    for signature in signatures:
+        func_go = f"""
+        // {signature.name} forwards a message to the actual hook
+        func (blockchain *BlockchainHookGateway) {signature.name}({get_ctor_args(signature.input)}) {get_output_args(signature)} {{
+            request := common.NewMessageBlockchain{signature.name}Request({get_call_args(signature)})
+            rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+            if err != nil {{
+		        return {signature.badReturn}{", err" if signature.error else ""}
+	        }}
+
+            response := rawResponse.(*common.MessageBlockchain{signature.name}Response)
+            {get_gateway_return(signature)}
+        }}
+        """
+
+        print(func_go)
+
+
+
+def get_call_args(signature):
+    call_args = []
+    for arg_name, _ in signature.input:
+        call_args.append(arg_name)
+
+    return ", ".join(call_args)
+
+
+def get_output_args(signature):
+    output_args = []
+    for arg_name, arg_type in signature.output:
+        output_args.append(arg_type)
+    if signature.error:
+        output_args.append(f"error")
+
+    result = ", ".join(output_args)
+    if len(output_args) > 1:
+       result = f"({result})"
+
+    return result
+
+
+def get_gateway_return(signature):
+    result_field, _ = signature.output[0]
+    result_field = my_capitalize(result_field)
+
+    if signature.error:
+        return f"return response.{result_field}, response.GetError()"
+    return f"return response.{result_field}"
 
 if __name__ == "__main__":
     main()

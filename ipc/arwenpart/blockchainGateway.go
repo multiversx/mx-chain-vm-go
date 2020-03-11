@@ -9,23 +9,29 @@ import (
 
 var _ vmcommon.BlockchainHook = (*BlockchainHookGateway)(nil)
 
-// BlockchainHookGateway is
+// BlockchainHookGateway forwards requests to the actual hook
 type BlockchainHookGateway struct {
 	messenger *ChildMessenger
 }
 
-// NewBlockchainHookGateway creates
+// NewBlockchainHookGateway creates a new gateway
 func NewBlockchainHookGateway(messenger *ChildMessenger) *BlockchainHookGateway {
 	return &BlockchainHookGateway{messenger: messenger}
 }
 
-// AccountExists forwards
+// AccountExists forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) AccountExists(address []byte) (bool, error) {
-	common.LogError("not implemented: AccountExists")
-	return false, nil
+	request := common.NewMessageBlockchainAccountExistsRequest(address)
+	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if err != nil {
+		return false, err
+	}
+
+	response := rawResponse.(*common.MessageBlockchainAccountExistsResponse)
+	return response.Result, response.GetError()
 }
 
-// NewAddress forwards
+// NewAddress forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) NewAddress(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error) {
 	request := common.NewMessageBlockchainNewAddressRequest(creatorAddress, creatorNonce, vmType)
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
@@ -37,13 +43,19 @@ func (blockchain *BlockchainHookGateway) NewAddress(creatorAddress []byte, creat
 	return response.Result, response.GetError()
 }
 
-// GetBalance forwards
+// GetBalance forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) GetBalance(address []byte) (*big.Int, error) {
-	common.LogError("not implemented: GetBalance")
-	return nil, nil
+	request := common.NewMessageBlockchainGetBalanceRequest(address)
+	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if err != nil {
+		return nil, err
+	}
+
+	response := rawResponse.(*common.MessageBlockchainGetBalanceResponse)
+	return response.Balance, response.GetError()
 }
 
-// GetNonce forwards
+// GetNonce forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) GetNonce(address []byte) (uint64, error) {
 	request := common.NewMessageBlockchainGetNonceRequest(address)
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
@@ -55,9 +67,9 @@ func (blockchain *BlockchainHookGateway) GetNonce(address []byte) (uint64, error
 	return response.Nonce, response.GetError()
 }
 
-// GetStorageData forwards
-func (blockchain *BlockchainHookGateway) GetStorageData(accountAddress []byte, index []byte) ([]byte, error) {
-	request := common.NewMessageBlockchainGetStorageDataRequest(accountAddress, index)
+// GetStorageData forwards a message to the actual hook
+func (blockchain *BlockchainHookGateway) GetStorageData(address []byte, index []byte) ([]byte, error) {
+	request := common.NewMessageBlockchainGetStorageDataRequest(address, index)
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
 	if err != nil {
 		return nil, err
@@ -67,13 +79,19 @@ func (blockchain *BlockchainHookGateway) GetStorageData(accountAddress []byte, i
 	return response.Data, response.GetError()
 }
 
-// IsCodeEmpty forwards
+// IsCodeEmpty forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) IsCodeEmpty(address []byte) (bool, error) {
-	common.LogError("not implemented: IsCodeEmpty")
-	return false, nil
+	request := common.NewMessageBlockchainIsCodeEmptyRequest(address)
+	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if err != nil {
+		return false, err
+	}
+
+	response := rawResponse.(*common.MessageBlockchainIsCodeEmptyResponse)
+	return response.Result, response.GetError()
 }
 
-// GetCode forwards
+// GetCode forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) GetCode(address []byte) ([]byte, error) {
 	request := common.NewMessageBlockchainGetCodeRequest(address)
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
@@ -85,74 +103,146 @@ func (blockchain *BlockchainHookGateway) GetCode(address []byte) ([]byte, error)
 	return response.Code, response.GetError()
 }
 
-// GetBlockhash forwards
+// GetBlockhash forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) GetBlockhash(nonce uint64) ([]byte, error) {
-	common.LogError("not implemented: GetBlockhash")
-	return nil, nil
+	request := common.NewMessageBlockchainGetBlockhashRequest(nonce)
+	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if err != nil {
+		return nil, err
+	}
+
+	response := rawResponse.(*common.MessageBlockchainGetBlockhashResponse)
+	return response.Result, response.GetError()
 }
 
-// LastNonce forwards
+// LastNonce forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) LastNonce() uint64 {
-	common.LogError("not implemented: LastNonce")
-	return 0
+	request := common.NewMessageBlockchainLastNonceRequest()
+	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if err != nil {
+		return 0
+	}
+
+	response := rawResponse.(*common.MessageBlockchainLastNonceResponse)
+	return response.Result
 }
 
-// LastRound forwards
+// LastRound forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) LastRound() uint64 {
-	common.LogError("not implemented: LastRound")
-	return 0
+	request := common.NewMessageBlockchainLastRoundRequest()
+	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if err != nil {
+		return 0
+	}
+
+	response := rawResponse.(*common.MessageBlockchainLastRoundResponse)
+	return response.Result
 }
 
-// LastTimeStamp forwards
+// LastTimeStamp forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) LastTimeStamp() uint64 {
-	common.LogError("not implemented: LastTimeStamp")
-	return 0
+	request := common.NewMessageBlockchainLastTimeStampRequest()
+	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if err != nil {
+		return 0
+	}
+
+	response := rawResponse.(*common.MessageBlockchainLastTimeStampResponse)
+	return response.Result
 }
 
-// LastRandomSeed forwards
+// LastRandomSeed forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) LastRandomSeed() []byte {
-	common.LogError("not implemented: LastRandomSeed")
-	return nil
+	request := common.NewMessageBlockchainLastRandomSeedRequest()
+	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if err != nil {
+		return nil
+	}
+
+	response := rawResponse.(*common.MessageBlockchainLastRandomSeedResponse)
+	return response.Result
 }
 
-// LastEpoch forwards
+// LastEpoch forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) LastEpoch() uint32 {
-	common.LogError("not implemented: LastEpoch")
-	return 0
+	request := common.NewMessageBlockchainLastEpochRequest()
+	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if err != nil {
+		return 0
+	}
+
+	response := rawResponse.(*common.MessageBlockchainLastEpochResponse)
+	return response.Result
 }
 
-// GetStateRootHash forwards
+// GetStateRootHash forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) GetStateRootHash() []byte {
-	common.LogError("not implemented: GetStateRootHash")
-	return nil
+	request := common.NewMessageBlockchainGetStateRootHashRequest()
+	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if err != nil {
+		return nil
+	}
+
+	response := rawResponse.(*common.MessageBlockchainGetStateRootHashResponse)
+	return response.Result
 }
 
-// CurrentNonce forwards
+// CurrentNonce forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) CurrentNonce() uint64 {
-	common.LogError("not implemented: CurrentNonce")
-	return 0
+	request := common.NewMessageBlockchainCurrentNonceRequest()
+	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if err != nil {
+		return 0
+	}
+
+	response := rawResponse.(*common.MessageBlockchainCurrentNonceResponse)
+	return response.Result
 }
 
-// CurrentRound forwards
+// CurrentRound forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) CurrentRound() uint64 {
-	common.LogError("not implemented: CurrentRound")
-	return 0
+	request := common.NewMessageBlockchainCurrentRoundRequest()
+	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if err != nil {
+		return 0
+	}
+
+	response := rawResponse.(*common.MessageBlockchainCurrentRoundResponse)
+	return response.Result
 }
 
-// CurrentTimeStamp forwards
+// CurrentTimeStamp forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) CurrentTimeStamp() uint64 {
-	common.LogError("not implemented: CurrentTimeStamp")
-	return 0
+	request := common.NewMessageBlockchainCurrentTimeStampRequest()
+	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if err != nil {
+		return 0
+	}
+
+	response := rawResponse.(*common.MessageBlockchainCurrentTimeStampResponse)
+	return response.Result
 }
 
-// CurrentRandomSeed forwards
+// CurrentRandomSeed forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) CurrentRandomSeed() []byte {
-	common.LogError("not implemented: CurrentRandomSeed")
-	return nil
+	request := common.NewMessageBlockchainCurrentRandomSeedRequest()
+	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if err != nil {
+		return nil
+	}
+
+	response := rawResponse.(*common.MessageBlockchainCurrentRandomSeedResponse)
+	return response.Result
 }
 
-// CurrentEpoch forwards
+// CurrentEpoch forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) CurrentEpoch() uint32 {
-	common.LogError("not implemented: CurrentEpoch")
-	return 0
+	request := common.NewMessageBlockchainCurrentEpochRequest()
+	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if err != nil {
+		return 0
+	}
+
+	response := rawResponse.(*common.MessageBlockchainCurrentEpochResponse)
+	return response.Result
 }
