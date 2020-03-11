@@ -52,7 +52,7 @@ func newVMOutputAccount(address []byte) *vmcommon.OutputAccount {
 		Address:        address,
 		Nonce:          0,
 		BalanceDelta:   big.NewInt(0),
-		Balance:        big.NewInt(0),
+		Balance:        nil,
 		StorageUpdates: make(map[string]*vmcommon.StorageUpdate),
 	}
 }

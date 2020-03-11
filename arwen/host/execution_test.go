@@ -1,6 +1,7 @@
 package host
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"math/big"
@@ -315,11 +316,22 @@ func TestExecution_ExecuteOnSameContext_Simple(t *testing.T) {
 
 func TestExecution_ExecuteOnSameContext(t *testing.T) {
 	parentCode := GetTestSCCode("exec-same-ctx-parent", "../../")
+	firstSC := []byte("firstSC.........................")
+	firstSCBalance := big.NewInt(1000)
+
+	getBalanceCalled := func(address []byte) (*big.Int, error) {
+		fmt.Printf("getBalanceCalled for %s\n", address)
+		if bytes.Equal(firstSC, address) {
+			return firstSCBalance, nil
+		}
+		return big.NewInt(0), nil
+	}
 
 	// Execute the parent SC method "parentFunctionPrepare", which sets storage,
 	// finish data and performs a transfer. This step validates the test to the
 	// actual call to ExecuteOnSameContext().
-	host, _ := DefaultTestArwenForCall(t, parentCode)
+	host, stubBlockchainHook := DefaultTestArwenForCall(t, parentCode)
+	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
 	input := DefaultTestContractCallInput()
 	input.CallerAddr = []byte("user")
 	input.RecipientAddr = firstAddress
@@ -336,7 +348,9 @@ func TestExecution_ExecuteOnSameContext(t *testing.T) {
 
 	// Call parentFunctionWrongCall() of the parent SC, which will try to call a
 	// non-existing SC.
-	host, _ = DefaultTestArwenForCall(t, parentCode)
+	host, stubBlockchainHook = DefaultTestArwenForCall(t, parentCode)
+	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
+	host.Output().AddTxValueToAccount(firstSC, big.NewInt(1000))
 	input = DefaultTestContractCallInput()
 	input.CallerAddr = []byte("user")
 	input.RecipientAddr = firstAddress
@@ -353,7 +367,9 @@ func TestExecution_ExecuteOnSameContext(t *testing.T) {
 	// TODO verify whether the child can access bigInts of the parent? the child
 	// shouldn't
 	childCode := GetTestSCCode("exec-same-ctx-child", "../../")
-	host, _ = DefaultTestArwenForTwoSCs(t, parentCode, childCode)
+	host, stubBlockchainHook = DefaultTestArwenForTwoSCs(t, parentCode, childCode)
+	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
+	host.Output().AddTxValueToAccount(firstSC, big.NewInt(1000))
 	input = DefaultTestContractCallInput()
 	input.CallerAddr = []byte("user")
 	input.RecipientAddr = firstAddress
@@ -427,6 +443,7 @@ func expectedVMOutputs(id string) *vmcommon.VMOutput {
 			-parentTransferValue,
 			nil,
 		)
+		parentAccount.Balance = big.NewInt(1000)
 		SetStorageUpdate(parentAccount, parentKeyA, parentDataA)
 		SetStorageUpdate(parentAccount, parentKeyB, parentDataB)
 		_ = AddNewOutputAccount(
@@ -468,12 +485,13 @@ func expectedVMOutputs(id string) *vmcommon.VMOutput {
 		expectedVMOutput.GasRemaining = 995702
 		parentAccount := expectedVMOutput.OutputAccounts[string(parentAddress)]
 		parentAccount.BalanceDelta = big.NewInt(-141)
-		_ = AddNewOutputAccount(
+		childAccount := AddNewOutputAccount(
 			expectedVMOutput,
 			childAddress,
 			3,
 			nil,
 		)
+		childAccount.Balance = big.NewInt(0)
 		SetStorageUpdate(parentAccount, childKey, childData)
 		_ = AddNewOutputAccount(
 			expectedVMOutput,

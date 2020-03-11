@@ -82,7 +82,7 @@ func TestOutputContext_GetOutputAccount(t *testing.T) {
 	require.Equal(t, []byte("account"), account.Address)
 	require.Zero(t, account.Nonce)
 	require.Equal(t, big.NewInt(0), account.BalanceDelta)
-	require.Equal(t, big.NewInt(0), account.Balance)
+	require.Nil(t, account.Balance)
 	require.Zero(t, len(account.StorageUpdates))
 
 	// Change fields of the OutputAccount to ensure it will be returned on the
@@ -348,16 +348,28 @@ func TestOutputContext_Transfer(t *testing.T) {
 	balance := big.NewInt(10000)
 	valueToTransfer := big.NewInt(1000)
 
-	host := &mock.VmHostStub{}
+	host := &mock.VmHostMock{}
+	mockBlockchainHook := mock.NewBlockchainHookMock()
+	mockBlockchainHook.AddAccount(&mock.Account{
+		Exists:       true,
+		Address:      sender,
+		Nonce:        42,
+		Balance:      balance,
+		BalanceDelta: big.NewInt(0),
+	})
+
+	blockchainContext, _ := NewBlockchainContext(host, mockBlockchainHook)
 	outputContext, _ := NewOutputContext(host)
-	outputContext.AddTxValueToAccount(sender, balance)
+
+	host.OutputContext = outputContext
+	host.BlockchainContext = blockchainContext
 
 	result := outputContext.Transfer(receiver, sender, 54, valueToTransfer, []byte("txdata"))
 	require.Zero(t, result)
 
 	senderAccount, isNew := outputContext.GetOutputAccount(sender)
 	require.False(t, isNew)
-	require.Equal(t, big.NewInt(9000), senderAccount.BalanceDelta)
+	require.Equal(t, big.NewInt(-1000), senderAccount.BalanceDelta)
 
 	destAccount, isNew := outputContext.GetOutputAccount(receiver)
 	require.False(t, isNew)
@@ -373,8 +385,14 @@ func TestOutputContext_Transfer_Errors(t *testing.T) {
 	receiver := []byte("receiver")
 	balance := big.NewInt(10000)
 
-	host := &mock.VmHostStub{}
+	mockBlockchainHook := &mock.BlockchainHookMock{}
+
+	host := &mock.VmHostMock{}
 	outputContext, _ := NewOutputContext(host)
+	blockchainContext, _ := NewBlockchainContext(host, mockBlockchainHook)
+
+	host.OutputContext = outputContext
+	host.BlockchainContext = blockchainContext
 	outputContext.AddTxValueToAccount(sender, balance)
 
 	// negative transfers are disallowed

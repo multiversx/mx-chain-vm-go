@@ -132,7 +132,7 @@ func AddNewOutputAccount(vmOutput *vmcommon.VMOutput, address []byte, balanceDel
 		Address:        address,
 		Nonce:          0,
 		BalanceDelta:   big.NewInt(balanceDelta),
-		Balance:        big.NewInt(0),
+		Balance:        nil,
 		StorageUpdates: make(map[string]*vmcommon.StorageUpdate),
 		Code:           nil,
 		Data:           data,
