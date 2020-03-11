@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
 
@@ -82,7 +82,7 @@ func TestOutputContext_GetOutputAccount(t *testing.T) {
 	require.Equal(t, []byte("account"), account.Address)
 	require.Zero(t, account.Nonce)
 	require.Equal(t, big.NewInt(0), account.BalanceDelta)
-	require.Equal(t, big.NewInt(0), account.Balance)
+	require.Nil(t, account.Balance)
 	require.Zero(t, len(account.StorageUpdates))
 
 	// Change fields of the OutputAccount to ensure it will be returned on the
@@ -110,7 +110,6 @@ func TestOutputContext_GettersAndSetters(t *testing.T) {
 
 	outputContext.SetReturnMessage("rockets")
 	require.Equal(t, "rockets", outputContext.ReturnMessage())
-
 }
 
 func TestOutputContext_FinishReturnData(t *testing.T) {
@@ -349,21 +348,63 @@ func TestOutputContext_Transfer(t *testing.T) {
 	balance := big.NewInt(10000)
 	valueToTransfer := big.NewInt(1000)
 
-	host := &mock.VmHostStub{}
-	outputContext, _ := NewOutputContext(host)
-	outputContext.AddTxValueToAccount(sender, balance)
+	host := &mock.VmHostMock{}
+	mockBlockchainHook := mock.NewBlockchainHookMock()
+	mockBlockchainHook.AddAccount(&mock.Account{
+		Exists:       true,
+		Address:      sender,
+		Nonce:        42,
+		Balance:      balance,
+		BalanceDelta: big.NewInt(0),
+	})
 
-	outputContext.Transfer(receiver, sender, 54, valueToTransfer, []byte("txdata"))
+	blockchainContext, _ := NewBlockchainContext(host, mockBlockchainHook)
+	outputContext, _ := NewOutputContext(host)
+
+	host.OutputContext = outputContext
+	host.BlockchainContext = blockchainContext
+
+	result := outputContext.Transfer(receiver, sender, 54, valueToTransfer, []byte("txdata"))
+	require.Zero(t, result)
 
 	senderAccount, isNew := outputContext.GetOutputAccount(sender)
 	require.False(t, isNew)
-	require.Equal(t, big.NewInt(9000), senderAccount.BalanceDelta)
+	require.Equal(t, big.NewInt(-1000), senderAccount.BalanceDelta)
 
 	destAccount, isNew := outputContext.GetOutputAccount(receiver)
 	require.False(t, isNew)
 	require.Equal(t, valueToTransfer, destAccount.BalanceDelta)
 	require.Equal(t, uint64(54), destAccount.GasLimit)
 	require.Equal(t, []byte("txdata"), destAccount.Data)
+}
+
+func TestOutputContext_Transfer_Errors(t *testing.T) {
+	t.Parallel()
+
+	sender := []byte("sender")
+	receiver := []byte("receiver")
+	balance := big.NewInt(10000)
+
+	mockBlockchainHook := &mock.BlockchainHookMock{}
+
+	host := &mock.VmHostMock{}
+	outputContext, _ := NewOutputContext(host)
+	blockchainContext, _ := NewBlockchainContext(host, mockBlockchainHook)
+
+	host.OutputContext = outputContext
+	host.BlockchainContext = blockchainContext
+	outputContext.AddTxValueToAccount(sender, balance)
+
+	// negative transfers are disallowed
+	valueToTransfer := big.NewInt(-1000)
+	result := outputContext.Transfer(receiver, sender, 54, valueToTransfer, []byte("txdata"))
+	require.NotZero(t, result)
+
+	// account must have enough money to transfer
+	valueToTransfer = big.NewInt(50000)
+	result = outputContext.Transfer(receiver, sender, 54, valueToTransfer, []byte("txdata"))
+	require.NotZero(t, result)
+
 }
 
 func TestOutputContext_WriteLog(t *testing.T) {

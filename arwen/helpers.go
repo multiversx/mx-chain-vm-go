@@ -2,6 +2,8 @@ package arwen
 
 import (
 	"fmt"
+	"io/ioutil"
+	"path/filepath"
 	"unsafe"
 )
 
@@ -74,4 +76,10 @@ func WithFault(err error, context unsafe.Pointer, failExecution bool) bool {
 	}
 
 	return true
+}
+
+func GetSCCode(fileName string) []byte {
+	code, _ := ioutil.ReadFile(filepath.Clean(fileName))
+
+	return code
 }

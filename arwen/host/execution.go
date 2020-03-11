@@ -13,8 +13,8 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	runtime := host.Runtime()
 	metering := host.Metering()
 	output := host.Output()
+	storage := host.Storage()
 
-	var returnCode vmcommon.ReturnCode
 	var err error
 	defer func() {
 		if err != nil {
@@ -24,36 +24,37 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 			} else {
 				message = err.Error()
 			}
-			vmOutput = output.CreateVMOutputInCaseOfError(returnCode, message)
+			vmOutput = output.CreateVMOutputInCaseOfError(output.ReturnCode(), message)
 		}
 	}()
 
 	address, err := blockchain.NewAddress(input.CallerAddr)
 	if err != nil {
-		returnCode = vmcommon.ExecutionFailed
+		output.SetReturnCode(vmcommon.ExecutionFailed)
 		return vmOutput
 	}
 
 	runtime.SetVMInput(&input.VMInput)
 	runtime.SetSCAddress(address)
 	output.AddTxValueToAccount(address, input.CallValue)
+	storage.SetAddress(runtime.GetSCAddress())
 
 	err = metering.DeductInitialGasForDirectDeployment(input)
 	if err != nil {
-		returnCode = vmcommon.OutOfGas
+		output.SetReturnCode(vmcommon.OutOfGas)
 		return vmOutput
 	}
 
 	vmInput := runtime.GetVMInput()
 	err = runtime.CreateWasmerInstance(input.ContractCode, vmInput.GasProvided)
 	if err != nil {
-		returnCode = vmcommon.ContractInvalid
+		output.SetReturnCode(vmcommon.ContractInvalid)
 		return vmOutput
 	}
 
 	err = runtime.VerifyContractCode()
 	if err != nil {
-		returnCode = vmcommon.ContractInvalid
+		output.SetReturnCode(vmcommon.ContractInvalid)
 		return vmOutput
 	}
 
@@ -66,7 +67,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 
 	err = host.callInitFunction()
 	if err != nil {
-		returnCode = vmcommon.FunctionWrongSignature
+		output.SetReturnCode(vmcommon.FunctionWrongSignature)
 		return vmOutput
 	}
 
@@ -84,8 +85,8 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	output := host.Output()
 	metering := host.Metering()
 	blockchain := host.Blockchain()
+	storage := host.Storage()
 
-	var returnCode vmcommon.ReturnCode
 	var err error
 	defer func() {
 		if err != nil {
@@ -95,16 +96,17 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 			} else {
 				message = err.Error()
 			}
-			vmOutput = output.CreateVMOutputInCaseOfError(returnCode, message)
+			vmOutput = output.CreateVMOutputInCaseOfError(output.ReturnCode(), message)
 		}
 	}()
 
 	runtime.InitStateFromContractCallInput(input)
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
+	storage.SetAddress(runtime.GetSCAddress())
 
 	contract, err := blockchain.GetCode(runtime.GetSCAddress())
 	if err != nil {
-		returnCode = vmcommon.ContractInvalid
+		output.SetReturnCode(vmcommon.ContractInvalid)
 		return vmOutput
 	}
 
@@ -112,13 +114,13 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 
 	err = metering.DeductInitialGasForExecution(contract)
 	if err != nil {
-		returnCode = vmcommon.OutOfGas
+		output.SetReturnCode(vmcommon.OutOfGas)
 		return vmOutput
 	}
 
 	err = runtime.CreateWasmerInstance(contract, vmInput.GasProvided)
 	if err != nil {
-		returnCode = vmcommon.ContractInvalid
+		output.SetReturnCode(vmcommon.ContractInvalid)
 		return vmOutput
 	}
 
@@ -129,7 +131,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 		arwen.RemoveHostContext(idContext)
 	}()
 
-	returnCode, err = host.callSCMethod()
+	err = host.callSCMethod()
 
 	if err != nil {
 		return vmOutput
@@ -149,6 +151,8 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vm
 	host.InitState()
 
 	host.Runtime().InitStateFromContractCallInput(input)
+	host.Storage().SetAddress(host.Runtime().GetSCAddress())
+
 	err := host.execute(input)
 	if err != nil {
 		return nil, err
@@ -349,17 +353,19 @@ func (host *vmHost) callInitFunction() error {
 	return nil
 }
 
-func (host *vmHost) callSCMethod() (vmcommon.ReturnCode, error) {
+func (host *vmHost) callSCMethod() error {
+	output := host.Output()
 	if host.isInitFunctionBeingCalled() {
-		return vmcommon.UserError, arwen.ErrInitFuncCalledInRun
+		output.SetReturnCode(vmcommon.UserError)
+		return arwen.ErrInitFuncCalledInRun
 	}
 
 	runtime := host.Runtime()
-	output := host.Output()
 
 	function, err := runtime.GetFunctionToCall()
 	if err != nil {
-		return vmcommon.FunctionNotFound, err
+		output.SetReturnCode(vmcommon.FunctionNotFound)
+		return err
 	}
 
 	result, err := function()
@@ -370,12 +376,28 @@ func (host *vmHost) callSCMethod() (vmcommon.ReturnCode, error) {
 		}
 	}
 
-	// TODO: replace with wrong signature error/return code *before* starting executions
-	if !result.IsVoid() {
-		return vmcommon.UserError, arwen.ErrFunctionReturnNotVoidError
+	if err == arwen.ErrSignalError {
+		output.SetReturnCode(vmcommon.UserError)
+		return err
 	}
 
-	return output.ReturnCode(), err
+	if err == arwen.ErrNotEnoughGas {
+		output.SetReturnCode(vmcommon.OutOfGas)
+		return err
+	}
+
+	if err != nil {
+		output.SetReturnCode(vmcommon.ExecutionFailed)
+		return err
+	}
+
+	// TODO: replace with wrong signature error/return code *before* starting executions
+	if !result.IsVoid() {
+		output.SetReturnCode(vmcommon.UserError)
+		return arwen.ErrFunctionReturnNotVoidError
+	}
+
+	return err
 }
 
 // The first four bytes is the method selector. The rest of the input data are method arguments in chunks of 32 bytes.

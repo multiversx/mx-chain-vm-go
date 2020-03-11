@@ -110,8 +110,8 @@ func TestElrondEI_int64getArgument(t *testing.T) {
 	i64val12345 := big.NewInt(0).SetBytes(data[2])
 	assert.Equal(t, big.NewInt(12345), i64val12345)
 
-	// Take the result of the SC method (the number 12345 as bytes) and feed it
-	// back into the SC method.
+	// Take the result of the SC method (the number 12345 as bytes, received from
+	// the SC in data[2]) and feed it back into the SC method.
 	input.Arguments = [][]byte{data[2]}
 
 	vmOutput, err = host.RunSmartContractCall(input)

@@ -47,7 +47,15 @@ func (context *blockchainContext) AccountExists(address []byte) bool {
 func (context *blockchainContext) GetBalance(address []byte) []byte {
 	outputAccount, isNew := context.host.Output().GetOutputAccount(address)
 	if !isNew {
-		return outputAccount.Balance.Bytes()
+		if outputAccount.Balance == nil {
+			balance, err := context.blockChainHook.GetBalance(address)
+			if err != nil {
+				return big.NewInt(0).Bytes()
+			}
+			outputAccount.Balance = balance
+		}
+		balance := big.NewInt(0).Add(outputAccount.Balance, outputAccount.BalanceDelta)
+		return balance.Bytes()
 	}
 
 	balance, err := context.blockChainHook.GetBalance(address)
@@ -61,6 +69,10 @@ func (context *blockchainContext) GetBalance(address []byte) []byte {
 }
 
 func (context *blockchainContext) GetNonce(address []byte) (uint64, error) {
+	// TODO verify if Nonce is 0, which means the outputAccount was cached, but
+	// its Nonce not yet retrieved from the BlockchainHook; more generally,
+	// create a list of accounts that have been cached, but not yet fully updated
+	// from the BlockchainHook (they might have uninitialized Nonce and Balance).
 	outputAccount, isNew := context.host.Output().GetOutputAccount(address)
 	if !isNew {
 		return outputAccount.Nonce, nil
@@ -83,8 +95,7 @@ func (context *blockchainContext) IncreaseNonce(address []byte) {
 }
 
 func (context *blockchainContext) GetCodeHash(addr []byte) ([]byte, error) {
-	// TODO must get the code from the OutputAccount, if present
-	code, err := context.blockChainHook.GetCode(addr)
+	code, err := context.GetCode(addr)
 	if err != nil {
 		return nil, err
 	}
