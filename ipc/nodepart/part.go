@@ -4,21 +4,24 @@ import (
 	"os"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
+	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // NodePart is the endpoint that implements the message loop on Node's side
 type NodePart struct {
+	Logger     logger.Logger
 	Messenger  *NodeMessenger
 	blockchain vmcommon.BlockchainHook
 	Repliers   []common.MessageReplier
 }
 
 // NewNodePart creates the Node part
-func NewNodePart(input *os.File, output *os.File, blockchain vmcommon.BlockchainHook) (*NodePart, error) {
-	messenger := NewNodeMessenger(input, output)
+func NewNodePart(nodeLogger logger.Logger, input *os.File, output *os.File, blockchain vmcommon.BlockchainHook) (*NodePart, error) {
+	messenger := NewNodeMessenger(nodeLogger, input, output)
 
 	part := &NodePart{
+		Logger:     nodeLogger,
 		Messenger:  messenger,
 		blockchain: blockchain,
 	}
@@ -52,7 +55,7 @@ func (part *NodePart) StartLoop(request common.MessageHandler) (common.MessageHa
 	part.Messenger.SendContractRequest(request)
 	response, err := part.doLoop()
 
-	common.LogDebug("[NODE]: end of loop, err=%v", err)
+	part.Logger.Debug("[NODE]: end of loop, err=%v", err)
 	part.Messenger.EndDialogue()
 	return response, err
 }
@@ -108,6 +111,6 @@ func (part *NodePart) SendStopSignal() error {
 		return err
 	}
 
-	common.LogInfo("Node: sent stop signal to Arwen.")
+	part.Logger.Info("Node: sent stop signal to Arwen.")
 	return nil
 }

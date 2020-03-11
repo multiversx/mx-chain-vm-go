@@ -6,19 +6,21 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
+	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // ArwenPart is the endpoint that implements the message loop on Arwen's side
 type ArwenPart struct {
 	Messenger *ArwenMessenger
+	Logger    logger.Logger
 	VMHost    vmcommon.VMExecutionHandler
 	Repliers  []common.MessageReplier
 }
 
 // NewArwenPart creates the Arwen part
-func NewArwenPart(input *os.File, output *os.File, vmType []byte, blockGasLimit uint64, gasSchedule map[string]map[string]uint64) (*ArwenPart, error) {
-	messenger := NewArwenMessenger(input, output)
+func NewArwenPart(logger logger.Logger, input *os.File, output *os.File, vmType []byte, blockGasLimit uint64, gasSchedule map[string]map[string]uint64) (*ArwenPart, error) {
+	messenger := NewArwenMessenger(logger, input, output)
 	blockchain := NewBlockchainHookGateway(messenger)
 	crypto := NewCryptoHookGateway()
 
@@ -29,6 +31,7 @@ func NewArwenPart(input *os.File, output *os.File, vmType []byte, blockGasLimit 
 
 	part := &ArwenPart{
 		Messenger: messenger,
+		Logger:    logger,
 		VMHost:    host,
 	}
 
@@ -44,7 +47,7 @@ func NewArwenPart(input *os.File, output *os.File, vmType []byte, blockGasLimit 
 func (part *ArwenPart) StartLoop() error {
 	err := part.doLoop()
 	part.Messenger.Shutdown()
-	common.LogError("[ARWEN]: end of loop, err=%v", err)
+	part.Logger.Error("[ARWEN]: end of loop, err=%v", err)
 	return err
 }
 
@@ -68,7 +71,7 @@ func (part *ArwenPart) doLoop() error {
 }
 
 func (part *ArwenPart) replyToNodeRequest(request common.MessageHandler) common.MessageHandler {
-	common.LogInfo("[ARWEN]: replyToNodeRequest() %v", request)
+	part.Logger.Info("[ARWEN]: replyToNodeRequest() %v", request)
 	replier := part.Repliers[request.GetKind()]
 	return replier(request)
 }
@@ -82,7 +85,7 @@ func (part *ArwenPart) replyToRunSmartContractCreate(request common.MessageHandl
 func (part *ArwenPart) replyToRunSmartContractCall(request common.MessageHandler) common.MessageHandler {
 	typedRequest := request.(*common.MessageContractCallRequest)
 	vmOutput, err := part.VMHost.RunSmartContractCall(typedRequest.CallInput)
-	common.LogInfo("[ARWEN]: replyToRunSmartContractCall() done")
+	part.Logger.Info("[ARWEN]: replyToRunSmartContractCall() done")
 	return common.NewMessageContractResponse(vmOutput, err)
 }
 

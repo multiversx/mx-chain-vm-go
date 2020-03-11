@@ -11,6 +11,7 @@ import (
 	"syscall"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
+	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -18,7 +19,7 @@ var _ vmcommon.VMExecutionHandler = (*ArwenDriver)(nil)
 
 // ArwenDriver manages the execution of the Arwen process
 type ArwenDriver struct {
-	nodeLogger     common.NodeLogger
+	nodeLogger     logger.Logger
 	blockchainHook vmcommon.BlockchainHook
 	vmType         []byte
 	blockGasLimit  uint64
@@ -28,13 +29,15 @@ type ArwenDriver struct {
 	arwenInputWrite  *os.File
 	arwenOutputRead  *os.File
 	arwenOutputWrite *os.File
+	arwenLogRead     *os.File
+	arwenLogWrite    *os.File
 	command          *exec.Cmd
 	part             *NodePart
 }
 
 // NewArwenDriver creates a new driver
 func NewArwenDriver(
-	nodeLogger common.NodeLogger,
+	nodeLogger logger.Logger,
 	blockchainHook vmcommon.BlockchainHook,
 	vmType []byte,
 	blockGasLimit uint64,
@@ -62,13 +65,14 @@ func (driver *ArwenDriver) startArwen() error {
 		return err
 	}
 
-	arguments, err := common.PrepareArguments(driver.vmType, driver.blockGasLimit, driver.gasSchedule)
+	arguments, err := common.PrepareArguments(driver.vmType, driver.blockGasLimit, driver.gasSchedule, logger.LogDebug)
+	fmt.Println(arguments)
 	if err != nil {
 		return err
 	}
 
 	driver.command = exec.Command(arwenPath, arguments...)
-	driver.command.ExtraFiles = []*os.File{driver.arwenInputRead, driver.arwenOutputWrite}
+	driver.command.ExtraFiles = []*os.File{driver.arwenInputRead, driver.arwenOutputWrite, driver.arwenLogWrite}
 
 	arwenStdout, err := driver.command.StdoutPipe()
 	if err != nil {
@@ -85,7 +89,7 @@ func (driver *ArwenDriver) startArwen() error {
 		return err
 	}
 
-	driver.part, err = NewNodePart(driver.arwenOutputRead, driver.arwenInputWrite, driver.blockchainHook)
+	driver.part, err = NewNodePart(driver.nodeLogger, driver.arwenOutputRead, driver.arwenInputWrite, driver.blockchainHook)
 	if err != nil {
 		return err
 	}
@@ -128,6 +132,8 @@ func (driver *ArwenDriver) resetPipeStreams() error {
 	closeFile(driver.arwenInputWrite)
 	closeFile(driver.arwenOutputRead)
 	closeFile(driver.arwenOutputWrite)
+	closeFile(driver.arwenLogRead)
+	closeFile(driver.arwenLogWrite)
 
 	var err error
 
@@ -137,6 +143,11 @@ func (driver *ArwenDriver) resetPipeStreams() error {
 	}
 
 	driver.arwenOutputRead, driver.arwenOutputWrite, err = os.Pipe()
+	if err != nil {
+		return err
+	}
+
+	driver.arwenLogRead, driver.arwenLogWrite, err = os.Pipe()
 	if err != nil {
 		return err
 	}

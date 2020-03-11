@@ -8,20 +8,24 @@ import (
 	"io"
 	"os"
 	"time"
+
+	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/logger"
 )
 
 // Messenger intermediates communication (message exchange) via pipes
 type Messenger struct {
 	Name   string
 	Nonce  uint32
+	Logger logger.Logger
 	reader *os.File
 	writer *os.File
 }
 
 // NewMessenger creates a new messenger
-func NewMessenger(name string, reader *os.File, writer *os.File) *Messenger {
+func NewMessenger(name string, logger logger.Logger, reader *os.File, writer *os.File) *Messenger {
 	return &Messenger{
 		Name:   name,
+		Logger: logger,
 		reader: reader,
 		writer: writer,
 	}
@@ -47,7 +51,7 @@ func (messenger *Messenger) Send(message MessageHandler) error {
 		return err
 	}
 
-	LogDebug("[%s][#%d]: SENT message of size %d %s", messenger.Name, message.GetNonce(), len(dataBytes), message)
+	messenger.Logger.Debug("[%s][#%d]: SENT message of size %d %s", messenger.Name, message.GetNonce(), len(dataBytes), message)
 	return err
 }
 
@@ -61,7 +65,7 @@ func (messenger *Messenger) sendMessageLengthAndKind(length int, kind MessageKin
 
 // Receive receives a message, reads it from the pipe
 func (messenger *Messenger) Receive(timeout int) (MessageHandler, error) {
-	LogDebug("[%s]: Receive message...", messenger.Name)
+	messenger.Logger.Debug("[%s]: Receive message...", messenger.Name)
 
 	if timeout != 0 {
 		messenger.setReceiveDeadline(timeout)
@@ -87,7 +91,7 @@ func (messenger *Messenger) Receive(timeout int) (MessageHandler, error) {
 		return nil, err
 	}
 
-	LogDebug("[%s][#%d]: RECEIVED message of size %d %s", messenger.Name, message.GetNonce(), length, message)
+	messenger.Logger.Debug("[%s][#%d]: RECEIVED message of size %d %s", messenger.Name, message.GetNonce(), length, message)
 	messageNonce := message.GetNonce()
 	if messageNonce != messenger.Nonce+1 {
 		return nil, ErrInvalidMessageNonce
@@ -121,16 +125,16 @@ func (messenger *Messenger) receiveMessageLengthAndKind() (int, MessageKind, err
 
 // Shutdown closes the pipes
 func (messenger *Messenger) Shutdown() {
-	LogDebug("%s:  Messenger::Shutdown", messenger.Name)
+	messenger.Logger.Debug("%s:  Messenger::Shutdown", messenger.Name)
 
 	err := messenger.writer.Close()
 	if err != nil {
-		LogError("Cannot close writer: %v", err)
+		messenger.Logger.Error("Cannot close writer: %v", err)
 	}
 
 	err = messenger.reader.Close()
 	if err != nil {
-		LogError("Cannot close reader: %v", err)
+		messenger.Logger.Error("Cannot close reader: %v", err)
 	}
 }
 

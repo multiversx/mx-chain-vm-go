@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
+	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/logger"
 )
 
 // NodeMessenger is the messenger on Node's part of the pipe
@@ -13,9 +14,9 @@ type NodeMessenger struct {
 }
 
 // NewNodeMessenger creates a new messenger
-func NewNodeMessenger(reader *os.File, writer *os.File) *NodeMessenger {
+func NewNodeMessenger(logger logger.Logger, reader *os.File, writer *os.File) *NodeMessenger {
 	return &NodeMessenger{
-		Messenger: *common.NewMessenger("NODE", reader, writer),
+		Messenger: *common.NewMessenger("NODE", logger, reader, writer),
 	}
 }
 

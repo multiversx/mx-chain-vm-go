@@ -5,6 +5,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
+	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/logger"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/nodepart"
 	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
 	"github.com/stretchr/testify/require"
@@ -57,7 +58,8 @@ func TestArwenDriver_RestartsIfStopped(t *testing.T) {
 }
 
 func newDriver(t *testing.T, blockchain *mock.BlockChainHookStub) *nodepart.ArwenDriver {
-	driver, err := nodepart.NewArwenDriver(&MockNodeLogger{}, blockchain, arwenVirtualMachine, uint64(10000000), config.MakeGasMap(1))
+	logger := logger.NewDefaultLogger(logger.LogDebug)
+	driver, err := nodepart.NewArwenDriver(logger, blockchain, arwenVirtualMachine, uint64(10000000), config.MakeGasMap(1))
 	require.Nil(t, err)
 	require.NotNil(t, driver)
 	require.False(t, driver.IsClosed())

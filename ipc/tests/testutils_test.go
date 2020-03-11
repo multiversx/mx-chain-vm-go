@@ -50,21 +50,3 @@ func createCallInput(function string) *vmcommon.ContractCallInput {
 		Function:      function,
 	}
 }
-
-type MockNodeLogger struct {
-}
-
-func (logger *MockNodeLogger) Trace(message string, args ...interface{}) {
-}
-
-func (logger *MockNodeLogger) Debug(message string, args ...interface{}) {
-}
-
-func (logger *MockNodeLogger) Info(message string, args ...interface{}) {
-}
-
-func (logger *MockNodeLogger) Warn(message string, args ...interface{}) {
-}
-
-func (logger *MockNodeLogger) Error(message string, args ...interface{}) {
-}
