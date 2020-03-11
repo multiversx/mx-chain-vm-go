@@ -47,7 +47,7 @@ func NewArwenPart(logger logger.Logger, input *os.File, output *os.File, vmType 
 func (part *ArwenPart) StartLoop() error {
 	err := part.doLoop()
 	part.Messenger.Shutdown()
-	part.Logger.Error("[ARWEN]: end of loop, err=%v", err)
+	part.Logger.Error("[ARWEN]: end of loop", "err", err)
 	return err
 }
 
@@ -71,7 +71,7 @@ func (part *ArwenPart) doLoop() error {
 }
 
 func (part *ArwenPart) replyToNodeRequest(request common.MessageHandler) common.MessageHandler {
-	part.Logger.Info("[ARWEN]: replyToNodeRequest() %v", request)
+	part.Logger.Info("[ARWEN]: replyToNodeRequest()", "req", request)
 	replier := part.Repliers[request.GetKind()]
 	return replier(request)
 }

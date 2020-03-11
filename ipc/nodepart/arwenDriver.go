@@ -66,7 +66,6 @@ func (driver *ArwenDriver) startArwen() error {
 	}
 
 	arguments, err := common.PrepareArguments(driver.vmType, driver.blockGasLimit, driver.gasSchedule, logger.LogDebug)
-	fmt.Println(arguments)
 	if err != nil {
 		return err
 	}
@@ -280,7 +279,7 @@ func (driver *ArwenDriver) continuouslyCopyArwenLogs(arwenStdout io.Reader, arwe
 			}
 
 			line = strings.TrimSpace(line)
-			driver.nodeLogger.Info(line)
+			driver.nodeLogger.Info("ARWEN-OUT", line)
 		}
 	}()
 
@@ -292,7 +291,7 @@ func (driver *ArwenDriver) continuouslyCopyArwenLogs(arwenStdout io.Reader, arwe
 			}
 
 			line = strings.TrimSpace(line)
-			driver.nodeLogger.Error(line)
+			driver.nodeLogger.Error("ARWEN-ERR", line)
 		}
 	}()
 }

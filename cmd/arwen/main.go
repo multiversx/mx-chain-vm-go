@@ -25,12 +25,13 @@ func main() {
 		log.Fatal("Cannot create [arwenToNodeFile] file")
 	}
 
-	logToNodeFile := os.NewFile(4, "/proc/self/fd/5")
+	logToNodeFile := os.NewFile(5, "/proc/self/fd/5")
 	if arwenToNodeFile == nil {
 		log.Fatal("Cannot create [logToNodeFile] file")
 	}
 
 	arwenLogger := logger.NewPipeLogger(logLevel, logToNodeFile)
+	//arwenLogger = logger.NewDefaultLogger(logLevel)
 	part, err := arwenpart.NewArwenPart(arwenLogger, nodeToArwenFile, arwenToNodeFile, vmType, blockGasLimit, gasSchedule)
 	if err != nil {
 		log.Fatalf("Cannot create ArwenPart: %v", err)
