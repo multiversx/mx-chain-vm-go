@@ -295,8 +295,8 @@ func (te *arwenTestExecutor) Run(test *ij.Test) error {
 		}
 
 		if matchingAcct.Balance.Cmp(postAcct.Balance) != 0 {
-			return fmt.Errorf("bad account balance. Account: %s. Want: 0x%x. Have: 0x%x",
-				hex.EncodeToString(matchingAcct.Address), postAcct.Balance, matchingAcct.Balance)
+			return fmt.Errorf("bad account balance. Account: %s. Want: %s. Have: %s",
+				hex.EncodeToString(matchingAcct.Address), bigIntPretty(postAcct.Balance), bigIntPretty(matchingAcct.Balance))
 		}
 
 		if !bytes.Equal(matchingAcct.Code, postAcct.Code) {

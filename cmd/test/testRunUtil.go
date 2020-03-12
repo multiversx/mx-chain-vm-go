@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math/big"
 
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
@@ -56,4 +57,8 @@ func zeroIfNil(i *big.Int) *big.Int {
 		return zero
 	}
 	return i
+}
+
+func bigIntPretty(i *big.Int) string {
+	return fmt.Sprintf("0x%x (%d)", i, i)
 }
