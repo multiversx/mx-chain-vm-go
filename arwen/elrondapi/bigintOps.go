@@ -200,7 +200,7 @@ func bigIntStorageStore(context unsafe.Pointer, keyOffset int32, source int32) i
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntStorageStore
 	metering.UseGas(gasToUse)
 
-	return storage.SetStorage(runtime.GetSCAddress(), key, bytes)
+	return storage.SetStorage(key, bytes)
 }
 
 //export bigIntStorageLoad
@@ -215,7 +215,7 @@ func bigIntStorageLoad(context unsafe.Pointer, keyOffset int32, destination int3
 		return 0
 	}
 
-	bytes := storage.GetStorage(runtime.GetSCAddress(), key)
+	bytes := storage.GetStorage(key)
 
 	value := bigInt.GetOne(destination)
 	value.SetBytes(bytes)

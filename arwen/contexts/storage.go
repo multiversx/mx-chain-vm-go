@@ -10,6 +10,8 @@ import (
 type storageContext struct {
 	host           arwen.VMHost
 	blockChainHook vmcommon.BlockchainHook
+	address        []byte
+	stateStack     [][]byte
 }
 
 func NewStorageContext(
@@ -19,9 +21,33 @@ func NewStorageContext(
 	context := &storageContext{
 		host:           host,
 		blockChainHook: blockChainHook,
+		stateStack:     make([][]byte, 0),
 	}
 
 	return context, nil
+}
+
+func (context *storageContext) InitState() {
+}
+
+func (context *storageContext) PushState() {
+	context.stateStack = append(context.stateStack, context.address)
+}
+
+func (context *storageContext) PopState() {
+	stateStackLen := len(context.stateStack)
+	prevAddress := context.stateStack[stateStackLen-1]
+	context.stateStack = context.stateStack[:stateStackLen-1]
+
+	context.address = prevAddress
+}
+
+func (context *storageContext) ClearStateStack() {
+	context.stateStack = make([][]byte, 0)
+}
+
+func (context *storageContext) SetAddress(address []byte) {
+	context.address = address
 }
 
 func (context *storageContext) GetStorageUpdates(address []byte) map[string]*vmcommon.StorageUpdate {
@@ -29,17 +55,17 @@ func (context *storageContext) GetStorageUpdates(address []byte) map[string]*vmc
 	return account.StorageUpdates
 }
 
-func (context *storageContext) GetStorage(address []byte, key []byte) []byte {
-	storageUpdates := context.GetStorageUpdates(address)
+func (context *storageContext) GetStorage(key []byte) []byte {
+	storageUpdates := context.GetStorageUpdates(context.address)
 	if storageUpdate, ok := storageUpdates[string(key)]; ok {
 		return storageUpdate.Data
 	}
 
-	value, _ := context.blockChainHook.GetStorageData(address, key)
+	value, _ := context.blockChainHook.GetStorageData(context.address, key)
 	return value
 }
 
-func (context *storageContext) SetStorage(address []byte, key []byte, value []byte) int32 {
+func (context *storageContext) SetStorage(key []byte, value []byte) int32 {
 	if context.host.Runtime().ReadOnly() {
 		return int32(arwen.StorageUnchanged)
 	}
@@ -50,9 +76,9 @@ func (context *storageContext) SetStorage(address []byte, key []byte, value []by
 	length := len(value)
 
 	var oldValue []byte
-	storageUpdates := context.GetStorageUpdates(address)
+	storageUpdates := context.GetStorageUpdates(context.address)
 	if update, ok := storageUpdates[strKey]; !ok {
-		oldValue = context.GetStorage(address, key)
+		oldValue = context.GetStorage(key)
 		storageUpdates[strKey] = &vmcommon.StorageUpdate{
 			Offset: key,
 			Data:   oldValue,

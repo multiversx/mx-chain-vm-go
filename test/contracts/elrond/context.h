@@ -29,6 +29,7 @@ void getExternalBalance(byte *address, byte *balance);
 int transferValue(byte *destination, byte *value, byte *data, int length);
 
 // Storage-related functions
+int storageGetValueLength(byte *key);
 int storageStore(byte *key, byte *data, int dataLength);
 int storageLoad(byte *key, byte *data);
 int int64storageStore(byte *key, long long value);

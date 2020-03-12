@@ -43,3 +43,11 @@ var ErrNegativeLength = errors.New("negative length")
 var ErrMemoryDeclarationMissing = errors.New("wasm memory declaration missing")
 
 var ErrInvalidFunctionName = errors.New("invalid function name")
+
+var ErrFailedTransfer = errors.New("failed transfer")
+
+var ErrFailedTransferDuringAsyncCall = errors.New("failed transfer during async call")
+
+var ErrTransferInsufficientFunds = errors.New("insufficient funds for transfer")
+
+var ErrTransferNegativeValue = errors.New("cannot transfer negative value")

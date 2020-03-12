@@ -1,7 +1,6 @@
 package wasmer
 
 import (
-	"errors"
 	"fmt"
 	"unsafe"
 )
@@ -73,6 +72,20 @@ type Instance struct {
 
 	// The exported memory of a WebAssembly instance.
 	Memory *Memory
+
+	Data unsafe.Pointer
+}
+
+func newWrappedError(target error) error {
+	var lastError string
+	var err error
+	lastError, err = GetLastError()
+
+	if err != nil {
+		lastError = "unknown details"
+	}
+
+	return fmt.Errorf("%w: %s", target, lastError)
 }
 
 func SetImports(imports *Imports) error {
@@ -84,16 +97,7 @@ func SetImports(imports *Imports) error {
 	)
 
 	if result != cWasmerOk {
-		var lastError, err = GetLastError()
-		var errorMessage = "Failed to create cached imports: %s"
-
-		if err != nil {
-			errorMessage = fmt.Sprintf(errorMessage, "(unknown details)")
-		} else {
-			errorMessage = fmt.Sprintf(errorMessage, lastError)
-		}
-
-		return errors.New(errorMessage)
+		return newWrappedError(ErrFailedCacheImports)
 	}
 	return nil
 }
@@ -108,6 +112,11 @@ func NewMeteredInstance(
 ) (*Instance, error) {
 	var c_instance *cWasmerInstanceT
 
+	if len(bytes) == 0 {
+		var emptyInstance = &Instance{instance: nil, Exports: nil, Memory: nil}
+		return emptyInstance, newWrappedError(ErrInvalidBytecode)
+	}
+
 	var compileResult = cWasmerInstantiateWithMetering(
 		&c_instance,
 		(*cUchar)(unsafe.Pointer(&bytes[0])),
@@ -116,17 +125,8 @@ func NewMeteredInstance(
 	)
 
 	if compileResult != cWasmerOk {
-		var lastError, err = GetLastError()
-		var errorMessage = "Failed to instantiate the module:\n    %s"
-
-		if err != nil {
-			errorMessage = fmt.Sprintf(errorMessage, "(unknown details)")
-		} else {
-			errorMessage = fmt.Sprintf(errorMessage, lastError)
-		}
-
 		var emptyInstance = &Instance{instance: nil, Exports: nil, Memory: nil}
-		return emptyInstance, NewInstanceError(errorMessage)
+		return emptyInstance, newWrappedError(ErrFailedInstantiation)
 	}
 
 	instance, err := newInstance(c_instance)
@@ -134,7 +134,6 @@ func NewMeteredInstance(
 }
 
 func newInstance(c_instance *cWasmerInstanceT) (*Instance, error) {
-
 	var emptyInstance = &Instance{instance: nil, Exports: nil, Memory: nil}
 
 	var wasmExports *cWasmerExportsT
@@ -173,6 +172,7 @@ func (instance *Instance) HasMemory() bool {
 // global to the instance.
 func (instance *Instance) SetContextData(data unsafe.Pointer) {
 	cWasmerInstanceContextDataSet(instance.instance, data)
+	instance.Data = data
 }
 
 func (instance *Instance) Clean() {

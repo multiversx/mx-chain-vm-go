@@ -2,8 +2,13 @@ package arwen
 
 import (
 	"fmt"
+	"io/ioutil"
+	"math/big"
+	"path/filepath"
 	"unsafe"
 )
+
+var Zero = big.NewInt(0)
 
 func GuardedMakeByteSlice2D(length int32) ([][]byte, error) {
 	if length < 0 {
@@ -74,4 +79,10 @@ func WithFault(err error, context unsafe.Pointer, failExecution bool) bool {
 	}
 
 	return true
+}
+
+func GetSCCode(fileName string) []byte {
+	code, _ := ioutil.ReadFile(filepath.Clean(fileName))
+
+	return code
 }
