@@ -323,8 +323,8 @@ func (te *arwenTestExecutor) Run(test *ij.Test) error {
 			have := matchingAcct.StorageValue(k)
 			if !bytes.Equal(want, have) {
 				storageError += fmt.Sprintf(
-					"\n  for key %s: Want: 0x%s. Have: 0x%s",
-					hex.EncodeToString([]byte(k)), hex.EncodeToString(want), hex.EncodeToString(have))
+					"\n  for key %s: Want: %s. Have: %s",
+					hex.EncodeToString([]byte(k)), byteArrayPretty(want), byteArrayPretty(have))
 			}
 		}
 		if len(storageError) > 0 {

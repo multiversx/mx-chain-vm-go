@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/hex"
 	"fmt"
 	"math/big"
 
@@ -19,6 +20,10 @@ func convertAccount(testAcct *ij.Account) *worldhook.Account {
 		}
 		key := string(stkvp.Key)
 		storage[key] = stkvp.Value
+	}
+
+	if len(testAcct.Address) != 32 {
+		panic("bad test: account address should be 32 bytes long")
 	}
 
 	return &worldhook.Account{
@@ -61,4 +66,12 @@ func zeroIfNil(i *big.Int) *big.Int {
 
 func bigIntPretty(i *big.Int) string {
 	return fmt.Sprintf("0x%x (%d)", i, i)
+}
+
+func byteArrayPretty(b []byte) string {
+	if len(b) == 0 {
+		return "[]"
+	}
+	asInt := big.NewInt(0).SetBytes(b)
+	return fmt.Sprintf("0x%s (%d)", hex.EncodeToString(b), asInt)
 }
