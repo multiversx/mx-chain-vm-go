@@ -14,16 +14,24 @@ type NodePart struct {
 	Messenger  *NodeMessenger
 	blockchain vmcommon.BlockchainHook
 	Repliers   []common.MessageReplier
+	config     Config
 }
 
 // NewNodePart creates the Node part
-func NewNodePart(nodeLogger logger.Logger, input *os.File, output *os.File, blockchain vmcommon.BlockchainHook) (*NodePart, error) {
+func NewNodePart(
+	nodeLogger logger.Logger,
+	input *os.File,
+	output *os.File,
+	blockchain vmcommon.BlockchainHook,
+	config Config,
+) (*NodePart, error) {
 	messenger := NewNodeMessenger(nodeLogger, input, output)
 
 	part := &NodePart{
 		Logger:     nodeLogger,
 		Messenger:  messenger,
 		blockchain: blockchain,
+		config:     config,
 	}
 
 	part.Repliers = common.CreateReplySlots()
@@ -64,8 +72,7 @@ func (part *NodePart) StartLoop(request common.MessageHandler) (common.MessageHa
 // Critical failure = Arwen timeouts or crashes
 // The error result is set only in case of critical failure
 func (part *NodePart) doLoop() (common.MessageHandler, error) {
-	const MaxLoopTime = 1000
-	remainingMilliseconds := MaxLoopTime
+	remainingMilliseconds := part.config.MaxLoopTime
 
 	for {
 		message, duration, err := part.Messenger.ReceiveHookCallRequestOrContractResponse(remainingMilliseconds)

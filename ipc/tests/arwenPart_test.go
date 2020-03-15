@@ -73,7 +73,7 @@ func doContractRequest(
 	}()
 
 	go func() {
-		part, err := nodepart.NewNodePart(logger, files.inputOfNode, files.outputOfNode, blockchain)
+		part, err := nodepart.NewNodePart(logger, files.inputOfNode, files.outputOfNode, blockchain, nodepart.Config{MaxLoopTime: 1000})
 		assert.Nil(t, err)
 		response, responseError = part.StartLoop(request)
 		part.SendStopSignal()

@@ -59,7 +59,14 @@ func TestArwenDriver_RestartsIfStopped(t *testing.T) {
 
 func newDriver(t *testing.T, blockchain *mock.BlockChainHookStub) *nodepart.ArwenDriver {
 	logger := logger.NewDefaultLogger(logger.LogDebug)
-	driver, err := nodepart.NewArwenDriver(logger, blockchain, arwenVirtualMachine, uint64(10000000), config.MakeGasMap(1))
+	driver, err := nodepart.NewArwenDriver(
+		logger,
+		blockchain,
+		nodepart.Config{MaxLoopTime: 1000},
+		arwenVirtualMachine,
+		uint64(10000000),
+		config.MakeGasMap(1),
+	)
 	require.Nil(t, err)
 	require.NotNil(t, driver)
 	require.False(t, driver.IsClosed())
