@@ -34,7 +34,7 @@ func NewNodePart(
 		config:     config,
 	}
 
-	part.Repliers = common.CreateReplySlots()
+	part.Repliers = common.CreateReplySlots(part.noopReplier)
 	part.Repliers[common.BlockchainAccountExistsRequest] = part.replyToBlockchainAccountExists
 	part.Repliers[common.BlockchainNewAddressRequest] = part.replyToBlockchainNewAddress
 	part.Repliers[common.BlockchainGetBalanceRequest] = part.replyToBlockchainGetBalance
@@ -56,6 +56,11 @@ func NewNodePart(
 	part.Repliers[common.BlockchainCurrentEpochRequest] = part.replyToBlockchainCurrentEpoch
 
 	return part, nil
+}
+
+func (part *NodePart) noopReplier(message common.MessageHandler) common.MessageHandler {
+	part.Logger.Error("noopReplier called")
+	return common.CreateMessage(common.UndefinedRequestOrResponse)
 }
 
 // StartLoop runs the main loop

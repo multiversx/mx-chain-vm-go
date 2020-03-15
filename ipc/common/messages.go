@@ -2,6 +2,7 @@ package common
 
 import (
 	"fmt"
+	"math"
 )
 
 // MessageKind is the kind of a message (that is passed between the Node and Arwen)
@@ -53,6 +54,7 @@ const (
 	BlockchainCurrentEpochResponse
 	DiagnoseWaitRequest
 	DiagnoseWaitResponse
+	UndefinedRequestOrResponse
 	LastKind
 )
 
@@ -146,7 +148,7 @@ func (message *Message) SetKind(kind MessageKind) {
 
 // GetError gets the error within the message
 func (message *Message) GetError() error {
-	if message.ErrorMessage == "" {
+	if len(message.ErrorMessage) == 0 {
 		return nil
 	}
 
@@ -161,7 +163,7 @@ func (message *Message) SetError(err error) {
 }
 
 func (message *Message) String() string {
-	kindName, _ := messageKindNameByID[message.Kind]
+	kindName := messageKindNameByID[message.Kind]
 	return fmt.Sprintf("[kind=%s nonce=%d err=%s]", kindName, message.DialogueNonce, message.ErrorMessage)
 }
 
@@ -177,15 +179,24 @@ func NewMessageStop() *MessageStop {
 	return message
 }
 
+// UndefinedMessage is an undefined message
+type UndefinedMessage struct {
+	Message
+}
+
+// NewUndefinedMessage creates an undefined message
+func NewUndefinedMessage() *UndefinedMessage {
+	message := &UndefinedMessage{}
+	message.Kind = UndefinedRequestOrResponse
+	message.SetNonce(math.MaxUint32)
+	return message
+}
+
 // MessageReplier is a callback signature
 type MessageReplier func(MessageHandler) MessageHandler
 
-func noopReplier(message MessageHandler) MessageHandler {
-	panic("NO-OP replier called")
-}
-
 // CreateReplySlots creates a slice of no-operation repliers, to be substituted with actual repliers (by message listeners)
-func CreateReplySlots() []MessageReplier {
+func CreateReplySlots(noopReplier MessageReplier) []MessageReplier {
 	slots := make([]MessageReplier, LastKind)
 	for i := 0; i < len(slots); i++ {
 		slots[i] = noopReplier

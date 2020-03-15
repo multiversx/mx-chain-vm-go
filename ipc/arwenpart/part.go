@@ -35,12 +35,17 @@ func NewArwenPart(logger logger.Logger, input *os.File, output *os.File, vmType 
 		VMHost:    host,
 	}
 
-	part.Repliers = common.CreateReplySlots()
+	part.Repliers = common.CreateReplySlots(part.noopReplier)
 	part.Repliers[common.ContractDeployRequest] = part.replyToRunSmartContractCreate
 	part.Repliers[common.ContractCallRequest] = part.replyToRunSmartContractCall
 	part.Repliers[common.DiagnoseWaitRequest] = part.replyToDiagnoseWait
 
 	return part, nil
+}
+
+func (part *ArwenPart) noopReplier(message common.MessageHandler) common.MessageHandler {
+	part.Logger.Error("noopReplier called")
+	return common.CreateMessage(common.UndefinedRequestOrResponse)
 }
 
 // StartLoop runs the main loop

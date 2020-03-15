@@ -1,9 +1,5 @@
 package common
 
-import (
-	"fmt"
-)
-
 // CreateMessage creates a message given its kind
 func CreateMessage(kind MessageKind) MessageHandler {
 	var message MessageHandler
@@ -98,7 +94,7 @@ func CreateMessage(kind MessageKind) MessageHandler {
 	case DiagnoseWaitResponse:
 		message = &MessageDiagnoseWaitResponse{}
 	default:
-		panic(fmt.Sprintf("Unknown message kind [%d]", kind))
+		message = NewUndefinedMessage()
 	}
 
 	message.SetKind(kind)
