@@ -1,5 +1,14 @@
 package logger
 
+// Logger is the logger interface
+type Logger interface {
+	Trace(message string, args ...interface{})
+	Debug(message string, args ...interface{})
+	Info(message string, args ...interface{})
+	Warn(message string, args ...interface{})
+	Error(message string, args ...interface{})
+}
+
 // LogLevel defines the priority level of a log line. Trace is the lowest priority level, Error is the highest
 type LogLevel uint8
 
