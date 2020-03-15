@@ -105,7 +105,6 @@ func (pipeLogger *PipeLogger) sendMessage(message *LogMessage) {
 		return
 	}
 
-	// Send length
 	length := len(payload)
 	buffer := make([]byte, 4)
 	binary.LittleEndian.PutUint32(buffer, uint32(length))
@@ -115,7 +114,6 @@ func (pipeLogger *PipeLogger) sendMessage(message *LogMessage) {
 		return
 	}
 
-	// Send payload
 	_, err = pipeLogger.pipe.Write(payload)
 	if err != nil {
 		pipeLogger.fallback.Error("pipeLogger.sendMessage() send payload error", err.Error())

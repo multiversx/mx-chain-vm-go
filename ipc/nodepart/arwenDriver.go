@@ -55,7 +55,11 @@ func NewArwenDriver(
 	}
 
 	err := driver.startArwen()
-	return driver, err
+	if err != nil {
+		return nil, err
+	}
+
+	return driver, nil
 }
 
 func (driver *ArwenDriver) startArwen() error {
