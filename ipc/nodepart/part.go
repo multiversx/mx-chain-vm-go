@@ -56,7 +56,7 @@ func (part *NodePart) StartLoop(request common.MessageHandler) (common.MessageHa
 	response, err := part.doLoop()
 
 	part.Logger.Debug("[NODE]: end of loop", "err", err)
-	part.Messenger.EndDialogue()
+	part.Messenger.ResetDialogue()
 	return response, err
 }
 

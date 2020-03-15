@@ -131,6 +131,16 @@ func (messenger *Messenger) readMessage(kind MessageKind, length int) (MessageHa
 	return message, nil
 }
 
+// Reset resets the messenger
+func (messenger *Messenger) Reset() {
+	messenger.ResetDialogue()
+}
+
+// ResetDialogue resets the dialogue nonce
+func (messenger *Messenger) ResetDialogue() {
+	messenger.Nonce = 0
+}
+
 // Shutdown closes the pipes
 func (messenger *Messenger) Shutdown() {
 	messenger.Logger.Debug("%s:  Messenger::Shutdown", messenger.Name)
@@ -144,11 +154,6 @@ func (messenger *Messenger) Shutdown() {
 	if err != nil {
 		messenger.Logger.Error("Cannot close reader: %v", err)
 	}
-}
-
-// EndDialogue resets the dialogue nonce
-func (messenger *Messenger) EndDialogue() {
-	messenger.Nonce = 0
 }
 
 func (messenger *Messenger) marshal(data interface{}) ([]byte, error) {

@@ -45,6 +45,7 @@ func NewArwenPart(logger logger.Logger, input *os.File, output *os.File, vmType 
 
 // StartLoop runs the main loop
 func (part *ArwenPart) StartLoop() error {
+	part.Messenger.Reset()
 	err := part.doLoop()
 	part.Messenger.Shutdown()
 	part.Logger.Error("[ARWEN]: end of loop", "err", err)
@@ -66,7 +67,7 @@ func (part *ArwenPart) doLoop() error {
 
 		// Successful execution, send response
 		part.Messenger.SendContractResponse(response)
-		part.Messenger.EndDialogue()
+		part.Messenger.ResetDialogue()
 	}
 }
 
