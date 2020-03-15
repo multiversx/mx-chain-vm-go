@@ -9,25 +9,40 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/logger"
 )
 
+const (
+	fileDescriptorNodeToArwen = 3
+	fileDescriptorArwenToNode = 4
+	fileDescriptorLogToNode   = 5
+)
+
 func main() {
+	errCode, errMessage := doMain()
+	if errCode != common.ErrCodeSuccess {
+		fmt.Fprintln(os.Stderr, errorCode)
+		os.Exit(errorCode)
+	}
+}
+
+// doMain returns (error code, error message)
+func doMain() (int, string) {
 	arguments, err := common.ParseArguments()
 	if err != nil {
-		exitWithError(fmt.Sprintf("Bad arguments to Arwen: %v", err), common.ErrCodeBadArguments)
+		return common.ErrCodeBadArguments, fmt.Sprintf("Bad arguments to Arwen: %v", err)
 	}
 
-	nodeToArwenFile := os.NewFile(3, "/proc/self/fd/3")
+	nodeToArwenFile := getPipeFile(fileDescriptorNodeToArwen)
 	if nodeToArwenFile == nil {
-		exitWithError("Cannot create [nodeToArwenFile] file", common.ErrCodeCannotCreateFile)
+		return common.ErrCodeCannotCreateFile, "Cannot get pipe file: [nodeToArwenFile]"
 	}
 
-	arwenToNodeFile := os.NewFile(4, "/proc/self/fd/4")
+	arwenToNodeFile := getPipeFile(fileDescriptorArwenToNode)
 	if arwenToNodeFile == nil {
-		exitWithError("Cannot create [arwenToNodeFile] file", common.ErrCodeCannotCreateFile)
+		return common.ErrCodeCannotCreateFile, "Cannot get pipe file: [arwenToNodeFile]"
 	}
 
-	logToNodeFile := os.NewFile(5, "/proc/self/fd/5")
+	logToNodeFile := getPipeFile(fileDescriptorLogToNode)
 	if arwenToNodeFile == nil {
-		exitWithError("Cannot create [logToNodeFile] file", common.ErrCodeCannotCreateFile)
+		return common.ErrCodeCannotCreateFile, "Cannot get pipe file: [logToNodeFile]"
 	}
 
 	arwenLogger := logger.NewPipeLogger(arguments.LogLevel, logToNodeFile)
@@ -40,19 +55,18 @@ func main() {
 		arguments.GasSchedule,
 	)
 	if err != nil {
-		exitWithError(fmt.Sprintf("Cannot create ArwenPart: %v", err), common.ErrCodeInit)
+		return common.ErrCodeInit, fmt.Sprintf("Cannot create ArwenPart: %v", err)
 	}
 
-	arwenLogger.Info("Arwen.main() start loop")
 	err = part.StartLoop()
 	if err != nil {
-		exitWithError(fmt.Sprintf("Ended Arwen loop: %v", err), common.ErrCodeTerminated)
+		return  common.ErrCodeTerminated, fmt.Sprintf("Ended Arwen loop: %v", err
 	}
 
-	arwenLogger.Info("Arwen.main() ended")
+	return common.ErrCodeSuccess, ""
 }
 
-func exitWithError(errorMessage string, errorCode int) {
-	fmt.Fprintln(os.Stderr, errorCode)
-	os.Exit(errorCode)
+func getPipeFile(fileDescriptor uintptr) *os.File {
+	file := os.NewFile(fileDescriptor, fmt.Sprintf("/proc/self/fd/%d", fileDescriptor))
+	return file
 }

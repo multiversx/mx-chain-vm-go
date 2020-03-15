@@ -113,7 +113,7 @@ func (part *NodePart) replyToHookCallRequest(request common.MessageHandler) erro
 func (part *NodePart) SendStopSignal() error {
 	request := common.NewMessageStop()
 
-	err := part.Messenger.SendContractRequest(request)
+	err := part.Messenger.Send(request)
 	if err != nil {
 		return err
 	}
