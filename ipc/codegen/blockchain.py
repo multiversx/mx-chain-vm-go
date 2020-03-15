@@ -1,6 +1,6 @@
 
-import collections
 from argparse import ArgumentParser
+
 
 class HookSignature:
     def __init__(self, name, input, output, error=False, badReturn="nil"):
@@ -42,7 +42,7 @@ def main():
 
     messages_parser = subparsers.add_parser("messages")
     messages_parser.set_defaults(func=generate_messages)
-    
+
     repliers_parser = subparsers.add_parser("repliers")
     repliers_parser.set_defaults(func=generate_repliers)
 
@@ -107,7 +107,7 @@ def get_struct_fields_go(input_output):
     for arg_name, arg_type in input_output:
         field_name = my_capitalize(arg_name)
         fields.append(f"{field_name} {arg_type}")
-    
+
     return "\n".join(fields)
 
 
@@ -153,7 +153,8 @@ def generate_repliers(args):
             return response
         }}
         """
-        print(func_go)       
+        print(func_go)
+
 
 def get_call(signature):
     output_args = []
@@ -186,22 +187,22 @@ def generate_gateway(args):
 package arwenpart
 
 import (
-	"math/big"
+    "math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+    "github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
+    vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var _ vmcommon.BlockchainHook = (*BlockchainHookGateway)(nil)
 
 // BlockchainHookGateway forwards requests to the actual hook
 type BlockchainHookGateway struct {
-	messenger *ArwenMessenger
+    messenger *ArwenMessenger
 }
 
 // NewBlockchainHookGateway creates a new gateway
 func NewBlockchainHookGateway(messenger *ArwenMessenger) *BlockchainHookGateway {
-	return &BlockchainHookGateway{messenger: messenger}
+    return &BlockchainHookGateway{messenger: messenger}
 }
 """)
 
@@ -212,8 +213,8 @@ func NewBlockchainHookGateway(messenger *ArwenMessenger) *BlockchainHookGateway 
             request := common.NewMessageBlockchain{signature.name}Request({get_call_args(signature)})
             rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
             if err != nil {{
-		        return {signature.badReturn}{", err" if signature.error else ""}
-	        }}
+                return {signature.badReturn}{", err" if signature.error else ""}
+            }}
 
             response := rawResponse.(*common.MessageBlockchain{signature.name}Response)
             {get_gateway_return(signature)}
@@ -221,7 +222,6 @@ func NewBlockchainHookGateway(messenger *ArwenMessenger) *BlockchainHookGateway 
         """
 
         print(func_go)
-
 
 
 def get_call_args(signature):
@@ -241,7 +241,7 @@ def get_output_args(signature):
 
     result = ", ".join(output_args)
     if len(output_args) > 1:
-       result = f"({result})"
+        result = f"({result})"
 
     return result
 
@@ -253,6 +253,7 @@ def get_gateway_return(signature):
     if signature.error:
         return f"return response.{result_field}, response.GetError()"
     return f"return response.{result_field}"
+
 
 if __name__ == "__main__":
     main()
