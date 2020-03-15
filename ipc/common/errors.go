@@ -61,3 +61,17 @@ var ErrCannotSendHookCallRequest = &CriticalError{InnerErr: fmt.Errorf("cannot s
 
 // ErrCannotReceiveHookCallResponse signals a critical error
 var ErrCannotReceiveHookCallResponse = &CriticalError{InnerErr: fmt.Errorf("cannot receive hook call response")}
+
+// ErrBadHookResponseFromNode signals a critical error
+var ErrBadHookResponseFromNode = &CriticalError{InnerErr: fmt.Errorf("bad hook response from node")}
+
+const (
+	// ErrCodeBadArguments signals a critical error
+	ErrCodeBadArguments = iota + 1
+	// ErrCodeCannotCreateFile signals a critical error
+	ErrCodeCannotCreateFile
+	// ErrCodeInit signals a critical error
+	ErrCodeInit
+	// ErrCodeTerminated signals a critical error
+	ErrCodeTerminated
+)

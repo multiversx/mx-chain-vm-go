@@ -78,16 +78,7 @@ func (messenger *Messenger) Receive(timeout int) (MessageHandler, error) {
 		return nil, err
 	}
 
-	message := CreateMessage(kind)
-
-	// Now read the body
-	buffer := make([]byte, length)
-	_, err = io.ReadFull(messenger.reader, buffer)
-	if err != nil {
-		return nil, err
-	}
-
-	err = messenger.unmarshal(buffer, message)
+	message, err := messenger.readMessage(kind, length)
 	if err != nil {
 		return nil, err
 	}
@@ -122,6 +113,22 @@ func (messenger *Messenger) receiveMessageLengthAndKind() (int, MessageKind, err
 	length := binary.LittleEndian.Uint32(buffer[0:4])
 	kind := MessageKind(binary.LittleEndian.Uint32(buffer[4:8]))
 	return int(length), kind, nil
+}
+
+func (messenger *Messenger) readMessage(kind MessageKind, length int) (MessageHandler, error) {
+	buffer := make([]byte, length)
+	_, err := io.ReadFull(messenger.reader, buffer)
+	if err != nil {
+		return nil, err
+	}
+
+	message := CreateMessage(kind)
+	err = messenger.unmarshal(buffer, message)
+	if err != nil {
+		return nil, err
+	}
+
+	return message, nil
 }
 
 // Shutdown closes the pipes

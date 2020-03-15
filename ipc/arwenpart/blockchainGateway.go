@@ -23,6 +23,10 @@ func NewBlockchainHookGateway(messenger *ArwenMessenger) *BlockchainHookGateway 
 func (blockchain *BlockchainHookGateway) AccountExists(address []byte) (bool, error) {
 	request := common.NewMessageBlockchainAccountExistsRequest(address)
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if rawResponse.GetKind() != common.BlockchainAccountExistsResponse {
+		return false, common.ErrBadHookResponseFromNode
+	}
+
 	if err != nil {
 		return false, err
 	}
@@ -35,6 +39,10 @@ func (blockchain *BlockchainHookGateway) AccountExists(address []byte) (bool, er
 func (blockchain *BlockchainHookGateway) NewAddress(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error) {
 	request := common.NewMessageBlockchainNewAddressRequest(creatorAddress, creatorNonce, vmType)
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if rawResponse.GetKind() != common.BlockchainNewAddressResponse {
+		return nil, common.ErrBadHookResponseFromNode
+	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -47,6 +55,10 @@ func (blockchain *BlockchainHookGateway) NewAddress(creatorAddress []byte, creat
 func (blockchain *BlockchainHookGateway) GetBalance(address []byte) (*big.Int, error) {
 	request := common.NewMessageBlockchainGetBalanceRequest(address)
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if rawResponse.GetKind() != common.BlockchainGetBalanceResponse {
+		return nil, common.ErrBadHookResponseFromNode
+	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -59,6 +71,10 @@ func (blockchain *BlockchainHookGateway) GetBalance(address []byte) (*big.Int, e
 func (blockchain *BlockchainHookGateway) GetNonce(address []byte) (uint64, error) {
 	request := common.NewMessageBlockchainGetNonceRequest(address)
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if rawResponse.GetKind() != common.BlockchainGetNonceResponse {
+		return 0, common.ErrBadHookResponseFromNode
+	}
+
 	if err != nil {
 		return 0, err
 	}
@@ -71,6 +87,10 @@ func (blockchain *BlockchainHookGateway) GetNonce(address []byte) (uint64, error
 func (blockchain *BlockchainHookGateway) GetStorageData(address []byte, index []byte) ([]byte, error) {
 	request := common.NewMessageBlockchainGetStorageDataRequest(address, index)
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if rawResponse.GetKind() != common.BlockchainGetStorageDataResponse {
+		return nil, common.ErrBadHookResponseFromNode
+	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -83,6 +103,10 @@ func (blockchain *BlockchainHookGateway) GetStorageData(address []byte, index []
 func (blockchain *BlockchainHookGateway) IsCodeEmpty(address []byte) (bool, error) {
 	request := common.NewMessageBlockchainIsCodeEmptyRequest(address)
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if rawResponse.GetKind() != common.BlockchainIsCodeEmptyResponse {
+		return false, common.ErrBadHookResponseFromNode
+	}
+
 	if err != nil {
 		return false, err
 	}
@@ -95,6 +119,10 @@ func (blockchain *BlockchainHookGateway) IsCodeEmpty(address []byte) (bool, erro
 func (blockchain *BlockchainHookGateway) GetCode(address []byte) ([]byte, error) {
 	request := common.NewMessageBlockchainGetCodeRequest(address)
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if rawResponse.GetKind() != common.BlockchainGetCodeResponse {
+		return nil, common.ErrBadHookResponseFromNode
+	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -107,6 +135,10 @@ func (blockchain *BlockchainHookGateway) GetCode(address []byte) ([]byte, error)
 func (blockchain *BlockchainHookGateway) GetBlockhash(nonce uint64) ([]byte, error) {
 	request := common.NewMessageBlockchainGetBlockhashRequest(nonce)
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if rawResponse.GetKind() != common.BlockchainGetBlockhashResponse {
+		return nil, common.ErrBadHookResponseFromNode
+	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -119,6 +151,10 @@ func (blockchain *BlockchainHookGateway) GetBlockhash(nonce uint64) ([]byte, err
 func (blockchain *BlockchainHookGateway) LastNonce() uint64 {
 	request := common.NewMessageBlockchainLastNonceRequest()
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if rawResponse.GetKind() != common.BlockchainLastNonceResponse {
+		return 0
+	}
+
 	if err != nil {
 		return 0
 	}
@@ -131,6 +167,10 @@ func (blockchain *BlockchainHookGateway) LastNonce() uint64 {
 func (blockchain *BlockchainHookGateway) LastRound() uint64 {
 	request := common.NewMessageBlockchainLastRoundRequest()
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if rawResponse.GetKind() != common.BlockchainLastRoundResponse {
+		return 0
+	}
+
 	if err != nil {
 		return 0
 	}
@@ -143,6 +183,10 @@ func (blockchain *BlockchainHookGateway) LastRound() uint64 {
 func (blockchain *BlockchainHookGateway) LastTimeStamp() uint64 {
 	request := common.NewMessageBlockchainLastTimeStampRequest()
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if rawResponse.GetKind() != common.BlockchainLastTimeStampResponse {
+		return 0
+	}
+
 	if err != nil {
 		return 0
 	}
@@ -155,6 +199,10 @@ func (blockchain *BlockchainHookGateway) LastTimeStamp() uint64 {
 func (blockchain *BlockchainHookGateway) LastRandomSeed() []byte {
 	request := common.NewMessageBlockchainLastRandomSeedRequest()
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if rawResponse.GetKind() != common.BlockchainLastRandomSeedResponse {
+		return nil
+	}
+
 	if err != nil {
 		return nil
 	}
@@ -167,6 +215,10 @@ func (blockchain *BlockchainHookGateway) LastRandomSeed() []byte {
 func (blockchain *BlockchainHookGateway) LastEpoch() uint32 {
 	request := common.NewMessageBlockchainLastEpochRequest()
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if rawResponse.GetKind() != common.BlockchainLastEpochResponse {
+		return 0
+	}
+
 	if err != nil {
 		return 0
 	}
@@ -179,6 +231,10 @@ func (blockchain *BlockchainHookGateway) LastEpoch() uint32 {
 func (blockchain *BlockchainHookGateway) GetStateRootHash() []byte {
 	request := common.NewMessageBlockchainGetStateRootHashRequest()
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if rawResponse.GetKind() != common.BlockchainGetStateRootHashResponse {
+		return nil
+	}
+
 	if err != nil {
 		return nil
 	}
@@ -191,6 +247,10 @@ func (blockchain *BlockchainHookGateway) GetStateRootHash() []byte {
 func (blockchain *BlockchainHookGateway) CurrentNonce() uint64 {
 	request := common.NewMessageBlockchainCurrentNonceRequest()
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if rawResponse.GetKind() != common.BlockchainCurrentNonceResponse {
+		return 0
+	}
+
 	if err != nil {
 		return 0
 	}
@@ -203,6 +263,10 @@ func (blockchain *BlockchainHookGateway) CurrentNonce() uint64 {
 func (blockchain *BlockchainHookGateway) CurrentRound() uint64 {
 	request := common.NewMessageBlockchainCurrentRoundRequest()
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if rawResponse.GetKind() != common.BlockchainCurrentRoundResponse {
+		return 0
+	}
+
 	if err != nil {
 		return 0
 	}
@@ -215,6 +279,10 @@ func (blockchain *BlockchainHookGateway) CurrentRound() uint64 {
 func (blockchain *BlockchainHookGateway) CurrentTimeStamp() uint64 {
 	request := common.NewMessageBlockchainCurrentTimeStampRequest()
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if rawResponse.GetKind() != common.BlockchainCurrentTimeStampResponse {
+		return 0
+	}
+
 	if err != nil {
 		return 0
 	}
@@ -227,6 +295,10 @@ func (blockchain *BlockchainHookGateway) CurrentTimeStamp() uint64 {
 func (blockchain *BlockchainHookGateway) CurrentRandomSeed() []byte {
 	request := common.NewMessageBlockchainCurrentRandomSeedRequest()
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if rawResponse.GetKind() != common.BlockchainCurrentRandomSeedResponse {
+		return nil
+	}
+
 	if err != nil {
 		return nil
 	}
@@ -239,6 +311,10 @@ func (blockchain *BlockchainHookGateway) CurrentRandomSeed() []byte {
 func (blockchain *BlockchainHookGateway) CurrentEpoch() uint32 {
 	request := common.NewMessageBlockchainCurrentEpochRequest()
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if rawResponse.GetKind() != common.BlockchainCurrentEpochResponse {
+		return 0
+	}
+
 	if err != nil {
 		return 0
 	}
