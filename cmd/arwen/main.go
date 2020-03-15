@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	vmType, blockGasLimit, gasSchedule, logLevel, err := common.ParseArguments()
+	arguments, err := common.ParseArguments()
 	if err != nil {
 		exitWithError(fmt.Sprintf("Bad arguments to Arwen: %v", err), common.ErrCodeBadArguments)
 	}
@@ -30,8 +30,15 @@ func main() {
 		exitWithError("Cannot create [logToNodeFile] file", common.ErrCodeCannotCreateFile)
 	}
 
-	arwenLogger := logger.NewPipeLogger(logLevel, logToNodeFile)
-	part, err := arwenpart.NewArwenPart(arwenLogger, nodeToArwenFile, arwenToNodeFile, vmType, blockGasLimit, gasSchedule)
+	arwenLogger := logger.NewPipeLogger(arguments.LogLevel, logToNodeFile)
+	part, err := arwenpart.NewArwenPart(
+		arwenLogger,
+		nodeToArwenFile,
+		arwenToNodeFile,
+		arguments.VMType,
+		arguments.BlockGasLimit,
+		arguments.GasSchedule,
+	)
 	if err != nil {
 		exitWithError(fmt.Sprintf("Cannot create ArwenPart: %v", err), common.ErrCodeInit)
 	}

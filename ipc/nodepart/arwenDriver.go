@@ -65,7 +65,12 @@ func (driver *ArwenDriver) startArwen() error {
 		return err
 	}
 
-	arguments, err := common.PrepareArguments(driver.vmType, driver.blockGasLimit, driver.gasSchedule, logger.LogDebug)
+	arguments, err := common.PrepareArguments(common.Arguments{
+		VMType:        driver.vmType,
+		BlockGasLimit: driver.blockGasLimit,
+		GasSchedule:   driver.gasSchedule,
+		LogLevel:      logger.LogDebug,
+	})
 	if err != nil {
 		return err
 	}
