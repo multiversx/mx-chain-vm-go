@@ -3,7 +3,7 @@
         "pre": {
             "``node_address__________________s1": {
                 "nonce": "0x00",
-                "balance": "0x00",
+                "balance": "0",
                 "storage": {},
                 "code": ""
             },
@@ -105,7 +105,7 @@
         "postState": {
             "``node_address__________________s1": {
                 "nonce": "0x00",
-                "balance": "0x00",
+                "balance": "0",
                 "storage": {},
                 "code": ""
             },
