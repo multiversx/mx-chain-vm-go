@@ -20,7 +20,7 @@ type Arguments struct {
 	LogLevel      logger.LogLevel
 }
 
-// PrepareArguments prepares the list of arguments (command line) to be sent by the Node to Arwen when the latter should be started
+// PrepareArguments prepares the list of arguments (command line) to be sent by the Node to Arwen when Arwen should be started
 func PrepareArguments(arguments Arguments) ([]string, error) {
 	file, err := ioutil.TempFile("", "gasScheduleToArwen")
 	if err != nil {

@@ -92,6 +92,7 @@ func (part *ArwenPart) replyToRunSmartContractCall(request common.MessageHandler
 
 func (part *ArwenPart) replyToDiagnoseWait(request common.MessageHandler) common.MessageHandler {
 	typedRequest := request.(*common.MessageDiagnoseWaitRequest)
-	time.Sleep(time.Duration(typedRequest.Milliseconds) * time.Millisecond)
+	duration := time.Duration(int64(typedRequest.Milliseconds) * int64(time.Millisecond))
+	time.Sleep(duration)
 	return common.NewMessageDiagnoseWaitResponse()
 }
