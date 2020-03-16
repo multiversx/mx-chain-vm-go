@@ -16,16 +16,14 @@ import (
 var owner = []byte("owner")
 var receiver = []byte("receiver")
 var scAddress = []byte("erc20")
-var nTransfers = 100
-var nRuns = 1
-var totalTokenSupply = big.NewInt(int64(nTransfers * nRuns))
 
 func Test_RunERC20Benchmark(t *testing.T) {
-	runERC20Benchmark(t)
+	runERC20Benchmark(t, 100, 4)
 }
 
-func runERC20Benchmark(tb testing.TB) {
-	host, mockBlockchainHook := deploy(tb)
+func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int) {
+	totalTokenSupply := big.NewInt(int64(nTransfers * nRuns))
+	host, mockBlockchainHook := deploy(tb, totalTokenSupply)
 
 	// Prepare ERC20 transfer call input
 	transferInput := &vmcommon.ContractCallInput{
@@ -46,7 +44,6 @@ func runERC20Benchmark(tb testing.TB) {
 
 	// Perform ERC20 transfers
 	for r := 0; r < nRuns; r++ {
-		TotalWasmerExecution = 0
 		start := time.Now()
 		for i := 0; i < nTransfers; i++ {
 			transferInput.GasProvided = 100000
@@ -62,10 +59,10 @@ func runERC20Benchmark(tb testing.TB) {
 		fmt.Printf("Executing %d ERC20 transfers: %s\n", nTransfers, elapsedTime.String())
 	}
 
-	verifyTransfers(tb, mockBlockchainHook)
+	verifyTransfers(tb, mockBlockchainHook, totalTokenSupply)
 }
 
-func deploy(tb testing.TB) (*vmHost, *mock.BlockchainHookMock) {
+func deploy(tb testing.TB, totalTokenSupply *big.Int) (*vmHost, *mock.BlockchainHookMock) {
 	// Prepare the host
 	mockBlockchainHook := mock.NewBlockchainHookMock()
 	mockBlockchainHook.AddAccount(&mock.Account{
@@ -104,7 +101,7 @@ func deploy(tb testing.TB) (*vmHost, *mock.BlockchainHookMock) {
 	return host, mockBlockchainHook
 }
 
-func verifyTransfers(tb testing.TB, mockBlockchainHook *mock.BlockchainHookMock) {
+func verifyTransfers(tb testing.TB, mockBlockchainHook *mock.BlockchainHookMock, totalTokenSupply *big.Int) {
 	ownerKey := string([]byte{
 		1, 0, 'o', 'w', 'n', 'e', 'r', 0,
 		0, 0, 0, 0, 0, 0, 0, 0,
