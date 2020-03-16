@@ -52,6 +52,9 @@ def main():
     gateway_parser = subparsers.add_parser("gateway")
     gateway_parser.set_defaults(func=generate_gateway)
 
+    factory_parser = subparsers.add_parser("factory")
+    factory_parser.set_defaults(func=generate_factory)
+
     args = parser.parse_args()
 
     if not hasattr(args, "func"):
@@ -257,6 +260,94 @@ def get_gateway_return(signature):
     if signature.error:
         return f"return response.{result_field}, response.GetError()"
     return f"return response.{result_field}"
+
+
+def generate_factory(args):
+    assignments = ""
+
+    for signature in signatures:
+        assignments += f"messageCreators[Blockchain{signature.name}Request] = createMessageBlockchain{signature.name}Request"
+        assignments += "\n"
+        assignments += f"messageCreators[Blockchain{signature.name}Response] = createMessageBlockchain{signature.name}Response"
+        assignments += "\n"
+
+    print(f"""
+package common
+
+
+// CreateMessage creates a message given its kind
+func CreateMessage(kind MessageKind) MessageHandler {{
+    kindIndex := uint32(kind)
+    length := uint32(len(messageCreators))
+    if kindIndex < length {{
+        message := messageCreators[kindIndex]()
+        message.SetKind(kind)
+        return message
+    }}
+
+    return createUndefinedMessage()
+}}
+
+type messageCreator func() MessageHandler
+
+var messageCreators = make([]messageCreator, LastKind)
+
+func init() {{
+    for i := 0; i < len(messageCreators); i++ {{
+        messageCreators[i] = createUndefinedMessage
+    }}
+
+    messageCreators[Stop] = createMessageStop
+    messageCreators[ContractDeployRequest] = createMessageContractDeployRequest
+    messageCreators[ContractCallRequest] = createMessageContractCallRequest
+    messageCreators[ContractResponse] = createMessageContractResponse
+    messageCreators[DiagnoseWaitRequest] = createMessageDiagnoseWaitRequest
+    messageCreators[DiagnoseWaitResponse] = createMessageDiagnoseWaitResponse
+
+    {assignments}
+}}
+
+func createMessageStop() MessageHandler {{
+    return &MessageStop{{}}
+}}
+
+func createMessageContractDeployRequest() MessageHandler {{
+    return &MessageContractDeployRequest{{}}
+}}
+
+func createMessageContractCallRequest() MessageHandler {{
+    return &MessageContractCallRequest{{}}
+}}
+
+func createMessageContractResponse() MessageHandler {{
+    return &MessageContractResponse{{}}
+}}
+
+func createMessageDiagnoseWaitRequest() MessageHandler {{
+    return &MessageDiagnoseWaitRequest{{}}
+}}
+
+func createMessageDiagnoseWaitResponse() MessageHandler {{
+    return &MessageDiagnoseWaitResponse{{}}
+}}
+
+func createUndefinedMessage() MessageHandler {{
+    return NewUndefinedMessage()
+}}
+""")
+
+    for signature in signatures:
+        print(f"""
+        func createMessageBlockchain{signature.name}Request() MessageHandler {{
+            return &MessageBlockchain{signature.name}Request{{}}
+        }}
+        """)
+
+        print(f"""
+        func createMessageBlockchain{signature.name}Response() MessageHandler {{
+            return &MessageBlockchain{signature.name}Response{{}}
+        }}
+        """)
 
 
 if __name__ == "__main__":
