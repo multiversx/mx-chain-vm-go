@@ -219,7 +219,12 @@ func (driver *ArwenDriver) RunSmartContractCreate(input *vmcommon.ContractCreate
 	}
 
 	typedResponse := response.(*common.MessageContractResponse)
-	return typedResponse.VMOutput, response.GetError()
+	vmOutput, err := typedResponse.VMOutput, response.GetError()
+	if err != nil {
+		return nil, err
+	}
+
+	return vmOutput, nil
 }
 
 // RunSmartContractCall sends an execution request to Arwen and waits for the output
@@ -235,7 +240,12 @@ func (driver *ArwenDriver) RunSmartContractCall(input *vmcommon.ContractCallInpu
 	}
 
 	typedResponse := response.(*common.MessageContractResponse)
-	return typedResponse.VMOutput, response.GetError()
+	vmOutput, err := typedResponse.VMOutput, response.GetError()
+	if err != nil {
+		return nil, err
+	}
+
+	return vmOutput, nil
 }
 
 // DiagnoseWait sends a diagnose message to Arwen
