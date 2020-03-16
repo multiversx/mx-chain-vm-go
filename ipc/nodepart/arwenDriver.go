@@ -117,7 +117,7 @@ func (driver *ArwenDriver) startArwen() error {
 }
 
 func (driver *ArwenDriver) getArwenPath() (string, error) {
-	arwenPath := os.Getenv("ARWEN_PATH")
+	arwenPath := os.Getenv(common.EnvVarArwenPath)
 	if fileExists(arwenPath) {
 		return arwenPath, nil
 	}
@@ -181,7 +181,8 @@ func closeFile(file *os.File) {
 	}
 }
 
-func (driver *ArwenDriver) restartArwenIfNecessary() error {
+// RestartArwenIfNecessary restarts Arwen if the process is closed
+func (driver *ArwenDriver) RestartArwenIfNecessary() error {
 	if !driver.IsClosed() {
 		return nil
 	}
@@ -210,11 +211,6 @@ func (driver *ArwenDriver) IsClosed() bool {
 func (driver *ArwenDriver) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (*vmcommon.VMOutput, error) {
 	driver.nodeLogger.Trace("RunSmartContractCreate")
 
-	err := driver.restartArwenIfNecessary()
-	if err != nil {
-		return nil, common.WrapCriticalError(err)
-	}
-
 	request := common.NewMessageContractDeployRequest(input)
 	response, err := driver.part.StartLoop(request)
 	if err != nil {
@@ -230,11 +226,6 @@ func (driver *ArwenDriver) RunSmartContractCreate(input *vmcommon.ContractCreate
 func (driver *ArwenDriver) RunSmartContractCall(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	driver.nodeLogger.Trace("RunSmartContractCall", "sc", input.RecipientAddr)
 
-	err := driver.restartArwenIfNecessary()
-	if err != nil {
-		return nil, common.WrapCriticalError(err)
-	}
-
 	request := common.NewMessageContractCallRequest(input)
 	response, err := driver.part.StartLoop(request)
 	if err != nil {
@@ -249,11 +240,6 @@ func (driver *ArwenDriver) RunSmartContractCall(input *vmcommon.ContractCallInpu
 
 // DiagnoseWait sends a diagnose message to Arwen
 func (driver *ArwenDriver) DiagnoseWait(milliseconds uint32) error {
-	err := driver.restartArwenIfNecessary()
-	if err != nil {
-		return common.WrapCriticalError(err)
-	}
-
 	request := common.NewMessageDiagnoseWaitRequest(milliseconds)
 	response, err := driver.part.StartLoop(request)
 	if err != nil {
