@@ -7,12 +7,17 @@ package elrondapi
 // typedef int int32_t;
 //
 // extern int32_t bigIntNew(void* context, long long smallValue);
-// extern int32_t bigIntByteLength(void* context, int32_t reference);
-// extern int32_t bigIntGetBytes(void* context, int32_t reference, int32_t byteOffset);
-// extern void bigIntSetBytes(void* context, int32_t destination, int32_t byteOffset, int32_t byteLength);
+//
+// extern int32_t bigIntUnsignedByteLength(void* context, int32_t reference);
+// extern int32_t bigIntGetUnsignedBytes(void* context, int32_t reference, int32_t byteOffset);
+// extern int32_t bigIntGetSignedBytes(void* context, int32_t reference, int32_t byteOffset);
+// extern void bigIntSetUnsignedBytes(void* context, int32_t destination, int32_t byteOffset, int32_t byteLength);
+// extern void bigIntSetSignedBytes(void* context, int32_t destination, int32_t byteOffset, int32_t byteLength);
+//
 // extern int32_t bigIntIsInt64(void* context, int32_t reference);
 // extern long long bigIntGetInt64(void* context, int32_t reference);
 // extern void bigIntSetInt64(void* context, int32_t destination, long long value);
+//
 // extern void bigIntAdd(void* context, int32_t destination, int32_t op1, int32_t op2);
 // extern void bigIntSub(void* context, int32_t destination, int32_t op1, int32_t op2);
 // extern void bigIntMul(void* context, int32_t destination, int32_t op1, int32_t op2);
@@ -20,10 +25,22 @@ package elrondapi
 // extern void bigIntTMod(void* context, int32_t destination, int32_t op1, int32_t op2);
 // extern void bigIntEDiv(void* context, int32_t destination, int32_t op1, int32_t op2);
 // extern void bigIntEMod(void* context, int32_t destination, int32_t op1, int32_t op2);
+//
+// extern void bigIntAbs(void* context, int32_t destination, int32_t op);
+// extern void bigIntNeg(void* context, int32_t destination, int32_t op);
+// extern int32_t bigIntSign(void* context, int32_t op);
 // extern int32_t bigIntCmp(void* context, int32_t op1, int32_t op2);
+//
+// extern void bigIntNot(void* context, int32_t destination, int32_t op);
+// extern void bigIntAnd(void* context, int32_t destination, int32_t op1, int32_t op2);
+// extern void bigIntOr(void* context, int32_t destination, int32_t op1, int32_t op2);
+// extern void bigIntXor(void* context, int32_t destination, int32_t op1, int32_t op2);
+// extern void bigIntShr(void* context, int32_t destination, int32_t op, int32_t bits);
+// extern void bigIntShl(void* context, int32_t destination, int32_t op, int32_t bits);
+//
 // extern void bigIntFinish(void* context, int32_t reference);
-// extern int32_t bigIntStorageStore(void *context, int32_t keyOffset, int32_t source);
-// extern int32_t bigIntStorageLoad(void *context, int32_t keyOffset, int32_t destination);
+// extern int32_t bigIntStorageStoreUnsigned(void *context, int32_t keyOffset, int32_t source);
+// extern int32_t bigIntStorageLoadUnsigned(void *context, int32_t keyOffset, int32_t destination);
 // extern void bigIntGetUnsignedArgument(void *context, int32_t id, int32_t destination);
 // extern void bigIntGetSignedArgument(void *context, int32_t id, int32_t destination);
 // extern void bigIntGetCallValue(void *context, int32_t destination);
@@ -46,17 +63,27 @@ func BigIntImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntByteLength", bigIntByteLength, C.bigIntByteLength)
+	imports, err = imports.Append("bigIntUnsignedByteLength", bigIntUnsignedByteLength, C.bigIntUnsignedByteLength)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntGetBytes", bigIntGetBytes, C.bigIntGetBytes)
+	imports, err = imports.Append("bigIntGetUnsignedBytes", bigIntGetUnsignedBytes, C.bigIntGetUnsignedBytes)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntSetBytes", bigIntSetBytes, C.bigIntSetBytes)
+	imports, err = imports.Append("bigIntGetSignedBytes", bigIntGetSignedBytes, C.bigIntGetSignedBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntSetUnsignedBytes", bigIntSetUnsignedBytes, C.bigIntSetUnsignedBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntSetSignedBytes", bigIntSetSignedBytes, C.bigIntSetSignedBytes)
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +128,62 @@ func BigIntImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 		return nil, err
 	}
 
+	imports, err = imports.Append("bigIntEDiv", bigIntEDiv, C.bigIntEDiv)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntEMod", bigIntEMod, C.bigIntEMod)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntAbs", bigIntAbs, C.bigIntAbs)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntNeg", bigIntNeg, C.bigIntNeg)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntSign", bigIntCmp, C.bigIntCmp)
+	if err != nil {
+		return nil, err
+	}
+
 	imports, err = imports.Append("bigIntCmp", bigIntCmp, C.bigIntCmp)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntNot", bigIntNot, C.bigIntNot)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntAnd", bigIntAnd, C.bigIntAnd)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntOr", bigIntOr, C.bigIntOr)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntXor", bigIntXor, C.bigIntXor)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntShr", bigIntShr, C.bigIntShr)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntShl", bigIntShl, C.bigIntShl)
 	if err != nil {
 		return nil, err
 	}
@@ -111,12 +193,12 @@ func BigIntImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntStorageStore", bigIntStorageStore, C.bigIntStorageStore)
+	imports, err = imports.Append("bigIntStorageStoreUnsigned", bigIntStorageStoreUnsigned, C.bigIntStorageStoreUnsigned)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntStorageLoad", bigIntStorageLoad, C.bigIntStorageLoad)
+	imports, err = imports.Append("bigIntStorageLoadUnsigned", bigIntStorageLoadUnsigned, C.bigIntStorageLoadUnsigned)
 	if err != nil {
 		return nil, err
 	}
@@ -182,8 +264,8 @@ func bigIntGetSignedArgument(context unsafe.Pointer, id int32, destination int32
 	twos.SetBytes(value, args[id])
 }
 
-//export bigIntStorageStore
-func bigIntStorageStore(context unsafe.Pointer, keyOffset int32, source int32) int32 {
+//export bigIntStorageStoreUnsigned
+func bigIntStorageStoreUnsigned(context unsafe.Pointer, keyOffset int32, source int32) int32 {
 	bigInt := arwen.GetBigIntContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
@@ -203,8 +285,8 @@ func bigIntStorageStore(context unsafe.Pointer, keyOffset int32, source int32) i
 	return storage.SetStorage(key, bytes)
 }
 
-//export bigIntStorageLoad
-func bigIntStorageLoad(context unsafe.Pointer, keyOffset int32, destination int32) int32 {
+//export bigIntStorageLoadUnsigned
+func bigIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, destination int32) int32 {
 	bigInt := arwen.GetBigIntContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
@@ -219,6 +301,7 @@ func bigIntStorageLoad(context unsafe.Pointer, keyOffset int32, destination int3
 
 	value := bigInt.GetOne(destination)
 	value.SetBytes(bytes)
+	//fmt.Printf("%s -> %s\n", hex.EncodeToString(key), hex.EncodeToString(bytes))
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntStorageLoad
 	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(bytes))
@@ -272,41 +355,63 @@ func bigIntNew(context unsafe.Pointer, smallValue int64) int32 {
 	return bigInt.Put(smallValue)
 }
 
-//export bigIntByteLength
-func bigIntByteLength(context unsafe.Pointer, reference int32) int32 {
+//export bigIntUnsignedByteLength
+func bigIntUnsignedByteLength(context unsafe.Pointer, reference int32) int32 {
 	bigInt := arwen.GetBigIntContext(context)
 	metering := arwen.GetMeteringContext(context)
 
 	value := bigInt.GetOne(reference)
 
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntByteLength
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntUnsignedByteLength
 	metering.UseGas(gasToUse)
 
 	return int32(len(value.Bytes()))
 }
 
-//export bigIntGetBytes
-func bigIntGetBytes(context unsafe.Pointer, reference int32, byteOffset int32) int32 {
+//export bigIntGetUnsignedBytes
+func bigIntGetUnsignedBytes(context unsafe.Pointer, reference int32, byteOffset int32) int32 {
 	bigInt := arwen.GetBigIntContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	bytes := bigInt.GetOne(reference).Bytes()
+	value := bigInt.GetOne(reference)
+	bytes := value.Bytes()
 
 	err := runtime.MemStore(byteOffset, bytes)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return 0
 	}
 
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetBytes
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetUnsignedBytes
 	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(bytes))
 	metering.UseGas(gasToUse)
 
 	return int32(len(bytes))
 }
 
-//export bigIntSetBytes
-func bigIntSetBytes(context unsafe.Pointer, destination int32, byteOffset int32, byteLength int32) {
+//export bigIntGetSignedBytes
+func bigIntGetSignedBytes(context unsafe.Pointer, reference int32, byteOffset int32) int32 {
+	bigInt := arwen.GetBigIntContext(context)
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	value := bigInt.GetOne(reference)
+	bytes := twos.ToBytes(value)
+
+	err := runtime.MemStore(byteOffset, bytes)
+	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return 0
+	}
+
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetSignedBytes
+	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(bytes))
+	metering.UseGas(gasToUse)
+
+	return int32(len(bytes))
+}
+
+//export bigIntSetUnsignedBytes
+func bigIntSetUnsignedBytes(context unsafe.Pointer, destination int32, byteOffset int32, byteLength int32) {
 	bigInt := arwen.GetBigIntContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -319,7 +424,26 @@ func bigIntSetBytes(context unsafe.Pointer, destination int32, byteOffset int32,
 	value := bigInt.GetOne(destination)
 	value.SetBytes(bytes)
 
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSetBytes
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSetUnsignedBytes
+	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(bytes))
+	metering.UseGas(gasToUse)
+}
+
+//export bigIntSetSignedBytes
+func bigIntSetSignedBytes(context unsafe.Pointer, destination int32, byteOffset int32, byteLength int32) {
+	bigInt := arwen.GetBigIntContext(context)
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	bytes, err := runtime.MemLoad(byteOffset, byteLength)
+	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return
+	}
+
+	value := bigInt.GetOne(destination)
+	twos.SetBytes(value, bytes)
+
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSetSignedBytes
 	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(bytes))
 	metering.UseGas(gasToUse)
 }
@@ -411,7 +535,7 @@ func bigIntTDiv(context unsafe.Pointer, destination, op1, op2 int32) {
 	}
 	dest.Quo(a, b) // Quo implements truncated division (like Go)
 
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntMul // TODO: new cost
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntTDiv
 	metering.UseGas(gasToUse)
 }
 
@@ -427,7 +551,7 @@ func bigIntTMod(context unsafe.Pointer, destination, op1, op2 int32) {
 	}
 	dest.Rem(a, b) // Rem implements truncated modulus (like Go)
 
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntMul // TODO: new cost
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntTMod
 	metering.UseGas(gasToUse)
 }
 
@@ -443,7 +567,7 @@ func bigIntEDiv(context unsafe.Pointer, destination, op1, op2 int32) {
 	}
 	dest.Div(a, b) // Div implements Euclidean division (unlike Go)
 
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntMul // TODO: new cost
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntEDiv
 	metering.UseGas(gasToUse)
 }
 
@@ -459,8 +583,44 @@ func bigIntEMod(context unsafe.Pointer, destination, op1, op2 int32) {
 	}
 	dest.Mod(a, b) // Mod implements Euclidean division (unlike Go)
 
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntMul // TODO: new cost
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntEMod
 	metering.UseGas(gasToUse)
+}
+
+//export bigIntAbs
+func bigIntAbs(context unsafe.Pointer, destination, op int32) {
+	bigInt := arwen.GetBigIntContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	dest, a := bigInt.GetTwo(destination, op)
+	dest.Abs(a)
+
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntAbs
+	metering.UseGas(gasToUse)
+}
+
+//export bigIntNeg
+func bigIntNeg(context unsafe.Pointer, destination, op int32) {
+	bigInt := arwen.GetBigIntContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	dest, a := bigInt.GetTwo(destination, op)
+	dest.Neg(a)
+
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntNeg
+	metering.UseGas(gasToUse)
+}
+
+//export bigIntSign
+func bigIntSign(context unsafe.Pointer, op int32) int32 {
+	bigInt := arwen.GetBigIntContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSign
+	metering.UseGas(gasToUse)
+
+	a := bigInt.GetOne(op)
+	return int32(a.Sign())
 }
 
 //export bigIntCmp
@@ -473,6 +633,102 @@ func bigIntCmp(context unsafe.Pointer, op1, op2 int32) int32 {
 
 	a, b := bigInt.GetTwo(op1, op2)
 	return int32(a.Cmp(b))
+}
+
+//export bigIntNot
+func bigIntNot(context unsafe.Pointer, destination, op int32) {
+	bigInt := arwen.GetBigIntContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	dest, a := bigInt.GetTwo(destination, op)
+	if a.Sign() < 0 {
+		runtime := arwen.GetRuntimeContext(context)
+		runtime.SignalUserError("[bigIntAnd] bitwise operations only allowed on positive integers")
+	}
+	dest.Not(a)
+
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntNot
+	metering.UseGas(gasToUse)
+}
+
+//export bigIntAnd
+func bigIntAnd(context unsafe.Pointer, destination, op1, op2 int32) {
+	bigInt := arwen.GetBigIntContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	dest, a, b := bigInt.GetThree(destination, op1, op2)
+	if a.Sign() < 0 || b.Sign() < 0 {
+		runtime := arwen.GetRuntimeContext(context)
+		runtime.SignalUserError("[bigIntAnd] bitwise operations only allowed on positive integers")
+	}
+	dest.And(a, b)
+
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntAnd
+	metering.UseGas(gasToUse)
+}
+
+//export bigIntOr
+func bigIntOr(context unsafe.Pointer, destination, op1, op2 int32) {
+	bigInt := arwen.GetBigIntContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	dest, a, b := bigInt.GetThree(destination, op1, op2)
+	if a.Sign() < 0 || b.Sign() < 0 {
+		runtime := arwen.GetRuntimeContext(context)
+		runtime.SignalUserError("[bigIntOr] bitwise operations only allowed on positive integers")
+	}
+	dest.Or(a, b)
+
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntOr
+	metering.UseGas(gasToUse)
+}
+
+//export bigIntXor
+func bigIntXor(context unsafe.Pointer, destination, op1, op2 int32) {
+	bigInt := arwen.GetBigIntContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	dest, a, b := bigInt.GetThree(destination, op1, op2)
+	if a.Sign() < 0 || b.Sign() < 0 {
+		runtime := arwen.GetRuntimeContext(context)
+		runtime.SignalUserError("[bigIntXor] bitwise operations only allowed on positive integers")
+	}
+	dest.Xor(a, b)
+
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntXor
+	metering.UseGas(gasToUse)
+}
+
+//export bigIntShr
+func bigIntShr(context unsafe.Pointer, destination, op, bits int32) {
+	bigInt := arwen.GetBigIntContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	dest, a := bigInt.GetTwo(destination, op)
+	if a.Sign() < 0 || bits < 0 {
+		runtime := arwen.GetRuntimeContext(context)
+		runtime.SignalUserError("[bigIntShr] both arguments must be positive")
+	}
+	dest.Rsh(a, uint(bits))
+
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntShr
+	metering.UseGas(gasToUse)
+}
+
+//export bigIntShl
+func bigIntShl(context unsafe.Pointer, destination, op, bits int32) {
+	bigInt := arwen.GetBigIntContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	dest, a := bigInt.GetTwo(destination, op)
+	if a.Sign() < 0 || bits < 0 {
+		runtime := arwen.GetRuntimeContext(context)
+		runtime.SignalUserError("[bigIntShl] both arguments must be positive")
+	}
+	dest.Lsh(a, uint(bits))
+
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntShl
+	metering.UseGas(gasToUse)
 }
 
 //export bigIntFinish

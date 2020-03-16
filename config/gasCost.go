@@ -86,16 +86,31 @@ type EthAPICost struct {
 
 type BigIntAPICost struct {
 	BigIntNew                uint64
-	BigIntByteLength         uint64
-	BigIntGetBytes           uint64
-	BigIntSetBytes           uint64
+	BigIntUnsignedByteLength uint64
+	BigIntGetUnsignedBytes   uint64
+	BigIntGetSignedBytes     uint64
+	BigIntSetUnsignedBytes   uint64
+	BigIntSetSignedBytes     uint64
 	BigIntIsInt64            uint64
 	BigIntGetInt64           uint64
 	BigIntSetInt64           uint64
 	BigIntAdd                uint64
 	BigIntSub                uint64
 	BigIntMul                uint64
+	BigIntTDiv               uint64
+	BigIntTMod               uint64
+	BigIntEDiv               uint64
+	BigIntEMod               uint64
+	BigIntAbs                uint64
+	BigIntNeg                uint64
+	BigIntSign               uint64
 	BigIntCmp                uint64
+	BigIntNot                uint64
+	BigIntAnd                uint64
+	BigIntOr                 uint64
+	BigIntXor                uint64
+	BigIntShr                uint64
+	BigIntShl                uint64
 	BigIntFinish             uint64
 	BigIntStorageLoad        uint64
 	BigIntStorageStore       uint64
