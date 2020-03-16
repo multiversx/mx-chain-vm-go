@@ -2,7 +2,6 @@ package logger
 
 import (
 	"encoding/binary"
-	"encoding/json"
 	"io"
 	"os"
 )
@@ -99,7 +98,7 @@ func (pipeLogger *PipeLogger) Error(message string, args ...interface{}) {
 }
 
 func (pipeLogger *PipeLogger) sendMessage(message *LogMessage) {
-	payload, err := marshalJSON(message)
+	payload, err := marshalLog(message)
 	if err != nil {
 		pipeLogger.fallback.Error("pipeLogger.sendMessage() marshal error", err.Error())
 		return
@@ -121,14 +120,6 @@ func (pipeLogger *PipeLogger) sendMessage(message *LogMessage) {
 	}
 }
 
-func marshalJSON(data interface{}) ([]byte, error) {
-	return json.Marshal(data)
-}
-
-func unmarshalJSON(dataBytes []byte, data interface{}) error {
-	return json.Unmarshal(dataBytes, data)
-}
-
 // ReceiveLogThroughPipe reads a log message from the pipe and sends it to a regular Node logger
 func ReceiveLogThroughPipe(receivingLogger Logger, pipe *os.File) error {
 	buffer := make([]byte, 4)
@@ -145,7 +136,7 @@ func ReceiveLogThroughPipe(receivingLogger Logger, pipe *os.File) error {
 	}
 
 	logMessage := &LogMessage{}
-	err = unmarshalJSON(buffer, logMessage)
+	err = unmarshalLog(buffer, logMessage)
 	if err != nil {
 		return err
 	}
