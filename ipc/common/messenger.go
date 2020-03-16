@@ -1,10 +1,7 @@
 package common
 
 import (
-	"bytes"
 	"encoding/binary"
-	"encoding/gob"
-	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -37,7 +34,7 @@ func (messenger *Messenger) Send(message MessageHandler) error {
 	messenger.Nonce++
 	message.SetNonce(messenger.Nonce)
 
-	dataBytes, err := messenger.marshal(message)
+	dataBytes, err := marshalMessage(message)
 	if err != nil {
 		return err
 	}
@@ -123,7 +120,7 @@ func (messenger *Messenger) readMessage(kind MessageKind, length int) (MessageHa
 	}
 
 	message := CreateMessage(kind)
-	err = messenger.unmarshal(buffer, message)
+	err = unmarshalMessage(buffer, message)
 	if err != nil {
 		return nil, err
 	}
@@ -154,42 +151,4 @@ func (messenger *Messenger) Shutdown() {
 	if err != nil {
 		messenger.Logger.Error("Cannot close reader: %v", err)
 	}
-}
-
-func (messenger *Messenger) marshal(data interface{}) ([]byte, error) {
-	return marshalJSON(data)
-}
-
-func (messenger *Messenger) unmarshal(dataBytes []byte, data interface{}) error {
-	return unmarshalJSON(dataBytes, data)
-}
-
-func marshalGob(data interface{}) ([]byte, error) {
-	var buffer bytes.Buffer
-	encoder := gob.NewEncoder(&buffer)
-	err := encoder.Encode(data)
-	if err != nil {
-		return nil, err
-	}
-
-	return buffer.Bytes(), nil
-}
-
-func unmarshalGob(dataBytes []byte, data interface{}) error {
-	buffer := bytes.NewBuffer(dataBytes)
-	decoder := gob.NewDecoder(buffer)
-	err := decoder.Decode(data)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func marshalJSON(data interface{}) ([]byte, error) {
-	return json.Marshal(data)
-}
-
-func unmarshalJSON(dataBytes []byte, data interface{}) error {
-	return json.Unmarshal(dataBytes, data)
 }
