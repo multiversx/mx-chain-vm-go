@@ -18,8 +18,8 @@ const (
 func main() {
 	errCode, errMessage := doMain()
 	if errCode != common.ErrCodeSuccess {
-		fmt.Fprintln(os.Stderr, errorCode)
-		os.Exit(errorCode)
+		fmt.Fprintln(os.Stderr, errMessage)
+		os.Exit(errCode)
 	}
 }
 
@@ -60,7 +60,7 @@ func doMain() (int, string) {
 
 	err = part.StartLoop()
 	if err != nil {
-		return  common.ErrCodeTerminated, fmt.Sprintf("Ended Arwen loop: %v", err
+		return common.ErrCodeTerminated, fmt.Sprintf("Ended Arwen loop: %v", err)
 	}
 
 	return common.ErrCodeSuccess, ""
