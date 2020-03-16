@@ -32,7 +32,7 @@
             },
             "``user_account_2________________s1": {
                 "nonce": "0x00",
-                "balance": "0",
+                "balance": "222,001,000,001",
                 "storage": {},
                 "code": ""
             }
@@ -43,6 +43,14 @@
                     {
                         "out": [],
                         "status": "",
+                        "gas": "*",
+                        "logs": [],
+                        "refund": ""
+                    },
+                    {
+                        "out": [],
+                        "status": "4",
+                        "message": "payment exceeds maximum total stake",
                         "gas": "*",
                         "logs": [],
                         "refund": ""
@@ -58,6 +66,16 @@
                         "arguments": [],
                         "gasPrice": "0x01",
                         "from": "``user_account_1________________s1"
+                    },
+                    {
+                        "nonce": "0x00",
+                        "function": "stake",
+                        "gasLimit": "1,000,000",
+                        "value": "222,000,000,001",
+                        "to": "``delegation_contract___________s1",
+                        "arguments": [],
+                        "gasPrice": "0x01",
+                        "from": "``user_account_2________________s1"
                     }
                 ],
                 "blockHeader": {
@@ -108,8 +126,8 @@
                 "code": ""
             },
             "``user_account_2________________s1": {
-                "nonce": "0x00",
-                "balance": "0",
+                "nonce": "0x01",
+                "balance": "222,000,000,001",
                 "storage": {},
                 "code": ""
             }
