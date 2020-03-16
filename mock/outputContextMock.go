@@ -43,7 +43,7 @@ func (o *OutputContextMock) NewVMOutputAccountFromMockAccount(account *Account) 
 	return &vmcommon.OutputAccount{
 		Address:        account.Address,
 		Nonce:          account.Nonce,
-		BalanceDelta:   account.BalanceDelta,
+		BalanceDelta:   big.NewInt(0),
 		Balance:        account.Balance,
 		StorageUpdates: make(map[string]*vmcommon.StorageUpdate),
 	}

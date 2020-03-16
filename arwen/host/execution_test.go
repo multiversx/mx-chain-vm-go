@@ -320,7 +320,6 @@ func TestExecution_ExecuteOnSameContext(t *testing.T) {
 	firstSCBalance := big.NewInt(1000)
 
 	getBalanceCalled := func(address []byte) (*big.Int, error) {
-		fmt.Printf("getBalanceCalled for %s\n", address)
 		if bytes.Equal(firstSC, address) {
 			return firstSCBalance, nil
 		}
