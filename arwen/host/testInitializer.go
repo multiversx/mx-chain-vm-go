@@ -44,13 +44,13 @@ func DefaultTestArwenForDeployment(t *testing.T, ownerNonce uint64, newAddress [
 	return host
 }
 
-func DefaultTestArwenForCall(t *testing.T, code []byte) (*vmHost, *mock.BlockchainHookStub) {
+func DefaultTestArwenForCall(tb testing.TB, code []byte) (*vmHost, *mock.BlockchainHookStub) {
 	mockCryptoHook := &mock.CryptoHookMock{}
 	stubBlockchainHook := &mock.BlockchainHookStub{}
 	stubBlockchainHook.GetCodeCalled = func(address []byte) ([]byte, error) {
 		return code, nil
 	}
-	host, _ := DefaultTestArwen(t, stubBlockchainHook, mockCryptoHook)
+	host, _ := DefaultTestArwen(tb, stubBlockchainHook, mockCryptoHook)
 	return host, stubBlockchainHook
 }
 
@@ -70,10 +70,10 @@ func DefaultTestArwenForTwoSCs(t *testing.T, firstCode []byte, secondCode []byte
 	return host, stubBlockchainHook
 }
 
-func DefaultTestArwen(t *testing.T, blockchain vmcommon.BlockchainHook, crypto vmcommon.CryptoHook) (*vmHost, error) {
+func DefaultTestArwen(tb testing.TB, blockchain vmcommon.BlockchainHook, crypto vmcommon.CryptoHook) (*vmHost, error) {
 	host, err := NewArwenVM(blockchain, crypto, defaultVmType, uint64(1000), config.MakeGasMap(1))
-	require.Nil(t, err)
-	require.NotNil(t, host)
+	require.Nil(tb, err)
+	require.NotNil(tb, host)
 	return host, err
 }
 
