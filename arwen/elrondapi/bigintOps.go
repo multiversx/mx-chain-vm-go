@@ -313,7 +313,6 @@ func bigIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, destinat
 
 	value := bigInt.GetOne(destination)
 	value.SetBytes(bytes)
-	//fmt.Printf("%s -> %s\n", hex.EncodeToString(key), hex.EncodeToString(bytes))
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntStorageLoadUnsigned
 	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(bytes))
