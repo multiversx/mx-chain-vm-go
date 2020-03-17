@@ -16,7 +16,7 @@ type NodeMessenger struct {
 // NewNodeMessenger creates a new messenger
 func NewNodeMessenger(logger logger.Logger, reader *os.File, writer *os.File) *NodeMessenger {
 	return &NodeMessenger{
-		Messenger: *common.NewMessenger("NODE", logger, reader, writer),
+		Messenger: *common.NewMessengerPipes("NODE", logger, reader, writer),
 	}
 }
 

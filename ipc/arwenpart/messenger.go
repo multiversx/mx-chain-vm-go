@@ -15,7 +15,7 @@ type ArwenMessenger struct {
 // NewArwenMessenger creates a new messenger
 func NewArwenMessenger(logger logger.Logger, reader *os.File, writer *os.File) *ArwenMessenger {
 	return &ArwenMessenger{
-		Messenger: *common.NewMessenger("ARWEN", logger, reader, writer),
+		Messenger: *common.NewMessengerPipes("ARWEN", logger, reader, writer),
 	}
 }
 
