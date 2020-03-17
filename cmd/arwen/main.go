@@ -10,9 +10,10 @@ import (
 )
 
 const (
-	fileDescriptorNodeToArwen = 3
-	fileDescriptorArwenToNode = 4
-	fileDescriptorLogToNode   = 5
+	fileDescriptorArwenInit   = 3
+	fileDescriptorNodeToArwen = 4
+	fileDescriptorArwenToNode = 5
+	fileDescriptorLogToNode   = 6
 )
 
 func main() {
@@ -30,6 +31,11 @@ func doMain() (int, string) {
 		return common.ErrCodeBadArguments, fmt.Sprintf("Bad arguments to Arwen: %v", err)
 	}
 
+	arwenInitFile := getPipeFile(fileDescriptorArwenInit)
+	if arwenInitFile == nil {
+		return common.ErrCodeCannotCreateFile, "Cannot get pipe file: [arwenInitFile]"
+	}
+
 	nodeToArwenFile := getPipeFile(fileDescriptorNodeToArwen)
 	if nodeToArwenFile == nil {
 		return common.ErrCodeCannotCreateFile, "Cannot get pipe file: [nodeToArwenFile]"
@@ -41,18 +47,24 @@ func doMain() (int, string) {
 	}
 
 	logToNodeFile := getPipeFile(fileDescriptorLogToNode)
-	if arwenToNodeFile == nil {
+	if logToNodeFile == nil {
 		return common.ErrCodeCannotCreateFile, "Cannot get pipe file: [logToNodeFile]"
 	}
 
+	pipeArguments, err := common.GetPipeArguments(arwenInitFile)
+	if err != nil {
+		return common.ErrCodeInit, fmt.Sprintf("Cannot receive gasSchedule: %v", err)
+	}
+
 	arwenLogger := logger.NewPipeLogger(arguments.LogLevel, logToNodeFile)
+
 	part, err := arwenpart.NewArwenPart(
 		arwenLogger,
 		nodeToArwenFile,
 		arwenToNodeFile,
 		arguments.VMType,
 		arguments.BlockGasLimit,
-		arguments.GasSchedule,
+		pipeArguments.GasSchedule,
 	)
 	if err != nil {
 		return common.ErrCodeInit, fmt.Sprintf("Cannot create ArwenPart: %v", err)

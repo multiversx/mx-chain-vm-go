@@ -10,6 +10,7 @@ type MessageKind uint32
 
 const (
 	FirstKind MessageKind = iota
+	Initialize
 	Stop
 	ContractDeployRequest
 	ContractCallRequest
@@ -62,6 +63,7 @@ var messageKindNameByID = map[MessageKind]string{}
 
 func init() {
 	messageKindNameByID[FirstKind] = "FirstKind"
+	messageKindNameByID[Initialize] = "Initialize"
 	messageKindNameByID[Stop] = "Stop"
 	messageKindNameByID[ContractDeployRequest] = "ContractDeployRequest"
 	messageKindNameByID[ContractCallRequest] = "ContractCallRequest"
@@ -106,6 +108,7 @@ func init() {
 	messageKindNameByID[BlockchainCurrentEpochResponse] = "BlockchainCurrentEpochResponse"
 	messageKindNameByID[DiagnoseWaitRequest] = "DiagnoseWaitRequest"
 	messageKindNameByID[DiagnoseWaitResponse] = "DiagnoseWaitResponse"
+	messageKindNameByID[UndefinedRequestOrResponse] = "UndefinedRequestOrResponse"
 	messageKindNameByID[LastKind] = "LastKind"
 }
 
@@ -165,6 +168,20 @@ func (message *Message) SetError(err error) {
 func (message *Message) String() string {
 	kindName := messageKindNameByID[message.Kind]
 	return fmt.Sprintf("[kind=%s nonce=%d err=%s]", kindName, message.DialogueNonce, message.ErrorMessage)
+}
+
+// MessageInitialize is a message sent by Node to initialize Arwen
+type MessageInitialize struct {
+	Message
+	Arguments PipeArguments
+}
+
+// NewMessageInitialize creates a new message
+func NewMessageInitialize(arguments PipeArguments) *MessageInitialize {
+	message := &MessageInitialize{}
+	message.Kind = Initialize
+	message.Arguments = arguments
+	return message
 }
 
 // MessageStop is a message sent by Node to stop Arwen

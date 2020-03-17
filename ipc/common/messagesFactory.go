@@ -22,6 +22,7 @@ func init() {
 		messageCreators[i] = createUndefinedMessage
 	}
 
+	messageCreators[Initialize] = createMessageInitialize
 	messageCreators[Stop] = createMessageStop
 	messageCreators[ContractDeployRequest] = createMessageContractDeployRequest
 	messageCreators[ContractCallRequest] = createMessageContractCallRequest
@@ -68,6 +69,10 @@ func init() {
 	messageCreators[BlockchainCurrentEpochRequest] = createMessageBlockchainCurrentEpochRequest
 	messageCreators[BlockchainCurrentEpochResponse] = createMessageBlockchainCurrentEpochResponse
 
+}
+
+func createMessageInitialize() MessageHandler {
+	return &MessageInitialize{}
 }
 
 func createMessageStop() MessageHandler {

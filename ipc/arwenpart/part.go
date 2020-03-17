@@ -19,7 +19,7 @@ type ArwenPart struct {
 }
 
 // NewArwenPart creates the Arwen part
-func NewArwenPart(logger logger.Logger, input *os.File, output *os.File, vmType []byte, blockGasLimit uint64, gasSchedule map[string]map[string]uint64) (*ArwenPart, error) {
+func NewArwenPart(logger logger.Logger, input *os.File, output *os.File, vmType []byte, blockGasLimit uint64, gasSchedule common.GasScheduleMap) (*ArwenPart, error) {
 	messenger := NewArwenMessenger(logger, input, output)
 	blockchain := NewBlockchainHookGateway(messenger)
 	crypto := NewCryptoHookGateway()

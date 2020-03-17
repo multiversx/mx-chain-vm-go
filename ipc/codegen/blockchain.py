@@ -297,6 +297,7 @@ func init() {{
         messageCreators[i] = createUndefinedMessage
     }}
 
+    messageCreators[Initialize] = createMessageInitialize
     messageCreators[Stop] = createMessageStop
     messageCreators[ContractDeployRequest] = createMessageContractDeployRequest
     messageCreators[ContractCallRequest] = createMessageContractCallRequest
@@ -305,6 +306,10 @@ func init() {{
     messageCreators[DiagnoseWaitResponse] = createMessageDiagnoseWaitResponse
 
     {assignments}
+}}
+
+func createMessageInitialize() MessageHandler {{
+    return &MessageInitialize{{}}
 }}
 
 func createMessageStop() MessageHandler {{
