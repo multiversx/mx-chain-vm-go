@@ -5,17 +5,21 @@ import (
 	"io"
 	"os"
 	"time"
+
+	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/marshaling"
 )
 
 // Receiver intermediates communication (message receiving) via pipes
 type Receiver struct {
-	reader *os.File
+	reader      *os.File
+	marshalizer marshaling.Marshalizer
 }
 
 // NewReceiver creates a new receiver
-func NewReceiver(reader *os.File) *Receiver {
+func NewReceiver(reader *os.File, marshalizer marshaling.Marshalizer) *Receiver {
 	return &Receiver{
-		reader: reader,
+		reader:      reader,
+		marshalizer: marshalizer,
 	}
 }
 
@@ -69,7 +73,7 @@ func (receiver *Receiver) readMessage(kind MessageKind, length int) (MessageHand
 	}
 
 	message := CreateMessage(kind)
-	err = unmarshalMessage(buffer, message)
+	err = receiver.marshalizer.UnmarshalItem(buffer, message)
 	if err != nil {
 		return nil, err
 	}

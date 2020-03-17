@@ -6,6 +6,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/logger"
+	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/marshaling"
 )
 
 // NodeMessenger is the messenger on Node's part of the pipe
@@ -14,9 +15,9 @@ type NodeMessenger struct {
 }
 
 // NewNodeMessenger creates a new messenger
-func NewNodeMessenger(logger logger.Logger, reader *os.File, writer *os.File) *NodeMessenger {
+func NewNodeMessenger(logger logger.Logger, reader *os.File, writer *os.File, marshalizer marshaling.Marshalizer) *NodeMessenger {
 	return &NodeMessenger{
-		Messenger: *common.NewMessengerPipes("NODE", logger, reader, writer),
+		Messenger: *common.NewMessengerPipes("NODE", logger, reader, writer, marshalizer),
 	}
 }
 

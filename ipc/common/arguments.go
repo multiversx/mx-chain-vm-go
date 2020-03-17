@@ -21,16 +21,18 @@ type ArwenArguments struct {
 type GasScheduleMap = map[string]map[string]uint64
 
 // SendArwenArguments sends initialization arguments through a pipe
+// For the arguments, the marshalizer is hardcoded, JSON
 func SendArwenArguments(pipe *os.File, pipeArguments ArwenArguments) error {
-	sender := NewSender(pipe)
+	sender := NewSender(pipe, marshaling.CreateMarshalizer(marshaling.JSON))
 	message := NewMessageInitialize(pipeArguments)
 	_, err := sender.Send(message)
 	return err
 }
 
 // GetArwenArguments reads initialization arguments from the pipe
+// For the arguments, the marshalizer is hardcoded, JSON
 func GetArwenArguments(pipe *os.File) (*ArwenArguments, error) {
-	receiver := NewReceiver(pipe)
+	receiver := NewReceiver(pipe, marshaling.CreateMarshalizer(marshaling.JSON))
 	message, _, err := receiver.Receive(0)
 	if err != nil {
 		return nil, err

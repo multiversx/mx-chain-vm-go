@@ -9,6 +9,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/arwenpart"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/logger"
+	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/marshaling"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/nodepart"
 	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -66,14 +67,28 @@ func doContractRequest(
 	logger := logger.NewDefaultLogger(logger.LogDebug)
 
 	go func() {
-		part, err := arwenpart.NewArwenPart(logger, files.inputOfArwen, files.outputOfArwen, []byte{5, 0}, uint64(10000000), config.MakeGasMap(1))
+		arwenArguments := &common.ArwenArguments{
+			VMType:              []byte{5, 0},
+			BlockGasLimit:       uint64(10000000),
+			GasSchedule:         config.MakeGasMap(1),
+			LogsMarshalizer:     marshaling.JSON,
+			MessagesMarshalizer: marshaling.JSON,
+		}
+		part, err := arwenpart.NewArwenPart(logger, files.inputOfArwen, files.outputOfArwen, arwenArguments)
 		assert.Nil(t, err)
 		part.StartLoop()
 		wg.Done()
 	}()
 
 	go func() {
-		part, err := nodepart.NewNodePart(logger, files.inputOfNode, files.outputOfNode, blockchain, nodepart.Config{MaxLoopTime: 1000})
+		part, err := nodepart.NewNodePart(
+			logger,
+			files.inputOfNode,
+			files.outputOfNode,
+			blockchain,
+			nodepart.Config{MaxLoopTime: 1000},
+			marshaling.CreateMarshalizer(marshaling.JSON),
+		)
 		assert.Nil(t, err)
 		response, responseError = part.StartLoop(request)
 		part.SendStopSignal()

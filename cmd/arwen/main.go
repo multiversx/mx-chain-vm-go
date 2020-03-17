@@ -47,21 +47,19 @@ func doMain() (int, string) {
 		return common.ErrCodeCannotCreateFile, "Cannot get pipe file: [logToNodeFile]"
 	}
 
-	pipeArguments, err := common.GetArwenArguments(arwenInitFile)
+	arwenArguments, err := common.GetArwenArguments(arwenInitFile)
 	if err != nil {
 		return common.ErrCodeInit, fmt.Sprintf("Cannot receive gasSchedule: %v", err)
 	}
 
-	arwenLoggerMarshalizer := marshaling.CreateMarshalizer(pipeArguments.LogsMarshalizer)
-	arwenLogger := logger.NewPipeLogger(pipeArguments.LogLevel, logToNodeFile, arwenLoggerMarshalizer)
+	arwenLoggerMarshalizer := marshaling.CreateMarshalizer(arwenArguments.LogsMarshalizer)
+	arwenLogger := logger.NewPipeLogger(arwenArguments.LogLevel, logToNodeFile, arwenLoggerMarshalizer)
 
 	part, err := arwenpart.NewArwenPart(
 		arwenLogger,
 		nodeToArwenFile,
 		arwenToNodeFile,
-		pipeArguments.VMType,
-		pipeArguments.BlockGasLimit,
-		pipeArguments.GasSchedule,
+		arwenArguments,
 	)
 	if err != nil {
 		return common.ErrCodeInit, fmt.Sprintf("Cannot create ArwenPart: %v", err)

@@ -3,25 +3,27 @@ package common
 import (
 	"encoding/binary"
 	"os"
+
+	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/marshaling"
 )
 
 // Sender intermediates communication (message sending) via pipes
 type Sender struct {
-	Name   string
-	Nonce  uint32
-	writer *os.File
+	writer      *os.File
+	marshalizer marshaling.Marshalizer
 }
 
 // NewSender creates a new sender
-func NewSender(writer *os.File) *Sender {
+func NewSender(writer *os.File, marshalizer marshaling.Marshalizer) *Sender {
 	return &Sender{
-		writer: writer,
+		writer:      writer,
+		marshalizer: marshalizer,
 	}
 }
 
 // Send sends a message over the pipe
 func (sender *Sender) Send(message MessageHandler) (int, error) {
-	dataBytes, err := marshalMessage(message)
+	dataBytes, err := sender.marshalizer.MarshalItem(message)
 	if err != nil {
 		return 0, err
 	}

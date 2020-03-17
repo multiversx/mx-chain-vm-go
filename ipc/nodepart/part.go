@@ -5,6 +5,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/logger"
+	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/marshaling"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -24,8 +25,9 @@ func NewNodePart(
 	output *os.File,
 	blockchain vmcommon.BlockchainHook,
 	config Config,
+	marshalizer marshaling.Marshalizer,
 ) (*NodePart, error) {
-	messenger := NewNodeMessenger(nodeLogger, input, output)
+	messenger := NewNodeMessenger(nodeLogger, input, output, marshalizer)
 
 	part := &NodePart{
 		Logger:     nodeLogger,

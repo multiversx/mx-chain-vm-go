@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/logger"
+	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/marshaling"
 )
 
 // Messenger intermediates communication (message exchange) via pipes
@@ -17,12 +18,12 @@ type Messenger struct {
 }
 
 // NewMessengerPipes creates a new messenger from pipes
-func NewMessengerPipes(name string, logger logger.Logger, reader *os.File, writer *os.File) *Messenger {
+func NewMessengerPipes(name string, logger logger.Logger, reader *os.File, writer *os.File, marshalizer marshaling.Marshalizer) *Messenger {
 	return &Messenger{
 		Name:     name,
 		Logger:   logger,
-		receiver: NewReceiver(reader),
-		sender:   NewSender(writer),
+		receiver: NewReceiver(reader, marshalizer),
+		sender:   NewSender(writer, marshalizer),
 	}
 }
 

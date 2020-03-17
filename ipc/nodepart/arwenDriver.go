@@ -102,6 +102,7 @@ func (driver *ArwenDriver) startArwen() error {
 		driver.arwenInputWrite,
 		driver.blockchainHook,
 		driver.config,
+		driver.messagesMarshalizer,
 	)
 	if err != nil {
 		return err

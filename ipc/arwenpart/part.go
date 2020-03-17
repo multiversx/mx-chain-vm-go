@@ -7,6 +7,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/logger"
+	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/marshaling"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -19,12 +20,13 @@ type ArwenPart struct {
 }
 
 // NewArwenPart creates the Arwen part
-func NewArwenPart(logger logger.Logger, input *os.File, output *os.File, vmType []byte, blockGasLimit uint64, gasSchedule common.GasScheduleMap) (*ArwenPart, error) {
-	messenger := NewArwenMessenger(logger, input, output)
+func NewArwenPart(logger logger.Logger, input *os.File, output *os.File, arwenArguments *common.ArwenArguments) (*ArwenPart, error) {
+	messagesMarshalizer := marshaling.CreateMarshalizer(arwenArguments.MessagesMarshalizer)
+	messenger := NewArwenMessenger(logger, input, output, messagesMarshalizer)
 	blockchain := NewBlockchainHookGateway(messenger)
 	crypto := NewCryptoHookGateway()
 
-	host, err := host.NewArwenVM(blockchain, crypto, vmType, blockGasLimit, gasSchedule)
+	host, err := host.NewArwenVM(blockchain, crypto, arwenArguments.VMType, arwenArguments.BlockGasLimit, arwenArguments.GasSchedule)
 	if err != nil {
 		return nil, err
 	}
