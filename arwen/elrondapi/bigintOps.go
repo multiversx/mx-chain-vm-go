@@ -38,7 +38,8 @@ package elrondapi
 // extern void bigIntShr(void* context, int32_t destination, int32_t op, int32_t bits);
 // extern void bigIntShl(void* context, int32_t destination, int32_t op, int32_t bits);
 //
-// extern void bigIntFinish(void* context, int32_t reference);
+// extern void bigIntFinishUnsigned(void* context, int32_t reference);
+// extern void bigIntFinishSigned(void* context, int32_t reference);
 // extern int32_t bigIntStorageStoreUnsigned(void *context, int32_t keyOffset, int32_t source);
 // extern int32_t bigIntStorageLoadUnsigned(void *context, int32_t keyOffset, int32_t destination);
 // extern void bigIntGetUnsignedArgument(void *context, int32_t id, int32_t destination);
@@ -188,7 +189,12 @@ func BigIntImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntFinish", bigIntFinish, C.bigIntFinish)
+	imports, err = imports.Append("bigIntFinishUnsigned", bigIntFinishUnsigned, C.bigIntFinishUnsigned)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntFinishSigned", bigIntFinishSigned, C.bigIntFinishSigned)
 	if err != nil {
 		return nil, err
 	}
@@ -731,21 +737,32 @@ func bigIntShl(context unsafe.Pointer, destination, op, bits int32) {
 	metering.UseGas(gasToUse)
 }
 
-//export bigIntFinish
-func bigIntFinish(context unsafe.Pointer, reference int32) {
+//export bigIntFinishUnsigned
+func bigIntFinishUnsigned(context unsafe.Pointer, reference int32) {
 	bigInt := arwen.GetBigIntContext(context)
 	output := arwen.GetOutputContext(context)
 	metering := arwen.GetMeteringContext(context)
 
 	value := bigInt.GetOne(reference)
 	bigIntBytes := value.Bytes()
-	if len(bigIntBytes) == 0 {
-		// send one byte of "0", otherwise nothing gets saved when we "return 0"
-		bigIntBytes = []byte{0}
-	}
 	output.Finish(bigIntBytes)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntFinish
 	gasToUse += metering.GasSchedule().BaseOperationCost.PersistPerByte * uint64(len(value.Bytes()))
+	metering.UseGas(gasToUse)
+}
+
+//export bigIntFinishSigned
+func bigIntFinishSigned(context unsafe.Pointer, reference int32) {
+	bigInt := arwen.GetBigIntContext(context)
+	output := arwen.GetOutputContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	value := bigInt.GetOne(reference)
+	bigInt2cBytes := twos.ToBytes(value)
+	output.Finish(bigInt2cBytes)
+
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntFinish
+	gasToUse += metering.GasSchedule().BaseOperationCost.PersistPerByte * uint64(len(bigInt2cBytes))
 	metering.UseGas(gasToUse)
 }
