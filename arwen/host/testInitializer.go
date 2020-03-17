@@ -3,14 +3,17 @@ package host
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"math/big"
+	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/pelletier/go-toml"
 	"github.com/stretchr/testify/require"
 )
 
@@ -154,4 +157,94 @@ func SetStorageUpdate(account *vmcommon.OutputAccount, key []byte, data []byte) 
 
 func SetStorageUpdateStrings(account *vmcommon.OutputAccount, key string, data string) {
 	SetStorageUpdate(account, []byte(key), []byte(data))
+}
+
+// OpenFile method opens the file from given path - does not close the file
+func OpenFile(relativePath string) (*os.File, error) {
+	path, err := filepath.Abs(relativePath)
+	if err != nil {
+		fmt.Printf("cannot create absolute path for the provided file: %s", err.Error())
+		return nil, err
+	}
+	f, err := os.Open(filepath.Clean(path))
+	if err != nil {
+		return nil, err
+	}
+
+	return f, nil
+}
+
+// LoadTomlFile method to open and decode toml file
+func LoadTomlFile(dest interface{}, relativePath string) error {
+	f, err := OpenFile(relativePath)
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		err = f.Close()
+		if err != nil {
+			fmt.Printf("cannot close file: %s", err.Error())
+		}
+	}()
+
+	return toml.NewDecoder(f).Decode(dest)
+}
+
+// LoadTomlFileToMap opens and decodes a toml file as a map[string]interface{}
+func LoadTomlFileToMap(relativePath string) (map[string]interface{}, error) {
+	f, err := OpenFile(relativePath)
+	if err != nil {
+		return nil, err
+	}
+
+	fileinfo, err := f.Stat()
+	if err != nil {
+		fmt.Printf("cannot stat file: %s", err.Error())
+		return nil, err
+	}
+
+	filesize := fileinfo.Size()
+	buffer := make([]byte, filesize)
+
+	_, err = f.Read(buffer)
+	if err != nil {
+		fmt.Printf("cannot read from file: %s", err.Error())
+		return nil, err
+	}
+
+	defer func() {
+		err = f.Close()
+		if err != nil {
+			fmt.Printf("cannot close file: %s", err.Error())
+		}
+	}()
+
+	loadedTree, err := toml.Load(string(buffer))
+	if err != nil {
+		fmt.Printf("cannot interpret file contents as toml: %s", err.Error())
+		return nil, err
+	}
+
+	loadedMap := loadedTree.ToMap()
+
+	return loadedMap, nil
+}
+
+func LoadGasScheduleConfig(filepath string) (map[string]map[string]uint64, error) {
+	gasScheduleConfig, err := LoadTomlFileToMap(filepath)
+	if err != nil {
+		return nil, err
+	}
+
+	flattenedGasSchedule := make(map[string]map[string]uint64)
+	for libType, costs := range gasScheduleConfig {
+		flattenedGasSchedule[libType] = make(map[string]uint64)
+		costsMap := costs.(map[string]interface{})
+		for operationName, cost := range costsMap {
+			flattenedGasSchedule[libType][operationName] = uint64(cost.(int64))
+		}
+	}
+
+	return flattenedGasSchedule, nil
 }

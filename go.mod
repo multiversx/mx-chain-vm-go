@@ -7,5 +7,6 @@ require (
 	github.com/ElrondNetwork/elrond-vm-common v0.1.12
 	github.com/ElrondNetwork/elrond-vm-util v0.1.4
 	github.com/mitchellh/mapstructure v1.1.2
+	github.com/pelletier/go-toml v1.6.0
 	github.com/stretchr/testify v1.4.0
 )

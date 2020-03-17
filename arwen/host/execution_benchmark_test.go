@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
@@ -25,6 +24,8 @@ func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int) {
 	totalTokenSupply := big.NewInt(int64(nTransfers * nRuns))
 	host, mockBlockchainHook := deploy(tb, totalTokenSupply)
 
+	gasProvided := uint64(5000000000)
+
 	// Prepare ERC20 transfer call input
 	transferInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
@@ -33,10 +34,10 @@ func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int) {
 				receiver,
 				big.NewInt(1).Bytes(),
 			},
-			CallValue:   big.NewInt(0),
+			CallValue:   big.NewInt(10),
 			CallType:    vmcommon.DirectCall,
-			GasPrice:    0,
-			GasProvided: 100000,
+			GasPrice:    100000000000000,
+			GasProvided: gasProvided,
 		},
 		RecipientAddr: scAddress,
 		Function:      "transferToken",
@@ -46,12 +47,12 @@ func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int) {
 	for r := 0; r < nRuns; r++ {
 		start := time.Now()
 		for i := 0; i < nTransfers; i++ {
-			transferInput.GasProvided = 100000
+			transferInput.GasProvided = gasProvided
 			vmOutput, err := host.RunSmartContractCall(transferInput)
 			require.Nil(tb, err)
 			require.NotNil(tb, vmOutput)
-			require.Equal(tb, "", vmOutput.ReturnMessage)
 			require.Equal(tb, vmcommon.Ok, vmOutput.ReturnCode)
+			require.Equal(tb, "", vmOutput.ReturnMessage)
 
 			mockBlockchainHook.UpdateAccounts(vmOutput.OutputAccounts)
 		}
@@ -71,7 +72,10 @@ func deploy(tb testing.TB, totalTokenSupply *big.Int) (*vmHost, *mock.Blockchain
 		Balance: big.NewInt(88000),
 	})
 
-	host, err := NewArwenVM(mockBlockchainHook, &mock.CryptoHookMock{}, defaultVmType, uint64(1000), config.MakeGasMap(1))
+	gasMap, err := LoadGasScheduleConfig("../../test/gasSchedule.toml")
+	require.Nil(tb, err)
+
+	host, err := NewArwenVM(mockBlockchainHook, &mock.CryptoHookMock{}, defaultVmType, uint64(1000), gasMap)
 	require.Nil(tb, err)
 
 	// Deploy ERC20
@@ -84,7 +88,7 @@ func deploy(tb testing.TB, totalTokenSupply *big.Int) (*vmHost, *mock.Blockchain
 			CallValue:   big.NewInt(0),
 			CallType:    vmcommon.DirectCall,
 			GasPrice:    0,
-			GasProvided: 100000,
+			GasProvided: 0xFFFFFFFFFFFFFFFF,
 		},
 		ContractCode: GetTestSCCode("erc20", "../../"),
 	}
