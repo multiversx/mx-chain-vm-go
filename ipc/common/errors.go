@@ -68,8 +68,6 @@ var ErrBadHookResponseFromNode = &CriticalError{InnerErr: fmt.Errorf("bad hook r
 const (
 	// ErrCodeSuccess signals success
 	ErrCodeSuccess = iota
-	// ErrCodeBadArguments signals a critical error
-	ErrCodeBadArguments
 	// ErrCodeCannotCreateFile signals a critical error
 	ErrCodeCannotCreateFile
 	// ErrCodeInit signals a critical error

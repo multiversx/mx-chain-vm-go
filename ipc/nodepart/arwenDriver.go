@@ -21,10 +21,8 @@ var _ vmcommon.VMExecutionHandler = (*ArwenDriver)(nil)
 type ArwenDriver struct {
 	nodeLogger     logger.Logger
 	blockchainHook vmcommon.BlockchainHook
+	arwenArguments common.ArwenArguments
 	config         Config
-	vmType         []byte
-	blockGasLimit  uint64
-	gasSchedule    common.GasScheduleMap
 
 	arwenInitRead    *os.File
 	arwenInitWrite   *os.File
@@ -42,18 +40,14 @@ type ArwenDriver struct {
 func NewArwenDriver(
 	nodeLogger logger.Logger,
 	blockchainHook vmcommon.BlockchainHook,
+	arwenArguments common.ArwenArguments,
 	config Config,
-	vmType []byte,
-	blockGasLimit uint64,
-	gasSchedule common.GasScheduleMap,
 ) (*ArwenDriver, error) {
 	driver := &ArwenDriver{
 		nodeLogger:     nodeLogger,
 		blockchainHook: blockchainHook,
+		arwenArguments: arwenArguments,
 		config:         config,
-		vmType:         vmType,
-		blockGasLimit:  blockGasLimit,
-		gasSchedule:    gasSchedule,
 	}
 
 	err := driver.startArwen()
@@ -69,21 +63,12 @@ func (driver *ArwenDriver) startArwen() error {
 
 	driver.resetPipeStreams()
 
-	arguments, err := common.PrepareCommandLineArguments(common.CommandLineArguments{
-		VMType:        driver.vmType,
-		BlockGasLimit: driver.blockGasLimit,
-		LogLevel:      logger.LogDebug,
-	})
-	if err != nil {
-		return err
-	}
-
 	arwenPath, err := driver.getArwenPath()
 	if err != nil {
 		return err
 	}
 
-	driver.command = exec.Command(arwenPath, arguments...)
+	driver.command = exec.Command(arwenPath)
 	driver.command.ExtraFiles = []*os.File{driver.arwenInitRead, driver.arwenInputRead, driver.arwenOutputWrite, driver.arwenLogWrite}
 
 	arwenStdout, err := driver.command.StdoutPipe()
@@ -101,9 +86,10 @@ func (driver *ArwenDriver) startArwen() error {
 		return err
 	}
 
-	common.SendPipeArguments(driver.arwenInitWrite, common.PipeArguments{
-		GasSchedule: driver.gasSchedule,
-	})
+	err = common.SendArwenArguments(driver.arwenInitWrite, driver.arwenArguments)
+	if err != nil {
+		return err
+	}
 
 	driver.part, err = NewNodePart(
 		driver.nodeLogger,

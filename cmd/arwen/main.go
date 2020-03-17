@@ -26,11 +26,6 @@ func main() {
 
 // doMain returns (error code, error message)
 func doMain() (int, string) {
-	arguments, err := common.ParseCommandLineArguments()
-	if err != nil {
-		return common.ErrCodeBadArguments, fmt.Sprintf("Bad arguments to Arwen: %v", err)
-	}
-
 	arwenInitFile := getPipeFile(fileDescriptorArwenInit)
 	if arwenInitFile == nil {
 		return common.ErrCodeCannotCreateFile, "Cannot get pipe file: [arwenInitFile]"
@@ -51,19 +46,19 @@ func doMain() (int, string) {
 		return common.ErrCodeCannotCreateFile, "Cannot get pipe file: [logToNodeFile]"
 	}
 
-	pipeArguments, err := common.GetPipeArguments(arwenInitFile)
+	pipeArguments, err := common.GetArwenArguments(arwenInitFile)
 	if err != nil {
 		return common.ErrCodeInit, fmt.Sprintf("Cannot receive gasSchedule: %v", err)
 	}
 
-	arwenLogger := logger.NewPipeLogger(arguments.LogLevel, logToNodeFile)
+	arwenLogger := logger.NewPipeLogger(pipeArguments.LogLevel, logToNodeFile)
 
 	part, err := arwenpart.NewArwenPart(
 		arwenLogger,
 		nodeToArwenFile,
 		arwenToNodeFile,
-		arguments.VMType,
-		arguments.BlockGasLimit,
+		pipeArguments.VMType,
+		pipeArguments.BlockGasLimit,
 		pipeArguments.GasSchedule,
 	)
 	if err != nil {

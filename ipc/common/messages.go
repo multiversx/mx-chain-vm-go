@@ -173,11 +173,11 @@ func (message *Message) String() string {
 // MessageInitialize is a message sent by Node to initialize Arwen
 type MessageInitialize struct {
 	Message
-	Arguments PipeArguments
+	Arguments ArwenArguments
 }
 
 // NewMessageInitialize creates a new message
-func NewMessageInitialize(arguments PipeArguments) *MessageInitialize {
+func NewMessageInitialize(arguments ArwenArguments) *MessageInitialize {
 	message := &MessageInitialize{}
 	message.Kind = Initialize
 	message.Arguments = arguments
