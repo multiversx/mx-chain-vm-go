@@ -194,6 +194,9 @@ func closeFile(file *os.File) {
 }
 
 // RestartArwenIfNecessary restarts Arwen if the process is closed
+// TODO: This has to be called on Node's behalf when a critical error is encountered while processing a smart contract transaction.
+// The basic idea is that the node should not wait for Arwen to restart,
+// but process other types of transactions, and only when Arwen is ready should go with the smart contract transactions.
 func (driver *ArwenDriver) RestartArwenIfNecessary() error {
 	if !driver.IsClosed() {
 		return nil
