@@ -4,14 +4,17 @@ import (
 	"os"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/logger"
+	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/marshaling"
 )
 
 // ArwenArguments represents the initialization arguments required by Arwen, passed through the initialization pipe
 type ArwenArguments struct {
-	VMType        []byte
-	BlockGasLimit uint64
-	LogLevel      logger.LogLevel
-	GasSchedule   GasScheduleMap
+	VMType              []byte
+	BlockGasLimit       uint64
+	LogLevel            logger.LogLevel
+	GasSchedule         GasScheduleMap
+	LogsMarshalizer     marshaling.MarshalizerKind
+	MessagesMarshalizer marshaling.MarshalizerKind
 }
 
 // GasScheduleMap is an alias

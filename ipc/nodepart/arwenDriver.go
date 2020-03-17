@@ -12,6 +12,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/logger"
+	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/marshaling"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -19,10 +20,12 @@ var _ vmcommon.VMExecutionHandler = (*ArwenDriver)(nil)
 
 // ArwenDriver manages the execution of the Arwen process
 type ArwenDriver struct {
-	nodeLogger     logger.Logger
-	blockchainHook vmcommon.BlockchainHook
-	arwenArguments common.ArwenArguments
-	config         Config
+	nodeLogger          logger.Logger
+	blockchainHook      vmcommon.BlockchainHook
+	arwenArguments      common.ArwenArguments
+	config              Config
+	logsMarshalizer     marshaling.Marshalizer
+	messagesMarshalizer marshaling.Marshalizer
 
 	arwenInitRead    *os.File
 	arwenInitWrite   *os.File
@@ -44,10 +47,12 @@ func NewArwenDriver(
 	config Config,
 ) (*ArwenDriver, error) {
 	driver := &ArwenDriver{
-		nodeLogger:     nodeLogger,
-		blockchainHook: blockchainHook,
-		arwenArguments: arwenArguments,
-		config:         config,
+		nodeLogger:          nodeLogger,
+		blockchainHook:      blockchainHook,
+		arwenArguments:      arwenArguments,
+		config:              config,
+		logsMarshalizer:     marshaling.CreateMarshalizer(arwenArguments.LogsMarshalizer),
+		messagesMarshalizer: marshaling.CreateMarshalizer(arwenArguments.MessagesMarshalizer),
 	}
 
 	err := driver.startArwen()
@@ -313,7 +318,8 @@ func (driver *ArwenDriver) continuouslyCopyArwenLogs(arwenStdout io.Reader, arwe
 
 	go func() {
 		for {
-			err := logger.ReceiveLogThroughPipe(driver.nodeLogger, arwenLog)
+			// TODO: refactor to struct / component
+			err := logger.ReceiveLogThroughPipe(driver.nodeLogger, arwenLog, driver.logsMarshalizer)
 			if err != nil {
 				driver.nodeLogger.Error("ReceiveLogThroughPipe error", "err", err)
 				break

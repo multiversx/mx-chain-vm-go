@@ -7,6 +7,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/arwenpart"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/logger"
+	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/marshaling"
 )
 
 const (
@@ -51,7 +52,8 @@ func doMain() (int, string) {
 		return common.ErrCodeInit, fmt.Sprintf("Cannot receive gasSchedule: %v", err)
 	}
 
-	arwenLogger := logger.NewPipeLogger(pipeArguments.LogLevel, logToNodeFile)
+	arwenLoggerMarshalizer := marshaling.CreateMarshalizer(pipeArguments.LogsMarshalizer)
+	arwenLogger := logger.NewPipeLogger(pipeArguments.LogLevel, logToNodeFile, arwenLoggerMarshalizer)
 
 	part, err := arwenpart.NewArwenPart(
 		arwenLogger,

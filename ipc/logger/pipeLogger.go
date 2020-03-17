@@ -4,6 +4,8 @@ import (
 	"encoding/binary"
 	"io"
 	"os"
+
+	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/marshaling"
 )
 
 var _ Logger = (*PipeLogger)(nil)
@@ -17,17 +19,19 @@ type LogMessage struct {
 
 // PipeLogger is a pipe-based logger
 type PipeLogger struct {
-	pipe     *os.File
-	level    LogLevel
-	fallback Logger
+	pipe        *os.File
+	level       LogLevel
+	fallback    Logger
+	marshalizer marshaling.Marshalizer
 }
 
 // NewPipeLogger creates a new pipe logger
-func NewPipeLogger(level LogLevel, pipe *os.File) Logger {
+func NewPipeLogger(level LogLevel, pipe *os.File, marshalizer marshaling.Marshalizer) Logger {
 	return &PipeLogger{
-		level:    level,
-		pipe:     pipe,
-		fallback: NewDefaultLogger(level),
+		level:       level,
+		pipe:        pipe,
+		fallback:    NewDefaultLogger(level),
+		marshalizer: marshalizer,
 	}
 }
 
@@ -98,7 +102,7 @@ func (pipeLogger *PipeLogger) Error(message string, args ...interface{}) {
 }
 
 func (pipeLogger *PipeLogger) sendMessage(message *LogMessage) {
-	payload, err := marshalLog(message)
+	payload, err := pipeLogger.marshalizer.MarshalItem(message)
 	if err != nil {
 		pipeLogger.fallback.Error("pipeLogger.sendMessage() marshal error", err.Error())
 		return
@@ -121,7 +125,8 @@ func (pipeLogger *PipeLogger) sendMessage(message *LogMessage) {
 }
 
 // ReceiveLogThroughPipe reads a log message from the pipe and sends it to a regular Node logger
-func ReceiveLogThroughPipe(receivingLogger Logger, pipe *os.File) error {
+// TODO: refactor, create LogsReceiver component
+func ReceiveLogThroughPipe(receivingLogger Logger, pipe *os.File, marshalizer marshaling.Marshalizer) error {
 	buffer := make([]byte, 4)
 	_, err := io.ReadFull(pipe, buffer)
 	if err != nil {
@@ -136,7 +141,7 @@ func ReceiveLogThroughPipe(receivingLogger Logger, pipe *os.File) error {
 	}
 
 	logMessage := &LogMessage{}
-	err = unmarshalLog(buffer, logMessage)
+	err = marshalizer.UnmarshalItem(buffer, logMessage)
 	if err != nil {
 		return err
 	}
