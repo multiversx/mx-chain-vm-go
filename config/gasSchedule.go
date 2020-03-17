@@ -224,6 +224,7 @@ func FillGasMap_BigIntAPICosts(value uint64) map[string]uint64 {
 	gasMap := make(map[string]uint64)
 	gasMap["BigIntNew"] = value
 	gasMap["BigIntUnsignedByteLength"] = value
+	gasMap["BigIntSignedByteLength"] = value
 	gasMap["BigIntGetUnsignedBytes"] = value
 	gasMap["BigIntGetSignedBytes"] = value
 	gasMap["BigIntSetUnsignedBytes"] = value
@@ -248,10 +249,12 @@ func FillGasMap_BigIntAPICosts(value uint64) map[string]uint64 {
 	gasMap["BigIntXor"] = value
 	gasMap["BigIntShr"] = value
 	gasMap["BigIntShl"] = value
-	gasMap["BigIntFinish"] = value
-	gasMap["BigIntStorageLoad"] = value
-	gasMap["BigIntStorageStore"] = value
-	gasMap["BigIntGetArgument"] = value
+	gasMap["BigIntFinishUnsigned"] = value
+	gasMap["BigIntFinishSigned"] = value
+	gasMap["BigIntStorageLoadUnsigned"] = value
+	gasMap["BigIntStorageStoreUnsigned"] = value
+	gasMap["BigIntGetUnsignedArgument"] = value
+	gasMap["BigIntGetSignedArgument"] = value
 	gasMap["BigIntGetCallValue"] = value
 	gasMap["BigIntGetExternalBalance"] = value
 

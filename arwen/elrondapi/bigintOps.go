@@ -244,7 +244,7 @@ func bigIntGetUnsignedArgument(context unsafe.Pointer, id int32, destination int
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetArgument
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetUnsignedArgument
 	metering.UseGas(gasToUse)
 
 	args := runtime.Arguments()
@@ -263,7 +263,7 @@ func bigIntGetSignedArgument(context unsafe.Pointer, id int32, destination int32
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetArgument
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetSignedArgument
 	metering.UseGas(gasToUse)
 
 	args := runtime.Arguments()
@@ -291,7 +291,7 @@ func bigIntStorageStoreUnsigned(context unsafe.Pointer, keyOffset int32, source 
 	value := bigInt.GetOne(source)
 	bytes := value.Bytes()
 
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntStorageStore
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntStorageStoreUnsigned
 	metering.UseGas(gasToUse)
 
 	return storage.SetStorage(key, bytes)
@@ -315,7 +315,7 @@ func bigIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, destinat
 	value.SetBytes(bytes)
 	//fmt.Printf("%s -> %s\n", hex.EncodeToString(key), hex.EncodeToString(bytes))
 
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntStorageLoad
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntStorageLoadUnsigned
 	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(bytes))
 	metering.UseGas(gasToUse)
 
@@ -388,7 +388,7 @@ func bigIntSignedByteLength(context unsafe.Pointer, reference int32) int32 {
 
 	value := bigInt.GetOne(reference)
 
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntUnsignedByteLength
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSignedByteLength
 	metering.UseGas(gasToUse)
 
 	bytes := twos.ToBytes(value) // TODO: figure out the correct length without computing the 2's complement
@@ -768,7 +768,7 @@ func bigIntFinishUnsigned(context unsafe.Pointer, reference int32) {
 	bigIntBytes := value.Bytes()
 	output.Finish(bigIntBytes)
 
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntFinish
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntFinishUnsigned
 	gasToUse += metering.GasSchedule().BaseOperationCost.PersistPerByte * uint64(len(value.Bytes()))
 	metering.UseGas(gasToUse)
 }
@@ -783,7 +783,7 @@ func bigIntFinishSigned(context unsafe.Pointer, reference int32) {
 	bigInt2cBytes := twos.ToBytes(value)
 	output.Finish(bigInt2cBytes)
 
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntFinish
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntFinishSigned
 	gasToUse += metering.GasSchedule().BaseOperationCost.PersistPerByte * uint64(len(bigInt2cBytes))
 	metering.UseGas(gasToUse)
 }
