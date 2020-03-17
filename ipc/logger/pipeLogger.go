@@ -125,7 +125,6 @@ func (pipeLogger *PipeLogger) sendMessage(message *LogMessage) {
 }
 
 // ReceiveLogThroughPipe reads a log message from the pipe and sends it to a regular Node logger
-// TODO: refactor, create LogsReceiver component
 func ReceiveLogThroughPipe(receivingLogger Logger, pipe *os.File, marshalizer marshaling.Marshalizer) error {
 	buffer := make([]byte, 4)
 	_, err := io.ReadFull(pipe, buffer)

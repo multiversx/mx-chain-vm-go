@@ -319,7 +319,6 @@ func (driver *ArwenDriver) continuouslyCopyArwenLogs(arwenStdout io.Reader, arwe
 
 	go func() {
 		for {
-			// TODO: refactor to struct / component
 			err := logger.ReceiveLogThroughPipe(driver.nodeLogger, arwenLog, driver.logsMarshalizer)
 			if err != nil {
 				driver.nodeLogger.Error("ReceiveLogThroughPipe error", "err", err)
