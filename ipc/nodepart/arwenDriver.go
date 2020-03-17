@@ -69,7 +69,7 @@ func (driver *ArwenDriver) startArwen() error {
 
 	driver.resetPipeStreams()
 
-	arguments, err := common.PrepareArguments(common.Arguments{
+	arguments, err := common.PrepareCommandLineArguments(common.CommandLineArguments{
 		VMType:        driver.vmType,
 		BlockGasLimit: driver.blockGasLimit,
 		LogLevel:      logger.LogDebug,

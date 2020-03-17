@@ -26,7 +26,7 @@ func main() {
 
 // doMain returns (error code, error message)
 func doMain() (int, string) {
-	arguments, err := common.ParseArguments()
+	arguments, err := common.ParseCommandLineArguments()
 	if err != nil {
 		return common.ErrCodeBadArguments, fmt.Sprintf("Bad arguments to Arwen: %v", err)
 	}

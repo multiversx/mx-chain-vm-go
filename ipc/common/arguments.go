@@ -11,8 +11,8 @@ import (
 // NumCommandLineArguments is the number of arguments required by the CLI
 const NumCommandLineArguments = 4
 
-// Arguments represents the command-line arguments required by Arwen
-type Arguments struct {
+// CommandLineArguments represents the command-line arguments required by Arwen
+type CommandLineArguments struct {
 	VMType        []byte
 	BlockGasLimit uint64
 	LogLevel      logger.LogLevel
@@ -26,8 +26,8 @@ type PipeArguments struct {
 // GasScheduleMap is an alias
 type GasScheduleMap = map[string]map[string]uint64
 
-// PrepareArguments prepares the list of arguments (command line) to be sent by the Node to Arwen when Arwen should be started
-func PrepareArguments(arguments Arguments) ([]string, error) {
+// PrepareCommandLineArguments prepares the list of arguments (command line) to be sent by the Node to Arwen when Arwen should be started
+func PrepareCommandLineArguments(arguments CommandLineArguments) ([]string, error) {
 	stringArguments := []string{
 		hex.EncodeToString(arguments.VMType),
 		strconv.FormatUint(arguments.BlockGasLimit, 10),
@@ -37,8 +37,8 @@ func PrepareArguments(arguments Arguments) ([]string, error) {
 	return stringArguments, nil
 }
 
-// ParseArguments parses the arguments (command line) received by Arwen from the Node
-func ParseArguments() (*Arguments, error) {
+// ParseCommandLineArguments parses the arguments (command line) received by Arwen from the Node
+func ParseCommandLineArguments() (*CommandLineArguments, error) {
 	arguments := os.Args
 	if len(arguments) != NumCommandLineArguments {
 		return nil, ErrBadArwenArguments
@@ -61,7 +61,7 @@ func ParseArguments() (*Arguments, error) {
 
 	logLevel := logger.LogLevel(logLevelUint)
 
-	return &Arguments{
+	return &CommandLineArguments{
 		VMType:        vmType,
 		BlockGasLimit: blockGasLimit,
 		LogLevel:      logLevel,
