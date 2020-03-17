@@ -65,10 +65,12 @@ func newDriver(t *testing.T, blockchain *mock.BlockChainHookStub) *nodepart.Arwe
 		nodeLogger,
 		blockchain,
 		common.ArwenArguments{
-			VMType:        arwenVirtualMachine,
-			BlockGasLimit: uint64(10000000),
-			LogLevel:      logger.LogDebug,
-			GasSchedule:   config.MakeGasMap(1),
+			VMHostArguments: common.VMHostArguments{
+				VMType:        arwenVirtualMachine,
+				BlockGasLimit: uint64(10000000),
+				GasSchedule:   config.MakeGasMap(1),
+			},
+			LogLevel: logger.LogDebug,
 		},
 		nodepart.Config{MaxLoopTime: 1000},
 	)

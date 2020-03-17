@@ -20,13 +20,18 @@ type ArwenPart struct {
 }
 
 // NewArwenPart creates the Arwen part
-func NewArwenPart(logger logger.Logger, input *os.File, output *os.File, arwenArguments *common.ArwenArguments) (*ArwenPart, error) {
-	messagesMarshalizer := marshaling.CreateMarshalizer(arwenArguments.MessagesMarshalizer)
-	messenger := NewArwenMessenger(logger, input, output, messagesMarshalizer)
+func NewArwenPart(
+	logger logger.Logger,
+	input *os.File,
+	output *os.File,
+	vmHostArguments *common.VMHostArguments,
+	marshalizer marshaling.Marshalizer,
+) (*ArwenPart, error) {
+	messenger := NewArwenMessenger(logger, input, output, marshalizer)
 	blockchain := NewBlockchainHookGateway(messenger)
 	crypto := NewCryptoHookGateway()
 
-	host, err := host.NewArwenVM(blockchain, crypto, arwenArguments.VMType, arwenArguments.BlockGasLimit, arwenArguments.GasSchedule)
+	host, err := host.NewArwenVM(blockchain, crypto, vmHostArguments.VMType, vmHostArguments.BlockGasLimit, vmHostArguments.GasSchedule)
 	if err != nil {
 		return nil, err
 	}

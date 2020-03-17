@@ -52,14 +52,16 @@ func doMain() (int, string) {
 		return common.ErrCodeInit, fmt.Sprintf("Cannot receive gasSchedule: %v", err)
 	}
 
-	arwenLoggerMarshalizer := marshaling.CreateMarshalizer(arwenArguments.LogsMarshalizer)
-	arwenLogger := logger.NewPipeLogger(arwenArguments.LogLevel, logToNodeFile, arwenLoggerMarshalizer)
+	messagesMarshalizer := marshaling.CreateMarshalizer(arwenArguments.MessagesMarshalizer)
+	logsMarshalizer := marshaling.CreateMarshalizer(arwenArguments.LogsMarshalizer)
+	arwenLogger := logger.NewPipeLogger(arwenArguments.LogLevel, logToNodeFile, logsMarshalizer)
 
 	part, err := arwenpart.NewArwenPart(
 		arwenLogger,
 		nodeToArwenFile,
 		arwenToNodeFile,
-		arwenArguments,
+		&arwenArguments.VMHostArguments,
+		messagesMarshalizer,
 	)
 	if err != nil {
 		return common.ErrCodeInit, fmt.Sprintf("Cannot create ArwenPart: %v", err)

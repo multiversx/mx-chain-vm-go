@@ -67,14 +67,19 @@ func doContractRequest(
 	logger := logger.NewDefaultLogger(logger.LogDebug)
 
 	go func() {
-		arwenArguments := &common.ArwenArguments{
-			VMType:              []byte{5, 0},
-			BlockGasLimit:       uint64(10000000),
-			GasSchedule:         config.MakeGasMap(1),
-			LogsMarshalizer:     marshaling.JSON,
-			MessagesMarshalizer: marshaling.JSON,
+		vmHostArguments := &common.VMHostArguments{
+			VMType:        []byte{5, 0},
+			BlockGasLimit: uint64(10000000),
+			GasSchedule:   config.MakeGasMap(1),
 		}
-		part, err := arwenpart.NewArwenPart(logger, files.inputOfArwen, files.outputOfArwen, arwenArguments)
+
+		part, err := arwenpart.NewArwenPart(
+			logger,
+			files.inputOfArwen,
+			files.outputOfArwen,
+			vmHostArguments,
+			marshaling.CreateMarshalizer(marshaling.JSON),
+		)
 		assert.Nil(t, err)
 		part.StartLoop()
 		wg.Done()
