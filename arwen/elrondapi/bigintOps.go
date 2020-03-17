@@ -9,6 +9,7 @@ package elrondapi
 // extern int32_t bigIntNew(void* context, long long smallValue);
 //
 // extern int32_t bigIntUnsignedByteLength(void* context, int32_t reference);
+// extern int32_t bigIntSignedByteLength(void* context, int32_t reference);
 // extern int32_t bigIntGetUnsignedBytes(void* context, int32_t reference, int32_t byteOffset);
 // extern int32_t bigIntGetSignedBytes(void* context, int32_t reference, int32_t byteOffset);
 // extern void bigIntSetUnsignedBytes(void* context, int32_t destination, int32_t byteOffset, int32_t byteLength);
@@ -65,6 +66,11 @@ func BigIntImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("bigIntUnsignedByteLength", bigIntUnsignedByteLength, C.bigIntUnsignedByteLength)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntSignedByteLength", bigIntSignedByteLength, C.bigIntSignedByteLength)
 	if err != nil {
 		return nil, err
 	}
@@ -371,7 +377,22 @@ func bigIntUnsignedByteLength(context unsafe.Pointer, reference int32) int32 {
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntUnsignedByteLength
 	metering.UseGas(gasToUse)
 
-	return int32(len(value.Bytes()))
+	bytes := value.Bytes()
+	return int32(len(bytes))
+}
+
+//export bigIntSignedByteLength
+func bigIntSignedByteLength(context unsafe.Pointer, reference int32) int32 {
+	bigInt := arwen.GetBigIntContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	value := bigInt.GetOne(reference)
+
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntUnsignedByteLength
+	metering.UseGas(gasToUse)
+
+	bytes := twos.ToBytes(value) // TODO: figure out the correct length without computing the 2's complement
+	return int32(len(bytes))
 }
 
 //export bigIntGetUnsignedBytes
