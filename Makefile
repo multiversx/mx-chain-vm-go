@@ -10,7 +10,5 @@ build-arwen:
 	go build -o ./cmd/arwen/arwen ./cmd/arwen
 	cp ./cmd/arwen/arwen ./ipc/tests
 
-test: build-arwen run-tests
-
-run-tests:
+test: clean build-arwen
 	go test -count=1 ./...
