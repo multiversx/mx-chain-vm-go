@@ -197,8 +197,8 @@ func (te *arwenTestExecutor) Run(test *ij.Test) error {
 				expectedStatus = int(blResult.Status.Int64())
 			}
 			if expectedStatus != int(output.ReturnCode) {
-				return fmt.Errorf("result code mismatch. Tx #%d. Want: %d. Have: %d (%s)",
-					txIndex, expectedStatus, int(output.ReturnCode), output.ReturnCode.String())
+				return fmt.Errorf("result code mismatch. Tx #%d. Want: %d. Have: %d (%s). Message: %s",
+					txIndex, expectedStatus, int(output.ReturnCode), output.ReturnCode.String(), output.ReturnMessage)
 			}
 
 			if output.ReturnMessage != blResult.Message {
@@ -295,8 +295,8 @@ func (te *arwenTestExecutor) Run(test *ij.Test) error {
 		}
 
 		if matchingAcct.Balance.Cmp(postAcct.Balance) != 0 {
-			return fmt.Errorf("bad account balance. Account: %s. Want: 0x%x. Have: 0x%x",
-				hex.EncodeToString(matchingAcct.Address), postAcct.Balance, matchingAcct.Balance)
+			return fmt.Errorf("bad account balance. Account: %s. Want: %s. Have: %s",
+				hex.EncodeToString(matchingAcct.Address), bigIntPretty(postAcct.Balance), bigIntPretty(matchingAcct.Balance))
 		}
 
 		if !bytes.Equal(matchingAcct.Code, postAcct.Code) {
@@ -323,8 +323,8 @@ func (te *arwenTestExecutor) Run(test *ij.Test) error {
 			have := matchingAcct.StorageValue(k)
 			if !bytes.Equal(want, have) {
 				storageError += fmt.Sprintf(
-					"\n  for key %s: Want: 0x%s. Have: 0x%s",
-					hex.EncodeToString([]byte(k)), hex.EncodeToString(want), hex.EncodeToString(have))
+					"\n  for key %s: Want: %s. Have: %s",
+					hex.EncodeToString([]byte(k)), byteArrayPretty(want), byteArrayPretty(have))
 			}
 		}
 		if len(storageError) > 0 {
