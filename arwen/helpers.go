@@ -2,24 +2,13 @@ package arwen
 
 import (
 	"fmt"
+	"io/ioutil"
 	"math/big"
+	"path/filepath"
 	"unsafe"
-
-	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 )
 
-func ConvertReturnValue(wasmValue wasmer.Value) []byte {
-	switch wasmValue.GetType() {
-	case wasmer.TypeVoid:
-		return []byte{}
-	case wasmer.TypeI32:
-		return big.NewInt(wasmValue.ToI64()).Bytes()
-	case wasmer.TypeI64:
-		return big.NewInt(wasmValue.ToI64()).Bytes()
-	}
-
-	panic("unsupported return type")
-}
+var Zero = big.NewInt(0)
 
 func GuardedMakeByteSlice2D(length int32) ([][]byte, error) {
 	if length < 0 {
@@ -50,6 +39,23 @@ func GuardedGetBytesSlice(data []byte, offset int32, length int32) ([]byte, erro
 	return result, nil
 }
 
+func PadBytesLeft(data []byte, size int) []byte {
+	if data == nil {
+		return nil
+	}
+	if len(data) == 0 {
+		return []byte{}
+	}
+	padSize := size - len(data)
+	if padSize <= 0 {
+		return data
+	}
+
+	paddedBytes := make([]byte, padSize)
+	paddedBytes = append(paddedBytes, data...)
+	return paddedBytes
+}
+
 func InverseBytes(data []byte) []byte {
 	length := len(data)
 	invBytes := make([]byte, length)
@@ -73,4 +79,10 @@ func WithFault(err error, context unsafe.Pointer, failExecution bool) bool {
 	}
 
 	return true
+}
+
+func GetSCCode(fileName string) []byte {
+	code, _ := ioutil.ReadFile(filepath.Clean(fileName))
+
+	return code
 }

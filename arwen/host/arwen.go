@@ -151,9 +151,10 @@ func (host *vmHost) BigInt() arwen.BigIntContext {
 }
 
 func (host *vmHost) InitState() {
-	host.BigInt().InitState()
-	host.Output().InitState()
-	host.Runtime().InitState()
+	host.bigIntContext.InitState()
+	host.outputContext.InitState()
+	host.runtimeContext.InitState()
+	host.storageContext.InitState()
 	host.ethInput = nil
 }
 
@@ -161,12 +162,14 @@ func (host *vmHost) PushState() {
 	host.bigIntContext.PushState()
 	host.runtimeContext.PushState()
 	host.outputContext.PushState()
+	host.storageContext.PushState()
 }
 
 func (host *vmHost) PopState() {
 	host.bigIntContext.PopState()
 	host.runtimeContext.PopState()
 	host.outputContext.PopState()
+	host.storageContext.PopState()
 }
 
 func (host *vmHost) ClearStateStack() {
@@ -174,6 +177,7 @@ func (host *vmHost) ClearStateStack() {
 	host.runtimeContext.ClearStateStack()
 	host.runtimeContext.ClearInstanceStack()
 	host.outputContext.ClearStateStack()
+	host.storageContext.ClearStateStack()
 }
 
 func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error) {

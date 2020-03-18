@@ -48,6 +48,7 @@ type BlockchainContext interface {
 	NewAddress(creatorAddress []byte) ([]byte, error)
 	AccountExists(addr []byte) bool
 	GetBalance(addr []byte) []byte
+	GetBalanceBigInt(addr []byte) *big.Int
 	GetNonce(addr []byte) (uint64, error)
 	CurrentEpoch() uint32
 	GetStateRootHash() []byte
@@ -122,7 +123,7 @@ type OutputContext interface {
 
 	GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool)
 	WriteLog(address []byte, topics [][]byte, data []byte)
-	Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte)
+	Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte) error
 	SelfDestruct(address []byte, beneficiary []byte)
 	GetRefund() uint64
 	SetRefund(refund uint64)
@@ -133,7 +134,6 @@ type OutputContext interface {
 	ReturnData() [][]byte
 	ClearReturnData()
 	Finish(data []byte)
-	FinishValue(value wasmer.Value)
 	GetVMOutput() *vmcommon.VMOutput
 	AddTxValueToAccount(address []byte, value *big.Int)
 	DeployCode(address []byte, code []byte)
@@ -155,7 +155,10 @@ type MeteringContext interface {
 }
 
 type StorageContext interface {
+	StateStack
+
+	SetAddress(address []byte)
 	GetStorageUpdates(address []byte) map[string]*vmcommon.StorageUpdate
-	GetStorage(address []byte, key []byte) []byte
-	SetStorage(address []byte, key []byte, value []byte) int32
+	GetStorage(key []byte) []byte
+	SetStorage(key []byte, value []byte) int32
 }

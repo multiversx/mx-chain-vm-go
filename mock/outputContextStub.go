@@ -4,7 +4,6 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -17,7 +16,7 @@ type OutputContextStub struct {
 	ClearStateStackCalled             func()
 	GetOutputAccountCalled            func(address []byte) (*vmcommon.OutputAccount, bool)
 	WriteLogCalled                    func(address []byte, topics [][]byte, data []byte)
-	TransferCalled                    func(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte)
+	TransferCalled                    func(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte) error
 	SelfDestructCalled                func(address []byte, beneficiary []byte)
 	GetRefundCalled                   func() uint64
 	SetRefundCalled                   func(refund uint64)
@@ -28,7 +27,6 @@ type OutputContextStub struct {
 	ReturnDataCalled                  func() [][]byte
 	ClearReturnDataCalled             func()
 	FinishCalled                      func(data []byte)
-	FinishValueCalled                 func(value wasmer.Value)
 	GetVMOutputCalled                 func() *vmcommon.VMOutput
 	AddTxValueToAccountCalled         func(address []byte, value *big.Int)
 	DeployCodeCalled                  func(address []byte, code []byte)
@@ -72,10 +70,12 @@ func (o *OutputContextStub) WriteLog(address []byte, topics [][]byte, data []byt
 	}
 }
 
-func (o *OutputContextStub) Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte) {
+func (o *OutputContextStub) Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte) error {
 	if o.TransferCalled != nil {
-		o.TransferCalled(destination, sender, gasLimit, value, input)
+		return o.TransferCalled(destination, sender, gasLimit, value, input)
 	}
+
+	return nil
 }
 
 func (o *OutputContextStub) SelfDestruct(address []byte, beneficiary []byte) {
@@ -138,12 +138,6 @@ func (o *OutputContextStub) ClearReturnData() {
 func (o *OutputContextStub) Finish(data []byte) {
 	if o.FinishCalled != nil {
 		o.FinishCalled(data)
-	}
-}
-
-func (o *OutputContextStub) FinishValue(value wasmer.Value) {
-	if o.FinishValueCalled != nil {
-		o.FinishValueCalled(value)
 	}
 }
 

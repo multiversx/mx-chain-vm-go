@@ -6,7 +6,6 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
-	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
@@ -83,8 +82,8 @@ func TestOutputContext_GetOutputAccount(t *testing.T) {
 	require.True(t, isNew)
 	require.Equal(t, []byte("account"), account.Address)
 	require.Zero(t, account.Nonce)
-	require.Equal(t, big.NewInt(0), account.BalanceDelta)
-	require.Equal(t, big.NewInt(0), account.Balance)
+	require.Equal(t, arwen.Zero, account.BalanceDelta)
+	require.Nil(t, account.Balance)
 	require.Zero(t, len(account.StorageUpdates))
 
 	// Change fields of the OutputAccount to ensure it will be returned on the
@@ -112,7 +111,6 @@ func TestOutputContext_GettersAndSetters(t *testing.T) {
 
 	outputContext.SetReturnMessage("rockets")
 	require.Equal(t, "rockets", outputContext.ReturnMessage())
-
 }
 
 func TestOutputContext_FinishReturnData(t *testing.T) {
@@ -135,21 +133,10 @@ func TestOutputContext_FinishReturnData(t *testing.T) {
 	expectedData = append(expectedData, big.NewInt(1234567).Bytes())
 	require.Equal(t, expectedData, outputContext.ReturnData())
 
-	outputContext.FinishValue(wasmer.I64(99))
-	expectedData = append(expectedData, arwen.ConvertReturnValue(wasmer.I64(99)))
-	require.Equal(t, expectedData, outputContext.ReturnData())
-
-	outputContext.FinishValue(wasmer.I32(87654))
-	expectedData = append(expectedData, arwen.ConvertReturnValue(wasmer.I32(87654)))
-	require.Equal(t, expectedData, outputContext.ReturnData())
-
 	// TODO update this section after modifying Finish to accept empty []byte
 	// slices
 	outputContext.Finish([]byte{})
-	require.Equal(t, expectedData, outputContext.ReturnData())
-
-	// TODO update this section after modifying FinishValue to accept wasmer.Void()
-	outputContext.FinishValue(wasmer.Void())
+	expectedData = append(expectedData, []byte{})
 	require.Equal(t, expectedData, outputContext.ReturnData())
 
 	outputContext.ClearReturnData()
@@ -362,21 +349,82 @@ func TestOutputContext_Transfer(t *testing.T) {
 	balance := big.NewInt(10000)
 	valueToTransfer := big.NewInt(1000)
 
-	host := &mock.VmHostStub{}
-	outputContext, _ := NewOutputContext(host)
-	outputContext.AddTxValueToAccount(sender, balance)
+	host := &mock.VmHostMock{}
+	mockBlockchainHook := mock.NewBlockchainHookMock()
+	mockBlockchainHook.AddAccount(&mock.Account{
+		Exists:       true,
+		Address:      sender,
+		Nonce:        42,
+		Balance:      balance,
+		BalanceDelta: big.NewInt(0),
+	})
 
-	outputContext.Transfer(receiver, sender, 54, valueToTransfer, []byte("txdata"))
+	blockchainContext, _ := NewBlockchainContext(host, mockBlockchainHook)
+	outputContext, _ := NewOutputContext(host)
+
+	host.OutputContext = outputContext
+	host.BlockchainContext = blockchainContext
+
+	err := outputContext.Transfer(receiver, sender, 54, valueToTransfer, []byte("txdata"))
+	require.Nil(t, err)
 
 	senderAccount, isNew := outputContext.GetOutputAccount(sender)
 	require.False(t, isNew)
-	require.Equal(t, big.NewInt(9000), senderAccount.BalanceDelta)
+	require.Equal(t, big.NewInt(-1000), senderAccount.BalanceDelta)
 
 	destAccount, isNew := outputContext.GetOutputAccount(receiver)
 	require.False(t, isNew)
 	require.Equal(t, valueToTransfer, destAccount.BalanceDelta)
 	require.Equal(t, uint64(54), destAccount.GasLimit)
 	require.Equal(t, []byte("txdata"), destAccount.Data)
+}
+
+func TestOutputContext_Transfer_Errors_And_Checks(t *testing.T) {
+	t.Parallel()
+
+	sender := []byte("sender")
+	receiver := []byte("receiver")
+
+	mockBlockchainHook := mock.NewBlockchainHookMock()
+	mockBlockchainHook.AddAccount(&mock.Account{
+		Exists:  true,
+		Address: sender,
+		Nonce:   88,
+		Balance: big.NewInt(2000),
+	})
+
+	host := &mock.VmHostMock{}
+	outputContext, _ := NewOutputContext(host)
+	blockchainContext, _ := NewBlockchainContext(host, mockBlockchainHook)
+
+	host.OutputContext = outputContext
+	host.BlockchainContext = blockchainContext
+
+	senderOutputAccount, _ := outputContext.GetOutputAccount(sender)
+	require.Nil(t, senderOutputAccount.Balance)
+	require.Equal(t, arwen.Zero, senderOutputAccount.BalanceDelta)
+
+	// negative transfers are disallowed
+	valueToTransfer := big.NewInt(-1000)
+	err := outputContext.Transfer(receiver, sender, 54, valueToTransfer, []byte("txdata"))
+	require.Equal(t, arwen.ErrTransferNegativeValue, err)
+	require.Nil(t, senderOutputAccount.Balance)
+	require.Equal(t, arwen.Zero, senderOutputAccount.BalanceDelta)
+
+	// account must have enough money to transfer
+	valueToTransfer = big.NewInt(5000)
+	err = outputContext.Transfer(receiver, sender, 54, valueToTransfer, []byte("txdata"))
+	require.Equal(t, arwen.ErrTransferInsufficientFunds, err)
+	require.Equal(t, big.NewInt(2000), senderOutputAccount.Balance)
+	require.Equal(t, arwen.Zero, senderOutputAccount.BalanceDelta)
+
+	senderOutputAccount.BalanceDelta = big.NewInt(4000)
+	valueToTransfer = big.NewInt(5000)
+	err = outputContext.Transfer(receiver, sender, 54, valueToTransfer, []byte("txdata"))
+	require.Nil(t, err)
+	require.Equal(t, big.NewInt(-1000), senderOutputAccount.BalanceDelta)
+
+	require.Equal(t, big.NewInt(1000), blockchainContext.GetBalanceBigInt(sender))
 }
 
 func TestOutputContext_WriteLog(t *testing.T) {

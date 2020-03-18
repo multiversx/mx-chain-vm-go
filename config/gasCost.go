@@ -85,23 +85,41 @@ type EthAPICost struct {
 }
 
 type BigIntAPICost struct {
-	BigIntNew                uint64
-	BigIntByteLength         uint64
-	BigIntGetBytes           uint64
-	BigIntSetBytes           uint64
-	BigIntIsInt64            uint64
-	BigIntGetInt64           uint64
-	BigIntSetInt64           uint64
-	BigIntAdd                uint64
-	BigIntSub                uint64
-	BigIntMul                uint64
-	BigIntCmp                uint64
-	BigIntFinish             uint64
-	BigIntStorageLoad        uint64
-	BigIntStorageStore       uint64
-	BigIntGetArgument        uint64
-	BigIntGetCallValue       uint64
-	BigIntGetExternalBalance uint64
+	BigIntNew                  uint64
+	BigIntUnsignedByteLength   uint64
+	BigIntSignedByteLength     uint64
+	BigIntGetUnsignedBytes     uint64
+	BigIntGetSignedBytes       uint64
+	BigIntSetUnsignedBytes     uint64
+	BigIntSetSignedBytes       uint64
+	BigIntIsInt64              uint64
+	BigIntGetInt64             uint64
+	BigIntSetInt64             uint64
+	BigIntAdd                  uint64
+	BigIntSub                  uint64
+	BigIntMul                  uint64
+	BigIntTDiv                 uint64
+	BigIntTMod                 uint64
+	BigIntEDiv                 uint64
+	BigIntEMod                 uint64
+	BigIntAbs                  uint64
+	BigIntNeg                  uint64
+	BigIntSign                 uint64
+	BigIntCmp                  uint64
+	BigIntNot                  uint64
+	BigIntAnd                  uint64
+	BigIntOr                   uint64
+	BigIntXor                  uint64
+	BigIntShr                  uint64
+	BigIntShl                  uint64
+	BigIntFinishUnsigned       uint64
+	BigIntFinishSigned         uint64
+	BigIntStorageLoadUnsigned  uint64
+	BigIntStorageStoreUnsigned uint64
+	BigIntGetUnsignedArgument  uint64
+	BigIntGetSignedArgument    uint64
+	BigIntGetCallValue         uint64
+	BigIntGetExternalBalance   uint64
 }
 
 type CryptoAPICost struct {
@@ -125,11 +143,12 @@ type WASMOpcodeCost struct {
 	CallIndirect           uint32
 	Drop                   uint32
 	Select                 uint32
-	GetLocal               uint32
-	SetLocal               uint32
-	TeeLocal               uint32
-	GetGlobal              uint32
-	SetGlobal              uint32
+	TypedSelect            uint32
+	LocalGet               uint32
+	LocalSet               uint32
+	LocalTee               uint32
+	GlobalGet              uint32
+	GlobalSet              uint32
 	I32Load                uint32
 	I64Load                uint32
 	F32Load                uint32
@@ -161,6 +180,7 @@ type WASMOpcodeCost struct {
 	F64Const               uint32
 	RefNull                uint32
 	RefIsNull              uint32
+	RefFunc                uint32
 	I32Eqz                 uint32
 	I32Eq                  uint32
 	I32Ne                  uint32
@@ -260,25 +280,25 @@ type WASMOpcodeCost struct {
 	F64Max                 uint32
 	F64Copysign            uint32
 	I32WrapI64             uint32
-	I32TruncSF32           uint32
-	I32TruncUF32           uint32
-	I32TruncSF64           uint32
-	I32TruncUF64           uint32
-	I64ExtendSI32          uint32
-	I64ExtendUI32          uint32
-	I64TruncSF32           uint32
-	I64TruncUF32           uint32
-	I64TruncSF64           uint32
-	I64TruncUF64           uint32
-	F32ConvertSI32         uint32
-	F32ConvertUI32         uint32
-	F32ConvertSI64         uint32
-	F32ConvertUI64         uint32
+	I32TruncF32S           uint32
+	I32TruncF32U           uint32
+	I32TruncF64S           uint32
+	I32TruncF64U           uint32
+	I64ExtendI32S          uint32
+	I64ExtendI32U          uint32
+	I64TruncF32S           uint32
+	I64TruncF32U           uint32
+	I64TruncF64S           uint32
+	I64TruncF64U           uint32
+	F32ConvertI32S         uint32
+	F32ConvertI32U         uint32
+	F32ConvertI64S         uint32
+	F32ConvertI64U         uint32
 	F32DemoteF64           uint32
-	F64ConvertSI32         uint32
-	F64ConvertUI32         uint32
-	F64ConvertSI64         uint32
-	F64ConvertUI64         uint32
+	F64ConvertI32S         uint32
+	F64ConvertI32U         uint32
+	F64ConvertI64S         uint32
+	F64ConvertI64U         uint32
 	F64PromoteF32          uint32
 	I32ReinterpretF32      uint32
 	I64ReinterpretF64      uint32
@@ -289,14 +309,14 @@ type WASMOpcodeCost struct {
 	I64Extend8S            uint32
 	I64Extend16S           uint32
 	I64Extend32S           uint32
-	I32TruncSSatF32        uint32
-	I32TruncUSatF32        uint32
-	I32TruncSSatF64        uint32
-	I32TruncUSatF64        uint32
-	I64TruncSSatF32        uint32
-	I64TruncUSatF32        uint32
-	I64TruncSSatF64        uint32
-	I64TruncUSatF64        uint32
+	I32TruncSatF32S        uint32
+	I32TruncSatF32U        uint32
+	I32TruncSatF64S        uint32
+	I32TruncSatF64U        uint32
+	I64TruncSatF32S        uint32
+	I64TruncSatF32U        uint32
+	I64TruncSatF64S        uint32
+	I64TruncSatF64U        uint32
 	MemoryInit             uint32
 	DataDrop               uint32
 	MemoryCopy             uint32
@@ -304,14 +324,15 @@ type WASMOpcodeCost struct {
 	TableInit              uint32
 	ElemDrop               uint32
 	TableCopy              uint32
+	TableFill              uint32
 	TableGet               uint32
 	TableSet               uint32
 	TableGrow              uint32
 	TableSize              uint32
-	Wake                   uint32
-	I32Wait                uint32
-	I64Wait                uint32
-	Fence                  uint32
+	AtomicNotify           uint32
+	I32AtomicWait          uint32
+	I64AtomicWait          uint32
+	AtomicFence            uint32
 	I32AtomicLoad          uint32
 	I64AtomicLoad          uint32
 	I32AtomicLoad8U        uint32
@@ -328,53 +349,53 @@ type WASMOpcodeCost struct {
 	I64AtomicStore32       uint32
 	I32AtomicRmwAdd        uint32
 	I64AtomicRmwAdd        uint32
-	I32AtomicRmw8UAdd      uint32
-	I32AtomicRmw16UAdd     uint32
-	I64AtomicRmw8UAdd      uint32
-	I64AtomicRmw16UAdd     uint32
-	I64AtomicRmw32UAdd     uint32
+	I32AtomicRmw8AddU      uint32
+	I32AtomicRmw16AddU     uint32
+	I64AtomicRmw8AddU      uint32
+	I64AtomicRmw16AddU     uint32
+	I64AtomicRmw32AddU     uint32
 	I32AtomicRmwSub        uint32
 	I64AtomicRmwSub        uint32
-	I32AtomicRmw8USub      uint32
-	I32AtomicRmw16USub     uint32
-	I64AtomicRmw8USub      uint32
-	I64AtomicRmw16USub     uint32
-	I64AtomicRmw32USub     uint32
+	I32AtomicRmw8SubU      uint32
+	I32AtomicRmw16SubU     uint32
+	I64AtomicRmw8SubU      uint32
+	I64AtomicRmw16SubU     uint32
+	I64AtomicRmw32SubU     uint32
 	I32AtomicRmwAnd        uint32
 	I64AtomicRmwAnd        uint32
-	I32AtomicRmw8UAnd      uint32
-	I32AtomicRmw16UAnd     uint32
-	I64AtomicRmw8UAnd      uint32
-	I64AtomicRmw16UAnd     uint32
-	I64AtomicRmw32UAnd     uint32
+	I32AtomicRmw8AndU      uint32
+	I32AtomicRmw16AndU     uint32
+	I64AtomicRmw8AndU      uint32
+	I64AtomicRmw16AndU     uint32
+	I64AtomicRmw32AndU     uint32
 	I32AtomicRmwOr         uint32
 	I64AtomicRmwOr         uint32
-	I32AtomicRmw8UOr       uint32
-	I32AtomicRmw16UOr      uint32
-	I64AtomicRmw8UOr       uint32
-	I64AtomicRmw16UOr      uint32
-	I64AtomicRmw32UOr      uint32
+	I32AtomicRmw8OrU       uint32
+	I32AtomicRmw16OrU      uint32
+	I64AtomicRmw8OrU       uint32
+	I64AtomicRmw16OrU      uint32
+	I64AtomicRmw32OrU      uint32
 	I32AtomicRmwXor        uint32
 	I64AtomicRmwXor        uint32
-	I32AtomicRmw8UXor      uint32
-	I32AtomicRmw16UXor     uint32
-	I64AtomicRmw8UXor      uint32
-	I64AtomicRmw16UXor     uint32
-	I64AtomicRmw32UXor     uint32
+	I32AtomicRmw8XorU      uint32
+	I32AtomicRmw16XorU     uint32
+	I64AtomicRmw8XorU      uint32
+	I64AtomicRmw16XorU     uint32
+	I64AtomicRmw32XorU     uint32
 	I32AtomicRmwXchg       uint32
 	I64AtomicRmwXchg       uint32
-	I32AtomicRmw8UXchg     uint32
-	I32AtomicRmw16UXchg    uint32
-	I64AtomicRmw8UXchg     uint32
-	I64AtomicRmw16UXchg    uint32
-	I64AtomicRmw32UXchg    uint32
+	I32AtomicRmw8XchgU     uint32
+	I32AtomicRmw16XchgU    uint32
+	I64AtomicRmw8XchgU     uint32
+	I64AtomicRmw16XchgU    uint32
+	I64AtomicRmw32XchgU    uint32
 	I32AtomicRmwCmpxchg    uint32
 	I64AtomicRmwCmpxchg    uint32
-	I32AtomicRmw8UCmpxchg  uint32
-	I32AtomicRmw16UCmpxchg uint32
-	I64AtomicRmw8UCmpxchg  uint32
-	I64AtomicRmw16UCmpxchg uint32
-	I64AtomicRmw32UCmpxchg uint32
+	I32AtomicRmw8CmpxchgU  uint32
+	I32AtomicRmw16CmpxchgU uint32
+	I64AtomicRmw8CmpxchgU  uint32
+	I64AtomicRmw16CmpxchgU uint32
+	I64AtomicRmw32CmpxchgU uint32
 	V128Load               uint32
 	V128Store              uint32
 	V128Const              uint32
@@ -442,6 +463,7 @@ type WASMOpcodeCost struct {
 	F64x2Ge                uint32
 	V128Not                uint32
 	V128And                uint32
+	V128AndNot             uint32
 	V128Or                 uint32
 	V128Xor                uint32
 	V128Bitselect          uint32
@@ -457,6 +479,10 @@ type WASMOpcodeCost struct {
 	I8x16Sub               uint32
 	I8x16SubSaturateS      uint32
 	I8x16SubSaturateU      uint32
+	I8x16MinS              uint32
+	I8x16MinU              uint32
+	I8x16MaxS              uint32
+	I8x16MaxU              uint32
 	I8x16Mul               uint32
 	I16x8Neg               uint32
 	I16x8AnyTrue           uint32
@@ -471,6 +497,10 @@ type WASMOpcodeCost struct {
 	I16x8SubSaturateS      uint32
 	I16x8SubSaturateU      uint32
 	I16x8Mul               uint32
+	I16x8MinS              uint32
+	I16x8MinU              uint32
+	I16x8MaxS              uint32
+	I16x8MaxU              uint32
 	I32x4Neg               uint32
 	I32x4AnyTrue           uint32
 	I32x4AllTrue           uint32
@@ -480,6 +510,10 @@ type WASMOpcodeCost struct {
 	I32x4Add               uint32
 	I32x4Sub               uint32
 	I32x4Mul               uint32
+	I32x4MinS              uint32
+	I32x4MinU              uint32
+	I32x4MaxS              uint32
+	I32x4MaxU              uint32
 	I64x2Neg               uint32
 	I64x2AnyTrue           uint32
 	I64x2AllTrue           uint32
@@ -488,6 +522,7 @@ type WASMOpcodeCost struct {
 	I64x2ShrU              uint32
 	I64x2Add               uint32
 	I64x2Sub               uint32
+	I64x2Mul               uint32
 	F32x4Abs               uint32
 	F32x4Neg               uint32
 	F32x4Sqrt              uint32
@@ -506,20 +541,40 @@ type WASMOpcodeCost struct {
 	F64x2Div               uint32
 	F64x2Min               uint32
 	F64x2Max               uint32
-	I32x4TruncSF32x4Sat    uint32
-	I32x4TruncUF32x4Sat    uint32
-	I64x2TruncSF64x2Sat    uint32
-	I64x2TruncUF64x2Sat    uint32
-	F32x4ConvertSI32x4     uint32
-	F32x4ConvertUI32x4     uint32
-	F64x2ConvertSI64x2     uint32
-	F64x2ConvertUI64x2     uint32
+	I32x4TruncSatF32x4S    uint32
+	I32x4TruncSatF32x4U    uint32
+	I64x2TruncSatF64x2S    uint32
+	I64x2TruncSatF64x2U    uint32
+	F32x4ConvertI32x4S     uint32
+	F32x4ConvertI32x4U     uint32
+	F64x2ConvertI64x2S     uint32
+	F64x2ConvertI64x2U     uint32
 	V8x16Swizzle           uint32
 	V8x16Shuffle           uint32
-	I8x16LoadSplat         uint32
-	I16x8LoadSplat         uint32
-	I32x4LoadSplat         uint32
-	I64x2LoadSplat         uint32
+	V8x16LoadSplat         uint32
+	V16x8LoadSplat         uint32
+	V32x4LoadSplat         uint32
+	V64x2LoadSplat         uint32
+	I8x16NarrowI16x8S      uint32
+	I8x16NarrowI16x8U      uint32
+	I16x8NarrowI32x4S      uint32
+	I16x8NarrowI32x4U      uint32
+	I16x8WidenLowI8x16S    uint32
+	I16x8WidenHighI8x16S   uint32
+	I16x8WidenLowI8x16U    uint32
+	I16x8WidenHighI8x16U   uint32
+	I32x4WidenLowI16x8S    uint32
+	I32x4WidenHighI16x8S   uint32
+	I32x4WidenLowI16x8U    uint32
+	I32x4WidenHighI16x8U   uint32
+	I16x8Load8x8S          uint32
+	I16x8Load8x8U          uint32
+	I32x4Load16x4S         uint32
+	I32x4Load16x4U         uint32
+	I64x2Load32x2S         uint32
+	I64x2Load32x2U         uint32
+	I8x16RoundingAverageU  uint32
+	I16x8RoundingAverageU  uint32
 }
 
 type GasCost struct {
@@ -549,11 +604,12 @@ func (opcode_costs_struct *WASMOpcodeCost) ToOpcodeCostsArray() [wasmer.OPCODE_C
 	opcode_costs[wasmer.OpcodeCallIndirect] = opcode_costs_struct.CallIndirect
 	opcode_costs[wasmer.OpcodeDrop] = opcode_costs_struct.Drop
 	opcode_costs[wasmer.OpcodeSelect] = opcode_costs_struct.Select
-	opcode_costs[wasmer.OpcodeGetLocal] = opcode_costs_struct.GetLocal
-	opcode_costs[wasmer.OpcodeSetLocal] = opcode_costs_struct.SetLocal
-	opcode_costs[wasmer.OpcodeTeeLocal] = opcode_costs_struct.TeeLocal
-	opcode_costs[wasmer.OpcodeGetGlobal] = opcode_costs_struct.GetGlobal
-	opcode_costs[wasmer.OpcodeSetGlobal] = opcode_costs_struct.SetGlobal
+	opcode_costs[wasmer.OpcodeTypedSelect] = opcode_costs_struct.TypedSelect
+	opcode_costs[wasmer.OpcodeLocalGet] = opcode_costs_struct.LocalGet
+	opcode_costs[wasmer.OpcodeLocalSet] = opcode_costs_struct.LocalSet
+	opcode_costs[wasmer.OpcodeLocalTee] = opcode_costs_struct.LocalTee
+	opcode_costs[wasmer.OpcodeGlobalGet] = opcode_costs_struct.GlobalGet
+	opcode_costs[wasmer.OpcodeGlobalSet] = opcode_costs_struct.GlobalSet
 	opcode_costs[wasmer.OpcodeI32Load] = opcode_costs_struct.I32Load
 	opcode_costs[wasmer.OpcodeI64Load] = opcode_costs_struct.I64Load
 	opcode_costs[wasmer.OpcodeF32Load] = opcode_costs_struct.F32Load
@@ -585,6 +641,7 @@ func (opcode_costs_struct *WASMOpcodeCost) ToOpcodeCostsArray() [wasmer.OPCODE_C
 	opcode_costs[wasmer.OpcodeF64Const] = opcode_costs_struct.F64Const
 	opcode_costs[wasmer.OpcodeRefNull] = opcode_costs_struct.RefNull
 	opcode_costs[wasmer.OpcodeRefIsNull] = opcode_costs_struct.RefIsNull
+	opcode_costs[wasmer.OpcodeRefFunc] = opcode_costs_struct.RefFunc
 	opcode_costs[wasmer.OpcodeI32Eqz] = opcode_costs_struct.I32Eqz
 	opcode_costs[wasmer.OpcodeI32Eq] = opcode_costs_struct.I32Eq
 	opcode_costs[wasmer.OpcodeI32Ne] = opcode_costs_struct.I32Ne
@@ -684,25 +741,25 @@ func (opcode_costs_struct *WASMOpcodeCost) ToOpcodeCostsArray() [wasmer.OPCODE_C
 	opcode_costs[wasmer.OpcodeF64Max] = opcode_costs_struct.F64Max
 	opcode_costs[wasmer.OpcodeF64Copysign] = opcode_costs_struct.F64Copysign
 	opcode_costs[wasmer.OpcodeI32WrapI64] = opcode_costs_struct.I32WrapI64
-	opcode_costs[wasmer.OpcodeI32TruncSF32] = opcode_costs_struct.I32TruncSF32
-	opcode_costs[wasmer.OpcodeI32TruncUF32] = opcode_costs_struct.I32TruncUF32
-	opcode_costs[wasmer.OpcodeI32TruncSF64] = opcode_costs_struct.I32TruncSF64
-	opcode_costs[wasmer.OpcodeI32TruncUF64] = opcode_costs_struct.I32TruncUF64
-	opcode_costs[wasmer.OpcodeI64ExtendSI32] = opcode_costs_struct.I64ExtendSI32
-	opcode_costs[wasmer.OpcodeI64ExtendUI32] = opcode_costs_struct.I64ExtendUI32
-	opcode_costs[wasmer.OpcodeI64TruncSF32] = opcode_costs_struct.I64TruncSF32
-	opcode_costs[wasmer.OpcodeI64TruncUF32] = opcode_costs_struct.I64TruncUF32
-	opcode_costs[wasmer.OpcodeI64TruncSF64] = opcode_costs_struct.I64TruncSF64
-	opcode_costs[wasmer.OpcodeI64TruncUF64] = opcode_costs_struct.I64TruncUF64
-	opcode_costs[wasmer.OpcodeF32ConvertSI32] = opcode_costs_struct.F32ConvertSI32
-	opcode_costs[wasmer.OpcodeF32ConvertUI32] = opcode_costs_struct.F32ConvertUI32
-	opcode_costs[wasmer.OpcodeF32ConvertSI64] = opcode_costs_struct.F32ConvertSI64
-	opcode_costs[wasmer.OpcodeF32ConvertUI64] = opcode_costs_struct.F32ConvertUI64
+	opcode_costs[wasmer.OpcodeI32TruncF32S] = opcode_costs_struct.I32TruncF32S
+	opcode_costs[wasmer.OpcodeI32TruncF32U] = opcode_costs_struct.I32TruncF32U
+	opcode_costs[wasmer.OpcodeI32TruncF64S] = opcode_costs_struct.I32TruncF64S
+	opcode_costs[wasmer.OpcodeI32TruncF64U] = opcode_costs_struct.I32TruncF64U
+	opcode_costs[wasmer.OpcodeI64ExtendI32S] = opcode_costs_struct.I64ExtendI32S
+	opcode_costs[wasmer.OpcodeI64ExtendI32U] = opcode_costs_struct.I64ExtendI32U
+	opcode_costs[wasmer.OpcodeI64TruncF32S] = opcode_costs_struct.I64TruncF32S
+	opcode_costs[wasmer.OpcodeI64TruncF32U] = opcode_costs_struct.I64TruncF32U
+	opcode_costs[wasmer.OpcodeI64TruncF64S] = opcode_costs_struct.I64TruncF64S
+	opcode_costs[wasmer.OpcodeI64TruncF64U] = opcode_costs_struct.I64TruncF64U
+	opcode_costs[wasmer.OpcodeF32ConvertI32S] = opcode_costs_struct.F32ConvertI32S
+	opcode_costs[wasmer.OpcodeF32ConvertI32U] = opcode_costs_struct.F32ConvertI32U
+	opcode_costs[wasmer.OpcodeF32ConvertI64S] = opcode_costs_struct.F32ConvertI64S
+	opcode_costs[wasmer.OpcodeF32ConvertI64U] = opcode_costs_struct.F32ConvertI64U
 	opcode_costs[wasmer.OpcodeF32DemoteF64] = opcode_costs_struct.F32DemoteF64
-	opcode_costs[wasmer.OpcodeF64ConvertSI32] = opcode_costs_struct.F64ConvertSI32
-	opcode_costs[wasmer.OpcodeF64ConvertUI32] = opcode_costs_struct.F64ConvertUI32
-	opcode_costs[wasmer.OpcodeF64ConvertSI64] = opcode_costs_struct.F64ConvertSI64
-	opcode_costs[wasmer.OpcodeF64ConvertUI64] = opcode_costs_struct.F64ConvertUI64
+	opcode_costs[wasmer.OpcodeF64ConvertI32S] = opcode_costs_struct.F64ConvertI32S
+	opcode_costs[wasmer.OpcodeF64ConvertI32U] = opcode_costs_struct.F64ConvertI32U
+	opcode_costs[wasmer.OpcodeF64ConvertI64S] = opcode_costs_struct.F64ConvertI64S
+	opcode_costs[wasmer.OpcodeF64ConvertI64U] = opcode_costs_struct.F64ConvertI64U
 	opcode_costs[wasmer.OpcodeF64PromoteF32] = opcode_costs_struct.F64PromoteF32
 	opcode_costs[wasmer.OpcodeI32ReinterpretF32] = opcode_costs_struct.I32ReinterpretF32
 	opcode_costs[wasmer.OpcodeI64ReinterpretF64] = opcode_costs_struct.I64ReinterpretF64
@@ -713,14 +770,14 @@ func (opcode_costs_struct *WASMOpcodeCost) ToOpcodeCostsArray() [wasmer.OPCODE_C
 	opcode_costs[wasmer.OpcodeI64Extend8S] = opcode_costs_struct.I64Extend8S
 	opcode_costs[wasmer.OpcodeI64Extend16S] = opcode_costs_struct.I64Extend16S
 	opcode_costs[wasmer.OpcodeI64Extend32S] = opcode_costs_struct.I64Extend32S
-	opcode_costs[wasmer.OpcodeI32TruncSSatF32] = opcode_costs_struct.I32TruncSSatF32
-	opcode_costs[wasmer.OpcodeI32TruncUSatF32] = opcode_costs_struct.I32TruncUSatF32
-	opcode_costs[wasmer.OpcodeI32TruncSSatF64] = opcode_costs_struct.I32TruncSSatF64
-	opcode_costs[wasmer.OpcodeI32TruncUSatF64] = opcode_costs_struct.I32TruncUSatF64
-	opcode_costs[wasmer.OpcodeI64TruncSSatF32] = opcode_costs_struct.I64TruncSSatF32
-	opcode_costs[wasmer.OpcodeI64TruncUSatF32] = opcode_costs_struct.I64TruncUSatF32
-	opcode_costs[wasmer.OpcodeI64TruncSSatF64] = opcode_costs_struct.I64TruncSSatF64
-	opcode_costs[wasmer.OpcodeI64TruncUSatF64] = opcode_costs_struct.I64TruncUSatF64
+	opcode_costs[wasmer.OpcodeI32TruncSatF32S] = opcode_costs_struct.I32TruncSatF32S
+	opcode_costs[wasmer.OpcodeI32TruncSatF32U] = opcode_costs_struct.I32TruncSatF32U
+	opcode_costs[wasmer.OpcodeI32TruncSatF64S] = opcode_costs_struct.I32TruncSatF64S
+	opcode_costs[wasmer.OpcodeI32TruncSatF64U] = opcode_costs_struct.I32TruncSatF64U
+	opcode_costs[wasmer.OpcodeI64TruncSatF32S] = opcode_costs_struct.I64TruncSatF32S
+	opcode_costs[wasmer.OpcodeI64TruncSatF32U] = opcode_costs_struct.I64TruncSatF32U
+	opcode_costs[wasmer.OpcodeI64TruncSatF64S] = opcode_costs_struct.I64TruncSatF64S
+	opcode_costs[wasmer.OpcodeI64TruncSatF64U] = opcode_costs_struct.I64TruncSatF64U
 	opcode_costs[wasmer.OpcodeMemoryInit] = opcode_costs_struct.MemoryInit
 	opcode_costs[wasmer.OpcodeDataDrop] = opcode_costs_struct.DataDrop
 	opcode_costs[wasmer.OpcodeMemoryCopy] = opcode_costs_struct.MemoryCopy
@@ -728,14 +785,15 @@ func (opcode_costs_struct *WASMOpcodeCost) ToOpcodeCostsArray() [wasmer.OPCODE_C
 	opcode_costs[wasmer.OpcodeTableInit] = opcode_costs_struct.TableInit
 	opcode_costs[wasmer.OpcodeElemDrop] = opcode_costs_struct.ElemDrop
 	opcode_costs[wasmer.OpcodeTableCopy] = opcode_costs_struct.TableCopy
+	opcode_costs[wasmer.OpcodeTableFill] = opcode_costs_struct.TableFill
 	opcode_costs[wasmer.OpcodeTableGet] = opcode_costs_struct.TableGet
 	opcode_costs[wasmer.OpcodeTableSet] = opcode_costs_struct.TableSet
 	opcode_costs[wasmer.OpcodeTableGrow] = opcode_costs_struct.TableGrow
 	opcode_costs[wasmer.OpcodeTableSize] = opcode_costs_struct.TableSize
-	opcode_costs[wasmer.OpcodeWake] = opcode_costs_struct.Wake
-	opcode_costs[wasmer.OpcodeI32Wait] = opcode_costs_struct.I32Wait
-	opcode_costs[wasmer.OpcodeI64Wait] = opcode_costs_struct.I64Wait
-	opcode_costs[wasmer.OpcodeFence] = opcode_costs_struct.Fence
+	opcode_costs[wasmer.OpcodeAtomicNotify] = opcode_costs_struct.AtomicNotify
+	opcode_costs[wasmer.OpcodeI32AtomicWait] = opcode_costs_struct.I32AtomicWait
+	opcode_costs[wasmer.OpcodeI64AtomicWait] = opcode_costs_struct.I64AtomicWait
+	opcode_costs[wasmer.OpcodeAtomicFence] = opcode_costs_struct.AtomicFence
 	opcode_costs[wasmer.OpcodeI32AtomicLoad] = opcode_costs_struct.I32AtomicLoad
 	opcode_costs[wasmer.OpcodeI64AtomicLoad] = opcode_costs_struct.I64AtomicLoad
 	opcode_costs[wasmer.OpcodeI32AtomicLoad8U] = opcode_costs_struct.I32AtomicLoad8U
@@ -752,53 +810,53 @@ func (opcode_costs_struct *WASMOpcodeCost) ToOpcodeCostsArray() [wasmer.OPCODE_C
 	opcode_costs[wasmer.OpcodeI64AtomicStore32] = opcode_costs_struct.I64AtomicStore32
 	opcode_costs[wasmer.OpcodeI32AtomicRmwAdd] = opcode_costs_struct.I32AtomicRmwAdd
 	opcode_costs[wasmer.OpcodeI64AtomicRmwAdd] = opcode_costs_struct.I64AtomicRmwAdd
-	opcode_costs[wasmer.OpcodeI32AtomicRmw8UAdd] = opcode_costs_struct.I32AtomicRmw8UAdd
-	opcode_costs[wasmer.OpcodeI32AtomicRmw16UAdd] = opcode_costs_struct.I32AtomicRmw16UAdd
-	opcode_costs[wasmer.OpcodeI64AtomicRmw8UAdd] = opcode_costs_struct.I64AtomicRmw8UAdd
-	opcode_costs[wasmer.OpcodeI64AtomicRmw16UAdd] = opcode_costs_struct.I64AtomicRmw16UAdd
-	opcode_costs[wasmer.OpcodeI64AtomicRmw32UAdd] = opcode_costs_struct.I64AtomicRmw32UAdd
+	opcode_costs[wasmer.OpcodeI32AtomicRmw8AddU] = opcode_costs_struct.I32AtomicRmw8AddU
+	opcode_costs[wasmer.OpcodeI32AtomicRmw16AddU] = opcode_costs_struct.I32AtomicRmw16AddU
+	opcode_costs[wasmer.OpcodeI64AtomicRmw8AddU] = opcode_costs_struct.I64AtomicRmw8AddU
+	opcode_costs[wasmer.OpcodeI64AtomicRmw16AddU] = opcode_costs_struct.I64AtomicRmw16AddU
+	opcode_costs[wasmer.OpcodeI64AtomicRmw32AddU] = opcode_costs_struct.I64AtomicRmw32AddU
 	opcode_costs[wasmer.OpcodeI32AtomicRmwSub] = opcode_costs_struct.I32AtomicRmwSub
 	opcode_costs[wasmer.OpcodeI64AtomicRmwSub] = opcode_costs_struct.I64AtomicRmwSub
-	opcode_costs[wasmer.OpcodeI32AtomicRmw8USub] = opcode_costs_struct.I32AtomicRmw8USub
-	opcode_costs[wasmer.OpcodeI32AtomicRmw16USub] = opcode_costs_struct.I32AtomicRmw16USub
-	opcode_costs[wasmer.OpcodeI64AtomicRmw8USub] = opcode_costs_struct.I64AtomicRmw8USub
-	opcode_costs[wasmer.OpcodeI64AtomicRmw16USub] = opcode_costs_struct.I64AtomicRmw16USub
-	opcode_costs[wasmer.OpcodeI64AtomicRmw32USub] = opcode_costs_struct.I64AtomicRmw32USub
+	opcode_costs[wasmer.OpcodeI32AtomicRmw8SubU] = opcode_costs_struct.I32AtomicRmw8SubU
+	opcode_costs[wasmer.OpcodeI32AtomicRmw16SubU] = opcode_costs_struct.I32AtomicRmw16SubU
+	opcode_costs[wasmer.OpcodeI64AtomicRmw8SubU] = opcode_costs_struct.I64AtomicRmw8SubU
+	opcode_costs[wasmer.OpcodeI64AtomicRmw16SubU] = opcode_costs_struct.I64AtomicRmw16SubU
+	opcode_costs[wasmer.OpcodeI64AtomicRmw32SubU] = opcode_costs_struct.I64AtomicRmw32SubU
 	opcode_costs[wasmer.OpcodeI32AtomicRmwAnd] = opcode_costs_struct.I32AtomicRmwAnd
 	opcode_costs[wasmer.OpcodeI64AtomicRmwAnd] = opcode_costs_struct.I64AtomicRmwAnd
-	opcode_costs[wasmer.OpcodeI32AtomicRmw8UAnd] = opcode_costs_struct.I32AtomicRmw8UAnd
-	opcode_costs[wasmer.OpcodeI32AtomicRmw16UAnd] = opcode_costs_struct.I32AtomicRmw16UAnd
-	opcode_costs[wasmer.OpcodeI64AtomicRmw8UAnd] = opcode_costs_struct.I64AtomicRmw8UAnd
-	opcode_costs[wasmer.OpcodeI64AtomicRmw16UAnd] = opcode_costs_struct.I64AtomicRmw16UAnd
-	opcode_costs[wasmer.OpcodeI64AtomicRmw32UAnd] = opcode_costs_struct.I64AtomicRmw32UAnd
+	opcode_costs[wasmer.OpcodeI32AtomicRmw8AndU] = opcode_costs_struct.I32AtomicRmw8AndU
+	opcode_costs[wasmer.OpcodeI32AtomicRmw16AndU] = opcode_costs_struct.I32AtomicRmw16AndU
+	opcode_costs[wasmer.OpcodeI64AtomicRmw8AndU] = opcode_costs_struct.I64AtomicRmw8AndU
+	opcode_costs[wasmer.OpcodeI64AtomicRmw16AndU] = opcode_costs_struct.I64AtomicRmw16AndU
+	opcode_costs[wasmer.OpcodeI64AtomicRmw32AndU] = opcode_costs_struct.I64AtomicRmw32AndU
 	opcode_costs[wasmer.OpcodeI32AtomicRmwOr] = opcode_costs_struct.I32AtomicRmwOr
 	opcode_costs[wasmer.OpcodeI64AtomicRmwOr] = opcode_costs_struct.I64AtomicRmwOr
-	opcode_costs[wasmer.OpcodeI32AtomicRmw8UOr] = opcode_costs_struct.I32AtomicRmw8UOr
-	opcode_costs[wasmer.OpcodeI32AtomicRmw16UOr] = opcode_costs_struct.I32AtomicRmw16UOr
-	opcode_costs[wasmer.OpcodeI64AtomicRmw8UOr] = opcode_costs_struct.I64AtomicRmw8UOr
-	opcode_costs[wasmer.OpcodeI64AtomicRmw16UOr] = opcode_costs_struct.I64AtomicRmw16UOr
-	opcode_costs[wasmer.OpcodeI64AtomicRmw32UOr] = opcode_costs_struct.I64AtomicRmw32UOr
+	opcode_costs[wasmer.OpcodeI32AtomicRmw8OrU] = opcode_costs_struct.I32AtomicRmw8OrU
+	opcode_costs[wasmer.OpcodeI32AtomicRmw16OrU] = opcode_costs_struct.I32AtomicRmw16OrU
+	opcode_costs[wasmer.OpcodeI64AtomicRmw8OrU] = opcode_costs_struct.I64AtomicRmw8OrU
+	opcode_costs[wasmer.OpcodeI64AtomicRmw16OrU] = opcode_costs_struct.I64AtomicRmw16OrU
+	opcode_costs[wasmer.OpcodeI64AtomicRmw32OrU] = opcode_costs_struct.I64AtomicRmw32OrU
 	opcode_costs[wasmer.OpcodeI32AtomicRmwXor] = opcode_costs_struct.I32AtomicRmwXor
 	opcode_costs[wasmer.OpcodeI64AtomicRmwXor] = opcode_costs_struct.I64AtomicRmwXor
-	opcode_costs[wasmer.OpcodeI32AtomicRmw8UXor] = opcode_costs_struct.I32AtomicRmw8UXor
-	opcode_costs[wasmer.OpcodeI32AtomicRmw16UXor] = opcode_costs_struct.I32AtomicRmw16UXor
-	opcode_costs[wasmer.OpcodeI64AtomicRmw8UXor] = opcode_costs_struct.I64AtomicRmw8UXor
-	opcode_costs[wasmer.OpcodeI64AtomicRmw16UXor] = opcode_costs_struct.I64AtomicRmw16UXor
-	opcode_costs[wasmer.OpcodeI64AtomicRmw32UXor] = opcode_costs_struct.I64AtomicRmw32UXor
+	opcode_costs[wasmer.OpcodeI32AtomicRmw8XorU] = opcode_costs_struct.I32AtomicRmw8XorU
+	opcode_costs[wasmer.OpcodeI32AtomicRmw16XorU] = opcode_costs_struct.I32AtomicRmw16XorU
+	opcode_costs[wasmer.OpcodeI64AtomicRmw8XorU] = opcode_costs_struct.I64AtomicRmw8XorU
+	opcode_costs[wasmer.OpcodeI64AtomicRmw16XorU] = opcode_costs_struct.I64AtomicRmw16XorU
+	opcode_costs[wasmer.OpcodeI64AtomicRmw32XorU] = opcode_costs_struct.I64AtomicRmw32XorU
 	opcode_costs[wasmer.OpcodeI32AtomicRmwXchg] = opcode_costs_struct.I32AtomicRmwXchg
 	opcode_costs[wasmer.OpcodeI64AtomicRmwXchg] = opcode_costs_struct.I64AtomicRmwXchg
-	opcode_costs[wasmer.OpcodeI32AtomicRmw8UXchg] = opcode_costs_struct.I32AtomicRmw8UXchg
-	opcode_costs[wasmer.OpcodeI32AtomicRmw16UXchg] = opcode_costs_struct.I32AtomicRmw16UXchg
-	opcode_costs[wasmer.OpcodeI64AtomicRmw8UXchg] = opcode_costs_struct.I64AtomicRmw8UXchg
-	opcode_costs[wasmer.OpcodeI64AtomicRmw16UXchg] = opcode_costs_struct.I64AtomicRmw16UXchg
-	opcode_costs[wasmer.OpcodeI64AtomicRmw32UXchg] = opcode_costs_struct.I64AtomicRmw32UXchg
+	opcode_costs[wasmer.OpcodeI32AtomicRmw8XchgU] = opcode_costs_struct.I32AtomicRmw8XchgU
+	opcode_costs[wasmer.OpcodeI32AtomicRmw16XchgU] = opcode_costs_struct.I32AtomicRmw16XchgU
+	opcode_costs[wasmer.OpcodeI64AtomicRmw8XchgU] = opcode_costs_struct.I64AtomicRmw8XchgU
+	opcode_costs[wasmer.OpcodeI64AtomicRmw16XchgU] = opcode_costs_struct.I64AtomicRmw16XchgU
+	opcode_costs[wasmer.OpcodeI64AtomicRmw32XchgU] = opcode_costs_struct.I64AtomicRmw32XchgU
 	opcode_costs[wasmer.OpcodeI32AtomicRmwCmpxchg] = opcode_costs_struct.I32AtomicRmwCmpxchg
 	opcode_costs[wasmer.OpcodeI64AtomicRmwCmpxchg] = opcode_costs_struct.I64AtomicRmwCmpxchg
-	opcode_costs[wasmer.OpcodeI32AtomicRmw8UCmpxchg] = opcode_costs_struct.I32AtomicRmw8UCmpxchg
-	opcode_costs[wasmer.OpcodeI32AtomicRmw16UCmpxchg] = opcode_costs_struct.I32AtomicRmw16UCmpxchg
-	opcode_costs[wasmer.OpcodeI64AtomicRmw8UCmpxchg] = opcode_costs_struct.I64AtomicRmw8UCmpxchg
-	opcode_costs[wasmer.OpcodeI64AtomicRmw16UCmpxchg] = opcode_costs_struct.I64AtomicRmw16UCmpxchg
-	opcode_costs[wasmer.OpcodeI64AtomicRmw32UCmpxchg] = opcode_costs_struct.I64AtomicRmw32UCmpxchg
+	opcode_costs[wasmer.OpcodeI32AtomicRmw8CmpxchgU] = opcode_costs_struct.I32AtomicRmw8CmpxchgU
+	opcode_costs[wasmer.OpcodeI32AtomicRmw16CmpxchgU] = opcode_costs_struct.I32AtomicRmw16CmpxchgU
+	opcode_costs[wasmer.OpcodeI64AtomicRmw8CmpxchgU] = opcode_costs_struct.I64AtomicRmw8CmpxchgU
+	opcode_costs[wasmer.OpcodeI64AtomicRmw16CmpxchgU] = opcode_costs_struct.I64AtomicRmw16CmpxchgU
+	opcode_costs[wasmer.OpcodeI64AtomicRmw32CmpxchgU] = opcode_costs_struct.I64AtomicRmw32CmpxchgU
 	opcode_costs[wasmer.OpcodeV128Load] = opcode_costs_struct.V128Load
 	opcode_costs[wasmer.OpcodeV128Store] = opcode_costs_struct.V128Store
 	opcode_costs[wasmer.OpcodeV128Const] = opcode_costs_struct.V128Const
@@ -866,6 +924,7 @@ func (opcode_costs_struct *WASMOpcodeCost) ToOpcodeCostsArray() [wasmer.OPCODE_C
 	opcode_costs[wasmer.OpcodeF64x2Ge] = opcode_costs_struct.F64x2Ge
 	opcode_costs[wasmer.OpcodeV128Not] = opcode_costs_struct.V128Not
 	opcode_costs[wasmer.OpcodeV128And] = opcode_costs_struct.V128And
+	opcode_costs[wasmer.OpcodeV128AndNot] = opcode_costs_struct.V128AndNot
 	opcode_costs[wasmer.OpcodeV128Or] = opcode_costs_struct.V128Or
 	opcode_costs[wasmer.OpcodeV128Xor] = opcode_costs_struct.V128Xor
 	opcode_costs[wasmer.OpcodeV128Bitselect] = opcode_costs_struct.V128Bitselect
@@ -881,6 +940,10 @@ func (opcode_costs_struct *WASMOpcodeCost) ToOpcodeCostsArray() [wasmer.OPCODE_C
 	opcode_costs[wasmer.OpcodeI8x16Sub] = opcode_costs_struct.I8x16Sub
 	opcode_costs[wasmer.OpcodeI8x16SubSaturateS] = opcode_costs_struct.I8x16SubSaturateS
 	opcode_costs[wasmer.OpcodeI8x16SubSaturateU] = opcode_costs_struct.I8x16SubSaturateU
+	opcode_costs[wasmer.OpcodeI8x16MinS] = opcode_costs_struct.I8x16MinS
+	opcode_costs[wasmer.OpcodeI8x16MinU] = opcode_costs_struct.I8x16MinU
+	opcode_costs[wasmer.OpcodeI8x16MaxS] = opcode_costs_struct.I8x16MaxS
+	opcode_costs[wasmer.OpcodeI8x16MaxU] = opcode_costs_struct.I8x16MaxU
 	opcode_costs[wasmer.OpcodeI8x16Mul] = opcode_costs_struct.I8x16Mul
 	opcode_costs[wasmer.OpcodeI16x8Neg] = opcode_costs_struct.I16x8Neg
 	opcode_costs[wasmer.OpcodeI16x8AnyTrue] = opcode_costs_struct.I16x8AnyTrue
@@ -895,6 +958,10 @@ func (opcode_costs_struct *WASMOpcodeCost) ToOpcodeCostsArray() [wasmer.OPCODE_C
 	opcode_costs[wasmer.OpcodeI16x8SubSaturateS] = opcode_costs_struct.I16x8SubSaturateS
 	opcode_costs[wasmer.OpcodeI16x8SubSaturateU] = opcode_costs_struct.I16x8SubSaturateU
 	opcode_costs[wasmer.OpcodeI16x8Mul] = opcode_costs_struct.I16x8Mul
+	opcode_costs[wasmer.OpcodeI16x8MinS] = opcode_costs_struct.I16x8MinS
+	opcode_costs[wasmer.OpcodeI16x8MinU] = opcode_costs_struct.I16x8MinU
+	opcode_costs[wasmer.OpcodeI16x8MaxS] = opcode_costs_struct.I16x8MaxS
+	opcode_costs[wasmer.OpcodeI16x8MaxU] = opcode_costs_struct.I16x8MaxU
 	opcode_costs[wasmer.OpcodeI32x4Neg] = opcode_costs_struct.I32x4Neg
 	opcode_costs[wasmer.OpcodeI32x4AnyTrue] = opcode_costs_struct.I32x4AnyTrue
 	opcode_costs[wasmer.OpcodeI32x4AllTrue] = opcode_costs_struct.I32x4AllTrue
@@ -904,6 +971,10 @@ func (opcode_costs_struct *WASMOpcodeCost) ToOpcodeCostsArray() [wasmer.OPCODE_C
 	opcode_costs[wasmer.OpcodeI32x4Add] = opcode_costs_struct.I32x4Add
 	opcode_costs[wasmer.OpcodeI32x4Sub] = opcode_costs_struct.I32x4Sub
 	opcode_costs[wasmer.OpcodeI32x4Mul] = opcode_costs_struct.I32x4Mul
+	opcode_costs[wasmer.OpcodeI32x4MinS] = opcode_costs_struct.I32x4MinS
+	opcode_costs[wasmer.OpcodeI32x4MinU] = opcode_costs_struct.I32x4MinU
+	opcode_costs[wasmer.OpcodeI32x4MaxS] = opcode_costs_struct.I32x4MaxS
+	opcode_costs[wasmer.OpcodeI32x4MaxU] = opcode_costs_struct.I32x4MaxU
 	opcode_costs[wasmer.OpcodeI64x2Neg] = opcode_costs_struct.I64x2Neg
 	opcode_costs[wasmer.OpcodeI64x2AnyTrue] = opcode_costs_struct.I64x2AnyTrue
 	opcode_costs[wasmer.OpcodeI64x2AllTrue] = opcode_costs_struct.I64x2AllTrue
@@ -912,6 +983,7 @@ func (opcode_costs_struct *WASMOpcodeCost) ToOpcodeCostsArray() [wasmer.OPCODE_C
 	opcode_costs[wasmer.OpcodeI64x2ShrU] = opcode_costs_struct.I64x2ShrU
 	opcode_costs[wasmer.OpcodeI64x2Add] = opcode_costs_struct.I64x2Add
 	opcode_costs[wasmer.OpcodeI64x2Sub] = opcode_costs_struct.I64x2Sub
+	opcode_costs[wasmer.OpcodeI64x2Mul] = opcode_costs_struct.I64x2Mul
 	opcode_costs[wasmer.OpcodeF32x4Abs] = opcode_costs_struct.F32x4Abs
 	opcode_costs[wasmer.OpcodeF32x4Neg] = opcode_costs_struct.F32x4Neg
 	opcode_costs[wasmer.OpcodeF32x4Sqrt] = opcode_costs_struct.F32x4Sqrt
@@ -930,20 +1002,40 @@ func (opcode_costs_struct *WASMOpcodeCost) ToOpcodeCostsArray() [wasmer.OPCODE_C
 	opcode_costs[wasmer.OpcodeF64x2Div] = opcode_costs_struct.F64x2Div
 	opcode_costs[wasmer.OpcodeF64x2Min] = opcode_costs_struct.F64x2Min
 	opcode_costs[wasmer.OpcodeF64x2Max] = opcode_costs_struct.F64x2Max
-	opcode_costs[wasmer.OpcodeI32x4TruncSF32x4Sat] = opcode_costs_struct.I32x4TruncSF32x4Sat
-	opcode_costs[wasmer.OpcodeI32x4TruncUF32x4Sat] = opcode_costs_struct.I32x4TruncUF32x4Sat
-	opcode_costs[wasmer.OpcodeI64x2TruncSF64x2Sat] = opcode_costs_struct.I64x2TruncSF64x2Sat
-	opcode_costs[wasmer.OpcodeI64x2TruncUF64x2Sat] = opcode_costs_struct.I64x2TruncUF64x2Sat
-	opcode_costs[wasmer.OpcodeF32x4ConvertSI32x4] = opcode_costs_struct.F32x4ConvertSI32x4
-	opcode_costs[wasmer.OpcodeF32x4ConvertUI32x4] = opcode_costs_struct.F32x4ConvertUI32x4
-	opcode_costs[wasmer.OpcodeF64x2ConvertSI64x2] = opcode_costs_struct.F64x2ConvertSI64x2
-	opcode_costs[wasmer.OpcodeF64x2ConvertUI64x2] = opcode_costs_struct.F64x2ConvertUI64x2
+	opcode_costs[wasmer.OpcodeI32x4TruncSatF32x4S] = opcode_costs_struct.I32x4TruncSatF32x4S
+	opcode_costs[wasmer.OpcodeI32x4TruncSatF32x4U] = opcode_costs_struct.I32x4TruncSatF32x4U
+	opcode_costs[wasmer.OpcodeI64x2TruncSatF64x2S] = opcode_costs_struct.I64x2TruncSatF64x2S
+	opcode_costs[wasmer.OpcodeI64x2TruncSatF64x2U] = opcode_costs_struct.I64x2TruncSatF64x2U
+	opcode_costs[wasmer.OpcodeF32x4ConvertI32x4S] = opcode_costs_struct.F32x4ConvertI32x4S
+	opcode_costs[wasmer.OpcodeF32x4ConvertI32x4U] = opcode_costs_struct.F32x4ConvertI32x4U
+	opcode_costs[wasmer.OpcodeF64x2ConvertI64x2S] = opcode_costs_struct.F64x2ConvertI64x2S
+	opcode_costs[wasmer.OpcodeF64x2ConvertI64x2U] = opcode_costs_struct.F64x2ConvertI64x2U
 	opcode_costs[wasmer.OpcodeV8x16Swizzle] = opcode_costs_struct.V8x16Swizzle
 	opcode_costs[wasmer.OpcodeV8x16Shuffle] = opcode_costs_struct.V8x16Shuffle
-	opcode_costs[wasmer.OpcodeI8x16LoadSplat] = opcode_costs_struct.I8x16LoadSplat
-	opcode_costs[wasmer.OpcodeI16x8LoadSplat] = opcode_costs_struct.I16x8LoadSplat
-	opcode_costs[wasmer.OpcodeI32x4LoadSplat] = opcode_costs_struct.I32x4LoadSplat
-	opcode_costs[wasmer.OpcodeI64x2LoadSplat] = opcode_costs_struct.I64x2LoadSplat
+	opcode_costs[wasmer.OpcodeV8x16LoadSplat] = opcode_costs_struct.V8x16LoadSplat
+	opcode_costs[wasmer.OpcodeV16x8LoadSplat] = opcode_costs_struct.V16x8LoadSplat
+	opcode_costs[wasmer.OpcodeV32x4LoadSplat] = opcode_costs_struct.V32x4LoadSplat
+	opcode_costs[wasmer.OpcodeV64x2LoadSplat] = opcode_costs_struct.V64x2LoadSplat
+	opcode_costs[wasmer.OpcodeI8x16NarrowI16x8S] = opcode_costs_struct.I8x16NarrowI16x8S
+	opcode_costs[wasmer.OpcodeI8x16NarrowI16x8U] = opcode_costs_struct.I8x16NarrowI16x8U
+	opcode_costs[wasmer.OpcodeI16x8NarrowI32x4S] = opcode_costs_struct.I16x8NarrowI32x4S
+	opcode_costs[wasmer.OpcodeI16x8NarrowI32x4U] = opcode_costs_struct.I16x8NarrowI32x4U
+	opcode_costs[wasmer.OpcodeI16x8WidenLowI8x16S] = opcode_costs_struct.I16x8WidenLowI8x16S
+	opcode_costs[wasmer.OpcodeI16x8WidenHighI8x16S] = opcode_costs_struct.I16x8WidenHighI8x16S
+	opcode_costs[wasmer.OpcodeI16x8WidenLowI8x16U] = opcode_costs_struct.I16x8WidenLowI8x16U
+	opcode_costs[wasmer.OpcodeI16x8WidenHighI8x16U] = opcode_costs_struct.I16x8WidenHighI8x16U
+	opcode_costs[wasmer.OpcodeI32x4WidenLowI16x8S] = opcode_costs_struct.I32x4WidenLowI16x8S
+	opcode_costs[wasmer.OpcodeI32x4WidenHighI16x8S] = opcode_costs_struct.I32x4WidenHighI16x8S
+	opcode_costs[wasmer.OpcodeI32x4WidenLowI16x8U] = opcode_costs_struct.I32x4WidenLowI16x8U
+	opcode_costs[wasmer.OpcodeI32x4WidenHighI16x8U] = opcode_costs_struct.I32x4WidenHighI16x8U
+	opcode_costs[wasmer.OpcodeI16x8Load8x8S] = opcode_costs_struct.I16x8Load8x8S
+	opcode_costs[wasmer.OpcodeI16x8Load8x8U] = opcode_costs_struct.I16x8Load8x8U
+	opcode_costs[wasmer.OpcodeI32x4Load16x4S] = opcode_costs_struct.I32x4Load16x4S
+	opcode_costs[wasmer.OpcodeI32x4Load16x4U] = opcode_costs_struct.I32x4Load16x4U
+	opcode_costs[wasmer.OpcodeI64x2Load32x2S] = opcode_costs_struct.I64x2Load32x2S
+	opcode_costs[wasmer.OpcodeI64x2Load32x2U] = opcode_costs_struct.I64x2Load32x2U
+	opcode_costs[wasmer.OpcodeI8x16RoundingAverageU] = opcode_costs_struct.I8x16RoundingAverageU
+	opcode_costs[wasmer.OpcodeI16x8RoundingAverageU] = opcode_costs_struct.I16x8RoundingAverageU
 
 	return opcode_costs
 }

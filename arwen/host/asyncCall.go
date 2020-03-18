@@ -4,11 +4,10 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
-func (host *vmHost) handleAsyncCallBreakpoint(result wasmer.Value) error {
+func (host *vmHost) handleAsyncCallBreakpoint() error {
 	runtime := host.Runtime()
 	runtime.SetRuntimeBreakpointValue(arwen.BreakpointNone)
 

@@ -4,8 +4,7 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common"
 )
 
 type logTopicsData struct {
@@ -53,7 +52,7 @@ func newVMOutputAccount(address []byte) *vmcommon.OutputAccount {
 		Address:        address,
 		Nonce:          0,
 		BalanceDelta:   big.NewInt(0),
-		Balance:        big.NewInt(0),
+		Balance:        nil,
 		StorageUpdates: make(map[string]*vmcommon.StorageUpdate),
 	}
 }
@@ -132,16 +131,7 @@ func (context *outputContext) SelfDestruct(address []byte, beneficiary []byte) {
 }
 
 func (context *outputContext) Finish(data []byte) {
-	if len(data) > 0 {
-		context.outputState.ReturnData = append(context.outputState.ReturnData, data)
-	}
-}
-
-func (context *outputContext) FinishValue(value wasmer.Value) {
-	if !value.IsVoid() {
-		valueBytes := arwen.ConvertReturnValue(value)
-		context.Finish(valueBytes)
-	}
+	context.outputState.ReturnData = append(context.outputState.ReturnData, data)
 }
 
 func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []byte) {
@@ -160,7 +150,15 @@ func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []b
 // Transfer handles any necessary value transfer required and takes
 // the necessary steps to create accounts and reverses the state in case of an
 // execution error or failed value transfer.
-func (context *outputContext) Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte) {
+func (context *outputContext) Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte) error {
+	if value.Cmp(arwen.Zero) < 0 {
+		return arwen.ErrTransferNegativeValue
+	}
+
+	if !context.hasSufficientBalance(sender, value) {
+		return arwen.ErrTransferInsufficientFunds
+	}
+
 	senderAcc, _ := context.GetOutputAccount(sender)
 	destAcc, _ := context.GetOutputAccount(destination)
 
@@ -168,6 +166,16 @@ func (context *outputContext) Transfer(destination []byte, sender []byte, gasLim
 	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
 	destAcc.Data = append(destAcc.Data, input...)
 	destAcc.GasLimit = gasLimit
+
+	return nil
+}
+
+func (context *outputContext) hasSufficientBalance(address []byte, value *big.Int) bool {
+	senderBalance := context.host.Blockchain().GetBalanceBigInt(address)
+	if value.Cmp(senderBalance) > 0 {
+		return false
+	}
+	return true
 }
 
 func (context *outputContext) AddTxValueToAccount(address []byte, value *big.Int) {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -42,9 +43,7 @@ func TestErc20FromRust(t *testing.T) {
 }
 
 func TestAdderFromRust(t *testing.T) {
-	testExec := newArwenTestExecutor().replaceCode(
-		"adder.wasm",
-		filepath.Join(getTestRoot(), "contracts/adder.wasm"))
+	testExec := newArwenTestExecutor()
 
 	err := controller.RunAllJSONTestsInDirectory(
 		getTestRoot(),
@@ -59,9 +58,7 @@ func TestAdderFromRust(t *testing.T) {
 }
 
 func TestCryptoBubbles(t *testing.T) {
-	testExec := newArwenTestExecutor().replaceCode(
-		"crypto-bubbles.wasm",
-		filepath.Join(getTestRoot(), "contracts/crypto-bubbles.wasm"))
+	testExec := newArwenTestExecutor()
 	excludedTests := []string{}
 
 	err := controller.RunAllJSONTestsInDirectory(
@@ -77,9 +74,7 @@ func TestCryptoBubbles(t *testing.T) {
 }
 
 func TestFeaturesFromRust(t *testing.T) {
-	testExec := newArwenTestExecutor().replaceCode(
-		"features.wasm",
-		filepath.Join(getTestRoot(), "contracts/features.wasm"))
+	testExec := newArwenTestExecutor()
 
 	err := controller.RunAllJSONTestsInDirectory(
 		getTestRoot(),
@@ -91,4 +86,44 @@ func TestFeaturesFromRust(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+}
+
+func TestAsyncCalls(t *testing.T) {
+	testExec := newArwenTestExecutor().replaceCode(
+		"features.wasm",
+		filepath.Join(getTestRoot(), "contracts/features.wasm"))
+
+	err := controller.RunAllJSONTestsInDirectory(
+		getTestRoot(),
+		"async",
+		".json",
+		[]string{},
+		testExec)
+
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestDelegationContract(t *testing.T) {
+	testExec := newArwenTestExecutor()
+	err := controller.RunAllJSONTestsInDirectory(
+		getTestRoot(),
+		"delegation",
+		".json",
+		[]string{},
+		testExec)
+
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func getTestRoot() string {
+	exePath, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	arwenTestRoot := filepath.Join(exePath, "../../test")
+	return arwenTestRoot
 }

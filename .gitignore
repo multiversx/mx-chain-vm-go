@@ -12,8 +12,14 @@
 
 /arwen/debug
 /cmd/test/test
+/ipc/tests/testdata/streams
 
 # VSCode settings
 .vscode
 
 tags
+
+# SmartContract compilation artefacts
+*.hex*
+*.ll
+*.o

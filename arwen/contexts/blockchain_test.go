@@ -5,6 +5,7 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
@@ -65,6 +66,7 @@ func TestBlockchainContext_GetBalance(t *testing.T) {
 	// Act as if the OutputContext has no OutputAccounts cached
 	// (mockOutput.GetOutputAccount() always returns "is new")
 	account := &vmcommon.OutputAccount{}
+	account.BalanceDelta = big.NewInt(0)
 	mockOutput.OutputAccountMock = account
 	mockOutput.OutputAccountIsNew = true
 
@@ -72,7 +74,7 @@ func TestBlockchainContext_GetBalance(t *testing.T) {
 	blockchainHook.Err = errTestError
 	balanceBytes := blockchainContext.GetBalance([]byte("account_new_with_money"))
 	value := big.NewInt(0).SetBytes(balanceBytes)
-	require.Equal(t, big.NewInt(0), value)
+	require.Equal(t, arwen.Zero, value)
 	blockchainHook.Err = nil
 
 	// Test that an account that doesn't exist will not be updated with any kind
@@ -80,16 +82,8 @@ func TestBlockchainContext_GetBalance(t *testing.T) {
 	account.Balance = big.NewInt(15)
 	balanceBytes = blockchainContext.GetBalance([]byte("account_missing"))
 	value = big.NewInt(0).SetBytes(balanceBytes)
-	require.Equal(t, big.NewInt(0), value)
+	require.Equal(t, arwen.Zero, value)
 	require.Equal(t, big.NewInt(15), account.Balance)
-
-	// Test that an account newly cached by the OutputAccounts will have its
-	// Balance updated, if BlockchainHook.GetBalance() is successful
-	account.Balance = big.NewInt(300)
-	balanceBytes = blockchainContext.GetBalance([]byte("account_new_with_money"))
-	value = big.NewInt(0).SetBytes(balanceBytes)
-	require.Equal(t, big.NewInt(1000), value)
-	require.Equal(t, big.NewInt(1000), account.Balance)
 
 	// Act as if the OutputContext has the requested OutputAccount cached
 	account.Balance = big.NewInt(42)
@@ -98,6 +92,44 @@ func TestBlockchainContext_GetBalance(t *testing.T) {
 	value = big.NewInt(0).SetBytes(balanceBytes)
 	require.Equal(t, big.NewInt(42), value)
 
+	// GetBalance must add Balance and BalanceDelta together
+	account.Balance = big.NewInt(10)
+	account.BalanceDelta = big.NewInt(32)
+	mockOutput.OutputAccountIsNew = false
+	balanceBytes = blockchainContext.GetBalance([]byte("any account"))
+	value = big.NewInt(0).SetBytes(balanceBytes)
+	require.Equal(t, big.NewInt(42), value)
+	require.Equal(t, big.NewInt(10), account.Balance)
+	require.Equal(t, big.NewInt(32), account.BalanceDelta)
+}
+
+func TestBlockchainContext_GetBalance_Updates(t *testing.T) {
+	t.Parallel()
+
+	blockchainHook := mock.NewBlockchainHookMock()
+	blockchainHook.AddAccounts(testAccounts)
+	mockOutput := &mock.OutputContextMock{}
+	host := &mock.VmHostMock{}
+	host.OutputContext = mockOutput
+	blockchainContext, _ := NewBlockchainContext(host, blockchainHook)
+
+	// Act as if the OutputContext has no OutputAccounts cached
+	// (mockOutput.GetOutputAccount() always returns "is new")
+	account := &vmcommon.OutputAccount{
+		Address:        []byte("account_new_with_money"),
+		Nonce:          2,
+		BalanceDelta:   big.NewInt(0),
+		Balance:        nil,
+		StorageUpdates: make(map[string]*vmcommon.StorageUpdate),
+	}
+
+	mockOutput.OutputAccountMock = account
+	mockOutput.OutputAccountIsNew = false
+
+	balanceBytes := blockchainContext.GetBalance([]byte("account_new_with_money"))
+	value := big.NewInt(0).SetBytes(balanceBytes)
+	require.Equal(t, big.NewInt(1000), value)
+	require.Equal(t, big.NewInt(1000), account.Balance)
 }
 
 func TestBlockchainContext_GetNonceAndIncrease(t *testing.T) {
@@ -257,7 +289,7 @@ func TestBlockchainContext_NewAddress(t *testing.T) {
 	mockOutput.OutputAccountIsNew = true
 
 	expectedCreatorAddres := creatorAddress
-	stubBlockchain := &mock.BlockChainHookStub{
+	stubBlockchain := &mock.BlockchainHookStub{
 		GetNonceCalled: blockchainHook.GetNonce,
 		NewAddressCalled: func(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error) {
 			require.Equal(t, expectedCreatorAddres, creatorAddress)
@@ -280,7 +312,7 @@ func TestBlockchainContext_NewAddress(t *testing.T) {
 	mockOutput.OutputAccountIsNew = false
 
 	expectedCreatorAddres = creatorAddress
-	stubBlockchain = &mock.BlockChainHookStub{
+	stubBlockchain = &mock.BlockchainHookStub{
 		GetNonceCalled: blockchainHook.GetNonce,
 		NewAddressCalled: func(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error) {
 			require.Equal(t, expectedCreatorAddres, creatorAddress)
@@ -303,7 +335,7 @@ func TestBlockchainContext_NewAddress(t *testing.T) {
 	mockOutput.OutputAccountIsNew = false
 
 	expectedCreatorAddres = creatorAddress
-	stubBlockchain = &mock.BlockChainHookStub{
+	stubBlockchain = &mock.BlockchainHookStub{
 		GetNonceCalled: blockchainHook.GetNonce,
 		NewAddressCalled: func(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error) {
 			require.Equal(t, expectedCreatorAddres, creatorAddress)

@@ -4,6 +4,7 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/stretchr/testify/require"
 )
 
@@ -59,7 +60,7 @@ func TestBigIntContext_PutGet(t *testing.T) {
 	require.Equal(t, big.NewInt(value2), bigRes2)
 
 	zeroRes := bigIntContext.GetOne(123)
-	require.Equal(t, big.NewInt(0), zeroRes)
+	require.Equal(t, arwen.Zero, zeroRes)
 
 	bigRes1, bigRes2 = bigIntContext.GetTwo(index1, index2)
 	require.Equal(t, big.NewInt(value1), bigRes1)
@@ -68,7 +69,7 @@ func TestBigIntContext_PutGet(t *testing.T) {
 	bigRes1, bigRes2, zeroRes = bigIntContext.GetThree(index1, index2, 123)
 	require.Equal(t, big.NewInt(value1), bigRes1)
 	require.Equal(t, big.NewInt(value2), bigRes2)
-	require.Equal(t, big.NewInt(0), zeroRes)
+	require.Equal(t, arwen.Zero, zeroRes)
 
 	bigRes1, bigRes2, bigRes3 := bigIntContext.GetThree(index1, index2, index3)
 	require.Equal(t, big.NewInt(value1), bigRes1)

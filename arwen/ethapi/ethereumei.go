@@ -339,7 +339,7 @@ func ethstorageStore(context unsafe.Pointer, pathOffset int32, valueOffset int32
 		return
 	}
 
-	_ = storage.SetStorage(runtime.GetSCAddress(), key, data)
+	_ = storage.SetStorage(key, data)
 }
 
 //export ethstorageLoad
@@ -356,7 +356,7 @@ func ethstorageLoad(context unsafe.Pointer, pathOffset int32, resultOffset int32
 		return
 	}
 
-	data := storage.GetStorage(runtime.GetSCAddress(), key)
+	data := storage.GetStorage(key)
 	dataGasToUse := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(data))
 	metering.UseGas(dataGasToUse)
 

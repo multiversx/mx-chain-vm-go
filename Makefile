@@ -1,4 +1,7 @@
-.PHONY: test build
+.PHONY: test build clean
+
+clean:
+	go clean -cache -testcache
 
 build:
 	go build ./...

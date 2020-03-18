@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/hex"
+	"fmt"
 	"math/big"
 
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
@@ -20,13 +22,18 @@ func convertAccount(testAcct *ij.Account) *worldhook.Account {
 		storage[key] = stkvp.Value
 	}
 
+	if len(testAcct.Address) != 32 {
+		panic("bad test: account address should be 32 bytes long")
+	}
+
 	return &worldhook.Account{
-		Exists:  true,
-		Address: testAcct.Address,
-		Nonce:   testAcct.Nonce.Uint64(),
-		Balance: big.NewInt(0).Set(testAcct.Balance),
-		Storage: storage,
-		Code:    []byte(testAcct.Code),
+		Exists:        true,
+		Address:       testAcct.Address,
+		Nonce:         testAcct.Nonce.Uint64(),
+		Balance:       big.NewInt(0).Set(testAcct.Balance),
+		Storage:       storage,
+		Code:          []byte(testAcct.Code),
+		AsyncCallData: testAcct.AsyncCallData,
 	}
 }
 
@@ -55,4 +62,16 @@ func zeroIfNil(i *big.Int) *big.Int {
 		return zero
 	}
 	return i
+}
+
+func bigIntPretty(i *big.Int) string {
+	return fmt.Sprintf("0x%x (%d)", i, i)
+}
+
+func byteArrayPretty(b []byte) string {
+	if len(b) == 0 {
+		return "[]"
+	}
+	asInt := big.NewInt(0).SetBytes(b)
+	return fmt.Sprintf("0x%s (%d)", hex.EncodeToString(b), asInt)
 }
