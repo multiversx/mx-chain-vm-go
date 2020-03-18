@@ -43,9 +43,7 @@ func TestErc20FromRust(t *testing.T) {
 }
 
 func TestAdderFromRust(t *testing.T) {
-	testExec := newArwenTestExecutor().replaceCode(
-		"adder.wasm",
-		filepath.Join(getTestRoot(), "contracts/adder.wasm"))
+	testExec := newArwenTestExecutor()
 
 	err := controller.RunAllJSONTestsInDirectory(
 		getTestRoot(),
@@ -76,9 +74,7 @@ func TestCryptoBubbles(t *testing.T) {
 }
 
 func TestFeaturesFromRust(t *testing.T) {
-	testExec := newArwenTestExecutor().replaceCode(
-		"features.wasm",
-		filepath.Join(getTestRoot(), "contracts/features.wasm"))
+	testExec := newArwenTestExecutor()
 
 	err := controller.RunAllJSONTestsInDirectory(
 		getTestRoot(),
