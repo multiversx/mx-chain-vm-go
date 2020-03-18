@@ -114,17 +114,35 @@ func (driver *ArwenDriver) startArwen() error {
 }
 
 func (driver *ArwenDriver) getArwenPath() (string, error) {
-	arwenPath := os.Getenv(common.EnvVarArwenPath)
-	if fileExists(arwenPath) {
+	arwenPath, err := driver.getArwenPathInCurrentDirectory()
+	if err == nil {
 		return arwenPath, nil
 	}
 
+	arwenPath, err = driver.getArwenPathFromEnvironment()
+	if err == nil {
+		return arwenPath, nil
+	}
+
+	return "", common.ErrArwenNotFound
+}
+
+func (driver *ArwenDriver) getArwenPathInCurrentDirectory() (string, error) {
 	cwd, err := os.Getwd()
 	if err != nil {
 		return "", err
 	}
 
-	arwenPath = path.Join(cwd, "arwen")
+	arwenPath := path.Join(cwd, "arwen")
+	if fileExists(arwenPath) {
+		return arwenPath, nil
+	}
+
+	return "", common.ErrArwenNotFound
+}
+
+func (driver *ArwenDriver) getArwenPathFromEnvironment() (string, error) {
+	arwenPath := os.Getenv(common.EnvVarArwenPath)
 	if fileExists(arwenPath) {
 		return arwenPath, nil
 	}
