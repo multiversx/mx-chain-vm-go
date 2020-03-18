@@ -32,8 +32,6 @@ func TestArwenDriver_DiagnoseWaitWithTimeout(t *testing.T) {
 }
 
 func TestArwenDriver_RestartsIfStopped(t *testing.T) {
-	t.Skip()
-
 	blockchain := &mock.BlockchainHookStub{}
 	driver := newDriver(t, blockchain)
 
