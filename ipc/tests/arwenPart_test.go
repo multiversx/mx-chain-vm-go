@@ -25,7 +25,7 @@ type testFiles struct {
 }
 
 func TestArwenPart_SendDeployRequest(t *testing.T) {
-	blockchain := &mock.BlockChainHookStub{}
+	blockchain := &mock.BlockchainHookStub{}
 
 	response, err := doContractRequest(t, "2", createDeployRequest(bytecodeCounter), blockchain)
 	require.NotNil(t, response)
@@ -33,7 +33,7 @@ func TestArwenPart_SendDeployRequest(t *testing.T) {
 }
 
 func TestArwenPart_SendCallRequestWhenNoContract(t *testing.T) {
-	blockchain := &mock.BlockChainHookStub{}
+	blockchain := &mock.BlockchainHookStub{}
 
 	response, err := doContractRequest(t, "3", createCallRequest("increment"), blockchain)
 	require.NotNil(t, response)
@@ -41,7 +41,7 @@ func TestArwenPart_SendCallRequestWhenNoContract(t *testing.T) {
 }
 
 func TestArwenPart_SendCallRequest(t *testing.T) {
-	blockchain := &mock.BlockChainHookStub{}
+	blockchain := &mock.BlockchainHookStub{}
 
 	blockchain.GetCodeCalled = func(address []byte) ([]byte, error) {
 		return bytecodeCounter, nil

@@ -14,7 +14,7 @@ import (
 var arwenVirtualMachine = []byte{5, 0}
 
 func TestArwenDriver_DiagnoseWait(t *testing.T) {
-	blockchain := &mock.BlockChainHookStub{}
+	blockchain := &mock.BlockchainHookStub{}
 	driver := newDriver(t, blockchain)
 
 	err := driver.DiagnoseWait(100)
@@ -22,7 +22,7 @@ func TestArwenDriver_DiagnoseWait(t *testing.T) {
 }
 
 func TestArwenDriver_DiagnoseWaitWithTimeout(t *testing.T) {
-	blockchain := &mock.BlockChainHookStub{}
+	blockchain := &mock.BlockchainHookStub{}
 	driver := newDriver(t, blockchain)
 
 	err := driver.DiagnoseWait(5000)
@@ -34,7 +34,7 @@ func TestArwenDriver_DiagnoseWaitWithTimeout(t *testing.T) {
 func TestArwenDriver_RestartsIfStopped(t *testing.T) {
 	t.Skip()
 
-	blockchain := &mock.BlockChainHookStub{}
+	blockchain := &mock.BlockchainHookStub{}
 	driver := newDriver(t, blockchain)
 
 	blockchain.GetCodeCalled = func(address []byte) ([]byte, error) {
@@ -59,7 +59,7 @@ func TestArwenDriver_RestartsIfStopped(t *testing.T) {
 	require.False(t, driver.IsClosed())
 }
 
-func newDriver(t *testing.T, blockchain *mock.BlockChainHookStub) *nodepart.ArwenDriver {
+func newDriver(t *testing.T, blockchain *mock.BlockchainHookStub) *nodepart.ArwenDriver {
 	nodeLogger := logger.NewDefaultLogger(logger.LogDebug)
 	driver, err := nodepart.NewArwenDriver(
 		nodeLogger,
