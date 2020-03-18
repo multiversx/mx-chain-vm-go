@@ -215,12 +215,12 @@ func NewBlockchainHookGateway(messenger *ArwenMessenger) *BlockchainHookGateway 
         func (blockchain *BlockchainHookGateway) {signature.name}({get_ctor_args(signature.input)}) {get_output_args(signature)} {{
             request := common.NewMessageBlockchain{signature.name}Request({get_call_args(signature)})
             rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
-            if rawResponse.GetKind() != common.Blockchain{signature.name}Response {{
-                return {signature.badReturn}{", common.ErrBadHookResponseFromNode" if signature.error else ""}
-            }}
-
             if err != nil {{
                 return {signature.badReturn}{", err" if signature.error else ""}
+            }}
+
+            if rawResponse.GetKind() != common.Blockchain{signature.name}Response {{
+                return {signature.badReturn}{", common.ErrBadHookResponseFromNode" if signature.error else ""}
             }}
 
             response := rawResponse.(*common.MessageBlockchain{signature.name}Response)
