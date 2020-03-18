@@ -71,6 +71,15 @@ func BenchmarkArwenDriver_RestartsIfStopped(b *testing.B) {
 	}
 }
 
+func BenchmarkArwenDriver_RestartArwenIfNecessary(b *testing.B) {
+	blockchain := &mock.BlockchainHookStub{}
+	driver := newDriver(b, blockchain)
+
+	for i := 0; i < b.N; i++ {
+		driver.RestartArwenIfNecessary()
+	}
+}
+
 func newDriver(tb testing.TB, blockchain *mock.BlockchainHookStub) *nodepart.ArwenDriver {
 	nodeLogger := logger.NewDefaultLogger(logger.LogDebug)
 	driver, err := nodepart.NewArwenDriver(
