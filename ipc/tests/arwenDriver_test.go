@@ -59,7 +59,19 @@ func TestArwenDriver_RestartsIfStopped(t *testing.T) {
 	require.False(t, driver.IsClosed())
 }
 
-func newDriver(t *testing.T, blockchain *mock.BlockchainHookStub) *nodepart.ArwenDriver {
+func BenchmarkArwenDriver_RestartsIfStopped(b *testing.B) {
+	blockchain := &mock.BlockchainHookStub{}
+	driver := newDriver(b, blockchain)
+
+	for i := 0; i < b.N; i++ {
+		driver.Close()
+		require.True(b, driver.IsClosed())
+		driver.RestartArwenIfNecessary()
+		require.False(b, driver.IsClosed())
+	}
+}
+
+func newDriver(tb testing.TB, blockchain *mock.BlockchainHookStub) *nodepart.ArwenDriver {
 	nodeLogger := logger.NewDefaultLogger(logger.LogDebug)
 	driver, err := nodepart.NewArwenDriver(
 		nodeLogger,
@@ -74,8 +86,8 @@ func newDriver(t *testing.T, blockchain *mock.BlockchainHookStub) *nodepart.Arwe
 		},
 		nodepart.Config{MaxLoopTime: 1000},
 	)
-	require.Nil(t, err)
-	require.NotNil(t, driver)
-	require.False(t, driver.IsClosed())
+	require.Nil(tb, err)
+	require.NotNil(tb, driver)
+	require.False(tb, driver.IsClosed())
 	return driver
 }
