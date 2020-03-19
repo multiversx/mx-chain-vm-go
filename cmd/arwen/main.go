@@ -49,7 +49,8 @@ func doMain() (int, string) {
 
 	arwenArguments, err := common.GetArwenArguments(arwenInitFile)
 	if err != nil {
-		return common.ErrCodeInit, fmt.Sprintf("Cannot receive gasSchedule: %v", err)
+		// TODO: send message through "starting pipe" (ERR)
+		return common.ErrCodeInit, fmt.Sprintf("Cannot receive Arwen arguments: %v", err)
 	}
 
 	messagesMarshalizer := marshaling.CreateMarshalizer(arwenArguments.MessagesMarshalizer)
@@ -64,9 +65,11 @@ func doMain() (int, string) {
 		messagesMarshalizer,
 	)
 	if err != nil {
+		// TODO: send message through "starting pipe" (ERR)
 		return common.ErrCodeInit, fmt.Sprintf("Cannot create ArwenPart: %v", err)
 	}
 
+	// TODO: send message through "starting pipe" (OK)
 	err = part.StartLoop()
 	if err != nil {
 		return common.ErrCodeTerminated, fmt.Sprintf("Ended Arwen loop: %v", err)

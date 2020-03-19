@@ -96,6 +96,8 @@ func (driver *ArwenDriver) startArwen() error {
 		return err
 	}
 
+	// TODO: wait for ACK (ERR / OK) message.
+
 	driver.part, err = NewNodePart(
 		driver.nodeLogger,
 		driver.arwenOutputRead,

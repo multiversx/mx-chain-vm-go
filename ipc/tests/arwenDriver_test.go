@@ -13,6 +13,32 @@ import (
 
 var arwenVirtualMachine = []byte{5, 0}
 
+func TestNewArwenDriver_ErrorWhenArwenError_BadGasSchedule(t *testing.T) {
+	t.Skip()
+
+	nodeLogger := logger.NewDefaultLogger(logger.LogTrace)
+	blockchain := &mock.BlockchainHookStub{}
+	badGasSchedule := config.MakeGasMap(1)
+	delete(badGasSchedule["BaseOperationCost"], "StorePerByte")
+
+	driver, err := nodepart.NewArwenDriver(
+		nodeLogger,
+		blockchain,
+		common.ArwenArguments{
+			VMHostArguments: common.VMHostArguments{
+				VMType:        arwenVirtualMachine,
+				BlockGasLimit: uint64(10000000),
+				GasSchedule:   badGasSchedule,
+			},
+			LogLevel: logger.LogTrace,
+		},
+		nodepart.Config{MaxLoopTime: 1000},
+	)
+
+	require.NotNil(t, err)
+	require.Nil(t, driver)
+}
+
 func TestArwenDriver_DiagnoseWait(t *testing.T) {
 	blockchain := &mock.BlockchainHookStub{}
 	driver := newDriver(t, blockchain)
