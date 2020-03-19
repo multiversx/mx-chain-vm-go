@@ -10,7 +10,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/ethapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // TryFunction corresponds to the try() part of a try / catch block
@@ -34,6 +34,7 @@ type vmHost struct {
 	bigIntContext     arwen.BigIntContext
 }
 
+// NewArwenVM creates a new Arwen vmHost
 func NewArwenVM(
 	blockChainHook vmcommon.BlockchainHook,
 	cryptoHook vmcommon.CryptoHook,
@@ -84,7 +85,7 @@ func NewArwenVM(
 		return nil, err
 	}
 
-	imports, err := elrondapi.ElrondEImports()
+	imports, err := elrondapi.ElrondEIImports()
 	if err != nil {
 		return nil, err
 	}

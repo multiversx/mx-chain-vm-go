@@ -16,7 +16,7 @@ import (
 )
 
 func InitializeWasmer() {
-	imports, _ := elrondapi.ElrondEImports()
+	imports, _ := elrondapi.ElrondEIImports()
 	imports, _ = elrondapi.BigIntImports(imports)
 	imports, _ = ethapi.EthereumImports(imports)
 	imports, _ = crypto.CryptoImports(imports)

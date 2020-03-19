@@ -20,10 +20,6 @@ var ErrNotEnoughGas = errors.New("not enough gas")
 
 var ErrUnhandledRuntimeBreakpoint = errors.New("unhandled runtime breakpoint")
 
-var StateStackUnderflow = errors.New("state stack underflow")
-
-var InstanceStackUnderflow = errors.New("instance stack underflow")
-
 var ErrFuncNotFound = errors.New("function not found")
 
 var ErrSignalError = errors.New("error signalled by smartcontract")
