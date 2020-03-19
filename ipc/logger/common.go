@@ -1,5 +1,7 @@
 package logger
 
+import "strings"
+
 // Logger is the logger interface
 type Logger interface {
 	Trace(message string, args ...interface{})
@@ -21,3 +23,26 @@ const (
 	LogError   LogLevel = 4
 	LogNone    LogLevel = 5
 )
+
+// ParseLogLevel gets a log level from a string
+func ParseLogLevel(str string) LogLevel {
+	str = strings.ToUpper(str)
+	str = strings.Trim(str, " ")
+
+	switch str {
+	case "TRACE":
+		return LogTrace
+	case "DEBUG":
+		return LogDebug
+	case "INFO":
+		return LogInfo
+	case "WARNING":
+		return LogWarning
+	case "ERROR":
+		return LogError
+	case "NONE":
+		return LogNone
+	default:
+		return LogInfo
+	}
+}

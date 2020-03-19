@@ -25,7 +25,7 @@ func NewReceiver(reader *os.File, marshalizer marshaling.Marshalizer) *Receiver 
 
 // Receive receives a message, reads it from the pipe
 func (receiver *Receiver) Receive(timeout int) (MessageHandler, int, error) {
-	if timeout != 0 {
+	if timeout > 0 {
 		receiver.setReceiveDeadline(timeout)
 		defer receiver.resetReceiveDeadline()
 	}
