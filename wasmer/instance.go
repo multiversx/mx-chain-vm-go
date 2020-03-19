@@ -44,7 +44,7 @@ func NewExportedFunctionError(functionName string, message string) *ExportedFunc
 // ExportedFunctionError is an actual error. The `Error` function
 // returns the error message.
 func (error *ExportedFunctionError) Error() string {
-	return fmt.Sprintf(error.message, error.functionName)
+	return error.message
 }
 
 type ExportedFunctionCallback func(...interface{}) (Value, error)

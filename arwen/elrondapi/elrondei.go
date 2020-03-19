@@ -506,7 +506,8 @@ func getNumArguments(context unsafe.Pointer) int32 {
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetNumArguments
 	metering.UseGas(gasToUse)
 
-	return int32(len(runtime.Arguments()))
+	args := runtime.Arguments()
+	return int32(len(args))
 }
 
 //export storageStore
@@ -782,7 +783,6 @@ func returnData(context unsafe.Pointer, pointer int32, length int32) {
 	}
 
 	output.Finish(data)
-
 	gasToUse := metering.GasSchedule().ElrondAPICost.Finish
 	gasToUse += metering.GasSchedule().BaseOperationCost.PersistPerByte * uint64(length)
 	metering.UseGas(gasToUse)
