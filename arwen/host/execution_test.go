@@ -363,8 +363,6 @@ func TestExecution_ExecuteOnSameContext(t *testing.T) {
 
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using executeOnSameContext().
-	// TODO verify whether the child can access bigInts of the parent? the child
-	// shouldn't
 	childCode := GetTestSCCode("exec-same-ctx-child", "../../")
 	host, stubBlockchainHook = DefaultTestArwenForTwoSCs(t, parentCode, childCode)
 	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
@@ -378,6 +376,26 @@ func TestExecution_ExecuteOnSameContext(t *testing.T) {
 	vmOutput, err = host.RunSmartContractCall(input)
 	require.Nil(t, err)
 	expectedVMOutput = expectedVMOutputs("ExecuteOnSameContext_ChildCall")
+	require.Equal(t, expectedVMOutput, vmOutput)
+
+	// Call parentFunctionChildCall_BigInts() of the parent SC, which will call a
+	// method of the child SC that takes some big Int references as arguments and
+	// produce a new big Int out of the arguments.
+	childCode = GetTestSCCode("exec-same-ctx-child", "../../")
+	host, stubBlockchainHook = DefaultTestArwenForTwoSCs(t, parentCode, childCode)
+	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
+	host.Output().AddTxValueToAccount(firstSC, big.NewInt(1000))
+	input = DefaultTestContractCallInput()
+	input.CallerAddr = []byte("user")
+	input.RecipientAddr = firstAddress
+	input.Function = "parentFunctionChildCall_BigInts"
+	input.GasProvided = 1000000
+
+	vmOutput, err = host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	fmt.Println("what")
+	expectedVMOutput = expectedVMOutputs("ExecuteOnSameContext_ChildCall_BigInts")
+	fmt.Println("where")
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
@@ -433,9 +451,10 @@ func expectedVMOutputs(id string) *vmcommon.VMOutput {
 	if id == "ExecuteOnSameContext_Prepare" {
 		expectedVMOutput := MakeVMOutput()
 		expectedVMOutput.ReturnCode = vmcommon.Ok
-		expectedVMOutput.GasRemaining = 998255
+		expectedVMOutput.GasRemaining = 997760
 		AddFinishData(expectedVMOutput, parentFinishA)
 		AddFinishData(expectedVMOutput, parentFinishB)
+		AddFinishData(expectedVMOutput, []byte("success"))
 		parentAccount := AddNewOutputAccount(
 			expectedVMOutput,
 			parentAddress,
@@ -457,7 +476,7 @@ func expectedVMOutputs(id string) *vmcommon.VMOutput {
 	if id == "ExecuteOnSameContext_WrongCall" {
 		expectedVMOutput := expectedVMOutputs("ExecuteOnSameContext_Prepare")
 		AddFinishData(expectedVMOutput, []byte("failed"))
-		expectedVMOutput.GasRemaining = 988131
+		expectedVMOutput.GasRemaining = 987634
 		parentAccount := expectedVMOutput.OutputAccounts[string(parentAddress)]
 		parentAccount.BalanceDelta = big.NewInt(-141)
 		_ = AddNewOutputAccount(
@@ -481,7 +500,7 @@ func expectedVMOutputs(id string) *vmcommon.VMOutput {
 		}
 		AddFinishData(expectedVMOutput, []byte("child ok"))
 		AddFinishData(expectedVMOutput, []byte("success"))
-		expectedVMOutput.GasRemaining = 995702
+		expectedVMOutput.GasRemaining = 994177
 		parentAccount := expectedVMOutput.OutputAccounts[string(parentAddress)]
 		parentAccount.BalanceDelta = big.NewInt(-141)
 		childAccount := AddNewOutputAccount(
@@ -499,6 +518,39 @@ func expectedVMOutputs(id string) *vmcommon.VMOutput {
 			[]byte("qwerty"),
 		)
 
+		return expectedVMOutput
+	}
+	if id == "ExecuteOnSameContext_ChildCall_BigInts" {
+		expectedVMOutput := MakeVMOutput()
+		expectedVMOutput.ReturnCode = vmcommon.Ok
+		AddFinishData(expectedVMOutput, []byte("child ok"))
+		AddFinishData(expectedVMOutput, []byte("success"))
+		expectedVMOutput.GasRemaining = 995621
+		fmt.Println("what2")
+		parentAccount := AddNewOutputAccount(
+			expectedVMOutput,
+			parentAddress,
+			-parentTransferValue,
+			nil,
+		)
+		parentAccount.BalanceDelta = big.NewInt(-141)
+		childAccount := AddNewOutputAccount(
+			expectedVMOutput,
+			childAddress,
+			3,
+			nil,
+		)
+		fmt.Println("what3")
+		childAccount.Balance = big.NewInt(0)
+		SetStorageUpdate(parentAccount, childKey, childData)
+		_ = AddNewOutputAccount(
+			expectedVMOutput,
+			childTransferReceiver,
+			96,
+			[]byte("qwerty"),
+		)
+
+		fmt.Println("what4")
 		return expectedVMOutput
 	}
 	if id == "Nil" {

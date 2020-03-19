@@ -23,12 +23,13 @@ void parentFunctionPrepare() {
 	storageStore(parentKeyB, parentDataB, 11);
 	finish(parentFinishA, 13);
 	finish(parentFinishB, 13);
-	transferValue(
+	int result = transferValue(
 			parentTransferReceiver,
 			parentTransferValue,
 			parentTransferData,
 			18
 	);
+	finishResult(result);
 }
 
 void parentFunctionWrongCall() {
@@ -62,6 +63,31 @@ void parentFunctionChildCall() {
 			2,
 			(byte*)executeArgumentsLengths,
 			executeArgumentsData
+	);
+	finishResult(result);
+}
+
+void parentFunctionChildCall_BigInts() {
+	bigInt intA = bigIntNew(84); 
+	bigInt intB = bigIntNew(96);
+	bigInt intC = bigIntNew(1024);
+
+	byte argumentSize = sizeof(bigInt);
+
+	bigInt arguments[] = {intA, intB, intC};
+	byte argumentLengths[3] = {argumentSize, argumentSize, argumentSize};
+
+	byte childAddress[] = "secondSC........................";
+	byte functionName[] = "childFunction_BigInts";
+	int result = executeOnSameContext(
+			200000,
+			childAddress,
+			executeValue,
+			functionName,
+			21,
+			3,
+			argumentLengths,
+			(byte*)arguments
 	);
 	finishResult(result);
 }

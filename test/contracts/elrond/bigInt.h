@@ -20,7 +20,7 @@ long long bigIntGetInt64(bigInt reference);
 void      bigIntSetInt64(bigInt destination, long long value);
 
 void      bigIntFinish(bigInt reference);
-void      bigIntgetCallValue(bigInt destination);
+void      bigIntGetCallValue(bigInt destination);
 void      bigIntgetExternalBalance(byte *address, bigInt result);
 
 int       bigIntByteLength(bigInt reference);
