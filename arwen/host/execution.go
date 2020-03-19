@@ -59,7 +59,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	}
 
 	idContext := arwen.AddHostContext(host)
-	runtime.SetInstanceContextId(idContext)
+	runtime.SetInstanceContextID(idContext)
 	defer func() {
 		runtime.CleanInstance()
 		arwen.RemoveHostContext(idContext)
@@ -125,7 +125,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	}
 
 	idContext := arwen.AddHostContext(host)
-	runtime.SetInstanceContextId(idContext)
+	runtime.SetInstanceContextID(idContext)
 	defer func() {
 		runtime.CleanInstance()
 		arwen.RemoveHostContext(idContext)
@@ -203,7 +203,12 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]by
 		return nil, err
 	}
 
-	output.Transfer(address, input.CallerAddr, 0, input.CallValue, nil)
+	err = output.Transfer(address, input.CallerAddr, 0, input.CallValue, nil)
+	if err != nil {
+		runtime.PopState()
+		return nil, err
+	}
+
 	blockchain.IncreaseNonce(input.CallerAddr)
 	runtime.SetSCAddress(address)
 
@@ -233,7 +238,7 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]by
 		return nil, err
 	}
 
-	runtime.SetInstanceContextId(idContext)
+	runtime.SetInstanceContextID(idContext)
 
 	err = host.callInitFunction()
 	if err != nil {
@@ -290,7 +295,7 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 		return err
 	}
 
-	runtime.SetInstanceContextId(idContext)
+	runtime.SetInstanceContextID(idContext)
 
 	// TODO replace with callSCMethod()?
 	exports := runtime.GetInstanceExports()

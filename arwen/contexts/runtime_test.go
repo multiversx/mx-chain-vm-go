@@ -16,7 +16,7 @@ import (
 )
 
 func InitializeWasmer() {
-	imports, _ := elrondapi.ElrondEImports()
+	imports, _ := elrondapi.ElrondEIImports()
 	imports, _ = elrondapi.BigIntImports(imports)
 	imports, _ = ethapi.EthereumImports(imports)
 	imports, _ = crypto.CryptoImports(imports)
@@ -80,6 +80,7 @@ func TestRuntimeContext_NewWasmerInstance(t *testing.T) {
 	vmType := []byte("type")
 
 	runtimeContext, err := NewRuntimeContext(host, vmType)
+	require.Nil(t, err)
 
 	gasLimit := uint64(100000000)
 	dummy := []byte{}

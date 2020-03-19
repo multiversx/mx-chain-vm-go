@@ -32,8 +32,8 @@ package elrondapi
 // extern void asyncCall(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
 //
 // extern int32_t getNumReturnData(void *context);
-// extern int32_t getReturnDataSize(void *context, int32_t resultId);
-// extern int32_t getReturnData(void *context, int32_t resultId, int32_t dataOffset);
+// extern int32_t getReturnDataSize(void *context, int32_t resultID);
+// extern int32_t getReturnData(void *context, int32_t resultID, int32_t dataOffset);
 //
 // extern long long getBlockTimestamp(void *context);
 // extern long long getBlockNonce(void *context);
@@ -63,7 +63,8 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
-func ElrondEImports() (*wasmer.Imports, error) {
+// ElrondEIImports creates a new wasmer.Imports populated with the ElrondEI API methods
+func ElrondEIImports() (*wasmer.Imports, error) {
 	imports := wasmer.NewImports()
 	imports = imports.Namespace("env")
 
@@ -896,7 +897,10 @@ func executeOnSameContext(
 	metering.UseGas(gasToUse)
 
 	bigIntVal := big.NewInt(0).SetBytes(value)
-	output.Transfer(dest, send, 0, bigIntVal, nil)
+	err = output.Transfer(dest, send, 0, bigIntVal, nil)
+	if err != nil {
+		return 1
+	}
 
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
@@ -952,7 +956,10 @@ func executeOnDestContext(
 	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
 	metering.UseGas(gasToUse)
 
-	output.Transfer(dest, send, 0, big.NewInt(0).SetBytes(value), nil)
+	err = output.Transfer(dest, send, 0, big.NewInt(0).SetBytes(value), nil)
+	if err != nil {
+		return 1
+	}
 
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
@@ -1045,7 +1052,10 @@ func delegateExecution(
 	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
 	metering.UseGas(gasToUse)
 
-	output.Transfer(address, sender, 0, value, nil)
+	err = output.Transfer(address, sender, 0, value, nil)
+	if err != nil {
+		return 1
+	}
 
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
@@ -1106,7 +1116,10 @@ func executeReadOnly(
 	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
 	metering.UseGas(gasToUse)
 
-	output.Transfer(address, sender, 0, value, nil)
+	err = output.Transfer(address, sender, 0, value, nil)
+	if err != nil {
+		return 1
+	}
 
 	runtime.SetReadOnly(true)
 
@@ -1201,7 +1214,7 @@ func getNumReturnData(context unsafe.Pointer) int32 {
 }
 
 //export getReturnDataSize
-func getReturnDataSize(context unsafe.Pointer, resultId int32) int32 {
+func getReturnDataSize(context unsafe.Pointer, resultID int32) int32 {
 	output := arwen.GetOutputContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -1209,15 +1222,15 @@ func getReturnDataSize(context unsafe.Pointer, resultId int32) int32 {
 	metering.UseGas(gasToUse)
 
 	returnData := output.ReturnData()
-	if resultId >= int32(len(returnData)) {
+	if resultID >= int32(len(returnData)) {
 		return 0
 	}
 
-	return int32(len(returnData[resultId]))
+	return int32(len(returnData[resultID]))
 }
 
 //export getReturnData
-func getReturnData(context unsafe.Pointer, resultId int32, dataOffset int32) int32 {
+func getReturnData(context unsafe.Pointer, resultID int32, dataOffset int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	output := arwen.GetOutputContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -1226,14 +1239,14 @@ func getReturnData(context unsafe.Pointer, resultId int32, dataOffset int32) int
 	metering.UseGas(gasToUse)
 
 	returnData := output.ReturnData()
-	if resultId >= int32(len(returnData)) {
+	if resultID >= int32(len(returnData)) {
 		return 0
 	}
 
-	err := runtime.MemStore(dataOffset, returnData[resultId])
+	err := runtime.MemStore(dataOffset, returnData[resultID])
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 0
 	}
 
-	return int32(len(returnData[resultId]))
+	return int32(len(returnData[resultID]))
 }

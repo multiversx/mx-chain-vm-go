@@ -8,7 +8,7 @@ type ReservedFunctions struct {
 // NewReservedFunctions creates a new ReservedFunctions
 func NewReservedFunctions() *ReservedFunctions {
 	result := &ReservedFunctions{
-		functionNames: make(map[string]interface{}, 0),
+		functionNames: make(map[string]interface{}),
 	}
 
 	result.functionNames["claimDeveloperRewards"] = nil

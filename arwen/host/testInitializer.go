@@ -10,26 +10,29 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
 
-var defaultVmType = []byte{0xF, 0xF}
-var ErrCodeNotFound = errors.New("code not found")
+var defaultVMType = []byte{0xF, 0xF}
+var errCodeNotFound = errors.New("code not found")
 var firstAddress = []byte("firstSC.........................")
 var secondAddress = []byte("secondSC........................")
 
+// GetSCCode retrieves the bytecode of a WASM module from a file
 func GetSCCode(fileName string) []byte {
 	code, _ := ioutil.ReadFile(filepath.Clean(fileName))
 
 	return code
 }
 
+// GetTestSCCode retrieves the bytecode of a WASM testing module
 func GetTestSCCode(scName string, prefixToTestSCs string) []byte {
 	pathToSC := prefixToTestSCs + "test/contracts/" + scName + "/" + scName + ".wasm"
 	return GetSCCode(pathToSC)
 }
 
+// DefaultTestArwenForDeployment creates an Arwen vmHost configured for testing deployments
 func DefaultTestArwenForDeployment(t *testing.T, ownerNonce uint64, newAddress []byte) *vmHost {
 	mockCryptoHook := &mock.CryptoHookMock{}
 	stubBlockchainHook := &mock.BlockchainHookStub{}
@@ -44,6 +47,7 @@ func DefaultTestArwenForDeployment(t *testing.T, ownerNonce uint64, newAddress [
 	return host
 }
 
+// DefaultTestArwenForCall creates an Arwen vmHost configured for testing SC calls
 func DefaultTestArwenForCall(t *testing.T, code []byte) (*vmHost, *mock.BlockchainHookStub) {
 	mockCryptoHook := &mock.CryptoHookMock{}
 	stubBlockchainHook := &mock.BlockchainHookStub{}
@@ -54,6 +58,7 @@ func DefaultTestArwenForCall(t *testing.T, code []byte) (*vmHost, *mock.Blockcha
 	return host, stubBlockchainHook
 }
 
+// DefaultTestArwenForTwoSCs creates an Arwen vmHost configured for testing calls between 2 SmartContracts
 func DefaultTestArwenForTwoSCs(t *testing.T, firstCode []byte, secondCode []byte) (*vmHost, *mock.BlockchainHookStub) {
 	mockCryptoHook := &mock.CryptoHookMock{}
 	stubBlockchainHook := &mock.BlockchainHookStub{}
@@ -64,19 +69,21 @@ func DefaultTestArwenForTwoSCs(t *testing.T, firstCode []byte, secondCode []byte
 		if bytes.Equal(scAddress, secondAddress) {
 			return secondCode, nil
 		}
-		return nil, ErrCodeNotFound
+		return nil, errCodeNotFound
 	}
 	host, _ := DefaultTestArwen(t, stubBlockchainHook, mockCryptoHook)
 	return host, stubBlockchainHook
 }
 
+// DefaultTestArwen creates an Arwen vmHost configured with the provided BlockchainHook and CryptoHook
 func DefaultTestArwen(t *testing.T, blockchain vmcommon.BlockchainHook, crypto vmcommon.CryptoHook) (*vmHost, error) {
-	host, err := NewArwenVM(blockchain, crypto, defaultVmType, uint64(1000), config.MakeGasMap(1))
+	host, err := NewArwenVM(blockchain, crypto, defaultVMType, uint64(1000), config.MakeGasMap(1))
 	require.Nil(t, err)
 	require.NotNil(t, host)
 	return host, err
 }
 
+// DefaultTestContractCreateInput creates a vmcommon.ContractCreateInput struct with default values
 func DefaultTestContractCreateInput() *vmcommon.ContractCreateInput {
 	return &vmcommon.ContractCreateInput{
 		VMInput: vmcommon.VMInput{
@@ -94,6 +101,7 @@ func DefaultTestContractCreateInput() *vmcommon.ContractCreateInput {
 	}
 }
 
+// DefaultTestContractCallInput creates a vmcommon.ContractCallInput struct with default values
 func DefaultTestContractCallInput() *vmcommon.ContractCallInput {
 	return &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
@@ -109,6 +117,7 @@ func DefaultTestContractCallInput() *vmcommon.ContractCallInput {
 	}
 }
 
+// MakeVMOutput creates a vmcommon.VMOutput struct with default values
 func MakeVMOutput() *vmcommon.VMOutput {
 	return &vmcommon.VMOutput{
 		ReturnCode:      vmcommon.Ok,
@@ -123,10 +132,12 @@ func MakeVMOutput() *vmcommon.VMOutput {
 	}
 }
 
+// AddFinishData appends the provided []byte to the ReturnData of the given vmOutput
 func AddFinishData(vmOutput *vmcommon.VMOutput, data []byte) {
 	vmOutput.ReturnData = append(vmOutput.ReturnData, data)
 }
 
+// AddNewOutputAccount creates a new vmcommon.OutputAccount from the provided arguments and adds it to OutputAccounts of the provided vmOutput
 func AddNewOutputAccount(vmOutput *vmcommon.VMOutput, address []byte, balanceDelta int64, data []byte) *vmcommon.OutputAccount {
 	account := &vmcommon.OutputAccount{
 		Address:        address,
@@ -141,6 +152,7 @@ func AddNewOutputAccount(vmOutput *vmcommon.VMOutput, address []byte, balanceDel
 	return account
 }
 
+// SetStorageUpdate sets a storage update to the provided vmcommon.OutputAccount
 func SetStorageUpdate(account *vmcommon.OutputAccount, key []byte, data []byte) {
 	keyString := string(key)
 	update, exists := account.StorageUpdates[keyString]
@@ -152,6 +164,7 @@ func SetStorageUpdate(account *vmcommon.OutputAccount, key []byte, data []byte) 
 	update.Data = data
 }
 
+// SetStorageUpdateStrings sets a storage update to the provided vmcommon.OutputAccount, from string arguments
 func SetStorageUpdateStrings(account *vmcommon.OutputAccount, key string, data string) {
 	SetStorageUpdate(account, []byte(key), []byte(data))
 }

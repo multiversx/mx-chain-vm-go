@@ -3,7 +3,7 @@ package contexts
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 type meteringContext struct {
@@ -13,6 +13,7 @@ type meteringContext struct {
 	host                  arwen.VMHost
 }
 
+// NewMeteringContext creates a new meteringContext
 func NewMeteringContext(
 	host arwen.VMHost,
 	gasSchedule map[string]map[string]uint64,

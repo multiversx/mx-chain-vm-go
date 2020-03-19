@@ -35,6 +35,9 @@ var ErrBadArwenArguments = &CriticalError{InnerErr: fmt.Errorf("bad arguments pa
 // ErrArwenClosed signals a critical error
 var ErrArwenClosed = &CriticalError{InnerErr: fmt.Errorf("arwen closed")}
 
+// ErrArwenTimeExpired signals a critical error
+var ErrArwenTimeExpired = &CriticalError{InnerErr: fmt.Errorf("arwen time expired")}
+
 // ErrArwenNotFound signals a critical error
 var ErrArwenNotFound = &CriticalError{InnerErr: fmt.Errorf("arwen binary not found")}
 

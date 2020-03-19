@@ -301,7 +301,7 @@ func (driver *ArwenDriver) stopArwen() error {
 	err := driver.command.Process.Kill()
 	driver.command.Process.Wait()
 	if err != nil {
-		driver.nodeLogger.Error("stopArwen error=%s", err)
+		driver.nodeLogger.Error("stopArwen error", "err", err)
 	}
 
 	return err

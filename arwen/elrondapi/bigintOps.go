@@ -57,6 +57,7 @@ import (
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 )
 
+// BigIntImports creates a new wasmer.Imports populated with the BigInt API methods
 func BigIntImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	imports = imports.Namespace("env")
 
@@ -155,7 +156,7 @@ func BigIntImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntSign", bigIntCmp, C.bigIntCmp)
+	imports, err = imports.Append("bigIntSign", bigIntSign, C.bigIntSign)
 	if err != nil {
 		return nil, err
 	}
@@ -644,7 +645,6 @@ func bigIntSign(context unsafe.Pointer, op int32) int32 {
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSign
 	metering.UseGas(gasToUse)
-
 	a := bigInt.GetOne(op)
 	return int32(a.Sign())
 }
