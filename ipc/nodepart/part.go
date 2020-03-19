@@ -69,8 +69,12 @@ func (part *NodePart) noopReplier(message common.MessageHandler) common.MessageH
 func (part *NodePart) StartLoop(request common.MessageHandler) (common.MessageHandler, error) {
 	part.Messenger.SendContractRequest(request)
 	response, err := part.doLoop()
+	if err != nil {
+		part.Logger.Error("[NODE]: end of loop", "err", err)
+	} else {
+		part.Logger.Debug("[NODE]: end of loop")
+	}
 
-	part.Logger.Debug("[NODE]: end of loop", "err", err)
 	part.Messenger.ResetDialogue()
 	return response, err
 }
@@ -83,9 +87,13 @@ func (part *NodePart) doLoop() (common.MessageHandler, error) {
 
 	for {
 		message, duration, err := part.Messenger.ReceiveHookCallRequestOrContractResponse(remainingMilliseconds)
-		remainingMilliseconds -= duration
 		if err != nil {
 			return nil, err
+		}
+
+		remainingMilliseconds -= duration
+		if remainingMilliseconds < 0 {
+			return nil, common.ErrArwenTimeExpired
 		}
 
 		if common.IsHookCall(message) {
