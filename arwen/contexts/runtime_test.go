@@ -80,6 +80,7 @@ func TestRuntimeContext_NewWasmerInstance(t *testing.T) {
 	vmType := []byte("type")
 
 	runtimeContext, err := NewRuntimeContext(host, vmType)
+	require.Nil(t, err)
 
 	gasLimit := uint64(100000000)
 	dummy := []byte{}

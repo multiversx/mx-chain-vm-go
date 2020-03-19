@@ -4,13 +4,8 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
-
-type logTopicsData struct {
-	topics [][]byte
-	data   []byte
-}
 
 type outputContext struct {
 	host        arwen.VMHost
@@ -18,6 +13,7 @@ type outputContext struct {
 	stateStack  []*vmcommon.VMOutput
 }
 
+// NewOutputContext creates a new outputContext
 func NewOutputContext(host arwen.VMHost) (*outputContext, error) {
 	context := &outputContext{
 		host:       host,
@@ -172,10 +168,7 @@ func (context *outputContext) Transfer(destination []byte, sender []byte, gasLim
 
 func (context *outputContext) hasSufficientBalance(address []byte, value *big.Int) bool {
 	senderBalance := context.host.Blockchain().GetBalanceBigInt(address)
-	if value.Cmp(senderBalance) > 0 {
-		return false
-	}
-	return true
+	return senderBalance.Cmp(value) >= 0
 }
 
 func (context *outputContext) AddTxValueToAccount(address []byte, value *big.Int) {

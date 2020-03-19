@@ -8,10 +8,12 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 )
 
+// WASMValidator is a validator for WASM SmartContracts
 type WASMValidator struct {
 	reserved *ReservedFunctions
 }
 
+// NewWASMValidator creates a new WASMValidator
 func NewWASMValidator() *WASMValidator {
 	return &WASMValidator{
 		reserved: NewReservedFunctions(),
