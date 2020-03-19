@@ -81,6 +81,7 @@ func TestStorageContext_StateStack(t *testing.T) {
 	valueB := []byte("valueB")
 	storageContext.SetAddress(addressB)
 	storageStatus = storageContext.SetStorage(keyB, valueB)
+	require.Equal(t, int32(arwen.StorageAdded), storageStatus)
 	require.Equal(t, valueB, storageContext.GetStorage(keyB))
 	require.Len(t, storageContext.GetStorageUpdates(addressA), 1)
 	require.Len(t, storageContext.GetStorageUpdates(addressB), 1)

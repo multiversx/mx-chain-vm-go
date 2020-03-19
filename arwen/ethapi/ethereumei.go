@@ -49,6 +49,7 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
+// EthereumImports creates a new wasmer.Imports populated with the Ethereum API methods
 func EthereumImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	imports = imports.Namespace("ethereum")
 
@@ -779,7 +780,10 @@ func ethcall(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueO
 
 	invBytes := arwen.InverseBytes(value)
 	bigIntVal := big.NewInt(0).SetBytes(invBytes)
-	output.Transfer(dest, send, 0, bigIntVal, nil)
+	err = output.Transfer(dest, send, 0, bigIntVal, nil)
+	if err != nil {
+		return 1
+	}
 
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
@@ -831,7 +835,10 @@ func ethcallCode(context unsafe.Pointer, gasLimit int64, addressOffset int32, va
 	}
 
 	invBytes := arwen.InverseBytes(value)
-	output.Transfer(dest, send, 0, big.NewInt(0).SetBytes(invBytes), nil)
+	err = output.Transfer(dest, send, 0, big.NewInt(0).SetBytes(invBytes), nil)
+	if err != nil {
+		return 1
+	}
 
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
@@ -879,7 +886,10 @@ func ethcallDelegate(context unsafe.Pointer, gasLimit int64, addressOffset int32
 		return 1
 	}
 
-	output.Transfer(address, sender, 0, value, nil)
+	err = output.Transfer(address, sender, 0, value, nil)
+	if err != nil {
+		return 1
+	}
 
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
@@ -936,7 +946,10 @@ func ethcallStatic(context unsafe.Pointer, gasLimit int64, addressOffset int32, 
 		return 0
 	}
 
-	output.Transfer(address, sender, 0, value, nil)
+	err = output.Transfer(address, sender, 0, value, nil)
+	if err != nil {
+		return 1
+	}
 
 	runtime.SetReadOnly(true)
 

@@ -9,6 +9,7 @@ type bigIntContext struct {
 	stateStack   []*bigIntContext
 }
 
+// NewBigIntContext creates a new bigIntContext
 func NewBigIntContext() (*bigIntContext, error) {
 	context := &bigIntContext{
 		mappedValues: make(map[int32]*big.Int),

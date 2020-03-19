@@ -10,14 +10,16 @@ import (
 )
 
 type runtimeContext struct {
-	host            arwen.VMHost
-	instance        *wasmer.Instance
-	instanceContext *wasmer.InstanceContext
-	vmInput         *vmcommon.VMInput
-	scAddress       []byte
-	callFunction    string
-	vmType          []byte
-	readOnly        bool
+	host     arwen.VMHost
+	instance *wasmer.Instance
+	// Temporarily holding these pointers are supposed to circumvent an undesired deallocation performed by Go's GC
+	instanceContextDataPointers []*int
+	instanceContext             *wasmer.InstanceContext
+	vmInput                     *vmcommon.VMInput
+	scAddress                   []byte
+	callFunction                string
+	vmType                      []byte
+	readOnly                    bool
 
 	stateStack    []*runtimeContext
 	instanceStack []*wasmer.Instance
@@ -28,16 +30,18 @@ type runtimeContext struct {
 	validator *WASMValidator
 }
 
+// NewRuntimeContext creates a new runtimeContext
 func NewRuntimeContext(
 	host arwen.VMHost,
 	vmType []byte,
 ) (*runtimeContext, error) {
 	context := &runtimeContext{
-		host:          host,
-		vmType:        vmType,
-		stateStack:    make([]*runtimeContext, 0),
-		instanceStack: make([]*wasmer.Instance, 0),
-		validator:     NewWASMValidator(),
+		host:                        host,
+		instanceContextDataPointers: make([]*int, 0),
+		vmType:                      vmType,
+		stateStack:                  make([]*runtimeContext, 0),
+		instanceStack:               make([]*wasmer.Instance, 0),
+		validator:                   NewWASMValidator(),
 	}
 
 	context.InitState()
@@ -46,6 +50,7 @@ func NewRuntimeContext(
 }
 
 func (context *runtimeContext) InitState() {
+	context.instanceContextDataPointers = make([]*int, 0)
 	context.vmInput = &vmcommon.VMInput{}
 	context.scAddress = make([]byte, 0)
 	context.callFunction = ""
@@ -221,7 +226,8 @@ func (context *runtimeContext) SetReadOnly(readOnly bool) {
 	context.readOnly = readOnly
 }
 
-func (context *runtimeContext) SetInstanceContextId(id int) {
+func (context *runtimeContext) SetInstanceContextID(id int) {
+	context.instanceContextDataPointers = append(context.instanceContextDataPointers, &id)
 	context.instance.SetContextData(unsafe.Pointer(&id))
 }
 
