@@ -30,6 +30,7 @@ type runtimeContext struct {
 	validator *WASMValidator
 }
 
+// NewRuntimeContext creates a new runtimeContext
 func NewRuntimeContext(
 	host arwen.VMHost,
 	vmType []byte,
@@ -225,7 +226,7 @@ func (context *runtimeContext) SetReadOnly(readOnly bool) {
 	context.readOnly = readOnly
 }
 
-func (context *runtimeContext) SetInstanceContextId(id int) {
+func (context *runtimeContext) SetInstanceContextID(id int) {
 	context.instanceContextDataPointers = append(context.instanceContextDataPointers, &id)
 	context.instance.SetContextData(unsafe.Pointer(&id))
 }

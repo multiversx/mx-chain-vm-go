@@ -17,7 +17,7 @@ type RuntimeContextMock struct {
 	ReadOnlyFlag           bool
 	CurrentBreakpointValue arwen.BreakpointValue
 	PointsUsed             uint64
-	InstanceCtxId          int
+	InstanceCtxID          int
 	MemLoadResult          []byte
 	ArgParserMock          arwen.ArgumentsParser
 	FailCryptoAPI          bool
@@ -125,8 +125,8 @@ func (r *RuntimeContextMock) SetReadOnly(readOnly bool) {
 	r.ReadOnlyFlag = readOnly
 }
 
-func (r *RuntimeContextMock) SetInstanceContextId(id int) {
-	r.InstanceCtxId = id
+func (r *RuntimeContextMock) SetInstanceContextID(id int) {
+	r.InstanceCtxID = id
 }
 
 func (r *RuntimeContextMock) SetInstanceContext(instCtx *wasmer.InstanceContext) {

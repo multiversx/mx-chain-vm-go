@@ -57,6 +57,7 @@ import (
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 )
 
+// BigIntImports creates a new wasmer.Imports populated with the BigInt API methods
 func BigIntImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	imports = imports.Namespace("env")
 
