@@ -69,7 +69,7 @@ func (b *BlockchainHookMock) AccountExists(address []byte) (bool, error) {
 	}
 
 	account, ok := b.Accounts[string(address)]
-	if ok == false {
+	if !ok {
 		return false, nil
 	}
 
@@ -102,7 +102,7 @@ func (b *BlockchainHookMock) GetBalance(address []byte) (*big.Int, error) {
 	}
 
 	account, ok := b.Accounts[string(address)]
-	if ok == false {
+	if !ok {
 		return nil, ErrAccountDoesntExist
 	}
 
@@ -110,7 +110,7 @@ func (b *BlockchainHookMock) GetBalance(address []byte) (*big.Int, error) {
 		return nil, account.Err
 	}
 
-	if account.Exists == false {
+	if !account.Exists {
 		return nil, ErrAccountDoesntExist
 	}
 
@@ -123,7 +123,7 @@ func (b *BlockchainHookMock) GetNonce(address []byte) (uint64, error) {
 	}
 
 	account, ok := b.Accounts[string(address)]
-	if ok == false {
+	if !ok {
 		return 0, ErrAccountDoesntExist
 	}
 
@@ -140,7 +140,7 @@ func (b *BlockchainHookMock) GetStorageData(address []byte, index []byte) ([]byt
 	}
 
 	account, ok := b.Accounts[string(address)]
-	if ok == false {
+	if !ok {
 		return []byte{}, ErrAccountDoesntExist
 	}
 
@@ -157,7 +157,7 @@ func (b *BlockchainHookMock) IsCodeEmpty(address []byte) (bool, error) {
 	}
 
 	account, ok := b.Accounts[string(address)]
-	if ok == false {
+	if !ok {
 		return false, ErrAccountDoesntExist
 	}
 
@@ -175,7 +175,7 @@ func (b *BlockchainHookMock) GetCode(address []byte) ([]byte, error) {
 	}
 
 	account, ok := b.Accounts[string(address)]
-	if ok == false {
+	if !ok {
 		return []byte{}, ErrAccountDoesntExist
 	}
 

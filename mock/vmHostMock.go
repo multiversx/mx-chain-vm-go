@@ -66,11 +66,9 @@ func (host *VmHostMock) EthereumCallData() []byte {
 }
 
 func (host *VmHostMock) InitState() {
-	return
 }
 
 func (host *VmHostMock) PushState() {
-	return
 }
 
 func (host *VmHostMock) PopState() {

@@ -1,7 +1,6 @@
 package config
 
 import (
-	"errors"
 	"fmt"
 	"reflect"
 
@@ -96,7 +95,7 @@ func checkForZeroUint64Fields(arg interface{}) error {
 		}
 		if field.Uint() == 0 {
 			name := v.Type().Field(i).Name
-			return errors.New(fmt.Sprintf("Gas cost for operation %s has been set to 0 or is not set.", name))
+			return fmt.Errorf("Gas cost for operation %s has been set to 0 or is not set.", name)
 		}
 	}
 
