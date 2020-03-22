@@ -20,17 +20,18 @@ type NodePart struct {
 
 // NewNodePart creates the Node part
 func NewNodePart(
-	nodeLogger logger.Logger,
+	mainLogger logger.Logger,
+	dialogueLogger logger.Logger,
 	input *os.File,
 	output *os.File,
 	blockchain vmcommon.BlockchainHook,
 	config Config,
 	marshalizer marshaling.Marshalizer,
 ) (*NodePart, error) {
-	messenger := NewNodeMessenger(nodeLogger, input, output, marshalizer)
+	messenger := NewNodeMessenger(dialogueLogger, input, output, marshalizer)
 
 	part := &NodePart{
-		Logger:     nodeLogger,
+		Logger:     mainLogger,
 		Messenger:  messenger,
 		blockchain: blockchain,
 		config:     config,
@@ -72,7 +73,7 @@ func (part *NodePart) StartLoop(request common.MessageHandler) (common.MessageHa
 	if err != nil {
 		part.Logger.Error("[NODE]: end of loop", "err", err)
 	} else {
-		part.Logger.Debug("[NODE]: end of loop")
+		part.Logger.Trace("[NODE]: end of loop")
 	}
 
 	part.Messenger.ResetDialogue()

@@ -64,7 +64,8 @@ func doContractRequest(
 	wg := sync.WaitGroup{}
 	wg.Add(2)
 
-	logger := logger.NewDefaultLogger(logger.LogDebug)
+	mainLogger := logger.NewDefaultLogger(logger.LogDebug)
+	dialogueLogger := logger.NewDefaultLogger(logger.LogDebug)
 
 	go func() {
 		vmHostArguments := &common.VMHostArguments{
@@ -74,7 +75,8 @@ func doContractRequest(
 		}
 
 		part, err := arwenpart.NewArwenPart(
-			logger,
+			mainLogger,
+			dialogueLogger,
 			files.inputOfArwen,
 			files.outputOfArwen,
 			vmHostArguments,
@@ -87,7 +89,8 @@ func doContractRequest(
 
 	go func() {
 		part, err := nodepart.NewNodePart(
-			logger,
+			mainLogger,
+			dialogueLogger,
 			files.inputOfNode,
 			files.outputOfNode,
 			blockchain,

@@ -21,13 +21,14 @@ type ArwenPart struct {
 
 // NewArwenPart creates the Arwen part
 func NewArwenPart(
-	logger logger.Logger,
+	mainLogger logger.Logger,
+	dialogueLogger logger.Logger,
 	input *os.File,
 	output *os.File,
 	vmHostArguments *common.VMHostArguments,
 	marshalizer marshaling.Marshalizer,
 ) (*ArwenPart, error) {
-	messenger := NewArwenMessenger(logger, input, output, marshalizer)
+	messenger := NewArwenMessenger(dialogueLogger, input, output, marshalizer)
 	blockchain := NewBlockchainHookGateway(messenger)
 	crypto := NewCryptoHookGateway()
 
@@ -38,7 +39,7 @@ func NewArwenPart(
 
 	part := &ArwenPart{
 		Messenger: messenger,
-		Logger:    logger,
+		Logger:    mainLogger,
 		VMHost:    host,
 	}
 
