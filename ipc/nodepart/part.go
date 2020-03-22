@@ -1,7 +1,9 @@
 package nodepart
 
 import (
+	"fmt"
 	"os"
+	"time"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/logger"
@@ -68,12 +70,12 @@ func (part *NodePart) noopReplier(message common.MessageHandler) common.MessageH
 
 // StartLoop runs the main loop
 func (part *NodePart) StartLoop(request common.MessageHandler) (common.MessageHandler, error) {
+	defer part.timeTrack(time.Now(), "[NODE] end of loop")
+
 	part.Messenger.SendContractRequest(request)
 	response, err := part.doLoop()
 	if err != nil {
 		part.Logger.Error("[NODE]: end of loop", "err", err)
-	} else {
-		part.Logger.Trace("[NODE]: end of loop")
 	}
 
 	part.Messenger.ResetDialogue()
@@ -118,6 +120,8 @@ func (part *NodePart) doLoop() (common.MessageHandler, error) {
 }
 
 func (part *NodePart) replyToHookCallRequest(request common.MessageHandler) error {
+	defer part.timeTrack(time.Now(), fmt.Sprintf("replyToHookCallRequest %s", request.GetKindName()))
+
 	replier := part.Repliers[request.GetKind()]
 	hookResponse := replier(request)
 	err := part.Messenger.SendHookCallResponse(hookResponse)
@@ -136,4 +140,9 @@ func (part *NodePart) SendStopSignal() error {
 
 	part.Logger.Info("Node: sent stop signal to Arwen.")
 	return nil
+}
+
+func (part *NodePart) timeTrack(start time.Time, message string) {
+	elapsed := time.Since(start)
+	part.Logger.Trace(message, "duration", elapsed)
 }

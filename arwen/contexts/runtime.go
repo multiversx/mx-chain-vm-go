@@ -2,6 +2,7 @@ package contexts
 
 import (
 	"fmt"
+	"time"
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -60,6 +61,8 @@ func (context *runtimeContext) InitState() {
 }
 
 func (context *runtimeContext) CreateWasmerInstance(contract []byte, gasLimit uint64) error {
+	defer arwen.TimeTrack(time.Now(), "CreateWasmerInstance")
+
 	var err error
 	context.instance, err = wasmer.NewMeteredInstance(contract, gasLimit)
 	if err != nil {

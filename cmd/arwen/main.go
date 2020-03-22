@@ -15,7 +15,7 @@ const (
 	fileDescriptorNodeToArwen       = 4
 	fileDescriptorArwenToNode       = 5
 	fileDescriptorMainLogToNode     = 6
-	fileDescriptorDialogueLogToNode = 6
+	fileDescriptorDialogueLogToNode = 7
 )
 
 func main() {

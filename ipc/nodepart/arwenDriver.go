@@ -42,6 +42,9 @@ type ArwenDriver struct {
 	dialogueLogRead  *os.File
 	dialogueLogWrite *os.File
 
+	counterDeploy uint64
+	counterCall   uint64
+
 	command *exec.Cmd
 	part    *NodePart
 }
@@ -258,7 +261,9 @@ func (driver *ArwenDriver) IsClosed() bool {
 
 // RunSmartContractCreate sends a deploy request to Arwen and waits for the output
 func (driver *ArwenDriver) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (*vmcommon.VMOutput, error) {
-	driver.driverLogger.Trace("RunSmartContractCreate")
+	driver.counterDeploy++
+
+	driver.driverLogger.Trace("RunSmartContractCreate", "counter", driver.counterDeploy)
 	driver.RestartArwenIfNecessary()
 
 	request := common.NewMessageContractDeployRequest(input)
@@ -279,7 +284,9 @@ func (driver *ArwenDriver) RunSmartContractCreate(input *vmcommon.ContractCreate
 
 // RunSmartContractCall sends an execution request to Arwen and waits for the output
 func (driver *ArwenDriver) RunSmartContractCall(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
-	driver.driverLogger.Trace("RunSmartContractCall", "sc", input.RecipientAddr)
+	driver.counterCall++
+
+	driver.driverLogger.Trace("RunSmartContractCall", "counter", driver.counterCall, "func", input.Function, "sc", input.RecipientAddr)
 	driver.RestartArwenIfNecessary()
 
 	request := common.NewMessageContractCallRequest(input)
