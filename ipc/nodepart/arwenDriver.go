@@ -80,7 +80,10 @@ func NewArwenDriver(
 func (driver *ArwenDriver) startArwen() error {
 	driver.driverLogger.Info("ArwenDriver.startArwen()")
 
-	driver.resetPipeStreams()
+	err := driver.resetPipeStreams()
+	if err != nil {
+		return err
+	}
 
 	arwenPath, err := driver.getArwenPath()
 	if err != nil {
@@ -252,24 +255,24 @@ func (driver *ArwenDriver) IsClosed() bool {
 	}
 
 	err = process.Signal(syscall.Signal(0))
-	if err != nil {
-		return true
-	}
-
-	return false
+	return err != nil
 }
 
 // RunSmartContractCreate sends a deploy request to Arwen and waits for the output
 func (driver *ArwenDriver) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (*vmcommon.VMOutput, error) {
 	driver.counterDeploy++
-
 	driver.driverLogger.Trace("RunSmartContractCreate", "counter", driver.counterDeploy)
-	driver.RestartArwenIfNecessary()
+
+	err := driver.RestartArwenIfNecessary()
+	if err != nil {
+		return nil, common.WrapCriticalError(err)
+	}
 
 	request := common.NewMessageContractDeployRequest(input)
 	response, err := driver.part.StartLoop(request)
 	if err != nil {
-		driver.stopArwen()
+		driver.driverLogger.Error("RunSmartContractCreate", "err", err)
+		_ = driver.Close()
 		return nil, common.WrapCriticalError(err)
 	}
 
@@ -285,15 +288,18 @@ func (driver *ArwenDriver) RunSmartContractCreate(input *vmcommon.ContractCreate
 // RunSmartContractCall sends an execution request to Arwen and waits for the output
 func (driver *ArwenDriver) RunSmartContractCall(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	driver.counterCall++
-
 	driver.driverLogger.Trace("RunSmartContractCall", "counter", driver.counterCall, "func", input.Function, "sc", input.RecipientAddr)
-	driver.RestartArwenIfNecessary()
+
+	err := driver.RestartArwenIfNecessary()
+	if err != nil {
+		return nil, common.WrapCriticalError(err)
+	}
 
 	request := common.NewMessageContractCallRequest(input)
 	response, err := driver.part.StartLoop(request)
 	if err != nil {
 		driver.driverLogger.Error("RunSmartContractCall", "err", err)
-		driver.stopArwen()
+		_ = driver.Close()
 		return nil, common.WrapCriticalError(err)
 	}
 
@@ -308,13 +314,16 @@ func (driver *ArwenDriver) RunSmartContractCall(input *vmcommon.ContractCallInpu
 
 // DiagnoseWait sends a diagnose message to Arwen
 func (driver *ArwenDriver) DiagnoseWait(milliseconds uint32) error {
-	driver.RestartArwenIfNecessary()
+	err := driver.RestartArwenIfNecessary()
+	if err != nil {
+		return common.WrapCriticalError(err)
+	}
 
 	request := common.NewMessageDiagnoseWaitRequest(milliseconds)
 	response, err := driver.part.StartLoop(request)
 	if err != nil {
-		driver.driverLogger.Error("RunSmartContractCall", "err", err)
-		driver.stopArwen()
+		driver.driverLogger.Error("DiagnoseWait", "err", err)
+		_ = driver.Close()
 		return common.WrapCriticalError(err)
 	}
 
@@ -325,6 +334,7 @@ func (driver *ArwenDriver) DiagnoseWait(milliseconds uint32) error {
 func (driver *ArwenDriver) Close() error {
 	err := driver.stopArwen()
 	if err != nil {
+		driver.driverLogger.Error("ArwenDriver.Close()", "err", err)
 		return err
 	}
 
@@ -333,12 +343,16 @@ func (driver *ArwenDriver) Close() error {
 
 func (driver *ArwenDriver) stopArwen() error {
 	err := driver.command.Process.Kill()
-	driver.command.Process.Wait()
 	if err != nil {
-		driver.driverLogger.Error("stopArwen error", "err", err)
+		return err
 	}
 
-	return err
+	_, err = driver.command.Process.Wait()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (driver *ArwenDriver) continuouslyCopyArwenLogs(arwenStdout io.Reader, arwenStderr io.Reader) {

@@ -79,7 +79,11 @@ func (part *ArwenPart) doLoop() error {
 		response := part.replyToNodeRequest(request)
 
 		// Successful execution, send response
-		part.Messenger.SendContractResponse(response)
+		err = part.Messenger.SendContractResponse(response)
+		if err != nil {
+			return err
+		}
+
 		part.Messenger.ResetDialogue()
 	}
 }

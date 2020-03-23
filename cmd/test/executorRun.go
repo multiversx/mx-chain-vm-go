@@ -163,7 +163,7 @@ func (te *arwenTestExecutor) Run(test *ij.Test) error {
 
 			if output.ReturnCode == vmi.Ok {
 				// subtract call value from sender (this is not reflected in the delta)
-				world.UpdateBalanceWithDelta(tx.From, big.NewInt(0).Neg(tx.Value))
+				_ = world.UpdateBalanceWithDelta(tx.From, big.NewInt(0).Neg(tx.Value))
 
 				accountsSlice := make([]*vmi.OutputAccount, len(output.OutputAccounts))
 				i := 0

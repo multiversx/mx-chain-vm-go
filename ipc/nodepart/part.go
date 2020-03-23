@@ -72,7 +72,11 @@ func (part *NodePart) noopReplier(message common.MessageHandler) common.MessageH
 func (part *NodePart) StartLoop(request common.MessageHandler) (common.MessageHandler, error) {
 	defer part.timeTrack(time.Now(), "[NODE] end of loop")
 
-	part.Messenger.SendContractRequest(request)
+	err := part.Messenger.SendContractRequest(request)
+	if err != nil {
+		return nil, err
+	}
+
 	response, err := part.doLoop()
 	if err != nil {
 		part.Logger.Error("[NODE]: end of loop", "err", err)
