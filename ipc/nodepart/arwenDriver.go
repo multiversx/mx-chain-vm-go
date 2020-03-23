@@ -369,7 +369,7 @@ func (driver *ArwenDriver) continuouslyCopyArwenLogs(arwenStdout io.Reader, arwe
 			}
 
 			line = strings.TrimSpace(line)
-			driver.arwenMainLogger.Info("ARWEN-OUT", "line", line)
+			driver.arwenMainLogger.Trace("ARWEN-OUT", "line", line)
 		}
 	}()
 
