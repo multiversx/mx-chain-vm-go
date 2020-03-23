@@ -81,7 +81,7 @@ func doContractRequest(
 			marshaling.CreateMarshalizer(marshaling.JSON),
 		)
 		assert.Nil(t, err)
-		part.StartLoop()
+		_ = part.StartLoop()
 		wg.Done()
 	}()
 
@@ -96,7 +96,7 @@ func doContractRequest(
 		)
 		assert.Nil(t, err)
 		response, responseError = part.StartLoop(request)
-		part.SendStopSignal()
+		_ = part.SendStopSignal()
 		wg.Done()
 	}()
 

@@ -26,8 +26,12 @@ func NewReceiver(reader *os.File, marshalizer marshaling.Marshalizer) *Receiver 
 // Receive receives a message, reads it from the pipe
 func (receiver *Receiver) Receive(timeout int) (MessageHandler, int, error) {
 	if timeout > 0 {
-		receiver.setReceiveDeadline(timeout)
-		defer receiver.resetReceiveDeadline()
+		err := receiver.setReceiveDeadline(timeout)
+		if err != nil {
+			return nil, 0, err
+		}
+
+		defer receiver.resetReceiveDeadlineQuietly()
 	}
 
 	length, kind, err := receiver.receiveMessageLengthAndKind()
@@ -43,14 +47,14 @@ func (receiver *Receiver) Receive(timeout int) (MessageHandler, int, error) {
 	return message, length, nil
 }
 
-func (receiver *Receiver) setReceiveDeadline(timeout int) {
+func (receiver *Receiver) setReceiveDeadline(timeout int) error {
 	duration := time.Duration(timeout) * time.Millisecond
 	future := time.Now().Add(duration)
-	receiver.reader.SetDeadline(future)
+	return receiver.reader.SetDeadline(future)
 }
 
-func (receiver *Receiver) resetReceiveDeadline() {
-	receiver.reader.SetDeadline(time.Time{})
+func (receiver *Receiver) resetReceiveDeadlineQuietly() {
+	_ = receiver.reader.SetDeadline(time.Time{})
 }
 
 func (receiver *Receiver) receiveMessageLengthAndKind() (int, MessageKind, error) {
