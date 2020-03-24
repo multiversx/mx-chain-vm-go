@@ -385,21 +385,16 @@ func (driver *ArwenDriver) continuouslyCopyArwenLogs(arwenStdout io.Reader, arwe
 		}
 	}()
 
-	go func() {
-		for {
-			err := logger.ReceiveLogThroughPipe(driver.arwenMainLogger, arwenLog, driver.logsMarshalizer)
-			if err != nil {
-				driver.driverLogger.Error("ReceiveLogThroughPipe error (arwenMainLogger)", "err", err)
-				break
-			}
-		}
-	}()
+	driver.continuouslyCopyPipeToLog(arwenLog, driver.arwenMainLogger)
+	driver.continuouslyCopyPipeToLog(dialogueLog, driver.dialogueLogger)
+}
 
+func (driver *ArwenDriver) continuouslyCopyPipeToLog(pipe *os.File, log logger.Logger) {
 	go func() {
 		for {
-			err := logger.ReceiveLogThroughPipe(driver.dialogueLogger, dialogueLog, driver.logsMarshalizer)
+			err := logger.ReceiveLogThroughPipe(log, pipe, driver.logsMarshalizer)
 			if err != nil {
-				driver.driverLogger.Error("ReceiveLogThroughPipe error (dialogueLogger)", "err", err)
+				driver.driverLogger.Error("continuouslyCopyPipeToLog error", "err", err)
 				break
 			}
 		}
