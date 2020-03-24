@@ -42,7 +42,7 @@ func (messenger *Messenger) Send(message MessageHandler) error {
 	messenger.Nonce++
 	message.SetNonce(messenger.Nonce)
 	length, err := messenger.sender.Send(message)
-	messenger.Logger.Trace(fmt.Sprintf("[%s][#%d]: SENT message", messenger.Name, message.GetNonce()), "size", length, "msg", message)
+	messenger.Logger.Trace(fmt.Sprintf("[%s][#%d]: SENT message", messenger.Name, message.GetNonce()), "size", length, "msg", message.DebugString())
 	return err
 }
 
@@ -54,7 +54,7 @@ func (messenger *Messenger) Receive(timeout int) (MessageHandler, error) {
 		return nil, err
 	}
 
-	messenger.Logger.Trace(fmt.Sprintf("[%s][#%d]: RECEIVED message", messenger.Name, message.GetNonce()), "size", length, "msg", message)
+	messenger.Logger.Trace(fmt.Sprintf("[%s][#%d]: RECEIVED message", messenger.Name, message.GetNonce()), "size", length, "msg", message.DebugString())
 	messageNonce := message.GetNonce()
 	if messageNonce != messenger.Nonce+1 {
 		return nil, ErrInvalidMessageNonce

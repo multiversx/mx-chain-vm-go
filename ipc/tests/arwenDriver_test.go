@@ -79,9 +79,14 @@ func BenchmarkArwenDriver_RestartArwenIfNecessary(b *testing.B) {
 }
 
 func newDriver(tb testing.TB, blockchain *mock.BlockchainHookStub) *nodepart.ArwenDriver {
-	nodeLogger := logger.NewDefaultLogger(logger.LogDebug)
+	driverLogger := logger.NewDefaultLogger(logger.LogDebug)
+	arwenMainLogger := logger.NewDefaultLogger(logger.LogDebug)
+	dialogueLogger := logger.NewDefaultLogger(logger.LogDebug)
+
 	driver, err := nodepart.NewArwenDriver(
-		nodeLogger,
+		driverLogger,
+		arwenMainLogger,
+		dialogueLogger,
 		blockchain,
 		common.ArwenArguments{
 			VMHostArguments: common.VMHostArguments{
@@ -89,7 +94,8 @@ func newDriver(tb testing.TB, blockchain *mock.BlockchainHookStub) *nodepart.Arw
 				BlockGasLimit: uint64(10000000),
 				GasSchedule:   config.MakeGasMap(1),
 			},
-			LogLevel: logger.LogDebug,
+			MainLogLevel:     logger.LogDebug,
+			DialogueLogLevel: logger.LogDebug,
 		},
 		nodepart.Config{MaxLoopTime: 1000},
 	)
