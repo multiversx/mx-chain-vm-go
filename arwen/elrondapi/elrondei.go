@@ -801,7 +801,8 @@ func int64getArgument(context unsafe.Pointer, id int32) int64 {
 		return -1
 	}
 
-	return bytesToInt64(args[id])
+	argBigInt := big.NewInt(0).SetBytes(args[id])
+	return argBigInt.Int64()
 }
 
 //export int64storageStore
@@ -896,11 +897,6 @@ func executeOnSameContext(
 	metering.UseGas(gasToUse)
 
 	bigIntVal := big.NewInt(0).SetBytes(value)
-	err = output.Transfer(dest, send, 0, bigIntVal, nil)
-	if err != nil {
-		return 1
-	}
-
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallerAddr:  send,
@@ -911,6 +907,11 @@ func executeOnSameContext(
 		},
 		RecipientAddr: dest,
 		Function:      function,
+	}
+
+	err = output.Transfer(dest, send, 0, bigIntVal, nil)
+	if err != nil {
+		return 1
 	}
 
 	err = host.ExecuteOnSameContext(contractCallInput)
@@ -955,21 +956,22 @@ func executeOnDestContext(
 	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
 	metering.UseGas(gasToUse)
 
-	err = output.Transfer(dest, send, 0, big.NewInt(0).SetBytes(value), nil)
-	if err != nil {
-		return 1
-	}
-
+	bigIntVal := big.NewInt(0).SetBytes(value)
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallerAddr:  send,
 			Arguments:   data,
-			CallValue:   big.NewInt(0).SetBytes(value),
+			CallValue:   bigIntVal,
 			GasPrice:    0,
 			GasProvided: metering.BoundGasLimit(gasLimit),
 		},
 		RecipientAddr: dest,
 		Function:      function,
+	}
+
+	err = output.Transfer(dest, send, 0, bigIntVal, nil)
+	if err != nil {
+		return 1
 	}
 
 	_, err = host.ExecuteOnDestContext(contractCallInput)
@@ -1080,15 +1082,6 @@ func bytesToInt32(data []byte) int32 {
 	actualLen := int32(0)
 	for i := len(data) - 1; i >= 0; i-- {
 		actualLen = (actualLen << 8) + int32(data[i])
-	}
-
-	return actualLen
-}
-
-func bytesToInt64(data []byte) int64 {
-	actualLen := int64(0)
-	for i := len(data) - 1; i >= 0; i-- {
-		actualLen = (actualLen << 8) + int64(data[i])
 	}
 
 	return actualLen

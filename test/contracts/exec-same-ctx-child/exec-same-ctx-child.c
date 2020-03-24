@@ -1,7 +1,6 @@
 #include "../elrond/context.h"
 #include "../elrond/bigInt.h"
 
-byte bla[] = "bla bla bla bla bla bla bla bla";
 byte dataA[20] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 byte dataB[20] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 byte parentKeyA[] =  "parentKeyA......................";
@@ -69,8 +68,8 @@ void childFunction() {
 		not_ok();
 		return;
 	}
-	i64 slLenA = storageLoad(parentKeyA, dataA);
-	i64 slLenB = storageLoad(parentKeyB, dataB);
+	u64 slLenA = storageLoad(parentKeyA, dataA);
+	u64 slLenB = storageLoad(parentKeyB, dataB);
 
 	finish(dataA, 11);
 

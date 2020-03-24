@@ -13,10 +13,11 @@ byte parentTransferValue[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 byte parentTransferData[] = "parentTransferData";
 
 byte executeValue[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,99};
-i32 executeArgumentsLengths[] = {32, 6};
+u32 executeArgumentsLengths[] = {32, 6};
 byte executeArgumentsData[] = "asdfoottxxwlllllllllllwrraatttttqwerty";
 
 void finishResult(int);
+u32 reverseU32(u32);
 
 void parentFunctionPrepare() {
 	storageStore(parentKeyA, parentDataA, 11);
@@ -38,7 +39,7 @@ void parentFunctionWrongCall() {
 	byte functionName[] = "childFunction";
 
 	int result = executeOnSameContext(
-			10000,
+			50000,
 			childAddress,
 			executeValue,
 			functionName,
@@ -52,7 +53,7 @@ void parentFunctionWrongCall() {
 
 void parentFunctionChildCall() {
 	parentFunctionPrepare();
-	byte childAddress[] = "secondSC........................";
+	byte childAddress[] = "childSC.........................";
 	byte functionName[] = "childFunction";
 	int result = executeOnSameContext(
 			200000,
@@ -74,10 +75,17 @@ void parentFunctionChildCall_BigInts() {
 
 	byte argumentSize = sizeof(bigInt);
 
-	bigInt arguments[] = {intA, intB, intC};
+	// All SmartContracts expect their integer arguments in Big Endian form, so
+	// we need to reverse them (we're in Little Endian here) in order to pass
+	// them to the childSC.
+	bigInt arguments[] = {
+		reverseU32(intA),
+		reverseU32(intB),
+		reverseU32(intC)
+	};
 	int argumentLengths[3] = {argumentSize, argumentSize, argumentSize};
 
-	byte childAddress[] = "secondSC........................";
+	byte childAddress[] = "childSC.........................";
 	byte functionName[] = "childFunction_BigInts";
 	int result = executeOnSameContext(
 			200000,
@@ -92,17 +100,31 @@ void parentFunctionChildCall_BigInts() {
 	finishResult(result);
 }
 
+u32 reverseU32(u32 value) {
+	u32 lastByteMask = 0x00000000000000FF;
+	u32 result = 0;
+	int size = sizeof(value);
+	for (int i = 0; i < size; i++) {
+		byte lastByte = value & lastByteMask;
+		value >>= 8;
+
+		result <<= 8;
+		result += lastByte;
+	}
+	return result;
+}
+
 void finishResult(int result) {
 	if (result == 0) {
-		byte message[] = "success";
-		finish(message, 7);
+		byte message[] = "succ";
+		finish(message, 4);
 	}
 	if (result == 1) {
-		byte message[] = "failed";
-		finish(message, 6);
+		byte message[] = "fail";
+		finish(message, 4);
 	}
 	if (result != 0 && result != 1) {
-		byte message[] = "unknown result";
-		finish(message, 14);
+		byte message[] = "unkn";
+		finish(message, 4);
 	}
 }
