@@ -1,9 +1,10 @@
 package main
 
 import (
+	"encoding/hex"
+	"fmt"
 	"math/big"
 
-	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 	worldhook "github.com/ElrondNetwork/elrond-vm-util/mock-hook-blockchain"
 
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
@@ -18,6 +19,10 @@ func convertAccount(testAcct *ij.Account) *worldhook.Account {
 		}
 		key := string(stkvp.Key)
 		storage[key] = stkvp.Value
+	}
+
+	if len(testAcct.Address) != 32 {
+		panic("bad test: account address should be 32 bytes long")
 	}
 
 	return &worldhook.Account{
@@ -41,19 +46,14 @@ func convertLogToTestFormat(outputLog *vmi.LogEntry) *ij.LogEntry {
 	return &testLog
 }
 
-func convertArgument(arg *big.Int) []byte {
-	if arg.Sign() >= 0 {
-		return arg.Bytes()
-	}
-
-	return twos.ToBytes(arg)
+func bigIntPretty(i *big.Int) string {
+	return fmt.Sprintf("0x%x (%d)", i, i)
 }
 
-var zero = big.NewInt(0)
-
-func zeroIfNil(i *big.Int) *big.Int {
-	if i == nil {
-		return zero
+func byteArrayPretty(b []byte) string {
+	if len(b) == 0 {
+		return "[]"
 	}
-	return i
+	asInt := big.NewInt(0).SetBytes(b)
+	return fmt.Sprintf("0x%s (%d)", hex.EncodeToString(b), asInt)
 }

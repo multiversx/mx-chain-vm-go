@@ -12,6 +12,7 @@ type blockchainContext struct {
 	blockChainHook vmcommon.BlockchainHook
 }
 
+// NewBlockchainContext creates a new blockchainContext
 func NewBlockchainContext(
 	host arwen.VMHost,
 	blockChainHook vmcommon.BlockchainHook,
@@ -32,7 +33,7 @@ func (context *blockchainContext) NewAddress(creatorAddress []byte) ([]byte, err
 	}
 
 	if nonce > 0 {
-		nonce -= 1
+		nonce--
 	}
 
 	vmType := context.host.Runtime().GetVMType()

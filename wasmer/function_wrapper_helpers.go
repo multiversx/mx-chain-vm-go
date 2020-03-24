@@ -168,21 +168,21 @@ func writeInt32ToWasmInputs(wasmInputs []cWasmerValueT, index int, value interfa
 	wasmInputs[index].tag = cWasmI32
 	var pointer = (*int32)(unsafe.Pointer(&wasmInputs[index].value))
 
-	switch value.(type) {
+	switch typedValue := value.(type) {
 	case int8:
-		*pointer = int32(value.(int8))
+		*pointer = int32(typedValue)
 	case uint8:
-		*pointer = int32(value.(uint8))
+		*pointer = int32(typedValue)
 	case int16:
-		*pointer = int32(value.(int16))
+		*pointer = int32(typedValue)
 	case uint16:
-		*pointer = int32(value.(uint16))
+		*pointer = int32(typedValue)
 	case int32:
-		*pointer = int32(value.(int32))
+		*pointer = int32(typedValue)
 	case int:
-		*pointer = int32(value.(int))
+		*pointer = int32(typedValue)
 	case uint:
-		*pointer = int32(value.(uint))
+		*pointer = int32(typedValue)
 	case Value:
 		var value = value.(Value)
 
@@ -202,25 +202,25 @@ func writeInt64ToWasmInputs(wasmInputs []cWasmerValueT, index int, value interfa
 	wasmInputs[index].tag = cWasmI64
 	var pointer = (*int64)(unsafe.Pointer(&wasmInputs[index].value))
 
-	switch value.(type) {
+	switch typedValue := value.(type) {
 	case int8:
-		*pointer = int64(value.(int8))
+		*pointer = int64(typedValue)
 	case uint8:
-		*pointer = int64(value.(uint8))
+		*pointer = int64(typedValue)
 	case int16:
-		*pointer = int64(value.(int16))
+		*pointer = int64(typedValue)
 	case uint16:
-		*pointer = int64(value.(uint16))
+		*pointer = int64(typedValue)
 	case int32:
-		*pointer = int64(value.(int32))
+		*pointer = int64(typedValue)
 	case uint32:
-		*pointer = int64(value.(uint32))
+		*pointer = int64(typedValue)
 	case int64:
-		*pointer = int64(value.(int64))
+		*pointer = int64(typedValue)
 	case int:
-		*pointer = int64(value.(int))
+		*pointer = int64(typedValue)
 	case uint:
-		*pointer = int64(value.(uint))
+		*pointer = int64(typedValue)
 	case Value:
 		var value = value.(Value)
 
@@ -240,11 +240,11 @@ func writeFloat32ToWasmInputs(wasmInputs []cWasmerValueT, index int, value inter
 	wasmInputs[index].tag = cWasmF32
 	var pointer = (*float32)(unsafe.Pointer(&wasmInputs[index].value))
 
-	switch value.(type) {
+	switch typedValue := value.(type) {
 	case float32:
-		*pointer = value.(float32)
+		*pointer = typedValue
 	case Value:
-		var value = value.(Value)
+		var value = typedValue
 
 		if value.GetType() != TypeF32 {
 			return NewExportedFunctionError(exportedFunctionName, fmt.Sprintf("Argument #%d of the `%%s` exported function must be of type `f32`, cannot cast given value to this type.", index+1))
@@ -262,13 +262,13 @@ func writeFloat64ToWasmInputs(wasmInputs []cWasmerValueT, index int, value inter
 	wasmInputs[index].tag = cWasmF64
 	var pointer = (*float64)(unsafe.Pointer(&wasmInputs[index].value))
 
-	switch value.(type) {
+	switch typedValue := value.(type) {
 	case float32:
-		*pointer = float64(value.(float32))
+		*pointer = float64(typedValue)
 	case float64:
-		*pointer = value.(float64)
+		*pointer = typedValue
 	case Value:
-		var value = value.(Value)
+		var value = typedValue
 
 		if value.GetType() != TypeF64 {
 			return NewExportedFunctionError(exportedFunctionName, fmt.Sprintf("Argument #%d of the `%%s` exported function must be of type `f64`, cannot cast given value to this type.", index+1))

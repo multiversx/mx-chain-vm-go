@@ -155,7 +155,7 @@ func (host *vmHost) computeDataLengthFromArguments(function string, arguments []
 			continue
 		}
 		if i != 0 && dataLength > 0 {
-			dataLength += 1
+			dataLength++
 		}
 		dataLength += len(element)
 	}

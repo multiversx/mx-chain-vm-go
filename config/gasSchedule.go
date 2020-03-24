@@ -1,7 +1,6 @@
 package config
 
 import (
-	"errors"
 	"fmt"
 	"reflect"
 
@@ -96,7 +95,7 @@ func checkForZeroUint64Fields(arg interface{}) error {
 		}
 		if field.Uint() == 0 {
 			name := v.Type().Field(i).Name
-			return errors.New(fmt.Sprintf("Gas cost for operation %s has been set to 0 or is not set.", name))
+			return fmt.Errorf("Gas cost for operation %s has been set to 0 or is not set.", name)
 		}
 	}
 
@@ -223,20 +222,38 @@ func FillGasMap_EthereumAPICosts(value uint64) map[string]uint64 {
 func FillGasMap_BigIntAPICosts(value uint64) map[string]uint64 {
 	gasMap := make(map[string]uint64)
 	gasMap["BigIntNew"] = value
-	gasMap["BigIntByteLength"] = value
-	gasMap["BigIntGetBytes"] = value
-	gasMap["BigIntSetBytes"] = value
+	gasMap["BigIntUnsignedByteLength"] = value
+	gasMap["BigIntSignedByteLength"] = value
+	gasMap["BigIntGetUnsignedBytes"] = value
+	gasMap["BigIntGetSignedBytes"] = value
+	gasMap["BigIntSetUnsignedBytes"] = value
+	gasMap["BigIntSetSignedBytes"] = value
 	gasMap["BigIntIsInt64"] = value
 	gasMap["BigIntGetInt64"] = value
 	gasMap["BigIntSetInt64"] = value
 	gasMap["BigIntAdd"] = value
 	gasMap["BigIntSub"] = value
 	gasMap["BigIntMul"] = value
+	gasMap["BigIntTDiv"] = value
+	gasMap["BigIntTMod"] = value
+	gasMap["BigIntEDiv"] = value
+	gasMap["BigIntEMod"] = value
+	gasMap["BigIntAbs"] = value
+	gasMap["BigIntNeg"] = value
+	gasMap["BigIntSign"] = value
 	gasMap["BigIntCmp"] = value
-	gasMap["BigIntFinish"] = value
-	gasMap["BigIntStorageLoad"] = value
-	gasMap["BigIntStorageStore"] = value
-	gasMap["BigIntGetArgument"] = value
+	gasMap["BigIntNot"] = value
+	gasMap["BigIntAnd"] = value
+	gasMap["BigIntOr"] = value
+	gasMap["BigIntXor"] = value
+	gasMap["BigIntShr"] = value
+	gasMap["BigIntShl"] = value
+	gasMap["BigIntFinishUnsigned"] = value
+	gasMap["BigIntFinishSigned"] = value
+	gasMap["BigIntStorageLoadUnsigned"] = value
+	gasMap["BigIntStorageStoreUnsigned"] = value
+	gasMap["BigIntGetUnsignedArgument"] = value
+	gasMap["BigIntGetSignedArgument"] = value
 	gasMap["BigIntGetCallValue"] = value
 	gasMap["BigIntGetExternalBalance"] = value
 

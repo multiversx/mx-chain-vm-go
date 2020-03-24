@@ -60,7 +60,7 @@ func TestExecution_DeployNewAddressErr(t *testing.T) {
 	stubBlockchainHook.NewAddressCalled = func(creatorAddress []byte, nonce uint64, vmType []byte) ([]byte, error) {
 		require.Equal(t, input.CallerAddr, creatorAddress)
 		require.Equal(t, uint64(0), nonce)
-		require.Equal(t, defaultVmType, vmType)
+		require.Equal(t, defaultVMType, vmType)
 		return nil, errNewAddress
 	}
 
@@ -159,7 +159,7 @@ func TestExecution_ManyDeployments(t *testing.T) {
 		return ownerNonce, nil
 	}
 	stubBlockchainHook.NewAddressCalled = func(creatorAddress []byte, nonce uint64, vmType []byte) ([]byte, error) {
-		ownerNonce += 1
+		ownerNonce++
 		return []byte(newAddress + " " + string(ownerNonce)), nil
 	}
 
@@ -492,11 +492,11 @@ func expectedVMOutputs(id string) *vmcommon.VMOutput {
 		AddFinishData(expectedVMOutput, childFinish)
 		AddFinishData(expectedVMOutput, parentDataA)
 		for _, c := range parentDataA {
-			AddFinishData(expectedVMOutput, []byte{byte(c)})
+			AddFinishData(expectedVMOutput, []byte{c})
 		}
 		AddFinishData(expectedVMOutput, parentDataB)
 		for _, c := range parentDataB {
-			AddFinishData(expectedVMOutput, []byte{byte(c)})
+			AddFinishData(expectedVMOutput, []byte{c})
 		}
 		AddFinishData(expectedVMOutput, []byte("child ok"))
 		AddFinishData(expectedVMOutput, []byte("success"))

@@ -44,7 +44,7 @@ func NewExportedFunctionError(functionName string, message string) *ExportedFunc
 // ExportedFunctionError is an actual error. The `Error` function
 // returns the error message.
 func (error *ExportedFunctionError) Error() string {
-	return fmt.Sprintf(error.message, error.functionName)
+	return error.message
 }
 
 type ExportedFunctionCallback func(...interface{}) (Value, error)
@@ -137,7 +137,7 @@ func newInstance(c_instance *cWasmerInstanceT) (*Instance, error) {
 	var emptyInstance = &Instance{instance: nil, Exports: nil, Memory: nil}
 
 	var wasmExports *cWasmerExportsT
-	var hasMemory = false
+	var hasMemory bool
 
 	cWasmerInstanceExports(c_instance, &wasmExports)
 	defer cWasmerExportsDestroy(wasmExports)
@@ -152,7 +152,7 @@ func newInstance(c_instance *cWasmerInstanceT) (*Instance, error) {
 		return emptyInstance, err
 	}
 
-	if hasMemory == false {
+	if !hasMemory {
 		return &Instance{instance: c_instance, Exports: exports, Memory: nil}, nil
 	}
 

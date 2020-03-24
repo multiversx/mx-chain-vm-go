@@ -1,4 +1,4 @@
-.PHONY: test build clean
+.PHONY: test build build-arwen clean
 
 clean:
 	go clean -cache -testcache
@@ -6,5 +6,9 @@ clean:
 build:
 	go build ./...
 
-test:
+build-arwen:
+	go build -o ./cmd/arwen/arwen ./cmd/arwen
+	cp ./cmd/arwen/arwen ./ipc/tests
+
+test: clean build-arwen
 	go test -count=1 ./...
