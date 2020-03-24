@@ -75,7 +75,7 @@ void parentFunctionChildCall_BigInts() {
 	byte argumentSize = sizeof(bigInt);
 
 	bigInt arguments[] = {intA, intB, intC};
-	byte argumentLengths[3] = {argumentSize, argumentSize, argumentSize};
+	int argumentLengths[3] = {argumentSize, argumentSize, argumentSize};
 
 	byte childAddress[] = "secondSC........................";
 	byte functionName[] = "childFunction_BigInts";
@@ -86,7 +86,7 @@ void parentFunctionChildCall_BigInts() {
 			functionName,
 			21,
 			3,
-			argumentLengths,
+			(byte*)argumentLengths,
 			(byte*)arguments
 	);
 	finishResult(result);

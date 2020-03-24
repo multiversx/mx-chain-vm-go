@@ -393,9 +393,7 @@ func TestExecution_ExecuteOnSameContext(t *testing.T) {
 
 	vmOutput, err = host.RunSmartContractCall(input)
 	require.Nil(t, err)
-	fmt.Println("what")
 	expectedVMOutput = expectedVMOutputs("ExecuteOnSameContext_ChildCall_BigInts")
-	fmt.Println("where")
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
@@ -448,10 +446,12 @@ func expectedVMOutputs(id string) *vmcommon.VMOutput {
 	childAddress := secondAddress
 	wrongAddress := []byte("wrongSC.........................")
 
+	baseGasRemaining := uint64(980098)
+
 	if id == "ExecuteOnSameContext_Prepare" {
 		expectedVMOutput := MakeVMOutput()
 		expectedVMOutput.ReturnCode = vmcommon.Ok
-		expectedVMOutput.GasRemaining = 997760
+		expectedVMOutput.GasRemaining = baseGasRemaining + 17658
 		AddFinishData(expectedVMOutput, parentFinishA)
 		AddFinishData(expectedVMOutput, parentFinishB)
 		AddFinishData(expectedVMOutput, []byte("success"))
@@ -476,7 +476,7 @@ func expectedVMOutputs(id string) *vmcommon.VMOutput {
 	if id == "ExecuteOnSameContext_WrongCall" {
 		expectedVMOutput := expectedVMOutputs("ExecuteOnSameContext_Prepare")
 		AddFinishData(expectedVMOutput, []byte("failed"))
-		expectedVMOutput.GasRemaining = 987634
+		expectedVMOutput.GasRemaining = baseGasRemaining + 7532
 		parentAccount := expectedVMOutput.OutputAccounts[string(parentAddress)]
 		parentAccount.BalanceDelta = big.NewInt(-141)
 		_ = AddNewOutputAccount(
@@ -500,7 +500,7 @@ func expectedVMOutputs(id string) *vmcommon.VMOutput {
 		}
 		AddFinishData(expectedVMOutput, []byte("child ok"))
 		AddFinishData(expectedVMOutput, []byte("success"))
-		expectedVMOutput.GasRemaining = 994177
+		expectedVMOutput.GasRemaining = baseGasRemaining + 14075
 		parentAccount := expectedVMOutput.OutputAccounts[string(parentAddress)]
 		parentAccount.BalanceDelta = big.NewInt(-141)
 		childAccount := AddNewOutputAccount(
@@ -525,32 +525,21 @@ func expectedVMOutputs(id string) *vmcommon.VMOutput {
 		expectedVMOutput.ReturnCode = vmcommon.Ok
 		AddFinishData(expectedVMOutput, []byte("child ok"))
 		AddFinishData(expectedVMOutput, []byte("success"))
-		expectedVMOutput.GasRemaining = 995621
-		fmt.Println("what2")
+		expectedVMOutput.GasRemaining = baseGasRemaining + 14547
 		parentAccount := AddNewOutputAccount(
 			expectedVMOutput,
 			parentAddress,
 			-parentTransferValue,
 			nil,
 		)
-		parentAccount.BalanceDelta = big.NewInt(-141)
-		childAccount := AddNewOutputAccount(
-			expectedVMOutput,
-			childAddress,
-			3,
-			nil,
-		)
-		fmt.Println("what3")
-		childAccount.Balance = big.NewInt(0)
-		SetStorageUpdate(parentAccount, childKey, childData)
+		parentAccount.Balance = big.NewInt(1000)
+		parentAccount.BalanceDelta = big.NewInt(-99)
 		_ = AddNewOutputAccount(
 			expectedVMOutput,
-			childTransferReceiver,
-			96,
-			[]byte("qwerty"),
+			childAddress,
+			99,
+			nil,
 		)
-
-		fmt.Println("what4")
 		return expectedVMOutput
 	}
 	if id == "Nil" {
