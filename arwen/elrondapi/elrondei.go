@@ -801,8 +801,7 @@ func int64getArgument(context unsafe.Pointer, id int32) int64 {
 		return -1
 	}
 
-	argBigInt := big.NewInt(0).SetBytes(args[id])
-	return argBigInt.Int64()
+	return bytesToInt64(args[id])
 }
 
 //export int64storageStore
@@ -1004,7 +1003,7 @@ func getArgumentsFromMemory(
 
 	for i := int32(0); i < numArguments; i++ {
 		currArgLenData := argumentsLengthData[i*4 : i*4+4]
-		actualLen := dataToInt32(currArgLenData)
+		actualLen := bytesToInt32(currArgLenData)
 
 		data[i], err = runtime.MemLoad(currOffset, actualLen)
 		if arwen.WithFault(err, context, false) {
@@ -1077,10 +1076,19 @@ func delegateExecution(
 	return 0
 }
 
-func dataToInt32(data []byte) int32 {
+func bytesToInt32(data []byte) int32 {
 	actualLen := int32(0)
 	for i := len(data) - 1; i >= 0; i-- {
 		actualLen = (actualLen << 8) + int32(data[i])
+	}
+
+	return actualLen
+}
+
+func bytesToInt64(data []byte) int64 {
+	actualLen := int64(0)
+	for i := len(data) - 1; i >= 0; i-- {
+		actualLen = (actualLen << 8) + int64(data[i])
 	}
 
 	return actualLen
