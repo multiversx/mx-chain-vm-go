@@ -5,7 +5,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 type StateStack interface {
@@ -103,7 +103,7 @@ type RuntimeContext interface {
 	MemStore(offset int32, data []byte) error
 	MemLoad(offset int32, length int32) ([]byte, error)
 	CleanInstance()
-	SetInstanceContextId(id int)
+	SetInstanceContextID(id int)
 	ElrondAPIErrorShouldFailExecution() bool
 	CryptoAPIErrorShouldFailExecution() bool
 	BigIntAPIErrorShouldFailExecution() bool
