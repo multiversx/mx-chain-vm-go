@@ -291,15 +291,16 @@ func TestExecution_Call_Successful(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, vmOutput)
 	require.Len(t, vmOutput.OutputAccounts, 1)
-	require.Len(t, vmOutput.OutputAccounts["smartcontract"].StorageUpdates, 1)
+	require.Len(t, vmOutput.OutputAccounts[string(parentAddress)].StorageUpdates, 1)
 
-	storedBytes := vmOutput.OutputAccounts["smartcontract"].StorageUpdates[string(counterKey)].Data
+	storedBytes := vmOutput.OutputAccounts[string(parentAddress)].StorageUpdates[string(counterKey)].Data
 	require.Equal(t, big.NewInt(1002).Bytes(), storedBytes)
 }
 
 func TestExecution_ExecuteOnSameContext_Simple(t *testing.T) {
 	parentCode := GetTestSCCode("exec-same-ctx-simple-parent", "../../")
 	childCode := GetTestSCCode("exec-same-ctx-simple-child", "../../")
+
 	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
 	input := DefaultTestContractCallInput()
 	input.CallerAddr = []byte("user")
@@ -371,7 +372,7 @@ func TestExecution_ExecuteOnSameContext_Prepare(t *testing.T) {
 	fmt.Println(vmOutput.ReturnMessage)
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 
-	expectedVMOutput := expectedVMOutputs("Prepare")
+	expectedVMOutput := expectedVMOutput_Prepare()
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
@@ -398,7 +399,7 @@ func TestExecution_ExecuteOnSameContext_Wrong(t *testing.T) {
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
-	expectedVMOutput := expectedVMOutputs("ExecuteOnSameContext_WrongCall")
+	expectedVMOutput := expectedVMOutput_WrongContractCalled()
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
@@ -408,6 +409,7 @@ func TestExecution_ExecuteOnSameContext_OutOfGas(t *testing.T) {
 
 func TestExecution_ExecuteOnSameContext_Successful(t *testing.T) {
 	parentCode := GetTestSCCode("exec-same-ctx-parent", "../../")
+	childCode := GetTestSCCode("exec-same-ctx-child", "../../")
 	parentSCBalance := big.NewInt(1000)
 
 	getBalanceCalled := func(address []byte) (*big.Int, error) {
@@ -420,7 +422,6 @@ func TestExecution_ExecuteOnSameContext_Successful(t *testing.T) {
 
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using executeOnSameContext().
-	childCode := GetTestSCCode("exec-same-ctx-child", "../../")
 	host, stubBlockchainHook := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
 	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
 	input := DefaultTestContractCallInput()
@@ -431,13 +432,14 @@ func TestExecution_ExecuteOnSameContext_Successful(t *testing.T) {
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
-	expectedVMOutput := expectedVMOutputs("ExecuteOnSameContext_ChildCall")
+	expectedVMOutput := expectedVMOutput_SuccessfulChildCall_SameCtx()
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
 func TestExecution_ExecuteOnSameContext_Successful_BigInts(t *testing.T) {
 	parentCode := GetTestSCCode("exec-same-ctx-parent", "../../")
 	parentSCBalance := big.NewInt(1000)
+	childCode := GetTestSCCode("exec-same-ctx-child", "../../")
 
 	getBalanceCalled := func(address []byte) (*big.Int, error) {
 		if bytes.Equal(parentAddress, address) {
@@ -449,7 +451,6 @@ func TestExecution_ExecuteOnSameContext_Successful_BigInts(t *testing.T) {
 	// Call parentFunctionChildCall_BigInts() of the parent SC, which will call a
 	// method of the child SC that takes some big Int references as arguments and
 	// produce a new big Int out of the arguments.
-	childCode := GetTestSCCode("exec-same-ctx-child", "../../")
 	host, stubBlockchainHook := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
 	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
 	input := DefaultTestContractCallInput()
@@ -460,7 +461,7 @@ func TestExecution_ExecuteOnSameContext_Successful_BigInts(t *testing.T) {
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
-	expectedVMOutput := expectedVMOutputs("ExecuteOnSameContext_ChildCall_BigInts")
+	expectedVMOutput := expectedVMOutput_SuccessfulChildCall_BigInts_SameCtx()
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
@@ -492,7 +493,7 @@ func TestExecution_ExecuteOnDestContext_Prepare(t *testing.T) {
 	fmt.Println(vmOutput.ReturnMessage)
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 
-	expectedVMOutput := expectedVMOutputs("Prepare")
+	expectedVMOutput := expectedVMOutput_Prepare()
 	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
@@ -520,7 +521,7 @@ func TestExecution_ExecuteOnDestContext_Wrong(t *testing.T) {
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
-	expectedVMOutput := expectedVMOutputs("ExecuteOnSameContext_WrongCall")
+	expectedVMOutput := expectedVMOutput_WrongContractCalled()
 	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
@@ -529,174 +530,31 @@ func TestExecution_ExecuteOnDestContext_OutOfGas(t *testing.T) {
 	// TODO
 }
 
-func expectedVMOutputs(id string) *vmcommon.VMOutput {
-	parentKeyA := []byte("parentKeyA......................")
-	parentKeyB := []byte("parentKeyB......................")
-	childKey := []byte("childKey........................")
-	parentDataA := []byte("parentDataA")
-	parentDataB := []byte("parentDataB")
-	childData := []byte("childData")
-	parentFinishA := []byte("parentFinishA")
-	parentFinishB := []byte("parentFinishB")
-	childFinish := []byte("childFinish")
-	parentTransferReceiver := []byte("parentTransferReceiver..........")
-	childTransferReceiver := []byte("asdfoottxxwlllllllllllwrraattttt")
-	parentTransferValue := int64(42)
-	parentTransferData := []byte("parentTransferData")
+func TestExecution_ExecuteOnDestContext_Successful(t *testing.T) {
+	parentCode := GetTestSCCode("exec-dest-ctx-parent", "../../")
+	childCode := GetTestSCCode("exec-dest-ctx-child", "../../")
+	parentSCBalance := big.NewInt(1000)
 
-	childAddress := childAddress
-
-	gasProvided := uint64(1000000)
-	parentCompilationCost := uint64(2282)
-	childCompilationCost := uint64(3020)
-
-	if id == "Prepare" {
-		expectedVMOutput := MakeVMOutput()
-		expectedVMOutput.ReturnCode = vmcommon.Ok
-
-		expectedExecutionCost := uint64(135)
-		gas := gasProvided
-		gas -= parentCompilationCost
-		gas -= expectedExecutionCost
-		expectedVMOutput.GasRemaining = gas
-
-		AddFinishData(expectedVMOutput, parentFinishA)
-		AddFinishData(expectedVMOutput, parentFinishB)
-		AddFinishData(expectedVMOutput, []byte("succ"))
-		parentAccount := AddNewOutputAccount(
-			expectedVMOutput,
-			parentAddress,
-			-parentTransferValue,
-			nil,
-		)
-		parentAccount.Balance = big.NewInt(1000)
-		SetStorageUpdate(parentAccount, parentKeyA, parentDataA)
-		SetStorageUpdate(parentAccount, parentKeyB, parentDataB)
-		_ = AddNewOutputAccount(
-			expectedVMOutput,
-			parentTransferReceiver,
-			parentTransferValue,
-			parentTransferData,
-		)
-
-		return expectedVMOutput
-	}
-	if id == "ExecuteOnSameContext_WrongCall" {
-		expectedVMOutput := expectedVMOutputs("Prepare")
-		AddFinishData(expectedVMOutput, []byte("fail"))
-
-		executionCostBeforeExecuteAPI := uint64(180)
-		executeAPICost := uint64(39)
-		gasLostOnFailure := uint64(50000)
-		finalCost := uint64(44)
-		gas := gasProvided
-		gas -= parentCompilationCost
-		gas -= executionCostBeforeExecuteAPI
-		gas -= executeAPICost
-		gas -= gasLostOnFailure
-		gas -= finalCost
-		expectedVMOutput.GasRemaining = gas
-		_ = AddNewOutputAccount(
-			expectedVMOutput,
-			[]byte("wrongSC........................."),
-			99,
-			nil,
-		)
-		parentAccount := expectedVMOutput.OutputAccounts[string(parentAddress)]
-		parentAccount.BalanceDelta = big.NewInt(-141)
-
-		return expectedVMOutput
-	}
-	if id == "ExecuteOnSameContext_ChildCall" {
-		expectedVMOutput := expectedVMOutputs("Prepare")
-		AddFinishData(expectedVMOutput, childFinish)
-		AddFinishData(expectedVMOutput, parentDataA)
-		for _, c := range parentDataA {
-			AddFinishData(expectedVMOutput, []byte{c})
+	getBalanceCalled := func(address []byte) (*big.Int, error) {
+		if bytes.Equal(parentAddress, address) {
+			return parentSCBalance, nil
 		}
-		AddFinishData(expectedVMOutput, parentDataB)
-		for _, c := range parentDataB {
-			AddFinishData(expectedVMOutput, []byte{c})
-		}
-		AddFinishData(expectedVMOutput, []byte("child ok"))
-		AddFinishData(expectedVMOutput, []byte("succ"))
 
-		parentGasBeforeExecuteAPI := uint64(188)
-		executeAPICost := uint64(39)
-		childExecutionCost := uint64(441)
-		finalCost := uint64(36)
-		gas := gasProvided
-		gas -= parentCompilationCost
-		gas -= parentGasBeforeExecuteAPI
-		gas -= executeAPICost
-		gas -= childCompilationCost
-		gas -= childExecutionCost
-		gas -= finalCost
-		expectedVMOutput.GasRemaining = gas
-		parentAccount := expectedVMOutput.OutputAccounts[string(parentAddress)]
-		parentAccount.BalanceDelta = big.NewInt(-141)
-		childAccount := AddNewOutputAccount(
-			expectedVMOutput,
-			childAddress,
-			3,
-			nil,
-		)
-		childAccount.Balance = big.NewInt(0)
-		SetStorageUpdate(parentAccount, childKey, childData)
-		_ = AddNewOutputAccount(
-			expectedVMOutput,
-			childTransferReceiver,
-			96,
-			[]byte("qwerty"),
-		)
-
-		return expectedVMOutput
-	}
-	if id == "ExecuteOnSameContext_ChildCall_BigInts" {
-		expectedVMOutput := MakeVMOutput()
-		expectedVMOutput.ReturnCode = vmcommon.Ok
-		AddFinishData(expectedVMOutput, []byte("child ok"))
-		AddFinishData(expectedVMOutput, []byte("succ"))
-
-		parentGasBeforeExecuteAPI := uint64(143)
-		executeAPICost := uint64(13)
-		childExecutionCost := uint64(90)
-		finalCost := uint64(36)
-		gas := gasProvided
-		gas -= parentCompilationCost
-		gas -= parentGasBeforeExecuteAPI
-		gas -= executeAPICost
-		gas -= childCompilationCost
-		gas -= childExecutionCost
-		gas -= finalCost
-		expectedVMOutput.GasRemaining = gas
-
-		parentAccount := AddNewOutputAccount(
-			expectedVMOutput,
-			parentAddress,
-			-parentTransferValue,
-			nil,
-		)
-		parentAccount.Balance = big.NewInt(1000)
-		parentAccount.BalanceDelta = big.NewInt(-99)
-		_ = AddNewOutputAccount(
-			expectedVMOutput,
-			childAddress,
-			99,
-			nil,
-		)
-		return expectedVMOutput
-	}
-	if id == "Nil" {
-		expectedVMOutput := MakeVMOutput()
-		expectedVMOutput.GasRemaining = 0
-		expectedVMOutput.ReturnData = nil
-		expectedVMOutput.OutputAccounts = nil
-		expectedVMOutput.TouchedAccounts = nil
-		expectedVMOutput.DeletedAccounts = nil
-		expectedVMOutput.Logs = nil
-		return expectedVMOutput
+		return big.NewInt(0), nil
 	}
 
-	return nil
+	// Call parentFunctionChildCall() of the parent SC, which will call the child
+	// SC and pass some arguments using executeOnDestContext().
+	host, stubBlockchainHook := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
+	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
+	input := DefaultTestContractCallInput()
+	input.CallerAddr = []byte("user")
+	input.RecipientAddr = parentAddress
+	input.Function = "parentFunctionChildCall"
+	input.GasProvided = 1000000
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	expectedVMOutput := expectedVMOutput_SuccessfulChildCall_DestCtx()
+	require.Equal(t, expectedVMOutput, vmOutput)
 }

@@ -12,3 +12,6 @@ build-arwen:
 
 test: clean build-arwen
 	go test -count=1 ./...
+
+test-serial: clean build-arwen
+	go test -count=1 -p 1 ./...
