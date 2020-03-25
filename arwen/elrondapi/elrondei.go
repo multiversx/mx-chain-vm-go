@@ -429,8 +429,8 @@ func asyncCall(context unsafe.Pointer, destOffset int32, valueOffset int32, data
 	// is in the same shard with the caller or not. This will be later resolved
 	// in the handler for BreakpointAsyncCall.
 	err = output.Transfer(calledSCAddress, callingSCAddress, gasLimit, big.NewInt(0).SetBytes(value), data)
-	if err != nil {
-		arwen.WithFault(err, context, true)
+	if arwen.WithFault(err, context, true) {
+		return
 	}
 
 	runtime.SetAsyncCallInfo(&arwen.AsyncCallInfo{
