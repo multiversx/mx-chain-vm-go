@@ -7,13 +7,13 @@ import (
 )
 
 func TestReservedFunctions_IsFunctionReserved(t *testing.T) {
-	reserved := NewReservedFunctions()
+	reserved := NewReservedFunctions([]string{})
 
 	require.False(t, reserved.IsReserved("foo"))
 	require.True(t, reserved.IsReserved("claimDeveloperRewards"))
 }
 
 func TestReservedFunctions_GetReserved(t *testing.T) {
-	reserved := NewReservedFunctions()
+	reserved := NewReservedFunctions([]string{})
 	require.ElementsMatch(t, []string{"claimDeveloperRewards"}, reserved.GetReserved())
 }

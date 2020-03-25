@@ -14,9 +14,9 @@ type WASMValidator struct {
 }
 
 // NewWASMValidator creates a new WASMValidator
-func NewWASMValidator() *WASMValidator {
+func NewWASMValidator(scAPINames []string) *WASMValidator {
 	return &WASMValidator{
-		reserved: NewReservedFunctions(),
+		reserved: NewReservedFunctions(scAPINames),
 	}
 }
 
@@ -28,14 +28,42 @@ func (validator *WASMValidator) verifyMemoryDeclaration(instance *wasmer.Instanc
 	return nil
 }
 
-func (validator *WASMValidator) verifyFunctionsNames(instance *wasmer.Instance) error {
+func (validator *WASMValidator) verifyFunctions(instance *wasmer.Instance) error {
 	for functionName := range instance.Exports {
 		if !validator.isValidFunctionName(functionName) {
 			return fmt.Errorf("%w: %s", arwen.ErrInvalidFunctionName, functionName)
 		}
+
+		if !validator.isVoidFunction(instance, functionName) {
+			return fmt.Errorf("%w: %s", arwen.ErrFunctionNonvoidSignature, functionName)
+		}
 	}
 
 	return nil
+}
+
+func (validator *WASMValidator) isVoidFunction(instance *wasmer.Instance, functionName string) bool {
+	inArity := validator.getInputArity(instance, functionName)
+	outArity := validator.getOutputArity(instance, functionName)
+
+	isVoid := (inArity == 0 && outArity == 0)
+	return isVoid
+}
+
+func (validator *WASMValidator) getInputArity(instance *wasmer.Instance, functionName string) int {
+	signature, ok := instance.Signatures[functionName]
+	if !ok {
+		return -1
+	}
+	return signature.InputArity
+}
+
+func (validator *WASMValidator) getOutputArity(instance *wasmer.Instance, functionName string) int {
+	signature, ok := instance.Signatures[functionName]
+	if !ok {
+		return -1
+	}
+	return signature.OutputArity
 }
 
 func (validator *WASMValidator) isValidFunctionName(functionName string) bool {

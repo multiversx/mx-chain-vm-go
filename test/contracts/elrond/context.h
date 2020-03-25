@@ -10,6 +10,7 @@ long long getGasLeft();
 void finish(byte *data, int length);
 void int64finish(long long value);
 void writeLog(byte *pointer, int length, byte *topicPtr, int numTopics);
+void asyncCall(byte *destination, byte *value, byte *data, int length);
 void signalError(byte *message, int length);
 
 int executeOnSameContext(long long gas, byte *address, byte *value, byte *function, int functionLength, int numArguments, byte *argumentsLengths, byte *arguments);

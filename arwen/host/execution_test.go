@@ -124,7 +124,21 @@ func TestExecution_DeployWASM_WrongInit(t *testing.T) {
 	vmOutput, err := host.RunSmartContractCreate(input)
 	require.Nil(t, err)
 	require.NotNil(t, vmOutput)
-	require.Equal(t, vmcommon.FunctionWrongSignature, vmOutput.ReturnCode)
+	require.Equal(t, vmcommon.ContractInvalid, vmOutput.ReturnCode)
+}
+
+func TestExecution_DeployWASM_WrongMethods(t *testing.T) {
+	t.Parallel()
+
+	newAddress := []byte("new smartcontract")
+	host := DefaultTestArwenForDeployment(t, 24, newAddress)
+	input := DefaultTestContractCreateInput()
+	input.GasProvided = 1000
+	input.ContractCode = GetTestSCCode("signatures", "../../")
+	vmOutput, err := host.RunSmartContractCreate(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.ContractInvalid, vmOutput.ReturnCode)
 }
 
 func TestExecution_DeployWASM_Successful(t *testing.T) {

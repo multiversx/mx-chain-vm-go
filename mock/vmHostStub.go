@@ -2,6 +2,7 @@ package mock
 
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -24,6 +25,7 @@ type VmHostStub struct {
 	ExecuteOnSameContextCalled func(input *vmcommon.ContractCallInput) error
 	ExecuteOnDestContextCalled func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
 	EthereumCallDataCalled     func() []byte
+	GetAPIMethodsCalled        func() *wasmer.Imports
 }
 
 func (vhs *VmHostStub) InitState() {
@@ -123,6 +125,13 @@ func (vhs *VmHostStub) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (
 func (vhs *VmHostStub) EthereumCallData() []byte {
 	if vhs.EthereumCallDataCalled != nil {
 		return vhs.EthereumCallDataCalled()
+	}
+	return nil
+}
+
+func (vhs *VmHostStub) GetAPIMethods() *wasmer.Imports {
+	if vhs.GetAPIMethodsCalled != nil {
+		return vhs.GetAPIMethodsCalled()
 	}
 	return nil
 }

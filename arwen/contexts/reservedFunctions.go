@@ -6,12 +6,17 @@ type ReservedFunctions struct {
 }
 
 // NewReservedFunctions creates a new ReservedFunctions
-func NewReservedFunctions() *ReservedFunctions {
+func NewReservedFunctions(scAPINames []string) *ReservedFunctions {
 	result := &ReservedFunctions{
 		functionNames: make(map[string]interface{}),
 	}
 
 	result.functionNames["claimDeveloperRewards"] = nil
+
+	for _, name := range scAPINames {
+		result.functionNames[name] = nil
+	}
+
 	return result
 }
 
