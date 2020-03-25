@@ -248,21 +248,21 @@ func (b *BlockchainHookMock) UpdateAccounts(outputAccounts map[string]*vmcommon.
 		account, exists := b.Accounts[strAddress]
 		if !exists {
 			account = &Account{
-				Exists:  true,
 				Address: outputAccount.Address,
-				Balance: big.NewInt(0).Set(outputAccount.BalanceDelta),
-				Code:    outputAccount.Code,
+				Balance: big.NewInt(0),
+				Code:    nil,
 				Storage: make(map[string][]byte),
+				Nonce:   0,
 			}
-		} else {
-			account.Exists = true
-			if outputAccount.Nonce > account.Nonce {
-				account.Nonce = outputAccount.Nonce
-			}
-			account.Balance.Add(account.Balance, outputAccount.BalanceDelta)
-			if len(outputAccount.Code) > 0 {
-				account.Code = outputAccount.Code
-			}
+		}
+
+		account.Exists = true
+		if outputAccount.Nonce > account.Nonce {
+			account.Nonce = outputAccount.Nonce
+		}
+		account.Balance.Add(account.Balance, outputAccount.BalanceDelta)
+		if len(outputAccount.Code) > 0 {
+			account.Code = outputAccount.Code
 		}
 
 		mergeStorageUpdates(account, outputAccount)

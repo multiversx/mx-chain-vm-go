@@ -69,7 +69,7 @@ func deploy(tb testing.TB, totalTokenSupply *big.Int) (*vmHost, *mock.Blockchain
 	mockBlockchainHook.AddAccount(&mock.Account{
 		Address: owner,
 		Nonce:   1024,
-		Balance: big.NewInt(88000),
+		Balance: big.NewInt(0),
 	})
 
 	gasMap, err := LoadGasScheduleConfig("../../test/gasSchedule.toml")
@@ -106,22 +106,32 @@ func deploy(tb testing.TB, totalTokenSupply *big.Int) (*vmHost, *mock.Blockchain
 }
 
 func verifyTransfers(tb testing.TB, mockBlockchainHook *mock.BlockchainHookMock, totalTokenSupply *big.Int) {
-	ownerKey := string([]byte{
-		1, 0, 'o', 'w', 'n', 'e', 'r', 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-	})
-	receiverKey := string([]byte{
-		1, 0, 'r', 'e', 'c', 'e', 'i', 'v',
-		'e', 'r', 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0,
-	})
+	ownerKey := createERC20Key("owner")
+	receiverKey := createERC20Key("receiver")
 
 	scStorage := mockBlockchainHook.Accounts[string(scAddress)].Storage
 	ownerTokens := big.NewInt(0).SetBytes(scStorage[ownerKey])
 	receiverTokens := big.NewInt(0).SetBytes(scStorage[receiverKey])
 	require.Equal(tb, arwen.Zero, ownerTokens)
 	require.Equal(tb, totalTokenSupply, receiverTokens)
+}
+
+func createERC20Key(accountName string) string {
+	keyLength := 32
+	key := make([]byte, keyLength)
+	key[0] = 1
+	key[1] = 0
+	i := 2
+	for _, c := range accountName {
+		key[i] = byte(c)
+		i++
+		if i == keyLength {
+			break
+		}
+	}
+	for q := i; q < keyLength; q++ {
+		key[q] = 0
+	}
+
+	return string(key)
 }
