@@ -24,8 +24,8 @@ void didCallerPay() {
 	bigIntGetCallValue(bigInt_payment);
 
 	long long payment = bigIntGetInt64(bigInt_payment);
-	if (payment != 33) {
-		byte message[] = "child execution requires tx value of 33";
+	if (payment != 99) {
+		byte message[] = "child execution requires tx value of 99";
 		signalError(message, 39);
 	}
 }
