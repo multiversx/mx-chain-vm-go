@@ -11,10 +11,11 @@ import (
 )
 
 const (
-	fileDescriptorArwenInit   = 3
-	fileDescriptorNodeToArwen = 4
-	fileDescriptorArwenToNode = 5
-	fileDescriptorLogToNode   = 6
+	fileDescriptorArwenInit         = 3
+	fileDescriptorNodeToArwen       = 4
+	fileDescriptorArwenToNode       = 5
+	fileDescriptorMainLogToNode     = 6
+	fileDescriptorDialogueLogToNode = 7
 )
 
 func main() {
@@ -42,9 +43,14 @@ func doMain() (int, string) {
 		return common.ErrCodeCannotCreateFile, "Cannot get pipe file: [arwenToNodeFile]"
 	}
 
-	logToNodeFile := getPipeFile(fileDescriptorLogToNode)
-	if logToNodeFile == nil {
-		return common.ErrCodeCannotCreateFile, "Cannot get pipe file: [logToNodeFile]"
+	mainLogToNodeFile := getPipeFile(fileDescriptorMainLogToNode)
+	if mainLogToNodeFile == nil {
+		return common.ErrCodeCannotCreateFile, "Cannot get pipe file: [mainLogToNodeFile]"
+	}
+
+	dialogueLogToNodeFile := getPipeFile(fileDescriptorDialogueLogToNode)
+	if dialogueLogToNodeFile == nil {
+		return common.ErrCodeCannotCreateFile, "Cannot get pipe file: [dialogueLogToNodeFile]"
 	}
 
 	arwenArguments, err := common.GetArwenArguments(arwenInitFile)
@@ -54,10 +60,12 @@ func doMain() (int, string) {
 
 	messagesMarshalizer := marshaling.CreateMarshalizer(arwenArguments.MessagesMarshalizer)
 	logsMarshalizer := marshaling.CreateMarshalizer(arwenArguments.LogsMarshalizer)
-	arwenLogger := logger.NewPipeLogger(arwenArguments.LogLevel, logToNodeFile, logsMarshalizer)
+	mainLogger := logger.NewPipeLogger(arwenArguments.MainLogLevel, mainLogToNodeFile, logsMarshalizer)
+	dialogueLogger := logger.NewPipeLogger(arwenArguments.DialogueLogLevel, dialogueLogToNodeFile, logsMarshalizer)
 
 	part, err := arwenpart.NewArwenPart(
-		arwenLogger,
+		mainLogger,
+		dialogueLogger,
 		nodeToArwenFile,
 		arwenToNodeFile,
 		&arwenArguments.VMHostArguments,
