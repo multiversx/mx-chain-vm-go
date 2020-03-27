@@ -1,5 +1,7 @@
 package contexts
 
+import "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+
 // ReservedFunctions holds the reserved function names
 type ReservedFunctions struct {
 	functionNames map[string]interface{}
@@ -12,6 +14,7 @@ func NewReservedFunctions() *ReservedFunctions {
 	}
 
 	result.functionNames["claimDeveloperRewards"] = nil
+	result.functionNames[arwen.UpgradeFunctionName] = nil
 	return result
 }
 

@@ -195,7 +195,11 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 }
 
 func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
-	try := func() {
+	tryUpgrade := func() {
+		vmOutput = host.doRunSmartContractUpgrade(input)
+	}
+
+	tryCall := func() {
 		vmOutput = host.doRunSmartContractCall(input)
 	}
 
@@ -203,7 +207,12 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 		err = caught
 	}
 
-	TryCatch(try, catch, "arwen.RunSmartContractCall")
+	isUpgrade := input.Function == arwen.UpgradeFunctionName
+	if isUpgrade {
+		TryCatch(tryUpgrade, catch, "arwen.RunSmartContractUpgrade")
+	} else {
+		TryCatch(tryCall, catch, "arwen.RunSmartContractCall")
+	}
 	return
 }
 

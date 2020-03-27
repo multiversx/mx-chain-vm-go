@@ -144,6 +144,76 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	return vmOutput
 }
 
+// TODO: Remove duplication
+// TODO: Add test
+func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput) {
+	host.ClearStateStack()
+	host.InitState()
+
+	runtime := host.Runtime()
+	metering := host.Metering()
+	output := host.Output()
+	storage := host.Storage()
+
+	var err error
+	defer func() {
+		if err != nil {
+			var message string
+			if err == arwen.ErrSignalError {
+				message = output.ReturnMessage()
+			} else {
+				message = err.Error()
+			}
+			vmOutput = output.CreateVMOutputInCaseOfError(output.ReturnCode(), message)
+		}
+	}()
+
+	address := input.RecipientAddr
+	contractCode := input.Arguments[0]
+
+	runtime.SetVMInput(&input.VMInput)
+	runtime.SetSCAddress(address)
+	output.AddTxValueToAccount(address, input.CallValue)
+	storage.SetAddress(runtime.GetSCAddress())
+
+	err = metering.DeductInitialGasForDirectUpgrade(input)
+	if err != nil {
+		output.SetReturnCode(vmcommon.OutOfGas)
+		return vmOutput
+	}
+
+	vmInput := runtime.GetVMInput()
+	err = runtime.CreateWasmerInstance(contractCode, vmInput.GasProvided)
+	if err != nil {
+		output.SetReturnCode(vmcommon.ContractInvalid)
+		return vmOutput
+	}
+
+	err = runtime.VerifyContractCode()
+	if err != nil {
+		output.SetReturnCode(vmcommon.ContractInvalid)
+		return vmOutput
+	}
+
+	idContext := arwen.AddHostContext(host)
+	runtime.SetInstanceContextID(idContext)
+	defer func() {
+		runtime.CleanInstance()
+		arwen.RemoveHostContext(idContext)
+	}()
+
+	err = host.callInitFunction()
+	if err != nil {
+		output.SetReturnCode(vmcommon.FunctionWrongSignature)
+		return vmOutput
+	}
+
+	output.DeployCode(address, contractCode)
+	vmOutput = output.GetVMOutput()
+
+	return vmOutput
+}
+
 func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	host.PushState()
 	defer host.PopState()
@@ -179,6 +249,12 @@ func (host *vmHost) isInitFunctionBeingCalled() bool {
 	return functionName == arwen.InitFunctionName || functionName == arwen.InitFunctionNameEth
 }
 
+func (host *vmHost) isUpgradeFunctionBeingCalled() bool {
+	functionName := host.Runtime().Function()
+	return functionName == arwen.UpgradeFunctionName
+}
+
+// TODO: Rename to RunSmartContractDeployIndirect?
 func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error) {
 	runtime := host.Runtime()
 	blockchain := host.Blockchain()
@@ -260,6 +336,7 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]by
 	return address, nil
 }
 
+// TODO: Rename this. Only called from within a contract, correct?
 func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 	runtime := host.Runtime()
 	metering := host.Metering()
@@ -272,6 +349,10 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 
 	if host.isInitFunctionBeingCalled() {
 		return arwen.ErrInitFuncCalledInRun
+	}
+
+	if host.isUpgradeFunctionBeingCalled() {
+		// TODO:
 	}
 
 	contract, err := host.Blockchain().GetCode(runtime.GetSCAddress())

@@ -151,6 +151,8 @@ type MeteringContext interface {
 	DeductInitialGasForExecution(contract []byte) error
 	DeductInitialGasForDirectDeployment(input *vmcommon.ContractCreateInput) error
 	DeductInitialGasForIndirectDeployment(input *vmcommon.ContractCreateInput) error
+	DeductInitialGasForDirectUpgrade(input *vmcommon.ContractCallInput) error
+	DeductInitialGasForIndirectUpgrade(input *vmcommon.ContractCallInput) error
 	UnlockGasIfAsyncStep()
 }
 

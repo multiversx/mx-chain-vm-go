@@ -141,6 +141,24 @@ func (context *meteringContext) DeductInitialGasForIndirectDeployment(input *vmc
 	)
 }
 
+// DeductInitialGasForDirectUpgrade deducts gas for the upgrade of a contract initiated by a Transaction
+func (context *meteringContext) DeductInitialGasForDirectUpgrade(input *vmcommon.ContractCallInput) error {
+	// TODO: Refactor
+	// TODO: vmcommon.ContractUpgradeInput?
+	contractCode := input.Arguments[0]
+
+	return context.deductInitialGas(
+		contractCode,
+		context.gasSchedule.ElrondAPICost.CreateContract,
+		context.gasSchedule.BaseOperationCost.StorePerByte,
+	)
+}
+
+// DeductInitialGasForIndirectUpgrade deducts gas for the upgrade of a contract initiated by another SmartContract
+func (context *meteringContext) DeductInitialGasForIndirectUpgrade(input *vmcommon.ContractCallInput) error {
+	panic("DeductInitialGasForIndirectUpgrade")
+}
+
 func (context *meteringContext) deductInitialGas(
 	code []byte,
 	baseCost uint64,
