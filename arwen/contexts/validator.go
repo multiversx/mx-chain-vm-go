@@ -57,6 +57,7 @@ func (validator *WASMValidator) isValidFunctionName(functionName string) bool {
 	return true
 }
 
+// TODO: Add more constraints (too loose currently)
 func isASCIIString(input string) bool {
 	for i := 0; i < len(input); i++ {
 		if input[i] > unicode.MaxASCII {
