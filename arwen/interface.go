@@ -17,13 +17,10 @@ type StateStack interface {
 
 // ArgumentsParser defines the functionality to parse transaction data into arguments and code for smart contracts
 type ArgumentsParser interface {
-	GetArguments() ([][]byte, error)
-	GetCode() ([]byte, error)
+	GetFunctionArguments() ([][]byte, error)
+	GetConstructorArguments() ([][]byte, error)
 	GetFunction() (string, error)
 	ParseData(data string) error
-
-	CreateDataFromStorageUpdate(storageUpdates []*vmcommon.StorageUpdate) string
-	GetStorageUpdates(data string) ([]*vmcommon.StorageUpdate, error)
 	IsInterfaceNil() bool
 }
 

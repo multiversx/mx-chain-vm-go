@@ -79,7 +79,7 @@ func (host *vmHost) createDestinationContractCallInput() (*vmcommon.ContractCall
 		return nil, err
 	}
 
-	arguments, err := argParser.GetArguments()
+	arguments, err := argParser.GetFunctionArguments()
 	if err != nil {
 		return nil, err
 	}
