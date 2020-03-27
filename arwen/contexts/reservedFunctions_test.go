@@ -12,11 +12,12 @@ func TestReservedFunctions_IsFunctionReserved(t *testing.T) {
 
 	require.False(t, reserved.IsReserved("foo"))
 	require.True(t, reserved.IsReserved("claimDeveloperRewards"))
+	require.True(t, reserved.IsReserved("callBack"))
 	require.True(t, reserved.IsReserved(arwen.UpgradeFunctionName))
 }
 
 func TestReservedFunctions_GetReserved(t *testing.T) {
 	reserved := NewReservedFunctions()
-	actualReserved := []string{"claimDeveloperRewards", arwen.UpgradeFunctionName}
+	actualReserved := []string{"claimDeveloperRewards", "callBack", arwen.UpgradeFunctionName}
 	require.ElementsMatch(t, actualReserved, reserved.GetReserved())
 }

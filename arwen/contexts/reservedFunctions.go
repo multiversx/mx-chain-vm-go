@@ -13,7 +13,9 @@ func NewReservedFunctions() *ReservedFunctions {
 		functionNames: make(map[string]interface{}),
 	}
 
+	// TODO: Move to vmCommon. Don't use New, use init().
 	result.functionNames["claimDeveloperRewards"] = nil
+	result.functionNames["callBack"] = nil
 	result.functionNames[arwen.UpgradeFunctionName] = nil
 	return result
 }
