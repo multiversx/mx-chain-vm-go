@@ -246,11 +246,13 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) erro
 	return err
 }
 
+// TODO: Move to vmCommon.
 func (host *vmHost) isInitFunctionBeingCalled() bool {
 	functionName := host.Runtime().Function()
 	return functionName == arwen.InitFunctionName || functionName == arwen.InitFunctionNameEth
 }
 
+// TODO: Move to vmCommon.
 func (host *vmHost) isUpgradeFunctionBeingCalled() bool {
 	functionName := host.Runtime().Function()
 	return functionName == arwen.UpgradeFunctionName
