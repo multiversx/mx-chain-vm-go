@@ -182,9 +182,10 @@ func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 	return context.outputState
 }
 
-func (context *outputContext) DeployCode(address []byte, code []byte) {
-	newSCAcc, _ := context.GetOutputAccount(address)
-	newSCAcc.Code = code
+func (context *outputContext) DeployCode(address []byte, code []byte, codeMetadata []byte) {
+	newSCAccount, _ := context.GetOutputAccount(address)
+	newSCAccount.Code = code
+	newSCAccount.CodeMetadata = codeMetadata
 }
 
 func (context *outputContext) CreateVMOutputInCaseOfError(errCode vmcommon.ReturnCode, message string) *vmcommon.VMOutput {

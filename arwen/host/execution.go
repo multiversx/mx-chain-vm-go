@@ -71,7 +71,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 		return vmOutput
 	}
 
-	output.DeployCode(address, input.ContractCode)
+	output.DeployCode(address, input.ContractCode, input.ContractCodeMetadata)
 	vmOutput = output.GetVMOutput()
 
 	return vmOutput
@@ -169,7 +169,9 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 	}()
 
 	address := input.RecipientAddr
+	// TODO: Refactor
 	contractCode := input.Arguments[0]
+	contractCodeMetadata := input.Arguments[1]
 
 	runtime.SetVMInput(&input.VMInput)
 	runtime.SetSCAddress(address)
@@ -208,7 +210,7 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 		return vmOutput
 	}
 
-	output.DeployCode(address, contractCode)
+	output.DeployCode(address, contractCode, contractCodeMetadata)
 	vmOutput = output.GetVMOutput()
 
 	return vmOutput
@@ -324,7 +326,7 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]by
 		return nil, err
 	}
 
-	output.DeployCode(address, input.ContractCode)
+	output.DeployCode(address, input.ContractCode, input.ContractCodeMetadata)
 
 	gasToRestoreToCaller := metering.GasLeft()
 

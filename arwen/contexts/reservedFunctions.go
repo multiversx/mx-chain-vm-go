@@ -15,7 +15,7 @@ func NewReservedFunctions() *ReservedFunctions {
 
 	// TODO: Move to vmCommon. Don't use New, use init().
 	result.functionNames["claimDeveloperRewards"] = nil
-	result.functionNames["callBack"] = nil
+	// TODO: "callBack"?
 	result.functionNames[arwen.UpgradeFunctionName] = nil
 	return result
 }
