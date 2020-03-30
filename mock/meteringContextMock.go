@@ -81,10 +81,3 @@ func (m *MeteringContextMock) DeductInitialGasForDirectUpgrade(input *vmcommon.C
 	}
 	return nil
 }
-
-func (m *MeteringContextMock) DeductInitialGasForIndirectUpgrade(input *vmcommon.ContractCallInput) error {
-	if m.Err != nil {
-		return m.Err
-	}
-	return nil
-}
