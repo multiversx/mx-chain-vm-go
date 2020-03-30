@@ -144,8 +144,6 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	return vmOutput
 }
 
-// TODO: Remove duplication
-// TODO: Add test
 func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput) {
 	host.ClearStateStack()
 	host.InitState()
@@ -169,9 +167,18 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 	}()
 
 	address := input.RecipientAddr
-	// TODO: Refactor
-	contractCode := input.Arguments[0]
-	contractCodeMetadata := input.Arguments[1]
+
+	contractCode, err := input.GetCodeUpgrade()
+	if err != nil {
+		output.SetReturnCode(vmcommon.UpgradeFailed)
+		return vmOutput
+	}
+
+	contractCodeMetadata, err := input.GetCodeMetadataUpgrade()
+	if err != nil {
+		output.SetReturnCode(vmcommon.UpgradeFailed)
+		return vmOutput
+	}
 
 	runtime.SetVMInput(&input.VMInput)
 	runtime.SetSCAddress(address)
@@ -246,19 +253,16 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) erro
 	return err
 }
 
-// TODO: Move to vmCommon.
 func (host *vmHost) isInitFunctionBeingCalled() bool {
 	functionName := host.Runtime().Function()
 	return functionName == arwen.InitFunctionName || functionName == arwen.InitFunctionNameEth
 }
 
-// TODO: Move to vmCommon.
 func (host *vmHost) isUpgradeFunctionBeingCalled() bool {
 	functionName := host.Runtime().Function()
 	return functionName == arwen.UpgradeFunctionName
 }
 
-// TODO: Rename to RunSmartContractDeployIndirect?
 func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error) {
 	runtime := host.Runtime()
 	blockchain := host.Blockchain()
@@ -340,7 +344,6 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]by
 	return address, nil
 }
 
-// TODO: Rename this. Only called from within a contract, correct?
 func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 	runtime := host.Runtime()
 	metering := host.Metering()
@@ -356,7 +359,7 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 	}
 
 	if host.isUpgradeFunctionBeingCalled() {
-		// TODO:
+		return arwen.ErrUpgradeFuncCalledInExecute
 	}
 
 	contract, err := host.Blockchain().GetCode(runtime.GetSCAddress())
