@@ -54,7 +54,10 @@ func TestOutputContext_PushPopState(t *testing.T) {
 	outputContext.PushState()
 	outputContext.InitState()
 	require.Equal(t, 1, len(outputContext.stateStack))
-	require.Equal(t, 0, len(outputContext.outputState.OutputAccounts))
+
+	// outputContext.InitState() does not clear the vmOutput if the state stack
+	// already contains vmOutputs.
+	require.Equal(t, 1, len(outputContext.outputState.OutputAccounts))
 
 	outputContext.PopState()
 	account, isNew = outputContext.GetOutputAccount(address)
@@ -169,7 +172,7 @@ func TestOutputContext_MergeCompleteAccounts(t *testing.T) {
 		Address:        []byte("addr2"),
 		Nonce:          2,
 		Balance:        big.NewInt(2000),
-		BalanceDelta:   big.NewInt(30000),
+		BalanceDelta:   big.NewInt(20000),
 		StorageUpdates: map[string]*vmcommon.StorageUpdate{"key": {Data: []byte("data"), Offset: []byte("offset")}},
 		Code:           []byte("code2"),
 		Data:           []byte("data2"),

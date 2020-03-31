@@ -26,7 +26,21 @@ func NewOutputContext(host arwen.VMHost) (*outputContext, error) {
 }
 
 func (context *outputContext) InitState() {
-	context.outputState = newVMOutput()
+	newState := newVMOutput()
+
+	// If there is a vmOutput on top of the stack when initializing, use it as a
+	// starting point instead of a blank vmOutput. This is needed by
+	// ExecuteOnDestContext(). The starting state must be censored first, because
+	// it was created in a prior execution, the results of which must be hidden
+	// from ExecuteOnDestContext().
+	stateStackLen := len(context.stateStack)
+	if stateStackLen > 0 {
+		topState := context.stateStack[stateStackLen-1]
+		mergeVMOutputs(newState, topState)
+		censorVMOutput(newState)
+	}
+
+	context.outputState = newState
 }
 
 func newVMOutput() *vmcommon.VMOutput {
@@ -234,7 +248,7 @@ func mergeOutputAccounts(
 		leftAccount.BalanceDelta = big.NewInt(0)
 	}
 	if rightAccount.BalanceDelta != nil {
-		leftAccount.BalanceDelta = big.NewInt(0).Add(leftAccount.BalanceDelta, rightAccount.BalanceDelta)
+		leftAccount.BalanceDelta = rightAccount.BalanceDelta
 	}
 	if len(rightAccount.Code) > 0 {
 		leftAccount.Code = rightAccount.Code
@@ -256,5 +270,18 @@ func mergeStorageUpdates(
 	}
 	for key, update := range rightAccount.StorageUpdates {
 		leftAccount.StorageUpdates[key] = update
+	}
+}
+
+func censorVMOutput(vmOutput *vmcommon.VMOutput) {
+	vmOutput.ReturnData = make([][]byte, 0)
+	vmOutput.ReturnCode = vmcommon.Ok
+	vmOutput.ReturnMessage = ""
+	vmOutput.GasRemaining = 0
+	vmOutput.GasRefund = big.NewInt(0)
+	vmOutput.Logs = make([]*vmcommon.LogEntry, 0)
+
+	for _, account := range vmOutput.OutputAccounts {
+		account.StorageUpdates = make(map[string]*vmcommon.StorageUpdate)
 	}
 }

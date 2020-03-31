@@ -21,8 +21,6 @@ var parentTransferValue = int64(42)
 var parentTransferData = []byte("parentTransferData")
 
 var gasProvided = uint64(1000000)
-var parentCompilationCost = uint64(2282)
-var childCompilationCost = uint64(3020)
 
 func expectedVMOutput_Prepare() *vmcommon.VMOutput {
 	expectedVMOutput := MakeVMOutput()
@@ -50,6 +48,7 @@ func expectedVMOutput_Prepare() *vmcommon.VMOutput {
 	AddFinishData(expectedVMOutput, parentFinishB)
 	AddFinishData(expectedVMOutput, []byte("succ"))
 
+	parentCompilationCost := uint64(2282)
 	expectedExecutionCost := uint64(135)
 	gas := gasProvided
 	gas -= parentCompilationCost
@@ -74,6 +73,7 @@ func expectedVMOutput_WrongContractCalled() *vmcommon.VMOutput {
 
 	AddFinishData(expectedVMOutput, []byte("fail"))
 
+	parentCompilationCost := uint64(2282)
 	executionCostBeforeExecuteAPI := uint64(180)
 	executeAPICost := uint64(39)
 	gasLostOnFailure := uint64(50000)
@@ -127,6 +127,8 @@ func expectedVMOutput_SuccessfulChildCall_SameCtx() *vmcommon.VMOutput {
 	AddFinishData(expectedVMOutput, []byte("child ok"))
 	AddFinishData(expectedVMOutput, []byte("succ"))
 
+	parentCompilationCost := uint64(2282)
+	childCompilationCost := uint64(3020)
 	parentGasBeforeExecuteAPI := uint64(188)
 	executeAPICost := uint64(39)
 	childExecutionCost := uint64(441)
@@ -168,6 +170,8 @@ func expectedVMOutput_SuccessfulChildCall_BigInts_SameCtx() *vmcommon.VMOutput {
 	AddFinishData(expectedVMOutput, []byte("child ok"))
 	AddFinishData(expectedVMOutput, []byte("succ"))
 
+	parentCompilationCost := uint64(2282)
+	childCompilationCost := uint64(3020)
 	parentGasBeforeExecuteAPI := uint64(143)
 	executeAPICost := uint64(13)
 	childExecutionCost := uint64(90)
@@ -187,12 +191,12 @@ func expectedVMOutput_SuccessfulChildCall_DestCtx() *vmcommon.VMOutput {
 	expectedVMOutput := expectedVMOutput_Prepare()
 
 	parentAccount := expectedVMOutput.OutputAccounts[string(parentAddress)]
-	parentAccount.BalanceDelta = big.NewInt(-75)
+	parentAccount.BalanceDelta = big.NewInt(-141)
 
 	childAccount := AddNewOutputAccount(
 		expectedVMOutput,
 		childAddress,
-		33,
+		99-12,
 		nil,
 	)
 	childAccount.Balance = big.NewInt(0)
@@ -209,5 +213,19 @@ func expectedVMOutput_SuccessfulChildCall_DestCtx() *vmcommon.VMOutput {
 	AddFinishData(expectedVMOutput, childFinish)
 	AddFinishData(expectedVMOutput, []byte("succ"))
 
+	parentCompilationCost := uint64(1673)
+	childCompilationCost := uint64(893)
+	parentGasBeforeExecuteAPI := uint64(188)
+	executeAPICost := uint64(42)
+	childExecutionCost := uint64(88)
+	finalCost := uint64(36)
+	gas := gasProvided
+	gas -= parentCompilationCost
+	gas -= parentGasBeforeExecuteAPI
+	gas -= executeAPICost
+	gas -= childCompilationCost
+	gas -= childExecutionCost
+	gas -= finalCost
+	expectedVMOutput.GasRemaining = gas
 	return expectedVMOutput
 }
