@@ -7,6 +7,8 @@ import (
 
 var ErrInitFuncCalledInRun = errors.New("it is not allowed to call init in run")
 
+var ErrCallBackFuncCalledInRun = errors.New("it is not allowed to call callBack in run")
+
 var ErrFunctionRunError = errors.New("function run error")
 
 var ErrFunctionNonvoidSignature = errors.New("function signature not void")

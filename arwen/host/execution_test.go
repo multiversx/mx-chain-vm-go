@@ -248,13 +248,21 @@ func TestExecution_CallSCMethod(t *testing.T) {
 	input := DefaultTestContractCallInput()
 	input.GasProvided = 100000
 
-	// Calling init() is forbidden
+	// Calling init() directly is forbidden
 	input.Function = "init"
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
 	require.NotNil(t, vmOutput)
 	require.Equal(t, vmcommon.UserError, vmOutput.ReturnCode)
 	require.Equal(t, arwen.ErrInitFuncCalledInRun.Error(), vmOutput.ReturnMessage)
+
+	// Calling callBack() directly is forbidden
+	input.Function = "callBack"
+	vmOutput, err = host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.UserError, vmOutput.ReturnCode)
+	require.Equal(t, arwen.ErrCallBackFuncCalledInRun.Error(), vmOutput.ReturnMessage)
 
 	// Handle calling a missing function
 	input.Function = "wrong"

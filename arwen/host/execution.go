@@ -131,9 +131,9 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 		arwen.RemoveHostContext(idContext)
 	}()
 
-	err = host.callSCMethod()
-
+	returnCode, err := host.callSCMethod()
 	if err != nil {
+		output.SetReturnCode(returnCode)
 		return vmOutput
 	}
 
@@ -346,19 +346,17 @@ func (host *vmHost) callInitFunction() error {
 	return nil
 }
 
-func (host *vmHost) callSCMethod() error {
-	output := host.Output()
-	if host.isInitFunctionBeingCalled() {
-		output.SetReturnCode(vmcommon.UserError)
-		return arwen.ErrInitFuncCalledInRun
-	}
-
+func (host *vmHost) callSCMethod() (vmcommon.ReturnCode, error) {
 	runtime := host.Runtime()
+
+	err := host.verifyAllowedFunctionCall()
+	if err != nil {
+		return vmcommon.UserError, err
+	}
 
 	function, err := runtime.GetFunctionToCall()
 	if err != nil {
-		output.SetReturnCode(vmcommon.FunctionNotFound)
-		return err
+		return vmcommon.FunctionNotFound, err
 	}
 
 	_, err = function()
@@ -370,19 +368,38 @@ func (host *vmHost) callSCMethod() error {
 	}
 
 	if err != nil {
+		var returnCode vmcommon.ReturnCode
 		switch err {
 		case arwen.ErrSignalError:
-			output.SetReturnCode(vmcommon.UserError)
+			returnCode = vmcommon.UserError
 		case arwen.ErrNotEnoughGas:
-			output.SetReturnCode(vmcommon.OutOfGas)
+			returnCode = vmcommon.OutOfGas
 		default:
-			output.SetReturnCode(vmcommon.ExecutionFailed)
+			returnCode = vmcommon.ExecutionFailed
 		}
 
-		return err
+		return returnCode, err
 	}
 
-	return err
+	return vmcommon.Ok, nil
+}
+
+func (host *vmHost) verifyAllowedFunctionCall() error {
+	runtime := host.Runtime()
+	functionName := runtime.Function()
+
+	isInit := functionName == arwen.InitFunctionName || functionName == arwen.InitFunctionNameEth
+	if isInit {
+		return arwen.ErrInitFuncCalledInRun
+	}
+
+	isCallBack := functionName == arwen.CallBackFunctionName
+	isInAsyncCallBack := runtime.GetVMInput().CallType == vmcommon.AsynchronousCallBack
+	if isCallBack && !isInAsyncCallBack {
+		return arwen.ErrCallBackFuncCalledInRun
+	}
+
+	return nil
 }
 
 // The first four bytes is the method selector. The rest of the input data are method arguments in chunks of 32 bytes.
