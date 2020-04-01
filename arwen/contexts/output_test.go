@@ -45,29 +45,59 @@ func TestOutputContext_PushPopState(t *testing.T) {
 	host := &mock.VmHostStub{}
 	outputContext, _ := NewOutputContext(host)
 
-	address := []byte("address")
-	account, isNew := outputContext.GetOutputAccount(address)
+	address1 := []byte("address1")
+	address2 := []byte("address2")
+
+	// Create an account with nonce 99 on the active state.
+	account, isNew := outputContext.GetOutputAccount(address1)
+	account.Nonce = 99
 	require.True(t, isNew)
 	require.Equal(t, 1, len(outputContext.outputState.OutputAccounts))
 
-	account.Nonce = 99
+	// Copy active state onto the stack.
 	outputContext.PushState()
+	require.Equal(t, 1, len(outputContext.stateStack))
+
+	// Clear the active state and create a new account with the same address as
+	// the previous; the new account must not have nonce 99.
 	outputContext.InitState()
-	require.Equal(t, 1, len(outputContext.stateStack))
-
-	// outputContext.InitState() does not clear the vmOutput if the state stack
-	// already contains vmOutputs.
+	account, isNew = outputContext.GetOutputAccount(address1)
+	require.True(t, isNew)
 	require.Equal(t, 1, len(outputContext.outputState.OutputAccounts))
+	require.Equal(t, uint64(0), account.Nonce)
 
-	outputContext.PopState()
-	account, isNew = outputContext.GetOutputAccount(address)
+	account.Nonce = 84
+
+	// Copy active state onto the stack, then create a new account with nonce 42.
+	outputContext.PushState()
+	require.Equal(t, 2, len(outputContext.stateStack))
+
+	account, isNew = outputContext.GetOutputAccount(address2)
+	account.Nonce = 42
+	require.True(t, isNew)
+	require.Equal(t, 2, len(outputContext.outputState.OutputAccounts))
+
+	// Revert to the previous state: account with nonce 42 is lost, and the
+	// account with "address1" has nonce 84.
+	outputContext.PopSetActiveState()
+	account, isNew = outputContext.GetOutputAccount(address1)
 	require.False(t, isNew)
-	require.Equal(t, uint64(99), account.Nonce)
+	require.Equal(t, uint64(84), account.Nonce)
 	require.Equal(t, 1, len(outputContext.outputState.OutputAccounts))
-	require.Equal(t, 0, len(outputContext.stateStack))
+	require.Equal(t, 1, len(outputContext.stateStack))
 
 	outputContext.PushState()
+	require.Equal(t, 2, len(outputContext.stateStack))
+
+	outputContext.PopDiscard()
 	require.Equal(t, 1, len(outputContext.stateStack))
+
+	account, isNew = outputContext.GetOutputAccount(address1)
+	require.False(t, isNew)
+	require.Equal(t, uint64(84), account.Nonce)
+	require.Equal(t, 1, len(outputContext.outputState.OutputAccounts))
+	require.Equal(t, 1, len(outputContext.stateStack))
+
 	outputContext.ClearStateStack()
 	require.Equal(t, 0, len(outputContext.stateStack))
 }

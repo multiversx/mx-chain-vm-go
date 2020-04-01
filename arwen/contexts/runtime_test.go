@@ -212,7 +212,11 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 	runtimeContext.SetVMInput(nil)
 	runtimeContext.SetReadOnly(true)
 
-	runtimeContext.PopState()
+	require.Equal(t, []byte("dummy"), runtimeContext.GetSCAddress())
+	require.Nil(t, runtimeContext.GetVMInput())
+	require.True(t, runtimeContext.ReadOnly())
+
+	runtimeContext.PopSetActiveState()
 
 	//check state was restored correctly
 	require.Equal(t, scAddress, runtimeContext.GetSCAddress())
@@ -223,6 +227,13 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 
 	runtimeContext.PushState()
 	require.Equal(t, 1, len(runtimeContext.stateStack))
+
+	runtimeContext.PushState()
+	require.Equal(t, 2, len(runtimeContext.stateStack))
+
+	runtimeContext.PopDiscard()
+	require.Equal(t, 1, len(runtimeContext.stateStack))
+
 	runtimeContext.ClearStateStack()
 	require.Equal(t, 0, len(runtimeContext.stateStack))
 }

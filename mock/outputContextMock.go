@@ -64,6 +64,12 @@ func (o *OutputContextMock) PopDiscard() {
 func (o *OutputContextMock) ClearStateStack() {
 }
 
+func (o *OutputContextMock) CopyTopOfStackToActiveState() {
+}
+
+func (o *OutputContextMock) CensorVMOutput() {
+}
+
 func (o *OutputContextMock) GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool) {
 	return o.OutputAccountMock, o.OutputAccountIsNew
 }

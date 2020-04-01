@@ -16,6 +16,8 @@ type OutputContextStub struct {
 	PopMergeActiveStateCalled         func()
 	PopDiscardCalled                  func()
 	ClearStateStackCalled             func()
+	CopyTopOfStackToActiveStateCalled func()
+	CensorVMOutputCalled              func()
 	GetOutputAccountCalled            func(address []byte) (*vmcommon.OutputAccount, bool)
 	WriteLogCalled                    func(address []byte, topics [][]byte, data []byte)
 	TransferCalled                    func(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte) error
@@ -68,6 +70,18 @@ func (o *OutputContextStub) PopDiscard() {
 func (o *OutputContextStub) ClearStateStack() {
 	if o.ClearStateStackCalled != nil {
 		o.ClearStateStackCalled()
+	}
+}
+
+func (o *OutputContextStub) CopyTopOfStackToActiveState() {
+	if o.CopyTopOfStackToActiveStateCalled != nil {
+		o.CopyTopOfStackToActiveStateCalled()
+	}
+}
+
+func (o *OutputContextStub) CensorVMOutput() {
+	if o.CensorVMOutputCalled != nil {
+		o.CensorVMOutputCalled()
 	}
 }
 

@@ -26,21 +26,7 @@ func NewOutputContext(host arwen.VMHost) (*outputContext, error) {
 }
 
 func (context *outputContext) InitState() {
-	newState := newVMOutput()
-
-	// If there is a vmOutput on top of the stack when initializing, use it as a
-	// starting point instead of a blank vmOutput. This is needed by
-	// ExecuteOnDestContext(). The starting state must be censored first, because
-	// it was created in a prior execution, the results of which must be hidden
-	// from ExecuteOnDestContext().
-	stateStackLen := len(context.stateStack)
-	if stateStackLen > 0 {
-		topState := context.stateStack[stateStackLen-1]
-		mergeVMOutputs(newState, topState)
-		censorVMOutput(newState)
-	}
-
-	context.outputState = newState
+	context.outputState = newVMOutput()
 }
 
 func newVMOutput() *vmcommon.VMOutput {
@@ -103,6 +89,28 @@ func (context *outputContext) PopDiscard() {
 
 func (context *outputContext) ClearStateStack() {
 	context.stateStack = make([]*vmcommon.VMOutput, 0)
+}
+
+func (context *outputContext) CopyTopOfStackToActiveState() {
+	stateStackLen := len(context.stateStack)
+	topState := context.stateStack[stateStackLen-1]
+
+	newState := newVMOutput()
+	mergeVMOutputs(newState, topState)
+	context.outputState = newState
+}
+
+func (context *outputContext) CensorVMOutput() {
+	context.outputState.ReturnData = make([][]byte, 0)
+	context.outputState.ReturnCode = vmcommon.Ok
+	context.outputState.ReturnMessage = ""
+	context.outputState.GasRemaining = 0
+	context.outputState.GasRefund = big.NewInt(0)
+	context.outputState.Logs = make([]*vmcommon.LogEntry, 0)
+
+	for _, account := range context.outputState.OutputAccounts {
+		account.StorageUpdates = make(map[string]*vmcommon.StorageUpdate)
+	}
 }
 
 func (context *outputContext) GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool) {
@@ -283,18 +291,5 @@ func mergeStorageUpdates(
 	}
 	for key, update := range rightAccount.StorageUpdates {
 		leftAccount.StorageUpdates[key] = update
-	}
-}
-
-func censorVMOutput(vmOutput *vmcommon.VMOutput) {
-	vmOutput.ReturnData = make([][]byte, 0)
-	vmOutput.ReturnCode = vmcommon.Ok
-	vmOutput.ReturnMessage = ""
-	vmOutput.GasRemaining = 0
-	vmOutput.GasRefund = big.NewInt(0)
-	vmOutput.Logs = make([]*vmcommon.LogEntry, 0)
-
-	for _, account := range vmOutput.OutputAccounts {
-		account.StorageUpdates = make(map[string]*vmcommon.StorageUpdate)
 	}
 }
