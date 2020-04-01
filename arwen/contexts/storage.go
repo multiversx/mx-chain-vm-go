@@ -63,9 +63,11 @@ func (context *storageContext) GetStorage(key []byte) []byte {
 	}
 
 	value, _ := context.blockChainHook.GetStorageData(context.address, key)
-	storageUpdates[string(key)] = &vmcommon.StorageUpdate{
-		Offset: key,
-		Data:   value,
+	if value != nil {
+		storageUpdates[string(key)] = &vmcommon.StorageUpdate{
+			Offset: key,
+			Data:   value,
+		}
 	}
 
 	return value
