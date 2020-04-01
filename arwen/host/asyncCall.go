@@ -150,15 +150,9 @@ func (host *vmHost) computeDataLengthFromArguments(function string, arguments []
 
 	// TODO this needs tests, especially for the case when the arguments slice
 	// contains an empty []byte
-	dataLength := len(function) + 1
-	for i, element := range arguments {
-		if len(element) == 0 {
-			dataLength++
-			continue
-		}
-		if i != 0 && dataLength > 0 {
-			dataLength++
-		}
+	numSeparators := len(arguments)
+	dataLength := len(function) + numSeparators
+	for _, element := range arguments {
 		dataLength += len(element)
 	}
 

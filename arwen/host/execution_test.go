@@ -278,9 +278,9 @@ func TestExecution_Call_Successful(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, vmOutput)
 	require.Len(t, vmOutput.OutputAccounts, 1)
-	require.Len(t, vmOutput.OutputAccounts[string(parentAddress)].StorageUpdates, 1)
+	require.Len(t, vmOutput.OutputAccounts[string(parentSCAddress)].StorageUpdates, 1)
 
-	storedBytes := vmOutput.OutputAccounts[string(parentAddress)].StorageUpdates[string(counterKey)].Data
+	storedBytes := vmOutput.OutputAccounts[string(parentSCAddress)].StorageUpdates[string(counterKey)].Data
 	require.Equal(t, big.NewInt(1002).Bytes(), storedBytes)
 }
 
@@ -291,7 +291,7 @@ func TestExecution_ExecuteOnSameContext_Simple(t *testing.T) {
 	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
 	input := DefaultTestContractCallInput()
 	input.CallerAddr = []byte("user")
-	input.RecipientAddr = parentAddress
+	input.RecipientAddr = parentSCAddress
 	input.Function = "parentFunctionChildCall"
 	input.GasProvided = 1000000
 
@@ -337,7 +337,7 @@ func TestExecution_ExecuteOnSameContext_Prepare(t *testing.T) {
 	parentSCBalance := big.NewInt(1000)
 
 	getBalanceCalled := func(address []byte) (*big.Int, error) {
-		if bytes.Equal(parentAddress, address) {
+		if bytes.Equal(parentSCAddress, address) {
 			return parentSCBalance, nil
 		}
 		return big.NewInt(0), nil
@@ -350,7 +350,7 @@ func TestExecution_ExecuteOnSameContext_Prepare(t *testing.T) {
 	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
 	input := DefaultTestContractCallInput()
 	input.CallerAddr = []byte("user")
-	input.RecipientAddr = parentAddress
+	input.RecipientAddr = parentSCAddress
 	input.Function = "parentFunctionPrepare"
 	input.GasProvided = 1000000
 
@@ -368,7 +368,7 @@ func TestExecution_ExecuteOnSameContext_Wrong(t *testing.T) {
 	parentSCBalance := big.NewInt(1000)
 
 	getBalanceCalled := func(address []byte) (*big.Int, error) {
-		if bytes.Equal(parentAddress, address) {
+		if bytes.Equal(parentSCAddress, address) {
 			return parentSCBalance, nil
 		}
 		return big.NewInt(0), nil
@@ -380,7 +380,7 @@ func TestExecution_ExecuteOnSameContext_Wrong(t *testing.T) {
 	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
 	input := DefaultTestContractCallInput()
 	input.CallerAddr = []byte("user")
-	input.RecipientAddr = parentAddress
+	input.RecipientAddr = parentSCAddress
 	input.Function = "parentFunctionWrongCall"
 	input.GasProvided = 1000000
 
@@ -400,7 +400,7 @@ func TestExecution_ExecuteOnSameContext_Successful(t *testing.T) {
 	parentSCBalance := big.NewInt(1000)
 
 	getBalanceCalled := func(address []byte) (*big.Int, error) {
-		if bytes.Equal(parentAddress, address) {
+		if bytes.Equal(parentSCAddress, address) {
 			return parentSCBalance, nil
 		}
 
@@ -413,7 +413,7 @@ func TestExecution_ExecuteOnSameContext_Successful(t *testing.T) {
 	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
 	input := DefaultTestContractCallInput()
 	input.CallerAddr = []byte("user")
-	input.RecipientAddr = parentAddress
+	input.RecipientAddr = parentSCAddress
 	input.Function = "parentFunctionChildCall"
 	input.GasProvided = 1000000
 
@@ -429,7 +429,7 @@ func TestExecution_ExecuteOnSameContext_Successful_BigInts(t *testing.T) {
 	childCode := GetTestSCCode("exec-same-ctx-child", "../../")
 
 	getBalanceCalled := func(address []byte) (*big.Int, error) {
-		if bytes.Equal(parentAddress, address) {
+		if bytes.Equal(parentSCAddress, address) {
 			return parentSCBalance, nil
 		}
 		return big.NewInt(0), nil
@@ -442,7 +442,7 @@ func TestExecution_ExecuteOnSameContext_Successful_BigInts(t *testing.T) {
 	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
 	input := DefaultTestContractCallInput()
 	input.CallerAddr = []byte("user")
-	input.RecipientAddr = parentAddress
+	input.RecipientAddr = parentSCAddress
 	input.Function = "parentFunctionChildCall_BigInts"
 	input.GasProvided = 1000000
 
@@ -471,7 +471,7 @@ func TestExecution_ExecuteOnDestContext_Prepare(t *testing.T) {
 	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
 	input := DefaultTestContractCallInput()
 	input.CallerAddr = []byte("user")
-	input.RecipientAddr = parentAddress
+	input.RecipientAddr = parentSCAddress
 	input.Function = "parentFunctionPrepare"
 	input.GasProvided = 1000000
 
@@ -490,7 +490,7 @@ func TestExecution_ExecuteOnDestContext_Wrong(t *testing.T) {
 	parentSCBalance := big.NewInt(1000)
 
 	getBalanceCalled := func(address []byte) (*big.Int, error) {
-		if bytes.Equal(parentAddress, address) {
+		if bytes.Equal(parentSCAddress, address) {
 			return parentSCBalance, nil
 		}
 		return big.NewInt(0), nil
@@ -502,7 +502,7 @@ func TestExecution_ExecuteOnDestContext_Wrong(t *testing.T) {
 	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
 	input := DefaultTestContractCallInput()
 	input.CallerAddr = []byte("user")
-	input.RecipientAddr = parentAddress
+	input.RecipientAddr = parentSCAddress
 	input.Function = "parentFunctionWrongCall"
 	input.GasProvided = 1000000
 
@@ -526,7 +526,7 @@ func TestExecution_ExecuteOnDestContext_Successful(t *testing.T) {
 	parentSCBalance := big.NewInt(1000)
 
 	getBalanceCalled := func(address []byte) (*big.Int, error) {
-		if bytes.Equal(parentAddress, address) {
+		if bytes.Equal(parentSCAddress, address) {
 			return parentSCBalance, nil
 		}
 
@@ -539,7 +539,7 @@ func TestExecution_ExecuteOnDestContext_Successful(t *testing.T) {
 	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
 	input := DefaultTestContractCallInput()
 	input.CallerAddr = []byte("user")
-	input.RecipientAddr = parentAddress
+	input.RecipientAddr = parentSCAddress
 	input.Function = "parentFunctionChildCall"
 	input.GasProvided = 1000000
 

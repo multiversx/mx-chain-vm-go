@@ -43,20 +43,39 @@ func TestFunctionsGuard_Arity(t *testing.T) {
 	instance, err := wasmer.NewMeteredInstance(contractCode, gasLimit)
 	require.Nil(t, err)
 
-	require.Equal(t, 0, validator.getInputArity(instance, "goodFunction"))
-	require.Equal(t, 0, validator.getOutputArity(instance, "goodFunction"))
+	inArity, _ := validator.getInputArity(instance, "goodFunction")
+	require.Equal(t, 0, inArity)
 
-	require.Equal(t, 0, validator.getInputArity(instance, "wrongReturn"))
-	require.Equal(t, 1, validator.getOutputArity(instance, "wrongReturn"))
+	outArity, _ := validator.getOutputArity(instance, "goodFunction")
+	require.Equal(t, 0, outArity)
 
-	require.Equal(t, 1, validator.getInputArity(instance, "wrongParams"))
-	require.Equal(t, 0, validator.getOutputArity(instance, "wrongParams"))
+	inArity, _ = validator.getInputArity(instance, "wrongReturn")
+	require.Equal(t, 0, inArity)
 
-	require.Equal(t, 2, validator.getInputArity(instance, "wrongParamsAndReturn"))
-	require.Equal(t, 1, validator.getOutputArity(instance, "wrongParamsAndReturn"))
+	outArity, _ = validator.getOutputArity(instance, "wrongReturn")
+	require.Equal(t, 1, outArity)
 
-	require.Equal(t, true, validator.isVoidFunction(instance, "goodFunction"))
-	require.Equal(t, false, validator.isVoidFunction(instance, "wrongReturn"))
-	require.Equal(t, false, validator.isVoidFunction(instance, "wrongParams"))
-	require.Equal(t, false, validator.isVoidFunction(instance, "wrongParamsAndReturn"))
+	inArity, _ = validator.getInputArity(instance, "wrongParams")
+	require.Equal(t, 1, inArity)
+
+	outArity, _ = validator.getOutputArity(instance, "wrongParams")
+	require.Equal(t, 0, outArity)
+
+	inArity, _ = validator.getInputArity(instance, "wrongParamsAndReturn")
+	require.Equal(t, 2, inArity)
+
+	outArity, _ = validator.getOutputArity(instance, "wrongParamsAndReturn")
+	require.Equal(t, 1, outArity)
+
+	isVoid, _ := validator.isVoidFunction(instance, "goodFunction")
+	require.Equal(t, true, isVoid)
+
+	isVoid, _ = validator.isVoidFunction(instance, "wrongReturn")
+	require.Equal(t, false, isVoid)
+
+	isVoid, _ = validator.isVoidFunction(instance, "wrongParams")
+	require.Equal(t, false, isVoid)
+
+	isVoid, _ = validator.isVoidFunction(instance, "wrongParamsAndReturn")
+	require.Equal(t, false, isVoid)
 }

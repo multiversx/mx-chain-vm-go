@@ -19,8 +19,8 @@ import (
 
 var defaultVMType = []byte{0xF, 0xF}
 var errCodeNotFound = errors.New("code not found")
-var parentAddress = []byte("parentSC.........................")
-var childAddress = []byte("childSC.........................")
+var parentSCAddress = []byte("parentSC.........................")
+var childSCAddress = []byte("childSC.........................")
 
 // GetSCCode retrieves the bytecode of a WASM module from a file
 func GetSCCode(fileName string) []byte {
@@ -54,7 +54,7 @@ func DefaultTestArwenForCall(tb testing.TB, code []byte) (*vmHost, *mock.Blockch
 	mockCryptoHook := &mock.CryptoHookMock{}
 	stubBlockchainHook := &mock.BlockchainHookStub{}
 	stubBlockchainHook.GetCodeCalled = func(scAddress []byte) ([]byte, error) {
-		if bytes.Equal(scAddress, parentAddress) {
+		if bytes.Equal(scAddress, parentSCAddress) {
 			return code, nil
 		}
 		return nil, errCodeNotFound
@@ -68,10 +68,10 @@ func DefaultTestArwenForTwoSCs(t *testing.T, parentCode []byte, childCode []byte
 	mockCryptoHook := &mock.CryptoHookMock{}
 	stubBlockchainHook := &mock.BlockchainHookStub{}
 	stubBlockchainHook.GetCodeCalled = func(scAddress []byte) ([]byte, error) {
-		if bytes.Equal(scAddress, parentAddress) {
+		if bytes.Equal(scAddress, parentSCAddress) {
 			return parentCode, nil
 		}
-		if bytes.Equal(scAddress, childAddress) {
+		if bytes.Equal(scAddress, childSCAddress) {
 			return childCode, nil
 		}
 		return nil, errCodeNotFound
@@ -116,7 +116,7 @@ func DefaultTestContractCallInput() *vmcommon.ContractCallInput {
 			GasPrice:    0,
 			GasProvided: 0,
 		},
-		RecipientAddr: parentAddress,
+		RecipientAddr: parentSCAddress,
 		Function:      "function",
 	}
 }

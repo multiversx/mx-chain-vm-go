@@ -8,6 +8,8 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 )
 
+const NoArity = -1
+
 // WASMValidator is a validator for WASM SmartContracts
 type WASMValidator struct {
 	reserved *ReservedFunctions
@@ -34,7 +36,12 @@ func (validator *WASMValidator) verifyFunctions(instance *wasmer.Instance) error
 			return fmt.Errorf("%w: %s", arwen.ErrInvalidFunctionName, functionName)
 		}
 
-		if !validator.isVoidFunction(instance, functionName) {
+		isVoid, err := validator.isVoidFunction(instance, functionName)
+		if err == arwen.ErrFuncNotFound {
+			return fmt.Errorf("%w: %s", arwen.ErrFuncNotFound, functionName)
+		}
+
+		if !isVoid {
 			return fmt.Errorf("%w: %s", arwen.ErrFunctionNonvoidSignature, functionName)
 		}
 	}
@@ -42,28 +49,35 @@ func (validator *WASMValidator) verifyFunctions(instance *wasmer.Instance) error
 	return nil
 }
 
-func (validator *WASMValidator) isVoidFunction(instance *wasmer.Instance, functionName string) bool {
-	inArity := validator.getInputArity(instance, functionName)
-	outArity := validator.getOutputArity(instance, functionName)
+func (validator *WASMValidator) isVoidFunction(instance *wasmer.Instance, functionName string) (bool, error) {
+	inArity, err := validator.getInputArity(instance, functionName)
+	if err != nil {
+		return false, err
+	}
 
-	isVoid := (inArity == 0 && outArity == 0)
-	return isVoid
+	outArity, err := validator.getOutputArity(instance, functionName)
+	if err != nil {
+		return false, err
+	}
+
+	isVoid := inArity == 0 && outArity == 0
+	return isVoid, nil
 }
 
-func (validator *WASMValidator) getInputArity(instance *wasmer.Instance, functionName string) int {
+func (validator *WASMValidator) getInputArity(instance *wasmer.Instance, functionName string) (int, error) {
 	signature, ok := instance.Signatures[functionName]
 	if !ok {
-		return -1
+		return NoArity, arwen.ErrFuncNotFound
 	}
-	return signature.InputArity
+	return signature.InputArity, nil
 }
 
-func (validator *WASMValidator) getOutputArity(instance *wasmer.Instance, functionName string) int {
+func (validator *WASMValidator) getOutputArity(instance *wasmer.Instance, functionName string) (int, error) {
 	signature, ok := instance.Signatures[functionName]
 	if !ok {
-		return -1
+		return NoArity, arwen.ErrFuncNotFound
 	}
-	return signature.OutputArity
+	return signature.OutputArity, nil
 }
 
 func (validator *WASMValidator) isValidFunctionName(functionName string) bool {

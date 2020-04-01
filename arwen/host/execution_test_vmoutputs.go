@@ -30,7 +30,7 @@ func expectedVMOutput_Prepare() *vmcommon.VMOutput {
 
 	parentAccount := AddNewOutputAccount(
 		expectedVMOutput,
-		parentAddress,
+		parentSCAddress,
 		-parentTransferValue,
 		nil,
 	)
@@ -62,7 +62,7 @@ func expectedVMOutput_Prepare() *vmcommon.VMOutput {
 func expectedVMOutput_WrongContractCalled() *vmcommon.VMOutput {
 	expectedVMOutput := expectedVMOutput_Prepare()
 
-	parentAccount := expectedVMOutput.OutputAccounts[string(parentAddress)]
+	parentAccount := expectedVMOutput.OutputAccounts[string(parentSCAddress)]
 	parentAccount.BalanceDelta = big.NewInt(-141)
 
 	_ = AddNewOutputAccount(
@@ -92,12 +92,12 @@ func expectedVMOutput_WrongContractCalled() *vmcommon.VMOutput {
 func expectedVMOutput_SuccessfulChildCall_SameCtx() *vmcommon.VMOutput {
 	expectedVMOutput := expectedVMOutput_Prepare()
 
-	parentAccount := expectedVMOutput.OutputAccounts[string(parentAddress)]
+	parentAccount := expectedVMOutput.OutputAccounts[string(parentSCAddress)]
 	parentAccount.BalanceDelta = big.NewInt(-141)
 
 	childAccount := AddNewOutputAccount(
 		expectedVMOutput,
-		childAddress,
+		childSCAddress,
 		3,
 		nil,
 	)
@@ -149,7 +149,7 @@ func expectedVMOutput_SuccessfulChildCall_BigInts_SameCtx() *vmcommon.VMOutput {
 
 	parentAccount := AddNewOutputAccount(
 		expectedVMOutput,
-		parentAddress,
+		parentSCAddress,
 		-parentTransferValue,
 		nil,
 	)
@@ -158,7 +158,7 @@ func expectedVMOutput_SuccessfulChildCall_BigInts_SameCtx() *vmcommon.VMOutput {
 
 	_ = AddNewOutputAccount(
 		expectedVMOutput,
-		childAddress,
+		childSCAddress,
 		99,
 		nil,
 	)
@@ -186,12 +186,12 @@ func expectedVMOutput_SuccessfulChildCall_BigInts_SameCtx() *vmcommon.VMOutput {
 func expectedVMOutput_SuccessfulChildCall_DestCtx() *vmcommon.VMOutput {
 	expectedVMOutput := expectedVMOutput_Prepare()
 
-	parentAccount := expectedVMOutput.OutputAccounts[string(parentAddress)]
+	parentAccount := expectedVMOutput.OutputAccounts[string(parentSCAddress)]
 	parentAccount.BalanceDelta = big.NewInt(-75)
 
 	childAccount := AddNewOutputAccount(
 		expectedVMOutput,
-		childAddress,
+		childSCAddress,
 		33,
 		nil,
 	)
