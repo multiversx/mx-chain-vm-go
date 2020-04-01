@@ -212,7 +212,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) erro
 	// resume from the new state.
 	bigInt.PopDiscard()
 	output.PopDiscard()
-	runtime.PopDiscard()
+	runtime.PopSetActiveState()
 
 	return nil
 }
