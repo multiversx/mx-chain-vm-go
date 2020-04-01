@@ -6,7 +6,7 @@ import (
 )
 
 func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput) {
-	host.ClearStateStack()
+	host.ClearContextStateStack()
 	host.InitState()
 
 	blockchain := host.Blockchain()
@@ -78,7 +78,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 }
 
 func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput) {
-	host.ClearStateStack()
+	host.ClearContextStateStack()
 	host.InitState()
 
 	runtime := host.Runtime()
@@ -144,72 +144,77 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	return vmOutput
 }
 
-/*
-	initialize:
-		bigint	push, InitState
-		output	push, InitState (clone top of stack with censoring)
-		runtime	push, InitStateFromContractCallInput
-		storage	push, SetAddress
-
-	success:
-		bigint	popSetActive
-		output	popMergeActive
-		runtime	popSetActive
-		storage	popSetActive
-
-	fail:
-		bigint	popSetActive
-		output	popSetActive
-		runtime	popSetActive
-		storage	popSetActive
-*/
 func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
-	host.PushState()
-	defer host.PopState()
+	bigInt := host.BigInt()
+	output := host.Output()
+	runtime := host.Runtime()
+	storage := host.Storage()
 
-	host.InitState()
+	bigInt.PushState()
+	bigInt.InitState()
 
-	host.Runtime().InitStateFromContractCallInput(input)
-	host.Storage().SetAddress(host.Runtime().GetSCAddress())
+	output.PushState()
+	output.CensorVMOutput()
+
+	runtime.PushState()
+	runtime.InitStateFromContractCallInput(input)
+
+	storage.PushState()
+	storage.SetAddress(host.Runtime().GetSCAddress())
 
 	err := host.execute(input)
 	if err != nil {
+		// Execution failed: restore contexts as if the execution didn't happen.
+		bigInt.PopSetActiveState()
+		output.PopSetActiveState()
+		runtime.PopSetActiveState()
+
 		return nil, err
 	}
 
+	// Extract the VMOutput produced by the execution in isolation, before
+	// restoring the contexts.
 	vmOutput := host.Output().GetVMOutput()
+
+	// Execution successful: restore the previous context states, except Output,
+	// which will merge the current state (VMOutput) with the initial state.
+	bigInt.PopSetActiveState()
+	output.PopMergeActiveState()
+	runtime.PopSetActiveState()
+	storage.PopSetActiveState()
 
 	return vmOutput, nil
 }
 
-/*
-	initialize:
-		bigint	push
-		output	push
-		runtime push, InitStateFromContractCallInput
-		storage -
-
-	success:
-		bigint	popDiscard
-		output	popDiscard
-		runtime	popSetActive
-		storage	-
-
-	fail:
-		bigint	popSetActive
-		output	popSetActive
-		runtime	popSetActive
-		storage	-
-*/
 func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) error {
+	bigInt := host.BigInt()
+	output := host.Output()
 	runtime := host.Runtime()
+
+	// Back up the states of the contexts (except Storage, which isn't affected
+	// by ExecuteOnSameContext())
+	bigInt.PushState()
+	output.PushState()
 	runtime.PushState()
-	defer runtime.PopState()
 
 	runtime.InitStateFromContractCallInput(input)
 	err := host.execute(input)
+	if err != nil {
+		// Execution failed: restore contexts as if the execution didn't happen.
+		bigInt.PopSetActiveState()
+		output.PopSetActiveState()
+		runtime.PopSetActiveState()
 
-	return err
+		return err
+	}
+
+	// Execution successful: discard the backups made at the beginning and
+	// resume from the new state.
+	bigInt.PopDiscard()
+	output.PopDiscard()
+	runtime.PopDiscard()
+
+	return nil
 }
 
 func (host *vmHost) isInitFunctionBeingCalled() bool {
@@ -237,13 +242,13 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]by
 	runtime.SetVMInput(&input.VMInput)
 	address, err := blockchain.NewAddress(input.CallerAddr)
 	if err != nil {
-		runtime.PopState()
+		runtime.PopSetActiveState()
 		return nil, err
 	}
 
 	err = output.Transfer(address, input.CallerAddr, 0, input.CallValue, nil)
 	if err != nil {
-		runtime.PopState()
+		runtime.PopSetActiveState()
 		return nil, err
 	}
 
@@ -252,7 +257,7 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]by
 
 	err = metering.DeductInitialGasForIndirectDeployment(input)
 	if err != nil {
-		runtime.PopState()
+		runtime.PopSetActiveState()
 		return nil, err
 	}
 
@@ -263,7 +268,7 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]by
 	err = runtime.CreateWasmerInstance(input.ContractCode, gasForDeployment)
 	if err != nil {
 		runtime.PopInstance()
-		runtime.PopState()
+		runtime.PopSetActiveState()
 		arwen.RemoveHostContext(idContext)
 		return nil, err
 	}
@@ -271,7 +276,7 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]by
 	err = runtime.VerifyContractCode()
 	if err != nil {
 		runtime.PopInstance()
-		runtime.PopState()
+		runtime.PopSetActiveState()
 		arwen.RemoveHostContext(idContext)
 		return nil, err
 	}
@@ -281,7 +286,7 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]by
 	err = host.callInitFunction()
 	if err != nil {
 		runtime.PopInstance()
-		runtime.PopState()
+		runtime.PopSetActiveState()
 		arwen.RemoveHostContext(idContext)
 		return nil, err
 	}
@@ -291,7 +296,7 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]by
 	gasToRestoreToCaller := metering.GasLeft()
 
 	runtime.PopInstance()
-	runtime.PopState()
+	runtime.PopSetActiveState()
 	arwen.RemoveHostContext(idContext)
 
 	metering.RestoreGas(gasToRestoreToCaller)

@@ -164,25 +164,10 @@ func (host *vmHost) InitState() {
 	host.ethInput = nil
 }
 
-func (host *vmHost) PushState() {
-	host.bigIntContext.PushState()
-	host.runtimeContext.PushState()
-	host.outputContext.PushState()
-	host.storageContext.PushState()
-}
-
-func (host *vmHost) PopState() {
-	host.bigIntContext.PopState()
-	host.runtimeContext.PopState()
-	host.outputContext.PopState()
-	host.storageContext.PopState()
-}
-
-func (host *vmHost) ClearStateStack() {
+func (host *vmHost) ClearContextStateStack() {
 	host.bigIntContext.ClearStateStack()
-	host.runtimeContext.ClearStateStack()
-	host.runtimeContext.ClearInstanceStack()
 	host.outputContext.ClearStateStack()
+	host.runtimeContext.ClearStateStack()
 	host.storageContext.ClearStateStack()
 }
 

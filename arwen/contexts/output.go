@@ -91,15 +91,6 @@ func (context *outputContext) ClearStateStack() {
 	context.stateStack = make([]*vmcommon.VMOutput, 0)
 }
 
-func (context *outputContext) CopyTopOfStackToActiveState() {
-	stateStackLen := len(context.stateStack)
-	topState := context.stateStack[stateStackLen-1]
-
-	newState := newVMOutput()
-	mergeVMOutputs(newState, topState)
-	context.outputState = newState
-}
-
 func (context *outputContext) CensorVMOutput() {
 	context.outputState.ReturnData = make([][]byte, 0)
 	context.outputState.ReturnCode = vmcommon.Ok

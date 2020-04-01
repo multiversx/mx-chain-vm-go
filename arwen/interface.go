@@ -121,7 +121,6 @@ type BigIntContext interface {
 type OutputContext interface {
 	StateStack
 	PopMergeActiveState()
-	CopyTopOfStackToActiveState()
 	CensorVMOutput()
 
 	GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool)
