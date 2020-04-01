@@ -98,7 +98,7 @@ void parentFunctionChildCall_BigInts() {
 
 	byte childAddress[] = "childSC.........................";
 	byte functionName[] = "childFunction_BigInts";
-	int result = executeOnSameContext(
+	int result = executeOnDestContext(
 			200000,
 			childAddress,
 			executeValue,
@@ -115,6 +115,7 @@ void parentFunctionChildCall_BigInts() {
 	long long x = bigIntGetInt64(4);
 	if (x != 0) {
 		result = 1;
+		int64finish(x);
 	}
 	finishResult(result);
 }

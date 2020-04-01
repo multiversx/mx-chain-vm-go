@@ -153,11 +153,11 @@ func expectedVMOutput_SuccessfulChildCall_BigInts_SameCtx() *vmcommon.VMOutput {
 	parentAccount := AddNewOutputAccount(
 		expectedVMOutput,
 		parentAddress,
-		-parentTransferValue,
+		-99,
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
-	parentAccount.BalanceDelta = big.NewInt(-99)
+	// parentAccount.BalanceDelta = big.NewInt(-99)
 
 	_ = AddNewOutputAccount(
 		expectedVMOutput,
@@ -222,6 +222,48 @@ func expectedVMOutput_SuccessfulChildCall_DestCtx() *vmcommon.VMOutput {
 	executeAPICost := uint64(42)
 	childExecutionCost := uint64(88)
 	finalCost := uint64(65)
+	gas := gasProvided
+	gas -= parentCompilationCost
+	gas -= parentGasBeforeExecuteAPI
+	gas -= executeAPICost
+	gas -= childCompilationCost
+	gas -= childExecutionCost
+	gas -= finalCost
+	expectedVMOutput.GasRemaining = gas
+	return expectedVMOutput
+}
+
+func expectedVMOutput_SuccessfulChildCall_BigInts_DestCtx() *vmcommon.VMOutput {
+	expectedVMOutput := MakeVMOutput()
+	expectedVMOutput.ReturnCode = vmcommon.Ok
+
+	parentAccount := AddNewOutputAccount(
+		expectedVMOutput,
+		parentAddress,
+		-99,
+		nil,
+	)
+	parentAccount.Balance = big.NewInt(1000)
+
+	_ = AddNewOutputAccount(
+		expectedVMOutput,
+		childAddress,
+		99,
+		nil,
+	)
+
+	// The child SC will output "child ok" if it could NOT read the Big Ints from
+	// the parent's context.
+	AddFinishData(expectedVMOutput, []byte("child ok"))
+	AddFinishData(expectedVMOutput, []byte("succ"))
+	AddFinishData(expectedVMOutput, []byte("succ"))
+
+	parentCompilationCost := uint64(3007)
+	childCompilationCost := uint64(3134)
+	parentGasBeforeExecuteAPI := uint64(143)
+	executeAPICost := uint64(13)
+	childExecutionCost := uint64(117)
+	finalCost := uint64(54)
 	gas := gasProvided
 	gas -= parentCompilationCost
 	gas -= parentGasBeforeExecuteAPI

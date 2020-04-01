@@ -74,18 +74,26 @@ void childFunction_BigInts() {
 	long long b = bigIntGetInt64(intB);
 	long long c = bigIntGetInt64(intC);
 
-	if (a != 84) {
+	if (a != 0) {
 		not_ok();
 		int64finish(a);
 	}
-	if (b != 96) {
+	if (b != 0) {
 		not_ok();
 		int64finish(b);
 	}
-	if (c != 1024) {
+	if (c != 0) {
 		not_ok();
 		int64finish(c);
 	}
+
+	bigInt intX = bigIntNew(256);
+	if (intX != 4) {
+		not_ok();
+		int64finish(intX);
+		status = 1;
+	}
+
 
 	if (status == 0) {
 		byte msg[] = "child ok";

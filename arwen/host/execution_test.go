@@ -433,8 +433,8 @@ func TestExecution_ExecuteOnSameContext_Successful(t *testing.T) {
 
 func TestExecution_ExecuteOnSameContext_Successful_BigInts(t *testing.T) {
 	parentCode := GetTestSCCode("exec-same-ctx-parent", "../../")
-	parentSCBalance := big.NewInt(1000)
 	childCode := GetTestSCCode("exec-same-ctx-child", "../../")
+	parentSCBalance := big.NewInt(1000)
 
 	getBalanceCalled := func(address []byte) (*big.Int, error) {
 		if bytes.Equal(parentAddress, address) {
@@ -551,5 +551,34 @@ func TestExecution_ExecuteOnDestContext_Successful(t *testing.T) {
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
 	expectedVMOutput := expectedVMOutput_SuccessfulChildCall_DestCtx()
+	require.Equal(t, expectedVMOutput, vmOutput)
+}
+
+func TestExecution_ExecuteOnDestContext_Successful_BigInts(t *testing.T) {
+	parentCode := GetTestSCCode("exec-dest-ctx-parent", "../../")
+	childCode := GetTestSCCode("exec-dest-ctx-child", "../../")
+	parentSCBalance := big.NewInt(1000)
+
+	getBalanceCalled := func(address []byte) (*big.Int, error) {
+		if bytes.Equal(parentAddress, address) {
+			return parentSCBalance, nil
+		}
+		return big.NewInt(0), nil
+	}
+
+	// Call parentFunctionChildCall_BigInts() of the parent SC, which will call a
+	// method of the child SC that takes some big Int references as arguments and
+	// produce a new big Int out of the arguments.
+	host, stubBlockchainHook := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
+	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
+	input := DefaultTestContractCallInput()
+	input.CallerAddr = []byte("user")
+	input.RecipientAddr = parentAddress
+	input.Function = "parentFunctionChildCall_BigInts"
+	input.GasProvided = 1000000
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	expectedVMOutput := expectedVMOutput_SuccessfulChildCall_BigInts_DestCtx()
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
