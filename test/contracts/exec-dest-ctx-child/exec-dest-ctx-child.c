@@ -54,3 +54,41 @@ void childFunction() {
 	// This finish value will appear alongside the finish values set by the parent.
 	finish(childFinish, 11);
 }
+
+void childFunction_BigInts() {
+	int numArgs = getNumArguments();
+	if (numArgs != 3) {
+		byte message[] = "wrong number of arguments";
+		signalError(message, 25);
+	}
+
+	didCallerPay();
+
+	int status = 0;
+
+	bigInt intA = int64getArgument(0);
+	bigInt intB = int64getArgument(1);
+	bigInt intC = int64getArgument(2);
+
+	long long a = bigIntGetInt64(intA);
+	long long b = bigIntGetInt64(intB);
+	long long c = bigIntGetInt64(intC);
+
+	if (a != 84) {
+		not_ok();
+		int64finish(a);
+	}
+	if (b != 96) {
+		not_ok();
+		int64finish(b);
+	}
+	if (c != 1024) {
+		not_ok();
+		int64finish(c);
+	}
+
+	if (status == 0) {
+		byte msg[] = "child ok";
+		finish(msg, 8);
+	}
+}

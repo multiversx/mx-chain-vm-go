@@ -8,6 +8,9 @@ byte parentDataB[] = "parentDataB";
 byte parentFinishA[] = "parentFinishA";
 byte parentFinishB[] = "parentFinishB";
 
+byte childKey[] =  "childKey........................";
+byte childData[] = "childData";
+
 byte parentTransferReceiver[] = "parentTransferReceiver..........";
 byte parentTransferValue[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,42};
 byte parentTransferData[] = "parentTransferData";
@@ -15,6 +18,8 @@ byte parentTransferData[] = "parentTransferData";
 byte executeValue[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,99};
 u32 executeArgumentsLengths[] = {32, 6};
 byte executeArgumentsData[] = "childTransferReceiver...........qwerty";
+
+byte data[20] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 void finishResult(int);
 u32 reverseU32(u32);
@@ -66,12 +71,33 @@ void parentFunctionChildCall() {
 			executeArgumentsData
 	);
 
-	// TODO assert that the storage changes made by the child are visible here
 	finishResult(result);
+
+	// The parent has access to the data stored by the child.
+	int len = storageGetValueLength(childKey);
+	if (len != 9) {
+		finishResult(1);
+		return;
+	}
+
+	u64 slLen = storageLoad(childKey, data);
+	if (slLen != len) {
+		finishResult(1);
+		return;
+	}
+
+	for (int i = 0; i < len; i++) {
+		if (data[i] != childData[i]) {
+			finishResult(1);
+			return;
+		}
+	}
+
+	finishResult(0);
 }
 
 void parentFunctionChildCall_BigInts() {
-	bigInt intA = bigIntNew(84); 
+	bigInt intA = bigIntNew(84);
 	bigInt intB = bigIntNew(96);
 	bigInt intC = bigIntNew(1024);
 
@@ -99,6 +125,14 @@ void parentFunctionChildCall_BigInts() {
 			(byte*)argumentLengths,
 			(byte*)arguments
 	);
+	finishResult(result);
+
+	// The parent can access the big integer created by the child.
+	result = 0;
+	long long x = bigIntGetInt64(4);
+	if (x != 256) {
+		result = 1;
+	}
 	finishResult(result);
 }
 

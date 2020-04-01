@@ -48,7 +48,7 @@ func expectedVMOutput_Prepare() *vmcommon.VMOutput {
 	AddFinishData(expectedVMOutput, parentFinishB)
 	AddFinishData(expectedVMOutput, []byte("succ"))
 
-	parentCompilationCost := uint64(2282)
+	parentCompilationCost := uint64(2861)
 	expectedExecutionCost := uint64(135)
 	gas := gasProvided
 	gas -= parentCompilationCost
@@ -73,7 +73,7 @@ func expectedVMOutput_WrongContractCalled() *vmcommon.VMOutput {
 
 	AddFinishData(expectedVMOutput, []byte("fail"))
 
-	parentCompilationCost := uint64(2282)
+	parentCompilationCost := uint64(2861)
 	executionCostBeforeExecuteAPI := uint64(180)
 	executeAPICost := uint64(39)
 	gasLostOnFailure := uint64(50000)
@@ -126,13 +126,14 @@ func expectedVMOutput_SuccessfulChildCall_SameCtx() *vmcommon.VMOutput {
 	}
 	AddFinishData(expectedVMOutput, []byte("child ok"))
 	AddFinishData(expectedVMOutput, []byte("succ"))
+	AddFinishData(expectedVMOutput, []byte("succ"))
 
-	parentCompilationCost := uint64(2282)
+	parentCompilationCost := uint64(2861)
 	childCompilationCost := uint64(3020)
 	parentGasBeforeExecuteAPI := uint64(188)
 	executeAPICost := uint64(39)
 	childExecutionCost := uint64(441)
-	finalCost := uint64(36)
+	finalCost := uint64(139)
 	gas := gasProvided
 	gas -= parentCompilationCost
 	gas -= parentGasBeforeExecuteAPI
@@ -169,13 +170,14 @@ func expectedVMOutput_SuccessfulChildCall_BigInts_SameCtx() *vmcommon.VMOutput {
 	// Ints directly from the parent's context.
 	AddFinishData(expectedVMOutput, []byte("child ok"))
 	AddFinishData(expectedVMOutput, []byte("succ"))
+	AddFinishData(expectedVMOutput, []byte("succ"))
 
-	parentCompilationCost := uint64(2282)
-	childCompilationCost := uint64(3020)
+	parentCompilationCost := uint64(3007)
+	childCompilationCost := uint64(3134)
 	parentGasBeforeExecuteAPI := uint64(143)
 	executeAPICost := uint64(13)
-	childExecutionCost := uint64(90)
-	finalCost := uint64(36)
+	childExecutionCost := uint64(117)
+	finalCost := uint64(54)
 	gas := gasProvided
 	gas -= parentCompilationCost
 	gas -= parentGasBeforeExecuteAPI
@@ -212,13 +214,14 @@ func expectedVMOutput_SuccessfulChildCall_DestCtx() *vmcommon.VMOutput {
 
 	AddFinishData(expectedVMOutput, childFinish)
 	AddFinishData(expectedVMOutput, []byte("succ"))
+	AddFinishData(expectedVMOutput, []byte("succ"))
 
-	parentCompilationCost := uint64(1673)
+	parentCompilationCost := uint64(1864)
 	childCompilationCost := uint64(893)
 	parentGasBeforeExecuteAPI := uint64(188)
 	executeAPICost := uint64(42)
 	childExecutionCost := uint64(88)
-	finalCost := uint64(36)
+	finalCost := uint64(65)
 	gas := gasProvided
 	gas -= parentCompilationCost
 	gas -= parentGasBeforeExecuteAPI

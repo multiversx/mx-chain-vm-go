@@ -133,14 +133,24 @@ void childFunction_BigInts() {
 	if (a != 84) {
 		not_ok();
 		int64finish(a);
+		status = 1;
 	}
 	if (b != 96) {
 		not_ok();
 		int64finish(b);
+		status = 1;
 	}
 	if (c != 1024) {
 		not_ok();
 		int64finish(c);
+		status = 1;
+	}
+
+	bigInt intX = bigIntNew(256);
+	if (intX != 4) {
+		not_ok();
+		int64finish(intX);
+		status = 1;
 	}
 
 	if (status == 0) {
