@@ -22,7 +22,7 @@ var parentTransferData = []byte("parentTransferData")
 
 var gasProvided = uint64(1000000)
 
-func expectedVMOutput_Prepare() *vmcommon.VMOutput {
+func expectedVMOutput_SameCtx_Prepare() *vmcommon.VMOutput {
 	expectedVMOutput := MakeVMOutput()
 	expectedVMOutput.ReturnCode = vmcommon.Ok
 
@@ -48,7 +48,7 @@ func expectedVMOutput_Prepare() *vmcommon.VMOutput {
 	AddFinishData(expectedVMOutput, parentFinishB)
 	AddFinishData(expectedVMOutput, []byte("succ"))
 
-	parentCompilationCost := uint64(2861)
+	parentCompilationCost := uint64(3007)
 	expectedExecutionCost := uint64(135)
 	gas := gasProvided
 	gas -= parentCompilationCost
@@ -58,8 +58,8 @@ func expectedVMOutput_Prepare() *vmcommon.VMOutput {
 	return expectedVMOutput
 }
 
-func expectedVMOutput_WrongContractCalled() *vmcommon.VMOutput {
-	expectedVMOutput := expectedVMOutput_Prepare()
+func expectedVMOutput_SameCtx_WrongContractCalled() *vmcommon.VMOutput {
+	expectedVMOutput := expectedVMOutput_SameCtx_Prepare()
 
 	parentAccount := expectedVMOutput.OutputAccounts[string(parentAddress)]
 	parentAccount.BalanceDelta = big.NewInt(-141)
@@ -73,7 +73,7 @@ func expectedVMOutput_WrongContractCalled() *vmcommon.VMOutput {
 
 	AddFinishData(expectedVMOutput, []byte("fail"))
 
-	parentCompilationCost := uint64(2861)
+	parentCompilationCost := uint64(3007)
 	executionCostBeforeExecuteAPI := uint64(180)
 	executeAPICost := uint64(39)
 	gasLostOnFailure := uint64(50000)
@@ -89,8 +89,8 @@ func expectedVMOutput_WrongContractCalled() *vmcommon.VMOutput {
 	return expectedVMOutput
 }
 
-func expectedVMOutput_SuccessfulChildCall_SameCtx() *vmcommon.VMOutput {
-	expectedVMOutput := expectedVMOutput_Prepare()
+func expectedVMOutput_SameCtx_SuccessfulChildCall() *vmcommon.VMOutput {
+	expectedVMOutput := expectedVMOutput_SameCtx_Prepare()
 
 	parentAccount := expectedVMOutput.OutputAccounts[string(parentAddress)]
 	parentAccount.BalanceDelta = big.NewInt(-141)
@@ -128,8 +128,8 @@ func expectedVMOutput_SuccessfulChildCall_SameCtx() *vmcommon.VMOutput {
 	AddFinishData(expectedVMOutput, []byte("succ"))
 	AddFinishData(expectedVMOutput, []byte("succ"))
 
-	parentCompilationCost := uint64(2861)
-	childCompilationCost := uint64(3020)
+	parentCompilationCost := uint64(3007)
+	childCompilationCost := uint64(3134)
 	parentGasBeforeExecuteAPI := uint64(188)
 	executeAPICost := uint64(39)
 	childExecutionCost := uint64(441)
@@ -146,7 +146,7 @@ func expectedVMOutput_SuccessfulChildCall_SameCtx() *vmcommon.VMOutput {
 	return expectedVMOutput
 }
 
-func expectedVMOutput_SuccessfulChildCall_BigInts_SameCtx() *vmcommon.VMOutput {
+func expectedVMOutput_SameCtx_SuccessfulChildCall_BigInts() *vmcommon.VMOutput {
 	expectedVMOutput := MakeVMOutput()
 	expectedVMOutput.ReturnCode = vmcommon.Ok
 
@@ -189,8 +189,75 @@ func expectedVMOutput_SuccessfulChildCall_BigInts_SameCtx() *vmcommon.VMOutput {
 	return expectedVMOutput
 }
 
-func expectedVMOutput_SuccessfulChildCall_DestCtx() *vmcommon.VMOutput {
-	expectedVMOutput := expectedVMOutput_Prepare()
+func expectedVMOutput_DestCtx_Prepare() *vmcommon.VMOutput {
+	expectedVMOutput := MakeVMOutput()
+	expectedVMOutput.ReturnCode = vmcommon.Ok
+
+	parentAccount := AddNewOutputAccount(
+		expectedVMOutput,
+		parentAddress,
+		-parentTransferValue,
+		nil,
+	)
+	parentAccount.Balance = big.NewInt(1000)
+
+	_ = AddNewOutputAccount(
+		expectedVMOutput,
+		parentTransferReceiver,
+		parentTransferValue,
+		parentTransferData,
+	)
+
+	SetStorageUpdate(parentAccount, parentKeyA, parentDataA)
+	SetStorageUpdate(parentAccount, parentKeyB, parentDataB)
+
+	AddFinishData(expectedVMOutput, parentFinishA)
+	AddFinishData(expectedVMOutput, parentFinishB)
+	AddFinishData(expectedVMOutput, []byte("succ"))
+
+	parentCompilationCost := uint64(2670)
+	expectedExecutionCost := uint64(135)
+	gas := gasProvided
+	gas -= parentCompilationCost
+	gas -= expectedExecutionCost
+	expectedVMOutput.GasRemaining = gas
+
+	return expectedVMOutput
+}
+
+func expectedVMOutput_DestCtx_WrongContractCalled() *vmcommon.VMOutput {
+	expectedVMOutput := expectedVMOutput_SameCtx_Prepare()
+
+	parentAccount := expectedVMOutput.OutputAccounts[string(parentAddress)]
+	parentAccount.BalanceDelta = big.NewInt(-141)
+
+	_ = AddNewOutputAccount(
+		expectedVMOutput,
+		[]byte("wrongSC........................."),
+		99,
+		nil,
+	)
+
+	AddFinishData(expectedVMOutput, []byte("fail"))
+
+	parentCompilationCost := uint64(2670)
+	executionCostBeforeExecuteAPI := uint64(180)
+	executeAPICost := uint64(42)
+	gasLostOnFailure := uint64(10000)
+	finalCost := uint64(44)
+	gas := gasProvided
+	gas -= parentCompilationCost
+	gas -= executionCostBeforeExecuteAPI
+	gas -= executeAPICost
+	gas -= gasLostOnFailure
+	gas -= finalCost
+	expectedVMOutput.GasRemaining = gas
+
+	return expectedVMOutput
+}
+
+func expectedVMOutput_DestCtx_SuccessfulChildCall() *vmcommon.VMOutput {
+	expectedVMOutput := expectedVMOutput_SameCtx_Prepare()
 
 	parentAccount := expectedVMOutput.OutputAccounts[string(parentAddress)]
 	parentAccount.BalanceDelta = big.NewInt(-141)
@@ -216,8 +283,8 @@ func expectedVMOutput_SuccessfulChildCall_DestCtx() *vmcommon.VMOutput {
 	AddFinishData(expectedVMOutput, []byte("succ"))
 	AddFinishData(expectedVMOutput, []byte("succ"))
 
-	parentCompilationCost := uint64(1864)
-	childCompilationCost := uint64(893)
+	parentCompilationCost := uint64(2670)
+	childCompilationCost := uint64(1568)
 	parentGasBeforeExecuteAPI := uint64(188)
 	executeAPICost := uint64(42)
 	childExecutionCost := uint64(88)
@@ -233,7 +300,7 @@ func expectedVMOutput_SuccessfulChildCall_DestCtx() *vmcommon.VMOutput {
 	return expectedVMOutput
 }
 
-func expectedVMOutput_SuccessfulChildCall_BigInts_DestCtx() *vmcommon.VMOutput {
+func expectedVMOutput_DestCtx_SuccessfulChildCall_BigInts() *vmcommon.VMOutput {
 	expectedVMOutput := MakeVMOutput()
 	expectedVMOutput.ReturnCode = vmcommon.Ok
 
@@ -258,12 +325,12 @@ func expectedVMOutput_SuccessfulChildCall_BigInts_DestCtx() *vmcommon.VMOutput {
 	AddFinishData(expectedVMOutput, []byte("succ"))
 	AddFinishData(expectedVMOutput, []byte("succ"))
 
-	parentCompilationCost := uint64(3007)
-	childCompilationCost := uint64(3134)
+	parentCompilationCost := uint64(2670)
+	childCompilationCost := uint64(1568)
 	parentGasBeforeExecuteAPI := uint64(143)
 	executeAPICost := uint64(13)
-	childExecutionCost := uint64(117)
-	finalCost := uint64(54)
+	childExecutionCost := uint64(110)
+	finalCost := uint64(55)
 	gas := gasProvided
 	gas -= parentCompilationCost
 	gas -= parentGasBeforeExecuteAPI

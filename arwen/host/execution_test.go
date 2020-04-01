@@ -367,7 +367,7 @@ func TestExecution_ExecuteOnSameContext_Prepare(t *testing.T) {
 	fmt.Println(vmOutput.ReturnMessage)
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 
-	expectedVMOutput := expectedVMOutput_Prepare()
+	expectedVMOutput := expectedVMOutput_SameCtx_Prepare()
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
@@ -394,7 +394,7 @@ func TestExecution_ExecuteOnSameContext_Wrong(t *testing.T) {
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
-	expectedVMOutput := expectedVMOutput_WrongContractCalled()
+	expectedVMOutput := expectedVMOutput_SameCtx_WrongContractCalled()
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
@@ -427,7 +427,7 @@ func TestExecution_ExecuteOnSameContext_Successful(t *testing.T) {
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
-	expectedVMOutput := expectedVMOutput_SuccessfulChildCall_SameCtx()
+	expectedVMOutput := expectedVMOutput_SameCtx_SuccessfulChildCall()
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
@@ -456,7 +456,7 @@ func TestExecution_ExecuteOnSameContext_Successful_BigInts(t *testing.T) {
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
-	expectedVMOutput := expectedVMOutput_SuccessfulChildCall_BigInts_SameCtx()
+	expectedVMOutput := expectedVMOutput_SameCtx_SuccessfulChildCall_BigInts()
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
@@ -488,8 +488,7 @@ func TestExecution_ExecuteOnDestContext_Prepare(t *testing.T) {
 	fmt.Println(vmOutput.ReturnMessage)
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 
-	expectedVMOutput := expectedVMOutput_Prepare()
-	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
+	expectedVMOutput := expectedVMOutput_DestCtx_Prepare()
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
@@ -516,8 +515,7 @@ func TestExecution_ExecuteOnDestContext_Wrong(t *testing.T) {
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
-	expectedVMOutput := expectedVMOutput_WrongContractCalled()
-	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
+	expectedVMOutput := expectedVMOutput_DestCtx_WrongContractCalled()
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
@@ -550,7 +548,7 @@ func TestExecution_ExecuteOnDestContext_Successful(t *testing.T) {
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
-	expectedVMOutput := expectedVMOutput_SuccessfulChildCall_DestCtx()
+	expectedVMOutput := expectedVMOutput_DestCtx_SuccessfulChildCall()
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
@@ -579,6 +577,6 @@ func TestExecution_ExecuteOnDestContext_Successful_BigInts(t *testing.T) {
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
-	expectedVMOutput := expectedVMOutput_SuccessfulChildCall_BigInts_DestCtx()
+	expectedVMOutput := expectedVMOutput_DestCtx_SuccessfulChildCall_BigInts()
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
