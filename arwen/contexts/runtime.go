@@ -89,9 +89,8 @@ func (context *runtimeContext) PushState() {
 	context.stateStack = append(context.stateStack, newState)
 }
 
-func (context *runtimeContext) PopState() {
+func (context *runtimeContext) PopSetActiveState() {
 	stateStackLen := len(context.stateStack)
-
 	prevState := context.stateStack[stateStackLen-1]
 	context.stateStack = context.stateStack[:stateStackLen-1]
 
@@ -100,6 +99,11 @@ func (context *runtimeContext) PopState() {
 	context.callFunction = prevState.callFunction
 	context.readOnly = prevState.readOnly
 	context.asyncCallInfo = prevState.asyncCallInfo
+}
+
+func (context *runtimeContext) PopDiscard() {
+	stateStackLen := len(context.stateStack)
+	context.stateStack = context.stateStack[:stateStackLen-1]
 }
 
 func (context *runtimeContext) ClearStateStack() {

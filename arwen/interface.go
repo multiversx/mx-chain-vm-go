@@ -11,7 +11,8 @@ import (
 type StateStack interface {
 	InitState()
 	PushState()
-	PopState()
+	PopSetActiveState()
+	PopDiscard()
 	ClearStateStack()
 }
 
@@ -28,8 +29,6 @@ type ArgumentsParser interface {
 }
 
 type VMHost interface {
-	StateStack
-
 	Crypto() vmcommon.CryptoHook
 	Blockchain() BlockchainContext
 	Runtime() RuntimeContext
@@ -121,6 +120,7 @@ type BigIntContext interface {
 
 type OutputContext interface {
 	StateStack
+	PopMergeActiveState()
 
 	GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool)
 	WriteLog(address []byte, topics [][]byte, data []byte)

@@ -144,6 +144,25 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	return vmOutput
 }
 
+/*
+	initialize:
+		bigint	push, InitState
+		output	push, InitState (clone top of stack with censoring)
+		runtime	push, InitStateFromContractCallInput
+		storage	push, SetAddress
+
+	success:
+		bigint	popSetActive
+		output	popMergeActive
+		runtime	popSetActive
+		storage	popSetActive
+
+	fail:
+		bigint	popSetActive
+		output	popSetActive
+		runtime	popSetActive
+		storage	popSetActive
+*/
 func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	host.PushState()
 	defer host.PopState()
@@ -163,6 +182,25 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vm
 	return vmOutput, nil
 }
 
+/*
+	initialize:
+		bigint	push
+		output	push
+		runtime push, InitStateFromContractCallInput
+		storage -
+
+	success:
+		bigint	popDiscard
+		output	popDiscard
+		runtime	popSetActive
+		storage	-
+
+	fail:
+		bigint	popSetActive
+		output	popSetActive
+		runtime	popSetActive
+		storage	-
+*/
 func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) error {
 	runtime := host.Runtime()
 	runtime.PushState()

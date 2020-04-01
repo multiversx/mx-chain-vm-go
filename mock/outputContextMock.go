@@ -52,7 +52,13 @@ func (o *OutputContextMock) NewVMOutputAccountFromMockAccount(account *Account) 
 func (o *OutputContextMock) PushState() {
 }
 
-func (o *OutputContextMock) PopState() {
+func (o *OutputContextMock) PopSetActiveState() {
+}
+
+func (o *OutputContextMock) PopMergeActiveState() {
+}
+
+func (o *OutputContextMock) PopDiscard() {
 }
 
 func (o *OutputContextMock) ClearStateStack() {

@@ -12,7 +12,9 @@ var _ arwen.OutputContext = (*OutputContextStub)(nil)
 type OutputContextStub struct {
 	InitStateCalled                   func()
 	PushStateCalled                   func()
-	PopStateCalled                    func()
+	PopSetActiveStateCalled           func()
+	PopMergeActiveStateCalled         func()
+	PopDiscardCalled                  func()
 	ClearStateStackCalled             func()
 	GetOutputAccountCalled            func(address []byte) (*vmcommon.OutputAccount, bool)
 	WriteLogCalled                    func(address []byte, topics [][]byte, data []byte)
@@ -45,9 +47,21 @@ func (o *OutputContextStub) PushState() {
 	}
 }
 
-func (o *OutputContextStub) PopState() {
-	if o.PopStateCalled != nil {
-		o.PopStateCalled()
+func (o *OutputContextStub) PopSetActiveState() {
+	if o.PopSetActiveStateCalled != nil {
+		o.PopSetActiveStateCalled()
+	}
+}
+
+func (o *OutputContextStub) PopMergeActiveState() {
+	if o.PopMergeActiveStateCalled != nil {
+		o.PopMergeActiveStateCalled()
+	}
+}
+
+func (o *OutputContextStub) PopDiscard() {
+	if o.PopDiscardCalled != nil {
+		o.PopDiscardCalled()
 	}
 }
 

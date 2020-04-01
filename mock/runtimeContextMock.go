@@ -42,7 +42,10 @@ func (r *RuntimeContextMock) InitStateFromContractCallInput(input *vmcommon.Cont
 func (r *RuntimeContextMock) PushState() {
 }
 
-func (r *RuntimeContextMock) PopState() {
+func (r *RuntimeContextMock) PopSetActiveState() {
+}
+
+func (r *RuntimeContextMock) PopDiscard() {
 }
 
 func (r *RuntimeContextMock) ClearStateStack() {

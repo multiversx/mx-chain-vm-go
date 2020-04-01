@@ -31,12 +31,17 @@ func (context *bigIntContext) PushState() {
 	context.stateStack = append(context.stateStack, newState)
 }
 
-func (context *bigIntContext) PopState() {
+func (context *bigIntContext) PopSetActiveState() {
 	stateStackLen := len(context.stateStack)
 	prevState := context.stateStack[stateStackLen-1]
 	context.stateStack = context.stateStack[:stateStackLen-1]
 
 	context.mappedValues = prevState.mappedValues
+}
+
+func (context *bigIntContext) PopDiscard() {
+	stateStackLen := len(context.stateStack)
+	context.stateStack = context.stateStack[:stateStackLen-1]
 }
 
 func (context *bigIntContext) ClearStateStack() {

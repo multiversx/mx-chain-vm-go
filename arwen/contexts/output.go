@@ -73,7 +73,15 @@ func (context *outputContext) PushState() {
 	context.stateStack = append(context.stateStack, newState)
 }
 
-func (context *outputContext) PopState() {
+func (context *outputContext) PopSetActiveState() {
+	stateStackLen := len(context.stateStack)
+	prevState := context.stateStack[stateStackLen-1]
+	context.stateStack = context.stateStack[:stateStackLen-1]
+
+	context.outputState = prevState
+}
+
+func (context *outputContext) PopMergeActiveState() {
 	stateStackLen := len(context.stateStack)
 
 	// Merge the current state into the head of the stateStack,
@@ -86,6 +94,11 @@ func (context *outputContext) PopState() {
 	mergeVMOutputs(prevState, context.outputState)
 	context.outputState = newVMOutput()
 	mergeVMOutputs(context.outputState, prevState)
+}
+
+func (context *outputContext) PopDiscard() {
+	stateStackLen := len(context.stateStack)
+	context.stateStack = context.stateStack[:stateStackLen-1]
 }
 
 func (context *outputContext) ClearStateStack() {

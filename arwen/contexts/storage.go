@@ -35,12 +35,17 @@ func (context *storageContext) PushState() {
 	context.stateStack = append(context.stateStack, context.address)
 }
 
-func (context *storageContext) PopState() {
+func (context *storageContext) PopSetActiveState() {
 	stateStackLen := len(context.stateStack)
 	prevAddress := context.stateStack[stateStackLen-1]
 	context.stateStack = context.stateStack[:stateStackLen-1]
 
 	context.address = prevAddress
+}
+
+func (context *storageContext) PopDiscard() {
+	stateStackLen := len(context.stateStack)
+	context.stateStack = context.stateStack[:stateStackLen-1]
 }
 
 func (context *storageContext) ClearStateStack() {
