@@ -39,7 +39,13 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	output.AddTxValueToAccount(address, input.CallValue)
 	storage.SetAddress(runtime.GetSCAddress())
 
-	err = metering.DeductInitialGasForDirectDeployment(arwen.CodeDeployInput{input.ContractCode})
+	codeDeployInput := arwen.CodeDeployInput{
+		ContractCode:         input.ContractCode,
+		ContractCodeMetadata: input.ContractCodeMetadata,
+		ContractAddress:      address,
+	}
+
+	err = metering.DeductInitialGasForDirectDeployment(codeDeployInput)
 	if err != nil {
 		output.SetReturnCode(vmcommon.OutOfGas)
 		return vmOutput
@@ -71,10 +77,14 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 		return vmOutput
 	}
 
-	output.DeployCode(address, input.ContractCode, input.ContractCodeMetadata)
+	output.DeployCode(codeDeployInput)
 	vmOutput = output.GetVMOutput()
 
 	return vmOutput
+}
+
+func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput) {
+	panic("todo")
 }
 
 func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput) {
@@ -142,10 +152,6 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	vmOutput = output.GetVMOutput()
 
 	return vmOutput
-}
-
-func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput) {
-	panic("todo")
 }
 
 func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
@@ -221,7 +227,13 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]by
 	blockchain.IncreaseNonce(input.CallerAddr)
 	runtime.SetSCAddress(address)
 
-	err = metering.DeductInitialGasForIndirectDeployment(arwen.CodeDeployInput{ContractCode: input.ContractCode})
+	codeDeployInput := arwen.CodeDeployInput{
+		ContractCode:         input.ContractCode,
+		ContractCodeMetadata: input.ContractCodeMetadata,
+		ContractAddress:      address,
+	}
+
+	err = metering.DeductInitialGasForIndirectDeployment(codeDeployInput)
 	if err != nil {
 		runtime.PopState()
 		return nil, err
@@ -257,7 +269,7 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]by
 		return nil, err
 	}
 
-	output.DeployCode(address, input.ContractCode, input.ContractCodeMetadata)
+	output.DeployCode(codeDeployInput)
 
 	gasToRestoreToCaller := metering.GasLeft()
 

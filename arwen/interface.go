@@ -135,7 +135,7 @@ type OutputContext interface {
 	Finish(data []byte)
 	GetVMOutput() *vmcommon.VMOutput
 	AddTxValueToAccount(address []byte, value *big.Int)
-	DeployCode(address []byte, code []byte, codeMetadata []byte)
+	DeployCode(input CodeDeployInput)
 	CreateVMOutputInCaseOfError(errCode vmcommon.ReturnCode, message string) *vmcommon.VMOutput
 }
 

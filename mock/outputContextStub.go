@@ -29,7 +29,7 @@ type OutputContextStub struct {
 	FinishCalled                      func(data []byte)
 	GetVMOutputCalled                 func() *vmcommon.VMOutput
 	AddTxValueToAccountCalled         func(address []byte, value *big.Int)
-	DeployCodeCalled                  func(address []byte, code []byte, codeMetadata []byte)
+	DeployCodeCalled                  func(input arwen.CodeDeployInput)
 	CreateVMOutputInCaseOfErrorCalled func(errCode vmcommon.ReturnCode, message string) *vmcommon.VMOutput
 }
 
@@ -154,9 +154,9 @@ func (o *OutputContextStub) AddTxValueToAccount(address []byte, value *big.Int) 
 	}
 }
 
-func (o *OutputContextStub) DeployCode(address []byte, code []byte, codeMetadata []byte) {
+func (o *OutputContextStub) DeployCode(input arwen.CodeDeployInput) {
 	if o.DeployCodeCalled != nil {
-		o.DeployCodeCalled(address, code, codeMetadata)
+		o.DeployCodeCalled(input)
 	}
 }
 

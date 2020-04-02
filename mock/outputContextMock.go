@@ -116,7 +116,7 @@ func (o *OutputContextMock) GetVMOutput() *vmcommon.VMOutput {
 	return o.OutputStateMock
 }
 
-func (o *OutputContextMock) DeployCode(address []byte, code []byte, codeMetadata []byte) {
+func (o *OutputContextMock) DeployCode(input arwen.CodeDeployInput) {
 }
 
 func (o *OutputContextMock) CreateVMOutputInCaseOfError(errCode vmcommon.ReturnCode, message string) *vmcommon.VMOutput {

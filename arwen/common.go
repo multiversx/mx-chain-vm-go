@@ -30,5 +30,7 @@ type AsyncCallInfo struct {
 
 // CodeDeployInput contains code deploy state, whether it comes from a ContractCreateInput or a ContractCallInput
 type CodeDeployInput struct {
-	ContractCode []byte
+	ContractCode         []byte
+	ContractCodeMetadata []byte
+	ContractAddress      []byte
 }
