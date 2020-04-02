@@ -162,7 +162,19 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vm
 	storage.PushState()
 	storage.SetAddress(host.Runtime().GetSCAddress())
 
-	err := host.execute(input)
+	// Perform a value transfer to the called SC. If the execution fails, this
+	// transfer will not persist.
+	err := output.Transfer(input.RecipientAddr, input.CallerAddr, 0, input.CallValue, nil)
+	if err != nil {
+		// Execution failed: restore contexts as if the execution didn't happen.
+		bigInt.PopSetActiveState()
+		output.PopSetActiveState()
+		runtime.PopSetActiveState()
+
+		return nil, err
+	}
+
+	err = host.execute(input)
 	if err != nil {
 		// Execution failed: restore contexts as if the execution didn't happen.
 		bigInt.PopSetActiveState()

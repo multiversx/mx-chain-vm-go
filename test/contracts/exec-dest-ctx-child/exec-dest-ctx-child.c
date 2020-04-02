@@ -112,5 +112,24 @@ void childFunction_BigInts() {
 		byte msg[] = "child not ok";
 		finish(msg, 12);
 	}
+}
 
+void childFunction_OutOfGas() {
+	int numArgs = getNumArguments();
+	if (numArgs != 0) {
+		byte message[] = "wrong number of arguments";
+		signalError(message, 25);
+	}
+
+	didCallerPay();
+
+	storageStore(childKey, childData, 9);
+	finish(childFinish, 11);
+	bigIntSetInt64(12, 88);
+
+	// Start infinite loop.
+	byte msg[] = "rockets";
+	while (1) {
+		finish(msg, 7);
+	}
 }

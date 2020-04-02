@@ -983,11 +983,6 @@ func executeOnDestContext(
 		Function:      function,
 	}
 
-	err = output.Transfer(dest, send, 0, bigIntVal, nil)
-	if err != nil {
-		return 1
-	}
-
 	_, err = host.ExecuteOnDestContext(contractCallInput)
 	if err != nil {
 		return 1

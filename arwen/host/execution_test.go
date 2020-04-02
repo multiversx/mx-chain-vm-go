@@ -404,11 +404,12 @@ func TestExecution_ExecuteOnSameContext_OutOfGas(t *testing.T) {
 	// Parent sets data into the storage, finishes data and creates a bigint
 	// Parent calls executeOnSameContext, sending some value as well
 	// Parent provides insufficient gas to executeOnSameContext (enoguh to start the SC though)
-	// Child SC starts executing: sets data into the storage, finishes data and increments the bigint
+	// Child SC starts executing: sets data into the storage, finishes data and changes the bigint
 	// Child starts an infinite loop, which must surely end with OutOfGas
 	// Execution returns to parent, which finishes with the result of executeOnSameContext
 	// Assertions: modifications made by the child are did not take effect
 	// Assertions: the value sent by the parent to the child was returned to the parent
+	// Assertions: the parent lost all the gas provided to executeOnSameContext
 	parentCode := GetTestSCCode("exec-same-ctx-parent", "../../")
 	childCode := GetTestSCCode("exec-same-ctx-child", "../../")
 	parentSCBalance := big.NewInt(1000)
@@ -421,8 +422,10 @@ func TestExecution_ExecuteOnSameContext_OutOfGas(t *testing.T) {
 		return big.NewInt(0), nil
 	}
 
-	// Call parentFunctionChildCall() of the parent SC, which will call the child
-	// SC and pass some arguments using executeOnSameContext().
+	// Call parentFunctionChildCall_OutOfGas() of the parent SC, which will call
+	// the child SC using executeOnSameContext() with sufficient gas for
+	// compilation and starting, but the child starts an infinite loop which will
+	// end in OutOfGas.
 	host, stubBlockchainHook := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
 	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
 	input := DefaultTestContractCallInput()
@@ -587,7 +590,45 @@ func TestExecution_ExecuteOnDestContext_Wrong(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnDestContext_OutOfGas(t *testing.T) {
-	// TODO
+	// Scenario:
+	// Parent sets data into the storage, finishes data and creates a bigint
+	// Parent calls executeOnDestContext, sending some value as well
+	// Parent provides insufficient gas to executeOnDestContext (enoguh to start the SC though)
+	// Child SC starts executing: sets data into the storage, finishes data and changes the bigint
+	// Child starts an infinite loop, which must surely end with OutOfGas
+	// Execution returns to parent, which finishes with the result of executeOnDestContext
+	// Assertions: modifications made by the child are did not take effect (no OutputAccount is created)
+	// Assertions: the value sent by the parent to the child was returned to the parent
+	// Assertions: the parent lost all the gas provided to executeOnDestContext
+	parentCode := GetTestSCCode("exec-dest-ctx-parent", "../../")
+	childCode := GetTestSCCode("exec-dest-ctx-child", "../../")
+	parentSCBalance := big.NewInt(1000)
+
+	getBalanceCalled := func(address []byte) (*big.Int, error) {
+		if bytes.Equal(parentAddress, address) {
+			return parentSCBalance, nil
+		}
+
+		return big.NewInt(0), nil
+	}
+
+	// Call parentFunctionChildCall_OutOfGas() of the parent SC, which will call
+	// the child SC using executeOnDestContext() with sufficient gas for
+	// compilation and starting, but the child starts an infinite loop which will
+	// end in OutOfGas.
+	host, stubBlockchainHook := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
+	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
+	input := DefaultTestContractCallInput()
+	input.CallerAddr = []byte("user")
+	input.RecipientAddr = parentAddress
+	input.Function = "parentFunctionChildCall_OutOfGas"
+	input.GasProvided = 1000000
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	expectedVMOutput := expectedVMOutput_DestCtx_OutOfGas()
+	assert.Equal(t, int64(42), host.BigInt().GetOne(12).Int64())
+	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
 func TestExecution_ExecuteOnDestContext_Successful(t *testing.T) {

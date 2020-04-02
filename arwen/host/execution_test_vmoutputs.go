@@ -25,8 +25,8 @@ var gasProvided = uint64(1000000)
 var parentCompilationCost_SameCtx = uint64(3577)
 var childCompilationCost_SameCtx = uint64(3285)
 
-var parentCompilationCost_DestCtx = uint64(2670)
-var childCompilationCost_DestCtx = uint64(1821)
+var parentCompilationCost_DestCtx = uint64(3267)
+var childCompilationCost_DestCtx = uint64(1827)
 
 func expectedVMOutput_SameCtx_Prepare() *vmcommon.VMOutput {
 	expectedVMOutput := MakeVMOutput()
@@ -265,6 +265,38 @@ func expectedVMOutput_DestCtx_WrongContractCalled() *vmcommon.VMOutput {
 	executeAPICost := uint64(42)
 	gasLostOnFailure := uint64(10000)
 	finalCost := uint64(44)
+	gas := gasProvided
+	gas -= parentCompilationCost_DestCtx
+	gas -= executionCostBeforeExecuteAPI
+	gas -= executeAPICost
+	gas -= gasLostOnFailure
+	gas -= finalCost
+	expectedVMOutput.GasRemaining = gas
+
+	return expectedVMOutput
+}
+
+func expectedVMOutput_DestCtx_OutOfGas() *vmcommon.VMOutput {
+	expectedVMOutput := MakeVMOutput()
+
+	expectedVMOutput.ReturnCode = vmcommon.Ok
+
+	parentAccount := AddNewOutputAccount(
+		expectedVMOutput,
+		parentAddress,
+		0,
+		nil,
+	)
+
+	SetStorageUpdate(parentAccount, parentKeyA, parentDataA)
+	AddFinishData(expectedVMOutput, parentFinishA)
+
+	AddFinishData(expectedVMOutput, []byte("fail"))
+
+	executionCostBeforeExecuteAPI := uint64(124)
+	executeAPICost := uint64(1)
+	gasLostOnFailure := uint64(3500)
+	finalCost := uint64(36)
 	gas := gasProvided
 	gas -= parentCompilationCost_DestCtx
 	gas -= executionCostBeforeExecuteAPI
