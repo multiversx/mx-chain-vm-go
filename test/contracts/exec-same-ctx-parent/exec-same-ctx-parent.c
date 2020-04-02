@@ -136,6 +136,28 @@ void parentFunctionChildCall_BigInts() {
 	finishResult(result);
 }
 
+void parentFunctionChildCall_OutOfGas() {
+	storageStore(parentKeyA, parentDataA, 11);
+	bigInt myInt = bigIntNew(42);
+	finish(parentFinishA, 13);
+
+	byte childAddress[] = "childSC.........................";
+	byte executeValue[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,99};
+	byte functionName[] = "childFunction";
+	int result = executeOnSameContext(
+			10000,
+			childAddress,
+			executeValue,
+			functionName,
+			13,
+			0,
+			0,
+			0
+	);
+
+	finishResult(result);
+}
+
 u32 reverseU32(u32 value) {
 	u32 lastByteMask = 0x00000000000000FF;
 	u32 result = 0;

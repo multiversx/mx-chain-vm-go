@@ -149,3 +149,17 @@ void childFunction_BigInts() {
 		finish(msg, 8);
 	}
 }
+
+void childFunction_OutOfGas() {
+	int numArgs = getNumArguments();
+	if (numArgs != 0) {
+		byte message[] = "wrong number of arguments";
+		signalError(message, 25);
+	}
+
+	didCallerPay();
+
+	storageStore(childKey, childData, 9);
+	finish(childFinish, 11);
+	bigIntSetInt64(0, 88);
+}

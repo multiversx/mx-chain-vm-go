@@ -93,6 +93,27 @@ func expectedVMOutput_SameCtx_WrongContractCalled() *vmcommon.VMOutput {
 	return expectedVMOutput
 }
 
+func expectedVMOutput_SameCtx_OutOfGas() *vmcommon.VMOutput {
+	expectedVMOutput := MakeVMOutput()
+
+	expectedVMOutput.ReturnCode = vmcommon.Ok
+
+	parentAccount := AddNewOutputAccount(
+		expectedVMOutput,
+		parentAddress,
+		0,
+		nil,
+	)
+	parentAccount.Balance = big.NewInt(1000)
+
+	SetStorageUpdate(parentAccount, parentKeyA, parentDataA)
+	AddFinishData(expectedVMOutput, parentFinishA)
+
+	AddFinishData(expectedVMOutput, []byte("fail"))
+
+	return expectedVMOutput
+}
+
 func expectedVMOutput_SameCtx_SuccessfulChildCall() *vmcommon.VMOutput {
 	expectedVMOutput := expectedVMOutput_SameCtx_Prepare()
 

@@ -399,7 +399,70 @@ func TestExecution_ExecuteOnSameContext_Wrong(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnSameContext_OutOfGas(t *testing.T) {
-	// TODO
+	// Scenario:
+	// Parent sets data into the storage, finishes data and creates a bigint
+	// Parent calls executeOnSameContext, sending some value as well
+	// Parent provides insufficient gas to executeOnSameContext (enoguh to start the SC though)
+	// Child SC starts executing: sets data into the storage, finishes data and increments the bigint
+	// Child starts an infinite loop, which must surely end with OutOfGas
+	// Execution returns to parent, which finishes with the result of executeOnSameContext
+	// Assertions: modifications made by the child are did not take effect
+	// Assertions: the value sent by the parent to the child was returned to the parent
+	parentCode := GetTestSCCode("exec-ctx-recursive-parent", "../../")
+	parentSCBalance := big.NewInt(1000)
+
+	getBalanceCalled := func(address []byte) (*big.Int, error) {
+		if bytes.Equal(parentAddress, address) {
+			return parentSCBalance, nil
+		}
+		return big.NewInt(0), nil
+	}
+
+	// Call parentFunctionWrongCall() of the parent SC, which will try to call a
+	// non-existing SC.
+	host, stubBlockchainHook := DefaultTestArwenForCall(t, parentCode)
+	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
+	input := DefaultTestContractCallInput()
+	input.CallerAddr = []byte("user")
+	input.RecipientAddr = parentAddress
+	input.Function = "parentFunctionWrongCall"
+	input.GasProvided = 1000000
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	expectedVMOutput := expectedVMOutput_SameCtx_WrongContractCalled()
+	require.Equal(t, expectedVMOutput, vmOutput)
+}
+
+func TestExecution_ExecuteOnSameContext_Recursive_Direct(t *testing.T) {
+	// Scenario:
+	// SC has a method "callRecursive" which takes a byte as argument (number of recursive calls)
+	// callRecursive() saves to storage "keyNNN" → "valueNNN", where NNN is the argument
+	// callRecursive() saves to storage a counter starting at 1, increased by every recursive call
+	// callRecursive() creates a bigInt and increments it with every iteration
+	// callRecursive() calls itself using executeOnSameContext(), with the argument decremented
+	// callRecursive() handles argument == 0 as follows: saves to storage the
+	//		value of the bigInt counter, then exits without recursive call
+	// Assertions: the VMOutput must contain as many StorageUpdates as the argument requires
+	// Assertions: the VMOutput must contain as many finished values as the argument requires
+	// Assertions: there must be a StorageUpdate with the value of the bigInt counter
+}
+
+func TestExecution_ExecuteOnSameContext_Recursive_Mutual_Methods(t *testing.T) {
+}
+
+func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs(t *testing.T) {
+	// Scenario:
+	// Parent has method parentCallChild()
+	// Child has method childCallParent()
+	// The two methods are identical, just named differently
+	// The methods do the following:
+	//		parent: save to storage "keyParentNNN" → "valueParentNNN"
+	//		parent:	finish "ParentNNN"
+	//		child:	save to storage "keyChildNNN" → "valueChildNNN"
+	//		child:	finish "ChildNNN"
+	//		both:		increment a shared bigInt counter
+	//		both:		whoever exits must save the shared bigInt counter to storage
 }
 
 func TestExecution_ExecuteOnSameContext_Successful(t *testing.T) {
