@@ -4,7 +4,7 @@ import (
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 const AddressLen = 32
@@ -29,6 +29,10 @@ func AddHostContext(ctx VMHost) int {
 	}
 	vmContextMap[id] = ctx
 	return int(id)
+}
+
+func RemoveAllHostContexts() {
+	vmContextMap = make(map[uint8]VMHost)
 }
 
 func RemoveHostContext(idx int) {

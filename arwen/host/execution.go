@@ -6,11 +6,6 @@ import (
 )
 
 func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput) {
-	var err error
-	defer func() {
-		vmOutput = host.overrideVMOutputIfError(err, vmOutput)
-	}()
-
 	host.ClearStateStack()
 	host.InitState()
 
@@ -20,10 +15,20 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	output := host.Output()
 	storage := host.Storage()
 
+	var err error
+	defer func() {
+		vmOutput = host.overrideVMOutputIfError(err, vmOutput)
+	}()
+
+	defer func() {
+		runtime.CleanInstance()
+		arwen.RemoveAllHostContexts()
+	}()
+
 	address, err := blockchain.NewAddress(input.CallerAddr)
 	if err != nil {
 		output.SetReturnCode(vmcommon.ExecutionFailed)
-		return vmOutput
+		return
 	}
 
 	runtime.SetVMInput(&input.VMInput)
@@ -40,39 +45,35 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	err = metering.DeductInitialGasForDirectDeployment(codeDeployInput)
 	if err != nil {
 		output.SetReturnCode(vmcommon.OutOfGas)
-		return vmOutput
+		return
 	}
 
 	vmInput := runtime.GetVMInput()
 	err = runtime.CreateWasmerInstance(input.ContractCode, vmInput.GasProvided)
 	if err != nil {
 		output.SetReturnCode(vmcommon.ContractInvalid)
-		return vmOutput
+		return
 	}
 
 	err = runtime.VerifyContractCode()
 	if err != nil {
 		output.SetReturnCode(vmcommon.ContractInvalid)
-		return vmOutput
+		return
 	}
 
 	idContext := arwen.AddHostContext(host)
 	runtime.SetInstanceContextID(idContext)
-	defer func() {
-		runtime.CleanInstance()
-		arwen.RemoveHostContext(idContext)
-	}()
 
 	err = host.callInitFunction()
 	if err != nil {
 		output.SetReturnCode(vmcommon.FunctionWrongSignature)
-		return vmOutput
+		return
 	}
 
 	output.DeployCode(codeDeployInput)
-	vmOutput = output.GetVMOutput()
 
-	return vmOutput
+	vmOutput = output.GetVMOutput()
+	return
 }
 
 func (host *vmHost) overrideVMOutputIfError(err error, vmOutput *vmcommon.VMOutput) *vmcommon.VMOutput {
@@ -97,11 +98,6 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 }
 
 func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput) {
-	var err error
-	defer func() {
-		vmOutput = host.overrideVMOutputIfError(err, vmOutput)
-	}()
-
 	host.ClearStateStack()
 	host.InitState()
 
@@ -111,6 +107,16 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	blockchain := host.Blockchain()
 	storage := host.Storage()
 
+	var err error
+	defer func() {
+		vmOutput = host.overrideVMOutputIfError(err, vmOutput)
+	}()
+
+	defer func() {
+		runtime.CleanInstance()
+		arwen.RemoveAllHostContexts()
+	}()
+
 	runtime.InitStateFromContractCallInput(input)
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
 	storage.SetAddress(runtime.GetSCAddress())
@@ -118,7 +124,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	contract, err := blockchain.GetCode(runtime.GetSCAddress())
 	if err != nil {
 		output.SetReturnCode(vmcommon.ContractInvalid)
-		return vmOutput
+		return
 	}
 
 	vmInput := runtime.GetVMInput()
@@ -126,33 +132,28 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	err = metering.DeductInitialGasForExecution(contract)
 	if err != nil {
 		output.SetReturnCode(vmcommon.OutOfGas)
-		return vmOutput
+		return
 	}
 
 	err = runtime.CreateWasmerInstance(contract, vmInput.GasProvided)
 	if err != nil {
 		output.SetReturnCode(vmcommon.ContractInvalid)
-		return vmOutput
+		return
 	}
 
 	idContext := arwen.AddHostContext(host)
 	runtime.SetInstanceContextID(idContext)
-	defer func() {
-		runtime.CleanInstance()
-		arwen.RemoveHostContext(idContext)
-	}()
 
 	err = host.callSCMethod()
 
 	if err != nil {
-		return vmOutput
+		return
 	}
 
 	metering.UnlockGasIfAsyncStep()
 
 	vmOutput = output.GetVMOutput()
-
-	return vmOutput
+	return
 }
 
 func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
