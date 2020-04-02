@@ -1,3 +1,3 @@
 typedef unsigned char byte;
-typedef unsigned int i32;
-typedef unsigned long long i64;
+typedef unsigned int u32;
+typedef unsigned long long u64;

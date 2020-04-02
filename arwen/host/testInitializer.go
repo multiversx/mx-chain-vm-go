@@ -19,8 +19,8 @@ import (
 
 var defaultVMType = []byte{0xF, 0xF}
 var errCodeNotFound = errors.New("code not found")
-var firstAddress = []byte("firstSC.........................")
-var secondAddress = []byte("secondSC........................")
+var parentSCAddress = []byte("parentSC.........................")
+var childSCAddress = []byte("childSC.........................")
 
 // GetSCCode retrieves the bytecode of a WASM module from a file
 func GetSCCode(fileName string) []byte {
@@ -53,23 +53,26 @@ func DefaultTestArwenForDeployment(t *testing.T, ownerNonce uint64, newAddress [
 func DefaultTestArwenForCall(tb testing.TB, code []byte) (*vmHost, *mock.BlockchainHookStub) {
 	mockCryptoHook := &mock.CryptoHookMock{}
 	stubBlockchainHook := &mock.BlockchainHookStub{}
-	stubBlockchainHook.GetCodeCalled = func(address []byte) ([]byte, error) {
-		return code, nil
+	stubBlockchainHook.GetCodeCalled = func(scAddress []byte) ([]byte, error) {
+		if bytes.Equal(scAddress, parentSCAddress) {
+			return code, nil
+		}
+		return nil, errCodeNotFound
 	}
 	host, _ := DefaultTestArwen(tb, stubBlockchainHook, mockCryptoHook)
 	return host, stubBlockchainHook
 }
 
 // DefaultTestArwenForTwoSCs creates an Arwen vmHost configured for testing calls between 2 SmartContracts
-func DefaultTestArwenForTwoSCs(t *testing.T, firstCode []byte, secondCode []byte) (*vmHost, *mock.BlockchainHookStub) {
+func DefaultTestArwenForTwoSCs(t *testing.T, parentCode []byte, childCode []byte) (*vmHost, *mock.BlockchainHookStub) {
 	mockCryptoHook := &mock.CryptoHookMock{}
 	stubBlockchainHook := &mock.BlockchainHookStub{}
 	stubBlockchainHook.GetCodeCalled = func(scAddress []byte) ([]byte, error) {
-		if bytes.Equal(scAddress, firstAddress) {
-			return firstCode, nil
+		if bytes.Equal(scAddress, parentSCAddress) {
+			return parentCode, nil
 		}
-		if bytes.Equal(scAddress, secondAddress) {
-			return secondCode, nil
+		if bytes.Equal(scAddress, childSCAddress) {
+			return childCode, nil
 		}
 		return nil, errCodeNotFound
 	}
@@ -113,7 +116,7 @@ func DefaultTestContractCallInput() *vmcommon.ContractCallInput {
 			GasPrice:    0,
 			GasProvided: 0,
 		},
-		RecipientAddr: []byte("smartcontract"),
+		RecipientAddr: parentSCAddress,
 		Function:      "function",
 	}
 }

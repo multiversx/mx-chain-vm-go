@@ -15,23 +15,31 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func InitializeWasmer() {
+func MakeAPIImports() *wasmer.Imports {
 	imports, _ := elrondapi.ElrondEIImports()
 	imports, _ = elrondapi.BigIntImports(imports)
 	imports, _ = ethapi.EthereumImports(imports)
 	imports, _ = crypto.CryptoImports(imports)
+	return imports
+}
+
+func InitializeWasmer() *wasmer.Imports {
+	imports := MakeAPIImports()
 	_ = wasmer.SetImports(imports)
 
 	gasSchedule := config.MakeGasMap(1)
 	gasCostConfig, _ := config.CreateGasConfig(gasSchedule)
 	opcodeCosts := gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray()
 	wasmer.SetOpcodeCosts(&opcodeCosts)
+	return imports
 }
 
 func TestNewRuntimeContext(t *testing.T) {
-	InitializeWasmer()
+	imports := InitializeWasmer()
 
 	host := &mock.VmHostMock{}
+	host.SCAPIMethods = imports
+
 	vmType := []byte("type")
 
 	runtimeContext, err := NewRuntimeContext(host, vmType)
@@ -47,9 +55,11 @@ func TestNewRuntimeContext(t *testing.T) {
 }
 
 func TestRuntimeContext_InitState(t *testing.T) {
-	InitializeWasmer()
+	imports := InitializeWasmer()
 
 	host := &mock.VmHostMock{}
+	host.SCAPIMethods = imports
+
 	vmType := []byte("type")
 
 	runtimeContext, err := NewRuntimeContext(host, vmType)
@@ -74,9 +84,11 @@ func TestRuntimeContext_InitState(t *testing.T) {
 }
 
 func TestRuntimeContext_NewWasmerInstance(t *testing.T) {
-	InitializeWasmer()
+	imports := InitializeWasmer()
 
 	host := &mock.VmHostMock{}
+	host.SCAPIMethods = imports
+
 	vmType := []byte("type")
 
 	runtimeContext, err := NewRuntimeContext(host, vmType)
@@ -101,7 +113,10 @@ func TestRuntimeContext_NewWasmerInstance(t *testing.T) {
 }
 
 func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
+	imports := MakeAPIImports()
 	host := &mock.VmHostMock{}
+	host.SCAPIMethods = imports
+
 	vmType := []byte("type")
 	runtimeContext, _ := NewRuntimeContext(host, vmType)
 
@@ -136,8 +151,11 @@ func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
 }
 
 func TestRuntimeContext_PushPopInstance(t *testing.T) {
-	InitializeWasmer()
+	imports := InitializeWasmer()
+
 	host := &mock.VmHostMock{}
+	host.SCAPIMethods = imports
+
 	vmType := []byte("type")
 	runtimeContext, _ := NewRuntimeContext(host, vmType)
 
@@ -165,7 +183,10 @@ func TestRuntimeContext_PushPopInstance(t *testing.T) {
 }
 
 func TestRuntimeContext_PushPopState(t *testing.T) {
+	imports := MakeAPIImports()
 	host := &mock.VmHostMock{}
+	host.SCAPIMethods = imports
+
 	vmType := []byte("type")
 	runtimeContext, _ := NewRuntimeContext(host, vmType)
 
@@ -207,8 +228,11 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 }
 
 func TestRuntimeContext_Instance(t *testing.T) {
-	InitializeWasmer()
+	imports := InitializeWasmer()
+
 	host := &mock.VmHostMock{}
+	host.SCAPIMethods = imports
+
 	vmType := []byte("type")
 	runtimeContext, _ := NewRuntimeContext(host, vmType)
 
@@ -248,14 +272,19 @@ func TestRuntimeContext_Instance(t *testing.T) {
 }
 
 func TestRuntimeContext_Breakpoints(t *testing.T) {
+	imports := InitializeWasmer()
+
 	mockOutput := &mock.OutputContextMock{}
 	mockOutput.SetReturnMessage("")
+
 	host := &mock.VmHostMock{
 		OutputContext: mockOutput,
+		SCAPIMethods:  imports,
 	}
-	InitializeWasmer()
+
 	vmType := []byte("type")
 	runtimeContext, _ := NewRuntimeContext(host, vmType)
+
 	gasLimit := uint64(100000000)
 	path := "./../../test/contracts/counter.wasm"
 	contractCode := arwen.GetSCCode(path)
@@ -303,8 +332,11 @@ func TestRuntimeContext_Breakpoints(t *testing.T) {
 }
 
 func TestRuntimeContext_MemLoadStoreOk(t *testing.T) {
-	InitializeWasmer()
+	imports := InitializeWasmer()
+
 	host := &mock.VmHostMock{}
+	host.SCAPIMethods = imports
+
 	vmType := []byte("type")
 	runtimeContext, _ := NewRuntimeContext(host, vmType)
 
@@ -334,8 +366,11 @@ func TestRuntimeContext_MemLoadStoreOk(t *testing.T) {
 }
 
 func TestRuntimeContext_MemLoadCases(t *testing.T) {
-	InitializeWasmer()
+	imports := InitializeWasmer()
+
 	host := &mock.VmHostMock{}
+	host.SCAPIMethods = imports
+
 	vmType := []byte("type")
 	runtimeContext, _ := NewRuntimeContext(host, vmType)
 
@@ -391,8 +426,11 @@ func TestRuntimeContext_MemLoadCases(t *testing.T) {
 }
 
 func TestRuntimeContext_MemStoreCases(t *testing.T) {
-	InitializeWasmer()
+	imports := InitializeWasmer()
+
 	host := &mock.VmHostMock{}
+	host.SCAPIMethods = imports
+
 	vmType := []byte("type")
 	runtimeContext, _ := NewRuntimeContext(host, vmType)
 
