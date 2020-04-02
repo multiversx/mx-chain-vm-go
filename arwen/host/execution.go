@@ -104,7 +104,36 @@ func (host *vmHost) performCodeDeploy(input arwen.CodeDeployInput) (*vmcommon.VM
 }
 
 func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput) {
-	panic("todo")
+	host.ClearStateStack()
+	host.InitState()
+
+	runtime := host.Runtime()
+	output := host.Output()
+	storage := host.Storage()
+
+	var err error
+	defer func() {
+		vmOutput = host.onExitDirectCreateOrCall(err, vmOutput)
+	}()
+
+	runtime.SetVMInput(&input.VMInput)
+	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
+	storage.SetAddress(runtime.GetSCAddress())
+
+	code, codeMetadata, err := runtime.GetCodeUpgradeFromArgs()
+	if err != nil {
+		output.SetReturnCode(vmcommon.UpgradeFailed)
+		return
+	}
+
+	codeDeployInput := arwen.CodeDeployInput{
+		ContractCode:         code,
+		ContractCodeMetadata: codeMetadata,
+		ContractAddress:      input.RecipientAddr,
+	}
+
+	vmOutput, err = host.performCodeDeploy(codeDeployInput)
+	return
 }
 
 func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput) {
