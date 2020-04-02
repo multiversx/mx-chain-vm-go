@@ -23,10 +23,10 @@ var parentTransferData = []byte("parentTransferData")
 var gasProvided = uint64(1000000)
 
 var parentCompilationCost_SameCtx = uint64(3007)
-var childCompilationCost_SameCtx = uint64(3134)
+var childCompilationCost_SameCtx = uint64(2922)
 
 var parentCompilationCost_DestCtx = uint64(2670)
-var childCompilationCost_DestCtx = uint64(1568)
+var childCompilationCost_DestCtx = uint64(1821)
 
 func expectedVMOutput_SameCtx_Prepare() *vmcommon.VMOutput {
 	expectedVMOutput := MakeVMOutput()
@@ -134,7 +134,7 @@ func expectedVMOutput_SameCtx_SuccessfulChildCall() *vmcommon.VMOutput {
 
 	parentGasBeforeExecuteAPI := uint64(188)
 	executeAPICost := uint64(39)
-	childExecutionCost := uint64(441)
+	childExecutionCost := uint64(431)
 	finalCost := uint64(139)
 	gas := gasProvided
 	gas -= parentCompilationCost_SameCtx
@@ -176,8 +176,8 @@ func expectedVMOutput_SameCtx_SuccessfulChildCall_BigInts() *vmcommon.VMOutput {
 
 	parentGasBeforeExecuteAPI := uint64(143)
 	executeAPICost := uint64(13)
-	childExecutionCost := uint64(117)
-	finalCost := uint64(54)
+	childExecutionCost := uint64(107)
+	finalCost := uint64(67)
 	gas := gasProvided
 	gas -= parentCompilationCost_SameCtx
 	gas -= parentGasBeforeExecuteAPI
@@ -283,7 +283,7 @@ func expectedVMOutput_DestCtx_SuccessfulChildCall() *vmcommon.VMOutput {
 
 	parentGasBeforeExecuteAPI := uint64(188)
 	executeAPICost := uint64(42)
-	childExecutionCost := uint64(88)
+	childExecutionCost := uint64(91)
 	finalCost := uint64(65)
 	gas := gasProvided
 	gas -= parentCompilationCost_DestCtx
@@ -323,8 +323,8 @@ func expectedVMOutput_DestCtx_SuccessfulChildCall_BigInts() *vmcommon.VMOutput {
 
 	parentGasBeforeExecuteAPI := uint64(143)
 	executeAPICost := uint64(13)
-	childExecutionCost := uint64(110)
-	finalCost := uint64(55)
+	childExecutionCost := uint64(101)
+	finalCost := uint64(68)
 	gas := gasProvided
 	gas -= parentCompilationCost_DestCtx
 	gas -= parentGasBeforeExecuteAPI

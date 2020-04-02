@@ -137,6 +137,8 @@ void childFunction_BigInts() {
 		status = 1;
 	}
 
+	// BigInt ID 3 was taken by didCallerPay(). The parent already had IDs 0, 1,
+	// and 2. Next ID available is 4.
 	bigInt intX = bigIntNew(256);
 	if (intX != 4) {
 		not_ok();
