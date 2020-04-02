@@ -940,7 +940,6 @@ func executeOnDestContext(
 ) int32 {
 	host := arwen.GetVmContext(context)
 	runtime := host.Runtime()
-	output := host.Output()
 	metering := host.Metering()
 
 	send := runtime.GetSCAddress()

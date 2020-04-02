@@ -447,6 +447,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct(t *testing.T) {
 	// callRecursive() saves to storage "keyNNN" → "valueNNN", where NNN is the argument
 	// callRecursive() saves to storage a counter starting at 1, increased by every recursive call
 	// callRecursive() creates a bigInt and increments it with every iteration
+	// callRecursive() finishes "finishNNN" in each iteration
 	// callRecursive() calls itself using executeOnSameContext(), with the argument decremented
 	// callRecursive() handles argument == 0 as follows: saves to storage the
 	//		value of the bigInt counter, then exits without recursive call
