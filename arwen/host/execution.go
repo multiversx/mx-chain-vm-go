@@ -6,6 +6,11 @@ import (
 )
 
 func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput) {
+	var err error
+	defer func() {
+		vmOutput = host.overrideVMOutputIfError(err, vmOutput)
+	}()
+
 	host.ClearStateStack()
 	host.InitState()
 
@@ -14,19 +19,6 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	metering := host.Metering()
 	output := host.Output()
 	storage := host.Storage()
-
-	var err error
-	defer func() {
-		if err != nil {
-			var message string
-			if err == arwen.ErrSignalError {
-				message = output.ReturnMessage()
-			} else {
-				message = err.Error()
-			}
-			vmOutput = output.CreateVMOutputInCaseOfError(output.ReturnCode(), message)
-		}
-	}()
 
 	address, err := blockchain.NewAddress(input.CallerAddr)
 	if err != nil {
@@ -83,11 +75,33 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	return vmOutput
 }
 
+func (host *vmHost) overrideVMOutputIfError(err error, vmOutput *vmcommon.VMOutput) *vmcommon.VMOutput {
+	if err == nil {
+		return vmOutput
+	}
+
+	output := host.Output()
+
+	var message string
+	if err == arwen.ErrSignalError {
+		message = output.ReturnMessage()
+	} else {
+		message = err.Error()
+	}
+
+	return output.CreateVMOutputInCaseOfError(output.ReturnCode(), message)
+}
+
 func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput) {
 	panic("todo")
 }
 
 func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput) {
+	var err error
+	defer func() {
+		vmOutput = host.overrideVMOutputIfError(err, vmOutput)
+	}()
+
 	host.ClearStateStack()
 	host.InitState()
 
@@ -96,19 +110,6 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	metering := host.Metering()
 	blockchain := host.Blockchain()
 	storage := host.Storage()
-
-	var err error
-	defer func() {
-		if err != nil {
-			var message string
-			if err == arwen.ErrSignalError {
-				message = output.ReturnMessage()
-			} else {
-				message = err.Error()
-			}
-			vmOutput = output.CreateVMOutputInCaseOfError(output.ReturnCode(), message)
-		}
-	}()
 
 	runtime.InitStateFromContractCallInput(input)
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
