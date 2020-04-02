@@ -15,9 +15,9 @@ func TestNewBigInt(t *testing.T) {
 
 	require.Nil(t, err)
 	require.False(t, bigIntContext.IsInterfaceNil())
-	require.NotNil(t, bigIntContext.mappedValues)
+	require.NotNil(t, bigIntContext.values)
 	require.NotNil(t, bigIntContext.stateStack)
-	require.Equal(t, 0, len(bigIntContext.mappedValues))
+	require.Equal(t, 0, len(bigIntContext.values))
 	require.Equal(t, 0, len(bigIntContext.stateStack))
 }
 

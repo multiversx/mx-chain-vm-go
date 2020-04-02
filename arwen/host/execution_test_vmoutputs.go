@@ -66,16 +66,6 @@ func expectedVMOutput_SameCtx_Prepare() *vmcommon.VMOutput {
 func expectedVMOutput_SameCtx_WrongContractCalled() *vmcommon.VMOutput {
 	expectedVMOutput := expectedVMOutput_SameCtx_Prepare()
 
-	parentAccount := expectedVMOutput.OutputAccounts[string(parentAddress)]
-	parentAccount.BalanceDelta = big.NewInt(-141)
-
-	_ = AddNewOutputAccount(
-		expectedVMOutput,
-		[]byte("wrongSC........................."),
-		99,
-		nil,
-	)
-
 	AddFinishData(expectedVMOutput, []byte("fail"))
 
 	executionCostBeforeExecuteAPI := uint64(180)
