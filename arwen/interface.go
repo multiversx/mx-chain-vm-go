@@ -78,6 +78,7 @@ type RuntimeContext interface {
 	GetVMType() []byte
 	Function() string
 	Arguments() [][]byte
+	GetCodeUpgradeFromArgs() ([]byte, []byte, error)
 	SignalUserError(message string)
 	FailExecution(err error)
 	SetRuntimeBreakpointValue(value BreakpointValue)
@@ -147,9 +148,8 @@ type MeteringContext interface {
 	BoundGasLimit(value int64) uint64
 	BlockGasLimit() uint64
 	DeductInitialGasForExecution(contract []byte) error
-	DeductInitialGasForDirectDeployment(input *vmcommon.ContractCreateInput) error
-	DeductInitialGasForIndirectDeployment(input *vmcommon.ContractCreateInput) error
-	DeductInitialGasForDirectUpgrade(input *vmcommon.ContractCallInput) error
+	DeductInitialGasForDirectDeployment(input CodeDeployInput) error
+	DeductInitialGasForIndirectDeployment(input CodeDeployInput) error
 	UnlockGasIfAsyncStep()
 }
 

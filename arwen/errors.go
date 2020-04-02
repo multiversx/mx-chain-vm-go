@@ -50,3 +50,5 @@ var ErrFuncNotFound = fmt.Errorf("%w (not found)", ErrInvalidFunction)
 var ErrInvalidFunctionName = fmt.Errorf("%w (invalid name)", ErrInvalidFunction)
 
 var ErrFunctionNonvoidSignature = fmt.Errorf("%w (nonvoid signature)", ErrInvalidFunction)
+
+var ErrInvalidUpgradeArguments = errors.New("invalid upgrade arguments")

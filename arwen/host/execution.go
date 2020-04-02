@@ -39,7 +39,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	output.AddTxValueToAccount(address, input.CallValue)
 	storage.SetAddress(runtime.GetSCAddress())
 
-	err = metering.DeductInitialGasForDirectDeployment(input)
+	err = metering.DeductInitialGasForDirectDeployment(arwen.CodeDeployInput{input.ContractCode})
 	if err != nil {
 		output.SetReturnCode(vmcommon.OutOfGas)
 		return vmOutput
@@ -145,82 +145,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 }
 
 func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput) {
-	host.ClearStateStack()
-	host.InitState()
-
-	runtime := host.Runtime()
-	metering := host.Metering()
-	output := host.Output()
-	storage := host.Storage()
-
-	var err error
-	defer func() {
-		if err != nil {
-			var message string
-			if err == arwen.ErrSignalError {
-				message = output.ReturnMessage()
-			} else {
-				message = err.Error()
-			}
-			vmOutput = output.CreateVMOutputInCaseOfError(output.ReturnCode(), message)
-		}
-	}()
-
-	address := input.RecipientAddr
-
-	contractCode, err := input.GetCodeUpgrade()
-	if err != nil {
-		output.SetReturnCode(vmcommon.UpgradeFailed)
-		return vmOutput
-	}
-
-	contractCodeMetadata, err := input.GetCodeMetadataUpgrade()
-	if err != nil {
-		output.SetReturnCode(vmcommon.UpgradeFailed)
-		return vmOutput
-	}
-
-	runtime.SetVMInput(&input.VMInput)
-	runtime.SetSCAddress(address)
-	output.AddTxValueToAccount(address, input.CallValue)
-	storage.SetAddress(runtime.GetSCAddress())
-
-	err = metering.DeductInitialGasForDirectUpgrade(input)
-	if err != nil {
-		output.SetReturnCode(vmcommon.OutOfGas)
-		return vmOutput
-	}
-
-	vmInput := runtime.GetVMInput()
-	err = runtime.CreateWasmerInstance(contractCode, vmInput.GasProvided)
-	if err != nil {
-		output.SetReturnCode(vmcommon.ContractInvalid)
-		return vmOutput
-	}
-
-	err = runtime.VerifyContractCode()
-	if err != nil {
-		output.SetReturnCode(vmcommon.ContractInvalid)
-		return vmOutput
-	}
-
-	idContext := arwen.AddHostContext(host)
-	runtime.SetInstanceContextID(idContext)
-	defer func() {
-		runtime.CleanInstance()
-		arwen.RemoveHostContext(idContext)
-	}()
-
-	err = host.callInitFunction()
-	if err != nil {
-		output.SetReturnCode(vmcommon.FunctionWrongSignature)
-		return vmOutput
-	}
-
-	output.DeployCode(address, contractCode, contractCodeMetadata)
-	vmOutput = output.GetVMOutput()
-
-	return vmOutput
+	panic("todo")
 }
 
 func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
@@ -296,7 +221,7 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]by
 	blockchain.IncreaseNonce(input.CallerAddr)
 	runtime.SetSCAddress(address)
 
-	err = metering.DeductInitialGasForIndirectDeployment(input)
+	err = metering.DeductInitialGasForIndirectDeployment(arwen.CodeDeployInput{ContractCode: input.ContractCode})
 	if err != nil {
 		runtime.PopState()
 		return nil, err

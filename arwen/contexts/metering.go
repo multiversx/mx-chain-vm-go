@@ -124,7 +124,7 @@ func (context *meteringContext) DeductInitialGasForExecution(contract []byte) er
 }
 
 // DeductInitialGasForDirectDeployment deducts gas for the deployment of a contract initiated by a Transaction
-func (context *meteringContext) DeductInitialGasForDirectDeployment(input *vmcommon.ContractCreateInput) error {
+func (context *meteringContext) DeductInitialGasForDirectDeployment(input arwen.CodeDeployInput) error {
 	return context.deductInitialGas(
 		input.ContractCode,
 		context.gasSchedule.ElrondAPICost.CreateContract,
@@ -133,24 +133,10 @@ func (context *meteringContext) DeductInitialGasForDirectDeployment(input *vmcom
 }
 
 // DeductInitialGasForIndirectDeployment deducts gas for the deployment of a contract initiated by another SmartContract
-func (context *meteringContext) DeductInitialGasForIndirectDeployment(input *vmcommon.ContractCreateInput) error {
+func (context *meteringContext) DeductInitialGasForIndirectDeployment(input arwen.CodeDeployInput) error {
 	return context.deductInitialGas(
 		input.ContractCode,
 		0,
-		context.gasSchedule.BaseOperationCost.StorePerByte,
-	)
-}
-
-// DeductInitialGasForDirectUpgrade deducts gas for the upgrade of a contract initiated by a Transaction
-func (context *meteringContext) DeductInitialGasForDirectUpgrade(input *vmcommon.ContractCallInput) error {
-	contractCode, err := input.GetCodeUpgrade()
-	if err != nil {
-		return err
-	}
-
-	return context.deductInitialGas(
-		contractCode,
-		context.gasSchedule.ElrondAPICost.CreateContract,
 		context.gasSchedule.BaseOperationCost.StorePerByte,
 	)
 }

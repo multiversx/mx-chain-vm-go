@@ -9,6 +9,8 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
+var _ arwen.RuntimeContext = (*runtimeContext)(nil)
+
 type runtimeContext struct {
 	host     arwen.VMHost
 	instance *wasmer.Instance
@@ -156,6 +158,19 @@ func (context *runtimeContext) Function() string {
 
 func (context *runtimeContext) Arguments() [][]byte {
 	return context.vmInput.Arguments
+}
+
+func (context *runtimeContext) GetCodeUpgradeFromArgs() ([]byte, []byte, error) {
+	const numMinUpgradeArguments = 2
+
+	arguments := context.vmInput.Arguments
+	if len(arguments) < numMinUpgradeArguments {
+		return nil, nil, arwen.ErrInvalidUpgradeArguments
+	}
+
+	code := arguments[0]
+	codeMetadata := arguments[1]
+	return code, codeMetadata, nil
 }
 
 func (context *runtimeContext) FailExecution(err error) {
