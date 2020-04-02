@@ -7,8 +7,6 @@ import (
 
 var ErrInitFuncCalledInRun = errors.New("it is not allowed to call init in run")
 
-var ErrUpgradeFuncCalledInExecute = errors.New("it is not allowed to call upgradeContract from an executing contract")
-
 var ErrFunctionRunError = errors.New("function run error")
 
 var ErrReturnCodeNotOk = errors.New("return not is not ok")

@@ -223,11 +223,6 @@ func (host *vmHost) isInitFunctionBeingCalled() bool {
 	return functionName == arwen.InitFunctionName || functionName == arwen.InitFunctionNameEth
 }
 
-func (host *vmHost) isUpgradeFunctionBeingCalled() bool {
-	functionName := host.Runtime().Function()
-	return functionName == arwen.UpgradeFunctionName
-}
-
 func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error) {
 	runtime := host.Runtime()
 	blockchain := host.Blockchain()
@@ -327,10 +322,6 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 
 	if host.isInitFunctionBeingCalled() {
 		return arwen.ErrInitFuncCalledInRun
-	}
-
-	if host.isUpgradeFunctionBeingCalled() {
-		return arwen.ErrUpgradeFuncCalledInExecute
 	}
 
 	contract, err := host.Blockchain().GetCode(runtime.GetSCAddress())
