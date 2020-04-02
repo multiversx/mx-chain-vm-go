@@ -198,7 +198,20 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) erro
 	runtime.PushState()
 
 	runtime.InitStateFromContractCallInput(input)
-	err := host.execute(input)
+
+	// Perform a value transfer to the called SC. If the execution fails, this
+	// transfer will not persist.
+	err := output.Transfer(input.RecipientAddr, input.CallerAddr, 0, input.CallValue, nil)
+	if err != nil {
+		// Execution failed: restore contexts as if the execution didn't happen.
+		bigInt.PopSetActiveState()
+		output.PopSetActiveState()
+		runtime.PopSetActiveState()
+
+		return err
+	}
+
+	err = host.execute(input)
 	if err != nil {
 		// Execution failed: restore contexts as if the execution didn't happen.
 		bigInt.PopSetActiveState()
@@ -308,8 +321,9 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 	metering := host.Metering()
 	output := host.Output()
 
-	// Use all gas initially. In case of successful execution, the unused gas
-	// will be restored.
+	// Use all gas initially, on the Wasmer instance of the caller
+	// (runtime.PushInstance() is called later). In case of successful execution,
+	// the unused gas will be restored.
 	initialGasProvided := input.GasProvided
 	metering.UseGas(initialGasProvided)
 
@@ -328,6 +342,7 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 	}
 
 	idContext := arwen.AddHostContext(host)
+
 	runtime.PushInstance()
 
 	gasForExecution := runtime.GetVMInput().GasProvided

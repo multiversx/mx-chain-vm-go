@@ -22,8 +22,8 @@ var parentTransferData = []byte("parentTransferData")
 
 var gasProvided = uint64(1000000)
 
-var parentCompilationCost_SameCtx = uint64(3007)
-var childCompilationCost_SameCtx = uint64(2922)
+var parentCompilationCost_SameCtx = uint64(3577)
+var childCompilationCost_SameCtx = uint64(3285)
 
 var parentCompilationCost_DestCtx = uint64(2670)
 var childCompilationCost_DestCtx = uint64(1821)
@@ -104,12 +104,23 @@ func expectedVMOutput_SameCtx_OutOfGas() *vmcommon.VMOutput {
 		0,
 		nil,
 	)
-	parentAccount.Balance = big.NewInt(1000)
 
 	SetStorageUpdate(parentAccount, parentKeyA, parentDataA)
 	AddFinishData(expectedVMOutput, parentFinishA)
 
 	AddFinishData(expectedVMOutput, []byte("fail"))
+
+	executionCostBeforeExecuteAPI := uint64(124)
+	executeAPICost := uint64(1)
+	gasLostOnFailure := uint64(3500)
+	finalCost := uint64(36)
+	gas := gasProvided
+	gas -= parentCompilationCost_SameCtx
+	gas -= executionCostBeforeExecuteAPI
+	gas -= executeAPICost
+	gas -= gasLostOnFailure
+	gas -= finalCost
+	expectedVMOutput.GasRemaining = gas
 
 	return expectedVMOutput
 }

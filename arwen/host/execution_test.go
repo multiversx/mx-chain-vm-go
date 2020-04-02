@@ -10,6 +10,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -408,29 +409,32 @@ func TestExecution_ExecuteOnSameContext_OutOfGas(t *testing.T) {
 	// Execution returns to parent, which finishes with the result of executeOnSameContext
 	// Assertions: modifications made by the child are did not take effect
 	// Assertions: the value sent by the parent to the child was returned to the parent
-	parentCode := GetTestSCCode("exec-ctx-recursive-parent", "../../")
+	parentCode := GetTestSCCode("exec-same-ctx-parent", "../../")
+	childCode := GetTestSCCode("exec-same-ctx-child", "../../")
 	parentSCBalance := big.NewInt(1000)
 
 	getBalanceCalled := func(address []byte) (*big.Int, error) {
 		if bytes.Equal(parentAddress, address) {
 			return parentSCBalance, nil
 		}
+
 		return big.NewInt(0), nil
 	}
 
-	// Call parentFunctionWrongCall() of the parent SC, which will try to call a
-	// non-existing SC.
-	host, stubBlockchainHook := DefaultTestArwenForCall(t, parentCode)
+	// Call parentFunctionChildCall() of the parent SC, which will call the child
+	// SC and pass some arguments using executeOnSameContext().
+	host, stubBlockchainHook := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
 	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
 	input := DefaultTestContractCallInput()
 	input.CallerAddr = []byte("user")
 	input.RecipientAddr = parentAddress
-	input.Function = "parentFunctionWrongCall"
+	input.Function = "parentFunctionChildCall_OutOfGas"
 	input.GasProvided = 1000000
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
-	expectedVMOutput := expectedVMOutput_SameCtx_WrongContractCalled()
+	expectedVMOutput := expectedVMOutput_SameCtx_OutOfGas()
+	assert.Equal(t, int64(42), host.BigInt().GetOne(0).Int64())
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 

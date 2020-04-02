@@ -164,4 +164,10 @@ void childFunction_OutOfGas() {
 	storageStore(childKey, childData, 9);
 	finish(childFinish, 11);
 	bigIntSetInt64(0, 88);
+
+	// Start infinite loop.
+	byte msg[] = "rockets";
+	while (1) {
+		finish(msg, 7);
+	}
 }

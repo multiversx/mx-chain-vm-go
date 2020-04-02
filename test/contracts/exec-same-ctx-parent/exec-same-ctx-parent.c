@@ -143,13 +143,13 @@ void parentFunctionChildCall_OutOfGas() {
 
 	byte childAddress[] = "childSC.........................";
 	byte executeValue[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,99};
-	byte functionName[] = "childFunction";
+	byte functionName[] = "childFunction_OutOfGas";
 	int result = executeOnSameContext(
-			10000,
+			3500,
 			childAddress,
 			executeValue,
 			functionName,
-			13,
+			22,
 			0,
 			0,
 			0

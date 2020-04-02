@@ -876,7 +876,6 @@ func executeOnSameContext(
 ) int32 {
 	host := arwen.GetVmContext(context)
 	runtime := host.Runtime()
-	output := host.Output()
 	metering := host.Metering()
 
 	send := runtime.GetSCAddress()
@@ -917,11 +916,6 @@ func executeOnSameContext(
 		},
 		RecipientAddr: dest,
 		Function:      function,
-	}
-
-	err = output.Transfer(dest, send, 0, bigIntVal, nil)
-	if err != nil {
-		return 1
 	}
 
 	err = host.ExecuteOnSameContext(contractCallInput)
