@@ -6,7 +6,7 @@ void parentFunctionChildCall() {
 	byte childAddress[] = "secondSC........................";
 	byte functionName[] = "childFunction";
 
-	i64 result = executeOnSameContext(
+	u64 result = executeOnSameContext(
 			200000,
 			childAddress,
 			executeValue,
