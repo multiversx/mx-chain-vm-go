@@ -20,7 +20,7 @@ void not_ok() {
 }
 
 void didCallerPay() {
-	bigInt bigInt_payment;
+	bigInt bigInt_payment = bigIntNew(0);
 	bigIntGetCallValue(bigInt_payment);
 
 	long long payment = bigIntGetInt64(bigInt_payment);
@@ -94,15 +94,6 @@ void childFunction() {
 			status = 2;
 			break;
 		}
-	}
-
-	bigInt parentIntID = 0;
-	long long parentInt64 = bigIntGetInt64(parentIntID);
-	if (parentInt64 != 0) {
-		not_ok();
-		byte msg[] = "big int from parent inherited by child";
-		finish(msg, 38);
-		int64finish(parentInt64);
 	}
 
 	if (status == 0) {

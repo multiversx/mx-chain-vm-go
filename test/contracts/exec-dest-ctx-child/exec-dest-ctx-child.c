@@ -20,7 +20,7 @@ void not_ok() {
 }
 
 void didCallerPay() {
-	bigInt bigInt_payment;
+	bigInt bigInt_payment = bigIntNew(0);
 	bigIntGetCallValue(bigInt_payment);
 
 	long long payment = bigIntGetInt64(bigInt_payment);
@@ -93,7 +93,6 @@ void childFunction_BigInts() {
 		int64finish(intX);
 		status = 1;
 	}
-
 
 	if (status == 0) {
 		byte msg[] = "child ok";
