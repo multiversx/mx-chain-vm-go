@@ -434,6 +434,12 @@ func TestRuntimeContext_MemLoadCases(t *testing.T) {
 	memContents, err = runtimeContext.MemLoad(offset, length)
 	require.Nil(t, err)
 	require.Equal(t, []byte{'e', 's', 't', ' ', 'd', 'a', 't', 'a', 0}, memContents)
+
+	// Zero length
+	offset = int32(memory.Length() - 8)
+	length = 0
+	memContents, err = runtimeContext.MemLoad(offset, length)
+	require.Equal(t, []byte{}, memContents)
 }
 
 func TestRuntimeContext_MemStoreCases(t *testing.T) {
@@ -476,4 +482,30 @@ func TestRuntimeContext_MemStoreCases(t *testing.T) {
 	err = runtimeContext.MemStore(offset, memContents)
 	require.True(t, errors.Is(err, arwen.ErrBadUpperBounds))
 	require.Equal(t, 4*pageSize, memory.Length())
+
+	// Write something, then overwrite, then overwrite with empty byte slice
+	memContents = []byte("this is a message")
+	offset = int32(memory.Length() - 100)
+	err = runtimeContext.MemStore(offset, memContents)
+	require.Nil(t, err)
+
+	memContents, err = runtimeContext.MemLoad(offset, 17)
+	require.Nil(t, err)
+	require.Equal(t, []byte("this is a message"), memContents)
+
+	memContents = []byte("this is something")
+	err = runtimeContext.MemStore(offset, memContents)
+	require.Nil(t, err)
+
+	memContents, err = runtimeContext.MemLoad(offset, 17)
+	require.Nil(t, err)
+	require.Equal(t, []byte("this is something"), memContents)
+
+	memContents = []byte{}
+	err = runtimeContext.MemStore(offset, memContents)
+	require.Nil(t, err)
+
+	memContents, err = runtimeContext.MemLoad(offset, 17)
+	require.Nil(t, err)
+	require.Equal(t, []byte("this is something"), memContents)
 }

@@ -293,6 +293,10 @@ func (context *runtimeContext) GetAsyncCallInfo() *arwen.AsyncCallInfo {
 }
 
 func (context *runtimeContext) MemLoad(offset int32, length int32) ([]byte, error) {
+	if length == 0 {
+		return []byte{}, nil
+	}
+
 	memory := context.instanceContext.Memory()
 	memoryView := memory.Data()
 	memoryLength := memory.Length()
@@ -320,10 +324,14 @@ func (context *runtimeContext) MemLoad(offset int32, length int32) ([]byte, erro
 }
 
 func (context *runtimeContext) MemStore(offset int32, data []byte) error {
+	dataLength := int32(len(data))
+	if dataLength == 0 {
+		return nil
+	}
+
 	memory := context.instanceContext.Memory()
 	memoryView := memory.Data()
 	memoryLength := memory.Length()
-	dataLength := int32(len(data))
 	requestedEnd := uint32(offset + dataLength)
 	isOffsetTooSmall := offset < 0
 	isNewPageNecessary := requestedEnd > memoryLength

@@ -1012,6 +1012,11 @@ func getArgumentsFromMemory(
 ) (string, [][]byte, int32, error) {
 	runtime := arwen.GetRuntimeContext(context)
 
+	function, err := runtime.MemLoad(functionOffset, functionLength)
+	if err != nil {
+		return "", nil, 0, err
+	}
+
 	argumentsLengthData, err := runtime.MemLoad(argumentsLengthOffset, numArguments*4)
 	if err != nil {
 		return "", nil, 0, err
@@ -1033,11 +1038,6 @@ func getArgumentsFromMemory(
 		}
 
 		currOffset += actualLen
-	}
-
-	function, err := runtime.MemLoad(functionOffset, functionLength)
-	if err != nil {
-		return "", nil, 0, err
 	}
 
 	return string(function), data, currOffset - dataOffset, nil
