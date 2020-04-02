@@ -13,24 +13,24 @@ func TestFunctionsGuard_isValidFunctionName(t *testing.T) {
 	imports := MakeAPIImports()
 	validator := NewWASMValidator(imports.Names())
 
-	require.True(t, validator.isValidFunctionName("foo"))
-	require.True(t, validator.isValidFunctionName("_"))
-	require.True(t, validator.isValidFunctionName("a"))
-	require.True(t, validator.isValidFunctionName("i"))
+	require.Nil(t, validator.verifyValidFunctionName("foo"))
+	require.Nil(t, validator.verifyValidFunctionName("_"))
+	require.Nil(t, validator.verifyValidFunctionName("a"))
+	require.Nil(t, validator.verifyValidFunctionName("i"))
 
-	require.False(t, validator.isValidFunctionName(""))
-	require.False(t, validator.isValidFunctionName("â"))
-	require.False(t, validator.isValidFunctionName("ș"))
-	require.False(t, validator.isValidFunctionName("Ä"))
+	require.NotNil(t, validator.verifyValidFunctionName(""))
+	require.NotNil(t, validator.verifyValidFunctionName("â"))
+	require.NotNil(t, validator.verifyValidFunctionName("ș"))
+	require.NotNil(t, validator.verifyValidFunctionName("Ä"))
 
-	require.False(t, validator.isValidFunctionName("claimDeveloperRewards"))
+	require.NotNil(t, validator.verifyValidFunctionName("claimDeveloperRewards"))
 
-	require.True(t, validator.isValidFunctionName(strings.Repeat("_", 255)))
-	require.False(t, validator.isValidFunctionName(strings.Repeat("_", 256)))
+	require.Nil(t, validator.verifyValidFunctionName(strings.Repeat("_", 255)))
+	require.NotNil(t, validator.verifyValidFunctionName(strings.Repeat("_", 256)))
 
-	require.False(t, validator.isValidFunctionName("getArgument"))
-	require.False(t, validator.isValidFunctionName("asyncCall"))
-	require.True(t, validator.isValidFunctionName("getArgument55"))
+	require.NotNil(t, validator.verifyValidFunctionName("getArgument"))
+	require.NotNil(t, validator.verifyValidFunctionName("asyncCall"))
+	require.Nil(t, validator.verifyValidFunctionName("getArgument55"))
 }
 
 func TestFunctionsGuard_Arity(t *testing.T) {
@@ -67,15 +67,15 @@ func TestFunctionsGuard_Arity(t *testing.T) {
 	outArity, _ = validator.getOutputArity(instance, "wrongParamsAndReturn")
 	require.Equal(t, 1, outArity)
 
-	isVoid, _ := validator.isVoidFunction(instance, "goodFunction")
-	require.Equal(t, true, isVoid)
+	err = validator.verifyVoidFunction(instance, "goodFunction")
+	require.Nil(t, err)
 
-	isVoid, _ = validator.isVoidFunction(instance, "wrongReturn")
-	require.Equal(t, false, isVoid)
+	err = validator.verifyVoidFunction(instance, "wrongReturn")
+	require.NotNil(t, err)
 
-	isVoid, _ = validator.isVoidFunction(instance, "wrongParams")
-	require.Equal(t, false, isVoid)
+	err = validator.verifyVoidFunction(instance, "wrongParams")
+	require.NotNil(t, err)
 
-	isVoid, _ = validator.isVoidFunction(instance, "wrongParamsAndReturn")
-	require.Equal(t, false, isVoid)
+	err = validator.verifyVoidFunction(instance, "wrongParamsAndReturn")
+	require.NotNil(t, err)
 }
