@@ -4,17 +4,23 @@ import "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 
 // ReservedFunctions holds the reserved function names
 type ReservedFunctions struct {
-	functionNames map[string]interface{}
+	functionNames map[string]struct{}
 }
 
 // NewReservedFunctions creates a new ReservedFunctions
-func NewReservedFunctions() *ReservedFunctions {
+func NewReservedFunctions(scAPINames []string) *ReservedFunctions {
 	result := &ReservedFunctions{
-		functionNames: make(map[string]interface{}),
+		functionNames: make(map[string]struct{}),
 	}
 
-	result.functionNames["claimDeveloperRewards"] = nil
-	result.functionNames[arwen.UpgradeFunctionName] = nil
+	var empty struct{}
+	result.functionNames["claimDeveloperRewards"] = empty
+	result.functionNames[arwen.UpgradeFunctionName] = empty
+
+	for _, name := range scAPINames {
+		result.functionNames[name] = empty
+	}
+
 	return result
 }
 

@@ -7,6 +7,7 @@ require (
 	github.com/ElrondNetwork/elrond-vm-common v0.1.13-0.20200402112636-0866cb4f2bab
 	github.com/ElrondNetwork/elrond-vm-util v0.1.5
 	github.com/mitchellh/mapstructure v1.1.2
+	github.com/pelletier/go-toml v1.6.0
 	github.com/stretchr/testify v1.4.0
 	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
 )

@@ -80,8 +80,9 @@ func retrieveExportedMemory(wasmExports *cWasmerExportsT) (Memory, bool, error) 
 	return memory, hasMemory, nil
 }
 
-func retrieveExportedFunctions(c_instance *cWasmerInstanceT, wasmExports *cWasmerExportsT) (ExportsMap, error) {
+func retrieveExportedFunctions(c_instance *cWasmerInstanceT, wasmExports *cWasmerExportsT) (ExportsMap, ExportSignaturesMap, error) {
 	var exports = make(ExportsMap)
+	var signatures = make(ExportSignaturesMap)
 
 	var numberOfExports = int(cWasmerExportsLen(wasmExports))
 
@@ -97,30 +98,36 @@ func retrieveExportedFunctions(c_instance *cWasmerInstanceT, wasmExports *cWasme
 		var wasmFunction = cWasmerExportToFunc(wasmExport)
 		var exportedFunctionName = cGoStringN((*cChar)(unsafe.Pointer(wasmExportName.bytes)), (cInt)(wasmExportName.bytes_len))
 
-		wrappedWasmFunction, err := createExportedFunctionWrapper(c_instance, wasmFunction, exportedFunctionName)
+		wrappedWasmFunction, signature, err := createExportedFunctionWrapper(c_instance, wasmFunction, exportedFunctionName)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		exports[exportedFunctionName] = wrappedWasmFunction
+		signatures[exportedFunctionName] = signature
 	}
 
-	return exports, nil
+	return exports, signatures, nil
 }
 
 func createExportedFunctionWrapper(
 	c_instance *cWasmerInstanceT,
 	wasmFunction *cWasmerExportFuncT,
 	exportedFunctionName string,
-) (func(...interface{}) (Value, error), error) {
+) (func(...interface{}) (Value, error), *ExportedFunctionSignature, error) {
 	wasmFunctionInputSignatures, wasmFunctionInputsArity, err := getExportedFunctionSignature(wasmFunction, exportedFunctionName)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	wasmFunctionOutputsArity, err := getExportedFunctionOutputArity(wasmFunction, exportedFunctionName)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
+	}
+
+	signature := &ExportedFunctionSignature{
+		InputArity:  int(wasmFunctionInputsArity),
+		OutputArity: int(wasmFunctionOutputsArity),
 	}
 
 	wrapper := func(arguments ...interface{}) (Value, error) {
@@ -150,5 +157,5 @@ func createExportedFunctionWrapper(
 		value, err := convertWasmOutputToValue(wasmFunctionOutputsArity, wasmOutputs, exportedFunctionName)
 		return value, err
 	}
-	return wrapper, nil
+	return wrapper, signature, nil
 }

@@ -35,13 +35,15 @@ func NewRuntimeContext(
 	host arwen.VMHost,
 	vmType []byte,
 ) (*runtimeContext, error) {
+	scAPINames := host.GetAPIMethods().Names()
+
 	context := &runtimeContext{
 		host:                        host,
 		instanceContextDataPointers: make([]*int, 0),
 		vmType:                      vmType,
 		stateStack:                  make([]*runtimeContext, 0),
 		instanceStack:               make([]*wasmer.Instance, 0),
-		validator:                   NewWASMValidator(),
+		validator:                   NewWASMValidator(scAPINames),
 	}
 
 	context.InitState()
@@ -190,7 +192,7 @@ func (context *runtimeContext) VerifyContractCode() error {
 		return err
 	}
 
-	err = context.validator.verifyFunctionsNames(context.instance)
+	err = context.validator.verifyFunctions(context.instance)
 	if err != nil {
 		return err
 	}

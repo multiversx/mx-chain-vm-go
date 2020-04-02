@@ -148,15 +148,11 @@ func (host *vmHost) computeDataLengthFromArguments(function string, arguments []
 	// Calculate what length would the Data field have, were it of the
 	// form "callback@arg1@arg4...
 
-	// TODO change this after allowing empty entries in VMCommon.ReturnData
-	dataLength := len(function) + 1
-	for i, element := range arguments {
-		if len(element) == 0 {
-			continue
-		}
-		if i != 0 && dataLength > 0 {
-			dataLength++
-		}
+	// TODO this needs tests, especially for the case when the arguments slice
+	// contains an empty []byte
+	numSeparators := len(arguments)
+	dataLength := len(function) + numSeparators
+	for _, element := range arguments {
 		dataLength += len(element)
 	}
 

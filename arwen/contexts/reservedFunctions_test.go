@@ -8,15 +8,22 @@ import (
 )
 
 func TestReservedFunctions_IsFunctionReserved(t *testing.T) {
-	reserved := NewReservedFunctions()
+	reserved := NewReservedFunctions([]string{})
 
 	require.False(t, reserved.IsReserved("foo"))
 	require.True(t, reserved.IsReserved("claimDeveloperRewards"))
 	require.True(t, reserved.IsReserved(arwen.UpgradeFunctionName))
 }
 
+func TestReservedFunctions_IsFunctionReservedExplicit(t *testing.T) {
+	reserved := NewReservedFunctions([]string{"rockets"})
+
+	require.False(t, reserved.IsReserved("foo"))
+	require.True(t, reserved.IsReserved("rockets"))
+	require.True(t, reserved.IsReserved("claimDeveloperRewards"))
+}
+
 func TestReservedFunctions_GetReserved(t *testing.T) {
-	reserved := NewReservedFunctions()
-	actualReserved := []string{"claimDeveloperRewards", arwen.UpgradeFunctionName}
-	require.ElementsMatch(t, actualReserved, reserved.GetReserved())
+	reserved := NewReservedFunctions([]string{})
+	require.ElementsMatch(t, []string{"claimDeveloperRewards", arwen.UpgradeFunctionName}, reserved.GetReserved())
 }

@@ -84,6 +84,23 @@ func (imports *Imports) Count() int {
 	return count
 }
 
+func (imports *Imports) Names() []string {
+	length := 0
+	for _, env := range imports.imports {
+		length += len(env)
+	}
+
+	names := make([]string, length)
+	i := 0
+	for _, env := range imports.imports {
+		for name, _ := range env {
+			names[i] = name
+			i++
+		}
+	}
+	return names
+}
+
 // Append adds a new imported function to the current set.
 func (imports *Imports) Append(importName string, implementation interface{}, cgoPointer unsafe.Pointer) (*Imports, error) {
 	var importType = reflect.TypeOf(implementation)

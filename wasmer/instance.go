@@ -33,6 +33,13 @@ type ExportedFunctionError struct {
 	message      string
 }
 
+// ExportedFunctionSignature holds information about the input/output arities
+// of an exported function
+type ExportedFunctionSignature struct {
+	InputArity  int
+	OutputArity int
+}
+
 // NewExportedFunctionError constructs a new `ExportedFunctionError`,
 // where `functionName` is the name of the exported function, and
 // `message` is the error message. If the error message contains `%s`,
@@ -49,6 +56,7 @@ func (error *ExportedFunctionError) Error() string {
 
 type ExportedFunctionCallback func(...interface{}) (Value, error)
 type ExportsMap map[string]ExportedFunctionCallback
+type ExportSignaturesMap map[string]*ExportedFunctionSignature
 
 // Instance represents a WebAssembly instance.
 type Instance struct {
@@ -69,6 +77,8 @@ type Instance struct {
 	// that the returned value is of kind `Value`, and not a
 	// standard Go type.
 	Exports ExportsMap
+
+	Signatures ExportSignaturesMap
 
 	// The exported memory of a WebAssembly instance.
 	Memory *Memory
@@ -134,7 +144,7 @@ func NewMeteredInstance(
 }
 
 func newInstance(c_instance *cWasmerInstanceT) (*Instance, error) {
-	var emptyInstance = &Instance{instance: nil, Exports: nil, Memory: nil}
+	var emptyInstance = &Instance{instance: nil, Exports: nil, Signatures: nil, Memory: nil}
 
 	var wasmExports *cWasmerExportsT
 	var hasMemory bool
@@ -142,7 +152,7 @@ func newInstance(c_instance *cWasmerInstanceT) (*Instance, error) {
 	cWasmerInstanceExports(c_instance, &wasmExports)
 	defer cWasmerExportsDestroy(wasmExports)
 
-	exports, err := retrieveExportedFunctions(c_instance, wasmExports)
+	exports, signatures, err := retrieveExportedFunctions(c_instance, wasmExports)
 	if err != nil {
 		return emptyInstance, err
 	}
@@ -153,10 +163,10 @@ func newInstance(c_instance *cWasmerInstanceT) (*Instance, error) {
 	}
 
 	if !hasMemory {
-		return &Instance{instance: c_instance, Exports: exports, Memory: nil}, nil
+		return &Instance{instance: c_instance, Exports: exports, Signatures: signatures, Memory: nil}, nil
 	}
 
-	return &Instance{instance: c_instance, Exports: exports, Memory: &memory}, nil
+	return &Instance{instance: c_instance, Exports: exports, Signatures: signatures, Memory: &memory}, nil
 }
 
 // HasMemory checks whether the instance has at least one exported memory.

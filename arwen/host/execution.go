@@ -385,26 +385,18 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 
 	runtime.SetInstanceContextID(idContext)
 
-	// TODO replace with callSCMethod()?
-	exports := runtime.GetInstanceExports()
-	functionName := runtime.Function()
-	function, ok := exports[functionName]
-	if !ok {
+	function, err := runtime.GetFunctionToCall()
+	if err != nil {
 		runtime.PopInstance()
 		arwen.RemoveHostContext(idContext)
-		return arwen.ErrFuncNotFound
+		return err
 	}
 
-	result, err := function()
+	_, err = function()
 	if err != nil {
 		runtime.PopInstance()
 		arwen.RemoveHostContext(idContext)
 		return arwen.ErrFunctionRunError
-	}
-
-	// TODO: replace with wrong signature error/return code *before* starting execution
-	if !result.IsVoid() {
-		return arwen.ErrFunctionReturnNotVoidError
 	}
 
 	if output.ReturnCode() != vmcommon.Ok {
@@ -434,13 +426,9 @@ func (host *vmHost) EthereumCallData() []byte {
 func (host *vmHost) callInitFunction() error {
 	init := host.Runtime().GetInitFunction()
 	if init != nil {
-		result, err := init()
+		_, err := init()
 		if err != nil {
 			return err
-		}
-		// TODO: replace with wrong signature error/return code *before* starting execution
-		if !result.IsVoid() {
-			return arwen.ErrFunctionReturnNotVoidError
 		}
 	}
 	return nil
@@ -461,7 +449,7 @@ func (host *vmHost) callSCMethod() error {
 		return err
 	}
 
-	result, err := function()
+	_, err = function()
 	if err != nil {
 		breakpointValue := runtime.GetRuntimeBreakpointValue()
 		if breakpointValue != arwen.BreakpointNone {
@@ -480,12 +468,6 @@ func (host *vmHost) callSCMethod() error {
 		}
 
 		return err
-	}
-
-	// TODO: replace with wrong signature error/return code *before* starting executions
-	if !result.IsVoid() {
-		output.SetReturnCode(vmcommon.UserError)
-		return arwen.ErrFunctionReturnNotVoidError
 	}
 
 	return err
