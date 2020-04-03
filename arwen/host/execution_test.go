@@ -565,7 +565,17 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_Methods(t *testing.T) {
 	// Assertions: the VMOutput must contain as many finished values as the argument requires
 	// Assertions: there must be a StorageUpdate with the value of the bigInt counter
 	code := GetTestSCCode("exec-same-ctx-recursive", "../../")
-	host, _ := DefaultTestArwenForCall(t, code)
+	scBalance := big.NewInt(1000)
+
+	getBalanceCalled := func(address []byte) (*big.Int, error) {
+		if bytes.Equal(parentAddress, address) {
+			return scBalance, nil
+		}
+		return big.NewInt(0), nil
+	}
+
+	host, stubBlockchainHook := DefaultTestArwenForCall(t, code)
+	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
 
 	input := DefaultTestContractCallInput()
 	input.CallerAddr = []byte("user")
@@ -592,10 +602,10 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs(t *testing.T) {
 	// Child has method childCallParent()
 	// The two methods are identical, just named differently
 	// The methods do the following:
-	//		parent: save to storage "keyParentNNN" → "valueParentNNN"
-	//		parent:	finish "ParentNNN"
-	//		child:	save to storage "keyChildNNN" → "valueChildNNN"
-	//		child:	finish "ChildNNN"
+	//		parent: save to storage "PkeyNNN" → "PvalueNNN"
+	//		parent:	finish "PfinishNNN"
+	//		child:	save to storage "CkeyNNN" → "CvalueNNN"
+	//		child:	finish "CfinishNNN"
 	//		both:		increment a shared bigInt counter
 	//		both:		whoever exits must save the shared bigInt counter to storage
 }
