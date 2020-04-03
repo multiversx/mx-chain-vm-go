@@ -1236,9 +1236,9 @@ func createContract(
 			GasPrice:    0,
 			GasProvided: gasLimit,
 		},
-		ContractCode:         code,
+		ContractCode: code,
+		// TODO: Receive code metadata as argument
 		ContractCodeMetadata: []byte{1, 0},
-		// TODO: Contract code metadata. default to upgradeable...
 	}
 
 	newAddress, err := host.CreateNewContract(contractCreate)

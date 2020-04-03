@@ -274,17 +274,13 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]by
 	gasForDeployment := runtime.GetVMInput().GasProvided
 	err = runtime.CreateWasmerInstance(input.ContractCode, gasForDeployment)
 	if err != nil {
-		runtime.PopInstance()
-		runtime.PopState()
-		arwen.RemoveHostContext(idContext)
+		host.onExitIndirectCreate(idContext)
 		return nil, err
 	}
 
 	err = runtime.VerifyContractCode()
 	if err != nil {
-		runtime.PopInstance()
-		runtime.PopState()
-		arwen.RemoveHostContext(idContext)
+		host.onExitIndirectCreate(idContext)
 		return nil, err
 	}
 
@@ -292,9 +288,7 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]by
 
 	err = host.callInitFunction()
 	if err != nil {
-		runtime.PopInstance()
-		runtime.PopState()
-		arwen.RemoveHostContext(idContext)
+		host.onExitIndirectCreate(idContext)
 		return nil, err
 	}
 
@@ -302,77 +296,19 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]by
 
 	gasToRestoreToCaller := metering.GasLeft()
 
-	runtime.PopInstance()
-	runtime.PopState()
-	arwen.RemoveHostContext(idContext)
+	host.onExitIndirectCreate(idContext)
 
 	metering.RestoreGas(gasToRestoreToCaller)
 	return address, nil
 }
 
-func (host *vmHost) performCodeDeployIndirect(input arwen.CodeDeployInput) error {
-	runtime := host.Runtime()
-	metering := host.Metering()
-	output := host.Output()
-
-	err := metering.DeductInitialGasForIndirectDeployment(input)
-	if err != nil {
-		runtime.PopState()
-		return err
-	}
-
-	idContext := arwen.AddHostContext(host)
-	runtime.PushInstance()
-
-	gasForDeployment := runtime.GetVMInput().GasProvided
-	err = runtime.CreateWasmerInstance(input.ContractCode, gasForDeployment)
-	if err != nil {
-		runtime.PopInstance()
-		runtime.PopState()
-		arwen.RemoveHostContext(idContext)
-		return err
-	}
-
-	err = runtime.VerifyContractCode()
-	if err != nil {
-		runtime.PopInstance()
-		runtime.PopState()
-		arwen.RemoveHostContext(idContext)
-		return err
-	}
-
-	runtime.SetInstanceContextID(idContext)
-
-	err = host.callInitFunction()
-	if err != nil {
-		runtime.PopInstance()
-		runtime.PopState()
-		arwen.RemoveHostContext(idContext)
-		return err
-	}
-
-	output.DeployCode(input)
-	return nil
+func (host *vmHost) onExitIndirectCreate(idContext int) {
+	host.Runtime().PopInstance()
+	host.Runtime().PopState()
+	arwen.RemoveHostContext(idContext)
 }
 
 func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
-
-	//	isUpgrade := input.Function == arwen.UpgradeFunctionName
-
-	// code, codeMetadata, err := runtime.GetCodeUpgradeFromArgs()
-	// if err != nil {
-	// 	output.SetReturnCode(vmcommon.UpgradeFailed)
-	// 	return
-	// }
-
-	// codeDeployInput := arwen.CodeDeployInput{
-	// 	ContractCode:         code,
-	// 	ContractCodeMetadata: codeMetadata,
-	// 	ContractAddress:      input.RecipientAddr,
-	// }
-
-	// vmOutput, err = host.performCodeDeploy(codeDeployInput)
-
 	runtime := host.Runtime()
 	metering := host.Metering()
 	output := host.Output()
@@ -399,8 +335,6 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 	idContext := arwen.AddHostContext(host)
 	runtime.PushInstance()
 
-	// ...
-
 	gasForExecution := runtime.GetVMInput().GasProvided
 	err = runtime.CreateWasmerInstance(contract, gasForExecution)
 	if err != nil {
@@ -417,8 +351,6 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 		arwen.RemoveHostContext(idContext)
 		return err
 	}
-
-	// ...
 
 	if output.ReturnCode() != vmcommon.Ok {
 		runtime.PopInstance()
