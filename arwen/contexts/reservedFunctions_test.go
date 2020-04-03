@@ -22,8 +22,3 @@ func TestReservedFunctions_IsFunctionReservedExplicit(t *testing.T) {
 	require.True(t, reserved.IsReserved("rockets"))
 	require.True(t, reserved.IsReserved("claimDeveloperRewards"))
 }
-
-func TestReservedFunctions_GetReserved(t *testing.T) {
-	reserved := NewReservedFunctions([]string{})
-	require.ElementsMatch(t, []string{"claimDeveloperRewards", arwen.UpgradeFunctionName}, reserved.GetReserved())
-}

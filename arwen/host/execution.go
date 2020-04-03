@@ -116,7 +116,7 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 		vmOutput = host.onExitDirectCreateOrCall(err, vmOutput)
 	}()
 
-	runtime.SetVMInput(&input.VMInput)
+	runtime.InitStateFromContractCallInput(input)
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
 	storage.SetAddress(runtime.GetSCAddress())
 
@@ -274,13 +274,17 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]by
 	gasForDeployment := runtime.GetVMInput().GasProvided
 	err = runtime.CreateWasmerInstance(input.ContractCode, gasForDeployment)
 	if err != nil {
-		host.onExitIndirectCreate(idContext)
+		runtime.PopInstance()
+		runtime.PopState()
+		arwen.RemoveHostContext(idContext)
 		return nil, err
 	}
 
 	err = runtime.VerifyContractCode()
 	if err != nil {
-		host.onExitIndirectCreate(idContext)
+		runtime.PopInstance()
+		runtime.PopState()
+		arwen.RemoveHostContext(idContext)
 		return nil, err
 	}
 
@@ -288,7 +292,9 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]by
 
 	err = host.callInitFunction()
 	if err != nil {
-		host.onExitIndirectCreate(idContext)
+		runtime.PopInstance()
+		runtime.PopState()
+		arwen.RemoveHostContext(idContext)
 		return nil, err
 	}
 
@@ -296,16 +302,12 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]by
 
 	gasToRestoreToCaller := metering.GasLeft()
 
-	host.onExitIndirectCreate(idContext)
+	runtime.PopInstance()
+	runtime.PopState()
+	arwen.RemoveHostContext(idContext)
 
 	metering.RestoreGas(gasToRestoreToCaller)
 	return address, nil
-}
-
-func (host *vmHost) onExitIndirectCreate(idContext int) {
-	host.Runtime().PopInstance()
-	host.Runtime().PopState()
-	arwen.RemoveHostContext(idContext)
 }
 
 // TODO: Add support for indirect smart contract upgrades.
