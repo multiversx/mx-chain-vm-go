@@ -308,6 +308,7 @@ func (host *vmHost) onExitIndirectCreate(idContext int) {
 	arwen.RemoveHostContext(idContext)
 }
 
+// TODO: Add support for indirect smart contract upgrades.
 func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 	runtime := host.Runtime()
 	metering := host.Metering()

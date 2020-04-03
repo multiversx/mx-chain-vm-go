@@ -233,6 +233,8 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 		return nil, err
 	}
 
+	// TODO: Add extra function, upgradeContract()
+
 	imports, err = imports.Append("executeReadOnly", executeReadOnly, C.executeReadOnly)
 	if err != nil {
 		return nil, err
