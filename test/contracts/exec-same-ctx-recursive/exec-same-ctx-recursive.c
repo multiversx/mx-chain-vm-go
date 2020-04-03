@@ -16,6 +16,10 @@ void intTo3String(int value, byte *string, int startPos);
 void finishResult(int result);
 void incrementIterCounter();
 void incrementBigIntCounter();
+void storeIterationNumber(byte iteration, byte prefix);
+void finishIterationNumber(byte iteration, byte prefix);
+
+void recursiveMethodA();
 
 void callRecursive() {
 	int numArgs = getNumArguments();
@@ -26,22 +30,9 @@ void callRecursive() {
 
 	byte iteration = (byte) int64getArgument(0);
 
-  // Add iteration number to finish()
-  byte finishIter[] = "finishNNN";
-  intTo3String(iteration, finishIter, 6);
-  finish(finishIter, 9);
-
-  // Add iteration number to storage
-  byte keyIter[] = "keyNNN..........................";
-  byte valueIter[] = "valueNNN";
-  intTo3String(iteration, keyIter, 3);
-  intTo3String(iteration, valueIter, 5);
-  storageStore(keyIter, valueIter, 8);
-
-  // Increment a stored counter
+  finishIterationNumber(iteration, 'R');
+  storeIterationNumber(iteration, 'R');
   incrementIterCounter();
-
-  // Increment a bigInt counter (possible because of executeOnSameContext())
   incrementBigIntCounter();
 
   // Run next iteration.
@@ -62,6 +53,67 @@ void callRecursive() {
   } else {
     bigIntStorageStoreUnsigned(recursiveIterationBigCounterKey, bigIntIterationCounterID);
   }
+}
+
+void callRecursiveMutualMethods() {
+	int numArgs = getNumArguments();
+	if (numArgs != 1) {
+		byte message[] = "wrong number of arguments";
+		signalError(message, 25);
+	}
+
+	byte iteration = (byte) int64getArgument(0);
+  if (iteration < 2) {
+		byte message[] = "need number of recursive calls >= 2";
+		signalError(message, 25);
+  }
+
+  byte startMsg[] = "start recursive mutual calls";
+  finish(startMsg, 28);
+
+  byte endMsg[] = "end recursive mutual calls";
+}
+
+void recursiveMethodA() {
+	byte iteration = (byte) int64getArgument(0);
+
+  finishIterationNumber(iteration, 'A');
+  storeIterationNumber(iteration, 'A');
+  incrementIterCounter();
+  incrementBigIntCounter();
+
+  byte functionNameB[] = "recursiveMethodB";
+  if (iteration > 0) {
+    arguments[0] = iteration - 1;
+    int result = executeOnSameContext(
+        10000,
+        selfAddress,
+        executeValue,
+        functionNameB,
+        16,
+        1,
+        (byte*)argumentsLengths,
+        arguments
+    );
+    finishResult(result);
+  }
+}
+
+void storeIterationNumber(byte iteration, byte prefix) {
+  byte keyIter[] = "XkeyNNN.........................";
+  byte valueIter[] = "XvalueNNN";
+  intTo3String(iteration, keyIter, 4);
+  intTo3String(iteration, valueIter, 6);
+  keyIter[0] = prefix;
+  valueIter[0] = prefix;
+  storageStore(keyIter, valueIter, 9);
+}
+
+void finishIterationNumber(byte iteration, byte prefix) {
+  byte finishIter[] = "XfinishNNN";
+  intTo3String(iteration, finishIter, 7);
+  finishIter[0] = prefix;
+  finish(finishIter, 10);
 }
 
 void intTo3String(int value, byte *string, int startPos) {

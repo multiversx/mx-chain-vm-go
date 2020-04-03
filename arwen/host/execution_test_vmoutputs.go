@@ -227,7 +227,7 @@ func expectedVMOutput_SameCtx_Recursive_Direct(recursiveCalls int) *vmcommon.VMO
 	account.Balance = big.NewInt(0)
 
 	for i := recursiveCalls; i >= 0; i-- {
-		finishString := fmt.Sprintf("finish%03d", i)
+		finishString := fmt.Sprintf("Rfinish%03d", i)
 		AddFinishData(expectedVMOutput, []byte(finishString))
 	}
 
@@ -236,13 +236,13 @@ func expectedVMOutput_SameCtx_Recursive_Direct(recursiveCalls int) *vmcommon.VMO
 	}
 
 	for i := 0; i <= recursiveCalls; i++ {
-		key := fmt.Sprintf("key%03d..........................", i)
-		value := fmt.Sprintf("value%03d", i)
+		key := fmt.Sprintf("Rkey%03d.........................", i)
+		value := fmt.Sprintf("Rvalue%03d", i)
 		SetStorageUpdateStrings(account, key, value)
 	}
 
-	SetStorageUpdate(account, recursiveIterationCounterKey, []byte{5})
-	SetStorageUpdate(account, recursiveIterationBigCounterKey, []byte{5})
+	SetStorageUpdate(account, recursiveIterationCounterKey, []byte{byte(recursiveCalls + 1)})
+	SetStorageUpdate(account, recursiveIterationBigCounterKey, []byte{byte(recursiveCalls + 1)})
 
 	return expectedVMOutput
 }

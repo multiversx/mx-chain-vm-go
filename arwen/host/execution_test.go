@@ -521,7 +521,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct(t *testing.T) {
 	input.Function = "callRecursive"
 	input.GasProvided = 1000000
 
-	recursiveCalls := byte(4)
+	recursiveCalls := byte(5)
 	input.Arguments = [][]byte{
 		[]byte{recursiveCalls},
 	}
@@ -531,10 +531,29 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct(t *testing.T) {
 	expectedVMOutput := expectedVMOutput_SameCtx_Recursive_Direct(int(recursiveCalls))
 	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
-	require.Equal(t, int64(5), host.BigInt().GetOne(16).Int64())
+	require.Equal(t, int64(recursiveCalls+1), host.BigInt().GetOne(16).Int64())
 }
 
 func TestExecution_ExecuteOnSameContext_Recursive_Mutual_Methods(t *testing.T) {
+	// Scenario:
+	// SC has a method "callRecursiveMutualMethods" which takes a byte as
+	//		argument (number of recursive calls)
+	// callRecursiveMutualMethods() sets the finish value "start recursive mutual calls"
+	// callRecursiveMutualMethods() calls recursiveMethodA() on the same context,
+	//		passing the argument
+
+	// recursiveMethodA() saves to storage "AkeyNNN" → "AvalueNNN", where NNN is the argument
+	// recursiveMethodA() saves to storage a counter starting at 1, increased by every recursive call
+	// recursiveMethodA() creates a bigInt and increments it with every iteration
+	// recursiveMethodA() finishes "AfinishNNN" in each iteration
+	// recursiveMethodA() calls recursiveMethodB() with the argument decremented
+	// recursiveMethodB() is a copy of recursiveMethodA()
+	// when argument == 0, either of them will save to storage the
+	//		value of the bigInt counter, then exits without recursive call
+	// callRecursiveMutualMethods() sets the finish value "end recursive mutual calls" and exits
+	// Assertions: the VMOutput must contain as many StorageUpdates as the argument requires
+	// Assertions: the VMOutput must contain as many finished values as the argument requires
+	// Assertions: there must be a StorageUpdate with the value of the bigInt counter
 }
 
 func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs(t *testing.T) {
