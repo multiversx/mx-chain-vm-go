@@ -233,6 +233,8 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 		return nil, err
 	}
 
+	// TODO: Add extra function, upgradeContract()
+
 	imports, err = imports.Append("executeReadOnly", executeReadOnly, C.executeReadOnly)
 	if err != nil {
 		return nil, err
@@ -1237,6 +1239,8 @@ func createContract(
 			GasProvided: gasLimit,
 		},
 		ContractCode: code,
+		// TODO: Receive code metadata as argument
+		ContractCodeMetadata: []byte{1, 0},
 	}
 
 	newAddress, err := host.CreateNewContract(contractCreate)

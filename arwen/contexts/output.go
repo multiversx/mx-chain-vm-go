@@ -7,6 +7,8 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
+var _ arwen.OutputContext = (*outputContext)(nil)
+
 type outputContext struct {
 	host        arwen.VMHost
 	outputState *vmcommon.VMOutput
@@ -182,9 +184,10 @@ func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 	return context.outputState
 }
 
-func (context *outputContext) DeployCode(address []byte, code []byte) {
-	newSCAcc, _ := context.GetOutputAccount(address)
-	newSCAcc.Code = code
+func (context *outputContext) DeployCode(input arwen.CodeDeployInput) {
+	newSCAccount, _ := context.GetOutputAccount(input.ContractAddress)
+	newSCAccount.Code = input.ContractCode
+	newSCAccount.CodeMetadata = input.ContractCodeMetadata
 }
 
 func (context *outputContext) CreateVMOutputInCaseOfError(errCode vmcommon.ReturnCode, message string) *vmcommon.VMOutput {

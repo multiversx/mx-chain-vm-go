@@ -1,5 +1,7 @@
 package contexts
 
+import "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+
 // ReservedFunctions holds the reserved function names
 type ReservedFunctions struct {
 	functionNames map[string]struct{}
@@ -13,6 +15,7 @@ func NewReservedFunctions(scAPINames []string) *ReservedFunctions {
 
 	var empty struct{}
 	result.functionNames["claimDeveloperRewards"] = empty
+	result.functionNames[arwen.UpgradeFunctionName] = empty
 
 	for _, name := range scAPINames {
 		result.functionNames[name] = empty
