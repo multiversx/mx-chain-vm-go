@@ -3,8 +3,7 @@
 #include "../elrond/types.h"
 
 byte selfAddress[] = "parentSC........................";
-byte executeValue[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-byte functionName[] = "callRecursive";
+byte executeValue[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5};
 byte arguments[1] = {0};
 int argumentsLengths[1] = {1};
 
@@ -36,6 +35,7 @@ void callRecursive() {
   incrementBigIntCounter();
 
   // Run next iteration.
+  byte functionName[] = "callRecursive";
   if (iteration > 0) {
     arguments[0] = iteration - 1;
     int result = executeOnSameContext(
@@ -71,7 +71,24 @@ void callRecursiveMutualMethods() {
   byte startMsg[] = "start recursive mutual calls";
   finish(startMsg, 28);
 
+  byte functionNameB[] = "recursiveMethodA";
+  if (iteration > 0) {
+    arguments[0] = iteration;
+    int result = executeOnSameContext(
+        10000,
+        selfAddress,
+        executeValue,
+        functionNameB,
+        16,
+        1,
+        (byte*)argumentsLengths,
+        arguments
+    );
+    finishResult(result);
+  }
+
   byte endMsg[] = "end recursive mutual calls";
+  finish(endMsg, 26);
 }
 
 void recursiveMethodA() {
@@ -96,7 +113,38 @@ void recursiveMethodA() {
         arguments
     );
     finishResult(result);
+  } else {
+    bigIntStorageStoreUnsigned(recursiveIterationBigCounterKey, bigIntIterationCounterID);
   }
+
+}
+
+void recursiveMethodB() {
+	byte iteration = (byte) int64getArgument(0);
+
+  finishIterationNumber(iteration, 'B');
+  storeIterationNumber(iteration, 'B');
+  incrementIterCounter();
+  incrementBigIntCounter();
+
+  byte functionNameB[] = "recursiveMethodA";
+  if (iteration > 0) {
+    arguments[0] = iteration - 1;
+    int result = executeOnSameContext(
+        10000,
+        selfAddress,
+        executeValue,
+        functionNameB,
+        16,
+        1,
+        (byte*)argumentsLengths,
+        arguments
+    );
+    finishResult(result);
+  } else {
+    bigIntStorageStoreUnsigned(recursiveIterationBigCounterKey, bigIntIterationCounterID);
+  }
+
 }
 
 void storeIterationNumber(byte iteration, byte prefix) {

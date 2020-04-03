@@ -513,7 +513,17 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct(t *testing.T) {
 	// Assertions: the VMOutput must contain as many finished values as the argument requires
 	// Assertions: there must be a StorageUpdate with the value of the bigInt counter
 	code := GetTestSCCode("exec-same-ctx-recursive", "../../")
-	host, _ := DefaultTestArwenForCall(t, code)
+	scBalance := big.NewInt(1000)
+
+	getBalanceCalled := func(address []byte) (*big.Int, error) {
+		if bytes.Equal(parentAddress, address) {
+			return scBalance, nil
+		}
+		return big.NewInt(0), nil
+	}
+
+	host, stubBlockchainHook := DefaultTestArwenForCall(t, code)
+	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
 
 	input := DefaultTestContractCallInput()
 	input.CallerAddr = []byte("user")
@@ -554,6 +564,26 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_Methods(t *testing.T) {
 	// Assertions: the VMOutput must contain as many StorageUpdates as the argument requires
 	// Assertions: the VMOutput must contain as many finished values as the argument requires
 	// Assertions: there must be a StorageUpdate with the value of the bigInt counter
+	code := GetTestSCCode("exec-same-ctx-recursive", "../../")
+	host, _ := DefaultTestArwenForCall(t, code)
+
+	input := DefaultTestContractCallInput()
+	input.CallerAddr = []byte("user")
+	input.RecipientAddr = parentAddress
+	input.Function = "callRecursiveMutualMethods"
+	input.GasProvided = 1000000
+
+	recursiveCalls := byte(5)
+	input.Arguments = [][]byte{
+		[]byte{recursiveCalls},
+	}
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	expectedVMOutput := expectedVMOutput_SameCtx_Recursive_MutualMethods(int(recursiveCalls))
+	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
+	require.Equal(t, expectedVMOutput, vmOutput)
+	require.Equal(t, int64(recursiveCalls+1), host.BigInt().GetOne(16).Int64())
 }
 
 func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs(t *testing.T) {
