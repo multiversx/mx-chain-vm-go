@@ -1,3 +1,6 @@
+#ifndef _CONTEXT_H_
+#define _CONTEXT_H_
+
 #include "types.h"
 
 void getOwner(byte *ownerAddress);
@@ -36,3 +39,5 @@ int storageStore(byte *key, byte *data, int dataLength);
 int storageLoad(byte *key, byte *data);
 int int64storageStore(byte *key, long long value);
 long long int64storageLoad(byte *key);
+
+#endif

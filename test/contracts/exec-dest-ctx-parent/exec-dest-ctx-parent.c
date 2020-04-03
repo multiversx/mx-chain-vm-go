@@ -1,5 +1,6 @@
 #include "../elrond/context.h"
 #include "../elrond/bigInt.h"
+#include "../elrond/test_utils.h"
 
 byte parentKeyA[] =  "parentKeyA......................";
 byte parentDataA[] = "parentDataA";
@@ -17,9 +18,6 @@ byte parentTransferData[] = "parentTransferData";
 byte executeValue[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,99};
 u32 executeArgumentsLengths[] = {15, 16, 10};
 byte executeArgumentsData[] = "First sentence.Second sentence.Some text.";
-
-void finishResult(int);
-u32 reverseU32(u32);
 
 void parentFunctionPrepare() {
 	storageStore(parentKeyA, parentDataA, 11);
@@ -140,34 +138,4 @@ void parentFunctionChildCall_OutOfGas() {
 	);
 
 	finishResult(result);
-}
-
-
-u32 reverseU32(u32 value) {
-	u32 lastByteMask = 0x00000000000000FF;
-	u32 result = 0;
-	int size = sizeof(value);
-	for (int i = 0; i < size; i++) {
-		byte lastByte = value & lastByteMask;
-		value >>= 8;
-
-		result <<= 8;
-		result += lastByte;
-	}
-	return result;
-}
-
-void finishResult(int result) {
-	if (result == 0) {
-		byte message[] = "succ";
-		finish(message, 4);
-	}
-	if (result == 1) {
-		byte message[] = "fail";
-		finish(message, 4);
-	}
-	if (result != 0 && result != 1) {
-		byte message[] = "unkn";
-		finish(message, 4);
-	}
 }

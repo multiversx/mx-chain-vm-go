@@ -1,5 +1,6 @@
 #include "../elrond/context.h"
 #include "../elrond/bigInt.h"
+#include "../elrond/test_utils.h"
 
 byte dataA[20] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 byte dataB[20] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
@@ -14,22 +15,6 @@ byte childFinish[] = "childFinish";
 byte recipient[32]     = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 byte value[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,96};
 
-void not_ok() {
-	byte msg[] = "not ok";
-	finish(msg, 6);
-}
-
-void didCallerPay() {
-	bigInt bigInt_payment = bigIntNew(0);
-	bigIntGetCallValue(bigInt_payment);
-
-	long long payment = bigIntGetInt64(bigInt_payment);
-	if (payment != 99) {
-		byte message[] = "child execution requires tx value of 99";
-		signalError(message, 39);
-	}
-}
-
 void childFunction() {
 	int numArgs = getNumArguments();
 	if (numArgs != 2) {
@@ -37,7 +22,7 @@ void childFunction() {
 		signalError(message, 25);
 	}
 
-	didCallerPay();
+	didCallerPay(99);
 
 	// This transfer will appear alongside the transfers made by the parent.
   getArgument(0, recipient);
@@ -109,7 +94,7 @@ void childFunction_BigInts() {
 		signalError(message, 25);
 	}
 
-	didCallerPay();
+	didCallerPay(99);
 
 	int status = 0;
 
@@ -159,7 +144,7 @@ void childFunction_OutOfGas() {
 		signalError(message, 25);
 	}
 
-	didCallerPay();
+	didCallerPay(99);
 
 	storageStore(childKey, childData, 9);
 	finish(childFinish, 11);
