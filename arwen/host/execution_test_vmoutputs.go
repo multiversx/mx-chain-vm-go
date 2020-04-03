@@ -20,6 +20,8 @@ var childTransferReceiver = []byte("childTransferReceiver...........")
 var parentTransferValue = int64(42)
 var parentTransferData = []byte("parentTransferData")
 
+var recursiveIterationCounterKey = []byte("recursiveIterationCounter.......")
+
 var gasProvided = uint64(1000000)
 
 var parentCompilationCost_SameCtx = uint64(3577)
@@ -208,6 +210,37 @@ func expectedVMOutput_SameCtx_SuccessfulChildCall_BigInts() *vmcommon.VMOutput {
 	gas -= childExecutionCost
 	gas -= finalCost
 	expectedVMOutput.GasRemaining = gas
+	return expectedVMOutput
+}
+
+func expectedVMOutput_SameCtx_Recursive_Direct(recursiveCalls int) *vmcommon.VMOutput {
+	expectedVMOutput := MakeVMOutput()
+
+	account := AddNewOutputAccount(
+		expectedVMOutput,
+		parentAddress,
+		0,
+		nil,
+	)
+	account.Balance = big.NewInt(0)
+
+	for i := recursiveCalls; i >= 0; i-- {
+		finishString := fmt.Sprintf("finish%03d", i)
+		AddFinishData(expectedVMOutput, []byte(finishString))
+	}
+
+	for i := recursiveCalls - 1; i >= 0; i-- {
+		AddFinishData(expectedVMOutput, []byte("succ"))
+	}
+
+	for i := 0; i <= recursiveCalls; i++ {
+		key := fmt.Sprintf("key%03d..........................", i)
+		value := fmt.Sprintf("value%03d", i)
+		SetStorageUpdateStrings(account, key, value)
+	}
+
+	SetStorageUpdate(account, recursiveIterationCounterKey, []byte{5})
+
 	return expectedVMOutput
 }
 

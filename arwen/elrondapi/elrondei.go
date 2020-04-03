@@ -919,7 +919,7 @@ func executeOnSameContext(
 	}
 
 	err = host.ExecuteOnSameContext(contractCallInput)
-	if err != nil {
+	if arwen.WithFault(err, context, false) {
 		return 1
 	}
 

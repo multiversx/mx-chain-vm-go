@@ -19,7 +19,7 @@ import (
 
 var defaultVMType = []byte{0xF, 0xF}
 var errCodeNotFound = errors.New("code not found")
-var parentAddress = []byte("parentSC.........................")
+var parentAddress = []byte("parentSC........................")
 var childAddress = []byte("childSC.........................")
 
 // GetSCCode retrieves the bytecode of a WASM module from a file

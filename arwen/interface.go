@@ -88,6 +88,7 @@ type RuntimeContext interface {
 	SetAsyncCallInfo(asyncCallInfo *AsyncCallInfo)
 	PushInstance()
 	PopInstance()
+	RunningInstancesCount() int
 	ClearInstanceStack()
 	ReadOnly() bool
 	SetReadOnly(readOnly bool)

@@ -62,11 +62,13 @@ func (context *runtimeContext) InitState() {
 }
 
 func (context *runtimeContext) CreateWasmerInstance(contract []byte, gasLimit uint64) error {
-	var err error
-	context.instance, err = wasmer.NewMeteredInstance(contract, gasLimit)
+	newInstance, err := wasmer.NewMeteredInstance(contract, gasLimit)
 	if err != nil {
+		context.instance = nil
 		return err
 	}
+
+	context.instance = newInstance
 	context.SetRuntimeBreakpointValue(arwen.BreakpointNone)
 	return nil
 }
@@ -121,6 +123,10 @@ func (context *runtimeContext) PopInstance() {
 
 	context.CleanInstance()
 	context.instance = prevInstance
+}
+
+func (context *runtimeContext) RunningInstancesCount() int {
+	return len(context.instanceStack)
 }
 
 func (context *runtimeContext) ClearInstanceStack() {

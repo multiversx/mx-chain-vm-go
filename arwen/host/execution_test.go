@@ -441,38 +441,6 @@ func TestExecution_ExecuteOnSameContext_OutOfGas(t *testing.T) {
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
-func TestExecution_ExecuteOnSameContext_Recursive_Direct(t *testing.T) {
-	// Scenario:
-	// SC has a method "callRecursive" which takes a byte as argument (number of recursive calls)
-	// callRecursive() saves to storage "keyNNN" → "valueNNN", where NNN is the argument
-	// callRecursive() saves to storage a counter starting at 1, increased by every recursive call
-	// callRecursive() creates a bigInt and increments it with every iteration
-	// callRecursive() finishes "finishNNN" in each iteration
-	// callRecursive() calls itself using executeOnSameContext(), with the argument decremented
-	// callRecursive() handles argument == 0 as follows: saves to storage the
-	//		value of the bigInt counter, then exits without recursive call
-	// Assertions: the VMOutput must contain as many StorageUpdates as the argument requires
-	// Assertions: the VMOutput must contain as many finished values as the argument requires
-	// Assertions: there must be a StorageUpdate with the value of the bigInt counter
-}
-
-func TestExecution_ExecuteOnSameContext_Recursive_Mutual_Methods(t *testing.T) {
-}
-
-func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs(t *testing.T) {
-	// Scenario:
-	// Parent has method parentCallChild()
-	// Child has method childCallParent()
-	// The two methods are identical, just named differently
-	// The methods do the following:
-	//		parent: save to storage "keyParentNNN" → "valueParentNNN"
-	//		parent:	finish "ParentNNN"
-	//		child:	save to storage "keyChildNNN" → "valueChildNNN"
-	//		child:	finish "ChildNNN"
-	//		both:		increment a shared bigInt counter
-	//		both:		whoever exits must save the shared bigInt counter to storage
-}
-
 func TestExecution_ExecuteOnSameContext_Successful(t *testing.T) {
 	parentCode := GetTestSCCode("exec-same-ctx-parent", "../../")
 	childCode := GetTestSCCode("exec-same-ctx-child", "../../")
@@ -529,6 +497,57 @@ func TestExecution_ExecuteOnSameContext_Successful_BigInts(t *testing.T) {
 	require.Nil(t, err)
 	expectedVMOutput := expectedVMOutput_SameCtx_SuccessfulChildCall_BigInts()
 	require.Equal(t, expectedVMOutput, vmOutput)
+}
+
+func TestExecution_ExecuteOnSameContext_Recursive_Direct(t *testing.T) {
+	// Scenario:
+	// SC has a method "callRecursive" which takes a byte as argument (number of recursive calls)
+	// callRecursive() saves to storage "keyNNN" → "valueNNN", where NNN is the argument
+	// callRecursive() saves to storage a counter starting at 1, increased by every recursive call
+	// callRecursive() creates a bigInt and increments it with every iteration
+	// callRecursive() finishes "finishNNN" in each iteration
+	// callRecursive() calls itself using executeOnSameContext(), with the argument decremented
+	// callRecursive() handles argument == 0 as follows: saves to storage the
+	//		value of the bigInt counter, then exits without recursive call
+	// Assertions: the VMOutput must contain as many StorageUpdates as the argument requires
+	// Assertions: the VMOutput must contain as many finished values as the argument requires
+	// Assertions: there must be a StorageUpdate with the value of the bigInt counter
+	code := GetTestSCCode("exec-same-ctx-recursive", "../../")
+	host, _ := DefaultTestArwenForCall(t, code)
+
+	input := DefaultTestContractCallInput()
+	input.CallerAddr = []byte("user")
+	input.RecipientAddr = parentAddress
+	input.Function = "callRecursive"
+	input.GasProvided = 1000000
+
+	recursiveCalls := byte(4)
+	input.Arguments = [][]byte{
+		[]byte{recursiveCalls},
+	}
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	expectedVMOutput := expectedVMOutput_SameCtx_Recursive_Direct(int(recursiveCalls))
+	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
+	require.Equal(t, expectedVMOutput, vmOutput)
+}
+
+func TestExecution_ExecuteOnSameContext_Recursive_Mutual_Methods(t *testing.T) {
+}
+
+func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs(t *testing.T) {
+	// Scenario:
+	// Parent has method parentCallChild()
+	// Child has method childCallParent()
+	// The two methods are identical, just named differently
+	// The methods do the following:
+	//		parent: save to storage "keyParentNNN" → "valueParentNNN"
+	//		parent:	finish "ParentNNN"
+	//		child:	save to storage "keyChildNNN" → "valueChildNNN"
+	//		child:	finish "ChildNNN"
+	//		both:		increment a shared bigInt counter
+	//		both:		whoever exits must save the shared bigInt counter to storage
 }
 
 func TestExecution_ExecuteOnDestContext_Prepare(t *testing.T) {
