@@ -8,7 +8,7 @@ import (
 )
 
 func TestReservedFunctions_IsFunctionReserved(t *testing.T) {
-	reserved := NewReservedFunctions([]string{})
+	reserved := NewReservedFunctions([]string{}, make(ProtocolReservedFunctions, 0))
 
 	require.False(t, reserved.IsReserved("foo"))
 	require.True(t, reserved.IsReserved("claimDeveloperRewards"))
@@ -16,7 +16,7 @@ func TestReservedFunctions_IsFunctionReserved(t *testing.T) {
 }
 
 func TestReservedFunctions_IsFunctionReservedExplicit(t *testing.T) {
-	reserved := NewReservedFunctions([]string{"rockets"})
+	reserved := NewReservedFunctions([]string{"rockets"}, make(ProtocolReservedFunctions, 0))
 
 	require.False(t, reserved.IsReserved("foo"))
 	require.True(t, reserved.IsReserved("rockets"))

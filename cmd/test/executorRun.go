@@ -8,6 +8,7 @@ import (
 	"math/big"
 	"path/filepath"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/contexts"
 	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -36,7 +37,7 @@ func newArwenTestExecutor() *arwenTestExecutor {
 
 	blockGasLimit := uint64(10000000)
 	gasSchedule := config.MakeGasMap(1)
-	vm, err := arwen.NewArwenVM(world, cryptohook.KryptoHookMockInstance, TestVMType, blockGasLimit, gasSchedule)
+	vm, err := arwen.NewArwenVM(world, cryptohook.KryptoHookMockInstance, TestVMType, blockGasLimit, gasSchedule, make(contexts.ProtocolReservedFunctions, 0))
 	if err != nil {
 		panic(err)
 	}

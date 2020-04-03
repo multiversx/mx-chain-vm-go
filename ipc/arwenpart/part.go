@@ -4,6 +4,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/contexts"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/logger"
@@ -32,7 +33,7 @@ func NewArwenPart(
 	blockchain := NewBlockchainHookGateway(messenger)
 	crypto := NewCryptoHookGateway()
 
-	host, err := host.NewArwenVM(blockchain, crypto, vmHostArguments.VMType, vmHostArguments.BlockGasLimit, vmHostArguments.GasSchedule)
+	host, err := host.NewArwenVM(blockchain, crypto, vmHostArguments.VMType, vmHostArguments.BlockGasLimit, vmHostArguments.GasSchedule, make(contexts.ProtocolReservedFunctions, 0))
 	if err != nil {
 		return nil, err
 	}

@@ -3,6 +3,8 @@ package common
 import (
 	"os"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/contexts"
+	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/logger"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/marshaling"
 )
@@ -18,13 +20,11 @@ type ArwenArguments struct {
 
 // VMHostArguments represents the arguments to be passed to VMHost
 type VMHostArguments struct {
-	VMType        []byte
-	BlockGasLimit uint64
-	GasSchedule   GasScheduleMap
+	VMType                    []byte
+	BlockGasLimit             uint64
+	GasSchedule               config.GasScheduleMap
+	ProtocolReservedFunctions contexts.ProtocolReservedFunctions
 }
-
-// GasScheduleMap is an alias
-type GasScheduleMap = map[string]map[string]uint64
 
 // SendArwenArguments sends initialization arguments through a pipe
 func SendArwenArguments(pipe *os.File, pipeArguments ArwenArguments) error {

@@ -11,7 +11,7 @@ import (
 
 func TestFunctionsGuard_isValidFunctionName(t *testing.T) {
 	imports := MakeAPIImports()
-	validator := NewWASMValidator(imports.Names())
+	validator := NewWASMValidator(imports.Names(), make(ProtocolReservedFunctions, 0))
 
 	require.Nil(t, validator.verifyValidFunctionName("foo"))
 	require.Nil(t, validator.verifyValidFunctionName("_"))
@@ -35,7 +35,7 @@ func TestFunctionsGuard_isValidFunctionName(t *testing.T) {
 
 func TestFunctionsGuard_Arity(t *testing.T) {
 	imports := InitializeWasmer()
-	validator := NewWASMValidator(imports.Names())
+	validator := NewWASMValidator(imports.Names(), make(ProtocolReservedFunctions, 0))
 
 	gasLimit := uint64(100000000)
 	path := "./../../test/contracts/signatures/signatures.wasm"

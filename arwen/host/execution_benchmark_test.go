@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/contexts"
 	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
@@ -75,7 +76,7 @@ func deploy(tb testing.TB, totalTokenSupply *big.Int) (*vmHost, *mock.Blockchain
 	gasMap, err := LoadGasScheduleConfig("../../test/gasSchedule.toml")
 	require.Nil(tb, err)
 
-	host, err := NewArwenVM(mockBlockchainHook, &mock.CryptoHookMock{}, defaultVMType, uint64(1000), gasMap)
+	host, err := NewArwenVM(mockBlockchainHook, &mock.CryptoHookMock{}, defaultVMType, uint64(1000), gasMap, make(contexts.ProtocolReservedFunctions, 0))
 	require.Nil(tb, err)
 
 	// Deploy ERC20

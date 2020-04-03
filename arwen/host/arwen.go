@@ -42,7 +42,8 @@ func NewArwenVM(
 	cryptoHook vmcommon.CryptoHook,
 	vmType []byte,
 	blockGasLimit uint64,
-	gasSchedule map[string]map[string]uint64,
+	gasSchedule config.GasScheduleMap,
+	protocolReservedFunctions contexts.ProtocolReservedFunctions,
 ) (*vmHost, error) {
 
 	host := &vmHost{
@@ -90,7 +91,7 @@ func NewArwenVM(
 		return nil, err
 	}
 
-	host.runtimeContext, err = contexts.NewRuntimeContext(host, vmType)
+	host.runtimeContext, err = contexts.NewRuntimeContext(host, vmType, protocolReservedFunctions)
 	if err != nil {
 		return nil, err
 	}
