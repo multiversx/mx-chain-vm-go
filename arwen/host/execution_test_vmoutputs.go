@@ -1,6 +1,7 @@
 package host
 
 import (
+	"fmt"
 	"math/big"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -21,6 +22,7 @@ var parentTransferValue = int64(42)
 var parentTransferData = []byte("parentTransferData")
 
 var recursiveIterationCounterKey = []byte("recursiveIterationCounter.......")
+var recursiveIterationBigCounterKey = []byte("recursiveIterationBigCounter....")
 
 var gasProvided = uint64(1000000)
 
@@ -240,6 +242,7 @@ func expectedVMOutput_SameCtx_Recursive_Direct(recursiveCalls int) *vmcommon.VMO
 	}
 
 	SetStorageUpdate(account, recursiveIterationCounterKey, []byte{5})
+	SetStorageUpdate(account, recursiveIterationBigCounterKey, []byte{5})
 
 	return expectedVMOutput
 }

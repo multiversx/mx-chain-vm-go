@@ -9,10 +9,13 @@ byte arguments[1] = {0};
 int argumentsLengths[1] = {1};
 
 byte recursiveIterationCounterKey[] = "recursiveIterationCounter.......";
+byte recursiveIterationBigCounterKey[] = "recursiveIterationBigCounter....";
+bigInt bigIntIterationCounterID = 16;
 
 void intTo3String(int value, byte *string, int startPos);
 void finishResult(int result);
 void incrementIterCounter();
+void incrementBigIntCounter();
 
 void callRecursive() {
 	int numArgs = getNumArguments();
@@ -38,6 +41,10 @@ void callRecursive() {
   // Increment a stored counter
   incrementIterCounter();
 
+  // Increment a bigInt counter (possible because of executeOnSameContext())
+  incrementBigIntCounter();
+
+  // Run next iteration.
   if (iteration > 0) {
     arguments[0] = iteration - 1;
     int result = executeOnSameContext(
@@ -52,6 +59,8 @@ void callRecursive() {
     );
 
     finishResult(result);
+  } else {
+    bigIntStorageStoreUnsigned(recursiveIterationBigCounterKey, bigIntIterationCounterID);
   }
 }
 
@@ -72,6 +81,11 @@ void incrementIterCounter() {
     counterValue = counterValue + 1;
     storageStore(recursiveIterationCounterKey, &counterValue, 1);
   }
+}
+
+void incrementBigIntCounter() {
+  bigIntSetInt64(42, 1);
+  bigIntAdd(bigIntIterationCounterID, bigIntIterationCounterID, 42);
 }
 
 void finishResult(int result) {
