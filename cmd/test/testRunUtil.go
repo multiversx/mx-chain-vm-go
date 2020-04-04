@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math/big"
 
-	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 	worldhook "github.com/ElrondNetwork/elrond-vm-util/mock-hook-blockchain"
 
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
@@ -45,23 +44,6 @@ func convertLogToTestFormat(outputLog *vmi.LogEntry) *ij.LogEntry {
 	}
 
 	return &testLog
-}
-
-func convertArgument(arg *big.Int) []byte {
-	if arg.Sign() >= 0 {
-		return arg.Bytes()
-	}
-
-	return twos.ToBytes(arg)
-}
-
-var zero = big.NewInt(0)
-
-func zeroIfNil(i *big.Int) *big.Int {
-	if i == nil {
-		return zero
-	}
-	return i
 }
 
 func bigIntPretty(i *big.Int) string {

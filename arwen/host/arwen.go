@@ -32,6 +32,8 @@ type vmHost struct {
 	meteringContext   arwen.MeteringContext
 	storageContext    arwen.StorageContext
 	bigIntContext     arwen.BigIntContext
+
+	scAPIMethods *wasmer.Imports
 }
 
 // NewArwenVM creates a new Arwen vmHost
@@ -51,9 +53,37 @@ func NewArwenVM(
 		blockchainContext: nil,
 		storageContext:    nil,
 		bigIntContext:     nil,
+		scAPIMethods:      nil,
 	}
 
 	var err error
+
+	imports, err := elrondapi.ElrondEIImports()
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = elrondapi.BigIntImports(imports)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = ethapi.EthereumImports(imports)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = crypto.CryptoImports(imports)
+	if err != nil {
+		return nil, err
+	}
+
+	err = wasmer.SetImports(imports)
+	if err != nil {
+		return nil, err
+	}
+
+	host.scAPIMethods = imports
 
 	host.blockchainContext, err = contexts.NewBlockchainContext(host, blockChainHook)
 	if err != nil {
@@ -81,31 +111,6 @@ func NewArwenVM(
 	}
 
 	host.bigIntContext, err = contexts.NewBigIntContext()
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err := elrondapi.ElrondEIImports()
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = elrondapi.BigIntImports(imports)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = ethapi.EthereumImports(imports)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = crypto.CryptoImports(imports)
-	if err != nil {
-		return nil, err
-	}
-
-	err = wasmer.SetImports(imports)
 	if err != nil {
 		return nil, err
 	}
@@ -181,6 +186,10 @@ func (host *vmHost) ClearStateStack() {
 	host.storageContext.ClearStateStack()
 }
 
+func (host *vmHost) GetAPIMethods() *wasmer.Imports {
+	return host.scAPIMethods
+}
+
 func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error) {
 	try := func() {
 		vmOutput = host.doRunSmartContractCreate(input)
@@ -195,7 +204,11 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 }
 
 func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
-	try := func() {
+	tryUpgrade := func() {
+		vmOutput = host.doRunSmartContractUpgrade(input)
+	}
+
+	tryCall := func() {
 		vmOutput = host.doRunSmartContractCall(input)
 	}
 
@@ -203,7 +216,12 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 		err = caught
 	}
 
-	TryCatch(try, catch, "arwen.RunSmartContractCall")
+	isUpgrade := input.Function == arwen.UpgradeFunctionName
+	if isUpgrade {
+		TryCatch(tryUpgrade, catch, "arwen.RunSmartContractUpgrade")
+	} else {
+		TryCatch(tryCall, catch, "arwen.RunSmartContractCall")
+	}
 	return
 }
 

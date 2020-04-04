@@ -1,7 +1,9 @@
 package nodepart
 
 import (
+	"fmt"
 	"os"
+	"time"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/logger"
@@ -20,17 +22,18 @@ type NodePart struct {
 
 // NewNodePart creates the Node part
 func NewNodePart(
-	nodeLogger logger.Logger,
+	mainLogger logger.Logger,
+	dialogueLogger logger.Logger,
 	input *os.File,
 	output *os.File,
 	blockchain vmcommon.BlockchainHook,
 	config Config,
 	marshalizer marshaling.Marshalizer,
 ) (*NodePart, error) {
-	messenger := NewNodeMessenger(nodeLogger, input, output, marshalizer)
+	messenger := NewNodeMessenger(dialogueLogger, input, output, marshalizer)
 
 	part := &NodePart{
-		Logger:     nodeLogger,
+		Logger:     mainLogger,
 		Messenger:  messenger,
 		blockchain: blockchain,
 		config:     config,
@@ -67,12 +70,16 @@ func (part *NodePart) noopReplier(message common.MessageHandler) common.MessageH
 
 // StartLoop runs the main loop
 func (part *NodePart) StartLoop(request common.MessageHandler) (common.MessageHandler, error) {
-	part.Messenger.SendContractRequest(request)
+	defer part.timeTrack(time.Now(), "[NODE] end of loop")
+
+	err := part.Messenger.SendContractRequest(request)
+	if err != nil {
+		return nil, err
+	}
+
 	response, err := part.doLoop()
 	if err != nil {
 		part.Logger.Error("[NODE]: end of loop", "err", err)
-	} else {
-		part.Logger.Debug("[NODE]: end of loop")
 	}
 
 	part.Messenger.ResetDialogue()
@@ -117,6 +124,8 @@ func (part *NodePart) doLoop() (common.MessageHandler, error) {
 }
 
 func (part *NodePart) replyToHookCallRequest(request common.MessageHandler) error {
+	defer part.timeTrack(time.Now(), fmt.Sprintf("replyToHookCallRequest %s", request.GetKindName()))
+
 	replier := part.Repliers[request.GetKind()]
 	hookResponse := replier(request)
 	err := part.Messenger.SendHookCallResponse(hookResponse)
@@ -135,4 +144,9 @@ func (part *NodePart) SendStopSignal() error {
 
 	part.Logger.Info("Node: sent stop signal to Arwen.")
 	return nil
+}
+
+func (part *NodePart) timeTrack(start time.Time, message string) {
+	elapsed := time.Since(start)
+	part.Logger.Trace(message, "duration", elapsed)
 }

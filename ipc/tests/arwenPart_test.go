@@ -64,7 +64,8 @@ func doContractRequest(
 	wg := sync.WaitGroup{}
 	wg.Add(2)
 
-	logger := logger.NewDefaultLogger(logger.LogDebug)
+	mainLogger := logger.NewDefaultLogger(logger.LogDebug)
+	dialogueLogger := logger.NewDefaultLogger(logger.LogDebug)
 
 	go func() {
 		vmHostArguments := &common.VMHostArguments{
@@ -74,20 +75,22 @@ func doContractRequest(
 		}
 
 		part, err := arwenpart.NewArwenPart(
-			logger,
+			mainLogger,
+			dialogueLogger,
 			files.inputOfArwen,
 			files.outputOfArwen,
 			vmHostArguments,
 			marshaling.CreateMarshalizer(marshaling.JSON),
 		)
 		assert.Nil(t, err)
-		part.StartLoop()
+		_ = part.StartLoop()
 		wg.Done()
 	}()
 
 	go func() {
 		part, err := nodepart.NewNodePart(
-			logger,
+			mainLogger,
+			dialogueLogger,
 			files.inputOfNode,
 			files.outputOfNode,
 			blockchain,
@@ -96,7 +99,7 @@ func doContractRequest(
 		)
 		assert.Nil(t, err)
 		response, responseError = part.StartLoop(request)
-		part.SendStopSignal()
+		_ = part.SendStopSignal()
 		wg.Done()
 	}()
 

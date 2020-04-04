@@ -9,6 +9,8 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
+var _ arwen.RuntimeContext = (*runtimeContext)(nil)
+
 type runtimeContext struct {
 	host     arwen.VMHost
 	instance *wasmer.Instance
@@ -35,13 +37,15 @@ func NewRuntimeContext(
 	host arwen.VMHost,
 	vmType []byte,
 ) (*runtimeContext, error) {
+	scAPINames := host.GetAPIMethods().Names()
+
 	context := &runtimeContext{
 		host:                        host,
 		instanceContextDataPointers: make([]*int, 0),
 		vmType:                      vmType,
 		stateStack:                  make([]*runtimeContext, 0),
 		instanceStack:               make([]*wasmer.Instance, 0),
-		validator:                   NewWASMValidator(),
+		validator:                   NewWASMValidator(scAPINames),
 	}
 
 	context.InitState()
@@ -156,6 +160,19 @@ func (context *runtimeContext) Arguments() [][]byte {
 	return context.vmInput.Arguments
 }
 
+func (context *runtimeContext) GetCodeUpgradeFromArgs() ([]byte, []byte, error) {
+	const numMinUpgradeArguments = 2
+
+	arguments := context.vmInput.Arguments
+	if len(arguments) < numMinUpgradeArguments {
+		return nil, nil, arwen.ErrInvalidUpgradeArguments
+	}
+
+	code := arguments[0]
+	codeMetadata := arguments[1]
+	return code, codeMetadata, nil
+}
+
 func (context *runtimeContext) FailExecution(err error) {
 	context.host.Output().SetReturnCode(vmcommon.ExecutionFailed)
 
@@ -190,7 +207,7 @@ func (context *runtimeContext) VerifyContractCode() error {
 		return err
 	}
 
-	err = context.validator.verifyFunctionsNames(context.instance)
+	err = context.validator.verifyFunctions(context.instance)
 	if err != nil {
 		return err
 	}

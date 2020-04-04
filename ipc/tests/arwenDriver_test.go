@@ -64,7 +64,7 @@ func BenchmarkArwenDriver_RestartsIfStopped(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		driver.Close()
 		require.True(b, driver.IsClosed())
-		driver.RestartArwenIfNecessary()
+		_ = driver.RestartArwenIfNecessary()
 		require.False(b, driver.IsClosed())
 	}
 }
@@ -74,14 +74,19 @@ func BenchmarkArwenDriver_RestartArwenIfNecessary(b *testing.B) {
 	driver := newDriver(b, blockchain)
 
 	for i := 0; i < b.N; i++ {
-		driver.RestartArwenIfNecessary()
+		_ = driver.RestartArwenIfNecessary()
 	}
 }
 
 func newDriver(tb testing.TB, blockchain *mock.BlockchainHookStub) *nodepart.ArwenDriver {
-	nodeLogger := logger.NewDefaultLogger(logger.LogDebug)
+	driverLogger := logger.NewDefaultLogger(logger.LogDebug)
+	arwenMainLogger := logger.NewDefaultLogger(logger.LogDebug)
+	dialogueLogger := logger.NewDefaultLogger(logger.LogDebug)
+
 	driver, err := nodepart.NewArwenDriver(
-		nodeLogger,
+		driverLogger,
+		arwenMainLogger,
+		dialogueLogger,
 		blockchain,
 		common.ArwenArguments{
 			VMHostArguments: common.VMHostArguments{
@@ -89,7 +94,8 @@ func newDriver(tb testing.TB, blockchain *mock.BlockchainHookStub) *nodepart.Arw
 				BlockGasLimit: uint64(10000000),
 				GasSchedule:   config.MakeGasMap(1),
 			},
-			LogLevel: logger.LogDebug,
+			MainLogLevel:     logger.LogDebug,
+			DialogueLogLevel: logger.LogDebug,
 		},
 		nodepart.Config{MaxLoopTime: 1000},
 	)

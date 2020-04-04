@@ -2,6 +2,7 @@ package mock
 
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -19,6 +20,8 @@ type VmHostMock struct {
 	MeteringContext   arwen.MeteringContext
 	StorageContext    arwen.StorageContext
 	BigIntContext     arwen.BigIntContext
+
+	SCAPIMethods *wasmer.Imports
 }
 
 func (host *VmHostMock) Crypto() vmcommon.CryptoHook {
@@ -66,15 +69,17 @@ func (host *VmHostMock) EthereumCallData() []byte {
 }
 
 func (host *VmHostMock) InitState() {
-	return
 }
 
 func (host *VmHostMock) PushState() {
-	return
 }
 
 func (host *VmHostMock) PopState() {
 }
 
 func (host *VmHostMock) ClearStateStack() {
+}
+
+func (host *VmHostMock) GetAPIMethods() *wasmer.Imports {
+	return host.SCAPIMethods
 }

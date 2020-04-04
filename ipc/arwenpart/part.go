@@ -21,13 +21,14 @@ type ArwenPart struct {
 
 // NewArwenPart creates the Arwen part
 func NewArwenPart(
-	logger logger.Logger,
+	mainLogger logger.Logger,
+	dialogueLogger logger.Logger,
 	input *os.File,
 	output *os.File,
 	vmHostArguments *common.VMHostArguments,
 	marshalizer marshaling.Marshalizer,
 ) (*ArwenPart, error) {
-	messenger := NewArwenMessenger(logger, input, output, marshalizer)
+	messenger := NewArwenMessenger(dialogueLogger, input, output, marshalizer)
 	blockchain := NewBlockchainHookGateway(messenger)
 	crypto := NewCryptoHookGateway()
 
@@ -38,7 +39,7 @@ func NewArwenPart(
 
 	part := &ArwenPart{
 		Messenger: messenger,
-		Logger:    logger,
+		Logger:    mainLogger,
 		VMHost:    host,
 	}
 
@@ -78,13 +79,16 @@ func (part *ArwenPart) doLoop() error {
 		response := part.replyToNodeRequest(request)
 
 		// Successful execution, send response
-		part.Messenger.SendContractResponse(response)
+		err = part.Messenger.SendContractResponse(response)
+		if err != nil {
+			return err
+		}
+
 		part.Messenger.ResetDialogue()
 	}
 }
 
 func (part *ArwenPart) replyToNodeRequest(request common.MessageHandler) common.MessageHandler {
-	part.Logger.Debug("[ARWEN]: replyToNodeRequest()", "req", request)
 	replier := part.Repliers[request.GetKind()]
 	return replier(request)
 }
@@ -98,7 +102,6 @@ func (part *ArwenPart) replyToRunSmartContractCreate(request common.MessageHandl
 func (part *ArwenPart) replyToRunSmartContractCall(request common.MessageHandler) common.MessageHandler {
 	typedRequest := request.(*common.MessageContractCallRequest)
 	vmOutput, err := part.VMHost.RunSmartContractCall(typedRequest.CallInput)
-	part.Logger.Debug("[ARWEN]: replyToRunSmartContractCall() done")
 	return common.NewMessageContractResponse(vmOutput, err)
 }
 

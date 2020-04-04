@@ -27,3 +27,10 @@ type AsyncCallInfo struct {
 	GasLimit    uint64
 	ValueBytes  []byte
 }
+
+// CodeDeployInput contains code deploy state, whether it comes from a ContractCreateInput or a ContractCallInput
+type CodeDeployInput struct {
+	ContractCode         []byte
+	ContractCodeMetadata []byte
+	ContractAddress      []byte
+}

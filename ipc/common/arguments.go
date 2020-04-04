@@ -10,16 +10,17 @@ import (
 // ArwenArguments represents the initialization arguments required by Arwen, passed through the initialization pipe
 type ArwenArguments struct {
 	VMHostArguments
-	LogLevel            logger.LogLevel
+	MainLogLevel        logger.LogLevel
+	DialogueLogLevel    logger.LogLevel
 	LogsMarshalizer     marshaling.MarshalizerKind
 	MessagesMarshalizer marshaling.MarshalizerKind
 }
 
 // VMHostArguments represents the arguments to be passed to VMHost
 type VMHostArguments struct {
-	VMType              []byte
-	BlockGasLimit       uint64
-	GasSchedule         GasScheduleMap
+	VMType        []byte
+	BlockGasLimit uint64
+	GasSchedule   GasScheduleMap
 }
 
 // GasScheduleMap is an alias

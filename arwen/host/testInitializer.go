@@ -3,21 +3,24 @@ package host
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"math/big"
+	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/pelletier/go-toml"
 	"github.com/stretchr/testify/require"
 )
 
 var defaultVMType = []byte{0xF, 0xF}
 var errCodeNotFound = errors.New("code not found")
-var firstAddress = []byte("firstSC.........................")
-var secondAddress = []byte("secondSC........................")
+var parentSCAddress = []byte("parentSC.........................")
+var childSCAddress = []byte("childSC.........................")
 
 // GetSCCode retrieves the bytecode of a WASM module from a file
 func GetSCCode(fileName string) []byte {
@@ -47,27 +50,29 @@ func DefaultTestArwenForDeployment(t *testing.T, ownerNonce uint64, newAddress [
 	return host
 }
 
-// DefaultTestArwenForCall creates an Arwen vmHost configured for testing SC calls
-func DefaultTestArwenForCall(t *testing.T, code []byte) (*vmHost, *mock.BlockchainHookStub) {
+func DefaultTestArwenForCall(tb testing.TB, code []byte) (*vmHost, *mock.BlockchainHookStub) {
 	mockCryptoHook := &mock.CryptoHookMock{}
 	stubBlockchainHook := &mock.BlockchainHookStub{}
-	stubBlockchainHook.GetCodeCalled = func(address []byte) ([]byte, error) {
-		return code, nil
+	stubBlockchainHook.GetCodeCalled = func(scAddress []byte) ([]byte, error) {
+		if bytes.Equal(scAddress, parentSCAddress) {
+			return code, nil
+		}
+		return nil, errCodeNotFound
 	}
-	host, _ := DefaultTestArwen(t, stubBlockchainHook, mockCryptoHook)
+	host, _ := DefaultTestArwen(tb, stubBlockchainHook, mockCryptoHook)
 	return host, stubBlockchainHook
 }
 
 // DefaultTestArwenForTwoSCs creates an Arwen vmHost configured for testing calls between 2 SmartContracts
-func DefaultTestArwenForTwoSCs(t *testing.T, firstCode []byte, secondCode []byte) (*vmHost, *mock.BlockchainHookStub) {
+func DefaultTestArwenForTwoSCs(t *testing.T, parentCode []byte, childCode []byte) (*vmHost, *mock.BlockchainHookStub) {
 	mockCryptoHook := &mock.CryptoHookMock{}
 	stubBlockchainHook := &mock.BlockchainHookStub{}
 	stubBlockchainHook.GetCodeCalled = func(scAddress []byte) ([]byte, error) {
-		if bytes.Equal(scAddress, firstAddress) {
-			return firstCode, nil
+		if bytes.Equal(scAddress, parentSCAddress) {
+			return parentCode, nil
 		}
-		if bytes.Equal(scAddress, secondAddress) {
-			return secondCode, nil
+		if bytes.Equal(scAddress, childSCAddress) {
+			return childCode, nil
 		}
 		return nil, errCodeNotFound
 	}
@@ -75,11 +80,10 @@ func DefaultTestArwenForTwoSCs(t *testing.T, firstCode []byte, secondCode []byte
 	return host, stubBlockchainHook
 }
 
-// DefaultTestArwen creates an Arwen vmHost configured with the provided BlockchainHook and CryptoHook
-func DefaultTestArwen(t *testing.T, blockchain vmcommon.BlockchainHook, crypto vmcommon.CryptoHook) (*vmHost, error) {
+func DefaultTestArwen(tb testing.TB, blockchain vmcommon.BlockchainHook, crypto vmcommon.CryptoHook) (*vmHost, error) {
 	host, err := NewArwenVM(blockchain, crypto, defaultVMType, uint64(1000), config.MakeGasMap(1))
-	require.Nil(t, err)
-	require.NotNil(t, host)
+	require.Nil(tb, err)
+	require.NotNil(tb, host)
 	return host, err
 }
 
@@ -112,7 +116,7 @@ func DefaultTestContractCallInput() *vmcommon.ContractCallInput {
 			GasPrice:    0,
 			GasProvided: 0,
 		},
-		RecipientAddr: []byte("smartcontract"),
+		RecipientAddr: parentSCAddress,
 		Function:      "function",
 	}
 }
@@ -167,4 +171,94 @@ func SetStorageUpdate(account *vmcommon.OutputAccount, key []byte, data []byte) 
 // SetStorageUpdateStrings sets a storage update to the provided vmcommon.OutputAccount, from string arguments
 func SetStorageUpdateStrings(account *vmcommon.OutputAccount, key string, data string) {
 	SetStorageUpdate(account, []byte(key), []byte(data))
+}
+
+// OpenFile method opens the file from given path - does not close the file
+func OpenFile(relativePath string) (*os.File, error) {
+	path, err := filepath.Abs(relativePath)
+	if err != nil {
+		fmt.Printf("cannot create absolute path for the provided file: %s", err.Error())
+		return nil, err
+	}
+	f, err := os.Open(filepath.Clean(path))
+	if err != nil {
+		return nil, err
+	}
+
+	return f, nil
+}
+
+// LoadTomlFile method to open and decode toml file
+func LoadTomlFile(dest interface{}, relativePath string) error {
+	f, err := OpenFile(relativePath)
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		err = f.Close()
+		if err != nil {
+			fmt.Printf("cannot close file: %s", err.Error())
+		}
+	}()
+
+	return toml.NewDecoder(f).Decode(dest)
+}
+
+// LoadTomlFileToMap opens and decodes a toml file as a map[string]interface{}
+func LoadTomlFileToMap(relativePath string) (map[string]interface{}, error) {
+	f, err := OpenFile(relativePath)
+	if err != nil {
+		return nil, err
+	}
+
+	fileinfo, err := f.Stat()
+	if err != nil {
+		fmt.Printf("cannot stat file: %s", err.Error())
+		return nil, err
+	}
+
+	filesize := fileinfo.Size()
+	buffer := make([]byte, filesize)
+
+	_, err = f.Read(buffer)
+	if err != nil {
+		fmt.Printf("cannot read from file: %s", err.Error())
+		return nil, err
+	}
+
+	defer func() {
+		err = f.Close()
+		if err != nil {
+			fmt.Printf("cannot close file: %s", err.Error())
+		}
+	}()
+
+	loadedTree, err := toml.Load(string(buffer))
+	if err != nil {
+		fmt.Printf("cannot interpret file contents as toml: %s", err.Error())
+		return nil, err
+	}
+
+	loadedMap := loadedTree.ToMap()
+
+	return loadedMap, nil
+}
+
+func LoadGasScheduleConfig(filepath string) (map[string]map[string]uint64, error) {
+	gasScheduleConfig, err := LoadTomlFileToMap(filepath)
+	if err != nil {
+		return nil, err
+	}
+
+	flattenedGasSchedule := make(map[string]map[string]uint64)
+	for libType, costs := range gasScheduleConfig {
+		flattenedGasSchedule[libType] = make(map[string]uint64)
+		costsMap := costs.(map[string]interface{})
+		for operationName, cost := range costsMap {
+			flattenedGasSchedule[libType][operationName] = uint64(cost.(int64))
+		}
+	}
+
+	return flattenedGasSchedule, nil
 }

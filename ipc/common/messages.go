@@ -120,6 +120,8 @@ type MessageHandler interface {
 	SetKind(kind MessageKind)
 	GetError() error
 	SetError(err error)
+	GetKindName() string
+	DebugString() string
 }
 
 // Message is the implementation of the abstraction
@@ -165,7 +167,14 @@ func (message *Message) SetError(err error) {
 	}
 }
 
-func (message *Message) String() string {
+// GetKindName gets the kind name
+func (message *Message) GetKindName() string {
+	kindName := messageKindNameByID[message.Kind]
+	return kindName
+}
+
+// DebugString is a debug representation of the message
+func (message *Message) DebugString() string {
 	kindName := messageKindNameByID[message.Kind]
 	return fmt.Sprintf("[kind=%s nonce=%d err=%s]", kindName, message.DialogueNonce, message.ErrorMessage)
 }

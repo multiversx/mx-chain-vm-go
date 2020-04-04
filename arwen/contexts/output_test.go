@@ -133,8 +133,6 @@ func TestOutputContext_FinishReturnData(t *testing.T) {
 	expectedData = append(expectedData, big.NewInt(1234567).Bytes())
 	require.Equal(t, expectedData, outputContext.ReturnData())
 
-	// TODO update this section after modifying Finish to accept empty []byte
-	// slices
 	outputContext.Finish([]byte{})
 	expectedData = append(expectedData, []byte{})
 	require.Equal(t, expectedData, outputContext.ReturnData())
@@ -352,11 +350,10 @@ func TestOutputContext_Transfer(t *testing.T) {
 	host := &mock.VmHostMock{}
 	mockBlockchainHook := mock.NewBlockchainHookMock()
 	mockBlockchainHook.AddAccount(&mock.Account{
-		Exists:       true,
-		Address:      sender,
-		Nonce:        42,
-		Balance:      balance,
-		BalanceDelta: big.NewInt(0),
+		Exists:  true,
+		Address: sender,
+		Nonce:   42,
+		Balance: balance,
 	})
 
 	blockchainContext, _ := NewBlockchainContext(host, mockBlockchainHook)

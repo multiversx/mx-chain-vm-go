@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"math/big"
 	"path/filepath"
+	"time"
 	"unsafe"
 )
 
@@ -85,4 +86,9 @@ func GetSCCode(fileName string) []byte {
 	code, _ := ioutil.ReadFile(filepath.Clean(fileName))
 
 	return code
+}
+
+func TimeTrack(start time.Time, message string) {
+	elapsed := time.Since(start)
+	fmt.Println(message, "duration", elapsed)
 }
