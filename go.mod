@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/ElrondNetwork/big-int-util v0.0.5
-	github.com/ElrondNetwork/elrond-vm-common v0.1.12
+	github.com/ElrondNetwork/elrond-vm-common v0.1.13
 	github.com/ElrondNetwork/elrond-vm-util v0.1.5
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/pelletier/go-toml v1.6.0

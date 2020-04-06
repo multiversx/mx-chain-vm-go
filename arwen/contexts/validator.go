@@ -8,6 +8,8 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 )
 
+const NoArity = -1
+
 // WASMValidator is a validator for WASM SmartContracts
 type WASMValidator struct {
 	reserved *ReservedFunctions
@@ -30,61 +32,76 @@ func (validator *WASMValidator) verifyMemoryDeclaration(instance *wasmer.Instanc
 
 func (validator *WASMValidator) verifyFunctions(instance *wasmer.Instance) error {
 	for functionName := range instance.Exports {
-		if !validator.isValidFunctionName(functionName) {
-			return fmt.Errorf("%w: %s", arwen.ErrInvalidFunctionName, functionName)
+		err := validator.verifyValidFunctionName(functionName)
+		if err != nil {
+			return err
 		}
 
-		if !validator.isVoidFunction(instance, functionName) {
-			return fmt.Errorf("%w: %s", arwen.ErrFunctionNonvoidSignature, functionName)
+		err = validator.verifyVoidFunction(instance, functionName)
+		if err != nil {
+			return err
 		}
 	}
 
 	return nil
 }
 
-func (validator *WASMValidator) isVoidFunction(instance *wasmer.Instance, functionName string) bool {
-	inArity := validator.getInputArity(instance, functionName)
-	outArity := validator.getOutputArity(instance, functionName)
+func (validator *WASMValidator) verifyVoidFunction(instance *wasmer.Instance, functionName string) error {
+	inArity, err := validator.getInputArity(instance, functionName)
+	if err != nil {
+		return err
+	}
 
-	isVoid := (inArity == 0 && outArity == 0)
-	return isVoid
+	outArity, err := validator.getOutputArity(instance, functionName)
+	if err != nil {
+		return err
+	}
+
+	isVoid := inArity == 0 && outArity == 0
+	if !isVoid {
+		return fmt.Errorf("%w: %s", arwen.ErrFunctionNonvoidSignature, functionName)
+	}
+	return nil
 }
 
-func (validator *WASMValidator) getInputArity(instance *wasmer.Instance, functionName string) int {
+func (validator *WASMValidator) getInputArity(instance *wasmer.Instance, functionName string) (int, error) {
 	signature, ok := instance.Signatures[functionName]
 	if !ok {
-		return -1
+		return NoArity, fmt.Errorf("%w: %s", arwen.ErrFuncNotFound, functionName)
 	}
-	return signature.InputArity
+	return signature.InputArity, nil
 }
 
-func (validator *WASMValidator) getOutputArity(instance *wasmer.Instance, functionName string) int {
+func (validator *WASMValidator) getOutputArity(instance *wasmer.Instance, functionName string) (int, error) {
 	signature, ok := instance.Signatures[functionName]
 	if !ok {
-		return -1
+		return NoArity, fmt.Errorf("%w: %s", arwen.ErrFuncNotFound, functionName)
 	}
-	return signature.OutputArity
+	return signature.OutputArity, nil
 }
 
-func (validator *WASMValidator) isValidFunctionName(functionName string) bool {
+func (validator *WASMValidator) verifyValidFunctionName(functionName string) error {
 	const maxLengthOfFunctionName = 256
 
+	errInvalidName := fmt.Errorf("%w: %s", arwen.ErrInvalidFunctionName, functionName)
+
 	if len(functionName) == 0 {
-		return false
+		return errInvalidName
 	}
 	if len(functionName) >= maxLengthOfFunctionName {
-		return false
+		return errInvalidName
 	}
 	if !isASCIIString(functionName) {
-		return false
+		return errInvalidName
 	}
 	if validator.reserved.IsReserved(functionName) {
-		return false
+		return errInvalidName
 	}
 
-	return true
+	return nil
 }
 
+// TODO: Add more constraints (too loose currently)
 func isASCIIString(input string) bool {
 	for i := 0; i < len(input); i++ {
 		if input[i] > unicode.MaxASCII {

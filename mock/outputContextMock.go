@@ -4,7 +4,7 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var _ arwen.OutputContext = (*OutputContextMock)(nil)
@@ -128,7 +128,7 @@ func (o *OutputContextMock) GetVMOutput() *vmcommon.VMOutput {
 	return o.OutputStateMock
 }
 
-func (o *OutputContextMock) DeployCode(address []byte, code []byte) {
+func (o *OutputContextMock) DeployCode(input arwen.CodeDeployInput) {
 }
 
 func (o *OutputContextMock) CreateVMOutputInCaseOfError(errCode vmcommon.ReturnCode, message string) *vmcommon.VMOutput {

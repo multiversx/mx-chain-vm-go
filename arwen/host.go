@@ -15,6 +15,7 @@ const BalanceLen = 32
 const InitFunctionName = "init"
 const InitFunctionNameEth = "solidity.ctor"
 const CallBackFunctionName = "callBack"
+const UpgradeFunctionName = "upgradeContract"
 
 var (
 	vmContextCounter uint8
@@ -29,6 +30,10 @@ func AddHostContext(ctx VMHost) int {
 	}
 	vmContextMap[id] = ctx
 	return int(id)
+}
+
+func RemoveAllHostContexts() {
+	vmContextMap = make(map[uint8]VMHost)
 }
 
 func RemoveHostContext(idx int) {

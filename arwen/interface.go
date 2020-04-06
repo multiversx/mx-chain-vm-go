@@ -18,13 +18,10 @@ type StateStack interface {
 
 // ArgumentsParser defines the functionality to parse transaction data into arguments and code for smart contracts
 type ArgumentsParser interface {
-	GetArguments() ([][]byte, error)
-	GetCode() ([]byte, error)
+	GetFunctionArguments() ([][]byte, error)
+	GetConstructorArguments() ([][]byte, error)
 	GetFunction() (string, error)
 	ParseData(data string) error
-
-	CreateDataFromStorageUpdate(storageUpdates []*vmcommon.StorageUpdate) string
-	GetStorageUpdates(data string) ([]*vmcommon.StorageUpdate, error)
 	IsInterfaceNil() bool
 }
 
@@ -80,6 +77,7 @@ type RuntimeContext interface {
 	GetVMType() []byte
 	Function() string
 	Arguments() [][]byte
+	GetCodeUpgradeFromArgs() ([]byte, []byte, error)
 	SignalUserError(message string)
 	FailExecution(err error)
 	SetRuntimeBreakpointValue(value BreakpointValue)
@@ -139,7 +137,7 @@ type OutputContext interface {
 	Finish(data []byte)
 	GetVMOutput() *vmcommon.VMOutput
 	AddTxValueToAccount(address []byte, value *big.Int)
-	DeployCode(address []byte, code []byte)
+	DeployCode(input CodeDeployInput)
 	CreateVMOutputInCaseOfError(errCode vmcommon.ReturnCode, message string) *vmcommon.VMOutput
 }
 
@@ -152,8 +150,8 @@ type MeteringContext interface {
 	BoundGasLimit(value int64) uint64
 	BlockGasLimit() uint64
 	DeductInitialGasForExecution(contract []byte) error
-	DeductInitialGasForDirectDeployment(input *vmcommon.ContractCreateInput) error
-	DeductInitialGasForIndirectDeployment(input *vmcommon.ContractCreateInput) error
+	DeductInitialGasForDirectDeployment(input CodeDeployInput) error
+	DeductInitialGasForIndirectDeployment(input CodeDeployInput) error
 	UnlockGasIfAsyncStep()
 }
 

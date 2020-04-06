@@ -1,9 +1,11 @@
 package mock
 
 import (
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	"github.com/ElrondNetwork/elrond-vm-common"
 )
+
+var _ arwen.MeteringContext = (*MeteringContextMock)(nil)
 
 type MeteringContextMock struct {
 	GasCost           *config.GasCost
@@ -58,14 +60,14 @@ func (m *MeteringContextMock) DeductInitialGasForExecution(contract []byte) erro
 	return nil
 }
 
-func (m *MeteringContextMock) DeductInitialGasForDirectDeployment(input *vmcommon.ContractCreateInput) error {
+func (m *MeteringContextMock) DeductInitialGasForDirectDeployment(input arwen.CodeDeployInput) error {
 	if m.Err != nil {
 		return m.Err
 	}
 	return nil
 }
 
-func (m *MeteringContextMock) DeductInitialGasForIndirectDeployment(input *vmcommon.ContractCreateInput) error {
+func (m *MeteringContextMock) DeductInitialGasForIndirectDeployment(input arwen.CodeDeployInput) error {
 	if m.Err != nil {
 		return m.Err
 	}

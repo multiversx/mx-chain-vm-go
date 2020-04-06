@@ -93,6 +93,15 @@ func (r *RuntimeContextMock) Arguments() [][]byte {
 	return r.VmInput.Arguments
 }
 
+func (r *RuntimeContextMock) GetCodeUpgradeFromArgs() ([]byte, []byte, error) {
+	arguments := r.VmInput.Arguments
+	if len(arguments) < 2 {
+		panic("GetCodeUpgradeFromArgs: bad test setup")
+	}
+
+	return r.VmInput.Arguments[0], r.VmInput.Arguments[1], nil
+}
+
 func (r *RuntimeContextMock) SignalExit(_ int) {
 }
 
