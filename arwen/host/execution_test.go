@@ -538,6 +538,9 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct(t *testing.T) {
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
+
+	// TODO set proper gas calculation in the expectedVMOutput, like the other
+	// tests
 	expectedVMOutput := expectedVMOutput_SameCtx_Recursive_Direct(int(recursiveCalls))
 	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
@@ -833,9 +836,11 @@ func TestExecution_ExecuteOnDestContext_Recursive_Direct(t *testing.T) {
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
+
+	// TODO set proper gas calculation in the expectedVMOutput, like the other
+	// tests
 	expectedVMOutput := expectedVMOutput_DestCtx_Recursive_Direct(int(recursiveCalls))
 	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
-
 	require.Equal(t, expectedVMOutput, vmOutput)
 	require.Equal(t, int64(1), host.BigInt().GetOne(16).Int64())
 }
