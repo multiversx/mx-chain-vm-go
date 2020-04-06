@@ -153,11 +153,11 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vm
 	bigInt.PushState()
 	bigInt.InitState()
 
-	output.PushState()
-	output.CensorVMOutput()
-
 	runtime.PushState()
 	runtime.InitStateFromContractCallInput(input)
+
+	output.PushState()
+	output.CensorVMOutput()
 
 	storage.PushState()
 	storage.SetAddress(host.Runtime().GetSCAddress())
