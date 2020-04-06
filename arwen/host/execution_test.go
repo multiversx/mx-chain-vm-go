@@ -612,11 +612,10 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs(t *testing.T) {
 
 func TestExecution_ExecuteOnDestContext_Prepare(t *testing.T) {
 	parentCode := GetTestSCCode("exec-dest-ctx-parent", "../../")
-	parentSC := []byte("parentSC.........................")
 	parentSCBalance := big.NewInt(1000)
 
 	getBalanceCalled := func(address []byte) (*big.Int, error) {
-		if bytes.Equal(parentSC, address) {
+		if bytes.Equal(parentAddress, address) {
 			return parentSCBalance, nil
 		}
 		return big.NewInt(0), nil

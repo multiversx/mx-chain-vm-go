@@ -26,11 +26,11 @@ var recursiveIterationBigCounterKey = []byte("recursiveIterationBigCounter....")
 
 var gasProvided = uint64(1000000)
 
-var parentCompilationCost_SameCtx = uint64(3577)
+var parentCompilationCost_SameCtx = uint64(3578)
 var childCompilationCost_SameCtx = uint64(3285)
 
-var parentCompilationCost_DestCtx = uint64(3267)
-var childCompilationCost_DestCtx = uint64(1827)
+var parentCompilationCost_DestCtx = uint64(3268)
+var childCompilationCost_DestCtx = uint64(1810)
 
 func expectedVMOutput_SameCtx_Prepare() *vmcommon.VMOutput {
 	expectedVMOutput := MakeVMOutput()
@@ -330,14 +330,7 @@ func expectedVMOutput_DestCtx_WrongContractCalled() *vmcommon.VMOutput {
 	expectedVMOutput := expectedVMOutput_SameCtx_Prepare()
 
 	parentAccount := expectedVMOutput.OutputAccounts[string(parentAddress)]
-	parentAccount.BalanceDelta = big.NewInt(-141)
-
-	_ = AddNewOutputAccount(
-		expectedVMOutput,
-		[]byte("wrongSC........................."),
-		99,
-		nil,
-	)
+	parentAccount.BalanceDelta = big.NewInt(-42)
 
 	AddFinishData(expectedVMOutput, []byte("fail"))
 
