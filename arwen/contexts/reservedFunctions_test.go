@@ -8,17 +8,20 @@ import (
 )
 
 func TestReservedFunctions_IsFunctionReserved(t *testing.T) {
-	reserved := NewReservedFunctions([]string{}, make(ProtocolReservedFunctions, 0))
+	scAPINames := []string{
+		"rockets",
+	}
 
-	require.False(t, reserved.IsReserved("foo"))
-	require.True(t, reserved.IsReserved("claimDeveloperRewards"))
-	require.True(t, reserved.IsReserved(arwen.UpgradeFunctionName))
-}
+	fromProtocol := []string{
+		"protocolFunctionFoo",
+		"protocolFunctionBar",
+	}
 
-func TestReservedFunctions_IsFunctionReservedExplicit(t *testing.T) {
-	reserved := NewReservedFunctions([]string{"rockets"}, make(ProtocolReservedFunctions, 0))
+	reserved := NewReservedFunctions(scAPINames, fromProtocol)
 
 	require.False(t, reserved.IsReserved("foo"))
 	require.True(t, reserved.IsReserved("rockets"))
-	require.True(t, reserved.IsReserved("claimDeveloperRewards"))
+	require.True(t, reserved.IsReserved("protocolFunctionFoo"))
+	require.True(t, reserved.IsReserved("protocolFunctionBar"))
+	require.True(t, reserved.IsReserved(arwen.UpgradeFunctionName))
 }
