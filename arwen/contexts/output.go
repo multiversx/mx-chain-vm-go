@@ -1,7 +1,6 @@
 package contexts
 
 import (
-	"bytes"
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -100,14 +99,6 @@ func (context *outputContext) CensorVMOutput() {
 	context.outputState.GasRemaining = 0
 	context.outputState.GasRefund = big.NewInt(0)
 	context.outputState.Logs = make([]*vmcommon.LogEntry, 0)
-
-	scAddress := context.host.Runtime().GetSCAddress()
-
-	for _, account := range context.outputState.OutputAccounts {
-		if !bytes.Equal(account.Address, scAddress) {
-			account.StorageUpdates = make(map[string]*vmcommon.StorageUpdate)
-		}
-	}
 }
 
 func (context *outputContext) GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool) {

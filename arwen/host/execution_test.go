@@ -836,15 +836,80 @@ func TestExecution_ExecuteOnDestContext_Recursive_Direct(t *testing.T) {
 	expectedVMOutput := expectedVMOutput_DestCtx_Recursive_Direct(int(recursiveCalls))
 	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 
-	fmt.Printf("%#v\n", expectedVMOutput.OutputAccounts[string(parentAddress)].StorageUpdates)
 	require.Equal(t, expectedVMOutput, vmOutput)
 	require.Equal(t, int64(1), host.BigInt().GetOne(16).Int64())
 }
 
 func TestExecution_ExecuteOnDestContext_Recursive_Mutual_Methods(t *testing.T) {
-	// TODO
+	code := GetTestSCCode("exec-dest-ctx-recursive", "../../")
+	scBalance := big.NewInt(1000)
+
+	getBalanceCalled := func(address []byte) (*big.Int, error) {
+		if bytes.Equal(parentAddress, address) {
+			return scBalance, nil
+		}
+		return big.NewInt(0), nil
+	}
+
+	host, stubBlockchainHook := DefaultTestArwenForCall(t, code)
+	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
+
+	input := DefaultTestContractCallInput()
+	input.CallerAddr = []byte("user")
+	input.RecipientAddr = parentAddress
+	input.Function = "callRecursiveMutualMethods"
+	input.GasProvided = 1000000
+
+	recursiveCalls := byte(5)
+	input.Arguments = [][]byte{
+		[]byte{recursiveCalls},
+	}
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	// TODO set proper gas calculation in the expectedVMOutput, like the other
+	// tests
+	expectedVMOutput := expectedVMOutput_DestCtx_Recursive_MutualMethods(int(recursiveCalls))
+	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
+	require.Equal(t, expectedVMOutput, vmOutput)
+	require.Equal(t, int64(0), host.BigInt().GetOne(16).Int64())
 }
 
 func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs(t *testing.T) {
-	// TODO
+	parentCode := GetTestSCCode("exec-dest-ctx-recursive-parent", "../../")
+	childCode := GetTestSCCode("exec-dest-ctx-recursive-child", "../../")
+	parentSCBalance := big.NewInt(1000)
+
+	getBalanceCalled := func(address []byte) (*big.Int, error) {
+		if bytes.Equal(parentAddress, address) {
+			return parentSCBalance, nil
+		}
+
+		return big.NewInt(0), nil
+	}
+
+	// Call parentFunctionChildCall() of the parent SC, which will call the child
+	// SC and pass some arguments using executeOnDestContext().
+	host, stubBlockchainHook := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
+	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
+	input := DefaultTestContractCallInput()
+	input.CallerAddr = []byte("user")
+	input.RecipientAddr = parentAddress
+	input.Function = "parentCallsChild"
+	input.GasProvided = 1000000
+
+	recursiveCalls := byte(5)
+	input.Arguments = [][]byte{
+		[]byte{recursiveCalls},
+	}
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+
+	// TODO set proper gas calculation in the expectedVMOutput, like the other
+	// tests
+	expectedVMOutput := expectedVMOutput_DestCtx_Recursive_MutualSCs(int(recursiveCalls))
+	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
+	require.Equal(t, expectedVMOutput, vmOutput)
+	require.Equal(t, int64(1), host.BigInt().GetOne(88).Int64())
 }
