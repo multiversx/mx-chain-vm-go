@@ -291,6 +291,60 @@ func expectedVMOutput_SameCtx_Recursive_MutualMethods(recursiveCalls int) *vmcom
 	return expectedVMOutput
 }
 
+func expectedVMOutput_SameCtx_Recursive_MutualSCs(recursiveCalls int) *vmcommon.VMOutput {
+	expectedVMOutput := MakeVMOutput()
+
+	parentAccount := AddNewOutputAccount(
+		expectedVMOutput,
+		parentAddress,
+		0,
+		nil,
+	)
+	parentAccount.Balance = big.NewInt(1000)
+
+	childAccount := AddNewOutputAccount(
+		expectedVMOutput,
+		childAddress,
+		0,
+		nil,
+	)
+	childAccount.Balance = big.NewInt(0)
+
+	if recursiveCalls%2 == 1 {
+		parentAccount.BalanceDelta = big.NewInt(-5)
+		childAccount.BalanceDelta = big.NewInt(5)
+	} else {
+		parentAccount.BalanceDelta = big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1))
+		childAccount.BalanceDelta = big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1))
+	}
+
+	for i := recursiveCalls; i >= 0; i-- {
+		var finishData string
+		var key string
+		var value string
+		if i%2 == 1 {
+			finishData = fmt.Sprintf("Pfinish%03d", i)
+			key = fmt.Sprintf("Pkey%03d.........................", i)
+			value = fmt.Sprintf("Pvalue%03d", i)
+		} else {
+			finishData = fmt.Sprintf("Cfinish%03d", i)
+			key = fmt.Sprintf("Ckey%03d.........................", i)
+			value = fmt.Sprintf("Cvalue%03d", i)
+		}
+		SetStorageUpdateStrings(parentAccount, key, value)
+		AddFinishData(expectedVMOutput, []byte(finishData))
+	}
+
+	for i := recursiveCalls - 1; i >= 0; i-- {
+		AddFinishData(expectedVMOutput, []byte("succ"))
+	}
+
+	SetStorageUpdate(parentAccount, recursiveIterationCounterKey, []byte{byte(recursiveCalls + 1)})
+	SetStorageUpdate(parentAccount, recursiveIterationBigCounterKey, big.NewInt(int64(recursiveCalls+1)).Bytes())
+
+	return expectedVMOutput
+}
+
 func expectedVMOutput_DestCtx_Prepare() *vmcommon.VMOutput {
 	expectedVMOutput := MakeVMOutput()
 	expectedVMOutput.ReturnCode = vmcommon.Ok
