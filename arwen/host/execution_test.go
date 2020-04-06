@@ -651,6 +651,42 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs(t *testing.T) {
 	require.Equal(t, int64(recursiveCalls+1), host.BigInt().GetOne(88).Int64())
 }
 
+func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs_OutOfGas(t *testing.T) {
+	parentCode := GetTestSCCode("exec-same-ctx-recursive-parent", "../../")
+	childCode := GetTestSCCode("exec-same-ctx-recursive-child", "../../")
+	parentSCBalance := big.NewInt(1000)
+
+	getBalanceCalled := func(address []byte) (*big.Int, error) {
+		if bytes.Equal(parentAddress, address) {
+			return parentSCBalance, nil
+		}
+
+		return big.NewInt(0), nil
+	}
+
+	// Call parentFunctionChildCall() of the parent SC, which will call the child
+	// SC and pass some arguments using executeOnDestContext().
+	host, stubBlockchainHook := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
+	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
+	input := DefaultTestContractCallInput()
+	input.CallerAddr = []byte("user")
+	input.RecipientAddr = parentAddress
+	input.Function = "parentCallsChild"
+	input.GasProvided = 10000
+
+	recursiveCalls := byte(5)
+	input.Arguments = [][]byte{
+		[]byte{recursiveCalls},
+	}
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.OutOfGas, vmOutput.ReturnCode)
+	require.Equal(t, arwen.ErrNotEnoughGas.Error(), vmOutput.ReturnMessage)
+}
+
 func TestExecution_ExecuteOnDestContext_Prepare(t *testing.T) {
 	parentCode := GetTestSCCode("exec-dest-ctx-parent", "../../")
 	parentSCBalance := big.NewInt(1000)
@@ -942,7 +978,7 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 	input.Function = "parentCallsChild"
 	input.GasProvided = 10000
 
-	recursiveCalls := byte(4)
+	recursiveCalls := byte(5)
 	input.Arguments = [][]byte{
 		[]byte{recursiveCalls},
 	}
@@ -950,10 +986,7 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
 
-	// TODO set proper gas calculation in the expectedVMOutput, like the other
-	// tests
-	expectedVMOutput := expectedVMOutput_DestCtx_Recursive_MutualSCs(int(recursiveCalls))
-	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
-	require.Equal(t, expectedVMOutput, vmOutput)
-	require.Equal(t, int64(1), host.BigInt().GetOne(88).Int64())
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.OutOfGas, vmOutput.ReturnCode)
+	require.Equal(t, arwen.ErrNotEnoughGas.Error(), vmOutput.ReturnMessage)
 }
