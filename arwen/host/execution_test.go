@@ -805,3 +805,46 @@ func TestExecution_ExecuteOnDestContext_Successful_BigInts(t *testing.T) {
 	expectedVMOutput := expectedVMOutput_DestCtx_SuccessfulChildCall_BigInts()
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
+
+func TestExecution_ExecuteOnDestContext_Recursive_Direct(t *testing.T) {
+	code := GetTestSCCode("exec-dest-ctx-recursive", "../../")
+	scBalance := big.NewInt(1000)
+
+	getBalanceCalled := func(address []byte) (*big.Int, error) {
+		if bytes.Equal(parentAddress, address) {
+			return scBalance, nil
+		}
+		return big.NewInt(0), nil
+	}
+
+	host, stubBlockchainHook := DefaultTestArwenForCall(t, code)
+	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
+
+	input := DefaultTestContractCallInput()
+	input.CallerAddr = []byte("user")
+	input.RecipientAddr = parentAddress
+	input.Function = "callRecursive"
+	input.GasProvided = 1000000
+
+	recursiveCalls := byte(5)
+	input.Arguments = [][]byte{
+		[]byte{recursiveCalls},
+	}
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	expectedVMOutput := expectedVMOutput_DestCtx_Recursive_Direct(int(recursiveCalls))
+	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
+
+	fmt.Printf("%#v\n", expectedVMOutput.OutputAccounts[string(parentAddress)].StorageUpdates)
+	require.Equal(t, expectedVMOutput, vmOutput)
+	require.Equal(t, int64(1), host.BigInt().GetOne(16).Int64())
+}
+
+func TestExecution_ExecuteOnDestContext_Recursive_Mutual_Methods(t *testing.T) {
+	// TODO
+}
+
+func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs(t *testing.T) {
+	// TODO
+}

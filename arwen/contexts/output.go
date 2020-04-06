@@ -1,6 +1,7 @@
 package contexts
 
 import (
+	"bytes"
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -77,6 +78,7 @@ func (context *outputContext) PopMergeActiveState() {
 	// later merging the output of the two SCs in chronological order.
 	prevState := context.stateStack[stateStackLen-1]
 	context.stateStack = context.stateStack[:stateStackLen-1]
+
 	mergeVMOutputs(prevState, context.outputState)
 	context.outputState = newVMOutput()
 	mergeVMOutputs(context.outputState, prevState)
@@ -99,8 +101,12 @@ func (context *outputContext) CensorVMOutput() {
 	context.outputState.GasRefund = big.NewInt(0)
 	context.outputState.Logs = make([]*vmcommon.LogEntry, 0)
 
+	scAddress := context.host.Runtime().GetSCAddress()
+
 	for _, account := range context.outputState.OutputAccounts {
-		account.StorageUpdates = make(map[string]*vmcommon.StorageUpdate)
+		if !bytes.Equal(account.Address, scAddress) {
+			account.StorageUpdates = make(map[string]*vmcommon.StorageUpdate)
+		}
 	}
 }
 

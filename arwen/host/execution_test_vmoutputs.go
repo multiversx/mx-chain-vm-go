@@ -516,3 +516,36 @@ func expectedVMOutput_DestCtx_SuccessfulChildCall_BigInts() *vmcommon.VMOutput {
 	expectedVMOutput.GasRemaining = gas
 	return expectedVMOutput
 }
+
+func expectedVMOutput_DestCtx_Recursive_Direct(recursiveCalls int) *vmcommon.VMOutput {
+	expectedVMOutput := MakeVMOutput()
+
+	account := AddNewOutputAccount(
+		expectedVMOutput,
+		parentAddress,
+		0,
+		nil,
+	)
+	account.Balance = big.NewInt(1000)
+	account.BalanceDelta = big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1))
+
+	for i := recursiveCalls; i >= 0; i-- {
+		finishString := fmt.Sprintf("Rfinish%03d", i)
+		AddFinishData(expectedVMOutput, []byte(finishString))
+	}
+
+	for i := recursiveCalls - 1; i >= 0; i-- {
+		AddFinishData(expectedVMOutput, []byte("succ"))
+	}
+
+	for i := 0; i <= recursiveCalls; i++ {
+		key := fmt.Sprintf("Rkey%03d.........................", i)
+		value := fmt.Sprintf("Rvalue%03d", i)
+		SetStorageUpdateStrings(account, key, value)
+	}
+
+	SetStorageUpdate(account, recursiveIterationCounterKey, []byte{byte(recursiveCalls + 1)})
+	SetStorageUpdate(account, recursiveIterationBigCounterKey, big.NewInt(int64(1)).Bytes())
+
+	return expectedVMOutput
+}
