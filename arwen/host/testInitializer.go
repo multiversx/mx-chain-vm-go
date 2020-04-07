@@ -19,6 +19,7 @@ import (
 
 var defaultVMType = []byte{0xF, 0xF}
 var errCodeNotFound = errors.New("code not found")
+var userAddress = []byte("userAccount.....................")
 var parentAddress = []byte("parentSC........................")
 var childAddress = []byte("childSC.........................")
 
@@ -109,7 +110,7 @@ func DefaultTestContractCreateInput() *vmcommon.ContractCreateInput {
 func DefaultTestContractCallInput() *vmcommon.ContractCallInput {
 	return &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
-			CallerAddr:  []byte("caller"),
+			CallerAddr:  userAddress,
 			Arguments:   make([][]byte, 0),
 			CallValue:   big.NewInt(0),
 			CallType:    vmcommon.DirectCall,

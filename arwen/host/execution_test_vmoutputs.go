@@ -1,6 +1,7 @@
 package host
 
 import (
+	"encoding/hex"
 	"fmt"
 	"math/big"
 
@@ -31,6 +32,9 @@ var childCompilationCost_SameCtx = uint64(3285)
 
 var parentCompilationCost_DestCtx = uint64(3268)
 var childCompilationCost_DestCtx = uint64(1810)
+
+var vaultAddress = []byte("vaultAddress....................")
+var thirdPartyAddress = []byte("thirdPartyAddress...............")
 
 func expectedVMOutput_SameCtx_Prepare() *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
@@ -655,4 +659,59 @@ func expectedVMOutput_DestCtx_Recursive_MutualSCs(recursiveCalls int) *vmcommon.
 	}
 
 	return vmOutput
+}
+
+func expectedVMOutput_AsyncCall() *vmcommon.VMOutput {
+	vmOutput := MakeVMOutput()
+
+	parentAccount := AddNewOutputAccount(
+		vmOutput,
+		parentAddress,
+		-10,
+		nil,
+	)
+	parentAccount.Balance = big.NewInt(1000)
+	SetStorageUpdate(parentAccount, parentKeyA, parentDataA)
+	SetStorageUpdate(parentAccount, parentKeyB, parentDataB)
+	AddFinishData(vmOutput, parentFinishA)
+	AddFinishData(vmOutput, parentFinishB)
+
+	_ = AddNewOutputAccount(
+		vmOutput,
+		thirdPartyAddress,
+		6,
+		[]byte("hello there"),
+	)
+
+	childAccount := AddNewOutputAccount(
+		vmOutput,
+		childAddress,
+		0,
+		nil,
+	)
+	childAccount.Balance = big.NewInt(0)
+	SetStorageUpdate(childAccount, childKey, childData)
+
+	_ = AddNewOutputAccount(
+		vmOutput,
+		vaultAddress,
+		4,
+		nil,
+	)
+
+	AddFinishData(vmOutput, []byte("thirdparty"))
+	AddFinishData(vmOutput, []byte("vault"))
+
+	return vmOutput
+}
+
+func createDataBytes(returnCode vmcommon.ReturnCode, returnData [][]byte) []byte {
+	data := []byte("@" + hex.EncodeToString([]byte(returnCode.String())))
+
+	for _, returnDataPiece := range returnData {
+		returnDataPieceHex := []byte("@" + hex.EncodeToString(returnDataPiece))
+		data = append(data, returnDataPieceHex...)
+	}
+
+	return data
 }

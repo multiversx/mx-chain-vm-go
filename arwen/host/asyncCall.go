@@ -15,8 +15,7 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 	// on address?), by account addresses - this would make the empty SC code an
 	// unrecoverable error, so returning nil here will not be appropriate anymore.
 	if !host.canExecuteSynchronously() {
-		host.setAsyncCallToDestination()
-		return nil
+		return host.sendAsyncCallToDestination()
 	}
 
 	// Start calling the destination SC, synchronously.
@@ -55,12 +54,30 @@ func (host *vmHost) canExecuteSynchronously() bool {
 	return len(calledSCCode) != 0 && err == nil
 }
 
-func (host *vmHost) setAsyncCallToDestination() {
+func (host *vmHost) sendAsyncCallToDestination() error {
 	runtime := host.Runtime()
 	output := host.Output()
-	destination := runtime.GetAsyncCallInfo().Destination
+
+	asyncCallInfo := runtime.GetAsyncCallInfo()
+	destination := asyncCallInfo.Destination
 	destinationAccount, _ := output.GetOutputAccount(destination)
 	destinationAccount.CallType = vmcommon.AsynchronousCall
+
+	err := output.Transfer(
+		destination,
+		runtime.GetSCAddress(),
+		asyncCallInfo.GasLimit,
+		big.NewInt(0).SetBytes(asyncCallInfo.ValueBytes),
+		asyncCallInfo.Data,
+	)
+	if err != nil {
+		metering := host.Metering()
+		metering.UseGas(metering.GasLeft())
+		runtime.FailExecution(err)
+		return err
+	}
+
+	return nil
 }
 
 func (host *vmHost) createDestinationContractCallInput() (*vmcommon.ContractCallInput, error) {

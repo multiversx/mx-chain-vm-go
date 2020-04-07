@@ -2,6 +2,7 @@ package host
 
 import (
 	"bytes"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"math/big"
@@ -299,7 +300,6 @@ func TestExecution_ExecuteOnSameContext_Simple(t *testing.T) {
 
 	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
 	input := DefaultTestContractCallInput()
-	input.CallerAddr = []byte("user")
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionChildCall"
 	input.GasProvided = 1000000
@@ -358,7 +358,6 @@ func TestExecution_ExecuteOnSameContext_Prepare(t *testing.T) {
 	host, stubBlockchainHook := DefaultTestArwenForCall(t, parentCode)
 	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
 	input := DefaultTestContractCallInput()
-	input.CallerAddr = []byte("user")
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionPrepare"
 	input.GasProvided = 1000000
@@ -388,7 +387,6 @@ func TestExecution_ExecuteOnSameContext_Wrong(t *testing.T) {
 	host, stubBlockchainHook := DefaultTestArwenForCall(t, parentCode)
 	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
 	input := DefaultTestContractCallInput()
-	input.CallerAddr = []byte("user")
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionWrongCall"
 	input.GasProvided = 1000000
@@ -429,7 +427,6 @@ func TestExecution_ExecuteOnSameContext_OutOfGas(t *testing.T) {
 	host, stubBlockchainHook := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
 	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
 	input := DefaultTestContractCallInput()
-	input.CallerAddr = []byte("user")
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionChildCall_OutOfGas"
 	input.GasProvided = 1000000
@@ -459,7 +456,6 @@ func TestExecution_ExecuteOnSameContext_Successful(t *testing.T) {
 	host, stubBlockchainHook := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
 	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
 	input := DefaultTestContractCallInput()
-	input.CallerAddr = []byte("user")
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionChildCall"
 	input.GasProvided = 1000000
@@ -488,7 +484,6 @@ func TestExecution_ExecuteOnSameContext_Successful_BigInts(t *testing.T) {
 	host, stubBlockchainHook := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
 	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
 	input := DefaultTestContractCallInput()
-	input.CallerAddr = []byte("user")
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionChildCall_BigInts"
 	input.GasProvided = 1000000
@@ -526,7 +521,6 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct(t *testing.T) {
 	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
 
 	input := DefaultTestContractCallInput()
-	input.CallerAddr = []byte("user")
 	input.RecipientAddr = parentAddress
 	input.Function = "callRecursive"
 	input.GasProvided = 1000000
@@ -581,7 +575,6 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_Methods(t *testing.T) {
 	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
 
 	input := DefaultTestContractCallInput()
-	input.CallerAddr = []byte("user")
 	input.RecipientAddr = parentAddress
 	input.Function = "callRecursiveMutualMethods"
 	input.GasProvided = 1000000
@@ -630,7 +623,6 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs(t *testing.T) {
 	host, stubBlockchainHook := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
 	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
 	input := DefaultTestContractCallInput()
-	input.CallerAddr = []byte("user")
 	input.RecipientAddr = parentAddress
 	input.Function = "parentCallsChild"
 	input.GasProvided = 1000000
@@ -669,7 +661,6 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 	host, stubBlockchainHook := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
 	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
 	input := DefaultTestContractCallInput()
-	input.CallerAddr = []byte("user")
 	input.RecipientAddr = parentAddress
 	input.Function = "parentCallsChild"
 	input.GasProvided = 10000
@@ -704,7 +695,6 @@ func TestExecution_ExecuteOnDestContext_Prepare(t *testing.T) {
 	host, stubBlockchainHook := DefaultTestArwenForCall(t, parentCode)
 	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
 	input := DefaultTestContractCallInput()
-	input.CallerAddr = []byte("user")
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionPrepare"
 	input.GasProvided = 1000000
@@ -734,7 +724,6 @@ func TestExecution_ExecuteOnDestContext_Wrong(t *testing.T) {
 	host, stubBlockchainHook := DefaultTestArwenForCall(t, parentCode)
 	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
 	input := DefaultTestContractCallInput()
-	input.CallerAddr = []byte("user")
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionWrongCall"
 	input.GasProvided = 1000000
@@ -775,7 +764,6 @@ func TestExecution_ExecuteOnDestContext_OutOfGas(t *testing.T) {
 	host, stubBlockchainHook := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
 	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
 	input := DefaultTestContractCallInput()
-	input.CallerAddr = []byte("user")
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionChildCall_OutOfGas"
 	input.GasProvided = 1000000
@@ -805,7 +793,6 @@ func TestExecution_ExecuteOnDestContext_Successful(t *testing.T) {
 	host, stubBlockchainHook := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
 	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
 	input := DefaultTestContractCallInput()
-	input.CallerAddr = []byte("user")
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionChildCall"
 	input.GasProvided = 1000000
@@ -834,7 +821,6 @@ func TestExecution_ExecuteOnDestContext_Successful_BigInts(t *testing.T) {
 	host, stubBlockchainHook := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
 	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
 	input := DefaultTestContractCallInput()
-	input.CallerAddr = []byte("user")
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionChildCall_BigInts"
 	input.GasProvided = 1000000
@@ -860,7 +846,6 @@ func TestExecution_ExecuteOnDestContext_Recursive_Direct(t *testing.T) {
 	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
 
 	input := DefaultTestContractCallInput()
-	input.CallerAddr = []byte("user")
 	input.RecipientAddr = parentAddress
 	input.Function = "callRecursive"
 	input.GasProvided = 1000000
@@ -896,7 +881,6 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_Methods(t *testing.T) {
 	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
 
 	input := DefaultTestContractCallInput()
-	input.CallerAddr = []byte("user")
 	input.RecipientAddr = parentAddress
 	input.Function = "callRecursiveMutualMethods"
 	input.GasProvided = 1000000
@@ -934,7 +918,6 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs(t *testing.T) {
 	host, stubBlockchainHook := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
 	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
 	input := DefaultTestContractCallInput()
-	input.CallerAddr = []byte("user")
 	input.RecipientAddr = parentAddress
 	input.Function = "parentCallsChild"
 	input.GasProvided = 1000000
@@ -973,7 +956,6 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 	host, stubBlockchainHook := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
 	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
 	input := DefaultTestContractCallInput()
-	input.CallerAddr = []byte("user")
 	input.RecipientAddr = parentAddress
 	input.Function = "parentCallsChild"
 	input.GasProvided = 10000
@@ -989,4 +971,59 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 	require.NotNil(t, vmOutput)
 	require.Equal(t, vmcommon.OutOfGas, vmOutput.ReturnCode)
 	require.Equal(t, arwen.ErrNotEnoughGas.Error(), vmOutput.ReturnMessage)
+}
+
+func TestExecution_AsyncCall(t *testing.T) {
+	// Scenario
+	// Parent SC calls Child SC
+	// Before asyncCall, Parent sets storage, makes a value transfer to ThirdParty and finishes some data
+	// Parent performs asyncCall to Child with a sufficient amount of ERD, with arguments:
+	//	* the address of ThirdParty
+	//	* number of ERD the Child should send to ThirdParty
+	//  * a string, to be set as the data on the transfer to ThirdParty
+	// Child stores the received arguments to storage
+	// Child performs two transfers:
+	//	* to ThirdParty, sending the amount of ERD specified as argument in asyncCall
+	//	* to the Vault, a fixed address known by the Child, sending exactly 4 ERD with the data provided by Parent
+	// Child finishes with "thirdparty" if the transfer to ThirdParty was successful
+	// Child finishes with "vault" if the transfer to Vault was successful
+	// Parent callBack() verifies its arguments and expects both "thirdparty" and "vault"
+	// If "vault" not received, then Parent sends 4 ERD to the Vault directly
+	// Assertions: OutputAccounts for
+	//		* Parent: negative balance delta (payment for child + thirdparty + vault => 2), storage
+	//		* Child: zero balance delta, storage
+	//		* ThirdParty: positive balance delta
+	//		* Vault
+	parentCode := GetTestSCCode("async-call-parent", "../../")
+	childCode := GetTestSCCode("async-call-child", "../../")
+	parentSCBalance := big.NewInt(1000)
+
+	getBalanceCalled := func(address []byte) (*big.Int, error) {
+		if bytes.Equal(parentAddress, address) {
+			return parentSCBalance, nil
+		}
+
+		return big.NewInt(0), nil
+	}
+
+	// Call parentFunctionChildCall() of the parent SC, which will call the child
+	// SC and pass some arguments using executeOnDestContext().
+	host, stubBlockchainHook := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
+	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
+
+	input := DefaultTestContractCallInput()
+	input.RecipientAddr = parentAddress
+	input.Function = "parentPerformAsyncCall"
+	input.GasProvided = 100000
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+
+	expectedVMOutput := expectedVMOutput_AsyncCall()
+	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
+	require.Equal(t, expectedVMOutput, vmOutput)
+}
+
+func TestHex(t *testing.T) {
+	fmt.Println(hex.EncodeToString([]byte(" there")))
 }
