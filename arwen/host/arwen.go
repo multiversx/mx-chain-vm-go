@@ -10,8 +10,11 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/ethapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
+
+var log = logger.GetOrCreate("arwen/host")
 
 // TryFunction corresponds to the try() part of a try / catch block
 type TryFunction func()
@@ -191,6 +194,8 @@ func (host *vmHost) GetAPIMethods() *wasmer.Imports {
 }
 
 func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error) {
+	log.Trace("RunSmartContractCreate", "len(code)", len(input.ContractCode), "metadata", input.ContractCodeMetadata)
+
 	try := func() {
 		vmOutput = host.doRunSmartContractCreate(input)
 	}
@@ -204,6 +209,8 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 }
 
 func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
+	log.Trace("RunSmartContractCall", "function", input.Function)
+
 	tryUpgrade := func() {
 		vmOutput = host.doRunSmartContractUpgrade(input)
 	}
