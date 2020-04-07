@@ -66,6 +66,8 @@ func (host *vmHost) overrideVMOutputIfError(err error, vmOutput *vmcommon.VMOutp
 }
 
 func (host *vmHost) performCodeDeploy(input arwen.CodeDeployInput) (*vmcommon.VMOutput, error) {
+	log.Trace("performCodeDeploy", "address", input.ContractAddress, "len(code)", len(input.ContractCode), "metadata", input.ContractCodeMetadata)
+
 	runtime := host.Runtime()
 	metering := host.Metering()
 	output := host.Output()
@@ -189,6 +191,8 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 }
 
 func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+	log.Trace("ExecuteOnDestContext", "function", input.Function)
+
 	host.PushState()
 	defer host.PopState()
 
@@ -208,6 +212,8 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vm
 }
 
 func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) error {
+	log.Trace("ExecuteOnSameContext", "function", input.Function)
+
 	runtime := host.Runtime()
 	runtime.PushState()
 	defer runtime.PopState()
@@ -224,6 +230,8 @@ func (host *vmHost) isInitFunctionBeingCalled() bool {
 }
 
 func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error) {
+	log.Trace("CreateNewContract", "len(code)", len(input.ContractCode), "metadata", input.ContractCodeMetadata)
+
 	runtime := host.Runtime()
 	blockchain := host.Blockchain()
 	metering := host.Metering()
