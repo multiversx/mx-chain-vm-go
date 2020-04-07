@@ -28,7 +28,7 @@ var recursiveIterationBigCounterKey = []byte("recursiveIterationBigCounter....")
 var gasProvided = uint64(1000000)
 
 var parentCompilationCost_SameCtx = uint64(3578)
-var childCompilationCost_SameCtx = uint64(3285)
+var childCompilationCost_SameCtx = uint64(3269)
 
 var parentCompilationCost_DestCtx = uint64(3268)
 var childCompilationCost_DestCtx = uint64(1810)
