@@ -8,18 +8,22 @@ type ReservedFunctions struct {
 }
 
 // NewReservedFunctions creates a new ReservedFunctions
-func NewReservedFunctions(scAPINames []string) *ReservedFunctions {
+func NewReservedFunctions(scAPINames []string, protocolReservedFunctions []string) *ReservedFunctions {
 	result := &ReservedFunctions{
 		functionNames: make(map[string]struct{}),
 	}
 
 	var empty struct{}
-	result.functionNames["claimDeveloperRewards"] = empty
-	result.functionNames[arwen.UpgradeFunctionName] = empty
+
+	for _, name := range protocolReservedFunctions {
+		result.functionNames[name] = empty
+	}
 
 	for _, name := range scAPINames {
 		result.functionNames[name] = empty
 	}
+
+	result.functionNames[arwen.UpgradeFunctionName] = empty
 
 	return result
 }
