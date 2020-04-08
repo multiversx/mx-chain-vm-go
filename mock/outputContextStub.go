@@ -34,7 +34,7 @@ type OutputContextStub struct {
 	GetVMOutputCalled                 func() *vmcommon.VMOutput
 	AddTxValueToAccountCalled         func(address []byte, value *big.Int)
 	DeployCodeCalled                  func(input arwen.CodeDeployInput)
-	CreateVMOutputInCaseOfErrorCalled func(errCode vmcommon.ReturnCode, message string) *vmcommon.VMOutput
+	CreateVMOutputInCaseOfErrorCalled func(err error) *vmcommon.VMOutput
 }
 
 func (o *OutputContextStub) InitState() {
@@ -188,9 +188,9 @@ func (o *OutputContextStub) DeployCode(input arwen.CodeDeployInput) {
 	}
 }
 
-func (o *OutputContextStub) CreateVMOutputInCaseOfError(errCode vmcommon.ReturnCode, message string) *vmcommon.VMOutput {
+func (o *OutputContextStub) CreateVMOutputInCaseOfError(err error) *vmcommon.VMOutput {
 	if o.CreateVMOutputInCaseOfErrorCalled != nil {
-		return o.CreateVMOutputInCaseOfErrorCalled(errCode, message)
+		return o.CreateVMOutputInCaseOfErrorCalled(err)
 	}
 	return nil
 }

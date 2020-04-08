@@ -39,7 +39,9 @@ var ErrFailedTransferDuringAsyncCall = fmt.Errorf("%w (failed during async call)
 
 var ErrTransferNegativeValue = fmt.Errorf("%w (negative value)", ErrFailedTransfer)
 
-var ErrInvalidUpgradeArguments = errors.New("invalid upgrade arguments")
+var ErrUpgradeFailed = errors.New("upgrade failed")
+
+var ErrInvalidUpgradeArguments = fmt.Errorf("%w (invalid arguments)", ErrUpgradeFailed)
 
 var ErrInvalidFunction = errors.New("invalid function")
 
@@ -52,3 +54,7 @@ var ErrFuncNotFound = fmt.Errorf("%w (not found)", ErrInvalidFunction)
 var ErrInvalidFunctionName = fmt.Errorf("%w (invalid name)", ErrInvalidFunction)
 
 var ErrFunctionNonvoidSignature = fmt.Errorf("%w (nonvoid signature)", ErrInvalidFunction)
+
+var ErrContractInvalid = fmt.Errorf("invalid contract code")
+
+var ErrContractNotFound = fmt.Errorf("%w (not found)", ErrContractInvalid)

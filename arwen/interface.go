@@ -139,7 +139,7 @@ type OutputContext interface {
 	GetVMOutput() *vmcommon.VMOutput
 	AddTxValueToAccount(address []byte, value *big.Int)
 	DeployCode(input CodeDeployInput)
-	CreateVMOutputInCaseOfError(errCode vmcommon.ReturnCode, message string) *vmcommon.VMOutput
+	CreateVMOutputInCaseOfError(err error) *vmcommon.VMOutput
 }
 
 type MeteringContext interface {
@@ -154,6 +154,7 @@ type MeteringContext interface {
 	DeductInitialGasForDirectDeployment(input CodeDeployInput) error
 	DeductInitialGasForIndirectDeployment(input CodeDeployInput) error
 	UnlockGasIfAsyncStep()
+	GetGasLockedForAsyncStep() uint64
 }
 
 type StorageContext interface {

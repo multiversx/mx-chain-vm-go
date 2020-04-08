@@ -1,6 +1,7 @@
 package contexts
 
 import (
+	"errors"
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -213,13 +214,57 @@ func (context *outputContext) DeployCode(input arwen.CodeDeployInput) {
 	newSCAccount.CodeMetadata = input.ContractCodeMetadata
 }
 
-func (context *outputContext) CreateVMOutputInCaseOfError(errCode vmcommon.ReturnCode, message string) *vmcommon.VMOutput {
+func (context *outputContext) CreateVMOutputInCaseOfError(err error) *vmcommon.VMOutput {
+	metering := context.host.Metering()
+	var message string
+
+	if err == arwen.ErrSignalError {
+		message = context.ReturnMessage()
+	} else {
+		message = err.Error()
+	}
+
+	returnCode := context.resolveReturnCodeFromError(err)
+
 	return &vmcommon.VMOutput{
-		GasRemaining:  0,
+		GasRemaining:  metering.GetGasLockedForAsyncStep(),
 		GasRefund:     big.NewInt(0),
-		ReturnCode:    errCode,
+		ReturnCode:    returnCode,
 		ReturnMessage: message,
 	}
+}
+
+func (context *outputContext) resolveReturnCodeFromError(err error) vmcommon.ReturnCode {
+	if err != nil {
+		if errors.Is(err, arwen.ErrSignalError) {
+			return vmcommon.UserError
+		}
+		if err == arwen.ErrFuncNotFound {
+			return vmcommon.FunctionNotFound
+		}
+		if err == arwen.ErrFunctionNonvoidSignature {
+			return vmcommon.FunctionWrongSignature
+		}
+		if errors.Is(err, arwen.ErrInvalidFunction) {
+			return vmcommon.UserError
+		}
+		if errors.Is(err, arwen.ErrNotEnoughGas) {
+			return vmcommon.OutOfGas
+		}
+		if errors.Is(err, arwen.ErrContractInvalid) {
+			return vmcommon.ContractInvalid
+		}
+		if errors.Is(err, arwen.ErrUpgradeFailed) {
+			return vmcommon.UpgradeFailed
+		}
+		if err == arwen.ErrTransferInsufficientFunds {
+			return vmcommon.OutOfFunds
+		}
+
+		return vmcommon.ExecutionFailed
+	}
+
+	return vmcommon.Ok
 }
 
 func mergeVMOutputs(leftOutput *vmcommon.VMOutput, rightOutput *vmcommon.VMOutput) {

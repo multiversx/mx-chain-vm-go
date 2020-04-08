@@ -150,8 +150,8 @@ func createExportedFunctionWrapper(
 		)
 
 		if callResult != cWasmerOk {
-			message := fmt.Sprintf("Failed to call the `%s` exported function.", exportedFunctionName)
-			return Void(), NewExportedFunctionError(exportedFunctionName, message)
+			err := fmt.Errorf("Failed to call the `%s` exported function.", exportedFunctionName)
+			return Void(), newWrappedError(err)
 		}
 
 		value, err := convertWasmOutputToValue(wasmFunctionOutputsArity, wasmOutputs, exportedFunctionName)

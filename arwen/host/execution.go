@@ -1,13 +1,11 @@
 package host
 
 import (
-	"errors"
-
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
-func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput) {
+func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput) *vmcommon.VMOutput {
 	host.ClearContextStateStack()
 	host.InitState()
 
@@ -16,15 +14,14 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	output := host.Output()
 	storage := host.Storage()
 
-	var err error
 	defer func() {
-		vmOutput = host.onExitDirectCreateOrCall(err, vmOutput)
+		host.Runtime().CleanInstance()
+		arwen.RemoveAllHostContexts()
 	}()
 
 	address, err := blockchain.NewAddress(input.CallerAddr)
 	if err != nil {
-		output.SetReturnCode(vmcommon.ExecutionFailed)
-		return
+		return output.CreateVMOutputInCaseOfError(err)
 	}
 
 	runtime.SetVMInput(&input.VMInput)
@@ -39,14 +36,14 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 		ContractAddress:      address,
 	}
 
-	vmOutput, err = host.performCodeDeploy(codeDeployInput)
-	return
+	vmOutput, err := host.performCodeDeploy(codeDeployInput)
+	if err != nil {
+		return output.CreateVMOutputInCaseOfError(err)
+	}
+	return vmOutput
 }
 
 func (host *vmHost) onExitDirectCreateOrCall(err error, vmOutput *vmcommon.VMOutput) *vmcommon.VMOutput {
-	host.Runtime().CleanInstance()
-	arwen.RemoveAllHostContexts()
-
 	return host.overrideVMOutputIfError(err, vmOutput)
 }
 
@@ -57,14 +54,7 @@ func (host *vmHost) overrideVMOutputIfError(err error, vmOutput *vmcommon.VMOutp
 
 	output := host.Output()
 
-	var message string
-	if err == arwen.ErrSignalError {
-		message = output.ReturnMessage()
-	} else {
-		message = err.Error()
-	}
-
-	return output.CreateVMOutputInCaseOfError(output.ReturnCode(), message)
+	return output.CreateVMOutputInCaseOfError(err)
 }
 
 func (host *vmHost) performCodeDeploy(input arwen.CodeDeployInput) (*vmcommon.VMOutput, error) {
@@ -81,22 +71,18 @@ func (host *vmHost) performCodeDeploy(input arwen.CodeDeployInput) (*vmcommon.VM
 	vmInput := runtime.GetVMInput()
 	err = runtime.CreateWasmerInstance(input.ContractCode, vmInput.GasProvided)
 	if err != nil {
-		output.SetReturnCode(vmcommon.ContractInvalid)
-		return nil, err
+		return nil, arwen.ErrContractInvalid
 	}
 
 	err = runtime.VerifyContractCode()
 	if err != nil {
-		output.SetReturnCode(vmcommon.ContractInvalid)
-		return nil, err
+		return nil, arwen.ErrContractInvalid
 	}
 
 	idContext := arwen.AddHostContext(host)
 	runtime.SetInstanceContextID(idContext)
 
 	err = host.callInitFunction()
-	returnCode := host.resolveReturnCodeFromError(err)
-	output.SetReturnCode(returnCode)
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +92,7 @@ func (host *vmHost) performCodeDeploy(input arwen.CodeDeployInput) (*vmcommon.VM
 	return vmOutput, nil
 }
 
-func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput) {
+func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput) *vmcommon.VMOutput {
 	host.ClearContextStateStack()
 	host.InitState()
 
@@ -114,9 +100,9 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 	output := host.Output()
 	storage := host.Storage()
 
-	var err error
 	defer func() {
-		vmOutput = host.onExitDirectCreateOrCall(err, vmOutput)
+		host.Runtime().CleanInstance()
+		arwen.RemoveAllHostContexts()
 	}()
 
 	runtime.InitStateFromContractCallInput(input)
@@ -125,8 +111,7 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 
 	code, codeMetadata, err := runtime.GetCodeUpgradeFromArgs()
 	if err != nil {
-		output.SetReturnCode(vmcommon.UpgradeFailed)
-		return
+		return output.CreateVMOutputInCaseOfError(arwen.ErrInvalidUpgradeArguments)
 	}
 
 	codeDeployInput := arwen.CodeDeployInput{
@@ -135,8 +120,11 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 		ContractAddress:      input.RecipientAddr,
 	}
 
-	vmOutput, err = host.performCodeDeploy(codeDeployInput)
-	return
+	vmOutput, err := host.performCodeDeploy(codeDeployInput)
+	if err != nil {
+		return output.CreateVMOutputInCaseOfError(err)
+	}
+	return vmOutput
 }
 
 func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput) {
@@ -149,9 +137,9 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	blockchain := host.Blockchain()
 	storage := host.Storage()
 
-	var err error
 	defer func() {
-		vmOutput = host.onExitDirectCreateOrCall(err, vmOutput)
+		host.Runtime().CleanInstance()
+		arwen.RemoveAllHostContexts()
 	}()
 
 	runtime.InitStateFromContractCallInput(input)
@@ -160,31 +148,26 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 
 	contract, err := blockchain.GetCode(runtime.GetSCAddress())
 	if err != nil {
-		output.SetReturnCode(vmcommon.ContractInvalid)
-		return
+		return output.CreateVMOutputInCaseOfError(arwen.ErrContractNotFound)
 	}
 
 	err = metering.DeductInitialGasForExecution(contract)
 	if err != nil {
-		output.SetReturnCode(vmcommon.OutOfGas)
-		return
+		return output.CreateVMOutputInCaseOfError(arwen.ErrNotEnoughGas)
 	}
 
 	vmInput := runtime.GetVMInput()
 	err = runtime.CreateWasmerInstance(contract, vmInput.GasProvided)
 	if err != nil {
-		output.SetReturnCode(vmcommon.ContractInvalid)
-		return
+		return output.CreateVMOutputInCaseOfError(arwen.ErrContractInvalid)
 	}
 
 	idContext := arwen.AddHostContext(host)
 	runtime.SetInstanceContextID(idContext)
 
 	err = host.callSCMethod()
-	returnCode := host.resolveReturnCodeFromError(err)
-	output.SetReturnCode(returnCode)
 	if err != nil {
-		return
+		return output.CreateVMOutputInCaseOfError(err)
 	}
 
 	metering.UnlockGasIfAsyncStep()
@@ -215,29 +198,34 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vm
 	// transfer will not persist.
 	err := output.Transfer(input.RecipientAddr, input.CallerAddr, 0, input.CallValue, nil)
 	if err != nil {
-		// Execution failed: restore contexts as if the execution didn't happen.
+		// Execution failed: restore contexts as if the execution didn't happen,
+		// but first create a vmOutput to capture the error.
+		vmOutput := output.CreateVMOutputInCaseOfError(err)
+
 		bigInt.PopSetActiveState()
 		output.PopSetActiveState()
 		runtime.PopSetActiveState()
 
-		return nil, err
+		return vmOutput, err
 	}
 
 	err = host.execute(input)
+	if err != nil {
+		// Execution failed: restore contexts as if the execution didn't happen,
+		// but first create a vmOutput to capture the error.
+		vmOutput := output.CreateVMOutputInCaseOfError(err)
+
+		bigInt.PopSetActiveState()
+		output.PopSetActiveState()
+		runtime.PopSetActiveState()
+
+		return vmOutput, err
+	}
 
 	// Extract the VMOutput produced by the execution in isolation, before
 	// restoring the contexts. This needs to be done before popping any state
 	// stacks.
 	vmOutput := host.Output().GetVMOutput()
-
-	if err != nil {
-		// Execution failed: restore contexts as if the execution didn't happen.
-		bigInt.PopSetActiveState()
-		output.PopSetActiveState()
-		runtime.PopSetActiveState()
-
-		return nil, err
-	}
 
 	// Execution successful: restore the previous context states, except Output,
 	// which will merge the current state (VMOutput) with the initial state.
@@ -426,8 +414,6 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 	runtime.SetInstanceContextID(idContext)
 
 	err = host.callSCMethodIndirect()
-	returnCode := host.resolveReturnCodeFromError(err)
-	output.SetReturnCode(returnCode)
 	if err != nil {
 		runtime.PopInstance()
 		arwen.RemoveHostContext(idContext)
@@ -473,13 +459,21 @@ func (host *vmHost) EthereumCallData() []byte {
 }
 
 func (host *vmHost) callInitFunction() error {
-	init := host.Runtime().GetInitFunction()
-	if init != nil {
-		_, err := init()
-		if err != nil {
-			return err
-		}
+	runtime := host.Runtime()
+	init := runtime.GetInitFunction()
+	if init == nil {
+		return nil
 	}
+
+	_, err := init()
+	if err != nil {
+		breakpointValue := runtime.GetRuntimeBreakpointValue()
+		if breakpointValue != arwen.BreakpointNone {
+			err = host.handleBreakpoint(breakpointValue)
+		}
+		return err
+	}
+
 	return nil
 }
 
@@ -505,30 +499,6 @@ func (host *vmHost) callSCMethod() error {
 	}
 
 	return err
-}
-
-func (host *vmHost) resolveReturnCodeFromError(err error) vmcommon.ReturnCode {
-	if err != nil {
-		if errors.Is(err, arwen.ErrSignalError) {
-			return vmcommon.UserError
-		}
-		if err == arwen.ErrFuncNotFound {
-			return vmcommon.FunctionNotFound
-		}
-		if err == arwen.ErrFunctionNonvoidSignature {
-			return vmcommon.FunctionWrongSignature
-		}
-		if errors.Is(err, arwen.ErrInvalidFunction) {
-			return vmcommon.UserError
-		}
-		if errors.Is(err, arwen.ErrNotEnoughGas) {
-			return vmcommon.OutOfGas
-		}
-
-		return vmcommon.ExecutionFailed
-	}
-
-	return vmcommon.Ok
 }
 
 func (host *vmHost) verifyAllowedFunctionCall() error {

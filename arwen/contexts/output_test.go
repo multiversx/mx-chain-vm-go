@@ -360,7 +360,7 @@ func TestOutputContext_VMOutputError(t *testing.T) {
 	outputContext, _ := NewOutputContext(host)
 
 	returnCode := vmcommon.ContractNotFound
-	returnMessage := "computer not found"
+	returnMessage := arwen.ErrContractNotFound.Error()
 
 	expected := &vmcommon.VMOutput{
 		GasRemaining:  0,
@@ -368,7 +368,7 @@ func TestOutputContext_VMOutputError(t *testing.T) {
 		ReturnCode:    returnCode,
 		ReturnMessage: returnMessage,
 	}
-	vmOutput := outputContext.CreateVMOutputInCaseOfError(returnCode, returnMessage)
+	vmOutput := outputContext.CreateVMOutputInCaseOfError(arwen.ErrContractNotFound)
 	require.Equal(t, expected, vmOutput)
 }
 
