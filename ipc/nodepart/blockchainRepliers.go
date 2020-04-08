@@ -125,3 +125,10 @@ func (part *NodePart) replyToBlockchainCurrentEpoch(request common.MessageHandle
 	response := common.NewMessageBlockchainCurrentEpochResponse(result)
 	return response
 }
+
+func (part *NodePart) replyToBlockchainProcessBuiltInFunction(request common.MessageHandler) common.MessageHandler {
+	typedRequest := request.(*common.MessageBlockchainProcessBuiltInFunctionRequest)
+	value, gasConsumed, err := part.blockchain.ProcessBuiltInFunction(&typedRequest.CallInput)
+	response := common.NewMessageBlockchainProcessBuiltInFunctionResponse(value, gasConsumed, err)
+	return response
+}

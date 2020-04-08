@@ -59,6 +59,7 @@ func NewNodePart(
 	part.Repliers[common.BlockchainCurrentTimeStampRequest] = part.replyToBlockchainCurrentTimeStamp
 	part.Repliers[common.BlockchainCurrentRandomSeedRequest] = part.replyToBlockchainCurrentRandomSeed
 	part.Repliers[common.BlockchainCurrentEpochRequest] = part.replyToBlockchainCurrentEpoch
+	part.Repliers[common.BlockchainProcessBuiltInFunctionRequest] = part.replyToBlockchainProcessBuiltInFunction
 
 	return part, nil
 }
