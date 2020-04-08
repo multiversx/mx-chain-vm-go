@@ -3,6 +3,7 @@ package mock
 import (
 	"math/big"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -163,9 +164,10 @@ func (b *BlockchainHookStub) CurrentEpoch() uint32 {
 	}
 	return 0
 }
+
 func (b *BlockchainHookStub) ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*big.Int, uint64, error) {
 	if b.ProcessBuiltInFunctionCalled != nil {
-		return b.ProcessBuiltInFunctionCalled(input)
+		return b.ProcessBuiltInFunction(input)
 	}
-	return nil, 0, nil
+	return arwen.Zero, 0, nil
 }

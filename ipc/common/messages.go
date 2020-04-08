@@ -53,6 +53,8 @@ const (
 	BlockchainCurrentRandomSeedResponse
 	BlockchainCurrentEpochRequest
 	BlockchainCurrentEpochResponse
+	BlockchainProcessBuiltInFunctionRequest
+	BlockchainProcessBuiltInFunctionResponse
 	DiagnoseWaitRequest
 	DiagnoseWaitResponse
 	UndefinedRequestOrResponse
