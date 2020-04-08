@@ -9,25 +9,26 @@ import (
 var _ vmcommon.BlockchainHook = (*BlockchainHookStub)(nil)
 
 type BlockchainHookStub struct {
-	AccountExtistsCalled    func(address []byte) (bool, error)
-	NewAddressCalled        func(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error)
-	GetBalanceCalled        func(address []byte) (*big.Int, error)
-	GetNonceCalled          func(address []byte) (uint64, error)
-	GetStorageDataCalled    func(accountsAddress []byte, index []byte) ([]byte, error)
-	IsCodeEmptyCalled       func(address []byte) (bool, error)
-	GetCodeCalled           func(address []byte) ([]byte, error)
-	GetBlockHashCalled      func(nonce uint64) ([]byte, error)
-	LastNonceCalled         func() uint64
-	LastRoundCalled         func() uint64
-	LastTimeStampCalled     func() uint64
-	LastRandomSeedCalled    func() []byte
-	LastEpochCalled         func() uint32
-	GetStateRootHashCalled  func() []byte
-	CurrentNonceCalled      func() uint64
-	CurrentRoundCalled      func() uint64
-	CurrentTimeStampCalled  func() uint64
-	CurrentRandomSeedCalled func() []byte
-	CurrentEpochCalled      func() uint32
+	AccountExtistsCalled         func(address []byte) (bool, error)
+	NewAddressCalled             func(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error)
+	GetBalanceCalled             func(address []byte) (*big.Int, error)
+	GetNonceCalled               func(address []byte) (uint64, error)
+	GetStorageDataCalled         func(accountsAddress []byte, index []byte) ([]byte, error)
+	IsCodeEmptyCalled            func(address []byte) (bool, error)
+	GetCodeCalled                func(address []byte) ([]byte, error)
+	GetBlockHashCalled           func(nonce uint64) ([]byte, error)
+	LastNonceCalled              func() uint64
+	LastRoundCalled              func() uint64
+	LastTimeStampCalled          func() uint64
+	LastRandomSeedCalled         func() []byte
+	LastEpochCalled              func() uint32
+	GetStateRootHashCalled       func() []byte
+	CurrentNonceCalled           func() uint64
+	CurrentRoundCalled           func() uint64
+	CurrentTimeStampCalled       func() uint64
+	CurrentRandomSeedCalled      func() []byte
+	CurrentEpochCalled           func() uint32
+	ProcessBuiltInFunctionCalled func(input *vmcommon.ContractCallInput) (*big.Int, uint64, error)
 }
 
 func (b *BlockchainHookStub) AccountExists(address []byte) (bool, error) {
@@ -161,4 +162,10 @@ func (b *BlockchainHookStub) CurrentEpoch() uint32 {
 		return b.CurrentEpochCalled()
 	}
 	return 0
+}
+func (b *BlockchainHookStub) ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*big.Int, uint64, error) {
+	if b.ProcessBuiltInFunctionCalled != nil {
+		return b.ProcessBuiltInFunctionCalled(input)
+	}
+	return nil, 0, nil
 }

@@ -25,11 +25,8 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 	}
 
 	destinationVMOutput, err := host.ExecuteOnDestContext(destinationCallInput)
-	if err != nil {
-		return err
-	}
 
-	callbackCallInput, err := host.createCallbackContractCallInput(destinationVMOutput)
+	callbackCallInput, err := host.createCallbackContractCallInput(destinationVMOutput, err)
 	if err != nil {
 		return err
 	}
@@ -124,13 +121,20 @@ func (host *vmHost) createDestinationContractCallInput() (*vmcommon.ContractCall
 	return contractCallInput, nil
 }
 
-func (host *vmHost) createCallbackContractCallInput(destinationVMOutput *vmcommon.VMOutput) (*vmcommon.ContractCallInput, error) {
+func (host *vmHost) createCallbackContractCallInput(destinationVMOutput *vmcommon.VMOutput, destinationErr error) (*vmcommon.ContractCallInput, error) {
 	metering := host.Metering()
 	runtime := host.Runtime()
 
 	arguments := destinationVMOutput.ReturnData
 	gasLimit := destinationVMOutput.GasRemaining
 	function := "callBack"
+
+	if destinationErr != nil {
+		arguments = [][]byte{
+			[]byte(destinationVMOutput.ReturnCode.String()),
+			[]byte(runtime.GetTxHash()),
+		}
+	}
 
 	dataLength := host.computeDataLengthFromArguments(function, arguments)
 
