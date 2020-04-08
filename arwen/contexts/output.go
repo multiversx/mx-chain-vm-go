@@ -251,6 +251,9 @@ func (context *outputContext) resolveReturnCodeFromError(err error) vmcommon.Ret
 		if errors.Is(err, arwen.ErrNotEnoughGas) {
 			return vmcommon.OutOfGas
 		}
+		if err == arwen.ErrContractNotFound {
+			return vmcommon.ContractNotFound
+		}
 		if errors.Is(err, arwen.ErrContractInvalid) {
 			return vmcommon.ContractInvalid
 		}

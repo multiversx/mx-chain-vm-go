@@ -698,10 +698,10 @@ func expectedVMOutput_AsyncCall() *vmcommon.VMOutput {
 		nil,
 	)
 
-	AddFinishData(vmOutput, []byte{3})
+	AddFinishData(vmOutput, []byte{0})
 	AddFinishData(vmOutput, []byte("thirdparty"))
 	AddFinishData(vmOutput, []byte("vault"))
-	AddFinishData(vmOutput, []byte{3})
+	AddFinishData(vmOutput, []byte{0})
 	AddFinishData(vmOutput, []byte("succ"))
 
 	return vmOutput
@@ -745,6 +745,54 @@ func expectedVMOutput_AsyncCall_ChildFails() *vmcommon.VMOutput {
 	)
 
 	AddFinishData(vmOutput, []byte("succ"))
+
+	return vmOutput
+}
+
+func expectedVMOutput_AsyncCall_CallBackFails() *vmcommon.VMOutput {
+	vmOutput := MakeVMOutput()
+
+	parentAccount := AddNewOutputAccount(
+		vmOutput,
+		parentAddress,
+		-10,
+		nil,
+	)
+	parentAccount.Balance = big.NewInt(1000)
+	SetStorageUpdate(parentAccount, parentKeyA, parentDataA)
+	SetStorageUpdate(parentAccount, parentKeyB, parentDataB)
+	AddFinishData(vmOutput, parentFinishA)
+	AddFinishData(vmOutput, parentFinishB)
+
+	_ = AddNewOutputAccount(
+		vmOutput,
+		thirdPartyAddress,
+		6,
+		[]byte("hello there"),
+	)
+
+	childAccount := AddNewOutputAccount(
+		vmOutput,
+		childAddress,
+		0,
+		nil,
+	)
+	childAccount.Balance = big.NewInt(0)
+	childAccount.BalanceDelta = big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1))
+	SetStorageUpdate(childAccount, childKey, childData)
+
+	_ = AddNewOutputAccount(
+		vmOutput,
+		vaultAddress,
+		4,
+		nil,
+	)
+
+	AddFinishData(vmOutput, []byte{3})
+	AddFinishData(vmOutput, []byte("thirdparty"))
+	AddFinishData(vmOutput, []byte("vault"))
+	AddFinishData(vmOutput, []byte("execution failed"))
+	AddFinishData(vmOutput, []byte("txhash"))
 
 	return vmOutput
 }

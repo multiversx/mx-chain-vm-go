@@ -60,7 +60,6 @@ void handleBehaviorArgument() {
 		}
 	}
 
-	behavior = behavior + 3;
 	finish(&behavior, 1);
 }
 

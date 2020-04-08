@@ -109,11 +109,11 @@ void handleBehaviorArgument() {
 
 	byte behavior = int64getArgument(0);
 
-	if (behavior == 4) {
+	if (behavior == 3) {
 		byte msg[] = "callBack error";
 		signalError(msg, 14);
 	}
-	if (behavior == 5) {
+	if (behavior == 4) {
 		byte msg[] = "loop";
 		while (1) {
 			finish(msg, 4);

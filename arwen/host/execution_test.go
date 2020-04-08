@@ -240,8 +240,8 @@ func TestExecution_CallGetCodeErr(t *testing.T) {
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
 	require.NotNil(t, vmOutput)
-	require.Equal(t, vmcommon.ContractInvalid, vmOutput.ReturnCode)
-	require.Equal(t, errGetCode.Error(), vmOutput.ReturnMessage)
+	require.Equal(t, vmcommon.ContractNotFound, vmOutput.ReturnCode)
+	require.Equal(t, arwen.ErrContractNotFound.Error(), vmOutput.ReturnMessage)
 }
 
 func TestExecution_CallOutOfGas(t *testing.T) {
@@ -1085,11 +1085,50 @@ func TestExecution_AsyncCall_ChildFails(t *testing.T) {
 	input.Function = "parentPerformAsyncCall"
 	input.GasProvided = 100000
 	input.Arguments = [][]byte{[]byte{1}}
+	input.CurrentTxHash = []byte("txhash")
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
 
 	expectedVMOutput := expectedVMOutput_AsyncCall_ChildFails()
+	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
+	require.Equal(t, expectedVMOutput, vmOutput)
+}
+
+func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
+	// Scenario
+	// Identical to TestExecution_AsyncCall(), except that the child is
+	// instructed to call signalError().
+	// Because "vault" was not received by the callBack(), the Parent sends 4 ERD
+	// to the Vault directly.
+	parentCode := GetTestSCCode("async-call-parent", "../../")
+	childCode := GetTestSCCode("async-call-child", "../../")
+	parentSCBalance := big.NewInt(1000)
+
+	getBalanceCalled := func(address []byte) (*big.Int, error) {
+		if bytes.Equal(parentAddress, address) {
+			return parentSCBalance, nil
+		}
+
+		return big.NewInt(0), nil
+	}
+
+	// Call parentFunctionChildCall() of the parent SC, which will call the child
+	// SC and pass some arguments using executeOnDestContext().
+	host, stubBlockchainHook := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
+	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
+
+	input := DefaultTestContractCallInput()
+	input.RecipientAddr = parentAddress
+	input.Function = "parentPerformAsyncCall"
+	input.GasProvided = 100000
+	input.Arguments = [][]byte{[]byte{3}}
+	input.CurrentTxHash = []byte("txhash")
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+
+	expectedVMOutput := expectedVMOutput_AsyncCall_CallBackFails()
 	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
 }

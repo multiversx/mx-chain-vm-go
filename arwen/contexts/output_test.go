@@ -356,14 +356,18 @@ func TestOutputContext_MergeVMOutputs(t *testing.T) {
 func TestOutputContext_VMOutputError(t *testing.T) {
 	t.Parallel()
 
-	host := &mock.VmHostStub{}
+	host := &mock.VmHostMock{}
+	host.MeteringContext = &mock.MeteringContextMock{
+		GasLocked: 1001,
+	}
+
 	outputContext, _ := NewOutputContext(host)
 
 	returnCode := vmcommon.ContractNotFound
 	returnMessage := arwen.ErrContractNotFound.Error()
 
 	expected := &vmcommon.VMOutput{
-		GasRemaining:  0,
+		GasRemaining:  1001,
 		GasRefund:     big.NewInt(0),
 		ReturnCode:    returnCode,
 		ReturnMessage: returnMessage,
