@@ -13,13 +13,16 @@ byte thirdPartyAddress[] = "thirdPartyAddress...............";
 int sendToThirdParty();
 int sendToVault();
 byte getValueToSend();
+void handleBehaviorArgument();
 
 void transferToThirdParty() {
 	int numArgs = getNumArguments();
-	if (numArgs != 2) {
+	if (numArgs != 3) {
 		byte msg[] = "wrong num of arguments";
 		signalError(msg, 22);
 	}
+
+	handleBehaviorArgument();
 
 	int result = 0;
 
@@ -36,6 +39,29 @@ void transferToThirdParty() {
 	}
 
 	storageStore(childKey, childData, 9);
+}
+
+void handleBehaviorArgument() {
+	int numArgs = getNumArguments();
+	if (numArgs < 3) {
+		return;
+	}
+
+	byte behavior = int64getArgument(2);
+
+	if (behavior == 1) {
+		byte msg[] = "child error";
+		signalError(msg, 11);
+	}
+	if (behavior == 2) {
+		byte msg[] = "loop";
+		while (1) {
+			finish(msg, 4);
+		}
+	}
+
+	behavior = behavior + 3;
+	finish(&behavior, 1);
 }
 
 int sendToThirdParty() {
