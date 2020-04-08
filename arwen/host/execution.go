@@ -1,6 +1,8 @@
 package host
 
 import (
+	"errors"
+
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -93,8 +95,9 @@ func (host *vmHost) performCodeDeploy(input arwen.CodeDeployInput) (*vmcommon.VM
 	runtime.SetInstanceContextID(idContext)
 
 	err = host.callInitFunction()
+	returnCode := host.resolveReturnCodeFromError(err)
+	output.SetReturnCode(returnCode)
 	if err != nil {
-		output.SetReturnCode(vmcommon.FunctionWrongSignature)
 		return nil, err
 	}
 
@@ -177,9 +180,10 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	idContext := arwen.AddHostContext(host)
 	runtime.SetInstanceContextID(idContext)
 
-	returnCode, err := host.callSCMethod()
+	err = host.callSCMethod()
+	returnCode := host.resolveReturnCodeFromError(err)
+	output.SetReturnCode(returnCode)
 	if err != nil {
-		output.SetReturnCode(returnCode)
 		return
 	}
 
@@ -220,6 +224,12 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vm
 	}
 
 	err = host.execute(input)
+
+	// Extract the VMOutput produced by the execution in isolation, before
+	// restoring the contexts. This needs to be done before popping any state
+	// stacks.
+	vmOutput := host.Output().GetVMOutput()
+
 	if err != nil {
 		// Execution failed: restore contexts as if the execution didn't happen.
 		bigInt.PopSetActiveState()
@@ -228,10 +238,6 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vm
 
 		return nil, err
 	}
-
-	// Extract the VMOutput produced by the execution in isolation, before
-	// restoring the contexts.
-	vmOutput := host.Output().GetVMOutput()
 
 	// Execution successful: restore the previous context states, except Output,
 	// which will merge the current state (VMOutput) with the initial state.
@@ -420,6 +426,8 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 	runtime.SetInstanceContextID(idContext)
 
 	err = host.callSCMethodIndirect()
+	returnCode := host.resolveReturnCodeFromError(err)
+	output.SetReturnCode(returnCode)
 	if err != nil {
 		runtime.PopInstance()
 		arwen.RemoveHostContext(idContext)
@@ -475,17 +483,17 @@ func (host *vmHost) callInitFunction() error {
 	return nil
 }
 
-func (host *vmHost) callSCMethod() (vmcommon.ReturnCode, error) {
+func (host *vmHost) callSCMethod() error {
 	runtime := host.Runtime()
 
 	err := host.verifyAllowedFunctionCall()
 	if err != nil {
-		return vmcommon.UserError, err
+		return err
 	}
 
 	function, err := runtime.GetFunctionToCall()
 	if err != nil {
-		return vmcommon.FunctionNotFound, err
+		return err
 	}
 
 	_, err = function()
@@ -496,21 +504,31 @@ func (host *vmHost) callSCMethod() (vmcommon.ReturnCode, error) {
 		}
 	}
 
+	return err
+}
+
+func (host *vmHost) resolveReturnCodeFromError(err error) vmcommon.ReturnCode {
 	if err != nil {
-		var returnCode vmcommon.ReturnCode
-		switch err {
-		case arwen.ErrSignalError:
-			returnCode = vmcommon.UserError
-		case arwen.ErrNotEnoughGas:
-			returnCode = vmcommon.OutOfGas
-		default:
-			returnCode = vmcommon.ExecutionFailed
+		if errors.Is(err, arwen.ErrSignalError) {
+			return vmcommon.UserError
+		}
+		if err == arwen.ErrFuncNotFound {
+			return vmcommon.FunctionNotFound
+		}
+		if err == arwen.ErrFunctionNonvoidSignature {
+			return vmcommon.FunctionWrongSignature
+		}
+		if errors.Is(err, arwen.ErrInvalidFunction) {
+			return vmcommon.UserError
+		}
+		if errors.Is(err, arwen.ErrNotEnoughGas) {
+			return vmcommon.OutOfGas
 		}
 
-		return returnCode, err
+		return vmcommon.ExecutionFailed
 	}
 
-	return vmcommon.Ok, nil
+	return vmcommon.Ok
 }
 
 func (host *vmHost) verifyAllowedFunctionCall() error {

@@ -398,6 +398,8 @@ func TestExecution_ExecuteOnSameContext_Wrong(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnSameContext_OutOfGas(t *testing.T) {
+	t.Skip()
+
 	// Scenario:
 	// Parent sets data into the storage, finishes data and creates a bigint
 	// Parent calls executeOnSameContext, sending some value as well
@@ -644,6 +646,8 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs_OutOfGas(t *testing.T) {
+	t.Skip()
+
 	parentCode := GetTestSCCode("exec-same-ctx-recursive-parent", "../../")
 	childCode := GetTestSCCode("exec-same-ctx-recursive-child", "../../")
 	parentSCBalance := big.NewInt(1000)
