@@ -22,7 +22,7 @@ type VMHostArguments struct {
 	VMType                    []byte
 	BlockGasLimit             uint64
 	GasSchedule               config.GasScheduleMap
-	ProtocolReservedFunctions []string
+	ProtocolReservedFunctions ProtocolReservedFunctions
 }
 
 // SendArwenArguments sends initialization arguments through a pipe

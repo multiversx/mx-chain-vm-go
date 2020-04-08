@@ -43,7 +43,7 @@ func NewArwenVM(
 	vmType []byte,
 	blockGasLimit uint64,
 	gasSchedule config.GasScheduleMap,
-	protocolReservedFunctions []string,
+	protocolReservedFunctions ProtocolReservedFunctions,
 ) (*vmHost, error) {
 
 	host := &vmHost{

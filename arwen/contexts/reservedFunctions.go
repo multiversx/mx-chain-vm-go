@@ -2,6 +2,9 @@ package contexts
 
 import "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 
+// ProtocolReservedFunctions (alias) is the list of protocol-reserved functions
+type ProtocolReservedFunctions = []string
+
 // ReservedFunctions holds the reserved function names
 type ReservedFunctions struct {
 	functionNames map[string]struct{}
