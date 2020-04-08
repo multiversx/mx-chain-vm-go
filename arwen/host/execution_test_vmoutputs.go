@@ -1,7 +1,6 @@
 package host
 
 import (
-	"encoding/hex"
 	"fmt"
 	"math/big"
 
@@ -701,17 +700,7 @@ func expectedVMOutput_AsyncCall() *vmcommon.VMOutput {
 
 	AddFinishData(vmOutput, []byte("thirdparty"))
 	AddFinishData(vmOutput, []byte("vault"))
+	AddFinishData(vmOutput, []byte("succ"))
 
 	return vmOutput
-}
-
-func createDataBytes(returnCode vmcommon.ReturnCode, returnData [][]byte) []byte {
-	data := []byte("@" + hex.EncodeToString([]byte(returnCode.String())))
-
-	for _, returnDataPiece := range returnData {
-		returnDataPieceHex := []byte("@" + hex.EncodeToString(returnDataPiece))
-		data = append(data, returnDataPieceHex...)
-	}
-
-	return data
 }

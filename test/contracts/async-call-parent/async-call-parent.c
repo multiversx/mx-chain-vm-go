@@ -31,4 +31,16 @@ void parentPerformAsyncCall() {
 }
 
 void callBack() {
+	byte loadedData[11];
+	storageLoad(parentKeyB, loadedData);
+
+	int status = 0;
+	for (int i = 0; i < 11; i++) {
+		if (loadedData[i] != parentDataB[i]) {
+			status = 1;
+			break;
+		}
+	}
+
+	finishResult(status);
 }
