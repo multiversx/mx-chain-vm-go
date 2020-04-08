@@ -2,6 +2,8 @@ package common
 
 import (
 	"math/big"
+
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // MessageBlockchainAccountExistsRequest represents a request message
@@ -536,5 +538,37 @@ func NewMessageBlockchainCurrentEpochResponse(result uint32) *MessageBlockchainC
 	message := &MessageBlockchainCurrentEpochResponse{}
 	message.Kind = BlockchainCurrentEpochResponse
 	message.Result = result
+	return message
+}
+
+// MessageBlockchainProcessBuiltInFunctionRequest represents a request message
+type MessageBlockchainProcessBuiltInFunctionRequest struct {
+	Message
+	CallInput vmcommon.ContractCallInput
+}
+
+// NewMessageBlockchainProcessBuiltInFunctionRequest creates a request message
+func NewMessageBlockchainProcessBuiltInFunctionRequest(callInput vmcommon.ContractCallInput) *MessageBlockchainProcessBuiltInFunctionRequest {
+	message := &MessageBlockchainProcessBuiltInFunctionRequest{}
+	message.Kind = BlockchainProcessBuiltInFunctionRequest
+	message.CallInput = callInput
+
+	return message
+}
+
+// MessageBlockchainProcessBuiltInFunctionResponse represents a response message
+type MessageBlockchainProcessBuiltInFunctionResponse struct {
+	Message
+	Value       *big.Int
+	GasConsumed uint64
+}
+
+// NewMessageBlockchainProcessBuiltInFunctionResponse creates a response message
+func NewMessageBlockchainProcessBuiltInFunctionResponse(value *big.Int, gasConsumed uint64, err error) *MessageBlockchainProcessBuiltInFunctionResponse {
+	message := &MessageBlockchainProcessBuiltInFunctionResponse{}
+	message.Kind = BlockchainProcessBuiltInFunctionResponse
+	message.Value = value
+	message.GasConsumed = gasConsumed
+	message.SetError(err)
 	return message
 }

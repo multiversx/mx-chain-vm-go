@@ -4,6 +4,7 @@ import (
 	"errors"
 	"math/big"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -241,6 +242,10 @@ func (b *BlockchainHookMock) CurrentRandomSeed() []byte {
 
 func (b *BlockchainHookMock) CurrentEpoch() uint32 {
 	return b.CEpoch
+}
+
+func (b *BlockchainHookMock) ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*big.Int, uint64, error) {
+	return arwen.Zero, 0, nil
 }
 
 func (b *BlockchainHookMock) UpdateAccounts(outputAccounts map[string]*vmcommon.OutputAccount) {
