@@ -24,7 +24,7 @@ type RuntimeContextMock struct {
 	FailElrondAPI          bool
 	FailBigIntAPI          bool
 	AsyncCallInfo          *arwen.AsyncCallInfo
-	RunningInstances       int
+	RunningInstances       uint64
 	TxHash                 []byte
 }
 
@@ -59,8 +59,11 @@ func (r *RuntimeContextMock) PushInstance() {
 func (r *RuntimeContextMock) PopInstance() {
 }
 
-func (r *RuntimeContextMock) RunningInstancesCount() int {
+func (r *RuntimeContextMock) RunningInstancesCount() uint64 {
 	return r.RunningInstances
+}
+
+func (r *RuntimeContextMock) SetMaxInstanceCount(uint64) {
 }
 
 func (r *RuntimeContextMock) ClearInstanceStack() {

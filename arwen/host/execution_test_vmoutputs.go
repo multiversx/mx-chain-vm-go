@@ -251,6 +251,29 @@ func expectedVMOutput_SameCtx_Recursive_Direct(recursiveCalls int) *vmcommon.VMO
 	return vmOutput
 }
 
+func expectedVMOutput_SameCtx_Recursive_Direct_ErrMaxInstances(recursiveCalls int) *vmcommon.VMOutput {
+	vmOutput := MakeVMOutput()
+
+	account := AddNewOutputAccount(
+		vmOutput,
+		parentAddress,
+		0,
+		nil,
+	)
+
+	finishString := fmt.Sprintf("Rfinish%03d", recursiveCalls)
+	AddFinishData(vmOutput, []byte(finishString))
+
+	key := fmt.Sprintf("Rkey%03d.........................", recursiveCalls)
+	value := fmt.Sprintf("Rvalue%03d", recursiveCalls)
+	SetStorageUpdateStrings(account, key, value)
+
+	AddFinishData(vmOutput, []byte("fail"))
+	SetStorageUpdate(account, recursiveIterationCounterKey, []byte{byte(1)})
+
+	return vmOutput
+}
+
 func expectedVMOutput_SameCtx_Recursive_MutualMethods(recursiveCalls int) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 

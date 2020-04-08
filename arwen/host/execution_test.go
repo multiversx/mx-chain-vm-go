@@ -567,6 +567,39 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct(t *testing.T) {
 	require.Equal(t, int64(recursiveCalls+1), host.BigInt().GetOne(16).Int64())
 }
 
+func TestExecution_ExecuteOnSameContext_Recursive_Direct_ErrMaxInstances(t *testing.T) {
+	code := GetTestSCCode("exec-same-ctx-recursive", "../../")
+	scBalance := big.NewInt(1000)
+
+	getBalanceCalled := func(address []byte) (*big.Int, error) {
+		if bytes.Equal(parentAddress, address) {
+			return scBalance, nil
+		}
+		return big.NewInt(0), nil
+	}
+
+	host, stubBlockchainHook := DefaultTestArwenForCall(t, code)
+	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
+
+	input := DefaultTestContractCallInput()
+	input.RecipientAddr = parentAddress
+	input.Function = "callRecursive"
+	input.GasProvided = 1000000
+
+	recursiveCalls := byte(11)
+	input.Arguments = [][]byte{
+		[]byte{recursiveCalls},
+	}
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+
+	expectedVMOutput := expectedVMOutput_SameCtx_Recursive_Direct_ErrMaxInstances(int(recursiveCalls))
+	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
+	require.Equal(t, expectedVMOutput, vmOutput)
+	require.Equal(t, int64(1), host.BigInt().GetOne(16).Int64())
+}
+
 func TestExecution_ExecuteOnSameContext_Recursive_Mutual_Methods(t *testing.T) {
 	// Scenario:
 	// SC has a method "callRecursiveMutualMethods" which takes a byte as

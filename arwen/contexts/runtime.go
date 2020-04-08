@@ -26,6 +26,8 @@ type runtimeContext struct {
 	stateStack    []*runtimeContext
 	instanceStack []*wasmer.Instance
 
+	maxWasmerInstances uint64
+
 	asyncCallInfo *arwen.AsyncCallInfo
 
 	argParser arwen.ArgumentsParser
@@ -64,6 +66,10 @@ func (context *runtimeContext) InitState() {
 }
 
 func (context *runtimeContext) CreateWasmerInstance(contract []byte, gasLimit uint64) error {
+	if context.RunningInstancesCount() >= context.maxWasmerInstances {
+		context.instance = nil
+		return arwen.ErrMaxInstancesReached
+	}
 	newInstance, err := wasmer.NewMeteredInstance(contract, gasLimit)
 	if err != nil {
 		context.instance = nil
@@ -73,6 +79,10 @@ func (context *runtimeContext) CreateWasmerInstance(contract []byte, gasLimit ui
 	context.instance = newInstance
 	context.SetRuntimeBreakpointValue(arwen.BreakpointNone)
 	return nil
+}
+
+func (context *runtimeContext) SetMaxInstanceCount(maxInstances uint64) {
+	context.maxWasmerInstances = maxInstances
 }
 
 func (context *runtimeContext) InitStateFromContractCallInput(input *vmcommon.ContractCallInput) {
@@ -127,8 +137,8 @@ func (context *runtimeContext) PopInstance() {
 	context.instance = prevInstance
 }
 
-func (context *runtimeContext) RunningInstancesCount() int {
-	return len(context.instanceStack)
+func (context *runtimeContext) RunningInstancesCount() uint64 {
+	return uint64(len(context.instanceStack))
 }
 
 func (context *runtimeContext) ClearInstanceStack() {

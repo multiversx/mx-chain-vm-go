@@ -400,7 +400,6 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 	}
 
 	idContext := arwen.AddHostContext(host)
-
 	runtime.PushInstance()
 
 	gasForExecution := runtime.GetVMInput().GasProvided

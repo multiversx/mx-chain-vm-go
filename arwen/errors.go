@@ -29,8 +29,6 @@ var ErrBadUpperBounds = fmt.Errorf("%w (upper)", ErrBadBounds)
 
 var ErrNegativeLength = errors.New("negative length")
 
-var ErrMemoryDeclarationMissing = errors.New("wasm memory declaration missing")
-
 var ErrFailedTransfer = errors.New("failed transfer")
 
 var ErrTransferInsufficientFunds = fmt.Errorf("%w (insufficient funds)", ErrFailedTransfer)
@@ -58,3 +56,7 @@ var ErrFunctionNonvoidSignature = fmt.Errorf("%w (nonvoid signature)", ErrInvali
 var ErrContractInvalid = fmt.Errorf("invalid contract code")
 
 var ErrContractNotFound = fmt.Errorf("%w (not found)", ErrContractInvalid)
+
+var ErrMemoryDeclarationMissing = fmt.Errorf("%w (missing memory declaration)", ErrContractInvalid)
+
+var ErrMaxInstancesReached = fmt.Errorf("%w (max instances reached)", ErrExecutionFailed)

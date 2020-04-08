@@ -13,6 +13,8 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
+var MaximumWasmerInstanceCount = uint64(10)
+
 // TryFunction corresponds to the try() part of a try / catch block
 type TryFunction func()
 
@@ -119,6 +121,8 @@ func NewArwenVM(
 	if err != nil {
 		return nil, err
 	}
+
+	host.runtimeContext.SetMaxInstanceCount(MaximumWasmerInstanceCount)
 
 	opcodeCosts := gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray()
 	wasmer.SetOpcodeCosts(&opcodeCosts)

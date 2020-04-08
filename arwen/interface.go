@@ -87,11 +87,12 @@ type RuntimeContext interface {
 	SetAsyncCallInfo(asyncCallInfo *AsyncCallInfo)
 	PushInstance()
 	PopInstance()
-	RunningInstancesCount() int
+	RunningInstancesCount() uint64
 	ClearInstanceStack()
 	ReadOnly() bool
 	SetReadOnly(readOnly bool)
 	CreateWasmerInstance(contract []byte, gasLimit uint64) error
+	SetMaxInstanceCount(uint64)
 	VerifyContractCode() error
 	SetInstanceContext(instCtx *wasmer.InstanceContext)
 	GetInstanceContext() *wasmer.InstanceContext
