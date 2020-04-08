@@ -119,7 +119,7 @@ func (context *storageContext) SetStorage(key []byte, value []byte) int32 {
 		return int32(arwen.StorageAdded)
 	}
 	if bytes.Equal(value, zero) {
-		freeGas := metering.GasSchedule().BaseOperationCost.StorePerByte * uint64(len(oldValue))
+		freeGas := metering.GasSchedule().BaseOperationCost.ReleasePerByte * uint64(len(oldValue))
 		metering.FreeGas(freeGas)
 		return int32(arwen.StorageDeleted)
 	}
