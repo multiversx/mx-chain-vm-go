@@ -339,3 +339,8 @@ func (blockchain *BlockchainHookGateway) ProcessBuiltInFunction(input *vmcommon.
 	response := rawResponse.(*common.MessageBlockchainProcessBuiltInFunctionResponse)
 	return response.Value, response.GasConsumed, response.GetError()
 }
+
+// GetBuiltinFunctionNames forwards a message to the actual hook
+func (blockchain *BlockchainHookGateway) GetBuiltinFunctionNames() vmcommon.FunctionNames {
+	panic("not implemented")
+}

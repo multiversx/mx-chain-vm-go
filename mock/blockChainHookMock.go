@@ -249,6 +249,10 @@ func (b *BlockchainHookMock) ProcessBuiltInFunction(input *vmcommon.ContractCall
 	return b.Value, b.Gas, b.Err
 }
 
+func (b *BlockchainHookMock) GetBuiltinFunctionNames() vmcommon.FunctionNames {
+	return make(vmcommon.FunctionNames)
+}
+
 func (b *BlockchainHookMock) UpdateAccounts(outputAccounts map[string]*vmcommon.OutputAccount) {
 	for strAddress, outputAccount := range outputAccounts {
 		account, exists := b.Accounts[strAddress]
