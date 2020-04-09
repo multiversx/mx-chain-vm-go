@@ -94,6 +94,8 @@ func TestRuntimeContext_NewWasmerInstance(t *testing.T) {
 	runtimeContext, err := NewRuntimeContext(host, vmType)
 	require.Nil(t, err)
 
+	runtimeContext.SetMaxInstanceCount(1)
+
 	gasLimit := uint64(100000000)
 	dummy := []byte{}
 	err = runtimeContext.CreateWasmerInstance(dummy, gasLimit)
@@ -158,6 +160,7 @@ func TestRuntimeContext_PushPopInstance(t *testing.T) {
 
 	vmType := []byte("type")
 	runtimeContext, _ := NewRuntimeContext(host, vmType)
+	runtimeContext.SetMaxInstanceCount(1)
 
 	gasLimit := uint64(100000000)
 	path := "./../../test/contracts/counter.wasm"
@@ -189,6 +192,7 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 
 	vmType := []byte("type")
 	runtimeContext, _ := NewRuntimeContext(host, vmType)
+	runtimeContext.SetMaxInstanceCount(1)
 
 	vmInput := vmcommon.VMInput{
 		CallerAddr:  []byte("caller"),
@@ -246,6 +250,7 @@ func TestRuntimeContext_Instance(t *testing.T) {
 
 	vmType := []byte("type")
 	runtimeContext, _ := NewRuntimeContext(host, vmType)
+	runtimeContext.SetMaxInstanceCount(1)
 
 	gasLimit := uint64(100000000)
 	path := "./../../test/contracts/counter.wasm"
@@ -295,6 +300,7 @@ func TestRuntimeContext_Breakpoints(t *testing.T) {
 
 	vmType := []byte("type")
 	runtimeContext, _ := NewRuntimeContext(host, vmType)
+	runtimeContext.SetMaxInstanceCount(1)
 
 	gasLimit := uint64(100000000)
 	path := "./../../test/contracts/counter.wasm"
@@ -350,6 +356,7 @@ func TestRuntimeContext_MemLoadStoreOk(t *testing.T) {
 
 	vmType := []byte("type")
 	runtimeContext, _ := NewRuntimeContext(host, vmType)
+	runtimeContext.SetMaxInstanceCount(1)
 
 	gasLimit := uint64(100000000)
 	path := "./../../test/contracts/counter.wasm"
@@ -384,6 +391,7 @@ func TestRuntimeContext_MemLoadCases(t *testing.T) {
 
 	vmType := []byte("type")
 	runtimeContext, _ := NewRuntimeContext(host, vmType)
+	runtimeContext.SetMaxInstanceCount(1)
 
 	gasLimit := uint64(100000000)
 	path := "./../../test/contracts/counter.wasm"
@@ -450,6 +458,7 @@ func TestRuntimeContext_MemStoreCases(t *testing.T) {
 
 	vmType := []byte("type")
 	runtimeContext, _ := NewRuntimeContext(host, vmType)
+	runtimeContext.SetMaxInstanceCount(1)
 
 	gasLimit := uint64(100000000)
 	path := "./../../test/contracts/counter.wasm"
