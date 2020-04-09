@@ -26,7 +26,7 @@ var recursiveIterationBigCounterKey = []byte("recursiveIterationBigCounter....")
 
 var gasProvided = uint64(1000000)
 
-var parentCompilationCost_SameCtx = uint64(3578)
+var parentCompilationCost_SameCtx = uint64(3601)
 var childCompilationCost_SameCtx = uint64(3269)
 
 var parentCompilationCost_DestCtx = uint64(3291)
@@ -111,7 +111,7 @@ func expectedVMOutput_SameCtx_OutOfGas() *vmcommon.VMOutput {
 	executionCostBeforeExecuteAPI := uint64(124)
 	executeAPICost := uint64(1)
 	gasLostOnFailure := uint64(3500)
-	finalCost := uint64(36)
+	finalCost := uint64(54)
 	gas := gasProvided
 	gas -= parentCompilationCost_SameCtx
 	gas -= executionCostBeforeExecuteAPI
