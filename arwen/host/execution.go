@@ -147,7 +147,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	return
 }
 
-func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
 	bigInt := host.BigInt()
 	output := host.Output()
 	runtime := host.Runtime()
@@ -165,32 +165,39 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vm
 	storage.PushState()
 	storage.SetAddress(host.Runtime().GetSCAddress())
 
+	defer func() {
+		vmOutput = host.finishExecuteOnDestContext(err)
+	}()
+
 	// Perform a value transfer to the called SC. If the execution fails, this
 	// transfer will not persist.
-	err := output.Transfer(input.RecipientAddr, input.CallerAddr, 0, input.CallValue, nil)
+	err = output.Transfer(input.RecipientAddr, input.CallerAddr, 0, input.CallValue, nil)
 	if err != nil {
-		// Execution failed: restore contexts as if the execution didn't happen,
-		// but first create a vmOutput to capture the error.
-		vmOutput := output.CreateVMOutputInCaseOfError(err)
-
-		bigInt.PopSetActiveState()
-		output.PopSetActiveState()
-		runtime.PopSetActiveState()
-
-		return vmOutput, err
+		return
 	}
 
 	err = host.execute(input)
-	if err != nil {
+
+	return
+}
+
+func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOutput {
+	bigInt := host.BigInt()
+	output := host.Output()
+	runtime := host.Runtime()
+	storage := host.Storage()
+
+	if executeErr != nil {
 		// Execution failed: restore contexts as if the execution didn't happen,
 		// but first create a vmOutput to capture the error.
-		vmOutput := output.CreateVMOutputInCaseOfError(err)
+		vmOutput := output.CreateVMOutputInCaseOfError(executeErr)
 
 		bigInt.PopSetActiveState()
 		output.PopSetActiveState()
 		runtime.PopSetActiveState()
+		storage.PopSetActiveState()
 
-		return vmOutput, err
+		return vmOutput
 	}
 
 	// Extract the VMOutput produced by the execution in isolation, before
@@ -205,10 +212,10 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vm
 	runtime.PopSetActiveState()
 	storage.PopSetActiveState()
 
-	return vmOutput, nil
+	return vmOutput
 }
 
-func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) error {
+func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (err error) {
 	bigInt := host.BigInt()
 	output := host.Output()
 	runtime := host.Runtime()
@@ -221,26 +228,37 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) erro
 
 	runtime.InitStateFromContractCallInput(input)
 
+	defer func() {
+		host.finishExecuteOnSameContext(err)
+	}()
+
 	// Perform a value transfer to the called SC. If the execution fails, this
 	// transfer will not persist.
-	err := output.Transfer(input.RecipientAddr, input.CallerAddr, 0, input.CallValue, nil)
+	err = output.Transfer(input.RecipientAddr, input.CallerAddr, 0, input.CallValue, nil)
 	if err != nil {
-		// Execution failed: restore contexts as if the execution didn't happen.
-		bigInt.PopSetActiveState()
-		output.PopSetActiveState()
-		runtime.PopSetActiveState()
-
-		return err
+		return
 	}
 
 	err = host.execute(input)
 	if err != nil {
+		return
+	}
+
+	return
+}
+
+func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
+	bigInt := host.BigInt()
+	output := host.Output()
+	runtime := host.Runtime()
+
+	if executeErr != nil {
 		// Execution failed: restore contexts as if the execution didn't happen.
 		bigInt.PopSetActiveState()
 		output.PopSetActiveState()
 		runtime.PopSetActiveState()
 
-		return err
+		return
 	}
 
 	// Execution successful: discard the backups made at the beginning and
@@ -248,8 +266,6 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) erro
 	bigInt.PopDiscard()
 	output.PopDiscard()
 	runtime.PopSetActiveState()
-
-	return nil
 }
 
 func (host *vmHost) isInitFunctionBeingCalled() bool {
