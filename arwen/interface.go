@@ -11,7 +11,8 @@ import (
 type StateStack interface {
 	InitState()
 	PushState()
-	PopState()
+	PopSetActiveState()
+	PopDiscard()
 	ClearStateStack()
 }
 
@@ -25,8 +26,6 @@ type ArgumentsParser interface {
 }
 
 type VMHost interface {
-	StateStack
-
 	Crypto() vmcommon.CryptoHook
 	Blockchain() BlockchainContext
 	Runtime() RuntimeContext
@@ -79,6 +78,8 @@ type RuntimeContext interface {
 	GetVMType() []byte
 	Function() string
 	Arguments() [][]byte
+	GetCurrentTxHash() []byte
+	GetOriginalTxHash() []byte
 	GetCodeUpgradeFromArgs() ([]byte, []byte, error)
 	SignalUserError(message string)
 	FailExecution(err error)
@@ -88,10 +89,12 @@ type RuntimeContext interface {
 	SetAsyncCallInfo(asyncCallInfo *AsyncCallInfo)
 	PushInstance()
 	PopInstance()
+	RunningInstancesCount() uint64
 	ClearInstanceStack()
 	ReadOnly() bool
 	SetReadOnly(readOnly bool)
-	CreateWasmerInstance(contract []byte, gasLimit uint64) error
+	StartWasmerInstance(contract []byte, gasLimit uint64) error
+	SetMaxInstanceCount(uint64)
 	VerifyContractCode() error
 	SetInstanceContext(instCtx *wasmer.InstanceContext)
 	GetInstanceContext() *wasmer.InstanceContext
@@ -120,6 +123,8 @@ type BigIntContext interface {
 
 type OutputContext interface {
 	StateStack
+	PopMergeActiveState()
+	CensorVMOutput()
 
 	GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool)
 	WriteLog(address []byte, topics [][]byte, data []byte)
@@ -137,7 +142,7 @@ type OutputContext interface {
 	GetVMOutput() *vmcommon.VMOutput
 	AddTxValueToAccount(address []byte, value *big.Int)
 	DeployCode(input CodeDeployInput)
-	CreateVMOutputInCaseOfError(errCode vmcommon.ReturnCode, message string) *vmcommon.VMOutput
+	CreateVMOutputInCaseOfError(err error) *vmcommon.VMOutput
 }
 
 type MeteringContext interface {
@@ -152,6 +157,7 @@ type MeteringContext interface {
 	DeductInitialGasForDirectDeployment(input CodeDeployInput) error
 	DeductInitialGasForIndirectDeployment(input CodeDeployInput) error
 	UnlockGasIfAsyncStep()
+	GetGasLockedForAsyncStep() uint64
 }
 
 type StorageContext interface {

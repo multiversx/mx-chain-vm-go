@@ -105,7 +105,7 @@
                     "0x0000000000000000000000000000000000000000000000000000000000000000": "789,000,000,000"
                 },
                 "code": "staking-mock.wasm",
-                "asyncCallData" : "stake@"
+                "asyncCallData" : ""
             },
             "``delegation_contract___________s1": {
                 "nonce": "0x00",

@@ -1,6 +1,7 @@
 package contexts
 
 import (
+	"errors"
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -61,7 +62,15 @@ func (context *outputContext) PushState() {
 	context.stateStack = append(context.stateStack, newState)
 }
 
-func (context *outputContext) PopState() {
+func (context *outputContext) PopSetActiveState() {
+	stateStackLen := len(context.stateStack)
+	prevState := context.stateStack[stateStackLen-1]
+	context.stateStack = context.stateStack[:stateStackLen-1]
+
+	context.outputState = prevState
+}
+
+func (context *outputContext) PopMergeActiveState() {
 	stateStackLen := len(context.stateStack)
 
 	// Merge the current state into the head of the stateStack,
@@ -71,13 +80,32 @@ func (context *outputContext) PopState() {
 	// later merging the output of the two SCs in chronological order.
 	prevState := context.stateStack[stateStackLen-1]
 	context.stateStack = context.stateStack[:stateStackLen-1]
+
 	mergeVMOutputs(prevState, context.outputState)
 	context.outputState = newVMOutput()
 	mergeVMOutputs(context.outputState, prevState)
 }
 
+func (context *outputContext) PopDiscard() {
+	stateStackLen := len(context.stateStack)
+	context.stateStack = context.stateStack[:stateStackLen-1]
+}
+
 func (context *outputContext) ClearStateStack() {
 	context.stateStack = make([]*vmcommon.VMOutput, 0)
+}
+
+// CensorVMOutput will cause the next executed SC to appear isolated, as if
+// nothing was executed before. Required for ExecuteOnDestContext().
+// StorageUpdates are not deleted from context.outputState.OutputAccounts,
+// preserving the storage cache.
+func (context *outputContext) CensorVMOutput() {
+	context.outputState.ReturnData = make([][]byte, 0)
+	context.outputState.ReturnCode = vmcommon.Ok
+	context.outputState.ReturnMessage = ""
+	context.outputState.GasRemaining = 0
+	context.outputState.GasRefund = big.NewInt(0)
+	context.outputState.Logs = make([]*vmcommon.LogEntry, 0)
 }
 
 func (context *outputContext) GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool) {
@@ -190,13 +218,64 @@ func (context *outputContext) DeployCode(input arwen.CodeDeployInput) {
 	newSCAccount.CodeMetadata = input.ContractCodeMetadata
 }
 
-func (context *outputContext) CreateVMOutputInCaseOfError(errCode vmcommon.ReturnCode, message string) *vmcommon.VMOutput {
+func (context *outputContext) CreateVMOutputInCaseOfError(err error) *vmcommon.VMOutput {
+	metering := context.host.Metering()
+	var message string
+
+	if err == arwen.ErrSignalError {
+		message = context.ReturnMessage()
+	} else {
+		message = err.Error()
+	}
+
+	returnCode := context.resolveReturnCodeFromError(err)
+
 	return &vmcommon.VMOutput{
-		GasRemaining:  0,
+		GasRemaining:  metering.GetGasLockedForAsyncStep(),
 		GasRefund:     big.NewInt(0),
-		ReturnCode:    errCode,
+		ReturnCode:    returnCode,
 		ReturnMessage: message,
 	}
+}
+
+func (context *outputContext) resolveReturnCodeFromError(err error) vmcommon.ReturnCode {
+	if err == nil {
+		return vmcommon.Ok
+	}
+
+	if errors.Is(err, arwen.ErrSignalError) {
+		return vmcommon.UserError
+	}
+
+	if errors.Is(err, arwen.ErrFuncNotFound) {
+		return vmcommon.FunctionNotFound
+	}
+	if errors.Is(err, arwen.ErrFunctionNonvoidSignature) {
+		return vmcommon.FunctionWrongSignature
+	}
+	if errors.Is(err, arwen.ErrInvalidFunction) {
+		return vmcommon.UserError
+	}
+
+	if errors.Is(err, arwen.ErrNotEnoughGas) {
+		return vmcommon.OutOfGas
+	}
+
+	if errors.Is(err, arwen.ErrContractNotFound) {
+		return vmcommon.ContractNotFound
+	}
+	if errors.Is(err, arwen.ErrContractInvalid) {
+		return vmcommon.ContractInvalid
+	}
+	if errors.Is(err, arwen.ErrUpgradeFailed) {
+		return vmcommon.UpgradeFailed
+	}
+
+	if errors.Is(err, arwen.ErrTransferInsufficientFunds) {
+		return vmcommon.OutOfFunds
+	}
+
+	return vmcommon.ExecutionFailed
 }
 
 func mergeVMOutputs(leftOutput *vmcommon.VMOutput, rightOutput *vmcommon.VMOutput) {
@@ -237,7 +316,7 @@ func mergeOutputAccounts(
 		leftAccount.BalanceDelta = big.NewInt(0)
 	}
 	if rightAccount.BalanceDelta != nil {
-		leftAccount.BalanceDelta = big.NewInt(0).Add(leftAccount.BalanceDelta, rightAccount.BalanceDelta)
+		leftAccount.BalanceDelta = rightAccount.BalanceDelta
 	}
 	if len(rightAccount.Code) > 0 {
 		leftAccount.Code = rightAccount.Code

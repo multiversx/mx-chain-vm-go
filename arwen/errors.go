@@ -5,8 +5,6 @@ import (
 	"fmt"
 )
 
-var ErrInitFuncCalledInRun = errors.New("it is not allowed to call init in run")
-
 var ErrFunctionRunError = errors.New("function run error")
 
 var ErrReturnCodeNotOk = errors.New("return not is not ok")
@@ -31,17 +29,23 @@ var ErrBadUpperBounds = fmt.Errorf("%w (upper)", ErrBadBounds)
 
 var ErrNegativeLength = errors.New("negative length")
 
-var ErrMemoryDeclarationMissing = errors.New("wasm memory declaration missing")
-
 var ErrFailedTransfer = errors.New("failed transfer")
 
-var ErrFailedTransferDuringAsyncCall = errors.New("failed transfer during async call")
+var ErrTransferInsufficientFunds = fmt.Errorf("%w (insufficient funds)", ErrFailedTransfer)
 
-var ErrTransferInsufficientFunds = errors.New("insufficient funds for transfer")
+var ErrFailedTransferDuringAsyncCall = fmt.Errorf("%w (failed during async call)", ErrFailedTransfer)
 
-var ErrTransferNegativeValue = errors.New("cannot transfer negative value")
+var ErrTransferNegativeValue = fmt.Errorf("%w (negative value)", ErrFailedTransfer)
+
+var ErrUpgradeFailed = errors.New("upgrade failed")
+
+var ErrInvalidUpgradeArguments = fmt.Errorf("%w (invalid arguments)", ErrUpgradeFailed)
 
 var ErrInvalidFunction = errors.New("invalid function")
+
+var ErrInitFuncCalledInRun = fmt.Errorf("%w (calling init() directly is forbidden)", ErrInvalidFunction)
+
+var ErrCallBackFuncCalledInRun = fmt.Errorf("%w (calling callBack() directly is forbidden)", ErrInvalidFunction)
 
 var ErrFuncNotFound = fmt.Errorf("%w (not found)", ErrInvalidFunction)
 
@@ -49,4 +53,10 @@ var ErrInvalidFunctionName = fmt.Errorf("%w (invalid name)", ErrInvalidFunction)
 
 var ErrFunctionNonvoidSignature = fmt.Errorf("%w (nonvoid signature)", ErrInvalidFunction)
 
-var ErrInvalidUpgradeArguments = errors.New("invalid upgrade arguments")
+var ErrContractInvalid = fmt.Errorf("invalid contract code")
+
+var ErrContractNotFound = fmt.Errorf("%w (not found)", ErrContractInvalid)
+
+var ErrMemoryDeclarationMissing = fmt.Errorf("%w (missing memory declaration)", ErrContractInvalid)
+
+var ErrMaxInstancesReached = fmt.Errorf("%w (max instances reached)", ErrExecutionFailed)

@@ -108,6 +108,10 @@ func (context *meteringContext) UnlockGasIfAsyncStep() {
 	context.gasLockedForAsyncStep = 0
 }
 
+func (context *meteringContext) GetGasLockedForAsyncStep() uint64 {
+	return context.gasLockedForAsyncStep
+}
+
 func (context *meteringContext) BlockGasLimit() uint64 {
 	return context.blockGasLimit
 }

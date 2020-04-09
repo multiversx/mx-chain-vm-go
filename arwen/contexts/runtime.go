@@ -26,6 +26,8 @@ type runtimeContext struct {
 	stateStack    []*runtimeContext
 	instanceStack []*wasmer.Instance
 
+	maxWasmerInstances uint64
+
 	asyncCallInfo *arwen.AsyncCallInfo
 
 	argParser arwen.ArgumentsParser
@@ -61,14 +63,24 @@ func (context *runtimeContext) InitState() {
 	context.asyncCallInfo = nil
 }
 
-func (context *runtimeContext) CreateWasmerInstance(contract []byte, gasLimit uint64) error {
-	var err error
-	context.instance, err = wasmer.NewMeteredInstance(contract, gasLimit)
+func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uint64) error {
+	if context.RunningInstancesCount() >= context.maxWasmerInstances {
+		context.instance = nil
+		return arwen.ErrMaxInstancesReached
+	}
+	newInstance, err := wasmer.NewMeteredInstance(contract, gasLimit)
 	if err != nil {
+		context.instance = nil
 		return err
 	}
+
+	context.instance = newInstance
 	context.SetRuntimeBreakpointValue(arwen.BreakpointNone)
 	return nil
+}
+
+func (context *runtimeContext) SetMaxInstanceCount(maxInstances uint64) {
+	context.maxWasmerInstances = maxInstances
 }
 
 func (context *runtimeContext) InitStateFromContractCallInput(input *vmcommon.ContractCallInput) {
@@ -89,9 +101,8 @@ func (context *runtimeContext) PushState() {
 	context.stateStack = append(context.stateStack, newState)
 }
 
-func (context *runtimeContext) PopState() {
+func (context *runtimeContext) PopSetActiveState() {
 	stateStackLen := len(context.stateStack)
-
 	prevState := context.stateStack[stateStackLen-1]
 	context.stateStack = context.stateStack[:stateStackLen-1]
 
@@ -100,6 +111,11 @@ func (context *runtimeContext) PopState() {
 	context.callFunction = prevState.callFunction
 	context.readOnly = prevState.readOnly
 	context.asyncCallInfo = prevState.asyncCallInfo
+}
+
+func (context *runtimeContext) PopDiscard() {
+	stateStackLen := len(context.stateStack)
+	context.stateStack = context.stateStack[:stateStackLen-1]
 }
 
 func (context *runtimeContext) ClearStateStack() {
@@ -117,6 +133,10 @@ func (context *runtimeContext) PopInstance() {
 
 	context.CleanInstance()
 	context.instance = prevInstance
+}
+
+func (context *runtimeContext) RunningInstancesCount() uint64 {
+	return uint64(len(context.instanceStack))
 }
 
 func (context *runtimeContext) ClearInstanceStack() {
@@ -148,6 +168,14 @@ func (context *runtimeContext) GetSCAddress() []byte {
 
 func (context *runtimeContext) SetSCAddress(scAddress []byte) {
 	context.scAddress = scAddress
+}
+
+func (context *runtimeContext) GetCurrentTxHash() []byte {
+	return context.vmInput.CurrentTxHash
+}
+
+func (context *runtimeContext) GetOriginalTxHash() []byte {
+	return context.vmInput.OriginalTxHash
 }
 
 func (context *runtimeContext) Function() string {
@@ -302,6 +330,10 @@ func (context *runtimeContext) GetAsyncCallInfo() *arwen.AsyncCallInfo {
 }
 
 func (context *runtimeContext) MemLoad(offset int32, length int32) ([]byte, error) {
+	if length == 0 {
+		return []byte{}, nil
+	}
+
 	memory := context.instanceContext.Memory()
 	memoryView := memory.Data()
 	memoryLength := memory.Length()
@@ -329,10 +361,14 @@ func (context *runtimeContext) MemLoad(offset int32, length int32) ([]byte, erro
 }
 
 func (context *runtimeContext) MemStore(offset int32, data []byte) error {
+	dataLength := int32(len(data))
+	if dataLength == 0 {
+		return nil
+	}
+
 	memory := context.instanceContext.Memory()
 	memoryView := memory.Data()
 	memoryLength := memory.Length()
-	dataLength := int32(len(data))
 	requestedEnd := uint32(offset + dataLength)
 	isOffsetTooSmall := offset < 0
 	isNewPageNecessary := requestedEnd > memoryLength

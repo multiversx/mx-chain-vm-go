@@ -1,3 +1,6 @@
+#ifndef _BIGINT_H_
+#define _BIGINT_H_
+
 #include "types.h"
 
 typedef unsigned int bigInt;
@@ -29,3 +32,5 @@ int       bigIntGetUnsignedBytes(bigInt reference, byte *byte);
 int       bigIntGetSignedBytes(bigInt reference, byte *byte);
 void      bigIntSetUnsignedBytes(bigInt destination, byte *byte, int byteLength);
 void      bigIntSetSignedBytes(bigInt destination, byte *byte, int byteLength);
+
+#endif
