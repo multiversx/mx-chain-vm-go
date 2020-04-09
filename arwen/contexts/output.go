@@ -239,43 +239,43 @@ func (context *outputContext) CreateVMOutputInCaseOfError(err error) *vmcommon.V
 }
 
 func (context *outputContext) resolveReturnCodeFromError(err error) vmcommon.ReturnCode {
-	if err != nil {
-		if errors.Is(err, arwen.ErrSignalError) {
-			return vmcommon.UserError
-		}
-
-		if errors.Is(err, arwen.ErrFuncNotFound) {
-			return vmcommon.FunctionNotFound
-		}
-		if errors.Is(err, arwen.ErrFunctionNonvoidSignature) {
-			return vmcommon.FunctionWrongSignature
-		}
-		if errors.Is(err, arwen.ErrInvalidFunction) {
-			return vmcommon.UserError
-		}
-
-		if errors.Is(err, arwen.ErrNotEnoughGas) {
-			return vmcommon.OutOfGas
-		}
-
-		if errors.Is(err, arwen.ErrContractNotFound) {
-			return vmcommon.ContractNotFound
-		}
-		if errors.Is(err, arwen.ErrContractInvalid) {
-			return vmcommon.ContractInvalid
-		}
-		if errors.Is(err, arwen.ErrUpgradeFailed) {
-			return vmcommon.UpgradeFailed
-		}
-
-		if errors.Is(err, arwen.ErrTransferInsufficientFunds) {
-			return vmcommon.OutOfFunds
-		}
-
-		return vmcommon.ExecutionFailed
+	if err == nil {
+		return vmcommon.Ok
 	}
 
-	return vmcommon.Ok
+	if errors.Is(err, arwen.ErrSignalError) {
+		return vmcommon.UserError
+	}
+
+	if errors.Is(err, arwen.ErrFuncNotFound) {
+		return vmcommon.FunctionNotFound
+	}
+	if errors.Is(err, arwen.ErrFunctionNonvoidSignature) {
+		return vmcommon.FunctionWrongSignature
+	}
+	if errors.Is(err, arwen.ErrInvalidFunction) {
+		return vmcommon.UserError
+	}
+
+	if errors.Is(err, arwen.ErrNotEnoughGas) {
+		return vmcommon.OutOfGas
+	}
+
+	if errors.Is(err, arwen.ErrContractNotFound) {
+		return vmcommon.ContractNotFound
+	}
+	if errors.Is(err, arwen.ErrContractInvalid) {
+		return vmcommon.ContractInvalid
+	}
+	if errors.Is(err, arwen.ErrUpgradeFailed) {
+		return vmcommon.UpgradeFailed
+	}
+
+	if errors.Is(err, arwen.ErrTransferInsufficientFunds) {
+		return vmcommon.OutOfFunds
+	}
+
+	return vmcommon.ExecutionFailed
 }
 
 func mergeVMOutputs(leftOutput *vmcommon.VMOutput, rightOutput *vmcommon.VMOutput) {
