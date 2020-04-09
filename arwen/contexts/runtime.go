@@ -37,7 +37,7 @@ type runtimeContext struct {
 // NewRuntimeContext creates a new runtimeContext
 func NewRuntimeContext(host arwen.VMHost, vmType []byte) (*runtimeContext, error) {
 	scAPINames := host.GetAPIMethods().Names()
-	protocolReservedFunctions := host.GetProtocolReservedFunctions()
+	protocolBuiltinFunctions := host.GetProtocolBuiltinFunctions()
 
 	context := &runtimeContext{
 		host:                        host,
@@ -45,7 +45,7 @@ func NewRuntimeContext(host arwen.VMHost, vmType []byte) (*runtimeContext, error
 		vmType:                      vmType,
 		stateStack:                  make([]*runtimeContext, 0),
 		instanceStack:               make([]*wasmer.Instance, 0),
-		validator:                   NewWASMValidator(scAPINames, protocolReservedFunctions),
+		validator:                   NewWASMValidator(scAPINames, protocolBuiltinFunctions),
 	}
 
 	context.InitState()

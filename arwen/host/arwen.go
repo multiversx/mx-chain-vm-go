@@ -35,8 +35,7 @@ type vmHost struct {
 	storageContext    arwen.StorageContext
 	bigIntContext     arwen.BigIntContext
 
-	scAPIMethods              *wasmer.Imports
-	protocolReservedFunctions []string
+	scAPIMethods *wasmer.Imports
 }
 
 // NewArwenVM creates a new Arwen vmHost
@@ -46,19 +45,17 @@ func NewArwenVM(
 	vmType []byte,
 	blockGasLimit uint64,
 	gasSchedule config.GasScheduleMap,
-	protocolReservedFunctions contexts.ProtocolReservedFunctions,
 ) (*vmHost, error) {
 
 	host := &vmHost{
-		blockChainHook:            blockChainHook,
-		cryptoHook:                cryptoHook,
-		meteringContext:           nil,
-		runtimeContext:            nil,
-		blockchainContext:         nil,
-		storageContext:            nil,
-		bigIntContext:             nil,
-		scAPIMethods:              nil,
-		protocolReservedFunctions: protocolReservedFunctions,
+		blockChainHook:    blockChainHook,
+		cryptoHook:        cryptoHook,
+		meteringContext:   nil,
+		runtimeContext:    nil,
+		blockchainContext: nil,
+		storageContext:    nil,
+		bigIntContext:     nil,
+		scAPIMethods:      nil,
 	}
 
 	var err error
@@ -204,8 +201,8 @@ func (host *vmHost) GetAPIMethods() *wasmer.Imports {
 	return host.scAPIMethods
 }
 
-func (host *vmHost) GetProtocolReservedFunctions() []string {
-	return host.protocolReservedFunctions
+func (host *vmHost) GetProtocolBuiltinFunctions() vmcommon.FunctionNames {
+	return host.Blockchain().GetBuiltinFunctionNames()
 }
 
 func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error) {

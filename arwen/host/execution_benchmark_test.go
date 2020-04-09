@@ -75,7 +75,7 @@ func deploy(tb testing.TB, totalTokenSupply *big.Int) (*vmHost, *mock.Blockchain
 	gasMap, err := LoadGasScheduleConfig("../../test/gasSchedule.toml")
 	require.Nil(tb, err)
 
-	host, err := NewArwenVM(mockBlockchainHook, &mock.CryptoHookMock{}, defaultVMType, uint64(1000), gasMap, []string{})
+	host, err := NewArwenVM(mockBlockchainHook, &mock.CryptoHookMock{}, defaultVMType, uint64(1000), gasMap)
 	require.Nil(tb, err)
 
 	// Deploy ERC20
