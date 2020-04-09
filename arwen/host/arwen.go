@@ -13,6 +13,8 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
+var MaximumWasmerInstanceCount = uint64(10)
+
 // TryFunction corresponds to the try() part of a try / catch block
 type TryFunction func()
 
@@ -120,6 +122,8 @@ func NewArwenVM(
 		return nil, err
 	}
 
+	host.runtimeContext.SetMaxInstanceCount(MaximumWasmerInstanceCount)
+
 	opcodeCosts := gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray()
 	wasmer.SetOpcodeCosts(&opcodeCosts)
 
@@ -156,7 +160,24 @@ func (host *vmHost) BigInt() arwen.BigIntContext {
 	return host.bigIntContext
 }
 
+func (host *vmHost) GetContexts() (
+	arwen.BigIntContext,
+	arwen.BlockchainContext,
+	arwen.MeteringContext,
+	arwen.OutputContext,
+	arwen.RuntimeContext,
+	arwen.StorageContext,
+) {
+	return host.bigIntContext,
+		host.blockchainContext,
+		host.meteringContext,
+		host.outputContext,
+		host.runtimeContext,
+		host.storageContext
+}
+
 func (host *vmHost) InitState() {
+	host.ClearContextStateStack()
 	host.bigIntContext.InitState()
 	host.outputContext.InitState()
 	host.runtimeContext.InitState()
@@ -164,26 +185,16 @@ func (host *vmHost) InitState() {
 	host.ethInput = nil
 }
 
-func (host *vmHost) PushState() {
-	host.bigIntContext.PushState()
-	host.runtimeContext.PushState()
-	host.outputContext.PushState()
-	host.storageContext.PushState()
-}
-
-func (host *vmHost) PopState() {
-	host.bigIntContext.PopState()
-	host.runtimeContext.PopState()
-	host.outputContext.PopState()
-	host.storageContext.PopState()
-}
-
-func (host *vmHost) ClearStateStack() {
+func (host *vmHost) ClearContextStateStack() {
 	host.bigIntContext.ClearStateStack()
-	host.runtimeContext.ClearStateStack()
-	host.runtimeContext.ClearInstanceStack()
 	host.outputContext.ClearStateStack()
+	host.runtimeContext.ClearStateStack()
 	host.storageContext.ClearStateStack()
+}
+
+func (host *vmHost) Clean() {
+	host.runtimeContext.CleanInstance()
+	arwen.RemoveAllHostContexts()
 }
 
 func (host *vmHost) GetAPIMethods() *wasmer.Imports {

@@ -23,7 +23,7 @@ func TestNewStorageContext(t *testing.T) {
 	require.NotNil(t, storageContext)
 }
 
-func TestStorageContext_StateStack(t *testing.T) {
+func TestStorageContext_SetAddress(t *testing.T) {
 	t.Parallel()
 
 	addressA := []byte("accountA")
@@ -86,6 +86,10 @@ func TestStorageContext_StateStack(t *testing.T) {
 	require.Len(t, storageContext.GetStorageUpdates(addressA), 1)
 	require.Len(t, storageContext.GetStorageUpdates(addressB), 1)
 	require.Equal(t, []byte(nil), storageContext.GetStorage(keyA))
+}
+
+func TestStorageContext_StateStack(t *testing.T) {
+	// TODO
 }
 
 func TestStorageContext_GetStorageUpdates(t *testing.T) {

@@ -12,8 +12,12 @@ var _ arwen.OutputContext = (*OutputContextStub)(nil)
 type OutputContextStub struct {
 	InitStateCalled                   func()
 	PushStateCalled                   func()
-	PopStateCalled                    func()
+	PopSetActiveStateCalled           func()
+	PopMergeActiveStateCalled         func()
+	PopDiscardCalled                  func()
 	ClearStateStackCalled             func()
+	CopyTopOfStackToActiveStateCalled func()
+	CensorVMOutputCalled              func()
 	GetOutputAccountCalled            func(address []byte) (*vmcommon.OutputAccount, bool)
 	WriteLogCalled                    func(address []byte, topics [][]byte, data []byte)
 	TransferCalled                    func(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte) error
@@ -30,7 +34,7 @@ type OutputContextStub struct {
 	GetVMOutputCalled                 func() *vmcommon.VMOutput
 	AddTxValueToAccountCalled         func(address []byte, value *big.Int)
 	DeployCodeCalled                  func(input arwen.CodeDeployInput)
-	CreateVMOutputInCaseOfErrorCalled func(errCode vmcommon.ReturnCode, message string) *vmcommon.VMOutput
+	CreateVMOutputInCaseOfErrorCalled func(err error) *vmcommon.VMOutput
 }
 
 func (o *OutputContextStub) InitState() {
@@ -45,15 +49,39 @@ func (o *OutputContextStub) PushState() {
 	}
 }
 
-func (o *OutputContextStub) PopState() {
-	if o.PopStateCalled != nil {
-		o.PopStateCalled()
+func (o *OutputContextStub) PopSetActiveState() {
+	if o.PopSetActiveStateCalled != nil {
+		o.PopSetActiveStateCalled()
+	}
+}
+
+func (o *OutputContextStub) PopMergeActiveState() {
+	if o.PopMergeActiveStateCalled != nil {
+		o.PopMergeActiveStateCalled()
+	}
+}
+
+func (o *OutputContextStub) PopDiscard() {
+	if o.PopDiscardCalled != nil {
+		o.PopDiscardCalled()
 	}
 }
 
 func (o *OutputContextStub) ClearStateStack() {
 	if o.ClearStateStackCalled != nil {
 		o.ClearStateStackCalled()
+	}
+}
+
+func (o *OutputContextStub) CopyTopOfStackToActiveState() {
+	if o.CopyTopOfStackToActiveStateCalled != nil {
+		o.CopyTopOfStackToActiveStateCalled()
+	}
+}
+
+func (o *OutputContextStub) CensorVMOutput() {
+	if o.CensorVMOutputCalled != nil {
+		o.CensorVMOutputCalled()
 	}
 }
 
@@ -160,9 +188,9 @@ func (o *OutputContextStub) DeployCode(input arwen.CodeDeployInput) {
 	}
 }
 
-func (o *OutputContextStub) CreateVMOutputInCaseOfError(errCode vmcommon.ReturnCode, message string) *vmcommon.VMOutput {
+func (o *OutputContextStub) CreateVMOutputInCaseOfError(err error) *vmcommon.VMOutput {
 	if o.CreateVMOutputInCaseOfErrorCalled != nil {
-		return o.CreateVMOutputInCaseOfErrorCalled(errCode, message)
+		return o.CreateVMOutputInCaseOfErrorCalled(err)
 	}
 	return nil
 }

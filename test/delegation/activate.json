@@ -124,8 +124,8 @@
                     "0x0c00000000000000000000000000000000000000000000000000000000000001": "``signature_2_____________________"
                     
                 },
-                "code": "auction-mock.wasm",
-                "asyncCallData" : "stake@02@626c735f6b65795f315f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f@7369676e61747572655f315f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f@626c735f6b65795f325f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f@7369676e61747572655f325f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f@"
+                "code": "staking-mock.wasm",
+                "asyncCallData" : ""
             },
             "``delegation_contract___________s1": {
                 "nonce": "0x00",

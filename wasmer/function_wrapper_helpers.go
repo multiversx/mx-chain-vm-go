@@ -113,16 +113,6 @@ func createWasmInputsFromArguments(
 			if err != nil {
 				return nil, err
 			}
-		case cWasmF32:
-			err = writeFloat32ToWasmInputs(wasmInputs, index, value, exportedFunctionName)
-			if err != nil {
-				return nil, err
-			}
-		case cWasmF64:
-			err = writeFloat64ToWasmInputs(wasmInputs, index, value, exportedFunctionName)
-			if err != nil {
-				return nil, err
-			}
 		default:
 			return nil, NewExportedFunctionError(exportedFunctionName, "Invalid arguments type when calling the `%s` exported function.")
 		}
@@ -148,14 +138,6 @@ func convertWasmOutputToValue(
 			pointer := (*int64)(unsafe.Pointer(&result.value))
 
 			return I64(*pointer), nil
-		case cWasmF32:
-			pointer := (*float32)(unsafe.Pointer(&result.value))
-
-			return F32(*pointer), nil
-		case cWasmF64:
-			pointer := (*float64)(unsafe.Pointer(&result.value))
-
-			return F64(*pointer), nil
 		default:
 			return Void(), NewExportedFunctionError(exportedFunctionName, "Invalid output type retrieved from function `%s`.")
 		}
@@ -231,52 +213,6 @@ func writeInt64ToWasmInputs(wasmInputs []cWasmerValueT, index int, value interfa
 		*pointer = value.ToI64()
 	default:
 		return NewExportedFunctionError(exportedFunctionName, fmt.Sprintf("Argument #%d of the `%%s` exported function must be of type `i64`, cannot cast given value to this type.", index+1))
-	}
-
-	return nil
-}
-
-func writeFloat32ToWasmInputs(wasmInputs []cWasmerValueT, index int, value interface{}, exportedFunctionName string) error {
-	wasmInputs[index].tag = cWasmF32
-	var pointer = (*float32)(unsafe.Pointer(&wasmInputs[index].value))
-
-	switch typedValue := value.(type) {
-	case float32:
-		*pointer = typedValue
-	case Value:
-		var value = typedValue
-
-		if value.GetType() != TypeF32 {
-			return NewExportedFunctionError(exportedFunctionName, fmt.Sprintf("Argument #%d of the `%%s` exported function must be of type `f32`, cannot cast given value to this type.", index+1))
-		}
-
-		*pointer = value.ToF32()
-	default:
-		return NewExportedFunctionError(exportedFunctionName, fmt.Sprintf("Argument #%d of the `%%s` exported function must be of type `f32`, cannot cast given value to this type.", index+1))
-	}
-
-	return nil
-}
-
-func writeFloat64ToWasmInputs(wasmInputs []cWasmerValueT, index int, value interface{}, exportedFunctionName string) error {
-	wasmInputs[index].tag = cWasmF64
-	var pointer = (*float64)(unsafe.Pointer(&wasmInputs[index].value))
-
-	switch typedValue := value.(type) {
-	case float32:
-		*pointer = float64(typedValue)
-	case float64:
-		*pointer = typedValue
-	case Value:
-		var value = typedValue
-
-		if value.GetType() != TypeF64 {
-			return NewExportedFunctionError(exportedFunctionName, fmt.Sprintf("Argument #%d of the `%%s` exported function must be of type `f64`, cannot cast given value to this type.", index+1))
-		}
-
-		*pointer = value.ToF64()
-	default:
-		return NewExportedFunctionError(exportedFunctionName, fmt.Sprintf("Argument #%d of the `%%s` exported function must be of type `f64`, cannot cast given value to this type.", index+1))
 	}
 
 	return nil
