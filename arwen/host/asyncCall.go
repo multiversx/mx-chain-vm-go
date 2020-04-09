@@ -24,15 +24,15 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 		return err
 	}
 
-	destinationVMOutput, err := host.ExecuteOnDestContext(destinationCallInput)
+	destinationVMOutput, destinationErr := host.ExecuteOnDestContext(destinationCallInput)
 
-	callbackCallInput, err := host.createCallbackContractCallInput(destinationVMOutput, err)
+	callbackCallInput, err := host.createCallbackContractCallInput(destinationVMOutput, destinationErr)
 	if err != nil {
 		return err
 	}
 
-	callbackVMOutput, err := host.ExecuteOnDestContext(callbackCallInput)
-	err = host.processCallbackVMOutput(callbackVMOutput, err)
+	callbackVMOutput, callBackErr := host.ExecuteOnDestContext(callbackCallInput)
+	err = host.processCallbackVMOutput(callbackVMOutput, callBackErr)
 	if err != nil {
 		return err
 	}
