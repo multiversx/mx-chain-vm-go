@@ -21,7 +21,8 @@ type VmHostMock struct {
 	StorageContext    arwen.StorageContext
 	BigIntContext     arwen.BigIntContext
 
-	SCAPIMethods *wasmer.Imports
+	SCAPIMethods              *wasmer.Imports
+	ProtocolReservedFunctions []string
 }
 
 func (host *VmHostMock) Crypto() vmcommon.CryptoHook {
@@ -82,4 +83,8 @@ func (host *VmHostMock) ClearStateStack() {
 
 func (host *VmHostMock) GetAPIMethods() *wasmer.Imports {
 	return host.SCAPIMethods
+}
+
+func (host *VmHostMock) GetProtocolReservedFunctions() []string {
+	return host.ProtocolReservedFunctions
 }

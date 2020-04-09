@@ -33,8 +33,9 @@ type runtimeContext struct {
 }
 
 // NewRuntimeContext creates a new runtimeContext
-func NewRuntimeContext(host arwen.VMHost, vmType []byte, protocolReservedFunctions []string) (*runtimeContext, error) {
+func NewRuntimeContext(host arwen.VMHost, vmType []byte) (*runtimeContext, error) {
 	scAPINames := host.GetAPIMethods().Names()
+	protocolReservedFunctions := host.GetProtocolReservedFunctions()
 
 	context := &runtimeContext{
 		host:                        host,
