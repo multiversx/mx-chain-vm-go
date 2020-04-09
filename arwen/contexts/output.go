@@ -95,6 +95,10 @@ func (context *outputContext) ClearStateStack() {
 	context.stateStack = make([]*vmcommon.VMOutput, 0)
 }
 
+// CensorVMOutput will cause the next executed SC to appear isolated, as if
+// nothing was executed before. Required for ExecuteOnDestContext().
+// StorageUpdates are not deleted from context.outputState.OutputAccounts,
+// preserving the storage cache.
 func (context *outputContext) CensorVMOutput() {
 	context.outputState.ReturnData = make([][]byte, 0)
 	context.outputState.ReturnCode = vmcommon.Ok
