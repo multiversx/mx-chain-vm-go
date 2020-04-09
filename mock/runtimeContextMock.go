@@ -25,7 +25,8 @@ type RuntimeContextMock struct {
 	FailBigIntAPI          bool
 	AsyncCallInfo          *arwen.AsyncCallInfo
 	RunningInstances       uint64
-	TxHash                 []byte
+	CurrentTxHash          []byte
+	OriginalTxHash         []byte
 }
 
 func (r *RuntimeContextMock) InitState() {
@@ -97,8 +98,12 @@ func (r *RuntimeContextMock) Arguments() [][]byte {
 	return r.VmInput.Arguments
 }
 
-func (r *RuntimeContextMock) GetTxHash() []byte {
-	return r.TxHash
+func (r *RuntimeContextMock) GetCurrentTxHash() []byte {
+	return r.CurrentTxHash
+}
+
+func (r *RuntimeContextMock) GetOriginalTxHash() []byte {
+	return r.OriginalTxHash
 }
 
 func (r *RuntimeContextMock) GetCodeUpgradeFromArgs() ([]byte, []byte, error) {

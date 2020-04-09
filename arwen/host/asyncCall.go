@@ -108,13 +108,14 @@ func (host *vmHost) createDestinationContractCallInput() (*vmcommon.ContractCall
 
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
-			CallerAddr:    sender,
-			Arguments:     arguments,
-			CallValue:     big.NewInt(0).SetBytes(asyncCallInfo.ValueBytes),
-			CallType:      vmcommon.AsynchronousCall,
-			GasPrice:      runtime.GetVMInput().GasPrice,
-			GasProvided:   gasLimit,
-			CurrentTxHash: runtime.GetTxHash(),
+			CallerAddr:     sender,
+			Arguments:      arguments,
+			CallValue:      big.NewInt(0).SetBytes(asyncCallInfo.ValueBytes),
+			CallType:       vmcommon.AsynchronousCall,
+			GasPrice:       runtime.GetVMInput().GasPrice,
+			GasProvided:    gasLimit,
+			CurrentTxHash:  runtime.GetCurrentTxHash(),
+			OriginalTxHash: runtime.GetOriginalTxHash(),
 		},
 		RecipientAddr: asyncCallInfo.Destination,
 		Function:      function,
@@ -134,7 +135,7 @@ func (host *vmHost) createCallbackContractCallInput(destinationVMOutput *vmcommo
 	if destinationErr != nil {
 		arguments = [][]byte{
 			[]byte(destinationVMOutput.ReturnCode.String()),
-			[]byte(runtime.GetTxHash()),
+			[]byte(runtime.GetCurrentTxHash()),
 		}
 	}
 
@@ -153,13 +154,14 @@ func (host *vmHost) createCallbackContractCallInput(destinationVMOutput *vmcommo
 	// Return to the sender SC, calling its callback() method.
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
-			CallerAddr:    sender,
-			Arguments:     arguments,
-			CallValue:     big.NewInt(0),
-			CallType:      vmcommon.AsynchronousCallBack,
-			GasPrice:      runtime.GetVMInput().GasPrice,
-			GasProvided:   gasLimit,
-			CurrentTxHash: runtime.GetTxHash(),
+			CallerAddr:     sender,
+			Arguments:      arguments,
+			CallValue:      big.NewInt(0),
+			CallType:       vmcommon.AsynchronousCallBack,
+			GasPrice:       runtime.GetVMInput().GasPrice,
+			GasProvided:    gasLimit,
+			CurrentTxHash:  runtime.GetCurrentTxHash(),
+			OriginalTxHash: runtime.GetOriginalTxHash(),
 		},
 		RecipientAddr: dest,
 		Function:      function,
@@ -178,7 +180,7 @@ func (host *vmHost) processCallbackVMOutput(callbackVMOutput *vmcommon.VMOutput,
 
 	runtime.GetVMInput().GasProvided = 0
 	output.Finish([]byte(callbackVMOutput.ReturnCode.String()))
-	output.Finish([]byte(runtime.GetTxHash()))
+	output.Finish([]byte(runtime.GetCurrentTxHash()))
 
 	return nil
 }

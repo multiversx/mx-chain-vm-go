@@ -172,8 +172,12 @@ func (context *runtimeContext) SetSCAddress(scAddress []byte) {
 	context.scAddress = scAddress
 }
 
-func (context *runtimeContext) GetTxHash() []byte {
+func (context *runtimeContext) GetCurrentTxHash() []byte {
 	return context.vmInput.CurrentTxHash
+}
+
+func (context *runtimeContext) GetOriginalTxHash() []byte {
+	return context.vmInput.OriginalTxHash
 }
 
 func (context *runtimeContext) Function() string {

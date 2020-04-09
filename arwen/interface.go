@@ -77,7 +77,8 @@ type RuntimeContext interface {
 	GetVMType() []byte
 	Function() string
 	Arguments() [][]byte
-	GetTxHash() []byte
+	GetCurrentTxHash() []byte
+	GetOriginalTxHash() []byte
 	GetCodeUpgradeFromArgs() ([]byte, []byte, error)
 	SignalUserError(message string)
 	FailExecution(err error)
