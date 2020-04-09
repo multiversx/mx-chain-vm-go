@@ -26,7 +26,7 @@ func NewArwenPart(
 	dialogueLogger logger.Logger,
 	input *os.File,
 	output *os.File,
-	VMHostParameters *arwen.VMHostParameters,
+	vmHostParameters *arwen.VMHostParameters,
 	marshalizer marshaling.Marshalizer,
 ) (*ArwenPart, error) {
 	messenger := NewArwenMessenger(dialogueLogger, input, output, marshalizer)
@@ -36,7 +36,7 @@ func NewArwenPart(
 	host, err := host.NewArwenVM(
 		blockchain,
 		crypto,
-		VMHostParameters,
+		vmHostParameters,
 	)
 	if err != nil {
 		return nil, err
