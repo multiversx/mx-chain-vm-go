@@ -3,6 +3,7 @@ package arwenpart
 import (
 	"math/big"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -321,4 +322,20 @@ func (blockchain *BlockchainHookGateway) CurrentEpoch() uint32 {
 
 	response := rawResponse.(*common.MessageBlockchainCurrentEpochResponse)
 	return response.Result
+}
+
+// ProcessBuiltInFunction forwards a message to the actual hook
+func (blockchain *BlockchainHookGateway) ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*big.Int, uint64, error) {
+	request := common.NewMessageBlockchainProcessBuiltInFunctionRequest(*input)
+	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if err != nil {
+		return arwen.Zero, 0, err
+	}
+
+	if rawResponse.GetKind() != common.BlockchainProcessBuiltInFunctionResponse {
+		return arwen.Zero, 0, common.ErrBadHookResponseFromNode
+	}
+
+	response := rawResponse.(*common.MessageBlockchainProcessBuiltInFunctionResponse)
+	return response.Value, response.GasConsumed, response.GetError()
 }
