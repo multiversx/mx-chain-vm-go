@@ -153,5 +153,6 @@ void parentFunctionChildCall_OutOfGas() {
 			0
 	);
 
+	storageStore(parentKeyB, parentDataB, 11);
 	finishResult(result);
 }
