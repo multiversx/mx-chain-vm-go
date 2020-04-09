@@ -239,19 +239,22 @@ func (context *outputContext) resolveReturnCodeFromError(err error) vmcommon.Ret
 		if errors.Is(err, arwen.ErrSignalError) {
 			return vmcommon.UserError
 		}
-		if err == arwen.ErrFuncNotFound {
+
+		if errors.Is(err, arwen.ErrFuncNotFound) {
 			return vmcommon.FunctionNotFound
 		}
-		if err == arwen.ErrFunctionNonvoidSignature {
+		if errors.Is(err, arwen.ErrFunctionNonvoidSignature) {
 			return vmcommon.FunctionWrongSignature
 		}
 		if errors.Is(err, arwen.ErrInvalidFunction) {
 			return vmcommon.UserError
 		}
+
 		if errors.Is(err, arwen.ErrNotEnoughGas) {
 			return vmcommon.OutOfGas
 		}
-		if err == arwen.ErrContractNotFound {
+
+		if errors.Is(err, arwen.ErrContractNotFound) {
 			return vmcommon.ContractNotFound
 		}
 		if errors.Is(err, arwen.ErrContractInvalid) {
@@ -260,7 +263,8 @@ func (context *outputContext) resolveReturnCodeFromError(err error) vmcommon.Ret
 		if errors.Is(err, arwen.ErrUpgradeFailed) {
 			return vmcommon.UpgradeFailed
 		}
-		if err == arwen.ErrTransferInsufficientFunds {
+
+		if errors.Is(err, arwen.ErrTransferInsufficientFunds) {
 			return vmcommon.OutOfFunds
 		}
 
