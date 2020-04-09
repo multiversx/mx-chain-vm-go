@@ -427,10 +427,7 @@ func (host *vmHost) callInitFunction() error {
 
 	_, err := init()
 	if err != nil {
-		breakpointValue := runtime.GetRuntimeBreakpointValue()
-		if breakpointValue != arwen.BreakpointNone {
-			err = host.handleBreakpoint(breakpointValue)
-		}
+		err = host.handleBreakpointIfAny(err)
 		return err
 	}
 
@@ -452,10 +449,7 @@ func (host *vmHost) callSCMethod() error {
 
 	_, err = function()
 	if err != nil {
-		breakpointValue := runtime.GetRuntimeBreakpointValue()
-		if breakpointValue != arwen.BreakpointNone {
-			err = host.handleBreakpoint(breakpointValue)
-		}
+		err = host.handleBreakpointIfAny(err)
 	}
 
 	return err
