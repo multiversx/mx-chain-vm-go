@@ -52,10 +52,22 @@ func (o *OutputContextMock) NewVMOutputAccountFromMockAccount(account *Account) 
 func (o *OutputContextMock) PushState() {
 }
 
-func (o *OutputContextMock) PopState() {
+func (o *OutputContextMock) PopSetActiveState() {
+}
+
+func (o *OutputContextMock) PopMergeActiveState() {
+}
+
+func (o *OutputContextMock) PopDiscard() {
 }
 
 func (o *OutputContextMock) ClearStateStack() {
+}
+
+func (o *OutputContextMock) CopyTopOfStackToActiveState() {
+}
+
+func (o *OutputContextMock) CensorVMOutput() {
 }
 
 func (o *OutputContextMock) GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool) {
@@ -119,6 +131,6 @@ func (o *OutputContextMock) GetVMOutput() *vmcommon.VMOutput {
 func (o *OutputContextMock) DeployCode(input arwen.CodeDeployInput) {
 }
 
-func (o *OutputContextMock) CreateVMOutputInCaseOfError(errCode vmcommon.ReturnCode, message string) *vmcommon.VMOutput {
+func (o *OutputContextMock) CreateVMOutputInCaseOfError(err error) *vmcommon.VMOutput {
 	return o.OutputStateMock
 }

@@ -1,5 +1,6 @@
 #include "../elrond/context.h"
 #include "../elrond/bigInt.h"
+#include "../elrond/test_utils.h"
 
 byte dataA[20] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 byte dataB[20] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
@@ -14,22 +15,6 @@ byte childFinish[] = "childFinish";
 byte recipient[32]     = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 byte value[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,96};
 
-void not_ok() {
-	byte msg[] = "not ok";
-	finish(msg, 6);
-}
-
-void didCallerPay() {
-	bigInt bigInt_payment;
-	bigIntGetCallValue(bigInt_payment);
-
-	long long payment = bigIntGetInt64(bigInt_payment);
-	if (payment != 99) {
-		byte message[] = "child execution requires tx value of 99";
-		signalError(message, 39);
-	}
-}
-
 void childFunction() {
 	int numArgs = getNumArguments();
 	if (numArgs != 2) {
@@ -37,7 +22,7 @@ void childFunction() {
 		signalError(message, 25);
 	}
 
-	didCallerPay();
+	didCallerPay(99);
 
 	// This transfer will appear alongside the transfers made by the parent.
   getArgument(0, recipient);
@@ -96,15 +81,6 @@ void childFunction() {
 		}
 	}
 
-	bigInt parentIntID = 0;
-	long long parentInt64 = bigIntGetInt64(parentIntID);
-	if (parentInt64 != 0) {
-		not_ok();
-		byte msg[] = "big int from parent inherited by child";
-		finish(msg, 38);
-		int64finish(parentInt64);
-	}
-
 	if (status == 0) {
 		byte msg[] = "child ok";
 		finish(msg, 8);
@@ -118,7 +94,7 @@ void childFunction_BigInts() {
 		signalError(message, 25);
 	}
 
-	didCallerPay();
+	didCallerPay(99);
 
 	int status = 0;
 
@@ -133,18 +109,50 @@ void childFunction_BigInts() {
 	if (a != 84) {
 		not_ok();
 		int64finish(a);
+		status = 1;
 	}
 	if (b != 96) {
 		not_ok();
 		int64finish(b);
+		status = 1;
 	}
 	if (c != 1024) {
 		not_ok();
 		int64finish(c);
+		status = 1;
+	}
+
+	// BigInt ID 3 was taken by didCallerPay(). The parent already had IDs 0, 1,
+	// and 2. Next ID available is 4.
+	bigInt intX = bigIntNew(256);
+	if (intX != 4) {
+		not_ok();
+		int64finish(intX);
+		status = 1;
 	}
 
 	if (status == 0) {
 		byte msg[] = "child ok";
 		finish(msg, 8);
+	}
+}
+
+void childFunction_OutOfGas() {
+	int numArgs = getNumArguments();
+	if (numArgs != 0) {
+		byte message[] = "wrong number of arguments";
+		signalError(message, 25);
+	}
+
+	didCallerPay(99);
+
+	storageStore(childKey, childData, 9);
+	finish(childFinish, 11);
+	bigIntSetInt64(0, 88);
+
+	// Start infinite loop.
+	byte msg[] = "rockets";
+	while (1) {
+		finish(msg, 7);
 	}
 }

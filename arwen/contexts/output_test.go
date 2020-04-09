@@ -45,26 +45,59 @@ func TestOutputContext_PushPopState(t *testing.T) {
 	host := &mock.VmHostStub{}
 	outputContext, _ := NewOutputContext(host)
 
-	address := []byte("address")
-	account, isNew := outputContext.GetOutputAccount(address)
+	address1 := []byte("address1")
+	address2 := []byte("address2")
+
+	// Create an account with nonce 99 on the active state.
+	account, isNew := outputContext.GetOutputAccount(address1)
+	account.Nonce = 99
 	require.True(t, isNew)
 	require.Equal(t, 1, len(outputContext.outputState.OutputAccounts))
 
-	account.Nonce = 99
+	// Copy active state onto the stack.
 	outputContext.PushState()
+	require.Equal(t, 1, len(outputContext.stateStack))
+
+	// Clear the active state and create a new account with the same address as
+	// the previous; the new account must not have nonce 99.
 	outputContext.InitState()
-	require.Equal(t, 1, len(outputContext.stateStack))
-	require.Equal(t, 0, len(outputContext.outputState.OutputAccounts))
-
-	outputContext.PopState()
-	account, isNew = outputContext.GetOutputAccount(address)
-	require.False(t, isNew)
-	require.Equal(t, uint64(99), account.Nonce)
+	account, isNew = outputContext.GetOutputAccount(address1)
+	require.True(t, isNew)
 	require.Equal(t, 1, len(outputContext.outputState.OutputAccounts))
-	require.Equal(t, 0, len(outputContext.stateStack))
+	require.Equal(t, uint64(0), account.Nonce)
+
+	account.Nonce = 84
+
+	// Copy active state onto the stack, then create a new account with nonce 42.
+	outputContext.PushState()
+	require.Equal(t, 2, len(outputContext.stateStack))
+
+	account, isNew = outputContext.GetOutputAccount(address2)
+	account.Nonce = 42
+	require.True(t, isNew)
+	require.Equal(t, 2, len(outputContext.outputState.OutputAccounts))
+
+	// Revert to the previous state: account with nonce 42 is lost, and the
+	// account with "address1" has nonce 84.
+	outputContext.PopSetActiveState()
+	account, isNew = outputContext.GetOutputAccount(address1)
+	require.False(t, isNew)
+	require.Equal(t, uint64(84), account.Nonce)
+	require.Equal(t, 1, len(outputContext.outputState.OutputAccounts))
+	require.Equal(t, 1, len(outputContext.stateStack))
 
 	outputContext.PushState()
+	require.Equal(t, 2, len(outputContext.stateStack))
+
+	outputContext.PopDiscard()
 	require.Equal(t, 1, len(outputContext.stateStack))
+
+	account, isNew = outputContext.GetOutputAccount(address1)
+	require.False(t, isNew)
+	require.Equal(t, uint64(84), account.Nonce)
+	require.Equal(t, 1, len(outputContext.outputState.OutputAccounts))
+	require.Equal(t, 1, len(outputContext.stateStack))
+
 	outputContext.ClearStateStack()
 	require.Equal(t, 0, len(outputContext.stateStack))
 }
@@ -169,7 +202,7 @@ func TestOutputContext_MergeCompleteAccounts(t *testing.T) {
 		Address:        []byte("addr2"),
 		Nonce:          2,
 		Balance:        big.NewInt(2000),
-		BalanceDelta:   big.NewInt(30000),
+		BalanceDelta:   big.NewInt(20000),
 		StorageUpdates: map[string]*vmcommon.StorageUpdate{"key": {Data: []byte("data"), Offset: []byte("offset")}},
 		Code:           []byte("code2"),
 		Data:           []byte("data2"),
@@ -323,19 +356,23 @@ func TestOutputContext_MergeVMOutputs(t *testing.T) {
 func TestOutputContext_VMOutputError(t *testing.T) {
 	t.Parallel()
 
-	host := &mock.VmHostStub{}
+	host := &mock.VmHostMock{}
+	host.MeteringContext = &mock.MeteringContextMock{
+		GasLocked: 1001,
+	}
+
 	outputContext, _ := NewOutputContext(host)
 
 	returnCode := vmcommon.ContractNotFound
-	returnMessage := "computer not found"
+	returnMessage := arwen.ErrContractNotFound.Error()
 
 	expected := &vmcommon.VMOutput{
-		GasRemaining:  0,
+		GasRemaining:  1001,
 		GasRefund:     big.NewInt(0),
 		ReturnCode:    returnCode,
 		ReturnMessage: returnMessage,
 	}
-	vmOutput := outputContext.CreateVMOutputInCaseOfError(returnCode, returnMessage)
+	vmOutput := outputContext.CreateVMOutputInCaseOfError(arwen.ErrContractNotFound)
 	require.Equal(t, expected, vmOutput)
 }
 

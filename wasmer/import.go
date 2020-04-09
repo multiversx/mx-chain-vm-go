@@ -132,10 +132,6 @@ func (imports *Imports) Append(importName string, implementation interface{}, cg
 			wasmInputs[nth] = cWasmI32
 		case reflect.Int64:
 			wasmInputs[nth] = cWasmI64
-		case reflect.Float32:
-			wasmInputs[nth] = cWasmF32
-		case reflect.Float64:
-			wasmInputs[nth] = cWasmF64
 		default:
 			return nil, NewImportedFunctionError(importName, fmt.Sprintf("Invalid input type for the `%%s` imported function; given `%s`; only accept `int32`, `int64`, `float32`, and `float64`.", importInput.Kind()))
 		}
@@ -149,10 +145,6 @@ func (imports *Imports) Append(importName string, implementation interface{}, cg
 			wasmOutputs[0] = cWasmI32
 		case reflect.Int64:
 			wasmOutputs[0] = cWasmI64
-		case reflect.Float32:
-			wasmOutputs[0] = cWasmF32
-		case reflect.Float64:
-			wasmOutputs[0] = cWasmF64
 		default:
 			return nil, NewImportedFunctionError(importName, fmt.Sprintf("Invalid output type for the `%%s` imported function; given `%s`; only accept `int32`, `int64`, `float32`, and `float64`.", importType.Out(0).Kind()))
 		}

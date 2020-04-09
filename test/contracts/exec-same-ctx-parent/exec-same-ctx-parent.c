@@ -1,5 +1,6 @@
 #include "../elrond/context.h"
 #include "../elrond/bigInt.h"
+#include "../elrond/test_utils.h"
 
 byte parentKeyA[] =  "parentKeyA......................";
 byte parentDataA[] = "parentDataA";
@@ -7,6 +8,9 @@ byte parentKeyB[] =  "parentKeyB......................";
 byte parentDataB[] = "parentDataB";
 byte parentFinishA[] = "parentFinishA";
 byte parentFinishB[] = "parentFinishB";
+
+byte childKey[] =  "childKey........................";
+byte childData[] = "childData";
 
 byte parentTransferReceiver[] = "parentTransferReceiver..........";
 byte parentTransferValue[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,42};
@@ -16,8 +20,7 @@ byte executeValue[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 u32 executeArgumentsLengths[] = {32, 6};
 byte executeArgumentsData[] = "childTransferReceiver...........qwerty";
 
-void finishResult(int);
-u32 reverseU32(u32);
+byte data[20] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 void parentFunctionPrepare() {
 	storageStore(parentKeyA, parentDataA, 11);
@@ -66,12 +69,33 @@ void parentFunctionChildCall() {
 			executeArgumentsData
 	);
 
-	// TODO assert that the storage changes made by the child are visible here
 	finishResult(result);
+
+	// The parent has access to the data stored by the child.
+	int len = storageGetValueLength(childKey);
+	if (len != 9) {
+		finishResult(1);
+		return;
+	}
+
+	u64 slLen = storageLoad(childKey, data);
+	if (slLen != len) {
+		finishResult(1);
+		return;
+	}
+
+	for (int i = 0; i < len; i++) {
+		if (data[i] != childData[i]) {
+			finishResult(1);
+			return;
+		}
+	}
+
+	finishResult(0);
 }
 
 void parentFunctionChildCall_BigInts() {
-	bigInt intA = bigIntNew(84); 
+	bigInt intA = bigIntNew(84);
 	bigInt intB = bigIntNew(96);
 	bigInt intC = bigIntNew(1024);
 
@@ -100,33 +124,35 @@ void parentFunctionChildCall_BigInts() {
 			(byte*)arguments
 	);
 	finishResult(result);
+
+	// The parent can access the big integer created by the child.
+	result = 0;
+	long long x = bigIntGetInt64(4);
+	if (x != 256) {
+		result = 1;
+	}
+	finishResult(result);
 }
 
-u32 reverseU32(u32 value) {
-	u32 lastByteMask = 0x00000000000000FF;
-	u32 result = 0;
-	int size = sizeof(value);
-	for (int i = 0; i < size; i++) {
-		byte lastByte = value & lastByteMask;
-		value >>= 8;
+void parentFunctionChildCall_OutOfGas() {
+	storageStore(parentKeyA, parentDataA, 11);
+	bigInt myInt = bigIntNew(42);
+	finish(parentFinishA, 13);
 
-		result <<= 8;
-		result += lastByte;
-	}
-	return result;
-}
+	byte childAddress[] = "childSC.........................";
+	byte executeValue[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,99};
+	byte functionName[] = "childFunction_OutOfGas";
+	int result = executeOnSameContext(
+			3500,
+			childAddress,
+			executeValue,
+			functionName,
+			22,
+			0,
+			0,
+			0
+	);
 
-void finishResult(int result) {
-	if (result == 0) {
-		byte message[] = "succ";
-		finish(message, 4);
-	}
-	if (result == 1) {
-		byte message[] = "fail";
-		finish(message, 4);
-	}
-	if (result != 0 && result != 1) {
-		byte message[] = "unkn";
-		finish(message, 4);
-	}
+	storageStore(parentKeyB, parentDataB, 11);
+	finishResult(result);
 }

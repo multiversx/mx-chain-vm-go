@@ -2,7 +2,6 @@ package wasmer
 
 import (
 	"fmt"
-	"math"
 )
 
 // ValueType represents the `Value` type.
@@ -14,12 +13,6 @@ const (
 
 	// TypeI64 represents the WebAssembly `i64` type.
 	TypeI64
-
-	// TypeF32 represents the WebAssembly `f32` type.
-	TypeF32
-
-	// TypeF64 represents the WebAssembly `f64` type.
-	TypeF64
 
 	// TypeVoid represents nothing.
 	// WebAssembly doesn't have “void” type, but it is introduced
@@ -53,22 +46,6 @@ func I64(value int64) Value {
 	}
 }
 
-// F32 constructs a WebAssembly value of type `f32`.
-func F32(value float32) Value {
-	return Value{
-		value: uint64(math.Float32bits(value)),
-		ty:    TypeF32,
-	}
-}
-
-// F64 constructs a WebAssembly value of type `f64`.
-func F64(value float64) Value {
-	return Value{
-		value: math.Float64bits(value),
-		ty:    TypeF64,
-	}
-}
-
 // void constructs an empty WebAssembly value.
 func Void() Value {
 	return Value{
@@ -94,18 +71,6 @@ func (value Value) ToI64() int64 {
 	return int64(value.value)
 }
 
-// ToF32 reads the WebAssembly value bits as a `float32`. The WebAssembly
-// value type is ignored.
-func (value Value) ToF32() float32 {
-	return math.Float32frombits(uint32(value.value))
-}
-
-// ToF64 reads the WebAssembly value bits as a `float64`. The WebAssembly
-// value type is ignored.
-func (value Value) ToF64() float64 {
-	return math.Float64frombits(value.value)
-}
-
 // ToVoid reads the WebAssembly value bits as a `nil`. The WebAssembly
 // value type is ignored.
 func (value Value) ToVoid() interface{} {
@@ -119,10 +84,6 @@ func (value Value) String() string {
 		return fmt.Sprintf("%d", value.ToI32())
 	case TypeI64:
 		return fmt.Sprintf("%d", value.ToI64())
-	case TypeF32:
-		return fmt.Sprintf("%f", value.ToF32())
-	case TypeF64:
-		return fmt.Sprintf("%f", value.ToF64())
 	case TypeVoid:
 		return "void"
 	default:

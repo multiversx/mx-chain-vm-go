@@ -19,8 +19,9 @@ import (
 
 var defaultVMType = []byte{0xF, 0xF}
 var errCodeNotFound = errors.New("code not found")
-var parentSCAddress = []byte("parentSC.........................")
-var childSCAddress = []byte("childSC.........................")
+var userAddress = []byte("userAccount.....................")
+var parentAddress = []byte("parentSC........................")
+var childAddress = []byte("childSC.........................")
 
 // GetSCCode retrieves the bytecode of a WASM module from a file
 func GetSCCode(fileName string) []byte {
@@ -54,7 +55,7 @@ func DefaultTestArwenForCall(tb testing.TB, code []byte) (*vmHost, *mock.Blockch
 	mockCryptoHook := &mock.CryptoHookMock{}
 	stubBlockchainHook := &mock.BlockchainHookStub{}
 	stubBlockchainHook.GetCodeCalled = func(scAddress []byte) ([]byte, error) {
-		if bytes.Equal(scAddress, parentSCAddress) {
+		if bytes.Equal(scAddress, parentAddress) {
 			return code, nil
 		}
 		return nil, errCodeNotFound
@@ -68,10 +69,10 @@ func DefaultTestArwenForTwoSCs(t *testing.T, parentCode []byte, childCode []byte
 	mockCryptoHook := &mock.CryptoHookMock{}
 	stubBlockchainHook := &mock.BlockchainHookStub{}
 	stubBlockchainHook.GetCodeCalled = func(scAddress []byte) ([]byte, error) {
-		if bytes.Equal(scAddress, parentSCAddress) {
+		if bytes.Equal(scAddress, parentAddress) {
 			return parentCode, nil
 		}
-		if bytes.Equal(scAddress, childSCAddress) {
+		if bytes.Equal(scAddress, childAddress) {
 			return childCode, nil
 		}
 		return nil, errCodeNotFound
@@ -109,14 +110,14 @@ func DefaultTestContractCreateInput() *vmcommon.ContractCreateInput {
 func DefaultTestContractCallInput() *vmcommon.ContractCallInput {
 	return &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
-			CallerAddr:  []byte("caller"),
+			CallerAddr:  userAddress,
 			Arguments:   make([][]byte, 0),
 			CallValue:   big.NewInt(0),
 			CallType:    vmcommon.DirectCall,
 			GasPrice:    0,
 			GasProvided: 0,
 		},
-		RecipientAddr: parentSCAddress,
+		RecipientAddr: parentAddress,
 		Function:      "function",
 	}
 }

@@ -396,9 +396,7 @@ func transferValue(context unsafe.Pointer, destOffset int32, valueOffset int32, 
 func asyncCall(context unsafe.Pointer, destOffset int32, valueOffset int32, dataOffset int32, length int32) {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
-	output := arwen.GetOutputContext(context)
 
-	callingSCAddress := runtime.GetSCAddress()
 	calledSCAddress, err := runtime.MemLoad(destOffset, arwen.AddressLen)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
@@ -430,11 +428,6 @@ func asyncCall(context unsafe.Pointer, destOffset int32, valueOffset int32, data
 	// Set up the async call as if it is not known whether the called SC
 	// is in the same shard with the caller or not. This will be later resolved
 	// in the handler for BreakpointAsyncCall.
-	err = output.Transfer(calledSCAddress, callingSCAddress, gasLimit, big.NewInt(0).SetBytes(value), data)
-	if arwen.WithFault(err, context, true) {
-		return
-	}
-
 	runtime.SetAsyncCallInfo(&arwen.AsyncCallInfo{
 		Destination: calledSCAddress,
 		Data:        data,
@@ -878,7 +871,6 @@ func executeOnSameContext(
 ) int32 {
 	host := arwen.GetVmContext(context)
 	runtime := host.Runtime()
-	output := host.Output()
 	metering := host.Metering()
 
 	send := runtime.GetSCAddress()
@@ -921,13 +913,8 @@ func executeOnSameContext(
 		Function:      function,
 	}
 
-	err = output.Transfer(dest, send, 0, bigIntVal, nil)
-	if err != nil {
-		return 1
-	}
-
 	err = host.ExecuteOnSameContext(contractCallInput)
-	if err != nil {
+	if arwen.WithFault(err, context, false) {
 		return 1
 	}
 
@@ -948,7 +935,6 @@ func executeOnDestContext(
 ) int32 {
 	host := arwen.GetVmContext(context)
 	runtime := host.Runtime()
-	output := host.Output()
 	metering := host.Metering()
 
 	send := runtime.GetSCAddress()
@@ -991,11 +977,6 @@ func executeOnDestContext(
 		Function:      function,
 	}
 
-	err = output.Transfer(dest, send, 0, bigIntVal, nil)
-	if err != nil {
-		return 1
-	}
-
 	_, err = host.ExecuteOnDestContext(contractCallInput)
 	if err != nil {
 		return 1
@@ -1013,6 +994,11 @@ func getArgumentsFromMemory(
 	dataOffset int32,
 ) (string, [][]byte, int32, error) {
 	runtime := arwen.GetRuntimeContext(context)
+
+	function, err := runtime.MemLoad(functionOffset, functionLength)
+	if err != nil {
+		return "", nil, 0, err
+	}
 
 	argumentsLengthData, err := runtime.MemLoad(argumentsLengthOffset, numArguments*4)
 	if err != nil {
@@ -1035,11 +1021,6 @@ func getArgumentsFromMemory(
 		}
 
 		currOffset += actualLen
-	}
-
-	function, err := runtime.MemLoad(functionOffset, functionLength)
-	if err != nil {
-		return "", nil, 0, err
 	}
 
 	return string(function), data, currOffset - dataOffset, nil
