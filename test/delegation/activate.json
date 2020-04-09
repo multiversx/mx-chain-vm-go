@@ -124,7 +124,7 @@
                     "0x0c00000000000000000000000000000000000000000000000000000000000001": "``signature_2_____________________"
                     
                 },
-                "code": "staking-mock.wasm",
+                "code": "auction-mock.wasm",
                 "asyncCallData" : ""
             },
             "``delegation_contract___________s1": {
