@@ -64,19 +64,14 @@
             {
                 "results": [
                     {
-                        "out": [
-                            "``userStoreCallback",
-                            "1",
-                            "0xd1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1",
-                            "``coolname0001"
-                        ],
+                        "out": [ "true" ],
                         "status": "",
                         "gas": "*",
                         "logs": [],
                         "refund": ""
                     },
                     {
-                        "out": [ ],
+                        "out": [ "``cool_address__________________sz" ],
                         "status": "",
                         "gas": "*",
                         "logs": [],
@@ -148,7 +143,7 @@
                     "0x0100000000000000000000000000000000000000000000000000000000000000": "2",
                     "0x0200000000000000000000000000000000000000000000000000000000000000": "0xd1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1",
 
-                    "0x5bc9a3e2762313cb60b1edd995e5660575462348d57b185d060d95a0d5c1f1b9": "``pcool_address__________________sz"
+                    "0x5bc9a3e2762313cb60b1edd995e5660575462348d57b185d060d95a0d5c1f1b9": "``cool_address__________________sz"
                 },
                 "code": "dns.wasm"
             },
@@ -184,8 +179,7 @@
                 "storage": {
                     "0xd1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1": "``coolname0001"
                 },
-                "code": "user-mock.wasm",
-                "asyncCallData": "storeIfNotExists@d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1@636f6f6c6e616d6530303031@7573657253746f726543616c6c6261636b"
+                "code": "user-mock.wasm"
             }
         }
     }

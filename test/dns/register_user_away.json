@@ -138,7 +138,7 @@
                     "0x0200000000000000000000000000000000000000000000000000000000000000": "0xd1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1",
 
                     "0x5bc9a3e2762313cb60b1edd995e5660575462348d57b185d060d95a0d5c1f1b9": "``pcool_address__________________sz",
-                    "``tx_hash_________________________": "``userStoreCallback@5bc9a3e2762313cb60b1edd995e5660575462348d57b185d060d95a0d5c1f1b9@636f6f6c5f616464726573735f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f737a"
+                    "``tx_hash_________________________": "``userStoreCallback@5bc9a3e2762313cb60b1edd995e5660575462348d57b185d060d95a0d5c1f1b9"
                 },
                 "code": "dns.wasm"
             },
