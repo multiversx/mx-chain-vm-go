@@ -126,11 +126,16 @@ func (context *storageContext) SetStorage(key []byte, value []byte) int32 {
 
 	newValueExtraLength := length - len(oldValue)
 	if newValueExtraLength > 0 {
-		useGas := metering.GasSchedule().BaseOperationCost.PersistPerByte * uint64(newValueExtraLength)
+		useGas := metering.GasSchedule().BaseOperationCost.PersistPerByte * uint64(len(oldValue))
+		useGas += metering.GasSchedule().BaseOperationCost.StorePerByte * uint64(newValueExtraLength)
 		metering.UseGas(useGas)
 	}
 	if newValueExtraLength < 0 {
 		newValueExtraLength = -newValueExtraLength
+
+		useGas := metering.GasSchedule().BaseOperationCost.PersistPerByte * uint64(len(value))
+		metering.UseGas(useGas)
+
 		freeGas := metering.GasSchedule().BaseOperationCost.ReleasePerByte * uint64(newValueExtraLength)
 		metering.FreeGas(freeGas)
 	}
