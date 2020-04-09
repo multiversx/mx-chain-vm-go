@@ -161,6 +161,7 @@ func (host *vmHost) BigInt() arwen.BigIntContext {
 }
 
 func (host *vmHost) InitState() {
+	host.ClearContextStateStack()
 	host.bigIntContext.InitState()
 	host.outputContext.InitState()
 	host.runtimeContext.InitState()
@@ -173,6 +174,11 @@ func (host *vmHost) ClearContextStateStack() {
 	host.outputContext.ClearStateStack()
 	host.runtimeContext.ClearStateStack()
 	host.storageContext.ClearStateStack()
+}
+
+func (host *vmHost) Clean() {
+	host.runtimeContext.CleanInstance()
+	arwen.RemoveAllHostContexts()
 }
 
 func (host *vmHost) GetAPIMethods() *wasmer.Imports {

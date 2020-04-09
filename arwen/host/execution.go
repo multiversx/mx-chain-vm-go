@@ -6,18 +6,13 @@ import (
 )
 
 func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput) *vmcommon.VMOutput {
-	host.ClearContextStateStack()
 	host.InitState()
+	defer host.Clean()
 
 	blockchain := host.Blockchain()
 	runtime := host.Runtime()
 	output := host.Output()
 	storage := host.Storage()
-
-	defer func() {
-		host.Runtime().CleanInstance()
-		arwen.RemoveAllHostContexts()
-	}()
 
 	address, err := blockchain.NewAddress(input.CallerAddr)
 	if err != nil {
@@ -41,20 +36,6 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 		return output.CreateVMOutputInCaseOfError(err)
 	}
 	return vmOutput
-}
-
-func (host *vmHost) onExitDirectCreateOrCall(err error, vmOutput *vmcommon.VMOutput) *vmcommon.VMOutput {
-	return host.overrideVMOutputIfError(err, vmOutput)
-}
-
-func (host *vmHost) overrideVMOutputIfError(err error, vmOutput *vmcommon.VMOutput) *vmcommon.VMOutput {
-	if err == nil {
-		return vmOutput
-	}
-
-	output := host.Output()
-
-	return output.CreateVMOutputInCaseOfError(err)
 }
 
 func (host *vmHost) performCodeDeploy(input arwen.CodeDeployInput) (*vmcommon.VMOutput, error) {
@@ -93,17 +74,12 @@ func (host *vmHost) performCodeDeploy(input arwen.CodeDeployInput) (*vmcommon.VM
 }
 
 func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput) *vmcommon.VMOutput {
-	host.ClearContextStateStack()
 	host.InitState()
+	defer host.Clean()
 
 	runtime := host.Runtime()
 	output := host.Output()
 	storage := host.Storage()
-
-	defer func() {
-		host.Runtime().CleanInstance()
-		arwen.RemoveAllHostContexts()
-	}()
 
 	runtime.InitStateFromContractCallInput(input)
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
@@ -128,19 +104,14 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 }
 
 func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput) {
-	host.ClearContextStateStack()
 	host.InitState()
+	defer host.Clean()
 
 	runtime := host.Runtime()
 	output := host.Output()
 	metering := host.Metering()
 	blockchain := host.Blockchain()
 	storage := host.Storage()
-
-	defer func() {
-		host.Runtime().CleanInstance()
-		arwen.RemoveAllHostContexts()
-	}()
 
 	runtime.InitStateFromContractCallInput(input)
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
