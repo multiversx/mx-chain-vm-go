@@ -49,40 +49,40 @@ func (context *bigIntContext) ClearStateStack() {
 
 func (context *bigIntContext) clone() bigIntMap {
 	newState := make(bigIntMap, len(context.values))
-	for id, bigInt := range context.values {
-		newState[id] = big.NewInt(0).Set(bigInt)
+	for handle, bigInt := range context.values {
+		newState[handle] = big.NewInt(0).Set(bigInt)
 	}
 	return newState
 }
 
 func (context *bigIntContext) Put(value int64) int32 {
-	newIndex := int32(len(context.values))
+	newHandle := int32(len(context.values))
 	for {
-		if _, ok := context.values[newIndex]; !ok {
+		if _, ok := context.values[newHandle]; !ok {
 			break
 		}
-		newIndex++
+		newHandle++
 	}
 
-	context.values[newIndex] = big.NewInt(value)
+	context.values[newHandle] = big.NewInt(value)
 
-	return newIndex
+	return newHandle
 }
 
-func (context *bigIntContext) GetOne(id int32) *big.Int {
-	if _, ok := context.values[id]; !ok {
-		context.values[id] = big.NewInt(0)
+func (context *bigIntContext) GetOne(handle int32) *big.Int {
+	if _, ok := context.values[handle]; !ok {
+		context.values[handle] = big.NewInt(0)
 	}
 
-	return context.values[id]
+	return context.values[handle]
 }
 
-func (context *bigIntContext) GetTwo(id1 int32, id2 int32) (*big.Int, *big.Int) {
-	return context.GetOne(id1), context.GetOne(id2)
+func (context *bigIntContext) GetTwo(handle1 int32, handle2 int32) (*big.Int, *big.Int) {
+	return context.GetOne(handle1), context.GetOne(handle2)
 }
 
-func (context *bigIntContext) GetThree(id1 int32, id2 int32, id3 int32) (*big.Int, *big.Int, *big.Int) {
-	return context.GetOne(id1), context.GetOne(id2), context.GetOne(id3)
+func (context *bigIntContext) GetThree(handle1 int32, handle2 int32, handle3 int32) (*big.Int, *big.Int, *big.Int) {
+	return context.GetOne(handle1), context.GetOne(handle2), context.GetOne(handle3)
 }
 
 func (context *bigIntContext) IsInterfaceNil() bool {
