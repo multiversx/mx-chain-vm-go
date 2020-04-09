@@ -65,7 +65,7 @@ func (context *runtimeContext) InitState() {
 	context.asyncCallInfo = nil
 }
 
-func (context *runtimeContext) CreateWasmerInstance(contract []byte, gasLimit uint64) error {
+func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uint64) error {
 	if context.RunningInstancesCount() >= context.maxWasmerInstances {
 		context.instance = nil
 		return arwen.ErrMaxInstancesReached

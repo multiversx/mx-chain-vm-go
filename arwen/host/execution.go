@@ -45,7 +45,7 @@ func (host *vmHost) performCodeDeploy(input arwen.CodeDeployInput) (*vmcommon.VM
 	}
 
 	vmInput := runtime.GetVMInput()
-	err = runtime.CreateWasmerInstance(input.ContractCode, vmInput.GasProvided)
+	err = runtime.StartWasmerInstance(input.ContractCode, vmInput.GasProvided)
 	if err != nil {
 		return nil, arwen.ErrContractInvalid
 	}
@@ -117,7 +117,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	}
 
 	vmInput := runtime.GetVMInput()
-	err = runtime.CreateWasmerInstance(contract, vmInput.GasProvided)
+	err = runtime.StartWasmerInstance(contract, vmInput.GasProvided)
 	if err != nil {
 		return output.CreateVMOutputInCaseOfError(arwen.ErrContractInvalid)
 	}
@@ -298,7 +298,7 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]by
 	runtime.PushInstance()
 
 	gasForDeployment := runtime.GetVMInput().GasProvided
-	err = runtime.CreateWasmerInstance(input.ContractCode, gasForDeployment)
+	err = runtime.StartWasmerInstance(input.ContractCode, gasForDeployment)
 	if err != nil {
 		runtime.PopInstance()
 		runtime.PopSetActiveState()
@@ -364,7 +364,7 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 	runtime.PushInstance()
 
 	gasForExecution := runtime.GetVMInput().GasProvided
-	err = runtime.CreateWasmerInstance(contract, gasForExecution)
+	err = runtime.StartWasmerInstance(contract, gasForExecution)
 	if err != nil {
 		runtime.PopInstance()
 		arwen.RemoveHostContext(idContext)

@@ -92,7 +92,7 @@ type RuntimeContext interface {
 	ClearInstanceStack()
 	ReadOnly() bool
 	SetReadOnly(readOnly bool)
-	CreateWasmerInstance(contract []byte, gasLimit uint64) error
+	StartWasmerInstance(contract []byte, gasLimit uint64) error
 	SetMaxInstanceCount(uint64)
 	VerifyContractCode() error
 	SetInstanceContext(instCtx *wasmer.InstanceContext)

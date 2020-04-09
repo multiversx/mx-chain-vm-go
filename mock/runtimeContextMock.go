@@ -32,7 +32,7 @@ type RuntimeContextMock struct {
 func (r *RuntimeContextMock) InitState() {
 }
 
-func (r *RuntimeContextMock) CreateWasmerInstance(contract []byte, gasLimit uint64) error {
+func (r *RuntimeContextMock) StartWasmerInstance(contract []byte, gasLimit uint64) error {
 	if r.Err != nil {
 		return r.Err
 	}
