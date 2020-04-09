@@ -7,14 +7,14 @@ import (
 type bigIntMap map[int32]*big.Int
 
 type bigIntContext struct {
-	values     map[int32]*big.Int
+	values     bigIntMap
 	stateStack []bigIntMap
 }
 
 // NewBigIntContext creates a new bigIntContext
 func NewBigIntContext() (*bigIntContext, error) {
 	context := &bigIntContext{
-		values:     make(map[int32]*big.Int),
+		values:     make(bigIntMap),
 		stateStack: make([]bigIntMap, 0),
 	}
 
@@ -22,11 +22,11 @@ func NewBigIntContext() (*bigIntContext, error) {
 }
 
 func (context *bigIntContext) InitState() {
-	context.values = make(map[int32]*big.Int)
+	context.values = make(bigIntMap)
 }
 
 func (context *bigIntContext) PushState() {
-	newState := context.duplicateState()
+	newState := context.clone()
 	context.stateStack = append(context.stateStack, newState)
 }
 
@@ -47,7 +47,7 @@ func (context *bigIntContext) ClearStateStack() {
 	context.stateStack = make([]bigIntMap, 0)
 }
 
-func (context *bigIntContext) duplicateState() bigIntMap {
+func (context *bigIntContext) clone() bigIntMap {
 	newState := make(bigIntMap, len(context.values))
 	for id, bigInt := range context.values {
 		newState[id] = big.NewInt(0).Set(bigInt)
