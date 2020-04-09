@@ -160,6 +160,22 @@ func (host *vmHost) BigInt() arwen.BigIntContext {
 	return host.bigIntContext
 }
 
+func (host *vmHost) GetContexts() (
+	arwen.BigIntContext,
+	arwen.BlockchainContext,
+	arwen.MeteringContext,
+	arwen.OutputContext,
+	arwen.RuntimeContext,
+	arwen.StorageContext,
+) {
+	return host.bigIntContext,
+		host.blockchainContext,
+		host.meteringContext,
+		host.outputContext,
+		host.runtimeContext,
+		host.storageContext
+}
+
 func (host *vmHost) InitState() {
 	host.ClearContextStateStack()
 	host.bigIntContext.InitState()

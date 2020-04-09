@@ -9,10 +9,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	host.InitState()
 	defer host.Clean()
 
-	blockchain := host.Blockchain()
-	runtime := host.Runtime()
-	output := host.Output()
-	storage := host.Storage()
+	_, blockchain, _, output, runtime, storage := host.GetContexts()
 
 	address, err := blockchain.NewAddress(input.CallerAddr)
 	if err != nil {
@@ -39,9 +36,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 }
 
 func (host *vmHost) performCodeDeploy(input arwen.CodeDeployInput) (*vmcommon.VMOutput, error) {
-	runtime := host.Runtime()
-	metering := host.Metering()
-	output := host.Output()
+	_, _, metering, output, runtime, _ := host.GetContexts()
 
 	err := metering.DeductInitialGasForDirectDeployment(input)
 	if err != nil {
@@ -77,9 +72,7 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 	host.InitState()
 	defer host.Clean()
 
-	runtime := host.Runtime()
-	output := host.Output()
-	storage := host.Storage()
+	_, _, _, output, runtime, storage := host.GetContexts()
 
 	runtime.InitStateFromContractCallInput(input)
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
@@ -107,11 +100,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	host.InitState()
 	defer host.Clean()
 
-	runtime := host.Runtime()
-	output := host.Output()
-	metering := host.Metering()
-	blockchain := host.Blockchain()
-	storage := host.Storage()
+	_, blockchain, metering, output, runtime, storage := host.GetContexts()
 
 	runtime.InitStateFromContractCallInput(input)
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
@@ -148,10 +137,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 }
 
 func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
-	bigInt := host.BigInt()
-	output := host.Output()
-	runtime := host.Runtime()
-	storage := host.Storage()
+	bigInt, _, _, output, runtime, storage := host.GetContexts()
 
 	bigInt.PushState()
 	bigInt.InitState()
@@ -182,10 +168,7 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 }
 
 func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOutput {
-	bigInt := host.BigInt()
-	output := host.Output()
-	runtime := host.Runtime()
-	storage := host.Storage()
+	bigInt, _, _, output, runtime, storage := host.GetContexts()
 
 	if executeErr != nil {
 		// Execution failed: restore contexts as if the execution didn't happen,
@@ -216,9 +199,7 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 }
 
 func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (err error) {
-	bigInt := host.BigInt()
-	output := host.Output()
-	runtime := host.Runtime()
+	bigInt, _, _, output, runtime, _ := host.GetContexts()
 
 	// Back up the states of the contexts (except Storage, which isn't affected
 	// by ExecuteOnSameContext())
@@ -248,9 +229,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (err
 }
 
 func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
-	bigInt := host.BigInt()
-	output := host.Output()
-	runtime := host.Runtime()
+	bigInt, _, _, output, runtime, _ := host.GetContexts()
 
 	if executeErr != nil {
 		// Execution failed: restore contexts as if the execution didn't happen.
@@ -274,10 +253,7 @@ func (host *vmHost) isInitFunctionBeingCalled() bool {
 }
 
 func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error) {
-	runtime := host.Runtime()
-	blockchain := host.Blockchain()
-	metering := host.Metering()
-	output := host.Output()
+	_, blockchain, metering, output, runtime, _ := host.GetContexts()
 
 	// Use all gas initially. In case of successful deployment, the unused gas
 	// will be restored.
@@ -362,9 +338,7 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]by
 
 // TODO: Add support for indirect smart contract upgrades.
 func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
-	runtime := host.Runtime()
-	metering := host.Metering()
-	output := host.Output()
+	_, _, metering, output, runtime, _ := host.GetContexts()
 
 	// Use all gas initially, on the Wasmer instance of the caller
 	// (runtime.PushInstance() is called later). In case of successful execution,
