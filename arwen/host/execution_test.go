@@ -195,7 +195,7 @@ func TestExecution_ManyDeployments(t *testing.T) {
 	input.CallerAddr = []byte("owner")
 	input.Arguments = make([][]byte, 0)
 	input.CallValue = big.NewInt(88)
-	input.ContractCode = GetTestSCCode("init-correct", "../../")
+	input.ContractCode = GetTestSCCode("init-simple", "../../")
 
 	numDeployments := 100000
 	for i := 0; i < numDeployments; i++ {
