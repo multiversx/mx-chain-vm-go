@@ -43,10 +43,7 @@ type vmHost struct {
 func NewArwenVM(
 	blockChainHook vmcommon.BlockchainHook,
 	cryptoHook vmcommon.CryptoHook,
-	vmType []byte,
-	blockGasLimit uint64,
-	gasSchedule config.GasScheduleMap,
-	protocolBuiltinFunctions vmcommon.FunctionNames,
+	hostParameters *arwen.VMHostParameters,
 ) (*vmHost, error) {
 
 	host := &vmHost{
@@ -58,7 +55,7 @@ func NewArwenVM(
 		storageContext:           nil,
 		bigIntContext:            nil,
 		scAPIMethods:             nil,
-		protocolBuiltinFunctions: protocolBuiltinFunctions,
+		protocolBuiltinFunctions: hostParameters.ProtocolBuiltinFunctions,
 	}
 
 	var err error
@@ -95,12 +92,12 @@ func NewArwenVM(
 		return nil, err
 	}
 
-	host.runtimeContext, err = contexts.NewRuntimeContext(host, vmType)
+	host.runtimeContext, err = contexts.NewRuntimeContext(host, hostParameters.VMType)
 	if err != nil {
 		return nil, err
 	}
 
-	host.meteringContext, err = contexts.NewMeteringContext(host, gasSchedule, blockGasLimit)
+	host.meteringContext, err = contexts.NewMeteringContext(host, hostParameters.GasSchedule, hostParameters.BlockGasLimit)
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +117,7 @@ func NewArwenVM(
 		return nil, err
 	}
 
-	gasCostConfig, err := config.CreateGasConfig(gasSchedule)
+	gasCostConfig, err := config.CreateGasConfig(hostParameters.GasSchedule)
 	if err != nil {
 		return nil, err
 	}

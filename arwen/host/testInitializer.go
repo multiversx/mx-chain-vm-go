@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -82,7 +83,12 @@ func DefaultTestArwenForTwoSCs(t *testing.T, parentCode []byte, childCode []byte
 }
 
 func DefaultTestArwen(tb testing.TB, blockchain vmcommon.BlockchainHook, crypto vmcommon.CryptoHook) (*vmHost, error) {
-	host, err := NewArwenVM(blockchain, crypto, defaultVMType, uint64(1000), config.MakeGasMap(1), make(vmcommon.FunctionNames))
+	host, err := NewArwenVM(blockchain, crypto, &arwen.VMHostParameters{
+		VMType:                   defaultVMType,
+		BlockGasLimit:            uint64(1000),
+		GasSchedule:              config.MakeGasMap(1),
+		ProtocolBuiltinFunctions: make(vmcommon.FunctionNames),
+	})
 	require.Nil(tb, err)
 	require.NotNil(tb, host)
 	return host, err
