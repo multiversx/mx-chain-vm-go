@@ -36,7 +36,7 @@ func newArwenTestExecutor() *arwenTestExecutor {
 
 	blockGasLimit := uint64(10000000)
 	gasSchedule := config.MakeGasMap(1)
-	vm, err := arwen.NewArwenVM(world, cryptohook.KryptoHookMockInstance, TestVMType, blockGasLimit, gasSchedule)
+	vm, err := arwen.NewArwenVM(world, cryptohook.KryptoHookMockInstance, TestVMType, blockGasLimit, gasSchedule, make(vmcommon.FunctionNames))
 	if err != nil {
 		panic(err)
 	}

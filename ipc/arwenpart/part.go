@@ -32,7 +32,14 @@ func NewArwenPart(
 	blockchain := NewBlockchainHookGateway(messenger)
 	crypto := NewCryptoHookGateway()
 
-	host, err := host.NewArwenVM(blockchain, crypto, vmHostArguments.VMType, vmHostArguments.BlockGasLimit, vmHostArguments.GasSchedule)
+	host, err := host.NewArwenVM(
+		blockchain,
+		crypto,
+		vmHostArguments.VMType,
+		vmHostArguments.BlockGasLimit,
+		vmHostArguments.GasSchedule,
+		vmHostArguments.ProtocolBuiltinFunctions,
+	)
 	if err != nil {
 		return nil, err
 	}

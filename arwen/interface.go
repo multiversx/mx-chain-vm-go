@@ -64,7 +64,6 @@ type BlockchainContext interface {
 	GetCode(addr []byte) ([]byte, error)
 	GetCodeSize(addr []byte) (int32, error)
 	BlockHash(number int64) []byte
-	GetBuiltinFunctionNames() vmcommon.FunctionNames
 }
 
 type RuntimeContext interface {

@@ -541,34 +541,62 @@ func NewMessageBlockchainCurrentEpochResponse(result uint32) *MessageBlockchainC
 	return message
 }
 
-// MessageBlockchainProcessBuiltInFunctionRequest represents a request message
-type MessageBlockchainProcessBuiltInFunctionRequest struct {
+// MessageBlockchainProcessBuiltinFunctionRequest represents a request message
+type MessageBlockchainProcessBuiltinFunctionRequest struct {
 	Message
 	CallInput vmcommon.ContractCallInput
 }
 
-// NewMessageBlockchainProcessBuiltInFunctionRequest creates a request message
-func NewMessageBlockchainProcessBuiltInFunctionRequest(callInput vmcommon.ContractCallInput) *MessageBlockchainProcessBuiltInFunctionRequest {
-	message := &MessageBlockchainProcessBuiltInFunctionRequest{}
-	message.Kind = BlockchainProcessBuiltInFunctionRequest
+// NewMessageBlockchainProcessBuiltinFunctionRequest creates a request message
+func NewMessageBlockchainProcessBuiltinFunctionRequest(callInput vmcommon.ContractCallInput) *MessageBlockchainProcessBuiltinFunctionRequest {
+	message := &MessageBlockchainProcessBuiltinFunctionRequest{}
+	message.Kind = BlockchainProcessBuiltinFunctionRequest
 	message.CallInput = callInput
 
 	return message
 }
 
-// MessageBlockchainProcessBuiltInFunctionResponse represents a response message
-type MessageBlockchainProcessBuiltInFunctionResponse struct {
+// MessageBlockchainProcessBuiltinFunctionResponse represents a response message
+type MessageBlockchainProcessBuiltinFunctionResponse struct {
 	Message
 	Value       *big.Int
 	GasConsumed uint64
 }
 
-// NewMessageBlockchainProcessBuiltInFunctionResponse creates a response message
-func NewMessageBlockchainProcessBuiltInFunctionResponse(value *big.Int, gasConsumed uint64, err error) *MessageBlockchainProcessBuiltInFunctionResponse {
-	message := &MessageBlockchainProcessBuiltInFunctionResponse{}
-	message.Kind = BlockchainProcessBuiltInFunctionResponse
+// NewMessageBlockchainProcessBuiltinFunctionResponse creates a response message
+func NewMessageBlockchainProcessBuiltinFunctionResponse(value *big.Int, gasConsumed uint64, err error) *MessageBlockchainProcessBuiltinFunctionResponse {
+	message := &MessageBlockchainProcessBuiltinFunctionResponse{}
+	message.Kind = BlockchainProcessBuiltinFunctionResponse
 	message.Value = value
 	message.GasConsumed = gasConsumed
 	message.SetError(err)
+	return message
+}
+
+// MessageBlockchainGetBuiltinFunctionNamesRequest represents a request message
+type MessageBlockchainGetBuiltinFunctionNamesRequest struct {
+	Message
+}
+
+// NewMessageBlockchainGetBuiltinFunctionNamesRequest creates a request message
+func NewMessageBlockchainGetBuiltinFunctionNamesRequest() *MessageBlockchainGetBuiltinFunctionNamesRequest {
+	message := &MessageBlockchainGetBuiltinFunctionNamesRequest{}
+	message.Kind = BlockchainGetBuiltinFunctionNamesRequest
+
+	return message
+}
+
+// MessageBlockchainGetBuiltinFunctionNamesResponse represents a response message
+type MessageBlockchainGetBuiltinFunctionNamesResponse struct {
+	Message
+	FunctionNames vmcommon.FunctionNames
+}
+
+// NewMessageBlockchainGetBuiltinFunctionNamesResponse creates a response message
+func NewMessageBlockchainGetBuiltinFunctionNamesResponse(functionNames vmcommon.FunctionNames) *MessageBlockchainGetBuiltinFunctionNamesResponse {
+	message := &MessageBlockchainGetBuiltinFunctionNamesResponse{}
+	message.Kind = BlockchainGetBuiltinFunctionNamesResponse
+	message.FunctionNames = functionNames
+
 	return message
 }

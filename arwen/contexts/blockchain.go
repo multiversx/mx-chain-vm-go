@@ -180,7 +180,3 @@ func (context *blockchainContext) LastRandomSeed() []byte {
 func (context *blockchainContext) CurrentRandomSeed() []byte {
 	return context.blockChainHook.CurrentRandomSeed()
 }
-
-func (context *blockchainContext) GetBuiltinFunctionNames() vmcommon.FunctionNames {
-	return context.blockChainHook.GetBuiltinFunctionNames()
-}
