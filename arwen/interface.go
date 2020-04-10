@@ -39,6 +39,7 @@ type VMHost interface {
 	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
 	EthereumCallData() []byte
 	GetAPIMethods() *wasmer.Imports
+	GetProtocolBuiltinFunctions() vmcommon.FunctionNames
 }
 
 type BlockchainContext interface {

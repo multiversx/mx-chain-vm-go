@@ -68,7 +68,7 @@ func doMain() (int, string) {
 		dialogueLogger,
 		nodeToArwenFile,
 		arwenToNodeFile,
-		&arwenArguments.VMHostArguments,
+		&arwenArguments.VMHostParameters,
 		messagesMarshalizer,
 	)
 	if err != nil {

@@ -35,27 +35,27 @@ type vmHost struct {
 	storageContext    arwen.StorageContext
 	bigIntContext     arwen.BigIntContext
 
-	scAPIMethods *wasmer.Imports
+	scAPIMethods             *wasmer.Imports
+	protocolBuiltinFunctions vmcommon.FunctionNames
 }
 
 // NewArwenVM creates a new Arwen vmHost
 func NewArwenVM(
 	blockChainHook vmcommon.BlockchainHook,
 	cryptoHook vmcommon.CryptoHook,
-	vmType []byte,
-	blockGasLimit uint64,
-	gasSchedule map[string]map[string]uint64,
+	hostParameters *arwen.VMHostParameters,
 ) (*vmHost, error) {
 
 	host := &vmHost{
-		blockChainHook:    blockChainHook,
-		cryptoHook:        cryptoHook,
-		meteringContext:   nil,
-		runtimeContext:    nil,
-		blockchainContext: nil,
-		storageContext:    nil,
-		bigIntContext:     nil,
-		scAPIMethods:      nil,
+		blockChainHook:           blockChainHook,
+		cryptoHook:               cryptoHook,
+		meteringContext:          nil,
+		runtimeContext:           nil,
+		blockchainContext:        nil,
+		storageContext:           nil,
+		bigIntContext:            nil,
+		scAPIMethods:             nil,
+		protocolBuiltinFunctions: hostParameters.ProtocolBuiltinFunctions,
 	}
 
 	var err error
@@ -92,12 +92,12 @@ func NewArwenVM(
 		return nil, err
 	}
 
-	host.runtimeContext, err = contexts.NewRuntimeContext(host, vmType)
+	host.runtimeContext, err = contexts.NewRuntimeContext(host, hostParameters.VMType)
 	if err != nil {
 		return nil, err
 	}
 
-	host.meteringContext, err = contexts.NewMeteringContext(host, gasSchedule, blockGasLimit)
+	host.meteringContext, err = contexts.NewMeteringContext(host, hostParameters.GasSchedule, hostParameters.BlockGasLimit)
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +117,7 @@ func NewArwenVM(
 		return nil, err
 	}
 
-	gasCostConfig, err := config.CreateGasConfig(gasSchedule)
+	gasCostConfig, err := config.CreateGasConfig(hostParameters.GasSchedule)
 	if err != nil {
 		return nil, err
 	}
@@ -199,6 +199,10 @@ func (host *vmHost) Clean() {
 
 func (host *vmHost) GetAPIMethods() *wasmer.Imports {
 	return host.scAPIMethods
+}
+
+func (host *vmHost) GetProtocolBuiltinFunctions() vmcommon.FunctionNames {
+	return host.protocolBuiltinFunctions
 }
 
 func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error) {

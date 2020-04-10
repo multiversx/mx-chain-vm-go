@@ -4,6 +4,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/logger"
@@ -25,14 +26,18 @@ func NewArwenPart(
 	dialogueLogger logger.Logger,
 	input *os.File,
 	output *os.File,
-	vmHostArguments *common.VMHostArguments,
+	vmHostParameters *arwen.VMHostParameters,
 	marshalizer marshaling.Marshalizer,
 ) (*ArwenPart, error) {
 	messenger := NewArwenMessenger(dialogueLogger, input, output, marshalizer)
 	blockchain := NewBlockchainHookGateway(messenger)
 	crypto := NewCryptoHookGateway()
 
-	host, err := host.NewArwenVM(blockchain, crypto, vmHostArguments.VMType, vmHostArguments.BlockGasLimit, vmHostArguments.GasSchedule)
+	host, err := host.NewArwenVM(
+		blockchain,
+		crypto,
+		vmHostParameters,
+	)
 	if err != nil {
 		return nil, err
 	}

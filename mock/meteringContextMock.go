@@ -15,7 +15,7 @@ type MeteringContextMock struct {
 	Err               error
 }
 
-func (m *MeteringContextMock) SetGasSchedule(gasSchedule map[string]map[string]uint64) {
+func (m *MeteringContextMock) SetGasSchedule(gasSchedule config.GasScheduleMap) {
 	gasCostConfig, _ := config.CreateGasConfig(gasSchedule)
 	m.GasCost = gasCostConfig
 }

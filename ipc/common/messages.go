@@ -53,8 +53,10 @@ const (
 	BlockchainCurrentRandomSeedResponse
 	BlockchainCurrentEpochRequest
 	BlockchainCurrentEpochResponse
-	BlockchainProcessBuiltInFunctionRequest
-	BlockchainProcessBuiltInFunctionResponse
+	BlockchainProcessBuiltinFunctionRequest
+	BlockchainProcessBuiltinFunctionResponse
+	BlockchainGetBuiltinFunctionNamesRequest
+	BlockchainGetBuiltinFunctionNamesResponse
 	DiagnoseWaitRequest
 	DiagnoseWaitResponse
 	UndefinedRequestOrResponse
@@ -108,6 +110,10 @@ func init() {
 	messageKindNameByID[BlockchainCurrentRandomSeedResponse] = "BlockchainCurrentRandomSeedResponse"
 	messageKindNameByID[BlockchainCurrentEpochRequest] = "BlockchainCurrentEpochRequest"
 	messageKindNameByID[BlockchainCurrentEpochResponse] = "BlockchainCurrentEpochResponse"
+	messageKindNameByID[BlockchainProcessBuiltinFunctionRequest] = "BlockchainProcessBuiltinFunctionRequest"
+	messageKindNameByID[BlockchainProcessBuiltinFunctionResponse] = "BlockchainProcessBuiltinFunctionResponse"
+	messageKindNameByID[BlockchainGetBuiltinFunctionNamesRequest] = "BlockchainGetBuiltinFunctionNamesRequest"
+	messageKindNameByID[BlockchainGetBuiltinFunctionNamesResponse] = "BlockchainGetBuiltinFunctionNamesResponse"
 	messageKindNameByID[DiagnoseWaitRequest] = "DiagnoseWaitRequest"
 	messageKindNameByID[DiagnoseWaitResponse] = "DiagnoseWaitResponse"
 	messageKindNameByID[UndefinedRequestOrResponse] = "UndefinedRequestOrResponse"
