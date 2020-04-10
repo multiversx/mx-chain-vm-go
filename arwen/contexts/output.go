@@ -167,9 +167,17 @@ func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []b
 
 	newLogEntry := &vmcommon.LogEntry{
 		Address: address,
-		Topics:  topics,
 		Data:    data,
 	}
+
+	if len(topics) == 0 {
+		context.outputState.Logs = append(context.outputState.Logs, newLogEntry)
+		return
+	}
+
+	newLogEntry.Identifier = topics[0]
+	newLogEntry.Topics = topics[1:]
+
 	context.outputState.Logs = append(context.outputState.Logs, newLogEntry)
 }
 

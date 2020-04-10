@@ -462,5 +462,34 @@ func TestOutputContext_Transfer_Errors_And_Checks(t *testing.T) {
 }
 
 func TestOutputContext_WriteLog(t *testing.T) {
-	// TODO first discuss how Logs should be implemented
+	t.Parallel()
+
+	host := &mock.VmHostMock{
+		RuntimeContext: &mock.RuntimeContextMock{},
+	}
+	outputContext, _ := NewOutputContext(host)
+
+	address := []byte("address")
+	data := []byte("data")
+	topics := make([][]byte, 0)
+
+	outputContext.WriteLog(address, topics, data)
+	require.Equal(t, len(outputContext.outputState.Logs), 1)
+	require.Equal(t, outputContext.outputState.Logs[0].Address, address)
+	require.Equal(t, outputContext.outputState.Logs[0].Data, data)
+	require.Empty(t, outputContext.outputState.Logs[0].Identifier)
+	require.Empty(t, outputContext.outputState.Logs[0].Topics)
+
+	identifier := []byte("identifier")
+	topic := []byte("topic")
+	topics = append(topics, identifier)
+	outputContext.WriteLog(address, topics, data)
+
+	require.Equal(t, outputContext.outputState.Logs[1].Identifier, identifier)
+	require.Empty(t, outputContext.outputState.Logs[1].Topics)
+
+	topics = append(topics, topic)
+	outputContext.WriteLog(address, topics, data)
+
+	require.Equal(t, outputContext.outputState.Logs[2].Topics, [][]byte{topic})
 }
