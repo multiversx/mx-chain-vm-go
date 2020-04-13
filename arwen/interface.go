@@ -131,7 +131,6 @@ type OutputContext interface {
 	Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte) error
 	SelfDestruct(address []byte, beneficiary []byte)
 	GetRefund() uint64
-	AddRefund(refund *big.Int)
 	SetRefund(refund uint64)
 	ReturnCode() vmcommon.ReturnCode
 	SetReturnCode(returnCode vmcommon.ReturnCode)

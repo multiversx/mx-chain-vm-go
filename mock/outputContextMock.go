@@ -74,9 +74,6 @@ func (o *OutputContextMock) GetOutputAccount(address []byte) (*vmcommon.OutputAc
 	return o.OutputAccountMock, o.OutputAccountIsNew
 }
 
-func (o *OutputContextMock) AddRefund(refund *big.Int) {
-}
-
 func (o *OutputContextMock) GetRefund() uint64 {
 	return uint64(o.GasRefund.Int64())
 }

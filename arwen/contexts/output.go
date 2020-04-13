@@ -128,10 +128,6 @@ func (context *outputContext) SetRefund(refund uint64) {
 	context.outputState.GasRefund = big.NewInt(int64(refund))
 }
 
-func (context *outputContext) AddRefund(refund *big.Int) {
-	context.outputState.GasRefund.Add(context.outputState.GasRefund, refund)
-}
-
 func (context *outputContext) ReturnData() [][]byte {
 	return context.outputState.ReturnData
 }
