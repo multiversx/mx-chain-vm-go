@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path"
 	"syscall"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
@@ -36,8 +35,9 @@ type ArwenDriver struct {
 	counterDeploy uint64
 	counterCall   uint64
 
-	command *exec.Cmd
-	part    *NodePart
+	command  *exec.Cmd
+	part     *NodePart
+	logsPart ParentLogsPart
 }
 
 // NewArwenDriver creates a new driver
@@ -65,8 +65,10 @@ func NewArwenDriver(
 func (driver *ArwenDriver) startArwen() error {
 	log.Info("ArwenDriver.startArwen()")
 
-	logsPart, err := pipes.NewParentPart("Arwen", driver.logsMarshalizer)
-	logsProfileReader, logsWriter := logsPart.GetChildPipes()
+	logsProfileReader, logsWriter, err := driver.resetLogsPart()
+	if err != nil {
+		return err
+	}
 
 	err = driver.resetPipeStreams()
 	if err != nil {
@@ -118,55 +120,20 @@ func (driver *ArwenDriver) startArwen() error {
 		return err
 	}
 
-	logsPart.StartLoop(arwenStdout, arwenStderr)
+	driver.logsPart.StartLoop(arwenStdout, arwenStderr)
 
 	return nil
 }
 
-func (driver *ArwenDriver) getArwenPath() (string, error) {
-	arwenPath, err := driver.getArwenPathInCurrentDirectory()
-	if err == nil {
-		return arwenPath, nil
-	}
-
-	arwenPath, err = driver.getArwenPathFromEnvironment()
-	if err == nil {
-		return arwenPath, nil
-	}
-
-	return "", common.ErrArwenNotFound
-}
-
-func (driver *ArwenDriver) getArwenPathInCurrentDirectory() (string, error) {
-	cwd, err := os.Getwd()
+func (driver *ArwenDriver) resetLogsPart() (*os.File, *os.File, error) {
+	logsPart, err := pipes.NewParentPart("Arwen", driver.logsMarshalizer)
 	if err != nil {
-		return "", err
+		return nil, nil, err
 	}
 
-	arwenPath := path.Join(cwd, "arwen")
-	if fileExists(arwenPath) {
-		return arwenPath, nil
-	}
-
-	return "", common.ErrArwenNotFound
-}
-
-func (driver *ArwenDriver) getArwenPathFromEnvironment() (string, error) {
-	arwenPath := os.Getenv(common.EnvVarArwenPath)
-	if fileExists(arwenPath) {
-		return arwenPath, nil
-	}
-
-	return "", common.ErrArwenNotFound
-}
-
-func fileExists(filename string) bool {
-	info, err := os.Stat(filename)
-	if os.IsNotExist(err) {
-		return false
-	}
-
-	return !info.IsDir()
+	driver.logsPart = logsPart
+	readProfile, writeLogs := logsPart.GetChildPipes()
+	return readProfile, writeLogs, nil
 }
 
 func (driver *ArwenDriver) resetPipeStreams() error {
@@ -302,6 +269,8 @@ func (driver *ArwenDriver) DiagnoseWait(milliseconds uint32) error {
 
 // Close stops Arwen
 func (driver *ArwenDriver) Close() error {
+	driver.logsPart.StopLoop()
+
 	err := driver.stopArwen()
 	if err != nil {
 		log.Error("ArwenDriver.Close()", "err", err)
