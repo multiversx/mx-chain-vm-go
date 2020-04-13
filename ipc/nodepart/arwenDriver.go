@@ -1,28 +1,25 @@
 package nodepart
 
 import (
-	"bufio"
 	"fmt"
-	"io"
 	"os"
 	"os/exec"
 	"path"
-	"strings"
 	"syscall"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
-	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/logger"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/marshaling"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
+	"github.com/ElrondNetwork/elrond-go-logger/pipes"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
+
+var log = logger.GetOrCreate("arwenDriver")
 
 var _ vmcommon.VMExecutionHandler = (*ArwenDriver)(nil)
 
 // ArwenDriver manages the execution of the Arwen process
 type ArwenDriver struct {
-	driverLogger        logger.Logger
-	arwenMainLogger     logger.Logger
-	dialogueLogger      logger.Logger
 	blockchainHook      vmcommon.BlockchainHook
 	arwenArguments      common.ArwenArguments
 	config              Config
@@ -36,12 +33,6 @@ type ArwenDriver struct {
 	arwenOutputRead  *os.File
 	arwenOutputWrite *os.File
 
-	// TODO: Encapsulate to PipeLoggerSinkPart / PipeLoggerSourcePart
-	arwenLogRead     *os.File
-	arwenLogWrite    *os.File
-	dialogueLogRead  *os.File
-	dialogueLogWrite *os.File
-
 	counterDeploy uint64
 	counterCall   uint64
 
@@ -51,17 +42,11 @@ type ArwenDriver struct {
 
 // NewArwenDriver creates a new driver
 func NewArwenDriver(
-	driverLogger logger.Logger,
-	arwenMainLogger logger.Logger,
-	dialogueLogger logger.Logger,
 	blockchainHook vmcommon.BlockchainHook,
 	arwenArguments common.ArwenArguments,
 	config Config,
 ) (*ArwenDriver, error) {
 	driver := &ArwenDriver{
-		driverLogger:        driverLogger,
-		arwenMainLogger:     arwenMainLogger,
-		dialogueLogger:      dialogueLogger,
 		blockchainHook:      blockchainHook,
 		arwenArguments:      arwenArguments,
 		config:              config,
@@ -78,9 +63,12 @@ func NewArwenDriver(
 }
 
 func (driver *ArwenDriver) startArwen() error {
-	driver.driverLogger.Info("ArwenDriver.startArwen()")
+	log.Info("ArwenDriver.startArwen()")
 
-	err := driver.resetPipeStreams()
+	logsPart, err := pipes.NewParentPart("Arwen", driver.logsMarshalizer)
+	logsProfileReader, logsWriter := logsPart.GetChildPipes()
+
+	err = driver.resetPipeStreams()
 	if err != nil {
 		return err
 	}
@@ -95,8 +83,8 @@ func (driver *ArwenDriver) startArwen() error {
 		driver.arwenInitRead,
 		driver.arwenInputRead,
 		driver.arwenOutputWrite,
-		driver.arwenLogWrite,
-		driver.dialogueLogWrite,
+		logsProfileReader,
+		logsWriter,
 	}
 
 	arwenStdout, err := driver.command.StdoutPipe()
@@ -120,8 +108,6 @@ func (driver *ArwenDriver) startArwen() error {
 	}
 
 	driver.part, err = NewNodePart(
-		driver.driverLogger,
-		driver.dialogueLogger,
 		driver.arwenOutputRead,
 		driver.arwenInputWrite,
 		driver.blockchainHook,
@@ -132,7 +118,7 @@ func (driver *ArwenDriver) startArwen() error {
 		return err
 	}
 
-	driver.continuouslyCopyArwenLogs(arwenStdout, arwenStderr)
+	logsPart.StartLoop(arwenStdout, arwenStderr)
 
 	return nil
 }
@@ -191,12 +177,6 @@ func (driver *ArwenDriver) resetPipeStreams() error {
 	closeFile(driver.arwenOutputRead)
 	closeFile(driver.arwenOutputWrite)
 
-	// TODO: Encapsulate logger-pipes (see above TODO)
-	closeFile(driver.arwenLogRead)
-	closeFile(driver.arwenLogWrite)
-	closeFile(driver.dialogueLogRead)
-	closeFile(driver.dialogueLogWrite)
-
 	var err error
 
 	driver.arwenInitRead, driver.arwenInitWrite, err = os.Pipe()
@@ -210,16 +190,6 @@ func (driver *ArwenDriver) resetPipeStreams() error {
 	}
 
 	driver.arwenOutputRead, driver.arwenOutputWrite, err = os.Pipe()
-	if err != nil {
-		return err
-	}
-
-	driver.arwenLogRead, driver.arwenLogWrite, err = os.Pipe()
-	if err != nil {
-		return err
-	}
-
-	driver.dialogueLogRead, driver.dialogueLogWrite, err = os.Pipe()
 	if err != nil {
 		return err
 	}
@@ -261,7 +231,7 @@ func (driver *ArwenDriver) IsClosed() bool {
 // RunSmartContractCreate sends a deploy request to Arwen and waits for the output
 func (driver *ArwenDriver) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (*vmcommon.VMOutput, error) {
 	driver.counterDeploy++
-	driver.driverLogger.Trace("RunSmartContractCreate", "counter", driver.counterDeploy)
+	log.Trace("RunSmartContractCreate", "counter", driver.counterDeploy)
 
 	err := driver.RestartArwenIfNecessary()
 	if err != nil {
@@ -271,7 +241,7 @@ func (driver *ArwenDriver) RunSmartContractCreate(input *vmcommon.ContractCreate
 	request := common.NewMessageContractDeployRequest(input)
 	response, err := driver.part.StartLoop(request)
 	if err != nil {
-		driver.driverLogger.Error("RunSmartContractCreate", "err", err)
+		log.Warn("RunSmartContractCreate", "err", err)
 		_ = driver.Close()
 		return nil, common.WrapCriticalError(err)
 	}
@@ -288,7 +258,7 @@ func (driver *ArwenDriver) RunSmartContractCreate(input *vmcommon.ContractCreate
 // RunSmartContractCall sends an execution request to Arwen and waits for the output
 func (driver *ArwenDriver) RunSmartContractCall(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	driver.counterCall++
-	driver.driverLogger.Trace("RunSmartContractCall", "counter", driver.counterCall, "func", input.Function, "sc", input.RecipientAddr)
+	log.Trace("RunSmartContractCall", "counter", driver.counterCall, "func", input.Function, "sc", input.RecipientAddr)
 
 	err := driver.RestartArwenIfNecessary()
 	if err != nil {
@@ -298,7 +268,7 @@ func (driver *ArwenDriver) RunSmartContractCall(input *vmcommon.ContractCallInpu
 	request := common.NewMessageContractCallRequest(input)
 	response, err := driver.part.StartLoop(request)
 	if err != nil {
-		driver.driverLogger.Error("RunSmartContractCall", "err", err)
+		log.Warn("RunSmartContractCall", "err", err)
 		_ = driver.Close()
 		return nil, common.WrapCriticalError(err)
 	}
@@ -322,7 +292,7 @@ func (driver *ArwenDriver) DiagnoseWait(milliseconds uint32) error {
 	request := common.NewMessageDiagnoseWaitRequest(milliseconds)
 	response, err := driver.part.StartLoop(request)
 	if err != nil {
-		driver.driverLogger.Error("DiagnoseWait", "err", err)
+		log.Error("DiagnoseWait", "err", err)
 		_ = driver.Close()
 		return common.WrapCriticalError(err)
 	}
@@ -334,7 +304,7 @@ func (driver *ArwenDriver) DiagnoseWait(milliseconds uint32) error {
 func (driver *ArwenDriver) Close() error {
 	err := driver.stopArwen()
 	if err != nil {
-		driver.driverLogger.Error("ArwenDriver.Close()", "err", err)
+		log.Error("ArwenDriver.Close()", "err", err)
 		return err
 	}
 
@@ -353,50 +323,4 @@ func (driver *ArwenDriver) stopArwen() error {
 	}
 
 	return nil
-}
-
-func (driver *ArwenDriver) continuouslyCopyArwenLogs(arwenStdout io.Reader, arwenStderr io.Reader) {
-	stdoutReader := bufio.NewReader(arwenStdout)
-	stderrReader := bufio.NewReader(arwenStderr)
-	arwenLog := driver.arwenLogRead
-	dialogueLog := driver.dialogueLogRead
-
-	go func() {
-		for {
-			line, err := stdoutReader.ReadString('\n')
-			if err != nil {
-				break
-			}
-
-			line = strings.TrimSpace(line)
-			driver.arwenMainLogger.Trace("ARWEN-OUT", "line", line)
-		}
-	}()
-
-	go func() {
-		for {
-			line, err := stderrReader.ReadString('\n')
-			if err != nil {
-				break
-			}
-
-			line = strings.TrimSpace(line)
-			driver.arwenMainLogger.Error("ARWEN-ERR", "line", line)
-		}
-	}()
-
-	driver.continuouslyCopyPipeToLog(arwenLog, driver.arwenMainLogger)
-	driver.continuouslyCopyPipeToLog(dialogueLog, driver.dialogueLogger)
-}
-
-func (driver *ArwenDriver) continuouslyCopyPipeToLog(pipe *os.File, log logger.Logger) {
-	go func() {
-		for {
-			err := logger.ReceiveLogThroughPipe(log, pipe, driver.logsMarshalizer)
-			if err != nil {
-				driver.driverLogger.Error("continuouslyCopyPipeToLog error", "err", err)
-				break
-			}
-		}
-	}()
 }
