@@ -85,7 +85,7 @@
                     "0x5555555555555555555555555555555555555555555555555555555555555555": "0xfefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefe"
                 },
                 "code": "bob.wasm",
-                "asyncCallData": "messageMe@01@02@030303@fefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefe@"
+                "asyncCallData": ""
             }
         }
     }

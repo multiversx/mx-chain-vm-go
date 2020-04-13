@@ -3,6 +3,7 @@ package tests
 import (
 	"testing"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/logger"
@@ -89,7 +90,7 @@ func newDriver(tb testing.TB, blockchain *mock.BlockchainHookStub) *nodepart.Arw
 		dialogueLogger,
 		blockchain,
 		common.ArwenArguments{
-			VMHostArguments: common.VMHostArguments{
+			VMHostParameters: arwen.VMHostParameters{
 				VMType:        arwenVirtualMachine,
 				BlockGasLimit: uint64(10000000),
 				GasSchedule:   config.MakeGasMap(1),

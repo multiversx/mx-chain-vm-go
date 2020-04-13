@@ -1,5 +1,10 @@
 package arwen
 
+import (
+	"github.com/ElrondNetwork/arwen-wasm-vm/config"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+)
+
 type StorageStatus int
 
 const (
@@ -33,4 +38,12 @@ type CodeDeployInput struct {
 	ContractCode         []byte
 	ContractCodeMetadata []byte
 	ContractAddress      []byte
+}
+
+// VMHostParameters represents the parameters to be passed to VMHost
+type VMHostParameters struct {
+	VMType                   []byte
+	BlockGasLimit            uint64
+	GasSchedule              config.GasScheduleMap
+	ProtocolBuiltinFunctions vmcommon.FunctionNames
 }

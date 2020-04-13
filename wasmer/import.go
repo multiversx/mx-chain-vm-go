@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"reflect"
 	"unsafe"
+
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // ImportedFunctionError represents any kind of errors related to a
@@ -84,18 +86,12 @@ func (imports *Imports) Count() int {
 	return count
 }
 
-func (imports *Imports) Names() []string {
-	length := 0
+func (imports *Imports) Names() vmcommon.FunctionNames {
+	names := make(vmcommon.FunctionNames)
+	var empty struct{}
 	for _, env := range imports.imports {
-		length += len(env)
-	}
-
-	names := make([]string, length)
-	i := 0
-	for _, env := range imports.imports {
-		for name, _ := range env {
-			names[i] = name
-			i++
+		for name := range env {
+			names[name] = empty
 		}
 	}
 	return names
@@ -132,10 +128,6 @@ func (imports *Imports) Append(importName string, implementation interface{}, cg
 			wasmInputs[nth] = cWasmI32
 		case reflect.Int64:
 			wasmInputs[nth] = cWasmI64
-		case reflect.Float32:
-			wasmInputs[nth] = cWasmF32
-		case reflect.Float64:
-			wasmInputs[nth] = cWasmF64
 		default:
 			return nil, NewImportedFunctionError(importName, fmt.Sprintf("Invalid input type for the `%%s` imported function; given `%s`; only accept `int32`, `int64`, `float32`, and `float64`.", importInput.Kind()))
 		}
@@ -149,10 +141,6 @@ func (imports *Imports) Append(importName string, implementation interface{}, cg
 			wasmOutputs[0] = cWasmI32
 		case reflect.Int64:
 			wasmOutputs[0] = cWasmI64
-		case reflect.Float32:
-			wasmOutputs[0] = cWasmF32
-		case reflect.Float64:
-			wasmOutputs[0] = cWasmF64
 		default:
 			return nil, NewImportedFunctionError(importName, fmt.Sprintf("Invalid output type for the `%%s` imported function; given `%s`; only accept `int32`, `int64`, `float32`, and `float64`.", importType.Out(0).Kind()))
 		}

@@ -5,6 +5,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/arwenpart"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
@@ -68,7 +69,7 @@ func doContractRequest(
 	dialogueLogger := logger.NewDefaultLogger(logger.LogDebug)
 
 	go func() {
-		vmHostArguments := &common.VMHostArguments{
+		VMHostParameters := &arwen.VMHostParameters{
 			VMType:        []byte{5, 0},
 			BlockGasLimit: uint64(10000000),
 			GasSchedule:   config.MakeGasMap(1),
@@ -79,7 +80,7 @@ func doContractRequest(
 			dialogueLogger,
 			files.inputOfArwen,
 			files.outputOfArwen,
-			vmHostArguments,
+			VMHostParameters,
 			marshaling.CreateMarshalizer(marshaling.JSON),
 		)
 		assert.Nil(t, err)

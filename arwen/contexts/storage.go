@@ -35,12 +35,17 @@ func (context *storageContext) PushState() {
 	context.stateStack = append(context.stateStack, context.address)
 }
 
-func (context *storageContext) PopState() {
+func (context *storageContext) PopSetActiveState() {
 	stateStackLen := len(context.stateStack)
 	prevAddress := context.stateStack[stateStackLen-1]
 	context.stateStack = context.stateStack[:stateStackLen-1]
 
 	context.address = prevAddress
+}
+
+func (context *storageContext) PopDiscard() {
+	stateStackLen := len(context.stateStack)
+	context.stateStack = context.stateStack[:stateStackLen-1]
 }
 
 func (context *storageContext) ClearStateStack() {
@@ -63,9 +68,11 @@ func (context *storageContext) GetStorage(key []byte) []byte {
 	}
 
 	value, _ := context.blockChainHook.GetStorageData(context.address, key)
-	storageUpdates[string(key)] = &vmcommon.StorageUpdate{
-		Offset: key,
-		Data:   value,
+	if value != nil {
+		storageUpdates[string(key)] = &vmcommon.StorageUpdate{
+			Offset: key,
+			Data:   value,
+		}
 	}
 
 	return value
@@ -93,6 +100,7 @@ func (context *storageContext) SetStorage(key []byte, value []byte) int32 {
 		oldValue = update.Data
 	}
 
+	lengthOldValue := len(oldValue)
 	if bytes.Equal(oldValue, value) {
 		useGas := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(length)
 		metering.UseGas(useGas)
@@ -112,13 +120,26 @@ func (context *storageContext) SetStorage(key []byte, value []byte) int32 {
 		return int32(arwen.StorageAdded)
 	}
 	if bytes.Equal(value, zero) {
-		freeGas := metering.GasSchedule().BaseOperationCost.StorePerByte * uint64(len(oldValue))
+		freeGas := metering.GasSchedule().BaseOperationCost.ReleasePerByte * uint64(lengthOldValue)
 		metering.FreeGas(freeGas)
 		return int32(arwen.StorageDeleted)
 	}
 
-	useGas := metering.GasSchedule().BaseOperationCost.PersistPerByte * uint64(length)
-	metering.UseGas(useGas)
+	newValueExtraLength := length - lengthOldValue
+	if newValueExtraLength > 0 {
+		useGas := metering.GasSchedule().BaseOperationCost.PersistPerByte * uint64(lengthOldValue)
+		useGas += metering.GasSchedule().BaseOperationCost.StorePerByte * uint64(newValueExtraLength)
+		metering.UseGas(useGas)
+	}
+	if newValueExtraLength < 0 {
+		newValueExtraLength = -newValueExtraLength
+
+		useGas := metering.GasSchedule().BaseOperationCost.PersistPerByte * uint64(length)
+		metering.UseGas(useGas)
+
+		freeGas := metering.GasSchedule().BaseOperationCost.ReleasePerByte * uint64(newValueExtraLength)
+		metering.FreeGas(freeGas)
+	}
 
 	return int32(arwen.StorageModified)
 }

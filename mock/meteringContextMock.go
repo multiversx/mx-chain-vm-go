@@ -11,6 +11,7 @@ type MeteringContextMock struct {
 	GasCost           *config.GasCost
 	GasLeftMock       uint64
 	BlockGasLimitMock uint64
+	GasLocked         uint64
 	Err               error
 }
 
@@ -47,6 +48,10 @@ func (m *MeteringContextMock) BoundGasLimit(value int64) uint64 {
 }
 
 func (m *MeteringContextMock) UnlockGasIfAsyncStep() {
+}
+
+func (m *MeteringContextMock) GetGasLockedForAsyncStep() uint64 {
+	return m.GasLocked
 }
 
 func (m *MeteringContextMock) BlockGasLimit() uint64 {

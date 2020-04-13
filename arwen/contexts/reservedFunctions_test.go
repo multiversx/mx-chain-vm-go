@@ -4,17 +4,18 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
 
 func TestReservedFunctions_IsFunctionReserved(t *testing.T) {
-	scAPINames := []string{
-		"rockets",
+	scAPINames := vmcommon.FunctionNames{
+		"rockets": {},
 	}
 
-	fromProtocol := []string{
-		"protocolFunctionFoo",
-		"protocolFunctionBar",
+	fromProtocol := vmcommon.FunctionNames{
+		"protocolFunctionFoo": {},
+		"protocolFunctionBar": {},
 	}
 
 	reserved := NewReservedFunctions(scAPINames, fromProtocol)

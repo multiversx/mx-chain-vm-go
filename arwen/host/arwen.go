@@ -16,6 +16,8 @@ import (
 
 var log = logger.GetOrCreate("arwen/host")
 
+var MaximumWasmerInstanceCount = uint64(10)
+
 // TryFunction corresponds to the try() part of a try / catch block
 type TryFunction func()
 
@@ -36,28 +38,27 @@ type vmHost struct {
 	storageContext    arwen.StorageContext
 	bigIntContext     arwen.BigIntContext
 
-	scAPIMethods *wasmer.Imports
+	scAPIMethods             *wasmer.Imports
+	protocolBuiltinFunctions vmcommon.FunctionNames
 }
 
 // NewArwenVM creates a new Arwen vmHost
 func NewArwenVM(
 	blockChainHook vmcommon.BlockchainHook,
 	cryptoHook vmcommon.CryptoHook,
-	vmType []byte,
-	blockGasLimit uint64,
-	gasSchedule config.GasScheduleMap,
-	protocolReservedFunctions []string,
+	hostParameters *arwen.VMHostParameters,
 ) (*vmHost, error) {
 
 	host := &vmHost{
-		blockChainHook:    blockChainHook,
-		cryptoHook:        cryptoHook,
-		meteringContext:   nil,
-		runtimeContext:    nil,
-		blockchainContext: nil,
-		storageContext:    nil,
-		bigIntContext:     nil,
-		scAPIMethods:      nil,
+		blockChainHook:           blockChainHook,
+		cryptoHook:               cryptoHook,
+		meteringContext:          nil,
+		runtimeContext:           nil,
+		blockchainContext:        nil,
+		storageContext:           nil,
+		bigIntContext:            nil,
+		scAPIMethods:             nil,
+		protocolBuiltinFunctions: hostParameters.ProtocolBuiltinFunctions,
 	}
 
 	var err error
@@ -94,12 +95,12 @@ func NewArwenVM(
 		return nil, err
 	}
 
-	host.runtimeContext, err = contexts.NewRuntimeContext(host, vmType, protocolReservedFunctions)
+	host.runtimeContext, err = contexts.NewRuntimeContext(host, hostParameters.VMType)
 	if err != nil {
 		return nil, err
 	}
 
-	host.meteringContext, err = contexts.NewMeteringContext(host, gasSchedule, blockGasLimit)
+	host.meteringContext, err = contexts.NewMeteringContext(host, hostParameters.GasSchedule, hostParameters.BlockGasLimit)
 	if err != nil {
 		return nil, err
 	}
@@ -119,10 +120,12 @@ func NewArwenVM(
 		return nil, err
 	}
 
-	gasCostConfig, err := config.CreateGasConfig(gasSchedule)
+	gasCostConfig, err := config.CreateGasConfig(hostParameters.GasSchedule)
 	if err != nil {
 		return nil, err
 	}
+
+	host.runtimeContext.SetMaxInstanceCount(MaximumWasmerInstanceCount)
 
 	opcodeCosts := gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray()
 	wasmer.SetOpcodeCosts(&opcodeCosts)
@@ -160,7 +163,24 @@ func (host *vmHost) BigInt() arwen.BigIntContext {
 	return host.bigIntContext
 }
 
+func (host *vmHost) GetContexts() (
+	arwen.BigIntContext,
+	arwen.BlockchainContext,
+	arwen.MeteringContext,
+	arwen.OutputContext,
+	arwen.RuntimeContext,
+	arwen.StorageContext,
+) {
+	return host.bigIntContext,
+		host.blockchainContext,
+		host.meteringContext,
+		host.outputContext,
+		host.runtimeContext,
+		host.storageContext
+}
+
 func (host *vmHost) InitState() {
+	host.ClearContextStateStack()
 	host.bigIntContext.InitState()
 	host.outputContext.InitState()
 	host.runtimeContext.InitState()
@@ -168,30 +188,24 @@ func (host *vmHost) InitState() {
 	host.ethInput = nil
 }
 
-func (host *vmHost) PushState() {
-	host.bigIntContext.PushState()
-	host.runtimeContext.PushState()
-	host.outputContext.PushState()
-	host.storageContext.PushState()
-}
-
-func (host *vmHost) PopState() {
-	host.bigIntContext.PopState()
-	host.runtimeContext.PopState()
-	host.outputContext.PopState()
-	host.storageContext.PopState()
-}
-
-func (host *vmHost) ClearStateStack() {
+func (host *vmHost) ClearContextStateStack() {
 	host.bigIntContext.ClearStateStack()
-	host.runtimeContext.ClearStateStack()
-	host.runtimeContext.ClearInstanceStack()
 	host.outputContext.ClearStateStack()
+	host.runtimeContext.ClearStateStack()
 	host.storageContext.ClearStateStack()
+}
+
+func (host *vmHost) Clean() {
+	host.runtimeContext.CleanInstance()
+	arwen.RemoveAllHostContexts()
 }
 
 func (host *vmHost) GetAPIMethods() *wasmer.Imports {
 	return host.scAPIMethods
+}
+
+func (host *vmHost) GetProtocolBuiltinFunctions() vmcommon.FunctionNames {
+	return host.protocolBuiltinFunctions
 }
 
 func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error) {

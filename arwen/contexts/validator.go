@@ -6,6 +6,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 const NoArity = -1
@@ -16,9 +17,9 @@ type WASMValidator struct {
 }
 
 // NewWASMValidator creates a new WASMValidator
-func NewWASMValidator(scAPINames []string, protocolReservedFunctions []string) *WASMValidator {
+func NewWASMValidator(scAPINames vmcommon.FunctionNames, protocolBuiltinFunctions vmcommon.FunctionNames) *WASMValidator {
 	return &WASMValidator{
-		reserved: NewReservedFunctions(scAPINames, protocolReservedFunctions),
+		reserved: NewReservedFunctions(scAPINames, protocolBuiltinFunctions),
 	}
 }
 

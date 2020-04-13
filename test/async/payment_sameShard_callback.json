@@ -84,7 +84,7 @@
                     "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff": "0x123400"
                 },
                 "code": "bob.wasm",
-                "asyncCallData": "payMeWithResult@56@70617943616c6c6261636b"
+                "asyncCallData": ""
             }
         }
     }
