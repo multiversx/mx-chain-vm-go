@@ -16,7 +16,7 @@ type meteringContext struct {
 // NewMeteringContext creates a new meteringContext
 func NewMeteringContext(
 	host arwen.VMHost,
-	gasSchedule map[string]map[string]uint64,
+	gasSchedule config.GasScheduleMap,
 	blockGasLimit uint64,
 ) (*meteringContext, error) {
 

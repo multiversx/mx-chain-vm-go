@@ -83,3 +83,7 @@ func (host *VmHostMock) ClearStateStack() {
 func (host *VmHostMock) GetAPIMethods() *wasmer.Imports {
 	return host.SCAPIMethods
 }
+
+func (host *VmHostMock) GetProtocolBuiltinFunctions() vmcommon.FunctionNames {
+	return make(vmcommon.FunctionNames)
+}

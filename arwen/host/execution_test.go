@@ -17,7 +17,7 @@ import (
 var counterKey = []byte{'m', 'y', 'c', 'o', 'u', 'n', 't', 'e', 'r', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 
 func TestNewArwen(t *testing.T) {
-	host, err := DefaultTestArwen(t, nil, nil)
+	host, err := DefaultTestArwen(t, &mock.BlockchainHookStub{}, &mock.CryptoHookMock{})
 	require.Nil(t, err)
 	require.NotNil(t, host)
 }

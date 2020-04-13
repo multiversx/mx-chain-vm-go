@@ -14,18 +14,19 @@ type VmHostStub struct {
 	PopStateCalled        func()
 	ClearStateStackCalled func()
 
-	CryptoCalled               func() vmcommon.CryptoHook
-	BlockchainCalled           func() arwen.BlockchainContext
-	RuntimeCalled              func() arwen.RuntimeContext
-	BigIntCalled               func() arwen.BigIntContext
-	OutputCalled               func() arwen.OutputContext
-	MeteringCalled             func() arwen.MeteringContext
-	StorageCalled              func() arwen.StorageContext
-	CreateNewContractCalled    func(input *vmcommon.ContractCreateInput) ([]byte, error)
-	ExecuteOnSameContextCalled func(input *vmcommon.ContractCallInput) error
-	ExecuteOnDestContextCalled func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
-	EthereumCallDataCalled     func() []byte
-	GetAPIMethodsCalled        func() *wasmer.Imports
+	CryptoCalled                      func() vmcommon.CryptoHook
+	BlockchainCalled                  func() arwen.BlockchainContext
+	RuntimeCalled                     func() arwen.RuntimeContext
+	BigIntCalled                      func() arwen.BigIntContext
+	OutputCalled                      func() arwen.OutputContext
+	MeteringCalled                    func() arwen.MeteringContext
+	StorageCalled                     func() arwen.StorageContext
+	CreateNewContractCalled           func(input *vmcommon.ContractCreateInput) ([]byte, error)
+	ExecuteOnSameContextCalled        func(input *vmcommon.ContractCallInput) error
+	ExecuteOnDestContextCalled        func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
+	EthereumCallDataCalled            func() []byte
+	GetAPIMethodsCalled               func() *wasmer.Imports
+	GetProtocolBuiltinFunctionsCalled func() vmcommon.FunctionNames
 }
 
 func (vhs *VmHostStub) InitState() {
@@ -134,4 +135,11 @@ func (vhs *VmHostStub) GetAPIMethods() *wasmer.Imports {
 		return vhs.GetAPIMethodsCalled()
 	}
 	return nil
+}
+
+func (vhs *VmHostStub) GetProtocolBuiltinFunctions() vmcommon.FunctionNames {
+	if vhs.GetProtocolBuiltinFunctionsCalled != nil {
+		return vhs.GetProtocolBuiltinFunctionsCalled()
+	}
+	return make(vmcommon.FunctionNames)
 }

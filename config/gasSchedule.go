@@ -7,7 +7,10 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-func CreateGasConfig(gasMap map[string]map[string]uint64) (*GasCost, error) {
+// GasScheduleMap (alias) is the map for gas schedule
+type GasScheduleMap = map[string]map[string]uint64
+
+func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 	baseOps := &BaseOperationCost{}
 	err := mapstructure.Decode(gasMap["BaseOperationCost"], baseOps)
 	if err != nil {
@@ -102,13 +105,13 @@ func checkForZeroUint64Fields(arg interface{}) error {
 	return nil
 }
 
-func MakeGasMap(value uint64) map[string]map[string]uint64 {
-	gasMap := make(map[string]map[string]uint64)
+func MakeGasMap(value uint64) GasScheduleMap {
+	gasMap := make(GasScheduleMap)
 	gasMap = FillGasMap(gasMap, value)
 	return gasMap
 }
 
-func FillGasMap(gasMap map[string]map[string]uint64, value uint64) map[string]map[string]uint64 {
+func FillGasMap(gasMap GasScheduleMap, value uint64) GasScheduleMap {
 	gasMap["BuiltInCost"] = FillGasMap_BuiltInCosts(value)
 	gasMap["BaseOperationCost"] = FillGasMap_BaseOperationCosts(value)
 	gasMap["ElrondAPICost"] = FillGasMap_ElrondAPICosts(value)

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"reflect"
 	"unsafe"
+
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // ImportedFunctionError represents any kind of errors related to a
@@ -84,18 +86,12 @@ func (imports *Imports) Count() int {
 	return count
 }
 
-func (imports *Imports) Names() []string {
-	length := 0
+func (imports *Imports) Names() vmcommon.FunctionNames {
+	names := make(vmcommon.FunctionNames)
+	var empty struct{}
 	for _, env := range imports.imports {
-		length += len(env)
-	}
-
-	names := make([]string, length)
-	i := 0
-	for _, env := range imports.imports {
-		for name, _ := range env {
-			names[i] = name
-			i++
+		for name := range env {
+			names[name] = empty
 		}
 	}
 	return names

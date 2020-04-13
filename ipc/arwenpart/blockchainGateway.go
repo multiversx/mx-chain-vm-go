@@ -326,16 +326,32 @@ func (blockchain *BlockchainHookGateway) CurrentEpoch() uint32 {
 
 // ProcessBuiltInFunction forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*big.Int, uint64, error) {
-	request := common.NewMessageBlockchainProcessBuiltInFunctionRequest(*input)
+	request := common.NewMessageBlockchainProcessBuiltinFunctionRequest(*input)
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
 	if err != nil {
 		return arwen.Zero, 0, err
 	}
 
-	if rawResponse.GetKind() != common.BlockchainProcessBuiltInFunctionResponse {
+	if rawResponse.GetKind() != common.BlockchainProcessBuiltinFunctionResponse {
 		return arwen.Zero, 0, common.ErrBadHookResponseFromNode
 	}
 
-	response := rawResponse.(*common.MessageBlockchainProcessBuiltInFunctionResponse)
+	response := rawResponse.(*common.MessageBlockchainProcessBuiltinFunctionResponse)
 	return response.Value, response.GasConsumed, response.GetError()
+}
+
+// GetBuiltinFunctionNames forwards a message to the actual hook
+func (blockchain *BlockchainHookGateway) GetBuiltinFunctionNames() vmcommon.FunctionNames {
+	request := common.NewMessageBlockchainGetBuiltinFunctionNamesRequest()
+	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if err != nil {
+		return make(vmcommon.FunctionNames)
+	}
+
+	if rawResponse.GetKind() != common.BlockchainGetBuiltinFunctionNamesResponse {
+		return make(vmcommon.FunctionNames)
+	}
+
+	response := rawResponse.(*common.MessageBlockchainGetBuiltinFunctionNamesResponse)
+	return response.FunctionNames
 }

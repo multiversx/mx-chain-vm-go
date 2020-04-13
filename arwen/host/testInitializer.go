@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -82,7 +83,12 @@ func DefaultTestArwenForTwoSCs(t *testing.T, parentCode []byte, childCode []byte
 }
 
 func DefaultTestArwen(tb testing.TB, blockchain vmcommon.BlockchainHook, crypto vmcommon.CryptoHook) (*vmHost, error) {
-	host, err := NewArwenVM(blockchain, crypto, defaultVMType, uint64(1000), config.MakeGasMap(1))
+	host, err := NewArwenVM(blockchain, crypto, &arwen.VMHostParameters{
+		VMType:                   defaultVMType,
+		BlockGasLimit:            uint64(1000),
+		GasSchedule:              config.MakeGasMap(1),
+		ProtocolBuiltinFunctions: make(vmcommon.FunctionNames),
+	})
 	require.Nil(tb, err)
 	require.NotNil(tb, host)
 	return host, err
@@ -246,13 +252,13 @@ func LoadTomlFileToMap(relativePath string) (map[string]interface{}, error) {
 	return loadedMap, nil
 }
 
-func LoadGasScheduleConfig(filepath string) (map[string]map[string]uint64, error) {
+func LoadGasScheduleConfig(filepath string) (config.GasScheduleMap, error) {
 	gasScheduleConfig, err := LoadTomlFileToMap(filepath)
 	if err != nil {
 		return nil, err
 	}
 
-	flattenedGasSchedule := make(map[string]map[string]uint64)
+	flattenedGasSchedule := make(config.GasScheduleMap)
 	for libType, costs := range gasScheduleConfig {
 		flattenedGasSchedule[libType] = make(map[string]uint64)
 		costsMap := costs.(map[string]interface{})
