@@ -740,6 +740,80 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 	require.Equal(t, arwen.ErrNotEnoughGas.Error(), vmOutput.ReturnMessage)
 }
 
+func TestExecution_ExecuteOnSameContext_BuiltinFunctions(t *testing.T) {
+	code := GetTestSCCode("exec-same-ctx-builtin", "../../")
+	scBalance := big.NewInt(1000)
+
+	getBalanceCalled := func(address []byte) (*big.Int, error) {
+		if bytes.Equal(parentAddress, address) {
+			return scBalance, nil
+		}
+
+		return big.NewInt(0), nil
+	}
+	getBuiltinFunctionNames := func() vmcommon.FunctionNames {
+		names := make(vmcommon.FunctionNames)
+
+		var empty struct{}
+		names["builtinClaim"] = empty
+		names["builtinDoSomething"] = empty
+		return names
+	}
+
+	host, stubBlockchainHook := DefaultTestArwenForCall(t, code)
+	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
+	// stubBlockchainHook.GetBuiltinFunctionNamesCalled = getBuiltinFunctionNames
+	stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
+	host.protocolBuiltinFunctions = getBuiltinFunctionNames()
+
+	input := DefaultTestContractCallInput()
+	input.RecipientAddr = parentAddress
+
+	// Run function testBuiltins1
+	input.Function = "testBuiltins1"
+	input.GasProvided = 100000
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+
+	require.NotNil(t, vmOutput)
+	expectedVMOutput := expectedVMOutput_SameCtx_BuiltinFunctions_1()
+	require.Equal(t, expectedVMOutput, vmOutput)
+
+	// Run function testBuiltins2
+	input.Function = "testBuiltins2"
+	input.GasProvided = 100000
+
+	vmOutput, err = host.RunSmartContractCall(input)
+	require.Nil(t, err)
+
+	require.NotNil(t, vmOutput)
+	expectedVMOutput = expectedVMOutput_SameCtx_BuiltinFunctions_2()
+	require.Equal(t, expectedVMOutput, vmOutput)
+
+	// Run function testBuiltins3
+	input.Function = "testBuiltins3"
+	input.GasProvided = 100000
+
+	vmOutput, err = host.RunSmartContractCall(input)
+	require.Nil(t, err)
+
+	require.NotNil(t, vmOutput)
+	expectedVMOutput = expectedVMOutput_SameCtx_BuiltinFunctions_3()
+	require.Equal(t, expectedVMOutput, vmOutput)
+}
+
+func dummyProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*big.Int, uint64, error) {
+	if input.Function == "builtinClaim" {
+		return big.NewInt(42), 100, nil
+	}
+	if input.Function == "builtinDoSomething" {
+		return arwen.Zero, 0, nil
+	}
+	return input.CallValue, input.GasProvided, arwen.ErrFuncNotFound
+
+}
+
 func TestExecution_ExecuteOnDestContext_Prepare(t *testing.T) {
 	parentCode := GetTestSCCode("exec-dest-ctx-parent", "../../")
 	parentSCBalance := big.NewInt(1000)

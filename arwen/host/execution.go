@@ -426,7 +426,7 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) error
 
 	valueToSend, gasConsumed, err := host.blockChainHook.ProcessBuiltInFunction(input)
 	if err != nil {
-		metering.UseGas(input.GasProvided)
+		metering.UseGas(gasConsumed)
 		return err
 	}
 
