@@ -22,6 +22,7 @@ type OutputContextStub struct {
 	WriteLogCalled                    func(address []byte, topics [][]byte, data []byte)
 	TransferCalled                    func(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte) error
 	SelfDestructCalled                func(address []byte, beneficiary []byte)
+	AddRefundCalled                   func(refund *big.Int)
 	GetRefundCalled                   func() uint64
 	SetRefundCalled                   func(refund uint64)
 	ReturnCodeCalled                  func() vmcommon.ReturnCode
@@ -117,6 +118,12 @@ func (o *OutputContextStub) GetRefund() uint64 {
 		return o.GetRefundCalled()
 	}
 	return 0
+}
+
+func (o *OutputContextStub) AddRefund(refund *big.Int) {
+	if o.AddRefundCalled != nil {
+		o.AddRefundCalled(refund)
+	}
 }
 
 func (o *OutputContextStub) SetRefund(refund uint64) {

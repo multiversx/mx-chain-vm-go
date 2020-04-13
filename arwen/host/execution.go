@@ -252,6 +252,12 @@ func (host *vmHost) isInitFunctionBeingCalled() bool {
 	return functionName == arwen.InitFunctionName || functionName == arwen.InitFunctionNameEth
 }
 
+func (host *vmHost) isBuiltinFunctionBeingCalled() bool {
+	functionName := host.Runtime().Function()
+	_, ok := host.protocolBuiltinFunctions[functionName]
+	return ok
+}
+
 func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error) {
 	_, blockchain, metering, output, runtime, _ := host.GetContexts()
 
@@ -340,6 +346,10 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]by
 func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 	_, _, metering, output, runtime, _ := host.GetContexts()
 
+	if host.isBuiltinFunctionBeingCalled() {
+		return host.callBuiltinFunction(input)
+	}
+
 	// Use all gas initially, on the Wasmer instance of the caller
 	// (runtime.PushInstance() is called later). In case of successful execution,
 	// the unused gas will be restored.
@@ -408,6 +418,20 @@ func (host *vmHost) callSCMethodIndirect() error {
 		return arwen.ErrFunctionRunError
 	}
 
+	return nil
+}
+
+func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) error {
+	_, _, metering, output, _, _ := host.GetContexts()
+
+	valueToSend, gasConsumed, err := host.blockChainHook.ProcessBuiltInFunction(input)
+	if err != nil {
+		metering.UseGas(input.GasProvided)
+		return err
+	}
+
+	output.AddRefund(valueToSend)
+	metering.UseGas(gasConsumed)
 	return nil
 }
 
