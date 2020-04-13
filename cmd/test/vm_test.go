@@ -111,9 +111,7 @@ func TestDelegationContract(t *testing.T) {
 		getTestRoot(),
 		"delegation",
 		".json",
-		[]string{
-			"*/init_bad_node_share.json", // TODO: test will pass after arwen init error fix
-		},
+		[]string{},
 		testExec)
 
 	if err != nil {
