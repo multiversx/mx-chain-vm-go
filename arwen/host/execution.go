@@ -422,7 +422,7 @@ func (host *vmHost) callSCMethodIndirect() error {
 }
 
 func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) error {
-	_, _, metering, output, _, _ := host.GetContexts()
+	_, _, metering, output, runtime, _ := host.GetContexts()
 
 	valueToSend, gasConsumed, err := host.blockChainHook.ProcessBuiltInFunction(input)
 	if err != nil {
@@ -430,7 +430,8 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) error
 		return err
 	}
 
-	output.AddRefund(valueToSend)
+	scAccount, _ := output.GetOutputAccount(runtime.GetSCAddress())
+	scAccount.BalanceDelta.Add(scAccount.BalanceDelta, valueToSend)
 	metering.UseGas(gasConsumed)
 	return nil
 }
