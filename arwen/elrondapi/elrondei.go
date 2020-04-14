@@ -60,6 +60,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
+	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -792,11 +793,15 @@ func int64getArgument(context unsafe.Pointer, id int32) int64 {
 	metering.UseGas(gasToUse)
 
 	args := runtime.Arguments()
-	if int32(len(args)) <= id {
-		return -1
+	if id < 0 || id >= int32(len(args)) {
+		runtime.SignalUserError(arwen.UserErrorArgIndexOutOfRange)
 	}
 
-	argBigInt := big.NewInt(0).SetBytes(args[id])
+	arg := args[id]
+	argBigInt := twos.SetBytes(big.NewInt(0), arg)
+	if !argBigInt.IsInt64() {
+		runtime.SignalUserError(arwen.UserErrorArgOutOfRange)
+	}
 	return argBigInt.Int64()
 }
 
@@ -845,12 +850,7 @@ func int64finish(context unsafe.Pointer, value int64) {
 	output := arwen.GetOutputContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	var valueBytes []byte
-	if value == 0 {
-		valueBytes = []byte{0}
-	} else {
-		valueBytes = big.NewInt(0).SetInt64(value).Bytes()
-	}
+	valueBytes := twos.ToBytes(big.NewInt(0).SetInt64(value))
 	output.Finish(valueBytes)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64Finish

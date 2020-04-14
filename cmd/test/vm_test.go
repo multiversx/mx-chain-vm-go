@@ -119,6 +119,20 @@ func TestDelegationContract(t *testing.T) {
 	}
 }
 
+func TestDnsContract(t *testing.T) {
+	testExec := newArwenTestExecutor()
+	err := controller.RunAllJSONTestsInDirectory(
+		getTestRoot(),
+		"dns",
+		".json",
+		[]string{},
+		testExec)
+
+	if err != nil {
+		t.Error(err)
+	}
+}
+
 func getTestRoot() string {
 	exePath, err := os.Getwd()
 	if err != nil {
