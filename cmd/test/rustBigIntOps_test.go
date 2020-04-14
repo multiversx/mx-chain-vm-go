@@ -10,52 +10,6 @@ import (
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 )
 
-func getSmallNumbers() []*big.Int {
-	return []*big.Int{
-		big.NewInt(0),
-		big.NewInt(1),
-		big.NewInt(2),
-		big.NewInt(10),
-		big.NewInt(12345),
-	}
-}
-
-func getLargeNumbers() []*big.Int {
-	big1, _ := big.NewInt(0).SetString("18446744073709551615", 10)
-	big2, _ := big.NewInt(0).SetString("18446744073709551616", 10)
-	big3, _ := big.NewInt(0).SetString("18446744073709551617", 10)
-
-	return []*big.Int{
-		big.NewInt(2147483647),
-		big.NewInt(2147483648),
-		big.NewInt(2147483649),
-		big.NewInt(4294967295),
-		big.NewInt(4294967296),
-		big.NewInt(4294967297),
-		big1,
-		big2,
-		big3,
-	}
-}
-
-func getPositiveNumbers() []*big.Int {
-	var numbers []*big.Int
-	numbers = append(numbers, getSmallNumbers()...)
-	numbers = append(numbers, getLargeNumbers()...)
-	return numbers
-}
-
-func getNumbers() []*big.Int {
-	positiveNumbers := getPositiveNumbers()
-	var numbers []*big.Int
-	numbers = append(numbers, positiveNumbers...)
-	for _, num := range numbers {
-		neg := big.NewInt(0).Neg(num)
-		numbers = append(numbers, neg)
-	}
-	return numbers
-}
-
 func unsignedInterpreter(bytes []byte) *big.Int {
 	return big.NewInt(0).SetBytes(bytes)
 }
@@ -118,14 +72,98 @@ func appendBinaryOpTestCase(
 	return testCases
 }
 
-func TestBigUintArith(t *testing.T) {
-	if testing.Short() {
-		t.Skip("this is not a short test")
-	}
-
+func TestBigIntArith(t *testing.T) {
 	var testCases []*pureFunctionIO
 
-	numbers := getPositiveNumbers()
+	big1, _ := big.NewInt(0).SetString("18446744073709551616", 10)
+	big2, _ := big.NewInt(0).SetString("-123456789012345678901234567890", 10)
+	numbers := []*big.Int{
+		big.NewInt(0),
+		big.NewInt(1),
+		big.NewInt(-1),
+		big.NewInt(12345),
+		big1,
+		big2,
+	}
+
+	for _, num1 := range numbers {
+		for _, num2 := range numbers {
+			bytes1 := twos.ToBytes(num1)
+			bytes2 := twos.ToBytes(num2)
+
+			// add
+			sumBytes := twos.ToBytes(big.NewInt(0).Add(num1, num2))
+			testCases = appendBinaryOpTestCase(testCases,
+				"add", true,
+				bytes1, bytes2, sumBytes,
+				vmi.Ok, "")
+
+			// sub
+			diffBytes := twos.ToBytes(big.NewInt(0).Sub(num1, num2))
+			testCases = appendBinaryOpTestCase(testCases,
+				"sub", true,
+				bytes1, bytes2, diffBytes,
+				vmi.Ok, "")
+
+			// mul
+			mulBytes := twos.ToBytes(big.NewInt(0).Mul(num1, num2))
+			testCases = appendBinaryOpTestCase(testCases,
+				"mul", true,
+				bytes1, bytes2, mulBytes,
+				vmi.Ok, "")
+
+			// div
+			if num2.Sign() == 0 {
+				testCases = appendBinaryOpTestCase(testCases,
+					"div", true,
+					bytes1, bytes2, nil,
+					vmi.UserError, arwen.UserErrorDivZero)
+			} else {
+				divBytes := twos.ToBytes(big.NewInt(0).Quo(num1, num2))
+				testCases = appendBinaryOpTestCase(testCases,
+					"div", true,
+					bytes1, bytes2, divBytes,
+					vmi.Ok, "")
+			}
+
+			// mod
+			if num2.Sign() == 0 {
+				testCases = appendBinaryOpTestCase(testCases,
+					"rem", true,
+					bytes1, bytes2, nil,
+					vmi.UserError, arwen.UserErrorDivZero)
+			} else {
+				remBytes := twos.ToBytes(big.NewInt(0).Rem(num1, num2))
+				testCases = appendBinaryOpTestCase(testCases,
+					"rem", true,
+					bytes1, bytes2, remBytes,
+					vmi.Ok, "")
+			}
+		}
+	}
+
+	logFunc := func(testCaseIndex, testCaseCount int) {
+		if testCaseIndex%100 == 0 {
+			fmt.Printf("Big int operation test case %d/%d\n", testCaseIndex, len(testCases))
+		}
+	}
+
+	pureFunctionTest(t, testCases, unsignedInterpreter, logFunc)
+}
+
+func TestBigUintArith(t *testing.T) {
+	var testCases []*pureFunctionIO
+
+	big1, _ := big.NewInt(0).SetString("18446744073709551615", 10)
+	big2, _ := big.NewInt(0).SetString("18446744073709551616", 10)
+	numbers := []*big.Int{
+		big.NewInt(0),
+		big.NewInt(1),
+		big.NewInt(2),
+		big.NewInt(12345),
+		big1,
+		big2,
+	}
 
 	for _, num1 := range numbers {
 		for _, num2 := range numbers {
@@ -199,74 +237,100 @@ func TestBigUintArith(t *testing.T) {
 	pureFunctionTest(t, testCases, unsignedInterpreter, logFunc)
 }
 
-func TestBigIntArith(t *testing.T) {
-	if testing.Short() {
-		t.Skip("this is not a short test")
-	}
-
+func TestBigUintBitwise(t *testing.T) {
 	var testCases []*pureFunctionIO
 
-	numbers := getNumbers()
+	big1, _ := big.NewInt(0).SetString("18446744073709551615", 10)
+	big2, _ := big.NewInt(0).SetString("123456789012345678901234567890", 10)
+	numbers := []*big.Int{
+		big.NewInt(0),
+		big.NewInt(1),
+		big.NewInt(2),
+		big.NewInt(12345),
+		big1,
+		big2,
+	}
 
 	for _, num1 := range numbers {
 		for _, num2 := range numbers {
-			bytes1 := twos.ToBytes(num1)
-			bytes2 := twos.ToBytes(num2)
+			bytes1 := num1.Bytes()
+			bytes2 := num2.Bytes()
 
-			// add
-			sumBytes := twos.ToBytes(big.NewInt(0).Add(num1, num2))
+			// and
+			sumBytes := big.NewInt(0).And(num1, num2).Bytes()
 			testCases = appendBinaryOpTestCase(testCases,
-				"add", true,
+				"bit_and", false,
 				bytes1, bytes2, sumBytes,
 				vmi.Ok, "")
 
-			// sub
-			diffBytes := twos.ToBytes(big.NewInt(0).Sub(num1, num2))
+			// or
+			orBytes := big.NewInt(0).Or(num1, num2).Bytes()
 			testCases = appendBinaryOpTestCase(testCases,
-				"sub", true,
-				bytes1, bytes2, diffBytes,
+				"bit_or", false,
+				bytes1, bytes2, orBytes,
 				vmi.Ok, "")
 
-			// mul
-			mulBytes := twos.ToBytes(big.NewInt(0).Mul(num1, num2))
+			// xor
+			xorBytes := big.NewInt(0).Xor(num1, num2).Bytes()
 			testCases = appendBinaryOpTestCase(testCases,
-				"mul", true,
-				bytes1, bytes2, mulBytes,
+				"bit_xor", false,
+				bytes1, bytes2, xorBytes,
 				vmi.Ok, "")
-
-			// div
-			if num2.Sign() == 0 {
-				testCases = appendBinaryOpTestCase(testCases,
-					"div", true,
-					bytes1, bytes2, nil,
-					vmi.UserError, arwen.UserErrorDivZero)
-			} else {
-				divBytes := twos.ToBytes(big.NewInt(0).Quo(num1, num2))
-				testCases = appendBinaryOpTestCase(testCases,
-					"div", true,
-					bytes1, bytes2, divBytes,
-					vmi.Ok, "")
-			}
-
-			// mod
-			if num2.Sign() == 0 {
-				testCases = appendBinaryOpTestCase(testCases,
-					"rem", true,
-					bytes1, bytes2, nil,
-					vmi.UserError, arwen.UserErrorDivZero)
-			} else {
-				remBytes := twos.ToBytes(big.NewInt(0).Rem(num1, num2))
-				testCases = appendBinaryOpTestCase(testCases,
-					"rem", true,
-					bytes1, bytes2, remBytes,
-					vmi.Ok, "")
-			}
 		}
 	}
 
 	logFunc := func(testCaseIndex, testCaseCount int) {
 		if testCaseIndex%100 == 0 {
-			fmt.Printf("Big int operation test case %d/%d\n", testCaseIndex, len(testCases))
+			fmt.Printf("Big uint bitwise operation test case %d/%d\n", testCaseIndex, len(testCases))
+		}
+	}
+
+	pureFunctionTest(t, testCases, unsignedInterpreter, logFunc)
+}
+
+func TestBigUintShift(t *testing.T) {
+	var testCases []*pureFunctionIO
+
+	big1, _ := big.NewInt(0).SetString("18446744073709551615", 10)
+	big2, _ := big.NewInt(0).SetString("123456789012345678901234567890", 10)
+	numbers := []*big.Int{
+		big.NewInt(0),
+		big.NewInt(1),
+		big1,
+		big2,
+	}
+
+	shiftAmounts := []uint{
+		0,
+		1,
+		10,
+		100,
+	}
+
+	for _, num := range numbers {
+		for _, shiftAmount := range shiftAmounts {
+			bytes1 := num.Bytes()
+			bytes2 := big.NewInt(int64(shiftAmount)).Bytes()
+
+			// shift right
+			shrBytes := big.NewInt(0).Rsh(num, shiftAmount).Bytes()
+			testCases = appendBinaryOpTestCase(testCases,
+				"shr", false,
+				bytes1, bytes2, shrBytes,
+				vmi.Ok, "")
+
+			// shift left
+			shlBytes := big.NewInt(0).Lsh(num, shiftAmount).Bytes()
+			testCases = appendBinaryOpTestCase(testCases,
+				"shl", false,
+				bytes1, bytes2, shlBytes,
+				vmi.Ok, "")
+		}
+	}
+
+	logFunc := func(testCaseIndex, testCaseCount int) {
+		if testCaseIndex%100 == 0 {
+			fmt.Printf("Big uint bitwise shift test case %d/%d\n", testCaseIndex, len(testCases))
 		}
 	}
 
