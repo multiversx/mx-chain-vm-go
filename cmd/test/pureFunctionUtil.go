@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"math/big"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -26,7 +27,13 @@ type pureFunctionIO struct {
 	expectedResults [][]byte
 }
 
-func pureFunctionTest(t *testing.T, testCases []*pureFunctionIO) {
+type resultInterpreter func([]byte) *big.Int
+type logProgress func(testCaseIndex, testCaseCount int)
+
+func pureFunctionTest(t *testing.T,
+	testCases []*pureFunctionIO,
+	resultInterpreter resultInterpreter,
+	logProgress logProgress) {
 
 	contractPathFilePath := filepath.Join(getTestRoot(), "features/features.wasm")
 	scCode, err := ioutil.ReadFile(contractPathFilePath)
@@ -75,7 +82,10 @@ func pureFunctionTest(t *testing.T, testCases []*pureFunctionIO) {
 	}
 
 	// RUN!
-	for _, testCase := range testCases {
+	for testCaseIndex, testCase := range testCases {
+		if logProgress != nil {
+			logProgress(testCaseIndex, len(testCases))
+		}
 
 		input := &vmi.ContractCallInput{
 			RecipientAddr: contractAddr,
@@ -110,16 +120,17 @@ func pureFunctionTest(t *testing.T, testCases []*pureFunctionIO) {
 				ij.ResultAsString(testCase.expectedResults), ij.ResultAsString(output.ReturnData)))
 		}
 		for i, expected := range testCase.expectedResults {
-			if !ij.ResultEqual(expected, output.ReturnData[i]) {
-				t.Error(fmt.Errorf("result mismatch. Want: %s. Have: %s",
-					ij.ResultAsString(testCase.expectedResults), ij.ResultAsString(output.ReturnData)))
+			wantNum := resultInterpreter(expected)
+			haveNum := resultInterpreter(output.ReturnData[i])
+			if wantNum.Cmp(haveNum) != 0 {
+				var argStr []string
+				for _, arg := range testCase.arguments {
+					argNum := resultInterpreter(arg)
+					argStr = append(argStr, fmt.Sprintf("%d", argNum))
+				}
+				t.Error(fmt.Errorf("result mismatch. Want: %d. Have: %d. Call: %s(%s)",
+					wantNum, haveNum, testCase.functionName, strings.Join(argStr, ", ")))
 			}
 		}
-
 	}
-
-	//fmt.Println("Returned: " + string(output.ReturnData[0].Bytes()))
-
-	//lastReturnCode = output.ReturnCode
-
 }
