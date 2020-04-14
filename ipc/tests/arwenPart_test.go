@@ -9,7 +9,6 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/arwenpart"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
-	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/logger"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/marshaling"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/nodepart"
 	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
@@ -65,9 +64,6 @@ func doContractRequest(
 	wg := sync.WaitGroup{}
 	wg.Add(2)
 
-	mainLogger := logger.NewDefaultLogger(logger.LogDebug)
-	dialogueLogger := logger.NewDefaultLogger(logger.LogDebug)
-
 	go func() {
 		VMHostParameters := &arwen.VMHostParameters{
 			VMType:        []byte{5, 0},
@@ -76,8 +72,6 @@ func doContractRequest(
 		}
 
 		part, err := arwenpart.NewArwenPart(
-			mainLogger,
-			dialogueLogger,
 			files.inputOfArwen,
 			files.outputOfArwen,
 			VMHostParameters,
@@ -90,8 +84,6 @@ func doContractRequest(
 
 	go func() {
 		part, err := nodepart.NewNodePart(
-			mainLogger,
-			dialogueLogger,
 			files.inputOfNode,
 			files.outputOfNode,
 			blockchain,

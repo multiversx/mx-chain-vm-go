@@ -10,7 +10,7 @@ var _ Marshalizer = (*gobMarshalizer)(nil)
 type gobMarshalizer struct {
 }
 
-func (marshalizer *gobMarshalizer) MarshalItem(data interface{}) ([]byte, error) {
+func (marshalizer *gobMarshalizer) Marshal(data interface{}) ([]byte, error) {
 	var buffer bytes.Buffer
 	encoder := gob.NewEncoder(&buffer)
 	err := encoder.Encode(data)
@@ -21,7 +21,7 @@ func (marshalizer *gobMarshalizer) MarshalItem(data interface{}) ([]byte, error)
 	return buffer.Bytes(), nil
 }
 
-func (marshalizer *gobMarshalizer) UnmarshalItem(dataBytes []byte, data interface{}) error {
+func (marshalizer *gobMarshalizer) Unmarshal(data interface{}, dataBytes []byte) error {
 	buffer := bytes.NewBuffer(dataBytes)
 	decoder := gob.NewDecoder(buffer)
 	err := decoder.Decode(data)
@@ -30,4 +30,8 @@ func (marshalizer *gobMarshalizer) UnmarshalItem(dataBytes []byte, data interfac
 	}
 
 	return nil
+}
+
+func (marshalizer *gobMarshalizer) IsInterfaceNil() bool {
+	return marshalizer == nil
 }

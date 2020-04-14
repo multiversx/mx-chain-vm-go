@@ -10,8 +10,11 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/ethapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
+
+var log = logger.GetOrCreate("arwen/host")
 
 var MaximumWasmerInstanceCount = uint64(10)
 
@@ -206,19 +209,26 @@ func (host *vmHost) GetProtocolBuiltinFunctions() vmcommon.FunctionNames {
 }
 
 func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error) {
+	log.Trace("RunSmartContractCreate begin", "len(code)", len(input.ContractCode), "metadata", input.ContractCodeMetadata)
+
 	try := func() {
 		vmOutput = host.doRunSmartContractCreate(input)
 	}
 
 	catch := func(caught error) {
 		err = caught
+		log.Error("RunSmartContractCreate", "error", err)
 	}
 
 	TryCatch(try, catch, "arwen.RunSmartContractCreate")
+
+	log.Trace("RunSmartContractCreate end", "returnCode", vmOutput.ReturnCode, "returnMessage", vmOutput.ReturnMessage)
 	return
 }
 
 func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
+	log.Trace("RunSmartContractCall begin", "function", input.Function)
+
 	tryUpgrade := func() {
 		vmOutput = host.doRunSmartContractUpgrade(input)
 	}
@@ -229,6 +239,7 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 
 	catch := func(caught error) {
 		err = caught
+		log.Error("RunSmartContractCall", "error", err)
 	}
 
 	isUpgrade := input.Function == arwen.UpgradeFunctionName
@@ -237,6 +248,8 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 	} else {
 		TryCatch(tryCall, catch, "arwen.RunSmartContractCall")
 	}
+
+	log.Trace("RunSmartContractCall end", "returnCode", vmOutput.ReturnCode, "returnMessage", vmOutput.ReturnMessage)
 	return
 }
 

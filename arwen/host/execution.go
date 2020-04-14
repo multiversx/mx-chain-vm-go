@@ -36,6 +36,8 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 }
 
 func (host *vmHost) performCodeDeploy(input arwen.CodeDeployInput) (*vmcommon.VMOutput, error) {
+	log.Trace("performCodeDeploy", "address", input.ContractAddress, "len(code)", len(input.ContractCode), "metadata", input.ContractCodeMetadata)
+
 	_, _, metering, output, runtime, _ := host.GetContexts()
 
 	err := metering.DeductInitialGasForDirectDeployment(input)
@@ -137,6 +139,8 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 }
 
 func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
+	log.Trace("ExecuteOnDestContext", "function", input.Function)
+
 	bigInt, _, _, output, runtime, storage := host.GetContexts()
 
 	bigInt.PushState()
@@ -199,6 +203,8 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 }
 
 func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (err error) {
+	log.Trace("ExecuteOnSameContext", "function", input.Function)
+
 	bigInt, _, _, output, runtime, _ := host.GetContexts()
 
 	// Back up the states of the contexts (except Storage, which isn't affected
@@ -259,6 +265,8 @@ func (host *vmHost) isBuiltinFunctionBeingCalled() bool {
 }
 
 func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error) {
+	log.Trace("CreateNewContract", "len(code)", len(input.ContractCode), "metadata", input.ContractCodeMetadata)
+
 	_, blockchain, metering, output, runtime, _ := host.GetContexts()
 
 	// Use all gas initially. In case of successful deployment, the unused gas

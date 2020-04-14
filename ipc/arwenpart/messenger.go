@@ -4,7 +4,6 @@ import (
 	"os"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
-	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/logger"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/marshaling"
 )
 
@@ -14,9 +13,9 @@ type ArwenMessenger struct {
 }
 
 // NewArwenMessenger creates a new messenger
-func NewArwenMessenger(logger logger.Logger, reader *os.File, writer *os.File, marshalizer marshaling.Marshalizer) *ArwenMessenger {
+func NewArwenMessenger(reader *os.File, writer *os.File, marshalizer marshaling.Marshalizer) *ArwenMessenger {
 	return &ArwenMessenger{
-		Messenger: *common.NewMessengerPipes("ARWEN", logger, reader, writer, marshalizer),
+		Messenger: *common.NewMessengerPipes("ARWEN", reader, writer, marshalizer),
 	}
 }
 
@@ -32,6 +31,8 @@ func (messenger *ArwenMessenger) ReceiveNodeRequest() (common.MessageHandler, er
 
 // SendContractResponse sends a contract response to the Node
 func (messenger *ArwenMessenger) SendContractResponse(response common.MessageHandler) error {
+	log.Trace("[ARWEN]: SendContractResponse", "response", response.DebugString())
+
 	err := messenger.Send(response)
 	if err != nil {
 		return err
@@ -42,7 +43,7 @@ func (messenger *ArwenMessenger) SendContractResponse(response common.MessageHan
 
 // SendHookCallRequest makes a hook call (over the pipe) and waits for the response
 func (messenger *ArwenMessenger) SendHookCallRequest(request common.MessageHandler) (common.MessageHandler, error) {
-	messenger.Logger.Trace("[ARWEN]: CallHook", request)
+	log.Trace("[ARWEN]: SendHookCallRequest", "request", request.DebugString())
 
 	err := messenger.Send(request)
 	if err != nil {

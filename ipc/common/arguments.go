@@ -4,15 +4,12 @@ import (
 	"os"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/logger"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/marshaling"
 )
 
 // ArwenArguments represents the initialization arguments required by Arwen, passed through the initialization pipe
 type ArwenArguments struct {
 	arwen.VMHostParameters
-	MainLogLevel        logger.LogLevel
-	DialogueLogLevel    logger.LogLevel
 	LogsMarshalizer     marshaling.MarshalizerKind
 	MessagesMarshalizer marshaling.MarshalizerKind
 }

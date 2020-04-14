@@ -6,9 +6,9 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
-	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/logger"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/nodepart"
 	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/stretchr/testify/require"
 )
 
@@ -33,6 +33,9 @@ func TestArwenDriver_DiagnoseWaitWithTimeout(t *testing.T) {
 }
 
 func TestArwenDriver_RestartsIfStopped(t *testing.T) {
+	logger.ToggleLoggerName(true)
+	logger.SetLogLevel("*:TRACE")
+
 	blockchain := &mock.BlockchainHookStub{}
 	driver := newDriver(t, blockchain)
 
@@ -80,14 +83,7 @@ func BenchmarkArwenDriver_RestartArwenIfNecessary(b *testing.B) {
 }
 
 func newDriver(tb testing.TB, blockchain *mock.BlockchainHookStub) *nodepart.ArwenDriver {
-	driverLogger := logger.NewDefaultLogger(logger.LogDebug)
-	arwenMainLogger := logger.NewDefaultLogger(logger.LogDebug)
-	dialogueLogger := logger.NewDefaultLogger(logger.LogDebug)
-
 	driver, err := nodepart.NewArwenDriver(
-		driverLogger,
-		arwenMainLogger,
-		dialogueLogger,
 		blockchain,
 		common.ArwenArguments{
 			VMHostParameters: arwen.VMHostParameters{
@@ -95,8 +91,6 @@ func newDriver(tb testing.TB, blockchain *mock.BlockchainHookStub) *nodepart.Arw
 				BlockGasLimit: uint64(10000000),
 				GasSchedule:   config.MakeGasMap(1),
 			},
-			MainLogLevel:     logger.LogDebug,
-			DialogueLogLevel: logger.LogDebug,
 		},
 		nodepart.Config{MaxLoopTime: 1000},
 	)

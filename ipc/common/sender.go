@@ -23,7 +23,7 @@ func NewSender(writer *os.File, marshalizer marshaling.Marshalizer) *Sender {
 
 // Send sends a message over the pipe
 func (sender *Sender) Send(message MessageHandler) (int, error) {
-	dataBytes, err := sender.marshalizer.MarshalItem(message)
+	dataBytes, err := sender.marshalizer.Marshal(message)
 	if err != nil {
 		return 0, err
 	}
