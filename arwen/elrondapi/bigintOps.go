@@ -558,9 +558,10 @@ func bigIntTDiv(context unsafe.Pointer, destination, op1, op2 int32) {
 	dest, a, b := bigInt.GetThree(destination, op1, op2)
 	if b.Sign() == 0 {
 		runtime := arwen.GetRuntimeContext(context)
-		runtime.SignalUserError("[bigIntTDiv] division by 0")
+		runtime.SignalUserError(arwen.UserErrorDivZero)
+	} else {
+		dest.Quo(a, b) // Quo implements truncated division (like Go)
 	}
-	dest.Quo(a, b) // Quo implements truncated division (like Go)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntTDiv
 	metering.UseGas(gasToUse)
@@ -574,9 +575,10 @@ func bigIntTMod(context unsafe.Pointer, destination, op1, op2 int32) {
 	dest, a, b := bigInt.GetThree(destination, op1, op2)
 	if b.Sign() == 0 {
 		runtime := arwen.GetRuntimeContext(context)
-		runtime.SignalUserError("[bigIntTMod] division by 0")
+		runtime.SignalUserError(arwen.UserErrorDivZero)
+	} else {
+		dest.Rem(a, b) // Rem implements truncated modulus (like Go)
 	}
-	dest.Rem(a, b) // Rem implements truncated modulus (like Go)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntTMod
 	metering.UseGas(gasToUse)
@@ -590,9 +592,10 @@ func bigIntEDiv(context unsafe.Pointer, destination, op1, op2 int32) {
 	dest, a, b := bigInt.GetThree(destination, op1, op2)
 	if b.Sign() == 0 {
 		runtime := arwen.GetRuntimeContext(context)
-		runtime.SignalUserError("[bigIntEDiv] division by 0")
+		runtime.SignalUserError(arwen.UserErrorDivZero)
+	} else {
+		dest.Div(a, b) // Div implements Euclidean division (unlike Go)
 	}
-	dest.Div(a, b) // Div implements Euclidean division (unlike Go)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntEDiv
 	metering.UseGas(gasToUse)
@@ -606,9 +609,10 @@ func bigIntEMod(context unsafe.Pointer, destination, op1, op2 int32) {
 	dest, a, b := bigInt.GetThree(destination, op1, op2)
 	if b.Sign() == 0 {
 		runtime := arwen.GetRuntimeContext(context)
-		runtime.SignalUserError("[bigIntEMod] division by 0")
+		runtime.SignalUserError(arwen.UserErrorDivZero)
+	} else {
+		dest.Mod(a, b) // Mod implements Euclidean division (unlike Go)
 	}
-	dest.Mod(a, b) // Mod implements Euclidean division (unlike Go)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntEMod
 	metering.UseGas(gasToUse)
