@@ -762,7 +762,6 @@ func TestExecution_ExecuteOnSameContext_BuiltinFunctions(t *testing.T) {
 
 	host, stubBlockchainHook := DefaultTestArwenForCall(t, code)
 	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
-	// stubBlockchainHook.GetBuiltinFunctionNamesCalled = getBuiltinFunctionNames
 	stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
 	host.protocolBuiltinFunctions = getBuiltinFunctionNames()
 
