@@ -374,6 +374,60 @@ func expectedVMOutput_SameCtx_Recursive_MutualSCs(recursiveCalls int) *vmcommon.
 	return vmOutput
 }
 
+func expectedVMOutput_SameCtx_BuiltinFunctions_1() *vmcommon.VMOutput {
+	vmOutput := MakeVMOutput()
+
+	account := AddNewOutputAccount(
+		vmOutput,
+		parentAddress,
+		42,
+		nil,
+	)
+	account.Balance = big.NewInt(1000)
+
+	AddFinishData(vmOutput, []byte("succ"))
+	gasConsumed_builtinClaim := 100
+	vmOutput.GasRemaining = uint64(98504 - gasConsumed_builtinClaim)
+
+	return vmOutput
+}
+
+func expectedVMOutput_SameCtx_BuiltinFunctions_2() *vmcommon.VMOutput {
+	vmOutput := MakeVMOutput()
+
+	account := AddNewOutputAccount(
+		vmOutput,
+		parentAddress,
+		0,
+		nil,
+	)
+	account.Balance = big.NewInt(1000)
+	account.BalanceDelta = big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1))
+
+	AddFinishData(vmOutput, []byte("succ"))
+
+	gasConsumed_builtinDoSomething := 0
+	vmOutput.GasRemaining = uint64(98500 - gasConsumed_builtinDoSomething)
+
+	return vmOutput
+}
+
+func expectedVMOutput_SameCtx_BuiltinFunctions_3() *vmcommon.VMOutput {
+	vmOutput := MakeVMOutput()
+
+	_ = AddNewOutputAccount(
+		vmOutput,
+		parentAddress,
+		0,
+		nil,
+	)
+
+	AddFinishData(vmOutput, []byte("fail"))
+	vmOutput.GasRemaining = 98000
+
+	return vmOutput
+}
+
 func expectedVMOutput_DestCtx_Prepare() *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 	vmOutput.ReturnCode = vmcommon.Ok
