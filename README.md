@@ -91,7 +91,6 @@ Loggers defined on Arwen's part:
 
  - `arwen/host` 
  - `arwen/part`
- - `arwen/messenger`
  - `arwen/baseMessenger`
  - `arwen/duration`
 
