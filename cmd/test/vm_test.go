@@ -1,7 +1,6 @@
 package main
 
 import (
-	"os"
 	"path/filepath"
 	"testing"
 
@@ -131,13 +130,4 @@ func TestDnsContract(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-}
-
-func getTestRoot() string {
-	exePath, err := os.Getwd()
-	if err != nil {
-		panic(err)
-	}
-	arwenTestRoot := filepath.Join(exePath, "../../test")
-	return arwenTestRoot
 }
