@@ -103,7 +103,7 @@ func (te *arwenTestExecutor) Run(test *ij.Test) error {
 
 			arguments := make([][]byte, len(tx.Arguments))
 			for i, arg := range tx.Arguments {
-				arguments[i] = append(arguments[i], arg.ToBytes()...)
+				arguments[i] = append(arguments[i], arg...)
 			}
 			var output *vmi.VMOutput
 
@@ -255,6 +255,10 @@ func (te *arwenTestExecutor) Run(test *ij.Test) error {
 					testLog := blResult.Logs[i]
 					if !bytes.Equal(outLog.Address, testLog.Address) {
 						return fmt.Errorf("bad log address. Want:\n%s\nGot:\n%s",
+							ij.LogToString(testLog), ij.LogToString(convertLogToTestFormat(outLog)))
+					}
+					if !bytes.Equal(outLog.Identifier, testLog.Identifier) {
+						return fmt.Errorf("bad log identifier. Want:\n%s\nGot:\n%s",
 							ij.LogToString(testLog), ij.LogToString(convertLogToTestFormat(outLog)))
 					}
 					if len(outLog.Topics) != len(testLog.Topics) {
