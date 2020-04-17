@@ -59,7 +59,7 @@
                             "3455",
                             "``auction_contract______________s1"
                         ],
-                        "contractCode": "delegation.wasm",
+                        "contractCode": "file:delegation.wasm",
                         "gasPrice": "0x01",
                         "from": "``node_address__________________s1"
                     },
@@ -114,7 +114,7 @@
                     "0x1200000000000000000000000000000000000000000000000000000000000002": "567,000,000,000",
                     "0x1300000000000000000000000000000000000000000000000000000000000002": "0"
                 },
-                "code": "delegation.wasm"
+                "code": "file:delegation.wasm"
             },
             "``user_account_1________________s1": {
                 "nonce": "0x01",

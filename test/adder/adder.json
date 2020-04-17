@@ -45,7 +45,7 @@
                         "arguments": [
                             "0x05"
                         ],
-                        "contractCode": "adder.wasm",
+                        "contractCode": "file:adder.wasm",
                         "gasPrice": "0x01",
                         "from": "0xacc1000000000000000000000000000000000000000000000000000000001234"
                     }
@@ -99,7 +99,7 @@
                 "storage": {
                     "0x0000000000000000000000000000000000000000000000000000000000000000" : "0x08"
                 },
-                "code": "adder.wasm"
+                "code": "file:adder.wasm"
             }
         }
     }

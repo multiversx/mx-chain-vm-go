@@ -11,7 +11,7 @@
                 "nonce": "0x00",
                 "balance": "0",
                 "storage": {},
-                "code": "auction-mock.wasm"
+                "code": "file:auction-mock.wasm"
             },
             "``delegation_contract___________s1": {
                 "nonce": "0x00",
@@ -42,7 +42,7 @@
                     "0x1200000000000000000000000000000000000000000000000000000000000003": "222,000,000,000",
                     "0x1300000000000000000000000000000000000000000000000000000000000003": "0"
                 },
-                "code": "delegation.wasm"
+                "code": "file:delegation.wasm"
             },
             "``user_account_1________________s1": {
                 "nonce": "0x00",
@@ -103,7 +103,7 @@
                 "nonce": "0x00",
                 "balance": "0",
                 "storage": {},
-                "code": "auction-mock.wasm"
+                "code": "file:auction-mock.wasm"
             },
             "``delegation_contract___________s1": {
                 "nonce": "0x00",
@@ -134,7 +134,7 @@
                     "0x1200000000000000000000000000000000000000000000000000000000000003": "222,000,000,000",
                     "0x1300000000000000000000000000000000000000000000000000000000000003": "0"
                 },
-                "code": "delegation.wasm"
+                "code": "file:delegation.wasm"
             },
             "``user_account_1________________s1": {
                 "nonce": "0x00",

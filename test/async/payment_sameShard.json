@@ -13,13 +13,13 @@
                 "storage": {
                     "0x0000000000000000000000000000000000000000000000000000000000000000": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1234"
                 },
-                "code": "alice.wasm"
+                "code": "file:alice.wasm"
             },
             "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1234": {
                 "nonce": "0x00",
                 "balance": "0x00",
                 "storage": {},
-                "code": "bob.wasm"
+                "code": "file:bob.wasm"
             }
         },
         "blocks": [
@@ -73,7 +73,7 @@
                 "storage": {
                     "0x0000000000000000000000000000000000000000000000000000000000000000": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1234"
                 },
-                "code": "alice.wasm"
+                "code": "file:alice.wasm"
             },
             "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1234": {
                 "nonce": "0x00",
@@ -82,7 +82,7 @@
                     "0x1111111111111111111111111111111111111111111111111111111111111111": "0x56",
                     "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff": "0x123400"
                 },
-                "code": "bob.wasm",
+                "code": "file:bob.wasm",
                 "asyncCallData": ""
             }
         }

@@ -13,7 +13,7 @@
                 "storage": {
                     "0x0000000000000000000000000000000000000000000000000000000000000000": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb5555"
                 },
-                "code": "alice.wasm"
+                "code": "file:alice.wasm"
             }
         },
         "blocks": [
@@ -67,7 +67,7 @@
                 "storage": {
                     "0x0000000000000000000000000000000000000000000000000000000000000000": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb5555"
                 },
-                "code": "alice.wasm"
+                "code": "file:alice.wasm"
             },
             "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb5555": {
                 "nonce": "0x00",

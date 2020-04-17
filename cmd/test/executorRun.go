@@ -4,9 +4,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
-	"io/ioutil"
 	"math/big"
-	"path/filepath"
 
 	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
@@ -25,10 +23,9 @@ const ignoreGas = true
 const ignoreAllLogs = false
 
 type arwenTestExecutor struct {
-	world                    *worldhook.BlockchainHookMock
-	vm                       vmi.VMExecutionHandler
-	contractPathReplacements map[string]string
-	checkGas                 bool
+	world    *worldhook.BlockchainHookMock
+	vm       vmi.VMExecutionHandler
+	checkGas bool
 }
 
 func newArwenTestExecutor() *arwenTestExecutor {
@@ -47,35 +44,10 @@ func newArwenTestExecutor() *arwenTestExecutor {
 		panic(err)
 	}
 	return &arwenTestExecutor{
-		world:                    world,
-		vm:                       vm,
-		contractPathReplacements: make(map[string]string),
-		checkGas:                 false,
+		world:    world,
+		vm:       vm,
+		checkGas: false,
 	}
-}
-
-func (te *arwenTestExecutor) replaceCode(pathInTest, actualPath string) *arwenTestExecutor {
-	te.contractPathReplacements[pathInTest] = actualPath
-	return te
-}
-
-// ProcessCode takes the contract file path, assembles it and yields the bytecode.
-func (te *arwenTestExecutor) ProcessCode(testPath string, value string) (string, error) {
-	if len(value) == 0 {
-		return "", nil
-	}
-	var fullPath string
-	if replacement, shouldReplace := te.contractPathReplacements[value]; shouldReplace {
-		fullPath = replacement
-	} else {
-		fullPath = filepath.Join(testPath, value)
-	}
-	scCode, err := ioutil.ReadFile(fullPath)
-	if err != nil {
-		return "", err
-	}
-
-	return string(scCode), nil
 }
 
 // Run executes an individual test.
@@ -124,7 +96,7 @@ func (te *arwenTestExecutor) Run(test *ij.Test) error {
 			} else if tx.IsCreate {
 				// SC create
 				input := &vmi.ContractCreateInput{
-					ContractCode: []byte(tx.AssembledCode),
+					ContractCode: tx.Code,
 					VMInput: vmi.VMInput{
 						CallerAddr:  tx.From,
 						Arguments:   arguments,

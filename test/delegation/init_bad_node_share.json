@@ -32,7 +32,7 @@
                             "10001",
                             "``auction_contract______________s1"
                         ],
-                        "contractCode": "delegation.wasm",
+                        "contractCode": "file:delegation.wasm",
                         "gasPrice": "0x01",
                         "from": "``node_address__________________s1"
                     }

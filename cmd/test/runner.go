@@ -5,6 +5,7 @@ import (
 	"os"
 
 	controller "github.com/ElrondNetwork/elrond-vm-util/test-util/testcontroller"
+	ij "github.com/ElrondNetwork/elrond-vm-util/test-util/vmtestjson"
 )
 
 func main() {
@@ -14,8 +15,11 @@ func main() {
 
 	jsonTestPath := os.Args[1]
 
-	testExecutor := newArwenTestExecutor()
-	err := controller.RunSingleJSONTest(jsonTestPath, testExecutor)
+	runner := controller.NewRunner(
+		newArwenTestExecutor(),
+		ij.NewDefaultFileResolver(),
+	)
+	err := runner.RunSingleJSONTest(jsonTestPath)
 	if err == nil {
 		fmt.Println("SUCCESS")
 	} else {
