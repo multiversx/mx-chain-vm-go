@@ -15,7 +15,7 @@ func main() {
 
 	jsonTestPath := os.Args[1]
 
-	runner := controller.NewRunner(
+	runner := controller.NewTestRunner(
 		newArwenTestExecutor(),
 		ij.NewDefaultFileResolver(),
 	)
