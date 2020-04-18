@@ -11,7 +11,7 @@ import (
 
 func checkTxResults(
 	txIndex int,
-	blResult ij.TransactionResult,
+	blResult *ij.TransactionResult,
 	checkGas bool,
 	output *vmi.VMOutput,
 ) error {

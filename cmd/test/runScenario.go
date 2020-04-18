@@ -11,19 +11,13 @@ import (
 	ij "github.com/ElrondNetwork/elrond-vm-util/test-util/vmtestjson"
 )
 
-// TestVMType is the VM type argument we use in tests.
-var TestVMType = []byte{0, 0}
-
-const ignoreGas = true
-const ignoreAllLogs = false
-
-type arwenTestExecutor struct {
+type arwenScenarioExecutor struct {
 	world    *worldhook.BlockchainHookMock
 	vm       vmi.VMExecutionHandler
 	checkGas bool
 }
 
-func newArwenTestExecutor() *arwenTestExecutor {
+func newArwenScenarioExecutor() *arwenScenarioExecutor {
 	world := worldhook.NewMock()
 	world.EnableMockAddressGeneration()
 
@@ -38,7 +32,7 @@ func newArwenTestExecutor() *arwenTestExecutor {
 	if err != nil {
 		panic(err)
 	}
-	return &arwenTestExecutor{
+	return &arwenScenarioExecutor{
 		world:    world,
 		vm:       vm,
 		checkGas: false,
@@ -46,38 +40,43 @@ func newArwenTestExecutor() *arwenTestExecutor {
 }
 
 // Run executes an individual test.
-func (te *arwenTestExecutor) Run(test *ij.Test) error {
-	world := te.world
-	vm := te.vm
+func (se *arwenScenarioExecutor) Run(scenario *ij.Scenario) error {
+	world := se.world
+	vm := se.vm
 
 	// reset world
 	world.Clear()
-	world.Blockhashes = test.BlockHashes
 
-	for _, acct := range test.Pre {
-		world.AcctMap.PutAccount(convertAccount(acct))
-	}
-
-	//spew.Dump(world.AcctMap)
-
-	for _, block := range test.Blocks {
-		for txIndex, tx := range block.Transactions {
-			//fmt.Printf("%d\n", txIndex)
-			output, err := executeTx(tx, world, vm)
+	txIndex := 0
+	for _, generalStep := range scenario.Steps {
+		switch step := generalStep.(type) {
+		case *ij.SetStateStep:
+			for _, acct := range step.Accounts {
+				world.AcctMap.PutAccount(convertAccount(acct))
+			}
+			world.Blockhashes = step.BlockHashes
+		case *ij.CheckStateStep:
+			err := checkAccounts(step.CheckAccounts, world)
 			if err != nil {
 				return err
 			}
-
-			blResult := block.Results[txIndex]
+		case *ij.TxStep:
+			// execute tx
+			output, err := executeTx(step.Tx, world, vm)
+			if err != nil {
+				return err
+			}
 
 			// check results
-			checkGas := te.checkGas && test.CheckGas && blResult.CheckGas
-			err = checkTxResults(txIndex, blResult, checkGas, output)
+			checkGas := se.checkGas && scenario.CheckGas && step.ExpectedResult.CheckGas
+			err = checkTxResults(txIndex, step.ExpectedResult, checkGas, output)
 			if err != nil {
 				return err
 			}
+			txIndex++
 		}
+
 	}
 
-	return checkAccounts(test.PostState, world)
+	return nil
 }
