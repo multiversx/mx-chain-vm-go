@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	controller "github.com/ElrondNetwork/elrond-vm-util/test-util/testcontroller"
 	ij "github.com/ElrondNetwork/elrond-vm-util/test-util/vmtestjson"
@@ -13,13 +14,22 @@ func main() {
 		panic("One argument expected - the path to the json test.")
 	}
 
-	jsonTestPath := os.Args[1]
+	jsonFilePath := os.Args[1]
+	var err error
+	if strings.HasSuffix(jsonFilePath, ".scen.json") {
+		runner := controller.NewScenarioRunner(
+			newArwenScenarioExecutor(),
+			ij.NewDefaultFileResolver(),
+		)
+		err = runner.RunSingleJSONScenario(jsonFilePath)
+	} else {
+		runner := controller.NewTestRunner(
+			newArwenTestExecutor(),
+			ij.NewDefaultFileResolver(),
+		)
+		err = runner.RunSingleJSONTest(jsonFilePath)
+	}
 
-	runner := controller.NewTestRunner(
-		newArwenTestExecutor(),
-		ij.NewDefaultFileResolver(),
-	)
-	err := runner.RunSingleJSONTest(jsonTestPath)
 	if err == nil {
 		fmt.Println("SUCCESS")
 	} else {
