@@ -4,6 +4,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	ajt "github.com/ElrondNetwork/arwen-wasm-vm/arwenjsontest"
 	controller "github.com/ElrondNetwork/elrond-vm-util/test-util/testcontroller"
 	ij "github.com/ElrondNetwork/elrond-vm-util/test-util/vmtestjson"
 )
@@ -13,7 +14,7 @@ func TestErc20FromC(t *testing.T) {
 		"erc20.wasm",
 		filepath.Join(getTestRoot(), "contracts/erc20-c.wasm"))
 	runner := controller.NewTestRunner(
-		newArwenTestExecutor(),
+		ajt.NewArwenTestExecutor(),
 		fileResolver,
 	)
 	err := runner.RunAllJSONTestsInDirectory(
@@ -32,7 +33,7 @@ func TestErc20FromRust(t *testing.T) {
 		"erc20.wasm",
 		filepath.Join(getTestRoot(), "contracts/simple-coin.wasm"))
 	runner := controller.NewTestRunner(
-		newArwenTestExecutor(),
+		ajt.NewArwenTestExecutor(),
 		fileResolver,
 	)
 	err := runner.RunAllJSONTestsInDirectory(
@@ -48,7 +49,7 @@ func TestErc20FromRust(t *testing.T) {
 
 func TestAdderFromRust(t *testing.T) {
 	runner := controller.NewScenarioRunner(
-		newArwenScenarioExecutor(),
+		ajt.NewArwenScenarioExecutor(),
 		ij.NewDefaultFileResolver(),
 	)
 	err := runner.RunAllJSONScenariosInDirectory(
@@ -64,7 +65,7 @@ func TestAdderFromRust(t *testing.T) {
 
 func TestCryptoBubbles(t *testing.T) {
 	runner := controller.NewTestRunner(
-		newArwenTestExecutor(),
+		ajt.NewArwenTestExecutor(),
 		ij.NewDefaultFileResolver(),
 	)
 	err := runner.RunAllJSONTestsInDirectory(
@@ -80,7 +81,7 @@ func TestCryptoBubbles(t *testing.T) {
 
 func TestFeaturesFromRust(t *testing.T) {
 	runner := controller.NewTestRunner(
-		newArwenTestExecutor(),
+		ajt.NewArwenTestExecutor(),
 		ij.NewDefaultFileResolver(),
 	)
 	err := runner.RunAllJSONTestsInDirectory(
@@ -96,7 +97,7 @@ func TestFeaturesFromRust(t *testing.T) {
 
 func TestAsyncCalls(t *testing.T) {
 	runner := controller.NewTestRunner(
-		newArwenTestExecutor(),
+		ajt.NewArwenTestExecutor(),
 		ij.NewDefaultFileResolver(),
 	)
 	err := runner.RunAllJSONTestsInDirectory(
@@ -112,7 +113,7 @@ func TestAsyncCalls(t *testing.T) {
 
 func TestDelegationContract(t *testing.T) {
 	runner := controller.NewTestRunner(
-		newArwenTestExecutor(),
+		ajt.NewArwenTestExecutor(),
 		ij.NewDefaultFileResolver(),
 	)
 	err := runner.RunAllJSONTestsInDirectory(
@@ -128,7 +129,7 @@ func TestDelegationContract(t *testing.T) {
 
 func TestDnsContract(t *testing.T) {
 	runner := controller.NewTestRunner(
-		newArwenTestExecutor(),
+		ajt.NewArwenTestExecutor(),
 		ij.NewDefaultFileResolver(),
 	)
 	err := runner.RunAllJSONTestsInDirectory(

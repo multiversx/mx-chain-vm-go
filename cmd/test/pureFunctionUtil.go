@@ -71,8 +71,9 @@ func pureFunctionTest(t *testing.T,
 	// create VM
 	blockGasLimit := uint64(10000000)
 	gasSchedule := config.MakeGasMap(1)
+	vmType := []byte{0, 0}
 	vm, err := arwenHost.NewArwenVM(world, cryptohook.KryptoHookMockInstance, &arwen.VMHostParameters{
-		VMType:                   TestVMType,
+		VMType:                   vmType,
 		BlockGasLimit:            blockGasLimit,
 		GasSchedule:              gasSchedule,
 		ProtocolBuiltinFunctions: make(vmcommon.FunctionNames),

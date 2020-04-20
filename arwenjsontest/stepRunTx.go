@@ -1,4 +1,4 @@
-package main
+package arwenjsontest
 
 import (
 	"encoding/hex"

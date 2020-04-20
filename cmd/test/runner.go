@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	ajt "github.com/ElrondNetwork/arwen-wasm-vm/arwenjsontest"
 	controller "github.com/ElrondNetwork/elrond-vm-util/test-util/testcontroller"
 	ij "github.com/ElrondNetwork/elrond-vm-util/test-util/vmtestjson"
 )
@@ -18,13 +19,13 @@ func main() {
 	var err error
 	if strings.HasSuffix(jsonFilePath, ".scen.json") {
 		runner := controller.NewScenarioRunner(
-			newArwenScenarioExecutor(),
+			ajt.NewArwenScenarioExecutor(),
 			ij.NewDefaultFileResolver(),
 		)
 		err = runner.RunSingleJSONScenario(jsonFilePath)
 	} else {
 		runner := controller.NewTestRunner(
-			newArwenTestExecutor(),
+			ajt.NewArwenTestExecutor(),
 			ij.NewDefaultFileResolver(),
 		)
 		err = runner.RunSingleJSONTest(jsonFilePath)

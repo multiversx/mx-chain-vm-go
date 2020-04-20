@@ -1,4 +1,4 @@
-package main
+package arwenjsontest
 
 import (
 	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -11,13 +11,15 @@ import (
 	ij "github.com/ElrondNetwork/elrond-vm-util/test-util/vmtestjson"
 )
 
-type arwenScenarioExecutor struct {
+// ArwenScenarioExecutor parses, interprets and executes .scen.json test scenarios.
+type ArwenScenarioExecutor struct {
 	world    *worldhook.BlockchainHookMock
 	vm       vmi.VMExecutionHandler
 	checkGas bool
 }
 
-func newArwenScenarioExecutor() *arwenScenarioExecutor {
+// NewArwenScenarioExecutor prepares a new ArwenScenarioExecutor instance.
+func NewArwenScenarioExecutor() *ArwenScenarioExecutor {
 	world := worldhook.NewMock()
 	world.EnableMockAddressGeneration()
 
@@ -32,7 +34,7 @@ func newArwenScenarioExecutor() *arwenScenarioExecutor {
 	if err != nil {
 		panic(err)
 	}
-	return &arwenScenarioExecutor{
+	return &ArwenScenarioExecutor{
 		world:    world,
 		vm:       vm,
 		checkGas: false,
@@ -40,7 +42,7 @@ func newArwenScenarioExecutor() *arwenScenarioExecutor {
 }
 
 // Run executes an individual test.
-func (se *arwenScenarioExecutor) Run(scenario *ij.Scenario) error {
+func (se *ArwenScenarioExecutor) Run(scenario *ij.Scenario) error {
 	world := se.world
 	vm := se.vm
 

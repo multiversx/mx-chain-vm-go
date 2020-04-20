@@ -1,4 +1,4 @@
-package main
+package arwenjsontest
 
 import (
 	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -17,13 +17,15 @@ var TestVMType = []byte{0, 0}
 const ignoreGas = true
 const ignoreAllLogs = false
 
-type arwenTestExecutor struct {
+// ArwenTestExecutor parses, interprets and executes .test.json tests.
+type ArwenTestExecutor struct {
 	world    *worldhook.BlockchainHookMock
 	vm       vmi.VMExecutionHandler
 	checkGas bool
 }
 
-func newArwenTestExecutor() *arwenTestExecutor {
+// NewArwenTestExecutor prepares a new ArwenTestExecutor instance.
+func NewArwenTestExecutor() *ArwenTestExecutor {
 	world := worldhook.NewMock()
 	world.EnableMockAddressGeneration()
 
@@ -38,7 +40,7 @@ func newArwenTestExecutor() *arwenTestExecutor {
 	if err != nil {
 		panic(err)
 	}
-	return &arwenTestExecutor{
+	return &ArwenTestExecutor{
 		world:    world,
 		vm:       vm,
 		checkGas: false,
@@ -46,7 +48,7 @@ func newArwenTestExecutor() *arwenTestExecutor {
 }
 
 // Run executes an individual test.
-func (te *arwenTestExecutor) Run(test *ij.Test) error {
+func (te *ArwenTestExecutor) Run(test *ij.Test) error {
 	world := te.world
 	vm := te.vm
 
