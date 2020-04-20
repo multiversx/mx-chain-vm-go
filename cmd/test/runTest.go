@@ -52,7 +52,7 @@ func (te *arwenTestExecutor) Run(test *ij.Test) error {
 
 	// reset world
 	world.Clear()
-	world.Blockhashes = test.BlockHashes
+	world.Blockhashes = ij.JSONBytesValues(test.BlockHashes)
 
 	for _, acct := range test.Pre {
 		world.AcctMap.PutAccount(convertAccount(acct))

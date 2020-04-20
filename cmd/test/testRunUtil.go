@@ -14,34 +14,34 @@ import (
 func convertAccount(testAcct *ij.Account) *worldhook.Account {
 	storage := make(map[string][]byte)
 	for _, stkvp := range testAcct.Storage {
-		if stkvp.Value == nil {
-			panic("why?")
-		}
-		key := string(stkvp.Key)
-		storage[key] = stkvp.Value
+		key := string(stkvp.Key.Value)
+		storage[key] = stkvp.Value.Value
 	}
 
-	if len(testAcct.Address) != 32 {
+	if len(testAcct.Address.Value) != 32 {
 		panic("bad test: account address should be 32 bytes long")
 	}
 
 	return &worldhook.Account{
 		Exists:        true,
-		Address:       testAcct.Address,
-		Nonce:         testAcct.Nonce.Uint64(),
-		Balance:       big.NewInt(0).Set(testAcct.Balance),
+		Address:       testAcct.Address.Value,
+		Nonce:         testAcct.Nonce.Value,
+		Balance:       big.NewInt(0).Set(testAcct.Balance.Value),
 		Storage:       storage,
-		Code:          []byte(testAcct.Code),
+		Code:          []byte(testAcct.Code.Value),
 		AsyncCallData: testAcct.AsyncCallData,
 	}
 }
 
 func convertLogToTestFormat(outputLog *vmi.LogEntry) *ij.LogEntry {
 	testLog := ij.LogEntry{
-		Address:    outputLog.Address,
-		Identifier: outputLog.Identifier,
-		Data:       outputLog.Data,
-		Topics:     outputLog.Topics,
+		Address:    ij.JSONBytes{Value: outputLog.Address},
+		Identifier: ij.JSONBytes{Value: outputLog.Identifier},
+		Data:       ij.JSONBytes{Value: outputLog.Data},
+		Topics:     make([]ij.JSONBytes, len(outputLog.Topics)),
+	}
+	for i, topic := range outputLog.Topics {
+		testLog.Topics[i] = ij.JSONBytes{Value: topic}
 	}
 
 	return &testLog

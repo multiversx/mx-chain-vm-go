@@ -15,19 +15,20 @@ func executeTx(tx *ij.Transaction,
 	world *worldhook.BlockchainHookMock,
 	vm vmi.VMExecutionHandler) (*vmi.VMOutput, error) {
 
-	beforeErr := world.UpdateWorldStateBefore(tx.From, tx.GasLimit, tx.GasPrice)
+	beforeErr := world.UpdateWorldStateBefore(
+		tx.From.Value,
+		tx.GasLimit.Value,
+		tx.GasPrice.Value)
 	if beforeErr != nil {
 		return nil, beforeErr
 	}
 
-	arguments := make([][]byte, len(tx.Arguments))
-	for i, arg := range tx.Arguments {
-		arguments[i] = append(arguments[i], arg...)
-	}
+	arguments := ij.JSONBytesValues(tx.Arguments)
+
 	var output *vmi.VMOutput
 
-	sender := world.AcctMap.GetAccount(tx.From)
-	if sender.Balance.Cmp(tx.Value) < 0 {
+	sender := world.AcctMap.GetAccount(tx.From.Value)
+	if sender.Balance.Cmp(tx.Value.Value) < 0 {
 		// out of funds is handled by the protocol, so needs to be mocked here
 		output = &vmcommon.VMOutput{
 			ReturnData:      make([][]byte, 0),
@@ -43,13 +44,13 @@ func executeTx(tx *ij.Transaction,
 	} else if tx.IsCreate {
 		// SC create
 		input := &vmi.ContractCreateInput{
-			ContractCode: tx.Code,
+			ContractCode: tx.Code.Value,
 			VMInput: vmi.VMInput{
-				CallerAddr:  tx.From,
+				CallerAddr:  tx.From.Value,
 				Arguments:   arguments,
-				CallValue:   tx.Value,
-				GasPrice:    tx.GasPrice,
-				GasProvided: tx.GasLimit,
+				CallValue:   tx.Value.Value,
+				GasPrice:    tx.GasPrice.Value,
+				GasProvided: tx.GasLimit.Value,
 			},
 		}
 
@@ -60,22 +61,22 @@ func executeTx(tx *ij.Transaction,
 		}
 	} else {
 		// SC call
-		recipient := world.AcctMap.GetAccount(tx.To)
+		recipient := world.AcctMap.GetAccount(tx.To.Value)
 		if recipient == nil {
-			return nil, fmt.Errorf("Tx recipient (address: %s) does not exist", hex.EncodeToString(tx.To))
+			return nil, fmt.Errorf("Tx recipient (address: %s) does not exist", hex.EncodeToString(tx.To.Value))
 		}
 		if len(recipient.Code) == 0 {
-			return nil, fmt.Errorf("Tx recipient (address: %s) is not a smart contract", hex.EncodeToString(tx.To))
+			return nil, fmt.Errorf("Tx recipient (address: %s) is not a smart contract", hex.EncodeToString(tx.To.Value))
 		}
 		input := &vmi.ContractCallInput{
-			RecipientAddr: tx.To,
+			RecipientAddr: tx.To.Value,
 			Function:      tx.Function,
 			VMInput: vmi.VMInput{
-				CallerAddr:  tx.From,
+				CallerAddr:  tx.From.Value,
 				Arguments:   arguments,
-				CallValue:   tx.Value,
-				GasPrice:    tx.GasPrice,
-				GasProvided: tx.GasLimit,
+				CallValue:   tx.Value.Value,
+				GasPrice:    tx.GasPrice.Value,
+				GasProvided: tx.GasLimit.Value,
 			},
 		}
 
@@ -88,7 +89,7 @@ func executeTx(tx *ij.Transaction,
 
 	if output.ReturnCode == vmi.Ok {
 		// subtract call value from sender (this is not reflected in the delta)
-		_ = world.UpdateBalanceWithDelta(tx.From, big.NewInt(0).Neg(tx.Value))
+		_ = world.UpdateBalanceWithDelta(tx.From.Value, big.NewInt(0).Neg(tx.Value.Value))
 
 		accountsSlice := make([]*vmi.OutputAccount, len(output.OutputAccounts))
 		i := 0
@@ -108,9 +109,9 @@ func executeTx(tx *ij.Transaction,
 		for _, oa := range output.OutputAccounts {
 			sumOfBalanceDeltas = sumOfBalanceDeltas.Add(sumOfBalanceDeltas, oa.BalanceDelta)
 		}
-		if sumOfBalanceDeltas.Cmp(tx.Value) != 0 {
+		if sumOfBalanceDeltas.Cmp(tx.Value.Value) != 0 {
 			return nil, fmt.Errorf("sum of balance deltas should equal call value. Sum of balance deltas: %d (0x%x). Call value: %d (0x%x)",
-				sumOfBalanceDeltas, sumOfBalanceDeltas, tx.Value, tx.Value)
+				sumOfBalanceDeltas, sumOfBalanceDeltas, tx.Value.Value, tx.Value.Value)
 		}
 	}
 

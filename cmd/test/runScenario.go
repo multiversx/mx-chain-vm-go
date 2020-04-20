@@ -54,7 +54,7 @@ func (se *arwenScenarioExecutor) Run(scenario *ij.Scenario) error {
 			for _, acct := range step.Accounts {
 				world.AcctMap.PutAccount(convertAccount(acct))
 			}
-			world.Blockhashes = step.BlockHashes
+			world.Blockhashes = ij.JSONBytesValues(step.BlockHashes)
 		case *ij.CheckStateStep:
 			err := checkAccounts(step.CheckAccounts, world)
 			if err != nil {
