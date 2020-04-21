@@ -12,7 +12,7 @@ import (
 
 func TestErc20FromRust(t *testing.T) {
 	fileResolver := ij.NewDefaultFileResolver()
-	executor, err := ajt.NewArwenScenarioExecutor()
+	executor, err := ajt.NewArwenTestExecutor()
 	require.Nil(t, err)
 	runner := controller.NewScenarioRunner(
 		executor,
@@ -30,7 +30,7 @@ func TestErc20FromC(t *testing.T) {
 	fileResolver := ij.NewDefaultFileResolver().ReplacePath(
 		"contracts/simple-coin.wasm",
 		filepath.Join(getTestRoot(), "erc20/contracts/erc20-c.wasm"))
-	executor, err := ajt.NewArwenScenarioExecutor()
+	executor, err := ajt.NewArwenTestExecutor()
 	require.Nil(t, err)
 	runner := controller.NewScenarioRunner(
 		executor,
@@ -48,7 +48,7 @@ func TestErc20FromC(t *testing.T) {
 }
 
 func TestAdderFromRust(t *testing.T) {
-	executor, err := ajt.NewArwenScenarioExecutor()
+	executor, err := ajt.NewArwenTestExecutor()
 	require.Nil(t, err)
 	runner := controller.NewScenarioRunner(
 		executor,
@@ -66,7 +66,7 @@ func TestAdderFromRust(t *testing.T) {
 }
 
 func TestCryptoBubbles(t *testing.T) {
-	executor, err := ajt.NewArwenScenarioExecutor()
+	executor, err := ajt.NewArwenTestExecutor()
 	require.Nil(t, err)
 	runner := controller.NewScenarioRunner(
 		executor,
@@ -84,7 +84,7 @@ func TestCryptoBubbles(t *testing.T) {
 }
 
 func TestFeaturesFromRust(t *testing.T) {
-	executor, err := ajt.NewArwenScenarioExecutor()
+	executor, err := ajt.NewArwenTestExecutor()
 	require.Nil(t, err)
 	runner := controller.NewScenarioRunner(
 		executor,
@@ -102,7 +102,7 @@ func TestFeaturesFromRust(t *testing.T) {
 }
 
 func TestAsyncCalls(t *testing.T) {
-	executor, err := ajt.NewArwenScenarioExecutor()
+	executor, err := ajt.NewArwenTestExecutor()
 	require.Nil(t, err)
 	runner := controller.NewScenarioRunner(
 		executor,
@@ -120,7 +120,7 @@ func TestAsyncCalls(t *testing.T) {
 }
 
 func TestDelegationContract(t *testing.T) {
-	executor, err := ajt.NewArwenScenarioExecutor()
+	executor, err := ajt.NewArwenTestExecutor()
 	require.Nil(t, err)
 	runner := controller.NewScenarioRunner(
 		executor,
@@ -138,7 +138,7 @@ func TestDelegationContract(t *testing.T) {
 }
 
 func TestDnsContract(t *testing.T) {
-	executor, err := ajt.NewArwenScenarioExecutor()
+	executor, err := ajt.NewArwenTestExecutor()
 	require.Nil(t, err)
 	runner := controller.NewScenarioRunner(
 		executor,
