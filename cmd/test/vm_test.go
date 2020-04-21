@@ -13,14 +13,14 @@ func TestErc20FromC(t *testing.T) {
 	fileResolver := ij.NewDefaultFileResolver().ReplacePath(
 		"erc20.wasm",
 		filepath.Join(getTestRoot(), "contracts/erc20-c.wasm"))
-	runner := controller.NewTestRunner(
-		ajt.NewArwenTestExecutor(),
+	runner := controller.NewScenarioRunner(
+		ajt.NewArwenScenarioExecutor(),
 		fileResolver,
 	)
-	err := runner.RunAllJSONTestsInDirectory(
+	err := runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
 		"erc20",
-		".test.json",
+		".scen.json",
 		[]string{})
 
 	if err != nil {
@@ -32,14 +32,14 @@ func TestErc20FromRust(t *testing.T) {
 	fileResolver := ij.NewDefaultFileResolver().ReplacePath(
 		"erc20.wasm",
 		filepath.Join(getTestRoot(), "contracts/simple-coin.wasm"))
-	runner := controller.NewTestRunner(
-		ajt.NewArwenTestExecutor(),
+	runner := controller.NewScenarioRunner(
+		ajt.NewArwenScenarioExecutor(),
 		fileResolver,
 	)
-	err := runner.RunAllJSONTestsInDirectory(
+	err := runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
 		"erc20",
-		".test.json",
+		".scen.json",
 		[]string{})
 
 	if err != nil {
@@ -64,14 +64,14 @@ func TestAdderFromRust(t *testing.T) {
 }
 
 func TestCryptoBubbles(t *testing.T) {
-	runner := controller.NewTestRunner(
-		ajt.NewArwenTestExecutor(),
+	runner := controller.NewScenarioRunner(
+		ajt.NewArwenScenarioExecutor(),
 		ij.NewDefaultFileResolver(),
 	)
-	err := runner.RunAllJSONTestsInDirectory(
+	err := runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
 		"crypto_bubbles_min_v1",
-		".test.json",
+		".scen.json",
 		[]string{})
 
 	if err != nil {
@@ -80,14 +80,14 @@ func TestCryptoBubbles(t *testing.T) {
 }
 
 func TestFeaturesFromRust(t *testing.T) {
-	runner := controller.NewTestRunner(
-		ajt.NewArwenTestExecutor(),
+	runner := controller.NewScenarioRunner(
+		ajt.NewArwenScenarioExecutor(),
 		ij.NewDefaultFileResolver(),
 	)
-	err := runner.RunAllJSONTestsInDirectory(
+	err := runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
 		"features",
-		".test.json",
+		".scen.json",
 		[]string{})
 
 	if err != nil {
@@ -96,14 +96,14 @@ func TestFeaturesFromRust(t *testing.T) {
 }
 
 func TestAsyncCalls(t *testing.T) {
-	runner := controller.NewTestRunner(
-		ajt.NewArwenTestExecutor(),
+	runner := controller.NewScenarioRunner(
+		ajt.NewArwenScenarioExecutor(),
 		ij.NewDefaultFileResolver(),
 	)
-	err := runner.RunAllJSONTestsInDirectory(
+	err := runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
 		"async",
-		".test.json",
+		".scen.json",
 		[]string{})
 
 	if err != nil {
@@ -112,14 +112,14 @@ func TestAsyncCalls(t *testing.T) {
 }
 
 func TestDelegationContract(t *testing.T) {
-	runner := controller.NewTestRunner(
-		ajt.NewArwenTestExecutor(),
+	runner := controller.NewScenarioRunner(
+		ajt.NewArwenScenarioExecutor(),
 		ij.NewDefaultFileResolver(),
 	)
-	err := runner.RunAllJSONTestsInDirectory(
+	err := runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
 		"delegation",
-		".test.json",
+		".scen.json",
 		[]string{})
 
 	if err != nil {
@@ -128,14 +128,14 @@ func TestDelegationContract(t *testing.T) {
 }
 
 func TestDnsContract(t *testing.T) {
-	runner := controller.NewTestRunner(
-		ajt.NewArwenTestExecutor(),
+	runner := controller.NewScenarioRunner(
+		ajt.NewArwenScenarioExecutor(),
 		ij.NewDefaultFileResolver(),
 	)
-	err := runner.RunAllJSONTestsInDirectory(
+	err := runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
 		"dns",
-		".test.json",
+		".scen.json",
 		[]string{})
 
 	if err != nil {

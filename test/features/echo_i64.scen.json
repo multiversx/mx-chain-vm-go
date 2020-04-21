@@ -1,0 +1,236 @@
+{
+    "steps": [
+        {
+            "step": "setState",
+            "accounts": {
+                "``features_contract_____________s0": {
+                    "nonce": "0x00",
+                    "balance": "0x100",
+                    "storage": {},
+                    "code": "file:features.wasm"
+                },
+                "``an_account____________________s0": {
+                    "nonce": "0x00",
+                    "balance": "0x900abc",
+                    "storage": {},
+                    "code": ""
+                }
+            },
+            "blockhashes": []
+        },
+        {
+            "step": "tx",
+            "txId": "1",
+            "tx": {
+                "from": "``an_account____________________s0",
+                "to": "``features_contract_____________s0",
+                "value": "0x00",
+                "function": "echo_i64",
+                "contractCode": "",
+                "arguments": [
+                    "0"
+                ],
+                "gasLimit": "0x100000",
+                "gasPrice": "0x01"
+            },
+            "expect": {
+                "out": [
+                    ""
+                ],
+                "status": "",
+                "gas": "*",
+                "logs": [],
+                "refund": ""
+            }
+        },
+        {
+            "step": "tx",
+            "txId": "2",
+            "tx": {
+                "from": "``an_account____________________s0",
+                "to": "``features_contract_____________s0",
+                "value": "0x00",
+                "function": "echo_i64",
+                "contractCode": "",
+                "arguments": [
+                    "5"
+                ],
+                "gasLimit": "0x100000",
+                "gasPrice": "0x01"
+            },
+            "expect": {
+                "out": [
+                    "5"
+                ],
+                "status": "",
+                "gas": "*",
+                "logs": [],
+                "refund": ""
+            }
+        },
+        {
+            "step": "tx",
+            "txId": "3",
+            "tx": {
+                "from": "``an_account____________________s0",
+                "to": "``features_contract_____________s0",
+                "value": "0x00",
+                "function": "echo_i64",
+                "contractCode": "",
+                "arguments": [
+                    "-3"
+                ],
+                "gasLimit": "0x100000",
+                "gasPrice": "0x01"
+            },
+            "expect": {
+                "out": [
+                    "0xfd"
+                ],
+                "status": "",
+                "gas": "*",
+                "logs": [],
+                "refund": ""
+            }
+        },
+        {
+            "step": "tx",
+            "txId": "4",
+            "tx": {
+                "from": "``an_account____________________s0",
+                "to": "``features_contract_____________s0",
+                "value": "0x00",
+                "function": "echo_i64",
+                "contractCode": "",
+                "arguments": [
+                    "0x010000000000000000"
+                ],
+                "gasLimit": "0x100000",
+                "gasPrice": "0x01"
+            },
+            "expect": {
+                "out": [],
+                "status": "4",
+                "message": "argument out of range",
+                "gas": "*",
+                "logs": [],
+                "refund": ""
+            }
+        },
+        {
+            "step": "tx",
+            "txId": "5",
+            "tx": {
+                "from": "``an_account____________________s0",
+                "to": "``features_contract_____________s0",
+                "value": "0x00",
+                "function": "echo_i64",
+                "contractCode": "",
+                "arguments": [
+                    "0xffffffffffffffff"
+                ],
+                "gasLimit": "0x100000",
+                "gasPrice": "0x01"
+            },
+            "expect": {
+                "out": [
+                    "0xff"
+                ],
+                "status": "",
+                "gas": "*",
+                "logs": [],
+                "refund": ""
+            }
+        },
+        {
+            "step": "tx",
+            "txId": "6",
+            "tx": {
+                "from": "``an_account____________________s0",
+                "to": "``features_contract_____________s0",
+                "value": "0x00",
+                "function": "echo_i64",
+                "contractCode": "",
+                "arguments": [
+                    "0x7fffffffffffffff"
+                ],
+                "gasLimit": "0x100000",
+                "gasPrice": "0x01"
+            },
+            "expect": {
+                "out": [
+                    "0x7fffffffffffffff"
+                ],
+                "status": "",
+                "gas": "*",
+                "logs": [],
+                "refund": ""
+            }
+        },
+        {
+            "step": "tx",
+            "txId": "7",
+            "tx": {
+                "from": "``an_account____________________s0",
+                "to": "``features_contract_____________s0",
+                "value": "0x00",
+                "function": "echo_i64",
+                "contractCode": "",
+                "arguments": [
+                    "+9223372036854775808"
+                ],
+                "gasLimit": "0x100000",
+                "gasPrice": "0x01"
+            },
+            "expect": {
+                "out": [],
+                "status": "4",
+                "message": "argument out of range",
+                "gas": "*",
+                "logs": [],
+                "refund": ""
+            }
+        },
+        {
+            "step": "tx",
+            "txId": "8",
+            "tx": {
+                "from": "``an_account____________________s0",
+                "to": "``features_contract_____________s0",
+                "value": "0x00",
+                "function": "echo_i64",
+                "contractCode": "",
+                "arguments": [
+                    "-9223372036854775809"
+                ],
+                "gasLimit": "0x100000",
+                "gasPrice": "0x01"
+            },
+            "expect": {
+                "out": [],
+                "status": "4",
+                "message": "argument out of range",
+                "gas": "*",
+                "logs": [],
+                "refund": ""
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "``features_contract_____________s0": {
+                    "nonce": "0x00",
+                    "balance": "0x100",
+                    "storage": {},
+                    "code": "file:features.wasm"
+                },
+                "``an_account____________________s0": {
+                    "nonce": "0x08",
+                    "balance": "0x100abc",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        }
+    ]
+}

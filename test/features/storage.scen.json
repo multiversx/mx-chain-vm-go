@@ -1,0 +1,67 @@
+{
+    "steps": [
+        {
+            "step": "setState",
+            "accounts": {
+                "``features_contract_____________s0": {
+                    "nonce": "0x00",
+                    "balance": "0x100",
+                    "storage": {
+                        "0x0101010101010101010101010101010101010101010101010101010101010101": "0x010203"
+                    },
+                    "code": "file:features.wasm"
+                },
+                "``an_account____________________s0": {
+                    "nonce": "0x00",
+                    "balance": "0x300abc",
+                    "storage": {},
+                    "code": ""
+                }
+            },
+            "blockhashes": []
+        },
+        {
+            "step": "tx",
+            "txId": "1",
+            "tx": {
+                "from": "``an_account____________________s0",
+                "to": "``features_contract_____________s0",
+                "value": "0x00",
+                "function": "storageLoadVec",
+                "contractCode": "",
+                "arguments": [],
+                "gasLimit": "0x100000",
+                "gasPrice": "0x01"
+            },
+            "expect": {
+                "out": [
+                    "0x010203",
+                    "0x03"
+                ],
+                "status": "",
+                "gas": "*",
+                "logs": [],
+                "refund": ""
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "``features_contract_____________s0": {
+                    "nonce": "0x00",
+                    "balance": "0x100",
+                    "storage": {
+                        "0x0101010101010101010101010101010101010101010101010101010101010101": "0x010203"
+                    },
+                    "code": "file:features.wasm"
+                },
+                "``an_account____________________s0": {
+                    "nonce": "0x01",
+                    "balance": "0x200abc",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        }
+    ]
+}
