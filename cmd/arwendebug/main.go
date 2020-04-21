@@ -9,7 +9,7 @@ import (
 
 func main() {
 	facade := &arwendebug.DebugFacade{}
-	app := arwendebug.Initialize(facade)
+	app := initializeCLI(facade)
 
 	err := app.Run(os.Args)
 	if err != nil {

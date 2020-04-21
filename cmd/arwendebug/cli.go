@@ -1,11 +1,11 @@
-package arwendebug
+package main
 
 import (
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwendebug"
 	"github.com/urfave/cli"
 )
 
-// CLIArguments -
-type CLIArguments struct {
+type cliArguments struct {
 	ServerAddress   string
 	DatabasePath    string
 	Session         string
@@ -18,13 +18,12 @@ type CLIArguments struct {
 	CodeMetadata    string
 }
 
-// Initialize -
-func Initialize(facade *DebugFacade) *cli.App {
+func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 	app := cli.NewApp()
 	app.Name = "Arwen Debug"
 	app.Usage = ""
 
-	args := &CLIArguments{}
+	args := &cliArguments{}
 
 	flagServerAddress := cli.StringFlag{
 		Name:        "address",

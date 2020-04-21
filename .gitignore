@@ -16,6 +16,7 @@
 /arwen/debug
 /cmd/test/test
 /cmd/arwen/arwen
+/cmd/arwendebug/arwendebug
 /ipc/tests/testdata/streams
 /ipc/tests/arwen
 
