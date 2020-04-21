@@ -1,4 +1,5 @@
 {
+    "name": "getClaimable_node",
     "steps": [
         {
             "step": "setState",

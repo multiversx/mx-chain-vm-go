@@ -1,4 +1,5 @@
 {
+    "name": "rewardWinner",
     "steps": [
         {
             "step": "setState",

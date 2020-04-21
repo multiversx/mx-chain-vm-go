@@ -1,4 +1,5 @@
 {
+    "name": "transferFrom_AllDistinct-EntireAllowanceMoreThanBalance",
     "steps": [
         {
             "step": "setState",

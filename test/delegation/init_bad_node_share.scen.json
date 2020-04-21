@@ -1,4 +1,5 @@
 {
+    "name": "init_bad_node_share",
     "steps": [
         {
             "step": "setState",

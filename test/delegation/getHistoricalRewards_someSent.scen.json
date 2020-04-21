@@ -1,4 +1,5 @@
 {
+    "name": "getHistoricalRewards_someSent",
     "steps": [
         {
             "step": "setState",

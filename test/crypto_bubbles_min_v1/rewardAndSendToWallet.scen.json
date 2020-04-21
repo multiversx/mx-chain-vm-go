@@ -1,4 +1,5 @@
 {
+    "name": "rewardAndSendToWallet",
     "steps": [
         {
             "step": "setState",

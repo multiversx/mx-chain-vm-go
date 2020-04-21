@@ -1,4 +1,5 @@
 {
+    "name": "claim_all_thrice",
     "steps": [
         {
             "step": "setState",

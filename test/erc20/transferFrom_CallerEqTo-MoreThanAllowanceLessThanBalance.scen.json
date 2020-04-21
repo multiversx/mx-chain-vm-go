@@ -1,4 +1,5 @@
 {
+    "name": "transferFrom_CallerEqTo-MoreThanAllowanceLessThanBalance",
     "steps": [
         {
             "step": "setState",

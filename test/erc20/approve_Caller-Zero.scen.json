@@ -1,4 +1,5 @@
 {
+    "name": "approve_Caller-Zero",
     "steps": [
         {
             "step": "setState",

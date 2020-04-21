@@ -1,4 +1,5 @@
 {
+    "name": "transfer_Other-EntireBalance",
     "steps": [
         {
             "step": "setState",

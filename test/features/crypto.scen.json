@@ -1,4 +1,5 @@
 {
+    "name": "crypto",
     "steps": [
         {
             "step": "setState",

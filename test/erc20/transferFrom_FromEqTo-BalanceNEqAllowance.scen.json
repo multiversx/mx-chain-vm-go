@@ -1,4 +1,5 @@
 {
+    "name": "transferFrom_FromEqTo-BalanceNEqAllowance",
     "steps": [
         {
             "step": "setState",

@@ -1,4 +1,5 @@
 {
+    "name": "allowance_OtherEqOther",
     "steps": [
         {
             "step": "setState",

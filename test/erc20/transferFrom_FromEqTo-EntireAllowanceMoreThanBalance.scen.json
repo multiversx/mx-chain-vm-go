@@ -1,4 +1,5 @@
 {
+    "name": "transferFrom_FromEqTo-EntireAllowanceMoreThanBalance",
     "steps": [
         {
             "step": "setState",

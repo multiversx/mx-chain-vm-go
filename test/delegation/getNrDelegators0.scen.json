@@ -1,4 +1,5 @@
 {
+    "name": "getNrDelegators0",
     "steps": [
         {
             "step": "setState",

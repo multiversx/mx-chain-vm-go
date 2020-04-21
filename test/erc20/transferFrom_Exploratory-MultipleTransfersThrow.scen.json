@@ -1,4 +1,5 @@
 {
+    "name": "transferFrom_Exploratory-MultipleTransfersThrow",
     "steps": [
         {
             "step": "setState",

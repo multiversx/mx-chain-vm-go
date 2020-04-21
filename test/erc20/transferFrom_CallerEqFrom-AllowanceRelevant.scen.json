@@ -1,4 +1,5 @@
 {
+    "name": "transferFrom_CallerEqFrom-AllowanceRelevant",
     "steps": [
         {
             "step": "setState",

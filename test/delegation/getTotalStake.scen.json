@@ -1,4 +1,5 @@
 {
+    "name": "getTotalStake",
     "steps": [
         {
             "step": "setState",

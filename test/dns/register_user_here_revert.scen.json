@@ -1,4 +1,5 @@
 {
+    "name": "register_user_here_revert",
     "steps": [
         {
             "step": "setState",

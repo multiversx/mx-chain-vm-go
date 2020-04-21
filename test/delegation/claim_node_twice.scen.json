@@ -1,4 +1,5 @@
 {
+    "name": "claim_node_twice",
     "steps": [
         {
             "step": "setState",

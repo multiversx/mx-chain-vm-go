@@ -1,4 +1,5 @@
 {
+    "name": "activate_no_bls",
     "steps": [
         {
             "step": "setState",

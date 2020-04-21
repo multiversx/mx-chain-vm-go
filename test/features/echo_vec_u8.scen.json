@@ -1,4 +1,5 @@
 {
+    "name": "echo_vec_u8",
     "steps": [
         {
             "step": "setState",

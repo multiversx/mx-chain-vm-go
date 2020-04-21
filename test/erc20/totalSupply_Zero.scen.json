@@ -1,4 +1,5 @@
 {
+    "name": "totalSupply_Zero",
     "steps": [
         {
             "step": "setState",

@@ -1,4 +1,5 @@
 {
+    "name": "claim_all",
     "steps": [
         {
             "step": "setState",

@@ -1,4 +1,5 @@
 {
+    "name": "adder",
     "comment": "add then check",
     "steps": [
         {

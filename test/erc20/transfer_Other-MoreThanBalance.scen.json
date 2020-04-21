@@ -1,4 +1,5 @@
 {
+    "name": "transfer_Other-MoreThanBalance",
     "steps": [
         {
             "step": "setState",

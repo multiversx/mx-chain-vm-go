@@ -1,4 +1,5 @@
 {
+    "name": "topUp_ok",
     "steps": [
         {
             "step": "setState",

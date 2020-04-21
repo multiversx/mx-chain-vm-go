@@ -1,4 +1,5 @@
 {
+    "name": "transfer_Caller-EntireBalance",
     "steps": [
         {
             "step": "setState",

@@ -1,4 +1,5 @@
 {
+    "name": "claim_node",
     "steps": [
         {
             "step": "setState",

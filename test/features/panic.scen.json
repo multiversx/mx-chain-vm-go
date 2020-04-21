@@ -1,4 +1,5 @@
 {
+    "name": "panic",
     "steps": [
         {
             "step": "setState",

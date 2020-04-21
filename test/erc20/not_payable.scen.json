@@ -1,4 +1,5 @@
 {
+    "name": "not_payable",
     "steps": [
         {
             "step": "setState",

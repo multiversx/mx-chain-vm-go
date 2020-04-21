@@ -1,4 +1,5 @@
 {
+    "name": "activate_other_shard",
     "steps": [
         {
             "step": "setState",

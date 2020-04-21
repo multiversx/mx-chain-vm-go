@@ -1,4 +1,5 @@
 {
+    "name": "getClaimable_2",
     "steps": [
         {
             "step": "setState",

@@ -1,4 +1,5 @@
 {
+    "name": "transfer_Caller-AllowanceIrrelevant",
     "steps": [
         {
             "step": "setState",

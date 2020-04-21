@@ -1,4 +1,5 @@
 {
+    "name": "purchase_offer",
     "steps": [
         {
             "step": "setState",

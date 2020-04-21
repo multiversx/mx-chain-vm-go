@@ -1,4 +1,5 @@
 {
+    "name": "register_user_here_ok",
     "steps": [
         {
             "step": "setState",

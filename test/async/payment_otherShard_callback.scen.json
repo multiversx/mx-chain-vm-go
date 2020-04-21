@@ -1,4 +1,5 @@
 {
+    "name": "payment_otherShard_callback",
     "steps": [
         {
             "step": "setState",

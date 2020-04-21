@@ -1,4 +1,5 @@
 {
+    "name": "allowance_CallerOther",
     "steps": [
         {
             "step": "setState",

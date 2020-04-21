@@ -1,4 +1,5 @@
 {
+    "name": "stake_over_1",
     "steps": [
         {
             "step": "setState",

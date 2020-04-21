@@ -1,4 +1,5 @@
 {
+    "name": "transferFrom_Exploratory-MultipleTransfersSucceed",
     "steps": [
         {
             "step": "setState",

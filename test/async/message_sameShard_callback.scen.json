@@ -1,4 +1,5 @@
 {
+    "name": "message_sameShard_callback",
     "steps": [
         {
             "step": "setState",

@@ -1,4 +1,5 @@
 {
+    "name": "purchase_buy_tooMuch1",
     "steps": [
         {
             "step": "setState",

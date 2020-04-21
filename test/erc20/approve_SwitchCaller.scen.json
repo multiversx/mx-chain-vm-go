@@ -1,4 +1,5 @@
 {
+    "name": "approve_SwitchCaller",
     "steps": [
         {
             "step": "setState",

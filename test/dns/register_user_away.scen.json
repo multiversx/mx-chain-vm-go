@@ -1,4 +1,5 @@
 {
+    "name": "register_user_away",
     "steps": [
         {
             "step": "setState",

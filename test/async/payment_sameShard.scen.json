@@ -1,4 +1,5 @@
 {
+    "name": "payment_sameShard",
     "steps": [
         {
             "step": "setState",

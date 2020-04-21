@@ -1,4 +1,5 @@
 {
+    "name": "rewardWinner_Last",
     "steps": [
         {
             "step": "setState",

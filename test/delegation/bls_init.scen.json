@@ -1,4 +1,5 @@
 {
+    "name": "bls_init",
     "steps": [
         {
             "step": "setState",

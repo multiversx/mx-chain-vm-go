@@ -1,4 +1,5 @@
 {
+    "name": "getStake_node_0",
     "steps": [
         {
             "step": "setState",

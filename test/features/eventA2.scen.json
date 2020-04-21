@@ -1,4 +1,5 @@
 {
+    "name": "eventA2",
     "steps": [
         {
             "step": "setState",

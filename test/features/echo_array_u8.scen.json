@@ -1,4 +1,5 @@
 {
+    "name": "echo_array_u8",
     "steps": [
         {
             "step": "setState",

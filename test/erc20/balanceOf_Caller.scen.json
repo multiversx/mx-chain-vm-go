@@ -1,4 +1,5 @@
 {
+    "name": "balanceOf_Caller",
     "steps": [
         {
             "step": "setState",
