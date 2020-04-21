@@ -673,7 +673,7 @@ func bigIntNot(context unsafe.Pointer, destination, op int32) {
 	dest, a := bigInt.GetTwo(destination, op)
 	if a.Sign() < 0 {
 		runtime := arwen.GetRuntimeContext(context)
-		runtime.SignalUserError("[bigIntAnd] bitwise operations only allowed on positive integers")
+		runtime.SignalUserError(arwen.UserErrorBitwiseNegative)
 	}
 	dest.Not(a)
 
@@ -689,7 +689,7 @@ func bigIntAnd(context unsafe.Pointer, destination, op1, op2 int32) {
 	dest, a, b := bigInt.GetThree(destination, op1, op2)
 	if a.Sign() < 0 || b.Sign() < 0 {
 		runtime := arwen.GetRuntimeContext(context)
-		runtime.SignalUserError("[bigIntAnd] bitwise operations only allowed on positive integers")
+		runtime.SignalUserError(arwen.UserErrorBitwiseNegative)
 	}
 	dest.And(a, b)
 
@@ -705,7 +705,7 @@ func bigIntOr(context unsafe.Pointer, destination, op1, op2 int32) {
 	dest, a, b := bigInt.GetThree(destination, op1, op2)
 	if a.Sign() < 0 || b.Sign() < 0 {
 		runtime := arwen.GetRuntimeContext(context)
-		runtime.SignalUserError("[bigIntOr] bitwise operations only allowed on positive integers")
+		runtime.SignalUserError(arwen.UserErrorBitwiseNegative)
 	}
 	dest.Or(a, b)
 
@@ -721,7 +721,7 @@ func bigIntXor(context unsafe.Pointer, destination, op1, op2 int32) {
 	dest, a, b := bigInt.GetThree(destination, op1, op2)
 	if a.Sign() < 0 || b.Sign() < 0 {
 		runtime := arwen.GetRuntimeContext(context)
-		runtime.SignalUserError("[bigIntXor] bitwise operations only allowed on positive integers")
+		runtime.SignalUserError(arwen.UserErrorBitwiseNegative)
 	}
 	dest.Xor(a, b)
 
@@ -737,7 +737,7 @@ func bigIntShr(context unsafe.Pointer, destination, op, bits int32) {
 	dest, a := bigInt.GetTwo(destination, op)
 	if a.Sign() < 0 || bits < 0 {
 		runtime := arwen.GetRuntimeContext(context)
-		runtime.SignalUserError("[bigIntShr] both arguments must be positive")
+		runtime.SignalUserError(arwen.UserErrorShiftNegative)
 	}
 	dest.Rsh(a, uint(bits))
 
@@ -753,7 +753,7 @@ func bigIntShl(context unsafe.Pointer, destination, op, bits int32) {
 	dest, a := bigInt.GetTwo(destination, op)
 	if a.Sign() < 0 || bits < 0 {
 		runtime := arwen.GetRuntimeContext(context)
-		runtime.SignalUserError("[bigIntShl] both arguments must be positive")
+		runtime.SignalUserError(arwen.UserErrorShiftNegative)
 	}
 	dest.Lsh(a, uint(bits))
 
