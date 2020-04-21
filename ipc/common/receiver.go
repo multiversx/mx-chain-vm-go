@@ -77,7 +77,7 @@ func (receiver *Receiver) readMessage(kind MessageKind, length int) (MessageHand
 	}
 
 	message := CreateMessage(kind)
-	err = receiver.marshalizer.UnmarshalItem(buffer, message)
+	err = receiver.marshalizer.Unmarshal(message, buffer)
 	if err != nil {
 		return nil, err
 	}

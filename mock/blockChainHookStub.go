@@ -168,7 +168,7 @@ func (b *BlockchainHookStub) CurrentEpoch() uint32 {
 
 func (b *BlockchainHookStub) ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*big.Int, uint64, error) {
 	if b.ProcessBuiltInFunctionCalled != nil {
-		return b.ProcessBuiltInFunction(input)
+		return b.ProcessBuiltInFunctionCalled(input)
 	}
 	return arwen.Zero, 0, nil
 }

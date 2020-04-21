@@ -7,8 +7,13 @@ import (
 	"path/filepath"
 	"time"
 	"unsafe"
+
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 )
 
+var logDuration = logger.GetOrCreate("arwen/duration")
+
+// Zero is the big integer 0
 var Zero = big.NewInt(0)
 
 func GuardedMakeByteSlice2D(length int32) ([][]byte, error) {
@@ -84,11 +89,10 @@ func WithFault(err error, context unsafe.Pointer, failExecution bool) bool {
 
 func GetSCCode(fileName string) []byte {
 	code, _ := ioutil.ReadFile(filepath.Clean(fileName))
-
 	return code
 }
 
 func TimeTrack(start time.Time, message string) {
 	elapsed := time.Since(start)
-	fmt.Println(message, "duration", elapsed)
+	logDuration.Trace(message, "duration", elapsed)
 }
