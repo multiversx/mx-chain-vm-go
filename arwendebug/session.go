@@ -9,13 +9,30 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
+type sessionRecord struct {
+	id        string
+	createdOn string
+	accounts  mock.AccountsMap
+}
+
 type session struct {
 	blockchainHook mock.BlockchainHookMock
 	vm             vmcommon.VMExecutionHandler
 }
 
+func newSessionRecord(sessionID string) *sessionRecord {
+	return &sessionRecord{
+		id:        sessionID,
+		createdOn: "now",
+		accounts:  make(mock.AccountsMap),
+	}
+}
+
 // NewSession -
-func NewSession(blockchainHook *mock.BlockchainHookMock) (*session, error) {
+func NewSession(record *sessionRecord) (*session, error) {
+	blockchainHook := mock.NewBlockchainHookMock()
+	blockchainHook.Accounts = record.accounts
+
 	vm, err := host.NewArwenVM(
 		blockchainHook,
 		arwenpart.NewCryptoHookGateway(),

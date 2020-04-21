@@ -6,26 +6,10 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
-
-	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
 )
 
 type database struct {
 	rootPath string
-}
-
-type sessionRecord struct {
-	id        string
-	createdOn string
-	accounts  mock.AccountsMap
-}
-
-func newSessionRecord(sessionID string) *sessionRecord {
-	return &sessionRecord{
-		id:        sessionID,
-		createdOn: "now",
-		accounts:  make(mock.AccountsMap),
-	}
 }
 
 // NewDatabase -
@@ -49,9 +33,7 @@ func (db *database) loadSession(sessionID string) (*session, error) {
 		}
 	}
 
-	hook := mock.NewBlockchainHookMock()
-	hook.Accounts = record.accounts
-	session, err := NewSession(hook)
+	session, err := NewSession(record)
 	if err != nil {
 		return nil, err
 	}
@@ -69,13 +51,8 @@ func fileExists(filePath string) bool {
 }
 
 func (db *database) readSessionRecord(filePath string) (*sessionRecord, error) {
-	rawData, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		return nil, err
-	}
-
 	record := &sessionRecord{}
-	err = json.Unmarshal(rawData, record)
+	err := db.unmarshalRecord(filePath, record)
 	if err != nil {
 		return nil, err
 	}
@@ -85,4 +62,17 @@ func (db *database) readSessionRecord(filePath string) (*sessionRecord, error) {
 
 func (db *database) storeSession() {
 
+}
+
+func (db *database) unmarshalRecord(filePath string, record interface{}) error {
+	data, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return err
+	}
+
+	return json.Unmarshal(data, record)
+}
+
+func (db *database) marshalRecord(record interface{}) ([]byte, error) {
+	return json.MarshalIndent(record, "", "\t")
 }
