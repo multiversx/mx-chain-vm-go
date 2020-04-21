@@ -1,6 +1,7 @@
 package mock
 
 import (
+	"encoding/binary"
 	"errors"
 	"math/big"
 
@@ -100,7 +101,18 @@ func (b *BlockchainHookMock) NewAddress(creatorAddress []byte, creatorNonce uint
 		return nil, b.Err
 	}
 
-	return b.NewAddr, nil
+	if b.NewAddr != nil {
+		return b.NewAddr, nil
+	}
+
+	return b.createContractAddress(creatorAddress, creatorNonce), nil
+}
+
+func (b *BlockchainHookMock) createContractAddress(creatorAddress []byte, creatorNonce uint64) []byte {
+	address := make([]byte, len(creatorAddress))
+	copy(address, creatorAddress)
+	binary.LittleEndian.PutUint64(address[0:8], creatorNonce)
+	return address
 }
 
 func (b *BlockchainHookMock) GetBalance(address []byte) (*big.Int, error) {
