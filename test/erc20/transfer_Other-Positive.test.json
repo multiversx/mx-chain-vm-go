@@ -14,7 +14,7 @@
                     "0x19efaebcc296cffac396adb4a60d54c05eff43926a6072498a618e943908efe1": "0x2710",
                     "0x0000000000000000000000000000000000000000000000000000000000000000": "0x2710"
                 },
-                "code": "file:erc20.wasm"
+                "code": "file:contracts/simple-coin.wasm"
             }
         },
         "blocks": [
@@ -83,7 +83,7 @@
                     "0x60a02085f5c92598d4796160d8e2339c326ac52bb5317b538d1105baf24b490f": "0x17",
                     "0x0000000000000000000000000000000000000000000000000000000000000000": "0x2710"
                 },
-                "code": "file:erc20.wasm"
+                "code": "file:contracts/simple-coin.wasm"
             }
         }
     }

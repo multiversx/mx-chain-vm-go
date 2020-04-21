@@ -9,10 +9,8 @@ import (
 	ij "github.com/ElrondNetwork/elrond-vm-util/test-util/vmtestjson"
 )
 
-func TestErc20FromC(t *testing.T) {
-	fileResolver := ij.NewDefaultFileResolver().ReplacePath(
-		"erc20.wasm",
-		filepath.Join(getTestRoot(), "contracts/erc20-c.wasm"))
+func TestErc20FromRust(t *testing.T) {
+	fileResolver := ij.NewDefaultFileResolver()
 	runner := controller.NewScenarioRunner(
 		ajt.NewArwenScenarioExecutor(),
 		fileResolver,
@@ -28,10 +26,10 @@ func TestErc20FromC(t *testing.T) {
 	}
 }
 
-func TestErc20FromRust(t *testing.T) {
+func TestErc20FromC(t *testing.T) {
 	fileResolver := ij.NewDefaultFileResolver().ReplacePath(
-		"erc20.wasm",
-		filepath.Join(getTestRoot(), "contracts/simple-coin.wasm"))
+		"contracts/simple-coin.wasm",
+		filepath.Join(getTestRoot(), "erc20/contracts/erc20-c.wasm"))
 	runner := controller.NewScenarioRunner(
 		ajt.NewArwenScenarioExecutor(),
 		fileResolver,

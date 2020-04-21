@@ -14,7 +14,7 @@
                     "nonce": "0x00",
                     "balance": "0x00",
                     "storage": {},
-                    "code": "file:erc20.wasm"
+                    "code": "file:contracts/simple-coin.wasm"
                 }
             }
         },
@@ -54,7 +54,7 @@
                     "nonce": "0x00",
                     "balance": "0x00",
                     "storage": {},
-                    "code": "file:erc20.wasm"
+                    "code": "file:contracts/simple-coin.wasm"
                 }
             }
         }

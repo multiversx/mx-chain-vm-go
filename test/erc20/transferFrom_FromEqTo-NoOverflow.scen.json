@@ -19,7 +19,7 @@
                         "0xfe1847a18709e94e8938511fd1050153c9f207efa75081b2736362b3d4cf962c": "0x0a",
                         "0x0000000000000000000000000000000000000000000000000000000000000000": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
                     },
-                    "code": "file:erc20.wasm"
+                    "code": "file:contracts/simple-coin.wasm"
                 }
             }
         },
@@ -74,7 +74,7 @@
                         "0xfe1847a18709e94e8938511fd1050153c9f207efa75081b2736362b3d4cf962c": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
                         "0x0000000000000000000000000000000000000000000000000000000000000000": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
                     },
-                    "code": "file:erc20.wasm"
+                    "code": "file:contracts/simple-coin.wasm"
                 }
             }
         }
