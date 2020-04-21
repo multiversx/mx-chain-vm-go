@@ -19,7 +19,7 @@ type ArwenScenarioExecutor struct {
 }
 
 // NewArwenScenarioExecutor prepares a new ArwenScenarioExecutor instance.
-func NewArwenScenarioExecutor() *ArwenScenarioExecutor {
+func NewArwenScenarioExecutor() (*ArwenScenarioExecutor, error) {
 	world := worldhook.NewMock()
 	world.EnableMockAddressGeneration()
 
@@ -32,39 +32,36 @@ func NewArwenScenarioExecutor() *ArwenScenarioExecutor {
 		ProtocolBuiltinFunctions: make(vmcommon.FunctionNames),
 	})
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	return &ArwenScenarioExecutor{
 		world:    world,
 		vm:       vm,
 		checkGas: false,
-	}
+	}, nil
 }
 
 // Run executes an individual test.
 func (se *ArwenScenarioExecutor) Run(scenario *ij.Scenario) error {
-	world := se.world
-	vm := se.vm
-
 	// reset world
-	world.Clear()
+	se.world.Clear()
 
 	txIndex := 0
 	for _, generalStep := range scenario.Steps {
 		switch step := generalStep.(type) {
 		case *ij.SetStateStep:
 			for _, acct := range step.Accounts {
-				world.AcctMap.PutAccount(convertAccount(acct))
+				se.world.AcctMap.PutAccount(convertAccount(acct))
 			}
-			world.Blockhashes = ij.JSONBytesValues(step.BlockHashes)
+			se.world.Blockhashes = ij.JSONBytesValues(step.BlockHashes)
 		case *ij.CheckStateStep:
-			err := checkAccounts(step.CheckAccounts, world)
+			err := checkAccounts(step.CheckAccounts, se.world)
 			if err != nil {
 				return err
 			}
 		case *ij.TxStep:
 			// execute tx
-			output, err := executeTx(step.Tx, world, vm)
+			output, err := executeTx(step.Tx, se.world, se.vm)
 			if err != nil {
 				return err
 			}

@@ -64,42 +64,40 @@ func checkTxResults(
 				output.GasRemaining)
 		}
 	}
-	// burned := big.NewInt(0).Sub(tx.GasLimit, output.GasRemaining)
-	// fmt.Printf("all: 0x%x  remaining: 0x%x  consumed: 0x%x   refund: 0x%x\n", tx.GasLimit, output.GasRemaining, burned, output.GasRefund)
 
-	// check empty logs, this seems to be the value
-	if blResult.IgnoreLogs || ignoreAllLogs {
-		// nothing, ignore
-	} else {
-		// this is the real log check
-		if len(blResult.Logs) != len(output.Logs) {
-			return fmt.Errorf("wrong number of logs. Want:%d. Got:%d",
-				len(blResult.Logs), len(output.Logs))
+	// "logs": "*" means any value is accepted, log check ignored
+	if blResult.IgnoreLogs {
+		return nil
+	}
+
+	// this is the real log check
+	if len(blResult.Logs) != len(output.Logs) {
+		return fmt.Errorf("wrong number of logs. Want:%d. Got:%d",
+			len(blResult.Logs), len(output.Logs))
+	}
+	for i, outLog := range output.Logs {
+		testLog := blResult.Logs[i]
+		if !bytes.Equal(outLog.Address, testLog.Address.Value) {
+			return fmt.Errorf("bad log address. Want:\n%s\nGot:\n%s",
+				ij.LogToString(testLog), ij.LogToString(convertLogToTestFormat(outLog)))
 		}
-		for i, outLog := range output.Logs {
-			testLog := blResult.Logs[i]
-			if !bytes.Equal(outLog.Address, testLog.Address.Value) {
-				return fmt.Errorf("bad log address. Want:\n%s\nGot:\n%s",
+		if !bytes.Equal(outLog.Identifier, testLog.Identifier.Value) {
+			return fmt.Errorf("bad log identifier. Want:\n%s\nGot:\n%s",
+				ij.LogToString(testLog), ij.LogToString(convertLogToTestFormat(outLog)))
+		}
+		if len(outLog.Topics) != len(testLog.Topics) {
+			return fmt.Errorf("wrong number of log topics. Want:\n%s\nGot:\n%s",
+				ij.LogToString(testLog), ij.LogToString(convertLogToTestFormat(outLog)))
+		}
+		for ti := range outLog.Topics {
+			if !bytes.Equal(outLog.Topics[ti], testLog.Topics[ti].Value) {
+				return fmt.Errorf("bad log topic. Want:\n%s\nGot:\n%s",
 					ij.LogToString(testLog), ij.LogToString(convertLogToTestFormat(outLog)))
 			}
-			if !bytes.Equal(outLog.Identifier, testLog.Identifier.Value) {
-				return fmt.Errorf("bad log identifier. Want:\n%s\nGot:\n%s",
-					ij.LogToString(testLog), ij.LogToString(convertLogToTestFormat(outLog)))
-			}
-			if len(outLog.Topics) != len(testLog.Topics) {
-				return fmt.Errorf("wrong number of log topics. Want:\n%s\nGot:\n%s",
-					ij.LogToString(testLog), ij.LogToString(convertLogToTestFormat(outLog)))
-			}
-			for ti := range outLog.Topics {
-				if !bytes.Equal(outLog.Topics[ti], testLog.Topics[ti].Value) {
-					return fmt.Errorf("bad log topic. Want:\n%s\nGot:\n%s",
-						ij.LogToString(testLog), ij.LogToString(convertLogToTestFormat(outLog)))
-				}
-			}
-			if big.NewInt(0).SetBytes(outLog.Data).Cmp(big.NewInt(0).SetBytes(testLog.Data.Value)) != 0 {
-				return fmt.Errorf("bad log data. Want:\n%s\nGot:\n%s",
-					ij.LogToString(testLog), ij.LogToString(convertLogToTestFormat(outLog)))
-			}
+		}
+		if big.NewInt(0).SetBytes(outLog.Data).Cmp(big.NewInt(0).SetBytes(testLog.Data.Value)) != 0 {
+			return fmt.Errorf("bad log data. Want:\n%s\nGot:\n%s",
+				ij.LogToString(testLog), ij.LogToString(convertLogToTestFormat(outLog)))
 		}
 	}
 

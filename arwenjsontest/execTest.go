@@ -15,7 +15,6 @@ import (
 var TestVMType = []byte{0, 0}
 
 const ignoreGas = true
-const ignoreAllLogs = false
 
 // ArwenTestExecutor parses, interprets and executes .test.json tests.
 type ArwenTestExecutor struct {
@@ -25,7 +24,7 @@ type ArwenTestExecutor struct {
 }
 
 // NewArwenTestExecutor prepares a new ArwenTestExecutor instance.
-func NewArwenTestExecutor() *ArwenTestExecutor {
+func NewArwenTestExecutor() (*ArwenTestExecutor, error) {
 	world := worldhook.NewMock()
 	world.EnableMockAddressGeneration()
 
@@ -38,34 +37,29 @@ func NewArwenTestExecutor() *ArwenTestExecutor {
 		ProtocolBuiltinFunctions: make(vmcommon.FunctionNames),
 	})
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	return &ArwenTestExecutor{
 		world:    world,
 		vm:       vm,
 		checkGas: false,
-	}
+	}, nil
 }
 
 // Run executes an individual test.
 func (te *ArwenTestExecutor) Run(test *ij.Test) error {
-	world := te.world
-	vm := te.vm
-
 	// reset world
-	world.Clear()
-	world.Blockhashes = ij.JSONBytesValues(test.BlockHashes)
+	te.world.Clear()
+	te.world.Blockhashes = ij.JSONBytesValues(test.BlockHashes)
 
 	for _, acct := range test.Pre {
-		world.AcctMap.PutAccount(convertAccount(acct))
+		te.world.AcctMap.PutAccount(convertAccount(acct))
 	}
-
-	//spew.Dump(world.AcctMap)
 
 	for _, block := range test.Blocks {
 		for txIndex, tx := range block.Transactions {
 			//fmt.Printf("%d\n", txIndex)
-			output, err := executeTx(tx, world, vm)
+			output, err := executeTx(tx, te.world, te.vm)
 			if err != nil {
 				return err
 			}
@@ -81,5 +75,5 @@ func (te *ArwenTestExecutor) Run(test *ij.Test) error {
 		}
 	}
 
-	return checkAccounts(test.PostState, world)
+	return checkAccounts(test.PostState, te.world)
 }

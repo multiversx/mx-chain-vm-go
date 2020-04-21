@@ -7,34 +7,36 @@ import (
 	ajt "github.com/ElrondNetwork/arwen-wasm-vm/arwenjsontest"
 	controller "github.com/ElrondNetwork/elrond-vm-util/test-util/testcontroller"
 	ij "github.com/ElrondNetwork/elrond-vm-util/test-util/vmtestjson"
+	"github.com/stretchr/testify/require"
 )
 
 func TestErc20FromRust(t *testing.T) {
 	fileResolver := ij.NewDefaultFileResolver()
+	executor, err := ajt.NewArwenScenarioExecutor()
+	require.Nil(t, err)
 	runner := controller.NewScenarioRunner(
-		ajt.NewArwenScenarioExecutor(),
+		executor,
 		fileResolver,
 	)
-	err := runner.RunAllJSONScenariosInDirectory(
+	err = runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
 		"erc20",
 		".scen.json",
 		[]string{})
-
-	if err != nil {
-		t.Error(err)
-	}
+	require.Nil(t, err)
 }
 
 func TestErc20FromC(t *testing.T) {
 	fileResolver := ij.NewDefaultFileResolver().ReplacePath(
 		"contracts/simple-coin.wasm",
 		filepath.Join(getTestRoot(), "erc20/contracts/erc20-c.wasm"))
+	executor, err := ajt.NewArwenScenarioExecutor()
+	require.Nil(t, err)
 	runner := controller.NewScenarioRunner(
-		ajt.NewArwenScenarioExecutor(),
+		executor,
 		fileResolver,
 	)
-	err := runner.RunAllJSONScenariosInDirectory(
+	err = runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
 		"erc20",
 		".scen.json",
@@ -46,11 +48,13 @@ func TestErc20FromC(t *testing.T) {
 }
 
 func TestAdderFromRust(t *testing.T) {
+	executor, err := ajt.NewArwenScenarioExecutor()
+	require.Nil(t, err)
 	runner := controller.NewScenarioRunner(
-		ajt.NewArwenScenarioExecutor(),
+		executor,
 		ij.NewDefaultFileResolver(),
 	)
-	err := runner.RunAllJSONScenariosInDirectory(
+	err = runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
 		"adder",
 		".scen.json",
@@ -62,11 +66,13 @@ func TestAdderFromRust(t *testing.T) {
 }
 
 func TestCryptoBubbles(t *testing.T) {
+	executor, err := ajt.NewArwenScenarioExecutor()
+	require.Nil(t, err)
 	runner := controller.NewScenarioRunner(
-		ajt.NewArwenScenarioExecutor(),
+		executor,
 		ij.NewDefaultFileResolver(),
 	)
-	err := runner.RunAllJSONScenariosInDirectory(
+	err = runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
 		"crypto_bubbles_min_v1",
 		".scen.json",
@@ -78,11 +84,13 @@ func TestCryptoBubbles(t *testing.T) {
 }
 
 func TestFeaturesFromRust(t *testing.T) {
+	executor, err := ajt.NewArwenScenarioExecutor()
+	require.Nil(t, err)
 	runner := controller.NewScenarioRunner(
-		ajt.NewArwenScenarioExecutor(),
+		executor,
 		ij.NewDefaultFileResolver(),
 	)
-	err := runner.RunAllJSONScenariosInDirectory(
+	err = runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
 		"features",
 		".scen.json",
@@ -94,11 +102,13 @@ func TestFeaturesFromRust(t *testing.T) {
 }
 
 func TestAsyncCalls(t *testing.T) {
+	executor, err := ajt.NewArwenScenarioExecutor()
+	require.Nil(t, err)
 	runner := controller.NewScenarioRunner(
-		ajt.NewArwenScenarioExecutor(),
+		executor,
 		ij.NewDefaultFileResolver(),
 	)
-	err := runner.RunAllJSONScenariosInDirectory(
+	err = runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
 		"async",
 		".scen.json",
@@ -110,11 +120,13 @@ func TestAsyncCalls(t *testing.T) {
 }
 
 func TestDelegationContract(t *testing.T) {
+	executor, err := ajt.NewArwenScenarioExecutor()
+	require.Nil(t, err)
 	runner := controller.NewScenarioRunner(
-		ajt.NewArwenScenarioExecutor(),
+		executor,
 		ij.NewDefaultFileResolver(),
 	)
-	err := runner.RunAllJSONScenariosInDirectory(
+	err = runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
 		"delegation",
 		".scen.json",
@@ -126,11 +138,13 @@ func TestDelegationContract(t *testing.T) {
 }
 
 func TestDnsContract(t *testing.T) {
+	executor, err := ajt.NewArwenScenarioExecutor()
+	require.Nil(t, err)
 	runner := controller.NewScenarioRunner(
-		ajt.NewArwenScenarioExecutor(),
+		executor,
 		ij.NewDefaultFileResolver(),
 	)
-	err := runner.RunAllJSONScenariosInDirectory(
+	err = runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
 		"dns",
 		".scen.json",

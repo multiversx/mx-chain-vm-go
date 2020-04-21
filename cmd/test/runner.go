@@ -18,17 +18,29 @@ func main() {
 	jsonFilePath := os.Args[1]
 	var err error
 	if strings.HasSuffix(jsonFilePath, ".scen.json") {
+		executor, err := ajt.NewArwenScenarioExecutor()
+		if err != nil {
+			panic("Could not instantiate Arwen VM")
+		}
 		runner := controller.NewScenarioRunner(
-			ajt.NewArwenScenarioExecutor(),
+			executor,
 			ij.NewDefaultFileResolver(),
 		)
-		err = runner.RunSingleJSONScenario(jsonFilePath)
+		if err == nil {
+			err = runner.RunSingleJSONScenario(jsonFilePath)
+		}
 	} else {
+		executor, err := ajt.NewArwenTestExecutor()
+		if err != nil {
+			panic("Could not instantiate Arwen VM")
+		}
 		runner := controller.NewTestRunner(
-			ajt.NewArwenTestExecutor(),
+			executor,
 			ij.NewDefaultFileResolver(),
 		)
-		err = runner.RunSingleJSONTest(jsonFilePath)
+		if err == nil {
+			err = runner.RunSingleJSONTest(jsonFilePath)
+		}
 	}
 
 	if err == nil {
