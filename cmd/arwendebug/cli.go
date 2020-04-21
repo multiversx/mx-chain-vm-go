@@ -5,19 +5,6 @@ import (
 	"github.com/urfave/cli"
 )
 
-type cliArguments struct {
-	ServerAddress   string
-	DatabasePath    string
-	Session         string
-	ContractAddress string
-	Action          string
-	Function        string
-	Arguments       []string
-	Code            string
-	CodePath        string
-	CodeMetadata    string
-}
-
 func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 	app := cli.NewApp()
 	app.Name = "Arwen Debug"
@@ -28,7 +15,7 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 	flagServerAddress := cli.StringFlag{
 		Name:        "address",
 		Usage:       "",
-		Value:       "localhost:9091",
+		Value:       ":9091",
 		Destination: &args.ServerAddress,
 	}
 
@@ -66,7 +53,7 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 			Name:  "deploy",
 			Usage: "deploy a smart contract",
 			Action: func(context *cli.Context) error {
-				facade.DeploySmartContract()
+				facade.DeploySmartContract(args.toDeployRequest())
 				return nil
 			},
 		},
@@ -74,7 +61,7 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 			Name:  "upgrade",
 			Usage: "upgrade smart contract",
 			Action: func(context *cli.Context) error {
-				facade.UpgradeSmartContract()
+				facade.UpgradeSmartContract(args.toUpgradeRequest())
 				return nil
 			},
 		},
