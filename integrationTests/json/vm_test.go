@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -9,6 +10,15 @@ import (
 	ij "github.com/ElrondNetwork/elrond-vm-util/test-util/vmtestjson"
 	"github.com/stretchr/testify/require"
 )
+
+func getTestRoot() string {
+	exePath, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	arwenTestRoot := filepath.Join(exePath, "../../test")
+	return arwenTestRoot
+}
 
 func TestErc20FromRust(t *testing.T) {
 	fileResolver := ij.NewDefaultFileResolver()

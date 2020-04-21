@@ -3,12 +3,28 @@ package main
 import (
 	"fmt"
 	"math/big"
+	"os"
+	"path/filepath"
 	"testing"
 
 	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/stretchr/testify/require"
 )
+
+func getTestRoot() string {
+	exePath, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	arwenTestRoot := filepath.Join(exePath, "../../test")
+	return arwenTestRoot
+}
+
+func getFeaturesContractPath() string {
+	return filepath.Join(getTestRoot(), "features/features.wasm")
+}
 
 func unsignedInterpreter(bytes []byte) *big.Int {
 	return big.NewInt(0).SetBytes(bytes)
@@ -148,7 +164,10 @@ func TestBigIntArith(t *testing.T) {
 		}
 	}
 
-	pureFunctionTest(t, testCases, unsignedInterpreter, logFunc)
+	pfe, err := newPureFunctionExecutor()
+	require.Nil(t, err)
+	pfe.initAccounts(getFeaturesContractPath())
+	pfe.executePureFunctionTests(t, testCases, unsignedInterpreter, logFunc)
 }
 
 func TestBigUintArith(t *testing.T) {
@@ -234,7 +253,10 @@ func TestBigUintArith(t *testing.T) {
 		}
 	}
 
-	pureFunctionTest(t, testCases, unsignedInterpreter, logFunc)
+	pfe, err := newPureFunctionExecutor()
+	require.Nil(t, err)
+	pfe.initAccounts(getFeaturesContractPath())
+	pfe.executePureFunctionTests(t, testCases, unsignedInterpreter, logFunc)
 }
 
 func TestBigUintBitwise(t *testing.T) {
@@ -285,7 +307,10 @@ func TestBigUintBitwise(t *testing.T) {
 		}
 	}
 
-	pureFunctionTest(t, testCases, unsignedInterpreter, logFunc)
+	pfe, err := newPureFunctionExecutor()
+	require.Nil(t, err)
+	pfe.initAccounts(getFeaturesContractPath())
+	pfe.executePureFunctionTests(t, testCases, unsignedInterpreter, logFunc)
 }
 
 func TestBigUintShift(t *testing.T) {
@@ -334,5 +359,8 @@ func TestBigUintShift(t *testing.T) {
 		}
 	}
 
-	pureFunctionTest(t, testCases, unsignedInterpreter, logFunc)
+	pfe, err := newPureFunctionExecutor()
+	require.Nil(t, err)
+	pfe.initAccounts(getFeaturesContractPath())
+	pfe.executePureFunctionTests(t, testCases, unsignedInterpreter, logFunc)
 }
