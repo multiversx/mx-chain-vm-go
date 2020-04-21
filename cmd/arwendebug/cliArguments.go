@@ -4,7 +4,7 @@ import "github.com/ElrondNetwork/arwen-wasm-vm/arwendebug"
 
 type cliArguments struct {
 	ServerAddress   string
-	DatabasePath    string
+	Database        string
 	Session         string
 	Impersonator    string
 	ContractAddress string
@@ -31,7 +31,7 @@ func (args *cliArguments) populateDeployRequest(request *arwendebug.DeployReques
 }
 
 func (args *cliArguments) populateRequestBase(request *arwendebug.RequestBase) {
-	request.DatabasePath = args.DatabasePath
+	request.DatabasePath = args.Database
 	request.Session = args.Session
 	request.Impersonator = args.Impersonator
 }

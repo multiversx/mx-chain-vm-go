@@ -19,6 +19,13 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 		Destination: &args.ServerAddress,
 	}
 
+	flagDatabase := cli.StringFlag{
+		Name:        "database",
+		Usage:       "",
+		Value:       "./db",
+		Destination: &args.Database,
+	}
+
 	flagSession := cli.StringFlag{
 		Name:        "session",
 		Usage:       "",
@@ -28,6 +35,7 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 
 	app.Flags = []cli.Flag{
 		flagSession,
+		flagDatabase,
 	}
 
 	app.Authors = []cli.Author{

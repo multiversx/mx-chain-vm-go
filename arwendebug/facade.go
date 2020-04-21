@@ -10,6 +10,10 @@ var log = logger.GetOrCreate("arwendebug/facade")
 type DebugFacade struct {
 }
 
+// NewDebugFacade -
+func NewDebugFacade() {
+}
+
 // StartServer -
 func (facade *DebugFacade) StartServer(address string) {
 	log.Debug("DebugFacade.StartServer()")
@@ -17,21 +21,46 @@ func (facade *DebugFacade) StartServer(address string) {
 }
 
 // DeploySmartContract -
-func (facade *DebugFacade) DeploySmartContract() {
+func (facade *DebugFacade) DeploySmartContract(request DeployRequest) error {
+	log.Debug("DebugFacade.DeploySmartContract()")
 
+	session, err := facade.loadSession(request.DatabasePath, request.Session)
+	if err != nil {
+		return err
+	}
+
+	return session.DeploySmartContract()
+}
+
+func (facade *DebugFacade) loadSession(databaseRootPath string, sessionID string) (*session, error) {
+	database := facade.loadDatabase(databaseRootPath)
+	return database.loadSession(sessionID)
+}
+
+func (facade *DebugFacade) loadDatabase(rootPath string) *database {
+	// TODO: use factory
+	database := NewDatabase(rootPath)
+	return database
 }
 
 // UpgradeSmartContract -
-func (facade *DebugFacade) UpgradeSmartContract() {
+func (facade *DebugFacade) UpgradeSmartContract(request UpgradeRequest) error {
+	log.Debug("DebugFacade.UpgradeSmartContract()")
 
+	session, err := facade.loadSession(request.DatabasePath, request.Session)
+	if err != nil {
+		return err
+	}
+
+	return session.UpgradeSmartContract()
 }
 
 // RunSmartContract -
-func (facade *DebugFacade) RunSmartContract() {
-
+func (facade *DebugFacade) RunSmartContract(request RunRequest) {
+	log.Debug("DebugFacade.RunSmartContract()")
 }
 
 // QuerySmartContract -
-func (facade *DebugFacade) QuerySmartContract() {
-
+func (facade *DebugFacade) QuerySmartContract(query QueryRequest) {
+	log.Debug("DebugFacade.QuerySmartContracts()")
 }
