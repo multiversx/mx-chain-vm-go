@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwendebug"
 	"github.com/urfave/cli"
 )
@@ -61,7 +63,12 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 			Name:  "deploy",
 			Usage: "deploy a smart contract",
 			Action: func(context *cli.Context) error {
-				facade.DeploySmartContract(args.toDeployRequest())
+				response, err := facade.DeploySmartContract(args.toDeployRequest())
+				if err != nil {
+					return err
+				}
+
+				fmt.Println(response.DebugString())
 				return nil
 			},
 		},

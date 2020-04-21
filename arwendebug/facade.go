@@ -4,7 +4,7 @@ import (
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 )
 
-var log = logger.GetOrCreate("arwendebug/facade")
+var log = logger.GetOrCreate("arwendebug")
 
 // DebugFacade -
 type DebugFacade struct {
@@ -21,15 +21,15 @@ func (facade *DebugFacade) StartServer(address string) {
 }
 
 // DeploySmartContract -
-func (facade *DebugFacade) DeploySmartContract(request DeployRequest) error {
+func (facade *DebugFacade) DeploySmartContract(request DeployRequest) (DeployResponse, error) {
 	log.Debug("DebugFacade.DeploySmartContract()")
 
 	session, err := facade.loadSession(request.DatabasePath, request.Session)
 	if err != nil {
-		return err
+		return DeployResponse{}, err
 	}
 
-	return session.DeploySmartContract()
+	return session.DeploySmartContract(request)
 }
 
 func (facade *DebugFacade) loadSession(databaseRootPath string, sessionID string) (*session, error) {
