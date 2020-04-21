@@ -11,13 +11,21 @@ import (
 	ij "github.com/ElrondNetwork/elrond-vm-util/test-util/vmtestjson"
 )
 
-func isDirectory(name string) (bool, error) {
-	// use a switch to make it a bit cleaner
-	fi, err := os.Stat(name)
-	if err != nil {
-		return false, err
+func resolveArgument(arg string) (string, bool, error) {
+	fi, err := os.Stat(arg)
+	if os.IsNotExist(err) {
+		exeDir, err := os.Getwd()
+		if err != nil {
+			return "", false, err
+		}
+		arg = filepath.Join(exeDir, arg)
+		fmt.Println(arg)
+		fi, err = os.Stat(arg)
 	}
-	return fi.IsDir(), nil
+	if err != nil {
+		return "", false, err
+	}
+	return arg, fi.IsDir(), nil
 }
 
 func main() {
@@ -25,15 +33,9 @@ func main() {
 		panic("One argument expected - the path to the json test.")
 	}
 
-	exeDir, err := os.Getwd()
+	jsonFilePath, isDir, err := resolveArgument(os.Args[1])
 	if err != nil {
 		fmt.Println(err)
-	}
-	jsonFilePath := filepath.Join(exeDir, os.Args[1])
-
-	isDir, err := isDirectory(jsonFilePath)
-	if err != nil {
-		fmt.Printf("Path does not exist: %v\n", err)
 		return
 	}
 
