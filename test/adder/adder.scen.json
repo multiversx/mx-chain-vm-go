@@ -30,9 +30,9 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "gas": "*",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {
@@ -52,9 +52,9 @@
                     "5"
                 ],
                 "status": "",
-                "gas": "*",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {
@@ -74,9 +74,9 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "gas": "*",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {

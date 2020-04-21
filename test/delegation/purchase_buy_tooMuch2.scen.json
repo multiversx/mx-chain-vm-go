@@ -64,9 +64,9 @@
                 "out": [],
                 "status": "4",
                 "message": "payment exceeds stake owned by user",
-                "gas": "*",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {

@@ -38,9 +38,9 @@
                 "out": [],
                 "status": "0x04",
                 "message": "attempted to transfer funds via a non-payable function",
-                "gas": "",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {
@@ -62,9 +62,9 @@
                 "out": [],
                 "status": "0x04",
                 "message": "attempted to transfer funds via a non-payable function",
-                "gas": "",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {
@@ -87,9 +87,9 @@
                 "out": [],
                 "status": "0x04",
                 "message": "attempted to transfer funds via a non-payable function",
-                "gas": "",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {
@@ -112,9 +112,9 @@
                 "out": [],
                 "status": "0x04",
                 "message": "attempted to transfer funds via a non-payable function",
-                "gas": "",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {
@@ -137,9 +137,9 @@
                 "out": [],
                 "status": "0x04",
                 "message": "attempted to transfer funds via a non-payable function",
-                "gas": "",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {
@@ -163,9 +163,9 @@
                 "out": [],
                 "status": "0x04",
                 "message": "attempted to transfer funds via a non-payable function",
-                "gas": "",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {

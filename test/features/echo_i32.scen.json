@@ -38,9 +38,9 @@
                     ""
                 ],
                 "status": "",
-                "gas": "*",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {
@@ -63,9 +63,9 @@
                     "5"
                 ],
                 "status": "",
-                "gas": "*",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {
@@ -88,9 +88,9 @@
                     "0xfd"
                 ],
                 "status": "",
-                "gas": "*",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {
@@ -112,9 +112,9 @@
                 "out": [],
                 "status": "4",
                 "message": "argument out of range",
-                "gas": "*",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {
@@ -137,9 +137,9 @@
                     "0xff"
                 ],
                 "status": "",
-                "gas": "*",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {
@@ -162,9 +162,9 @@
                     "0x7fffffff"
                 ],
                 "status": "",
-                "gas": "*",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {
@@ -186,9 +186,9 @@
                 "out": [],
                 "status": "4",
                 "message": "argument out of range",
-                "gas": "*",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {
@@ -210,9 +210,9 @@
                 "out": [],
                 "status": "4",
                 "message": "argument out of range",
-                "gas": "*",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {

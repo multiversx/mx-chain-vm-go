@@ -14,13 +14,10 @@ import (
 // TestVMType is the VM type argument we use in tests.
 var TestVMType = []byte{0, 0}
 
-const ignoreGas = true
-
 // ArwenTestExecutor parses, interprets and executes both .test.json tests and .scen.json scenarios with Arwen.
 type ArwenTestExecutor struct {
-	world    *worldhook.BlockchainHookMock
-	vm       vmi.VMExecutionHandler
-	checkGas bool
+	world *worldhook.BlockchainHookMock
+	vm    vmi.VMExecutionHandler
 }
 
 var _ controller.TestExecutor = (*ArwenTestExecutor)(nil)
@@ -43,8 +40,7 @@ func NewArwenTestExecutor() (*ArwenTestExecutor, error) {
 		return nil, err
 	}
 	return &ArwenTestExecutor{
-		world:    world,
-		vm:       vm,
-		checkGas: false,
+		world: world,
+		vm:    vm,
 	}, nil
 }

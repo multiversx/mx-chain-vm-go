@@ -47,9 +47,9 @@
                     "0x100"
                 ],
                 "status": "",
-                "gas": "*",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {
@@ -72,9 +72,9 @@
                     "0x00"
                 ],
                 "status": "",
-                "gas": "*",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {

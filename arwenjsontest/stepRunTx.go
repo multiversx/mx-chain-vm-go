@@ -23,7 +23,7 @@ func (ae *ArwenTestExecutor) executeTx(tx *ij.Transaction) (*vmi.VMOutput, error
 
 	sender := ae.world.AcctMap.GetAccount(tx.From.Value)
 	if sender.Balance.Cmp(tx.Value.Value) < 0 {
-		// out of funds is handled by the protocol, so needs to be mocked here
+		// out of funds is handled by the protocol, so it needs to be mocked here
 		output = outOfFundsResult()
 	} else if tx.IsCreate {
 		var err error
@@ -101,8 +101,10 @@ func (ae *ArwenTestExecutor) scCall(tx *ij.Transaction) (*vmi.VMOutput, error) {
 	return ae.vm.RunSmartContractCall(input)
 }
 
-func (ae *ArwenTestExecutor) updateStateAfterTx(tx *ij.Transaction,
+func (ae *ArwenTestExecutor) updateStateAfterTx(
+	tx *ij.Transaction,
 	output *vmi.VMOutput) error {
+
 	// subtract call value from sender (this is not reflected in the delta)
 	_ = ae.world.UpdateBalanceWithDelta(tx.From.Value, big.NewInt(0).Neg(tx.Value.Value))
 

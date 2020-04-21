@@ -4,7 +4,7 @@ import (
 	ij "github.com/ElrondNetwork/elrond-vm-util/test-util/vmtestjson"
 )
 
-// Run executes an individual test.
+// ExecuteTest executes an individual test.
 func (ae *ArwenTestExecutor) ExecuteTest(test *ij.Test) error {
 	// reset world
 	ae.world.Clear()
@@ -24,8 +24,7 @@ func (ae *ArwenTestExecutor) ExecuteTest(test *ij.Test) error {
 			blResult := block.Results[txIndex]
 
 			// check results
-			checkGas := ae.checkGas && test.CheckGas && blResult.CheckGas
-			err = checkTxResults(txIndex, blResult, checkGas, output)
+			err = checkTxResults(txIndex, blResult, test.CheckGas, output)
 			if err != nil {
 				return err
 			}

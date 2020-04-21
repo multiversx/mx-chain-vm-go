@@ -74,9 +74,9 @@
                     "0x01"
                 ],
                 "status": "",
-                "gas": "*",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {
@@ -99,9 +99,9 @@
                     "0x01"
                 ],
                 "status": "",
-                "gas": "*",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {
@@ -124,9 +124,9 @@
                     "0x"
                 ],
                 "status": "",
-                "gas": "*",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {
@@ -149,9 +149,9 @@
                     "0x03"
                 ],
                 "status": "",
-                "gas": "*",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {
@@ -174,9 +174,9 @@
                     "0x02"
                 ],
                 "status": "",
-                "gas": "*",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {

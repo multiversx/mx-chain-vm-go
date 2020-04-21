@@ -41,9 +41,9 @@
                     "0x2710"
                 ],
                 "status": "",
-                "gas": "0x0fa3fc",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {

@@ -42,9 +42,9 @@
                     "0x00"
                 ],
                 "status": "",
-                "gas": "0x0f9d71",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {

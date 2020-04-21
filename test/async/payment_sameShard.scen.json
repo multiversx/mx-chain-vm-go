@@ -42,9 +42,9 @@
             "expect": {
                 "out": [],
                 "status": "0x00",
-                "gas": "*",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {

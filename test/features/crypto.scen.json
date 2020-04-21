@@ -38,9 +38,9 @@
                     "0x3ac225168df54212a25c1c01fd35bebfea408fdac2e31ddd6f80a4bbf9a5f1cb"
                 ],
                 "status": "",
-                "gas": "*",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {
@@ -63,9 +63,9 @@
                     "0xfec062278915ba5c3c3af6ebf470b5afc94fedadf39fe78eea427b9aa5df9692"
                 ],
                 "status": "",
-                "gas": "*",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {

@@ -58,9 +58,9 @@
                 "out": [],
                 "status": "4",
                 "message": "cannot offer more stake than is owned",
-                "gas": "*",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {

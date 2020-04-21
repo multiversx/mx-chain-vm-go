@@ -57,9 +57,9 @@
                 "out": [],
                 "status": "4",
                 "message": "payment exceeds maximum total stake",
-                "gas": "*",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {

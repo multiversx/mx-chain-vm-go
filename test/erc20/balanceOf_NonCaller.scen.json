@@ -41,9 +41,9 @@
                     "0x00"
                 ],
                 "status": "",
-                "gas": "0x0fa980",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {

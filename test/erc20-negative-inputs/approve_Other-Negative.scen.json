@@ -47,7 +47,7 @@
                 "message": "approve amount cannot be negative",
                 "gas": "0x00",
                 "logs": [],
-                "refund": ""
+                "refund": "*"
             }
         },
         {

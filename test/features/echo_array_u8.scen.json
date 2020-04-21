@@ -38,9 +38,9 @@
                     "0x0102030405"
                 ],
                 "status": "",
-                "gas": "*",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {
@@ -62,9 +62,9 @@
                 "out": [],
                 "status": "4",
                 "message": "argument has wrong length",
-                "gas": "*",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {

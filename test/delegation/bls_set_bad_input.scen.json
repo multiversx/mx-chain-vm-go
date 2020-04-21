@@ -61,9 +61,9 @@
                 "out": [],
                 "status": "4",
                 "message": "wrong number of arguments",
-                "gas": "*",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {
@@ -88,9 +88,9 @@
                 "out": [],
                 "status": "4",
                 "message": "wrong number of arguments",
-                "gas": "*",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {
@@ -114,9 +114,9 @@
                 "out": [],
                 "status": "4",
                 "message": "wrong size BLS key",
-                "gas": "*",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {
@@ -140,9 +140,9 @@
                 "out": [],
                 "status": "4",
                 "message": "wrong size BLS key",
-                "gas": "*",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {
@@ -161,9 +161,9 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "gas": "*",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {
@@ -184,9 +184,9 @@
                     "0"
                 ],
                 "status": "",
-                "gas": "*",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {

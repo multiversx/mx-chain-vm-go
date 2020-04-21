@@ -63,7 +63,6 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "gas": "*",
                 "logs": [
                     {
                         "address": "``delegation_contract___________s1",
@@ -75,7 +74,8 @@
                         "data": "40,000,000,002"
                     }
                 ],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {
@@ -96,7 +96,6 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "gas": "*",
                 "logs": [
                     {
                         "address": "``delegation_contract___________s1",
@@ -108,7 +107,8 @@
                         "data": "30,000,000,003"
                     }
                 ],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {

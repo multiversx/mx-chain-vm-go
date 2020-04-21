@@ -33,9 +33,9 @@
                 "out": [],
                 "status": "4",
                 "message": "node share out of range",
-                "gas": "*",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {

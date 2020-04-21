@@ -41,9 +41,9 @@
                 "out": [],
                 "status": "0x04",
                 "message": "32 bytes of data expected as argument value",
-                "gas": "*",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {
@@ -65,9 +65,9 @@
                 "out": [],
                 "status": "0x04",
                 "message": "32 bytes of data expected as argument value",
-                "gas": "*",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {

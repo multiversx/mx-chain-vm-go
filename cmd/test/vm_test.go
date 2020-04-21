@@ -23,7 +23,9 @@ func TestErc20FromRust(t *testing.T) {
 		"erc20",
 		".scen.json",
 		[]string{})
-	require.Nil(t, err)
+	if err != nil {
+		t.Error(err)
+	}
 }
 
 func TestErc20FromC(t *testing.T) {

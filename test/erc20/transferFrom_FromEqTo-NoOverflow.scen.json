@@ -43,7 +43,6 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "gas": "0x0f3f0b",
                 "logs": [
                     {
                         "address": "0x1000000000000000000000000000000000000000000000000000000000000000",
@@ -55,7 +54,8 @@
                         "data": "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff5"
                     }
                 ],
-                "refund": "0x3a98"
+                "gas": "*",
+                "refund": "*"
             }
         },
         {

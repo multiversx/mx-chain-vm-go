@@ -30,9 +30,9 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "gas": "0x0c4246",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {
@@ -55,9 +55,9 @@
                     "0x2710"
                 ],
                 "status": "",
-                "gas": "0x0c4246",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {

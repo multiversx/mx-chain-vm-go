@@ -36,9 +36,9 @@
                     "0x00"
                 ],
                 "status": "",
-                "gas": "0x0fa976",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {

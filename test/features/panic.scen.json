@@ -35,9 +35,9 @@
                 "out": [],
                 "status": "0x04",
                 "message": "panic occurred: example panic message",
-                "gas": "*",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {

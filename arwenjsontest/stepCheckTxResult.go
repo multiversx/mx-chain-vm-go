@@ -47,7 +47,7 @@ func checkTxResults(
 	}
 
 	// check refund
-	if !ignoreGas && !blResult.Refund.IsStar {
+	if !blResult.Refund.IsStar {
 		if blResult.Refund.Value.Cmp(output.GasRefund) != 0 {
 			return fmt.Errorf("result gas refund mismatch. Want: 0x%x. Have: 0x%x",
 				blResult.Refund.Value, output.GasRefund)

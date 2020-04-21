@@ -64,9 +64,9 @@
                 "out": [],
                 "status": "4",
                 "message": "payment exceeds stake offered",
-                "gas": "*",
                 "logs": [],
-                "refund": ""
+                "gas": "*",
+                "refund": "*"
             }
         },
         {
