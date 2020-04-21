@@ -1,25 +1,31 @@
 package contexts
 
-import "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+import (
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+)
 
 // ReservedFunctions holds the reserved function names
 type ReservedFunctions struct {
-	functionNames map[string]struct{}
+	functionNames vmcommon.FunctionNames
 }
 
 // NewReservedFunctions creates a new ReservedFunctions
-func NewReservedFunctions(scAPINames []string) *ReservedFunctions {
+func NewReservedFunctions(scAPINames vmcommon.FunctionNames, protocolBuiltinFunctions vmcommon.FunctionNames) *ReservedFunctions {
 	result := &ReservedFunctions{
-		functionNames: make(map[string]struct{}),
+		functionNames: make(vmcommon.FunctionNames),
+	}
+
+	for name, value := range protocolBuiltinFunctions {
+		result.functionNames[name] = value
+	}
+
+	for name, value := range scAPINames {
+		result.functionNames[name] = value
 	}
 
 	var empty struct{}
-	result.functionNames["claimDeveloperRewards"] = empty
 	result.functionNames[arwen.UpgradeFunctionName] = empty
-
-	for _, name := range scAPINames {
-		result.functionNames[name] = empty
-	}
 
 	return result
 }

@@ -26,7 +26,7 @@
             {
                 "results": [
                     {
-                        "out": [ "" ],
+                        "out": [],
                         "status": "0x00",
                         "gas": "*",
                         "logs": [],
@@ -83,7 +83,7 @@
                     "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff": "0x123400"
                 },
                 "code": "bob.wasm",
-                "asyncCallData": "payMe@56@"
+                "asyncCallData": ""
             }
         }
     }

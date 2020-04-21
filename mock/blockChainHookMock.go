@@ -43,6 +43,8 @@ type BlockchainHookMock struct {
 	CEpoch        uint32
 	StateRootHash []byte
 	NewAddr       []byte
+	Value         *big.Int
+	Gas           uint64
 	Err           error
 }
 
@@ -241,6 +243,14 @@ func (b *BlockchainHookMock) CurrentRandomSeed() []byte {
 
 func (b *BlockchainHookMock) CurrentEpoch() uint32 {
 	return b.CEpoch
+}
+
+func (b *BlockchainHookMock) ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*big.Int, uint64, error) {
+	return b.Value, b.Gas, b.Err
+}
+
+func (b *BlockchainHookMock) GetBuiltinFunctionNames() vmcommon.FunctionNames {
+	return make(vmcommon.FunctionNames)
 }
 
 func (b *BlockchainHookMock) UpdateAccounts(outputAccounts map[string]*vmcommon.OutputAccount) {

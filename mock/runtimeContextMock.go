@@ -24,12 +24,15 @@ type RuntimeContextMock struct {
 	FailElrondAPI          bool
 	FailBigIntAPI          bool
 	AsyncCallInfo          *arwen.AsyncCallInfo
+	RunningInstances       uint64
+	CurrentTxHash          []byte
+	OriginalTxHash         []byte
 }
 
 func (r *RuntimeContextMock) InitState() {
 }
 
-func (r *RuntimeContextMock) CreateWasmerInstance(contract []byte, gasLimit uint64) error {
+func (r *RuntimeContextMock) StartWasmerInstance(contract []byte, gasLimit uint64) error {
 	if r.Err != nil {
 		return r.Err
 	}
@@ -42,7 +45,10 @@ func (r *RuntimeContextMock) InitStateFromContractCallInput(input *vmcommon.Cont
 func (r *RuntimeContextMock) PushState() {
 }
 
-func (r *RuntimeContextMock) PopState() {
+func (r *RuntimeContextMock) PopSetActiveState() {
+}
+
+func (r *RuntimeContextMock) PopDiscard() {
 }
 
 func (r *RuntimeContextMock) ClearStateStack() {
@@ -52,6 +58,13 @@ func (r *RuntimeContextMock) PushInstance() {
 }
 
 func (r *RuntimeContextMock) PopInstance() {
+}
+
+func (r *RuntimeContextMock) RunningInstancesCount() uint64 {
+	return r.RunningInstances
+}
+
+func (r *RuntimeContextMock) SetMaxInstanceCount(uint64) {
 }
 
 func (r *RuntimeContextMock) ClearInstanceStack() {
@@ -83,6 +96,14 @@ func (r *RuntimeContextMock) Function() string {
 
 func (r *RuntimeContextMock) Arguments() [][]byte {
 	return r.VmInput.Arguments
+}
+
+func (r *RuntimeContextMock) GetCurrentTxHash() []byte {
+	return r.CurrentTxHash
+}
+
+func (r *RuntimeContextMock) GetOriginalTxHash() []byte {
+	return r.OriginalTxHash
 }
 
 func (r *RuntimeContextMock) GetCodeUpgradeFromArgs() ([]byte, []byte, error) {

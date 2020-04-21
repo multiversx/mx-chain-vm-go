@@ -5,10 +5,10 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/arwenpart"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
-	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/logger"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/marshaling"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/nodepart"
 	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
@@ -64,22 +64,17 @@ func doContractRequest(
 	wg := sync.WaitGroup{}
 	wg.Add(2)
 
-	mainLogger := logger.NewDefaultLogger(logger.LogDebug)
-	dialogueLogger := logger.NewDefaultLogger(logger.LogDebug)
-
 	go func() {
-		vmHostArguments := &common.VMHostArguments{
+		VMHostParameters := &arwen.VMHostParameters{
 			VMType:        []byte{5, 0},
 			BlockGasLimit: uint64(10000000),
 			GasSchedule:   config.MakeGasMap(1),
 		}
 
 		part, err := arwenpart.NewArwenPart(
-			mainLogger,
-			dialogueLogger,
 			files.inputOfArwen,
 			files.outputOfArwen,
-			vmHostArguments,
+			VMHostParameters,
 			marshaling.CreateMarshalizer(marshaling.JSON),
 		)
 		assert.Nil(t, err)
@@ -89,8 +84,6 @@ func doContractRequest(
 
 	go func() {
 		part, err := nodepart.NewNodePart(
-			mainLogger,
-			dialogueLogger,
 			files.inputOfNode,
 			files.outputOfNode,
 			blockchain,

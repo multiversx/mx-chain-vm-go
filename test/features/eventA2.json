@@ -1,13 +1,13 @@
 {
     "API_TEST": {
         "pre": {
-            "0x1234123412341234123412341234123412341234123412341234123412341234": {
+            "``features_contract_____________s0": {
                 "nonce": "0x00",
                 "balance": "0x100",
                 "storage": {},
                 "code": "features.wasm"
             },
-            "0xacc5555555555555555555555555555555555555555555555555555555555555": {
+            "``an_account____________________s0": {
                 "nonce": "0x00",
                 "balance": "0x300abc",
                 "storage": {},
@@ -18,26 +18,33 @@
             {
                 "results": [
                     {
-                        "out": [ "0x00", "0x00"],
+                        "out": [],
                         "status": "",
                         "gas": "*",
-                        "logs": [],
+                        "logs": [
+                            {
+                                "address": "``features_contract_____________s0",
+                                "identifier": "0x0123456789abcdef0123456789abcdef0123456789abcdef000000000000000a",
+                                "topics": [],
+                                "data": "0x000000000000000000000000000000000000000000000000000000001234abc"
+                            }
+                        ],
                         "refund": ""
                     }
                 ],
                 "transactions": [
                     {
                         "nonce": "0x00",
-                        "function": "echo_vec_u8",
+                        "function": "logEventA",
                         "gasLimit": "0x100000",
                         "value": "0x00",
-                        "to": "0x1234123412341234123412341234123412341234123412341234123412341234",
+                        "to": "``features_contract_____________s0",
                         "arguments": [
-                            "0x00"
+                            "0x1234abc"
                         ],
                         "contractCode": "",
                         "gasPrice": "0x01",
-                        "from": "0xacc5555555555555555555555555555555555555555555555555555555555555"
+                        "from": "``an_account____________________s0"
                     }
                 ],
                 "blockHeader": {
@@ -52,13 +59,13 @@
         "network": "Danse",
         "blockhashes": [],
         "postState": {
-            "0x1234123412341234123412341234123412341234123412341234123412341234": {
+            "``features_contract_____________s0": {
                 "nonce": "0x00",
                 "balance": "0x100",
                 "storage": {},
                 "code": "features.wasm"
             },
-            "0xacc5555555555555555555555555555555555555555555555555555555555555": {
+            "``an_account____________________s0": {
                 "nonce": "0x01",
                 "balance": "0x200abc",
                 "storage": {},

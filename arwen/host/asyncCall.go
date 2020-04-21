@@ -15,8 +15,7 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 	// on address?), by account addresses - this would make the empty SC code an
 	// unrecoverable error, so returning nil here will not be appropriate anymore.
 	if !host.canExecuteSynchronously() {
-		host.setAsyncCallToDestination()
-		return nil
+		return host.sendAsyncCallToDestination()
 	}
 
 	// Start calling the destination SC, synchronously.
@@ -25,17 +24,15 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 		return err
 	}
 
-	destinationVMOutput, err := host.ExecuteOnDestContext(destinationCallInput)
+	destinationVMOutput, destinationErr := host.ExecuteOnDestContext(destinationCallInput)
+
+	callbackCallInput, err := host.createCallbackContractCallInput(destinationVMOutput, destinationErr)
 	if err != nil {
 		return err
 	}
 
-	callbackCallInput, err := host.createCallbackContractCallInput(destinationVMOutput)
-	if err != nil {
-		return err
-	}
-
-	_, err = host.ExecuteOnDestContext(callbackCallInput)
+	callbackVMOutput, callBackErr := host.ExecuteOnDestContext(callbackCallInput)
+	err = host.processCallbackVMOutput(callbackVMOutput, callBackErr)
 	if err != nil {
 		return err
 	}
@@ -55,12 +52,30 @@ func (host *vmHost) canExecuteSynchronously() bool {
 	return len(calledSCCode) != 0 && err == nil
 }
 
-func (host *vmHost) setAsyncCallToDestination() {
+func (host *vmHost) sendAsyncCallToDestination() error {
 	runtime := host.Runtime()
 	output := host.Output()
-	destination := runtime.GetAsyncCallInfo().Destination
+
+	asyncCallInfo := runtime.GetAsyncCallInfo()
+	destination := asyncCallInfo.Destination
 	destinationAccount, _ := output.GetOutputAccount(destination)
 	destinationAccount.CallType = vmcommon.AsynchronousCall
+
+	err := output.Transfer(
+		destination,
+		runtime.GetSCAddress(),
+		asyncCallInfo.GasLimit,
+		big.NewInt(0).SetBytes(asyncCallInfo.ValueBytes),
+		asyncCallInfo.Data,
+	)
+	if err != nil {
+		metering := host.Metering()
+		metering.UseGas(metering.GasLeft())
+		runtime.FailExecution(err)
+		return err
+	}
+
+	return nil
 }
 
 func (host *vmHost) createDestinationContractCallInput() (*vmcommon.ContractCallInput, error) {
@@ -93,12 +108,14 @@ func (host *vmHost) createDestinationContractCallInput() (*vmcommon.ContractCall
 
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
-			CallerAddr:  sender,
-			Arguments:   arguments,
-			CallValue:   big.NewInt(0).SetBytes(asyncCallInfo.ValueBytes),
-			CallType:    vmcommon.AsynchronousCall,
-			GasPrice:    runtime.GetVMInput().GasPrice,
-			GasProvided: gasLimit,
+			CallerAddr:     sender,
+			Arguments:      arguments,
+			CallValue:      big.NewInt(0).SetBytes(asyncCallInfo.ValueBytes),
+			CallType:       vmcommon.AsynchronousCall,
+			GasPrice:       runtime.GetVMInput().GasPrice,
+			GasProvided:    gasLimit,
+			CurrentTxHash:  runtime.GetCurrentTxHash(),
+			OriginalTxHash: runtime.GetOriginalTxHash(),
 		},
 		RecipientAddr: asyncCallInfo.Destination,
 		Function:      function,
@@ -107,13 +124,20 @@ func (host *vmHost) createDestinationContractCallInput() (*vmcommon.ContractCall
 	return contractCallInput, nil
 }
 
-func (host *vmHost) createCallbackContractCallInput(destinationVMOutput *vmcommon.VMOutput) (*vmcommon.ContractCallInput, error) {
+func (host *vmHost) createCallbackContractCallInput(destinationVMOutput *vmcommon.VMOutput, destinationErr error) (*vmcommon.ContractCallInput, error) {
 	metering := host.Metering()
 	runtime := host.Runtime()
 
 	arguments := destinationVMOutput.ReturnData
 	gasLimit := destinationVMOutput.GasRemaining
 	function := "callBack"
+
+	if destinationErr != nil {
+		arguments = [][]byte{
+			[]byte(destinationVMOutput.ReturnCode.String()),
+			[]byte(runtime.GetCurrentTxHash()),
+		}
+	}
 
 	dataLength := host.computeDataLengthFromArguments(function, arguments)
 
@@ -130,18 +154,35 @@ func (host *vmHost) createCallbackContractCallInput(destinationVMOutput *vmcommo
 	// Return to the sender SC, calling its callback() method.
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
-			CallerAddr:  sender,
-			Arguments:   arguments,
-			CallValue:   big.NewInt(0),
-			CallType:    vmcommon.AsynchronousCallBack,
-			GasPrice:    runtime.GetVMInput().GasPrice,
-			GasProvided: gasLimit,
+			CallerAddr:     sender,
+			Arguments:      arguments,
+			CallValue:      big.NewInt(0),
+			CallType:       vmcommon.AsynchronousCallBack,
+			GasPrice:       runtime.GetVMInput().GasPrice,
+			GasProvided:    gasLimit,
+			CurrentTxHash:  runtime.GetCurrentTxHash(),
+			OriginalTxHash: runtime.GetOriginalTxHash(),
 		},
 		RecipientAddr: dest,
 		Function:      function,
 	}
 
 	return contractCallInput, nil
+}
+
+func (host *vmHost) processCallbackVMOutput(callbackVMOutput *vmcommon.VMOutput, callBackErr error) error {
+	if callBackErr == nil {
+		return nil
+	}
+
+	runtime := host.Runtime()
+	output := host.Output()
+
+	runtime.GetVMInput().GasProvided = 0
+	output.Finish([]byte(callbackVMOutput.ReturnCode.String()))
+	output.Finish([]byte(runtime.GetCurrentTxHash()))
+
+	return nil
 }
 
 func (host *vmHost) computeDataLengthFromArguments(function string, arguments [][]byte) int {

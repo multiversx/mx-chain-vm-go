@@ -6,12 +6,19 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
 
 func TestFunctionsGuard_isValidFunctionName(t *testing.T) {
 	imports := MakeAPIImports()
-	validator := NewWASMValidator(imports.Names())
+
+	protocolBuiltinFunctions := vmcommon.FunctionNames{
+		"fromProtocolFoo": {},
+		"fromProtocolBar": {},
+	}
+
+	validator := NewWASMValidator(imports.Names(), protocolBuiltinFunctions)
 
 	require.Nil(t, validator.verifyValidFunctionName("foo"))
 	require.Nil(t, validator.verifyValidFunctionName("_"))
@@ -23,7 +30,8 @@ func TestFunctionsGuard_isValidFunctionName(t *testing.T) {
 	require.NotNil(t, validator.verifyValidFunctionName("ș"))
 	require.NotNil(t, validator.verifyValidFunctionName("Ä"))
 
-	require.NotNil(t, validator.verifyValidFunctionName("claimDeveloperRewards"))
+	require.NotNil(t, validator.verifyValidFunctionName("fromProtocolFoo"))
+	require.NotNil(t, validator.verifyValidFunctionName("fromProtocolBar"))
 
 	require.Nil(t, validator.verifyValidFunctionName(strings.Repeat("_", 255)))
 	require.NotNil(t, validator.verifyValidFunctionName(strings.Repeat("_", 256)))
@@ -35,7 +43,7 @@ func TestFunctionsGuard_isValidFunctionName(t *testing.T) {
 
 func TestFunctionsGuard_Arity(t *testing.T) {
 	imports := InitializeWasmer()
-	validator := NewWASMValidator(imports.Names())
+	validator := NewWASMValidator(imports.Names(), make(vmcommon.FunctionNames))
 
 	gasLimit := uint64(100000000)
 	path := "./../../test/contracts/signatures/signatures.wasm"

@@ -38,8 +38,6 @@ type cWasmerSerializedModuleT C.wasmer_serialized_module_t
 type cWasmerValueT C.wasmer_value_t
 type cWasmerValueTag C.wasmer_value_tag
 
-const cWasmF32 = C.WASM_F32
-const cWasmF64 = C.WASM_F64
 const cWasmFunction = C.WASM_FUNCTION
 const cWasmGlobal = C.WASM_GLOBAL
 const cWasmI32 = C.WASM_I32

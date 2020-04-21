@@ -4,42 +4,45 @@ import (
 	"os"
 	"time"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
-	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/logger"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/marshaling"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
+
+var log = logger.GetOrCreate("arwen/part")
 
 // ArwenPart is the endpoint that implements the message loop on Arwen's side
 type ArwenPart struct {
 	Messenger *ArwenMessenger
-	Logger    logger.Logger
 	VMHost    vmcommon.VMExecutionHandler
 	Repliers  []common.MessageReplier
 }
 
 // NewArwenPart creates the Arwen part
 func NewArwenPart(
-	mainLogger logger.Logger,
-	dialogueLogger logger.Logger,
 	input *os.File,
 	output *os.File,
-	vmHostArguments *common.VMHostArguments,
+	vmHostParameters *arwen.VMHostParameters,
 	marshalizer marshaling.Marshalizer,
 ) (*ArwenPart, error) {
-	messenger := NewArwenMessenger(dialogueLogger, input, output, marshalizer)
+	messenger := NewArwenMessenger(input, output, marshalizer)
 	blockchain := NewBlockchainHookGateway(messenger)
 	crypto := NewCryptoHookGateway()
 
-	host, err := host.NewArwenVM(blockchain, crypto, vmHostArguments.VMType, vmHostArguments.BlockGasLimit, vmHostArguments.GasSchedule)
+	host, err := host.NewArwenVM(
+		blockchain,
+		crypto,
+		vmHostParameters,
+	)
 	if err != nil {
 		return nil, err
 	}
 
 	part := &ArwenPart{
 		Messenger: messenger,
-		Logger:    mainLogger,
 		VMHost:    host,
 	}
 
@@ -52,7 +55,7 @@ func NewArwenPart(
 }
 
 func (part *ArwenPart) noopReplier(message common.MessageHandler) common.MessageHandler {
-	part.Logger.Error("noopReplier called")
+	log.Error("noopReplier called")
 	return common.CreateMessage(common.UndefinedRequestOrResponse)
 }
 
@@ -61,7 +64,7 @@ func (part *ArwenPart) StartLoop() error {
 	part.Messenger.Reset()
 	err := part.doLoop()
 	part.Messenger.Shutdown()
-	part.Logger.Error("[ARWEN]: end of loop", "err", err)
+	log.Error("end of loop", "err", err)
 	return err
 }
 

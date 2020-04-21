@@ -6,16 +6,16 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/arwenpart"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
-	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/logger"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/marshaling"
+	"github.com/ElrondNetwork/elrond-go-logger/pipes"
 )
 
 const (
-	fileDescriptorArwenInit         = 3
-	fileDescriptorNodeToArwen       = 4
-	fileDescriptorArwenToNode       = 5
-	fileDescriptorMainLogToNode     = 6
-	fileDescriptorDialogueLogToNode = 7
+	fileDescriptorArwenInit      = 3
+	fileDescriptorNodeToArwen    = 4
+	fileDescriptorArwenToNode    = 5
+	fileDescriptorReadLogProfile = 6
+	fileDescriptorLogToNode      = 7
 )
 
 func main() {
@@ -43,14 +43,14 @@ func doMain() (int, string) {
 		return common.ErrCodeCannotCreateFile, "Cannot get pipe file: [arwenToNodeFile]"
 	}
 
-	mainLogToNodeFile := getPipeFile(fileDescriptorMainLogToNode)
-	if mainLogToNodeFile == nil {
-		return common.ErrCodeCannotCreateFile, "Cannot get pipe file: [mainLogToNodeFile]"
+	readLogProfileFile := getPipeFile(fileDescriptorReadLogProfile)
+	if readLogProfileFile == nil {
+		return common.ErrCodeCannotCreateFile, "Cannot get pipe file: [readLogProfileFile]"
 	}
 
-	dialogueLogToNodeFile := getPipeFile(fileDescriptorDialogueLogToNode)
-	if dialogueLogToNodeFile == nil {
-		return common.ErrCodeCannotCreateFile, "Cannot get pipe file: [dialogueLogToNodeFile]"
+	logToNodeFile := getPipeFile(fileDescriptorLogToNode)
+	if logToNodeFile == nil {
+		return common.ErrCodeCannotCreateFile, "Cannot get pipe file: [logToNodeFile]"
 	}
 
 	arwenArguments, err := common.GetArwenArguments(arwenInitFile)
@@ -60,15 +60,23 @@ func doMain() (int, string) {
 
 	messagesMarshalizer := marshaling.CreateMarshalizer(arwenArguments.MessagesMarshalizer)
 	logsMarshalizer := marshaling.CreateMarshalizer(arwenArguments.LogsMarshalizer)
-	mainLogger := logger.NewPipeLogger(arwenArguments.MainLogLevel, mainLogToNodeFile, logsMarshalizer)
-	dialogueLogger := logger.NewPipeLogger(arwenArguments.DialogueLogLevel, dialogueLogToNodeFile, logsMarshalizer)
+
+	logsPart, err := pipes.NewChildPart(readLogProfileFile, logToNodeFile, logsMarshalizer)
+	if err != nil {
+		return common.ErrCodeInit, fmt.Sprintf("Cannot create logs part: %v", err)
+	}
+
+	err = logsPart.StartLoop()
+	if err != nil {
+		return common.ErrCodeInit, fmt.Sprintf("Cannot start logs loop: %v", err)
+	}
+
+	defer logsPart.StopLoop()
 
 	part, err := arwenpart.NewArwenPart(
-		mainLogger,
-		dialogueLogger,
 		nodeToArwenFile,
 		arwenToNodeFile,
-		&arwenArguments.VMHostArguments,
+		&arwenArguments.VMHostParameters,
 		messagesMarshalizer,
 	)
 	if err != nil {
@@ -80,6 +88,7 @@ func doMain() (int, string) {
 		return common.ErrCodeTerminated, fmt.Sprintf("Ended Arwen loop: %v", err)
 	}
 
+	// This is never reached, actually. Arwen is supposed to run an infinite message loop.
 	return common.ErrCodeSuccess, ""
 }
 

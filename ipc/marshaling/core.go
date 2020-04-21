@@ -29,6 +29,7 @@ func ParseKind(str string) MarshalizerKind {
 
 // Marshalizer deals with messages serialization
 type Marshalizer interface {
-	MarshalItem(data interface{}) ([]byte, error)
-	UnmarshalItem(dataBytes []byte, data interface{}) error
+	Marshal(data interface{}) ([]byte, error)
+	Unmarshal(data interface{}, dataBytes []byte) error
+	IsInterfaceNil() bool
 }

@@ -16,7 +16,7 @@ type meteringContext struct {
 // NewMeteringContext creates a new meteringContext
 func NewMeteringContext(
 	host arwen.VMHost,
-	gasSchedule map[string]map[string]uint64,
+	gasSchedule config.GasScheduleMap,
 	blockGasLimit uint64,
 ) (*meteringContext, error) {
 
@@ -106,6 +106,10 @@ func (context *meteringContext) UnlockGasIfAsyncStep() {
 	input := context.host.Runtime().GetVMInput()
 	input.GasProvided += context.gasLockedForAsyncStep
 	context.gasLockedForAsyncStep = 0
+}
+
+func (context *meteringContext) GetGasLockedForAsyncStep() uint64 {
+	return context.gasLockedForAsyncStep
 }
 
 func (context *meteringContext) BlockGasLimit() uint64 {

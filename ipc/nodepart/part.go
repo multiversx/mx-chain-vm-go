@@ -6,14 +6,12 @@ import (
 	"time"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
-	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/logger"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/marshaling"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // NodePart is the endpoint that implements the message loop on Node's side
 type NodePart struct {
-	Logger     logger.Logger
 	Messenger  *NodeMessenger
 	blockchain vmcommon.BlockchainHook
 	Repliers   []common.MessageReplier
@@ -22,18 +20,15 @@ type NodePart struct {
 
 // NewNodePart creates the Node part
 func NewNodePart(
-	mainLogger logger.Logger,
-	dialogueLogger logger.Logger,
 	input *os.File,
 	output *os.File,
 	blockchain vmcommon.BlockchainHook,
 	config Config,
 	marshalizer marshaling.Marshalizer,
 ) (*NodePart, error) {
-	messenger := NewNodeMessenger(dialogueLogger, input, output, marshalizer)
+	messenger := NewNodeMessenger(input, output, marshalizer)
 
 	part := &NodePart{
-		Logger:     mainLogger,
 		Messenger:  messenger,
 		blockchain: blockchain,
 		config:     config,
@@ -59,12 +54,14 @@ func NewNodePart(
 	part.Repliers[common.BlockchainCurrentTimeStampRequest] = part.replyToBlockchainCurrentTimeStamp
 	part.Repliers[common.BlockchainCurrentRandomSeedRequest] = part.replyToBlockchainCurrentRandomSeed
 	part.Repliers[common.BlockchainCurrentEpochRequest] = part.replyToBlockchainCurrentEpoch
+	part.Repliers[common.BlockchainProcessBuiltinFunctionRequest] = part.replyToBlockchainProcessBuiltinFunction
+	part.Repliers[common.BlockchainGetBuiltinFunctionNamesRequest] = part.replyToBlockchainGetBuiltinFunctionNames
 
 	return part, nil
 }
 
 func (part *NodePart) noopReplier(message common.MessageHandler) common.MessageHandler {
-	part.Logger.Error("noopReplier called")
+	log.Error("noopReplier called")
 	return common.CreateMessage(common.UndefinedRequestOrResponse)
 }
 
@@ -79,7 +76,7 @@ func (part *NodePart) StartLoop(request common.MessageHandler) (common.MessageHa
 
 	response, err := part.doLoop()
 	if err != nil {
-		part.Logger.Error("[NODE]: end of loop", "err", err)
+		log.Warn("[NODE]: end of loop", "err", err)
 	}
 
 	part.Messenger.ResetDialogue()
@@ -142,11 +139,11 @@ func (part *NodePart) SendStopSignal() error {
 		return err
 	}
 
-	part.Logger.Info("Node: sent stop signal to Arwen.")
+	log.Warn("Node sent stop signal to Arwen.")
 	return nil
 }
 
 func (part *NodePart) timeTrack(start time.Time, message string) {
 	elapsed := time.Since(start)
-	part.Logger.Trace(message, "duration", elapsed)
+	log.Trace(message, "duration", elapsed)
 }
