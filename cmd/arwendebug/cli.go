@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwendebug"
 	"github.com/urfave/cli"
 )
@@ -35,10 +33,35 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 		Destination: &args.Session,
 	}
 
-	app.Flags = []cli.Flag{
-		flagSession,
-		flagDatabase,
+	flagImpersonated := cli.StringFlag{
+		Required:    true,
+		Name:        "impersonated",
+		Usage:       "",
+		Destination: &args.Impersonated,
 	}
+
+	flagAccountAddress := cli.StringFlag{
+		Required:    true,
+		Name:        "address",
+		Usage:       "",
+		Destination: &args.AccountAddress,
+	}
+
+	flagAccountBalance := cli.StringFlag{
+		Required:    true,
+		Name:        "balance",
+		Usage:       "",
+		Destination: &args.AccountBalance,
+	}
+
+	flagAccountNonce := cli.Uint64Flag{
+		Required:    true,
+		Name:        "nonce",
+		Usage:       "",
+		Destination: &args.AccountNonce,
+	}
+
+	app.Flags = []cli.Flag{}
 
 	app.Authors = []cli.Author{
 		{
@@ -63,21 +86,41 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 			Name:  "deploy",
 			Usage: "deploy a smart contract",
 			Action: func(context *cli.Context) error {
-				response, err := facade.DeploySmartContract(args.toDeployRequest())
-				if err != nil {
-					return err
-				}
-
-				fmt.Println(response.DebugString())
-				return nil
+				_, err := facade.DeploySmartContract(args.toDeployRequest())
+				return err
+			},
+			Flags: []cli.Flag{
+				flagSession,
+				flagDatabase,
+				flagImpersonated,
 			},
 		},
 		{
 			Name:  "upgrade",
 			Usage: "upgrade smart contract",
 			Action: func(context *cli.Context) error {
-				facade.UpgradeSmartContract(args.toUpgradeRequest())
-				return nil
+				_, err := facade.UpgradeSmartContract(args.toUpgradeRequest())
+				return err
+			},
+			Flags: []cli.Flag{
+				flagSession,
+				flagDatabase,
+				flagImpersonated,
+			},
+		},
+		{
+			Name:  "create-account",
+			Usage: "create account",
+			Action: func(context *cli.Context) error {
+				_, err := facade.CreateAccount(args.toCreateAccountRequest())
+				return err
+			},
+			Flags: []cli.Flag{
+				flagSession,
+				flagDatabase,
+				flagAccountAddress,
+				flagAccountBalance,
+				flagAccountNonce,
 			},
 		},
 	}

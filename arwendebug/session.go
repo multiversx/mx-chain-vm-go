@@ -40,7 +40,7 @@ func getHostParameters() *arwen.VMHostParameters {
 }
 
 // DeploySmartContract -
-func (session *session) DeploySmartContract(request DeployRequest) (DeployResponse, error) {
+func (session *session) DeploySmartContract(request DeployRequest) (*DeployResponse, error) {
 	log.Debug("Session.DeploySmartContract()")
 
 	createInput := &vmcommon.ContractCreateInput{}
@@ -50,12 +50,12 @@ func (session *session) DeploySmartContract(request DeployRequest) (DeployRespon
 	response.Output = *vmOutput
 	response.Error = err
 
-	return *response, nil
+	return response, nil
 }
 
 // UpgradeSmartContract -
-func (session *session) UpgradeSmartContract() error {
-	return nil
+func (session *session) UpgradeSmartContract() (*UpgradeResponse, error) {
+	return &UpgradeResponse{}, nil
 }
 
 // RunSmartContract -
@@ -66,4 +66,20 @@ func (session *session) RunSmartContract() error {
 // QuerySmartContract -
 func (session *session) QuerySmartContract() error {
 	return nil
+}
+
+func (session *session) CreateAccount(request CreateAccountRequest) (*CreateAccountResponse, error) {
+	balance, err := request.parseBalance()
+	if err != nil {
+		return nil, err
+	}
+
+	account := &mock.Account{
+		Address: []byte(request.Address),
+		Nonce:   request.Nonce,
+		Balance: balance,
+	}
+
+	session.blockchainHook.AddAccount(account)
+	return &CreateAccountResponse{}, nil
 }

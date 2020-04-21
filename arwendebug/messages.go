@@ -1,7 +1,7 @@
 package arwendebug
 
 import (
-	"encoding/json"
+	"math/big"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -10,29 +10,29 @@ import (
 type RequestBase struct {
 	DatabasePath string
 	Session      string
-	Impersonator string
 }
 
 // ResponseBase -
 type ResponseBase struct {
-	Input  vmcommon.VMInput
-	Output vmcommon.VMOutput
-	Error  error
+	Error error
 }
 
-// DebugString -
-func (response *ResponseBase) DebugString() string {
-	data, err := json.MarshalIndent(response, "", "\t")
-	if err != nil {
-		return "{}"
-	}
+// ContractRequestBase -
+type ContractRequestBase struct {
+	RequestBase
+	Impersonated string
+}
 
-	return string(data)
+// ContractResponseBase -
+type ContractResponseBase struct {
+	ResponseBase
+	Input  vmcommon.VMInput
+	Output vmcommon.VMOutput
 }
 
 // DeployRequest -
 type DeployRequest struct {
-	RequestBase
+	ContractRequestBase
 	Code         string
 	CodeMetadata string
 	Arguments    []string
@@ -40,7 +40,7 @@ type DeployRequest struct {
 
 // DeployResponse -
 type DeployResponse struct {
-	ResponseBase
+	ContractResponseBase
 }
 
 // UpgradeRequest -
@@ -49,15 +49,51 @@ type UpgradeRequest struct {
 	ContractAddress string
 }
 
+// UpgradeResponse -
+type UpgradeResponse struct {
+	ContractResponseBase
+}
+
 // RunRequest -
 type RunRequest struct {
-	RequestBase
+	ContractRequestBase
 	ContractAddress string
 	Function        string
 	Arguments       []string
 }
 
+// RunResponse -
+type RunResponse struct {
+	ContractResponseBase
+}
+
 // QueryRequest -
 type QueryRequest struct {
 	RunRequest
+}
+
+// QueryResponse -
+type QueryResponse struct {
+	ContractResponseBase
+}
+
+// CreateAccountRequest -
+type CreateAccountRequest struct {
+	RequestBase
+	Address string
+	Balance string
+	Nonce   uint64
+}
+
+func (request *CreateAccountRequest) parseBalance() (*big.Int, error) {
+	balance, ok := big.NewInt(0).SetString(request.Balance, 10)
+	if !ok {
+		return nil, NewRequestError("invalid balance")
+	}
+
+	return balance, nil
+}
+
+// CreateAccountResponse -
+type CreateAccountResponse struct {
 }
