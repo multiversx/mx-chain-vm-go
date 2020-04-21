@@ -1,10 +1,9 @@
-package main
+package featuresintegrationtest
 
 import (
 	"fmt"
 	"io/ioutil"
 	"math/big"
-	"path/filepath"
 	"strings"
 	"testing"
 
@@ -145,12 +144,6 @@ func (pfe *pureFunctionExecutor) executePureFunctionTests(t *testing.T,
 	testCases []*pureFunctionIO,
 	resultInterpreter resultInterpreter,
 	logProgress logProgress) {
-
-	pfe, err := newPureFunctionExecutor()
-	require.Nil(t, err)
-
-	contractPathFilePath := filepath.Join(getTestRoot(), "features/features.wasm")
-	pfe.initAccounts(contractPathFilePath)
 
 	// RUN!
 	for testCaseIndex, testCase := range testCases {
