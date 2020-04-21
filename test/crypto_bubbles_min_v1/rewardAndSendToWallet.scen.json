@@ -19,8 +19,7 @@
                     },
                     "code": "file:crypto-bubbles.wasm"
                 }
-            },
-            "blockhashes": []
+            }
         },
         {
             "step": "tx",

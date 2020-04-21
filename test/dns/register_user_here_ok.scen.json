@@ -61,8 +61,7 @@
                     "storage": {},
                     "code": "file:user-mock.wasm"
                 }
-            },
-            "blockhashes": []
+            }
         },
         {
             "step": "tx",

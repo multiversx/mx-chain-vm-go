@@ -39,8 +39,7 @@
                     "storage": {},
                     "code": ""
                 }
-            },
-            "blockhashes": []
+            }
         },
         {
             "step": "tx",
