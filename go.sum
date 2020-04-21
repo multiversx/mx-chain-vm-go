@@ -6,8 +6,8 @@ github.com/ElrondNetwork/elrond-vm-common v0.1.17 h1:tfxM6YYbU7i44hxpPQmq5TebEJg
 github.com/ElrondNetwork/elrond-vm-common v0.1.17/go.mod h1:ZakxPST/Wt8umnRtA9gobcy3Dw2bywxwkC54P5VhO9g=
 github.com/ElrondNetwork/elrond-vm-common v0.1.18 h1:lgWO37mySU3OlrsMZSPpHcWDzwFBiAik4Q8LkFztlH0=
 github.com/ElrondNetwork/elrond-vm-common v0.1.18/go.mod h1:ZakxPST/Wt8umnRtA9gobcy3Dw2bywxwkC54P5VhO9g=
-github.com/ElrondNetwork/elrond-vm-util v0.1.8 h1:9Pkzgfqhx2kg68n++UTsShAEDRa4rbyQ5m2SeU76xY0=
-github.com/ElrondNetwork/elrond-vm-util v0.1.8/go.mod h1:nj0ZN4uEKCbpxqUOaAgWtbpGmkm17e0sRfc6T1TVo7w=
+github.com/ElrondNetwork/elrond-vm-util v0.2.0 h1:1XFqEsTOEu+SPI27UyL7Mk3jkiIVpkYkpw7qWIJ2llk=
+github.com/ElrondNetwork/elrond-vm-util v0.2.0/go.mod h1:XhWd54gVSTUtaoYJnf0Yj5MaR+9Oticbc2DM3wWCD54=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
