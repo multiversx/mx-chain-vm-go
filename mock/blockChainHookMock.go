@@ -5,6 +5,7 @@ import (
 	"errors"
 	"math/big"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -109,7 +110,11 @@ func (b *BlockchainHookMock) NewAddress(creatorAddress []byte, creatorNonce uint
 }
 
 func (b *BlockchainHookMock) createContractAddress(creatorAddress []byte, creatorNonce uint64) []byte {
-	address := make([]byte, len(creatorAddress))
+	if len(creatorAddress) == 0 {
+		panic("mock: bad creator address")
+	}
+
+	address := make([]byte, arwen.AddressLen)
 	copy(address, creatorAddress)
 	binary.LittleEndian.PutUint64(address[0:8], creatorNonce)
 	return address

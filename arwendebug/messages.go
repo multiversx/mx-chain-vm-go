@@ -21,13 +21,38 @@ type ResponseBase struct {
 type ContractRequestBase struct {
 	RequestBase
 	Impersonated string
+	Value        string
+	GasPrice     uint64
+	GasLimit     uint64
+}
+
+func (request *ContractRequestBase) getValue() *big.Int {
+	value := big.NewInt(0)
+	_, _ = value.SetString(request.Value, 10)
+	return value
+}
+
+func (request *ContractRequestBase) getGasPrice() uint64 {
+	if request.GasPrice == 0 {
+		return DefaultGasPrice
+	}
+
+	return request.GasPrice
+}
+
+func (request *ContractRequestBase) getGasLimit() uint64 {
+	if request.GasLimit == 0 {
+		return DefaultGasLimit
+	}
+
+	return request.GasLimit
 }
 
 // ContractResponseBase -
 type ContractResponseBase struct {
 	ResponseBase
-	Input  vmcommon.VMInput
-	Output vmcommon.VMOutput
+	Input  *vmcommon.VMInput
+	Output *vmcommon.VMOutput
 }
 
 // DeployRequest -

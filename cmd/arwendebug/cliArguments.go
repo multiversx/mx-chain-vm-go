@@ -57,6 +57,8 @@ func (args *cliArguments) toCreateAccountRequest() arwendebug.CreateAccountReque
 	request := &arwendebug.CreateAccountRequest{}
 	args.populateRequestBase(&request.RequestBase)
 
+	request.Address = args.AccountAddress
 	request.Balance = args.AccountBalance
+	request.Nonce = args.AccountNonce
 	return *request
 }

@@ -60,8 +60,12 @@ func (db *database) readWorldDataModel(filePath string) (*worldDataModel, error)
 	return dataModel, nil
 }
 
-func (db *database) storeworld() {
+func (db *database) storeWorld(world *world) {
+	log.Trace("Database.storeWorld()")
 
+	filePath := db.getWorldFile(world.id)
+	dataModel := world.toDataModel()
+	db.marshalDataModel(filePath, dataModel)
 }
 
 func (db *database) unmarshalDataModel(filePath string, dataModel interface{}) error {
@@ -73,6 +77,11 @@ func (db *database) unmarshalDataModel(filePath string, dataModel interface{}) e
 	return json.Unmarshal(data, dataModel)
 }
 
-func (db *database) marshalDataModel(dataModel interface{}) ([]byte, error) {
-	return json.MarshalIndent(dataModel, "", "\t")
+func (db *database) marshalDataModel(filePath string, dataModel interface{}) error {
+	data, err := json.MarshalIndent(dataModel, "", "\t")
+	if err != nil {
+		return err
+	}
+
+	return ioutil.WriteFile(filePath, data, 0644)
 }

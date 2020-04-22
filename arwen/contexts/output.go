@@ -210,6 +210,7 @@ func (context *outputContext) hasSufficientBalance(address []byte, value *big.In
 }
 
 func (context *outputContext) AddTxValueToAccount(address []byte, value *big.Int) {
+	// TODO: Perhaps handle possible nil value?
 	destAcc, _ := context.GetOutputAccount(address)
 	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
 }

@@ -18,7 +18,7 @@ const (
 
 func main() {
 	logger.ToggleLoggerName(true)
-	logger.SetLogLevel("*:DEBUG")
+	logger.SetLogLevel("*:TRACE")
 
 	facade := &arwendebug.DebugFacade{}
 	app := initializeCLI(facade)

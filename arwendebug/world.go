@@ -10,28 +10,29 @@ import (
 )
 
 type worldDataModel struct {
-	id        string
-	createdOn string
-	accounts  mock.AccountsMap
+	ID        string
+	CreatedOn string
+	Accounts  mock.AccountsMap
 }
 
 type world struct {
+	id             string
 	blockchainHook mock.BlockchainHookMock
 	vm             vmcommon.VMExecutionHandler
 }
 
 func newWorldDataModel(worldID string) *worldDataModel {
 	return &worldDataModel{
-		id:        worldID,
-		createdOn: "now",
-		accounts:  make(mock.AccountsMap),
+		ID:        worldID,
+		CreatedOn: "now",
+		Accounts:  make(mock.AccountsMap),
 	}
 }
 
 // NewWorld -
 func NewWorld(dataModel *worldDataModel) (*world, error) {
 	blockchainHook := mock.NewBlockchainHookMock()
-	blockchainHook.Accounts = dataModel.accounts
+	blockchainHook.Accounts = dataModel.Accounts
 
 	vm, err := host.NewArwenVM(
 		blockchainHook,
@@ -43,6 +44,7 @@ func NewWorld(dataModel *worldDataModel) (*world, error) {
 	}
 
 	return &world{
+		id:             dataModel.ID,
 		blockchainHook: *blockchainHook,
 		vm:             vm,
 	}, nil
@@ -61,10 +63,17 @@ func (world *world) DeploySmartContract(request DeployRequest) (*DeployResponse,
 	log.Debug("world.DeploySmartContract()")
 
 	createInput := &vmcommon.ContractCreateInput{}
+	createInput.CallerAddr = []byte(request.Impersonated)
+	createInput.CallValue = request.getValue()
+	createInput.ContractCode = []byte(request.Code)
+	createInput.ContractCodeMetadata = []byte{}
+	createInput.GasProvided = request.getGasLimit()
+	createInput.GasPrice = request.getGasPrice()
+
 	vmOutput, err := world.vm.RunSmartContractCreate(createInput)
 
 	response := &DeployResponse{}
-	response.Output = *vmOutput
+	response.Output = vmOutput
 	response.Error = err
 
 	return response, nil
@@ -99,4 +108,12 @@ func (world *world) CreateAccount(request CreateAccountRequest) (*CreateAccountR
 
 	world.blockchainHook.AddAccount(account)
 	return &CreateAccountResponse{}, nil
+}
+
+func (world *world) toDataModel() *worldDataModel {
+	return &worldDataModel{
+		ID:        world.id,
+		CreatedOn: "test",
+		Accounts:  world.blockchainHook.Accounts,
+	}
 }

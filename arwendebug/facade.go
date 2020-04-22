@@ -21,7 +21,8 @@ func NewDebugFacade() {
 func (facade *DebugFacade) DeploySmartContract(request DeployRequest) (*DeployResponse, error) {
 	log.Debug("DebugFacade.DeploySmartContract()")
 
-	world, err := facade.loadWorld(request.DatabasePath, request.World)
+	database := facade.loadDatabase(request.DatabasePath)
+	world, err := database.loadWorld(request.World)
 	if err != nil {
 		return nil, err
 	}
@@ -31,13 +32,9 @@ func (facade *DebugFacade) DeploySmartContract(request DeployRequest) (*DeployRe
 		return nil, err
 	}
 
+	database.storeWorld(world)
 	dumpResponse(&response)
 	return response, err
-}
-
-func (facade *DebugFacade) loadWorld(databaseRootPath string, worldID string) (*world, error) {
-	database := facade.loadDatabase(databaseRootPath)
-	return database.loadWorld(worldID)
 }
 
 func (facade *DebugFacade) loadDatabase(rootPath string) *database {
@@ -46,15 +43,12 @@ func (facade *DebugFacade) loadDatabase(rootPath string) *database {
 	return database
 }
 
-func (facade *DebugFacade) saveWorld() {
-
-}
-
 // UpgradeSmartContract -
 func (facade *DebugFacade) UpgradeSmartContract(request UpgradeRequest) (*UpgradeResponse, error) {
 	log.Debug("DebugFacade.UpgradeSmartContract()")
 
-	world, err := facade.loadWorld(request.DatabasePath, request.World)
+	database := facade.loadDatabase(request.DatabasePath)
+	world, err := database.loadWorld(request.World)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +76,8 @@ func (facade *DebugFacade) QuerySmartContract(request QueryRequest) {
 func (facade *DebugFacade) CreateAccount(request CreateAccountRequest) (*CreateAccountResponse, error) {
 	log.Debug("DebugFacade.CreateAccount()")
 
-	world, err := facade.loadWorld(request.DatabasePath, request.World)
+	database := facade.loadDatabase(request.DatabasePath)
+	world, err := database.loadWorld(request.World)
 	if err != nil {
 		return nil, err
 	}
@@ -92,6 +87,7 @@ func (facade *DebugFacade) CreateAccount(request CreateAccountRequest) (*CreateA
 		return nil, err
 	}
 
+	database.storeWorld(world)
 	dumpResponse(&response)
 	return response, err
 }
