@@ -37,9 +37,10 @@ func Test_CreateAccount(t *testing.T) {
 
 func Test_DeployContract(t *testing.T) {
 	facade := &DebugFacade{}
+	requestBase := createRequestBase()
 
 	createAccountRequest := CreateAccountRequest{
-		RequestBase: createRequestBase(),
+		RequestBase: requestBase,
 		Address:     "alice",
 		Balance:     "42",
 		Nonce:       1,
@@ -47,7 +48,7 @@ func Test_DeployContract(t *testing.T) {
 
 	deployRequest := DeployRequest{
 		ContractRequestBase: ContractRequestBase{
-			RequestBase:  createRequestBase(),
+			RequestBase:  requestBase,
 			Impersonated: "alice",
 		},
 		CodePath: "./testdata/counter.wasm",
