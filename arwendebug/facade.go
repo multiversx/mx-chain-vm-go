@@ -58,13 +58,29 @@ func (facade *DebugFacade) UpgradeSmartContract(request UpgradeRequest) (*Upgrad
 		return nil, err
 	}
 
+	database.storeWorld(world)
 	dumpResponse(&response)
 	return response, err
 }
 
 // RunSmartContract -
-func (facade *DebugFacade) RunSmartContract(request RunRequest) {
+func (facade *DebugFacade) RunSmartContract(request RunRequest) (*RunResponse, error) {
 	log.Debug("DebugFacade.RunSmartContract()")
+
+	database := facade.loadDatabase(request.DatabasePath)
+	world, err := database.loadWorld(request.World)
+	if err != nil {
+		return nil, err
+	}
+
+	response, err := world.RunSmartContract(request)
+	if err != nil {
+		return nil, err
+	}
+
+	database.storeWorld(world)
+	dumpResponse(&response)
+	return response, err
 }
 
 // QuerySmartContract -

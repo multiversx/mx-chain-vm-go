@@ -73,6 +73,55 @@ func Test_DeployContract(t *testing.T) {
 	require.True(t, exists)
 }
 
+func Test_RunContract(t *testing.T) {
+	facade := &DebugFacade{}
+	requestBase := createRequestBase()
+
+	createAccountRequest := CreateAccountRequest{
+		RequestBase: requestBase,
+		Address:     "alice",
+		Balance:     "42",
+		Nonce:       1,
+	}
+
+	deployRequest := DeployRequest{
+		ContractRequestBase: ContractRequestBase{
+			RequestBase:  requestBase,
+			Impersonated: "alice",
+		},
+		CodePath: "./testdata/counter.wasm",
+	}
+
+	runRequest := RunRequest{
+		ContractRequestBase: ContractRequestBase{
+			RequestBase:  requestBase,
+			Impersonated: "alice",
+		},
+		ContractAddress: "contract0000000000000000000alice",
+		Function:        "increment",
+	}
+
+	createAccountResponse, err := facade.CreateAccount(createAccountRequest)
+	require.Nil(t, err)
+	require.NotNil(t, createAccountResponse)
+
+	deployResponse, err := facade.DeploySmartContract(deployRequest)
+	require.Nil(t, err)
+	require.NotNil(t, deployResponse)
+	require.Nil(t, deployResponse.Error)
+	require.Equal(t, vmcommon.Ok, deployResponse.Output.ReturnCode)
+
+	runResponse, err := facade.RunSmartContract(runRequest)
+	require.Nil(t, err)
+	require.NotNil(t, runResponse)
+	require.Nil(t, runResponse.Error)
+	require.Equal(t, vmcommon.Ok, runResponse.Output.ReturnCode)
+
+	database := NewDatabase(deployRequest.DatabasePath)
+	world, err := database.loadWorld(deployRequest.World)
+	require.Nil(t, err)
+}
+
 func createRequestBase() RequestBase {
 	return RequestBase{
 		DatabasePath: "./testdata/db",

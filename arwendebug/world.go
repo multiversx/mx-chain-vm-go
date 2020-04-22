@@ -106,8 +106,35 @@ func (world *world) UpgradeSmartContract() (*UpgradeResponse, error) {
 }
 
 // RunSmartContract -
-func (world *world) RunSmartContract() error {
-	return nil
+func (world *world) RunSmartContract(request RunRequest) (*RunResponse, error) {
+	callInput, err := world.prepareCallInput(request)
+	if err != nil {
+		return nil, err
+	}
+
+	vmOutput, err := world.vm.RunSmartContractCall(callInput)
+	if err == nil {
+		world.blockchainHook.UpdateAccounts(vmOutput.OutputAccounts)
+	}
+
+	response := &RunResponse{}
+	response.Output = vmOutput
+	response.Error = err
+
+	return response, nil
+}
+
+func (world *world) prepareCallInput(request RunRequest) (*vmcommon.ContractCallInput, error) {
+	callInput := &vmcommon.ContractCallInput{}
+	callInput.RecipientAddr = []byte(request.ContractAddress)
+	callInput.CallerAddr = request.getImpersonated()
+	callInput.CallValue = request.getValue()
+	callInput.Function = request.Function
+	callInput.Arguments = nil
+	callInput.GasProvided = request.getGasLimit()
+	callInput.GasPrice = request.getGasPrice()
+
+	return callInput, nil
 }
 
 // QuerySmartContract -
