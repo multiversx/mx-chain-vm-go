@@ -116,10 +116,6 @@ func Test_RunContract(t *testing.T) {
 	require.NotNil(t, runResponse)
 	require.Nil(t, runResponse.Error)
 	require.Equal(t, vmcommon.Ok, runResponse.Output.ReturnCode)
-
-	database := NewDatabase(deployRequest.DatabasePath)
-	world, err := database.loadWorld(deployRequest.World)
-	require.Nil(t, err)
 }
 
 func createRequestBase() RequestBase {
