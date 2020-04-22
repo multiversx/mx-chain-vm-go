@@ -1,6 +1,8 @@
 package arwendebug
 
 import (
+	"encoding/hex"
+	"io/ioutil"
 	"math/big"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -59,8 +61,47 @@ type ContractResponseBase struct {
 type DeployRequest struct {
 	ContractRequestBase
 	Code         string
+	CodePath     string
 	CodeMetadata string
 	Arguments    []string
+}
+
+func (request *DeployRequest) getCode() ([]byte, error) {
+	if len(request.Code) > 0 {
+		codeAsHex := request.Code
+		codeAsBytes, err := hex.DecodeString(codeAsHex)
+		if err != nil {
+			return nil, err
+		}
+
+		return codeAsBytes, nil
+	}
+
+	if len(request.CodePath) > 0 {
+		codeAsBytes, err := ioutil.ReadFile(request.CodePath)
+		if err != nil {
+			return nil, err
+		}
+
+		return codeAsBytes, nil
+	}
+
+	return nil, NewRequestError("invalid code")
+}
+
+func (request *DeployRequest) getCodeMetadata() ([]byte, error) {
+	if len(request.CodeMetadata) > 0 {
+		metadataAsHex := request.CodeMetadata
+		metadataAsBytes, err := hex.DecodeString(metadataAsHex)
+		if err != nil {
+			return nil, err
+		}
+
+		return metadataAsBytes, nil
+	}
+
+	defaultMetadata := vmcommon.CodeMetadata{Upgradeable: true}
+	return defaultMetadata.ToBytes(), nil
 }
 
 // DeployResponse -

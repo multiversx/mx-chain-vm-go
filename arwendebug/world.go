@@ -62,21 +62,39 @@ func getHostParameters() *arwen.VMHostParameters {
 func (world *world) DeploySmartContract(request DeployRequest) (*DeployResponse, error) {
 	log.Debug("world.DeploySmartContract()")
 
-	createInput := &vmcommon.ContractCreateInput{}
-	createInput.CallerAddr = []byte(request.Impersonated)
-	createInput.CallValue = request.getValue()
-	createInput.ContractCode = []byte(request.Code)
-	createInput.ContractCodeMetadata = []byte{}
-	createInput.GasProvided = request.getGasLimit()
-	createInput.GasPrice = request.getGasPrice()
+	createInput, err := world.prepareDeployInput(request)
+	if err != nil {
+		return nil, err
+	}
 
 	vmOutput, err := world.vm.RunSmartContractCreate(createInput)
-
 	response := &DeployResponse{}
 	response.Output = vmOutput
 	response.Error = err
 
 	return response, nil
+}
+
+func (world *world) prepareDeployInput(request DeployRequest) (*vmcommon.ContractCreateInput, error) {
+	var err error
+
+	createInput := &vmcommon.ContractCreateInput{}
+	createInput.CallerAddr = []byte(request.Impersonated)
+	createInput.CallValue = request.getValue()
+	createInput.ContractCode, err = request.getCode()
+	if err != nil {
+		return nil, err
+	}
+
+	createInput.ContractCodeMetadata, err = request.getCodeMetadata()
+	if err != nil {
+		return nil, err
+	}
+
+	createInput.GasProvided = request.getGasLimit()
+	createInput.GasPrice = request.getGasPrice()
+
+	return createInput, nil
 }
 
 // UpgradeSmartContract -
@@ -104,6 +122,7 @@ func (world *world) CreateAccount(request CreateAccountRequest) (*CreateAccountR
 		Address: []byte(request.Address),
 		Nonce:   request.Nonce,
 		Balance: balance,
+		Exists:  true,
 	}
 
 	world.blockchainHook.AddAccount(account)
