@@ -20,6 +20,7 @@
 /cmd/arwendebug/arwendebug/db
 /ipc/tests/testdata/streams
 /ipc/tests/arwen
+/db
 
 # VSCode settings
 .vscode

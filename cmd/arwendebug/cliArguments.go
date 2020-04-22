@@ -32,6 +32,7 @@ func (args *cliArguments) populateDeployRequest(request *arwendebug.DeployReques
 	args.populateContractRequestBase(&request.ContractRequestBase)
 
 	request.Code = args.Code
+	request.CodePath = args.CodePath
 	request.CodeMetadata = args.CodeMetadata
 	request.Arguments = args.Arguments
 }

@@ -17,4 +17,4 @@ build-arwendebug:
 	go build -o ./cmd/arwendebug/arwendebug ./cmd/arwendebug
 
 test-arwendebug: build-arwendebug
-	ARWENDEBUG=./cmd/arwendebug/arwendebug ./cmd/arwendebug/testdata/simple.sh
+	ARWENDEBUG=./cmd/arwendebug/arwendebug TESTDATA=./cmd/arwendebug/testdata ./cmd/arwendebug/testdata/simple.sh

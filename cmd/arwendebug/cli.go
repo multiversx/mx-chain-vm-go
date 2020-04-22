@@ -12,6 +12,7 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 
 	args := &cliArguments{}
 
+	// For server
 	flagServerAddress := cli.StringFlag{
 		Name:        "address",
 		Usage:       "",
@@ -19,6 +20,7 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 		Destination: &args.ServerAddress,
 	}
 
+	// Common for all actions
 	flagDatabase := cli.StringFlag{
 		Name:        "database",
 		Usage:       "",
@@ -33,6 +35,7 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 		Destination: &args.World,
 	}
 
+	// Common for contract actions
 	flagImpersonated := cli.StringFlag{
 		Required:    true,
 		Name:        "impersonated",
@@ -40,10 +43,26 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 		Destination: &args.Impersonated,
 	}
 
+	// For deploy
+	flagCode := cli.StringFlag{
+		Name:        "code",
+		Destination: &args.Code,
+	}
+
+	flagCodePath := cli.StringFlag{
+		Name:        "code-path",
+		Destination: &args.CodePath,
+	}
+
+	flagCodeMetadata := cli.StringFlag{
+		Name:        "code-metadata",
+		Destination: &args.CodeMetadata,
+	}
+
+	// For create-account
 	flagAccountAddress := cli.StringFlag{
 		Required:    true,
 		Name:        "address",
-		Usage:       "",
 		Destination: &args.AccountAddress,
 	}
 
@@ -92,6 +111,9 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 				flagWorld,
 				flagDatabase,
 				flagImpersonated,
+				flagCode,
+				flagCodePath,
+				flagCodeMetadata,
 			},
 		},
 		{
