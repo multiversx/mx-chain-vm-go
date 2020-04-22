@@ -220,9 +220,11 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 		log.Error("RunSmartContractCreate", "error", err)
 	}
 
-	TryCatch(try, catch, "arwen.RunSmartContractCreate")
+	ok := TryCatch(try, catch, "arwen.RunSmartContractCreate")
+	if ok {
+		log.Trace("RunSmartContractCreate end", "returnCode", vmOutput.ReturnCode, "returnMessage", vmOutput.ReturnMessage)
+	}
 
-	log.Trace("RunSmartContractCreate end", "returnCode", vmOutput.ReturnCode, "returnMessage", vmOutput.ReturnMessage)
 	return
 }
 
@@ -242,19 +244,23 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 		log.Error("RunSmartContractCall", "error", err)
 	}
 
+	var ok bool
 	isUpgrade := input.Function == arwen.UpgradeFunctionName
 	if isUpgrade {
-		TryCatch(tryUpgrade, catch, "arwen.RunSmartContractUpgrade")
+		ok = TryCatch(tryUpgrade, catch, "arwen.RunSmartContractUpgrade")
 	} else {
-		TryCatch(tryCall, catch, "arwen.RunSmartContractCall")
+		ok = TryCatch(tryCall, catch, "arwen.RunSmartContractCall")
 	}
 
-	log.Trace("RunSmartContractCall end", "returnCode", vmOutput.ReturnCode, "returnMessage", vmOutput.ReturnMessage)
+	if ok {
+		log.Trace("RunSmartContractCall end", "returnCode", vmOutput.ReturnCode, "returnMessage", vmOutput.ReturnMessage)
+	}
+
 	return
 }
 
 // TryCatch simulates a try/catch block using golang's recover() functionality
-func TryCatch(try TryFunction, catch CatchFunction, catchFallbackMessage string) {
+func TryCatch(try TryFunction, catch CatchFunction, catchFallbackMessage string) (ok bool) {
 	defer func() {
 		if r := recover(); r != nil {
 			err, ok := r.(error)
@@ -263,8 +269,11 @@ func TryCatch(try TryFunction, catch CatchFunction, catchFallbackMessage string)
 			}
 
 			catch(err)
+			ok = false
 		}
 	}()
 
 	try()
+	ok = true
+	return
 }
