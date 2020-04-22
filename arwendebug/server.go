@@ -6,7 +6,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func startServer(address string) {
+// StartServer -
+func StartServer(facade *DebugFacade, address string) error {
+	log.Debug("StartServer()")
+
 	// TODO: gin.SetMode(gin.ReleaseMode)
 
 	router := gin.Default()
@@ -15,5 +18,5 @@ func startServer(address string) {
 		c.String(http.StatusOK, "pong")
 	})
 
-	router.Run(address)
+	return router.Run(address)
 }

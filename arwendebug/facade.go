@@ -17,12 +17,6 @@ type DebugFacade struct {
 func NewDebugFacade() {
 }
 
-// StartServer -
-func (facade *DebugFacade) StartServer(address string) {
-	log.Debug("DebugFacade.StartServer()")
-	startServer(address)
-}
-
 // DeploySmartContract -
 func (facade *DebugFacade) DeploySmartContract(request DeployRequest) (*DeployResponse, error) {
 	log.Debug("DebugFacade.DeploySmartContract()")

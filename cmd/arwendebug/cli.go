@@ -75,8 +75,7 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 			Name:  "server",
 			Usage: "start debug server",
 			Action: func(context *cli.Context) error {
-				facade.StartServer(args.ServerAddress)
-				return nil
+				return arwendebug.StartServer(facade, args.ServerAddress)
 			},
 			Flags: []cli.Flag{
 				flagServerAddress,
