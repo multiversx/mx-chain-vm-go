@@ -9,29 +9,29 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
-type sessionRecord struct {
+type worldDataModel struct {
 	id        string
 	createdOn string
 	accounts  mock.AccountsMap
 }
 
-type session struct {
+type world struct {
 	blockchainHook mock.BlockchainHookMock
 	vm             vmcommon.VMExecutionHandler
 }
 
-func newSessionRecord(sessionID string) *sessionRecord {
-	return &sessionRecord{
-		id:        sessionID,
+func newWorldDataModel(worldID string) *worldDataModel {
+	return &worldDataModel{
+		id:        worldID,
 		createdOn: "now",
 		accounts:  make(mock.AccountsMap),
 	}
 }
 
-// NewSession -
-func NewSession(record *sessionRecord) (*session, error) {
+// NewWorld -
+func NewWorld(dataModel *worldDataModel) (*world, error) {
 	blockchainHook := mock.NewBlockchainHookMock()
-	blockchainHook.Accounts = record.accounts
+	blockchainHook.Accounts = dataModel.accounts
 
 	vm, err := host.NewArwenVM(
 		blockchainHook,
@@ -42,7 +42,7 @@ func NewSession(record *sessionRecord) (*session, error) {
 		return nil, err
 	}
 
-	return &session{
+	return &world{
 		blockchainHook: *blockchainHook,
 		vm:             vm,
 	}, nil
@@ -57,11 +57,11 @@ func getHostParameters() *arwen.VMHostParameters {
 }
 
 // DeploySmartContract -
-func (session *session) DeploySmartContract(request DeployRequest) (*DeployResponse, error) {
-	log.Debug("Session.DeploySmartContract()")
+func (world *world) DeploySmartContract(request DeployRequest) (*DeployResponse, error) {
+	log.Debug("world.DeploySmartContract()")
 
 	createInput := &vmcommon.ContractCreateInput{}
-	vmOutput, err := session.vm.RunSmartContractCreate(createInput)
+	vmOutput, err := world.vm.RunSmartContractCreate(createInput)
 
 	response := &DeployResponse{}
 	response.Output = *vmOutput
@@ -71,21 +71,21 @@ func (session *session) DeploySmartContract(request DeployRequest) (*DeployRespo
 }
 
 // UpgradeSmartContract -
-func (session *session) UpgradeSmartContract() (*UpgradeResponse, error) {
+func (world *world) UpgradeSmartContract() (*UpgradeResponse, error) {
 	return &UpgradeResponse{}, nil
 }
 
 // RunSmartContract -
-func (session *session) RunSmartContract() error {
+func (world *world) RunSmartContract() error {
 	return nil
 }
 
 // QuerySmartContract -
-func (session *session) QuerySmartContract() error {
+func (world *world) QuerySmartContract() error {
 	return nil
 }
 
-func (session *session) CreateAccount(request CreateAccountRequest) (*CreateAccountResponse, error) {
+func (world *world) CreateAccount(request CreateAccountRequest) (*CreateAccountResponse, error) {
 	balance, err := request.parseBalance()
 	if err != nil {
 		return nil, err
@@ -97,6 +97,6 @@ func (session *session) CreateAccount(request CreateAccountRequest) (*CreateAcco
 		Balance: balance,
 	}
 
-	session.blockchainHook.AddAccount(account)
+	world.blockchainHook.AddAccount(account)
 	return &CreateAccountResponse{}, nil
 }

@@ -21,28 +21,28 @@ func NewDatabase(rootPath string) *database {
 	}
 }
 
-func (db *database) loadSession(sessionID string) (*session, error) {
+func (db *database) loadWorld(worldID string) (*world, error) {
 	var err error
-	record := newSessionRecord(sessionID)
-	filePath := db.getSessionFile(sessionID)
+	dataModel := newWorldDataModel(worldID)
+	filePath := db.getWorldFile(worldID)
 
 	if fileExists(filePath) {
-		record, err = db.readSessionRecord(filePath)
+		dataModel, err = db.readWorldDataModel(filePath)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	session, err := NewSession(record)
+	world, err := NewWorld(dataModel)
 	if err != nil {
 		return nil, err
 	}
 
-	return session, nil
+	return world, nil
 }
 
-func (db *database) getSessionFile(sessionID string) string {
-	return path.Join(db.rootPath, fmt.Sprintf("%s.json", sessionID))
+func (db *database) getWorldFile(worldID string) string {
+	return path.Join(db.rootPath, fmt.Sprintf("%s.json", worldID))
 }
 
 func fileExists(filePath string) bool {
@@ -50,29 +50,29 @@ func fileExists(filePath string) bool {
 	return err == nil
 }
 
-func (db *database) readSessionRecord(filePath string) (*sessionRecord, error) {
-	record := &sessionRecord{}
-	err := db.unmarshalRecord(filePath, record)
+func (db *database) readWorldDataModel(filePath string) (*worldDataModel, error) {
+	dataModel := &worldDataModel{}
+	err := db.unmarshalDataModel(filePath, dataModel)
 	if err != nil {
 		return nil, err
 	}
 
-	return record, nil
+	return dataModel, nil
 }
 
-func (db *database) storeSession() {
+func (db *database) storeworld() {
 
 }
 
-func (db *database) unmarshalRecord(filePath string, record interface{}) error {
+func (db *database) unmarshalDataModel(filePath string, dataModel interface{}) error {
 	data, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		return err
 	}
 
-	return json.Unmarshal(data, record)
+	return json.Unmarshal(data, dataModel)
 }
 
-func (db *database) marshalRecord(record interface{}) ([]byte, error) {
-	return json.MarshalIndent(record, "", "\t")
+func (db *database) marshalDataModel(dataModel interface{}) ([]byte, error) {
+	return json.MarshalIndent(dataModel, "", "\t")
 }

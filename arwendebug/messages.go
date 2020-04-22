@@ -9,7 +9,7 @@ import (
 // RequestBase -
 type RequestBase struct {
 	DatabasePath string
-	Session      string
+	World        string
 }
 
 // ResponseBase -

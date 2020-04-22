@@ -4,6 +4,6 @@ package arwendebug
 type Database interface {
 }
 
-// Session -
-type Session interface {
+// World -
+type World interface {
 }

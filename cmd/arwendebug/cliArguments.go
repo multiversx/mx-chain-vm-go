@@ -6,7 +6,7 @@ type cliArguments struct {
 	// Common arguments
 	ServerAddress string
 	Database      string
-	Session       string
+	World         string
 	// For contract-related actions
 	Impersonated    string
 	ContractAddress string
@@ -43,7 +43,7 @@ func (args *cliArguments) populateContractRequestBase(request *arwendebug.Contra
 
 func (args *cliArguments) populateRequestBase(request *arwendebug.RequestBase) {
 	request.DatabasePath = args.Database
-	request.Session = args.Session
+	request.World = args.World
 }
 
 func (args *cliArguments) toUpgradeRequest() arwendebug.UpgradeRequest {

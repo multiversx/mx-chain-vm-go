@@ -26,11 +26,11 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 		Destination: &args.Database,
 	}
 
-	flagSession := cli.StringFlag{
-		Name:        "session",
+	flagWorld := cli.StringFlag{
+		Name:        "world",
 		Usage:       "",
 		Value:       "default",
-		Destination: &args.Session,
+		Destination: &args.World,
 	}
 
 	flagImpersonated := cli.StringFlag{
@@ -89,7 +89,7 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 				return err
 			},
 			Flags: []cli.Flag{
-				flagSession,
+				flagWorld,
 				flagDatabase,
 				flagImpersonated,
 			},
@@ -102,7 +102,7 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 				return err
 			},
 			Flags: []cli.Flag{
-				flagSession,
+				flagWorld,
 				flagDatabase,
 				flagImpersonated,
 			},
@@ -115,7 +115,7 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 				return err
 			},
 			Flags: []cli.Flag{
-				flagSession,
+				flagWorld,
 				flagDatabase,
 				flagAccountAddress,
 				flagAccountBalance,

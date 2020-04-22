@@ -21,12 +21,12 @@ func NewDebugFacade() {
 func (facade *DebugFacade) DeploySmartContract(request DeployRequest) (*DeployResponse, error) {
 	log.Debug("DebugFacade.DeploySmartContract()")
 
-	session, err := facade.loadSession(request.DatabasePath, request.Session)
+	world, err := facade.loadWorld(request.DatabasePath, request.World)
 	if err != nil {
 		return nil, err
 	}
 
-	response, err := session.DeploySmartContract(request)
+	response, err := world.DeploySmartContract(request)
 	if err != nil {
 		return nil, err
 	}
@@ -35,9 +35,9 @@ func (facade *DebugFacade) DeploySmartContract(request DeployRequest) (*DeployRe
 	return response, err
 }
 
-func (facade *DebugFacade) loadSession(databaseRootPath string, sessionID string) (*session, error) {
+func (facade *DebugFacade) loadWorld(databaseRootPath string, worldID string) (*world, error) {
 	database := facade.loadDatabase(databaseRootPath)
-	return database.loadSession(sessionID)
+	return database.loadWorld(worldID)
 }
 
 func (facade *DebugFacade) loadDatabase(rootPath string) *database {
@@ -46,7 +46,7 @@ func (facade *DebugFacade) loadDatabase(rootPath string) *database {
 	return database
 }
 
-func (facade *DebugFacade) saveSession() {
+func (facade *DebugFacade) saveWorld() {
 
 }
 
@@ -54,12 +54,12 @@ func (facade *DebugFacade) saveSession() {
 func (facade *DebugFacade) UpgradeSmartContract(request UpgradeRequest) (*UpgradeResponse, error) {
 	log.Debug("DebugFacade.UpgradeSmartContract()")
 
-	session, err := facade.loadSession(request.DatabasePath, request.Session)
+	world, err := facade.loadWorld(request.DatabasePath, request.World)
 	if err != nil {
 		return nil, err
 	}
 
-	response, err := session.UpgradeSmartContract()
+	response, err := world.UpgradeSmartContract()
 	if err != nil {
 		return nil, err
 	}
@@ -82,12 +82,12 @@ func (facade *DebugFacade) QuerySmartContract(request QueryRequest) {
 func (facade *DebugFacade) CreateAccount(request CreateAccountRequest) (*CreateAccountResponse, error) {
 	log.Debug("DebugFacade.CreateAccount()")
 
-	session, err := facade.loadSession(request.DatabasePath, request.Session)
+	world, err := facade.loadWorld(request.DatabasePath, request.World)
 	if err != nil {
 		return nil, err
 	}
 
-	response, err := session.CreateAccount(request)
+	response, err := world.CreateAccount(request)
 	if err != nil {
 		return nil, err
 	}
