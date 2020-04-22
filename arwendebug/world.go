@@ -5,14 +5,13 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/arwenpart"
-	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 type worldDataModel struct {
 	ID        string
 	CreatedOn string
-	Accounts  mock.AccountsMap
+	Accounts  AccountsMap
 }
 
 type world struct {
@@ -122,11 +121,10 @@ func (world *world) CreateAccount(request CreateAccountRequest) (*CreateAccountR
 		return nil, err
 	}
 
-	account := &mock.Account{
+	account := &Account{
 		Address: request.getAddress(),
 		Nonce:   request.Nonce,
 		Balance: balance,
-		Exists:  true,
 	}
 
 	world.blockchainHook.AddAccount(account)
