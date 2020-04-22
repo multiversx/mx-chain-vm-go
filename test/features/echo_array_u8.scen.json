@@ -1,0 +1,88 @@
+{
+    "name": "echo_array_u8",
+    "steps": [
+        {
+            "step": "setState",
+            "accounts": {
+                "``features_contract_____________s0": {
+                    "nonce": "0x00",
+                    "balance": "0x100",
+                    "storage": {},
+                    "code": "file:features.wasm"
+                },
+                "``an_account____________________s0": {
+                    "nonce": "0x00",
+                    "balance": "0x300abc",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "tx",
+            "txId": "1",
+            "tx": {
+                "from": "``an_account____________________s0",
+                "to": "``features_contract_____________s0",
+                "value": "0x00",
+                "function": "echo_array_u8",
+                "contractCode": "",
+                "arguments": [
+                    "0x0102030405"
+                ],
+                "gasLimit": "0x100000",
+                "gasPrice": "0x01"
+            },
+            "expect": {
+                "out": [
+                    "0x0102030405"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "tx",
+            "txId": "2",
+            "tx": {
+                "from": "``an_account____________________s0",
+                "to": "``features_contract_____________s0",
+                "value": "0x00",
+                "function": "echo_array_u8",
+                "contractCode": "",
+                "arguments": [
+                    "0x010203"
+                ],
+                "gasLimit": "0x100000",
+                "gasPrice": "0x01"
+            },
+            "expect": {
+                "out": [],
+                "status": "4",
+                "message": "argument has wrong length",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "``features_contract_____________s0": {
+                    "nonce": "0x00",
+                    "balance": "0x100",
+                    "storage": {},
+                    "code": "file:features.wasm"
+                },
+                "``an_account____________________s0": {
+                    "nonce": "0x02",
+                    "balance": "0x100abc",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        }
+    ]
+}

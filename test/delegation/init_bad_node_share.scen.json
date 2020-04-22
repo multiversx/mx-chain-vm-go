@@ -1,0 +1,53 @@
+{
+    "name": "init_bad_node_share",
+    "steps": [
+        {
+            "step": "setState",
+            "accounts": {
+                "``node_address__________________s1": {
+                    "nonce": "0x00",
+                    "balance": "0x100000",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "tx",
+            "txId": "1",
+            "tx": {
+                "from": "``node_address__________________s1",
+                "to": "",
+                "value": "0x00",
+                "function": "",
+                "contractCode": "file:delegation.wasm",
+                "arguments": [
+                    "123,000,000",
+                    "10001",
+                    "``auction_contract______________s1"
+                ],
+                "gasLimit": "0x100000",
+                "gasPrice": "0x01"
+            },
+            "expect": {
+                "out": [],
+                "status": "4",
+                "message": "node share out of range",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "``node_address__________________s1": {
+                    "nonce": "0x01",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        }
+    ]
+}

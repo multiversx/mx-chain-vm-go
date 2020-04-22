@@ -507,11 +507,11 @@ func bigIntSetInt64(context unsafe.Pointer, destination int32, value int64) {
 	bigInt := arwen.GetBigIntContext(context)
 	metering := arwen.GetMeteringContext(context)
 
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
+	metering.UseGas(gasToUse)
+
 	dest := bigInt.GetOne(destination)
 	dest.SetInt64(value)
-
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSetInt64
-	metering.UseGas(gasToUse)
 }
 
 //export bigIntAdd
@@ -519,11 +519,11 @@ func bigIntAdd(context unsafe.Pointer, destination, op1, op2 int32) {
 	bigInt := arwen.GetBigIntContext(context)
 	metering := arwen.GetMeteringContext(context)
 
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
+	metering.UseGas(gasToUse)
+
 	dest, a, b := bigInt.GetThree(destination, op1, op2)
 	dest.Add(a, b)
-
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntAdd
-	metering.UseGas(gasToUse)
 }
 
 //export bigIntSub
@@ -531,11 +531,11 @@ func bigIntSub(context unsafe.Pointer, destination, op1, op2 int32) {
 	bigInt := arwen.GetBigIntContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	dest, a, b := bigInt.GetThree(destination, op1, op2)
-	dest.Sub(a, b)
-
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
 	metering.UseGas(gasToUse)
+
+	dest, a, b := bigInt.GetThree(destination, op1, op2)
+	dest.Sub(a, b)
 }
 
 //export bigIntMul
@@ -543,11 +543,11 @@ func bigIntMul(context unsafe.Pointer, destination, op1, op2 int32) {
 	bigInt := arwen.GetBigIntContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	dest, a, b := bigInt.GetThree(destination, op1, op2)
-	dest.Mul(a, b)
-
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntMul
 	metering.UseGas(gasToUse)
+
+	dest, a, b := bigInt.GetThree(destination, op1, op2)
+	dest.Mul(a, b)
 }
 
 //export bigIntTDiv
@@ -555,15 +555,16 @@ func bigIntTDiv(context unsafe.Pointer, destination, op1, op2 int32) {
 	bigInt := arwen.GetBigIntContext(context)
 	metering := arwen.GetMeteringContext(context)
 
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntTDiv
+	metering.UseGas(gasToUse)
+
 	dest, a, b := bigInt.GetThree(destination, op1, op2)
 	if b.Sign() == 0 {
 		runtime := arwen.GetRuntimeContext(context)
-		runtime.SignalUserError("[bigIntTDiv] division by 0")
+		runtime.SignalUserError(arwen.UserErrorDivZero)
+		return
 	}
 	dest.Quo(a, b) // Quo implements truncated division (like Go)
-
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntTDiv
-	metering.UseGas(gasToUse)
 }
 
 //export bigIntTMod
@@ -571,15 +572,16 @@ func bigIntTMod(context unsafe.Pointer, destination, op1, op2 int32) {
 	bigInt := arwen.GetBigIntContext(context)
 	metering := arwen.GetMeteringContext(context)
 
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
+	metering.UseGas(gasToUse)
+
 	dest, a, b := bigInt.GetThree(destination, op1, op2)
 	if b.Sign() == 0 {
 		runtime := arwen.GetRuntimeContext(context)
-		runtime.SignalUserError("[bigIntTMod] division by 0")
+		runtime.SignalUserError(arwen.UserErrorDivZero)
+		return
 	}
 	dest.Rem(a, b) // Rem implements truncated modulus (like Go)
-
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntTMod
-	metering.UseGas(gasToUse)
 }
 
 //export bigIntEDiv
@@ -587,15 +589,16 @@ func bigIntEDiv(context unsafe.Pointer, destination, op1, op2 int32) {
 	bigInt := arwen.GetBigIntContext(context)
 	metering := arwen.GetMeteringContext(context)
 
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
+	metering.UseGas(gasToUse)
+
 	dest, a, b := bigInt.GetThree(destination, op1, op2)
 	if b.Sign() == 0 {
 		runtime := arwen.GetRuntimeContext(context)
-		runtime.SignalUserError("[bigIntEDiv] division by 0")
+		runtime.SignalUserError(arwen.UserErrorDivZero)
+		return
 	}
 	dest.Div(a, b) // Div implements Euclidean division (unlike Go)
-
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntEDiv
-	metering.UseGas(gasToUse)
 }
 
 //export bigIntEMod
@@ -603,15 +606,16 @@ func bigIntEMod(context unsafe.Pointer, destination, op1, op2 int32) {
 	bigInt := arwen.GetBigIntContext(context)
 	metering := arwen.GetMeteringContext(context)
 
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
+	metering.UseGas(gasToUse)
+
 	dest, a, b := bigInt.GetThree(destination, op1, op2)
 	if b.Sign() == 0 {
 		runtime := arwen.GetRuntimeContext(context)
-		runtime.SignalUserError("[bigIntEMod] division by 0")
+		runtime.SignalUserError(arwen.UserErrorDivZero)
+		return
 	}
 	dest.Mod(a, b) // Mod implements Euclidean division (unlike Go)
-
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntEMod
-	metering.UseGas(gasToUse)
 }
 
 //export bigIntAbs
@@ -619,11 +623,11 @@ func bigIntAbs(context unsafe.Pointer, destination, op int32) {
 	bigInt := arwen.GetBigIntContext(context)
 	metering := arwen.GetMeteringContext(context)
 
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
+	metering.UseGas(gasToUse)
+
 	dest, a := bigInt.GetTwo(destination, op)
 	dest.Abs(a)
-
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntAbs
-	metering.UseGas(gasToUse)
 }
 
 //export bigIntNeg
@@ -631,11 +635,11 @@ func bigIntNeg(context unsafe.Pointer, destination, op int32) {
 	bigInt := arwen.GetBigIntContext(context)
 	metering := arwen.GetMeteringContext(context)
 
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
+	metering.UseGas(gasToUse)
+
 	dest, a := bigInt.GetTwo(destination, op)
 	dest.Neg(a)
-
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntNeg
-	metering.UseGas(gasToUse)
 }
 
 //export bigIntSign
@@ -645,6 +649,7 @@ func bigIntSign(context unsafe.Pointer, op int32) int32 {
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSign
 	metering.UseGas(gasToUse)
+
 	a := bigInt.GetOne(op)
 	return int32(a.Sign())
 }
@@ -666,15 +671,16 @@ func bigIntNot(context unsafe.Pointer, destination, op int32) {
 	bigInt := arwen.GetBigIntContext(context)
 	metering := arwen.GetMeteringContext(context)
 
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
+	metering.UseGas(gasToUse)
+
 	dest, a := bigInt.GetTwo(destination, op)
 	if a.Sign() < 0 {
 		runtime := arwen.GetRuntimeContext(context)
-		runtime.SignalUserError("[bigIntAnd] bitwise operations only allowed on positive integers")
+		runtime.SignalUserError(arwen.UserErrorBitwiseNegative)
+		return
 	}
 	dest.Not(a)
-
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntNot
-	metering.UseGas(gasToUse)
 }
 
 //export bigIntAnd
@@ -682,15 +688,16 @@ func bigIntAnd(context unsafe.Pointer, destination, op1, op2 int32) {
 	bigInt := arwen.GetBigIntContext(context)
 	metering := arwen.GetMeteringContext(context)
 
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
+	metering.UseGas(gasToUse)
+
 	dest, a, b := bigInt.GetThree(destination, op1, op2)
 	if a.Sign() < 0 || b.Sign() < 0 {
 		runtime := arwen.GetRuntimeContext(context)
-		runtime.SignalUserError("[bigIntAnd] bitwise operations only allowed on positive integers")
+		runtime.SignalUserError(arwen.UserErrorBitwiseNegative)
+		return
 	}
 	dest.And(a, b)
-
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntAnd
-	metering.UseGas(gasToUse)
 }
 
 //export bigIntOr
@@ -698,15 +705,16 @@ func bigIntOr(context unsafe.Pointer, destination, op1, op2 int32) {
 	bigInt := arwen.GetBigIntContext(context)
 	metering := arwen.GetMeteringContext(context)
 
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
+	metering.UseGas(gasToUse)
+
 	dest, a, b := bigInt.GetThree(destination, op1, op2)
 	if a.Sign() < 0 || b.Sign() < 0 {
 		runtime := arwen.GetRuntimeContext(context)
-		runtime.SignalUserError("[bigIntOr] bitwise operations only allowed on positive integers")
+		runtime.SignalUserError(arwen.UserErrorBitwiseNegative)
+		return
 	}
 	dest.Or(a, b)
-
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntOr
-	metering.UseGas(gasToUse)
 }
 
 //export bigIntXor
@@ -714,15 +722,16 @@ func bigIntXor(context unsafe.Pointer, destination, op1, op2 int32) {
 	bigInt := arwen.GetBigIntContext(context)
 	metering := arwen.GetMeteringContext(context)
 
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
+	metering.UseGas(gasToUse)
+
 	dest, a, b := bigInt.GetThree(destination, op1, op2)
 	if a.Sign() < 0 || b.Sign() < 0 {
 		runtime := arwen.GetRuntimeContext(context)
-		runtime.SignalUserError("[bigIntXor] bitwise operations only allowed on positive integers")
+		runtime.SignalUserError(arwen.UserErrorBitwiseNegative)
+		return
 	}
 	dest.Xor(a, b)
-
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntXor
-	metering.UseGas(gasToUse)
 }
 
 //export bigIntShr
@@ -730,15 +739,16 @@ func bigIntShr(context unsafe.Pointer, destination, op, bits int32) {
 	bigInt := arwen.GetBigIntContext(context)
 	metering := arwen.GetMeteringContext(context)
 
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
+	metering.UseGas(gasToUse)
+
 	dest, a := bigInt.GetTwo(destination, op)
 	if a.Sign() < 0 || bits < 0 {
 		runtime := arwen.GetRuntimeContext(context)
-		runtime.SignalUserError("[bigIntShr] both arguments must be positive")
+		runtime.SignalUserError(arwen.UserErrorShiftNegative)
+		return
 	}
 	dest.Rsh(a, uint(bits))
-
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntShr
-	metering.UseGas(gasToUse)
 }
 
 //export bigIntShl
@@ -746,15 +756,16 @@ func bigIntShl(context unsafe.Pointer, destination, op, bits int32) {
 	bigInt := arwen.GetBigIntContext(context)
 	metering := arwen.GetMeteringContext(context)
 
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
+	metering.UseGas(gasToUse)
+
 	dest, a := bigInt.GetTwo(destination, op)
 	if a.Sign() < 0 || bits < 0 {
 		runtime := arwen.GetRuntimeContext(context)
-		runtime.SignalUserError("[bigIntShl] both arguments must be positive")
+		runtime.SignalUserError(arwen.UserErrorShiftNegative)
+		return
 	}
 	dest.Lsh(a, uint(bits))
-
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntShl
-	metering.UseGas(gasToUse)
 }
 
 //export bigIntFinishUnsigned
