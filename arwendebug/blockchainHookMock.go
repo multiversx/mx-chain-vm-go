@@ -1,9 +1,11 @@
-package mock
+package arwendebug
 
 import (
 	"errors"
 	"math/big"
+	"strconv"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -88,10 +90,6 @@ func (b *BlockchainHookMock) AccountExists(address []byte) (bool, error) {
 		return false, nil
 	}
 
-	if account.Nonce == 0 && account.Balance.Cmp(zero) == 0 {
-		return false, nil
-	}
-
 	return true, nil
 }
 
@@ -100,7 +98,23 @@ func (b *BlockchainHookMock) NewAddress(creatorAddress []byte, creatorNonce uint
 		return nil, b.Err
 	}
 
-	return b.NewAddr, nil
+	if b.NewAddr != nil {
+		return b.NewAddr, nil
+	}
+
+	return b.createContractAddress(creatorAddress, creatorNonce), nil
+}
+
+func (b *BlockchainHookMock) createContractAddress(creatorAddress []byte, creatorNonce uint64) []byte {
+	if len(creatorAddress) == 0 {
+		panic("mock: bad creator address")
+	}
+
+	address := make([]byte, arwen.AddressLen)
+	copy(address, creatorAddress)
+	copy(address, []byte("contract"))
+	copy(address[len("contract"):], strconv.Itoa(int(creatorNonce)))
+	return address
 }
 
 func (b *BlockchainHookMock) GetBalance(address []byte) (*big.Int, error) {

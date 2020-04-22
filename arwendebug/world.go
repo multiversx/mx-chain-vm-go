@@ -17,7 +17,7 @@ type worldDataModel struct {
 
 type world struct {
 	id             string
-	blockchainHook mock.BlockchainHookMock
+	blockchainHook BlockchainHookMock
 	vm             vmcommon.VMExecutionHandler
 }
 
@@ -25,13 +25,13 @@ func newWorldDataModel(worldID string) *worldDataModel {
 	return &worldDataModel{
 		ID:        worldID,
 		CreatedOn: "now",
-		Accounts:  make(mock.AccountsMap),
+		Accounts:  make(AccountsMap),
 	}
 }
 
 // NewWorld -
 func NewWorld(dataModel *worldDataModel) (*world, error) {
-	blockchainHook := mock.NewBlockchainHookMock()
+	blockchainHook := NewBlockchainHookMock()
 	blockchainHook.Accounts = dataModel.Accounts
 
 	vm, err := host.NewArwenVM(
