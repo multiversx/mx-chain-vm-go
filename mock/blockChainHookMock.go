@@ -1,9 +1,9 @@
 package mock
 
 import (
-	"encoding/binary"
 	"errors"
 	"math/big"
+	"strconv"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -90,10 +90,6 @@ func (b *BlockchainHookMock) AccountExists(address []byte) (bool, error) {
 		return false, nil
 	}
 
-	if account.Nonce == 0 && account.Balance.Cmp(zero) == 0 {
-		return false, nil
-	}
-
 	return true, nil
 }
 
@@ -116,7 +112,8 @@ func (b *BlockchainHookMock) createContractAddress(creatorAddress []byte, creato
 
 	address := make([]byte, arwen.AddressLen)
 	copy(address, creatorAddress)
-	binary.LittleEndian.PutUint64(address[0:8], creatorNonce)
+	copy(address, []byte("contract"))
+	copy(address[len("contract"):], strconv.Itoa(int(creatorNonce)))
 	return address
 }
 

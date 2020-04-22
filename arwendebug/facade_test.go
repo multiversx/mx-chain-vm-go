@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
 
@@ -16,7 +17,7 @@ func Test_CreateAccount(t *testing.T) {
 	facade := &DebugFacade{}
 	request := CreateAccountRequest{
 		RequestBase: createRequestBase(),
-		Address:     "erd1alice",
+		Address:     "alice",
 		Balance:     "42",
 		Nonce:       1,
 	}
@@ -29,7 +30,7 @@ func Test_CreateAccount(t *testing.T) {
 	world, err := database.loadWorld(request.World)
 	require.Nil(t, err)
 
-	exists, err := world.blockchainHook.AccountExists([]byte("erd1alice"))
+	exists, err := world.blockchainHook.AccountExists(fixTestAddress("alice"))
 	require.Nil(t, err)
 	require.True(t, exists)
 }
@@ -39,7 +40,7 @@ func Test_DeployContract(t *testing.T) {
 
 	createAccountRequest := CreateAccountRequest{
 		RequestBase: createRequestBase(),
-		Address:     "erd1alice",
+		Address:     "alice",
 		Balance:     "42",
 		Nonce:       1,
 	}
@@ -47,9 +48,9 @@ func Test_DeployContract(t *testing.T) {
 	deployRequest := DeployRequest{
 		ContractRequestBase: ContractRequestBase{
 			RequestBase:  createRequestBase(),
-			Impersonated: "erd1alice",
+			Impersonated: "alice",
 		},
-		Code: "x",
+		CodePath: "./testdata/counter.wasm",
 	}
 
 	createAccountResponse, err := facade.CreateAccount(createAccountRequest)
@@ -59,14 +60,16 @@ func Test_DeployContract(t *testing.T) {
 	deployResponse, err := facade.DeploySmartContract(deployRequest)
 	require.Nil(t, err)
 	require.NotNil(t, deployResponse)
+	require.Nil(t, deployResponse.Error)
+	require.Equal(t, vmcommon.Ok, deployResponse.Output.ReturnCode)
 
-	// database := NewDatabase(deployRequest.DatabasePath)
-	// world, err := database.loadWorld(deployRequest.World)
-	// require.Nil(t, err)
+	database := NewDatabase(deployRequest.DatabasePath)
+	world, err := database.loadWorld(deployRequest.World)
+	require.Nil(t, err)
 
-	// exists, err := world.blockchainHook.AccountExists([]byte("erd1alice"))
-	// require.Nil(t, err)
-	// require.True(t, exists)
+	exists, err := world.blockchainHook.AccountExists([]byte("contract0000000000000000000alice"))
+	require.Nil(t, err)
+	require.True(t, exists)
 }
 
 func createRequestBase() RequestBase {

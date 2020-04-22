@@ -68,6 +68,10 @@ func (world *world) DeploySmartContract(request DeployRequest) (*DeployResponse,
 	}
 
 	vmOutput, err := world.vm.RunSmartContractCreate(createInput)
+	if err == nil {
+		world.blockchainHook.UpdateAccounts(vmOutput.OutputAccounts)
+	}
+
 	response := &DeployResponse{}
 	response.Output = vmOutput
 	response.Error = err
@@ -79,7 +83,7 @@ func (world *world) prepareDeployInput(request DeployRequest) (*vmcommon.Contrac
 	var err error
 
 	createInput := &vmcommon.ContractCreateInput{}
-	createInput.CallerAddr = []byte(request.Impersonated)
+	createInput.CallerAddr = request.getImpersonated()
 	createInput.CallValue = request.getValue()
 	createInput.ContractCode, err = request.getCode()
 	if err != nil {
@@ -113,13 +117,13 @@ func (world *world) QuerySmartContract() error {
 }
 
 func (world *world) CreateAccount(request CreateAccountRequest) (*CreateAccountResponse, error) {
-	balance, err := request.parseBalance()
+	balance, err := request.getBalance()
 	if err != nil {
 		return nil, err
 	}
 
 	account := &mock.Account{
-		Address: []byte(request.Address),
+		Address: request.getAddress(),
 		Nonce:   request.Nonce,
 		Balance: balance,
 		Exists:  true,
