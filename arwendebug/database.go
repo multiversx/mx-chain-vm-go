@@ -61,9 +61,9 @@ func (db *database) readWorldDataModel(filePath string) (*worldDataModel, error)
 }
 
 func (db *database) storeWorld(world *world) {
-	log.Trace("Database.storeWorld()")
-
 	filePath := db.getWorldFile(world.id)
+	log.Trace("Database.storeWorld()", "file", filePath)
+
 	dataModel := world.toDataModel()
 	db.marshalDataModel(filePath, dataModel)
 }
