@@ -7,6 +7,7 @@ type cliArguments struct {
 	ServerAddress string
 	Database      string
 	World         string
+	Outcome       string
 	// For contract-related actions
 	Impersonated    string
 	ContractAddress string

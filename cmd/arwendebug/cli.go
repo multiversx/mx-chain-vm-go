@@ -39,7 +39,7 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 		Required:    true,
 		Name:        "outcome",
 		Usage:       "",
-		Destination: &args.World,
+		Destination: &args.Outcome,
 	}
 
 	// Common for contract actions
