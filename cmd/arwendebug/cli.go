@@ -35,6 +35,13 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 		Destination: &args.World,
 	}
 
+	flagOutcome := cli.StringFlag{
+		Required:    true,
+		Name:        "outcome",
+		Usage:       "",
+		Destination: &args.World,
+	}
+
 	// Common for contract actions
 	flagImpersonated := cli.StringFlag{
 		Required:    true,
@@ -108,6 +115,7 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 				return err
 			},
 			Flags: []cli.Flag{
+				flagOutcome,
 				flagWorld,
 				flagDatabase,
 				flagImpersonated,
@@ -124,6 +132,7 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 				return err
 			},
 			Flags: []cli.Flag{
+				flagOutcome,
 				flagWorld,
 				flagDatabase,
 				flagImpersonated,
@@ -137,6 +146,7 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 				return err
 			},
 			Flags: []cli.Flag{
+				flagOutcome,
 				flagWorld,
 				flagDatabase,
 				flagAccountAddress,

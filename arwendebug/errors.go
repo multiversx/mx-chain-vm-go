@@ -1,6 +1,7 @@
 package arwendebug
 
 import (
+	"errors"
 	"fmt"
 )
 
@@ -33,3 +34,6 @@ func (err *RequestError) Error() string {
 func (err *RequestError) Unwrap() error {
 	return err.InnerErr
 }
+
+// ErrInvalidOutcomeKey signals an error
+var ErrInvalidOutcomeKey = errors.New("invalid outcome key")

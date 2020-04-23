@@ -32,8 +32,17 @@ func (facade *DebugFacade) DeploySmartContract(request DeployRequest) (*DeployRe
 		return nil, err
 	}
 
-	database.storeWorld(world)
-	dumpResponse(&response)
+	err = database.storeWorld(world)
+	if err != nil {
+		return nil, err
+	}
+
+	err = database.storeOutcome(request.Outcome, response)
+	if err != nil {
+		return nil, err
+	}
+
+	dumpOutcome(&response)
 	return response, err
 }
 
@@ -58,8 +67,17 @@ func (facade *DebugFacade) UpgradeSmartContract(request UpgradeRequest) (*Upgrad
 		return nil, err
 	}
 
-	database.storeWorld(world)
-	dumpResponse(&response)
+	err = database.storeWorld(world)
+	if err != nil {
+		return nil, err
+	}
+
+	err = database.storeOutcome(request.Outcome, response)
+	if err != nil {
+		return nil, err
+	}
+
+	dumpOutcome(&response)
 	return response, err
 }
 
@@ -78,8 +96,17 @@ func (facade *DebugFacade) RunSmartContract(request RunRequest) (*RunResponse, e
 		return nil, err
 	}
 
-	database.storeWorld(world)
-	dumpResponse(&response)
+	err = database.storeWorld(world)
+	if err != nil {
+		return nil, err
+	}
+
+	err = database.storeOutcome(request.Outcome, response)
+	if err != nil {
+		return nil, err
+	}
+
+	dumpOutcome(&response)
 	return response, err
 }
 
@@ -103,13 +130,22 @@ func (facade *DebugFacade) CreateAccount(request CreateAccountRequest) (*CreateA
 		return nil, err
 	}
 
-	database.storeWorld(world)
-	dumpResponse(&response)
+	err = database.storeWorld(world)
+	if err != nil {
+		return nil, err
+	}
+
+	err = database.storeOutcome(request.Outcome, response)
+	if err != nil {
+		return nil, err
+	}
+
+	dumpOutcome(&response)
 	return response, err
 }
 
-func dumpResponse(response interface{}) {
-	data, err := json.MarshalIndent(response, "", "\t")
+func dumpOutcome(outcome interface{}) {
+	data, err := json.MarshalIndent(outcome, "", "\t")
 	if err != nil {
 		fmt.Println("{}")
 	}

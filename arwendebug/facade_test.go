@@ -1,6 +1,8 @@
 package arwendebug
 
 import (
+	"fmt"
+	"math/rand"
 	"os"
 	"testing"
 	"time"
@@ -119,8 +121,12 @@ func Test_RunContract(t *testing.T) {
 }
 
 func createRequestBase() RequestBase {
+	randomWorld := fmt.Sprintf("%s_%d", time.Now().Format("20060102150405"), rand.Intn(100))
+	randomOutcome := fmt.Sprintf("%s_%d", time.Now().Format("20060102150405"), rand.Intn(100))
+
 	return RequestBase{
 		DatabasePath: "./testdata/db",
-		World:        time.Now().Format("20060102150405"),
+		World:        randomWorld,
+		Outcome:      randomOutcome,
 	}
 }

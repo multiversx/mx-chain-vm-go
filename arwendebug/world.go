@@ -155,7 +155,7 @@ func (world *world) CreateAccount(request CreateAccountRequest) (*CreateAccountR
 	}
 
 	world.blockchainHook.AddAccount(account)
-	return &CreateAccountResponse{}, nil
+	return &CreateAccountResponse{Account: account}, nil
 }
 
 func (world *world) toDataModel() *worldDataModel {

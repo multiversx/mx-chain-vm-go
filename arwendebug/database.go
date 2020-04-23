@@ -14,11 +14,15 @@ type database struct {
 
 // NewDatabase -
 func NewDatabase(rootPath string) *database {
-	_ = os.MkdirAll(rootPath, os.ModePerm)
+	database := &database{rootPath: rootPath}
+	database.initFolders()
+	return database
+}
 
-	return &database{
-		rootPath: rootPath,
-	}
+func (db *database) initFolders() {
+	_ = os.MkdirAll(db.rootPath, os.ModePerm)
+	_ = os.MkdirAll(path.Join(db.rootPath, "worlds"), os.ModePerm)
+	_ = os.MkdirAll(path.Join(db.rootPath, "out"), os.ModePerm)
 }
 
 func (db *database) loadWorld(worldID string) (*world, error) {
@@ -42,7 +46,7 @@ func (db *database) loadWorld(worldID string) (*world, error) {
 }
 
 func (db *database) getWorldFile(worldID string) string {
-	return path.Join(db.rootPath, fmt.Sprintf("%s.json", worldID))
+	return path.Join(db.rootPath, "worlds", fmt.Sprintf("%s.json", worldID))
 }
 
 func fileExists(filePath string) bool {
@@ -60,12 +64,26 @@ func (db *database) readWorldDataModel(filePath string) (*worldDataModel, error)
 	return dataModel, nil
 }
 
-func (db *database) storeWorld(world *world) {
+func (db *database) storeWorld(world *world) error {
 	filePath := db.getWorldFile(world.id)
 	log.Trace("Database.storeWorld()", "file", filePath)
 
 	dataModel := world.toDataModel()
-	db.marshalDataModel(filePath, dataModel)
+	return db.marshalDataModel(filePath, dataModel)
+}
+
+func (db *database) storeOutcome(key string, outcome interface{}) error {
+	if len(key) == 0 {
+		return ErrInvalidOutcomeKey
+	}
+
+	filePath := db.getOutcomeFile(key)
+	log.Trace("Database.storeOutcome()", "file", filePath)
+	return db.marshalDataModel(filePath, outcome)
+}
+
+func (db *database) getOutcomeFile(uniqueID string) string {
+	return path.Join(db.rootPath, "out", fmt.Sprintf("%s.json", uniqueID))
 }
 
 func (db *database) unmarshalDataModel(filePath string, dataModel interface{}) error {

@@ -12,6 +12,7 @@ import (
 type RequestBase struct {
 	DatabasePath string
 	World        string
+	Outcome      string
 }
 
 // ResponseBase -
@@ -170,4 +171,5 @@ func (request *CreateAccountRequest) getBalance() (*big.Int, error) {
 
 // CreateAccountResponse -
 type CreateAccountResponse struct {
+	Account *Account
 }
