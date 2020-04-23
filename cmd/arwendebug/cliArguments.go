@@ -46,6 +46,7 @@ func (args *cliArguments) populateContractRequestBase(request *arwendebug.Contra
 func (args *cliArguments) populateRequestBase(request *arwendebug.RequestBase) {
 	request.DatabasePath = args.Database
 	request.World = args.World
+	request.Outcome = args.Outcome
 }
 
 func (args *cliArguments) toUpgradeRequest() arwendebug.UpgradeRequest {
