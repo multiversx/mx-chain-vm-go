@@ -5,13 +5,13 @@
             "step": "setState",
             "accounts": {
                 "``node_address__________________s1": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0",
                     "storage": {},
                     "code": ""
                 },
                 "``delegation_contract___________s1": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "10000400010",
                     "storage": {
                         "0x0000000000000000000000000000000000000000000000000000000000000000": "``node_address__________________s1",
@@ -32,13 +32,13 @@
                     "code": "file:delegation.wasm"
                 },
                 "``user_account_1________________s1": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0x300abc",
                     "storage": {},
                     "code": ""
                 },
                 "``user_account_2________________s1": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "40,004,000,002",
                     "storage": {},
                     "code": ""
@@ -74,13 +74,13 @@
             "step": "checkState",
             "accounts": {
                 "``node_address__________________s1": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0",
                     "storage": {},
                     "code": ""
                 },
                 "``delegation_contract___________s1": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "10000400010",
                     "storage": {
                         "0x0000000000000000000000000000000000000000000000000000000000000000": "``node_address__________________s1",
@@ -101,13 +101,13 @@
                     "code": "file:delegation.wasm"
                 },
                 "``user_account_1________________s1": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0x300abc",
                     "storage": {},
                     "code": ""
                 },
                 "``user_account_2________________s1": {
-                    "nonce": "0x01",
+                    "nonce": "1",
                     "balance": "40,000,000,002",
                     "storage": {},
                     "code": ""
