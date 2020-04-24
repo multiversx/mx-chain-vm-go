@@ -45,6 +45,8 @@ type BlockchainHookMock struct {
 	StateRootHash []byte
 	Value         *big.Int
 	Gas           uint64
+
+	LastCreatedContractAddress []byte
 }
 
 func NewBlockchainHookMock() *BlockchainHookMock {
@@ -87,6 +89,7 @@ func (b *BlockchainHookMock) NewAddress(creatorAddress []byte, creatorNonce uint
 	copy(address, creatorAddress)
 	copy(address, []byte("contract"))
 	copy(address[len("contract"):], strconv.Itoa(int(creatorNonce)))
+	b.LastCreatedContractAddress = address
 	return address, nil
 }
 

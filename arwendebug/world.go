@@ -16,7 +16,7 @@ type worldDataModel struct {
 
 type world struct {
 	id             string
-	blockchainHook BlockchainHookMock
+	blockchainHook *BlockchainHookMock
 	vm             vmcommon.VMExecutionHandler
 }
 
@@ -44,7 +44,7 @@ func NewWorld(dataModel *worldDataModel) (*world, error) {
 
 	return &world{
 		id:             dataModel.ID,
-		blockchainHook: *blockchainHook,
+		blockchainHook: blockchainHook,
 		vm:             vm,
 	}, nil
 }
@@ -72,9 +72,10 @@ func (world *world) DeploySmartContract(request DeployRequest) (*DeployResponse,
 	}
 
 	response := &DeployResponse{}
+	response.Input = &createInput.VMInput
 	response.Output = vmOutput
 	response.Error = err
-
+	response.ContractAddress = string(world.blockchainHook.LastCreatedContractAddress)
 	return response, nil
 }
 
@@ -118,6 +119,7 @@ func (world *world) RunSmartContract(request RunRequest) (*RunResponse, error) {
 	}
 
 	response := &RunResponse{}
+	response.Input = &callInput.VMInput
 	response.Output = vmOutput
 	response.Error = err
 

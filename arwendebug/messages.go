@@ -112,6 +112,7 @@ func (request *DeployRequest) getCodeMetadata() ([]byte, error) {
 // DeployResponse -
 type DeployResponse struct {
 	ContractResponseBase
+	ContractAddress string
 }
 
 // UpgradeRequest -
