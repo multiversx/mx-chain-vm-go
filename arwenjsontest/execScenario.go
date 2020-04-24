@@ -30,7 +30,7 @@ func (ae *ArwenTestExecutor) ExecuteScenario(scenario *ij.Scenario) error {
 			}
 
 			// check results
-			err = checkTxResults(txIndex, step.ExpectedResult, scenario.CheckGas, output)
+			err = checkTxResults(step.TxIdent, step.ExpectedResult, scenario.CheckGas, output)
 			if err != nil {
 				return err
 			}
