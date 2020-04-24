@@ -17,6 +17,7 @@ func (ae *ArwenTestExecutor) ExecuteScenario(scenario *ij.Scenario) error {
 				ae.world.AcctMap.PutAccount(convertAccount(acct))
 			}
 			ae.world.Blockhashes = ij.JSONBytesValues(step.BlockHashes)
+			ae.world.NewAddressMocks = convertNewAddressMocks(step.NewAddressMocks)
 		case *ij.CheckStateStep:
 			err := checkAccounts(step.CheckAccounts, ae.world)
 			if err != nil {

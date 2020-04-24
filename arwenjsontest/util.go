@@ -33,6 +33,18 @@ func convertAccount(testAcct *ij.Account) *worldhook.Account {
 	}
 }
 
+func convertNewAddressMocks(testNAMs []*ij.NewAddressMock) []*worldhook.NewAddressMock {
+	var result []*worldhook.NewAddressMock
+	for _, testNAM := range testNAMs {
+		result = append(result, &worldhook.NewAddressMock{
+			CreatorAddress: testNAM.CreatorAddress.Value,
+			CreatorNonce:   testNAM.CreatorNonce.Value,
+			NewAddress:     testNAM.NewAddress.Value,
+		})
+	}
+	return result
+}
+
 func convertLogToTestFormat(outputLog *vmi.LogEntry) *ij.LogEntry {
 	testLog := ij.LogEntry{
 		Address:    ij.JSONBytes{Value: outputLog.Address},
