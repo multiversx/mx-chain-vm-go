@@ -111,8 +111,27 @@ func (facade *DebugFacade) RunSmartContract(request RunRequest) (*RunResponse, e
 }
 
 // QuerySmartContract -
-func (facade *DebugFacade) QuerySmartContract(request QueryRequest) {
+func (facade *DebugFacade) QuerySmartContract(request QueryRequest) (*QueryResponse, error) {
 	log.Debug("DebugFacade.QuerySmartContracts()")
+
+	database := facade.loadDatabase(request.DatabasePath)
+	world, err := database.loadWorld(request.World)
+	if err != nil {
+		return nil, err
+	}
+
+	response, err := world.QuerySmartContract(request)
+	if err != nil {
+		return nil, err
+	}
+
+	err = database.storeOutcome(request.Outcome, response)
+	if err != nil {
+		return nil, err
+	}
+
+	dumpOutcome(&response)
+	return response, err
 }
 
 // CreateAccount -
@@ -145,7 +164,7 @@ func (facade *DebugFacade) CreateAccount(request CreateAccountRequest) (*CreateA
 }
 
 func dumpOutcome(outcome interface{}) {
-	data, err := json.MarshalIndent(outcome, "", "\t")
+	data, err := json.Marshal(outcome)
 	if err != nil {
 		fmt.Println("{}")
 	}

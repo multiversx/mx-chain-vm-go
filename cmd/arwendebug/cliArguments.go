@@ -67,11 +67,23 @@ func (args *cliArguments) toUpgradeRequest() arwendebug.UpgradeRequest {
 
 func (args *cliArguments) toRunRequest() arwendebug.RunRequest {
 	request := &arwendebug.RunRequest{}
+	args.populateRunRequest(request)
+
+	return *request
+}
+
+func (args *cliArguments) populateRunRequest(request *arwendebug.RunRequest) {
 	args.populateContractRequestBase(&request.ContractRequestBase)
 
 	request.ContractAddress = args.ContractAddress
 	request.Function = args.Function
 	request.Arguments = args.Arguments
+}
+
+func (args *cliArguments) toQueryRequest() arwendebug.QueryRequest {
+	request := &arwendebug.QueryRequest{}
+	args.populateRunRequest(&request.RunRequest)
+
 	return *request
 }
 

@@ -140,8 +140,20 @@ func (world *world) prepareCallInput(request RunRequest) (*vmcommon.ContractCall
 }
 
 // QuerySmartContract -
-func (world *world) QuerySmartContract() error {
-	return nil
+func (world *world) QuerySmartContract(request QueryRequest) (*QueryResponse, error) {
+	callInput, err := world.prepareCallInput(request.RunRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	vmOutput, err := world.vm.RunSmartContractCall(callInput)
+
+	response := &QueryResponse{}
+	response.Input = &callInput.VMInput
+	response.Output = vmOutput
+	response.Error = err
+
+	return response, nil
 }
 
 func (world *world) CreateAccount(request CreateAccountRequest) (*CreateAccountResponse, error) {

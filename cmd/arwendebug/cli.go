@@ -198,6 +198,23 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 			},
 		},
 		{
+			Name:  "query",
+			Usage: "query smart contract",
+			Action: func(context *cli.Context) error {
+				_, err := facade.QuerySmartContract(args.toQueryRequest())
+				return err
+			},
+			Flags: []cli.Flag{
+				flagOutcome,
+				flagWorld,
+				flagDatabase,
+				flagContract,
+				flagImpersonated,
+				flagFunction,
+				// TODO arguments
+			},
+		},
+		{
 			Name:  "create-account",
 			Usage: "create account",
 			Action: func(context *cli.Context) error {
