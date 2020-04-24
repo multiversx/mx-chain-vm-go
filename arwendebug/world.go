@@ -9,9 +9,8 @@ import (
 )
 
 type worldDataModel struct {
-	ID        string
-	CreatedOn string
-	Accounts  AccountsMap
+	ID       string
+	Accounts AccountsMap
 }
 
 type world struct {
@@ -22,9 +21,8 @@ type world struct {
 
 func newWorldDataModel(worldID string) *worldDataModel {
 	return &worldDataModel{
-		ID:        worldID,
-		CreatedOn: "now",
-		Accounts:  make(AccountsMap),
+		ID:       worldID,
+		Accounts: make(AccountsMap),
 	}
 }
 
@@ -174,8 +172,7 @@ func (world *world) CreateAccount(request CreateAccountRequest) (*CreateAccountR
 
 func (world *world) toDataModel() *worldDataModel {
 	return &worldDataModel{
-		ID:        world.id,
-		CreatedOn: "test",
-		Accounts:  world.blockchainHook.Accounts,
+		ID:       world.id,
+		Accounts: world.blockchainHook.Accounts,
 	}
 }
