@@ -43,6 +43,12 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 	}
 
 	// Common for contract actions
+	flagContract := cli.StringFlag{
+		Required:    true,
+		Name:        "contract",
+		Destination: &args.ContractAddress,
+	}
+
 	flagImpersonated := cli.StringFlag{
 		Required:    true,
 		Name:        "impersonated",
@@ -50,7 +56,28 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 		Destination: &args.Impersonated,
 	}
 
-	// For deploy
+	flagFunction := cli.StringFlag{
+		Required:    true,
+		Name:        "function",
+		Destination: &args.Function,
+	}
+
+	flagValue := cli.StringFlag{
+		Name:        "value",
+		Destination: &args.Value,
+	}
+
+	flagGasLimit := cli.Uint64Flag{
+		Name:        "gas-limit",
+		Destination: &args.GasLimit,
+	}
+
+	flagGasPrice := cli.Uint64Flag{
+		Name:        "gas-price",
+		Destination: &args.GasPrice,
+	}
+
+	// For deploy / upgrade
 	flagCode := cli.StringFlag{
 		Name:        "code",
 		Destination: &args.Code,
@@ -122,6 +149,10 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 				flagCode,
 				flagCodePath,
 				flagCodeMetadata,
+				// TODO arguments
+				flagValue,
+				flagGasLimit,
+				flagGasPrice,
 			},
 		},
 		{
@@ -135,7 +166,35 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 				flagOutcome,
 				flagWorld,
 				flagDatabase,
+				flagContract,
 				flagImpersonated,
+				flagCode,
+				flagCodePath,
+				flagCodeMetadata,
+				// TODO arguments
+				flagValue,
+				flagGasLimit,
+				flagGasPrice,
+			},
+		},
+		{
+			Name:  "run",
+			Usage: "run smart contract",
+			Action: func(context *cli.Context) error {
+				_, err := facade.RunSmartContract(args.toRunRequest())
+				return err
+			},
+			Flags: []cli.Flag{
+				flagOutcome,
+				flagWorld,
+				flagDatabase,
+				flagContract,
+				flagImpersonated,
+				flagFunction,
+				// TODO arguments
+				flagValue,
+				flagGasLimit,
+				flagGasPrice,
 			},
 		},
 		{

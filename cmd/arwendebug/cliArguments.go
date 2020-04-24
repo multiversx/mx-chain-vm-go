@@ -17,6 +17,9 @@ type cliArguments struct {
 	Code            string
 	CodePath        string
 	CodeMetadata    string
+	Value           string
+	GasLimit        uint64
+	GasPrice        uint64
 	// For blockchain-related action
 	AccountAddress string
 	AccountBalance string
@@ -26,6 +29,7 @@ type cliArguments struct {
 func (args *cliArguments) toDeployRequest() arwendebug.DeployRequest {
 	request := &arwendebug.DeployRequest{}
 	args.populateDeployRequest(request)
+
 	return *request
 }
 
@@ -40,7 +44,11 @@ func (args *cliArguments) populateDeployRequest(request *arwendebug.DeployReques
 
 func (args *cliArguments) populateContractRequestBase(request *arwendebug.ContractRequestBase) {
 	args.populateRequestBase(&request.RequestBase)
+
 	request.Impersonated = args.Impersonated
+	request.Value = args.Value
+	request.GasLimit = args.GasLimit
+	request.GasPrice = args.GasPrice
 }
 
 func (args *cliArguments) populateRequestBase(request *arwendebug.RequestBase) {
@@ -51,8 +59,19 @@ func (args *cliArguments) populateRequestBase(request *arwendebug.RequestBase) {
 
 func (args *cliArguments) toUpgradeRequest() arwendebug.UpgradeRequest {
 	request := &arwendebug.UpgradeRequest{}
-	request.ContractAddress = args.ContractAddress
 	args.populateDeployRequest(&request.DeployRequest)
+
+	request.ContractAddress = args.ContractAddress
+	return *request
+}
+
+func (args *cliArguments) toRunRequest() arwendebug.RunRequest {
+	request := &arwendebug.RunRequest{}
+	args.populateContractRequestBase(&request.ContractRequestBase)
+
+	request.ContractAddress = args.ContractAddress
+	request.Function = args.Function
+	request.Arguments = args.Arguments
 	return *request
 }
 

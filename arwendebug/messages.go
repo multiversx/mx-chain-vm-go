@@ -76,7 +76,7 @@ func (request *DeployRequest) getCode() ([]byte, error) {
 		codeAsHex := request.Code
 		codeAsBytes, err := hex.DecodeString(codeAsHex)
 		if err != nil {
-			return nil, NewRequestErrorMessageInner("invalid code", err)
+			return nil, NewRequestErrorMessageInner("invalid contract code", err)
 		}
 
 		return codeAsBytes, nil
@@ -91,7 +91,7 @@ func (request *DeployRequest) getCode() ([]byte, error) {
 		return codeAsBytes, nil
 	}
 
-	return nil, NewRequestError("invalid code")
+	return nil, NewRequestError("invalid contract code")
 }
 
 func (request *DeployRequest) getCodeMetadata() ([]byte, error) {
