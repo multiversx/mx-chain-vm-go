@@ -47,23 +47,18 @@ func checkTxResults(
 	}
 
 	// check refund
-	if !blResult.Refund.IsStar {
-		if blResult.Refund.Value.Cmp(output.GasRefund) != 0 {
-			return fmt.Errorf("result gas refund mismatch. Tx %s. Want: 0x%x. Have: 0x%x",
-				txIndex, blResult.Refund.Value, output.GasRefund)
-		}
+	if !blResult.Refund.Check(output.GasRefund) {
+		return fmt.Errorf("result gas refund mismatch. Tx %s. Want: %s. Have: 0x%x",
+			txIndex, blResult.Refund.Original, output.GasRefund)
 	}
 
 	// check gas
-	if checkGas && !blResult.Gas.IsStar {
-		if blResult.Gas.Value != output.GasRemaining {
-			return fmt.Errorf("result gas mismatch. Tx %s. Want: %d (0x%x). Got: %d (0x%x)",
-				txIndex,
-				blResult.Gas.Value,
-				blResult.Gas.Value,
-				output.GasRemaining,
-				output.GasRemaining)
-		}
+	if checkGas && !blResult.Gas.Check(output.GasRemaining) {
+		return fmt.Errorf("result gas mismatch. Tx %s. Want: %s. Got: %d (0x%x)",
+			txIndex,
+			blResult.Gas.Original,
+			output.GasRemaining,
+			output.GasRemaining)
 	}
 
 	// "logs": "*" means any value is accepted, log check ignored
