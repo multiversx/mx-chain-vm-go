@@ -1,4 +1,4 @@
-.PHONY: test build build-arwen clean
+.PHONY: test test-short build build-arwen clean
 
 clean:
 	go clean -cache -testcache
@@ -13,8 +13,5 @@ build-arwen:
 test: clean build-arwen
 	go test -count=1 ./...
 
-build-arwendebug:
-	go build -o ./cmd/arwendebug/arwendebug ./cmd/arwendebug
-
-test-arwendebug: build-arwendebug
-	ARWENDEBUG=./cmd/arwendebug/arwendebug TESTDATA=./cmd/arwendebug/testdata ./cmd/arwendebug/testdata/simple.sh
+test-short: build-arwen
+	go test -short -count=1 ./...

@@ -25,6 +25,7 @@ script:
   $TRAVIS_BUILD_DIR/build; fi
 - if [[ "$GOOS" == darwin && "$GOARCH" == amd64 ]]; then cp -f $TRAVIS_BUILD_DIR/wasmer/libwasmer_darwin_amd64.dylib
   $TRAVIS_BUILD_DIR/build; fi
+- make test-short
 before_deploy:
 - cd "$TRAVIS_BUILD_DIR/build"
 - tar czvf "$TRAVIS_BUILD_DIR/$ARCHIVE" *

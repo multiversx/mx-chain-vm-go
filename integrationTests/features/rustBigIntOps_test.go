@@ -89,6 +89,10 @@ func appendBinaryOpTestCase(
 }
 
 func TestBigIntArith(t *testing.T) {
+	if testing.Short() {
+		t.Skip("long test")
+	}
+
 	var testCases []*pureFunctionIO
 
 	big1, _ := big.NewInt(0).SetString("18446744073709551616", 10)
@@ -171,6 +175,10 @@ func TestBigIntArith(t *testing.T) {
 }
 
 func TestBigUintArith(t *testing.T) {
+	if testing.Short() {
+		t.Skip("long test")
+	}
+
 	var testCases []*pureFunctionIO
 
 	big1, _ := big.NewInt(0).SetString("18446744073709551615", 10)
@@ -260,6 +268,10 @@ func TestBigUintArith(t *testing.T) {
 }
 
 func TestBigUintBitwise(t *testing.T) {
+	if testing.Short() {
+		t.Skip("long test")
+	}
+
 	var testCases []*pureFunctionIO
 
 	big1, _ := big.NewInt(0).SetString("18446744073709551615", 10)
@@ -314,6 +326,10 @@ func TestBigUintBitwise(t *testing.T) {
 }
 
 func TestBigUintShift(t *testing.T) {
+	if testing.Short() {
+		t.Skip("long test")
+	}
+
 	var testCases []*pureFunctionIO
 
 	big1, _ := big.NewInt(0).SetString("18446744073709551615", 10)
