@@ -40,4 +40,8 @@ deploy:
   bucket: ide.elrond.com
   skip_cleanup: true
   glob: "$ARCHIVE"
+  branches:
+    only:
+    - master
+    - arwendebug
 
