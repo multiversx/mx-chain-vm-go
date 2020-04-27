@@ -50,9 +50,7 @@ script:
     ls &&
     patchelf --set-rpath "." ./arwen &&
     patchelf --set-rpath "." ./arwendebug &&
-    patchelf --set-rpath "." ./test &&
-    ldd "./arwen" &&
-    ./arwen;
+    patchelf --set-rpath "." ./test;
   fi
 
 before_deploy:
