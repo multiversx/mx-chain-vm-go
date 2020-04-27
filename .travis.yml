@@ -39,20 +39,16 @@ script:
 - echo $ARCHIVE
 
 before_deploy:
+- mkdir $TRAVIS_BUILD_DIR/travis-builds
 - cd "$TRAVIS_BUILD_DIR/build"
-- tar czvf "$TRAVIS_BUILD_DIR/$ARCHIVE" *
-- cd "$TRAVIS_BUILD_DIR"
-after_deploy:
-- rm -rf "$TRAVIS_BUILD_DIR/build"
-- rm -rf "$TRAVIS_BUILD_DIR/$ARCHIVE"
+- tar czvf "$TRAVIS_BUILD_DIR/travis-builds/$ARCHIVE" *
 deploy:
   provider: s3
   access_key_id: $AWS_KEY_ID
   secret_access_key: $AWS_SECRET_KEY
   bucket: ide.elrond.com
   skip_cleanup: true
-  glob: "$ARCHIVE"
-  upload-dir: travis-builds
+  local-dir: $TRAVIS_BUILD_DIR/travis-builds
   on:
     branch: arwendebug
 
