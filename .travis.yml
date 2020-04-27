@@ -46,11 +46,11 @@ script:
 
 - if [[ "$GOOS" == linux && "$GOARCH" == amd64 ]];
   then
-    patchelf --set-rpath "." $TRAVIS_BUILD_DIR/cmd/arwen &&
-    patchelf --set-rpath "." $TRAVIS_BUILD_DIR/cmd/arwendebug &&
-    patchelf --set-rpath "." $TRAVIS_BUILD_DIR/cmd/test &&
+    patchelf --set-rpath "." $TRAVIS_BUILD_DIR/build/arwen &&
+    patchelf --set-rpath "." $TRAVIS_BUILD_DIR/build/arwendebug &&
+    patchelf --set-rpath "." $TRAVIS_BUILD_DIR/build/test &&
     ldd "$TRAVIS_BUILD_DIR/build/arwen" &&
-    $TRAVIS_BUILD_DIR/cmd/arwen;
+    $TRAVIS_BUILD_DIR/build/arwen;
   fi
 
 before_deploy:
