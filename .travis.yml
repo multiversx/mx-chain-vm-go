@@ -36,9 +36,9 @@ script:
 # Now fix lib loading for the binaries (register parent directory)
 - if [[ "$GOOS" == darwin && "$GOARCH" == amd64 ]];
   then
-    install_name_tool -add_rpath @executable_path/. $TRAVIS_BUILD_DIR/build/arwen &&
-    install_name_tool -add_rpath @executable_path/. $TRAVIS_BUILD_DIR/build/arwendebug &&
-    install_name_tool -add_rpath @executable_path/. $TRAVIS_BUILD_DIR/build/test &&
+    install_name_tool -add_rpath @executable_path/.. $TRAVIS_BUILD_DIR/build/arwen &&
+    install_name_tool -add_rpath @executable_path/.. $TRAVIS_BUILD_DIR/build/arwendebug &&
+    install_name_tool -add_rpath @executable_path/.. $TRAVIS_BUILD_DIR/build/test &&
     otool -L $TRAVIS_BUILD_DIR/build/arwen;
   fi
 
