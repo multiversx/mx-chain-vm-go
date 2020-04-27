@@ -16,7 +16,8 @@ script:
 - go build -o "$TRAVIS_BUILD_DIR/build/arwendebug" -a -i -ldflags="-X main.appVersion=$APP_VER"
 - go build -o "$TRAVIS_BUILD_DIR/build/test" -a -i -ldflags="-X main.appVersion=$APP_VER"
 - otool -L $TRAVIS_BUILD_DIR/wasmer/libwasmer_darwin_amd64.dylib
-- otool -L $TRAVIS_BUILD_DIR/build/arwen"
+- install_name_tool -id libwasmer_darwin_amd64.dylib $TRAVIS_BUILD_DIR/wasmer/libwasmer_darwin_amd64.dylib
+- otool -L $TRAVIS_BUILD_DIR/wasmer/libwasmer_darwin_amd64.dylib
 - GOOS=$(go env GOOS)
 - GOARCH=$(go env GOARCH)
 
