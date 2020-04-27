@@ -1,6 +1,7 @@
 language: go
 go: '1.13'
 os:
+- linux
 - osx
 arch:
 - amd64
@@ -29,6 +30,12 @@ script:
     install_name_tool -id @executable_path/libwasmer_darwin_amd64.dylib $TRAVIS_BUILD_DIR/wasmer/libwasmer_darwin_amd64.dylib;
   fi
 
+- if [[ "$GOOS" == linux && "$GOARCH" == amd64 ]];
+  then
+    sudo apt install patchelf &&
+    patchelf --set-soname libwasmer_linux_amd64.so $TRAVIS_BUILD_DIR/wasmer/libwasmer_linux_amd64.so;
+  fi
+
 - go build -o "$TRAVIS_BUILD_DIR/build/arwen" -ldflags="-X main.appVersion=$APP_VER" $TRAVIS_BUILD_DIR/cmd/arwen
 - go build -o "$TRAVIS_BUILD_DIR/build/arwendebug" -ldflags="-X main.appVersion=$APP_VER" $TRAVIS_BUILD_DIR/cmd/arwendebug
 - go build -o "$TRAVIS_BUILD_DIR/build/test" -ldflags="-X main.appVersion=$APP_VER" $TRAVIS_BUILD_DIR/cmd/test
@@ -36,7 +43,14 @@ script:
 - if [[ "$GOOS" == linux && "$GOARCH" == amd64 ]]; then cp -f $TRAVIS_BUILD_DIR/wasmer/libwasmer_linux_amd64.so $TRAVIS_BUILD_DIR/build; fi
 - if [[ "$GOOS" == darwin && "$GOARCH" == amd64 ]]; then cp -f $TRAVIS_BUILD_DIR/wasmer/libwasmer_darwin_amd64.dylib $TRAVIS_BUILD_DIR/build; fi
 
-- echo $ARCHIVE
+- if [[ "$GOOS" == linux && "$GOARCH" == amd64 ]];
+  then
+    patchelf --set-rpath "." $TRAVIS_BUILD_DIR/cmd/arwen &&
+    patchelf --set-rpath "." $TRAVIS_BUILD_DIR/cmd/arwendebug &&
+    patchelf --set-rpath "." $TRAVIS_BUILD_DIR/cmd/test &&
+    ldd "$TRAVIS_BUILD_DIR/build/arwen" &&
+    $TRAVIS_BUILD_DIR/cmd/arwen
+  fi
 
 before_deploy:
 - mkdir $TRAVIS_BUILD_DIR/travis-builds
@@ -49,6 +63,7 @@ deploy:
   bucket: ide.elrond.com
   skip_cleanup: true
   local-dir: $TRAVIS_BUILD_DIR/travis-builds
+  upload-dir: travis-builds
   on:
     branch: arwendebug
 
