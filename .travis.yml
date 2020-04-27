@@ -10,7 +10,7 @@ before_script:
 - APP_VER_SHORT=$(git describe --tags)
 - GOOS=$(go env GOOS)
 - GOARCH=$(go env GOARCH)
-- ARCHIVE="ARWEN_""$APP_VER_SHORT""_""$GOOS""_""$GOARCH"".tgz"
+- ARCHIVE="ARWEN_""$APP_VER_SHORT""_""$GOOS""_""$GOARCH"".tar.gz"
 script:
 - GOOS=$(go env GOOS)
 - GOARCH=$(go env GOARCH)
@@ -51,7 +51,8 @@ deploy:
   secret_access_key: $AWS_SECRET_KEY
   bucket: ide.elrond.com
   skip_cleanup: true
-  glob: "*.tgz"
+  glob: "$ARCHIVE"
+  upload-dir: travis-builds
   on:
     branch: arwendebug
 
