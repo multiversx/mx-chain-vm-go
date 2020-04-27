@@ -49,7 +49,7 @@ script:
     patchelf --set-rpath "." $TRAVIS_BUILD_DIR/cmd/arwendebug &&
     patchelf --set-rpath "." $TRAVIS_BUILD_DIR/cmd/test &&
     ldd "$TRAVIS_BUILD_DIR/build/arwen" &&
-    $TRAVIS_BUILD_DIR/cmd/arwen
+    $TRAVIS_BUILD_DIR/cmd/arwen;
   fi
 
 before_deploy:
