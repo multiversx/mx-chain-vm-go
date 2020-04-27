@@ -44,9 +44,8 @@ after_deploy:
 - rm -rf "$TRAVIS_BUILD_DIR/$ARCHIVE"
 deploy:
   provider: s3
-  access_key_id: AKIA3J5Z2DGWF6MJIDOJ
-  secret_access_key:
-    secure: Bbe71JHeIa256ffMOMgckgjxAb1TX4Vy3T+WfFB5Q7uaZNhr6wk2WzE46xfWPNNFcjKMyy46W18cTDQWHSLNhO7dGhelTysU5TSeezQ9V5y9FssKjkh4L4DR7FGy4iojzuUOXea3tP/ttlQwjlfoSV+yP5CZXbVbpWRuN++3mS51uC4IU2rmvwjym7nNVuSbIuHW8QtnTCiWjnWBqFhE5Mc4lmt5bVcX5HAhGGpFk+d42lgdYIUzArCyevUI/+/wHBmMrcfju0fKCfOFM4wdMkVKvyvwtkwz5OgkPh+THTv9h7dmRupsbZZ+iv4WgyAHJ9R18hP6Mr+uhJRlLLb3+j+6wtWJ+yj7RB9MZJzy96KQ1e51k74rXqaVJnV7DeEluQUghryDq5y04s4hqfFvS4vs/XsUVOL3MSDcKPT44n1Ku4eBrmpq403dPm15B6X3rJMFStr/bWO2s52gZ0OAKi/RGbcPTZcQ8Q4o48VjpMOxXLXsTLNMYHemM4H0jLY0FEDajBbV8AIuPwsG6GQceif099T0MYLIrOm+jbW9gbfmGvG2Bnhj/HX2TkGUQayTIBBBhFPFsKHTBIrt8Wa538+ljB/+Oab0jRCzVtqYZDPqQ1/zkq1vthcVhuRyoFfoVZSA5b6yDV6fo9UyOH2eNLW9Xn9bAGHd64WBq0EnRcI=
+  access_key_id: $AWS_KEY_ID
+  secret_access_key: $AWS_SECRET_KEY
   bucket: ide.elrond.com
   skip_cleanup: true
   glob: "$ARCHIVE"
