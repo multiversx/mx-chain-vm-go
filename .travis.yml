@@ -29,12 +29,14 @@ script:
     install_name_tool -id @executable_path/libwasmer_darwin_amd64.dylib $TRAVIS_BUILD_DIR/wasmer/libwasmer_darwin_amd64.dylib;
   fi
 
-- go build -o "$TRAVIS_BUILD_DIR/build/arwen" -a -i -ldflags="-X main.appVersion=$APP_VER" $TRAVIS_BUILD_DIR/cmd/arwen
-- go build -o "$TRAVIS_BUILD_DIR/build/arwendebug" -a -i -ldflags="-X main.appVersion=$APP_VER" $TRAVIS_BUILD_DIR/cmd/arwendebug
-- go build -o "$TRAVIS_BUILD_DIR/build/test" -a -i -ldflags="-X main.appVersion=$APP_VER" $TRAVIS_BUILD_DIR/cmd/test
+- go build -o "$TRAVIS_BUILD_DIR/build/arwen" -ldflags="-X main.appVersion=$APP_VER" $TRAVIS_BUILD_DIR/cmd/arwen
+- go build -o "$TRAVIS_BUILD_DIR/build/arwendebug" -ldflags="-X main.appVersion=$APP_VER" $TRAVIS_BUILD_DIR/cmd/arwendebug
+- go build -o "$TRAVIS_BUILD_DIR/build/test" -ldflags="-X main.appVersion=$APP_VER" $TRAVIS_BUILD_DIR/cmd/test
 
 - if [[ "$GOOS" == linux && "$GOARCH" == amd64 ]]; then cp -f $TRAVIS_BUILD_DIR/wasmer/libwasmer_linux_amd64.so $TRAVIS_BUILD_DIR/build; fi
 - if [[ "$GOOS" == darwin && "$GOARCH" == amd64 ]]; then cp -f $TRAVIS_BUILD_DIR/wasmer/libwasmer_darwin_amd64.dylib $TRAVIS_BUILD_DIR/build; fi
+
+- echo $ARCHIVE
 
 before_deploy:
 - cd "$TRAVIS_BUILD_DIR/build"
@@ -48,7 +50,7 @@ deploy:
   secret_access_key: $AWS_SECRET_KEY
   bucket: ide.elrond.com
   skip_cleanup: true
-  glob: "$ARCHIVE"
+  glob: "$TRAVIS_BUILD_DIR/$ARCHIVE"
   on:
     branch: arwendebug
 
