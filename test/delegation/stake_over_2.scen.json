@@ -41,14 +41,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "1",
             "tx": {
                 "from": "``user_account_1________________s1",
                 "to": "``delegation_contract___________s1",
                 "value": "567,000,000,000",
                 "function": "stake",
-                "contractCode": "",
                 "arguments": [],
                 "gasLimit": "1,000,000",
                 "gasPrice": "0x01"
@@ -71,14 +70,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "2",
             "tx": {
                 "from": "``user_account_2________________s1",
                 "to": "``delegation_contract___________s1",
                 "value": "222,000,000,001",
                 "function": "stake",
-                "contractCode": "",
                 "arguments": [],
                 "gasLimit": "1,000,000",
                 "gasPrice": "0x01"

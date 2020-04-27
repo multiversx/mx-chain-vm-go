@@ -13,13 +13,11 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scDeploy",
             "txId": "1",
             "tx": {
                 "from": "``node_address__________________s1",
-                "to": "",
                 "value": "0",
-                "function": "",
                 "contractCode": "file:delegation.wasm",
                 "arguments": [
                     "123,000,000",

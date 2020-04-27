@@ -13,13 +13,11 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scDeploy",
             "txId": "1",
             "tx": {
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000001234",
-                "to": "",
                 "value": "0",
-                "function": "",
                 "contractCode": "file:contracts/simple-coin.wasm",
                 "arguments": [
                     "0x2710"
@@ -36,14 +34,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "2",
             "tx": {
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000001234",
                 "to": "0x0000000000000000000011111111a94f5374fce5edbc8e2a8697c15331001234",
                 "value": "0",
                 "function": "balanceOf",
-                "contractCode": "",
                 "arguments": [
                     "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000001234"
                 ],

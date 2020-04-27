@@ -55,14 +55,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "1",
             "tx": {
                 "from": "``an_account____________________sy",
                 "to": "0x0000000000000000000011111111dddddddddddddddddddddddddddddddd0000",
                 "value": "0",
                 "function": "nameShard",
-                "contractCode": "",
                 "arguments": [
                     "``coolname0001"
                 ],
@@ -80,14 +79,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "2",
             "tx": {
                 "from": "``an_account____________________sy",
                 "to": "0x0000000000000000000011111111dddddddddddddddddddddddddddddddd0000",
                 "value": "0",
                 "function": "nameShard",
-                "contractCode": "",
                 "arguments": [
                     "``coolname0002"
                 ],
@@ -105,14 +103,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "3",
             "tx": {
                 "from": "``an_account____________________sy",
                 "to": "0x0000000000000000000011111111dddddddddddddddddddddddddddddddd0000",
                 "value": "0",
                 "function": "nameShard",
-                "contractCode": "",
                 "arguments": [
                     "``coolname0003"
                 ],
@@ -130,14 +127,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "4",
             "tx": {
                 "from": "``an_account____________________sy",
                 "to": "0x0000000000000000000011111111dddddddddddddddddddddddddddddddd0000",
                 "value": "0",
                 "function": "nameShard",
-                "contractCode": "",
                 "arguments": [
                     "``coolname0005"
                 ],
@@ -155,14 +151,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "5",
             "tx": {
                 "from": "``an_account____________________sy",
                 "to": "0x0000000000000000000011111111dddddddddddddddddddddddddddddddd0000",
                 "value": "0",
                 "function": "nameShard",
-                "contractCode": "",
                 "arguments": [
                     "``coolname0000000017"
                 ],

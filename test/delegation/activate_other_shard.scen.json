@@ -54,14 +54,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "1",
             "tx": {
                 "from": "``node_address__________________s1",
                 "to": "``delegation_contract___________s1",
                 "value": "0",
                 "function": "activate",
-                "contractCode": "",
                 "arguments": [
                     "``signature_1_____________________",
                     "``signature_2_____________________"

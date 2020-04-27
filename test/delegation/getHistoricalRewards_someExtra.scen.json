@@ -40,14 +40,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "1",
             "tx": {
                 "from": "``delegator_1___________________s1",
                 "to": "``delegation_contract___________s1",
                 "value": "0",
                 "function": "getHistoricalRewards",
-                "contractCode": "",
                 "arguments": [],
                 "gasLimit": "0x100000",
                 "gasPrice": "0x01"
@@ -63,14 +62,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "2",
             "tx": {
                 "from": "``delegator_1___________________s1",
                 "to": "``delegation_contract___________s1",
                 "value": "0",
                 "function": "getHistoricalRewardsForNode",
-                "contractCode": "",
                 "arguments": [],
                 "gasLimit": "0x100000",
                 "gasPrice": "0x01"
@@ -86,14 +84,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "3",
             "tx": {
                 "from": "``delegator_1___________________s1",
                 "to": "``delegation_contract___________s1",
                 "value": "0",
                 "function": "getHistoricalRewardsForDelegators",
-                "contractCode": "",
                 "arguments": [],
                 "gasLimit": "0x100000",
                 "gasPrice": "0x01"

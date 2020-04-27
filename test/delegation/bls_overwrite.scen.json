@@ -40,14 +40,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "1",
             "tx": {
                 "from": "``node_address__________________s1",
                 "to": "``delegation_contract___________s1",
                 "value": "0",
                 "function": "setBlsKeys",
-                "contractCode": "",
                 "arguments": [
                     "5",
                     "``will_be_overwritten_1___________________________________________________________________________________________________________",
@@ -68,14 +67,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "2",
             "tx": {
                 "from": "``node_address__________________s1",
                 "to": "``delegation_contract___________s1",
                 "value": "0",
                 "function": "setBlsKeys",
-                "contractCode": "",
                 "arguments": [
                     "2",
                     "``bls_key_1_______________________________________________________________________________________________________________________",
@@ -93,14 +91,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "3",
             "tx": {
                 "from": "``node_address__________________s1",
                 "to": "``delegation_contract___________s1",
                 "value": "0",
                 "function": "getBlsKeys",
-                "contractCode": "",
                 "arguments": [],
                 "gasLimit": "0x100000",
                 "gasPrice": "0x01"
@@ -117,14 +114,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "4",
             "tx": {
                 "from": "``node_address__________________s1",
                 "to": "``delegation_contract___________s1",
                 "value": "0",
                 "function": "getNrBlsKeys",
-                "contractCode": "",
                 "arguments": [],
                 "gasLimit": "0x100000",
                 "gasPrice": "0x01"

@@ -46,14 +46,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "1",
             "tx": {
                 "from": "``user_account_2________________s1",
                 "to": "``delegation_contract___________s1",
                 "value": "0",
                 "function": "purchaseStake",
-                "contractCode": "",
                 "arguments": [
                     "``user_account_1________________s1"
                 ],

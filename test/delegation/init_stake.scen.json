@@ -25,13 +25,11 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scDeploy",
             "txId": "1",
             "tx": {
                 "from": "``node_address__________________s1",
-                "to": "",
                 "value": "0",
-                "function": "",
                 "contractCode": "file:delegation.wasm",
                 "arguments": [
                     "789,000,000,000",
@@ -50,14 +48,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "2",
             "tx": {
                 "from": "``user_account_1________________s1",
                 "to": "0x00000000000000000000111111116e6f64655f616464726573735f5f5f007331",
                 "value": "567,000,000,000",
                 "function": "stake",
-                "contractCode": "",
                 "arguments": [],
                 "gasLimit": "1,000,000",
                 "gasPrice": "0x01"

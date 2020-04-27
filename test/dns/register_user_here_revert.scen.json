@@ -67,14 +67,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "1",
             "tx": {
                 "from": "``an_account____________________sy",
                 "to": "0x0000000000000000000011111111dddddddddddddddddddddddddddddddd0001",
                 "value": "0",
                 "function": "register",
-                "contractCode": "",
                 "arguments": [
                     "``coolname0001",
                     "``cool_address__________________sz"
@@ -93,14 +92,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "2",
             "tx": {
                 "from": "``an_account____________________sy",
                 "to": "0x0000000000000000000011111111dddddddddddddddddddddddddddddddd0001",
                 "value": "0",
                 "function": "resolve",
-                "contractCode": "",
                 "arguments": [
                     "``coolname0001"
                 ],

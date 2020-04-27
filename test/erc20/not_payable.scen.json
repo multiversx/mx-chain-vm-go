@@ -22,14 +22,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "1",
             "tx": {
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
                 "to": "0x1000000000000000000000000000000000000000000000000000000000000000",
                 "value": "0x01",
                 "function": "totalSupply",
-                "contractCode": "",
                 "arguments": [],
                 "gasLimit": "0x100000",
                 "gasPrice": "0x01"
@@ -44,14 +43,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "2",
             "tx": {
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
                 "to": "0x1000000000000000000000000000000000000000000000000000000000000000",
                 "value": "0x01",
                 "function": "balanceOf",
-                "contractCode": "",
                 "arguments": [
                     "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000"
                 ],
@@ -68,14 +66,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "3",
             "tx": {
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
                 "to": "0x1000000000000000000000000000000000000000000000000000000000000000",
                 "value": "0x01",
                 "function": "allowance",
-                "contractCode": "",
                 "arguments": [
                     "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
                     "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000"
@@ -93,14 +90,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "4",
             "tx": {
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
                 "to": "0x1000000000000000000000000000000000000000000000000000000000000000",
                 "value": "0x01",
                 "function": "transferToken",
-                "contractCode": "",
                 "arguments": [
                     "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
                     "0x01"
@@ -118,14 +114,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "5",
             "tx": {
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
                 "to": "0x1000000000000000000000000000000000000000000000000000000000000000",
                 "value": "0x01",
                 "function": "approve",
-                "contractCode": "",
                 "arguments": [
                     "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
                     "0x01"
@@ -143,14 +138,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "6",
             "tx": {
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
                 "to": "0x1000000000000000000000000000000000000000000000000000000000000000",
                 "value": "0x01",
                 "function": "transferFrom",
-                "contractCode": "",
                 "arguments": [
                     "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
                     "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",

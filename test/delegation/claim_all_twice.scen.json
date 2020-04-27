@@ -51,14 +51,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "1",
             "tx": {
                 "from": "``user_account_1________________s1",
                 "to": "``delegation_contract___________s1",
                 "value": "0",
                 "function": "claimRewards",
-                "contractCode": "",
                 "arguments": [],
                 "gasLimit": "0x100000",
                 "gasPrice": "0x01"
@@ -72,14 +71,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "2",
             "tx": {
                 "from": "``user_account_2________________s1",
                 "to": "``delegation_contract___________s1",
                 "value": "0",
                 "function": "claimRewards",
-                "contractCode": "",
                 "arguments": [],
                 "gasLimit": "0x100000",
                 "gasPrice": "0x01"
@@ -93,14 +91,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "3",
             "tx": {
                 "from": "``node_address__________________s1",
                 "to": "``delegation_contract___________s1",
                 "value": "0",
                 "function": "claimRewards",
-                "contractCode": "",
                 "arguments": [],
                 "gasLimit": "0x100000",
                 "gasPrice": "0x01"
@@ -114,14 +111,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "4",
             "tx": {
                 "from": "``user_account_1________________s1",
                 "to": "``delegation_contract___________s1",
                 "value": "0",
                 "function": "claimRewards",
-                "contractCode": "",
                 "arguments": [],
                 "gasLimit": "0x100000",
                 "gasPrice": "0x01"
@@ -135,14 +131,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "5",
             "tx": {
                 "from": "``user_account_2________________s1",
                 "to": "``delegation_contract___________s1",
                 "value": "0",
                 "function": "claimRewards",
-                "contractCode": "",
                 "arguments": [],
                 "gasLimit": "0x100000",
                 "gasPrice": "0x01"
@@ -156,14 +151,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "6",
             "tx": {
                 "from": "``node_address__________________s1",
                 "to": "``delegation_contract___________s1",
                 "value": "0",
                 "function": "claimRewards",
-                "contractCode": "",
                 "arguments": [],
                 "gasLimit": "0x100000",
                 "gasPrice": "0x01"

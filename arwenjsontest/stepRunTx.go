@@ -2,6 +2,7 @@ package arwenjsontest
 
 import (
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"math/big"
 
@@ -25,18 +26,26 @@ func (ae *ArwenTestExecutor) executeTx(tx *ij.Transaction) (*vmi.VMOutput, error
 	if sender.Balance.Cmp(tx.Value.Value) < 0 {
 		// out of funds is handled by the protocol, so it needs to be mocked here
 		output = outOfFundsResult()
-	} else if tx.IsCreate {
-		var err error
-		output, err = ae.scCreate(tx)
-		if err != nil {
-			return nil, err
-		}
 	} else {
-		var err error
-		output, err = ae.scCall(tx)
-		if err != nil {
-			return nil, err
+		switch tx.Type {
+		case ij.ScDeploy:
+			var err error
+			output, err = ae.scCreate(tx)
+			if err != nil {
+				return nil, err
+			}
+		case ij.ScCall:
+			var err error
+			output, err = ae.scCall(tx)
+			if err != nil {
+				return nil, err
+			}
+		case ij.Transfer:
+			return nil, errors.New("simple transfers not yet implemented")
+		default:
+			return nil, errors.New("unknown transaction type")
 		}
+
 	}
 
 	if output.ReturnCode == vmi.Ok {
