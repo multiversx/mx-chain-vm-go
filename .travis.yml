@@ -6,6 +6,8 @@ os:
 arch:
 - amd64
 osx_image: xcode11.3
+before_install:
+- if [[ $TRAVIS_OS_NAME == linux ]]; then sudo apt-get install -y patchelf; fi
 before_script:
 - APP_VER=$(git describe --tags --long --dirty)
 - APP_VER_SHORT=$(git describe --tags)
@@ -32,7 +34,6 @@ script:
 
 - if [[ "$GOOS" == linux && "$GOARCH" == amd64 ]];
   then
-    sudo apt install patchelf &&
     patchelf --set-soname libwasmer_linux_amd64.so $TRAVIS_BUILD_DIR/wasmer/libwasmer_linux_amd64.so;
   fi
 
