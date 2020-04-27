@@ -1,7 +1,6 @@
 language: go
 go: '1.13'
 os:
-- linux
 - osx
 arch:
 - amd64
@@ -14,18 +13,16 @@ before_script:
 - ARCHIVE="elrond_""$APP_VER_SHORT""_""$GOOS""_""$GOARCH"".tgz"
 script:
 - go build -o "$TRAVIS_BUILD_DIR/build/arwen" -a -i -ldflags="-X main.appVersion=$APP_VER"
-  $TRAVIS_BUILD_DIR/cmd/arwen
 - go build -o "$TRAVIS_BUILD_DIR/build/arwendebug" -a -i -ldflags="-X main.appVersion=$APP_VER"
-  $TRAVIS_BUILD_DIR/cmd/arwendebug
 - go build -o "$TRAVIS_BUILD_DIR/build/test" -a -i -ldflags="-X main.appVersion=$APP_VER"
-  $TRAVIS_BUILD_DIR/cmd/test
+- otool -L $TRAVIS_BUILD_DIR/wasmer/libwasmer_darwin_amd64.dylib
+- otool -L $TRAVIS_BUILD_DIR/build/arwen"
 - GOOS=$(go env GOOS)
 - GOARCH=$(go env GOARCH)
+
 - if [[ "$GOOS" == linux && "$GOARCH" == amd64 ]]; then cp -f $TRAVIS_BUILD_DIR/wasmer/libwasmer_linux_amd64.so
   $TRAVIS_BUILD_DIR/build; fi
 - if [[ "$GOOS" == darwin && "$GOARCH" == amd64 ]]; then cp -f $TRAVIS_BUILD_DIR/wasmer/libwasmer_darwin_amd64.dylib
-  otool -L $TRAVIS_BUILD_DIR/wasmer/libwasmer_darwin_amd64.dylib
-  otool -L $TRAVIS_BUILD_DIR/build/arwen"
   $TRAVIS_BUILD_DIR/build; fi
 - make test-short
 before_deploy:
