@@ -26,25 +26,18 @@ script:
 # For building, use a relative path to libwasmer
 - if [[ "$GOOS" == darwin && "$GOARCH" == amd64 ]];
   then
-    install_name_tool -id libwasmer_darwin_amd64.dylib $TRAVIS_BUILD_DIR/wasmer/libwasmer_darwin_amd64.dylib;
+    install_name_tool -id @executable_path/libwasmer_darwin_amd64.dylib $TRAVIS_BUILD_DIR/wasmer/libwasmer_darwin_amd64.dylib;
   fi
 
 - go build -o "$TRAVIS_BUILD_DIR/build/arwen" -a -i -ldflags="-X main.appVersion=$APP_VER" $TRAVIS_BUILD_DIR/cmd/arwen
 - go build -o "$TRAVIS_BUILD_DIR/build/arwendebug" -a -i -ldflags="-X main.appVersion=$APP_VER" $TRAVIS_BUILD_DIR/cmd/arwendebug
 - go build -o "$TRAVIS_BUILD_DIR/build/test" -a -i -ldflags="-X main.appVersion=$APP_VER" $TRAVIS_BUILD_DIR/cmd/test
 
-# Now fix lib loading for the binaries (register parent directory)
-- if [[ "$GOOS" == darwin && "$GOARCH" == amd64 ]];
-  then
-    install_name_tool -add_rpath @executable_path/.. $TRAVIS_BUILD_DIR/build/arwen &&
-    install_name_tool -add_rpath @executable_path/.. $TRAVIS_BUILD_DIR/build/arwendebug &&
-    install_name_tool -add_rpath @executable_path/.. $TRAVIS_BUILD_DIR/build/test &&
-    otool -L $TRAVIS_BUILD_DIR/build/arwen;
-  fi
-
 - if [[ "$GOOS" == linux && "$GOARCH" == amd64 ]]; then cp -f $TRAVIS_BUILD_DIR/wasmer/libwasmer_linux_amd64.so $TRAVIS_BUILD_DIR/build; fi
 - if [[ "$GOOS" == darwin && "$GOARCH" == amd64 ]]; then cp -f $TRAVIS_BUILD_DIR/wasmer/libwasmer_darwin_amd64.dylib $TRAVIS_BUILD_DIR/build; fi
 
+- ls $TRAVIS_BUILD_DIR/build
+- otool -L $TRAVIS_BUILD_DIR/build/arwen
 - $TRAVIS_BUILD_DIR/build/arwen
 before_deploy:
 - cd "$TRAVIS_BUILD_DIR/build"
