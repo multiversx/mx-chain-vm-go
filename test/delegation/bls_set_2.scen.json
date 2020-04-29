@@ -5,13 +5,13 @@
             "step": "setState",
             "accounts": {
                 "``node_address__________________s1": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0x300abc",
                     "storage": {},
                     "code": ""
                 },
                 "``delegation_contract___________s1": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "10000400010",
                     "storage": {
                         "0x0000000000000000000000000000000000000000000000000000000000000000": "``node_address__________________s1",
@@ -32,7 +32,7 @@
                     "code": "file:delegation.wasm"
                 },
                 "``delegator_1___________________s1": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0",
                     "storage": {},
                     "code": ""
@@ -40,14 +40,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "1",
             "tx": {
                 "from": "``node_address__________________s1",
                 "to": "``delegation_contract___________s1",
-                "value": "0x00",
+                "value": "0",
                 "function": "setBlsKeys",
-                "contractCode": "",
                 "arguments": [
                     "2",
                     "``bls_key_1_______________________________________________________________________________________________________________________",
@@ -65,14 +64,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "2",
             "tx": {
                 "from": "``node_address__________________s1",
                 "to": "``delegation_contract___________s1",
-                "value": "0x00",
+                "value": "0",
                 "function": "getBlsKeys",
-                "contractCode": "",
                 "arguments": [],
                 "gasLimit": "0x100000",
                 "gasPrice": "0x01"
@@ -89,14 +87,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "3",
             "tx": {
                 "from": "``node_address__________________s1",
                 "to": "``delegation_contract___________s1",
-                "value": "0x00",
+                "value": "0",
                 "function": "getNrBlsKeys",
-                "contractCode": "",
                 "arguments": [],
                 "gasLimit": "0x100000",
                 "gasPrice": "0x01"
@@ -115,13 +112,13 @@
             "step": "checkState",
             "accounts": {
                 "``node_address__________________s1": {
-                    "nonce": "0x03",
+                    "nonce": "3",
                     "balance": "0xabc",
                     "storage": {},
                     "code": ""
                 },
                 "``delegation_contract___________s1": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "10000400010",
                     "storage": {
                         "0x0000000000000000000000000000000000000000000000000000000000000000": "``node_address__________________s1",
@@ -143,7 +140,7 @@
                     "code": "file:delegation.wasm"
                 },
                 "``delegator_1___________________s1": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0",
                     "storage": {},
                     "code": ""

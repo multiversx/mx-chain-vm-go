@@ -5,13 +5,13 @@
             "step": "setState",
             "accounts": {
                 "``node_address__________________s1": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0",
                     "storage": {},
                     "code": ""
                 },
                 "``delegation_contract___________s1": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0",
                     "storage": {
                         "0x0000000000000000000000000000000000000000000000000000000000000000": "``node_address__________________s1",
@@ -27,13 +27,13 @@
                     "code": "file:delegation.wasm"
                 },
                 "``user_account_1________________s1": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "567,001,000,000",
                     "storage": {},
                     "code": ""
                 },
                 "``user_account_2________________s1": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0",
                     "storage": {},
                     "code": ""
@@ -41,14 +41,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "1",
             "tx": {
                 "from": "``user_account_1________________s1",
                 "to": "``delegation_contract___________s1",
                 "value": "567,000,000,000",
                 "function": "stake",
-                "contractCode": "",
                 "arguments": [],
                 "gasLimit": "1,000,000",
                 "gasPrice": "0x01"
@@ -74,13 +73,13 @@
             "step": "checkState",
             "accounts": {
                 "``node_address__________________s1": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0",
                     "storage": {},
                     "code": ""
                 },
                 "``delegation_contract___________s1": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "567,000,000,000",
                     "storage": {
                         "0x0000000000000000000000000000000000000000000000000000000000000000": "``node_address__________________s1",
@@ -101,13 +100,13 @@
                     "code": "file:delegation.wasm"
                 },
                 "``user_account_1________________s1": {
-                    "nonce": "0x01",
+                    "nonce": "1",
                     "balance": "0",
                     "storage": {},
                     "code": ""
                 },
                 "``user_account_2________________s1": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0",
                     "storage": {},
                     "code": ""

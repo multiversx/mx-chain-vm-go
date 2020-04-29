@@ -7,8 +7,8 @@ github.com/ElrondNetwork/elrond-go-logger v1.0.2/go.mod h1:e5D+c97lKUfFdAzFX7rrI
 github.com/ElrondNetwork/elrond-vm-common v0.1.17/go.mod h1:ZakxPST/Wt8umnRtA9gobcy3Dw2bywxwkC54P5VhO9g=
 github.com/ElrondNetwork/elrond-vm-common v0.1.18 h1:lgWO37mySU3OlrsMZSPpHcWDzwFBiAik4Q8LkFztlH0=
 github.com/ElrondNetwork/elrond-vm-common v0.1.18/go.mod h1:ZakxPST/Wt8umnRtA9gobcy3Dw2bywxwkC54P5VhO9g=
-github.com/ElrondNetwork/elrond-vm-util v0.2.1 h1:Y5vtEpqp+1QkeVjllBFpd5bUblzCYrH0Pz92EN2OHMk=
-github.com/ElrondNetwork/elrond-vm-util v0.2.1/go.mod h1:XhWd54gVSTUtaoYJnf0Yj5MaR+9Oticbc2DM3wWCD54=
+github.com/ElrondNetwork/elrond-vm-util v0.2.2 h1:yBPi9sGPQpbLNB1UPas/spOwk0AsHnIMLrLi8//SUjk=
+github.com/ElrondNetwork/elrond-vm-util v0.2.2/go.mod h1:XhWd54gVSTUtaoYJnf0Yj5MaR+9Oticbc2DM3wWCD54=
 github.com/cpuguy83/go-md2man/v2 v2.0.0-20190314233015-f79a8a8ca69d h1:U+s90UTSYgptZMwQh2aRr3LuazLJIa+Pg3Kc1ylSYVY=
 github.com/cpuguy83/go-md2man/v2 v2.0.0-20190314233015-f79a8a8ca69d/go.mod h1:maD7wRr/U5Z6m/iR4s+kqSMx2CaBsrgA7czyZG/E6dU=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

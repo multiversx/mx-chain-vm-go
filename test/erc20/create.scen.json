@@ -5,7 +5,7 @@
             "step": "setState",
             "accounts": {
                 "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000001234": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0xe8d4a51000",
                     "storage": {},
                     "code": ""
@@ -13,13 +13,11 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scDeploy",
             "txId": "1",
             "tx": {
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000001234",
-                "to": "",
-                "value": "0x00",
-                "function": "",
+                "value": "0",
                 "contractCode": "file:contracts/simple-coin.wasm",
                 "arguments": [
                     "0x2710"
@@ -36,14 +34,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "2",
             "tx": {
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000001234",
                 "to": "0x0000000000000000000011111111a94f5374fce5edbc8e2a8697c15331001234",
-                "value": "0x00",
+                "value": "0",
                 "function": "balanceOf",
-                "contractCode": "",
                 "arguments": [
                     "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000001234"
                 ],
@@ -64,14 +61,14 @@
             "step": "checkState",
             "accounts": {
                 "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000001234": {
-                    "nonce": "0x02",
+                    "nonce": "2",
                     "balance": "0xe8d4851000",
                     "storage": {},
                     "code": ""
                 },
                 "0x0000000000000000000011111111a94f5374fce5edbc8e2a8697c15331001234": {
-                    "nonce": "0x00",
-                    "balance": "0x00",
+                    "nonce": "0",
+                    "balance": "0",
                     "storage": {
                         "0x4f77fb908938adf8ff6a16fc62ebfbe8c8fd55f225233a5faf4ec70dd24a4074": "0x2710",
                         "0x0000000000000000000000000000000000000000000000000000000000000000": "0x2710"

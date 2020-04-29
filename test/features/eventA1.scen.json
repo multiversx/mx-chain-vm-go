@@ -5,13 +5,13 @@
             "step": "setState",
             "accounts": {
                 "``features_contract_____________s0": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0x100",
                     "storage": {},
                     "code": "file:features.wasm"
                 },
                 "``an_account____________________s0": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0x300abc",
                     "storage": {},
                     "code": ""
@@ -19,14 +19,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "1",
             "tx": {
                 "from": "``an_account____________________s0",
                 "to": "``features_contract_____________s0",
-                "value": "0x00",
+                "value": "0",
                 "function": "logEventA",
-                "contractCode": "",
                 "arguments": [
                     "0"
                 ],
@@ -52,13 +51,13 @@
             "step": "checkState",
             "accounts": {
                 "``features_contract_____________s0": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0x100",
                     "storage": {},
                     "code": "file:features.wasm"
                 },
                 "``an_account____________________s0": {
-                    "nonce": "0x01",
+                    "nonce": "1",
                     "balance": "0x200abc",
                     "storage": {},
                     "code": ""

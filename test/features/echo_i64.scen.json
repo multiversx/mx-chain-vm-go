@@ -5,13 +5,13 @@
             "step": "setState",
             "accounts": {
                 "``features_contract_____________s0": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0x100",
                     "storage": {},
                     "code": "file:features.wasm"
                 },
                 "``an_account____________________s0": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0x900abc",
                     "storage": {},
                     "code": ""
@@ -19,14 +19,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "1",
             "tx": {
                 "from": "``an_account____________________s0",
                 "to": "``features_contract_____________s0",
-                "value": "0x00",
+                "value": "0",
                 "function": "echo_i64",
-                "contractCode": "",
                 "arguments": [
                     "0"
                 ],
@@ -44,14 +43,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "2",
             "tx": {
                 "from": "``an_account____________________s0",
                 "to": "``features_contract_____________s0",
-                "value": "0x00",
+                "value": "0",
                 "function": "echo_i64",
-                "contractCode": "",
                 "arguments": [
                     "5"
                 ],
@@ -69,14 +67,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "3",
             "tx": {
                 "from": "``an_account____________________s0",
                 "to": "``features_contract_____________s0",
-                "value": "0x00",
+                "value": "0",
                 "function": "echo_i64",
-                "contractCode": "",
                 "arguments": [
                     "-3"
                 ],
@@ -94,14 +91,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "4",
             "tx": {
                 "from": "``an_account____________________s0",
                 "to": "``features_contract_____________s0",
-                "value": "0x00",
+                "value": "0",
                 "function": "echo_i64",
-                "contractCode": "",
                 "arguments": [
                     "0x010000000000000000"
                 ],
@@ -118,14 +114,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "5",
             "tx": {
                 "from": "``an_account____________________s0",
                 "to": "``features_contract_____________s0",
-                "value": "0x00",
+                "value": "0",
                 "function": "echo_i64",
-                "contractCode": "",
                 "arguments": [
                     "0xffffffffffffffff"
                 ],
@@ -143,14 +138,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "6",
             "tx": {
                 "from": "``an_account____________________s0",
                 "to": "``features_contract_____________s0",
-                "value": "0x00",
+                "value": "0",
                 "function": "echo_i64",
-                "contractCode": "",
                 "arguments": [
                     "0x7fffffffffffffff"
                 ],
@@ -168,14 +162,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "7",
             "tx": {
                 "from": "``an_account____________________s0",
                 "to": "``features_contract_____________s0",
-                "value": "0x00",
+                "value": "0",
                 "function": "echo_i64",
-                "contractCode": "",
                 "arguments": [
                     "+9223372036854775808"
                 ],
@@ -192,14 +185,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "8",
             "tx": {
                 "from": "``an_account____________________s0",
                 "to": "``features_contract_____________s0",
-                "value": "0x00",
+                "value": "0",
                 "function": "echo_i64",
-                "contractCode": "",
                 "arguments": [
                     "-9223372036854775809"
                 ],
@@ -219,13 +211,13 @@
             "step": "checkState",
             "accounts": {
                 "``features_contract_____________s0": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0x100",
                     "storage": {},
                     "code": "file:features.wasm"
                 },
                 "``an_account____________________s0": {
-                    "nonce": "0x08",
+                    "nonce": "8",
                     "balance": "0x100abc",
                     "storage": {},
                     "code": ""
