@@ -1,6 +1,8 @@
 package arwenjsontest
 
 import (
+	"fmt"
+
 	ij "github.com/ElrondNetwork/elrond-vm-util/test-util/vmtestjson"
 )
 
@@ -16,7 +18,10 @@ func (ae *ArwenTestExecutor) ExecuteTest(test *ij.Test) error {
 
 	for _, block := range test.Blocks {
 		for txIndex, tx := range block.Transactions {
-			output, err := ae.executeTx(tx)
+			txName := fmt.Sprintf("%d", txIndex)
+
+			// execute
+			output, err := ae.executeTx(txName, tx)
 			if err != nil {
 				return err
 			}
@@ -24,7 +29,7 @@ func (ae *ArwenTestExecutor) ExecuteTest(test *ij.Test) error {
 			blResult := block.Results[txIndex]
 
 			// check results
-			err = checkTxResults(txIndex, blResult, test.CheckGas, output)
+			err = checkTxResults(txName, blResult, test.CheckGas, output)
 			if err != nil {
 				return err
 			}

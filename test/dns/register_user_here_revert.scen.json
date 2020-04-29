@@ -5,13 +5,13 @@
             "step": "setState",
             "accounts": {
                 "``dns_owner_____________________sx": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0",
                     "storage": {},
                     "code": ""
                 },
                 "0x0000000000000000000011111111dddddddddddddddddddddddddddddddd0000": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0",
                     "storage": {
                         "0x0000000000000000000000000000000000000000000000000000000000000000": "``dns_owner_____________________sx",
@@ -21,7 +21,7 @@
                     "code": "file:dns.wasm"
                 },
                 "0x0000000000000000000011111111dddddddddddddddddddddddddddddddd0001": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0",
                     "storage": {
                         "0x0000000000000000000000000000000000000000000000000000000000000000": "``dns_owner_____________________sx",
@@ -31,7 +31,7 @@
                     "code": "file:dns.wasm"
                 },
                 "0x0000000000000000000011111111dddddddddddddddddddddddddddddddd0002": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0",
                     "storage": {
                         "0x0000000000000000000000000000000000000000000000000000000000000000": "``dns_owner_____________________sx",
@@ -41,7 +41,7 @@
                     "code": "file:dns.wasm"
                 },
                 "0x0000000000000000000011111111dddddddddddddddddddddddddddddddd0003": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0",
                     "storage": {
                         "0x0000000000000000000000000000000000000000000000000000000000000000": "``dns_owner_____________________sx",
@@ -51,13 +51,13 @@
                     "code": "file:dns.wasm"
                 },
                 "``an_account____________________sy": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0x700abc",
                     "storage": {},
                     "code": ""
                 },
                 "``cool_address__________________sz": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0",
                     "storage": {
                         "0xd1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1": "``already_taken!!!"
@@ -67,14 +67,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "1",
             "tx": {
                 "from": "``an_account____________________sy",
                 "to": "0x0000000000000000000011111111dddddddddddddddddddddddddddddddd0001",
-                "value": "0x00",
+                "value": "0",
                 "function": "register",
-                "contractCode": "",
                 "arguments": [
                     "``coolname0001",
                     "``cool_address__________________sz"
@@ -93,14 +92,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "2",
             "tx": {
                 "from": "``an_account____________________sy",
                 "to": "0x0000000000000000000011111111dddddddddddddddddddddddddddddddd0001",
-                "value": "0x00",
+                "value": "0",
                 "function": "resolve",
-                "contractCode": "",
                 "arguments": [
                     "``coolname0001"
                 ],
@@ -119,13 +117,13 @@
             "step": "checkState",
             "accounts": {
                 "``dns_owner_____________________sx": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0",
                     "storage": {},
                     "code": ""
                 },
                 "0x0000000000000000000011111111dddddddddddddddddddddddddddddddd0000": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0",
                     "storage": {
                         "0x0000000000000000000000000000000000000000000000000000000000000000": "``dns_owner_____________________sx",
@@ -135,7 +133,7 @@
                     "code": "file:dns.wasm"
                 },
                 "0x0000000000000000000011111111dddddddddddddddddddddddddddddddd0001": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0",
                     "storage": {
                         "0x0000000000000000000000000000000000000000000000000000000000000000": "``dns_owner_____________________sx",
@@ -146,7 +144,7 @@
                     "code": "file:dns.wasm"
                 },
                 "0x0000000000000000000011111111dddddddddddddddddddddddddddddddd0002": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0",
                     "storage": {
                         "0x0000000000000000000000000000000000000000000000000000000000000000": "``dns_owner_____________________sx",
@@ -156,7 +154,7 @@
                     "code": "file:dns.wasm"
                 },
                 "0x0000000000000000000011111111dddddddddddddddddddddddddddddddd0003": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0",
                     "storage": {
                         "0x0000000000000000000000000000000000000000000000000000000000000000": "``dns_owner_____________________sx",
@@ -166,13 +164,13 @@
                     "code": "file:dns.wasm"
                 },
                 "``an_account____________________sy": {
-                    "nonce": "0x02",
+                    "nonce": "2",
                     "balance": "0x500abc",
                     "storage": {},
                     "code": ""
                 },
                 "``cool_address__________________sz": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0",
                     "storage": {
                         "0xd1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1": "``already_taken!!!"

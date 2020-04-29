@@ -5,19 +5,19 @@
             "step": "setState",
             "accounts": {
                 "``node_address__________________s1": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "1,000,000,000",
                     "storage": {},
                     "code": ""
                 },
                 "``auction_contract______________s1": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0",
                     "storage": {},
                     "code": "file:auction-mock.wasm"
                 },
                 "``delegation_contract___________s1": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "789,000,000,000",
                     "storage": {
                         "0x0000000000000000000000000000000000000000000000000000000000000000": "``node_address__________________s1",
@@ -46,13 +46,13 @@
                     "code": "file:delegation.wasm"
                 },
                 "``user_account_1________________s1": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0",
                     "storage": {},
                     "code": ""
                 },
                 "``user_account_2________________s1": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0",
                     "storage": {},
                     "code": ""
@@ -60,14 +60,13 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scCall",
             "txId": "1",
             "tx": {
                 "from": "``node_address__________________s1",
                 "to": "``delegation_contract___________s1",
                 "value": "0",
                 "function": "activate",
-                "contractCode": "",
                 "arguments": [
                     "``signature_1_____________________",
                     "``signature_2_____________________"
@@ -94,13 +93,13 @@
             "step": "checkState",
             "accounts": {
                 "``node_address__________________s1": {
-                    "nonce": "0x01",
+                    "nonce": "1",
                     "balance": "0",
                     "storage": {},
                     "code": ""
                 },
                 "``auction_contract______________s1": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "789,000,000,000",
                     "storage": {
                         "0x0000000000000000000000000000000000000000000000000000000000000000": "789,000,000,000",
@@ -113,7 +112,7 @@
                     "code": "file:auction-mock.wasm"
                 },
                 "``delegation_contract___________s1": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0",
                     "storage": {
                         "0x0000000000000000000000000000000000000000000000000000000000000000": "``node_address__________________s1",
@@ -142,13 +141,13 @@
                     "code": "file:delegation.wasm"
                 },
                 "``user_account_1________________s1": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0",
                     "storage": {},
                     "code": ""
                 },
                 "``user_account_2________________s1": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0",
                     "storage": {},
                     "code": ""

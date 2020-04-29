@@ -5,7 +5,7 @@
             "step": "setState",
             "accounts": {
                 "``node_address__________________s1": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0x100000",
                     "storage": {},
                     "code": ""
@@ -13,13 +13,11 @@
             }
         },
         {
-            "step": "tx",
+            "step": "scDeploy",
             "txId": "1",
             "tx": {
                 "from": "``node_address__________________s1",
-                "to": "",
-                "value": "0x00",
-                "function": "",
+                "value": "0",
                 "contractCode": "file:delegation.wasm",
                 "arguments": [
                     "123,000,000",
@@ -41,13 +39,13 @@
             "step": "checkState",
             "accounts": {
                 "``node_address__________________s1": {
-                    "nonce": "0x01",
+                    "nonce": "1",
                     "balance": "0",
                     "storage": {},
                     "code": ""
                 },
                 "0x00000000000000000000111111116e6f64655f616464726573735f5f5f007331": {
-                    "nonce": "0x00",
+                    "nonce": "0",
                     "balance": "0",
                     "storage": {
                         "0x0000000000000000000000000000000000000000000000000000000000000000": "``node_address__________________s1",
