@@ -48,9 +48,9 @@ script:
   then
     cd $TRAVIS_BUILD_DIR/build &&
     ls &&
-    patchelf --set-rpath "." ./arwen &&
-    patchelf --set-rpath "." ./arwendebug &&
-    patchelf --set-rpath "." ./test;
+    patchelf --set-rpath "\$ORIGIN" ./arwen &&
+    patchelf --set-rpath "\$ORIGIN" ./arwendebug &&
+    patchelf --set-rpath "\$ORIGIN" ./test;
   fi
 
 before_deploy:
