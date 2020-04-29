@@ -25,7 +25,7 @@ func (ae *ArwenTestExecutor) ExecuteScenario(scenario *ij.Scenario) error {
 			}
 		case *ij.TxStep:
 			// execute tx
-			output, err := ae.executeTx(step.Tx)
+			output, err := ae.executeTx(step.TxIdent, step.Tx)
 			if err != nil {
 				return err
 			}

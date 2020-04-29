@@ -11,13 +11,13 @@ import (
 	ij "github.com/ElrondNetwork/elrond-vm-util/test-util/vmtestjson"
 )
 
-func (ae *ArwenTestExecutor) executeTx(tx *ij.Transaction) (*vmi.VMOutput, error) {
+func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *ij.Transaction) (*vmi.VMOutput, error) {
 	beforeErr := ae.world.UpdateWorldStateBefore(
 		tx.From.Value,
 		tx.GasLimit.Value,
 		tx.GasPrice.Value)
 	if beforeErr != nil {
-		return nil, beforeErr
+		return nil, fmt.Errorf("Could not set up tx %s: %w", txIndex, beforeErr)
 	}
 
 	var output *vmi.VMOutput
