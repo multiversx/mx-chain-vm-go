@@ -432,15 +432,19 @@ func (host *vmHost) callSCMethodIndirect() error {
 func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) error {
 	_, _, metering, output, runtime, _ := host.GetContexts()
 
-	valueToSend, gasConsumed, err := host.blockChainHook.ProcessBuiltInFunction(input)
+	vmOutput, err := host.blockChainHook.ProcessBuiltInFunction(input)
 	if err != nil {
-		metering.UseGas(gasConsumed)
+		metering.UseGas(input.GasProvided)
 		return err
 	}
 
+	gasConsumed := input.GasProvided - vmOutput.GasRemaining
+	if vmOutput.GasRemaining < input.GasProvided {
+		metering.UseGas(gasConsumed)
+	}
+
 	scAccount, _ := output.GetOutputAccount(runtime.GetSCAddress())
-	scAccount.BalanceDelta.Add(scAccount.BalanceDelta, valueToSend)
-	metering.UseGas(gasConsumed)
+	scAccount.BalanceDelta.Add(scAccount.BalanceDelta, vmOutput.GasRefund)
 	return nil
 }
 

@@ -802,15 +802,19 @@ func TestExecution_ExecuteOnSameContext_BuiltinFunctions(t *testing.T) {
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
-func dummyProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*big.Int, uint64, error) {
+func dummyProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+	outPutAccounts := make(map[string]*vmcommon.OutputAccount)
+	outPutAccounts[string(input.CallerAddr)] = &vmcommon.OutputAccount{BalanceDelta: big.NewInt(0)}
+
 	if input.Function == "builtinClaim" {
-		return big.NewInt(42), 100, nil
+		outPutAccounts[string(input.CallerAddr)].BalanceDelta = big.NewInt(42)
+		return &vmcommon.VMOutput{GasRemaining: 100, OutputAccounts: outPutAccounts}, nil
 	}
 	if input.Function == "builtinDoSomething" {
-		return arwen.Zero, 0, nil
+		return &vmcommon.VMOutput{OutputAccounts: outPutAccounts}, nil
 	}
-	return input.CallValue, input.GasProvided, arwen.ErrFuncNotFound
 
+	return nil, arwen.ErrFuncNotFound
 }
 
 func TestExecution_ExecuteOnDestContext_Prepare(t *testing.T) {
