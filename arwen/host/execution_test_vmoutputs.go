@@ -402,7 +402,7 @@ func expectedVMOutput_SameCtx_BuiltinFunctions_2() *vmcommon.VMOutput {
 		nil,
 	)
 	account.Balance = big.NewInt(1000)
-	account.BalanceDelta = big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1))
+	account.BalanceDelta = big.NewInt(0)
 
 	AddFinishData(vmOutput, []byte("succ"))
 

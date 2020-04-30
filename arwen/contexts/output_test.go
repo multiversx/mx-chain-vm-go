@@ -260,6 +260,7 @@ func TestOutputContext_MergeIncompleteAccounts(t *testing.T) {
 		Code:           []byte("left code"),
 		StorageUpdates: make(map[string]*vmcommon.StorageUpdate),
 		BalanceDelta:   big.NewInt(42),
+		Address:        left.Address,
 	}
 	mergeOutputAccounts(left, right)
 	require.Equal(t, expected, left)
