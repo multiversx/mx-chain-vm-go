@@ -152,8 +152,7 @@ func (context *outputContext) ClearReturnData() {
 	context.outputState.ReturnData = make([][]byte, 0)
 }
 
-func (context *outputContext) SelfDestruct(address []byte, beneficiary []byte) {
-	panic("not implemented")
+func (context *outputContext) SelfDestruct(_ []byte, _ []byte) {
 }
 
 func (context *outputContext) Finish(data []byte) {
@@ -286,6 +285,25 @@ func (context *outputContext) resolveReturnCodeFromError(err error) vmcommon.Ret
 	return vmcommon.ExecutionFailed
 }
 
+func (context *outputContext) AddToActiveState(rightOutput *vmcommon.VMOutput) {
+	rightOutput.GasRemaining = 0
+	if rightOutput.GasRefund != nil {
+		rightOutput.GasRefund.Add(rightOutput.GasRefund, context.outputState.GasRefund)
+	}
+
+	for address, rightAccount := range rightOutput.OutputAccounts {
+		leftAccount, ok := context.outputState.OutputAccounts[address]
+		if !ok || rightAccount.BalanceDelta == nil || leftAccount.BalanceDelta == nil {
+			continue
+		}
+
+		rightAccount.GasLimit = leftAccount.GasLimit
+		rightAccount.BalanceDelta.Add(rightAccount.BalanceDelta, leftAccount.BalanceDelta)
+	}
+
+	mergeVMOutputs(context.outputState, rightOutput)
+}
+
 func mergeVMOutputs(leftOutput *vmcommon.VMOutput, rightOutput *vmcommon.VMOutput) {
 	if leftOutput.OutputAccounts == nil {
 		leftOutput.OutputAccounts = make(map[string]*vmcommon.OutputAccount)
@@ -305,6 +323,10 @@ func mergeVMOutputs(leftOutput *vmcommon.VMOutput, rightOutput *vmcommon.VMOutpu
 	leftOutput.ReturnData = append(leftOutput.ReturnData, rightOutput.ReturnData...)
 	leftOutput.GasRemaining = rightOutput.GasRemaining
 	leftOutput.GasRefund = rightOutput.GasRefund
+	if leftOutput.GasRefund == nil {
+		leftOutput.GasRefund = big.NewInt(0)
+	}
+
 	leftOutput.ReturnCode = rightOutput.ReturnCode
 	leftOutput.ReturnMessage = rightOutput.ReturnMessage
 }
@@ -313,7 +335,10 @@ func mergeOutputAccounts(
 	leftAccount *vmcommon.OutputAccount,
 	rightAccount *vmcommon.OutputAccount,
 ) {
-	leftAccount.Address = rightAccount.Address
+	if len(rightAccount.Address) != 0 {
+		leftAccount.Address = rightAccount.Address
+	}
+
 	leftAccount.GasLimit = rightAccount.GasLimit
 	mergeStorageUpdates(leftAccount, rightAccount)
 

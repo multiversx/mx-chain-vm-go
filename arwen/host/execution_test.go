@@ -804,14 +804,14 @@ func TestExecution_ExecuteOnSameContext_BuiltinFunctions(t *testing.T) {
 
 func dummyProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	outPutAccounts := make(map[string]*vmcommon.OutputAccount)
-	outPutAccounts[string(input.CallerAddr)] = &vmcommon.OutputAccount{BalanceDelta: big.NewInt(0)}
+	outPutAccounts[string(parentAddress)] = &vmcommon.OutputAccount{BalanceDelta: big.NewInt(0)}
 
 	if input.Function == "builtinClaim" {
-		outPutAccounts[string(input.CallerAddr)].BalanceDelta = big.NewInt(42)
-		return &vmcommon.VMOutput{GasRemaining: 100, OutputAccounts: outPutAccounts}, nil
+		outPutAccounts[string(parentAddress)].BalanceDelta = big.NewInt(42)
+		return &vmcommon.VMOutput{GasRemaining: 400, OutputAccounts: outPutAccounts}, nil
 	}
 	if input.Function == "builtinDoSomething" {
-		return &vmcommon.VMOutput{OutputAccounts: outPutAccounts}, nil
+		return &vmcommon.VMOutput{OutputAccounts: outPutAccounts, GasRemaining: input.GasProvided}, nil
 	}
 
 	return nil, arwen.ErrFuncNotFound
