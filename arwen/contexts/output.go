@@ -293,7 +293,7 @@ func (context *outputContext) AddToActiveState(rightOutput *vmcommon.VMOutput) {
 
 	for address, rightAccount := range rightOutput.OutputAccounts {
 		leftAccount, ok := context.outputState.OutputAccounts[address]
-		if !ok || rightAccount.BalanceDelta == nil || leftAccount.BalanceDelta == nil {
+		if !ok || rightAccount.BalanceDelta == nil {
 			continue
 		}
 
