@@ -13,7 +13,7 @@ type BlockchainHookStub struct {
 	NewAddressCalled              func(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error)
 	GetBalanceCalled              func(address []byte) (*big.Int, error)
 	GetNonceCalled                func(address []byte) (uint64, error)
-	GetStorageDataCalled          func(accountsAddress []byte, index []byte) ([]byte, error)
+	GetStorageDataCalled          func(accountsAddress []byte, index []byte) (vmcommon.StorageData, error)
 	IsCodeEmptyCalled             func(address []byte) (bool, error)
 	GetCodeCalled                 func(address []byte) ([]byte, error)
 	GetBlockHashCalled            func(nonce uint64) ([]byte, error)
@@ -61,11 +61,11 @@ func (b *BlockchainHookStub) GetNonce(address []byte) (uint64, error) {
 	return 0, nil
 }
 
-func (b *BlockchainHookStub) GetStorageData(accountAddress []byte, index []byte) ([]byte, error) {
+func (b *BlockchainHookStub) GetStorageData(accountAddress []byte, index []byte) (vmcommon.StorageData, error) {
 	if b.GetStorageDataCalled != nil {
 		return b.GetStorageDataCalled(accountAddress, index)
 	}
-	return nil, nil
+	return vmcommon.StorageData{}, nil
 }
 
 func (b *BlockchainHookStub) IsCodeEmpty(address []byte) (bool, error) {

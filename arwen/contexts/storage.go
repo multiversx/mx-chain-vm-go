@@ -64,18 +64,18 @@ func (context *storageContext) GetStorageUpdates(address []byte) map[string]*vmc
 func (context *storageContext) GetStorage(key []byte) []byte {
 	storageUpdates := context.GetStorageUpdates(context.address)
 	if storageUpdate, ok := storageUpdates[string(key)]; ok {
-		return storageUpdate.Data
+		return storageUpdate.StorageData.Data
 	}
 
 	value, _ := context.blockChainHook.GetStorageData(context.address, key)
-	if value != nil {
+	if value.Data != nil {
 		storageUpdates[string(key)] = &vmcommon.StorageUpdate{
 			Offset: key,
-			Data:   value,
+			StorageData: value,
 		}
 	}
 
-	return value
+	return value.Data
 }
 
 func (context *storageContext) SetStorage(key []byte, value []byte) int32 {
@@ -94,10 +94,12 @@ func (context *storageContext) SetStorage(key []byte, value []byte) int32 {
 		oldValue = context.GetStorage(key)
 		storageUpdates[strKey] = &vmcommon.StorageUpdate{
 			Offset: key,
-			Data:   oldValue,
+			StorageData: vmcommon.StorageData{
+				Data: oldValue,
+			},
 		}
 	} else {
-		oldValue = update.Data
+		oldValue = update.StorageData.Data
 	}
 
 	lengthOldValue := len(oldValue)
@@ -109,9 +111,11 @@ func (context *storageContext) SetStorage(key []byte, value []byte) int32 {
 
 	newUpdate := &vmcommon.StorageUpdate{
 		Offset: key,
-		Data:   make([]byte, length),
+		StorageData: vmcommon.StorageData{
+			Data: make([]byte, length),
+		},
 	}
-	copy(newUpdate.Data[:length], value[:length])
+	copy(newUpdate.StorageData.Data[:length], value[:length])
 	storageUpdates[strKey] = newUpdate
 
 	if bytes.Equal(oldValue, zero) {
@@ -119,6 +123,8 @@ func (context *storageContext) SetStorage(key []byte, value []byte) int32 {
 		metering.UseGas(useGas)
 		return int32(arwen.StorageAdded)
 	}
+
+	// TODO: free gas for timeloks?
 	if bytes.Equal(value, zero) {
 		freeGas := metering.GasSchedule().BaseOperationCost.ReleasePerByte * uint64(lengthOldValue)
 		metering.FreeGas(freeGas)

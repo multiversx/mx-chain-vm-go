@@ -172,7 +172,7 @@ func SetStorageUpdate(account *vmcommon.OutputAccount, key []byte, data []byte) 
 		account.StorageUpdates[keyString] = update
 	}
 	update.Offset = key
-	update.Data = data
+	update.StorageData.Data = data
 }
 
 // SetStorageUpdateStrings sets a storage update to the provided vmcommon.OutputAccount, from string arguments
