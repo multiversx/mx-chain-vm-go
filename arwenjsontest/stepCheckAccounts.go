@@ -78,10 +78,10 @@ func checkAccountStorage(expectedAcct *ij.CheckAccount, matchingAcct *worldhook.
 	for k := range allKeys {
 		want, _ := expectedStorage[k]
 		have := matchingAcct.StorageValue(k)
-		if !bytes.Equal(want, have) {
+		if !bytes.Equal(want, have.Data) {
 			storageError += fmt.Sprintf(
 				"\n  for key %s: Want: %s. Have: %s",
-				hex.EncodeToString([]byte(k)), byteArrayPretty(want), byteArrayPretty(have))
+				hex.EncodeToString([]byte(k)), byteArrayPretty(want), byteArrayPretty(have.Data))
 		}
 	}
 	if len(storageError) > 0 {

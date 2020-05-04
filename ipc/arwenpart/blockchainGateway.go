@@ -93,7 +93,7 @@ func (blockchain *BlockchainHookGateway) GetStorageData(address []byte, index []
 	}
 
 	if rawResponse.GetKind() != common.BlockchainGetStorageDataResponse {
-		return nil, common.ErrBadHookResponseFromNode
+		return storageData, common.ErrBadHookResponseFromNode
 	}
 
 	response := rawResponse.(*common.MessageBlockchainGetStorageDataResponse)
