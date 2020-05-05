@@ -20,7 +20,6 @@
                 "value": "0",
                 "contractCode": "file:delegation.wasm",
                 "arguments": [
-                    "123,000,000",
                     "10001",
                     "``auction_contract______________s1"
                 ],

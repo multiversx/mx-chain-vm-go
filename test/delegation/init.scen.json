@@ -6,11 +6,18 @@
             "accounts": {
                 "``node_address__________________s1": {
                     "nonce": "0",
-                    "balance": "0x100000",
+                    "balance": "0x10000000",
                     "storage": {},
                     "code": ""
                 }
-            }
+            },
+            "newAddresses": [
+                {
+                    "creatorAddress": "``node_address__________________s1",
+                    "creatorNonce": "0",
+                    "newAddress": "``new_delegation_contract_______s1"
+                }
+            ]
         },
         {
             "step": "scDeploy",
@@ -20,7 +27,6 @@
                 "value": "0",
                 "contractCode": "file:delegation.wasm",
                 "arguments": [
-                    "123,000,000",
                     "3455",
                     "``auction_contract______________s1"
                 ],
@@ -39,25 +45,94 @@
             "step": "checkState",
             "accounts": {
                 "``node_address__________________s1": {
-                    "nonce": "1",
-                    "balance": "0",
+                    "nonce": "*",
+                    "balance": "*",
                     "storage": {},
                     "code": ""
                 },
-                "0x00000000000000000000111111116e6f64655f616464726573735f5f5f007331": {
+                "``new_delegation_contract_______s1": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "0x0000000000000000000000000000000000000000000000000000000000000000": "``node_address__________________s1",
-                        "0x0100000000000000000000000000000000000000000000000000000000000000": "123,000,000",
-                        "0x0200000000000000000000000000000000000000000000000000000000000000": "3455",
-                        "0x0300000000000000000000000000000000000000000000000000000000000000": "``node_address__________________s1",
-                        "0x0400000000000000000000000000000000000000000000000000000000000000": "1",
-                        "0x0500000000000000000000000000000000000000000000000000000000000000": "123,000,000",
-                        "0x0600000000000000000000000000000000000000000000000000000000000000": "0",
-                        "0x0700000000000000000000000000000000000000000000000000000000000000": "0",
-                        "0x0800000000000000000000000000000000000000000000000000000000000000": "``auction_contract______________s1",
-                        "``node_address__________________s1": "0x01"
+                        "``owner": "``node_address__________________s1",
+                        "``node_share": "3455",
+                        "``node_rewards_addr": "``node_address__________________s1",
+                        "``auction_addr": "``auction_contract______________s1",
+
+                        "``nr_users": "1",
+                        "``user_id|``node_address__________________s1": "0x01"
+                    },
+                    "code": "file:delegation.wasm"
+                }
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "2-nr-nodes",
+            "tx": {
+                "from": "``node_address__________________s1",
+                "to": "``new_delegation_contract_______s1",
+                "value": "0",
+                "function": "setNrNodes",
+                "arguments": [
+                    "3"
+                ],
+                "gasLimit": "0x100000",
+                "gasPrice": "0x01"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "2-stake-per-node",
+            "tx": {
+                "from": "``node_address__________________s1",
+                "to": "``new_delegation_contract_______s1",
+                "value": "0",
+                "function": "setStakePerNode",
+                "arguments": [
+                    "123,000,321"
+                ],
+                "gasLimit": "0x100000",
+                "gasPrice": "0x01"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "``node_address__________________s1": {
+                    "nonce": "*",
+                    "balance": "*",
+                    "storage": {},
+                    "code": ""
+                },
+                "``new_delegation_contract_______s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {
+                        "``owner": "``node_address__________________s1",
+                        "``node_share": "3455",
+                        "``node_rewards_addr": "``node_address__________________s1",
+                        "``auction_addr": "``auction_contract______________s1",
+
+                        "``nr_nodes": "3",
+                        "``stake_per_node": "123,000,321",
+
+                        "``nr_users": "1",
+                        "``user_id|``node_address__________________s1": "0x01"
                     },
                     "code": "file:delegation.wasm"
                 }
