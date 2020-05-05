@@ -69,7 +69,7 @@ void parentFunctionChildCall() {
 	finishResult(result);
 
 	// The parent cannot access the storage of the child.
-	int len = storageGetValueLength(childKey);
+	int len = storageLoadLength(childKey, 32);
 	if (len == 0) {
 		finishResult(0);
 	} else {

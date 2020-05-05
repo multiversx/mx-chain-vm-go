@@ -23,8 +23,8 @@ byte executeArgumentsData[] = "childTransferReceiver...........qwerty";
 byte data[20] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 void parentFunctionPrepare() {
-	storageStore(parentKeyA, parentDataA, 11);
-	storageStore(parentKeyB, parentDataB, 11);
+	storageStore(parentKeyA, 32, parentDataA, 11);
+	storageStore(parentKeyB, 32, parentDataB, 11);
 	finish(parentFinishA, 13);
 	finish(parentFinishB, 13);
 	int result = transferValue(
@@ -72,13 +72,13 @@ void parentFunctionChildCall() {
 	finishResult(result);
 
 	// The parent has access to the data stored by the child.
-	int len = storageGetValueLength(childKey);
+	int len = storageLoadLength(childKey, 32);
 	if (len != 9) {
 		finishResult(1);
 		return;
 	}
 
-	u64 slLen = storageLoad(childKey, data);
+	u64 slLen = storageLoad(childKey, 32, data);
 	if (slLen != len) {
 		finishResult(1);
 		return;
@@ -135,7 +135,7 @@ void parentFunctionChildCall_BigInts() {
 }
 
 void parentFunctionChildCall_OutOfGas() {
-	storageStore(parentKeyA, parentDataA, 11);
+	storageStore(parentKeyA, 32, parentDataA, 11);
 	bigInt myInt = bigIntNew(42);
 	finish(parentFinishA, 13);
 
@@ -153,6 +153,6 @@ void parentFunctionChildCall_OutOfGas() {
 			0
 	);
 
-	storageStore(parentKeyB, parentDataB, 11);
+	storageStore(parentKeyB, 32, parentDataB, 11);
 	finishResult(result);
 }

@@ -38,7 +38,7 @@ void childFunction() {
 	finish(childFinish, 11);
 
 	// The child has access to the storage of the parent.
-	int lenA = storageGetValueLength(parentKeyA);
+	int lenA = storageLoadLength(parentKeyA, 32);
 	if (lenA != 11) {
 		byte err[] = "err lenA";
 		finish(err, 8);
@@ -46,15 +46,15 @@ void childFunction() {
 		not_ok();
 		return;
 	}
-	int lenB = storageGetValueLength(parentKeyB);
+	int lenB = storageLoadLength(parentKeyB, 32);
 	if (lenB != 11) {
 		byte err[] = "err lenB";
 		finish(err, 8);
 		not_ok();
 		return;
 	}
-	u64 slLenA = storageLoad(parentKeyA, dataA);
-	u64 slLenB = storageLoad(parentKeyB, dataB);
+	u64 slLenA = storageLoad(parentKeyA, 32, dataA);
+	u64 slLenB = storageLoad(parentKeyB, 32, dataB);
 
 	finish(dataA, 11);
 
