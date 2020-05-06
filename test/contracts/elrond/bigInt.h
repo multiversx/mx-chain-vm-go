@@ -10,8 +10,8 @@ bigInt    bigIntNew(long long value);
 void      bigIntGetUnsignedArgument(int argumentIndex, bigInt argument);
 void      bigIntGetSignedArgument(int argumentIndex, bigInt argument);
 
-int       bigIntStorageLoadUnsigned(byte *key, bigInt value);
-int       bigIntStorageStoreUnsigned(byte *key, bigInt value);
+int       bigIntStorageLoadUnsigned(byte *key, int keyLength, bigInt value);
+int       bigIntStorageStoreUnsigned(byte *key, int keyLength, bigInt value);
 
 void      bigIntAdd(bigInt destination, bigInt op1, bigInt op2);
 void      bigIntSub(bigInt destination, bigInt op1, bigInt op2);
