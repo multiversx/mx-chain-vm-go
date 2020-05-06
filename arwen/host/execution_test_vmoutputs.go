@@ -3,6 +3,7 @@ package host
 import (
 	"fmt"
 	"math/big"
+	"os"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -26,14 +27,31 @@ var recursiveIterationBigCounterKey = []byte("recursiveIterationBigCounter....")
 
 var gasProvided = uint64(1000000)
 
-var parentCompilationCost_SameCtx = uint64(3601)
-var childCompilationCost_SameCtx = uint64(3269)
+var parentCompilationCost_SameCtx uint64
+var childCompilationCost_SameCtx uint64
 
-var parentCompilationCost_DestCtx = uint64(3291)
-var childCompilationCost_DestCtx = uint64(1810)
+var parentCompilationCost_DestCtx uint64
+var childCompilationCost_DestCtx uint64
 
 var vaultAddress = []byte("vaultAddress....................")
 var thirdPartyAddress = []byte("thirdPartyAddress...............")
+
+func init() {
+	parentCompilationCost_SameCtx = getSizeOfFile("../../test/contracts/exec-same-ctx-parent/output/exec-same-ctx-parent.wasm")
+	childCompilationCost_SameCtx = getSizeOfFile("../../test/contracts/exec-same-ctx-child/output/exec-same-ctx-child.wasm")
+
+	parentCompilationCost_DestCtx = getSizeOfFile("../../test/contracts/exec-dest-ctx-parent/output/exec-dest-ctx-parent.wasm")
+	childCompilationCost_DestCtx = getSizeOfFile("../../test/contracts/exec-dest-ctx-child/output/exec-dest-ctx-child.wasm")
+}
+
+func getSizeOfFile(path string) uint64 {
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		panic(fmt.Sprintf("could not get file: %s", path))
+	}
+
+	return uint64(fileInfo.Size())
+}
 
 func expectedVMOutput_SameCtx_Prepare() *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
