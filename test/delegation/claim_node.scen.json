@@ -62,7 +62,7 @@
                 "function": "claimRewards",
                 "arguments": [],
                 "gasLimit": "0x300abc",
-                "gasPrice": "0x01"
+                "gasPrice": "1"
             },
             "expect": {
                 "out": [],

@@ -51,7 +51,7 @@
                 "function": "getHistoricalRewards",
                 "arguments": [],
                 "gasLimit": "0x100000",
-                "gasPrice": "0x01"
+                "gasPrice": "1"
             },
             "expect": {
                 "out": [
@@ -73,7 +73,7 @@
                 "function": "getHistoricalRewardsForNode",
                 "arguments": [],
                 "gasLimit": "0x100000",
-                "gasPrice": "0x01"
+                "gasPrice": "1"
             },
             "expect": {
                 "out": [
@@ -95,7 +95,7 @@
                 "function": "getHistoricalRewardsForDelegators",
                 "arguments": [],
                 "gasLimit": "0x100000",
-                "gasPrice": "0x01"
+                "gasPrice": "1"
             },
             "expect": {
                 "out": [

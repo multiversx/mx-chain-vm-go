@@ -62,7 +62,7 @@
                 "function": "claimRewards",
                 "arguments": [],
                 "gasLimit": "0x100000",
-                "gasPrice": "0x01"
+                "gasPrice": "1"
             },
             "expect": {
                 "out": [],
@@ -82,7 +82,7 @@
                 "function": "claimRewards",
                 "arguments": [],
                 "gasLimit": "0x100000",
-                "gasPrice": "0x01"
+                "gasPrice": "1"
             },
             "expect": {
                 "out": [],
@@ -102,7 +102,7 @@
                 "function": "claimRewards",
                 "arguments": [],
                 "gasLimit": "0x100000",
-                "gasPrice": "0x01"
+                "gasPrice": "1"
             },
             "expect": {
                 "out": [],
@@ -122,7 +122,7 @@
                 "function": "claimRewards",
                 "arguments": [],
                 "gasLimit": "0x100000",
-                "gasPrice": "0x01"
+                "gasPrice": "1"
             },
             "expect": {
                 "out": [],
@@ -142,7 +142,7 @@
                 "function": "claimRewards",
                 "arguments": [],
                 "gasLimit": "0x100000",
-                "gasPrice": "0x01"
+                "gasPrice": "1"
             },
             "expect": {
                 "out": [],
@@ -162,7 +162,7 @@
                 "function": "claimRewards",
                 "arguments": [],
                 "gasLimit": "0x100000",
-                "gasPrice": "0x01"
+                "gasPrice": "1"
             },
             "expect": {
                 "out": [],

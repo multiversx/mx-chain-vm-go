@@ -55,7 +55,7 @@
                     "``too_many_keys_only_1_expected___________________________________________________________________________________________________"
                 ],
                 "gasLimit": "0x100000",
-                "gasPrice": "0x01"
+                "gasPrice": "1"
             },
             "expect": {
                 "out": [],
@@ -76,7 +76,7 @@
                 "function": "setNrNodes",
                 "arguments": [ "5" ],
                 "gasLimit": "0x100000",
-                "gasPrice": "0x01"
+                "gasPrice": "1"
             },
             "expect": {
                 "out": [],
@@ -100,7 +100,7 @@
                     "``too_few_keys____________________________________________________________________________________________________________________"
                 ],
                 "gasLimit": "0x100000",
-                "gasPrice": "0x01"
+                "gasPrice": "1"
             },
             "expect": {
                 "out": [],
@@ -121,7 +121,7 @@
                 "function": "setNrNodes",
                 "arguments": [ "2" ],
                 "gasLimit": "0x100000",
-                "gasPrice": "0x01"
+                "gasPrice": "1"
             },
             "expect": {
                 "out": [],
@@ -144,7 +144,7 @@
                     "``ok_length_______________________________________________________________________________________________________________________"
                 ],
                 "gasLimit": "0x100000",
-                "gasPrice": "0x01"
+                "gasPrice": "1"
             },
             "expect": {
                 "out": [],
@@ -168,7 +168,7 @@
                     "``too_short________________________________________________________________________________________________________________<<<<!!"
                 ],
                 "gasLimit": "0x100000",
-                "gasPrice": "0x01"
+                "gasPrice": "1"
             },
             "expect": {
                 "out": [],
@@ -189,7 +189,7 @@
                 "function": "getBlsKeys",
                 "arguments": [],
                 "gasLimit": "0x100000",
-                "gasPrice": "0x01"
+                "gasPrice": "1"
             },
             "expect": {
                 "out": [],
@@ -209,7 +209,7 @@
                 "function": "getNrBlsKeys",
                 "arguments": [],
                 "gasLimit": "0x100000",
-                "gasPrice": "0x01"
+                "gasPrice": "1"
             },
             "expect": {
                 "out": [

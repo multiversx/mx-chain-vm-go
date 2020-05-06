@@ -51,7 +51,7 @@
                 "function": "getBlsKeys",
                 "arguments": [],
                 "gasLimit": "0x100000",
-                "gasPrice": "0x01"
+                "gasPrice": "1"
             },
             "expect": {
                 "out": [],
@@ -71,7 +71,7 @@
                 "function": "getNrBlsKeys",
                 "arguments": [],
                 "gasLimit": "0x100000",
-                "gasPrice": "0x01"
+                "gasPrice": "1"
             },
             "expect": {
                 "out": [

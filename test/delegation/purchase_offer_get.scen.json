@@ -59,7 +59,7 @@
                     "``user_account_1________________s1"
                 ],
                 "gasLimit": "4,000,000",
-                "gasPrice": "0x01"
+                "gasPrice": "1"
             },
             "expect": {
                 "out": [
