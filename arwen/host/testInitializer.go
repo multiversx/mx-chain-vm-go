@@ -33,7 +33,7 @@ func GetSCCode(fileName string) []byte {
 
 // GetTestSCCode retrieves the bytecode of a WASM testing module
 func GetTestSCCode(scName string, prefixToTestSCs string) []byte {
-	pathToSC := prefixToTestSCs + "test/contracts/" + scName + "/" + scName + ".wasm"
+	pathToSC := prefixToTestSCs + "test/contracts/" + scName + "/output/" + scName + ".wasm"
 	return GetSCCode(pathToSC)
 }
 

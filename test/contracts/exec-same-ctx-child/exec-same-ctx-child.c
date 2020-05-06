@@ -32,7 +32,7 @@ void childFunction() {
 	transferValue(recipient, value, transferData, dataLength);
 
 	// This storage update will appear alongside the storage updates made by the parent.
-	storageStore(childKey, childData, 9);
+	storageStore(childKey, 32, childData, 9);
 
 	// This finish value will appear alongside the finish values set by the parent.
 	finish(childFinish, 11);
@@ -146,7 +146,7 @@ void childFunction_OutOfGas() {
 
 	didCallerPay(99);
 
-	storageStore(childKey, childData, 9);
+	storageStore(childKey, 32, childData, 9);
 	finish(childFinish, 11);
 	bigIntSetInt64(0, 88);
 

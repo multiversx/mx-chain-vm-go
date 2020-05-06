@@ -318,7 +318,5 @@ void transferFrom() {
   int64finish(1); 
 }
 
-// global data used in next function, will be allocated to WebAssembly memory
-i32 selector[1] = {0};
 void _main(void) {
 }
