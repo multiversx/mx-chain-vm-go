@@ -57,3 +57,23 @@ endif
 	erdpy build ${SANDBOX}/sc-delegation-rs
 	erdpy test --directory="tests" ${SANDBOX}/sc-delegation-rs
 	cp ${SANDBOX}/sc-delegation-rs/output/delegation.wasm ./test/delegation/delegation.wasm
+
+build-sc-examples-rs:
+ifndef SANDBOX
+	$(error SANDBOX variable is undefined)
+endif
+	rm -rf ${SANDBOX}/sc-examples-rs
+	rm -rf ${SANDBOX}/sc-examples-rs-split
+
+	git clone --depth=1 --branch=development https://github.com/ElrondNetwork/sc-examples-rs.git ${SANDBOX}/sc-examples-rs
+	rm -rf ${SANDBOX}/sc-examples-rs/.git
+	mkdir ${SANDBOX}/sc-examples-rs-split
+	cp -r ${SANDBOX}/sc-examples-rs/adder ${SANDBOX}/sc-examples-rs-split
+	cp -r ${SANDBOX}/sc-examples-rs/simple-coin ${SANDBOX}/sc-examples-rs-split
+	
+	erdpy build ${SANDBOX}/sc-examples-rs-split/adder
+	erdpy build ${SANDBOX}/sc-examples-rs-split/simple-coin
+	erdpy test ${SANDBOX}/sc-examples-rs-split/adder
+	erdpy test ${SANDBOX}/sc-examples-rs-split/simple-coin
+	cp ${SANDBOX}/sc-examples-rs-split/adder/output/adder.wasm ./test/adder/adder.wasm
+	cp ${SANDBOX}/sc-examples-rs-split/simple-coin/output/simple-coin.wasm ./test/erc20/contracts/simple-coin.wasm
