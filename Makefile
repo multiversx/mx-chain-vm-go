@@ -58,6 +58,18 @@ endif
 	cp ${SANDBOX}/sc-delegation-rs/output/delegation.wasm ./test/delegation/delegation.wasm
 
 
+build-dns:
+ifndef SANDBOX
+	$(error SANDBOX variable is undefined)
+endif
+	rm -rf ${SANDBOX}/sc-dns-rs
+	git clone --depth=1 --branch=master https://github.com/ElrondNetwork/sc-dns-rs.git ${SANDBOX}/sc-dns-rs
+	rm -rf ${SANDBOX}/sc-dns-rs/.git
+	erdpy build ${SANDBOX}/sc-dns-rs
+	erdpy test --directory="tests" ${SANDBOX}/sc-dns-rs
+	cp ${SANDBOX}/sc-dns-rs/output/dns.wasm ./test/dns/dns.wasm
+
+
 build-sc-examples:
 ifndef SANDBOX
 	$(error SANDBOX variable is undefined)
