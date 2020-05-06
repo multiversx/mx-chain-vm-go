@@ -245,12 +245,22 @@ func (b *BlockchainHookMock) CurrentEpoch() uint32 {
 	return b.CEpoch
 }
 
-func (b *BlockchainHookMock) ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*big.Int, uint64, error) {
-	return b.Value, b.Gas, b.Err
+func (b *BlockchainHookMock) ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+	outPutAccounts := make(map[string]*vmcommon.OutputAccount)
+	outPutAccounts[string(input.CallerAddr)] = &vmcommon.OutputAccount{BalanceDelta: b.Value}
+
+	return &vmcommon.VMOutput{
+		GasRemaining:   b.Gas,
+		OutputAccounts: outPutAccounts,
+	}, b.Err
 }
 
 func (b *BlockchainHookMock) GetBuiltinFunctionNames() vmcommon.FunctionNames {
 	return make(vmcommon.FunctionNames)
+}
+
+func (b *BlockchainHookMock) GetAllState(_ []byte) (map[string][]byte, error) {
+	return nil, nil
 }
 
 func (b *BlockchainHookMock) UpdateAccounts(outputAccounts map[string]*vmcommon.OutputAccount) {

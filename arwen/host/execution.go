@@ -352,8 +352,6 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]by
 
 // TODO: Add support for indirect smart contract upgrades.
 func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
-	_, _, metering, output, runtime, _ := host.GetContexts()
-
 	if host.isBuiltinFunctionBeingCalled() {
 		return host.callBuiltinFunction(input)
 	}
@@ -361,6 +359,7 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 	// Use all gas initially, on the Wasmer instance of the caller
 	// (runtime.PushInstance() is called later). In case of successful execution,
 	// the unused gas will be restored.
+	_, _, metering, output, runtime, _ := host.GetContexts()
 	initialGasProvided := input.GasProvided
 	metering.UseGas(initialGasProvided)
 
@@ -430,17 +429,20 @@ func (host *vmHost) callSCMethodIndirect() error {
 }
 
 func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) error {
-	_, _, metering, output, runtime, _ := host.GetContexts()
+	_, _, metering, output, _, _ := host.GetContexts()
 
-	valueToSend, gasConsumed, err := host.blockChainHook.ProcessBuiltInFunction(input)
+	vmOutput, err := host.blockChainHook.ProcessBuiltInFunction(input)
 	if err != nil {
-		metering.UseGas(gasConsumed)
+		metering.UseGas(input.GasProvided)
 		return err
 	}
 
-	scAccount, _ := output.GetOutputAccount(runtime.GetSCAddress())
-	scAccount.BalanceDelta.Add(scAccount.BalanceDelta, valueToSend)
-	metering.UseGas(gasConsumed)
+	gasConsumed := input.GasProvided - vmOutput.GasRemaining
+	if vmOutput.GasRemaining < input.GasProvided {
+		metering.UseGas(gasConsumed)
+	}
+
+	output.AddToActiveState(vmOutput)
 	return nil
 }
 

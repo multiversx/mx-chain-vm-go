@@ -559,16 +559,14 @@ func NewMessageBlockchainProcessBuiltinFunctionRequest(callInput vmcommon.Contra
 // MessageBlockchainProcessBuiltinFunctionResponse represents a response message
 type MessageBlockchainProcessBuiltinFunctionResponse struct {
 	Message
-	Value       *big.Int
-	GasConsumed uint64
+	VMOutput *vmcommon.VMOutput
 }
 
 // NewMessageBlockchainProcessBuiltinFunctionResponse creates a response message
-func NewMessageBlockchainProcessBuiltinFunctionResponse(value *big.Int, gasConsumed uint64, err error) *MessageBlockchainProcessBuiltinFunctionResponse {
+func NewMessageBlockchainProcessBuiltinFunctionResponse(vmOutput *vmcommon.VMOutput, err error) *MessageBlockchainProcessBuiltinFunctionResponse {
 	message := &MessageBlockchainProcessBuiltinFunctionResponse{}
 	message.Kind = BlockchainProcessBuiltinFunctionResponse
-	message.Value = value
-	message.GasConsumed = gasConsumed
+	message.VMOutput = vmOutput
 	message.SetError(err)
 	return message
 }

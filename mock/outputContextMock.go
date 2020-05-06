@@ -26,6 +26,9 @@ type OutputContextMock struct {
 	TransferResult     error
 }
 
+func (o *OutputContextMock) AddToActiveState(_ *vmcommon.VMOutput) {
+}
+
 func (o *OutputContextMock) InitState() {
 }
 

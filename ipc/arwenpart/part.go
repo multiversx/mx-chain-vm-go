@@ -32,7 +32,7 @@ func NewArwenPart(
 	blockchain := NewBlockchainHookGateway(messenger)
 	crypto := NewCryptoHookGateway()
 
-	host, err := host.NewArwenVM(
+	newArwenHost, err := host.NewArwenVM(
 		blockchain,
 		crypto,
 		vmHostParameters,
@@ -43,7 +43,7 @@ func NewArwenPart(
 
 	part := &ArwenPart{
 		Messenger: messenger,
-		VMHost:    host,
+		VMHost:    newArwenHost,
 	}
 
 	part.Repliers = common.CreateReplySlots(part.noopReplier)
@@ -54,7 +54,7 @@ func NewArwenPart(
 	return part, nil
 }
 
-func (part *ArwenPart) noopReplier(message common.MessageHandler) common.MessageHandler {
+func (part *ArwenPart) noopReplier(_ common.MessageHandler) common.MessageHandler {
 	log.Error("noopReplier called")
 	return common.CreateMessage(common.UndefinedRequestOrResponse)
 }
