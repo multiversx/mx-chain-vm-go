@@ -6,10 +6,15 @@ import (
 	"testing"
 
 	ajt "github.com/ElrondNetwork/arwen-wasm-vm/arwenjsontest"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 	controller "github.com/ElrondNetwork/elrond-vm-util/test-util/testcontroller"
 	ij "github.com/ElrondNetwork/elrond-vm-util/test-util/vmtestjson"
 	"github.com/stretchr/testify/require"
 )
+
+func init() {
+	logger.SetLogLevel("*:DEBUG")
+}
 
 func getTestRoot() string {
 	exePath, err := os.Getwd()
