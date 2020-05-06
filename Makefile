@@ -28,3 +28,15 @@ build-c-contracts:
 
 	erdpy build ./test/contracts/exec-same-ctx-child
 	erdpy build ./test/contracts/exec-same-ctx-parent
+
+
+build-delegation:
+ifndef SANDBOX
+	$(error SANDBOX variable is undefined)
+endif
+	rm -rf ${SANDBOX}/sc-delegation-rs
+	git clone --depth=1 --branch=master https://github.com/ElrondNetwork/sc-delegation-rs.git ${SANDBOX}/sc-delegation-rs
+	rm -rf ${SANDBOX}/sc-delegation-rs/.git
+	erdpy build ${SANDBOX}/sc-delegation-rs
+	erdpy test --directory="tests" ${SANDBOX}/sc-delegation-rs
+	cp ${SANDBOX}/sc-delegation-rs/output/delegation.wasm ./test/delegation/delegation.wasm
