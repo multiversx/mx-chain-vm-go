@@ -26,7 +26,10 @@ var childAddress = []byte("childSC.........................")
 
 // GetSCCode retrieves the bytecode of a WASM module from a file
 func GetSCCode(fileName string) []byte {
-	code, _ := ioutil.ReadFile(filepath.Clean(fileName))
+	code, err := ioutil.ReadFile(filepath.Clean(fileName))
+	if err != nil {
+		panic(fmt.Sprintf("GetSCCode(): %s", fileName))
+	}
 
 	return code
 }

@@ -37,11 +37,11 @@ var vaultAddress = []byte("vaultAddress....................")
 var thirdPartyAddress = []byte("thirdPartyAddress...............")
 
 func init() {
-	parentCompilationCost_SameCtx = getSizeOfFile("../../test/contracts/exec-same-ctx-parent/output/exec-same-ctx-parent.wasm")
-	childCompilationCost_SameCtx = getSizeOfFile("../../test/contracts/exec-same-ctx-child/output/exec-same-ctx-child.wasm")
+	parentCompilationCost_SameCtx = uint64(len(GetTestSCCode("exec-same-ctx-parent", "../../")))
+	childCompilationCost_SameCtx = uint64(len(GetTestSCCode("exec-same-ctx-child", "../../")))
 
-	parentCompilationCost_DestCtx = getSizeOfFile("../../test/contracts/exec-dest-ctx-parent/output/exec-dest-ctx-parent.wasm")
-	childCompilationCost_DestCtx = getSizeOfFile("../../test/contracts/exec-dest-ctx-child/output/exec-dest-ctx-child.wasm")
+	parentCompilationCost_DestCtx = uint64(len(GetTestSCCode("exec-dest-ctx-parent", "../../")))
+	childCompilationCost_DestCtx = uint64(len(GetTestSCCode("exec-dest-ctx-child", "../../")))
 }
 
 func getSizeOfFile(path string) uint64 {
@@ -79,7 +79,7 @@ func expectedVMOutput_SameCtx_Prepare() *vmcommon.VMOutput {
 	AddFinishData(vmOutput, parentFinishB)
 	AddFinishData(vmOutput, []byte("succ"))
 
-	expectedExecutionCost := uint64(135)
+	expectedExecutionCost := uint64(137)
 	gas := gasProvided
 	gas -= parentCompilationCost_SameCtx
 	gas -= expectedExecutionCost
@@ -93,7 +93,7 @@ func expectedVMOutput_SameCtx_WrongContractCalled() *vmcommon.VMOutput {
 
 	AddFinishData(vmOutput, []byte("fail"))
 
-	executionCostBeforeExecuteAPI := uint64(180)
+	executionCostBeforeExecuteAPI := uint64(182)
 	executeAPICost := uint64(39)
 	gasLostOnFailure := uint64(50000)
 	finalCost := uint64(44)
@@ -126,7 +126,7 @@ func expectedVMOutput_SameCtx_OutOfGas() *vmcommon.VMOutput {
 
 	AddFinishData(vmOutput, []byte("fail"))
 
-	executionCostBeforeExecuteAPI := uint64(124)
+	executionCostBeforeExecuteAPI := uint64(128)
 	executeAPICost := uint64(1)
 	gasLostOnFailure := uint64(3500)
 	finalCost := uint64(54)
@@ -180,7 +180,7 @@ func expectedVMOutput_SameCtx_SuccessfulChildCall() *vmcommon.VMOutput {
 	AddFinishData(vmOutput, []byte("succ"))
 	AddFinishData(vmOutput, []byte("succ"))
 
-	parentGasBeforeExecuteAPI := uint64(188)
+	parentGasBeforeExecuteAPI := uint64(197)
 	executeAPICost := uint64(39)
 	childExecutionCost := uint64(431)
 	finalCost := uint64(139)
@@ -472,7 +472,7 @@ func expectedVMOutput_DestCtx_Prepare() *vmcommon.VMOutput {
 	AddFinishData(vmOutput, parentFinishB)
 	AddFinishData(vmOutput, []byte("succ"))
 
-	expectedExecutionCost := uint64(135)
+	expectedExecutionCost := uint64(137)
 	gas := gasProvided
 	gas -= parentCompilationCost_DestCtx
 	gas -= expectedExecutionCost
@@ -489,7 +489,7 @@ func expectedVMOutput_DestCtx_WrongContractCalled() *vmcommon.VMOutput {
 
 	AddFinishData(vmOutput, []byte("fail"))
 
-	executionCostBeforeExecuteAPI := uint64(180)
+	executionCostBeforeExecuteAPI := uint64(182)
 	executeAPICost := uint64(42)
 	gasLostOnFailure := uint64(10000)
 	finalCost := uint64(44)
@@ -522,7 +522,7 @@ func expectedVMOutput_DestCtx_OutOfGas() *vmcommon.VMOutput {
 
 	AddFinishData(vmOutput, []byte("fail"))
 
-	executionCostBeforeExecuteAPI := uint64(124)
+	executionCostBeforeExecuteAPI := uint64(128)
 	executeAPICost := uint64(1)
 	gasLostOnFailure := uint64(3500)
 	finalCost := uint64(54)
@@ -564,7 +564,7 @@ func expectedVMOutput_DestCtx_SuccessfulChildCall() *vmcommon.VMOutput {
 	AddFinishData(vmOutput, []byte("succ"))
 	AddFinishData(vmOutput, []byte("succ"))
 
-	parentGasBeforeExecuteAPI := uint64(188)
+	parentGasBeforeExecuteAPI := uint64(192)
 	executeAPICost := uint64(42)
 	childExecutionCost := uint64(91)
 	finalCost := uint64(65)
