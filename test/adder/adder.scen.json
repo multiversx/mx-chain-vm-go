@@ -91,7 +91,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "keccak256:``sum": "0x08"
+                        "``sum": "0x08"
                     },
                     "code": "file:adder.wasm"
                 }
