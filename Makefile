@@ -14,8 +14,6 @@ test: clean build-arwen
 	go test -count=1 ./...
 
 build-c-contracts:
-	# TODO: rm *.wasm
-
 	erdpy build ./test/contracts/erc20
 	erdpy build ./test/contracts/counter
 
@@ -23,8 +21,6 @@ build-c-contracts:
 	erdpy build ./test/contracts/init-simple
 	erdpy build ./test/contracts/init-wrong
 	erdpy build ./test/contracts/misc
-	# TODO: How to build this one?
-	# erdpy build ./test/contracts/num-with-fp
 	erdpy build ./test/contracts/signatures
 	erdpy build ./test/contracts/elrondei
 	erdpy build ./test/contracts/breakpoint
@@ -76,9 +72,7 @@ ifndef SANDBOX
 endif
 	rm -rf ${SANDBOX}/sc-examples
 
-	git clone --depth=1 --branch=master https://github.com/ElrondNetwork/sc-examples.git ${SANDBOX}/sc-examples
-	rm -rf ${SANDBOX}/sc-examples/.git
-
+	erdpy new --template=erc20-c --directory ${SANDBOX}/sc-examples erc20-c
 	erdpy build ${SANDBOX}/sc-examples/erc20-c
 	cp ${SANDBOX}/sc-examples/erc20-c/output/wrc20_arwen.wasm ./test/erc20/contracts/erc20-c.wasm
 
@@ -88,17 +82,12 @@ ifndef SANDBOX
 	$(error SANDBOX variable is undefined)
 endif
 	rm -rf ${SANDBOX}/sc-examples-rs
-	rm -rf ${SANDBOX}/sc-examples-rs-split
-
-	git clone --depth=1 --branch=development https://github.com/ElrondNetwork/sc-examples-rs.git ${SANDBOX}/sc-examples-rs
-	rm -rf ${SANDBOX}/sc-examples-rs/.git
-	mkdir ${SANDBOX}/sc-examples-rs-split
-	cp -r ${SANDBOX}/sc-examples-rs/adder ${SANDBOX}/sc-examples-rs-split
-	cp -r ${SANDBOX}/sc-examples-rs/simple-coin ${SANDBOX}/sc-examples-rs-split
-
-	erdpy build ${SANDBOX}/sc-examples-rs-split/adder
-	erdpy build ${SANDBOX}/sc-examples-rs-split/simple-coin
-	erdpy test ${SANDBOX}/sc-examples-rs-split/adder
-	erdpy test ${SANDBOX}/sc-examples-rs-split/simple-coin
-	cp ${SANDBOX}/sc-examples-rs-split/adder/output/adder.wasm ./test/adder/adder.wasm
-	cp ${SANDBOX}/sc-examples-rs-split/simple-coin/output/simple-coin.wasm ./test/erc20/contracts/simple-coin.wasm
+	
+	erdpy new --template=simple-coin --directory ${SANDBOX}/sc-examples-rs simple-coin
+	erdpy new --template=adder --directory ${SANDBOX}/sc-examples-rs adder
+	erdpy build ${SANDBOX}/sc-examples-rs/adder
+	erdpy build ${SANDBOX}/sc-examples-rs/simple-coin
+	erdpy test ${SANDBOX}/sc-examples-rs/adder
+	erdpy test ${SANDBOX}/sc-examples-rs/simple-coin
+	cp ${SANDBOX}/sc-examples-rs/adder/output/adder.wasm ./test/adder/adder.wasm
+	cp ${SANDBOX}/sc-examples-rs/simple-coin/output/simple-coin.wasm ./test/erc20/contracts/simple-coin.wasm
