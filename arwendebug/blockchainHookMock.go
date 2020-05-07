@@ -9,10 +9,7 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
-var ErrAccountDoesntExist = errors.New("account does not exist")
-
-//var ErrCantDetermineAccountExists = errors.New("can't determine whether account exists")
-
+var errAccountDoesntExist = errors.New("account does not exist")
 var zero = big.NewInt(0)
 
 var _ vmcommon.BlockchainHook = (*BlockchainHookMock)(nil)
@@ -26,9 +23,10 @@ type Account struct {
 	Code    []byte
 }
 
-// AccountMap is a map from address to account
+// AccountsMap is a map from address to account
 type AccountsMap map[string]*Account
 
+// BlockchainHookMock -
 type BlockchainHookMock struct {
 	Accounts      AccountsMap
 	BlockHash     []byte
@@ -49,12 +47,14 @@ type BlockchainHookMock struct {
 	LastCreatedContractAddress []byte
 }
 
+// NewBlockchainHookMock -
 func NewBlockchainHookMock() *BlockchainHookMock {
 	return &BlockchainHookMock{
 		Accounts: make(AccountsMap),
 	}
 }
 
+// AddAccount -
 func (b *BlockchainHookMock) AddAccount(account *Account) {
 	if account.Storage == nil {
 		account.Storage = make(map[string][]byte)
@@ -65,12 +65,14 @@ func (b *BlockchainHookMock) AddAccount(account *Account) {
 	b.Accounts[string(account.Address)] = account
 }
 
+// AddAccounts -
 func (b *BlockchainHookMock) AddAccounts(accounts []*Account) {
 	for _, account := range accounts {
 		b.AddAccount(account)
 	}
 }
 
+// AccountExists -
 func (b *BlockchainHookMock) AccountExists(address []byte) (bool, error) {
 	_, ok := b.Accounts[string(address)]
 	if !ok {
@@ -80,6 +82,7 @@ func (b *BlockchainHookMock) AccountExists(address []byte) (bool, error) {
 	return true, nil
 }
 
+// NewAddress -
 func (b *BlockchainHookMock) NewAddress(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error) {
 	if len(creatorAddress) == 0 {
 		panic("mock: bad creator address")
@@ -93,108 +96,133 @@ func (b *BlockchainHookMock) NewAddress(creatorAddress []byte, creatorNonce uint
 	return address, nil
 }
 
+// GetBalance -
 func (b *BlockchainHookMock) GetBalance(address []byte) (*big.Int, error) {
 	account, ok := b.Accounts[string(address)]
 	if !ok {
-		return nil, ErrAccountDoesntExist
+		return nil, errAccountDoesntExist
 	}
 
 	return account.Balance, nil
 }
 
+// GetNonce -
 func (b *BlockchainHookMock) GetNonce(address []byte) (uint64, error) {
 	account, ok := b.Accounts[string(address)]
 	if !ok {
-		return 0, ErrAccountDoesntExist
+		return 0, errAccountDoesntExist
 	}
 
 	return account.Nonce, nil
 }
 
+// GetStorageData -
 func (b *BlockchainHookMock) GetStorageData(address []byte, index []byte) ([]byte, error) {
 	account, ok := b.Accounts[string(address)]
 	if !ok {
-		return []byte{}, ErrAccountDoesntExist
+		return []byte{}, errAccountDoesntExist
 	}
 
 	return account.Storage[string(index)], nil
 }
 
+// IsCodeEmpty -
 func (b *BlockchainHookMock) IsCodeEmpty(address []byte) (bool, error) {
 	account, ok := b.Accounts[string(address)]
 	if !ok {
-		return false, ErrAccountDoesntExist
+		return false, errAccountDoesntExist
 	}
 
 	empty := len(account.Code) == 0
 	return empty, nil
 }
 
+// GetCode -
 func (b *BlockchainHookMock) GetCode(address []byte) ([]byte, error) {
 	account, ok := b.Accounts[string(address)]
 	if !ok {
-		return []byte{}, ErrAccountDoesntExist
+		return []byte{}, errAccountDoesntExist
 	}
 
 	return account.Code, nil
 }
 
+// GetBlockhash -
 func (b *BlockchainHookMock) GetBlockhash(nonce uint64) ([]byte, error) {
 	return b.BlockHash, nil
 }
 
+// LastNonce -
 func (b *BlockchainHookMock) LastNonce() uint64 {
 	return b.LNonce
 }
 
+// LastRound -
 func (b *BlockchainHookMock) LastRound() uint64 {
 	return b.LRound
 }
 
+// LastTimeStamp -
 func (b *BlockchainHookMock) LastTimeStamp() uint64 {
 	return b.LTimeStamp
 }
 
+// LastRandomSeed -
 func (b *BlockchainHookMock) LastRandomSeed() []byte {
 	return b.LRandomSeed
 }
 
+// LastEpoch -
 func (b *BlockchainHookMock) LastEpoch() uint32 {
 	return b.LEpoch
 }
 
+// GetStateRootHash -
 func (b *BlockchainHookMock) GetStateRootHash() []byte {
 	return b.StateRootHash
 }
 
+// CurrentNonce -
 func (b *BlockchainHookMock) CurrentNonce() uint64 {
 	return b.CNonce
 }
 
+// CurrentRound -
 func (b *BlockchainHookMock) CurrentRound() uint64 {
 	return b.CRound
 }
 
+// CurrentTimeStamp -
 func (b *BlockchainHookMock) CurrentTimeStamp() uint64 {
 	return b.CTimeStamp
 }
 
+// CurrentRandomSeed -
 func (b *BlockchainHookMock) CurrentRandomSeed() []byte {
 	return b.CRandomSeed
 }
 
+// CurrentEpoch -
 func (b *BlockchainHookMock) CurrentEpoch() uint32 {
 	return b.CEpoch
 }
 
-func (b *BlockchainHookMock) ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*big.Int, uint64, error) {
-	return b.Value, b.Gas, nil
+// ProcessBuiltInFunction -
+func (b *BlockchainHookMock) ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+	return &vmcommon.VMOutput{}, nil
 }
 
+// GetBuiltinFunctionNames -
 func (b *BlockchainHookMock) GetBuiltinFunctionNames() vmcommon.FunctionNames {
 	return make(vmcommon.FunctionNames)
 }
 
+// GetAllState -
+func (b *BlockchainHookMock) GetAllState(address []byte) (map[string][]byte, error) {
+	return make(map[string][]byte), nil
+}
+
+// UpdateAccounts -
 func (b *BlockchainHookMock) UpdateAccounts(outputAccounts map[string]*vmcommon.OutputAccount) {
 	for strAddress, outputAccount := range outputAccounts {
 		account, exists := b.Accounts[strAddress]
