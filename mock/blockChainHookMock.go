@@ -20,7 +20,7 @@ type Account struct {
 	Address []byte
 	Nonce   uint64
 	Balance *big.Int
-	Storage map[string]vmcommon.StorageData
+	Storage map[string][]byte
 	Code    []byte
 	Err     error
 }
@@ -56,7 +56,7 @@ func NewBlockchainHookMock() *BlockchainHookMock {
 
 func (b *BlockchainHookMock) AddAccount(account *Account) {
 	if account.Storage == nil {
-		account.Storage = make(map[string]vmcommon.StorageData)
+		account.Storage = make(map[string][]byte)
 	}
 	if account.Balance == nil {
 		account.Balance = big.NewInt(0)
@@ -141,18 +141,18 @@ func (b *BlockchainHookMock) GetNonce(address []byte) (uint64, error) {
 	return account.Nonce, nil
 }
 
-func (b *BlockchainHookMock) GetStorageData(address []byte, index []byte) (vmcommon.StorageData, error) {
+func (b *BlockchainHookMock) GetStorageData(address []byte, index []byte) ([]byte, error) {
 	if b.Err != nil {
-		return vmcommon.StorageData{}, b.Err
+		return nil, b.Err
 	}
 
 	account, ok := b.Accounts[string(address)]
 	if !ok {
-		return vmcommon.StorageData{Data: []byte{}}, ErrAccountDoesntExist
+		return []byte{}, ErrAccountDoesntExist
 	}
 
 	if account.Err != nil {
-		return vmcommon.StorageData{}, account.Err
+		return nil, account.Err
 	}
 
 	return account.Storage[string(index)], nil
@@ -271,7 +271,7 @@ func (b *BlockchainHookMock) UpdateAccounts(outputAccounts map[string]*vmcommon.
 				Address: outputAccount.Address,
 				Balance: big.NewInt(0),
 				Code:    nil,
-				Storage: make(map[string]vmcommon.StorageData),
+				Storage: make(map[string][]byte),
 				Nonce:   0,
 			}
 		}
@@ -295,9 +295,9 @@ func mergeStorageUpdates(
 	rightAccount *vmcommon.OutputAccount,
 ) {
 	if leftAccount.Storage == nil {
-		leftAccount.Storage = make(map[string]vmcommon.StorageData)
+		leftAccount.Storage = make(map[string][]byte)
 	}
 	for key, update := range rightAccount.StorageUpdates {
-		leftAccount.Storage[key] = update.StorageData
+		leftAccount.Storage[key] = update.Data
 	}
 }

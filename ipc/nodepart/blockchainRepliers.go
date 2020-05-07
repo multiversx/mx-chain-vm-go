@@ -35,7 +35,7 @@ func (part *NodePart) replyToBlockchainGetNonce(request common.MessageHandler) c
 func (part *NodePart) replyToBlockchainGetStorageData(request common.MessageHandler) common.MessageHandler {
 	typedRequest := request.(*common.MessageBlockchainGetStorageDataRequest)
 	data, err := part.blockchain.GetStorageData(typedRequest.Address, typedRequest.Index)
-	response := common.NewMessageBlockchainGetStorageDataResponse(data.Data, err)
+	response := common.NewMessageBlockchainGetStorageDataResponse(data, err)
 	return response
 }
 

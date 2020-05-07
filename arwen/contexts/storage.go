@@ -7,6 +7,8 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
+const lockKeyContext string = "timelock"
+
 type storageContext struct {
 	host           arwen.VMHost
 	blockChainHook vmcommon.BlockchainHook
@@ -64,18 +66,18 @@ func (context *storageContext) GetStorageUpdates(address []byte) map[string]*vmc
 func (context *storageContext) GetStorage(key []byte) []byte {
 	storageUpdates := context.GetStorageUpdates(context.address)
 	if storageUpdate, ok := storageUpdates[string(key)]; ok {
-		return storageUpdate.StorageData.Data
+		return storageUpdate.Data
 	}
 
 	value, _ := context.blockChainHook.GetStorageData(context.address, key)
-	if value.Data != nil {
+	if value != nil {
 		storageUpdates[string(key)] = &vmcommon.StorageUpdate{
 			Offset: key,
-			StorageData: value,
+			Data:   value,
 		}
 	}
 
-	return value.Data
+	return value
 }
 
 func (context *storageContext) SetStorage(key []byte, value []byte) int32 {
@@ -94,12 +96,10 @@ func (context *storageContext) SetStorage(key []byte, value []byte) int32 {
 		oldValue = context.GetStorage(key)
 		storageUpdates[strKey] = &vmcommon.StorageUpdate{
 			Offset: key,
-			StorageData: vmcommon.StorageData{
-				Data: oldValue,
-			},
+			Data:   oldValue,
 		}
 	} else {
-		oldValue = update.StorageData.Data
+		oldValue = update.Data
 	}
 
 	lengthOldValue := len(oldValue)
@@ -111,11 +111,9 @@ func (context *storageContext) SetStorage(key []byte, value []byte) int32 {
 
 	newUpdate := &vmcommon.StorageUpdate{
 		Offset: key,
-		StorageData: vmcommon.StorageData{
-			Data: make([]byte, length),
-		},
+		Data:   make([]byte, length),
 	}
-	copy(newUpdate.StorageData.Data[:length], value[:length])
+	copy(newUpdate.Data[:length], value[:length])
 	storageUpdates[strKey] = newUpdate
 
 	if bytes.Equal(oldValue, zero) {
@@ -123,8 +121,6 @@ func (context *storageContext) SetStorage(key []byte, value []byte) int32 {
 		metering.UseGas(useGas)
 		return int32(arwen.StorageAdded)
 	}
-
-	// TODO: free gas for timeloks?
 	if bytes.Equal(value, zero) {
 		freeGas := metering.GasSchedule().BaseOperationCost.ReleasePerByte * uint64(lengthOldValue)
 		metering.FreeGas(freeGas)

@@ -1,0 +1,130 @@
+{
+  "name": "timelocks",
+  "comment": "increment, block, try to increment, release, increment again",
+  "steps": [
+    {
+      "step": "setState",
+      "accounts": {
+        "0xacc1000000000000000000000000000000000000000000000000000000001234": {
+          "nonce": "5",
+          "balance": "0x1000000",
+          "storage": {},
+          "code": ""
+        }
+      }
+    },
+    {
+      "step": "scDeploy",
+      "tx": {
+        "from": "0xacc1000000000000000000000000000000000000000000000000000000001234",
+        "value": "0",
+        "contractCode": "file:timelocks.wasm",
+        "arguments": [],
+        "gasLimit": "0x100000",
+        "gasPrice": "0x01"
+      },
+      "expect": {
+        "out": [],
+        "status": "",
+        "logs": [],
+        "gas": "*",
+        "refund": "*"
+      }
+    },
+    {
+      "step": "scCall",
+      "tx": {
+        "from": "0xacc1000000000000000000000000000000000000000000000000000000001234",
+        "to": "0x0000000000000000000011111111acc100000000000000000000000000051234",
+        "value": "0",
+        "function": "incrementCounter",
+        "arguments": [],
+        "gasLimit": "0x100000",
+        "gasPrice": "0x01"
+      },
+      "expect": {
+        "out": ["1"],
+        "status": "",
+        "logs": [],
+        "gas": "*",
+        "refund": "*"
+      }
+    },
+    {
+      "step": "scCall",
+      "tx": {
+        "from": "0xacc1000000000000000000000000000000000000000000000000000000001234",
+        "to": "0x0000000000000000000011111111acc100000000000000000000000000051234",
+        "value": "0",
+        "function": "lockCounter",
+        "arguments": [],
+        "gasLimit": "0x100000",
+        "gasPrice": "0x01"
+      },
+      "expect": {
+        "out": [],
+        "status": "",
+        "logs": [],
+        "gas": "*",
+        "refund": "*"
+      }
+    },
+    {
+      "step": "scCall",
+      "tx": {
+        "from": "0xacc1000000000000000000000000000000000000000000000000000000001234",
+        "to": "0x0000000000000000000011111111acc100000000000000000000000000051234",
+        "value": "0",
+        "function": "incrementCounter",
+        "arguments": [],
+        "gasLimit": "0x100000",
+        "gasPrice": "0x01"
+      },
+      "expect": {
+        "out": ["1"],
+        "status": "",
+        "logs": [],
+        "gas": "*",
+        "refund": "*"
+      }
+    },
+    {
+      "step": "scCall",
+      "tx": {
+        "from": "0xacc1000000000000000000000000000000000000000000000000000000001234",
+        "to": "0x0000000000000000000011111111acc100000000000000000000000000051234",
+        "value": "0",
+        "function": "releaseCounter",
+        "arguments": [],
+        "gasLimit": "0x100000",
+        "gasPrice": "0x01"
+      },
+      "expect": {
+        "out": [],
+        "status": "",
+        "logs": [],
+        "gas": "*",
+        "refund": "*"
+      }
+    },
+    {
+      "step": "scCall",
+      "tx": {
+        "from": "0xacc1000000000000000000000000000000000000000000000000000000001234",
+        "to": "0x0000000000000000000011111111acc100000000000000000000000000051234",
+        "value": "0",
+        "function": "incrementCounter",
+        "arguments": [],
+        "gasLimit": "0x100000",
+        "gasPrice": "0x01"
+      },
+      "expect": {
+        "out": ["2"],
+        "status": "",
+        "logs": [],
+        "gas": "*",
+        "refund": "*"
+      }
+    }
+  ]
+}

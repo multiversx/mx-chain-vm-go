@@ -73,7 +73,7 @@ func (pfe *pureFunctionExecutor) initAccounts(contractPath string) {
 		Address: pfe.contractAddress,
 		Nonce:   0,
 		Balance: big.NewInt(0),
-		Storage: make(map[string]vmcommon.StorageData),
+		Storage: make(map[string][]byte),
 		Code:    scCode,
 	})
 
@@ -82,7 +82,7 @@ func (pfe *pureFunctionExecutor) initAccounts(contractPath string) {
 		Address: pfe.userAddress,
 		Nonce:   0,
 		Balance: big.NewInt(0x100000000),
-		Storage: make(map[string]vmcommon.StorageData),
+		Storage: make(map[string][]byte),
 		Code:    []byte{},
 	})
 }

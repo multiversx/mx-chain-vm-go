@@ -101,8 +101,8 @@ func TestStorageContext_GetStorageUpdates(t *testing.T) {
 	mockOutput.OutputAccountIsNew = false
 
 	account.StorageUpdates["update"] = &vmcommon.StorageUpdate{
-		Offset:      []byte("update"),
-		StorageData: vmcommon.StorageData{Data:   []byte("some data")},
+		Offset: []byte("update"),
+		Data:   []byte("some data"),
 	}
 
 	host := &mock.VmHostMock{
@@ -115,7 +115,7 @@ func TestStorageContext_GetStorageUpdates(t *testing.T) {
 	storageUpdates := storageContext.GetStorageUpdates([]byte("account"))
 	require.Equal(t, 1, len(storageUpdates))
 	require.Equal(t, []byte("update"), storageUpdates["update"].Offset)
-	require.Equal(t, []byte("some data"), storageUpdates["update"].StorageData.Data)
+	require.Equal(t, []byte("some data"), storageUpdates["update"].Data)
 }
 
 func TestStorageContext_SetStorage(t *testing.T) {

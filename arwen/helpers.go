@@ -16,6 +16,11 @@ var logDuration = logger.GetOrCreate("arwen/duration")
 // Zero is the big integer 0
 var Zero = big.NewInt(0)
 
+func CustomStorageKey(context unsafe.Pointer, keyType string, associatedKey []byte) ([]byte, error) {
+	crypto := GetCryptoContext(context)
+	return crypto.Keccak256(append(associatedKey, []byte(keyType)...))
+}
+
 func GuardedMakeByteSlice2D(length int32) ([][]byte, error) {
 	if length < 0 {
 		return nil, fmt.Errorf("GuardedMakeByteSlice2D: negative length (%d)", length)

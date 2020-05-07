@@ -35,6 +35,11 @@ package elrondapi
 // extern int32_t getReturnDataSize(void *context, int32_t resultID);
 // extern int32_t getReturnData(void *context, int32_t resultID, int32_t dataOffset);
 //
+// extern int32_t setStorageLock(void *context, int32_t keyOffset, long long lockTimestamp);
+// extern long long getStorageLock(void *context, int32_t keyOffset);
+// extern int32_t isStorageLocked(void *context, int32_t keyOffset);
+// extern int32_t clearStorageLock(void *context, int32_t keyOffset);
+//
 // extern long long getBlockTimestamp(void *context);
 // extern long long getBlockNonce(void *context);
 // extern long long getBlockRound(void *context);
@@ -125,6 +130,26 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("storageLoad", storageLoad, C.storageLoad)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getStorageLock", getStorageLock, C.getStorageLock)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("setStorageLock", setStorageLock, C.setStorageLock)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("isStorageLocked", isStorageLocked, C.isStorageLocked)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("clearStorageLock", clearStorageLock, C.clearStorageLock)
 	if err != nil {
 		return nil, err
 	}
@@ -570,6 +595,74 @@ func storageLoad(context unsafe.Pointer, keyOffset int32, dataOffset int32) int3
 	}
 
 	return int32(len(data))
+}
+
+//export setStorageLock
+func setStorageLock(context unsafe.Pointer, keyOffset int32, lockTimestamp int64) int32 {
+	runtime := arwen.GetRuntimeContext(context)
+	storage := arwen.GetStorageContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	key, err := runtime.MemLoad(keyOffset, arwen.HashLen)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return -1
+	}
+
+	timeLockKey, err := arwen.CustomStorageKey(context, arwen.TimeLockKeyPrefix, key)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return -1
+	}
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.Int64StorageStore
+	metering.UseGas(gasToUse)
+
+	bigTimestamp := big.NewInt(0).SetInt64(lockTimestamp)
+	return storage.SetStorage(timeLockKey, bigTimestamp.Bytes())
+}
+
+//export getStorageLock
+func getStorageLock(context unsafe.Pointer, keyOffset int32) int64 {
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+	storage := arwen.GetStorageContext(context)
+
+	key, err := runtime.MemLoad(keyOffset, arwen.HashLen)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return -1
+	}
+
+	timeLockKey, err := arwen.CustomStorageKey(context, arwen.TimeLockKeyPrefix, key)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return -1
+	}
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.StorageLoad
+	metering.UseGas(gasToUse)
+
+	data := storage.GetStorage(timeLockKey)
+	timeLock := big.NewInt(0).SetBytes(data).Int64()
+
+	return timeLock
+}
+
+//export isStorageLocked
+func isStorageLocked(context unsafe.Pointer, keyOffset int32) int32 {
+	timeLock := getStorageLock(context, keyOffset)
+	if timeLock < 0 {
+		return -1
+	}
+
+	currentTimestamp := getBlockTimestamp(context)
+	if timeLock <= currentTimestamp {
+		return 0
+	}
+
+	return 1
+}
+
+//export clearStorageLock
+func clearStorageLock(context unsafe.Pointer, keyOffset int32) int32 {
+	return setStorageLock(context, keyOffset, 0)
 }
 
 //export getCaller

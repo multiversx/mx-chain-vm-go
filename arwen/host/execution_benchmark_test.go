@@ -115,8 +115,8 @@ func verifyTransfers(tb testing.TB, mockBlockchainHook *mock.BlockchainHookMock,
 	receiverKey := createERC20Key("receiver")
 
 	scStorage := mockBlockchainHook.Accounts[string(scAddress)].Storage
-	ownerTokens := big.NewInt(0).SetBytes(scStorage[ownerKey].Data)
-	receiverTokens := big.NewInt(0).SetBytes(scStorage[receiverKey].Data)
+	ownerTokens := big.NewInt(0).SetBytes(scStorage[ownerKey])
+	receiverTokens := big.NewInt(0).SetBytes(scStorage[receiverKey])
 	require.Equal(tb, arwen.Zero, ownerTokens)
 	require.Equal(tb, totalTokenSupply, receiverTokens)
 }

@@ -12,12 +12,10 @@ import (
 )
 
 func convertAccount(testAcct *ij.Account) *worldhook.Account {
-	storage := make(map[string]vmi.StorageData)
+	storage := make(map[string][]byte)
 	for _, stkvp := range testAcct.Storage {
 		key := string(stkvp.Key.Value)
-		storage[key] = vmi.StorageData{
-			Data: stkvp.Value.Value,
-		}
+		storage[key] = stkvp.Value.Value
 	}
 
 	if len(testAcct.Address.Value) != 32 {

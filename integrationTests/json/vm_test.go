@@ -158,7 +158,25 @@ func TestDnsContract(t *testing.T) {
 	)
 	err = runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
-		"dns",
+		"adder",
+		".scen.json",
+		[]string{})
+
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestTimelocks(t *testing.T) {
+	executor, err := ajt.NewArwenTestExecutor()
+	require.Nil(t, err)
+	runner := controller.NewScenarioRunner(
+		executor,
+		ij.NewDefaultFileResolver(),
+	)
+	err = runner.RunAllJSONScenariosInDirectory(
+		getTestRoot(),
+		"timelocks",
 		".scen.json",
 		[]string{})
 

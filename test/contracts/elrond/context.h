@@ -40,4 +40,10 @@ int storageLoad(byte *key, byte *data);
 int int64storageStore(byte *key, long long value);
 long long int64storageLoad(byte *key);
 
+// Timelocks related functions
+int setStorageLock(byte *key, long long timeLock);
+long long getStorageLock(byte *key);
+int isStorageLocked(byte *key);
+int clearStorageLock(byte *key);
+
 #endif

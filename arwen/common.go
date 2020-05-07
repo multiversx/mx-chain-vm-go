@@ -25,6 +25,8 @@ const (
 	BreakpointOutOfGas
 )
 
+const TimeLockKeyPrefix = "timelock"
+
 // AsyncCallInfo contains the information required to handle the asynchronous call of another SmartContract
 type AsyncCallInfo struct {
 	Destination []byte

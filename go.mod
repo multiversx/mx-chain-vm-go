@@ -5,8 +5,8 @@ go 1.13
 require (
 	github.com/ElrondNetwork/big-int-util v0.0.5
 	github.com/ElrondNetwork/elrond-go-logger v1.0.2
-	github.com/ElrondNetwork/elrond-vm-common v0.1.20-0.20200504094321-bd04798c0f44
-	github.com/ElrondNetwork/elrond-vm-util v0.2.4-0.20200504094701-c7c56a4d2bce
+	github.com/ElrondNetwork/elrond-vm-common v0.1.19
+	github.com/ElrondNetwork/elrond-vm-util v0.2.3
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/pelletier/go-toml v1.6.0
 	github.com/stretchr/testify v1.5.1

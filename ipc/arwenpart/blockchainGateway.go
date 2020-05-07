@@ -83,11 +83,11 @@ func (blockchain *BlockchainHookGateway) GetNonce(address []byte) (uint64, error
 	return response.Nonce, response.GetError()
 }
 
-// GetStorageData forwards a message to the actual hook
-func (blockchain *BlockchainHookGateway) GetStorageData(address []byte, index []byte) (vmcommon.StorageData, error) {
+// GetStorageFullData forwards a message to the actual hook
+func (blockchain *BlockchainHookGateway) GetStorageData(address []byte, index []byte) ([]byte, error) {
 	request := common.NewMessageBlockchainGetStorageDataRequest(address, index)
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
-	storageData := vmcommon.StorageData{}
+	storageData := make([]byte, 0)
 	if err != nil {
 		return storageData, err
 	}
@@ -97,7 +97,7 @@ func (blockchain *BlockchainHookGateway) GetStorageData(address []byte, index []
 	}
 
 	response := rawResponse.(*common.MessageBlockchainGetStorageDataResponse)
-	storageData.Data = response.Data
+	storageData = response.Data
 	return storageData, response.GetError()
 }
 

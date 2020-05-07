@@ -303,8 +303,8 @@ func TestExecution_CallSCMethod(t *testing.T) {
 func TestExecution_Call_Successful(t *testing.T) {
 	code := GetTestSCCode("counter", "../../")
 	host, stubBlockchainHook := DefaultTestArwenForCall(t, code)
-	stubBlockchainHook.GetStorageDataCalled = func(scAddress []byte, key []byte) (vmcommon.StorageData, error) {
-		return vmcommon.StorageData{Data: big.NewInt(1001).Bytes()}, nil
+	stubBlockchainHook.GetStorageDataCalled = func(scAddress []byte, key []byte) ([]byte, error) {
+		return big.NewInt(1001).Bytes(), nil
 	}
 	input := DefaultTestContractCallInput()
 	input.GasProvided = 100000
@@ -316,7 +316,7 @@ func TestExecution_Call_Successful(t *testing.T) {
 	require.Len(t, vmOutput.OutputAccounts, 1)
 	require.Len(t, vmOutput.OutputAccounts[string(parentAddress)].StorageUpdates, 1)
 
-	storedBytes := vmOutput.OutputAccounts[string(parentAddress)].StorageUpdates[string(counterKey)].StorageData.Data
+	storedBytes := vmOutput.OutputAccounts[string(parentAddress)].StorageUpdates[string(counterKey)].Data
 	require.Equal(t, big.NewInt(1002).Bytes(), storedBytes)
 }
 
