@@ -53,7 +53,7 @@ func Test_DeployContract(t *testing.T) {
 			RequestBase:  requestBase,
 			Impersonated: "alice",
 		},
-		CodePath: "./testdata/counter.wasm",
+		CodePath: "../test/contracts/counter/counter.wasm",
 	}
 
 	createAccountResponse, err := facade.CreateAccount(createAccountRequest)
@@ -91,7 +91,7 @@ func Test_RunContract(t *testing.T) {
 			RequestBase:  requestBase,
 			Impersonated: "alice",
 		},
-		CodePath: "./testdata/counter.wasm",
+		CodePath: "../test/contracts/counter/counter.wasm",
 	}
 
 	runRequest := RunRequest{
