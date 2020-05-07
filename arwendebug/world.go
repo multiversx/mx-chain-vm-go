@@ -93,6 +93,11 @@ func (world *world) prepareDeployInput(request DeployRequest) (*vmcommon.Contrac
 		return nil, err
 	}
 
+	createInput.Arguments, err = request.getArguments()
+	if err != nil {
+		return nil, err
+	}
+
 	createInput.GasProvided = request.getGasLimit()
 	createInput.GasPrice = request.getGasPrice()
 
@@ -125,12 +130,18 @@ func (world *world) RunSmartContract(request RunRequest) (*RunResponse, error) {
 }
 
 func (world *world) prepareCallInput(request RunRequest) (*vmcommon.ContractCallInput, error) {
+	var err error
+
 	callInput := &vmcommon.ContractCallInput{}
 	callInput.RecipientAddr = []byte(request.ContractAddress)
 	callInput.CallerAddr = request.getImpersonated()
 	callInput.CallValue = request.getValue()
 	callInput.Function = request.Function
-	callInput.Arguments = nil
+	callInput.Arguments, err = request.getArguments()
+	if err != nil {
+		return nil, err
+	}
+
 	callInput.GasProvided = request.getGasLimit()
 	callInput.GasPrice = request.getGasPrice()
 

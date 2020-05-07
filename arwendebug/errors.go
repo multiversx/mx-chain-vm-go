@@ -37,3 +37,6 @@ func (err *RequestError) Unwrap() error {
 
 // ErrInvalidOutcomeKey signals an error
 var ErrInvalidOutcomeKey = errors.New("invalid outcome key")
+
+// ErrInvalidArgumentEncoding signals an error
+var ErrInvalidArgumentEncoding = errors.New("invalid contract argument encoding")

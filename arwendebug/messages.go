@@ -109,6 +109,10 @@ func (request *DeployRequest) getCodeMetadata() ([]byte, error) {
 	return defaultMetadata.ToBytes(), nil
 }
 
+func (request *DeployRequest) getArguments() ([][]byte, error) {
+	return decodeArguments(request.Arguments)
+}
+
 // DeployResponse -
 type DeployResponse struct {
 	ContractResponseBase
@@ -132,6 +136,10 @@ type RunRequest struct {
 	ContractAddress string
 	Function        string
 	Arguments       []string
+}
+
+func (request *RunRequest) getArguments() ([][]byte, error) {
+	return decodeArguments(request.Arguments)
 }
 
 // RunResponse -
