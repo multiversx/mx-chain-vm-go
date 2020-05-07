@@ -62,6 +62,12 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 		Destination: &args.Function,
 	}
 
+	flagArguments := cli.StringSliceFlag{
+		Required: false,
+		Name:     "arguments",
+		Value:    &args.Arguments,
+	}
+
 	flagValue := cli.StringFlag{
 		Name:        "value",
 		Destination: &args.Value,
@@ -149,7 +155,7 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 				flagCode,
 				flagCodePath,
 				flagCodeMetadata,
-				// TODO arguments
+				flagArguments,
 				flagValue,
 				flagGasLimit,
 				flagGasPrice,
@@ -171,7 +177,7 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 				flagCode,
 				flagCodePath,
 				flagCodeMetadata,
-				// TODO arguments
+				flagArguments,
 				flagValue,
 				flagGasLimit,
 				flagGasPrice,
@@ -191,7 +197,7 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 				flagContract,
 				flagImpersonated,
 				flagFunction,
-				// TODO arguments
+				flagArguments,
 				flagValue,
 				flagGasLimit,
 				flagGasPrice,
@@ -211,7 +217,7 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 				flagContract,
 				flagImpersonated,
 				flagFunction,
-				// TODO arguments
+				flagArguments,
 			},
 		},
 		{

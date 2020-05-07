@@ -1,6 +1,9 @@
 package main
 
-import "github.com/ElrondNetwork/arwen-wasm-vm/arwendebug"
+import (
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwendebug"
+	"github.com/urfave/cli"
+)
 
 type cliArguments struct {
 	// Common arguments
@@ -13,7 +16,7 @@ type cliArguments struct {
 	ContractAddress string
 	Action          string
 	Function        string
-	Arguments       []string
+	Arguments       cli.StringSlice
 	Code            string
 	CodePath        string
 	CodeMetadata    string
