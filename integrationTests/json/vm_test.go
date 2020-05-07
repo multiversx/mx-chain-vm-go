@@ -158,7 +158,7 @@ func TestDnsContract(t *testing.T) {
 	)
 	err = runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
-		"adder",
+		"dns",
 		".scen.json",
 		[]string{})
 
