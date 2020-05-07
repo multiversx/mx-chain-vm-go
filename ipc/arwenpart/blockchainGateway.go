@@ -83,22 +83,20 @@ func (blockchain *BlockchainHookGateway) GetNonce(address []byte) (uint64, error
 	return response.Nonce, response.GetError()
 }
 
-// GetStorageFullData forwards a message to the actual hook
+// GetStorageData forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) GetStorageData(address []byte, index []byte) ([]byte, error) {
 	request := common.NewMessageBlockchainGetStorageDataRequest(address, index)
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
-	storageData := make([]byte, 0)
 	if err != nil {
-		return storageData, err
+		return nil, err
 	}
 
 	if rawResponse.GetKind() != common.BlockchainGetStorageDataResponse {
-		return storageData, common.ErrBadHookResponseFromNode
+		return nil, common.ErrBadHookResponseFromNode
 	}
 
 	response := rawResponse.(*common.MessageBlockchainGetStorageDataResponse)
-	storageData = response.Data
-	return storageData, response.GetError()
+	return response.Data, response.GetError()
 }
 
 // IsCodeEmpty forwards a message to the actual hook
