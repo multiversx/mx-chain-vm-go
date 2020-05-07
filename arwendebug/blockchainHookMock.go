@@ -219,7 +219,12 @@ func (b *BlockchainHookMock) GetBuiltinFunctionNames() vmcommon.FunctionNames {
 
 // GetAllState -
 func (b *BlockchainHookMock) GetAllState(address []byte) (map[string][]byte, error) {
-	return make(map[string][]byte), nil
+	account, ok := b.Accounts[string(address)]
+	if !ok {
+		return nil, errAccountDoesntExist
+	}
+
+	return account.Storage, nil
 }
 
 // UpdateAccounts -
