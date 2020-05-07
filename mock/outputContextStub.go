@@ -35,6 +35,13 @@ type OutputContextStub struct {
 	AddTxValueToAccountCalled         func(address []byte, value *big.Int)
 	DeployCodeCalled                  func(input arwen.CodeDeployInput)
 	CreateVMOutputInCaseOfErrorCalled func(err error) *vmcommon.VMOutput
+	AddToActiveStateCalled            func(vmOutput *vmcommon.VMOutput)
+}
+
+func (o *OutputContextStub) AddToActiveState(vmOutput *vmcommon.VMOutput) {
+	if o.AddToActiveStateCalled != nil {
+		o.AddToActiveStateCalled(vmOutput)
+	}
 }
 
 func (o *OutputContextStub) InitState() {

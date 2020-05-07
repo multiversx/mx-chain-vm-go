@@ -3,7 +3,6 @@ package mock
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -29,8 +28,9 @@ type BlockchainHookStub struct {
 	CurrentTimeStampCalled        func() uint64
 	CurrentRandomSeedCalled       func() []byte
 	CurrentEpochCalled            func() uint32
-	ProcessBuiltInFunctionCalled  func(input *vmcommon.ContractCallInput) (*big.Int, uint64, error)
+	ProcessBuiltInFunctionCalled  func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
 	GetBuiltinFunctionNamesCalled func() vmcommon.FunctionNames
+	GetAllStateCalled             func(address []byte) (map[string][]byte, error)
 }
 
 func (b *BlockchainHookStub) AccountExists(address []byte) (bool, error) {
@@ -166,11 +166,11 @@ func (b *BlockchainHookStub) CurrentEpoch() uint32 {
 	return 0
 }
 
-func (b *BlockchainHookStub) ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*big.Int, uint64, error) {
+func (b *BlockchainHookStub) ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	if b.ProcessBuiltInFunctionCalled != nil {
 		return b.ProcessBuiltInFunctionCalled(input)
 	}
-	return arwen.Zero, 0, nil
+	return &vmcommon.VMOutput{}, nil
 }
 
 func (b *BlockchainHookStub) GetBuiltinFunctionNames() vmcommon.FunctionNames {
@@ -178,4 +178,11 @@ func (b *BlockchainHookStub) GetBuiltinFunctionNames() vmcommon.FunctionNames {
 		return b.GetBuiltinFunctionNamesCalled()
 	}
 	return make(vmcommon.FunctionNames)
+}
+
+func (b *BlockchainHookStub) GetAllState(address []byte) (map[string][]byte, error) {
+	if b.GetAllStateCalled != nil {
+		return b.GetAllStateCalled(address)
+	}
+	return nil, nil
 }
