@@ -174,7 +174,7 @@ func FillGasMap_ElrondAPICosts(value uint64) map[string]uint64 {
 	gasMap["DelegateExecution"] = value
 	gasMap["ExecuteReadOnly"] = value
 	gasMap["AsyncCallStep"] = value
-	gasMap["AsyncCallbackGasLock"] = value
+	gasMap["AsyncCallbackGasLock"] = 100_000
 	gasMap["CreateContract"] = value
 	gasMap["GetReturnData"] = value
 	gasMap["GetNumReturnData"] = value
