@@ -82,7 +82,7 @@
             "expect": {
                 "out": [],
                 "status": "4",
-                "message": "wrong number of BLS keys",
+                "message": "wrong number of arguments",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"

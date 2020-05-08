@@ -1,5 +1,5 @@
 {
-    "name": "activate_other_shard",
+    "name": "activate",
     "steps": [
         {
             "step": "setState",
@@ -9,6 +9,14 @@
                     "balance": "1,000,000,000",
                     "storage": {},
                     "code": ""
+                },
+                "``auction_contract______________s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {
+                        "``staking_failure": "true"
+                    },
+                    "code": "file:../auction-mock.wasm"
                 },
                 "``delegation_contract___________s1": {
                     "nonce": "0",
@@ -72,8 +80,16 @@
             },
             "expect": {
                 "out": [],
-                "status": "",
-                "logs": [],
+                "status": "0",
+                "message": "",
+                "logs": [
+                    {
+                        "address": "``delegation_contract___________s1",
+                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000003",
+                        "topics": [],
+                        "data": "``auction smart contract deliberate error"
+                    }
+                ],
                 "gas": "*",
                 "refund": "*"
             }
@@ -89,14 +105,15 @@
                 },
                 "``auction_contract______________s1": {
                     "nonce": "0",
-                    "balance": "789,000,000,000",
-                    "storage": {},
-                    "code": "",
-                    "asyncCallData": "stake@02@626c735f6b65795f315f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f@7369676e61747572655f315f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f@626c735f6b65795f325f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f@7369676e61747572655f325f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f"
+                    "balance": "0",
+                    "storage": {
+                        "``staking_failure": "true"                       
+                    },
+                    "code": "file:../auction-mock.wasm"
                 },
                 "``delegation_contract___________s1": {
                     "nonce": "0",
-                    "balance": "0",
+                    "balance": "789,000,000,000",
                     "storage": {
                         "``owner": "``node_address__________________s1",
                         
@@ -109,8 +126,8 @@
                         "``non_reward_balance": "789,000,000,000",
                         "``sent_rewards": "0",
                         "``auction_addr": "``auction_contract______________s1",
-                        "``active": "true",
-                        "``rewards_dirty": "true",
+                        "``active": "false",
+                        "``rewards_dirty": "false",
                         "``bls_keys": "``bls_key_1_______________________________________________________________________________________________________________________bls_key_2_______________________________________________________________________________________________________________________",
                         "``user_id|``node_address__________________s1": "0x01",
                         "``user_id|``user_account_1________________s1": "0x02",
@@ -122,9 +139,7 @@
                         "``u_last|0x0000000000000003": "0",
                         "``u_uncl|0x0000000000000003": "0",
                         "``u_stak|0x0000000000000003": "222,000,000,000",
-                        "``u_sale|0x0000000000000003": "0",
-
-                        "``tx_hash_________________________": "``auction_stake_callback"
+                        "``u_sale|0x0000000000000003": "0"
                     },
                     "code": "file:../delegation.wasm"
                 },
