@@ -49,11 +49,13 @@ func (host *vmHost) performCodeDeploy(input arwen.CodeDeployInput) (*vmcommon.VM
 	vmInput := runtime.GetVMInput()
 	err = runtime.StartWasmerInstance(input.ContractCode, vmInput.GasProvided)
 	if err != nil {
+		log.Debug("performCodeDeploy/StartWasmerInstance", "err", err)
 		return nil, arwen.ErrContractInvalid
 	}
 
 	err = runtime.VerifyContractCode()
 	if err != nil {
+		log.Debug("performCodeDeploy/VerifyContractCode", "err", err)
 		return nil, arwen.ErrContractInvalid
 	}
 

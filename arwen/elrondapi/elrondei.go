@@ -14,9 +14,9 @@ package elrondapi
 // extern int32_t getArgument(void *context, int32_t id, int32_t argOffset);
 // extern int32_t getFunction(void *context, int32_t functionOffset);
 // extern int32_t getNumArguments(void *context);
-// extern int32_t storageStore(void *context, int32_t keyOffset, int32_t dataOffset, int32_t dataLength);
-// extern int32_t storageGetValueLength(void *context, int32_t keyOffset);
-// extern int32_t storageLoad(void *context, int32_t keyOffset, int32_t dataOffset);
+// extern int32_t storageStore(void *context, int32_t keyOffset, int32_t keyLength , int32_t dataOffset, int32_t dataLength);
+// extern int32_t storageLoadLength(void *context, int32_t keyOffset, int32_t keyLength );
+// extern int32_t storageLoad(void *context, int32_t keyOffset, int32_t keyLength , int32_t dataOffset);
 // extern void getCaller(void *context, int32_t resultOffset);
 // extern int32_t callValue(void *context, int32_t resultOffset);
 // extern void writeLog(void *context, int32_t pointer, int32_t length, int32_t topicPtr, int32_t numTopics);
@@ -49,8 +49,8 @@ package elrondapi
 // extern void getPrevBlockRandomSeed(void *context, int32_t resultOffset);
 //
 // extern long long int64getArgument(void *context, int32_t id);
-// extern int32_t int64storageStore(void *context, int32_t keyOffset, long long value);
-// extern long long int64storageLoad(void *context, int32_t keyOffset);
+// extern int32_t int64storageStore(void *context, int32_t keyOffset, int32_t keyLength , long long value);
+// extern long long int64storageLoad(void *context, int32_t keyOffset, int32_t keyLength );
 // extern void int64finish(void* context, long long value);
 import "C"
 
@@ -119,7 +119,7 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 		return nil, err
 	}
 
-	imports, err = imports.Append("storageGetValueLength", storageGetValueLength, C.storageGetValueLength)
+	imports, err = imports.Append("storageLoadLength", storageLoadLength, C.storageLoadLength)
 	if err != nil {
 		return nil, err
 	}
@@ -507,12 +507,12 @@ func getNumArguments(context unsafe.Pointer) int32 {
 }
 
 //export storageStore
-func storageStore(context unsafe.Pointer, keyOffset int32, dataOffset int32, dataLength int32) int32 {
+func storageStore(context unsafe.Pointer, keyOffset int32, keyLength int32, dataOffset int32, dataLength int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	key, err := runtime.MemLoad(keyOffset, arwen.HashLen)
+	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
@@ -528,13 +528,13 @@ func storageStore(context unsafe.Pointer, keyOffset int32, dataOffset int32, dat
 	return storage.SetStorage(key, data)
 }
 
-//export storageGetValueLength
-func storageGetValueLength(context unsafe.Pointer, keyOffset int32) int32 {
+//export storageLoadLength
+func storageLoadLength(context unsafe.Pointer, keyOffset int32, keyLength int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	key, err := runtime.MemLoad(keyOffset, arwen.HashLen)
+	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
@@ -548,12 +548,12 @@ func storageGetValueLength(context unsafe.Pointer, keyOffset int32) int32 {
 }
 
 //export storageLoad
-func storageLoad(context unsafe.Pointer, keyOffset int32, dataOffset int32) int32 {
+func storageLoad(context unsafe.Pointer, keyOffset int32, keyLength int32, dataOffset int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	key, err := runtime.MemLoad(keyOffset, arwen.HashLen)
+	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
@@ -806,12 +806,12 @@ func int64getArgument(context unsafe.Pointer, id int32) int64 {
 }
 
 //export int64storageStore
-func int64storageStore(context unsafe.Pointer, keyOffset int32, value int64) int32 {
+func int64storageStore(context unsafe.Pointer, keyOffset int32, keyLength int32, value int64) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	key, err := runtime.MemLoad(keyOffset, arwen.HashLen)
+	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
@@ -825,12 +825,12 @@ func int64storageStore(context unsafe.Pointer, keyOffset int32, value int64) int
 }
 
 //export int64storageLoad
-func int64storageLoad(context unsafe.Pointer, keyOffset int32) int64 {
+func int64storageLoad(context unsafe.Pointer, keyOffset int32, keyLength int32) int64 {
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	key, err := runtime.MemLoad(keyOffset, arwen.HashLen)
+	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 0
 	}

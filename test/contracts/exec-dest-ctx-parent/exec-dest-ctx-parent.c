@@ -20,8 +20,8 @@ u32 executeArgumentsLengths[] = {15, 16, 10};
 byte executeArgumentsData[] = "First sentence.Second sentence.Some text.";
 
 void parentFunctionPrepare() {
-	storageStore(parentKeyA, parentDataA, 11);
-	storageStore(parentKeyB, parentDataB, 11);
+	storageStore(parentKeyA, 32, parentDataA, 11);
+	storageStore(parentKeyB, 32, parentDataB, 11);
 	finish(parentFinishA, 13);
 	finish(parentFinishB, 13);
 	int result = transferValue(
@@ -69,7 +69,7 @@ void parentFunctionChildCall() {
 	finishResult(result);
 
 	// The parent cannot access the storage of the child.
-	int len = storageGetValueLength(childKey);
+	int len = storageLoadLength(childKey, 32);
 	if (len == 0) {
 		finishResult(0);
 	} else {
@@ -119,7 +119,7 @@ void parentFunctionChildCall_BigInts() {
 }
 
 void parentFunctionChildCall_OutOfGas() {
-	storageStore(parentKeyA, parentDataA, 11);
+	storageStore(parentKeyA, 32, parentDataA, 11);
 	bigIntSetInt64(12, 42);
 	finish(parentFinishA, 13);
 
@@ -137,6 +137,6 @@ void parentFunctionChildCall_OutOfGas() {
 			0
 	);
 
-	storageStore(parentKeyB, parentDataB, 11);
+	storageStore(parentKeyB, 32, parentDataB, 11);
 	finishResult(result);
 }

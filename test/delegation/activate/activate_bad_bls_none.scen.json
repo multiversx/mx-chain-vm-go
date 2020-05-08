@@ -1,0 +1,87 @@
+{
+    "name": "activate_no_bls",
+    "steps": [
+        {
+            "step": "setState",
+            "accounts": {
+                "``node_address__________________s1": {
+                    "nonce": "0",
+                    "balance": "1,000,000,000",
+                    "storage": {},
+                    "code": ""
+                },
+                "``auction_contract______________s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": "file:../auction-mock.wasm"
+                },
+                "``delegation_contract___________s1": {
+                    "nonce": "0",
+                    "balance": "789,000,000,000",
+                    "storage": {
+                        "``owner": "``node_address__________________s1",
+                        
+                        "``nr_nodes": "0",
+                        "``stake_per_node": "789,000,000,000",
+                        
+                        "``node_share": "3455",
+                        "``node_rewards_addr": "``node_address__________________s1",
+                        "``nr_users": "3",
+                        "``filled_stake": "789,000,000,000",
+                        "``non_reward_balance": "789,000,000,000",
+                        "``sent_rewards": "0",
+                        "``auction_addr": "``auction_contract______________s1",
+                        "``active": "false",
+                        "``user_id|``node_address__________________s1": "0x01",
+                        "``user_id|``user_account_1________________s1": "0x02",
+                        "``u_last|0x0000000000000002": "0",
+                        "``u_uncl|0x0000000000000002": "0",
+                        "``u_stak|0x0000000000000002": "567,000,000,000",
+                        "``u_sale|0x0000000000000002": "0",
+                        "``user_id|``user_account_2________________s1": "0x03",
+                        "``u_last|0x0000000000000003": "0",
+                        "``u_uncl|0x0000000000000003": "0",
+                        "``u_stak|0x0000000000000003": "222,000,000,000",
+                        "``u_sale|0x0000000000000003": "0"
+                    },
+                    "code": "file:../delegation.wasm"
+                },
+                "``user_account_1________________s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                },
+                "``user_account_2________________s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "1",
+            "tx": {
+                "from": "``node_address__________________s1",
+                "to": "``delegation_contract___________s1",
+                "value": "0",
+                "function": "activate",
+                "arguments": [
+                ],
+                "gasLimit": "1,000,000,000",
+                "gasPrice": "1"
+            },
+            "expect": {
+                "out": [],
+                "status": "4",
+                "message": "cannot activate before specifying any BLS keys",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        }        
+    ]
+}

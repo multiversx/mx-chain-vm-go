@@ -41,8 +41,8 @@ package elrondapi
 //
 // extern void bigIntFinishUnsigned(void* context, int32_t reference);
 // extern void bigIntFinishSigned(void* context, int32_t reference);
-// extern int32_t bigIntStorageStoreUnsigned(void *context, int32_t keyOffset, int32_t source);
-// extern int32_t bigIntStorageLoadUnsigned(void *context, int32_t keyOffset, int32_t destination);
+// extern int32_t bigIntStorageStoreUnsigned(void *context, int32_t keyOffset, int32_t keyLength, int32_t source);
+// extern int32_t bigIntStorageLoadUnsigned(void *context, int32_t keyOffset, int32_t keyLength, int32_t destination);
 // extern void bigIntGetUnsignedArgument(void *context, int32_t id, int32_t destination);
 // extern void bigIntGetSignedArgument(void *context, int32_t id, int32_t destination);
 // extern void bigIntGetCallValue(void *context, int32_t destination);
@@ -278,13 +278,13 @@ func bigIntGetSignedArgument(context unsafe.Pointer, id int32, destination int32
 }
 
 //export bigIntStorageStoreUnsigned
-func bigIntStorageStoreUnsigned(context unsafe.Pointer, keyOffset int32, source int32) int32 {
+func bigIntStorageStoreUnsigned(context unsafe.Pointer, keyOffset int32, keyLength int32, source int32) int32 {
 	bigInt := arwen.GetBigIntContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	key, err := runtime.MemLoad(keyOffset, arwen.HashLen)
+	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return 0
 	}
@@ -299,13 +299,13 @@ func bigIntStorageStoreUnsigned(context unsafe.Pointer, keyOffset int32, source 
 }
 
 //export bigIntStorageLoadUnsigned
-func bigIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, destination int32) int32 {
+func bigIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, keyLength int32, destination int32) int32 {
 	bigInt := arwen.GetBigIntContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	key, err := runtime.MemLoad(keyOffset, arwen.HashLen)
+	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return 0
 	}

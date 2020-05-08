@@ -1,0 +1,142 @@
+{
+    "name": "init",
+    "steps": [
+        {
+            "step": "setState",
+            "accounts": {
+                "``node_address__________________s1": {
+                    "nonce": "0",
+                    "balance": "0x10000000",
+                    "storage": {},
+                    "code": ""
+                }
+            },
+            "newAddresses": [
+                {
+                    "creatorAddress": "``node_address__________________s1",
+                    "creatorNonce": "0",
+                    "newAddress": "``new_delegation_contract_______s1"
+                }
+            ]
+        },
+        {
+            "step": "scDeploy",
+            "txId": "1",
+            "tx": {
+                "from": "``node_address__________________s1",
+                "value": "0",
+                "contractCode": "file:../delegation.wasm",
+                "arguments": [
+                    "3455",
+                    "``auction_contract______________s1"
+                ],
+                "gasLimit": "0x100000",
+                "gasPrice": "1"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "``node_address__________________s1": {
+                    "nonce": "*",
+                    "balance": "*",
+                    "storage": {},
+                    "code": ""
+                },
+                "``new_delegation_contract_______s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {
+                        "``owner": "``node_address__________________s1",
+                        "``node_share": "3455",
+                        "``node_rewards_addr": "``node_address__________________s1",
+                        "``auction_addr": "``auction_contract______________s1",
+
+                        "``nr_users": "1",
+                        "``user_id|``node_address__________________s1": "0x01"
+                    },
+                    "code": "file:../delegation.wasm"
+                }
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "2-nr-nodes",
+            "tx": {
+                "from": "``node_address__________________s1",
+                "to": "``new_delegation_contract_______s1",
+                "value": "0",
+                "function": "setNrNodes",
+                "arguments": [
+                    "3"
+                ],
+                "gasLimit": "0x100000",
+                "gasPrice": "1"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "2-stake-per-node",
+            "tx": {
+                "from": "``node_address__________________s1",
+                "to": "``new_delegation_contract_______s1",
+                "value": "0",
+                "function": "setStakePerNode",
+                "arguments": [
+                    "123,000,321"
+                ],
+                "gasLimit": "0x100000",
+                "gasPrice": "1"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "``node_address__________________s1": {
+                    "nonce": "*",
+                    "balance": "*",
+                    "storage": {},
+                    "code": ""
+                },
+                "``new_delegation_contract_______s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {
+                        "``owner": "``node_address__________________s1",
+                        "``node_share": "3455",
+                        "``node_rewards_addr": "``node_address__________________s1",
+                        "``auction_addr": "``auction_contract______________s1",
+
+                        "``nr_nodes": "3",
+                        "``stake_per_node": "123,000,321",
+
+                        "``nr_users": "1",
+                        "``user_id|``node_address__________________s1": "0x01"
+                    },
+                    "code": "file:../delegation.wasm"
+                }
+            }
+        }
+    ]
+}
