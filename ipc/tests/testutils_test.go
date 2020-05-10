@@ -12,7 +12,7 @@ import (
 var bytecodeCounter []byte
 
 func init() {
-	bytecodeCounter = getSCCode("./../../test/contracts/counter.wasm")
+	bytecodeCounter = getSCCode("./../../test/contracts/counter/output/counter.wasm")
 }
 
 func getSCCode(fileName string) []byte {

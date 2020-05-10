@@ -1,0 +1,108 @@
+{
+    "name": "stake_over_1",
+    "steps": [
+        {
+            "step": "setState",
+            "accounts": {
+                "``node_address__________________s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                },
+                "``delegation_contract___________s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {
+                        "``owner": "``node_address__________________s1",
+                        
+                        "``nr_nodes": "1",
+                        "``stake_per_node": "789,000,000,000",
+                        "``node_share": "3455",
+                        "``node_rewards_addr": "``node_address__________________s1",
+                        "``nr_users": "1",
+                        "``filled_stake": "0",
+                        "``non_reward_balance": "0",
+                        "``sent_rewards": "0",
+                        "``user_id|``node_address__________________s1": "0x01"
+                    },
+                    "code": "file:../delegation.wasm"
+                },
+                "``user_account_1________________s1": {
+                    "nonce": "0",
+                    "balance": "789,001,000,001",
+                    "storage": {},
+                    "code": ""
+                },
+                "``user_account_2________________s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "1",
+            "tx": {
+                "from": "``user_account_1________________s1",
+                "to": "``delegation_contract___________s1",
+                "value": "789,000,000,001",
+                "function": "stake",
+                "arguments": [],
+                "gasLimit": "1,000,000",
+                "gasPrice": "1"
+            },
+            "expect": {
+                "out": [],
+                "status": "4",
+                "message": "payment exceeds unfilled total stake",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "``node_address__________________s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                },
+                "``delegation_contract___________s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {
+                        "``owner": "``node_address__________________s1",
+                        
+                        "``nr_nodes": "1",
+                        "``stake_per_node": "789,000,000,000",
+                        "``node_share": "3455",
+                        "``node_rewards_addr": "``node_address__________________s1",
+                        "``nr_users": "1",
+                        "``filled_stake": "0",
+                        "``non_reward_balance": "0",
+                        "``sent_rewards": "0",
+                        "``user_id|``node_address__________________s1": "0x01"
+                    },
+                    "code": "file:../delegation.wasm"
+                },
+                "``user_account_1________________s1": {
+                    "nonce": "1",
+                    "balance": "789,000,000,001",
+                    "storage": {},
+                    "code": ""
+                },
+                "``user_account_2________________s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        }
+    ]
+}

@@ -21,8 +21,8 @@ int mustTransferToVault();
 int isVault();
 
 void parentPerformAsyncCall() {
-	storageStore(parentKeyA, parentDataA, 11);
-	storageStore(parentKeyB, parentDataB, 11);
+	storageStore(parentKeyA, 32, parentDataA, 11);
+	storageStore(parentKeyB, 32, parentDataB, 11);
 	finish(parentFinishA, 13);
 	finish(parentFinishB, 13);
 
@@ -45,7 +45,7 @@ void callBack() {
 	}
 
 	byte loadedData[11];
-	storageLoad(parentKeyB, loadedData);
+	storageLoad(parentKeyB, 32, loadedData);
 
 	int status = 0;
 	for (int i = 0; i < 11; i++) {

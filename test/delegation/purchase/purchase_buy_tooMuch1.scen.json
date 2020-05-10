@@ -1,0 +1,120 @@
+{
+    "name": "purchase_buy_tooMuch1",
+    "steps": [
+        {
+            "step": "setState",
+            "accounts": {
+                "``node_address__________________s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                },
+                "``delegation_contract___________s1": {
+                    "nonce": "0",
+                    "balance": "10000400010",
+                    "storage": {
+                        "``owner": "``node_address__________________s1",
+                        
+                        "``nr_nodes": "1",
+                        "``stake_per_node": "500,000,000,100",
+                        "``node_share": "3000",
+                        "``node_rewards_addr": "``node_address__________________s1",
+                        "``nr_users": "2",
+                        "``filled_stake": "500,000,000,100",
+                        "``non_reward_balance": "00000400000",
+                        "``sent_rewards": "0",
+                        "``user_id|``node_address__________________s1": "0x01",
+                        "``user_id|``user_account_1________________s1": "0x02",
+                        "``u_last|0x0000000000000002": "0",
+                        "``u_uncl|0x0000000000000002": "0",
+                        "``u_stak|0x0000000000000002": "500,000,000,100",
+                        "``u_sale|0x0000000000000002": "40,000,000,001"
+                    },
+                    "code": "file:../delegation.wasm"
+                },
+                "``user_account_1________________s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                },
+                "``user_account_2________________s1": {
+                    "nonce": "0",
+                    "balance": "40,004,000,002",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "1",
+            "tx": {
+                "from": "``user_account_2________________s1",
+                "to": "``delegation_contract___________s1",
+                "value": "40,000,000,002",
+                "function": "purchaseStake",
+                "arguments": [
+                    "``user_account_1________________s1"
+                ],
+                "gasLimit": "4,000,000",
+                "gasPrice": "1"
+            },
+            "expect": {
+                "out": [],
+                "status": "4",
+                "message": "payment exceeds stake offered",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "``node_address__________________s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                },
+                "``delegation_contract___________s1": {
+                    "nonce": "0",
+                    "balance": "10000400010",
+                    "storage": {
+                        "``owner": "``node_address__________________s1",
+                        
+                        "``nr_nodes": "1",
+                        "``stake_per_node": "500,000,000,100",
+                        "``node_share": "3000",
+                        "``node_rewards_addr": "``node_address__________________s1",
+                        "``nr_users": "2",
+                        "``filled_stake": "500,000,000,100",
+                        "``non_reward_balance": "00000400000",
+                        "``sent_rewards": "0",
+                        "``user_id|``node_address__________________s1": "0x01",
+                        "``user_id|``user_account_1________________s1": "0x02",
+                        "``u_last|0x0000000000000002": "0",
+                        "``u_uncl|0x0000000000000002": "0",
+                        "``u_stak|0x0000000000000002": "500,000,000,100",
+                        "``u_sale|0x0000000000000002": "40,000,000,001"
+                    },
+                    "code": "file:../delegation.wasm"
+                },
+                "``user_account_1________________s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                },
+                "``user_account_2________________s1": {
+                    "nonce": "1",
+                    "balance": "40,000,000,002",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        }
+    ]
+}

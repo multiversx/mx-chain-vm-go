@@ -38,7 +38,7 @@ void transferToThirdParty() {
 		finish(msg, 5);
 	}
 
-	storageStore(childKey, childData, 9);
+	storageStore(childKey, 32, childData, 9);
 }
 
 void handleBehaviorArgument() {

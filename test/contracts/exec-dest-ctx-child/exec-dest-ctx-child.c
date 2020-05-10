@@ -34,7 +34,7 @@ void childFunction() {
 	}
 	
 	// This storage update will appear separate from the storage updates made by the parent.
-	storageStore(childKey, childData, 9);
+	storageStore(childKey, 32, childData, 9);
 
 	// This finish value will appear alongside the finish values set by the parent.
 	finish(childFinish, 11);
@@ -108,7 +108,7 @@ void childFunction_OutOfGas() {
 
 	didCallerPay(99);
 
-	storageStore(childKey, childData, 9);
+	storageStore(childKey, 32, childData, 9);
 	finish(childFinish, 11);
 	bigIntSetInt64(12, 88);
 
