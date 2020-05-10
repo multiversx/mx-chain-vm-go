@@ -45,6 +45,20 @@ func convertNewAddressMocks(testNAMs []*ij.NewAddressMock) []*worldhook.NewAddre
 	return result
 }
 
+func convertBlockInfo(testBlockInfo *ij.BlockInfo) *worldhook.BlockInfo {
+	if testBlockInfo == nil {
+		return nil
+	}
+	result := &worldhook.BlockInfo{
+		BlockTimestamp: testBlockInfo.BlockTimestamp.Value,
+		BlockNonce:     testBlockInfo.BlockNonce.Value,
+		BlockRound:     testBlockInfo.BlockRound.Value,
+		BlockEpoch:     uint32(testBlockInfo.BlockEpoch.Value),
+	}
+
+	return result
+}
+
 func convertLogToTestFormat(outputLog *vmi.LogEntry) *ij.LogEntry {
 	testLog := ij.LogEntry{
 		Address:    ij.JSONBytes{Value: outputLog.Address},
