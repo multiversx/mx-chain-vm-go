@@ -40,7 +40,8 @@
                 "contractCode": "file:../delegation.wasm",
                 "arguments": [
                     "3455",
-                    "``auction_contract______________s1"
+                    "``auction_contract______________s1",
+                    "680400000"
                 ],
                 "gasLimit": "1000000",
                 "gasPrice": "1"
@@ -164,6 +165,7 @@
                         "``nr_nodes": "1",
                         "``stake_per_node": "789,000,000,000",
                         "``node_share": "3455",
+                        "``time_before_force_unstake": "680400000",
                         "``node_rewards_addr": "``node_address__________________s1",
                         "``nr_users": "2",
                         "``filled_stake": "567,000,000,000",
