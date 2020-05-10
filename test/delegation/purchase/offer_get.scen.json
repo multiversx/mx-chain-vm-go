@@ -1,5 +1,5 @@
 {
-    "name": "purchase_offer",
+    "name": "purchase_offer_get",
     "steps": [
         {
             "step": "setState",
@@ -24,18 +24,24 @@
                         "``filled_stake": "500,000,000,100",
                         "``non_reward_balance": "00000400000",
                         "``sent_rewards": "0",
-                        "``user_id|``node_address__________________s1": "0x01",
-                        "``user_id|``delegator_1___________________s1": "0x02",
+                        "``user_id|``node_address__________________s1": "1",
+                        "``user_id|``user_account_1________________s1": "2",
                         "``u_last|0x0000000000000002": "0",
                         "``u_uncl|0x0000000000000002": "0",
                         "``u_stak|0x0000000000000002": "500,000,000,100",
-                        "``u_sale|0x0000000000000002": "0"
+                        "``u_sale|0x0000000000000002": "250,000,000,006"
                     },
                     "code": "file:../delegation.wasm"
                 },
-                "``delegator_1___________________s1": {
+                "``user_account_1________________s1": {
                     "nonce": "0",
                     "balance": "0x300abc",
+                    "storage": {},
+                    "code": ""
+                },
+                "``user_account_2________________s1": {
+                    "nonce": "0",
+                    "balance": "40,004,000,002",
                     "storage": {},
                     "code": ""
                 }
@@ -45,18 +51,20 @@
             "step": "scCall",
             "txId": "1",
             "tx": {
-                "from": "``delegator_1___________________s1",
+                "from": "``user_account_2________________s1",
                 "to": "``delegation_contract___________s1",
                 "value": "0",
-                "function": "offerStakeForSale",
+                "function": "getStakeForSale",
                 "arguments": [
-                    "250,000,000,006"
+                    "``user_account_1________________s1"
                 ],
-                "gasLimit": "0x100000",
+                "gasLimit": "4,000,000",
                 "gasPrice": "1"
             },
             "expect": {
-                "out": [],
+                "out": [
+                    "250,000,000,006"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -86,8 +94,8 @@
                         "``filled_stake": "500,000,000,100",
                         "``non_reward_balance": "00000400000",
                         "``sent_rewards": "0",
-                        "``user_id|``node_address__________________s1": "0x01",
-                        "``user_id|``delegator_1___________________s1": "0x02",
+                        "``user_id|``node_address__________________s1": "1",
+                        "``user_id|``user_account_1________________s1": "2",
                         "``u_last|0x0000000000000002": "0",
                         "``u_uncl|0x0000000000000002": "0",
                         "``u_stak|0x0000000000000002": "500,000,000,100",
@@ -95,9 +103,15 @@
                     },
                     "code": "file:../delegation.wasm"
                 },
-                "``delegator_1___________________s1": {
+                "``user_account_1________________s1": {
+                    "nonce": "0",
+                    "balance": "0x300abc",
+                    "storage": {},
+                    "code": ""
+                },
+                "``user_account_2________________s1": {
                     "nonce": "1",
-                    "balance": "0x200abc",
+                    "balance": "40,000,000,002",
                     "storage": {},
                     "code": ""
                 }
