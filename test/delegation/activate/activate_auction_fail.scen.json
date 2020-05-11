@@ -85,7 +85,7 @@
                 "logs": [
                     {
                         "address": "``delegation_contract___________s1",
-                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000003",
+                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000004",
                         "topics": [],
                         "data": "``auction smart contract deliberate error"
                     }
