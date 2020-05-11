@@ -38,6 +38,12 @@
                     "balance": "0x300abc",
                     "storage": {},
                     "code": ""
+                },
+                "``delegator_2___________________s1": {
+                    "nonce": "0",
+                    "balance": "40,004,000,002",
+                    "storage": {},
+                    "code": ""
                 }
             },
             "currentBlockInfo": {
@@ -46,7 +52,29 @@
         },
         {
             "step": "scCall",
-            "txId": "1",
+            "txId": "1-get-before",
+            "tx": {
+                "from": "``delegator_2___________________s1",
+                "to": "``delegation_contract___________s1",
+                "value": "0",
+                "function": "getStakeForSale",
+                "arguments": [
+                    "``delegator_1___________________s1"
+                ],
+                "gasLimit": "4,000,000",
+                "gasPrice": "1"
+            },
+            "expect": {
+                "out": [ "0" ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "2-offer",
             "tx": {
                 "from": "``delegator_1___________________s1",
                 "to": "``delegation_contract___________s1",
@@ -60,6 +88,28 @@
             },
             "expect": {
                 "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "3-get-after",
+            "tx": {
+                "from": "``delegator_2___________________s1",
+                "to": "``delegation_contract___________s1",
+                "value": "0",
+                "function": "getStakeForSale",
+                "arguments": [
+                    "``delegator_1___________________s1"
+                ],
+                "gasLimit": "4,000,000",
+                "gasPrice": "1"
+            },
+            "expect": {
+                "out": [ "250,000,000,006" ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -102,6 +152,12 @@
                 "``delegator_1___________________s1": {
                     "nonce": "1",
                     "balance": "0x200abc",
+                    "storage": {},
+                    "code": ""
+                },
+                "``delegator_2___________________s1": {
+                    "nonce": "*",
+                    "balance": "*",
                     "storage": {},
                     "code": ""
                 }

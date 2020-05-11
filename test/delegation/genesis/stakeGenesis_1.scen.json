@@ -28,13 +28,13 @@
                     },
                     "code": "file:../delegation.wasm"
                 },
-                "``user_account_1________________s1": {
+                "``delegator_1___________________s1": {
                     "nonce": "0",
                     "balance": "1,000,000",
                     "storage": {},
                     "code": ""
                 },
-                "``user_account_2________________s1": {
+                "``delegator_2___________________s1": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {},
@@ -46,7 +46,7 @@
             "step": "scCall",
             "txId": "1",
             "tx": {
-                "from": "``user_account_1________________s1",
+                "from": "``delegator_1___________________s1",
                 "to": "``delegation_contract___________s1",
                 "value": "0",
                 "function": "stakeGenesis",
@@ -97,7 +97,7 @@
                         "``non_reward_balance": "0",
                         "``sent_rewards": "0",
                         "``user_id|``node_address__________________s1": "1",
-                        "``user_id|``user_account_1________________s1": "2",
+                        "``user_id|``delegator_1___________________s1": "2",
                         "``u_last|0x0000000000000002": "0",
                         "``u_uncl|0x0000000000000002": "0",
                         "``u_stak|0x0000000000000002": "567,000,000,000",
@@ -105,13 +105,13 @@
                     },
                     "code": "file:../delegation.wasm"
                 },
-                "``user_account_1________________s1": {
+                "``delegator_1___________________s1": {
                     "nonce": "1",
                     "balance": "0",
                     "storage": {},
                     "code": ""
                 },
-                "``user_account_2________________s1": {
+                "``delegator_2___________________s1": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {},

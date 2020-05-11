@@ -10,13 +10,13 @@
                     "storage": {},
                     "code": ""
                 },
-                "``user_account_1________________s1": {
+                "``delegator_1___________________s1": {
                     "nonce": "0",
                     "balance": "567,001,000,000",
                     "storage": {},
                     "code": ""
                 },
-                "``user_account_2________________s1": {
+                "``delegator_2___________________s1": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {},
@@ -41,7 +41,7 @@
                 "arguments": [
                     "3455",
                     "``auction_contract______________s1",
-                    "680400000"
+                    "680400"
                 ],
                 "gasLimit": "1000000",
                 "gasPrice": "1"
@@ -122,7 +122,7 @@
             "step": "scCall",
             "txId": "5-stake",
             "tx": {
-                "from": "``user_account_1________________s1",
+                "from": "``delegator_1___________________s1",
                 "to": "``new_delegation_contract_______s1",
                 "value": "567,000,000,000",
                 "function": "stake",
@@ -165,7 +165,7 @@
                         "``nr_nodes": "1",
                         "``stake_per_node": "789,000,000,000",
                         "``node_share": "3455",
-                        "``time_before_force_unstake": "680400000",
+                        "``time_before_force_unstake": "680400",
                         "``node_rewards_addr": "``node_address__________________s1",
                         "``nr_users": "2",
                         "``filled_stake": "567,000,000,000",
@@ -173,7 +173,7 @@
                         "``sent_rewards": "0",
                         "``auction_addr": "``auction_contract______________s1",
                         "``user_id|``node_address__________________s1": "1",
-                        "``user_id|``user_account_1________________s1": "2",
+                        "``user_id|``delegator_1___________________s1": "2",
                         "``u_last|0x0000000000000002": "0",
                         "``u_uncl|0x0000000000000002": "0",
                         "``u_stak|0x0000000000000002": "567,000,000,000",
@@ -181,13 +181,13 @@
                     },
                     "code": "file:../delegation.wasm"
                 },
-                "``user_account_1________________s1": {
+                "``delegator_1___________________s1": {
                     "nonce": "1",
                     "balance": "0",
                     "storage": {},
                     "code": ""
                 },
-                "``user_account_2________________s1": {
+                "``delegator_2___________________s1": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {},
