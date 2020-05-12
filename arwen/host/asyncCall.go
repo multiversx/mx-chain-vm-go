@@ -133,12 +133,12 @@ func (host *vmHost) createCallbackContractCallInput(destinationVMOutput *vmcommo
 		big.NewInt(int64(destinationVMOutput.ReturnCode)).Bytes(),
 	}
 	if destinationErr == nil {
-		// when execution went Ok,
-		// use called function results as callback arguments
+		// when execution went Ok, callBack arguments are:
+		// [0, result1, result2, ....]
 		arguments = append(arguments, destinationVMOutput.ReturnData...)
 	} else {
-		// when execution returned error,
-		// also provide error message as argument
+		// when execution returned error, callBack arguments are:
+		// [error code, error message]
 		arguments = append(arguments, []byte(destinationVMOutput.ReturnMessage))
 	}
 
