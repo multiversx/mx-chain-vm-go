@@ -27,7 +27,7 @@ func InitializeWasmer() *wasmer.Imports {
 	imports := MakeAPIImports()
 	_ = wasmer.SetImports(imports)
 
-	gasSchedule := config.MakeGasMap(1)
+	gasSchedule := config.MakeGasMapForTests()
 	gasCostConfig, _ := config.CreateGasConfig(gasSchedule)
 	opcodeCosts := gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray()
 	wasmer.SetOpcodeCosts(&opcodeCosts)

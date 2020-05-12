@@ -105,16 +105,16 @@ func checkForZeroUint64Fields(arg interface{}) error {
 	return nil
 }
 
-func MakeGasMap(value uint64) GasScheduleMap {
+func MakeGasMap(value, asyncCallbackGasLock uint64) GasScheduleMap {
 	gasMap := make(GasScheduleMap)
-	gasMap = FillGasMap(gasMap, value)
+	gasMap = FillGasMap(gasMap, value, asyncCallbackGasLock)
 	return gasMap
 }
 
-func FillGasMap(gasMap GasScheduleMap, value uint64) GasScheduleMap {
+func FillGasMap(gasMap GasScheduleMap, value, asyncCallbackGasLock uint64) GasScheduleMap {
 	gasMap["BuiltInCost"] = FillGasMap_BuiltInCosts(value)
 	gasMap["BaseOperationCost"] = FillGasMap_BaseOperationCosts(value)
-	gasMap["ElrondAPICost"] = FillGasMap_ElrondAPICosts(value)
+	gasMap["ElrondAPICost"] = FillGasMap_ElrondAPICosts(value, asyncCallbackGasLock)
 	gasMap["EthAPICost"] = FillGasMap_EthereumAPICosts(value)
 	gasMap["BigIntAPICost"] = FillGasMap_BigIntAPICosts(value)
 	gasMap["CryptoAPICost"] = FillGasMap_CryptoAPICosts(value)
@@ -142,9 +142,7 @@ func FillGasMap_BaseOperationCosts(value uint64) map[string]uint64 {
 	return gasMap
 }
 
-const AsyncCallbackGasLock = 100_000
-
-func FillGasMap_ElrondAPICosts(value uint64) map[string]uint64 {
+func FillGasMap_ElrondAPICosts(value, asyncCallbackGasLock uint64) map[string]uint64 {
 	gasMap := make(map[string]uint64)
 	gasMap["GetOwner"] = value
 	gasMap["GetExternalBalance"] = value
@@ -176,7 +174,7 @@ func FillGasMap_ElrondAPICosts(value uint64) map[string]uint64 {
 	gasMap["DelegateExecution"] = value
 	gasMap["ExecuteReadOnly"] = value
 	gasMap["AsyncCallStep"] = value
-	gasMap["AsyncCallbackGasLock"] = AsyncCallbackGasLock
+	gasMap["AsyncCallbackGasLock"] = asyncCallbackGasLock
 	gasMap["CreateContract"] = value
 	gasMap["GetReturnData"] = value
 	gasMap["GetNumReturnData"] = value
@@ -724,4 +722,11 @@ func FillGasMap_WASMOpcodeValues(value uint64) map[string]uint64 {
 	gasMap["I16x8RoundingAverageU"] = value
 
 	return gasMap
+}
+
+const GasValueForTests = 1
+const AsyncCallbackGasLockForTests = 100_000
+
+func MakeGasMapForTests() GasScheduleMap {
+	return MakeGasMap(GasValueForTests, AsyncCallbackGasLockForTests)
 }
