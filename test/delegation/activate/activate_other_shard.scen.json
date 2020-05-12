@@ -25,15 +25,15 @@
                         "``non_reward_balance": "789,000,000,000",
                         "``sent_rewards": "0",
                         "``auction_addr": "``auction_contract______________s1",
-                        "``active": "false",
+                        "``stake_state": "0",
                         "``bls_keys": "``bls_key_1_______________________________________________________________________________________________________________________bls_key_2_______________________________________________________________________________________________________________________",
-                        "``user_id|``node_address__________________s1": "0x01",
-                        "``user_id|``user_account_1________________s1": "0x02",
+                        "``user_id|``node_address__________________s1": "1",
+                        "``user_id|``delegator_1___________________s1": "2",
                         "``u_last|0x0000000000000002": "0",
                         "``u_uncl|0x0000000000000002": "0",
                         "``u_stak|0x0000000000000002": "567,000,000,000",
                         "``u_sale|0x0000000000000002": "0",
-                        "``user_id|``user_account_2________________s1": "0x03",
+                        "``user_id|``delegator_2___________________s1": "3",
                         "``u_last|0x0000000000000003": "0",
                         "``u_uncl|0x0000000000000003": "0",
                         "``u_stak|0x0000000000000003": "222,000,000,000",
@@ -41,13 +41,13 @@
                     },
                     "code": "file:../delegation.wasm"
                 },
-                "``user_account_1________________s1": {
+                "``delegator_1___________________s1": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {},
                     "code": ""
                 },
-                "``user_account_2________________s1": {
+                "``delegator_2___________________s1": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {},
@@ -92,7 +92,7 @@
                     "balance": "789,000,000,000",
                     "storage": {},
                     "code": "",
-                    "asyncCallData": "stake@00000002@626c735f6b65795f315f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f@7369676e61747572655f315f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f@626c735f6b65795f325f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f@7369676e61747572655f325f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f"
+                    "asyncCallData": "stake@02@626c735f6b65795f315f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f@7369676e61747572655f315f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f@626c735f6b65795f325f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f@7369676e61747572655f325f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f"
                 },
                 "``delegation_contract___________s1": {
                     "nonce": "0",
@@ -109,32 +109,31 @@
                         "``non_reward_balance": "789,000,000,000",
                         "``sent_rewards": "0",
                         "``auction_addr": "``auction_contract______________s1",
-                        "``active": "true",
-                        "``rewards_dirty": "true",
+                        "``stake_state": "1",
                         "``bls_keys": "``bls_key_1_______________________________________________________________________________________________________________________bls_key_2_______________________________________________________________________________________________________________________",
-                        "``user_id|``node_address__________________s1": "0x01",
-                        "``user_id|``user_account_1________________s1": "0x02",
+                        "``user_id|``node_address__________________s1": "1",
+                        "``user_id|``delegator_1___________________s1": "2",
                         "``u_last|0x0000000000000002": "0",
                         "``u_uncl|0x0000000000000002": "0",
                         "``u_stak|0x0000000000000002": "567,000,000,000",
                         "``u_sale|0x0000000000000002": "0",
-                        "``user_id|``user_account_2________________s1": "0x03",
+                        "``user_id|``delegator_2___________________s1": "3",
                         "``u_last|0x0000000000000003": "0",
                         "``u_uncl|0x0000000000000003": "0",
                         "``u_stak|0x0000000000000003": "222,000,000,000",
                         "``u_sale|0x0000000000000003": "0",
 
-                        "``tx_hash_________________________": "``stake_callback"
+                        "``tx_hash_________________________": "``auction_stake_callback"
                     },
                     "code": "file:../delegation.wasm"
                 },
-                "``user_account_1________________s1": {
+                "``delegator_1___________________s1": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {},
                     "code": ""
                 },
-                "``user_account_2________________s1": {
+                "``delegator_2___________________s1": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {},

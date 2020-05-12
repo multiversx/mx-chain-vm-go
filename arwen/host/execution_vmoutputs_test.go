@@ -878,7 +878,7 @@ func expectedVMOutput_AsyncCall_CallBackFails() *vmcommon.VMOutput {
 	AddFinishData(vmOutput, []byte{3})
 	AddFinishData(vmOutput, []byte("thirdparty"))
 	AddFinishData(vmOutput, []byte("vault"))
-	AddFinishData(vmOutput, []byte("execution failed"))
+	AddFinishData(vmOutput, []byte("user error"))
 	AddFinishData(vmOutput, []byte("txhash"))
 
 	return vmOutput

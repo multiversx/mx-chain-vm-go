@@ -43,7 +43,7 @@ func newPureFunctionExecutor() (*pureFunctionExecutor, error) {
 	world.EnableMockAddressGeneration()
 
 	blockGasLimit := uint64(10000000)
-	gasSchedule := config.MakeGasMap(1)
+	gasSchedule := config.MakeGasMapForTests()
 	vm, err := arwenHost.NewArwenVM(world, cryptohook.KryptoHookMockInstance, &arwen.VMHostParameters{
 		VMType:                   testVMType,
 		BlockGasLimit:            blockGasLimit,

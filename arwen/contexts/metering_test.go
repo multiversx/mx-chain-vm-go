@@ -16,7 +16,7 @@ func TestNewMeteringContext(t *testing.T) {
 
 	host := &mock.VmHostMock{}
 
-	meteringContext, err := NewMeteringContext(host, config.MakeGasMap(1), uint64(15000))
+	meteringContext, err := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000))
 	require.Nil(t, err)
 	require.NotNil(t, meteringContext)
 }
@@ -35,7 +35,7 @@ func TestMeteringContext_GasSchedule(t *testing.T) {
 	t.Parallel()
 
 	host := &mock.VmHostStub{}
-	meteringContext, _ := NewMeteringContext(host, config.MakeGasMap(1), uint64(15000))
+	meteringContext, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000))
 
 	schedule := meteringContext.GasSchedule()
 	require.NotNil(t, schedule)
@@ -50,7 +50,7 @@ func TestMeteringContext_UseGas(t *testing.T) {
 	host := &mock.VmHostMock{
 		RuntimeContext: mockRuntime,
 	}
-	meteringContext, _ := NewMeteringContext(host, config.MakeGasMap(1), uint64(15000))
+	meteringContext, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000))
 
 	gas := uint64(1000)
 	meteringContext.UseGas(gas)
@@ -61,7 +61,7 @@ func TestMeteringContext_UseGas(t *testing.T) {
 	vmInput = &vmcommon.VMInput{GasProvided: gasProvided}
 	mockRuntime.SetVMInput(vmInput)
 	mockRuntime.SetPointsUsed(0)
-	meteringContext, _ = NewMeteringContext(host, config.MakeGasMap(1), uint64(15000))
+	meteringContext, _ = NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000))
 
 	require.Equal(t, gasProvided, meteringContext.GasLeft())
 	meteringContext.UseGas(gas)
@@ -76,7 +76,7 @@ func TestMeteringContext_FreeGas(t *testing.T) {
 		OutputContext: mockOutput,
 	}
 
-	meteringContext, _ := NewMeteringContext(host, config.MakeGasMap(1), uint64(15000))
+	meteringContext, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000))
 
 	mockOutput.GasRefund = big.NewInt(0)
 	meteringContext.FreeGas(1000)
@@ -96,7 +96,7 @@ func TestMeteringContext_BoundGasLimit(t *testing.T) {
 		RuntimeContext: mockRuntime,
 	}
 	blockGasLimit := uint64(15000)
-	meteringContext, _ := NewMeteringContext(host, config.MakeGasMap(1), uint64(15000))
+	meteringContext, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000))
 
 	gasProvided := uint64(10000)
 	vmInput := &vmcommon.VMInput{GasProvided: gasProvided}
@@ -130,7 +130,7 @@ func TestMeteringContext_DeductInitialGasForExecution(t *testing.T) {
 		RuntimeContext: mockRuntime,
 	}
 
-	meteringContext, _ := NewMeteringContext(host, config.MakeGasMap(1), uint64(15000))
+	meteringContext, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000))
 
 	contract := []byte("contract")
 	err := meteringContext.DeductInitialGasForExecution(contract)
@@ -159,7 +159,7 @@ func TestDeductInitialGasForDirectDeployment(t *testing.T) {
 		RuntimeContext: mockRuntime,
 	}
 
-	meteringContext, _ := NewMeteringContext(host, config.MakeGasMap(1), uint64(15000))
+	meteringContext, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000))
 
 	mockRuntime.SetPointsUsed(0)
 	err := meteringContext.DeductInitialGasForDirectDeployment(arwen.CodeDeployInput{ContractCode: contractCode})
@@ -192,7 +192,7 @@ func TestDeductInitialGasForIndirectDeployment(t *testing.T) {
 		RuntimeContext: mockRuntime,
 	}
 
-	meteringContext, _ := NewMeteringContext(host, config.MakeGasMap(1), uint64(15000))
+	meteringContext, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000))
 
 	mockRuntime.SetPointsUsed(0)
 	err := meteringContext.DeductInitialGasForIndirectDeployment(arwen.CodeDeployInput{ContractCode: contractCode})
@@ -225,18 +225,18 @@ func TestMeteringContext_AsyncCallGasLocking(t *testing.T) {
 		RuntimeContext: mockRuntime,
 	}
 
-	meteringContext, _ := NewMeteringContext(host, config.MakeGasMap(1), uint64(15000))
+	meteringContext, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000))
 
 	input.GasProvided = 2
 	err := meteringContext.deductAndLockGasIfAsyncStep()
 	require.Equal(t, arwen.ErrNotEnoughGas, err)
 
-	gasProvided := uint64(10000)
+	gasProvided := uint64(1_000_000)
 	input.GasProvided = gasProvided
 	err = meteringContext.deductAndLockGasIfAsyncStep()
 	require.Nil(t, err)
-	require.Equal(t, uint64(2), meteringContext.gasLockedForAsyncStep)
-	require.Equal(t, gasProvided-3, meteringContext.GasLeft())
+	require.Equal(t, uint64(config.AsyncCallbackGasLockForTests + 1), meteringContext.gasLockedForAsyncStep)
+	require.Equal(t, gasProvided - config.AsyncCallbackGasLockForTests - 2, meteringContext.GasLeft())
 
 	meteringContext.UnlockGasIfAsyncStep()
 	require.Equal(t, gasProvided-1, meteringContext.GasLeft())

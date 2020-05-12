@@ -424,10 +424,10 @@ func (host *vmHost) callSCMethodIndirect() error {
 
 	_, err = function()
 	if err != nil {
-		return arwen.ErrFunctionRunError
+		err = host.handleBreakpointIfAny(err)
 	}
 
-	return nil
+	return err
 }
 
 func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) error {
@@ -465,10 +465,9 @@ func (host *vmHost) callInitFunction() error {
 	_, err := init()
 	if err != nil {
 		err = host.handleBreakpointIfAny(err)
-		return err
 	}
 
-	return nil
+	return err
 }
 
 func (host *vmHost) callSCMethod() error {

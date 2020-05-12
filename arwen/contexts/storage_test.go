@@ -55,7 +55,7 @@ func TestStorageContext_SetAddress(t *testing.T) {
 
 	mockRuntime := &mock.RuntimeContextMock{}
 	mockMetering := &mock.MeteringContextMock{}
-	mockMetering.SetGasSchedule(config.MakeGasMap(1))
+	mockMetering.SetGasSchedule(config.MakeGasMapForTests())
 	mockMetering.BlockGasLimitMock = uint64(15000)
 
 	host := &mock.VmHostMock{
@@ -129,7 +129,7 @@ func TestStorageContext_SetStorage(t *testing.T) {
 
 	mockRuntime := &mock.RuntimeContextMock{}
 	mockMetering := &mock.MeteringContextMock{}
-	mockMetering.SetGasSchedule(config.MakeGasMap(1))
+	mockMetering.SetGasSchedule(config.MakeGasMapForTests())
 	mockMetering.BlockGasLimitMock = uint64(15000)
 
 	host := &mock.VmHostMock{

@@ -128,17 +128,22 @@ func (host *vmHost) createCallbackContractCallInput(destinationVMOutput *vmcommo
 	metering := host.Metering()
 	runtime := host.Runtime()
 
-	arguments := destinationVMOutput.ReturnData
-	gasLimit := destinationVMOutput.GasRemaining
-	function := "callBack"
-
-	if destinationErr != nil {
-		arguments = [][]byte{
-			[]byte(destinationVMOutput.ReturnCode.String()),
-			[]byte(runtime.GetCurrentTxHash()),
-		}
+	// always provide return code as the first argument to callback function
+	arguments := [][]byte{
+		big.NewInt(int64(destinationVMOutput.ReturnCode)).Bytes(),
+	}
+	if destinationErr == nil {
+		// when execution went Ok, callBack arguments are:
+		// [0, result1, result2, ....]
+		arguments = append(arguments, destinationVMOutput.ReturnData...)
+	} else {
+		// when execution returned error, callBack arguments are:
+		// [error code, error message]
+		arguments = append(arguments, []byte(destinationVMOutput.ReturnMessage))
 	}
 
+	gasLimit := destinationVMOutput.GasRemaining
+	function := "callBack"
 	dataLength := host.computeDataLengthFromArguments(function, arguments)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.AsyncCallStep

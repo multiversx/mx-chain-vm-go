@@ -24,13 +24,13 @@
                         "``filled_stake": "1,000,000",
                         "``non_reward_balance": "400,000",
                         "``sent_rewards": "0",
-                        "``user_id|``node_address__________________s1": "0x01",
-                        "``user_id|``user_account_1________________s1": "0x02",
+                        "``user_id|``node_address__________________s1": "1",
+                        "``user_id|``delegator_1___________________s1": "2",
                         "``u_last|0x0000000000000002": "0",
                         "``u_uncl|0x0000000000000002": "0",
                         "``u_stak|0x0000000000000002": "100,000",
                         "``u_sale|0x0000000000000002": "0",
-                        "``user_id|``user_account_2________________s1": "0x03",
+                        "``user_id|``delegator_2___________________s1": "3",
                         "``u_last|0x0000000000000003": "0",
                         "``u_uncl|0x0000000000000003": "0",
                         "``u_stak|0x0000000000000003": "900,000",
@@ -38,13 +38,13 @@
                     },
                     "code": "file:../delegation.wasm"
                 },
-                "``user_account_1________________s1": {
+                "``delegator_1___________________s1": {
                     "nonce": "0",
                     "balance": "0x200000",
                     "storage": {},
                     "code": ""
                 },
-                "``user_account_2________________s1": {
+                "``delegator_2___________________s1": {
                     "nonce": "0",
                     "balance": "0x200000",
                     "storage": {},
@@ -56,7 +56,7 @@
             "step": "scCall",
             "txId": "1",
             "tx": {
-                "from": "``user_account_1________________s1",
+                "from": "``delegator_1___________________s1",
                 "to": "``delegation_contract___________s1",
                 "value": "0",
                 "function": "claimRewards",
@@ -76,7 +76,7 @@
             "step": "scCall",
             "txId": "2",
             "tx": {
-                "from": "``user_account_2________________s1",
+                "from": "``delegator_2___________________s1",
                 "to": "``delegation_contract___________s1",
                 "value": "0",
                 "function": "claimRewards",
@@ -116,7 +116,7 @@
             "step": "scCall",
             "txId": "4",
             "tx": {
-                "from": "``user_account_1________________s1",
+                "from": "``delegator_1___________________s1",
                 "to": "``delegation_contract___________s1",
                 "value": "0",
                 "function": "claimRewards",
@@ -136,7 +136,7 @@
             "step": "scCall",
             "txId": "5",
             "tx": {
-                "from": "``user_account_2________________s1",
+                "from": "``delegator_2___________________s1",
                 "to": "``delegation_contract___________s1",
                 "value": "0",
                 "function": "claimRewards",
@@ -196,14 +196,14 @@
                         "``filled_stake": "1,000,000",
                         "``non_reward_balance": "400,000",
                         "``sent_rewards": "10,000,000,009",
-                        "``user_id|``node_address__________________s1": "0x01",
+                        "``user_id|``node_address__________________s1": "1",
                         "``node_last": "3,000,000,003",
-                        "``user_id|``user_account_1________________s1": "0x02",
+                        "``user_id|``delegator_1___________________s1": "2",
                         "``u_last|0x0000000000000002": "7,000,000,007",
                         "``u_uncl|0x0000000000000002": "0",
                         "``u_stak|0x0000000000000002": "100,000",
                         "``u_sale|0x0000000000000002": "0",
-                        "``user_id|``user_account_2________________s1": "0x03",
+                        "``user_id|``delegator_2___________________s1": "3",
                         "``u_last|0x0000000000000003": "7,000,000,007",
                         "``u_uncl|0x0000000000000003": "0",
                         "``u_stak|0x0000000000000003": "900,000",
@@ -211,14 +211,14 @@
                     },
                     "code": "file:../delegation.wasm"
                 },
-                "``user_account_1________________s1": {
+                "``delegator_1___________________s1": {
                     "nonce": "2",
                     "balance": "0700,000,000",
                     "storage": {},
                     "code": "",
                     "asyncCallData": "delegation claim"
                 },
-                "``user_account_2________________s1": {
+                "``delegator_2___________________s1": {
                     "nonce": "2",
                     "balance": "6300,000,006",
                     "storage": {},
