@@ -3,7 +3,6 @@ package host
 import (
 	"fmt"
 	"math/big"
-	"os"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -42,15 +41,6 @@ func init() {
 
 	parentCompilationCost_DestCtx = uint64(len(GetTestSCCode("exec-dest-ctx-parent", "../../")))
 	childCompilationCost_DestCtx = uint64(len(GetTestSCCode("exec-dest-ctx-child", "../../")))
-}
-
-func getSizeOfFile(path string) uint64 {
-	fileInfo, err := os.Stat(path)
-	if err != nil {
-		panic(fmt.Sprintf("could not get file: %s", path))
-	}
-
-	return uint64(fileInfo.Size())
 }
 
 func expectedVMOutput_SameCtx_Prepare() *vmcommon.VMOutput {
