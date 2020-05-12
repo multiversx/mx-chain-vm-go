@@ -231,12 +231,12 @@ func TestMeteringContext_AsyncCallGasLocking(t *testing.T) {
 	err := meteringContext.deductAndLockGasIfAsyncStep()
 	require.Equal(t, arwen.ErrNotEnoughGas, err)
 
-	gasProvided := uint64(10000)
+	gasProvided := uint64(1_000_000)
 	input.GasProvided = gasProvided
 	err = meteringContext.deductAndLockGasIfAsyncStep()
 	require.Nil(t, err)
-	require.Equal(t, uint64(2), meteringContext.gasLockedForAsyncStep)
-	require.Equal(t, gasProvided-3, meteringContext.GasLeft())
+	require.Equal(t, uint64(config.AsyncCallbackGasLock + 1), meteringContext.gasLockedForAsyncStep)
+	require.Equal(t, gasProvided - config.AsyncCallbackGasLock - 2, meteringContext.GasLeft())
 
 	meteringContext.UnlockGasIfAsyncStep()
 	require.Equal(t, gasProvided-1, meteringContext.GasLeft())
