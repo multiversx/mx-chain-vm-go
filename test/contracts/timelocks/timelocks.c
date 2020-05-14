@@ -3,14 +3,15 @@
 byte counterKey[] = "counter";
 
 void init() {
-    int64storageStore(counterKey, 0);
+    int64storageStore(counterKey, sizeof(counterKey), 0);
 }
 
 void incrementCounter() {
-    i64 counter = int64storageLoad(counterKey);
-    if (isStorageLocked(counterKey) == 0) {
+    int counterKeySize = sizeof(counterKey);
+    i64 counter = int64storageLoad(counterKey, counterKeySize);
+    if (isStorageLocked(counterKey, counterKeySize) == 0) {
         counter++;
-        int64storageStore(counterKey, counter);
+        int64storageStore(counterKey, counterKeySize, counter);
     }
     int64finish(counter);
 }
@@ -18,9 +19,9 @@ void incrementCounter() {
 void lockCounter() {
     long long lockTimestamp = getBlockTimestamp();
     lockTimestamp += 3600*24;
-    setStorageLock(counterKey, lockTimestamp);
+    setStorageLock(counterKey, sizeof(counterKey), lockTimestamp);
 }
 
 void releaseCounter() {
-    setStorageLock(counterKey, 0);
+    setStorageLock(counterKey, sizeof(counterKey), 0);
 }

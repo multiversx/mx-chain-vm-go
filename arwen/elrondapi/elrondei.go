@@ -35,10 +35,10 @@ package elrondapi
 // extern int32_t getReturnDataSize(void *context, int32_t resultID);
 // extern int32_t getReturnData(void *context, int32_t resultID, int32_t dataOffset);
 //
-// extern int32_t setStorageLock(void *context, int32_t keyOffset, long long lockTimestamp);
-// extern long long getStorageLock(void *context, int32_t keyOffset);
-// extern int32_t isStorageLocked(void *context, int32_t keyOffset);
-// extern int32_t clearStorageLock(void *context, int32_t keyOffset);
+// extern int32_t setStorageLock(void *context, int32_t keyOffset, int32_t keyLength, long long lockTimestamp);
+// extern long long getStorageLock(void *context, int32_t keyOffset, int32_t keyLength);
+// extern int32_t isStorageLocked(void *context, int32_t keyOffset, int32_t keyLength);
+// extern int32_t clearStorageLock(void *context, int32_t keyOffset, int32_t keyLength);
 //
 // extern long long getBlockTimestamp(void *context);
 // extern long long getBlockNonce(void *context);
@@ -598,17 +598,18 @@ func storageLoad(context unsafe.Pointer, keyOffset int32, keyLength int32, dataO
 }
 
 //export setStorageLock
-func setStorageLock(context unsafe.Pointer, keyOffset int32, lockTimestamp int64) int32 {
+func setStorageLock(context unsafe.Pointer, keyOffset int32, keyLength int32, lockTimestamp int64) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
+	crypto := arwen.GetCryptoContext(context)
 
-	key, err := runtime.MemLoad(keyOffset, arwen.HashLen)
+	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
 
-	timeLockKey, err := arwen.CustomStorageKey(context, arwen.TimeLockKeyPrefix, key)
+	timeLockKey, err := arwen.CustomStorageKey(crypto, arwen.TimeLockKeyPrefix, key)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
@@ -621,17 +622,18 @@ func setStorageLock(context unsafe.Pointer, keyOffset int32, lockTimestamp int64
 }
 
 //export getStorageLock
-func getStorageLock(context unsafe.Pointer, keyOffset int32) int64 {
+func getStorageLock(context unsafe.Pointer, keyOffset int32, keyLength int32) int64 {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	storage := arwen.GetStorageContext(context)
+	crypto := arwen.GetCryptoContext(context)
 
-	key, err := runtime.MemLoad(keyOffset, arwen.HashLen)
+	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
 
-	timeLockKey, err := arwen.CustomStorageKey(context, arwen.TimeLockKeyPrefix, key)
+	timeLockKey, err := arwen.CustomStorageKey(crypto, arwen.TimeLockKeyPrefix, key)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
@@ -646,8 +648,8 @@ func getStorageLock(context unsafe.Pointer, keyOffset int32) int64 {
 }
 
 //export isStorageLocked
-func isStorageLocked(context unsafe.Pointer, keyOffset int32) int32 {
-	timeLock := getStorageLock(context, keyOffset)
+func isStorageLocked(context unsafe.Pointer, keyOffset int32, keyLength int32) int32 {
+	timeLock := getStorageLock(context, keyOffset, keyLength)
 	if timeLock < 0 {
 		return -1
 	}
@@ -661,8 +663,8 @@ func isStorageLocked(context unsafe.Pointer, keyOffset int32) int32 {
 }
 
 //export clearStorageLock
-func clearStorageLock(context unsafe.Pointer, keyOffset int32) int32 {
-	return setStorageLock(context, keyOffset, 0)
+func clearStorageLock(context unsafe.Pointer, keyOffset int32, keyLength int32) int32 {
+	return setStorageLock(context, keyOffset, keyLength,0)
 }
 
 //export getCaller

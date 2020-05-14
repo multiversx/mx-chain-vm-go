@@ -9,6 +9,7 @@ import (
 	"unsafe"
 
 	logger "github.com/ElrondNetwork/elrond-go-logger"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var logDuration = logger.GetOrCreate("arwen/duration")
@@ -16,8 +17,7 @@ var logDuration = logger.GetOrCreate("arwen/duration")
 // Zero is the big integer 0
 var Zero = big.NewInt(0)
 
-func CustomStorageKey(context unsafe.Pointer, keyType string, associatedKey []byte) ([]byte, error) {
-	crypto := GetCryptoContext(context)
+func CustomStorageKey(crypto vmcommon.CryptoHook, keyType string, associatedKey []byte) ([]byte, error) {
 	return crypto.Keccak256(append(associatedKey, []byte(keyType)...))
 }
 
