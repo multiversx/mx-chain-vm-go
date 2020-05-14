@@ -23,6 +23,7 @@ func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *ij.Transaction) (*vmi
 		}
 	}
 
+	// we also use fake vm outputs for transactions that don't use the VM, just for convenience
 	var output *vmi.VMOutput
 
 	if !ae.senderHasEnoughBalance(tx) {
@@ -79,11 +80,6 @@ func (ae *ArwenTestExecutor) senderHasEnoughBalance(tx *ij.Transaction) bool {
 }
 
 func (ae *ArwenTestExecutor) simpleTransferOutput(tx *ij.Transaction) (*vmi.VMOutput, error) {
-	// recipient := ae.world.AcctMap.GetAccount(tx.To.Value)
-	// if recipient == nil {
-	// 	return nil, fmt.Errorf("Tx recipient (address: %s) does not exist", hex.EncodeToString(tx.To.Value))
-	// }
-	// recipient
 	outputAccounts := make(map[string]*vmcommon.OutputAccount)
 	outputAccounts[string(tx.To.Value)] = &vmcommon.OutputAccount{
 		Address:      tx.To.Value,
