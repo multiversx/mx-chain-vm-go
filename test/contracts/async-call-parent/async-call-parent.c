@@ -21,8 +21,8 @@ int mustTransferToVault();
 int isVault();
 
 void parentPerformAsyncCall() {
-	storageStore(parentKeyA, parentDataA, 11);
-	storageStore(parentKeyB, parentDataB, 11);
+	storageStore(parentKeyA, 32, parentDataA, 11);
+	storageStore(parentKeyB, 32, parentDataB, 11);
 	finish(parentFinishA, 13);
 	finish(parentFinishB, 13);
 
@@ -39,13 +39,13 @@ void parentPerformAsyncCall() {
 
 void callBack() {
 	int numArgs = getNumArguments();
-	if (numArgs < 1) {
+	if (numArgs < 2) {
 		byte msg[] = "wrong num of arguments";
 		signalError(msg, 22);
 	}
 
 	byte loadedData[11];
-	storageLoad(parentKeyB, loadedData);
+	storageLoad(parentKeyB, 32, loadedData);
 
 	int status = 0;
 	for (int i = 0; i < 11; i++) {
@@ -73,15 +73,15 @@ int mustTransferToVault() {
 	int numArgs = getNumArguments();
 	byte childArgument[10];
 
-	if (numArgs == 2) {
-		getArgument(1, childArgument);
+	if (numArgs == 3) {
+		getArgument(2, childArgument);
 		if (isVault(childArgument)) {
 			return 0;
 		}
 	}
 
-	if (numArgs == 3) {
-		getArgument(2, childArgument);
+	if (numArgs == 4) {
+		getArgument(3, childArgument);
 		if (isVault(childArgument)) {
 			return 0;
 		}
@@ -103,11 +103,11 @@ int isVault(byte *string) {
 
 void handleBehaviorArgument() {
 	int numArgs = getNumArguments();
-	if (numArgs < 3) {
+	if (numArgs < 4) {
 		return;
 	}
 
-	byte behavior = int64getArgument(0);
+	byte behavior = int64getArgument(1);
 
 	if (behavior == 3) {
 		byte msg[] = "callBack error";

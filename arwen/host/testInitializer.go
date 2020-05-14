@@ -26,14 +26,17 @@ var childAddress = []byte("childSC.........................")
 
 // GetSCCode retrieves the bytecode of a WASM module from a file
 func GetSCCode(fileName string) []byte {
-	code, _ := ioutil.ReadFile(filepath.Clean(fileName))
+	code, err := ioutil.ReadFile(filepath.Clean(fileName))
+	if err != nil {
+		panic(fmt.Sprintf("GetSCCode(): %s", fileName))
+	}
 
 	return code
 }
 
 // GetTestSCCode retrieves the bytecode of a WASM testing module
 func GetTestSCCode(scName string, prefixToTestSCs string) []byte {
-	pathToSC := prefixToTestSCs + "test/contracts/" + scName + "/" + scName + ".wasm"
+	pathToSC := prefixToTestSCs + "test/contracts/" + scName + "/output/" + scName + ".wasm"
 	return GetSCCode(pathToSC)
 }
 
@@ -86,7 +89,7 @@ func DefaultTestArwen(tb testing.TB, blockchain vmcommon.BlockchainHook, crypto 
 	host, err := NewArwenVM(blockchain, crypto, &arwen.VMHostParameters{
 		VMType:                   defaultVMType,
 		BlockGasLimit:            uint64(1000),
-		GasSchedule:              config.MakeGasMap(1),
+		GasSchedule:              config.MakeGasMapForTests(),
 		ProtocolBuiltinFunctions: make(vmcommon.FunctionNames),
 	})
 	require.Nil(tb, err)

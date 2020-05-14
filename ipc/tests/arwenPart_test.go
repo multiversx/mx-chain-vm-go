@@ -68,7 +68,7 @@ func doContractRequest(
 		VMHostParameters := &arwen.VMHostParameters{
 			VMType:        []byte{5, 0},
 			BlockGasLimit: uint64(10000000),
-			GasSchedule:   config.MakeGasMap(1),
+			GasSchedule:   config.MakeGasMapForTests(),
 		}
 
 		part, err := arwenpart.NewArwenPart(

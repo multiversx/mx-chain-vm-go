@@ -1,0 +1,159 @@
+{
+    "name": "stake_2",
+    "steps": [
+        {
+            "step": "setState",
+            "accounts": {
+                "``node_address__________________s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                },
+                "``delegation_contract___________s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {
+                        "``owner": "``node_address__________________s1",
+                        
+                        "``nr_nodes": "1",
+                        "``stake_per_node": "789,000,000,000",
+                        "``node_share": "3455",
+                        "``node_rewards_addr": "``node_address__________________s1",
+                        "``nr_users": "1",
+                        "``filled_stake": "0",
+                        "``non_reward_balance": "0",
+                        "``sent_rewards": "0",
+                        "``user_id|``node_address__________________s1": "1"
+                    },
+                    "code": "file:../delegation.wasm"
+                },
+                "``delegator_1___________________s1": {
+                    "nonce": "0",
+                    "balance": "1,000,000",
+                    "storage": {},
+                    "code": ""
+                },
+                "``delegator_2___________________s1": {
+                    "nonce": "0",
+                    "balance": "1,000,000",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "1",
+            "tx": {
+                "from": "``delegator_1___________________s1",
+                "to": "``delegation_contract___________s1",
+                "value": "0",
+                "function": "stakeGenesis",
+                "arguments": [
+                    "567,000,000,000"
+                ],
+                "gasLimit": "1,000,000",
+                "gasPrice": "1"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [
+                    {
+                        "address": "``delegation_contract___________s1",
+                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000001",
+                        "topics": [
+                            "``delegator_1___________________s1"
+                        ],
+                        "data": "567,000,000,000"
+                    }
+                ],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "2",
+            "tx": {
+                "from": "``delegator_2___________________s1",
+                "to": "``delegation_contract___________s1",
+                "value": "0",
+                "function": "stakeGenesis",
+                "arguments": [
+                    "222,000,000,000"
+                ],
+                "gasLimit": "1,000,000",
+                "gasPrice": "1"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [
+                    {
+                        "address": "``delegation_contract___________s1",
+                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000001",
+                        "topics": [
+                            "``delegator_2___________________s1"
+                        ],
+                        "data": "222,000,000,000"
+                    }
+                ],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "``node_address__________________s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                },
+                "``delegation_contract___________s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {
+                        "``owner": "``node_address__________________s1",
+                        
+                        "``nr_nodes": "1",
+                        "``stake_per_node": "789,000,000,000",
+                        "``node_share": "3455",
+                        "``node_rewards_addr": "``node_address__________________s1",
+                        "``nr_users": "3",
+                        "``filled_stake": "789,000,000,000",
+                        "``non_reward_balance": "0",
+                        "``sent_rewards": "0",
+                        "``user_id|``node_address__________________s1": "1",
+                        "``user_id|``delegator_1___________________s1": "2",
+                        "``u_last|0x0000000000000002": "0",
+                        "``u_uncl|0x0000000000000002": "0",
+                        "``u_stak|0x0000000000000002": "567,000,000,000",
+                        "``u_sale|0x0000000000000002": "0",
+                        "``user_id|``delegator_2___________________s1": "3",
+                        "``u_last|0x0000000000000003": "0",
+                        "``u_uncl|0x0000000000000003": "0",
+                        "``u_stak|0x0000000000000003": "222,000,000,000",
+                        "``u_sale|0x0000000000000003": "0"
+                    },
+                    "code": "file:../delegation.wasm"
+                },
+                "``delegator_1___________________s1": {
+                    "nonce": "1",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                },
+                "``delegator_2___________________s1": {
+                    "nonce": "1",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        }
+    ]
+}

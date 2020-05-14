@@ -18,7 +18,7 @@ void storeIterationNumber(byte iteration, byte prefix) {
   intTo3String(iteration, valueIter, 6);
   keyIter[0] = prefix;
   valueIter[0] = prefix;
-  storageStore(keyIter, valueIter, 9);
+  storageStore(keyIter, 32, valueIter, 9);
 }
 
 void finishIterationNumber(byte iteration, byte prefix) {
@@ -65,14 +65,14 @@ void not_ok() {
 
 void incrementIterCounter(byte *storageKey) {
   byte counterValue;
-  int len = storageGetValueLength(storageKey);
+  int len = storageLoadLength(storageKey, 32);
   if (len == 0) {
     counterValue = 1;
-    storageStore(storageKey, &counterValue, 1);
+    storageStore(storageKey, 32, &counterValue, 1);
   } else {
-    storageLoad(storageKey, &counterValue); 
+    storageLoad(storageKey, 32, &counterValue); 
     counterValue = counterValue + 1;
-    storageStore(storageKey, &counterValue, 1);
+    storageStore(storageKey, 32, &counterValue, 1);
   }
 }
 

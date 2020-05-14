@@ -52,7 +52,7 @@
                 },
                 "``an_account____________________sy": {
                     "nonce": "0",
-                    "balance": "0x700abc",
+                    "balance": "1,000,000",
                     "storage": {},
                     "code": ""
                 },
@@ -76,8 +76,8 @@
                     "``coolname0001",
                     "``cool_address__________________sz"
                 ],
-                "gasLimit": "0x100000",
-                "gasPrice": "0x01"
+                "gasLimit": "1,000,000,000",
+                "gasPrice": "1"
             },
             "expect": {
                 "out": [
@@ -100,8 +100,8 @@
                 "arguments": [
                     "``coolname0001"
                 ],
-                "gasLimit": "0x100000",
-                "gasPrice": "0x01"
+                "gasLimit": "1,000,000,000",
+                "gasPrice": "1"
             },
             "expect": {
                 "out": [
@@ -164,8 +164,8 @@
                     "code": "file:dns.wasm"
                 },
                 "``an_account____________________sy": {
-                    "nonce": "2",
-                    "balance": "0x500abc",
+                    "nonce": "*",
+                    "balance": "*",
                     "storage": {},
                     "code": ""
                 },

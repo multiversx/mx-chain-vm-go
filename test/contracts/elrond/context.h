@@ -34,11 +34,11 @@ void getExternalBalance(byte *address, byte *balance);
 int transferValue(byte *destination, byte *value, byte *data, int length);
 
 // Storage-related functions
-int storageGetValueLength(byte *key);
-int storageStore(byte *key, byte *data, int dataLength);
-int storageLoad(byte *key, byte *data);
-int int64storageStore(byte *key, long long value);
-long long int64storageLoad(byte *key);
+int storageLoadLength(byte *key, int keyLength);
+int storageStore(byte *key, int keyLength, byte *data, int dataLength);
+int storageLoad(byte *key, int keyLength, byte *data);
+int int64storageStore(byte *key, int keyLength, long long value);
+long long int64storageLoad(byte *key, int keyLength);
 
 // Timelocks related functions
 int setStorageLock(byte *key, long long timeLock);

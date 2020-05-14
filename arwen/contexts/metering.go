@@ -132,7 +132,7 @@ func (context *meteringContext) DeductInitialGasForDirectDeployment(input arwen.
 	return context.deductInitialGas(
 		input.ContractCode,
 		context.gasSchedule.ElrondAPICost.CreateContract,
-		context.gasSchedule.BaseOperationCost.StorePerByte,
+		context.gasSchedule.BaseOperationCost.CompilePerByte,
 	)
 }
 
@@ -141,7 +141,7 @@ func (context *meteringContext) DeductInitialGasForIndirectDeployment(input arwe
 	return context.deductInitialGas(
 		input.ContractCode,
 		0,
-		context.gasSchedule.BaseOperationCost.StorePerByte,
+		context.gasSchedule.BaseOperationCost.CompilePerByte,
 	)
 }
 

@@ -89,7 +89,7 @@ func newDriver(tb testing.TB, blockchain *mock.BlockchainHookStub) *nodepart.Arw
 			VMHostParameters: arwen.VMHostParameters{
 				VMType:        arwenVirtualMachine,
 				BlockGasLimit: uint64(10000000),
-				GasSchedule:   config.MakeGasMap(1),
+				GasSchedule:   config.MakeGasMapForTests(),
 			},
 		},
 		nodepart.Config{MaxLoopTime: 1000},

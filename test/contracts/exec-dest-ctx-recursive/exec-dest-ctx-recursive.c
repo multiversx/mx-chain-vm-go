@@ -45,7 +45,7 @@ void callRecursive() {
 
     finishResult(result);
   } else {
-    bigIntStorageStoreUnsigned(bigIntCounterKey, bigIntCounterID);
+    bigIntStorageStoreUnsigned(bigIntCounterKey, 32, bigIntCounterID);
   }
 }
 
@@ -108,7 +108,7 @@ void recursiveMethodA() {
     );
     finishResult(result);
   } else {
-    bigIntStorageStoreUnsigned(bigIntCounterKey, bigIntCounterID);
+    bigIntStorageStoreUnsigned(bigIntCounterKey, 32, bigIntCounterID);
   }
 }
 
@@ -135,6 +135,6 @@ void recursiveMethodB() {
     );
     finishResult(result);
   } else {
-    bigIntStorageStoreUnsigned(bigIntCounterKey, bigIntCounterID);
+    bigIntStorageStoreUnsigned(bigIntCounterKey, 32, bigIntCounterID);
   }
 }

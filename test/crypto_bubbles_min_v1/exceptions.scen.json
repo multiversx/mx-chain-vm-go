@@ -39,7 +39,7 @@
             "expect": {
                 "out": [],
                 "status": "0x04",
-                "message": "32 bytes of data expected as argument value",
+                "message": "argument has wrong length: 32 bytes expected",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"
@@ -62,7 +62,7 @@
             "expect": {
                 "out": [],
                 "status": "0x04",
-                "message": "32 bytes of data expected as argument value",
+                "message": "argument has wrong length: 32 bytes expected",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"

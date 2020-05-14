@@ -46,6 +46,6 @@ void childCallsParent() {
 
     finishResult(result);
   } else {
-    bigIntStorageStoreUnsigned(bigIntCounterKey, bigIntCounterID);
+    bigIntStorageStoreUnsigned(bigIntCounterKey, 32, bigIntCounterID);
   }
 }
