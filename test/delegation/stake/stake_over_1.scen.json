@@ -22,7 +22,7 @@
                         "``node_rewards_addr": "``node_address__________________s1",
                         "``nr_users": "1",
                         "``filled_stake": "0",
-                        "``non_reward_balance": "0",
+                        "``inactive_stake": "0",
                         "``sent_rewards": "0",
                         "``user_id|``node_address__________________s1": "1"
                     },
@@ -84,7 +84,7 @@
                         "``node_rewards_addr": "``node_address__________________s1",
                         "``nr_users": "1",
                         "``filled_stake": "0",
-                        "``non_reward_balance": "0",
+                        "``inactive_stake": "0",
                         "``sent_rewards": "0",
                         "``user_id|``node_address__________________s1": "1"
                     },
