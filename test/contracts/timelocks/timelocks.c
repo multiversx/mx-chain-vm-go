@@ -23,5 +23,5 @@ void lockCounter() {
 }
 
 void releaseCounter() {
-    setStorageLock(counterKey, sizeof(counterKey), 0);
+    clearStorageLock(counterKey, sizeof(counterKey));
 }
