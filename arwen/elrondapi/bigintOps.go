@@ -289,6 +289,11 @@ func bigIntStorageStoreUnsigned(context unsafe.Pointer, keyOffset int32, keyLeng
 		return 0
 	}
 
+	if isElrondReservedKey(key) {
+		runtime.SignalUserError(arwen.UserErrorStoreElrondReservedKey)
+		return -1
+	}
+
 	value := bigInt.GetOne(source)
 	bytes := value.Bytes()
 

@@ -55,6 +55,7 @@ package elrondapi
 import "C"
 
 import (
+	"bytes"
 	"math/big"
 	"unsafe"
 
@@ -506,6 +507,10 @@ func getNumArguments(context unsafe.Pointer) int32 {
 	return int32(len(args))
 }
 
+func isElrondReservedKey(key []byte) bool {
+	return bytes.HasPrefix(key, []byte(arwen.ElrondProtectedKeyPrefix))
+}
+
 //export storageStore
 func storageStore(context unsafe.Pointer, keyOffset int32, keyLength int32, dataOffset int32, dataLength int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
@@ -514,6 +519,11 @@ func storageStore(context unsafe.Pointer, keyOffset int32, keyLength int32, data
 
 	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return -1
+	}
+
+	if isElrondReservedKey(key) {
+		runtime.SignalUserError(arwen.UserErrorStoreElrondReservedKey)
 		return -1
 	}
 
@@ -813,6 +823,11 @@ func int64storageStore(context unsafe.Pointer, keyOffset int32, keyLength int32,
 
 	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return -1
+	}
+
+	if isElrondReservedKey(key) {
+		runtime.SignalUserError(arwen.UserErrorStoreElrondReservedKey)
 		return -1
 	}
 
