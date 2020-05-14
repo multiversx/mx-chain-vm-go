@@ -22,12 +22,12 @@
                     "storage": {
                         "``owner": "``node_address__________________s1",
                         
-                        "``nr_nodes": "0",
+                        "``num_nodes": "0",
                         "``stake_per_node": "789,000,000,000",
                         
                         "``node_share": "3455",
                         "``node_rewards_addr": "``node_address__________________s1",
-                        "``nr_users": "3",
+                        "``num_users": "3",
                         "``filled_stake": "789,000,000,000",
                         "``inactive_stake": "789,000,000,000",
                         "``sent_rewards": "0",

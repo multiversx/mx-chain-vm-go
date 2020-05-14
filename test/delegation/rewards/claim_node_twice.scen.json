@@ -16,11 +16,11 @@
                     "storage": {
                         "``owner": "``node_address__________________s1",
                         
-                        "``nr_nodes": "1",
+                        "``num_nodes": "1",
                         "``stake_per_node": "1,000,000",
                         "``node_share": "3000",
                         "``node_rewards_addr": "``node_address__________________s1",
-                        "``nr_users": "3",
+                        "``num_users": "3",
                         "``filled_stake": "1,000,000",
                         "``inactive_stake": "0",
                         "``sent_rewards": "0",
@@ -110,11 +110,11 @@
                     "storage": {
                         "``owner": "``node_address__________________s1",
                         
-                        "``nr_nodes": "1",
+                        "``num_nodes": "1",
                         "``stake_per_node": "1,000,000",
                         "``node_share": "3000",
                         "``node_rewards_addr": "``node_address__________________s1",
-                        "``nr_users": "3",
+                        "``num_users": "3",
                         "``filled_stake": "1,000,000",
                         "``inactive_stake": "0",
                         "``sent_rewards": "3,000,000,003",

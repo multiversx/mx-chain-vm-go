@@ -16,11 +16,11 @@
                     "storage": {
                         "``owner": "``node_address__________________s1",
                         
-                        "``nr_nodes": "7",
+                        "``num_nodes": "7",
                         "``stake_per_node": "500,000,000,100",
                         "``node_share": "3000",
                         "``node_rewards_addr": "``node_address__________________s1",
-                        "``nr_users": "2",
+                        "``num_users": "2",
                         "``filled_stake": "500,000,000,100",
                         "``inactive_stake": "00000400000",
                         "``sent_rewards": "0",
@@ -104,7 +104,7 @@
                 "from": "``node_address__________________s1",
                 "to": "``delegation_contract___________s1",
                 "value": "0",
-                "function": "getNrBlsKeys",
+                "function": "getNumBlsKeys",
                 "arguments": [],
                 "gasLimit": "0x100000",
                 "gasPrice": "1"
@@ -134,11 +134,11 @@
                     "storage": {
                         "``owner": "``node_address__________________s1",
                         
-                        "``nr_nodes": "7",
+                        "``num_nodes": "7",
                         "``stake_per_node": "500,000,000,100",
                         "``node_share": "3000",
                         "``node_rewards_addr": "``node_address__________________s1",
-                        "``nr_users": "2",
+                        "``num_users": "2",
                         "``filled_stake": "500,000,000,100",
                         "``inactive_stake": "00000400000",
                         "``sent_rewards": "0",
