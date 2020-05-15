@@ -526,8 +526,7 @@ func storageStore(context unsafe.Pointer, keyOffset int32, keyLength int32, data
 	metering.UseGas(gasToUse)
 
 	storageStatus, err := storage.SetStorage(key, data)
-	if err != nil {
-		runtime.SignalUserError(err.Error())
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
 
@@ -828,8 +827,7 @@ func int64storageStore(context unsafe.Pointer, keyOffset int32, keyLength int32,
 	metering.UseGas(gasToUse)
 
 	storageStatus, err := storage.SetStorage(key, data.Bytes())
-	if err != nil {
-		runtime.SignalUserError(err.Error())
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
 

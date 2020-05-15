@@ -296,8 +296,7 @@ func bigIntStorageStoreUnsigned(context unsafe.Pointer, keyOffset int32, keyLeng
 	metering.UseGas(gasToUse)
 
 	storageStatus, err := storage.SetStorage(key, bytes)
-	if err != nil {
-		runtime.SignalUserError(err.Error())
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
 
