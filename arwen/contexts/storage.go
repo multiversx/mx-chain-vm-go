@@ -91,7 +91,7 @@ func (context *storageContext) isElrondReservedKey(key []byte) bool {
 
 func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.StorageStatus, error) {
 	if context.isElrondReservedKey(key) {
-		return arwen.StorageUnchanged, errors.New(arwen.UserErrorStoreElrondReservedKey)
+		return arwen.StorageUnchanged, arwen.ErrStoreElrondReservedKey
 	}
 
 	if context.host.Runtime().ReadOnly() {

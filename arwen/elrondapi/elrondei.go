@@ -799,13 +799,15 @@ func int64getArgument(context unsafe.Pointer, id int32) int64 {
 
 	args := runtime.Arguments()
 	if id < 0 || id >= int32(len(args)) {
-		runtime.SignalUserError(arwen.UserErrorArgIndexOutOfRange)
+		arwen.WithFault(arwen.ErrArgIndexOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		return 0
 	}
 
 	arg := args[id]
 	argBigInt := twos.SetBytes(big.NewInt(0), arg)
 	if !argBigInt.IsInt64() {
-		runtime.SignalUserError(arwen.UserErrorArgOutOfRange)
+		arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		return 0
 	}
 	return argBigInt.Int64()
 }
