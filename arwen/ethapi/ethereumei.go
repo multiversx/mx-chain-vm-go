@@ -341,7 +341,7 @@ func ethstorageStore(context unsafe.Pointer, pathOffset int32, valueOffset int32
 	}
 
 	_, err = storage.SetStorage(key, data)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFault(err, context, true) {
 		return
 	}
 }
