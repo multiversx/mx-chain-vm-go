@@ -55,7 +55,6 @@ package elrondapi
 import "C"
 
 import (
-	"bytes"
 	"math/big"
 	"unsafe"
 
@@ -507,10 +506,6 @@ func getNumArguments(context unsafe.Pointer) int32 {
 	return int32(len(args))
 }
 
-func isElrondReservedKey(key []byte) bool {
-	return bytes.HasPrefix(key, []byte(arwen.ElrondProtectedKeyPrefix))
-}
-
 //export storageStore
 func storageStore(context unsafe.Pointer, keyOffset int32, keyLength int32, dataOffset int32, dataLength int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
@@ -522,11 +517,6 @@ func storageStore(context unsafe.Pointer, keyOffset int32, keyLength int32, data
 		return -1
 	}
 
-	if isElrondReservedKey(key) {
-		runtime.SignalUserError(arwen.UserErrorStoreElrondReservedKey)
-		return -1
-	}
-
 	data, err := runtime.MemLoad(dataOffset, dataLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
@@ -535,7 +525,13 @@ func storageStore(context unsafe.Pointer, keyOffset int32, keyLength int32, data
 	gasToUse := metering.GasSchedule().ElrondAPICost.StorageStore
 	metering.UseGas(gasToUse)
 
-	return storage.SetStorage(key, data)
+	storageStatus, err := storage.SetStorage(key, data)
+	if err != nil {
+		runtime.SignalUserError(err.Error())
+		return -1
+	}
+
+	return int32(storageStatus)
 }
 
 //export storageLoadLength
@@ -826,17 +822,18 @@ func int64storageStore(context unsafe.Pointer, keyOffset int32, keyLength int32,
 		return -1
 	}
 
-	if isElrondReservedKey(key) {
-		runtime.SignalUserError(arwen.UserErrorStoreElrondReservedKey)
-		return -1
-	}
-
 	data := big.NewInt(value)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64StorageStore
 	metering.UseGas(gasToUse)
 
-	return storage.SetStorage(key, data.Bytes())
+	storageStatus, err := storage.SetStorage(key, data.Bytes())
+	if err != nil {
+		runtime.SignalUserError(err.Error())
+		return -1
+	}
+
+	return int32(storageStatus)
 }
 
 //export int64storageLoad

@@ -12,13 +12,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var elrondReservedTestPrefix = []byte("ELRONDTEST")
+
 func TestNewStorageContext(t *testing.T) {
 	t.Parallel()
 
 	host := &mock.VmHostMock{}
 	mockBlockchain := &mock.BlockchainHookMock{}
 
-	storageContext, err := NewStorageContext(host, mockBlockchain)
+	storageContext, err := NewStorageContext(host, mockBlockchain, elrondReservedTestPrefix)
 	require.Nil(t, err)
 	require.NotNil(t, storageContext)
 }
@@ -65,14 +67,15 @@ func TestStorageContext_SetAddress(t *testing.T) {
 	}
 	bcHook := &mock.BlockchainHookStub{}
 
-	storageContext, _ := NewStorageContext(host, bcHook)
+	storageContext, _ := NewStorageContext(host, bcHook, elrondReservedTestPrefix)
 
 	keyA := []byte("keyA")
 	valueA := []byte("valueA")
 
 	storageContext.SetAddress(addressA)
-	storageStatus := storageContext.SetStorage(keyA, valueA)
-	require.Equal(t, int32(arwen.StorageAdded), storageStatus)
+	storageStatus, err := storageContext.SetStorage(keyA, valueA)
+	require.Nil(t, err)
+	require.Equal(t, arwen.StorageAdded, storageStatus)
 	require.Equal(t, valueA, storageContext.GetStorage(keyA))
 	require.Len(t, storageContext.GetStorageUpdates(addressA), 1)
 	require.Len(t, storageContext.GetStorageUpdates(addressB), 0)
@@ -80,8 +83,9 @@ func TestStorageContext_SetAddress(t *testing.T) {
 	keyB := []byte("keyB")
 	valueB := []byte("valueB")
 	storageContext.SetAddress(addressB)
-	storageStatus = storageContext.SetStorage(keyB, valueB)
-	require.Equal(t, int32(arwen.StorageAdded), storageStatus)
+	storageStatus, err = storageContext.SetStorage(keyB, valueB)
+	require.Nil(t, err)
+	require.Equal(t, arwen.StorageAdded, storageStatus)
 	require.Equal(t, valueB, storageContext.GetStorage(keyB))
 	require.Len(t, storageContext.GetStorageUpdates(addressA), 1)
 	require.Len(t, storageContext.GetStorageUpdates(addressB), 1)
@@ -110,7 +114,7 @@ func TestStorageContext_GetStorageUpdates(t *testing.T) {
 	}
 
 	mockBlockchainHook := &mock.BlockchainHookMock{}
-	storageContext, _ := NewStorageContext(host, mockBlockchainHook)
+	storageContext, _ := NewStorageContext(host, mockBlockchainHook, elrondReservedTestPrefix)
 
 	storageUpdates := storageContext.GetStorageUpdates([]byte("account"))
 	require.Equal(t, 1, len(storageUpdates))
@@ -139,47 +143,53 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	}
 	bcHook := &mock.BlockchainHookStub{}
 
-	storageContext, _ := NewStorageContext(host, bcHook)
+	storageContext, _ := NewStorageContext(host, bcHook, elrondReservedTestPrefix)
 	storageContext.SetAddress(address)
 
 	key := []byte("key")
 	value := []byte("value")
 
-	storageStatus := storageContext.SetStorage(key, value)
-	require.Equal(t, int32(arwen.StorageAdded), storageStatus)
+	storageStatus, err := storageContext.SetStorage(key, value)
+	require.Nil(t, err)
+	require.Equal(t, arwen.StorageAdded, storageStatus)
 	require.Equal(t, value, storageContext.GetStorage(key))
 	require.Len(t, storageContext.GetStorageUpdates(address), 1)
 
 	value = []byte("newValue")
-	storageStatus = storageContext.SetStorage(key, value)
-	require.Equal(t, int32(arwen.StorageModified), storageStatus)
+	storageStatus, err = storageContext.SetStorage(key, value)
+	require.Nil(t, err)
+	require.Equal(t, arwen.StorageModified, storageStatus)
 	require.Equal(t, value, storageContext.GetStorage(key))
 	require.Len(t, storageContext.GetStorageUpdates(address), 1)
 
 	value = []byte("newValue")
-	storageStatus = storageContext.SetStorage(key, value)
-	require.Equal(t, int32(arwen.StorageUnchanged), storageStatus)
+	storageStatus, err = storageContext.SetStorage(key, value)
+	require.Nil(t, err)
+	require.Equal(t, arwen.StorageUnchanged, storageStatus)
 	require.Equal(t, value, storageContext.GetStorage(key))
 	require.Len(t, storageContext.GetStorageUpdates(address), 1)
 
 	value = nil
-	storageStatus = storageContext.SetStorage(key, value)
-	require.Equal(t, int32(arwen.StorageDeleted), storageStatus)
+	storageStatus, err = storageContext.SetStorage(key, value)
+	require.Nil(t, err)
+	require.Equal(t, arwen.StorageDeleted, storageStatus)
 	require.Equal(t, []byte{}, storageContext.GetStorage(key))
 	require.Len(t, storageContext.GetStorageUpdates(address), 1)
 
 	mockRuntime.SetReadOnly(true)
 	value = []byte("newValue")
-	storageStatus = storageContext.SetStorage(key, value)
-	require.Equal(t, int32(arwen.StorageUnchanged), storageStatus)
+	storageStatus, err = storageContext.SetStorage(key, value)
+	require.Nil(t, err)
+	require.Equal(t, arwen.StorageUnchanged, storageStatus)
 	require.Equal(t, []byte{}, storageContext.GetStorage(key))
 	require.Len(t, storageContext.GetStorageUpdates(address), 1)
 
 	mockRuntime.SetReadOnly(false)
 	key = []byte("other_key")
 	value = []byte("other_value")
-	storageStatus = storageContext.SetStorage(key, value)
-	require.Equal(t, int32(arwen.StorageAdded), storageStatus)
+	storageStatus, err = storageContext.SetStorage(key, value)
+	require.Nil(t, err)
+	require.Equal(t, arwen.StorageAdded, storageStatus)
 	require.Equal(t, value, storageContext.GetStorage(key))
 	require.Len(t, storageContext.GetStorageUpdates(address), 2)
 }

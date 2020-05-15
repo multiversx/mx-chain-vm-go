@@ -49,6 +49,7 @@ func newPureFunctionExecutor() (*pureFunctionExecutor, error) {
 		BlockGasLimit:            blockGasLimit,
 		GasSchedule:              gasSchedule,
 		ProtocolBuiltinFunctions: make(vmcommon.FunctionNames),
+		ElrondProtectedKeyPrefix: []byte("ELROND"),
 	})
 	if err != nil {
 		return nil, err

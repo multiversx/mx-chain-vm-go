@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"math/big"
 
-	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	ij "github.com/ElrondNetwork/elrond-vm-util/test-util/vmtestjson"
@@ -106,7 +105,7 @@ func (ae *ArwenTestExecutor) validatorRewardOutput(tx *ij.Transaction) (*vmi.VMO
 		return nil, fmt.Errorf("Tx recipient (address: %s) does not exist", hex.EncodeToString(tx.To.Value))
 	}
 	recipient.BalanceDelta = reward
-	storageElrondReward := recipient.StorageValue(arwen.ElrondRewardKey)
+	storageElrondReward := recipient.StorageValue(ElrondRewardKey)
 	storageElrondReward = big.NewInt(0).Add(
 		big.NewInt(0).SetBytes(storageElrondReward),
 		reward).Bytes()
@@ -116,8 +115,8 @@ func (ae *ArwenTestExecutor) validatorRewardOutput(tx *ij.Transaction) (*vmi.VMO
 		Address:      tx.To.Value,
 		BalanceDelta: tx.Value.Value,
 		StorageUpdates: map[string]*vmi.StorageUpdate{
-			arwen.ElrondRewardKey: &vmi.StorageUpdate{
-				Offset: []byte(arwen.ElrondRewardKey),
+			ElrondRewardKey: &vmi.StorageUpdate{
+				Offset: []byte(ElrondRewardKey),
 				Data:   storageElrondReward,
 			},
 		},

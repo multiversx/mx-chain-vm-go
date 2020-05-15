@@ -2,27 +2,34 @@ package contexts
 
 import (
 	"bytes"
+	"errors"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 type storageContext struct {
-	host           arwen.VMHost
-	blockChainHook vmcommon.BlockchainHook
-	address        []byte
-	stateStack     [][]byte
+	host                     arwen.VMHost
+	blockChainHook           vmcommon.BlockchainHook
+	address                  []byte
+	stateStack               [][]byte
+	elrondProtectedKeyPrefix []byte
 }
 
 // NewStorageContext creates a new storageContext
 func NewStorageContext(
 	host arwen.VMHost,
 	blockChainHook vmcommon.BlockchainHook,
+	elrondProtectedKeyPrefix []byte,
 ) (*storageContext, error) {
+	if len(elrondProtectedKeyPrefix) == 0 {
+		return nil, errors.New("elrondProtectedKeyPrefix cannot be empty")
+	}
 	context := &storageContext{
-		host:           host,
-		blockChainHook: blockChainHook,
-		stateStack:     make([][]byte, 0),
+		host:                     host,
+		blockChainHook:           blockChainHook,
+		stateStack:               make([][]byte, 0),
+		elrondProtectedKeyPrefix: elrondProtectedKeyPrefix,
 	}
 
 	return context, nil
@@ -78,9 +85,17 @@ func (context *storageContext) GetStorage(key []byte) []byte {
 	return value
 }
 
-func (context *storageContext) SetStorage(key []byte, value []byte) int32 {
+func (context *storageContext) isElrondReservedKey(key []byte) bool {
+	return bytes.HasPrefix(key, []byte(context.elrondProtectedKeyPrefix))
+}
+
+func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.StorageStatus, error) {
+	if context.isElrondReservedKey(key) {
+		return arwen.StorageUnchanged, errors.New(arwen.UserErrorStoreElrondReservedKey)
+	}
+
 	if context.host.Runtime().ReadOnly() {
-		return int32(arwen.StorageUnchanged)
+		return arwen.StorageUnchanged, nil
 	}
 
 	metering := context.host.Metering()
@@ -104,7 +119,7 @@ func (context *storageContext) SetStorage(key []byte, value []byte) int32 {
 	if bytes.Equal(oldValue, value) {
 		useGas := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(length)
 		metering.UseGas(useGas)
-		return int32(arwen.StorageUnchanged)
+		return arwen.StorageUnchanged, nil
 	}
 
 	newUpdate := &vmcommon.StorageUpdate{
@@ -117,12 +132,12 @@ func (context *storageContext) SetStorage(key []byte, value []byte) int32 {
 	if bytes.Equal(oldValue, zero) {
 		useGas := metering.GasSchedule().BaseOperationCost.StorePerByte * uint64(length)
 		metering.UseGas(useGas)
-		return int32(arwen.StorageAdded)
+		return arwen.StorageAdded, nil
 	}
 	if bytes.Equal(value, zero) {
 		freeGas := metering.GasSchedule().BaseOperationCost.ReleasePerByte * uint64(lengthOldValue)
 		metering.FreeGas(freeGas)
-		return int32(arwen.StorageDeleted)
+		return arwen.StorageDeleted, nil
 	}
 
 	newValueExtraLength := length - lengthOldValue
@@ -141,5 +156,5 @@ func (context *storageContext) SetStorage(key []byte, value []byte) int32 {
 		metering.FreeGas(freeGas)
 	}
 
-	return int32(arwen.StorageModified)
+	return arwen.StorageModified, nil
 }

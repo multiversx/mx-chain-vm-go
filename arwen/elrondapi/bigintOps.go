@@ -289,18 +289,19 @@ func bigIntStorageStoreUnsigned(context unsafe.Pointer, keyOffset int32, keyLeng
 		return 0
 	}
 
-	if isElrondReservedKey(key) {
-		runtime.SignalUserError(arwen.UserErrorStoreElrondReservedKey)
-		return -1
-	}
-
 	value := bigInt.GetOne(source)
 	bytes := value.Bytes()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntStorageStoreUnsigned
 	metering.UseGas(gasToUse)
 
-	return storage.SetStorage(key, bytes)
+	storageStatus, err := storage.SetStorage(key, bytes)
+	if err != nil {
+		runtime.SignalUserError(err.Error())
+		return -1
+	}
+
+	return int32(storageStatus)
 }
 
 //export bigIntStorageLoadUnsigned
