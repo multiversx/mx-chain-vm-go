@@ -2,6 +2,7 @@ package contexts
 
 import (
 	"bytes"
+	"errors"
 	"math/big"
 	"testing"
 
@@ -12,7 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var elrondReservedTestPrefix = []byte("ELRONDTEST")
+var elrondReservedTestPrefix = []byte("RESERVED")
 
 func TestNewStorageContext(t *testing.T) {
 	t.Parallel()
@@ -192,4 +193,14 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	require.Equal(t, arwen.StorageAdded, storageStatus)
 	require.Equal(t, value, storageContext.GetStorage(key))
 	require.Len(t, storageContext.GetStorageUpdates(address), 2)
+
+	key = []byte("RESERVEDkey")
+	value = []byte("doesn't matter")
+	storageStatus, err = storageContext.SetStorage(key, value)
+	require.Equal(t, errors.New(arwen.UserErrorStoreElrondReservedKey), err)
+
+	key = []byte("RESERVED")
+	value = []byte("doesn't matter")
+	storageStatus, err = storageContext.SetStorage(key, value)
+	require.Equal(t, errors.New(arwen.UserErrorStoreElrondReservedKey), err)
 }
