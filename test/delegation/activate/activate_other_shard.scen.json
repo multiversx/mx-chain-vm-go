@@ -16,17 +16,17 @@
                     "storage": {
                         "``owner": "``node_address__________________s1",
                         
-                        "``nr_nodes": "2",
+                        "``num_nodes": "2",
                         "``stake_per_node": "394,500,000,000",
                         "``node_share": "3455",
                         "``node_rewards_addr": "``node_address__________________s1",
-                        "``nr_users": "3",
+                        "``num_users": "3",
                         "``filled_stake": "789,000,000,000",
-                        "``non_reward_balance": "789,000,000,000",
+                        "``inactive_stake": "789,000,000,000",
                         "``sent_rewards": "0",
                         "``auction_addr": "``auction_contract______________s1",
                         "``stake_state": "0",
-                        "``bls_keys": "``bls_key_1_______________________________________________________________________________________________________________________bls_key_2_______________________________________________________________________________________________________________________",
+                        "``bls_keys": "``bls_key_1_______________________________________________________________________________________bls_key_2_______________________________________________________________________________________",
                         "``user_id|``node_address__________________s1": "1",
                         "``user_id|``delegator_1___________________s1": "2",
                         "``u_last|0x0000000000000002": "0",
@@ -92,7 +92,7 @@
                     "balance": "789,000,000,000",
                     "storage": {},
                     "code": "",
-                    "asyncCallData": "stake@02@626c735f6b65795f315f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f@7369676e61747572655f315f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f@626c735f6b65795f325f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f@7369676e61747572655f325f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f"
+                    "asyncCallData": "stake@02@626c735f6b65795f315f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f@7369676e61747572655f315f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f@626c735f6b65795f325f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f@7369676e61747572655f325f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f"
                 },
                 "``delegation_contract___________s1": {
                     "nonce": "0",
@@ -100,17 +100,17 @@
                     "storage": {
                         "``owner": "``node_address__________________s1",
                         
-                        "``nr_nodes": "2",
+                        "``num_nodes": "2",
                         "``stake_per_node": "394,500,000,000",
                         "``node_share": "3455",
                         "``node_rewards_addr": "``node_address__________________s1",
-                        "``nr_users": "3",
+                        "``num_users": "3",
                         "``filled_stake": "789,000,000,000",
-                        "``non_reward_balance": "789,000,000,000",
+                        "``inactive_stake": "789,000,000,000",
                         "``sent_rewards": "0",
                         "``auction_addr": "``auction_contract______________s1",
                         "``stake_state": "1",
-                        "``bls_keys": "``bls_key_1_______________________________________________________________________________________________________________________bls_key_2_______________________________________________________________________________________________________________________",
+                        "``bls_keys": "``bls_key_1_______________________________________________________________________________________bls_key_2_______________________________________________________________________________________",
                         "``user_id|``node_address__________________s1": "1",
                         "``user_id|``delegator_1___________________s1": "2",
                         "``u_last|0x0000000000000002": "0",

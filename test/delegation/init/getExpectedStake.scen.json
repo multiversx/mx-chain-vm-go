@@ -16,13 +16,13 @@
                     "storage": {
                         "``owner": "``node_address__________________s1",
                         
-                        "``nr_nodes": "1",
+                        "``num_nodes": "1",
                         "``stake_per_node": "500,000,000,300",
                         "``node_share": "5000",
                         "``node_rewards_addr": "``node_address__________________s1",
-                        "``nr_users": "2",
+                        "``num_users": "2",
                         "``filled_stake": "500,000,000,300",
-                        "``non_reward_balance": "0",
+                        "``inactive_stake": "0",
                         "``sent_rewards": "0",
                         "``user_id|``node_address__________________s1": "1",
                         "``user_id|``delegator_1___________________s1": "2",
@@ -78,13 +78,13 @@
                     "storage": {
                         "``owner": "``node_address__________________s1",
                         
-                        "``nr_nodes": "1",
+                        "``num_nodes": "1",
                         "``stake_per_node": "500,000,000,300",
                         "``node_share": "5000",
                         "``node_rewards_addr": "``node_address__________________s1",
-                        "``nr_users": "2",
+                        "``num_users": "2",
                         "``filled_stake": "500,000,000,300",
-                        "``non_reward_balance": "0",
+                        "``inactive_stake": "0",
                         "``sent_rewards": "0",
                         "``user_id|``node_address__________________s1": "1",
                         "``user_id|``delegator_1___________________s1": "2",
