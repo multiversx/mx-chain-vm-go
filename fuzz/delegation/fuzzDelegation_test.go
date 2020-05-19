@@ -51,22 +51,24 @@ func TestFuzzDelegation(t *testing.T) {
 	err := executor.init(&fuzzDelegationExecutorInitArgs{
 		nodeShare:              r.Intn(10000),
 		timeBeforeForceUnstake: 0,
-		numDelegators:          r.Intn(49) + 1,
-		numNodes:               r.Intn(29) + 1,
+		numDelegators:          r.Intn(4) + 1,
+		numNodes:               r.Intn(9) + 1,
 		stakePerNode:           big.NewInt(1000000000),
 	})
 	if err != nil {
 		panic(err)
 	}
 
+	re := newRandomEventProvider()
 	for stepIndex := 0; stepIndex < 1000 && !executor.active; stepIndex++ {
+		re.reset()
 		switch {
-		case rand.Float32() < 0.3:
+		case re.withProbability(0.3):
 			err = executor.maybeActivate()
 			if err != nil {
 				panic(err)
 			}
-		case rand.Float32() < 0.01:
+		case re.withProbability(0.01):
 			// finish staking, activate
 			delegatorIdx := r.Intn(executor.numDelegators)
 			err = executor.stakeTheRest(delegatorIdx)
@@ -77,13 +79,23 @@ func TestFuzzDelegation(t *testing.T) {
 			if err != nil {
 				panic(err)
 			}
-		default:
+		case re.withProbability(0.5):
+			// stake
 			delegatorIdx := r.Intn(executor.numDelegators)
 			stake := big.NewInt(0).Rand(r, executor.expectedStake)
 			err = executor.tryStake(delegatorIdx, stake)
 			if err != nil {
 				panic(err)
 			}
+		case re.withProbability(0.1):
+			// unstake
+			delegatorIdx := r.Intn(executor.numDelegators)
+			stake := big.NewInt(0).Rand(r, executor.expectedStake)
+			err = executor.tryUnstake(delegatorIdx, stake)
+			if err != nil {
+				panic(err)
+			}
+		default:
 		}
 	}
 

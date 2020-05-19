@@ -362,7 +362,36 @@ func (pfe *fuzzDelegationExecutor) tryStake(delegIndex int, amount *big.Int) err
 	if output.ReturnCode == vmi.Ok {
 		pfe.log("try stake, delegator: %d, amount: %d, ok", delegIndex, amount)
 	} else {
-		pfe.log("try stake, delegator: %d, amount: %d, fail", delegIndex, amount)
+		pfe.log("try stake, delegator: %d, amount: %d, fail, %s", delegIndex, amount, output.ReturnMessage)
+	}
+	return err
+}
+
+func (pfe *fuzzDelegationExecutor) tryUnstake(delegIndex int, amount *big.Int) error {
+	output, err := pfe.executeTxStep(fmt.Sprintf(`
+	{
+		"step": "scCall",
+		"txId": "-unstake-",
+		"tx": {
+			"from": "''%s",
+			"to": "''%s",
+			"value": "0",
+			"function": "unstake",
+			"arguments": [
+				"%d"
+			],
+			"gasLimit": "1,000,000",
+			"gasPrice": "0"
+		}
+	}`,
+		string(delegatorAddress(delegIndex)),
+		string(pfe.delegationContractAddress),
+		amount,
+	))
+	if output.ReturnCode == vmi.Ok {
+		pfe.log("try unstake, delegator: %d, amount: %d, ok", delegIndex, amount)
+	} else {
+		pfe.log("try unstake, delegator: %d, amount: %d, fail, %s", delegIndex, amount, output.ReturnMessage)
 	}
 	return err
 }
