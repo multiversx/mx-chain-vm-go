@@ -5,7 +5,7 @@
         {
             "step": "setState",
             "accounts": {
-                "``node_address__________________s1": {
+                "''node_address__________________s1": {
                     "nonce": "0",
                     "balance": "0x100000",
                     "storage": {},
@@ -17,7 +17,7 @@
             "step": "scDeploy",
             "txId": "1",
             "tx": {
-                "from": "``node_address__________________s1",
+                "from": "''node_address__________________s1",
                 "value": "0",
                 "contractCode": "file:../delegation.wasm",
                 "arguments": [],
@@ -36,7 +36,7 @@
         {
             "step": "checkState",
             "accounts": {
-                "``node_address__________________s1": {
+                "''node_address__________________s1": {
                     "nonce": "1",
                     "balance": "0",
                     "storage": {},

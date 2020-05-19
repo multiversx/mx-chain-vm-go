@@ -4,31 +4,31 @@
         {
             "step": "setState",
             "accounts": {
-                "``node_address__________________s1": {
+                "''node_address__________________s1": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {},
                     "code": ""
                 },
-                "``delegation_contract___________s1": {
+                "''delegation_contract___________s1": {
                     "nonce": "0",
                     "balance": "0x100",
                     "storage": {
-                        "``owner": "``node_address__________________s1",
+                        "''owner": "''node_address__________________s1",
                         
-                        "``num_nodes": "1",
-                        "``stake_per_node": "500,000,000,100",
-                        "``node_share": "5000",
-                        "``node_rewards_addr": "``node_address__________________s1",
-                        "``num_users": "1",
-                        "``filled_stake": "500,000,000,100",
-                        "``inactive_stake": "0",
-                        "``sent_rewards": "0",
-                        "``user_id|``node_address__________________s1": "1"
+                        "''num_nodes": "1",
+                        "''stake_per_node": "500,000,000,100",
+                        "''node_share": "5000",
+                        "''node_rewards_addr": "''node_address__________________s1",
+                        "''num_users": "1",
+                        "''filled_stake": "500,000,000,100",
+                        "''inactive_stake": "0",
+                        "''sent_rewards": "0",
+                        "''user_id|''node_address__________________s1": "1"
                     },
                     "code": "file:../delegation.wasm"
                 },
-                "``delegator_1___________________s1": {
+                "''delegator_1___________________s1": {
                     "nonce": "0",
                     "balance": "0x300abc",
                     "storage": {},
@@ -40,8 +40,8 @@
             "step": "scCall",
             "txId": "1",
             "tx": {
-                "from": "``delegator_1___________________s1",
-                "to": "``delegation_contract___________s1",
+                "from": "''delegator_1___________________s1",
+                "to": "''delegation_contract___________s1",
                 "value": "0",
                 "function": "getNrDelegators",
                 "arguments": [],
@@ -61,31 +61,31 @@
         {
             "step": "checkState",
             "accounts": {
-                "``node_address__________________s1": {
+                "''node_address__________________s1": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {},
                     "code": ""
                 },
-                "``delegation_contract___________s1": {
+                "''delegation_contract___________s1": {
                     "nonce": "0",
                     "balance": "0x100",
                     "storage": {
-                        "``owner": "``node_address__________________s1",
+                        "''owner": "''node_address__________________s1",
                         
-                        "``num_nodes": "1",
-                        "``stake_per_node": "500,000,000,100",
-                        "``node_share": "5000",
-                        "``node_rewards_addr": "``node_address__________________s1",
-                        "``num_users": "1",
-                        "``filled_stake": "500,000,000,100",
-                        "``inactive_stake": "0",
-                        "``sent_rewards": "0",
-                        "``user_id|``node_address__________________s1": "1"
+                        "''num_nodes": "1",
+                        "''stake_per_node": "500,000,000,100",
+                        "''node_share": "5000",
+                        "''node_rewards_addr": "''node_address__________________s1",
+                        "''num_users": "1",
+                        "''filled_stake": "500,000,000,100",
+                        "''inactive_stake": "0",
+                        "''sent_rewards": "0",
+                        "''user_id|''node_address__________________s1": "1"
                     },
                     "code": "file:../delegation.wasm"
                 },
-                "``delegator_1___________________s1": {
+                "''delegator_1___________________s1": {
                     "nonce": "1",
                     "balance": "0x200abc",
                     "storage": {},
