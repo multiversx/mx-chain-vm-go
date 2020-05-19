@@ -1,6 +1,7 @@
 package arwenjsontest
 
 import (
+	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	ij "github.com/ElrondNetwork/elrond-vm-util/test-util/vmtestjson"
 )
 
@@ -27,13 +28,19 @@ func (ae *ArwenTestExecutor) ExecuteScenario(scenario *ij.Scenario) error {
 func (ae *ArwenTestExecutor) ExecuteStep(generalStep ij.Step) error {
 	switch step := generalStep.(type) {
 	case *ij.SetStateStep:
+		// append accounts
 		for _, acct := range step.Accounts {
 			ae.World.AcctMap.PutAccount(convertAccount(acct))
 		}
+
+		// replace block info
 		ae.World.PreviousBlockInfo = convertBlockInfo(step.PreviousBlockInfo)
 		ae.World.CurrentBlockInfo = convertBlockInfo(step.CurrentBlockInfo)
 		ae.World.Blockhashes = ij.JSONBytesValues(step.BlockHashes)
-		ae.World.NewAddressMocks = convertNewAddressMocks(step.NewAddressMocks)
+
+		// append NewAddressMocks
+		addressMocksToAdd := convertNewAddressMocks(step.NewAddressMocks)
+		ae.World.NewAddressMocks = append(ae.World.NewAddressMocks, addressMocksToAdd...)
 	case *ij.CheckStateStep:
 		err := checkAccounts(step.CheckAccounts, ae.World)
 		if err != nil {
@@ -41,19 +48,29 @@ func (ae *ArwenTestExecutor) ExecuteStep(generalStep ij.Step) error {
 		}
 	case *ij.TxStep:
 		// execute tx
-		output, err := ae.executeTx(step.TxIdent, step.Tx)
+		_, err := ae.ExecuteTxStep(step)
 		if err != nil {
 			return err
-		}
-
-		// check results
-		if step.ExpectedResult != nil {
-			err = checkTxResults(step.TxIdent, step.ExpectedResult, ae.checkGas, output)
-			if err != nil {
-				return err
-			}
 		}
 	}
 
 	return nil
+}
+
+// ExecuteTxStep executes a tx step and updates mock state.
+func (ae *ArwenTestExecutor) ExecuteTxStep(txStep *ij.TxStep) (*vmi.VMOutput, error) {
+	output, err := ae.executeTx(txStep.TxIdent, txStep.Tx)
+	if err != nil {
+		return nil, err
+	}
+
+	// check results
+	if txStep.ExpectedResult != nil {
+		err = checkTxResults(txStep.TxIdent, txStep.ExpectedResult, ae.checkGas, output)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return output, nil
 }

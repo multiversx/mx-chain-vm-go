@@ -59,15 +59,31 @@ func TestFuzzDelegation(t *testing.T) {
 		panic(err)
 	}
 
-	for stepIndex := 0; stepIndex < 100; stepIndex++ {
-
+	for stepIndex := 0; stepIndex < 1000 && !executor.active; stepIndex++ {
 		switch {
-		case rand.Float32() < 0.1:
-			executor.activate()
+		case rand.Float32() < 0.3:
+			err = executor.maybeActivate()
+			if err != nil {
+				panic(err)
+			}
+		case rand.Float32() < 0.01:
+			// finish staking, activate
+			delegatorIdx := r.Intn(executor.numDelegators)
+			err = executor.stakeTheRest(delegatorIdx)
+			if err != nil {
+				panic(err)
+			}
+			err = executor.mustActivate()
+			if err != nil {
+				panic(err)
+			}
 		default:
-			delegatorIdx := r.Intn(executor.initArgs.numDelegators)
+			delegatorIdx := r.Intn(executor.numDelegators)
 			stake := big.NewInt(0).Rand(r, executor.expectedStake)
-			executor.stake(delegatorIdx, stake)
+			err = executor.tryStake(delegatorIdx, stake)
+			if err != nil {
+				panic(err)
+			}
 		}
 	}
 
