@@ -13,7 +13,7 @@ import (
 
 func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *ij.Transaction) (*vmi.VMOutput, error) {
 	if tx.Type.HasSender() {
-		beforeErr := ae.world.UpdateWorldStateBefore(
+		beforeErr := ae.World.UpdateWorldStateBefore(
 			tx.From.Value,
 			tx.GasLimit.Value,
 			tx.GasPrice.Value)
@@ -74,7 +74,7 @@ func (ae *ArwenTestExecutor) senderHasEnoughBalance(tx *ij.Transaction) bool {
 	if !tx.Type.HasSender() {
 		return true
 	}
-	sender := ae.world.AcctMap.GetAccount(tx.From.Value)
+	sender := ae.World.AcctMap.GetAccount(tx.From.Value)
 	return sender.Balance.Cmp(tx.Value.Value) >= 0
 }
 
@@ -100,7 +100,7 @@ func (ae *ArwenTestExecutor) simpleTransferOutput(tx *ij.Transaction) (*vmi.VMOu
 
 func (ae *ArwenTestExecutor) validatorRewardOutput(tx *ij.Transaction) (*vmi.VMOutput, error) {
 	reward := tx.Value.Value
-	recipient := ae.world.AcctMap.GetAccount(tx.To.Value)
+	recipient := ae.World.AcctMap.GetAccount(tx.To.Value)
 	if recipient == nil {
 		return nil, fmt.Errorf("Tx recipient (address: %s) does not exist", hex.EncodeToString(tx.To.Value))
 	}
@@ -165,7 +165,7 @@ func (ae *ArwenTestExecutor) scCreate(tx *ij.Transaction) (*vmi.VMOutput, error)
 }
 
 func (ae *ArwenTestExecutor) scCall(tx *ij.Transaction) (*vmi.VMOutput, error) {
-	recipient := ae.world.AcctMap.GetAccount(tx.To.Value)
+	recipient := ae.World.AcctMap.GetAccount(tx.To.Value)
 	if recipient == nil {
 		return nil, fmt.Errorf("Tx recipient (address: %s) does not exist", hex.EncodeToString(tx.To.Value))
 	}
@@ -194,7 +194,7 @@ func (ae *ArwenTestExecutor) updateStateAfterTx(
 	// subtract call value from sender (this is not reflected in the delta)
 	// except for validatorReward, there is no sender there
 	if tx.Type.HasSender() {
-		_ = ae.world.UpdateBalanceWithDelta(tx.From.Value, big.NewInt(0).Neg(tx.Value.Value))
+		_ = ae.World.UpdateBalanceWithDelta(tx.From.Value, big.NewInt(0).Neg(tx.Value.Value))
 	}
 
 	accountsSlice := make([]*vmi.OutputAccount, len(output.OutputAccounts))
@@ -205,7 +205,7 @@ func (ae *ArwenTestExecutor) updateStateAfterTx(
 	}
 
 	// update accounts based on deltas
-	updErr := ae.world.UpdateAccounts(accountsSlice, output.DeletedAccounts)
+	updErr := ae.World.UpdateAccounts(accountsSlice, output.DeletedAccounts)
 	if updErr != nil {
 		return updErr
 	}

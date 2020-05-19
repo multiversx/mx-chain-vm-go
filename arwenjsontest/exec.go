@@ -16,8 +16,9 @@ var TestVMType = []byte{0, 0}
 
 // ArwenTestExecutor parses, interprets and executes both .test.json tests and .scen.json scenarios with Arwen.
 type ArwenTestExecutor struct {
-	world *worldhook.BlockchainHookMock
-	vm    vmi.VMExecutionHandler
+	World    *worldhook.BlockchainHookMock
+	vm       vmi.VMExecutionHandler
+	checkGas bool
 }
 
 var _ controller.TestExecutor = (*ArwenTestExecutor)(nil)
@@ -41,7 +42,13 @@ func NewArwenTestExecutor() (*ArwenTestExecutor, error) {
 		return nil, err
 	}
 	return &ArwenTestExecutor{
-		world: world,
-		vm:    vm,
+		World:    world,
+		vm:       vm,
+		checkGas: true,
 	}, nil
+}
+
+// GetVM yields a reference to the VMExecutionHandler used.
+func (ae *ArwenTestExecutor) GetVM() vmi.VMExecutionHandler {
+	return ae.vm
 }

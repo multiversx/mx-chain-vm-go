@@ -9,11 +9,11 @@ import (
 // ExecuteTest executes an individual test.
 func (ae *ArwenTestExecutor) ExecuteTest(test *ij.Test) error {
 	// reset world
-	ae.world.Clear()
-	ae.world.Blockhashes = ij.JSONBytesValues(test.BlockHashes)
+	ae.World.Clear()
+	ae.World.Blockhashes = ij.JSONBytesValues(test.BlockHashes)
 
 	for _, acct := range test.Pre {
-		ae.world.AcctMap.PutAccount(convertAccount(acct))
+		ae.World.AcctMap.PutAccount(convertAccount(acct))
 	}
 
 	for _, block := range test.Blocks {
@@ -36,5 +36,5 @@ func (ae *ArwenTestExecutor) ExecuteTest(test *ij.Test) error {
 		}
 	}
 
-	return checkAccounts(test.PostState, ae.world)
+	return checkAccounts(test.PostState, ae.World)
 }
