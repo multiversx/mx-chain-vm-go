@@ -16,6 +16,8 @@ func (ae *ArwenTestExecutor) ExecuteScenario(scenario *ij.Scenario) error {
 			for _, acct := range step.Accounts {
 				ae.world.AcctMap.PutAccount(convertAccount(acct))
 			}
+			ae.world.PreviousBlockInfo = convertBlockInfo(step.PreviousBlockInfo)
+			ae.world.CurrentBlockInfo = convertBlockInfo(step.CurrentBlockInfo)
 			ae.world.Blockhashes = ij.JSONBytesValues(step.BlockHashes)
 			ae.world.NewAddressMocks = convertNewAddressMocks(step.NewAddressMocks)
 		case *ij.CheckStateStep:
@@ -31,10 +33,13 @@ func (ae *ArwenTestExecutor) ExecuteScenario(scenario *ij.Scenario) error {
 			}
 
 			// check results
-			err = checkTxResults(step.TxIdent, step.ExpectedResult, scenario.CheckGas, output)
-			if err != nil {
-				return err
+			if step.ExpectedResult != nil {
+				err = checkTxResults(step.TxIdent, step.ExpectedResult, scenario.CheckGas, output)
+				if err != nil {
+					return err
+				}
 			}
+
 			txIndex++
 		}
 

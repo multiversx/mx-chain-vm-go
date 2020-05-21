@@ -65,16 +65,17 @@ func doContractRequest(
 	wg.Add(2)
 
 	go func() {
-		VMHostParameters := &arwen.VMHostParameters{
-			VMType:        []byte{5, 0},
-			BlockGasLimit: uint64(10000000),
-			GasSchedule:   config.MakeGasMap(1),
+		vmHostParameters := &arwen.VMHostParameters{
+			VMType:                   []byte{5, 0},
+			BlockGasLimit:            uint64(10000000),
+			GasSchedule:              config.MakeGasMapForTests(),
+			ElrondProtectedKeyPrefix: []byte("ELROND"),
 		}
 
 		part, err := arwenpart.NewArwenPart(
 			files.inputOfArwen,
 			files.outputOfArwen,
-			VMHostParameters,
+			vmHostParameters,
 			marshaling.CreateMarshalizer(marshaling.JSON),
 		)
 		assert.Nil(t, err)

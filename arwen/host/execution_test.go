@@ -1155,7 +1155,7 @@ func TestExecution_AsyncCall(t *testing.T) {
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentPerformAsyncCall"
-	input.GasProvided = 100000
+	input.GasProvided = 1_000_000
 	input.Arguments = [][]byte{[]byte{0}}
 
 	vmOutput, err := host.RunSmartContractCall(input)
@@ -1193,7 +1193,7 @@ func TestExecution_AsyncCall_ChildFails(t *testing.T) {
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentPerformAsyncCall"
-	input.GasProvided = 100000
+	input.GasProvided = 1_000_000
 	input.Arguments = [][]byte{[]byte{1}}
 	input.CurrentTxHash = []byte("txhash")
 
@@ -1231,7 +1231,7 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentPerformAsyncCall"
-	input.GasProvided = 100000
+	input.GasProvided = 1_000_000
 	input.Arguments = [][]byte{[]byte{3}}
 	input.CurrentTxHash = []byte("txhash")
 

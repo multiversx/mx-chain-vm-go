@@ -49,9 +49,10 @@ func NewWorld(dataModel *worldDataModel) (*world, error) {
 
 func getHostParameters() *arwen.VMHostParameters {
 	return &arwen.VMHostParameters{
-		VMType:        []byte{5, 0},
-		BlockGasLimit: uint64(10000000),
-		GasSchedule:   config.MakeGasMap(1),
+		VMType:                   []byte{5, 0},
+		BlockGasLimit:            uint64(10000000),
+		GasSchedule:              config.MakeGasMap(1, 1),
+		ElrondProtectedKeyPrefix: []byte("ELROND"),
 	}
 }
 

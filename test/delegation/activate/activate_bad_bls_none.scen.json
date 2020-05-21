@@ -22,24 +22,24 @@
                     "storage": {
                         "``owner": "``node_address__________________s1",
                         
-                        "``nr_nodes": "0",
+                        "``num_nodes": "0",
                         "``stake_per_node": "789,000,000,000",
                         
                         "``node_share": "3455",
                         "``node_rewards_addr": "``node_address__________________s1",
-                        "``nr_users": "3",
+                        "``num_users": "3",
                         "``filled_stake": "789,000,000,000",
-                        "``non_reward_balance": "789,000,000,000",
+                        "``inactive_stake": "789,000,000,000",
                         "``sent_rewards": "0",
                         "``auction_addr": "``auction_contract______________s1",
-                        "``active": "false",
-                        "``user_id|``node_address__________________s1": "0x01",
-                        "``user_id|``user_account_1________________s1": "0x02",
+                        "``stake_state": "0",
+                        "``user_id|``node_address__________________s1": "1",
+                        "``user_id|``delegator_1___________________s1": "2",
                         "``u_last|0x0000000000000002": "0",
                         "``u_uncl|0x0000000000000002": "0",
                         "``u_stak|0x0000000000000002": "567,000,000,000",
                         "``u_sale|0x0000000000000002": "0",
-                        "``user_id|``user_account_2________________s1": "0x03",
+                        "``user_id|``delegator_2___________________s1": "3",
                         "``u_last|0x0000000000000003": "0",
                         "``u_uncl|0x0000000000000003": "0",
                         "``u_stak|0x0000000000000003": "222,000,000,000",
@@ -47,13 +47,13 @@
                     },
                     "code": "file:../delegation.wasm"
                 },
-                "``user_account_1________________s1": {
+                "``delegator_1___________________s1": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {},
                     "code": ""
                 },
-                "``user_account_2________________s1": {
+                "``delegator_2___________________s1": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {},
@@ -77,7 +77,7 @@
             "expect": {
                 "out": [],
                 "status": "4",
-                "message": "cannot activate before specifying any BLS keys",
+                "message": "cannot activate with no nodes",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"

@@ -1,5 +1,5 @@
 {
-    "name": "getHistoricalRewards_someExtra",
+    "name": "stake_1",
     "steps": [
         {
             "step": "setState",
@@ -12,30 +12,31 @@
                 },
                 "``delegation_contract___________s1": {
                     "nonce": "0",
-                    "balance": "10000400010",
+                    "balance": "0",
                     "storage": {
                         "``owner": "``node_address__________________s1",
                         
-                        "``nr_nodes": "1",
-                        "``stake_per_node": "500,000,000,100",
-                        "``node_share": "7000",
+                        "``num_nodes": "1",
+                        "``stake_per_node": "789,000,000,000",
+                        "``node_share": "3455",
                         "``node_rewards_addr": "``node_address__________________s1",
-                        "``nr_users": "2",
-                        "``filled_stake": "500,000,000,100",
-                        "``non_reward_balance": "00000400000",
+                        "``num_users": "1",
+                        "``filled_stake": "0",
+                        "``inactive_stake": "0",
                         "``sent_rewards": "0",
-                        "``user_id|``node_address__________________s1": "0x01",
-                        "``user_id|``delegator_1___________________s1": "0x02",
-                        "``u_last|0x0000000000000002": "0",
-                        "``u_uncl|0x0000000000000002": "0",
-                        "``u_stak|0x0000000000000002": "500,000,000,100",
-                        "``u_sale|0x0000000000000002": "0"
+                        "``user_id|``node_address__________________s1": "1"
                     },
                     "code": "file:../delegation.wasm"
                 },
                 "``delegator_1___________________s1": {
                     "nonce": "0",
-                    "balance": "0x300abc",
+                    "balance": "567,002,000,000",
+                    "storage": {},
+                    "code": ""
+                },
+                "``delegator_2___________________s1": {
+                    "nonce": "0",
+                    "balance": "0",
                     "storage": {},
                     "code": ""
                 }
@@ -43,66 +44,60 @@
         },
         {
             "step": "scCall",
-            "txId": "1",
+            "txId": "1-stake",
             "tx": {
                 "from": "``delegator_1___________________s1",
                 "to": "``delegation_contract___________s1",
-                "value": "0",
-                "function": "getHistoricalRewards",
+                "value": "567,000,000,000",
+                "function": "stake",
                 "arguments": [],
-                "gasLimit": "0x100000",
+                "gasLimit": "1,000,000",
                 "gasPrice": "1"
             },
             "expect": {
-                "out": [
-                    "10000000010"
-                ],
+                "out": [],
                 "status": "",
-                "logs": [],
+                "logs": [
+                    {
+                        "address": "``delegation_contract___________s1",
+                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000001",
+                        "topics": [
+                            "``delegator_1___________________s1"
+                        ],
+                        "data": "567,000,000,000"
+                    }
+                ],
                 "gas": "*",
                 "refund": "*"
             }
         },
         {
             "step": "scCall",
-            "txId": "2",
+            "txId": "2-unstake",
             "tx": {
                 "from": "``delegator_1___________________s1",
                 "to": "``delegation_contract___________s1",
                 "value": "0",
-                "function": "getHistoricalRewardsForNode",
-                "arguments": [],
-                "gasLimit": "0x100000",
+                "function": "unstake",
+                "arguments": [
+                    "567,000,000,000"
+                ],
+                "gasLimit": "1,000,000",
                 "gasPrice": "1"
             },
             "expect": {
-                "out": [
-                    "7000000007"
-                ],
+                "out": [],
                 "status": "",
-                "logs": [],
-                "gas": "*",
-                "refund": "*"
-            }
-        },
-        {
-            "step": "scCall",
-            "txId": "3",
-            "tx": {
-                "from": "``delegator_1___________________s1",
-                "to": "``delegation_contract___________s1",
-                "value": "0",
-                "function": "getHistoricalRewardsForDelegators",
-                "arguments": [],
-                "gasLimit": "0x100000",
-                "gasPrice": "1"
-            },
-            "expect": {
-                "out": [
-                    "3000000003"
+                "logs": [
+                    {
+                        "address": "``delegation_contract___________s1",
+                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000002",
+                        "topics": [
+                            "``delegator_1___________________s1"
+                        ],
+                        "data": "567,000,000,000"
+                    }
                 ],
-                "status": "",
-                "logs": [],
                 "gas": "*",
                 "refund": "*"
             }
@@ -118,30 +113,37 @@
                 },
                 "``delegation_contract___________s1": {
                     "nonce": "0",
-                    "balance": "10000400010",
+                    "balance": "",
                     "storage": {
                         "``owner": "``node_address__________________s1",
                         
-                        "``nr_nodes": "1",
-                        "``stake_per_node": "500,000,000,100",
-                        "``node_share": "7000",
+                        "``num_nodes": "1",
+                        "``stake_per_node": "789,000,000,000",
+                        "``node_share": "3455",
                         "``node_rewards_addr": "``node_address__________________s1",
-                        "``nr_users": "2",
-                        "``filled_stake": "500,000,000,100",
-                        "``non_reward_balance": "00000400000",
+                        "``num_users": "2",
+                        "``filled_stake": "0",
+                        "``inactive_stake": "0",
                         "``sent_rewards": "0",
-                        "``user_id|``node_address__________________s1": "0x01",
-                        "``user_id|``delegator_1___________________s1": "0x02",
+                        "``user_id|``node_address__________________s1": "1",
+                        "``user_id|``delegator_1___________________s1": "2",
                         "``u_last|0x0000000000000002": "0",
                         "``u_uncl|0x0000000000000002": "0",
-                        "``u_stak|0x0000000000000002": "500,000,000,100",
+                        "``u_stak|0x0000000000000002": "0",
                         "``u_sale|0x0000000000000002": "0"
                     },
                     "code": "file:../delegation.wasm"
                 },
                 "``delegator_1___________________s1": {
                     "nonce": "*",
-                    "balance": "*",
+                    "balance": "567,000,000,000",
+                    "storage": {},
+                    "code": "",
+                    "asyncCallData": "delegation unstake"
+                },
+                "``delegator_2___________________s1": {
+                    "nonce": "0",
+                    "balance": "0",
                     "storage": {},
                     "code": ""
                 }

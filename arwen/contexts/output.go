@@ -233,7 +233,12 @@ func (context *outputContext) CreateVMOutputInCaseOfError(err error) *vmcommon.V
 	if err == arwen.ErrSignalError {
 		message = context.ReturnMessage()
 	} else {
-		message = err.Error()
+		if len(context.outputState.ReturnMessage) > 0 {
+			// another return message was already set previously
+			message = context.outputState.ReturnMessage
+		} else {
+			message = err.Error()
+		}
 	}
 
 	returnCode := context.resolveReturnCodeFromError(err)

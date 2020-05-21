@@ -340,7 +340,10 @@ func ethstorageStore(context unsafe.Pointer, pathOffset int32, valueOffset int32
 		return
 	}
 
-	_ = storage.SetStorage(key, data)
+	_, err = storage.SetStorage(key, data)
+	if arwen.WithFault(err, context, true) {
+		return
+	}
 }
 
 //export ethstorageLoad

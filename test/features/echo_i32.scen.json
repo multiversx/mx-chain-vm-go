@@ -106,7 +106,7 @@
             },
             "expect": {
                 "out": [],
-                "status": "4",
+                "status": "10",
                 "message": "argument out of range",
                 "logs": [],
                 "gas": "*",
