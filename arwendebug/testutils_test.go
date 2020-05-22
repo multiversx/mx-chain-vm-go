@@ -2,6 +2,7 @@ package arwendebug
 
 import (
 	"fmt"
+	"math/big"
 	"math/rand"
 	"testing"
 	"time"
@@ -27,22 +28,22 @@ func newTestContext(t *testing.T) *testContext {
 }
 
 func (context *testContext) createAccount(address string, balance string) {
-	createAccountRequest := CreateAccountRequest{
+	request := CreateAccountRequest{
 		RequestBase: context.createRequestBase(),
 		Address:     address,
 		Balance:     balance,
 		Nonce:       0,
 	}
 
-	createAccountResponse, err := context.facade.CreateAccount(createAccountRequest)
+	response, err := context.facade.CreateAccount(request)
 
 	t := context.t
 	require.Nil(t, err)
-	require.NotNil(t, createAccountResponse)
+	require.NotNil(t, response)
 }
 
-func (context *testContext) deployContract(codePath string, impersonated string, arguments ...string) {
-	deployRequest := DeployRequest{
+func (context *testContext) deployContract(codePath string, impersonated string, arguments ...string) *DeployResponse {
+	request := DeployRequest{
 		ContractRequestBase: ContractRequestBase{
 			RequestBase:  context.createRequestBase(),
 			Impersonated: impersonated,
@@ -51,17 +52,19 @@ func (context *testContext) deployContract(codePath string, impersonated string,
 		Arguments: arguments,
 	}
 
-	deployResponse, err := context.facade.DeploySmartContract(deployRequest)
+	response, err := context.facade.DeploySmartContract(request)
 
 	t := context.t
 	require.Nil(t, err)
-	require.NotNil(t, deployResponse)
-	require.Nil(t, deployResponse.Error)
-	require.Equal(t, vmcommon.Ok, deployResponse.Output.ReturnCode)
+	require.NotNil(t, response)
+	require.Nil(t, response.Error)
+	require.Equal(t, vmcommon.Ok, response.Output.ReturnCode)
+
+	return response
 }
 
 func (context *testContext) runContract(contract string, impersonated string, function string, arguments ...string) {
-	runRequest := RunRequest{
+	request := RunRequest{
 		ContractRequestBase: ContractRequestBase{
 			RequestBase:  context.createRequestBase(),
 			Impersonated: impersonated,
@@ -71,13 +74,47 @@ func (context *testContext) runContract(contract string, impersonated string, fu
 		Arguments:       arguments,
 	}
 
-	runResponse, err := context.facade.RunSmartContract(runRequest)
+	response, err := context.facade.RunSmartContract(request)
 
 	t := context.t
 	require.Nil(t, err)
-	require.NotNil(t, runResponse)
-	require.Nil(t, runResponse.Error)
-	require.Equal(t, vmcommon.Ok, runResponse.Output.ReturnCode)
+	require.NotNil(t, response)
+	require.Nil(t, response.Error)
+	require.Equal(t, vmcommon.Ok, response.Output.ReturnCode)
+}
+
+func (context *testContext) queryContract(contract string, impersonated string, function string, arguments ...string) *QueryResponse {
+	request := QueryRequest{
+		RunRequest: RunRequest{
+			ContractRequestBase: ContractRequestBase{
+				RequestBase:  context.createRequestBase(),
+				Impersonated: impersonated,
+			},
+			ContractAddress: contract,
+			Function:        function,
+			Arguments:       arguments,
+		},
+	}
+
+	response, err := context.facade.QuerySmartContract(request)
+
+	t := context.t
+	require.Nil(t, err)
+	require.NotNil(t, response)
+	require.Nil(t, response.Error)
+	require.Equal(t, vmcommon.Ok, response.Output.ReturnCode)
+
+	return response
+}
+
+func (response *ContractResponseBase) getFirstResultAsInt64() int64 {
+	result, err := response.Output.GetFirstReturnData(vmcommon.AsBigInt)
+	if err != nil {
+		return 0
+	}
+
+	asBigInt := result.(*big.Int)
+	return asBigInt.Int64()
 }
 
 func (context *testContext) createRequestBase() RequestBase {

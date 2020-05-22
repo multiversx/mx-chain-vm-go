@@ -2,3 +2,4 @@ Finish test for erc20
 Tests with arguments in erdjs
 Query contract (test here and also in erdjs) - with/without arguments
 Upgrade contract (test here and also in erdjs) - with/without arguments
+Add comments to public functions

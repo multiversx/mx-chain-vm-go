@@ -62,6 +62,10 @@ type ContractResponseBase struct {
 	Output *vmcommon.VMOutput
 }
 
+func (response *ContractResponseBase) getReturnCode() vmcommon.ReturnCode {
+	return response.Output.ReturnCode
+}
+
 // DeployRequest -
 type DeployRequest struct {
 	ContractRequestBase
