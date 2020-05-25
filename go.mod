@@ -2,8 +2,6 @@ module github.com/ElrondNetwork/arwen-wasm-vm
 
 go 1.13
 
-replace github.com/ElrondNetwork/elrond-vm-util => /Users/ccorcov/go/src/github.com/ElrondNetwork/elrond-vm-util
-
 require (
 	github.com/ElrondNetwork/big-int-util v0.0.5
 	github.com/ElrondNetwork/elrond-go-logger v1.0.2
@@ -14,3 +12,7 @@ require (
 	github.com/stretchr/testify v1.5.1
 	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
 )
+
+replace github.com/ElrondNetwork/elrond-vm-common => /Users/ccorcov/go/src/github.com/ElrondNetwork/elrond-vm-common
+
+replace github.com/ElrondNetwork/elrond-vm-util => /Users/ccorcov/go/src/github.com/ElrondNetwork/elrond-vm-util
