@@ -1,106 +1,82 @@
 {
-    "name": "getHistoricalRewards_someExtra",
+    "name": "getClaimable_2",
     "steps": [
         {
             "step": "setState",
             "accounts": {
                 "``node_address__________________s1": {
                     "nonce": "0",
-                    "balance": "0",
+                    "balance": "100,000",
                     "storage": {},
                     "code": ""
                 },
                 "``delegation_contract___________s1": {
                     "nonce": "0",
-                    "balance": "10000400010",
+                    "balance": "10,001,000,010",
                     "storage": {
                         "``owner": "``node_address__________________s1",
                         
-                        "``nr_nodes": "1",
-                        "``stake_per_node": "500,000,000,100",
-                        "``node_share": "7000",
+                        "``num_nodes": "1",
+                        "``stake_per_node": "1,000,000",
+                        "``node_share": "3000",
                         "``node_rewards_addr": "``node_address__________________s1",
-                        "``nr_users": "2",
-                        "``filled_stake": "500,000,000,100",
-                        "``non_reward_balance": "00000400000",
+                        "``num_users": "3",
+                        "``filled_stake": "1,000,000",
+                        "``inactive_stake": "1,000,000",
                         "``sent_rewards": "0",
                         "``user_id|``node_address__________________s1": "1",
                         "``user_id|``delegator_1___________________s1": "2",
                         "``u_last|0x0000000000000002": "0",
                         "``u_uncl|0x0000000000000002": "0",
-                        "``u_stak|0x0000000000000002": "500,000,000,100",
-                        "``u_sale|0x0000000000000002": "0"
+                        "``u_stak|0x0000000000000002": "100,000",
+                        "``u_sale|0x0000000000000002": "0",
+                        "``user_id|``delegator_2___________________s1": "3",
+                        "``u_last|0x0000000000000003": "0",
+                        "``u_uncl|0x0000000000000003": "0",
+                        "``u_stak|0x0000000000000003": "900,000",
+                        "``u_sale|0x0000000000000003": "0",
+
+                        "``ELRONDreward": "10,000,000,010"
                     },
                     "code": "file:../delegation.wasm"
                 },
                 "``delegator_1___________________s1": {
                     "nonce": "0",
-                    "balance": "0x300abc",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                },
+                "``someone_______________________s2": {
+                    "nonce": "0",
+                    "balance": "3,000,000,000",
                     "storage": {},
                     "code": ""
                 }
             }
         },
         {
-            "step": "scCall",
-            "txId": "1",
-            "tx": {
-                "from": "``delegator_1___________________s1",
-                "to": "``delegation_contract___________s1",
-                "value": "0",
-                "function": "getHistoricalRewards",
-                "arguments": [],
-                "gasLimit": "0x100000",
-                "gasPrice": "1"
-            },
-            "expect": {
-                "out": [
-                    "10000000010"
-                ],
-                "status": "",
-                "logs": [],
-                "gas": "*",
-                "refund": "*"
-            }
-        },
-        {
-            "step": "scCall",
+            "step": "transfer",
             "txId": "2",
             "tx": {
-                "from": "``delegator_1___________________s1",
+                "from": "``someone_______________________s2",
                 "to": "``delegation_contract___________s1",
-                "value": "0",
-                "function": "getHistoricalRewardsForNode",
-                "arguments": [],
-                "gasLimit": "0x100000",
-                "gasPrice": "1"
-            },
-            "expect": {
-                "out": [
-                    "7000000007"
-                ],
-                "status": "",
-                "logs": [],
-                "gas": "*",
-                "refund": "*"
+                "value": "50,000"
             }
         },
         {
             "step": "scCall",
             "txId": "3",
             "tx": {
-                "from": "``delegator_1___________________s1",
+                "from": "``node_address__________________s1",
                 "to": "``delegation_contract___________s1",
                 "value": "0",
-                "function": "getHistoricalRewardsForDelegators",
+                "function": "withdrawUnexpectedBalance",
                 "arguments": [],
-                "gasLimit": "0x100000",
+                "gasLimit": "100,000",
                 "gasPrice": "1"
             },
             "expect": {
-                "out": [
-                    "3000000003"
-                ],
+                "out": [],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -111,35 +87,49 @@
             "step": "checkState",
             "accounts": {
                 "``node_address__________________s1": {
-                    "nonce": "0",
-                    "balance": "0",
+                    "nonce": "*",
+                    "balance": "50,000",
                     "storage": {},
-                    "code": ""
+                    "code": "",
+                    "asyncCallData": "unexpected balance"
                 },
                 "``delegation_contract___________s1": {
                     "nonce": "0",
-                    "balance": "10000400010",
+                    "balance": "10,001,000,010",
                     "storage": {
                         "``owner": "``node_address__________________s1",
                         
-                        "``nr_nodes": "1",
-                        "``stake_per_node": "500,000,000,100",
-                        "``node_share": "7000",
+                        "``num_nodes": "1",
+                        "``stake_per_node": "1,000,000",
+                        "``node_share": "3000",
                         "``node_rewards_addr": "``node_address__________________s1",
-                        "``nr_users": "2",
-                        "``filled_stake": "500,000,000,100",
-                        "``non_reward_balance": "00000400000",
+                        "``num_users": "3",
+                        "``filled_stake": "1,000,000",
+                        "``inactive_stake": "1,000,000",
                         "``sent_rewards": "0",
                         "``user_id|``node_address__________________s1": "1",
                         "``user_id|``delegator_1___________________s1": "2",
                         "``u_last|0x0000000000000002": "0",
                         "``u_uncl|0x0000000000000002": "0",
-                        "``u_stak|0x0000000000000002": "500,000,000,100",
-                        "``u_sale|0x0000000000000002": "0"
+                        "``u_stak|0x0000000000000002": "100,000",
+                        "``u_sale|0x0000000000000002": "0",
+                        "``user_id|``delegator_2___________________s1": "3",
+                        "``u_last|0x0000000000000003": "0",
+                        "``u_uncl|0x0000000000000003": "0",
+                        "``u_stak|0x0000000000000003": "900,000",
+                        "``u_sale|0x0000000000000003": "0",
+
+                        "``ELRONDreward": "10,000,000,010"
                     },
                     "code": "file:../delegation.wasm"
                 },
                 "``delegator_1___________________s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                },
+                "``someone_______________________s2": {
                     "nonce": "*",
                     "balance": "*",
                     "storage": {},

@@ -5,15 +5,6 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
-type StorageStatus int
-
-const (
-	StorageUnchanged StorageStatus = iota
-	StorageModified
-	StorageAdded
-	StorageDeleted
-)
-
 type BreakpointValue uint64
 
 const (
@@ -49,4 +40,5 @@ type VMHostParameters struct {
 	BlockGasLimit            uint64
 	GasSchedule              config.GasScheduleMap
 	ProtocolBuiltinFunctions vmcommon.FunctionNames
+	ElrondProtectedKeyPrefix []byte
 }

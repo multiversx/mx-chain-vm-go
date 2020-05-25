@@ -295,7 +295,12 @@ func bigIntStorageStoreUnsigned(context unsafe.Pointer, keyOffset int32, keyLeng
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntStorageStoreUnsigned
 	metering.UseGas(gasToUse)
 
-	return storage.SetStorage(key, bytes)
+	storageStatus, err := storage.SetStorage(key, bytes)
+	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return -1
+	}
+
+	return int32(storageStatus)
 }
 
 //export bigIntStorageLoadUnsigned
@@ -561,7 +566,7 @@ func bigIntTDiv(context unsafe.Pointer, destination, op1, op2 int32) {
 	dest, a, b := bigInt.GetThree(destination, op1, op2)
 	if b.Sign() == 0 {
 		runtime := arwen.GetRuntimeContext(context)
-		runtime.SignalUserError(arwen.UserErrorDivZero)
+		arwen.WithFault(arwen.ErrDivZero, context, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
 	dest.Quo(a, b) // Quo implements truncated division (like Go)
@@ -578,7 +583,7 @@ func bigIntTMod(context unsafe.Pointer, destination, op1, op2 int32) {
 	dest, a, b := bigInt.GetThree(destination, op1, op2)
 	if b.Sign() == 0 {
 		runtime := arwen.GetRuntimeContext(context)
-		runtime.SignalUserError(arwen.UserErrorDivZero)
+		arwen.WithFault(arwen.ErrDivZero, context, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
 	dest.Rem(a, b) // Rem implements truncated modulus (like Go)
@@ -595,7 +600,7 @@ func bigIntEDiv(context unsafe.Pointer, destination, op1, op2 int32) {
 	dest, a, b := bigInt.GetThree(destination, op1, op2)
 	if b.Sign() == 0 {
 		runtime := arwen.GetRuntimeContext(context)
-		runtime.SignalUserError(arwen.UserErrorDivZero)
+		arwen.WithFault(arwen.ErrDivZero, context, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
 	dest.Div(a, b) // Div implements Euclidean division (unlike Go)
@@ -612,7 +617,7 @@ func bigIntEMod(context unsafe.Pointer, destination, op1, op2 int32) {
 	dest, a, b := bigInt.GetThree(destination, op1, op2)
 	if b.Sign() == 0 {
 		runtime := arwen.GetRuntimeContext(context)
-		runtime.SignalUserError(arwen.UserErrorDivZero)
+		arwen.WithFault(arwen.ErrDivZero, context, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
 	dest.Mod(a, b) // Mod implements Euclidean division (unlike Go)
@@ -677,7 +682,7 @@ func bigIntNot(context unsafe.Pointer, destination, op int32) {
 	dest, a := bigInt.GetTwo(destination, op)
 	if a.Sign() < 0 {
 		runtime := arwen.GetRuntimeContext(context)
-		runtime.SignalUserError(arwen.UserErrorBitwiseNegative)
+		arwen.WithFault(arwen.ErrBitwiseNegative, context, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
 	dest.Not(a)
@@ -694,7 +699,7 @@ func bigIntAnd(context unsafe.Pointer, destination, op1, op2 int32) {
 	dest, a, b := bigInt.GetThree(destination, op1, op2)
 	if a.Sign() < 0 || b.Sign() < 0 {
 		runtime := arwen.GetRuntimeContext(context)
-		runtime.SignalUserError(arwen.UserErrorBitwiseNegative)
+		arwen.WithFault(arwen.ErrBitwiseNegative, context, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
 	dest.And(a, b)
@@ -711,7 +716,7 @@ func bigIntOr(context unsafe.Pointer, destination, op1, op2 int32) {
 	dest, a, b := bigInt.GetThree(destination, op1, op2)
 	if a.Sign() < 0 || b.Sign() < 0 {
 		runtime := arwen.GetRuntimeContext(context)
-		runtime.SignalUserError(arwen.UserErrorBitwiseNegative)
+		arwen.WithFault(arwen.ErrBitwiseNegative, context, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
 	dest.Or(a, b)
@@ -728,7 +733,7 @@ func bigIntXor(context unsafe.Pointer, destination, op1, op2 int32) {
 	dest, a, b := bigInt.GetThree(destination, op1, op2)
 	if a.Sign() < 0 || b.Sign() < 0 {
 		runtime := arwen.GetRuntimeContext(context)
-		runtime.SignalUserError(arwen.UserErrorBitwiseNegative)
+		arwen.WithFault(arwen.ErrBitwiseNegative, context, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
 	dest.Xor(a, b)
@@ -745,7 +750,7 @@ func bigIntShr(context unsafe.Pointer, destination, op, bits int32) {
 	dest, a := bigInt.GetTwo(destination, op)
 	if a.Sign() < 0 || bits < 0 {
 		runtime := arwen.GetRuntimeContext(context)
-		runtime.SignalUserError(arwen.UserErrorShiftNegative)
+		arwen.WithFault(arwen.ErrShiftNegative, context, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
 	dest.Rsh(a, uint(bits))
@@ -762,7 +767,7 @@ func bigIntShl(context unsafe.Pointer, destination, op, bits int32) {
 	dest, a := bigInt.GetTwo(destination, op)
 	if a.Sign() < 0 || bits < 0 {
 		runtime := arwen.GetRuntimeContext(context)
-		runtime.SignalUserError(arwen.UserErrorShiftNegative)
+		arwen.WithFault(arwen.ErrShiftNegative, context, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
 	dest.Lsh(a, uint(bits))

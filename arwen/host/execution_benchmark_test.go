@@ -80,6 +80,7 @@ func deploy(tb testing.TB, totalTokenSupply *big.Int) (*vmHost, *mock.Blockchain
 		BlockGasLimit:            uint64(1000),
 		GasSchedule:              gasMap,
 		ProtocolBuiltinFunctions: make(vmcommon.FunctionNames),
+		ElrondProtectedKeyPrefix: []byte("ELROND"),
 	})
 	require.Nil(tb, err)
 

@@ -61,4 +61,16 @@ var ErrMemoryDeclarationMissing = fmt.Errorf("%w (missing memory declaration)", 
 
 var ErrMaxInstancesReached = fmt.Errorf("%w (max instances reached)", ErrExecutionFailed)
 
+var ErrStoreElrondReservedKey = errors.New("cannot write to storage under Elrond reserved key")
+
+var ErrArgIndexOutOfRange = errors.New("argument index out of range")
+
+var ErrArgOutOfRange = errors.New("argument out of range")
+
+var ErrDivZero = errors.New("division by 0")
+
+var ErrBitwiseNegative = errors.New("bitwise operations only allowed on positive integers")
+
+var ErrShiftNegative = errors.New("bitwise shift operations only allowed on positive integers and by a positive amount")
+
 var ErrAsyncContextDoesNotExist = errors.New("async context was not created yet")

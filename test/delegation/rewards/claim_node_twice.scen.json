@@ -12,17 +12,17 @@
                 },
                 "``delegation_contract___________s1": {
                     "nonce": "0",
-                    "balance": "10,000,400,010",
+                    "balance": "10,000,000,010",
                     "storage": {
                         "``owner": "``node_address__________________s1",
                         
-                        "``nr_nodes": "1",
+                        "``num_nodes": "1",
                         "``stake_per_node": "1,000,000",
                         "``node_share": "3000",
                         "``node_rewards_addr": "``node_address__________________s1",
-                        "``nr_users": "3",
+                        "``num_users": "3",
                         "``filled_stake": "1,000,000",
-                        "``non_reward_balance": "400,000",
+                        "``inactive_stake": "0",
                         "``sent_rewards": "0",
                         "``user_id|``node_address__________________s1": "1",
                         "``user_id|``delegator_1___________________s1": "2",
@@ -34,7 +34,9 @@
                         "``u_last|0x0000000000000003": "0",
                         "``u_uncl|0x0000000000000003": "0",
                         "``u_stak|0x0000000000000003": "900,000",
-                        "``u_sale|0x0000000000000003": "0"
+                        "``u_sale|0x0000000000000003": "0",
+
+                        "``ELRONDreward": "10,000,000,010"
                     },
                     "code": "file:../delegation.wasm"
                 },
@@ -104,20 +106,23 @@
                 },
                 "``delegation_contract___________s1": {
                     "nonce": "0",
-                    "balance": "7000400007",
+                    "balance": "7,000,000,007",
                     "storage": {
                         "``owner": "``node_address__________________s1",
                         
-                        "``nr_nodes": "1",
+                        "``num_nodes": "1",
                         "``stake_per_node": "1,000,000",
                         "``node_share": "3000",
                         "``node_rewards_addr": "``node_address__________________s1",
-                        "``nr_users": "3",
+                        "``num_users": "3",
                         "``filled_stake": "1,000,000",
-                        "``non_reward_balance": "400,000",
+                        "``inactive_stake": "0",
                         "``sent_rewards": "3,000,000,003",
                         "``user_id|``node_address__________________s1": "1",
-                        "``node_last": "3,000,000,003",
+                        "``u_last|0x0000000000000001": "10,000,000,010",
+                        "``u_uncl|0x0000000000000001": "0",
+                        "``u_stak|0x0000000000000001": "0",
+                        "``u_sale|0x0000000000000001": "0",
                         "``user_id|``delegator_1___________________s1": "2",
                         "``u_last|0x0000000000000002": "0",
                         "``u_uncl|0x0000000000000002": "0",
@@ -127,7 +132,9 @@
                         "``u_last|0x0000000000000003": "0",
                         "``u_uncl|0x0000000000000003": "0",
                         "``u_stak|0x0000000000000003": "900,000",
-                        "``u_sale|0x0000000000000003": "0"
+                        "``u_sale|0x0000000000000003": "0",
+
+                        "``ELRONDreward": "10,000,000,010"
                     },
                     "code": "file:../delegation.wasm"
                 },

@@ -164,11 +164,20 @@ type MeteringContext interface {
 	GetGasLockedForAsyncStep() uint64
 }
 
+type StorageStatus int
+
+const (
+	StorageUnchanged StorageStatus = iota
+	StorageModified
+	StorageAdded
+	StorageDeleted
+)
+
 type StorageContext interface {
 	StateStack
 
 	SetAddress(address []byte)
 	GetStorageUpdates(address []byte) map[string]*vmcommon.StorageUpdate
 	GetStorage(key []byte) []byte
-	SetStorage(key []byte, value []byte) int32
+	SetStorage(key []byte, value []byte) (StorageStatus, error)
 }

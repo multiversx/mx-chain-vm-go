@@ -635,7 +635,12 @@ func storageStore(context unsafe.Pointer, keyOffset int32, keyLength int32, data
 	gasToUse := metering.GasSchedule().ElrondAPICost.StorageStore
 	metering.UseGas(gasToUse)
 
-	return storage.SetStorage(key, data)
+	storageStatus, err := storage.SetStorage(key, data)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return -1
+	}
+
+	return int32(storageStatus)
 }
 
 //export storageLoadLength
@@ -974,13 +979,15 @@ func int64getArgument(context unsafe.Pointer, id int32) int64 {
 
 	args := runtime.Arguments()
 	if id < 0 || id >= int32(len(args)) {
-		runtime.SignalUserError(arwen.UserErrorArgIndexOutOfRange)
+		arwen.WithFault(arwen.ErrArgIndexOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		return 0
 	}
 
 	arg := args[id]
 	argBigInt := twos.SetBytes(big.NewInt(0), arg)
 	if !argBigInt.IsInt64() {
-		runtime.SignalUserError(arwen.UserErrorArgOutOfRange)
+		arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		return 0
 	}
 	return argBigInt.Int64()
 }
@@ -1001,7 +1008,12 @@ func int64storageStore(context unsafe.Pointer, keyOffset int32, keyLength int32,
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64StorageStore
 	metering.UseGas(gasToUse)
 
-	return storage.SetStorage(key, data.Bytes())
+	storageStatus, err := storage.SetStorage(key, data.Bytes())
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return -1
+	}
+
+	return int32(storageStatus)
 }
 
 //export int64storageLoad

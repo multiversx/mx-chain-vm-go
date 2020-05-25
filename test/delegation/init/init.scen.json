@@ -61,7 +61,7 @@
                         "``auction_addr": "``auction_contract______________s1",
                         "``time_before_force_unstake": "680400",
 
-                        "``nr_users": "1",
+                        "``num_users": "1",
                         "``user_id|``node_address__________________s1": "1"
                     },
                     "code": "file:../delegation.wasm"
@@ -75,7 +75,7 @@
                 "from": "``node_address__________________s1",
                 "to": "``new_delegation_contract_______s1",
                 "value": "0",
-                "function": "setNrNodes",
+                "function": "setNumNodes",
                 "arguments": [
                     "3"
                 ],
@@ -130,11 +130,11 @@
                         "``node_rewards_addr": "``node_address__________________s1",
                         "``auction_addr": "``auction_contract______________s1",
 
-                        "``nr_nodes": "3",
+                        "``num_nodes": "3",
                         "``stake_per_node": "123,000,321",
                         "``time_before_force_unstake": "680400",
 
-                        "``nr_users": "1",
+                        "``num_users": "1",
                         "``user_id|``node_address__________________s1": "1"
                     },
                     "code": "file:../delegation.wasm"
