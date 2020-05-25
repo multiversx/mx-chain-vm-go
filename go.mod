@@ -2,6 +2,8 @@ module github.com/ElrondNetwork/arwen-wasm-vm
 
 go 1.13
 
+replace github.com/ElrondNetwork/elrond-vm-util => /Users/ccorcov/go/src/github.com/ElrondNetwork/elrond-vm-util
+
 require (
 	github.com/ElrondNetwork/big-int-util v0.0.5
 	github.com/ElrondNetwork/elrond-go-logger v1.0.2

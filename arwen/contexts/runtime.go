@@ -28,7 +28,8 @@ type runtimeContext struct {
 
 	maxWasmerInstances uint64
 
-	asyncCallInfo *arwen.AsyncCallInfo
+	asyncCallInfo  *arwen.AsyncCallInfo
+	asyncContexMap vmcommon.AsyncContextMap
 
 	argParser arwen.ArgumentsParser
 	validator *WASMValidator
@@ -61,6 +62,7 @@ func (context *runtimeContext) InitState() {
 	context.readOnly = false
 	context.argParser = vmcommon.NewAtArgumentParser()
 	context.asyncCallInfo = nil
+	context.asyncContexMap = make(vmcommon.AsyncContextMap)
 }
 
 func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uint64) error {
@@ -87,15 +89,18 @@ func (context *runtimeContext) InitStateFromContractCallInput(input *vmcommon.Co
 	context.vmInput = &input.VMInput
 	context.scAddress = input.RecipientAddr
 	context.callFunction = input.Function
+	// Reset async map for initial state
+	context.asyncContexMap = make(vmcommon.AsyncContextMap)
 }
 
 func (context *runtimeContext) PushState() {
 	newState := &runtimeContext{
-		vmInput:       context.vmInput,
-		scAddress:     context.scAddress,
-		callFunction:  context.callFunction,
-		readOnly:      context.readOnly,
-		asyncCallInfo: context.asyncCallInfo,
+		vmInput:        context.vmInput,
+		scAddress:      context.scAddress,
+		callFunction:   context.callFunction,
+		readOnly:       context.readOnly,
+		asyncCallInfo:  context.asyncCallInfo,
+		asyncContexMap: context.asyncContexMap,
 	}
 
 	context.stateStack = append(context.stateStack, newState)
@@ -111,6 +116,7 @@ func (context *runtimeContext) PopSetActiveState() {
 	context.callFunction = prevState.callFunction
 	context.readOnly = prevState.readOnly
 	context.asyncCallInfo = prevState.asyncCallInfo
+	context.asyncContexMap = prevState.asyncContexMap
 }
 
 func (context *runtimeContext) PopDiscard() {
@@ -323,6 +329,33 @@ func (context *runtimeContext) GetInitFunction() wasmer.ExportedFunctionCallback
 
 func (context *runtimeContext) SetAsyncCallInfo(asyncCallInfo *arwen.AsyncCallInfo) {
 	context.asyncCallInfo = asyncCallInfo
+}
+
+func (context *runtimeContext) AddAsyncContextCall(contextIdentifier []byte, asyncCall *vmcommon.AsyncCall) error {
+	asyncContext := context.asyncContexMap[string(contextIdentifier)]
+	if asyncContext == nil {
+		// Maybe callback should be -1 since it's not mandatory
+		context.asyncContexMap[string(contextIdentifier)] = &vmcommon.AsyncContext{
+			AsyncCalls: make([]*vmcommon.AsyncCall, 0),
+		}
+	}
+
+	context.asyncContexMap[string(contextIdentifier)].AsyncCalls = append(context.asyncContexMap[string(contextIdentifier)].AsyncCalls, asyncCall)
+
+	return nil
+}
+
+func (context *runtimeContext) GetAsyncContextMap() vmcommon.AsyncContextMap {
+	return context.asyncContexMap
+}
+
+func (context *runtimeContext) GetAsyncContext(contextIdentifier []byte) (*vmcommon.AsyncContext, error) {
+	asyncContext := context.asyncContexMap[string(contextIdentifier)]
+	if asyncContext == nil {
+		return nil, arwen.ErrAsyncContextDoesNotExist
+	}
+
+	return asyncContext, nil
 }
 
 func (context *runtimeContext) GetAsyncCallInfo() *arwen.AsyncCallInfo {

@@ -60,3 +60,5 @@ var ErrContractNotFound = fmt.Errorf("%w (not found)", ErrContractInvalid)
 var ErrMemoryDeclarationMissing = fmt.Errorf("%w (missing memory declaration)", ErrContractInvalid)
 
 var ErrMaxInstancesReached = fmt.Errorf("%w (max instances reached)", ErrExecutionFailed)
+
+var ErrAsyncContextDoesNotExist = errors.New("async context was not created yet")

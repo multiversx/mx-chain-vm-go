@@ -56,12 +56,12 @@ func (host *VmHostMock) CreateNewContract(input *vmcommon.ContractCreateInput) (
 	return nil, nil
 }
 
-func (host *VmHostMock) ExecuteOnSameContext(input *vmcommon.ContractCallInput) error {
-	return nil
+func (host *VmHostMock) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (vmcommon.AsyncContextMap, error){
+	return nil, nil
 }
 
-func (host *VmHostMock) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
-	return nil, nil
+func (host *VmHostMock) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, vmcommon.AsyncContextMap, error) {
+	return nil, nil, nil
 }
 
 func (host *VmHostMock) EthereumCallData() []byte {

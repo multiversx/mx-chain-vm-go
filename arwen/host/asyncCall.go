@@ -24,14 +24,20 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 		return err
 	}
 
-	destinationVMOutput, destinationErr := host.ExecuteOnDestContext(destinationCallInput)
+	// TODO: If this generates async calls before jumping out here, we should execute those calls?
+	destinationVMOutput, _, destinationErr := host.ExecuteOnDestContext(destinationCallInput)
 
-	callbackCallInput, err := host.createCallbackContractCallInput(destinationVMOutput, destinationErr)
+	callbackCallInput, err := host.createCallbackContractCallInput(
+		destinationVMOutput,
+		runtime.GetAsyncCallInfo().Destination,
+		arwen.CallbackDefault,
+		destinationErr,
+	)
 	if err != nil {
 		return err
 	}
 
-	callbackVMOutput, callBackErr := host.ExecuteOnDestContext(callbackCallInput)
+	callbackVMOutput, _, callBackErr := host.ExecuteOnDestContext(callbackCallInput)
 	err = host.processCallbackVMOutput(callbackVMOutput, callBackErr)
 	if err != nil {
 		return err
@@ -40,16 +46,21 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 	return nil
 }
 
+func (host *vmHost) canExecuteSynchronouslyOnDest(dest []byte) bool {
+	blockchain := host.Blockchain()
+	calledSCCode, err := blockchain.GetCode(dest)
+
+	return len(calledSCCode) != 0 && err == nil
+}
+
 func (host *vmHost) canExecuteSynchronously() bool {
 	// TODO replace with a blockchain hook that verifies if the caller and callee
 	// are in the same Shard.
 	runtime := host.Runtime()
-	blockchain := host.Blockchain()
 	asyncCallInfo := runtime.GetAsyncCallInfo()
 	dest := asyncCallInfo.Destination
-	calledSCCode, err := blockchain.GetCode(dest)
 
-	return len(calledSCCode) != 0 && err == nil
+	return host.canExecuteSynchronouslyOnDest(dest)
 }
 
 func (host *vmHost) sendAsyncCallToDestination() error {
@@ -76,6 +87,76 @@ func (host *vmHost) sendAsyncCallToDestination() error {
 	}
 
 	return nil
+}
+
+func (host *vmHost) sendAcToDest(asyncCall *vmcommon.AsyncCall) error {
+	runtime := host.Runtime()
+	output := host.Output()
+
+	destination := asyncCall.Destination
+	destinationAccount, _ := output.GetOutputAccount(destination)
+	destinationAccount.CallType = vmcommon.AsynchronousCall
+
+	err := output.Transfer(
+		destination,
+		runtime.GetSCAddress(),
+		asyncCall.GasLimit,
+		big.NewInt(0).SetBytes(asyncCall.ValueBytes),
+		asyncCall.Data,
+	)
+	if err != nil {
+		metering := host.Metering()
+		metering.UseGas(metering.GasLeft())
+		runtime.FailExecution(err)
+		return err
+	}
+
+	return nil
+}
+
+func (host  *vmHost) createDestinationContractCallInputFromAsyncCall(asyncCall *vmcommon.AsyncCall) (*vmcommon.ContractCallInput, error) {
+	runtime := host.Runtime()
+	sender := runtime.GetSCAddress()
+
+	argParser := runtime.ArgParser()
+	err := argParser.ParseData(string(asyncCall.Data))
+	if err != nil {
+		return nil, err
+	}
+
+	function, err := argParser.GetFunction()
+	if err != nil {
+		return nil, err
+	}
+
+	arguments, err := argParser.GetFunctionArguments()
+	if err != nil {
+		return nil, err
+	}
+
+	gasLimit := asyncCall.GasLimit
+	gasToUse := host.Metering().GasSchedule().ElrondAPICost.AsyncCallStep
+	if gasLimit <= gasToUse {
+		return nil, arwen.ErrNotEnoughGas
+	}
+	gasLimit -= gasToUse
+
+	contractCallInput := &vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			CallerAddr:     sender,
+			Arguments:      arguments,
+			CallValue:      big.NewInt(0).SetBytes(asyncCall.ValueBytes),
+			CallType:       vmcommon.AsynchronousCall,
+			GasPrice:       runtime.GetVMInput().GasPrice,
+			GasProvided:    gasLimit,
+			CurrentTxHash:  runtime.GetCurrentTxHash(),
+			OriginalTxHash: runtime.GetOriginalTxHash(),
+		},
+		RecipientAddr: asyncCall.Destination,
+		Function:      function,
+	}
+
+	return contractCallInput, nil
 }
 
 func (host *vmHost) createDestinationContractCallInput() (*vmcommon.ContractCallInput, error) {
@@ -124,7 +205,12 @@ func (host *vmHost) createDestinationContractCallInput() (*vmcommon.ContractCall
 	return contractCallInput, nil
 }
 
-func (host *vmHost) createCallbackContractCallInput(destinationVMOutput *vmcommon.VMOutput, destinationErr error) (*vmcommon.ContractCallInput, error) {
+func (host *vmHost) createCallbackContractCallInput(
+	destinationVMOutput *vmcommon.VMOutput,
+	callbackInitiator []byte,
+	callbackFunction string,
+	destinationErr error,
+) (*vmcommon.ContractCallInput, error) {
 	metering := host.Metering()
 	runtime := host.Runtime()
 
@@ -143,8 +229,7 @@ func (host *vmHost) createCallbackContractCallInput(destinationVMOutput *vmcommo
 	}
 
 	gasLimit := destinationVMOutput.GasRemaining
-	function := "callBack"
-	dataLength := host.computeDataLengthFromArguments(function, arguments)
+	dataLength := host.computeDataLengthFromArguments(callbackFunction, arguments)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.AsyncCallStep
 	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(dataLength)
@@ -153,13 +238,10 @@ func (host *vmHost) createCallbackContractCallInput(destinationVMOutput *vmcommo
 	}
 	gasLimit -= gasToUse
 
-	sender := runtime.GetAsyncCallInfo().Destination
-	dest := runtime.GetSCAddress()
-
 	// Return to the sender SC, calling its callback() method.
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
-			CallerAddr:     sender,
+			CallerAddr:     callbackInitiator,
 			Arguments:      arguments,
 			CallValue:      big.NewInt(0),
 			CallType:       vmcommon.AsynchronousCallBack,
@@ -168,8 +250,8 @@ func (host *vmHost) createCallbackContractCallInput(destinationVMOutput *vmcommo
 			CurrentTxHash:  runtime.GetCurrentTxHash(),
 			OriginalTxHash: runtime.GetOriginalTxHash(),
 		},
-		RecipientAddr: dest,
-		Function:      function,
+		RecipientAddr: runtime.GetSCAddress(),
+		Function:      callbackFunction,
 	}
 
 	return contractCallInput, nil

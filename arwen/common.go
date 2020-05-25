@@ -25,6 +25,7 @@ const (
 	BreakpointOutOfGas
 )
 
+const CallbackDefault = "callBack"
 const TimeLockKeyPrefix = "timelock"
 
 // AsyncCallInfo contains the information required to handle the asynchronous call of another SmartContract

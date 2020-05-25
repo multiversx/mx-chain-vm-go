@@ -140,7 +140,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	return
 }
 
-func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
+func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, asyncMap vmcommon.AsyncContextMap, err error) {
 	log.Trace("ExecuteOnDestContext", "function", input.Function)
 
 	bigInt, _, _, output, runtime, storage := host.GetContexts()
@@ -169,6 +169,8 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	}
 
 	err = host.execute(input)
+	asyncMap = runtime.GetAsyncContextMap()
+	host.processAsyncMap(asyncMap)
 
 	return
 }
@@ -204,7 +206,7 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 	return vmOutput
 }
 
-func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (err error) {
+func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asyncMap vmcommon.AsyncContextMap, err error) {
 	log.Trace("ExecuteOnSameContext", "function", input.Function)
 
 	bigInt, _, _, output, runtime, _ := host.GetContexts()
@@ -232,6 +234,8 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (err
 	if err != nil {
 		return
 	}
+
+	asyncMap = runtime.GetAsyncContextMap()
 
 	return
 }
@@ -427,6 +431,10 @@ func (host *vmHost) callSCMethodIndirect() error {
 		err = host.handleBreakpointIfAny(err)
 	}
 
+	if err != nil {
+		return err
+	}
+
 	return err
 }
 
@@ -487,6 +495,11 @@ func (host *vmHost) callSCMethod() error {
 	if err != nil {
 		err = host.handleBreakpointIfAny(err)
 	}
+	if err != nil {
+		return err
+	}
+
+	host.processAsyncMap(runtime.GetAsyncContextMap())
 
 	return err
 }
@@ -531,4 +544,80 @@ func (host *vmHost) createETHCallInput() []byte {
 	}
 
 	return newInput
+}
+
+func (host *vmHost) processAsyncMap(asyncMap vmcommon.AsyncContextMap) {
+	// Call all async functions
+	for _, asyncContext := range asyncMap {
+		for _, asyncCall := range asyncContext.AsyncCalls {
+			if !host.canExecuteSynchronouslyOnDest(asyncCall.Destination) {
+				// should send to shard
+				continue
+			}
+
+			// TODO: Figure out what to do with this errors, these are not errors resulted from the contract call
+			_ = host.processAsyncCall(asyncCall)
+		}
+	}
+}
+
+func (host *vmHost) processAsyncCall(asyncCall *vmcommon.AsyncCall) error {
+	input, _ := host.createDestinationContractCallInputFromAsyncCall(asyncCall)
+	output, asyncMap, executionError := host.ExecuteOnDestContext(input)
+
+	if executionError != nil {
+		return executionError
+	}
+
+	allCallsProcessed := true
+	for _, asyncContext := range asyncMap {
+		for _, asyncCall := range asyncContext.AsyncCalls {
+			if asyncCall.Status == vmcommon.AsyncCallPending {
+				allCallsProcessed = false
+				break
+			}
+		}
+		if !allCallsProcessed {
+			break
+		}
+	}
+
+	// If 0 or they are already processed - callback here
+	if allCallsProcessed {
+		return host.callbackAsync(asyncCall, output, executionError)
+	} else {
+		// save
+	}
+
+
+
+	return nil
+}
+
+func (host *vmHost) callbackAsync(asyncCall *vmcommon.AsyncCall, vmOutput *vmcommon.VMOutput, executionError error) error {
+	asyncCall.Status = vmcommon.AsyncCallResolved
+	callbackFunction := asyncCall.SuccessCallback
+	if vmOutput.ReturnCode != vmcommon.Ok {
+		asyncCall.Status = vmcommon.AsyncCallRejected
+		callbackFunction = asyncCall.ErrorCallback
+	}
+
+	callbackCallInput, err := host.createCallbackContractCallInput(
+		vmOutput,
+		asyncCall.Destination,
+		callbackFunction,
+		executionError,
+	)
+	if err != nil {
+		return err
+	}
+
+	// Callback omits for now any async call - TODO: take into consideration async calls generated from callbacks
+	callbackVMOutput, _, callBackErr := host.ExecuteOnDestContext(callbackCallInput)
+	err = host.processCallbackVMOutput(callbackVMOutput, callBackErr)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

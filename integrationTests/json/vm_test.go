@@ -191,3 +191,21 @@ func TestTimelocks(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+func TestPromises(t *testing.T) {
+	executor, err := ajt.NewArwenTestExecutor()
+	require.Nil(t, err)
+	runner := controller.NewScenarioRunner(
+		executor,
+		ij.NewDefaultFileResolver(),
+	)
+	err = runner.RunAllJSONScenariosInDirectory(
+		getTestRoot(),
+		"promises",
+		".scen.json",
+		[]string{})
+
+	if err != nil {
+		t.Error(err)
+	}
+}
