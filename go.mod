@@ -1,6 +1,6 @@
 module github.com/ElrondNetwork/arwen-wasm-vm
 
-go 1.13
+go 1.14
 
 require (
 	github.com/ElrondNetwork/big-int-util v0.0.5
