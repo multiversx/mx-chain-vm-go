@@ -26,7 +26,8 @@ type runtimeContext struct {
 	stateStack    []*runtimeContext
 	instanceStack []*wasmer.Instance
 
-	maxWasmerInstances uint64
+	maxWasmerInstances  uint64
+	wasmerOpcodeTracing bool
 
 	asyncCallInfo *arwen.AsyncCallInfo
 
@@ -46,6 +47,7 @@ func NewRuntimeContext(host arwen.VMHost, vmType []byte) (*runtimeContext, error
 		stateStack:                  make([]*runtimeContext, 0),
 		instanceStack:               make([]*wasmer.Instance, 0),
 		validator:                   NewWASMValidator(scAPINames, protocolBuiltinFunctions),
+		wasmerOpcodeTracing:         true,
 	}
 
 	context.InitState()
@@ -68,7 +70,11 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 		context.instance = nil
 		return arwen.ErrMaxInstancesReached
 	}
-	newInstance, err := wasmer.NewMeteredInstance(contract, gasLimit)
+	options := wasmer.CompilationOptions{
+		GasLimit:    gasLimit,
+		OpcodeTrace: context.wasmerOpcodeTracing,
+	}
+	newInstance, err := wasmer.NewInstanceWithOptions(contract, options)
 	if err != nil {
 		context.instance = nil
 		return err

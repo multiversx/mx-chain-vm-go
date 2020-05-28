@@ -86,6 +86,11 @@ type Instance struct {
 	Data unsafe.Pointer
 }
 
+type CompilationOptions struct {
+	GasLimit    uint64
+	OpcodeTrace bool
+}
+
 func newWrappedError(target error) error {
 	var lastError string
 	var err error
@@ -116,9 +121,9 @@ func SetOpcodeCosts(opcode_costs *[OPCODE_COUNT]uint32) {
 	cWasmerSetOpcodeCosts(opcode_costs)
 }
 
-func NewMeteredInstance(
+func NewInstanceWithOptions(
 	bytes []byte,
-	gasLimit uint64,
+	options CompilationOptions,
 ) (*Instance, error) {
 	var c_instance *cWasmerInstanceT
 
@@ -127,11 +132,12 @@ func NewMeteredInstance(
 		return emptyInstance, newWrappedError(ErrInvalidBytecode)
 	}
 
-	var compileResult = cWasmerInstantiateWithMetering(
+	cOptions := unsafe.Pointer(&options)
+	var compileResult = cWasmerInstantiateWithOptions(
 		&c_instance,
 		(*cUchar)(unsafe.Pointer(&bytes[0])),
 		cUint(len(bytes)),
-		gasLimit,
+		(*cWasmerCompilationOptions)(cOptions),
 	)
 
 	if compileResult != cWasmerOk {

@@ -151,6 +151,24 @@ func TestExecution_DeployWASM_Successful(t *testing.T) {
 	require.Equal(t, big.NewInt(88), vmOutput.OutputAccounts["new smartcontract"].BalanceDelta)
 }
 
+func TestExecution_DeployWASM_Popcnt(t *testing.T) {
+	newAddress := []byte("new smartcontract")
+	host := DefaultTestArwenForDeployment(t, 24, newAddress)
+	input := DefaultTestContractCreateInput()
+	input.CallValue = big.NewInt(88)
+	input.GasProvided = 1000
+	input.ContractCode = GetTestSCCode("init-simple-popcnt", "../../")
+	input.Arguments = [][]byte{}
+
+	vmOutput, err := host.RunSmartContractCreate(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+	fmt.Println(vmOutput.ReturnData)
+	require.Len(t, vmOutput.ReturnData, 1)
+	require.Equal(t, []byte{3}, vmOutput.ReturnData[0])
+}
+
 func TestExecution_DeployWASM_Init_Errors(t *testing.T) {
 	// TODO this test needs a Wasmer fix to pass completely
 	t.Skip()
