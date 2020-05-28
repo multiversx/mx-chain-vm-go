@@ -48,7 +48,7 @@ func NewRuntimeContext(host arwen.VMHost, vmType []byte) (*runtimeContext, error
 		stateStack:                    make([]*runtimeContext, 0),
 		instanceStack:                 make([]*wasmer.Instance, 0),
 		validator:                     NewWASMValidator(scAPINames, protocolBuiltinFunctions),
-		wasmerOpcodeTracing:           true,
+		wasmerOpcodeTracing:           false,
 		wasmerMemExceptionAnnotations: false,
 	}
 
