@@ -2,11 +2,14 @@ package arwenjsontest
 
 import (
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
+	controller "github.com/ElrondNetwork/elrond-vm-util/test-util/testcontroller"
 	ij "github.com/ElrondNetwork/elrond-vm-util/test-util/vmtestjson"
 )
 
 // ExecuteScenario executes an individual test.
-func (ae *ArwenTestExecutor) ExecuteScenario(scenario *ij.Scenario) error {
+func (ae *ArwenTestExecutor) ExecuteScenario(scenario *ij.Scenario, fileResolver ij.FileResolver) error {
+	ae.fileResolver = fileResolver
+
 	// reset world
 	ae.World.Clear()
 	ae.checkGas = scenario.CheckGas
@@ -27,6 +30,16 @@ func (ae *ArwenTestExecutor) ExecuteScenario(scenario *ij.Scenario) error {
 // ExecuteStep executes a single scenario step and updates mock state.
 func (ae *ArwenTestExecutor) ExecuteStep(generalStep ij.Step) error {
 	switch step := generalStep.(type) {
+	case *ij.ExternalStepsStep:
+		externalStepsRunner := controller.NewScenarioRunner(
+			ae,
+			ae.fileResolver,
+		)
+		extAbsPth := ae.fileResolver.ResolveAbsolutePath(step.Path)
+		err := externalStepsRunner.RunSingleJSONScenario(extAbsPth)
+		if err != nil {
+			return err
+		}
 	case *ij.SetStateStep:
 		// append accounts
 		for _, acct := range step.Accounts {
