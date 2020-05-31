@@ -62,8 +62,12 @@ func checkAccounts(
 }
 
 func checkAccountStorage(expectedAcct *ij.CheckAccount, matchingAcct *worldhook.Account) error {
+	if expectedAcct.IgnoreStorage {
+		return nil
+	}
+
 	expectedStorage := make(map[string][]byte)
-	for _, stkvp := range expectedAcct.Storage {
+	for _, stkvp := range expectedAcct.CheckStorage {
 		expectedStorage[string(stkvp.Key.Value)] = stkvp.Value.Value
 	}
 
