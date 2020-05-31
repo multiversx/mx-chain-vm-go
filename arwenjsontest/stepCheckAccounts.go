@@ -10,18 +10,20 @@ import (
 )
 
 func checkAccounts(
-	expectedAccounts []*ij.CheckAccount,
+	checkAccounts *ij.CheckAccounts,
 	world *worldhook.BlockchainHookMock,
 ) error {
 
-	for worldAcctAddr := range world.AcctMap {
-		postAcctMatch := ij.FindCheckAccount(expectedAccounts, []byte(worldAcctAddr))
-		if postAcctMatch == nil {
-			return fmt.Errorf("unexpected account address: %s", hex.EncodeToString([]byte(worldAcctAddr)))
+	if !checkAccounts.OtherAccountsAllowed {
+		for worldAcctAddr := range world.AcctMap {
+			postAcctMatch := ij.FindCheckAccount(checkAccounts.Accounts, []byte(worldAcctAddr))
+			if postAcctMatch == nil {
+				return fmt.Errorf("unexpected account address: %s", hex.EncodeToString([]byte(worldAcctAddr)))
+			}
 		}
 	}
 
-	for _, expectedAcct := range expectedAccounts {
+	for _, expectedAcct := range checkAccounts.Accounts {
 		matchingAcct, isMatch := world.AcctMap[string(expectedAcct.Address.Value)]
 		if !isMatch {
 			return fmt.Errorf("account %s expected but not found after running test",
