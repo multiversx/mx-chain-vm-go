@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"math/big"
 	"testing"
-	"time"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
@@ -505,13 +504,10 @@ func TestExecution_ExecuteOnSameContext_Successful(t *testing.T) {
 	input.Function = "parentFunctionChildCall"
 	input.GasProvided = 1000000
 
-	time.Sleep(2 * time.Second)
 	vmOutput, err := host.RunSmartContractCall(input)
-	time.Sleep(2 * time.Second)
 	require.Nil(t, err)
 	expectedVMOutput := expectedVMOutput_SameCtx_SuccessfulChildCall()
 	require.Equal(t, expectedVMOutput, vmOutput)
-	time.Sleep(2 * time.Second)
 }
 
 func TestExecution_ExecuteOnSameContext_Successful_BigInts(t *testing.T) {
