@@ -6,12 +6,15 @@ import (
 	ij "github.com/ElrondNetwork/elrond-vm-util/test-util/vmtestjson"
 )
 
+// Reset clears state/world.
+// Is called in RunAllJSONScenariosInDirectory, but not in RunSingleJSONScenario.
+func (ae *ArwenTestExecutor) Reset() {
+	ae.World.Clear()
+}
+
 // ExecuteScenario executes an individual test.
 func (ae *ArwenTestExecutor) ExecuteScenario(scenario *ij.Scenario, fileResolver ij.FileResolver) error {
 	ae.fileResolver = fileResolver
-
-	// reset world
-	ae.World.Clear()
 	ae.checkGas = scenario.CheckGas
 
 	txIndex := 0

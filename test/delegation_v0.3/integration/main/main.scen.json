@@ -1,0 +1,45 @@
+{
+    "name": "init",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "01_init.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "01c_init.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "02_add_nodes.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "02c_add_nodes.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "02x_rem_nodes_bad.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "03_stake.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "04_activate.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "05_rewards.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "06_stake_pt_2.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "07_activate_pt_2.steps.json"
+        }
+    ]
+}
