@@ -60,18 +60,18 @@ func getHostParameters() *arwen.VMHostParameters {
 func (world *world) DeploySmartContract(request DeployRequest) (*DeployResponse, error) {
 	log.Debug("world.DeploySmartContract()")
 
-	createInput, err := world.prepareDeployInput(request)
+	input, err := world.prepareDeployInput(request)
 	if err != nil {
 		return nil, err
 	}
 
-	vmOutput, err := world.vm.RunSmartContractCreate(createInput)
+	vmOutput, err := world.vm.RunSmartContractCreate(input)
 	if err == nil {
 		world.blockchainHook.UpdateAccounts(vmOutput.OutputAccounts)
 	}
 
 	response := &DeployResponse{}
-	response.Input = &createInput.VMInput
+	response.Input = &input.VMInput
 	response.Output = vmOutput
 	response.Error = err
 	response.ContractAddress = string(world.blockchainHook.LastCreatedContractAddress)
@@ -79,24 +79,39 @@ func (world *world) DeploySmartContract(request DeployRequest) (*DeployResponse,
 }
 
 // UpgradeSmartContract -
-func (world *world) UpgradeSmartContract() (*UpgradeResponse, error) {
-	return &UpgradeResponse{}, nil
-}
-
-// RunSmartContract -
-func (world *world) RunSmartContract(request RunRequest) (*RunResponse, error) {
-	callInput, err := world.prepareCallInput(request)
+func (world *world) UpgradeSmartContract(request UpgradeRequest) (*UpgradeResponse, error) {
+	input, err := world.prepareUpgradeInput(request)
 	if err != nil {
 		return nil, err
 	}
 
-	vmOutput, err := world.vm.RunSmartContractCall(callInput)
+	vmOutput, err := world.vm.RunSmartContractCall(input)
+	if err == nil {
+		world.blockchainHook.UpdateAccounts(vmOutput.OutputAccounts)
+	}
+
+	response := &UpgradeResponse{}
+	response.Input = &input.VMInput
+	response.Output = vmOutput
+	response.Error = err
+
+	return response, nil
+}
+
+// RunSmartContract -
+func (world *world) RunSmartContract(request RunRequest) (*RunResponse, error) {
+	input, err := world.prepareCallInput(request)
+	if err != nil {
+		return nil, err
+	}
+
+	vmOutput, err := world.vm.RunSmartContractCall(input)
 	if err == nil {
 		world.blockchainHook.UpdateAccounts(vmOutput.OutputAccounts)
 	}
 
 	response := &RunResponse{}
-	response.Input = &callInput.VMInput
+	response.Input = &input.VMInput
 	response.Output = vmOutput
 	response.Error = err
 
@@ -105,15 +120,15 @@ func (world *world) RunSmartContract(request RunRequest) (*RunResponse, error) {
 
 // QuerySmartContract -
 func (world *world) QuerySmartContract(request QueryRequest) (*QueryResponse, error) {
-	callInput, err := world.prepareCallInput(request.RunRequest)
+	input, err := world.prepareCallInput(request.RunRequest)
 	if err != nil {
 		return nil, err
 	}
 
-	vmOutput, err := world.vm.RunSmartContractCall(callInput)
+	vmOutput, err := world.vm.RunSmartContractCall(input)
 
 	response := &QueryResponse{}
-	response.Input = &callInput.VMInput
+	response.Input = &input.VMInput
 	response.Output = vmOutput
 	response.Error = err
 

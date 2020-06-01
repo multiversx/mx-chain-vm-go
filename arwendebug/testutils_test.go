@@ -58,13 +58,39 @@ func (context *testContext) deployContract(codePath string, impersonated string,
 	t := context.t
 	require.Nil(t, err)
 	require.NotNil(t, response)
+	require.NotNil(t, response.Output)
 	require.Nil(t, response.Error)
-	require.Equal(t, vmcommon.Ok, response.Output.ReturnCode)
+	require.Equal(t, vmcommon.Ok.String(), response.Output.ReturnCode.String(), response.Output.ReturnMessage)
 
 	return response
 }
 
-func (context *testContext) runContract(contract string, impersonated string, function string, arguments ...string) {
+func (context *testContext) upgradeContract(contract string, codePath string, impersonated string, arguments ...string) *UpgradeResponse {
+	request := UpgradeRequest{
+		DeployRequest: DeployRequest{
+			ContractRequestBase: ContractRequestBase{
+				RequestBase:  context.createRequestBase(),
+				Impersonated: impersonated,
+			},
+			CodePath:  codePath,
+			Arguments: arguments,
+		},
+		ContractAddress: contract,
+	}
+
+	response, err := context.facade.UpgradeSmartContract(request)
+
+	t := context.t
+	require.Nil(t, err)
+	require.NotNil(t, response)
+	require.NotNil(t, response.Output)
+	require.Nil(t, response.Error)
+	require.Equal(t, vmcommon.Ok.String(), response.Output.ReturnCode.String(), response.Output.ReturnMessage)
+
+	return response
+}
+
+func (context *testContext) runContract(contract string, impersonated string, function string, arguments ...string) *RunResponse {
 	request := RunRequest{
 		ContractRequestBase: ContractRequestBase{
 			RequestBase:  context.createRequestBase(),
@@ -80,8 +106,11 @@ func (context *testContext) runContract(contract string, impersonated string, fu
 	t := context.t
 	require.Nil(t, err)
 	require.NotNil(t, response)
+	require.NotNil(t, response.Output)
 	require.Nil(t, response.Error)
-	require.Equal(t, vmcommon.Ok, response.Output.ReturnCode)
+	require.Equal(t, vmcommon.Ok.String(), response.Output.ReturnCode.String(), response.Output.ReturnMessage)
+
+	return response
 }
 
 func (context *testContext) queryContract(contract string, impersonated string, function string, arguments ...string) *QueryResponse {
@@ -102,8 +131,9 @@ func (context *testContext) queryContract(contract string, impersonated string, 
 	t := context.t
 	require.Nil(t, err)
 	require.NotNil(t, response)
+	require.NotNil(t, response.Output)
 	require.Nil(t, response.Error)
-	require.Equal(t, vmcommon.Ok, response.Output.ReturnCode)
+	require.Equal(t, vmcommon.Ok.String(), response.Output.ReturnCode.String(), response.Output.ReturnMessage)
 
 	return response
 }

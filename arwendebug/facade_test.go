@@ -8,6 +8,8 @@ import (
 )
 
 var databasePath = "./testdata/db"
+var wasmCounterPath = "../test/contracts/counter/counter.wasm"
+var wasmErc20Path = "../test/contracts/erc20/erc20.wasm"
 
 func init() {
 	os.RemoveAll(databasePath)
@@ -30,10 +32,13 @@ func TestFacade_RunContract_Counter(t *testing.T) {
 
 	alice := newDummyAddress("alice")
 	context.createAccount(alice.hex, "42")
-	deployResponse := context.deployContract("../test/contracts/counter/counter.wasm", alice.hex)
+	deployResponse := context.deployContract(wasmCounterPath, alice.hex)
 	contractAddress := deployResponse.ContractAddress
 	require.Equal(t, "contract0000000000000000000alice", contractAddress)
 	context.runContract(contractAddress, alice.hex, "increment")
+
+	counterValue := context.queryContract(contractAddress, alice.hex, "get").getFirstResultAsInt64()
+	require.Equal(t, int64(2), counterValue)
 
 	world := context.loadWorld()
 	exists, err := world.blockchainHook.AccountExists([]byte(contractAddress))
@@ -53,10 +58,9 @@ func TestFacade_RunContract_ERC20(t *testing.T) {
 	alice := newDummyAddress("alice")
 	bob := newDummyAddress("bob")
 	carol := newDummyAddress("carol")
+
 	context.createAccount(alice.hex, "42")
-	context.createAccount(bob.hex, "40")
-	context.createAccount(carol.hex, "30")
-	deployResponse := context.deployContract("../test/contracts/erc20/erc20.wasm", alice.hex, "64")
+	deployResponse := context.deployContract(wasmErc20Path, alice.hex, "64")
 	contractAddress := deployResponse.ContractAddress
 	require.Equal(t, "contract0000000000000000000alice", contractAddress)
 
@@ -82,4 +86,27 @@ func TestFacade_RunContract_ERC20(t *testing.T) {
 	require.Equal(t, int64(80), balanceOfAlice)
 	require.Equal(t, int64(5), balanceOfBob)
 	require.Equal(t, int64(15), balanceOfCarol)
+}
+
+func TestFacade_UpgradeContract_CounterToERC20(t *testing.T) {
+	context := newTestContext(t)
+
+	alice := newDummyAddress("alice")
+	bob := newDummyAddress("bob")
+	context.createAccount(alice.hex, "42")
+
+	// Deploy counter & smoke test
+	deployResponse := context.deployContract(wasmCounterPath, alice.hex)
+	contractAddress := deployResponse.ContractAddress
+	context.runContract(contractAddress, alice.hex, "increment")
+	counterValue := context.queryContract(contractAddress, alice.hex, "get").getFirstResultAsInt64()
+	require.Equal(t, int64(2), counterValue)
+
+	// Upgrade to ERC20 & smoke test
+	_ = context.upgradeContract(contractAddress, wasmErc20Path, alice.hex, "64")
+	context.runContract(contractAddress, alice.hex, "transferToken", bob.hex, "0A")
+	balanceOfAlice := context.queryContract(contractAddress, alice.hex, "balanceOf", alice.hex).getFirstResultAsInt64()
+	balanceOfBob := context.queryContract(contractAddress, alice.hex, "balanceOf", bob.hex).getFirstResultAsInt64()
+	require.Equal(t, int64(90), balanceOfAlice)
+	require.Equal(t, int64(10), balanceOfBob)
 }
