@@ -62,7 +62,7 @@ func (facade *DebugFacade) UpgradeSmartContract(request UpgradeRequest) (*Upgrad
 		return nil, err
 	}
 
-	response, err := world.UpgradeSmartContract()
+	response, err := world.UpgradeSmartContract(request)
 	if err != nil {
 		return nil, err
 	}
