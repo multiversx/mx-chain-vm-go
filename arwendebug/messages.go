@@ -51,8 +51,14 @@ func (request *ContractRequestBase) getGasLimit() uint64 {
 	return request.GasLimit
 }
 
-func (request *ContractRequestBase) getImpersonated() []byte {
-	return fixTestAddress(request.Impersonated)
+func (request *ContractRequestBase) getImpersonated() ([]byte, error) {
+	impersonatedAsHex := request.Impersonated
+	impersonatedAsBytes, err := hex.DecodeString(impersonatedAsHex)
+	if err != nil {
+		return nil, NewRequestErrorMessageInner("invalid impersonated address", err)
+	}
+
+	return impersonatedAsBytes, nil
 }
 
 // ContractResponseBase -
@@ -169,8 +175,14 @@ type CreateAccountRequest struct {
 	Nonce   uint64
 }
 
-func (request *CreateAccountRequest) getAddress() []byte {
-	return fixTestAddress(request.Address)
+func (request *CreateAccountRequest) getAddress() ([]byte, error) {
+	addressAsHex := request.Address
+	addressAsBytes, err := hex.DecodeString(addressAsHex)
+	if err != nil {
+		return nil, NewRequestErrorMessageInner("invalid account address", err)
+	}
+
+	return addressAsBytes, nil
 }
 
 func (request *CreateAccountRequest) getBalance() (*big.Int, error) {

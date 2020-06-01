@@ -8,7 +8,11 @@ func (world *world) prepareDeployInput(request DeployRequest) (*vmcommon.Contrac
 	var err error
 
 	createInput := &vmcommon.ContractCreateInput{}
-	createInput.CallerAddr = request.getImpersonated()
+	createInput.CallerAddr, err = request.getImpersonated()
+	if err != nil {
+		return nil, err
+	}
+
 	createInput.CallValue = request.getValue()
 	createInput.ContractCode, err = request.getCode()
 	if err != nil {
@@ -36,7 +40,11 @@ func (world *world) prepareCallInput(request RunRequest) (*vmcommon.ContractCall
 
 	callInput := &vmcommon.ContractCallInput{}
 	callInput.RecipientAddr = []byte(request.ContractAddress)
-	callInput.CallerAddr = request.getImpersonated()
+	callInput.CallerAddr, err = request.getImpersonated()
+	if err != nil {
+		return nil, err
+	}
+
 	callInput.CallValue = request.getValue()
 	callInput.Function = request.Function
 	callInput.Arguments, err = request.getArguments()

@@ -121,13 +121,18 @@ func (world *world) QuerySmartContract(request QueryRequest) (*QueryResponse, er
 }
 
 func (world *world) CreateAccount(request CreateAccountRequest) (*CreateAccountResponse, error) {
+	address, err := request.getAddress()
+	if err != nil {
+		return nil, err
+	}
+
 	balance, err := request.getBalance()
 	if err != nil {
 		return nil, err
 	}
 
 	account := &Account{
-		Address: request.getAddress(),
+		Address: address,
 		Nonce:   request.Nonce,
 		Balance: balance,
 	}

@@ -1,6 +1,7 @@
 package arwendebug
 
 import (
+	"encoding/hex"
 	"fmt"
 	"math/big"
 	"math/rand"
@@ -133,4 +134,18 @@ func (context *testContext) loadWorld() *world {
 	require.Nil(context.t, err)
 
 	return world
+}
+
+type dummyAddress struct {
+	hex string
+	raw []byte
+}
+
+// Left-pads the input address with character "0" (not \0)
+func newDummyAddress(address string) *dummyAddress {
+	rawString := fmt.Sprintf("%032s", address)
+	return &dummyAddress{
+		hex: hex.EncodeToString([]byte(rawString)),
+		raw: []byte(rawString),
+	}
 }

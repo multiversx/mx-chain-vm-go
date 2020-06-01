@@ -84,7 +84,7 @@ func (b *BlockchainHookMock) AccountExists(address []byte) (bool, error) {
 
 // NewAddress -
 func (b *BlockchainHookMock) NewAddress(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error) {
-	if len(creatorAddress) == 0 {
+	if len(creatorAddress) != arwen.AddressLen {
 		panic("mock: bad creator address")
 	}
 
