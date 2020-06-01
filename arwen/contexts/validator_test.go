@@ -49,8 +49,10 @@ func TestFunctionsGuard_Arity(t *testing.T) {
 	path := "./../../test/contracts/signatures/signatures.wasm"
 	contractCode := arwen.GetSCCode(path)
 	options := wasmer.CompilationOptions{
-		GasLimit:    gasLimit,
-		OpcodeTrace: false,
+		GasLimit:           gasLimit,
+		OpcodeTrace:        false,
+		Metering:           true,
+		RuntimeBreakpoints: true,
 	}
 	instance, err := wasmer.NewInstanceWithOptions(contractCode, options)
 	require.Nil(t, err)
