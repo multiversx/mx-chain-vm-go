@@ -136,7 +136,7 @@ func TestAsyncCalls(t *testing.T) {
 	}
 }
 
-func TestDelegationContract(t *testing.T) {
+func TestDelegation_v0_2(t *testing.T) {
 	executor, err := ajt.NewArwenTestExecutor()
 	require.Nil(t, err)
 	runner := controller.NewScenarioRunner(
@@ -145,7 +145,25 @@ func TestDelegationContract(t *testing.T) {
 	)
 	err = runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
-		"delegation",
+		"delegation_v0.2",
+		".scen.json",
+		[]string{})
+
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestDelegation_v0_3(t *testing.T) {
+	executor, err := ajt.NewArwenTestExecutor()
+	require.Nil(t, err)
+	runner := controller.NewScenarioRunner(
+		executor,
+		ij.NewDefaultFileResolver(),
+	)
+	err = runner.RunAllJSONScenariosInDirectory(
+		getTestRoot(),
+		"delegation_v0.3",
 		".scen.json",
 		[]string{})
 
