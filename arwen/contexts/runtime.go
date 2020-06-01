@@ -26,9 +26,8 @@ type runtimeContext struct {
 	stateStack    []*runtimeContext
 	instanceStack []*wasmer.Instance
 
-	maxWasmerInstances            uint64
-	wasmerOpcodeTracing           bool
-	wasmerMemExceptionAnnotations bool
+	maxWasmerInstances  uint64
+	wasmerOpcodeTracing bool
 
 	asyncCallInfo *arwen.AsyncCallInfo
 
@@ -42,14 +41,13 @@ func NewRuntimeContext(host arwen.VMHost, vmType []byte) (*runtimeContext, error
 	protocolBuiltinFunctions := host.GetProtocolBuiltinFunctions()
 
 	context := &runtimeContext{
-		host:                          host,
-		instanceContextDataPointers:   make([]*int, 0),
-		vmType:                        vmType,
-		stateStack:                    make([]*runtimeContext, 0),
-		instanceStack:                 make([]*wasmer.Instance, 0),
-		validator:                     NewWASMValidator(scAPINames, protocolBuiltinFunctions),
-		wasmerOpcodeTracing:           false,
-		wasmerMemExceptionAnnotations: false,
+		host:                        host,
+		instanceContextDataPointers: make([]*int, 0),
+		vmType:                      vmType,
+		stateStack:                  make([]*runtimeContext, 0),
+		instanceStack:               make([]*wasmer.Instance, 0),
+		validator:                   NewWASMValidator(scAPINames, protocolBuiltinFunctions),
+		wasmerOpcodeTracing:         false,
 	}
 
 	context.InitState()
@@ -73,9 +71,8 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 		return arwen.ErrMaxInstancesReached
 	}
 	options := wasmer.CompilationOptions{
-		GasLimit:          gasLimit,
-		OpcodeTrace:       context.wasmerOpcodeTracing,
-		MemExcpAnnotation: context.wasmerMemExceptionAnnotations,
+		GasLimit:    gasLimit,
+		OpcodeTrace: context.wasmerOpcodeTracing,
 	}
 	newInstance, err := wasmer.NewInstanceWithOptions(contract, options)
 	if err != nil {

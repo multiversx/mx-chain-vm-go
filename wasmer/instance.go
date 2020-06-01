@@ -87,9 +87,8 @@ type Instance struct {
 }
 
 type CompilationOptions struct {
-	GasLimit          uint64
-	OpcodeTrace       bool
-	MemExcpAnnotation bool
+	GasLimit    uint64
+	OpcodeTrace bool
 }
 
 func newWrappedError(target error) error {
