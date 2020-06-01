@@ -49,6 +49,9 @@ func TestFacade_RunContract_Counter(t *testing.T) {
 func TestFacade_RunContract_ERC20(t *testing.T) {
 	context := newTestContext(t)
 
+	aliceHex := "303030303030303030303030303030303030303030303030303030616c696365"
+	bobHex := "3030303030303030303030303030303030303030303030303030303030626f62"
+	carolHex := "3030303030303030303030303030303030303030303030303030306361726f6c"
 	context.createAccount("alice", "42")
 	context.createAccount("bob", "40")
 	context.createAccount("carol", "30")
@@ -56,46 +59,22 @@ func TestFacade_RunContract_ERC20(t *testing.T) {
 	contractAddress := deployResponse.ContractAddress
 	require.Equal(t, "contract0000000000000000000alice", contractAddress)
 
+	// Initial state
 	totalSupply := context.queryContract(contractAddress, "alice", "totalSupply").getFirstResultAsInt64()
-	balanceOfAlice := context.queryContract(contractAddress, "alice", "balanceOf", "alicehex").getFirstResultAsInt64()
+	balanceOfAlice := context.queryContract(contractAddress, "alice", "balanceOf", aliceHex).getFirstResultAsInt64()
 	require.Equal(t, int64(100), totalSupply)
 	require.Equal(t, int64(100), balanceOfAlice)
 
+	// Transfers
+	context.runContract(contractAddress, "alice", "transferToken", aliceHex, "0A")
+	context.runContract(contractAddress, "alice", "transferToken", bobHex, "0A")
+	context.runContract(contractAddress, "alice", "transferToken", carolHex, "0A")
+	context.runContract(contractAddress, "bob", "transferToken", carolHex, "05")
+
+	balanceOfAlice = context.queryContract(contractAddress, "alice", "balanceOf", aliceHex).getFirstResultAsInt64()
+	balanceOfBob := context.queryContract(contractAddress, "alice", "balanceOf", bobHex).getFirstResultAsInt64()
+	balanceOfCarol := context.queryContract(contractAddress, "alice", "balanceOf", carolHex).getFirstResultAsInt64()
+	require.Equal(t, int64(80), balanceOfAlice)
+	require.Equal(t, int64(5), balanceOfBob)
+	require.Equal(t, int64(15), balanceOfCarol)
 }
-
-// err := context.DeploySC("../testdata/erc20-c-03/wrc20_arwen.wasm", "00"+arwen.FormatHexNumber(42000))
-// require.Nil(t, err)
-
-// // Assertion
-// require.Equal(t, uint64(42000), context.QuerySCInt("totalSupply", [][]byte{}))
-// require.Equal(t, uint64(42000), context.QuerySCInt("balanceOf", [][]byte{context.Owner.Address}))
-
-// // Minting
-// err = context.ExecuteSC(owner, "transferToken@"+alice.AddressHex()+"@00"+arwen.FormatHexNumber(1000))
-// require.Nil(t, err)
-// err = context.ExecuteSC(owner, "transferToken@"+bob.AddressHex()+"@00"+arwen.FormatHexNumber(1000))
-// require.Nil(t, err)
-
-// // Regular transfers
-// err = context.ExecuteSC(alice, "transferToken@"+bob.AddressHex()+"@00"+arwen.FormatHexNumber(200))
-// require.Nil(t, err)
-// err = context.ExecuteSC(bob, "transferToken@"+alice.AddressHex()+"@00"+arwen.FormatHexNumber(400))
-// require.Nil(t, err)
-
-// // Assertion
-// require.Equal(t, uint64(1200), context.QuerySCInt("balanceOf", [][]byte{alice.Address}))
-// require.Equal(t, uint64(800), context.QuerySCInt("balanceOf", [][]byte{bob.Address}))
-
-// // Approve and transfer
-// err = context.ExecuteSC(alice, "approve@"+bob.AddressHex()+"@00"+arwen.FormatHexNumber(500))
-// require.Nil(t, err)
-// err = context.ExecuteSC(bob, "approve@"+alice.AddressHex()+"@00"+arwen.FormatHexNumber(500))
-// require.Nil(t, err)
-// err = context.ExecuteSC(alice, "transferFrom@"+bob.AddressHex()+"@"+carol.AddressHex()+"@00"+arwen.FormatHexNumber(25))
-// require.Nil(t, err)
-// err = context.ExecuteSC(bob, "transferFrom@"+alice.AddressHex()+"@"+carol.AddressHex()+"@00"+arwen.FormatHexNumber(25))
-// require.Nil(t, err)
-
-// require.Equal(t, uint64(1175), context.QuerySCInt("balanceOf", [][]byte{alice.Address}))
-// require.Equal(t, uint64(775), context.QuerySCInt("balanceOf", [][]byte{bob.Address}))
-// require.Equal(t, uint64(50), context.QuerySCInt("balanceOf", [][]byte{carol.Address}))
