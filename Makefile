@@ -1,4 +1,4 @@
-.PHONY: test test-short build build-arwen clean
+.PHONY: test test-short build arwen arwendebug clean
 
 clean:
 	go clean -cache -testcache
@@ -6,17 +6,21 @@ clean:
 build:
 	go build ./...
 
-build-arwen:
+arwen:
 	go build -o ./cmd/arwen/arwen ./cmd/arwen
 	cp ./cmd/arwen/arwen ./ipc/tests
 
-build-arwendebug:
+arwendebug:
+ifndef ARWENDEBUG_PATH
+	$(error ARWENDEBUG_PATH is undefined)
+endif
 	go build -o ./cmd/arwendebug/arwendebug ./cmd/arwendebug
-	
-test: clean build-arwen
+	cp ./cmd/arwendebug/arwendebug ${ARWENDEBUG_PATH}
+
+test: clean arwen
 	go test -count=1 ./...
 
-test-short: build-arwen
+test-short: arwen
 	go test -short -count=1 ./...
 
 build-c-contracts:
