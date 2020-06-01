@@ -87,8 +87,10 @@ type Instance struct {
 }
 
 type CompilationOptions struct {
-	GasLimit    uint64
-	OpcodeTrace bool
+	GasLimit           uint64
+	OpcodeTrace        bool
+	Metering           bool
+	RuntimeBreakpoints bool
 }
 
 func newWrappedError(target error) error {
