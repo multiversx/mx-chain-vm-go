@@ -9,15 +9,15 @@ import (
 
 var log = logger.GetOrCreate("arwendebug")
 
-// DebugFacade -
+// DebugFacade is the debug facade
 type DebugFacade struct {
 }
 
-// NewDebugFacade -
+// NewDebugFacade creates a new debug facade
 func NewDebugFacade() {
 }
 
-// DeploySmartContract -
+// DeploySmartContract deploys a smart contract
 func (facade *DebugFacade) DeploySmartContract(request DeployRequest) (*DeployResponse, error) {
 	log.Debug("DebugFacade.DeploySmartContract()")
 
@@ -27,7 +27,7 @@ func (facade *DebugFacade) DeploySmartContract(request DeployRequest) (*DeployRe
 		return nil, err
 	}
 
-	response, err := world.DeploySmartContract(request)
+	response, err := world.deploySmartContract(request)
 	if err != nil {
 		return nil, err
 	}
@@ -48,11 +48,11 @@ func (facade *DebugFacade) DeploySmartContract(request DeployRequest) (*DeployRe
 
 func (facade *DebugFacade) loadDatabase(rootPath string) *database {
 	// TODO: use factory
-	database := NewDatabase(rootPath)
+	database := newDatabase(rootPath)
 	return database
 }
 
-// UpgradeSmartContract -
+// UpgradeSmartContract upgrades a smart contract
 func (facade *DebugFacade) UpgradeSmartContract(request UpgradeRequest) (*UpgradeResponse, error) {
 	log.Debug("DebugFacade.UpgradeSmartContract()")
 
@@ -62,7 +62,7 @@ func (facade *DebugFacade) UpgradeSmartContract(request UpgradeRequest) (*Upgrad
 		return nil, err
 	}
 
-	response, err := world.UpgradeSmartContract(request)
+	response, err := world.upgradeSmartContract(request)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +81,7 @@ func (facade *DebugFacade) UpgradeSmartContract(request UpgradeRequest) (*Upgrad
 	return response, err
 }
 
-// RunSmartContract -
+// RunSmartContract executes a smart contract function
 func (facade *DebugFacade) RunSmartContract(request RunRequest) (*RunResponse, error) {
 	log.Debug("DebugFacade.RunSmartContract()")
 
@@ -91,7 +91,7 @@ func (facade *DebugFacade) RunSmartContract(request RunRequest) (*RunResponse, e
 		return nil, err
 	}
 
-	response, err := world.RunSmartContract(request)
+	response, err := world.runSmartContract(request)
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +110,7 @@ func (facade *DebugFacade) RunSmartContract(request RunRequest) (*RunResponse, e
 	return response, err
 }
 
-// QuerySmartContract -
+// QuerySmartContract queries a pure function of the smart contract
 func (facade *DebugFacade) QuerySmartContract(request QueryRequest) (*QueryResponse, error) {
 	log.Debug("DebugFacade.QuerySmartContracts()")
 
@@ -120,7 +120,7 @@ func (facade *DebugFacade) QuerySmartContract(request QueryRequest) (*QueryRespo
 		return nil, err
 	}
 
-	response, err := world.QuerySmartContract(request)
+	response, err := world.querySmartContract(request)
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +134,7 @@ func (facade *DebugFacade) QuerySmartContract(request QueryRequest) (*QueryRespo
 	return response, err
 }
 
-// CreateAccount -
+// CreateAccount creates a test account
 func (facade *DebugFacade) CreateAccount(request CreateAccountRequest) (*CreateAccountResponse, error) {
 	log.Debug("DebugFacade.CreateAccount()")
 
@@ -144,7 +144,7 @@ func (facade *DebugFacade) CreateAccount(request CreateAccountRequest) (*CreateA
 		return nil, err
 	}
 
-	response, err := world.CreateAccount(request)
+	response, err := world.qreateAccount(request)
 	if err != nil {
 		return nil, err
 	}

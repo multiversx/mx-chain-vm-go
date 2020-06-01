@@ -8,19 +8,19 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
-// RequestBase -
+// RequestBase is a CLI / REST request message
 type RequestBase struct {
 	DatabasePath string
 	World        string
 	Outcome      string
 }
 
-// ResponseBase -
+// ResponseBase is a CLI / REST response message
 type ResponseBase struct {
 	Error error
 }
 
-// ContractRequestBase -
+// ContractRequestBase is a CLI / REST request message
 type ContractRequestBase struct {
 	RequestBase
 	Impersonated string
@@ -61,7 +61,7 @@ func (request *ContractRequestBase) getImpersonated() ([]byte, error) {
 	return impersonatedAsBytes, nil
 }
 
-// ContractResponseBase -
+// ContractResponseBase is a CLI / REST response message
 type ContractResponseBase struct {
 	ResponseBase
 	Input  *vmcommon.VMInput
@@ -72,7 +72,7 @@ func (response *ContractResponseBase) getReturnCode() vmcommon.ReturnCode {
 	return response.Output.ReturnCode
 }
 
-// DeployRequest -
+// DeployRequest is a CLI / REST request message
 type DeployRequest struct {
 	ContractRequestBase
 	Code         string
@@ -123,24 +123,24 @@ func (request *DeployRequest) getArguments() ([][]byte, error) {
 	return decodeArguments(request.Arguments)
 }
 
-// DeployResponse -
+// DeployResponse is a CLI / REST response message
 type DeployResponse struct {
 	ContractResponseBase
 	ContractAddress string
 }
 
-// UpgradeRequest -
+// UpgradeRequest is a CLI / REST request message
 type UpgradeRequest struct {
 	DeployRequest
 	ContractAddress string
 }
 
-// UpgradeResponse -
+// UpgradeResponse is a CLI / REST response message
 type UpgradeResponse struct {
 	ContractResponseBase
 }
 
-// RunRequest -
+// RunRequest is a CLI / REST request message
 type RunRequest struct {
 	ContractRequestBase
 	ContractAddress string
@@ -152,22 +152,22 @@ func (request *RunRequest) getArguments() ([][]byte, error) {
 	return decodeArguments(request.Arguments)
 }
 
-// RunResponse -
+// RunResponse is a CLI / REST response message
 type RunResponse struct {
 	ContractResponseBase
 }
 
-// QueryRequest -
+// QueryRequest is a CLI / REST request message
 type QueryRequest struct {
 	RunRequest
 }
 
-// QueryResponse -
+// QueryResponse is a CLI / REST response message
 type QueryResponse struct {
 	ContractResponseBase
 }
 
-// CreateAccountRequest -
+// CreateAccountRequest is a CLI / REST request message
 type CreateAccountRequest struct {
 	RequestBase
 	Address string
@@ -194,7 +194,7 @@ func (request *CreateAccountRequest) getBalance() (*big.Int, error) {
 	return balance, nil
 }
 
-// CreateAccountResponse -
+// CreateAccountResponse is a CLI / REST response message
 type CreateAccountResponse struct {
 	Account *Account
 }

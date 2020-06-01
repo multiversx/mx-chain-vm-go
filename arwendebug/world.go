@@ -26,8 +26,8 @@ func newWorldDataModel(worldID string) *worldDataModel {
 	}
 }
 
-// NewWorld -
-func NewWorld(dataModel *worldDataModel) (*world, error) {
+// newWorld creates a new debugging world
+func newWorld(dataModel *worldDataModel) (*world, error) {
 	blockchainHook := NewBlockchainHookMock()
 	blockchainHook.Accounts = dataModel.Accounts
 
@@ -56,8 +56,7 @@ func getHostParameters() *arwen.VMHostParameters {
 	}
 }
 
-// DeploySmartContract -
-func (world *world) DeploySmartContract(request DeployRequest) (*DeployResponse, error) {
+func (world *world) deploySmartContract(request DeployRequest) (*DeployResponse, error) {
 	log.Debug("world.DeploySmartContract()")
 
 	input, err := world.prepareDeployInput(request)
@@ -78,8 +77,7 @@ func (world *world) DeploySmartContract(request DeployRequest) (*DeployResponse,
 	return response, nil
 }
 
-// UpgradeSmartContract -
-func (world *world) UpgradeSmartContract(request UpgradeRequest) (*UpgradeResponse, error) {
+func (world *world) upgradeSmartContract(request UpgradeRequest) (*UpgradeResponse, error) {
 	input, err := world.prepareUpgradeInput(request)
 	if err != nil {
 		return nil, err
@@ -98,8 +96,7 @@ func (world *world) UpgradeSmartContract(request UpgradeRequest) (*UpgradeRespon
 	return response, nil
 }
 
-// RunSmartContract -
-func (world *world) RunSmartContract(request RunRequest) (*RunResponse, error) {
+func (world *world) runSmartContract(request RunRequest) (*RunResponse, error) {
 	input, err := world.prepareCallInput(request)
 	if err != nil {
 		return nil, err
@@ -118,8 +115,7 @@ func (world *world) RunSmartContract(request RunRequest) (*RunResponse, error) {
 	return response, nil
 }
 
-// QuerySmartContract -
-func (world *world) QuerySmartContract(request QueryRequest) (*QueryResponse, error) {
+func (world *world) querySmartContract(request QueryRequest) (*QueryResponse, error) {
 	input, err := world.prepareCallInput(request.RunRequest)
 	if err != nil {
 		return nil, err
@@ -135,7 +131,7 @@ func (world *world) QuerySmartContract(request QueryRequest) (*QueryResponse, er
 	return response, nil
 }
 
-func (world *world) CreateAccount(request CreateAccountRequest) (*CreateAccountResponse, error) {
+func (world *world) qreateAccount(request CreateAccountRequest) (*CreateAccountResponse, error) {
 	address, err := request.getAddress()
 	if err != nil {
 		return nil, err

@@ -159,7 +159,7 @@ func (context *testContext) createRequestBase() RequestBase {
 }
 
 func (context *testContext) loadWorld() *world {
-	database := NewDatabase(databasePath)
+	database := newDatabase(databasePath)
 	world, err := database.loadWorld(context.worldID)
 	require.Nil(context.t, err)
 

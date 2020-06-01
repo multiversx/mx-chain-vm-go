@@ -12,8 +12,8 @@ type database struct {
 	rootPath string
 }
 
-// NewDatabase -
-func NewDatabase(rootPath string) *database {
+// newDatabase creates a new debugging database (basically, a folder with JSON files)
+func newDatabase(rootPath string) *database {
 	database := &database{rootPath: rootPath}
 	database.initFolders()
 	return database
@@ -37,7 +37,7 @@ func (db *database) loadWorld(worldID string) (*world, error) {
 		}
 	}
 
-	world, err := NewWorld(dataModel)
+	world, err := newWorld(dataModel)
 	if err != nil {
 		return nil, err
 	}
