@@ -1,6 +1,7 @@
 package host
 
 import (
+	"encoding/hex"
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -15,11 +16,11 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 	// on address?), by account addresses - this would make the empty SC code an
 	// unrecoverable error, so returning nil here will not be appropriate anymore.
 	if !host.canExecuteSynchronously() {
-		return host.sendAsyncCallToDestination()
+		return host.sendAsyncCallToDestination(runtime.GetAsyncCallInfo())
 	}
 
 	// Start calling the destination SC, synchronously.
-	destinationCallInput, err := host.createDestinationContractCallInput()
+	destinationCallInput, err := host.createDestinationContractCallInput(runtime.GetAsyncCallInfo())
 	if err != nil {
 		return err
 	}
@@ -63,21 +64,20 @@ func (host *vmHost) canExecuteSynchronously() bool {
 	return host.canExecuteSynchronouslyOnDest(dest)
 }
 
-func (host *vmHost) sendAsyncCallToDestination() error {
+func (host *vmHost) sendAsyncCallToDestination(asyncCallInfo arwen.AsyncCallInfoHandler) error {
 	runtime := host.Runtime()
 	output := host.Output()
 
-	asyncCallInfo := runtime.GetAsyncCallInfo()
-	destination := asyncCallInfo.Destination
+	destination := asyncCallInfo.GetDestination()
 	destinationAccount, _ := output.GetOutputAccount(destination)
 	destinationAccount.CallType = vmcommon.AsynchronousCall
 
 	err := output.Transfer(
 		destination,
 		runtime.GetSCAddress(),
-		asyncCallInfo.GasLimit,
-		big.NewInt(0).SetBytes(asyncCallInfo.ValueBytes),
-		asyncCallInfo.Data,
+		asyncCallInfo.GetGasLimit(),
+		big.NewInt(0).SetBytes(asyncCallInfo.GetValueBytes()),
+		asyncCallInfo.GetData(),
 	)
 	if err != nil {
 		metering := host.Metering()
@@ -89,23 +89,30 @@ func (host *vmHost) sendAsyncCallToDestination() error {
 	return nil
 }
 
-func (host *vmHost) sendAcToDest(asyncCall *vmcommon.AsyncCall) error {
+
+func (host *vmHost) sendCallbackToDestination() error {
 	runtime := host.Runtime()
 	output := host.Output()
+	metering := host.Metering()
+	currentCall := runtime.GetVMInput()
 
-	destination := asyncCall.Destination
+	destination := currentCall.CallerAddr
 	destinationAccount, _ := output.GetOutputAccount(destination)
-	destinationAccount.CallType = vmcommon.AsynchronousCall
+	destinationAccount.CallType = vmcommon.AsynchronousCallBack
+
+	retData := []byte("@" + hex.EncodeToString([]byte(output.ReturnCode().String())))
+	for _, data := range output.ReturnData() {
+		retData = append(retData, []byte("@"+hex.EncodeToString(data))...)
+	}
 
 	err := output.Transfer(
 		destination,
 		runtime.GetSCAddress(),
-		asyncCall.GasLimit,
-		big.NewInt(0).SetBytes(asyncCall.ValueBytes),
-		asyncCall.Data,
+		metering.GasLeft(),
+		big.NewInt(0).SetUint64(metering.GasLeft()*currentCall.GasPrice),
+		retData,
 	)
 	if err != nil {
-		metering := host.Metering()
 		metering.UseGas(metering.GasLeft())
 		runtime.FailExecution(err)
 		return err
@@ -114,12 +121,38 @@ func (host *vmHost) sendAcToDest(asyncCall *vmcommon.AsyncCall) error {
 	return nil
 }
 
-func (host  *vmHost) createDestinationContractCallInputFromAsyncCall(asyncCall *vmcommon.AsyncCall) (*vmcommon.ContractCallInput, error) {
+func (host *vmHost) sendStorageCallbackToDestination(asyncCallInitiator vmcommon.AsyncInitiator) error {
+	runtime := host.Runtime()
+	output := host.Output()
+	metering := host.Metering()
+	currentCall := runtime.GetVMInput()
+
+	destination := asyncCallInitiator.CallerAddr
+	destinationAccount, _ := output.GetOutputAccount(destination)
+	destinationAccount.CallType = vmcommon.AsynchronousCallBack
+
+	err := output.Transfer(
+		destination,
+		runtime.GetSCAddress(),
+		metering.GasLeft(),
+		big.NewInt(0).SetUint64(metering.GasLeft()*currentCall.GasPrice),
+		asyncCallInitiator.ReturnData,
+	)
+	if err != nil {
+		metering.UseGas(metering.GasLeft())
+		runtime.FailExecution(err)
+		return err
+	}
+
+	return nil
+}
+
+func (host *vmHost) createDestinationContractCallInput(asyncCallInfo arwen.AsyncCallInfoHandler) (*vmcommon.ContractCallInput, error) {
 	runtime := host.Runtime()
 	sender := runtime.GetSCAddress()
 
 	argParser := runtime.ArgParser()
-	err := argParser.ParseData(string(asyncCall.Data))
+	err := argParser.ParseData(string(asyncCallInfo.GetData()))
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +167,7 @@ func (host  *vmHost) createDestinationContractCallInputFromAsyncCall(asyncCall *
 		return nil, err
 	}
 
-	gasLimit := asyncCall.GasLimit
+	gasLimit := asyncCallInfo.GetGasLimit()
 	gasToUse := host.Metering().GasSchedule().ElrondAPICost.AsyncCallStep
 	if gasLimit <= gasToUse {
 		return nil, arwen.ErrNotEnoughGas
@@ -145,60 +178,14 @@ func (host  *vmHost) createDestinationContractCallInputFromAsyncCall(asyncCall *
 		VMInput: vmcommon.VMInput{
 			CallerAddr:     sender,
 			Arguments:      arguments,
-			CallValue:      big.NewInt(0).SetBytes(asyncCall.ValueBytes),
+			CallValue:      big.NewInt(0).SetBytes(asyncCallInfo.GetValueBytes()),
 			CallType:       vmcommon.AsynchronousCall,
 			GasPrice:       runtime.GetVMInput().GasPrice,
 			GasProvided:    gasLimit,
 			CurrentTxHash:  runtime.GetCurrentTxHash(),
 			OriginalTxHash: runtime.GetOriginalTxHash(),
 		},
-		RecipientAddr: asyncCall.Destination,
-		Function:      function,
-	}
-
-	return contractCallInput, nil
-}
-
-func (host *vmHost) createDestinationContractCallInput() (*vmcommon.ContractCallInput, error) {
-	runtime := host.Runtime()
-	sender := runtime.GetSCAddress()
-	asyncCallInfo := runtime.GetAsyncCallInfo()
-
-	argParser := runtime.ArgParser()
-	err := argParser.ParseData(string(asyncCallInfo.Data))
-	if err != nil {
-		return nil, err
-	}
-
-	function, err := argParser.GetFunction()
-	if err != nil {
-		return nil, err
-	}
-
-	arguments, err := argParser.GetFunctionArguments()
-	if err != nil {
-		return nil, err
-	}
-
-	gasLimit := asyncCallInfo.GasLimit
-	gasToUse := host.Metering().GasSchedule().ElrondAPICost.AsyncCallStep
-	if gasLimit <= gasToUse {
-		return nil, arwen.ErrNotEnoughGas
-	}
-	gasLimit -= gasToUse
-
-	contractCallInput := &vmcommon.ContractCallInput{
-		VMInput: vmcommon.VMInput{
-			CallerAddr:     sender,
-			Arguments:      arguments,
-			CallValue:      big.NewInt(0).SetBytes(asyncCallInfo.ValueBytes),
-			CallType:       vmcommon.AsynchronousCall,
-			GasPrice:       runtime.GetVMInput().GasPrice,
-			GasProvided:    gasLimit,
-			CurrentTxHash:  runtime.GetCurrentTxHash(),
-			OriginalTxHash: runtime.GetOriginalTxHash(),
-		},
-		RecipientAddr: asyncCallInfo.Destination,
+		RecipientAddr: asyncCallInfo.GetDestination(),
 		Function:      function,
 	}
 

@@ -21,6 +21,7 @@ func CustomStorageKey(crypto vmcommon.CryptoHook, keyType string, associatedKey 
 	return crypto.Keccak256(append(associatedKey, []byte(keyType)...))
 }
 
+
 func GuardedMakeByteSlice2D(length int32) ([][]byte, error) {
 	if length < 0 {
 		return nil, fmt.Errorf("GuardedMakeByteSlice2D: negative length (%d)", length)

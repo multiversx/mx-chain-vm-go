@@ -56,11 +56,11 @@ func (host *VmHostMock) CreateNewContract(input *vmcommon.ContractCreateInput) (
 	return nil, nil
 }
 
-func (host *VmHostMock) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (vmcommon.AsyncContextMap, error){
+func (host *VmHostMock) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*vmcommon.AsyncContextInfo, error){
 	return nil, nil
 }
 
-func (host *VmHostMock) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, vmcommon.AsyncContextMap, error) {
+func (host *VmHostMock) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *vmcommon.AsyncContextInfo, error) {
 	return nil, nil, nil
 }
 

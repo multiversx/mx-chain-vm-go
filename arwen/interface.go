@@ -35,8 +35,8 @@ type VMHost interface {
 	Storage() StorageContext
 
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
-	ExecuteOnSameContext(input *vmcommon.ContractCallInput) (vmcommon.AsyncContextMap, error)
-	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, vmcommon.AsyncContextMap, error)
+	ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*vmcommon.AsyncContextInfo, error)
+	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *vmcommon.AsyncContextInfo, error)
 	EthereumCallData() []byte
 	GetAPIMethods() *wasmer.Imports
 	GetProtocolBuiltinFunctions() vmcommon.FunctionNames
@@ -88,7 +88,7 @@ type RuntimeContext interface {
 	GetAsyncCallInfo() *AsyncCallInfo
 	SetAsyncCallInfo(asyncCallInfo *AsyncCallInfo)
 	AddAsyncContextCall(contextIdentifier []byte, asyncCall *vmcommon.AsyncCall) error
-	GetAsyncContextMap() vmcommon.AsyncContextMap
+	GetAsyncContextInfo() *vmcommon.AsyncContextInfo
 	GetAsyncContext(contextIdentifier []byte) (*vmcommon.AsyncContext, error)
 	PushInstance()
 	PopInstance()
@@ -180,4 +180,15 @@ type StorageContext interface {
 	GetStorageUpdates(address []byte) map[string]*vmcommon.StorageUpdate
 	GetStorage(key []byte) []byte
 	SetStorage(key []byte, value []byte) (StorageStatus, error)
+}
+
+type AsyncCallInfoHandler interface {
+	GetDestination() []byte
+	GetData() []byte
+	GetGasLimit() uint64
+	GetValueBytes() []byte
+}
+
+type CallbackInfoHandler interface {
+
 }

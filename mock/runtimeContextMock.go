@@ -226,7 +226,7 @@ func (r *RuntimeContextMock) AddAsyncContextCall(_ []byte, _ *vmcommon.AsyncCall
 	return nil
 }
 
-func (r *RuntimeContextMock) GetAsyncContextMap() vmcommon.AsyncContextMap {
+func (r *RuntimeContextMock) GetAsyncContextInfo() *vmcommon.AsyncContextInfo {
 	return nil
 }
 

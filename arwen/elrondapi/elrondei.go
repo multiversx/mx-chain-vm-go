@@ -30,7 +30,7 @@ package elrondapi
 // extern int32_t executeReadOnly(void *context, long long gas, int32_t addressOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t createContract(void *context, int32_t valueOffset, int32_t codeOffset, int32_t length, int32_t resultOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern void asyncCall(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
-// extern void createAsyncCall(void *context, int32_t identifierOffset, int32_t identifierLength, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length, int32_t successCallback, int32_t successLength, int32_t errorCallback, int32_t errorLength);
+// extern void createAsyncCall(void *context, int32_t identifierOffset, int32_t identifierLength, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length, int32_t successCallback, int32_t successLength, int32_t errorCallback, int32_t errorLength, int32_t gasPercentage);
 //
 // extern int32_t getNumReturnData(void *context);
 // extern int32_t getReturnDataSize(void *context, int32_t resultID);
@@ -436,9 +436,9 @@ func createAsyncCall(context unsafe.Pointer,
 	successLength int32,
 	errorOffset int32,
 	errorLength int32,
+	gasPercentage int32,
 ) {
 	runtime := arwen.GetRuntimeContext(context)
-	metering := arwen.GetMeteringContext(context)
 
 	acIdentifier, err := runtime.MemLoad(asyncContextIdentifier, identifierLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -473,10 +473,10 @@ func createAsyncCall(context unsafe.Pointer,
 	err = runtime.AddAsyncContextCall(acIdentifier, &vmcommon.AsyncCall{
 		Destination: calledSCAddress,
 		Data: data,
-		GasLimit: metering.GasLeft(),
 		ValueBytes: value,
 		SuccessCallback: string(successFunc),
 		ErrorCallback: string(errorFunc),
+		GasPercentage: gasPercentage,
 	})
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
@@ -708,7 +708,11 @@ func setStorageLock(context unsafe.Pointer, keyOffset int32, keyLength int32, lo
 	metering.UseGas(gasToUse)
 
 	bigTimestamp := big.NewInt(0).SetInt64(lockTimestamp)
-	return storage.SetStorage(timeLockKey, bigTimestamp.Bytes())
+	storageStatus, err := storage.SetStorage(timeLockKey, bigTimestamp.Bytes())
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return -1
+	}
+	return int32(storageStatus)
 }
 
 //export getStorageLock

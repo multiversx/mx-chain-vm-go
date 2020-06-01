@@ -14,7 +14,8 @@ extern "C"
         byte *successCallback,
         int successCallbackLen,
         byte *errorCallback,
-        int errorCallbackLen
+        int errorCallbackLen,
+        int gasPercentage
     );
     long long getBlockTimestamp();
     int setStorageLock(byte *key, int keyLen, long long timeLock);
@@ -49,7 +50,8 @@ extern "C" void bookMyStuff() {
         (byte*)"myTrainSuccess",
         14,
         (byte*)"myTrainError",
-        12
+        12,
+        100
     );
 }
 

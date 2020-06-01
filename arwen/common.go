@@ -18,6 +18,7 @@ const (
 
 const CallbackDefault = "callBack"
 const TimeLockKeyPrefix = "timelock"
+const AsyncDataPrefix = "asyncCalls"
 
 // AsyncCallInfo contains the information required to handle the asynchronous call of another SmartContract
 type AsyncCallInfo struct {
@@ -42,3 +43,21 @@ type VMHostParameters struct {
 	ProtocolBuiltinFunctions vmcommon.FunctionNames
 	ElrondProtectedKeyPrefix []byte
 }
+
+func (aci *AsyncCallInfo) GetDestination() []byte {
+	return aci.Destination
+}
+
+func (aci *AsyncCallInfo) GetData() []byte {
+	return aci.Data
+}
+
+func (aci *AsyncCallInfo) GetGasLimit() uint64 {
+	return aci.GasLimit
+}
+
+func (aci *AsyncCallInfo) GetValueBytes() []byte {
+	return aci.ValueBytes
+}
+
+

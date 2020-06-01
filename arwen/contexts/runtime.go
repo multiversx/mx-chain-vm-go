@@ -28,8 +28,8 @@ type runtimeContext struct {
 
 	maxWasmerInstances uint64
 
-	asyncCallInfo  *arwen.AsyncCallInfo
-	asyncContexMap vmcommon.AsyncContextMap
+	asyncCallInfo    *arwen.AsyncCallInfo
+	asyncContextInfo *vmcommon.AsyncContextInfo
 
 	argParser arwen.ArgumentsParser
 	validator *WASMValidator
@@ -62,7 +62,9 @@ func (context *runtimeContext) InitState() {
 	context.readOnly = false
 	context.argParser = vmcommon.NewAtArgumentParser()
 	context.asyncCallInfo = nil
-	context.asyncContexMap = make(vmcommon.AsyncContextMap)
+	context.asyncContextInfo = &vmcommon.AsyncContextInfo {
+		AsyncContextMap: make(map[string]*vmcommon.AsyncContext),
+	}
 }
 
 func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uint64) error {
@@ -90,17 +92,22 @@ func (context *runtimeContext) InitStateFromContractCallInput(input *vmcommon.Co
 	context.scAddress = input.RecipientAddr
 	context.callFunction = input.Function
 	// Reset async map for initial state
-	context.asyncContexMap = make(vmcommon.AsyncContextMap)
+	context.asyncContextInfo = &vmcommon.AsyncContextInfo {
+		AsyncInitiator: vmcommon.AsyncInitiator{
+			CallerAddr: input.CallerAddr,
+		},
+		AsyncContextMap: make(map[string]*vmcommon.AsyncContext),
+	}
 }
 
 func (context *runtimeContext) PushState() {
 	newState := &runtimeContext{
-		vmInput:        context.vmInput,
-		scAddress:      context.scAddress,
-		callFunction:   context.callFunction,
-		readOnly:       context.readOnly,
-		asyncCallInfo:  context.asyncCallInfo,
-		asyncContexMap: context.asyncContexMap,
+		vmInput:          context.vmInput,
+		scAddress:        context.scAddress,
+		callFunction:     context.callFunction,
+		readOnly:         context.readOnly,
+		asyncCallInfo:    context.asyncCallInfo,
+		asyncContextInfo: context.asyncContextInfo,
 	}
 
 	context.stateStack = append(context.stateStack, newState)
@@ -116,7 +123,7 @@ func (context *runtimeContext) PopSetActiveState() {
 	context.callFunction = prevState.callFunction
 	context.readOnly = prevState.readOnly
 	context.asyncCallInfo = prevState.asyncCallInfo
-	context.asyncContexMap = prevState.asyncContexMap
+	context.asyncContextInfo = prevState.asyncContextInfo
 }
 
 func (context *runtimeContext) PopDiscard() {
@@ -332,25 +339,30 @@ func (context *runtimeContext) SetAsyncCallInfo(asyncCallInfo *arwen.AsyncCallIn
 }
 
 func (context *runtimeContext) AddAsyncContextCall(contextIdentifier []byte, asyncCall *vmcommon.AsyncCall) error {
-	asyncContext := context.asyncContexMap[string(contextIdentifier)]
+	err := context.validateNewAsyncCall(asyncCall)
+	if err != nil {
+		return err
+	}
+
+	asyncContext := context.asyncContextInfo.AsyncContextMap[string(contextIdentifier)]
 	if asyncContext == nil {
-		// Maybe callback should be -1 since it's not mandatory
-		context.asyncContexMap[string(contextIdentifier)] = &vmcommon.AsyncContext{
+		context.asyncContextInfo.AsyncContextMap[string(contextIdentifier)] = &vmcommon.AsyncContext{
 			AsyncCalls: make([]*vmcommon.AsyncCall, 0),
 		}
 	}
 
-	context.asyncContexMap[string(contextIdentifier)].AsyncCalls = append(context.asyncContexMap[string(contextIdentifier)].AsyncCalls, asyncCall)
+	context.asyncContextInfo.AsyncContextMap[string(contextIdentifier)].AsyncCalls =
+		append(context.asyncContextInfo.AsyncContextMap[string(contextIdentifier)].AsyncCalls, asyncCall)
 
 	return nil
 }
 
-func (context *runtimeContext) GetAsyncContextMap() vmcommon.AsyncContextMap {
-	return context.asyncContexMap
+func (context *runtimeContext) GetAsyncContextInfo() *vmcommon.AsyncContextInfo {
+	return context.asyncContextInfo
 }
 
 func (context *runtimeContext) GetAsyncContext(contextIdentifier []byte) (*vmcommon.AsyncContext, error) {
-	asyncContext := context.asyncContexMap[string(contextIdentifier)]
+	asyncContext := context.asyncContextInfo.AsyncContextMap[string(contextIdentifier)]
 	if asyncContext == nil {
 		return nil, arwen.ErrAsyncContextDoesNotExist
 	}
@@ -425,5 +437,24 @@ func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 	}
 
 	copy(memoryView[offset:requestedEnd], data)
+	return nil
+}
+
+func (context *runtimeContext) validateNewAsyncCall(asyncCall *vmcommon.AsyncCall) error {
+	if asyncCall.GasPercentage < 0 || asyncCall.GasPercentage > 100 {
+		return arwen.ErrInvalidGasPercentage
+	}
+
+	currentPercentage := int32(0)
+	for _, asyncMAp := range context.asyncContextInfo.AsyncContextMap {
+		for _, ac := range asyncMAp.AsyncCalls {
+			currentPercentage += ac.GasPercentage
+		}
+	}
+
+	if asyncCall.GasPercentage + currentPercentage > 100 {
+		return arwen.ErrInvalidGasPercentage
+	}
+
 	return nil
 }

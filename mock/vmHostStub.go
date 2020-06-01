@@ -22,8 +22,8 @@ type VmHostStub struct {
 	MeteringCalled                    func() arwen.MeteringContext
 	StorageCalled                     func() arwen.StorageContext
 	CreateNewContractCalled           func(input *vmcommon.ContractCreateInput) ([]byte, error)
-	ExecuteOnSameContextCalled        func(input *vmcommon.ContractCallInput) (vmcommon.AsyncContextMap, error)
-	ExecuteOnDestContextCalled        func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, vmcommon.AsyncContextMap, error)
+	ExecuteOnSameContextCalled        func(input *vmcommon.ContractCallInput) (*vmcommon.AsyncContextInfo, error)
+	ExecuteOnDestContextCalled        func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *vmcommon.AsyncContextInfo, error)
 	EthereumCallDataCalled            func() []byte
 	GetAPIMethodsCalled               func() *wasmer.Imports
 	GetProtocolBuiltinFunctionsCalled func() vmcommon.FunctionNames
@@ -109,14 +109,14 @@ func (vhs *VmHostStub) CreateNewContract(input *vmcommon.ContractCreateInput) ([
 	return nil, nil
 }
 
-func (vhs *VmHostStub) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (vmcommon.AsyncContextMap, error) {
+func (vhs *VmHostStub) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*vmcommon.AsyncContextInfo, error) {
 	if vhs.ExecuteOnSameContextCalled != nil {
 		return vhs.ExecuteOnSameContextCalled(input)
 	}
 	return nil, nil
 }
 
-func (vhs *VmHostStub) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, vmcommon.AsyncContextMap, error) {
+func (vhs *VmHostStub) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *vmcommon.AsyncContextInfo, error) {
 	if vhs.ExecuteOnDestContextCalled != nil {
 		return vhs.ExecuteOnDestContextCalled(input)
 	}
