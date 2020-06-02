@@ -35,7 +35,7 @@ func TestSCMem(t *testing.T) {
 	testString := "this is some random string of bytes"
 	expectedData := [][]byte{
 		[]byte(testString),
-		[]byte{35},
+		{35},
 	}
 	for _, c := range testString {
 		expectedData = append(expectedData, []byte{byte(c)})
@@ -136,7 +136,7 @@ func TestExecution_DeployWASM_Successful(t *testing.T) {
 	input.CallValue = big.NewInt(88)
 	input.GasProvided = 1000
 	input.ContractCode = GetTestSCCode("init-correct", "../../")
-	input.Arguments = [][]byte{[]byte{0}}
+	input.Arguments = [][]byte{{0}}
 
 	vmOutput, err := host.RunSmartContractCreate(input)
 	require.Nil(t, err)
@@ -151,6 +151,24 @@ func TestExecution_DeployWASM_Successful(t *testing.T) {
 	require.Equal(t, big.NewInt(88), vmOutput.OutputAccounts["new smartcontract"].BalanceDelta)
 }
 
+func TestExecution_DeployWASM_Popcnt(t *testing.T) {
+	newAddress := []byte("new smartcontract")
+	host := DefaultTestArwenForDeployment(t, 24, newAddress)
+	input := DefaultTestContractCreateInput()
+	input.CallValue = big.NewInt(88)
+	input.GasProvided = 1000
+	input.ContractCode = GetTestSCCode("init-simple-popcnt", "../../")
+	input.Arguments = [][]byte{}
+
+	vmOutput, err := host.RunSmartContractCreate(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+	fmt.Println(vmOutput.ReturnData)
+	require.Len(t, vmOutput.ReturnData, 1)
+	require.Equal(t, []byte{3}, vmOutput.ReturnData[0])
+}
+
 func TestExecution_DeployWASM_Init_Errors(t *testing.T) {
 	// TODO this test needs a Wasmer fix to pass completely
 	t.Skip()
@@ -163,14 +181,14 @@ func TestExecution_DeployWASM_Init_Errors(t *testing.T) {
 	input.ContractCode = GetTestSCCode("init-correct", "../../")
 
 	// init() calls signalError()
-	input.Arguments = [][]byte{[]byte{1}}
+	input.Arguments = [][]byte{{1}}
 	vmOutput, err := host.RunSmartContractCreate(input)
 	require.Nil(t, err)
 	require.NotNil(t, vmOutput)
 	require.Equal(t, vmcommon.UserError, vmOutput.ReturnCode)
 
 	// init() starts an infinite loop
-	input.Arguments = [][]byte{[]byte{2}}
+	input.Arguments = [][]byte{{2}}
 	vmOutput, err = host.RunSmartContractCreate(input)
 	require.Nil(t, err)
 	require.NotNil(t, vmOutput)
@@ -347,18 +365,18 @@ func TestExecution_Call_Breakpoints(t *testing.T) {
 	input.Function = "testFunc"
 
 	// Send the number 15 to the SC, causing it to finish with the number 100
-	input.Arguments = [][]byte{[]byte{15}}
+	input.Arguments = [][]byte{{15}}
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
 	require.NotNil(t, vmOutput)
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
-	require.Equal(t, [][]byte{[]byte{100}}, vmOutput.ReturnData)
+	require.Equal(t, [][]byte{{100}}, vmOutput.ReturnData)
 
 	// Send the number 1 to the SC, causing it to exit with ReturnMessage "exit
 	// here" if the breakpoint mechanism works properly, or with the
 	// ReturnMessage "exit later" if the breakpoint mechanism fails to stop the
 	// execution.
-	input.Arguments = [][]byte{[]byte{1}}
+	input.Arguments = [][]byte{{1}}
 	vmOutput, err = host.RunSmartContractCall(input)
 	require.Nil(t, err)
 	require.NotNil(t, vmOutput)
@@ -553,7 +571,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct(t *testing.T) {
 
 	recursiveCalls := byte(5)
 	input.Arguments = [][]byte{
-		[]byte{recursiveCalls},
+		{recursiveCalls},
 	}
 
 	vmOutput, err := host.RunSmartContractCall(input)
@@ -588,7 +606,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct_ErrMaxInstances(t *test
 
 	recursiveCalls := byte(11)
 	input.Arguments = [][]byte{
-		[]byte{recursiveCalls},
+		{recursiveCalls},
 	}
 
 	vmOutput, err := host.RunSmartContractCall(input)
@@ -640,7 +658,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_Methods(t *testing.T) {
 
 	recursiveCalls := byte(5)
 	input.Arguments = [][]byte{
-		[]byte{recursiveCalls},
+		{recursiveCalls},
 	}
 
 	vmOutput, err := host.RunSmartContractCall(input)
@@ -688,7 +706,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs(t *testing.T) {
 
 	recursiveCalls := byte(5)
 	input.Arguments = [][]byte{
-		[]byte{recursiveCalls},
+		{recursiveCalls},
 	}
 
 	vmOutput, err := host.RunSmartContractCall(input)
@@ -729,7 +747,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 
 	recursiveCalls := byte(5)
 	input.Arguments = [][]byte{
-		[]byte{recursiveCalls},
+		{recursiveCalls},
 	}
 
 	vmOutput, err := host.RunSmartContractCall(input)
@@ -991,7 +1009,7 @@ func TestExecution_ExecuteOnDestContext_Recursive_Direct(t *testing.T) {
 
 	recursiveCalls := byte(6)
 	input.Arguments = [][]byte{
-		[]byte{recursiveCalls},
+		{recursiveCalls},
 	}
 
 	vmOutput, err := host.RunSmartContractCall(input)
@@ -1026,7 +1044,7 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_Methods(t *testing.T) {
 
 	recursiveCalls := byte(7)
 	input.Arguments = [][]byte{
-		[]byte{recursiveCalls},
+		{recursiveCalls},
 	}
 
 	vmOutput, err := host.RunSmartContractCall(input)
@@ -1063,7 +1081,7 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs(t *testing.T) {
 
 	recursiveCalls := byte(6)
 	input.Arguments = [][]byte{
-		[]byte{recursiveCalls},
+		{recursiveCalls},
 	}
 
 	vmOutput, err := host.RunSmartContractCall(input)
@@ -1104,7 +1122,7 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 
 	recursiveCalls := byte(5)
 	input.Arguments = [][]byte{
-		[]byte{recursiveCalls},
+		{recursiveCalls},
 	}
 
 	vmOutput, err := host.RunSmartContractCall(input)
@@ -1156,7 +1174,7 @@ func TestExecution_AsyncCall(t *testing.T) {
 	input.RecipientAddr = parentAddress
 	input.Function = "parentPerformAsyncCall"
 	input.GasProvided = 1_000_000
-	input.Arguments = [][]byte{[]byte{0}}
+	input.Arguments = [][]byte{{0}}
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
@@ -1194,7 +1212,7 @@ func TestExecution_AsyncCall_ChildFails(t *testing.T) {
 	input.RecipientAddr = parentAddress
 	input.Function = "parentPerformAsyncCall"
 	input.GasProvided = 1_000_000
-	input.Arguments = [][]byte{[]byte{1}}
+	input.Arguments = [][]byte{{1}}
 	input.CurrentTxHash = []byte("txhash")
 
 	vmOutput, err := host.RunSmartContractCall(input)
@@ -1232,7 +1250,7 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 	input.RecipientAddr = parentAddress
 	input.Function = "parentPerformAsyncCall"
 	input.GasProvided = 1_000_000
-	input.Arguments = [][]byte{[]byte{3}}
+	input.Arguments = [][]byte{{3}}
 	input.CurrentTxHash = []byte("txhash")
 
 	vmOutput, err := host.RunSmartContractCall(input)
