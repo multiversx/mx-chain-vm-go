@@ -1,4 +1,4 @@
-package arwenjsontest
+package arwenmandos
 
 import (
 	"bytes"
@@ -6,17 +6,17 @@ import (
 	"fmt"
 
 	worldhook "github.com/ElrondNetwork/elrond-vm-util/mock-hook-blockchain"
-	ij "github.com/ElrondNetwork/elrond-vm-util/test-util/vmtestjson"
+	mj "github.com/ElrondNetwork/elrond-vm-util/test-util/mandosjson"
 )
 
 func checkAccounts(
-	checkAccounts *ij.CheckAccounts,
+	checkAccounts *mj.CheckAccounts,
 	world *worldhook.BlockchainHookMock,
 ) error {
 
 	if !checkAccounts.OtherAccountsAllowed {
 		for worldAcctAddr := range world.AcctMap {
-			postAcctMatch := ij.FindCheckAccount(checkAccounts.Accounts, []byte(worldAcctAddr))
+			postAcctMatch := mj.FindCheckAccount(checkAccounts.Accounts, []byte(worldAcctAddr))
 			if postAcctMatch == nil {
 				return fmt.Errorf("unexpected account address: %s", hex.EncodeToString([]byte(worldAcctAddr)))
 			}
@@ -63,7 +63,7 @@ func checkAccounts(
 	return nil
 }
 
-func checkAccountStorage(expectedAcct *ij.CheckAccount, matchingAcct *worldhook.Account) error {
+func checkAccountStorage(expectedAcct *mj.CheckAccount, matchingAcct *worldhook.Account) error {
 	if expectedAcct.IgnoreStorage {
 		return nil
 	}

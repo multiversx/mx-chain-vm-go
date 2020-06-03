@@ -6,17 +6,17 @@ import (
 	"math/big"
 	"strings"
 
-	ajt "github.com/ElrondNetwork/arwen-wasm-vm/arwenjsontest"
+	am "github.com/ElrondNetwork/arwen-wasm-vm/arwenmandos"
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	worldhook "github.com/ElrondNetwork/elrond-vm-util/mock-hook-blockchain"
-	ij "github.com/ElrondNetwork/elrond-vm-util/test-util/vmtestjson"
+	mj "github.com/ElrondNetwork/elrond-vm-util/test-util/mandosjson"
 )
 
 type fuzzDelegationExecutor struct {
-	arwenTestExecutor *ajt.ArwenTestExecutor
+	arwenTestExecutor *am.ArwenTestExecutor
 	world             *worldhook.BlockchainHookMock
 	vm                vmi.VMExecutionHandler
-	mandosParser      ij.Parser
+	mandosParser      mj.Parser
 
 	initialDelegatorBalance   *big.Int
 	nodeShare                 int
@@ -31,12 +31,12 @@ type fuzzDelegationExecutor struct {
 	active                    bool
 }
 
-func newFuzzDelegationExecutor(fileResolver ij.FileResolver) (*fuzzDelegationExecutor, error) {
-	arwenTestExecutor, err := ajt.NewArwenTestExecutor()
+func newFuzzDelegationExecutor(fileResolver mj.FileResolver) (*fuzzDelegationExecutor, error) {
+	arwenTestExecutor, err := am.NewArwenTestExecutor()
 	if err != nil {
 		return nil, err
 	}
-	parser := ij.Parser{
+	parser := mj.Parser{
 		FileResolver: fileResolver,
 	}
 	return &fuzzDelegationExecutor{
@@ -73,7 +73,7 @@ func (pfe *fuzzDelegationExecutor) executeTxStep(stepSnippet string) (*vmi.VMOut
 	if err != nil {
 		return nil, err
 	}
-	txStep, isTx := step.(*ij.TxStep)
+	txStep, isTx := step.(*mj.TxStep)
 	if !isTx {
 		return nil, errors.New("tx step expected")
 	}

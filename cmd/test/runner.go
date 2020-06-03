@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	ajt "github.com/ElrondNetwork/arwen-wasm-vm/arwenjsontest"
-	controller "github.com/ElrondNetwork/elrond-vm-util/test-util/testcontroller"
-	ij "github.com/ElrondNetwork/elrond-vm-util/test-util/vmtestjson"
+	am "github.com/ElrondNetwork/arwen-wasm-vm/arwenmandos"
+	mc "github.com/ElrondNetwork/elrond-vm-util/test-util/mandoscontroller"
+	mj "github.com/ElrondNetwork/elrond-vm-util/test-util/mandosjson"
 )
 
 func resolveArgument(arg string) (string, bool, error) {
@@ -40,7 +40,7 @@ func main() {
 	}
 
 	// init
-	executor, err := ajt.NewArwenTestExecutor()
+	executor, err := am.NewArwenTestExecutor()
 	if err != nil {
 		panic("Could not instantiate Arwen VM")
 	}
@@ -48,9 +48,9 @@ func main() {
 	// execute
 	switch {
 	case isDir:
-		runner := controller.NewScenarioRunner(
+		runner := mc.NewScenarioRunner(
 			executor,
-			ij.NewDefaultFileResolver(),
+			mj.NewDefaultFileResolver(),
 		)
 		err = runner.RunAllJSONScenariosInDirectory(
 			jsonFilePath,
@@ -58,15 +58,15 @@ func main() {
 			".scen.json",
 			[]string{})
 	case strings.HasSuffix(jsonFilePath, ".scen.json"):
-		runner := controller.NewScenarioRunner(
+		runner := mc.NewScenarioRunner(
 			executor,
-			ij.NewDefaultFileResolver(),
+			mj.NewDefaultFileResolver(),
 		)
 		err = runner.RunSingleJSONScenario(jsonFilePath)
 	default:
-		runner := controller.NewTestRunner(
+		runner := mc.NewTestRunner(
 			executor,
-			ij.NewDefaultFileResolver(),
+			mj.NewDefaultFileResolver(),
 		)
 		err = runner.RunSingleJSONTest(jsonFilePath)
 	}

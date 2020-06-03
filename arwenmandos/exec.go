@@ -1,4 +1,4 @@
-package arwenjsontest
+package arwenmandos
 
 import (
 	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -8,8 +8,8 @@ import (
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	worldhook "github.com/ElrondNetwork/elrond-vm-util/mock-hook-blockchain"
 	cryptohook "github.com/ElrondNetwork/elrond-vm-util/mock-hook-crypto"
-	controller "github.com/ElrondNetwork/elrond-vm-util/test-util/testcontroller"
-	ij "github.com/ElrondNetwork/elrond-vm-util/test-util/vmtestjson"
+	mc "github.com/ElrondNetwork/elrond-vm-util/test-util/mandoscontroller"
+	mj "github.com/ElrondNetwork/elrond-vm-util/test-util/mandosjson"
 )
 
 // TestVMType is the VM type argument we use in tests.
@@ -17,14 +17,14 @@ var TestVMType = []byte{0, 0}
 
 // ArwenTestExecutor parses, interprets and executes both .test.json tests and .scen.json scenarios with Arwen.
 type ArwenTestExecutor struct {
-	fileResolver ij.FileResolver
+	fileResolver mj.FileResolver
 	World        *worldhook.BlockchainHookMock
 	vm           vmi.VMExecutionHandler
 	checkGas     bool
 }
 
-var _ controller.TestExecutor = (*ArwenTestExecutor)(nil)
-var _ controller.ScenarioExecutor = (*ArwenTestExecutor)(nil)
+var _ mc.TestExecutor = (*ArwenTestExecutor)(nil)
+var _ mc.ScenarioExecutor = (*ArwenTestExecutor)(nil)
 
 // NewArwenTestExecutor prepares a new ArwenTestExecutor instance.
 func NewArwenTestExecutor() (*ArwenTestExecutor, error) {

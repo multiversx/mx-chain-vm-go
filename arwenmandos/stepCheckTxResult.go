@@ -1,4 +1,4 @@
-package arwenjsontest
+package arwenmandos
 
 import (
 	"bytes"
@@ -6,12 +6,12 @@ import (
 	"math/big"
 
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
-	ij "github.com/ElrondNetwork/elrond-vm-util/test-util/vmtestjson"
+	mj "github.com/ElrondNetwork/elrond-vm-util/test-util/mandosjson"
 )
 
 func checkTxResults(
 	txIndex string,
-	blResult *ij.TransactionResult,
+	blResult *mj.TransactionResult,
 	checkGas bool,
 	output *vmi.VMOutput,
 ) error {
@@ -34,15 +34,15 @@ func checkTxResults(
 	if len(output.ReturnData) != len(blResult.Out) {
 		return fmt.Errorf("result length mismatch. Tx %s. Want: %s. Have: %s",
 			txIndex,
-			ij.JSONCheckBytesString(blResult.Out),
-			ij.ResultAsString(output.ReturnData))
+			mj.JSONCheckBytesString(blResult.Out),
+			mj.ResultAsString(output.ReturnData))
 	}
 	for i, expected := range blResult.Out {
 		if !expected.Check(output.ReturnData[i]) {
 			return fmt.Errorf("result mismatch. Tx %s. Want: %s. Have: %s",
 				txIndex,
-				ij.JSONCheckBytesString(blResult.Out),
-				ij.ResultAsString(output.ReturnData))
+				mj.JSONCheckBytesString(blResult.Out),
+				mj.ResultAsString(output.ReturnData))
 		}
 	}
 
@@ -78,34 +78,34 @@ func checkTxResults(
 		if !bytes.Equal(outLog.Address, testLog.Address.Value) {
 			return fmt.Errorf("bad log address. Tx %s. Want:\n%s\nGot:\n%s",
 				txIndex,
-				ij.LogToString(testLog),
-				ij.LogToString(convertLogToTestFormat(outLog)))
+				mj.LogToString(testLog),
+				mj.LogToString(convertLogToTestFormat(outLog)))
 		}
 		if !bytes.Equal(outLog.Identifier, testLog.Identifier.Value) {
 			return fmt.Errorf("bad log identifier. Tx %s. Want:\n%s\nGot:\n%s",
 				txIndex,
-				ij.LogToString(testLog),
-				ij.LogToString(convertLogToTestFormat(outLog)))
+				mj.LogToString(testLog),
+				mj.LogToString(convertLogToTestFormat(outLog)))
 		}
 		if len(outLog.Topics) != len(testLog.Topics) {
 			return fmt.Errorf("wrong number of log topics. Tx %s. Want:\n%s\nGot:\n%s",
 				txIndex,
-				ij.LogToString(testLog),
-				ij.LogToString(convertLogToTestFormat(outLog)))
+				mj.LogToString(testLog),
+				mj.LogToString(convertLogToTestFormat(outLog)))
 		}
 		for ti := range outLog.Topics {
 			if !bytes.Equal(outLog.Topics[ti], testLog.Topics[ti].Value) {
 				return fmt.Errorf("bad log topic. Tx %s. Want:\n%s\nGot:\n%s",
 					txIndex,
-					ij.LogToString(testLog),
-					ij.LogToString(convertLogToTestFormat(outLog)))
+					mj.LogToString(testLog),
+					mj.LogToString(convertLogToTestFormat(outLog)))
 			}
 		}
 		if big.NewInt(0).SetBytes(outLog.Data).Cmp(big.NewInt(0).SetBytes(testLog.Data.Value)) != 0 {
 			return fmt.Errorf("bad log data. Tx %s. Want:\n%s\nGot:\n%s",
 				txIndex,
-				ij.LogToString(testLog),
-				ij.LogToString(convertLogToTestFormat(outLog)))
+				mj.LogToString(testLog),
+				mj.LogToString(convertLogToTestFormat(outLog)))
 		}
 	}
 

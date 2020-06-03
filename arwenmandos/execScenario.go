@@ -1,9 +1,9 @@
-package arwenjsontest
+package arwenmandos
 
 import (
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
-	controller "github.com/ElrondNetwork/elrond-vm-util/test-util/testcontroller"
-	ij "github.com/ElrondNetwork/elrond-vm-util/test-util/vmtestjson"
+	mc "github.com/ElrondNetwork/elrond-vm-util/test-util/mandoscontroller"
+	mj "github.com/ElrondNetwork/elrond-vm-util/test-util/mandosjson"
 )
 
 // Reset clears state/world.
@@ -13,7 +13,7 @@ func (ae *ArwenTestExecutor) Reset() {
 }
 
 // ExecuteScenario executes an individual test.
-func (ae *ArwenTestExecutor) ExecuteScenario(scenario *ij.Scenario, fileResolver ij.FileResolver) error {
+func (ae *ArwenTestExecutor) ExecuteScenario(scenario *mj.Scenario, fileResolver mj.FileResolver) error {
 	ae.fileResolver = fileResolver
 	ae.checkGas = scenario.CheckGas
 
@@ -31,10 +31,10 @@ func (ae *ArwenTestExecutor) ExecuteScenario(scenario *ij.Scenario, fileResolver
 }
 
 // ExecuteStep executes a single scenario step and updates mock state.
-func (ae *ArwenTestExecutor) ExecuteStep(generalStep ij.Step) error {
+func (ae *ArwenTestExecutor) ExecuteStep(generalStep mj.Step) error {
 	switch step := generalStep.(type) {
-	case *ij.ExternalStepsStep:
-		externalStepsRunner := controller.NewScenarioRunner(
+	case *mj.ExternalStepsStep:
+		externalStepsRunner := mc.NewScenarioRunner(
 			ae,
 			ae.fileResolver,
 		)
@@ -43,7 +43,7 @@ func (ae *ArwenTestExecutor) ExecuteStep(generalStep ij.Step) error {
 		if err != nil {
 			return err
 		}
-	case *ij.SetStateStep:
+	case *mj.SetStateStep:
 		// append accounts
 		for _, acct := range step.Accounts {
 			ae.World.AcctMap.PutAccount(convertAccount(acct))
@@ -52,17 +52,17 @@ func (ae *ArwenTestExecutor) ExecuteStep(generalStep ij.Step) error {
 		// replace block info
 		ae.World.PreviousBlockInfo = convertBlockInfo(step.PreviousBlockInfo)
 		ae.World.CurrentBlockInfo = convertBlockInfo(step.CurrentBlockInfo)
-		ae.World.Blockhashes = ij.JSONBytesValues(step.BlockHashes)
+		ae.World.Blockhashes = mj.JSONBytesValues(step.BlockHashes)
 
 		// append NewAddressMocks
 		addressMocksToAdd := convertNewAddressMocks(step.NewAddressMocks)
 		ae.World.NewAddressMocks = append(ae.World.NewAddressMocks, addressMocksToAdd...)
-	case *ij.CheckStateStep:
+	case *mj.CheckStateStep:
 		err := checkAccounts(step.CheckAccounts, ae.World)
 		if err != nil {
 			return err
 		}
-	case *ij.TxStep:
+	case *mj.TxStep:
 		// execute tx
 		_, err := ae.ExecuteTxStep(step)
 		if err != nil {
@@ -74,7 +74,7 @@ func (ae *ArwenTestExecutor) ExecuteStep(generalStep ij.Step) error {
 }
 
 // ExecuteTxStep executes a tx step and updates mock state.
-func (ae *ArwenTestExecutor) ExecuteTxStep(txStep *ij.TxStep) (*vmi.VMOutput, error) {
+func (ae *ArwenTestExecutor) ExecuteTxStep(txStep *mj.TxStep) (*vmi.VMOutput, error) {
 	output, err := ae.executeTx(txStep.TxIdent, txStep.Tx)
 	if err != nil {
 		return nil, err

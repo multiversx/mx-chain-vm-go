@@ -1,4 +1,4 @@
-package arwenjsontest
+package arwenmandos
 
 import (
 	"encoding/hex"
@@ -8,10 +8,10 @@ import (
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
-	ij "github.com/ElrondNetwork/elrond-vm-util/test-util/vmtestjson"
+	mj "github.com/ElrondNetwork/elrond-vm-util/test-util/mandosjson"
 )
 
-func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *ij.Transaction) (*vmi.VMOutput, error) {
+func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmi.VMOutput, error) {
 	if tx.Type.HasSender() {
 		beforeErr := ae.World.UpdateWorldStateBefore(
 			tx.From.Value,
@@ -30,25 +30,25 @@ func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *ij.Transaction) (*vmi
 		output = outOfFundsResult()
 	} else {
 		switch tx.Type {
-		case ij.ScDeploy:
+		case mj.ScDeploy:
 			var err error
 			output, err = ae.scCreate(tx)
 			if err != nil {
 				return nil, err
 			}
-		case ij.ScCall:
+		case mj.ScCall:
 			var err error
 			output, err = ae.scCall(tx)
 			if err != nil {
 				return nil, err
 			}
-		case ij.Transfer:
+		case mj.Transfer:
 			var err error
 			output, err = ae.simpleTransferOutput(tx)
 			if err != nil {
 				return nil, err
 			}
-		case ij.ValidatorReward:
+		case mj.ValidatorReward:
 			var err error
 			output, err = ae.validatorRewardOutput(tx)
 			if err != nil {
@@ -70,7 +70,7 @@ func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *ij.Transaction) (*vmi
 	return output, nil
 }
 
-func (ae *ArwenTestExecutor) senderHasEnoughBalance(tx *ij.Transaction) bool {
+func (ae *ArwenTestExecutor) senderHasEnoughBalance(tx *mj.Transaction) bool {
 	if !tx.Type.HasSender() {
 		return true
 	}
@@ -78,7 +78,7 @@ func (ae *ArwenTestExecutor) senderHasEnoughBalance(tx *ij.Transaction) bool {
 	return sender.Balance.Cmp(tx.Value.Value) >= 0
 }
 
-func (ae *ArwenTestExecutor) simpleTransferOutput(tx *ij.Transaction) (*vmi.VMOutput, error) {
+func (ae *ArwenTestExecutor) simpleTransferOutput(tx *mj.Transaction) (*vmi.VMOutput, error) {
 	outputAccounts := make(map[string]*vmcommon.OutputAccount)
 	outputAccounts[string(tx.To.Value)] = &vmcommon.OutputAccount{
 		Address:      tx.To.Value,
@@ -98,7 +98,7 @@ func (ae *ArwenTestExecutor) simpleTransferOutput(tx *ij.Transaction) (*vmi.VMOu
 	}, nil
 }
 
-func (ae *ArwenTestExecutor) validatorRewardOutput(tx *ij.Transaction) (*vmi.VMOutput, error) {
+func (ae *ArwenTestExecutor) validatorRewardOutput(tx *mj.Transaction) (*vmi.VMOutput, error) {
 	reward := tx.Value.Value
 	recipient := ae.World.AcctMap.GetAccount(tx.To.Value)
 	if recipient == nil {
@@ -149,12 +149,12 @@ func outOfFundsResult() *vmi.VMOutput {
 	}
 }
 
-func (ae *ArwenTestExecutor) scCreate(tx *ij.Transaction) (*vmi.VMOutput, error) {
+func (ae *ArwenTestExecutor) scCreate(tx *mj.Transaction) (*vmi.VMOutput, error) {
 	input := &vmi.ContractCreateInput{
 		ContractCode: tx.Code.Value,
 		VMInput: vmi.VMInput{
 			CallerAddr:  tx.From.Value,
-			Arguments:   ij.JSONBytesValues(tx.Arguments),
+			Arguments:   mj.JSONBytesValues(tx.Arguments),
 			CallValue:   tx.Value.Value,
 			GasPrice:    tx.GasPrice.Value,
 			GasProvided: tx.GasLimit.Value,
@@ -164,7 +164,7 @@ func (ae *ArwenTestExecutor) scCreate(tx *ij.Transaction) (*vmi.VMOutput, error)
 	return ae.vm.RunSmartContractCreate(input)
 }
 
-func (ae *ArwenTestExecutor) scCall(tx *ij.Transaction) (*vmi.VMOutput, error) {
+func (ae *ArwenTestExecutor) scCall(tx *mj.Transaction) (*vmi.VMOutput, error) {
 	recipient := ae.World.AcctMap.GetAccount(tx.To.Value)
 	if recipient == nil {
 		return nil, fmt.Errorf("Tx recipient (address: %s) does not exist", hex.EncodeToString(tx.To.Value))
@@ -177,7 +177,7 @@ func (ae *ArwenTestExecutor) scCall(tx *ij.Transaction) (*vmi.VMOutput, error) {
 		Function:      tx.Function,
 		VMInput: vmi.VMInput{
 			CallerAddr:  tx.From.Value,
-			Arguments:   ij.JSONBytesValues(tx.Arguments),
+			Arguments:   mj.JSONBytesValues(tx.Arguments),
 			CallValue:   tx.Value.Value,
 			GasPrice:    tx.GasPrice.Value,
 			GasProvided: tx.GasLimit.Value,
@@ -188,7 +188,7 @@ func (ae *ArwenTestExecutor) scCall(tx *ij.Transaction) (*vmi.VMOutput, error) {
 }
 
 func (ae *ArwenTestExecutor) updateStateAfterTx(
-	tx *ij.Transaction,
+	tx *mj.Transaction,
 	output *vmi.VMOutput) error {
 
 	// subtract call value from sender (this is not reflected in the delta)

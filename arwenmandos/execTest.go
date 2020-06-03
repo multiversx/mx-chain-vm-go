@@ -1,16 +1,16 @@
-package arwenjsontest
+package arwenmandos
 
 import (
 	"fmt"
 
-	ij "github.com/ElrondNetwork/elrond-vm-util/test-util/vmtestjson"
+	mj "github.com/ElrondNetwork/elrond-vm-util/test-util/mandosjson"
 )
 
 // ExecuteTest executes an individual test.
-func (ae *ArwenTestExecutor) ExecuteTest(test *ij.Test) error {
+func (ae *ArwenTestExecutor) ExecuteTest(test *mj.Test) error {
 	// reset world
 	ae.World.Clear()
-	ae.World.Blockhashes = ij.JSONBytesValues(test.BlockHashes)
+	ae.World.Blockhashes = mj.JSONBytesValues(test.BlockHashes)
 
 	for _, acct := range test.Pre {
 		ae.World.AcctMap.PutAccount(convertAccount(acct))

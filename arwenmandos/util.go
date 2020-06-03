@@ -1,4 +1,4 @@
-package arwenjsontest
+package arwenmandos
 
 import (
 	"encoding/hex"
@@ -8,10 +8,10 @@ import (
 	worldhook "github.com/ElrondNetwork/elrond-vm-util/mock-hook-blockchain"
 
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
-	ij "github.com/ElrondNetwork/elrond-vm-util/test-util/vmtestjson"
+	mj "github.com/ElrondNetwork/elrond-vm-util/test-util/mandosjson"
 )
 
-func convertAccount(testAcct *ij.Account) *worldhook.Account {
+func convertAccount(testAcct *mj.Account) *worldhook.Account {
 	storage := make(map[string][]byte)
 	for _, stkvp := range testAcct.Storage {
 		key := string(stkvp.Key.Value)
@@ -33,7 +33,7 @@ func convertAccount(testAcct *ij.Account) *worldhook.Account {
 	}
 }
 
-func convertNewAddressMocks(testNAMs []*ij.NewAddressMock) []*worldhook.NewAddressMock {
+func convertNewAddressMocks(testNAMs []*mj.NewAddressMock) []*worldhook.NewAddressMock {
 	var result []*worldhook.NewAddressMock
 	for _, testNAM := range testNAMs {
 		result = append(result, &worldhook.NewAddressMock{
@@ -45,7 +45,7 @@ func convertNewAddressMocks(testNAMs []*ij.NewAddressMock) []*worldhook.NewAddre
 	return result
 }
 
-func convertBlockInfo(testBlockInfo *ij.BlockInfo) *worldhook.BlockInfo {
+func convertBlockInfo(testBlockInfo *mj.BlockInfo) *worldhook.BlockInfo {
 	if testBlockInfo == nil {
 		return nil
 	}
@@ -59,15 +59,15 @@ func convertBlockInfo(testBlockInfo *ij.BlockInfo) *worldhook.BlockInfo {
 	return result
 }
 
-func convertLogToTestFormat(outputLog *vmi.LogEntry) *ij.LogEntry {
-	testLog := ij.LogEntry{
-		Address:    ij.JSONBytes{Value: outputLog.Address},
-		Identifier: ij.JSONBytes{Value: outputLog.Identifier},
-		Data:       ij.JSONBytes{Value: outputLog.Data},
-		Topics:     make([]ij.JSONBytes, len(outputLog.Topics)),
+func convertLogToTestFormat(outputLog *vmi.LogEntry) *mj.LogEntry {
+	testLog := mj.LogEntry{
+		Address:    mj.JSONBytes{Value: outputLog.Address},
+		Identifier: mj.JSONBytes{Value: outputLog.Identifier},
+		Data:       mj.JSONBytes{Value: outputLog.Data},
+		Topics:     make([]mj.JSONBytes, len(outputLog.Topics)),
 	}
 	for i, topic := range outputLog.Topics {
-		testLog.Topics[i] = ij.JSONBytes{Value: topic}
+		testLog.Topics[i] = mj.JSONBytes{Value: topic}
 	}
 
 	return &testLog

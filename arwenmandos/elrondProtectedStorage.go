@@ -1,4 +1,4 @@
-package arwenjsontest
+package arwenmandos
 
 // ElrondProtectedKeyPrefix prefixes all Elrond reserved storage. Only the protocol can write to keys starting with this.
 const ElrondProtectedKeyPrefix = "ELROND"

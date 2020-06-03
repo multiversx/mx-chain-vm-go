@@ -14,7 +14,7 @@ import (
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	worldhook "github.com/ElrondNetwork/elrond-vm-util/mock-hook-blockchain"
 	cryptohook "github.com/ElrondNetwork/elrond-vm-util/mock-hook-crypto"
-	ij "github.com/ElrondNetwork/elrond-vm-util/test-util/vmtestjson"
+	mj "github.com/ElrondNetwork/elrond-vm-util/test-util/mandosjson"
 	"github.com/stretchr/testify/require"
 )
 
@@ -122,7 +122,7 @@ func (pfe *pureFunctionExecutor) checkTxResults(
 	// check result
 	if len(output.ReturnData) != len(testCase.expectedResults) {
 		return fmt.Errorf("result length mismatch. Want: %s. Have: %s",
-			ij.ResultAsString(testCase.expectedResults), ij.ResultAsString(output.ReturnData))
+			mj.ResultAsString(testCase.expectedResults), mj.ResultAsString(output.ReturnData))
 	}
 	for i, expected := range testCase.expectedResults {
 		wantNum := resultInterpreter(expected)
