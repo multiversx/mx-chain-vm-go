@@ -13,7 +13,9 @@
                 "''auction_contract______________s1": {
                     "nonce": "0",
                     "balance": "0",
-                    "storage": {},
+                    "storage": {
+                        "''stake_per_node": "111,000,000,000,000"
+                    },
                     "code": "file:../../auction-mock.wasm"
                 },
                 "''someone_______________________s1": {
@@ -36,6 +38,12 @@
                     "code": ""
                 },
                 "''delegator_2___________________s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                },
+                "''delegator_3___________________s1": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {},

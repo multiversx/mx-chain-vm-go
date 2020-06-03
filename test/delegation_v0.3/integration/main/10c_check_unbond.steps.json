@@ -1,30 +1,27 @@
 {
-    "name": "send some rewards",
+    "name": "unstake some nodes",
     "steps": [
         {
-            "step": "validatorReward",
-            "txId": "validatorReward-1",
-            "comment": "reward value proportional to stake to make it easier to check, 50% are fees",
-            "tx": {
-                "to": "''delegation_contract___________s1",
-                "value": "666,000,000"
-            }
-        },
-        {
             "step": "scCall",
-            "txId": "get-total-cumulated-1",
+            "txId": "check-node_state-4_1",
             "tx": {
                 "from": "''someone_______________________s1",
                 "to": "''delegation_contract___________s1",
                 "value": "0",
-                "function": "getTotalCumulatedRewards",
+                "function": "getAllNodeStates",
                 "arguments": [],
                 "gasLimit": "1,000,000",
                 "gasPrice": "0"
             },
             "expect": {
                 "out": [
-                    "666,000,000"
+                    "''bls_key_1_______________________________________________________________________________________", "0x06",
+                    "''bls_key_2_______________________________________________________________________________________", "0x02",
+                    "''bls_key_3_______________________________________________________________________________________", "0x04",
+                    "''bls_key_4_______________________________________________________________________________________", "0x06",
+                    "''bls_key_5_______________________________________________________________________________________", "0x00",
+                    "''bls_key_6_______________________________________________________________________________________", "0x02",
+                    "''bls_key_7_______________________________________________________________________________________", "0x06"
                 ],
                 "status": "",
                 "logs": [],
@@ -34,12 +31,34 @@
         },
         {
             "step": "scCall",
-            "txId": "claimable-0",
+            "txId": "check-stake-by-type-10_total",
             "tx": {
                 "from": "''someone_______________________s1",
                 "to": "''delegation_contract___________s1",
                 "value": "0",
-                "function": "getClaimableRewards",
+                "function": "getTotalStakeByType",
+                "arguments": [],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "111,001,000,000,000", "0", "222,000,000,000,000", "0", "111,000,000,000,000", "0", "0"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "check-stake-by-type-10_0",
+            "tx": {
+                "from": "''someone_______________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "getUserStakeByType",
                 "arguments": [
                     "''node_address__________________s1"
                 ],
@@ -48,7 +67,7 @@
             },
             "expect": {
                 "out": [
-                    "333,000,000"
+                    "0", "0", "011,000,000,000,000", "0", "0", "0", "0"
                 ],
                 "status": "",
                 "logs": [],
@@ -58,12 +77,12 @@
         },
         {
             "step": "scCall",
-            "txId": "claimable-1",
+            "txId": "check-stake-by-type-10_1",
             "tx": {
                 "from": "''someone_______________________s1",
                 "to": "''delegation_contract___________s1",
                 "value": "0",
-                "function": "getClaimableRewards",
+                "function": "getUserStakeByType",
                 "arguments": [
                     "''delegator_1___________________s1"
                 ],
@@ -72,7 +91,7 @@
             },
             "expect": {
                 "out": [
-                    "300,000,000"
+                    "78,000,000,000,000", "0", "211,000,000,000,000", "0", "111,000,000,000,000", "0", "0"
                 ],
                 "status": "",
                 "logs": [],
@@ -82,12 +101,12 @@
         },
         {
             "step": "scCall",
-            "txId": "claimable-2",
+            "txId": "check-stake-by-type-10_2",
             "tx": {
                 "from": "''someone_______________________s1",
                 "to": "''delegation_contract___________s1",
                 "value": "0",
-                "function": "getClaimableRewards",
+                "function": "getUserStakeByType",
                 "arguments": [
                     "''delegator_2___________________s1"
                 ],
@@ -96,7 +115,7 @@
             },
             "expect": {
                 "out": [
-                    "033,000,000"
+                    "033,001,000,000,000", "0", "0", "0", "0", "0", "0"
                 ],
                 "status": "",
                 "logs": [],
@@ -106,49 +125,23 @@
         },
         {
             "step": "scCall",
-            "txId": "delegator 1 claim 1",
+            "txId": "check-balance-after-unbond",
+            "comment": "indirect way of checking that we got the staked ERD back from auction, if the unexpected balance is 0, then the contract balance matches with the state",
             "tx": {
-                "from": "''delegator_1___________________s1",
+                "from": "''someone_______________________s1",
                 "to": "''delegation_contract___________s1",
                 "value": "0",
-                "function": "claimRewards",
+                "function": "getUnexpectedBalance",
                 "arguments": [],
                 "gasLimit": "1,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [],
+                "out": [ "0" ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"
-            }
-        },
-        {
-            "step": "checkState",
-            "comment": "check that rewards were received",
-            "accounts": {
-                "''delegation_contract___________s1": {
-                    "comment": "inactive stake (1,000,000) + unclaimed rewards",
-                    "nonce": "*",
-                    "balance": "1,366,000,000",
-                    "storage": "*",
-                    "code": "file:../../delegation.wasm"
-                },
-                "''delegator_1___________________s1": {
-                    "nonce": "*",
-                    "balance": "300,000,000",
-                    "storage": {},
-                    "code": "",
-                    "asyncCallData": "delegation claim"
-                },
-                "''delegator_2___________________s1": {
-                    "nonce": "*",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
-                },
-                "+": ""
             }
         }
     ]

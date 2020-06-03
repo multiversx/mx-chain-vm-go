@@ -1,23 +1,15 @@
 {
-    "name": "activate pt 1",
+    "name": "genesis activate",
     "steps": [
         {
             "step": "scCall",
-            "txId": "activate-1",
+            "txId": "activate-genesis-1",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "''delegation_contract___________s1",
                 "value": "0",
-                "function": "activateNodes",
-                "arguments": [
-                    "3",
-                    "''bls_key_2_______________________________________________________________________________________",
-                    "''signature_2_____________________",
-                    "''bls_key_3_______________________________________________________________________________________",
-                    "''signature_3_____________________",
-                    "''bls_key_6_______________________________________________________________________________________",
-                    "''signature_6_____________________"
-                ],
+                "function": "activateGenesis",
+                "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },

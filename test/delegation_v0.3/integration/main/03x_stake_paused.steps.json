@@ -1,49 +1,62 @@
 {
-    "name": "remove nodes err",
+    "name": "stake pt 1",
     "steps": [
         {
             "step": "scCall",
-            "txId": "rem nodes bad 1",
+            "txId": "pause staking",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "''delegation_contract___________s1",
                 "value": "0",
-                "function": "removeNodes",
-                "arguments": [
-                    "''bls_key_x_______________________________________________________________________________________",
-                    "''bls_key_2_______________________________________________________________________________________"
-                ],
+                "function": "pauseStaking",
+                "arguments": [],
                 "gasLimit": "1,000,000",
                 "gasPrice": "0"
             },
             "expect": {
                 "out": [],
-                "status": "4",
-                "message": "node not registered",
+                "status": "",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"
             }
-        }
-        ,
+        },
         {
             "step": "scCall",
-            "txId": "rem nodes bad 2",
+            "txId": "attempt to stake while paused",
             "tx": {
-                "from": "''node_address__________________s1",
+                "from": "''endless_sack_of_erd___________s1",
                 "to": "''delegation_contract___________s1",
-                "value": "0",
-                "function": "removeNodes",
-                "arguments": [
-                    "''bls_key_1_______________________________________________________________________________________"
-                ],
+                "value": "1234567890",
+                "function": "stake",
+                "arguments": [],
                 "gasLimit": "1,000,000",
                 "gasPrice": "0"
             },
             "expect": {
                 "out": [],
                 "status": "4",
-                "message": "only inactive nodes can be removed",
+                "message": "staking paused",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "unpause staking",
+            "tx": {
+                "from": "''node_address__________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "unpauseStaking",
+                "arguments": [],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"

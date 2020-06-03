@@ -1,5 +1,5 @@
 {
-    "name": "init",
+    "name": "check nodes",
     "steps": [
         {
             "step": "scCall",

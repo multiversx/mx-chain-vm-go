@@ -1,18 +1,16 @@
 {
-    "name": "activate pt 2",
+    "name": "unBond a node",
     "steps": [
         {
             "step": "scCall",
-            "txId": "activate-2",
+            "txId": "unBond-1",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "''delegation_contract___________s1",
                 "value": "0",
-                "function": "activateNodes",
+                "function": "unBond",
                 "arguments": [
-                    "1",
-                    "''bls_key_5_______________________________________________________________________________________",
-                    "''signature_5_____________________"
+                    "''bls_key_5_______________________________________________________________________________________"
                 ],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
@@ -23,7 +21,7 @@
                 "logs": [
                     {
                         "address": "''delegation_contract___________s1",
-                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000003",
+                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000007",
                         "topics": [],
                         "data": "0x"
                     }
