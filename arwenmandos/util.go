@@ -8,7 +8,7 @@ import (
 	worldhook "github.com/ElrondNetwork/elrond-vm-util/mock-hook-blockchain"
 
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
-	mj "github.com/ElrondNetwork/elrond-vm-util/test-util/mandosjson"
+	mj "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/model"
 )
 
 func convertAccount(testAcct *mj.Account) *worldhook.Account {

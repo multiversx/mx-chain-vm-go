@@ -9,14 +9,15 @@ import (
 	am "github.com/ElrondNetwork/arwen-wasm-vm/arwenmandos"
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	worldhook "github.com/ElrondNetwork/elrond-vm-util/mock-hook-blockchain"
-	mj "github.com/ElrondNetwork/elrond-vm-util/test-util/mandosjson"
+	mj "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/model"
+	mjparse "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/parse"
 )
 
 type fuzzDelegationExecutor struct {
 	arwenTestExecutor *am.ArwenTestExecutor
 	world             *worldhook.BlockchainHookMock
 	vm                vmi.VMExecutionHandler
-	mandosParser      mj.Parser
+	mandosParser      mjparse.Parser
 
 	initialDelegatorBalance   *big.Int
 	nodeShare                 int
@@ -31,12 +32,12 @@ type fuzzDelegationExecutor struct {
 	active                    bool
 }
 
-func newFuzzDelegationExecutor(fileResolver mj.FileResolver) (*fuzzDelegationExecutor, error) {
+func newFuzzDelegationExecutor(fileResolver mjparse.FileResolver) (*fuzzDelegationExecutor, error) {
 	arwenTestExecutor, err := am.NewArwenTestExecutor()
 	if err != nil {
 		return nil, err
 	}
-	parser := mj.Parser{
+	parser := mjparse.Parser{
 		FileResolver: fileResolver,
 	}
 	return &fuzzDelegationExecutor{

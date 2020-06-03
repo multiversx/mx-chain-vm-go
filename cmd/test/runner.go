@@ -7,8 +7,7 @@ import (
 	"strings"
 
 	am "github.com/ElrondNetwork/arwen-wasm-vm/arwenmandos"
-	mc "github.com/ElrondNetwork/elrond-vm-util/test-util/mandoscontroller"
-	mj "github.com/ElrondNetwork/elrond-vm-util/test-util/mandosjson"
+	mc "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/controller"
 )
 
 func resolveArgument(arg string) (string, bool, error) {
@@ -50,7 +49,7 @@ func main() {
 	case isDir:
 		runner := mc.NewScenarioRunner(
 			executor,
-			mj.NewDefaultFileResolver(),
+			mc.NewDefaultFileResolver(),
 		)
 		err = runner.RunAllJSONScenariosInDirectory(
 			jsonFilePath,
@@ -60,13 +59,13 @@ func main() {
 	case strings.HasSuffix(jsonFilePath, ".scen.json"):
 		runner := mc.NewScenarioRunner(
 			executor,
-			mj.NewDefaultFileResolver(),
+			mc.NewDefaultFileResolver(),
 		)
 		err = runner.RunSingleJSONScenario(jsonFilePath)
 	default:
 		runner := mc.NewTestRunner(
 			executor,
-			mj.NewDefaultFileResolver(),
+			mc.NewDefaultFileResolver(),
 		)
 		err = runner.RunSingleJSONTest(jsonFilePath)
 	}

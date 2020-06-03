@@ -8,8 +8,8 @@ import (
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	worldhook "github.com/ElrondNetwork/elrond-vm-util/mock-hook-blockchain"
 	cryptohook "github.com/ElrondNetwork/elrond-vm-util/mock-hook-crypto"
-	mc "github.com/ElrondNetwork/elrond-vm-util/test-util/mandoscontroller"
-	mj "github.com/ElrondNetwork/elrond-vm-util/test-util/mandosjson"
+	mc "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/controller"
+	mjparse "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/parse"
 )
 
 // TestVMType is the VM type argument we use in tests.
@@ -17,7 +17,7 @@ var TestVMType = []byte{0, 0}
 
 // ArwenTestExecutor parses, interprets and executes both .test.json tests and .scen.json scenarios with Arwen.
 type ArwenTestExecutor struct {
-	fileResolver mj.FileResolver
+	fileResolver mjparse.FileResolver
 	World        *worldhook.BlockchainHookMock
 	vm           vmi.VMExecutionHandler
 	checkGas     bool

@@ -8,7 +8,7 @@ import (
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
-	mj "github.com/ElrondNetwork/elrond-vm-util/test-util/mandosjson"
+	mj "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/model"
 )
 
 func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmi.VMOutput, error) {

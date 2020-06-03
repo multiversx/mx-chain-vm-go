@@ -2,8 +2,9 @@ package arwenmandos
 
 import (
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
-	mc "github.com/ElrondNetwork/elrond-vm-util/test-util/mandoscontroller"
-	mj "github.com/ElrondNetwork/elrond-vm-util/test-util/mandosjson"
+	mc "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/controller"
+	mj "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/model"
+	mjparse "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/parse"
 )
 
 // Reset clears state/world.
@@ -13,7 +14,7 @@ func (ae *ArwenTestExecutor) Reset() {
 }
 
 // ExecuteScenario executes an individual test.
-func (ae *ArwenTestExecutor) ExecuteScenario(scenario *mj.Scenario, fileResolver mj.FileResolver) error {
+func (ae *ArwenTestExecutor) ExecuteScenario(scenario *mj.Scenario, fileResolver mjparse.FileResolver) error {
 	ae.fileResolver = fileResolver
 	ae.checkGas = scenario.CheckGas
 

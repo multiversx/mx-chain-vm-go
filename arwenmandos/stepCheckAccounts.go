@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	worldhook "github.com/ElrondNetwork/elrond-vm-util/mock-hook-blockchain"
-	mj "github.com/ElrondNetwork/elrond-vm-util/test-util/mandosjson"
+	mj "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/model"
 )
 
 func checkAccounts(
@@ -44,9 +44,9 @@ func checkAccounts(
 				hex.EncodeToString(matchingAcct.Address), expectedAcct.Balance.Original, bigIntPretty(matchingAcct.Balance))
 		}
 
-		if !bytes.Equal(expectedAcct.Code.Value, matchingAcct.Code) {
+		if !expectedAcct.Code.Check(matchingAcct.Code) {
 			return fmt.Errorf("bad account code. Account: %s. Want: [%s]. Have: [%s]",
-				hex.EncodeToString(matchingAcct.Address), expectedAcct.Code, matchingAcct.Code)
+				hex.EncodeToString(matchingAcct.Address), expectedAcct.Code.Original, string(matchingAcct.Code))
 		}
 
 		if matchingAcct.AsyncCallData != expectedAcct.AsyncCallData {

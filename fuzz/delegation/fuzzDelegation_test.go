@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	mj "github.com/ElrondNetwork/elrond-vm-util/test-util/mandosjson"
+	mc "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/controller"
 )
 
 var fuzz = flag.Bool("fuzz", false, "fuzz")
@@ -24,7 +24,7 @@ func getTestRoot() string {
 }
 
 func newExecutorWithPaths() *fuzzDelegationExecutor {
-	fileResolver := mj.NewDefaultFileResolver().
+	fileResolver := mc.NewDefaultFileResolver().
 		ReplacePath(
 			"delegation.wasm",
 			filepath.Join(getTestRoot(), "delegation_v0.2/delegation.wasm")).

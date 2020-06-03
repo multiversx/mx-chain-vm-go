@@ -6,7 +6,8 @@ import (
 	"math/big"
 
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
-	mj "github.com/ElrondNetwork/elrond-vm-util/test-util/mandosjson"
+	mj "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/model"
+	mjwrite "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/write"
 )
 
 func checkTxResults(
@@ -78,34 +79,34 @@ func checkTxResults(
 		if !bytes.Equal(outLog.Address, testLog.Address.Value) {
 			return fmt.Errorf("bad log address. Tx %s. Want:\n%s\nGot:\n%s",
 				txIndex,
-				mj.LogToString(testLog),
-				mj.LogToString(convertLogToTestFormat(outLog)))
+				mjwrite.LogToString(testLog),
+				mjwrite.LogToString(convertLogToTestFormat(outLog)))
 		}
 		if !bytes.Equal(outLog.Identifier, testLog.Identifier.Value) {
 			return fmt.Errorf("bad log identifier. Tx %s. Want:\n%s\nGot:\n%s",
 				txIndex,
-				mj.LogToString(testLog),
-				mj.LogToString(convertLogToTestFormat(outLog)))
+				mjwrite.LogToString(testLog),
+				mjwrite.LogToString(convertLogToTestFormat(outLog)))
 		}
 		if len(outLog.Topics) != len(testLog.Topics) {
 			return fmt.Errorf("wrong number of log topics. Tx %s. Want:\n%s\nGot:\n%s",
 				txIndex,
-				mj.LogToString(testLog),
-				mj.LogToString(convertLogToTestFormat(outLog)))
+				mjwrite.LogToString(testLog),
+				mjwrite.LogToString(convertLogToTestFormat(outLog)))
 		}
 		for ti := range outLog.Topics {
 			if !bytes.Equal(outLog.Topics[ti], testLog.Topics[ti].Value) {
 				return fmt.Errorf("bad log topic. Tx %s. Want:\n%s\nGot:\n%s",
 					txIndex,
-					mj.LogToString(testLog),
-					mj.LogToString(convertLogToTestFormat(outLog)))
+					mjwrite.LogToString(testLog),
+					mjwrite.LogToString(convertLogToTestFormat(outLog)))
 			}
 		}
 		if big.NewInt(0).SetBytes(outLog.Data).Cmp(big.NewInt(0).SetBytes(testLog.Data.Value)) != 0 {
 			return fmt.Errorf("bad log data. Tx %s. Want:\n%s\nGot:\n%s",
 				txIndex,
-				mj.LogToString(testLog),
-				mj.LogToString(convertLogToTestFormat(outLog)))
+				mjwrite.LogToString(testLog),
+				mjwrite.LogToString(convertLogToTestFormat(outLog)))
 		}
 	}
 
