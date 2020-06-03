@@ -8,7 +8,7 @@ import (
 )
 
 const GasValueForTests = 1
-const AsyncCallbackGasLockForTests = 1_000_000
+const AsyncCallbackGasLockForTests = 100_000
 
 // GasScheduleMap (alias) is the map for gas schedule
 type GasScheduleMap = map[string]map[string]uint64
