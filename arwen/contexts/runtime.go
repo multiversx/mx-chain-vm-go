@@ -68,7 +68,13 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 		context.instance = nil
 		return arwen.ErrMaxInstancesReached
 	}
-	newInstance, err := wasmer.NewMeteredInstance(contract, gasLimit)
+	options := wasmer.CompilationOptions{
+		GasLimit:           gasLimit,
+		OpcodeTrace:        false,
+		Metering:           true,
+		RuntimeBreakpoints: true,
+	}
+	newInstance, err := wasmer.NewInstanceWithOptions(contract, options)
 	if err != nil {
 		context.instance = nil
 		return err
