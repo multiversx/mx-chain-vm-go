@@ -30,11 +30,11 @@ void parentPerformAsyncCall() {
 	byte transferData[] = "hello";
 	transferValue(thirdPartyAddress, value, transferData, 5);
 	
-	byte callData[] = "transferToThirdParty@3@207468657265@0";
-	callData[36] = int64getArgument(0) + '0';
+	byte callData[] = "transferToThirdParty@03@207468657265@00";
+	callData[38] = int64getArgument(0) + '0';
 
 	value[31] = 7;
-	asyncCall(childAddress, value, callData, 37);
+	asyncCall(childAddress, value, callData, 39);
 }
 
 void callBack() {

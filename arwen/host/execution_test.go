@@ -1250,7 +1250,7 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 	input.RecipientAddr = parentAddress
 	input.Function = "parentPerformAsyncCall"
 	input.GasProvided = 1_000_000
-	input.Arguments = [][]byte{{3}}
+	input.Arguments = [][]byte{{0, 3}}
 	input.CurrentTxHash = []byte("txhash")
 
 	vmOutput, err := host.RunSmartContractCall(input)
