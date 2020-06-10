@@ -66,10 +66,9 @@ extern "C" void myTrainError() {
     clearStorageLock(successInteractionsKey, sizeof(successInteractionsKey));
 }
 
-extern "C" i64 isMyStorageLocked() {
+extern "C" void isMyStorageLocked() {
     i64 isLocked = isStorageLocked(successInteractionsKey, sizeof(successInteractionsKey));
     int64finish(isLocked);
-    return isLocked;
 }
 
 void myFirstVacationBooked() {

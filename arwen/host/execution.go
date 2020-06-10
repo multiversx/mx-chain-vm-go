@@ -575,6 +575,14 @@ func (host *vmHost) createETHCallInput() []byte {
  * returns a list of pending calls (the ones that should be processed on other hosts)
  */
 func (host *vmHost) processAsyncInfo(asyncInfo *vmcommon.AsyncContextInfo) (*vmcommon.AsyncContextInfo, error) {
+	pendingMap := host.getExternalAsyncCalls(asyncInfo)
+	if len(pendingMap.AsyncContextMap) > 0 {
+		err := host.savePendingAsyncCalls(pendingMap)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	host.setupAsyncCallsGasByPercentages(asyncInfo)
 
 	for _, asyncContext := range asyncInfo.AsyncContextMap {
@@ -591,14 +599,6 @@ func (host *vmHost) processAsyncInfo(asyncInfo *vmcommon.AsyncContextInfo) (*vmc
 			if err != nil {
 				return nil, err
 			}
-		}
-	}
-
-	pendingMap := host.getPendingAsyncCalls(asyncInfo)
-	if len(pendingMap.AsyncContextMap) > 0 {
-		err := host.savePendingAsyncCalls(pendingMap)
-		if err != nil {
-			return nil, err
 		}
 	}
 
@@ -714,6 +714,40 @@ func (host *vmHost) getPendingAsyncCalls(asyncInfo *vmcommon.AsyncContextInfo) *
 }
 
 /**
+ * getExternalAsyncCalls returns async calls for which we don't have the code to execute. This should be saved
+ *  before we execute the rest of the calls so we can correctly split the gas after saving them in storage
+ */
+func (host *vmHost) getExternalAsyncCalls(asyncInfo *vmcommon.AsyncContextInfo) *vmcommon.AsyncContextInfo {
+	pendingMap := &vmcommon.AsyncContextInfo{
+		AsyncInitiator: vmcommon.AsyncInitiator{
+			CallerAddr: asyncInfo.CallerAddr,
+			ReturnData: asyncInfo.ReturnData,
+		},
+		AsyncContextMap: make(map[string]*vmcommon.AsyncContext),
+	}
+
+	for contextIdentifier, asyncContext := range asyncInfo.AsyncContextMap {
+		for _, asyncCall := range asyncContext.AsyncCalls {
+			if !host.canExecuteSynchronouslyOnDest(asyncCall.Destination) {
+				continue
+			}
+			if pendingMap.AsyncContextMap[contextIdentifier] == nil {
+				pendingMap.AsyncContextMap[contextIdentifier] = &vmcommon.AsyncContext{
+					Callback: asyncContext.Callback,
+					AsyncCalls: make([]*vmcommon.AsyncCall, 0),
+				}
+			}
+			pendingMap.AsyncContextMap[contextIdentifier].AsyncCalls = append(
+				pendingMap.AsyncContextMap[contextIdentifier].AsyncCalls,
+				asyncCall,
+			)
+		}
+	}
+
+	return pendingMap
+}
+
+/**
  * processCallbackStack is triggered when a callback was received from another host through a transaction.
  *  It will return an error if we receive a callback and we don't have it's associated data in the storage.
  *  If the associated callback was found in the pending set, it will be removed - It should not be executed
@@ -797,12 +831,12 @@ func (host *vmHost) setupAsyncCallsGasByPercentages(asyncInfo *vmcommon.AsyncCon
 
 	var lastContextIdentifier string
 	var lastAsyncCallIndex int
-	for indentifier, asyncContext := range asyncInfo.AsyncContextMap {
-		lastContextIdentifier = indentifier
+	for identifier, asyncContext := range asyncInfo.AsyncContextMap {
+		lastContextIdentifier = identifier
 		for index, asyncCall := range asyncContext.AsyncCalls {
 			lastAsyncCallIndex = index
-			gasLimit := gasLeft/uint64(asyncCall.GasPercentage)
-			asyncCall.GasLimit = gasLimit
+			gasLimit := gasLeft*(uint64(asyncCall.GasPercentage)/100)
+			asyncInfo.AsyncContextMap[identifier].AsyncCalls[index].GasLimit = gasLimit
 			gasAdded += gasLimit
 		}
 	}
