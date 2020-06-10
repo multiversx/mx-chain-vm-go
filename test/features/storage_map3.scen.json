@@ -48,7 +48,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "``map3|0x0000000000000057": "true"
+                        "``map3|0x00000057": "true"
                     },
                     "code": "file:features.wasm"
                 },
@@ -112,7 +112,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "``map3|0x0000000000000057": "false"
+                        "``map3|0x00000057": "false"
                     },
                     "code": "file:features.wasm"
                 },

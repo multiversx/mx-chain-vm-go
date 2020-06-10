@@ -1,0 +1,97 @@
+{
+    "name": "unstake some nodes",
+    "steps": [
+        {
+            "step": "transfer",
+            "txId": "slip some ERD directly into the contract",
+            "tx": {
+                "from": "''endless_sack_of_erd___________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "1,234,567,000,000"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "check-unexpected-balance",
+            "tx": {
+                "from": "''someone_______________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "getUnexpectedBalance",
+                "arguments": [],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [ "1,234,567,000,000" ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "withdraw-unexpected-balance",
+            "tx": {
+                "from": "''node_address__________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "withdrawUnexpectedBalance",
+                "arguments": [],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "check-unexpected-balance-after-withdraw",
+            "tx": {
+                "from": "''someone_______________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "getUnexpectedBalance",
+                "arguments": [],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [ "0" ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "comment": "check that stake was transferred",
+            "accounts": {
+                "''node_address__________________s1": {
+                    "nonce": "*",
+                    "balance": "1,234,567,000,000",
+                    "storage": "*",
+                    "code": "",
+                    "asyncCallData": "unexpected balance"
+                },
+                "+": ""
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "owner is nice and transfers back; we also no longer need to keep track of this sum",
+            "tx": {
+                "from": "''node_address__________________s1",
+                "to": "''endless_sack_of_erd___________s1",
+                "value": "1,234,567,000,000"
+            }
+        }
+    ]
+}

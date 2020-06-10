@@ -19,7 +19,6 @@ type RuntimeContextMock struct {
 	PointsUsed             uint64
 	InstanceCtxID          int
 	MemLoadResult          []byte
-	ArgParserMock          arwen.ArgumentsParser
 	FailCryptoAPI          bool
 	FailElrondAPI          bool
 	FailBigIntAPI          bool
@@ -133,10 +132,6 @@ func (r *RuntimeContextMock) VerifyContractCode() error {
 		return r.Err
 	}
 	return nil
-}
-
-func (r *RuntimeContextMock) ArgParser() arwen.ArgumentsParser {
-	return r.ArgParserMock
 }
 
 func (r *RuntimeContextMock) GetPointsUsed() uint64 {

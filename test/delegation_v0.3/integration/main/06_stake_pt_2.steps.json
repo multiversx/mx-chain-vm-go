@@ -1,0 +1,81 @@
+{
+    "name": "stake pt 2",
+    "steps": [
+        {
+            "step": "transfer",
+            "txId": "supply delegator 1 again",
+            "tx": {
+                "from": "''endless_sack_of_erd___________s1",
+                "to": "''delegator_1___________________s1",
+                "value": "100,000,000,000,000"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "supply owner for stake",
+            "tx": {
+                "from": "''endless_sack_of_erd___________s1",
+                "to": "''node_address__________________s1",
+                "value": "011,000,000,000,000"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "delegator 1 stake 2",
+            "tx": {
+                "from": "''delegator_1___________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "100,000,000,000,000",
+                "function": "stake",
+                "arguments": [],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [
+                    {
+                        "address": "''delegation_contract___________s1",
+                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000001",
+                        "topics": [
+                            "''delegator_1___________________s1"
+                        ],
+                        "data": "100,000,000,000,000"
+                    }
+                ],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "owner also adds some stake",
+            "tx": {
+                "from": "''node_address__________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "011,000,000,000,000",
+                "function": "stake",
+                "arguments": [],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [
+                    {
+                        "address": "''delegation_contract___________s1",
+                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000001",
+                        "topics": [
+                            "''node_address__________________s1"
+                        ],
+                        "data": "011,000,000,000,000"
+                    }
+                ],
+                "gas": "*",
+                "refund": "*"
+            }
+        }
+    ]
+}

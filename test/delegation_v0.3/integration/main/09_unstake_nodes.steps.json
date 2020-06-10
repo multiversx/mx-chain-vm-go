@@ -1,0 +1,35 @@
+{
+    "name": "unstake some nodes",
+    "steps": [
+        {
+            "step": "scCall",
+            "txId": "unstake-1",
+            "tx": {
+                "from": "''node_address__________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "deactivateNodes",
+                "arguments": [
+                    "''bls_key_3_______________________________________________________________________________________",
+                    "''bls_key_5_______________________________________________________________________________________"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [
+                    {
+                        "address": "''delegation_contract___________s1",
+                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000005",
+                        "topics": [],
+                        "data": "0x"
+                    }
+                ],
+                "gas": "*",
+                "refund": "*"
+            }
+        }
+    ]
+}

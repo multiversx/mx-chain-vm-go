@@ -6,6 +6,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
 
 func (host *vmHost) handleAsyncCallBreakpoint() error {
@@ -151,18 +152,8 @@ func (host *vmHost) createDestinationContractCallInput(asyncCallInfo arwen.Async
 	runtime := host.Runtime()
 	sender := runtime.GetSCAddress()
 
-	argParser := runtime.ArgParser()
-	err := argParser.ParseData(string(asyncCallInfo.GetData()))
-	if err != nil {
-		return nil, err
-	}
-
-	function, err := argParser.GetFunction()
-	if err != nil {
-		return nil, err
-	}
-
-	arguments, err := argParser.GetFunctionArguments()
+	argParser := parsers.NewCallArgsParser()
+	function, arguments, err := argParser.ParseData(string(asyncCallInfo.GetData()))
 	if err != nil {
 		return nil, err
 	}

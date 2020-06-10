@@ -1,0 +1,39 @@
+{
+    "name": "force unstake",
+    "steps": [
+        {
+            "step": "setState",
+            "comment": "one week passes",
+            "currentBlockInfo": {
+                "blockTimestamp": "1589800401"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "force-unstake",
+            "tx": {
+                "from": "''delegator_1___________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "forceUnstake",
+                "arguments": [],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [
+                    {
+                        "address": "''delegation_contract___________s1",
+                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000005",
+                        "topics": [],
+                        "data": "0x"
+                    }
+                ],
+                "gas": "*",
+                "refund": "*"
+            }
+        }
+    ]
+}

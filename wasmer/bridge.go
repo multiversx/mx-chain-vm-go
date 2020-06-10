@@ -37,6 +37,7 @@ type cWasmerResultT C.wasmer_result_t
 type cWasmerSerializedModuleT C.wasmer_serialized_module_t
 type cWasmerValueT C.wasmer_value_t
 type cWasmerValueTag C.wasmer_value_tag
+type cWasmerCompilationOptions C.wasmer_compilation_options_t
 
 const cWasmFunction = C.WASM_FUNCTION
 const cWasmGlobal = C.WASM_GLOBAL
@@ -90,7 +91,7 @@ func cWasmerCacheImportObjectFromImports(
 ) cWasmerResultT {
 	return (cWasmerResultT)(C.wasmer_import_object_cache_from_imports(
 		(*C.wasmer_import_t)(imports),
-		(C.int)(importsLength),
+		(C.uint32_t)(importsLength),
 	))
 }
 
@@ -239,17 +240,17 @@ func cWasmerInstanceExports(instance *cWasmerInstanceT, exports **cWasmerExports
 	)
 }
 
-func cWasmerInstantiateWithMetering(
+func cWasmerInstantiateWithOptions(
 	instance **cWasmerInstanceT,
 	wasmBytes *cUchar,
 	wasmBytesLength cUint,
-	gasLimit uint64,
+	options *cWasmerCompilationOptions,
 ) cWasmerResultT {
-	return (cWasmerResultT)(C.wasmer_instantiate_with_metering(
+	return (cWasmerResultT)(C.wasmer_instantiate_with_options(
 		(**C.wasmer_instance_t)(unsafe.Pointer(instance)),
 		(*C.uchar)(wasmBytes),
 		(C.uint)(wasmBytesLength),
-		(C.uint64_t)(gasLimit),
+		(*C.wasmer_compilation_options_t)(options),
 	))
 }
 
