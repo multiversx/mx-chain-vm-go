@@ -1,6 +1,7 @@
 package arwendebug
 
 import (
+	"encoding/hex"
 	"errors"
 	"math/big"
 	"strconv"
@@ -16,11 +17,12 @@ var _ vmcommon.BlockchainHook = (*BlockchainHookMock)(nil)
 
 // Account holds the account info
 type Account struct {
-	Address []byte
-	Nonce   uint64
-	Balance *big.Int
-	Storage map[string][]byte
-	Code    []byte
+	AddressAsBytes []byte
+	AddressAsHex   string
+	Nonce          uint64
+	Balance        *big.Int
+	Storage        map[string][]byte
+	Code           []byte
 }
 
 // AccountsMap is a map from address to account
@@ -62,7 +64,7 @@ func (b *BlockchainHookMock) AddAccount(account *Account) {
 	if account.Balance == nil {
 		account.Balance = big.NewInt(0)
 	}
-	b.Accounts[string(account.Address)] = account
+	b.Accounts[string(account.AddressAsBytes)] = account
 }
 
 // AddAccounts -
@@ -233,11 +235,12 @@ func (b *BlockchainHookMock) UpdateAccounts(outputAccounts map[string]*vmcommon.
 		account, exists := b.Accounts[strAddress]
 		if !exists {
 			account = &Account{
-				Address: outputAccount.Address,
-				Balance: big.NewInt(0),
-				Code:    nil,
-				Storage: make(map[string][]byte),
-				Nonce:   0,
+				AddressAsBytes: outputAccount.Address,
+				AddressAsHex:   hex.EncodeToString(outputAccount.Address),
+				Balance:        big.NewInt(0),
+				Code:           nil,
+				Storage:        make(map[string][]byte),
+				Nonce:          0,
 			}
 		}
 

@@ -14,6 +14,18 @@ type RequestBase struct {
 	Outcome      string
 }
 
+func (request *RequestBase) digest() error {
+	if request.DatabasePath == "" {
+		request.DatabasePath = "./db"
+	}
+
+	if request.World == "" {
+		request.World = "default"
+	}
+
+	return nil
+}
+
 // ResponseBase is a CLI / REST response message
 type ResponseBase struct {
 	Error error
@@ -22,46 +34,49 @@ type ResponseBase struct {
 // ContractRequestBase is a CLI / REST request message
 type ContractRequestBase struct {
 	RequestBase
-	Impersonated string
-	Value        string
-	GasPrice     uint64
-	GasLimit     uint64
+	ImpersonatedAsHex   string
+	ImpersonatedAsBytes []byte
+	Value               string
+	ValueAsBigInt       *big.Int
+	GasPrice            uint64
+	GasLimit            uint64
 }
 
-func (request *ContractRequestBase) getValue() *big.Int {
-	value := big.NewInt(0)
-	_, _ = value.SetString(request.Value, 10)
-	return value
-}
+func (request *ContractRequestBase) digest() error {
+	var err error
+	var ok bool
 
-func (request *ContractRequestBase) getGasPrice() uint64 {
-	if request.GasPrice == 0 {
-		return DefaultGasPrice
-	}
-
-	return request.GasPrice
-}
-
-func (request *ContractRequestBase) getGasLimit() uint64 {
-	if request.GasLimit == 0 {
-		return DefaultGasLimit
-	}
-
-	return request.GasLimit
-}
-
-func (request *ContractRequestBase) getImpersonated() ([]byte, error) {
-	if request.Impersonated == "" {
-		return nil, NewRequestError("empty impersonated address")
-	}
-
-	impersonatedAsHex := request.Impersonated
-	impersonatedAsBytes, err := hex.DecodeString(impersonatedAsHex)
+	err = request.RequestBase.digest()
 	if err != nil {
-		return nil, NewRequestErrorMessageInner("invalid impersonated address", err)
+		return err
 	}
 
-	return impersonatedAsBytes, nil
+	if request.ImpersonatedAsHex == "" {
+		return NewRequestError("empty impersonated address")
+	}
+
+	request.ImpersonatedAsBytes, err = hex.DecodeString(request.ImpersonatedAsHex)
+	if err != nil {
+		return NewRequestErrorMessageInner("invalid impersonated address", err)
+	}
+
+	if request.GasPrice == 0 {
+		request.GasPrice = DefaultGasPrice
+	}
+
+	if request.GasLimit == 0 {
+		request.GasLimit = DefaultGasLimit
+	}
+
+	request.ValueAsBigInt = big.NewInt(0)
+	if len(request.Value) > 0 {
+		_, ok = request.ValueAsBigInt.SetString(request.Value, 10)
+		if !ok {
+			return NewRequestError("invalid value (erd)")
+		}
+	}
+
+	return nil
 }
 
 // ContractResponseBase is a CLI / REST response message

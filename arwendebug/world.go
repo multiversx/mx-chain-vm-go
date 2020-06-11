@@ -1,6 +1,8 @@
 package arwendebug
 
 import (
+	"encoding/hex"
+
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
@@ -59,11 +61,7 @@ func getHostParameters() *arwen.VMHostParameters {
 func (world *world) deploySmartContract(request DeployRequest) (*DeployResponse, error) {
 	log.Debug("world.DeploySmartContract()")
 
-	input, err := world.prepareDeployInput(request)
-	if err != nil {
-		return nil, err
-	}
-
+	input := world.prepareDeployInput(request)
 	vmOutput, err := world.vm.RunSmartContractCreate(input)
 	if err == nil {
 		world.blockchainHook.UpdateAccounts(vmOutput.OutputAccounts)
@@ -78,11 +76,7 @@ func (world *world) deploySmartContract(request DeployRequest) (*DeployResponse,
 }
 
 func (world *world) upgradeSmartContract(request UpgradeRequest) (*UpgradeResponse, error) {
-	input, err := world.prepareUpgradeInput(request)
-	if err != nil {
-		return nil, err
-	}
-
+	input := world.prepareUpgradeInput(request)
 	vmOutput, err := world.vm.RunSmartContractCall(input)
 	if err == nil {
 		world.blockchainHook.UpdateAccounts(vmOutput.OutputAccounts)
@@ -97,11 +91,7 @@ func (world *world) upgradeSmartContract(request UpgradeRequest) (*UpgradeRespon
 }
 
 func (world *world) runSmartContract(request RunRequest) (*RunResponse, error) {
-	input, err := world.prepareCallInput(request)
-	if err != nil {
-		return nil, err
-	}
-
+	input := world.prepareCallInput(request)
 	vmOutput, err := world.vm.RunSmartContractCall(input)
 	if err == nil {
 		world.blockchainHook.UpdateAccounts(vmOutput.OutputAccounts)
@@ -116,11 +106,7 @@ func (world *world) runSmartContract(request RunRequest) (*RunResponse, error) {
 }
 
 func (world *world) querySmartContract(request QueryRequest) (*QueryResponse, error) {
-	input, err := world.prepareCallInput(request.RunRequest)
-	if err != nil {
-		return nil, err
-	}
-
+	input := world.prepareCallInput(request.RunRequest)
 	vmOutput, err := world.vm.RunSmartContractCall(input)
 
 	response := &QueryResponse{}
@@ -143,9 +129,10 @@ func (world *world) qreateAccount(request CreateAccountRequest) (*CreateAccountR
 	}
 
 	account := &Account{
-		Address: address,
-		Nonce:   request.Nonce,
-		Balance: balance,
+		AddressAsBytes: address,
+		AddressAsHex:   hex.EncodeToString(address),
+		Nonce:          request.Nonce,
+		Balance:        balance,
 	}
 
 	world.blockchainHook.AddAccount(account)

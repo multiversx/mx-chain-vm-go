@@ -46,11 +46,11 @@ func (context *testContext) createAccount(address string, balance string) {
 func (context *testContext) deployContract(codePath string, impersonated string, arguments ...string) *DeployResponse {
 	request := DeployRequest{
 		ContractRequestBase: ContractRequestBase{
-			RequestBase:  context.createRequestBase(),
-			Impersonated: impersonated,
+			RequestBase:       context.createRequestBase(),
+			ImpersonatedAsHex: impersonated,
 		},
-		CodePath:  codePath,
-		Arguments: arguments,
+		CodePath:       codePath,
+		ArgumentsAsHex: arguments,
 	}
 
 	response, err := context.facade.DeploySmartContract(request)
@@ -69,11 +69,11 @@ func (context *testContext) upgradeContract(contract string, codePath string, im
 	request := UpgradeRequest{
 		DeployRequest: DeployRequest{
 			ContractRequestBase: ContractRequestBase{
-				RequestBase:  context.createRequestBase(),
-				Impersonated: impersonated,
+				RequestBase:       context.createRequestBase(),
+				ImpersonatedAsHex: impersonated,
 			},
-			CodePath:  codePath,
-			Arguments: arguments,
+			CodePath:       codePath,
+			ArgumentsAsHex: arguments,
 		},
 		ContractAddress: contract,
 	}
@@ -93,12 +93,12 @@ func (context *testContext) upgradeContract(contract string, codePath string, im
 func (context *testContext) runContract(contract string, impersonated string, function string, arguments ...string) *RunResponse {
 	request := RunRequest{
 		ContractRequestBase: ContractRequestBase{
-			RequestBase:  context.createRequestBase(),
-			Impersonated: impersonated,
+			RequestBase:       context.createRequestBase(),
+			ImpersonatedAsHex: impersonated,
 		},
-		ContractAddress: contract,
-		Function:        function,
-		Arguments:       arguments,
+		ContractAddressAsHex: contract,
+		Function:             function,
+		ArgumentsAsHex:       arguments,
 	}
 
 	response, err := context.facade.RunSmartContract(request)
@@ -117,12 +117,12 @@ func (context *testContext) queryContract(contract string, impersonated string, 
 	request := QueryRequest{
 		RunRequest: RunRequest{
 			ContractRequestBase: ContractRequestBase{
-				RequestBase:  context.createRequestBase(),
-				Impersonated: impersonated,
+				RequestBase:       context.createRequestBase(),
+				ImpersonatedAsHex: impersonated,
 			},
-			ContractAddress: contract,
-			Function:        function,
-			Arguments:       arguments,
+			ContractAddressAsHex: contract,
+			Function:             function,
+			ArgumentsAsHex:       arguments,
 		},
 	}
 

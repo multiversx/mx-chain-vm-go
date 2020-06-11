@@ -10,52 +10,53 @@ import (
 // DeployRequest is a CLI / REST request message
 type DeployRequest struct {
 	ContractRequestBase
-	Code         string
-	CodePath     string
-	CodeMetadata string
-	Arguments    []string
+	CodeAsHex           string
+	CodeAsBytes         []byte
+	CodePath            string
+	CodeMetadata        string
+	CodeMetadataAsBytes []byte
+	ArgumentsAsHex      []string
+	ArgumentsAsBytes    [][]byte
 }
 
-func (request *DeployRequest) getCode() ([]byte, error) {
-	if len(request.Code) > 0 {
-		codeAsHex := request.Code
-		codeAsBytes, err := hex.DecodeString(codeAsHex)
-		if err != nil {
-			return nil, NewRequestErrorMessageInner("invalid contract code", err)
-		}
+func (request *DeployRequest) digest() error {
+	err := request.ContractRequestBase.digest()
+	if err != nil {
+		return err
+	}
 
-		return codeAsBytes, nil
+	if len(request.CodeAsHex) > 0 {
+		request.CodeAsBytes, err = hex.DecodeString(request.CodeAsHex)
+		if err != nil {
+			return NewRequestErrorMessageInner("invalid contract code", err)
+		}
 	}
 
 	if len(request.CodePath) > 0 {
-		codeAsBytes, err := ioutil.ReadFile(request.CodePath)
+		request.CodeAsBytes, err = ioutil.ReadFile(request.CodePath)
 		if err != nil {
-			return nil, err
+			return err
 		}
-
-		return codeAsBytes, nil
 	}
 
-	return nil, NewRequestError("invalid contract code")
-}
+	if len(request.CodeAsBytes) == 0 {
+		return NewRequestError("invalid contract code")
+	}
 
-func (request *DeployRequest) getCodeMetadata() ([]byte, error) {
+	request.CodeMetadataAsBytes = (&vmcommon.CodeMetadata{Upgradeable: true}).ToBytes()
 	if len(request.CodeMetadata) > 0 {
-		metadataAsHex := request.CodeMetadata
-		metadataAsBytes, err := hex.DecodeString(metadataAsHex)
+		request.CodeMetadataAsBytes, err = hex.DecodeString(request.CodeMetadata)
 		if err != nil {
-			return nil, err
+			return err
 		}
-
-		return metadataAsBytes, nil
 	}
 
-	defaultMetadata := vmcommon.CodeMetadata{Upgradeable: true}
-	return defaultMetadata.ToBytes(), nil
-}
+	request.ArgumentsAsBytes, err = decodeArguments(request.ArgumentsAsHex)
+	if err != nil {
+		return err
+	}
 
-func (request *DeployRequest) getArguments() ([][]byte, error) {
-	return decodeArguments(request.Arguments)
+	return nil
 }
 
 // DeployResponse is a CLI / REST response message

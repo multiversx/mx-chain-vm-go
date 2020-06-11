@@ -21,6 +21,11 @@ func NewDebugFacade() {
 func (facade *DebugFacade) DeploySmartContract(request DeployRequest) (*DeployResponse, error) {
 	log.Debug("DebugFacade.DeploySmartContract()")
 
+	err := request.digest()
+	if err != nil {
+		return nil, err
+	}
+
 	database := facade.loadDatabase(request.DatabasePath)
 	world, err := database.loadWorld(request.World)
 	if err != nil {
@@ -55,6 +60,11 @@ func (facade *DebugFacade) loadDatabase(rootPath string) *database {
 func (facade *DebugFacade) UpgradeSmartContract(request UpgradeRequest) (*UpgradeResponse, error) {
 	log.Debug("DebugFacade.UpgradeSmartContract()")
 
+	err := request.digest()
+	if err != nil {
+		return nil, err
+	}
+
 	database := facade.loadDatabase(request.DatabasePath)
 	world, err := database.loadWorld(request.World)
 	if err != nil {
@@ -83,6 +93,11 @@ func (facade *DebugFacade) UpgradeSmartContract(request UpgradeRequest) (*Upgrad
 // RunSmartContract executes a smart contract function
 func (facade *DebugFacade) RunSmartContract(request RunRequest) (*RunResponse, error) {
 	log.Debug("DebugFacade.RunSmartContract()")
+
+	err := request.digest()
+	if err != nil {
+		return nil, err
+	}
 
 	database := facade.loadDatabase(request.DatabasePath)
 	world, err := database.loadWorld(request.World)
@@ -113,6 +128,11 @@ func (facade *DebugFacade) RunSmartContract(request RunRequest) (*RunResponse, e
 func (facade *DebugFacade) QuerySmartContract(request QueryRequest) (*QueryResponse, error) {
 	log.Debug("DebugFacade.QuerySmartContracts()")
 
+	err := request.digest()
+	if err != nil {
+		return nil, err
+	}
+
 	database := facade.loadDatabase(request.DatabasePath)
 	world, err := database.loadWorld(request.World)
 	if err != nil {
@@ -136,6 +156,11 @@ func (facade *DebugFacade) QuerySmartContract(request QueryRequest) (*QueryRespo
 // CreateAccount creates a test account
 func (facade *DebugFacade) CreateAccount(request CreateAccountRequest) (*CreateAccountResponse, error) {
 	log.Debug("DebugFacade.CreateAccount()")
+
+	err := request.digest()
+	if err != nil {
+		return nil, err
+	}
 
 	database := facade.loadDatabase(request.DatabasePath)
 	world, err := database.loadWorld(request.World)

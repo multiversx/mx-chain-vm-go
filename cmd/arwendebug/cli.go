@@ -15,7 +15,6 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 	// For server
 	flagServerAddress := cli.StringFlag{
 		Name:        "address",
-		Usage:       "",
 		Value:       ":9091",
 		Destination: &args.ServerAddress,
 	}
@@ -23,22 +22,17 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 	// Common for all actions
 	flagDatabase := cli.StringFlag{
 		Name:        "database",
-		Usage:       "",
-		Value:       "./db",
 		Destination: &args.Database,
 	}
 
 	flagWorld := cli.StringFlag{
 		Name:        "world",
-		Usage:       "",
-		Value:       "default",
 		Destination: &args.World,
 	}
 
 	flagOutcome := cli.StringFlag{
 		Required:    true,
 		Name:        "outcome",
-		Usage:       "",
 		Destination: &args.Outcome,
 	}
 

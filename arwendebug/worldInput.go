@@ -5,95 +5,45 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
-func (world *world) prepareDeployInput(request DeployRequest) (*vmcommon.ContractCreateInput, error) {
-	var err error
-
+func (world *world) prepareDeployInput(request DeployRequest) *vmcommon.ContractCreateInput {
 	createInput := &vmcommon.ContractCreateInput{}
-	createInput.CallerAddr, err = request.getImpersonated()
-	if err != nil {
-		return nil, err
-	}
+	createInput.CallerAddr = request.ImpersonatedAsBytes
+	createInput.CallValue = request.ValueAsBigInt
+	createInput.ContractCode = request.CodeAsBytes
+	createInput.ContractCodeMetadata = request.CodeMetadataAsBytes
+	createInput.Arguments = request.ArgumentsAsBytes
+	createInput.GasProvided = request.GasLimit
+	createInput.GasPrice = request.GasPrice
 
-	createInput.CallValue = request.getValue()
-	createInput.ContractCode, err = request.getCode()
-	if err != nil {
-		return nil, err
-	}
-
-	createInput.ContractCodeMetadata, err = request.getCodeMetadata()
-	if err != nil {
-		return nil, err
-	}
-
-	createInput.Arguments, err = request.getArguments()
-	if err != nil {
-		return nil, err
-	}
-
-	createInput.GasProvided = request.getGasLimit()
-	createInput.GasPrice = request.getGasPrice()
-
-	return createInput, nil
+	return createInput
 }
 
-func (world *world) prepareUpgradeInput(request UpgradeRequest) (*vmcommon.ContractCallInput, error) {
-	var err error
-
+func (world *world) prepareUpgradeInput(request UpgradeRequest) *vmcommon.ContractCallInput {
 	callInput := &vmcommon.ContractCallInput{}
 	callInput.RecipientAddr = []byte(request.ContractAddress)
-	callInput.CallerAddr, err = request.getImpersonated()
-	if err != nil {
-		return nil, err
-	}
-
-	callInput.CallValue = request.getValue()
+	callInput.CallerAddr = request.ImpersonatedAsBytes
+	callInput.CallValue = request.ValueAsBigInt
 	callInput.Function = arwen.UpgradeFunctionName
-
-	contractCode, err := request.getCode()
-	if err != nil {
-		return nil, err
-	}
-
-	contractCodeMetadata, err := request.getCodeMetadata()
-	if err != nil {
-		return nil, err
-	}
-
-	arguments, err := request.getArguments()
-	if err != nil {
-		return nil, err
-	}
-
 	allArguments := make([][]byte, 0)
-	allArguments = append(allArguments, contractCode, contractCodeMetadata)
-	allArguments = append(allArguments, arguments...)
+	allArguments = append(allArguments, request.CodeAsBytes, request.CodeMetadataAsBytes)
+	allArguments = append(allArguments, request.ArgumentsAsBytes...)
 
 	callInput.Arguments = allArguments
-	callInput.GasProvided = request.getGasLimit()
-	callInput.GasPrice = request.getGasPrice()
+	callInput.GasProvided = request.GasLimit
+	callInput.GasPrice = request.GasPrice
 
-	return callInput, nil
+	return callInput
 }
 
-func (world *world) prepareCallInput(request RunRequest) (*vmcommon.ContractCallInput, error) {
-	var err error
-
+func (world *world) prepareCallInput(request RunRequest) *vmcommon.ContractCallInput {
 	callInput := &vmcommon.ContractCallInput{}
-	callInput.RecipientAddr = []byte(request.ContractAddress)
-	callInput.CallerAddr, err = request.getImpersonated()
-	if err != nil {
-		return nil, err
-	}
-
-	callInput.CallValue = request.getValue()
+	callInput.RecipientAddr = []byte(request.ContractAddressAsHex)
+	callInput.CallerAddr = request.ImpersonatedAsBytes
+	callInput.CallValue = request.ValueAsBigInt
 	callInput.Function = request.Function
-	callInput.Arguments, err = request.getArguments()
-	if err != nil {
-		return nil, err
-	}
+	callInput.Arguments = request.ArgumentsAsBytes
+	callInput.GasProvided = request.GasLimit
+	callInput.GasPrice = request.GasPrice
 
-	callInput.GasProvided = request.getGasLimit()
-	callInput.GasPrice = request.getGasPrice()
-
-	return callInput, nil
+	return callInput
 }
