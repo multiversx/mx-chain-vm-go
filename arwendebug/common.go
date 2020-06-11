@@ -46,3 +46,7 @@ func prettyJson(request interface{}) string {
 func toHex(bytes []byte) string {
 	return hex.EncodeToString(bytes)
 }
+
+func fromHex(encoded string) ([]byte, error) {
+	return hex.DecodeString(encoded)
+}

@@ -12,7 +12,7 @@ type Account struct {
 	AddressHex string
 	Nonce      uint64
 	Balance    *big.Int
-	Code       []byte
+	CodeHex    string
 	Storage    map[string][]byte
 }
 
@@ -26,7 +26,7 @@ func NewAccount(address []byte, nonce uint64, balance *big.Int) *Account {
 		AddressHex: toHex(address),
 		Nonce:      nonce,
 		Balance:    balance,
-		Code:       nil,
+		CodeHex:    "",
 		Storage:    make(map[string][]byte),
 	}
 }

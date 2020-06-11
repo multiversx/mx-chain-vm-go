@@ -121,7 +121,7 @@ func (b *BlockchainHookMock) IsCodeEmpty(address []byte) (bool, error) {
 		return false, errAccountDoesntExist
 	}
 
-	empty := len(account.Code) == 0
+	empty := len(account.CodeHex) == 0
 	return empty, nil
 }
 
@@ -132,7 +132,7 @@ func (b *BlockchainHookMock) GetCode(address []byte) ([]byte, error) {
 		return []byte{}, errAccountDoesntExist
 	}
 
-	return account.Code, nil
+	return fromHex(account.CodeHex)
 }
 
 // GetBlockhash -
@@ -229,7 +229,7 @@ func (b *BlockchainHookMock) UpdateAccounts(outputAccounts map[string]*vmcommon.
 		}
 		account.Balance.Add(account.Balance, outputAccount.BalanceDelta)
 		if len(outputAccount.Code) > 0 {
-			account.Code = outputAccount.Code
+			account.CodeHex = toHex(outputAccount.Code)
 		}
 
 		mergeStorageUpdates(account, outputAccount)
