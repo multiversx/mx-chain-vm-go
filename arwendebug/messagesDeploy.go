@@ -1,7 +1,6 @@
 package arwendebug
 
 import (
-	"encoding/hex"
 	"io/ioutil"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -26,7 +25,7 @@ func (request *DeployRequest) digest() error {
 	}
 
 	if len(request.CodeHex) > 0 {
-		request.Code, err = hex.DecodeString(request.CodeHex)
+		request.Code, err = fromHex(request.CodeHex)
 		if err != nil {
 			return NewRequestErrorMessageInner("invalid contract code", err)
 		}
@@ -45,7 +44,7 @@ func (request *DeployRequest) digest() error {
 
 	request.CodeMetadataBytes = (&vmcommon.CodeMetadata{Upgradeable: true}).ToBytes()
 	if len(request.CodeMetadata) > 0 {
-		request.CodeMetadataBytes, err = hex.DecodeString(request.CodeMetadata)
+		request.CodeMetadataBytes, err = fromHex(request.CodeMetadata)
 		if err != nil {
 			return err
 		}
@@ -62,13 +61,29 @@ func (request *DeployRequest) digest() error {
 // DeployResponse is a CLI / REST response message
 type DeployResponse struct {
 	ContractResponseBase
-	ContractAddress string
+	ContractAddress    []byte
+	ContractAddressHex string
 }
 
 // UpgradeRequest is a CLI / REST request message
 type UpgradeRequest struct {
 	DeployRequest
-	ContractAddress string
+	ContractAddressHex string
+	ContractAddress    []byte
+}
+
+func (request *UpgradeRequest) digest() error {
+	err := request.DeployRequest.digest()
+	if err != nil {
+		return err
+	}
+
+	request.ContractAddress, err = fromHex(request.ContractAddressHex)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // UpgradeResponse is a CLI / REST response message

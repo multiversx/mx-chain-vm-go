@@ -64,7 +64,7 @@ func (args *cliArguments) toUpgradeRequest() arwendebug.UpgradeRequest {
 	request := &arwendebug.UpgradeRequest{}
 	args.populateDeployRequest(&request.DeployRequest)
 
-	request.ContractAddress = args.ContractAddress
+	request.ContractAddressHex = args.ContractAddress
 	return *request
 }
 

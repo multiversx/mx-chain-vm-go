@@ -27,20 +27,11 @@ func (server *DebugServer) Start() error {
 
 	router := gin.Default()
 
-	router.GET("/ping", func(c *gin.Context) {
-		c.String(http.StatusOK, "pong")
-	})
-
 	router.POST("/account", server.handleCreateAccount)
 	router.POST("/deploy", server.handleDeploy)
-
-	// deploy
-
-	// upgrade
-
-	// run
-
-	// query
+	router.POST("/upgrade", server.handleUpgrade)
+	router.POST("/run", server.handleRun)
+	router.POST("/query", server.handleQuery)
 
 	return router.Run(server.address)
 }
@@ -75,6 +66,60 @@ func (server *DebugServer) handleDeploy(ginContext *gin.Context) {
 	response, err := server.facade.DeploySmartContract(request)
 	if err != nil {
 		returnBadRequest(ginContext, "handleDeploy.DeploySmartContract", err)
+		return
+	}
+
+	returnOkResponse(ginContext, response)
+}
+
+func (server *DebugServer) handleUpgrade(ginContext *gin.Context) {
+	request := UpgradeRequest{}
+
+	err := ginContext.ShouldBindJSON(&request)
+	if err != nil {
+		returnBadRequest(ginContext, "handleUpgrade.ShouldBindJSON", err)
+		return
+	}
+
+	response, err := server.facade.UpgradeSmartContract(request)
+	if err != nil {
+		returnBadRequest(ginContext, "handleUpgrade.UpgradeSmartContract", err)
+		return
+	}
+
+	returnOkResponse(ginContext, response)
+}
+
+func (server *DebugServer) handleRun(ginContext *gin.Context) {
+	request := RunRequest{}
+
+	err := ginContext.ShouldBindJSON(&request)
+	if err != nil {
+		returnBadRequest(ginContext, "handleRun.ShouldBindJSON", err)
+		return
+	}
+
+	response, err := server.facade.RunSmartContract(request)
+	if err != nil {
+		returnBadRequest(ginContext, "handleRun.UpgradeSmartContract", err)
+		return
+	}
+
+	returnOkResponse(ginContext, response)
+}
+
+func (server *DebugServer) handleQuery(ginContext *gin.Context) {
+	request := QueryRequest{}
+
+	err := ginContext.ShouldBindJSON(&request)
+	if err != nil {
+		returnBadRequest(ginContext, "handleQuery.ShouldBindJSON", err)
+		return
+	}
+
+	response, err := server.facade.QuerySmartContract(request)
+	if err != nil {
+		returnBadRequest(ginContext, "handleQuery.UpgradeSmartContract", err)
 		return
 	}
 

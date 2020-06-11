@@ -1,7 +1,6 @@
 package arwendebug
 
 import (
-	"encoding/hex"
 	"math/big"
 )
 
@@ -25,7 +24,7 @@ func (request *CreateAccountRequest) digest() error {
 		return NewRequestErrorMessageInner("empty account address", err)
 	}
 
-	request.Address, err = hex.DecodeString(request.AddressHex)
+	request.Address, err = fromHex(request.AddressHex)
 	if err != nil {
 		return NewRequestErrorMessageInner("invalid account address", err)
 	}

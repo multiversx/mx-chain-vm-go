@@ -20,7 +20,7 @@ func (world *world) prepareDeployInput(request DeployRequest) *vmcommon.Contract
 
 func (world *world) prepareUpgradeInput(request UpgradeRequest) *vmcommon.ContractCallInput {
 	callInput := &vmcommon.ContractCallInput{}
-	callInput.RecipientAddr = []byte(request.ContractAddress)
+	callInput.RecipientAddr = request.ContractAddress
 	callInput.CallerAddr = request.Impersonated
 	callInput.CallValue = request.ValueAsBigInt
 	callInput.Function = arwen.UpgradeFunctionName
@@ -37,7 +37,7 @@ func (world *world) prepareUpgradeInput(request UpgradeRequest) *vmcommon.Contra
 
 func (world *world) prepareCallInput(request RunRequest) *vmcommon.ContractCallInput {
 	callInput := &vmcommon.ContractCallInput{}
-	callInput.RecipientAddr = []byte(request.ContractAddressHex)
+	callInput.RecipientAddr = request.ContractAddress
 	callInput.CallerAddr = request.Impersonated
 	callInput.CallValue = request.ValueAsBigInt
 	callInput.Function = request.Function

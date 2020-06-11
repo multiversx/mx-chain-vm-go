@@ -74,7 +74,7 @@ func (context *testContext) upgradeContract(contract string, codePath string, im
 			CodePath:     codePath,
 			ArgumentsHex: arguments,
 		},
-		ContractAddress: contract,
+		ContractAddressHex: contract,
 	}
 
 	response, err := context.facade.UpgradeSmartContract(request)

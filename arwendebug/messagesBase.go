@@ -1,7 +1,6 @@
 package arwendebug
 
 import (
-	"encoding/hex"
 	"math/big"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -52,7 +51,7 @@ func (request *ContractRequestBase) digest() error {
 		return NewRequestError("empty impersonated address")
 	}
 
-	request.Impersonated, err = hex.DecodeString(request.ImpersonatedHex)
+	request.Impersonated, err = fromHex(request.ImpersonatedHex)
 	if err != nil {
 		return NewRequestErrorMessageInner("invalid impersonated address", err)
 	}

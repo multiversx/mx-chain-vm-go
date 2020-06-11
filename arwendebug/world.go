@@ -69,7 +69,8 @@ func (world *world) deploySmartContract(request DeployRequest) (*DeployResponse,
 	response.Input = &input.VMInput
 	response.Output = vmOutput
 	response.Error = err
-	response.ContractAddress = string(world.blockchainHook.LastCreatedContractAddress)
+	response.ContractAddress = world.blockchainHook.LastCreatedContractAddress
+	response.ContractAddressHex = toHex(response.ContractAddress)
 	return response, nil
 }
 

@@ -4,6 +4,7 @@ package arwendebug
 type RunRequest struct {
 	ContractRequestBase
 	ContractAddressHex string
+	ContractAddress    []byte
 	Function           string
 	ArgumentsHex       []string
 	Arguments          [][]byte
@@ -16,6 +17,11 @@ func (request *RunRequest) digest() error {
 	}
 
 	request.Arguments, err = decodeArguments(request.ArgumentsHex)
+	if err != nil {
+		return err
+	}
+
+	request.ContractAddress, err = fromHex(request.ContractAddressHex)
 	if err != nil {
 		return err
 	}
