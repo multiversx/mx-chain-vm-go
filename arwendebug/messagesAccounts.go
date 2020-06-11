@@ -8,28 +8,41 @@ import (
 // CreateAccountRequest is a CLI / REST request message
 type CreateAccountRequest struct {
 	RequestBase
-	Address string
-	Balance string
-	Nonce   uint64
+	AddressAsHex    string
+	AddressAsBytes  []byte
+	Balance         string
+	BalanceAsBigInt *big.Int
+	Nonce           uint64
 }
 
-func (request *CreateAccountRequest) getAddress() ([]byte, error) {
-	addressAsHex := request.Address
-	addressAsBytes, err := hex.DecodeString(addressAsHex)
+func (request *CreateAccountRequest) digest() error {
+	var err error
+	var ok bool
+
+	err = request.RequestBase.digest()
 	if err != nil {
-		return nil, NewRequestErrorMessageInner("invalid account address", err)
+		return err
 	}
 
-	return addressAsBytes, nil
-}
-
-func (request *CreateAccountRequest) getBalance() (*big.Int, error) {
-	balance, ok := big.NewInt(0).SetString(request.Balance, 10)
-	if !ok {
-		return nil, NewRequestError("invalid balance")
+	if len(request.AddressAsHex) == 0 {
+		return NewRequestErrorMessageInner("empty account address", err)
 	}
 
-	return balance, nil
+	request.AddressAsBytes, err = hex.DecodeString(request.AddressAsHex)
+	if err != nil {
+		return NewRequestErrorMessageInner("invalid account address", err)
+	}
+
+	// todo move to common
+	request.BalanceAsBigInt = big.NewInt(0)
+	if len(request.Balance) > 0 {
+		_, ok = request.BalanceAsBigInt.SetString(request.Balance, 10)
+		if !ok {
+			return NewRequestError("invalid value (erd)")
+		}
+	}
+
+	return nil
 }
 
 // CreateAccountResponse is a CLI / REST response message

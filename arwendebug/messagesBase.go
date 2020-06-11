@@ -68,6 +68,7 @@ func (request *ContractRequestBase) digest() error {
 		request.GasLimit = DefaultGasLimit
 	}
 
+	// todo move to common
 	request.ValueAsBigInt = big.NewInt(0)
 	if len(request.Value) > 0 {
 		_, ok = request.ValueAsBigInt.SetString(request.Value, 10)

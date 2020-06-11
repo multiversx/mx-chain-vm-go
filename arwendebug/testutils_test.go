@@ -30,10 +30,10 @@ func newTestContext(t *testing.T) *testContext {
 
 func (context *testContext) createAccount(address string, balance string) {
 	request := CreateAccountRequest{
-		RequestBase: context.createRequestBase(),
-		Address:     address,
-		Balance:     balance,
-		Nonce:       0,
+		RequestBase:  context.createRequestBase(),
+		AddressAsHex: address,
+		Balance:      balance,
+		Nonce:        0,
 	}
 
 	response, err := context.facade.CreateAccount(request)

@@ -1,8 +1,6 @@
 package arwendebug
 
 import (
-	"encoding/hex"
-
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
@@ -117,24 +115,8 @@ func (world *world) querySmartContract(request QueryRequest) (*QueryResponse, er
 	return response, nil
 }
 
-func (world *world) qreateAccount(request CreateAccountRequest) (*CreateAccountResponse, error) {
-	address, err := request.getAddress()
-	if err != nil {
-		return nil, err
-	}
-
-	balance, err := request.getBalance()
-	if err != nil {
-		return nil, err
-	}
-
-	account := &Account{
-		AddressAsBytes: address,
-		AddressAsHex:   hex.EncodeToString(address),
-		Nonce:          request.Nonce,
-		Balance:        balance,
-	}
-
+func (world *world) createAccount(request CreateAccountRequest) (*CreateAccountResponse, error) {
+	account := NewAccount(request.AddressAsBytes, request.Nonce, request.BalanceAsBigInt)
 	world.blockchainHook.AddAccount(account)
 	return &CreateAccountResponse{Account: account}, nil
 }

@@ -168,7 +168,7 @@ func (facade *DebugFacade) CreateAccount(request CreateAccountRequest) (*CreateA
 		return nil, err
 	}
 
-	response, err := world.qreateAccount(request)
+	response, err := world.createAccount(request)
 	if err != nil {
 		return nil, err
 	}
