@@ -83,7 +83,7 @@ type RuntimeContext interface {
 	GetRuntimeBreakpointValue() BreakpointValue
 	GetAsyncCallInfo() *AsyncCallInfo
 	SetAsyncCallInfo(asyncCallInfo *AsyncCallInfo)
-	AddAsyncContextCall(contextIdentifier []byte, asyncCall *vmcommon.AsyncCall) error
+	AddAsyncContextCall(contextIdentifier []byte, asyncCall *vmcommon.AsyncGeneratedCall) error
 	GetAsyncContextInfo() *vmcommon.AsyncContextInfo
 	GetAsyncContext(contextIdentifier []byte) (*vmcommon.AsyncContext, error)
 	PushInstance()

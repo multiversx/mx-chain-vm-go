@@ -91,7 +91,7 @@ func (host *vmHost) sendAsyncCallToDestination(asyncCallInfo arwen.AsyncCallInfo
 }
 
 
-func (host *vmHost) sendCallbackToDestination() error {
+func (host *vmHost) sendCallbackToCurrentCaller() error {
 	runtime := host.Runtime()
 	output := host.Output()
 	metering := host.Metering()

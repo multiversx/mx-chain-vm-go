@@ -192,11 +192,11 @@ func TestDnsContract(t *testing.T) {
 }
 
 func TestTimelocks(t *testing.T) {
-	executor, err := ajt.NewArwenTestExecutor()
+	executor, err := am.NewArwenTestExecutor()
 	require.Nil(t, err)
-	runner := controller.NewScenarioRunner(
+	runner := mc.NewScenarioRunner(
 		executor,
-		ij.NewDefaultFileResolver(),
+		mc.NewDefaultFileResolver(),
 	)
 	err = runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
@@ -210,11 +210,11 @@ func TestTimelocks(t *testing.T) {
 }
 
 func TestPromises(t *testing.T) {
-	executor, err := ajt.NewArwenTestExecutor()
+	executor, err := am.NewArwenTestExecutor()
 	require.Nil(t, err)
-	runner := controller.NewScenarioRunner(
+	runner := mc.NewScenarioRunner(
 		executor,
-		ij.NewDefaultFileResolver(),
+		mc.NewDefaultFileResolver(),
 	)
 	err = runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),

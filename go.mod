@@ -14,5 +14,3 @@ require (
 )
 
 replace github.com/ElrondNetwork/elrond-vm-common => /Users/ccorcov/go/src/github.com/ElrondNetwork/elrond-vm-common
-
-replace github.com/ElrondNetwork/elrond-vm-util => /Users/ccorcov/go/src/github.com/ElrondNetwork/elrond-vm-util

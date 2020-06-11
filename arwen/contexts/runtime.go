@@ -338,7 +338,7 @@ func (context *runtimeContext) SetAsyncCallInfo(asyncCallInfo *arwen.AsyncCallIn
 	context.asyncCallInfo = asyncCallInfo
 }
 
-func (context *runtimeContext) AddAsyncContextCall(contextIdentifier []byte, asyncCall *vmcommon.AsyncCall) error {
+func (context *runtimeContext) AddAsyncContextCall(contextIdentifier []byte, asyncCall *vmcommon.AsyncGeneratedCall) error {
 	err := context.validateNewAsyncCall(asyncCall)
 	if err != nil {
 		return err
@@ -347,7 +347,7 @@ func (context *runtimeContext) AddAsyncContextCall(contextIdentifier []byte, asy
 	asyncContext := context.asyncContextInfo.AsyncContextMap[string(contextIdentifier)]
 	if asyncContext == nil {
 		context.asyncContextInfo.AsyncContextMap[string(contextIdentifier)] = &vmcommon.AsyncContext{
-			AsyncCalls: make([]*vmcommon.AsyncCall, 0),
+			AsyncCalls: make([]*vmcommon.AsyncGeneratedCall, 0),
 		}
 	}
 
@@ -440,7 +440,7 @@ func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 	return nil
 }
 
-func (context *runtimeContext) validateNewAsyncCall(asyncCall *vmcommon.AsyncCall) error {
+func (context *runtimeContext) validateNewAsyncCall(asyncCall *vmcommon.AsyncGeneratedCall) error {
 	if asyncCall.GasPercentage < 0 || asyncCall.GasPercentage > 100 {
 		return arwen.ErrInvalidGasPercentage
 	}

@@ -470,7 +470,7 @@ func createAsyncCall(context unsafe.Pointer,
 		return
 	}
 
-	err = runtime.AddAsyncContextCall(acIdentifier, &vmcommon.AsyncCall{
+	err = runtime.AddAsyncContextCall(acIdentifier, &vmcommon.AsyncGeneratedCall{
 		Destination: calledSCAddress,
 		Data: data,
 		ValueBytes: value,

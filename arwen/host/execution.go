@@ -513,7 +513,7 @@ func (host *vmHost) callSCMethod() error {
 			return err
 		}
 		if len(pendingMap.AsyncContextMap) == 0 {
-			err = host.sendCallbackToDestination()
+			err = host.sendCallbackToCurrentCaller()
 		}
 		break
 	case vmcommon.AsynchronousCallBack:
@@ -570,28 +570,19 @@ func (host *vmHost) createETHCallInput() []byte {
 
 /**
  * processAsyncInfo takes a list of async calls and for each of them, if the code exists and can be processed on this
- *  host it will. For all others, a vm output account is generated for an actual async call
+ *  host it will. For all others, a vm output account is generated for an actual async call.
+ *  Given the fact that the generated async calls that remain pending will be saved on storage, the processing is
+ *  done in two steps in order to correctly use all remaining gas. We first split the gas as specified by the developer,
+ *  then we save the storage, then we split again the gas to calls that leave this shard.
  *
  * returns a list of pending calls (the ones that should be processed on other hosts)
  */
 func (host *vmHost) processAsyncInfo(asyncInfo *vmcommon.AsyncContextInfo) (*vmcommon.AsyncContextInfo, error) {
-	pendingMap := host.getExternalAsyncCalls(asyncInfo)
-	if len(pendingMap.AsyncContextMap) > 0 {
-		err := host.savePendingAsyncCalls(pendingMap)
-		if err != nil {
-			return nil, err
-		}
-	}
 
 	host.setupAsyncCallsGasByPercentages(asyncInfo)
-
 	for _, asyncContext := range asyncInfo.AsyncContextMap {
 		for _, asyncCall := range asyncContext.AsyncCalls {
 			if !host.canExecuteSynchronouslyOnDest(asyncCall.Destination) {
-				err := host.sendAsyncCallToDestination(asyncCall)
-				if err != nil {
-					return nil, err
-				}
 				continue
 			}
 
@@ -602,32 +593,50 @@ func (host *vmHost) processAsyncInfo(asyncInfo *vmcommon.AsyncContextInfo) (*vmc
 		}
 	}
 
-	return pendingMap, nil
+	pendingMapInfo := host.getPendingAsyncCalls(asyncInfo)
+	if len(pendingMapInfo.AsyncContextMap) == 0 {
+		return pendingMapInfo, nil
+	}
+
+	saveErr := host.savePendingAsyncCalls(pendingMapInfo)
+	if saveErr != nil {
+		return nil, saveErr
+	}
+
+	host.setupAsyncCallsGasByPercentages(pendingMapInfo)
+	for _, asyncContext := range pendingMapInfo.AsyncContextMap {
+		for _, asyncCall := range asyncContext.AsyncCalls {
+			if !host.canExecuteSynchronouslyOnDest(asyncCall.Destination) {
+				err := host.sendAsyncCallToDestination(asyncCall)
+				if err != nil {
+					return nil, err
+				}
+			}
+		}
+	}
+
+	return pendingMapInfo, nil
 }
 
 /**
  * processAsyncCall executes an async call and processes the callback if no extra calls are pending
  */
-func (host *vmHost) processAsyncCall(asyncCall *vmcommon.AsyncCall) error {
+func (host *vmHost) processAsyncCall(asyncCall *vmcommon.AsyncGeneratedCall) error {
 	input, _ := host.createDestinationContractCallInput(asyncCall)
 	output, asyncMap, executionError := host.ExecuteOnDestContext(input)
-
-	if executionError != nil {
-		return executionError
-	}
 
 	pendingMap := host.getPendingAsyncCalls(asyncMap)
 	if len(pendingMap.AsyncContextMap) == 0 {
 		return host.callbackAsync(asyncCall, output, executionError)
 	}
 
-	return nil
+	return executionError
 }
 
 /**
  * callbackAsync will execute a callback from an async call that was ran on this host and set it's status to resolved or rejected
  */
-func (host *vmHost) callbackAsync(asyncCall *vmcommon.AsyncCall, vmOutput *vmcommon.VMOutput, executionError error) error {
+func (host *vmHost) callbackAsync(asyncCall *vmcommon.AsyncGeneratedCall, vmOutput *vmcommon.VMOutput, executionError error) error {
 	asyncCall.Status = vmcommon.AsyncCallResolved
 	callbackFunction := asyncCall.SuccessCallback
 	if vmOutput.ReturnCode != vmcommon.Ok {
@@ -700,41 +709,7 @@ func (host *vmHost) getPendingAsyncCalls(asyncInfo *vmcommon.AsyncContextInfo) *
 			if pendingMap.AsyncContextMap[contextIdentifier] == nil {
 				pendingMap.AsyncContextMap[contextIdentifier] = &vmcommon.AsyncContext{
 					Callback: asyncContext.Callback,
-					AsyncCalls: make([]*vmcommon.AsyncCall, 0),
-				}
-			}
-			pendingMap.AsyncContextMap[contextIdentifier].AsyncCalls = append(
-				pendingMap.AsyncContextMap[contextIdentifier].AsyncCalls,
-				asyncCall,
-			)
-		}
-	}
-
-	return pendingMap
-}
-
-/**
- * getExternalAsyncCalls returns async calls for which we don't have the code to execute. This should be saved
- *  before we execute the rest of the calls so we can correctly split the gas after saving them in storage
- */
-func (host *vmHost) getExternalAsyncCalls(asyncInfo *vmcommon.AsyncContextInfo) *vmcommon.AsyncContextInfo {
-	pendingMap := &vmcommon.AsyncContextInfo{
-		AsyncInitiator: vmcommon.AsyncInitiator{
-			CallerAddr: asyncInfo.CallerAddr,
-			ReturnData: asyncInfo.ReturnData,
-		},
-		AsyncContextMap: make(map[string]*vmcommon.AsyncContext),
-	}
-
-	for contextIdentifier, asyncContext := range asyncInfo.AsyncContextMap {
-		for _, asyncCall := range asyncContext.AsyncCalls {
-			if !host.canExecuteSynchronouslyOnDest(asyncCall.Destination) {
-				continue
-			}
-			if pendingMap.AsyncContextMap[contextIdentifier] == nil {
-				pendingMap.AsyncContextMap[contextIdentifier] = &vmcommon.AsyncContext{
-					Callback: asyncContext.Callback,
-					AsyncCalls: make([]*vmcommon.AsyncCall, 0),
+					AsyncCalls: make([]*vmcommon.AsyncGeneratedCall, 0),
 				}
 			}
 			pendingMap.AsyncContextMap[contextIdentifier].AsyncCalls = append(
@@ -802,7 +777,20 @@ func (host *vmHost) processCallbackStack() error {
 		delete(asyncInfo.AsyncContextMap, currentContextIdentifier)
 	}
 
-	if len(asyncInfo.AsyncContextMap) == 0 {
+	// If we are still waiting for callbacks we return
+	if len(asyncInfo.AsyncContextMap) > 0 {
+		return nil
+	}
+
+	_, err = storage.SetStorage(storageKey, nil)
+	if err != nil {
+		return err
+	}
+
+
+
+	// Now figure out if we can execute the callback here or different shard
+	if !host.canExecuteSynchronouslyOnDest(asyncInfo.AsyncInitiator.CallerAddr) {
 		err = host.sendStorageCallbackToDestination(asyncInfo.AsyncInitiator)
 		if err != nil {
 			return err
@@ -814,6 +802,24 @@ func (host *vmHost) processCallbackStack() error {
 			return err
 		}
 
+		return nil
+	}
+
+	// The caller is in the same shard, execute it's callback
+	callbackCallInput, err := host.createCallbackContractCallInput(
+		host.Output().GetVMOutput(),
+		asyncInfo.AsyncInitiator.CallerAddr,
+		arwen.CallbackDefault,
+		nil,
+	)
+	if err != nil {
+		return err
+	}
+
+	callbackVMOutput, _, callBackErr := host.ExecuteOnDestContext(callbackCallInput)
+	err = host.processCallbackVMOutput(callbackVMOutput, callBackErr)
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -828,6 +834,12 @@ func (host *vmHost) processCallbackStack() error {
 func (host *vmHost) setupAsyncCallsGasByPercentages(asyncInfo *vmcommon.AsyncContextInfo) {
 	gasLeft := host.Metering().GasLeft()
 	gasAdded := uint64(0)
+	totalPercentage := int32(0)
+	for _, asyncContext := range asyncInfo.AsyncContextMap {
+		for _, asyncCall := range asyncContext.AsyncCalls {
+			totalPercentage += asyncCall.GasPercentage
+		}
+	}
 
 	var lastContextIdentifier string
 	var lastAsyncCallIndex int
@@ -835,7 +847,7 @@ func (host *vmHost) setupAsyncCallsGasByPercentages(asyncInfo *vmcommon.AsyncCon
 		lastContextIdentifier = identifier
 		for index, asyncCall := range asyncContext.AsyncCalls {
 			lastAsyncCallIndex = index
-			gasLimit := gasLeft*(uint64(asyncCall.GasPercentage)/100)
+			gasLimit := gasLeft*uint64(asyncCall.GasPercentage/totalPercentage)
 			asyncInfo.AsyncContextMap[identifier].AsyncCalls[index].GasLimit = gasLimit
 			gasAdded += gasLimit
 		}
