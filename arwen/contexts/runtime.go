@@ -30,7 +30,6 @@ type runtimeContext struct {
 
 	asyncCallInfo *arwen.AsyncCallInfo
 
-	argParser arwen.ArgumentsParser
 	validator *WASMValidator
 }
 
@@ -59,7 +58,6 @@ func (context *runtimeContext) InitState() {
 	context.scAddress = make([]byte, 0)
 	context.callFunction = ""
 	context.readOnly = false
-	context.argParser = vmcommon.NewAtArgumentParser()
 	context.asyncCallInfo = nil
 }
 
@@ -68,7 +66,13 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 		context.instance = nil
 		return arwen.ErrMaxInstancesReached
 	}
-	newInstance, err := wasmer.NewMeteredInstance(contract, gasLimit)
+	options := wasmer.CompilationOptions{
+		GasLimit:           gasLimit,
+		OpcodeTrace:        false,
+		Metering:           true,
+		RuntimeBreakpoints: true,
+	}
+	newInstance, err := wasmer.NewInstanceWithOptions(contract, options)
 	if err != nil {
 		context.instance = nil
 		return err
@@ -144,10 +148,6 @@ func (context *runtimeContext) ClearInstanceStack() {
 		instance.Clean()
 	}
 	context.instanceStack = make([]*wasmer.Instance, 0)
-}
-
-func (context *runtimeContext) ArgParser() arwen.ArgumentsParser {
-	return context.argParser
 }
 
 func (context *runtimeContext) GetVMType() []byte {

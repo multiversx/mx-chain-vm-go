@@ -1,0 +1,74 @@
+{
+    "name": "genesis activate",
+    "steps": [
+        {
+            "step": "scCall",
+            "txId": "add removed node back",
+            "tx": {
+                "from": "''node_address__________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "addNodes",
+                "arguments": [
+                    "''bls_key_5_______________________________________________________________________________________"
+                ],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "delegator 2 re-stake (adjust after genesis)",
+            "tx": {
+                "from": "''delegator_2___________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "1,000,000,000",
+                "function": "stake",
+                "arguments": [],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [
+                    {
+                        "address": "''delegation_contract___________s1",
+                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000001",
+                        "topics": [
+                            "''delegator_2___________________s1"
+                        ],
+                        "data": "1,000,000,000"
+                    }
+                ],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "simulate funds being set up correctly at genesis",
+            "tx": {
+                "from": "''delegator_1___________________s1",
+                "to": "''auction_contract______________s1",
+                "value": "300,000,000,000,000"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "simulate funds being set up correctly at genesis",
+            "tx": {
+                "from": "''delegator_2___________________s1",
+                "to": "''auction_contract______________s1",
+                "value": "033,000,000,000,000"
+            }
+        }
+    ]
+}

@@ -17,7 +17,7 @@ var receiver = []byte("receiver")
 var scAddress = []byte("erc20")
 
 func Test_RunERC20Benchmark(t *testing.T) {
-	runERC20Benchmark(t, 100, 4)
+	runERC20Benchmark(t, 1000, 4)
 }
 
 func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int) {

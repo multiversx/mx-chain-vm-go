@@ -48,7 +48,13 @@ func TestFunctionsGuard_Arity(t *testing.T) {
 	gasLimit := uint64(100000000)
 	path := "./../../test/contracts/signatures/signatures.wasm"
 	contractCode := arwen.GetSCCode(path)
-	instance, err := wasmer.NewMeteredInstance(contractCode, gasLimit)
+	options := wasmer.CompilationOptions{
+		GasLimit:           gasLimit,
+		OpcodeTrace:        false,
+		Metering:           true,
+		RuntimeBreakpoints: true,
+	}
+	instance, err := wasmer.NewInstanceWithOptions(contractCode, options)
 	require.Nil(t, err)
 
 	inArity, _ := validator.getInputArity(instance, "goodFunction")

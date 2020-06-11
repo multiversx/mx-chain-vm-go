@@ -1,0 +1,33 @@
+{
+    "name": "force unstake",
+    "steps": [
+        {
+            "step": "setState",
+            "comment": "almost one week passes (1 second too early)",
+            "currentBlockInfo": {
+                "blockTimestamp": "1589800400"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "force-unstake-too-soon",
+            "tx": {
+                "from": "''delegator_1___________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "forceUnstake",
+                "arguments": [],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "4",
+                "message": "too soon to call forceUnstake",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        }
+    ]
+}
