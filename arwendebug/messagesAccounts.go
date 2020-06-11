@@ -16,10 +16,7 @@ type CreateAccountRequest struct {
 }
 
 func (request *CreateAccountRequest) digest() error {
-	var err error
-	var ok bool
-
-	err = request.RequestBase.digest()
+	err := request.RequestBase.digest()
 	if err != nil {
 		return err
 	}
@@ -33,13 +30,9 @@ func (request *CreateAccountRequest) digest() error {
 		return NewRequestErrorMessageInner("invalid account address", err)
 	}
 
-	// todo move to common
-	request.BalanceAsBigInt = big.NewInt(0)
-	if len(request.Balance) > 0 {
-		_, ok = request.BalanceAsBigInt.SetString(request.Balance, 10)
-		if !ok {
-			return NewRequestError("invalid value (erd)")
-		}
+	request.BalanceAsBigInt, err = parseValue(request.Balance)
+	if err != nil {
+		return err
 	}
 
 	return nil

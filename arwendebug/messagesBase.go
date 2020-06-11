@@ -43,10 +43,7 @@ type ContractRequestBase struct {
 }
 
 func (request *ContractRequestBase) digest() error {
-	var err error
-	var ok bool
-
-	err = request.RequestBase.digest()
+	err := request.RequestBase.digest()
 	if err != nil {
 		return err
 	}
@@ -68,13 +65,9 @@ func (request *ContractRequestBase) digest() error {
 		request.GasLimit = DefaultGasLimit
 	}
 
-	// todo move to common
-	request.ValueAsBigInt = big.NewInt(0)
-	if len(request.Value) > 0 {
-		_, ok = request.ValueAsBigInt.SetString(request.Value, 10)
-		if !ok {
-			return NewRequestError("invalid value (erd)")
-		}
+	request.ValueAsBigInt, err = parseValue(request.Value)
+	if err != nil {
+		return err
 	}
 
 	return nil
