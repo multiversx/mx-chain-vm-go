@@ -104,6 +104,10 @@ func (context *runtimeContext) InitStateFromContractCallInput(input *vmcommon.Co
 	}
 }
 
+func (context *runtimeContext) SetCustomCallFunction(callFunction string) {
+	context.callFunction = callFunction
+}
+
 func (context *runtimeContext) PushState() {
 	newState := &runtimeContext{
 		vmInput:          context.vmInput,

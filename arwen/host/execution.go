@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -492,8 +493,8 @@ func (host *vmHost) callSCMethod() error {
 		return err
 	}
 
-	// If this is callback we should figure out what
-	function, err := runtime.GetFunctionToCall()
+	callType := runtime.GetVMInput().CallType
+	function, err := host.getFunctionByCallType(callType)
 	if err != nil {
 		return err
 	}
@@ -506,7 +507,7 @@ func (host *vmHost) callSCMethod() error {
 		return err
 	}
 
-	switch runtime.GetVMInput().CallType {
+	switch callType {
 	case vmcommon.AsynchronousCall:
 		pendingMap, paiErr := host.processAsyncInfo(runtime.GetAsyncContextInfo())
 		if paiErr != nil {
@@ -787,17 +788,9 @@ func (host *vmHost) processCallbackStack() error {
 		return err
 	}
 
-
-
 	// Now figure out if we can execute the callback here or different shard
 	if !host.canExecuteSynchronouslyOnDest(asyncInfo.AsyncInitiator.CallerAddr) {
 		err = host.sendStorageCallbackToDestination(asyncInfo.AsyncInitiator)
-		if err != nil {
-			return err
-		}
-
-		// Delete storage, we are no longer expecting any callback
-		_, err = storage.SetStorage(storageKey, nil)
 		if err != nil {
 			return err
 		}
@@ -855,4 +848,56 @@ func (host *vmHost) setupAsyncCallsGasByPercentages(asyncInfo *vmcommon.AsyncCon
 	if len(lastContextIdentifier) > 0 && gasAdded < gasLeft {
 		asyncInfo.AsyncContextMap[lastContextIdentifier].AsyncCalls[lastAsyncCallIndex].GasLimit += gasLeft - gasAdded
 	}
+}
+
+func (host *vmHost) getFunctionByCallType(callType vmcommon.CallType) (wasmer.ExportedFunctionCallback, error) {
+	runtime := host.Runtime()
+
+	if callType != vmcommon.AsynchronousCallBack {
+		return runtime.GetFunctionToCall()
+	}
+
+	asyncInfo, err := host.getCurrentAsyncInfo()
+	if err != nil {
+		return nil, err
+	}
+
+	vmInput := runtime.GetVMInput()
+
+	customCallback := false
+	for _, asyncContext := range asyncInfo.AsyncContextMap {
+		for _, asyncCall := range asyncContext.AsyncCalls {
+			if bytes.Equal(vmInput.CallerAddr, asyncCall.Destination) {
+				customCallback = true
+				runtime.SetCustomCallFunction(asyncCall.SuccessCallback)
+				break
+			}
+		}
+
+		if customCallback {
+			break
+		}
+	}
+
+	return runtime.GetFunctionToCall()
+}
+
+func (host *vmHost) getCurrentAsyncInfo() (*vmcommon.AsyncContextInfo, error) {
+	runtime := host.Runtime()
+	storage := host.Storage()
+
+	storageKey, err := arwen.CustomStorageKey(host.Crypto(), arwen.AsyncDataPrefix, runtime.GetOriginalTxHash())
+	if err != nil {
+		return nil, err
+	}
+
+	buff := storage.GetStorage(storageKey)
+
+	asyncInfo := &vmcommon.AsyncContextInfo{}
+	err = json.Unmarshal(buff, &asyncInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	return asyncInfo, nil
 }

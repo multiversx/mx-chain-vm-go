@@ -228,3 +228,7 @@ func (r *RuntimeContextMock) GetAsyncContextInfo() *vmcommon.AsyncContextInfo {
 func (r *RuntimeContextMock) GetAsyncContext(_ []byte) (*vmcommon.AsyncContext, error) {
 	return nil, nil
 }
+
+func (r *RuntimeContextMock) SetCustomCallFunction(callFunction string) {
+
+}
