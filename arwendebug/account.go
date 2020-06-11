@@ -13,7 +13,7 @@ type Account struct {
 	Nonce      uint64
 	Balance    *big.Int
 	CodeHex    string
-	Storage    map[string][]byte
+	Storage    map[string]string
 }
 
 // NewAccount creates a new debug account
@@ -27,6 +27,6 @@ func NewAccount(address []byte, nonce uint64, balance *big.Int) *Account {
 		Nonce:      nonce,
 		Balance:    balance,
 		CodeHex:    "",
-		Storage:    make(map[string][]byte),
+		Storage:    make(map[string]string),
 	}
 }

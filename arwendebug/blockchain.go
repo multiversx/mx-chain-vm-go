@@ -1,16 +1,12 @@
 package arwendebug
 
 import (
-	"errors"
 	"math/big"
 	"strconv"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
-
-var errAccountDoesntExist = errors.New("account does not exist")
-var zero = big.NewInt(0)
 
 var _ vmcommon.BlockchainHook = (*BlockchainHookMock)(nil)
 
@@ -44,12 +40,6 @@ func NewBlockchainHookMock() *BlockchainHookMock {
 
 // AddAccount -
 func (b *BlockchainHookMock) AddAccount(account *Account) {
-	if account.Storage == nil {
-		account.Storage = make(map[string][]byte)
-	}
-	if account.Balance == nil {
-		account.Balance = big.NewInt(0)
-	}
 	b.Accounts[account.AddressHex] = account
 }
 
@@ -111,7 +101,7 @@ func (b *BlockchainHookMock) GetStorageData(address []byte, index []byte) ([]byt
 		return []byte{}, errAccountDoesntExist
 	}
 
-	return account.Storage[string(index)], nil
+	return fromHex(account.Storage[toHex(index)])
 }
 
 // IsCodeEmpty -
@@ -212,7 +202,22 @@ func (b *BlockchainHookMock) GetAllState(address []byte) (map[string][]byte, err
 		return nil, errAccountDoesntExist
 	}
 
-	return account.Storage, nil
+	allState := make(map[string][]byte)
+	for key, value := range account.Storage {
+		keyAsBytes, err := fromHex(key)
+		if err != nil {
+			return nil, err
+		}
+
+		valueAsBytes, err := fromHex(value)
+		if err != nil {
+			return nil, err
+		}
+
+		allState[string(keyAsBytes)] = valueAsBytes
+	}
+
+	return allState, nil
 }
 
 // UpdateAccounts -
@@ -238,10 +243,7 @@ func (b *BlockchainHookMock) UpdateAccounts(outputAccounts map[string]*vmcommon.
 }
 
 func mergeStorageUpdates(leftAccount *Account, rightAccount *vmcommon.OutputAccount) {
-	if leftAccount.Storage == nil {
-		leftAccount.Storage = make(map[string][]byte)
-	}
 	for key, update := range rightAccount.StorageUpdates {
-		leftAccount.Storage[key] = update.Data
+		leftAccount.Storage[toHex([]byte(key))] = toHex(update.Data)
 	}
 }
