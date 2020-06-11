@@ -74,7 +74,8 @@ func (db *database) storeWorld(world *world) error {
 
 func (db *database) storeOutcome(key string, outcome interface{}) error {
 	if len(key) == 0 {
-		return ErrInvalidOutcomeKey
+		log.Trace("Database.storeOutcome(), won't store (empty key)")
+		return nil
 	}
 
 	filePath := db.getOutcomeFile(key)

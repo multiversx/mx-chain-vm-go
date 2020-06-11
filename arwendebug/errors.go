@@ -27,6 +27,10 @@ func NewRequestErrorMessageInner(message string, err error) *RequestError {
 }
 
 func (err *RequestError) Error() string {
+	if err.InnerErr == nil {
+		return fmt.Sprintf("request error: message=%s", err.Message)
+	}
+
 	return fmt.Sprintf("request error: message=%s; inner=%v", err.Message, err.InnerErr)
 }
 
@@ -34,9 +38,6 @@ func (err *RequestError) Error() string {
 func (err *RequestError) Unwrap() error {
 	return err.InnerErr
 }
-
-// ErrInvalidOutcomeKey signals an error
-var ErrInvalidOutcomeKey = errors.New("invalid outcome key")
 
 // ErrInvalidArgumentEncoding signals an error
 var ErrInvalidArgumentEncoding = errors.New("invalid contract argument encoding")

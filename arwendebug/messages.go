@@ -52,6 +52,10 @@ func (request *ContractRequestBase) getGasLimit() uint64 {
 }
 
 func (request *ContractRequestBase) getImpersonated() ([]byte, error) {
+	if request.Impersonated == "" {
+		return nil, NewRequestError("empty impersonated address")
+	}
+
 	impersonatedAsHex := request.Impersonated
 	impersonatedAsBytes, err := hex.DecodeString(impersonatedAsHex)
 	if err != nil {
@@ -66,10 +70,6 @@ type ContractResponseBase struct {
 	ResponseBase
 	Input  *vmcommon.VMInput
 	Output *vmcommon.VMOutput
-}
-
-func (response *ContractResponseBase) getReturnCode() vmcommon.ReturnCode {
-	return response.Output.ReturnCode
 }
 
 // DeployRequest is a CLI / REST request message

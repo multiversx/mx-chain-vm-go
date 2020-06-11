@@ -131,18 +131,19 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 
 	app.Commands = []cli.Command{
 		{
-			Name:  "server",
-			Usage: "start debug server",
+			Name:        "server",
+			Description: "start debug server",
 			Action: func(context *cli.Context) error {
-				return arwendebug.StartServer(facade, args.ServerAddress)
+				server := arwendebug.NewDebugServer(facade, args.ServerAddress)
+				return server.Start()
 			},
 			Flags: []cli.Flag{
 				flagServerAddress,
 			},
 		},
 		{
-			Name:  "deploy",
-			Usage: "deploy a smart contract",
+			Name:        "deploy",
+			Description: "deploy a smart contract",
 			Action: func(context *cli.Context) error {
 				_, err := facade.DeploySmartContract(args.toDeployRequest())
 				return err
@@ -162,8 +163,8 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 			},
 		},
 		{
-			Name:  "upgrade",
-			Usage: "upgrade smart contract",
+			Name:        "upgrade",
+			Description: "upgrade smart contract",
 			Action: func(context *cli.Context) error {
 				_, err := facade.UpgradeSmartContract(args.toUpgradeRequest())
 				return err
@@ -184,8 +185,8 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 			},
 		},
 		{
-			Name:  "run",
-			Usage: "run smart contract",
+			Name:        "run",
+			Description: "run smart contract",
 			Action: func(context *cli.Context) error {
 				_, err := facade.RunSmartContract(args.toRunRequest())
 				return err
@@ -204,8 +205,8 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 			},
 		},
 		{
-			Name:  "query",
-			Usage: "query smart contract",
+			Name:        "query",
+			Description: "query smart contract",
 			Action: func(context *cli.Context) error {
 				_, err := facade.QuerySmartContract(args.toQueryRequest())
 				return err
@@ -221,8 +222,8 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 			},
 		},
 		{
-			Name:  "create-account",
-			Usage: "create account",
+			Name:        "create-account",
+			Description: "create account",
 			Action: func(context *cli.Context) error {
 				_, err := facade.CreateAccount(args.toCreateAccountRequest())
 				return err

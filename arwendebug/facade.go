@@ -47,7 +47,6 @@ func (facade *DebugFacade) DeploySmartContract(request DeployRequest) (*DeployRe
 }
 
 func (facade *DebugFacade) loadDatabase(rootPath string) *database {
-	// TODO: use factory
 	database := newDatabase(rootPath)
 	return database
 }
