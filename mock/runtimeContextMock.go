@@ -105,10 +105,10 @@ func (r *RuntimeContextMock) GetOriginalTxHash() []byte {
 	return r.OriginalTxHash
 }
 
-func (r *RuntimeContextMock) GetCodeUpgradeFromArgs() ([]byte, []byte, error) {
+func (r *RuntimeContextMock) ExtractCodeUpgradeFromArgs() ([]byte, []byte, error) {
 	arguments := r.VmInput.Arguments
 	if len(arguments) < 2 {
-		panic("GetCodeUpgradeFromArgs: bad test setup")
+		panic("ExtractCodeUpgradeFromArgs: bad test setup")
 	}
 
 	return r.VmInput.Arguments[0], r.VmInput.Arguments[1], nil

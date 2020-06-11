@@ -76,7 +76,7 @@ type RuntimeContext interface {
 	Arguments() [][]byte
 	GetCurrentTxHash() []byte
 	GetOriginalTxHash() []byte
-	GetCodeUpgradeFromArgs() ([]byte, []byte, error)
+	ExtractCodeUpgradeFromArgs() ([]byte, []byte, error)
 	SignalUserError(message string)
 	FailExecution(err error)
 	SetRuntimeBreakpointValue(value BreakpointValue)

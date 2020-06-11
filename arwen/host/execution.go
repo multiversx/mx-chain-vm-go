@@ -82,7 +82,7 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
 	storage.SetAddress(runtime.GetSCAddress())
 
-	code, codeMetadata, err := runtime.GetCodeUpgradeFromArgs()
+	code, codeMetadata, err := runtime.ExtractCodeUpgradeFromArgs()
 	if err != nil {
 		return output.CreateVMOutputInCaseOfError(arwen.ErrInvalidUpgradeArguments)
 	}
