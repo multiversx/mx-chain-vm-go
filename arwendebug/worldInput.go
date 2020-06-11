@@ -7,11 +7,11 @@ import (
 
 func (world *world) prepareDeployInput(request DeployRequest) *vmcommon.ContractCreateInput {
 	createInput := &vmcommon.ContractCreateInput{}
-	createInput.CallerAddr = request.ImpersonatedAsBytes
+	createInput.CallerAddr = request.Impersonated
 	createInput.CallValue = request.ValueAsBigInt
-	createInput.ContractCode = request.CodeAsBytes
-	createInput.ContractCodeMetadata = request.CodeMetadataAsBytes
-	createInput.Arguments = request.ArgumentsAsBytes
+	createInput.ContractCode = request.Code
+	createInput.ContractCodeMetadata = request.CodeMetadataBytes
+	createInput.Arguments = request.Arguments
 	createInput.GasProvided = request.GasLimit
 	createInput.GasPrice = request.GasPrice
 
@@ -21,12 +21,12 @@ func (world *world) prepareDeployInput(request DeployRequest) *vmcommon.Contract
 func (world *world) prepareUpgradeInput(request UpgradeRequest) *vmcommon.ContractCallInput {
 	callInput := &vmcommon.ContractCallInput{}
 	callInput.RecipientAddr = []byte(request.ContractAddress)
-	callInput.CallerAddr = request.ImpersonatedAsBytes
+	callInput.CallerAddr = request.Impersonated
 	callInput.CallValue = request.ValueAsBigInt
 	callInput.Function = arwen.UpgradeFunctionName
 	allArguments := make([][]byte, 0)
-	allArguments = append(allArguments, request.CodeAsBytes, request.CodeMetadataAsBytes)
-	allArguments = append(allArguments, request.ArgumentsAsBytes...)
+	allArguments = append(allArguments, request.Code, request.CodeMetadataBytes)
+	allArguments = append(allArguments, request.Arguments...)
 
 	callInput.Arguments = allArguments
 	callInput.GasProvided = request.GasLimit
@@ -37,11 +37,11 @@ func (world *world) prepareUpgradeInput(request UpgradeRequest) *vmcommon.Contra
 
 func (world *world) prepareCallInput(request RunRequest) *vmcommon.ContractCallInput {
 	callInput := &vmcommon.ContractCallInput{}
-	callInput.RecipientAddr = []byte(request.ContractAddressAsHex)
-	callInput.CallerAddr = request.ImpersonatedAsBytes
+	callInput.RecipientAddr = []byte(request.ContractAddressHex)
+	callInput.CallerAddr = request.Impersonated
 	callInput.CallValue = request.ValueAsBigInt
 	callInput.Function = request.Function
-	callInput.Arguments = request.ArgumentsAsBytes
+	callInput.Arguments = request.Arguments
 	callInput.GasProvided = request.GasLimit
 	callInput.GasPrice = request.GasPrice
 

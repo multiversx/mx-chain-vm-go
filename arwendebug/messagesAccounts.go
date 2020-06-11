@@ -8,8 +8,8 @@ import (
 // CreateAccountRequest is a CLI / REST request message
 type CreateAccountRequest struct {
 	RequestBase
-	AddressAsHex    string
-	AddressAsBytes  []byte
+	AddressHex      string
+	Address         []byte
 	Balance         string
 	BalanceAsBigInt *big.Int
 	Nonce           uint64
@@ -21,11 +21,11 @@ func (request *CreateAccountRequest) digest() error {
 		return err
 	}
 
-	if len(request.AddressAsHex) == 0 {
+	if len(request.AddressHex) == 0 {
 		return NewRequestErrorMessageInner("empty account address", err)
 	}
 
-	request.AddressAsBytes, err = hex.DecodeString(request.AddressAsHex)
+	request.Address, err = hex.DecodeString(request.AddressHex)
 	if err != nil {
 		return NewRequestErrorMessageInner("invalid account address", err)
 	}

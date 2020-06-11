@@ -1,7 +1,6 @@
 package arwendebug
 
 import (
-	"encoding/hex"
 	"fmt"
 	"math/big"
 	"math/rand"
@@ -30,10 +29,10 @@ func newTestContext(t *testing.T) *testContext {
 
 func (context *testContext) createAccount(address string, balance string) {
 	request := CreateAccountRequest{
-		RequestBase:  context.createRequestBase(),
-		AddressAsHex: address,
-		Balance:      balance,
-		Nonce:        0,
+		RequestBase: context.createRequestBase(),
+		AddressHex:  address,
+		Balance:     balance,
+		Nonce:       0,
 	}
 
 	response, err := context.facade.CreateAccount(request)
@@ -46,11 +45,11 @@ func (context *testContext) createAccount(address string, balance string) {
 func (context *testContext) deployContract(codePath string, impersonated string, arguments ...string) *DeployResponse {
 	request := DeployRequest{
 		ContractRequestBase: ContractRequestBase{
-			RequestBase:       context.createRequestBase(),
-			ImpersonatedAsHex: impersonated,
+			RequestBase:     context.createRequestBase(),
+			ImpersonatedHex: impersonated,
 		},
-		CodePath:       codePath,
-		ArgumentsAsHex: arguments,
+		CodePath:     codePath,
+		ArgumentsHex: arguments,
 	}
 
 	response, err := context.facade.DeploySmartContract(request)
@@ -69,11 +68,11 @@ func (context *testContext) upgradeContract(contract string, codePath string, im
 	request := UpgradeRequest{
 		DeployRequest: DeployRequest{
 			ContractRequestBase: ContractRequestBase{
-				RequestBase:       context.createRequestBase(),
-				ImpersonatedAsHex: impersonated,
+				RequestBase:     context.createRequestBase(),
+				ImpersonatedHex: impersonated,
 			},
-			CodePath:       codePath,
-			ArgumentsAsHex: arguments,
+			CodePath:     codePath,
+			ArgumentsHex: arguments,
 		},
 		ContractAddress: contract,
 	}
@@ -93,12 +92,12 @@ func (context *testContext) upgradeContract(contract string, codePath string, im
 func (context *testContext) runContract(contract string, impersonated string, function string, arguments ...string) *RunResponse {
 	request := RunRequest{
 		ContractRequestBase: ContractRequestBase{
-			RequestBase:       context.createRequestBase(),
-			ImpersonatedAsHex: impersonated,
+			RequestBase:     context.createRequestBase(),
+			ImpersonatedHex: impersonated,
 		},
-		ContractAddressAsHex: contract,
-		Function:             function,
-		ArgumentsAsHex:       arguments,
+		ContractAddressHex: contract,
+		Function:           function,
+		ArgumentsHex:       arguments,
 	}
 
 	response, err := context.facade.RunSmartContract(request)
@@ -117,12 +116,12 @@ func (context *testContext) queryContract(contract string, impersonated string, 
 	request := QueryRequest{
 		RunRequest: RunRequest{
 			ContractRequestBase: ContractRequestBase{
-				RequestBase:       context.createRequestBase(),
-				ImpersonatedAsHex: impersonated,
+				RequestBase:     context.createRequestBase(),
+				ImpersonatedHex: impersonated,
 			},
-			ContractAddressAsHex: contract,
-			Function:             function,
-			ArgumentsAsHex:       arguments,
+			ContractAddressHex: contract,
+			Function:           function,
+			ArgumentsHex:       arguments,
 		},
 	}
 
@@ -175,7 +174,7 @@ type dummyAddress struct {
 func newDummyAddress(address string) *dummyAddress {
 	rawString := fmt.Sprintf("%032s", address)
 	return &dummyAddress{
-		hex: hex.EncodeToString([]byte(rawString)),
+		hex: toHex([]byte(rawString)),
 		raw: []byte(rawString),
 	}
 }

@@ -57,9 +57,9 @@ func getHostParameters() *arwen.VMHostParameters {
 }
 
 func (world *world) deploySmartContract(request DeployRequest) (*DeployResponse, error) {
-	log.Debug("world.DeploySmartContract()")
-
 	input := world.prepareDeployInput(request)
+	log.Trace("world.deploySmartContract()", "input", prettyJson(input))
+
 	vmOutput, err := world.vm.RunSmartContractCreate(input)
 	if err == nil {
 		world.blockchainHook.UpdateAccounts(vmOutput.OutputAccounts)
@@ -75,6 +75,8 @@ func (world *world) deploySmartContract(request DeployRequest) (*DeployResponse,
 
 func (world *world) upgradeSmartContract(request UpgradeRequest) (*UpgradeResponse, error) {
 	input := world.prepareUpgradeInput(request)
+	log.Trace("world.upgradeSmartContract()", "input", prettyJson(input))
+
 	vmOutput, err := world.vm.RunSmartContractCall(input)
 	if err == nil {
 		world.blockchainHook.UpdateAccounts(vmOutput.OutputAccounts)
@@ -90,6 +92,8 @@ func (world *world) upgradeSmartContract(request UpgradeRequest) (*UpgradeRespon
 
 func (world *world) runSmartContract(request RunRequest) (*RunResponse, error) {
 	input := world.prepareCallInput(request)
+	log.Trace("world.runSmartContract()", "input", prettyJson(input))
+
 	vmOutput, err := world.vm.RunSmartContractCall(input)
 	if err == nil {
 		world.blockchainHook.UpdateAccounts(vmOutput.OutputAccounts)
@@ -105,6 +109,8 @@ func (world *world) runSmartContract(request RunRequest) (*RunResponse, error) {
 
 func (world *world) querySmartContract(request QueryRequest) (*QueryResponse, error) {
 	input := world.prepareCallInput(request.RunRequest)
+	log.Trace("world.querySmartContract()", "input", prettyJson(input))
+
 	vmOutput, err := world.vm.RunSmartContractCall(input)
 
 	response := &QueryResponse{}
@@ -116,7 +122,9 @@ func (world *world) querySmartContract(request QueryRequest) (*QueryResponse, er
 }
 
 func (world *world) createAccount(request CreateAccountRequest) (*CreateAccountResponse, error) {
-	account := NewAccount(request.AddressAsBytes, request.Nonce, request.BalanceAsBigInt)
+	log.Trace("world.createAccount()", "request", prettyJson(request))
+
+	account := NewAccount(request.Address, request.Nonce, request.BalanceAsBigInt)
 	world.blockchainHook.AddAccount(account)
 	return &CreateAccountResponse{Account: account}, nil
 }

@@ -34,12 +34,12 @@ type ResponseBase struct {
 // ContractRequestBase is a CLI / REST request message
 type ContractRequestBase struct {
 	RequestBase
-	ImpersonatedAsHex   string
-	ImpersonatedAsBytes []byte
-	Value               string
-	ValueAsBigInt       *big.Int
-	GasPrice            uint64
-	GasLimit            uint64
+	ImpersonatedHex string
+	Impersonated    []byte
+	Value           string
+	ValueAsBigInt   *big.Int
+	GasPrice        uint64
+	GasLimit        uint64
 }
 
 func (request *ContractRequestBase) digest() error {
@@ -48,11 +48,11 @@ func (request *ContractRequestBase) digest() error {
 		return err
 	}
 
-	if request.ImpersonatedAsHex == "" {
+	if request.ImpersonatedHex == "" {
 		return NewRequestError("empty impersonated address")
 	}
 
-	request.ImpersonatedAsBytes, err = hex.DecodeString(request.ImpersonatedAsHex)
+	request.Impersonated, err = hex.DecodeString(request.ImpersonatedHex)
 	if err != nil {
 		return NewRequestErrorMessageInner("invalid impersonated address", err)
 	}

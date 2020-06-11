@@ -39,16 +39,16 @@ func (args *cliArguments) toDeployRequest() arwendebug.DeployRequest {
 func (args *cliArguments) populateDeployRequest(request *arwendebug.DeployRequest) {
 	args.populateContractRequestBase(&request.ContractRequestBase)
 
-	request.CodeAsHex = args.Code
+	request.CodeHex = args.Code
 	request.CodePath = args.CodePath
 	request.CodeMetadata = args.CodeMetadata
-	request.ArgumentsAsHex = args.Arguments
+	request.ArgumentsHex = args.Arguments
 }
 
 func (args *cliArguments) populateContractRequestBase(request *arwendebug.ContractRequestBase) {
 	args.populateRequestBase(&request.RequestBase)
 
-	request.ImpersonatedAsHex = args.Impersonated
+	request.ImpersonatedHex = args.Impersonated
 	request.Value = args.Value
 	request.GasLimit = args.GasLimit
 	request.GasPrice = args.GasPrice
@@ -78,9 +78,9 @@ func (args *cliArguments) toRunRequest() arwendebug.RunRequest {
 func (args *cliArguments) populateRunRequest(request *arwendebug.RunRequest) {
 	args.populateContractRequestBase(&request.ContractRequestBase)
 
-	request.ContractAddressAsHex = args.ContractAddress
+	request.ContractAddressHex = args.ContractAddress
 	request.Function = args.Function
-	request.ArgumentsAsHex = args.Arguments
+	request.ArgumentsHex = args.Arguments
 }
 
 func (args *cliArguments) toQueryRequest() arwendebug.QueryRequest {
@@ -94,7 +94,7 @@ func (args *cliArguments) toCreateAccountRequest() arwendebug.CreateAccountReque
 	request := &arwendebug.CreateAccountRequest{}
 	args.populateRequestBase(&request.RequestBase)
 
-	request.AddressAsHex = args.AccountAddress
+	request.AddressHex = args.AccountAddress
 	request.Balance = args.AccountBalance
 	request.Nonce = args.AccountNonce
 	return *request

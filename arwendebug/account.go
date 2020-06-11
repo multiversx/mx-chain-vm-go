@@ -1,7 +1,6 @@
 package arwendebug
 
 import (
-	"encoding/hex"
 	"math/big"
 )
 
@@ -10,12 +9,11 @@ type AccountsMap map[string]*Account
 
 // Account holds the account info
 type Account struct {
-	AddressAsBytes []byte
-	AddressAsHex   string
-	Nonce          uint64
-	Balance        *big.Int
-	Code           []byte
-	Storage        map[string][]byte
+	AddressHex string
+	Nonce      uint64
+	Balance    *big.Int
+	Code       []byte
+	Storage    map[string][]byte
 }
 
 // NewAccount creates a new debug account
@@ -25,11 +23,10 @@ func NewAccount(address []byte, nonce uint64, balance *big.Int) *Account {
 	}
 
 	return &Account{
-		AddressAsBytes: address,
-		AddressAsHex:   hex.EncodeToString(address),
-		Nonce:          nonce,
-		Balance:        balance,
-		Code:           nil,
-		Storage:        make(map[string][]byte),
+		AddressHex: toHex(address),
+		Nonce:      nonce,
+		Balance:    balance,
+		Code:       nil,
+		Storage:    make(map[string][]byte),
 	}
 }

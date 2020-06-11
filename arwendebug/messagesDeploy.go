@@ -10,13 +10,13 @@ import (
 // DeployRequest is a CLI / REST request message
 type DeployRequest struct {
 	ContractRequestBase
-	CodeAsHex           string
-	CodeAsBytes         []byte
-	CodePath            string
-	CodeMetadata        string
-	CodeMetadataAsBytes []byte
-	ArgumentsAsHex      []string
-	ArgumentsAsBytes    [][]byte
+	CodeHex           string
+	Code              []byte
+	CodePath          string
+	CodeMetadata      string
+	CodeMetadataBytes []byte
+	ArgumentsHex      []string
+	Arguments         [][]byte
 }
 
 func (request *DeployRequest) digest() error {
@@ -25,33 +25,33 @@ func (request *DeployRequest) digest() error {
 		return err
 	}
 
-	if len(request.CodeAsHex) > 0 {
-		request.CodeAsBytes, err = hex.DecodeString(request.CodeAsHex)
+	if len(request.CodeHex) > 0 {
+		request.Code, err = hex.DecodeString(request.CodeHex)
 		if err != nil {
 			return NewRequestErrorMessageInner("invalid contract code", err)
 		}
 	}
 
 	if len(request.CodePath) > 0 {
-		request.CodeAsBytes, err = ioutil.ReadFile(request.CodePath)
+		request.Code, err = ioutil.ReadFile(request.CodePath)
 		if err != nil {
 			return err
 		}
 	}
 
-	if len(request.CodeAsBytes) == 0 {
+	if len(request.Code) == 0 {
 		return NewRequestError("invalid contract code")
 	}
 
-	request.CodeMetadataAsBytes = (&vmcommon.CodeMetadata{Upgradeable: true}).ToBytes()
+	request.CodeMetadataBytes = (&vmcommon.CodeMetadata{Upgradeable: true}).ToBytes()
 	if len(request.CodeMetadata) > 0 {
-		request.CodeMetadataAsBytes, err = hex.DecodeString(request.CodeMetadata)
+		request.CodeMetadataBytes, err = hex.DecodeString(request.CodeMetadata)
 		if err != nil {
 			return err
 		}
 	}
 
-	request.ArgumentsAsBytes, err = decodeArguments(request.ArgumentsAsHex)
+	request.Arguments, err = decodeArguments(request.ArgumentsHex)
 	if err != nil {
 		return err
 	}

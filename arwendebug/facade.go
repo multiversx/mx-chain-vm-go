@@ -188,7 +188,7 @@ func (facade *DebugFacade) CreateAccount(request CreateAccountRequest) (*CreateA
 }
 
 func dumpOutcome(outcome interface{}) {
-	data, err := json.Marshal(outcome)
+	data, err := json.MarshalIndent(outcome, "", "\t")
 	if err != nil {
 		fmt.Println("{}")
 	}

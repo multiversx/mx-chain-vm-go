@@ -50,7 +50,7 @@ func (b *BlockchainHookMock) AddAccount(account *Account) {
 	if account.Balance == nil {
 		account.Balance = big.NewInt(0)
 	}
-	b.Accounts[string(account.AddressAsBytes)] = account
+	b.Accounts[account.AddressHex] = account
 }
 
 // AddAccounts -
@@ -62,7 +62,7 @@ func (b *BlockchainHookMock) AddAccounts(accounts []*Account) {
 
 // AccountExists -
 func (b *BlockchainHookMock) AccountExists(address []byte) (bool, error) {
-	_, ok := b.Accounts[string(address)]
+	_, ok := b.Accounts[toHex(address)]
 	if !ok {
 		return false, nil
 	}
@@ -86,7 +86,7 @@ func (b *BlockchainHookMock) NewAddress(creatorAddress []byte, creatorNonce uint
 
 // GetBalance -
 func (b *BlockchainHookMock) GetBalance(address []byte) (*big.Int, error) {
-	account, ok := b.Accounts[string(address)]
+	account, ok := b.Accounts[toHex(address)]
 	if !ok {
 		return nil, errAccountDoesntExist
 	}
@@ -96,7 +96,7 @@ func (b *BlockchainHookMock) GetBalance(address []byte) (*big.Int, error) {
 
 // GetNonce -
 func (b *BlockchainHookMock) GetNonce(address []byte) (uint64, error) {
-	account, ok := b.Accounts[string(address)]
+	account, ok := b.Accounts[toHex(address)]
 	if !ok {
 		return 0, errAccountDoesntExist
 	}
@@ -106,7 +106,7 @@ func (b *BlockchainHookMock) GetNonce(address []byte) (uint64, error) {
 
 // GetStorageData -
 func (b *BlockchainHookMock) GetStorageData(address []byte, index []byte) ([]byte, error) {
-	account, ok := b.Accounts[string(address)]
+	account, ok := b.Accounts[toHex(address)]
 	if !ok {
 		return []byte{}, errAccountDoesntExist
 	}
@@ -116,7 +116,7 @@ func (b *BlockchainHookMock) GetStorageData(address []byte, index []byte) ([]byt
 
 // IsCodeEmpty -
 func (b *BlockchainHookMock) IsCodeEmpty(address []byte) (bool, error) {
-	account, ok := b.Accounts[string(address)]
+	account, ok := b.Accounts[toHex(address)]
 	if !ok {
 		return false, errAccountDoesntExist
 	}
@@ -127,7 +127,7 @@ func (b *BlockchainHookMock) IsCodeEmpty(address []byte) (bool, error) {
 
 // GetCode -
 func (b *BlockchainHookMock) GetCode(address []byte) ([]byte, error) {
-	account, ok := b.Accounts[string(address)]
+	account, ok := b.Accounts[toHex(address)]
 	if !ok {
 		return []byte{}, errAccountDoesntExist
 	}
@@ -207,7 +207,7 @@ func (b *BlockchainHookMock) GetBuiltinFunctionNames() vmcommon.FunctionNames {
 
 // GetAllState -
 func (b *BlockchainHookMock) GetAllState(address []byte) (map[string][]byte, error) {
-	account, ok := b.Accounts[string(address)]
+	account, ok := b.Accounts[toHex(address)]
 	if !ok {
 		return nil, errAccountDoesntExist
 	}
@@ -217,8 +217,9 @@ func (b *BlockchainHookMock) GetAllState(address []byte) (map[string][]byte, err
 
 // UpdateAccounts -
 func (b *BlockchainHookMock) UpdateAccounts(outputAccounts map[string]*vmcommon.OutputAccount) {
-	for strAddress, outputAccount := range outputAccounts {
-		account, exists := b.Accounts[strAddress]
+	for address, outputAccount := range outputAccounts {
+		addressHex := toHex([]byte(address))
+		account, exists := b.Accounts[addressHex]
 		if !exists {
 			account = NewAccount(outputAccount.Address, 0, nil)
 		}
@@ -232,14 +233,11 @@ func (b *BlockchainHookMock) UpdateAccounts(outputAccounts map[string]*vmcommon.
 		}
 
 		mergeStorageUpdates(account, outputAccount)
-		b.Accounts[strAddress] = account
+		b.Accounts[addressHex] = account
 	}
 }
 
-func mergeStorageUpdates(
-	leftAccount *Account,
-	rightAccount *vmcommon.OutputAccount,
-) {
+func mergeStorageUpdates(leftAccount *Account, rightAccount *vmcommon.OutputAccount) {
 	if leftAccount.Storage == nil {
 		leftAccount.Storage = make(map[string][]byte)
 	}

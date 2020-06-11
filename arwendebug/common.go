@@ -2,6 +2,7 @@ package arwendebug
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"math/big"
 )
 
@@ -31,4 +32,17 @@ func parseValue(value string) (*big.Int, error) {
 	}
 
 	return valueAsBigInt, nil
+}
+
+func prettyJson(request interface{}) string {
+	data, err := json.MarshalIndent(request, "", "\t")
+	if err != nil {
+		log.Error("prettyJson", "err", err)
+	}
+
+	return string(data)
+}
+
+func toHex(bytes []byte) string {
+	return hex.EncodeToString(bytes)
 }

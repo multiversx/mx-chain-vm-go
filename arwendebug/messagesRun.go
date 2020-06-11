@@ -3,10 +3,10 @@ package arwendebug
 // RunRequest is a CLI / REST request message
 type RunRequest struct {
 	ContractRequestBase
-	ContractAddressAsHex string
-	Function             string
-	ArgumentsAsHex       []string
-	ArgumentsAsBytes     [][]byte
+	ContractAddressHex string
+	Function           string
+	ArgumentsHex       []string
+	Arguments          [][]byte
 }
 
 func (request *RunRequest) digest() error {
@@ -15,7 +15,7 @@ func (request *RunRequest) digest() error {
 		return err
 	}
 
-	request.ArgumentsAsBytes, err = decodeArguments(request.ArgumentsAsHex)
+	request.Arguments, err = decodeArguments(request.ArgumentsHex)
 	if err != nil {
 		return err
 	}
