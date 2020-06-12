@@ -115,7 +115,7 @@
                     "balance": "300,000,000",
                     "storage": {},
                     "code": "",
-                    "asyncCallData": "delegation claim"
+                    "asyncCallData": "delegation withdraw inactive stake"
                 },
                 "''delegator_2___________________s1": {
                     "nonce": "*",
