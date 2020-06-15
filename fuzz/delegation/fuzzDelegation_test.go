@@ -10,6 +10,7 @@ import (
 	"time"
 
 	mc "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/controller"
+	"github.com/stretchr/testify/assert"
 )
 
 var fuzz = flag.Bool("fuzz", false, "fuzz")
@@ -27,10 +28,10 @@ func newExecutorWithPaths() *fuzzDelegationExecutor {
 	fileResolver := mc.NewDefaultFileResolver().
 		ReplacePath(
 			"delegation.wasm",
-			filepath.Join(getTestRoot(), "delegation_v0.2/delegation.wasm")).
+			filepath.Join(getTestRoot(), "delegation_v0.3/delegation.wasm")).
 		ReplacePath(
 			"auction-mock.wasm",
-			filepath.Join(getTestRoot(), "delegation_v0.2/auction-mock.wasm"))
+			filepath.Join(getTestRoot(), "delegation_v0.3/auction-mock.wasm"))
 
 	executor, err := newFuzzDelegationExecutor(fileResolver)
 	if err != nil {
@@ -40,63 +41,50 @@ func newExecutorWithPaths() *fuzzDelegationExecutor {
 }
 
 func TestFuzzDelegation(t *testing.T) {
-	if !*fuzz {
-		t.Skip("skipping test; only run with --fuzz argument")
-	}
+	// if !*fuzz {
+	// 	t.Skip("skipping test; only run with --fuzz argument")
+	// }
 
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	executor := newExecutorWithPaths()
+	// defer executor.saveGeneratedScenario()
 
 	err := executor.init(&fuzzDelegationExecutorInitArgs{
-		nodeShare:              r.Intn(10000),
-		timeBeforeForceUnstake: 0,
-		numDelegators:          r.Intn(4) + 1,
-		numNodes:               r.Intn(9) + 1,
-		stakePerNode:           big.NewInt(1000000000),
+		serviceFee:                  r.Intn(10000),
+		numBlocksBeforeForceUnstake: 0,
+		numBlocksBeforeUnbond:       0,
+		numDelegators:               r.Intn(10) + 1,
+		stakePerNode:                big.NewInt(1000000000),
 	})
-	if err != nil {
-		panic(err)
-	}
+	assert.Nil(t, err)
+	executor.enableAutoActivation()
+
+	maxStake := big.NewInt(0).Mul(executor.stakePerNode, big.NewInt(2))
 
 	re := newRandomEventProvider()
-	for stepIndex := 0; stepIndex < 1000 && !executor.active; stepIndex++ {
+	for stepIndex := 0; stepIndex < 100; stepIndex++ {
 		re.reset()
 		switch {
-		case re.withProbability(0.3):
-			err = executor.maybeActivate()
-			if err != nil {
-				panic(err)
-			}
-		case re.withProbability(0.01):
-			// finish staking, activate
-			delegatorIdx := r.Intn(executor.numDelegators)
-			err = executor.stakeTheRest(delegatorIdx)
-			if err != nil {
-				panic(err)
-			}
-			err = executor.mustActivate()
-			if err != nil {
-				panic(err)
-			}
+		case re.withProbability(0.2):
+			// add nodes
+			// err = executor.addNodes(r.Intn(3))
+			// assert.Nil(t, err)
 		case re.withProbability(0.5):
 			// stake
-			delegatorIdx := r.Intn(executor.numDelegators)
-			stake := big.NewInt(0).Rand(r, executor.expectedStake)
-			err = executor.tryStake(delegatorIdx, stake)
-			if err != nil {
-				panic(err)
-			}
-		case re.withProbability(0.1):
+			// delegatorIdx := r.Intn(executor.numDelegators)
+			// stake := big.NewInt(0).Rand(r, maxStake)
+			// err = executor.stake(delegatorIdx, stake)
+			// assert.Nil(t, err)
+		case re.withProbability(0.3):
 			// unstake
 			delegatorIdx := r.Intn(executor.numDelegators)
-			stake := big.NewInt(0).Rand(r, executor.expectedStake)
-			err = executor.tryUnstake(delegatorIdx, stake)
-			if err != nil {
-				panic(err)
-			}
+			stake := big.NewInt(0).Rand(r, maxStake)
+			err = executor.withdrawInactiveStake(delegatorIdx, stake)
+			assert.Nil(t, err)
 		default:
 		}
+		// executor.saveGeneratedScenario()
 	}
 
 }
