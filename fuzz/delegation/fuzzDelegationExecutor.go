@@ -363,11 +363,7 @@ func (pfe *fuzzDelegationExecutor) addNodes(numNodesToAdd int) error {
 }
 
 func (pfe *fuzzDelegationExecutor) stake(delegIndex int, amount *big.Int) error {
-	err := pfe.computeAllRewards()
-	if err != nil {
-		return err
-	}
-	_, err = pfe.executeTxStep(fmt.Sprintf(`
+	_, err := pfe.executeTxStep(fmt.Sprintf(`
 	{
 		"step": "scCall",
 		"txId": "%d",
