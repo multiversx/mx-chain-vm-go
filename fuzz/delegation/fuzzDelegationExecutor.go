@@ -20,6 +20,7 @@ type fuzzDelegationExecutor struct {
 	world             *worldhook.BlockchainHookMock
 	vm                vmi.VMExecutionHandler
 	mandosParser      mjparse.Parser
+	txIndex           int
 
 	initialDelegatorBalance     *big.Int
 	serviceFee                  int
@@ -31,6 +32,7 @@ type fuzzDelegationExecutor struct {
 	delegationContractAddress   []byte
 	auctionMockAddress          []byte
 	numNodes                    int
+	totalRewards                *big.Int
 	generatedScenario           *mj.Scenario
 }
 
@@ -47,7 +49,9 @@ func newFuzzDelegationExecutor(fileResolver mjparse.FileResolver) (*fuzzDelegati
 		world:             arwenTestExecutor.World,
 		vm:                arwenTestExecutor.GetVM(),
 		mandosParser:      parser,
+		txIndex:           0,
 		numNodes:          0,
+		totalRewards:      big.NewInt(0),
 		generatedScenario: &mj.Scenario{
 			Name: "fuzz generated",
 		},
@@ -80,6 +84,11 @@ func (pfe *fuzzDelegationExecutor) saveGeneratedScenario() {
 	}
 }
 
+func (pfe *fuzzDelegationExecutor) nextTxIndex() int {
+	pfe.txIndex++
+	return pfe.txIndex
+}
+
 func (pfe *fuzzDelegationExecutor) executeStep(stepSnippet string) error {
 	step, err := pfe.mandosParser.ParseScenarioStep(stepSnippet)
 	if err != nil {
@@ -106,7 +115,7 @@ func (pfe *fuzzDelegationExecutor) simpleQuery(funcName string) (*big.Int, error
 	output, err := pfe.executeTxStep(fmt.Sprintf(`
 	{
 		"step": "scCall",
-		"txId": "-simpleQuery-",
+		"txId": "%d",
 		"tx": {
 			"from": "''%s",
 			"to": "''%s",
@@ -124,6 +133,7 @@ func (pfe *fuzzDelegationExecutor) simpleQuery(funcName string) (*big.Int, error
 			"refund": "*"
 		}
 	}`,
+		pfe.nextTxIndex(),
 		string(pfe.ownerAddress),
 		string(pfe.delegationContractAddress),
 		funcName,
@@ -260,7 +270,7 @@ func (pfe *fuzzDelegationExecutor) setStakePerNode(stakePerNode *big.Int) error 
 	_, err := pfe.executeTxStep(fmt.Sprintf(`
 	{
 		"step": "scCall",
-		"txId": "-nr-nodes-",
+		"txId": "-setStakePerNode-",
 		"tx": {
 			"from": "''%s",
 			"to": "''%s",
@@ -292,7 +302,7 @@ func (pfe *fuzzDelegationExecutor) enableAutoActivation() error {
 	_, err := pfe.executeTxStep(fmt.Sprintf(`
 	{
 		"step": "scCall",
-		"txId": "-enable-auto-activation-",
+		"txId": "%d",
 		"tx": {
 			"from": "''%s",
 			"to": "''%s",
@@ -310,6 +320,7 @@ func (pfe *fuzzDelegationExecutor) enableAutoActivation() error {
 			"refund": "*"
 		}
 	}`,
+		pfe.nextTxIndex(),
 		string(pfe.ownerAddress),
 		string(pfe.delegationContractAddress),
 	))
@@ -322,7 +333,7 @@ func (pfe *fuzzDelegationExecutor) addNodes(numNodesToAdd int) error {
 	_, err := pfe.executeTxStep(fmt.Sprintf(`
 	{
 		"step": "scCall",
-		"txId": "-add-nodes-",
+		"txId": "%d",
 		"tx": {
 			"from": "''%s",
 			"to": "''%s",
@@ -342,6 +353,7 @@ func (pfe *fuzzDelegationExecutor) addNodes(numNodesToAdd int) error {
 			"refund": "*"
 		}
 	}`,
+		pfe.nextTxIndex(),
 		string(pfe.ownerAddress),
 		string(pfe.delegationContractAddress),
 		blsKeySignatureArgsString(pfe.numNodes, numNodesToAdd),
@@ -351,17 +363,21 @@ func (pfe *fuzzDelegationExecutor) addNodes(numNodesToAdd int) error {
 }
 
 func (pfe *fuzzDelegationExecutor) stake(delegIndex int, amount *big.Int) error {
-	_, err := pfe.executeTxStep(fmt.Sprintf(`
+	err := pfe.computeAllRewards()
+	if err != nil {
+		return err
+	}
+	_, err = pfe.executeTxStep(fmt.Sprintf(`
 	{
 		"step": "scCall",
-		"txId": "-stake-",
+		"txId": "%d",
 		"tx": {
 			"from": "''%s",
 			"to": "''%s",
 			"value": "%d",
 			"function": "stake",
 			"arguments": [],
-			"gasLimit": "1,000,000",
+			"gasLimit": "100,000,000",
 			"gasPrice": "0"
 		},
 		"expect": {
@@ -372,6 +388,7 @@ func (pfe *fuzzDelegationExecutor) stake(delegIndex int, amount *big.Int) error 
 			"refund": "*"
 		}
 	}`,
+		pfe.nextTxIndex(),
 		string(delegatorAddress(delegIndex)),
 		string(pfe.delegationContractAddress),
 		amount,
@@ -384,7 +401,7 @@ func (pfe *fuzzDelegationExecutor) withdrawInactiveStake(delegIndex int, amount 
 	output, err := pfe.executeTxStep(fmt.Sprintf(`
 	{
 		"step": "scCall",
-		"txId": "-unstake-",
+		"txId": "%d",
 		"tx": {
 			"from": "''%s",
 			"to": "''%s",
@@ -397,6 +414,7 @@ func (pfe *fuzzDelegationExecutor) withdrawInactiveStake(delegIndex int, amount 
 			"gasPrice": "0"
 		}
 	}`,
+		pfe.nextTxIndex(),
 		string(delegatorAddress(delegIndex)),
 		string(pfe.delegationContractAddress),
 		amount,
@@ -406,6 +424,137 @@ func (pfe *fuzzDelegationExecutor) withdrawInactiveStake(delegIndex int, amount 
 	} else {
 		pfe.log("unstake, delegator: %d, amount: %d, fail, %s", delegIndex, amount, output.ReturnMessage)
 	}
+	return err
+}
+
+func (pfe *fuzzDelegationExecutor) addRewards(amount *big.Int) error {
+	_, err := pfe.executeTxStep(fmt.Sprintf(`
+	{
+		"step": "validatorReward",
+		"txId": "%d",
+		"tx": {
+			"to": "''%s",
+			"value": "%d"
+		}
+	}`,
+		pfe.nextTxIndex(),
+		string(pfe.delegationContractAddress),
+		amount,
+	))
+	pfe.log("reward: %d", amount)
+	return err
+}
+
+func (pfe *fuzzDelegationExecutor) getClaimableRewards(delegIndex int) (*big.Int, error) {
+	output, err := pfe.executeTxStep(fmt.Sprintf(`
+	{
+		"step": "scCall",
+		"txId": "%d",
+		"tx": {
+			"from": "''%s",
+			"to": "''%s",
+			"value": "0",
+			"function": "getClaimableRewards",
+			"arguments": [
+				"''%s"
+			],
+			"gasLimit": "1,000,000",
+			"gasPrice": "0"
+		},
+		"expect": {
+			"out": [ "*" ],
+			"status": "",
+			"logs": "*",
+			"gas": "*",
+			"refund": "*"
+		}
+	}`,
+		pfe.nextTxIndex(),
+		string(delegatorAddress(delegIndex)),
+		string(pfe.delegationContractAddress),
+		string(delegatorAddress(delegIndex)),
+	))
+	if err != nil {
+		return nil, err
+	}
+	return big.NewInt(0).SetBytes(output.ReturnData[0]), nil
+}
+
+func (pfe *fuzzDelegationExecutor) claimRewards(delegIndex int) error {
+	claimableRewardsBefore, err := pfe.getClaimableRewards(delegIndex)
+	if err != nil {
+		return err
+	}
+	if claimableRewardsBefore.Sign() == 0 {
+		pfe.log("no rewards, delegator: %d", delegIndex)
+		return nil
+	}
+	_, err = pfe.executeTxStep(fmt.Sprintf(`
+	{
+		"step": "scCall",
+		"txId": "%d",
+		"tx": {
+			"from": "''%s",
+			"to": "''%s",
+			"value": "0",
+			"function": "claimRewards",
+			"arguments": [],
+			"gasLimit": "1,000,000",
+			"gasPrice": "0"
+		},
+		"expect": {
+			"out": [],
+			"status": "",
+			"logs": "*",
+			"gas": "*",
+			"refund": "*"
+		}
+	}`,
+		pfe.nextTxIndex(),
+		string(delegatorAddress(delegIndex)),
+		string(pfe.delegationContractAddress),
+	))
+	if err != nil {
+		return err
+	}
+	claimableRewardsAfter, err := pfe.getClaimableRewards(delegIndex)
+	if err != nil {
+		return err
+	}
+	if claimableRewardsAfter.Sign() != 0 {
+		return errors.New("getClaimableRewards should always yield 0 after claimRewards")
+	}
+	pfe.log("claim rewards, delegator: %d, amount: %d", delegIndex, claimableRewardsBefore)
+	return nil
+}
+
+func (pfe *fuzzDelegationExecutor) computeAllRewards() error {
+	_, err := pfe.executeTxStep(fmt.Sprintf(`
+	{
+		"step": "scCall",
+		"txId": "%d",
+		"tx": {
+			"from": "''%s",
+			"to": "''%s",
+			"value": "0",
+			"function": "computeAllRewards",
+			"arguments": [],
+			"gasLimit": "1,000,000",
+			"gasPrice": "0"
+		},
+		"expect": {
+			"out": [],
+			"status": "",
+			"logs": "*",
+			"gas": "*",
+			"refund": "*"
+		}
+	}`,
+		pfe.nextTxIndex(),
+		string(pfe.ownerAddress),
+		string(pfe.delegationContractAddress),
+	))
+	pfe.log("computeAllRewards")
 	return err
 }
 
