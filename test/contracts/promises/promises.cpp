@@ -15,7 +15,7 @@ extern "C"
         int successCallbackLen,
         byte *errorCallback,
         int errorCallbackLen,
-        int gasPercentage
+        long long gas
     );
     long long getBlockTimestamp();
     int setStorageLock(byte *key, int keyLen, long long timeLock);
@@ -39,7 +39,7 @@ extern "C" void init() {
 
 extern "C" void bookMyStuff() {
     lockMyStorage();
-    byte asyncContext[] = "my_first_vacantion";
+    byte asyncContext[] = "my_first_vacation";
     createAsyncCall(
         asyncContext,
         sizeof(asyncContext),
@@ -51,7 +51,7 @@ extern "C" void bookMyStuff() {
         14,
         (byte*)"myTrainError",
         12,
-        100
+        4000000
     );
 }
 

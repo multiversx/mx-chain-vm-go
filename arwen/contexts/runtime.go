@@ -29,7 +29,7 @@ type runtimeContext struct {
 	maxWasmerInstances uint64
 
 	asyncCallInfo    *arwen.AsyncCallInfo
-	asyncContextInfo *vmcommon.AsyncContextInfo
+	asyncContextInfo *arwen.AsyncContextInfo
 
 	validator *WASMValidator
 }
@@ -60,8 +60,8 @@ func (context *runtimeContext) InitState() {
 	context.callFunction = ""
 	context.readOnly = false
 	context.asyncCallInfo = nil
-	context.asyncContextInfo = &vmcommon.AsyncContextInfo {
-		AsyncContextMap: make(map[string]*vmcommon.AsyncContext),
+	context.asyncContextInfo = &arwen.AsyncContextInfo {
+		AsyncContextMap: make(map[string]*arwen.AsyncContext),
 	}
 }
 
@@ -96,11 +96,11 @@ func (context *runtimeContext) InitStateFromContractCallInput(input *vmcommon.Co
 	context.scAddress = input.RecipientAddr
 	context.callFunction = input.Function
 	// Reset async map for initial state
-	context.asyncContextInfo = &vmcommon.AsyncContextInfo {
-		AsyncInitiator: vmcommon.AsyncInitiator{
+	context.asyncContextInfo = &arwen.AsyncContextInfo {
+		AsyncInitiator: arwen.AsyncInitiator{
 			CallerAddr: input.CallerAddr,
 		},
-		AsyncContextMap: make(map[string]*vmcommon.AsyncContext),
+		AsyncContextMap: make(map[string]*arwen.AsyncContext),
 	}
 }
 
@@ -342,32 +342,28 @@ func (context *runtimeContext) SetAsyncCallInfo(asyncCallInfo *arwen.AsyncCallIn
 	context.asyncCallInfo = asyncCallInfo
 }
 
-func (context *runtimeContext) AddAsyncContextCall(contextIdentifier []byte, asyncCall *vmcommon.AsyncGeneratedCall) error {
-	err := context.validateNewAsyncCall(asyncCall)
-	if err != nil {
-		return err
-	}
-
-	asyncContext := context.asyncContextInfo.AsyncContextMap[string(contextIdentifier)]
-	if asyncContext == nil {
-		context.asyncContextInfo.AsyncContextMap[string(contextIdentifier)] = &vmcommon.AsyncContext{
-			AsyncCalls: make([]*vmcommon.AsyncGeneratedCall, 0),
+func (context *runtimeContext) AddAsyncContextCall(contextIdentifier []byte, asyncCall *arwen.AsyncGeneratedCall) error {
+	_, ok := context.asyncContextInfo.AsyncContextMap[string(contextIdentifier)]
+	currentContextMap := context.asyncContextInfo.AsyncContextMap
+	if !ok {
+		currentContextMap[string(contextIdentifier)] = &arwen.AsyncContext{
+			AsyncCalls: make([]*arwen.AsyncGeneratedCall, 0),
 		}
 	}
 
-	context.asyncContextInfo.AsyncContextMap[string(contextIdentifier)].AsyncCalls =
-		append(context.asyncContextInfo.AsyncContextMap[string(contextIdentifier)].AsyncCalls, asyncCall)
+	currentContextMap[string(contextIdentifier)].AsyncCalls =
+		append(currentContextMap[string(contextIdentifier)].AsyncCalls, asyncCall)
 
 	return nil
 }
 
-func (context *runtimeContext) GetAsyncContextInfo() *vmcommon.AsyncContextInfo {
+func (context *runtimeContext) GetAsyncContextInfo() *arwen.AsyncContextInfo {
 	return context.asyncContextInfo
 }
 
-func (context *runtimeContext) GetAsyncContext(contextIdentifier []byte) (*vmcommon.AsyncContext, error) {
-	asyncContext := context.asyncContextInfo.AsyncContextMap[string(contextIdentifier)]
-	if asyncContext == nil {
+func (context *runtimeContext) GetAsyncContext(contextIdentifier []byte) (*arwen.AsyncContext, error) {
+	asyncContext, ok := context.asyncContextInfo.AsyncContextMap[string(contextIdentifier)]
+	if !ok {
 		return nil, arwen.ErrAsyncContextDoesNotExist
 	}
 
@@ -441,24 +437,5 @@ func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 	}
 
 	copy(memoryView[offset:requestedEnd], data)
-	return nil
-}
-
-func (context *runtimeContext) validateNewAsyncCall(asyncCall *vmcommon.AsyncGeneratedCall) error {
-	if asyncCall.GasPercentage < 0 || asyncCall.GasPercentage > 100 {
-		return arwen.ErrInvalidGasPercentage
-	}
-
-	currentPercentage := int32(0)
-	for _, asyncMAp := range context.asyncContextInfo.AsyncContextMap {
-		for _, ac := range asyncMAp.AsyncCalls {
-			currentPercentage += ac.GasPercentage
-		}
-	}
-
-	if asyncCall.GasPercentage + currentPercentage > 100 {
-		return arwen.ErrInvalidGasPercentage
-	}
-
 	return nil
 }

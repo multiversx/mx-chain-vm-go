@@ -7,7 +7,4 @@ typedef unsigned int u32;
 typedef unsigned long long u64;
 typedef long long i64;
 
-typedef void (*successCallback) (void);
-typedef void (*errorCallback) (void);
-
 #endif

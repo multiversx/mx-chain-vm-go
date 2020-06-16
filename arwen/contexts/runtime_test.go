@@ -2,6 +2,7 @@ package contexts
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -513,4 +514,35 @@ func TestRuntimeContext_MemStoreCases(t *testing.T) {
 	memContents, err = runtimeContext.MemLoad(offset, 17)
 	require.Nil(t, err)
 	require.Equal(t, []byte("this is something"), memContents)
+}
+
+type MyShit struct {
+	asyncContextInfo *arwen.AsyncContextInfo
+}
+
+func TestShit(t *testing.T) {
+	x := &MyShit{
+		asyncContextInfo: &arwen.AsyncContextInfo{
+			AsyncContextMap: make(map[string]*arwen.AsyncContext),
+		},
+	}
+
+	x.addToMap([]byte("test"), &arwen.AsyncGeneratedCall{
+		Status: arwen.AsyncCallResolved,
+	})
+
+	fmt.Println(x.asyncContextInfo.AsyncContextMap)
+}
+
+func (context *MyShit) addToMap(contextIdentifier []byte, asyncCall *arwen.AsyncGeneratedCall) {
+	_, ok := context.asyncContextInfo.AsyncContextMap[string(contextIdentifier)]
+	currentContextMap := context.asyncContextInfo.AsyncContextMap
+	if !ok {
+		currentContextMap[string(contextIdentifier)] = &arwen.AsyncContext{
+			AsyncCalls: make([]*arwen.AsyncGeneratedCall, 0),
+		}
+	}
+
+	currentContextMap[string(contextIdentifier)].AsyncCalls =
+		append(currentContextMap[string(contextIdentifier)].AsyncCalls, asyncCall)
 }

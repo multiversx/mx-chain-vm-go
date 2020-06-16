@@ -30,7 +30,8 @@ package elrondapi
 // extern int32_t executeReadOnly(void *context, long long gas, int32_t addressOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t createContract(void *context, int32_t valueOffset, int32_t codeOffset, int32_t length, int32_t resultOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern void asyncCall(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
-// extern void createAsyncCall(void *context, int32_t identifierOffset, int32_t identifierLength, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length, int32_t successCallback, int32_t successLength, int32_t errorCallback, int32_t errorLength, int32_t gasPercentage);
+// extern void createAsyncCall(void *context, int32_t identifierOffset, int32_t identifierLength, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length, int32_t successCallback, int32_t successLength, int32_t errorCallback, int32_t errorLength, int64_t gas);
+// extern int32_t createAsyncContextCallback(void *context, int32_t identifierOffset, int32_t identifierLength, int32_t callback, int32_t callbackLength);
 //
 // extern int32_t getNumReturnData(void *context);
 // extern int32_t getReturnDataSize(void *context, int32_t resultID);
@@ -101,6 +102,11 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("createAsyncCall", createAsyncCall, C.createAsyncCall)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("createAsyncContextCallback", createAsyncContextCallback, C.createAsyncContextCallback)
 	if err != nil {
 		return nil, err
 	}
@@ -436,7 +442,7 @@ func createAsyncCall(context unsafe.Pointer,
 	successLength int32,
 	errorOffset int32,
 	errorLength int32,
-	gasPercentage int32,
+	gas int64,
 ) {
 	runtime := arwen.GetRuntimeContext(context)
 
@@ -470,13 +476,19 @@ func createAsyncCall(context unsafe.Pointer,
 		return
 	}
 
-	err = runtime.AddAsyncContextCall(acIdentifier, &vmcommon.AsyncGeneratedCall{
-		Destination: calledSCAddress,
-		Data: data,
-		ValueBytes: value,
+	//err = validateAsyncCallGas(context, gas)
+	//if err != nil {
+	//	runtime.SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+	//	return
+	//}
+
+	err = runtime.AddAsyncContextCall(acIdentifier, &arwen.AsyncGeneratedCall{
+		Destination:     calledSCAddress,
+		Data:            data,
+		ValueBytes:      value,
 		SuccessCallback: string(successFunc),
-		ErrorCallback: string(errorFunc),
-		GasPercentage: gasPercentage,
+		ErrorCallback:   string(errorFunc),
+		ProvidedGas:     uint64(gas),
 	})
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
@@ -485,7 +497,12 @@ func createAsyncCall(context unsafe.Pointer,
 }
 
 //export createAsyncContextCallback
-func createAsyncContextCallback(context unsafe.Pointer, asyncContextIdentifier int32, identifierLength int32, callback int32) int32 {
+func createAsyncContextCallback(context unsafe.Pointer,
+	asyncContextIdentifier int32,
+	identifierLength int32,
+	callback int32,
+	callbackLength int32,
+) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 
 	acIdentifier, err := runtime.MemLoad(asyncContextIdentifier, identifierLength)
@@ -498,7 +515,12 @@ func createAsyncContextCallback(context unsafe.Pointer, asyncContextIdentifier i
 		return -1
 	}
 
-	asyncContext.Callback = callback
+	callbackFunc, err := runtime.MemLoad(callback, callbackLength)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return -1
+	}
+
+	asyncContext.Callback = string(callbackFunc)
 
 	return 0
 }
@@ -692,18 +714,13 @@ func setStorageLock(context unsafe.Pointer, keyOffset int32, keyLength int32, lo
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
-	crypto := arwen.GetCryptoContext(context)
 
 	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
 
-	timeLockKey, err := arwen.CustomStorageKey(crypto, arwen.TimeLockKeyPrefix, key)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return -1
-	}
-
+	timeLockKey := arwen.CustomStorageKey(arwen.TimeLockKeyPrefix, key)
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64StorageStore
 	metering.UseGas(gasToUse)
 
@@ -720,18 +737,13 @@ func getStorageLock(context unsafe.Pointer, keyOffset int32, keyLength int32) in
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	storage := arwen.GetStorageContext(context)
-	crypto := arwen.GetCryptoContext(context)
 
 	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
 
-	timeLockKey, err := arwen.CustomStorageKey(crypto, arwen.TimeLockKeyPrefix, key)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return -1
-	}
-
+	timeLockKey := arwen.CustomStorageKey(arwen.TimeLockKeyPrefix, key)
 	gasToUse := metering.GasSchedule().ElrondAPICost.StorageLoad
 	metering.UseGas(gasToUse)
 
@@ -1280,7 +1292,6 @@ func delegateExecution(
 		Function:      function,
 	}
 
-	// TODO: Delegate should probably execute async calls?
 	_, err = host.ExecuteOnSameContext(contractCallInput)
 	if err != nil {
 		return 1
@@ -1483,4 +1494,19 @@ func getReturnData(context unsafe.Pointer, resultID int32, dataOffset int32) int
 	}
 
 	return int32(len(returnData[resultID]))
+}
+
+func validateAsyncCallGas(context unsafe.Pointer, gas int64) error {
+	// This is so we won't make the gas parameter mandatory. If we leave it to 0, the async call
+	//  will get it's share from the remaining gas
+	if gas == 0 {
+		return nil
+	}
+
+	metering := arwen.GetMeteringContext(context)
+	if uint64(gas) > metering.GasLeft() {
+		return arwen.ErrNotEnoughGas
+	}
+
+	return nil
 }

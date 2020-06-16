@@ -1,5 +1,5 @@
 {
-  "name": "timelocks",
+  "name": "promises",
   "comment": "increment, block, try to increment, release, increment again",
   "steps": [
     {

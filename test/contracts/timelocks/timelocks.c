@@ -1,6 +1,8 @@
 #include "../elrond/context.h"
 
+
 byte counterKey[] = "counter";
+const long long oneDay = 3600*24;
 
 void init() {
     int64storageStore(counterKey, sizeof(counterKey), 0);
@@ -18,7 +20,7 @@ void incrementCounter() {
 
 void lockCounter() {
     long long lockTimestamp = getBlockTimestamp();
-    lockTimestamp += 3600*24;
+    lockTimestamp += oneDay;
     setStorageLock(counterKey, sizeof(counterKey), lockTimestamp);
 }
 

@@ -217,15 +217,15 @@ func (r *RuntimeContextMock) SetAsyncCallInfo(asyncCallInfo *arwen.AsyncCallInfo
 	r.AsyncCallInfo = asyncCallInfo
 }
 
-func (r *RuntimeContextMock) AddAsyncContextCall(_ []byte, _ *vmcommon.AsyncGeneratedCall) error {
+func (r *RuntimeContextMock) AddAsyncContextCall(_ []byte, _ *arwen.AsyncGeneratedCall) error {
 	return nil
 }
 
-func (r *RuntimeContextMock) GetAsyncContextInfo() *vmcommon.AsyncContextInfo {
+func (r *RuntimeContextMock) GetAsyncContextInfo() *arwen.AsyncContextInfo {
 	return nil
 }
 
-func (r *RuntimeContextMock) GetAsyncContext(_ []byte) (*vmcommon.AsyncContext, error) {
+func (r *RuntimeContextMock) GetAsyncContext(_ []byte) (*arwen.AsyncContext, error) {
 	return nil, nil
 }
 

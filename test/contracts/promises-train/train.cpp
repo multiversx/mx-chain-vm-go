@@ -14,7 +14,7 @@ extern "C"
         int successCallbackLen,
         byte *errorCallback,
         int errorCallbackLen,
-        int gasPercentage
+        long long gas
     );
     int int64storageStore(byte *key, int keyLength, long long value);
     long long int64storageLoad(byte *key, int keyLength);
@@ -59,7 +59,7 @@ extern "C" void bookTrain() {
         16,
         (byte*)"bookTrainError",
         14,
-        100
+        2000000
     );
 }
 

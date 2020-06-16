@@ -9,7 +9,6 @@ import (
 	"unsafe"
 
 	logger "github.com/ElrondNetwork/elrond-go-logger"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var logDuration = logger.GetOrCreate("arwen/duration")
@@ -17,10 +16,9 @@ var logDuration = logger.GetOrCreate("arwen/duration")
 // Zero is the big integer 0
 var Zero = big.NewInt(0)
 
-func CustomStorageKey(crypto vmcommon.CryptoHook, keyType string, associatedKey []byte) ([]byte, error) {
-	return crypto.Keccak256(append(associatedKey, []byte(keyType)...))
+func CustomStorageKey(keyType string, associatedKey []byte) []byte {
+	return append(associatedKey, []byte(keyType)...)
 }
-
 
 func GuardedMakeByteSlice2D(length int32) ([][]byte, error) {
 	if length < 0 {
@@ -101,4 +99,11 @@ func GetSCCode(fileName string) []byte {
 func TimeTrack(start time.Time, message string) {
 	elapsed := time.Since(start)
 	logDuration.Trace(message, "duration", elapsed)
+}
+
+func U64MulToBigInt(x, y uint64) *big.Int {
+	bx := big.NewInt(0).SetUint64(x)
+	by := big.NewInt(0).SetUint64(y)
+
+	return big.NewInt(0).Mul(bx, by)
 }

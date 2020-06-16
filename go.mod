@@ -12,5 +12,3 @@ require (
 	github.com/stretchr/testify v1.5.1
 	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
 )
-
-replace github.com/ElrondNetwork/elrond-vm-common => /Users/ccorcov/go/src/github.com/ElrondNetwork/elrond-vm-common
