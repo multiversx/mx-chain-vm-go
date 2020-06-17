@@ -91,66 +91,36 @@ func (pfe *fuzzDelegationExecutor) withdrawInactiveStake(delegIndex int, amount 
 		return err
 	}
 	if output.ReturnCode == vmi.Ok {
-		pfe.log("unstake, delegator: %d, amount: %d", delegIndex, amount)
+		pfe.log("withdraw inactive stake, delegator: %d, amount: %d", delegIndex, amount)
+
+		// move withdrawn stake to a special account
+		_, err = pfe.executeTxStep(fmt.Sprintf(`
+		{
+			"step": "transfer",
+			"txId": "%d",
+			"tx": {
+				"from": "''%s",
+				"to": "''%s",
+				"value": "%d"
+			}
+		}`,
+			pfe.nextTxIndex(),
+			string(pfe.delegatorAddress(delegIndex)),
+			pfe.withdrawTargetAddress,
+			amount,
+		))
+		if err != nil {
+			return err
+		}
 	} else {
-		pfe.log("unstake, delegator: %d, amount: %d, fail, %s", delegIndex, amount, output.ReturnMessage)
+		pfe.log("withdraw inactive stake, delegator: %d, amount: %d, fail, %s", delegIndex, amount, output.ReturnMessage)
 	}
 
-	// move withdrawn stake to a special account
-	_, err = pfe.executeTxStep(fmt.Sprintf(`
-	{
-		"step": "transfer",
-		"txId": "%d",
-		"tx": {
-			"from": "''%s",
-			"to": "''%s",
-			"value": "%d"
-		}
-	}`,
-		pfe.nextTxIndex(),
-		string(pfe.delegatorAddress(delegIndex)),
-		pfe.withdrawTargetAddress,
-		amount,
-	))
-	return err
+	return nil
 }
 
 func (pfe *fuzzDelegationExecutor) getUserInactiveStake(delegIndex int) (*big.Int, error) {
-	output, err := pfe.executeTxStep(fmt.Sprintf(`
-	{
-		"step": "scCall",
-		"txId": "%d",
-		"tx": {
-			"from": "''%s",
-			"to": "''%s",
-			"value": "0",
-			"function": "getUserInactiveStake",
-			"arguments": [
-				"''%s"
-			],
-			"gasLimit": "100,000",
-			"gasPrice": "0"
-		},
-		"expect": {
-			"out": [ "*" ],
-			"status": "",
-			"logs": [],
-			"gas": "*",
-			"refund": "*"
-		}
-	}`,
-		pfe.nextTxIndex(),
-		string(pfe.delegatorAddress(delegIndex)),
-		string(pfe.delegationContractAddress),
-		string(pfe.delegatorAddress(delegIndex)),
-	))
-	if err != nil {
-		return nil, err
-	}
-
-	result := big.NewInt(0).SetBytes(output.ReturnData[0])
-	pfe.log("getUserInactiveStake -> %d", result)
-	return result, nil
+	return pfe.delegatorQuery("getUserInactiveStake", delegIndex)
 }
 
 func (pfe *fuzzDelegationExecutor) withdrawAllInactiveStake(delegIndex int) error {
@@ -159,4 +129,46 @@ func (pfe *fuzzDelegationExecutor) withdrawAllInactiveStake(delegIndex int) erro
 		return err
 	}
 	return pfe.withdrawInactiveStake(delegIndex, inactiveStake)
+}
+
+func (pfe *fuzzDelegationExecutor) getUserActiveStake(delegIndex int) (*big.Int, error) {
+	return pfe.delegatorQuery("getUserActiveStake", delegIndex)
+}
+
+func (pfe *fuzzDelegationExecutor) announceUnStake(delegIndex int, amount *big.Int) error {
+	// keep track of stake withdrawn
+	pfe.totalStakeWithdrawn.Add(pfe.totalStakeWithdrawn, amount)
+
+	// actual withdraw
+	output, err := pfe.executeTxStep(fmt.Sprintf(`
+	{
+		"step": "scCall",
+		"txId": "%d",
+		"tx": {
+			"from": "''%s",
+			"to": "''%s",
+			"value": "0",
+			"function": "announceUnStake",
+			"arguments": [
+				"%d"
+			],
+			"gasLimit": "1,000,000",
+			"gasPrice": "0"
+		}
+	}`,
+		pfe.nextTxIndex(),
+		string(pfe.delegatorAddress(delegIndex)),
+		string(pfe.delegationContractAddress),
+		amount,
+	))
+	if err != nil {
+		return err
+	}
+	if output.ReturnCode == vmi.Ok {
+		pfe.log("announceUnStake, delegator: %d, amount: %d", delegIndex, amount)
+	} else {
+		pfe.log("announceUnStake, delegator: %d, amount: %d, fail, %s", delegIndex, amount, output.ReturnMessage)
+	}
+
+	return nil
 }

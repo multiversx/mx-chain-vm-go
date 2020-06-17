@@ -147,7 +147,7 @@ func (pfe *fuzzDelegationExecutor) executeTxStep(stepSnippet string) (*vmi.VMOut
 	return pfe.arwenTestExecutor.ExecuteTxStep(txStep)
 }
 
-func (pfe *fuzzDelegationExecutor) simpleQuery(funcName string) (*big.Int, error) {
+func (pfe *fuzzDelegationExecutor) querySingleResult(funcName string, args string) (*big.Int, error) {
 	output, err := pfe.executeTxStep(fmt.Sprintf(`
 	{
 		"step": "scCall",
@@ -157,7 +157,9 @@ func (pfe *fuzzDelegationExecutor) simpleQuery(funcName string) (*big.Int, error
 			"to": "''%s",
 			"value": "0",
 			"function": "%s",
-			"arguments": [],
+			"arguments": [
+				%s
+			],
 			"gasLimit": "10,000,000",
 			"gasPrice": "0"
 		},
@@ -173,42 +175,24 @@ func (pfe *fuzzDelegationExecutor) simpleQuery(funcName string) (*big.Int, error
 		string(pfe.ownerAddress),
 		string(pfe.delegationContractAddress),
 		funcName,
+		args,
 	))
 	if err != nil {
 		return nil, err
 	}
 
 	result := big.NewInt(0).SetBytes(output.ReturnData[0])
-	pfe.log("simpleQuery: %s -> %d", funcName, result)
+	pfe.log("query: %s -> %d", funcName, result)
 	return result, nil
 }
 
-func (pfe *fuzzDelegationExecutor) checkContractBalanceVsState() error {
-	err := pfe.computeAllRewards()
-	if err != nil {
-		return err
-	}
+func (pfe *fuzzDelegationExecutor) simpleQuery(funcName string) (*big.Int, error) {
+	return pfe.querySingleResult(funcName, "")
+}
 
-	totalInactive, err := pfe.simpleQuery("getTotalInactiveStake")
-	if err != nil {
-		return err
-	}
-
-	totalUnclRewards, err := pfe.simpleQuery("getTotalUnclaimedRewards")
-	if err != nil {
-		return err
-	}
-
-	expectedBalance := big.NewInt(0).Add(totalInactive, totalUnclRewards)
-
-	contractBalance := pfe.getContractBalance()
-	if contractBalance.Cmp(expectedBalance) != 0 {
-		return fmt.Errorf(
-			"bad contract balance.\nWant: %d (inactive stake) + %d (unclaimed rewards) = %d\nHave: %d",
-			totalInactive, totalUnclRewards, expectedBalance,
-			contractBalance)
-	}
-	return nil
+func (pfe *fuzzDelegationExecutor) delegatorQuery(funcName string, delegIndex int) (*big.Int, error) {
+	delegAddr := fmt.Sprintf(`"''%s"`, string(pfe.delegatorAddress(delegIndex)))
+	return pfe.querySingleResult(funcName, delegAddr)
 }
 
 func (pfe *fuzzDelegationExecutor) delegatorAddress(delegIndex int) []byte {
