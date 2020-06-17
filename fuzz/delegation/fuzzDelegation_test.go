@@ -2,6 +2,7 @@ package delegation
 
 import (
 	"flag"
+	"fmt"
 	"math/big"
 	"math/rand"
 	"os"
@@ -33,11 +34,11 @@ func newExecutorWithPaths() *fuzzDelegationExecutor {
 			"auction-mock.wasm",
 			filepath.Join(getTestRoot(), "delegation_v0.3/auction-mock.wasm"))
 
-	executor, err := newFuzzDelegationExecutor(fileResolver)
+	pfe, err := newFuzzDelegationExecutor(fileResolver)
 	if err != nil {
 		panic(err)
 	}
-	return executor
+	return pfe
 }
 
 func TestFuzzDelegation(t *testing.T) {
@@ -47,57 +48,94 @@ func TestFuzzDelegation(t *testing.T) {
 
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
-	executor := newExecutorWithPaths()
-	defer executor.saveGeneratedScenario()
+	pfe := newExecutorWithPaths()
+	defer pfe.saveGeneratedScenario()
 
-	err := executor.init(&fuzzDelegationExecutorInitArgs{
+	err := pfe.init(&fuzzDelegationExecutorInitArgs{
 		serviceFee:                  r.Intn(10000),
 		numBlocksBeforeForceUnstake: 0,
 		numBlocksBeforeUnbond:       0,
-		numDelegators:               r.Intn(50) + 1,
+		numDelegators:               100,
 		stakePerNode:                big.NewInt(1000000000),
 	})
 	require.Nil(t, err)
-	executor.enableAutoActivation()
+	pfe.enableAutoActivation()
 
-	maxStake := big.NewInt(0).Mul(executor.stakePerNode, big.NewInt(2))
+	maxStake := big.NewInt(0).Mul(pfe.stakePerNode, big.NewInt(2))
 	maxSystemReward := big.NewInt(1000000000)
 
 	re := newRandomEventProvider()
-	for stepIndex := 0; stepIndex < 10000; stepIndex++ {
+	for stepIndex := 0; stepIndex < 1000; stepIndex++ {
 		re.reset()
 		switch {
 		case re.withProbability(0.1):
 			// add nodes
-			err = executor.addNodes(r.Intn(3))
+			err = pfe.addNodes(r.Intn(3))
 			require.Nil(t, err)
 		case re.withProbability(0.3):
 			// stake
-			delegatorIdx := r.Intn(executor.numDelegators)
+			delegatorIdx := r.Intn(pfe.numDelegators + 1)
 			stake := big.NewInt(0).Rand(r, maxStake)
-			err = executor.stake(delegatorIdx, stake)
+			err = pfe.stake(delegatorIdx, stake)
 			require.Nil(t, err)
 		case re.withProbability(0.1):
 			// withdraw inactive stake
-			delegatorIdx := r.Intn(executor.numDelegators)
+			delegatorIdx := r.Intn(pfe.numDelegators + 1)
 			stake := big.NewInt(0).Rand(r, maxStake)
-			err = executor.withdrawInactiveStake(delegatorIdx, stake)
+			err = pfe.withdrawInactiveStake(delegatorIdx, stake)
 			require.Nil(t, err)
 		case re.withProbability(0.2):
 			// add system rewards
 			rewards := big.NewInt(0).Rand(r, maxSystemReward)
-			err = executor.addRewards(rewards)
+			err = pfe.addRewards(rewards)
 			require.Nil(t, err)
-		case re.withProbability(0.1):
+		case re.withProbability(0.15):
 			// claim rewards
-			delegatorIdx := r.Intn(executor.numDelegators)
-			err = executor.claimRewards(delegatorIdx)
+			delegatorIdx := r.Intn(pfe.numDelegators + 1)
+			err = pfe.claimRewards(delegatorIdx)
 			require.Nil(t, err)
-		case re.withProbability(0.2):
+		case re.withProbability(0.05):
 			// computeAllRewards
-			err = executor.computeAllRewards()
+			err = pfe.computeAllRewards()
+			require.Nil(t, err)
 		default:
 		}
 	}
+
+	err = pfe.checkContractBalanceVsState()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	for delegatorIdx := 0; delegatorIdx <= pfe.numDelegators; delegatorIdx++ {
+		err = pfe.withdrawAllInactiveStake(delegatorIdx)
+		require.Nil(t, err)
+	}
+
+	fmt.Println(pfe.getAllDelegatorsBalance())
+
+	err = pfe.computeAllRewards()
+	for delegatorIdx := 0; delegatorIdx <= pfe.numDelegators; delegatorIdx++ {
+		err = pfe.claimRewards(delegatorIdx)
+		require.Nil(t, err)
+
+		err = pfe.checkContractBalanceVsState()
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+	}
+
+	totalDelegatorBalance := pfe.getAllDelegatorsBalance()
+
+	// fmt.Println(pfe.getContractBalance())
+	// fmt.Println(totalDelegatorBalance)
+	// fmt.Println(big.NewInt(0).Add(pfe.getContractBalance(), totalDelegatorBalance))
+	// fmt.Println(pfe.totalRewards)
+	// fmt.Println()
+	// fmt.Println(pfe.getAuctionBalance())
+	// fmt.Println(pfe.getWithdrawTargetBalance())
+	require.True(t, pfe.totalRewards.Cmp(totalDelegatorBalance) == 0, "rewards don't match")
 
 }
