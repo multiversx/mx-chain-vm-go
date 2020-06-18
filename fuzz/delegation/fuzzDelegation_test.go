@@ -55,7 +55,7 @@ func TestFuzzDelegation(t *testing.T) {
 		serviceFee:                  r.Intn(10000),
 		numBlocksBeforeForceUnstake: 0,
 		numBlocksBeforeUnbond:       0,
-		numDelegators:               100,
+		numDelegators:               2,
 		stakePerNode:                big.NewInt(1000000000),
 	})
 	require.Nil(t, err)
@@ -98,11 +98,18 @@ func TestFuzzDelegation(t *testing.T) {
 			// computeAllRewards
 			err = pfe.computeAllRewards()
 			require.Nil(t, err)
-		case re.withProbability(0.1):
+		case re.withProbability(0.07):
 			// announceUnStake
 			delegatorIdx := r.Intn(pfe.numDelegators + 1)
 			amount := big.NewInt(0).Rand(r, maxStake)
 			err = pfe.announceUnStake(delegatorIdx, amount)
+			require.Nil(t, err)
+		case re.withProbability(0.03):
+			// purchaseStake
+			sellerIdx := r.Intn(pfe.numDelegators + 1)
+			buyerIdx := r.Intn(pfe.numDelegators + 1)
+			amount := big.NewInt(0).Rand(r, maxStake)
+			err = pfe.purchaseStake(sellerIdx, buyerIdx, amount)
 			require.Nil(t, err)
 		default:
 		}
@@ -135,10 +142,10 @@ func TestFuzzDelegation(t *testing.T) {
 
 	totalDelegatorBalance := pfe.getAllDelegatorsBalance()
 
-	fmt.Println(pfe.getContractBalance())
-	fmt.Println()
-	fmt.Println(pfe.getAuctionBalance())
-	fmt.Println(pfe.getWithdrawTargetBalance())
+	// fmt.Println(pfe.getContractBalance())
+	// fmt.Println()
+	// fmt.Println(pfe.getAuctionBalance())
+	// fmt.Println(pfe.getWithdrawTargetBalance())
 	require.True(t, pfe.totalRewards.Cmp(totalDelegatorBalance) == 0,
 		"Rewards don't match. Total rewards: %d. Total delegator balance: %d.",
 		pfe.totalRewards, totalDelegatorBalance)

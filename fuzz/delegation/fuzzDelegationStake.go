@@ -17,12 +17,13 @@ func (pfe *fuzzDelegationExecutor) stake(delegIndex int, amount *big.Int) error 
 		"step": "transfer",
 		"txId": "%d",
 		"tx": {
-			"from": "''endless_sack_of_erd___________s1",
+			"from": "''%s",
 			"to": "''%s",
 			"value": "%d"
 		}
 	}`,
 		pfe.nextTxIndex(),
+		string(pfe.faucetAddress),
 		string(pfe.delegatorAddress(delegIndex)),
 		amount,
 	))
@@ -136,10 +137,6 @@ func (pfe *fuzzDelegationExecutor) getUserActiveStake(delegIndex int) (*big.Int,
 }
 
 func (pfe *fuzzDelegationExecutor) announceUnStake(delegIndex int, amount *big.Int) error {
-	// keep track of stake withdrawn
-	pfe.totalStakeWithdrawn.Add(pfe.totalStakeWithdrawn, amount)
-
-	// actual withdraw
 	output, err := pfe.executeTxStep(fmt.Sprintf(`
 	{
 		"step": "scCall",
@@ -168,6 +165,102 @@ func (pfe *fuzzDelegationExecutor) announceUnStake(delegIndex int, amount *big.I
 		pfe.log("announceUnStake, delegator: %d, amount: %d", delegIndex, amount)
 	} else {
 		pfe.log("announceUnStake, delegator: %d, amount: %d, fail, %s", delegIndex, amount, output.ReturnMessage)
+	}
+
+	return nil
+}
+
+func (pfe *fuzzDelegationExecutor) purchaseStake(sellerIndex, buyerIndex int, amount *big.Int) error {
+	// get the value from the big sack
+	_, err := pfe.executeTxStep(fmt.Sprintf(`
+	{
+		"step": "transfer",
+		"txId": "%d",
+		"tx": {
+			"from": "''%s",
+			"to": "''%s",
+			"value": "%d"
+		}
+	}`,
+		pfe.nextTxIndex(),
+		string(pfe.faucetAddress),
+		string(pfe.delegatorAddress(buyerIndex)),
+		amount,
+	))
+	if err != nil {
+		return err
+	}
+
+	// the purchase itself
+	output, err := pfe.executeTxStep(fmt.Sprintf(`
+	{
+		"step": "scCall",
+		"txId": "%d",
+		"tx": {
+			"from": "''%s",
+			"to": "''%s",
+			"value": "%d",
+			"function": "purchaseStake",
+			"arguments": [
+				"''%s"
+			],
+			"gasLimit": "1,000,000",
+			"gasPrice": "0"
+		}
+	}`,
+		pfe.nextTxIndex(),
+		string(pfe.delegatorAddress(buyerIndex)),
+		string(pfe.delegationContractAddress),
+		amount,
+		string(pfe.delegatorAddress(sellerIndex)),
+	))
+	if err != nil {
+		return err
+	}
+	if output.ReturnCode == vmi.Ok {
+		pfe.log("purchaseStake, seller: %d, buyer: %d, amount: %d", sellerIndex, buyerIndex, amount)
+
+		// forward received sum
+		_, err := pfe.executeTxStep(fmt.Sprintf(`
+		{
+			"step": "transfer",
+			"txId": "%d",
+			"tx": {
+				"from": "''%s",
+				"to": "''%s",
+				"value": "%d"
+			}
+		}`,
+			pfe.nextTxIndex(),
+			string(pfe.delegatorAddress(sellerIndex)),
+			string(pfe.withdrawTargetAddress),
+			amount,
+		))
+		if err != nil {
+			return err
+		}
+	} else {
+		pfe.log("purchaseStake, seller: %d, buyer: %d, amount: %d, fail, %s", sellerIndex, buyerIndex, amount, output.ReturnMessage)
+
+		// return the value
+		_, err := pfe.executeTxStep(fmt.Sprintf(`
+		{
+			"step": "transfer",
+			"txId": "%d",
+			"tx": {
+				"from": "''%s",
+				"to": "''%s",
+				"value": "%d"
+			}
+		}`,
+			pfe.nextTxIndex(),
+			string(pfe.delegatorAddress(buyerIndex)),
+			string(pfe.faucetAddress),
+			amount,
+		))
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

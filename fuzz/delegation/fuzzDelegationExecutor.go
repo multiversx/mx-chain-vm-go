@@ -33,6 +33,7 @@ type fuzzDelegationExecutor struct {
 	auctionMockAddress          []byte
 	faucetAddress               []byte
 	withdrawTargetAddress       []byte
+	stakePurchaseForwardAddress []byte
 	numNodes                    int
 	totalStakeAdded             *big.Int
 	totalStakeWithdrawn         *big.Int
