@@ -1185,7 +1185,6 @@ func executeOnDestContext(
 		Function:      function,
 	}
 
-	// TODO: Should probably execute async calls?
 	_, _, err = host.ExecuteOnDestContext(contractCallInput)
 	if err != nil {
 		return 1
