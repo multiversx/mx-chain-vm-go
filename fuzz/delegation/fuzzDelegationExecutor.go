@@ -196,6 +196,30 @@ func (pfe *fuzzDelegationExecutor) delegatorQuery(funcName string, delegIndex in
 	return pfe.querySingleResult(funcName, delegAddr)
 }
 
+func (pfe *fuzzDelegationExecutor) increaseBlockNonce(nonceDelta int) error {
+	curentBlockNonce := uint64(0)
+	if pfe.world.CurrentBlockInfo != nil {
+		curentBlockNonce = pfe.world.CurrentBlockInfo.BlockNonce
+	}
+
+	err := pfe.executeStep(fmt.Sprintf(`
+	{
+		"step": "setState",
+		"comment": "%d - increase block nonce",
+		"currentBlockInfo": {
+			"blockNonce": "%d"
+		}
+	}`,
+		pfe.nextTxIndex(),
+		curentBlockNonce+uint64(nonceDelta),
+	))
+	if err != nil {
+		return err
+	}
+	pfe.log("block nonce: %d ---> %d", curentBlockNonce, curentBlockNonce+uint64(nonceDelta))
+	return nil
+}
+
 func (pfe *fuzzDelegationExecutor) delegatorAddress(delegIndex int) []byte {
 	if delegIndex == 0 {
 		return pfe.ownerAddress

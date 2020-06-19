@@ -53,19 +53,20 @@ func TestFuzzDelegation(t *testing.T) {
 
 	err := pfe.init(&fuzzDelegationExecutorInitArgs{
 		serviceFee:                  r.Intn(10000),
-		numBlocksBeforeForceUnstake: 0,
-		numBlocksBeforeUnbond:       0,
-		numDelegators:               2,
+		numBlocksBeforeForceUnstake: r.Intn(1000),
+		numBlocksBeforeUnbond:       r.Intn(1000),
+		numDelegators:               8,
 		stakePerNode:                big.NewInt(1000000000),
 	})
 	require.Nil(t, err)
 	pfe.enableAutoActivation()
+	pfe.increaseBlockNonce(r.Intn(10000))
 
 	maxStake := big.NewInt(0).Mul(pfe.stakePerNode, big.NewInt(2))
 	maxSystemReward := big.NewInt(1000000000)
 
 	re := newRandomEventProvider()
-	for stepIndex := 0; stepIndex < 1000; stepIndex++ {
+	for stepIndex := 0; stepIndex < 100; stepIndex++ {
 		re.reset()
 		switch {
 		case re.withProbability(0.1):
@@ -121,13 +122,13 @@ func TestFuzzDelegation(t *testing.T) {
 		return
 	}
 
+	// all delegators (incl. owner) withdraw all inactive stake
 	for delegatorIdx := 0; delegatorIdx <= pfe.numDelegators; delegatorIdx++ {
 		err = pfe.withdrawAllInactiveStake(delegatorIdx)
 		require.Nil(t, err)
 	}
 
-	fmt.Println(pfe.getAllDelegatorsBalance())
-
+	// all delegators (incl. owner) claim all rewards
 	err = pfe.computeAllRewards()
 	for delegatorIdx := 0; delegatorIdx <= pfe.numDelegators; delegatorIdx++ {
 		err = pfe.claimRewards(delegatorIdx)
@@ -150,4 +151,17 @@ func TestFuzzDelegation(t *testing.T) {
 		"Rewards don't match. Total rewards: %d. Total delegator balance: %d.",
 		pfe.totalRewards, totalDelegatorBalance)
 
+	// all delegators (incl. owner) announce unstake
+	for delegatorIdx := 0; delegatorIdx <= pfe.numDelegators; delegatorIdx++ {
+		err = pfe.announceUnStakeAll(delegatorIdx)
+		require.Nil(t, err)
+	}
+
+	pfe.increaseBlockNonce(pfe.numBlocksBeforeForceUnstake + 1)
+
+	// all delegators (incl. owner) unstake
+	for delegatorIdx := 0; delegatorIdx <= pfe.numDelegators; delegatorIdx++ {
+		err = pfe.unStake(delegatorIdx)
+		require.Nil(t, err)
+	}
 }
