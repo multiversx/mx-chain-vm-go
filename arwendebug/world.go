@@ -56,31 +56,31 @@ func getHostParameters() *arwen.VMHostParameters {
 	}
 }
 
-func (world *world) deploySmartContract(request DeployRequest) (*DeployResponse, error) {
-	input := world.prepareDeployInput(request)
-	log.Trace("world.deploySmartContract()", "input", prettyJson(input))
+func (w *world) deploySmartContract(request DeployRequest) *DeployResponse {
+	input := w.prepareDeployInput(request)
+	log.Trace("w.deploySmartContract()", "input", prettyJson(input))
 
-	vmOutput, err := world.vm.RunSmartContractCreate(input)
+	vmOutput, err := w.vm.RunSmartContractCreate(input)
 	if err == nil {
-		world.blockchainHook.UpdateAccounts(vmOutput.OutputAccounts)
+		w.blockchainHook.UpdateAccounts(vmOutput.OutputAccounts)
 	}
 
 	response := &DeployResponse{}
 	response.Input = &input.VMInput
 	response.Output = vmOutput
 	response.Error = err
-	response.ContractAddress = world.blockchainHook.LastCreatedContractAddress
+	response.ContractAddress = w.blockchainHook.LastCreatedContractAddress
 	response.ContractAddressHex = toHex(response.ContractAddress)
-	return response, nil
+	return response
 }
 
-func (world *world) upgradeSmartContract(request UpgradeRequest) (*UpgradeResponse, error) {
-	input := world.prepareUpgradeInput(request)
-	log.Trace("world.upgradeSmartContract()", "input", prettyJson(input))
+func (w *world) upgradeSmartContract(request UpgradeRequest) *UpgradeResponse {
+	input := w.prepareUpgradeInput(request)
+	log.Trace("w.upgradeSmartContract()", "input", prettyJson(input))
 
-	vmOutput, err := world.vm.RunSmartContractCall(input)
+	vmOutput, err := w.vm.RunSmartContractCall(input)
 	if err == nil {
-		world.blockchainHook.UpdateAccounts(vmOutput.OutputAccounts)
+		w.blockchainHook.UpdateAccounts(vmOutput.OutputAccounts)
 	}
 
 	response := &UpgradeResponse{}
@@ -88,16 +88,16 @@ func (world *world) upgradeSmartContract(request UpgradeRequest) (*UpgradeRespon
 	response.Output = vmOutput
 	response.Error = err
 
-	return response, nil
+	return response
 }
 
-func (world *world) runSmartContract(request RunRequest) (*RunResponse, error) {
-	input := world.prepareCallInput(request)
-	log.Trace("world.runSmartContract()", "input", prettyJson(input))
+func (w *world) runSmartContract(request RunRequest) *RunResponse {
+	input := w.prepareCallInput(request)
+	log.Trace("w.runSmartContract()", "input", prettyJson(input))
 
-	vmOutput, err := world.vm.RunSmartContractCall(input)
+	vmOutput, err := w.vm.RunSmartContractCall(input)
 	if err == nil {
-		world.blockchainHook.UpdateAccounts(vmOutput.OutputAccounts)
+		w.blockchainHook.UpdateAccounts(vmOutput.OutputAccounts)
 	}
 
 	response := &RunResponse{}
@@ -105,34 +105,34 @@ func (world *world) runSmartContract(request RunRequest) (*RunResponse, error) {
 	response.Output = vmOutput
 	response.Error = err
 
-	return response, nil
+	return response
 }
 
-func (world *world) querySmartContract(request QueryRequest) (*QueryResponse, error) {
-	input := world.prepareCallInput(request.RunRequest)
-	log.Trace("world.querySmartContract()", "input", prettyJson(input))
+func (w *world) querySmartContract(request QueryRequest) *QueryResponse {
+	input := w.prepareCallInput(request.RunRequest)
+	log.Trace("w.querySmartContract()", "input", prettyJson(input))
 
-	vmOutput, err := world.vm.RunSmartContractCall(input)
+	vmOutput, err := w.vm.RunSmartContractCall(input)
 
 	response := &QueryResponse{}
 	response.Input = &input.VMInput
 	response.Output = vmOutput
 	response.Error = err
 
-	return response, nil
+	return response
 }
 
-func (world *world) createAccount(request CreateAccountRequest) (*CreateAccountResponse, error) {
-	log.Trace("world.createAccount()", "request", prettyJson(request))
+func (w *world) createAccount(request CreateAccountRequest) *CreateAccountResponse {
+	log.Trace("w.createAccount()", "request", prettyJson(request))
 
 	account := NewAccount(request.Address, request.Nonce, request.BalanceAsBigInt)
-	world.blockchainHook.AddAccount(account)
-	return &CreateAccountResponse{Account: account}, nil
+	w.blockchainHook.AddAccount(account)
+	return &CreateAccountResponse{Account: account}
 }
 
-func (world *world) toDataModel() *worldDataModel {
+func (w *world) toDataModel() *worldDataModel {
 	return &worldDataModel{
-		ID:       world.id,
-		Accounts: world.blockchainHook.Accounts,
+		ID:       w.id,
+		Accounts: w.blockchainHook.Accounts,
 	}
 }

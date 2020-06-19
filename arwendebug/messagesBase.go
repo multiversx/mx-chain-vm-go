@@ -61,7 +61,7 @@ func (request *ContractRequestBase) digest() error {
 	}
 
 	if request.GasLimit == 0 {
-		request.GasLimit = DefaultGasLimit
+		return NewRequestError("invalid gas limit")
 	}
 
 	request.ValueAsBigInt, err = parseValue(request.Value)

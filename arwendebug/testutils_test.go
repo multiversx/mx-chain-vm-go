@@ -11,6 +11,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const gasLimit = 50000000
+
 type testContext struct {
 	t       *testing.T
 	worldID string
@@ -47,6 +49,7 @@ func (context *testContext) deployContract(codePath string, impersonated string,
 		ContractRequestBase: ContractRequestBase{
 			RequestBase:     context.createRequestBase(),
 			ImpersonatedHex: impersonated,
+			GasLimit:        gasLimit,
 		},
 		CodePath:     codePath,
 		ArgumentsHex: arguments,
@@ -70,6 +73,7 @@ func (context *testContext) upgradeContract(contract string, codePath string, im
 			ContractRequestBase: ContractRequestBase{
 				RequestBase:     context.createRequestBase(),
 				ImpersonatedHex: impersonated,
+				GasLimit:        gasLimit,
 			},
 			CodePath:     codePath,
 			ArgumentsHex: arguments,
@@ -94,6 +98,7 @@ func (context *testContext) runContract(contract string, impersonated string, fu
 		ContractRequestBase: ContractRequestBase{
 			RequestBase:     context.createRequestBase(),
 			ImpersonatedHex: impersonated,
+			GasLimit:        gasLimit,
 		},
 		ContractAddressHex: contract,
 		Function:           function,
@@ -118,6 +123,7 @@ func (context *testContext) queryContract(contract string, impersonated string, 
 			ContractRequestBase: ContractRequestBase{
 				RequestBase:     context.createRequestBase(),
 				ImpersonatedHex: impersonated,
+				GasLimit:        gasLimit,
 			},
 			ContractAddressHex: contract,
 			Function:           function,
