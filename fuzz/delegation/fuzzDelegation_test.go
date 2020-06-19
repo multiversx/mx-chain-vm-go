@@ -164,4 +164,28 @@ func TestFuzzDelegation(t *testing.T) {
 		err = pfe.unStake(delegatorIdx)
 		require.Nil(t, err)
 	}
+
+	pfe.increaseBlockNonce(pfe.numBlocksBeforeUnbond + 1)
+
+	// unBondAllAvailable
+	err = pfe.unBondAllAvailable()
+	require.Nil(t, err)
+
+	// auction SC should have no more funds
+	auctionBalanceAfterUnbond := pfe.getAuctionBalance()
+	require.True(t, auctionBalanceAfterUnbond.Sign() == 0,
+		"Auction still has balance after full unbond: %d",
+		auctionBalanceAfterUnbond)
+
+	// all delegators (incl. owner) withdraw all inactive stake
+	for delegatorIdx := 0; delegatorIdx <= pfe.numDelegators; delegatorIdx++ {
+		err = pfe.withdrawAllInactiveStake(delegatorIdx)
+		require.Nil(t, err)
+	}
+
+	withdrawnAtTheEnd := pfe.getWithdrawTargetBalance()
+	require.True(t, withdrawnAtTheEnd.Cmp(pfe.totalStakeAdded) == 0,
+		"Stake added and withdrawn doesn't match. Staked: %d. Withdrawn: %d.",
+		pfe.totalStakeAdded, withdrawnAtTheEnd)
+
 }

@@ -304,3 +304,34 @@ func (pfe *fuzzDelegationExecutor) unStake(delegIndex int) error {
 
 	return nil
 }
+
+func (pfe *fuzzDelegationExecutor) unBondAllAvailable() error {
+	output, err := pfe.executeTxStep(fmt.Sprintf(`
+	{
+		"step": "scCall",
+		"txId": "%d",
+		"tx": {
+			"from": "''%s",
+			"to": "''%s",
+			"value": "0",
+			"function": "unBondAllAvailable",
+			"arguments": [],
+			"gasLimit": "100,000,000",
+			"gasPrice": "0"
+		}
+	}`,
+		pfe.nextTxIndex(),
+		string(pfe.ownerAddress),
+		string(pfe.delegationContractAddress),
+	))
+	if err != nil {
+		return err
+	}
+	if output.ReturnCode == vmi.Ok {
+		pfe.log("unBondAllAvailable")
+	} else {
+		pfe.log("unBondAllAvailable, fail, %s", output.ReturnMessage)
+	}
+
+	return nil
+}
