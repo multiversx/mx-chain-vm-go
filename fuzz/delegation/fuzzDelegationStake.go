@@ -63,9 +63,6 @@ func (pfe *fuzzDelegationExecutor) stake(delegIndex int, amount *big.Int) error 
 }
 
 func (pfe *fuzzDelegationExecutor) withdrawInactiveStake(delegIndex int, amount *big.Int) error {
-	// keep track of stake withdrawn
-	pfe.totalStakeWithdrawn.Add(pfe.totalStakeWithdrawn, amount)
-
 	// actual withdraw
 	output, err := pfe.executeTxStep(fmt.Sprintf(`
 	{
@@ -91,7 +88,11 @@ func (pfe *fuzzDelegationExecutor) withdrawInactiveStake(delegIndex int, amount 
 	if err != nil {
 		return err
 	}
+
 	if output.ReturnCode == vmi.Ok {
+		// keep track of stake withdrawn
+		pfe.totalStakeWithdrawn.Add(pfe.totalStakeWithdrawn, amount)
+
 		pfe.log("withdraw inactive stake, delegator: %d, amount: %d", delegIndex, amount)
 
 		// move withdrawn stake to a special account
@@ -107,7 +108,7 @@ func (pfe *fuzzDelegationExecutor) withdrawInactiveStake(delegIndex int, amount 
 		}`,
 			pfe.nextTxIndex(),
 			string(pfe.delegatorAddress(delegIndex)),
-			pfe.withdrawTargetAddress,
+			string(pfe.withdrawTargetAddress),
 			amount,
 		))
 		if err != nil {
@@ -241,7 +242,7 @@ func (pfe *fuzzDelegationExecutor) purchaseStake(sellerIndex, buyerIndex int, am
 		}`,
 			pfe.nextTxIndex(),
 			string(pfe.delegatorAddress(sellerIndex)),
-			string(pfe.withdrawTargetAddress),
+			string(pfe.stakePurchaseForwardAddress),
 			amount,
 		))
 		if err != nil {

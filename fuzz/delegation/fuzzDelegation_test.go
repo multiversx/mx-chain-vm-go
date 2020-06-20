@@ -55,7 +55,7 @@ func TestFuzzDelegation(t *testing.T) {
 		serviceFee:                  r.Intn(10000),
 		numBlocksBeforeForceUnstake: r.Intn(1000),
 		numBlocksBeforeUnbond:       r.Intn(1000),
-		numDelegators:               8,
+		numDelegators:               10,
 		stakePerNode:                big.NewInt(1000000000),
 	})
 	require.Nil(t, err)
@@ -66,31 +66,35 @@ func TestFuzzDelegation(t *testing.T) {
 	maxSystemReward := big.NewInt(1000000000)
 
 	re := newRandomEventProvider()
-	for stepIndex := 0; stepIndex < 100; stepIndex++ {
+	for stepIndex := 0; stepIndex < 10000; stepIndex++ {
 		re.reset()
 		switch {
-		case re.withProbability(0.1):
+		case re.withProbability(0.05):
+			// increment block nonce
+			err = pfe.increaseBlockNonce(r.Intn(1000))
+			require.Nil(t, err)
+		case re.withProbability(0.05):
 			// add nodes
 			err = pfe.addNodes(r.Intn(3))
 			require.Nil(t, err)
-		case re.withProbability(0.2):
+		case re.withProbability(0.05):
 			// stake
 			delegatorIdx := r.Intn(pfe.numDelegators + 1)
 			stake := big.NewInt(0).Rand(r, maxStake)
 			err = pfe.stake(delegatorIdx, stake)
 			require.Nil(t, err)
-		case re.withProbability(0.1):
+		case re.withProbability(0.05):
 			// withdraw inactive stake
 			delegatorIdx := r.Intn(pfe.numDelegators + 1)
 			stake := big.NewInt(0).Rand(r, maxStake)
 			err = pfe.withdrawInactiveStake(delegatorIdx, stake)
 			require.Nil(t, err)
-		case re.withProbability(0.2):
+		case re.withProbability(0.05):
 			// add system rewards
 			rewards := big.NewInt(0).Rand(r, maxSystemReward)
 			err = pfe.addRewards(rewards)
 			require.Nil(t, err)
-		case re.withProbability(0.15):
+		case re.withProbability(0.05):
 			// claim rewards
 			delegatorIdx := r.Intn(pfe.numDelegators + 1)
 			err = pfe.claimRewards(delegatorIdx)
@@ -99,18 +103,27 @@ func TestFuzzDelegation(t *testing.T) {
 			// computeAllRewards
 			err = pfe.computeAllRewards()
 			require.Nil(t, err)
-		case re.withProbability(0.07):
+		case re.withProbability(0.05):
 			// announceUnStake
 			delegatorIdx := r.Intn(pfe.numDelegators + 1)
 			amount := big.NewInt(0).Rand(r, maxStake)
 			err = pfe.announceUnStake(delegatorIdx, amount)
 			require.Nil(t, err)
-		case re.withProbability(0.03):
+		case re.withProbability(0.05):
 			// purchaseStake
 			sellerIdx := r.Intn(pfe.numDelegators + 1)
 			buyerIdx := r.Intn(pfe.numDelegators + 1)
 			amount := big.NewInt(0).Rand(r, maxStake)
 			err = pfe.purchaseStake(sellerIdx, buyerIdx, amount)
+			require.Nil(t, err)
+		case re.withProbability(0.05):
+			// unStake
+			delegatorIdx := r.Intn(pfe.numDelegators + 1)
+			err = pfe.unStake(delegatorIdx)
+			require.Nil(t, err)
+		case re.withProbability(0.05):
+			// unBondAllAvailable
+			err = pfe.unBondAllAvailable()
 			require.Nil(t, err)
 		default:
 		}
@@ -185,7 +198,8 @@ func TestFuzzDelegation(t *testing.T) {
 
 	withdrawnAtTheEnd := pfe.getWithdrawTargetBalance()
 	require.True(t, withdrawnAtTheEnd.Cmp(pfe.totalStakeAdded) == 0,
-		"Stake added and withdrawn doesn't match. Staked: %d. Withdrawn: %d.",
-		pfe.totalStakeAdded, withdrawnAtTheEnd)
+		"Stake added and withdrawn doesn't match. Staked: %d. Withdrawn: %d. Off by: %d",
+		pfe.totalStakeAdded, withdrawnAtTheEnd,
+		big.NewInt(0).Sub(pfe.totalStakeAdded, withdrawnAtTheEnd))
 
 }
