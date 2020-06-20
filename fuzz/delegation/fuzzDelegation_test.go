@@ -66,7 +66,7 @@ func TestFuzzDelegation(t *testing.T) {
 	maxSystemReward := big.NewInt(1000000000)
 
 	re := newRandomEventProvider()
-	for stepIndex := 0; stepIndex < 10000; stepIndex++ {
+	for stepIndex := 0; stepIndex < 1000; stepIndex++ {
 		re.reset()
 		switch {
 		case re.withProbability(0.05):
@@ -94,7 +94,7 @@ func TestFuzzDelegation(t *testing.T) {
 			rewards := big.NewInt(0).Rand(r, maxSystemReward)
 			err = pfe.addRewards(rewards)
 			require.Nil(t, err)
-		case re.withProbability(0.05):
+		case re.withProbability(0.2):
 			// claim rewards
 			delegatorIdx := r.Intn(pfe.numDelegators + 1)
 			err = pfe.claimRewards(delegatorIdx)
@@ -154,12 +154,8 @@ func TestFuzzDelegation(t *testing.T) {
 		}
 	}
 
+	// check that delegators got all rewards out
 	totalDelegatorBalance := pfe.getAllDelegatorsBalance()
-
-	// fmt.Println(pfe.getContractBalance())
-	// fmt.Println()
-	// fmt.Println(pfe.getAuctionBalance())
-	// fmt.Println(pfe.getWithdrawTargetBalance())
 	require.True(t, pfe.totalRewards.Cmp(totalDelegatorBalance) == 0,
 		"Rewards don't match. Total rewards: %d. Total delegator balance: %d.",
 		pfe.totalRewards, totalDelegatorBalance)
