@@ -23,18 +23,18 @@
         },
         {
             "step": "scCall",
-            "txId": "check time before force unstake",
+            "txId": "getNumBlocksBeforeForceUnstake",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "''delegation_contract___________s1",
                 "value": "0",
-                "function": "getTimeBeforeForceUnstake",
+                "function": "getNumBlocksBeforeForceUnstake",
                 "arguments": [],
                 "gasLimit": "1,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "680400" ],
+                "out": [ "50" ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -43,18 +43,18 @@
         },
         {
             "step": "scCall",
-            "txId": "check time before force unstake",
+            "txId": "getNumBlocksBeforeUnBond",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "''delegation_contract___________s1",
                 "value": "0",
-                "function": "getTimeBeforeForceUnstake",
+                "function": "getNumBlocksBeforeUnBond",
                 "arguments": [],
                 "gasLimit": "1,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "680400" ],
+                "out": [ "60" ],
                 "status": "",
                 "logs": [],
                 "gas": "*",

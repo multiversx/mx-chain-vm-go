@@ -5,7 +5,7 @@
             "step": "setState",
             "comment": "relevant for force unstake later",
             "currentBlockInfo": {
-                "blockTimestamp": "1589120000"
+                "blockNonce": "521000"
             }
         },
         {
@@ -15,7 +15,7 @@
                 "from": "''delegator_1___________________s1",
                 "to": "''delegation_contract___________s1",
                 "value": "0",
-                "function": "offerStakeForSale",
+                "function": "announceUnStake",
                 "arguments": [
                     "113,000,000,000,000"
                 ],
@@ -67,7 +67,7 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "1589120000" ],
+                "out": [ "521000" ],
                 "status": "",
                 "logs": [],
                 "gas": "*",

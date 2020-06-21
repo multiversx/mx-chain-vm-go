@@ -1,0 +1,4475 @@
+{
+    "name": "fuzz generated",
+    "checkGas": false,
+    "steps": [
+        {
+            "step": "setState",
+            "accounts": {
+                "''fuzz_owner_addr_______________s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                },
+                "''fuzz_sc_auction_mock_addr_____s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {
+                        "''stake_per_node": "1000000000"
+                    },
+                    "code": "file:auction-mock.wasm"
+                },
+                "''endless_sack_of_erd___________s1": {
+                    "nonce": "0",
+                    "balance": "1,000,000,000,000,000,000,000,000,000,000",
+                    "storage": {},
+                    "code": ""
+                },
+                "''withdraw_target_______________s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                },
+                "''stake_purchase_forwarded______s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                }
+            },
+            "newAddresses": [
+                {
+                    "creatorAddress": "''fuzz_owner_addr_______________s1",
+                    "creatorNonce": "0",
+                    "newAddress": "''fuzz_sc_delegation_addr_______s1"
+                }
+            ]
+        },
+        {
+            "step": "setState",
+            "accounts": {
+                "''delegator     1               s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "setState",
+            "accounts": {
+                "''delegator     2               s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "setState",
+            "accounts": {
+                "''delegator     3               s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "setState",
+            "accounts": {
+                "''delegator     4               s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "setState",
+            "accounts": {
+                "''delegator     5               s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "setState",
+            "accounts": {
+                "''delegator     6               s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "setState",
+            "accounts": {
+                "''delegator     7               s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "setState",
+            "accounts": {
+                "''delegator     8               s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "scDeploy",
+            "txId": "-deploy-",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "value": "0",
+                "contractCode": "file:delegation.wasm",
+                "arguments": [
+                    "''fuzz_sc_auction_mock_addr_____s1",
+                    "1176",
+                    "534",
+                    "396"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "-setStakePerNode-",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "setStakePerNode",
+                "arguments": [
+                    "1000000000"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "1",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "enableAutoActivation",
+                "arguments": [],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "setState",
+            "comment": "2 - increase block nonce",
+            "currentBlockInfo": {
+                "blockNonce": "5746"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "3",
+            "tx": {
+                "from": "''delegator     8               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "''delegator     8               s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "validatorReward",
+            "txId": "4",
+            "tx": {
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "377650987"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "5",
+            "tx": {
+                "from": "''delegator     5               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "''delegator     5               s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "6",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "addNodes",
+                "arguments": [
+                    "''bls key     0 ..................................................................................",
+                    "''bls key signature     0 ........",
+                    "''bls key     1 ..................................................................................",
+                    "''bls key signature     1 ........"
+                ],
+                "gasLimit": "1,000,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "7",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "withdrawInactiveStake",
+                "arguments": [
+                    "871792154"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "8",
+            "tx": {
+                "from": "''endless_sack_of_erd___________s1",
+                "to": "''delegator     8               s1",
+                "value": "801366117"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "9",
+            "tx": {
+                "from": "''delegator     8               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "801366117",
+                "function": "purchaseStake",
+                "arguments": [
+                    "''delegator     6               s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "10",
+            "tx": {
+                "from": "''delegator     8               s1",
+                "to": "''endless_sack_of_erd___________s1",
+                "value": "801366117"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "11",
+            "tx": {
+                "from": "''delegator     6               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "announceUnStake",
+                "arguments": [
+                    "461534922"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "12",
+            "tx": {
+                "from": "''delegator     1               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "''delegator     1               s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "13",
+            "tx": {
+                "from": "''endless_sack_of_erd___________s1",
+                "to": "''delegator     7               s1",
+                "value": "1006682239"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "14",
+            "tx": {
+                "from": "''delegator     7               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "1006682239",
+                "function": "stake",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "15",
+            "tx": {
+                "from": "''endless_sack_of_erd___________s1",
+                "to": "''delegator     5               s1",
+                "value": "251653161"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "16",
+            "tx": {
+                "from": "''delegator     5               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "251653161",
+                "function": "stake",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "17",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "announceUnStake",
+                "arguments": [
+                    "1679309196"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "validatorReward",
+            "txId": "18",
+            "tx": {
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "548569578"
+            }
+        },
+        {
+            "step": "validatorReward",
+            "txId": "19",
+            "tx": {
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "16768845"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "20",
+            "tx": {
+                "from": "''delegator     3               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "announceUnStake",
+                "arguments": [
+                    "564242569"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "21",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "addNodes",
+                "arguments": [
+                    "''bls key     2 ..................................................................................",
+                    "''bls key signature     2 ........"
+                ],
+                "gasLimit": "1,000,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "22",
+            "tx": {
+                "from": "''delegator     1               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "announceUnStake",
+                "arguments": [
+                    "1533158898"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "validatorReward",
+            "txId": "23",
+            "tx": {
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "33060347"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "24",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "addNodes",
+                "arguments": [
+                    "''bls key     3 ..................................................................................",
+                    "''bls key signature     3 ........"
+                ],
+                "gasLimit": "1,000,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "validatorReward",
+            "txId": "25",
+            "tx": {
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "503369361"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "26",
+            "tx": {
+                "from": "''delegator     2               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "announceUnStake",
+                "arguments": [
+                    "1398243374"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "27",
+            "tx": {
+                "from": "''endless_sack_of_erd___________s1",
+                "to": "''delegator     6               s1",
+                "value": "459004534"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "28",
+            "tx": {
+                "from": "''delegator     6               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "459004534",
+                "function": "stake",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "29",
+            "tx": {
+                "from": "''delegator     1               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "''delegator     1               s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "30",
+            "tx": {
+                "from": "''endless_sack_of_erd___________s1",
+                "to": "''delegator     2               s1",
+                "value": "1433501913"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "31",
+            "tx": {
+                "from": "''delegator     2               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "1433501913",
+                "function": "purchaseStake",
+                "arguments": [
+                    "''delegator     8               s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "32",
+            "tx": {
+                "from": "''delegator     2               s1",
+                "to": "''endless_sack_of_erd___________s1",
+                "value": "1433501913"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "33",
+            "tx": {
+                "from": "''endless_sack_of_erd___________s1",
+                "to": "''delegator     6               s1",
+                "value": "550528740"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "34",
+            "tx": {
+                "from": "''delegator     6               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "550528740",
+                "function": "stake",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "35",
+            "tx": {
+                "from": "''delegator     6               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "withdrawInactiveStake",
+                "arguments": [
+                    "1604730160"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "36",
+            "tx": {
+                "from": "''endless_sack_of_erd___________s1",
+                "to": "''delegator     4               s1",
+                "value": "1714387956"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "37",
+            "tx": {
+                "from": "''delegator     4               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "1714387956",
+                "function": "purchaseStake",
+                "arguments": [
+                    "''delegator     5               s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "38",
+            "tx": {
+                "from": "''delegator     4               s1",
+                "to": "''endless_sack_of_erd___________s1",
+                "value": "1714387956"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "39",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "addNodes",
+                "arguments": [
+                    "''bls key     4 ..................................................................................",
+                    "''bls key signature     4 ........"
+                ],
+                "gasLimit": "1,000,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "40",
+            "tx": {
+                "from": "''endless_sack_of_erd___________s1",
+                "to": "''delegator     2               s1",
+                "value": "1780760936"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "41",
+            "tx": {
+                "from": "''delegator     2               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "1780760936",
+                "function": "stake",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "42",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "addNodes",
+                "arguments": [
+                    "''bls key     5 ..................................................................................",
+                    "''bls key signature     5 ........"
+                ],
+                "gasLimit": "1,000,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "43",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "computeAllRewards",
+                "arguments": [],
+                "gasLimit": "1,000,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "44",
+            "tx": {
+                "from": "''endless_sack_of_erd___________s1",
+                "to": "''delegator     3               s1",
+                "value": "583881787"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "45",
+            "tx": {
+                "from": "''delegator     3               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "583881787",
+                "function": "stake",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "46",
+            "tx": {
+                "from": "''delegator     8               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "announceUnStake",
+                "arguments": [
+                    "977455273"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "47",
+            "tx": {
+                "from": "''delegator     2               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "withdrawInactiveStake",
+                "arguments": [
+                    "39944098"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "48",
+            "tx": {
+                "from": "''delegator     2               s1",
+                "to": "''withdraw_target_______________s1",
+                "value": "39944098"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "49",
+            "tx": {
+                "from": "''delegator     2               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "withdrawInactiveStake",
+                "arguments": [
+                    "698194732"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "50",
+            "tx": {
+                "from": "''endless_sack_of_erd___________s1",
+                "to": "''delegator     8               s1",
+                "value": "760064160"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "51",
+            "tx": {
+                "from": "''delegator     8               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "760064160",
+                "function": "stake",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "52",
+            "tx": {
+                "from": "''endless_sack_of_erd___________s1",
+                "to": "''delegator     2               s1",
+                "value": "1298592533"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "53",
+            "tx": {
+                "from": "''delegator     2               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "1298592533",
+                "function": "stake",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "54",
+            "tx": {
+                "from": "''delegator     1               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "''delegator     1               s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "55",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "addNodes",
+                "arguments": [
+                    "''bls key     6 ..................................................................................",
+                    "''bls key signature     6 ........"
+                ],
+                "gasLimit": "1,000,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "56",
+            "tx": {
+                "from": "''delegator     6               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "announceUnStake",
+                "arguments": [
+                    "1586266797"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "57",
+            "tx": {
+                "from": "''delegator     5               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "announceUnStake",
+                "arguments": [
+                    "1158108236"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "58",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "addNodes",
+                "arguments": [
+                    "''bls key     7 ..................................................................................",
+                    "''bls key signature     7 ........",
+                    "''bls key     8 ..................................................................................",
+                    "''bls key signature     8 ........"
+                ],
+                "gasLimit": "1,000,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "validatorReward",
+            "txId": "59",
+            "tx": {
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "978100007"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "60",
+            "tx": {
+                "from": "''endless_sack_of_erd___________s1",
+                "to": "''delegator     8               s1",
+                "value": "176934035"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "61",
+            "tx": {
+                "from": "''delegator     8               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "176934035",
+                "function": "stake",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "validatorReward",
+            "txId": "62",
+            "tx": {
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "464945331"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "63",
+            "tx": {
+                "from": "''endless_sack_of_erd___________s1",
+                "to": "''delegator     5               s1",
+                "value": "840198516"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "64",
+            "tx": {
+                "from": "''delegator     5               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "840198516",
+                "function": "stake",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "65",
+            "tx": {
+                "from": "''endless_sack_of_erd___________s1",
+                "to": "''delegator     4               s1",
+                "value": "1037093802"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "66",
+            "tx": {
+                "from": "''delegator     4               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "1037093802",
+                "function": "stake",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "validatorReward",
+            "txId": "67",
+            "tx": {
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "250817270"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "68",
+            "tx": {
+                "from": "''delegator     8               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "''delegator     8               s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "69",
+            "tx": {
+                "from": "''delegator     8               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "claimRewards",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "70",
+            "tx": {
+                "from": "''delegator     8               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "''delegator     8               s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "71",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "addNodes",
+                "arguments": [
+                    "''bls key     9 ..................................................................................",
+                    "''bls key signature     9 ........"
+                ],
+                "gasLimit": "1,000,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "validatorReward",
+            "txId": "72",
+            "tx": {
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "930395044"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "73",
+            "tx": {
+                "from": "''delegator     4               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "''delegator     4               s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "74",
+            "tx": {
+                "from": "''delegator     4               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "claimRewards",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "75",
+            "tx": {
+                "from": "''delegator     4               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "''delegator     4               s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "76",
+            "tx": {
+                "from": "''delegator     7               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "''delegator     7               s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "77",
+            "tx": {
+                "from": "''delegator     7               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "claimRewards",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "78",
+            "tx": {
+                "from": "''delegator     7               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "''delegator     7               s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "79",
+            "tx": {
+                "from": "''endless_sack_of_erd___________s1",
+                "to": "''delegator     4               s1",
+                "value": "1002502394"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "80",
+            "tx": {
+                "from": "''delegator     4               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "1002502394",
+                "function": "stake",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "validatorReward",
+            "txId": "81",
+            "tx": {
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "174488783"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "82",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "announceUnStake",
+                "arguments": [
+                    "398921077"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "83",
+            "tx": {
+                "from": "''endless_sack_of_erd___________s1",
+                "to": "''delegator     2               s1",
+                "value": "325665785"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "84",
+            "tx": {
+                "from": "''delegator     2               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "325665785",
+                "function": "stake",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "85",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "computeAllRewards",
+                "arguments": [],
+                "gasLimit": "1,000,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "86",
+            "tx": {
+                "from": "''endless_sack_of_erd___________s1",
+                "to": "''delegator     3               s1",
+                "value": "567752448"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "87",
+            "tx": {
+                "from": "''delegator     3               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "567752448",
+                "function": "stake",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "88",
+            "tx": {
+                "from": "''delegator     7               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "withdrawInactiveStake",
+                "arguments": [
+                    "778417852"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "89",
+            "tx": {
+                "from": "''delegator     5               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "''delegator     5               s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "90",
+            "tx": {
+                "from": "''delegator     5               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "claimRewards",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "91",
+            "tx": {
+                "from": "''delegator     5               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "''delegator     5               s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "92",
+            "tx": {
+                "from": "''delegator     4               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "announceUnStake",
+                "arguments": [
+                    "971670585"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "93",
+            "tx": {
+                "from": "''endless_sack_of_erd___________s1",
+                "to": "''fuzz_owner_addr_______________s1",
+                "value": "1907783229"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "94",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "1907783229",
+                "function": "stake",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "95",
+            "tx": {
+                "from": "''endless_sack_of_erd___________s1",
+                "to": "''delegator     3               s1",
+                "value": "611682727"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "96",
+            "tx": {
+                "from": "''delegator     3               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "611682727",
+                "function": "stake",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "97",
+            "tx": {
+                "from": "''delegator     2               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "''delegator     2               s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "98",
+            "tx": {
+                "from": "''delegator     2               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "claimRewards",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "99",
+            "tx": {
+                "from": "''delegator     2               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "''delegator     2               s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "validatorReward",
+            "txId": "100",
+            "tx": {
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "194032275"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "101",
+            "tx": {
+                "from": "''endless_sack_of_erd___________s1",
+                "to": "''delegator     2               s1",
+                "value": "1106015394"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "102",
+            "tx": {
+                "from": "''delegator     2               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "1106015394",
+                "function": "stake",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "validatorReward",
+            "txId": "103",
+            "tx": {
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "606928600"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "104",
+            "tx": {
+                "from": "''delegator     3               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "''delegator     3               s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "105",
+            "tx": {
+                "from": "''delegator     3               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "claimRewards",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "106",
+            "tx": {
+                "from": "''delegator     3               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "''delegator     3               s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "107",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "addNodes",
+                "arguments": [
+                    "''bls key    10 ..................................................................................",
+                    "''bls key signature    10 ........"
+                ],
+                "gasLimit": "1,000,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "108",
+            "tx": {
+                "from": "''delegator     3               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "announceUnStake",
+                "arguments": [
+                    "449869083"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "validatorReward",
+            "txId": "109",
+            "tx": {
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "511248188"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "110",
+            "tx": {
+                "from": "''delegator     5               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "announceUnStake",
+                "arguments": [
+                    "1800866769"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "111",
+            "tx": {
+                "from": "''delegator     4               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "''delegator     4               s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "112",
+            "tx": {
+                "from": "''delegator     4               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "claimRewards",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "113",
+            "tx": {
+                "from": "''delegator     4               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "''delegator     4               s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "114",
+            "tx": {
+                "from": "''delegator     5               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "withdrawInactiveStake",
+                "arguments": [
+                    "1043952860"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "115",
+            "tx": {
+                "from": "''endless_sack_of_erd___________s1",
+                "to": "''fuzz_owner_addr_______________s1",
+                "value": "453255881"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "116",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "453255881",
+                "function": "stake",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "117",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "addNodes",
+                "arguments": [
+                    "''bls key    11 ..................................................................................",
+                    "''bls key signature    11 ........",
+                    "''bls key    12 ..................................................................................",
+                    "''bls key signature    12 ........"
+                ],
+                "gasLimit": "1,000,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "118",
+            "tx": {
+                "from": "''delegator     7               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "''delegator     7               s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "119",
+            "tx": {
+                "from": "''delegator     7               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "claimRewards",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "120",
+            "tx": {
+                "from": "''delegator     7               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "''delegator     7               s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "121",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "computeAllRewards",
+                "arguments": [],
+                "gasLimit": "1,000,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "122",
+            "tx": {
+                "from": "''delegator     8               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "withdrawInactiveStake",
+                "arguments": [
+                    "238221834"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "123",
+            "tx": {
+                "from": "''delegator     6               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "announceUnStake",
+                "arguments": [
+                    "1397786670"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "124",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "addNodes",
+                "arguments": [
+                    "''bls key    13 ..................................................................................",
+                    "''bls key signature    13 ........"
+                ],
+                "gasLimit": "1,000,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "125",
+            "tx": {
+                "from": "''endless_sack_of_erd___________s1",
+                "to": "''fuzz_owner_addr_______________s1",
+                "value": "355908774"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "126",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "355908774",
+                "function": "stake",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "127",
+            "tx": {
+                "from": "''delegator     5               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "withdrawInactiveStake",
+                "arguments": [
+                    "448161197"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "128",
+            "tx": {
+                "from": "''endless_sack_of_erd___________s1",
+                "to": "''delegator     2               s1",
+                "value": "747048514"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "129",
+            "tx": {
+                "from": "''delegator     2               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "747048514",
+                "function": "stake",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "validatorReward",
+            "txId": "130",
+            "tx": {
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "841719123"
+            }
+        },
+        {
+            "step": "validatorReward",
+            "txId": "131",
+            "tx": {
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "488042733"
+            }
+        },
+        {
+            "step": "validatorReward",
+            "txId": "132",
+            "tx": {
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "599136617"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "133",
+            "tx": {
+                "from": "''delegator     3               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "announceUnStake",
+                "arguments": [
+                    "1259549113"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "134",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "computeAllRewards",
+                "arguments": [],
+                "gasLimit": "1,000,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "135",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getTotalInactiveStake",
+                "arguments": [],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "136",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getTotalUnclaimedRewards",
+                "arguments": [],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "137",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getUserInactiveStake",
+                "arguments": [
+                    "''fuzz_owner_addr_______________s1"
+                ],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "138",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "withdrawInactiveStake",
+                "arguments": [
+                    "0"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "139",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''withdraw_target_______________s1",
+                "value": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "140",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getUserInactiveStake",
+                "arguments": [
+                    "''delegator     1               s1"
+                ],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "141",
+            "tx": {
+                "from": "''delegator     1               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "withdrawInactiveStake",
+                "arguments": [
+                    "0"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "142",
+            "tx": {
+                "from": "''delegator     1               s1",
+                "to": "''withdraw_target_______________s1",
+                "value": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "143",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getUserInactiveStake",
+                "arguments": [
+                    "''delegator     2               s1"
+                ],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "144",
+            "tx": {
+                "from": "''delegator     2               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "withdrawInactiveStake",
+                "arguments": [
+                    "747048514"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "145",
+            "tx": {
+                "from": "''delegator     2               s1",
+                "to": "''withdraw_target_______________s1",
+                "value": "747048514"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "146",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getUserInactiveStake",
+                "arguments": [
+                    "''delegator     3               s1"
+                ],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "147",
+            "tx": {
+                "from": "''delegator     3               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "withdrawInactiveStake",
+                "arguments": [
+                    "1002398453"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "148",
+            "tx": {
+                "from": "''delegator     3               s1",
+                "to": "''withdraw_target_______________s1",
+                "value": "1002398453"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "149",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getUserInactiveStake",
+                "arguments": [
+                    "''delegator     4               s1"
+                ],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "150",
+            "tx": {
+                "from": "''delegator     4               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "withdrawInactiveStake",
+                "arguments": [
+                    "33618524"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "151",
+            "tx": {
+                "from": "''delegator     4               s1",
+                "to": "''withdraw_target_______________s1",
+                "value": "33618524"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "152",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getUserInactiveStake",
+                "arguments": [
+                    "''delegator     5               s1"
+                ],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "153",
+            "tx": {
+                "from": "''delegator     5               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "withdrawInactiveStake",
+                "arguments": [
+                    "0"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "154",
+            "tx": {
+                "from": "''delegator     5               s1",
+                "to": "''withdraw_target_______________s1",
+                "value": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "155",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getUserInactiveStake",
+                "arguments": [
+                    "''delegator     6               s1"
+                ],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "156",
+            "tx": {
+                "from": "''delegator     6               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "withdrawInactiveStake",
+                "arguments": [
+                    "0"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "157",
+            "tx": {
+                "from": "''delegator     6               s1",
+                "to": "''withdraw_target_______________s1",
+                "value": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "158",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getUserInactiveStake",
+                "arguments": [
+                    "''delegator     7               s1"
+                ],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "159",
+            "tx": {
+                "from": "''delegator     7               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "withdrawInactiveStake",
+                "arguments": [
+                    "0"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "160",
+            "tx": {
+                "from": "''delegator     7               s1",
+                "to": "''withdraw_target_______________s1",
+                "value": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "161",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getUserInactiveStake",
+                "arguments": [
+                    "''delegator     8               s1"
+                ],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "162",
+            "tx": {
+                "from": "''delegator     8               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "withdrawInactiveStake",
+                "arguments": [
+                    "0"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "163",
+            "tx": {
+                "from": "''delegator     8               s1",
+                "to": "''withdraw_target_______________s1",
+                "value": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "164",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "computeAllRewards",
+                "arguments": [],
+                "gasLimit": "1,000,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "165",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "''fuzz_owner_addr_______________s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "166",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "claimRewards",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "167",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "''fuzz_owner_addr_______________s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "168",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "computeAllRewards",
+                "arguments": [],
+                "gasLimit": "1,000,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "169",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getTotalInactiveStake",
+                "arguments": [],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "170",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getTotalUnclaimedRewards",
+                "arguments": [],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "171",
+            "tx": {
+                "from": "''delegator     1               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "''delegator     1               s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "172",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "computeAllRewards",
+                "arguments": [],
+                "gasLimit": "1,000,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "173",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getTotalInactiveStake",
+                "arguments": [],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "174",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getTotalUnclaimedRewards",
+                "arguments": [],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "175",
+            "tx": {
+                "from": "''delegator     2               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "''delegator     2               s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "176",
+            "tx": {
+                "from": "''delegator     2               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "claimRewards",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "177",
+            "tx": {
+                "from": "''delegator     2               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "''delegator     2               s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "178",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "computeAllRewards",
+                "arguments": [],
+                "gasLimit": "1,000,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "179",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getTotalInactiveStake",
+                "arguments": [],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "180",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getTotalUnclaimedRewards",
+                "arguments": [],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "181",
+            "tx": {
+                "from": "''delegator     3               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "''delegator     3               s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "182",
+            "tx": {
+                "from": "''delegator     3               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "claimRewards",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "183",
+            "tx": {
+                "from": "''delegator     3               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "''delegator     3               s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "184",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "computeAllRewards",
+                "arguments": [],
+                "gasLimit": "1,000,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "185",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getTotalInactiveStake",
+                "arguments": [],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "186",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getTotalUnclaimedRewards",
+                "arguments": [],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "187",
+            "tx": {
+                "from": "''delegator     4               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "''delegator     4               s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "188",
+            "tx": {
+                "from": "''delegator     4               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "claimRewards",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "189",
+            "tx": {
+                "from": "''delegator     4               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "''delegator     4               s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "190",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "computeAllRewards",
+                "arguments": [],
+                "gasLimit": "1,000,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "191",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getTotalInactiveStake",
+                "arguments": [],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "192",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getTotalUnclaimedRewards",
+                "arguments": [],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "193",
+            "tx": {
+                "from": "''delegator     5               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "''delegator     5               s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "194",
+            "tx": {
+                "from": "''delegator     5               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "claimRewards",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "195",
+            "tx": {
+                "from": "''delegator     5               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "''delegator     5               s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "196",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "computeAllRewards",
+                "arguments": [],
+                "gasLimit": "1,000,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "197",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getTotalInactiveStake",
+                "arguments": [],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "198",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getTotalUnclaimedRewards",
+                "arguments": [],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "199",
+            "tx": {
+                "from": "''delegator     6               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "''delegator     6               s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "200",
+            "tx": {
+                "from": "''delegator     6               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "claimRewards",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "201",
+            "tx": {
+                "from": "''delegator     6               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "''delegator     6               s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "202",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "computeAllRewards",
+                "arguments": [],
+                "gasLimit": "1,000,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "203",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getTotalInactiveStake",
+                "arguments": [],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "204",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getTotalUnclaimedRewards",
+                "arguments": [],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "205",
+            "tx": {
+                "from": "''delegator     7               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "''delegator     7               s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "206",
+            "tx": {
+                "from": "''delegator     7               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "claimRewards",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "207",
+            "tx": {
+                "from": "''delegator     7               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "''delegator     7               s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "208",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "computeAllRewards",
+                "arguments": [],
+                "gasLimit": "1,000,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "209",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getTotalInactiveStake",
+                "arguments": [],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "210",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getTotalUnclaimedRewards",
+                "arguments": [],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "211",
+            "tx": {
+                "from": "''delegator     8               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "''delegator     8               s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "212",
+            "tx": {
+                "from": "''delegator     8               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "claimRewards",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "213",
+            "tx": {
+                "from": "''delegator     8               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "''delegator     8               s1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "214",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "computeAllRewards",
+                "arguments": [],
+                "gasLimit": "1,000,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "215",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getTotalInactiveStake",
+                "arguments": [],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "216",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getTotalUnclaimedRewards",
+                "arguments": [],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "217",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getUserActiveStake",
+                "arguments": [
+                    "''fuzz_owner_addr_______________s1"
+                ],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "218",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "announceUnStake",
+                "arguments": [
+                    "2716947884"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "219",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getUserActiveStake",
+                "arguments": [
+                    "''delegator     1               s1"
+                ],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "220",
+            "tx": {
+                "from": "''delegator     1               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "announceUnStake",
+                "arguments": [
+                    "0"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "221",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getUserActiveStake",
+                "arguments": [
+                    "''delegator     2               s1"
+                ],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "222",
+            "tx": {
+                "from": "''delegator     2               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "announceUnStake",
+                "arguments": [
+                    "4471090550"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "223",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getUserActiveStake",
+                "arguments": [
+                    "''delegator     3               s1"
+                ],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "224",
+            "tx": {
+                "from": "''delegator     3               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "announceUnStake",
+                "arguments": [
+                    "760918509"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "225",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getUserActiveStake",
+                "arguments": [
+                    "''delegator     4               s1"
+                ],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "226",
+            "tx": {
+                "from": "''delegator     4               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "announceUnStake",
+                "arguments": [
+                    "2005977672"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "227",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getUserActiveStake",
+                "arguments": [
+                    "''delegator     5               s1"
+                ],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "228",
+            "tx": {
+                "from": "''delegator     5               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "announceUnStake",
+                "arguments": [
+                    "1091851677"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "229",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getUserActiveStake",
+                "arguments": [
+                    "''delegator     6               s1"
+                ],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "230",
+            "tx": {
+                "from": "''delegator     6               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "announceUnStake",
+                "arguments": [
+                    "1009533274"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "231",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getUserActiveStake",
+                "arguments": [
+                    "''delegator     7               s1"
+                ],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "232",
+            "tx": {
+                "from": "''delegator     7               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "announceUnStake",
+                "arguments": [
+                    "1006682239"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "233",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "getUserActiveStake",
+                "arguments": [
+                    "''delegator     8               s1"
+                ],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "234",
+            "tx": {
+                "from": "''delegator     8               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "announceUnStake",
+                "arguments": [
+                    "936998195"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "setState",
+            "comment": "235 - increase block nonce",
+            "currentBlockInfo": {
+                "blockNonce": "6281"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "236",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "unStake",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "237",
+            "tx": {
+                "from": "''delegator     1               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "unStake",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "238",
+            "tx": {
+                "from": "''delegator     2               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "unStake",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "239",
+            "tx": {
+                "from": "''delegator     3               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "unStake",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "240",
+            "tx": {
+                "from": "''delegator     4               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "unStake",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "241",
+            "tx": {
+                "from": "''delegator     5               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "unStake",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "242",
+            "tx": {
+                "from": "''delegator     6               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "unStake",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "243",
+            "tx": {
+                "from": "''delegator     7               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "unStake",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "244",
+            "tx": {
+                "from": "''delegator     8               s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "unStake",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        }
+    ]
+}

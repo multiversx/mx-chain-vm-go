@@ -1,0 +1,96 @@
+{
+    "name": "activate pt 1",
+    "steps": [
+        {
+            "step": "scCall",
+            "txId": "cause auction mock to reject node 3",
+            "tx": {
+                "from": "''someone_______________________s1",
+                "to": "''auction_contract______________s1",
+                "value": "0",
+                "function": "setBlsDeliberateError",
+                "arguments": [
+                    "''bls_key_3_______________________________________________________________________________________",
+                    "1"
+                ],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "cause auction mock to reject node 6",
+            "tx": {
+                "from": "''someone_______________________s1",
+                "to": "''auction_contract______________s1",
+                "value": "0",
+                "function": "setBlsDeliberateError",
+                "arguments": [
+                    "''bls_key_6_______________________________________________________________________________________",
+                    "1"
+                ],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+
+
+
+        {
+            "step": "scCall",
+            "txId": "activate-1-partial-fail",
+            "tx": {
+                "from": "''node_address__________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "stakeNodes",
+                "arguments": [
+                    "''bls_key_2_______________________________________________________________________________________",
+                    "''bls_key_3_______________________________________________________________________________________",
+                    "''bls_key_6_______________________________________________________________________________________"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "''bls_key_3_______________________________________________________________________________________",
+                    "1",
+                    "''bls_key_6_______________________________________________________________________________________",
+                    "1"
+                ],
+                "status": "",
+                "logs": [
+                    {
+                        "address": "''delegation_contract___________s1",
+                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000003",
+                        "topics": [],
+                        "data": "0x"
+                    },
+                    {
+                        "address": "''delegation_contract___________s1",
+                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000004",
+                        "topics": [],
+                        "data": "''staking failed for some nodes"
+                    }
+                ],
+                "gas": "*",
+                "refund": "*"
+            }
+        }
+    ]
+}
