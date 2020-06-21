@@ -5,7 +5,7 @@ os:
 - osx
 arch:
 - amd64
-- arm64
+#- arm64
 osx_image: xcode11.3
 before_install:
 - if [[ $TRAVIS_OS_NAME == linux ]]; then sudo apt-get install -y patchelf; fi
@@ -55,7 +55,7 @@ script:
   fi
 
 before_deploy:
-- mkdir $TRAVIS_BUILD_DIR/travis-builds
+- mkdir -p $TRAVIS_BUILD_DIR/travis-builds
 - cd "$TRAVIS_BUILD_DIR/build"
 - tar czvf "$TRAVIS_BUILD_DIR/travis-builds/$ARCHIVE" *
 deploy:
@@ -67,4 +67,6 @@ deploy:
   local-dir: $TRAVIS_BUILD_DIR/travis-builds
   upload-dir: travis-builds
   on:
-    branch: master
+    branch: 
+      - master
+      - arwendebug*
