@@ -42,9 +42,9 @@ func newExecutorWithPaths() *fuzzDelegationExecutor {
 }
 
 func TestFuzzDelegation(t *testing.T) {
-	// if !*fuzz {
-	// 	t.Skip("skipping test; only run with --fuzz argument")
-	// }
+	if !*fuzz {
+		t.Skip("skipping test; only run with --fuzz argument")
+	}
 
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
