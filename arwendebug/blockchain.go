@@ -39,20 +39,20 @@ func NewBlockchainHookMock() *BlockchainHookMock {
 }
 
 // AddAccount -
-func (blockchain *BlockchainHookMock) AddAccount(account *Account) {
-	blockchain.Accounts[account.AddressHex] = account
+func (b *BlockchainHookMock) AddAccount(account *Account) {
+	b.Accounts[account.AddressHex] = account
 }
 
 // AddAccounts -
-func (blockchain *BlockchainHookMock) AddAccounts(accounts []*Account) {
+func (b *BlockchainHookMock) AddAccounts(accounts []*Account) {
 	for _, account := range accounts {
-		blockchain.AddAccount(account)
+		b.AddAccount(account)
 	}
 }
 
 // AccountExists -
-func (blockchain *BlockchainHookMock) AccountExists(address []byte) (bool, error) {
-	_, ok := blockchain.Accounts[toHex(address)]
+func (b *BlockchainHookMock) AccountExists(address []byte) (bool, error) {
+	_, ok := b.Accounts[toHex(address)]
 	if !ok {
 		return false, nil
 	}
@@ -61,7 +61,7 @@ func (blockchain *BlockchainHookMock) AccountExists(address []byte) (bool, error
 }
 
 // NewAddress -
-func (blockchain *BlockchainHookMock) NewAddress(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error) {
+func (b *BlockchainHookMock) NewAddress(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error) {
 	if len(creatorAddress) != arwen.AddressLen {
 		panic("mock: bad creator address")
 	}
@@ -70,13 +70,13 @@ func (blockchain *BlockchainHookMock) NewAddress(creatorAddress []byte, creatorN
 	copy(address, creatorAddress)
 	copy(address, []byte("contract"))
 	copy(address[len("contract"):], strconv.Itoa(int(creatorNonce)))
-	blockchain.LastCreatedContractAddress = address
+	b.LastCreatedContractAddress = address
 	return address, nil
 }
 
 // GetBalance -
-func (blockchain *BlockchainHookMock) GetBalance(address []byte) (*big.Int, error) {
-	account, ok := blockchain.Accounts[toHex(address)]
+func (b *BlockchainHookMock) GetBalance(address []byte) (*big.Int, error) {
+	account, ok := b.Accounts[toHex(address)]
 	if !ok {
 		return nil, errAccountDoesntExist
 	}
@@ -85,8 +85,8 @@ func (blockchain *BlockchainHookMock) GetBalance(address []byte) (*big.Int, erro
 }
 
 // GetNonce -
-func (blockchain *BlockchainHookMock) GetNonce(address []byte) (uint64, error) {
-	account, ok := blockchain.Accounts[toHex(address)]
+func (b *BlockchainHookMock) GetNonce(address []byte) (uint64, error) {
+	account, ok := b.Accounts[toHex(address)]
 	if !ok {
 		return 0, errAccountDoesntExist
 	}
@@ -95,8 +95,8 @@ func (blockchain *BlockchainHookMock) GetNonce(address []byte) (uint64, error) {
 }
 
 // GetStorageData -
-func (blockchain *BlockchainHookMock) GetStorageData(address []byte, index []byte) ([]byte, error) {
-	account, ok := blockchain.Accounts[toHex(address)]
+func (b *BlockchainHookMock) GetStorageData(address []byte, index []byte) ([]byte, error) {
+	account, ok := b.Accounts[toHex(address)]
 	if !ok {
 		return []byte{}, errAccountDoesntExist
 	}
@@ -105,8 +105,8 @@ func (blockchain *BlockchainHookMock) GetStorageData(address []byte, index []byt
 }
 
 // IsCodeEmpty -
-func (blockchain *BlockchainHookMock) IsCodeEmpty(address []byte) (bool, error) {
-	account, ok := blockchain.Accounts[toHex(address)]
+func (b *BlockchainHookMock) IsCodeEmpty(address []byte) (bool, error) {
+	account, ok := b.Accounts[toHex(address)]
 	if !ok {
 		return false, errAccountDoesntExist
 	}
@@ -116,8 +116,8 @@ func (blockchain *BlockchainHookMock) IsCodeEmpty(address []byte) (bool, error) 
 }
 
 // GetCode -
-func (blockchain *BlockchainHookMock) GetCode(address []byte) ([]byte, error) {
-	account, ok := blockchain.Accounts[toHex(address)]
+func (b *BlockchainHookMock) GetCode(address []byte) ([]byte, error) {
+	account, ok := b.Accounts[toHex(address)]
 	if !ok {
 		return []byte{}, errAccountDoesntExist
 	}
@@ -126,78 +126,78 @@ func (blockchain *BlockchainHookMock) GetCode(address []byte) ([]byte, error) {
 }
 
 // GetBlockhash -
-func (blockchain *BlockchainHookMock) GetBlockhash(nonce uint64) ([]byte, error) {
-	return blockchain.BlockHash, nil
+func (b *BlockchainHookMock) GetBlockhash(nonce uint64) ([]byte, error) {
+	return b.BlockHash, nil
 }
 
 // LastNonce -
-func (blockchain *BlockchainHookMock) LastNonce() uint64 {
-	return blockchain.LNonce
+func (b *BlockchainHookMock) LastNonce() uint64 {
+	return b.LNonce
 }
 
 // LastRound -
-func (blockchain *BlockchainHookMock) LastRound() uint64 {
-	return blockchain.LRound
+func (b *BlockchainHookMock) LastRound() uint64 {
+	return b.LRound
 }
 
 // LastTimeStamp -
-func (blockchain *BlockchainHookMock) LastTimeStamp() uint64 {
-	return blockchain.LTimeStamp
+func (b *BlockchainHookMock) LastTimeStamp() uint64 {
+	return b.LTimeStamp
 }
 
 // LastRandomSeed -
-func (blockchain *BlockchainHookMock) LastRandomSeed() []byte {
-	return blockchain.LRandomSeed
+func (b *BlockchainHookMock) LastRandomSeed() []byte {
+	return b.LRandomSeed
 }
 
 // LastEpoch -
-func (blockchain *BlockchainHookMock) LastEpoch() uint32 {
-	return blockchain.LEpoch
+func (b *BlockchainHookMock) LastEpoch() uint32 {
+	return b.LEpoch
 }
 
 // GetStateRootHash -
-func (blockchain *BlockchainHookMock) GetStateRootHash() []byte {
-	return blockchain.StateRootHash
+func (b *BlockchainHookMock) GetStateRootHash() []byte {
+	return b.StateRootHash
 }
 
 // CurrentNonce -
-func (blockchain *BlockchainHookMock) CurrentNonce() uint64 {
-	return blockchain.CNonce
+func (b *BlockchainHookMock) CurrentNonce() uint64 {
+	return b.CNonce
 }
 
 // CurrentRound -
-func (blockchain *BlockchainHookMock) CurrentRound() uint64 {
-	return blockchain.CRound
+func (b *BlockchainHookMock) CurrentRound() uint64 {
+	return b.CRound
 }
 
 // CurrentTimeStamp -
-func (blockchain *BlockchainHookMock) CurrentTimeStamp() uint64 {
-	return blockchain.CTimeStamp
+func (b *BlockchainHookMock) CurrentTimeStamp() uint64 {
+	return b.CTimeStamp
 }
 
 // CurrentRandomSeed -
-func (blockchain *BlockchainHookMock) CurrentRandomSeed() []byte {
-	return blockchain.CRandomSeed
+func (b *BlockchainHookMock) CurrentRandomSeed() []byte {
+	return b.CRandomSeed
 }
 
 // CurrentEpoch -
-func (blockchain *BlockchainHookMock) CurrentEpoch() uint32 {
-	return blockchain.CEpoch
+func (b *BlockchainHookMock) CurrentEpoch() uint32 {
+	return b.CEpoch
 }
 
 // ProcessBuiltInFunction -
-func (blockchain *BlockchainHookMock) ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+func (b *BlockchainHookMock) ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	return &vmcommon.VMOutput{}, nil
 }
 
 // GetBuiltinFunctionNames -
-func (blockchain *BlockchainHookMock) GetBuiltinFunctionNames() vmcommon.FunctionNames {
+func (b *BlockchainHookMock) GetBuiltinFunctionNames() vmcommon.FunctionNames {
 	return make(vmcommon.FunctionNames)
 }
 
 // GetAllState -
-func (blockchain *BlockchainHookMock) GetAllState(address []byte) (map[string][]byte, error) {
-	account, ok := blockchain.Accounts[toHex(address)]
+func (b *BlockchainHookMock) GetAllState(address []byte) (map[string][]byte, error) {
+	account, ok := b.Accounts[toHex(address)]
 	if !ok {
 		return nil, errAccountDoesntExist
 	}
@@ -221,10 +221,10 @@ func (blockchain *BlockchainHookMock) GetAllState(address []byte) (map[string][]
 }
 
 // UpdateAccounts -
-func (blockchain *BlockchainHookMock) UpdateAccounts(outputAccounts map[string]*vmcommon.OutputAccount) {
+func (b *BlockchainHookMock) UpdateAccounts(outputAccounts map[string]*vmcommon.OutputAccount) {
 	for address, outputAccount := range outputAccounts {
 		addressHex := toHex([]byte(address))
-		account, exists := blockchain.Accounts[addressHex]
+		account, exists := b.Accounts[addressHex]
 		if !exists {
 			account = NewAccount(outputAccount.Address, 0, nil)
 		}
@@ -238,7 +238,7 @@ func (blockchain *BlockchainHookMock) UpdateAccounts(outputAccounts map[string]*
 		}
 
 		mergeStorageUpdates(account, outputAccount)
-		blockchain.Accounts[addressHex] = account
+		b.Accounts[addressHex] = account
 	}
 }
 

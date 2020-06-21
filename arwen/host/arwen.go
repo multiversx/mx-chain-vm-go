@@ -221,7 +221,7 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 	}
 
 	ok := TryCatch(try, catch, "arwen.RunSmartContractCreate")
-	if ok {
+	if ok && vmOutput != nil {
 		log.Trace("RunSmartContractCreate end", "returnCode", vmOutput.ReturnCode, "returnMessage", vmOutput.ReturnMessage)
 	}
 
@@ -244,7 +244,7 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 		log.Error("RunSmartContractCall", "error", err)
 	}
 
-	var ok bool
+	ok := false
 	isUpgrade := input.Function == arwen.UpgradeFunctionName
 	if isUpgrade {
 		ok = TryCatch(tryUpgrade, catch, "arwen.RunSmartContractUpgrade")
@@ -252,7 +252,7 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 		ok = TryCatch(tryCall, catch, "arwen.RunSmartContractCall")
 	}
 
-	if ok {
+	if ok && vmOutput != nil {
 		log.Trace("RunSmartContractCall end", "returnCode", vmOutput.ReturnCode, "returnMessage", vmOutput.ReturnMessage)
 	}
 
