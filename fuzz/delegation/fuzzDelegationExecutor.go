@@ -22,7 +22,6 @@ type fuzzDelegationExecutor struct {
 	mandosParser      mjparse.Parser
 	txIndex           int
 
-	initialDelegatorBalance     *big.Int
 	serviceFee                  int
 	numBlocksBeforeForceUnstake int
 	numBlocksBeforeUnbond       int

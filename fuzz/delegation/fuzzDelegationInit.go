@@ -11,7 +11,6 @@ func (pfe *fuzzDelegationExecutor) init(args *fuzzDelegationExecutorInitArgs) er
 	pfe.numBlocksBeforeUnbond = args.numBlocksBeforeUnbond
 	pfe.numDelegators = args.numDelegators
 	pfe.stakePerNode = args.stakePerNode
-	pfe.initialDelegatorBalance, _ = big.NewInt(0).SetString("1000000000000000", 10)
 
 	pfe.world.Clear()
 
