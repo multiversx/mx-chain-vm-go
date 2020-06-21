@@ -50,7 +50,6 @@ func TestNewRuntimeContext(t *testing.T) {
 	require.Equal(t, []byte{}, runtimeContext.scAddress)
 	require.Equal(t, "", runtimeContext.callFunction)
 	require.Equal(t, false, runtimeContext.readOnly)
-	require.NotNil(t, runtimeContext.argParser)
 	require.Nil(t, runtimeContext.asyncCallInfo)
 }
 
@@ -70,7 +69,6 @@ func TestRuntimeContext_InitState(t *testing.T) {
 	runtimeContext.scAddress = []byte("some address")
 	runtimeContext.callFunction = "a function"
 	runtimeContext.readOnly = true
-	runtimeContext.argParser = nil
 	runtimeContext.asyncCallInfo = &arwen.AsyncCallInfo{}
 
 	runtimeContext.InitState()
@@ -79,7 +77,6 @@ func TestRuntimeContext_InitState(t *testing.T) {
 	require.Equal(t, []byte{}, runtimeContext.scAddress)
 	require.Equal(t, "", runtimeContext.callFunction)
 	require.Equal(t, false, runtimeContext.readOnly)
-	require.NotNil(t, runtimeContext.argParser)
 	require.Nil(t, runtimeContext.asyncCallInfo)
 }
 
@@ -138,7 +135,6 @@ func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
 	require.Equal(t, []byte("recipient"), runtimeContext.GetSCAddress())
 	require.Equal(t, "test function", runtimeContext.Function())
 	require.Equal(t, vmType, runtimeContext.GetVMType())
-	require.NotNil(t, runtimeContext.ArgParser())
 	require.Equal(t, arguments, runtimeContext.Arguments())
 
 	vmInput2 := vmcommon.VMInput{

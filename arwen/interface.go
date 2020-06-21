@@ -16,12 +16,9 @@ type StateStack interface {
 	ClearStateStack()
 }
 
-// ArgumentsParser defines the functionality to parse transaction data into arguments and code for smart contracts
-type ArgumentsParser interface {
-	GetFunctionArguments() ([][]byte, error)
-	GetConstructorArguments() ([][]byte, error)
-	GetFunction() (string, error)
-	ParseData(data string) error
+// CallArgsParser defines the functionality to parse transaction data for a smart contract call
+type CallArgsParser interface {
+	ParseData(data string) (string, [][]byte, error)
 	IsInterfaceNil() bool
 }
 
@@ -70,7 +67,6 @@ type RuntimeContext interface {
 	StateStack
 
 	InitStateFromContractCallInput(input *vmcommon.ContractCallInput)
-	ArgParser() ArgumentsParser
 	GetVMInput() *vmcommon.VMInput
 	SetVMInput(vmInput *vmcommon.VMInput)
 	GetSCAddress() []byte
