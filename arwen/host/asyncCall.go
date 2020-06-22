@@ -123,22 +123,21 @@ func (host *vmHost) sendCallbackToCurrentCaller() error {
 	return nil
 }
 
-func (host *vmHost) sendStorageCallbackToDestination(asyncCallInitiator arwen.AsyncInitiator) error {
+func (host *vmHost) sendStorageCallbackToDestination(callerAddress, returnData []byte) error {
 	runtime := host.Runtime()
 	output := host.Output()
 	metering := host.Metering()
 	currentCall := runtime.GetVMInput()
 
-	destination := asyncCallInitiator.CallerAddr
-	destinationAccount, _ := output.GetOutputAccount(destination)
+	destinationAccount, _ := output.GetOutputAccount(callerAddress)
 	destinationAccount.CallType = vmcommon.AsynchronousCallBack
 
 	err := output.Transfer(
-		destination,
+		callerAddress,
 		runtime.GetSCAddress(),
 		metering.GasLeft(),
 		arwen.U64MulToBigInt(metering.GasLeft(), currentCall.GasPrice),
-		asyncCallInitiator.ReturnData,
+		returnData,
 	)
 	if err != nil {
 		metering.UseGas(metering.GasLeft())
@@ -293,7 +292,7 @@ func (host *vmHost) processAsyncInfo(asyncInfo *arwen.AsyncContextInfo) (*arwen.
 
 			procErr := host.processAsyncCall(asyncCall)
 			if procErr != nil {
-				return nil, err
+				return nil, procErr
 			}
 		}
 	}
@@ -403,10 +402,8 @@ func (host *vmHost) savePendingAsyncCalls(pendingAsyncMap *arwen.AsyncContextInf
  */
 func (host *vmHost) saveCrossShardCalls(asyncInfo *arwen.AsyncContextInfo) error {
 	crossMap := &arwen.AsyncContextInfo{
-		AsyncInitiator: arwen.AsyncInitiator{
-			CallerAddr: asyncInfo.CallerAddr,
-			ReturnData: asyncInfo.ReturnData,
-		},
+		CallerAddr: asyncInfo.CallerAddr,
+		ReturnData: asyncInfo.ReturnData,
 		AsyncContextMap: make(map[string]*arwen.AsyncContext),
 	}
 
@@ -436,10 +433,8 @@ func (host *vmHost) saveCrossShardCalls(asyncInfo *arwen.AsyncContextInfo) error
  */
 func (host *vmHost) getPendingAsyncCalls(asyncInfo *arwen.AsyncContextInfo) *arwen.AsyncContextInfo {
 	pendingMap := &arwen.AsyncContextInfo{
-		AsyncInitiator: arwen.AsyncInitiator{
-			CallerAddr: asyncInfo.CallerAddr,
-			ReturnData: asyncInfo.ReturnData,
-		},
+		CallerAddr: asyncInfo.CallerAddr,
+		ReturnData: asyncInfo.ReturnData,
 		AsyncContextMap: make(map[string]*arwen.AsyncContext),
 	}
 
@@ -528,8 +523,8 @@ func (host *vmHost) processCallbackStack() error {
 	}
 
 	// Now figure out if we can execute the callback here or different shard
-	if !host.canExecuteSynchronouslyOnDest(asyncInfo.AsyncInitiator.CallerAddr) {
-		err = host.sendStorageCallbackToDestination(asyncInfo.AsyncInitiator)
+	if !host.canExecuteSynchronouslyOnDest(asyncInfo.CallerAddr) {
+		err = host.sendStorageCallbackToDestination(asyncInfo.CallerAddr, asyncInfo.ReturnData)
 		if err != nil {
 			return err
 		}
@@ -540,7 +535,7 @@ func (host *vmHost) processCallbackStack() error {
 	// The caller is in the same shard, execute it's callback
 	callbackCallInput, err := host.createCallbackContractCallInput(
 		host.Output().GetVMOutput(),
-		asyncInfo.AsyncInitiator.CallerAddr,
+		asyncInfo.CallerAddr,
 		arwen.CallbackDefault,
 		nil,
 	)

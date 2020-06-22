@@ -31,7 +31,7 @@ package elrondapi
 // extern int32_t createContract(void *context, int32_t valueOffset, int32_t codeOffset, int32_t length, int32_t resultOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern void asyncCall(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
 // extern void createAsyncCall(void *context, int32_t identifierOffset, int32_t identifierLength, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length, int32_t successCallback, int32_t successLength, int32_t errorCallback, int32_t errorLength, int64_t gas);
-// extern int32_t createAsyncContextCallback(void *context, int32_t identifierOffset, int32_t identifierLength, int32_t callback, int32_t callbackLength);
+// extern int32_t setAsyncContextCallback(void *context, int32_t identifierOffset, int32_t identifierLength, int32_t callback, int32_t callbackLength);
 //
 // extern int32_t getNumReturnData(void *context);
 // extern int32_t getReturnDataSize(void *context, int32_t resultID);
@@ -106,7 +106,7 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 		return nil, err
 	}
 
-	imports, err = imports.Append("createAsyncContextCallback", createAsyncContextCallback, C.createAsyncContextCallback)
+	imports, err = imports.Append("setAsyncContextCallback", setAsyncContextCallback, C.setAsyncContextCallback)
 	if err != nil {
 		return nil, err
 	}
@@ -476,12 +476,6 @@ func createAsyncCall(context unsafe.Pointer,
 		return
 	}
 
-	//err = validateAsyncCallGas(context, gas)
-	//if err != nil {
-	//	runtime.SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
-	//	return
-	//}
-
 	err = runtime.AddAsyncContextCall(acIdentifier, &arwen.AsyncGeneratedCall{
 		Destination:     calledSCAddress,
 		Data:            data,
@@ -496,8 +490,8 @@ func createAsyncCall(context unsafe.Pointer,
 
 }
 
-//export createAsyncContextCallback
-func createAsyncContextCallback(context unsafe.Pointer,
+//export setAsyncContextCallback
+func setAsyncContextCallback(context unsafe.Pointer,
 	asyncContextIdentifier int32,
 	identifierLength int32,
 	callback int32,
@@ -1493,19 +1487,4 @@ func getReturnData(context unsafe.Pointer, resultID int32, dataOffset int32) int
 	}
 
 	return int32(len(returnData[resultID]))
-}
-
-func validateAsyncCallGas(context unsafe.Pointer, gas int64) error {
-	// This is so we won't make the gas parameter mandatory. If we leave it to 0, the async call
-	//  will get it's share from the remaining gas
-	if gas == 0 {
-		return nil
-	}
-
-	metering := arwen.GetMeteringContext(context)
-	if uint64(gas) > metering.GasLeft() {
-		return arwen.ErrNotEnoughGas
-	}
-
-	return nil
 }

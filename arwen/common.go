@@ -88,16 +88,11 @@ type AsyncContext struct {
 	AsyncCalls []*AsyncGeneratedCall
 }
 
-// AsyncInitiator will keep the data about the initiator of an async call
-type AsyncInitiator struct {
-	CallerAddr []byte
-	ReturnData []byte
-}
-
 // AsyncContextInfo is the structure resulting after a smart contract call that has initiated
 // one or more async calls. It will
 type AsyncContextInfo struct {
-	AsyncInitiator
+	CallerAddr []byte
+	ReturnData []byte
 	AsyncContextMap map[string]*AsyncContext
 }
 

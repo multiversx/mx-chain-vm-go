@@ -97,9 +97,7 @@ func (context *runtimeContext) InitStateFromContractCallInput(input *vmcommon.Co
 	context.callFunction = input.Function
 	// Reset async map for initial state
 	context.asyncContextInfo = &arwen.AsyncContextInfo {
-		AsyncInitiator: arwen.AsyncInitiator{
-			CallerAddr: input.CallerAddr,
-		},
+		CallerAddr: input.CallerAddr,
 		AsyncContextMap: make(map[string]*arwen.AsyncContext),
 	}
 }
