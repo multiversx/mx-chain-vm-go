@@ -43,9 +43,10 @@ func TestArwenPart_SendCallRequestWhenNoContract(t *testing.T) {
 func TestArwenPart_SendCallRequest(t *testing.T) {
 	blockchain := &mock.BlockchainHookStub{}
 
-	blockchain.GetCodeCalled = func(address []byte) ([]byte, error) {
-		return bytecodeCounter, nil
+	blockchain.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
+		return &mock.Account{Code: bytecodeCounter}, nil
 	}
+
 	response, err := doContractRequest(t, "3", createCallRequest("increment"), blockchain)
 	require.NotNil(t, response)
 	require.Nil(t, err)

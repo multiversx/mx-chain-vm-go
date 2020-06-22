@@ -388,7 +388,6 @@ func TestOutputContext_Transfer(t *testing.T) {
 	host := &mock.VmHostMock{}
 	mockBlockchainHook := mock.NewBlockchainHookMock()
 	mockBlockchainHook.AddAccount(&mock.Account{
-		Exists:  true,
 		Address: sender,
 		Nonce:   42,
 		Balance: balance,
@@ -422,7 +421,6 @@ func TestOutputContext_Transfer_Errors_And_Checks(t *testing.T) {
 
 	mockBlockchainHook := mock.NewBlockchainHookMock()
 	mockBlockchainHook.AddAccount(&mock.Account{
-		Exists:  true,
 		Address: sender,
 		Nonce:   88,
 		Balance: big.NewInt(2000),

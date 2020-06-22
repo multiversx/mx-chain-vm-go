@@ -19,7 +19,8 @@ import (
 )
 
 var defaultVMType = []byte{0xF, 0xF}
-var errCodeNotFound = errors.New("code not found")
+var errAccountNotFound = errors.New("account not found")
+
 var userAddress = []byte("userAccount.....................")
 var parentAddress = []byte("parentSC........................")
 var childAddress = []byte("childSC.........................")
@@ -44,8 +45,10 @@ func GetTestSCCode(scName string, prefixToTestSCs string) []byte {
 func DefaultTestArwenForDeployment(t *testing.T, ownerNonce uint64, newAddress []byte) *vmHost {
 	mockCryptoHook := &mock.CryptoHookMock{}
 	stubBlockchainHook := &mock.BlockchainHookStub{}
-	stubBlockchainHook.GetNonceCalled = func(address []byte) (uint64, error) {
-		return 24, nil
+	stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
+		return &mock.Account{
+			Nonce: 24,
+		}, nil
 	}
 	stubBlockchainHook.NewAddressCalled = func(creatorAddress []byte, nonce uint64, vmType []byte) ([]byte, error) {
 		return newAddress, nil
@@ -55,32 +58,44 @@ func DefaultTestArwenForDeployment(t *testing.T, ownerNonce uint64, newAddress [
 	return host
 }
 
-func DefaultTestArwenForCall(tb testing.TB, code []byte) (*vmHost, *mock.BlockchainHookStub) {
+func DefaultTestArwenForCall(tb testing.TB, code []byte, balance *big.Int) (*vmHost, *mock.BlockchainHookStub) {
 	mockCryptoHook := &mock.CryptoHookMock{}
 	stubBlockchainHook := &mock.BlockchainHookStub{}
-	stubBlockchainHook.GetCodeCalled = func(scAddress []byte) ([]byte, error) {
+	stubBlockchainHook.GetUserAccountCalled = func(scAddress []byte) (vmcommon.UserAccountHandler, error) {
 		if bytes.Equal(scAddress, parentAddress) {
-			return code, nil
+			return &mock.Account{
+				Code:    code,
+				Balance: balance,
+			}, nil
 		}
-		return nil, errCodeNotFound
+		return nil, errAccountNotFound
 	}
+
 	host, _ := DefaultTestArwen(tb, stubBlockchainHook, mockCryptoHook)
 	return host, stubBlockchainHook
 }
 
 // DefaultTestArwenForTwoSCs creates an Arwen vmHost configured for testing calls between 2 SmartContracts
-func DefaultTestArwenForTwoSCs(t *testing.T, parentCode []byte, childCode []byte) (*vmHost, *mock.BlockchainHookStub) {
+func DefaultTestArwenForTwoSCs(t *testing.T, parentCode []byte, childCode []byte, parentSCBalance *big.Int) (*vmHost, *mock.BlockchainHookStub) {
 	mockCryptoHook := &mock.CryptoHookMock{}
 	stubBlockchainHook := &mock.BlockchainHookStub{}
-	stubBlockchainHook.GetCodeCalled = func(scAddress []byte) ([]byte, error) {
+
+	stubBlockchainHook.GetUserAccountCalled = func(scAddress []byte) (vmcommon.UserAccountHandler, error) {
 		if bytes.Equal(scAddress, parentAddress) {
-			return parentCode, nil
+			return &mock.Account{
+				Code:    parentCode,
+				Balance: parentSCBalance,
+			}, nil
 		}
 		if bytes.Equal(scAddress, childAddress) {
-			return childCode, nil
+			return &mock.Account{
+				Code: childCode,
+			}, nil
 		}
-		return nil, errCodeNotFound
+
+		return nil, errAccountNotFound
 	}
+
 	host, _ := DefaultTestArwen(t, stubBlockchainHook, mockCryptoHook)
 	return host, stubBlockchainHook
 }
