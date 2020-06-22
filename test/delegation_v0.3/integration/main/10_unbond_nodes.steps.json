@@ -1,14 +1,21 @@
 {
-    "name": "unBond a node",
+    "name": "unBondNodes",
     "steps": [
         {
+            "step": "setState",
+            "comment": "block nonce for unbond, just in time",
+            "currentBlockInfo": {
+                "blockNonce": "321061"
+            }
+        },
+        {
             "step": "scCall",
-            "txId": "unBond-1",
+            "txId": "unBondNodes-1",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "''delegation_contract___________s1",
                 "value": "0",
-                "function": "unBond",
+                "function": "unBondNodes",
                 "arguments": [
                     "''bls_key_5_______________________________________________________________________________________"
                 ],

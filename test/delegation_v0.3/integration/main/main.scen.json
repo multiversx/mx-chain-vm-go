@@ -1,5 +1,5 @@
 {
-    "name": "init",
+    "name": "main scenario, happy path",
     "steps": [
         {
             "step": "externalSteps",
@@ -100,6 +100,10 @@
         },
         {
             "step": "externalSteps",
+            "path": "10x_unbond_nodes_too_soon.steps.json"
+        },
+        {
+            "step": "externalSteps",
             "path": "10_unbond_nodes.steps.json"
         },
         {
@@ -128,15 +132,27 @@
         },
         {
             "step": "externalSteps",
-            "path": "14x_force_unstake_too_soon.steps.json"
+            "path": "14x_unstake_too_soon.steps.json"
         },
         {
             "step": "externalSteps",
-            "path": "14_force_unstake.steps.json"
+            "path": "14_unstake.steps.json"
         },
         {
             "step": "externalSteps",
-            "path": "14c_check_force_unstake.steps.json"
+            "path": "14c_check_unstake.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "15_unbond_all.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "15c_check_unbond.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "16_withdraw.steps.json"
         }
     ]
 }

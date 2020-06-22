@@ -8,7 +8,7 @@
                 "from": "''delegator_1___________________s1",
                 "to": "''delegation_contract___________s1",
                 "value": "0",
-                "function": "offerStakeForSale",
+                "function": "announceUnStake",
                 "arguments": [
                     "1,000,000,000,000"
                 ],
@@ -130,7 +130,7 @@
                 "arguments": [
                     "''delegator_1___________________s1"
                 ],
-                "gasLimit": "4,000,000",
+                "gasLimit": "1,000,000",
                 "gasPrice": "0"
             },
             "expect": {

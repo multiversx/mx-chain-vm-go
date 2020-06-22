@@ -1,23 +1,22 @@
 {
-    "name": "unstake some nodes",
+    "name": "unBondNodes-too-soon",
     "steps": [
         {
             "step": "setState",
-            "comment": "time of unstake",
+            "comment": "1 block too early for unbond",
             "currentBlockInfo": {
-                "blockNonce": "321000"
+                "blockNonce": "321060"
             }
         },
         {
             "step": "scCall",
-            "txId": "unstake-nodes-1",
+            "txId": "unBondNodes-too-soon",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "''delegation_contract___________s1",
                 "value": "0",
-                "function": "unStakeNodes",
+                "function": "unBondNodes",
                 "arguments": [
-                    "''bls_key_3_______________________________________________________________________________________",
                     "''bls_key_5_______________________________________________________________________________________"
                 ],
                 "gasLimit": "100,000,000",
@@ -25,15 +24,9 @@
             },
             "expect": {
                 "out": [],
-                "status": "",
-                "logs": [
-                    {
-                        "address": "''delegation_contract___________s1",
-                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000005",
-                        "topics": [],
-                        "data": "0x"
-                    }
-                ],
+                "status": "4",
+                "message": "too soon to unbond node",
+                "logs": [],
                 "gas": "*",
                 "refund": "*"
             }
