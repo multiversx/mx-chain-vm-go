@@ -7,6 +7,7 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
@@ -564,7 +565,12 @@ func (host *vmHost) setupAsyncCallsGas(asyncInfo *arwen.AsyncContextInfo) error 
 
 	for identifier, asyncContext := range asyncInfo.AsyncContextMap {
 		for index, asyncCall := range asyncContext.AsyncCalls {
-			gasNeeded += asyncCall.ProvidedGas
+			var err error
+			gasNeeded, err = math.AddUint64(gasNeeded, asyncCall.ProvidedGas)
+			if err != nil {
+				return err
+			}
+
 			if gasNeeded > gasLeft {
 				return arwen.ErrNotEnoughGas
 			}
