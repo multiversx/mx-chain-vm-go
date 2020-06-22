@@ -3,7 +3,10 @@
 
 #include "types.h"
 
-void getOwner(byte *ownerAddress);
+void getSCAddress(byte *address);
+void getOwnerAddress(byte *address);
+int getShardOfAddress(byte *address);
+int isSmartContract(byte *address);
 
 // Call-related functions
 void getCaller(byte *callerAddress);

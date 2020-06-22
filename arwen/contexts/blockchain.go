@@ -41,8 +41,9 @@ func (context *blockchainContext) NewAddress(creatorAddress []byte) ([]byte, err
 }
 
 func (context *blockchainContext) AccountExists(address []byte) bool {
-	exists, _ := context.blockChainHook.AccountExists(address)
-	return exists
+	// Question for review: should we handle the return error perhaps, like: if err == vmcommon.AccountNotFound?
+	account, _ := context.blockChainHook.GetUserAccount(address)
+	return account != nil
 }
 
 func (context *blockchainContext) GetBalance(address []byte) []byte {
@@ -53,21 +54,24 @@ func (context *blockchainContext) GetBalanceBigInt(address []byte) *big.Int {
 	outputAccount, isNew := context.host.Output().GetOutputAccount(address)
 	if !isNew {
 		if outputAccount.Balance == nil {
-			balance, err := context.blockChainHook.GetBalance(address)
-			if err != nil {
+			account, err := context.blockChainHook.GetUserAccount(address)
+			if err != nil || account == nil {
 				return big.NewInt(0)
 			}
-			outputAccount.Balance = balance
+
+			outputAccount.Balance = account.GetBalance()
 		}
+
 		balance := big.NewInt(0).Add(outputAccount.Balance, outputAccount.BalanceDelta)
 		return balance
 	}
 
-	balance, err := context.blockChainHook.GetBalance(address)
-	if err != nil {
+	account, err := context.blockChainHook.GetUserAccount(address)
+	if err != nil || account == nil {
 		return big.NewInt(0)
 	}
 
+	balance := account.GetBalance()
 	outputAccount.Balance = balance
 
 	return balance
@@ -83,11 +87,12 @@ func (context *blockchainContext) GetNonce(address []byte) (uint64, error) {
 		return outputAccount.Nonce, nil
 	}
 
-	nonce, err := context.blockChainHook.GetNonce(address)
-	if err != nil {
+	account, err := context.blockChainHook.GetUserAccount(address)
+	if err != nil || account == nil {
 		return 0, err
 	}
 
+	nonce := account.GetNonce()
 	outputAccount.Nonce = nonce
 
 	return nonce, nil
@@ -108,18 +113,24 @@ func (context *blockchainContext) GetCodeHash(addr []byte) ([]byte, error) {
 	return context.host.Crypto().Keccak256(code)
 }
 
-func (context *blockchainContext) GetCode(addr []byte) ([]byte, error) {
+func (context *blockchainContext) GetCode(address []byte) ([]byte, error) {
 	// TODO must get the code from the OutputAccount, if present
-	return context.blockChainHook.GetCode(addr)
+	account, err := context.blockChainHook.GetUserAccount(address)
+	if err != nil || account == nil {
+		return nil, err
+	}
+
+	return account.GetCode(), nil
 }
 
-func (context *blockchainContext) GetCodeSize(addr []byte) (int32, error) {
+func (context *blockchainContext) GetCodeSize(address []byte) (int32, error) {
 	// TODO must get the code from the OutputAccount, if present
-	code, err := context.blockChainHook.GetCode(addr)
-	if err != nil {
+	account, err := context.blockChainHook.GetUserAccount(address)
+	if err != nil || account == nil {
 		return 0, err
 	}
 
+	code := account.GetCode()
 	result := int32(len(code))
 	return result, nil
 }
@@ -179,4 +190,22 @@ func (context *blockchainContext) LastRandomSeed() []byte {
 
 func (context *blockchainContext) CurrentRandomSeed() []byte {
 	return context.blockChainHook.CurrentRandomSeed()
+}
+
+func (context *blockchainContext) GetOwnerAddress() ([]byte, error) {
+	scAddress := context.host.Runtime().GetSCAddress()
+	scAccount, err := context.blockChainHook.GetUserAccount(scAddress)
+	if err != nil || scAccount == nil {
+		return nil, err
+	}
+
+	return scAccount.GetOwnerAddress(), nil
+}
+
+func (context *blockchainContext) GetShardOfAddress(addr []byte) uint32 {
+	return context.blockChainHook.GetShardOfAddress(addr)
+}
+
+func (context *blockchainContext) IsSmartContract(addr []byte) bool {
+	return context.blockChainHook.IsSmartContract(addr)
 }
