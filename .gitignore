@@ -21,6 +21,7 @@
 /cmd/arwendebug/db
 /ipc/tests/testdata/streams
 /ipc/tests/arwen
+/fuzz/delegation/fuzz_gen*.scen.json
 
 # VSCode settings
 .vscode

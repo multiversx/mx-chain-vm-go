@@ -1,9 +1,9 @@
 {
-    "name": "check after unbond",
+    "name": "unstake some nodes",
     "steps": [
         {
             "step": "scCall",
-            "txId": "check-node_state-10_1",
+            "txId": "check-node_state-14",
             "tx": {
                 "from": "''someone_______________________s1",
                 "to": "''delegation_contract___________s1",
@@ -16,11 +16,11 @@
             "expect": {
                 "out": [
                     "''bls_key_1_______________________________________________________________________________________", "0x06",
-                    "''bls_key_2_______________________________________________________________________________________", "0x02",
+                    "''bls_key_2_______________________________________________________________________________________", "0x04",
                     "''bls_key_3_______________________________________________________________________________________", "0x04",
                     "''bls_key_4_______________________________________________________________________________________", "0x06",
                     "''bls_key_5_______________________________________________________________________________________", "0x00",
-                    "''bls_key_6_______________________________________________________________________________________", "0x02",
+                    "''bls_key_6_______________________________________________________________________________________", "0x04",
                     "''bls_key_7_______________________________________________________________________________________", "0x06"
                 ],
                 "status": "",
@@ -31,7 +31,7 @@
         },
         {
             "step": "scCall",
-            "txId": "check-stake-by-type-10_total",
+            "txId": "check-stake-by-type-14_total",
             "tx": {
                 "from": "''someone_______________________s1",
                 "to": "''delegation_contract___________s1",
@@ -43,7 +43,7 @@
             },
             "expect": {
                 "out": [
-                    "111,001,000,000,000", "0", "222,000,000,000,000", "0", "111,000,000,000,000", "0", "0", "0"
+                    "111,001,000,000,000", "0", "0", "0", "333,000,000,000,000", "0", "0", "0"
                 ],
                 "status": "",
                 "logs": [],
@@ -53,7 +53,7 @@
         },
         {
             "step": "scCall",
-            "txId": "check-stake-by-type-10_0",
+            "txId": "check-stake-by-type-14_0",
             "tx": {
                 "from": "''someone_______________________s1",
                 "to": "''delegation_contract___________s1",
@@ -67,7 +67,7 @@
             },
             "expect": {
                 "out": [
-                    "0", "0", "011,000,000,000,000", "0", "0", "0", "0", "0"
+                    "0", "0", "0", "0", "012,000,000,000,000", "0", "0", "0"
                 ],
                 "status": "",
                 "logs": [],
@@ -77,7 +77,7 @@
         },
         {
             "step": "scCall",
-            "txId": "check-stake-by-type-10_1",
+            "txId": "check-stake-by-type-14_1",
             "tx": {
                 "from": "''someone_______________________s1",
                 "to": "''delegation_contract___________s1",
@@ -91,7 +91,7 @@
             },
             "expect": {
                 "out": [
-                    "78,000,000,000,000", "0", "211,000,000,000,000", "0", "111,000,000,000,000", "0", "0", "0"
+                    "78,000,000,000,000", "0", "0", "0", "320,000,000,000,000", "0", "0", "0"
                 ],
                 "status": "",
                 "logs": [],
@@ -101,7 +101,7 @@
         },
         {
             "step": "scCall",
-            "txId": "check-stake-by-type-10_2",
+            "txId": "check-stake-by-type-14_2",
             "tx": {
                 "from": "''someone_______________________s1",
                 "to": "''delegation_contract___________s1",
@@ -125,19 +125,45 @@
         },
         {
             "step": "scCall",
-            "txId": "check-balance-after-unbond",
-            "comment": "indirect way of checking that we got the staked ERD back from auction, if the unexpected balance is 0, then the contract balance matches with the state",
+            "txId": "check-stake-by-type-14_3",
             "tx": {
                 "from": "''someone_______________________s1",
                 "to": "''delegation_contract___________s1",
                 "value": "0",
-                "function": "getUnexpectedBalance",
+                "function": "getUserStakeByType",
+                "arguments": [
+                    "''delegator_3___________________s1"
+                ],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "0", "0", "0", "0", "1,000,000,000,000", "0", "0", "0"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "14-getUnbondQueue",
+            "comment": "how to read: (1 element) user_id: 2, amount len: 6, amount: 112,000,000,000,000",
+            "tx": {
+                "from": "''someone_______________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "getUnbondQueue",
                 "arguments": [],
                 "gasLimit": "1,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "0" ],
+                "out": [
+                    "0x00000002|0x00000006|112,000,000,000,000"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",

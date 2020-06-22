@@ -67,8 +67,9 @@
                 "contractCode": "file:../../delegation.wasm",
                 "arguments": [
                     "''auction_contract______________s1",
-                    "680400",
-                    "680300"
+                    "1",
+                    "50",
+                    "60"
                 ],
                 "gasLimit": "1,000,000",
                 "gasPrice": "0"

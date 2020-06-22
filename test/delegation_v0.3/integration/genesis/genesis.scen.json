@@ -1,5 +1,5 @@
 {
-    "name": "init",
+    "name": "genesis big scenario",
     "steps": [
         {
             "step": "externalSteps",
@@ -75,6 +75,10 @@
         },
         {
             "step": "externalSteps",
+            "path": "../main/10x_unbond_nodes_too_soon.steps.json"
+        },
+        {
+            "step": "externalSteps",
             "path": "../main/10_unbond_nodes.steps.json"
         },
         {
@@ -103,15 +107,27 @@
         },
         {
             "step": "externalSteps",
-            "path": "../main/14x_force_unstake_too_soon.steps.json"
+            "path": "../main/14x_unstake_too_soon.steps.json"
         },
         {
             "step": "externalSteps",
-            "path": "../main/14_force_unstake.steps.json"
+            "path": "../main/14_unstake.steps.json"
         },
         {
             "step": "externalSteps",
-            "path": "../main/14c_check_force_unstake.steps.json"
+            "path": "../main/14c_check_unstake.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "../main/15_unbond_all.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "../main/15c_check_unbond.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "../main/16_withdraw.steps.json"
         }
     ]
 }
