@@ -55,7 +55,7 @@ func (context *blockchainContext) GetBalanceBigInt(address []byte) *big.Int {
 	if !isNew {
 		if outputAccount.Balance == nil {
 			account, err := context.blockChainHook.GetUserAccount(address)
-			if err != nil || account == nil {
+			if err != nil || arwen.IfNil(account) {
 				return big.NewInt(0)
 			}
 
@@ -67,7 +67,7 @@ func (context *blockchainContext) GetBalanceBigInt(address []byte) *big.Int {
 	}
 
 	account, err := context.blockChainHook.GetUserAccount(address)
-	if err != nil || account == nil {
+	if err != nil || arwen.IfNil(account) {
 		return big.NewInt(0)
 	}
 
@@ -88,7 +88,7 @@ func (context *blockchainContext) GetNonce(address []byte) (uint64, error) {
 	}
 
 	account, err := context.blockChainHook.GetUserAccount(address)
-	if err != nil || account == nil {
+	if err != nil || arwen.IfNil(account) {
 		return 0, err
 	}
 
@@ -116,7 +116,7 @@ func (context *blockchainContext) GetCodeHash(addr []byte) ([]byte, error) {
 func (context *blockchainContext) GetCode(address []byte) ([]byte, error) {
 	// TODO must get the code from the OutputAccount, if present
 	account, err := context.blockChainHook.GetUserAccount(address)
-	if err != nil || account == nil {
+	if err != nil || arwen.IfNil(account) {
 		return nil, err
 	}
 
@@ -126,7 +126,7 @@ func (context *blockchainContext) GetCode(address []byte) ([]byte, error) {
 func (context *blockchainContext) GetCodeSize(address []byte) (int32, error) {
 	// TODO must get the code from the OutputAccount, if present
 	account, err := context.blockChainHook.GetUserAccount(address)
-	if err != nil || account == nil {
+	if err != nil || arwen.IfNil(account) {
 		return 0, err
 	}
 
@@ -195,7 +195,7 @@ func (context *blockchainContext) CurrentRandomSeed() []byte {
 func (context *blockchainContext) GetOwnerAddress() ([]byte, error) {
 	scAddress := context.host.Runtime().GetSCAddress()
 	scAccount, err := context.blockChainHook.GetUserAccount(scAddress)
-	if err != nil || scAccount == nil {
+	if err != nil || arwen.IfNil(scAccount) {
 		return nil, err
 	}
 

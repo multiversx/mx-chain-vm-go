@@ -35,13 +35,8 @@ func NewNodePart(
 	}
 
 	part.Repliers = common.CreateReplySlots(part.noopReplier)
-	part.Repliers[common.BlockchainAccountExistsRequest] = part.replyToBlockchainAccountExists
 	part.Repliers[common.BlockchainNewAddressRequest] = part.replyToBlockchainNewAddress
-	part.Repliers[common.BlockchainGetBalanceRequest] = part.replyToBlockchainGetBalance
-	part.Repliers[common.BlockchainGetNonceRequest] = part.replyToBlockchainGetNonce
 	part.Repliers[common.BlockchainGetStorageDataRequest] = part.replyToBlockchainGetStorageData
-	part.Repliers[common.BlockchainIsCodeEmptyRequest] = part.replyToBlockchainIsCodeEmpty
-	part.Repliers[common.BlockchainGetCodeRequest] = part.replyToBlockchainGetCode
 	part.Repliers[common.BlockchainGetBlockhashRequest] = part.replyToBlockchainGetBlockhash
 	part.Repliers[common.BlockchainLastNonceRequest] = part.replyToBlockchainLastNonce
 	part.Repliers[common.BlockchainLastRoundRequest] = part.replyToBlockchainLastRound
@@ -56,6 +51,10 @@ func NewNodePart(
 	part.Repliers[common.BlockchainCurrentEpochRequest] = part.replyToBlockchainCurrentEpoch
 	part.Repliers[common.BlockchainProcessBuiltinFunctionRequest] = part.replyToBlockchainProcessBuiltinFunction
 	part.Repliers[common.BlockchainGetBuiltinFunctionNamesRequest] = part.replyToBlockchainGetBuiltinFunctionNames
+	part.Repliers[common.BlockchainGetAllStateRequest] = part.replyToBlockchainGetAllState
+	part.Repliers[common.BlockchainGetUserAccountRequest] = part.replyToBlockchainGetUserAccount
+	part.Repliers[common.BlockchainGetShardOfAddressRequest] = part.replyToBlockchainGetShardOfAddress
+	part.Repliers[common.BlockchainIsSmartContractRequest] = part.replyToBlockchainIsSmartContract
 
 	return part, nil
 }

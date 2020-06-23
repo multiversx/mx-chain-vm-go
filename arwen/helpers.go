@@ -96,3 +96,15 @@ func TimeTrack(start time.Time, message string) {
 	elapsed := time.Since(start)
 	logDuration.Trace(message, "duration", elapsed)
 }
+
+// IfNil tests if the provided interface pointer or underlying object is nil
+func IfNil(checker nilInterfaceChecker) bool {
+	if checker == nil {
+		return true
+	}
+	return checker.IsInterfaceNil()
+}
+
+type nilInterfaceChecker interface {
+	IsInterfaceNil() bool
+}
