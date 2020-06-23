@@ -14,9 +14,9 @@ type database struct {
 
 // newDatabase creates a new debugging database (basically, a folder with JSON files)
 func newDatabase(rootPath string) *database {
-	database := &database{rootPath: rootPath}
-	database.initFolders()
-	return database
+	db := &database{rootPath: rootPath}
+	db.initFolders()
+	return db
 }
 
 func (db *database) initFolders() {

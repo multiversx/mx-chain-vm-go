@@ -220,8 +220,8 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 		log.Error("RunSmartContractCreate", "error", err)
 	}
 
-	ok := TryCatch(try, catch, "arwen.RunSmartContractCreate")
-	if ok && vmOutput != nil {
+	TryCatch(try, catch, "arwen.RunSmartContractCreate")
+	if vmOutput != nil {
 		log.Trace("RunSmartContractCreate end", "returnCode", vmOutput.ReturnCode, "returnMessage", vmOutput.ReturnMessage)
 	}
 
@@ -244,15 +244,14 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 		log.Error("RunSmartContractCall", "error", err)
 	}
 
-	ok := false
 	isUpgrade := input.Function == arwen.UpgradeFunctionName
 	if isUpgrade {
-		ok = TryCatch(tryUpgrade, catch, "arwen.RunSmartContractUpgrade")
+		TryCatch(tryUpgrade, catch, "arwen.RunSmartContractUpgrade")
 	} else {
-		ok = TryCatch(tryCall, catch, "arwen.RunSmartContractCall")
+		TryCatch(tryCall, catch, "arwen.RunSmartContractCall")
 	}
 
-	if ok && vmOutput != nil {
+	if vmOutput != nil {
 		log.Trace("RunSmartContractCall end", "returnCode", vmOutput.ReturnCode, "returnMessage", vmOutput.ReturnMessage)
 	}
 
@@ -260,7 +259,7 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 }
 
 // TryCatch simulates a try/catch block using golang's recover() functionality
-func TryCatch(try TryFunction, catch CatchFunction, catchFallbackMessage string) (ok bool) {
+func TryCatch(try TryFunction, catch CatchFunction, catchFallbackMessage string) {
 	defer func() {
 		if r := recover(); r != nil {
 			err, ok := r.(error)
@@ -269,11 +268,8 @@ func TryCatch(try TryFunction, catch CatchFunction, catchFallbackMessage string)
 			}
 
 			catch(err)
-			ok = false
 		}
 	}()
 
 	try()
-	ok = true
-	return
 }

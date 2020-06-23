@@ -78,7 +78,7 @@ func (b *BlockchainHookMock) NewAddress(creatorAddress []byte, creatorNonce uint
 func (b *BlockchainHookMock) GetBalance(address []byte) (*big.Int, error) {
 	account, ok := b.Accounts[toHex(address)]
 	if !ok {
-		return nil, errAccountDoesntExist
+		return nil, ErrAccountDoesntExist
 	}
 
 	return account.Balance, nil
@@ -88,7 +88,7 @@ func (b *BlockchainHookMock) GetBalance(address []byte) (*big.Int, error) {
 func (b *BlockchainHookMock) GetNonce(address []byte) (uint64, error) {
 	account, ok := b.Accounts[toHex(address)]
 	if !ok {
-		return 0, errAccountDoesntExist
+		return 0, ErrAccountDoesntExist
 	}
 
 	return account.Nonce, nil
@@ -98,7 +98,7 @@ func (b *BlockchainHookMock) GetNonce(address []byte) (uint64, error) {
 func (b *BlockchainHookMock) GetStorageData(address []byte, index []byte) ([]byte, error) {
 	account, ok := b.Accounts[toHex(address)]
 	if !ok {
-		return []byte{}, errAccountDoesntExist
+		return []byte{}, ErrAccountDoesntExist
 	}
 
 	return fromHex(account.Storage[toHex(index)])
@@ -108,7 +108,7 @@ func (b *BlockchainHookMock) GetStorageData(address []byte, index []byte) ([]byt
 func (b *BlockchainHookMock) IsCodeEmpty(address []byte) (bool, error) {
 	account, ok := b.Accounts[toHex(address)]
 	if !ok {
-		return false, errAccountDoesntExist
+		return false, ErrAccountDoesntExist
 	}
 
 	empty := len(account.CodeHex) == 0
@@ -119,7 +119,7 @@ func (b *BlockchainHookMock) IsCodeEmpty(address []byte) (bool, error) {
 func (b *BlockchainHookMock) GetCode(address []byte) ([]byte, error) {
 	account, ok := b.Accounts[toHex(address)]
 	if !ok {
-		return []byte{}, errAccountDoesntExist
+		return []byte{}, ErrAccountDoesntExist
 	}
 
 	return fromHex(account.CodeHex)
@@ -199,7 +199,7 @@ func (b *BlockchainHookMock) GetBuiltinFunctionNames() vmcommon.FunctionNames {
 func (b *BlockchainHookMock) GetAllState(address []byte) (map[string][]byte, error) {
 	account, ok := b.Accounts[toHex(address)]
 	if !ok {
-		return nil, errAccountDoesntExist
+		return nil, ErrAccountDoesntExist
 	}
 
 	allState := make(map[string][]byte)

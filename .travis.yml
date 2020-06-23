@@ -16,8 +16,6 @@ before_script:
 - GOARCH=$(go env GOARCH)
 - ARCHIVE="ARWEN_""$APP_VER_SHORT""_""$GOOS""_""$GOARCH"".tar.gz"
 script:
-- GOOS=$(go env GOOS)
-- GOARCH=$(go env GOARCH)
 
 # In order to run the tests, use the absolute path to libwasmer
 - if [[ "$GOOS" == darwin && "$GOARCH" == amd64 ]];

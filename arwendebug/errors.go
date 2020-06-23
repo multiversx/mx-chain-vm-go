@@ -42,4 +42,5 @@ func (err *RequestError) Unwrap() error {
 // ErrInvalidArgumentEncoding signals an error
 var ErrInvalidArgumentEncoding = errors.New("invalid contract argument encoding")
 
-var errAccountDoesntExist = errors.New("account does not exist")
+// ErrAccountDoesntExist signals an error
+var ErrAccountDoesntExist = errors.New("account does not exist")

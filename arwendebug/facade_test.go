@@ -12,7 +12,7 @@ var wasmCounterPath = "../test/contracts/counter/counter.wasm"
 var wasmErc20Path = "../test/contracts/erc20/erc20.wasm"
 
 func init() {
-	os.RemoveAll(databasePath)
+	_ = os.RemoveAll(databasePath)
 }
 
 func TestFacade_CreateAccount(t *testing.T) {

@@ -5,7 +5,7 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
-func (world *world) prepareDeployInput(request DeployRequest) *vmcommon.ContractCreateInput {
+func (w *world) prepareDeployInput(request DeployRequest) *vmcommon.ContractCreateInput {
 	createInput := &vmcommon.ContractCreateInput{}
 	createInput.CallerAddr = request.Impersonated
 	createInput.CallValue = request.ValueAsBigInt
@@ -18,7 +18,7 @@ func (world *world) prepareDeployInput(request DeployRequest) *vmcommon.Contract
 	return createInput
 }
 
-func (world *world) prepareUpgradeInput(request UpgradeRequest) *vmcommon.ContractCallInput {
+func (w *world) prepareUpgradeInput(request UpgradeRequest) *vmcommon.ContractCallInput {
 	callInput := &vmcommon.ContractCallInput{}
 	callInput.RecipientAddr = request.ContractAddress
 	callInput.CallerAddr = request.Impersonated
@@ -35,7 +35,7 @@ func (world *world) prepareUpgradeInput(request UpgradeRequest) *vmcommon.Contra
 	return callInput
 }
 
-func (world *world) prepareCallInput(request RunRequest) *vmcommon.ContractCallInput {
+func (w *world) prepareCallInput(request RunRequest) *vmcommon.ContractCallInput {
 	callInput := &vmcommon.ContractCallInput{}
 	callInput.RecipientAddr = request.ContractAddress
 	callInput.CallerAddr = request.Impersonated
