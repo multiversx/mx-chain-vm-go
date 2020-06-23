@@ -588,7 +588,7 @@ func (host *vmHost) setupAsyncCallsGas(asyncInfo *arwen.AsyncContextInfo) error 
 		return nil
 	}
 
-	if gasLeft == gasNeeded {
+	if gasLeft <= gasNeeded {
 		return arwen.ErrNotEnoughGas
 	}
 
