@@ -298,7 +298,7 @@ func (blockchain *BlockchainHookGateway) GetAllState(address []byte) (map[string
 	}
 
 	response := rawResponse.(*common.MessageBlockchainGetAllStateResponse)
-	return response.AllState, request.GetError()
+	return response.AllState, response.GetError()
 }
 
 // GetUserAccount forwards a message to the actual hook
@@ -315,7 +315,7 @@ func (blockchain *BlockchainHookGateway) GetUserAccount(address []byte) (vmcommo
 	}
 
 	response := rawResponse.(*common.MessageBlockchainGetUserAccountResponse)
-	return response.Account, request.GetError()
+	return response.Account, response.GetError()
 }
 
 // GetShardOfAddress forwards a message to the actual hook
@@ -326,7 +326,7 @@ func (blockchain *BlockchainHookGateway) GetShardOfAddress(address []byte) uint3
 		return 0
 	}
 
-	if rawResponse.GetKind() != common.BlockchainGetUserAccountResponse {
+	if rawResponse.GetKind() != common.BlockchainGetShardOfAddressResponse {
 		log.Error("GetShardOfAddress", "err", common.ErrBadHookResponseFromNode)
 		return 0
 	}
