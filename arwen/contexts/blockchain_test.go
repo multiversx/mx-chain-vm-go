@@ -14,7 +14,7 @@ import (
 var errAccountFault = errors.New("account fault")
 var errTestError = errors.New("some test error")
 
-var testAccounts = []*mock.Account{
+var testAccounts = []*mock.AccountMock{
 	{Address: []byte("account_old"), Nonce: 12, Balance: big.NewInt(0)},
 	{Address: []byte("account_newer"), Nonce: 8, Balance: big.NewInt(0)},
 	{Address: []byte("account_new"), Nonce: 0, Balance: big.NewInt(0)},

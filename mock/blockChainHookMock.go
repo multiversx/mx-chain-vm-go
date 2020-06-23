@@ -12,7 +12,7 @@ var ErrAccountDoesntExist = errors.New("account does not exist")
 var _ vmcommon.BlockchainHook = (*BlockchainHookMock)(nil)
 
 // AccountMap is a map from address to account
-type AccountsMap map[string]*Account
+type AccountsMap map[string]*AccountMock
 
 type BlockchainHookMock struct {
 	Accounts      AccountsMap
@@ -40,7 +40,7 @@ func NewBlockchainHookMock() *BlockchainHookMock {
 	}
 }
 
-func (b *BlockchainHookMock) AddAccount(account *Account) {
+func (b *BlockchainHookMock) AddAccount(account *AccountMock) {
 	if account.Storage == nil {
 		account.Storage = make(map[string][]byte)
 	}
@@ -50,7 +50,7 @@ func (b *BlockchainHookMock) AddAccount(account *Account) {
 	b.Accounts[string(account.Address)] = account
 }
 
-func (b *BlockchainHookMock) AddAccounts(accounts []*Account) {
+func (b *BlockchainHookMock) AddAccounts(accounts []*AccountMock) {
 	for _, account := range accounts {
 		b.AddAccount(account)
 	}
@@ -190,7 +190,7 @@ func (b *BlockchainHookMock) UpdateAccounts(outputAccounts map[string]*vmcommon.
 	for strAddress, outputAccount := range outputAccounts {
 		account, exists := b.Accounts[strAddress]
 		if !exists {
-			account = &Account{
+			account = &AccountMock{
 				Address: outputAccount.Address,
 				Balance: big.NewInt(0),
 				Code:    nil,
@@ -213,7 +213,7 @@ func (b *BlockchainHookMock) UpdateAccounts(outputAccounts map[string]*vmcommon.
 }
 
 func mergeStorageUpdates(
-	leftAccount *Account,
+	leftAccount *AccountMock,
 	rightAccount *vmcommon.OutputAccount,
 ) {
 	if leftAccount.Storage == nil {

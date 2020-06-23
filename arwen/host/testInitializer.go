@@ -46,7 +46,7 @@ func DefaultTestArwenForDeployment(t *testing.T, ownerNonce uint64, newAddress [
 	mockCryptoHook := &mock.CryptoHookMock{}
 	stubBlockchainHook := &mock.BlockchainHookStub{}
 	stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
-		return &mock.Account{
+		return &mock.AccountMock{
 			Nonce: 24,
 		}, nil
 	}
@@ -63,7 +63,7 @@ func DefaultTestArwenForCall(tb testing.TB, code []byte, balance *big.Int) (*vmH
 	stubBlockchainHook := &mock.BlockchainHookStub{}
 	stubBlockchainHook.GetUserAccountCalled = func(scAddress []byte) (vmcommon.UserAccountHandler, error) {
 		if bytes.Equal(scAddress, parentAddress) {
-			return &mock.Account{
+			return &mock.AccountMock{
 				Code:    code,
 				Balance: balance,
 			}, nil
@@ -82,13 +82,13 @@ func DefaultTestArwenForTwoSCs(t *testing.T, parentCode []byte, childCode []byte
 
 	stubBlockchainHook.GetUserAccountCalled = func(scAddress []byte) (vmcommon.UserAccountHandler, error) {
 		if bytes.Equal(scAddress, parentAddress) {
-			return &mock.Account{
+			return &mock.AccountMock{
 				Code:    parentCode,
 				Balance: parentSCBalance,
 			}, nil
 		}
 		if bytes.Equal(scAddress, childAddress) {
-			return &mock.Account{
+			return &mock.AccountMock{
 				Code: childCode,
 			}, nil
 		}

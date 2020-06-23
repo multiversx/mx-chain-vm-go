@@ -330,7 +330,6 @@ func getOwnerAddress(context unsafe.Pointer, resultOffset int32) {
 	metering := arwen.GetMeteringContext(context)
 
 	owner, err := blockchain.GetOwnerAddress()
-	// Question for review: is this error handling ok?
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}

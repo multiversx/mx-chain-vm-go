@@ -66,7 +66,7 @@ func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int) {
 func deploy(tb testing.TB, totalTokenSupply *big.Int) (*vmHost, *mock.BlockchainHookMock) {
 	// Prepare the host
 	mockBlockchainHook := mock.NewBlockchainHookMock()
-	mockBlockchainHook.AddAccount(&mock.Account{
+	mockBlockchainHook.AddAccount(&mock.AccountMock{
 		Address: owner,
 		Nonce:   1024,
 		Balance: big.NewInt(0),

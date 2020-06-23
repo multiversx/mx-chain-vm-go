@@ -15,8 +15,7 @@ type Account struct {
 	OwnerAddress    []byte
 	UserName        []byte
 	CodeMetadata    []byte
-	// Question for review: will this be populated (always?) by the blockchain hook in elrond-go?
-	Code []byte
+	Code            []byte
 }
 
 // AddressBytes gets the address

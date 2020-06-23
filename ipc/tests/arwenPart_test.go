@@ -44,7 +44,7 @@ func TestArwenPart_SendCallRequest(t *testing.T) {
 	blockchain := &mock.BlockchainHookStub{}
 
 	blockchain.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
-		return &mock.Account{Code: bytecodeCounter}, nil
+		return &mock.AccountMock{Code: bytecodeCounter}, nil
 	}
 
 	response, err := doContractRequest(t, "3", createCallRequest("increment"), blockchain)

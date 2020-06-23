@@ -4,52 +4,53 @@ import (
 	"math/big"
 )
 
-// Account holds the account info
-type Account struct {
+// AccountMock holds the account info
+type AccountMock struct {
 	Address      []byte
 	Nonce        uint64
 	Balance      *big.Int
-	Storage      map[string][]byte
 	Code         []byte
 	CodeMetadata []byte
 	OwnerAddress []byte
 	UserName     []byte
-	ShardID      uint32
-	Err          error
+
+	ShardID uint32
+	Storage map[string][]byte
+	Err     error
 }
 
 // AddressBytes -
-func (a *Account) AddressBytes() []byte {
+func (a *AccountMock) AddressBytes() []byte {
 	return a.Address
 }
 
 // GetNonce -
-func (a *Account) GetNonce() uint64 {
+func (a *AccountMock) GetNonce() uint64 {
 	return a.Nonce
 }
 
 // GetCode -
-func (a *Account) GetCode() []byte {
+func (a *AccountMock) GetCode() []byte {
 	return a.Code
 }
 
 // GetCodeMetadata -
-func (a *Account) GetCodeMetadata() []byte {
+func (a *AccountMock) GetCodeMetadata() []byte {
 	return a.CodeMetadata
 }
 
 // GetCodeHash -
-func (a *Account) GetCodeHash() []byte {
+func (a *AccountMock) GetCodeHash() []byte {
 	return []byte{}
 }
 
 // GetRootHash -
-func (a *Account) GetRootHash() []byte {
+func (a *AccountMock) GetRootHash() []byte {
 	return []byte{}
 }
 
 // GetBalance -
-func (a *Account) GetBalance() *big.Int {
+func (a *AccountMock) GetBalance() *big.Int {
 	if a.Balance == nil {
 		return big.NewInt(0)
 	}
@@ -57,21 +58,21 @@ func (a *Account) GetBalance() *big.Int {
 }
 
 // GetDeveloperReward -
-func (a *Account) GetDeveloperReward() *big.Int {
+func (a *AccountMock) GetDeveloperReward() *big.Int {
 	return big.NewInt(0)
 }
 
 // GetOwnerAddress -
-func (a *Account) GetOwnerAddress() []byte {
+func (a *AccountMock) GetOwnerAddress() []byte {
 	return a.OwnerAddress
 }
 
 // GetOwnerAddress -
-func (a *Account) GetUserName() []byte {
+func (a *AccountMock) GetUserName() []byte {
 	return a.UserName
 }
 
 // IsInterfaceNil -
-func (a *Account) IsInterfaceNil() bool {
+func (a *AccountMock) IsInterfaceNil() bool {
 	return a == nil
 }

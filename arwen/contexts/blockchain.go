@@ -41,9 +41,13 @@ func (context *blockchainContext) NewAddress(creatorAddress []byte) ([]byte, err
 }
 
 func (context *blockchainContext) AccountExists(address []byte) bool {
-	// Question for review: should we handle the return error perhaps, like: if err == vmcommon.AccountNotFound?
-	account, _ := context.blockChainHook.GetUserAccount(address)
-	return account != nil
+	account, err := context.blockChainHook.GetUserAccount(address)
+	if err != nil {
+		return false
+	}
+
+	exists := !arwen.IfNil(account)
+	return exists
 }
 
 func (context *blockchainContext) GetBalance(address []byte) []byte {

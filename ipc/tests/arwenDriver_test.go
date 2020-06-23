@@ -41,7 +41,7 @@ func TestArwenDriver_RestartsIfStopped(t *testing.T) {
 	driver := newDriver(t, blockchain)
 
 	blockchain.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
-		return &mock.Account{Code: bytecodeCounter}, nil
+		return &mock.AccountMock{Code: bytecodeCounter}, nil
 	}
 
 	vmOutput, err := driver.RunSmartContractCreate(createDeployInput(bytecodeCounter))
