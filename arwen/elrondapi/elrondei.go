@@ -374,11 +374,7 @@ func isSmartContract(context unsafe.Pointer, addressOffset int32) int32 {
 	metering.UseGas(gasToUse)
 
 	isSmartContract := blockchain.IsSmartContract(address)
-	if isSmartContract {
-		return 1
-	}
-
-	return 0
+	return int32(arwen.BooleanToInt(isSmartContract))
 }
 
 //export signalError

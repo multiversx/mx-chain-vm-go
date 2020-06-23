@@ -118,7 +118,6 @@ func (context *blockchainContext) GetCodeHash(addr []byte) ([]byte, error) {
 }
 
 func (context *blockchainContext) GetCode(address []byte) ([]byte, error) {
-	// TODO must get the code from the OutputAccount, if present
 	account, err := context.blockChainHook.GetUserAccount(address)
 	if err != nil || arwen.IfNil(account) {
 		return nil, err
@@ -128,7 +127,6 @@ func (context *blockchainContext) GetCode(address []byte) ([]byte, error) {
 }
 
 func (context *blockchainContext) GetCodeSize(address []byte) (int32, error) {
-	// TODO must get the code from the OutputAccount, if present
 	account, err := context.blockChainHook.GetUserAccount(address)
 	if err != nil || arwen.IfNil(account) {
 		return 0, err
