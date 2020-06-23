@@ -72,8 +72,7 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 	imports := wasmer.NewImports()
 	imports = imports.Namespace("env")
 
-	// TODO: rename getOwner -> getSCAddress when all affected contracts (delegation etc.) are ready
-	imports, err := imports.Append("getOwner", getSCAddress, C.getSCAddress)
+	imports, err := imports.Append("getSCAddress", getSCAddress, C.getSCAddress)
 	if err != nil {
 		return nil, err
 	}
