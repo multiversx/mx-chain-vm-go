@@ -9,6 +9,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/nodepart"
 	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
 
@@ -34,13 +35,13 @@ func TestArwenDriver_DiagnoseWaitWithTimeout(t *testing.T) {
 
 func TestArwenDriver_RestartsIfStopped(t *testing.T) {
 	logger.ToggleLoggerName(true)
-	logger.SetLogLevel("*:TRACE")
+	_ = logger.SetLogLevel("*:TRACE")
 
 	blockchain := &mock.BlockchainHookStub{}
 	driver := newDriver(t, blockchain)
 
-	blockchain.GetCodeCalled = func(address []byte) ([]byte, error) {
-		return bytecodeCounter, nil
+	blockchain.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
+		return &mock.AccountMock{Code: bytecodeCounter}, nil
 	}
 
 	vmOutput, err := driver.RunSmartContractCreate(createDeployInput(bytecodeCounter))

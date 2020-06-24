@@ -1,39 +1,8 @@
 package common
 
 import (
-	"math/big"
-
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
-
-// MessageBlockchainAccountExistsRequest represents a request message
-type MessageBlockchainAccountExistsRequest struct {
-	Message
-	Address []byte
-}
-
-// NewMessageBlockchainAccountExistsRequest creates a request message
-func NewMessageBlockchainAccountExistsRequest(address []byte) *MessageBlockchainAccountExistsRequest {
-	message := &MessageBlockchainAccountExistsRequest{}
-	message.Kind = BlockchainAccountExistsRequest
-	message.Address = address
-	return message
-}
-
-// MessageBlockchainAccountExistsResponse represents a response message
-type MessageBlockchainAccountExistsResponse struct {
-	Message
-	Result bool
-}
-
-// NewMessageBlockchainAccountExistsResponse creates a response message
-func NewMessageBlockchainAccountExistsResponse(result bool, err error) *MessageBlockchainAccountExistsResponse {
-	message := &MessageBlockchainAccountExistsResponse{}
-	message.Kind = BlockchainAccountExistsResponse
-	message.Result = result
-	message.SetError(err)
-	return message
-}
 
 // MessageBlockchainNewAddressRequest represents a request message
 type MessageBlockchainNewAddressRequest struct {
@@ -68,64 +37,6 @@ func NewMessageBlockchainNewAddressResponse(result []byte, err error) *MessageBl
 	return message
 }
 
-// MessageBlockchainGetBalanceRequest represents a request message
-type MessageBlockchainGetBalanceRequest struct {
-	Message
-	Address []byte
-}
-
-// NewMessageBlockchainGetBalanceRequest creates a request message
-func NewMessageBlockchainGetBalanceRequest(address []byte) *MessageBlockchainGetBalanceRequest {
-	message := &MessageBlockchainGetBalanceRequest{}
-	message.Kind = BlockchainGetBalanceRequest
-	message.Address = address
-	return message
-}
-
-// MessageBlockchainGetBalanceResponse represents a response message
-type MessageBlockchainGetBalanceResponse struct {
-	Message
-	Balance *big.Int
-}
-
-// NewMessageBlockchainGetBalanceResponse creates a response message
-func NewMessageBlockchainGetBalanceResponse(balance *big.Int, err error) *MessageBlockchainGetBalanceResponse {
-	message := &MessageBlockchainGetBalanceResponse{}
-	message.Kind = BlockchainGetBalanceResponse
-	message.Balance = balance
-	message.SetError(err)
-	return message
-}
-
-// MessageBlockchainGetNonceRequest represents a request message
-type MessageBlockchainGetNonceRequest struct {
-	Message
-	Address []byte
-}
-
-// NewMessageBlockchainGetNonceRequest creates a request message
-func NewMessageBlockchainGetNonceRequest(address []byte) *MessageBlockchainGetNonceRequest {
-	message := &MessageBlockchainGetNonceRequest{}
-	message.Kind = BlockchainGetNonceRequest
-	message.Address = address
-	return message
-}
-
-// MessageBlockchainGetNonceResponse represents a response message
-type MessageBlockchainGetNonceResponse struct {
-	Message
-	Nonce uint64
-}
-
-// NewMessageBlockchainGetNonceResponse creates a response message
-func NewMessageBlockchainGetNonceResponse(nonce uint64, err error) *MessageBlockchainGetNonceResponse {
-	message := &MessageBlockchainGetNonceResponse{}
-	message.Kind = BlockchainGetNonceResponse
-	message.Nonce = nonce
-	message.SetError(err)
-	return message
-}
-
 // MessageBlockchainGetStorageDataRequest represents a request message
 type MessageBlockchainGetStorageDataRequest struct {
 	Message
@@ -153,64 +64,6 @@ func NewMessageBlockchainGetStorageDataResponse(data []byte, err error) *Message
 	message := &MessageBlockchainGetStorageDataResponse{}
 	message.Kind = BlockchainGetStorageDataResponse
 	message.Data = data
-	message.SetError(err)
-	return message
-}
-
-// MessageBlockchainIsCodeEmptyRequest represents a request message
-type MessageBlockchainIsCodeEmptyRequest struct {
-	Message
-	Address []byte
-}
-
-// NewMessageBlockchainIsCodeEmptyRequest creates a request message
-func NewMessageBlockchainIsCodeEmptyRequest(address []byte) *MessageBlockchainIsCodeEmptyRequest {
-	message := &MessageBlockchainIsCodeEmptyRequest{}
-	message.Kind = BlockchainIsCodeEmptyRequest
-	message.Address = address
-	return message
-}
-
-// MessageBlockchainIsCodeEmptyResponse represents a response message
-type MessageBlockchainIsCodeEmptyResponse struct {
-	Message
-	Result bool
-}
-
-// NewMessageBlockchainIsCodeEmptyResponse creates a response message
-func NewMessageBlockchainIsCodeEmptyResponse(result bool, err error) *MessageBlockchainIsCodeEmptyResponse {
-	message := &MessageBlockchainIsCodeEmptyResponse{}
-	message.Kind = BlockchainIsCodeEmptyResponse
-	message.Result = result
-	message.SetError(err)
-	return message
-}
-
-// MessageBlockchainGetCodeRequest represents a request message
-type MessageBlockchainGetCodeRequest struct {
-	Message
-	Address []byte
-}
-
-// NewMessageBlockchainGetCodeRequest creates a request message
-func NewMessageBlockchainGetCodeRequest(address []byte) *MessageBlockchainGetCodeRequest {
-	message := &MessageBlockchainGetCodeRequest{}
-	message.Kind = BlockchainGetCodeRequest
-	message.Address = address
-	return message
-}
-
-// MessageBlockchainGetCodeResponse represents a response message
-type MessageBlockchainGetCodeResponse struct {
-	Message
-	Code []byte
-}
-
-// NewMessageBlockchainGetCodeResponse creates a response message
-func NewMessageBlockchainGetCodeResponse(code []byte, err error) *MessageBlockchainGetCodeResponse {
-	message := &MessageBlockchainGetCodeResponse{}
-	message.Kind = BlockchainGetCodeResponse
-	message.Code = code
 	message.SetError(err)
 	return message
 }
@@ -596,5 +449,119 @@ func NewMessageBlockchainGetBuiltinFunctionNamesResponse(functionNames vmcommon.
 	message.Kind = BlockchainGetBuiltinFunctionNamesResponse
 	message.FunctionNames = functionNames
 
+	return message
+}
+
+// MessageBlockchainGetAllStateRequest represents a request message
+type MessageBlockchainGetAllStateRequest struct {
+	Message
+	Address []byte
+}
+
+// NewMessageBlockchainGetAllStateRequest creates a request message
+func NewMessageBlockchainGetAllStateRequest(address []byte) *MessageBlockchainGetAllStateRequest {
+	message := &MessageBlockchainGetAllStateRequest{}
+	message.Kind = BlockchainGetAllStateRequest
+	message.Address = address
+	return message
+}
+
+// MessageBlockchainGetAllStateResponse represents a response message
+type MessageBlockchainGetAllStateResponse struct {
+	Message
+	AllState map[string][]byte
+}
+
+// NewMessageBlockchainGetAllStateResponse creates a response message
+func NewMessageBlockchainGetAllStateResponse(state map[string][]byte, err error) *MessageBlockchainGetAllStateResponse {
+	message := &MessageBlockchainGetAllStateResponse{}
+	message.Kind = BlockchainGetAllStateResponse
+	message.AllState = state
+	message.SetError(err)
+	return message
+}
+
+// MessageBlockchainGetUserAccountRequest represents a request message
+type MessageBlockchainGetUserAccountRequest struct {
+	Message
+	Address []byte
+}
+
+// NewMessageBlockchainGetUserAccountRequest creates a request message
+func NewMessageBlockchainGetUserAccountRequest(address []byte) *MessageBlockchainGetUserAccountRequest {
+	message := &MessageBlockchainGetUserAccountRequest{}
+	message.Kind = BlockchainGetUserAccountRequest
+	message.Address = address
+	return message
+}
+
+// MessageBlockchainGetUserAccountResponse represents a response message
+type MessageBlockchainGetUserAccountResponse struct {
+	Message
+	Account *Account
+}
+
+// NewMessageBlockchainGetUserAccountResponse creates a response message
+func NewMessageBlockchainGetUserAccountResponse(account *Account, err error) *MessageBlockchainGetUserAccountResponse {
+	message := &MessageBlockchainGetUserAccountResponse{}
+	message.Kind = BlockchainGetUserAccountResponse
+	message.Account = account
+	message.SetError(err)
+	return message
+}
+
+// MessageBlockchainGetShardOfAddressRequest represents a request message
+type MessageBlockchainGetShardOfAddressRequest struct {
+	Message
+	Address []byte
+}
+
+// NewMessageBlockchainGetShardOfAddressRequest creates a request message
+func NewMessageBlockchainGetShardOfAddressRequest(address []byte) *MessageBlockchainGetShardOfAddressRequest {
+	message := &MessageBlockchainGetShardOfAddressRequest{}
+	message.Kind = BlockchainGetShardOfAddressRequest
+	message.Address = address
+	return message
+}
+
+// MessageBlockchainGetShardOfAddressResponse represents a response message
+type MessageBlockchainGetShardOfAddressResponse struct {
+	Message
+	Shard uint32
+}
+
+// NewMessageBlockchainGetShardOfAddressResponse creates a response message
+func NewMessageBlockchainGetShardOfAddressResponse(shard uint32) *MessageBlockchainGetShardOfAddressResponse {
+	message := &MessageBlockchainGetShardOfAddressResponse{}
+	message.Kind = BlockchainGetShardOfAddressResponse
+	message.Shard = shard
+	return message
+}
+
+// MessageBlockchainIsSmartContractRequest represents a request message
+type MessageBlockchainIsSmartContractRequest struct {
+	Message
+	Address []byte
+}
+
+// NewMessageBlockchainIsSmartContractRequest creates a request message
+func NewMessageBlockchainIsSmartContractRequest(address []byte) *MessageBlockchainIsSmartContractRequest {
+	message := &MessageBlockchainIsSmartContractRequest{}
+	message.Kind = BlockchainIsSmartContractRequest
+	message.Address = address
+	return message
+}
+
+// MessageBlockchainIsSmartContractResponse represents a response message
+type MessageBlockchainIsSmartContractResponse struct {
+	Message
+	Result bool
+}
+
+// NewMessageBlockchainIsSmartContractResponse creates a response message
+func NewMessageBlockchainIsSmartContractResponse(result bool) *MessageBlockchainIsSmartContractResponse {
+	message := &MessageBlockchainIsSmartContractResponse{}
+	message.Kind = BlockchainIsSmartContractResponse
+	message.Result = result
 	return message
 }

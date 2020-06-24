@@ -15,20 +15,10 @@ const (
 	ContractDeployRequest
 	ContractCallRequest
 	ContractResponse
-	BlockchainAccountExistsRequest
-	BlockchainAccountExistsResponse
 	BlockchainNewAddressRequest
 	BlockchainNewAddressResponse
-	BlockchainGetBalanceRequest
-	BlockchainGetBalanceResponse
-	BlockchainGetNonceRequest
-	BlockchainGetNonceResponse
 	BlockchainGetStorageDataRequest
 	BlockchainGetStorageDataResponse
-	BlockchainIsCodeEmptyRequest
-	BlockchainIsCodeEmptyResponse
-	BlockchainGetCodeRequest
-	BlockchainGetCodeResponse
 	BlockchainGetBlockhashRequest
 	BlockchainGetBlockhashResponse
 	BlockchainLastNonceRequest
@@ -57,6 +47,14 @@ const (
 	BlockchainProcessBuiltinFunctionResponse
 	BlockchainGetBuiltinFunctionNamesRequest
 	BlockchainGetBuiltinFunctionNamesResponse
+	BlockchainGetAllStateRequest
+	BlockchainGetAllStateResponse
+	BlockchainGetUserAccountRequest
+	BlockchainGetUserAccountResponse
+	BlockchainGetShardOfAddressRequest
+	BlockchainGetShardOfAddressResponse
+	BlockchainIsSmartContractRequest
+	BlockchainIsSmartContractResponse
 	DiagnoseWaitRequest
 	DiagnoseWaitResponse
 	UndefinedRequestOrResponse
@@ -72,20 +70,10 @@ func init() {
 	messageKindNameByID[ContractDeployRequest] = "ContractDeployRequest"
 	messageKindNameByID[ContractCallRequest] = "ContractCallRequest"
 	messageKindNameByID[ContractResponse] = "ContractResponse"
-	messageKindNameByID[BlockchainAccountExistsRequest] = "BlockchainAccountExistsRequest"
-	messageKindNameByID[BlockchainAccountExistsResponse] = "BlockchainAccountExistsResponse"
 	messageKindNameByID[BlockchainNewAddressRequest] = "BlockchainNewAddressRequest"
 	messageKindNameByID[BlockchainNewAddressResponse] = "BlockchainNewAddressResponse"
-	messageKindNameByID[BlockchainGetBalanceRequest] = "BlockchainGetBalanceRequest"
-	messageKindNameByID[BlockchainGetBalanceResponse] = "BlockchainGetBalanceResponse"
-	messageKindNameByID[BlockchainGetNonceRequest] = "BlockchainGetNonceRequest"
-	messageKindNameByID[BlockchainGetNonceResponse] = "BlockchainGetNonceResponse"
 	messageKindNameByID[BlockchainGetStorageDataRequest] = "BlockchainGetStorageDataRequest"
 	messageKindNameByID[BlockchainGetStorageDataResponse] = "BlockchainGetStorageDataResponse"
-	messageKindNameByID[BlockchainIsCodeEmptyRequest] = "BlockchainIsCodeEmptyRequest"
-	messageKindNameByID[BlockchainIsCodeEmptyResponse] = "BlockchainIsCodeEmptyResponse"
-	messageKindNameByID[BlockchainGetCodeRequest] = "BlockchainGetCodeRequest"
-	messageKindNameByID[BlockchainGetCodeResponse] = "BlockchainGetCodeResponse"
 	messageKindNameByID[BlockchainGetBlockhashRequest] = "BlockchainGetBlockhashRequest"
 	messageKindNameByID[BlockchainGetBlockhashResponse] = "BlockchainGetBlockhashResponse"
 	messageKindNameByID[BlockchainLastNonceRequest] = "BlockchainLastNonceRequest"
@@ -114,6 +102,14 @@ func init() {
 	messageKindNameByID[BlockchainProcessBuiltinFunctionResponse] = "BlockchainProcessBuiltinFunctionResponse"
 	messageKindNameByID[BlockchainGetBuiltinFunctionNamesRequest] = "BlockchainGetBuiltinFunctionNamesRequest"
 	messageKindNameByID[BlockchainGetBuiltinFunctionNamesResponse] = "BlockchainGetBuiltinFunctionNamesResponse"
+	messageKindNameByID[BlockchainGetAllStateRequest] = "BlockchainGetAllStateRequest"
+	messageKindNameByID[BlockchainGetAllStateResponse] = "BlockchainGetAllStateResponse"
+	messageKindNameByID[BlockchainGetUserAccountRequest] = "BlockchainGetUserAccountRequest"
+	messageKindNameByID[BlockchainGetUserAccountResponse] = "BlockchainGetUserAccountResponse"
+	messageKindNameByID[BlockchainGetShardOfAddressRequest] = "BlockchainGetShardOfAddressRequest"
+	messageKindNameByID[BlockchainGetShardOfAddressResponse] = "BlockchainGetShardOfAddressResponse"
+	messageKindNameByID[BlockchainIsSmartContractRequest] = "BlockchainIsSmartContractRequest"
+	messageKindNameByID[BlockchainIsSmartContractResponse] = "BlockchainIsSmartContractResponse"
 	messageKindNameByID[DiagnoseWaitRequest] = "DiagnoseWaitRequest"
 	messageKindNameByID[DiagnoseWaitResponse] = "DiagnoseWaitResponse"
 	messageKindNameByID[UndefinedRequestOrResponse] = "UndefinedRequestOrResponse"
@@ -242,7 +238,7 @@ func CreateReplySlots(noopReplier MessageReplier) []MessageReplier {
 // IsHookCall returns whether a message is a hook call
 func IsHookCall(message MessageHandler) bool {
 	kind := message.GetKind()
-	return kind >= BlockchainAccountExistsRequest && kind <= BlockchainCurrentEpochResponse
+	return kind >= BlockchainNewAddressRequest && kind <= BlockchainIsSmartContractResponse
 }
 
 // IsStopRequest returns whether a message is a stop request

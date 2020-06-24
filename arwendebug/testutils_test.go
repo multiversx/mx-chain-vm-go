@@ -44,6 +44,12 @@ func (context *testContext) createAccount(address string, balance string) {
 	require.NotNil(t, response)
 }
 
+func (context *testContext) accountExists(address []byte) bool {
+	world := context.loadWorld()
+	account, err := world.blockchainHook.GetUserAccount(address)
+	return err == nil && account != nil
+}
+
 func (context *testContext) deployContract(codePath string, impersonated string, arguments ...string) *DeployResponse {
 	request := DeployRequest{
 		ContractRequestBase: ContractRequestBase{

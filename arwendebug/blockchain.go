@@ -50,16 +50,6 @@ func (b *BlockchainHookMock) AddAccounts(accounts []*Account) {
 	}
 }
 
-// AccountExists -
-func (b *BlockchainHookMock) AccountExists(address []byte) (bool, error) {
-	_, ok := b.Accounts[toHex(address)]
-	if !ok {
-		return false, nil
-	}
-
-	return true, nil
-}
-
 // NewAddress -
 func (b *BlockchainHookMock) NewAddress(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error) {
 	if len(creatorAddress) != arwen.AddressLen {
@@ -74,26 +64,6 @@ func (b *BlockchainHookMock) NewAddress(creatorAddress []byte, creatorNonce uint
 	return address, nil
 }
 
-// GetBalance -
-func (b *BlockchainHookMock) GetBalance(address []byte) (*big.Int, error) {
-	account, ok := b.Accounts[toHex(address)]
-	if !ok {
-		return nil, ErrAccountDoesntExist
-	}
-
-	return account.Balance, nil
-}
-
-// GetNonce -
-func (b *BlockchainHookMock) GetNonce(address []byte) (uint64, error) {
-	account, ok := b.Accounts[toHex(address)]
-	if !ok {
-		return 0, ErrAccountDoesntExist
-	}
-
-	return account.Nonce, nil
-}
-
 // GetStorageData -
 func (b *BlockchainHookMock) GetStorageData(address []byte, index []byte) ([]byte, error) {
 	account, ok := b.Accounts[toHex(address)]
@@ -102,27 +72,6 @@ func (b *BlockchainHookMock) GetStorageData(address []byte, index []byte) ([]byt
 	}
 
 	return fromHex(account.Storage[toHex(index)])
-}
-
-// IsCodeEmpty -
-func (b *BlockchainHookMock) IsCodeEmpty(address []byte) (bool, error) {
-	account, ok := b.Accounts[toHex(address)]
-	if !ok {
-		return false, ErrAccountDoesntExist
-	}
-
-	empty := len(account.CodeHex) == 0
-	return empty, nil
-}
-
-// GetCode -
-func (b *BlockchainHookMock) GetCode(address []byte) ([]byte, error) {
-	account, ok := b.Accounts[toHex(address)]
-	if !ok {
-		return []byte{}, ErrAccountDoesntExist
-	}
-
-	return fromHex(account.CodeHex)
 }
 
 // GetBlockhash -
@@ -220,6 +169,36 @@ func (b *BlockchainHookMock) GetAllState(address []byte) (map[string][]byte, err
 	return allState, nil
 }
 
+// GetUserAccount -
+func (b *BlockchainHookMock) GetUserAccount(address []byte) (vmcommon.UserAccountHandler, error) {
+	account, ok := b.Accounts[toHex(address)]
+	if !ok {
+		return nil, ErrAccountDoesntExist
+	}
+
+	return account, nil
+}
+
+// GetShardOfAddress -
+func (b *BlockchainHookMock) GetShardOfAddress(address []byte) uint32 {
+	account, ok := b.Accounts[toHex(address)]
+	if !ok {
+		return 0
+	}
+
+	return account.ShardID
+}
+
+// IsSmartContract -
+func (b *BlockchainHookMock) IsSmartContract(address []byte) bool {
+	account, ok := b.Accounts[toHex(address)]
+	if !ok {
+		return false
+	}
+
+	return len(account.CodeHex) > 0
+}
+
 // UpdateAccounts -
 func (b *BlockchainHookMock) UpdateAccounts(outputAccounts map[string]*vmcommon.OutputAccount) {
 	for address, outputAccount := range outputAccounts {
@@ -229,12 +208,17 @@ func (b *BlockchainHookMock) UpdateAccounts(outputAccounts map[string]*vmcommon.
 			account = NewAccount(outputAccount.Address, 0, nil)
 		}
 
+		account.Balance.Add(account.Balance, outputAccount.BalanceDelta)
+
 		if outputAccount.Nonce > account.Nonce {
 			account.Nonce = outputAccount.Nonce
 		}
-		account.Balance.Add(account.Balance, outputAccount.BalanceDelta)
 		if len(outputAccount.Code) > 0 {
 			account.CodeHex = toHex(outputAccount.Code)
+
+		}
+		if len(outputAccount.CodeMetadata) > 0 {
+			account.CodeMetadataHex = toHex(outputAccount.CodeMetadata)
 		}
 
 		mergeStorageUpdates(account, outputAccount)

@@ -19,10 +19,7 @@ func TestFacade_CreateAccount(t *testing.T) {
 	context := newTestContext(t)
 	context.createAccount(newDummyAddress("alice").hex, "42")
 
-	world := context.loadWorld()
-	exists, err := world.blockchainHook.AccountExists(newDummyAddress("alice").raw)
-	require.Nil(t, err)
-	require.True(t, exists)
+	require.True(t, context.accountExists(newDummyAddress("alice").raw))
 }
 
 func TestFacade_RunContract_Counter(t *testing.T) {
@@ -36,17 +33,13 @@ func TestFacade_RunContract_Counter(t *testing.T) {
 	contractAddress := deployResponse.ContractAddress
 	contractAddressHex := deployResponse.ContractAddressHex
 	require.Equal(t, "contract0000000000000000000alice", string(contractAddress))
-	context.runContract(contractAddressHex, alice.hex, "increment")
+	require.True(t, context.accountExists([]byte(contractAddress)))
 
+	context.runContract(contractAddressHex, alice.hex, "increment")
 	counterValue := context.queryContract(contractAddressHex, alice.hex, "get").getFirstResultAsInt64()
 	require.Equal(t, int64(2), counterValue)
 
 	world := context.loadWorld()
-	exists, err := world.blockchainHook.AccountExists([]byte(contractAddress))
-	require.Nil(t, err)
-	require.True(t, exists)
-
-	world = context.loadWorld()
 	state, err := world.blockchainHook.GetAllState([]byte(contractAddress))
 	require.Nil(t, err)
 	require.NotNil(t, state)
