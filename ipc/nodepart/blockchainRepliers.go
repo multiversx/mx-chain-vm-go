@@ -1,15 +1,9 @@
 package nodepart
 
 import (
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 )
-
-func (part *NodePart) replyToBlockchainAccountExists(request common.MessageHandler) common.MessageHandler {
-	typedRequest := request.(*common.MessageBlockchainAccountExistsRequest)
-	result, err := part.blockchain.AccountExists(typedRequest.Address)
-	response := common.NewMessageBlockchainAccountExistsResponse(result, err)
-	return response
-}
 
 func (part *NodePart) replyToBlockchainNewAddress(request common.MessageHandler) common.MessageHandler {
 	typedRequest := request.(*common.MessageBlockchainNewAddressRequest)
@@ -18,38 +12,10 @@ func (part *NodePart) replyToBlockchainNewAddress(request common.MessageHandler)
 	return response
 }
 
-func (part *NodePart) replyToBlockchainGetBalance(request common.MessageHandler) common.MessageHandler {
-	typedRequest := request.(*common.MessageBlockchainGetBalanceRequest)
-	balance, err := part.blockchain.GetBalance(typedRequest.Address)
-	response := common.NewMessageBlockchainGetBalanceResponse(balance, err)
-	return response
-}
-
-func (part *NodePart) replyToBlockchainGetNonce(request common.MessageHandler) common.MessageHandler {
-	typedRequest := request.(*common.MessageBlockchainGetNonceRequest)
-	nonce, err := part.blockchain.GetNonce(typedRequest.Address)
-	response := common.NewMessageBlockchainGetNonceResponse(nonce, err)
-	return response
-}
-
 func (part *NodePart) replyToBlockchainGetStorageData(request common.MessageHandler) common.MessageHandler {
 	typedRequest := request.(*common.MessageBlockchainGetStorageDataRequest)
 	data, err := part.blockchain.GetStorageData(typedRequest.Address, typedRequest.Index)
 	response := common.NewMessageBlockchainGetStorageDataResponse(data, err)
-	return response
-}
-
-func (part *NodePart) replyToBlockchainIsCodeEmpty(request common.MessageHandler) common.MessageHandler {
-	typedRequest := request.(*common.MessageBlockchainIsCodeEmptyRequest)
-	result, err := part.blockchain.IsCodeEmpty(typedRequest.Address)
-	response := common.NewMessageBlockchainIsCodeEmptyResponse(result, err)
-	return response
-}
-
-func (part *NodePart) replyToBlockchainGetCode(request common.MessageHandler) common.MessageHandler {
-	typedRequest := request.(*common.MessageBlockchainGetCodeRequest)
-	code, err := part.blockchain.GetCode(typedRequest.Address)
-	response := common.NewMessageBlockchainGetCodeResponse(code, err)
 	return response
 }
 
@@ -136,5 +102,48 @@ func (part *NodePart) replyToBlockchainProcessBuiltinFunction(request common.Mes
 func (part *NodePart) replyToBlockchainGetBuiltinFunctionNames(request common.MessageHandler) common.MessageHandler {
 	functionNames := part.blockchain.GetBuiltinFunctionNames()
 	response := common.NewMessageBlockchainGetBuiltinFunctionNamesResponse(functionNames)
+	return response
+}
+
+func (part *NodePart) replyToBlockchainGetAllState(request common.MessageHandler) common.MessageHandler {
+	typedRequest := request.(*common.MessageBlockchainGetAllStateRequest)
+	state, err := part.blockchain.GetAllState(typedRequest.Address)
+	response := common.NewMessageBlockchainGetAllStateResponse(state, err)
+	return response
+}
+
+func (part *NodePart) replyToBlockchainGetUserAccount(request common.MessageHandler) common.MessageHandler {
+	typedRequest := request.(*common.MessageBlockchainGetUserAccountRequest)
+	account, err := part.blockchain.GetUserAccount(typedRequest.Address)
+
+	if arwen.IfNil(account) {
+		return common.NewMessageBlockchainGetUserAccountResponse(nil, err)
+	}
+
+	return common.NewMessageBlockchainGetUserAccountResponse(&common.Account{
+		Nonce:           account.GetNonce(),
+		Address:         account.AddressBytes(),
+		Balance:         account.GetBalance(),
+		Code:            account.GetCode(),
+		CodeMetadata:    account.GetCodeMetadata(),
+		CodeHash:        account.GetCodeHash(),
+		RootHash:        account.GetRootHash(),
+		DeveloperReward: account.GetDeveloperReward(),
+		OwnerAddress:    account.GetOwnerAddress(),
+		UserName:        account.GetUserName(),
+	}, err)
+}
+
+func (part *NodePart) replyToBlockchainGetShardOfAddress(request common.MessageHandler) common.MessageHandler {
+	typedRequest := request.(*common.MessageBlockchainGetShardOfAddressRequest)
+	result := part.blockchain.GetShardOfAddress(typedRequest.Address)
+	response := common.NewMessageBlockchainGetShardOfAddressResponse(result)
+	return response
+}
+
+func (part *NodePart) replyToBlockchainIsSmartContract(request common.MessageHandler) common.MessageHandler {
+	typedRequest := request.(*common.MessageBlockchainIsSmartContractRequest)
+	result := part.blockchain.IsSmartContract(typedRequest.Address)
+	response := common.NewMessageBlockchainIsSmartContractResponse(result)
 	return response
 }

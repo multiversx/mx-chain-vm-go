@@ -42,7 +42,7 @@ func (o *OutputContextMock) NewVMOutputAccount(address []byte) *vmcommon.OutputA
 	}
 }
 
-func (o *OutputContextMock) NewVMOutputAccountFromMockAccount(account *Account) *vmcommon.OutputAccount {
+func (o *OutputContextMock) NewVMOutputAccountFromMockAccount(account *AccountMock) *vmcommon.OutputAccount {
 	return &vmcommon.OutputAccount{
 		Address:        account.Address,
 		Nonce:          account.Nonce,

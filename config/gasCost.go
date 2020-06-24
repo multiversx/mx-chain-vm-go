@@ -11,7 +11,10 @@ type BaseOperationCost struct {
 }
 
 type ElrondAPICost struct {
-	GetOwner             uint64
+	GetSCAddress         uint64
+	GetOwnerAddress      uint64
+	IsSmartContract      uint64
+	GetShardOfAddress    uint64
 	GetExternalBalance   uint64
 	GetBlockHash         uint64
 	TransferValue        uint64

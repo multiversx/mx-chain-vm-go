@@ -14,7 +14,7 @@ func TestElrondEI_CallValue(t *testing.T) {
 	code := GetTestSCCode("elrondei", "../../")
 
 	// 1-byte call value
-	host, _ := DefaultTestArwenForCall(t, code)
+	host, _ := DefaultTestArwenForCall(t, code, nil)
 	input := DefaultTestContractCallInput()
 	input.GasProvided = 100000
 	input.Function = "test_getCallValue_1byte"
@@ -38,7 +38,7 @@ func TestElrondEI_CallValue(t *testing.T) {
 		data[2])
 
 	// 4-byte call value
-	host, _ = DefaultTestArwenForCall(t, code)
+	host, _ = DefaultTestArwenForCall(t, code, nil)
 	input = DefaultTestContractCallInput()
 	input.GasProvided = 100000
 	input.Function = "test_getCallValue_4bytes"
@@ -61,7 +61,7 @@ func TestElrondEI_CallValue(t *testing.T) {
 		data[2])
 
 	// BigInt call value
-	host, _ = DefaultTestArwenForCall(t, code)
+	host, _ = DefaultTestArwenForCall(t, code, nil)
 	input = DefaultTestContractCallInput()
 	input.GasProvided = 100000
 	input.Function = "test_getCallValue_bigInt_to_Bytes"
@@ -89,7 +89,7 @@ func TestElrondEI_CallValue(t *testing.T) {
 
 func TestElrondEI_int64getArgument(t *testing.T) {
 	code := GetTestSCCode("elrondei", "../../")
-	host, _ := DefaultTestArwenForCall(t, code)
+	host, _ := DefaultTestArwenForCall(t, code, nil)
 	input := DefaultTestContractCallInput()
 	input.GasProvided = 100000
 	input.Function = "test_int64getArgument"

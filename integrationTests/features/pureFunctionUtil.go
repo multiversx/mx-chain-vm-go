@@ -70,7 +70,6 @@ func (pfe *pureFunctionExecutor) initAccounts(contractPath string) {
 	}
 
 	pfe.world.AcctMap.PutAccount(&worldhook.Account{
-		Exists:  true,
 		Address: pfe.contractAddress,
 		Nonce:   0,
 		Balance: big.NewInt(0),
@@ -79,7 +78,6 @@ func (pfe *pureFunctionExecutor) initAccounts(contractPath string) {
 	})
 
 	pfe.world.AcctMap.PutAccount(&worldhook.Account{
-		Exists:  true,
 		Address: pfe.userAddress,
 		Nonce:   0,
 		Balance: big.NewInt(0x100000000),

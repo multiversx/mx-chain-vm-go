@@ -1,7 +1,6 @@
 package host
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"math/big"
@@ -24,7 +23,7 @@ func TestNewArwen(t *testing.T) {
 
 func TestSCMem(t *testing.T) {
 	code := GetTestSCCode("misc", "../../")
-	host, _ := DefaultTestArwenForCall(t, code)
+	host, _ := DefaultTestArwenForCall(t, code, nil)
 	input := DefaultTestContractCallInput()
 	input.GasProvided = 100000
 	input.Function = "iterate_over_byte_array"
@@ -51,9 +50,9 @@ func TestExecution_DeployNewAddressErr(t *testing.T) {
 
 	host, _ := DefaultTestArwen(t, stubBlockchainHook, mockCryptoHook)
 	input := DefaultTestContractCreateInput()
-	stubBlockchainHook.GetNonceCalled = func(address []byte) (uint64, error) {
+	stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
 		require.Equal(t, input.CallerAddr, address)
-		return 0, nil
+		return &mock.AccountMock{}, nil
 	}
 	stubBlockchainHook.NewAddressCalled = func(creatorAddress []byte, nonce uint64, vmType []byte) ([]byte, error) {
 		require.Equal(t, input.CallerAddr, creatorAddress)
@@ -200,8 +199,8 @@ func TestExecution_ManyDeployments(t *testing.T) {
 	newAddress := "new smartcontract"
 	mockCryptoHook := &mock.CryptoHookMock{}
 	stubBlockchainHook := &mock.BlockchainHookStub{}
-	stubBlockchainHook.GetNonceCalled = func(address []byte) (uint64, error) {
-		return ownerNonce, nil
+	stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
+		return &mock.AccountMock{Nonce: ownerNonce}, nil
 	}
 	stubBlockchainHook.NewAddressCalled = func(creatorAddress []byte, nonce uint64, vmType []byte) ([]byte, error) {
 		ownerNonce++
@@ -243,16 +242,16 @@ func TestExecution_Deploy_DisallowFloatingPoint(t *testing.T) {
 	require.Equal(t, vmcommon.ContractInvalid, vmOutput.ReturnCode)
 }
 
-func TestExecution_CallGetCodeErr(t *testing.T) {
+func TestExecution_CallGetUserAccountErr(t *testing.T) {
 	mockCryptoHook := &mock.CryptoHookMock{}
 	stubBlockchainHook := &mock.BlockchainHookStub{}
 
-	errGetCode := errors.New("get code error")
+	errGetAccount := errors.New("get code error")
 
 	host, _ := DefaultTestArwen(t, stubBlockchainHook, mockCryptoHook)
 	input := DefaultTestContractCallInput()
-	stubBlockchainHook.GetCodeCalled = func(address []byte) ([]byte, error) {
-		return nil, errGetCode
+	stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
+		return nil, errGetAccount
 	}
 
 	vmOutput, err := host.RunSmartContractCall(input)
@@ -264,7 +263,7 @@ func TestExecution_CallGetCodeErr(t *testing.T) {
 
 func TestExecution_CallOutOfGas(t *testing.T) {
 	code := GetTestSCCode("counter", "../../")
-	host, _ := DefaultTestArwenForCall(t, code)
+	host, _ := DefaultTestArwenForCall(t, code, nil)
 	input := DefaultTestContractCallInput()
 	input.Function = "increment"
 
@@ -277,7 +276,7 @@ func TestExecution_CallOutOfGas(t *testing.T) {
 
 func TestExecution_CallWasmerError(t *testing.T) {
 	code := []byte("not WASM")
-	host, _ := DefaultTestArwenForCall(t, code)
+	host, _ := DefaultTestArwenForCall(t, code, nil)
 	input := DefaultTestContractCallInput()
 	input.GasProvided = 100000
 	input.Function = "increment"
@@ -290,7 +289,7 @@ func TestExecution_CallWasmerError(t *testing.T) {
 
 func TestExecution_CallSCMethod(t *testing.T) {
 	code := GetTestSCCode("counter", "../../")
-	host, _ := DefaultTestArwenForCall(t, code)
+	host, _ := DefaultTestArwenForCall(t, code, nil)
 	input := DefaultTestContractCallInput()
 	input.GasProvided = 100000
 
@@ -320,7 +319,7 @@ func TestExecution_CallSCMethod(t *testing.T) {
 
 func TestExecution_Call_Successful(t *testing.T) {
 	code := GetTestSCCode("counter", "../../")
-	host, stubBlockchainHook := DefaultTestArwenForCall(t, code)
+	host, stubBlockchainHook := DefaultTestArwenForCall(t, code, nil)
 	stubBlockchainHook.GetStorageDataCalled = func(scAddress []byte, key []byte) ([]byte, error) {
 		return big.NewInt(1001).Bytes(), nil
 	}
@@ -342,7 +341,7 @@ func TestExecution_ExecuteOnSameContext_Simple(t *testing.T) {
 	parentCode := GetTestSCCode("exec-same-ctx-simple-parent", "../../")
 	childCode := GetTestSCCode("exec-same-ctx-simple-child", "../../")
 
-	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
+	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode, nil)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionChildCall"
@@ -359,7 +358,7 @@ func TestExecution_Call_Breakpoints(t *testing.T) {
 	t.Parallel()
 
 	code := GetTestSCCode("breakpoint", "../../")
-	host, _ := DefaultTestArwenForCall(t, code)
+	host, _ := DefaultTestArwenForCall(t, code, nil)
 	input := DefaultTestContractCallInput()
 	input.GasProvided = 100000
 	input.Function = "testFunc"
@@ -389,18 +388,10 @@ func TestExecution_ExecuteOnSameContext_Prepare(t *testing.T) {
 	parentCode := GetTestSCCode("exec-same-ctx-parent", "../../")
 	parentSCBalance := big.NewInt(1000)
 
-	getBalanceCalled := func(address []byte) (*big.Int, error) {
-		if bytes.Equal(parentAddress, address) {
-			return parentSCBalance, nil
-		}
-		return big.NewInt(0), nil
-	}
-
 	// Execute the parent SC method "parentFunctionPrepare", which sets storage,
 	// finish data and performs a transfer. This step validates the test to the
 	// actual call to ExecuteOnSameContext().
-	host, stubBlockchainHook := DefaultTestArwenForCall(t, parentCode)
-	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
+	host, _ := DefaultTestArwenForCall(t, parentCode, parentSCBalance)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionPrepare"
@@ -419,17 +410,9 @@ func TestExecution_ExecuteOnSameContext_Wrong(t *testing.T) {
 	parentCode := GetTestSCCode("exec-same-ctx-parent", "../../")
 	parentSCBalance := big.NewInt(1000)
 
-	getBalanceCalled := func(address []byte) (*big.Int, error) {
-		if bytes.Equal(parentAddress, address) {
-			return parentSCBalance, nil
-		}
-		return big.NewInt(0), nil
-	}
-
 	// Call parentFunctionWrongCall() of the parent SC, which will try to call a
 	// non-existing SC.
-	host, stubBlockchainHook := DefaultTestArwenForCall(t, parentCode)
-	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
+	host, _ := DefaultTestArwenForCall(t, parentCode, parentSCBalance)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionWrongCall"
@@ -456,20 +439,11 @@ func TestExecution_ExecuteOnSameContext_OutOfGas(t *testing.T) {
 	childCode := GetTestSCCode("exec-same-ctx-child", "../../")
 	parentSCBalance := big.NewInt(1000)
 
-	getBalanceCalled := func(address []byte) (*big.Int, error) {
-		if bytes.Equal(parentAddress, address) {
-			return parentSCBalance, nil
-		}
-
-		return big.NewInt(0), nil
-	}
-
 	// Call parentFunctionChildCall_OutOfGas() of the parent SC, which will call
 	// the child SC using executeOnSameContext() with sufficient gas for
 	// compilation and starting, but the child starts an infinite loop which will
 	// end in OutOfGas.
-	host, stubBlockchainHook := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
-	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
+	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode, parentSCBalance)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionChildCall_OutOfGas"
@@ -487,18 +461,9 @@ func TestExecution_ExecuteOnSameContext_Successful(t *testing.T) {
 	childCode := GetTestSCCode("exec-same-ctx-child", "../../")
 	parentSCBalance := big.NewInt(1000)
 
-	getBalanceCalled := func(address []byte) (*big.Int, error) {
-		if bytes.Equal(parentAddress, address) {
-			return parentSCBalance, nil
-		}
-
-		return big.NewInt(0), nil
-	}
-
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using executeOnSameContext().
-	host, stubBlockchainHook := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
-	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
+	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode, parentSCBalance)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionChildCall"
@@ -515,18 +480,10 @@ func TestExecution_ExecuteOnSameContext_Successful_BigInts(t *testing.T) {
 	childCode := GetTestSCCode("exec-same-ctx-child", "../../")
 	parentSCBalance := big.NewInt(1000)
 
-	getBalanceCalled := func(address []byte) (*big.Int, error) {
-		if bytes.Equal(parentAddress, address) {
-			return parentSCBalance, nil
-		}
-		return big.NewInt(0), nil
-	}
-
 	// Call parentFunctionChildCall_BigInts() of the parent SC, which will call a
 	// method of the child SC that takes some big Int references as arguments and
 	// produce a new big Int out of the arguments.
-	host, stubBlockchainHook := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
-	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
+	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode, parentSCBalance)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionChildCall_BigInts"
@@ -554,16 +511,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct(t *testing.T) {
 	code := GetTestSCCode("exec-same-ctx-recursive", "../../")
 	scBalance := big.NewInt(1000)
 
-	getBalanceCalled := func(address []byte) (*big.Int, error) {
-		if bytes.Equal(parentAddress, address) {
-			return scBalance, nil
-		}
-		return big.NewInt(0), nil
-	}
-
-	host, stubBlockchainHook := DefaultTestArwenForCall(t, code)
-	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
-
+	host, _ := DefaultTestArwenForCall(t, code, scBalance)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "callRecursive"
@@ -589,16 +537,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct_ErrMaxInstances(t *test
 	code := GetTestSCCode("exec-same-ctx-recursive", "../../")
 	scBalance := big.NewInt(1000)
 
-	getBalanceCalled := func(address []byte) (*big.Int, error) {
-		if bytes.Equal(parentAddress, address) {
-			return scBalance, nil
-		}
-		return big.NewInt(0), nil
-	}
-
-	host, stubBlockchainHook := DefaultTestArwenForCall(t, code)
-	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
-
+	host, _ := DefaultTestArwenForCall(t, code, scBalance)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "callRecursive"
@@ -641,16 +580,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_Methods(t *testing.T) {
 	code := GetTestSCCode("exec-same-ctx-recursive", "../../")
 	scBalance := big.NewInt(1000)
 
-	getBalanceCalled := func(address []byte) (*big.Int, error) {
-		if bytes.Equal(parentAddress, address) {
-			return scBalance, nil
-		}
-		return big.NewInt(0), nil
-	}
-
-	host, stubBlockchainHook := DefaultTestArwenForCall(t, code)
-	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
-
+	host, _ := DefaultTestArwenForCall(t, code, scBalance)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "callRecursiveMutualMethods"
@@ -687,18 +617,9 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs(t *testing.T) {
 	childCode := GetTestSCCode("exec-same-ctx-recursive-child", "../../")
 	parentSCBalance := big.NewInt(1000)
 
-	getBalanceCalled := func(address []byte) (*big.Int, error) {
-		if bytes.Equal(parentAddress, address) {
-			return parentSCBalance, nil
-		}
-
-		return big.NewInt(0), nil
-	}
-
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using executeOnDestContext().
-	host, stubBlockchainHook := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
-	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
+	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode, parentSCBalance)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentCallsChild"
@@ -728,18 +649,9 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 	childCode := GetTestSCCode("exec-same-ctx-recursive-child", "../../")
 	parentSCBalance := big.NewInt(1000)
 
-	getBalanceCalled := func(address []byte) (*big.Int, error) {
-		if bytes.Equal(parentAddress, address) {
-			return parentSCBalance, nil
-		}
-
-		return big.NewInt(0), nil
-	}
-
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using executeOnDestContext().
-	host, stubBlockchainHook := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
-	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
+	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode, parentSCBalance)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentCallsChild"
@@ -762,13 +674,6 @@ func TestExecution_ExecuteOnSameContext_BuiltinFunctions(t *testing.T) {
 	code := GetTestSCCode("exec-same-ctx-builtin", "../../")
 	scBalance := big.NewInt(1000)
 
-	getBalanceCalled := func(address []byte) (*big.Int, error) {
-		if bytes.Equal(parentAddress, address) {
-			return scBalance, nil
-		}
-
-		return big.NewInt(0), nil
-	}
 	getBuiltinFunctionNames := func() vmcommon.FunctionNames {
 		names := make(vmcommon.FunctionNames)
 
@@ -778,8 +683,7 @@ func TestExecution_ExecuteOnSameContext_BuiltinFunctions(t *testing.T) {
 		return names
 	}
 
-	host, stubBlockchainHook := DefaultTestArwenForCall(t, code)
-	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
+	host, stubBlockchainHook := DefaultTestArwenForCall(t, code, scBalance)
 	stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
 	host.protocolBuiltinFunctions = getBuiltinFunctionNames()
 
@@ -839,18 +743,10 @@ func TestExecution_ExecuteOnDestContext_Prepare(t *testing.T) {
 	parentCode := GetTestSCCode("exec-dest-ctx-parent", "../../")
 	parentSCBalance := big.NewInt(1000)
 
-	getBalanceCalled := func(address []byte) (*big.Int, error) {
-		if bytes.Equal(parentAddress, address) {
-			return parentSCBalance, nil
-		}
-		return big.NewInt(0), nil
-	}
-
 	// Execute the parent SC method "parentFunctionPrepare", which sets storage,
 	// finish data and performs a transfer. This step validates the test to the
 	// actual call to ExecuteOnSameContext().
-	host, stubBlockchainHook := DefaultTestArwenForCall(t, parentCode)
-	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
+	host, _ := DefaultTestArwenForCall(t, parentCode, parentSCBalance)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionPrepare"
@@ -869,17 +765,9 @@ func TestExecution_ExecuteOnDestContext_Wrong(t *testing.T) {
 	parentCode := GetTestSCCode("exec-dest-ctx-parent", "../../")
 	parentSCBalance := big.NewInt(1000)
 
-	getBalanceCalled := func(address []byte) (*big.Int, error) {
-		if bytes.Equal(parentAddress, address) {
-			return parentSCBalance, nil
-		}
-		return big.NewInt(0), nil
-	}
-
 	// Call parentFunctionWrongCall() of the parent SC, which will try to call a
 	// non-existing SC.
-	host, stubBlockchainHook := DefaultTestArwenForCall(t, parentCode)
-	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
+	host, _ := DefaultTestArwenForCall(t, parentCode, parentSCBalance)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionWrongCall"
@@ -906,20 +794,11 @@ func TestExecution_ExecuteOnDestContext_OutOfGas(t *testing.T) {
 	childCode := GetTestSCCode("exec-dest-ctx-child", "../../")
 	parentSCBalance := big.NewInt(1000)
 
-	getBalanceCalled := func(address []byte) (*big.Int, error) {
-		if bytes.Equal(parentAddress, address) {
-			return parentSCBalance, nil
-		}
-
-		return big.NewInt(0), nil
-	}
-
 	// Call parentFunctionChildCall_OutOfGas() of the parent SC, which will call
 	// the child SC using executeOnDestContext() with sufficient gas for
 	// compilation and starting, but the child starts an infinite loop which will
 	// end in OutOfGas.
-	host, stubBlockchainHook := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
-	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
+	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode, parentSCBalance)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionChildCall_OutOfGas"
@@ -937,18 +816,9 @@ func TestExecution_ExecuteOnDestContext_Successful(t *testing.T) {
 	childCode := GetTestSCCode("exec-dest-ctx-child", "../../")
 	parentSCBalance := big.NewInt(1000)
 
-	getBalanceCalled := func(address []byte) (*big.Int, error) {
-		if bytes.Equal(parentAddress, address) {
-			return parentSCBalance, nil
-		}
-
-		return big.NewInt(0), nil
-	}
-
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using executeOnDestContext().
-	host, stubBlockchainHook := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
-	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
+	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode, parentSCBalance)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionChildCall"
@@ -965,18 +835,10 @@ func TestExecution_ExecuteOnDestContext_Successful_BigInts(t *testing.T) {
 	childCode := GetTestSCCode("exec-dest-ctx-child", "../../")
 	parentSCBalance := big.NewInt(1000)
 
-	getBalanceCalled := func(address []byte) (*big.Int, error) {
-		if bytes.Equal(parentAddress, address) {
-			return parentSCBalance, nil
-		}
-		return big.NewInt(0), nil
-	}
-
 	// Call parentFunctionChildCall_BigInts() of the parent SC, which will call a
 	// method of the child SC that takes some big Int references as arguments and
 	// produce a new big Int out of the arguments.
-	host, stubBlockchainHook := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
-	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
+	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode, parentSCBalance)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionChildCall_BigInts"
@@ -992,16 +854,7 @@ func TestExecution_ExecuteOnDestContext_Recursive_Direct(t *testing.T) {
 	code := GetTestSCCode("exec-dest-ctx-recursive", "../../")
 	scBalance := big.NewInt(1000)
 
-	getBalanceCalled := func(address []byte) (*big.Int, error) {
-		if bytes.Equal(parentAddress, address) {
-			return scBalance, nil
-		}
-		return big.NewInt(0), nil
-	}
-
-	host, stubBlockchainHook := DefaultTestArwenForCall(t, code)
-	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
-
+	host, _ := DefaultTestArwenForCall(t, code, scBalance)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "callRecursive"
@@ -1027,16 +880,7 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_Methods(t *testing.T) {
 	code := GetTestSCCode("exec-dest-ctx-recursive", "../../")
 	scBalance := big.NewInt(1000)
 
-	getBalanceCalled := func(address []byte) (*big.Int, error) {
-		if bytes.Equal(parentAddress, address) {
-			return scBalance, nil
-		}
-		return big.NewInt(0), nil
-	}
-
-	host, stubBlockchainHook := DefaultTestArwenForCall(t, code)
-	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
-
+	host, _ := DefaultTestArwenForCall(t, code, scBalance)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "callRecursiveMutualMethods"
@@ -1062,18 +906,9 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs(t *testing.T) {
 	childCode := GetTestSCCode("exec-dest-ctx-recursive-child", "../../")
 	parentSCBalance := big.NewInt(1000)
 
-	getBalanceCalled := func(address []byte) (*big.Int, error) {
-		if bytes.Equal(parentAddress, address) {
-			return parentSCBalance, nil
-		}
-
-		return big.NewInt(0), nil
-	}
-
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using executeOnDestContext().
-	host, stubBlockchainHook := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
-	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
+	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode, parentSCBalance)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentCallsChild"
@@ -1103,18 +938,9 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 	childCode := GetTestSCCode("exec-dest-ctx-recursive-child", "../../")
 	parentSCBalance := big.NewInt(1000)
 
-	getBalanceCalled := func(address []byte) (*big.Int, error) {
-		if bytes.Equal(parentAddress, address) {
-			return parentSCBalance, nil
-		}
-
-		return big.NewInt(0), nil
-	}
-
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using executeOnDestContext().
-	host, stubBlockchainHook := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
-	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
+	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode, parentSCBalance)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentCallsChild"
@@ -1157,19 +983,9 @@ func TestExecution_AsyncCall(t *testing.T) {
 	childCode := GetTestSCCode("async-call-child", "../../")
 	parentSCBalance := big.NewInt(1000)
 
-	getBalanceCalled := func(address []byte) (*big.Int, error) {
-		if bytes.Equal(parentAddress, address) {
-			return parentSCBalance, nil
-		}
-
-		return big.NewInt(0), nil
-	}
-
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using executeOnDestContext().
-	host, stubBlockchainHook := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
-	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
-
+	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode, parentSCBalance)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentPerformAsyncCall"
@@ -1194,18 +1010,9 @@ func TestExecution_AsyncCall_ChildFails(t *testing.T) {
 	childCode := GetTestSCCode("async-call-child", "../../")
 	parentSCBalance := big.NewInt(1000)
 
-	getBalanceCalled := func(address []byte) (*big.Int, error) {
-		if bytes.Equal(parentAddress, address) {
-			return parentSCBalance, nil
-		}
-
-		return big.NewInt(0), nil
-	}
-
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using executeOnDestContext().
-	host, stubBlockchainHook := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
-	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
+	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode, parentSCBalance)
 	host.Metering().GasSchedule().ElrondAPICost.AsyncCallbackGasLock = 3000
 
 	input := DefaultTestContractCallInput()
@@ -1233,19 +1040,9 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 	childCode := GetTestSCCode("async-call-child", "../../")
 	parentSCBalance := big.NewInt(1000)
 
-	getBalanceCalled := func(address []byte) (*big.Int, error) {
-		if bytes.Equal(parentAddress, address) {
-			return parentSCBalance, nil
-		}
-
-		return big.NewInt(0), nil
-	}
-
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using executeOnDestContext().
-	host, stubBlockchainHook := DefaultTestArwenForTwoSCs(t, parentCode, childCode)
-	stubBlockchainHook.GetBalanceCalled = getBalanceCalled
-
+	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode, parentSCBalance)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentPerformAsyncCall"

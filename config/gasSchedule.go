@@ -147,7 +147,10 @@ func FillGasMap_BaseOperationCosts(value uint64) map[string]uint64 {
 
 func FillGasMap_ElrondAPICosts(value, asyncCallbackGasLock uint64) map[string]uint64 {
 	gasMap := make(map[string]uint64)
-	gasMap["GetOwner"] = value
+	gasMap["GetSCAddress"] = value
+	gasMap["GetOwnerAddress"] = value
+	gasMap["IsSmartContract"] = value
+	gasMap["GetShardOfAddress"] = value
 	gasMap["GetExternalBalance"] = value
 	gasMap["GetBlockHash"] = value
 	gasMap["TransferValue"] = value

@@ -20,7 +20,10 @@
     CompilePerByte    = 200
 
 [ElrondAPICost]
-    GetOwner           = 100
+    GetSCAddress       = 100
+    GetOwnerAddress    = 1000
+    IsSmartContract    = 1000
+    GetShardOfAddress  = 1000
     GetExternalBalance = 7000
     GetBlockHash       = 1000
     TransferValue      = 150000
