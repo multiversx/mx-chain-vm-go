@@ -140,7 +140,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	return
 }
 
-func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
+func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, asyncInfo *arwen.AsyncContextInfo, err error) {
 	log.Trace("ExecuteOnDestContext", "function", input.Function)
 
 	bigInt, _, _, output, runtime, storage := host.GetContexts()
@@ -169,7 +169,12 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	}
 
 	err = host.execute(input)
+	if err != nil {
+		return
+	}
 
+	asyncInfo = runtime.GetAsyncContextInfo()
+	_, err = host.processAsyncInfo(asyncInfo)
 	return
 }
 
@@ -204,7 +209,7 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 	return vmOutput
 }
 
-func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (err error) {
+func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asyncInfo *arwen.AsyncContextInfo, err error) {
 	log.Trace("ExecuteOnSameContext", "function", input.Function)
 
 	bigInt, _, _, output, runtime, _ := host.GetContexts()
@@ -232,6 +237,8 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (err
 	if err != nil {
 		return
 	}
+
+	asyncInfo = runtime.GetAsyncContextInfo()
 
 	return
 }
@@ -427,6 +434,10 @@ func (host *vmHost) callSCMethodIndirect() error {
 		err = host.handleBreakpointIfAny(err)
 	}
 
+	if err != nil {
+		return err
+	}
+
 	return err
 }
 
@@ -478,7 +489,8 @@ func (host *vmHost) callSCMethod() error {
 		return err
 	}
 
-	function, err := runtime.GetFunctionToCall()
+	callType := runtime.GetVMInput().CallType
+	function, err := host.getFunctionByCallType(callType)
 	if err != nil {
 		return err
 	}
@@ -486,6 +498,26 @@ func (host *vmHost) callSCMethod() error {
 	_, err = function()
 	if err != nil {
 		err = host.handleBreakpointIfAny(err)
+	}
+	if err != nil {
+		return err
+	}
+
+	switch callType {
+	case vmcommon.AsynchronousCall:
+		pendingMap, paiErr := host.processAsyncInfo(runtime.GetAsyncContextInfo())
+		if paiErr != nil {
+			return paiErr
+		}
+		if len(pendingMap.AsyncContextMap) == 0 {
+			err = host.sendCallbackToCurrentCaller()
+		}
+		break
+	case vmcommon.AsynchronousCallBack:
+		err = host.processCallbackStack()
+		break
+	default:
+		_, err = host.processAsyncInfo(runtime.GetAsyncContextInfo())
 	}
 
 	return err

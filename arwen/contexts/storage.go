@@ -8,6 +8,8 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
+const lockKeyContext string = "timelock"
+
 type storageContext struct {
 	host                     arwen.VMHost
 	blockChainHook           vmcommon.BlockchainHook
