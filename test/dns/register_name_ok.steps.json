@@ -4,38 +4,12 @@
         {
             "step": "setState",
             "accounts": {
-                "''an_account____________________sy": {
-                    "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
-                },
                 "''cool_address__________________sz": {
                     "nonce": "0",
                     "balance": "123,000",
                     "storage": {},
                     "code": "file:user-mock.wasm"
                 }
-            }
-        },
-        {
-            "step": "scCall",
-            "txId": "check-version",
-            "tx": {
-                "from": "''an_account____________________sy",
-                "to": "''dns____________________________|0x00",
-                "value": "0",
-                "function": "version",
-                "arguments": [],
-                "gasLimit": "100,000",
-                "gasPrice": "0"
-            },
-            "expect": {
-                "out": [ "''0.2.1" ],
-                "status": "",
-                "logs": [],
-                "gas": "*",
-                "refund": "*"
             }
         },
         {
@@ -141,7 +115,6 @@
                     "nonce": "*",
                     "balance": "123,000",
                     "storage": {
-                        "''owner": "''dns_owner_______________________",
                         "''registration_cost": "123,000",
                         "''value_state|0x5bc9a3e2762313cb60b1edd995e5660575462348d57b185d060d95a0d5c1f1b9": "''cool_address__________________sz"
                     },
