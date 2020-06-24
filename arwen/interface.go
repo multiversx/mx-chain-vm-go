@@ -61,6 +61,9 @@ type BlockchainContext interface {
 	GetCode(addr []byte) ([]byte, error)
 	GetCodeSize(addr []byte) (int32, error)
 	BlockHash(number int64) []byte
+	GetOwnerAddress() ([]byte, error)
+	GetShardOfAddress(addr []byte) uint32
+	IsSmartContract(addr []byte) bool
 }
 
 type RuntimeContext interface {

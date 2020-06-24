@@ -20,6 +20,13 @@ func CustomStorageKey(keyType string, associatedKey []byte) []byte {
 	return append(associatedKey, []byte(keyType)...)
 }
 
+func BooleanToInt(b bool) int {
+	if b {
+		return 1
+	}
+	return 0
+}
+
 func GuardedMakeByteSlice2D(length int32) ([][]byte, error) {
 	if length < 0 {
 		return nil, fmt.Errorf("GuardedMakeByteSlice2D: negative length (%d)", length)
@@ -106,4 +113,16 @@ func U64MulToBigInt(x, y uint64) *big.Int {
 	by := big.NewInt(0).SetUint64(y)
 
 	return big.NewInt(0).Mul(bx, by)
+}
+
+// IfNil tests if the provided interface pointer or underlying object is nil
+func IfNil(checker nilInterfaceChecker) bool {
+	if checker == nil {
+		return true
+	}
+	return checker.IsInterfaceNil()
+}
+
+type nilInterfaceChecker interface {
+	IsInterfaceNil() bool
 }

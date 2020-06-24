@@ -6,7 +6,10 @@
     ReleasePerByte  = 10
 
 [ElrondAPICost]
-    GetOwner           = 10
+    GetSCAddress       = 10
+    GetOwnerAddress    = 10
+    IsSmartContract    = 10
+    GetShardOfAddress  = 10
     GetExternalBalance = 10
     GetBlockHash       = 10
     TransferValue      = 10

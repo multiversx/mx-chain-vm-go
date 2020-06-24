@@ -1,3 +1,5 @@
+# WARNING: THIS CODE GENERATOR IS DEPRECATED
+# TODO: Reimplement using go code generators if possible
 
 from argparse import ArgumentParser
 

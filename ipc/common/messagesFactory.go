@@ -1,5 +1,11 @@
 package common
 
+import (
+	logger "github.com/ElrondNetwork/elrond-go-logger"
+)
+
+var logMessages = logger.GetOrCreate("arwen/messages")
+
 // CreateMessage creates a message given its kind
 func CreateMessage(kind MessageKind) MessageHandler {
 	kindIndex := uint32(kind)
@@ -10,6 +16,7 @@ func CreateMessage(kind MessageKind) MessageHandler {
 		return message
 	}
 
+	logMessages.Error("Creating undefined message", "kind", kind)
 	return createUndefinedMessage()
 }
 
@@ -30,20 +37,10 @@ func init() {
 	messageCreators[DiagnoseWaitRequest] = createMessageDiagnoseWaitRequest
 	messageCreators[DiagnoseWaitResponse] = createMessageDiagnoseWaitResponse
 
-	messageCreators[BlockchainAccountExistsRequest] = createMessageBlockchainAccountExistsRequest
-	messageCreators[BlockchainAccountExistsResponse] = createMessageBlockchainAccountExistsResponse
 	messageCreators[BlockchainNewAddressRequest] = createMessageBlockchainNewAddressRequest
 	messageCreators[BlockchainNewAddressResponse] = createMessageBlockchainNewAddressResponse
-	messageCreators[BlockchainGetBalanceRequest] = createMessageBlockchainGetBalanceRequest
-	messageCreators[BlockchainGetBalanceResponse] = createMessageBlockchainGetBalanceResponse
-	messageCreators[BlockchainGetNonceRequest] = createMessageBlockchainGetNonceRequest
-	messageCreators[BlockchainGetNonceResponse] = createMessageBlockchainGetNonceResponse
 	messageCreators[BlockchainGetStorageDataRequest] = createMessageBlockchainGetStorageDataRequest
 	messageCreators[BlockchainGetStorageDataResponse] = createMessageBlockchainGetStorageDataResponse
-	messageCreators[BlockchainIsCodeEmptyRequest] = createMessageBlockchainIsCodeEmptyRequest
-	messageCreators[BlockchainIsCodeEmptyResponse] = createMessageBlockchainIsCodeEmptyResponse
-	messageCreators[BlockchainGetCodeRequest] = createMessageBlockchainGetCodeRequest
-	messageCreators[BlockchainGetCodeResponse] = createMessageBlockchainGetCodeResponse
 	messageCreators[BlockchainGetBlockhashRequest] = createMessageBlockchainGetBlockhashRequest
 	messageCreators[BlockchainGetBlockhashResponse] = createMessageBlockchainGetBlockhashResponse
 	messageCreators[BlockchainLastNonceRequest] = createMessageBlockchainLastNonceRequest
@@ -68,7 +65,18 @@ func init() {
 	messageCreators[BlockchainCurrentRandomSeedResponse] = createMessageBlockchainCurrentRandomSeedResponse
 	messageCreators[BlockchainCurrentEpochRequest] = createMessageBlockchainCurrentEpochRequest
 	messageCreators[BlockchainCurrentEpochResponse] = createMessageBlockchainCurrentEpochResponse
-
+	messageCreators[BlockchainProcessBuiltinFunctionRequest] = createMessageBlockchainProcessBuiltinFunctionRequest
+	messageCreators[BlockchainProcessBuiltinFunctionResponse] = createMessageBlockchainProcessBuiltinFunctionResponse
+	messageCreators[BlockchainGetBuiltinFunctionNamesRequest] = createMessageBlockchainGetBuiltinFunctionNamesRequest
+	messageCreators[BlockchainGetBuiltinFunctionNamesResponse] = createMessageBlockchainGetBuiltinFunctionNamesResponse
+	messageCreators[BlockchainGetAllStateRequest] = createMessageBlockchainGetAllStateRequest
+	messageCreators[BlockchainGetAllStateResponse] = createMessageBlockchainGetAllStateResponse
+	messageCreators[BlockchainGetUserAccountRequest] = createMessageBlockchainGetUserAccountRequest
+	messageCreators[BlockchainGetUserAccountResponse] = createMessageBlockchainGetUserAccountResponse
+	messageCreators[BlockchainGetShardOfAddressRequest] = createMessageBlockchainGetShardOfAddressRequest
+	messageCreators[BlockchainGetShardOfAddressResponse] = createMessageBlockchainGetShardOfAddressResponse
+	messageCreators[BlockchainIsSmartContractRequest] = createMessageBlockchainIsSmartContractRequest
+	messageCreators[BlockchainIsSmartContractResponse] = createMessageBlockchainIsSmartContractResponse
 }
 
 func createMessageInitialize() MessageHandler {
@@ -103,14 +111,6 @@ func createUndefinedMessage() MessageHandler {
 	return NewUndefinedMessage()
 }
 
-func createMessageBlockchainAccountExistsRequest() MessageHandler {
-	return &MessageBlockchainAccountExistsRequest{}
-}
-
-func createMessageBlockchainAccountExistsResponse() MessageHandler {
-	return &MessageBlockchainAccountExistsResponse{}
-}
-
 func createMessageBlockchainNewAddressRequest() MessageHandler {
 	return &MessageBlockchainNewAddressRequest{}
 }
@@ -119,44 +119,12 @@ func createMessageBlockchainNewAddressResponse() MessageHandler {
 	return &MessageBlockchainNewAddressResponse{}
 }
 
-func createMessageBlockchainGetBalanceRequest() MessageHandler {
-	return &MessageBlockchainGetBalanceRequest{}
-}
-
-func createMessageBlockchainGetBalanceResponse() MessageHandler {
-	return &MessageBlockchainGetBalanceResponse{}
-}
-
-func createMessageBlockchainGetNonceRequest() MessageHandler {
-	return &MessageBlockchainGetNonceRequest{}
-}
-
-func createMessageBlockchainGetNonceResponse() MessageHandler {
-	return &MessageBlockchainGetNonceResponse{}
-}
-
 func createMessageBlockchainGetStorageDataRequest() MessageHandler {
 	return &MessageBlockchainGetStorageDataRequest{}
 }
 
 func createMessageBlockchainGetStorageDataResponse() MessageHandler {
 	return &MessageBlockchainGetStorageDataResponse{}
-}
-
-func createMessageBlockchainIsCodeEmptyRequest() MessageHandler {
-	return &MessageBlockchainIsCodeEmptyRequest{}
-}
-
-func createMessageBlockchainIsCodeEmptyResponse() MessageHandler {
-	return &MessageBlockchainIsCodeEmptyResponse{}
-}
-
-func createMessageBlockchainGetCodeRequest() MessageHandler {
-	return &MessageBlockchainGetCodeRequest{}
-}
-
-func createMessageBlockchainGetCodeResponse() MessageHandler {
-	return &MessageBlockchainGetCodeResponse{}
 }
 
 func createMessageBlockchainGetBlockhashRequest() MessageHandler {
@@ -253,4 +221,52 @@ func createMessageBlockchainCurrentEpochRequest() MessageHandler {
 
 func createMessageBlockchainCurrentEpochResponse() MessageHandler {
 	return &MessageBlockchainCurrentEpochResponse{}
+}
+
+func createMessageBlockchainProcessBuiltinFunctionRequest() MessageHandler {
+	return &MessageBlockchainProcessBuiltinFunctionRequest{}
+}
+
+func createMessageBlockchainProcessBuiltinFunctionResponse() MessageHandler {
+	return &MessageBlockchainProcessBuiltinFunctionResponse{}
+}
+
+func createMessageBlockchainGetBuiltinFunctionNamesRequest() MessageHandler {
+	return &MessageBlockchainGetBuiltinFunctionNamesRequest{}
+}
+
+func createMessageBlockchainGetBuiltinFunctionNamesResponse() MessageHandler {
+	return &MessageBlockchainGetBuiltinFunctionNamesResponse{}
+}
+
+func createMessageBlockchainGetAllStateRequest() MessageHandler {
+	return &MessageBlockchainGetAllStateRequest{}
+}
+
+func createMessageBlockchainGetAllStateResponse() MessageHandler {
+	return &MessageBlockchainGetAllStateResponse{}
+}
+
+func createMessageBlockchainGetUserAccountRequest() MessageHandler {
+	return &MessageBlockchainGetUserAccountRequest{}
+}
+
+func createMessageBlockchainGetUserAccountResponse() MessageHandler {
+	return &MessageBlockchainGetUserAccountResponse{}
+}
+
+func createMessageBlockchainGetShardOfAddressRequest() MessageHandler {
+	return &MessageBlockchainGetShardOfAddressRequest{}
+}
+
+func createMessageBlockchainGetShardOfAddressResponse() MessageHandler {
+	return &MessageBlockchainGetShardOfAddressResponse{}
+}
+
+func createMessageBlockchainIsSmartContractRequest() MessageHandler {
+	return &MessageBlockchainIsSmartContractRequest{}
+}
+
+func createMessageBlockchainIsSmartContractResponse() MessageHandler {
+	return &MessageBlockchainIsSmartContractResponse{}
 }

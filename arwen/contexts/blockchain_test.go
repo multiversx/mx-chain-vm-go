@@ -14,15 +14,14 @@ import (
 var errAccountFault = errors.New("account fault")
 var errTestError = errors.New("some test error")
 
-var testAccounts = []*mock.Account{
-	{Exists: true, Address: []byte("account_old"), Nonce: 12, Balance: big.NewInt(0)},
-	{Exists: true, Address: []byte("account_newer"), Nonce: 8, Balance: big.NewInt(0)},
-	{Exists: true, Address: []byte("account_new"), Nonce: 0, Balance: big.NewInt(0)},
-	{Exists: true, Address: []byte("account_new_with_money"), Nonce: 0, Balance: big.NewInt(1000)},
-	{Exists: true, Address: []byte("account_with_code"), Nonce: 4, Balance: big.NewInt(512), Code: []byte("somecode")},
-	{Exists: true, Address: []byte("account_old_with_money"), Nonce: 56, Balance: big.NewInt(1024)},
-	{Exists: false, Address: []byte("account_missing")},
-	{Exists: true, Address: []byte("account_faulty"), Err: errAccountFault},
+var testAccounts = []*mock.AccountMock{
+	{Address: []byte("account_old"), Nonce: 12, Balance: big.NewInt(0)},
+	{Address: []byte("account_newer"), Nonce: 8, Balance: big.NewInt(0)},
+	{Address: []byte("account_new"), Nonce: 0, Balance: big.NewInt(0)},
+	{Address: []byte("account_new_with_money"), Nonce: 0, Balance: big.NewInt(1000)},
+	{Address: []byte("account_with_code"), Nonce: 4, Balance: big.NewInt(512), Code: []byte("somecode")},
+	{Address: []byte("account_old_with_money"), Nonce: 56, Balance: big.NewInt(1024)},
+	{Address: []byte("account_faulty"), Err: errAccountFault},
 }
 
 func TestNewBlockchainContext(t *testing.T) {
@@ -290,7 +289,7 @@ func TestBlockchainContext_NewAddress(t *testing.T) {
 
 	expectedCreatorAddres := creatorAddress
 	stubBlockchain := &mock.BlockchainHookStub{
-		GetNonceCalled: blockchainHook.GetNonce,
+		GetUserAccountCalled: blockchainHook.GetUserAccount,
 		NewAddressCalled: func(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error) {
 			require.Equal(t, expectedCreatorAddres, creatorAddress)
 			require.Equal(t, uint64(0), creatorNonce)
@@ -313,7 +312,7 @@ func TestBlockchainContext_NewAddress(t *testing.T) {
 
 	expectedCreatorAddres = creatorAddress
 	stubBlockchain = &mock.BlockchainHookStub{
-		GetNonceCalled: blockchainHook.GetNonce,
+		GetUserAccountCalled: blockchainHook.GetUserAccount,
 		NewAddressCalled: func(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error) {
 			require.Equal(t, expectedCreatorAddres, creatorAddress)
 			require.Equal(t, uint64(55), creatorNonce)
@@ -336,7 +335,7 @@ func TestBlockchainContext_NewAddress(t *testing.T) {
 
 	expectedCreatorAddres = creatorAddress
 	stubBlockchain = &mock.BlockchainHookStub{
-		GetNonceCalled: blockchainHook.GetNonce,
+		GetUserAccountCalled: blockchainHook.GetUserAccount,
 		NewAddressCalled: func(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error) {
 			require.Equal(t, expectedCreatorAddres, creatorAddress)
 			require.Equal(t, uint64(3), creatorNonce)

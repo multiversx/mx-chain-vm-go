@@ -6,7 +6,10 @@ package elrondapi
 // typedef unsigned char uint8_t;
 // typedef int int32_t;
 //
-// extern void getOwner(void *context, int32_t resultOffset);
+// extern void getSCAddress(void *context, int32_t resultOffset);
+// extern void getOwnerAddress(void *context, int32_t resultOffset);
+// extern int32_t getShardOfAddress(void *context, int32_t addressOffset);
+// extern int32_t isSmartContract(void *context, int32_t addressOffset);
 // extern void getExternalBalance(void *context, int32_t addressOffset, int32_t resultOffset);
 // extern int32_t blockHash(void *context, long long nonce, int32_t resultOffset);
 // extern int32_t transferValue(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
@@ -76,7 +79,22 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 	imports := wasmer.NewImports()
 	imports = imports.Namespace("env")
 
-	imports, err := imports.Append("getOwner", getOwner, C.getOwner)
+	imports, err := imports.Append("getSCAddress", getSCAddress, C.getSCAddress)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getOwnerAddress", getOwnerAddress, C.getOwnerAddress)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getShardOfAddress", getShardOfAddress, C.getShardOfAddress)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("isSmartContract", isSmartContract, C.isSmartContract)
 	if err != nil {
 		return nil, err
 	}
@@ -326,8 +344,8 @@ func getGasLeft(context unsafe.Pointer) int64 {
 	return int64(metering.GasLeft())
 }
 
-//export getOwner
-func getOwner(context unsafe.Pointer, resultOffset int32) {
+//export getSCAddress
+func getSCAddress(context unsafe.Pointer, resultOffset int32) {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -337,8 +355,63 @@ func getOwner(context unsafe.Pointer, resultOffset int32) {
 		return
 	}
 
-	gasToUse := metering.GasSchedule().ElrondAPICost.GetOwner
+	gasToUse := metering.GasSchedule().ElrondAPICost.GetSCAddress
 	metering.UseGas(gasToUse)
+}
+
+//export getOwnerAddress
+func getOwnerAddress(context unsafe.Pointer, resultOffset int32) {
+	blockchain := arwen.GetBlockchainContext(context)
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	owner, err := blockchain.GetOwnerAddress()
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return
+	}
+
+	err = runtime.MemStore(resultOffset, owner)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return
+	}
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.GetOwnerAddress
+	metering.UseGas(gasToUse)
+}
+
+//export getShardOfAddress
+func getShardOfAddress(context unsafe.Pointer, addressOffset int32) int32 {
+	blockchain := arwen.GetBlockchainContext(context)
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	address, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 0
+	}
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.GetShardOfAddress
+	metering.UseGas(gasToUse)
+
+	return int32(blockchain.GetShardOfAddress(address))
+}
+
+//export isSmartContract
+func isSmartContract(context unsafe.Pointer, addressOffset int32) int32 {
+	blockchain := arwen.GetBlockchainContext(context)
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	address, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 0
+	}
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.IsSmartContract
+	metering.UseGas(gasToUse)
+
+	isSmartContract := blockchain.IsSmartContract(address)
+	return int32(arwen.BooleanToInt(isSmartContract))
 }
 
 //export signalError
