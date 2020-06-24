@@ -53,22 +53,34 @@ func (host *vmHost) canExecuteSynchronously(destination []byte, data []byte) boo
 	runtime := host.Runtime()
 	blockchain := host.Blockchain()
 
+	// Sync execution requires the destination to be in the same shard.
 	shardOfSC := blockchain.GetShardOfAddress(runtime.GetSCAddress())
 	shardOfDest := blockchain.GetShardOfAddress(destination)
 	if shardOfSC != shardOfDest {
 		return false
 	}
 
+	// TODO add check for blockchain.IsPayable(destination), when it will be
+	// available.
+
+	// If ArgParser cannot read the Data field, then this isn't even a smart
+	// contract call. Async calls should not be used for transferring value.
 	argParser := parsers.NewCallArgsParser()
 	functionName, _, err := argParser.ParseData(string(data))
 	if err != nil {
 		return false
 	}
 
-	isSmartContract := blockchain.IsSmartContract(destination)
-	isCallToBuiltin := host.isBuiltinFunctionName(functionName)
+	// If the called account has code, it is a smart contract and can be called
+	// without further investigation.
+	code, err := blockchain.GetCode(destination)
+	if len(code) > 0 && err == nil {
+		return true
+	}
 
-	return isSmartContract || isCallToBuiltin
+	// If all else fails, this must be a call to a built-in function to execute
+	// synchronously.
+	return host.isBuiltinFunctionName(functionName)
 }
 
 func (host *vmHost) sendAsyncCallToDestination(asyncCallInfo arwen.AsyncCallInfoHandler) error {
