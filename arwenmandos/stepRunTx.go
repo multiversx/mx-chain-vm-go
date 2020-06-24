@@ -205,7 +205,7 @@ func (ae *ArwenTestExecutor) updateStateAfterTx(
 	}
 
 	// update accounts based on deltas
-	updErr := ae.World.UpdateAccounts(accountsSlice, output.DeletedAccounts)
+	updErr := ae.World.UpdateAccounts(accountsSlice, output.DeletedAccounts, tx.From.Value)
 	if updErr != nil {
 		return updErr
 	}
