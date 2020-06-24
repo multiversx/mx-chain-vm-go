@@ -47,6 +47,8 @@ var ErrInitFuncCalledInRun = fmt.Errorf("%w (calling init() directly is forbidde
 
 var ErrCallBackFuncCalledInRun = fmt.Errorf("%w (calling callBack() directly is forbidden)", ErrInvalidFunction)
 
+var ErrCallBackFuncNotExpected = fmt.Errorf("%w (unexpected callback was received)", ErrInvalidFunction)
+
 var ErrFuncNotFound = fmt.Errorf("%w (not found)", ErrInvalidFunction)
 
 var ErrInvalidFunctionName = fmt.Errorf("%w (invalid name)", ErrInvalidFunction)
@@ -72,3 +74,7 @@ var ErrDivZero = errors.New("division by 0")
 var ErrBitwiseNegative = errors.New("bitwise operations only allowed on positive integers")
 
 var ErrShiftNegative = errors.New("bitwise shift operations only allowed on positive integers and by a positive amount")
+
+var ErrAsyncContextDoesNotExist = errors.New("async context was not created yet")
+
+var ErrAsync = errors.New("invalid gas percentage provided for async call")

@@ -105,10 +105,10 @@ func (r *RuntimeContextMock) GetOriginalTxHash() []byte {
 	return r.OriginalTxHash
 }
 
-func (r *RuntimeContextMock) GetCodeUpgradeFromArgs() ([]byte, []byte, error) {
+func (r *RuntimeContextMock) ExtractCodeUpgradeFromArgs() ([]byte, []byte, error) {
 	arguments := r.VmInput.Arguments
 	if len(arguments) < 2 {
-		panic("GetCodeUpgradeFromArgs: bad test setup")
+		panic("ExtractCodeUpgradeFromArgs: bad test setup")
 	}
 
 	return r.VmInput.Arguments[0], r.VmInput.Arguments[1], nil
@@ -215,4 +215,20 @@ func (r *RuntimeContextMock) GetAsyncCallInfo() *arwen.AsyncCallInfo {
 
 func (r *RuntimeContextMock) SetAsyncCallInfo(asyncCallInfo *arwen.AsyncCallInfo) {
 	r.AsyncCallInfo = asyncCallInfo
+}
+
+func (r *RuntimeContextMock) AddAsyncContextCall(_ []byte, _ *arwen.AsyncGeneratedCall) error {
+	return nil
+}
+
+func (r *RuntimeContextMock) GetAsyncContextInfo() *arwen.AsyncContextInfo {
+	return nil
+}
+
+func (r *RuntimeContextMock) GetAsyncContext(_ []byte) (*arwen.AsyncContext, error) {
+	return nil, nil
+}
+
+func (r *RuntimeContextMock) SetCustomCallFunction(callFunction string) {
+
 }

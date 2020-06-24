@@ -221,8 +221,10 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 	}
 
 	TryCatch(try, catch, "arwen.RunSmartContractCreate")
+	if vmOutput != nil {
+		log.Trace("RunSmartContractCreate end", "returnCode", vmOutput.ReturnCode, "returnMessage", vmOutput.ReturnMessage)
+	}
 
-	log.Trace("RunSmartContractCreate end", "returnCode", vmOutput.ReturnCode, "returnMessage", vmOutput.ReturnMessage)
 	return
 }
 
@@ -249,7 +251,10 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 		TryCatch(tryCall, catch, "arwen.RunSmartContractCall")
 	}
 
-	log.Trace("RunSmartContractCall end", "returnCode", vmOutput.ReturnCode, "returnMessage", vmOutput.ReturnMessage)
+	if vmOutput != nil {
+		log.Trace("RunSmartContractCall end", "returnCode", vmOutput.ReturnCode, "returnMessage", vmOutput.ReturnMessage)
+	}
+
 	return
 }
 

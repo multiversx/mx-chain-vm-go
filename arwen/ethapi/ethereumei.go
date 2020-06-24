@@ -800,7 +800,7 @@ func ethcall(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueO
 		Function:      "main",
 	}
 
-	_, err = host.ExecuteOnDestContext(contractCallInput)
+	_, _, err = host.ExecuteOnDestContext(contractCallInput)
 	if err != nil {
 		return 1
 	}
@@ -855,7 +855,7 @@ func ethcallCode(context unsafe.Pointer, gasLimit int64, addressOffset int32, va
 		Function:      "main",
 	}
 
-	err = host.ExecuteOnSameContext(contractCallInput)
+	_, err = host.ExecuteOnSameContext(contractCallInput)
 	if err != nil {
 		return 1
 	}
@@ -906,7 +906,7 @@ func ethcallDelegate(context unsafe.Pointer, gasLimit int64, addressOffset int32
 		Function:      "main",
 	}
 
-	err = host.ExecuteOnSameContext(contractCallInput)
+	_, err = host.ExecuteOnSameContext(contractCallInput)
 	if err != nil {
 		return 1
 	}
@@ -968,7 +968,7 @@ func ethcallStatic(context unsafe.Pointer, gasLimit int64, addressOffset int32, 
 		Function:      "main",
 	}
 
-	err = host.ExecuteOnSameContext(contractCallInput)
+	_, err = host.ExecuteOnSameContext(contractCallInput)
 
 	runtime.SetReadOnly(false)
 	if err != nil {
