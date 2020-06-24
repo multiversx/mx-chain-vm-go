@@ -1,0 +1,6 @@
+init
+bookTrain
+bookTrainSuccess
+bookTrainError
+cancelTrainBooking
+isMyTrainBooked

@@ -16,6 +16,10 @@ var logDuration = logger.GetOrCreate("arwen/duration")
 // Zero is the big integer 0
 var Zero = big.NewInt(0)
 
+func CustomStorageKey(keyType string, associatedKey []byte) []byte {
+	return append(associatedKey, []byte(keyType)...)
+}
+
 func BooleanToInt(b bool) int {
 	if b {
 		return 1
@@ -102,6 +106,13 @@ func GetSCCode(fileName string) []byte {
 func TimeTrack(start time.Time, message string) {
 	elapsed := time.Since(start)
 	logDuration.Trace(message, "duration", elapsed)
+}
+
+func U64MulToBigInt(x, y uint64) *big.Int {
+	bx := big.NewInt(0).SetUint64(x)
+	by := big.NewInt(0).SetUint64(y)
+
+	return big.NewInt(0).Mul(bx, by)
 }
 
 // IfNil tests if the provided interface pointer or underlying object is nil

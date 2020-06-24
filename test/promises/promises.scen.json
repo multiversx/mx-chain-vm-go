@@ -1,0 +1,95 @@
+{
+  "name": "promises",
+  "comment": "increment, block, try to increment, release, increment again",
+  "steps": [
+    {
+      "step": "setState",
+      "accounts": {
+        "``my_account______________________": {
+          "nonce": "5",
+          "balance": "10,000,000,000",
+          "storage": {},
+          "code": ""
+        },
+        "``dataSC..........................": {
+          "nonce": "0",
+          "balance": "0",
+          "storage": {},
+          "code": "file:trackingSystem.wasm"
+        },
+        "``trainSC.........................": {
+          "nonce": "0",
+          "balance": "0",
+          "storage": {},
+          "code": "file:train.wasm"
+        },
+        "``promiseSC.......................": {
+          "nonce": "0",
+          "balance": "0",
+          "storage": {},
+          "code": "file:promises.wasm"
+        }
+      }
+    },
+    {
+      "step": "scCall",
+      "txId": "1",
+      "tx": {
+        "from": "``my_account______________________",
+        "to": "``promiseSC.......................",
+        "value": "0",
+        "function": "bookMyStuff",
+        "arguments": [],
+        "gasLimit": "1,000,000,000",
+        "gasPrice": "1"
+      },
+      "expect": {
+        "out": [],
+        "status": "",
+        "logs": [],
+        "gas": "*",
+        "refund": "*"
+      }
+    },
+    {
+      "step": "scCall",
+      "txId": "2",
+      "tx": {
+        "from": "``my_account______________________",
+        "to": "``trainSC.........................",
+        "value": "0",
+        "function": "isMyTrainBooked",
+        "arguments": [],
+        "gasLimit": "1,000,000,000",
+        "gasPrice": "1"
+      },
+      "expect": {
+        "out": ["1"],
+        "status": "",
+        "logs": [],
+        "gas": "*",
+        "refund": "*"
+      }
+    },
+    {
+      "step": "scCall",
+      "txId": "3",
+      "tx": {
+        "from": "``my_account______________________",
+        "to": "``promiseSC.......................",
+        "value": "0",
+        "function": "isMyStorageLocked",
+        "arguments": [],
+        "gasLimit": "1,000,000,000",
+        "gasPrice": "1"
+      },
+      "expect": {
+        "out": ["0"],
+        "status": "",
+        "logs": [],
+        "gas": "*",
+        "refund": "*"
+      }
+    }
+  ]
+}
