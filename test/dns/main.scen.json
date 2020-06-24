@@ -7,6 +7,10 @@
         },
         {
             "step": "externalSteps",
+            "path": "dns_init_check.steps.json"
+        },
+        {
+            "step": "externalSteps",
             "path": "register_name_ok.steps.json"
         },
         {
