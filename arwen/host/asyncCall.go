@@ -17,15 +17,13 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 	runtime := host.Runtime()
 	runtime.SetRuntimeBreakpointValue(arwen.BreakpointNone)
 
-	// TODO also determine whether caller and callee are in the same Shard (based
-	// on address?), by account addresses - this would make the empty SC code an
-	// unrecoverable error, so returning nil here will not be appropriate anymore.
-	if !host.canExecuteSynchronously() {
-		return host.sendAsyncCallToDestination(runtime.GetAsyncCallInfo())
+	asyncCallInfo := runtime.GetAsyncCallInfo()
+	if !host.canExecuteSynchronously(asyncCallInfo.Destination, asyncCallInfo.Data) {
+		return host.sendAsyncCallToDestination(asyncCallInfo)
 	}
 
 	// Start calling the destination SC, synchronously.
-	destinationCallInput, err := host.createDestinationContractCallInput(runtime.GetAsyncCallInfo())
+	destinationCallInput, err := host.createDestinationContractCallInput(asyncCallInfo)
 	if err != nil {
 		return err
 	}
@@ -51,21 +49,26 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 	return nil
 }
 
-func (host *vmHost) canExecuteSynchronouslyOnDest(dest []byte) bool {
-	blockchain := host.Blockchain()
-	calledSCCode, err := blockchain.GetCode(dest)
-
-	return len(calledSCCode) != 0 && err == nil
-}
-
-func (host *vmHost) canExecuteSynchronously() bool {
-	// TODO replace with a blockchain hook that verifies if the caller and callee
-	// are in the same Shard.
+func (host *vmHost) canExecuteSynchronously(destination []byte, data []byte) bool {
 	runtime := host.Runtime()
-	asyncCallInfo := runtime.GetAsyncCallInfo()
-	dest := asyncCallInfo.Destination
+	blockchain := host.Blockchain()
 
-	return host.canExecuteSynchronouslyOnDest(dest)
+	shardOfSC := blockchain.GetShardOfAddress(runtime.GetSCAddress())
+	shardOfDest := blockchain.GetShardOfAddress(destination)
+	if shardOfSC != shardOfDest {
+		return false
+	}
+
+	argParser := parsers.NewCallArgsParser()
+	functionName, _, err := argParser.ParseData(string(data))
+	if err != nil {
+		return false
+	}
+
+	isSmartContract := blockchain.IsSmartContract(destination)
+	isCallToBuiltin := host.isBuiltinFunctionName(functionName)
+
+	return isSmartContract || isCallToBuiltin
 }
 
 func (host *vmHost) sendAsyncCallToDestination(asyncCallInfo arwen.AsyncCallInfoHandler) error {
@@ -287,7 +290,7 @@ func (host *vmHost) processAsyncInfo(asyncInfo *arwen.AsyncContextInfo) (*arwen.
 
 	for _, asyncContext := range asyncInfo.AsyncContextMap {
 		for _, asyncCall := range asyncContext.AsyncCalls {
-			if !host.canExecuteSynchronouslyOnDest(asyncCall.Destination) {
+			if !host.canExecuteSynchronously(asyncCall.Destination, asyncCall.Data) {
 				continue
 			}
 
@@ -315,7 +318,7 @@ func (host *vmHost) processAsyncInfo(asyncInfo *arwen.AsyncContextInfo) (*arwen.
 
 	for _, asyncContext := range pendingMapInfo.AsyncContextMap {
 		for _, asyncCall := range asyncContext.AsyncCalls {
-			if !host.canExecuteSynchronouslyOnDest(asyncCall.Destination) {
+			if !host.canExecuteSynchronously(asyncCall.Destination, asyncCall.Data) {
 				sendErr := host.sendAsyncCallToDestination(asyncCall)
 				if sendErr != nil {
 					return nil, sendErr
@@ -403,18 +406,18 @@ func (host *vmHost) savePendingAsyncCalls(pendingAsyncMap *arwen.AsyncContextInf
  */
 func (host *vmHost) saveCrossShardCalls(asyncInfo *arwen.AsyncContextInfo) error {
 	crossMap := &arwen.AsyncContextInfo{
-		CallerAddr: asyncInfo.CallerAddr,
-		ReturnData: asyncInfo.ReturnData,
+		CallerAddr:      asyncInfo.CallerAddr,
+		ReturnData:      asyncInfo.ReturnData,
 		AsyncContextMap: make(map[string]*arwen.AsyncContext),
 	}
 
 	for contextIdentifier, asyncContext := range asyncInfo.AsyncContextMap {
 		for _, asyncCall := range asyncContext.AsyncCalls {
-			if !host.canExecuteSynchronouslyOnDest(asyncCall.Destination) {
+			if !host.canExecuteSynchronously(asyncCall.Destination, asyncCall.Data) {
 				_, ok := crossMap.AsyncContextMap[contextIdentifier]
 				if !ok {
 					crossMap.AsyncContextMap[contextIdentifier] = &arwen.AsyncContext{
-						Callback: asyncContext.Callback,
+						Callback:   asyncContext.Callback,
 						AsyncCalls: make([]*arwen.AsyncGeneratedCall, 0),
 					}
 				}
@@ -434,8 +437,8 @@ func (host *vmHost) saveCrossShardCalls(asyncInfo *arwen.AsyncContextInfo) error
  */
 func (host *vmHost) getPendingAsyncCalls(asyncInfo *arwen.AsyncContextInfo) *arwen.AsyncContextInfo {
 	pendingMap := &arwen.AsyncContextInfo{
-		CallerAddr: asyncInfo.CallerAddr,
-		ReturnData: asyncInfo.ReturnData,
+		CallerAddr:      asyncInfo.CallerAddr,
+		ReturnData:      asyncInfo.ReturnData,
 		AsyncContextMap: make(map[string]*arwen.AsyncContext),
 	}
 
@@ -448,7 +451,7 @@ func (host *vmHost) getPendingAsyncCalls(asyncInfo *arwen.AsyncContextInfo) *arw
 			_, ok := pendingMap.AsyncContextMap[contextIdentifier]
 			if !ok {
 				pendingMap.AsyncContextMap[contextIdentifier] = &arwen.AsyncContext{
-					Callback: asyncContext.Callback,
+					Callback:   asyncContext.Callback,
 					AsyncCalls: make([]*arwen.AsyncGeneratedCall, 0),
 				}
 			}
@@ -524,7 +527,7 @@ func (host *vmHost) processCallbackStack() error {
 	}
 
 	// Now figure out if we can execute the callback here or different shard
-	if !host.canExecuteSynchronouslyOnDest(asyncInfo.CallerAddr) {
+	if !host.canExecuteSynchronously(asyncInfo.CallerAddr, asyncInfo.ReturnData) {
 		err = host.sendStorageCallbackToDestination(asyncInfo.CallerAddr, asyncInfo.ReturnData)
 		if err != nil {
 			return err
@@ -592,7 +595,7 @@ func (host *vmHost) setupAsyncCallsGas(asyncInfo *arwen.AsyncContextInfo) error 
 		return arwen.ErrNotEnoughGas
 	}
 
-	gasShare := (gasLeft - gasNeeded)/callsWithZeroGas
+	gasShare := (gasLeft - gasNeeded) / callsWithZeroGas
 	for identifier, asyncContext := range asyncInfo.AsyncContextMap {
 		for index, asyncCall := range asyncContext.AsyncCalls {
 			if asyncCall.ProvidedGas == 0 {
