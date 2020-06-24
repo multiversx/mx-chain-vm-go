@@ -17,4 +17,8 @@ func TestAddUint64(t *testing.T) {
 	c := uint64(3)
 	sum, err = AddUint64(b, c)
 	require.Equal(t, ErrAdditionOverflow, err)
+
+	d := uint64(0)
+	sum, err = AddUint64(b, d)
+	require.Nil(t, err)
 }
