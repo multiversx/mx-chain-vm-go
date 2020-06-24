@@ -201,7 +201,7 @@ func (context *runtimeContext) Arguments() [][]byte {
 	return context.vmInput.Arguments
 }
 
-func (context *runtimeContext) GetCodeUpgradeFromArgs() ([]byte, []byte, error) {
+func (context *runtimeContext) ExtractCodeUpgradeFromArgs() ([]byte, []byte, error) {
 	const numMinUpgradeArguments = 2
 
 	arguments := context.vmInput.Arguments
@@ -211,6 +211,7 @@ func (context *runtimeContext) GetCodeUpgradeFromArgs() ([]byte, []byte, error) 
 
 	code := arguments[0]
 	codeMetadata := arguments[1]
+	context.vmInput.Arguments = context.vmInput.Arguments[numMinUpgradeArguments:]
 	return code, codeMetadata, nil
 }
 
