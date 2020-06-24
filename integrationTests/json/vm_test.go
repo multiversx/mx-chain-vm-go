@@ -172,8 +172,6 @@ func TestDelegation_v0_3(t *testing.T) {
 }
 
 func TestDnsContract(t *testing.T) {
-	t.Skip("Will be fixed in future PR")
-
 	executor, err := am.NewArwenTestExecutor()
 	require.Nil(t, err)
 	runner := mc.NewScenarioRunner(

@@ -15,6 +15,7 @@
 
 /arwen/debug
 /cmd/test/test
+/cmd/testgen/dns/dns
 /cmd/arwen/arwen
 /arwendebug/testdata/db
 /cmd/arwendebug/arwendebug

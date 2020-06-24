@@ -78,7 +78,6 @@ type fuzzDelegationExecutorInitArgs struct {
 
 func (pfe *fuzzDelegationExecutor) addStep(step mj.Step) {
 	pfe.generatedScenario.Steps = append(pfe.generatedScenario.Steps, step)
-	pfe.saveGeneratedScenario()
 }
 
 func (pfe *fuzzDelegationExecutor) saveGeneratedScenario() {
