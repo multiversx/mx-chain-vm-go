@@ -79,4 +79,4 @@ var ErrAsyncContextDoesNotExist = errors.New("async context was not created yet"
 
 var ErrAsync = errors.New("invalid gas percentage provided for async call")
 
-var ErrInvalidAccount = errors.New("account does exist")
+var ErrInvalidAccount = errors.New("account does not exist")
