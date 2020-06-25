@@ -119,8 +119,16 @@ func (context *blockchainContext) GetCodeHash(addr []byte) ([]byte, error) {
 
 func (context *blockchainContext) GetCode(address []byte) ([]byte, error) {
 	account, err := context.blockChainHook.GetUserAccount(address)
-	if err != nil || arwen.IfNil(account) {
+	if arwen.IfNil(account) {
+		return nil, arwen.ErrInvalidAccount
+	}
+	if err != nil {
 		return nil, err
+	}
+
+	code := account.GetCode()
+	if len(code) == 0 {
+		return nil, arwen.ErrContractNotFound
 	}
 
 	return account.GetCode(), nil
