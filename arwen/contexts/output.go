@@ -365,6 +365,8 @@ func mergeOutputAccounts(
 	if rightAccount.Nonce > leftAccount.Nonce {
 		leftAccount.Nonce = rightAccount.Nonce
 	}
+
+	leftAccount.CallType = rightAccount.CallType
 }
 
 func mergeStorageUpdates(
