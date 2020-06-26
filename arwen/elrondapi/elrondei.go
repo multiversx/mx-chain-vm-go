@@ -50,14 +50,14 @@ package elrondapi
 // extern int64 getBlockTimestamp(void *context);
 // extern int64 getBlockNonce(void *context);
 // extern int64 getBlockRound(void *context);
-// extern int64_t getBlockEpoch(void *context);
+// extern int64 getBlockEpoch(void *context);
 // extern void getBlockRandomSeed(void *context, int32_t resultOffset);
 // extern void getStateRootHash(void *context, int32_t resultOffset);
 //
 // extern int64 getPrevBlockTimestamp(void *context);
 // extern int64 getPrevBlockNonce(void *context);
 // extern int64 getPrevBlockRound(void *context);
-// extern int64_t getPrevBlockEpoch(void *context);
+// extern int64 getPrevBlockEpoch(void *context);
 // extern void getPrevBlockRandomSeed(void *context, int32_t resultOffset);
 //
 // extern long long int64getArgument(void *context, int32_t id);
