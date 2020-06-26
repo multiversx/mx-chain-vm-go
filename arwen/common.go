@@ -69,7 +69,23 @@ func (aci *AsyncCallInfo) GetValueBytes() []byte {
 	return aci.ValueBytes
 }
 
-// AsyncGeneratedCall holds the information abount an async call
+// AsyncContext is the structure resulting after a smart contract call that has initiated
+// one or more async calls. It contains all of the async calls produced by the
+// smart contract method.
+type AsyncContext struct {
+	CallerAddr      []byte
+	ReturnData      []byte
+	AsyncCallGroups map[string]*AsyncCallGroup
+}
+
+// AsyncCallGroup is a structure containing a group of async calls and a callback
+// that should be called when all these async calls are resolved
+type AsyncCallGroup struct {
+	Callback   string
+	AsyncCalls []*AsyncCall
+}
+
+// AsyncCall holds the information about an individual async call
 type AsyncCall struct {
 	Status          AsyncCallStatus
 	Destination     []byte
@@ -79,21 +95,6 @@ type AsyncCall struct {
 	SuccessCallback string
 	ErrorCallback   string
 	ProvidedGas     uint64
-}
-
-// AsyncContext is a structure containing a group of async calls and a callback
-//  that should be called when all these async calls are resolved
-type AsyncCallGroup struct {
-	Callback   string
-	AsyncCalls []*AsyncCall
-}
-
-// AsyncContext is the structure resulting after a smart contract call that has initiated
-// one or more async calls. It will
-type AsyncContext struct {
-	CallerAddr      []byte
-	ReturnData      []byte
-	AsyncCallGroups map[string]*AsyncCallGroup
 }
 
 // GetDestination returns the destination of an async call
