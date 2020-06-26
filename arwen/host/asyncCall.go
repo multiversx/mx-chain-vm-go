@@ -20,15 +20,18 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 	asyncCallInfo := runtime.GetAsyncCallInfo()
 
 	execMode, err := host.determineAsyncCallExecutionMode(asyncCallInfo)
+	if err != nil {
+		return err
+	}
 
-	if execMode == AsyncUnknown {
+	if execMode == arwen.AsyncUnknown {
 		return host.sendAsyncCallToDestination(asyncCallInfo)
 	}
 
 	// Cross-shard calls for built-in functions must be executed in both the
 	// sender and destination shards.
-	if execMode == AsyncBuiltinFunc {
-		destinationVMOutput, err := executeDestinationCall(asyncCallInfo)
+	if execMode == arwen.AsyncBuiltinFunc {
+		_, err := host.executeSyncDestinationCall(asyncCallInfo)
 		if err != nil {
 			return err
 		}
@@ -36,9 +39,9 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 	}
 
 	// Start calling the destination SC, synchronously.
-	destinationVMOutput, destinationErr := executeDestinationCall(asyncCallInfo)
+	destinationVMOutput, destinationErr := host.executeSyncDestinationCall(asyncCallInfo)
 
-	callbackVMOutput, _, callbackErr := host.executeSyncCallbackCall(asyncCallInfo, destinationVMOutput, destinationErr)
+	callbackVMOutput, callBackErr := host.executeSyncCallbackCall(asyncCallInfo, destinationVMOutput, destinationErr)
 
 	err = host.processCallbackVMOutput(callbackVMOutput, callBackErr)
 	if err != nil {
@@ -55,34 +58,34 @@ func (host *vmHost) determineAsyncCallExecutionMode(asyncCallInfo *arwen.AsyncCa
 	// If ArgParser cannot read the Data field, then this is neither a SC call,
 	// nor a built-in function call.
 	argParser := parsers.NewCallArgsParser()
-	functionName, _, err := argParser.ParseData(string(data))
+	functionName, _, err := argParser.ParseData(string(asyncCallInfo.Data))
 	if err != nil {
-		return err
+		return arwen.AsyncUnknown, err
 	}
 
-	code, err := blockchain.GetCode(destination)
+	code, err := blockchain.GetCode(asyncCallInfo.Destination)
 	if len(code) > 0 && err == nil {
-		return arwen.SyncCall
+		return arwen.SyncCall, nil
 	}
 
 	shardOfSC := blockchain.GetShardOfAddress(runtime.GetSCAddress())
-	shardOfDest := blockchain.GetShardOfAddress(destination)
+	shardOfDest := blockchain.GetShardOfAddress(asyncCallInfo.Destination)
 	sameShard := shardOfSC == shardOfDest
 
 	if host.isBuiltinFunctionName(functionName) {
 		if sameShard {
-			return arwen.SyncCall
+			return arwen.SyncCall, nil
 		}
-		return arwen.AsyncBuiltinFunc
+		return arwen.AsyncBuiltinFunc, nil
 	}
 
-	return arwen.AsyncUnknown
+	return arwen.AsyncUnknown, nil
 }
 
-func (host *vmHost) executeSyncDestinationCall(asyncCallInfo *arwen.AsyncCallInfo) error {
+func (host *vmHost) executeSyncDestinationCall(asyncCallInfo *arwen.AsyncCallInfo) (*vmcommon.VMOutput, error) {
 	destinationCallInput, err := host.createDestinationContractCallInput(asyncCallInfo)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	destinationVMOutput, _, err := host.ExecuteOnDestContext(destinationCallInput)
@@ -93,7 +96,7 @@ func (host *vmHost) executeSyncCallbackCall(
 	asyncCallInfo *arwen.AsyncCallInfo,
 	destinationVMOutput *vmcommon.VMOutput,
 	destinationErr error,
-) error {
+) (*vmcommon.VMOutput, error) {
 	callbackCallInput, err := host.createCallbackContractCallInput(
 		destinationVMOutput,
 		asyncCallInfo.Destination,
@@ -101,45 +104,19 @@ func (host *vmHost) executeSyncCallbackCall(
 		destinationErr,
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	callbackVMOutput, _, callBackErr := host.ExecuteOnDestContext(callbackCallInput)
+	return callbackVMOutput, callBackErr
 }
 
 func (host *vmHost) canExecuteSynchronously(destination []byte, data []byte) bool {
 	// TODO replace this function in promise-related code below.
-	runtime := host.Runtime()
 	blockchain := host.Blockchain()
+	calledSCCode, err := blockchain.GetCode(destination)
 
-	// Sync execution requires the destination to be in the same shard.
-	shardOfSC := blockchain.GetShardOfAddress(runtime.GetSCAddress())
-	shardOfDest := blockchain.GetShardOfAddress(destination)
-	if shardOfSC != shardOfDest {
-		return false
-	}
-
-	// TODO add check for blockchain.IsPayable(destination), when it will be
-	// available.
-
-	// If ArgParser cannot read the Data field, then this isn't even a smart
-	// contract call. Async calls should not be used for transferring value.
-	argParser := parsers.NewCallArgsParser()
-	functionName, _, err := argParser.ParseData(string(data))
-	if err != nil {
-		return false
-	}
-
-	// If the called account has code, it is a smart contract and can be called
-	// without further investigation.
-	code, err := blockchain.GetCode(destination)
-	if len(code) > 0 && err == nil {
-		return true
-	}
-
-	// If all else fails, this must be a call to a built-in function to execute
-	// synchronously.
-	return host.isBuiltinFunctionName(functionName)
+	return len(calledSCCode) > 0 && err == nil
 }
 
 func (host *vmHost) sendAsyncCallToDestination(asyncCallInfo arwen.AsyncCallInfoHandler) error {

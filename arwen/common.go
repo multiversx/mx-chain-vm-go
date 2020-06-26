@@ -16,6 +16,8 @@ const (
 	BreakpointOutOfGas
 )
 
+type AsyncCallExecutionMode uint
+
 const (
 	SyncCall AsyncCallExecutionMode = iota
 	AsyncBuiltinFunc
