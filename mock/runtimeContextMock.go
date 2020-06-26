@@ -22,7 +22,7 @@ type RuntimeContextMock struct {
 	FailCryptoAPI          bool
 	FailElrondAPI          bool
 	FailBigIntAPI          bool
-	AsyncCallInfo          *arwen.AsyncCallInfo
+	DefaultAsyncCall       *arwen.AsyncCall
 	RunningInstances       uint64
 	CurrentTxHash          []byte
 	OriginalTxHash         []byte
@@ -209,12 +209,12 @@ func (r *RuntimeContextMock) BigIntAPIErrorShouldFailExecution() bool {
 func (r *RuntimeContextMock) FailExecution(err error) {
 }
 
-func (r *RuntimeContextMock) GetAsyncCallInfo() *arwen.AsyncCallInfo {
-	return r.AsyncCallInfo
+func (r *RuntimeContextMock) GetDefaultAsyncCall() *arwen.AsyncCall {
+	return r.DefaultAsyncCall
 }
 
-func (r *RuntimeContextMock) SetAsyncCallInfo(asyncCallInfo *arwen.AsyncCallInfo) {
-	r.AsyncCallInfo = asyncCallInfo
+func (r *RuntimeContextMock) SetDefaultAsyncCall(asyncCall *arwen.AsyncCall) {
+	r.DefaultAsyncCall = asyncCall
 }
 
 func (r *RuntimeContextMock) AddAsyncCall(_ []byte, _ *arwen.AsyncCall) error {

@@ -274,7 +274,7 @@ func ethgetBlockHash(context unsafe.Pointer, number int64, resultOffset int32) i
 	gasToUse := metering.GasSchedule().EthAPICost.GetBlockHash
 	metering.UseGas(gasToUse)
 
-	hash := blockchain.BlockHash(number)
+	hash := blockchain.BlockHash(uint64(number))
 	err := runtime.MemStore(resultOffset, hash)
 	if err != nil {
 		return 0
@@ -794,7 +794,7 @@ func ethcall(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueO
 			Arguments:   [][]byte{data},
 			CallValue:   bigIntVal,
 			GasPrice:    0,
-			GasProvided: metering.BoundGasLimit(gasLimit),
+			GasProvided: metering.BoundGasLimit(uint64(gasLimit)),
 		},
 		RecipientAddr: dest,
 		Function:      "main",
@@ -849,7 +849,7 @@ func ethcallCode(context unsafe.Pointer, gasLimit int64, addressOffset int32, va
 			Arguments:   [][]byte{data},
 			CallValue:   big.NewInt(0).SetBytes(value),
 			GasPrice:    0,
-			GasProvided: metering.BoundGasLimit(gasLimit),
+			GasProvided: metering.BoundGasLimit(uint64(gasLimit)),
 		},
 		RecipientAddr: dest,
 		Function:      "main",
@@ -900,7 +900,7 @@ func ethcallDelegate(context unsafe.Pointer, gasLimit int64, addressOffset int32
 			Arguments:   [][]byte{data},
 			CallValue:   value,
 			GasPrice:    0,
-			GasProvided: metering.BoundGasLimit(gasLimit),
+			GasProvided: metering.BoundGasLimit(uint64(gasLimit)),
 		},
 		RecipientAddr: address,
 		Function:      "main",
@@ -962,7 +962,7 @@ func ethcallStatic(context unsafe.Pointer, gasLimit int64, addressOffset int32, 
 			Arguments:   [][]byte{data},
 			CallValue:   value,
 			GasPrice:    0,
-			GasProvided: metering.BoundGasLimit(gasLimit),
+			GasProvided: metering.BoundGasLimit(uint64(gasLimit)),
 		},
 		RecipientAddr: address,
 		Function:      "main",

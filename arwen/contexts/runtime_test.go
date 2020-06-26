@@ -2,6 +2,7 @@ package contexts
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -16,10 +17,22 @@ import (
 )
 
 func MakeAPIImports() *wasmer.Imports {
-	imports, _ := elrondapi.ElrondEIImports()
-	imports, _ = elrondapi.BigIntImports(imports)
-	imports, _ = ethapi.EthereumImports(imports)
-	imports, _ = crypto.CryptoImports(imports)
+	imports, err := elrondapi.ElrondEIImports()
+	if err != nil {
+		fmt.Println("API Imports error =", err)
+	}
+	imports, err = elrondapi.BigIntImports(imports)
+	if err != nil {
+		fmt.Println("API Imports error =", err)
+	}
+	imports, err = ethapi.EthereumImports(imports)
+	if err != nil {
+		fmt.Println("API Imports error =", err)
+	}
+	imports, err = crypto.CryptoImports(imports)
+	if err != nil {
+		fmt.Println("API Imports error =", err)
+	}
 	return imports
 }
 
@@ -50,7 +63,7 @@ func TestNewRuntimeContext(t *testing.T) {
 	require.Equal(t, []byte{}, runtimeContext.scAddress)
 	require.Equal(t, "", runtimeContext.callFunction)
 	require.Equal(t, false, runtimeContext.readOnly)
-	require.Nil(t, runtimeContext.asyncCallInfo)
+	require.Nil(t, runtimeContext.defaultAsyncCall)
 }
 
 func TestRuntimeContext_InitState(t *testing.T) {
@@ -69,7 +82,7 @@ func TestRuntimeContext_InitState(t *testing.T) {
 	runtimeContext.scAddress = []byte("some address")
 	runtimeContext.callFunction = "a function"
 	runtimeContext.readOnly = true
-	runtimeContext.asyncCallInfo = &arwen.AsyncCallInfo{}
+	runtimeContext.defaultAsyncCall = &arwen.AsyncCall{}
 
 	runtimeContext.InitState()
 
@@ -77,7 +90,7 @@ func TestRuntimeContext_InitState(t *testing.T) {
 	require.Equal(t, []byte{}, runtimeContext.scAddress)
 	require.Equal(t, "", runtimeContext.callFunction)
 	require.Equal(t, false, runtimeContext.readOnly)
-	require.Nil(t, runtimeContext.asyncCallInfo)
+	require.Nil(t, runtimeContext.defaultAsyncCall)
 }
 
 func TestRuntimeContext_NewWasmerInstance(t *testing.T) {

@@ -145,12 +145,8 @@ func (context *blockchainContext) GetCodeSize(address []byte) (int32, error) {
 	return result, nil
 }
 
-func (context *blockchainContext) BlockHash(number int64) []byte {
-	if number < 0 {
-		return nil
-	}
-
-	block, err := context.blockChainHook.GetBlockhash(uint64(number))
+func (context *blockchainContext) BlockHash(number uint64) []byte {
+	block, err := context.blockChainHook.GetBlockhash(number)
 	if err != nil {
 		return nil
 	}

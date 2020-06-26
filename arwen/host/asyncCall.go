@@ -17,24 +17,28 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 	runtime := host.Runtime()
 	runtime.SetRuntimeBreakpointValue(arwen.BreakpointNone)
 
+	asyncCall := runtime.GetDefaultAsyncCall()
+
 	// TODO also determine whether caller and callee are in the same Shard (based
 	// on address?), by account addresses - this would make the empty SC code an
 	// unrecoverable error, so returning nil here will not be appropriate anymore.
 	if !host.canExecuteSynchronously() {
-		return host.sendAsyncCallToDestination(runtime.GetAsyncCallInfo())
+		return host.sendAsyncCallToDestination(asyncCall)
 	}
 
 	// Start calling the destination SC, synchronously.
-	destinationCallInput, err := host.createDestinationContractCallInput(runtime.GetAsyncCallInfo())
+	destinationCallInput, err := host.createDestinationContractCallInput(asyncCall)
 	if err != nil {
 		return err
 	}
 
 	destinationVMOutput, _, destinationErr := host.ExecuteOnDestContext(destinationCallInput)
 
+	// executeCallback(asyncCall, destinationVMOutput)
+
 	callbackCallInput, err := host.createCallbackContractCallInput(
 		destinationVMOutput,
-		runtime.GetAsyncCallInfo().Destination,
+		asyncCall.Destination,
 		arwen.CallbackDefault,
 		destinationErr,
 	)
@@ -62,8 +66,8 @@ func (host *vmHost) canExecuteSynchronously() bool {
 	// TODO replace with a blockchain hook that verifies if the caller and callee
 	// are in the same Shard.
 	runtime := host.Runtime()
-	asyncCallInfo := runtime.GetAsyncCallInfo()
-	dest := asyncCallInfo.Destination
+	asyncCall := runtime.GetDefaultAsyncCall()
+	dest := asyncCall.Destination
 
 	return host.canExecuteSynchronouslyOnDest(dest)
 }
@@ -267,13 +271,17 @@ func (host *vmHost) computeDataLengthFromArguments(function string, arguments []
 }
 
 /**
- * processAsyncInfo takes a list of async calls and for each of them, if the code exists and can be processed on this
- *  host it will. For all others, a vm output account is generated for an actual async call.
- *  Given the fact that the generated async calls that remain pending will be saved on storage, the processing is
- *  done in two steps in order to correctly use all remaining gas. We first split the gas as specified by the developer,
- *  then we save the storage, then we split again the gas to calls that leave this shard.
+ * processAsyncContext takes an entire context of async calls and for each of
+ * them, if the code exists and can be processed on this host it will. For all
+ * others, a vm output account is generated for an actual async call.  Given
+ * the fact that the generated async calls that remain pending will be saved on
+ * storage, the processing is done in two steps in order to correctly use all
+ * remaining gas. We first split the gas as specified by the developer, then we
+ * save the storage, then we split again the gas to calls that leave this
+ * shard.
  *
- * returns a list of pending calls (the ones that should be processed on other hosts)
+ * returns a list of pending calls (the ones that should be processed on other
+ * hosts)
  */
 func (host *vmHost) processAsyncContext(asyncContext *arwen.AsyncContext) (*arwen.AsyncContext, error) {
 	if len(asyncContext.AsyncCallGroups) == 0 {

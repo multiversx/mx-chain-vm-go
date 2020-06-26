@@ -103,12 +103,12 @@ func TestMeteringContext_BoundGasLimit(t *testing.T) {
 	mockRuntime.SetVMInput(vmInput)
 	mockRuntime.SetPointsUsed(0)
 
-	gasLimit := 5000
-	limit := meteringContext.BoundGasLimit(int64(gasLimit))
+	gasLimit := uint64(5000)
+	limit := meteringContext.BoundGasLimit(gasLimit)
 	require.Equal(t, uint64(gasLimit), limit)
 
 	gasLimit = 25000
-	limit = meteringContext.BoundGasLimit(int64(gasLimit))
+	limit = meteringContext.BoundGasLimit(gasLimit)
 	require.Equal(t, meteringContext.GasLeft(), limit)
 
 	blockLimit := meteringContext.BlockGasLimit()
@@ -235,8 +235,8 @@ func TestMeteringContext_AsyncCallGasLocking(t *testing.T) {
 	input.GasProvided = gasProvided
 	err = meteringContext.deductAndLockGasIfAsyncStep()
 	require.Nil(t, err)
-	require.Equal(t, uint64(config.AsyncCallbackGasLockForTests + 1), meteringContext.gasLockedForAsyncStep)
-	require.Equal(t, gasProvided - config.AsyncCallbackGasLockForTests - 2, meteringContext.GasLeft())
+	require.Equal(t, uint64(config.AsyncCallbackGasLockForTests+1), meteringContext.gasLockedForAsyncStep)
+	require.Equal(t, gasProvided-config.AsyncCallbackGasLockForTests-2, meteringContext.GasLeft())
 
 	meteringContext.UnlockGasIfAsyncStep()
 	require.Equal(t, gasProvided-1, meteringContext.GasLeft())

@@ -28,8 +28,8 @@ type runtimeContext struct {
 
 	maxWasmerInstances uint64
 
-	asyncCallInfo *arwen.AsyncCallInfo
-	asyncContext  *arwen.AsyncContext
+	defaultAsyncCall *arwen.AsyncCall
+	asyncContext     *arwen.AsyncContext
 
 	validator *WASMValidator
 }
@@ -59,7 +59,7 @@ func (context *runtimeContext) InitState() {
 	context.scAddress = make([]byte, 0)
 	context.callFunction = ""
 	context.readOnly = false
-	context.asyncCallInfo = nil
+	context.defaultAsyncCall = nil
 	context.asyncContext = &arwen.AsyncContext{
 		AsyncCallGroups: make(map[string]*arwen.AsyncCallGroup),
 	}
@@ -108,12 +108,12 @@ func (context *runtimeContext) SetCustomCallFunction(callFunction string) {
 
 func (context *runtimeContext) PushState() {
 	newState := &runtimeContext{
-		vmInput:       context.vmInput,
-		scAddress:     context.scAddress,
-		callFunction:  context.callFunction,
-		readOnly:      context.readOnly,
-		asyncCallInfo: context.asyncCallInfo,
-		asyncContext:  context.asyncContext,
+		vmInput:          context.vmInput,
+		scAddress:        context.scAddress,
+		callFunction:     context.callFunction,
+		readOnly:         context.readOnly,
+		defaultAsyncCall: context.defaultAsyncCall,
+		asyncContext:     context.asyncContext,
 	}
 
 	context.stateStack = append(context.stateStack, newState)
@@ -128,7 +128,7 @@ func (context *runtimeContext) PopSetActiveState() {
 	context.scAddress = prevState.scAddress
 	context.callFunction = prevState.callFunction
 	context.readOnly = prevState.readOnly
-	context.asyncCallInfo = prevState.asyncCallInfo
+	context.defaultAsyncCall = prevState.defaultAsyncCall
 	context.asyncContext = prevState.asyncContext
 }
 
@@ -337,8 +337,8 @@ func (context *runtimeContext) GetInitFunction() wasmer.ExportedFunctionCallback
 	return nil
 }
 
-func (context *runtimeContext) SetAsyncCallInfo(asyncCallInfo *arwen.AsyncCallInfo) {
-	context.asyncCallInfo = asyncCallInfo
+func (context *runtimeContext) SetDefaultAsyncCall(asyncCall *arwen.AsyncCall) {
+	context.defaultAsyncCall = asyncCall
 }
 
 func (context *runtimeContext) AddAsyncCall(groupID []byte, asyncCall *arwen.AsyncCall) error {
@@ -369,8 +369,8 @@ func (context *runtimeContext) GetAsyncCallGroup(groupID []byte) (*arwen.AsyncCa
 	return asyncCallGroup, nil
 }
 
-func (context *runtimeContext) GetAsyncCallInfo() *arwen.AsyncCallInfo {
-	return context.asyncCallInfo
+func (context *runtimeContext) GetDefaultAsyncCall() *arwen.AsyncCall {
+	return context.defaultAsyncCall
 }
 
 func (context *runtimeContext) MemLoad(offset int32, length int32) ([]byte, error) {

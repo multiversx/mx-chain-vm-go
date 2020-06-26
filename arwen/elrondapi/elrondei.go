@@ -5,13 +5,15 @@ package elrondapi
 // #include <stdlib.h>
 // typedef unsigned char uint8_t;
 // typedef int int32_t;
+// typedef unsigned int uint32_t;
+// typedef long long int int64;
 //
 // extern void getSCAddress(void *context, int32_t resultOffset);
 // extern void getOwnerAddress(void *context, int32_t resultOffset);
 // extern int32_t getShardOfAddress(void *context, int32_t addressOffset);
 // extern int32_t isSmartContract(void *context, int32_t addressOffset);
 // extern void getExternalBalance(void *context, int32_t addressOffset, int32_t resultOffset);
-// extern int32_t blockHash(void *context, long long nonce, int32_t resultOffset);
+// extern int32_t blockHash(void *context, int64 nonce, int32_t resultOffset);
 // extern int32_t transferValue(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
 // extern int32_t getArgumentLength(void *context, int32_t id);
 // extern int32_t getArgument(void *context, int32_t id, int32_t argOffset);
@@ -25,37 +27,37 @@ package elrondapi
 // extern void writeLog(void *context, int32_t pointer, int32_t length, int32_t topicPtr, int32_t numTopics);
 // extern void returnData(void* context, int32_t dataOffset, int32_t length);
 // extern void signalError(void* context, int32_t messageOffset, int32_t messageLength);
-// extern long long getGasLeft(void *context);
+// extern int64 getGasLeft(void *context);
 //
-// extern int32_t executeOnDestContext(void *context, long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
-// extern int32_t executeOnSameContext(void *context, long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
-// extern int32_t delegateExecution(void *context, long long gas, int32_t addressOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
-// extern int32_t executeReadOnly(void *context, long long gas, int32_t addressOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern int32_t executeOnDestContext(void *context, int64 gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern int32_t executeOnSameContext(void *context, int64 gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern int32_t delegateExecution(void *context, int64 gas, int32_t addressOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern int32_t executeReadOnly(void *context, int64 gas, int32_t addressOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t createContract(void *context, int32_t valueOffset, int32_t codeOffset, int32_t length, int32_t resultOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern void asyncCall(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
-// extern void createAsyncCall(void *context, int32_t identifierOffset, int32_t identifierLength, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length, int32_t successCallback, int32_t successLength, int32_t errorCallback, int32_t errorLength, long long gas);
+// extern void createAsyncCall(void *context, int32_t identifierOffset, int32_t identifierLength, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length, int32_t successCallback, int32_t successLength, int32_t errorCallback, int32_t errorLength, int64 gas);
 // extern int32_t setAsyncContextCallback(void *context, int32_t identifierOffset, int32_t identifierLength, int32_t callback, int32_t callbackLength);
 //
 // extern int32_t getNumReturnData(void *context);
 // extern int32_t getReturnDataSize(void *context, int32_t resultID);
 // extern int32_t getReturnData(void *context, int32_t resultID, int32_t dataOffset);
 //
-// extern int32_t setStorageLock(void *context, int32_t keyOffset, int32_t keyLength, long long lockTimestamp);
-// extern long long getStorageLock(void *context, int32_t keyOffset, int32_t keyLength);
+// extern int32_t setStorageLock(void *context, int32_t keyOffset, int32_t keyLength, int64 lockTimestamp);
+// extern int64 getStorageLock(void *context, int32_t keyOffset, int32_t keyLength);
 // extern int32_t isStorageLocked(void *context, int32_t keyOffset, int32_t keyLength);
 // extern int32_t clearStorageLock(void *context, int32_t keyOffset, int32_t keyLength);
 //
-// extern long long getBlockTimestamp(void *context);
-// extern long long getBlockNonce(void *context);
-// extern long long getBlockRound(void *context);
-// extern long long getBlockEpoch(void *context);
+// extern int64 getBlockTimestamp(void *context);
+// extern int64 getBlockNonce(void *context);
+// extern int64 getBlockRound(void *context);
+// extern int64_t getBlockEpoch(void *context);
 // extern void getBlockRandomSeed(void *context, int32_t resultOffset);
 // extern void getStateRootHash(void *context, int32_t resultOffset);
 //
-// extern long long getPrevBlockTimestamp(void *context);
-// extern long long getPrevBlockNonce(void *context);
-// extern long long getPrevBlockRound(void *context);
-// extern long long getPrevBlockEpoch(void *context);
+// extern int64 getPrevBlockTimestamp(void *context);
+// extern int64 getPrevBlockNonce(void *context);
+// extern int64 getPrevBlockRound(void *context);
+// extern int64_t getPrevBlockEpoch(void *context);
 // extern void getPrevBlockRandomSeed(void *context, int32_t resultOffset);
 //
 // extern long long int64getArgument(void *context, int32_t id);
@@ -460,7 +462,7 @@ func blockHash(context unsafe.Pointer, nonce int64, resultOffset int32) int32 {
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetBlockHash
 	metering.UseGas(gasToUse)
 
-	hash := blockchain.BlockHash(nonce)
+	hash := blockchain.BlockHash(uint64(nonce))
 	err := runtime.MemStore(resultOffset, hash)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
@@ -628,11 +630,13 @@ func asyncCall(context unsafe.Pointer, destOffset int32, valueOffset int32, data
 	// Set up the async call as if it is not known whether the called SC
 	// is in the same shard with the caller or not. This will be later resolved
 	// in the handler for BreakpointAsyncCall.
-	runtime.SetAsyncCallInfo(&arwen.AsyncCallInfo{
-		Destination: calledSCAddress,
-		Data:        data,
-		GasLimit:    gasLimit,
-		ValueBytes:  value,
+	runtime.SetDefaultAsyncCall(&arwen.AsyncCall{
+		Destination:     calledSCAddress,
+		Data:            data,
+		GasLimit:        gasLimit,
+		ValueBytes:      value,
+		SuccessCallback: arwen.CallbackDefault,
+		ErrorCallback:   arwen.CallbackDefault,
 	})
 
 	// Instruct Wasmer to interrupt the execution of the caller SC.
@@ -827,7 +831,7 @@ func isStorageLocked(context unsafe.Pointer, keyOffset int32, keyLength int32) i
 		return -1
 	}
 
-	currentTimestamp := getBlockTimestamp(context)
+	currentTimestamp := int64(getBlockTimestamp(context))
 	if timeLock <= currentTimestamp {
 		return 0
 	}
@@ -1182,7 +1186,7 @@ func executeOnSameContext(
 			Arguments:   data,
 			CallValue:   bigIntVal,
 			GasPrice:    0,
-			GasProvided: metering.BoundGasLimit(gasLimit),
+			GasProvided: metering.BoundGasLimit(uint64(gasLimit)),
 		},
 		RecipientAddr: dest,
 		Function:      function,
@@ -1246,7 +1250,7 @@ func executeOnDestContext(
 			Arguments:   data,
 			CallValue:   bigIntVal,
 			GasPrice:    0,
-			GasProvided: metering.BoundGasLimit(gasLimit),
+			GasProvided: metering.BoundGasLimit(uint64(gasLimit)),
 		},
 		RecipientAddr: dest,
 		Function:      function,
@@ -1352,7 +1356,7 @@ func delegateExecution(
 			Arguments:   data,
 			CallValue:   value,
 			GasPrice:    0,
-			GasProvided: metering.BoundGasLimit(gasLimit),
+			GasProvided: metering.BoundGasLimit(uint64(gasLimit)),
 		},
 		RecipientAddr: address,
 		Function:      function,
@@ -1428,7 +1432,7 @@ func executeReadOnly(
 			Arguments:   data,
 			CallValue:   value,
 			GasPrice:    0,
-			GasProvided: metering.BoundGasLimit(gasLimit),
+			GasProvided: metering.BoundGasLimit(uint64(gasLimit)),
 		},
 		RecipientAddr: address,
 		Function:      function,

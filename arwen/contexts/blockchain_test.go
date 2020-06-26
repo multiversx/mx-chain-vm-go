@@ -362,10 +362,6 @@ func TestBlockchainContext_BlockHash(t *testing.T) {
 	require.Nil(t, hash)
 	blockchainHook.Err = nil
 
-	blockchainHook.BlockHash = []byte("1234fa")
-	hash = blockchainContext.BlockHash(-5)
-	require.Nil(t, hash)
-
 	blockchainHook.BlockHash = []byte("1234fb")
 	hash = blockchainContext.BlockHash(0)
 	require.Equal(t, []byte("1234fb"), hash)

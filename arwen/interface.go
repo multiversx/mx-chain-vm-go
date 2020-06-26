@@ -60,7 +60,7 @@ type BlockchainContext interface {
 	GetCodeHash(addr []byte) ([]byte, error)
 	GetCode(addr []byte) ([]byte, error)
 	GetCodeSize(addr []byte) (int32, error)
-	BlockHash(number int64) []byte
+	BlockHash(number uint64) []byte
 	GetOwnerAddress() ([]byte, error)
 	GetShardOfAddress(addr []byte) uint32
 	IsSmartContract(addr []byte) bool
@@ -85,8 +85,8 @@ type RuntimeContext interface {
 	FailExecution(err error)
 	SetRuntimeBreakpointValue(value BreakpointValue)
 	GetRuntimeBreakpointValue() BreakpointValue
-	GetAsyncCallInfo() *AsyncCallInfo
-	SetAsyncCallInfo(asyncCallInfo *AsyncCallInfo)
+	GetDefaultAsyncCall() *AsyncCall
+	SetDefaultAsyncCall(asyncCallInfo *AsyncCall)
 	AddAsyncCall(contextIdentifier []byte, asyncCall *AsyncCall) error
 	GetAsyncContext() *AsyncContext
 	GetAsyncCallGroup(groupID []byte) (*AsyncCallGroup, error)
@@ -155,7 +155,7 @@ type MeteringContext interface {
 	FreeGas(gas uint64)
 	RestoreGas(gas uint64)
 	GasLeft() uint64
-	BoundGasLimit(value int64) uint64
+	BoundGasLimit(limit uint64) uint64
 	BlockGasLimit() uint64
 	DeductInitialGasForExecution(contract []byte) error
 	DeductInitialGasForDirectDeployment(input CodeDeployInput) error
