@@ -700,13 +700,13 @@ func (host *vmHost) getCurrentAsyncInfo() (*arwen.AsyncContextInfo, error) {
 	runtime := host.Runtime()
 	storage := host.Storage()
 
+	asyncInfo := &arwen.AsyncContextInfo{}
 	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, runtime.GetOriginalTxHash())
 	buff := storage.GetStorage(storageKey)
 	if len(buff) == 0 {
-		return nil, nil
+		return asyncInfo, nil
 	}
 
-	asyncInfo := &arwen.AsyncContextInfo{}
 	err := json.Unmarshal(buff, &asyncInfo)
 	if err != nil {
 		return nil, err
