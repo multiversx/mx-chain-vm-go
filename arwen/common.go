@@ -16,6 +16,12 @@ const (
 	BreakpointOutOfGas
 )
 
+const (
+	SyncCall AsyncCallExecutionMode = iota
+	AsyncBuiltinFunc
+	AsyncUnknown
+)
+
 const CallbackDefault = "callBack"
 const TimeLockKeyPrefix = "timelock"
 const AsyncDataPrefix = "asyncCalls"
@@ -91,8 +97,8 @@ type AsyncContext struct {
 // AsyncContextInfo is the structure resulting after a smart contract call that has initiated
 // one or more async calls. It will
 type AsyncContextInfo struct {
-	CallerAddr []byte
-	ReturnData []byte
+	CallerAddr      []byte
+	ReturnData      []byte
 	AsyncContextMap map[string]*AsyncContext
 }
 
@@ -120,5 +126,3 @@ func (ac *AsyncGeneratedCall) GetValueBytes() []byte {
 func (ac *AsyncGeneratedCall) IsInterfaceNil() bool {
 	return ac == nil
 }
-
-
