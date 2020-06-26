@@ -525,6 +525,9 @@ func (host *vmHost) processCallbackStack() error {
 
 	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, runtime.GetOriginalTxHash())
 	buff := storage.GetStorage(storageKey)
+	if len(buff) == 0 {
+		return nil
+	}
 
 	asyncInfo := &arwen.AsyncContextInfo{}
 	err := json.Unmarshal(buff, &asyncInfo)
@@ -693,6 +696,9 @@ func (host *vmHost) getCurrentAsyncInfo() (*arwen.AsyncContextInfo, error) {
 
 	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, runtime.GetOriginalTxHash())
 	buff := storage.GetStorage(storageKey)
+	if len(buff) == 0 {
+		return nil, nil
+	}
 
 	asyncInfo := &arwen.AsyncContextInfo{}
 	err := json.Unmarshal(buff, &asyncInfo)
