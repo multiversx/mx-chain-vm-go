@@ -50,6 +50,9 @@ build-c-contracts:
 	erdpy contract build ./test/contracts/async-call-parent
 	erdpy contract build ./test/contracts/async-call-child
 	erdpy contract build ./test/contracts/exec-same-ctx-builtin
+	erdpy contract build ./test/contracts/promises
+	erdpy contract build ./test/contracts/promises-train
+	erdpy contract build ./test/contracts/promises-tracking
 
 
 build-delegation:
