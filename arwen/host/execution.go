@@ -140,7 +140,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	return
 }
 
-func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, asyncInfo *arwen.AsyncContextInfo, err error) {
+func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, asyncInfo *arwen.AsyncContext, err error) {
 	log.Trace("ExecuteOnDestContext", "function", input.Function)
 
 	bigInt, _, _, output, runtime, storage := host.GetContexts()
@@ -173,8 +173,8 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 		return
 	}
 
-	asyncInfo = runtime.GetAsyncContextInfo()
-	_, err = host.processAsyncInfo(asyncInfo)
+	asyncContext := runtime.GetAsyncContext()
+	_, err = host.processAsyncContext(asyncContext)
 	return
 }
 
@@ -209,7 +209,7 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 	return vmOutput
 }
 
-func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asyncInfo *arwen.AsyncContextInfo, err error) {
+func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asyncInfo *arwen.AsyncContext, err error) {
 	log.Trace("ExecuteOnSameContext", "function", input.Function)
 
 	bigInt, _, _, output, runtime, _ := host.GetContexts()
@@ -238,7 +238,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 		return
 	}
 
-	asyncInfo = runtime.GetAsyncContextInfo()
+	asyncInfo = runtime.GetAsyncContext()
 
 	return
 }
@@ -505,11 +505,11 @@ func (host *vmHost) callSCMethod() error {
 
 	switch callType {
 	case vmcommon.AsynchronousCall:
-		pendingMap, paiErr := host.processAsyncInfo(runtime.GetAsyncContextInfo())
+		pendingAsyncContext, paiErr := host.processAsyncContext(runtime.GetAsyncContext())
 		if paiErr != nil {
 			return paiErr
 		}
-		if len(pendingMap.AsyncContextMap) == 0 {
+		if len(pendingAsyncContext.AsyncCallGroups) == 0 {
 			err = host.sendCallbackToCurrentCaller()
 		}
 		break
@@ -517,7 +517,7 @@ func (host *vmHost) callSCMethod() error {
 		err = host.processCallbackStack()
 		break
 	default:
-		_, err = host.processAsyncInfo(runtime.GetAsyncContextInfo())
+		_, err = host.processAsyncContext(runtime.GetAsyncContext())
 	}
 
 	return err

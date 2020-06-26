@@ -32,8 +32,8 @@ type VMHost interface {
 	Storage() StorageContext
 
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
-	ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*AsyncContextInfo, error)
-	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *AsyncContextInfo, error)
+	ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*AsyncContext, error)
+	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *AsyncContext, error)
 	EthereumCallData() []byte
 	GetAPIMethods() *wasmer.Imports
 	GetProtocolBuiltinFunctions() vmcommon.FunctionNames
@@ -87,9 +87,9 @@ type RuntimeContext interface {
 	GetRuntimeBreakpointValue() BreakpointValue
 	GetAsyncCallInfo() *AsyncCallInfo
 	SetAsyncCallInfo(asyncCallInfo *AsyncCallInfo)
-	AddAsyncContextCall(contextIdentifier []byte, asyncCall *AsyncGeneratedCall) error
-	GetAsyncContextInfo() *AsyncContextInfo
-	GetAsyncContext(contextIdentifier []byte) (*AsyncContext, error)
+	AddAsyncCall(contextIdentifier []byte, asyncCall *AsyncCall) error
+	GetAsyncContext() *AsyncContext
+	GetAsyncCallGroup(groupID []byte) (*AsyncCallGroup, error)
 	PushInstance()
 	PopInstance()
 	RunningInstancesCount() uint64

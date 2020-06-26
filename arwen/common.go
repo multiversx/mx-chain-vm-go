@@ -70,7 +70,7 @@ func (aci *AsyncCallInfo) GetValueBytes() []byte {
 }
 
 // AsyncGeneratedCall holds the information abount an async call
-type AsyncGeneratedCall struct {
+type AsyncCall struct {
 	Status          AsyncCallStatus
 	Destination     []byte
 	Data            []byte
@@ -83,42 +83,40 @@ type AsyncGeneratedCall struct {
 
 // AsyncContext is a structure containing a group of async calls and a callback
 //  that should be called when all these async calls are resolved
-type AsyncContext struct {
+type AsyncCallGroup struct {
 	Callback   string
-	AsyncCalls []*AsyncGeneratedCall
+	AsyncCalls []*AsyncCall
 }
 
-// AsyncContextInfo is the structure resulting after a smart contract call that has initiated
+// AsyncContext is the structure resulting after a smart contract call that has initiated
 // one or more async calls. It will
-type AsyncContextInfo struct {
-	CallerAddr []byte
-	ReturnData []byte
-	AsyncContextMap map[string]*AsyncContext
+type AsyncContext struct {
+	CallerAddr      []byte
+	ReturnData      []byte
+	AsyncCallGroups map[string]*AsyncCallGroup
 }
 
 // GetDestination returns the destination of an async call
-func (ac *AsyncGeneratedCall) GetDestination() []byte {
+func (ac *AsyncCall) GetDestination() []byte {
 	return ac.Destination
 }
 
 // GetData returns the transaction data of the async call
-func (ac *AsyncGeneratedCall) GetData() []byte {
+func (ac *AsyncCall) GetData() []byte {
 	return ac.Data
 }
 
 // GetGasLimit returns the gas limit of the current async call
-func (ac *AsyncGeneratedCall) GetGasLimit() uint64 {
+func (ac *AsyncCall) GetGasLimit() uint64 {
 	return ac.GasLimit
 }
 
 // GetValueBytes returns the byte representation of the value of the async call
-func (ac *AsyncGeneratedCall) GetValueBytes() []byte {
+func (ac *AsyncCall) GetValueBytes() []byte {
 	return ac.ValueBytes
 }
 
 // IsInterfaceNil returns true if there is no value under the interface
-func (ac *AsyncGeneratedCall) IsInterfaceNil() bool {
+func (ac *AsyncCall) IsInterfaceNil() bool {
 	return ac == nil
 }
-
-

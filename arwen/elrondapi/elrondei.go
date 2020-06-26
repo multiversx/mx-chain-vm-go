@@ -505,7 +505,7 @@ func transferValue(context unsafe.Pointer, destOffset int32, valueOffset int32, 
 
 //export createAsyncCall
 func createAsyncCall(context unsafe.Pointer,
-	asyncContextIdentifier int32,
+	groupIDOffset int32,
 	identifierLength int32,
 	destOffset int32,
 	valueOffset int32,
@@ -519,7 +519,7 @@ func createAsyncCall(context unsafe.Pointer,
 ) {
 	runtime := arwen.GetRuntimeContext(context)
 
-	acIdentifier, err := runtime.MemLoad(asyncContextIdentifier, identifierLength)
+	groupID, err := runtime.MemLoad(groupIDOffset, identifierLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
@@ -549,7 +549,7 @@ func createAsyncCall(context unsafe.Pointer,
 		return
 	}
 
-	err = runtime.AddAsyncContextCall(acIdentifier, &arwen.AsyncGeneratedCall{
+	err = runtime.AddAsyncCall(groupID, &arwen.AsyncCall{
 		Destination:     calledSCAddress,
 		Data:            data,
 		ValueBytes:      value,
@@ -565,19 +565,19 @@ func createAsyncCall(context unsafe.Pointer,
 
 //export setAsyncContextCallback
 func setAsyncContextCallback(context unsafe.Pointer,
-	asyncContextIdentifier int32,
+	groupIDOffset int32,
 	identifierLength int32,
 	callback int32,
 	callbackLength int32,
 ) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 
-	acIdentifier, err := runtime.MemLoad(asyncContextIdentifier, identifierLength)
+	groupID, err := runtime.MemLoad(groupIDOffset, identifierLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
 
-	asyncContext, err := runtime.GetAsyncContext(acIdentifier)
+	asyncContext, err := runtime.GetAsyncCallGroup(groupID)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
@@ -837,7 +837,7 @@ func isStorageLocked(context unsafe.Pointer, keyOffset int32, keyLength int32) i
 
 //export clearStorageLock
 func clearStorageLock(context unsafe.Pointer, keyOffset int32, keyLength int32) int32 {
-	return setStorageLock(context, keyOffset, keyLength,0)
+	return setStorageLock(context, keyOffset, keyLength, 0)
 }
 
 //export getCaller

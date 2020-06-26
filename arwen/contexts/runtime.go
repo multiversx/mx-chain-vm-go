@@ -28,8 +28,8 @@ type runtimeContext struct {
 
 	maxWasmerInstances uint64
 
-	asyncCallInfo    *arwen.AsyncCallInfo
-	asyncContextInfo *arwen.AsyncContextInfo
+	asyncCallInfo *arwen.AsyncCallInfo
+	asyncContext  *arwen.AsyncContext
 
 	validator *WASMValidator
 }
@@ -60,8 +60,8 @@ func (context *runtimeContext) InitState() {
 	context.callFunction = ""
 	context.readOnly = false
 	context.asyncCallInfo = nil
-	context.asyncContextInfo = &arwen.AsyncContextInfo {
-		AsyncContextMap: make(map[string]*arwen.AsyncContext),
+	context.asyncContext = &arwen.AsyncContext{
+		AsyncCallGroups: make(map[string]*arwen.AsyncCallGroup),
 	}
 }
 
@@ -96,9 +96,9 @@ func (context *runtimeContext) InitStateFromContractCallInput(input *vmcommon.Co
 	context.scAddress = input.RecipientAddr
 	context.callFunction = input.Function
 	// Reset async map for initial state
-	context.asyncContextInfo = &arwen.AsyncContextInfo {
-		CallerAddr: input.CallerAddr,
-		AsyncContextMap: make(map[string]*arwen.AsyncContext),
+	context.asyncContext = &arwen.AsyncContext{
+		CallerAddr:      input.CallerAddr,
+		AsyncCallGroups: make(map[string]*arwen.AsyncCallGroup),
 	}
 }
 
@@ -108,12 +108,12 @@ func (context *runtimeContext) SetCustomCallFunction(callFunction string) {
 
 func (context *runtimeContext) PushState() {
 	newState := &runtimeContext{
-		vmInput:          context.vmInput,
-		scAddress:        context.scAddress,
-		callFunction:     context.callFunction,
-		readOnly:         context.readOnly,
-		asyncCallInfo:    context.asyncCallInfo,
-		asyncContextInfo: context.asyncContextInfo,
+		vmInput:       context.vmInput,
+		scAddress:     context.scAddress,
+		callFunction:  context.callFunction,
+		readOnly:      context.readOnly,
+		asyncCallInfo: context.asyncCallInfo,
+		asyncContext:  context.asyncContext,
 	}
 
 	context.stateStack = append(context.stateStack, newState)
@@ -129,7 +129,7 @@ func (context *runtimeContext) PopSetActiveState() {
 	context.callFunction = prevState.callFunction
 	context.readOnly = prevState.readOnly
 	context.asyncCallInfo = prevState.asyncCallInfo
-	context.asyncContextInfo = prevState.asyncContextInfo
+	context.asyncContext = prevState.asyncContext
 }
 
 func (context *runtimeContext) PopDiscard() {
@@ -341,32 +341,32 @@ func (context *runtimeContext) SetAsyncCallInfo(asyncCallInfo *arwen.AsyncCallIn
 	context.asyncCallInfo = asyncCallInfo
 }
 
-func (context *runtimeContext) AddAsyncContextCall(contextIdentifier []byte, asyncCall *arwen.AsyncGeneratedCall) error {
-	_, ok := context.asyncContextInfo.AsyncContextMap[string(contextIdentifier)]
-	currentContextMap := context.asyncContextInfo.AsyncContextMap
+func (context *runtimeContext) AddAsyncCall(groupID []byte, asyncCall *arwen.AsyncCall) error {
+	_, ok := context.asyncContext.AsyncCallGroups[string(groupID)]
+	asyncCallGroup := context.asyncContext.AsyncCallGroups
 	if !ok {
-		currentContextMap[string(contextIdentifier)] = &arwen.AsyncContext{
-			AsyncCalls: make([]*arwen.AsyncGeneratedCall, 0),
+		asyncCallGroup[string(groupID)] = &arwen.AsyncCallGroup{
+			AsyncCalls: make([]*arwen.AsyncCall, 0),
 		}
 	}
 
-	currentContextMap[string(contextIdentifier)].AsyncCalls =
-		append(currentContextMap[string(contextIdentifier)].AsyncCalls, asyncCall)
+	asyncCallGroup[string(groupID)].AsyncCalls =
+		append(asyncCallGroup[string(groupID)].AsyncCalls, asyncCall)
 
 	return nil
 }
 
-func (context *runtimeContext) GetAsyncContextInfo() *arwen.AsyncContextInfo {
-	return context.asyncContextInfo
+func (context *runtimeContext) GetAsyncContext() *arwen.AsyncContext {
+	return context.asyncContext
 }
 
-func (context *runtimeContext) GetAsyncContext(contextIdentifier []byte) (*arwen.AsyncContext, error) {
-	asyncContext, ok := context.asyncContextInfo.AsyncContextMap[string(contextIdentifier)]
+func (context *runtimeContext) GetAsyncCallGroup(groupID []byte) (*arwen.AsyncCallGroup, error) {
+	asyncCallGroup, ok := context.asyncContext.AsyncCallGroups[string(groupID)]
 	if !ok {
-		return nil, arwen.ErrAsyncContextDoesNotExist
+		return nil, arwen.ErrAsyncCallGroupDoesNotExist
 	}
 
-	return asyncContext, nil
+	return asyncCallGroup, nil
 }
 
 func (context *runtimeContext) GetAsyncCallInfo() *arwen.AsyncCallInfo {
