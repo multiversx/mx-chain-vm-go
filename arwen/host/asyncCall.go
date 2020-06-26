@@ -31,10 +31,16 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 	// Cross-shard calls for built-in functions must be executed in both the
 	// sender and destination shards.
 	if execMode == arwen.AsyncBuiltinFunc {
-		_, err := host.executeSyncDestinationCall(asyncCallInfo)
+		builtinFuncVMOutput, err := host.executeSyncDestinationCall(asyncCallInfo)
 		if err != nil {
 			return err
 		}
+
+		err = host.processCallbackVMOutput(builtinFuncVMOutput, err)
+		if err != nil {
+			return err
+		}
+
 		return host.sendAsyncCallToDestination(asyncCallInfo)
 	}
 
