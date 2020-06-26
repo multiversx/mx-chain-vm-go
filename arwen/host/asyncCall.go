@@ -163,7 +163,7 @@ func (host *vmHost) sendCallbackToCurrentCaller() error {
 		destination,
 		runtime.GetSCAddress(),
 		metering.GasLeft(),
-		arwen.U64MulToBigInt(metering.GasLeft(), currentCall.GasPrice),
+		currentCall.CallValue,
 		retData,
 	)
 	if err != nil {
@@ -188,7 +188,7 @@ func (host *vmHost) sendStorageCallbackToDestination(callerAddress, returnData [
 		callerAddress,
 		runtime.GetSCAddress(),
 		metering.GasLeft(),
-		arwen.U64MulToBigInt(metering.GasLeft(), currentCall.GasPrice),
+		currentCall.CallValue,
 		returnData,
 	)
 	if err != nil {

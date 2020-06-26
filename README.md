@@ -1,5 +1,7 @@
 # arwen-wasm-vm
 
+[![Build Status](https://travis-ci.com/ElrondNetwork/arwen-wasm-vm.svg?branch=master)](https://travis-ci.com/ElrondNetwork/arwen-wasm-vm)
+
 Arwen is the WASM-based Virtual Machine for running Elrond Smart Contracts.
 
 The VM is launched as a child process of the [Elrond Node](https://github.com/ElrondNetwork/elrond-go).
