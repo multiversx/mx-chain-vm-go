@@ -119,11 +119,11 @@ func (context *blockchainContext) GetCodeHash(addr []byte) ([]byte, error) {
 
 func (context *blockchainContext) GetCode(address []byte) ([]byte, error) {
 	account, err := context.blockChainHook.GetUserAccount(address)
-	if arwen.IfNil(account) {
-		return nil, arwen.ErrInvalidAccount
-	}
 	if err != nil {
 		return nil, err
+	}
+	if arwen.IfNil(account) {
+		return nil, arwen.ErrInvalidAccount
 	}
 
 	code := account.GetCode()
