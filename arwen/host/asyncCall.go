@@ -291,8 +291,8 @@ func (host *vmHost) processAsyncContext(asyncContext *arwen.AsyncContext) (*arwe
 		return nil, err
 	}
 
-	for _, asyncGroup := range asyncContext.AsyncCallGroups {
-		for _, asyncCall := range asyncGroup.AsyncCalls {
+	for _, asyncCallGroup := range asyncContext.AsyncCallGroups {
+		for _, asyncCall := range asyncCallGroup.AsyncCalls {
 			if !host.canExecuteSynchronouslyOnDest(asyncCall.Destination) {
 				continue
 			}
@@ -319,8 +319,8 @@ func (host *vmHost) processAsyncContext(asyncContext *arwen.AsyncContext) (*arwe
 		return nil, err
 	}
 
-	for _, asyncGroup := range pendingMapInfo.AsyncCallGroups {
-		for _, asyncCall := range asyncGroup.AsyncCalls {
+	for _, asyncCallGroup := range pendingMapInfo.AsyncCallGroups {
+		for _, asyncCall := range asyncCallGroup.AsyncCalls {
 			if !host.canExecuteSynchronouslyOnDest(asyncCall.Destination) {
 				sendErr := host.sendAsyncCallToDestination(asyncCall)
 				if sendErr != nil {
@@ -414,18 +414,18 @@ func (host *vmHost) saveCrossShardCalls(asyncContext *arwen.AsyncContext) error 
 		AsyncCallGroups: make(map[string]*arwen.AsyncCallGroup),
 	}
 
-	for contextIdentifier, asyncGroup := range asyncContext.AsyncCallGroups {
-		for _, asyncCall := range asyncGroup.AsyncCalls {
+	for groupID, asyncCallGroup := range asyncContext.AsyncCallGroups {
+		for _, asyncCall := range asyncCallGroup.AsyncCalls {
 			if !host.canExecuteSynchronouslyOnDest(asyncCall.Destination) {
-				_, ok := crossShardCallGroups.AsyncCallGroups[contextIdentifier]
+				_, ok := crossShardCallGroups.AsyncCallGroups[groupID]
 				if !ok {
-					crossShardCallGroups.AsyncCallGroups[contextIdentifier] = &arwen.AsyncCallGroup{
-						Callback:   asyncGroup.Callback,
+					crossShardCallGroups.AsyncCallGroups[groupID] = &arwen.AsyncCallGroup{
+						Callback:   asyncCallGroup.Callback,
 						AsyncCalls: make([]*arwen.AsyncCall, 0),
 					}
 				}
-				crossShardCallGroups.AsyncCallGroups[contextIdentifier].AsyncCalls = append(
-					crossShardCallGroups.AsyncCallGroups[contextIdentifier].AsyncCalls,
+				crossShardCallGroups.AsyncCallGroups[groupID].AsyncCalls = append(
+					crossShardCallGroups.AsyncCallGroups[groupID].AsyncCalls,
 					asyncCall,
 				)
 			}
@@ -445,8 +445,8 @@ func (host *vmHost) getPendingAsyncCalls(asyncContext *arwen.AsyncContext) *arwe
 		AsyncCallGroups: make(map[string]*arwen.AsyncCallGroup),
 	}
 
-	for groupID, asyncGroup := range asyncContext.AsyncCallGroups {
-		for _, asyncCall := range asyncGroup.AsyncCalls {
+	for groupID, asyncCallGroup := range asyncContext.AsyncCallGroups {
+		for _, asyncCall := range asyncCallGroup.AsyncCalls {
 			if asyncCall.Status != arwen.AsyncCallPending {
 				continue
 			}
@@ -454,7 +454,7 @@ func (host *vmHost) getPendingAsyncCalls(asyncContext *arwen.AsyncContext) *arwe
 			_, ok := pendingCallGroups.AsyncCallGroups[groupID]
 			if !ok {
 				pendingCallGroups.AsyncCallGroups[groupID] = &arwen.AsyncCallGroup{
-					Callback:   asyncGroup.Callback,
+					Callback:   asyncCallGroup.Callback,
 					AsyncCalls: make([]*arwen.AsyncCall, 0),
 				}
 			}
@@ -489,34 +489,34 @@ func (host *vmHost) processCallbackStack() error {
 
 	vmInput := runtime.GetVMInput()
 	var asyncCallPosition int
-	var currentContextIdentifier string
-	for contextIdentifier, asyncGroup := range asyncContext.AsyncCallGroups {
-		for position, asyncCall := range asyncGroup.AsyncCalls {
+	var currentGroupID string
+	for groupID, asyncCallGroup := range asyncContext.AsyncCallGroups {
+		for position, asyncCall := range asyncCallGroup.AsyncCalls {
 			if bytes.Equal(vmInput.CallerAddr, asyncCall.Destination) {
 				asyncCallPosition = position
-				currentContextIdentifier = contextIdentifier
+				currentGroupID = groupID
 				break
 			}
 		}
 
-		if len(currentContextIdentifier) > 0 {
+		if len(currentGroupID) > 0 {
 			break
 		}
 	}
 
-	if len(currentContextIdentifier) == 0 {
+	if len(currentGroupID) == 0 {
 		return arwen.ErrCallBackFuncNotExpected
 	}
 
 	// Remove current async call from the pending list
-	currentContextCalls := asyncContext.AsyncCallGroups[currentContextIdentifier].AsyncCalls
+	currentContextCalls := asyncContext.AsyncCallGroups[currentGroupID].AsyncCalls
 	currentContextCalls[asyncCallPosition] = currentContextCalls[len(currentContextCalls)-1]
 	currentContextCalls[len(currentContextCalls)-1] = nil
 	currentContextCalls = currentContextCalls[:len(currentContextCalls)-1]
 
 	if len(currentContextCalls) == 0 {
 		// call OUR callback for resolving a full context
-		delete(asyncContext.AsyncCallGroups, currentContextIdentifier)
+		delete(asyncContext.AsyncCallGroups, currentGroupID)
 	}
 
 	// If we are still waiting for callbacks we return
@@ -625,8 +625,8 @@ func (host *vmHost) getFunctionByCallType(callType vmcommon.CallType) (wasmer.Ex
 	vmInput := runtime.GetVMInput()
 
 	customCallback := false
-	for _, asyncGroup := range asyncContext.AsyncCallGroups {
-		for _, asyncCall := range asyncGroup.AsyncCalls {
+	for _, asyncCallGroup := range asyncContext.AsyncCallGroups {
+		for _, asyncCall := range asyncCallGroup.AsyncCalls {
 			if bytes.Equal(vmInput.CallerAddr, asyncCall.Destination) {
 				customCallback = true
 				runtime.SetCustomCallFunction(asyncCall.SuccessCallback)
