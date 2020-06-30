@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var counterKey = []byte{'m', 'y', 'c', 'o', 'u', 'n', 't', 'e', 'r', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+var counterKey = []byte("COUNTER")
 
 func TestNewArwen(t *testing.T) {
 	host, err := DefaultTestArwen(t, &mock.BlockchainHookStub{}, &mock.CryptoHookMock{})

@@ -1,26 +1,27 @@
-#include "../elrond/context.h"
+#include "elrond/context.h"
+#include "elrond/util.h"
 
-byte counterKey[32] = {'m','y','c','o','u','n','t','e','r',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+STORAGE_KEY(COUNTER);
 
 void init() {
-    int64storageStore(counterKey, 32, 1);
+    int64storageStore(COUNTER_KEY, COUNTER_KEY_LEN, 1);
 }
 
 void increment() {
-    i64 counter = int64storageLoad(counterKey, 32);
+    i64 counter = int64storageLoad(COUNTER_KEY, COUNTER_KEY_LEN);
     counter++;
-    int64storageStore(counterKey, 32, counter);
+    int64storageStore(COUNTER_KEY, COUNTER_KEY_LEN, counter);
     int64finish(counter);
 }
 
 void decrement() {
-    i64 counter = int64storageLoad(counterKey, 32);
+    i64 counter = int64storageLoad(COUNTER_KEY, COUNTER_KEY_LEN);
     counter--;
-    int64storageStore(counterKey, 32, counter);
+    int64storageStore(COUNTER_KEY, COUNTER_KEY_LEN, counter);
     int64finish(counter);
 }
 
 void get() {
-    i64 counter = int64storageLoad(counterKey, 32);
+    i64 counter = int64storageLoad(COUNTER_KEY, COUNTER_KEY_LEN);
     int64finish(counter);
 }

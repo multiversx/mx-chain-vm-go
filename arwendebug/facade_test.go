@@ -25,8 +25,6 @@ func TestFacade_CreateAccount(t *testing.T) {
 func TestFacade_RunContract_Counter(t *testing.T) {
 	context := newTestContext(t)
 
-	counterKey := []byte{'m', 'y', 'c', 'o', 'u', 'n', 't', 'e', 'r', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-
 	alice := newDummyAddress("alice")
 	context.createAccount(alice.hex, "42")
 	deployResponse := context.deployContract(wasmCounterPath, alice.hex)
@@ -43,7 +41,7 @@ func TestFacade_RunContract_Counter(t *testing.T) {
 	state, err := world.blockchainHook.GetAllState([]byte(contractAddress))
 	require.Nil(t, err)
 	require.NotNil(t, state)
-	require.Equal(t, []byte{2}, state[string(counterKey)])
+	require.Equal(t, []byte{2}, state["COUNTER"])
 }
 
 func TestFacade_RunContract_ERC20(t *testing.T) {
