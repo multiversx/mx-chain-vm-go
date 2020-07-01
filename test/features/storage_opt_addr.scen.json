@@ -27,7 +27,7 @@
                 "value": "0",
                 "function": "store_opt_addr",
                 "arguments": [
-                    "1|``____________address_____________"
+                    "``____________address_____________"
                 ],
                 "gasLimit": "0x100000",
                 "gasPrice": "0x01"
@@ -88,7 +88,6 @@
                 "value": "0",
                 "function": "store_opt_addr",
                 "arguments": [
-                    "0x00"
                 ],
                 "gasLimit": "0x100000",
                 "gasPrice": "0x01"
