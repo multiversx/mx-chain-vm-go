@@ -100,3 +100,14 @@ func canInterpretAsString(bytes []byte) bool {
 	}
 	return true
 }
+
+func generateTxHash(txIndex string) []byte {
+	txIndexBytes := []byte(txIndex)
+	if len(txIndexBytes) > 32 {
+		return txIndexBytes[:32]
+	}
+	for i := len(txIndexBytes); i < 32; i++ {
+		txIndexBytes = append(txIndexBytes, '.')
+	}
+	return txIndexBytes
+}
