@@ -265,6 +265,11 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 		return nil, err
 	}
 
+	imports, err = imports.Append("getOriginalTxHash", getOriginalTxHash, C.getOriginalTxHash)
+	if err != nil {
+		return nil, err
+	}
+
 	imports, err = imports.Append("getGasLeft", getGasLeft, C.getGasLeft)
 	if err != nil {
 		return nil, err
