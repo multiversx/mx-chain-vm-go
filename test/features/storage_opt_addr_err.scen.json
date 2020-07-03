@@ -35,7 +35,7 @@
             "expect": {
                 "out": [],
                 "status": "4",
-                "message": "storage deserialization error (Option): input too long",
+                "message": "storage decode error: input too long",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"
