@@ -269,6 +269,10 @@ func (host *vmHost) isInitFunctionBeingCalled() bool {
 
 func (host *vmHost) isBuiltinFunctionBeingCalled() bool {
 	functionName := host.Runtime().Function()
+	return host.isBuiltinFunctionName(functionName)
+}
+
+func (host *vmHost) isBuiltinFunctionName(functionName string) bool {
 	_, ok := host.protocolBuiltinFunctions[functionName]
 	return ok
 }

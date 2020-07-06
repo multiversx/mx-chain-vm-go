@@ -16,6 +16,14 @@ const (
 	BreakpointOutOfGas
 )
 
+type AsyncCallExecutionMode uint
+
+const (
+	SyncCall AsyncCallExecutionMode = iota
+	AsyncBuiltinFunc
+	AsyncUnknown
+)
+
 const CallbackDefault = "callBack"
 const TimeLockKeyPrefix = "timelock"
 const AsyncDataPrefix = "asyncCalls"

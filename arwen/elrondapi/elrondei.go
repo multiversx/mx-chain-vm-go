@@ -59,6 +59,7 @@ package elrondapi
 // extern int64 getPrevBlockRound(void *context);
 // extern int64 getPrevBlockEpoch(void *context);
 // extern void getPrevBlockRandomSeed(void *context, int32_t resultOffset);
+// extern void getOriginalTxHash(void *context, int32_t resultOffset);
 //
 // extern long long int64getArgument(void *context, int32_t id);
 // extern int32_t int64storageStore(void *context, int32_t keyOffset, int32_t keyLength , long long value);
@@ -1564,4 +1565,16 @@ func getReturnData(context unsafe.Pointer, resultID int32, dataOffset int32) int
 	}
 
 	return int32(len(returnData[resultID]))
+}
+
+//export getOriginalTxHash
+func getOriginalTxHash(context unsafe.Pointer, dataOffset int32) {
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.GetBlockHash
+	metering.UseGas(gasToUse)
+
+	err := runtime.MemStore(dataOffset, runtime.GetOriginalTxHash())
+	_ = arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
 }
