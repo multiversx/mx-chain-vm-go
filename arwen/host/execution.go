@@ -209,7 +209,7 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 	return vmOutput
 }
 
-func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asyncInfo *arwen.AsyncContext, err error) {
+func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asyncContext *arwen.AsyncContext, err error) {
 	log.Trace("ExecuteOnSameContext", "function", input.Function)
 
 	bigInt, _, _, output, runtime, _ := host.GetContexts()
@@ -238,7 +238,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 		return
 	}
 
-	asyncInfo = runtime.GetAsyncContext()
+	asyncContext = runtime.GetAsyncContext()
 
 	return
 }
