@@ -8,8 +8,8 @@ import (
 )
 
 var databasePath = "./testdata/db"
-var wasmCounterPath = "../test/contracts/counter/counter.wasm"
-var wasmErc20Path = "../test/contracts/erc20/erc20.wasm"
+var wasmCounterPath = "../test/contracts/counter/output/counter.wasm"
+var wasmErc20Path = "../test/contracts/erc20/output/erc20.wasm"
 
 func init() {
 	_ = os.RemoveAll(databasePath)
