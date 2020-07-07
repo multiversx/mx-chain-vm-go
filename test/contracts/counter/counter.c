@@ -1,5 +1,5 @@
-#include "elrond/context.h"
-#include "elrond/util.h"
+#include "../elrond/context.h"
+#include "../elrond/util.h"
 
 STORAGE_KEY(COUNTER);
 
