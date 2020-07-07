@@ -46,7 +46,7 @@ func TestFunctionsGuard_Arity(t *testing.T) {
 	validator := NewWASMValidator(imports.Names(), make(vmcommon.FunctionNames))
 
 	gasLimit := uint64(100000000)
-	path := "./../../test/contracts/signatures/signatures.wasm"
+	path := "./../../test/contracts/signatures/output/signatures.wasm"
 	contractCode := arwen.GetSCCode(path)
 	options := wasmer.CompilationOptions{
 		GasLimit:           gasLimit,
