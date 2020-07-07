@@ -2,6 +2,7 @@ package host
 
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/async"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -140,7 +141,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	return
 }
 
-func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, asyncContext *arwen.AsyncContext, err error) {
+func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, asyncContext *async.AsyncContext, err error) {
 	log.Trace("ExecuteOnDestContext", "function", input.Function)
 
 	bigInt, _, _, output, runtime, storage := host.GetContexts()
@@ -209,7 +210,7 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 	return vmOutput
 }
 
-func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asyncContext *arwen.AsyncContext, err error) {
+func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asyncContext *async.AsyncContext, err error) {
 	log.Trace("ExecuteOnSameContext", "function", input.Function)
 
 	bigInt, _, _, output, runtime, _ := host.GetContexts()
@@ -539,7 +540,7 @@ func (host *vmHost) verifyAllowedFunctionCall() error {
 	isCallBack := functionName == arwen.CallBackFunctionName
 	isInAsyncCallBack := runtime.GetVMInput().CallType == vmcommon.AsynchronousCallBack
 	if isCallBack && !isInAsyncCallBack {
-		return arwen.ErrCallBackFuncCalledInRun
+		return async.ErrCallBackFuncCalledInRun
 	}
 
 	return nil

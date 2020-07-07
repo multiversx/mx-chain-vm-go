@@ -3,6 +3,7 @@ package arwen
 import (
 	"math/big"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/async"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -32,8 +33,8 @@ type VMHost interface {
 	Storage() StorageContext
 
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
-	ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*AsyncContext, error)
-	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *AsyncContext, error)
+	ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*async.AsyncContext, error)
+	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *async.AsyncContext, error)
 	EthereumCallData() []byte
 	GetAPIMethods() *wasmer.Imports
 	GetProtocolBuiltinFunctions() vmcommon.FunctionNames
@@ -85,11 +86,11 @@ type RuntimeContext interface {
 	FailExecution(err error)
 	SetRuntimeBreakpointValue(value BreakpointValue)
 	GetRuntimeBreakpointValue() BreakpointValue
-	GetDefaultAsyncCall() *AsyncCall
-	SetDefaultAsyncCall(asyncCallInfo *AsyncCall)
-	AddAsyncCall(contextIdentifier []byte, asyncCall *AsyncCall) error
-	GetAsyncContext() *AsyncContext
-	GetAsyncCallGroup(groupID []byte) (*AsyncCallGroup, error)
+	GetDefaultAsyncCall() *async.AsyncCall
+	SetDefaultAsyncCall(asyncCallInfo *async.AsyncCall)
+	AddAsyncCall(contextIdentifier []byte, asyncCall *async.AsyncCall) error
+	GetAsyncContext() *async.AsyncContext
+	GetAsyncCallGroup(groupID []byte) (*async.AsyncCallGroup, error)
 	PushInstance()
 	PopInstance()
 	RunningInstancesCount() uint64

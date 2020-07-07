@@ -2,6 +2,7 @@ package mock
 
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/async"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -22,8 +23,8 @@ type VmHostStub struct {
 	MeteringCalled                    func() arwen.MeteringContext
 	StorageCalled                     func() arwen.StorageContext
 	CreateNewContractCalled           func(input *vmcommon.ContractCreateInput) ([]byte, error)
-	ExecuteOnSameContextCalled        func(input *vmcommon.ContractCallInput) (*arwen.AsyncContext, error)
-	ExecuteOnDestContextCalled        func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *arwen.AsyncContext, error)
+	ExecuteOnSameContextCalled        func(input *vmcommon.ContractCallInput) (*async.AsyncContext, error)
+	ExecuteOnDestContextCalled        func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *async.AsyncContext, error)
 	EthereumCallDataCalled            func() []byte
 	GetAPIMethodsCalled               func() *wasmer.Imports
 	GetProtocolBuiltinFunctionsCalled func() vmcommon.FunctionNames
@@ -109,14 +110,14 @@ func (vhs *VmHostStub) CreateNewContract(input *vmcommon.ContractCreateInput) ([
 	return nil, nil
 }
 
-func (vhs *VmHostStub) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*arwen.AsyncContext, error) {
+func (vhs *VmHostStub) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*async.AsyncContext, error) {
 	if vhs.ExecuteOnSameContextCalled != nil {
 		return vhs.ExecuteOnSameContextCalled(input)
 	}
 	return nil, nil
 }
 
-func (vhs *VmHostStub) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *arwen.AsyncContext, error) {
+func (vhs *VmHostStub) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *async.AsyncContext, error) {
 	if vhs.ExecuteOnDestContextCalled != nil {
 		return vhs.ExecuteOnDestContextCalled(input)
 	}

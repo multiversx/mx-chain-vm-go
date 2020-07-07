@@ -2,6 +2,7 @@ package mock
 
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/async"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -56,11 +57,11 @@ func (host *VmHostMock) CreateNewContract(input *vmcommon.ContractCreateInput) (
 	return nil, nil
 }
 
-func (host *VmHostMock) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*arwen.AsyncContext, error) {
+func (host *VmHostMock) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*async.AsyncContext, error) {
 	return nil, nil
 }
 
-func (host *VmHostMock) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *arwen.AsyncContext, error) {
+func (host *VmHostMock) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *async.AsyncContext, error) {
 	return nil, nil, nil
 }
 

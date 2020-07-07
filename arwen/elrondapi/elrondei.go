@@ -72,6 +72,7 @@ import (
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/async"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -552,7 +553,7 @@ func createAsyncCall(context unsafe.Pointer,
 		return
 	}
 
-	err = runtime.AddAsyncCall(groupID, &arwen.AsyncCall{
+	err = runtime.AddAsyncCall(groupID, &async.AsyncCall{
 		Destination:     calledSCAddress,
 		Data:            data,
 		ValueBytes:      value,
@@ -631,13 +632,13 @@ func asyncCall(context unsafe.Pointer, destOffset int32, valueOffset int32, data
 	// Set up the async call as if it is not known whether the called SC
 	// is in the same shard with the caller or not. This will be later resolved
 	// in the handler for BreakpointAsyncCall.
-	runtime.SetDefaultAsyncCall(&arwen.AsyncCall{
+	runtime.SetDefaultAsyncCall(&async.AsyncCall{
 		Destination:     calledSCAddress,
 		Data:            data,
 		GasLimit:        gasLimit,
 		ValueBytes:      value,
-		SuccessCallback: arwen.CallbackDefault,
-		ErrorCallback:   arwen.CallbackDefault,
+		SuccessCallback: async.CallbackDefault,
+		ErrorCallback:   async.CallbackDefault,
 	})
 
 	// Instruct Wasmer to interrupt the execution of the caller SC.
