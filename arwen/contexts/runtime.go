@@ -5,7 +5,6 @@ import (
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/async"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -29,8 +28,8 @@ type runtimeContext struct {
 
 	maxWasmerInstances uint64
 
-	defaultAsyncCall *async.AsyncCall
-	asyncContext     *async.AsyncContext
+	defaultAsyncCall *arwen.AsyncCall
+	asyncContext     *arwen.AsyncContext
 
 	validator *WASMValidator
 }
@@ -61,8 +60,8 @@ func (context *runtimeContext) InitState() {
 	context.callFunction = ""
 	context.readOnly = false
 	context.defaultAsyncCall = nil
-	context.asyncContext = &async.AsyncContext{
-		AsyncCallGroups: make(map[string]*async.AsyncCallGroup),
+	context.asyncContext = &arwen.AsyncContext{
+		AsyncCallGroups: make(map[string]*arwen.AsyncCallGroup),
 	}
 }
 
@@ -97,9 +96,9 @@ func (context *runtimeContext) InitStateFromContractCallInput(input *vmcommon.Co
 	context.scAddress = input.RecipientAddr
 	context.callFunction = input.Function
 	// Reset async map for initial state
-	context.asyncContext = &async.AsyncContext{
+	context.asyncContext = &arwen.AsyncContext{
 		CallerAddr:      input.CallerAddr,
-		AsyncCallGroups: make(map[string]*async.AsyncCallGroup),
+		AsyncCallGroups: make(map[string]*arwen.AsyncCallGroup),
 	}
 }
 
@@ -338,15 +337,15 @@ func (context *runtimeContext) GetInitFunction() wasmer.ExportedFunctionCallback
 	return nil
 }
 
-func (context *runtimeContext) SetDefaultAsyncCall(asyncCall *async.AsyncCall) {
+func (context *runtimeContext) SetDefaultAsyncCall(asyncCall *arwen.AsyncCall) {
 	context.defaultAsyncCall = asyncCall
 }
 
-func (context *runtimeContext) AddAsyncCall(groupID []byte, asyncCall *async.AsyncCall) error {
+func (context *runtimeContext) AddAsyncCall(groupID []byte, asyncCall *arwen.AsyncCall) error {
 	asyncCallGroup, ok := context.asyncContext.AsyncCallGroups[string(groupID)]
 	if !ok {
-		asyncCallGroup = &async.AsyncCallGroup{
-			AsyncCalls: make([]*async.AsyncCall, 0),
+		asyncCallGroup = &arwen.AsyncCallGroup{
+			AsyncCalls: make([]*arwen.AsyncCall, 0),
 		}
 		context.asyncContext.AsyncCallGroups[string(groupID)] = asyncCallGroup
 	}
@@ -356,20 +355,20 @@ func (context *runtimeContext) AddAsyncCall(groupID []byte, asyncCall *async.Asy
 	return nil
 }
 
-func (context *runtimeContext) GetAsyncContext() *async.AsyncContext {
+func (context *runtimeContext) GetAsyncContext() *arwen.AsyncContext {
 	return context.asyncContext
 }
 
-func (context *runtimeContext) GetAsyncCallGroup(groupID []byte) (*async.AsyncCallGroup, error) {
+func (context *runtimeContext) GetAsyncCallGroup(groupID []byte) (*arwen.AsyncCallGroup, error) {
 	asyncCallGroup, ok := context.asyncContext.AsyncCallGroups[string(groupID)]
 	if !ok {
-		return nil, async.ErrAsyncCallGroupDoesNotExist
+		return nil, arwen.ErrAsyncCallGroupDoesNotExist
 	}
 
 	return asyncCallGroup, nil
 }
 
-func (context *runtimeContext) GetDefaultAsyncCall() *async.AsyncCall {
+func (context *runtimeContext) GetDefaultAsyncCall() *arwen.AsyncCall {
 	return context.defaultAsyncCall
 }
 

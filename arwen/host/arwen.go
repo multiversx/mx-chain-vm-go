@@ -16,6 +16,8 @@ import (
 
 var log = logger.GetOrCreate("arwen/host")
 
+// MaximumWasmerInstanceCount specifies the maximum number of allowed Wasmer
+// instances on the InstanceStack of the RuntimeContext
 var MaximumWasmerInstanceCount = uint64(10)
 
 // TryFunction corresponds to the try() part of a try / catch block

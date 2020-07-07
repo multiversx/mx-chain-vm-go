@@ -1,4 +1,4 @@
-package async
+package arwen
 
 // AsyncCallGroup is a structure containing a group of async calls and a callback
 // that should be called when all these async calls are resolved

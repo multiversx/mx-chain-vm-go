@@ -2,7 +2,6 @@ package mock
 
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/async"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -23,7 +22,7 @@ type RuntimeContextMock struct {
 	FailCryptoAPI          bool
 	FailElrondAPI          bool
 	FailBigIntAPI          bool
-	DefaultAsyncCall       *async.AsyncCall
+	DefaultAsyncCall       *arwen.AsyncCall
 	RunningInstances       uint64
 	CurrentTxHash          []byte
 	OriginalTxHash         []byte
@@ -210,23 +209,23 @@ func (r *RuntimeContextMock) BigIntAPIErrorShouldFailExecution() bool {
 func (r *RuntimeContextMock) FailExecution(err error) {
 }
 
-func (r *RuntimeContextMock) GetDefaultAsyncCall() *async.AsyncCall {
+func (r *RuntimeContextMock) GetDefaultAsyncCall() *arwen.AsyncCall {
 	return r.DefaultAsyncCall
 }
 
-func (r *RuntimeContextMock) SetDefaultAsyncCall(asyncCall *async.AsyncCall) {
+func (r *RuntimeContextMock) SetDefaultAsyncCall(asyncCall *arwen.AsyncCall) {
 	r.DefaultAsyncCall = asyncCall
 }
 
-func (r *RuntimeContextMock) AddAsyncCall(_ []byte, _ *async.AsyncCall) error {
+func (r *RuntimeContextMock) AddAsyncCall(_ []byte, _ *arwen.AsyncCall) error {
 	return nil
 }
 
-func (r *RuntimeContextMock) GetAsyncContext() *async.AsyncContext {
+func (r *RuntimeContextMock) GetAsyncContext() *arwen.AsyncContext {
 	return nil
 }
 
-func (r *RuntimeContextMock) GetAsyncCallGroup(_ []byte) (*async.AsyncCallGroup, error) {
+func (r *RuntimeContextMock) GetAsyncCallGroup(_ []byte) (*arwen.AsyncCallGroup, error) {
 	return nil, nil
 }
 

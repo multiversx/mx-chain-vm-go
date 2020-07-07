@@ -72,3 +72,11 @@ var ErrBitwiseNegative = errors.New("bitwise operations only allowed on positive
 var ErrShiftNegative = errors.New("bitwise shift operations only allowed on positive integers and by a positive amount")
 
 var ErrInvalidAccount = errors.New("account does not exist")
+
+var ErrAsyncCallGroupDoesNotExist = errors.New("async call group does not exist")
+
+var ErrAsyncCallNotFound = errors.New("async call not found")
+
+var ErrCallBackFuncCalledInRun = errors.New("calling callBack() directly is forbidden")
+
+var ErrCallBackFuncNotExpected = errors.New("unexpected callback was received")
