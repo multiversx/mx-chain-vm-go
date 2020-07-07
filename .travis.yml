@@ -56,6 +56,8 @@ before_deploy:
 - mkdir -p $TRAVIS_BUILD_DIR/travis-builds
 - cd "$TRAVIS_BUILD_DIR/build"
 - tar czvf "$TRAVIS_BUILD_DIR/travis-builds/$ARCHIVE" *
+- echo "Will deploy to Amazon S3 (https://ide.elrond.com):"
+- echo $ARCHIVE
 deploy:
   provider: s3
   access_key_id: $AWS_KEY_ID
