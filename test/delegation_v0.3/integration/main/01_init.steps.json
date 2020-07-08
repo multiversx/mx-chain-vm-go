@@ -60,7 +60,7 @@
         },
         {
             "step": "scDeploy",
-            "txId": "1",
+            "txId": "deploy-1",
             "tx": {
                 "from": "''node_address__________________s1",
                 "value": "0",
