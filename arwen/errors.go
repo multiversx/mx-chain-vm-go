@@ -80,3 +80,7 @@ var ErrAsyncCallNotFound = errors.New("async call not found")
 var ErrCallBackFuncCalledInRun = errors.New("calling callBack() directly is forbidden")
 
 var ErrCallBackFuncNotExpected = errors.New("unexpected callback was received")
+
+var ErrUnknownCallType = errors.New("unknown call type")
+
+var ErrCannotUseBuiltinAsCallback = errors.New("cannot use built-in function as callback")

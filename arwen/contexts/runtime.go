@@ -342,6 +342,13 @@ func (context *runtimeContext) SetDefaultAsyncCall(asyncCall *arwen.AsyncCall) {
 }
 
 func (context *runtimeContext) AddAsyncCall(groupID []byte, asyncCall *arwen.AsyncCall) error {
+	if context.host.IsBuiltinFunctionName(asyncCall.SuccessCallback) {
+		return arwen.ErrCannotUseBuiltinAsCallback
+	}
+	if context.host.IsBuiltinFunctionName(asyncCall.ErrorCallback) {
+		return arwen.ErrCannotUseBuiltinAsCallback
+	}
+
 	asyncCallGroup, ok := context.asyncContext.AsyncCallGroups[string(groupID)]
 	if !ok {
 		asyncCallGroup = &arwen.AsyncCallGroup{

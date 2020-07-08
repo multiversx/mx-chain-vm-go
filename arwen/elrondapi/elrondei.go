@@ -573,7 +573,8 @@ func setAsyncContextCallback(context unsafe.Pointer,
 	callback int32,
 	callbackLength int32,
 ) int32 {
-	runtime := arwen.GetRuntimeContext(context)
+	host := arwen.GetVmContext(context)
+	runtime := host.Runtime()
 
 	groupID, err := runtime.MemLoad(groupIDOffset, identifierLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -587,6 +588,13 @@ func setAsyncContextCallback(context unsafe.Pointer,
 
 	callbackFunc, err := runtime.MemLoad(callback, callbackLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return -1
+	}
+
+	strCallbackFunc := string(callbackFunc)
+	if host.IsBuiltinFunctionName(strCallbackFunc) {
+		err := arwen.ErrCannotUseBuiltinAsCallback
+		arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
 		return -1
 	}
 

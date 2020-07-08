@@ -269,10 +269,10 @@ func (host *vmHost) isInitFunctionBeingCalled() bool {
 
 func (host *vmHost) isBuiltinFunctionBeingCalled() bool {
 	functionName := host.Runtime().Function()
-	return host.isBuiltinFunctionName(functionName)
+	return host.IsBuiltinFunctionName(functionName)
 }
 
-func (host *vmHost) isBuiltinFunctionName(functionName string) bool {
+func (host *vmHost) IsBuiltinFunctionName(functionName string) bool {
 	_, ok := host.protocolBuiltinFunctions[functionName]
 	return ok
 }
@@ -508,6 +508,8 @@ func (host *vmHost) callSCMethod() error {
 	}
 
 	switch callType {
+	case vmcommon.DirectCall:
+		_, err = host.processAsyncContext(runtime.GetAsyncContext())
 	case vmcommon.AsynchronousCall:
 		pendingAsyncContext, paiErr := host.processAsyncContext(runtime.GetAsyncContext())
 		if paiErr != nil {
@@ -517,9 +519,9 @@ func (host *vmHost) callSCMethod() error {
 			err = host.sendCallbackToCurrentCaller()
 		}
 	case vmcommon.AsynchronousCallBack:
-		err = host.processCallbackStack()
+		err = host.postprocessCrossShardCallback()
 	default:
-		_, err = host.processAsyncContext(runtime.GetAsyncContext())
+		err = arwen.ErrUnknownCallType
 	}
 
 	return err

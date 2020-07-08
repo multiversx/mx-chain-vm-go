@@ -78,7 +78,7 @@ func (host *vmHost) determineAsyncCallExecutionMode(asyncCall *arwen.AsyncCall) 
 	shardOfDest := blockchain.GetShardOfAddress(asyncCall.Destination)
 	sameShard := shardOfSC == shardOfDest
 
-	if host.isBuiltinFunctionName(functionName) {
+	if host.IsBuiltinFunctionName(functionName) {
 		if sameShard {
 			return arwen.SyncCall, nil
 		}
@@ -364,7 +364,7 @@ func (host *vmHost) processAsyncContext(asyncContext *arwen.AsyncContext) (*arwe
 		}
 	}
 
-	pendingAsyncContext := host.getPendingAsyncCalls(asyncContext)
+	pendingAsyncContext := asyncContext.MakeAsyncContextWithPendingCalls()
 	if len(pendingAsyncContext.AsyncCallGroups) == 0 {
 		return pendingAsyncContext, nil
 	}
@@ -398,9 +398,9 @@ func (host *vmHost) processAsyncContext(asyncContext *arwen.AsyncContext) (*arwe
  */
 func (host *vmHost) processAsyncCall(asyncCall *arwen.AsyncCall) error {
 	input, _ := host.createDestinationContractCallInput(asyncCall)
-	output, asyncMap, executionError := host.ExecuteOnDestContext(input)
+	output, asyncContext, executionError := host.ExecuteOnDestContext(input)
 
-	pendingMap := host.getPendingAsyncCalls(asyncMap)
+	pendingMap := asyncContext.MakeAsyncContextWithPendingCalls()
 	if len(pendingMap.AsyncCallGroups) == 0 {
 		return host.callbackAsync(asyncCall, output, executionError)
 	}
@@ -465,47 +465,18 @@ func (host *vmHost) saveAsyncContext(asyncContext *arwen.AsyncContext) error {
 }
 
 /**
- * getPendingAsyncCalls returns only pending async calls from a list that can also contain resolved/rejected entries
+ * postprocessCrossShardCallback() is called by host.callSCMethod() after it
+ * has locally executed the callback of a returning cross-shard AsyncCall,
+ * which means that the corresponding AsyncCall must be deleted from the
+ * current AsyncContext.
+
+ * Moreover, because individual AsyncCalls are contained by AsyncCallGroups, we
+ * must verify whether the containing AsyncCallGroup has any remaining calls
+ * pending. If not, the final callback of the containing AsyncCallGroup must be
+ * executed as well.
  */
-func (host *vmHost) getPendingAsyncCalls(asyncContext *arwen.AsyncContext) *arwen.AsyncContext {
-	pendingCallGroups := &arwen.AsyncContext{
-		CallerAddr:      asyncContext.CallerAddr,
-		ReturnData:      asyncContext.ReturnData,
-		AsyncCallGroups: make(map[string]*arwen.AsyncCallGroup),
-	}
-
-	for groupID, asyncCallGroup := range asyncContext.AsyncCallGroups {
-		for _, asyncCall := range asyncCallGroup.AsyncCalls {
-			if asyncCall.Status != arwen.AsyncCallPending {
-				continue
-			}
-
-			_, ok := pendingCallGroups.AsyncCallGroups[groupID]
-			if !ok {
-				pendingCallGroups.AsyncCallGroups[groupID] = &arwen.AsyncCallGroup{
-					Callback:   asyncCallGroup.Callback,
-					AsyncCalls: make([]*arwen.AsyncCall, 0),
-				}
-			}
-			pendingCallGroups.AsyncCallGroups[groupID].AsyncCalls = append(
-				pendingCallGroups.AsyncCallGroups[groupID].AsyncCalls,
-				asyncCall,
-			)
-		}
-	}
-
-	return pendingCallGroups
-}
-
-/**
- * processCallbackStack is triggered when a callback was received from another host through a transaction.
- *  It will return an error if we receive a callback and we don't have it's associated data in the storage.
- *  If the associated callback was found in the pending set, it will be removed - It should not be executed
- *   again since it was executed in the callSCMethod step
- */
-func (host *vmHost) processCallbackStack() error {
+func (host *vmHost) postprocessCrossShardCallback() error {
 	runtime := host.Runtime()
-	storage := host.Storage()
 
 	asyncContext, err := host.getCurrentAsyncContext()
 	if err != nil {
@@ -515,34 +486,24 @@ func (host *vmHost) processCallbackStack() error {
 	// TODO FindAsyncCallByDestination() only returns the first matched AsyncCall
 	// by destination, but there could be multiple matches in an AsyncContext.
 	vmInput := runtime.GetVMInput()
-	currentGroupID, asyncCallPosition, err := asyncContext.FindAsyncCallByDestination(vmInput.CallerAddr)
-
+	currentGroupID, asyncCallIndex, err := asyncContext.FindAsyncCallByDestination(vmInput.CallerAddr)
 	if err != nil {
 		return arwen.ErrCallBackFuncNotExpected
 	}
 
-	// Remove current async call from the pending list
-	currentGroupCalls := asyncContext.AsyncCallGroups[currentGroupID].AsyncCalls
-	currentGroupCalls[asyncCallPosition] = currentGroupCalls[len(currentGroupCalls)-1]
-	currentGroupCalls[len(currentGroupCalls)-1] = nil
-	currentGroupCalls = currentGroupCalls[:len(currentGroupCalls)-1]
+	currentCallGroup := asyncContext.AsyncCallGroups[currentGroupID]
+	currentCallGroup.DeleteAsyncCall(asyncCallIndex)
 
-	if len(currentGroupCalls) == 0 {
-		// call OUR callback for resolving a full context
-		delete(asyncContext.AsyncCallGroups, currentGroupID)
-	}
-
-	// If we are still waiting for callbacks we return
-	if len(asyncContext.AsyncCallGroups) > 0 {
+	if currentCallGroup.HasPendingCalls() {
 		return nil
 	}
 
-	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, runtime.GetOriginalTxHash())
-	_, err = storage.SetStorage(storageKey, nil)
-	if err != nil {
-		return err
+	// Are we still waiting for callbacks to return?
+	if asyncContext.HasPendingCallGroups() {
+		return nil
 	}
 
+	// All callbacks in the current AsyncCallGroup have returned.
 	// Now figure out if we can execute the callback here or different shard
 	if !host.canExecuteSynchronouslyOnDest(asyncContext.CallerAddr, asyncContext.ReturnData) {
 		err = host.sendStorageCallbackToDestination(asyncContext.CallerAddr, asyncContext.ReturnData)
@@ -553,7 +514,7 @@ func (host *vmHost) processCallbackStack() error {
 		return nil
 	}
 
-	// The caller is in the same shard, execute it's callback
+	// The caller is in the same shard, execute its callback
 	callbackCallInput, err := host.createCallbackContractCallInput(
 		host.Output().GetVMOutput(),
 		asyncContext.CallerAddr,
@@ -673,4 +634,13 @@ func (host *vmHost) getCurrentAsyncContext() (*arwen.AsyncContext, error) {
 	}
 
 	return asyncContext, nil
+}
+
+func (host *vmHost) deleteCurrentAsyncContext() error {
+	runtime := host.Runtime()
+	storage := host.Storage()
+
+	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, runtime.GetOriginalTxHash())
+	_, err := storage.SetStorage(storageKey, nil)
+	return err
 }
