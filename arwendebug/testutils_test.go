@@ -144,7 +144,7 @@ func (context *testContext) queryContract(contract string, impersonated string, 
 	require.NotNil(t, response)
 	require.NotNil(t, response.Output)
 	require.Nil(t, response.Error)
-	require.Equal(t, vmcommon.Ok.String(), response.Output.ReturnCode.String(), response.Output.ReturnMessage)
+	require.Equal(t, vmcommon.Ok.String(), response.ReturnCodeString, response.Output.ReturnMessage)
 
 	return response
 }

@@ -75,6 +75,20 @@ func (request *ContractRequestBase) digest() error {
 // ContractResponseBase is a CLI / REST response message
 type ContractResponseBase struct {
 	ResponseBase
-	Input  *vmcommon.VMInput
-	Output *vmcommon.VMOutput
+	Input            *vmcommon.VMInput
+	Output           *vmcommon.VMOutput
+	ReturnCodeString string
+}
+
+func createContractResponseBase(input *vmcommon.VMInput, output *vmcommon.VMOutput) ContractResponseBase {
+	response := ContractResponseBase{
+		Input:  input,
+		Output: output,
+	}
+
+	if output != nil {
+		response.ReturnCodeString = output.ReturnCode.String()
+	}
+
+	return response
 }

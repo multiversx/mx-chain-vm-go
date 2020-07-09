@@ -213,6 +213,7 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 				flagImpersonated,
 				flagFunction,
 				flagArguments,
+				flagGasLimit,
 			},
 		},
 		{
