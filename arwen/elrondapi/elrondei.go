@@ -553,6 +553,7 @@ func createAsyncCall(context unsafe.Pointer,
 	}
 
 	err = runtime.AddAsyncCall(groupID, &arwen.AsyncCall{
+		Status:          arwen.AsyncCallPending,
 		Destination:     calledSCAddress,
 		Data:            data,
 		ValueBytes:      value,
@@ -581,7 +582,7 @@ func setAsyncContextCallback(context unsafe.Pointer,
 		return -1
 	}
 
-	asyncContext, err := runtime.GetAsyncCallGroup(groupID)
+	asyncCallGroup, err := runtime.GetAsyncCallGroup(groupID)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
@@ -598,7 +599,8 @@ func setAsyncContextCallback(context unsafe.Pointer,
 		return -1
 	}
 
-	asyncContext.Callback = string(callbackFunc)
+	// TODO set gas limit as well
+	asyncCallGroup.Callback = string(callbackFunc)
 
 	return 0
 }

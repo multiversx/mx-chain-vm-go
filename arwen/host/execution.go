@@ -140,7 +140,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	return
 }
 
-func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, asyncContext *arwen.AsyncContext, err error) {
+func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
 	log.Trace("ExecuteOnDestContext", "function", input.Function)
 
 	bigInt, _, _, output, runtime, storage := host.GetContexts()
@@ -173,8 +173,7 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 		return
 	}
 
-	asyncContext = runtime.GetAsyncContext()
-	_, err = host.processAsyncContext(asyncContext)
+	err = host.executeAsyncContext()
 	return
 }
 

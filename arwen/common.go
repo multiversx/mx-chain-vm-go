@@ -25,7 +25,7 @@ type AsyncCallExecutionMode uint
 const (
 	// SyncCall indicates that the async call can be executed synchronously, with
 	// its corresponding callback
-	SyncCall AsyncCallExecutionMode = iota
+	SyncExecution AsyncCallExecutionMode = iota
 
 	// AsyncBuiltinFunc indicates that the async call is a cross-shard call to a
 	// built-in function, which is executed half in-shard, half cross-shard

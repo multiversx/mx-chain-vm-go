@@ -22,3 +22,14 @@ func (acg *AsyncCallGroup) DeleteAsyncCall(index int) {
 	asyncCalls = asyncCalls[:len(asyncCalls)-1]
 	acg.AsyncCalls = asyncCalls
 }
+
+func (acg *AsyncCallGroup) DeleteCompletedAsyncCalls() {
+	remainingAsyncCalls := make([]*AsyncCall, 0)
+	for _, asyncCall := range acg.AsyncCalls {
+		if asyncCall.Status == AsyncCallPending {
+			remainingAsyncCalls = append(remainingAsyncCalls, asyncCall)
+		}
+	}
+
+	acg.AsyncCalls = remainingAsyncCalls
+}
