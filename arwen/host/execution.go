@@ -35,43 +35,6 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	return vmOutput
 }
 
-func (host *vmHost) performCodeDeploy(input arwen.CodeDeployInput) (*vmcommon.VMOutput, error) {
-	log.Trace("performCodeDeploy", "address", input.ContractAddress, "len(code)", len(input.ContractCode), "metadata", input.ContractCodeMetadata)
-
-	_, _, metering, output, runtime, _ := host.GetContexts()
-
-	err := metering.DeductInitialGasForDirectDeployment(input)
-	if err != nil {
-		output.SetReturnCode(vmcommon.OutOfGas)
-		return nil, err
-	}
-
-	vmInput := runtime.GetVMInput()
-	err = runtime.StartWasmerInstance(input.ContractCode, vmInput.GasProvided)
-	if err != nil {
-		log.Debug("performCodeDeploy/StartWasmerInstance", "err", err)
-		return nil, arwen.ErrContractInvalid
-	}
-
-	err = runtime.VerifyContractCode()
-	if err != nil {
-		log.Debug("performCodeDeploy/VerifyContractCode", "err", err)
-		return nil, arwen.ErrContractInvalid
-	}
-
-	idContext := arwen.AddHostContext(host)
-	runtime.SetInstanceContextID(idContext)
-
-	err = host.callInitFunction()
-	if err != nil {
-		return nil, err
-	}
-
-	output.DeployCode(input)
-	vmOutput := output.GetVMOutput()
-	return vmOutput, nil
-}
-
 func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput) *vmcommon.VMOutput {
 	host.InitState()
 	defer host.Clean()
@@ -138,6 +101,43 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 
 	vmOutput = output.GetVMOutput()
 	return
+}
+
+func (host *vmHost) performCodeDeploy(input arwen.CodeDeployInput) (*vmcommon.VMOutput, error) {
+	log.Trace("performCodeDeploy", "address", input.ContractAddress, "len(code)", len(input.ContractCode), "metadata", input.ContractCodeMetadata)
+
+	_, _, metering, output, runtime, _ := host.GetContexts()
+
+	err := metering.DeductInitialGasForDirectDeployment(input)
+	if err != nil {
+		output.SetReturnCode(vmcommon.OutOfGas)
+		return nil, err
+	}
+
+	vmInput := runtime.GetVMInput()
+	err = runtime.StartWasmerInstance(input.ContractCode, vmInput.GasProvided)
+	if err != nil {
+		log.Debug("performCodeDeploy/StartWasmerInstance", "err", err)
+		return nil, arwen.ErrContractInvalid
+	}
+
+	err = runtime.VerifyContractCode()
+	if err != nil {
+		log.Debug("performCodeDeploy/VerifyContractCode", "err", err)
+		return nil, arwen.ErrContractInvalid
+	}
+
+	idContext := arwen.AddHostContext(host)
+	runtime.SetInstanceContextID(idContext)
+
+	err = host.callInitFunction()
+	if err != nil {
+		return nil, err
+	}
+
+	output.DeployCode(input)
+	vmOutput := output.GetVMOutput()
+	return vmOutput, nil
 }
 
 func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, asyncInfo *arwen.AsyncContextInfo, err error) {
@@ -363,6 +363,48 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) ([]by
 	return address, nil
 }
 
+func (host *vmHost) callSCMethod() error {
+	runtime := host.Runtime()
+
+	err := host.verifyAllowedFunctionCall()
+	if err != nil {
+		return err
+	}
+
+	callType := runtime.GetVMInput().CallType
+	function, err := host.getFunctionByCallType(callType)
+	if err != nil {
+		return err
+	}
+
+	_, err = function()
+	if err != nil {
+		err = host.handleBreakpointIfAny(err)
+	}
+	if err != nil {
+		return err
+	}
+
+	switch callType {
+	case vmcommon.AsynchronousCall:
+		pendingMap, paiErr := host.processAsyncInfo(runtime.GetAsyncContextInfo())
+		if paiErr != nil {
+			return paiErr
+		}
+		if len(pendingMap.AsyncContextMap) == 0 {
+			err = host.sendCallbackToCurrentCaller()
+		}
+		break
+	case vmcommon.AsynchronousCallBack:
+		err = host.processCallbackStack()
+		break
+	default:
+		_, err = host.processAsyncInfo(runtime.GetAsyncContextInfo())
+	}
+
+	return err
+}
+
 // TODO: Add support for indirect smart contract upgrades.
 func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 	if host.isBuiltinFunctionBeingCalled() {
@@ -480,48 +522,6 @@ func (host *vmHost) callInitFunction() error {
 	_, err := init()
 	if err != nil {
 		err = host.handleBreakpointIfAny(err)
-	}
-
-	return err
-}
-
-func (host *vmHost) callSCMethod() error {
-	runtime := host.Runtime()
-
-	err := host.verifyAllowedFunctionCall()
-	if err != nil {
-		return err
-	}
-
-	callType := runtime.GetVMInput().CallType
-	function, err := host.getFunctionByCallType(callType)
-	if err != nil {
-		return err
-	}
-
-	_, err = function()
-	if err != nil {
-		err = host.handleBreakpointIfAny(err)
-	}
-	if err != nil {
-		return err
-	}
-
-	switch callType {
-	case vmcommon.AsynchronousCall:
-		pendingMap, paiErr := host.processAsyncInfo(runtime.GetAsyncContextInfo())
-		if paiErr != nil {
-			return paiErr
-		}
-		if len(pendingMap.AsyncContextMap) == 0 {
-			err = host.sendCallbackToCurrentCaller()
-		}
-		break
-	case vmcommon.AsynchronousCallBack:
-		err = host.processCallbackStack()
-		break
-	default:
-		_, err = host.processAsyncInfo(runtime.GetAsyncContextInfo())
 	}
 
 	return err
