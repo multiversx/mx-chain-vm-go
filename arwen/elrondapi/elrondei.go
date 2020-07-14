@@ -120,15 +120,15 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 		return nil, err
 	}
 
-	imports, err = imports.Append("createAsyncCall", createAsyncCall, C.createAsyncCall)
-	if err != nil {
-		return nil, err
-	}
+	// imports, err = imports.Append("createAsyncCall", createAsyncCall, C.createAsyncCall)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	imports, err = imports.Append("setAsyncContextCallback", setAsyncContextCallback, C.setAsyncContextCallback)
-	if err != nil {
-		return nil, err
-	}
+	// imports, err = imports.Append("setAsyncContextCallback", setAsyncContextCallback, C.setAsyncContextCallback)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	imports, err = imports.Append("getArgumentLength", getArgumentLength, C.getArgumentLength)
 	if err != nil {
