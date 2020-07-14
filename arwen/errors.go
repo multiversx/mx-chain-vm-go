@@ -75,8 +75,10 @@ var ErrBitwiseNegative = errors.New("bitwise operations only allowed on positive
 
 var ErrShiftNegative = errors.New("bitwise shift operations only allowed on positive integers and by a positive amount")
 
+var ErrAsyncCallsDisallowed = errors.New("async calls disallowed")
+
 var ErrAsyncContextDoesNotExist = errors.New("async context was not created yet")
 
-var ErrAsync = errors.New("invalid gas percentage provided for async call")
-
 var ErrInvalidAccount = errors.New("account does not exist")
+
+var ErrDeploymentOverExistingAccount = errors.New("cannot deploy over existing account")

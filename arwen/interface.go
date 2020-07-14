@@ -37,6 +37,9 @@ type VMHost interface {
 	EthereumCallData() []byte
 	GetAPIMethods() *wasmer.Imports
 	GetProtocolBuiltinFunctions() vmcommon.FunctionNames
+
+	AreAsyncCallsAllowed() bool
+	IsIndirectInitCallAllowed() bool
 }
 
 type BlockchainContext interface {
@@ -131,6 +134,7 @@ type OutputContext interface {
 	AddToActiveState(rightOutput *vmcommon.VMOutput)
 
 	GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool)
+	DeleteOutputAccount(address []byte)
 	WriteLog(address []byte, topics [][]byte, data []byte)
 	Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte) error
 	SelfDestruct(address []byte, beneficiary []byte)

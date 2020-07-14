@@ -19,6 +19,7 @@ type OutputContextStub struct {
 	CopyTopOfStackToActiveStateCalled func()
 	CensorVMOutputCalled              func()
 	GetOutputAccountCalled            func(address []byte) (*vmcommon.OutputAccount, bool)
+	DeleteOutputAccountCalled         func(address []byte)
 	WriteLogCalled                    func(address []byte, topics [][]byte, data []byte)
 	TransferCalled                    func(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte) error
 	SelfDestructCalled                func(address []byte, beneficiary []byte)
@@ -97,6 +98,12 @@ func (o *OutputContextStub) GetOutputAccount(address []byte) (*vmcommon.OutputAc
 		return o.GetOutputAccountCalled(address)
 	}
 	return nil, false
+}
+
+func (o *OutputContextStub) DeleteOutputAccount(address []byte) {
+	if o.DeleteOutputAccountCalled != nil {
+		o.DeleteOutputAccountCalled(address)
+	}
 }
 
 func (o *OutputContextStub) WriteLog(address []byte, topics [][]byte, data []byte) {

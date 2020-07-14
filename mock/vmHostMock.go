@@ -22,6 +22,9 @@ type VmHostMock struct {
 	BigIntContext     arwen.BigIntContext
 
 	SCAPIMethods *wasmer.Imports
+
+	AllowAsyncCalls       bool
+	AllowIndirectInitCall bool
 }
 
 func (host *VmHostMock) Crypto() vmcommon.CryptoHook {
@@ -52,11 +55,19 @@ func (host *VmHostMock) BigInt() arwen.BigIntContext {
 	return host.BigIntContext
 }
 
+func (host *VmHostMock) AreAsyncCallsAllowed() bool {
+	return host.AllowAsyncCalls
+}
+
+func (host *VmHostMock) IsIndirectInitCallAllowed() bool {
+	return host.AllowIndirectInitCall
+}
+
 func (host *VmHostMock) CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error) {
 	return nil, nil
 }
 
-func (host *VmHostMock) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*arwen.AsyncContextInfo, error){
+func (host *VmHostMock) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*arwen.AsyncContextInfo, error) {
 	return nil, nil
 }
 

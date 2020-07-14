@@ -27,6 +27,8 @@ type VmHostStub struct {
 	EthereumCallDataCalled            func() []byte
 	GetAPIMethodsCalled               func() *wasmer.Imports
 	GetProtocolBuiltinFunctionsCalled func() vmcommon.FunctionNames
+	AreAsyncCallsAllowedCalled        func() bool
+	IsIndirectInitCallAllowedCalled   func() bool
 }
 
 func (vhs *VmHostStub) InitState() {
@@ -100,6 +102,20 @@ func (vhs *VmHostStub) Storage() arwen.StorageContext {
 		return vhs.StorageCalled()
 	}
 	return nil
+}
+
+func (vhs *VmHostStub) AreAsyncCallsAllowed() bool {
+	if vhs.AreAsyncCallsAllowedCalled != nil {
+		return vhs.AreAsyncCallsAllowedCalled()
+	}
+	return true
+}
+
+func (vhs *VmHostStub) IsIndirectInitCallAllowed() bool {
+	if vhs.IsIndirectInitCallAllowedCalled != nil {
+		return vhs.IsIndirectInitCallAllowedCalled()
+	}
+	return false
 }
 
 func (vhs *VmHostStub) CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error) {

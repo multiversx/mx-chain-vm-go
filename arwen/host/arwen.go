@@ -40,6 +40,9 @@ type vmHost struct {
 
 	scAPIMethods             *wasmer.Imports
 	protocolBuiltinFunctions vmcommon.FunctionNames
+
+	allowAsyncCalls            bool
+	allowCallingInitIndirectly bool
 }
 
 // NewArwenVM creates a new Arwen vmHost
@@ -186,6 +189,8 @@ func (host *vmHost) InitState() {
 	host.runtimeContext.InitState()
 	host.storageContext.InitState()
 	host.ethInput = nil
+	host.allowAsyncCalls = true
+	host.allowCallingInitIndirectly = false
 }
 
 func (host *vmHost) ClearContextStateStack() {
@@ -193,6 +198,14 @@ func (host *vmHost) ClearContextStateStack() {
 	host.outputContext.ClearStateStack()
 	host.runtimeContext.ClearStateStack()
 	host.storageContext.ClearStateStack()
+}
+
+func (host *vmHost) AreAsyncCallsAllowed() bool {
+	return host.allowAsyncCalls
+}
+
+func (host *vmHost) IsIndirectInitCallAllowed() bool {
+	return host.allowCallingInitIndirectly
 }
 
 func (host *vmHost) Clean() {

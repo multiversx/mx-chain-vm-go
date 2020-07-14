@@ -518,7 +518,14 @@ func createAsyncCall(context unsafe.Pointer,
 	errorLength int32,
 	gas int64,
 ) {
-	runtime := arwen.GetRuntimeContext(context)
+	host := arwen.GetVmContext(context)
+	runtime := host.Runtime()
+
+	if !host.AreAsyncCallsAllowed() {
+		err := arwen.ErrAsyncCallsDisallowed
+		arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
+		return
+	}
 
 	acIdentifier, err := runtime.MemLoad(asyncContextIdentifier, identifierLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -571,7 +578,14 @@ func setAsyncContextCallback(context unsafe.Pointer,
 	callback int32,
 	callbackLength int32,
 ) int32 {
-	runtime := arwen.GetRuntimeContext(context)
+	host := arwen.GetVmContext(context)
+	runtime := host.Runtime()
+
+	if !host.AreAsyncCallsAllowed() {
+		err := arwen.ErrAsyncCallsDisallowed
+		arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
+		return -1
+	}
 
 	acIdentifier, err := runtime.MemLoad(asyncContextIdentifier, identifierLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -595,8 +609,15 @@ func setAsyncContextCallback(context unsafe.Pointer,
 
 //export asyncCall
 func asyncCall(context unsafe.Pointer, destOffset int32, valueOffset int32, dataOffset int32, length int32) {
-	runtime := arwen.GetRuntimeContext(context)
-	metering := arwen.GetMeteringContext(context)
+	host := arwen.GetVmContext(context)
+	runtime := host.Runtime()
+	metering := host.Metering()
+
+	if !host.AreAsyncCallsAllowed() {
+		err := arwen.ErrAsyncCallsDisallowed
+		arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
+		return
+	}
 
 	calledSCAddress, err := runtime.MemLoad(destOffset, arwen.AddressLen)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
