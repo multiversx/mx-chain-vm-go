@@ -491,7 +491,7 @@ func TestExecution_ExecuteOnSameContext_Successful_BigInts(t *testing.T) {
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
-	expectedVMOutput := expectedVMOutput_SameCtx_SuccessfulChildCall_BigInts()
+	expectedVMOutput := expectedVMOutput_SameCtx_SuccessfulChildCall_BigInts(parentCode, childCode)
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
@@ -527,7 +527,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct(t *testing.T) {
 
 	// TODO set proper gas calculation in the expectedVMOutput, like the other
 	// tests
-	expectedVMOutput := expectedVMOutput_SameCtx_Recursive_Direct(int(recursiveCalls))
+	expectedVMOutput := expectedVMOutput_SameCtx_Recursive_Direct(code, int(recursiveCalls))
 	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
 	require.Equal(t, int64(recursiveCalls+1), host.BigInt().GetOne(16).Int64())
@@ -551,7 +551,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct_ErrMaxInstances(t *test
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
 
-	expectedVMOutput := expectedVMOutput_SameCtx_Recursive_Direct_ErrMaxInstances(int(recursiveCalls))
+	expectedVMOutput := expectedVMOutput_SameCtx_Recursive_Direct_ErrMaxInstances(code, int(recursiveCalls))
 	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
 	require.Equal(t, int64(1), host.BigInt().GetOne(16).Int64())
@@ -595,7 +595,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_Methods(t *testing.T) {
 	require.Nil(t, err)
 	// TODO set proper gas calculation in the expectedVMOutput, like the other
 	// tests
-	expectedVMOutput := expectedVMOutput_SameCtx_Recursive_MutualMethods(int(recursiveCalls))
+	expectedVMOutput := expectedVMOutput_SameCtx_Recursive_MutualMethods(code, int(recursiveCalls))
 	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
 	require.Equal(t, int64(recursiveCalls+1), host.BigInt().GetOne(16).Int64())
@@ -635,7 +635,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs(t *testing.T) {
 
 	// TODO set proper gas calculation in the expectedVMOutput, like the other
 	// tests
-	expectedVMOutput := expectedVMOutput_SameCtx_Recursive_MutualSCs(int(recursiveCalls))
+	expectedVMOutput := expectedVMOutput_SameCtx_Recursive_MutualSCs(parentCode, childCode, int(recursiveCalls))
 	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
 	require.Equal(t, int64(recursiveCalls+1), host.BigInt().GetOne(88).Int64())
@@ -698,7 +698,7 @@ func TestExecution_ExecuteOnSameContext_BuiltinFunctions(t *testing.T) {
 	require.Nil(t, err)
 
 	require.NotNil(t, vmOutput)
-	expectedVMOutput := expectedVMOutput_SameCtx_BuiltinFunctions_1()
+	expectedVMOutput := expectedVMOutput_SameCtx_BuiltinFunctions_1(code)
 	require.Equal(t, expectedVMOutput, vmOutput)
 
 	// Run function testBuiltins2
@@ -709,7 +709,7 @@ func TestExecution_ExecuteOnSameContext_BuiltinFunctions(t *testing.T) {
 	require.Nil(t, err)
 
 	require.NotNil(t, vmOutput)
-	expectedVMOutput = expectedVMOutput_SameCtx_BuiltinFunctions_2()
+	expectedVMOutput = expectedVMOutput_SameCtx_BuiltinFunctions_2(code)
 	require.Equal(t, expectedVMOutput, vmOutput)
 
 	// Run function testBuiltins3
@@ -720,7 +720,7 @@ func TestExecution_ExecuteOnSameContext_BuiltinFunctions(t *testing.T) {
 	require.Nil(t, err)
 
 	require.NotNil(t, vmOutput)
-	expectedVMOutput = expectedVMOutput_SameCtx_BuiltinFunctions_3()
+	expectedVMOutput = expectedVMOutput_SameCtx_BuiltinFunctions_3(code)
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
@@ -806,7 +806,7 @@ func TestExecution_ExecuteOnDestContext_OutOfGas(t *testing.T) {
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
-	expectedVMOutput := expectedVMOutput_DestCtx_OutOfGas()
+	expectedVMOutput := expectedVMOutput_DestCtx_OutOfGas(parentCode)
 	require.Equal(t, expectedVMOutput, vmOutput)
 	require.Equal(t, int64(42), host.BigInt().GetOne(12).Int64())
 }

@@ -189,7 +189,7 @@ func expectedVMOutput_SameCtx_SuccessfulChildCall(parentCode []byte, childCode [
 	return vmOutput
 }
 
-func expectedVMOutput_SameCtx_SuccessfulChildCall_BigInts() *vmcommon.VMOutput {
+func expectedVMOutput_SameCtx_SuccessfulChildCall_BigInts(parentCode []byte, childCode []byte) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 	vmOutput.ReturnCode = vmcommon.Ok
 
@@ -200,14 +200,16 @@ func expectedVMOutput_SameCtx_SuccessfulChildCall_BigInts() *vmcommon.VMOutput {
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
+	parentAccount.Code = parentCode
 	// parentAccount.BalanceDelta = big.NewInt(-99)
 
-	_ = AddNewOutputAccount(
+	childAccount := AddNewOutputAccount(
 		vmOutput,
 		childAddress,
 		99,
 		nil,
 	)
+	childAccount.Code = childCode
 
 	// The child SC will output "child ok" if it could read some expected Big
 	// Ints directly from the parent's context.
@@ -230,7 +232,7 @@ func expectedVMOutput_SameCtx_SuccessfulChildCall_BigInts() *vmcommon.VMOutput {
 	return vmOutput
 }
 
-func expectedVMOutput_SameCtx_Recursive_Direct(recursiveCalls int) *vmcommon.VMOutput {
+func expectedVMOutput_SameCtx_Recursive_Direct(code []byte, recursiveCalls int) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 
 	account := AddNewOutputAccount(
@@ -241,6 +243,7 @@ func expectedVMOutput_SameCtx_Recursive_Direct(recursiveCalls int) *vmcommon.VMO
 	)
 	account.Balance = big.NewInt(1000)
 	account.BalanceDelta = big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1))
+	account.Code = code
 
 	for i := recursiveCalls; i >= 0; i-- {
 		finishString := fmt.Sprintf("Rfinish%03d", i)
@@ -263,7 +266,7 @@ func expectedVMOutput_SameCtx_Recursive_Direct(recursiveCalls int) *vmcommon.VMO
 	return vmOutput
 }
 
-func expectedVMOutput_SameCtx_Recursive_Direct_ErrMaxInstances(recursiveCalls int) *vmcommon.VMOutput {
+func expectedVMOutput_SameCtx_Recursive_Direct_ErrMaxInstances(code []byte, recursiveCalls int) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 
 	account := AddNewOutputAccount(
@@ -272,6 +275,7 @@ func expectedVMOutput_SameCtx_Recursive_Direct_ErrMaxInstances(recursiveCalls in
 		0,
 		nil,
 	)
+	account.Code = code
 
 	finishString := fmt.Sprintf("Rfinish%03d", recursiveCalls)
 	AddFinishData(vmOutput, []byte(finishString))
@@ -286,7 +290,7 @@ func expectedVMOutput_SameCtx_Recursive_Direct_ErrMaxInstances(recursiveCalls in
 	return vmOutput
 }
 
-func expectedVMOutput_SameCtx_Recursive_MutualMethods(recursiveCalls int) *vmcommon.VMOutput {
+func expectedVMOutput_SameCtx_Recursive_MutualMethods(code []byte, recursiveCalls int) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 
 	account := AddNewOutputAccount(
@@ -297,6 +301,7 @@ func expectedVMOutput_SameCtx_Recursive_MutualMethods(recursiveCalls int) *vmcom
 	)
 	account.Balance = big.NewInt(1000)
 	account.BalanceDelta = big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1))
+	account.Code = code
 
 	SetStorageUpdate(account, recursiveIterationCounterKey, []byte{byte(recursiveCalls + 1)})
 	SetStorageUpdate(account, recursiveIterationBigCounterKey, big.NewInt(int64(recursiveCalls+1)).Bytes())
@@ -330,7 +335,7 @@ func expectedVMOutput_SameCtx_Recursive_MutualMethods(recursiveCalls int) *vmcom
 	return vmOutput
 }
 
-func expectedVMOutput_SameCtx_Recursive_MutualSCs(recursiveCalls int) *vmcommon.VMOutput {
+func expectedVMOutput_SameCtx_Recursive_MutualSCs(parentCode []byte, childCode []byte, recursiveCalls int) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 
 	parentAccount := AddNewOutputAccount(
@@ -340,6 +345,7 @@ func expectedVMOutput_SameCtx_Recursive_MutualSCs(recursiveCalls int) *vmcommon.
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
+	parentAccount.Code = parentCode
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,
@@ -348,6 +354,7 @@ func expectedVMOutput_SameCtx_Recursive_MutualSCs(recursiveCalls int) *vmcommon.
 		nil,
 	)
 	childAccount.Balance = big.NewInt(0)
+	childAccount.Code = childCode
 
 	if recursiveCalls%2 == 1 {
 		parentAccount.BalanceDelta = big.NewInt(-5)
@@ -385,7 +392,7 @@ func expectedVMOutput_SameCtx_Recursive_MutualSCs(recursiveCalls int) *vmcommon.
 	return vmOutput
 }
 
-func expectedVMOutput_SameCtx_BuiltinFunctions_1() *vmcommon.VMOutput {
+func expectedVMOutput_SameCtx_BuiltinFunctions_1(code []byte) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 
 	account := AddNewOutputAccount(
@@ -395,6 +402,7 @@ func expectedVMOutput_SameCtx_BuiltinFunctions_1() *vmcommon.VMOutput {
 		nil,
 	)
 	account.Balance = big.NewInt(1000)
+	account.Code = code
 
 	AddFinishData(vmOutput, []byte("succ"))
 	gasConsumed_builtinClaim := 100
@@ -403,7 +411,7 @@ func expectedVMOutput_SameCtx_BuiltinFunctions_1() *vmcommon.VMOutput {
 	return vmOutput
 }
 
-func expectedVMOutput_SameCtx_BuiltinFunctions_2() *vmcommon.VMOutput {
+func expectedVMOutput_SameCtx_BuiltinFunctions_2(code []byte) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 
 	account := AddNewOutputAccount(
@@ -414,6 +422,7 @@ func expectedVMOutput_SameCtx_BuiltinFunctions_2() *vmcommon.VMOutput {
 	)
 	account.Balance = big.NewInt(1000)
 	account.BalanceDelta = big.NewInt(0)
+	account.Code = code
 
 	AddFinishData(vmOutput, []byte("succ"))
 
@@ -423,15 +432,16 @@ func expectedVMOutput_SameCtx_BuiltinFunctions_2() *vmcommon.VMOutput {
 	return vmOutput
 }
 
-func expectedVMOutput_SameCtx_BuiltinFunctions_3() *vmcommon.VMOutput {
+func expectedVMOutput_SameCtx_BuiltinFunctions_3(code []byte) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 
-	_ = AddNewOutputAccount(
+	account := AddNewOutputAccount(
 		vmOutput,
 		parentAddress,
 		0,
 		nil,
 	)
+	account.Code = code
 
 	AddFinishData(vmOutput, []byte("fail"))
 	vmOutput.GasRemaining = 98000
@@ -498,7 +508,7 @@ func expectedVMOutput_DestCtx_WrongContractCalled(parentCode []byte) *vmcommon.V
 	return vmOutput
 }
 
-func expectedVMOutput_DestCtx_OutOfGas() *vmcommon.VMOutput {
+func expectedVMOutput_DestCtx_OutOfGas(parentCode []byte) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 
 	vmOutput.ReturnCode = vmcommon.Ok
@@ -509,6 +519,7 @@ func expectedVMOutput_DestCtx_OutOfGas() *vmcommon.VMOutput {
 		0,
 		nil,
 	)
+	parentAccount.Code = parentCode
 
 	SetStorageUpdate(parentAccount, parentKeyA, parentDataA)
 	SetStorageUpdate(parentAccount, parentKeyB, parentDataB)
