@@ -187,9 +187,29 @@
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "''fuzz_sc_delegation_addr_______s1",
                 "value": "0",
-                "function": "enableAutoActivation",
+                "function": "setAnyoneCanActivate",
                 "arguments": [],
                 "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "enable-unstake",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "to": "''fuzz_sc_delegation_addr_______s1",
+                "value": "0",
+                "function": "enableUnStake",
+                "arguments": [],
+                "gasLimit": "1,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -391,7 +411,7 @@
                 "from": "''delegator     7               s1",
                 "to": "''fuzz_sc_delegation_addr_______s1",
                 "value": "1006682239",
-                "function": "stake",
+                "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
@@ -420,7 +440,7 @@
                 "from": "''delegator     5               s1",
                 "to": "''fuzz_sc_delegation_addr_______s1",
                 "value": "251653161",
-                "function": "stake",
+                "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
@@ -587,7 +607,7 @@
                 "from": "''delegator     6               s1",
                 "to": "''fuzz_sc_delegation_addr_______s1",
                 "value": "459004534",
-                "function": "stake",
+                "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
@@ -673,7 +693,7 @@
                 "from": "''delegator     6               s1",
                 "to": "''fuzz_sc_delegation_addr_______s1",
                 "value": "550528740",
-                "function": "stake",
+                "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
@@ -773,7 +793,7 @@
                 "from": "''delegator     2               s1",
                 "to": "''fuzz_sc_delegation_addr_______s1",
                 "value": "1780760936",
-                "function": "stake",
+                "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
@@ -845,7 +865,7 @@
                 "from": "''delegator     3               s1",
                 "to": "''fuzz_sc_delegation_addr_______s1",
                 "value": "583881787",
-                "function": "stake",
+                "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
@@ -928,7 +948,7 @@
                 "from": "''delegator     8               s1",
                 "to": "''fuzz_sc_delegation_addr_______s1",
                 "value": "760064160",
-                "function": "stake",
+                "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
@@ -957,7 +977,7 @@
                 "from": "''delegator     2               s1",
                 "to": "''fuzz_sc_delegation_addr_______s1",
                 "value": "1298592533",
-                "function": "stake",
+                "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
@@ -1096,7 +1116,7 @@
                 "from": "''delegator     8               s1",
                 "to": "''fuzz_sc_delegation_addr_______s1",
                 "value": "176934035",
-                "function": "stake",
+                "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
@@ -1133,7 +1153,7 @@
                 "from": "''delegator     5               s1",
                 "to": "''fuzz_sc_delegation_addr_______s1",
                 "value": "840198516",
-                "function": "stake",
+                "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
@@ -1162,7 +1182,7 @@
                 "from": "''delegator     4               s1",
                 "to": "''fuzz_sc_delegation_addr_______s1",
                 "value": "1037093802",
-                "function": "stake",
+                "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
@@ -1434,7 +1454,7 @@
                 "from": "''delegator     4               s1",
                 "to": "''fuzz_sc_delegation_addr_______s1",
                 "value": "1002502394",
-                "function": "stake",
+                "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
@@ -1486,7 +1506,7 @@
                 "from": "''delegator     2               s1",
                 "to": "''fuzz_sc_delegation_addr_______s1",
                 "value": "325665785",
-                "function": "stake",
+                "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
@@ -1535,7 +1555,7 @@
                 "from": "''delegator     3               s1",
                 "to": "''fuzz_sc_delegation_addr_______s1",
                 "value": "567752448",
-                "function": "stake",
+                "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
@@ -1662,7 +1682,7 @@
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "''fuzz_sc_delegation_addr_______s1",
                 "value": "1907783229",
-                "function": "stake",
+                "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
@@ -1691,7 +1711,7 @@
                 "from": "''delegator     3               s1",
                 "to": "''fuzz_sc_delegation_addr_______s1",
                 "value": "611682727",
-                "function": "stake",
+                "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
@@ -1796,7 +1816,7 @@
                 "from": "''delegator     2               s1",
                 "to": "''fuzz_sc_delegation_addr_______s1",
                 "value": "1106015394",
-                "function": "stake",
+                "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
@@ -2045,7 +2065,7 @@
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "''fuzz_sc_delegation_addr_______s1",
                 "value": "453255881",
-                "function": "stake",
+                "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
@@ -2240,7 +2260,7 @@
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "''fuzz_sc_delegation_addr_______s1",
                 "value": "355908774",
-                "function": "stake",
+                "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
@@ -2284,7 +2304,7 @@
                 "from": "''delegator     2               s1",
                 "to": "''fuzz_sc_delegation_addr_______s1",
                 "value": "747048514",
-                "function": "stake",
+                "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"

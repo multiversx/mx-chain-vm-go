@@ -27,7 +27,7 @@
                 "value": "0",
                 "function": "store_opt_addr",
                 "arguments": [
-                    "1|``____________address_____________"
+                    "``____________address_____________"
                 ],
                 "gasLimit": "0x100000",
                 "gasPrice": "0x01"
@@ -51,12 +51,7 @@
                     },
                     "code": "file:features.wasm"
                 },
-                "``an_account____________________s0": {
-                    "nonce": "*",
-                    "balance": "*",
-                    "storage": {},
-                    "code": ""
-                }
+                "+": ""
             }
         },
         {
@@ -88,7 +83,6 @@
                 "value": "0",
                 "function": "store_opt_addr",
                 "arguments": [
-                    "0x00"
                 ],
                 "gasLimit": "0x100000",
                 "gasPrice": "0x01"
@@ -105,19 +99,14 @@
             "step": "checkState",
             "accounts": {
                 "``features_contract_____________s0": {
-                    "nonce": "0",
-                    "balance": "0",
+                    "nonce": "*",
+                    "balance": "*",
                     "storage": {
-                        "``opt_addr": "0x00"
+                        "``opt_addr": ""
                     },
                     "code": "file:features.wasm"
                 },
-                "``an_account____________________s0": {
-                    "nonce": "*",
-                    "balance": "*",
-                    "storage": {},
-                    "code": ""
-                }
+                "+": ""
             }
         },
         {

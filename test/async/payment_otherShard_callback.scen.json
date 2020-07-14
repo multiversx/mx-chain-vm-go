@@ -54,7 +54,7 @@
                     "balance": "0",
                     "storage": {
                         "0x0000000000000000000000000000000000000000000000000000000000000000": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb5555",
-                        "``tx_hash_________________________": "``payCallback"
+                        "``1...............................": "``payCallback"
                     },
                     "code": "file:alice.wasm"
                 },
