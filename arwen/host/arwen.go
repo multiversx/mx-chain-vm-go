@@ -209,7 +209,7 @@ func (host *vmHost) IsIndirectInitCallAllowed() bool {
 }
 
 func (host *vmHost) Clean() {
-	host.runtimeContext.CleanInstance()
+	host.runtimeContext.CleanWasmerInstance()
 	arwen.RemoveAllHostContexts()
 }
 

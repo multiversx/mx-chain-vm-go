@@ -2,7 +2,6 @@ package contexts
 
 import (
 	"fmt"
-	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
@@ -12,17 +11,13 @@ import (
 var _ arwen.RuntimeContext = (*runtimeContext)(nil)
 
 type runtimeContext struct {
-	host     arwen.VMHost
-	instance *wasmer.Instance
-	// Temporarily holding these pointers is supposed to circumvent an undesired
-	// deallocation performed by Go's GC
-	instanceContextDataPointers []*int
-	instanceContext             *wasmer.InstanceContext
-	vmInput                     *vmcommon.VMInput
-	scAddress                   []byte
-	callFunction                string
-	vmType                      []byte
-	readOnly                    bool
+	host         arwen.VMHost
+	instance     *wasmer.Instance
+	vmInput      *vmcommon.VMInput
+	scAddress    []byte
+	callFunction string
+	vmType       []byte
+	readOnly     bool
 
 	stateStack    []*runtimeContext
 	instanceStack []*wasmer.Instance
@@ -41,12 +36,11 @@ func NewRuntimeContext(host arwen.VMHost, vmType []byte) (*runtimeContext, error
 	protocolBuiltinFunctions := host.GetProtocolBuiltinFunctions()
 
 	context := &runtimeContext{
-		host:                        host,
-		instanceContextDataPointers: make([]*int, 0),
-		vmType:                      vmType,
-		stateStack:                  make([]*runtimeContext, 0),
-		instanceStack:               make([]*wasmer.Instance, 0),
-		validator:                   NewWASMValidator(scAPINames, protocolBuiltinFunctions),
+		host:          host,
+		vmType:        vmType,
+		stateStack:    make([]*runtimeContext, 0),
+		instanceStack: make([]*wasmer.Instance, 0),
+		validator:     NewWASMValidator(scAPINames, protocolBuiltinFunctions),
 	}
 
 	context.InitState()
@@ -55,7 +49,6 @@ func NewRuntimeContext(host arwen.VMHost, vmType []byte) (*runtimeContext, error
 }
 
 func (context *runtimeContext) InitState() {
-	context.instanceContextDataPointers = make([]*int, 0)
 	context.vmInput = &vmcommon.VMInput{}
 	context.scAddress = make([]byte, 0)
 	context.callFunction = ""
@@ -84,6 +77,16 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 	}
 
 	context.instance = newInstance
+
+	idContext := arwen.AddHostContext(context.host)
+	context.instance.SetContextData(idContext)
+
+	err = context.VerifyContractCode()
+	if err != nil {
+		context.instance = nil
+		return err
+	}
+
 	context.SetRuntimeBreakpointValue(arwen.BreakpointNone)
 	return nil
 }
@@ -151,7 +154,7 @@ func (context *runtimeContext) PopInstance() {
 	prevInstance := context.instanceStack[instanceStackLen-1]
 	context.instanceStack = context.instanceStack[:instanceStackLen-1]
 
-	context.CleanInstance()
+	context.CleanWasmerInstance()
 	context.instance = prevInstance
 }
 
@@ -286,27 +289,24 @@ func (context *runtimeContext) SetReadOnly(readOnly bool) {
 	context.readOnly = readOnly
 }
 
-func (context *runtimeContext) SetInstanceContextID(id int) {
-	context.instanceContextDataPointers = append(context.instanceContextDataPointers, &id)
-	context.instance.SetContextData(unsafe.Pointer(&id))
-}
-
 func (context *runtimeContext) SetInstanceContext(instCtx *wasmer.InstanceContext) {
-	context.instanceContext = instCtx
+	// TODO remove this method when the vmContextMap is removed
 }
 
 func (context *runtimeContext) GetInstanceContext() *wasmer.InstanceContext {
-	return context.instanceContext
+	return &context.instance.InstanceCtx
 }
 
 func (context *runtimeContext) GetInstanceExports() wasmer.ExportsMap {
 	return context.instance.Exports
 }
 
-func (context *runtimeContext) CleanInstance() {
+func (context *runtimeContext) CleanWasmerInstance() {
 	if context.instance == nil {
 		return
 	}
+
+	arwen.RemoveHostContext(*context.instance.Data)
 	context.instance.Clean()
 	context.instance = nil
 }
@@ -379,7 +379,7 @@ func (context *runtimeContext) MemLoad(offset int32, length int32) ([]byte, erro
 		return []byte{}, nil
 	}
 
-	memory := context.instanceContext.Memory()
+	memory := context.instance.InstanceCtx.Memory()
 	memoryView := memory.Data()
 	memoryLength := memory.Length()
 	requestedEnd := uint32(offset + length)
@@ -411,7 +411,7 @@ func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 		return nil
 	}
 
-	memory := context.instanceContext.Memory()
+	memory := context.instance.InstanceCtx.Memory()
 	memoryView := memory.Data()
 	memoryLength := memory.Length()
 	requestedEnd := uint32(offset + dataLength)
