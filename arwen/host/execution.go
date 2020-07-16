@@ -130,7 +130,9 @@ func (host *vmHost) performCodeDeployment(input arwen.CodeDeployInput) (*vmcommo
 	idContext := arwen.AddHostContext(host)
 	runtime.SetInstanceContextID(idContext)
 
+	host.allowAsyncCalls = false
 	err = host.callInitFunction()
+	host.allowAsyncCalls = true
 	if err != nil {
 		return nil, err
 	}
@@ -289,10 +291,15 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newA
 
 	_, blockchain, metering, output, runtime, _ := host.GetContexts()
 
-	// Use all gas initially. In case of successful deployment, the unused gas
-	// will be restored.
-	initialGasProvided := input.GasProvided
-	metering.UseGas(initialGasProvided)
+	codeDeployInput := arwen.CodeDeployInput{
+		ContractCode:         input.ContractCode,
+		ContractCodeMetadata: input.ContractCodeMetadata,
+		ContractAddress:      newAddress,
+	}
+	err = metering.DeductInitialGasForIndirectDeployment(codeDeployInput)
+	if err != nil {
+		return
+	}
 
 	// The init() method of the newly deployed contract will be executed using
 	// host.ExecuteOnDestContext(), which must be informed that calling init() is
@@ -555,10 +562,6 @@ func (host *vmHost) callSCMethodIndirect() error {
 	_, err = function()
 	if err != nil {
 		err = host.handleBreakpointIfAny(err)
-	}
-
-	if err != nil {
-		return err
 	}
 
 	return err

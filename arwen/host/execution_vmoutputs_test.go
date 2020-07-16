@@ -912,3 +912,33 @@ func expectedVMOutput_AsyncCall_CallBackFails(parentCode []byte, childCode []byt
 
 	return vmOutput
 }
+
+func expectedVMOutput_CreateNewContract_Success(parentCode []byte, childCode []byte) *vmcommon.VMOutput {
+	vmOutput := MakeVMOutput()
+	parentAccount := AddNewOutputAccount(
+		vmOutput,
+		parentAddress,
+		-42,
+		nil,
+	)
+	parentAccount.Balance = big.NewInt(1000)
+	parentAccount.Code = parentCode
+	parentAccount.Nonce = 1
+	SetStorageUpdate(parentAccount, []byte{'A'}, childCode)
+
+	childAccount := AddNewOutputAccount(
+		vmOutput,
+		[]byte("newAddress"),
+		42,
+		nil,
+	)
+	childAccount.Code = childCode
+	childAccount.CodeMetadata = []byte{1, 0}
+
+	l := len(childCode)
+	AddFinishData(vmOutput, []byte{byte(l / 256), byte(l % 256)})
+	AddFinishData(vmOutput, []byte("init successful"))
+	AddFinishData(vmOutput, []byte("succ"))
+
+	return vmOutput
+}

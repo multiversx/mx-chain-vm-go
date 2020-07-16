@@ -363,6 +363,9 @@ func mergeOutputAccounts(
 	if len(rightAccount.Code) > 0 {
 		leftAccount.Code = rightAccount.Code
 	}
+	if len(rightAccount.CodeMetadata) > 0 {
+		leftAccount.CodeMetadata = rightAccount.CodeMetadata
+	}
 	if len(rightAccount.Data) > 0 {
 		leftAccount.Data = rightAccount.Data
 	}

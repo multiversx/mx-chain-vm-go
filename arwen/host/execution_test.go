@@ -1,6 +1,7 @@
 package host
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"math/big"
@@ -1054,6 +1055,38 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 	require.Nil(t, err)
 
 	expectedVMOutput := expectedVMOutput_AsyncCall_CallBackFails(parentCode, childCode)
+	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
+	require.Equal(t, expectedVMOutput, vmOutput)
+}
+
+func TestExecution_CreateNewContract_Success(t *testing.T) {
+	parentCode := GetTestSCCode("deployer", "../../")
+	childCode := GetTestSCCode("init-correct", "../../")
+	parentBalance := big.NewInt(1000)
+
+	host, stubBlockchainHook := DefaultTestArwenForCall(t, parentCode, parentBalance)
+	stubBlockchainHook.GetStorageDataCalled = func(address []byte, key []byte) ([]byte, error) {
+		if bytes.Equal(address, parentAddress) {
+			if bytes.Equal(key, []byte{'A'}) {
+				return childCode, nil
+			}
+			return nil, nil
+		}
+		return nil, arwen.ErrInvalidAccount
+	}
+
+	input := DefaultTestContractCallInput()
+	input.Function = "deployChildContract"
+	input.Arguments = [][]byte{{'A'}}
+	input.GasProvided = 1_000_000
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+
+	expectedVMOutput := expectedVMOutput_CreateNewContract_Success(parentCode, childCode)
+
+	// TODO calculate expected remaining gas properly, instead of copying it from
+	// the actual vmOutput.
 	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
 }

@@ -14,7 +14,8 @@ var _ arwen.RuntimeContext = (*runtimeContext)(nil)
 type runtimeContext struct {
 	host     arwen.VMHost
 	instance *wasmer.Instance
-	// Temporarily holding these pointers are supposed to circumvent an undesired deallocation performed by Go's GC
+	// Temporarily holding these pointers is supposed to circumvent an undesired
+	// deallocation performed by Go's GC
 	instanceContextDataPointers []*int
 	instanceContext             *wasmer.InstanceContext
 	vmInput                     *vmcommon.VMInput
@@ -60,7 +61,7 @@ func (context *runtimeContext) InitState() {
 	context.callFunction = ""
 	context.readOnly = false
 	context.asyncCallInfo = nil
-	context.asyncContextInfo = &arwen.AsyncContextInfo {
+	context.asyncContextInfo = &arwen.AsyncContextInfo{
 		AsyncContextMap: make(map[string]*arwen.AsyncContext),
 	}
 }
@@ -96,8 +97,8 @@ func (context *runtimeContext) InitStateFromContractCallInput(input *vmcommon.Co
 	context.scAddress = input.RecipientAddr
 	context.callFunction = input.Function
 	// Reset async map for initial state
-	context.asyncContextInfo = &arwen.AsyncContextInfo {
-		CallerAddr: input.CallerAddr,
+	context.asyncContextInfo = &arwen.AsyncContextInfo{
+		CallerAddr:      input.CallerAddr,
 		AsyncContextMap: make(map[string]*arwen.AsyncContext),
 	}
 }
