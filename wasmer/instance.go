@@ -85,6 +85,8 @@ type Instance struct {
 
 	Data        *int
 	DataPointer unsafe.Pointer
+
+	InstanceCtx InstanceContext
 }
 
 type CompilationOptions struct {
@@ -149,6 +151,10 @@ func NewInstanceWithOptions(
 	}
 
 	instance, err := newInstance(c_instance)
+	if instance.Memory != nil {
+		c_instance_context := cWasmerInstanceContextGet(c_instance)
+		instance.InstanceCtx = IntoInstanceContextDirect(c_instance_context)
+	}
 	return instance, err
 }
 

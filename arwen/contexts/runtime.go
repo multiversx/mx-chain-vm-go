@@ -11,14 +11,13 @@ import (
 var _ arwen.RuntimeContext = (*runtimeContext)(nil)
 
 type runtimeContext struct {
-	host            arwen.VMHost
-	instance        *wasmer.Instance
-	instanceContext *wasmer.InstanceContext
-	vmInput         *vmcommon.VMInput
-	scAddress       []byte
-	callFunction    string
-	vmType          []byte
-	readOnly        bool
+	host         arwen.VMHost
+	instance     *wasmer.Instance
+	vmInput      *vmcommon.VMInput
+	scAddress    []byte
+	callFunction string
+	vmType       []byte
+	readOnly     bool
 
 	stateStack    []*runtimeContext
 	instanceStack []*wasmer.Instance
@@ -291,11 +290,11 @@ func (context *runtimeContext) SetReadOnly(readOnly bool) {
 }
 
 func (context *runtimeContext) SetInstanceContext(instCtx *wasmer.InstanceContext) {
-	context.instanceContext = instCtx
+	// TODO remove this method when the vmContextMap is removed
 }
 
 func (context *runtimeContext) GetInstanceContext() *wasmer.InstanceContext {
-	return context.instanceContext
+	return &context.instance.InstanceCtx
 }
 
 func (context *runtimeContext) GetInstanceExports() wasmer.ExportsMap {
@@ -380,7 +379,7 @@ func (context *runtimeContext) MemLoad(offset int32, length int32) ([]byte, erro
 		return []byte{}, nil
 	}
 
-	memory := context.instanceContext.Memory()
+	memory := context.instance.InstanceCtx.Memory()
 	memoryView := memory.Data()
 	memoryLength := memory.Length()
 	requestedEnd := uint32(offset + length)
@@ -412,7 +411,7 @@ func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 		return nil
 	}
 
-	memory := context.instanceContext.Memory()
+	memory := context.instance.InstanceCtx.Memory()
 	memoryView := memory.Data()
 	memoryLength := memory.Length()
 	requestedEnd := uint32(offset + dataLength)

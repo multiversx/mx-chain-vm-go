@@ -361,7 +361,6 @@ func TestRuntimeContext_MemLoadStoreOk(t *testing.T) {
 	require.Nil(t, err)
 
 	memory := runtimeContext.instance.Memory
-	runtimeContext.instanceContext = wasmer.NewInstanceContext(nil, *memory)
 
 	memContents, err := runtimeContext.MemLoad(10, 10)
 	require.Nil(t, err)
@@ -396,7 +395,6 @@ func TestRuntimeContext_MemLoadCases(t *testing.T) {
 	require.Nil(t, err)
 
 	memory := runtimeContext.instance.Memory
-	runtimeContext.instanceContext = wasmer.NewInstanceContext(nil, *memory)
 
 	var offset int32
 	var length int32
@@ -465,7 +463,6 @@ func TestRuntimeContext_MemStoreCases(t *testing.T) {
 	pageSize := uint32(65536)
 	memory := runtimeContext.instance.Memory
 	require.Equal(t, 2*pageSize, memory.Length())
-	runtimeContext.instanceContext = wasmer.NewInstanceContext(nil, *memory)
 
 	// Bad lower bounds
 	memContents := []byte("test data")
