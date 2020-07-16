@@ -279,7 +279,7 @@ func TestRuntimeContext_Instance(t *testing.T) {
 	initFunc := runtimeContext.GetInitFunction()
 	require.NotNil(t, initFunc)
 
-	runtimeContext.CleanInstance()
+	runtimeContext.CleanWasmerInstance()
 	require.Nil(t, runtimeContext.instance)
 }
 

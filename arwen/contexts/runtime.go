@@ -2,7 +2,6 @@ package contexts
 
 import (
 	"fmt"
-	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
@@ -12,16 +11,14 @@ import (
 var _ arwen.RuntimeContext = (*runtimeContext)(nil)
 
 type runtimeContext struct {
-	host     arwen.VMHost
-	instance *wasmer.Instance
-	// Temporarily holding these pointers are supposed to circumvent an undesired deallocation performed by Go's GC
-	instanceContextDataPointers []*int
-	instanceContext             *wasmer.InstanceContext
-	vmInput                     *vmcommon.VMInput
-	scAddress                   []byte
-	callFunction                string
-	vmType                      []byte
-	readOnly                    bool
+	host            arwen.VMHost
+	instance        *wasmer.Instance
+	instanceContext *wasmer.InstanceContext
+	vmInput         *vmcommon.VMInput
+	scAddress       []byte
+	callFunction    string
+	vmType          []byte
+	readOnly        bool
 
 	stateStack    []*runtimeContext
 	instanceStack []*wasmer.Instance
@@ -40,12 +37,11 @@ func NewRuntimeContext(host arwen.VMHost, vmType []byte) (*runtimeContext, error
 	protocolBuiltinFunctions := host.GetProtocolBuiltinFunctions()
 
 	context := &runtimeContext{
-		host:                        host,
-		instanceContextDataPointers: make([]*int, 0),
-		vmType:                      vmType,
-		stateStack:                  make([]*runtimeContext, 0),
-		instanceStack:               make([]*wasmer.Instance, 0),
-		validator:                   NewWASMValidator(scAPINames, protocolBuiltinFunctions),
+		host:          host,
+		vmType:        vmType,
+		stateStack:    make([]*runtimeContext, 0),
+		instanceStack: make([]*wasmer.Instance, 0),
+		validator:     NewWASMValidator(scAPINames, protocolBuiltinFunctions),
 	}
 
 	context.InitState()
@@ -54,13 +50,12 @@ func NewRuntimeContext(host arwen.VMHost, vmType []byte) (*runtimeContext, error
 }
 
 func (context *runtimeContext) InitState() {
-	context.instanceContextDataPointers = make([]*int, 0)
 	context.vmInput = &vmcommon.VMInput{}
 	context.scAddress = make([]byte, 0)
 	context.callFunction = ""
 	context.readOnly = false
 	context.asyncCallInfo = nil
-	context.asyncContextInfo = &arwen.AsyncContextInfo {
+	context.asyncContextInfo = &arwen.AsyncContextInfo{
 		AsyncContextMap: make(map[string]*arwen.AsyncContext),
 	}
 }
@@ -83,6 +78,16 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 	}
 
 	context.instance = newInstance
+
+	idContext := arwen.AddHostContext(context.host)
+	context.instance.SetContextData(idContext)
+
+	err = context.VerifyContractCode()
+	if err != nil {
+		context.instance = nil
+		return err
+	}
+
 	context.SetRuntimeBreakpointValue(arwen.BreakpointNone)
 	return nil
 }
@@ -96,8 +101,8 @@ func (context *runtimeContext) InitStateFromContractCallInput(input *vmcommon.Co
 	context.scAddress = input.RecipientAddr
 	context.callFunction = input.Function
 	// Reset async map for initial state
-	context.asyncContextInfo = &arwen.AsyncContextInfo {
-		CallerAddr: input.CallerAddr,
+	context.asyncContextInfo = &arwen.AsyncContextInfo{
+		CallerAddr:      input.CallerAddr,
 		AsyncContextMap: make(map[string]*arwen.AsyncContext),
 	}
 }
@@ -150,7 +155,7 @@ func (context *runtimeContext) PopInstance() {
 	prevInstance := context.instanceStack[instanceStackLen-1]
 	context.instanceStack = context.instanceStack[:instanceStackLen-1]
 
-	context.CleanInstance()
+	context.CleanWasmerInstance()
 	context.instance = prevInstance
 }
 
@@ -285,11 +290,6 @@ func (context *runtimeContext) SetReadOnly(readOnly bool) {
 	context.readOnly = readOnly
 }
 
-func (context *runtimeContext) SetInstanceContextID(id int) {
-	context.instanceContextDataPointers = append(context.instanceContextDataPointers, &id)
-	context.instance.SetContextData(unsafe.Pointer(&id))
-}
-
 func (context *runtimeContext) SetInstanceContext(instCtx *wasmer.InstanceContext) {
 	context.instanceContext = instCtx
 }
@@ -302,10 +302,12 @@ func (context *runtimeContext) GetInstanceExports() wasmer.ExportsMap {
 	return context.instance.Exports
 }
 
-func (context *runtimeContext) CleanInstance() {
+func (context *runtimeContext) CleanWasmerInstance() {
 	if context.instance == nil {
 		return
 	}
+
+	arwen.RemoveHostContext(*context.instance.Data)
 	context.instance.Clean()
 	context.instance = nil
 }

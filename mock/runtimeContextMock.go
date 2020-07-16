@@ -165,7 +165,7 @@ func (r *RuntimeContextMock) GetInstanceExports() wasmer.ExportsMap {
 	return nil
 }
 
-func (r *RuntimeContextMock) CleanInstance() {
+func (r *RuntimeContextMock) CleanWasmerInstance() {
 }
 
 func (r *RuntimeContextMock) GetFunctionToCall() (wasmer.ExportedFunctionCallback, error) {
