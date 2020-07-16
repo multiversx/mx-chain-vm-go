@@ -8,7 +8,7 @@
                 "from": "''node_address__________________s1",
                 "to": "''delegation_contract___________s1",
                 "value": "0",
-                "function": "enableAutoActivation",
+                "function": "setAnyoneCanActivate",
                 "arguments": [],
                 "gasLimit": "1,000,000",
                 "gasPrice": "0"
@@ -54,13 +54,13 @@
         },
         {
             "step": "scCall",
-            "txId": "stake and trigger auto activation",
+            "txId": "stake and activate",
             "comment": "BUG WARNING! Not all events get saved, stake event missing!!!",
             "tx": {
                 "from": "''delegator_1___________________s1",
                 "to": "''delegation_contract___________s1",
                 "value": "1",
-                "function": "stake",
+                "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "2,000,000",
                 "gasPrice": "0"
@@ -69,6 +69,14 @@
                 "out": [],
                 "status": "",
                 "logs": [
+                    {
+                        "address": "''delegation_contract___________s1",
+                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000001",
+                        "topics": [
+                            "''delegator_1___________________s1"
+                        ],
+                        "data": "1"
+                    },
                     {
                         "address": "''delegation_contract___________s1",
                         "identifier": "0x0000000000000000000000000000000000000000000000000000000000000003",

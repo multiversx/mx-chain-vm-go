@@ -60,7 +60,7 @@
         },
         {
             "step": "scDeploy",
-            "txId": "1",
+            "txId": "deploy-1",
             "tx": {
                 "from": "''node_address__________________s1",
                 "value": "0",
@@ -115,6 +115,26 @@
                 "arguments": [
                     "5000"
                 ],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "enable-unstake",
+            "tx": {
+                "from": "''node_address__________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "enableUnStake",
+                "arguments": [],
                 "gasLimit": "1,000,000",
                 "gasPrice": "0"
             },

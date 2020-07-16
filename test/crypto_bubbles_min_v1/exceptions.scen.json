@@ -39,7 +39,7 @@
             "expect": {
                 "out": [],
                 "status": "0x04",
-                "message": "argument has wrong length: 32 bytes expected",
+                "message": "argument decode error (winner): input too long",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"
@@ -62,7 +62,7 @@
             "expect": {
                 "out": [],
                 "status": "0x04",
-                "message": "argument has wrong length: 32 bytes expected",
+                "message": "argument decode error (subject): input too long",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"
