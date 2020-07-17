@@ -346,7 +346,7 @@ func TestExecution_ExecuteOnSameContext_Simple(t *testing.T) {
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionChildCall"
-	input.GasProvided = 1000000
+	input.GasProvided = gasProvided
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	fmt.Println(vmOutput.ReturnMessage)
@@ -396,7 +396,7 @@ func TestExecution_ExecuteOnSameContext_Prepare(t *testing.T) {
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionPrepare"
-	input.GasProvided = 1000000
+	input.GasProvided = gasProvided
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
@@ -417,7 +417,7 @@ func TestExecution_ExecuteOnSameContext_Wrong(t *testing.T) {
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionWrongCall"
-	input.GasProvided = 1000000
+	input.GasProvided = gasProvided
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
@@ -448,7 +448,7 @@ func TestExecution_ExecuteOnSameContext_OutOfGas(t *testing.T) {
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionChildCall_OutOfGas"
-	input.GasProvided = 1000000
+	input.GasProvided = gasProvided
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
@@ -468,7 +468,7 @@ func TestExecution_ExecuteOnSameContext_Successful(t *testing.T) {
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionChildCall"
-	input.GasProvided = 1000000
+	input.GasProvided = gasProvided
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
@@ -488,7 +488,7 @@ func TestExecution_ExecuteOnSameContext_Successful_BigInts(t *testing.T) {
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionChildCall_BigInts"
-	input.GasProvided = 1000000
+	input.GasProvided = gasProvided
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
@@ -516,7 +516,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct(t *testing.T) {
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "callRecursive"
-	input.GasProvided = 1000000
+	input.GasProvided = gasProvided
 
 	recursiveCalls := byte(5)
 	input.Arguments = [][]byte{
@@ -542,7 +542,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct_ErrMaxInstances(t *test
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "callRecursive"
-	input.GasProvided = 1000000
+	input.GasProvided = gasProvided
 
 	recursiveCalls := byte(11)
 	input.Arguments = [][]byte{
@@ -585,7 +585,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_Methods(t *testing.T) {
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "callRecursiveMutualMethods"
-	input.GasProvided = 1000000
+	input.GasProvided = gasProvided
 
 	recursiveCalls := byte(5)
 	input.Arguments = [][]byte{
@@ -624,7 +624,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs(t *testing.T) {
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentCallsChild"
-	input.GasProvided = 1000000
+	input.GasProvided = gasProvided
 
 	recursiveCalls := byte(5)
 	input.Arguments = [][]byte{
@@ -751,7 +751,7 @@ func TestExecution_ExecuteOnDestContext_Prepare(t *testing.T) {
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionPrepare"
-	input.GasProvided = 1000000
+	input.GasProvided = gasProvided
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
@@ -772,7 +772,7 @@ func TestExecution_ExecuteOnDestContext_Wrong(t *testing.T) {
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionWrongCall"
-	input.GasProvided = 1000000
+	input.GasProvided = gasProvided
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
@@ -803,7 +803,7 @@ func TestExecution_ExecuteOnDestContext_OutOfGas(t *testing.T) {
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionChildCall_OutOfGas"
-	input.GasProvided = 1000000
+	input.GasProvided = gasProvided
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
@@ -823,7 +823,7 @@ func TestExecution_ExecuteOnDestContext_Successful(t *testing.T) {
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionChildCall"
-	input.GasProvided = 1000000
+	input.GasProvided = gasProvided
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
@@ -843,7 +843,7 @@ func TestExecution_ExecuteOnDestContext_Successful_BigInts(t *testing.T) {
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionChildCall_BigInts"
-	input.GasProvided = 1000000
+	input.GasProvided = gasProvided
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
@@ -859,7 +859,7 @@ func TestExecution_ExecuteOnDestContext_Recursive_Direct(t *testing.T) {
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "callRecursive"
-	input.GasProvided = 1000000
+	input.GasProvided = gasProvided
 
 	recursiveCalls := byte(6)
 	input.Arguments = [][]byte{
@@ -885,7 +885,7 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_Methods(t *testing.T) {
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "callRecursiveMutualMethods"
-	input.GasProvided = 1000000
+	input.GasProvided = gasProvided
 
 	recursiveCalls := byte(7)
 	input.Arguments = [][]byte{
@@ -894,6 +894,7 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_Methods(t *testing.T) {
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
+
 	// TODO set proper gas calculation in the expectedVMOutput, like the other
 	// tests
 	expectedVMOutput := expectedVMOutput_DestCtx_Recursive_MutualMethods(code, int(recursiveCalls))
@@ -913,7 +914,7 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs(t *testing.T) {
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentCallsChild"
-	input.GasProvided = 1000000
+	input.GasProvided = gasProvided
 
 	recursiveCalls := byte(6)
 	input.Arguments = [][]byte{
@@ -996,6 +997,8 @@ func TestExecution_AsyncCall(t *testing.T) {
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
 
+	// TODO calculate expected remaining gas properly, instead of copying it from
+	// the actual vmOutput.
 	expectedVMOutput := expectedVMOutput_AsyncCall(parentCode, childCode)
 	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
@@ -1026,6 +1029,8 @@ func TestExecution_AsyncCall_ChildFails(t *testing.T) {
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
 
+	// TODO calculate expected remaining gas properly, instead of copying it from
+	// the actual vmOutput.
 	expectedVMOutput := expectedVMOutput_AsyncCall_ChildFails(parentCode, childCode)
 	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
@@ -1054,6 +1059,8 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
 
+	// TODO calculate expected remaining gas properly, instead of copying it from
+	// the actual vmOutput.
 	expectedVMOutput := expectedVMOutput_AsyncCall_CallBackFails(parentCode, childCode)
 	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
