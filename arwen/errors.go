@@ -77,7 +77,7 @@ var ErrShiftNegative = errors.New("bitwise shift operations only allowed on posi
 
 var ErrAsyncCallsDisallowed = errors.New("async calls disallowed")
 
-var ErrAsyncContextDoesNotExist = errors.New("async context was not created yet")
+var ErrAsyncContextDoesNotExist = errors.New("async context does not exist")
 
 var ErrInvalidAccount = errors.New("account does not exist")
 
