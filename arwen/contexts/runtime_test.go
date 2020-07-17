@@ -368,6 +368,7 @@ func TestRuntimeContext_MemLoadStoreOk(t *testing.T) {
 
 	pageSize := uint32(65536)
 	require.Equal(t, 2*pageSize, memory.Length())
+
 	memContents = []byte("test data")
 	err = runtimeContext.MemStore(10, memContents)
 	require.Nil(t, err)
@@ -510,4 +511,67 @@ func TestRuntimeContext_MemStoreCases(t *testing.T) {
 	memContents, err = runtimeContext.MemLoad(offset, 17)
 	require.Nil(t, err)
 	require.Equal(t, []byte("this is something"), memContents)
+}
+
+func TestRuntimeContext_MemLoadStoreVsInstanceStack(t *testing.T) {
+	imports := InitializeWasmer()
+
+	host := &mock.VmHostMock{}
+	host.SCAPIMethods = imports
+
+	vmType := []byte("type")
+	runtimeContext, _ := NewRuntimeContext(host, vmType)
+	runtimeContext.SetMaxInstanceCount(2)
+
+	gasLimit := uint64(100000000)
+	path := "./../../test/contracts/counter/output/counter.wasm"
+	contractCode := arwen.GetSCCode(path)
+	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit)
+	require.Nil(t, err)
+
+	// Write "test data1" to the WASM memory of the current instance
+	memContents := []byte("test data1")
+	err = runtimeContext.MemStore(10, memContents)
+	require.Nil(t, err)
+
+	memContents, err = runtimeContext.MemLoad(10, 10)
+	require.Nil(t, err)
+	require.Equal(t, []byte("test data1"), memContents)
+
+	// Push the current instance down the instance stack
+	runtimeContext.PushInstance()
+	require.Equal(t, 1, len(runtimeContext.instanceStack))
+
+	// Create a new Wasmer instance
+	contractCode = arwen.GetSCCode(path)
+	err = runtimeContext.StartWasmerInstance(contractCode, gasLimit)
+	require.Nil(t, err)
+
+	// Write "test data2" to the WASM memory of the new instance
+	memContents = []byte("test data2")
+	err = runtimeContext.MemStore(10, memContents)
+	require.Nil(t, err)
+
+	memContents, err = runtimeContext.MemLoad(10, 10)
+	require.Nil(t, err)
+	require.Equal(t, []byte("test data2"), memContents)
+
+	// Pop the initial instance from the stack, making it the 'current instance'
+	runtimeContext.PopInstance()
+	require.Equal(t, 0, len(runtimeContext.instanceStack))
+
+	// Check whether the previously-written string "test data1" is still in the
+	// memory of the initial instance
+	memContents, err = runtimeContext.MemLoad(10, 10)
+	require.Nil(t, err)
+	require.Equal(t, []byte("test data1"), memContents)
+
+	// Write "test data3" to the WASM memory of the initial instance (now current)
+	memContents = []byte("test data3")
+	err = runtimeContext.MemStore(10, memContents)
+	require.Nil(t, err)
+
+	memContents, err = runtimeContext.MemLoad(10, 10)
+	require.Nil(t, err)
+	require.Equal(t, []byte("test data3"), memContents)
 }
