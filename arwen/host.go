@@ -16,7 +16,6 @@ const InitFunctionName = "init"
 const InitFunctionNameEth = "solidity.ctor"
 const CallBackFunctionName = "callBack"
 const UpgradeFunctionName = "upgradeContract"
-const DefaultVMContextID = 255
 
 var (
 	vmContextCounter uint8
@@ -33,14 +32,6 @@ func AddHostContext(ctx VMHost) int {
 	return int(id)
 }
 
-func SetDefaultHostContext(ctx VMHost) int {
-	if vmContextMap == nil {
-		vmContextMap = make(map[uint8]VMHost)
-	}
-	vmContextMap[DefaultVMContextID] = ctx
-	return DefaultVMContextID
-}
-
 func RemoveAllHostContexts() {
 	vmContextMap = make(map[uint8]VMHost)
 }
@@ -49,15 +40,7 @@ func RemoveHostContext(idx int) {
 	delete(vmContextMap, uint8(idx))
 }
 
-func GetDefaultVmContext() VMHost {
-	return vmContextMap[DefaultVMContextID]
-}
-
 func GetVmContext(context unsafe.Pointer) VMHost {
-	if context == nil {
-		return GetDefaultVmContext()
-	}
-
 	instCtx := wasmer.IntoInstanceContext(context)
 	var idx = *(*int)(instCtx.Data())
 
