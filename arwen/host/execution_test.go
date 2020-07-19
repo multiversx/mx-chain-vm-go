@@ -144,7 +144,7 @@ func TestExecution_DeployWASM_Successful(t *testing.T) {
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 	require.Len(t, vmOutput.ReturnData, 1)
 	require.Equal(t, []byte("init successful"), vmOutput.ReturnData[0])
-	require.Equal(t, uint64(579), vmOutput.GasRemaining)
+	require.Equal(t, uint64(528), vmOutput.GasRemaining)
 	require.Len(t, vmOutput.OutputAccounts, 2)
 	require.Equal(t, uint64(24), vmOutput.OutputAccounts["caller"].Nonce)
 	require.Equal(t, input.ContractCode, vmOutput.OutputAccounts["new smartcontract"].Code)

@@ -18,9 +18,6 @@ void deployChildContract() {
 	byte arg = 0;
 	getArgument(1, &arg);
 
-	int64finish((i64) arg);
-	int64finish((i64)(arguments));
-
 	arguments[0] = arg;
 
 	int initArgLengths[] = {1};
