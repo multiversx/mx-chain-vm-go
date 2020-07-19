@@ -942,3 +942,23 @@ func expectedVMOutput_CreateNewContract_Success(parentCode []byte, childCode []b
 
 	return vmOutput
 }
+
+func expectedVMOutput_CreateNewContract_Fail(parentCode []byte, childCode []byte) *vmcommon.VMOutput {
+	vmOutput := MakeVMOutput()
+	parentAccount := AddNewOutputAccount(
+		vmOutput,
+		parentAddress,
+		0,
+		nil,
+	)
+	parentAccount.Balance = big.NewInt(1000)
+	parentAccount.Code = parentCode
+	parentAccount.Nonce = 0
+	SetStorageUpdate(parentAccount, []byte{'A'}, childCode)
+
+	l := len(childCode)
+	AddFinishData(vmOutput, []byte{byte(l / 256), byte(l % 256)})
+	AddFinishData(vmOutput, []byte("fail"))
+
+	return vmOutput
+}

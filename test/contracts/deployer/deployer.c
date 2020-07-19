@@ -7,28 +7,31 @@ byte newAddress[32] = {};
 
 byte deploymentValue[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,42};
 
-void preverifyDeployment() {
-	getArgument(0, &contractID);
-	int codeLength = storageLoadLength(&contractID, 1);
-	int loadedLength = storageLoad(&contractID, 1, contractCode);
-	int64finish(loadedLength);
-}
+byte arguments[1] = {0};
+int argumentsLengths[1] = {1};
 
 void deployChildContract() {
 	getArgument(0, &contractID);
 	int loadedLength = storageLoad(&contractID, 1, contractCode);
 	int64finish(loadedLength);
 
-	byte initArgLengths[] = {1};
-	byte initArgs[] = {0};
+	byte arg = 0;
+	getArgument(1, &arg);
+
+	int64finish((i64) arg);
+	int64finish((i64)(arguments));
+
+	arguments[0] = arg;
+
+	int initArgLengths[] = {1};
 	int result = createContract(
 			deploymentValue,
 			contractCode,
 			loadedLength,
 			newAddress,
 			1,
-			initArgLengths,
-			initArgs);
+			(byte*)argumentsLengths,
+			arguments);
 
 	finishResult(result);
 }
