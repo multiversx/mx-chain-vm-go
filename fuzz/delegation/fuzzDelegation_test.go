@@ -53,6 +53,7 @@ func TestFuzzDelegation(t *testing.T) {
 
 	err := pfe.init(&fuzzDelegationExecutorInitArgs{
 		serviceFee:                  r.Intn(10000),
+		ownerMinStake:               r.Intn(1000),
 		numBlocksBeforeForceUnstake: r.Intn(1000),
 		numBlocksBeforeUnbond:       r.Intn(1000),
 		numDelegators:               10,
@@ -66,7 +67,7 @@ func TestFuzzDelegation(t *testing.T) {
 	maxSystemReward := big.NewInt(1000000000)
 
 	re := newRandomEventProvider()
-	for stepIndex := 0; stepIndex < 1000; stepIndex++ {
+	for stepIndex := 0; stepIndex < 50; stepIndex++ {
 		re.reset()
 		switch {
 		case re.withProbability(0.05):

@@ -113,9 +113,10 @@ func (pfe *fuzzDelegationExecutor) init(args *fuzzDelegationExecutorInitArgs) er
 				"''%s",
 				"%d",
 				"%d",
+				"%d",
 				"%d"
 			],
-			"gasLimit": "100,000",
+			"gasLimit": "1,000,000",
 			"gasPrice": "0"
 		},
 		"expect": {
@@ -129,9 +130,15 @@ func (pfe *fuzzDelegationExecutor) init(args *fuzzDelegationExecutorInitArgs) er
 		string(pfe.ownerAddress),
 		string(pfe.auctionMockAddress),
 		args.serviceFee,
+		args.ownerMinStake,
 		args.numBlocksBeforeForceUnstake,
 		args.numBlocksBeforeUnbond,
 	))
+	if err != nil {
+		return err
+	}
+
+	err = pfe.enableUnstake()
 	if err != nil {
 		return err
 	}
@@ -143,6 +150,35 @@ func (pfe *fuzzDelegationExecutor) init(args *fuzzDelegationExecutorInitArgs) er
 
 	pfe.log("init ok")
 	return nil
+}
+
+func (pfe *fuzzDelegationExecutor) enableUnstake() error {
+	pfe.log("enableUnstake")
+	_, err := pfe.executeTxStep(fmt.Sprintf(`
+	{
+		"step": "scCall",
+		"txId": "-enable-unstake-",
+		"tx": {
+			"from": "''%s",
+			"to": "''%s",
+			"value": "0",
+			"function": "enableUnStake",
+			"arguments": [],
+			"gasLimit": "100,000",
+			"gasPrice": "0"
+		},
+		"expect": {
+			"out": [],
+			"status": "",
+			"logs": [],
+			"gas": "*",
+			"refund": "*"
+		}
+	}`,
+		string(pfe.ownerAddress),
+		string(pfe.delegationContractAddress),
+	))
+	return err
 }
 
 func (pfe *fuzzDelegationExecutor) setStakePerNode(stakePerNode *big.Int) error {

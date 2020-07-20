@@ -70,6 +70,7 @@ func (pfe *fuzzDelegationExecutor) log(info string, args ...interface{}) {
 
 type fuzzDelegationExecutorInitArgs struct {
 	serviceFee                  int
+	ownerMinStake               int
 	numBlocksBeforeForceUnstake int
 	numBlocksBeforeUnbond       int
 	numDelegators               int
