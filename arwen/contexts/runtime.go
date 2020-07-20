@@ -289,14 +289,6 @@ func (context *runtimeContext) SetReadOnly(readOnly bool) {
 	context.readOnly = readOnly
 }
 
-func (context *runtimeContext) SetInstanceContext(instCtx *wasmer.InstanceContext) {
-	// TODO remove this method when the vmContextMap is removed
-}
-
-func (context *runtimeContext) GetInstanceContext() *wasmer.InstanceContext {
-	return &context.instance.InstanceCtx
-}
-
 func (context *runtimeContext) GetInstanceExports() wasmer.ExportsMap {
 	return context.instance.Exports
 }
