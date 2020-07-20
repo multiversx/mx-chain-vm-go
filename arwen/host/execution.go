@@ -46,16 +46,12 @@ func (host *vmHost) performCodeDeployment(input arwen.CodeDeployInput) (*vmcommo
 		return nil, err
 	}
 
+	runtime.VerifyNextContractCode()
+
 	vmInput := runtime.GetVMInput()
 	err = runtime.StartWasmerInstance(input.ContractCode, vmInput.GasProvided)
 	if err != nil {
 		log.Debug("performCodeDeployment/StartWasmerInstance", "err", err)
-		return nil, arwen.ErrContractInvalid
-	}
-
-	err = runtime.VerifyContractCode()
-	if err != nil {
-		log.Debug("performCodeDeployment/VerifyContractCode", "err", err)
 		return nil, arwen.ErrContractInvalid
 	}
 
@@ -337,6 +333,8 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newA
 			output.DeleteOutputAccount(newAddress)
 		}
 	}()
+
+	runtime.VerifyNextContractCode()
 
 	initCallInput := &vmcommon.ContractCallInput{
 		RecipientAddr: newAddress,

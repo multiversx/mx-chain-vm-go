@@ -15,6 +15,7 @@ type RuntimeContextMock struct {
 	CallFunction           string
 	VmType                 []byte
 	ReadOnlyFlag           bool
+	VerifyCode             bool
 	CurrentBreakpointValue arwen.BreakpointValue
 	PointsUsed             uint64
 	InstanceCtxID          int
@@ -48,6 +49,9 @@ func (r *RuntimeContextMock) PopSetActiveState() {
 }
 
 func (r *RuntimeContextMock) PopDiscard() {
+}
+
+func (r *RuntimeContextMock) VerifyNextContractCode() {
 }
 
 func (r *RuntimeContextMock) ClearStateStack() {
