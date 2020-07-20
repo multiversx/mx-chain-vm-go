@@ -150,22 +150,11 @@ func (r *RuntimeContextMock) SetReadOnly(readOnly bool) {
 	r.ReadOnlyFlag = readOnly
 }
 
-func (r *RuntimeContextMock) SetInstanceContextID(id int) {
-	r.InstanceCtxID = id
-}
-
-func (r *RuntimeContextMock) SetInstanceContext(instCtx *wasmer.InstanceContext) {
-}
-
-func (r *RuntimeContextMock) GetInstanceContext() *wasmer.InstanceContext {
-	return nil
-}
-
 func (r *RuntimeContextMock) GetInstanceExports() wasmer.ExportsMap {
 	return nil
 }
 
-func (r *RuntimeContextMock) CleanInstance() {
+func (r *RuntimeContextMock) CleanWasmerInstance() {
 }
 
 func (r *RuntimeContextMock) GetFunctionToCall() (wasmer.ExportedFunctionCallback, error) {

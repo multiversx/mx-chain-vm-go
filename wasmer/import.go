@@ -199,6 +199,11 @@ func IntoInstanceContext(instanceContext unsafe.Pointer) InstanceContext {
 	return InstanceContext{context, memory}
 }
 
+func IntoInstanceContextDirect(instanceContext *cWasmerInstanceContextT) InstanceContext {
+	memory := newMemory(cWasmerInstanceContextMemory(instanceContext))
+	return InstanceContext{instanceContext, memory}
+}
+
 // Memory returns the current instance memory.
 func (instanceContext *InstanceContext) Memory() *Memory {
 	return &instanceContext.memory

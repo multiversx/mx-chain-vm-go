@@ -97,10 +97,9 @@ type RuntimeContext interface {
 	ReadOnly() bool
 	SetReadOnly(readOnly bool)
 	StartWasmerInstance(contract []byte, gasLimit uint64) error
+	CleanWasmerInstance()
 	SetMaxInstanceCount(uint64)
 	VerifyContractCode() error
-	SetInstanceContext(instCtx *wasmer.InstanceContext)
-	GetInstanceContext() *wasmer.InstanceContext
 	GetInstanceExports() wasmer.ExportsMap
 	GetInitFunction() wasmer.ExportedFunctionCallback
 	GetFunctionToCall() (wasmer.ExportedFunctionCallback, error)
@@ -108,8 +107,6 @@ type RuntimeContext interface {
 	SetPointsUsed(gasPoints uint64)
 	MemStore(offset int32, data []byte) error
 	MemLoad(offset int32, length int32) ([]byte, error)
-	CleanInstance()
-	SetInstanceContextID(id int)
 	ElrondAPIErrorShouldFailExecution() bool
 	CryptoAPIErrorShouldFailExecution() bool
 	BigIntAPIErrorShouldFailExecution() bool

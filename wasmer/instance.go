@@ -83,7 +83,10 @@ type Instance struct {
 	// The exported memory of a WebAssembly instance.
 	Memory *Memory
 
-	Data unsafe.Pointer
+	Data        *int
+	DataPointer unsafe.Pointer
+
+	InstanceCtx InstanceContext
 }
 
 type CompilationOptions struct {
@@ -148,6 +151,10 @@ func NewInstanceWithOptions(
 	}
 
 	instance, err := newInstance(c_instance)
+	if instance.Memory != nil {
+		c_instance_context := cWasmerInstanceContextGet(c_instance)
+		instance.InstanceCtx = IntoInstanceContextDirect(c_instance_context)
+	}
 	return instance, err
 }
 
@@ -188,9 +195,10 @@ func (instance *Instance) HasMemory() bool {
 // context can hold a pointer to any kind of data. It is important to
 // understand that this data is shared by all imported function, it's
 // global to the instance.
-func (instance *Instance) SetContextData(data unsafe.Pointer) {
-	cWasmerInstanceContextDataSet(instance.instance, data)
-	instance.Data = data
+func (instance *Instance) SetContextData(data int) {
+	instance.Data = &data
+	instance.DataPointer = unsafe.Pointer(instance.Data)
+	cWasmerInstanceContextDataSet(instance.instance, instance.DataPointer)
 }
 
 func (instance *Instance) Clean() {
