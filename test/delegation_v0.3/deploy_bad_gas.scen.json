@@ -1,0 +1,50 @@
+{
+    "name": "fuzz generated",
+    "checkGas": false,
+    "steps": [
+        {
+            "step": "setState",
+            "accounts": {
+                "''fuzz_owner_addr_______________s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                }
+            },
+            "newAddresses": [
+                {
+                    "creatorAddress": "''fuzz_owner_addr_______________s1",
+                    "creatorNonce": "0",
+                    "newAddress": "''fuzz_sc_delegation_addr_______s1"
+                }
+            ]
+        },
+        {
+            "step": "scDeploy",
+            "txId": "-deploy-",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "value": "0",
+                "contractCode": "file:delegation.wasm",
+                "arguments": [
+                    "''fuzz_sc_auction_mock_addr_____s1",
+                    "1176",
+                    "0",
+                    "534",
+                    "396"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "5",
+                "message": "not enough gas",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        }
+    ]
+}
