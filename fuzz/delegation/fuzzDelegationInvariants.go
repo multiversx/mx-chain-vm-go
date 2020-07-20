@@ -5,6 +5,27 @@ import (
 	"math/big"
 )
 
+func (pfe *fuzzDelegationExecutor) checkNoUnexpectedBalance() error {
+	err := pfe.computeAllRewards()
+	if err != nil {
+		return err
+	}
+
+	unexpectedBalance, err := pfe.simpleQuery("getUnexpectedBalance")
+	if err != nil {
+		return err
+	}
+
+	if unexpectedBalance.Sign() > 0 {
+		return fmt.Errorf(
+			"Should not have unexpected balance in the fuzzer. Unexpected balance: %d",
+			unexpectedBalance)
+	}
+
+	return nil
+}
+
+// Currently outdated, not used.
 func (pfe *fuzzDelegationExecutor) checkContractBalanceVsState() error {
 	err := pfe.computeAllRewards()
 	if err != nil {
