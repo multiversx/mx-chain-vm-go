@@ -3,7 +3,11 @@
     "steps": [
         {
             "step": "externalSteps",
-            "path": "../main/01_init.steps.json"
+            "path": "../main/01a_init_accounts.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "../main/01b_deploy.steps.json"
         },
         {
             "step": "externalSteps",

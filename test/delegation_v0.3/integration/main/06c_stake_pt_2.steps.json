@@ -3,6 +3,26 @@
     "steps": [
         {
             "step": "scCall",
+            "txId": "check-total_stake-6",
+            "tx": {
+                "from": "''someone_______________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "totalStake",
+                "arguments": [],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [ "444,001,000,000,000" ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
             "txId": "check-stake-by-type-6_0",
             "tx": {
                 "from": "''someone_______________________s1",

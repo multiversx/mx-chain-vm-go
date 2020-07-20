@@ -23,7 +23,7 @@
             "expect": {
                 "out": [],
                 "status": "4",
-                "message": "too soon to call unStake",
+                "message": "no stake eligible for unStake",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"

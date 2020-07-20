@@ -140,7 +140,7 @@
                     "balance": "300,000,000",
                     "storage": {},
                     "code": "",
-                    "asyncCallData": "delegation claim"
+                    "asyncCallData": "delegation rewards claim"
                 },
                 "''delegator_2___________________s1": {
                     "nonce": "*",

@@ -146,26 +146,6 @@
                 "gas": "*",
                 "refund": "*"
             }
-        },
-        {
-            "step": "scCall",
-            "txId": "14-getUnbondQueue",
-            "tx": {
-                "from": "''someone_______________________s1",
-                "to": "''delegation_contract___________s1",
-                "value": "0",
-                "function": "getUnbondQueue",
-                "arguments": [],
-                "gasLimit": "1,000,000",
-                "gasPrice": "0"
-            },
-            "expect": {
-                "out": [ "" ],
-                "status": "",
-                "logs": [],
-                "gas": "*",
-                "refund": "*"
-            }
         }
     ]
 }

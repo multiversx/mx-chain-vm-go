@@ -1,0 +1,30 @@
+{
+    "name": "activate not possible because owner has not enough skin in the game",
+    "steps": [
+        {
+            "step": "scCall",
+            "txId": "activate-1",
+            "tx": {
+                "from": "''node_address__________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "stakeNodes",
+                "arguments": [
+                    "''bls_key_2_______________________________________________________________________________________",
+                    "''bls_key_3_______________________________________________________________________________________",
+                    "''bls_key_6_______________________________________________________________________________________"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "4",
+                "message": "owner doesn't have enough stake in the contract",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        }
+    ]
+}

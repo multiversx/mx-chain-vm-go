@@ -59,7 +59,7 @@
                 "from": "''someone_______________________s1",
                 "to": "''delegation_contract___________s1",
                 "value": "0",
-                "function": "getTimeOfStakeOffer",
+                "function": "getStakeForSaleCreationNonces",
                 "arguments": [
                     "''delegator_1___________________s1"
                 ],

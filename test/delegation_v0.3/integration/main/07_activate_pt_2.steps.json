@@ -3,7 +3,7 @@
     "steps": [
         {
             "step": "scCall",
-            "txId": "enable auto activation",
+            "txId": "setAnyoneCanActivate",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "''delegation_contract___________s1",
@@ -25,12 +25,12 @@
             "step": "scCall",
             "txId": "withdraw some stake to not affect the flow",
             "tx": {
-                "from": "''delegator_1___________________s1",
+                "from": "''delegator_2___________________s1",
                 "to": "''delegation_contract___________s1",
                 "value": "0",
                 "function": "withdrawInactiveStake",
                 "arguments": [
-                    "1"
+                    "1,000,000,000"
                 ],
                 "gasLimit": "1,000,000",
                 "gasPrice": "0"
@@ -43,9 +43,9 @@
                         "address": "''delegation_contract___________s1",
                         "identifier": "0x0000000000000000000000000000000000000000000000000000000000000002",
                         "topics": [
-                            "''delegator_1___________________s1"
+                            "''delegator_2___________________s1"
                         ],
-                        "data": "1"
+                        "data": "1,000,000,000"
                     }
                 ],
                 "gas": "*",
@@ -57,9 +57,9 @@
             "txId": "stake and activate",
             "comment": "BUG WARNING! Not all events get saved, stake event missing!!!",
             "tx": {
-                "from": "''delegator_1___________________s1",
+                "from": "''delegator_2___________________s1",
                 "to": "''delegation_contract___________s1",
-                "value": "1",
+                "value": "1,000,000,000",
                 "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "2,000,000",
@@ -73,9 +73,9 @@
                         "address": "''delegation_contract___________s1",
                         "identifier": "0x0000000000000000000000000000000000000000000000000000000000000001",
                         "topics": [
-                            "''delegator_1___________________s1"
+                            "''delegator_2___________________s1"
                         ],
-                        "data": "1"
+                        "data": "1,000,000,000"
                     },
                     {
                         "address": "''delegation_contract___________s1",

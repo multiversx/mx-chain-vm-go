@@ -144,10 +144,11 @@
                 "arguments": [
                     "''fuzz_sc_auction_mock_addr_____s1",
                     "1176",
+                    "0",
                     "534",
                     "396"
                 ],
-                "gasLimit": "100,000",
+                "gasLimit": "1,000,000",
                 "gasPrice": "0"
             },
             "expect": {

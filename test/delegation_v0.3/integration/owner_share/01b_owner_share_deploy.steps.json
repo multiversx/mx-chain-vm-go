@@ -1,90 +1,100 @@
 {
-    "name": "check stake pt 1",
+    "name": "init",
     "steps": [
         {
-            "step": "scCall",
-            "txId": "check-total_stake-3",
+            "step": "setState",
+            "newAddresses": [
+                {
+                    "creatorAddress": "''node_address__________________s1",
+                    "creatorNonce": "0",
+                    "newAddress": "''delegation_contract___________s1"
+                }
+            ]
+        },
+        {
+            "step": "scDeploy",
+            "txId": "deploy-1",
+            "comment": "in this scenario the owner stakes 11,000,000,000,000 out of 444,001,000,000,000 = 2.477%",
             "tx": {
-                "from": "''someone_______________________s1",
+                "from": "''node_address__________________s1",
+                "value": "0",
+                "contractCode": "file:../../delegation.wasm",
+                "arguments": [
+                    "''auction_contract______________s1",
+                    "1",
+                    "247",
+                    "50",
+                    "60"
+                ],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "set-stake-per-node",
+            "tx": {
+                "from": "''node_address__________________s1",
                 "to": "''delegation_contract___________s1",
                 "value": "0",
-                "function": "totalStake",
+                "function": "setStakePerNode",
+                "arguments": [
+                    "111,000,000,000,000"
+                ],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "set-fee",
+            "tx": {
+                "from": "''node_address__________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "setServiceFee",
+                "arguments": [
+                    "5000"
+                ],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "enable-unstake",
+            "tx": {
+                "from": "''node_address__________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "enableUnStake",
                 "arguments": [],
                 "gasLimit": "1,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "333,001,000,000,000" ],
-                "status": "",
-                "logs": [],
-                "gas": "*",
-                "refund": "*"
-            }
-        },
-        {
-            "step": "scCall",
-            "txId": "check-stake-by-type-3_1",
-            "tx": {
-                "from": "''someone_______________________s1",
-                "to": "''delegation_contract___________s1",
-                "value": "0",
-                "function": "getUserStakeByType",
-                "arguments": [
-                    "''delegator_1___________________s1"
-                ],
-                "gasLimit": "1,000,000",
-                "gasPrice": "0"
-            },
-            "expect": {
-                "out": [
-                    "300,000,000,000,000", "0", "0", "0", "0", "0", "0", "0", "0", "0"
-                ],
-                "status": "",
-                "logs": [],
-                "gas": "*",
-                "refund": "*"
-            }
-        },
-        {
-            "step": "scCall",
-            "txId": "check-stake-by-type-3_2",
-            "tx": {
-                "from": "''someone_______________________s1",
-                "to": "''delegation_contract___________s1",
-                "value": "0",
-                "function": "getUserStakeByType",
-                "arguments": [
-                    "''delegator_2___________________s1"
-                ],
-                "gasLimit": "1,000,000",
-                "gasPrice": "0"
-            },
-            "expect": {
-                "out": [
-                    "033,001,000,000,000", "0", "0", "0", "0", "0", "0", "0", "0", "0"
-                ],
-                "status": "",
-                "logs": [],
-                "gas": "*",
-                "refund": "*"
-            }
-        },
-        {
-            "step": "scCall",
-            "txId": "check-stake-by-type-3_total",
-            "tx": {
-                "from": "''someone_______________________s1",
-                "to": "''delegation_contract___________s1",
-                "value": "0",
-                "function": "getTotalStakeByType",
-                "arguments": [],
-                "gasLimit": "1,000,000",
-                "gasPrice": "0"
-            },
-            "expect": {
-                "out": [
-                    "333,001,000,000,000", "0", "0", "0", "0", "0", "0", "0", "0", "0"
-                ],
+                "out": [],
                 "status": "",
                 "logs": [],
                 "gas": "*",
