@@ -1099,9 +1099,6 @@ func TestExecution_CreateNewContract_Success(t *testing.T) {
 }
 
 func TestExecution_CreateNewContract_Fail(t *testing.T) {
-	// TODO this test fails, and likely requires extra changes in Wasmer to pass
-	t.Skip()
-
 	parentCode := GetTestSCCode("deployer", "../../")
 	childCode := GetTestSCCode("init-correct", "../../")
 	parentBalance := big.NewInt(1000)
