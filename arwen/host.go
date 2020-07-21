@@ -44,10 +44,7 @@ func GetVmContext(context unsafe.Pointer) VMHost {
 	instCtx := wasmer.IntoInstanceContext(context)
 	var idx = *(*int)(instCtx.Data())
 
-	ctx := vmContextMap[uint8(idx)]
-	ctx.Runtime().SetInstanceContext(&instCtx)
-
-	return ctx
+	return vmContextMap[uint8(idx)]
 }
 
 func GetBlockchainContext(context unsafe.Pointer) BlockchainContext {

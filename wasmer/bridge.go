@@ -207,6 +207,12 @@ func cWasmerInstanceCall(
 	))
 }
 
+func cWasmerInstanceContextGet(instance *cWasmerInstanceT) *cWasmerInstanceContextT {
+	return (*cWasmerInstanceContextT)(C.wasmer_instance_context_get(
+		(*C.wasmer_instance_t)(instance),
+	))
+}
+
 func cWasmerInstanceContextDataGet(instanceContext *cWasmerInstanceContextT) unsafe.Pointer {
 	return unsafe.Pointer(C.wasmer_instance_context_data_get(
 		(*C.wasmer_instance_context_t)(instanceContext),

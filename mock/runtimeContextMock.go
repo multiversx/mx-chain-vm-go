@@ -15,6 +15,7 @@ type RuntimeContextMock struct {
 	CallFunction           string
 	VmType                 []byte
 	ReadOnlyFlag           bool
+	VerifyCode             bool
 	CurrentBreakpointValue arwen.BreakpointValue
 	PointsUsed             uint64
 	InstanceCtxID          int
@@ -48,6 +49,9 @@ func (r *RuntimeContextMock) PopSetActiveState() {
 }
 
 func (r *RuntimeContextMock) PopDiscard() {
+}
+
+func (r *RuntimeContextMock) MustVerifyNextContractCode() {
 }
 
 func (r *RuntimeContextMock) ClearStateStack() {
@@ -150,22 +154,11 @@ func (r *RuntimeContextMock) SetReadOnly(readOnly bool) {
 	r.ReadOnlyFlag = readOnly
 }
 
-func (r *RuntimeContextMock) SetInstanceContextID(id int) {
-	r.InstanceCtxID = id
-}
-
-func (r *RuntimeContextMock) SetInstanceContext(instCtx *wasmer.InstanceContext) {
-}
-
-func (r *RuntimeContextMock) GetInstanceContext() *wasmer.InstanceContext {
-	return nil
-}
-
 func (r *RuntimeContextMock) GetInstanceExports() wasmer.ExportsMap {
 	return nil
 }
 
-func (r *RuntimeContextMock) CleanInstance() {
+func (r *RuntimeContextMock) CleanWasmerInstance() {
 }
 
 func (r *RuntimeContextMock) GetFunctionToCall() (wasmer.ExportedFunctionCallback, error) {

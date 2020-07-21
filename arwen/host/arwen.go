@@ -196,7 +196,7 @@ func (host *vmHost) ClearContextStateStack() {
 }
 
 func (host *vmHost) Clean() {
-	host.runtimeContext.CleanInstance()
+	host.runtimeContext.CleanWasmerInstance()
 	arwen.RemoveAllHostContexts()
 }
 

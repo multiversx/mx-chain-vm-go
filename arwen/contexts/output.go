@@ -120,6 +120,10 @@ func (context *outputContext) GetOutputAccount(address []byte) (*vmcommon.Output
 	return account, accountIsNew
 }
 
+func (context *outputContext) DeleteOutputAccount(address []byte) {
+	delete(context.outputState.OutputAccounts, string(address))
+}
+
 func (context *outputContext) GetRefund() uint64 {
 	return uint64(context.outputState.GasRefund.Int64())
 }
@@ -368,6 +372,9 @@ func mergeOutputAccounts(
 	}
 	if len(rightAccount.Code) > 0 {
 		leftAccount.Code = rightAccount.Code
+	}
+	if len(rightAccount.CodeMetadata) > 0 {
+		leftAccount.CodeMetadata = rightAccount.CodeMetadata
 	}
 	if len(rightAccount.Data) > 0 {
 		leftAccount.Data = rightAccount.Data
