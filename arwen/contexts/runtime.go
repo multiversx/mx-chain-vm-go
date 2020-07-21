@@ -19,6 +19,8 @@ type runtimeContext struct {
 	vmType       []byte
 	readOnly     bool
 
+	verifyCode bool
+
 	stateStack    []*runtimeContext
 	instanceStack []*wasmer.Instance
 
@@ -52,6 +54,7 @@ func (context *runtimeContext) InitState() {
 	context.vmInput = &vmcommon.VMInput{}
 	context.scAddress = make([]byte, 0)
 	context.callFunction = ""
+	context.verifyCode = false
 	context.readOnly = false
 	context.asyncCallInfo = nil
 	context.asyncContextInfo = &arwen.AsyncContextInfo{
@@ -83,12 +86,16 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 
 	err = context.VerifyContractCode()
 	if err != nil {
-		context.instance = nil
+		context.CleanWasmerInstance()
 		return err
 	}
 
 	context.SetRuntimeBreakpointValue(arwen.BreakpointNone)
 	return nil
+}
+
+func (context *runtimeContext) MustVerifyNextContractCode() {
+	context.verifyCode = true
 }
 
 func (context *runtimeContext) SetMaxInstanceCount(maxInstances uint64) {
@@ -248,6 +255,12 @@ func (context *runtimeContext) GetRuntimeBreakpointValue() arwen.BreakpointValue
 }
 
 func (context *runtimeContext) VerifyContractCode() error {
+	if !context.verifyCode {
+		return nil
+	}
+
+	context.verifyCode = false
+
 	err := context.validator.verifyMemoryDeclaration(context.instance)
 	if err != nil {
 		return err
