@@ -199,6 +199,8 @@ func IntoInstanceContext(instanceContext unsafe.Pointer) InstanceContext {
 	return InstanceContext{context, memory}
 }
 
+// IntoInstanceContextDirect retrieves the Wasmer instance context directly
+// from the Wasmer instance. This context can be stored as long as the instance itself.
 func IntoInstanceContextDirect(instanceContext *cWasmerInstanceContextT) InstanceContext {
 	memory := newMemory(cWasmerInstanceContextMemory(instanceContext))
 	return InstanceContext{instanceContext, memory}

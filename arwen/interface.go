@@ -37,9 +37,6 @@ type VMHost interface {
 	EthereumCallData() []byte
 	GetAPIMethods() *wasmer.Imports
 	GetProtocolBuiltinFunctions() vmcommon.FunctionNames
-
-	AreAsyncCallsAllowed() bool
-	IsIndirectInitCallAllowed() bool
 }
 
 type BlockchainContext interface {
@@ -86,7 +83,7 @@ type RuntimeContext interface {
 	ExtractCodeUpgradeFromArgs() ([]byte, []byte, error)
 	SignalUserError(message string)
 	FailExecution(err error)
-	VerifyNextContractCode()
+	MustVerifyNextContractCode()
 	SetRuntimeBreakpointValue(value BreakpointValue)
 	GetRuntimeBreakpointValue() BreakpointValue
 	GetAsyncCallInfo() *AsyncCallInfo

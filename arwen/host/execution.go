@@ -46,7 +46,7 @@ func (host *vmHost) performCodeDeployment(input arwen.CodeDeployInput) (*vmcommo
 		return nil, err
 	}
 
-	runtime.VerifyNextContractCode()
+	runtime.MustVerifyNextContractCode()
 
 	vmInput := runtime.GetVMInput()
 	err = runtime.StartWasmerInstance(input.ContractCode, vmInput.GasProvided)
@@ -56,7 +56,6 @@ func (host *vmHost) performCodeDeployment(input arwen.CodeDeployInput) (*vmcommo
 	}
 
 	err = host.callInitFunction()
-	host.allowAsyncCalls = true
 	if err != nil {
 		return nil, err
 	}
@@ -270,13 +269,13 @@ func (host *vmHost) isBuiltinFunctionName(functionName string) bool {
 	return ok
 }
 
-func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newAddress []byte, err error) {
-	newAddress = nil
+func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newContractAddress []byte, err error) {
+	newContractAddress = nil
 	err = nil
 
 	defer func() {
 		if err != nil {
-			newAddress = nil
+			newContractAddress = nil
 		}
 	}()
 
@@ -285,41 +284,24 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newA
 	codeDeployInput := arwen.CodeDeployInput{
 		ContractCode:         input.ContractCode,
 		ContractCodeMetadata: input.ContractCodeMetadata,
-		ContractAddress:      newAddress,
+		ContractAddress:      newContractAddress,
 	}
 	err = metering.DeductInitialGasForIndirectDeployment(codeDeployInput)
 	if err != nil {
 		return
 	}
 
-	// The init() method of the newly deployed contract will be executed using
-	// host.ExecuteOnDestContext(), which must be informed that calling init() is
-	// permitted in this specific case. In all other cases, it is an error to
-	// call init() using host.ExecuteOnDestContext().
-	host.allowCallingInitIndirectly = true
-
-	// Async calls are disallowed during indirect contract deployment.
-	// TODO analyze whether this restriction should be lifted, and how to handle
-	// the async calls here (async calls during indirect deployment can be very
-	// useful).
-	host.allowAsyncCalls = false
-
-	defer func() {
-		host.allowCallingInitIndirectly = false
-		host.allowAsyncCalls = true
-	}()
-
 	if runtime.ReadOnly() {
 		err = arwen.ErrInvalidCallOnReadOnlyMode
 		return
 	}
 
-	newAddress, err = blockchain.NewAddress(input.CallerAddr)
+	newContractAddress, err = blockchain.NewAddress(input.CallerAddr)
 	if err != nil {
 		return
 	}
 
-	newContractAccount, isNew := output.GetOutputAccount(newAddress)
+	newContractAccount, isNew := output.GetOutputAccount(newContractAddress)
 	if !isNew {
 		err = arwen.ErrDeploymentOverExistingAccount
 		return
@@ -330,16 +312,17 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newA
 
 	defer func() {
 		if err != nil {
-			output.DeleteOutputAccount(newAddress)
+			output.DeleteOutputAccount(newContractAddress)
 		}
 	}()
 
-	runtime.VerifyNextContractCode()
+	runtime.MustVerifyNextContractCode()
 
 	initCallInput := &vmcommon.ContractCallInput{
-		RecipientAddr: newAddress,
-		Function:      arwen.InitFunctionName,
-		VMInput:       input.VMInput,
+		RecipientAddr:     newContractAddress,
+		Function:          arwen.InitFunctionName,
+		AllowInitFunction: true,
+		VMInput:           input.VMInput,
 	}
 	vmOutput, _, err := host.ExecuteOnDestContext(initCallInput)
 	if err != nil {
@@ -365,7 +348,7 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 	initialGasProvided := input.GasProvided
 	metering.UseGas(initialGasProvided)
 
-	if host.isInitFunctionBeingCalled() && !host.allowCallingInitIndirectly {
+	if host.isInitFunctionBeingCalled() && !input.AllowInitFunction {
 		return arwen.ErrInitFuncCalledInRun
 	}
 

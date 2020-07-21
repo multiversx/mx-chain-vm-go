@@ -84,20 +84,17 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 	idContext := arwen.AddHostContext(context.host)
 	context.instance.SetContextData(idContext)
 
-	if context.verifyCode {
-		context.verifyCode = false
-		err = context.VerifyContractCode()
-		if err != nil {
-			context.instance = nil
-			return err
-		}
+	err = context.VerifyContractCode()
+	if err != nil {
+		context.CleanWasmerInstance()
+		return err
 	}
 
 	context.SetRuntimeBreakpointValue(arwen.BreakpointNone)
 	return nil
 }
 
-func (context *runtimeContext) VerifyNextContractCode() {
+func (context *runtimeContext) MustVerifyNextContractCode() {
 	context.verifyCode = true
 }
 
@@ -258,6 +255,12 @@ func (context *runtimeContext) GetRuntimeBreakpointValue() arwen.BreakpointValue
 }
 
 func (context *runtimeContext) VerifyContractCode() error {
+	if !context.verifyCode {
+		return nil
+	}
+
+	context.verifyCode = false
+
 	err := context.validator.verifyMemoryDeclaration(context.instance)
 	if err != nil {
 		return err

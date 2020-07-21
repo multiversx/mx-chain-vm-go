@@ -119,7 +119,8 @@ func (context *blockchainContext) GetCodeHash(addr []byte) ([]byte, error) {
 
 func (context *blockchainContext) GetCode(address []byte) ([]byte, error) {
 	outputAccount, isNew := context.host.Output().GetOutputAccount(address)
-	if !isNew && len(outputAccount.Code) > 0 {
+	hasCode := !isNew && len(outputAccount.Code) > 0
+	if hasCode {
 		return outputAccount.Code, nil
 	}
 

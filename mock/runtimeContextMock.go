@@ -51,7 +51,7 @@ func (r *RuntimeContextMock) PopSetActiveState() {
 func (r *RuntimeContextMock) PopDiscard() {
 }
 
-func (r *RuntimeContextMock) VerifyNextContractCode() {
+func (r *RuntimeContextMock) MustVerifyNextContractCode() {
 }
 
 func (r *RuntimeContextMock) ClearStateStack() {
