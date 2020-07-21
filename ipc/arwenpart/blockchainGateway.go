@@ -351,3 +351,19 @@ func (blockchain *BlockchainHookGateway) IsSmartContract(address []byte) bool {
 	response := rawResponse.(*common.MessageBlockchainIsSmartContractResponse)
 	return response.Result
 }
+
+// IsPayable forwards a message to the actual hook
+func (blockchain *BlockchainHookGateway) IsPayable(address []byte) (bool, error) {
+	request := common.NewMessageBlockchainIsPayableRequest(address)
+	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if err != nil {
+		return false, err
+	}
+
+	if rawResponse.GetKind() != common.BlockchainIsPayableResponse {
+		return false, common.ErrBadHookResponseFromNode
+	}
+
+	response := rawResponse.(*common.MessageBlockchainIsPayableResponse)
+	return response.Result, response.GetError()
+}

@@ -199,6 +199,21 @@ func (b *BlockchainHookMock) IsSmartContract(address []byte) bool {
 	return len(account.CodeHex) > 0
 }
 
+// IsSmartContract -
+func (b *BlockchainHookMock) IsPayable(address []byte) (bool, error) {
+	account, ok := b.Accounts[toHex(address)]
+	if !ok {
+		return true, nil
+	}
+
+	if !b.IsSmartContract(address) {
+		return true, nil
+	}
+
+	metadata := vmcommon.CodeMetadataFromBytes(account.GetCodeMetadata())
+	return metadata.Payable, nil
+}
+
 // UpdateAccounts -
 func (b *BlockchainHookMock) UpdateAccounts(outputAccounts map[string]*vmcommon.OutputAccount) {
 	for address, outputAccount := range outputAccounts {

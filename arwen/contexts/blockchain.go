@@ -219,3 +219,8 @@ func (context *blockchainContext) GetShardOfAddress(addr []byte) uint32 {
 func (context *blockchainContext) IsSmartContract(addr []byte) bool {
 	return context.blockChainHook.IsSmartContract(addr)
 }
+
+func (context *blockchainContext) IsPayable(addr []byte) (bool, error) {
+	return context.blockChainHook.IsPayable(addr)
+}
+

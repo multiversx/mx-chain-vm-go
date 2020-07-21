@@ -55,6 +55,8 @@ const (
 	BlockchainGetShardOfAddressResponse
 	BlockchainIsSmartContractRequest
 	BlockchainIsSmartContractResponse
+	BlockchainIsPayableRequest
+	BlockchainIsPayableResponse
 	DiagnoseWaitRequest
 	DiagnoseWaitResponse
 	UndefinedRequestOrResponse
@@ -110,6 +112,8 @@ func init() {
 	messageKindNameByID[BlockchainGetShardOfAddressResponse] = "BlockchainGetShardOfAddressResponse"
 	messageKindNameByID[BlockchainIsSmartContractRequest] = "BlockchainIsSmartContractRequest"
 	messageKindNameByID[BlockchainIsSmartContractResponse] = "BlockchainIsSmartContractResponse"
+	messageKindNameByID[BlockchainIsPayableRequest] = "BlockchainIsPayableRequest"
+	messageKindNameByID[BlockchainIsPayableResponse] = "BlockchainIsPayableResponse"
 	messageKindNameByID[DiagnoseWaitRequest] = "DiagnoseWaitRequest"
 	messageKindNameByID[DiagnoseWaitResponse] = "DiagnoseWaitResponse"
 	messageKindNameByID[UndefinedRequestOrResponse] = "UndefinedRequestOrResponse"
