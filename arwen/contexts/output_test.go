@@ -460,6 +460,45 @@ func TestOutputContext_Transfer_Errors_And_Checks(t *testing.T) {
 	require.Equal(t, big.NewInt(1000), blockchainContext.GetBalanceBigInt(sender))
 }
 
+func TestOutputContext_Transfer_IsAccountPayable(t *testing.T) {
+	t.Parallel()
+
+	sender := []byte("sender")
+	receiverNonPayable := make([]byte, 32)
+
+	mockBlockchainHook := mock.NewBlockchainHookMock()
+	mockBlockchainHook.AddAccounts([]*mock.AccountMock{
+		{
+			Address: sender,
+			Nonce:   0,
+			Balance: big.NewInt(2000),
+		},
+		{
+			Address: receiverNonPayable,
+			Nonce:   0,
+			Balance: big.NewInt(0),
+			Code:    []byte("contract_code"),
+		},
+	})
+
+	host := &mock.VmHostMock{}
+	outputContext, _ := NewOutputContext(host)
+	blockchainContext, _ := NewBlockchainContext(host, mockBlockchainHook)
+
+	host.OutputContext = outputContext
+	host.BlockchainContext = blockchainContext
+
+	valueToTransfer := big.NewInt(10)
+	err := outputContext.Transfer(receiverNonPayable, sender, 54, valueToTransfer, []byte("txdata"))
+
+	require.Equal(t, arwen.ErrAccountNotPayable, err)
+
+	valueToTransfer = big.NewInt(0)
+	err = outputContext.Transfer(receiverNonPayable, sender, 54, valueToTransfer, []byte("txdata"))
+
+	require.Nil(t, err)
+}
+
 func TestOutputContext_WriteLog(t *testing.T) {
 	t.Parallel()
 

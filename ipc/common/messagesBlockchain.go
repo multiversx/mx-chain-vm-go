@@ -589,7 +589,7 @@ type MessageBlockchainIsPayableResponse struct {
 // NewMessageBlockchainIsPayableResponse creates a response message
 func NewMessageBlockchainIsPayableResponse(result bool, err error) *MessageBlockchainIsPayableResponse {
 	message := &MessageBlockchainIsPayableResponse{}
-	message.Kind = BlockchainIsPayableRequest
+	message.Kind = BlockchainIsPayableResponse
 	message.Result = result
 	message.SetError(err)
 	return message
