@@ -170,9 +170,6 @@ func TestExecution_DeployWASM_Popcnt(t *testing.T) {
 }
 
 func TestExecution_DeployWASM_Init_Errors(t *testing.T) {
-	// TODO this test needs a Wasmer fix to pass completely
-	t.Skip()
-
 	newAddress := []byte("new smartcontract")
 	host := DefaultTestArwenForDeployment(t, 24, newAddress)
 	input := DefaultTestContractCreateInput()
@@ -643,9 +640,6 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs_OutOfGas(t *testing.T) {
-	// TODO this test needs a Wasmer fix to pass completely
-	t.Skip()
-
 	parentCode := GetTestSCCode("exec-same-ctx-recursive-parent", "../../")
 	childCode := GetTestSCCode("exec-same-ctx-recursive-child", "../../")
 	parentSCBalance := big.NewInt(1000)
@@ -933,9 +927,6 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs_OutOfGas(t *testing.T) {
-	// TODO this test needs a Wasmer fix to pass completely
-	t.Skip()
-
 	parentCode := GetTestSCCode("exec-dest-ctx-recursive-parent", "../../")
 	childCode := GetTestSCCode("exec-dest-ctx-recursive-child", "../../")
 	parentSCBalance := big.NewInt(1000)
