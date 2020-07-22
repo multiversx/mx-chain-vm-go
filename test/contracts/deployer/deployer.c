@@ -22,6 +22,7 @@ void deployChildContract() {
 
 	int initArgLengths[] = {1};
 	int result = createContract(
+			2000,
 			deploymentValue,
 			contractCode,
 			loadedLength,

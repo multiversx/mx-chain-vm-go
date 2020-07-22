@@ -12,7 +12,6 @@ const (
 	BreakpointExecutionFailed
 	BreakpointAsyncCall
 	BreakpointSignalError
-	BreakpointSignalExit
 	BreakpointOutOfGas
 )
 

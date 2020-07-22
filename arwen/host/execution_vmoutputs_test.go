@@ -951,7 +951,6 @@ func expectedVMOutput_CreateNewContract_Fail(parentCode []byte, childCode []byte
 		0,
 		nil,
 	)
-	parentAccount.Balance = big.NewInt(1000)
 	parentAccount.Code = parentCode
 	parentAccount.Nonce = 0
 	SetStorageUpdate(parentAccount, []byte{'A'}, childCode)
