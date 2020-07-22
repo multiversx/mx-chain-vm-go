@@ -465,6 +465,8 @@ func TestOutputContext_Transfer_IsAccountPayable(t *testing.T) {
 
 	sender := []byte("sender")
 	receiverNonPayable := make([]byte, 32)
+	receiverPayable := make([]byte, 32)
+	receiverPayable[31] = 1
 
 	mockBlockchainHook := mock.NewBlockchainHookMock()
 	mockBlockchainHook.AddAccounts([]*mock.AccountMock{
@@ -479,22 +481,34 @@ func TestOutputContext_Transfer_IsAccountPayable(t *testing.T) {
 			Balance: big.NewInt(0),
 			Code:    []byte("contract_code"),
 		},
+		{
+			Address: receiverPayable,
+			Nonce:   0,
+			Balance: big.NewInt(0),
+			Code:    []byte("contract_code"),
+			CodeMetadata: []byte{0, vmcommon.METADATA_PAYABLE},
+		},
 	})
 
 	host := &mock.VmHostMock{}
-	outputContext, _ := NewOutputContext(host)
-	blockchainContext, _ := NewBlockchainContext(host, mockBlockchainHook)
+	oc, _ := NewOutputContext(host)
+	bc, _ := NewBlockchainContext(host, mockBlockchainHook)
 
-	host.OutputContext = outputContext
-	host.BlockchainContext = blockchainContext
+	host.OutputContext = oc
+	host.BlockchainContext = bc
 
 	valueToTransfer := big.NewInt(10)
-	err := outputContext.Transfer(receiverNonPayable, sender, 54, valueToTransfer, []byte("txdata"))
+	err := oc.Transfer(receiverNonPayable, sender, 54, valueToTransfer, []byte("txdata"))
 
 	require.Equal(t, arwen.ErrAccountNotPayable, err)
 
 	valueToTransfer = big.NewInt(0)
-	err = outputContext.Transfer(receiverNonPayable, sender, 54, valueToTransfer, []byte("txdata"))
+	err = oc.Transfer(receiverNonPayable, sender, 54, valueToTransfer, []byte("txdata"))
+
+	require.Nil(t, err)
+
+	valueToTransfer = big.NewInt(10)
+	err = oc.Transfer(receiverPayable, sender, 54, valueToTransfer, []byte("txdata"))
 
 	require.Nil(t, err)
 }

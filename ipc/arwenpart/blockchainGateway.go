@@ -1,8 +1,6 @@
 package arwenpart
 
 import (
-	"fmt"
-
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -363,8 +361,6 @@ func (blockchain *BlockchainHookGateway) IsPayable(address []byte) (bool, error)
 	}
 
 	if rawResponse.GetKind() != common.BlockchainIsPayableResponse {
-		x := rawResponse.GetKind()
-		fmt.Println(x)
 		return false, common.ErrBadHookResponseFromNode
 	}
 

@@ -196,9 +196,6 @@ func (context *outputContext) Transfer(destination []byte, sender []byte, gasLim
 		return arwen.ErrTransferInsufficientFunds
 	}
 
-	senderAcc, _ := context.GetOutputAccount(sender)
-	destAcc, _ := context.GetOutputAccount(destination)
-
 	payable, err := context.host.Blockchain().IsPayable(destination)
 	if err != nil {
 		return err
@@ -208,6 +205,9 @@ func (context *outputContext) Transfer(destination []byte, sender []byte, gasLim
 	if !payable && hasValue {
 		return arwen.ErrAccountNotPayable
 	}
+
+	senderAcc, _ := context.GetOutputAccount(sender)
+	destAcc, _ := context.GetOutputAccount(destination)
 
 	senderAcc.BalanceDelta = big.NewInt(0).Sub(senderAcc.BalanceDelta, value)
 	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
