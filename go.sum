@@ -8,6 +8,8 @@ github.com/ElrondNetwork/elrond-vm-common v0.1.22-0.20200721095743-9c43254d3fe1 
 github.com/ElrondNetwork/elrond-vm-common v0.1.22-0.20200721095743-9c43254d3fe1/go.mod h1:ZakxPST/Wt8umnRtA9gobcy3Dw2bywxwkC54P5VhO9g=
 github.com/ElrondNetwork/elrond-vm-common v0.1.23-0.20200722094654-5497c2c1dc61 h1:53eBnk/FC1AcZpoXT9a/JunW9QEk4wNnnQbTqMfWADc=
 github.com/ElrondNetwork/elrond-vm-common v0.1.23-0.20200722094654-5497c2c1dc61/go.mod h1:ZakxPST/Wt8umnRtA9gobcy3Dw2bywxwkC54P5VhO9g=
+github.com/ElrondNetwork/elrond-vm-common v0.1.23-0.20200722095946-b07133f70a01 h1:DF+Pgqr1eoQAPj/PlAMuifVe3fXhqtpdnVOWl6nz/BY=
+github.com/ElrondNetwork/elrond-vm-common v0.1.23-0.20200722095946-b07133f70a01/go.mod h1:ZakxPST/Wt8umnRtA9gobcy3Dw2bywxwkC54P5VhO9g=
 github.com/ElrondNetwork/elrond-vm-util v0.3.5-0.20200721120725-388e63f80f87 h1:TgcIcrpMgzl7IJfsag5VC90U84ynfIkRr6PyalvZpCo=
 github.com/ElrondNetwork/elrond-vm-util v0.3.5-0.20200721120725-388e63f80f87/go.mod h1:skrUGjBkN3YBuk5bIGDgrb7I8TBpxN6ckTX0MtT/RMk=
 github.com/cpuguy83/go-md2man/v2 v2.0.0-20190314233015-f79a8a8ca69d h1:U+s90UTSYgptZMwQh2aRr3LuazLJIa+Pg3Kc1ylSYVY=
