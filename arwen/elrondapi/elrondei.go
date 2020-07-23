@@ -1156,15 +1156,23 @@ func executeOnSameContext(
 	host := arwen.GetVmContext(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
+	blockchain := host.Blockchain()
 
-	send := runtime.GetSCAddress()
-	dest, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
-	if arwen.WithFault(err, context, false) {
+	sender := runtime.GetSCAddress()
+	destination, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
+	if err != nil {
+		return 1
+	}
+
+	shardOfSender := blockchain.GetShardOfAddress(sender)
+	shardOfDestination := blockchain.GetShardOfAddress(destination)
+	sameShard := shardOfSender == shardOfDestination
+	if !sameShard {
 		return 1
 	}
 
 	value, err := runtime.MemLoad(valueOffset, arwen.BalanceLen)
-	if arwen.WithFault(err, context, false) {
+	if err != nil {
 		return 1
 	}
 
@@ -1176,7 +1184,7 @@ func executeOnSameContext(
 		argumentsLengthOffset,
 		dataOffset,
 	)
-	if arwen.WithFault(err, context, false) {
+	if err != nil {
 		return 1
 	}
 
@@ -1187,18 +1195,18 @@ func executeOnSameContext(
 	bigIntVal := big.NewInt(0).SetBytes(value)
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
-			CallerAddr:  send,
+			CallerAddr:  sender,
 			Arguments:   data,
 			CallValue:   bigIntVal,
 			GasPrice:    0,
 			GasProvided: metering.BoundGasLimit(gasLimit),
 		},
-		RecipientAddr: dest,
+		RecipientAddr: destination,
 		Function:      function,
 	}
 
 	_, err = host.ExecuteOnSameContext(contractCallInput)
-	if arwen.WithFault(err, context, false) {
+	if err != nil {
 		return 1
 	}
 
@@ -1220,15 +1228,23 @@ func executeOnDestContext(
 	host := arwen.GetVmContext(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
+	blockchain := host.Blockchain()
 
-	send := runtime.GetSCAddress()
-	dest, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
-	if arwen.WithFault(err, context, false) {
+	sender := runtime.GetSCAddress()
+	destination, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
+	if err != nil {
+		return 1
+	}
+
+	shardOfSender := blockchain.GetShardOfAddress(sender)
+	shardOfDestination := blockchain.GetShardOfAddress(destination)
+	sameShard := shardOfSender == shardOfDestination
+	if !sameShard {
 		return 1
 	}
 
 	value, err := runtime.MemLoad(valueOffset, arwen.BalanceLen)
-	if arwen.WithFault(err, context, false) {
+	if err != nil {
 		return 1
 	}
 
@@ -1240,7 +1256,7 @@ func executeOnDestContext(
 		argumentsLengthOffset,
 		dataOffset,
 	)
-	if arwen.WithFault(err, context, false) {
+	if err != nil {
 		return 1
 	}
 
@@ -1251,13 +1267,13 @@ func executeOnDestContext(
 	bigIntVal := big.NewInt(0).SetBytes(value)
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
-			CallerAddr:  send,
+			CallerAddr:  sender,
 			Arguments:   data,
 			CallValue:   bigIntVal,
 			GasPrice:    0,
 			GasProvided: metering.BoundGasLimit(gasLimit),
 		},
-		RecipientAddr: dest,
+		RecipientAddr: destination,
 		Function:      function,
 	}
 

@@ -82,3 +82,5 @@ var ErrAsyncContextDoesNotExist = errors.New("async context does not exist")
 var ErrInvalidAccount = errors.New("account does not exist")
 
 var ErrDeploymentOverExistingAccount = errors.New("cannot deploy over existing account")
+
+var ErrSyncDestinationNotInSameShard = errors.New("destination for synchronous execution not in same shard")
