@@ -92,10 +92,6 @@ func TestStorageContext_SetAddress(t *testing.T) {
 	require.Equal(t, []byte(nil), storageContext.GetStorage(keyA))
 }
 
-func TestStorageContext_StateStack(t *testing.T) {
-	// TODO
-}
-
 func TestStorageContext_GetStorageUpdates(t *testing.T) {
 	t.Parallel()
 
@@ -202,4 +198,12 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	value = []byte("doesn't matter")
 	storageStatus, err = storageContext.SetStorage(key, value)
 	require.Equal(t, arwen.ErrStoreElrondReservedKey, err)
+}
+
+func TestStorageContext_LoadGasStoreGasPerKey(t *testing.T) {
+	// TODO
+}
+
+func TestStorageContext_StoreGasPerKey(t *testing.T) {
+	// TODO
 }
