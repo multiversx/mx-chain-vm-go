@@ -77,6 +77,8 @@ func init() {
 	messageCreators[BlockchainGetShardOfAddressResponse] = createMessageBlockchainGetShardOfAddressResponse
 	messageCreators[BlockchainIsSmartContractRequest] = createMessageBlockchainIsSmartContractRequest
 	messageCreators[BlockchainIsSmartContractResponse] = createMessageBlockchainIsSmartContractResponse
+	messageCreators[BlockchainIsPayableRequest] = createMessageBlockchainIsPayableRequest
+	messageCreators[BlockchainIsPayableResponse] = createMessageBlockchainIsPayableResponse
 }
 
 func createMessageInitialize() MessageHandler {
@@ -269,4 +271,12 @@ func createMessageBlockchainIsSmartContractRequest() MessageHandler {
 
 func createMessageBlockchainIsSmartContractResponse() MessageHandler {
 	return &MessageBlockchainIsSmartContractResponse{}
+}
+
+func createMessageBlockchainIsPayableRequest() MessageHandler {
+	return &MessageBlockchainIsPayableRequest{}
+}
+
+func createMessageBlockchainIsPayableResponse() MessageHandler {
+	return &MessageBlockchainIsPayableResponse{}
 }

@@ -118,6 +118,21 @@ func TestGateway_IsSmartContract(t *testing.T) {
 	runHookScenario(t, callHook, handleHookCall)
 }
 
+func TestGateway_IsPayable(t *testing.T) {
+	callHook := func(gateway *BlockchainHookGateway) {
+		result, err := gateway.IsPayable([]byte("contract"))
+		require.True(t, result)
+		require.Nil(t, err)
+	}
+
+	handleHookCall := func(request common.MessageHandler) common.MessageHandler {
+		require.Equal(t, "contract", string(request.(*common.MessageBlockchainIsPayableRequest).Address))
+		return common.NewMessageBlockchainIsPayableResponse(true, nil)
+	}
+
+	runHookScenario(t, callHook, handleHookCall)
+}
+
 func runHookScenario(t *testing.T, callHook func(*BlockchainHookGateway), handleHookCall func(common.MessageHandler) common.MessageHandler) {
 	testFiles := createTestFiles(t)
 	marshalizer := marshaling.CreateMarshalizer(marshaling.JSON)

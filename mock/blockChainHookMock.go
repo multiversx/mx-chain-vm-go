@@ -186,6 +186,20 @@ func (b *BlockchainHookMock) IsSmartContract(address []byte) bool {
 	return len(account.Code) > 0
 }
 
+func (b *BlockchainHookMock) IsPayable(address []byte) (bool, error) {
+	account, ok := b.Accounts[string(address)]
+	if !ok {
+		return true, nil
+	}
+
+	if !b.IsSmartContract(address) {
+		return true, nil
+	}
+
+	metadata := vmcommon.CodeMetadataFromBytes(account.CodeMetadata)
+	return metadata.Payable, nil
+}
+
 func (b *BlockchainHookMock) UpdateAccounts(outputAccounts map[string]*vmcommon.OutputAccount) {
 	for strAddress, outputAccount := range outputAccounts {
 		account, exists := b.Accounts[strAddress]

@@ -27,6 +27,7 @@ type BlockchainHookStub struct {
 	GetUserAccountCalled          func(address []byte) (vmcommon.UserAccountHandler, error)
 	GetShardOfAddressCalled       func(address []byte) uint32
 	IsSmartContractCalled         func(address []byte) bool
+	IsPayableCalled               func(address []byte) (bool, error)
 }
 
 func (b *BlockchainHookStub) NewAddress(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error) {
@@ -167,4 +168,11 @@ func (b *BlockchainHookStub) IsSmartContract(address []byte) bool {
 		return b.IsSmartContractCalled(address)
 	}
 	return false
+}
+
+func (b *BlockchainHookStub) IsPayable(address []byte) (bool, error) {
+	if b.IsPayableCalled != nil {
+		return b.IsPayableCalled(address)
+	}
+	return true, nil
 }
