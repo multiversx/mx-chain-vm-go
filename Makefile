@@ -9,6 +9,7 @@ build:
 arwen:
 	go build -o ./cmd/arwen/arwen ./cmd/arwen
 	cp ./cmd/arwen/arwen ./ipc/tests
+	cp ./cmd/arwen/arwen ${ARWEN_PATH}
 
 arwendebug:
 ifndef ARWENDEBUG_PATH
