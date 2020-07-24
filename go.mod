@@ -14,3 +14,5 @@ require (
 	github.com/urfave/cli v1.22.4
 	golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37
 )
+
+replace github.com/ElrondNetwork/elrond-vm-util => ../elrond-vm-util
