@@ -53,10 +53,10 @@ const (
 	BlockchainGetUserAccountResponse
 	BlockchainGetShardOfAddressRequest
 	BlockchainGetShardOfAddressResponse
-	BlockchainIsSmartContractRequest
-	BlockchainIsSmartContractResponse
 	BlockchainIsPayableRequest
 	BlockchainIsPayableResponse
+	BlockchainIsSmartContractRequest
+	BlockchainIsSmartContractResponse
 	DiagnoseWaitRequest
 	DiagnoseWaitResponse
 	UndefinedRequestOrResponse
