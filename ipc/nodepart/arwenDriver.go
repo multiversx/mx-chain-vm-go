@@ -214,7 +214,7 @@ func (driver *ArwenDriver) RunSmartContractCreate(input *vmcommon.ContractCreate
 	}
 
 	typedResponse := response.(*common.MessageContractResponse)
-	vmOutput, err := typedResponse.VMOutput, response.GetError()
+	vmOutput, err := typedResponse.SerializableVMOutput.ConvertToVMOutput(), response.GetError()
 	if err != nil {
 		return nil, err
 	}
@@ -241,7 +241,7 @@ func (driver *ArwenDriver) RunSmartContractCall(input *vmcommon.ContractCallInpu
 	}
 
 	typedResponse := response.(*common.MessageContractResponse)
-	vmOutput, err := typedResponse.VMOutput, response.GetError()
+	vmOutput, err := typedResponse.SerializableVMOutput.ConvertToVMOutput(), response.GetError()
 	if err != nil {
 		return nil, err
 	}

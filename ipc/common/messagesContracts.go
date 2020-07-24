@@ -35,14 +35,14 @@ func NewMessageContractCallRequest(input *vmcommon.ContractCallInput) *MessageCo
 // MessageContractResponse is a contract response message (from Arwen)
 type MessageContractResponse struct {
 	Message
-	VMOutput *vmcommon.VMOutput
+	SerializableVMOutput *SerializableVMOutput
 }
 
 // NewMessageContractResponse creates a message
 func NewMessageContractResponse(vmOutput *vmcommon.VMOutput, err error) *MessageContractResponse {
 	message := &MessageContractResponse{}
 	message.Kind = ContractResponse
-	message.VMOutput = vmOutput
+	message.SerializableVMOutput = NewSerializableVMOutput(vmOutput)
 	message.SetError(err)
 	return message
 }
