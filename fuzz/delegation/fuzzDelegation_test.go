@@ -154,6 +154,10 @@ func TestFuzzDelegation(t *testing.T) {
 		}
 	}
 
+	// owner needs to withdraw rewards for ActiveForSale,
+	err = pfe.claimRewards(ownerDelegatorIndex)
+	require.Nil(t, err)
+
 	// check that delegators got all rewards out
 	totalDelegatorBalance := pfe.getAllDelegatorsBalance()
 	require.True(t, pfe.totalRewards.Cmp(totalDelegatorBalance) == 0,

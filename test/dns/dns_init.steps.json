@@ -6670,6 +6670,5894 @@
                 "gas": "*",
                 "refund": "*"
             }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x00",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x00",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x01",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x01",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x02",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x02",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x03",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x03",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x04",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x04",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x05",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x05",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x06",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x06",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x07",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x07",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x08",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x08",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x09",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x09",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x0a",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x0a",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x0b",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x0b",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x0c",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x0c",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x0d",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x0d",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x0e",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x0e",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x0f",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x0f",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x10",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x10",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x11",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x11",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x12",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x12",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x13",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x13",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x14",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x14",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x15",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x15",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x16",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x16",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x17",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x17",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x18",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x18",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x19",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x19",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x1a",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x1a",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x1b",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x1b",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x1c",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x1c",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x1d",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x1d",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x1e",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x1e",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x1f",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x1f",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x20",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x20",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x21",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x21",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x22",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x22",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x23",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x23",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x24",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x24",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x25",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x25",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x26",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x26",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x27",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x27",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x28",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x28",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x29",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x29",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x2a",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x2a",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x2b",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x2b",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x2c",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x2c",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x2d",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x2d",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x2e",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x2e",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x2f",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x2f",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x30",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x30",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x31",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x31",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x32",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x32",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x33",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x33",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x34",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x34",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x35",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x35",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x36",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x36",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x37",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x37",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x38",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x38",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x39",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x39",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x3a",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x3a",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x3b",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x3b",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x3c",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x3c",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x3d",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x3d",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x3e",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x3e",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x3f",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x3f",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x40",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x40",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x41",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x41",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x42",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x42",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x43",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x43",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x44",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x44",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x45",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x45",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x46",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x46",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x47",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x47",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x48",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x48",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x49",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x49",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x4a",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x4a",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x4b",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x4b",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x4c",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x4c",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x4d",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x4d",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x4e",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x4e",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x4f",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x4f",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x50",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x50",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x51",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x51",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x52",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x52",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x53",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x53",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x54",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x54",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x55",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x55",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x56",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x56",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x57",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x57",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x58",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x58",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x59",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x59",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x5a",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x5a",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x5b",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x5b",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x5c",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x5c",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x5d",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x5d",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x5e",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x5e",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x5f",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x5f",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x60",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x60",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x61",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x61",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x62",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x62",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x63",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x63",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x64",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x64",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x65",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x65",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x66",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x66",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x67",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x67",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x68",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x68",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x69",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x69",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x6a",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x6a",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x6b",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x6b",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x6c",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x6c",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x6d",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x6d",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x6e",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x6e",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x6f",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x6f",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x70",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x70",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x71",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x71",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x72",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x72",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x73",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x73",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x74",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x74",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x75",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x75",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x76",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x76",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x77",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x77",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x78",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x78",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x79",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x79",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x7a",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x7a",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x7b",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x7b",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x7c",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x7c",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x7d",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x7d",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x7e",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x7e",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x7f",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x7f",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x80",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x80",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x81",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x81",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x82",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x82",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x83",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x83",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x84",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x84",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x85",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x85",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x86",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x86",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x87",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x87",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x88",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x88",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x89",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x89",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x8a",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x8a",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x8b",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x8b",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x8c",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x8c",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x8d",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x8d",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x8e",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x8e",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x8f",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x8f",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x90",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x90",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x91",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x91",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x92",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x92",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x93",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x93",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x94",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x94",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x95",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x95",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x96",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x96",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x97",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x97",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x98",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x98",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x99",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x99",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x9a",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x9a",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x9b",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x9b",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x9c",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x9c",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x9d",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x9d",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x9e",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x9e",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0x9f",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0x9f",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xa0",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xa0",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xa1",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xa1",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xa2",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xa2",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xa3",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xa3",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xa4",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xa4",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xa5",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xa5",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xa6",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xa6",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xa7",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xa7",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xa8",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xa8",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xa9",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xa9",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xaa",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xaa",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xab",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xab",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xac",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xac",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xad",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xad",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xae",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xae",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xaf",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xaf",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xb0",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xb0",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xb1",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xb1",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xb2",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xb2",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xb3",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xb3",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xb4",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xb4",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xb5",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xb5",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xb6",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xb6",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xb7",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xb7",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xb8",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xb8",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xb9",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xb9",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xba",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xba",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xbb",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xbb",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xbc",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xbc",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xbd",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xbd",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xbe",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xbe",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xbf",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xbf",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xc0",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xc0",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xc1",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xc1",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xc2",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xc2",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xc3",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xc3",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xc4",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xc4",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xc5",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xc5",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xc6",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xc6",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xc7",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xc7",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xc8",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xc8",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xc9",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xc9",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xca",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xca",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xcb",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xcb",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xcc",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xcc",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xcd",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xcd",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xce",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xce",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xcf",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xcf",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xd0",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xd0",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xd1",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xd1",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xd2",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xd2",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xd3",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xd3",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xd4",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xd4",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xd5",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xd5",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xd6",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xd6",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xd7",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xd7",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xd8",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xd8",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xd9",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xd9",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xda",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xda",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xdb",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xdb",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xdc",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xdc",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xdd",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xdd",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xde",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xde",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xdf",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xdf",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xe0",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xe0",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xe1",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xe1",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xe2",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xe2",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xe3",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xe3",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xe4",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xe4",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xe5",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xe5",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xe6",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xe6",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xe7",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xe7",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xe8",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xe8",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xe9",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xe9",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xea",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xea",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xeb",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xeb",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xec",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xec",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xed",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xed",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xee",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xee",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xef",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xef",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xf0",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xf0",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xf1",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xf1",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xf2",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xf2",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xf3",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xf3",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xf4",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xf4",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xf5",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xf5",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xf6",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xf6",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xf7",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xf7",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xf8",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xf8",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xf9",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xf9",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xfa",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xfa",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xfb",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xfb",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xfc",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xfc",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xfd",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xfd",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xfe",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xfe",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "feature-register-0xff",
+            "tx": {
+                "from": "''dns_owner_______________________",
+                "to": "''dns____________________________|0xff",
+                "value": "0",
+                "function": "setFeatureFlag",
+                "arguments": [
+                    "''register",
+                    "true"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
         }
     ]
 }

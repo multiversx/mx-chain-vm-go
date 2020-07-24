@@ -15,6 +15,8 @@ import (
 	mjwrite "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/write"
 )
 
+const ownerDelegatorIndex = 0
+
 type fuzzDelegationExecutor struct {
 	arwenTestExecutor *am.ArwenTestExecutor
 	world             *worldhook.BlockchainHookMock
@@ -219,7 +221,7 @@ func (pfe *fuzzDelegationExecutor) increaseBlockNonce(nonceDelta int) error {
 }
 
 func (pfe *fuzzDelegationExecutor) delegatorAddress(delegIndex int) []byte {
-	if delegIndex == 0 {
+	if delegIndex == ownerDelegatorIndex {
 		return pfe.ownerAddress
 	}
 	return []byte(fmt.Sprintf("delegator %5d               s1", delegIndex))
