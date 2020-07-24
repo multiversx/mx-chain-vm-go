@@ -284,7 +284,7 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newC
 	codeDeployInput := arwen.CodeDeployInput{
 		ContractCode:         input.ContractCode,
 		ContractCodeMetadata: input.ContractCodeMetadata,
-		ContractAddress:      newContractAddress,
+		ContractAddress:      nil,
 	}
 	err = metering.DeductInitialGasForIndirectDeployment(codeDeployInput)
 	if err != nil {
@@ -301,14 +301,13 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newC
 		return
 	}
 
-	newContractAccount, isNew := output.GetOutputAccount(newContractAddress)
-	if !isNew {
+	if blockchain.AccountExists(newContractAddress) {
 		err = arwen.ErrDeploymentOverExistingAccount
 		return
 	}
 
-	newContractAccount.Code = input.ContractCode
-	newContractAccount.CodeMetadata = input.ContractCodeMetadata
+	codeDeployInput.ContractAddress = newContractAddress
+	output.DeployCode(codeDeployInput)
 
 	defer func() {
 		if err != nil {
