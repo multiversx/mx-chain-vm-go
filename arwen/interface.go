@@ -64,6 +64,7 @@ type BlockchainContext interface {
 	GetOwnerAddress() ([]byte, error)
 	GetShardOfAddress(addr []byte) uint32
 	IsSmartContract(addr []byte) bool
+	IsPayable(address []byte) (bool, error)
 }
 
 type RuntimeContext interface {

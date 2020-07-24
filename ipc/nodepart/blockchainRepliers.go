@@ -147,3 +147,10 @@ func (part *NodePart) replyToBlockchainIsSmartContract(request common.MessageHan
 	response := common.NewMessageBlockchainIsSmartContractResponse(result)
 	return response
 }
+
+func (part *NodePart) replyToBlockchainIsPayable(request common.MessageHandler) common.MessageHandler {
+	typedRequest := request.(*common.MessageBlockchainIsPayableRequest)
+	result, err := part.blockchain.IsPayable(typedRequest.Address)
+	response := common.NewMessageBlockchainIsPayableResponse(result, err)
+	return response
+}

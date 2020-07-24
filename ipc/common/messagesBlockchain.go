@@ -469,6 +469,7 @@ func NewMessageBlockchainGetAllStateRequest(address []byte) *MessageBlockchainGe
 // MessageBlockchainGetAllStateResponse represents a response message
 type MessageBlockchainGetAllStateResponse struct {
 	Message
+	// TODO: Make sure to change "map[string][]byte" to a JSON-serializable friendly structure when "GetAllState()" will be used
 	AllState map[string][]byte
 }
 
@@ -563,5 +564,34 @@ func NewMessageBlockchainIsSmartContractResponse(result bool) *MessageBlockchain
 	message := &MessageBlockchainIsSmartContractResponse{}
 	message.Kind = BlockchainIsSmartContractResponse
 	message.Result = result
+	return message
+}
+
+// MessageBlockchainIsPayableRequest represents a request message
+type MessageBlockchainIsPayableRequest struct {
+	Message
+	Address []byte
+}
+
+// NewMessageBlockchainIsPayableRequest creates a request message
+func NewMessageBlockchainIsPayableRequest(address []byte) *MessageBlockchainIsPayableRequest {
+	message := &MessageBlockchainIsPayableRequest{}
+	message.Kind = BlockchainIsPayableRequest
+	message.Address = address
+	return message
+}
+
+// MessageBlockchainIsPayableResponse represents a response message
+type MessageBlockchainIsPayableResponse struct {
+	Message
+	Result bool
+}
+
+// NewMessageBlockchainIsPayableResponse creates a response message
+func NewMessageBlockchainIsPayableResponse(result bool, err error) *MessageBlockchainIsPayableResponse {
+	message := &MessageBlockchainIsPayableResponse{}
+	message.Kind = BlockchainIsPayableResponse
+	message.Result = result
+	message.SetError(err)
 	return message
 }

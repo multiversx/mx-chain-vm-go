@@ -199,6 +199,16 @@ func (context *outputContext) Transfer(destination []byte, sender []byte, gasLim
 		return arwen.ErrTransferInsufficientFunds
 	}
 
+	payable, err := context.host.Blockchain().IsPayable(destination)
+	if err != nil {
+		return err
+	}
+
+	hasValue := value.Cmp(big.NewInt(0)) == 1
+	if !payable && hasValue {
+		return arwen.ErrAccountNotPayable
+	}
+
 	senderAcc, _ := context.GetOutputAccount(sender)
 	destAcc, _ := context.GetOutputAccount(destination)
 
