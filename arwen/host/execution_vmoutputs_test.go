@@ -172,7 +172,7 @@ func expectedVMOutput_SameCtx_SuccessfulChildCall(parentCode []byte, childCode [
 
 	parentGasBeforeExecuteAPI := uint64(197)
 	executeAPICost := uint64(39)
-	childExecutionCost := uint64(431)
+	childExecutionCost := uint64(462)
 	finalCost := uint64(139)
 	gas := gasProvided
 	gas -= parentCompilationCost_SameCtx

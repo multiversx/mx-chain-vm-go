@@ -37,6 +37,7 @@ type VMHost interface {
 	EthereumCallData() []byte
 	GetAPIMethods() *wasmer.Imports
 	GetProtocolBuiltinFunctions() vmcommon.FunctionNames
+	IsBuiltinFunctionName(functionName string) bool
 }
 
 type BlockchainContext interface {

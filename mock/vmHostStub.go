@@ -27,6 +27,7 @@ type VmHostStub struct {
 	EthereumCallDataCalled            func() []byte
 	GetAPIMethodsCalled               func() *wasmer.Imports
 	GetProtocolBuiltinFunctionsCalled func() vmcommon.FunctionNames
+	IsBuiltinFunctionNameCalled       func(functionName string) bool
 }
 
 func (vhs *VmHostStub) InitState() {
@@ -142,4 +143,11 @@ func (vhs *VmHostStub) GetProtocolBuiltinFunctions() vmcommon.FunctionNames {
 		return vhs.GetProtocolBuiltinFunctionsCalled()
 	}
 	return make(vmcommon.FunctionNames)
+}
+
+func (vhs *VmHostStub) IsBuiltinFunctionName(functionName string) bool {
+	if vhs.IsBuiltinFunctionNameCalled != nil {
+		return vhs.IsBuiltinFunctionNameCalled(functionName)
+	}
+	return false
 }
