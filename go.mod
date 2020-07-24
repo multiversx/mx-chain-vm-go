@@ -7,6 +7,7 @@ require (
 	github.com/ElrondNetwork/elrond-go-logger v1.0.2
 	github.com/ElrondNetwork/elrond-vm-common v0.1.23
 	github.com/ElrondNetwork/elrond-vm-util v0.3.5
+	github.com/davecgh/go-spew v1.1.1
 	github.com/gin-gonic/gin v1.6.3
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/pelletier/go-toml v1.6.0

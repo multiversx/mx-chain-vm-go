@@ -469,6 +469,7 @@ func NewMessageBlockchainGetAllStateRequest(address []byte) *MessageBlockchainGe
 // MessageBlockchainGetAllStateResponse represents a response message
 type MessageBlockchainGetAllStateResponse struct {
 	Message
+	// TODO: Make sure to change "map[string][]byte" to a JSON-serializable friendly structure when "GetAllState()" will be used
 	AllState map[string][]byte
 }
 
