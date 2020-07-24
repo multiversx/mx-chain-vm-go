@@ -1,13 +1,11 @@
 package common
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/marshaling"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/stretchr/testify/require"
 )
 
@@ -49,7 +47,7 @@ func TestMessageContractResponse_CanWrapNilVMOutput(t *testing.T) {
 	expectedEmptyVMOutput := vmcommon.VMOutput{OutputAccounts: make(map[string]*vmcommon.OutputAccount)}
 	actualVMOutput := *message.SerializableVMOutput.ConvertToVMOutput()
 
-	require.Equal(t, spew.Sdump(expectedEmptyVMOutput), spew.Sdump(actualVMOutput))
+	require.True(t, reflect.DeepEqual(expectedEmptyVMOutput, actualVMOutput))
 	requireSerializationConsistency(t, message, &MessageContractResponse{})
 }
 
@@ -65,8 +63,6 @@ func TestMessageBlockchainGetAllStateResponse_IsConsistentlySerializable(t *test
 }
 
 func requireSerializationConsistency(t *testing.T, message interface{}, intoMessage interface{}) {
-	spew.Config.SortKeys = true
-	spew.Config.Indent = "\t"
 	marshalizer := marshaling.CreateMarshalizer(marshaling.JSON)
 
 	serialized, err := marshalizer.Marshal(message)
@@ -76,10 +72,6 @@ func requireSerializationConsistency(t *testing.T, message interface{}, intoMess
 
 	areEqual := reflect.DeepEqual(message, intoMessage)
 	if !areEqual {
-		fmt.Println("### Original message ###")
-		spew.Dump(message)
-		fmt.Println("### Into message ###")
-		spew.Dump(intoMessage)
 		require.FailNow(t, "Serialization is not consistent.")
 	}
 }
