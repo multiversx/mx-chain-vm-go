@@ -71,16 +71,35 @@ func (context *storageContext) GetStorageUpdates(address []byte) map[string]*vmc
 }
 
 func (context *storageContext) GetStorage(key []byte) []byte {
-	storageUpdates := context.GetStorageUpdates(context.address)
-	if storageUpdate, ok := storageUpdates[string(key)]; ok {
-		return storageUpdate.Data
+	metering := context.host.Metering()
+
+	extraBytes := len(key) - arwen.AddressLen
+	if extraBytes > 0 {
+		gasToUse := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(extraBytes)
+		metering.UseGas(gasToUse)
 	}
 
-	value, _ := context.blockChainHook.GetStorageData(context.address, key)
-	if value != nil {
-		storageUpdates[string(key)] = &vmcommon.StorageUpdate{
-			Offset: key,
-			Data:   value,
+	value := context.GetStorageUnmetered(key)
+
+	gasToUse := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(value))
+	metering.UseGas(gasToUse)
+
+	return value
+}
+
+func (context *storageContext) GetStorageUnmetered(key []byte) []byte {
+	var value []byte
+
+	storageUpdates := context.GetStorageUpdates(context.address)
+	if storageUpdate, ok := storageUpdates[string(key)]; ok {
+		value = storageUpdate.Data
+	} else {
+		value, _ = context.blockChainHook.GetStorageData(context.address, key)
+		if value != nil {
+			storageUpdates[string(key)] = &vmcommon.StorageUpdate{
+				Offset: key,
+				Data:   value,
+			}
 		}
 	}
 
@@ -101,6 +120,13 @@ func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.Stora
 	}
 
 	metering := context.host.Metering()
+
+	extraBytes := len(key) - arwen.AddressLen
+	if extraBytes > 0 {
+		gasToUse := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(extraBytes)
+		metering.UseGas(gasToUse)
+	}
+
 	var zero []byte
 	strKey := string(key)
 	length := len(value)
@@ -108,7 +134,7 @@ func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.Stora
 	var oldValue []byte
 	storageUpdates := context.GetStorageUpdates(context.address)
 	if update, ok := storageUpdates[strKey]; !ok {
-		oldValue = context.GetStorage(key)
+		oldValue = context.GetStorageUnmetered(key)
 		storageUpdates[strKey] = &vmcommon.StorageUpdate{
 			Offset: key,
 			Data:   oldValue,

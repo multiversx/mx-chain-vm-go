@@ -720,6 +720,9 @@ func storageStore(context unsafe.Pointer, keyOffset int32, keyLength int32, data
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
 
+	gasToUse := metering.GasSchedule().ElrondAPICost.StorageStore
+	metering.UseGas(gasToUse)
+
 	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
@@ -729,9 +732,6 @@ func storageStore(context unsafe.Pointer, keyOffset int32, keyLength int32, data
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
-
-	gasToUse := metering.GasSchedule().ElrondAPICost.StorageStore
-	metering.UseGas(gasToUse)
 
 	storageStatus, err := storage.SetStorage(key, data)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -747,15 +747,15 @@ func storageLoadLength(context unsafe.Pointer, keyOffset int32, keyLength int32)
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
 
+	gasToUse := metering.GasSchedule().ElrondAPICost.StorageLoad
+	metering.UseGas(gasToUse)
+
 	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
 
 	data := storage.GetStorage(key)
-
-	gasToUse := metering.GasSchedule().ElrondAPICost.StorageLoad
-	metering.UseGas(gasToUse)
 
 	return int32(len(data))
 }
@@ -766,16 +766,15 @@ func storageLoad(context unsafe.Pointer, keyOffset int32, keyLength int32, dataO
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
 
+	gasToUse := metering.GasSchedule().ElrondAPICost.StorageLoad
+	metering.UseGas(gasToUse)
+
 	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
 
 	data := storage.GetStorage(key)
-
-	gasToUse := metering.GasSchedule().ElrondAPICost.StorageLoad
-	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(data))
-	metering.UseGas(gasToUse)
 
 	err = runtime.MemStore(dataOffset, data)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -1157,6 +1156,9 @@ func executeOnSameContext(
 	runtime := host.Runtime()
 	metering := host.Metering()
 
+	gasToUse := metering.GasSchedule().ElrondAPICost.ExecuteOnSameContext
+	metering.UseGas(gasToUse)
+
 	send := runtime.GetSCAddress()
 	dest, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
 	if arwen.WithFault(err, context, false) {
@@ -1180,8 +1182,7 @@ func executeOnSameContext(
 		return 1
 	}
 
-	gasToUse := metering.GasSchedule().ElrondAPICost.ExecuteOnSameContext
-	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
+	gasToUse = metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
 	metering.UseGas(gasToUse)
 
 	bigIntVal := big.NewInt(0).SetBytes(value)

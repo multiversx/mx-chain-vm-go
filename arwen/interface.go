@@ -178,6 +178,7 @@ type StorageContext interface {
 	SetAddress(address []byte)
 	GetStorageUpdates(address []byte) map[string]*vmcommon.StorageUpdate
 	GetStorage(key []byte) []byte
+	GetStorageUnmetered(key []byte) []byte
 	SetStorage(key []byte, value []byte) (StorageStatus, error)
 }
 
