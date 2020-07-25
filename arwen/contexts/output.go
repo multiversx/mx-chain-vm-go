@@ -14,6 +14,7 @@ type outputContext struct {
 	host        arwen.VMHost
 	outputState *vmcommon.VMOutput
 	stateStack  []*vmcommon.VMOutput
+	codeUpdates map[string]struct{}
 }
 
 // NewOutputContext creates a new outputContext
@@ -30,6 +31,7 @@ func NewOutputContext(host arwen.VMHost) (*outputContext, error) {
 
 func (context *outputContext) InitState() {
 	context.outputState = newVMOutput()
+	context.codeUpdates = make(map[string]struct{})
 }
 
 func newVMOutput() *vmcommon.VMOutput {
@@ -122,6 +124,7 @@ func (context *outputContext) GetOutputAccount(address []byte) (*vmcommon.Output
 
 func (context *outputContext) DeleteOutputAccount(address []byte) {
 	delete(context.outputState.OutputAccounts, string(address))
+	delete(context.codeUpdates, string(address))
 }
 
 func (context *outputContext) GetRefund() uint64 {
@@ -230,6 +233,7 @@ func (context *outputContext) AddTxValueToAccount(address []byte, value *big.Int
 // GetVMOutput updates the current VMOutput and returns it
 func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 	context.outputState.GasRemaining = context.host.Metering().GasLeft()
+	context.removeNonUpdatedCode(context.outputState)
 	return context.outputState
 }
 
@@ -237,6 +241,9 @@ func (context *outputContext) DeployCode(input arwen.CodeDeployInput) {
 	newSCAccount, _ := context.GetOutputAccount(input.ContractAddress)
 	newSCAccount.Code = input.ContractCode
 	newSCAccount.CodeMetadata = input.ContractCodeMetadata
+
+	var empty struct{}
+	context.codeUpdates[string(input.ContractAddress)] = empty
 }
 
 func (context *outputContext) CreateVMOutputInCaseOfError(err error) *vmcommon.VMOutput {
@@ -261,6 +268,16 @@ func (context *outputContext) CreateVMOutputInCaseOfError(err error) *vmcommon.V
 		GasRefund:     big.NewInt(0),
 		ReturnCode:    returnCode,
 		ReturnMessage: message,
+	}
+}
+
+func (context *outputContext) removeNonUpdatedCode(vmOutput *vmcommon.VMOutput) {
+	for address, account := range vmOutput.OutputAccounts {
+		_, ok := context.codeUpdates[address]
+		if !ok {
+			account.Code = nil
+			account.CodeMetadata = nil
+		}
 	}
 }
 

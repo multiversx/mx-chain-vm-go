@@ -69,7 +69,7 @@ func (host *vmHost) determineAsyncCallExecutionMode(asyncCallInfo *arwen.AsyncCa
 	shardOfDest := blockchain.GetShardOfAddress(asyncCallInfo.Destination)
 	sameShard := shardOfSC == shardOfDest
 
-	if host.isBuiltinFunctionName(functionName) {
+	if host.IsBuiltinFunctionName(functionName) {
 		if sameShard {
 			return arwen.SyncCall, nil
 		}
@@ -521,7 +521,7 @@ func (host *vmHost) processCallbackStack() error {
 	storage := host.Storage()
 
 	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, runtime.GetOriginalTxHash())
-	buff := storage.GetStorage(storageKey)
+	buff := storage.GetStorageUnmetered(storageKey)
 	if len(buff) == 0 {
 		return nil
 	}
@@ -693,7 +693,7 @@ func (host *vmHost) getCurrentAsyncInfo() (*arwen.AsyncContextInfo, error) {
 
 	asyncInfo := &arwen.AsyncContextInfo{}
 	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, runtime.GetOriginalTxHash())
-	buff := storage.GetStorage(storageKey)
+	buff := storage.GetStorageUnmetered(storageKey)
 	if len(buff) == 0 {
 		return asyncInfo, nil
 	}
