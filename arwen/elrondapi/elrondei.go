@@ -771,7 +771,7 @@ func storageLoadLength(context unsafe.Pointer, keyOffset int32, keyLength int32)
 		return -1
 	}
 
-	data := storage.GetStorage(key)
+	data := storage.GetStorageUnmetered(key)
 
 	return int32(len(data))
 }
