@@ -95,11 +95,9 @@ func (context *storageContext) GetStorageUnmetered(key []byte) []byte {
 		value = storageUpdate.Data
 	} else {
 		value, _ = context.blockChainHook.GetStorageData(context.address, key)
-		if value != nil {
-			storageUpdates[string(key)] = &vmcommon.StorageUpdate{
-				Offset: key,
-				Data:   value,
-			}
+		storageUpdates[string(key)] = &vmcommon.StorageUpdate{
+			Offset: key,
+			Data:   value,
 		}
 	}
 
@@ -107,7 +105,7 @@ func (context *storageContext) GetStorageUnmetered(key []byte) []byte {
 }
 
 func (context *storageContext) isElrondReservedKey(key []byte) bool {
-	return bytes.HasPrefix(key, []byte(context.elrondProtectedKeyPrefix))
+	return bytes.HasPrefix(key, context.elrondProtectedKeyPrefix)
 }
 
 func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.StorageStatus, error) {
