@@ -721,7 +721,9 @@ func TestExecution_ExecuteOnSameContext_BuiltinFunctions(t *testing.T) {
 
 func dummyProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	outPutAccounts := make(map[string]*vmcommon.OutputAccount)
-	outPutAccounts[string(parentAddress)] = &vmcommon.OutputAccount{BalanceDelta: big.NewInt(0)}
+	outPutAccounts[string(parentAddress)] = &vmcommon.OutputAccount{
+		BalanceDelta: big.NewInt(0),
+		Address:      parentAddress}
 
 	if input.Function == "builtinClaim" {
 		outPutAccounts[string(parentAddress)].BalanceDelta = big.NewInt(42)
