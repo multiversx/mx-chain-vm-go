@@ -78,7 +78,7 @@
             "expect": {
                 "out": [],
                 "status": "4",
-                "message": "only owner can withdraw unexpected balance",
+                "message": "str:only owner can withdraw unexpected balance",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"

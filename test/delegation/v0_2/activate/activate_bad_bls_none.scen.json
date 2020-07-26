@@ -77,7 +77,7 @@
             "expect": {
                 "out": [],
                 "status": "4",
-                "message": "cannot activate with no nodes",
+                "message": "str:cannot activate with no nodes",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"

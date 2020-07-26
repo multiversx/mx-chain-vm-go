@@ -61,7 +61,7 @@
             "expect": {
                 "out": [],
                 "status": "4",
-                "message": "cannot change BLS keys while active",
+                "message": "str:cannot change BLS keys while active",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"

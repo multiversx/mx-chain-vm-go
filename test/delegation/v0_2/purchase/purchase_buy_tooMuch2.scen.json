@@ -64,7 +64,7 @@
             "expect": {
                 "out": [],
                 "status": "4",
-                "message": "payment exceeds stake owned by user",
+                "message": "str:payment exceeds stake owned by user",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"

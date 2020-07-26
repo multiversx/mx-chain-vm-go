@@ -29,7 +29,7 @@
             "expect": {
                 "out": [],
                 "status": "4",
-                "message": "name already taken",
+                "message": "str:name already taken",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"

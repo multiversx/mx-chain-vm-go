@@ -102,7 +102,7 @@
                     "balance": "3,000,000,003",
                     "storage": {},
                     "code": "",
-                    "asyncCallData": "delegation claim"
+                    "asyncCallData": "str:delegation claim"
                 },
                 "''delegation_contract___________s1": {
                     "nonce": "0",

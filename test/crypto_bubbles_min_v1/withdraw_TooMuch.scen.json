@@ -44,7 +44,7 @@
             "expect": {
                 "out": [],
                 "status": "0x04",
-                "message": "amount to withdraw must be less or equal to balance",
+                "message": "str:amount to withdraw must be less or equal to balance",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"

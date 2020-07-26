@@ -63,7 +63,7 @@
                     "balance": "0x123400",
                     "storage": {},
                     "code": "",
-                    "asyncCallData": "payMeWithResult@56"
+                    "asyncCallData": "str:payMeWithResult@56"
                 }
             }
         }

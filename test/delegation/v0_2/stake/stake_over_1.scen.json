@@ -57,7 +57,7 @@
             "expect": {
                 "out": [],
                 "status": "4",
-                "message": "payment exceeds unfilled total stake",
+                "message": "str:payment exceeds unfilled total stake",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"

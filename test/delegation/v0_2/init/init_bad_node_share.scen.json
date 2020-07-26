@@ -30,7 +30,7 @@
             "expect": {
                 "out": [],
                 "status": "4",
-                "message": "node share out of range",
+                "message": "str:node share out of range",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"

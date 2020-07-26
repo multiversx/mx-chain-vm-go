@@ -139,7 +139,7 @@
                     "balance": "567,000,000,000",
                     "storage": {},
                     "code": "",
-                    "asyncCallData": "delegation unstake"
+                    "asyncCallData": "str:delegation unstake"
                 },
                 "''delegator_2___________________s1": {
                     "nonce": "0",

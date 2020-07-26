@@ -33,7 +33,7 @@
             "expect": {
                 "out": [],
                 "status": "0x04",
-                "message": "panic occurred: example panic message",
+                "message": "str:panic occurred: example panic message",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"

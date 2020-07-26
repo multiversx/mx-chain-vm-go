@@ -49,9 +49,9 @@ func checkAccounts(
 				hex.EncodeToString(matchingAcct.Address), expectedAcct.Code.Original, string(matchingAcct.Code))
 		}
 
-		if matchingAcct.AsyncCallData != expectedAcct.AsyncCallData {
+		if !expectedAcct.AsyncCallData.Check([]byte(matchingAcct.AsyncCallData)) {
 			return fmt.Errorf("bad async call data. Account: %s. Want: [%s]. Have: [%s]",
-				hex.EncodeToString(matchingAcct.Address), expectedAcct.AsyncCallData, matchingAcct.AsyncCallData)
+				hex.EncodeToString(matchingAcct.Address), expectedAcct.AsyncCallData.Original, matchingAcct.AsyncCallData)
 		}
 
 		err := checkAccountStorage(expectedAcct, matchingAcct)

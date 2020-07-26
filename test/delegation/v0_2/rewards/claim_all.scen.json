@@ -122,7 +122,7 @@
                     "balance": "3000000003",
                     "storage": {},
                     "code": "",
-                    "asyncCallData": "delegation claim"
+                    "asyncCallData": "str:delegation claim"
                 },
                 "''delegation_contract___________s1": {
                     "nonce": "0",
@@ -163,14 +163,14 @@
                     "balance": "0700,000,000",
                     "storage": {},
                     "code": "",
-                    "asyncCallData": "delegation claim"
+                    "asyncCallData": "str:delegation claim"
                 },
                 "''delegator_2___________________s1": {
                     "nonce": "1",
                     "balance": "6300,000,006",
                     "storage": {},
                     "code": "",
-                    "asyncCallData": "delegation claim"
+                    "asyncCallData": "str:delegation claim"
                 }
             }
         }

@@ -91,7 +91,7 @@
                     "balance": "50,000",
                     "storage": {},
                     "code": "",
-                    "asyncCallData": "unexpected balance"
+                    "asyncCallData": "str:unexpected balance"
                 },
                 "''delegation_contract___________s1": {
                     "nonce": "0",

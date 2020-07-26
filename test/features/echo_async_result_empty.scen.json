@@ -58,7 +58,7 @@
             "expect": {
                 "out": [],
                 "status": "4",
-                "message": "message",
+                "message": "str:message",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"

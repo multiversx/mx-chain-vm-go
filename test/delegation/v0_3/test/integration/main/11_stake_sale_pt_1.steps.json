@@ -92,7 +92,7 @@
             "expect": {
                 "out": [],
                 "status": "4",
-                "message": "stake sale paused",
+                "message": "str:stake sale paused",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"

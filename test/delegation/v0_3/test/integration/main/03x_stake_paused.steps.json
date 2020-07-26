@@ -36,7 +36,7 @@
             "expect": {
                 "out": [],
                 "status": "4",
-                "message": "staking paused",
+                "message": "str:staking paused",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"

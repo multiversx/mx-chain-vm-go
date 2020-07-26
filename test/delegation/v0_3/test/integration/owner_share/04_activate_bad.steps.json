@@ -20,7 +20,7 @@
             "expect": {
                 "out": [],
                 "status": "4",
-                "message": "owner doesn't have enough stake in the contract",
+                "message": "str:owner doesn't have enough stake in the contract",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"

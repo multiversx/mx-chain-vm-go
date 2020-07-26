@@ -79,7 +79,7 @@
                     "balance": "1,234,567,000,000",
                     "storage": "*",
                     "code": "",
-                    "asyncCallData": "unexpected balance"
+                    "asyncCallData": "str:unexpected balance"
                 },
                 "+": ""
             }

@@ -58,7 +58,7 @@
             "expect": {
                 "out": [],
                 "status": "4",
-                "message": "cannot offer more stake than is owned",
+                "message": "str:cannot offer more stake than is owned",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"

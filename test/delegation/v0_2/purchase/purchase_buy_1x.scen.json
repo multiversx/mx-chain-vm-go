@@ -121,7 +121,7 @@
                     "balance": "40,000,000,002",
                     "storage": {},
                     "code": "",
-                    "asyncCallData": "payment for stake"
+                    "asyncCallData": "str:payment for stake"
                 },
                 "''delegator_2___________________s1": {
                     "nonce": "1",

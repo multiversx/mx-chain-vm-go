@@ -59,7 +59,7 @@
             "expect": {
                 "out": [],
                 "status": "4",
-                "message": "wrong number of arguments",
+                "message": "str:wrong number of arguments",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"
@@ -104,7 +104,7 @@
             "expect": {
                 "out": [],
                 "status": "4",
-                "message": "wrong number of arguments",
+                "message": "str:wrong number of arguments",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"
@@ -148,7 +148,7 @@
             "expect": {
                 "out": [],
                 "status": "4",
-                "message": "argument deserialization error (BLSKey): input too long",
+                "message": "str:argument deserialization error (BLSKey): input too long",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"
@@ -172,7 +172,7 @@
             "expect": {
                 "out": [],
                 "status": "4",
-                "message": "argument deserialization error (BLSKey): input too short",
+                "message": "str:argument deserialization error (BLSKey): input too short",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"

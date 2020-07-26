@@ -81,7 +81,7 @@
             "expect": {
                 "out": [],
                 "status": "0",
-                "message": "",
+                "message": "str:",
                 "logs": [
                     {
                         "address": "''delegation_contract___________s1",

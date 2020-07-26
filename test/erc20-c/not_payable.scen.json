@@ -36,7 +36,7 @@
             "expect": {
                 "out": [],
                 "status": "0x04",
-                "message": "attempted to transfer funds via a non-payable function",
+                "message": "str:attempted to transfer funds via a non-payable function",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"
@@ -59,7 +59,7 @@
             "expect": {
                 "out": [],
                 "status": "0x04",
-                "message": "attempted to transfer funds via a non-payable function",
+                "message": "str:attempted to transfer funds via a non-payable function",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"
@@ -83,7 +83,7 @@
             "expect": {
                 "out": [],
                 "status": "0x04",
-                "message": "attempted to transfer funds via a non-payable function",
+                "message": "str:attempted to transfer funds via a non-payable function",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"
@@ -107,7 +107,7 @@
             "expect": {
                 "out": [],
                 "status": "0x04",
-                "message": "attempted to transfer funds via a non-payable function",
+                "message": "str:attempted to transfer funds via a non-payable function",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"
@@ -131,7 +131,7 @@
             "expect": {
                 "out": [],
                 "status": "0x04",
-                "message": "attempted to transfer funds via a non-payable function",
+                "message": "str:attempted to transfer funds via a non-payable function",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"
@@ -156,7 +156,7 @@
             "expect": {
                 "out": [],
                 "status": "0x04",
-                "message": "attempted to transfer funds via a non-payable function",
+                "message": "str:attempted to transfer funds via a non-payable function",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"
