@@ -234,6 +234,7 @@ func (context *outputContext) AddTxValueToAccount(address []byte, value *big.Int
 func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 	context.outputState.GasRemaining = context.host.Metering().GasLeft()
 	context.removeNonUpdatedCode(context.outputState)
+
 	return context.outputState
 }
 
@@ -327,8 +328,8 @@ func (context *outputContext) AddToActiveState(rightOutput *vmcommon.VMOutput) {
 		rightOutput.GasRefund.Add(rightOutput.GasRefund, context.outputState.GasRefund)
 	}
 
-	for address, rightAccount := range rightOutput.OutputAccounts {
-		leftAccount, ok := context.outputState.OutputAccounts[address]
+	for _, rightAccount := range rightOutput.OutputAccounts {
+		leftAccount, ok := context.outputState.OutputAccounts[string(rightAccount.Address)]
 		if !ok || rightAccount.BalanceDelta == nil {
 			continue
 		}
@@ -344,11 +345,11 @@ func mergeVMOutputs(leftOutput *vmcommon.VMOutput, rightOutput *vmcommon.VMOutpu
 	if leftOutput.OutputAccounts == nil {
 		leftOutput.OutputAccounts = make(map[string]*vmcommon.OutputAccount)
 	}
-	for address, rightAccount := range rightOutput.OutputAccounts {
-		leftAccount, ok := leftOutput.OutputAccounts[address]
+	for _, rightAccount := range rightOutput.OutputAccounts {
+		leftAccount, ok := leftOutput.OutputAccounts[string(rightAccount.Address)]
 		if !ok {
 			leftAccount = &vmcommon.OutputAccount{}
-			leftOutput.OutputAccounts[address] = leftAccount
+			leftOutput.OutputAccounts[string(rightAccount.Address)] = leftAccount
 		}
 		mergeOutputAccounts(leftAccount, rightAccount)
 	}

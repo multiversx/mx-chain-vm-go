@@ -346,10 +346,10 @@ func TestExecution_ExecuteOnSameContext_Simple(t *testing.T) {
 	input.GasProvided = gasProvided
 
 	vmOutput, err := host.RunSmartContractCall(input)
-	fmt.Println(vmOutput.ReturnMessage)
 	require.Nil(t, err)
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 	require.Equal(t, "", vmOutput.ReturnMessage)
+	fmt.Println(vmOutput.ReturnMessage)
 }
 
 func TestExecution_Call_Breakpoints(t *testing.T) {
@@ -721,7 +721,9 @@ func TestExecution_ExecuteOnSameContext_BuiltinFunctions(t *testing.T) {
 
 func dummyProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	outPutAccounts := make(map[string]*vmcommon.OutputAccount)
-	outPutAccounts[string(parentAddress)] = &vmcommon.OutputAccount{BalanceDelta: big.NewInt(0)}
+	outPutAccounts[string(parentAddress)] = &vmcommon.OutputAccount{
+		BalanceDelta: big.NewInt(0),
+		Address:      parentAddress}
 
 	if input.Function == "builtinClaim" {
 		outPutAccounts[string(parentAddress)].BalanceDelta = big.NewInt(42)
@@ -822,7 +824,8 @@ func TestExecution_ExecuteOnDestContext_Successful(t *testing.T) {
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
 	expectedVMOutput := expectedVMOutput_DestCtx_SuccessfulChildCall(parentCode, childCode)
-	require.Equal(t, expectedVMOutput, vmOutput)
+	expectedVMOutput.OutputAccounts[string(parentAddress)].StorageUpdates[string(childKey)] = &vmcommon.StorageUpdate{Offset: childKey, Data: nil}
+	assert.Equal(t, expectedVMOutput, vmOutput)
 }
 
 func TestExecution_ExecuteOnDestContext_Successful_BigInts(t *testing.T) {
