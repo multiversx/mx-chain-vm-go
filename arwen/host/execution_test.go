@@ -809,8 +809,6 @@ func TestExecution_ExecuteOnDestContext_OutOfGas(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnDestContext_Successful(t *testing.T) {
-	// TODO fix this test
-	t.Skip("fix this test")
 	parentCode := GetTestSCCode("exec-dest-ctx-parent", "../../")
 	childCode := GetTestSCCode("exec-dest-ctx-child", "../../")
 	parentSCBalance := big.NewInt(1000)
@@ -826,6 +824,7 @@ func TestExecution_ExecuteOnDestContext_Successful(t *testing.T) {
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
 	expectedVMOutput := expectedVMOutput_DestCtx_SuccessfulChildCall(parentCode, childCode)
+	expectedVMOutput.OutputAccounts[string(parentAddress)].StorageUpdates[string(childKey)] = &vmcommon.StorageUpdate{Offset: childKey, Data: nil}
 	assert.Equal(t, expectedVMOutput, vmOutput)
 }
 
