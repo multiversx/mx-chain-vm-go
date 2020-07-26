@@ -142,7 +142,7 @@ func TestDelegation_v0_2(t *testing.T) {
 	)
 	err = runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
-		"delegation_v0.2",
+		"delegation/v0_2",
 		".scen.json",
 		[]string{})
 
@@ -160,7 +160,25 @@ func TestDelegation_v0_3(t *testing.T) {
 	)
 	err = runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
-		"delegation_v0.3",
+		"delegation/v0_3",
+		".scen.json",
+		[]string{})
+
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestDelegation_v0_4_genesis(t *testing.T) {
+	executor, err := am.NewArwenTestExecutor()
+	require.Nil(t, err)
+	runner := mc.NewScenarioRunner(
+		executor,
+		mc.NewDefaultFileResolver(),
+	)
+	err = runner.RunAllJSONScenariosInDirectory(
+		getTestRoot(),
+		"delegation/v0_4_genesis",
 		".scen.json",
 		[]string{})
 
