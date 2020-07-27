@@ -35,7 +35,7 @@
             "expect": {
                 "out": [],
                 "status": "10",
-                "message": "cannot write to storage under Elrond reserved key",
+                "message": "str:cannot write to storage under Elrond reserved key",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"
@@ -58,7 +58,7 @@
             "expect": {
                 "out": [],
                 "status": "10",
-                "message": "cannot write to storage under Elrond reserved key",
+                "message": "str:cannot write to storage under Elrond reserved key",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"
@@ -81,7 +81,7 @@
             "expect": {
                 "out": [],
                 "status": "10",
-                "message": "cannot write to storage under Elrond reserved key",
+                "message": "str:cannot write to storage under Elrond reserved key",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"

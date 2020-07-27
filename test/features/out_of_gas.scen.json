@@ -36,7 +36,7 @@
             "expect": {
                 "out": [],
                 "status": "5",
-                "message": "not enough gas",
+                "message": "str:not enough gas",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"

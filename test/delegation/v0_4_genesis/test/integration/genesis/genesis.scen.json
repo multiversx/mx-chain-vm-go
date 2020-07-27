@@ -1,0 +1,45 @@
+{
+    "name": "genesis big scenario",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "01a_init_accounts.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "01b_deploy.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "01c_init.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "02_add_nodes.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "02c_add_nodes.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "03_genesis_stake.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "03c_stake.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "04b_genesis_activate.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "04c_activate.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "05_rewards.steps.json"
+        }
+    ]
+}

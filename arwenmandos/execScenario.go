@@ -63,6 +63,11 @@ func (ae *ArwenTestExecutor) ExecuteStep(generalStep mj.Step) error {
 		if err != nil {
 			return err
 		}
+	case *mj.DumpStateStep:
+		err := dumpWorld(ae.World)
+		if err != nil {
+			return err
+		}
 	case *mj.TxStep:
 		// execute tx
 		_, err := ae.ExecuteTxStep(step)

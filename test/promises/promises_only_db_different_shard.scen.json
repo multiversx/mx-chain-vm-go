@@ -80,7 +80,7 @@
           "balance": "0",
           "storage": {},
           "code": "",
-          "asyncCallData": "bookTrain"
+          "asyncCallData": "str:bookTrain"
         }
       }
     }

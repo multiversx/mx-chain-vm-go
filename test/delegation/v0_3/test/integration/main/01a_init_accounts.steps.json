@@ -1,0 +1,55 @@
+{
+    "name": "init",
+    "steps": [
+        {
+            "step": "setState",
+            "accounts": {
+                "''node_address__________________s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                },
+                "''auction_contract______________s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {
+                        "''stake_per_node": "111,000,000,000,000"
+                    },
+                    "code": "file:../../../../auction-mock/output/auction-mock.wasm"
+                },
+                "''someone_______________________s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                },
+                "''endless_sack_of_erd___________s1": {
+                    "nonce": "0",
+                    "balance": "1,000,000,000,000,000,000,000,000,000,000",
+                    "storage": {},
+                    "code": ""
+                },
+                "''delegator_1___________________s1": {
+                    "comment": "starting with 0 balance, transferring funds only when needed to make it easier to keep track of rewards",
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                },
+                "''delegator_2___________________s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                },
+                "''delegator_3___________________s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        }
+    ]
+}

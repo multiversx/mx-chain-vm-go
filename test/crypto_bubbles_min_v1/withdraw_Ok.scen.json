@@ -81,7 +81,7 @@
                     "balance": "0x10",
                     "storage": {},
                     "code": "",
-                    "asyncCallData": "crypto bubbles"
+                    "asyncCallData": "str:crypto bubbles"
                 }
             }
         }

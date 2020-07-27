@@ -62,7 +62,7 @@
                     "balance": "0",
                     "storage": {},
                     "code": "",
-                    "asyncCallData": "messageMe@01@02@030303@fefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefe"
+                    "asyncCallData": "str:messageMe@01@02@030303@fefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefe"
                 }
             }
         }

@@ -17,16 +17,20 @@ func checkTxResults(
 	output *vmi.VMOutput,
 ) error {
 
-	expectedStatus := 0
-	if blResult.Status.Value != nil {
-		expectedStatus = int(blResult.Status.Value.Int64())
-	}
-	if expectedStatus != int(output.ReturnCode) {
-		return fmt.Errorf("result code mismatch. Tx %s. Want: %d. Have: %d (%s). Message: %s",
-			txIndex, expectedStatus, int(output.ReturnCode), output.ReturnCode.String(), output.ReturnMessage)
+	// expectedStatus := 0
+	// if blResult.Status.Value != nil {
+	// 	expectedStatus = int(blResult.Status.Value.Int64())
+	// }
+	// if expectedStatus != int(output.ReturnCode) {
+	// 	return fmt.Errorf("result code mismatch. Tx %s. Want: %d. Have: %d (%s). Message: %s",
+	// 		txIndex, expectedStatus, int(output.ReturnCode), output.ReturnCode.String(), output.ReturnMessage)
+	// }
+	if !blResult.Status.Check(big.NewInt(int64(output.ReturnCode))) {
+		return fmt.Errorf("result code mismatch. Tx %s. Want: %s. Have: %d (%s). Message: %s",
+			txIndex, blResult.Status.Original, int(output.ReturnCode), output.ReturnCode.String(), output.ReturnMessage)
 	}
 
-	if output.ReturnMessage != blResult.Message {
+	if !blResult.Message.Check([]byte(output.ReturnMessage)) {
 		return fmt.Errorf("result message mismatch. Tx %s. Want: %s. Have: %s",
 			txIndex, blResult.Message, output.ReturnMessage)
 	}
