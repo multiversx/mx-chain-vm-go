@@ -53,6 +53,7 @@ func TestFuzzDelegation(t *testing.T) {
 
 	err := pfe.init(&fuzzDelegationExecutorInitArgs{
 		serviceFee:                  r.Intn(10000),
+		ownerMinStake:               0,
 		numBlocksBeforeForceUnstake: r.Intn(1000),
 		numBlocksBeforeUnbond:       r.Intn(1000),
 		numDelegators:               10,
@@ -66,7 +67,7 @@ func TestFuzzDelegation(t *testing.T) {
 	maxSystemReward := big.NewInt(1000000000)
 
 	re := newRandomEventProvider()
-	for stepIndex := 0; stepIndex < 1000; stepIndex++ {
+	for stepIndex := 0; stepIndex < 500; stepIndex++ {
 		re.reset()
 		switch {
 		case re.withProbability(0.05):
@@ -82,6 +83,11 @@ func TestFuzzDelegation(t *testing.T) {
 			delegatorIdx := r.Intn(pfe.numDelegators + 1)
 			stake := big.NewInt(0).Rand(r, maxStake)
 			err = pfe.stake(delegatorIdx, stake)
+			require.Nil(t, err)
+		case re.withProbability(0.05):
+			// stakeAllAvailable
+			delegatorIdx := r.Intn(pfe.numDelegators + 1)
+			err = pfe.stakeAllAvailable(delegatorIdx)
 			require.Nil(t, err)
 		case re.withProbability(0.05):
 			// withdraw inactive stake
@@ -129,7 +135,7 @@ func TestFuzzDelegation(t *testing.T) {
 		}
 	}
 
-	err = pfe.checkContractBalanceVsState()
+	err = pfe.checkNoUnexpectedBalance()
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -147,16 +153,12 @@ func TestFuzzDelegation(t *testing.T) {
 		err = pfe.claimRewards(delegatorIdx)
 		require.Nil(t, err)
 
-		err = pfe.checkContractBalanceVsState()
+		err = pfe.checkNoUnexpectedBalance()
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
 	}
-
-	// owner needs to withdraw rewards for ActiveForSale,
-	err = pfe.claimRewards(ownerDelegatorIndex)
-	require.Nil(t, err)
 
 	// check that delegators got all rewards out
 	totalDelegatorBalance := pfe.getAllDelegatorsBalance()

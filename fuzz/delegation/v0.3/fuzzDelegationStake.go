@@ -62,6 +62,36 @@ func (pfe *fuzzDelegationExecutor) stake(delegIndex int, amount *big.Int) error 
 	return err
 }
 
+func (pfe *fuzzDelegationExecutor) stakeAllAvailable(delegIndex int) error {
+	pfe.log("stakeAllAvailable, called by delegator: %d", delegIndex)
+	_, err := pfe.executeTxStep(fmt.Sprintf(`
+	{
+		"step": "scCall",
+		"txId": "%d",
+		"tx": {
+			"from": "''%s",
+			"to": "''%s",
+			"value": "0",
+			"function": "stakeAllAvailable",
+			"arguments": [],
+			"gasLimit": "100,000,000",
+			"gasPrice": "0"
+		},
+		"expect": {
+			"out": [],
+			"status": "",
+			"logs": "*",
+			"gas": "*",
+			"refund": "*"
+		}
+	}`,
+		pfe.nextTxIndex(),
+		string(pfe.delegatorAddress(delegIndex)),
+		string(pfe.delegationContractAddress),
+	))
+	return err
+}
+
 func (pfe *fuzzDelegationExecutor) withdrawInactiveStake(delegIndex int, amount *big.Int) error {
 	// actual withdraw
 	output, err := pfe.executeTxStep(fmt.Sprintf(`
