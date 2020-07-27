@@ -328,8 +328,8 @@ func (context *outputContext) AddToActiveState(rightOutput *vmcommon.VMOutput) {
 		rightOutput.GasRefund.Add(rightOutput.GasRefund, context.outputState.GasRefund)
 	}
 
-	for _, rightAccount := range rightOutput.OutputAccounts {
-		leftAccount, ok := context.outputState.OutputAccounts[string(rightAccount.Address)]
+	for address, rightAccount := range rightOutput.OutputAccounts {
+		leftAccount, ok := context.outputState.OutputAccounts[address]
 		if !ok || rightAccount.BalanceDelta == nil {
 			continue
 		}
@@ -345,11 +345,12 @@ func mergeVMOutputs(leftOutput *vmcommon.VMOutput, rightOutput *vmcommon.VMOutpu
 	if leftOutput.OutputAccounts == nil {
 		leftOutput.OutputAccounts = make(map[string]*vmcommon.OutputAccount)
 	}
-	for _, rightAccount := range rightOutput.OutputAccounts {
-		leftAccount, ok := leftOutput.OutputAccounts[string(rightAccount.Address)]
+
+	for address, rightAccount := range rightOutput.OutputAccounts {
+		leftAccount, ok := leftOutput.OutputAccounts[address]
 		if !ok {
 			leftAccount = &vmcommon.OutputAccount{}
-			leftOutput.OutputAccounts[string(rightAccount.Address)] = leftAccount
+			leftOutput.OutputAccounts[address] = leftAccount
 		}
 		mergeOutputAccounts(leftAccount, rightAccount)
 	}

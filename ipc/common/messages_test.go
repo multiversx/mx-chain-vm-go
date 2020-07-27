@@ -52,8 +52,6 @@ func TestMessageContractResponse_CanWrapNilVMOutput(t *testing.T) {
 }
 
 func TestMessageBlockchainGetAllStateResponse_IsConsistentlySerializable(t *testing.T) {
-	t.Skip("GetAllState isn't used at this moment")
-
 	allState := make(map[string][]byte)
 	allState["foo"] = []byte{0}
 	allState[string([]byte{0})] = []byte{0}

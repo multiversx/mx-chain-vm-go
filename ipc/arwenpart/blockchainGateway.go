@@ -266,7 +266,7 @@ func (blockchain *BlockchainHookGateway) ProcessBuiltInFunction(input *vmcommon.
 	}
 
 	response := rawResponse.(*common.MessageBlockchainProcessBuiltinFunctionResponse)
-	return response.VMOutput, response.GetError()
+	return response.SerializableVMOutput.ConvertToVMOutput(), response.GetError()
 }
 
 // GetBuiltinFunctionNames forwards a message to the actual hook
@@ -298,7 +298,7 @@ func (blockchain *BlockchainHookGateway) GetAllState(address []byte) (map[string
 	}
 
 	response := rawResponse.(*common.MessageBlockchainGetAllStateResponse)
-	return response.AllState, response.GetError()
+	return response.SerializableAllState.ConvertToMap(), response.GetError()
 }
 
 // GetUserAccount forwards a message to the actual hook
