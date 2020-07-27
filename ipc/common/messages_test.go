@@ -51,6 +51,16 @@ func TestMessageContractResponse_CanWrapNilVMOutput(t *testing.T) {
 	requireSerializationConsistency(t, message, &MessageContractResponse{})
 }
 
+func TestMessageBlockchainProcessBuiltinFunctionResponse_IsConsistentlySerializable(t *testing.T) {
+	vmOutput := &vmcommon.VMOutput{OutputAccounts: make(map[string]*vmcommon.OutputAccount)}
+	vmOutput.OutputAccounts["alice"] = &vmcommon.OutputAccount{Address: []byte("alice")}
+	// Non UTF-8 as output account keys
+	vmOutput.OutputAccounts[string([]byte{0, 129})] = &vmcommon.OutputAccount{Address: []byte{0, 129}}
+	vmOutput.OutputAccounts[string([]byte{0, 128})] = &vmcommon.OutputAccount{Address: []byte{0, 128}}
+	message := NewMessageBlockchainProcessBuiltinFunctionResponse(vmOutput, nil)
+	requireSerializationConsistency(t, message, &MessageBlockchainProcessBuiltinFunctionResponse{})
+}
+
 func TestMessageBlockchainGetAllStateResponse_IsConsistentlySerializable(t *testing.T) {
 	allState := make(map[string][]byte)
 	allState["foo"] = []byte{0}
