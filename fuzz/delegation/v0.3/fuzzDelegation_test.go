@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	fuzzutil "github.com/ElrondNetwork/arwen-wasm-vm/fuzz/util"
 	mc "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/controller"
 	"github.com/stretchr/testify/require"
 )
@@ -66,68 +67,68 @@ func TestFuzzDelegation(t *testing.T) {
 	maxStake := big.NewInt(0).Mul(pfe.stakePerNode, big.NewInt(2))
 	maxSystemReward := big.NewInt(1000000000)
 
-	re := newRandomEventProvider()
+	re := fuzzutil.NewRandomEventProvider()
 	for stepIndex := 0; stepIndex < 500; stepIndex++ {
-		re.reset()
+		re.Reset()
 		switch {
-		case re.withProbability(0.05):
+		case re.WithProbability(0.05):
 			// increment block nonce
 			err = pfe.increaseBlockNonce(r.Intn(1000))
 			require.Nil(t, err)
-		case re.withProbability(0.05):
+		case re.WithProbability(0.05):
 			// add nodes
 			err = pfe.addNodes(r.Intn(3))
 			require.Nil(t, err)
-		case re.withProbability(0.05):
+		case re.WithProbability(0.05):
 			// stake
 			delegatorIdx := r.Intn(pfe.numDelegators + 1)
 			stake := big.NewInt(0).Rand(r, maxStake)
 			err = pfe.stake(delegatorIdx, stake)
 			require.Nil(t, err)
-		case re.withProbability(0.05):
+		case re.WithProbability(0.05):
 			// stakeAllAvailable
 			delegatorIdx := r.Intn(pfe.numDelegators + 1)
 			err = pfe.stakeAllAvailable(delegatorIdx)
 			require.Nil(t, err)
-		case re.withProbability(0.05):
+		case re.WithProbability(0.05):
 			// withdraw inactive stake
 			delegatorIdx := r.Intn(pfe.numDelegators + 1)
 			stake := big.NewInt(0).Rand(r, maxStake)
 			err = pfe.withdrawInactiveStake(delegatorIdx, stake)
 			require.Nil(t, err)
-		case re.withProbability(0.05):
+		case re.WithProbability(0.05):
 			// add system rewards
 			rewards := big.NewInt(0).Rand(r, maxSystemReward)
 			err = pfe.addRewards(rewards)
 			require.Nil(t, err)
-		case re.withProbability(0.2):
+		case re.WithProbability(0.2):
 			// claim rewards
 			delegatorIdx := r.Intn(pfe.numDelegators + 1)
 			err = pfe.claimRewards(delegatorIdx)
 			require.Nil(t, err)
-		case re.withProbability(0.05):
+		case re.WithProbability(0.05):
 			// computeAllRewards
 			err = pfe.computeAllRewards()
 			require.Nil(t, err)
-		case re.withProbability(0.05):
+		case re.WithProbability(0.05):
 			// announceUnStake
 			delegatorIdx := r.Intn(pfe.numDelegators + 1)
 			amount := big.NewInt(0).Rand(r, maxStake)
 			err = pfe.announceUnStake(delegatorIdx, amount)
 			require.Nil(t, err)
-		case re.withProbability(0.05):
+		case re.WithProbability(0.05):
 			// purchaseStake
 			sellerIdx := r.Intn(pfe.numDelegators + 1)
 			buyerIdx := r.Intn(pfe.numDelegators + 1)
 			amount := big.NewInt(0).Rand(r, maxStake)
 			err = pfe.purchaseStake(sellerIdx, buyerIdx, amount)
 			require.Nil(t, err)
-		case re.withProbability(0.05):
+		case re.WithProbability(0.05):
 			// unStake
 			delegatorIdx := r.Intn(pfe.numDelegators + 1)
 			err = pfe.unStake(delegatorIdx)
 			require.Nil(t, err)
-		case re.withProbability(0.05):
+		case re.WithProbability(0.05):
 			// unBondAllAvailable
 			err = pfe.unBondAllAvailable()
 			require.Nil(t, err)
