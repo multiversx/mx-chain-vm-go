@@ -1,0 +1,184 @@
+{
+    "name": "fuzz generated",
+    "checkGas": false,
+    "steps": [
+        {
+            "step": "setState",
+            "accounts": {
+                "''fuzz_owner_addr_______________s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                },
+                "''fuzz_sc_auction_mock_addr_____s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {
+                        "''stake_per_node": "1000000000"
+                    },
+                    "code": "file:auction-mock.wasm"
+                },
+                "''endless_sack_of_erd___________s1": {
+                    "nonce": "0",
+                    "balance": "1,000,000,000,000,000,000,000,000,000,000",
+                    "storage": {},
+                    "code": ""
+                },
+                "''withdraw_target_______________s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                },
+                "''stake_purchase_forwarded______s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                }
+            },
+            "newAddresses": [
+                {
+                    "creatorAddress": "''fuzz_owner_addr_______________s1",
+                    "creatorNonce": "0",
+                    "newAddress": "''fuzz_sc_delegation_addr_______s1"
+                }
+            ]
+        },
+        {
+            "step": "setState",
+            "accounts": {
+                "''delegator     1               s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "setState",
+            "accounts": {
+                "''delegator     2               s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "setState",
+            "accounts": {
+                "''delegator     3               s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "setState",
+            "accounts": {
+                "''delegator     4               s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "setState",
+            "accounts": {
+                "''delegator     5               s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "setState",
+            "accounts": {
+                "''delegator     6               s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "setState",
+            "accounts": {
+                "''delegator     7               s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "setState",
+            "accounts": {
+                "''delegator     8               s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "setState",
+            "accounts": {
+                "''delegator     9               s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "setState",
+            "accounts": {
+                "''delegator    10               s1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "scDeploy",
+            "txId": "-deploy-",
+            "tx": {
+                "from": "''fuzz_owner_addr_______________s1",
+                "value": "0",
+                "contractCode": "file:delegation.wasm",
+                "arguments": [
+                    "''fuzz_sc_auction_mock_addr_____s1",
+                    "8072",
+                    "787",
+                    "401"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        }
+    ]
+}

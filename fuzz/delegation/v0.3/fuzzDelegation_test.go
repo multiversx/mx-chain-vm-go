@@ -21,7 +21,7 @@ func getTestRoot() string {
 	if err != nil {
 		panic(err)
 	}
-	arwenTestRoot := filepath.Join(exePath, "../../test")
+	arwenTestRoot := filepath.Join(exePath, "../../../test")
 	return arwenTestRoot
 }
 
@@ -29,10 +29,10 @@ func newExecutorWithPaths() *fuzzDelegationExecutor {
 	fileResolver := mc.NewDefaultFileResolver().
 		ReplacePath(
 			"delegation.wasm",
-			filepath.Join(getTestRoot(), "delegation_v0.3/delegation.wasm")).
+			filepath.Join(getTestRoot(), "delegation/v0_3/output/delegation.wasm")).
 		ReplacePath(
 			"auction-mock.wasm",
-			filepath.Join(getTestRoot(), "delegation_v0.3/auction-mock.wasm"))
+			filepath.Join(getTestRoot(), "delegation/auction-mock/output/auction-mock.wasm"))
 
 	pfe, err := newFuzzDelegationExecutor(fileResolver)
 	if err != nil {
