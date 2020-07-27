@@ -345,6 +345,7 @@ func mergeVMOutputs(leftOutput *vmcommon.VMOutput, rightOutput *vmcommon.VMOutpu
 	if leftOutput.OutputAccounts == nil {
 		leftOutput.OutputAccounts = make(map[string]*vmcommon.OutputAccount)
 	}
+
 	for _, rightAccount := range rightOutput.OutputAccounts {
 		leftAccount, ok := leftOutput.OutputAccounts[string(rightAccount.Address)]
 		if !ok {
