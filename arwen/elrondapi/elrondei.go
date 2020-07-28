@@ -492,7 +492,7 @@ func transferValue(context unsafe.Pointer, destOffset int32, valueOffset int32, 
 		return 1
 	}
 
-	value, err := runtime.MemLoad(valueOffset, arwen.BalanceLen)
+	valueBytes, err := runtime.MemLoad(valueOffset, arwen.BalanceLen)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -512,8 +512,8 @@ func transferValue(context unsafe.Pointer, destOffset int32, valueOffset int32, 
 		return 1
 	}
 
-	err = output.Transfer(dest, send, 0, big.NewInt(0).SetBytes(value), data)
-	if err != nil {
+	err = output.Transfer(dest, send, 0, big.NewInt(0).SetBytes(valueBytes), data)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 

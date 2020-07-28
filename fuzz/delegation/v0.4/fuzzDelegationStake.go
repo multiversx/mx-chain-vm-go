@@ -66,28 +66,8 @@ func (pfe *fuzzDelegationExecutor) stakeGenesis(delegIndex int, amount *big.Int)
 	// keep track of stake added
 	pfe.totalStakeAdded.Add(pfe.totalStakeAdded, amount)
 
-	// get the stake from the big sack
-	_, err := pfe.executeTxStep(fmt.Sprintf(`
-	{
-		"step": "transfer",
-		"txId": "%d",
-		"tx": {
-			"from": "''%s",
-			"to": "''%s",
-			"value": "%d"
-		}
-	}`,
-		pfe.nextTxIndex(),
-		string(pfe.faucetAddress),
-		string(pfe.delegatorAddress(delegIndex)),
-		amount,
-	))
-	if err != nil {
-		return err
-	}
-
 	// actual staking
-	_, err = pfe.executeTxStep(fmt.Sprintf(`
+	_, err := pfe.executeTxStep(fmt.Sprintf(`
 	{
 		"step": "scCall",
 		"txId": "%d",
@@ -116,6 +96,36 @@ func (pfe *fuzzDelegationExecutor) stakeGenesis(delegIndex int, amount *big.Int)
 		amount,
 	))
 	pfe.log("stakeGenesis, delegator: %d, amount: %d", delegIndex, amount)
+	return err
+}
+
+func (pfe *fuzzDelegationExecutor) activateGenesis() error {
+	_, err := pfe.executeTxStep(fmt.Sprintf(`
+	{
+		"step": "scCall",
+		"txId": "%d",
+		"tx": {
+			"from": "''%s",
+			"to": "''%s",
+			"value": "0",
+			"function": "activateGenesis",
+			"arguments": [],
+			"gasLimit": "1,000,000,000",
+			"gasPrice": "0"
+		},
+		"expect": {
+			"out": [],
+			"status": "",
+			"logs": "*",
+			"gas": "*",
+			"refund": "*"
+		}
+	}`,
+		pfe.nextTxIndex(),
+		string(pfe.ownerAddress),
+		string(pfe.delegationContractAddress),
+	))
+	pfe.log("activateGenesis")
 	return err
 }
 

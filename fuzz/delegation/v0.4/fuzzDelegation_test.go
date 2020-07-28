@@ -62,13 +62,14 @@ func TestFuzzDelegation_v0_4_0_genesis(t *testing.T) {
 	require.Nil(t, err)
 
 	maxStake := big.NewInt(0).Mul(pfe.stakePerNode, big.NewInt(2))
-	maxSystemReward := big.NewInt(1000000000)
+	maxSystemReward := big.NewInt(10)
 
-	// genesis
+	// add nodes
+	numNodesAtGenesis := 10 + r.Intn(190)
+	pfe.addNodes(numNodesAtGenesis)
 
-	numNodesAtGenesis := 100 + r.Intn(1900)
+	// stake genesis
 	genesisStake := big.NewInt(0).Mul(pfe.stakePerNode, big.NewInt(int64(numNodesAtGenesis)))
-
 	for stepIndex := 0; stepIndex < 30; stepIndex++ {
 		delegatorIdx := r.Intn(pfe.numDelegators + 1)
 		stake := big.NewInt(0).Rand(r, maxStake)
@@ -80,23 +81,25 @@ func TestFuzzDelegation_v0_4_0_genesis(t *testing.T) {
 	}
 
 	if pfe.totalStakeAdded.Cmp(genesisStake) < 0 {
+		// stake the remainder
 		delegatorIdx := r.Intn(pfe.numDelegators + 1)
-		remainingStake := big.NewInt(0).Add(genesisStake, pfe.totalStakeAdded)
+		remainingStake := big.NewInt(0).Sub(genesisStake, pfe.totalStakeAdded)
 		err = pfe.stakeGenesis(delegatorIdx, remainingStake)
 		require.Nil(t, err)
 	}
 
-	require.True(t, pfe.getContractBalance().Sign() == 0)
-
-	pfe.increaseBlockNonce(r.Intn(10000))
+	// activate genesis
+	err = pfe.activateGenesis()
+	require.Nil(t, err)
 
 	// after genesis
-
+	pfe.increaseBlockNonce(r.Intn(10000))
 	re := fuzzutil.NewRandomEventProvider()
-	for stepIndex := 0; stepIndex < 100; stepIndex++ {
+
+	for stepIndex := 0; stepIndex < 500; stepIndex++ {
 		re.Reset()
 		switch {
-		case re.WithProbability(0.7):
+		case re.WithProbability(0.2):
 			// add system rewards
 			rewards := big.NewInt(0).Rand(r, maxSystemReward)
 			err = pfe.addRewards(rewards)

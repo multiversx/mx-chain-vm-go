@@ -220,6 +220,13 @@ func (pfe *fuzzDelegationExecutor) increaseBlockNonce(nonceDelta int) error {
 	return nil
 }
 
+func (pfe *fuzzDelegationExecutor) dumpState() error {
+	return pfe.executeStep(`
+	{
+		"step": "dumpState"
+	}`)
+}
+
 func (pfe *fuzzDelegationExecutor) delegatorAddress(delegIndex int) []byte {
 	if delegIndex == 0 {
 		return pfe.ownerAddress
