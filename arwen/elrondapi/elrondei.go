@@ -481,7 +481,6 @@ func transferValue(context unsafe.Pointer, destOffset int32, valueOffset int32, 
 	host := arwen.GetVmContext(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
-	blockchain := arwen.GetBlockchainContext(context)
 	output := host.Output()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.TransferValue
@@ -495,13 +494,6 @@ func transferValue(context unsafe.Pointer, destOffset int32, valueOffset int32, 
 
 	valueBytes, err := runtime.MemLoad(valueOffset, arwen.BalanceLen)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return 1
-	}
-	value := big.NewInt(0).SetBytes(valueBytes)
-	contractBalanceBytes := blockchain.GetBalance(send)
-	contractBalance := big.NewInt(0).SetBytes(contractBalanceBytes)
-	if value.Cmp(contractBalance) > 0 {
-		arwen.WithFault(arwen.ErrTransferMoreThanContractBalance, context, runtime.BigIntAPIErrorShouldFailExecution())
 		return 1
 	}
 
@@ -520,8 +512,8 @@ func transferValue(context unsafe.Pointer, destOffset int32, valueOffset int32, 
 		return 1
 	}
 
-	err = output.Transfer(dest, send, 0, value, data)
-	if err != nil {
+	err = output.Transfer(dest, send, 0, big.NewInt(0).SetBytes(valueBytes), data)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
