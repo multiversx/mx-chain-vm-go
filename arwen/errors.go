@@ -84,3 +84,5 @@ var ErrInvalidAccount = errors.New("account does not exist")
 var ErrDeploymentOverExistingAccount = errors.New("cannot deploy over existing account")
 
 var ErrAccountNotPayable = errors.New("sending value to non payable contract")
+
+var ErrTransferMoreThanContractBalance = errors.New("value transfer exceeds contract balance")
