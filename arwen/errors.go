@@ -79,6 +79,8 @@ var ErrAsyncCallsDisallowed = errors.New("async calls disallowed")
 
 var ErrAsyncContextDoesNotExist = errors.New("async context does not exist")
 
+var ErrNilCallbackVMOutput = errors.New("nil callback VMOutput")
+
 var ErrInvalidAccount = errors.New("account does not exist")
 
 var ErrDeploymentOverExistingAccount = errors.New("cannot deploy over existing account")

@@ -410,6 +410,7 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) error
 
 	vmOutput, err := host.blockChainHook.ProcessBuiltInFunction(input)
 	if err != nil {
+		// For review: if gas is used on error, then "executeSyncCallbackCall()" will return (vmOutput = nil, err = out of gas)
 		metering.UseGas(input.GasProvided)
 		return err
 	}
