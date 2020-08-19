@@ -286,6 +286,7 @@ func (host *vmHost) createCallbackContractCallInput(
 }
 
 func (host *vmHost) processCallbackVMOutput(callbackVMOutput *vmcommon.VMOutput, callBackErr error) error {
+	// For review: what to do in case of nil vmOutput? Return callBackErr instead perhaps?
 	if callbackVMOutput == nil {
 		return arwen.ErrNilCallbackVMOutput
 	}
