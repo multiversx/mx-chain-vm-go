@@ -296,7 +296,7 @@ func (host *vmHost) processCallbackVMOutput(callbackVMOutput *vmcommon.VMOutput,
 	output.Finish([]byte(callbackVMOutput.ReturnCode.String()))
 	output.Finish([]byte(runtime.GetCurrentTxHash()))
 
-	return callBackErr
+	return nil
 }
 
 func (host *vmHost) computeDataLengthFromArguments(function string, arguments [][]byte) int {
