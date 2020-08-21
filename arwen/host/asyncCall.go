@@ -245,7 +245,7 @@ func (host *vmHost) createCallbackContractCallInput(
 	arguments := [][]byte{
 		big.NewInt(int64(destinationVMOutput.ReturnCode)).Bytes(),
 	}
-	if destinationErr == nil {
+	if destinationErr == nil && destinationVMOutput.ReturnCode == vmcommon.Ok {
 		// when execution went Ok, callBack arguments are:
 		// [0, result1, result2, ....]
 		arguments = append(arguments, destinationVMOutput.ReturnData...)

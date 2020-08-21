@@ -191,12 +191,18 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 	// stacks.
 	vmOutput := host.Output().GetVMOutput()
 
-	// Execution successful: restore the previous context states, except Output,
-	// which will merge the current state (VMOutput) with the initial state.
+	// Restore the previous context states, except Output, which will be merged
+	// into the initial state (VMOutput), but only if it the child execution
+	// returned vmcommon.Ok.
 	bigInt.PopSetActiveState()
-	output.PopMergeActiveState()
 	runtime.PopSetActiveState()
 	storage.PopSetActiveState()
+
+	if vmOutput.ReturnCode == vmcommon.Ok {
+		output.PopMergeActiveState()
+	} else {
+		output.PopSetActiveState()
+	}
 
 	return vmOutput
 }
@@ -238,7 +244,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
 	bigInt, _, _, output, runtime, _ := host.GetContexts()
 
-	if executeErr != nil {
+	if executeErr != nil || output.ReturnCode() != vmcommon.Ok {
 		// Execution failed: restore contexts as if the execution didn't happen.
 		bigInt.PopSetActiveState()
 		output.PopSetActiveState()
@@ -336,14 +342,16 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newC
 
 // TODO: Add support for indirect smart contract upgrades.
 func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
+	_, _, metering, output, runtime, _ := host.GetContexts()
+
 	if host.isBuiltinFunctionBeingCalled() {
+		metering.DeductAndLockGasIfAsyncStep()
 		return host.callBuiltinFunction(input)
 	}
 
 	// Use all gas initially, on the Wasmer instance of the caller
 	// (runtime.PushInstance() is called later). In case of successful execution,
 	// the unused gas will be restored.
-	_, _, metering, output, runtime, _ := host.GetContexts()
 	initialGasProvided := input.GasProvided
 	metering.UseGas(initialGasProvided)
 

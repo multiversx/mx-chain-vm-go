@@ -669,18 +669,9 @@ func TestExecution_ExecuteOnSameContext_BuiltinFunctions(t *testing.T) {
 	code := GetTestSCCode("exec-same-ctx-builtin", "../../")
 	scBalance := big.NewInt(1000)
 
-	getBuiltinFunctionNames := func() vmcommon.FunctionNames {
-		names := make(vmcommon.FunctionNames)
-
-		var empty struct{}
-		names["builtinClaim"] = empty
-		names["builtinDoSomething"] = empty
-		return names
-	}
-
 	host, stubBlockchainHook := DefaultTestArwenForCall(t, code, scBalance)
 	stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
-	host.protocolBuiltinFunctions = getBuiltinFunctionNames()
+	host.protocolBuiltinFunctions = getDummyBuiltinFunctionNames()
 
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
@@ -732,8 +723,26 @@ func dummyProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.V
 	if input.Function == "builtinDoSomething" {
 		return &vmcommon.VMOutput{OutputAccounts: outPutAccounts, GasRemaining: input.GasProvided}, nil
 	}
+	if input.Function == "builtinFail" {
+		return &vmcommon.VMOutput{
+			GasRemaining:  0,
+			GasRefund:     big.NewInt(0),
+			ReturnCode:    vmcommon.UserError,
+			ReturnMessage: "whatdidyoudo",
+		}, nil
+	}
 
 	return nil, arwen.ErrFuncNotFound
+}
+
+func getDummyBuiltinFunctionNames() vmcommon.FunctionNames {
+	names := make(vmcommon.FunctionNames)
+
+	var empty struct{}
+	names["builtinClaim"] = empty
+	names["builtinDoSomething"] = empty
+	names["builtinFail"] = empty
+	return names
 }
 
 func TestExecution_ExecuteOnDestContext_Prepare(t *testing.T) {
@@ -1058,6 +1067,28 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 	expectedVMOutput := expectedVMOutput_AsyncCall_CallBackFails(parentCode, childCode)
 	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
+}
+
+func TestExecution_AsyncCall_BuiltinFails(t *testing.T) {
+	code := GetTestSCCode("async-call-builtin", "../../")
+	scBalance := big.NewInt(1000)
+
+	host, stubBlockchainHook := DefaultTestArwenForCall(t, code, scBalance)
+	stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
+	host.protocolBuiltinFunctions = getDummyBuiltinFunctionNames()
+
+	input := DefaultTestContractCallInput()
+	input.RecipientAddr = parentAddress
+	input.Function = "performAsyncCallToBuiltin"
+	input.Arguments = [][]byte{{1}}
+	input.GasProvided = 1000000
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+	require.Equal(t, [][]byte{[]byte("hello"), {4}}, vmOutput.ReturnData)
 }
 
 func TestExecution_CreateNewContract_Success(t *testing.T) {
