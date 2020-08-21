@@ -261,7 +261,6 @@ func (host *vmHost) createCallbackContractCallInput(
 	gasToUse := metering.GasSchedule().ElrondAPICost.AsyncCallStep
 	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(dataLength)
 	if gasLimit <= gasToUse {
-		// For review: in case of error on built-in function, gas is used, therefore gasLimit is zero here.
 		return nil, arwen.ErrNotEnoughGas
 	}
 	gasLimit -= gasToUse
@@ -286,10 +285,6 @@ func (host *vmHost) createCallbackContractCallInput(
 }
 
 func (host *vmHost) processCallbackVMOutput(callbackVMOutput *vmcommon.VMOutput, callBackErr error) error {
-	// For review: what to do in case of nil vmOutput? Return callBackErr instead perhaps?
-	if callbackVMOutput == nil {
-		return arwen.ErrNilCallbackVMOutput
-	}
 	if callBackErr == nil {
 		return nil
 	}
@@ -301,7 +296,7 @@ func (host *vmHost) processCallbackVMOutput(callbackVMOutput *vmcommon.VMOutput,
 	output.Finish([]byte(callbackVMOutput.ReturnCode.String()))
 	output.Finish([]byte(runtime.GetCurrentTxHash()))
 
-	return nil
+	return callBackErr
 }
 
 func (host *vmHost) computeDataLengthFromArguments(function string, arguments [][]byte) int {
