@@ -35,15 +35,17 @@ func (ae *ArwenTestExecutor) ExecuteScenario(scenario *mj.Scenario, fileResolver
 func (ae *ArwenTestExecutor) ExecuteStep(generalStep mj.Step) error {
 	switch step := generalStep.(type) {
 	case *mj.ExternalStepsStep:
+		fileResolverBackup := ae.fileResolver
 		externalStepsRunner := mc.NewScenarioRunner(
 			ae,
-			ae.fileResolver,
+			ae.fileResolver.Clone(),
 		)
 		extAbsPth := ae.fileResolver.ResolveAbsolutePath(step.Path)
 		err := externalStepsRunner.RunSingleJSONScenario(extAbsPth)
 		if err != nil {
 			return err
 		}
+		ae.fileResolver = fileResolverBackup
 	case *mj.SetStateStep:
 		// append accounts
 		for _, acct := range step.Accounts {
