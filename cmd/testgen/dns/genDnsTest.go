@@ -41,9 +41,7 @@ func main() {
 			"dns.wasm",
 			filepath.Join(getTestRoot(), "dns/dns.wasm"))
 	tg := &testGenerator{
-		mandosParser: mjparse.Parser{
-			FileResolver: fileResolver,
-		},
+		mandosParser: mjparse.NewParser(fileResolver),
 		generatedScenario: &mj.Scenario{
 			Name: "dns test",
 		},
