@@ -2,6 +2,7 @@ package mock
 
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -10,7 +11,7 @@ var _ arwen.VMHost = (*VmHostMock)(nil)
 
 type VmHostMock struct {
 	BlockChainHook vmcommon.BlockchainHook
-	CryptoHook     vmcommon.CryptoHook
+	CryptoHook     crypto.VMCrypto
 
 	EthInput []byte
 
@@ -25,7 +26,7 @@ type VmHostMock struct {
 	IsBuiltinFunc bool
 }
 
-func (host *VmHostMock) Crypto() vmcommon.CryptoHook {
+func (host *VmHostMock) Crypto() crypto.VMCrypto {
 	return host.CryptoHook
 }
 

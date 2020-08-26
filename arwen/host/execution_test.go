@@ -17,7 +17,7 @@ import (
 var counterKey = []byte("COUNTER")
 
 func TestNewArwen(t *testing.T) {
-	host, err := DefaultTestArwen(t, &mock.BlockchainHookStub{}, &mock.CryptoHookMock{})
+	host, err := DefaultTestArwen(t, &mock.BlockchainHookStub{})
 	require.Nil(t, err)
 	require.NotNil(t, host)
 }
@@ -44,12 +44,11 @@ func TestSCMem(t *testing.T) {
 }
 
 func TestExecution_DeployNewAddressErr(t *testing.T) {
-	mockCryptoHook := &mock.CryptoHookMock{}
 	stubBlockchainHook := &mock.BlockchainHookStub{}
 
 	errNewAddress := errors.New("new address error")
 
-	host, _ := DefaultTestArwen(t, stubBlockchainHook, mockCryptoHook)
+	host, _ := DefaultTestArwen(t, stubBlockchainHook)
 	input := DefaultTestContractCreateInput()
 	stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
 		require.Equal(t, input.CallerAddr, address)
@@ -195,7 +194,6 @@ func TestExecution_DeployWASM_Init_Errors(t *testing.T) {
 func TestExecution_ManyDeployments(t *testing.T) {
 	ownerNonce := uint64(23)
 	newAddress := "new smartcontract"
-	mockCryptoHook := &mock.CryptoHookMock{}
 	stubBlockchainHook := &mock.BlockchainHookStub{}
 	stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
 		return &mock.AccountMock{Nonce: ownerNonce}, nil
@@ -205,7 +203,7 @@ func TestExecution_ManyDeployments(t *testing.T) {
 		return []byte(newAddress + " " + string(ownerNonce)), nil
 	}
 
-	host, _ := DefaultTestArwen(t, stubBlockchainHook, mockCryptoHook)
+	host, _ := DefaultTestArwen(t, stubBlockchainHook)
 	input := DefaultTestContractCreateInput()
 	input.CallerAddr = []byte("owner")
 	input.Arguments = make([][]byte, 0)
@@ -241,12 +239,11 @@ func TestExecution_Deploy_DisallowFloatingPoint(t *testing.T) {
 }
 
 func TestExecution_CallGetUserAccountErr(t *testing.T) {
-	mockCryptoHook := &mock.CryptoHookMock{}
 	stubBlockchainHook := &mock.BlockchainHookStub{}
 
 	errGetAccount := errors.New("get code error")
 
-	host, _ := DefaultTestArwen(t, stubBlockchainHook, mockCryptoHook)
+	host, _ := DefaultTestArwen(t, stubBlockchainHook)
 	input := DefaultTestContractCallInput()
 	stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
 		return nil, errGetAccount

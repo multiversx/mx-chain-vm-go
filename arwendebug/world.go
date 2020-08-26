@@ -4,7 +4,6 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/arwenpart"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -33,7 +32,6 @@ func newWorld(dataModel *worldDataModel) (*world, error) {
 
 	vm, err := host.NewArwenVM(
 		blockchainHook,
-		arwenpart.NewCryptoHookGateway(),
 		getHostParameters(),
 	)
 	if err != nil {

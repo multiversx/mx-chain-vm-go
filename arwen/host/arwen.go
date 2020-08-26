@@ -5,10 +5,11 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/contexts"
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/crypto"
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/cryptoapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/elrondapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/ethapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -45,10 +46,10 @@ type vmHost struct {
 // NewArwenVM creates a new Arwen vmHost
 func NewArwenVM(
 	blockChainHook vmcommon.BlockchainHook,
-	cryptoHook vmcommon.CryptoHook,
 	hostParameters *arwen.VMHostParameters,
 ) (*vmHost, error) {
 
+	cryptoHook := crypto.NewCryptoVm()
 	host := &vmHost{
 		blockChainHook:           blockChainHook,
 		cryptoHook:               cryptoHook,
@@ -78,7 +79,7 @@ func NewArwenVM(
 		return nil, err
 	}
 
-	imports, err = crypto.CryptoImports(imports)
+	imports, err = cryptoapi.CryptoImports(imports)
 	if err != nil {
 		return nil, err
 	}
@@ -135,7 +136,7 @@ func NewArwenVM(
 	return host, nil
 }
 
-func (host *vmHost) Crypto() vmcommon.CryptoHook {
+func (host *vmHost) Crypto() crypto.VMCrypto {
 	return host.cryptoHook
 }
 

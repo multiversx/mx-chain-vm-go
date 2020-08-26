@@ -43,7 +43,6 @@ func GetTestSCCode(scName string, prefixToTestSCs string) []byte {
 
 // DefaultTestArwenForDeployment creates an Arwen vmHost configured for testing deployments
 func DefaultTestArwenForDeployment(t *testing.T, ownerNonce uint64, newAddress []byte) *vmHost {
-	mockCryptoHook := &mock.CryptoHookMock{}
 	stubBlockchainHook := &mock.BlockchainHookStub{}
 	stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
 		return &mock.AccountMock{
@@ -54,12 +53,11 @@ func DefaultTestArwenForDeployment(t *testing.T, ownerNonce uint64, newAddress [
 		return newAddress, nil
 	}
 
-	host, _ := DefaultTestArwen(t, stubBlockchainHook, mockCryptoHook)
+	host, _ := DefaultTestArwen(t, stubBlockchainHook)
 	return host
 }
 
 func DefaultTestArwenForCall(tb testing.TB, code []byte, balance *big.Int) (*vmHost, *mock.BlockchainHookStub) {
-	mockCryptoHook := &mock.CryptoHookMock{}
 	stubBlockchainHook := &mock.BlockchainHookStub{}
 	stubBlockchainHook.GetUserAccountCalled = func(scAddress []byte) (vmcommon.UserAccountHandler, error) {
 		if bytes.Equal(scAddress, parentAddress) {
@@ -71,13 +69,12 @@ func DefaultTestArwenForCall(tb testing.TB, code []byte, balance *big.Int) (*vmH
 		return nil, errAccountNotFound
 	}
 
-	host, _ := DefaultTestArwen(tb, stubBlockchainHook, mockCryptoHook)
+	host, _ := DefaultTestArwen(tb, stubBlockchainHook)
 	return host, stubBlockchainHook
 }
 
 // DefaultTestArwenForTwoSCs creates an Arwen vmHost configured for testing calls between 2 SmartContracts
 func DefaultTestArwenForTwoSCs(t *testing.T, parentCode []byte, childCode []byte, parentSCBalance *big.Int) (*vmHost, *mock.BlockchainHookStub) {
-	mockCryptoHook := &mock.CryptoHookMock{}
 	stubBlockchainHook := &mock.BlockchainHookStub{}
 
 	stubBlockchainHook.GetUserAccountCalled = func(scAddress []byte) (vmcommon.UserAccountHandler, error) {
@@ -96,12 +93,12 @@ func DefaultTestArwenForTwoSCs(t *testing.T, parentCode []byte, childCode []byte
 		return nil, errAccountNotFound
 	}
 
-	host, _ := DefaultTestArwen(t, stubBlockchainHook, mockCryptoHook)
+	host, _ := DefaultTestArwen(t, stubBlockchainHook)
 	return host, stubBlockchainHook
 }
 
-func DefaultTestArwen(tb testing.TB, blockchain vmcommon.BlockchainHook, crypto vmcommon.CryptoHook) (*vmHost, error) {
-	host, err := NewArwenVM(blockchain, crypto, &arwen.VMHostParameters{
+func DefaultTestArwen(tb testing.TB, blockchain vmcommon.BlockchainHook) (*vmHost, error) {
+	host, err := NewArwenVM(blockchain, &arwen.VMHostParameters{
 		VMType:                   defaultVMType,
 		BlockGasLimit:            uint64(1000),
 		GasSchedule:              config.MakeGasMapForTests(),

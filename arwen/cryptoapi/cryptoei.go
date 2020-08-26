@@ -1,4 +1,4 @@
-package crypto
+package cryptoapi
 
 // // Declare the function signatures (see [cgo](https://golang.org/cmd/cgo/)).
 //
