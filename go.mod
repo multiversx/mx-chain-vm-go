@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/ElrondNetwork/big-int-util v0.0.5
-	github.com/ElrondNetwork/elrond-go v1.1.0 // indirect
+	github.com/ElrondNetwork/elrond-go v1.1.0
 	github.com/ElrondNetwork/elrond-go-logger v1.0.4
 	github.com/ElrondNetwork/elrond-vm-common v0.1.23
 	github.com/ElrondNetwork/elrond-vm-util v0.3.6

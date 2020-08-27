@@ -3,8 +3,8 @@ package arwen
 import (
 	"unsafe"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 const AddressLen = 32
@@ -55,7 +55,7 @@ func GetRuntimeContext(context unsafe.Pointer) RuntimeContext {
 	return GetVmContext(context).Runtime()
 }
 
-func GetCryptoContext(context unsafe.Pointer) vmcommon.CryptoHook {
+func GetCryptoContext(context unsafe.Pointer) crypto.VMCrypto {
 	return GetVmContext(context).Crypto()
 }
 

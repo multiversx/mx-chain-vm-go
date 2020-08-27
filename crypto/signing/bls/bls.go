@@ -13,7 +13,7 @@ func NewBLS() *bls {
 	return &bls{}
 }
 
-func (b *bls) VerifyBLS(key []byte,  msg []byte, sig []byte) error {
+func (b *bls) BLSVerify(key []byte,  msg []byte, sig []byte) error {
 	suite := mcl.NewSuiteBLS12()
 	keyGenerator := signing.NewKeyGenerator(suite)
 

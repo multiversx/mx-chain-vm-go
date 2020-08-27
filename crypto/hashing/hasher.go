@@ -2,18 +2,16 @@ package hashing
 
 import (
 	"crypto/sha256"
-	"errors"
 
 	"golang.org/x/crypto/ripemd160"
 	"golang.org/x/crypto/sha3"
 )
 
 type hasher struct {
-
 }
 
 // NewHasher returns a new hasher instance implementing wrappers over different hash functions
-func NewHasher() Hasher {
+func NewHasher() *hasher {
 	return &hasher{}
 }
 
@@ -52,11 +50,3 @@ func (h *hasher) Ripemd160(data []byte) ([]byte, error) {
 	result := hash.Sum(nil)
 	return result, nil
 }
-
-// Ecrecover calculates the corresponding Ethereum address for the public key which created the given signature
-// https://ewasm.readthedocs.io/en/mkdocs/system_contracts/
-func (h *hasher) Ecrecover(_, _, _, _ []byte) ([]byte, error) {
-	return nil, errors.New("not implemented")
-}
-
-
