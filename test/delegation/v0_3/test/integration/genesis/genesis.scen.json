@@ -23,7 +23,7 @@
         },
         {
             "step": "externalSteps",
-            "path": "../genesis/03_genesis_stake.steps.json"
+            "path": "03_genesis_stake.steps.json"
         },
         {
             "step": "externalSteps",

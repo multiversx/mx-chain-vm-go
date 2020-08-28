@@ -31,14 +31,14 @@ func checkTxResults(
 	if len(output.ReturnData) != len(blResult.Out) {
 		return fmt.Errorf("result length mismatch. Tx %s. Want: %s. Have: %s",
 			txIndex,
-			mj.JSONCheckBytesString(blResult.Out),
+			checkBytesListPretty(blResult.Out),
 			mj.ResultAsString(output.ReturnData))
 	}
 	for i, expected := range blResult.Out {
 		if !expected.Check(output.ReturnData[i]) {
 			return fmt.Errorf("result mismatch. Tx %s. Want: %s. Have: %s",
 				txIndex,
-				mj.JSONCheckBytesString(blResult.Out),
+				checkBytesListPretty(blResult.Out),
 				mj.ResultAsString(output.ReturnData))
 		}
 	}

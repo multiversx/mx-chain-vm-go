@@ -10,6 +10,7 @@ import (
 	am "github.com/ElrondNetwork/arwen-wasm-vm/arwenmandos"
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	worldhook "github.com/ElrondNetwork/elrond-vm-util/mock-hook-blockchain"
+	fr "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/fileresolver"
 	mj "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/model"
 	mjparse "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/parse"
 	mjwrite "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/write"
@@ -40,14 +41,12 @@ type fuzzDelegationExecutor struct {
 	generatedScenario           *mj.Scenario
 }
 
-func newFuzzDelegationExecutor(fileResolver mjparse.FileResolver) (*fuzzDelegationExecutor, error) {
+func newFuzzDelegationExecutor(fileResolver fr.FileResolver) (*fuzzDelegationExecutor, error) {
 	arwenTestExecutor, err := am.NewArwenTestExecutor()
 	if err != nil {
 		return nil, err
 	}
-	parser := mjparse.Parser{
-		FileResolver: fileResolver,
-	}
+	parser := mjparse.NewParser(fileResolver)
 	return &fuzzDelegationExecutor{
 		arwenTestExecutor:   arwenTestExecutor,
 		world:               arwenTestExecutor.World,

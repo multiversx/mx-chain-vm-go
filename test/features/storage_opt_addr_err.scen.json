@@ -8,7 +8,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "``opt_addr": "1|``____________address_too_long____________"
+                        "``opt_addr": ["1", "``____________address_too_long____________"]
                     },
                     "code": "file:features.wasm"
                 },
