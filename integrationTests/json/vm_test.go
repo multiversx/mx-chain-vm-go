@@ -162,7 +162,9 @@ func TestDelegation_v0_3(t *testing.T) {
 		getTestRoot(),
 		"delegation/v0_3",
 		".scen.json",
-		[]string{})
+		[]string{
+			"delegation/v0_3/test/integration/genesis/genesis.scen.json",
+		})
 
 	if err != nil {
 		t.Error(err)
