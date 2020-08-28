@@ -232,7 +232,12 @@ func (context *outputContext) AddTxValueToAccount(address []byte, value *big.Int
 
 // GetVMOutput updates the current VMOutput and returns it
 func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
-	context.outputState.GasRemaining = context.host.Metering().GasLeft()
+	if context.outputState.ReturnCode == vmcommon.Ok {
+		context.outputState.GasRemaining = context.host.Metering().GasLeft()
+	} else {
+		context.outputState.GasRemaining = context.host.Metering().GetGasLockedForAsyncStep()
+	}
+
 	context.removeNonUpdatedCode(context.outputState)
 
 	return context.outputState

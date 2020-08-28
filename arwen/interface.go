@@ -161,6 +161,7 @@ type MeteringContext interface {
 	DeductInitialGasForExecution(contract []byte) error
 	DeductInitialGasForDirectDeployment(input CodeDeployInput) error
 	DeductInitialGasForIndirectDeployment(input CodeDeployInput) error
+	DeductAndLockGasIfAsyncStep() error
 	UnlockGasIfAsyncStep()
 	GetGasLockedForAsyncStep() uint64
 }
