@@ -24,7 +24,7 @@ func checkTxResults(
 
 	if !blResult.Message.Check([]byte(output.ReturnMessage)) {
 		return fmt.Errorf("result message mismatch. Tx %s. Want: %s. Have: %s",
-			txIndex, blResult.Message, output.ReturnMessage)
+			txIndex, blResult.Message.Original, output.ReturnMessage)
 	}
 
 	// check result
