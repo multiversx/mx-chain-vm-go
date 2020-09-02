@@ -24,21 +24,21 @@ func checkTxResults(
 
 	if !blResult.Message.Check([]byte(output.ReturnMessage)) {
 		return fmt.Errorf("result message mismatch. Tx %s. Want: %s. Have: %s",
-			txIndex, blResult.Message, output.ReturnMessage)
+			txIndex, blResult.Message.Original, output.ReturnMessage)
 	}
 
 	// check result
 	if len(output.ReturnData) != len(blResult.Out) {
 		return fmt.Errorf("result length mismatch. Tx %s. Want: %s. Have: %s",
 			txIndex,
-			mj.JSONCheckBytesString(blResult.Out),
+			checkBytesListPretty(blResult.Out),
 			mj.ResultAsString(output.ReturnData))
 	}
 	for i, expected := range blResult.Out {
 		if !expected.Check(output.ReturnData[i]) {
 			return fmt.Errorf("result mismatch. Tx %s. Want: %s. Have: %s",
 				txIndex,
-				mj.JSONCheckBytesString(blResult.Out),
+				checkBytesListPretty(blResult.Out),
 				mj.ResultAsString(output.ReturnData))
 		}
 	}

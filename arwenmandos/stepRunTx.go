@@ -155,7 +155,7 @@ func (ae *ArwenTestExecutor) scCreate(txIndex string, tx *mj.Transaction) (*vmi.
 		ContractCode: tx.Code.Value,
 		VMInput: vmi.VMInput{
 			CallerAddr:     tx.From.Value,
-			Arguments:      mj.JSONBytesValues(tx.Arguments),
+			Arguments:      mj.JSONBytesFromTreeValues(tx.Arguments),
 			CallValue:      tx.Value.Value,
 			GasPrice:       tx.GasPrice.Value,
 			GasProvided:    tx.GasLimit.Value,
@@ -181,7 +181,7 @@ func (ae *ArwenTestExecutor) scCall(txIndex string, tx *mj.Transaction) (*vmi.VM
 		Function:      tx.Function,
 		VMInput: vmi.VMInput{
 			CallerAddr:     tx.From.Value,
-			Arguments:      mj.JSONBytesValues(tx.Arguments),
+			Arguments:      mj.JSONBytesFromTreeValues(tx.Arguments),
 			CallValue:      tx.Value.Value,
 			GasPrice:       tx.GasPrice.Value,
 			GasProvided:    tx.GasLimit.Value,

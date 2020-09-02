@@ -10,7 +10,7 @@ import (
 func (ae *ArwenTestExecutor) ExecuteTest(test *mj.Test) error {
 	// reset world
 	ae.World.Clear()
-	ae.World.Blockhashes = mj.JSONBytesValues(test.BlockHashes)
+	ae.World.Blockhashes = mj.JSONBytesFromStringValues(test.BlockHashes)
 
 	for _, acct := range test.Pre {
 		ae.World.AcctMap.PutAccount(convertAccount(acct))
