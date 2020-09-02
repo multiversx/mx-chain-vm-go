@@ -28,7 +28,7 @@ type CatchFunction func(error)
 // vmHost implements HostContext interface.
 type vmHost struct {
 	blockChainHook vmcommon.BlockchainHook
-	cryptoHook     vmcommon.CryptoHook
+	cryptoHook     crypto.VMCrypto
 
 	ethInput []byte
 

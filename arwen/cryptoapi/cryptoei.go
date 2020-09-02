@@ -9,7 +9,7 @@ package cryptoapi
 // extern int32_t sha256(void* context, int32_t dataOffset, int32_t length, int32_t resultOffset);
 // extern int32_t keccak256(void *context, int32_t dataOffset, int32_t length, int32_t resultOffset);
 // extern int32_t ripemd160(void *context, int32_t dataOffset, int32_t length, int32_t resultOffset);
-// extern int32_t blsVerify(void *context, int32_t keyOffset, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
+// extern int32_t blsVerify1(void *context, int32_t keyOffset, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
 // extern int32_t ed25519Verify(void *context, int32_t keyOffset, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
 // extern int32_t secp256k1Verify(void *context, int32_t keyOffset, int32_t keyLength, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
 import "C"
@@ -37,6 +37,26 @@ func CryptoImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("keccak256", keccak256, C.keccak256)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("ripemd160", ripemd160, C.ripemd160)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("blsVerify1", blsVerify1, C.blsVerify1)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("ed25519Verify", ed25519Verify, C.ed25519Verify)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("secp256k1Verify", secp256k1Verify, C.secp256k1Verify)
 	if err != nil {
 		return nil, err
 	}
@@ -125,8 +145,8 @@ func ripemd160(context unsafe.Pointer, dataOffset int32, length int32, resultOff
 	return 0
 }
 
-//export blsVerify
-func blsVerify(
+//export blsVerify1
+func blsVerify1(
 	context unsafe.Pointer,
 	keyOffset int32,
 	messageOffset int32,
