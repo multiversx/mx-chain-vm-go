@@ -209,7 +209,7 @@ func (host *vmHost) GetProtocolBuiltinFunctions() vmcommon.FunctionNames {
 }
 
 func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error) {
-	log.Trace("RunSmartContractCreate begin", "len(code)", len(input.ContractCode), "metadata", input.ContractCodeMetadata)
+	log.Debug("RunSmartContractCreate begin", "len(code)", len(input.ContractCode), "metadata", input.ContractCodeMetadata)
 
 	try := func() {
 		vmOutput = host.doRunSmartContractCreate(input)
@@ -222,14 +222,14 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 
 	TryCatch(try, catch, "arwen.RunSmartContractCreate")
 	if vmOutput != nil {
-		log.Trace("RunSmartContractCreate end", "returnCode", vmOutput.ReturnCode, "returnMessage", vmOutput.ReturnMessage)
+		log.Debug("RunSmartContractCreate end", "returnCode", vmOutput.ReturnCode, "returnMessage", vmOutput.ReturnMessage)
 	}
 
 	return
 }
 
 func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
-	log.Trace("RunSmartContractCall begin", "function", input.Function)
+	log.Debug("RunSmartContractCall begin", "function", input.Function)
 
 	tryUpgrade := func() {
 		vmOutput = host.doRunSmartContractUpgrade(input)
@@ -252,7 +252,7 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 	}
 
 	if vmOutput != nil {
-		log.Trace("RunSmartContractCall end", "returnCode", vmOutput.ReturnCode, "returnMessage", vmOutput.ReturnMessage)
+		log.Debug("RunSmartContractCall end", "returnCode", vmOutput.ReturnCode, "returnMessage", vmOutput.ReturnMessage)
 	}
 
 	return

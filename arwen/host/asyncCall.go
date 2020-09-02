@@ -14,6 +14,12 @@ import (
 )
 
 func (host *vmHost) handleAsyncCallBreakpoint() error {
+	var err error
+	log.Debug("handleAsyncCallBreakpoint", "entered")
+	defer func() {
+		log.Error("handleAsyncCallBreakpoint", "error", err)
+	}()
+
 	runtime := host.Runtime()
 	runtime.SetRuntimeBreakpointValue(arwen.BreakpointNone)
 
@@ -80,6 +86,7 @@ func (host *vmHost) determineAsyncCallExecutionMode(asyncCallInfo *arwen.AsyncCa
 }
 
 func (host *vmHost) executeSyncDestinationCall(asyncCallInfo *arwen.AsyncCallInfo) (*vmcommon.VMOutput, error) {
+	log.Debug("executeSyncDestinationCall")
 	destinationCallInput, err := host.createDestinationContractCallInput(asyncCallInfo)
 	if err != nil {
 		return nil, err
@@ -94,6 +101,7 @@ func (host *vmHost) executeSyncCallbackCall(
 	destinationVMOutput *vmcommon.VMOutput,
 	destinationErr error,
 ) (*vmcommon.VMOutput, error) {
+	log.Debug("executeSyncCallbackCall")
 	callbackCallInput, err := host.createCallbackContractCallInput(
 		destinationVMOutput,
 		asyncCallInfo.Destination,
@@ -238,33 +246,42 @@ func (host *vmHost) createCallbackContractCallInput(
 	callbackFunction string,
 	destinationErr error,
 ) (*vmcommon.ContractCallInput, error) {
+	log.Debug("createCallbackContractCallInput")
 	metering := host.Metering()
 	runtime := host.Runtime()
 
+	log.Debug("createCallbackContractCallInput", "0")
 	// always provide return code as the first argument to callback function
 	arguments := [][]byte{
 		big.NewInt(int64(destinationVMOutput.ReturnCode)).Bytes(),
 	}
+	log.Debug("createCallbackContractCallInput", "1")
 	if destinationErr == nil && destinationVMOutput.ReturnCode == vmcommon.Ok {
 		// when execution went Ok, callBack arguments are:
 		// [0, result1, result2, ....]
+		log.Debug("createCallbackContractCallInput", "2")
 		arguments = append(arguments, destinationVMOutput.ReturnData...)
 	} else {
 		// when execution returned error, callBack arguments are:
 		// [error code, error message]
+		log.Debug("createCallbackContractCallInput", "3")
 		arguments = append(arguments, []byte(destinationVMOutput.ReturnMessage))
 	}
 
+	log.Debug("createCallbackContractCallInput", "4")
 	gasLimit := destinationVMOutput.GasRemaining
 	dataLength := host.computeDataLengthFromArguments(callbackFunction, arguments)
 
+	log.Debug("createCallbackContractCallInput", "5")
 	gasToUse := metering.GasSchedule().ElrondAPICost.AsyncCallStep
 	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(dataLength)
 	if gasLimit <= gasToUse {
+		log.Debug("createCallbackContractCallInput", "6")
 		return nil, arwen.ErrNotEnoughGas
 	}
 	gasLimit -= gasToUse
 
+	log.Debug("createCallbackContractCallInput", "7")
 	// Return to the sender SC, calling its callback() method.
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
@@ -281,6 +298,7 @@ func (host *vmHost) createCallbackContractCallInput(
 		Function:      callbackFunction,
 	}
 
+	log.Debug("createCallbackContractCallInput", "8")
 	return contractCallInput, nil
 }
 

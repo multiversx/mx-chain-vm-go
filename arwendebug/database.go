@@ -72,7 +72,7 @@ func (db *database) readWorldDataModel(filePath string) (*worldDataModel, error)
 
 func (db *database) storeWorld(world *world) error {
 	filePath := db.getWorldFile(world.id)
-	log.Trace("Database.storeWorld()", "file", filePath)
+	log.Debug("Database.storeWorld()", "file", filePath)
 
 	dataModel := world.toDataModel()
 	return db.marshalDataModel(filePath, dataModel)
@@ -80,12 +80,12 @@ func (db *database) storeWorld(world *world) error {
 
 func (db *database) storeOutcome(key string, outcome interface{}) error {
 	if len(key) == 0 {
-		log.Trace("Database.storeOutcome(), won't store (empty key)")
+		log.Debug("Database.storeOutcome(), won't store (empty key)")
 		return nil
 	}
 
 	filePath := db.getOutcomeFile(key)
-	log.Trace("Database.storeOutcome()", "file", filePath)
+	log.Debug("Database.storeOutcome()", "file", filePath)
 	return db.marshalDataModel(filePath, outcome)
 }
 

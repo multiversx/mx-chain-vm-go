@@ -198,7 +198,7 @@ func (driver *ArwenDriver) IsClosed() bool {
 // RunSmartContractCreate sends a deploy request to Arwen and waits for the output
 func (driver *ArwenDriver) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (*vmcommon.VMOutput, error) {
 	driver.counterDeploy++
-	log.Trace("RunSmartContractCreate", "counter", driver.counterDeploy)
+	log.Debug("RunSmartContractCreate", "counter", driver.counterDeploy)
 
 	err := driver.RestartArwenIfNecessary()
 	if err != nil {
@@ -225,7 +225,7 @@ func (driver *ArwenDriver) RunSmartContractCreate(input *vmcommon.ContractCreate
 // RunSmartContractCall sends an execution request to Arwen and waits for the output
 func (driver *ArwenDriver) RunSmartContractCall(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	driver.counterCall++
-	log.Trace("RunSmartContractCall", "counter", driver.counterCall, "func", input.Function, "sc", input.RecipientAddr)
+	log.Debug("RunSmartContractCall", "counter", driver.counterCall, "func", input.Function, "sc", input.RecipientAddr)
 
 	err := driver.RestartArwenIfNecessary()
 	if err != nil {

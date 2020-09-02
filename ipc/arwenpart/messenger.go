@@ -31,7 +31,7 @@ func (messenger *ArwenMessenger) ReceiveNodeRequest() (common.MessageHandler, er
 
 // SendContractResponse sends a contract response to the Node
 func (messenger *ArwenMessenger) SendContractResponse(response common.MessageHandler) error {
-	log.Trace("[ARWEN]: SendContractResponse", "response", response.DebugString())
+	log.Debug("[ARWEN]: SendContractResponse", "response", response.DebugString())
 
 	err := messenger.Send(response)
 	if err != nil {
@@ -43,7 +43,7 @@ func (messenger *ArwenMessenger) SendContractResponse(response common.MessageHan
 
 // SendHookCallRequest makes a hook call (over the pipe) and waits for the response
 func (messenger *ArwenMessenger) SendHookCallRequest(request common.MessageHandler) (common.MessageHandler, error) {
-	log.Trace("[ARWEN]: SendHookCallRequest", "request", request.DebugString())
+	log.Debug("[ARWEN]: SendHookCallRequest", "request", request.DebugString())
 
 	err := messenger.Send(request)
 	if err != nil {

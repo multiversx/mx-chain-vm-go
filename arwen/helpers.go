@@ -105,7 +105,7 @@ func GetSCCode(fileName string) []byte {
 
 func TimeTrack(start time.Time, message string) {
 	elapsed := time.Since(start)
-	logDuration.Trace(message, "duration", elapsed)
+	logDuration.Debug(message, "duration", elapsed)
 }
 
 func U64MulToBigInt(x, y uint64) *big.Int {

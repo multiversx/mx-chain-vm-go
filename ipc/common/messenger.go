@@ -41,19 +41,19 @@ func (messenger *Messenger) Send(message MessageHandler) error {
 	messenger.Nonce++
 	message.SetNonce(messenger.Nonce)
 	length, err := messenger.sender.Send(message)
-	log.Trace(fmt.Sprintf("[%s][#%d]: SENT message", messenger.Name, message.GetNonce()), "size", length, "msg", message.DebugString())
+	log.Debug(fmt.Sprintf("[%s][#%d]: SENT message", messenger.Name, message.GetNonce()), "size", length, "msg", message.DebugString())
 	return err
 }
 
 // Receive receives a message, reads it from the pipe
 func (messenger *Messenger) Receive(timeout int) (MessageHandler, error) {
-	log.Trace(fmt.Sprintf("[%s]: Receive message...", messenger.Name))
+	log.Debug(fmt.Sprintf("[%s]: Receive message...", messenger.Name))
 	message, length, err := messenger.receiver.Receive(timeout)
 	if err != nil {
 		return nil, err
 	}
 
-	log.Trace(fmt.Sprintf("[%s][#%d]: RECEIVED message", messenger.Name, message.GetNonce()), "size", length, "msg", message.DebugString())
+	log.Debug(fmt.Sprintf("[%s][#%d]: RECEIVED message", messenger.Name, message.GetNonce()), "size", length, "msg", message.DebugString())
 	messageNonce := message.GetNonce()
 	if messageNonce != messenger.Nonce+1 {
 		return nil, ErrInvalidMessageNonce

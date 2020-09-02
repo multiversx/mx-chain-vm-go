@@ -36,7 +36,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 }
 
 func (host *vmHost) performCodeDeployment(input arwen.CodeDeployInput) (*vmcommon.VMOutput, error) {
-	log.Trace("performCodeDeployment", "address", input.ContractAddress, "len(code)", len(input.ContractCode), "metadata", input.ContractCodeMetadata)
+	log.Debug("performCodeDeployment", "address", input.ContractAddress, "len(code)", len(input.ContractCode), "metadata", input.ContractCodeMetadata)
 
 	_, _, metering, output, runtime, _ := host.GetContexts()
 
@@ -95,8 +95,13 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 }
 
 func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput) {
+	var err error
+	log.Debug("doRunSmartContractCall", "function", input.Function)
 	host.InitState()
 	defer host.Clean()
+	defer func() {
+		log.Error("doRunSmartContractCall", "error", err)
+	}()
 
 	_, blockchain, metering, output, runtime, storage := host.GetContexts()
 
@@ -104,6 +109,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
 	storage.SetAddress(runtime.GetSCAddress())
 
+	log.Debug("doRunSmartContractCall", "GetCode")
 	contract, err := blockchain.GetCode(runtime.GetSCAddress())
 	if err != nil {
 		return output.CreateVMOutputInCaseOfError(arwen.ErrContractNotFound)
@@ -115,11 +121,13 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	}
 
 	vmInput := runtime.GetVMInput()
+	log.Debug("doRunSmartContractCall", "StartWasmerInstance")
 	err = runtime.StartWasmerInstance(contract, vmInput.GasProvided)
 	if err != nil {
 		return output.CreateVMOutputInCaseOfError(arwen.ErrContractInvalid)
 	}
 
+	log.Debug("doRunSmartContractCall", "callSCMethod")
 	err = host.callSCMethod()
 	if err != nil {
 		return output.CreateVMOutputInCaseOfError(err)
@@ -128,12 +136,13 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	metering.UnlockGasIfAsyncStep()
 
 	vmOutput = output.GetVMOutput()
+	log.Debug("doRunSmartContractCall", "CleanWasmerInstance")
 	runtime.CleanWasmerInstance()
 	return
 }
 
 func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, asyncInfo *arwen.AsyncContextInfo, err error) {
-	log.Trace("ExecuteOnDestContext", "function", input.Function)
+	log.Debug("ExecuteOnDestContext", "function", input.Function)
 
 	bigInt, _, _, output, runtime, storage := host.GetContexts()
 
@@ -208,7 +217,7 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 }
 
 func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asyncInfo *arwen.AsyncContextInfo, err error) {
-	log.Trace("ExecuteOnSameContext", "function", input.Function)
+	log.Debug("ExecuteOnSameContext", "function", input.Function)
 
 	bigInt, _, _, output, runtime, _ := host.GetContexts()
 
@@ -342,6 +351,12 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newC
 
 // TODO: Add support for indirect smart contract upgrades.
 func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
+	var err error
+	log.Debug("execute()")
+	defer func() {
+		log.Error("execute", "err", err)
+	}()
+
 	_, _, metering, output, runtime, _ := host.GetContexts()
 
 	if host.isBuiltinFunctionBeingCalled() {
@@ -414,13 +429,21 @@ func (host *vmHost) callSCMethodIndirect() error {
 }
 
 func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) error {
+	log.Debug("callBuiltinFunction", "function", input.Function)
+	var err error
+	defer func() {
+		log.Error("callBuiltinFunction", "error", err)
+	}()
+
 	_, _, metering, output, _, _ := host.GetContexts()
 
+	log.Debug("callBuiltinFunction", "ProcessBuiltInFunction()")
 	vmOutput, err := host.blockChainHook.ProcessBuiltInFunction(input)
 	if err != nil {
 		metering.UseGas(input.GasProvided)
 		return err
 	}
+	log.Debug("callBuiltinFunction", "ProcessBuiltInFunction() done")
 
 	gasConsumed := input.GasProvided - vmOutput.GasRemaining
 	if vmOutput.GasRemaining < input.GasProvided {
