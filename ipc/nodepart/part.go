@@ -109,6 +109,9 @@ func (part *NodePart) doLoop() (common.MessageHandler, error) {
 			continue
 		}
 
+		if common.IsVersionResponse(message) {
+			return message, nil
+		}
 		if common.IsContractResponse(message) {
 			return message, nil
 		}
