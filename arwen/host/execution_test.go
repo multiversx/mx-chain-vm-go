@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/assert"
@@ -1089,6 +1090,31 @@ func TestExecution_AsyncCall_BuiltinFails(t *testing.T) {
 	require.NotNil(t, vmOutput)
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 	require.Equal(t, [][]byte{[]byte("hello"), {4}}, vmOutput.ReturnData)
+}
+
+func TestExecution_AsyncCall_CallBackFailsBeforeExecution(t *testing.T) {
+	config.AsyncCallbackGasLockForTests = 2
+
+	code := GetTestSCCode("async-call-builtin", "../../")
+	scBalance := big.NewInt(1000)
+
+	host, stubBlockchainHook := DefaultTestArwenForCall(t, code, scBalance)
+	stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
+	host.protocolBuiltinFunctions = getDummyBuiltinFunctionNames()
+
+	input := DefaultTestContractCallInput()
+	input.RecipientAddr = parentAddress
+	input.Function = "performAsyncCallToBuiltin"
+	input.Arguments = [][]byte{{1}}
+	input.GasProvided = 1000000
+	input.CurrentTxHash = []byte("txhash")
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+	require.Equal(t, [][]byte{[]byte("hello"), []byte("out of gas"), []byte("txhash")}, vmOutput.ReturnData)
 }
 
 func TestExecution_CreateNewContract_Success(t *testing.T) {

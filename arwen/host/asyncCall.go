@@ -293,6 +293,12 @@ func (host *vmHost) processCallbackVMOutput(callbackVMOutput *vmcommon.VMOutput,
 	output := host.Output()
 
 	runtime.GetVMInput().GasProvided = 0
+
+	if callbackVMOutput == nil {
+		callbackVMOutput = output.CreateVMOutputInCaseOfError(callBackErr)
+	}
+
+	output.SetReturnMessage(callbackVMOutput.ReturnMessage)
 	output.Finish([]byte(callbackVMOutput.ReturnCode.String()))
 	output.Finish([]byte(runtime.GetCurrentTxHash()))
 

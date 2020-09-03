@@ -8,7 +8,8 @@ import (
 )
 
 const GasValueForTests = 1
-const AsyncCallbackGasLockForTests = 100_000
+
+var AsyncCallbackGasLockForTests = 100_000
 
 // GasScheduleMap (alias) is the map for gas schedule
 type GasScheduleMap = map[string]map[string]uint64
@@ -731,5 +732,5 @@ func FillGasMap_WASMOpcodeValues(value uint64) map[string]uint64 {
 }
 
 func MakeGasMapForTests() GasScheduleMap {
-	return MakeGasMap(GasValueForTests, AsyncCallbackGasLockForTests)
+	return MakeGasMap(GasValueForTests, uint64(AsyncCallbackGasLockForTests))
 }
