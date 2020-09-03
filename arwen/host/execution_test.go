@@ -1093,7 +1093,7 @@ func TestExecution_AsyncCall_BuiltinFails(t *testing.T) {
 }
 
 func TestExecution_AsyncCall_CallBackFailsBeforeExecution(t *testing.T) {
-	config.AsyncCallbackGasLockForTests = 2
+	config.AsyncCallbackGasLockForTests = uint64(2)
 
 	code := GetTestSCCode("async-call-builtin", "../../")
 	scBalance := big.NewInt(1000)
