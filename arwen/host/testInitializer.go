@@ -25,6 +25,8 @@ var userAddress = []byte("userAccount.....................")
 var parentAddress = []byte("parentSC........................")
 var childAddress = []byte("childSC.........................")
 
+var CustomGasSchedule = config.GasScheduleMap(nil)
+
 // GetSCCode retrieves the bytecode of a WASM module from a file
 func GetSCCode(fileName string) []byte {
 	code, err := ioutil.ReadFile(filepath.Clean(fileName))
@@ -98,10 +100,15 @@ func DefaultTestArwenForTwoSCs(t *testing.T, parentCode []byte, childCode []byte
 }
 
 func DefaultTestArwen(tb testing.TB, blockchain vmcommon.BlockchainHook) (*vmHost, error) {
+	gasSchedule := CustomGasSchedule
+	if gasSchedule == nil {
+		gasSchedule = config.MakeGasMapForTests()
+	}
+
 	host, err := NewArwenVM(blockchain, &arwen.VMHostParameters{
 		VMType:                   defaultVMType,
 		BlockGasLimit:            uint64(1000),
-		GasSchedule:              config.MakeGasMapForTests(),
+		GasSchedule:              gasSchedule,
 		ProtocolBuiltinFunctions: make(vmcommon.FunctionNames),
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
 	})

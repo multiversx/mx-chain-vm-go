@@ -881,6 +881,8 @@ func expectedVMOutput_AsyncCall_CallBackFails(parentCode []byte, childCode []byt
 	AddFinishData(vmOutput, []byte("user error"))
 	AddFinishData(vmOutput, []byte("txhash"))
 
+	vmOutput.ReturnMessage = "callBack error"
+
 	return vmOutput
 }
 
