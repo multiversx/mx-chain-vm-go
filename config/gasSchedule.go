@@ -274,9 +274,9 @@ func FillGasMap_CryptoAPICosts(value uint64) map[string]uint64 {
 	gasMap["SHA256"] = value
 	gasMap["Keccak256"] = value
 	gasMap["Ripemd160"] = value
-	gasMap["BLSVerify"] = value
-	gasMap["Ed25519Verify"] = value
-	gasMap["Secp256k1Verify"] = value
+	gasMap["VerifyBLS"] = value
+	gasMap["VerifyEd25519"] = value
+	gasMap["VerifySecp256k1"] = value
 
 	return gasMap
 }

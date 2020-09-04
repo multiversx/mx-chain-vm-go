@@ -13,7 +13,7 @@ func NewSecp256k1() *secp256k1 {
 	return &secp256k1{}
 }
 
-func (sec *secp256k1) Secp256k1Verify(key []byte,  msg []byte, sig []byte) error {
+func (sec *secp256k1) VerifySecp256k1(key []byte,  msg []byte, sig []byte) error {
 	pubKey, err := btcec.ParsePubKey(key, btcec.S256())
 	if err != nil {
 		return err

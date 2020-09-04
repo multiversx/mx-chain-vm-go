@@ -139,9 +139,9 @@
     SHA256          = 600
     Keccak256       = 600
     Ripemd160       = 600
-    BLSVerify       = 1000
-    Ed25519Verify   = 1000
-    Secp256k1Verify = 1000
+    VerifyBLS       = 1000
+    VerifyEd25519   = 1000
+    VerifySecp256k1 = 1000
 
 [WASMOpcodeCost]
     Unreachable = 1

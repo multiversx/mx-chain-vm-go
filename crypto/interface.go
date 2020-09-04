@@ -12,15 +12,15 @@ type Hasher interface {
 }
 
 type BLS interface {
-	BLSVerify(key []byte,  msg []byte, sig []byte) error
+	VerifyBLS(key []byte,  msg []byte, sig []byte) error
 }
 
 type Ed25519 interface {
-	Ed25519Verify(key []byte,  msg []byte, sig []byte) error
+	VerifyEd25519(key []byte,  msg []byte, sig []byte) error
 }
 
 type Secp256k1 interface {
-	Secp256k1Verify(key []byte,  msg []byte, sig []byte) error
+	VerifySecp256k1(key []byte,  msg []byte, sig []byte) error
 }
 
 

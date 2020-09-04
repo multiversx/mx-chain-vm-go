@@ -9,9 +9,9 @@ package cryptoapi
 // extern int32_t sha256(void* context, int32_t dataOffset, int32_t length, int32_t resultOffset);
 // extern int32_t keccak256(void *context, int32_t dataOffset, int32_t length, int32_t resultOffset);
 // extern int32_t ripemd160(void *context, int32_t dataOffset, int32_t length, int32_t resultOffset);
-// extern int32_t blsVerify1(void *context, int32_t keyOffset, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
-// extern int32_t ed25519Verify(void *context, int32_t keyOffset, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
-// extern int32_t secp256k1Verify(void *context, int32_t keyOffset, int32_t keyLength, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
+// extern int32_t verifyBLS(void *context, int32_t keyOffset, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
+// extern int32_t verifyEd25519(void *context, int32_t keyOffset, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
+// extern int32_t verifySecp256k1(void *context, int32_t keyOffset, int32_t keyLength, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
 import "C"
 
 import (
@@ -46,17 +46,17 @@ func CryptoImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 		return nil, err
 	}
 
-	imports, err = imports.Append("blsVerify1", blsVerify1, C.blsVerify1)
+	imports, err = imports.Append("verifyBLS", verifyBLS, C.verifyBLS)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("ed25519Verify", ed25519Verify, C.ed25519Verify)
+	imports, err = imports.Append("verifyEd25519", verifyEd25519, C.verifyEd25519)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("secp256k1Verify", secp256k1Verify, C.secp256k1Verify)
+	imports, err = imports.Append("verifySecp256k1", verifySecp256k1, C.verifySecp256k1)
 	if err != nil {
 		return nil, err
 	}
@@ -145,8 +145,8 @@ func ripemd160(context unsafe.Pointer, dataOffset int32, length int32, resultOff
 	return 0
 }
 
-//export blsVerify1
-func blsVerify1(
+//export verifyBLS
+func verifyBLS(
 	context unsafe.Pointer,
 	keyOffset int32,
 	messageOffset int32,
@@ -171,10 +171,10 @@ func blsVerify1(
 		return 1
 	}
 
-	invalidSigErr := crypto.BLSVerify(key, message, sig)
+	invalidSigErr := crypto.VerifyBLS(key, message, sig)
 
 	metering := arwen.GetMeteringContext(context)
-	gasToUse := metering.GasSchedule().CryptoAPICost.BLSVerify
+	gasToUse := metering.GasSchedule().CryptoAPICost.VerifyBLS
 	metering.UseGas(gasToUse)
 
 	if invalidSigErr != nil {
@@ -184,8 +184,8 @@ func blsVerify1(
 	return 0
 }
 
-//export ed25519Verify
-func ed25519Verify(
+//export verifyEd25519
+func verifyEd25519(
 	context unsafe.Pointer,
 	keyOffset int32,
 	messageOffset int32,
@@ -210,10 +210,10 @@ func ed25519Verify(
 		return 1
 	}
 
-	invalidSigErr := crypto.Ed25519Verify(key, message, sig)
+	invalidSigErr := crypto.VerifyEd25519(key, message, sig)
 
 	metering := arwen.GetMeteringContext(context)
-	gasToUse := metering.GasSchedule().CryptoAPICost.Ed25519Verify
+	gasToUse := metering.GasSchedule().CryptoAPICost.VerifyEd25519
 	metering.UseGas(gasToUse)
 
 	if invalidSigErr != nil {
@@ -223,8 +223,8 @@ func ed25519Verify(
 	return 0
 }
 
-//export secp256k1Verify
-func secp256k1Verify(
+//export verifySecp256k1
+func verifySecp256k1(
 	context unsafe.Pointer,
 	keyOffset int32,
 	keyLength int32,
@@ -255,10 +255,10 @@ func secp256k1Verify(
 		return 1
 	}
 
-	invalidSigErr := crypto.Secp256k1Verify(key, message, sig)
+	invalidSigErr := crypto.VerifySecp256k1(key, message, sig)
 
 	metering := arwen.GetMeteringContext(context)
-	gasToUse := metering.GasSchedule().CryptoAPICost.Secp256k1Verify
+	gasToUse := metering.GasSchedule().CryptoAPICost.VerifySecp256k1
 	metering.UseGas(gasToUse)
 
 	if invalidSigErr != nil {
