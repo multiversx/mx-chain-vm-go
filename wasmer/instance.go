@@ -5,7 +5,7 @@ import (
 	"unsafe"
 )
 
-const OPCODE_COUNT = 447
+const OPCODE_COUNT = 448
 
 // InstanceError represents any kind of errors related to a WebAssembly instance. It
 // is returned by `Instance` functions only.

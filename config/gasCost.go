@@ -578,6 +578,7 @@ type WASMOpcodeCost struct {
 	I64x2Load32x2U         uint32
 	I8x16RoundingAverageU  uint32
 	I16x8RoundingAverageU  uint32
+	LocalAllocate          uint32
 }
 
 type GasCost struct {
@@ -1039,6 +1040,7 @@ func (opcode_costs_struct *WASMOpcodeCost) ToOpcodeCostsArray() [wasmer.OPCODE_C
 	opcode_costs[wasmer.OpcodeI64x2Load32x2U] = opcode_costs_struct.I64x2Load32x2U
 	opcode_costs[wasmer.OpcodeI8x16RoundingAverageU] = opcode_costs_struct.I8x16RoundingAverageU
 	opcode_costs[wasmer.OpcodeI16x8RoundingAverageU] = opcode_costs_struct.I16x8RoundingAverageU
+	opcode_costs[wasmer.OpcodeLocalAllocate] = opcode_costs_struct.LocalAllocate
 
 	return opcode_costs
 }
