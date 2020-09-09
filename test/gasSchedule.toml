@@ -588,3 +588,4 @@
     I8x16RoundingAverageU = 200
     I16x8RoundingAverageU = 200
     LocalAllocate = 2
+    LocalsUnmetered = 100
