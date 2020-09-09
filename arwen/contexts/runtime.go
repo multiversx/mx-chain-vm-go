@@ -69,6 +69,7 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 	}
 	options := wasmer.CompilationOptions{
 		GasLimit:           gasLimit,
+		UnmeteredLocals:    100,
 		OpcodeTrace:        false,
 		Metering:           true,
 		RuntimeBreakpoints: true,
