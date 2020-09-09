@@ -189,6 +189,24 @@ func TestDelegation_v0_4_genesis(t *testing.T) {
 	}
 }
 
+func TestDelegation_v0_5(t *testing.T) {
+	executor, err := am.NewArwenTestExecutor()
+	require.Nil(t, err)
+	runner := mc.NewScenarioRunner(
+		executor,
+		mc.NewDefaultFileResolver(),
+	)
+	err = runner.RunAllJSONScenariosInDirectory(
+		getTestRoot(),
+		"delegation/v0_5",
+		".scen.json",
+		[]string{})
+
+	if err != nil {
+		t.Error(err)
+	}
+}
+
 func TestDnsContract(t *testing.T) {
 	executor, err := am.NewArwenTestExecutor()
 	require.Nil(t, err)
