@@ -19,10 +19,12 @@ type ArwenPart struct {
 	Messenger *ArwenMessenger
 	VMHost    vmcommon.VMExecutionHandler
 	Repliers  []common.MessageReplier
+	Version   string
 }
 
 // NewArwenPart creates the Arwen part
 func NewArwenPart(
+	version string,
 	input *os.File,
 	output *os.File,
 	vmHostParameters *arwen.VMHostParameters,
@@ -44,12 +46,14 @@ func NewArwenPart(
 	part := &ArwenPart{
 		Messenger: messenger,
 		VMHost:    newArwenHost,
+		Version:   version,
 	}
 
 	part.Repliers = common.CreateReplySlots(part.noopReplier)
 	part.Repliers[common.ContractDeployRequest] = part.replyToRunSmartContractCreate
 	part.Repliers[common.ContractCallRequest] = part.replyToRunSmartContractCall
 	part.Repliers[common.DiagnoseWaitRequest] = part.replyToDiagnoseWait
+	part.Repliers[common.VersionRequest] = part.replyToVersionRequest
 
 	return part, nil
 }
@@ -113,4 +117,8 @@ func (part *ArwenPart) replyToDiagnoseWait(request common.MessageHandler) common
 	duration := time.Duration(int64(typedRequest.Milliseconds) * int64(time.Millisecond))
 	time.Sleep(duration)
 	return common.NewMessageDiagnoseWaitResponse()
+}
+
+func (part *ArwenPart) replyToVersionRequest(request common.MessageHandler) common.MessageHandler {
+	return common.NewMessageVersionResponse(part.Version)
 }
