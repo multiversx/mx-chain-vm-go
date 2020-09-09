@@ -368,23 +368,22 @@ func TestExecution_Call_Successful(t *testing.T) {
 }
 
 func TestExecution_Call_GasConsumptionOnLocals(t *testing.T) {
-	gasSchedule := config.MakeGasMapForTests()
-	gasWithZeroLocals := callCustomSCAndGetGasUsed(t, 0, gasSchedule)
-	costPerLocal := gasSchedule["WASMOpcodeCost"]["LocalAllocate"]
+	gasWithZeroLocals, gasSchedule := callCustomSCAndGetGasUsed(t, 0)
+	costPerLocal := uint64(gasSchedule.WASMOpcodeCost.LocalAllocate)
 
-	UnmeteredLocals := 100
+	UnmeteredLocals := uint64(gasSchedule.WASMOpcodeCost.LocalsUnmetered)
 
 	// Any number of local variables below `UnmeteredLocals` must be instantiated
 	// without metering, i.e. gas-free.
-	for _, locals := range []int{1, UnmeteredLocals / 2, UnmeteredLocals} {
-		gasUsed := callCustomSCAndGetGasUsed(t, uint64(locals), gasSchedule)
+	for _, locals := range []uint64{1, UnmeteredLocals / 2, UnmeteredLocals} {
+		gasUsed, _ := callCustomSCAndGetGasUsed(t, uint64(locals))
 		require.Equal(t, gasWithZeroLocals, gasUsed)
 	}
 
 	// Any number of local variables above `UnmeteredLocals` must be instantiated
 	// with metering, i.e. will cost gas.
-	for _, locals := range []int{UnmeteredLocals + 1, UnmeteredLocals * 2, UnmeteredLocals * 4} {
-		gasUsed := callCustomSCAndGetGasUsed(t, uint64(locals), gasSchedule)
+	for _, locals := range []uint64{UnmeteredLocals + 1, UnmeteredLocals * 2, UnmeteredLocals * 4} {
+		gasUsed, _ := callCustomSCAndGetGasUsed(t, uint64(locals))
 		metered_locals := locals - UnmeteredLocals
 		costOfLocals := costPerLocal * uint64(metered_locals)
 		expectedGasUsed := gasWithZeroLocals + costOfLocals
@@ -392,9 +391,10 @@ func TestExecution_Call_GasConsumptionOnLocals(t *testing.T) {
 	}
 }
 
-func callCustomSCAndGetGasUsed(t *testing.T, locals uint64, gasSchedule map[string]map[string]uint64) uint64 {
+func callCustomSCAndGetGasUsed(t *testing.T, locals uint64) (uint64, *config.GasCost) {
 	code := makeBytecodeWithLocals(uint64(locals))
 	host, _ := DefaultTestArwenForCall(t, code, nil)
+	gasSchedule := host.Metering().GasSchedule()
 
 	gasLimit := uint64(100000)
 	input := DefaultTestContractCallInput()
@@ -405,8 +405,8 @@ func callCustomSCAndGetGasUsed(t *testing.T, locals uint64, gasSchedule map[stri
 	require.Nil(t, err)
 	require.NotNil(t, vmOutput)
 
-	compilationCost := uint64(len(code)) * gasSchedule["BaseOperationCost"]["CompilePerByte"]
-	return gasLimit - vmOutput.GasRemaining - compilationCost
+	compilationCost := uint64(len(code)) * gasSchedule.BaseOperationCost.CompilePerByte
+	return gasLimit - vmOutput.GasRemaining - compilationCost, gasSchedule
 }
 
 func TestExecution_ExecuteOnSameContext_Simple(t *testing.T) {

@@ -42,7 +42,9 @@ func TestFunctionsGuard_isValidFunctionName(t *testing.T) {
 }
 
 func TestFunctionsGuard_Arity(t *testing.T) {
-	imports := InitializeWasmer()
+	host := InitializeArwenAndWasmer()
+	imports := host.SCAPIMethods
+
 	validator := NewWASMValidator(imports.Names(), make(vmcommon.FunctionNames))
 
 	gasLimit := uint64(100000000)
