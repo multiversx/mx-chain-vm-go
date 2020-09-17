@@ -86,3 +86,5 @@ var ErrInvalidAccount = errors.New("account does not exist")
 var ErrDeploymentOverExistingAccount = errors.New("cannot deploy over existing account")
 
 var ErrAccountNotPayable = errors.New("sending value to non payable contract")
+
+var ErrInvalidPublicKeySize = errors.New("invalid public key size")

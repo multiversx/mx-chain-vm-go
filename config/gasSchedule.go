@@ -274,6 +274,10 @@ func FillGasMap_CryptoAPICosts(value uint64) map[string]uint64 {
 	gasMap := make(map[string]uint64)
 	gasMap["SHA256"] = value
 	gasMap["Keccak256"] = value
+	gasMap["Ripemd160"] = value
+	gasMap["VerifyBLS"] = value
+	gasMap["VerifyEd25519"] = value
+	gasMap["VerifySecp256k1"] = value
 
 	return gasMap
 }

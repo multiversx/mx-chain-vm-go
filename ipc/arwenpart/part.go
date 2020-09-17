@@ -32,11 +32,9 @@ func NewArwenPart(
 ) (*ArwenPart, error) {
 	messenger := NewArwenMessenger(input, output, marshalizer)
 	blockchain := NewBlockchainHookGateway(messenger)
-	crypto := NewCryptoHookGateway()
 
 	newArwenHost, err := host.NewArwenVM(
 		blockchain,
-		crypto,
 		vmHostParameters,
 	)
 	if err != nil {

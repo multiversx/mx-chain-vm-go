@@ -126,8 +126,12 @@ type BigIntAPICost struct {
 }
 
 type CryptoAPICost struct {
-	SHA256    uint64
-	Keccak256 uint64
+	SHA256          uint64
+	Keccak256       uint64
+	Ripemd160       uint64
+	VerifyBLS       uint64
+	VerifyEd25519   uint64
+	VerifySecp256k1 uint64
 }
 
 type WASMOpcodeCost struct {

@@ -4,6 +4,7 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -23,7 +24,7 @@ type CallArgsParser interface {
 }
 
 type VMHost interface {
-	Crypto() vmcommon.CryptoHook
+	Crypto() crypto.VMCrypto
 	Blockchain() BlockchainContext
 	Runtime() RuntimeContext
 	BigInt() BigIntContext
