@@ -16,6 +16,7 @@ import (
 )
 
 var counterKey = []byte("COUNTER")
+var WASMLocalsLimit = uint64(4000)
 
 func TestNewArwen(t *testing.T) {
 	host, err := DefaultTestArwen(t, &mock.BlockchainHookStub{})
@@ -167,6 +168,36 @@ func TestExecution_DeployWASM_Popcnt(t *testing.T) {
 	fmt.Println(vmOutput.ReturnData)
 	require.Len(t, vmOutput.ReturnData, 1)
 	require.Equal(t, []byte{3}, vmOutput.ReturnData[0])
+}
+
+func TestExecution_DeployWASM_AtMaximumLocals(t *testing.T) {
+	newAddress := []byte("new smartcontract")
+	host := DefaultTestArwenForDeployment(t, 24, newAddress)
+	input := DefaultTestContractCreateInput()
+	input.CallValue = big.NewInt(88)
+	input.GasProvided = 1000
+	input.ContractCode = makeBytecodeWithLocals(WASMLocalsLimit)
+	input.Arguments = [][]byte{{0}}
+
+	vmOutput, err := host.RunSmartContractCreate(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+}
+
+func TestExecution_DeployWASM_MoreThanMaximumLocals(t *testing.T) {
+	newAddress := []byte("new smartcontract")
+	host := DefaultTestArwenForDeployment(t, 24, newAddress)
+	input := DefaultTestContractCreateInput()
+	input.CallValue = big.NewInt(88)
+	input.GasProvided = 1000
+	input.ContractCode = makeBytecodeWithLocals(WASMLocalsLimit + 1)
+	input.Arguments = [][]byte{{0}}
+
+	vmOutput, err := host.RunSmartContractCreate(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.ContractInvalid, vmOutput.ReturnCode)
 }
 
 func TestExecution_DeployWASM_Init_Errors(t *testing.T) {
@@ -331,6 +362,48 @@ func TestExecution_Call_Successful(t *testing.T) {
 
 	storedBytes := vmOutput.OutputAccounts[string(parentAddress)].StorageUpdates[string(counterKey)].Data
 	require.Equal(t, big.NewInt(1002).Bytes(), storedBytes)
+}
+
+func TestExecution_Call_GasConsumptionOnLocals(t *testing.T) {
+	gasWithZeroLocals, gasSchedule := callCustomSCAndGetGasUsed(t, 0)
+	costPerLocal := uint64(gasSchedule.WASMOpcodeCost.LocalAllocate)
+
+	UnmeteredLocals := uint64(gasSchedule.WASMOpcodeCost.LocalsUnmetered)
+
+	// Any number of local variables below `UnmeteredLocals` must be instantiated
+	// without metering, i.e. gas-free.
+	for _, locals := range []uint64{1, UnmeteredLocals / 2, UnmeteredLocals} {
+		gasUsed, _ := callCustomSCAndGetGasUsed(t, uint64(locals))
+		require.Equal(t, gasWithZeroLocals, gasUsed)
+	}
+
+	// Any number of local variables above `UnmeteredLocals` must be instantiated
+	// with metering, i.e. will cost gas.
+	for _, locals := range []uint64{UnmeteredLocals + 1, UnmeteredLocals * 2, UnmeteredLocals * 4} {
+		gasUsed, _ := callCustomSCAndGetGasUsed(t, uint64(locals))
+		metered_locals := locals - UnmeteredLocals
+		costOfLocals := costPerLocal * uint64(metered_locals)
+		expectedGasUsed := gasWithZeroLocals + costOfLocals
+		require.Equal(t, expectedGasUsed, gasUsed)
+	}
+}
+
+func callCustomSCAndGetGasUsed(t *testing.T, locals uint64) (uint64, *config.GasCost) {
+	code := makeBytecodeWithLocals(uint64(locals))
+	host, _ := DefaultTestArwenForCall(t, code, nil)
+	gasSchedule := host.Metering().GasSchedule()
+
+	gasLimit := uint64(100000)
+	input := DefaultTestContractCallInput()
+	input.GasProvided = gasLimit
+	input.Function = "answer"
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+
+	compilationCost := uint64(len(code)) * gasSchedule.BaseOperationCost.CompilePerByte
+	return gasLimit - vmOutput.GasRemaining - compilationCost, gasSchedule
 }
 
 func TestExecution_ExecuteOnSameContext_Simple(t *testing.T) {
@@ -1176,4 +1249,25 @@ func TestExecution_CreateNewContract_Fail(t *testing.T) {
 	// the actual vmOutput.
 	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
+}
+
+// makeBytecodeWithLocals rewrites the bytecode of "answer" to change the
+// number of i64 locals it instantiates
+func makeBytecodeWithLocals(numLocals uint64) []byte {
+	originalCode := GetTestSCCode("answer", "../../")
+	firstSlice := originalCode[:0x5B]
+	secondSlice := originalCode[0x5C:]
+
+	encodedNumLocals := arwen.U64ToLEB128(numLocals)
+	extraBytes := len(encodedNumLocals) - 1
+
+	result := make([]byte, 0)
+	result = append(result, firstSlice...)
+	result = append(result, encodedNumLocals...)
+	result = append(result, secondSlice...)
+
+	result[0x57] = byte(int(result[0x57]) + extraBytes)
+	result[0x59] = byte(int(result[0x59]) + extraBytes)
+
+	return result
 }

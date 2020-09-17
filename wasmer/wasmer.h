@@ -38,7 +38,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#define OPCODE_COUNT 447
+#define OPCODE_COUNT 448
 
 #if defined(WASMER_WASI_ENABLED)
 enum Version {

@@ -448,4 +448,5 @@ const (
 	OpcodeI64x2Load32x2U
 	OpcodeI8x16RoundingAverageU
 	OpcodeI16x8RoundingAverageU
+	OpcodeLocalAllocate
 )
