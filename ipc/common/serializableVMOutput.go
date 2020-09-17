@@ -70,7 +70,7 @@ type SerializableOutputAccount struct {
 	StorageUpdates []*vmcommon.StorageUpdate
 	Code           []byte
 	CodeMetadata   []byte
-	Data           []byte
+	Data           [][]byte
 	GasLimit       uint64
 	CallType       vmcommon.CallType
 }

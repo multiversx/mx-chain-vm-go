@@ -214,7 +214,10 @@ func (context *outputContext) Transfer(destination []byte, sender []byte, gasLim
 
 	senderAcc.BalanceDelta = big.NewInt(0).Sub(senderAcc.BalanceDelta, value)
 	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
-	destAcc.Data = append(destAcc.Data, input...)
+
+	if len(input) > 0 {
+		destAcc.Data = append(destAcc.Data, input)
+	}
 	destAcc.GasLimit = gasLimit
 
 	return nil
