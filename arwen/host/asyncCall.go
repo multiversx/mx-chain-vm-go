@@ -108,7 +108,7 @@ func (host *vmHost) executeSyncCallbackCall(
 	return callbackVMOutput, callBackErr
 }
 
-func (host *vmHost) canExecuteSynchronously(destination []byte, data []byte) bool {
+func (host *vmHost) canExecuteSynchronously(destination []byte, _ []byte) bool {
 	// TODO replace this function in promise-related code below.
 	blockchain := host.Blockchain()
 	calledSCCode, err := blockchain.GetCode(destination)
@@ -300,7 +300,7 @@ func (host *vmHost) processCallbackVMOutput(callbackVMOutput *vmcommon.VMOutput,
 
 	output.SetReturnMessage(callbackVMOutput.ReturnMessage)
 	output.Finish([]byte(callbackVMOutput.ReturnCode.String()))
-	output.Finish([]byte(runtime.GetCurrentTxHash()))
+	output.Finish(runtime.GetCurrentTxHash())
 
 	return nil
 }

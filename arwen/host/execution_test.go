@@ -232,7 +232,7 @@ func TestExecution_ManyDeployments(t *testing.T) {
 	}
 	stubBlockchainHook.NewAddressCalled = func(creatorAddress []byte, nonce uint64, vmType []byte) ([]byte, error) {
 		ownerNonce++
-		return []byte(newAddress + " " + string(ownerNonce)), nil
+		return []byte(newAddress + " " + fmt.Sprint(ownerNonce)), nil
 	}
 
 	host, _ := DefaultTestArwen(t, stubBlockchainHook)

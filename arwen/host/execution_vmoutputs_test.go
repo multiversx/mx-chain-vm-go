@@ -766,8 +766,9 @@ func expectedVMOutput_AsyncCall(parentCode []byte, childCode []byte) *vmcommon.V
 		vmOutput,
 		thirdPartyAddress,
 		6,
-		[]byte("hello there"),
+		nil,
 	)
+	vmOutput.OutputAccounts[string(thirdPartyAddress)].Data = [][]byte{[]byte("hello"), []byte(" there")}
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,
@@ -855,8 +856,9 @@ func expectedVMOutput_AsyncCall_CallBackFails(parentCode []byte, childCode []byt
 		vmOutput,
 		thirdPartyAddress,
 		6,
-		[]byte("hello there"),
+		nil,
 	)
+	vmOutput.OutputAccounts[string(thirdPartyAddress)].Data = [][]byte{[]byte("hello"), []byte(" there")}
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,

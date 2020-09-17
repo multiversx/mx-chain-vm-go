@@ -180,7 +180,9 @@ func AddNewOutputAccount(vmOutput *vmcommon.VMOutput, address []byte, balanceDel
 		Balance:        nil,
 		StorageUpdates: make(map[string]*vmcommon.StorageUpdate),
 		Code:           nil,
-		Data:           data,
+	}
+	if len(data) > 0 {
+		account.Data = [][]byte{data}
 	}
 	vmOutput.OutputAccounts[string(address)] = account
 	return account
