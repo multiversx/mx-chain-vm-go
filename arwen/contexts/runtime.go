@@ -2,6 +2,7 @@ package contexts
 
 import (
 	"fmt"
+	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
@@ -106,7 +107,7 @@ func (context *runtimeContext) SetMaxInstanceCount(maxInstances uint64) {
 }
 
 func (context *runtimeContext) InitStateFromContractCallInput(input *vmcommon.ContractCallInput) {
-	context.vmInput = &input.VMInput
+	context.SetVMInput(&input.VMInput)
 	context.scAddress = input.RecipientAddr
 	context.callFunction = input.Function
 	// Reset async map for initial state
@@ -188,7 +189,29 @@ func (context *runtimeContext) GetVMInput() *vmcommon.VMInput {
 }
 
 func (context *runtimeContext) SetVMInput(vmInput *vmcommon.VMInput) {
-	context.vmInput = vmInput
+	if !context.host.IsArwenV2Enabled() {
+		context.vmInput = vmInput
+		return
+	}
+
+	context.vmInput = &vmcommon.VMInput{
+		CallerAddr:     make([]byte, len(vmInput.CallerAddr)),
+		Arguments:      make([][]byte, len(vmInput.Arguments)),
+		CallValue:      big.NewInt(0).Set(vmInput.CallValue),
+		CallType:       vmInput.CallType,
+		GasPrice:       vmInput.GasPrice,
+		GasProvided:    vmInput.GasProvided,
+		OriginalTxHash: make([]byte, len(vmInput.OriginalTxHash)),
+		CurrentTxHash:  make([]byte, len(vmInput.CurrentTxHash)),
+	}
+	copy(context.vmInput.CallerAddr, vmInput.CallerAddr)
+	copy(context.vmInput.CurrentTxHash, vmInput.CurrentTxHash)
+	copy(context.vmInput.OriginalTxHash, vmInput.OriginalTxHash)
+
+	for i, arg := range vmInput.Arguments {
+		context.vmInput.Arguments[i] = make([]byte, len(arg))
+		copy(context.vmInput.Arguments[i], arg)
+	}
 }
 
 func (context *runtimeContext) GetSCAddress() []byte {

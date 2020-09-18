@@ -31,6 +31,7 @@ type VMHost interface {
 	Output() OutputContext
 	Metering() MeteringContext
 	Storage() StorageContext
+	IsArwenV2Enabled() bool
 
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*AsyncContextInfo, error)
@@ -129,6 +130,7 @@ type OutputContext interface {
 	StateStack
 	PopMergeActiveState()
 	CensorVMOutput()
+	ResetConsumedGas()
 	AddToActiveState(rightOutput *vmcommon.VMOutput)
 
 	GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool)

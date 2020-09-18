@@ -303,33 +303,33 @@ func TestOutputContext_MergeVMOutputs(t *testing.T) {
 
 	left = newVMOutput()
 	right = newVMOutput()
-	right.OutputAccounts["address"] = newVMOutputAccount([]byte("address"))
+	right.OutputAccounts["address"] = NewVMOutputAccount([]byte("address"))
 	right.OutputAccounts["address"].Nonce = 84
 	expected = newVMOutput()
-	expected.OutputAccounts["address"] = newVMOutputAccount([]byte("address"))
+	expected.OutputAccounts["address"] = NewVMOutputAccount([]byte("address"))
 	expected.OutputAccounts["address"].Nonce = 84
 	mergeVMOutputs(left, right)
 	require.Equal(t, expected, left)
 
 	left = newVMOutput()
-	left.OutputAccounts["address"] = newVMOutputAccount([]byte("address"))
+	left.OutputAccounts["address"] = NewVMOutputAccount([]byte("address"))
 	left.OutputAccounts["address"].Nonce = 84
 	right = newVMOutput()
-	right.OutputAccounts["address"] = newVMOutputAccount([]byte("address"))
+	right.OutputAccounts["address"] = NewVMOutputAccount([]byte("address"))
 	right.OutputAccounts["address"].Nonce = 92
 	expected = newVMOutput()
-	expected.OutputAccounts["address"] = newVMOutputAccount([]byte("address"))
+	expected.OutputAccounts["address"] = NewVMOutputAccount([]byte("address"))
 	expected.OutputAccounts["address"].Nonce = 92
 	mergeVMOutputs(left, right)
 	require.Equal(t, expected, left)
 
 	left = newVMOutput()
-	left.OutputAccounts["left address"] = newVMOutputAccount([]byte("left address"))
+	left.OutputAccounts["left address"] = NewVMOutputAccount([]byte("left address"))
 	right = newVMOutput()
-	right.OutputAccounts["right address"] = newVMOutputAccount([]byte("right address"))
+	right.OutputAccounts["right address"] = NewVMOutputAccount([]byte("right address"))
 	expected = newVMOutput()
-	expected.OutputAccounts["left address"] = newVMOutputAccount([]byte("left address"))
-	expected.OutputAccounts["right address"] = newVMOutputAccount([]byte("right address"))
+	expected.OutputAccounts["left address"] = NewVMOutputAccount([]byte("left address"))
+	expected.OutputAccounts["right address"] = NewVMOutputAccount([]byte("right address"))
 	mergeVMOutputs(left, right)
 	require.Equal(t, expected, left)
 

@@ -2,6 +2,7 @@ package host
 
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/contexts"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -142,6 +143,7 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 
 	output.PushState()
 	output.CensorVMOutput()
+	output.ResetConsumedGas()
 
 	runtime.PushState()
 	runtime.InitStateFromContractCallInput(input)
@@ -170,10 +172,43 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	return
 }
 
+func computeGasUsedByCurrentSC(
+	vmInput *vmcommon.VMInput,
+	vmOutput *vmcommon.VMOutput,
+	executeErr error,
+) (uint64, error) {
+	if executeErr != nil {
+		return 0, executeErr
+	}
+
+	if vmOutput.ReturnCode != vmcommon.Ok {
+		return 0, nil
+	}
+
+	gasUsed := vmInput.GasProvided - vmOutput.GasRemaining
+	if vmInput.GasProvided < vmOutput.GasRemaining {
+		return 0, arwen.ErrGasUsageError
+	}
+
+	for _, outAcc := range vmOutput.OutputAccounts {
+		if gasUsed < outAcc.GasUsed+outAcc.GasLimit {
+			return 0, arwen.ErrGasUsageError
+		}
+		gasUsed -= outAcc.GasUsed
+		gasUsed -= outAcc.GasLimit
+	}
+	return gasUsed, nil
+}
+
 func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOutput {
 	bigInt, _, _, output, runtime, storage := host.GetContexts()
 
-	if executeErr != nil {
+	// Extract the VMOutput produced by the execution in isolation, before
+	// restoring the contexts. This needs to be done before popping any state
+	// stacks.
+	vmOutput := output.GetVMOutput()
+	gasUsed, err := computeGasUsedByCurrentSC(runtime.GetVMInput(), vmOutput, executeErr)
+	if err != nil {
 		// Execution failed: restore contexts as if the execution didn't happen,
 		// but first create a vmOutput to capture the error.
 		vmOutput := output.CreateVMOutputInCaseOfError(executeErr)
@@ -186,11 +221,6 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 		return vmOutput
 	}
 
-	// Extract the VMOutput produced by the execution in isolation, before
-	// restoring the contexts. This needs to be done before popping any state
-	// stacks.
-	vmOutput := host.Output().GetVMOutput()
-
 	// Restore the previous context states, except Output, which will be merged
 	// into the initial state (VMOutput), but only if it the child execution
 	// returned vmcommon.Ok.
@@ -200,6 +230,11 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 
 	if vmOutput.ReturnCode == vmcommon.Ok {
 		output.PopMergeActiveState()
+		scAddress := string(runtime.GetSCAddress())
+		if _, ok := vmOutput.OutputAccounts[scAddress]; !ok {
+			vmOutput.OutputAccounts[scAddress] = contexts.NewVMOutputAccount([]byte(scAddress))
+		}
+		vmOutput.OutputAccounts[scAddress].GasUsed += gasUsed
 	} else {
 		output.PopSetActiveState()
 	}
@@ -218,6 +253,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 	output.PushState()
 	runtime.PushState()
 
+	output.ResetConsumedGas()
 	runtime.InitStateFromContractCallInput(input)
 
 	defer func() {
@@ -244,7 +280,9 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
 	bigInt, _, _, output, runtime, _ := host.GetContexts()
 
-	if executeErr != nil || output.ReturnCode() != vmcommon.Ok {
+	vmOutput := output.GetVMOutput()
+	gasUsed, err := computeGasUsedByCurrentSC(runtime.GetVMInput(), vmOutput, executeErr)
+	if output.ReturnCode() != vmcommon.Ok || err != nil {
 		// Execution failed: restore contexts as if the execution didn't happen.
 		bigInt.PopSetActiveState()
 		output.PopSetActiveState()
@@ -253,11 +291,18 @@ func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
 		return
 	}
 
+	scAddress := string(runtime.GetSCAddress())
 	// Execution successful: discard the backups made at the beginning and
 	// resume from the new state.
 	bigInt.PopDiscard()
 	output.PopDiscard()
 	runtime.PopSetActiveState()
+
+	vmOutput = output.GetVMOutput()
+	if _, ok := vmOutput.OutputAccounts[scAddress]; !ok {
+		vmOutput.OutputAccounts[scAddress] = contexts.NewVMOutputAccount([]byte(scAddress))
+	}
+	vmOutput.OutputAccounts[scAddress].GasUsed += gasUsed
 }
 
 func (host *vmHost) isInitFunctionBeingCalled() bool {
@@ -345,7 +390,10 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 	_, _, metering, output, runtime, _ := host.GetContexts()
 
 	if host.isBuiltinFunctionBeingCalled() {
-		metering.DeductAndLockGasIfAsyncStep()
+		err := metering.DeductAndLockGasIfAsyncStep()
+		if err != nil {
+			return err
+		}
 		return host.callBuiltinFunction(input)
 	}
 

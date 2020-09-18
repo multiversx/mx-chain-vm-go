@@ -145,6 +145,10 @@ func expectedVMOutput_SameCtx_SuccessfulChildCall(parentCode []byte, childCode [
 	)
 	childAccount.Balance = big.NewInt(0)
 
+	executeAPICost := uint64(39)
+	childExecutionCost := uint64(431)
+	childAccount.GasUsed = childCompilationCost_SameCtx + childExecutionCost
+
 	_ = AddNewOutputAccount(
 		vmOutput,
 		childTransferReceiver,
@@ -171,8 +175,6 @@ func expectedVMOutput_SameCtx_SuccessfulChildCall(parentCode []byte, childCode [
 	AddFinishData(vmOutput, []byte("succ"))
 
 	parentGasBeforeExecuteAPI := uint64(197)
-	executeAPICost := uint64(39)
-	childExecutionCost := uint64(431)
 	finalCost := uint64(139)
 	gas := gasProvided
 	gas -= parentCompilationCost_SameCtx

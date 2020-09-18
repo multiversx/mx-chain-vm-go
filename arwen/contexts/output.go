@@ -48,7 +48,7 @@ func newVMOutput() *vmcommon.VMOutput {
 	}
 }
 
-func newVMOutputAccount(address []byte) *vmcommon.OutputAccount {
+func NewVMOutputAccount(address []byte) *vmcommon.OutputAccount {
 	return &vmcommon.OutputAccount{
 		Address:        address,
 		Nonce:          0,
@@ -110,11 +110,20 @@ func (context *outputContext) CensorVMOutput() {
 	context.outputState.Logs = make([]*vmcommon.LogEntry, 0)
 }
 
+// ResetConsumedGas will set to 0 all gas used from output accounts, in order
+// to properly calculate the actual used gas of one smart contract when called in sync
+func (context *outputContext) ResetConsumedGas() {
+	for _, outAcc := range context.outputState.OutputAccounts {
+		outAcc.GasUsed = 0
+		outAcc.GasLimit = 0
+	}
+}
+
 func (context *outputContext) GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool) {
 	accountIsNew := false
 	account, ok := context.outputState.OutputAccounts[string(address)]
 	if !ok {
-		account = newVMOutputAccount(address)
+		account = NewVMOutputAccount(address)
 		context.outputState.OutputAccounts[string(address)] = account
 		accountIsNew = true
 	}
@@ -298,7 +307,6 @@ func (context *outputContext) resolveReturnCodeFromError(err error) vmcommon.Ret
 	if errors.Is(err, arwen.ErrSignalError) {
 		return vmcommon.UserError
 	}
-
 	if errors.Is(err, arwen.ErrFuncNotFound) {
 		return vmcommon.FunctionNotFound
 	}
@@ -308,11 +316,9 @@ func (context *outputContext) resolveReturnCodeFromError(err error) vmcommon.Ret
 	if errors.Is(err, arwen.ErrInvalidFunction) {
 		return vmcommon.UserError
 	}
-
 	if errors.Is(err, arwen.ErrNotEnoughGas) {
 		return vmcommon.OutOfGas
 	}
-
 	if errors.Is(err, arwen.ErrContractNotFound) {
 		return vmcommon.ContractNotFound
 	}
@@ -322,7 +328,6 @@ func (context *outputContext) resolveReturnCodeFromError(err error) vmcommon.Ret
 	if errors.Is(err, arwen.ErrUpgradeFailed) {
 		return vmcommon.UpgradeFailed
 	}
-
 	if errors.Is(err, arwen.ErrTransferInsufficientFunds) {
 		return vmcommon.OutOfFunds
 	}
@@ -362,8 +367,6 @@ func mergeVMOutputs(leftOutput *vmcommon.VMOutput, rightOutput *vmcommon.VMOutpu
 		}
 		mergeOutputAccounts(leftAccount, rightAccount)
 	}
-
-	// TODO merge DeletedAccounts and TouchedAccounts as well?
 
 	leftOutput.Logs = append(leftOutput.Logs, rightOutput.Logs...)
 	leftOutput.ReturnData = append(leftOutput.ReturnData, rightOutput.ReturnData...)
@@ -410,6 +413,7 @@ func mergeOutputAccounts(
 		leftAccount.Nonce = rightAccount.Nonce
 	}
 
+	leftAccount.GasUsed = rightAccount.GasUsed
 	leftAccount.CallType = rightAccount.CallType
 }
 

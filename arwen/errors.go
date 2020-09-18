@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-var ErrFunctionRunError = errors.New("function run error")
+var ErrGasUsageError = errors.New("gas use error")
 
 var ErrReturnCodeNotOk = errors.New("return not is not ok")
 

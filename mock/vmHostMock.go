@@ -54,6 +54,10 @@ func (host *VmHostMock) BigInt() arwen.BigIntContext {
 	return host.BigIntContext
 }
 
+func (host *VmHostMock) IsArwenV2Enabled() bool {
+	return true
+}
+
 func (host *VmHostMock) CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error) {
 	return nil, nil
 }

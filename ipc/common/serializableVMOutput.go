@@ -73,6 +73,7 @@ type SerializableOutputAccount struct {
 	Data           [][]byte
 	GasLimit       uint64
 	CallType       vmcommon.CallType
+	GasUsed        uint64
 }
 
 func NewSerializableOutputAccount(account *vmcommon.OutputAccount) *SerializableOutputAccount {
@@ -87,6 +88,7 @@ func NewSerializableOutputAccount(account *vmcommon.OutputAccount) *Serializable
 		Data:           account.Data,
 		GasLimit:       account.GasLimit,
 		CallType:       account.CallType,
+		GasUsed:        account.GasUsed,
 	}
 
 	for _, storageUpdate := range account.StorageUpdates {
@@ -114,5 +116,6 @@ func (a *SerializableOutputAccount) ConvertToOutputAccount() *vmcommon.OutputAcc
 		Data:           a.Data,
 		GasLimit:       a.GasLimit,
 		CallType:       a.CallType,
+		GasUsed:        a.GasUsed,
 	}
 }
