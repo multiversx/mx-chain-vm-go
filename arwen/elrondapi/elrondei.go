@@ -20,6 +20,7 @@ package elrondapi
 // extern int32_t storageStore(void *context, int32_t keyOffset, int32_t keyLength , int32_t dataOffset, int32_t dataLength);
 // extern int32_t storageLoadLength(void *context, int32_t keyOffset, int32_t keyLength );
 // extern int32_t storageLoad(void *context, int32_t keyOffset, int32_t keyLength , int32_t dataOffset);
+// extern int32_t storageLoadFromAddress(void *context, int32_t addressOffset, int32_t keyOffset, int32_t keyLength , int32_t dataOffset);
 // extern void getCaller(void *context, int32_t resultOffset);
 // extern int32_t callValue(void *context, int32_t resultOffset);
 // extern void writeLog(void *context, int32_t pointer, int32_t length, int32_t topicPtr, int32_t numTopics);
@@ -162,6 +163,11 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("storageLoad", storageLoad, C.storageLoad)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("storageLoadFromAddress", storageLoadFromAddress, C.storageLoadFromAddress)
 	if err != nil {
 		return nil, err
 	}
@@ -772,6 +778,35 @@ func storageLoadLength(context unsafe.Pointer, keyOffset int32, keyLength int32)
 	}
 
 	data := storage.GetStorageUnmetered(key)
+
+	return int32(len(data))
+}
+
+//export storageLoadFromAddress
+func storageLoadFromAddress(context unsafe.Pointer, addressOffset int32, keyOffset int32, keyLength int32, dataOffset int32) int32 {
+	runtime := arwen.GetRuntimeContext(context)
+	storage := arwen.GetStorageContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.StorageLoad
+	metering.UseGas(gasToUse)
+
+	key, err := runtime.MemLoad(keyOffset, keyLength)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return -1
+	}
+
+	address, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return -1
+	}
+
+	data := storage.GetStorageFromAddress(address, key)
+
+	err = runtime.MemStore(dataOffset, data)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return -1
+	}
 
 	return int32(len(data))
 }
