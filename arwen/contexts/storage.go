@@ -97,14 +97,16 @@ func (context *storageContext) GetStorageFromAddress(address []byte, key []byte)
 		metering.UseGas(gasToUse)
 	}
 
-	userAcc, err := context.blockChainHook.GetUserAccount(address)
-	if err != nil || check.IfNil(userAcc) {
-		return nil
-	}
+	if !bytes.Equal(address, context.address) {
+		userAcc, err := context.blockChainHook.GetUserAccount(address)
+		if err != nil || check.IfNil(userAcc) {
+			return nil
+		}
 
-	metadata := vmcommon.CodeMetadataFromBytes(userAcc.GetCodeMetadata())
-	if !metadata.Readable {
-		return nil
+		metadata := vmcommon.CodeMetadataFromBytes(userAcc.GetCodeMetadata())
+		if !metadata.Readable {
+			return nil
+		}
 	}
 
 	value := context.getStorageFromAddressUnmetered(address, key)
