@@ -151,8 +151,9 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	storage.PushState()
 	storage.SetAddress(host.Runtime().GetSCAddress())
 
+	gasUsed := uint64(0)
 	defer func() {
-		vmOutput = host.finishExecuteOnDestContext(err)
+		vmOutput = host.finishExecuteOnDestContext(gasUsed, err)
 	}()
 
 	// Perform a value transfer to the called SC. If the execution fails, this
@@ -162,7 +163,7 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 		return
 	}
 
-	err = host.execute(input)
+	gasUsed, err = host.execute(input)
 	if err != nil {
 		return
 	}
@@ -173,7 +174,7 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 }
 
 func computeGasUsedByCurrentSC(
-	vmInput *vmcommon.VMInput,
+	gasUsed uint64,
 	vmOutput *vmcommon.VMOutput,
 	executeErr error,
 ) (uint64, error) {
@@ -183,11 +184,6 @@ func computeGasUsedByCurrentSC(
 
 	if vmOutput.ReturnCode != vmcommon.Ok {
 		return 0, nil
-	}
-
-	gasUsed := vmInput.GasProvided - vmOutput.GasRemaining
-	if vmInput.GasProvided < vmOutput.GasRemaining {
-		return 0, arwen.ErrGasUsageError
 	}
 
 	for _, outAcc := range vmOutput.OutputAccounts {
@@ -200,14 +196,14 @@ func computeGasUsedByCurrentSC(
 	return gasUsed, nil
 }
 
-func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOutput {
+func (host *vmHost) finishExecuteOnDestContext(gasUsed uint64, executeErr error) *vmcommon.VMOutput {
 	bigInt, _, _, output, runtime, storage := host.GetContexts()
 
 	// Extract the VMOutput produced by the execution in isolation, before
 	// restoring the contexts. This needs to be done before popping any state
 	// stacks.
 	vmOutput := output.GetVMOutput()
-	gasUsed, err := computeGasUsedByCurrentSC(runtime.GetVMInput(), vmOutput, executeErr)
+	gasUsedBySC, err := computeGasUsedByCurrentSC(gasUsed, vmOutput, executeErr)
 	if err != nil {
 		// Execution failed: restore contexts as if the execution didn't happen,
 		// but first create a vmOutput to capture the error.
@@ -234,7 +230,7 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 		if _, ok := vmOutput.OutputAccounts[scAddress]; !ok {
 			vmOutput.OutputAccounts[scAddress] = contexts.NewVMOutputAccount([]byte(scAddress))
 		}
-		vmOutput.OutputAccounts[scAddress].GasUsed += gasUsed
+		vmOutput.OutputAccounts[scAddress].GasUsed += gasUsedBySC
 	} else {
 		output.PopSetActiveState()
 	}
@@ -256,8 +252,9 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 	output.ResetConsumedGas()
 	runtime.InitStateFromContractCallInput(input)
 
+	gasUsed := uint64(0)
 	defer func() {
-		host.finishExecuteOnSameContext(err)
+		host.finishExecuteOnSameContext(gasUsed, err)
 	}()
 
 	// Perform a value transfer to the called SC. If the execution fails, this
@@ -267,7 +264,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 		return
 	}
 
-	err = host.execute(input)
+	gasUsed, err = host.execute(input)
 	if err != nil {
 		return
 	}
@@ -277,11 +274,11 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 	return
 }
 
-func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
+func (host *vmHost) finishExecuteOnSameContext(gasUsed uint64, executeErr error) {
 	bigInt, _, _, output, runtime, _ := host.GetContexts()
 
 	vmOutput := output.GetVMOutput()
-	gasUsed, err := computeGasUsedByCurrentSC(runtime.GetVMInput(), vmOutput, executeErr)
+	gasUsedBySC, err := computeGasUsedByCurrentSC(gasUsed, vmOutput, executeErr)
 	if output.ReturnCode() != vmcommon.Ok || err != nil {
 		// Execution failed: restore contexts as if the execution didn't happen.
 		bigInt.PopSetActiveState()
@@ -302,7 +299,7 @@ func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
 	if _, ok := vmOutput.OutputAccounts[scAddress]; !ok {
 		vmOutput.OutputAccounts[scAddress] = contexts.NewVMOutputAccount([]byte(scAddress))
 	}
-	vmOutput.OutputAccounts[scAddress].GasUsed += gasUsed
+	vmOutput.OutputAccounts[scAddress].GasUsed += gasUsedBySC
 }
 
 func (host *vmHost) isInitFunctionBeingCalled() bool {
@@ -386,15 +383,15 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newC
 }
 
 // TODO: Add support for indirect smart contract upgrades.
-func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
+func (host *vmHost) execute(input *vmcommon.ContractCallInput) (uint64, error) {
 	_, _, metering, output, runtime, _ := host.GetContexts()
 
 	if host.isBuiltinFunctionBeingCalled() {
 		err := metering.DeductAndLockGasIfAsyncStep()
 		if err != nil {
-			return err
+			return 0, err
 		}
-		return host.callBuiltinFunction(input)
+		return 0, host.callBuiltinFunction(input)
 	}
 
 	// Use all gas initially, on the Wasmer instance of the caller
@@ -404,17 +401,17 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 	metering.UseGas(initialGasProvided)
 
 	if host.isInitFunctionBeingCalled() && !input.AllowInitFunction {
-		return arwen.ErrInitFuncCalledInRun
+		return 0, arwen.ErrInitFuncCalledInRun
 	}
 
 	contract, err := host.Blockchain().GetCode(runtime.GetSCAddress())
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	err = metering.DeductInitialGasForExecution(contract)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	runtime.PushInstance()
@@ -423,18 +420,18 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 	err = runtime.StartWasmerInstance(contract, gasForExecution)
 	if err != nil {
 		runtime.PopInstance()
-		return err
+		return 0, err
 	}
 
 	err = host.callSCMethodIndirect()
 	if err != nil {
 		runtime.PopInstance()
-		return err
+		return 0, err
 	}
 
 	if output.ReturnCode() != vmcommon.Ok {
 		runtime.PopInstance()
-		return arwen.ErrReturnCodeNotOk
+		return 0, arwen.ErrReturnCodeNotOk
 	}
 
 	metering.UnlockGasIfAsyncStep()
@@ -444,7 +441,7 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 	runtime.PopInstance()
 	metering.RestoreGas(gasToRestoreToCaller)
 
-	return nil
+	return initialGasProvided - gasToRestoreToCaller, nil
 }
 
 func (host *vmHost) callSCMethodIndirect() error {

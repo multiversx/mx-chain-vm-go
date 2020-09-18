@@ -146,7 +146,7 @@ func expectedVMOutput_SameCtx_SuccessfulChildCall(parentCode []byte, childCode [
 	childAccount.Balance = big.NewInt(0)
 
 	executeAPICost := uint64(39)
-	childExecutionCost := uint64(431)
+	childExecutionCost := uint64(436)
 	childAccount.GasUsed = childCompilationCost_SameCtx + childExecutionCost
 
 	_ = AddNewOutputAccount(
@@ -175,7 +175,7 @@ func expectedVMOutput_SameCtx_SuccessfulChildCall(parentCode []byte, childCode [
 	AddFinishData(vmOutput, []byte("succ"))
 
 	parentGasBeforeExecuteAPI := uint64(197)
-	finalCost := uint64(139)
+	finalCost := uint64(134)
 	gas := gasProvided
 	gas -= parentCompilationCost_SameCtx
 	gas -= parentGasBeforeExecuteAPI
@@ -201,12 +201,14 @@ func expectedVMOutput_SameCtx_SuccessfulChildCall_BigInts(parentCode []byte, chi
 	parentAccount.Balance = big.NewInt(1000)
 	// parentAccount.BalanceDelta = big.NewInt(-99)
 
-	_ = AddNewOutputAccount(
+	childAccount := AddNewOutputAccount(
 		vmOutput,
 		childAddress,
 		99,
 		nil,
 	)
+	childExecutionCost := uint64(107)
+	childAccount.GasUsed = childCompilationCost_SameCtx + childExecutionCost
 
 	// The child SC will output "child ok" if it could read some expected Big
 	// Ints directly from the parent's context.
@@ -216,7 +218,6 @@ func expectedVMOutput_SameCtx_SuccessfulChildCall_BigInts(parentCode []byte, chi
 
 	parentGasBeforeExecuteAPI := uint64(143)
 	executeAPICost := uint64(13)
-	childExecutionCost := uint64(107)
 	finalCost := uint64(67)
 	gas := gasProvided
 	gas -= parentCompilationCost_SameCtx
@@ -240,6 +241,7 @@ func expectedVMOutput_SameCtx_Recursive_Direct(code []byte, recursiveCalls int) 
 	)
 	account.Balance = big.NewInt(1000)
 	account.BalanceDelta = big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1))
+	account.GasUsed = 21187
 
 	for i := recursiveCalls; i >= 0; i-- {
 		finishString := fmt.Sprintf("Rfinish%03d", i)
@@ -296,6 +298,7 @@ func expectedVMOutput_SameCtx_Recursive_MutualMethods(code []byte, recursiveCall
 	)
 	account.Balance = big.NewInt(1000)
 	account.BalanceDelta = big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1))
+	account.GasUsed = 25412
 
 	SetStorageUpdate(account, recursiveIterationCounterKey, []byte{byte(recursiveCalls + 1)})
 	SetStorageUpdate(account, recursiveIterationBigCounterKey, big.NewInt(int64(recursiveCalls+1)).Bytes())
@@ -339,6 +342,7 @@ func expectedVMOutput_SameCtx_Recursive_MutualSCs(parentCode []byte, childCode [
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
+	parentAccount.GasUsed = 3650
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,
@@ -347,6 +351,7 @@ func expectedVMOutput_SameCtx_Recursive_MutualSCs(parentCode []byte, childCode [
 		nil,
 	)
 	childAccount.Balance = big.NewInt(0)
+	childAccount.GasUsed = 5437
 
 	if recursiveCalls%2 == 1 {
 		parentAccount.BalanceDelta = big.NewInt(-5)

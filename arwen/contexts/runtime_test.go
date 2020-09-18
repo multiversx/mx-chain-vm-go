@@ -3,6 +3,7 @@ package contexts
 import (
 	"errors"
 	"fmt"
+	"math/big"
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -125,6 +126,7 @@ func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
 	vmInput := vmcommon.VMInput{
 		CallerAddr: []byte("caller"),
 		Arguments:  arguments,
+		CallValue:  big.NewInt(0),
 	}
 	callInput := &vmcommon.ContractCallInput{
 		VMInput:       vmInput,
@@ -142,6 +144,7 @@ func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
 	vmInput2 := vmcommon.VMInput{
 		CallerAddr: []byte("caller2"),
 		Arguments:  arguments,
+		CallValue:  big.NewInt(0),
 	}
 	runtimeContext.SetVMInput(&vmInput2)
 	require.Equal(t, []byte("caller2"), runtimeContext.GetVMInput().CallerAddr)
@@ -192,6 +195,7 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 	vmInput := vmcommon.VMInput{
 		CallerAddr:  []byte("caller"),
 		GasProvided: 1000,
+		CallValue:   big.NewInt(0),
 	}
 
 	funcName := "test_func"
@@ -256,7 +260,9 @@ func TestRuntimeContext_Instance(t *testing.T) {
 
 	funcName := "increment"
 	input := &vmcommon.ContractCallInput{
-		VMInput:       vmcommon.VMInput{},
+		VMInput: vmcommon.VMInput{
+			CallValue: big.NewInt(0),
+		},
 		RecipientAddr: []byte("addr"),
 		Function:      funcName,
 	}

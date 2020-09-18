@@ -120,7 +120,10 @@ func (driver *ArwenDriver) startArwen() error {
 		return err
 	}
 
-	driver.logsPart.StartLoop(arwenStdout, arwenStderr)
+	err = driver.logsPart.StartLoop(arwenStdout, arwenStderr)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

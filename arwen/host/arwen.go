@@ -136,7 +136,7 @@ func NewArwenVM(
 	opcodeCosts := gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray()
 	wasmer.SetOpcodeCosts(&opcodeCosts)
 
-	host.InitState()
+	host.initContexts()
 
 	return host, nil
 }
@@ -190,14 +190,18 @@ func (host *vmHost) GetContexts() (
 }
 
 func (host *vmHost) InitState() {
+	host.initContexts()
+	host.flagArwenV2.Toggle(host.blockChainHook.CurrentEpoch() >= host.arwenV2EnableEpoch)
+	log.Trace("arwenV2", "enabled", host.flagArwenV2.IsSet())
+}
+
+func (host *vmHost) initContexts() {
 	host.ClearContextStateStack()
 	host.bigIntContext.InitState()
 	host.outputContext.InitState()
 	host.runtimeContext.InitState()
 	host.storageContext.InitState()
 	host.ethInput = nil
-	host.flagArwenV2.Toggle(host.blockChainHook.CurrentEpoch() >= host.arwenV2EnableEpoch)
-	log.Trace("arwenV2", "enabled", host.flagArwenV2.IsSet())
 }
 
 func (host *vmHost) ClearContextStateStack() {
