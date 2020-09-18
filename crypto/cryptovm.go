@@ -7,17 +7,17 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/crypto/signing/secp256k1"
 )
 
-// NewCryptoVm returns a composite struct containing VMCrypto functionality implementations
-func NewCryptoVm() VMCrypto {
+// NewVMCrypto returns a composite struct containing VMCrypto functionality implementations
+func NewVMCrypto() VMCrypto {
 	return struct {
 		Hasher
 		Ed25519
 		BLS
 		Secp256k1
 	}{
-		hashing.NewHasher(),
-		ed25519.NewEd25519Signer(),
-		bls.NewBLS(),
-		secp256k1.NewSecp256k1(),
+		Hasher:    hashing.NewHasher(),
+		Ed25519:   ed25519.NewEd25519Signer(),
+		BLS:       bls.NewBLS(),
+		Secp256k1: secp256k1.NewSecp256k1(),
 	}
 }

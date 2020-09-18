@@ -21,13 +21,13 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 )
 
-const blsPublicKeyLength = 96
-const blsSignatureLength = 48
-const ed25519PublicKeyLength = 32
-const ed25519SignatureLength = 64
-const secp256k1CompressedPublicKeyLength = 33
-const secp256k1UncompressedPublicKeyLength = 65
-const secp256k1SignatureLength = 64
+const BlsPublicKeyLength = 96
+const BlsSignatureLength = 48
+const Ed25519PublicKeyLength = 32
+const Ed25519SignatureLength = 64
+const Secp256k1CompressedPublicKeyLength = 33
+const Secp256k1UncompressedPublicKeyLength = 65
+const Secp256k1SignatureLength = 64
 
 func CryptoImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	imports = imports.Namespace("env")
@@ -68,6 +68,11 @@ func CryptoImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 func sha256(context unsafe.Pointer, dataOffset int32, length int32, resultOffset int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	crypto := arwen.GetCryptoContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	memLoadGas := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(length)
+	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256 + memLoadGas
+	metering.UseGas(gasToUse)
 
 	data, err := runtime.MemLoad(dataOffset, length)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
@@ -84,10 +89,6 @@ func sha256(context unsafe.Pointer, dataOffset int32, length int32, resultOffset
 		return 1
 	}
 
-	metering := arwen.GetMeteringContext(context)
-	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
-	metering.UseGas(gasToUse)
-
 	return 0
 }
 
@@ -95,6 +96,11 @@ func sha256(context unsafe.Pointer, dataOffset int32, length int32, resultOffset
 func keccak256(context unsafe.Pointer, dataOffset int32, length int32, resultOffset int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	crypto := arwen.GetCryptoContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	memLoadGas := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(length)
+	gasToUse := metering.GasSchedule().CryptoAPICost.Keccak256 + memLoadGas
+	metering.UseGas(gasToUse)
 
 	data, err := runtime.MemLoad(dataOffset, length)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
@@ -111,10 +117,6 @@ func keccak256(context unsafe.Pointer, dataOffset int32, length int32, resultOff
 		return 1
 	}
 
-	metering := arwen.GetMeteringContext(context)
-	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
-	metering.UseGas(gasToUse)
-
 	return 0
 }
 
@@ -122,6 +124,11 @@ func keccak256(context unsafe.Pointer, dataOffset int32, length int32, resultOff
 func ripemd160(context unsafe.Pointer, dataOffset int32, length int32, resultOffset int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	crypto := arwen.GetCryptoContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	memLoadGas := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(length)
+	gasToUse := metering.GasSchedule().CryptoAPICost.Ripemd160 + memLoadGas
+	metering.UseGas(gasToUse)
 
 	data, err := runtime.MemLoad(dataOffset, length)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
@@ -138,10 +145,6 @@ func ripemd160(context unsafe.Pointer, dataOffset int32, length int32, resultOff
 		return 1
 	}
 
-	metering := arwen.GetMeteringContext(context)
-	gasToUse := metering.GasSchedule().CryptoAPICost.Ripemd160
-	metering.UseGas(gasToUse)
-
 	return 0
 }
 
@@ -155,30 +158,32 @@ func verifyBLS(
 ) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	crypto := arwen.GetCryptoContext(context)
+	metering := arwen.GetMeteringContext(context)
 
-	key, err := runtime.MemLoad(keyOffset, blsPublicKeyLength)
+	gasToUse := metering.GasSchedule().CryptoAPICost.VerifyBLS
+	metering.UseGas(gasToUse)
+
+	key, err := runtime.MemLoad(keyOffset, BlsPublicKeyLength)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
+
+	gasToUse = metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(messageLength)
+	metering.UseGas(gasToUse)
 
 	message, err := runtime.MemLoad(messageOffset, messageLength)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
-	sig, err := runtime.MemLoad(sigOffset, blsSignatureLength)
+	sig, err := runtime.MemLoad(sigOffset, BlsSignatureLength)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
 	invalidSigErr := crypto.VerifyBLS(key, message, sig)
-
-	metering := arwen.GetMeteringContext(context)
-	gasToUse := metering.GasSchedule().CryptoAPICost.VerifyBLS
-	metering.UseGas(gasToUse)
-
 	if invalidSigErr != nil {
-		return 1
+		return -1
 	}
 
 	return 0
@@ -194,30 +199,32 @@ func verifyEd25519(
 ) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	crypto := arwen.GetCryptoContext(context)
+	metering := arwen.GetMeteringContext(context)
 
-	key, err := runtime.MemLoad(keyOffset, ed25519PublicKeyLength)
+	gasToUse := metering.GasSchedule().CryptoAPICost.VerifyEd25519
+	metering.UseGas(gasToUse)
+
+	key, err := runtime.MemLoad(keyOffset, Ed25519PublicKeyLength)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
+
+	gasToUse = metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(messageLength)
+	metering.UseGas(gasToUse)
 
 	message, err := runtime.MemLoad(messageOffset, messageLength)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
-	sig, err := runtime.MemLoad(sigOffset, ed25519SignatureLength)
+	sig, err := runtime.MemLoad(sigOffset, Ed25519SignatureLength)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
 	invalidSigErr := crypto.VerifyEd25519(key, message, sig)
-
-	metering := arwen.GetMeteringContext(context)
-	gasToUse := metering.GasSchedule().CryptoAPICost.VerifyEd25519
-	metering.UseGas(gasToUse)
-
 	if invalidSigErr != nil {
-		return 1
+		return -1
 	}
 
 	return 0
@@ -234,8 +241,12 @@ func verifySecp256k1(
 ) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	crypto := arwen.GetCryptoContext(context)
+	metering := arwen.GetMeteringContext(context)
 
-	if keyLength != secp256k1CompressedPublicKeyLength && keyLength != secp256k1UncompressedPublicKeyLength {
+	gasToUse := metering.GasSchedule().CryptoAPICost.VerifySecp256k1
+	metering.UseGas(gasToUse)
+
+	if keyLength != Secp256k1CompressedPublicKeyLength && keyLength != Secp256k1UncompressedPublicKeyLength {
 		arwen.WithFault(arwen.ErrInvalidPublicKeySize, context, runtime.ElrondAPIErrorShouldFailExecution())
 		return 1
 	}
@@ -245,24 +256,22 @@ func verifySecp256k1(
 		return 1
 	}
 
+	gasToUse = metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(messageLength)
+	metering.UseGas(gasToUse)
+
 	message, err := runtime.MemLoad(messageOffset, messageLength)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
-	sig, err := runtime.MemLoad(sigOffset, secp256k1SignatureLength)
+	sig, err := runtime.MemLoad(sigOffset, Secp256k1SignatureLength)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
 	invalidSigErr := crypto.VerifySecp256k1(key, message, sig)
-
-	metering := arwen.GetMeteringContext(context)
-	gasToUse := metering.GasSchedule().CryptoAPICost.VerifySecp256k1
-	metering.UseGas(gasToUse)
-
 	if invalidSigErr != nil {
-		return 1
+		return -1
 	}
 
 	return 0

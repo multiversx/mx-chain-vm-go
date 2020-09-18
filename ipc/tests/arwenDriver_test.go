@@ -83,6 +83,17 @@ func BenchmarkArwenDriver_RestartArwenIfNecessary(b *testing.B) {
 	}
 }
 
+func TestArwenDriver_GetVersion(t *testing.T) {
+	// This test requires `make arwen` before running, or must be run directly
+	// with `make test`
+	blockchain := &mock.BlockchainHookStub{}
+	driver := newDriver(t, blockchain)
+	version, err := driver.GetVersion()
+	require.Nil(t, err)
+	require.NotZero(t, len(version))
+	require.NotEqual(t, "undefined", version)
+}
+
 func newDriver(tb testing.TB, blockchain *mock.BlockchainHookStub) *nodepart.ArwenDriver {
 	driver, err := nodepart.NewArwenDriver(
 		blockchain,

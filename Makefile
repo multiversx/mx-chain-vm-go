@@ -1,5 +1,7 @@
 .PHONY: test test-short build arwen arwendebug clean
 
+ARWEN_VERSION := $(shell git describe --tags --long --dirty)
+
 clean:
 	go clean -cache -testcache
 
@@ -7,7 +9,7 @@ build:
 	go build ./...
 
 arwen:
-	go build -o ./cmd/arwen/arwen ./cmd/arwen
+	go build -ldflags="-X main.appVersion=$(ARWEN_VERSION)" -o ./cmd/arwen/arwen ./cmd/arwen
 	cp ./cmd/arwen/arwen ./ipc/tests
 	cp ./cmd/arwen/arwen ${ARWEN_PATH}
 

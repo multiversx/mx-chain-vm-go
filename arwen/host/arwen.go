@@ -49,7 +49,7 @@ func NewArwenVM(
 	hostParameters *arwen.VMHostParameters,
 ) (*vmHost, error) {
 
-	cryptoHook := crypto.NewCryptoVm()
+	cryptoHook := crypto.NewVMCrypto()
 	host := &vmHost{
 		blockChainHook:           blockChainHook,
 		cryptoHook:               cryptoHook,

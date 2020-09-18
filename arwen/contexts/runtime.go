@@ -67,8 +67,11 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 		context.instance = nil
 		return arwen.ErrMaxInstancesReached
 	}
+
+	gasSchedule := context.host.Metering().GasSchedule()
 	options := wasmer.CompilationOptions{
 		GasLimit:           gasLimit,
+		UnmeteredLocals:    uint64(gasSchedule.WASMOpcodeCost.LocalsUnmetered),
 		OpcodeTrace:        false,
 		Metering:           true,
 		RuntimeBreakpoints: true,

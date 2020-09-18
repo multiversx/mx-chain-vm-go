@@ -16,9 +16,11 @@ github.com/ElrondNetwork/elrond-go-logger v1.0.4 h1:i5Yu4qyjTZDwvBY/ykbNpp2SP9jx
 github.com/ElrondNetwork/elrond-go-logger v1.0.4/go.mod h1:e5D+c97lKUfFdAzFX7rrI2Igl/z4Y0RkKYKWyzprTGk=
 github.com/ElrondNetwork/elrond-vm-common v0.1.23 h1:4tIzzVdpAI8FonCA1BrbNb+3lukKoyHUaoSOAZWvYnY=
 github.com/ElrondNetwork/elrond-vm-common v0.1.23/go.mod h1:ZakxPST/Wt8umnRtA9gobcy3Dw2bywxwkC54P5VhO9g=
+github.com/ElrondNetwork/elrond-vm-common v0.1.24 h1:6UL3GUjeMvzZUhoPQ38B8FD4gu1CrPCIo9uHCmJLfks=
+github.com/ElrondNetwork/elrond-vm-common v0.1.24/go.mod h1:ZakxPST/Wt8umnRtA9gobcy3Dw2bywxwkC54P5VhO9g=
 github.com/ElrondNetwork/elrond-vm-util v0.3.5/go.mod h1:+ecDJZLTwN/yeRXXEqd+sa9WoalLsT4nFtQWCo0YKWA=
-github.com/ElrondNetwork/elrond-vm-util v0.4.0 h1:TbwIdWZj7F2KNYvslw0gEUZn0wdISSWz7JQjZXvZ5DA=
-github.com/ElrondNetwork/elrond-vm-util v0.4.0/go.mod h1:L/IHojCXiYSd73/5oCJTsBRPwFY7UfR0E2f+o4ztjH8=
+github.com/ElrondNetwork/elrond-vm-util v0.4.1 h1:qSefi/st9eDMXjU7GYn8abOfrELI0qPZlLX1PQY+ps0=
+github.com/ElrondNetwork/elrond-vm-util v0.4.1/go.mod h1:8ChWfrduceT9o5yL8XrOUFJ2+i8GA2BTY31gIxB1wPY=
 github.com/Kubuxu/go-os-helper v0.0.1/go.mod h1:N8B+I7vPCT80IcP58r50u4+gEEcsZETFUpAzWW2ep1Y=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/StackExchange/wmi v0.0.0-20170410192909-ea383cf3ba6e/go.mod h1:3eOhrUMpNV+6aFIbp5/iudMxNCF27Vw2OZgy4xEx0Fg=

@@ -184,7 +184,7 @@ func TestOutputContext_MergeCompleteAccounts(t *testing.T) {
 		BalanceDelta:   big.NewInt(10000),
 		StorageUpdates: nil,
 		Code:           []byte("code1"),
-		Data:           []byte("data1"),
+		Data:           [][]byte{[]byte("data1")},
 		GasLimit:       99999,
 	}
 	right := &vmcommon.OutputAccount{
@@ -194,7 +194,7 @@ func TestOutputContext_MergeCompleteAccounts(t *testing.T) {
 		BalanceDelta:   big.NewInt(20000),
 		StorageUpdates: map[string]*vmcommon.StorageUpdate{"key": {Data: []byte("data"), Offset: []byte("offset")}},
 		Code:           []byte("code2"),
-		Data:           []byte("data2"),
+		Data:           [][]byte{[]byte("data2")},
 		GasLimit:       100000,
 	}
 
@@ -205,7 +205,7 @@ func TestOutputContext_MergeCompleteAccounts(t *testing.T) {
 		BalanceDelta:   big.NewInt(20000),
 		StorageUpdates: map[string]*vmcommon.StorageUpdate{"key": {Data: []byte("data"), Offset: []byte("offset")}},
 		Code:           []byte("code2"),
-		Data:           []byte("data2"),
+		Data:           [][]byte{[]byte("data2")},
 		GasLimit:       100000,
 	}
 
@@ -266,11 +266,11 @@ func TestOutputContext_MergeIncompleteAccounts(t *testing.T) {
 	require.Equal(t, expected, left)
 
 	left = &vmcommon.OutputAccount{
-		Data: []byte("left data"),
+		Data: [][]byte{[]byte("left data")},
 	}
 	right = &vmcommon.OutputAccount{}
 	expected = &vmcommon.OutputAccount{
-		Data:           []byte("left data"),
+		Data:           [][]byte{[]byte("left data")},
 		StorageUpdates: make(map[string]*vmcommon.StorageUpdate),
 		BalanceDelta:   big.NewInt(0),
 	}
@@ -410,7 +410,7 @@ func TestOutputContext_Transfer(t *testing.T) {
 	require.False(t, isNew)
 	require.Equal(t, valueToTransfer, destAccount.BalanceDelta)
 	require.Equal(t, uint64(54), destAccount.GasLimit)
-	require.Equal(t, []byte("txdata"), destAccount.Data)
+	require.Equal(t, []byte("txdata"), destAccount.Data[0])
 }
 
 func TestOutputContext_Transfer_Errors_And_Checks(t *testing.T) {
@@ -482,10 +482,10 @@ func TestOutputContext_Transfer_IsAccountPayable(t *testing.T) {
 			Code:    []byte("contract_code"),
 		},
 		{
-			Address: receiverPayable,
-			Nonce:   0,
-			Balance: big.NewInt(0),
-			Code:    []byte("contract_code"),
+			Address:      receiverPayable,
+			Nonce:        0,
+			Balance:      big.NewInt(0),
+			Code:         []byte("contract_code"),
 			CodeMetadata: []byte{0, vmcommon.METADATA_PAYABLE},
 		},
 	})
