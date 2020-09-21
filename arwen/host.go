@@ -12,6 +12,7 @@ const AddressLenEth = 20
 const HashLen = 32
 const ArgumentLenEth = 32
 const BalanceLen = 32
+const CodeMetadataLen = 2
 const InitFunctionName = "init"
 const InitFunctionNameEth = "solidity.ctor"
 const CallBackFunctionName = "callBack"
