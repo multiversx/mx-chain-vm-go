@@ -31,7 +31,7 @@ package elrondapi
 // extern int32_t executeOnSameContext(void *context, long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t delegateExecution(void *context, long long gas, int32_t addressOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t executeReadOnly(void *context, long long gas, int32_t addressOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
-// extern int32_t createContract(void *context, long long gas, int32_t valueOffset, int32_t codeOffset, int32_t length, int32_t resultOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern int32_t createContract(void *context, long long gas, int32_t valueOffset, int32_t codeOffset, int32_t codeMetadataOffset, int32_t length, int32_t resultOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern void asyncCall(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
 // extern void createAsyncCall(void *context, int32_t identifierOffset, int32_t identifierLength, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length, int32_t successCallback, int32_t successLength, int32_t errorCallback, int32_t errorLength, long long gas);
 // extern int32_t setAsyncContextCallback(void *context, int32_t identifierOffset, int32_t identifierLength, int32_t callback, int32_t callbackLength);
@@ -1486,6 +1486,7 @@ func createContract(
 	gasLimit int64,
 	valueOffset int32,
 	codeOffset int32,
+	codeMetadataOffset int32,
 	length int32,
 	resultOffset int32,
 	numArguments int32,
@@ -1506,6 +1507,11 @@ func createContract(
 	}
 
 	code, err := runtime.MemLoad(codeOffset, length)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	codeMetadata, err := runtime.MemLoad(codeMetadataOffset, arwen.CodeMetadataLen)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -1535,8 +1541,7 @@ func createContract(
 			GasProvided: metering.BoundGasLimit(gasLimit),
 		},
 		ContractCode: code,
-		// TODO: Receive code metadata as argument
-		ContractCodeMetadata: []byte{1, 0},
+		ContractCodeMetadata: codeMetadata,
 	}
 
 	newAddress, err := host.CreateNewContract(contractCreate)

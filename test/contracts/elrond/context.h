@@ -21,7 +21,7 @@ void signalError(byte *message, int length);
 
 int executeOnSameContext(long long gas, byte *address, byte *value, byte *function, int functionLength, int numArguments, byte *argumentsLengths, byte *arguments);
 int executeOnDestContext(long long gas, byte *address, byte *value, byte *function, int functionLength, int numArguments, byte *argumentsLengths, byte *arguments);
-int createContract(long long gas, byte *value, byte *code, int codeSize, byte *newAddress, int numInitArgs, byte *initArgLengths, byte *initArgs);
+int createContract(long long gas, byte *value, byte *code, byte *codeMetadata, int codeSize, byte *newAddress, int numInitArgs, byte *initArgLengths, byte *initArgs);
 
 // Blockchain-related functions
 long long getBlockTimestamp();
