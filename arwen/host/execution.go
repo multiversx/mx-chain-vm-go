@@ -227,10 +227,7 @@ func (host *vmHost) finishExecuteOnDestContext(gasUsed uint64, executeErr error)
 	if vmOutput.ReturnCode == vmcommon.Ok {
 		output.PopMergeActiveState()
 		scAddress := string(runtime.GetSCAddress())
-		if _, ok := vmOutput.OutputAccounts[scAddress]; !ok {
-			vmOutput.OutputAccounts[scAddress] = contexts.NewVMOutputAccount([]byte(scAddress))
-		}
-		vmOutput.OutputAccounts[scAddress].GasUsed += gasUsedBySC
+		accumulateGasUsedByContract(vmOutput, scAddress, gasUsedBySC)
 	} else {
 		output.PopSetActiveState()
 	}
@@ -296,10 +293,14 @@ func (host *vmHost) finishExecuteOnSameContext(gasUsed uint64, executeErr error)
 	runtime.PopSetActiveState()
 
 	vmOutput = output.GetVMOutput()
+	accumulateGasUsedByContract(vmOutput, scAddress, gasUsedBySC)
+}
+
+func accumulateGasUsedByContract(vmOutput *vmcommon.VMOutput, scAddress string, gasUsed uint64) {
 	if _, ok := vmOutput.OutputAccounts[scAddress]; !ok {
 		vmOutput.OutputAccounts[scAddress] = contexts.NewVMOutputAccount([]byte(scAddress))
 	}
-	vmOutput.OutputAccounts[scAddress].GasUsed += gasUsedBySC
+	vmOutput.OutputAccounts[scAddress].GasUsed += gasUsed
 }
 
 func (host *vmHost) isInitFunctionBeingCalled() bool {
