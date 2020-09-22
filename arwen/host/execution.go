@@ -213,7 +213,7 @@ func (host *vmHost) finishExecuteOnDestContext(gasUsed uint64, executeErr error)
 	if err != nil {
 		// Execution failed: restore contexts as if the execution didn't happen,
 		// but first create a vmOutput to capture the error.
-		vmOutput := output.CreateVMOutputInCaseOfError(executeErr)
+		vmOutput = output.CreateVMOutputInCaseOfError(executeErr)
 
 		bigInt.PopSetActiveState()
 		output.PopSetActiveState()

@@ -198,10 +198,11 @@ func (context *runtimeContext) SetVMInput(vmInput *vmcommon.VMInput) {
 		CallType:    vmInput.CallType,
 		GasPrice:    vmInput.GasPrice,
 		GasProvided: vmInput.GasProvided,
+		CallValue:   big.NewInt(0),
 	}
 
 	if vmInput.CallValue != nil {
-		context.vmInput.CallValue = big.NewInt(0).Set(vmInput.CallValue)
+		context.vmInput.CallValue.Set(vmInput.CallValue)
 	}
 
 	if len(vmInput.CallerAddr) > 0 {
