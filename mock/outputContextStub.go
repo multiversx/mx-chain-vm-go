@@ -38,6 +38,7 @@ type OutputContextStub struct {
 	CreateVMOutputInCaseOfErrorCalled func(err error) *vmcommon.VMOutput
 	AddToActiveStateCalled            func(vmOutput *vmcommon.VMOutput)
 	ResetConsumedGasCalled            func()
+	TransferValueOnlyCalled           func(destination []byte, sender []byte, value *big.Int) error
 }
 
 func (o *OutputContextStub) AddToActiveState(vmOutput *vmcommon.VMOutput) {
@@ -119,7 +120,15 @@ func (o *OutputContextStub) WriteLog(address []byte, topics [][]byte, data []byt
 	}
 }
 
-func (o *OutputContextStub) Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte) error {
+func (o *OutputContextStub) TransferValueOnly(destination []byte, sender []byte, value *big.Int) error {
+	if o.TransferValueOnlyCalled != nil {
+		return o.TransferValueOnlyCalled(destination, sender, value)
+	}
+
+	return nil
+}
+
+func (o *OutputContextStub) Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte, _ vmcommon.CallType) error {
 	if o.TransferCalled != nil {
 		return o.TransferCalled(destination, sender, gasLimit, value, input)
 	}

@@ -158,7 +158,7 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 
 	// Perform a value transfer to the called SC. If the execution fails, this
 	// transfer will not persist.
-	err = output.Transfer(input.RecipientAddr, input.CallerAddr, 0, input.CallValue, nil)
+	err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue)
 	if err != nil {
 		return
 	}
@@ -187,11 +187,17 @@ func computeGasUsedByCurrentSC(
 	}
 
 	for _, outAcc := range vmOutput.OutputAccounts {
-		if gasUsed < outAcc.GasUsed+outAcc.GasLimit {
+		accumulatedGasLimit := uint64(0)
+		for _, outTransfer := range outAcc.OutputTransfers {
+			accumulatedGasLimit += outTransfer.GasLimit
+		}
+
+		if gasUsed < outAcc.GasUsed+accumulatedGasLimit {
 			return 0, arwen.ErrGasUsageError
 		}
+
 		gasUsed -= outAcc.GasUsed
-		gasUsed -= outAcc.GasLimit
+		gasUsed -= accumulatedGasLimit
 	}
 	return gasUsed, nil
 }
@@ -256,7 +262,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 
 	// Perform a value transfer to the called SC. If the execution fails, this
 	// transfer will not persist.
-	err = output.Transfer(input.RecipientAddr, input.CallerAddr, 0, input.CallValue, nil)
+	err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue)
 	if err != nil {
 		return
 	}

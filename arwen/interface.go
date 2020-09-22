@@ -136,7 +136,8 @@ type OutputContext interface {
 	GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool)
 	DeleteOutputAccount(address []byte)
 	WriteLog(address []byte, topics [][]byte, data []byte)
-	Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte) error
+	TransferValueOnly(destination []byte, sender []byte, value *big.Int) error
+	Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte, callType vmcommon.CallType) error
 	SelfDestruct(address []byte, beneficiary []byte)
 	GetRefund() uint64
 	SetRefund(refund uint64)

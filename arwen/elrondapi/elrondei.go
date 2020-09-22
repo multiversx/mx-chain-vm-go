@@ -512,7 +512,7 @@ func transferValue(context unsafe.Pointer, destOffset int32, valueOffset int32, 
 		return 1
 	}
 
-	err = output.Transfer(dest, send, 0, big.NewInt(0).SetBytes(valueBytes), data)
+	err = output.Transfer(dest, send, 0, big.NewInt(0).SetBytes(valueBytes), data, vmcommon.DirectCall)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -1345,7 +1345,6 @@ func delegateExecution(
 ) int32 {
 	host := arwen.GetVmContext(context)
 	runtime := host.Runtime()
-	output := host.Output()
 	metering := host.Metering()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.DelegateExecution
@@ -1374,11 +1373,6 @@ func delegateExecution(
 
 	value := runtime.GetVMInput().CallValue
 	sender := runtime.GetVMInput().CallerAddr
-
-	err = output.Transfer(address, sender, 0, value, nil)
-	if err != nil {
-		return 1
-	}
 
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
@@ -1422,7 +1416,6 @@ func executeReadOnly(
 ) int32 {
 	host := arwen.GetVmContext(context)
 	runtime := host.Runtime()
-	output := host.Output()
 	metering := host.Metering()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.ExecuteReadOnly
@@ -1451,11 +1444,6 @@ func executeReadOnly(
 
 	value := runtime.GetVMInput().CallValue
 	sender := runtime.GetVMInput().CallerAddr
-
-	err = output.Transfer(address, sender, 0, value, nil)
-	if err != nil {
-		return 1
-	}
 
 	runtime.SetReadOnly(true)
 
@@ -1540,7 +1528,7 @@ func createContract(
 			GasPrice:    0,
 			GasProvided: metering.BoundGasLimit(gasLimit),
 		},
-		ContractCode: code,
+		ContractCode:         code,
 		ContractCodeMetadata: codeMetadata,
 	}
 

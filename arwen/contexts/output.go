@@ -115,7 +115,9 @@ func (context *outputContext) CensorVMOutput() {
 func (context *outputContext) ResetConsumedGas() {
 	for _, outAcc := range context.outputState.OutputAccounts {
 		outAcc.GasUsed = 0
-		outAcc.GasLimit = 0
+		for _, outTransfer := range outAcc.OutputTransfers {
+			outTransfer.GasLimit = 0
+		}
 	}
 }
 
@@ -196,10 +198,8 @@ func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []b
 	context.outputState.Logs = append(context.outputState.Logs, newLogEntry)
 }
 
-// Transfer handles any necessary value transfer required and takes
-// the necessary steps to create accounts and reverses the state in case of an
-// execution error or failed value transfer.
-func (context *outputContext) Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte) error {
+// TransferValueOnly will transfer the big.int value and checks if it is possible
+func (context *outputContext) TransferValueOnly(destination []byte, sender []byte, value *big.Int) error {
 	if value.Cmp(arwen.Zero) < 0 {
 		return arwen.ErrTransferNegativeValue
 	}
@@ -224,10 +224,26 @@ func (context *outputContext) Transfer(destination []byte, sender []byte, gasLim
 	senderAcc.BalanceDelta = big.NewInt(0).Sub(senderAcc.BalanceDelta, value)
 	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
 
-	if len(input) > 0 {
-		destAcc.Data = append(destAcc.Data, input)
+	return nil
+}
+
+// Transfer handles any necessary value transfer required and takes
+// the necessary steps to create accounts and reverses the state in case of an
+// execution error or failed value transfer.
+func (context *outputContext) Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte, callType vmcommon.CallType) error {
+	err := context.TransferValueOnly(destination, sender, value)
+	if err != nil {
+		return err
 	}
-	destAcc.GasLimit = gasLimit
+
+	destAcc, _ := context.GetOutputAccount(destination)
+	outputTransfer := vmcommon.OutputTransfer{
+		Value:    big.NewInt(0).Set(value),
+		GasLimit: gasLimit,
+		Data:     input,
+		CallType: callType,
+	}
+	destAcc.OutputTransfers = append(destAcc.OutputTransfers, outputTransfer)
 
 	return nil
 }
@@ -347,7 +363,6 @@ func (context *outputContext) AddToActiveState(rightOutput *vmcommon.VMOutput) {
 			continue
 		}
 
-		rightAccount.GasLimit = leftAccount.GasLimit
 		rightAccount.BalanceDelta.Add(rightAccount.BalanceDelta, leftAccount.BalanceDelta)
 	}
 
@@ -388,7 +403,6 @@ func mergeOutputAccounts(
 		leftAccount.Address = rightAccount.Address
 	}
 
-	leftAccount.GasLimit = rightAccount.GasLimit
 	mergeStorageUpdates(leftAccount, rightAccount)
 
 	if rightAccount.Balance != nil {
@@ -406,15 +420,17 @@ func mergeOutputAccounts(
 	if len(rightAccount.CodeMetadata) > 0 {
 		leftAccount.CodeMetadata = rightAccount.CodeMetadata
 	}
-	if len(rightAccount.Data) > 0 {
-		leftAccount.Data = rightAccount.Data
-	}
 	if rightAccount.Nonce > leftAccount.Nonce {
 		leftAccount.Nonce = rightAccount.Nonce
 	}
 
+	lenLeftOutTransfers := len(leftAccount.OutputTransfers)
+	lenRightOutTransfers := len(rightAccount.OutputTransfers)
+	if lenRightOutTransfers > lenLeftOutTransfers {
+		leftAccount.OutputTransfers = append(leftAccount.OutputTransfers, rightAccount.OutputTransfers[lenLeftOutTransfers:]...)
+	}
+
 	leftAccount.GasUsed = rightAccount.GasUsed
-	leftAccount.CallType = rightAccount.CallType
 }
 
 func mergeStorageUpdates(
