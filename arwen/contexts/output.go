@@ -110,9 +110,9 @@ func (context *outputContext) CensorVMOutput() {
 	context.outputState.Logs = make([]*vmcommon.LogEntry, 0)
 }
 
-// ResetConsumedGas will set to 0 all gas used from output accounts, in order
+// ResetGas will set to 0 all gas used from output accounts, in order
 // to properly calculate the actual used gas of one smart contract when called in sync
-func (context *outputContext) ResetConsumedGas() {
+func (context *outputContext) ResetGas() {
 	for _, outAcc := range context.outputState.OutputAccounts {
 		outAcc.GasUsed = 0
 		for _, outTransfer := range outAcc.OutputTransfers {

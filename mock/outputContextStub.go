@@ -95,7 +95,7 @@ func (o *OutputContextStub) CensorVMOutput() {
 	}
 }
 
-func (o *OutputContextStub) ResetConsumedGas() {
+func (o *OutputContextStub) ResetGas() {
 	if o.ResetConsumedGasCalled != nil {
 		o.ResetConsumedGasCalled()
 	}

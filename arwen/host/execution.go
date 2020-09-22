@@ -143,7 +143,7 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 
 	output.PushState()
 	output.CensorVMOutput()
-	output.ResetConsumedGas()
+	output.ResetGas()
 
 	runtime.PushState()
 	runtime.InitStateFromContractCallInput(input)
@@ -252,7 +252,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 	output.PushState()
 	runtime.PushState()
 
-	output.ResetConsumedGas()
+	output.ResetGas()
 	runtime.InitStateFromContractCallInput(input)
 
 	gasUsed := uint64(0)
