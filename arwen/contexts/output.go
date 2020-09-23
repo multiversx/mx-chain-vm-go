@@ -359,11 +359,16 @@ func (context *outputContext) AddToActiveState(rightOutput *vmcommon.VMOutput) {
 
 	for _, rightAccount := range rightOutput.OutputAccounts {
 		leftAccount, ok := context.outputState.OutputAccounts[string(rightAccount.Address)]
-		if !ok || rightAccount.BalanceDelta == nil {
+		if !ok {
 			continue
 		}
 
-		rightAccount.BalanceDelta.Add(rightAccount.BalanceDelta, leftAccount.BalanceDelta)
+		if rightAccount.BalanceDelta != nil {
+			rightAccount.BalanceDelta.Add(rightAccount.BalanceDelta, leftAccount.BalanceDelta)
+		}
+		if len(rightAccount.OutputTransfers) > 0 {
+			leftAccount.OutputTransfers = append(leftAccount.OutputTransfers, rightAccount.OutputTransfers...)
+		}
 	}
 
 	mergeVMOutputs(context.outputState, rightOutput)
