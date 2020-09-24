@@ -33,6 +33,7 @@ package elrondapi
 // extern int32_t delegateExecution(void *context, long long gas, int32_t addressOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t executeReadOnly(void *context, long long gas, int32_t addressOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t createContract(void *context, long long gas, int32_t valueOffset, int32_t codeOffset, int32_t codeMetadataOffset, int32_t length, int32_t resultOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern void upgradeContract(void *context, long long gas, int32_t valueOffset, int32_t dstOffset, int32_t codeOffset, int32_t codeMetadataOffset, int32_t length, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern void asyncCall(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
 // extern void createAsyncCall(void *context, int32_t identifierOffset, int32_t identifierLength, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length, int32_t successCallback, int32_t successLength, int32_t errorCallback, int32_t errorLength, long long gas);
 // extern int32_t setAsyncContextCallback(void *context, int32_t identifierOffset, int32_t identifierLength, int32_t callback, int32_t callbackLength);
@@ -302,7 +303,10 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 		return nil, err
 	}
 
-	// TODO: Add extra function, upgradeContract()
+	imports, err = imports.Append("upgradeContract", upgradeContract, C.upgradeContract)
+	if err != nil {
+		return nil, err
+	}
 
 	imports, err = imports.Append("executeReadOnly", executeReadOnly, C.executeReadOnly)
 	if err != nil {
@@ -618,6 +622,93 @@ func setAsyncContextCallback(context unsafe.Pointer,
 	asyncContext.Callback = string(callbackFunc)
 
 	return 0
+}
+
+//export upgradeContract
+func upgradeContract(
+	context unsafe.Pointer,
+	gasLimit int64,
+	destOffset int32,
+	valueOffset int32,
+	codeOffset int32,
+	codeMetadataOffset int32,
+	length int32,
+	numArguments int32,
+	argumentsLengthOffset int32,
+	dataOffset int32,
+) {
+	host := arwen.GetVmContext(context)
+	runtime := host.Runtime()
+	metering := host.Metering()
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.CreateContract
+	metering.UseGas(gasToUse)
+
+	value, err := runtime.MemLoad(valueOffset, arwen.BalanceLen)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return
+	}
+
+	code, err := runtime.MemLoad(codeOffset, length)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return
+	}
+
+	codeMetadata, err := runtime.MemLoad(codeMetadataOffset, arwen.CodeMetadataLen)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return
+	}
+
+	_, data, actualLen, err := getArgumentsFromMemory(
+		context,
+		0,
+		0,
+		numArguments,
+		argumentsLengthOffset,
+		dataOffset,
+	)
+
+	gasToUse = metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
+	metering.UseGas(gasToUse)
+
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return
+	}
+
+	gasSchedule := metering.GasSchedule()
+	gasToUse = gasSchedule.ElrondAPICost.AsyncCallStep
+	metering.UseGas(gasToUse)
+
+	calledSCAddress, err := runtime.MemLoad(destOffset, arwen.AddressLen)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return
+	}
+
+	gasToUse = gasSchedule.BaseOperationCost.DataCopyPerByte * uint64(length)
+	metering.UseGas(gasToUse)
+
+	minAsyncCallCost := 2*gasSchedule.ElrondAPICost.AsyncCallStep + gasSchedule.ElrondAPICost.AsyncCallbackGasLock
+	if uint64(gasLimit) < minAsyncCallCost {
+		runtime.SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+		return
+	}
+
+	// Set up the async call as if it is not known whether the called SC
+	// is in the same shard with the caller or not. This will be later resolved
+	// in the handler for BreakpointAsyncCall.
+	finalData := arwen.UpgradeFunctionName + "@" + string(code) + "@" + string(codeMetadata)
+	for _, arg := range data {
+		finalData += "@" + string(arg)
+	}
+	runtime.SetAsyncCallInfo(&arwen.AsyncCallInfo{
+		Destination: calledSCAddress,
+		Data:        []byte(finalData),
+		GasLimit:    uint64(gasLimit),
+		ValueBytes:  value,
+	})
+
+	// Instruct Wasmer to interrupt the execution of the caller SC.
+	runtime.SetRuntimeBreakpointValue(arwen.BreakpointAsyncCall)
 }
 
 //export asyncCall

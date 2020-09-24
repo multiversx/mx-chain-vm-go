@@ -7,7 +7,6 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/contexts"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/cryptoapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/elrondapi"
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/ethapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
@@ -75,11 +74,6 @@ func NewArwenVM(
 	}
 
 	imports, err = elrondapi.BigIntImports(imports)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = ethapi.EthereumImports(imports)
 	if err != nil {
 		return nil, err
 	}

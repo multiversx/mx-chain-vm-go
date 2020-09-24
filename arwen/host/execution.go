@@ -1,8 +1,12 @@
 package host
 
 import (
+	"bytes"
+	"errors"
+
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/contexts"
+	"github.com/ElrondNetwork/elrond-go-logger/check"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -199,6 +203,7 @@ func computeGasUsedByCurrentSC(
 		gasUsed -= outAcc.GasUsed
 		gasUsed -= accumulatedGasLimit
 	}
+
 	return gasUsed, nil
 }
 
@@ -389,7 +394,85 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newC
 	return
 }
 
-// TODO: Add support for indirect smart contract upgrades.
+func (host *vmHost) checkUpgradePermission(vmInput *vmcommon.ContractCallInput) error {
+	contract, err := host.blockChainHook.GetUserAccount(vmInput.RecipientAddr)
+	if err != nil {
+		return err
+	}
+	if check.IfNilReflect(contract) {
+		return arwen.ErrNilContract
+	}
+
+	codeMetadata := vmcommon.CodeMetadataFromBytes(contract.GetCodeMetadata())
+	isUpgradeable := codeMetadata.Upgradeable
+	callerAddress := vmInput.CallerAddr
+	ownerAddress := contract.GetOwnerAddress()
+	isCallerOwner := bytes.Equal(callerAddress, ownerAddress)
+
+	if isUpgradeable && isCallerOwner {
+		return nil
+	}
+
+	return arwen.ErrUpgradeNotAllowed
+}
+
+func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) (uint64, error) {
+	_, _, metering, output, runtime, _ := host.GetContexts()
+
+	initialGasProvided := input.GasProvided
+	err := host.checkUpgradePermission(input)
+	if err != nil {
+		return 0, err
+	}
+
+	code, codeMetadata, err := runtime.ExtractCodeUpgradeFromArgs()
+	if err != nil {
+		return 0, arwen.ErrInvalidUpgradeArguments
+	}
+
+	codeDeployInput := arwen.CodeDeployInput{
+		ContractCode:         code,
+		ContractCodeMetadata: codeMetadata,
+		ContractAddress:      input.RecipientAddr,
+	}
+
+	err = metering.DeductInitialGasForDirectDeployment(codeDeployInput)
+	if err != nil {
+		output.SetReturnCode(vmcommon.OutOfGas)
+		return 0, err
+	}
+
+	runtime.PushInstance()
+	runtime.MustVerifyNextContractCode()
+
+	vmInput := runtime.GetVMInput()
+	err = runtime.StartWasmerInstance(codeDeployInput.ContractCode, vmInput.GasProvided)
+	if err != nil {
+		log.Debug("performCodeDeployment/StartWasmerInstance", "err", err)
+		return 0, arwen.ErrContractInvalid
+	}
+
+	err = host.callInitFunction()
+	if err != nil {
+		return 0, err
+	}
+
+	output.DeployCode(codeDeployInput)
+	if output.ReturnCode() != vmcommon.Ok {
+		runtime.PopInstance()
+		return 0, arwen.ErrReturnCodeNotOk
+	}
+
+	metering.UnlockGasIfAsyncStep()
+
+	gasToRestoreToCaller := metering.GasLeft()
+
+	runtime.PopInstance()
+	metering.RestoreGas(gasToRestoreToCaller)
+
+	return initialGasProvided - gasToRestoreToCaller, nil
+}
+
 func (host *vmHost) execute(input *vmcommon.ContractCallInput) (uint64, error) {
 	_, _, metering, output, runtime, _ := host.GetContexts()
 
@@ -409,6 +492,11 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) (uint64, error) {
 
 	if host.isInitFunctionBeingCalled() && !input.AllowInitFunction {
 		return 0, arwen.ErrInitFuncCalledInRun
+	}
+
+	isUpgrade := input.Function == arwen.UpgradeFunctionName
+	if isUpgrade {
+		return host.executeUpgrade(input)
 	}
 
 	contract, err := host.Blockchain().GetCode(runtime.GetSCAddress())
@@ -454,6 +542,9 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) (uint64, error) {
 func (host *vmHost) callSCMethodIndirect() error {
 	function, err := host.Runtime().GetFunctionToCall()
 	if err != nil {
+		if errors.Is(err, arwen.ErrNilCallbackFunction) {
+			return nil
+		}
 		return err
 	}
 
@@ -516,6 +607,9 @@ func (host *vmHost) callSCMethod() error {
 	callType := runtime.GetVMInput().CallType
 	function, err := host.getFunctionByCallType(callType)
 	if err != nil {
+		if callType == vmcommon.AsynchronousCallBack && errors.Is(err, arwen.ErrNilCallbackFunction) {
+			return host.processCallbackStack()
+		}
 		return err
 	}
 

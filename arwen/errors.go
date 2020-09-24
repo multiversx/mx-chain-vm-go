@@ -88,3 +88,9 @@ var ErrDeploymentOverExistingAccount = errors.New("cannot deploy over existing a
 var ErrAccountNotPayable = errors.New("sending value to non payable contract")
 
 var ErrInvalidPublicKeySize = errors.New("invalid public key size")
+
+var ErrNilCallbackFunction = errors.New("nil callback function")
+
+var ErrUpgradeNotAllowed = errors.New("upgrade not allowed")
+
+var ErrNilContract = errors.New("nil contract")
