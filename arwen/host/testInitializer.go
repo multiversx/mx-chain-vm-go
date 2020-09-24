@@ -44,7 +44,7 @@ func GetTestSCCode(scName string, prefixToTestSCs string) []byte {
 }
 
 // DefaultTestArwenForDeployment creates an Arwen vmHost configured for testing deployments
-func DefaultTestArwenForDeployment(t *testing.T, ownerNonce uint64, newAddress []byte) *vmHost {
+func DefaultTestArwenForDeployment(t *testing.T, _ uint64, newAddress []byte) *vmHost {
 	stubBlockchainHook := &mock.BlockchainHookStub{}
 	stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
 		return &mock.AccountMock{
@@ -181,8 +181,13 @@ func AddNewOutputAccount(vmOutput *vmcommon.VMOutput, address []byte, balanceDel
 		StorageUpdates: make(map[string]*vmcommon.StorageUpdate),
 		Code:           nil,
 	}
-	if len(data) > 0 {
-		account.Data = [][]byte{data}
+	if data != nil {
+		account.OutputTransfers = []vmcommon.OutputTransfer{
+			{
+				Data:  data,
+				Value: big.NewInt(balanceDelta),
+			},
+		}
 	}
 	vmOutput.OutputAccounts[string(address)] = account
 	return account
@@ -218,23 +223,6 @@ func OpenFile(relativePath string) (*os.File, error) {
 	}
 
 	return f, nil
-}
-
-// LoadTomlFile method to open and decode toml file
-func LoadTomlFile(dest interface{}, relativePath string) error {
-	f, err := OpenFile(relativePath)
-	if err != nil {
-		return err
-	}
-
-	defer func() {
-		err = f.Close()
-		if err != nil {
-			fmt.Printf("cannot close file: %s", err.Error())
-		}
-	}()
-
-	return toml.NewDecoder(f).Decode(dest)
 }
 
 // LoadTomlFileToMap opens and decodes a toml file as a map[string]interface{}

@@ -73,11 +73,14 @@ func (o *OutputContextMock) CopyTopOfStackToActiveState() {
 func (o *OutputContextMock) CensorVMOutput() {
 }
 
-func (o *OutputContextMock) GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool) {
+func (o *OutputContextMock) ResetGas() {
+}
+
+func (o *OutputContextMock) GetOutputAccount(_ []byte) (*vmcommon.OutputAccount, bool) {
 	return o.OutputAccountMock, o.OutputAccountIsNew
 }
 
-func (o *OutputContextMock) DeleteOutputAccount(address []byte) {
+func (o *OutputContextMock) DeleteOutputAccount(_ []byte) {
 }
 
 func (o *OutputContextMock) GetRefund() uint64 {
@@ -120,23 +123,27 @@ func (o *OutputContextMock) Finish(data []byte) {
 	o.ReturnDataMock = append(o.ReturnDataMock, data)
 }
 
-func (o *OutputContextMock) WriteLog(address []byte, topics [][]byte, data []byte) {
+func (o *OutputContextMock) WriteLog(_ []byte, _ [][]byte, _ []byte) {
 }
 
-func (o *OutputContextMock) Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte) error {
+func (o *OutputContextMock) TransferValueOnly(_ []byte, _ []byte, _ *big.Int) error {
 	return o.TransferResult
 }
 
-func (o *OutputContextMock) AddTxValueToAccount(address []byte, value *big.Int) {
+func (o *OutputContextMock) Transfer(_ []byte, _ []byte, _ uint64, _ *big.Int, _ []byte, _ vmcommon.CallType) error {
+	return o.TransferResult
+}
+
+func (o *OutputContextMock) AddTxValueToAccount(_ []byte, _ *big.Int) {
 }
 
 func (o *OutputContextMock) GetVMOutput() *vmcommon.VMOutput {
 	return o.OutputStateMock
 }
 
-func (o *OutputContextMock) DeployCode(input arwen.CodeDeployInput) {
+func (o *OutputContextMock) DeployCode(_ arwen.CodeDeployInput) {
 }
 
-func (o *OutputContextMock) CreateVMOutputInCaseOfError(err error) *vmcommon.VMOutput {
+func (o *OutputContextMock) CreateVMOutputInCaseOfError(_ error) *vmcommon.VMOutput {
 	return o.OutputStateMock
 }

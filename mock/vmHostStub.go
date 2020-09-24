@@ -83,6 +83,10 @@ func (vhs *VmHostStub) BigInt() arwen.BigIntContext {
 	return nil
 }
 
+func (vhs *VmHostStub) IsArwenV2Enabled() bool {
+	return true
+}
+
 func (vhs *VmHostStub) Output() arwen.OutputContext {
 	if vhs.OutputCalled != nil {
 		return vhs.OutputCalled()

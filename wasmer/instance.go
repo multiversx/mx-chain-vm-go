@@ -152,7 +152,7 @@ func NewInstanceWithOptions(
 	}
 
 	instance, err := newInstance(c_instance)
-	if instance.Memory != nil {
+	if instance != nil && instance.Memory != nil {
 		c_instance_context := cWasmerInstanceContextGet(c_instance)
 		instance.InstanceCtx = IntoInstanceContextDirect(c_instance_context)
 	}

@@ -70,9 +70,15 @@ type SerializableOutputAccount struct {
 	StorageUpdates []*vmcommon.StorageUpdate
 	Code           []byte
 	CodeMetadata   []byte
-	Data           [][]byte
-	GasLimit       uint64
-	CallType       vmcommon.CallType
+	GasUsed        uint64
+	Transfers      []SerializableOutputTransfer
+}
+
+type SerializableOutputTransfer struct {
+	Value    *big.Int
+	Data     []byte
+	GasLimit uint64
+	CallType vmcommon.CallType
 }
 
 func NewSerializableOutputAccount(account *vmcommon.OutputAccount) *SerializableOutputAccount {
@@ -84,9 +90,18 @@ func NewSerializableOutputAccount(account *vmcommon.OutputAccount) *Serializable
 		StorageUpdates: make([]*vmcommon.StorageUpdate, 0, len(account.StorageUpdates)),
 		Code:           account.Code,
 		CodeMetadata:   account.CodeMetadata,
-		Data:           account.Data,
-		GasLimit:       account.GasLimit,
-		CallType:       account.CallType,
+		GasUsed:        account.GasUsed,
+	}
+
+	a.Transfers = make([]SerializableOutputTransfer, len(account.OutputTransfers))
+	for i, transfer := range account.OutputTransfers {
+		serializableTransfer := SerializableOutputTransfer{
+			Value:    transfer.Value,
+			Data:     transfer.Data,
+			GasLimit: transfer.GasLimit,
+			CallType: transfer.CallType,
+		}
+		a.Transfers[i] = serializableTransfer
 	}
 
 	for _, storageUpdate := range account.StorageUpdates {
@@ -103,7 +118,7 @@ func (a *SerializableOutputAccount) ConvertToOutputAccount() *vmcommon.OutputAcc
 		updatesMap[string(item.Offset)] = item
 	}
 
-	return &vmcommon.OutputAccount{
+	outAcc := &vmcommon.OutputAccount{
 		Address:        a.Address,
 		Nonce:          a.Nonce,
 		Balance:        a.Balance,
@@ -111,8 +126,18 @@ func (a *SerializableOutputAccount) ConvertToOutputAccount() *vmcommon.OutputAcc
 		StorageUpdates: updatesMap,
 		Code:           a.Code,
 		CodeMetadata:   a.CodeMetadata,
-		Data:           a.Data,
-		GasLimit:       a.GasLimit,
-		CallType:       a.CallType,
+		GasUsed:        a.GasUsed,
 	}
+	outAcc.OutputTransfers = make([]vmcommon.OutputTransfer, len(a.Transfers))
+	for i, transfer := range a.Transfers {
+		outPutTransfer := vmcommon.OutputTransfer{
+			Value:    transfer.Value,
+			GasLimit: transfer.GasLimit,
+			Data:     transfer.Data,
+			CallType: transfer.CallType,
+		}
+		outAcc.OutputTransfers[i] = outPutTransfer
+	}
+
+	return outAcc
 }
