@@ -31,6 +31,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 		ContractCode:         input.ContractCode,
 		ContractCodeMetadata: input.ContractCodeMetadata,
 		ContractAddress:      address,
+		CodeDeployerAddress:  input.CallerAddr,
 	}
 
 	vmOutput, err := host.performCodeDeployment(codeDeployInput)
@@ -71,6 +72,7 @@ func (host *vmHost) performCodeDeployment(input arwen.CodeDeployInput) (*vmcommo
 	return vmOutput, nil
 }
 
+// doRunSmartContractUpgrade upgrades a contract directly
 func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput) *vmcommon.VMOutput {
 	host.InitState()
 	defer host.Clean()
@@ -90,6 +92,7 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 		ContractCode:         code,
 		ContractCodeMetadata: codeMetadata,
 		ContractAddress:      input.RecipientAddr,
+		CodeDeployerAddress:  input.CallerAddr,
 	}
 
 	vmOutput, err := host.performCodeDeployment(codeDeployInput)
@@ -329,6 +332,7 @@ func (host *vmHost) IsBuiltinFunctionName(functionName string) bool {
 	return ok
 }
 
+// CreateNewContract creates a new contract indirectly (from another Smart Contract)
 func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newContractAddress []byte, err error) {
 	newContractAddress = nil
 	err = nil
@@ -345,6 +349,7 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newC
 		ContractCode:         input.ContractCode,
 		ContractCodeMetadata: input.ContractCodeMetadata,
 		ContractAddress:      nil,
+		CodeDeployerAddress:  input.CallerAddr,
 	}
 	err = metering.DeductInitialGasForIndirectDeployment(codeDeployInput)
 	if err != nil {
@@ -416,6 +421,7 @@ func (host *vmHost) checkUpgradePermission(vmInput *vmcommon.ContractCallInput) 
 	return arwen.ErrUpgradeNotAllowed
 }
 
+// executeUpgrade upgrades a contract indirectly (from another contract)
 func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) (uint64, error) {
 	_, _, metering, output, runtime, _ := host.GetContexts()
 
@@ -434,6 +440,7 @@ func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) (uint64, e
 		ContractCode:         code,
 		ContractCodeMetadata: codeMetadata,
 		ContractAddress:      input.RecipientAddr,
+		CodeDeployerAddress:  input.CallerAddr,
 	}
 
 	err = metering.DeductInitialGasForDirectDeployment(codeDeployInput)
