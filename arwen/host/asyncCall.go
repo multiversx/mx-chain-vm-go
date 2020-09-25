@@ -682,7 +682,12 @@ func (host *vmHost) getFunctionByCallType(callType vmcommon.CallType) (wasmer.Ex
 		}
 	}
 
-	return runtime.GetFunctionToCall()
+	function, err := runtime.GetFunctionToCall()
+	if err != nil && !customCallback {
+		return nil, arwen.ErrNilCallbackFunction
+	}
+
+	return function, nil
 }
 
 func (host *vmHost) getCurrentAsyncInfo() (*arwen.AsyncContextInfo, error) {

@@ -363,8 +363,8 @@ func (context *runtimeContext) GetFunctionToCall() (wasmer.ExportedFunctionCallb
 		return function, nil
 	}
 
-	if function, ok := exports["main"]; ok {
-		return function, nil
+	if context.callFunction == arwen.CallbackDefault {
+		return nil, arwen.ErrNilCallbackFunction
 	}
 
 	return nil, arwen.ErrFuncNotFound
@@ -372,12 +372,7 @@ func (context *runtimeContext) GetFunctionToCall() (wasmer.ExportedFunctionCallb
 
 func (context *runtimeContext) GetInitFunction() wasmer.ExportedFunctionCallback {
 	exports := context.instance.Exports
-
 	if init, ok := exports[arwen.InitFunctionName]; ok {
-		return init
-	}
-
-	if init, ok := exports[arwen.InitFunctionNameEth]; ok {
 		return init
 	}
 
