@@ -921,6 +921,7 @@ func expectedVMOutput_CreateNewContract_Success(_ []byte, childCode []byte) *vmc
 	)
 	childAccount.Code = childCode
 	childAccount.CodeMetadata = []byte{1, 0}
+	childAccount.CodeDeployerAddress = parentAddress
 
 	l := len(childCode)
 	AddFinishData(vmOutput, []byte{byte(l / 256), byte(l % 256)})
