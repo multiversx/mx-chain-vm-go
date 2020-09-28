@@ -182,13 +182,14 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 
 func computeGasUsedByCurrentSC(
 	gasUsed uint64,
-	vmOutput *vmcommon.VMOutput,
+	output arwen.OutputContext,
 	executeErr error,
 ) (uint64, error) {
 	if executeErr != nil {
 		return 0, executeErr
 	}
 
+	vmOutput := output.GetVMOutput()
 	if vmOutput.ReturnCode != vmcommon.Ok || gasUsed == 0 {
 		return 0, nil
 	}
@@ -216,12 +217,11 @@ func (host *vmHost) finishExecuteOnDestContext(gasUsed uint64, executeErr error)
 	// Extract the VMOutput produced by the execution in isolation, before
 	// restoring the contexts. This needs to be done before popping any state
 	// stacks.
-	vmOutput := output.GetVMOutput()
-	gasUsedBySC, err := computeGasUsedByCurrentSC(gasUsed, vmOutput, executeErr)
+	gasUsedBySC, err := computeGasUsedByCurrentSC(gasUsed, output, executeErr)
 	if err != nil {
 		// Execution failed: restore contexts as if the execution didn't happen,
 		// but first create a vmOutput to capture the error.
-		vmOutput = output.CreateVMOutputInCaseOfError(err)
+		vmOutput := output.CreateVMOutputInCaseOfError(err)
 
 		bigInt.PopSetActiveState()
 		output.PopSetActiveState()
@@ -230,6 +230,8 @@ func (host *vmHost) finishExecuteOnDestContext(gasUsed uint64, executeErr error)
 
 		return vmOutput
 	}
+
+	vmOutput := output.GetVMOutput()
 
 	// Restore the previous context states, except Output, which will be merged
 	// into the initial state (VMOutput), but only if it the child execution
@@ -288,8 +290,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 func (host *vmHost) finishExecuteOnSameContext(gasUsed uint64, executeErr error) {
 	bigInt, _, _, output, runtime, _ := host.GetContexts()
 
-	vmOutput := output.GetVMOutput()
-	gasUsedBySC, err := computeGasUsedByCurrentSC(gasUsed, vmOutput, executeErr)
+	gasUsedBySC, err := computeGasUsedByCurrentSC(gasUsed, output, executeErr)
 	if output.ReturnCode() != vmcommon.Ok || err != nil {
 		// Execution failed: restore contexts as if the execution didn't happen.
 		bigInt.PopSetActiveState()
@@ -306,7 +307,7 @@ func (host *vmHost) finishExecuteOnSameContext(gasUsed uint64, executeErr error)
 	output.PopDiscard()
 	runtime.PopSetActiveState()
 
-	vmOutput = output.GetVMOutput()
+	vmOutput := output.GetVMOutput()
 	accumulateGasUsedByContract(vmOutput, scAddress, gasUsedBySC)
 }
 
