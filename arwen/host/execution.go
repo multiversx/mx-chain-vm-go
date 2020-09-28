@@ -457,11 +457,13 @@ func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) (uint64, e
 	err = runtime.StartWasmerInstance(codeDeployInput.ContractCode, vmInput.GasProvided)
 	if err != nil {
 		log.Debug("performCodeDeployment/StartWasmerInstance", "err", err)
+		runtime.PopInstance()
 		return 0, arwen.ErrContractInvalid
 	}
 
 	err = host.callInitFunction()
 	if err != nil {
+		runtime.PopInstance()
 		return 0, err
 	}
 
