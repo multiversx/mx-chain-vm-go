@@ -63,15 +63,16 @@ func (o *SerializableVMOutput) ConvertToVMOutput() *vmcommon.VMOutput {
 }
 
 type SerializableOutputAccount struct {
-	Address        []byte
-	Nonce          uint64
-	Balance        *big.Int
-	BalanceDelta   *big.Int
-	StorageUpdates []*vmcommon.StorageUpdate
-	Code           []byte
-	CodeMetadata   []byte
-	GasUsed        uint64
-	Transfers      []SerializableOutputTransfer
+	Address             []byte
+	Nonce               uint64
+	Balance             *big.Int
+	BalanceDelta        *big.Int
+	StorageUpdates      []*vmcommon.StorageUpdate
+	Code                []byte
+	CodeMetadata        []byte
+	GasUsed             uint64
+	Transfers           []SerializableOutputTransfer
+	CodeDeployerAddress []byte
 }
 
 type SerializableOutputTransfer struct {
@@ -83,14 +84,15 @@ type SerializableOutputTransfer struct {
 
 func NewSerializableOutputAccount(account *vmcommon.OutputAccount) *SerializableOutputAccount {
 	a := &SerializableOutputAccount{
-		Address:        account.Address,
-		Nonce:          account.Nonce,
-		Balance:        account.Balance,
-		BalanceDelta:   account.BalanceDelta,
-		StorageUpdates: make([]*vmcommon.StorageUpdate, 0, len(account.StorageUpdates)),
-		Code:           account.Code,
-		CodeMetadata:   account.CodeMetadata,
-		GasUsed:        account.GasUsed,
+		Address:             account.Address,
+		Nonce:               account.Nonce,
+		Balance:             account.Balance,
+		BalanceDelta:        account.BalanceDelta,
+		StorageUpdates:      make([]*vmcommon.StorageUpdate, 0, len(account.StorageUpdates)),
+		Code:                account.Code,
+		CodeMetadata:        account.CodeMetadata,
+		GasUsed:             account.GasUsed,
+		CodeDeployerAddress: account.CodeDeployerAddress,
 	}
 
 	a.Transfers = make([]SerializableOutputTransfer, len(account.OutputTransfers))
@@ -119,14 +121,15 @@ func (a *SerializableOutputAccount) ConvertToOutputAccount() *vmcommon.OutputAcc
 	}
 
 	outAcc := &vmcommon.OutputAccount{
-		Address:        a.Address,
-		Nonce:          a.Nonce,
-		Balance:        a.Balance,
-		BalanceDelta:   a.BalanceDelta,
-		StorageUpdates: updatesMap,
-		Code:           a.Code,
-		CodeMetadata:   a.CodeMetadata,
-		GasUsed:        a.GasUsed,
+		Address:             a.Address,
+		Nonce:               a.Nonce,
+		Balance:             a.Balance,
+		BalanceDelta:        a.BalanceDelta,
+		StorageUpdates:      updatesMap,
+		Code:                a.Code,
+		CodeMetadata:        a.CodeMetadata,
+		GasUsed:             a.GasUsed,
+		CodeDeployerAddress: a.CodeDeployerAddress,
 	}
 	outAcc.OutputTransfers = make([]vmcommon.OutputTransfer, len(a.Transfers))
 	for i, transfer := range a.Transfers {

@@ -31,6 +31,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 		ContractCode:         input.ContractCode,
 		ContractCodeMetadata: input.ContractCodeMetadata,
 		ContractAddress:      address,
+		CodeDeployerAddress:  input.CallerAddr,
 	}
 
 	vmOutput, err := host.performCodeDeployment(codeDeployInput)
@@ -71,6 +72,7 @@ func (host *vmHost) performCodeDeployment(input arwen.CodeDeployInput) (*vmcommo
 	return vmOutput, nil
 }
 
+// doRunSmartContractUpgrade upgrades a contract directly
 func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput) *vmcommon.VMOutput {
 	host.InitState()
 	defer host.Clean()
@@ -90,6 +92,7 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 		ContractCode:         code,
 		ContractCodeMetadata: codeMetadata,
 		ContractAddress:      input.RecipientAddr,
+		CodeDeployerAddress:  input.CallerAddr,
 	}
 
 	vmOutput, err := host.performCodeDeployment(codeDeployInput)
@@ -179,13 +182,14 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 
 func computeGasUsedByCurrentSC(
 	gasUsed uint64,
-	vmOutput *vmcommon.VMOutput,
+	output arwen.OutputContext,
 	executeErr error,
 ) (uint64, error) {
 	if executeErr != nil {
 		return 0, executeErr
 	}
 
+	vmOutput := output.GetVMOutput()
 	if vmOutput.ReturnCode != vmcommon.Ok || gasUsed == 0 {
 		return 0, nil
 	}
@@ -213,12 +217,11 @@ func (host *vmHost) finishExecuteOnDestContext(gasUsed uint64, executeErr error)
 	// Extract the VMOutput produced by the execution in isolation, before
 	// restoring the contexts. This needs to be done before popping any state
 	// stacks.
-	vmOutput := output.GetVMOutput()
-	gasUsedBySC, err := computeGasUsedByCurrentSC(gasUsed, vmOutput, executeErr)
+	gasUsedBySC, err := computeGasUsedByCurrentSC(gasUsed, output, executeErr)
 	if err != nil {
 		// Execution failed: restore contexts as if the execution didn't happen,
 		// but first create a vmOutput to capture the error.
-		vmOutput = output.CreateVMOutputInCaseOfError(err)
+		vmOutput := output.CreateVMOutputInCaseOfError(err)
 
 		bigInt.PopSetActiveState()
 		output.PopSetActiveState()
@@ -227,6 +230,8 @@ func (host *vmHost) finishExecuteOnDestContext(gasUsed uint64, executeErr error)
 
 		return vmOutput
 	}
+
+	vmOutput := output.GetVMOutput()
 
 	// Restore the previous context states, except Output, which will be merged
 	// into the initial state (VMOutput), but only if it the child execution
@@ -285,8 +290,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 func (host *vmHost) finishExecuteOnSameContext(gasUsed uint64, executeErr error) {
 	bigInt, _, _, output, runtime, _ := host.GetContexts()
 
-	vmOutput := output.GetVMOutput()
-	gasUsedBySC, err := computeGasUsedByCurrentSC(gasUsed, vmOutput, executeErr)
+	gasUsedBySC, err := computeGasUsedByCurrentSC(gasUsed, output, executeErr)
 	if output.ReturnCode() != vmcommon.Ok || err != nil {
 		// Execution failed: restore contexts as if the execution didn't happen.
 		bigInt.PopSetActiveState()
@@ -303,7 +307,7 @@ func (host *vmHost) finishExecuteOnSameContext(gasUsed uint64, executeErr error)
 	output.PopDiscard()
 	runtime.PopSetActiveState()
 
-	vmOutput = output.GetVMOutput()
+	vmOutput := output.GetVMOutput()
 	accumulateGasUsedByContract(vmOutput, scAddress, gasUsedBySC)
 }
 
@@ -329,6 +333,7 @@ func (host *vmHost) IsBuiltinFunctionName(functionName string) bool {
 	return ok
 }
 
+// CreateNewContract creates a new contract indirectly (from another Smart Contract)
 func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newContractAddress []byte, err error) {
 	newContractAddress = nil
 	err = nil
@@ -345,6 +350,7 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newC
 		ContractCode:         input.ContractCode,
 		ContractCodeMetadata: input.ContractCodeMetadata,
 		ContractAddress:      nil,
+		CodeDeployerAddress:  input.CallerAddr,
 	}
 	err = metering.DeductInitialGasForIndirectDeployment(codeDeployInput)
 	if err != nil {
@@ -416,6 +422,7 @@ func (host *vmHost) checkUpgradePermission(vmInput *vmcommon.ContractCallInput) 
 	return arwen.ErrUpgradeNotAllowed
 }
 
+// executeUpgrade upgrades a contract indirectly (from another contract)
 func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) (uint64, error) {
 	_, _, metering, output, runtime, _ := host.GetContexts()
 
@@ -434,6 +441,7 @@ func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) (uint64, e
 		ContractCode:         code,
 		ContractCodeMetadata: codeMetadata,
 		ContractAddress:      input.RecipientAddr,
+		CodeDeployerAddress:  input.CallerAddr,
 	}
 
 	err = metering.DeductInitialGasForDirectDeployment(codeDeployInput)
@@ -449,11 +457,13 @@ func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) (uint64, e
 	err = runtime.StartWasmerInstance(codeDeployInput.ContractCode, vmInput.GasProvided)
 	if err != nil {
 		log.Debug("performCodeDeployment/StartWasmerInstance", "err", err)
+		runtime.PopInstance()
 		return 0, arwen.ErrContractInvalid
 	}
 
 	err = host.callInitFunction()
 	if err != nil {
+		runtime.PopInstance()
 		return 0, err
 	}
 

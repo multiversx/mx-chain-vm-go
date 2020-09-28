@@ -41,6 +41,7 @@ type CodeDeployInput struct {
 	ContractCode         []byte
 	ContractCodeMetadata []byte
 	ContractAddress      []byte
+	CodeDeployerAddress  []byte
 }
 
 // VMHostParameters represents the parameters to be passed to VMHost

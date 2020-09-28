@@ -33,7 +33,7 @@ package elrondapi
 // extern int32_t delegateExecution(void *context, long long gas, int32_t addressOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t executeReadOnly(void *context, long long gas, int32_t addressOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t createContract(void *context, long long gas, int32_t valueOffset, int32_t codeOffset, int32_t codeMetadataOffset, int32_t length, int32_t resultOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
-// extern void upgradeContract(void *context, long long gas, int32_t valueOffset, int32_t dstOffset, int32_t codeOffset, int32_t codeMetadataOffset, int32_t length, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern void upgradeContract(void *context, int32_t dstOffset, long long gas, int32_t valueOffset, int32_t codeOffset, int32_t codeMetadataOffset, int32_t length, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern void asyncCall(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
 // extern void createAsyncCall(void *context, int32_t identifierOffset, int32_t identifierLength, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length, int32_t successCallback, int32_t successLength, int32_t errorCallback, int32_t errorLength, long long gas);
 // extern int32_t setAsyncContextCallback(void *context, int32_t identifierOffset, int32_t identifierLength, int32_t callback, int32_t callbackLength);
@@ -68,6 +68,7 @@ package elrondapi
 import "C"
 
 import (
+	"encoding/hex"
 	"math/big"
 	"unsafe"
 
@@ -627,8 +628,8 @@ func setAsyncContextCallback(context unsafe.Pointer,
 //export upgradeContract
 func upgradeContract(
 	context unsafe.Pointer,
-	gasLimit int64,
 	destOffset int32,
+	gasLimit int64,
 	valueOffset int32,
 	codeOffset int32,
 	codeMetadataOffset int32,
@@ -696,10 +697,13 @@ func upgradeContract(
 	// Set up the async call as if it is not known whether the called SC
 	// is in the same shard with the caller or not. This will be later resolved
 	// in the handler for BreakpointAsyncCall.
-	finalData := arwen.UpgradeFunctionName + "@" + string(code) + "@" + string(codeMetadata)
+	codeEncoded := hex.EncodeToString(code)
+	codeMetadataEncoded := hex.EncodeToString(codeMetadata)
+	finalData := arwen.UpgradeFunctionName + "@" + codeEncoded + "@" + codeMetadataEncoded
 	for _, arg := range data {
 		finalData += "@" + string(arg)
 	}
+
 	runtime.SetAsyncCallInfo(&arwen.AsyncCallInfo{
 		Destination: calledSCAddress,
 		Data:        []byte(finalData),

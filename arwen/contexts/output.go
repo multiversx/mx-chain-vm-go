@@ -275,6 +275,7 @@ func (context *outputContext) DeployCode(input arwen.CodeDeployInput) {
 	newSCAccount, _ := context.GetOutputAccount(input.ContractAddress)
 	newSCAccount.Code = input.ContractCode
 	newSCAccount.CodeMetadata = input.ContractCodeMetadata
+	newSCAccount.CodeDeployerAddress = input.CodeDeployerAddress
 
 	var empty struct{}
 	context.codeUpdates[string(input.ContractAddress)] = empty
@@ -311,6 +312,7 @@ func (context *outputContext) removeNonUpdatedCode(vmOutput *vmcommon.VMOutput) 
 		if !ok {
 			account.Code = nil
 			account.CodeMetadata = nil
+			account.CodeDeployerAddress = nil
 		}
 	}
 }
@@ -436,6 +438,10 @@ func mergeOutputAccounts(
 	}
 
 	leftAccount.GasUsed = rightAccount.GasUsed
+
+	if rightAccount.CodeDeployerAddress != nil {
+		leftAccount.CodeDeployerAddress = rightAccount.CodeDeployerAddress
+	}
 }
 
 func mergeStorageUpdates(
