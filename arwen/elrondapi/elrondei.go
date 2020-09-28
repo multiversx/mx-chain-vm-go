@@ -68,6 +68,7 @@ package elrondapi
 import "C"
 
 import (
+	"encoding/hex"
 	"math/big"
 	"unsafe"
 
@@ -696,10 +697,13 @@ func upgradeContract(
 	// Set up the async call as if it is not known whether the called SC
 	// is in the same shard with the caller or not. This will be later resolved
 	// in the handler for BreakpointAsyncCall.
-	finalData := arwen.UpgradeFunctionName + "@" + string(code) + "@" + string(codeMetadata)
+	codeEncoded := hex.EncodeToString(code)
+	codeMetadataEncoded := hex.EncodeToString(codeMetadata)
+	finalData := arwen.UpgradeFunctionName + "@" + codeEncoded + "@" + codeMetadataEncoded
 	for _, arg := range data {
 		finalData += "@" + string(arg)
 	}
+
 	runtime.SetAsyncCallInfo(&arwen.AsyncCallInfo{
 		Destination: calledSCAddress,
 		Data:        []byte(finalData),
