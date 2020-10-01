@@ -10,6 +10,7 @@ import (
 
 	fuzzutil "github.com/ElrondNetwork/arwen-wasm-vm/fuzz/util"
 	mc "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/controller"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -44,6 +45,11 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 	pfe := newExecutorWithPaths()
 	defer pfe.saveGeneratedScenario()
 
+	stakePerNode := big.NewInt(1000000000)
+	numDelegators := 10
+	maxDelegationCap := big.NewInt(0).Mul(stakePerNode, big.NewInt(int64(4)))
+	totalDelegationCap := big.NewInt(0).Rand(r, maxDelegationCap)
+
 	err := pfe.init(
 		&fuzzDelegationExecutorInitArgs{
 			serviceFee:                  r.Intn(10000),
@@ -51,8 +57,9 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 			minStake:                    r.Intn(1000000),
 			numBlocksBeforeForceUnstake: r.Intn(1000),
 			numBlocksBeforeUnbond:       r.Intn(1000),
-			numDelegators:               10,
-			stakePerNode:                big.NewInt(1000000000),
+			numDelegators:               numDelegators,
+			stakePerNode:                stakePerNode,
+			totalDelegationCap:          totalDelegationCap,
 		},
 	)
 	require.Nil(t, err)
@@ -61,14 +68,8 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 	require.Nil(t, err)
 
 	re := fuzzutil.NewRandomEventProvider()
-	for stepIndex := 0; stepIndex < 500; stepIndex++ {
-		generateRandomEvent(t, pfe, r, re)
-	}
-
-	// all delegators (incl. owner) withdraw all inactive stake
-	for delegatorIdx := 0; delegatorIdx <= pfe.numDelegators; delegatorIdx++ {
-		err := pfe.withdrawAllInactiveStake(delegatorIdx)
-		require.Nil(t, err)
+	for stepIndex := 0; stepIndex < 1500; stepIndex++ {
+		generateRandomEvent(t, pfe, r, re, maxDelegationCap)
 	}
 
 	// all delegators (incl. owner) claim all rewards
@@ -79,22 +80,24 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 
 	// check that delegators got all rewards out
 	totalDelegatorBalance := pfe.getAllDelegatorsBalance()
-	require.True(t, pfe.totalRewards.Cmp(totalDelegatorBalance) == 0,
+	rewardsDifference := big.NewInt(0).Sub(pfe.totalRewards, totalDelegatorBalance)
+	require.True(t, rewardsDifference.Cmp(big.NewInt(100)) == -1,
 		"Rewards don't match. Total rewards: %d. Total delegator balance: %d.",
-		pfe.totalRewards, totalDelegatorBalance)
+		pfe.totalRewards, totalDelegatorBalance,
+	)
 
-	err = pfe.increaseBlockNonce(pfe.numBlocksBeforeForceUnstake + 1)
-	require.Nil(t, err)
+	pfe.printTotalStakeByType()
 
-	// all delegators (incl. owner) unStake a part of stake
+	// all delegators (incl. owner) unStake all from waiting
 	for delegatorIdx := 0; delegatorIdx <= pfe.numDelegators; delegatorIdx++ {
-		stake := big.NewInt(0).Rand(r, pfe.stakePerNode)
-		err = pfe.unStake(delegatorIdx, stake)
+		waitingFunds, err := pfe.getUserStakeOfType(delegatorIdx, UserWaiting)
+		assert.Nil(t, err)
+
+		err = pfe.unStake(delegatorIdx, waitingFunds)
 		require.Nil(t, err)
 	}
 
-	err = pfe.increaseBlockNonce(pfe.numBlocksBeforeUnbond + 1)
-	require.Nil(t, err)
+	pfe.printTotalStakeByType()
 
 	// all delegators (incl. owner) unBond
 	for delegatorIdx := 0; delegatorIdx <= pfe.numDelegators; delegatorIdx++ {
@@ -102,23 +105,20 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 		require.Nil(t, err)
 	}
 
+	pfe.printTotalStakeByType()
+
 	// auction SC should have no more funds
 	auctionBalanceAfterUnbond := pfe.getAuctionBalance()
 	require.True(t, auctionBalanceAfterUnbond.Sign() == 0,
 		"Auction still has balance after full unbond: %d",
 		auctionBalanceAfterUnbond)
 
-	// all delegators (incl. owner) withdraw all inactive stake
-	for delegatorIdx := 0; delegatorIdx <= pfe.numDelegators; delegatorIdx++ {
-		err = pfe.withdrawAllInactiveStake(delegatorIdx)
-		require.Nil(t, err)
-	}
-
 	withdrawnAtTheEnd := pfe.getWithdrawTargetBalance()
-	require.True(t, withdrawnAtTheEnd.Cmp(pfe.totalStakeAdded) == 0,
+	activeAndWithdrawn := big.NewInt(0).Add(withdrawnAtTheEnd, totalDelegationCap)
+	require.True(t, activeAndWithdrawn.Cmp(pfe.totalStakeAdded) == 0,
 		"Stake added and withdrawn doesn't match. Staked: %d. Withdrawn: %d. Off by: %d",
-		pfe.totalStakeAdded, withdrawnAtTheEnd,
-		big.NewInt(0).Sub(pfe.totalStakeAdded, withdrawnAtTheEnd))
+		pfe.totalStakeAdded, activeAndWithdrawn,
+		big.NewInt(0).Sub(pfe.totalStakeAdded, activeAndWithdrawn))
 }
 
 func generateRandomEvent(
@@ -126,9 +126,11 @@ func generateRandomEvent(
 	pfe *fuzzDelegationExecutor,
 	r *rand.Rand,
 	re *fuzzutil.RandomEventProvider,
+	maxDelegationCap *big.Int,
 ) {
 	maxStake := big.NewInt(0).Mul(pfe.stakePerNode, big.NewInt(2))
 	maxSystemReward := big.NewInt(1000000000)
+	maxServiceFee := 10000
 	re.Reset()
 
 	switch {
@@ -141,6 +143,10 @@ func generateRandomEvent(
 		err := pfe.addNodes(r.Intn(3))
 		require.Nil(t, err)
 	case re.WithProbability(0.05):
+		// add nodes
+		err := pfe.removeNodes(r.Intn(2))
+		require.Nil(t, err)
+	case re.WithProbability(0.05):
 		// stake
 		delegatorIdx := r.Intn(pfe.numDelegators + 1)
 		stake := big.NewInt(0).Rand(r, maxStake)
@@ -148,18 +154,16 @@ func generateRandomEvent(
 		err := pfe.stake(delegatorIdx, stake)
 		require.Nil(t, err)
 	case re.WithProbability(0.05):
-		// withdraw inactive stake
-		delegatorIdx := r.Intn(pfe.numDelegators + 1)
-		stake := big.NewInt(0).Rand(r, maxStake)
-
-		err := pfe.withdrawInactiveStake(delegatorIdx, stake)
+		ok, err := pfe.isBootstrapMode()
 		require.Nil(t, err)
-	case re.WithProbability(0.05):
-		// add system rewards
-		rewards := big.NewInt(0).Rand(r, maxSystemReward)
 
-		err := pfe.addRewards(rewards)
-		require.Nil(t, err)
+		if !ok {
+			// add system rewards
+			rewards := big.NewInt(0).Rand(r, maxSystemReward)
+
+			err := pfe.addRewards(rewards)
+			require.Nil(t, err)
+		}
 	case re.WithProbability(0.2):
 		// claim rewards
 		delegatorIdx := r.Intn(pfe.numDelegators + 1)
@@ -177,6 +181,30 @@ func generateRandomEvent(
 		// unBond
 		delegatorIdx := r.Intn(pfe.numDelegators + 1)
 		err := pfe.unBond(delegatorIdx)
+		require.Nil(t, err)
+	case re.WithProbability(0.05):
+		err := pfe.modifyDelegationCap(big.NewInt(0).Rand(r, maxDelegationCap))
+		require.Nil(t, err)
+
+		err = pfe.continueGlobalOperation()
+		require.Nil(t, err)
+
+		pfe.printServiceFeeAndDelegationCap(t)
+		pfe.printTotalStakeByType()
+	case re.WithProbability(0.05):
+		err := pfe.setServiceFee(r.Intn(maxServiceFee))
+		require.Nil(t, err)
+
+		err = pfe.continueGlobalOperation()
+		require.Nil(t, err)
+
+		pfe.printServiceFeeAndDelegationCap(t)
+		pfe.printTotalStakeByType()
+	case re.WithProbability(0.05):
+		err := pfe.validateOwnerStakeShare()
+		require.Nil(t, err)
+	case re.WithProbability(0.05):
+		err := pfe.validateDelegationCapInvariant()
 		require.Nil(t, err)
 	default:
 	}

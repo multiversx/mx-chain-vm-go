@@ -113,6 +113,7 @@ func (pfe *fuzzDelegationExecutor) init(args *fuzzDelegationExecutorInitArgs) er
 				"%d",
 				"%d",
 				"%d",
+				"%d",
 				"%d"
 			],
 			"gasLimit": "1,000,000",
@@ -132,17 +133,13 @@ func (pfe *fuzzDelegationExecutor) init(args *fuzzDelegationExecutorInitArgs) er
 		args.ownerMinStake,
 		args.numBlocksBeforeUnbond,
 		args.minStake,
+		args.totalDelegationCap,
 	))
 	if err != nil {
 		return err
 	}
 
 	err = pfe.enableUnstake()
-	if err != nil {
-		return err
-	}
-
-	err = pfe.setAnyoneCanActivate()
 	if err != nil {
 		return err
 	}
@@ -162,35 +159,6 @@ func (pfe *fuzzDelegationExecutor) enableUnstake() error {
 			"to": "''%s",
 			"value": "0",
 			"function": "enableUnStake",
-			"arguments": [],
-			"gasLimit": "100,000",
-			"gasPrice": "0"
-		},
-		"expect": {
-			"out": [],
-			"status": "",
-			"logs": [],
-			"gas": "*",
-			"refund": "*"
-		}
-	}`,
-		string(pfe.ownerAddress),
-		string(pfe.delegationContractAddress),
-	))
-	return err
-}
-
-func (pfe *fuzzDelegationExecutor) setAnyoneCanActivate() error {
-	pfe.log("setAnyoneCanActivate")
-	_, err := pfe.executeTxStep(fmt.Sprintf(`
-	{
-		"step": "scCall",
-		"txId": "-setAnyoneCanActivate-",
-		"tx": {
-			"from": "''%s",
-			"to": "''%s",
-			"value": "0",
-			"function": "setAnyoneCanActivate",
 			"arguments": [],
 			"gasLimit": "100,000",
 			"gasPrice": "0"
