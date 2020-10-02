@@ -24,7 +24,6 @@ const (
 	UserWithdrawOnly    = "getUserWithdrawOnlyStake"
 	UserWaiting         = "getUserWaitingStake"
 	UserActive          = "getUserActiveStake"
-	UserUnStaked        = "getUserUnstakedStake"
 	UserDeferredPayment = "getUserDeferredPaymentStake"
 )
 
@@ -369,7 +368,7 @@ func (pfe *fuzzDelegationExecutor) modifyDelegationCap(newCap *big.Int) error {
 		return err
 	}
 
-	pfe.log("modify delegation cap: returned code %s, newDelegationCap %d", output.ReturnCode, newCap)
+	pfe.log("modify delegation cap: returned code %s, returned message %s, newDelegationCap %d", output.ReturnCode, output.ReturnMessage, newCap)
 
 	return nil
 }

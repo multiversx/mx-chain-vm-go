@@ -48,7 +48,6 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 	stakePerNode := big.NewInt(1000000000)
 	numDelegators := 10
 	maxDelegationCap := big.NewInt(0).Mul(stakePerNode, big.NewInt(int64(4)))
-	totalDelegationCap := big.NewInt(0).Rand(r, maxDelegationCap)
 
 	err := pfe.init(
 		&fuzzDelegationExecutorInitArgs{
@@ -59,7 +58,7 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 			numBlocksBeforeUnbond:       r.Intn(1000),
 			numDelegators:               numDelegators,
 			stakePerNode:                stakePerNode,
-			totalDelegationCap:          totalDelegationCap,
+			totalDelegationCap:          big.NewInt(0).Rand(r, maxDelegationCap),
 		},
 	)
 	require.Nil(t, err)
@@ -71,6 +70,9 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 	for stepIndex := 0; stepIndex < 1500; stepIndex++ {
 		generateRandomEvent(t, pfe, r, re, maxDelegationCap)
 	}
+
+	err = pfe.increaseBlockNonce(r.Intn(pfe.numBlocksBeforeUnbond + 1))
+	require.Nil(t, err)
 
 	// all delegators (incl. owner) claim all rewards
 	for delegatorIdx := 0; delegatorIdx <= pfe.numDelegators; delegatorIdx++ {
@@ -99,6 +101,9 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 
 	pfe.printTotalStakeByType()
 
+	err = pfe.increaseBlockNonce(pfe.numBlocksBeforeUnbond + 1)
+	require.Nil(t, err)
+
 	// all delegators (incl. owner) unBond
 	for delegatorIdx := 0; delegatorIdx <= pfe.numDelegators; delegatorIdx++ {
 		err = pfe.unBond(delegatorIdx)
@@ -106,6 +111,9 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 	}
 
 	pfe.printTotalStakeByType()
+	for delegatorIdx := 0; delegatorIdx <= pfe.numDelegators; delegatorIdx++ {
+		pfe.printUserStakeByType(delegatorIdx)
+	}
 
 	// auction SC should have no more funds
 	auctionBalanceAfterUnbond := pfe.getAuctionBalance()
@@ -114,7 +122,16 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 		auctionBalanceAfterUnbond)
 
 	withdrawnAtTheEnd := pfe.getWithdrawTargetBalance()
-	activeAndWithdrawn := big.NewInt(0).Add(withdrawnAtTheEnd, totalDelegationCap)
+
+	totalActiveStake := big.NewInt(0)
+	for delegatorIdx := 0; delegatorIdx <= pfe.numDelegators; delegatorIdx++ {
+		activeUserStake, err := pfe.getUserStakeOfType(delegatorIdx, UserActive)
+		assert.Nil(t, err)
+
+		totalActiveStake = totalActiveStake.Add(totalActiveStake, activeUserStake)
+	}
+
+	activeAndWithdrawn := big.NewInt(0).Add(withdrawnAtTheEnd, totalActiveStake)
 	require.True(t, activeAndWithdrawn.Cmp(pfe.totalStakeAdded) == 0,
 		"Stake added and withdrawn doesn't match. Staked: %d. Withdrawn: %d. Off by: %d",
 		pfe.totalStakeAdded, activeAndWithdrawn,

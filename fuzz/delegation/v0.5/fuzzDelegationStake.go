@@ -44,13 +44,6 @@ func (pfe *fuzzDelegationExecutor) stake(delegIndex int, amount *big.Int) error 
 			"arguments": [],
 			"gasLimit": "100,000,000",
 			"gasPrice": "0"
-		},
-		"expect": {
-			"out": [],
-			"status": "",
-			"logs": "*",
-			"gas": "*",
-			"refund": "*"
 		}
 	}`,
 		pfe.nextTxIndex(),
@@ -59,6 +52,7 @@ func (pfe *fuzzDelegationExecutor) stake(delegIndex int, amount *big.Int) error 
 		amount,
 	))
 	pfe.log("stake, delegator: %d, amount: %d", delegIndex, amount)
+	pfe.printUserStakeByType(delegIndex)
 	return err
 }
 
@@ -91,11 +85,12 @@ func (pfe *fuzzDelegationExecutor) unStake(delegatorIndex int, stake *big.Int) e
 		pfe.log("unStake, delegator: %d, fail, %s", delegatorIndex, output.ReturnMessage)
 	}
 
+	pfe.printUserStakeByType(delegatorIndex)
 	return nil
 }
 
 func (pfe *fuzzDelegationExecutor) unBond(delegatorIndex int) error {
-	deferredPayment, err := pfe.getUserStakeOfType(delegatorIndex, UserDeferredPayment)
+	deferredPaymentBefore, err := pfe.getUserStakeOfType(delegatorIndex, UserDeferredPayment)
 	if err != nil {
 		return err
 	}
@@ -103,7 +98,6 @@ func (pfe *fuzzDelegationExecutor) unBond(delegatorIndex int) error {
 	if err != nil {
 		return err
 	}
-	stakeWithdrawn := big.NewInt(0).Add(deferredPayment, withdrawOnly)
 
 	output, err := pfe.executeTxStep(fmt.Sprintf(`
 	{
@@ -126,6 +120,14 @@ func (pfe *fuzzDelegationExecutor) unBond(delegatorIndex int) error {
 	if err != nil {
 		return err
 	}
+
+	deferredPaymentAfter, err := pfe.getUserStakeOfType(delegatorIndex, UserDeferredPayment)
+	if err != nil {
+		return err
+	}
+
+	deferredPaymentWithdrawn := big.NewInt(0).Sub(deferredPaymentBefore, deferredPaymentAfter)
+	stakeWithdrawn := big.NewInt(0).Add(deferredPaymentWithdrawn, withdrawOnly)
 
 	if output.ReturnCode == vmi.Ok {
 		pfe.log("unBond, delegator: %d", delegatorIndex)
@@ -151,11 +153,13 @@ func (pfe *fuzzDelegationExecutor) unBond(delegatorIndex int) error {
 			}
 		}
 
+		pfe.log("stake withdrawn %d", stakeWithdrawn)
 		pfe.totalStakeWithdrawn.Add(pfe.totalStakeWithdrawn, stakeWithdrawn)
 	} else {
 		pfe.log("unBond, delegator: %d, fail, %s", delegatorIndex, output.ReturnMessage)
 	}
 
+	pfe.printUserStakeByType(delegatorIndex)
 	return nil
 }
 
@@ -192,6 +196,35 @@ func (pfe *fuzzDelegationExecutor) getUserStakeOfType(delegatorIndex int, fundTy
 	return big.NewInt(0), nil
 }
 
+func (pfe *fuzzDelegationExecutor) printUserStakeByType(delegatorIndex int) {
+	output, err := pfe.executeTxStep(fmt.Sprintf(`
+	{
+		"step": "scCall",
+		"txId": "%d",
+		"tx": {
+			"from": "''%s",
+			"to": "''%s",
+			"value": "0",
+			"function": "getUserStakeByType",
+			"arguments": ["''%s"],
+			"gasLimit": "100,000,000",
+			"gasPrice": "0"
+		}
+	}`,
+		pfe.nextTxIndex(),
+		string(pfe.ownerAddress),
+		string(pfe.delegationContractAddress),
+		string(pfe.delegatorAddress(delegatorIndex)),
+	))
+	if err != nil {
+		pfe.log("getUserStakeByType error")
+		return
+	}
+
+	pfe.log("user %d stake by type:", delegatorIndex)
+	pfe.printFundsInEachBucket(output.ReturnData)
+}
+
 func (pfe *fuzzDelegationExecutor) printTotalStakeByType() {
 	output, err := pfe.executeTxStep(fmt.Sprintf(`
 	{
@@ -216,18 +249,23 @@ func (pfe *fuzzDelegationExecutor) printTotalStakeByType() {
 		return
 	}
 
-	if len(output.ReturnData) == 5 {
-		pfe.log("total funds in contract: "+
+	pfe.log("total stake by type:")
+	pfe.printFundsInEachBucket(output.ReturnData)
+}
+
+func (pfe *fuzzDelegationExecutor) printFundsInEachBucket(returnedData [][]byte) {
+	if len(returnedData) == 5 {
+		pfe.log("funds in contract: "+
 			"WithdrawOnly: %d "+
 			"Waiting: %d "+
 			"Active: %d "+
 			"UnStaked %d "+
 			"DeferredPayment %d",
-			big.NewInt(0).SetBytes(output.ReturnData[0]),
-			big.NewInt(0).SetBytes(output.ReturnData[1]),
-			big.NewInt(0).SetBytes(output.ReturnData[2]),
-			big.NewInt(0).SetBytes(output.ReturnData[3]),
-			big.NewInt(0).SetBytes(output.ReturnData[4]),
+			big.NewInt(0).SetBytes(returnedData[0]),
+			big.NewInt(0).SetBytes(returnedData[1]),
+			big.NewInt(0).SetBytes(returnedData[2]),
+			big.NewInt(0).SetBytes(returnedData[3]),
+			big.NewInt(0).SetBytes(returnedData[4]),
 		)
 	}
 }
