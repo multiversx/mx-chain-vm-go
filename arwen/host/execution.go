@@ -3,11 +3,14 @@ package host
 import (
 	"bytes"
 	"errors"
+	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/contexts"
 	"github.com/ElrondNetwork/elrond-go-logger/check"
+	"github.com/ElrondNetwork/elrond-go/core"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
 
 func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput) *vmcommon.VMOutput {
@@ -483,17 +486,13 @@ func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) (uint64, e
 	return initialGasProvided - gasToRestoreToCaller, nil
 }
 
-func (host *vmHost) execute(input *vmcommon.ContractCallInput) (uint64, error) {
-	_, _, metering, output, runtime, _ := host.GetContexts()
-
-	if host.isBuiltinFunctionBeingCalled() {
-		err := metering.DeductAndLockGasIfAsyncStep()
-		if err != nil {
-			return 0, err
-		}
-		return 0, host.callBuiltinFunction(input)
-	}
-
+func (host *vmHost) executeSmartContractCall(
+	input *vmcommon.ContractCallInput,
+	metering arwen.MeteringContext,
+	runtime arwen.RuntimeContext,
+	output arwen.OutputContext,
+	withInitialGasDeduct bool,
+) (uint64, error) {
 	// Use all gas initially, on the Wasmer instance of the caller
 	// (runtime.PushInstance() is called later). In case of successful execution,
 	// the unused gas will be restored.
@@ -514,9 +513,11 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) (uint64, error) {
 		return 0, err
 	}
 
-	err = metering.DeductInitialGasForExecution(contract)
-	if err != nil {
-		return 0, err
+	if withInitialGasDeduct {
+		err = metering.DeductInitialGasForExecution(contract)
+		if err != nil {
+			return 0, err
+		}
 	}
 
 	runtime.PushInstance()
@@ -549,6 +550,30 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) (uint64, error) {
 	return initialGasProvided - gasToRestoreToCaller, nil
 }
 
+func (host *vmHost) execute(input *vmcommon.ContractCallInput) (uint64, error) {
+	_, _, metering, output, runtime, _ := host.GetContexts()
+
+	if host.isBuiltinFunctionBeingCalled() {
+		err := metering.DeductAndLockGasIfAsyncStep()
+		if err != nil {
+			return 0, err
+		}
+
+		newVMInput, err := host.callBuiltinFunction(input)
+		if err != nil {
+			return 0, err
+		}
+
+		if newVMInput != nil {
+			return host.executeSmartContractCall(newVMInput, metering, runtime, output, true)
+		}
+
+		return 0, nil
+	}
+
+	return host.executeSmartContractCall(input, metering, runtime, output, false)
+}
+
 func (host *vmHost) callSCMethodIndirect() error {
 	function, err := host.Runtime().GetFunctionToCall()
 	if err != nil {
@@ -566,13 +591,13 @@ func (host *vmHost) callSCMethodIndirect() error {
 	return err
 }
 
-func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) error {
+func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmcommon.ContractCallInput, error) {
 	_, _, metering, output, _, _ := host.GetContexts()
 
 	vmOutput, err := host.blockChainHook.ProcessBuiltInFunction(input)
 	if err != nil {
 		metering.UseGas(input.GasProvided)
-		return err
+		return nil, err
 	}
 
 	gasConsumed := input.GasProvided - vmOutput.GasRemaining
@@ -580,8 +605,14 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) error
 		metering.UseGas(gasConsumed)
 	}
 
+	newVMInput, err := isSCExecutionAfterBuiltInFunc(input, vmOutput)
+	if err != nil {
+		return nil, err
+	}
+
 	output.AddToActiveState(vmOutput)
-	return nil
+
+	return newVMInput, nil
 }
 
 func (host *vmHost) EthereumCallData() []byte {
@@ -691,4 +722,71 @@ func (host *vmHost) createETHCallInput() []byte {
 	}
 
 	return newInput
+}
+
+func isSCExecutionAfterBuiltInFunc(
+	vmInput *vmcommon.ContractCallInput,
+	vmOutput *vmcommon.VMOutput,
+) (*vmcommon.ContractCallInput, error) {
+	if vmOutput.ReturnCode != vmcommon.Ok {
+		return nil, nil
+	}
+
+	if !core.IsSmartContractAddress(vmInput.RecipientAddr) {
+		return nil, nil
+	}
+
+	outAcc, ok := vmOutput.OutputAccounts[string(vmInput.RecipientAddr)]
+	if !ok {
+		return nil, nil
+	}
+	if len(outAcc.OutputTransfers) != 1 {
+		return nil, nil
+	}
+
+	callType := vmInput.CallType
+	txData := string(prependCallbackToTxDataIfAsyncCall(outAcc.OutputTransfers[0].Data, callType))
+
+	argParser := parsers.NewCallArgsParser()
+	function, arguments, err := argParser.ParseData(txData)
+	if err != nil {
+		return nil, err
+	}
+
+	newVMInput := &vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			CallerAddr:     vmInput.CallerAddr,
+			Arguments:      arguments,
+			CallValue:      big.NewInt(0),
+			CallType:       callType,
+			GasPrice:       vmInput.GasPrice,
+			GasProvided:    vmOutput.GasRemaining,
+			OriginalTxHash: vmInput.OriginalTxHash,
+			CurrentTxHash:  vmInput.CurrentTxHash,
+		},
+		RecipientAddr:     vmInput.RecipientAddr,
+		Function:          function,
+		AllowInitFunction: false,
+	}
+
+	fillWithESDTValue(vmInput, newVMInput)
+
+	return newVMInput, nil
+}
+
+func fillWithESDTValue(fullVMInput *vmcommon.ContractCallInput, newVMInput *vmcommon.ContractCallInput) {
+	if fullVMInput.Function != core.BuiltInFunctionESDTTransfer {
+		return
+	}
+
+	newVMInput.ESDTTokenName = fullVMInput.Arguments[0]
+	newVMInput.ESDTValue = big.NewInt(0).SetBytes(fullVMInput.Arguments[1])
+}
+
+func prependCallbackToTxDataIfAsyncCall(txData []byte, callType vmcommon.CallType) []byte {
+	if callType == vmcommon.AsynchronousCallBack {
+		return append([]byte("callBack"), txData...)
+	}
+
+	return txData
 }
