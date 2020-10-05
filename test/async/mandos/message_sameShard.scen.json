@@ -1,5 +1,5 @@
 {
-    "name": "message_otherShard_callback",
+    "name": "message_sameShard",
     "steps": [
         {
             "step": "setState",
@@ -14,9 +14,15 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "0x0000000000000000000000000000000000000000000000000000000000000000": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb5555"
+                        "0x0000000000000000000000000000000000000000000000000000000000000000": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1234"
                     },
-                    "code": "file:alice.wasm"
+                    "code": "file:../async-alice/output/alice.wasm"
+                },
+                "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1234": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": "file:../async-bob/output/bob.wasm"
                 }
             }
         },
@@ -53,16 +59,20 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "0x0000000000000000000000000000000000000000000000000000000000000000": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb5555"
+                        "0x0000000000000000000000000000000000000000000000000000000000000000": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1234"
                     },
-                    "code": "file:alice.wasm"
+                    "code": "file:../async-alice/output/alice.wasm"
                 },
-                "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb5555": {
+                "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1234": {
                     "nonce": "0",
                     "balance": "0",
-                    "storage": {},
-                    "code": "",
-                    "asyncCallData": "str:messageMe@01@02@030303@fefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefe"
+                    "storage": {
+                        "0x2222222222222222222222222222222222222222222222222222222222222222": "0x01",
+                        "0x3333333333333333333333333333333333333333333333333333333333333333": "0x02",
+                        "0x4444444444444444444444444444444444444444444444444444444444444444": "0x030303",
+                        "0x5555555555555555555555555555555555555555555555555555555555555555": "0xfefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefe"
+                    },
+                    "code": "file:../async-bob/output/bob.wasm"
                 }
             }
         }

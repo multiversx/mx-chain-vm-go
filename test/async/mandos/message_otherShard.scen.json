@@ -1,5 +1,5 @@
 {
-    "name": "payment_sameShard",
+    "name": "message_otherShard",
     "steps": [
         {
             "step": "setState",
@@ -14,15 +14,9 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "0x0000000000000000000000000000000000000000000000000000000000000000": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1234"
+                        "0x0000000000000000000000000000000000000000000000000000000000000000": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb5555"
                     },
-                    "code": "file:alice.wasm"
-                },
-                "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1234": {
-                    "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": "file:bob.wasm"
+                    "code": "file:../async-alice/output/alice.wasm"
                 }
             }
         },
@@ -32,15 +26,15 @@
             "tx": {
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebffefefefefefefefefefefe1234",
                 "to": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1234",
-                "value": "0x123400",
-                "function": "forwardToOtherContract",
+                "value": "0",
+                "function": "messageOtherContract",
                 "arguments": [],
                 "gasLimit": "0x1000000000000",
                 "gasPrice": "0x01"
             },
             "expect": {
                 "out": [],
-                "status": "0",
+                "status": "",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"
@@ -51,7 +45,7 @@
             "accounts": {
                 "0xa94f5374fce5edbc8e2a8697c15331677e6ebffefefefefefefefefefefe1234": {
                     "nonce": "1",
-                    "balance": "0xfffffffffff00e8d492dc00",
+                    "balance": "0xfffffffffff00e8d4a51000",
                     "storage": {},
                     "code": ""
                 },
@@ -59,18 +53,16 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "0x0000000000000000000000000000000000000000000000000000000000000000": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1234"
+                        "0x0000000000000000000000000000000000000000000000000000000000000000": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb5555"
                     },
-                    "code": "file:alice.wasm"
+                    "code": "file:../async-alice/output/alice.wasm"
                 },
-                "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1234": {
+                "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb5555": {
                     "nonce": "0",
-                    "balance": "0x123400",
-                    "storage": {
-                        "0x1111111111111111111111111111111111111111111111111111111111111111": "0x56",
-                        "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff": "0x123400"
-                    },
-                    "code": "file:bob.wasm"
+                    "balance": "0",
+                    "storage": {},
+                    "code": "",
+                    "asyncCallData": "str:messageMe@01@02@030303@fefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefe"
                 }
             }
         }

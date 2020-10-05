@@ -1,5 +1,5 @@
 {
-    "name": "message_sameShard",
+    "name": "message_sameShard_callback",
     "steps": [
         {
             "step": "setState",
@@ -16,13 +16,13 @@
                     "storage": {
                         "0x0000000000000000000000000000000000000000000000000000000000000000": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1234"
                     },
-                    "code": "file:alice.wasm"
+                    "code": "file:../async-alice/output/alice.wasm"
                 },
                 "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1234": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {},
-                    "code": "file:bob.wasm"
+                    "code": "file:../async-bob/output/bob.wasm"
                 }
             }
         },
@@ -33,7 +33,7 @@
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebffefefefefefefefefefefe1234",
                 "to": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1234",
                 "value": "0",
-                "function": "messageOtherContract",
+                "function": "messageOtherContractWithCallback",
                 "arguments": [],
                 "gasLimit": "0x1000000000000",
                 "gasPrice": "0x01"
@@ -59,9 +59,10 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "0x0000000000000000000000000000000000000000000000000000000000000000": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1234"
+                        "0x0000000000000000000000000000000000000000000000000000000000000000": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1234",
+                        "0x7777777777777777777777777777777777777777777777777777777777777777": "0x5555"
                     },
-                    "code": "file:alice.wasm"
+                    "code": "file:../async-alice/output/alice.wasm"
                 },
                 "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1234": {
                     "nonce": "0",
@@ -72,7 +73,7 @@
                         "0x4444444444444444444444444444444444444444444444444444444444444444": "0x030303",
                         "0x5555555555555555555555555555555555555555555555555555555555555555": "0xfefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefe"
                     },
-                    "code": "file:bob.wasm"
+                    "code": "file:../async-bob/output/bob.wasm"
                 }
             }
         }

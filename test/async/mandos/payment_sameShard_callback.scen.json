@@ -16,13 +16,13 @@
                     "storage": {
                         "0x0000000000000000000000000000000000000000000000000000000000000000": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1234"
                     },
-                    "code": "file:alice.wasm"
+                    "code": "file:../async-alice/output/alice.wasm"
                 },
                 "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1234": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {},
-                    "code": "file:bob.wasm"
+                    "code": "file:../async-bob/output/bob.wasm"
                 }
             }
         },
@@ -64,7 +64,7 @@
                         "0x0000000000000000000000000000000000000000000000000000000000000000": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1234",
                         "0x7777777777777777777777777777777777777777777777777777777777777777": "0x7777"
                     },
-                    "code": "file:alice.wasm"
+                    "code": "file:../async-alice/output/alice.wasm"
                 },
                 "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1234": {
                     "nonce": "0",
@@ -73,7 +73,7 @@
                         "0x1111111111111111111111111111111111111111111111111111111111111111": "0x56",
                         "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff": "0x123400"
                     },
-                    "code": "file:bob.wasm"
+                    "code": "file:../async-bob/output/bob.wasm"
                 }
             }
         }
