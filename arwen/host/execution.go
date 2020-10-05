@@ -565,13 +565,13 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) (uint64, error) {
 		}
 
 		if newVMInput != nil {
-			return host.executeSmartContractCall(newVMInput, metering, runtime, output, true)
+			return host.executeSmartContractCall(newVMInput, metering, runtime, output, false)
 		}
 
 		return 0, nil
 	}
 
-	return host.executeSmartContractCall(input, metering, runtime, output, false)
+	return host.executeSmartContractCall(input, metering, runtime, output, true)
 }
 
 func (host *vmHost) callSCMethodIndirect() error {
