@@ -1,6 +1,7 @@
 package delegation
 
 import (
+	"flag"
 	"math/big"
 	"math/rand"
 	"os"
@@ -13,6 +14,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+var fuzz = flag.Bool("fuzz", false, "fuzz")
 
 func getTestRoot() string {
 	exePath, err := os.Getwd()
@@ -40,6 +43,10 @@ func newExecutorWithPaths() *fuzzDelegationExecutor {
 }
 
 func TestFuzzDelegation_v0_5(t *testing.T) {
+	if !*fuzz {
+		t.Skip("skipping test; only run with --fuzz argument")
+	}
+
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	pfe := newExecutorWithPaths()
@@ -155,10 +162,14 @@ func generateRandomEvent(
 		// increment block nonce
 		err := pfe.increaseBlockNonce(r.Intn(1000))
 		require.Nil(t, err)
+
+		pfe.checkInvariants(t)
 	case re.WithProbability(0.05):
 		// add nodes
 		err := pfe.addNodes(r.Intn(3))
 		require.Nil(t, err)
+
+		pfe.checkInvariants(t)
 	case re.WithProbability(0.05):
 		// add nodes
 		err := pfe.removeNodes(r.Intn(2))
@@ -170,6 +181,8 @@ func generateRandomEvent(
 
 		err := pfe.stake(delegatorIdx, stake)
 		require.Nil(t, err)
+
+		pfe.checkInvariants(t)
 	case re.WithProbability(0.05):
 		ok, err := pfe.isBootstrapMode()
 		require.Nil(t, err)
@@ -180,6 +193,8 @@ func generateRandomEvent(
 
 			err := pfe.addRewards(rewards)
 			require.Nil(t, err)
+
+			pfe.checkInvariants(t)
 		}
 	case re.WithProbability(0.2):
 		// claim rewards
@@ -194,6 +209,8 @@ func generateRandomEvent(
 
 		err := pfe.unStake(delegatorIdx, stake)
 		require.Nil(t, err)
+
+		pfe.checkInvariants(t)
 	case re.WithProbability(0.05):
 		// unBond
 		delegatorIdx := r.Intn(pfe.numDelegators + 1)
@@ -208,6 +225,8 @@ func generateRandomEvent(
 
 		pfe.printServiceFeeAndDelegationCap(t)
 		pfe.printTotalStakeByType()
+
+		pfe.checkInvariants(t)
 	case re.WithProbability(0.05):
 		err := pfe.setServiceFee(r.Intn(maxServiceFee))
 		require.Nil(t, err)
@@ -217,12 +236,16 @@ func generateRandomEvent(
 
 		pfe.printServiceFeeAndDelegationCap(t)
 		pfe.printTotalStakeByType()
-	case re.WithProbability(0.05):
-		err := pfe.validateOwnerStakeShare()
-		require.Nil(t, err)
-	case re.WithProbability(0.05):
-		err := pfe.validateDelegationCapInvariant()
-		require.Nil(t, err)
+
+		pfe.checkInvariants(t)
 	default:
 	}
+}
+
+func (pfe *fuzzDelegationExecutor) checkInvariants(t *testing.T) {
+	err := pfe.validateOwnerStakeShare()
+	require.Nil(t, err)
+
+	err = pfe.validateDelegationCapInvariant()
+	require.Nil(t, err)
 }

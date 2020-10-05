@@ -34,8 +34,6 @@ func (pfe *fuzzDelegationExecutor) validateOwnerStakeShare() error {
 		return err
 	}
 
-	pfe.log("validateOwnerStakeShare")
-
 	return nil
 }
 
@@ -68,8 +66,6 @@ func (pfe *fuzzDelegationExecutor) validateDelegationCapInvariant() error {
 	if err != nil {
 		return err
 	}
-
-	pfe.log("validateDelegationCapInvariant")
 
 	return nil
 }
