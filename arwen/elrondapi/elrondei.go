@@ -25,6 +25,7 @@ package elrondapi
 // extern int32_t callValue(void *context, int32_t resultOffset);
 // extern int32_t getESDTValue(void *context, int32_t resultOffset);
 // extern int32_t getESDTTokenName(void *context, int32_t resultOffset);
+// extern int32_t getCallValueTokenName(void *context, int32_t callValueOffset, int32_t tokenNameOffset);
 // extern void writeLog(void *context, int32_t pointer, int32_t length, int32_t topicPtr, int32_t numTopics);
 // extern void returnData(void* context, int32_t dataOffset, int32_t length);
 // extern void signalError(void* context, int32_t messageOffset, int32_t messageLength);
@@ -212,6 +213,11 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("getESDTValue", getESDTTokenName, C.getESDTTokenName)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getCallValueTokenName", getCallValueTokenName, C.getCallValueTokenName)
 	if err != nil {
 		return nil, err
 	}
@@ -1073,14 +1079,43 @@ func getESDTTokenName(context unsafe.Pointer, resultOffset int32) int32 {
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetCallValue
 	metering.UseGas(gasToUse)
 
-	value := runtime.GetVMInput().ESDTTokenName
+	tokenName := runtime.GetVMInput().ESDTTokenName
 
-	err := runtime.MemStore(resultOffset, runtime.GetVMInput().ESDTTokenName)
+	err := runtime.MemStore(resultOffset, tokenName)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
 
-	return int32(len(value))
+	return int32(len(tokenName))
+}
+
+//export getCallValueTokenName
+func getCallValueTokenName(context unsafe.Pointer, callValueOffset int32, tokenNameOffset int32) int32 {
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.GetCallValue
+	metering.UseGas(gasToUse)
+
+	callValue := runtime.GetVMInput().CallValue.Bytes()
+	tokenName := []byte("eGLD")
+	if len(runtime.GetVMInput().ESDTTokenName) > 0 {
+		tokenName = runtime.GetVMInput().ESDTTokenName
+		callValue = runtime.GetVMInput().ESDTValue.Bytes()
+	}
+	callValue = arwen.PadBytesLeft(callValue, arwen.BalanceLen)
+
+	err := runtime.MemStore(tokenNameOffset, tokenName)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return -1
+	}
+
+	err = runtime.MemStore(callValueOffset, callValue)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return -1
+	}
+
+	return int32(len(tokenName))
 }
 
 //export writeLog
