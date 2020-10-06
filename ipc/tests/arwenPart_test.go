@@ -74,6 +74,7 @@ func doContractRequest(
 		}
 
 		part, err := arwenpart.NewArwenPart(
+			"testversion",
 			files.inputOfArwen,
 			files.outputOfArwen,
 			vmHostParameters,

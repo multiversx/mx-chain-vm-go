@@ -115,6 +115,24 @@ func U64MulToBigInt(x, y uint64) *big.Int {
 	return big.NewInt(0).Mul(bx, by)
 }
 
+// U64ToLEB128 encodes an uint64 using LEB128 (Little Endian Base 128), used in WASM bytecode
+// See https://en.wikipedia.org/wiki/LEB128
+// Copied from https://github.com/filecoin-project/go-leb128/blob/master/leb128.go
+func U64ToLEB128(n uint64) (out []byte) {
+	more := true
+	for more {
+		b := byte(n & 0x7F)
+		n >>= 7
+		if n == 0 {
+			more = false
+		} else {
+			b = b | 0x80
+		}
+		out = append(out, b)
+	}
+	return
+}
+
 // IfNil tests if the provided interface pointer or underlying object is nil
 func IfNil(checker nilInterfaceChecker) bool {
 	if checker == nil {

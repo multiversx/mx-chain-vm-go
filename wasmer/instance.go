@@ -5,7 +5,7 @@ import (
 	"unsafe"
 )
 
-const OPCODE_COUNT = 447
+const OPCODE_COUNT = 448
 
 // InstanceError represents any kind of errors related to a WebAssembly instance. It
 // is returned by `Instance` functions only.
@@ -91,6 +91,7 @@ type Instance struct {
 
 type CompilationOptions struct {
 	GasLimit           uint64
+	UnmeteredLocals    uint64
 	OpcodeTrace        bool
 	Metering           bool
 	RuntimeBreakpoints bool
@@ -151,7 +152,7 @@ func NewInstanceWithOptions(
 	}
 
 	instance, err := newInstance(c_instance)
-	if instance.Memory != nil {
+	if instance != nil && instance.Memory != nil {
 		c_instance_context := cWasmerInstanceContextGet(c_instance)
 		instance.InstanceCtx = IntoInstanceContextDirect(c_instance_context)
 	}

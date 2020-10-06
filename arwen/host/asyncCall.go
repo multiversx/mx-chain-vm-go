@@ -108,7 +108,7 @@ func (host *vmHost) executeSyncCallbackCall(
 	return callbackVMOutput, callBackErr
 }
 
-func (host *vmHost) canExecuteSynchronously(destination []byte, data []byte) bool {
+func (host *vmHost) canExecuteSynchronously(destination []byte, _ []byte) bool {
 	// TODO replace this function in promise-related code below.
 	blockchain := host.Blockchain()
 	calledSCCode, err := blockchain.GetCode(destination)
@@ -120,16 +120,13 @@ func (host *vmHost) sendAsyncCallToDestination(asyncCallInfo arwen.AsyncCallInfo
 	runtime := host.Runtime()
 	output := host.Output()
 
-	destination := asyncCallInfo.GetDestination()
-	destinationAccount, _ := output.GetOutputAccount(destination)
-	destinationAccount.CallType = vmcommon.AsynchronousCall
-
 	err := output.Transfer(
-		destination,
+		asyncCallInfo.GetDestination(),
 		runtime.GetSCAddress(),
 		asyncCallInfo.GetGasLimit(),
 		big.NewInt(0).SetBytes(asyncCallInfo.GetValueBytes()),
 		asyncCallInfo.GetData(),
+		vmcommon.AsynchronousCall,
 	)
 	if err != nil {
 		metering := host.Metering()
@@ -147,21 +144,18 @@ func (host *vmHost) sendCallbackToCurrentCaller() error {
 	metering := host.Metering()
 	currentCall := runtime.GetVMInput()
 
-	destination := currentCall.CallerAddr
-	destinationAccount, _ := output.GetOutputAccount(destination)
-	destinationAccount.CallType = vmcommon.AsynchronousCallBack
-
 	retData := []byte("@" + hex.EncodeToString([]byte(output.ReturnCode().String())))
 	for _, data := range output.ReturnData() {
 		retData = append(retData, []byte("@"+hex.EncodeToString(data))...)
 	}
 
 	err := output.Transfer(
-		destination,
+		currentCall.CallerAddr,
 		runtime.GetSCAddress(),
 		metering.GasLeft(),
 		currentCall.CallValue,
 		retData,
+		vmcommon.AsynchronousCallBack,
 	)
 	if err != nil {
 		metering.UseGas(metering.GasLeft())
@@ -178,15 +172,13 @@ func (host *vmHost) sendStorageCallbackToDestination(callerAddress, returnData [
 	metering := host.Metering()
 	currentCall := runtime.GetVMInput()
 
-	destinationAccount, _ := output.GetOutputAccount(callerAddress)
-	destinationAccount.CallType = vmcommon.AsynchronousCallBack
-
 	err := output.Transfer(
 		callerAddress,
 		runtime.GetSCAddress(),
 		metering.GasLeft(),
 		currentCall.CallValue,
 		returnData,
+		vmcommon.AsynchronousCallBack,
 	)
 	if err != nil {
 		metering.UseGas(metering.GasLeft())
@@ -300,7 +292,7 @@ func (host *vmHost) processCallbackVMOutput(callbackVMOutput *vmcommon.VMOutput,
 
 	output.SetReturnMessage(callbackVMOutput.ReturnMessage)
 	output.Finish([]byte(callbackVMOutput.ReturnCode.String()))
-	output.Finish([]byte(runtime.GetCurrentTxHash()))
+	output.Finish(runtime.GetCurrentTxHash())
 
 	return nil
 }
@@ -690,7 +682,12 @@ func (host *vmHost) getFunctionByCallType(callType vmcommon.CallType) (wasmer.Ex
 		}
 	}
 
-	return runtime.GetFunctionToCall()
+	function, err := runtime.GetFunctionToCall()
+	if err != nil && !customCallback {
+		return nil, arwen.ErrNilCallbackFunction
+	}
+
+	return function, nil
 }
 
 func (host *vmHost) getCurrentAsyncInfo() (*arwen.AsyncContextInfo, error) {

@@ -2,6 +2,7 @@ package contexts
 
 import (
 	"fmt"
+	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
@@ -67,8 +68,11 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 		context.instance = nil
 		return arwen.ErrMaxInstancesReached
 	}
+
+	gasSchedule := context.host.Metering().GasSchedule()
 	options := wasmer.CompilationOptions{
 		GasLimit:           gasLimit,
+		UnmeteredLocals:    uint64(gasSchedule.WASMOpcodeCost.LocalsUnmetered),
 		OpcodeTrace:        false,
 		Metering:           true,
 		RuntimeBreakpoints: true,
@@ -103,7 +107,7 @@ func (context *runtimeContext) SetMaxInstanceCount(maxInstances uint64) {
 }
 
 func (context *runtimeContext) InitStateFromContractCallInput(input *vmcommon.ContractCallInput) {
-	context.vmInput = &input.VMInput
+	context.SetVMInput(&input.VMInput)
 	context.scAddress = input.RecipientAddr
 	context.callFunction = input.Function
 	// Reset async map for initial state
@@ -185,7 +189,44 @@ func (context *runtimeContext) GetVMInput() *vmcommon.VMInput {
 }
 
 func (context *runtimeContext) SetVMInput(vmInput *vmcommon.VMInput) {
-	context.vmInput = vmInput
+	if !context.host.IsArwenV2Enabled() || vmInput == nil {
+		context.vmInput = vmInput
+		return
+	}
+
+	context.vmInput = &vmcommon.VMInput{
+		CallType:    vmInput.CallType,
+		GasPrice:    vmInput.GasPrice,
+		GasProvided: vmInput.GasProvided,
+		CallValue:   big.NewInt(0),
+	}
+
+	if vmInput.CallValue != nil {
+		context.vmInput.CallValue.Set(vmInput.CallValue)
+	}
+
+	if len(vmInput.CallerAddr) > 0 {
+		context.vmInput.CallerAddr = make([]byte, len(vmInput.CallerAddr))
+		copy(context.vmInput.CallerAddr, vmInput.CallerAddr)
+	}
+
+	if len(vmInput.OriginalTxHash) > 0 {
+		context.vmInput.OriginalTxHash = make([]byte, len(vmInput.OriginalTxHash))
+		copy(context.vmInput.OriginalTxHash, vmInput.OriginalTxHash)
+	}
+
+	if len(vmInput.CurrentTxHash) > 0 {
+		context.vmInput.CurrentTxHash = make([]byte, len(vmInput.CurrentTxHash))
+		copy(context.vmInput.CurrentTxHash, vmInput.CurrentTxHash)
+	}
+
+	if len(vmInput.Arguments) > 0 {
+		context.vmInput.Arguments = make([][]byte, len(vmInput.Arguments))
+		for i, arg := range vmInput.Arguments {
+			context.vmInput.Arguments[i] = make([]byte, len(arg))
+			copy(context.vmInput.Arguments[i], arg)
+		}
+	}
 }
 
 func (context *runtimeContext) GetSCAddress() []byte {
@@ -322,8 +363,8 @@ func (context *runtimeContext) GetFunctionToCall() (wasmer.ExportedFunctionCallb
 		return function, nil
 	}
 
-	if function, ok := exports["main"]; ok {
-		return function, nil
+	if context.callFunction == arwen.CallbackDefault {
+		return nil, arwen.ErrNilCallbackFunction
 	}
 
 	return nil, arwen.ErrFuncNotFound
@@ -331,12 +372,7 @@ func (context *runtimeContext) GetFunctionToCall() (wasmer.ExportedFunctionCallb
 
 func (context *runtimeContext) GetInitFunction() wasmer.ExportedFunctionCallback {
 	exports := context.instance.Exports
-
 	if init, ok := exports[arwen.InitFunctionName]; ok {
-		return init
-	}
-
-	if init, ok := exports[arwen.InitFunctionNameEth]; ok {
 		return init
 	}
 

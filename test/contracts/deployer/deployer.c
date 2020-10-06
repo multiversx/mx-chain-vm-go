@@ -2,6 +2,7 @@
 #include "../elrond/test_utils.h"
 
 byte contractCode[5000] = {};
+byte contractMetadata[2] = {1, 0};
 byte contractID = 0;
 byte newAddress[32] = {};
 
@@ -25,6 +26,7 @@ void deployChildContract() {
 			2000,
 			deploymentValue,
 			contractCode,
+			contractMetadata,
 			loadedLength,
 			newAddress,
 			1,

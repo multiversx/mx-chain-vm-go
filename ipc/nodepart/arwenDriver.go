@@ -120,7 +120,10 @@ func (driver *ArwenDriver) startArwen() error {
 		return err
 	}
 
-	driver.logsPart.StartLoop(arwenStdout, arwenStderr)
+	err = driver.logsPart.StartLoop(arwenStdout, arwenStderr)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -193,6 +196,27 @@ func (driver *ArwenDriver) IsClosed() bool {
 
 	err = process.Signal(syscall.Signal(0))
 	return err != nil
+}
+
+func (driver *ArwenDriver) GetVersion() (string, error) {
+	log.Trace("GetVersion")
+
+	err := driver.RestartArwenIfNecessary()
+	if err != nil {
+		return "", common.WrapCriticalError(err)
+	}
+
+	request := common.NewMessageVersionRequest()
+	response, err := driver.part.StartLoop(request)
+	if err != nil {
+		log.Warn("GetVersion", "err", err)
+		_ = driver.Close()
+		return "", common.WrapCriticalError(err)
+	}
+
+	typedResponse := response.(*common.MessageVersionResponse)
+
+	return typedResponse.Version, nil
 }
 
 // RunSmartContractCreate sends a deploy request to Arwen and waits for the output

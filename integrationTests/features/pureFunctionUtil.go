@@ -13,7 +13,6 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	worldhook "github.com/ElrondNetwork/elrond-vm-util/mock-hook-blockchain"
-	cryptohook "github.com/ElrondNetwork/elrond-vm-util/mock-hook-crypto"
 	mj "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/model"
 	"github.com/stretchr/testify/require"
 )
@@ -44,7 +43,7 @@ func newPureFunctionExecutor() (*pureFunctionExecutor, error) {
 
 	blockGasLimit := uint64(10000000)
 	gasSchedule := config.MakeGasMapForTests()
-	vm, err := arwenHost.NewArwenVM(world, cryptohook.KryptoHookMockInstance, &arwen.VMHostParameters{
+	vm, err := arwenHost.NewArwenVM(world, &arwen.VMHostParameters{
 		VMType:                   testVMType,
 		BlockGasLimit:            blockGasLimit,
 		GasSchedule:              gasSchedule,

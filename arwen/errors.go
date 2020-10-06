@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-var ErrFunctionRunError = errors.New("function run error")
+var ErrGasUsageError = errors.New("gas use error")
 
 var ErrReturnCodeNotOk = errors.New("return not is not ok")
 
@@ -86,3 +86,11 @@ var ErrInvalidAccount = errors.New("account does not exist")
 var ErrDeploymentOverExistingAccount = errors.New("cannot deploy over existing account")
 
 var ErrAccountNotPayable = errors.New("sending value to non payable contract")
+
+var ErrInvalidPublicKeySize = errors.New("invalid public key size")
+
+var ErrNilCallbackFunction = errors.New("nil callback function")
+
+var ErrUpgradeNotAllowed = errors.New("upgrade not allowed")
+
+var ErrNilContract = errors.New("nil contract")

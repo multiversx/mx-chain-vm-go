@@ -59,6 +59,8 @@ const (
 	BlockchainIsSmartContractResponse
 	DiagnoseWaitRequest
 	DiagnoseWaitResponse
+	VersionRequest
+	VersionResponse
 	UndefinedRequestOrResponse
 	LastKind
 )
@@ -116,6 +118,8 @@ func init() {
 	messageKindNameByID[BlockchainIsPayableResponse] = "BlockchainIsPayableResponse"
 	messageKindNameByID[DiagnoseWaitRequest] = "DiagnoseWaitRequest"
 	messageKindNameByID[DiagnoseWaitResponse] = "DiagnoseWaitResponse"
+	messageKindNameByID[VersionRequest] = "VersionRequest"
+	messageKindNameByID[VersionResponse] = "VersionResponse"
 	messageKindNameByID[UndefinedRequestOrResponse] = "UndefinedRequestOrResponse"
 	messageKindNameByID[LastKind] = "LastKind"
 }
@@ -248,6 +252,10 @@ func IsHookCall(message MessageHandler) bool {
 // IsStopRequest returns whether a message is a stop request
 func IsStopRequest(message MessageHandler) bool {
 	return message.GetKind() == Stop
+}
+
+func IsVersionResponse(message MessageHandler) bool {
+	return message.GetKind() == VersionResponse
 }
 
 // IsContractResponse returns whether a message is a contract response

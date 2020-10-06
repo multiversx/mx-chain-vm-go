@@ -41,6 +41,7 @@ type CodeDeployInput struct {
 	ContractCode         []byte
 	ContractCodeMetadata []byte
 	ContractAddress      []byte
+	CodeDeployerAddress  []byte
 }
 
 // VMHostParameters represents the parameters to be passed to VMHost
@@ -50,6 +51,7 @@ type VMHostParameters struct {
 	GasSchedule              config.GasScheduleMap
 	ProtocolBuiltinFunctions vmcommon.FunctionNames
 	ElrondProtectedKeyPrefix []byte
+	ArwenV2EnableEpoch       uint32
 }
 
 // AsyncCallInfo contains the information required to handle the asynchronous call of another SmartContract
