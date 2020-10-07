@@ -150,7 +150,7 @@ func (context *testContext) queryContract(contract string, impersonated string, 
 }
 
 func (response *ContractResponseBase) getFirstResultAsInt64() int64 {
-	result, err := response.Output.GetFirstReturnData(vmcommon.AsBigInt)
+	result, err := response.Output.ConvertToVMOutput().GetFirstReturnData(vmcommon.AsBigInt)
 	if err != nil {
 		return 0
 	}
