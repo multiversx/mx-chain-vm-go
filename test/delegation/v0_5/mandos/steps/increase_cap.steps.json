@@ -3,7 +3,7 @@
     "steps": [
         {
             "step": "scCall",
-            "txId": "change-delegation-cap",
+            "txId": "increase-delegation-cap",
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "''delegation_contract___________s1",
@@ -12,11 +12,11 @@
                 "arguments": [
                     "300,000,000,000,000"
                 ],
-                "gasLimit": "1,000,000",
+                "gasLimit": "900,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["true"],
+                "out": ["1"],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -36,7 +36,7 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["false"],
+                "out": ["0"],
                 "status": "",
                 "logs": [],
                 "gas": "*",

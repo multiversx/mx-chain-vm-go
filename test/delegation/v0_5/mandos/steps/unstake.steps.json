@@ -47,6 +47,30 @@
         },
         {
             "step": "scCall",
+            "txId": "check-defereed-payment-list",
+            "tx": {
+                "from": "''someone_______________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "getUserDeferredPaymentList",
+                "arguments": [
+                    "''delegator_1___________________s1"
+                ],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "1,000,000,000","0"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
             "txId": "check-stake-by-type-2",
             "tx": {
                 "from": "''someone_______________________s1",
