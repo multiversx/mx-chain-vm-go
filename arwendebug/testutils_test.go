@@ -111,7 +111,7 @@ func (context *testContext) runContract(contract string, impersonated string, fu
 		ArgumentsHex:       arguments,
 	}
 
-	response, err := context.facade.RunSmartContract(request)
+	response, err := context.facade.CallSmartContract(request)
 
 	t := context.t
 	require.Nil(t, err)
