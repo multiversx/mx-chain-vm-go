@@ -413,7 +413,7 @@ func (pfe *fuzzDelegationExecutor) continueGlobalOperation() error {
 			"value": "0",
 			"function": "continueGlobalOperation",
 			"arguments": [],
-			"gasLimit": "100,000",
+			"gasLimit": "900,000",
 			"gasPrice": "0"
 		}
 	}`,
