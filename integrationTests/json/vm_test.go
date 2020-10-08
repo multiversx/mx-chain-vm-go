@@ -34,7 +34,7 @@ func TestErc20FromRust(t *testing.T) {
 	)
 	err = runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
-		"erc20-rust",
+		"erc20-rust/mandos",
 		".scen.json",
 		[]string{})
 	if err != nil {
@@ -70,7 +70,7 @@ func TestAdderFromRust(t *testing.T) {
 	)
 	err = runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
-		"adder",
+		"adder/mandos",
 		".scen.json",
 		[]string{})
 
@@ -88,7 +88,7 @@ func TestCryptoBubbles(t *testing.T) {
 	)
 	err = runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
-		"crypto_bubbles_min_v1",
+		"crypto_bubbles_min_v1/mandos",
 		".scen.json",
 		[]string{})
 
@@ -106,7 +106,7 @@ func TestFeaturesFromRust(t *testing.T) {
 	)
 	err = runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
-		"features",
+		"features/mandos",
 		".scen.json",
 		[]string{})
 
@@ -124,7 +124,7 @@ func TestAsyncCalls(t *testing.T) {
 	)
 	err = runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
-		"async",
+		"async/mandos",
 		".scen.json",
 		[]string{})
 

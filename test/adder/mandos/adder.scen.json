@@ -5,21 +5,28 @@
         {
             "step": "setState",
             "accounts": {
-                "0xacc1000000000000000000000000000000000000000000000000000000001234": {
+                "address:owner": {
                     "nonce": "5",
                     "balance": "0x500000",
                     "storage": {},
                     "code": ""
                 }
-            }
+            },
+            "newAddresses": [
+                {
+                    "creatorAddress": "address:owner",
+                    "creatorNonce": "5",
+                    "newAddress": "address:adder_address"
+                }
+            ]
         },
         {
             "step": "scDeploy",
             "txId": "1",
             "tx": {
-                "from": "0xacc1000000000000000000000000000000000000000000000000000000001234",
+                "from": "address:owner",
                 "value": "0",
-                "contractCode": "file:adder.wasm",
+                "contractCode": "file:../output/adder.wasm",
                 "arguments": [
                     "0x05"
                 ],
@@ -38,8 +45,8 @@
             "step": "scCall",
             "txId": "2",
             "tx": {
-                "from": "0xacc1000000000000000000000000000000000000000000000000000000001234",
-                "to": "0x0000000000000000000011111111acc100000000000000000000000000051234",
+                "from": "address:owner",
+                "to": "address:adder_address",
                 "value": "0",
                 "function": "getSum",
                 "arguments": [],
@@ -60,8 +67,8 @@
             "step": "scCall",
             "txId": "3",
             "tx": {
-                "from": "0xacc1000000000000000000000000000000000000000000000000000000001234",
-                "to": "0x0000000000000000000011111111acc100000000000000000000000000051234",
+                "from": "address:owner",
+                "to": "address:adder_address",
                 "value": "0",
                 "function": "add",
                 "arguments": [
@@ -81,19 +88,19 @@
         {
             "step": "checkState",
             "accounts": {
-                "0xacc1000000000000000000000000000000000000000000000000000000001234": {
+                "address:owner": {
                     "nonce": "8",
                     "balance": "0x200000",
                     "storage": {},
                     "code": ""
                 },
-                "0x0000000000000000000011111111acc100000000000000000000000000051234": {
+                "address:adder_address": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
                         "``sum": "0x08"
                     },
-                    "code": "file:adder.wasm"
+                    "code": "file:../output/adder.wasm"
                 }
             }
         }
