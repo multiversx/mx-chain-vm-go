@@ -12,7 +12,7 @@
                 "arguments": [
                     "300,000,000,000,000"
                 ],
-                "gasLimit": "900,000",
+                "gasLimit": "90,000,000",
                 "gasPrice": "0"
             },
             "expect": {

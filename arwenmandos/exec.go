@@ -3,7 +3,6 @@ package arwenmandos
 import (
 	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
-	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	worldhook "github.com/ElrondNetwork/elrond-vm-util/mock-hook-blockchain"
@@ -31,11 +30,15 @@ func NewArwenTestExecutor() (*ArwenTestExecutor, error) {
 	world.EnableMockAddressGeneration()
 
 	blockGasLimit := uint64(10000000)
-	gasSchedule := config.MakeGasMapForTests()
+	// gasSchedule := config.MakeGasMapForTests()
+	gasMap, err := arwenHost.LoadGasScheduleConfig("../../test/gasSchedule.toml")
+	if err != nil {
+		return nil, err
+	}
 	vm, err := arwenHost.NewArwenVM(world, &arwen.VMHostParameters{
 		VMType:                   TestVMType,
 		BlockGasLimit:            blockGasLimit,
-		GasSchedule:              gasSchedule,
+		GasSchedule:              gasMap,
 		ProtocolBuiltinFunctions: make(vmcommon.FunctionNames),
 		ElrondProtectedKeyPrefix: []byte(ElrondProtectedKeyPrefix),
 	})

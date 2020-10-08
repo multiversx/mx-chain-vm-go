@@ -30,7 +30,7 @@
                     "1,000,000,000",
                     "200,000,000,000"
                 ],
-                "gasLimit": "1,000,000",
+                "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -59,7 +59,7 @@
                 "value": "150,000,000,000",
                 "function": "stake",
                 "arguments": [],
-                "gasLimit": "1,000,000",
+                "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -88,7 +88,7 @@
                 "value": "0",
                 "function": "getTotalStakeByType",
                 "arguments": [],
-                "gasLimit": "1,000,000",
+                "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -132,7 +132,7 @@
                 "value": "0",
                 "function": "getTotalStakeByType",
                 "arguments": [],
-                "gasLimit": "1,000,000",
+                "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {

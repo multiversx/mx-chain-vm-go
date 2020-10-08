@@ -18,7 +18,7 @@
                 "value": "0",
                 "function": "getNumBlocksBeforeUnBond",
                 "arguments": [],
-                "gasLimit": "1,000,000",
+                "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -40,7 +40,7 @@
                 "arguments": [
                     "15"
                 ],
-                "gasLimit": "1,000,000",
+                "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -60,7 +60,7 @@
                 "value": "0",
                 "function": "getNumBlocksBeforeUnBond",
                 "arguments": [],
-                "gasLimit": "1,000,000",
+                "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {

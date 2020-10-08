@@ -60,7 +60,7 @@
                 "value": "100,000,000,000,000",
                 "function": "stake",
                 "arguments": [],
-                "gasLimit": "1,000,000",
+                "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -125,7 +125,7 @@
                 "value": "0",
                 "function": "getTotalCumulatedRewards",
                 "arguments": [],
-                "gasLimit": "1,000,000",
+                "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -149,7 +149,7 @@
                 "arguments": [
                     "''node_address__________________s1"
                 ],
-                "gasLimit": "1,000,000",
+                "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -173,7 +173,7 @@
                 "arguments": [
                     "''delegator_1___________________s1"
                 ],
-                "gasLimit": "1,000,000",
+                "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -197,7 +197,7 @@
                 "arguments": [
                     "''delegator_2___________________s1"
                 ],
-                "gasLimit": "1,000,000",
+                "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -219,7 +219,7 @@
                 "value": "0",
                 "function": "claimRewards",
                 "arguments": [],
-                "gasLimit": "1,000,000",
+                "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -239,7 +239,7 @@
                 "value": "0",
                 "function": "claimRewards",
                 "arguments": [],
-                "gasLimit": "1,000,000",
+                "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -259,7 +259,7 @@
                 "value": "0",
                 "function": "claimRewards",
                 "arguments": [],
-                "gasLimit": "1,000,000",
+                "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
