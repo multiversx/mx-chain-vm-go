@@ -354,8 +354,6 @@ func bigIntGetESDTCallValue(context unsafe.Pointer, destination int32) {
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetCallValue
 	metering.UseGas(gasToUse)
 
-	var value []byte
-
 	value := bigInt.GetOne(destination)
 
 	esdtValue := runtime.GetVMInput().ESDTValue
