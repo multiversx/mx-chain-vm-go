@@ -136,3 +136,6 @@ func getDummyBuiltinFunctionNames() vmcommon.FunctionNames {
 	names["builtinFail"] = empty
 	return names
 }
+
+func TestESDT_SimpleTransferFromSC(t *testing.T) {
+}
