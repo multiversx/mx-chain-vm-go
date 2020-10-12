@@ -1395,14 +1395,18 @@ func executeOnSameContext(
 	gasToUse := metering.GasSchedule().ElrondAPICost.ExecuteOnSameContext
 	metering.UseGas(gasToUse)
 
-	send := runtime.GetSCAddress()
-	dest, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
-	if arwen.WithFault(err, context, false) {
+	sender := runtime.GetSCAddress()
+	destination, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
+	if err != nil {
+		return 1
+	}
+
+	if !areInSameShard(host, sender, destination) {
 		return 1
 	}
 
 	value, err := runtime.MemLoad(valueOffset, arwen.BalanceLen)
-	if arwen.WithFault(err, context, false) {
+	if err != nil {
 		return 1
 	}
 
@@ -1418,25 +1422,25 @@ func executeOnSameContext(
 	gasToUse = metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
 	metering.UseGas(gasToUse)
 
-	if arwen.WithFault(err, context, false) {
+	if err != nil {
 		return 1
 	}
 
 	bigIntVal := big.NewInt(0).SetBytes(value)
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
-			CallerAddr:  send,
+			CallerAddr:  sender,
 			Arguments:   data,
 			CallValue:   bigIntVal,
 			GasPrice:    0,
 			GasProvided: metering.BoundGasLimit(gasLimit),
 		},
-		RecipientAddr: dest,
+		RecipientAddr: destination,
 		Function:      function,
 	}
 
 	_, err = host.ExecuteOnSameContext(contractCallInput)
-	if arwen.WithFault(err, context, false) {
+	if err != nil {
 		return 1
 	}
 
@@ -1462,14 +1466,18 @@ func executeOnDestContext(
 	gasToUse := metering.GasSchedule().ElrondAPICost.ExecuteOnDestContext
 	metering.UseGas(gasToUse)
 
-	send := runtime.GetSCAddress()
-	dest, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
-	if arwen.WithFault(err, context, false) {
+	sender := runtime.GetSCAddress()
+	destination, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
+	if err != nil {
+		return 1
+	}
+
+	if !areInSameShard(host, sender, destination) {
 		return 1
 	}
 
 	value, err := runtime.MemLoad(valueOffset, arwen.BalanceLen)
-	if arwen.WithFault(err, context, false) {
+	if err != nil {
 		return 1
 	}
 
@@ -1481,24 +1489,23 @@ func executeOnDestContext(
 		argumentsLengthOffset,
 		dataOffset,
 	)
-
 	gasToUse = metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
 	metering.UseGas(gasToUse)
 
-	if arwen.WithFault(err, context, false) {
+	if err != nil {
 		return 1
 	}
 
 	bigIntVal := big.NewInt(0).SetBytes(value)
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
-			CallerAddr:  send,
+			CallerAddr:  sender,
 			Arguments:   data,
 			CallValue:   bigIntVal,
 			GasPrice:    0,
 			GasProvided: metering.BoundGasLimit(gasLimit),
 		},
-		RecipientAddr: dest,
+		RecipientAddr: destination,
 		Function:      function,
 	}
 
@@ -1569,8 +1576,13 @@ func delegateExecution(
 	gasToUse := metering.GasSchedule().ElrondAPICost.DelegateExecution
 	metering.UseGas(gasToUse)
 
-	address, err := runtime.MemLoad(addressOffset, arwen.HashLen)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	sender := runtime.GetSCAddress()
+	destination, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
+	if err != nil {
+		return 1
+	}
+
+	if !areInSameShard(host, sender, destination) {
 		return 1
 	}
 
@@ -1586,22 +1598,21 @@ func delegateExecution(
 	gasToUse = metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
 	metering.UseGas(gasToUse)
 
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if err != nil {
 		return 1
 	}
 
 	value := runtime.GetVMInput().CallValue
-	sender := runtime.GetVMInput().CallerAddr
-
+	bigIntVal := big.NewInt(0).Set(value)
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallerAddr:  sender,
 			Arguments:   data,
-			CallValue:   value,
+			CallValue:   bigIntVal,
 			GasPrice:    0,
 			GasProvided: metering.BoundGasLimit(gasLimit),
 		},
-		RecipientAddr: address,
+		RecipientAddr: destination,
 		Function:      function,
 	}
 
@@ -1640,8 +1651,13 @@ func executeReadOnly(
 	gasToUse := metering.GasSchedule().ElrondAPICost.ExecuteReadOnly
 	metering.UseGas(gasToUse)
 
-	address, err := runtime.MemLoad(addressOffset, arwen.HashLen)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	sender := runtime.GetSCAddress()
+	destination, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
+	if err != nil {
+		return 1
+	}
+
+	if !areInSameShard(host, sender, destination) {
 		return 1
 	}
 
@@ -1657,24 +1673,23 @@ func executeReadOnly(
 	gasToUse = metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
 	metering.UseGas(gasToUse)
 
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if err != nil {
 		return 1
 	}
 
-	value := runtime.GetVMInput().CallValue
-	sender := runtime.GetVMInput().CallerAddr
-
 	runtime.SetReadOnly(true)
 
+	value := runtime.GetVMInput().CallValue
+	bigIntVal := big.NewInt(0).Set(value)
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallerAddr:  sender,
 			Arguments:   data,
-			CallValue:   value,
+			CallValue:   bigIntVal,
 			GasPrice:    0,
 			GasProvided: metering.BoundGasLimit(gasLimit),
 		},
-		RecipientAddr: address,
+		RecipientAddr: destination,
 		Function:      function,
 	}
 
@@ -1824,4 +1839,12 @@ func getOriginalTxHash(context unsafe.Pointer, dataOffset int32) {
 
 	err := runtime.MemStore(dataOffset, runtime.GetOriginalTxHash())
 	_ = arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
+}
+
+func areInSameShard(host arwen.VMHost, leftAddress []byte, rightAddress []byte) bool {
+	blockchain := host.Blockchain()
+	leftShard := blockchain.GetShardOfAddress(leftAddress)
+	rightShard := blockchain.GetShardOfAddress(rightAddress)
+
+	return leftShard == rightShard
 }
