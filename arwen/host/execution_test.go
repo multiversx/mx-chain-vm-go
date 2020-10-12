@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/assert"
@@ -15,9 +16,10 @@ import (
 )
 
 var counterKey = []byte("COUNTER")
+var WASMLocalsLimit = uint64(4000)
 
 func TestNewArwen(t *testing.T) {
-	host, err := DefaultTestArwen(t, &mock.BlockchainHookStub{}, &mock.CryptoHookMock{})
+	host, err := DefaultTestArwen(t, &mock.BlockchainHookStub{})
 	require.Nil(t, err)
 	require.NotNil(t, host)
 }
@@ -44,12 +46,11 @@ func TestSCMem(t *testing.T) {
 }
 
 func TestExecution_DeployNewAddressErr(t *testing.T) {
-	mockCryptoHook := &mock.CryptoHookMock{}
 	stubBlockchainHook := &mock.BlockchainHookStub{}
 
 	errNewAddress := errors.New("new address error")
 
-	host, _ := DefaultTestArwen(t, stubBlockchainHook, mockCryptoHook)
+	host, _ := DefaultTestArwen(t, stubBlockchainHook)
 	input := DefaultTestContractCreateInput()
 	stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
 		require.Equal(t, input.CallerAddr, address)
@@ -169,6 +170,36 @@ func TestExecution_DeployWASM_Popcnt(t *testing.T) {
 	require.Equal(t, []byte{3}, vmOutput.ReturnData[0])
 }
 
+func TestExecution_DeployWASM_AtMaximumLocals(t *testing.T) {
+	newAddress := []byte("new smartcontract")
+	host := DefaultTestArwenForDeployment(t, 24, newAddress)
+	input := DefaultTestContractCreateInput()
+	input.CallValue = big.NewInt(88)
+	input.GasProvided = 1000
+	input.ContractCode = makeBytecodeWithLocals(WASMLocalsLimit)
+	input.Arguments = [][]byte{{0}}
+
+	vmOutput, err := host.RunSmartContractCreate(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+}
+
+func TestExecution_DeployWASM_MoreThanMaximumLocals(t *testing.T) {
+	newAddress := []byte("new smartcontract")
+	host := DefaultTestArwenForDeployment(t, 24, newAddress)
+	input := DefaultTestContractCreateInput()
+	input.CallValue = big.NewInt(88)
+	input.GasProvided = 1000
+	input.ContractCode = makeBytecodeWithLocals(WASMLocalsLimit + 1)
+	input.Arguments = [][]byte{{0}}
+
+	vmOutput, err := host.RunSmartContractCreate(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.ContractInvalid, vmOutput.ReturnCode)
+}
+
 func TestExecution_DeployWASM_Init_Errors(t *testing.T) {
 	newAddress := []byte("new smartcontract")
 	host := DefaultTestArwenForDeployment(t, 24, newAddress)
@@ -195,17 +226,16 @@ func TestExecution_DeployWASM_Init_Errors(t *testing.T) {
 func TestExecution_ManyDeployments(t *testing.T) {
 	ownerNonce := uint64(23)
 	newAddress := "new smartcontract"
-	mockCryptoHook := &mock.CryptoHookMock{}
 	stubBlockchainHook := &mock.BlockchainHookStub{}
 	stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
 		return &mock.AccountMock{Nonce: ownerNonce}, nil
 	}
 	stubBlockchainHook.NewAddressCalled = func(creatorAddress []byte, nonce uint64, vmType []byte) ([]byte, error) {
 		ownerNonce++
-		return []byte(newAddress + " " + string(ownerNonce)), nil
+		return []byte(newAddress + " " + fmt.Sprint(ownerNonce)), nil
 	}
 
-	host, _ := DefaultTestArwen(t, stubBlockchainHook, mockCryptoHook)
+	host, _ := DefaultTestArwen(t, stubBlockchainHook)
 	input := DefaultTestContractCreateInput()
 	input.CallerAddr = []byte("owner")
 	input.Arguments = make([][]byte, 0)
@@ -241,12 +271,11 @@ func TestExecution_Deploy_DisallowFloatingPoint(t *testing.T) {
 }
 
 func TestExecution_CallGetUserAccountErr(t *testing.T) {
-	mockCryptoHook := &mock.CryptoHookMock{}
 	stubBlockchainHook := &mock.BlockchainHookStub{}
 
 	errGetAccount := errors.New("get code error")
 
-	host, _ := DefaultTestArwen(t, stubBlockchainHook, mockCryptoHook)
+	host, _ := DefaultTestArwen(t, stubBlockchainHook)
 	input := DefaultTestContractCallInput()
 	stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
 		return nil, errGetAccount
@@ -335,6 +364,48 @@ func TestExecution_Call_Successful(t *testing.T) {
 	require.Equal(t, big.NewInt(1002).Bytes(), storedBytes)
 }
 
+func TestExecution_Call_GasConsumptionOnLocals(t *testing.T) {
+	gasWithZeroLocals, gasSchedule := callCustomSCAndGetGasUsed(t, 0)
+	costPerLocal := uint64(gasSchedule.WASMOpcodeCost.LocalAllocate)
+
+	UnmeteredLocals := uint64(gasSchedule.WASMOpcodeCost.LocalsUnmetered)
+
+	// Any number of local variables below `UnmeteredLocals` must be instantiated
+	// without metering, i.e. gas-free.
+	for _, locals := range []uint64{1, UnmeteredLocals / 2, UnmeteredLocals} {
+		gasUsed, _ := callCustomSCAndGetGasUsed(t, uint64(locals))
+		require.Equal(t, gasWithZeroLocals, gasUsed)
+	}
+
+	// Any number of local variables above `UnmeteredLocals` must be instantiated
+	// with metering, i.e. will cost gas.
+	for _, locals := range []uint64{UnmeteredLocals + 1, UnmeteredLocals * 2, UnmeteredLocals * 4} {
+		gasUsed, _ := callCustomSCAndGetGasUsed(t, uint64(locals))
+		metered_locals := locals - UnmeteredLocals
+		costOfLocals := costPerLocal * uint64(metered_locals)
+		expectedGasUsed := gasWithZeroLocals + costOfLocals
+		require.Equal(t, expectedGasUsed, gasUsed)
+	}
+}
+
+func callCustomSCAndGetGasUsed(t *testing.T, locals uint64) (uint64, *config.GasCost) {
+	code := makeBytecodeWithLocals(uint64(locals))
+	host, _ := DefaultTestArwenForCall(t, code, nil)
+	gasSchedule := host.Metering().GasSchedule()
+
+	gasLimit := uint64(100000)
+	input := DefaultTestContractCallInput()
+	input.GasProvided = gasLimit
+	input.Function = "answer"
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+
+	compilationCost := uint64(len(code)) * gasSchedule.BaseOperationCost.CompilePerByte
+	return gasLimit - vmOutput.GasRemaining - compilationCost, gasSchedule
+}
+
 func TestExecution_ExecuteOnSameContext_Simple(t *testing.T) {
 	parentCode := GetTestSCCode("exec-same-ctx-simple-parent", "../../")
 	childCode := GetTestSCCode("exec-same-ctx-simple-child", "../../")
@@ -346,10 +417,10 @@ func TestExecution_ExecuteOnSameContext_Simple(t *testing.T) {
 	input.GasProvided = gasProvided
 
 	vmOutput, err := host.RunSmartContractCall(input)
-	fmt.Println(vmOutput.ReturnMessage)
 	require.Nil(t, err)
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 	require.Equal(t, "", vmOutput.ReturnMessage)
+	fmt.Println(vmOutput.ReturnMessage)
 }
 
 func TestExecution_Call_Breakpoints(t *testing.T) {
@@ -669,18 +740,9 @@ func TestExecution_ExecuteOnSameContext_BuiltinFunctions(t *testing.T) {
 	code := GetTestSCCode("exec-same-ctx-builtin", "../../")
 	scBalance := big.NewInt(1000)
 
-	getBuiltinFunctionNames := func() vmcommon.FunctionNames {
-		names := make(vmcommon.FunctionNames)
-
-		var empty struct{}
-		names["builtinClaim"] = empty
-		names["builtinDoSomething"] = empty
-		return names
-	}
-
 	host, stubBlockchainHook := DefaultTestArwenForCall(t, code, scBalance)
 	stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
-	host.protocolBuiltinFunctions = getBuiltinFunctionNames()
+	host.protocolBuiltinFunctions = getDummyBuiltinFunctionNames()
 
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
@@ -721,7 +783,9 @@ func TestExecution_ExecuteOnSameContext_BuiltinFunctions(t *testing.T) {
 
 func dummyProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	outPutAccounts := make(map[string]*vmcommon.OutputAccount)
-	outPutAccounts[string(parentAddress)] = &vmcommon.OutputAccount{BalanceDelta: big.NewInt(0)}
+	outPutAccounts[string(parentAddress)] = &vmcommon.OutputAccount{
+		BalanceDelta: big.NewInt(0),
+		Address:      parentAddress}
 
 	if input.Function == "builtinClaim" {
 		outPutAccounts[string(parentAddress)].BalanceDelta = big.NewInt(42)
@@ -730,8 +794,26 @@ func dummyProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.V
 	if input.Function == "builtinDoSomething" {
 		return &vmcommon.VMOutput{OutputAccounts: outPutAccounts, GasRemaining: input.GasProvided}, nil
 	}
+	if input.Function == "builtinFail" {
+		return &vmcommon.VMOutput{
+			GasRemaining:  0,
+			GasRefund:     big.NewInt(0),
+			ReturnCode:    vmcommon.UserError,
+			ReturnMessage: "whatdidyoudo",
+		}, nil
+	}
 
 	return nil, arwen.ErrFuncNotFound
+}
+
+func getDummyBuiltinFunctionNames() vmcommon.FunctionNames {
+	names := make(vmcommon.FunctionNames)
+
+	var empty struct{}
+	names["builtinClaim"] = empty
+	names["builtinDoSomething"] = empty
+	names["builtinFail"] = empty
+	return names
 }
 
 func TestExecution_ExecuteOnDestContext_Prepare(t *testing.T) {
@@ -822,7 +904,8 @@ func TestExecution_ExecuteOnDestContext_Successful(t *testing.T) {
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
 	expectedVMOutput := expectedVMOutput_DestCtx_SuccessfulChildCall(parentCode, childCode)
-	require.Equal(t, expectedVMOutput, vmOutput)
+	expectedVMOutput.OutputAccounts[string(parentAddress)].StorageUpdates[string(childKey)] = &vmcommon.StorageUpdate{Offset: childKey, Data: nil}
+	assert.Equal(t, expectedVMOutput, vmOutput)
 }
 
 func TestExecution_ExecuteOnDestContext_Successful_BigInts(t *testing.T) {
@@ -1057,6 +1140,53 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
+func TestExecution_AsyncCall_BuiltinFails(t *testing.T) {
+	code := GetTestSCCode("async-call-builtin", "../../")
+	scBalance := big.NewInt(1000)
+
+	host, stubBlockchainHook := DefaultTestArwenForCall(t, code, scBalance)
+	stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
+	host.protocolBuiltinFunctions = getDummyBuiltinFunctionNames()
+
+	input := DefaultTestContractCallInput()
+	input.RecipientAddr = parentAddress
+	input.Function = "performAsyncCallToBuiltin"
+	input.Arguments = [][]byte{{1}}
+	input.GasProvided = 1000000
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+	require.Equal(t, [][]byte{[]byte("hello"), {4}}, vmOutput.ReturnData)
+}
+
+func TestExecution_AsyncCall_CallBackFailsBeforeExecution(t *testing.T) {
+	config.AsyncCallbackGasLockForTests = uint64(2)
+
+	code := GetTestSCCode("async-call-builtin", "../../")
+	scBalance := big.NewInt(1000)
+
+	host, stubBlockchainHook := DefaultTestArwenForCall(t, code, scBalance)
+	stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
+	host.protocolBuiltinFunctions = getDummyBuiltinFunctionNames()
+
+	input := DefaultTestContractCallInput()
+	input.RecipientAddr = parentAddress
+	input.Function = "performAsyncCallToBuiltin"
+	input.Arguments = [][]byte{{1}}
+	input.GasProvided = 1000000
+	input.CurrentTxHash = []byte("txhash")
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+	require.Equal(t, [][]byte{[]byte("hello"), []byte("out of gas"), []byte("txhash")}, vmOutput.ReturnData)
+}
+
 func TestExecution_CreateNewContract_Success(t *testing.T) {
 	parentCode := GetTestSCCode("deployer", "../../")
 	childCode := GetTestSCCode("init-correct", "../../")
@@ -1119,4 +1249,25 @@ func TestExecution_CreateNewContract_Fail(t *testing.T) {
 	// the actual vmOutput.
 	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
+}
+
+// makeBytecodeWithLocals rewrites the bytecode of "answer" to change the
+// number of i64 locals it instantiates
+func makeBytecodeWithLocals(numLocals uint64) []byte {
+	originalCode := GetTestSCCode("answer", "../../")
+	firstSlice := originalCode[:0x5B]
+	secondSlice := originalCode[0x5C:]
+
+	encodedNumLocals := arwen.U64ToLEB128(numLocals)
+	extraBytes := len(encodedNumLocals) - 1
+
+	result := make([]byte, 0)
+	result = append(result, firstSlice...)
+	result = append(result, encodedNumLocals...)
+	result = append(result, secondSlice...)
+
+	result[0x57] = byte(int(result[0x57]) + extraBytes)
+	result[0x59] = byte(int(result[0x59]) + extraBytes)
+
+	return result
 }

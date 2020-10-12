@@ -55,6 +55,7 @@ func NewNodePart(
 	part.Repliers[common.BlockchainGetUserAccountRequest] = part.replyToBlockchainGetUserAccount
 	part.Repliers[common.BlockchainGetShardOfAddressRequest] = part.replyToBlockchainGetShardOfAddress
 	part.Repliers[common.BlockchainIsSmartContractRequest] = part.replyToBlockchainIsSmartContract
+	part.Repliers[common.BlockchainIsPayableRequest] = part.replyToBlockchainIsPayable
 
 	return part, nil
 }
@@ -108,6 +109,9 @@ func (part *NodePart) doLoop() (common.MessageHandler, error) {
 			continue
 		}
 
+		if common.IsVersionResponse(message) {
+			return message, nil
+		}
 		if common.IsContractResponse(message) {
 			return message, nil
 		}

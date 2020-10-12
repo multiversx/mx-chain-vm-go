@@ -266,7 +266,7 @@ func (blockchain *BlockchainHookGateway) ProcessBuiltInFunction(input *vmcommon.
 	}
 
 	response := rawResponse.(*common.MessageBlockchainProcessBuiltinFunctionResponse)
-	return response.VMOutput, response.GetError()
+	return response.SerializableVMOutput.ConvertToVMOutput(), response.GetError()
 }
 
 // GetBuiltinFunctionNames forwards a message to the actual hook
@@ -298,7 +298,7 @@ func (blockchain *BlockchainHookGateway) GetAllState(address []byte) (map[string
 	}
 
 	response := rawResponse.(*common.MessageBlockchainGetAllStateResponse)
-	return response.AllState, response.GetError()
+	return response.SerializableAllState.ConvertToMap(), response.GetError()
 }
 
 // GetUserAccount forwards a message to the actual hook
@@ -350,4 +350,20 @@ func (blockchain *BlockchainHookGateway) IsSmartContract(address []byte) bool {
 
 	response := rawResponse.(*common.MessageBlockchainIsSmartContractResponse)
 	return response.Result
+}
+
+// IsPayable forwards a message to the actual hook
+func (blockchain *BlockchainHookGateway) IsPayable(address []byte) (bool, error) {
+	request := common.NewMessageBlockchainIsPayableRequest(address)
+	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if err != nil {
+		return false, err
+	}
+
+	if rawResponse.GetKind() != common.BlockchainIsPayableResponse {
+		return false, common.ErrBadHookResponseFromNode
+	}
+
+	response := rawResponse.(*common.MessageBlockchainIsPayableResponse)
+	return response.Result, response.GetError()
 }

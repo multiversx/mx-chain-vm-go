@@ -1,0 +1,95 @@
+{
+    "name": "unstake-2",
+    "steps":[
+        {
+            "step": "scCall",
+            "txId": "user-unstake",
+            "tx": {
+                "from": "''delegator_1___________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "unStake",
+                "arguments": ["50,001,000,000,000"],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "check-stake-by-type-1",
+            "tx": {
+                "from": "''someone_______________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "getUserStakeByType",
+                "arguments": [
+                    "''delegator_1___________________s1"
+                ],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "0", "0", "50,000,000,000,000", "50,000,000,000,000", "1,000,000,000"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "check-stake-by-type-2",
+            "tx": {
+                "from": "''someone_______________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "getUserStakeByType",
+                "arguments": [
+                    "''delegator_2___________________s1"
+                ],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "0", "0","200,000,000,000,000", "0","0"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "check-stake-by-type-total",
+            "tx": {
+                "from": "''someone_______________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "getTotalStakeByType",
+                "arguments": [],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                   "0", "0", "250,000,000,000,000",  "50,000,000,000,000", "1,000,000,000"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        }
+    ]
+}

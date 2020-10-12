@@ -9,6 +9,7 @@ import (
 
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	mj "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/model"
+	oj "github.com/ElrondNetwork/elrond-vm-util/test-util/orderedjson"
 )
 
 func convertAccount(testAcct *mj.Account) *worldhook.Account {
@@ -60,13 +61,13 @@ func convertBlockInfo(testBlockInfo *mj.BlockInfo) *worldhook.BlockInfo {
 
 func convertLogToTestFormat(outputLog *vmi.LogEntry) *mj.LogEntry {
 	testLog := mj.LogEntry{
-		Address:    mj.JSONBytes{Value: outputLog.Address},
-		Identifier: mj.JSONBytes{Value: outputLog.Identifier},
-		Data:       mj.JSONBytes{Value: outputLog.Data},
-		Topics:     make([]mj.JSONBytes, len(outputLog.Topics)),
+		Address:    mj.JSONBytesFromString{Value: outputLog.Address},
+		Identifier: mj.JSONBytesFromString{Value: outputLog.Identifier},
+		Data:       mj.JSONBytesFromString{Value: outputLog.Data},
+		Topics:     make([]mj.JSONBytesFromString, len(outputLog.Topics)),
 	}
 	for i, topic := range outputLog.Topics {
-		testLog.Topics[i] = mj.JSONBytes{Value: topic}
+		testLog.Topics[i] = mj.JSONBytesFromString{Value: topic}
 	}
 
 	return &testLog
@@ -110,4 +111,17 @@ func generateTxHash(txIndex string) []byte {
 		txIndexBytes = append(txIndexBytes, '.')
 	}
 	return txIndexBytes
+}
+
+// JSONCheckBytesString formats a list of JSONCheckBytes for printing to console.
+func checkBytesListPretty(jcbs []mj.JSONCheckBytes) string {
+	str := "["
+	for i, jcb := range jcbs {
+		if i > 0 {
+			str += ", "
+		}
+
+		str += "\"" + oj.JSONString(jcb.Original) + "\""
+	}
+	return str + "]"
 }

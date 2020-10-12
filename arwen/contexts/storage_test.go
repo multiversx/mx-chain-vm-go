@@ -92,10 +92,6 @@ func TestStorageContext_SetAddress(t *testing.T) {
 	require.Equal(t, []byte(nil), storageContext.GetStorage(keyA))
 }
 
-func TestStorageContext_StateStack(t *testing.T) {
-	// TODO
-}
-
 func TestStorageContext_GetStorageUpdates(t *testing.T) {
 	t.Parallel()
 
@@ -202,4 +198,65 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	value = []byte("doesn't matter")
 	storageStatus, err = storageContext.SetStorage(key, value)
 	require.Equal(t, arwen.ErrStoreElrondReservedKey, err)
+}
+
+func TestStorageContext_GetStorageFromAddress(t *testing.T) {
+	t.Parallel()
+
+	scAddress := []byte("account")
+	mockOutput := &mock.OutputContextMock{}
+	account := mockOutput.NewVMOutputAccount(scAddress)
+	mockOutput.OutputAccountMock = account
+	mockOutput.OutputAccountIsNew = false
+
+	mockRuntime := &mock.RuntimeContextMock{}
+	mockMetering := &mock.MeteringContextMock{}
+	mockMetering.SetGasSchedule(config.MakeGasMapForTests())
+	mockMetering.BlockGasLimitMock = uint64(15000)
+
+	host := &mock.VmHostMock{
+		OutputContext:   mockOutput,
+		MeteringContext: mockMetering,
+		RuntimeContext:  mockRuntime,
+	}
+
+	readable := []byte("readable")
+	nonreadable := []byte("nonreadable")
+	internalData := []byte("internalData")
+
+	bcHook := &mock.BlockchainHookStub{
+		GetUserAccountCalled: func(address []byte) (vmcommon.UserAccountHandler, error) {
+			if bytes.Equal(readable, address) {
+				return &mock.AccountMock{CodeMetadata: []byte{4, 0}}, nil
+			}
+			if bytes.Equal(nonreadable, address) || bytes.Equal(scAddress, address) {
+				return &mock.AccountMock{CodeMetadata: []byte{0, 0}}, nil
+			}
+			return nil, nil
+		},
+		GetStorageDataCalled: func(accountsAddress []byte, index []byte) ([]byte, error) {
+			return internalData, nil
+		},
+	}
+
+	storageContext, _ := NewStorageContext(host, bcHook, elrondReservedTestPrefix)
+	storageContext.SetAddress(scAddress)
+
+	key := []byte("key")
+	data := storageContext.GetStorageFromAddress(scAddress, key)
+	require.Equal(t, data, internalData)
+
+	data = storageContext.GetStorageFromAddress(readable, key)
+	require.Equal(t, data, internalData)
+
+	data = storageContext.GetStorageFromAddress(nonreadable, key)
+	require.Nil(t, data)
+}
+
+func TestStorageContext_LoadGasStoreGasPerKey(t *testing.T) {
+	// TODO
+}
+
+func TestStorageContext_StoreGasPerKey(t *testing.T) {
+	// TODO
 }

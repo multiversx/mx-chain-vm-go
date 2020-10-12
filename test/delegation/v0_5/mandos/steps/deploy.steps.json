@@ -1,0 +1,60 @@
+{
+    "name": "init",
+    "steps": [
+        {
+            "step": "setState",
+            "newAddresses": [
+                {
+                    "creatorAddress": "''node_address__________________s1",
+                    "creatorNonce": "0",
+                    "newAddress": "''delegation_contract___________s1"
+                }
+            ]
+        },
+        {
+            "step": "scDeploy",
+            "txId": "deploy-1",
+            "tx": {
+                "from": "''node_address__________________s1",
+                "value": "0",
+                "contractCode": "file:../../output/delegation.wasm",
+                "arguments": [
+                    "''auction_contract______________s1",
+                    "5000",
+                    "0",
+                    "60",
+                    "1,000,000,000"
+                ],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "enable-unstake",
+            "tx": {
+                "from": "''node_address__________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "enableUnStake",
+                "arguments": [],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        }
+    ]
+}

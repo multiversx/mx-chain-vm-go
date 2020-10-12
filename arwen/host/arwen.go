@@ -5,12 +5,13 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/contexts"
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/crypto"
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/cryptoapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/elrondapi"
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/ethapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
+	"github.com/ElrondNetwork/elrond-go/core/atomic"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -27,7 +28,7 @@ type CatchFunction func(error)
 // vmHost implements HostContext interface.
 type vmHost struct {
 	blockChainHook vmcommon.BlockchainHook
-	cryptoHook     vmcommon.CryptoHook
+	cryptoHook     crypto.VMCrypto
 
 	ethInput []byte
 
@@ -40,15 +41,18 @@ type vmHost struct {
 
 	scAPIMethods             *wasmer.Imports
 	protocolBuiltinFunctions vmcommon.FunctionNames
+
+	arwenV2EnableEpoch uint32
+	flagArwenV2        atomic.Flag
 }
 
 // NewArwenVM creates a new Arwen vmHost
 func NewArwenVM(
 	blockChainHook vmcommon.BlockchainHook,
-	cryptoHook vmcommon.CryptoHook,
 	hostParameters *arwen.VMHostParameters,
 ) (*vmHost, error) {
 
+	cryptoHook := crypto.NewVMCrypto()
 	host := &vmHost{
 		blockChainHook:           blockChainHook,
 		cryptoHook:               cryptoHook,
@@ -59,6 +63,7 @@ func NewArwenVM(
 		bigIntContext:            nil,
 		scAPIMethods:             nil,
 		protocolBuiltinFunctions: hostParameters.ProtocolBuiltinFunctions,
+		arwenV2EnableEpoch:       hostParameters.ArwenV2EnableEpoch,
 	}
 
 	var err error
@@ -73,12 +78,7 @@ func NewArwenVM(
 		return nil, err
 	}
 
-	imports, err = ethapi.EthereumImports(imports)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = crypto.CryptoImports(imports)
+	imports, err = cryptoapi.CryptoImports(imports)
 	if err != nil {
 		return nil, err
 	}
@@ -130,12 +130,12 @@ func NewArwenVM(
 	opcodeCosts := gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray()
 	wasmer.SetOpcodeCosts(&opcodeCosts)
 
-	host.InitState()
+	host.initContexts()
 
 	return host, nil
 }
 
-func (host *vmHost) Crypto() vmcommon.CryptoHook {
+func (host *vmHost) Crypto() crypto.VMCrypto {
 	return host.cryptoHook
 }
 
@@ -163,6 +163,10 @@ func (host *vmHost) BigInt() arwen.BigIntContext {
 	return host.bigIntContext
 }
 
+func (host *vmHost) IsArwenV2Enabled() bool {
+	return host.flagArwenV2.IsSet()
+}
+
 func (host *vmHost) GetContexts() (
 	arwen.BigIntContext,
 	arwen.BlockchainContext,
@@ -180,6 +184,12 @@ func (host *vmHost) GetContexts() (
 }
 
 func (host *vmHost) InitState() {
+	host.initContexts()
+	host.flagArwenV2.Toggle(host.blockChainHook.CurrentEpoch() >= host.arwenV2EnableEpoch)
+	log.Trace("arwenV2", "enabled", host.flagArwenV2.IsSet())
+}
+
+func (host *vmHost) initContexts() {
 	host.ClearContextStateStack()
 	host.bigIntContext.InitState()
 	host.outputContext.InitState()

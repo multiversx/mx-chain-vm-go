@@ -34,7 +34,7 @@ func TestErc20FromRust(t *testing.T) {
 	)
 	err = runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
-		"erc20-rust",
+		"erc20-rust/mandos",
 		".scen.json",
 		[]string{})
 	if err != nil {
@@ -70,7 +70,7 @@ func TestAdderFromRust(t *testing.T) {
 	)
 	err = runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
-		"adder",
+		"adder/mandos",
 		".scen.json",
 		[]string{})
 
@@ -88,7 +88,7 @@ func TestCryptoBubbles(t *testing.T) {
 	)
 	err = runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
-		"crypto_bubbles_min_v1",
+		"crypto_bubbles_min_v1/mandos",
 		".scen.json",
 		[]string{})
 
@@ -106,7 +106,7 @@ func TestFeaturesFromRust(t *testing.T) {
 	)
 	err = runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
-		"features",
+		"features/mandos",
 		".scen.json",
 		[]string{})
 
@@ -124,7 +124,7 @@ func TestAsyncCalls(t *testing.T) {
 	)
 	err = runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
-		"async",
+		"async/mandos",
 		".scen.json",
 		[]string{})
 
@@ -142,7 +142,7 @@ func TestDelegation_v0_2(t *testing.T) {
 	)
 	err = runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
-		"delegation_v0.2",
+		"delegation/v0_2",
 		".scen.json",
 		[]string{})
 
@@ -160,7 +160,45 @@ func TestDelegation_v0_3(t *testing.T) {
 	)
 	err = runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
-		"delegation_v0.3",
+		"delegation/v0_3",
+		".scen.json",
+		[]string{
+			"delegation/v0_3/test/integration/genesis/genesis.scen.json",
+		})
+
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestDelegation_v0_4_genesis(t *testing.T) {
+	executor, err := am.NewArwenTestExecutor()
+	require.Nil(t, err)
+	runner := mc.NewScenarioRunner(
+		executor,
+		mc.NewDefaultFileResolver(),
+	)
+	err = runner.RunAllJSONScenariosInDirectory(
+		getTestRoot(),
+		"delegation/v0_4_genesis",
+		".scen.json",
+		[]string{})
+
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestDelegation_v0_5(t *testing.T) {
+	executor, err := am.NewArwenTestExecutor()
+	require.Nil(t, err)
+	runner := mc.NewScenarioRunner(
+		executor,
+		mc.NewDefaultFileResolver(),
+	)
+	err = runner.RunAllJSONScenariosInDirectory(
+		getTestRoot(),
+		"delegation/v0_5",
 		".scen.json",
 		[]string{})
 

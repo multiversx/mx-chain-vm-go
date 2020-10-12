@@ -36,6 +36,8 @@ func init() {
 	messageCreators[ContractResponse] = createMessageContractResponse
 	messageCreators[DiagnoseWaitRequest] = createMessageDiagnoseWaitRequest
 	messageCreators[DiagnoseWaitResponse] = createMessageDiagnoseWaitResponse
+	messageCreators[VersionRequest] = createMessageVersionRequest
+	messageCreators[VersionResponse] = createMessageVersionResponse
 
 	messageCreators[BlockchainNewAddressRequest] = createMessageBlockchainNewAddressRequest
 	messageCreators[BlockchainNewAddressResponse] = createMessageBlockchainNewAddressResponse
@@ -77,6 +79,8 @@ func init() {
 	messageCreators[BlockchainGetShardOfAddressResponse] = createMessageBlockchainGetShardOfAddressResponse
 	messageCreators[BlockchainIsSmartContractRequest] = createMessageBlockchainIsSmartContractRequest
 	messageCreators[BlockchainIsSmartContractResponse] = createMessageBlockchainIsSmartContractResponse
+	messageCreators[BlockchainIsPayableRequest] = createMessageBlockchainIsPayableRequest
+	messageCreators[BlockchainIsPayableResponse] = createMessageBlockchainIsPayableResponse
 }
 
 func createMessageInitialize() MessageHandler {
@@ -107,6 +111,13 @@ func createMessageDiagnoseWaitResponse() MessageHandler {
 	return &MessageDiagnoseWaitResponse{}
 }
 
+func createMessageVersionRequest() MessageHandler {
+	return &MessageVersionRequest{}
+}
+
+func createMessageVersionResponse() MessageHandler {
+	return &MessageVersionResponse{}
+}
 func createUndefinedMessage() MessageHandler {
 	return NewUndefinedMessage()
 }
@@ -269,4 +280,12 @@ func createMessageBlockchainIsSmartContractRequest() MessageHandler {
 
 func createMessageBlockchainIsSmartContractResponse() MessageHandler {
 	return &MessageBlockchainIsSmartContractResponse{}
+}
+
+func createMessageBlockchainIsPayableRequest() MessageHandler {
+	return &MessageBlockchainIsPayableRequest{}
+}
+
+func createMessageBlockchainIsPayableResponse() MessageHandler {
+	return &MessageBlockchainIsPayableResponse{}
 }

@@ -23,7 +23,7 @@ func getTestRoot() string {
 }
 
 func getFeaturesContractPath() string {
-	return filepath.Join(getTestRoot(), "features/features.wasm")
+	return filepath.Join(getTestRoot(), "features/output/features.wasm")
 }
 
 func unsignedInterpreter(bytes []byte) *big.Int {

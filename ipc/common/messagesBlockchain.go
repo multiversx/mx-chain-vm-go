@@ -412,14 +412,14 @@ func NewMessageBlockchainProcessBuiltinFunctionRequest(callInput vmcommon.Contra
 // MessageBlockchainProcessBuiltinFunctionResponse represents a response message
 type MessageBlockchainProcessBuiltinFunctionResponse struct {
 	Message
-	VMOutput *vmcommon.VMOutput
+	SerializableVMOutput *SerializableVMOutput
 }
 
 // NewMessageBlockchainProcessBuiltinFunctionResponse creates a response message
 func NewMessageBlockchainProcessBuiltinFunctionResponse(vmOutput *vmcommon.VMOutput, err error) *MessageBlockchainProcessBuiltinFunctionResponse {
 	message := &MessageBlockchainProcessBuiltinFunctionResponse{}
 	message.Kind = BlockchainProcessBuiltinFunctionResponse
-	message.VMOutput = vmOutput
+	message.SerializableVMOutput = NewSerializableVMOutput(vmOutput)
 	message.SetError(err)
 	return message
 }
@@ -469,14 +469,14 @@ func NewMessageBlockchainGetAllStateRequest(address []byte) *MessageBlockchainGe
 // MessageBlockchainGetAllStateResponse represents a response message
 type MessageBlockchainGetAllStateResponse struct {
 	Message
-	AllState map[string][]byte
+	SerializableAllState *SerializableMapStringBytes
 }
 
 // NewMessageBlockchainGetAllStateResponse creates a response message
 func NewMessageBlockchainGetAllStateResponse(state map[string][]byte, err error) *MessageBlockchainGetAllStateResponse {
 	message := &MessageBlockchainGetAllStateResponse{}
 	message.Kind = BlockchainGetAllStateResponse
-	message.AllState = state
+	message.SerializableAllState = NewSerializableMapStringBytes(state)
 	message.SetError(err)
 	return message
 }
@@ -563,5 +563,34 @@ func NewMessageBlockchainIsSmartContractResponse(result bool) *MessageBlockchain
 	message := &MessageBlockchainIsSmartContractResponse{}
 	message.Kind = BlockchainIsSmartContractResponse
 	message.Result = result
+	return message
+}
+
+// MessageBlockchainIsPayableRequest represents a request message
+type MessageBlockchainIsPayableRequest struct {
+	Message
+	Address []byte
+}
+
+// NewMessageBlockchainIsPayableRequest creates a request message
+func NewMessageBlockchainIsPayableRequest(address []byte) *MessageBlockchainIsPayableRequest {
+	message := &MessageBlockchainIsPayableRequest{}
+	message.Kind = BlockchainIsPayableRequest
+	message.Address = address
+	return message
+}
+
+// MessageBlockchainIsPayableResponse represents a response message
+type MessageBlockchainIsPayableResponse struct {
+	Message
+	Result bool
+}
+
+// NewMessageBlockchainIsPayableResponse creates a response message
+func NewMessageBlockchainIsPayableResponse(result bool, err error) *MessageBlockchainIsPayableResponse {
+	message := &MessageBlockchainIsPayableResponse{}
+	message.Kind = BlockchainIsPayableResponse
+	message.Result = result
+	message.SetError(err)
 	return message
 }

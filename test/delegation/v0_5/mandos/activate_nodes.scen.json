@@ -1,0 +1,29 @@
+{
+    "name": "activate nodes scenario",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "steps/init_accounts.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "steps/deploy.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "steps/add_nodes.steps.json"
+        }, 
+        {
+            "step": "externalSteps",
+            "path": "steps/stake_1.steps.json"
+        }, 
+        {
+            "step": "externalSteps",
+            "path": "steps/increase_cap.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "steps/activate_nodes.steps.json"
+        }
+    ]
+}

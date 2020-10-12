@@ -126,8 +126,12 @@ type BigIntAPICost struct {
 }
 
 type CryptoAPICost struct {
-	SHA256    uint64
-	Keccak256 uint64
+	SHA256          uint64
+	Keccak256       uint64
+	Ripemd160       uint64
+	VerifyBLS       uint64
+	VerifyEd25519   uint64
+	VerifySecp256k1 uint64
 }
 
 type WASMOpcodeCost struct {
@@ -578,6 +582,8 @@ type WASMOpcodeCost struct {
 	I64x2Load32x2U         uint32
 	I8x16RoundingAverageU  uint32
 	I16x8RoundingAverageU  uint32
+	LocalAllocate          uint32
+	LocalsUnmetered        uint32
 }
 
 type GasCost struct {
@@ -1039,6 +1045,9 @@ func (opcode_costs_struct *WASMOpcodeCost) ToOpcodeCostsArray() [wasmer.OPCODE_C
 	opcode_costs[wasmer.OpcodeI64x2Load32x2U] = opcode_costs_struct.I64x2Load32x2U
 	opcode_costs[wasmer.OpcodeI8x16RoundingAverageU] = opcode_costs_struct.I8x16RoundingAverageU
 	opcode_costs[wasmer.OpcodeI16x8RoundingAverageU] = opcode_costs_struct.I16x8RoundingAverageU
+	opcode_costs[wasmer.OpcodeLocalAllocate] = opcode_costs_struct.LocalAllocate
+	// opcode_costs_struct.LocalsUnmetered is not added to the opcode_costs
+	// array; the value will be sent to Wasmer as a compilation option instead
 
 	return opcode_costs
 }

@@ -29,7 +29,7 @@
                     "balance": "123,000",
                     "storage": {},
                     "code": "",
-                    "asyncCallData": "dns claim"
+                    "asyncCallData": "str:dns claim"
                 },
                 "''dns____________________________|0xb9": {
                     "nonce": "*",

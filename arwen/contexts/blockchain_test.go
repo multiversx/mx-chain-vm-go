@@ -392,6 +392,23 @@ func TestBlockchainContext_BlockHash(t *testing.T) {
 	require.Equal(t, []byte("1234fc"), hash)
 }
 
+func TestBlockchainContext_IsPayable(t *testing.T) {
+	t.Parallel()
+
+	host := &mock.VmHostMock{}
+	blockchainHook := mock.NewBlockchainHookMock()
+	accounts := []*mock.AccountMock{
+		{Address: []byte("test"), CodeMetadata: []byte{0, vmcommon.METADATA_PAYABLE}},
+	}
+	blockchainHook.AddAccounts(accounts)
+
+	bc, _ := NewBlockchainContext(host, blockchainHook)
+
+	isPayable, err := bc.IsPayable([]byte("test"))
+	require.Nil(t, err)
+	require.True(t, isPayable)
+}
+
 func TestBlockchainContext_Getters(t *testing.T) {
 	t.Parallel()
 

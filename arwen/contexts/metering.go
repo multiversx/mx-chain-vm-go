@@ -16,17 +16,17 @@ type meteringContext struct {
 // NewMeteringContext creates a new meteringContext
 func NewMeteringContext(
 	host arwen.VMHost,
-	gasSchedule config.GasScheduleMap,
+	gasMap config.GasScheduleMap,
 	blockGasLimit uint64,
 ) (*meteringContext, error) {
 
-	gasCostConfig, err := config.CreateGasConfig(gasSchedule)
+	gasSchedule, err := config.CreateGasConfig(gasMap)
 	if err != nil {
 		return nil, err
 	}
 
 	context := &meteringContext{
-		gasSchedule:           gasCostConfig,
+		gasSchedule:           gasSchedule,
 		blockGasLimit:         blockGasLimit,
 		gasLockedForAsyncStep: 0,
 		host:                  host,
@@ -78,8 +78,8 @@ func (context *meteringContext) BoundGasLimit(value int64) uint64 {
 	return limit
 }
 
-// deductAndLockGasIfAsyncStep will deduct the gas for an async step and also lock gas for the callback, if the execution is an asynchronous call
-func (context *meteringContext) deductAndLockGasIfAsyncStep() error {
+// DeductAndLockGasIfAsyncStep will deduct the gas for an async step and also lock gas for the callback, if the execution is an asynchronous call
+func (context *meteringContext) DeductAndLockGasIfAsyncStep() error {
 	context.gasLockedForAsyncStep = 0
 
 	input := context.host.Runtime().GetVMInput()
@@ -124,7 +124,7 @@ func (context *meteringContext) DeductInitialGasForExecution(contract []byte) er
 		return err
 	}
 
-	return context.deductAndLockGasIfAsyncStep()
+	return context.DeductAndLockGasIfAsyncStep()
 }
 
 // DeductInitialGasForDirectDeployment deducts gas for the deployment of a contract initiated by a Transaction

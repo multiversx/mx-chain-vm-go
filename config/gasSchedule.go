@@ -8,7 +8,8 @@ import (
 )
 
 const GasValueForTests = 1
-const AsyncCallbackGasLockForTests = 100_000
+
+var AsyncCallbackGasLockForTests = uint64(100_000)
 
 // GasScheduleMap (alias) is the map for gas schedule
 type GasScheduleMap = map[string]map[string]uint64
@@ -273,6 +274,10 @@ func FillGasMap_CryptoAPICosts(value uint64) map[string]uint64 {
 	gasMap := make(map[string]uint64)
 	gasMap["SHA256"] = value
 	gasMap["Keccak256"] = value
+	gasMap["Ripemd160"] = value
+	gasMap["VerifyBLS"] = value
+	gasMap["VerifyEd25519"] = value
+	gasMap["VerifySecp256k1"] = value
 
 	return gasMap
 }
@@ -726,6 +731,8 @@ func FillGasMap_WASMOpcodeValues(value uint64) map[string]uint64 {
 	gasMap["I64x2Load32x2U"] = value
 	gasMap["I8x16RoundingAverageU"] = value
 	gasMap["I16x8RoundingAverageU"] = value
+	gasMap["LocalAllocate"] = value
+	gasMap["LocalsUnmetered"] = 100
 
 	return gasMap
 }
