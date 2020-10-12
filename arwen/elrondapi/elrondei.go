@@ -1391,7 +1391,6 @@ func executeOnSameContext(
 	host := arwen.GetVmContext(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
-	blockchain := host.Blockchain()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.ExecuteOnSameContext
 	metering.UseGas(gasToUse)
@@ -1402,10 +1401,7 @@ func executeOnSameContext(
 		return 1
 	}
 
-	shardOfSender := blockchain.GetShardOfAddress(sender)
-	shardOfDestination := blockchain.GetShardOfAddress(destination)
-	sameShard := shardOfSender == shardOfDestination
-	if !sameShard {
+	if !areInSameShard(host, sender, destination) {
 		return 1
 	}
 
@@ -1466,7 +1462,6 @@ func executeOnDestContext(
 	host := arwen.GetVmContext(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
-	blockchain := host.Blockchain()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.ExecuteOnDestContext
 	metering.UseGas(gasToUse)
@@ -1477,10 +1472,7 @@ func executeOnDestContext(
 		return 1
 	}
 
-	shardOfSender := blockchain.GetShardOfAddress(sender)
-	shardOfDestination := blockchain.GetShardOfAddress(destination)
-	sameShard := shardOfSender == shardOfDestination
-	if !sameShard {
+	if !areInSameShard(host, sender, destination) {
 		return 1
 	}
 
@@ -1584,8 +1576,13 @@ func delegateExecution(
 	gasToUse := metering.GasSchedule().ElrondAPICost.DelegateExecution
 	metering.UseGas(gasToUse)
 
-	address, err := runtime.MemLoad(addressOffset, arwen.HashLen)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	sender := runtime.GetSCAddress()
+	destination, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
+	if err != nil {
+		return 1
+	}
+
+	if !areInSameShard(host, sender, destination) {
 		return 1
 	}
 
@@ -1601,22 +1598,21 @@ func delegateExecution(
 	gasToUse = metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
 	metering.UseGas(gasToUse)
 
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if err != nil {
 		return 1
 	}
 
 	value := runtime.GetVMInput().CallValue
-	sender := runtime.GetVMInput().CallerAddr
-
+	bigIntVal := big.NewInt(0).Set(value)
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallerAddr:  sender,
 			Arguments:   data,
-			CallValue:   value,
+			CallValue:   bigIntVal,
 			GasPrice:    0,
 			GasProvided: metering.BoundGasLimit(gasLimit),
 		},
-		RecipientAddr: address,
+		RecipientAddr: destination,
 		Function:      function,
 	}
 
@@ -1655,8 +1651,13 @@ func executeReadOnly(
 	gasToUse := metering.GasSchedule().ElrondAPICost.ExecuteReadOnly
 	metering.UseGas(gasToUse)
 
-	address, err := runtime.MemLoad(addressOffset, arwen.HashLen)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	sender := runtime.GetSCAddress()
+	destination, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
+	if err != nil {
+		return 1
+	}
+
+	if !areInSameShard(host, sender, destination) {
 		return 1
 	}
 
@@ -1672,24 +1673,23 @@ func executeReadOnly(
 	gasToUse = metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
 	metering.UseGas(gasToUse)
 
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if err != nil {
 		return 1
 	}
 
-	value := runtime.GetVMInput().CallValue
-	sender := runtime.GetVMInput().CallerAddr
-
 	runtime.SetReadOnly(true)
 
+	value := runtime.GetVMInput().CallValue
+	bigIntVal := big.NewInt(0).Set(value)
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallerAddr:  sender,
 			Arguments:   data,
-			CallValue:   value,
+			CallValue:   bigIntVal,
 			GasPrice:    0,
 			GasProvided: metering.BoundGasLimit(gasLimit),
 		},
-		RecipientAddr: address,
+		RecipientAddr: destination,
 		Function:      function,
 	}
 
@@ -1839,4 +1839,12 @@ func getOriginalTxHash(context unsafe.Pointer, dataOffset int32) {
 
 	err := runtime.MemStore(dataOffset, runtime.GetOriginalTxHash())
 	_ = arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
+}
+
+func areInSameShard(host arwen.VMHost, leftAddress []byte, rightAddress []byte) bool {
+	blockchain := host.Blockchain()
+	leftShard := blockchain.GetShardOfAddress(leftAddress)
+	rightShard := blockchain.GetShardOfAddress(rightAddress)
+
+	return leftShard == rightShard
 }
