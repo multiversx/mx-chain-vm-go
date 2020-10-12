@@ -1,0 +1,186 @@
+{
+    "name": "withdraw inactive",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "steps/init_accounts.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "steps/deploy.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "steps/add_nodes.steps.json"
+        }, 
+        {
+            "step": "externalSteps",
+            "path": "steps/stake_1.steps.json"
+        }, 
+        {
+            "step": "externalSteps",
+            "path": "steps/increase_cap.steps.json"
+        },
+        {
+            "step": "scCall",
+            "comment":"withdraw partially",
+            "txId": "withdraw-inactive-stake",
+            "tx": {
+                "from": "''delegator_2___________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "withdrawInactiveStake",
+                "arguments": ["100,000,000"],
+                "gasLimit": "1,000,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "check-stake-by-type-total",
+            "tx": {
+                "from": "''someone_______________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "getTotalStakeByType",
+                "arguments": [],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                   "0",  "900,000,000", "300,000,000,000,000", "0", "0"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "check-stake-by-type-2",
+            "tx": {
+                "from": "''someone_______________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "getUserStakeByType",
+                "arguments": [
+                    "''delegator_2___________________s1"
+                ],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "0", "900,000,000", "199,999,000,000,000", "0", "0"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "''delegator_2___________________s1": {
+                    "nonce": "*",
+                    "balance": "100,000,000",
+                    "storage": {},
+                    "code": "",
+                    "asyncCallData": "''delegation withdraw inactive stake"
+                },
+                "+": ""
+            }
+        },
+
+        {
+            "step": "scCall",
+            "comment": "withdraw everything",
+            "txId": "withdraw-inactive-stake",
+            "tx": {
+                "from": "''delegator_2___________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "withdrawInactiveStake",
+                "arguments": ["900,000,000"],
+                "gasLimit": "1,000,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "check-stake-by-type-total",
+            "tx": {
+                "from": "''someone_______________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "getTotalStakeByType",
+                "arguments": [],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                   "0",  "0", "300,000,000,000,000", "0", "0"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "check-stake-by-type-2",
+            "tx": {
+                "from": "''someone_______________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "getUserStakeByType",
+                "arguments": [
+                    "''delegator_2___________________s1"
+                ],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "0", "0", "199,999,000,000,000", "0", "0"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "''delegator_2___________________s1": {
+                    "nonce": "*",
+                    "balance": "1,000,000,000",
+                    "storage": {},
+                    "code": "",
+                    "asyncCallData": "''delegation withdraw inactive stake"
+                },
+                "+": ""
+            }
+        }
+    ]
+}
