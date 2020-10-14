@@ -78,7 +78,7 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 	if scAddress != nil && context.warmInstanceAddress != nil && bytes.Equal(scAddress, context.warmInstanceAddress) {
 		context.instance = context.warmInstance
 		context.SetPointsUsed(0)
-		context.MemZero()
+		// context.MemZero()
 	} else {
 		options := wasmer.CompilationOptions{
 			GasLimit:           gasLimit,
