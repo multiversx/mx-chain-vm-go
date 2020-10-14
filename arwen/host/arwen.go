@@ -196,6 +196,9 @@ func (host *vmHost) ClearContextStateStack() {
 }
 
 func (host *vmHost) Clean() {
+	if host.runtimeContext.IsWarmInstance() {
+		return
+	}
 	host.runtimeContext.CleanWasmerInstance()
 	arwen.RemoveAllHostContexts()
 }

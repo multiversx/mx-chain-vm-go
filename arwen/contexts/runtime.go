@@ -110,6 +110,14 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 	return nil
 }
 
+func (context *runtimeContext) IsWarmInstance() bool {
+	if context.instance != nil && context.instance == context.warmInstance {
+		return true
+	}
+
+	return false
+}
+
 func (context *runtimeContext) MustVerifyNextContractCode() {
 	context.verifyCode = true
 }
@@ -323,7 +331,7 @@ func (context *runtimeContext) GetInstanceExports() wasmer.ExportsMap {
 }
 
 func (context *runtimeContext) CleanWasmerInstance() {
-	if context.instance == nil || context.instance == context.warmInstance {
+	if context.instance == nil || context.IsWarmInstance() {
 		return
 	}
 
