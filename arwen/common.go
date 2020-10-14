@@ -50,6 +50,7 @@ type VMHostParameters struct {
 	GasSchedule              config.GasScheduleMap
 	ProtocolBuiltinFunctions vmcommon.FunctionNames
 	ElrondProtectedKeyPrefix []byte
+	UseWarmInstance          bool
 }
 
 // AsyncCallInfo contains the information required to handle the asynchronous call of another SmartContract

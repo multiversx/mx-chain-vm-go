@@ -32,12 +32,13 @@ type runtimeContext struct {
 
 	validator *WASMValidator
 
+	useWarmInstance     bool
 	warmInstanceAddress []byte
 	warmInstance        *wasmer.Instance
 }
 
 // NewRuntimeContext creates a new runtimeContext
-func NewRuntimeContext(host arwen.VMHost, vmType []byte) (*runtimeContext, error) {
+func NewRuntimeContext(host arwen.VMHost, vmType []byte, useWarmInstance bool) (*runtimeContext, error) {
 	scAPINames := host.GetAPIMethods().Names()
 	protocolBuiltinFunctions := host.GetProtocolBuiltinFunctions()
 
@@ -47,6 +48,7 @@ func NewRuntimeContext(host arwen.VMHost, vmType []byte) (*runtimeContext, error
 		stateStack:          make([]*runtimeContext, 0),
 		instanceStack:       make([]*wasmer.Instance, 0),
 		validator:           NewWASMValidator(scAPINames, protocolBuiltinFunctions),
+		useWarmInstance:     useWarmInstance,
 		warmInstanceAddress: nil,
 		warmInstance:        nil,
 	}
@@ -75,7 +77,8 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 	}
 
 	scAddress := context.GetSCAddress()
-	if scAddress != nil && context.warmInstanceAddress != nil && bytes.Equal(scAddress, context.warmInstanceAddress) {
+	useWarm := context.useWarmInstance && context.warmInstanceAddress != nil && bytes.Equal(scAddress, context.warmInstanceAddress)
+	if scAddress != nil && useWarm {
 		context.instance = context.warmInstance
 		context.SetPointsUsed(0)
 		// context.MemZero()
@@ -94,8 +97,10 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 		}
 
 		context.instance = newInstance
-		context.warmInstanceAddress = context.GetSCAddress()
-		context.warmInstance = context.instance
+		if context.useWarmInstance {
+			context.warmInstanceAddress = context.GetSCAddress()
+			context.warmInstance = context.instance
+		}
 
 		idContext := arwen.AddHostContext(context.host)
 		context.instance.SetContextData(idContext)

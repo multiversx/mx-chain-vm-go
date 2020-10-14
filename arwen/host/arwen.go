@@ -95,7 +95,11 @@ func NewArwenVM(
 		return nil, err
 	}
 
-	host.runtimeContext, err = contexts.NewRuntimeContext(host, hostParameters.VMType)
+	host.runtimeContext, err = contexts.NewRuntimeContext(
+		host,
+		hostParameters.VMType,
+		hostParameters.UseWarmInstance,
+	)
 	if err != nil {
 		return nil, err
 	}

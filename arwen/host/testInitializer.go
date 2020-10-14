@@ -107,6 +107,7 @@ func DefaultTestArwen(tb testing.TB, blockchain vmcommon.BlockchainHook, crypto 
 		GasSchedule:              config.MakeGasMapForTests(),
 		ProtocolBuiltinFunctions: make(vmcommon.FunctionNames),
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
+		UseWarmInstance:          false,
 	})
 	require.Nil(tb, err)
 	require.NotNil(tb, host)
