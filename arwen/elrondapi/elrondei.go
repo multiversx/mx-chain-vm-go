@@ -212,7 +212,7 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getESDTValue", getESDTTokenName, C.getESDTTokenName)
+	imports, err = imports.Append("getESDTTokenName", getESDTTokenName, C.getESDTTokenName)
 	if err != nil {
 		return nil, err
 	}

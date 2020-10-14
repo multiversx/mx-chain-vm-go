@@ -94,3 +94,5 @@ var ErrNilCallbackFunction = errors.New("nil callback function")
 var ErrUpgradeNotAllowed = errors.New("upgrade not allowed")
 
 var ErrNilContract = errors.New("nil contract")
+
+var ErrBuiltinCallOnSameContextDisallowed = errors.New("calling built-in function on the same context is disallowed")
