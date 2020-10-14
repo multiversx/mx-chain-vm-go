@@ -1,6 +1,7 @@
 package contexts
 
 import (
+	"bytes"
 	"fmt"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -30,6 +31,9 @@ type runtimeContext struct {
 	asyncContextInfo *arwen.AsyncContextInfo
 
 	validator *WASMValidator
+
+	warmInstanceAddress []byte
+	warmInstance        *wasmer.Instance
 }
 
 // NewRuntimeContext creates a new runtimeContext
@@ -38,11 +42,13 @@ func NewRuntimeContext(host arwen.VMHost, vmType []byte) (*runtimeContext, error
 	protocolBuiltinFunctions := host.GetProtocolBuiltinFunctions()
 
 	context := &runtimeContext{
-		host:          host,
-		vmType:        vmType,
-		stateStack:    make([]*runtimeContext, 0),
-		instanceStack: make([]*wasmer.Instance, 0),
-		validator:     NewWASMValidator(scAPINames, protocolBuiltinFunctions),
+		host:                host,
+		vmType:              vmType,
+		stateStack:          make([]*runtimeContext, 0),
+		instanceStack:       make([]*wasmer.Instance, 0),
+		validator:           NewWASMValidator(scAPINames, protocolBuiltinFunctions),
+		warmInstanceAddress: nil,
+		warmInstance:        nil,
 	}
 
 	context.InitState()
@@ -67,27 +73,37 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 		context.instance = nil
 		return arwen.ErrMaxInstancesReached
 	}
-	options := wasmer.CompilationOptions{
-		GasLimit:           gasLimit,
-		OpcodeTrace:        false,
-		Metering:           true,
-		RuntimeBreakpoints: true,
-	}
-	newInstance, err := wasmer.NewInstanceWithOptions(contract, options)
-	if err != nil {
-		context.instance = nil
-		return err
-	}
 
-	context.instance = newInstance
+	scAddress := context.GetSCAddress()
+	if scAddress != nil && context.warmInstanceAddress != nil && bytes.Equal(scAddress, context.warmInstanceAddress) {
+		context.instance = context.warmInstance
+		context.MemZero()
+	} else {
+		options := wasmer.CompilationOptions{
+			GasLimit:           gasLimit,
+			OpcodeTrace:        false,
+			Metering:           true,
+			RuntimeBreakpoints: true,
+		}
 
-	idContext := arwen.AddHostContext(context.host)
-	context.instance.SetContextData(idContext)
+		newInstance, err := wasmer.NewInstanceWithOptions(contract, options)
+		if err != nil {
+			context.instance = nil
+			return err
+		}
 
-	err = context.VerifyContractCode()
-	if err != nil {
-		context.CleanWasmerInstance()
-		return err
+		context.instance = newInstance
+		context.warmInstanceAddress = context.GetSCAddress()
+		context.warmInstance = context.instance
+
+		idContext := arwen.AddHostContext(context.host)
+		context.instance.SetContextData(idContext)
+
+		err = context.VerifyContractCode()
+		if err != nil {
+			context.CleanWasmerInstance()
+			return err
+		}
 	}
 
 	context.SetRuntimeBreakpointValue(arwen.BreakpointNone)
@@ -307,7 +323,7 @@ func (context *runtimeContext) GetInstanceExports() wasmer.ExportsMap {
 }
 
 func (context *runtimeContext) CleanWasmerInstance() {
-	if context.instance == nil {
+	if context.instance == nil || context.instance == context.warmInstance {
 		return
 	}
 
@@ -443,4 +459,12 @@ func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 
 	copy(memoryView[offset:requestedEnd], data)
 	return nil
+}
+
+func (context *runtimeContext) MemZero() {
+	memory := context.instance.InstanceCtx.Memory()
+	memoryView := memory.Data()
+	for i := range memoryView {
+		memoryView[i] = 0
+	}
 }
