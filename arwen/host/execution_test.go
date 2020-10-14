@@ -148,8 +148,8 @@ func TestExecution_DeployWASM_Successful(t *testing.T) {
 	require.Equal(t, uint64(528), vmOutput.GasRemaining)
 	require.Len(t, vmOutput.OutputAccounts, 2)
 	require.Equal(t, uint64(24), vmOutput.OutputAccounts["caller"].Nonce)
-	require.Equal(t, input.ContractCode, vmOutput.OutputAccounts["new smartcontract"].Code)
-	require.Equal(t, big.NewInt(88), vmOutput.OutputAccounts["new smartcontract"].BalanceDelta)
+	require.Equal(t, input.ContractCode, vmOutput.OutputAccounts[string(newAddress)].Code)
+	require.Equal(t, big.NewInt(88), vmOutput.OutputAccounts[string(newAddress)].BalanceDelta)
 }
 
 func TestExecution_DeployWASM_Popcnt(t *testing.T) {

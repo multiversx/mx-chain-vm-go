@@ -1,14 +1,20 @@
 package host
 
 import (
+	"encoding/hex"
+	"fmt"
 	"math/big"
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
+	"github.com/ElrondNetwork/elrond-go/core"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
+
+var ESDTTransferGasCost = uint64(1)
+var ESDTTestTokenName = []byte("TT")
 
 func TestExecution_ExecuteOnSameContext_BuiltinFunctions(t *testing.T) {
 	code := GetTestSCCode("exec-same-ctx-builtin", "../../")
@@ -102,6 +108,63 @@ func TestExecution_AsyncCall_CallBackFailsBeforeExecution(t *testing.T) {
 	require.Equal(t, [][]byte{[]byte("hello"), []byte("out of gas"), []byte("txhash")}, vmOutput.ReturnData)
 }
 
+func TestESDT_GettersAPI(t *testing.T) {
+	code := GetTestSCCode("exchange", "../../")
+	scBalance := big.NewInt(1000)
+
+	host, _ := DefaultTestArwenForCall(t, code, scBalance)
+
+	input := DefaultTestContractCallInput()
+	input.RecipientAddr = parentAddress
+	input.Function = "validateGetters"
+	input.GasProvided = 1000000
+	input.ESDTValue = big.NewInt(5)
+	input.ESDTTokenName = ESDTTestTokenName
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+
+	require.NotNil(t, vmOutput)
+	fmt.Println(vmOutput.ReturnMessage)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+}
+
+func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
+	dummyCode := GetTestSCCode("init-simple", "../../")
+	exchangeCode := GetTestSCCode("exchange", "../../")
+	scBalance := big.NewInt(1000)
+	esdtValue := int64(4)
+
+	host, stubBlockchainHook := DefaultTestArwenForCall(t, exchangeCode, scBalance)
+	stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
+	host.protocolBuiltinFunctions = getDummyBuiltinFunctionNames()
+
+	input := DefaultTestContractCallInput()
+	err := host.Output().TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue)
+	require.Nil(t, err)
+
+	input.RecipientAddr = parentAddress
+	input.Function = core.BuiltInFunctionESDTTransfer
+	input.GasProvided = 1000000
+	input.Arguments = [][]byte{
+		ESDTTestTokenName,
+		big.NewInt(esdtValue).Bytes(),
+		[]byte("validateGetters"),
+	}
+
+	host.InitState()
+	host.Runtime().StartWasmerInstance(dummyCode, input.GasProvided)
+	vmOutput, asyncInfo, err := host.ExecuteOnDestContext(input)
+
+	require.Nil(t, err)
+	require.Zero(t, len(asyncInfo.AsyncContextMap))
+
+	require.NotNil(t, vmOutput)
+	fmt.Println(vmOutput.ReturnMessage)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+	host.Clean()
+}
+
 func dummyProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	outPutAccounts := make(map[string]*vmcommon.OutputAccount)
 	outPutAccounts[string(parentAddress)] = &vmcommon.OutputAccount{
@@ -123,6 +186,30 @@ func dummyProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.V
 			ReturnMessage: "whatdidyoudo",
 		}, nil
 	}
+	if input.Function == core.BuiltInFunctionESDTTransfer {
+		vmOutput := &vmcommon.VMOutput{
+			GasRemaining: input.GasProvided - ESDTTransferGasCost,
+		}
+		function := string(input.Arguments[2])
+		esdtTransferTxData := function
+		for _, arg := range input.Arguments[3:] {
+			esdtTransferTxData += "@" + hex.EncodeToString(arg)
+		}
+		outTransfer := vmcommon.OutputTransfer{
+			Value:    big.NewInt(0),
+			GasLimit: 0,
+			Data:     []byte(esdtTransferTxData),
+			CallType: vmcommon.AsynchronousCall,
+		}
+		vmOutput.OutputAccounts = make(map[string]*vmcommon.OutputAccount)
+		vmOutput.OutputAccounts[string(input.RecipientAddr)] = &vmcommon.OutputAccount{
+			Address:         input.RecipientAddr,
+			OutputTransfers: []vmcommon.OutputTransfer{outTransfer},
+		}
+		// TODO when ESDT token balance querying is implemented, ensure the
+		// transfers that happen here are persisted in the mock accounts
+		return vmOutput, nil
+	}
 
 	return nil, arwen.ErrFuncNotFound
 }
@@ -134,8 +221,7 @@ func getDummyBuiltinFunctionNames() vmcommon.FunctionNames {
 	names["builtinClaim"] = empty
 	names["builtinDoSomething"] = empty
 	names["builtinFail"] = empty
-	return names
-}
+	names[core.BuiltInFunctionESDTTransfer] = empty
 
-func TestESDT_SimpleTransferFromSC(t *testing.T) {
+	return names
 }
