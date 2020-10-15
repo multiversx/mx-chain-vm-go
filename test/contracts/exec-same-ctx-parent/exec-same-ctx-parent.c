@@ -21,6 +21,8 @@ u32 executeArgumentsLengths[] = {32, 6};
 byte executeArgumentsData[] = "childTransferReceiver...........qwerty";
 
 byte data[20] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+byte wrongSC[] = "wrongSC.........................";
+byte childSC[] = "childSC.........................";
 
 void parentFunctionPrepare() {
 	storageStore(parentKeyA, 32, parentDataA, 11);
@@ -38,7 +40,7 @@ void parentFunctionPrepare() {
 
 void parentFunctionWrongCall() {
 	parentFunctionPrepare();
-	byte childAddress[] = "wrongSC.........................";
+	byte* childAddress = wrongSC;
 	byte functionName[] = "childFunction";
 
 	int result = executeOnSameContext(
@@ -56,7 +58,7 @@ void parentFunctionWrongCall() {
 
 void parentFunctionChildCall() {
 	parentFunctionPrepare();
-	byte childAddress[] = "childSC.........................";
+	byte* childAddress = childSC;
 	byte functionName[] = "childFunction";
 	int result = executeOnSameContext(
 			200000,
@@ -111,7 +113,7 @@ void parentFunctionChildCall_BigInts() {
 	};
 	int argumentLengths[3] = {argumentSize, argumentSize, argumentSize};
 
-	byte childAddress[] = "childSC.........................";
+	byte* childAddress = childSC;
 	byte functionName[] = "childFunction_BigInts";
 	int result = executeOnSameContext(
 			200000,
@@ -139,7 +141,7 @@ void parentFunctionChildCall_OutOfGas() {
 	bigInt myInt = bigIntNew(42);
 	finish(parentFinishA, 13);
 
-	byte childAddress[] = "childSC.........................";
+	byte* childAddress = childSC;
 	byte executeValue[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,99};
 	byte functionName[] = "childFunction_OutOfGas";
 	int result = executeOnSameContext(
