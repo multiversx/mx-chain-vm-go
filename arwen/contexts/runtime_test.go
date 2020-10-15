@@ -196,6 +196,7 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 		CallerAddr:  []byte("caller"),
 		GasProvided: 1000,
 		CallValue:   big.NewInt(0),
+		ESDTValue:   big.NewInt(0),
 	}
 
 	funcName := "test_func"

@@ -159,7 +159,7 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	runtime.InitStateFromContractCallInput(input)
 
 	storage.PushState()
-	storage.SetAddress(host.Runtime().GetSCAddress())
+	storage.SetAddress(runtime.GetSCAddress())
 
 	gasUsed := uint64(0)
 	defer func() {
@@ -555,7 +555,7 @@ func (host *vmHost) executeSmartContractCall(
 }
 
 func (host *vmHost) execute(input *vmcommon.ContractCallInput) (uint64, error) {
-	_, _, metering, output, runtime, _ := host.GetContexts()
+	_, _, metering, output, runtime, storage := host.GetContexts()
 
 	if host.isBuiltinFunctionBeingCalled() {
 		err := metering.DeductAndLockGasIfAsyncStep()
@@ -569,6 +569,8 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) (uint64, error) {
 		}
 
 		if newVMInput != nil {
+			runtime.InitStateFromContractCallInput(newVMInput)
+			storage.SetAddress(runtime.GetSCAddress())
 			return host.executeSmartContractCall(newVMInput, metering, runtime, output, false)
 		}
 

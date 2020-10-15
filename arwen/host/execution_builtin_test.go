@@ -2,7 +2,6 @@ package host
 
 import (
 	"encoding/hex"
-	"fmt"
 	"math/big"
 	"testing"
 
@@ -17,6 +16,9 @@ var ESDTTransferGasCost = uint64(1)
 var ESDTTestTokenName = []byte("TT")
 
 func TestExecution_ExecuteOnSameContext_BuiltinFunctions(t *testing.T) {
+	// TODO rewrite to use ExecuteOnDestContext(). It is disallowed to call a
+	// built-in function with ExecuteOnSameContext().
+	t.Skip()
 	code := GetTestSCCode("exec-same-ctx-builtin", "../../")
 	scBalance := big.NewInt(1000)
 
@@ -125,7 +127,6 @@ func TestESDT_GettersAPI(t *testing.T) {
 	require.Nil(t, err)
 
 	require.NotNil(t, vmOutput)
-	fmt.Println(vmOutput.ReturnMessage)
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 }
 
@@ -133,7 +134,7 @@ func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 	dummyCode := GetTestSCCode("init-simple", "../../")
 	exchangeCode := GetTestSCCode("exchange", "../../")
 	scBalance := big.NewInt(1000)
-	esdtValue := int64(4)
+	esdtValue := int64(5)
 
 	host, stubBlockchainHook := DefaultTestArwenForCall(t, exchangeCode, scBalance)
 	stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
@@ -157,10 +158,10 @@ func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 	vmOutput, asyncInfo, err := host.ExecuteOnDestContext(input)
 
 	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+
 	require.Zero(t, len(asyncInfo.AsyncContextMap))
 
-	require.NotNil(t, vmOutput)
-	fmt.Println(vmOutput.ReturnMessage)
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 	host.Clean()
 }
