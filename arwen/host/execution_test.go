@@ -476,6 +476,10 @@ func TestExecution_ExecuteOnSameContext_Prepare(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnSameContext_Wrong(t *testing.T) {
+	// CustomGasSchedule = config.MakeGasMapForTests()
+	// CustomGasSchedule["BaseOperationCost"]["DataCopyPerByte"] = 1
+	// CustomGasSchedule["BaseOperationCost"]["CompilePerByte"] = 2
+
 	parentCode := GetTestSCCode("exec-same-ctx-parent", "../../")
 	parentSCBalance := big.NewInt(1000)
 

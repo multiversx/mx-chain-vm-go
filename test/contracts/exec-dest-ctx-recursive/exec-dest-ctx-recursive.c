@@ -5,7 +5,7 @@
 
 u64 maxGasForCalls = 100000;
 
-byte selfAddress[] = "parentSC........................";
+byte selfAddress[] = "\0\0\0\0\0\0\0\0\x0F\x0F" "parentSC..............";
 byte executeValue[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5};
 byte arguments[1] = {0};
 int argumentsLengths[1] = {1};

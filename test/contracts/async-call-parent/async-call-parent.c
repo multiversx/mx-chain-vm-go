@@ -9,9 +9,9 @@ byte parentDataB[] = "parentDataB";
 byte parentFinishA[] = "parentFinishA";
 byte parentFinishB[] = "parentFinishB";
 
-byte childAddress[] = "childSC.........................";
-byte vaultAddress[] = "vaultAddress....................";
-byte thirdPartyAddress[] = "thirdPartyAddress...............";
+byte childAddress[] = "\0\0\0\0\0\0\0\0\x0F\x0F" "childSC...............";
+byte vaultAddress[] = "\0\0\0\0\0\0\0\0\x0F\x0F" "vaultAddress..........";
+byte thirdPartyAddress[] = "\0\0\0\0\0\0\0\0\x0F\x0F" "thirdPartyAddress.....";
 
 byte value[32] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 

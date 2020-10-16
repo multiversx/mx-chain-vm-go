@@ -11,13 +11,16 @@ byte parentFinishB[] = "parentFinishB";
 
 byte childKey[] =  "childKey........................";
 
-byte parentTransferReceiver[] = "parentTransferReceiver..........";
+byte parentTransferReceiver[] = "\0\0\0\0\0\0\0\0\x0F\x0F" "parentTransferReceiver";
 byte parentTransferValue[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,42};
 byte parentTransferData[] = "parentTransferData";
 
 byte executeValue[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,99};
 u32 executeArgumentsLengths[] = {15, 16, 10};
 byte executeArgumentsData[] = "First sentence.Second sentence.Some text.";
+
+byte wrongSC[] = "\0\0\0\0\0\0\0\0\x0F\x0F" "wrongSC...............";
+byte childSC[] = "\0\0\0\0\0\0\0\0\x0F\x0F" "childSC...............";
 
 void parentFunctionPrepare() {
 	storageStore(parentKeyA, 32, parentDataA, 11);
@@ -35,7 +38,7 @@ void parentFunctionPrepare() {
 
 void parentFunctionWrongCall() {
 	parentFunctionPrepare();
-	byte childAddress[] = "wrongSC.........................";
+	byte* childAddress = wrongSC;
 	byte functionName[] = "childFunction";
 
 	int result = executeOnDestContext(
@@ -53,7 +56,7 @@ void parentFunctionWrongCall() {
 
 void parentFunctionChildCall() {
 	parentFunctionPrepare();
-	byte childAddress[] = "childSC.........................";
+	byte* childAddress = childSC;
 	byte functionName[] = "childFunction";
 	int result = executeOnDestContext(
 			200000,
@@ -94,7 +97,7 @@ void parentFunctionChildCall_BigInts() {
 	};
 	int argumentLengths[3] = {argumentSize, argumentSize, argumentSize};
 
-	byte childAddress[] = "childSC.........................";
+	byte* childAddress = childSC;
 	byte functionName[] = "childFunction_BigInts";
 	int result = executeOnDestContext(
 			200000,
@@ -123,7 +126,7 @@ void parentFunctionChildCall_OutOfGas() {
 	bigIntSetInt64(12, 42);
 	finish(parentFinishA, 13);
 
-	byte childAddress[] = "childSC.........................";
+	byte* childAddress = childSC;
 	byte executeValue[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,99};
 	byte functionName[] = "childFunction_OutOfGas";
 	int result = executeOnDestContext(

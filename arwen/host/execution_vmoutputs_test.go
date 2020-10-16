@@ -16,8 +16,8 @@ var childData = []byte("childData")
 var parentFinishA = []byte("parentFinishA")
 var parentFinishB = []byte("parentFinishB")
 var childFinish = []byte("childFinish")
-var parentTransferReceiver = []byte("parentTransferReceiver..........")
-var childTransferReceiver = []byte("childTransferReceiver...........")
+var parentTransferReceiver = []byte("\x00\x00\x00\x00\x00\x00\x00\x00\x0f\x0fparentTransferReceiver")
+var childTransferReceiver = []byte("\x00\x00\x00\x00\x00\x00\x00\x00\x0f\x0fchildTransferReceiver.")
 var parentTransferValue = int64(42)
 var parentTransferData = []byte("parentTransferData")
 
@@ -32,8 +32,8 @@ var childCompilationCost_SameCtx uint64
 var parentCompilationCost_DestCtx uint64
 var childCompilationCost_DestCtx uint64
 
-var vaultAddress = []byte("vaultAddress....................")
-var thirdPartyAddress = []byte("thirdPartyAddress...............")
+var vaultAddress = []byte("\x00\x00\x00\x00\x00\x00\x00\x00\x0f\x0fvaultAddress..........")
+var thirdPartyAddress = []byte("\x00\x00\x00\x00\x00\x00\x00\x00\x0f\x0fthirdPartyAddress.....")
 
 func init() {
 	parentCompilationCost_SameCtx = uint64(len(GetTestSCCode("exec-same-ctx-parent", "../../")))

@@ -12,17 +12,17 @@ byte parentFinishB[] = "parentFinishB";
 byte childKey[] =  "childKey........................";
 byte childData[] = "childData";
 
-byte parentTransferReceiver[] = "parentTransferReceiver..........";
+byte parentTransferReceiver[] = "\0\0\0\0\0\0\0\0\x0F\x0F" "parentTransferReceiver";
 byte parentTransferValue[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,42};
 byte parentTransferData[] = "parentTransferData";
 
 byte executeValue[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,99};
 u32 executeArgumentsLengths[] = {32, 6};
-byte executeArgumentsData[] = "childTransferReceiver...........qwerty";
+byte executeArgumentsData[] = "\0\0\0\0\0\0\0\0\x0F\x0F" "childTransferReceiver.qwerty";
 
 byte data[20] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-byte wrongSC[] = "wrongSC.........................";
-byte childSC[] = "childSC.........................";
+byte wrongSC[] = "\0\0\0\0\0\0\0\0\x0F\x0F" "wrongSC...............";
+byte childSC[] = "\0\0\0\0\0\0\0\0\x0F\x0F" "childSC...............";
 
 void parentFunctionPrepare() {
 	storageStore(parentKeyA, 32, parentDataA, 11);

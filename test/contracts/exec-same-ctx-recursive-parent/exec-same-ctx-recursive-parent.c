@@ -5,7 +5,7 @@
 
 u64 maxGasForCalls = 100000;
  
-byte childAddress[32] = "childSC.........................";
+byte childAddress[32] = "\0\0\0\0\0\0\0\0\x0F\x0F" "childSC...............";
 byte bigIntCounterKey[] = "recursiveIterationBigCounter....";
 bigInt bigIntCounterID = 88;
 byte executeValue[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5};

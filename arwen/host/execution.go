@@ -3,6 +3,7 @@ package host
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -512,6 +513,7 @@ func (host *vmHost) executeSmartContractCall(
 		return host.executeUpgrade(input)
 	}
 
+	fmt.Println(string(runtime.GetSCAddress()))
 	contract, err := host.Blockchain().GetCode(runtime.GetSCAddress())
 	if err != nil {
 		return 0, err
