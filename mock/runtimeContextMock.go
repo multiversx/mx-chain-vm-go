@@ -67,6 +67,9 @@ func (r *RuntimeContextMock) IsWarmInstance() bool {
 	return false
 }
 
+func (r *RuntimeContextMock) ResetWarmInstance() {
+}
+
 func (r *RuntimeContextMock) RunningInstancesCount() uint64 {
 	return r.RunningInstances
 }

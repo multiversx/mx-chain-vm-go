@@ -124,6 +124,11 @@ func (context *runtimeContext) IsWarmInstance() bool {
 	return false
 }
 
+func (context *runtimeContext) ResetWarmInstance() {
+	context.warmInstanceAddress = nil
+	context.warmInstance = nil
+}
+
 func (context *runtimeContext) MustVerifyNextContractCode() {
 	context.verifyCode = true
 }
