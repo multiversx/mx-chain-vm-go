@@ -269,7 +269,7 @@ func smallIntStorageLoadSigned(context unsafe.Pointer, keyOffset int32, keyLengt
 //export int64getArgument
 func int64getArgument(context unsafe.Pointer, id int32) int64 {
 	// backwards compatibility
-	return smallIntGetUnsignedArgument(context, id)
+	return smallIntGetSignedArgument(context, id)
 }
 
 //export int64finish

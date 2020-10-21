@@ -24,7 +24,7 @@ func getTestRoot() string {
 	return arwenTestRoot
 }
 
-func TestErc20FromRust(t *testing.T) {
+func TestRustErc20(t *testing.T) {
 	fileResolver := mc.NewDefaultFileResolver()
 	executor, err := am.NewArwenTestExecutor()
 	require.Nil(t, err)
@@ -42,7 +42,7 @@ func TestErc20FromRust(t *testing.T) {
 	}
 }
 
-func TestErc20FromC(t *testing.T) {
+func TestCErc20(t *testing.T) {
 	fileResolver := mc.NewDefaultFileResolver()
 	executor, err := am.NewArwenTestExecutor()
 	require.Nil(t, err)
@@ -61,7 +61,7 @@ func TestErc20FromC(t *testing.T) {
 	}
 }
 
-func TestAdderFromRust(t *testing.T) {
+func TestRustAdder(t *testing.T) {
 	executor, err := am.NewArwenTestExecutor()
 	require.Nil(t, err)
 	runner := mc.NewScenarioRunner(
@@ -97,7 +97,7 @@ func TestCryptoBubbles(t *testing.T) {
 	}
 }
 
-func TestFeaturesFromRust(t *testing.T) {
+func TestRustFeatures(t *testing.T) {
 	executor, err := am.NewArwenTestExecutor()
 	require.Nil(t, err)
 	runner := mc.NewScenarioRunner(
@@ -115,7 +115,27 @@ func TestFeaturesFromRust(t *testing.T) {
 	}
 }
 
-func TestAsyncCalls(t *testing.T) {
+// Backwards compatibility.
+func TestRustFeaturesLegacy(t *testing.T) {
+
+	executor, err := am.NewArwenTestExecutor()
+	require.Nil(t, err)
+	runner := mc.NewScenarioRunner(
+		executor,
+		mc.NewDefaultFileResolver(),
+	)
+	err = runner.RunAllJSONScenariosInDirectory(
+		getTestRoot(),
+		"features-legacy/mandos",
+		".scen.json",
+		[]string{})
+
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestRustAsyncCalls(t *testing.T) {
 	executor, err := am.NewArwenTestExecutor()
 	require.Nil(t, err)
 	runner := mc.NewScenarioRunner(
