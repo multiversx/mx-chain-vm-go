@@ -1384,9 +1384,13 @@ func int64storageLoad(context unsafe.Pointer, keyOffset int32, keyLength int32) 
 
 	data := storage.GetStorage(key)
 
-	bigInt := big.NewInt(0).SetBytes(data)
+	valueBigInt := twos.SetBytes(big.NewInt(0), data)
+	if !valueBigInt.IsInt64() {
+		arwen.WithFault(arwen.ErrStorageValueOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		return 0
+	}
 
-	return bigInt.Int64()
+	return valueBigInt.Int64()
 }
 
 //export int64finish
@@ -1464,9 +1468,13 @@ func uint64storageLoad(context unsafe.Pointer, keyOffset int32, keyLength int32)
 
 	data := storage.GetStorage(key)
 
-	bigInt := big.NewInt(0).SetBytes(data)
+	valueBigInt := big.NewInt(0).SetBytes(data)
+	if !valueBigInt.IsUint64() {
+		arwen.WithFault(arwen.ErrStorageValueOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		return 0
+	}
 
-	return int64(bigInt.Uint64())
+	return int64(valueBigInt.Uint64())
 }
 
 //export uint64finish
