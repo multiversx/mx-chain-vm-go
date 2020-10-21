@@ -125,6 +125,14 @@ func (context *runtimeContext) IsWarmInstance() bool {
 }
 
 func (context *runtimeContext) ResetWarmInstance() {
+	if context.instance == nil {
+		return
+	}
+
+	arwen.RemoveHostContext(*context.instance.Data)
+	context.instance.Clean()
+
+	context.instance = nil
 	context.warmInstanceAddress = nil
 	context.warmInstance = nil
 }
