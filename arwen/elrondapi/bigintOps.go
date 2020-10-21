@@ -46,6 +46,7 @@ package elrondapi
 // extern void bigIntGetUnsignedArgument(void *context, int32_t id, int32_t destination);
 // extern void bigIntGetSignedArgument(void *context, int32_t id, int32_t destination);
 // extern void bigIntGetCallValue(void *context, int32_t destination);
+// extern void bigIntGetESDTCallValue(void *context, int32_t destination);
 // extern void bigIntGetExternalBalance(void *context, int32_t addressOffset, int32_t result);
 import "C"
 
@@ -231,6 +232,11 @@ func BigIntImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 		return nil, err
 	}
 
+	imports, err = imports.Append("bigIntGetESDTCallValue", bigIntGetESDTCallValue, C.bigIntGetESDTCallValue)
+	if err != nil {
+		return nil, err
+	}
+
 	imports, err = imports.Append("bigIntGetExternalBalance", bigIntGetExternalBalance, C.bigIntGetExternalBalance)
 	if err != nil {
 		return nil, err
@@ -337,6 +343,23 @@ func bigIntGetCallValue(context unsafe.Pointer, destination int32) {
 
 	value := bigInt.GetOne(destination)
 	value.Set(runtime.GetVMInput().CallValue)
+}
+
+//export bigIntGetESDTCallValue
+func bigIntGetESDTCallValue(context unsafe.Pointer, destination int32) {
+	bigInt := arwen.GetBigIntContext(context)
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetCallValue
+	metering.UseGas(gasToUse)
+
+	value := bigInt.GetOne(destination)
+
+	esdtValue := runtime.GetVMInput().ESDTValue
+	if esdtValue != nil {
+		value.Set(esdtValue)
+	}
 }
 
 //export bigIntGetExternalBalance
