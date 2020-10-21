@@ -116,7 +116,7 @@ func TestRustFeatures(t *testing.T) {
 }
 
 // Backwards compatibility.
-func TestRustFeaturesLegacy(t *testing.T) {
+func TestRustLegacyFeatures(t *testing.T) {
 
 	executor, err := am.NewArwenTestExecutor()
 	require.Nil(t, err)
