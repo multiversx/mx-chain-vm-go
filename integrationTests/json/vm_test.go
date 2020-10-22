@@ -115,8 +115,26 @@ func TestRustFeatures(t *testing.T) {
 	}
 }
 
+func TestRustFeaturesNoSmallIntApi(t *testing.T) {
+	executor, err := am.NewArwenTestExecutor()
+	require.Nil(t, err)
+	runner := mc.NewScenarioRunner(
+		executor,
+		mc.NewDefaultFileResolver(),
+	)
+	err = runner.RunAllJSONScenariosInDirectory(
+		getTestRoot(),
+		"features-no-small-int-api/mandos",
+		".scen.json",
+		[]string{})
+
+	if err != nil {
+		t.Error(err)
+	}
+}
+
 // Backwards compatibility.
-func TestRustLegacyFeatures(t *testing.T) {
+func TestRustFeaturesLegacy(t *testing.T) {
 
 	executor, err := am.NewArwenTestExecutor()
 	require.Nil(t, err)
