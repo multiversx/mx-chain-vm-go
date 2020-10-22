@@ -1,50 +1,41 @@
 {
-    "name": "count ones",
-    "comment": "should fail if the processor doesn't support the `count ones` instruction",
+    "name": "echo_i64",
     "steps": [
         {
             "step": "setState",
             "accounts": {
                 "address:features_contract": {
                     "nonce": "0",
-                    "balance": "0",
+                    "balance": "0x100",
                     "storage": {},
-                    "code": "file:../output/features.wasm"
+                    "code": "file:../output/features-no-small-int-api.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
-                    "balance": "0",
+                    "balance": "0x900abc",
                     "storage": {},
                     "code": ""
                 }
-            },
-            "previousBlockInfo": {
-                "blockTimestamp": "506",
-                "blockNonce": "521",
-                "blockRound": "532",
-                "blockEpoch": "544"
-            },
-            "currentBlockInfo": {
-                "blockTimestamp": "511",
-                "blockNonce": "522",
-                "blockRound": "533",
-                "blockEpoch": "544"
             }
         },
         {
             "step": "scCall",
-            "txId": "get_prev_block_timestamp",
+            "txId": "1",
             "tx": {
                 "from": "address:an_account",
                 "to": "address:features_contract",
                 "value": "0",
-                "function": "get_prev_block_timestamp",
-                "arguments": [],
+                "function": "echo_i64",
+                "arguments": [
+                    "0"
+                ],
                 "gasLimit": "0x100000",
-                "gasPrice": "0"
+                "gasPrice": "0x01"
             },
             "expect": {
-                "out": [ "506" ],
+                "out": [
+                    ""
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -53,18 +44,22 @@
         },
         {
             "step": "scCall",
-            "txId": "get_prev_block_nonce",
+            "txId": "2",
             "tx": {
                 "from": "address:an_account",
                 "to": "address:features_contract",
                 "value": "0",
-                "function": "get_prev_block_nonce",
-                "arguments": [],
+                "function": "echo_i64",
+                "arguments": [
+                    "5"
+                ],
                 "gasLimit": "0x100000",
-                "gasPrice": "0"
+                "gasPrice": "0x01"
             },
             "expect": {
-                "out": [ "521" ],
+                "out": [
+                    "5"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -73,18 +68,22 @@
         },
         {
             "step": "scCall",
-            "txId": "get_prev_block_round",
+            "txId": "3",
             "tx": {
                 "from": "address:an_account",
                 "to": "address:features_contract",
                 "value": "0",
-                "function": "get_prev_block_round",
-                "arguments": [],
+                "function": "echo_i64",
+                "arguments": [
+                    "-3"
+                ],
                 "gasLimit": "0x100000",
-                "gasPrice": "0"
+                "gasPrice": "0x01"
             },
             "expect": {
-                "out": [ "532" ],
+                "out": [
+                    "0xfd"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -93,40 +92,22 @@
         },
         {
             "step": "scCall",
-            "txId": "get_prev_block_epoch",
+            "txId": "4",
             "tx": {
                 "from": "address:an_account",
                 "to": "address:features_contract",
                 "value": "0",
-                "function": "get_prev_block_epoch",
-                "arguments": [],
+                "function": "echo_i64",
+                "arguments": [
+                    "0x010000000000000000"
+                ],
                 "gasLimit": "0x100000",
-                "gasPrice": "0"
+                "gasPrice": "0x01"
             },
             "expect": {
-                "out": [ "544" ],
-                "status": "",
-                "logs": [],
-                "gas": "*",
-                "refund": "*"
-            }
-        },
-
-        {
-            "step": "scCall",
-            "txId": "get_block_timestamp",
-            "tx": {
-                "from": "address:an_account",
-                "to": "address:features_contract",
-                "value": "0",
-                "function": "get_block_timestamp",
-                "arguments": [],
-                "gasLimit": "0x100000",
-                "gasPrice": "0"
-            },
-            "expect": {
-                "out": [ "511" ],
-                "status": "",
+                "out": [],
+                "status": "*",
+                "message": "str:argument out of range",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"
@@ -134,18 +115,22 @@
         },
         {
             "step": "scCall",
-            "txId": "get_block_nonce",
+            "txId": "5",
             "tx": {
                 "from": "address:an_account",
                 "to": "address:features_contract",
                 "value": "0",
-                "function": "get_block_nonce",
-                "arguments": [],
+                "function": "echo_i64",
+                "arguments": [
+                    "0xffffffffffffffff"
+                ],
                 "gasLimit": "0x100000",
-                "gasPrice": "0"
+                "gasPrice": "0x01"
             },
             "expect": {
-                "out": [ "522" ],
+                "out": [
+                    "0xff"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -154,18 +139,22 @@
         },
         {
             "step": "scCall",
-            "txId": "get_block_round",
+            "txId": "6",
             "tx": {
                 "from": "address:an_account",
                 "to": "address:features_contract",
                 "value": "0",
-                "function": "get_block_round",
-                "arguments": [],
+                "function": "echo_i64",
+                "arguments": [
+                    "0x7fffffffffffffff"
+                ],
                 "gasLimit": "0x100000",
-                "gasPrice": "0"
+                "gasPrice": "0x01"
             },
             "expect": {
-                "out": [ "533" ],
+                "out": [
+                    "0x7fffffffffffffff"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -174,22 +163,87 @@
         },
         {
             "step": "scCall",
-            "txId": "get_block_epoch",
+            "txId": "7",
             "tx": {
                 "from": "address:an_account",
                 "to": "address:features_contract",
                 "value": "0",
-                "function": "get_block_epoch",
-                "arguments": [],
+                "function": "echo_i64",
+                "arguments": [
+                    "+9223372036854775808"
+                ],
                 "gasLimit": "0x100000",
-                "gasPrice": "0"
+                "gasPrice": "0x01"
             },
             "expect": {
-                "out": [ "544" ],
-                "status": "",
+                "out": [],
+                "status": "*",
+                "message": "str:argument out of range",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "8",
+            "tx": {
+                "from": "address:an_account",
+                "to": "address:features_contract",
+                "value": "0",
+                "function": "echo_i64",
+                "arguments": [
+                    "-9223372036854775809"
+                ],
+                "gasLimit": "0x100000",
+                "gasPrice": "0x01"
+            },
+            "expect": {
+                "out": [],
+                "status": "*",
+                "message": "str:argument out of range",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "9-zero",
+            "tx": {
+                "from": "address:an_account",
+                "to": "address:features_contract",
+                "value": "0",
+                "function": "echo_i64",
+                "arguments": [
+                    "0x00"
+                ],
+                "gasLimit": "0x100000",
+                "gasPrice": "0x01"
+            },
+            "expect": {
+                "out": [ "0" ],
+                "status": "0",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "address:features_contract": {
+                    "nonce": "*",
+                    "balance": "*",
+                    "storage": {},
+                    "code": "file:../output/features-no-small-int-api.wasm"
+                },
+                "address:an_account": {
+                    "nonce": "*",
+                    "balance": "*",
+                    "storage": {},
+                    "code": ""
+                }
             }
         }
     ]

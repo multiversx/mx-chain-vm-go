@@ -1,5 +1,5 @@
 {
-    "name": "echo_u64",
+    "name": "echo_usize",
     "steps": [
         {
             "step": "setState",
@@ -8,7 +8,7 @@
                     "nonce": "0",
                     "balance": "0x100",
                     "storage": {},
-                    "code": "file:../output/features.wasm"
+                    "code": "file:../output/features-no-small-int-api.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
@@ -25,7 +25,7 @@
                 "from": "address:an_account",
                 "to": "address:features_contract",
                 "value": "0",
-                "function": "echo_u64",
+                "function": "echo_usize",
                 "arguments": [
                     "0"
                 ],
@@ -49,7 +49,7 @@
                 "from": "address:an_account",
                 "to": "address:features_contract",
                 "value": "0",
-                "function": "echo_u64",
+                "function": "echo_usize",
                 "arguments": [
                     "5"
                 ],
@@ -73,7 +73,7 @@
                 "from": "address:an_account",
                 "to": "address:features_contract",
                 "value": "0",
-                "function": "echo_u64",
+                "function": "echo_usize",
                 "arguments": [
                     "0xc8"
                 ],
@@ -97,16 +97,16 @@
                 "from": "address:an_account",
                 "to": "address:features_contract",
                 "value": "0",
-                "function": "echo_u64",
+                "function": "echo_usize",
                 "arguments": [
-                    "0xffffffffffffffff"
+                    "0xffffffff"
                 ],
                 "gasLimit": "0x100000",
                 "gasPrice": "0x01"
             },
             "expect": {
                 "out": [
-                    "0xffffffffffffffff"
+                    "0xffffffff"
                 ],
                 "status": "",
                 "logs": [],
@@ -121,17 +121,17 @@
                 "from": "address:an_account",
                 "to": "address:features_contract",
                 "value": "0",
-                "function": "echo_u64",
+                "function": "echo_usize",
                 "arguments": [
-                    "0x010000000000000000"
+                    "0x0100000000"
                 ],
                 "gasLimit": "0x100000",
                 "gasPrice": "0x01"
             },
             "expect": {
                 "out": [],
-                "status": "10",
-                "message": "str:argument out of range",
+                "status": "4",
+                "message": "str:argument decode error (i): input too long",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"
@@ -144,7 +144,7 @@
                     "nonce": "0",
                     "balance": "0x100",
                     "storage": {},
-                    "code": "file:../output/features.wasm"
+                    "code": "file:../output/features-no-small-int-api.wasm"
                 },
                 "address:an_account": {
                     "nonce": "*",

@@ -22,6 +22,7 @@ const WASMPageSize = 65536
 func MakeAPIImports() *wasmer.Imports {
 	imports, _ := elrondapi.ElrondEIImports()
 	imports, _ = elrondapi.BigIntImports(imports)
+	imports, _ = elrondapi.SmallIntImports(imports)
 	imports, _ = ethapi.EthereumImports(imports)
 	imports, _ = cryptoapi.CryptoImports(imports)
 	return imports

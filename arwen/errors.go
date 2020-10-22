@@ -69,6 +69,8 @@ var ErrArgIndexOutOfRange = errors.New("argument index out of range")
 
 var ErrArgOutOfRange = errors.New("argument out of range")
 
+var ErrStorageValueOutOfRange = errors.New("storage value out of range")
+
 var ErrDivZero = errors.New("division by 0")
 
 var ErrBitwiseNegative = errors.New("bitwise operations only allowed on positive integers")

@@ -78,6 +78,11 @@ func NewArwenVM(
 		return nil, err
 	}
 
+	imports, err = elrondapi.SmallIntImports(imports)
+	if err != nil {
+		return nil, err
+	}
+
 	imports, err = cryptoapi.CryptoImports(imports)
 	if err != nil {
 		return nil, err
