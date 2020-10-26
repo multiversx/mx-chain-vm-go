@@ -260,9 +260,8 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 	tryCall := func() {
 		vmOutput = host.doRunSmartContractCall(input)
 
-		// Temporary workaround, reset warm instance
-		if vmOutput.ReturnMessage == "allocation error" {
-			log.Error("doRunSmartContractCall, allocation error, will reset warm instance")
+		if host.hasRetriableExecutionError(vmOutput) {
+			log.Error("Retriable execution error detected. Will reset warm Wasmer instance.")
 			host.runtimeContext.ResetWarmInstance()
 		}
 	}
@@ -300,4 +299,12 @@ func TryCatch(try TryFunction, catch CatchFunction, catchFallbackMessage string)
 	}()
 
 	try()
+}
+
+func (host *vmHost) hasRetriableExecutionError(vmOutput *vmcommon.VMOutput) bool {
+	if !host.runtimeContext.IsWarmInstance() {
+		return false
+	}
+
+	return vmOutput.ReturnMessage == "allocation error"
 }

@@ -11,7 +11,7 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
-var log = logger.GetOrCreate("arwen/host")
+var log = logger.GetOrCreate("arwen/runtime")
 
 var _ arwen.RuntimeContext = (*runtimeContext)(nil)
 
@@ -83,13 +83,12 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 	scAddress := context.GetSCAddress()
 	useWarm := context.useWarmInstance && context.warmInstanceAddress != nil && bytes.Equal(scAddress, context.warmInstanceAddress)
 	if scAddress != nil && useWarm {
-		log.Debug("Reusing the warm Wasmer instance")
+		log.Trace("Reusing the warm Wasmer instance")
 
 		context.instance = context.warmInstance
 		context.SetPointsUsed(0)
-		// context.MemZero()
 	} else {
-		log.Debug("Creating a new Wasmer instance")
+		log.Trace("Creating a new Wasmer instance")
 
 		gasSchedule := context.host.Metering().GasSchedule()
 		options := wasmer.CompilationOptions{
@@ -527,12 +526,4 @@ func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 
 	copy(memoryView[offset:requestedEnd], data)
 	return nil
-}
-
-func (context *runtimeContext) MemZero() {
-	memory := context.instance.InstanceCtx.Memory()
-	memoryView := memory.Data()
-	for i := range memoryView {
-		memoryView[i] = 0
-	}
 }
