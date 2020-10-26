@@ -1,13 +1,17 @@
 package contexts
 
 import (
+	"bytes"
 	"fmt"
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
+
+var log = logger.GetOrCreate("arwen/runtime")
 
 var _ arwen.RuntimeContext = (*runtimeContext)(nil)
 
@@ -31,19 +35,26 @@ type runtimeContext struct {
 	asyncContextInfo *arwen.AsyncContextInfo
 
 	validator *WASMValidator
+
+	useWarmInstance     bool
+	warmInstanceAddress []byte
+	warmInstance        *wasmer.Instance
 }
 
 // NewRuntimeContext creates a new runtimeContext
-func NewRuntimeContext(host arwen.VMHost, vmType []byte) (*runtimeContext, error) {
+func NewRuntimeContext(host arwen.VMHost, vmType []byte, useWarmInstance bool) (*runtimeContext, error) {
 	scAPINames := host.GetAPIMethods().Names()
 	protocolBuiltinFunctions := host.GetProtocolBuiltinFunctions()
 
 	context := &runtimeContext{
-		host:          host,
-		vmType:        vmType,
-		stateStack:    make([]*runtimeContext, 0),
-		instanceStack: make([]*wasmer.Instance, 0),
-		validator:     NewWASMValidator(scAPINames, protocolBuiltinFunctions),
+		host:                host,
+		vmType:              vmType,
+		stateStack:          make([]*runtimeContext, 0),
+		instanceStack:       make([]*wasmer.Instance, 0),
+		validator:           NewWASMValidator(scAPINames, protocolBuiltinFunctions),
+		useWarmInstance:     useWarmInstance,
+		warmInstanceAddress: nil,
+		warmInstance:        nil,
 	}
 
 	context.InitState()
@@ -69,33 +80,69 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 		return arwen.ErrMaxInstancesReached
 	}
 
-	gasSchedule := context.host.Metering().GasSchedule()
-	options := wasmer.CompilationOptions{
-		GasLimit:           gasLimit,
-		UnmeteredLocals:    uint64(gasSchedule.WASMOpcodeCost.LocalsUnmetered),
-		OpcodeTrace:        false,
-		Metering:           true,
-		RuntimeBreakpoints: true,
-	}
-	newInstance, err := wasmer.NewInstanceWithOptions(contract, options)
-	if err != nil {
-		context.instance = nil
-		return err
-	}
+	scAddress := context.GetSCAddress()
+	useWarm := context.useWarmInstance && context.warmInstanceAddress != nil && bytes.Equal(scAddress, context.warmInstanceAddress)
+	if scAddress != nil && useWarm {
+		log.Trace("Reusing the warm Wasmer instance")
 
-	context.instance = newInstance
+		context.instance = context.warmInstance
+		context.SetPointsUsed(0)
+	} else {
+		log.Trace("Creating a new Wasmer instance")
 
-	idContext := arwen.AddHostContext(context.host)
-	context.instance.SetContextData(idContext)
+		gasSchedule := context.host.Metering().GasSchedule()
+		options := wasmer.CompilationOptions{
+			GasLimit:           gasLimit,
+			UnmeteredLocals:    uint64(gasSchedule.WASMOpcodeCost.LocalsUnmetered),
+			OpcodeTrace:        false,
+			Metering:           true,
+			RuntimeBreakpoints: true,
+		}
+		newInstance, err := wasmer.NewInstanceWithOptions(contract, options)
+		if err != nil {
+			context.instance = nil
+			return err
+		}
 
-	err = context.VerifyContractCode()
-	if err != nil {
-		context.CleanWasmerInstance()
-		return err
+		context.instance = newInstance
+		if context.useWarmInstance {
+			context.warmInstanceAddress = context.GetSCAddress()
+			context.warmInstance = context.instance
+		}
+
+		idContext := arwen.AddHostContext(context.host)
+		context.instance.SetContextData(idContext)
+
+		err = context.VerifyContractCode()
+		if err != nil {
+			context.CleanWasmerInstance()
+			return err
+		}
 	}
 
 	context.SetRuntimeBreakpointValue(arwen.BreakpointNone)
 	return nil
+}
+
+func (context *runtimeContext) IsWarmInstance() bool {
+	if context.instance != nil && context.instance == context.warmInstance {
+		return true
+	}
+
+	return false
+}
+
+func (context *runtimeContext) ResetWarmInstance() {
+	if context.instance == nil {
+		return
+	}
+
+	arwen.RemoveHostContext(*context.instance.Data)
+	context.instance.Clean()
+
+	context.instance = nil
+	context.warmInstanceAddress = nil
+	context.warmInstance = nil
 }
 
 func (context *runtimeContext) MustVerifyNextContractCode() {
@@ -348,7 +395,7 @@ func (context *runtimeContext) GetInstanceExports() wasmer.ExportsMap {
 }
 
 func (context *runtimeContext) CleanWasmerInstance() {
-	if context.instance == nil {
+	if context.instance == nil || context.IsWarmInstance() {
 		return
 	}
 

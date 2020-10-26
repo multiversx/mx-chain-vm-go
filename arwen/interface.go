@@ -99,6 +99,8 @@ type RuntimeContext interface {
 	PopInstance()
 	RunningInstancesCount() uint64
 	ClearInstanceStack()
+	IsWarmInstance() bool
+	ResetWarmInstance()
 	ReadOnly() bool
 	SetReadOnly(readOnly bool)
 	StartWasmerInstance(contract []byte, gasLimit uint64) error
