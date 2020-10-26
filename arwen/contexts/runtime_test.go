@@ -52,7 +52,7 @@ func TestNewRuntimeContext(t *testing.T) {
 
 	vmType := []byte("type")
 
-	runtimeContext, err := NewRuntimeContext(host, vmType)
+	runtimeContext, err := NewRuntimeContext(host, vmType, false)
 	require.Nil(t, err)
 	require.NotNil(t, runtimeContext)
 
@@ -68,7 +68,7 @@ func TestRuntimeContext_InitState(t *testing.T) {
 
 	vmType := []byte("type")
 
-	runtimeContext, err := NewRuntimeContext(host, vmType)
+	runtimeContext, err := NewRuntimeContext(host, vmType, false)
 	require.Nil(t, err)
 	require.NotNil(t, runtimeContext)
 
@@ -92,7 +92,7 @@ func TestRuntimeContext_NewWasmerInstance(t *testing.T) {
 
 	vmType := []byte("type")
 
-	runtimeContext, err := NewRuntimeContext(host, vmType)
+	runtimeContext, err := NewRuntimeContext(host, vmType, false)
 	require.Nil(t, err)
 
 	runtimeContext.SetMaxInstanceCount(1)
@@ -121,7 +121,7 @@ func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
 	host.SCAPIMethods = imports
 
 	vmType := []byte("type")
-	runtimeContext, _ := NewRuntimeContext(host, vmType)
+	runtimeContext, _ := NewRuntimeContext(host, vmType, false)
 
 	arguments := [][]byte{[]byte("argument 1"), []byte("argument 2")}
 	vmInput := vmcommon.VMInput{
@@ -158,7 +158,7 @@ func TestRuntimeContext_PushPopInstance(t *testing.T) {
 	host := InitializeArwenAndWasmer()
 
 	vmType := []byte("type")
-	runtimeContext, _ := NewRuntimeContext(host, vmType)
+	runtimeContext, _ := NewRuntimeContext(host, vmType, false)
 	runtimeContext.SetMaxInstanceCount(1)
 
 	gasLimit := uint64(100000000)
@@ -190,7 +190,7 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 	host.SCAPIMethods = imports
 
 	vmType := []byte("type")
-	runtimeContext, _ := NewRuntimeContext(host, vmType)
+	runtimeContext, _ := NewRuntimeContext(host, vmType, false)
 	runtimeContext.SetMaxInstanceCount(1)
 
 	vmInput := vmcommon.VMInput{
@@ -246,7 +246,7 @@ func TestRuntimeContext_Instance(t *testing.T) {
 	host := InitializeArwenAndWasmer()
 
 	vmType := []byte("type")
-	runtimeContext, _ := NewRuntimeContext(host, vmType)
+	runtimeContext, _ := NewRuntimeContext(host, vmType, false)
 	runtimeContext.SetMaxInstanceCount(1)
 
 	gasLimit := uint64(100000000)
@@ -295,7 +295,7 @@ func TestRuntimeContext_Breakpoints(t *testing.T) {
 	host.OutputContext = mockOutput
 
 	vmType := []byte("type")
-	runtimeContext, _ := NewRuntimeContext(host, vmType)
+	runtimeContext, _ := NewRuntimeContext(host, vmType, false)
 	runtimeContext.SetMaxInstanceCount(1)
 
 	gasLimit := uint64(100000000)
@@ -348,7 +348,7 @@ func TestRuntimeContext_MemLoadStoreOk(t *testing.T) {
 	host := InitializeArwenAndWasmer()
 
 	vmType := []byte("type")
-	runtimeContext, _ := NewRuntimeContext(host, vmType)
+	runtimeContext, _ := NewRuntimeContext(host, vmType, false)
 	runtimeContext.SetMaxInstanceCount(1)
 
 	gasLimit := uint64(100000000)
@@ -380,7 +380,7 @@ func TestRuntimeContext_MemoryIsBlank(t *testing.T) {
 	host := InitializeArwenAndWasmer()
 
 	vmType := []byte("type")
-	runtimeContext, _ := NewRuntimeContext(host, vmType)
+	runtimeContext, _ := NewRuntimeContext(host, vmType, false)
 	runtimeContext.SetMaxInstanceCount(1)
 
 	gasLimit := uint64(100000000)
@@ -410,7 +410,7 @@ func TestRuntimeContext_MemLoadCases(t *testing.T) {
 	host := InitializeArwenAndWasmer()
 
 	vmType := []byte("type")
-	runtimeContext, _ := NewRuntimeContext(host, vmType)
+	runtimeContext, _ := NewRuntimeContext(host, vmType, false)
 	runtimeContext.SetMaxInstanceCount(1)
 
 	gasLimit := uint64(100000000)
@@ -473,7 +473,7 @@ func TestRuntimeContext_MemStoreCases(t *testing.T) {
 	host := InitializeArwenAndWasmer()
 
 	vmType := []byte("type")
-	runtimeContext, _ := NewRuntimeContext(host, vmType)
+	runtimeContext, _ := NewRuntimeContext(host, vmType, false)
 	runtimeContext.SetMaxInstanceCount(1)
 
 	gasLimit := uint64(100000000)
@@ -538,7 +538,7 @@ func TestRuntimeContext_MemLoadStoreVsInstanceStack(t *testing.T) {
 	host := InitializeArwenAndWasmer()
 
 	vmType := []byte("type")
-	runtimeContext, _ := NewRuntimeContext(host, vmType)
+	runtimeContext, _ := NewRuntimeContext(host, vmType, false)
 	runtimeContext.SetMaxInstanceCount(2)
 
 	gasLimit := uint64(100000000)

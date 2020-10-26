@@ -100,7 +100,11 @@ func NewArwenVM(
 		return nil, err
 	}
 
-	host.runtimeContext, err = contexts.NewRuntimeContext(host, hostParameters.VMType)
+	host.runtimeContext, err = contexts.NewRuntimeContext(
+		host,
+		hostParameters.VMType,
+		hostParameters.UseWarmInstance,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -211,6 +215,9 @@ func (host *vmHost) ClearContextStateStack() {
 }
 
 func (host *vmHost) Clean() {
+	if host.runtimeContext.IsWarmInstance() {
+		return
+	}
 	host.runtimeContext.CleanWasmerInstance()
 	arwen.RemoveAllHostContexts()
 }
@@ -252,6 +259,12 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 
 	tryCall := func() {
 		vmOutput = host.doRunSmartContractCall(input)
+
+		// Temporary workaround, reset warm instance
+		if vmOutput.ReturnMessage == "allocation error" {
+			log.Error("doRunSmartContractCall, allocation error, will reset warm instance")
+			host.runtimeContext.ResetWarmInstance()
+		}
 	}
 
 	catch := func(caught error) {
@@ -267,7 +280,7 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 	}
 
 	if vmOutput != nil {
-		log.Trace("RunSmartContractCall end", "returnCode", vmOutput.ReturnCode, "returnMessage", vmOutput.ReturnMessage)
+		log.Debug("RunSmartContractCall end", "returnCode", vmOutput.ReturnCode, "returnMessage", vmOutput.ReturnMessage, "function", input.Function)
 	}
 
 	return
