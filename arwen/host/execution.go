@@ -109,13 +109,15 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	host.InitState()
 	defer host.Clean()
 
-	_, blockchain, metering, output, runtime, storage := host.GetContexts()
+	_, _, metering, output, runtime, storage := host.GetContexts()
 
 	runtime.InitStateFromContractCallInput(input)
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
 	storage.SetAddress(runtime.GetSCAddress())
 
-	contract, err := blockchain.GetCode(runtime.GetSCAddress())
+	// TODO use runtime.GetSCCode() as much as possible, because it caches the
+	// code size
+	contract, err := runtime.GetSCCode()
 	if err != nil {
 		return output.CreateVMOutputInCaseOfError(arwen.ErrContractNotFound)
 	}
@@ -554,7 +556,7 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) (uint64, error) {
 	_, _, metering, output, runtime, _ := host.GetContexts()
 
 	if host.isBuiltinFunctionBeingCalled() {
-		err := metering.DeductAndLockGasIfAsyncStep()
+		err := metering.DeductGasIfAsyncStep()
 		if err != nil {
 			return 0, err
 		}

@@ -20,6 +20,7 @@ type runtimeContext struct {
 	instance     *wasmer.Instance
 	vmInput      *vmcommon.VMInput
 	scAddress    []byte
+	codeSize     uint64
 	callFunction string
 	vmType       []byte
 	readOnly     bool
@@ -122,6 +123,21 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 
 	context.SetRuntimeBreakpointValue(arwen.BreakpointNone)
 	return nil
+}
+
+func (context *runtimeContext) GetSCCode() ([]byte, error) {
+	blockchain := context.host.Blockchain()
+	code, err := blockchain.GetCode(context.scAddress)
+	if err != nil {
+		return nil, err
+	}
+
+	context.codeSize = uint64(len(code))
+	return code, nil
+}
+
+func (context *runtimeContext) GetSCCodeSize() uint64 {
+	return context.codeSize
 }
 
 func (context *runtimeContext) IsWarmInstance() bool {

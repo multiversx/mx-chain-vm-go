@@ -79,6 +79,8 @@ type RuntimeContext interface {
 	SetVMInput(vmInput *vmcommon.VMInput)
 	GetSCAddress() []byte
 	SetSCAddress(scAddress []byte)
+	GetSCCode() ([]byte, error)
+	GetSCCodeSize() uint64
 	GetVMType() []byte
 	Function() string
 	Arguments() [][]byte
@@ -139,7 +141,7 @@ type OutputContext interface {
 	DeleteOutputAccount(address []byte)
 	WriteLog(address []byte, topics [][]byte, data []byte)
 	TransferValueOnly(destination []byte, sender []byte, value *big.Int) error
-	Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte, callType vmcommon.CallType) error
+	Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, input []byte, callType vmcommon.CallType) error
 	SelfDestruct(address []byte, beneficiary []byte)
 	GetRefund() uint64
 	SetRefund(refund uint64)
@@ -167,9 +169,10 @@ type MeteringContext interface {
 	DeductInitialGasForExecution(contract []byte) error
 	DeductInitialGasForDirectDeployment(input CodeDeployInput) error
 	DeductInitialGasForIndirectDeployment(input CodeDeployInput) error
-	DeductAndLockGasIfAsyncStep() error
+	DeductGasIfAsyncStep() error
+	ComputeGasToLockForAsync() uint64
 	UnlockGasIfAsyncStep()
-	GetGasLockedForAsyncStep() uint64
+	GetGasLocked() uint64
 }
 
 type StorageStatus int

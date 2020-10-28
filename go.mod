@@ -18,3 +18,5 @@ require (
 	golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37
 	google.golang.org/protobuf v1.25.0 // indirect
 )
+
+replace github.com/ElrondNetwork/elrond-vm-common v0.3.0 => ../elrond-vm-common
