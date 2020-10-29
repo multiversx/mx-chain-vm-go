@@ -74,12 +74,7 @@ func (context *runtimeContext) InitState() {
 	}
 }
 
-func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uint64) error {
-	if context.RunningInstancesCount() >= context.maxWasmerInstances {
-		context.instance = nil
-		return arwen.ErrMaxInstancesReached
-	}
-
+func (context *runtimeContext) setWarmInstanceWhenNeeded() bool {
 	scAddress := context.GetSCAddress()
 	useWarm := context.useWarmInstance && context.warmInstanceAddress != nil && bytes.Equal(scAddress, context.warmInstanceAddress)
 	if scAddress != nil && useWarm {
@@ -87,32 +82,92 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 
 		context.instance = context.warmInstance
 		context.SetPointsUsed(0)
-	} else {
-		log.Trace("Creating a new Wasmer instance")
 
-		gasSchedule := context.host.Metering().GasSchedule()
-		options := wasmer.CompilationOptions{
-			GasLimit:           gasLimit,
-			UnmeteredLocals:    uint64(gasSchedule.WASMOpcodeCost.LocalsUnmetered),
-			OpcodeTrace:        false,
-			Metering:           true,
-			RuntimeBreakpoints: true,
-		}
-		newInstance, err := wasmer.NewInstanceWithOptions(contract, options)
-		if err != nil {
-			context.instance = nil
-			return err
-		}
+		context.SetRuntimeBreakpointValue(arwen.BreakpointNone)
+		return true
+	}
 
-		context.instance = newInstance
-		if context.useWarmInstance {
-			context.warmInstanceAddress = context.GetSCAddress()
-			context.warmInstance = context.instance
-		}
+	return false
+}
 
-		idContext := arwen.AddHostContext(context.host)
-		context.instance.SetContextData(idContext)
+func (context *runtimeContext) makeInstanceFromCompiledCode(codeHash []byte, gasLimit uint64, newCode bool) bool {
+	if newCode || len(codeHash) == 0 {
+		return false
+	}
 
+	blockchain := context.host.Blockchain()
+	found, compiledCode := blockchain.GetCompiledCode(codeHash)
+	if !found {
+		return false
+	}
+
+	//TODO: create new wasmer instance here from compiled code
+	gasSchedule := context.host.Metering().GasSchedule()
+	options := wasmer.CompilationOptions{
+		GasLimit:           gasLimit,
+		UnmeteredLocals:    uint64(gasSchedule.WASMOpcodeCost.LocalsUnmetered),
+		OpcodeTrace:        false,
+		Metering:           true,
+		RuntimeBreakpoints: true,
+	}
+	newInstance, err := wasmer.NewInstanceWithOptions(compiledCode, options)
+	if err != nil {
+		return false
+	}
+
+	context.instance = newInstance
+
+	idContext := arwen.AddHostContext(context.host)
+	context.instance.SetContextData(idContext)
+
+	return true
+}
+
+func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uint64, newCode bool) error {
+	if context.RunningInstancesCount() >= context.maxWasmerInstances {
+		context.instance = nil
+		return arwen.ErrMaxInstancesReached
+	}
+
+	blockchain := context.host.Blockchain()
+	codeHash := blockchain.GetCodeHash(context.GetSCAddress())
+
+	warmInstanceSet := context.setWarmInstanceWhenNeeded()
+	if warmInstanceSet {
+		return nil
+	}
+
+	compiledCodeSet := context.makeInstanceFromCompiledCode(codeHash, gasLimit, newCode)
+	if compiledCodeSet {
+		return nil
+	}
+
+	log.Trace("Creating a new Wasmer instance")
+
+	gasSchedule := context.host.Metering().GasSchedule()
+	options := wasmer.CompilationOptions{
+		GasLimit:           gasLimit,
+		UnmeteredLocals:    uint64(gasSchedule.WASMOpcodeCost.LocalsUnmetered),
+		OpcodeTrace:        false,
+		Metering:           true,
+		RuntimeBreakpoints: true,
+	}
+	newInstance, err := wasmer.NewInstanceWithOptions(contract, options)
+	if err != nil {
+		context.instance = nil
+		return err
+	}
+
+	context.instance = newInstance
+	if context.useWarmInstance {
+		context.warmInstanceAddress = context.GetSCAddress()
+		context.warmInstance = context.instance
+	}
+
+	idContext := arwen.AddHostContext(context.host)
+	context.instance.SetContextData(idContext)
+
+	if newCode {
 		err = context.VerifyContractCode()
 		if err != nil {
 			context.CleanWasmerInstance()
@@ -120,7 +175,17 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 		}
 	}
 
-	context.SetRuntimeBreakpointValue(arwen.BreakpointNone)
+	if newCode || len(codeHash) == 0 {
+		codeHash, err = context.host.Crypto().Sha256(contract)
+		if err != nil {
+			context.CleanWasmerInstance()
+			return err
+		}
+	}
+
+	//TODO: integrate new wasmer here - which returns this compiled code, change contract here to compiled one
+	blockchain.SaveCompiledCode(codeHash, contract)
+
 	return nil
 }
 

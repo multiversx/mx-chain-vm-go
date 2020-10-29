@@ -60,7 +60,7 @@ type BlockchainContext interface {
 	CurrentRandomSeed() []byte
 	LastRandomSeed() []byte
 	IncreaseNonce(addr []byte)
-	GetCodeHash(addr []byte) ([]byte, error)
+	GetCodeHash(addr []byte) []byte
 	GetCode(addr []byte) ([]byte, error)
 	GetCodeSize(addr []byte) (int32, error)
 	BlockHash(number int64) []byte
@@ -68,6 +68,8 @@ type BlockchainContext interface {
 	GetShardOfAddress(addr []byte) uint32
 	IsSmartContract(addr []byte) bool
 	IsPayable(address []byte) (bool, error)
+	SaveCompiledCode(codeHash []byte, code []byte)
+	GetCompiledCode(codeHash []byte) (bool, []byte)
 }
 
 type RuntimeContext interface {
@@ -103,7 +105,7 @@ type RuntimeContext interface {
 	ResetWarmInstance()
 	ReadOnly() bool
 	SetReadOnly(readOnly bool)
-	StartWasmerInstance(contract []byte, gasLimit uint64) error
+	StartWasmerInstance(contract []byte, gasLimit uint64, newCode bool) error
 	CleanWasmerInstance()
 	SetMaxInstanceCount(uint64)
 	VerifyContractCode() error

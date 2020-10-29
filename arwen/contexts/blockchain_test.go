@@ -204,7 +204,6 @@ func TestBlockchainContext_GetCodeHashAndSize(t *testing.T) {
 
 	address := []byte("account_with_code")
 	expectedCode := []byte("somecode")
-	expectedCodeHash := []byte("code hash")
 
 	// GetCode: Test if error is propagated from blockchain hook
 	outputContext.OutputAccountIsNew = true
@@ -226,27 +225,15 @@ func TestBlockchainContext_GetCodeHashAndSize(t *testing.T) {
 	outputContext.OutputAccountIsNew = true
 	outputContext.OutputAccountMock = &vmcommon.OutputAccount{}
 	blockchainHook.Err = errTestError
-	codeHash, err := blockchainContext.GetCodeHash(address)
-	require.Equal(t, errTestError, err)
+	codeHash := blockchainContext.GetCodeHash(address)
 	require.Nil(t, codeHash)
 	blockchainHook.Err = nil
-
-	// GetCodeHash: Test if error is propagated from crypto hook
-	outputContext.OutputAccountIsNew = true
-	outputContext.OutputAccountMock = &vmcommon.OutputAccount{}
-	mockCrypto.Result = nil
-	mockCrypto.Err = errTestError
-	codeHash, err = blockchainContext.GetCodeHash(address)
-	require.Equal(t, errTestError, err)
-	require.Nil(t, codeHash)
 
 	// GetCodeHash: Test success
 	outputContext.OutputAccountIsNew = true
 	outputContext.OutputAccountMock = &vmcommon.OutputAccount{}
-	mockCrypto.Result = expectedCodeHash
-	mockCrypto.Err = nil
-	codeHash, err = blockchainContext.GetCodeHash(address)
-	require.Equal(t, expectedCodeHash, codeHash)
+	codeHash = blockchainContext.GetCodeHash(address)
+	require.Equal(t, []byte{}, codeHash)
 	require.Nil(t, err)
 
 	// GetCodeSize: Test if error is propagated from blockchain hook
