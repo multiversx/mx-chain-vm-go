@@ -57,6 +57,10 @@ const (
 	BlockchainIsPayableResponse
 	BlockchainIsSmartContractRequest
 	BlockchainIsSmartContractResponse
+	BlockchainSaveCompiledCodeRequest
+	BlockchainSaveCompiledCodeResponse
+	BlockchainGetCompiledCodeRequest
+	BlockchainGetCompiledCodeResponse
 	DiagnoseWaitRequest
 	DiagnoseWaitResponse
 	VersionRequest
