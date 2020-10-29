@@ -2,6 +2,7 @@ package wasmer
 
 import (
 	"fmt"
+	"reflect"
 	"unsafe"
 )
 
@@ -226,4 +227,28 @@ func (instance *Instance) SetBreakpointValue(value uint64) {
 
 func (instance *Instance) GetBreakpointValue() uint64 {
 	return cWasmerInstanceGetBreakpointValue(instance.instance)
+}
+
+func (instance *Instance) Cache() ([]byte, error) {
+	var cache_bytes *cUchar
+	var cache_len cUint32T
+
+	var cacheResult = cWasmerInstanceCache(
+		instance.instance,
+		&cache_bytes,
+		&cache_len,
+	)
+
+	if cacheResult != cWasmerOk {
+		return nil, ErrCachingFailed
+	}
+
+	var header reflect.SliceHeader
+	header = *(*reflect.SliceHeader)(unsafe.Pointer(&header))
+
+	header.Data = uintptr(unsafe.Pointer(cache_bytes))
+	header.Len = int(cache_len)
+	header.Cap = int(cache_len)
+
+	return *(*[]byte)(unsafe.Pointer(&header)), nil
 }

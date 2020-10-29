@@ -124,6 +124,23 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 	return nil
 }
 
+func (context *runtimeContext) StartWasmerInstanceFromCache(cache []byte, gasLimit uint64) error {
+	if context.RunningInstancesCount() >= context.maxWasmerInstances {
+		context.instance = nil
+		return arwen.ErrMaxInstancesReached
+	}
+
+	if cache == nil {
+		return arwen.ErrNilCache
+	}
+
+	return nil
+}
+
+func (context *runtimeContext) CacheWasmerInstance() ([]byte, error) {
+	return context.instance.Cache()
+}
+
 func (context *runtimeContext) IsWarmInstance() bool {
 	if context.instance != nil && context.instance == context.warmInstance {
 		return true

@@ -85,6 +85,30 @@ func cWasmerInstanceGetBreakpointValue(instance *cWasmerInstanceT) uint64 {
 	))
 }
 
+func cWasmerInstanceCache(
+	instance *cWasmerInstanceT,
+	cache_bytes **cUchar,
+	cache_len *cUint32T,
+) cWasmerResultT {
+	return (cWasmerResultT)(C.wasmer_instance_cache(
+		(*C.wasmer_instance_t)(instance),
+		(**C.uchar)(unsafe.Pointer(cache_bytes)),
+		(*C.uint32_t)(cache_len),
+	))
+}
+
+func cWasmerInstanceFromCache(
+	instance **cWasmerInstanceT,
+	cache_bytes *cUchar,
+	cache_len cUint32T,
+) cWasmerResultT {
+	return (cWasmerResultT)(C.wasmer_instance_from_cache(
+		(**C.wasmer_instance_t)(unsafe.Pointer(instance)),
+		(*C.uchar)(cache_bytes),
+		(C.uint32_t)(cache_len),
+	))
+}
+
 func cWasmerCacheImportObjectFromImports(
 	imports *cWasmerImportT,
 	importsLength cInt,

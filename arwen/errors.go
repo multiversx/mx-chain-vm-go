@@ -63,6 +63,8 @@ var ErrMemoryDeclarationMissing = fmt.Errorf("%w (missing memory declaration)", 
 
 var ErrMaxInstancesReached = fmt.Errorf("%w (max instances reached)", ErrExecutionFailed)
 
+var ErrNilCache = errors.New("nil cache provided")
+
 var ErrStoreElrondReservedKey = errors.New("cannot write to storage under Elrond reserved key")
 
 var ErrArgIndexOutOfRange = errors.New("argument index out of range")

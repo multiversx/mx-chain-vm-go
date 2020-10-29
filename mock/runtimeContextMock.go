@@ -80,6 +80,14 @@ func (r *RuntimeContextMock) SetMaxInstanceCount(uint64) {
 func (r *RuntimeContextMock) ClearInstanceStack() {
 }
 
+func (r *RuntimeContextMock) CacheWasmerInstance() ([]byte, error) {
+	return nil, nil
+}
+
+func (r *RuntimeContextMock) StartWasmerInstanceFromCache(cache []byte, gasLimit uint64) error {
+	return nil
+}
+
 func (r *RuntimeContextMock) GetVMType() []byte {
 	return r.VmType
 }
