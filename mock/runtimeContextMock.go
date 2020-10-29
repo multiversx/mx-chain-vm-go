@@ -12,6 +12,8 @@ type RuntimeContextMock struct {
 	Err                    error
 	VmInput                *vmcommon.VMInput
 	SCAddress              []byte
+	SCCode                 []byte
+	SCCodeSize             uint64
 	CallFunction           string
 	VmType                 []byte
 	ReadOnlyFlag           bool
@@ -98,6 +100,14 @@ func (r *RuntimeContextMock) GetSCAddress() []byte {
 
 func (r *RuntimeContextMock) SetSCAddress(scAddress []byte) {
 	r.SCAddress = scAddress
+}
+
+func (r *RuntimeContextMock) GetSCCode() ([]byte, error) {
+	return r.SCCode, r.Err
+}
+
+func (r *RuntimeContextMock) GetSCCodeSize() uint64 {
+	return r.SCCodeSize
 }
 
 func (r *RuntimeContextMock) Function() string {

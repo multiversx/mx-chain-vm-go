@@ -510,7 +510,7 @@ func (host *vmHost) executeSmartContractCall(
 		return host.executeUpgrade(input)
 	}
 
-	contract, err := host.Blockchain().GetCode(runtime.GetSCAddress())
+	contract, err := runtime.GetSCCode()
 	if err != nil {
 		return 0, err
 	}
@@ -542,12 +542,11 @@ func (host *vmHost) executeSmartContractCall(
 		return 0, arwen.ErrReturnCodeNotOk
 	}
 
-	metering.UnlockGasIfAsyncStep()
-
 	gasToRestoreToCaller := metering.GasLeft()
 
 	runtime.PopInstance()
 	metering.RestoreGas(gasToRestoreToCaller)
+	metering.UnlockGasIfAsyncStep()
 
 	return initialGasProvided - gasToRestoreToCaller, nil
 }
@@ -606,6 +605,7 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmc
 	if vmOutput.GasRemaining < input.GasProvided {
 		metering.UseGas(gasConsumed)
 	}
+	// TODO else return ErrOutOfGas?
 
 	newVMInput, err := isSCExecutionAfterBuiltInFunc(input, vmOutput)
 	if err != nil {

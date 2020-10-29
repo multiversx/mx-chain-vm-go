@@ -224,6 +224,10 @@ func TestExecution_DeployWASM_Init_Errors(t *testing.T) {
 }
 
 func TestExecution_ManyDeployments(t *testing.T) {
+	if testing.Short() {
+		t.Skip("not a short test")
+	}
+
 	ownerNonce := uint64(23)
 	newAddress := "new smartcontract"
 	stubBlockchainHook := &mock.BlockchainHookStub{}
@@ -737,6 +741,8 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 }
 
 func TestExecution_ExecuteOnSameContext_BuiltinFunctions(t *testing.T) {
+	t.Skip("built-in functions may not be called with ExecuteOnSameContext")
+
 	code := GetTestSCCode("exec-same-ctx-builtin", "../../")
 	scBalance := big.NewInt(1000)
 
@@ -789,14 +795,20 @@ func dummyProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.V
 
 	if input.Function == "builtinClaim" {
 		outPutAccounts[string(parentAddress)].BalanceDelta = big.NewInt(42)
-		return &vmcommon.VMOutput{GasRemaining: 400, OutputAccounts: outPutAccounts}, nil
+		return &vmcommon.VMOutput{
+			GasRemaining:   400 + input.GasLocked,
+			OutputAccounts: outPutAccounts,
+		}, nil
 	}
 	if input.Function == "builtinDoSomething" {
-		return &vmcommon.VMOutput{OutputAccounts: outPutAccounts, GasRemaining: input.GasProvided}, nil
+		return &vmcommon.VMOutput{
+			GasRemaining:   400 + input.GasLocked,
+			OutputAccounts: outPutAccounts,
+		}, nil
 	}
 	if input.Function == "builtinFail" {
 		return &vmcommon.VMOutput{
-			GasRemaining:  0,
+			GasRemaining:  0 + input.GasLocked,
 			GasRefund:     big.NewInt(0),
 			ReturnCode:    vmcommon.UserError,
 			ReturnMessage: "whatdidyoudo",

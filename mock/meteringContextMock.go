@@ -10,8 +10,9 @@ var _ arwen.MeteringContext = (*MeteringContextMock)(nil)
 type MeteringContextMock struct {
 	GasCost           *config.GasCost
 	GasLeftMock       uint64
+	GasLockedMock     uint64
+	GasComputedToLock uint64
 	BlockGasLimitMock uint64
-	GasLocked         uint64
 	Err               error
 }
 
@@ -47,15 +48,19 @@ func (m *MeteringContextMock) BoundGasLimit(value int64) uint64 {
 	return limit
 }
 
-func (m *MeteringContextMock) DeductAndLockGasIfAsyncStep() error {
+func (m *MeteringContextMock) ComputeGasToLockForAsync() uint64 {
+	return m.GasComputedToLock
+}
+
+func (m *MeteringContextMock) DeductGasIfAsyncStep() error {
 	return nil
 }
 
 func (m *MeteringContextMock) UnlockGasIfAsyncStep() {
 }
 
-func (m *MeteringContextMock) GetGasLockedForAsyncStep() uint64 {
-	return m.GasLocked
+func (m *MeteringContextMock) GetGasLocked() uint64 {
+	return m.GasLockedMock
 }
 
 func (m *MeteringContextMock) BlockGasLimit() uint64 {

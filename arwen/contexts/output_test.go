@@ -362,7 +362,7 @@ func TestOutputContext_VMOutputError(t *testing.T) {
 
 	host := &mock.VmHostMock{}
 	host.MeteringContext = &mock.MeteringContextMock{
-		GasLocked: 1001,
+		GasLockedMock: 1001,
 	}
 
 	outputContext, _ := NewOutputContext(host)
@@ -402,7 +402,7 @@ func TestOutputContext_Transfer(t *testing.T) {
 	host.OutputContext = outputContext
 	host.BlockchainContext = blockchainContext
 
-	err := outputContext.Transfer(receiver, sender, 54, valueToTransfer, []byte("txdata"), 0)
+	err := outputContext.Transfer(receiver, sender, 54, 0, valueToTransfer, []byte("txdata"), 0)
 	require.Nil(t, err)
 
 	senderAccount, isNew := outputContext.GetOutputAccount(sender)
@@ -442,21 +442,21 @@ func TestOutputContext_Transfer_Errors_And_Checks(t *testing.T) {
 
 	// negative transfers are disallowed
 	valueToTransfer := big.NewInt(-1000)
-	err := outputContext.Transfer(receiver, sender, 54, valueToTransfer, []byte("txdata"), 0)
+	err := outputContext.Transfer(receiver, sender, 54, 0, valueToTransfer, []byte("txdata"), 0)
 	require.Equal(t, arwen.ErrTransferNegativeValue, err)
 	require.Nil(t, senderOutputAccount.Balance)
 	require.Equal(t, arwen.Zero, senderOutputAccount.BalanceDelta)
 
 	// account must have enough money to transfer
 	valueToTransfer = big.NewInt(5000)
-	err = outputContext.Transfer(receiver, sender, 54, valueToTransfer, []byte("txdata"), 0)
+	err = outputContext.Transfer(receiver, sender, 54, 0, valueToTransfer, []byte("txdata"), 0)
 	require.Equal(t, arwen.ErrTransferInsufficientFunds, err)
 	require.Equal(t, big.NewInt(2000), senderOutputAccount.Balance)
 	require.Equal(t, arwen.Zero, senderOutputAccount.BalanceDelta)
 
 	senderOutputAccount.BalanceDelta = big.NewInt(4000)
 	valueToTransfer = big.NewInt(5000)
-	err = outputContext.Transfer(receiver, sender, 54, valueToTransfer, []byte("txdata"), 0)
+	err = outputContext.Transfer(receiver, sender, 54, 0, valueToTransfer, []byte("txdata"), 0)
 	require.Nil(t, err)
 	require.Equal(t, big.NewInt(-1000), senderOutputAccount.BalanceDelta)
 
@@ -501,17 +501,17 @@ func TestOutputContext_Transfer_IsAccountPayable(t *testing.T) {
 	host.BlockchainContext = bc
 
 	valueToTransfer := big.NewInt(10)
-	err := oc.Transfer(receiverNonPayable, sender, 54, valueToTransfer, []byte("txdata"), 0)
+	err := oc.Transfer(receiverNonPayable, sender, 54, 0, valueToTransfer, []byte("txdata"), 0)
 
 	require.Equal(t, arwen.ErrAccountNotPayable, err)
 
 	valueToTransfer = big.NewInt(0)
-	err = oc.Transfer(receiverNonPayable, sender, 54, valueToTransfer, []byte("txdata"), 0)
+	err = oc.Transfer(receiverNonPayable, sender, 54, 0, valueToTransfer, []byte("txdata"), 0)
 
 	require.Nil(t, err)
 
 	valueToTransfer = big.NewInt(10)
-	err = oc.Transfer(receiverPayable, sender, 54, valueToTransfer, []byte("txdata"), 0)
+	err = oc.Transfer(receiverPayable, sender, 54, 0, valueToTransfer, []byte("txdata"), 0)
 
 	require.Nil(t, err)
 }

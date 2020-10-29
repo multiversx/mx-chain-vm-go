@@ -261,6 +261,7 @@ func (context *runtimeContext) SetVMInput(vmInput *vmcommon.VMInput) {
 		CallType:    vmInput.CallType,
 		GasPrice:    vmInput.GasPrice,
 		GasProvided: vmInput.GasProvided,
+		GasLocked:   vmInput.GasLocked,
 		CallValue:   big.NewInt(0),
 	}
 
