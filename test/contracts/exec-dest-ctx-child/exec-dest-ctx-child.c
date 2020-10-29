@@ -12,7 +12,7 @@ byte childKey[] =  "childKey........................";
 byte childData[] = "childData";
 byte childFinish[] = "childFinish";
 
-byte recipient[32] = "childTransferReceiver...........";
+byte recipient[32] = "\0\0\0\0\0\0\0\0\x0F\x0F" "childTransferReceiver.";
 byte value[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,12};
 
 void childFunction() {

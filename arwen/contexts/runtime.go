@@ -242,10 +242,12 @@ func (context *runtimeContext) SetVMInput(vmInput *vmcommon.VMInput) {
 	}
 
 	context.vmInput = &vmcommon.VMInput{
-		CallType:    vmInput.CallType,
-		GasPrice:    vmInput.GasPrice,
-		GasProvided: vmInput.GasProvided,
-		CallValue:   big.NewInt(0),
+		CallType:      vmInput.CallType,
+		GasPrice:      vmInput.GasPrice,
+		GasProvided:   vmInput.GasProvided,
+		CallValue:     big.NewInt(0),
+		ESDTValue:     big.NewInt(0),
+		ESDTTokenName: nil,
 	}
 
 	if vmInput.CallValue != nil {
@@ -255,6 +257,15 @@ func (context *runtimeContext) SetVMInput(vmInput *vmcommon.VMInput) {
 	if len(vmInput.CallerAddr) > 0 {
 		context.vmInput.CallerAddr = make([]byte, len(vmInput.CallerAddr))
 		copy(context.vmInput.CallerAddr, vmInput.CallerAddr)
+	}
+
+	if vmInput.ESDTValue != nil {
+		context.vmInput.ESDTValue.Set(vmInput.ESDTValue)
+	}
+
+	if len(vmInput.ESDTTokenName) > 0 {
+		context.vmInput.ESDTTokenName = make([]byte, len(vmInput.ESDTTokenName))
+		copy(context.vmInput.ESDTTokenName, vmInput.ESDTTokenName)
 	}
 
 	if len(vmInput.OriginalTxHash) > 0 {

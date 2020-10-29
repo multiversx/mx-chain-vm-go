@@ -31,7 +31,7 @@ extern "C"
 }
 
 byte isTrainBooked[] = "storage";
-byte databaseAddress[] = "dataSC..........................";
+byte databaseAddress[] = "\0\0\0\0\0\0\0\0\x0f\x0f" "dataSC................";
 
 
 void init() {

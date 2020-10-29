@@ -22,8 +22,8 @@ var defaultVMType = []byte{0xF, 0xF}
 var errAccountNotFound = errors.New("account not found")
 
 var userAddress = []byte("userAccount.....................")
-var parentAddress = []byte("parentSC........................")
-var childAddress = []byte("childSC.........................")
+var parentAddress = []byte("\x00\x00\x00\x00\x00\x00\x00\x00\x0f\x0fparentSC..............")
+var childAddress = []byte("\x00\x00\x00\x00\x00\x00\x00\x00\x0f\x0fchildSC...............")
 
 var CustomGasSchedule = config.GasScheduleMap(nil)
 

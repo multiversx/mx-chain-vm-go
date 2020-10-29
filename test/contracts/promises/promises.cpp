@@ -31,7 +31,7 @@ extern "C"
 void lockMyStorage();
 
 byte successInteractionsKey[] = "storage";
-byte trainAddress[] = "trainSC.........................";
+byte trainAddress[] = "\0\0\0\0\0\0\0\0\x0f\x0ftrainSC...............";
 // Maybe setup an initial state
 extern "C" void init() {
     int64storageStore(successInteractionsKey, sizeof(successInteractionsKey), 0);
