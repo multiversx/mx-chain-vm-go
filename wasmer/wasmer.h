@@ -854,6 +854,10 @@ wasmer_import_object_iter_t *wasmer_import_object_iterate_functions(const wasmer
  */
 wasmer_import_object_t *wasmer_import_object_new(void);
 
+wasmer_result_t wasmer_instance_cache(wasmer_instance_t *instance,
+                                      const uint8_t **cache_bytes,
+                                      uint32_t *cache_len);
+
 /**
  * Calls an exported function of a WebAssembly instance by `name`
  * with the provided parameters. The exported function results are
@@ -1067,9 +1071,15 @@ void wasmer_instance_destroy(wasmer_instance_t *instance);
  */
 void wasmer_instance_exports(wasmer_instance_t *instance, wasmer_exports_t **exports);
 
+wasmer_result_t wasmer_instance_from_cache(wasmer_instance_t **_instance,
+                                           uint8_t *_cache_bytes,
+                                           uint32_t _cache_len);
+
 uint64_t wasmer_instance_get_points_used(wasmer_instance_t *instance);
 
 uint64_t wasmer_instance_get_runtime_breakpoint_value(wasmer_instance_t *instance);
+
+void wasmer_instance_set_points_limit(wasmer_instance_t *instance, uint64_t limit);
 
 void wasmer_instance_set_points_used(wasmer_instance_t *instance, uint64_t new_gas);
 
