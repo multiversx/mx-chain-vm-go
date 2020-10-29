@@ -32,6 +32,7 @@ type VMHost interface {
 	Metering() MeteringContext
 	Storage() StorageContext
 	IsArwenV2Enabled() bool
+	IsAheadOfTimeCompileEnabled() bool
 
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*AsyncContextInfo, error)

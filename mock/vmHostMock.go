@@ -58,6 +58,10 @@ func (host *VmHostMock) IsArwenV2Enabled() bool {
 	return true
 }
 
+func (host *VmHostMock) IsAheadOfTimeCompileEnabled() bool {
+	return true
+}
+
 func (host *VmHostMock) CreateNewContract(_ *vmcommon.ContractCreateInput) ([]byte, error) {
 	return nil, nil
 }

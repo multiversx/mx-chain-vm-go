@@ -91,6 +91,10 @@ func (context *runtimeContext) setWarmInstanceWhenNeeded() bool {
 }
 
 func (context *runtimeContext) makeInstanceFromCompiledCode(codeHash []byte, gasLimit uint64, newCode bool) bool {
+	if !context.host.IsAheadOfTimeCompileEnabled() {
+		return false
+	}
+
 	if newCode || len(codeHash) == 0 {
 		return false
 	}
