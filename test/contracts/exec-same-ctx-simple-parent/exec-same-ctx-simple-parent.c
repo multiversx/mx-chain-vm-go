@@ -3,7 +3,7 @@
 byte executeValue[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,99};
 
 void parentFunctionChildCall() {
-	byte childAddress[] = "secondSC........................";
+	byte childAddress[] = "\0\0\0\0\0\0\0\0\x0f\x0fsecondSC..............";
 	byte functionName[] = "childFunction";
 
 	u64 result = executeOnSameContext(

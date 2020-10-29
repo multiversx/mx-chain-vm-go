@@ -4,7 +4,7 @@
 byte value[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 void testBuiltins1() {
-	byte scAddress[] = "parentSC........................";
+	byte scAddress[] = "\0\0\0\0\0\0\0\0\x0f\x0fparentSC..............";
 	byte functionName[] = "builtinClaim";
 	byte functionLength = 12;
 
@@ -24,7 +24,7 @@ void testBuiltins1() {
 }
 
 void testBuiltins2() {
-	byte scAddress[] = "parentSC........................";
+	byte scAddress[] = "\0\0\0\0\0\0\0\0\x0f\x0fparentSC..............";
 	byte functionName[] = "builtinDoSomething";
 	byte functionLength = 18;
 
@@ -44,7 +44,7 @@ void testBuiltins2() {
 }
 
 void testBuiltins3() {
-	byte scAddress[] = "parentSC........................";
+	byte scAddress[] = "\0\0\0\0\0\0\0\0\x0f\x0fparentSC..............";
 	byte functionName[] = "builtinDoesntExist";
 	byte functionLength = 18;
 

@@ -7,8 +7,8 @@ byte childData[] = "childData";
 byte childFinish[] = "childFinish";
 byte value[32] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
-byte vaultAddress[] = "vaultAddress....................";
-byte thirdPartyAddress[] = "thirdPartyAddress...............";
+byte vaultAddress[] = "\0\0\0\0\0\0\0\0\x0F\x0FvaultAddress..........";
+byte thirdPartyAddress[] = "\0\0\0\0\0\0\0\0\x0F\x0FthirdPartyAddress.....";
 
 int sendToThirdParty();
 int sendToVault();

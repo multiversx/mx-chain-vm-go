@@ -1,6 +1,6 @@
 #include "../elrond/context.h"
 
-byte scAddress[] = "parentSC........................";
+byte scAddress[] = "\0\0\0\0\0\0\0\0\x0F\x0FparentSC..............";
 byte value[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 void performAsyncCallToBuiltin() {
