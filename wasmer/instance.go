@@ -191,6 +191,38 @@ func (instance *Instance) HasMemory() bool {
 	return nil != instance.Memory
 }
 
+func NewInstanceFromCompiledCodeWithOptions(
+	compiledCode []byte,
+	options CompilationOptions,
+) (*Instance, error) {
+	var c_instance *cWasmerInstanceT
+
+	if len(compiledCode) == 0 {
+		var emptyInstance = &Instance{instance: nil, Exports: nil, Memory: nil}
+		return emptyInstance, newWrappedError(ErrInvalidBytecode)
+	}
+
+	cOptions := unsafe.Pointer(&options)
+	var instantiateResult = cWasmerInstanceFromCache(
+		&c_instance,
+		(*cUchar)(unsafe.Pointer(&compiledCode[0])),
+		cUint32T(len(compiledCode)),
+		(*cWasmerCompilationOptions)(cOptions),
+	)
+
+	if instantiateResult != cWasmerOk {
+		var emptyInstance = &Instance{instance: nil, Exports: nil, Memory: nil}
+		return emptyInstance, newWrappedError(ErrFailedInstantiation)
+	}
+
+	instance, err := newInstance(c_instance)
+	if instance != nil && instance.Memory != nil {
+		c_instance_context := cWasmerInstanceContextGet(c_instance)
+		instance.InstanceCtx = IntoInstanceContextDirect(c_instance_context)
+	}
+	return instance, err
+}
+
 // SetContextData assigns a data that can be used by all imported
 // functions. Indeed, each imported function receives as its first
 // argument an instance context (see `InstanceContext`). An instance

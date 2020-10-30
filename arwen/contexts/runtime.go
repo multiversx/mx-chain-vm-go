@@ -114,7 +114,7 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(codeHash []byte, gas
 		Metering:           true,
 		RuntimeBreakpoints: true,
 	}
-	newInstance, err := wasmer.NewInstanceWithOptions(compiledCode, options)
+	newInstance, err := wasmer.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
 	if err != nil {
 		return false
 	}
@@ -187,10 +187,19 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 		}
 	}
 
-	//TODO: integrate new wasmer here - which returns this compiled code, change contract here to compiled one
-	blockchain.SaveCompiledCode(codeHash, contract)
+	context.saveCompiledCode(codeHash)
 
 	return nil
+}
+
+func (context *runtimeContext) saveCompiledCode(codeHash []byte) {
+	compiledCode, err := context.instance.Cache()
+	if err != nil {
+		log.Error("getCompiledCode from instance", "error", err)
+	}
+
+	blockchain := context.host.Blockchain()
+	blockchain.SaveCompiledCode(codeHash, compiledCode)
 }
 
 func (context *runtimeContext) IsWarmInstance() bool {
