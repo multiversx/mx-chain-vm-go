@@ -431,8 +431,7 @@ wasmer_result_t wasmer_compile(wasmer_module_t **module,
  */
 wasmer_result_t wasmer_compile_with_gas_metering(wasmer_module_t **module,
                                                  uint8_t *wasm_bytes,
-                                                 uint32_t wasm_bytes_len,
-                                                 uint64_t gas_limit);
+                                                 uint32_t wasm_bytes_len);
 
 #if defined(WASMER_EMSCRIPTEN_ENABLED)
 /**

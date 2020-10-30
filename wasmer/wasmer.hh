@@ -346,8 +346,7 @@ wasmer_result_t wasmer_compile(wasmer_module_t **module,
 /// and `wasmer_last_error_message` to get an error message.
 wasmer_result_t wasmer_compile_with_gas_metering(wasmer_module_t **module,
                                                  uint8_t *wasm_bytes,
-                                                 uint32_t wasm_bytes_len,
-                                                 uint64_t gas_limit);
+                                                 uint32_t wasm_bytes_len);
 
 #if defined(WASMER_EMSCRIPTEN_ENABLED)
 /// Convenience function for setting up arguments and calling the Emscripten
