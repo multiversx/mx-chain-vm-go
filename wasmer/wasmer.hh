@@ -876,6 +876,17 @@ void wasmer_instance_set_points_used(wasmer_instance_t *instance, uint64_t new_g
 
 void wasmer_instance_set_runtime_breakpoint_value(wasmer_instance_t *instance, uint64_t value);
 
+wasmer_result_t wasmer_instance_cache(wasmer_instance_t *instance,
+                                      const uint8_t **cache_bytes,
+                                      uint32_t *cache_len);
+
+wasmer_result_t wasmer_instance_from_cache(wasmer_instance_t **_instance,
+                                           uint8_t *_cache_bytes,
+                                           uint32_t _cache_len,
+                                           const wasmer_compilation_options_t *options);
+
+void wasmer_instance_set_points_limit(wasmer_instance_t *instance, uint64_t limit);
+
 /// Creates a new WebAssembly instance from the given bytes and imports.
 ///
 /// The result is stored in the first argument `instance` if
