@@ -233,7 +233,7 @@ func TestBlockchainContext_GetCodeHashAndSize(t *testing.T) {
 	outputContext.OutputAccountIsNew = true
 	outputContext.OutputAccountMock = &vmcommon.OutputAccount{}
 	codeHash = blockchainContext.GetCodeHash(address)
-	require.Equal(t, []byte{}, codeHash)
+	require.Equal(t, 0, len(codeHash))
 	require.Nil(t, err)
 
 	// GetCodeSize: Test if error is propagated from blockchain hook
