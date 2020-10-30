@@ -116,6 +116,7 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(codeHash []byte, gas
 	}
 	newInstance, err := wasmer.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
 	if err != nil {
+		log.Trace("NewInstanceFromCompiledCodeWithOptions", "error", err)
 		return false
 	}
 

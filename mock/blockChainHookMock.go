@@ -4,6 +4,7 @@ import (
 	"errors"
 	"math/big"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -33,12 +34,15 @@ type BlockchainHookMock struct {
 	Gas           uint64
 	Err           error
 	CompiledCode  map[string][]byte
+
+	cryptoHook crypto.VMCrypto
 }
 
 func NewBlockchainHookMock() *BlockchainHookMock {
 	return &BlockchainHookMock{
 		Accounts:     make(AccountsMap),
 		CompiledCode: make(map[string][]byte),
+		cryptoHook:   crypto.NewVMCrypto(),
 	}
 }
 
@@ -221,6 +225,8 @@ func (b *BlockchainHookMock) UpdateAccounts(outputAccounts map[string]*vmcommon.
 		account.Balance.Add(account.Balance, outputAccount.BalanceDelta)
 		if len(outputAccount.Code) > 0 {
 			account.Code = outputAccount.Code
+			codeHash, _ := b.cryptoHook.Sha256(account.Code)
+			account.CodeHash = codeHash
 		}
 
 		mergeStorageUpdates(account, outputAccount)
