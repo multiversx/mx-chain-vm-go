@@ -120,7 +120,7 @@ func (context *meteringContext) BlockGasLimit() uint64 {
 func (context *meteringContext) DeductInitialGasForExecution(contract []byte) error {
 	costPerByte := context.gasSchedule.BaseOperationCost.CompilePerByte
 	if context.host.IsAheadOfTimeCompileEnabled() {
-		costPerByte = context.gasSchedule.BaseOperationCost.DataCopyPerByte
+		costPerByte = context.gasSchedule.BaseOperationCost.AoTPreparePerByte
 	}
 	err := context.deductInitialGas(contract, 0, costPerByte)
 	if err != nil {
