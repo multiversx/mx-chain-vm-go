@@ -235,7 +235,8 @@ func (b *BlockchainHookMock) UpdateAccounts(outputAccounts map[string]*vmcommon.
 }
 
 func (b *BlockchainHookMock) SaveCompiledCode(codeHash []byte, code []byte) {
-	b.CompiledCode[string(codeHash)] = code
+	b.CompiledCode[string(codeHash)] = make([]byte, len(code))
+	copy(b.CompiledCode[string(codeHash)], code)
 }
 
 func (b *BlockchainHookMock) GetCompiledCode(codeHash []byte) (bool, []byte) {

@@ -1,8 +1,8 @@
 package wasmer
 
+import "C"
 import (
 	"fmt"
-	"reflect"
 	"unsafe"
 )
 
@@ -275,12 +275,8 @@ func (instance *Instance) Cache() ([]byte, error) {
 		return nil, ErrCachingFailed
 	}
 
-	var header reflect.SliceHeader
-	header = *(&header)
+	goBytes := C.GoBytes(unsafe.Pointer(cacheBytes), C.int(cacheLen))
+	cacheBytes = nil
 
-	header.Data = uintptr(unsafe.Pointer(cacheBytes))
-	header.Len = int(cacheLen)
-	header.Cap = int(cacheLen)
-
-	return *(*[]byte)(unsafe.Pointer(&header)), nil
+	return goBytes, nil
 }

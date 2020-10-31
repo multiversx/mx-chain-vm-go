@@ -105,7 +105,6 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(codeHash []byte, gas
 		return false
 	}
 
-	//TODO: create new wasmer instance here from compiled code
 	gasSchedule := context.host.Metering().GasSchedule()
 	options := wasmer.CompilationOptions{
 		GasLimit:           gasLimit,
@@ -169,6 +168,16 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 		context.warmInstance = context.instance
 	}
 
+	if newCode || len(codeHash) == 0 {
+		codeHash, err = context.host.Crypto().Sha256(contract)
+		if err != nil {
+			context.CleanWasmerInstance()
+			return err
+		}
+	}
+
+	context.saveCompiledCode(codeHash)
+
 	idContext := arwen.AddHostContext(context.host)
 	context.instance.SetContextData(idContext)
 
@@ -179,16 +188,6 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 			return err
 		}
 	}
-
-	if newCode || len(codeHash) == 0 {
-		codeHash, err = context.host.Crypto().Sha256(contract)
-		if err != nil {
-			context.CleanWasmerInstance()
-			return err
-		}
-	}
-
-	context.saveCompiledCode(codeHash)
 
 	return nil
 }
