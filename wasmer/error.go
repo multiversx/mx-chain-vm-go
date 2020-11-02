@@ -11,6 +11,8 @@ var ErrFailedCacheImports = errors.New("could not cache imports")
 
 var ErrInvalidBytecode = errors.New("invalid bytecode")
 
+var ErrCachingFailed = errors.New("instance caching failed")
+
 // GetLastError returns the last error message if any, otherwise returns an error.
 func GetLastError() (string, error) {
 	var errorLength = cWasmerLastErrorLength()

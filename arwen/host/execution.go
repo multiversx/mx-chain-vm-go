@@ -58,7 +58,7 @@ func (host *vmHost) performCodeDeployment(input arwen.CodeDeployInput) (*vmcommo
 	runtime.MustVerifyNextContractCode()
 
 	vmInput := runtime.GetVMInput()
-	err = runtime.StartWasmerInstance(input.ContractCode, vmInput.GasProvided)
+	err = runtime.StartWasmerInstance(input.ContractCode, vmInput.GasProvided, true)
 	if err != nil {
 		log.Debug("performCodeDeployment/StartWasmerInstance", "err", err)
 		return nil, arwen.ErrContractInvalid
@@ -128,7 +128,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	}
 
 	vmInput := runtime.GetVMInput()
-	err = runtime.StartWasmerInstance(contract, vmInput.GasProvided)
+	err = runtime.StartWasmerInstance(contract, vmInput.GasProvided, false)
 	if err != nil {
 		return output.CreateVMOutputInCaseOfError(arwen.ErrContractInvalid)
 	}
@@ -463,7 +463,7 @@ func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) (uint64, e
 	runtime.MustVerifyNextContractCode()
 
 	vmInput := runtime.GetVMInput()
-	err = runtime.StartWasmerInstance(codeDeployInput.ContractCode, vmInput.GasProvided)
+	err = runtime.StartWasmerInstance(codeDeployInput.ContractCode, vmInput.GasProvided, true)
 	if err != nil {
 		log.Debug("performCodeDeployment/StartWasmerInstance", "err", err)
 		runtime.PopInstance()
@@ -529,7 +529,7 @@ func (host *vmHost) executeSmartContractCall(
 	runtime.PushInstance()
 
 	gasForExecution := runtime.GetVMInput().GasProvided
-	err = runtime.StartWasmerInstance(contract, gasForExecution)
+	err = runtime.StartWasmerInstance(contract, gasForExecution, false)
 	if err != nil {
 		runtime.PopInstance()
 		return 0, err

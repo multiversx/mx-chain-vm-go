@@ -58,15 +58,19 @@ func (host *VmHostMock) IsArwenV2Enabled() bool {
 	return true
 }
 
-func (host *VmHostMock) CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error) {
+func (host *VmHostMock) IsAheadOfTimeCompileEnabled() bool {
+	return true
+}
+
+func (host *VmHostMock) CreateNewContract(_ *vmcommon.ContractCreateInput) ([]byte, error) {
 	return nil, nil
 }
 
-func (host *VmHostMock) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*arwen.AsyncContextInfo, error) {
+func (host *VmHostMock) ExecuteOnSameContext(_ *vmcommon.ContractCallInput) (*arwen.AsyncContextInfo, error) {
 	return nil, nil
 }
 
-func (host *VmHostMock) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *arwen.AsyncContextInfo, error) {
+func (host *VmHostMock) ExecuteOnDestContext(_ *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *arwen.AsyncContextInfo, error) {
 	return nil, nil, nil
 }
 
@@ -94,6 +98,6 @@ func (host *VmHostMock) GetProtocolBuiltinFunctions() vmcommon.FunctionNames {
 	return make(vmcommon.FunctionNames)
 }
 
-func (host *VmHostMock) IsBuiltinFunctionName(functionName string) bool {
+func (host *VmHostMock) IsBuiltinFunctionName(_ string) bool {
 	return host.IsBuiltinFunc
 }

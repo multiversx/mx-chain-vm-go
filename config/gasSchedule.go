@@ -142,6 +142,7 @@ func FillGasMap_BaseOperationCosts(value uint64) map[string]uint64 {
 	gasMap["ReleasePerByte"] = value
 	gasMap["PersistPerByte"] = value
 	gasMap["CompilePerByte"] = value
+	gasMap["AoTPreparePerByte"] = value
 
 	return gasMap
 }

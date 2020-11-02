@@ -52,6 +52,7 @@ type VMHostParameters struct {
 	ProtocolBuiltinFunctions vmcommon.FunctionNames
 	ElrondProtectedKeyPrefix []byte
 	ArwenV2EnableEpoch       uint32
+	AheadOfTimeEnableEpoch   uint32
 	UseWarmInstance          bool
 }
 

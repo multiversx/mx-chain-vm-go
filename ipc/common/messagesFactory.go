@@ -81,6 +81,10 @@ func init() {
 	messageCreators[BlockchainIsSmartContractResponse] = createMessageBlockchainIsSmartContractResponse
 	messageCreators[BlockchainIsPayableRequest] = createMessageBlockchainIsPayableRequest
 	messageCreators[BlockchainIsPayableResponse] = createMessageBlockchainIsPayableResponse
+	messageCreators[BlockchainSaveCompiledCodeRequest] = createMessageBlockchainSaveCompiledCodeRequest
+	messageCreators[BlockchainSaveCompiledCodeResponse] = createMessageBlockchainSaveCompiledCodeResponse
+	messageCreators[BlockchainGetCompiledCodeRequest] = createMessageBlockchainGetCompiledCodeRequest
+	messageCreators[BlockchainGetCompiledCodeResponse] = createMessageBlockchainGetCompiledCodeResponse
 }
 
 func createMessageInitialize() MessageHandler {
@@ -288,4 +292,20 @@ func createMessageBlockchainIsPayableRequest() MessageHandler {
 
 func createMessageBlockchainIsPayableResponse() MessageHandler {
 	return &MessageBlockchainIsPayableResponse{}
+}
+
+func createMessageBlockchainSaveCompiledCodeRequest() MessageHandler {
+	return &MessageBlockchainSaveCompiledCodeRequest{}
+}
+
+func createMessageBlockchainSaveCompiledCodeResponse() MessageHandler {
+	return &MessageBlockchainSaveCompiledCodeResponse{}
+}
+
+func createMessageBlockchainGetCompiledCodeRequest() MessageHandler {
+	return &MessageBlockchainGetCompiledCodeRequest{}
+}
+
+func createMessageBlockchainGetCompiledCodeResponse() MessageHandler {
+	return &MessageBlockchainGetCompiledCodeResponse{}
 }
