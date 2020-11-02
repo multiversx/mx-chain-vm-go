@@ -253,6 +253,10 @@ func (instance *Instance) SetPointsUsed(points uint64) {
 	cWasmerInstanceSetPointsUsed(instance.instance, points)
 }
 
+func (instance *Instance) SetGasLimit(gasLimit uint64) {
+	cWasmerInstanceSetGasLimit(instance.instance, gasLimit)
+}
+
 func (instance *Instance) SetBreakpointValue(value uint64) {
 	cWasmerInstanceSetBreakpointValue(instance.instance, value)
 }

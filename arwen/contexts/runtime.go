@@ -74,7 +74,7 @@ func (context *runtimeContext) InitState() {
 	}
 }
 
-func (context *runtimeContext) setWarmInstanceWhenNeeded() bool {
+func (context *runtimeContext) setWarmInstanceWhenNeeded(gasLimit uint64) bool {
 	scAddress := context.GetSCAddress()
 	useWarm := context.useWarmInstance && context.warmInstanceAddress != nil && bytes.Equal(scAddress, context.warmInstanceAddress)
 	if scAddress != nil && useWarm {
@@ -82,6 +82,7 @@ func (context *runtimeContext) setWarmInstanceWhenNeeded() bool {
 
 		context.instance = context.warmInstance
 		context.SetPointsUsed(0)
+		context.instance.SetGasLimit(gasLimit)
 
 		context.SetRuntimeBreakpointValue(arwen.BreakpointNone)
 		return true
@@ -133,19 +134,22 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 		return arwen.ErrMaxInstancesReached
 	}
 
+	warmInstanceUsed := context.setWarmInstanceWhenNeeded(gasLimit)
+	if warmInstanceUsed {
+		return nil
+	}
+
 	blockchain := context.host.Blockchain()
 	codeHash := blockchain.GetCodeHash(context.GetSCAddress())
-
-	warmInstanceSet := context.setWarmInstanceWhenNeeded()
-	if warmInstanceSet {
+	compiledCodeUsed := context.makeInstanceFromCompiledCode(codeHash, gasLimit, newCode)
+	if compiledCodeUsed {
 		return nil
 	}
 
-	compiledCodeSet := context.makeInstanceFromCompiledCode(codeHash, gasLimit, newCode)
-	if compiledCodeSet {
-		return nil
-	}
+	return context.makeInstanceFromContractByteCode(contract, codeHash, gasLimit, newCode)
+}
 
+func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte, codeHash []byte, gasLimit uint64, newCode bool) error {
 	log.Trace("Creating a new Wasmer instance")
 
 	gasSchedule := context.host.Metering().GasSchedule()
@@ -163,10 +167,6 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 	}
 
 	context.instance = newInstance
-	if context.useWarmInstance {
-		context.warmInstanceAddress = context.GetSCAddress()
-		context.warmInstance = context.instance
-	}
 
 	if newCode || len(codeHash) == 0 {
 		codeHash, err = context.host.Crypto().Sha256(contract)
@@ -187,6 +187,11 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 			context.CleanWasmerInstance()
 			return err
 		}
+	}
+
+	if context.useWarmInstance {
+		context.warmInstanceAddress = context.GetSCAddress()
+		context.warmInstance = context.instance
 	}
 
 	return nil

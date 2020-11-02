@@ -72,6 +72,13 @@ func cWasmerInstanceSetPointsUsed(instance *cWasmerInstanceT, points uint64) {
 	)
 }
 
+func cWasmerInstanceSetGasLimit(instance *cWasmerInstanceT, gasLimit uint64) {
+	C.wasmer_instance_set_points_limit(
+		(*C.wasmer_instance_t)(instance),
+		(C.uint64_t)(gasLimit),
+	)
+}
+
 func cWasmerInstanceSetBreakpointValue(instance *cWasmerInstanceT, value uint64) {
 	C.wasmer_instance_set_runtime_breakpoint_value(
 		(*C.wasmer_instance_t)(instance),
