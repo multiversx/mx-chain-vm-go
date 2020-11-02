@@ -3,11 +3,12 @@ package config
 import "github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 
 type BaseOperationCost struct {
-	StorePerByte    uint64
-	ReleasePerByte  uint64
-	DataCopyPerByte uint64
-	PersistPerByte  uint64
-	CompilePerByte  uint64
+	StorePerByte      uint64
+	ReleasePerByte    uint64
+	DataCopyPerByte   uint64
+	PersistPerByte    uint64
+	CompilePerByte    uint64
+	AoTPreparePerByte uint64
 }
 
 type ElrondAPICost struct {

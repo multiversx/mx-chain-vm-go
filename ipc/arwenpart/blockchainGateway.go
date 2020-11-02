@@ -367,3 +367,32 @@ func (blockchain *BlockchainHookGateway) IsPayable(address []byte) (bool, error)
 	response := rawResponse.(*common.MessageBlockchainIsPayableResponse)
 	return response.Result, response.GetError()
 }
+
+// SaveCompiledCode forwards a message to the actual hook
+func (blockchain *BlockchainHookGateway) SaveCompiledCode(codeHash []byte, code []byte) {
+	request := common.NewMessageBlockchainSaveCompiledCodeRequest(codeHash, code)
+	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if err != nil {
+		return
+	}
+
+	if rawResponse.GetKind() != common.BlockchainSaveCompiledCodeResponse {
+		log.Error("SaveCompiledCode", "err", common.ErrBadHookResponseFromNode)
+	}
+}
+
+// GetCompiledCode forwards a message to the actual hook
+func (blockchain *BlockchainHookGateway) GetCompiledCode(codeHash []byte) (bool, []byte) {
+	request := common.NewMessageBlockchainGetCompiledCodeRequest(codeHash)
+	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if err != nil {
+		return false, nil
+	}
+
+	if rawResponse.GetKind() != common.BlockchainGetCompiledCodeResponse {
+		return false, nil
+	}
+
+	response := rawResponse.(*common.MessageBlockchainGetCompiledCodeResponse)
+	return response.Found, response.Code
+}

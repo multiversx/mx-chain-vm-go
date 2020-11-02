@@ -10,6 +10,7 @@ type AccountMock struct {
 	Nonce        uint64
 	Balance      *big.Int
 	Code         []byte
+	CodeHash     []byte
 	CodeMetadata []byte
 	OwnerAddress []byte
 	UserName     []byte
@@ -41,7 +42,7 @@ func (a *AccountMock) GetCodeMetadata() []byte {
 
 // GetCodeHash -
 func (a *AccountMock) GetCodeHash() []byte {
-	return []byte{}
+	return a.CodeHash
 }
 
 // GetRootHash -

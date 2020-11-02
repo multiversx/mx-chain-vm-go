@@ -87,6 +87,10 @@ func (vhs *VmHostStub) IsArwenV2Enabled() bool {
 	return true
 }
 
+func (host *VmHostStub) IsAheadOfTimeCompileEnabled() bool {
+	return true
+}
+
 func (vhs *VmHostStub) Output() arwen.OutputContext {
 	if vhs.OutputCalled != nil {
 		return vhs.OutputCalled()

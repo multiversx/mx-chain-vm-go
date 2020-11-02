@@ -4,6 +4,7 @@ import (
 	"errors"
 	"math/big"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -32,11 +33,16 @@ type BlockchainHookMock struct {
 	Value         *big.Int
 	Gas           uint64
 	Err           error
+	CompiledCode  map[string][]byte
+
+	cryptoHook crypto.VMCrypto
 }
 
 func NewBlockchainHookMock() *BlockchainHookMock {
 	return &BlockchainHookMock{
-		Accounts: make(AccountsMap),
+		Accounts:     make(AccountsMap),
+		CompiledCode: make(map[string][]byte),
+		cryptoHook:   crypto.NewVMCrypto(),
 	}
 }
 
@@ -56,7 +62,7 @@ func (b *BlockchainHookMock) AddAccounts(accounts []*AccountMock) {
 	}
 }
 
-func (b *BlockchainHookMock) NewAddress(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error) {
+func (b *BlockchainHookMock) NewAddress(_ []byte, _ uint64, _ []byte) ([]byte, error) {
 	if b.Err != nil {
 		return nil, b.Err
 	}
@@ -81,7 +87,7 @@ func (b *BlockchainHookMock) GetStorageData(address []byte, index []byte) ([]byt
 	return account.Storage[string(index)], nil
 }
 
-func (b *BlockchainHookMock) GetBlockhash(nonce uint64) ([]byte, error) {
+func (b *BlockchainHookMock) GetBlockhash(_ uint64) ([]byte, error) {
 	if b.Err != nil {
 		return nil, b.Err
 	}
@@ -219,11 +225,23 @@ func (b *BlockchainHookMock) UpdateAccounts(outputAccounts map[string]*vmcommon.
 		account.Balance.Add(account.Balance, outputAccount.BalanceDelta)
 		if len(outputAccount.Code) > 0 {
 			account.Code = outputAccount.Code
+			codeHash, _ := b.cryptoHook.Sha256(account.Code)
+			account.CodeHash = codeHash
 		}
 
 		mergeStorageUpdates(account, outputAccount)
 		b.Accounts[strAddress] = account
 	}
+}
+
+func (b *BlockchainHookMock) SaveCompiledCode(codeHash []byte, code []byte) {
+	b.CompiledCode[string(codeHash)] = make([]byte, len(code))
+	copy(b.CompiledCode[string(codeHash)], code)
+}
+
+func (b *BlockchainHookMock) GetCompiledCode(codeHash []byte) (bool, []byte) {
+	code, found := b.CompiledCode[string(codeHash)]
+	return found, code
 }
 
 func mergeStorageUpdates(

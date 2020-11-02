@@ -44,6 +44,9 @@ type vmHost struct {
 
 	arwenV2EnableEpoch uint32
 	flagArwenV2        atomic.Flag
+
+	aotEnableEpoch  uint32
+	flagAheadOfTime atomic.Flag
 }
 
 // NewArwenVM creates a new Arwen vmHost
@@ -64,6 +67,7 @@ func NewArwenVM(
 		scAPIMethods:             nil,
 		protocolBuiltinFunctions: hostParameters.ProtocolBuiltinFunctions,
 		arwenV2EnableEpoch:       hostParameters.ArwenV2EnableEpoch,
+		aotEnableEpoch:           hostParameters.AheadOfTimeEnableEpoch,
 	}
 
 	var err error
@@ -176,6 +180,10 @@ func (host *vmHost) IsArwenV2Enabled() bool {
 	return host.flagArwenV2.IsSet()
 }
 
+func (host *vmHost) IsAheadOfTimeCompileEnabled() bool {
+	return host.flagAheadOfTime.IsSet()
+}
+
 func (host *vmHost) GetContexts() (
 	arwen.BigIntContext,
 	arwen.BlockchainContext,
@@ -194,8 +202,12 @@ func (host *vmHost) GetContexts() (
 
 func (host *vmHost) InitState() {
 	host.initContexts()
-	host.flagArwenV2.Toggle(host.blockChainHook.CurrentEpoch() >= host.arwenV2EnableEpoch)
+	currentEpoch := host.blockChainHook.CurrentEpoch()
+	host.flagArwenV2.Toggle(currentEpoch >= host.arwenV2EnableEpoch)
 	log.Trace("arwenV2", "enabled", host.flagArwenV2.IsSet())
+
+	host.flagAheadOfTime.Toggle(currentEpoch >= host.aotEnableEpoch)
+	log.Trace("aheadOfTime compile", "enabled", host.flagAheadOfTime.IsSet())
 }
 
 func (host *vmHost) initContexts() {
