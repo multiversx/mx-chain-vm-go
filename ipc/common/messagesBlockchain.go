@@ -647,7 +647,7 @@ type MessageBlockchainGetCompiledCodeResponse struct {
 // NewMessageBlockchainGetCompiledCodeResponse creates a response message
 func NewMessageBlockchainGetCompiledCodeResponse(result bool, code []byte) *MessageBlockchainGetCompiledCodeResponse {
 	message := &MessageBlockchainGetCompiledCodeResponse{}
-	message.Kind = BlockchainSaveCompiledCodeResponse
+	message.Kind = BlockchainGetCompiledCodeResponse
 	message.Found = result
 	message.Code = code
 	return message

@@ -410,7 +410,7 @@ func TestExecution_ExecuteOnSameContext_Simple(t *testing.T) {
 	parentCode := GetTestSCCode("exec-same-ctx-simple-parent", "../../")
 	childCode := GetTestSCCode("exec-same-ctx-simple-child", "../../")
 
-	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode, nil)
+	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode, big.NewInt(1000))
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionChildCall"
