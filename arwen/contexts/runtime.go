@@ -121,8 +121,6 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(codeHash []byte, gas
 		return false
 	}
 
-	hashOfCompiledCode, _ := context.host.Crypto().Sha256(compiledCode)
-	log.Info("USING COMPILED INSTANCE", "gasLimit", gasLimit, "hash", hashOfCompiledCode)
 	context.instance = newInstance
 
 	idContext := arwen.AddHostContext(context.host)
