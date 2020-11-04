@@ -461,6 +461,10 @@ func (context *runtimeContext) ElrondAPIErrorShouldFailExecution() bool {
 	return true
 }
 
+func (context *runtimeContext) ElrondSyncExecAPIErrorShouldFailExecution() bool {
+	return false
+}
+
 func (context *runtimeContext) BigIntAPIErrorShouldFailExecution() bool {
 	return true
 }

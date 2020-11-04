@@ -420,7 +420,6 @@ func TestExecution_ExecuteOnSameContext_Simple(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 	require.Equal(t, "", vmOutput.ReturnMessage)
-	fmt.Println(vmOutput.ReturnMessage)
 }
 
 func TestExecution_Call_Breakpoints(t *testing.T) {

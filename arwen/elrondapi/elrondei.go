@@ -1291,18 +1291,18 @@ func executeOnSameContext(
 
 	sender := runtime.GetSCAddress()
 	destination, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
 	if !areInSameShard(host, sender, destination) {
 		err = arwen.ErrSyncExecutionNotInSameShard
-		arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
+		arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution())
 		return 1
 	}
 
 	value, err := runtime.MemLoad(valueOffset, arwen.BalanceLen)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -1318,7 +1318,7 @@ func executeOnSameContext(
 	gasToUse = metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
 	metering.UseGas(gasToUse)
 
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -1336,7 +1336,7 @@ func executeOnSameContext(
 	}
 
 	_, err = host.ExecuteOnSameContext(contractCallInput)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -1364,18 +1364,18 @@ func executeOnDestContext(
 
 	sender := runtime.GetSCAddress()
 	destination, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
 	if !areInSameShard(host, sender, destination) {
 		err = arwen.ErrSyncExecutionNotInSameShard
-		arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
+		arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution())
 		return 1
 	}
 
 	value, err := runtime.MemLoad(valueOffset, arwen.BalanceLen)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -1390,7 +1390,7 @@ func executeOnDestContext(
 	gasToUse = metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
 	metering.UseGas(gasToUse)
 
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -1408,7 +1408,7 @@ func executeOnDestContext(
 	}
 
 	_, _, err = host.ExecuteOnDestContext(contractCallInput)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -1476,13 +1476,13 @@ func delegateExecution(
 
 	sender := runtime.GetSCAddress()
 	destination, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
 	if !areInSameShard(host, sender, destination) {
 		err = arwen.ErrSyncExecutionNotInSameShard
-		arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
+		arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution())
 		return 1
 	}
 
@@ -1498,7 +1498,7 @@ func delegateExecution(
 	gasToUse = metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
 	metering.UseGas(gasToUse)
 
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -1517,7 +1517,7 @@ func delegateExecution(
 	}
 
 	_, err = host.ExecuteOnSameContext(contractCallInput)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -1553,13 +1553,13 @@ func executeReadOnly(
 
 	sender := runtime.GetSCAddress()
 	destination, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
 	if !areInSameShard(host, sender, destination) {
 		err = arwen.ErrSyncExecutionNotInSameShard
-		arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
+		arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution())
 		return 1
 	}
 
@@ -1575,7 +1575,7 @@ func executeReadOnly(
 	gasToUse = metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
 	metering.UseGas(gasToUse)
 
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -1597,7 +1597,7 @@ func executeReadOnly(
 
 	_, err = host.ExecuteOnSameContext(contractCallInput)
 	runtime.SetReadOnly(false)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
