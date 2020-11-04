@@ -462,7 +462,7 @@ func (context *runtimeContext) ElrondAPIErrorShouldFailExecution() bool {
 }
 
 func (context *runtimeContext) ElrondSyncExecAPIErrorShouldFailExecution() bool {
-	return false
+	return true
 }
 
 func (context *runtimeContext) BigIntAPIErrorShouldFailExecution() bool {
