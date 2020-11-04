@@ -131,6 +131,53 @@ func expectedVMOutput_SameCtx_OutOfGas(_ []byte, _ []byte) *vmcommon.VMOutput {
 	return vmOutput
 }
 
+func expectedVMOutput_SameCtx_Simple(parentCode []byte, childCode []byte) *vmcommon.VMOutput {
+	vmOutput := MakeVMOutput()
+
+	AddFinishData(vmOutput, []byte("child"))
+	AddFinishData(vmOutput, []byte{})
+	for i := 1; i < 100; i++ {
+		AddFinishData(vmOutput, []byte{byte(i)})
+	}
+	AddFinishData(vmOutput, []byte{})
+	AddFinishData(vmOutput, []byte("child"))
+	AddFinishData(vmOutput, []byte{})
+	for i := 1; i < 100; i++ {
+		AddFinishData(vmOutput, []byte{byte(i)})
+	}
+	AddFinishData(vmOutput, []byte{})
+	AddFinishData(vmOutput, []byte("parent"))
+
+	parentAccount := AddNewOutputAccount(
+		vmOutput,
+		parentAddress,
+		-198,
+		nil,
+	)
+	parentAccount.Balance = big.NewInt(1000)
+
+	childAccount := AddNewOutputAccount(
+		vmOutput,
+		childAddress,
+		198,
+		nil,
+	)
+	childAccount.GasUsed = 3434
+
+	parentGasUsed := uint64(3107)
+	childGasUsed := childAccount.GasUsed
+	executionCost := parentGasUsed + childGasUsed
+
+	gas := gasProvided
+	gas -= uint64(len(parentCode))
+	gas -= uint64(len(childCode))
+	gas -= executionCost
+
+	vmOutput.GasRemaining = gas
+
+	return vmOutput
+}
+
 func expectedVMOutput_SameCtx_SuccessfulChildCall(parentCode []byte, _ []byte) *vmcommon.VMOutput {
 	vmOutput := expectedVMOutput_SameCtx_Prepare(parentCode)
 
