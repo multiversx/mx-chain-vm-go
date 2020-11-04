@@ -322,6 +322,7 @@ func (context *outputContext) resolveReturnCodeFromError(err error) vmcommon.Ret
 		return vmcommon.Ok
 	}
 
+	log.Info("resolveReturnCodeFromError", "error", err)
 	if errors.Is(err, arwen.ErrSignalError) {
 		return vmcommon.UserError
 	}
@@ -335,6 +336,7 @@ func (context *outputContext) resolveReturnCodeFromError(err error) vmcommon.Ret
 		return vmcommon.UserError
 	}
 	if errors.Is(err, arwen.ErrNotEnoughGas) {
+		log.Info("this is out of gas resolveReturnCodeFromError")
 		return vmcommon.OutOfGas
 	}
 	if errors.Is(err, arwen.ErrContractNotFound) {

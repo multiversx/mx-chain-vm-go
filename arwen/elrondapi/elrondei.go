@@ -72,9 +72,12 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
+
+var log = logger.GetOrCreate("arwen/elrondei")
 
 // ElrondEIImports creates a new wasmer.Imports populated with the ElrondEI API methods
 func ElrondEIImports() (*wasmer.Imports, error) {
@@ -712,6 +715,8 @@ func asyncCall(context unsafe.Pointer, destOffset int32, valueOffset int32, data
 	host := arwen.GetVmContext(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
+
+	log.Info("asyncCall called")
 
 	gasSchedule := metering.GasSchedule()
 	gasToUse := gasSchedule.ElrondAPICost.AsyncCallStep

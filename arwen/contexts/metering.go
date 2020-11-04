@@ -92,6 +92,7 @@ func (context *meteringContext) DeductAndLockGasIfAsyncStep() error {
 	gasToLock := gasSchedule.AsyncCallStep + gasSchedule.AsyncCallbackGasLock
 	gasToDeduct := gasSchedule.AsyncCallStep + gasToLock
 	if input.GasProvided <= gasToDeduct {
+		log.Info("DeductAndLockGasIfAsyncStep not enough gas", "gasProvided", input.GasProvided, "gasToDeduct", gasToDeduct)
 		return arwen.ErrNotEnoughGas
 	}
 	input.GasProvided -= gasToDeduct
@@ -159,6 +160,7 @@ func (context *meteringContext) deductInitialGas(
 	initialCost := baseCost + codeCost
 
 	if initialCost > input.GasProvided {
+		log.Info("deductInitialGas", "gasProvided", input.GasProvided, "initialCost", initialCost, "costPerByte", costPerByte)
 		return arwen.ErrNotEnoughGas
 	}
 

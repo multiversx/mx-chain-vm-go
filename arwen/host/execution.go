@@ -51,6 +51,7 @@ func (host *vmHost) performCodeDeployment(input arwen.CodeDeployInput) (*vmcommo
 
 	err := metering.DeductInitialGasForDirectDeployment(input)
 	if err != nil {
+		log.Info("performCodeDeployment out of gas")
 		output.SetReturnCode(vmcommon.OutOfGas)
 		return nil, err
 	}
@@ -453,6 +454,7 @@ func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) (uint64, e
 
 	err = metering.DeductInitialGasForDirectDeployment(codeDeployInput)
 	if err != nil {
+		log.Info("executeUpgrade out of gas")
 		output.SetReturnCode(vmcommon.OutOfGas)
 		return 0, err
 	}
@@ -556,7 +558,7 @@ func (host *vmHost) executeSmartContractCall(
 
 func (host *vmHost) execute(input *vmcommon.ContractCallInput) (uint64, error) {
 	_, _, metering, output, runtime, storage := host.GetContexts()
-
+	log.Info("calling a built in function - maybe ?")
 	if host.isBuiltinFunctionBeingCalled() {
 		err := metering.DeductAndLockGasIfAsyncStep()
 		if err != nil {
@@ -660,14 +662,18 @@ func (host *vmHost) callSCMethod() error {
 		return err
 	}
 
+	log.Info("callSCMethod", "gasLeft", host.meteringContext.GasLeft())
 	_, err = function()
 	if err != nil {
+		log.Info("callSCMethod error once", "error", err)
 		err = host.handleBreakpointIfAny(err)
 	}
 	if err != nil {
+		log.Info("callSCMethod error twice", "error", err)
 		return err
 	}
 
+	log.Info("callSCMethod no error yet")
 	switch callType {
 	case vmcommon.AsynchronousCall:
 		pendingMap, paiErr := host.processAsyncInfo(runtime.GetAsyncContextInfo())

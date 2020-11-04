@@ -121,10 +121,12 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(codeHash []byte, gas
 		return false
 	}
 
+	log.Info("USING COMPILED INSTANCE", "gasLimit", gasLimit)
 	context.instance = newInstance
 
 	idContext := arwen.AddHostContext(context.host)
 	context.instance.SetContextData(idContext)
+	context.verifyCode = false
 
 	return true
 }
