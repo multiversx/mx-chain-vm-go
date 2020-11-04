@@ -117,6 +117,6 @@ func (part *ArwenPart) replyToDiagnoseWait(request common.MessageHandler) common
 	return common.NewMessageDiagnoseWaitResponse()
 }
 
-func (part *ArwenPart) replyToVersionRequest(request common.MessageHandler) common.MessageHandler {
+func (part *ArwenPart) replyToVersionRequest(_ common.MessageHandler) common.MessageHandler {
 	return common.NewMessageVersionResponse(part.Version)
 }

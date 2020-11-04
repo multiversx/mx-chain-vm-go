@@ -109,6 +109,8 @@ func (driver *ArwenDriver) startArwen() error {
 		return err
 	}
 
+	driver.blockchainHook.ClearCompiledCodes()
+
 	driver.part, err = NewNodePart(
 		driver.arwenOutputRead,
 		driver.arwenInputWrite,

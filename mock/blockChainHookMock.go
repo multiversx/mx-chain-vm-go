@@ -244,6 +244,9 @@ func (b *BlockchainHookMock) GetCompiledCode(codeHash []byte) (bool, []byte) {
 	return found, code
 }
 
+func (b *BlockchainHookMock) ClearCompiledCodes() {
+}
+
 func mergeStorageUpdates(
 	leftAccount *AccountMock,
 	rightAccount *vmcommon.OutputAccount,
