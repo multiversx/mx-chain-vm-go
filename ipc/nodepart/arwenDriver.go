@@ -267,11 +267,8 @@ func (driver *ArwenDriver) RunSmartContractCall(input *vmcommon.ContractCallInpu
 	typedResponse := response.(*common.MessageContractResponse)
 	vmOutput, err := typedResponse.SerializableVMOutput.ConvertToVMOutput(), response.GetError()
 	if err != nil {
-		log.Info("RunSmartContractCall arwen driver", "error", err)
 		return nil, err
 	}
-
-	log.Info("RunSmartContractCall vmOutput arwen driver", "returnCode", vmOutput.ReturnCode.String(), "returnMessage", vmOutput.ReturnMessage)
 
 	return vmOutput, nil
 }
