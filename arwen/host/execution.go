@@ -115,13 +115,12 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
 	storage.SetAddress(runtime.GetSCAddress())
 
-	// TODO use runtime.GetSCCode() as much as possible, because it caches the
-	// code size
 	contract, err := runtime.GetSCCode()
 	if err != nil {
 		return output.CreateVMOutputInCaseOfError(arwen.ErrContractNotFound)
 	}
 
+	metering.UnlockGasIfAsyncCallback()
 	err = metering.DeductInitialGasForExecution(contract)
 	if err != nil {
 		return output.CreateVMOutputInCaseOfError(arwen.ErrNotEnoughGas)
@@ -137,8 +136,6 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	if err != nil {
 		return output.CreateVMOutputInCaseOfError(err)
 	}
-
-	metering.UnlockGasIfAsyncStep()
 
 	vmOutput = output.GetVMOutput()
 	runtime.CleanWasmerInstance()
@@ -611,7 +608,6 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmc
 	if vmOutput.GasRemaining < input.GasProvided {
 		metering.UseGas(gasConsumed)
 	}
-	// TODO else return ErrOutOfGas?
 
 	newVMInput, err := isSCExecutionAfterBuiltInFunc(input, vmOutput)
 	if err != nil {
@@ -793,7 +789,7 @@ func fillWithESDTValue(fullVMInput *vmcommon.ContractCallInput, newVMInput *vmco
 
 func prependCallbackToTxDataIfAsyncCall(txData []byte, callType vmcommon.CallType) string {
 	if callType == vmcommon.AsynchronousCallBack {
-		return string(append([]byte("callBack"), txData...))
+		return string(append([]byte(arwen.CallbackFunctionName), txData...))
 	}
 
 	return string(txData)

@@ -96,7 +96,7 @@ func (context *meteringContext) DeductGasIfAsyncStep() error {
 }
 
 // ComputeGasToLockForAsync calculates the minimum amount of gas to lock for async callbacks
-func (context *meteringContext) ComputeGasToLockForAsync() uint64 {
+func (context *meteringContext) ComputeGasLockedForAsync() uint64 {
 	baseGasSchedule := context.GasSchedule().BaseOperationCost
 	apiGasSchedule := context.GasSchedule().ElrondAPICost
 	codeSize := context.host.Runtime().GetSCCodeSize()
@@ -107,15 +107,24 @@ func (context *meteringContext) ComputeGasToLockForAsync() uint64 {
 	return compilationGasLock + executionGasLock
 }
 
-// UnlockGasIfAsyncStep restores the locked gas to the initial GasProvided, for
-// seamless transition into the async callback.
-func (context *meteringContext) UnlockGasIfAsyncStep() {
+func (context *meteringContext) LockGasForAsyncCallback() error {
+	gasToLock := context.ComputeGasLockedForAsync()
+
+	if context.GasLeft() <= gasToLock {
+		return arwen.ErrNotEnoughGas
+	}
+
+	context.UseGas(gasToLock)
+	return nil
+}
+
+func (context *meteringContext) UnlockGasIfAsyncCallback() {
 	input := context.host.Runtime().GetVMInput()
-	if input.CallType != vmcommon.AsynchronousCall {
+	if input.CallType != vmcommon.AsynchronousCallBack {
 		return
 	}
 
-	input.GasProvided += input.GasLocked
+	input.GasProvided += context.ComputeGasLockedForAsync()
 	input.GasLocked = 0
 }
 

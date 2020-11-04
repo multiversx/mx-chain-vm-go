@@ -735,10 +735,19 @@ func asyncCall(context unsafe.Pointer, destOffset int32, valueOffset int32, data
 		return
 	}
 
-	gasLimit := metering.GasLeft()
+	err := metering.LockGasForAsyncCallback()
+	if errors.Is(err, arwen.ErrNotEnoughGas) {
+		runtime.SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+		return
+	}
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return
+	}
 
-	minAsyncCallCost := 2*gasSchedule.ElrondAPICost.AsyncCallStep + gasSchedule.ElrondAPICost.AsyncCallbackGasLock
-	if gasLimit < minAsyncCallCost {
+	gasLimit := metering.GasLeft()
+	asyncCallStepCost := gasSchedule.ElrondAPICost.AsyncCallStep
+
+	if gasLimit < asyncCallStepCost {
 		runtime.SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
 		return
 	}

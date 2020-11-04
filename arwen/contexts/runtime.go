@@ -521,7 +521,7 @@ func (context *runtimeContext) GetFunctionToCall() (wasmer.ExportedFunctionCallb
 		return function, nil
 	}
 
-	if context.callFunction == arwen.CallbackDefault {
+	if context.callFunction == arwen.CallbackFunctionName {
 		return nil, arwen.ErrNilCallbackFunction
 	}
 
@@ -534,6 +534,11 @@ func (context *runtimeContext) GetInitFunction() wasmer.ExportedFunctionCallback
 		return init
 	}
 
+	return nil
+}
+
+func (context *runtimeContext) ExecuteAsyncCall(address []byte, data []byte, value []byte) error {
+	metering := context.host.Metering()
 	return nil
 }
 
@@ -571,6 +576,11 @@ func (context *runtimeContext) GetAsyncContext(contextIdentifier []byte) (*arwen
 
 func (context *runtimeContext) GetAsyncCallInfo() *arwen.AsyncCallInfo {
 	return context.asyncCallInfo
+}
+
+func (context *runtimeContext) HasCallbackMethod() bool {
+	_, ok := context.instance.Exports[arwen.CallbackFunctionName]
+	return ok
 }
 
 func (context *runtimeContext) MemLoad(offset int32, length int32) ([]byte, error) {

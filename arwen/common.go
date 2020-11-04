@@ -23,7 +23,7 @@ const (
 	AsyncUnknown
 )
 
-const CallbackDefault = "callBack"
+const CallbackFunctionName = "callBack"
 const TimeLockKeyPrefix = "timelock"
 const AsyncDataPrefix = "asyncCalls"
 
@@ -61,6 +61,7 @@ type AsyncCallInfo struct {
 	Destination []byte
 	Data        []byte
 	GasLimit    uint64
+	GasLocked   uint64
 	ValueBytes  []byte
 }
 
