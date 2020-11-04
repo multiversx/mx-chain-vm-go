@@ -125,6 +125,7 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(codeHash []byte, gas
 
 	idContext := arwen.AddHostContext(context.host)
 	context.instance.SetContextData(idContext)
+	context.verifyCode = false
 
 	return true
 }

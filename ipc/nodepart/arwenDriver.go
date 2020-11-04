@@ -109,6 +109,8 @@ func (driver *ArwenDriver) startArwen() error {
 		return err
 	}
 
+	driver.blockchainHook.ClearCompiledCodes()
+
 	driver.part, err = NewNodePart(
 		driver.arwenOutputRead,
 		driver.arwenInputWrite,
@@ -171,7 +173,7 @@ func closeFile(file *os.File) {
 	if file != nil {
 		err := file.Close()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Cannot close file.\n")
+			_, _ = fmt.Fprintf(os.Stderr, "Cannot close file.\n")
 		}
 	}
 }
