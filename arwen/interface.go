@@ -122,6 +122,7 @@ type RuntimeContext interface {
 	ElrondAPIErrorShouldFailExecution() bool
 	CryptoAPIErrorShouldFailExecution() bool
 	BigIntAPIErrorShouldFailExecution() bool
+	ExecuteAsyncCall(address []byte, data []byte, value []byte) error
 }
 
 type BigIntContext interface {
@@ -174,6 +175,8 @@ type MeteringContext interface {
 	DeductInitialGasForIndirectDeployment(input CodeDeployInput) error
 	DeductGasIfAsyncStep() error
 	ComputeGasLockedForAsync() uint64
+	UseGasForAsyncStep() error
+	UseGasBounded(gasToUse uint64) error
 	UnlockGasIfAsyncCallback()
 	GetGasLocked() uint64
 }

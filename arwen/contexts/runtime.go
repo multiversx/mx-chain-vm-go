@@ -539,6 +539,30 @@ func (context *runtimeContext) GetInitFunction() wasmer.ExportedFunctionCallback
 
 func (context *runtimeContext) ExecuteAsyncCall(address []byte, data []byte, value []byte) error {
 	metering := context.host.Metering()
+
+	err := metering.UseGasForAsyncStep()
+	if err != nil {
+		return err
+	}
+
+	gasToLock := uint64(0)
+
+	if context.HasCallbackMethod() {
+		gasToLock = metering.ComputeGasLockedForAsync()
+		err = metering.UseGasBounded(gasToLock)
+		if err != nil {
+			return err
+		}
+	}
+
+	context.SetAsyncCallInfo(&arwen.AsyncCallInfo{
+		Destination: address,
+		Data:        data,
+		GasLimit:    metering.GasLeft(),
+		GasLocked:   gasToLock,
+	})
+	context.SetRuntimeBreakpointValue(arwen.BreakpointAsyncCall)
+
 	return nil
 }
 

@@ -67,6 +67,7 @@ import "C"
 
 import (
 	"encoding/hex"
+	"errors"
 	"math/big"
 	"unsafe"
 
@@ -735,7 +736,7 @@ func asyncCall(context unsafe.Pointer, destOffset int32, valueOffset int32, data
 		return
 	}
 
-	err := metering.LockGasForAsyncCallback()
+	err = runtime.ExecuteAsyncCall(calledSCAddress, data, value)
 	if errors.Is(err, arwen.ErrNotEnoughGas) {
 		runtime.SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
 		return
@@ -743,27 +744,6 @@ func asyncCall(context unsafe.Pointer, destOffset int32, valueOffset int32, data
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
-
-	gasLimit := metering.GasLeft()
-	asyncCallStepCost := gasSchedule.ElrondAPICost.AsyncCallStep
-
-	if gasLimit < asyncCallStepCost {
-		runtime.SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
-		return
-	}
-
-	// Set up the async call as if it is not known whether the called SC
-	// is in the same shard with the caller or not. This will be later resolved
-	// in the handler for BreakpointAsyncCall.
-	runtime.SetAsyncCallInfo(&arwen.AsyncCallInfo{
-		Destination: calledSCAddress,
-		Data:        data,
-		GasLimit:    gasLimit,
-		ValueBytes:  value,
-	})
-
-	// Instruct Wasmer to interrupt the execution of the caller SC.
-	runtime.SetRuntimeBreakpointValue(arwen.BreakpointAsyncCall)
 }
 
 //export getArgumentLength

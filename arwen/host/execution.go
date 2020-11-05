@@ -450,6 +450,7 @@ func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) (uint64, e
 		CodeDeployerAddress:  input.CallerAddr,
 	}
 
+	metering.UnlockGasIfAsyncCallback()
 	err = metering.DeductInitialGasForDirectDeployment(codeDeployInput)
 	if err != nil {
 		output.SetReturnCode(vmcommon.OutOfGas)
@@ -478,8 +479,6 @@ func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) (uint64, e
 		runtime.PopInstance()
 		return 0, arwen.ErrReturnCodeNotOk
 	}
-
-	metering.UnlockGasIfAsyncStep()
 
 	gasToRestoreToCaller := metering.GasLeft()
 
@@ -516,6 +515,7 @@ func (host *vmHost) executeSmartContractCall(
 		return 0, err
 	}
 
+	metering.UnlockGasIfAsyncCallback()
 	if withInitialGasDeduct {
 		err = metering.DeductInitialGasForExecution(contract)
 		if err != nil {
@@ -547,7 +547,6 @@ func (host *vmHost) executeSmartContractCall(
 
 	runtime.PopInstance()
 	metering.RestoreGas(gasToRestoreToCaller)
-	metering.UnlockGasIfAsyncStep()
 
 	return initialGasProvided - gasToRestoreToCaller, nil
 }
@@ -695,7 +694,7 @@ func (host *vmHost) verifyAllowedFunctionCall() error {
 		return arwen.ErrInitFuncCalledInRun
 	}
 
-	isCallBack := functionName == arwen.CallBackFunctionName
+	isCallBack := functionName == arwen.CallbackFunctionName
 	isInAsyncCallBack := runtime.GetVMInput().CallType == vmcommon.AsynchronousCallBack
 	if isCallBack && !isInAsyncCallBack {
 		return arwen.ErrCallBackFuncCalledInRun

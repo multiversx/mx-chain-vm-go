@@ -48,12 +48,23 @@ func (m *MeteringContextMock) BoundGasLimit(value int64) uint64 {
 	return limit
 }
 
-func (m *MeteringContextMock) ComputeGasToLockForAsync() uint64 {
+func (m *MeteringContextMock) ComputeGasLockedForAsync() uint64 {
 	return m.GasComputedToLock
 }
 
 func (m *MeteringContextMock) DeductGasIfAsyncStep() error {
-	return nil
+	return m.Err
+}
+
+func (m *MeteringContextMock) UseGasBounded(gas uint64) error {
+	return m.Err
+}
+
+func (m *MeteringContextMock) UnlockGasIfAsyncCallback() {
+}
+
+func (m *MeteringContextMock) UseGasForAsyncStep() error {
+	return m.Err
 }
 
 func (m *MeteringContextMock) UnlockGasIfAsyncStep() {
@@ -68,22 +79,13 @@ func (m *MeteringContextMock) BlockGasLimit() uint64 {
 }
 
 func (m *MeteringContextMock) DeductInitialGasForExecution(contract []byte) error {
-	if m.Err != nil {
-		return m.Err
-	}
-	return nil
+	return m.Err
 }
 
 func (m *MeteringContextMock) DeductInitialGasForDirectDeployment(input arwen.CodeDeployInput) error {
-	if m.Err != nil {
-		return m.Err
-	}
-	return nil
+	return m.Err
 }
 
 func (m *MeteringContextMock) DeductInitialGasForIndirectDeployment(input arwen.CodeDeployInput) error {
-	if m.Err != nil {
-		return m.Err
-	}
-	return nil
+	return m.Err
 }

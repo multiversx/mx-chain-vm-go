@@ -95,27 +95,34 @@ func (context *meteringContext) DeductGasIfAsyncStep() error {
 	return nil
 }
 
+func (context *meteringContext) UseGasForAsyncStep() error {
+	gasSchedule := context.GasSchedule().ElrondAPICost
+	gasToDeduct := gasSchedule.AsyncCallStep
+	return context.UseGasBounded(gasToDeduct)
+}
+
+func (context *meteringContext) UseGasBounded(gasToUse uint64) error {
+	if context.GasLeft() <= gasToUse {
+		return arwen.ErrNotEnoughGas
+	}
+	context.UseGas(gasToUse)
+	return nil
+}
+
 // ComputeGasToLockForAsync calculates the minimum amount of gas to lock for async callbacks
 func (context *meteringContext) ComputeGasLockedForAsync() uint64 {
 	baseGasSchedule := context.GasSchedule().BaseOperationCost
 	apiGasSchedule := context.GasSchedule().ElrondAPICost
 	codeSize := context.host.Runtime().GetSCCodeSize()
 
+	// Exact amount of gas required to compile this SC again, to execute the
+	// callback
 	compilationGasLock := codeSize * baseGasSchedule.CompilePerByte
+
+	// Minimum amount required to execute the callback
 	executionGasLock := apiGasSchedule.AsyncCallStep + apiGasSchedule.AsyncCallbackGasLock
 
 	return compilationGasLock + executionGasLock
-}
-
-func (context *meteringContext) LockGasForAsyncCallback() error {
-	gasToLock := context.ComputeGasLockedForAsync()
-
-	if context.GasLeft() <= gasToLock {
-		return arwen.ErrNotEnoughGas
-	}
-
-	context.UseGas(gasToLock)
-	return nil
 }
 
 func (context *meteringContext) UnlockGasIfAsyncCallback() {

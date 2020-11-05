@@ -148,11 +148,12 @@ func (r *RuntimeContextMock) GetRuntimeBreakpointValue() arwen.BreakpointValue {
 	return r.CurrentBreakpointValue
 }
 
+func (r *RuntimeContextMock) ExecuteAsyncCall(address []byte, data []byte, value []byte) error {
+	return r.Err
+}
+
 func (r *RuntimeContextMock) VerifyContractCode() error {
-	if r.Err != nil {
-		return r.Err
-	}
-	return nil
+	return r.Err
 }
 
 func (r *RuntimeContextMock) GetPointsUsed() uint64 {
@@ -198,10 +199,7 @@ func (r *RuntimeContextMock) MemLoad(_ int32, _ int32) ([]byte, error) {
 }
 
 func (r *RuntimeContextMock) MemStore(_ int32, _ []byte) error {
-	if r.Err != nil {
-		return r.Err
-	}
-	return nil
+	return r.Err
 }
 
 func (r *RuntimeContextMock) ElrondAPIErrorShouldFailExecution() bool {
@@ -228,7 +226,7 @@ func (r *RuntimeContextMock) SetAsyncCallInfo(asyncCallInfo *arwen.AsyncCallInfo
 }
 
 func (r *RuntimeContextMock) AddAsyncContextCall(_ []byte, _ *arwen.AsyncGeneratedCall) error {
-	return nil
+	return r.Err
 }
 
 func (r *RuntimeContextMock) GetAsyncContextInfo() *arwen.AsyncContextInfo {

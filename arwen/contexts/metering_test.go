@@ -241,6 +241,6 @@ func TestMeteringContext_AsyncCallGasLocking(t *testing.T) {
 	// require.Equal(t, uint64(config.AsyncCallbackGasLockForTests+1), meteringContext.gasLockedForAsyncStep)
 	require.Equal(t, gasProvided-config.AsyncCallbackGasLockForTests-2, meteringContext.GasLeft())
 
-	meteringContext.UnlockGasIfAsyncStep()
+	meteringContext.UnlockGasIfAsyncCallback()
 	require.Equal(t, gasProvided-1, meteringContext.GasLeft())
 }
