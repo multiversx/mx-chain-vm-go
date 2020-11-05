@@ -396,3 +396,7 @@ func (blockchain *BlockchainHookGateway) GetCompiledCode(codeHash []byte) (bool,
 	response := rawResponse.(*common.MessageBlockchainGetCompiledCodeResponse)
 	return response.Found, response.Code
 }
+
+// ClearCompiledCodes nothing to do - this needs to be called by nodepart only
+func (blockchain *BlockchainHookGateway) ClearCompiledCodes() {
+}

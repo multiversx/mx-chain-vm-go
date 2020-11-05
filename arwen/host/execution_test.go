@@ -165,7 +165,6 @@ func TestExecution_DeployWASM_Popcnt(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, vmOutput)
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
-	fmt.Println(vmOutput.ReturnData)
 	require.Len(t, vmOutput.ReturnData, 1)
 	require.Equal(t, []byte{3}, vmOutput.ReturnData[0])
 }
@@ -414,7 +413,7 @@ func TestExecution_ExecuteOnSameContext_Simple(t *testing.T) {
 	parentCode := GetTestSCCode("exec-same-ctx-simple-parent", "../../")
 	childCode := GetTestSCCode("exec-same-ctx-simple-child", "../../")
 
-	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode, nil)
+	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode, big.NewInt(1000))
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionChildCall"
@@ -422,9 +421,9 @@ func TestExecution_ExecuteOnSameContext_Simple(t *testing.T) {
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
-	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
-	require.Equal(t, "", vmOutput.ReturnMessage)
-	fmt.Println(vmOutput.ReturnMessage)
+
+	expectedVMOutput := expectedVMOutput_SameCtx_Simple(parentCode, childCode)
+	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
 func TestExecution_Call_Breakpoints(t *testing.T) {
@@ -472,7 +471,6 @@ func TestExecution_ExecuteOnSameContext_Prepare(t *testing.T) {
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
-	fmt.Println(vmOutput.ReturnMessage)
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 
 	expectedVMOutput := expectedVMOutput_SameCtx_Prepare(parentCode)
@@ -493,8 +491,16 @@ func TestExecution_ExecuteOnSameContext_Wrong(t *testing.T) {
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
-	expectedVMOutput := expectedVMOutput_SameCtx_WrongContractCalled(parentCode)
-	require.Equal(t, expectedVMOutput, vmOutput)
+	require.NotNil(t, vmOutput)
+
+	if host.Runtime().ElrondSyncExecAPIErrorShouldFailExecution() == false {
+		expectedVMOutput := expectedVMOutput_SameCtx_WrongContractCalled(parentCode)
+		require.Equal(t, expectedVMOutput, vmOutput)
+	} else {
+		require.Equal(t, vmcommon.ExecutionFailed, vmOutput.ReturnCode)
+		require.Equal(t, "account not found", vmOutput.ReturnMessage)
+		require.Zero(t, vmOutput.GasRemaining)
+	}
 }
 
 func TestExecution_ExecuteOnSameContext_OutOfGas(t *testing.T) {
@@ -524,9 +530,17 @@ func TestExecution_ExecuteOnSameContext_OutOfGas(t *testing.T) {
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
-	expectedVMOutput := expectedVMOutput_SameCtx_OutOfGas(parentCode, childCode)
-	assert.Equal(t, int64(42), host.BigInt().GetOne(0).Int64())
-	require.Equal(t, expectedVMOutput, vmOutput)
+	require.NotNil(t, vmOutput)
+
+	if host.Runtime().ElrondSyncExecAPIErrorShouldFailExecution() == false {
+		expectedVMOutput := expectedVMOutput_SameCtx_OutOfGas(parentCode, childCode)
+		assert.Equal(t, int64(42), host.BigInt().GetOne(0).Int64())
+		require.Equal(t, expectedVMOutput, vmOutput)
+	} else {
+		require.Equal(t, vmcommon.ExecutionFailed, vmOutput.ReturnCode)
+		require.Equal(t, arwen.ErrNotEnoughGas.Error(), vmOutput.ReturnMessage)
+		require.Zero(t, vmOutput.GasRemaining)
+	}
 }
 
 func TestExecution_ExecuteOnSameContext_Successful(t *testing.T) {
@@ -623,11 +637,17 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct_ErrMaxInstances(t *test
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
-
-	expectedVMOutput := expectedVMOutput_SameCtx_Recursive_Direct_ErrMaxInstances(code, int(recursiveCalls))
-	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
-	require.Equal(t, expectedVMOutput, vmOutput)
-	require.Equal(t, int64(1), host.BigInt().GetOne(16).Int64())
+	require.NotNil(t, vmOutput)
+	if host.Runtime().ElrondSyncExecAPIErrorShouldFailExecution() == false {
+		expectedVMOutput := expectedVMOutput_SameCtx_Recursive_Direct_ErrMaxInstances(code, int(recursiveCalls))
+		expectedVMOutput.GasRemaining = vmOutput.GasRemaining
+		require.Equal(t, expectedVMOutput, vmOutput)
+		require.Equal(t, int64(1), host.BigInt().GetOne(16).Int64())
+	} else {
+		require.Equal(t, vmcommon.ExecutionFailed, vmOutput.ReturnCode)
+		require.Equal(t, arwen.ErrExecutionFailed.Error(), vmOutput.ReturnMessage)
+		require.Zero(t, vmOutput.GasRemaining)
+	}
 }
 
 func TestExecution_ExecuteOnSameContext_Recursive_Mutual_Methods(t *testing.T) {
@@ -734,10 +754,15 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
-
 	require.NotNil(t, vmOutput)
-	require.Equal(t, vmcommon.OutOfGas, vmOutput.ReturnCode)
-	require.Equal(t, arwen.ErrNotEnoughGas.Error(), vmOutput.ReturnMessage)
+
+	if host.Runtime().ElrondSyncExecAPIErrorShouldFailExecution() == false {
+		require.Equal(t, vmcommon.OutOfGas, vmOutput.ReturnCode)
+		require.Equal(t, arwen.ErrNotEnoughGas.Error(), vmOutput.ReturnMessage)
+	} else {
+		require.Equal(t, vmcommon.ExecutionFailed, vmOutput.ReturnCode)
+		require.Equal(t, arwen.ErrExecutionFailed.Error(), vmOutput.ReturnMessage)
+	}
 }
 
 func TestExecution_ExecuteOnDestContext_Prepare(t *testing.T) {
@@ -776,8 +801,16 @@ func TestExecution_ExecuteOnDestContext_Wrong(t *testing.T) {
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
-	expectedVMOutput := expectedVMOutput_DestCtx_WrongContractCalled(parentCode)
-	require.Equal(t, expectedVMOutput, vmOutput)
+	require.NotNil(t, vmOutput)
+
+	if host.Runtime().ElrondSyncExecAPIErrorShouldFailExecution() == false {
+		expectedVMOutput := expectedVMOutput_DestCtx_WrongContractCalled(parentCode)
+		require.Equal(t, expectedVMOutput, vmOutput)
+	} else {
+		require.Equal(t, vmcommon.ExecutionFailed, vmOutput.ReturnCode)
+		require.Equal(t, "account not found", vmOutput.ReturnMessage)
+		require.Zero(t, vmOutput.GasRemaining)
+	}
 }
 
 func TestExecution_ExecuteOnDestContext_OutOfGas(t *testing.T) {
@@ -807,9 +840,17 @@ func TestExecution_ExecuteOnDestContext_OutOfGas(t *testing.T) {
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
-	expectedVMOutput := expectedVMOutput_DestCtx_OutOfGas(parentCode)
-	require.Equal(t, expectedVMOutput, vmOutput)
-	require.Equal(t, int64(42), host.BigInt().GetOne(12).Int64())
+	require.NotNil(t, vmOutput)
+
+	if host.Runtime().ElrondSyncExecAPIErrorShouldFailExecution() == false {
+		expectedVMOutput := expectedVMOutput_DestCtx_OutOfGas(parentCode)
+		require.Equal(t, expectedVMOutput, vmOutput)
+		require.Equal(t, int64(42), host.BigInt().GetOne(12).Int64())
+	} else {
+		require.Equal(t, vmcommon.ExecutionFailed, vmOutput.ReturnCode)
+		require.Equal(t, arwen.ErrNotEnoughGas.Error(), vmOutput.ReturnMessage)
+		require.Zero(t, vmOutput.GasRemaining)
+	}
 }
 
 func TestExecution_ExecuteOnDestContext_Successful(t *testing.T) {
@@ -953,10 +994,16 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
-
 	require.NotNil(t, vmOutput)
-	require.Equal(t, vmcommon.OutOfGas, vmOutput.ReturnCode)
-	require.Equal(t, arwen.ErrNotEnoughGas.Error(), vmOutput.ReturnMessage)
+
+	if host.Runtime().ElrondSyncExecAPIErrorShouldFailExecution() == false {
+		require.Equal(t, vmcommon.OutOfGas, vmOutput.ReturnCode)
+		require.Equal(t, arwen.ErrNotEnoughGas.Error(), vmOutput.ReturnMessage)
+	} else {
+		require.Equal(t, vmcommon.ExecutionFailed, vmOutput.ReturnCode)
+		require.Equal(t, arwen.ErrExecutionFailed.Error(), vmOutput.ReturnMessage)
+		require.Zero(t, vmOutput.GasRemaining)
+	}
 }
 
 func TestExecution_AsyncCall(t *testing.T) {

@@ -26,7 +26,7 @@ test: clean arwen
 test-short: arwen
 	go test -short -count=1 ./...
 
-build-c-contracts:
+build-test-contracts:
 	erdpy contract build ./test/contracts/erc20
 	erdpy contract build ./test/contracts/counter
 

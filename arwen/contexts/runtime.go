@@ -104,6 +104,7 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(codeHash []byte, gas
 	blockchain := context.host.Blockchain()
 	found, compiledCode := blockchain.GetCompiledCode(codeHash)
 	if !found {
+		log.Debug("compiled code was not found")
 		return false
 	}
 
@@ -117,7 +118,7 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(codeHash []byte, gas
 	}
 	newInstance, err := wasmer.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
 	if err != nil {
-		log.Trace("NewInstanceFromCompiledCodeWithOptions", "error", err)
+		log.Warn("NewInstanceFromCompiledCodeWithOptions", "error", err)
 		return false
 	}
 
@@ -125,6 +126,7 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(codeHash []byte, gas
 
 	idContext := arwen.AddHostContext(context.host)
 	context.instance.SetContextData(idContext)
+	context.verifyCode = false
 
 	return true
 }
@@ -474,6 +476,10 @@ func (context *runtimeContext) VerifyContractCode() error {
 }
 
 func (context *runtimeContext) ElrondAPIErrorShouldFailExecution() bool {
+	return true
+}
+
+func (context *runtimeContext) ElrondSyncExecAPIErrorShouldFailExecution() bool {
 	return true
 }
 

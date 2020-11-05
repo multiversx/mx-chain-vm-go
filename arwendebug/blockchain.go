@@ -225,6 +225,9 @@ func (b *BlockchainHookMock) GetCompiledCode(codeHash []byte) (bool, []byte) {
 	return found, code
 }
 
+func (b *BlockchainHookMock) ClearCompiledCodes() {
+}
+
 // UpdateAccounts -
 func (b *BlockchainHookMock) UpdateAccounts(outputAccounts map[string]*vmcommon.OutputAccount) {
 	for address, outputAccount := range outputAccounts {

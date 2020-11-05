@@ -24,6 +24,7 @@ type RuntimeContextMock struct {
 	MemLoadResult          []byte
 	FailCryptoAPI          bool
 	FailElrondAPI          bool
+	FailElrondSyncExecAPI  bool
 	FailBigIntAPI          bool
 	AsyncCallInfo          *arwen.AsyncCallInfo
 	RunningInstances       uint64
@@ -204,6 +205,10 @@ func (r *RuntimeContextMock) MemStore(_ int32, _ []byte) error {
 
 func (r *RuntimeContextMock) ElrondAPIErrorShouldFailExecution() bool {
 	return r.FailElrondAPI
+}
+
+func (r *RuntimeContextMock) ElrondSyncExecAPIErrorShouldFailExecution() bool {
+	return r.FailElrondSyncExecAPI
 }
 
 func (r *RuntimeContextMock) CryptoAPIErrorShouldFailExecution() bool {

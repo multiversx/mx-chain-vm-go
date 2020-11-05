@@ -191,3 +191,6 @@ func (b *BlockchainHookStub) GetCompiledCode(codeHash []byte) (bool, []byte) {
 	}
 	return false, nil
 }
+
+func (b *BlockchainHookStub) ClearCompiledCodes() {
+}
