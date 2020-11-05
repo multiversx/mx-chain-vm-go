@@ -58,7 +58,7 @@ func (host *vmHost) performCodeDeployment(input arwen.CodeDeployInput) (*vmcommo
 	runtime.MustVerifyNextContractCode()
 
 	vmInput := runtime.GetVMInput()
-	err = runtime.StartWasmerInstance(input.ContractCode, vmInput.GasProvided)
+	err = runtime.StartWasmerInstance(input.ContractCode, vmInput.GasProvided, true)
 	if err != nil {
 		log.Debug("performCodeDeployment/StartWasmerInstance", "err", err)
 		return nil, arwen.ErrContractInvalid
@@ -126,7 +126,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	}
 
 	vmInput := runtime.GetVMInput()
-	err = runtime.StartWasmerInstance(contract, vmInput.GasProvided)
+	err = runtime.StartWasmerInstance(contract, vmInput.GasProvided, false)
 	if err != nil {
 		return output.CreateVMOutputInCaseOfError(arwen.ErrContractInvalid)
 	}
@@ -159,7 +159,7 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	runtime.InitStateFromContractCallInput(input)
 
 	storage.PushState()
-	storage.SetAddress(host.Runtime().GetSCAddress())
+	storage.SetAddress(runtime.GetSCAddress())
 
 	gasUsed := uint64(0)
 	defer func() {
@@ -256,6 +256,10 @@ func (host *vmHost) finishExecuteOnDestContext(gasUsed uint64, executeErr error)
 
 func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asyncInfo *arwen.AsyncContextInfo, err error) {
 	log.Trace("ExecuteOnSameContext", "function", input.Function)
+
+	if host.IsBuiltinFunctionName(input.Function) {
+		return nil, arwen.ErrBuiltinCallOnSameContextDisallowed
+	}
 
 	bigInt, _, _, output, runtime, _ := host.GetContexts()
 
@@ -457,7 +461,7 @@ func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) (uint64, e
 	runtime.MustVerifyNextContractCode()
 
 	vmInput := runtime.GetVMInput()
-	err = runtime.StartWasmerInstance(codeDeployInput.ContractCode, vmInput.GasProvided)
+	err = runtime.StartWasmerInstance(codeDeployInput.ContractCode, vmInput.GasProvided, true)
 	if err != nil {
 		log.Debug("performCodeDeployment/StartWasmerInstance", "err", err)
 		runtime.PopInstance()
@@ -523,7 +527,7 @@ func (host *vmHost) executeSmartContractCall(
 	runtime.PushInstance()
 
 	gasForExecution := runtime.GetVMInput().GasProvided
-	err = runtime.StartWasmerInstance(contract, gasForExecution)
+	err = runtime.StartWasmerInstance(contract, gasForExecution, false)
 	if err != nil {
 		runtime.PopInstance()
 		return 0, err
@@ -551,7 +555,7 @@ func (host *vmHost) executeSmartContractCall(
 }
 
 func (host *vmHost) execute(input *vmcommon.ContractCallInput) (uint64, error) {
-	_, _, metering, output, runtime, _ := host.GetContexts()
+	_, _, metering, output, runtime, storage := host.GetContexts()
 
 	if host.isBuiltinFunctionBeingCalled() {
 		err := metering.DeductAndLockGasIfAsyncStep()
@@ -565,6 +569,8 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) (uint64, error) {
 		}
 
 		if newVMInput != nil {
+			runtime.InitStateFromContractCallInput(newVMInput)
+			storage.SetAddress(runtime.GetSCAddress())
 			return host.executeSmartContractCall(newVMInput, metering, runtime, output, false)
 		}
 
@@ -745,7 +751,7 @@ func isSCExecutionAfterBuiltInFunc(
 	}
 
 	callType := vmInput.CallType
-	txData := string(prependCallbackToTxDataIfAsyncCall(outAcc.OutputTransfers[0].Data, callType))
+	txData := prependCallbackToTxDataIfAsyncCall(outAcc.OutputTransfers[0].Data, callType)
 
 	argParser := parsers.NewCallArgsParser()
 	function, arguments, err := argParser.ParseData(txData)
@@ -783,10 +789,10 @@ func fillWithESDTValue(fullVMInput *vmcommon.ContractCallInput, newVMInput *vmco
 	newVMInput.ESDTValue = big.NewInt(0).SetBytes(fullVMInput.Arguments[1])
 }
 
-func prependCallbackToTxDataIfAsyncCall(txData []byte, callType vmcommon.CallType) []byte {
+func prependCallbackToTxDataIfAsyncCall(txData []byte, callType vmcommon.CallType) string {
 	if callType == vmcommon.AsynchronousCallBack {
-		return append([]byte("callBack"), txData...)
+		return string(append([]byte("callBack"), txData...))
 	}
 
-	return txData
+	return string(txData)
 }

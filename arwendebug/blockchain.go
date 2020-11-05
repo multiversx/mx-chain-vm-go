@@ -27,6 +27,7 @@ type BlockchainHookMock struct {
 	StateRootHash []byte
 	Value         *big.Int
 	Gas           uint64
+	CompiledCode  map[string][]byte
 
 	LastCreatedContractAddress []byte
 }
@@ -34,7 +35,8 @@ type BlockchainHookMock struct {
 // NewBlockchainHookMock -
 func NewBlockchainHookMock() *BlockchainHookMock {
 	return &BlockchainHookMock{
-		Accounts: make(AccountsMap),
+		Accounts:     make(AccountsMap),
+		CompiledCode: make(map[string][]byte),
 	}
 }
 
@@ -51,14 +53,14 @@ func (b *BlockchainHookMock) AddAccounts(accounts []*Account) {
 }
 
 // NewAddress -
-func (b *BlockchainHookMock) NewAddress(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error) {
+func (b *BlockchainHookMock) NewAddress(creatorAddress []byte, creatorNonce uint64, _ []byte) ([]byte, error) {
 	if len(creatorAddress) != arwen.AddressLen {
 		panic("mock: bad creator address")
 	}
 
 	address := make([]byte, arwen.AddressLen)
 	copy(address, creatorAddress)
-	copy(address, []byte("contract"))
+	copy(address, "contract")
 	copy(address[len("contract"):], strconv.Itoa(int(creatorNonce)))
 	b.LastCreatedContractAddress = address
 	return address, nil
@@ -75,7 +77,7 @@ func (b *BlockchainHookMock) GetStorageData(address []byte, index []byte) ([]byt
 }
 
 // GetBlockhash -
-func (b *BlockchainHookMock) GetBlockhash(nonce uint64) ([]byte, error) {
+func (b *BlockchainHookMock) GetBlockhash(_ uint64) ([]byte, error) {
 	return b.BlockHash, nil
 }
 
@@ -135,7 +137,7 @@ func (b *BlockchainHookMock) CurrentEpoch() uint32 {
 }
 
 // ProcessBuiltInFunction -
-func (b *BlockchainHookMock) ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+func (b *BlockchainHookMock) ProcessBuiltInFunction(_ *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	return &vmcommon.VMOutput{}, nil
 }
 
@@ -212,6 +214,18 @@ func (b *BlockchainHookMock) IsPayable(address []byte) (bool, error) {
 
 	metadata := vmcommon.CodeMetadataFromBytes(account.GetCodeMetadata())
 	return metadata.Payable, nil
+}
+
+func (b *BlockchainHookMock) SaveCompiledCode(codeHash []byte, code []byte) {
+	b.CompiledCode[string(codeHash)] = code
+}
+
+func (b *BlockchainHookMock) GetCompiledCode(codeHash []byte) (bool, []byte) {
+	code, found := b.CompiledCode[string(codeHash)]
+	return found, code
+}
+
+func (b *BlockchainHookMock) ClearCompiledCodes() {
 }
 
 // UpdateAccounts -

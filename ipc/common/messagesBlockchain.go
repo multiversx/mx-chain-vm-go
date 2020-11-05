@@ -594,3 +594,61 @@ func NewMessageBlockchainIsPayableResponse(result bool, err error) *MessageBlock
 	message.SetError(err)
 	return message
 }
+
+// MessageBlockchainSaveCompiledCodeRequest represents a request message
+type MessageBlockchainSaveCompiledCodeRequest struct {
+	Message
+	CodeHash []byte
+	Code     []byte
+}
+
+// NewMessageBlockchainSaveCompiledCodeRequest creates a request message
+func NewMessageBlockchainSaveCompiledCodeRequest(codeHash []byte, code []byte) *MessageBlockchainSaveCompiledCodeRequest {
+	message := &MessageBlockchainSaveCompiledCodeRequest{}
+	message.Kind = BlockchainSaveCompiledCodeRequest
+	message.CodeHash = codeHash
+	message.Code = code
+	return message
+}
+
+// MessageBlockchainSaveCompiledCodeResponse represents a response message
+type MessageBlockchainSaveCompiledCodeResponse struct {
+	Message
+}
+
+// NewMessageBlockchainSaveCompiledCodeResponse creates a response message
+func NewMessageBlockchainSaveCompiledCodeResponse() *MessageBlockchainSaveCompiledCodeResponse {
+	message := &MessageBlockchainSaveCompiledCodeResponse{}
+	message.Kind = BlockchainSaveCompiledCodeResponse
+	return message
+}
+
+// MessageBlockchainGetCompiledCodeRequest represents a request message
+type MessageBlockchainGetCompiledCodeRequest struct {
+	Message
+	CodeHash []byte
+}
+
+// NewMessageBlockchainGetCompiledCodeRequest creates a request message
+func NewMessageBlockchainGetCompiledCodeRequest(codeHash []byte) *MessageBlockchainGetCompiledCodeRequest {
+	message := &MessageBlockchainGetCompiledCodeRequest{}
+	message.Kind = BlockchainGetCompiledCodeRequest
+	message.CodeHash = codeHash
+	return message
+}
+
+// MessageBlockchainGetCompiledCodeResponse represents a response message
+type MessageBlockchainGetCompiledCodeResponse struct {
+	Message
+	Found bool
+	Code  []byte
+}
+
+// NewMessageBlockchainGetCompiledCodeResponse creates a response message
+func NewMessageBlockchainGetCompiledCodeResponse(result bool, code []byte) *MessageBlockchainGetCompiledCodeResponse {
+	message := &MessageBlockchainGetCompiledCodeResponse{}
+	message.Kind = BlockchainGetCompiledCodeResponse
+	message.Found = result
+	message.Code = code
+	return message
+}

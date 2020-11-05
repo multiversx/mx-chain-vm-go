@@ -56,11 +56,13 @@ func NewNodePart(
 	part.Repliers[common.BlockchainGetShardOfAddressRequest] = part.replyToBlockchainGetShardOfAddress
 	part.Repliers[common.BlockchainIsSmartContractRequest] = part.replyToBlockchainIsSmartContract
 	part.Repliers[common.BlockchainIsPayableRequest] = part.replyToBlockchainIsPayable
+	part.Repliers[common.BlockchainSaveCompiledCodeRequest] = part.replyToBlockchainSaveCompiledCode
+	part.Repliers[common.BlockchainGetCompiledCodeRequest] = part.replyToBlockchainGetCompiledCode
 
 	return part, nil
 }
 
-func (part *NodePart) noopReplier(message common.MessageHandler) common.MessageHandler {
+func (part *NodePart) noopReplier(_ common.MessageHandler) common.MessageHandler {
 	log.Error("noopReplier called")
 	return common.CreateMessage(common.UndefinedRequestOrResponse)
 }

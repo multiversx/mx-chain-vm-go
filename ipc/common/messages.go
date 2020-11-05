@@ -57,6 +57,10 @@ const (
 	BlockchainIsPayableResponse
 	BlockchainIsSmartContractRequest
 	BlockchainIsSmartContractResponse
+	BlockchainSaveCompiledCodeRequest
+	BlockchainSaveCompiledCodeResponse
+	BlockchainGetCompiledCodeRequest
+	BlockchainGetCompiledCodeResponse
 	DiagnoseWaitRequest
 	DiagnoseWaitResponse
 	VersionRequest
@@ -116,6 +120,10 @@ func init() {
 	messageKindNameByID[BlockchainIsSmartContractResponse] = "BlockchainIsSmartContractResponse"
 	messageKindNameByID[BlockchainIsPayableRequest] = "BlockchainIsPayableRequest"
 	messageKindNameByID[BlockchainIsPayableResponse] = "BlockchainIsPayableResponse"
+	messageKindNameByID[BlockchainGetCompiledCodeResponse] = "BlockchainGetCompiledCodeResponse"
+	messageKindNameByID[BlockchainGetCompiledCodeRequest] = "BlockchainGetCompiledCodeRequest"
+	messageKindNameByID[BlockchainSaveCompiledCodeRequest] = "BlockchainSaveCompiledCodeRequest"
+	messageKindNameByID[BlockchainSaveCompiledCodeResponse] = "BlockchainSaveCompiledCodeResponse"
 	messageKindNameByID[DiagnoseWaitRequest] = "DiagnoseWaitRequest"
 	messageKindNameByID[DiagnoseWaitResponse] = "DiagnoseWaitResponse"
 	messageKindNameByID[VersionRequest] = "VersionRequest"
@@ -246,7 +254,7 @@ func CreateReplySlots(noopReplier MessageReplier) []MessageReplier {
 // IsHookCall returns whether a message is a hook call
 func IsHookCall(message MessageHandler) bool {
 	kind := message.GetKind()
-	return kind >= BlockchainNewAddressRequest && kind <= BlockchainIsSmartContractResponse
+	return kind >= BlockchainNewAddressRequest && kind <= BlockchainGetCompiledCodeResponse
 }
 
 // IsStopRequest returns whether a message is a stop request

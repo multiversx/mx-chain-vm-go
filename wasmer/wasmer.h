@@ -431,8 +431,7 @@ wasmer_result_t wasmer_compile(wasmer_module_t **module,
  */
 wasmer_result_t wasmer_compile_with_gas_metering(wasmer_module_t **module,
                                                  uint8_t *wasm_bytes,
-                                                 uint32_t wasm_bytes_len,
-                                                 uint64_t gas_limit);
+                                                 uint32_t wasm_bytes_len);
 
 #if defined(WASMER_EMSCRIPTEN_ENABLED)
 /**
@@ -1074,6 +1073,17 @@ uint64_t wasmer_instance_get_runtime_breakpoint_value(wasmer_instance_t *instanc
 void wasmer_instance_set_points_used(wasmer_instance_t *instance, uint64_t new_gas);
 
 void wasmer_instance_set_runtime_breakpoint_value(wasmer_instance_t *instance, uint64_t value);
+
+wasmer_result_t wasmer_instance_cache(wasmer_instance_t *instance,
+                                      const uint8_t **cache_bytes,
+                                      uint32_t *cache_len);
+
+wasmer_result_t wasmer_instance_from_cache(wasmer_instance_t **_instance,
+                                           uint8_t *_cache_bytes,
+                                           uint32_t _cache_len,
+                                           const wasmer_compilation_options_t *options);
+
+void wasmer_instance_set_points_limit(wasmer_instance_t *instance, uint64_t limit);
 
 /**
  * Creates a new WebAssembly instance from the given bytes and imports.

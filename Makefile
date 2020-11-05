@@ -26,7 +26,7 @@ test: clean arwen
 test-short: arwen
 	go test -short -count=1 ./...
 
-build-c-contracts:
+build-test-contracts:
 	erdpy contract build ./test/contracts/erc20
 	erdpy contract build ./test/contracts/counter
 
@@ -37,6 +37,7 @@ build-c-contracts:
 	erdpy contract build ./test/contracts/signatures
 	erdpy contract build ./test/contracts/elrondei
 	erdpy contract build ./test/contracts/breakpoint
+	erdpy contract build --no-optimization ./test/contracts/num-with-fp
 
 	erdpy contract build ./test/contracts/exec-same-ctx-simple-parent
 	erdpy contract build ./test/contracts/exec-same-ctx-simple-child
@@ -53,6 +54,12 @@ build-c-contracts:
 	erdpy contract build ./test/contracts/async-call-parent
 	erdpy contract build ./test/contracts/async-call-child
 	erdpy contract build ./test/contracts/exec-same-ctx-builtin
+	erdpy contract build ./test/contracts/deployer
+	erdpy contract build ./test/contracts/exchange
+	erdpy contract build ./test/contracts/promises
+	erdpy contract build ./test/contracts/promises-train
+	erdpy contract build ./test/contracts/promises-tracking
+	erdpy contract build ./test/contracts/timelocks
 
 
 build-delegation:

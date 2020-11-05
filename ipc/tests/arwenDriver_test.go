@@ -52,7 +52,7 @@ func TestArwenDriver_RestartsIfStopped(t *testing.T) {
 	require.NotNil(t, vmOutput)
 
 	require.False(t, driver.IsClosed())
-	driver.Close()
+	_ = driver.Close()
 	require.True(t, driver.IsClosed())
 
 	// Per this request, Arwen is restarted
@@ -67,7 +67,7 @@ func BenchmarkArwenDriver_RestartsIfStopped(b *testing.B) {
 	driver := newDriver(b, blockchain)
 
 	for i := 0; i < b.N; i++ {
-		driver.Close()
+		_ = driver.Close()
 		require.True(b, driver.IsClosed())
 		_ = driver.RestartArwenIfNecessary()
 		require.False(b, driver.IsClosed())

@@ -18,7 +18,6 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 	runtime.SetRuntimeBreakpointValue(arwen.BreakpointNone)
 
 	asyncCallInfo := runtime.GetAsyncCallInfo()
-
 	execMode, err := host.determineAsyncCallExecutionMode(asyncCallInfo)
 	if err != nil {
 		return err

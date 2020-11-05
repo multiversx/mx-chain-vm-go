@@ -69,6 +69,8 @@ var ErrArgIndexOutOfRange = errors.New("argument index out of range")
 
 var ErrArgOutOfRange = errors.New("argument out of range")
 
+var ErrStorageValueOutOfRange = errors.New("storage value out of range")
+
 var ErrDivZero = errors.New("division by 0")
 
 var ErrBitwiseNegative = errors.New("bitwise operations only allowed on positive integers")
@@ -94,3 +96,7 @@ var ErrNilCallbackFunction = errors.New("nil callback function")
 var ErrUpgradeNotAllowed = errors.New("upgrade not allowed")
 
 var ErrNilContract = errors.New("nil contract")
+
+var ErrBuiltinCallOnSameContextDisallowed = errors.New("calling built-in function on the same context is disallowed")
+
+var ErrSyncExecutionNotInSameShard = errors.New("sync execution request is not in the same shard")
