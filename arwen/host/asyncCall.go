@@ -119,13 +119,12 @@ func (host *vmHost) canExecuteSynchronously(destination []byte, _ []byte) bool {
 func (host *vmHost) sendAsyncCallToDestination(asyncCallInfo arwen.AsyncCallInfoHandler) error {
 	runtime := host.Runtime()
 	output := host.Output()
-	metering := host.Metering()
 
 	err := output.Transfer(
 		asyncCallInfo.GetDestination(),
 		runtime.GetSCAddress(),
 		asyncCallInfo.GetGasLimit(),
-		metering.ComputeGasLockedForAsync(),
+		asyncCallInfo.GetGasLocked(),
 		big.NewInt(0).SetBytes(asyncCallInfo.GetValueBytes()),
 		asyncCallInfo.GetData(),
 		vmcommon.AsynchronousCall,
@@ -140,6 +139,7 @@ func (host *vmHost) sendAsyncCallToDestination(asyncCallInfo arwen.AsyncCallInfo
 	return nil
 }
 
+// TODO add locked gas during future refactoring, if needed
 func (host *vmHost) sendCallbackToCurrentCaller() error {
 	runtime := host.Runtime()
 	output := host.Output()
