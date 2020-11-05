@@ -242,6 +242,17 @@ func (host *vmHost) GetProtocolBuiltinFunctions() vmcommon.FunctionNames {
 	return host.protocolBuiltinFunctions
 }
 
+func (host *vmHost) GasScheduleChange(newGasSchedule map[string]map[string]uint64) {
+	gasCostConfig, err := config.CreateGasConfig(newGasSchedule)
+	if err != nil {
+		log.Error("cannot apply new gas config remained with old one")
+		return
+	}
+
+	opcodeCosts := gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray()
+	wasmer.SetOpcodeCosts(&opcodeCosts)
+}
+
 func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error) {
 	log.Trace("RunSmartContractCreate begin", "len(code)", len(input.ContractCode), "metadata", input.ContractCodeMetadata)
 

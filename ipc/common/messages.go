@@ -15,6 +15,8 @@ const (
 	ContractDeployRequest
 	ContractCallRequest
 	ContractResponse
+	GasScheduleChangeRequest
+	GasScheduleChangeResponse
 	BlockchainNewAddressRequest
 	BlockchainNewAddressResponse
 	BlockchainGetStorageDataRequest
@@ -78,6 +80,8 @@ func init() {
 	messageKindNameByID[ContractDeployRequest] = "ContractDeployRequest"
 	messageKindNameByID[ContractCallRequest] = "ContractCallRequest"
 	messageKindNameByID[ContractResponse] = "ContractResponse"
+	messageKindNameByID[GasScheduleChangeRequest] = "GasScheduleChangeRequest"
+	messageKindNameByID[GasScheduleChangeResponse] = "GasScheduleChangeResponse"
 	messageKindNameByID[BlockchainNewAddressRequest] = "BlockchainNewAddressRequest"
 	messageKindNameByID[BlockchainNewAddressResponse] = "BlockchainNewAddressResponse"
 	messageKindNameByID[BlockchainGetStorageDataRequest] = "BlockchainGetStorageDataRequest"
