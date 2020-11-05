@@ -480,7 +480,7 @@ func (context *runtimeContext) ElrondAPIErrorShouldFailExecution() bool {
 }
 
 func (context *runtimeContext) ElrondSyncExecAPIErrorShouldFailExecution() bool {
-	return true
+	return false
 }
 
 func (context *runtimeContext) BigIntAPIErrorShouldFailExecution() bool {
@@ -566,6 +566,7 @@ func (context *runtimeContext) ExecuteAsyncCall(address []byte, data []byte, val
 		Data:        data,
 		GasLimit:    metering.GasLeft(),
 		GasLocked:   gasToLock,
+		ValueBytes:  value,
 	})
 	context.SetRuntimeBreakpointValue(arwen.BreakpointAsyncCall)
 

@@ -450,7 +450,6 @@ func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) (uint64, e
 		CodeDeployerAddress:  input.CallerAddr,
 	}
 
-	metering.UnlockGasIfAsyncCallback()
 	err = metering.DeductInitialGasForDirectDeployment(codeDeployInput)
 	if err != nil {
 		output.SetReturnCode(vmcommon.OutOfGas)
@@ -495,15 +494,16 @@ func (host *vmHost) executeSmartContractCall(
 	output arwen.OutputContext,
 	withInitialGasDeduct bool,
 ) (uint64, error) {
-	// Use all gas initially, on the Wasmer instance of the caller
-	// (runtime.PushInstance() is called later). In case of successful execution,
-	// the unused gas will be restored.
-	initialGasProvided := input.GasProvided
-	metering.UseGas(initialGasProvided)
-
 	if host.isInitFunctionBeingCalled() && !input.AllowInitFunction {
 		return 0, arwen.ErrInitFuncCalledInRun
 	}
+
+	// Use all gas initially, on the Wasmer instance of the caller
+	// (runtime.PushInstance() is called later). In case of successful execution,
+	// the unused gas will be restored.
+	metering.UnlockGasIfAsyncCallback()
+	initialGasProvided := input.GasProvided
+	metering.UseGas(initialGasProvided)
 
 	isUpgrade := input.Function == arwen.UpgradeFunctionName
 	if isUpgrade {
@@ -515,7 +515,6 @@ func (host *vmHost) executeSmartContractCall(
 		return 0, err
 	}
 
-	metering.UnlockGasIfAsyncCallback()
 	if withInitialGasDeduct {
 		err = metering.DeductInitialGasForExecution(contract)
 		if err != nil {
@@ -555,7 +554,7 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) (uint64, error) {
 	_, _, metering, output, runtime, storage := host.GetContexts()
 
 	if host.isBuiltinFunctionBeingCalled() {
-		err := metering.DeductGasIfAsyncStep()
+		err := metering.UseGasForAsyncStep()
 		if err != nil {
 			return 0, err
 		}

@@ -77,6 +77,10 @@ func (aci *AsyncCallInfo) GetGasLimit() uint64 {
 	return aci.GasLimit
 }
 
+func (aci *AsyncCallInfo) GetGasLocked() uint64 {
+	return aci.GasLocked
+}
+
 func (aci *AsyncCallInfo) GetValueBytes() []byte {
 	return aci.ValueBytes
 }
@@ -121,6 +125,10 @@ func (ac *AsyncGeneratedCall) GetData() []byte {
 // GetGasLimit returns the gas limit of the current async call
 func (ac *AsyncGeneratedCall) GetGasLimit() uint64 {
 	return ac.GasLimit
+}
+
+func (ac *AsyncGeneratedCall) GetGasLocked() uint64 {
+	panic("not implemented")
 }
 
 // GetValueBytes returns the byte representation of the value of the async call

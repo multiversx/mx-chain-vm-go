@@ -76,25 +76,9 @@ func (context *meteringContext) BoundGasLimit(value int64) uint64 {
 	return limit
 }
 
-// DeductAndLockGasIfAsyncStep will deduct the gas for an async step and also
-// lock gas for the callback, if the execution is an asynchronous call
-func (context *meteringContext) DeductGasIfAsyncStep() error {
-	input := context.host.Runtime().GetVMInput()
-	if input.CallType != vmcommon.AsynchronousCall {
-		return nil
-	}
-
-	gasSchedule := context.GasSchedule().ElrondAPICost
-
-	gasToDeduct := gasSchedule.AsyncCallStep
-	if input.GasProvided <= gasToDeduct {
-		return arwen.ErrNotEnoughGas
-	}
-	input.GasProvided -= gasToDeduct
-
-	return nil
-}
-
+// UseGasForAsyncStep consumes the AsyncCallStep gas cost on the currently
+// running Wasmer instance
+// TODO the warmInstance will be affected if this function is misused
 func (context *meteringContext) UseGasForAsyncStep() error {
 	gasSchedule := context.GasSchedule().ElrondAPICost
 	gasToDeduct := gasSchedule.AsyncCallStep
@@ -131,7 +115,7 @@ func (context *meteringContext) UnlockGasIfAsyncCallback() {
 		return
 	}
 
-	input.GasProvided += context.ComputeGasLockedForAsync()
+	input.GasProvided += input.GasLocked
 	input.GasLocked = 0
 }
 
@@ -155,7 +139,7 @@ func (context *meteringContext) DeductInitialGasForExecution(contract []byte) er
 		return err
 	}
 
-	return context.DeductGasIfAsyncStep()
+	return nil
 }
 
 // DeductInitialGasForDirectDeployment deducts gas for the deployment of a contract initiated by a Transaction

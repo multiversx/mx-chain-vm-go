@@ -174,7 +174,6 @@ type MeteringContext interface {
 	DeductInitialGasForExecution(contract []byte) error
 	DeductInitialGasForDirectDeployment(input CodeDeployInput) error
 	DeductInitialGasForIndirectDeployment(input CodeDeployInput) error
-	DeductGasIfAsyncStep() error
 	ComputeGasLockedForAsync() uint64
 	UseGasForAsyncStep() error
 	UseGasBounded(gasToUse uint64) error
@@ -206,5 +205,6 @@ type AsyncCallInfoHandler interface {
 	GetDestination() []byte
 	GetData() []byte
 	GetGasLimit() uint64
+	GetGasLocked() uint64
 	GetValueBytes() []byte
 }

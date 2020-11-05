@@ -208,19 +208,16 @@ func TestDeductInitialGasForIndirectDeployment(t *testing.T) {
 
 func TestMeteringContext_AsyncCallGasLocking(t *testing.T) {
 	t.Parallel()
-	t.Skip()
-
-	// TODO fix this test
 
 	mockRuntime := &mock.RuntimeContextMock{}
-	contractCode := []byte("contractCode")
-	input := &vmcommon.ContractCreateInput{
+	contractSize := uint64(1000)
+	input := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallType: vmcommon.AsynchronousCall,
 		},
-		ContractCode: contractCode,
 	}
 
+	mockRuntime.SCCodeSize = contractSize
 	mockRuntime.SetVMInput(&input.VMInput)
 	mockRuntime.SetPointsUsed(0)
 
@@ -230,17 +227,23 @@ func TestMeteringContext_AsyncCallGasLocking(t *testing.T) {
 
 	meteringContext, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000))
 
-	input.GasProvided = 2
-	err := meteringContext.DeductGasIfAsyncStep()
+	input.GasProvided = 1
+	err := meteringContext.UseGasForAsyncStep()
 	require.Equal(t, arwen.ErrNotEnoughGas, err)
 
+	mockRuntime.SetPointsUsed(0)
 	gasProvided := uint64(1_000_000)
 	input.GasProvided = gasProvided
-	err = meteringContext.DeductGasIfAsyncStep()
+	gasToLock := meteringContext.ComputeGasLockedForAsync()
+	err = meteringContext.UseGasBounded(gasToLock)
 	require.Nil(t, err)
-	// require.Equal(t, uint64(config.AsyncCallbackGasLockForTests+1), meteringContext.gasLockedForAsyncStep)
-	require.Equal(t, gasProvided-config.AsyncCallbackGasLockForTests-2, meteringContext.GasLeft())
+	expectedGasLeft := gasProvided - gasToLock
+	require.Equal(t, expectedGasLeft, meteringContext.GasLeft())
 
+	mockRuntime.VmInput.CallType = vmcommon.AsynchronousCallBack
+	mockRuntime.VmInput.GasLocked = gasToLock
 	meteringContext.UnlockGasIfAsyncCallback()
+	err = meteringContext.UseGasForAsyncStep()
+	require.Nil(t, err)
 	require.Equal(t, gasProvided-1, meteringContext.GasLeft())
 }
