@@ -2,6 +2,7 @@ package host
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/contexts"
@@ -29,6 +30,7 @@ type CatchFunction func(error)
 type vmHost struct {
 	blockChainHook vmcommon.BlockchainHook
 	cryptoHook     crypto.VMCrypto
+	mutExecution   sync.RWMutex
 
 	ethInput []byte
 
@@ -243,6 +245,9 @@ func (host *vmHost) GetProtocolBuiltinFunctions() vmcommon.FunctionNames {
 }
 
 func (host *vmHost) GasScheduleChange(newGasSchedule map[string]map[string]uint64) {
+	host.mutExecution.Lock()
+	defer host.mutExecution.Unlock()
+
 	gasCostConfig, err := config.CreateGasConfig(newGasSchedule)
 	if err != nil {
 		log.Error("cannot apply new gas config remained with old one")
@@ -256,6 +261,9 @@ func (host *vmHost) GasScheduleChange(newGasSchedule map[string]map[string]uint6
 }
 
 func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error) {
+	host.mutExecution.RLock()
+	defer host.mutExecution.RUnlock()
+
 	log.Trace("RunSmartContractCreate begin", "len(code)", len(input.ContractCode), "metadata", input.ContractCodeMetadata)
 
 	try := func() {
@@ -276,6 +284,9 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 }
 
 func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
+	host.mutExecution.RLock()
+	defer host.mutExecution.RUnlock()
+
 	log.Trace("RunSmartContractCall begin", "function", input.Function)
 
 	tryUpgrade := func() {
