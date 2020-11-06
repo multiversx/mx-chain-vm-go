@@ -39,6 +39,15 @@ func (context *meteringContext) GasSchedule() *config.GasCost {
 	return context.gasSchedule
 }
 
+func (context *meteringContext) SetGasSchedule(gasMap config.GasScheduleMap) {
+	gasSchedule, err := config.CreateGasConfig(gasMap)
+	if err != nil {
+		log.Error("SetGasSchedule createGasConfig", "error", err)
+		return
+	}
+	context.gasSchedule = gasSchedule
+}
+
 func (context *meteringContext) UseGas(gas uint64) {
 	gasUsed := context.host.Runtime().GetPointsUsed() + gas
 	context.host.Runtime().SetPointsUsed(gasUsed)

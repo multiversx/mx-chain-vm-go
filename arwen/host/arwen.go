@@ -251,6 +251,8 @@ func (host *vmHost) GasScheduleChange(newGasSchedule map[string]map[string]uint6
 
 	opcodeCosts := gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray()
 	wasmer.SetOpcodeCosts(&opcodeCosts)
+
+	host.meteringContext.SetGasSchedule(newGasSchedule)
 }
 
 func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error) {
