@@ -73,7 +73,7 @@ func NewMessageVersionResponse(version string) *MessageVersionResponse {
 	return message
 }
 
-// MessageContractDeployRequest is a deploy request message (from the Node)
+// MessageGasScheduleChangeRequest is a deploy request message (from the Node)
 type MessageGasScheduleChangeRequest struct {
 	Message
 	GasSchedule map[string]map[string]uint64
