@@ -480,7 +480,7 @@ func (context *runtimeContext) ElrondAPIErrorShouldFailExecution() bool {
 }
 
 func (context *runtimeContext) ElrondSyncExecAPIErrorShouldFailExecution() bool {
-	return false
+	return true
 }
 
 func (context *runtimeContext) BigIntAPIErrorShouldFailExecution() bool {
@@ -545,14 +545,12 @@ func (context *runtimeContext) GetInitFunction() wasmer.ExportedFunctionCallback
 
 func (context *runtimeContext) ExecuteAsyncCall(address []byte, data []byte, value []byte) error {
 	metering := context.host.Metering()
-
 	err := metering.UseGasForAsyncStep()
 	if err != nil {
 		return err
 	}
 
 	gasToLock := uint64(0)
-
 	if context.HasCallbackMethod() {
 		gasToLock = metering.ComputeGasLockedForAsync()
 		err = metering.UseGasBounded(gasToLock)

@@ -78,7 +78,6 @@ func (context *meteringContext) BoundGasLimit(value int64) uint64 {
 
 // UseGasForAsyncStep consumes the AsyncCallStep gas cost on the currently
 // running Wasmer instance
-// TODO the warmInstance will be affected if this function is misused
 func (context *meteringContext) UseGasForAsyncStep() error {
 	gasSchedule := context.GasSchedule().ElrondAPICost
 	gasToDeduct := gasSchedule.AsyncCallStep
@@ -99,9 +98,8 @@ func (context *meteringContext) ComputeGasLockedForAsync() uint64 {
 	apiGasSchedule := context.GasSchedule().ElrondAPICost
 	codeSize := context.host.Runtime().GetSCCodeSize()
 
-	// Exact amount of gas required to compile this SC again, to execute the
-	// callback
-	compilationGasLock := codeSize * baseGasSchedule.CompilePerByte
+	// Exact amount of gas required to compile this SC again, to execute the callback
+	compilationGasLock := codeSize * baseGasSchedule.AoTPreparePerByte
 
 	// Minimum amount required to execute the callback
 	executionGasLock := apiGasSchedule.AsyncCallStep + apiGasSchedule.AsyncCallbackGasLock
