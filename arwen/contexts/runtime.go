@@ -553,7 +553,7 @@ func (context *runtimeContext) ExecuteAsyncCall(address []byte, data []byte, val
 	gasToLock := uint64(0)
 	if context.HasCallbackMethod() || !context.host.IsDynamicGasLockingEnabled() {
 		gasToLock = metering.ComputeGasLockedForAsync()
-		err = metering.UseGasBounded(gasToLock)
+		err = metering.UseGas(gasToLock)
 		if err != nil {
 			return err
 		}

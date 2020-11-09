@@ -503,7 +503,10 @@ func (host *vmHost) executeSmartContractCall(
 	// the unused gas will be restored.
 	metering.UnlockGasIfAsyncCallback()
 	initialGasProvided := input.GasProvided
-	metering.UseGas(initialGasProvided)
+	err := metering.UseGas(initialGasProvided)
+	if err != nil {
+		return 0, err
+	}
 
 	isUpgrade := input.Function == arwen.UpgradeFunctionName
 	if isUpgrade {

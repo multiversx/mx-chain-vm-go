@@ -25,7 +25,8 @@ func (m *MeteringContextMock) GasSchedule() *config.GasCost {
 	return m.GasCost
 }
 
-func (m *MeteringContextMock) UseGas(gas uint64) {
+func (m *MeteringContextMock) UseGas(gas uint64) error {
+	return m.Err
 }
 
 func (m *MeteringContextMock) FreeGas(gas uint64) {
@@ -53,10 +54,6 @@ func (m *MeteringContextMock) ComputeGasLockedForAsync() uint64 {
 }
 
 func (m *MeteringContextMock) DeductGasIfAsyncStep() error {
-	return m.Err
-}
-
-func (m *MeteringContextMock) UseGasBounded(gas uint64) error {
 	return m.Err
 }
 

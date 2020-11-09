@@ -166,7 +166,7 @@ type OutputContext interface {
 
 type MeteringContext interface {
 	GasSchedule() *config.GasCost
-	UseGas(gas uint64)
+	UseGas(gasToUse uint64) error
 	FreeGas(gas uint64)
 	RestoreGas(gas uint64)
 	GasLeft() uint64
@@ -177,7 +177,6 @@ type MeteringContext interface {
 	DeductInitialGasForIndirectDeployment(input CodeDeployInput) error
 	ComputeGasLockedForAsync() uint64
 	UseGasForAsyncStep() error
-	UseGasBounded(gasToUse uint64) error
 	UnlockGasIfAsyncCallback()
 	GetGasLocked() uint64
 }
