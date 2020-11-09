@@ -33,6 +33,7 @@ type VMHost interface {
 	Storage() StorageContext
 	IsArwenV2Enabled() bool
 	IsAheadOfTimeCompileEnabled() bool
+	IsDynamicGasLockingEnabled() bool
 
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*AsyncContextInfo, error)

@@ -45,22 +45,23 @@ func TestMeteringContext_UseGas(t *testing.T) {
 	t.Parallel()
 
 	mockRuntime := &mock.RuntimeContextMock{}
-	vmInput := &vmcommon.VMInput{GasProvided: 0}
-	mockRuntime.SetVMInput(vmInput)
 	host := &mock.VmHostMock{
 		RuntimeContext: mockRuntime,
 	}
 	meteringContext, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000))
 
+	gasProvided := uint64(1001)
+	vmInput := &vmcommon.VMInput{GasProvided: gasProvided}
+	mockRuntime.SetVMInput(vmInput)
 	gas := uint64(1000)
 	meteringContext.UseGas(gas)
 	require.Equal(t, mockRuntime.GetPointsUsed(), gas)
-	require.Equal(t, uint64(0), meteringContext.GasLeft())
+	require.Equal(t, uint64(1), meteringContext.GasLeft())
 
-	gasProvided := uint64(10000)
+	gasProvided = uint64(10000)
 	vmInput = &vmcommon.VMInput{GasProvided: gasProvided}
-	mockRuntime.SetVMInput(vmInput)
 	mockRuntime.SetPointsUsed(0)
+	mockRuntime.SetVMInput(vmInput)
 	meteringContext, _ = NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000))
 
 	require.Equal(t, gasProvided, meteringContext.GasLeft())

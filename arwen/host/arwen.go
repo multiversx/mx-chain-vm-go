@@ -47,6 +47,9 @@ type vmHost struct {
 
 	aotEnableEpoch  uint32
 	flagAheadOfTime atomic.Flag
+
+	dynGasLockEnableEpoch uint32
+	flagDynGasLock        atomic.Flag
 }
 
 // NewArwenVM creates a new Arwen vmHost
@@ -68,6 +71,7 @@ func NewArwenVM(
 		protocolBuiltinFunctions: hostParameters.ProtocolBuiltinFunctions,
 		arwenV2EnableEpoch:       hostParameters.ArwenV2EnableEpoch,
 		aotEnableEpoch:           hostParameters.AheadOfTimeEnableEpoch,
+		dynGasLockEnableEpoch:    hostParameters.DynGasLockEnableEpoch,
 	}
 
 	var err error
@@ -184,6 +188,10 @@ func (host *vmHost) IsAheadOfTimeCompileEnabled() bool {
 	return host.flagAheadOfTime.IsSet()
 }
 
+func (host *vmHost) IsDynamicGasLockingEnabled() bool {
+	return host.flagDynGasLock.IsSet()
+}
+
 func (host *vmHost) GetContexts() (
 	arwen.BigIntContext,
 	arwen.BlockchainContext,
@@ -208,6 +216,9 @@ func (host *vmHost) InitState() {
 
 	host.flagAheadOfTime.Toggle(currentEpoch >= host.aotEnableEpoch)
 	log.Trace("aheadOfTime compile", "enabled", host.flagAheadOfTime.IsSet())
+
+	host.flagDynGasLock.Toggle(currentEpoch >= host.dynGasLockEnableEpoch)
+	log.Trace("dynamic gas locking", "enabled", host.flagDynGasLock.IsSet())
 }
 
 func (host *vmHost) initContexts() {

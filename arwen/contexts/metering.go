@@ -98,8 +98,16 @@ func (context *meteringContext) ComputeGasLockedForAsync() uint64 {
 	apiGasSchedule := context.GasSchedule().ElrondAPICost
 	codeSize := context.host.Runtime().GetSCCodeSize()
 
+	costPerByte := baseGasSchedule.CompilePerByte
+	if context.host.IsAheadOfTimeCompileEnabled() {
+		costPerByte = baseGasSchedule.AoTPreparePerByte
+	}
+
 	// Exact amount of gas required to compile this SC again, to execute the callback
-	compilationGasLock := codeSize * baseGasSchedule.AoTPreparePerByte
+	compilationGasLock := uint64(0)
+	if context.host.IsDynamicGasLockingEnabled() {
+		compilationGasLock = codeSize * costPerByte
+	}
 
 	// Minimum amount required to execute the callback
 	executionGasLock := apiGasSchedule.AsyncCallStep + apiGasSchedule.AsyncCallbackGasLock

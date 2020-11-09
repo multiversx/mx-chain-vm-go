@@ -53,6 +53,7 @@ type VMHostParameters struct {
 	ElrondProtectedKeyPrefix []byte
 	ArwenV2EnableEpoch       uint32
 	AheadOfTimeEnableEpoch   uint32
+	DynGasLockEnableEpoch    uint32
 	UseWarmInstance          bool
 }
 
