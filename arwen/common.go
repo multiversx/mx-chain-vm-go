@@ -128,7 +128,7 @@ func (ac *AsyncGeneratedCall) GetGasLimit() uint64 {
 }
 
 func (ac *AsyncGeneratedCall) GetGasLocked() uint64 {
-	panic("not implemented")
+	return 0
 }
 
 // GetValueBytes returns the byte representation of the value of the async call
