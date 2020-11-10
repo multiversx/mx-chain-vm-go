@@ -52,6 +52,7 @@ func NewArwenPart(
 	part.Repliers[common.ContractCallRequest] = part.replyToRunSmartContractCall
 	part.Repliers[common.DiagnoseWaitRequest] = part.replyToDiagnoseWait
 	part.Repliers[common.VersionRequest] = part.replyToVersionRequest
+	part.Repliers[common.GasScheduleChangeRequest] = part.replyToGasScheduleChange
 
 	return part, nil
 }
@@ -119,4 +120,10 @@ func (part *ArwenPart) replyToDiagnoseWait(request common.MessageHandler) common
 
 func (part *ArwenPart) replyToVersionRequest(_ common.MessageHandler) common.MessageHandler {
 	return common.NewMessageVersionResponse(part.Version)
+}
+
+func (part *ArwenPart) replyToGasScheduleChange(request common.MessageHandler) common.MessageHandler {
+	typedRequest := request.(*common.MessageGasScheduleChangeRequest)
+	part.VMHost.GasScheduleChange(typedRequest.GasSchedule)
+	return common.NewGasScheduleChangeResponse()
 }

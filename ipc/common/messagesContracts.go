@@ -72,3 +72,24 @@ func NewMessageVersionResponse(version string) *MessageVersionResponse {
 	message.Version = version
 	return message
 }
+
+// MessageGasScheduleChangeRequest is a deploy request message (from the Node)
+type MessageGasScheduleChangeRequest struct {
+	Message
+	GasSchedule map[string]map[string]uint64
+}
+
+// NewMessageGasScheduleChangeRequest creates a MessageGasScheduleChangeRequest
+func NewMessageGasScheduleChangeRequest(gasSchedule map[string]map[string]uint64) *MessageGasScheduleChangeRequest {
+	message := &MessageGasScheduleChangeRequest{}
+	message.Kind = GasScheduleChangeRequest
+	message.GasSchedule = gasSchedule
+	return message
+}
+
+// NewGasScheduleChangeResponse creates a message to respond
+func NewGasScheduleChangeResponse() *Message {
+	message := &Message{}
+	message.Kind = GasScheduleChangeResponse
+	return message
+}

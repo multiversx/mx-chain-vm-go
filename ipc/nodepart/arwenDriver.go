@@ -221,6 +221,29 @@ func (driver *ArwenDriver) GetVersion() (string, error) {
 	return typedResponse.Version, nil
 }
 
+func (driver *ArwenDriver) GasScheduleChange(newGasSchedule map[string]map[string]uint64) {
+	driver.arwenArguments.GasSchedule = newGasSchedule
+	err := driver.RestartArwenIfNecessary()
+	if err != nil {
+		log.Error("GasScheduleChange RestartArwenIfNecessary", "error", err)
+		return
+	}
+
+	request := common.NewMessageGasScheduleChangeRequest(newGasSchedule)
+	response, err := driver.part.StartLoop(request)
+	if err != nil {
+		log.Error("GasScheduleChange StartLoop", "error", err)
+		_ = driver.Close()
+		return
+	}
+
+	if response.GetError() != nil {
+		log.Error("GasScheduleChange StartLoop response", "error", err)
+		_ = driver.Close()
+		return
+	}
+}
+
 // RunSmartContractCreate sends a deploy request to Arwen and waits for the output
 func (driver *ArwenDriver) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (*vmcommon.VMOutput, error) {
 	driver.counterDeploy++

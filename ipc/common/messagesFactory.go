@@ -34,6 +34,8 @@ func init() {
 	messageCreators[ContractDeployRequest] = createMessageContractDeployRequest
 	messageCreators[ContractCallRequest] = createMessageContractCallRequest
 	messageCreators[ContractResponse] = createMessageContractResponse
+	messageCreators[GasScheduleChangeRequest] = createMessageGasScheduleRequest
+	messageCreators[GasScheduleChangeResponse] = createMessageGasScheduleResponse
 	messageCreators[DiagnoseWaitRequest] = createMessageDiagnoseWaitRequest
 	messageCreators[DiagnoseWaitResponse] = createMessageDiagnoseWaitResponse
 	messageCreators[VersionRequest] = createMessageVersionRequest
@@ -97,6 +99,14 @@ func createMessageStop() MessageHandler {
 
 func createMessageContractDeployRequest() MessageHandler {
 	return &MessageContractDeployRequest{}
+}
+
+func createMessageGasScheduleRequest() MessageHandler {
+	return &MessageGasScheduleChangeRequest{}
+}
+
+func createMessageGasScheduleResponse() MessageHandler {
+	return &Message{}
 }
 
 func createMessageContractCallRequest() MessageHandler {

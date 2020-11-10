@@ -120,6 +120,9 @@ func (part *NodePart) doLoop() (common.MessageHandler, error) {
 		if common.IsDiagnose(message) {
 			return message, nil
 		}
+		if common.IsGasScheduleChangeResponse(message) {
+			return message, nil
+		}
 
 		return nil, common.ErrBadMessageFromArwen
 	}

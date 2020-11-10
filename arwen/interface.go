@@ -165,6 +165,7 @@ type OutputContext interface {
 }
 
 type MeteringContext interface {
+	SetGasSchedule(gasMap config.GasScheduleMap)
 	GasSchedule() *config.GasCost
 	UseGas(gas uint64)
 	FreeGas(gas uint64)
