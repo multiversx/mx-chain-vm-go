@@ -15,7 +15,6 @@ const BalanceLen = 32
 const CodeMetadataLen = 2
 const InitFunctionName = "init"
 const InitFunctionNameEth = "solidity.ctor"
-const CallBackFunctionName = "callBack"
 const UpgradeFunctionName = "upgradeContract"
 
 var (

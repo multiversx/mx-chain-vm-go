@@ -20,6 +20,7 @@ type runtimeContext struct {
 	instance     *wasmer.Instance
 	vmInput      *vmcommon.VMInput
 	scAddress    []byte
+	codeSize     uint64
 	callFunction string
 	vmType       []byte
 	readOnly     bool
@@ -199,6 +200,21 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 	return nil
 }
 
+func (context *runtimeContext) GetSCCode() ([]byte, error) {
+	blockchain := context.host.Blockchain()
+	code, err := blockchain.GetCode(context.scAddress)
+	if err != nil {
+		return nil, err
+	}
+
+	context.codeSize = uint64(len(code))
+	return code, nil
+}
+
+func (context *runtimeContext) GetSCCodeSize() uint64 {
+	return context.codeSize
+}
+
 func (context *runtimeContext) saveCompiledCode(codeHash []byte) {
 	compiledCode, err := context.instance.Cache()
 	if err != nil {
@@ -330,6 +346,7 @@ func (context *runtimeContext) SetVMInput(vmInput *vmcommon.VMInput) {
 		CallType:      vmInput.CallType,
 		GasPrice:      vmInput.GasPrice,
 		GasProvided:   vmInput.GasProvided,
+		GasLocked:     vmInput.GasLocked,
 		CallValue:     big.NewInt(0),
 		ESDTValue:     big.NewInt(0),
 		ESDTTokenName: nil,
@@ -510,7 +527,7 @@ func (context *runtimeContext) GetFunctionToCall() (wasmer.ExportedFunctionCallb
 		return function, nil
 	}
 
-	if context.callFunction == arwen.CallbackDefault {
+	if context.callFunction == arwen.CallbackFunctionName {
 		return nil, arwen.ErrNilCallbackFunction
 	}
 
@@ -522,6 +539,35 @@ func (context *runtimeContext) GetInitFunction() wasmer.ExportedFunctionCallback
 	if init, ok := exports[arwen.InitFunctionName]; ok {
 		return init
 	}
+
+	return nil
+}
+
+func (context *runtimeContext) ExecuteAsyncCall(address []byte, data []byte, value []byte) error {
+	metering := context.host.Metering()
+	err := metering.UseGasForAsyncStep()
+	if err != nil {
+		return err
+	}
+
+	gasToLock := uint64(0)
+	shouldLockGas := context.HasCallbackMethod() || !context.host.IsDynamicGasLockingEnabled()
+	if shouldLockGas {
+		gasToLock = metering.ComputeGasLockedForAsync()
+		err = metering.UseGasBounded(gasToLock)
+		if err != nil {
+			return err
+		}
+	}
+
+	context.SetAsyncCallInfo(&arwen.AsyncCallInfo{
+		Destination: address,
+		Data:        data,
+		GasLimit:    metering.GasLeft(),
+		GasLocked:   gasToLock,
+		ValueBytes:  value,
+	})
+	context.SetRuntimeBreakpointValue(arwen.BreakpointAsyncCall)
 
 	return nil
 }
@@ -560,6 +606,11 @@ func (context *runtimeContext) GetAsyncContext(contextIdentifier []byte) (*arwen
 
 func (context *runtimeContext) GetAsyncCallInfo() *arwen.AsyncCallInfo {
 	return context.asyncCallInfo
+}
+
+func (context *runtimeContext) HasCallbackMethod() bool {
+	_, ok := context.instance.Exports[arwen.CallbackFunctionName]
+	return ok
 }
 
 func (context *runtimeContext) MemLoad(offset int32, length int32) ([]byte, error) {

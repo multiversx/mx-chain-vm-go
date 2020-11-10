@@ -21,7 +21,7 @@ type OutputContextStub struct {
 	GetOutputAccountCalled            func(address []byte) (*vmcommon.OutputAccount, bool)
 	DeleteOutputAccountCalled         func(address []byte)
 	WriteLogCalled                    func(address []byte, topics [][]byte, data []byte)
-	TransferCalled                    func(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte) error
+	TransferCalled                    func(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, input []byte) error
 	SelfDestructCalled                func(address []byte, beneficiary []byte)
 	GetRefundCalled                   func() uint64
 	SetRefundCalled                   func(refund uint64)
@@ -128,9 +128,9 @@ func (o *OutputContextStub) TransferValueOnly(destination []byte, sender []byte,
 	return nil
 }
 
-func (o *OutputContextStub) Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte, _ vmcommon.CallType) error {
+func (o *OutputContextStub) Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, input []byte, _ vmcommon.CallType) error {
 	if o.TransferCalled != nil {
-		return o.TransferCalled(destination, sender, gasLimit, value, input)
+		return o.TransferCalled(destination, sender, gasLimit, gasLocked, value, input)
 	}
 
 	return nil

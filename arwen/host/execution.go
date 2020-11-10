@@ -109,17 +109,18 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	host.InitState()
 	defer host.Clean()
 
-	_, blockchain, metering, output, runtime, storage := host.GetContexts()
+	_, _, metering, output, runtime, storage := host.GetContexts()
 
 	runtime.InitStateFromContractCallInput(input)
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
 	storage.SetAddress(runtime.GetSCAddress())
 
-	contract, err := blockchain.GetCode(runtime.GetSCAddress())
+	contract, err := runtime.GetSCCode()
 	if err != nil {
 		return output.CreateVMOutputInCaseOfError(arwen.ErrContractNotFound)
 	}
 
+	metering.UnlockGasIfAsyncCallback()
 	err = metering.DeductInitialGasForExecution(contract)
 	if err != nil {
 		return output.CreateVMOutputInCaseOfError(arwen.ErrNotEnoughGas)
@@ -135,8 +136,6 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	if err != nil {
 		return output.CreateVMOutputInCaseOfError(err)
 	}
-
-	metering.UnlockGasIfAsyncStep()
 
 	vmOutput = output.GetVMOutput()
 	runtime.CleanWasmerInstance()
@@ -480,8 +479,6 @@ func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) (uint64, e
 		return 0, arwen.ErrReturnCodeNotOk
 	}
 
-	metering.UnlockGasIfAsyncStep()
-
 	gasToRestoreToCaller := metering.GasLeft()
 
 	runtime.PopInstance()
@@ -497,22 +494,23 @@ func (host *vmHost) executeSmartContractCall(
 	output arwen.OutputContext,
 	withInitialGasDeduct bool,
 ) (uint64, error) {
-	// Use all gas initially, on the Wasmer instance of the caller
-	// (runtime.PushInstance() is called later). In case of successful execution,
-	// the unused gas will be restored.
-	initialGasProvided := input.GasProvided
-	metering.UseGas(initialGasProvided)
-
 	if host.isInitFunctionBeingCalled() && !input.AllowInitFunction {
 		return 0, arwen.ErrInitFuncCalledInRun
 	}
+
+	// Use all gas initially, on the Wasmer instance of the caller
+	// (runtime.PushInstance() is called later). In case of successful execution,
+	// the unused gas will be restored.
+	metering.UnlockGasIfAsyncCallback()
+	initialGasProvided := input.GasProvided
+	metering.UseGas(initialGasProvided)
 
 	isUpgrade := input.Function == arwen.UpgradeFunctionName
 	if isUpgrade {
 		return host.executeUpgrade(input)
 	}
 
-	contract, err := host.Blockchain().GetCode(runtime.GetSCAddress())
+	contract, err := runtime.GetSCCode()
 	if err != nil {
 		return 0, err
 	}
@@ -544,8 +542,6 @@ func (host *vmHost) executeSmartContractCall(
 		return 0, arwen.ErrReturnCodeNotOk
 	}
 
-	metering.UnlockGasIfAsyncStep()
-
 	gasToRestoreToCaller := metering.GasLeft()
 
 	runtime.PopInstance()
@@ -558,7 +554,7 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) (uint64, error) {
 	_, _, metering, output, runtime, storage := host.GetContexts()
 
 	if host.isBuiltinFunctionBeingCalled() {
-		err := metering.DeductAndLockGasIfAsyncStep()
+		err := metering.UseGasForAsyncStep()
 		if err != nil {
 			return 0, err
 		}
@@ -697,7 +693,7 @@ func (host *vmHost) verifyAllowedFunctionCall() error {
 		return arwen.ErrInitFuncCalledInRun
 	}
 
-	isCallBack := functionName == arwen.CallBackFunctionName
+	isCallBack := functionName == arwen.CallbackFunctionName
 	isInAsyncCallBack := runtime.GetVMInput().CallType == vmcommon.AsynchronousCallBack
 	if isCallBack && !isInAsyncCallBack {
 		return arwen.ErrCallBackFuncCalledInRun
@@ -791,7 +787,7 @@ func fillWithESDTValue(fullVMInput *vmcommon.ContractCallInput, newVMInput *vmco
 
 func prependCallbackToTxDataIfAsyncCall(txData []byte, callType vmcommon.CallType) string {
 	if callType == vmcommon.AsynchronousCallBack {
-		return string(append([]byte("callBack"), txData...))
+		return string(append([]byte(arwen.CallbackFunctionName), txData...))
 	}
 
 	return string(txData)

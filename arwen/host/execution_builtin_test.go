@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/elrond-go/core"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
@@ -85,31 +84,6 @@ func TestExecution_AsyncCall_BuiltinFails(t *testing.T) {
 	require.Equal(t, [][]byte{[]byte("hello"), {4}}, vmOutput.ReturnData)
 }
 
-func TestExecution_AsyncCall_CallBackFailsBeforeExecution(t *testing.T) {
-	config.AsyncCallbackGasLockForTests = uint64(2)
-
-	code := GetTestSCCode("async-call-builtin", "../../")
-	scBalance := big.NewInt(1000)
-
-	host, stubBlockchainHook := DefaultTestArwenForCall(t, code, scBalance)
-	stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
-	host.protocolBuiltinFunctions = getDummyBuiltinFunctionNames()
-
-	input := DefaultTestContractCallInput()
-	input.RecipientAddr = parentAddress
-	input.Function = "performAsyncCallToBuiltin"
-	input.Arguments = [][]byte{{1}}
-	input.GasProvided = 1000000
-	input.CurrentTxHash = []byte("txhash")
-
-	vmOutput, err := host.RunSmartContractCall(input)
-	require.Nil(t, err)
-
-	require.NotNil(t, vmOutput)
-	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
-	require.Equal(t, [][]byte{[]byte("hello"), []byte("out of gas"), []byte("txhash")}, vmOutput.ReturnData)
-}
-
 func TestESDT_GettersAPI(t *testing.T) {
 	code := GetTestSCCode("exchange", "../../")
 	scBalance := big.NewInt(1000)
@@ -154,6 +128,7 @@ func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 	}
 
 	host.InitState()
+
 	_ = host.Runtime().StartWasmerInstance(dummyCode, input.GasProvided, true)
 	vmOutput, asyncInfo, err := host.ExecuteOnDestContext(input)
 
@@ -174,14 +149,20 @@ func dummyProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.V
 
 	if input.Function == "builtinClaim" {
 		outPutAccounts[string(parentAddress)].BalanceDelta = big.NewInt(42)
-		return &vmcommon.VMOutput{GasRemaining: 400, OutputAccounts: outPutAccounts}, nil
+		return &vmcommon.VMOutput{
+			GasRemaining:   400 + input.GasLocked,
+			OutputAccounts: outPutAccounts,
+		}, nil
 	}
 	if input.Function == "builtinDoSomething" {
-		return &vmcommon.VMOutput{OutputAccounts: outPutAccounts, GasRemaining: input.GasProvided}, nil
+		return &vmcommon.VMOutput{
+			GasRemaining:   400 + input.GasLocked,
+			OutputAccounts: outPutAccounts,
+		}, nil
 	}
 	if input.Function == "builtinFail" {
 		return &vmcommon.VMOutput{
-			GasRemaining:  0,
+			GasRemaining:  0 + input.GasLocked,
 			GasRefund:     big.NewInt(0),
 			ReturnCode:    vmcommon.UserError,
 			ReturnMessage: "whatdidyoudo",
@@ -189,7 +170,7 @@ func dummyProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.V
 	}
 	if input.Function == core.BuiltInFunctionESDTTransfer {
 		vmOutput := &vmcommon.VMOutput{
-			GasRemaining: input.GasProvided - ESDTTransferGasCost,
+			GasRemaining: input.GasProvided - ESDTTransferGasCost + input.GasLocked,
 		}
 		function := string(input.Arguments[2])
 		esdtTransferTxData := function

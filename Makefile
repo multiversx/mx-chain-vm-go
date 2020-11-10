@@ -60,6 +60,7 @@ build-test-contracts:
 	erdpy contract build ./test/contracts/promises-train
 	erdpy contract build ./test/contracts/promises-tracking
 	erdpy contract build ./test/contracts/timelocks
+	erdpy contract build ./test/contracts/async-call-builtin
 
 
 build-delegation:

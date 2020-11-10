@@ -112,6 +112,7 @@ func DefaultTestArwen(tb testing.TB, blockchain vmcommon.BlockchainHook) (*vmHos
 		ProtocolBuiltinFunctions: make(vmcommon.FunctionNames),
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
 		UseWarmInstance:          false,
+		DynGasLockEnableEpoch:    0,
 	})
 	require.Nil(tb, err)
 	require.NotNil(tb, host)

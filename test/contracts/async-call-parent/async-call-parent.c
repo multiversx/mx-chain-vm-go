@@ -30,6 +30,7 @@ void parentPerformAsyncCall() {
 	byte transferData[] = "hello";
 	transferValue(thirdPartyAddress, value, transferData, 5);
 	
+	// 207468657265 is the word 'there', hex-encoded ASCII
 	byte callData[] = "transferToThirdParty@03@207468657265@00";
 	callData[38] = int64getArgument(0) + '0';
 
