@@ -37,19 +37,9 @@ func (context *meteringContext) GasSchedule() *config.GasCost {
 	return context.gasSchedule
 }
 
-func (context *meteringContext) UseGas(gasToUse uint64) error {
-	gasLeft := context.GasLeft()
-
-	// Gas is consumed before checking if there's any left. Otherwise, the
-	// function would exit and return arwen.ErrNotEnoughGas without consuming anything.
-	gasUsed := context.host.Runtime().GetPointsUsed() + gasToUse
+func (context *meteringContext) UseGas(gas uint64) {
+	gasUsed := context.host.Runtime().GetPointsUsed() + gas
 	context.host.Runtime().SetPointsUsed(gasUsed)
-
-	if gasLeft < gasToUse {
-		return arwen.ErrNotEnoughGas
-	}
-
-	return nil
 }
 
 func (context *meteringContext) RestoreGas(gas uint64) {
@@ -91,7 +81,15 @@ func (context *meteringContext) BoundGasLimit(value int64) uint64 {
 func (context *meteringContext) UseGasForAsyncStep() error {
 	gasSchedule := context.GasSchedule().ElrondAPICost
 	gasToDeduct := gasSchedule.AsyncCallStep
-	return context.UseGas(gasToDeduct)
+	return context.UseGasBounded(gasToDeduct)
+}
+
+func (context *meteringContext) UseGasBounded(gasToUse uint64) error {
+	if context.GasLeft() <= gasToUse {
+		return arwen.ErrNotEnoughGas
+	}
+	context.UseGas(gasToUse)
+	return nil
 }
 
 // ComputeGasToLockForAsync calculates the minimum amount of gas to lock for async callbacks
