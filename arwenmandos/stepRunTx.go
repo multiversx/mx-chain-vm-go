@@ -32,13 +32,13 @@ func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmi
 		switch tx.Type {
 		case mj.ScDeploy:
 			var err error
-			output, err = ae.scCreate(tx)
+			output, err = ae.scCreate(txIndex, tx)
 			if err != nil {
 				return nil, err
 			}
 		case mj.ScCall:
 			var err error
-			output, err = ae.scCall(tx)
+			output, err = ae.scCall(txIndex, tx)
 			if err != nil {
 				return nil, err
 			}
@@ -149,22 +149,25 @@ func outOfFundsResult() *vmi.VMOutput {
 	}
 }
 
-func (ae *ArwenTestExecutor) scCreate(tx *mj.Transaction) (*vmi.VMOutput, error) {
+func (ae *ArwenTestExecutor) scCreate(txIndex string, tx *mj.Transaction) (*vmi.VMOutput, error) {
+	txHash := generateTxHash(txIndex)
 	input := &vmi.ContractCreateInput{
 		ContractCode: tx.Code.Value,
 		VMInput: vmi.VMInput{
-			CallerAddr:  tx.From.Value,
-			Arguments:   mj.JSONBytesValues(tx.Arguments),
-			CallValue:   tx.Value.Value,
-			GasPrice:    tx.GasPrice.Value,
-			GasProvided: tx.GasLimit.Value,
+			CallerAddr:     tx.From.Value,
+			Arguments:      mj.JSONBytesFromTreeValues(tx.Arguments),
+			CallValue:      tx.Value.Value,
+			GasPrice:       tx.GasPrice.Value,
+			GasProvided:    tx.GasLimit.Value,
+			OriginalTxHash: txHash,
+			CurrentTxHash:  txHash,
 		},
 	}
 
 	return ae.vm.RunSmartContractCreate(input)
 }
 
-func (ae *ArwenTestExecutor) scCall(tx *mj.Transaction) (*vmi.VMOutput, error) {
+func (ae *ArwenTestExecutor) scCall(txIndex string, tx *mj.Transaction) (*vmi.VMOutput, error) {
 	recipient := ae.World.AcctMap.GetAccount(tx.To.Value)
 	if recipient == nil {
 		return nil, fmt.Errorf("Tx recipient (address: %s) does not exist", hex.EncodeToString(tx.To.Value))
@@ -172,15 +175,18 @@ func (ae *ArwenTestExecutor) scCall(tx *mj.Transaction) (*vmi.VMOutput, error) {
 	if len(recipient.Code) == 0 {
 		return nil, fmt.Errorf("Tx recipient (address: %s) is not a smart contract", hex.EncodeToString(tx.To.Value))
 	}
+	txHash := generateTxHash(txIndex)
 	input := &vmi.ContractCallInput{
 		RecipientAddr: tx.To.Value,
 		Function:      tx.Function,
 		VMInput: vmi.VMInput{
-			CallerAddr:  tx.From.Value,
-			Arguments:   mj.JSONBytesValues(tx.Arguments),
-			CallValue:   tx.Value.Value,
-			GasPrice:    tx.GasPrice.Value,
-			GasProvided: tx.GasLimit.Value,
+			CallerAddr:     tx.From.Value,
+			Arguments:      mj.JSONBytesFromTreeValues(tx.Arguments),
+			CallValue:      tx.Value.Value,
+			GasPrice:       tx.GasPrice.Value,
+			GasProvided:    tx.GasLimit.Value,
+			OriginalTxHash: txHash,
+			CurrentTxHash:  txHash,
 		},
 	}
 

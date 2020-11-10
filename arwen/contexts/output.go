@@ -14,6 +14,7 @@ type outputContext struct {
 	host        arwen.VMHost
 	outputState *vmcommon.VMOutput
 	stateStack  []*vmcommon.VMOutput
+	codeUpdates map[string]struct{}
 }
 
 // NewOutputContext creates a new outputContext
@@ -30,6 +31,7 @@ func NewOutputContext(host arwen.VMHost) (*outputContext, error) {
 
 func (context *outputContext) InitState() {
 	context.outputState = newVMOutput()
+	context.codeUpdates = make(map[string]struct{})
 }
 
 func newVMOutput() *vmcommon.VMOutput {
@@ -46,7 +48,7 @@ func newVMOutput() *vmcommon.VMOutput {
 	}
 }
 
-func newVMOutputAccount(address []byte) *vmcommon.OutputAccount {
+func NewVMOutputAccount(address []byte) *vmcommon.OutputAccount {
 	return &vmcommon.OutputAccount{
 		Address:        address,
 		Nonce:          0,
@@ -108,16 +110,32 @@ func (context *outputContext) CensorVMOutput() {
 	context.outputState.Logs = make([]*vmcommon.LogEntry, 0)
 }
 
+// ResetGas will set to 0 all gas used from output accounts, in order
+// to properly calculate the actual used gas of one smart contract when called in sync
+func (context *outputContext) ResetGas() {
+	for _, outAcc := range context.outputState.OutputAccounts {
+		outAcc.GasUsed = 0
+		for _, outTransfer := range outAcc.OutputTransfers {
+			outTransfer.GasLimit = 0
+		}
+	}
+}
+
 func (context *outputContext) GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool) {
 	accountIsNew := false
 	account, ok := context.outputState.OutputAccounts[string(address)]
 	if !ok {
-		account = newVMOutputAccount(address)
+		account = NewVMOutputAccount(address)
 		context.outputState.OutputAccounts[string(address)] = account
 		accountIsNew = true
 	}
 
 	return account, accountIsNew
+}
+
+func (context *outputContext) DeleteOutputAccount(address []byte) {
+	delete(context.outputState.OutputAccounts, string(address))
+	delete(context.codeUpdates, string(address))
 }
 
 func (context *outputContext) GetRefund() uint64 {
@@ -180,10 +198,8 @@ func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []b
 	context.outputState.Logs = append(context.outputState.Logs, newLogEntry)
 }
 
-// Transfer handles any necessary value transfer required and takes
-// the necessary steps to create accounts and reverses the state in case of an
-// execution error or failed value transfer.
-func (context *outputContext) Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte) error {
+// TransferValueOnly will transfer the big.int value and checks if it is possible
+func (context *outputContext) TransferValueOnly(destination []byte, sender []byte, value *big.Int) error {
 	if value.Cmp(arwen.Zero) < 0 {
 		return arwen.ErrTransferNegativeValue
 	}
@@ -192,13 +208,42 @@ func (context *outputContext) Transfer(destination []byte, sender []byte, gasLim
 		return arwen.ErrTransferInsufficientFunds
 	}
 
+	payable, err := context.host.Blockchain().IsPayable(destination)
+	if err != nil {
+		return err
+	}
+
+	hasValue := value.Cmp(big.NewInt(0)) == 1
+	if !payable && hasValue {
+		return arwen.ErrAccountNotPayable
+	}
+
 	senderAcc, _ := context.GetOutputAccount(sender)
 	destAcc, _ := context.GetOutputAccount(destination)
 
 	senderAcc.BalanceDelta = big.NewInt(0).Sub(senderAcc.BalanceDelta, value)
 	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
-	destAcc.Data = append(destAcc.Data, input...)
-	destAcc.GasLimit = gasLimit
+
+	return nil
+}
+
+// Transfer handles any necessary value transfer required and takes
+// the necessary steps to create accounts and reverses the state in case of an
+// execution error or failed value transfer.
+func (context *outputContext) Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte, callType vmcommon.CallType) error {
+	err := context.TransferValueOnly(destination, sender, value)
+	if err != nil {
+		return err
+	}
+
+	destAcc, _ := context.GetOutputAccount(destination)
+	outputTransfer := vmcommon.OutputTransfer{
+		Value:    big.NewInt(0).Set(value),
+		GasLimit: gasLimit,
+		Data:     input,
+		CallType: callType,
+	}
+	destAcc.OutputTransfers = append(destAcc.OutputTransfers, outputTransfer)
 
 	return nil
 }
@@ -215,7 +260,14 @@ func (context *outputContext) AddTxValueToAccount(address []byte, value *big.Int
 
 // GetVMOutput updates the current VMOutput and returns it
 func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
-	context.outputState.GasRemaining = context.host.Metering().GasLeft()
+	if context.outputState.ReturnCode == vmcommon.Ok {
+		context.outputState.GasRemaining = context.host.Metering().GasLeft()
+	} else {
+		context.outputState.GasRemaining = context.host.Metering().GetGasLockedForAsyncStep()
+	}
+
+	context.removeNonUpdatedCode(context.outputState)
+
 	return context.outputState
 }
 
@@ -223,6 +275,10 @@ func (context *outputContext) DeployCode(input arwen.CodeDeployInput) {
 	newSCAccount, _ := context.GetOutputAccount(input.ContractAddress)
 	newSCAccount.Code = input.ContractCode
 	newSCAccount.CodeMetadata = input.ContractCodeMetadata
+	newSCAccount.CodeDeployerAddress = input.CodeDeployerAddress
+
+	var empty struct{}
+	context.codeUpdates[string(input.ContractAddress)] = empty
 }
 
 func (context *outputContext) CreateVMOutputInCaseOfError(err error) *vmcommon.VMOutput {
@@ -250,6 +306,17 @@ func (context *outputContext) CreateVMOutputInCaseOfError(err error) *vmcommon.V
 	}
 }
 
+func (context *outputContext) removeNonUpdatedCode(vmOutput *vmcommon.VMOutput) {
+	for address, account := range vmOutput.OutputAccounts {
+		_, ok := context.codeUpdates[address]
+		if !ok {
+			account.Code = nil
+			account.CodeMetadata = nil
+			account.CodeDeployerAddress = nil
+		}
+	}
+}
+
 func (context *outputContext) resolveReturnCodeFromError(err error) vmcommon.ReturnCode {
 	if err == nil {
 		return vmcommon.Ok
@@ -258,7 +325,6 @@ func (context *outputContext) resolveReturnCodeFromError(err error) vmcommon.Ret
 	if errors.Is(err, arwen.ErrSignalError) {
 		return vmcommon.UserError
 	}
-
 	if errors.Is(err, arwen.ErrFuncNotFound) {
 		return vmcommon.FunctionNotFound
 	}
@@ -268,11 +334,9 @@ func (context *outputContext) resolveReturnCodeFromError(err error) vmcommon.Ret
 	if errors.Is(err, arwen.ErrInvalidFunction) {
 		return vmcommon.UserError
 	}
-
 	if errors.Is(err, arwen.ErrNotEnoughGas) {
 		return vmcommon.OutOfGas
 	}
-
 	if errors.Is(err, arwen.ErrContractNotFound) {
 		return vmcommon.ContractNotFound
 	}
@@ -282,7 +346,6 @@ func (context *outputContext) resolveReturnCodeFromError(err error) vmcommon.Ret
 	if errors.Is(err, arwen.ErrUpgradeFailed) {
 		return vmcommon.UpgradeFailed
 	}
-
 	if errors.Is(err, arwen.ErrTransferInsufficientFunds) {
 		return vmcommon.OutOfFunds
 	}
@@ -296,14 +359,18 @@ func (context *outputContext) AddToActiveState(rightOutput *vmcommon.VMOutput) {
 		rightOutput.GasRefund.Add(rightOutput.GasRefund, context.outputState.GasRefund)
 	}
 
-	for address, rightAccount := range rightOutput.OutputAccounts {
-		leftAccount, ok := context.outputState.OutputAccounts[address]
-		if !ok || rightAccount.BalanceDelta == nil {
+	for _, rightAccount := range rightOutput.OutputAccounts {
+		leftAccount, ok := context.outputState.OutputAccounts[string(rightAccount.Address)]
+		if !ok {
 			continue
 		}
 
-		rightAccount.GasLimit = leftAccount.GasLimit
-		rightAccount.BalanceDelta.Add(rightAccount.BalanceDelta, leftAccount.BalanceDelta)
+		if rightAccount.BalanceDelta != nil {
+			rightAccount.BalanceDelta.Add(rightAccount.BalanceDelta, leftAccount.BalanceDelta)
+		}
+		if len(rightAccount.OutputTransfers) > 0 {
+			leftAccount.OutputTransfers = append(leftAccount.OutputTransfers, rightAccount.OutputTransfers...)
+		}
 	}
 
 	mergeVMOutputs(context.outputState, rightOutput)
@@ -313,16 +380,15 @@ func mergeVMOutputs(leftOutput *vmcommon.VMOutput, rightOutput *vmcommon.VMOutpu
 	if leftOutput.OutputAccounts == nil {
 		leftOutput.OutputAccounts = make(map[string]*vmcommon.OutputAccount)
 	}
-	for address, rightAccount := range rightOutput.OutputAccounts {
-		leftAccount, ok := leftOutput.OutputAccounts[address]
+
+	for _, rightAccount := range rightOutput.OutputAccounts {
+		leftAccount, ok := leftOutput.OutputAccounts[string(rightAccount.Address)]
 		if !ok {
 			leftAccount = &vmcommon.OutputAccount{}
-			leftOutput.OutputAccounts[address] = leftAccount
+			leftOutput.OutputAccounts[string(rightAccount.Address)] = leftAccount
 		}
 		mergeOutputAccounts(leftAccount, rightAccount)
 	}
-
-	// TODO merge DeletedAccounts and TouchedAccounts as well?
 
 	leftOutput.Logs = append(leftOutput.Logs, rightOutput.Logs...)
 	leftOutput.ReturnData = append(leftOutput.ReturnData, rightOutput.ReturnData...)
@@ -344,7 +410,6 @@ func mergeOutputAccounts(
 		leftAccount.Address = rightAccount.Address
 	}
 
-	leftAccount.GasLimit = rightAccount.GasLimit
 	mergeStorageUpdates(leftAccount, rightAccount)
 
 	if rightAccount.Balance != nil {
@@ -359,14 +424,24 @@ func mergeOutputAccounts(
 	if len(rightAccount.Code) > 0 {
 		leftAccount.Code = rightAccount.Code
 	}
-	if len(rightAccount.Data) > 0 {
-		leftAccount.Data = rightAccount.Data
+	if len(rightAccount.CodeMetadata) > 0 {
+		leftAccount.CodeMetadata = rightAccount.CodeMetadata
 	}
 	if rightAccount.Nonce > leftAccount.Nonce {
 		leftAccount.Nonce = rightAccount.Nonce
 	}
 
-	leftAccount.CallType = rightAccount.CallType
+	lenLeftOutTransfers := len(leftAccount.OutputTransfers)
+	lenRightOutTransfers := len(rightAccount.OutputTransfers)
+	if lenRightOutTransfers > lenLeftOutTransfers {
+		leftAccount.OutputTransfers = append(leftAccount.OutputTransfers, rightAccount.OutputTransfers[lenLeftOutTransfers:]...)
+	}
+
+	leftAccount.GasUsed = rightAccount.GasUsed
+
+	if rightAccount.CodeDeployerAddress != nil {
+		leftAccount.CodeDeployerAddress = rightAccount.CodeDeployerAddress
+	}
 }
 
 func mergeStorageUpdates(

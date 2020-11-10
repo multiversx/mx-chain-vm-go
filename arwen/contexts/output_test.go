@@ -177,36 +177,38 @@ func TestOutputContext_FinishReturnData(t *testing.T) {
 func TestOutputContext_MergeCompleteAccounts(t *testing.T) {
 	t.Parallel()
 
+	transfer1 := vmcommon.OutputTransfer{
+		Value:    big.NewInt(0),
+		GasLimit: 9999,
+		Data:     []byte("data1"),
+	}
 	left := &vmcommon.OutputAccount{
-		Address:        []byte("addr1"),
-		Nonce:          1,
-		Balance:        big.NewInt(1000),
-		BalanceDelta:   big.NewInt(10000),
-		StorageUpdates: nil,
-		Code:           []byte("code1"),
-		Data:           []byte("data1"),
-		GasLimit:       99999,
+		Address:         []byte("addr1"),
+		Nonce:           1,
+		Balance:         big.NewInt(1000),
+		BalanceDelta:    big.NewInt(10000),
+		StorageUpdates:  nil,
+		Code:            []byte("code1"),
+		OutputTransfers: []vmcommon.OutputTransfer{transfer1},
 	}
 	right := &vmcommon.OutputAccount{
-		Address:        []byte("addr2"),
-		Nonce:          2,
-		Balance:        big.NewInt(2000),
-		BalanceDelta:   big.NewInt(20000),
-		StorageUpdates: map[string]*vmcommon.StorageUpdate{"key": {Data: []byte("data"), Offset: []byte("offset")}},
-		Code:           []byte("code2"),
-		Data:           []byte("data2"),
-		GasLimit:       100000,
+		Address:         []byte("addr2"),
+		Nonce:           2,
+		Balance:         big.NewInt(2000),
+		BalanceDelta:    big.NewInt(20000),
+		StorageUpdates:  map[string]*vmcommon.StorageUpdate{"key": {Data: []byte("data"), Offset: []byte("offset")}},
+		Code:            []byte("code2"),
+		OutputTransfers: []vmcommon.OutputTransfer{transfer1, transfer1},
 	}
 
 	expected := &vmcommon.OutputAccount{
-		Address:        []byte("addr2"),
-		Nonce:          2,
-		Balance:        big.NewInt(2000),
-		BalanceDelta:   big.NewInt(20000),
-		StorageUpdates: map[string]*vmcommon.StorageUpdate{"key": {Data: []byte("data"), Offset: []byte("offset")}},
-		Code:           []byte("code2"),
-		Data:           []byte("data2"),
-		GasLimit:       100000,
+		Address:         []byte("addr2"),
+		Nonce:           2,
+		Balance:         big.NewInt(2000),
+		BalanceDelta:    big.NewInt(20000),
+		StorageUpdates:  map[string]*vmcommon.StorageUpdate{"key": {Data: []byte("data"), Offset: []byte("offset")}},
+		Code:            []byte("code2"),
+		OutputTransfers: []vmcommon.OutputTransfer{transfer1, transfer1},
 	}
 
 	mergeOutputAccounts(left, right)
@@ -226,14 +228,15 @@ func TestOutputContext_MergeIncompleteAccounts(t *testing.T) {
 	require.Equal(t, expected, left)
 
 	left = &vmcommon.OutputAccount{
-		GasLimit: 98,
+		OutputTransfers: []vmcommon.OutputTransfer{{GasLimit: 92}},
 	}
 	right = &vmcommon.OutputAccount{
 		BalanceDelta: big.NewInt(42),
 	}
 	expected = &vmcommon.OutputAccount{
-		StorageUpdates: make(map[string]*vmcommon.StorageUpdate),
-		BalanceDelta:   big.NewInt(42),
+		StorageUpdates:  make(map[string]*vmcommon.StorageUpdate),
+		BalanceDelta:    big.NewInt(42),
+		OutputTransfers: []vmcommon.OutputTransfer{{GasLimit: 92}},
 	}
 	mergeOutputAccounts(left, right)
 	require.Equal(t, expected, left)
@@ -266,13 +269,13 @@ func TestOutputContext_MergeIncompleteAccounts(t *testing.T) {
 	require.Equal(t, expected, left)
 
 	left = &vmcommon.OutputAccount{
-		Data: []byte("left data"),
+		OutputTransfers: []vmcommon.OutputTransfer{{Data: []byte("left data")}},
 	}
 	right = &vmcommon.OutputAccount{}
 	expected = &vmcommon.OutputAccount{
-		Data:           []byte("left data"),
-		StorageUpdates: make(map[string]*vmcommon.StorageUpdate),
-		BalanceDelta:   big.NewInt(0),
+		OutputTransfers: []vmcommon.OutputTransfer{{Data: []byte("left data")}},
+		StorageUpdates:  make(map[string]*vmcommon.StorageUpdate),
+		BalanceDelta:    big.NewInt(0),
 	}
 	mergeOutputAccounts(left, right)
 	require.Equal(t, expected, left)
@@ -303,33 +306,33 @@ func TestOutputContext_MergeVMOutputs(t *testing.T) {
 
 	left = newVMOutput()
 	right = newVMOutput()
-	right.OutputAccounts["address"] = newVMOutputAccount([]byte("address"))
+	right.OutputAccounts["address"] = NewVMOutputAccount([]byte("address"))
 	right.OutputAccounts["address"].Nonce = 84
 	expected = newVMOutput()
-	expected.OutputAccounts["address"] = newVMOutputAccount([]byte("address"))
+	expected.OutputAccounts["address"] = NewVMOutputAccount([]byte("address"))
 	expected.OutputAccounts["address"].Nonce = 84
 	mergeVMOutputs(left, right)
 	require.Equal(t, expected, left)
 
 	left = newVMOutput()
-	left.OutputAccounts["address"] = newVMOutputAccount([]byte("address"))
+	left.OutputAccounts["address"] = NewVMOutputAccount([]byte("address"))
 	left.OutputAccounts["address"].Nonce = 84
 	right = newVMOutput()
-	right.OutputAccounts["address"] = newVMOutputAccount([]byte("address"))
+	right.OutputAccounts["address"] = NewVMOutputAccount([]byte("address"))
 	right.OutputAccounts["address"].Nonce = 92
 	expected = newVMOutput()
-	expected.OutputAccounts["address"] = newVMOutputAccount([]byte("address"))
+	expected.OutputAccounts["address"] = NewVMOutputAccount([]byte("address"))
 	expected.OutputAccounts["address"].Nonce = 92
 	mergeVMOutputs(left, right)
 	require.Equal(t, expected, left)
 
 	left = newVMOutput()
-	left.OutputAccounts["left address"] = newVMOutputAccount([]byte("left address"))
+	left.OutputAccounts["left address"] = NewVMOutputAccount([]byte("left address"))
 	right = newVMOutput()
-	right.OutputAccounts["right address"] = newVMOutputAccount([]byte("right address"))
+	right.OutputAccounts["right address"] = NewVMOutputAccount([]byte("right address"))
 	expected = newVMOutput()
-	expected.OutputAccounts["left address"] = newVMOutputAccount([]byte("left address"))
-	expected.OutputAccounts["right address"] = newVMOutputAccount([]byte("right address"))
+	expected.OutputAccounts["left address"] = NewVMOutputAccount([]byte("left address"))
+	expected.OutputAccounts["right address"] = NewVMOutputAccount([]byte("right address"))
 	mergeVMOutputs(left, right)
 	require.Equal(t, expected, left)
 
@@ -399,7 +402,7 @@ func TestOutputContext_Transfer(t *testing.T) {
 	host.OutputContext = outputContext
 	host.BlockchainContext = blockchainContext
 
-	err := outputContext.Transfer(receiver, sender, 54, valueToTransfer, []byte("txdata"))
+	err := outputContext.Transfer(receiver, sender, 54, valueToTransfer, []byte("txdata"), 0)
 	require.Nil(t, err)
 
 	senderAccount, isNew := outputContext.GetOutputAccount(sender)
@@ -409,8 +412,8 @@ func TestOutputContext_Transfer(t *testing.T) {
 	destAccount, isNew := outputContext.GetOutputAccount(receiver)
 	require.False(t, isNew)
 	require.Equal(t, valueToTransfer, destAccount.BalanceDelta)
-	require.Equal(t, uint64(54), destAccount.GasLimit)
-	require.Equal(t, []byte("txdata"), destAccount.Data)
+	require.Equal(t, uint64(54), destAccount.OutputTransfers[0].GasLimit)
+	require.Equal(t, []byte("txdata"), destAccount.OutputTransfers[0].Data)
 }
 
 func TestOutputContext_Transfer_Errors_And_Checks(t *testing.T) {
@@ -439,25 +442,78 @@ func TestOutputContext_Transfer_Errors_And_Checks(t *testing.T) {
 
 	// negative transfers are disallowed
 	valueToTransfer := big.NewInt(-1000)
-	err := outputContext.Transfer(receiver, sender, 54, valueToTransfer, []byte("txdata"))
+	err := outputContext.Transfer(receiver, sender, 54, valueToTransfer, []byte("txdata"), 0)
 	require.Equal(t, arwen.ErrTransferNegativeValue, err)
 	require.Nil(t, senderOutputAccount.Balance)
 	require.Equal(t, arwen.Zero, senderOutputAccount.BalanceDelta)
 
 	// account must have enough money to transfer
 	valueToTransfer = big.NewInt(5000)
-	err = outputContext.Transfer(receiver, sender, 54, valueToTransfer, []byte("txdata"))
+	err = outputContext.Transfer(receiver, sender, 54, valueToTransfer, []byte("txdata"), 0)
 	require.Equal(t, arwen.ErrTransferInsufficientFunds, err)
 	require.Equal(t, big.NewInt(2000), senderOutputAccount.Balance)
 	require.Equal(t, arwen.Zero, senderOutputAccount.BalanceDelta)
 
 	senderOutputAccount.BalanceDelta = big.NewInt(4000)
 	valueToTransfer = big.NewInt(5000)
-	err = outputContext.Transfer(receiver, sender, 54, valueToTransfer, []byte("txdata"))
+	err = outputContext.Transfer(receiver, sender, 54, valueToTransfer, []byte("txdata"), 0)
 	require.Nil(t, err)
 	require.Equal(t, big.NewInt(-1000), senderOutputAccount.BalanceDelta)
 
 	require.Equal(t, big.NewInt(1000), blockchainContext.GetBalanceBigInt(sender))
+}
+
+func TestOutputContext_Transfer_IsAccountPayable(t *testing.T) {
+	t.Parallel()
+
+	sender := []byte("sender")
+	receiverNonPayable := make([]byte, 32)
+	receiverPayable := make([]byte, 32)
+	receiverPayable[31] = 1
+
+	mockBlockchainHook := mock.NewBlockchainHookMock()
+	mockBlockchainHook.AddAccounts([]*mock.AccountMock{
+		{
+			Address: sender,
+			Nonce:   0,
+			Balance: big.NewInt(2000),
+		},
+		{
+			Address: receiverNonPayable,
+			Nonce:   0,
+			Balance: big.NewInt(0),
+			Code:    []byte("contract_code"),
+		},
+		{
+			Address:      receiverPayable,
+			Nonce:        0,
+			Balance:      big.NewInt(0),
+			Code:         []byte("contract_code"),
+			CodeMetadata: []byte{0, vmcommon.METADATA_PAYABLE},
+		},
+	})
+
+	host := &mock.VmHostMock{}
+	oc, _ := NewOutputContext(host)
+	bc, _ := NewBlockchainContext(host, mockBlockchainHook)
+
+	host.OutputContext = oc
+	host.BlockchainContext = bc
+
+	valueToTransfer := big.NewInt(10)
+	err := oc.Transfer(receiverNonPayable, sender, 54, valueToTransfer, []byte("txdata"), 0)
+
+	require.Equal(t, arwen.ErrAccountNotPayable, err)
+
+	valueToTransfer = big.NewInt(0)
+	err = oc.Transfer(receiverNonPayable, sender, 54, valueToTransfer, []byte("txdata"), 0)
+
+	require.Nil(t, err)
+
+	valueToTransfer = big.NewInt(10)
+	err = oc.Transfer(receiverPayable, sender, 54, valueToTransfer, []byte("txdata"), 0)
+
+	require.Nil(t, err)
 }
 
 func TestOutputContext_WriteLog(t *testing.T) {

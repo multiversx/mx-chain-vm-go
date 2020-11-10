@@ -16,17 +16,17 @@ type meteringContext struct {
 // NewMeteringContext creates a new meteringContext
 func NewMeteringContext(
 	host arwen.VMHost,
-	gasSchedule config.GasScheduleMap,
+	gasMap config.GasScheduleMap,
 	blockGasLimit uint64,
 ) (*meteringContext, error) {
 
-	gasCostConfig, err := config.CreateGasConfig(gasSchedule)
+	gasSchedule, err := config.CreateGasConfig(gasMap)
 	if err != nil {
 		return nil, err
 	}
 
 	context := &meteringContext{
-		gasSchedule:           gasCostConfig,
+		gasSchedule:           gasSchedule,
 		blockGasLimit:         blockGasLimit,
 		gasLockedForAsyncStep: 0,
 		host:                  host,
@@ -37,6 +37,15 @@ func NewMeteringContext(
 
 func (context *meteringContext) GasSchedule() *config.GasCost {
 	return context.gasSchedule
+}
+
+func (context *meteringContext) SetGasSchedule(gasMap config.GasScheduleMap) {
+	gasSchedule, err := config.CreateGasConfig(gasMap)
+	if err != nil {
+		log.Error("SetGasSchedule createGasConfig", "error", err)
+		return
+	}
+	context.gasSchedule = gasSchedule
 }
 
 func (context *meteringContext) UseGas(gas uint64) {
@@ -77,8 +86,8 @@ func (context *meteringContext) BoundGasLimit(limit uint64) uint64 {
 	return limit
 }
 
-// deductAndLockGasIfAsyncStep will deduct the gas for an async step and also lock gas for the callback, if the execution is an asynchronous call
-func (context *meteringContext) deductAndLockGasIfAsyncStep() error {
+// DeductAndLockGasIfAsyncStep will deduct the gas for an async step and also lock gas for the callback, if the execution is an asynchronous call
+func (context *meteringContext) DeductAndLockGasIfAsyncStep() error {
 	context.gasLockedForAsyncStep = 0
 
 	input := context.host.Runtime().GetVMInput()
@@ -118,12 +127,15 @@ func (context *meteringContext) BlockGasLimit() uint64 {
 // DeductInitialGasForExecution deducts gas for compilation and locks gas if the execution is an asynchronous call
 func (context *meteringContext) DeductInitialGasForExecution(contract []byte) error {
 	costPerByte := context.gasSchedule.BaseOperationCost.CompilePerByte
+	if context.host.IsAheadOfTimeCompileEnabled() {
+		costPerByte = context.gasSchedule.BaseOperationCost.AoTPreparePerByte
+	}
 	err := context.deductInitialGas(contract, 0, costPerByte)
 	if err != nil {
 		return err
 	}
 
-	return context.deductAndLockGasIfAsyncStep()
+	return context.DeductAndLockGasIfAsyncStep()
 }
 
 // DeductInitialGasForDirectDeployment deducts gas for the deployment of a contract initiated by a Transaction

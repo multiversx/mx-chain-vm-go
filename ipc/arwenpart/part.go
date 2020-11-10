@@ -19,10 +19,12 @@ type ArwenPart struct {
 	Messenger *ArwenMessenger
 	VMHost    vmcommon.VMExecutionHandler
 	Repliers  []common.MessageReplier
+	Version   string
 }
 
 // NewArwenPart creates the Arwen part
 func NewArwenPart(
+	version string,
 	input *os.File,
 	output *os.File,
 	vmHostParameters *arwen.VMHostParameters,
@@ -30,11 +32,9 @@ func NewArwenPart(
 ) (*ArwenPart, error) {
 	messenger := NewArwenMessenger(input, output, marshalizer)
 	blockchain := NewBlockchainHookGateway(messenger)
-	crypto := NewCryptoHookGateway()
 
 	newArwenHost, err := host.NewArwenVM(
 		blockchain,
-		crypto,
 		vmHostParameters,
 	)
 	if err != nil {
@@ -44,12 +44,15 @@ func NewArwenPart(
 	part := &ArwenPart{
 		Messenger: messenger,
 		VMHost:    newArwenHost,
+		Version:   version,
 	}
 
 	part.Repliers = common.CreateReplySlots(part.noopReplier)
 	part.Repliers[common.ContractDeployRequest] = part.replyToRunSmartContractCreate
 	part.Repliers[common.ContractCallRequest] = part.replyToRunSmartContractCall
 	part.Repliers[common.DiagnoseWaitRequest] = part.replyToDiagnoseWait
+	part.Repliers[common.VersionRequest] = part.replyToVersionRequest
+	part.Repliers[common.GasScheduleChangeRequest] = part.replyToGasScheduleChange
 
 	return part, nil
 }
@@ -113,4 +116,14 @@ func (part *ArwenPart) replyToDiagnoseWait(request common.MessageHandler) common
 	duration := time.Duration(int64(typedRequest.Milliseconds) * int64(time.Millisecond))
 	time.Sleep(duration)
 	return common.NewMessageDiagnoseWaitResponse()
+}
+
+func (part *ArwenPart) replyToVersionRequest(_ common.MessageHandler) common.MessageHandler {
+	return common.NewMessageVersionResponse(part.Version)
+}
+
+func (part *ArwenPart) replyToGasScheduleChange(request common.MessageHandler) common.MessageHandler {
+	typedRequest := request.(*common.MessageGasScheduleChangeRequest)
+	part.VMHost.GasScheduleChange(typedRequest.GasSchedule)
+	return common.NewGasScheduleChangeResponse()
 }

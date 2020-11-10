@@ -2,6 +2,7 @@ package mock
 
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -14,7 +15,7 @@ type VmHostStub struct {
 	PopStateCalled        func()
 	ClearStateStackCalled func()
 
-	CryptoCalled                      func() vmcommon.CryptoHook
+	CryptoCalled                      func() crypto.VMCrypto
 	BlockchainCalled                  func() arwen.BlockchainContext
 	RuntimeCalled                     func() arwen.RuntimeContext
 	BigIntCalled                      func() arwen.BigIntContext
@@ -54,7 +55,7 @@ func (vhs *VmHostStub) ClearStateStack() {
 	}
 }
 
-func (vhs *VmHostStub) Crypto() vmcommon.CryptoHook {
+func (vhs *VmHostStub) Crypto() crypto.VMCrypto {
 	if vhs.CryptoCalled != nil {
 		return vhs.CryptoCalled()
 	}
@@ -80,6 +81,14 @@ func (vhs *VmHostStub) BigInt() arwen.BigIntContext {
 		return vhs.BigIntCalled()
 	}
 	return nil
+}
+
+func (vhs *VmHostStub) IsArwenV2Enabled() bool {
+	return true
+}
+
+func (host *VmHostStub) IsAheadOfTimeCompileEnabled() bool {
+	return true
 }
 
 func (vhs *VmHostStub) Output() arwen.OutputContext {

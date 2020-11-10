@@ -34,8 +34,12 @@ func init() {
 	messageCreators[ContractDeployRequest] = createMessageContractDeployRequest
 	messageCreators[ContractCallRequest] = createMessageContractCallRequest
 	messageCreators[ContractResponse] = createMessageContractResponse
+	messageCreators[GasScheduleChangeRequest] = createMessageGasScheduleRequest
+	messageCreators[GasScheduleChangeResponse] = createMessageGasScheduleResponse
 	messageCreators[DiagnoseWaitRequest] = createMessageDiagnoseWaitRequest
 	messageCreators[DiagnoseWaitResponse] = createMessageDiagnoseWaitResponse
+	messageCreators[VersionRequest] = createMessageVersionRequest
+	messageCreators[VersionResponse] = createMessageVersionResponse
 
 	messageCreators[BlockchainNewAddressRequest] = createMessageBlockchainNewAddressRequest
 	messageCreators[BlockchainNewAddressResponse] = createMessageBlockchainNewAddressResponse
@@ -77,6 +81,12 @@ func init() {
 	messageCreators[BlockchainGetShardOfAddressResponse] = createMessageBlockchainGetShardOfAddressResponse
 	messageCreators[BlockchainIsSmartContractRequest] = createMessageBlockchainIsSmartContractRequest
 	messageCreators[BlockchainIsSmartContractResponse] = createMessageBlockchainIsSmartContractResponse
+	messageCreators[BlockchainIsPayableRequest] = createMessageBlockchainIsPayableRequest
+	messageCreators[BlockchainIsPayableResponse] = createMessageBlockchainIsPayableResponse
+	messageCreators[BlockchainSaveCompiledCodeRequest] = createMessageBlockchainSaveCompiledCodeRequest
+	messageCreators[BlockchainSaveCompiledCodeResponse] = createMessageBlockchainSaveCompiledCodeResponse
+	messageCreators[BlockchainGetCompiledCodeRequest] = createMessageBlockchainGetCompiledCodeRequest
+	messageCreators[BlockchainGetCompiledCodeResponse] = createMessageBlockchainGetCompiledCodeResponse
 }
 
 func createMessageInitialize() MessageHandler {
@@ -89,6 +99,14 @@ func createMessageStop() MessageHandler {
 
 func createMessageContractDeployRequest() MessageHandler {
 	return &MessageContractDeployRequest{}
+}
+
+func createMessageGasScheduleRequest() MessageHandler {
+	return &MessageGasScheduleChangeRequest{}
+}
+
+func createMessageGasScheduleResponse() MessageHandler {
+	return &Message{}
 }
 
 func createMessageContractCallRequest() MessageHandler {
@@ -107,6 +125,13 @@ func createMessageDiagnoseWaitResponse() MessageHandler {
 	return &MessageDiagnoseWaitResponse{}
 }
 
+func createMessageVersionRequest() MessageHandler {
+	return &MessageVersionRequest{}
+}
+
+func createMessageVersionResponse() MessageHandler {
+	return &MessageVersionResponse{}
+}
 func createUndefinedMessage() MessageHandler {
 	return NewUndefinedMessage()
 }
@@ -269,4 +294,28 @@ func createMessageBlockchainIsSmartContractRequest() MessageHandler {
 
 func createMessageBlockchainIsSmartContractResponse() MessageHandler {
 	return &MessageBlockchainIsSmartContractResponse{}
+}
+
+func createMessageBlockchainIsPayableRequest() MessageHandler {
+	return &MessageBlockchainIsPayableRequest{}
+}
+
+func createMessageBlockchainIsPayableResponse() MessageHandler {
+	return &MessageBlockchainIsPayableResponse{}
+}
+
+func createMessageBlockchainSaveCompiledCodeRequest() MessageHandler {
+	return &MessageBlockchainSaveCompiledCodeRequest{}
+}
+
+func createMessageBlockchainSaveCompiledCodeResponse() MessageHandler {
+	return &MessageBlockchainSaveCompiledCodeResponse{}
+}
+
+func createMessageBlockchainGetCompiledCodeRequest() MessageHandler {
+	return &MessageBlockchainGetCompiledCodeRequest{}
+}
+
+func createMessageBlockchainGetCompiledCodeResponse() MessageHandler {
+	return &MessageBlockchainGetCompiledCodeResponse{}
 }

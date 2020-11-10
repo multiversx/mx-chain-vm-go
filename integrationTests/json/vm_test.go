@@ -24,7 +24,7 @@ func getTestRoot() string {
 	return arwenTestRoot
 }
 
-func TestErc20FromRust(t *testing.T) {
+func TestRustErc20(t *testing.T) {
 	fileResolver := mc.NewDefaultFileResolver()
 	executor, err := am.NewArwenTestExecutor()
 	require.Nil(t, err)
@@ -34,7 +34,7 @@ func TestErc20FromRust(t *testing.T) {
 	)
 	err = runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
-		"erc20",
+		"erc20-rust/mandos",
 		".scen.json",
 		[]string{})
 	if err != nil {
@@ -42,10 +42,8 @@ func TestErc20FromRust(t *testing.T) {
 	}
 }
 
-func TestErc20FromC(t *testing.T) {
-	fileResolver := mc.NewDefaultFileResolver().ReplacePath(
-		"contracts/simple-coin.wasm",
-		filepath.Join(getTestRoot(), "erc20/contracts/erc20-c.wasm"))
+func TestCErc20(t *testing.T) {
+	fileResolver := mc.NewDefaultFileResolver()
 	executor, err := am.NewArwenTestExecutor()
 	require.Nil(t, err)
 	runner := mc.NewScenarioRunner(
@@ -54,7 +52,7 @@ func TestErc20FromC(t *testing.T) {
 	)
 	err = runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
-		"erc20",
+		"erc20-c",
 		".scen.json",
 		[]string{})
 
@@ -63,7 +61,7 @@ func TestErc20FromC(t *testing.T) {
 	}
 }
 
-func TestAdderFromRust(t *testing.T) {
+func TestRustAdder(t *testing.T) {
 	executor, err := am.NewArwenTestExecutor()
 	require.Nil(t, err)
 	runner := mc.NewScenarioRunner(
@@ -72,7 +70,7 @@ func TestAdderFromRust(t *testing.T) {
 	)
 	err = runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
-		"adder",
+		"adder/mandos",
 		".scen.json",
 		[]string{})
 
@@ -90,7 +88,7 @@ func TestCryptoBubbles(t *testing.T) {
 	)
 	err = runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
-		"crypto_bubbles_min_v1",
+		"crypto_bubbles_min_v1/mandos",
 		".scen.json",
 		[]string{})
 
@@ -99,7 +97,7 @@ func TestCryptoBubbles(t *testing.T) {
 	}
 }
 
-func TestFeaturesFromRust(t *testing.T) {
+func TestRustFeatures(t *testing.T) {
 	executor, err := am.NewArwenTestExecutor()
 	require.Nil(t, err)
 	runner := mc.NewScenarioRunner(
@@ -108,7 +106,7 @@ func TestFeaturesFromRust(t *testing.T) {
 	)
 	err = runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
-		"features",
+		"features/mandos",
 		".scen.json",
 		[]string{})
 
@@ -117,7 +115,7 @@ func TestFeaturesFromRust(t *testing.T) {
 	}
 }
 
-func TestAsyncCalls(t *testing.T) {
+func TestRustFeaturesNoSmallIntApi(t *testing.T) {
 	executor, err := am.NewArwenTestExecutor()
 	require.Nil(t, err)
 	runner := mc.NewScenarioRunner(
@@ -126,7 +124,45 @@ func TestAsyncCalls(t *testing.T) {
 	)
 	err = runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
-		"async",
+		"features-no-small-int-api/mandos",
+		".scen.json",
+		[]string{})
+
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+// Backwards compatibility.
+func TestRustFeaturesLegacy(t *testing.T) {
+
+	executor, err := am.NewArwenTestExecutor()
+	require.Nil(t, err)
+	runner := mc.NewScenarioRunner(
+		executor,
+		mc.NewDefaultFileResolver(),
+	)
+	err = runner.RunAllJSONScenariosInDirectory(
+		getTestRoot(),
+		"features-legacy/mandos",
+		".scen.json",
+		[]string{})
+
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestRustAsyncCalls(t *testing.T) {
+	executor, err := am.NewArwenTestExecutor()
+	require.Nil(t, err)
+	runner := mc.NewScenarioRunner(
+		executor,
+		mc.NewDefaultFileResolver(),
+	)
+	err = runner.RunAllJSONScenariosInDirectory(
+		getTestRoot(),
+		"async/mandos",
 		".scen.json",
 		[]string{})
 
@@ -144,7 +180,7 @@ func TestDelegation_v0_2(t *testing.T) {
 	)
 	err = runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
-		"delegation_v0.2",
+		"delegation/v0_2",
 		".scen.json",
 		[]string{})
 
@@ -162,7 +198,45 @@ func TestDelegation_v0_3(t *testing.T) {
 	)
 	err = runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
-		"delegation_v0.3",
+		"delegation/v0_3",
+		".scen.json",
+		[]string{
+			"delegation/v0_3/test/integration/genesis/genesis.scen.json",
+		})
+
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestDelegation_v0_4_genesis(t *testing.T) {
+	executor, err := am.NewArwenTestExecutor()
+	require.Nil(t, err)
+	runner := mc.NewScenarioRunner(
+		executor,
+		mc.NewDefaultFileResolver(),
+	)
+	err = runner.RunAllJSONScenariosInDirectory(
+		getTestRoot(),
+		"delegation/v0_4_genesis",
+		".scen.json",
+		[]string{})
+
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestDelegation_v0_5(t *testing.T) {
+	executor, err := am.NewArwenTestExecutor()
+	require.Nil(t, err)
+	runner := mc.NewScenarioRunner(
+		executor,
+		mc.NewDefaultFileResolver(),
+	)
+	err = runner.RunAllJSONScenariosInDirectory(
+		getTestRoot(),
+		"delegation/v0_5",
 		".scen.json",
 		[]string{})
 
@@ -207,20 +281,20 @@ func TestTimelocks(t *testing.T) {
 	}
 }
 
-func TestPromises(t *testing.T) {
-	executor, err := am.NewArwenTestExecutor()
-	require.Nil(t, err)
-	runner := mc.NewScenarioRunner(
-		executor,
-		mc.NewDefaultFileResolver(),
-	)
-	err = runner.RunAllJSONScenariosInDirectory(
-		getTestRoot(),
-		"promises",
-		".scen.json",
-		[]string{})
+// func TestPromises(t *testing.T) {
+// 	executor, err := am.NewArwenTestExecutor()
+// 	require.Nil(t, err)
+// 	runner := mc.NewScenarioRunner(
+// 		executor,
+// 		mc.NewDefaultFileResolver(),
+// 	)
+// 	err = runner.RunAllJSONScenariosInDirectory(
+// 		getTestRoot(),
+// 		"promises",
+// 		".scen.json",
+// 		[]string{})
 
-	if err != nil {
-		t.Error(err)
-	}
-}
+// 	if err != nil {
+// 		t.Error(err)
+// 	}
+// }

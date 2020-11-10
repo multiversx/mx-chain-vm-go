@@ -1,0 +1,142 @@
+{
+    "name": "genesis big scenario",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "../genesis/01a_init_accounts.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "../genesis/01b_deploy.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "../genesis/02_add_nodes.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "../genesis/02c_add_nodes.steps.json"
+        },
+        {
+            "step": "scCall",
+            "txId": "only delegator only stake",
+            "tx": {
+                "from": "''delegator_1___________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "stakeGenesis",
+                "arguments": [
+                    "444,000,000,000,000"
+                ],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "externalSteps",
+            "path": "../genesis/04b_genesis_activate.steps.json"
+        },
+        {
+            "step": "validatorReward",
+            "txId": "validatorReward-1",
+            "tx": {
+                "to": "''delegation_contract___________s1",
+                "value": "1"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "delegator 1 claim 1",
+            "tx": {
+                "from": "''delegator_1___________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "claimRewards",
+                "arguments": [],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*"
+            }
+        },
+        {
+            "step": "validatorReward",
+            "txId": "validatorReward-2",
+            "tx": {
+                "to": "''delegation_contract___________s1",
+                "value": "1"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "delegator 1 claim 2",
+            "tx": {
+                "from": "''delegator_1___________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "claimRewards",
+                "arguments": [],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "owner gets fee",
+            "tx": {
+                "from": "''node_address__________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "claimRewards",
+                "arguments": [],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [
+                    {
+                        "address": "''delegation_contract___________s1",
+                        "identifier": "0x000000000000000000000000000000000000000000000000000000000000000a",
+                        "topics": [
+                            "''node_address__________________s1"
+                        ],
+                        "data": "1"
+                    }
+                ]
+            }
+        },
+        {
+            "step": "checkState",
+            "comment": "delegator 1 gets another 1",
+            "accounts": {
+                "''delegation_contract___________s1": {
+                    "balance": "1"
+                },
+                "''node_address__________________s1": {
+                    "balance": "1"
+                },
+                "''delegator_1___________________s1": {
+                    "balance": "0"
+                },
+                "+": ""
+            }
+        }
+    ]
+}

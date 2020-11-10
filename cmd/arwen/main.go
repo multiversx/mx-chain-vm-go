@@ -18,6 +18,8 @@ const (
 	fileDescriptorLogToNode      = 7
 )
 
+var appVersion = "undefined"
+
 func main() {
 	errCode, errMessage := doMain()
 	if errCode != common.ErrCodeSuccess {
@@ -74,6 +76,7 @@ func doMain() (int, string) {
 	defer logsPart.StopLoop()
 
 	part, err := arwenpart.NewArwenPart(
+		appVersion,
 		nodeToArwenFile,
 		arwenToNodeFile,
 		&arwenArguments.VMHostParameters,

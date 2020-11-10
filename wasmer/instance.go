@@ -1,11 +1,12 @@
 package wasmer
 
+import "C"
 import (
 	"fmt"
 	"unsafe"
 )
 
-const OPCODE_COUNT = 447
+const OPCODE_COUNT = 448
 
 // InstanceError represents any kind of errors related to a WebAssembly instance. It
 // is returned by `Instance` functions only.
@@ -83,11 +84,15 @@ type Instance struct {
 	// The exported memory of a WebAssembly instance.
 	Memory *Memory
 
-	Data unsafe.Pointer
+	Data        *int
+	DataPointer unsafe.Pointer
+
+	InstanceCtx InstanceContext
 }
 
 type CompilationOptions struct {
 	GasLimit           uint64
+	UnmeteredLocals    uint64
 	OpcodeTrace        bool
 	Metering           bool
 	RuntimeBreakpoints bool
@@ -148,6 +153,10 @@ func NewInstanceWithOptions(
 	}
 
 	instance, err := newInstance(c_instance)
+	if instance != nil && instance.Memory != nil {
+		c_instance_context := cWasmerInstanceContextGet(c_instance)
+		instance.InstanceCtx = IntoInstanceContextDirect(c_instance_context)
+	}
 	return instance, err
 }
 
@@ -182,15 +191,48 @@ func (instance *Instance) HasMemory() bool {
 	return nil != instance.Memory
 }
 
+func NewInstanceFromCompiledCodeWithOptions(
+	compiledCode []byte,
+	options CompilationOptions,
+) (*Instance, error) {
+	var c_instance *cWasmerInstanceT
+
+	if len(compiledCode) == 0 {
+		var emptyInstance = &Instance{instance: nil, Exports: nil, Memory: nil}
+		return emptyInstance, newWrappedError(ErrInvalidBytecode)
+	}
+
+	cOptions := unsafe.Pointer(&options)
+	var instantiateResult = cWasmerInstanceFromCache(
+		&c_instance,
+		(*cUchar)(unsafe.Pointer(&compiledCode[0])),
+		cUint32T(len(compiledCode)),
+		(*cWasmerCompilationOptions)(cOptions),
+	)
+
+	if instantiateResult != cWasmerOk {
+		var emptyInstance = &Instance{instance: nil, Exports: nil, Memory: nil}
+		return emptyInstance, newWrappedError(ErrFailedInstantiation)
+	}
+
+	instance, err := newInstance(c_instance)
+	if instance != nil && instance.Memory != nil {
+		c_instance_context := cWasmerInstanceContextGet(c_instance)
+		instance.InstanceCtx = IntoInstanceContextDirect(c_instance_context)
+	}
+	return instance, err
+}
+
 // SetContextData assigns a data that can be used by all imported
 // functions. Indeed, each imported function receives as its first
 // argument an instance context (see `InstanceContext`). An instance
 // context can hold a pointer to any kind of data. It is important to
 // understand that this data is shared by all imported function, it's
 // global to the instance.
-func (instance *Instance) SetContextData(data unsafe.Pointer) {
-	cWasmerInstanceContextDataSet(instance.instance, data)
-	instance.Data = data
+func (instance *Instance) SetContextData(data int) {
+	instance.Data = &data
+	instance.DataPointer = unsafe.Pointer(instance.Data)
+	cWasmerInstanceContextDataSet(instance.instance, instance.DataPointer)
 }
 
 func (instance *Instance) Clean() {
@@ -211,10 +253,34 @@ func (instance *Instance) SetPointsUsed(points uint64) {
 	cWasmerInstanceSetPointsUsed(instance.instance, points)
 }
 
+func (instance *Instance) SetGasLimit(gasLimit uint64) {
+	cWasmerInstanceSetGasLimit(instance.instance, gasLimit)
+}
+
 func (instance *Instance) SetBreakpointValue(value uint64) {
 	cWasmerInstanceSetBreakpointValue(instance.instance, value)
 }
 
 func (instance *Instance) GetBreakpointValue() uint64 {
 	return cWasmerInstanceGetBreakpointValue(instance.instance)
+}
+
+func (instance *Instance) Cache() ([]byte, error) {
+	var cacheBytes *cUchar
+	var cacheLen cUint32T
+
+	var cacheResult = cWasmerInstanceCache(
+		instance.instance,
+		&cacheBytes,
+		&cacheLen,
+	)
+
+	if cacheResult != cWasmerOk {
+		return nil, ErrCachingFailed
+	}
+
+	goBytes := C.GoBytes(unsafe.Pointer(cacheBytes), C.int(cacheLen))
+	cacheBytes = nil
+
+	return goBytes, nil
 }

@@ -1,0 +1,112 @@
+{
+    "name": "activate pt 2",
+    "steps": [
+        {
+            "step": "scCall",
+            "txId": "setAnyoneCanActivate",
+            "tx": {
+                "from": "''node_address__________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "setAnyoneCanActivate",
+                "arguments": [],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "withdraw some stake to not affect the flow",
+            "tx": {
+                "from": "''delegator_2___________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "withdrawInactiveStake",
+                "arguments": [
+                    "1,000,000,000"
+                ],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [
+                    {
+                        "address": "''delegation_contract___________s1",
+                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000002",
+                        "topics": [
+                            "''delegator_2___________________s1"
+                        ],
+                        "data": "1,000,000,000"
+                    }
+                ],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "stake and activate",
+            "comment": "BUG WARNING! Not all events get saved, stake event missing!!!",
+            "tx": {
+                "from": "''delegator_2___________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "1,000,000,000",
+                "function": "stakeAndTryActivate",
+                "arguments": [],
+                "gasLimit": "2,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [
+                    {
+                        "address": "''delegation_contract___________s1",
+                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000001",
+                        "topics": [
+                            "''delegator_2___________________s1"
+                        ],
+                        "data": "1,000,000,000"
+                    },
+                    {
+                        "address": "''delegation_contract___________s1",
+                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000003",
+                        "topics": [],
+                        "data": ""
+                    }
+                ],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "activate-2-auto does nothing",
+            "tx": {
+                "from": "''node_address__________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "stakeAllAvailable",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        }
+    ]
+}

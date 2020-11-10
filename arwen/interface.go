@@ -4,6 +4,7 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -23,13 +24,15 @@ type CallArgsParser interface {
 }
 
 type VMHost interface {
-	Crypto() vmcommon.CryptoHook
+	Crypto() crypto.VMCrypto
 	Blockchain() BlockchainContext
 	Runtime() RuntimeContext
 	BigInt() BigIntContext
 	Output() OutputContext
 	Metering() MeteringContext
 	Storage() StorageContext
+	IsArwenV2Enabled() bool
+	IsAheadOfTimeCompileEnabled() bool
 
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*AsyncContext, error)
@@ -58,13 +61,16 @@ type BlockchainContext interface {
 	CurrentRandomSeed() []byte
 	LastRandomSeed() []byte
 	IncreaseNonce(addr []byte)
-	GetCodeHash(addr []byte) ([]byte, error)
+	GetCodeHash(addr []byte) []byte
 	GetCode(addr []byte) ([]byte, error)
 	GetCodeSize(addr []byte) (int32, error)
 	BlockHash(number uint64) []byte
 	GetOwnerAddress() ([]byte, error)
 	GetShardOfAddress(addr []byte) uint32
 	IsSmartContract(addr []byte) bool
+	IsPayable(address []byte) (bool, error)
+	SaveCompiledCode(codeHash []byte, code []byte)
+	GetCompiledCode(codeHash []byte) (bool, []byte)
 }
 
 type RuntimeContext interface {
@@ -84,6 +90,7 @@ type RuntimeContext interface {
 	ExtractCodeUpgradeFromArgs() ([]byte, []byte, error)
 	SignalUserError(message string)
 	FailExecution(err error)
+	MustVerifyNextContractCode()
 	SetRuntimeBreakpointValue(value BreakpointValue)
 	GetRuntimeBreakpointValue() BreakpointValue
 	GetDefaultAsyncCall() *AsyncCall
@@ -95,13 +102,14 @@ type RuntimeContext interface {
 	PopInstance()
 	RunningInstancesCount() uint64
 	ClearInstanceStack()
+	IsWarmInstance() bool
+	ResetWarmInstance()
 	ReadOnly() bool
 	SetReadOnly(readOnly bool)
-	StartWasmerInstance(contract []byte, gasLimit uint64) error
+	StartWasmerInstance(contract []byte, gasLimit uint64, newCode bool) error
+	CleanWasmerInstance()
 	SetMaxInstanceCount(uint64)
 	VerifyContractCode() error
-	SetInstanceContext(instCtx *wasmer.InstanceContext)
-	GetInstanceContext() *wasmer.InstanceContext
 	GetInstanceExports() wasmer.ExportsMap
 	GetInitFunction() wasmer.ExportedFunctionCallback
 	GetFunctionToCall() (wasmer.ExportedFunctionCallback, error)
@@ -109,9 +117,8 @@ type RuntimeContext interface {
 	SetPointsUsed(gasPoints uint64)
 	MemStore(offset int32, data []byte) error
 	MemLoad(offset int32, length int32) ([]byte, error)
-	CleanInstance()
-	SetInstanceContextID(id int)
 	ElrondAPIErrorShouldFailExecution() bool
+	ElrondSyncExecAPIErrorShouldFailExecution() bool
 	CryptoAPIErrorShouldFailExecution() bool
 	BigIntAPIErrorShouldFailExecution() bool
 }
@@ -129,11 +136,14 @@ type OutputContext interface {
 	StateStack
 	PopMergeActiveState()
 	CensorVMOutput()
+	ResetGas()
 	AddToActiveState(rightOutput *vmcommon.VMOutput)
 
 	GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool)
+	DeleteOutputAccount(address []byte)
 	WriteLog(address []byte, topics [][]byte, data []byte)
-	Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte) error
+	TransferValueOnly(destination []byte, sender []byte, value *big.Int) error
+	Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte, callType vmcommon.CallType) error
 	SelfDestruct(address []byte, beneficiary []byte)
 	GetRefund() uint64
 	SetRefund(refund uint64)
@@ -151,6 +161,7 @@ type OutputContext interface {
 }
 
 type MeteringContext interface {
+	SetGasSchedule(gasMap config.GasScheduleMap)
 	GasSchedule() *config.GasCost
 	UseGas(gas uint64)
 	FreeGas(gas uint64)
@@ -161,6 +172,7 @@ type MeteringContext interface {
 	DeductInitialGasForExecution(contract []byte) error
 	DeductInitialGasForDirectDeployment(input CodeDeployInput) error
 	DeductInitialGasForIndirectDeployment(input CodeDeployInput) error
+	DeductAndLockGasIfAsyncStep() error
 	UnlockGasIfAsyncStep()
 	GetGasLockedForAsyncStep() uint64
 }
@@ -179,11 +191,13 @@ type StorageContext interface {
 
 	SetAddress(address []byte)
 	GetStorageUpdates(address []byte) map[string]*vmcommon.StorageUpdate
+	GetStorageFromAddress(address []byte, key []byte) []byte
 	GetStorage(key []byte) []byte
+	GetStorageUnmetered(key []byte) []byte
 	SetStorage(key []byte, value []byte) (StorageStatus, error)
 }
 
-type AsyncCallInfoHandler interface {
+type AsyncCallHandler interface {
 	GetDestination() []byte
 	GetData() []byte
 	GetGasLimit() uint64

@@ -1,0 +1,134 @@
+{
+    "name": "check activate pt 1",
+    "steps": [
+        {
+            "step": "scCall",
+            "txId": "check-node_state-4_1-partial-fail",
+            "tx": {
+                "from": "''someone_______________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "getAllNodeStates",
+                "arguments": [],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "''bls_key_1_______________________________________________________________________________________", "0x06",
+                    "''bls_key_2_______________________________________________________________________________________", "0x02",
+                    "''bls_key_3_______________________________________________________________________________________", "0x07",
+                    "''bls_key_4_______________________________________________________________________________________", "0x06",
+                    "''bls_key_5_______________________________________________________________________________________", "0x00",
+                    "''bls_key_6_______________________________________________________________________________________", "0x07",
+                    "''bls_key_7_______________________________________________________________________________________", "0x06"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "check-stake-by-type-1-partial-fail",
+            "tx": {
+                "from": "''someone_______________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "getUserStakeByType",
+                "arguments": [
+                    "''delegator_1___________________s1"
+                ],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "0", "0", "111,000,000,000,000", "0", "0", "0", "0", "189,000,000,000,000", "0", "0"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "check-stake-by-type-2-partial-fail",
+            "tx": {
+                "from": "''someone_______________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "getUserStakeByType",
+                "arguments": [
+                    "''delegator_2___________________s1"
+                ],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "1,000,000,000", "0", "0", "0", "0", "0", "0", "033,000,000,000,000", "0", "0"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "check-total-active-partial-fail",
+            "tx": {
+                "from": "''someone_______________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "getTotalActiveStake",
+                "arguments": [],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "111,000,000,000,000"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "comment": "check that stake was sent",
+            "accounts": {
+                "''delegation_contract___________s1": {
+                    "nonce": "*",
+                    "balance": "1,000,000,000",
+                    "storage": "*",
+                    "code": "file:../../../output/delegation.wasm"
+                },
+                "''auction_contract______________s1": {
+                    "nonce": "0",
+                    "balance": "333,000,000,000,000",
+                    "storage": "*",
+                    "code": "file:../../../../auction-mock/output/auction-mock.wasm"
+                },
+                "''delegator_1___________________s1": {
+                    "nonce": "*",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                },
+                "''delegator_2___________________s1": {
+                    "nonce": "*",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                },
+                "+": ""
+            }
+        }
+    ]
+}

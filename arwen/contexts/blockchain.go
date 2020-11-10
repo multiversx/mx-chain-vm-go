@@ -108,16 +108,26 @@ func (context *blockchainContext) IncreaseNonce(address []byte) {
 	outputAccount.Nonce = nonce + 1
 }
 
-func (context *blockchainContext) GetCodeHash(addr []byte) ([]byte, error) {
-	code, err := context.GetCode(addr)
+func (context *blockchainContext) GetCodeHash(address []byte) []byte {
+	account, err := context.blockChainHook.GetUserAccount(address)
 	if err != nil {
-		return nil, err
+		return nil
+	}
+	if arwen.IfNil(account) {
+		return nil
 	}
 
-	return context.host.Crypto().Keccak256(code)
+	codeHash := account.GetCodeHash()
+	return codeHash
 }
 
 func (context *blockchainContext) GetCode(address []byte) ([]byte, error) {
+	outputAccount, isNew := context.host.Output().GetOutputAccount(address)
+	hasCode := !isNew && len(outputAccount.Code) > 0
+	if hasCode {
+		return outputAccount.Code, nil
+	}
+
 	account, err := context.blockChainHook.GetUserAccount(address)
 	if err != nil {
 		return nil, err
@@ -131,7 +141,9 @@ func (context *blockchainContext) GetCode(address []byte) ([]byte, error) {
 		return nil, arwen.ErrContractNotFound
 	}
 
-	return account.GetCode(), nil
+	outputAccount.Code = code
+
+	return code, nil
 }
 
 func (context *blockchainContext) GetCodeSize(address []byte) (int32, error) {
@@ -214,4 +226,16 @@ func (context *blockchainContext) GetShardOfAddress(addr []byte) uint32 {
 
 func (context *blockchainContext) IsSmartContract(addr []byte) bool {
 	return context.blockChainHook.IsSmartContract(addr)
+}
+
+func (context *blockchainContext) IsPayable(addr []byte) (bool, error) {
+	return context.blockChainHook.IsPayable(addr)
+}
+
+func (context *blockchainContext) SaveCompiledCode(codeHash []byte, code []byte) {
+	context.blockChainHook.SaveCompiledCode(codeHash, code)
+}
+
+func (context *blockchainContext) GetCompiledCode(codeHash []byte) (bool, []byte) {
+	return context.blockChainHook.GetCompiledCode(codeHash)
 }

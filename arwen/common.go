@@ -16,15 +16,14 @@ const (
 	BreakpointExecutionFailed
 	BreakpointAsyncCall
 	BreakpointSignalError
-	BreakpointSignalExit
 	BreakpointOutOfGas
 )
 
 type AsyncCallExecutionMode uint
 
 const (
-	// SyncCall indicates that the async call can be executed synchronously, with
-	// its corresponding callback
+	// SyncExecution indicates that the async call can be executed synchronously,
+	// with its corresponding callback
 	SyncExecution AsyncCallExecutionMode = iota
 
 	// AsyncBuiltinFunc indicates that the async call is a cross-shard call to a
@@ -50,6 +49,7 @@ type CodeDeployInput struct {
 	ContractCode         []byte
 	ContractCodeMetadata []byte
 	ContractAddress      []byte
+	CodeDeployerAddress  []byte
 }
 
 // VMHostParameters represents the parameters to be passed to VMHost
@@ -59,4 +59,7 @@ type VMHostParameters struct {
 	GasSchedule              config.GasScheduleMap
 	ProtocolBuiltinFunctions vmcommon.FunctionNames
 	ElrondProtectedKeyPrefix []byte
+	ArwenV2EnableEpoch       uint32
+	AheadOfTimeEnableEpoch   uint32
+	UseWarmInstance          bool
 }

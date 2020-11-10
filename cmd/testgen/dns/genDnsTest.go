@@ -41,9 +41,7 @@ func main() {
 			"dns.wasm",
 			filepath.Join(getTestRoot(), "dns/dns.wasm"))
 	tg := &testGenerator{
-		mandosParser: mjparse.Parser{
-			FileResolver: fileResolver,
-		},
+		mandosParser: mjparse.NewParser(fileResolver),
 		generatedScenario: &mj.Scenario{
 			Name: "dns test",
 		},
@@ -101,6 +99,31 @@ func main() {
 				}
 			}`,
 			shard))
+	}
+
+	for shard := 0; shard < 256; shard++ {
+		tg.addStep(fmt.Sprintf(`
+			{
+				"step": "scCall",
+				"txId": "feature-register-0x%02x",
+				"tx": {
+					"from": "''dns_owner_______________________",
+					"to": "''dns____________________________|0x%02x",
+					"value": "0",
+					"function": "setFeatureFlag",
+					"arguments": [ "''register", "true" ],
+					"gasLimit": "100,000",
+					"gasPrice": "0"
+				},
+				"expect": {
+					"out": [],
+					"status": "",
+					"logs": [],
+					"gas": "*",
+					"refund": "*"
+				}
+			}`,
+			shard, shard))
 	}
 
 	// save

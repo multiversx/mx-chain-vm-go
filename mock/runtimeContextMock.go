@@ -15,12 +15,14 @@ type RuntimeContextMock struct {
 	CallFunction           string
 	VmType                 []byte
 	ReadOnlyFlag           bool
+	VerifyCode             bool
 	CurrentBreakpointValue arwen.BreakpointValue
 	PointsUsed             uint64
 	InstanceCtxID          int
 	MemLoadResult          []byte
 	FailCryptoAPI          bool
 	FailElrondAPI          bool
+	FailElrondSyncExecAPI  bool
 	FailBigIntAPI          bool
 	DefaultAsyncCall       *arwen.AsyncCall
 	RunningInstances       uint64
@@ -31,14 +33,14 @@ type RuntimeContextMock struct {
 func (r *RuntimeContextMock) InitState() {
 }
 
-func (r *RuntimeContextMock) StartWasmerInstance(contract []byte, gasLimit uint64) error {
+func (r *RuntimeContextMock) StartWasmerInstance(_ []byte, _ uint64, _ bool) error {
 	if r.Err != nil {
 		return r.Err
 	}
 	return nil
 }
 
-func (r *RuntimeContextMock) InitStateFromContractCallInput(input *vmcommon.ContractCallInput) {
+func (r *RuntimeContextMock) InitStateFromContractCallInput(_ *vmcommon.ContractCallInput) {
 }
 
 func (r *RuntimeContextMock) PushState() {
@@ -50,6 +52,9 @@ func (r *RuntimeContextMock) PopSetActiveState() {
 func (r *RuntimeContextMock) PopDiscard() {
 }
 
+func (r *RuntimeContextMock) MustVerifyNextContractCode() {
+}
+
 func (r *RuntimeContextMock) ClearStateStack() {
 }
 
@@ -57,6 +62,13 @@ func (r *RuntimeContextMock) PushInstance() {
 }
 
 func (r *RuntimeContextMock) PopInstance() {
+}
+
+func (r *RuntimeContextMock) IsWarmInstance() bool {
+	return false
+}
+
+func (r *RuntimeContextMock) ResetWarmInstance() {
 }
 
 func (r *RuntimeContextMock) RunningInstancesCount() uint64 {
@@ -120,7 +132,7 @@ func (r *RuntimeContextMock) SignalExit(_ int) {
 func (r *RuntimeContextMock) SignalUserError(_ string) {
 }
 
-func (r *RuntimeContextMock) SetRuntimeBreakpointValue(value arwen.BreakpointValue) {
+func (r *RuntimeContextMock) SetRuntimeBreakpointValue(_ arwen.BreakpointValue) {
 }
 
 func (r *RuntimeContextMock) GetRuntimeBreakpointValue() arwen.BreakpointValue {
@@ -150,22 +162,11 @@ func (r *RuntimeContextMock) SetReadOnly(readOnly bool) {
 	r.ReadOnlyFlag = readOnly
 }
 
-func (r *RuntimeContextMock) SetInstanceContextID(id int) {
-	r.InstanceCtxID = id
-}
-
-func (r *RuntimeContextMock) SetInstanceContext(instCtx *wasmer.InstanceContext) {
-}
-
-func (r *RuntimeContextMock) GetInstanceContext() *wasmer.InstanceContext {
-	return nil
-}
-
 func (r *RuntimeContextMock) GetInstanceExports() wasmer.ExportsMap {
 	return nil
 }
 
-func (r *RuntimeContextMock) CleanInstance() {
+func (r *RuntimeContextMock) CleanWasmerInstance() {
 }
 
 func (r *RuntimeContextMock) GetFunctionToCall() (wasmer.ExportedFunctionCallback, error) {
@@ -179,7 +180,7 @@ func (r *RuntimeContextMock) GetInitFunction() wasmer.ExportedFunctionCallback {
 	return nil
 }
 
-func (r *RuntimeContextMock) MemLoad(offset int32, length int32) ([]byte, error) {
+func (r *RuntimeContextMock) MemLoad(_ int32, _ int32) ([]byte, error) {
 	if r.Err != nil {
 		return nil, r.Err
 	}
@@ -187,7 +188,7 @@ func (r *RuntimeContextMock) MemLoad(offset int32, length int32) ([]byte, error)
 	return r.MemLoadResult, nil
 }
 
-func (r *RuntimeContextMock) MemStore(offset int32, data []byte) error {
+func (r *RuntimeContextMock) MemStore(_ int32, _ []byte) error {
 	if r.Err != nil {
 		return r.Err
 	}
@@ -198,6 +199,10 @@ func (r *RuntimeContextMock) ElrondAPIErrorShouldFailExecution() bool {
 	return r.FailElrondAPI
 }
 
+func (r *RuntimeContextMock) ElrondSyncExecAPIErrorShouldFailExecution() bool {
+	return r.FailElrondSyncExecAPI
+}
+
 func (r *RuntimeContextMock) CryptoAPIErrorShouldFailExecution() bool {
 	return r.FailCryptoAPI
 }
@@ -206,7 +211,7 @@ func (r *RuntimeContextMock) BigIntAPIErrorShouldFailExecution() bool {
 	return r.FailBigIntAPI
 }
 
-func (r *RuntimeContextMock) FailExecution(err error) {
+func (r *RuntimeContextMock) FailExecution(_ error) {
 }
 
 func (r *RuntimeContextMock) GetDefaultAsyncCall() *arwen.AsyncCall {
@@ -229,6 +234,5 @@ func (r *RuntimeContextMock) GetAsyncCallGroup(_ []byte) (*arwen.AsyncCallGroup,
 	return nil, nil
 }
 
-func (r *RuntimeContextMock) SetCustomCallFunction(callFunction string) {
-
+func (r *RuntimeContextMock) SetCustomCallFunction(_ string) {
 }

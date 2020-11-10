@@ -52,7 +52,7 @@ func TestArwenDriver_RestartsIfStopped(t *testing.T) {
 	require.NotNil(t, vmOutput)
 
 	require.False(t, driver.IsClosed())
-	driver.Close()
+	_ = driver.Close()
 	require.True(t, driver.IsClosed())
 
 	// Per this request, Arwen is restarted
@@ -67,7 +67,7 @@ func BenchmarkArwenDriver_RestartsIfStopped(b *testing.B) {
 	driver := newDriver(b, blockchain)
 
 	for i := 0; i < b.N; i++ {
-		driver.Close()
+		_ = driver.Close()
 		require.True(b, driver.IsClosed())
 		_ = driver.RestartArwenIfNecessary()
 		require.False(b, driver.IsClosed())
@@ -81,6 +81,17 @@ func BenchmarkArwenDriver_RestartArwenIfNecessary(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		_ = driver.RestartArwenIfNecessary()
 	}
+}
+
+func TestArwenDriver_GetVersion(t *testing.T) {
+	// This test requires `make arwen` before running, or must be run directly
+	// with `make test`
+	blockchain := &mock.BlockchainHookStub{}
+	driver := newDriver(t, blockchain)
+	version, err := driver.GetVersion()
+	require.Nil(t, err)
+	require.NotZero(t, len(version))
+	require.NotEqual(t, "undefined", version)
 }
 
 func newDriver(tb testing.TB, blockchain *mock.BlockchainHookStub) *nodepart.ArwenDriver {

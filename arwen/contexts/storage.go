@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/elrond-go-logger/check"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -71,13 +72,59 @@ func (context *storageContext) GetStorageUpdates(address []byte) map[string]*vmc
 }
 
 func (context *storageContext) GetStorage(key []byte) []byte {
-	storageUpdates := context.GetStorageUpdates(context.address)
-	if storageUpdate, ok := storageUpdates[string(key)]; ok {
-		return storageUpdate.Data
+	metering := context.host.Metering()
+
+	extraBytes := len(key) - arwen.AddressLen
+	if extraBytes > 0 {
+		gasToUse := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(extraBytes)
+		metering.UseGas(gasToUse)
 	}
 
-	value, _ := context.blockChainHook.GetStorageData(context.address, key)
-	if value != nil {
+	value := context.GetStorageUnmetered(key)
+
+	gasToUse := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(value))
+	metering.UseGas(gasToUse)
+
+	return value
+}
+
+func (context *storageContext) GetStorageFromAddress(address []byte, key []byte) []byte {
+	metering := context.host.Metering()
+
+	extraBytes := len(key) - arwen.AddressLen
+	if extraBytes > 0 {
+		gasToUse := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(extraBytes)
+		metering.UseGas(gasToUse)
+	}
+
+	if !bytes.Equal(address, context.address) {
+		userAcc, err := context.blockChainHook.GetUserAccount(address)
+		if err != nil || check.IfNil(userAcc) {
+			return nil
+		}
+
+		metadata := vmcommon.CodeMetadataFromBytes(userAcc.GetCodeMetadata())
+		if !metadata.Readable {
+			return nil
+		}
+	}
+
+	value := context.getStorageFromAddressUnmetered(address, key)
+
+	gasToUse := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(value))
+	metering.UseGas(gasToUse)
+
+	return value
+}
+
+func (context *storageContext) getStorageFromAddressUnmetered(address []byte, key []byte) []byte {
+	var value []byte
+
+	storageUpdates := context.GetStorageUpdates(address)
+	if storageUpdate, ok := storageUpdates[string(key)]; ok {
+		value = storageUpdate.Data
+	} else {
+		value, _ = context.blockChainHook.GetStorageData(address, key)
 		storageUpdates[string(key)] = &vmcommon.StorageUpdate{
 			Offset: key,
 			Data:   value,
@@ -87,8 +134,12 @@ func (context *storageContext) GetStorage(key []byte) []byte {
 	return value
 }
 
+func (context *storageContext) GetStorageUnmetered(key []byte) []byte {
+	return context.getStorageFromAddressUnmetered(context.address, key)
+}
+
 func (context *storageContext) isElrondReservedKey(key []byte) bool {
-	return bytes.HasPrefix(key, []byte(context.elrondProtectedKeyPrefix))
+	return bytes.HasPrefix(key, context.elrondProtectedKeyPrefix)
 }
 
 func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.StorageStatus, error) {
@@ -101,6 +152,13 @@ func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.Stora
 	}
 
 	metering := context.host.Metering()
+
+	extraBytes := len(key) - arwen.AddressLen
+	if extraBytes > 0 {
+		gasToUse := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(extraBytes)
+		metering.UseGas(gasToUse)
+	}
+
 	var zero []byte
 	strKey := string(key)
 	length := len(value)
@@ -108,7 +166,7 @@ func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.Stora
 	var oldValue []byte
 	storageUpdates := context.GetStorageUpdates(context.address)
 	if update, ok := storageUpdates[strKey]; !ok {
-		oldValue = context.GetStorage(key)
+		oldValue = context.GetStorageUnmetered(key)
 		storageUpdates[strKey] = &vmcommon.StorageUpdate{
 			Offset: key,
 			Data:   oldValue,

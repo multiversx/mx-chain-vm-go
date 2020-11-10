@@ -46,6 +46,10 @@ func (m *MeteringContextMock) BoundGasLimit(limit uint64) uint64 {
 	return limit
 }
 
+func (m *MeteringContextMock) DeductAndLockGasIfAsyncStep() error {
+	return nil
+}
+
 func (m *MeteringContextMock) UnlockGasIfAsyncStep() {
 }
 

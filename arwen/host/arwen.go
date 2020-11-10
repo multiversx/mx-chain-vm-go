@@ -2,15 +2,17 @@ package host
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/contexts"
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/crypto"
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/cryptoapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/elrondapi"
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/ethapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
+	"github.com/ElrondNetwork/elrond-go/core/atomic"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -29,7 +31,8 @@ type CatchFunction func(error)
 // vmHost implements HostContext interface.
 type vmHost struct {
 	blockChainHook vmcommon.BlockchainHook
-	cryptoHook     vmcommon.CryptoHook
+	cryptoHook     crypto.VMCrypto
+	mutExecution   sync.RWMutex
 
 	ethInput []byte
 
@@ -42,15 +45,21 @@ type vmHost struct {
 
 	scAPIMethods             *wasmer.Imports
 	protocolBuiltinFunctions vmcommon.FunctionNames
+
+	arwenV2EnableEpoch uint32
+	flagArwenV2        atomic.Flag
+
+	aotEnableEpoch  uint32
+	flagAheadOfTime atomic.Flag
 }
 
 // NewArwenVM creates a new Arwen vmHost
 func NewArwenVM(
 	blockChainHook vmcommon.BlockchainHook,
-	cryptoHook vmcommon.CryptoHook,
 	hostParameters *arwen.VMHostParameters,
 ) (*vmHost, error) {
 
+	cryptoHook := crypto.NewVMCrypto()
 	host := &vmHost{
 		blockChainHook:           blockChainHook,
 		cryptoHook:               cryptoHook,
@@ -61,6 +70,8 @@ func NewArwenVM(
 		bigIntContext:            nil,
 		scAPIMethods:             nil,
 		protocolBuiltinFunctions: hostParameters.ProtocolBuiltinFunctions,
+		arwenV2EnableEpoch:       hostParameters.ArwenV2EnableEpoch,
+		aotEnableEpoch:           hostParameters.AheadOfTimeEnableEpoch,
 	}
 
 	var err error
@@ -75,12 +86,12 @@ func NewArwenVM(
 		return nil, err
 	}
 
-	imports, err = ethapi.EthereumImports(imports)
+	imports, err = elrondapi.SmallIntImports(imports)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = crypto.CryptoImports(imports)
+	imports, err = cryptoapi.CryptoImports(imports)
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +108,11 @@ func NewArwenVM(
 		return nil, err
 	}
 
-	host.runtimeContext, err = contexts.NewRuntimeContext(host, hostParameters.VMType)
+	host.runtimeContext, err = contexts.NewRuntimeContext(
+		host,
+		hostParameters.VMType,
+		hostParameters.UseWarmInstance,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -132,12 +147,12 @@ func NewArwenVM(
 	opcodeCosts := gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray()
 	wasmer.SetOpcodeCosts(&opcodeCosts)
 
-	host.InitState()
+	host.initContexts()
 
 	return host, nil
 }
 
-func (host *vmHost) Crypto() vmcommon.CryptoHook {
+func (host *vmHost) Crypto() crypto.VMCrypto {
 	return host.cryptoHook
 }
 
@@ -165,6 +180,14 @@ func (host *vmHost) BigInt() arwen.BigIntContext {
 	return host.bigIntContext
 }
 
+func (host *vmHost) IsArwenV2Enabled() bool {
+	return host.flagArwenV2.IsSet()
+}
+
+func (host *vmHost) IsAheadOfTimeCompileEnabled() bool {
+	return host.flagAheadOfTime.IsSet()
+}
+
 func (host *vmHost) GetContexts() (
 	arwen.BigIntContext,
 	arwen.BlockchainContext,
@@ -182,6 +205,16 @@ func (host *vmHost) GetContexts() (
 }
 
 func (host *vmHost) InitState() {
+	host.initContexts()
+	currentEpoch := host.blockChainHook.CurrentEpoch()
+	host.flagArwenV2.Toggle(currentEpoch >= host.arwenV2EnableEpoch)
+	log.Trace("arwenV2", "enabled", host.flagArwenV2.IsSet())
+
+	host.flagAheadOfTime.Toggle(currentEpoch >= host.aotEnableEpoch)
+	log.Trace("aheadOfTime compile", "enabled", host.flagAheadOfTime.IsSet())
+}
+
+func (host *vmHost) initContexts() {
 	host.ClearContextStateStack()
 	host.bigIntContext.InitState()
 	host.outputContext.InitState()
@@ -198,7 +231,10 @@ func (host *vmHost) ClearContextStateStack() {
 }
 
 func (host *vmHost) Clean() {
-	host.runtimeContext.CleanInstance()
+	if host.runtimeContext.IsWarmInstance() {
+		return
+	}
+	host.runtimeContext.CleanWasmerInstance()
 	arwen.RemoveAllHostContexts()
 }
 
@@ -210,7 +246,26 @@ func (host *vmHost) GetProtocolBuiltinFunctions() vmcommon.FunctionNames {
 	return host.protocolBuiltinFunctions
 }
 
+func (host *vmHost) GasScheduleChange(newGasSchedule map[string]map[string]uint64) {
+	host.mutExecution.Lock()
+	defer host.mutExecution.Unlock()
+
+	gasCostConfig, err := config.CreateGasConfig(newGasSchedule)
+	if err != nil {
+		log.Error("cannot apply new gas config remained with old one")
+		return
+	}
+
+	opcodeCosts := gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray()
+	wasmer.SetOpcodeCosts(&opcodeCosts)
+
+	host.meteringContext.SetGasSchedule(newGasSchedule)
+}
+
 func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error) {
+	host.mutExecution.RLock()
+	defer host.mutExecution.RUnlock()
+
 	log.Trace("RunSmartContractCreate begin", "len(code)", len(input.ContractCode), "metadata", input.ContractCodeMetadata)
 
 	try := func() {
@@ -231,6 +286,9 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 }
 
 func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
+	host.mutExecution.RLock()
+	defer host.mutExecution.RUnlock()
+
 	log.Trace("RunSmartContractCall begin", "function", input.Function)
 
 	tryUpgrade := func() {
@@ -239,6 +297,11 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 
 	tryCall := func() {
 		vmOutput = host.doRunSmartContractCall(input)
+
+		if host.hasRetriableExecutionError(vmOutput) {
+			log.Error("Retriable execution error detected. Will reset warm Wasmer instance.")
+			host.runtimeContext.ResetWarmInstance()
+		}
 	}
 
 	catch := func(caught error) {
@@ -251,10 +314,6 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 		TryCatch(tryUpgrade, catch, "arwen.RunSmartContractUpgrade")
 	} else {
 		TryCatch(tryCall, catch, "arwen.RunSmartContractCall")
-	}
-
-	if vmOutput != nil {
-		log.Trace("RunSmartContractCall end", "returnCode", vmOutput.ReturnCode, "returnMessage", vmOutput.ReturnMessage)
 	}
 
 	return
@@ -274,4 +333,12 @@ func TryCatch(try TryFunction, catch CatchFunction, catchFallbackMessage string)
 	}()
 
 	try()
+}
+
+func (host *vmHost) hasRetriableExecutionError(vmOutput *vmcommon.VMOutput) bool {
+	if !host.runtimeContext.IsWarmInstance() {
+		return false
+	}
+
+	return vmOutput.ReturnMessage == "allocation error"
 }

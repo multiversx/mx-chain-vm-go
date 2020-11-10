@@ -1,0 +1,45 @@
+{
+    "name": "stake_partial_err",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "../main/01a_init_accounts.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "../main/01b_deploy.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "../main/02_add_nodes.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "../main/02c_add_nodes.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "../main/03_stake.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "../main/03c_stake.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "../stake_partial_err/04_activate_partial.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "../stake_partial_err/04c_activate_partial.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "../stake_partial_err/05_claim_failed.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "../stake_partial_err/05c_claim_failed.steps.json"
+        }
+    ]
+}

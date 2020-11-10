@@ -361,8 +361,6 @@ func ethstorageLoad(context unsafe.Pointer, pathOffset int32, resultOffset int32
 	}
 
 	data := storage.GetStorage(key)
-	dataGasToUse := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(data))
-	metering.UseGas(dataGasToUse)
 
 	currInput := make([]byte, arwen.HashLen)
 	copy(currInput[arwen.HashLen-len(data):], data)
@@ -756,7 +754,6 @@ func ethgetBlockDifficulty(context unsafe.Pointer, resultOffset int32) {
 func ethcall(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueOffset int32, dataOffset int32, dataLength int32) int32 {
 	host := arwen.GetVmContext(context)
 	runtime := host.Runtime()
-	output := host.Output()
 	metering := host.Metering()
 
 	gasToUse := metering.GasSchedule().EthAPICost.Call
@@ -783,11 +780,6 @@ func ethcall(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueO
 
 	invBytes := arwen.InverseBytes(value)
 	bigIntVal := big.NewInt(0).SetBytes(invBytes)
-	err = output.Transfer(dest, send, 0, bigIntVal, nil)
-	if err != nil {
-		return 1
-	}
-
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallerAddr:  send,
@@ -812,7 +804,6 @@ func ethcall(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueO
 func ethcallCode(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueOffset int32, dataOffset int32, dataLength int32) int32 {
 	host := arwen.GetVmContext(context)
 	runtime := host.Runtime()
-	output := host.Output()
 	metering := host.Metering()
 
 	gasToUse := metering.GasSchedule().EthAPICost.CallCode
@@ -838,16 +829,12 @@ func ethcallCode(context unsafe.Pointer, gasLimit int64, addressOffset int32, va
 	}
 
 	invBytes := arwen.InverseBytes(value)
-	err = output.Transfer(dest, send, 0, big.NewInt(0).SetBytes(invBytes), nil)
-	if err != nil {
-		return 1
-	}
-
+	bigIntVal := big.NewInt(0).SetBytes(invBytes)
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallerAddr:  send,
 			Arguments:   [][]byte{data},
-			CallValue:   big.NewInt(0).SetBytes(value),
+			CallValue:   bigIntVal,
 			GasPrice:    0,
 			GasProvided: metering.BoundGasLimit(uint64(gasLimit)),
 		},
@@ -867,7 +854,6 @@ func ethcallCode(context unsafe.Pointer, gasLimit int64, addressOffset int32, va
 func ethcallDelegate(context unsafe.Pointer, gasLimit int64, addressOffset int32, dataOffset int32, dataLength int32) int32 {
 	host := arwen.GetVmContext(context)
 	runtime := host.Runtime()
-	output := host.Output()
 	metering := host.Metering()
 
 	gasToUse := metering.GasSchedule().EthAPICost.CallDelegate
@@ -885,11 +871,6 @@ func ethcallDelegate(context unsafe.Pointer, gasLimit int64, addressOffset int32
 	sender := runtime.GetVMInput().CallerAddr
 
 	address, err := runtime.MemLoad(addressOffset, arwen.HashLen)
-	if err != nil {
-		return 1
-	}
-
-	err = output.Transfer(address, sender, 0, value, nil)
 	if err != nil {
 		return 1
 	}
@@ -918,7 +899,6 @@ func ethcallDelegate(context unsafe.Pointer, gasLimit int64, addressOffset int32
 func ethcallStatic(context unsafe.Pointer, gasLimit int64, addressOffset int32, dataOffset int32, dataLength int32) int32 {
 	host := arwen.GetVmContext(context)
 	runtime := host.Runtime()
-	output := host.Output()
 	metering := host.Metering()
 
 	gasToUse := metering.GasSchedule().EthAPICost.CallStatic
@@ -947,11 +927,6 @@ func ethcallStatic(context unsafe.Pointer, gasLimit int64, addressOffset int32, 
 		}
 
 		return 0
-	}
-
-	err = output.Transfer(address, sender, 0, value, nil)
-	if err != nil {
-		return 1
 	}
 
 	runtime.SetReadOnly(true)

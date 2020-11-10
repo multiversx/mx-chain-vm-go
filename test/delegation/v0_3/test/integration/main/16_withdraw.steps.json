@@ -1,0 +1,192 @@
+{
+    "name": "unBondNodes",
+    "steps": [
+        {
+            "step": "scCall",
+            "txId": "15-withdrawInactiveStake-1",
+            "tx": {
+                "from": "''delegator_1___________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "withdrawInactiveStake",
+                "arguments": [
+                    "1,000,000,000,000"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [
+                    {
+                        "address": "''delegation_contract___________s1",
+                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000002",
+                        "topics": [
+                            "''delegator_1___________________s1"
+                        ],
+                        "data": "1,000,000,000,000"
+                    }
+                ],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "16-withdraw-check-1",
+            "tx": {
+                "from": "''someone_______________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "getUserStakeByType",
+                "arguments": [
+                    "''delegator_1___________________s1"
+                ],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "286,000,000,000,000", "0", "0", "0", "0", "0", "111,000,000,000,000", "0", "0", "0"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "15-withdrawInactiveStake-2",
+            "tx": {
+                "from": "''delegator_1___________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "withdrawInactiveStake",
+                "arguments": [
+                    "113,000,000,000,000"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [
+                    {
+                        "address": "''delegation_contract___________s1",
+                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000002",
+                        "topics": [
+                            "''delegator_1___________________s1"
+                        ],
+                        "data": "113,000,000,000,000"
+                    }
+                ],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "16-withdraw-check-2",
+            "tx": {
+                "from": "''someone_______________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "getUserStakeByType",
+                "arguments": [
+                    "''delegator_1___________________s1"
+                ],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "284,000,000,000,000", "0", "0", "0", "0", "0", "0", "0", "0", "0"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "15-withdrawInactiveStake-3",
+            "tx": {
+                "from": "''delegator_1___________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "withdrawInactiveStake",
+                "arguments": [
+                    "284,000,000,000,000"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [
+                    {
+                        "address": "''delegation_contract___________s1",
+                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000002",
+                        "topics": [
+                            "''delegator_1___________________s1"
+                        ],
+                        "data": "284,000,000,000,000"
+                    }
+                ],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "16-withdraw-check-3",
+            "tx": {
+                "from": "''someone_______________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "getUserStakeByType",
+                "arguments": [
+                    "''delegator_1___________________s1"
+                ],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "0", "0", "0", "0", "0", "0", "0", "0", "0", "0"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "16-withdraw-check-total",
+            "tx": {
+                "from": "''someone_______________________s1",
+                "to": "''delegation_contract___________s1",
+                "value": "0",
+                "function": "getTotalStakeByType",
+                "arguments": [],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "46,001,000,000,000", "0", "0", "0", "0", "0", "0", "0", "0", "0"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        }
+    ]
+}

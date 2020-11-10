@@ -27,6 +27,9 @@ type BlockchainHookStub struct {
 	GetUserAccountCalled          func(address []byte) (vmcommon.UserAccountHandler, error)
 	GetShardOfAddressCalled       func(address []byte) uint32
 	IsSmartContractCalled         func(address []byte) bool
+	IsPayableCalled               func(address []byte) (bool, error)
+	GetCompiledCodeCalled         func(codeHash []byte) (bool, []byte)
+	SaveCompiledCodeCalled        func(codeHash []byte, code []byte)
 }
 
 func (b *BlockchainHookStub) NewAddress(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error) {
@@ -167,4 +170,27 @@ func (b *BlockchainHookStub) IsSmartContract(address []byte) bool {
 		return b.IsSmartContractCalled(address)
 	}
 	return false
+}
+
+func (b *BlockchainHookStub) IsPayable(address []byte) (bool, error) {
+	if b.IsPayableCalled != nil {
+		return b.IsPayableCalled(address)
+	}
+	return true, nil
+}
+
+func (b *BlockchainHookStub) SaveCompiledCode(codeHash []byte, code []byte) {
+	if b.SaveCompiledCodeCalled != nil {
+		b.SaveCompiledCodeCalled(codeHash, code)
+	}
+}
+
+func (b *BlockchainHookStub) GetCompiledCode(codeHash []byte) (bool, []byte) {
+	if b.GetCompiledCodeCalled != nil {
+		return b.GetCompiledCodeCalled(codeHash)
+	}
+	return false, nil
+}
+
+func (b *BlockchainHookStub) ClearCompiledCodes() {
 }

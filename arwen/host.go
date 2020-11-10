@@ -3,8 +3,8 @@ package arwen
 import (
 	"unsafe"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 const AddressLen = 32
@@ -12,6 +12,7 @@ const AddressLenEth = 20
 const HashLen = 32
 const ArgumentLenEth = 32
 const BalanceLen = 32
+const CodeMetadataLen = 2
 const InitFunctionName = "init"
 const InitFunctionNameEth = "solidity.ctor"
 const CallBackFunctionName = "callBack"
@@ -44,10 +45,7 @@ func GetVmContext(context unsafe.Pointer) VMHost {
 	instCtx := wasmer.IntoInstanceContext(context)
 	var idx = *(*int)(instCtx.Data())
 
-	ctx := vmContextMap[uint8(idx)]
-	ctx.Runtime().SetInstanceContext(&instCtx)
-
-	return ctx
+	return vmContextMap[uint8(idx)]
 }
 
 func GetBlockchainContext(context unsafe.Pointer) BlockchainContext {
@@ -58,7 +56,7 @@ func GetRuntimeContext(context unsafe.Pointer) RuntimeContext {
 	return GetVmContext(context).Runtime()
 }
 
-func GetCryptoContext(context unsafe.Pointer) vmcommon.CryptoHook {
+func GetCryptoContext(context unsafe.Pointer) crypto.VMCrypto {
 	return GetVmContext(context).Crypto()
 }
 

@@ -2,6 +2,7 @@ package mock
 
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -10,7 +11,7 @@ var _ arwen.VMHost = (*VmHostMock)(nil)
 
 type VmHostMock struct {
 	BlockChainHook vmcommon.BlockchainHook
-	CryptoHook     vmcommon.CryptoHook
+	CryptoHook     crypto.VMCrypto
 
 	EthInput []byte
 
@@ -21,10 +22,11 @@ type VmHostMock struct {
 	StorageContext    arwen.StorageContext
 	BigIntContext     arwen.BigIntContext
 
-	SCAPIMethods *wasmer.Imports
+	SCAPIMethods  *wasmer.Imports
+	IsBuiltinFunc bool
 }
 
-func (host *VmHostMock) Crypto() vmcommon.CryptoHook {
+func (host *VmHostMock) Crypto() crypto.VMCrypto {
 	return host.CryptoHook
 }
 
@@ -52,7 +54,15 @@ func (host *VmHostMock) BigInt() arwen.BigIntContext {
 	return host.BigIntContext
 }
 
-func (host *VmHostMock) CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error) {
+func (host *VmHostMock) IsArwenV2Enabled() bool {
+	return true
+}
+
+func (host *VmHostMock) IsAheadOfTimeCompileEnabled() bool {
+	return true
+}
+
+func (host *VmHostMock) CreateNewContract(_ *vmcommon.ContractCreateInput) ([]byte, error) {
 	return nil, nil
 }
 
@@ -60,8 +70,8 @@ func (host *VmHostMock) ExecuteOnSameContext(input *vmcommon.ContractCallInput) 
 	return nil, nil
 }
 
-func (host *VmHostMock) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *arwen.AsyncContext, error) {
-	return nil, nil, nil
+func (host *VmHostMock) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+	return nil, nil
 }
 
 func (host *VmHostMock) EthereumCallData() []byte {
@@ -88,6 +98,6 @@ func (host *VmHostMock) GetProtocolBuiltinFunctions() vmcommon.FunctionNames {
 	return make(vmcommon.FunctionNames)
 }
 
-func (host *VmHostMock) IsBuiltinFunctionName(functionName string) bool {
-	return false
+func (host *VmHostMock) IsBuiltinFunctionName(_ string) bool {
+	return host.IsBuiltinFunc
 }
