@@ -246,7 +246,7 @@ func BigIntImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	return imports, nil
 }
 
-const maxBigIntByteLenForNormalCost = 20
+const maxBigIntByteLenForNormalCost = 32
 
 func useExtraGasForOperations(metering arwen.MeteringContext, values []*big.Int) {
 	for _, val := range values {
