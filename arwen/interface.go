@@ -33,6 +33,7 @@ type VMHost interface {
 	Storage() StorageContext
 	IsArwenV2Enabled() bool
 	IsAheadOfTimeCompileEnabled() bool
+	IsDynamicGasLockingEnabled() bool
 
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*AsyncContext, error)
@@ -82,6 +83,8 @@ type RuntimeContext interface {
 	SetVMInput(vmInput *vmcommon.VMInput)
 	GetSCAddress() []byte
 	SetSCAddress(scAddress []byte)
+	GetSCCode() ([]byte, error)
+	GetSCCodeSize() uint64
 	GetVMType() []byte
 	Function() string
 	Arguments() [][]byte
@@ -121,6 +124,7 @@ type RuntimeContext interface {
 	ElrondSyncExecAPIErrorShouldFailExecution() bool
 	CryptoAPIErrorShouldFailExecution() bool
 	BigIntAPIErrorShouldFailExecution() bool
+	ExecuteAsyncCall(address []byte, data []byte, value []byte) error
 }
 
 type BigIntContext interface {
@@ -143,7 +147,7 @@ type OutputContext interface {
 	DeleteOutputAccount(address []byte)
 	WriteLog(address []byte, topics [][]byte, data []byte)
 	TransferValueOnly(destination []byte, sender []byte, value *big.Int) error
-	Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte, callType vmcommon.CallType) error
+	Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, input []byte, callType vmcommon.CallType) error
 	SelfDestruct(address []byte, beneficiary []byte)
 	GetRefund() uint64
 	SetRefund(refund uint64)
@@ -172,9 +176,11 @@ type MeteringContext interface {
 	DeductInitialGasForExecution(contract []byte) error
 	DeductInitialGasForDirectDeployment(input CodeDeployInput) error
 	DeductInitialGasForIndirectDeployment(input CodeDeployInput) error
-	DeductAndLockGasIfAsyncStep() error
-	UnlockGasIfAsyncStep()
-	GetGasLockedForAsyncStep() uint64
+	ComputeGasLockedForAsync() uint64
+	UseGasForAsyncStep() error
+	UseGasBounded(gasToUse uint64) error
+	UnlockGasIfAsyncCallback()
+	GetGasLocked() uint64
 }
 
 type StorageStatus int
@@ -201,5 +207,6 @@ type AsyncCallHandler interface {
 	GetDestination() []byte
 	GetData() []byte
 	GetGasLimit() uint64
+	GetGasLocked() uint64
 	GetValueBytes() []byte
 }

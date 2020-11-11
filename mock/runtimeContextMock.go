@@ -12,6 +12,8 @@ type RuntimeContextMock struct {
 	Err                    error
 	VmInput                *vmcommon.VMInput
 	SCAddress              []byte
+	SCCode                 []byte
+	SCCodeSize             uint64
 	CallFunction           string
 	VmType                 []byte
 	ReadOnlyFlag           bool
@@ -101,6 +103,14 @@ func (r *RuntimeContextMock) SetSCAddress(scAddress []byte) {
 	r.SCAddress = scAddress
 }
 
+func (r *RuntimeContextMock) GetSCCode() ([]byte, error) {
+	return r.SCCode, r.Err
+}
+
+func (r *RuntimeContextMock) GetSCCodeSize() uint64 {
+	return r.SCCodeSize
+}
+
 func (r *RuntimeContextMock) Function() string {
 	return r.CallFunction
 }
@@ -139,11 +149,12 @@ func (r *RuntimeContextMock) GetRuntimeBreakpointValue() arwen.BreakpointValue {
 	return r.CurrentBreakpointValue
 }
 
+func (r *RuntimeContextMock) ExecuteAsyncCall(address []byte, data []byte, value []byte) error {
+	return r.Err
+}
+
 func (r *RuntimeContextMock) VerifyContractCode() error {
-	if r.Err != nil {
-		return r.Err
-	}
-	return nil
+	return r.Err
 }
 
 func (r *RuntimeContextMock) GetPointsUsed() uint64 {
@@ -189,10 +200,7 @@ func (r *RuntimeContextMock) MemLoad(_ int32, _ int32) ([]byte, error) {
 }
 
 func (r *RuntimeContextMock) MemStore(_ int32, _ []byte) error {
-	if r.Err != nil {
-		return r.Err
-	}
-	return nil
+	return r.Err
 }
 
 func (r *RuntimeContextMock) ElrondAPIErrorShouldFailExecution() bool {

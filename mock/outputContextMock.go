@@ -130,7 +130,7 @@ func (o *OutputContextMock) TransferValueOnly(_ []byte, _ []byte, _ *big.Int) er
 	return o.TransferResult
 }
 
-func (o *OutputContextMock) Transfer(_ []byte, _ []byte, _ uint64, _ *big.Int, _ []byte, _ vmcommon.CallType) error {
+func (o *OutputContextMock) Transfer(_ []byte, _ []byte, _ uint64, _ uint64, _ *big.Int, _ []byte, _ vmcommon.CallType) error {
 	return o.TransferResult
 }
 

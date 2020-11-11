@@ -5,8 +5,8 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
+const CallbackFunctionName = "callBack"
 const TimeLockKeyPrefix = "timelock"
-const CallbackDefault = "callBack"
 const AsyncDataPrefix = "asyncCalls"
 
 type BreakpointValue uint64
@@ -61,5 +61,6 @@ type VMHostParameters struct {
 	ElrondProtectedKeyPrefix []byte
 	ArwenV2EnableEpoch       uint32
 	AheadOfTimeEnableEpoch   uint32
+	DynGasLockEnableEpoch    uint32
 	UseWarmInstance          bool
 }
