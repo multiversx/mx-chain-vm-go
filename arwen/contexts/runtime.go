@@ -576,6 +576,40 @@ func (context *runtimeContext) ExecuteAsyncCall(address []byte, data []byte, val
 	return nil
 }
 
+func (context *runtimeContext) CreateAndAddAsyncCall(
+	groupID []byte,
+	address []byte,
+	data []byte,
+	value []byte,
+	successCallback []byte,
+	errorCallback []byte,
+	gas uint64,
+) error {
+	metering := context.host.Metering()
+	err := metering.UseGasForAsyncStep()
+
+	gasToLock := uint64(0)
+	shouldLockGas := context.HasCallbackMethod() || !context.host.IsDynamicGasLockingEnabled()
+	if shouldLockGas {
+		gasToLock = metering.ComputeGasLockedForAsync()
+		err = metering.UseGasBounded(gasToLock)
+		if err != nil {
+			return err
+		}
+	}
+
+	return context.AddAsyncCall(groupID, &arwen.AsyncCall{
+		Status:          arwen.AsyncCallPending,
+		Destination:     address,
+		Data:            data,
+		ValueBytes:      value,
+		SuccessCallback: string(successCallback),
+		ErrorCallback:   string(errorCallback),
+		ProvidedGas:     uint64(gas),
+		GasLocked:       gasToLock,
+	})
+}
+
 func (context *runtimeContext) AddAsyncCall(groupID []byte, asyncCall *arwen.AsyncCall) error {
 	if context.host.IsBuiltinFunctionName(asyncCall.SuccessCallback) {
 		return arwen.ErrCannotUseBuiltinAsCallback

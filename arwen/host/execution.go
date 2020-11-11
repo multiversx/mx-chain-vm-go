@@ -7,6 +7,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/contexts"
+	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	"github.com/ElrondNetwork/elrond-go-logger/check"
 	"github.com/ElrondNetwork/elrond-go/core"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -663,14 +664,13 @@ func (host *vmHost) callSCMethod() error {
 		return err
 	}
 
+	err = host.executeCurrentAsyncContext()
+	if err != nil {
+		return err
+	}
+
 	switch callType {
-	case vmcommon.DirectCall:
-		err = host.executeCurrentAsyncContext()
 	case vmcommon.AsynchronousCall:
-		actxError := host.executeCurrentAsyncContext()
-		if actxError != nil {
-			return actxError
-		}
 		err = host.sendAsyncCallbackToCaller()
 	case vmcommon.AsynchronousCallBack:
 		err = host.postprocessCrossShardCallback()
@@ -679,6 +679,41 @@ func (host *vmHost) callSCMethod() error {
 	}
 
 	return err
+}
+
+// TODO move into RuntimeContext
+func (host *vmHost) getFunctionByCallType(callType vmcommon.CallType) (wasmer.ExportedFunctionCallback, error) {
+	runtime := host.Runtime()
+
+	if callType != vmcommon.AsynchronousCallBack {
+		return runtime.GetFunctionToCall()
+	}
+
+	asyncContext, err := host.loadCurrentAsyncContext()
+	if err != nil {
+		return nil, err
+	}
+
+	vmInput := runtime.GetVMInput()
+
+	customCallback := false
+	for _, asyncCallGroup := range asyncContext.AsyncCallGroups {
+		for _, asyncCall := range asyncCallGroup.AsyncCalls {
+			if bytes.Equal(vmInput.CallerAddr, asyncCall.Destination) {
+				customCallback = true
+				// TODO why asyncCall.SuccessCallback? why not check for error as well,
+				// and set asyncCall.ErrorCallback?
+				runtime.SetCustomCallFunction(asyncCall.SuccessCallback)
+				break
+			}
+		}
+
+		if customCallback {
+			break
+		}
+	}
+
+	return runtime.GetFunctionToCall()
 }
 
 func (host *vmHost) verifyAllowedFunctionCall() error {

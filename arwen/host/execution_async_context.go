@@ -1,6 +1,7 @@
 package host
 
 import (
+	"encoding/json"
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -63,6 +64,8 @@ func (host *vmHost) executeCurrentAsyncContext() error {
 			return err
 		}
 	}
+
+	host.saveAsyncContext(asyncContext)
 
 	return nil
 }
@@ -177,6 +180,12 @@ func (host *vmHost) executeSyncCall(asyncCall *arwen.AsyncCall) (*vmcommon.VMOut
 	}
 
 	vmOutput, err := host.ExecuteOnDestContext(destinationCallInput)
+
+	asyncCall.Status = arwen.AsyncCallResolved
+	if vmOutput.ReturnCode != vmcommon.Ok {
+		asyncCall.Status = arwen.AsyncCallRejected
+	}
+
 	return vmOutput, err
 }
 
@@ -186,19 +195,7 @@ func (host *vmHost) executeSyncCallback(
 	err error,
 ) (*vmcommon.VMOutput, error) {
 
-	asyncCall.Status = arwen.AsyncCallResolved
-	callbackFunction := asyncCall.SuccessCallback
-	if vmOutput.ReturnCode != vmcommon.Ok {
-		asyncCall.Status = arwen.AsyncCallRejected
-		callbackFunction = asyncCall.ErrorCallback
-	}
-
-	callbackInput, err := host.createSyncCallbackInput(
-		vmOutput,
-		asyncCall.Destination,
-		callbackFunction,
-		err,
-	)
+	callbackInput, err := host.createSyncCallbackInput(asyncCall, vmOutput, err)
 	if err != nil {
 		return nil, err
 	}
@@ -248,9 +245,8 @@ func (host *vmHost) createSyncCallInput(asyncCall arwen.AsyncCallHandler) (*vmco
 }
 
 func (host *vmHost) createSyncCallbackInput(
+	asyncCall *arwen.AsyncCall,
 	vmOutput *vmcommon.VMOutput,
-	callbackInitiator []byte,
-	callbackFunction string,
 	destinationErr error,
 ) (*vmcommon.ContractCallInput, error) {
 	metering := host.Metering()
@@ -270,7 +266,12 @@ func (host *vmHost) createSyncCallbackInput(
 		arguments = append(arguments, []byte(vmOutput.ReturnMessage))
 	}
 
-	gasLimit := vmOutput.GasRemaining
+	callbackFunction := asyncCall.SuccessCallback
+	if asyncCall.Status == arwen.AsyncCallRejected {
+		callbackFunction = asyncCall.ErrorCallback
+	}
+
+	gasLimit := vmOutput.GasRemaining + asyncCall.GetGasLocked()
 	dataLength := host.computeDataLengthFromArguments(callbackFunction, arguments)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.AsyncCallStep
@@ -283,7 +284,7 @@ func (host *vmHost) createSyncCallbackInput(
 	// Return to the sender SC, calling its specified callback method.
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
-			CallerAddr:     callbackInitiator,
+			CallerAddr:     asyncCall.Destination,
 			Arguments:      arguments,
 			CallValue:      big.NewInt(0),
 			CallType:       vmcommon.AsynchronousCallBack,
@@ -307,6 +308,7 @@ func (host *vmHost) sendAsyncCallCrossShard(asyncCall arwen.AsyncCallHandler) er
 		asyncCall.GetDestination(),
 		runtime.GetSCAddress(),
 		asyncCall.GetGasLimit(),
+		asyncCall.GetGasLocked(),
 		big.NewInt(0).SetBytes(asyncCall.GetValueBytes()),
 		asyncCall.GetData(),
 		vmcommon.AsynchronousCall,
@@ -390,6 +392,31 @@ func (host *vmHost) finishSyncExecution(vmOutput *vmcommon.VMOutput, err error) 
 
 	output.Finish([]byte(vmOutput.ReturnCode.String()))
 	output.Finish(runtime.GetCurrentTxHash())
+}
+
+/**
+ * saveAsyncContext takes a list of pending async calls and save them to storage so the info will be available on callback
+ */
+func (host *vmHost) saveAsyncContext(asyncContext *arwen.AsyncContext) error {
+	if len(asyncContext.AsyncCallGroups) == 0 {
+		return nil
+	}
+
+	storage := host.Storage()
+	runtime := host.Runtime()
+
+	asyncCallStorageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, runtime.GetOriginalTxHash())
+	data, err := json.Marshal(asyncContext)
+	if err != nil {
+		return err
+	}
+
+	_, err = storage.SetStorage(asyncCallStorageKey, data)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (host *vmHost) computeDataLengthFromArguments(function string, arguments [][]byte) int {

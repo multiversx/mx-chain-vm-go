@@ -1,19 +1,20 @@
 package host
 
 import (
-	"bytes"
 	"encoding/hex"
 	"encoding/json"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
 
 func (host *vmHost) handleAsyncCallBreakpoint() error {
 	runtime := host.Runtime()
 	runtime.SetRuntimeBreakpointValue(arwen.BreakpointNone)
 
+	// TODO ensure the default async call is deleted either by
+	// executeSyncCallback() or by postprocessCrossShardCallback()
 	asyncCall := runtime.GetDefaultAsyncCall()
 	err := host.executeAsyncCall(asyncCall, false)
 	if err != nil {
@@ -43,6 +44,7 @@ func (host *vmHost) sendAsyncCallbackToCaller() error {
 		currentCall.CallerAddr,
 		runtime.GetSCAddress(),
 		metering.GasLeft(),
+		0,
 		currentCall.CallValue,
 		retData,
 		vmcommon.AsynchronousCallBack,
@@ -66,6 +68,7 @@ func (host *vmHost) sendContextCallbackToOriginalCaller(asyncContext *arwen.Asyn
 		asyncContext.CallerAddr,
 		runtime.GetSCAddress(),
 		metering.GasLeft(),
+		0,
 		currentCall.CallValue,
 		asyncContext.ReturnData,
 		vmcommon.AsynchronousCallBack,
@@ -82,19 +85,19 @@ func (host *vmHost) sendContextCallbackToOriginalCaller(asyncContext *arwen.Asyn
 /**
  * postprocessCrossShardCallback() is called by host.callSCMethod() after it
  * has locally executed the callback of a returning cross-shard AsyncCall,
- * which means that the corresponding AsyncCall must be deleted from the
- * current AsyncContext.
+ * which means that the AsyncContext corresponding to the original transaction
+ * must be loaded from storage, and then the corresponding AsyncCall must be
+ * deleted from the current AsyncContext.
 
- * Moreover, because individual AsyncCalls are contained by AsyncCallGroups, we
+ * TODO because individual AsyncCalls are contained by AsyncCallGroups, we
  * must verify whether the containing AsyncCallGroup has any remaining calls
  * pending. If not, the final callback of the containing AsyncCallGroup must be
- * executed as well (note, though, that callbacks of AsyncCallGroups are
- * currently disabled).
+ * executed as well.
  */
 func (host *vmHost) postprocessCrossShardCallback() error {
 	runtime := host.Runtime()
 
-	asyncContext, err := host.getCurrentAsyncContext()
+	asyncContext, err := host.loadCurrentAsyncContext()
 	if err != nil {
 		return err
 	}
@@ -113,6 +116,8 @@ func (host *vmHost) postprocessCrossShardCallback() error {
 	if currentCallGroup.HasPendingCalls() {
 		return nil
 	}
+
+	asyncContext.DeleteAsyncCallGroup(currentGroupID)
 
 	// Are we still waiting for callbacks to return?
 	if asyncContext.HasPendingCallGroups() {
@@ -141,15 +146,7 @@ func (host *vmHost) executeAsyncContextCallback(asyncContext *arwen.AsyncContext
 	}
 
 	// The caller is in the same shard, execute its callback
-	callbackCallInput, err := host.createSyncCallbackInput(
-		host.Output().GetVMOutput(),
-		asyncContext.CallerAddr,
-		arwen.CallbackDefault,
-		nil,
-	)
-	if err != nil {
-		return err
-	}
+	callbackCallInput := host.createSyncContextCallbackInput(asyncContext)
 
 	callbackVMOutput, callBackErr := host.ExecuteOnDestContext(callbackCallInput)
 	host.finishSyncExecution(callbackVMOutput, callBackErr)
@@ -157,42 +154,34 @@ func (host *vmHost) executeAsyncContextCallback(asyncContext *arwen.AsyncContext
 	return nil
 }
 
-// TODO move into RuntimeContext
-func (host *vmHost) getFunctionByCallType(callType vmcommon.CallType) (wasmer.ExportedFunctionCallback, error) {
+func (host *vmHost) createSyncContextCallbackInput(asyncContext *arwen.AsyncContext) *vmcommon.ContractCallInput {
 	runtime := host.Runtime()
+	metering := host.Metering()
 
-	if callType != vmcommon.AsynchronousCallBack {
-		return runtime.GetFunctionToCall()
-	}
-
-	asyncContext, err := host.getCurrentAsyncContext()
+	argParser := parsers.NewCallArgsParser()
+	_, arguments, err := argParser.ParseData(string(asyncContext.ReturnData))
 	if err != nil {
-		return nil, err
+		arguments = [][]byte{asyncContext.ReturnData}
 	}
 
-	vmInput := runtime.GetVMInput()
-
-	customCallback := false
-	for _, asyncCallGroup := range asyncContext.AsyncCallGroups {
-		for _, asyncCall := range asyncCallGroup.AsyncCalls {
-			if bytes.Equal(vmInput.CallerAddr, asyncCall.Destination) {
-				customCallback = true
-				// TODO why asyncCall.SuccessCallback? why not check for error as well,
-				// and set asyncCall.ErrorCallback?
-				runtime.SetCustomCallFunction(asyncCall.SuccessCallback)
-				break
-			}
-		}
-
-		if customCallback {
-			break
-		}
+	input := &vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			CallerAddr:     runtime.GetSCAddress(),
+			Arguments:      arguments,
+			CallValue:      runtime.GetVMInput().CallValue,
+			CallType:       vmcommon.AsynchronousCallBack,
+			GasPrice:       runtime.GetVMInput().GasPrice,
+			GasProvided:    metering.GasLeft(),
+			CurrentTxHash:  runtime.GetCurrentTxHash(),
+			OriginalTxHash: runtime.GetOriginalTxHash(),
+		},
+		RecipientAddr: asyncContext.CallerAddr,
+		Function:      arwen.CallbackFunctionName, // TODO currently default; will customize in AsynContext
 	}
-
-	return runtime.GetFunctionToCall()
+	return input
 }
 
-func (host *vmHost) getCurrentAsyncContext() (*arwen.AsyncContext, error) {
+func (host *vmHost) loadCurrentAsyncContext() (*arwen.AsyncContext, error) {
 	runtime := host.Runtime()
 	storage := host.Storage()
 

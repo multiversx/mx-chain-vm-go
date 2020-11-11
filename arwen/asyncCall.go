@@ -28,6 +28,11 @@ func (ac *AsyncCall) GetGasLimit() uint64 {
 	return ac.GasLimit
 }
 
+// GetGasLimit returns the gas limit of the current async call
+func (ac *AsyncCall) GetGasLocked() uint64 {
+	return ac.GasLocked
+}
+
 // GetValueBytes returns the byte representation of the value of the async call
 func (ac *AsyncCall) GetValueBytes() []byte {
 	return ac.ValueBytes
