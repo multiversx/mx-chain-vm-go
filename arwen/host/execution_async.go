@@ -4,12 +4,10 @@ import (
 	"bytes"
 	"encoding/hex"
 	"encoding/json"
-	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
 
 func (host *vmHost) handleAsyncCallBreakpoint() error {
@@ -19,32 +17,6 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 	asyncCall := runtime.GetDefaultAsyncCall()
 	err := host.executeAsyncCall(asyncCall, false)
 	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (host *vmHost) canExecuteSynchronously(destination []byte, _ []byte) bool {
-	panic("remove this function")
-}
-
-func (host *vmHost) sendAsyncCallToDestination(asyncCall arwen.AsyncCallHandler) error {
-	runtime := host.Runtime()
-	output := host.Output()
-
-	err := output.Transfer(
-		asyncCall.GetDestination(),
-		runtime.GetSCAddress(),
-		asyncCall.GetGasLimit(),
-		big.NewInt(0).SetBytes(asyncCall.GetValueBytes()),
-		asyncCall.GetData(),
-		vmcommon.AsynchronousCall,
-	)
-	if err != nil {
-		metering := host.Metering()
-		metering.UseGas(metering.GasLeft())
-		runtime.FailExecution(err)
 		return err
 	}
 
@@ -101,164 +73,6 @@ func (host *vmHost) sendContextCallbackToOriginalCaller(asyncContext *arwen.Asyn
 	if err != nil {
 		metering.UseGas(metering.GasLeft())
 		runtime.FailExecution(err)
-		return err
-	}
-
-	return nil
-}
-
-func (host *vmHost) createDestinationContractCallInput(asyncCall arwen.AsyncCallHandler) (*vmcommon.ContractCallInput, error) {
-	runtime := host.Runtime()
-	sender := runtime.GetSCAddress()
-
-	argParser := parsers.NewCallArgsParser()
-	function, arguments, err := argParser.ParseData(string(asyncCall.GetData()))
-	if err != nil {
-		return nil, err
-	}
-
-	gasLimit := asyncCall.GetGasLimit()
-	gasToUse := host.Metering().GasSchedule().ElrondAPICost.AsyncCallStep
-	if gasLimit <= gasToUse {
-		return nil, arwen.ErrNotEnoughGas
-	}
-	gasLimit -= gasToUse
-
-	contractCallInput := &vmcommon.ContractCallInput{
-		VMInput: vmcommon.VMInput{
-			CallerAddr:     sender,
-			Arguments:      arguments,
-			CallValue:      big.NewInt(0).SetBytes(asyncCall.GetValueBytes()),
-			CallType:       vmcommon.AsynchronousCall,
-			GasPrice:       runtime.GetVMInput().GasPrice,
-			GasProvided:    gasLimit,
-			CurrentTxHash:  runtime.GetCurrentTxHash(),
-			OriginalTxHash: runtime.GetOriginalTxHash(),
-		},
-		RecipientAddr: asyncCall.GetDestination(),
-		Function:      function,
-	}
-
-	return contractCallInput, nil
-}
-
-func (host *vmHost) createCallbackContractCallInput(
-	destinationVMOutput *vmcommon.VMOutput,
-	callbackInitiator []byte,
-	callbackFunction string,
-	destinationErr error,
-) (*vmcommon.ContractCallInput, error) {
-	metering := host.Metering()
-	runtime := host.Runtime()
-
-	// always provide return code as the first argument to callback function
-	arguments := [][]byte{
-		big.NewInt(int64(destinationVMOutput.ReturnCode)).Bytes(),
-	}
-	if destinationErr == nil && destinationVMOutput.ReturnCode == vmcommon.Ok {
-		// when execution went Ok, callBack arguments are:
-		// [0, result1, result2, ....]
-		arguments = append(arguments, destinationVMOutput.ReturnData...)
-	} else {
-		// when execution returned error, callBack arguments are:
-		// [error code, error message]
-		arguments = append(arguments, []byte(destinationVMOutput.ReturnMessage))
-	}
-
-	gasLimit := destinationVMOutput.GasRemaining
-	dataLength := host.computeDataLengthFromArguments(callbackFunction, arguments)
-
-	gasToUse := metering.GasSchedule().ElrondAPICost.AsyncCallStep
-	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(dataLength)
-	if gasLimit <= gasToUse {
-		return nil, arwen.ErrNotEnoughGas
-	}
-	gasLimit -= gasToUse
-
-	// Return to the sender SC, calling its specified callback method.
-	contractCallInput := &vmcommon.ContractCallInput{
-		VMInput: vmcommon.VMInput{
-			CallerAddr:     callbackInitiator,
-			Arguments:      arguments,
-			CallValue:      big.NewInt(0),
-			CallType:       vmcommon.AsynchronousCallBack,
-			GasPrice:       runtime.GetVMInput().GasPrice,
-			GasProvided:    gasLimit,
-			CurrentTxHash:  runtime.GetCurrentTxHash(),
-			OriginalTxHash: runtime.GetOriginalTxHash(),
-		},
-		RecipientAddr: runtime.GetSCAddress(),
-		Function:      callbackFunction,
-	}
-
-	return contractCallInput, nil
-}
-
-/**
- * processAsyncCall executes an async call and processes the callback if no extra calls are pending
- */
-func (host *vmHost) processAsyncCall(asyncCall *arwen.AsyncCall) error {
-	input, _ := host.createSyncCallInput(asyncCall)
-	output, executionError := host.ExecuteOnDestContext(input)
-
-	pendingMap := host.Runtime().GetAsyncContext().MakeAsyncContextWithPendingCalls()
-	if len(pendingMap.AsyncCallGroups) == 0 {
-		return host.callbackAsync(asyncCall, output, executionError)
-	}
-
-	return executionError
-}
-
-/**
- * callbackAsync will execute a callback from an async call that was ran on this host and set it's status to resolved or rejected
- */
-func (host *vmHost) callbackAsync(asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput, executionError error) error {
-	asyncCall.Status = arwen.AsyncCallResolved
-	callbackFunction := asyncCall.SuccessCallback
-	if vmOutput.ReturnCode != vmcommon.Ok {
-		asyncCall.Status = arwen.AsyncCallRejected
-		callbackFunction = asyncCall.ErrorCallback
-	}
-
-	callbackCallInput, err := host.createSyncCallbackInput(
-		vmOutput,
-		asyncCall.Destination,
-		callbackFunction,
-		executionError,
-	)
-	if err != nil {
-		return err
-	}
-
-	// Callback omits for now any async call - TODO: take into consideration async calls generated from callbacks
-	callbackVMOutput, callBackErr := host.ExecuteOnDestContext(callbackCallInput)
-	host.finishSyncExecution(callbackVMOutput, callBackErr)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-/**
- * saveAsyncContext takes a list of pending async calls and save them to storage so the info will be available on callback
- */
-func (host *vmHost) saveAsyncContext(asyncContext *arwen.AsyncContext) error {
-	if len(asyncContext.AsyncCallGroups) == 0 {
-		return nil
-	}
-
-	storage := host.Storage()
-	runtime := host.Runtime()
-
-	asyncCallStorageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, runtime.GetOriginalTxHash())
-	data, err := json.Marshal(asyncContext)
-	if err != nil {
-		return err
-	}
-
-	_, err = storage.SetStorage(asyncCallStorageKey, data)
-	if err != nil {
 		return err
 	}
 

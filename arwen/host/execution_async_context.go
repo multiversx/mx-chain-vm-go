@@ -111,7 +111,7 @@ func (host *vmHost) executeAsyncCall(
 		// into the main output (such as OutputAccounts).
 		callbackVMOutput, callbackErr := host.executeSyncCallback(asyncCall, vmOutput, err)
 		host.finishSyncExecution(callbackVMOutput, callbackErr)
-		return err
+		return nil
 	}
 
 	if syncExecutionOnly {
@@ -208,6 +208,7 @@ func (host *vmHost) executeSyncCallback(
 }
 
 func (host *vmHost) executeAsyncCallGroupCallback(asyncCallGroup *arwen.AsyncCallGroup) error {
+	// TODO implement this
 	return nil
 }
 

@@ -155,12 +155,10 @@ func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 
 	host.InitState()
 	_ = host.Runtime().StartWasmerInstance(dummyCode, input.GasProvided, true)
-	vmOutput, asyncInfo, err := host.ExecuteOnDestContext(input)
+	vmOutput, err := host.ExecuteOnDestContext(input)
 
 	require.Nil(t, err)
 	require.NotNil(t, vmOutput)
-
-	require.Zero(t, len(asyncInfo.AsyncContextMap))
 
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 	host.Clean()

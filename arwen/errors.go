@@ -93,8 +93,6 @@ var ErrUnknownCallType = errors.New("unknown call type")
 
 var ErrCannotUseBuiltinAsCallback = errors.New("cannot use built-in function as callback")
 
-var ErrInvalidAccount = errors.New("account does not exist")
-
 var ErrDeploymentOverExistingAccount = errors.New("cannot deploy over existing account")
 
 var ErrAccountNotPayable = errors.New("sending value to non payable contract")

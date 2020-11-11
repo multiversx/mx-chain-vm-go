@@ -588,6 +588,7 @@ func createAsyncCall(context unsafe.Pointer,
 	}
 }
 
+// TODO rename to setAsyncCallGroupCallback
 //export setAsyncContextCallback
 func setAsyncContextCallback(context unsafe.Pointer,
 	groupIDOffset int32,
@@ -595,34 +596,34 @@ func setAsyncContextCallback(context unsafe.Pointer,
 	callback int32,
 	callbackLength int32,
 ) int32 {
-	host := arwen.GetVmContext(context)
-	runtime := host.Runtime()
-	// TODO consume gas
+	// host := arwen.GetVmContext(context)
+	// runtime := host.Runtime()
+	// // TODO consume gas
 
-	groupID, err := runtime.MemLoad(groupIDOffset, identifierLength)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return -1
-	}
+	// groupID, err := runtime.MemLoad(groupIDOffset, identifierLength)
+	// if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	// 	return -1
+	// }
 
-	asyncCallGroup, err := runtime.GetAsyncCallGroup(groupID)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return -1
-	}
+	// asyncCallGroup, err := runtime.GetAsyncCallGroup(groupID)
+	// if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	// 	return -1
+	// }
 
-	callbackFunc, err := runtime.MemLoad(callback, callbackLength)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return -1
-	}
+	// callbackFunc, err := runtime.MemLoad(callback, callbackLength)
+	// if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	// 	return -1
+	// }
 
-	strCallbackFunc := string(callbackFunc)
-	if host.IsBuiltinFunctionName(strCallbackFunc) {
-		err := arwen.ErrCannotUseBuiltinAsCallback
-		arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
-		return -1
-	}
+	// strCallbackFunc := string(callbackFunc)
+	// if host.IsBuiltinFunctionName(strCallbackFunc) {
+	// 	err := arwen.ErrCannotUseBuiltinAsCallback
+	// 	arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
+	// 	return -1
+	// }
 
 	// TODO set gas limit as well
-	asyncCallGroup.Callback = string(callbackFunc)
+	// asyncCallGroup.Callback = string(callbackFunc)
 
 	return 0
 }
@@ -647,10 +648,10 @@ func upgradeContract(
 	gasToUse := metering.GasSchedule().ElrondAPICost.CreateContract
 	metering.UseGas(gasToUse)
 
-	value, err := runtime.MemLoad(valueOffset, arwen.BalanceLen)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return
-	}
+	// value, err := runtime.MemLoad(valueOffset, arwen.BalanceLen)
+	// if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	// 	return
+	// }
 
 	code, err := runtime.MemLoad(codeOffset, length)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -682,10 +683,10 @@ func upgradeContract(
 	gasToUse = gasSchedule.ElrondAPICost.AsyncCallStep
 	metering.UseGas(gasToUse)
 
-	calledSCAddress, err := runtime.MemLoad(destOffset, arwen.AddressLen)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return
-	}
+	// calledSCAddress, err := runtime.MemLoad(destOffset, arwen.AddressLen)
+	// if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	// 	return
+	// }
 
 	gasToUse = gasSchedule.BaseOperationCost.DataCopyPerByte * uint64(length)
 	metering.UseGas(gasToUse)
@@ -695,6 +696,8 @@ func upgradeContract(
 		runtime.SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
 		return
 	}
+
+	// TODO replace the following code with runtime.AddAsyncCall()
 
 	// Set up the async call as if it is not known whether the called SC
 	// is in the same shard with the caller or not. This will be later resolved
@@ -706,12 +709,12 @@ func upgradeContract(
 		finalData += "@" + string(arg)
 	}
 
-	runtime.SetAsyncCallInfo(&arwen.AsyncCallInfo{
-		Destination: calledSCAddress,
-		Data:        []byte(finalData),
-		GasLimit:    uint64(gasLimit),
-		ValueBytes:  value,
-	})
+	// runtime.SetAsyncCallInfo(&arwen.AsyncCallInfo{
+	// 	Destination: calledSCAddress,
+	// 	Data:        []byte(finalData),
+	// 	GasLimit:    uint64(gasLimit),
+	// 	ValueBytes:  value,
+	// })
 
 	// Instruct Wasmer to interrupt the execution of the caller SC.
 	runtime.SetRuntimeBreakpointValue(arwen.BreakpointAsyncCall)
@@ -1419,7 +1422,7 @@ func executeOnDestContext(
 		Function:      function,
 	}
 
-	_, _, err = host.ExecuteOnDestContext(contractCallInput)
+	_, err = host.ExecuteOnDestContext(contractCallInput)
 	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -1674,7 +1677,7 @@ func createContract(
 			Arguments:   data,
 			CallValue:   big.NewInt(0).SetBytes(value),
 			GasPrice:    0,
-			GasProvided: metering.BoundGasLimit(gasLimit),
+			GasProvided: metering.BoundGasLimit(uint64(gasLimit)),
 		},
 		ContractCode:         code,
 		ContractCodeMetadata: codeMetadata,

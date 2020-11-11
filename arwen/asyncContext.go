@@ -30,7 +30,7 @@ func (actx *AsyncContext) MakeAsyncContextWithPendingCalls() *AsyncContext {
 			pendingGroup, ok := pendingGroups[groupID]
 			if !ok {
 				pendingGroup = &AsyncCallGroup{
-					Callback:   asyncCallGroup.Callback,
+					// Callback:   asyncCallGroup.Callback,
 					AsyncCalls: make([]*AsyncCall, 0),
 				}
 				pendingGroups[groupID] = pendingGroup

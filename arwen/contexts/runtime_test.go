@@ -3,6 +3,7 @@ package contexts
 import (
 	"errors"
 	"fmt"
+	"math/big"
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -28,11 +29,15 @@ func MakeAPIImports() *wasmer.Imports {
 	if err != nil {
 		fmt.Println("API Imports error =", err)
 	}
+	imports, err = elrondapi.SmallIntImports(imports)
+	if err != nil {
+		fmt.Println("API Imports error =", err)
+	}
 	imports, err = ethapi.EthereumImports(imports)
 	if err != nil {
 		fmt.Println("API Imports error =", err)
 	}
-	imports, err = crypto.CryptoImports(imports)
+	imports, err = cryptoapi.CryptoImports(imports)
 	if err != nil {
 		fmt.Println("API Imports error =", err)
 	}
