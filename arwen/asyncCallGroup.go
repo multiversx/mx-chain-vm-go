@@ -3,7 +3,8 @@ package arwen
 // AsyncCallGroup is a structure containing a group of async calls and a callback
 // that should be called when all these async calls are resolved
 type AsyncCallGroup struct {
-	Callback   string
+	// TODO re-enable AsyncCallGroup.Callback after the rest of the functionality works
+	// Callback string
 	AsyncCalls []*AsyncCall
 }
 

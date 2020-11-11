@@ -178,7 +178,7 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 		return
 	}
 
-	err = host.executeAsyncContext()
+	err = host.executeCurrentAsyncContext()
 	return
 }
 
@@ -395,7 +395,7 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newC
 		AllowInitFunction: true,
 		VMInput:           input.VMInput,
 	}
-	vmOutput, _, err := host.ExecuteOnDestContext(initCallInput)
+	vmOutput, err := host.ExecuteOnDestContext(initCallInput)
 	if err != nil {
 		return
 	}
@@ -669,15 +669,13 @@ func (host *vmHost) callSCMethod() error {
 
 	switch callType {
 	case vmcommon.DirectCall:
-		_, err = host.processAsyncContext(runtime.GetAsyncContext())
+		err = host.executeCurrentAsyncContext()
 	case vmcommon.AsynchronousCall:
-		pendingAsyncContext, paiErr := host.processAsyncContext(runtime.GetAsyncContext())
-		if paiErr != nil {
-			return paiErr
+		actxError := host.executeCurrentAsyncContext()
+		if actxError != nil {
+			return actxError
 		}
-		if len(pendingAsyncContext.AsyncCallGroups) == 0 {
-			err = host.sendCallbackToCurrentCaller()
-		}
+		err = host.sendAsyncCallbackToCaller()
 	case vmcommon.AsynchronousCallBack:
 		err = host.postprocessCrossShardCallback()
 	default:
