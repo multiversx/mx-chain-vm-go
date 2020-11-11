@@ -1,5 +1,5 @@
 {
-    "name": "echo_u64",
+    "name": "echo_big_int",
     "steps": [
         {
             "step": "setState",
@@ -25,7 +25,7 @@
                 "from": "address:an_account",
                 "to": "address:features_contract",
                 "value": "0",
-                "function": "echo_u64",
+                "function": "echo_big_int",
                 "arguments": [
                     "0"
                 ],
@@ -49,7 +49,7 @@
                 "from": "address:an_account",
                 "to": "address:features_contract",
                 "value": "0",
-                "function": "echo_u64",
+                "function": "echo_big_int",
                 "arguments": [
                     "5"
                 ],
@@ -73,16 +73,16 @@
                 "from": "address:an_account",
                 "to": "address:features_contract",
                 "value": "0",
-                "function": "echo_u64",
+                "function": "echo_big_int",
                 "arguments": [
-                    "0xc8"
+                    "-3"
                 ],
                 "gasLimit": "0x100000",
                 "gasPrice": "0x01"
             },
             "expect": {
                 "out": [
-                    "0xc8"
+                    "0xfd"
                 ],
                 "status": "",
                 "logs": [],
@@ -97,16 +97,16 @@
                 "from": "address:an_account",
                 "to": "address:features_contract",
                 "value": "0",
-                "function": "echo_u64",
+                "function": "echo_big_int",
                 "arguments": [
-                    "0xffffffffffffffff"
+                    "0x010000000000000000"
                 ],
                 "gasLimit": "0x100000",
                 "gasPrice": "0x01"
             },
             "expect": {
                 "out": [
-                    "0xffffffffffffffff"
+                    "0x010000000000000000"
                 ],
                 "status": "",
                 "logs": [],
@@ -121,17 +121,112 @@
                 "from": "address:an_account",
                 "to": "address:features_contract",
                 "value": "0",
-                "function": "echo_u64",
+                "function": "echo_big_int",
                 "arguments": [
-                    "0x010000000000000000"
+                    "0xffffffffffffffff"
                 ],
                 "gasLimit": "0x100000",
                 "gasPrice": "0x01"
             },
             "expect": {
-                "out": [],
-                "status": "*",
-                "message": "str:argument out of range",
+                "out": [
+                    "0xff"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "6",
+            "tx": {
+                "from": "address:an_account",
+                "to": "address:features_contract",
+                "value": "0",
+                "function": "echo_big_int",
+                "arguments": [
+                    "0x7fffffffffffffff"
+                ],
+                "gasLimit": "0x100000",
+                "gasPrice": "0x01"
+            },
+            "expect": {
+                "out": [
+                    "0x7fffffffffffffff"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "7",
+            "tx": {
+                "from": "address:an_account",
+                "to": "address:features_contract",
+                "value": "0",
+                "function": "echo_big_int",
+                "arguments": [
+                    "+9223372036854775808"
+                ],
+                "gasLimit": "0x100000",
+                "gasPrice": "0x01"
+            },
+            "expect": {
+                "out": [
+                    "+9223372036854775808"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "8",
+            "tx": {
+                "from": "address:an_account",
+                "to": "address:features_contract",
+                "value": "0",
+                "function": "echo_big_int",
+                "arguments": [
+                    "-9223372036854775809"
+                ],
+                "gasLimit": "0x100000",
+                "gasPrice": "0x01"
+            },
+            "expect": {
+                "out": [
+                    "-9223372036854775809"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "9-zero",
+            "tx": {
+                "from": "address:an_account",
+                "to": "address:features_contract",
+                "value": "0",
+                "function": "echo_big_int",
+                "arguments": [
+                    "0x00"
+                ],
+                "gasLimit": "0x100000",
+                "gasPrice": "0x01"
+            },
+            "expect": {
+                "out": [ "0" ],
+                "status": "0",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"
@@ -141,8 +236,8 @@
             "step": "checkState",
             "accounts": {
                 "address:features_contract": {
-                    "nonce": "0",
-                    "balance": "0x100",
+                    "nonce": "*",
+                    "balance": "*",
                     "storage": {},
                     "code": "file:../output/features.wasm"
                 },
