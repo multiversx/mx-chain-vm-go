@@ -51,6 +51,7 @@ package elrondapi
 import "C"
 
 import (
+	"math/big"
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -243,6 +244,17 @@ func BigIntImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	}
 
 	return imports, nil
+}
+
+const maxBigIntByteLenForNormalCost = 32
+
+func useExtraGasForOperations(metering arwen.MeteringContext, values []*big.Int) {
+	for _, val := range values {
+		byteLen := val.BitLen() / 8
+		if byteLen > maxBigIntByteLenForNormalCost {
+			metering.UseGas(uint64(byteLen) * metering.GasSchedule().BaseOperationCost.DataCopyPerByte)
+		}
+	}
 }
 
 //export bigIntGetUnsignedArgument
@@ -558,6 +570,7 @@ func bigIntAdd(context unsafe.Pointer, destination, op1, op2 int32) {
 	metering.UseGas(gasToUse)
 
 	dest, a, b := bigInt.GetThree(destination, op1, op2)
+	useExtraGasForOperations(metering, []*big.Int{dest, a, b})
 	dest.Add(a, b)
 }
 
@@ -570,6 +583,7 @@ func bigIntSub(context unsafe.Pointer, destination, op1, op2 int32) {
 	metering.UseGas(gasToUse)
 
 	dest, a, b := bigInt.GetThree(destination, op1, op2)
+	useExtraGasForOperations(metering, []*big.Int{dest, a, b})
 	dest.Sub(a, b)
 }
 
@@ -582,6 +596,7 @@ func bigIntMul(context unsafe.Pointer, destination, op1, op2 int32) {
 	metering.UseGas(gasToUse)
 
 	dest, a, b := bigInt.GetThree(destination, op1, op2)
+	useExtraGasForOperations(metering, []*big.Int{dest, a, b})
 	dest.Mul(a, b)
 }
 
@@ -594,6 +609,7 @@ func bigIntTDiv(context unsafe.Pointer, destination, op1, op2 int32) {
 	metering.UseGas(gasToUse)
 
 	dest, a, b := bigInt.GetThree(destination, op1, op2)
+	useExtraGasForOperations(metering, []*big.Int{dest, a, b})
 	if b.Sign() == 0 {
 		runtime := arwen.GetRuntimeContext(context)
 		arwen.WithFault(arwen.ErrDivZero, context, runtime.BigIntAPIErrorShouldFailExecution())
@@ -611,6 +627,7 @@ func bigIntTMod(context unsafe.Pointer, destination, op1, op2 int32) {
 	metering.UseGas(gasToUse)
 
 	dest, a, b := bigInt.GetThree(destination, op1, op2)
+	useExtraGasForOperations(metering, []*big.Int{dest, a, b})
 	if b.Sign() == 0 {
 		runtime := arwen.GetRuntimeContext(context)
 		arwen.WithFault(arwen.ErrDivZero, context, runtime.BigIntAPIErrorShouldFailExecution())
@@ -628,6 +645,7 @@ func bigIntEDiv(context unsafe.Pointer, destination, op1, op2 int32) {
 	metering.UseGas(gasToUse)
 
 	dest, a, b := bigInt.GetThree(destination, op1, op2)
+	useExtraGasForOperations(metering, []*big.Int{dest, a, b})
 	if b.Sign() == 0 {
 		runtime := arwen.GetRuntimeContext(context)
 		arwen.WithFault(arwen.ErrDivZero, context, runtime.BigIntAPIErrorShouldFailExecution())
@@ -645,6 +663,7 @@ func bigIntEMod(context unsafe.Pointer, destination, op1, op2 int32) {
 	metering.UseGas(gasToUse)
 
 	dest, a, b := bigInt.GetThree(destination, op1, op2)
+	useExtraGasForOperations(metering, []*big.Int{dest, a, b})
 	if b.Sign() == 0 {
 		runtime := arwen.GetRuntimeContext(context)
 		arwen.WithFault(arwen.ErrDivZero, context, runtime.BigIntAPIErrorShouldFailExecution())
@@ -662,6 +681,7 @@ func bigIntAbs(context unsafe.Pointer, destination, op int32) {
 	metering.UseGas(gasToUse)
 
 	dest, a := bigInt.GetTwo(destination, op)
+	useExtraGasForOperations(metering, []*big.Int{dest, a})
 	dest.Abs(a)
 }
 
@@ -674,6 +694,7 @@ func bigIntNeg(context unsafe.Pointer, destination, op int32) {
 	metering.UseGas(gasToUse)
 
 	dest, a := bigInt.GetTwo(destination, op)
+	useExtraGasForOperations(metering, []*big.Int{dest, a})
 	dest.Neg(a)
 }
 
@@ -686,6 +707,7 @@ func bigIntSign(context unsafe.Pointer, op int32) int32 {
 	metering.UseGas(gasToUse)
 
 	a := bigInt.GetOne(op)
+	useExtraGasForOperations(metering, []*big.Int{a})
 	return int32(a.Sign())
 }
 
@@ -698,6 +720,7 @@ func bigIntCmp(context unsafe.Pointer, op1, op2 int32) int32 {
 	metering.UseGas(gasToUse)
 
 	a, b := bigInt.GetTwo(op1, op2)
+	useExtraGasForOperations(metering, []*big.Int{a, b})
 	return int32(a.Cmp(b))
 }
 
@@ -710,6 +733,7 @@ func bigIntNot(context unsafe.Pointer, destination, op int32) {
 	metering.UseGas(gasToUse)
 
 	dest, a := bigInt.GetTwo(destination, op)
+	useExtraGasForOperations(metering, []*big.Int{dest, a})
 	if a.Sign() < 0 {
 		runtime := arwen.GetRuntimeContext(context)
 		arwen.WithFault(arwen.ErrBitwiseNegative, context, runtime.BigIntAPIErrorShouldFailExecution())
@@ -727,6 +751,7 @@ func bigIntAnd(context unsafe.Pointer, destination, op1, op2 int32) {
 	metering.UseGas(gasToUse)
 
 	dest, a, b := bigInt.GetThree(destination, op1, op2)
+	useExtraGasForOperations(metering, []*big.Int{a, b})
 	if a.Sign() < 0 || b.Sign() < 0 {
 		runtime := arwen.GetRuntimeContext(context)
 		arwen.WithFault(arwen.ErrBitwiseNegative, context, runtime.BigIntAPIErrorShouldFailExecution())
@@ -744,6 +769,7 @@ func bigIntOr(context unsafe.Pointer, destination, op1, op2 int32) {
 	metering.UseGas(gasToUse)
 
 	dest, a, b := bigInt.GetThree(destination, op1, op2)
+	useExtraGasForOperations(metering, []*big.Int{a, b})
 	if a.Sign() < 0 || b.Sign() < 0 {
 		runtime := arwen.GetRuntimeContext(context)
 		arwen.WithFault(arwen.ErrBitwiseNegative, context, runtime.BigIntAPIErrorShouldFailExecution())
@@ -761,6 +787,7 @@ func bigIntXor(context unsafe.Pointer, destination, op1, op2 int32) {
 	metering.UseGas(gasToUse)
 
 	dest, a, b := bigInt.GetThree(destination, op1, op2)
+	useExtraGasForOperations(metering, []*big.Int{a, b})
 	if a.Sign() < 0 || b.Sign() < 0 {
 		runtime := arwen.GetRuntimeContext(context)
 		arwen.WithFault(arwen.ErrBitwiseNegative, context, runtime.BigIntAPIErrorShouldFailExecution())
@@ -778,12 +805,14 @@ func bigIntShr(context unsafe.Pointer, destination, op, bits int32) {
 	metering.UseGas(gasToUse)
 
 	dest, a := bigInt.GetTwo(destination, op)
+	useExtraGasForOperations(metering, []*big.Int{a})
 	if a.Sign() < 0 || bits < 0 {
 		runtime := arwen.GetRuntimeContext(context)
 		arwen.WithFault(arwen.ErrShiftNegative, context, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
 	dest.Rsh(a, uint(bits))
+	useExtraGasForOperations(metering, []*big.Int{dest})
 }
 
 //export bigIntShl
@@ -795,12 +824,14 @@ func bigIntShl(context unsafe.Pointer, destination, op, bits int32) {
 	metering.UseGas(gasToUse)
 
 	dest, a := bigInt.GetTwo(destination, op)
+	useExtraGasForOperations(metering, []*big.Int{a})
 	if a.Sign() < 0 || bits < 0 {
 		runtime := arwen.GetRuntimeContext(context)
 		arwen.WithFault(arwen.ErrShiftNegative, context, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
 	dest.Lsh(a, uint(bits))
+	useExtraGasForOperations(metering, []*big.Int{dest})
 }
 
 //export bigIntFinishUnsigned
