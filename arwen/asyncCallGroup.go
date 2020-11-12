@@ -11,6 +11,17 @@ type AsyncCallGroup struct {
 	AsyncCalls []*AsyncCall
 }
 
+func NewAsyncCallGroup(identifier string) *AsyncCallGroup {
+	return &AsyncCallGroup{
+		Identifier: identifier,
+		AsyncCalls: make([]*AsyncCall, 0),
+	}
+}
+
+func (acg *AsyncCallGroup) AddAsyncCall(call *AsyncCall) {
+	acg.AsyncCalls = append(acg.AsyncCalls, call)
+}
+
 func (acg *AsyncCallGroup) HasPendingCalls() bool {
 	return len(acg.AsyncCalls) > 0
 }

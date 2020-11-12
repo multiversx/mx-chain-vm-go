@@ -9,7 +9,6 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/cryptoapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/elrondapi"
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/ethapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
@@ -22,25 +21,17 @@ const WASMPageSize = 65536
 
 func MakeAPIImports() *wasmer.Imports {
 	imports, err := elrondapi.ElrondEIImports()
-	if err != nil {
-		fmt.Println("API Imports error =", err)
-	}
+	log.LogIfError(err)
+
 	imports, err = elrondapi.BigIntImports(imports)
-	if err != nil {
-		fmt.Println("API Imports error =", err)
-	}
+	log.LogIfError(err)
+
 	imports, err = elrondapi.SmallIntImports(imports)
-	if err != nil {
-		fmt.Println("API Imports error =", err)
-	}
-	imports, err = ethapi.EthereumImports(imports)
-	if err != nil {
-		fmt.Println("API Imports error =", err)
-	}
+	log.LogIfError(err)
+
 	imports, err = cryptoapi.CryptoImports(imports)
-	if err != nil {
-		fmt.Println("API Imports error =", err)
-	}
+	log.LogIfError(err)
+
 	return imports
 }
 

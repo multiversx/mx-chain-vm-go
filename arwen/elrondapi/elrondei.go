@@ -76,7 +76,6 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
 
 // ElrondEIImports creates a new wasmer.Imports populated with the ElrondEI API methods
@@ -512,8 +511,7 @@ func transferValue(context unsafe.Pointer, destOffset int32, valueOffset int32, 
 	}
 
 	// TODO write test for this, after removing vmContextMap
-	argParser := parsers.NewCallArgsParser()
-	functionName, _, err := argParser.ParseData(string(data))
+	functionName, _, err := host.CallArgsParser().ParseData(string(data))
 	if host.IsBuiltinFunctionName(functionName) {
 		return 1
 	}

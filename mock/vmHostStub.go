@@ -29,6 +29,7 @@ type VmHostStub struct {
 	GetAPIMethodsCalled               func() *wasmer.Imports
 	GetProtocolBuiltinFunctionsCalled func() vmcommon.FunctionNames
 	IsBuiltinFunctionNameCalled       func(functionName string) bool
+	CallArgsParserCalled              func() arwen.CallArgsParser
 }
 
 func (vhs *VmHostStub) InitState() {
@@ -79,6 +80,13 @@ func (vhs *VmHostStub) Runtime() arwen.RuntimeContext {
 func (vhs *VmHostStub) BigInt() arwen.BigIntContext {
 	if vhs.BigIntCalled != nil {
 		return vhs.BigIntCalled()
+	}
+	return nil
+}
+
+func (vhs *VmHostStub) CallArgsParser() arwen.CallArgsParser {
+	if vhs.CallArgsParserCalled != nil {
+		return vhs.CallArgsParserCalled()
 	}
 	return nil
 }

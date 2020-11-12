@@ -9,6 +9,18 @@ type AsyncContext struct {
 	AsyncCallGroups []*AsyncCallGroup
 }
 
+func NewAsyncContext() *AsyncContext {
+	return &AsyncContext{
+		CallerAddr:      nil,
+		ReturnData:      nil,
+		AsyncCallGroups: make([]*AsyncCallGroup, 0),
+	}
+}
+
+func (actx *AsyncContext) AddAsyncGroup(group *AsyncCallGroup) {
+	actx.AsyncCallGroups = append(actx.AsyncCallGroups, group)
+}
+
 func (actx *AsyncContext) HasPendingCallGroups() bool {
 	return len(actx.AsyncCallGroups) > 0
 }
@@ -28,11 +40,7 @@ func (actx *AsyncContext) MakeAsyncContextWithPendingCalls() *AsyncContext {
 			}
 
 			if pendingGroup == nil {
-				pendingGroup = &AsyncCallGroup{
-					// Callback:   asyncCallGroup.Callback,
-					Identifier: group.Identifier,
-					AsyncCalls: make([]*AsyncCall, 0),
-				}
+				pendingGroup = NewAsyncCallGroup(group.Identifier)
 				pendingGroups = append(pendingGroups, pendingGroup)
 			}
 

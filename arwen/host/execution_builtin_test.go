@@ -56,7 +56,6 @@ func TestExecution_ExecuteOnSameContext_BuiltinFunctions(t *testing.T) {
 
 	vmOutput, err = host.RunSmartContractCall(input)
 	require.Nil(t, err)
-
 	require.NotNil(t, vmOutput)
 	expectedVMOutput = expectedVMOutput_SameCtx_BuiltinFunctions_3(code)
 	require.Equal(t, expectedVMOutput, vmOutput)
@@ -78,7 +77,6 @@ func TestExecution_AsyncCall_BuiltinFails(t *testing.T) {
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
-
 	require.NotNil(t, vmOutput)
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 	require.Equal(t, [][]byte{[]byte("hello"), {4}}, vmOutput.ReturnData)
@@ -99,7 +97,6 @@ func TestESDT_GettersAPI(t *testing.T) {
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
-
 	require.NotNil(t, vmOutput)
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 }
@@ -131,10 +128,8 @@ func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 
 	_ = host.Runtime().StartWasmerInstance(dummyCode, input.GasProvided, true)
 	vmOutput, err := host.ExecuteOnDestContext(input)
-
 	require.Nil(t, err)
 	require.NotNil(t, vmOutput)
-
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 	host.Clean()
 }

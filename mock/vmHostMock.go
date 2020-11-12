@@ -54,6 +54,10 @@ func (host *VmHostMock) BigInt() arwen.BigIntContext {
 	return host.BigIntContext
 }
 
+func (host *VmHostMock) CallArgsParser() arwen.CallArgsParser {
+	return nil
+}
+
 func (host *VmHostMock) IsArwenV2Enabled() bool {
 	return true
 }

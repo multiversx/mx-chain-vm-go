@@ -70,9 +70,7 @@ func (context *runtimeContext) InitState() {
 	context.verifyCode = false
 	context.readOnly = false
 	context.defaultAsyncCall = nil
-	context.asyncContext = &arwen.AsyncContext{
-		AsyncCallGroups: make(map[string]*arwen.AsyncCallGroup),
-	}
+	context.asyncContext = arwen.NewAsyncContext()
 }
 
 func (context *runtimeContext) setWarmInstanceWhenNeeded(gasLimit uint64) bool {
@@ -258,11 +256,9 @@ func (context *runtimeContext) InitStateFromContractCallInput(input *vmcommon.Co
 	context.SetVMInput(&input.VMInput)
 	context.scAddress = input.RecipientAddr
 	context.callFunction = input.Function
-	// Reset async map for initial state
-	context.asyncContext = &arwen.AsyncContext{
-		CallerAddr:      input.CallerAddr,
-		AsyncCallGroups: make(map[string]*arwen.AsyncCallGroup),
-	}
+
+	context.asyncContext = arwen.NewAsyncContext()
+	context.asyncContext.CallerAddr = input.CallerAddr
 }
 
 func (context *runtimeContext) SetCustomCallFunction(callFunction string) {
@@ -610,7 +606,9 @@ func (context *runtimeContext) CreateAndAddAsyncCall(
 	})
 }
 
-func (context *runtimeContext) AddAsyncCall(groupID []byte, asyncCall *arwen.AsyncCall) error {
+func (context *runtimeContext) AddAsyncCall(groupIDBytes []byte, asyncCall *arwen.AsyncCall) error {
+	groupID := string(groupIDBytes)
+
 	if context.host.IsBuiltinFunctionName(asyncCall.SuccessCallback) {
 		return arwen.ErrCannotUseBuiltinAsCallback
 	}
@@ -618,15 +616,13 @@ func (context *runtimeContext) AddAsyncCall(groupID []byte, asyncCall *arwen.Asy
 		return arwen.ErrCannotUseBuiltinAsCallback
 	}
 
-	asyncCallGroup, ok := context.asyncContext.AsyncCallGroups[string(groupID)]
+	asyncCallGroup, ok := context.asyncContext.GetAsyncCallGroup(groupID)
 	if !ok {
-		asyncCallGroup = &arwen.AsyncCallGroup{
-			AsyncCalls: make([]*arwen.AsyncCall, 0),
-		}
-		context.asyncContext.AsyncCallGroups[string(groupID)] = asyncCallGroup
+		asyncCallGroup = arwen.NewAsyncCallGroup(groupID)
+		context.asyncContext.AddAsyncGroup(asyncCallGroup)
 	}
 
-	asyncCallGroup.AsyncCalls = append(asyncCallGroup.AsyncCalls, asyncCall)
+	asyncCallGroup.AddAsyncCall(asyncCall)
 
 	return nil
 }
@@ -636,7 +632,7 @@ func (context *runtimeContext) GetAsyncContext() *arwen.AsyncContext {
 }
 
 func (context *runtimeContext) GetAsyncCallGroup(groupID []byte) (*arwen.AsyncCallGroup, error) {
-	asyncCallGroup, ok := context.asyncContext.AsyncCallGroups[string(groupID)]
+	asyncCallGroup, ok := context.asyncContext.GetAsyncCallGroup(string(groupID))
 	if !ok {
 		return nil, arwen.ErrAsyncCallGroupDoesNotExist
 	}

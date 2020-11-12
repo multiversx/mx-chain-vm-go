@@ -7,7 +7,6 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/math"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
 
 // executeCurrentAsyncContext is the entry-point of the async calling mechanism; it is
@@ -70,6 +69,8 @@ func (host *vmHost) executeCurrentAsyncContext() error {
 	return nil
 }
 
+// TODO split into two different functions, for sync execution and async
+// execution, and remove parameter syncExecutionOnly
 func (host *vmHost) executeAsyncCallGroup(
 	asyncCallGroup *arwen.AsyncCallGroup,
 	syncExecutionOnly bool,
@@ -105,6 +106,8 @@ func (host *vmHost) executeAsyncCall(
 
 	if execMode == arwen.SyncExecution {
 		vmOutput, err := host.executeSyncCall(asyncCall)
+		asyncCall.UpdateStatus(vmOutput.ReturnCode)
+
 		// TODO host.executeSyncCallback() returns a vmOutput produced by executing
 		// the callback. Information from this vmOutput should be preserved in the
 		// pending AsyncCallGroup, and made available to the callback of the
@@ -123,11 +126,20 @@ func (host *vmHost) executeAsyncCall(
 
 	if execMode == arwen.AsyncBuiltinFunc {
 		// Built-in functions will handle cross-shard calls themselves, by
-		// generating entries in vmOutput.OutputAccounts. It is not necessary to
-		// call sendAsyncCallCrossShard(). The vmOutput produced by the built-in
+		// generating entries in vmOutput.OutputAccounts, but they need to be
+		// executed synchronously to do that. It is not necessary to call
+		// sendAsyncCallCrossShard(). The vmOutput produced by the built-in
 		// function, containing the cross-shard call, has ALREADY been merged into
-		// the main output by the inner call to host.ExecuteOnDestContext().
-		_, err := host.executeSyncCall(asyncCall)
+		// the main output by the inner call to host.ExecuteOnDestContext().  The
+		// status of the AsyncCall is not updated here - it will be updated by
+		// postprocessCrossShardCallback(), when the cross-shard call returns.
+		vmOutput, err := host.executeSyncCall(asyncCall)
+		if vmOutput.ReturnCode != vmcommon.Ok {
+			asyncCall.UpdateStatus(vmOutput.ReturnCode)
+			callbackVMOutput, callbackErr := host.executeSyncCallback(asyncCall, vmOutput, err)
+			host.finishSyncExecution(callbackVMOutput, callbackErr)
+		}
+
 		return err
 	}
 
@@ -148,25 +160,20 @@ func (host *vmHost) determineExecutionMode(destination []byte, data []byte) (arw
 
 	// If ArgParser cannot read the Data field, then this is neither a SC call,
 	// nor a built-in function call.
-	argParser := parsers.NewCallArgsParser()
-	functionName, _, err := argParser.ParseData(string(data))
+	functionName, _, err := host.CallArgsParser().ParseData(string(data))
 	if err != nil {
 		return arwen.AsyncUnknown, err
-	}
-
-	code, err := blockchain.GetCode(destination)
-	if len(code) > 0 && err == nil {
-		return arwen.SyncExecution, nil
 	}
 
 	shardOfSC := blockchain.GetShardOfAddress(runtime.GetSCAddress())
 	shardOfDest := blockchain.GetShardOfAddress(destination)
 	sameShard := shardOfSC == shardOfDest
 
+	if sameShard {
+		return arwen.SyncExecution, nil
+	}
+
 	if host.IsBuiltinFunctionName(functionName) {
-		if sameShard {
-			return arwen.SyncExecution, nil
-		}
 		return arwen.AsyncBuiltinFunc, nil
 	}
 
@@ -180,11 +187,6 @@ func (host *vmHost) executeSyncCall(asyncCall *arwen.AsyncCall) (*vmcommon.VMOut
 	}
 
 	vmOutput, err := host.ExecuteOnDestContext(destinationCallInput)
-
-	asyncCall.Status = arwen.AsyncCallResolved
-	if vmOutput.ReturnCode != vmcommon.Ok {
-		asyncCall.Status = arwen.AsyncCallRejected
-	}
 
 	return vmOutput, err
 }
@@ -213,8 +215,7 @@ func (host *vmHost) createSyncCallInput(asyncCall arwen.AsyncCallHandler) (*vmco
 	runtime := host.Runtime()
 	sender := runtime.GetSCAddress()
 
-	argParser := parsers.NewCallArgsParser()
-	function, arguments, err := argParser.ParseData(string(asyncCall.GetData()))
+	function, arguments, err := host.CallArgsParser().ParseData(string(asyncCall.GetData()))
 	if err != nil {
 		return nil, err
 	}
@@ -266,10 +267,7 @@ func (host *vmHost) createSyncCallbackInput(
 		arguments = append(arguments, []byte(vmOutput.ReturnMessage))
 	}
 
-	callbackFunction := asyncCall.SuccessCallback
-	if asyncCall.Status == arwen.AsyncCallRejected {
-		callbackFunction = asyncCall.ErrorCallback
-	}
+	callbackFunction := asyncCall.GetCallbackName()
 
 	gasLimit := vmOutput.GasRemaining + asyncCall.GetGasLocked()
 	dataLength := host.computeDataLengthFromArguments(callbackFunction, arguments)

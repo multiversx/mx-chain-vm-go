@@ -11,7 +11,6 @@ import (
 	"github.com/ElrondNetwork/elrond-go-logger/check"
 	"github.com/ElrondNetwork/elrond-go/core"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
 
 func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput) *vmcommon.VMOutput {
@@ -143,8 +142,11 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	return
 }
 
-func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
+func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	log.Trace("ExecuteOnDestContext", "function", input.Function)
+
+	var vmOutput *vmcommon.VMOutput
+	var err error
 
 	bigInt, _, _, output, runtime, storage := host.GetContexts()
 
@@ -170,16 +172,16 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	// transfer will not persist.
 	err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	gasUsed, err = host.execute(input)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	err = host.executeCurrentAsyncContext()
-	return
+	return vmOutput, err
 }
 
 func computeGasUsedByCurrentSC(
@@ -253,12 +255,14 @@ func (host *vmHost) finishExecuteOnDestContext(gasUsed uint64, executeErr error)
 	return vmOutput
 }
 
-func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asyncContext *arwen.AsyncContext, err error) {
+func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*arwen.AsyncContext, error) {
 	log.Trace("ExecuteOnSameContext", "function", input.Function)
 
 	if host.IsBuiltinFunctionName(input.Function) {
 		return nil, arwen.ErrBuiltinCallOnSameContextDisallowed
 	}
+
+	var err error
 
 	bigInt, _, _, output, runtime, _ := host.GetContexts()
 
@@ -280,17 +284,15 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 	// transfer will not persist.
 	err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	gasUsed, err = host.execute(input)
 	if err != nil {
-		return
+		return nil, err
 	}
 
-	asyncContext = runtime.GetAsyncContext()
-
-	return
+	return runtime.GetAsyncContext(), nil
 }
 
 func (host *vmHost) finishExecuteOnSameContext(gasUsed uint64, executeErr error) {
@@ -607,7 +609,7 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmc
 		metering.UseGas(gasConsumed)
 	}
 
-	newVMInput, err := isSCExecutionAfterBuiltInFunc(input, vmOutput)
+	newVMInput, err := host.isSCExecutionAfterBuiltInFunc(input, vmOutput)
 	if err != nil {
 		return nil, err
 	}
@@ -758,7 +760,7 @@ func (host *vmHost) createETHCallInput() []byte {
 	return newInput
 }
 
-func isSCExecutionAfterBuiltInFunc(
+func (host *vmHost) isSCExecutionAfterBuiltInFunc(
 	vmInput *vmcommon.ContractCallInput,
 	vmOutput *vmcommon.VMOutput,
 ) (*vmcommon.ContractCallInput, error) {
@@ -781,8 +783,7 @@ func isSCExecutionAfterBuiltInFunc(
 	callType := vmInput.CallType
 	txData := prependCallbackToTxDataIfAsyncCall(outAcc.OutputTransfers[0].Data, callType)
 
-	argParser := parsers.NewCallArgsParser()
-	function, arguments, err := argParser.ParseData(txData)
+	function, arguments, err := host.CallArgsParser().ParseData(txData)
 	if err != nil {
 		return nil, err
 	}

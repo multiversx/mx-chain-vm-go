@@ -42,6 +42,7 @@ type VMHost interface {
 	GetAPIMethods() *wasmer.Imports
 	GetProtocolBuiltinFunctions() vmcommon.FunctionNames
 	IsBuiltinFunctionName(functionName string) bool
+	CallArgsParser() CallArgsParser
 }
 
 type BlockchainContext interface {

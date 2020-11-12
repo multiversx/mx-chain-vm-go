@@ -14,6 +14,7 @@ import (
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-go/core/atomic"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
 
 var log = logger.GetOrCreate("arwen/host")
@@ -54,6 +55,8 @@ type vmHost struct {
 
 	dynGasLockEnableEpoch uint32
 	flagDynGasLock        atomic.Flag
+
+	callArgsParser arwen.CallArgsParser
 }
 
 // NewArwenVM creates a new Arwen vmHost
@@ -76,6 +79,7 @@ func NewArwenVM(
 		arwenV2EnableEpoch:       hostParameters.ArwenV2EnableEpoch,
 		aotEnableEpoch:           hostParameters.AheadOfTimeEnableEpoch,
 		dynGasLockEnableEpoch:    hostParameters.DynGasLockEnableEpoch,
+		callArgsParser:           parsers.NewCallArgsParser(),
 	}
 
 	var err error
@@ -182,6 +186,10 @@ func (host *vmHost) Storage() arwen.StorageContext {
 
 func (host *vmHost) BigInt() arwen.BigIntContext {
 	return host.bigIntContext
+}
+
+func (host *vmHost) CallArgsParser() arwen.CallArgsParser {
+	return host.callArgsParser
 }
 
 func (host *vmHost) IsArwenV2Enabled() bool {

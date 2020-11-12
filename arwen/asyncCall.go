@@ -1,5 +1,7 @@
 package arwen
 
+import vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+
 // AsyncCall holds the information about an individual async call
 type AsyncCall struct {
 	Status          AsyncCallStatus
@@ -41,4 +43,19 @@ func (ac *AsyncCall) GetValueBytes() []byte {
 // IsInterfaceNil returns true if there is no value under the interface
 func (ac *AsyncCall) IsInterfaceNil() bool {
 	return ac == nil
+}
+
+func (ac *AsyncCall) UpdateStatus(returnCode vmcommon.ReturnCode) {
+	ac.Status = AsyncCallResolved
+	if returnCode != vmcommon.Ok {
+		ac.Status = AsyncCallRejected
+	}
+}
+
+func (ac *AsyncCall) GetCallbackName() string {
+	if ac.Status == AsyncCallResolved {
+		return ac.SuccessCallback
+	}
+
+	return ac.ErrorCallback
 }

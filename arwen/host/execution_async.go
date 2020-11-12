@@ -6,7 +6,6 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
 
 func (host *vmHost) handleAsyncCallBreakpoint() error {
@@ -26,7 +25,6 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 
 func (host *vmHost) sendAsyncCallbackToCaller() error {
 	runtime := host.Runtime()
-
 	if !runtime.GetAsyncContext().IsCompleted() {
 		return nil
 	}
@@ -95,7 +93,6 @@ func (host *vmHost) sendContextCallbackToOriginalCaller(asyncContext *arwen.Asyn
  * executed as well.
  */
 func (host *vmHost) postprocessCrossShardCallback() error {
-	runtime := host.Runtime()
 
 	asyncContext, err := host.loadCurrentAsyncContext()
 	if err != nil {
@@ -104,20 +101,24 @@ func (host *vmHost) postprocessCrossShardCallback() error {
 
 	// TODO FindAsyncCallByDestination() only returns the first matched AsyncCall
 	// by destination, but there could be multiple matches in an AsyncContext.
-	vmInput := runtime.GetVMInput()
+	vmInput := host.Runtime().GetVMInput()
 	currentGroupID, asyncCallIndex, err := asyncContext.FindAsyncCallByDestination(vmInput.CallerAddr)
 	if err != nil {
 		return arwen.ErrCallBackFuncNotExpected
 	}
 
-	currentCallGroup := asyncContext.AsyncCallGroups[currentGroupID]
+	currentCallGroup, ok := asyncContext.GetAsyncCallGroup(currentGroupID)
+	if !ok {
+		return arwen.ErrCallBackFuncNotExpected
+	}
+
 	currentCallGroup.DeleteAsyncCall(asyncCallIndex)
 
 	if currentCallGroup.HasPendingCalls() {
 		return nil
 	}
 
-	asyncContext.DeleteAsyncCallGroup(currentGroupID)
+	asyncContext.DeleteAsyncCallGroupByID(currentGroupID)
 
 	// Are we still waiting for callbacks to return?
 	if asyncContext.HasPendingCallGroups() {
@@ -158,8 +159,7 @@ func (host *vmHost) createSyncContextCallbackInput(asyncContext *arwen.AsyncCont
 	runtime := host.Runtime()
 	metering := host.Metering()
 
-	argParser := parsers.NewCallArgsParser()
-	_, arguments, err := argParser.ParseData(string(asyncContext.ReturnData))
+	_, arguments, err := host.CallArgsParser().ParseData(string(asyncContext.ReturnData))
 	if err != nil {
 		arguments = [][]byte{asyncContext.ReturnData}
 	}
@@ -186,6 +186,7 @@ func (host *vmHost) loadCurrentAsyncContext() (*arwen.AsyncContext, error) {
 	storage := host.Storage()
 
 	asyncContext := &arwen.AsyncContext{}
+	// TODO consider using the previous tx hash
 	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, runtime.GetOriginalTxHash())
 	buff := storage.GetStorage(storageKey)
 	if len(buff) == 0 {
@@ -204,6 +205,7 @@ func (host *vmHost) deleteCurrentAsyncContext() error {
 	runtime := host.Runtime()
 	storage := host.Storage()
 
+	// TODO consider using the previous tx hash
 	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, runtime.GetOriginalTxHash())
 	_, err := storage.SetStorage(storageKey, nil)
 	return err
