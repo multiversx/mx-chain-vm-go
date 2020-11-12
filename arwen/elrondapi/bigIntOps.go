@@ -812,6 +812,7 @@ func bigIntShr(context unsafe.Pointer, destination, op, bits int32) {
 		return
 	}
 	dest.Rsh(a, uint(bits))
+	useExtraGasForOperations(metering, []*big.Int{dest})
 }
 
 //export bigIntShl
@@ -830,6 +831,7 @@ func bigIntShl(context unsafe.Pointer, destination, op, bits int32) {
 		return
 	}
 	dest.Lsh(a, uint(bits))
+	useExtraGasForOperations(metering, []*big.Int{dest})
 }
 
 //export bigIntFinishUnsigned
