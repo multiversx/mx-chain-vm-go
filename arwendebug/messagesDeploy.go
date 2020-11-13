@@ -3,7 +3,7 @@ package arwendebug
 import (
 	"io/ioutil"
 
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-go/core/vm-common"
 )
 
 // DeployRequest is a CLI / REST request message

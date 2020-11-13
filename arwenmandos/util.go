@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"math/big"
 
-	worldhook "github.com/ElrondNetwork/elrond-vm-util/mock-hook-blockchain"
+	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/test/mock-hook-blockchain"
 
-	vmi "github.com/ElrondNetwork/elrond-vm-common"
-	mj "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/model"
-	oj "github.com/ElrondNetwork/elrond-vm-util/test-util/orderedjson"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/model"
+	oj "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/orderedjson"
+	vmi "github.com/ElrondNetwork/elrond-go/core/vm-common"
 )
 
 func convertAccount(testAcct *mj.Account) *worldhook.Account {

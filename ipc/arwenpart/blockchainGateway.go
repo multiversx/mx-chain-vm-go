@@ -2,7 +2,7 @@ package arwenpart
 
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-go/core/vm-common"
 )
 
 var _ vmcommon.BlockchainHook = (*BlockchainHookGateway)(nil)
