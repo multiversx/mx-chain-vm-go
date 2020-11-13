@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"math/big"
 
-	vmi "github.com/ElrondNetwork/elrond-vm-common"
-	mj "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/model"
-	mjwrite "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/write"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/model"
+	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/write"
+	vmi "github.com/ElrondNetwork/elrond-go/core/vm-common"
 )
 
 func checkTxResults(

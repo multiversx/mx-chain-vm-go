@@ -2,7 +2,7 @@ package arwendebug
 
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-go/core/vm-common"
 )
 
 func (w *world) prepareDeployInput(request DeployRequest) *vmcommon.ContractCreateInput {

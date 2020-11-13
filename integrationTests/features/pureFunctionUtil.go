@@ -10,10 +10,10 @@ import (
 	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	vmi "github.com/ElrondNetwork/elrond-vm-common"
-	worldhook "github.com/ElrondNetwork/elrond-vm-util/mock-hook-blockchain"
-	mj "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/model"
+	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/test/mock-hook-blockchain"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/model"
+	vmcommon "github.com/ElrondNetwork/elrond-go/core/vm-common"
+	vmi "github.com/ElrondNetwork/elrond-go/core/vm-common"
 	"github.com/stretchr/testify/require"
 )
 

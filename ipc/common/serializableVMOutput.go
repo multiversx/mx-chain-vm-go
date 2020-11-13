@@ -3,7 +3,7 @@ package common
 import (
 	"math/big"
 
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-go/core/vm-common"
 )
 
 type SerializableVMOutput struct {

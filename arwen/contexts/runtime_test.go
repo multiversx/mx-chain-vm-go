@@ -14,7 +14,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-go/core/vm-common"
 	"github.com/stretchr/testify/require"
 )
 

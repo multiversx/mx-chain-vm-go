@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	am "github.com/ElrondNetwork/arwen-wasm-vm/arwenmandos"
-	mc "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/controller"
+	mc "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/controller"
 )
 
 func resolveArgument(arg string) (string, bool, error) {

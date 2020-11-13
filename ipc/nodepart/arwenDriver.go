@@ -10,7 +10,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/marshaling"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-go-logger/pipes"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-go/core/vm-common"
 )
 
 var log = logger.GetOrCreate("arwenDriver")

@@ -6,13 +6,13 @@ import (
 	"testing"
 
 	am "github.com/ElrondNetwork/arwen-wasm-vm/arwenmandos"
+	mc "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/controller"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
-	mc "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/controller"
 	"github.com/stretchr/testify/require"
 )
 
 func init() {
-	logger.SetLogLevel("*:DEBUG")
+	_ = logger.SetLogLevel("*:DEBUG")
 }
 
 func getTestRoot() string {
