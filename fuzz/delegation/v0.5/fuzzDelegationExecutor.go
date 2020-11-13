@@ -16,7 +16,7 @@ import (
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/model"
 	mjparse "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/parse"
 	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/write"
-	vmi "github.com/ElrondNetwork/elrond-go/core/vm-common"
+	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
 )
 

@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	vmcommon "github.com/ElrondNetwork/elrond-go/core/vm-common"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 var _ vmcommon.BlockchainHook = (*BlockchainHookMock)(nil)
@@ -259,4 +259,9 @@ func mergeStorageUpdates(leftAccount *Account, rightAccount *vmcommon.OutputAcco
 	for key, update := range rightAccount.StorageUpdates {
 		leftAccount.Storage[toHex([]byte(key))] = toHex(update.Data)
 	}
+}
+
+// IsInterfaceNil returns true if underlying implementation is nil
+func (b *BlockchainHookMock) IsInterfaceNil() bool {
+	return b == nil
 }

@@ -7,8 +7,8 @@ import (
 	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/test/mock-hook-blockchain"
 	mc "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/controller"
 	fr "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/fileresolver"
-	vmcommon "github.com/ElrondNetwork/elrond-go/core/vm-common"
-	vmi "github.com/ElrondNetwork/elrond-go/core/vm-common"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 // TestVMType is the VM type argument we use in tests.
