@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"math/big"
 
-	vmcommon "github.com/ElrondNetwork/elrond-go/core/vm-common"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 var _ vmcommon.BlockchainHook = (*BlockchainHookMock)(nil)
@@ -208,4 +208,9 @@ func (b *BlockchainHookMock) GetCompiledCode(_ []byte) (bool, []byte) {
 }
 
 func (b *BlockchainHookMock) ClearCompiledCodes() {
+}
+
+// IsInterfaceNil returns true if underlying implementation is nil
+func (b *BlockchainHookMock) IsInterfaceNil() bool {
+	return b == nil
 }

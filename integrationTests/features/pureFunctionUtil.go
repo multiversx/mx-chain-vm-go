@@ -12,8 +12,8 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/test/mock-hook-blockchain"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/model"
-	vmcommon "github.com/ElrondNetwork/elrond-go/core/vm-common"
-	vmi "github.com/ElrondNetwork/elrond-go/core/vm-common"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
 )
 

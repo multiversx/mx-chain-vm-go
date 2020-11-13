@@ -6,7 +6,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/elrond-go-logger/check"
-	vmcommon "github.com/ElrondNetwork/elrond-go/core/vm-common"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 const lockKeyContext string = "timelock"

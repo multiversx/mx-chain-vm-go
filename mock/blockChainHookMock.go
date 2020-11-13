@@ -5,7 +5,7 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
-	vmcommon "github.com/ElrondNetwork/elrond-go/core/vm-common"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 var ErrAccountDoesntExist = errors.New("account does not exist")
@@ -257,4 +257,8 @@ func mergeStorageUpdates(
 	for key, update := range rightAccount.StorageUpdates {
 		leftAccount.Storage[key] = update.Data
 	}
+}
+
+func (b *BlockchainHookMock) IsInterfaceNil() bool {
+	return b == nil
 }

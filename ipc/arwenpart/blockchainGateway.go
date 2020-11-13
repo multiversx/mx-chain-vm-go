@@ -2,7 +2,7 @@ package arwenpart
 
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
-	vmcommon "github.com/ElrondNetwork/elrond-go/core/vm-common"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 var _ vmcommon.BlockchainHook = (*BlockchainHookGateway)(nil)
@@ -399,4 +399,9 @@ func (blockchain *BlockchainHookGateway) GetCompiledCode(codeHash []byte) (bool,
 
 // ClearCompiledCodes nothing to do - this needs to be called by nodepart only
 func (blockchain *BlockchainHookGateway) ClearCompiledCodes() {
+}
+
+// IsInterfaceNil returns true if underlying implementation is nil
+func (blockchain *BlockchainHookGateway) IsInterfaceNil() bool {
+	return blockchain == nil
 }

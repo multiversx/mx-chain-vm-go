@@ -6,7 +6,7 @@ import (
 
 	"golang.org/x/crypto/sha3"
 
-	vmcommon "github.com/ElrondNetwork/elrond-go/core/vm-common"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"golang.org/x/crypto/ripemd160"
 )
 
@@ -62,4 +62,9 @@ func (hook *CryptoHookGateway) Ripemd160(data []byte) ([]byte, error) {
 // https://ewasm.readthedocs.io/en/mkdocs/system_contracts/
 func (hook *CryptoHookGateway) Ecrecover(_ []byte, _ []byte, _ []byte, _ []byte) ([]byte, error) {
 	return nil, errors.New("not implemented")
+}
+
+// IsInterfaceNil returns true if underlying implementation is nil
+func (hook *CryptoHookGateway) IsInterfaceNil() bool {
+	return hook == nil
 }

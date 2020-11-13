@@ -9,7 +9,7 @@ import (
 
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/model"
 	oj "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/orderedjson"
-	vmi "github.com/ElrondNetwork/elrond-go/core/vm-common"
+	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 func convertAccount(testAcct *mj.Account) *worldhook.Account {
