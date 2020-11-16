@@ -103,7 +103,7 @@ func (host *vmHost) postprocessCrossShardCallback() error {
 	vmInput := host.Runtime().GetVMInput()
 	currentGroupID, asyncCallIndex, err := asyncContext.FindAsyncCallByDestination(vmInput.CallerAddr)
 	if err != nil {
-		return arwen.ErrCallBackFuncNotExpected
+		return err
 	}
 
 	currentCallGroup, ok := asyncContext.GetAsyncCallGroup(currentGroupID)

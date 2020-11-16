@@ -186,9 +186,7 @@ func (host *vmHost) executeSyncCall(asyncCall *arwen.AsyncCall) (*vmcommon.VMOut
 		return nil, err
 	}
 
-	vmOutput, err := host.ExecuteOnDestContext(destinationCallInput)
-
-	return vmOutput, err
+	return host.ExecuteOnDestContext(destinationCallInput)
 }
 
 func (host *vmHost) executeSyncCallback(
@@ -202,8 +200,7 @@ func (host *vmHost) executeSyncCallback(
 		return nil, err
 	}
 
-	callbackVMOutput, callBackErr := host.ExecuteOnDestContext(callbackInput)
-	return callbackVMOutput, callBackErr
+	return host.ExecuteOnDestContext(callbackInput)
 }
 
 func (host *vmHost) executeAsyncCallGroupCallback(asyncCallGroup *arwen.AsyncCallGroup) error {

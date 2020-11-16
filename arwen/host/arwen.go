@@ -160,50 +160,62 @@ func NewArwenVM(
 	return host, nil
 }
 
+// Crypto returns the VMCrypto instance of the host
 func (host *vmHost) Crypto() crypto.VMCrypto {
 	return host.cryptoHook
 }
 
+// Blockchain returns the BlockchainContext instance of the host
 func (host *vmHost) Blockchain() arwen.BlockchainContext {
 	return host.blockchainContext
 }
 
+// Runtime returns the RuntimeContext instance of the host
 func (host *vmHost) Runtime() arwen.RuntimeContext {
 	return host.runtimeContext
 }
 
+// Output returns the OutputContext instance of the host
 func (host *vmHost) Output() arwen.OutputContext {
 	return host.outputContext
 }
 
+// Metering returns the MeteringContext instance of the host
 func (host *vmHost) Metering() arwen.MeteringContext {
 	return host.meteringContext
 }
 
+// Storage returns the StorageContext instance of the host
 func (host *vmHost) Storage() arwen.StorageContext {
 	return host.storageContext
 }
 
+// BigInt returns the BigIntContext instance of the host
 func (host *vmHost) BigInt() arwen.BigIntContext {
 	return host.bigIntContext
 }
 
+// CallArgsParser returns the CallArgsParser instance of the host
 func (host *vmHost) CallArgsParser() arwen.CallArgsParser {
 	return host.callArgsParser
 }
 
+// IsArwenV2Enabled returns whether the Arwen V2 mode is enabled
 func (host *vmHost) IsArwenV2Enabled() bool {
 	return host.flagArwenV2.IsSet()
 }
 
+// IsAheadOfTimeCompileEnabled returns whether ahead-of-time compilation is enabled
 func (host *vmHost) IsAheadOfTimeCompileEnabled() bool {
 	return host.flagAheadOfTime.IsSet()
 }
 
+// IsDynamicGasLockingEnabled returns whether dynamic gas locking mode is enabled
 func (host *vmHost) IsDynamicGasLockingEnabled() bool {
 	return host.flagDynGasLock.IsSet()
 }
 
+// GetContexts returns the main contexts of the host
 func (host *vmHost) GetContexts() (
 	arwen.BigIntContext,
 	arwen.BlockchainContext,
@@ -220,6 +232,7 @@ func (host *vmHost) GetContexts() (
 		host.storageContext
 }
 
+// InitState resets the contexts of the host and reconfigures its flags
 func (host *vmHost) InitState() {
 	host.initContexts()
 	currentEpoch := host.blockChainHook.CurrentEpoch()
@@ -242,6 +255,7 @@ func (host *vmHost) initContexts() {
 	host.ethInput = nil
 }
 
+// ClearContextStateStack cleans the state stacks of all the contexts of the host
 func (host *vmHost) ClearContextStateStack() {
 	host.bigIntContext.ClearStateStack()
 	host.outputContext.ClearStateStack()
@@ -249,6 +263,7 @@ func (host *vmHost) ClearContextStateStack() {
 	host.storageContext.ClearStateStack()
 }
 
+// Clean closes the currently running Wasmer instance
 func (host *vmHost) Clean() {
 	if host.runtimeContext.IsWarmInstance() {
 		return
@@ -257,14 +272,17 @@ func (host *vmHost) Clean() {
 	arwen.RemoveAllHostContexts()
 }
 
+// GetAPIMethods returns the EEI as a set of imports for Wasmer
 func (host *vmHost) GetAPIMethods() *wasmer.Imports {
 	return host.scAPIMethods
 }
 
+// GetProtocolBuiltinFunctions returns the names of the built-in functions, reserved by the protocol
 func (host *vmHost) GetProtocolBuiltinFunctions() vmcommon.FunctionNames {
 	return host.protocolBuiltinFunctions
 }
 
+// GasScheduleChange applies a new gas schedule to the host
 func (host *vmHost) GasScheduleChange(newGasSchedule map[string]map[string]uint64) {
 	host.mutExecution.Lock()
 	defer host.mutExecution.Unlock()
@@ -281,6 +299,7 @@ func (host *vmHost) GasScheduleChange(newGasSchedule map[string]map[string]uint6
 	host.meteringContext.SetGasSchedule(newGasSchedule)
 }
 
+// RunSmartContractCreate executes the deployment of a new contract
 func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error) {
 	host.mutExecution.RLock()
 	defer host.mutExecution.RUnlock()
@@ -304,6 +323,7 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 	return
 }
 
+// RunSmartContractCall executes the call of an existing contract
 func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
 	host.mutExecution.RLock()
 	defer host.mutExecution.RUnlock()
