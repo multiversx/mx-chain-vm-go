@@ -620,19 +620,10 @@ func (context *runtimeContext) GetDefaultAsyncCall() *arwen.AsyncCall {
 // the default async call and informs Wasmer to stop contract execution with BreakpointAsyncCall
 func (context *runtimeContext) ExecuteAsyncCall(address []byte, data []byte, value []byte) error {
 	metering := context.host.Metering()
-	err := metering.UseGasForAsyncStep()
+
+	gasToLock, err := context.prepareGasForAsyncCall()
 	if err != nil {
 		return err
-	}
-
-	gasToLock := uint64(0)
-	shouldLockGas := context.HasCallbackMethod() || !context.host.IsDynamicGasLockingEnabled()
-	if shouldLockGas {
-		gasToLock = metering.ComputeGasLockedForAsync()
-		err = metering.UseGasBounded(gasToLock)
-		if err != nil {
-			return err
-		}
 	}
 
 	context.SetDefaultAsyncCall(&arwen.AsyncCall{
@@ -658,11 +649,29 @@ func (context *runtimeContext) CreateAndAddAsyncCall(
 	errorCallback []byte,
 	gas uint64,
 ) error {
-	metering := context.host.Metering()
 
-	err := metering.UseGasForAsyncStep()
+	gasToLock, err := context.prepareGasForAsyncCall()
 	if err != nil {
 		return err
+	}
+
+	return context.AddAsyncCall(groupID, &arwen.AsyncCall{
+		Status:          arwen.AsyncCallPending,
+		Destination:     address,
+		Data:            data,
+		ValueBytes:      value,
+		SuccessCallback: string(successCallback),
+		ErrorCallback:   string(errorCallback),
+		ProvidedGas:     gas,
+		GasLocked:       gasToLock,
+	})
+}
+
+func (context *runtimeContext) prepareGasForAsyncCall() (uint64, error) {
+	metering := context.host.Metering()
+	err := metering.UseGasForAsyncStep()
+	if err != nil {
+		return 0, err
 	}
 
 	var shouldLockGas bool
@@ -680,20 +689,11 @@ func (context *runtimeContext) CreateAndAddAsyncCall(
 		gasToLock = metering.ComputeGasLockedForAsync()
 		err = metering.UseGasBounded(gasToLock)
 		if err != nil {
-			return err
+			return 0, err
 		}
 	}
 
-	return context.AddAsyncCall(groupID, &arwen.AsyncCall{
-		Status:          arwen.AsyncCallPending,
-		Destination:     address,
-		Data:            data,
-		ValueBytes:      value,
-		SuccessCallback: string(successCallback),
-		ErrorCallback:   string(errorCallback),
-		ProvidedGas:     gas,
-		GasLocked:       gasToLock,
-	})
+	return gasToLock, nil
 }
 
 // AddAsyncCall adds an AsyncCall to the specified group
