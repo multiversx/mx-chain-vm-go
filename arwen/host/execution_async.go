@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 func (host *vmHost) handleAsyncCallBreakpoint() error {
@@ -164,6 +164,7 @@ func (host *vmHost) createSyncContextCallbackInput(asyncContext *arwen.AsyncCont
 		arguments = [][]byte{asyncContext.ReturnData}
 	}
 
+	// TODO ensure a new value for VMInput.CurrentTxHash
 	input := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallerAddr:     runtime.GetSCAddress(),
@@ -174,6 +175,7 @@ func (host *vmHost) createSyncContextCallbackInput(asyncContext *arwen.AsyncCont
 			GasProvided:    metering.GasLeft(),
 			CurrentTxHash:  runtime.GetCurrentTxHash(),
 			OriginalTxHash: runtime.GetOriginalTxHash(),
+			PrevTxHash:     runtime.GetPrevTxHash(),
 		},
 		RecipientAddr: asyncContext.CallerAddr,
 		Function:      arwen.CallbackFunctionName, // TODO currently default; will customize in AsynContext
@@ -186,8 +188,7 @@ func (host *vmHost) loadCurrentAsyncContext() (*arwen.AsyncContext, error) {
 	storage := host.Storage()
 
 	asyncContext := &arwen.AsyncContext{}
-	// TODO consider using the previous tx hash
-	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, runtime.GetOriginalTxHash())
+	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, runtime.GetPrevTxHash())
 	buff := storage.GetStorage(storageKey)
 	if len(buff) == 0 {
 		return asyncContext, nil
@@ -205,8 +206,7 @@ func (host *vmHost) deleteCurrentAsyncContext() error {
 	runtime := host.Runtime()
 	storage := host.Storage()
 
-	// TODO consider using the previous tx hash
-	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, runtime.GetOriginalTxHash())
+	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, runtime.GetPrevTxHash())
 	_, err := storage.SetStorage(storageKey, nil)
 	return err
 }

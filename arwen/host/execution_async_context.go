@@ -6,7 +6,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/math"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 // executeCurrentAsyncContext is the entry-point of the async calling mechanism; it is
@@ -237,6 +237,7 @@ func (host *vmHost) createSyncCallInput(asyncCall arwen.AsyncCallHandler) (*vmco
 			GasProvided:    gasLimit,
 			CurrentTxHash:  runtime.GetCurrentTxHash(),
 			OriginalTxHash: runtime.GetOriginalTxHash(),
+			PrevTxHash:     runtime.GetPrevTxHash(),
 		},
 		RecipientAddr: asyncCall.GetDestination(),
 		Function:      function,
@@ -290,6 +291,7 @@ func (host *vmHost) createSyncCallbackInput(
 			GasProvided:    gasLimit,
 			CurrentTxHash:  runtime.GetCurrentTxHash(),
 			OriginalTxHash: runtime.GetOriginalTxHash(),
+			PrevTxHash:     runtime.GetPrevTxHash(),
 		},
 		RecipientAddr: runtime.GetSCAddress(),
 		Function:      callbackFunction,
@@ -403,7 +405,7 @@ func (host *vmHost) saveAsyncContext(asyncContext *arwen.AsyncContext) error {
 	storage := host.Storage()
 	runtime := host.Runtime()
 
-	asyncCallStorageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, runtime.GetOriginalTxHash())
+	asyncCallStorageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, runtime.GetPrevTxHash())
 	data, err := json.Marshal(asyncContext)
 	if err != nil {
 		return err

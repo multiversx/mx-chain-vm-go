@@ -65,6 +65,7 @@ package elrondapi
 // extern int64 getPrevBlockEpoch(void *context);
 // extern void getPrevBlockRandomSeed(void *context, int32_t resultOffset);
 // extern void getOriginalTxHash(void *context, int32_t resultOffset);
+// extern void getPrevTxHash(void *context, int32_t resultOffset);
 import "C"
 
 import (
@@ -289,6 +290,11 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("getOriginalTxHash", getOriginalTxHash, C.getOriginalTxHash)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getPrevTxHash", getPrevTxHash, C.getPrevTxHash)
 	if err != nil {
 		return nil, err
 	}
@@ -1740,6 +1746,18 @@ func getOriginalTxHash(context unsafe.Pointer, dataOffset int32) {
 	metering.UseGas(gasToUse)
 
 	err := runtime.MemStore(dataOffset, runtime.GetOriginalTxHash())
+	_ = arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
+}
+
+//export getPrevTxHash
+func getPrevTxHash(context unsafe.Pointer, dataOffset int32) {
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.GetBlockHash
+	metering.UseGas(gasToUse)
+
+	err := runtime.MemStore(dataOffset, runtime.GetPrevTxHash())
 	_ = arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
 }
 

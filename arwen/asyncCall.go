@@ -1,6 +1,6 @@
 package arwen
 
-import vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+import "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 
 // AsyncCall holds the information about an individual async call
 type AsyncCall struct {

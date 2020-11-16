@@ -161,6 +161,7 @@ func (ae *ArwenTestExecutor) scCreate(txIndex string, tx *mj.Transaction) (*vmi.
 			GasProvided:    tx.GasLimit.Value,
 			OriginalTxHash: txHash,
 			CurrentTxHash:  txHash,
+			PrevTxHash:     txHash,
 		},
 	}
 
@@ -187,6 +188,7 @@ func (ae *ArwenTestExecutor) scCall(txIndex string, tx *mj.Transaction) (*vmi.VM
 			GasProvided:    tx.GasLimit.Value,
 			OriginalTxHash: txHash,
 			CurrentTxHash:  txHash,
+			PrevTxHash:     txHash,
 		},
 	}
 

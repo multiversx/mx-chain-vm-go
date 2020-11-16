@@ -376,6 +376,11 @@ func (context *runtimeContext) SetVMInput(vmInput *vmcommon.VMInput) {
 		copy(context.vmInput.CurrentTxHash, vmInput.CurrentTxHash)
 	}
 
+	if len(vmInput.PrevTxHash) > 0 {
+		context.vmInput.PrevTxHash = make([]byte, len(vmInput.PrevTxHash))
+		copy(context.vmInput.PrevTxHash, vmInput.PrevTxHash)
+	}
+
 	if len(vmInput.Arguments) > 0 {
 		context.vmInput.Arguments = make([][]byte, len(vmInput.Arguments))
 		for i, arg := range vmInput.Arguments {
@@ -399,6 +404,10 @@ func (context *runtimeContext) GetCurrentTxHash() []byte {
 
 func (context *runtimeContext) GetOriginalTxHash() []byte {
 	return context.vmInput.OriginalTxHash
+}
+
+func (context *runtimeContext) GetPrevTxHash() []byte {
+	return context.vmInput.PrevTxHash
 }
 
 func (context *runtimeContext) Function() string {

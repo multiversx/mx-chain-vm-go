@@ -91,6 +91,7 @@ type RuntimeContext interface {
 	Arguments() [][]byte
 	GetCurrentTxHash() []byte
 	GetOriginalTxHash() []byte
+	GetPrevTxHash() []byte
 	ExtractCodeUpgradeFromArgs() ([]byte, []byte, error)
 	SignalUserError(message string)
 	FailExecution(err error)
