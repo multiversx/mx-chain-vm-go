@@ -593,8 +593,17 @@ func (context *runtimeContext) CreateAndAddAsyncCall(
 	metering := context.host.Metering()
 	err := metering.UseGasForAsyncStep()
 
+	var shouldLockGas bool
+
+	if !context.host.IsDynamicGasLockingEnabled() {
+		// Legacy mode: static gas locking, always enabled
+		shouldLockGas = true
+	} else {
+		// Dynamic mode: lock only if callBack() exists
+		shouldLockGas = context.HasCallbackMethod()
+	}
+
 	gasToLock := uint64(0)
-	shouldLockGas := context.HasCallbackMethod() || !context.host.IsDynamicGasLockingEnabled()
 	if shouldLockGas {
 		gasToLock = metering.ComputeGasLockedForAsync()
 		err = metering.UseGasBounded(gasToLock)
