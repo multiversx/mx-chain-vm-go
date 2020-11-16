@@ -591,7 +591,11 @@ func (context *runtimeContext) CreateAndAddAsyncCall(
 	gas uint64,
 ) error {
 	metering := context.host.Metering()
+
 	err := metering.UseGasForAsyncStep()
+	if err != nil {
+		return err
+	}
 
 	var shouldLockGas bool
 
@@ -619,7 +623,7 @@ func (context *runtimeContext) CreateAndAddAsyncCall(
 		ValueBytes:      value,
 		SuccessCallback: string(successCallback),
 		ErrorCallback:   string(errorCallback),
-		ProvidedGas:     uint64(gas),
+		ProvidedGas:     gas,
 		GasLocked:       gasToLock,
 	})
 }
