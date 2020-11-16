@@ -17,16 +17,27 @@ const TimeLockKeyPrefix = "timelock"
 // storage; protected by Arwen explicitly, and implicitly by the Elrond node due to '@'
 const AsyncDataPrefix = "ARWEN@"
 
+// BreakpointValue encodes Wasmer runtime breakpoint types
 type BreakpointValue uint64
 
 const (
+	// BreakpointNone signifies the lack of a breakpoint
 	BreakpointNone BreakpointValue = iota
+
+	// BreakpointExecutionFailed means that Wasmer must stop immediately due to failure indicated by Arwen
 	BreakpointExecutionFailed
+
+	// BreakpointExecutionFailed means that Wasmer must stop immediately so Arwen can execute an AsyncCall
 	BreakpointAsyncCall
+
+	// BreakpointExecutionFailed means that Wasmer must stop immediately due to a contract-signalled error
 	BreakpointSignalError
+
+	// BreakpointExecutionFailed means that Wasmer must stop immediately due to gas being exhausted
 	BreakpointOutOfGas
 )
 
+// AsyncCallExecutionMode encodes the execution modes of an AsyncCall
 type AsyncCallExecutionMode uint
 
 const (
@@ -43,12 +54,17 @@ const (
 	AsyncUnknown
 )
 
-// AsyncCallStatus represents the different status an async call can have
+// AsyncCallStatus encodes the different statuses an async call can have
 type AsyncCallStatus uint8
 
 const (
+	// AsyncCallPending is the status of an async call that awaits complete execution
 	AsyncCallPending AsyncCallStatus = iota
+
+	// AsyncCallResolved is the status of an async call that was executed completely and successfully
 	AsyncCallResolved
+
+	// AsyncCallRejected is the status of an async call that was executed completely but unsuccessfully
 	AsyncCallRejected
 )
 
