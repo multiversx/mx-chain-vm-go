@@ -54,6 +54,10 @@ func (host *VmHostMock) BigInt() arwen.BigIntContext {
 	return host.BigIntContext
 }
 
+func (host *VmHostMock) CallArgsParser() arwen.CallArgsParser {
+	return nil
+}
+
 func (host *VmHostMock) IsArwenV2Enabled() bool {
 	return true
 }
@@ -70,12 +74,12 @@ func (host *VmHostMock) CreateNewContract(_ *vmcommon.ContractCreateInput) ([]by
 	return nil, nil
 }
 
-func (host *VmHostMock) ExecuteOnSameContext(_ *vmcommon.ContractCallInput) (*arwen.AsyncContextInfo, error) {
+func (host *VmHostMock) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*arwen.AsyncContext, error) {
 	return nil, nil
 }
 
-func (host *VmHostMock) ExecuteOnDestContext(_ *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *arwen.AsyncContextInfo, error) {
-	return nil, nil, nil
+func (host *VmHostMock) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+	return nil, nil
 }
 
 func (host *VmHostMock) EthereumCallData() []byte {

@@ -75,9 +75,8 @@ func (context *meteringContext) GasLeft() uint64 {
 	return gasProvided - gasUsed
 }
 
-func (context *meteringContext) BoundGasLimit(value int64) uint64 {
+func (context *meteringContext) BoundGasLimit(limit uint64) uint64 {
 	gasLeft := context.GasLeft()
-	limit := uint64(value)
 
 	if gasLeft < limit {
 		return gasLeft

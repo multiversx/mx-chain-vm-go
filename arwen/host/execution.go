@@ -7,9 +7,9 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/contexts"
+	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	"github.com/ElrondNetwork/elrond-go-logger/check"
 	"github.com/ElrondNetwork/elrond-go/core"
-	"github.com/ElrondNetwork/elrond-go/core/parsers"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
@@ -142,8 +142,11 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	return
 }
 
-func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, asyncInfo *arwen.AsyncContextInfo, err error) {
+func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	log.Trace("ExecuteOnDestContext", "function", input.Function)
+
+	var vmOutput *vmcommon.VMOutput
+	var err error
 
 	bigInt, _, _, output, runtime, storage := host.GetContexts()
 
@@ -169,17 +172,16 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	// transfer will not persist.
 	err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	gasUsed, err = host.execute(input)
 	if err != nil {
-		return
+		return nil, err
 	}
 
-	asyncInfo = runtime.GetAsyncContextInfo()
-	_, err = host.processAsyncInfo(asyncInfo)
-	return
+	err = host.executeCurrentAsyncContext()
+	return vmOutput, err
 }
 
 func computeGasUsedByCurrentSC(
@@ -253,12 +255,14 @@ func (host *vmHost) finishExecuteOnDestContext(gasUsed uint64, executeErr error)
 	return vmOutput
 }
 
-func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asyncInfo *arwen.AsyncContextInfo, err error) {
+func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*arwen.AsyncContext, error) {
 	log.Trace("ExecuteOnSameContext", "function", input.Function)
 
 	if host.IsBuiltinFunctionName(input.Function) {
 		return nil, arwen.ErrBuiltinCallOnSameContextDisallowed
 	}
+
+	var err error
 
 	bigInt, _, _, output, runtime, _ := host.GetContexts()
 
@@ -280,17 +284,15 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 	// transfer will not persist.
 	err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	gasUsed, err = host.execute(input)
 	if err != nil {
-		return
+		return nil, err
 	}
 
-	asyncInfo = runtime.GetAsyncContextInfo()
-
-	return
+	return runtime.GetAsyncContext(), nil
 }
 
 func (host *vmHost) finishExecuteOnSameContext(gasUsed uint64, executeErr error) {
@@ -395,7 +397,7 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newC
 		AllowInitFunction: true,
 		VMInput:           input.VMInput,
 	}
-	vmOutput, _, err := host.ExecuteOnDestContext(initCallInput)
+	vmOutput, err := host.ExecuteOnDestContext(initCallInput)
 	if err != nil {
 		return
 	}
@@ -607,7 +609,7 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmc
 		metering.UseGas(gasConsumed)
 	}
 
-	newVMInput, err := isSCExecutionAfterBuiltInFunc(input, vmOutput)
+	newVMInput, err := host.isSCExecutionAfterBuiltInFunc(input, vmOutput)
 	if err != nil {
 		return nil, err
 	}
@@ -651,7 +653,7 @@ func (host *vmHost) callSCMethod() error {
 	function, err := host.getFunctionByCallType(callType)
 	if err != nil {
 		if callType == vmcommon.AsynchronousCallBack && errors.Is(err, arwen.ErrNilCallbackFunction) {
-			return host.processCallbackStack()
+			return host.postprocessCrossShardCallback()
 		}
 		return err
 	}
@@ -664,24 +666,56 @@ func (host *vmHost) callSCMethod() error {
 		return err
 	}
 
+	err = host.executeCurrentAsyncContext()
+	if err != nil {
+		return err
+	}
+
 	switch callType {
 	case vmcommon.AsynchronousCall:
-		pendingMap, paiErr := host.processAsyncInfo(runtime.GetAsyncContextInfo())
-		if paiErr != nil {
-			return paiErr
-		}
-		if len(pendingMap.AsyncContextMap) == 0 {
-			err = host.sendCallbackToCurrentCaller()
-		}
-		break
+		err = host.sendAsyncCallbackToCaller()
 	case vmcommon.AsynchronousCallBack:
-		err = host.processCallbackStack()
-		break
+		err = host.postprocessCrossShardCallback()
 	default:
-		_, err = host.processAsyncInfo(runtime.GetAsyncContextInfo())
+		err = arwen.ErrUnknownCallType
 	}
 
 	return err
+}
+
+// TODO move into RuntimeContext
+func (host *vmHost) getFunctionByCallType(callType vmcommon.CallType) (wasmer.ExportedFunctionCallback, error) {
+	runtime := host.Runtime()
+
+	if callType != vmcommon.AsynchronousCallBack {
+		return runtime.GetFunctionToCall()
+	}
+
+	asyncContext, err := host.loadCurrentAsyncContext()
+	if err != nil {
+		return nil, err
+	}
+
+	vmInput := runtime.GetVMInput()
+
+	customCallback := false
+	for _, asyncCallGroup := range asyncContext.AsyncCallGroups {
+		for _, asyncCall := range asyncCallGroup.AsyncCalls {
+			if bytes.Equal(vmInput.CallerAddr, asyncCall.Destination) {
+				customCallback = true
+				// TODO why asyncCall.SuccessCallback? why not check for error as well,
+				// and set asyncCall.ErrorCallback?
+				runtime.SetCustomCallFunction(asyncCall.SuccessCallback)
+				break
+			}
+		}
+
+		if customCallback {
+			break
+		}
+	}
+
+	return runtime.GetFunctionToCall()
 }
 
 func (host *vmHost) verifyAllowedFunctionCall() error {
@@ -726,7 +760,7 @@ func (host *vmHost) createETHCallInput() []byte {
 	return newInput
 }
 
-func isSCExecutionAfterBuiltInFunc(
+func (host *vmHost) isSCExecutionAfterBuiltInFunc(
 	vmInput *vmcommon.ContractCallInput,
 	vmOutput *vmcommon.VMOutput,
 ) (*vmcommon.ContractCallInput, error) {
@@ -749,12 +783,14 @@ func isSCExecutionAfterBuiltInFunc(
 	callType := vmInput.CallType
 	txData := prependCallbackToTxDataIfAsyncCall(outAcc.OutputTransfers[0].Data, callType)
 
-	argParser := parsers.NewCallArgsParser()
-	function, arguments, err := argParser.ParseData(txData)
+	function, arguments, err := host.CallArgsParser().ParseData(txData)
 	if err != nil {
 		return nil, err
 	}
 
+	// TODO CurrentTxHash might equal PrevTxHash, because Arwen does not generate
+	// SCRs between async steps; analyze and fix this (e.g. create dummy SCRs
+	// just for hashing, or hash the VMInput itself)
 	newVMInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallerAddr:     vmInput.CallerAddr,
@@ -765,6 +801,7 @@ func isSCExecutionAfterBuiltInFunc(
 			GasProvided:    vmOutput.GasRemaining,
 			OriginalTxHash: vmInput.OriginalTxHash,
 			CurrentTxHash:  vmInput.CurrentTxHash,
+			PrevTxHash:     vmInput.PrevTxHash,
 		},
 		RecipientAddr:     vmInput.RecipientAddr,
 		Function:          function,

@@ -104,12 +104,12 @@ func TestMeteringContext_BoundGasLimit(t *testing.T) {
 	mockRuntime.SetVMInput(vmInput)
 	mockRuntime.SetPointsUsed(0)
 
-	gasLimit := 5000
-	limit := meteringContext.BoundGasLimit(int64(gasLimit))
+	gasLimit := uint64(5000)
+	limit := meteringContext.BoundGasLimit(gasLimit)
 	require.Equal(t, uint64(gasLimit), limit)
 
 	gasLimit = 25000
-	limit = meteringContext.BoundGasLimit(int64(gasLimit))
+	limit = meteringContext.BoundGasLimit(gasLimit)
 	require.Equal(t, meteringContext.GasLeft(), limit)
 
 	blockLimit := meteringContext.BlockGasLimit()

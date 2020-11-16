@@ -36,12 +36,13 @@ type VMHost interface {
 	IsDynamicGasLockingEnabled() bool
 
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
-	ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*AsyncContextInfo, error)
-	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *AsyncContextInfo, error)
+	ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*AsyncContext, error)
+	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
 	EthereumCallData() []byte
 	GetAPIMethods() *wasmer.Imports
 	GetProtocolBuiltinFunctions() vmcommon.FunctionNames
 	IsBuiltinFunctionName(functionName string) bool
+	CallArgsParser() CallArgsParser
 }
 
 type BlockchainContext interface {
@@ -65,7 +66,7 @@ type BlockchainContext interface {
 	GetCodeHash(addr []byte) []byte
 	GetCode(addr []byte) ([]byte, error)
 	GetCodeSize(addr []byte) (int32, error)
-	BlockHash(number int64) []byte
+	BlockHash(number uint64) []byte
 	GetOwnerAddress() ([]byte, error)
 	GetShardOfAddress(addr []byte) uint32
 	IsSmartContract(addr []byte) bool
@@ -90,17 +91,18 @@ type RuntimeContext interface {
 	Arguments() [][]byte
 	GetCurrentTxHash() []byte
 	GetOriginalTxHash() []byte
+	GetPrevTxHash() []byte
 	ExtractCodeUpgradeFromArgs() ([]byte, []byte, error)
 	SignalUserError(message string)
 	FailExecution(err error)
 	MustVerifyNextContractCode()
 	SetRuntimeBreakpointValue(value BreakpointValue)
 	GetRuntimeBreakpointValue() BreakpointValue
-	GetAsyncCallInfo() *AsyncCallInfo
-	SetAsyncCallInfo(asyncCallInfo *AsyncCallInfo)
-	AddAsyncContextCall(contextIdentifier []byte, asyncCall *AsyncGeneratedCall) error
-	GetAsyncContextInfo() *AsyncContextInfo
-	GetAsyncContext(contextIdentifier []byte) (*AsyncContext, error)
+	GetDefaultAsyncCall() *AsyncCall
+	SetDefaultAsyncCall(asyncCallInfo *AsyncCall)
+	AddAsyncCall(contextIdentifier []byte, asyncCall *AsyncCall) error
+	GetAsyncContext() *AsyncContext
+	GetAsyncCallGroup(groupID []byte) (*AsyncCallGroup, error)
 	PushInstance()
 	PopInstance()
 	RunningInstancesCount() uint64
@@ -171,7 +173,7 @@ type MeteringContext interface {
 	FreeGas(gas uint64)
 	RestoreGas(gas uint64)
 	GasLeft() uint64
-	BoundGasLimit(value int64) uint64
+	BoundGasLimit(limit uint64) uint64
 	BlockGasLimit() uint64
 	DeductInitialGasForExecution(contract []byte) error
 	DeductInitialGasForDirectDeployment(input CodeDeployInput) error
@@ -203,7 +205,7 @@ type StorageContext interface {
 	SetStorage(key []byte, value []byte) (StorageStatus, error)
 }
 
-type AsyncCallInfoHandler interface {
+type AsyncCallHandler interface {
 	GetDestination() []byte
 	GetData() []byte
 	GetGasLimit() uint64

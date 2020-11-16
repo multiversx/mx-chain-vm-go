@@ -38,9 +38,8 @@ func (m *MeteringContextMock) GasLeft() uint64 {
 	return m.GasLeftMock
 }
 
-func (m *MeteringContextMock) BoundGasLimit(value int64) uint64 {
+func (m *MeteringContextMock) BoundGasLimit(limit uint64) uint64 {
 	gasLeft := m.GasLeft()
-	limit := uint64(value)
 
 	if gasLeft < limit {
 		return gasLeft

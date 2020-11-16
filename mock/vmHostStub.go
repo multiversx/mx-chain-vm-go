@@ -23,12 +23,13 @@ type VmHostStub struct {
 	MeteringCalled                    func() arwen.MeteringContext
 	StorageCalled                     func() arwen.StorageContext
 	CreateNewContractCalled           func(input *vmcommon.ContractCreateInput) ([]byte, error)
-	ExecuteOnSameContextCalled        func(input *vmcommon.ContractCallInput) (*arwen.AsyncContextInfo, error)
-	ExecuteOnDestContextCalled        func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *arwen.AsyncContextInfo, error)
+	ExecuteOnSameContextCalled        func(input *vmcommon.ContractCallInput) (*arwen.AsyncContext, error)
+	ExecuteOnDestContextCalled        func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
 	EthereumCallDataCalled            func() []byte
 	GetAPIMethodsCalled               func() *wasmer.Imports
 	GetProtocolBuiltinFunctionsCalled func() vmcommon.FunctionNames
 	IsBuiltinFunctionNameCalled       func(functionName string) bool
+	CallArgsParserCalled              func() arwen.CallArgsParser
 }
 
 func (vhs *VmHostStub) InitState() {
@@ -83,6 +84,13 @@ func (vhs *VmHostStub) BigInt() arwen.BigIntContext {
 	return nil
 }
 
+func (vhs *VmHostStub) CallArgsParser() arwen.CallArgsParser {
+	if vhs.CallArgsParserCalled != nil {
+		return vhs.CallArgsParserCalled()
+	}
+	return nil
+}
+
 func (vhs *VmHostStub) IsArwenV2Enabled() bool {
 	return true
 }
@@ -123,18 +131,18 @@ func (vhs *VmHostStub) CreateNewContract(input *vmcommon.ContractCreateInput) ([
 	return nil, nil
 }
 
-func (vhs *VmHostStub) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*arwen.AsyncContextInfo, error) {
+func (vhs *VmHostStub) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*arwen.AsyncContext, error) {
 	if vhs.ExecuteOnSameContextCalled != nil {
 		return vhs.ExecuteOnSameContextCalled(input)
 	}
 	return nil, nil
 }
 
-func (vhs *VmHostStub) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *arwen.AsyncContextInfo, error) {
+func (vhs *VmHostStub) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	if vhs.ExecuteOnDestContextCalled != nil {
 		return vhs.ExecuteOnDestContextCalled(input)
 	}
-	return nil, nil, nil
+	return nil, nil
 }
 
 func (vhs *VmHostStub) EthereumCallData() []byte {

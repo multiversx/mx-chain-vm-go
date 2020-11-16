@@ -45,10 +45,6 @@ var ErrInvalidFunction = errors.New("invalid function")
 
 var ErrInitFuncCalledInRun = fmt.Errorf("%w (calling init() directly is forbidden)", ErrInvalidFunction)
 
-var ErrCallBackFuncCalledInRun = fmt.Errorf("%w (calling callBack() directly is forbidden)", ErrInvalidFunction)
-
-var ErrCallBackFuncNotExpected = fmt.Errorf("%w (unexpected callback was received)", ErrInvalidFunction)
-
 var ErrFuncNotFound = fmt.Errorf("%w (not found)", ErrInvalidFunction)
 
 var ErrInvalidFunctionName = fmt.Errorf("%w (invalid name)", ErrInvalidFunction)
@@ -77,13 +73,25 @@ var ErrBitwiseNegative = errors.New("bitwise operations only allowed on positive
 
 var ErrShiftNegative = errors.New("bitwise shift operations only allowed on positive integers and by a positive amount")
 
+var ErrInvalidAccount = errors.New("account does not exist")
+
 var ErrAsyncCallsDisallowed = errors.New("async calls disallowed")
 
 var ErrAsyncContextDoesNotExist = errors.New("async context does not exist")
 
+var ErrAsyncCallGroupDoesNotExist = errors.New("async call group does not exist")
+
 var ErrNilCallbackVMOutput = errors.New("nil callback VMOutput")
 
-var ErrInvalidAccount = errors.New("account does not exist")
+var ErrAsyncCallNotFound = errors.New("async call not found")
+
+var ErrCallBackFuncCalledInRun = errors.New("calling callBack() directly is forbidden")
+
+var ErrCallBackFuncNotExpected = errors.New("unexpected callback was received")
+
+var ErrUnknownCallType = errors.New("unknown call type")
+
+var ErrCannotUseBuiltinAsCallback = errors.New("cannot use built-in function as callback")
 
 var ErrDeploymentOverExistingAccount = errors.New("cannot deploy over existing account")
 

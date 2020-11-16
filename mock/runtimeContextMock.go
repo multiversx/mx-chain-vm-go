@@ -26,7 +26,7 @@ type RuntimeContextMock struct {
 	FailElrondAPI          bool
 	FailElrondSyncExecAPI  bool
 	FailBigIntAPI          bool
-	AsyncCallInfo          *arwen.AsyncCallInfo
+	DefaultAsyncCall       *arwen.AsyncCall
 	RunningInstances       uint64
 	CurrentTxHash          []byte
 	OriginalTxHash         []byte
@@ -222,23 +222,23 @@ func (r *RuntimeContextMock) BigIntAPIErrorShouldFailExecution() bool {
 func (r *RuntimeContextMock) FailExecution(_ error) {
 }
 
-func (r *RuntimeContextMock) GetAsyncCallInfo() *arwen.AsyncCallInfo {
-	return r.AsyncCallInfo
+func (r *RuntimeContextMock) GetDefaultAsyncCall() *arwen.AsyncCall {
+	return r.DefaultAsyncCall
 }
 
-func (r *RuntimeContextMock) SetAsyncCallInfo(asyncCallInfo *arwen.AsyncCallInfo) {
-	r.AsyncCallInfo = asyncCallInfo
+func (r *RuntimeContextMock) SetDefaultAsyncCall(asyncCall *arwen.AsyncCall) {
+	r.DefaultAsyncCall = asyncCall
 }
 
-func (r *RuntimeContextMock) AddAsyncContextCall(_ []byte, _ *arwen.AsyncGeneratedCall) error {
-	return r.Err
-}
-
-func (r *RuntimeContextMock) GetAsyncContextInfo() *arwen.AsyncContextInfo {
+func (r *RuntimeContextMock) AddAsyncCall(_ []byte, _ *arwen.AsyncCall) error {
 	return nil
 }
 
-func (r *RuntimeContextMock) GetAsyncContext(_ []byte) (*arwen.AsyncContext, error) {
+func (r *RuntimeContextMock) GetAsyncContext() *arwen.AsyncContext {
+	return nil
+}
+
+func (r *RuntimeContextMock) GetAsyncCallGroup(_ []byte) (*arwen.AsyncCallGroup, error) {
 	return nil, nil
 }
 

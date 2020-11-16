@@ -13,11 +13,14 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-go/core/atomic"
+	"github.com/ElrondNetwork/elrond-go/core/parsers"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 var log = logger.GetOrCreate("arwen/host")
 
+// MaximumWasmerInstanceCount specifies the maximum number of allowed Wasmer
+// instances on the InstanceStack of the RuntimeContext
 var MaximumWasmerInstanceCount = uint64(10)
 
 // TryFunction corresponds to the try() part of a try / catch block
@@ -52,6 +55,8 @@ type vmHost struct {
 
 	dynGasLockEnableEpoch uint32
 	flagDynGasLock        atomic.Flag
+
+	callArgsParser arwen.CallArgsParser
 }
 
 // NewArwenVM creates a new Arwen vmHost
@@ -74,6 +79,7 @@ func NewArwenVM(
 		arwenV2EnableEpoch:       hostParameters.ArwenV2EnableEpoch,
 		aotEnableEpoch:           hostParameters.AheadOfTimeEnableEpoch,
 		dynGasLockEnableEpoch:    hostParameters.DynGasLockEnableEpoch,
+		callArgsParser:           parsers.NewCallArgsParser(),
 	}
 
 	var err error
@@ -180,6 +186,10 @@ func (host *vmHost) Storage() arwen.StorageContext {
 
 func (host *vmHost) BigInt() arwen.BigIntContext {
 	return host.bigIntContext
+}
+
+func (host *vmHost) CallArgsParser() arwen.CallArgsParser {
+	return host.callArgsParser
 }
 
 func (host *vmHost) IsArwenV2Enabled() bool {

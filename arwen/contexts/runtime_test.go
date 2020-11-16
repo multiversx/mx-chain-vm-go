@@ -9,7 +9,6 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/cryptoapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/elrondapi"
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/ethapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
@@ -21,11 +20,18 @@ import (
 const WASMPageSize = 65536
 
 func MakeAPIImports() *wasmer.Imports {
-	imports, _ := elrondapi.ElrondEIImports()
-	imports, _ = elrondapi.BigIntImports(imports)
-	imports, _ = elrondapi.SmallIntImports(imports)
-	imports, _ = ethapi.EthereumImports(imports)
-	imports, _ = cryptoapi.CryptoImports(imports)
+	imports, err := elrondapi.ElrondEIImports()
+	log.LogIfError(err)
+
+	imports, err = elrondapi.BigIntImports(imports)
+	log.LogIfError(err)
+
+	imports, err = elrondapi.SmallIntImports(imports)
+	log.LogIfError(err)
+
+	imports, err = cryptoapi.CryptoImports(imports)
+	log.LogIfError(err)
+
 	return imports
 }
 
@@ -63,7 +69,7 @@ func TestNewRuntimeContext(t *testing.T) {
 	require.Equal(t, []byte{}, runtimeContext.scAddress)
 	require.Equal(t, "", runtimeContext.callFunction)
 	require.Equal(t, false, runtimeContext.readOnly)
-	require.Nil(t, runtimeContext.asyncCallInfo)
+	require.Nil(t, runtimeContext.defaultAsyncCall)
 }
 
 func TestRuntimeContext_InitState(t *testing.T) {
@@ -79,7 +85,7 @@ func TestRuntimeContext_InitState(t *testing.T) {
 	runtimeContext.scAddress = []byte("some address")
 	runtimeContext.callFunction = "a function"
 	runtimeContext.readOnly = true
-	runtimeContext.asyncCallInfo = &arwen.AsyncCallInfo{}
+	runtimeContext.defaultAsyncCall = &arwen.AsyncCall{}
 
 	runtimeContext.InitState()
 
@@ -87,7 +93,7 @@ func TestRuntimeContext_InitState(t *testing.T) {
 	require.Equal(t, []byte{}, runtimeContext.scAddress)
 	require.Equal(t, "", runtimeContext.callFunction)
 	require.Equal(t, false, runtimeContext.readOnly)
-	require.Nil(t, runtimeContext.asyncCallInfo)
+	require.Nil(t, runtimeContext.defaultAsyncCall)
 }
 
 func TestRuntimeContext_NewWasmerInstance(t *testing.T) {
