@@ -145,9 +145,6 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	log.Trace("ExecuteOnDestContext", "function", input.Function)
 
-	var vmOutput *vmcommon.VMOutput
-	var err error
-
 	bigInt, _, _, output, runtime, storage := host.GetContexts()
 
 	bigInt.PushState()
@@ -163,25 +160,60 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vm
 	storage.PushState()
 	storage.SetAddress(runtime.GetSCAddress())
 
-	gasUsed := uint64(0)
-	defer func() {
-		vmOutput = host.finishExecuteOnDestContext(gasUsed, err)
-	}()
-
 	// Perform a value transfer to the called SC. If the execution fails, this
 	// transfer will not persist.
-	err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue)
+	err := output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue)
 	if err != nil {
-		return nil, err
+		return host.finishExecuteOnDestContext(0, err)
 	}
 
-	gasUsed, err = host.execute(input)
+	gasUsed, err := host.execute(input)
 	if err != nil {
-		return nil, err
+		return host.finishExecuteOnDestContext(gasUsed, err)
 	}
 
 	err = host.executeCurrentAsyncContext()
-	return vmOutput, err
+	return host.finishExecuteOnDestContext(gasUsed, err)
+}
+
+func (host *vmHost) finishExecuteOnDestContext(gasUsed uint64, executeErr error) (*vmcommon.VMOutput, error) {
+	bigInt, _, _, output, runtime, storage := host.GetContexts()
+
+	// Extract the VMOutput produced by the execution in isolation, before
+	// restoring the contexts. This needs to be done before popping any state
+	// stacks.
+	gasUsedBySC, err := computeGasUsedByCurrentSC(gasUsed, output, executeErr)
+	if err != nil {
+		// Execution failed: restore contexts as if the execution didn't happen,
+		// but first create a vmOutput to capture the error.
+		vmOutput := output.CreateVMOutputInCaseOfError(err)
+
+		bigInt.PopSetActiveState()
+		output.PopSetActiveState()
+		runtime.PopSetActiveState()
+		storage.PopSetActiveState()
+
+		return vmOutput, executeErr
+	}
+
+	vmOutput := output.GetVMOutput()
+
+	// Restore the previous context states, except Output, which will be merged
+	// into the initial state (VMOutput), but only if it the child execution
+	// returned vmcommon.Ok.
+	bigInt.PopSetActiveState()
+	runtime.PopSetActiveState()
+	storage.PopSetActiveState()
+
+	if vmOutput.ReturnCode == vmcommon.Ok {
+		output.PopMergeActiveState()
+		scAddress := string(runtime.GetSCAddress())
+		accumulateGasUsedByContract(vmOutput, scAddress, gasUsedBySC)
+	} else {
+		output.PopSetActiveState()
+	}
+
+	return vmOutput, executeErr
 }
 
 func computeGasUsedByCurrentSC(
@@ -215,46 +247,6 @@ func computeGasUsedByCurrentSC(
 	return gasUsed, nil
 }
 
-func (host *vmHost) finishExecuteOnDestContext(gasUsed uint64, executeErr error) *vmcommon.VMOutput {
-	bigInt, _, _, output, runtime, storage := host.GetContexts()
-
-	// Extract the VMOutput produced by the execution in isolation, before
-	// restoring the contexts. This needs to be done before popping any state
-	// stacks.
-	gasUsedBySC, err := computeGasUsedByCurrentSC(gasUsed, output, executeErr)
-	if err != nil {
-		// Execution failed: restore contexts as if the execution didn't happen,
-		// but first create a vmOutput to capture the error.
-		vmOutput := output.CreateVMOutputInCaseOfError(err)
-
-		bigInt.PopSetActiveState()
-		output.PopSetActiveState()
-		runtime.PopSetActiveState()
-		storage.PopSetActiveState()
-
-		return vmOutput
-	}
-
-	vmOutput := output.GetVMOutput()
-
-	// Restore the previous context states, except Output, which will be merged
-	// into the initial state (VMOutput), but only if it the child execution
-	// returned vmcommon.Ok.
-	bigInt.PopSetActiveState()
-	runtime.PopSetActiveState()
-	storage.PopSetActiveState()
-
-	if vmOutput.ReturnCode == vmcommon.Ok {
-		output.PopMergeActiveState()
-		scAddress := string(runtime.GetSCAddress())
-		accumulateGasUsedByContract(vmOutput, scAddress, gasUsedBySC)
-	} else {
-		output.PopSetActiveState()
-	}
-
-	return vmOutput
-}
-
 func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*arwen.AsyncContext, error) {
 	log.Trace("ExecuteOnSameContext", "function", input.Function)
 
@@ -275,23 +267,21 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*ar
 	output.ResetGas()
 	runtime.InitStateFromContractCallInput(input)
 
-	gasUsed := uint64(0)
-	defer func() {
-		host.finishExecuteOnSameContext(gasUsed, err)
-	}()
-
 	// Perform a value transfer to the called SC. If the execution fails, this
 	// transfer will not persist.
 	err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue)
 	if err != nil {
+		host.finishExecuteOnSameContext(0, err)
 		return nil, err
 	}
 
-	gasUsed, err = host.execute(input)
+	gasUsed, err := host.execute(input)
 	if err != nil {
+		host.finishExecuteOnSameContext(gasUsed, err)
 		return nil, err
 	}
 
+	host.finishExecuteOnSameContext(gasUsed, err)
 	return runtime.GetAsyncContext(), nil
 }
 
@@ -672,6 +662,8 @@ func (host *vmHost) callSCMethod() error {
 	}
 
 	switch callType {
+	case vmcommon.DirectCall:
+		break
 	case vmcommon.AsynchronousCall:
 		err = host.sendAsyncCallbackToCaller()
 	case vmcommon.AsynchronousCallBack:

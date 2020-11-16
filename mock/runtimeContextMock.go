@@ -30,6 +30,7 @@ type RuntimeContextMock struct {
 	RunningInstances       uint64
 	CurrentTxHash          []byte
 	OriginalTxHash         []byte
+	PrevTxHash             []byte
 }
 
 func (r *RuntimeContextMock) InitState() {
@@ -125,6 +126,10 @@ func (r *RuntimeContextMock) GetCurrentTxHash() []byte {
 
 func (r *RuntimeContextMock) GetOriginalTxHash() []byte {
 	return r.OriginalTxHash
+}
+
+func (r *RuntimeContextMock) GetPrevTxHash() []byte {
+	return r.PrevTxHash
 }
 
 func (r *RuntimeContextMock) ExtractCodeUpgradeFromArgs() ([]byte, []byte, error) {
