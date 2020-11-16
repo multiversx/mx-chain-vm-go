@@ -93,7 +93,6 @@ func (host *vmHost) sendContextCallbackToOriginalCaller(asyncContext *arwen.Asyn
  * executed as well.
  */
 func (host *vmHost) postprocessCrossShardCallback() error {
-
 	asyncContext, err := host.loadCurrentAsyncContext()
 	if err != nil {
 		return err
@@ -113,13 +112,11 @@ func (host *vmHost) postprocessCrossShardCallback() error {
 	}
 
 	currentCallGroup.DeleteAsyncCall(asyncCallIndex)
-
 	if currentCallGroup.HasPendingCalls() {
 		return nil
 	}
 
 	asyncContext.DeleteAsyncCallGroupByID(currentGroupID)
-
 	// Are we still waiting for callbacks to return?
 	if asyncContext.HasPendingCallGroups() {
 		return nil

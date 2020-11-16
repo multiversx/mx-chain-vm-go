@@ -5,8 +5,16 @@ import (
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
+// CallbackFunctionName is the name of the default asynchronous callback
+// function of a smart contract
 const CallbackFunctionName = "callBack"
+
+// TimeLockKeyPrevix is the storage key prefix used for timelock-related storage;
+// not protected by Arwen, nor by the Elrond node
 const TimeLockKeyPrefix = "timelock"
+
+// AsyncDataPrefix is the storage key prefix used for AsyncContext-related
+// storage; protected by Arwen explicitly, and implicitly by the Elrond node due to '@'
 const AsyncDataPrefix = "ARWEN@"
 
 type BreakpointValue uint64

@@ -9,6 +9,7 @@ type AsyncContext struct {
 	AsyncCallGroups []*AsyncCallGroup
 }
 
+// NewAsyncContext creates a new instance of AsyncContext
 func NewAsyncContext() *AsyncContext {
 	return &AsyncContext{
 		CallerAddr:      nil,
@@ -17,18 +18,25 @@ func NewAsyncContext() *AsyncContext {
 	}
 }
 
+// AddAsyncGroup adds the provided AsyncCallGroup to the AsyncContext
 func (actx *AsyncContext) AddAsyncGroup(group *AsyncCallGroup) {
 	actx.AsyncCallGroups = append(actx.AsyncCallGroups, group)
 }
 
+// HasPendingCallGroups verifies whether the AsyncContext has any
+// AsyncCallGroups yet to complete
 func (actx *AsyncContext) HasPendingCallGroups() bool {
 	return len(actx.AsyncCallGroups) > 0
 }
 
+// IsCompleted verifies whether all the AsyncCallGroups in the AsyncContext
+// have been completed
 func (actx *AsyncContext) IsCompleted() bool {
 	return len(actx.AsyncCallGroups) == 0
 }
 
+// MakeAsyncContextWithPendingCalls creates a new AsyncContext containing only
+// the pending AsyncCallGroups, without deleting anything from the initial AsyncContext
 func (actx *AsyncContext) MakeAsyncContextWithPendingCalls() *AsyncContext {
 	pendingGroups := make([]*AsyncCallGroup, 0)
 	var pendingGroup *AsyncCallGroup
@@ -55,6 +63,8 @@ func (actx *AsyncContext) MakeAsyncContextWithPendingCalls() *AsyncContext {
 	}
 }
 
+// FindAsyncCallByDestination retrieves the AsyncCall which matches the given
+// destination, from within the AsyncCallGroups
 func (actx *AsyncContext) FindAsyncCallByDestination(destination []byte) (string, int, error) {
 	for _, group := range actx.AsyncCallGroups {
 		callIndex, ok := group.FindByDestination(destination)
@@ -66,8 +76,9 @@ func (actx *AsyncContext) FindAsyncCallByDestination(destination []byte) (string
 	return "", -1, ErrAsyncCallNotFound
 }
 
+// GetAsyncCallGroup retrieves an AsyncCallGroup by its Identifier
 func (actx *AsyncContext) GetAsyncCallGroup(groupID string) (*AsyncCallGroup, bool) {
-	index, ok := actx.FindAsyncCallGroup(groupID)
+	index, ok := findGroupByID(actx.AsyncCallGroups, groupID)
 	if ok {
 		return actx.AsyncCallGroups[index], true
 	}
@@ -75,25 +86,29 @@ func (actx *AsyncContext) GetAsyncCallGroup(groupID string) (*AsyncCallGroup, bo
 	return nil, false
 }
 
-func (actx *AsyncContext) FindAsyncCallGroup(groupID string) (int, bool) {
-	return findGroupByID(actx.AsyncCallGroups, groupID)
-}
-
+// DeleteAsyncCallGroupByID deletes an AsyncCallGroup by its Identifier
 func (actx *AsyncContext) DeleteAsyncCallGroupByID(groupID string) {
-	index, ok := actx.FindAsyncCallGroup(groupID)
+	index, ok := findGroupByID(actx.AsyncCallGroups, groupID)
 	if !ok {
 		return
 	}
 	actx.DeleteAsyncCallGroup(index)
 }
 
+// DeleteAsyncCallGroup deletes an AsyncCallGroup by its index
 func (actx *AsyncContext) DeleteAsyncCallGroup(index int) {
 	groups := actx.AsyncCallGroups
-	last := len(groups) - 1
-	groups[index] = groups[last]
-	groups[last] = nil
-	groups = groups[:last]
+	if len(groups) == 0 {
+		return
+	}
 
+	last := len(groups) - 1
+	if index < 0 || index > last {
+		return
+	}
+
+	groups[index] = groups[last]
+	groups = groups[:last]
 	actx.AsyncCallGroups = groups
 }
 

@@ -36,7 +36,7 @@ func (host *vmHost) executeCurrentAsyncContext() error {
 	// (includes smart contracts and built-in functions in the same shard)
 	host.setupAsyncCallsGas(asyncContext)
 
-	for groupID, asyncCallGroup := range asyncContext.AsyncCallGroups {
+	for groupIndex, asyncCallGroup := range asyncContext.AsyncCallGroups {
 		// Execute the call group strictly synchronously (no asynchronous calls allowed)
 		err := host.executeAsyncCallGroup(asyncCallGroup, true)
 		if err != nil {
@@ -44,7 +44,7 @@ func (host *vmHost) executeCurrentAsyncContext() error {
 		}
 
 		if asyncCallGroup.IsCompleted() {
-			asyncContext.DeleteAsyncCallGroup(groupID)
+			asyncContext.DeleteAsyncCallGroup(groupIndex)
 		}
 	}
 

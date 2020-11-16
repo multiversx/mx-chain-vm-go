@@ -30,7 +30,7 @@ func (ac *AsyncCall) GetGasLimit() uint64 {
 	return ac.GasLimit
 }
 
-// GetGasLimit returns the gas limit of the current async call
+// GetGasLocked returns the gas locked for the async callback
 func (ac *AsyncCall) GetGasLocked() uint64 {
 	return ac.GasLocked
 }
@@ -45,6 +45,7 @@ func (ac *AsyncCall) IsInterfaceNil() bool {
 	return ac == nil
 }
 
+// UpdateStatus sets the status of the async call depending on the provided ReturnCode
 func (ac *AsyncCall) UpdateStatus(returnCode vmcommon.ReturnCode) {
 	ac.Status = AsyncCallResolved
 	if returnCode != vmcommon.Ok {
@@ -52,6 +53,8 @@ func (ac *AsyncCall) UpdateStatus(returnCode vmcommon.ReturnCode) {
 	}
 }
 
+// GetCallbackName returns the name of the callback to execute, depending on
+// the status of the async call
 func (ac *AsyncCall) GetCallbackName() string {
 	if ac.Status == AsyncCallResolved {
 		return ac.SuccessCallback

@@ -626,7 +626,6 @@ func (context *runtimeContext) CreateAndAddAsyncCall(
 
 func (context *runtimeContext) AddAsyncCall(groupIDBytes []byte, asyncCall *arwen.AsyncCall) error {
 	groupID := string(groupIDBytes)
-
 	if context.host.IsBuiltinFunctionName(asyncCall.SuccessCallback) {
 		return arwen.ErrCannotUseBuiltinAsCallback
 	}
