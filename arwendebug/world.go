@@ -4,7 +4,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 type worldDataModel struct {

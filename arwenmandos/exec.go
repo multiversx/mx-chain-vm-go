@@ -1,14 +1,14 @@
 package arwenmandos
 
 import (
-	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	vmi "github.com/ElrondNetwork/elrond-vm-common"
-	worldhook "github.com/ElrondNetwork/elrond-vm-util/mock-hook-blockchain"
-	mc "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/controller"
-	fr "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/fileresolver"
+	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/test/mock-hook-blockchain"
+	mc "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/controller"
+	fr "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/fileresolver"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 // TestVMType is the VM type argument we use in tests.

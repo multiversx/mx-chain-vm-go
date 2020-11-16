@@ -6,7 +6,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
 )
 
@@ -489,7 +489,7 @@ func TestOutputContext_Transfer_IsAccountPayable(t *testing.T) {
 			Nonce:        0,
 			Balance:      big.NewInt(0),
 			Code:         []byte("contract_code"),
-			CodeMetadata: []byte{0, vmcommon.METADATA_PAYABLE},
+			CodeMetadata: []byte{0, vmcommon.MetadataPayable},
 		},
 	})
 

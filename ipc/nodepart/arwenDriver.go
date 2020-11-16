@@ -10,7 +10,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/marshaling"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-go-logger/pipes"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 var log = logger.GetOrCreate("arwenDriver")
@@ -341,4 +341,9 @@ func (driver *ArwenDriver) stopArwen() error {
 	}
 
 	return nil
+}
+
+// IsInterfaceNil returns true if there is no value under the interface
+func (driver *ArwenDriver) IsInterfaceNil() bool {
+	return driver == nil
 }

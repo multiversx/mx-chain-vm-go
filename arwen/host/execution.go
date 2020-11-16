@@ -10,7 +10,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	"github.com/ElrondNetwork/elrond-go-logger/check"
 	"github.com/ElrondNetwork/elrond-go/core"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput) *vmcommon.VMOutput {

@@ -1,7 +1,7 @@
 package mock
 
 import (
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 var _ vmcommon.BlockchainHook = (*BlockchainHookStub)(nil)
@@ -193,4 +193,8 @@ func (b *BlockchainHookStub) GetCompiledCode(codeHash []byte) (bool, []byte) {
 }
 
 func (b *BlockchainHookStub) ClearCompiledCodes() {
+}
+
+func (b *BlockchainHookStub) IsInterfaceNil() bool {
+	return b == nil
 }
