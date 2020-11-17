@@ -548,3 +548,30 @@ func TestOutputContext_WriteLog(t *testing.T) {
 
 	require.Equal(t, outputContext.outputState.Logs[2].Topics, [][]byte{topic})
 }
+
+func TestOutputContext_PopSetActiveStateIfStackIsEmptyShouldNotPanic(t *testing.T) {
+	t.Parallel()
+
+	bigIntContext, _ := NewOutputContext(&mock.VmHostMock{})
+	bigIntContext.PopSetActiveState()
+
+	require.Equal(t, 0, len(bigIntContext.stateStack))
+}
+
+func TestOutputContext_PopMergeActiveStateIfStackIsEmptyShouldNotPanic(t *testing.T) {
+	t.Parallel()
+
+	bigIntContext, _ := NewOutputContext(&mock.VmHostMock{})
+	bigIntContext.PopMergeActiveState()
+
+	require.Equal(t, 0, len(bigIntContext.stateStack))
+}
+
+func TestOutputContext_PopDiscardIfStackIsEmptyShouldNotPanic(t *testing.T) {
+	t.Parallel()
+
+	bigIntContext, _ := NewOutputContext(&mock.VmHostMock{})
+	bigIntContext.PopDiscard()
+
+	require.Equal(t, 0, len(bigIntContext.stateStack))
+}

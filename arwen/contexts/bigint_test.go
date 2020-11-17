@@ -125,3 +125,21 @@ func TestBigIntContext_PutGet(t *testing.T) {
 	require.Equal(t, big.NewInt(value2), bigValue2)
 	require.Equal(t, big.NewInt(value3), bigValue3)
 }
+
+func TestBigIntContext_PopSetActiveStateIfStackIsEmptyShouldNotPanic(t *testing.T) {
+	t.Parallel()
+
+	bigIntContext, _ := NewBigIntContext()
+	bigIntContext.PopSetActiveState()
+
+	require.Equal(t, 0, len(bigIntContext.stateStack))
+}
+
+func TestBigIntContext_PopDiscardIfStackIsEmptyShouldNotPanic(t *testing.T) {
+	t.Parallel()
+
+	bigIntContext, _ := NewBigIntContext()
+	bigIntContext.PopDiscard()
+
+	require.Equal(t, 0, len(bigIntContext.stateStack))
+}
