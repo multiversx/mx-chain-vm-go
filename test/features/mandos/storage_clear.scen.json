@@ -1,5 +1,5 @@
 {
-    "name": "storage",
+    "name": "storage clear test",
     "steps": [
         {
             "step": "setState",
@@ -7,7 +7,9 @@
                 "address:features_contract": {
                     "nonce": "0",
                     "balance": "0",
-                    "storage": {},
+                    "storage": {
+                        "``nr_to_clear": "42"
+                    },
                     "code": "file:../output/basic-features.wasm"
                 },
                 "address:an_account": {
@@ -20,20 +22,37 @@
         },
         {
             "step": "scCall",
-            "txId": "store-val",
+            "txId": "check-initial-val",
             "tx": {
                 "from": "address:an_account",
                 "to": "address:features_contract",
                 "value": "0",
-                "function": "store_addr",
-                "arguments": [
-                    "``____________address_____________"
-                ],
+                "function": "get_nr_to_clear",
+                "arguments": [],
                 "gasLimit": "0x100000",
-                "gasPrice": "0x01"
+                "gasPrice": "0"
             },
             "expect": {
-                "out": [],
+                "out": [ "42" ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "clear val",
+            "tx": {
+                "from": "address:an_account",
+                "to": "address:features_contract",
+                "value": "0",
+                "function": "clear_storage_value",
+                "arguments": [],
+                "gasLimit": "0x100000",
+                "gasPrice": "0"
+            },
+            "expect": {
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -46,37 +65,15 @@
                 "address:features_contract": {
                     "nonce": "0",
                     "balance": "0",
-                    "storage": {
-                        "``addr": "``____________address_____________"
-                    },
+                    "storage": {},
                     "code": "file:../output/basic-features.wasm"
                 },
                 "address:an_account": {
-                    "nonce": "*",
-                    "balance": "*",
+                    "nonce": "2",
+                    "balance": "100000000000000000",
                     "storage": {},
                     "code": ""
                 }
-            }
-        },
-        {
-            "step": "scCall",
-            "txId": "load-val",
-            "tx": {
-                "from": "address:an_account",
-                "to": "address:features_contract",
-                "value": "0",
-                "function": "load_addr",
-                "arguments": [],
-                "gasLimit": "0x100000",
-                "gasPrice": "0x01"
-            },
-            "expect": {
-                "out": [ "``____________address_____________" ],
-                "status": "",
-                "logs": [],
-                "gas": "*",
-                "refund": "*"
             }
         }
     ]

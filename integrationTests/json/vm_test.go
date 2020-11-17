@@ -79,7 +79,7 @@ func TestRustAdder(t *testing.T) {
 	}
 }
 
-func TestCryptoBubbles(t *testing.T) {
+func TestMultisig(t *testing.T) {
 	executor, err := am.NewArwenTestExecutor()
 	require.Nil(t, err)
 	runner := mc.NewScenarioRunner(
@@ -88,7 +88,7 @@ func TestCryptoBubbles(t *testing.T) {
 	)
 	err = runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
-		"crypto_bubbles_min_v1/mandos",
+		"multisig/mandos",
 		".scen.json",
 		[]string{})
 

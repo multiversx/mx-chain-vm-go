@@ -1,18 +1,18 @@
 {
-    "name": "storage",
+    "name": "echo_slice_u8",
     "steps": [
         {
             "step": "setState",
             "accounts": {
                 "address:features_contract": {
                     "nonce": "0",
-                    "balance": "0",
+                    "balance": "0x100",
                     "storage": {},
                     "code": "file:../output/basic-features.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
-                    "balance": "100000000000000000",
+                    "balance": "0x300abc",
                     "storage": {},
                     "code": ""
                 }
@@ -20,20 +20,48 @@
         },
         {
             "step": "scCall",
-            "txId": "store-val",
+            "txId": "1",
             "tx": {
                 "from": "address:an_account",
                 "to": "address:features_contract",
                 "value": "0",
-                "function": "store_addr",
+                "function": "echo_slice_u8",
                 "arguments": [
-                    "``____________address_____________"
+                    "0x00"
                 ],
                 "gasLimit": "0x100000",
                 "gasPrice": "0x01"
             },
             "expect": {
-                "out": [],
+                "out": [
+                    "0x00",
+                    "0x01"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "2",
+            "tx": {
+                "from": "address:an_account",
+                "to": "address:features_contract",
+                "value": "0",
+                "function": "echo_slice_u8",
+                "arguments": [
+                    "0x0102030405"
+                ],
+                "gasLimit": "0x100000",
+                "gasPrice": "0x01"
+            },
+            "expect": {
+                "out": [
+                    "0x0102030405",
+                    "0x05"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -45,38 +73,16 @@
             "accounts": {
                 "address:features_contract": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {
-                        "``addr": "``____________address_____________"
-                    },
+                    "balance": "0x100",
+                    "storage": {},
                     "code": "file:../output/basic-features.wasm"
                 },
                 "address:an_account": {
-                    "nonce": "*",
-                    "balance": "*",
+                    "nonce": "2",
+                    "balance": "0x100abc",
                     "storage": {},
                     "code": ""
                 }
-            }
-        },
-        {
-            "step": "scCall",
-            "txId": "load-val",
-            "tx": {
-                "from": "address:an_account",
-                "to": "address:features_contract",
-                "value": "0",
-                "function": "load_addr",
-                "arguments": [],
-                "gasLimit": "0x100000",
-                "gasPrice": "0x01"
-            },
-            "expect": {
-                "out": [ "``____________address_____________" ],
-                "status": "",
-                "logs": [],
-                "gas": "*",
-                "refund": "*"
             }
         }
     ]

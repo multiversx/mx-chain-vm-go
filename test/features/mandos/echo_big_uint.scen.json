@@ -8,7 +8,7 @@
                     "nonce": "0",
                     "balance": "0x100",
                     "storage": {},
-                    "code": "file:../output/features.wasm"
+                    "code": "file:../output/basic-features.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
@@ -129,9 +129,10 @@
                 "gasPrice": "0x01"
             },
             "expect": {
-                "out": [],
-                "status": "*",
-                "message": "str:argument out of range",
+                "out": [
+                    "0x010000000000000000"
+                ],
+                "status": "",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"
@@ -144,7 +145,7 @@
                     "nonce": "0",
                     "balance": "0x100",
                     "storage": {},
-                    "code": "file:../output/features.wasm"
+                    "code": "file:../output/basic-features.wasm"
                 },
                 "address:an_account": {
                     "nonce": "*",
