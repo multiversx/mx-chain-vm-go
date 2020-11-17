@@ -9,7 +9,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/marshaling"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 var log = logger.GetOrCreate("arwen/part")
@@ -52,6 +52,7 @@ func NewArwenPart(
 	part.Repliers[common.ContractCallRequest] = part.replyToRunSmartContractCall
 	part.Repliers[common.DiagnoseWaitRequest] = part.replyToDiagnoseWait
 	part.Repliers[common.VersionRequest] = part.replyToVersionRequest
+	part.Repliers[common.GasScheduleChangeRequest] = part.replyToGasScheduleChange
 
 	return part, nil
 }
@@ -119,4 +120,10 @@ func (part *ArwenPart) replyToDiagnoseWait(request common.MessageHandler) common
 
 func (part *ArwenPart) replyToVersionRequest(_ common.MessageHandler) common.MessageHandler {
 	return common.NewMessageVersionResponse(part.Version)
+}
+
+func (part *ArwenPart) replyToGasScheduleChange(request common.MessageHandler) common.MessageHandler {
+	typedRequest := request.(*common.MessageGasScheduleChangeRequest)
+	part.VMHost.GasScheduleChange(typedRequest.GasSchedule)
+	return common.NewGasScheduleChangeResponse()
 }

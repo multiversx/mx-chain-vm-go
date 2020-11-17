@@ -1,7 +1,7 @@
 package common
 
 import (
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 // MessageBlockchainNewAddressRequest represents a request message

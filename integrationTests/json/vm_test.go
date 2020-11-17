@@ -6,13 +6,13 @@ import (
 	"testing"
 
 	am "github.com/ElrondNetwork/arwen-wasm-vm/arwenmandos"
+	mc "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/controller"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
-	mc "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/controller"
 	"github.com/stretchr/testify/require"
 )
 
 func init() {
-	logger.SetLogLevel("*:DEBUG")
+	_ = logger.SetLogLevel("*:DEBUG")
 }
 
 func getTestRoot() string {
@@ -98,6 +98,10 @@ func TestCryptoBubbles(t *testing.T) {
 }
 
 func TestRustFeatures(t *testing.T) {
+	if testing.Short() {
+		t.Skip("not a short test")
+	}
+
 	executor, err := am.NewArwenTestExecutor()
 	require.Nil(t, err)
 	runner := mc.NewScenarioRunner(
@@ -116,6 +120,10 @@ func TestRustFeatures(t *testing.T) {
 }
 
 func TestRustFeaturesNoSmallIntApi(t *testing.T) {
+	if testing.Short() {
+		t.Skip("not a short test")
+	}
+
 	executor, err := am.NewArwenTestExecutor()
 	require.Nil(t, err)
 	runner := mc.NewScenarioRunner(
@@ -135,6 +143,9 @@ func TestRustFeaturesNoSmallIntApi(t *testing.T) {
 
 // Backwards compatibility.
 func TestRustFeaturesLegacy(t *testing.T) {
+	if testing.Short() {
+		t.Skip("not a short test")
+	}
 
 	executor, err := am.NewArwenTestExecutor()
 	require.Nil(t, err)
@@ -172,6 +183,10 @@ func TestRustAsyncCalls(t *testing.T) {
 }
 
 func TestDelegation_v0_2(t *testing.T) {
+	if testing.Short() {
+		t.Skip("not a short test")
+	}
+
 	executor, err := am.NewArwenTestExecutor()
 	require.Nil(t, err)
 	runner := mc.NewScenarioRunner(
@@ -190,6 +205,10 @@ func TestDelegation_v0_2(t *testing.T) {
 }
 
 func TestDelegation_v0_3(t *testing.T) {
+	if testing.Short() {
+		t.Skip("not a short test")
+	}
+
 	executor, err := am.NewArwenTestExecutor()
 	require.Nil(t, err)
 	runner := mc.NewScenarioRunner(
@@ -210,6 +229,10 @@ func TestDelegation_v0_3(t *testing.T) {
 }
 
 func TestDelegation_v0_4_genesis(t *testing.T) {
+	if testing.Short() {
+		t.Skip("not a short test")
+	}
+
 	executor, err := am.NewArwenTestExecutor()
 	require.Nil(t, err)
 	runner := mc.NewScenarioRunner(
@@ -228,6 +251,10 @@ func TestDelegation_v0_4_genesis(t *testing.T) {
 }
 
 func TestDelegation_v0_5(t *testing.T) {
+	if testing.Short() {
+		t.Skip("not a short test")
+	}
+
 	executor, err := am.NewArwenTestExecutor()
 	require.Nil(t, err)
 	runner := mc.NewScenarioRunner(
@@ -246,6 +273,10 @@ func TestDelegation_v0_5(t *testing.T) {
 }
 
 func TestDnsContract(t *testing.T) {
+	if testing.Short() {
+		t.Skip("not a short test")
+	}
+
 	executor, err := am.NewArwenTestExecutor()
 	require.Nil(t, err)
 	runner := mc.NewScenarioRunner(

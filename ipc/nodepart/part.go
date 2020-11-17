@@ -7,7 +7,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/marshaling"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 // NodePart is the endpoint that implements the message loop on Node's side
@@ -118,6 +118,9 @@ func (part *NodePart) doLoop() (common.MessageHandler, error) {
 			return message, nil
 		}
 		if common.IsDiagnose(message) {
+			return message, nil
+		}
+		if common.IsGasScheduleChangeResponse(message) {
 			return message, nil
 		}
 

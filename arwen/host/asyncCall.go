@@ -9,8 +9,8 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/parsers"
+	"github.com/ElrondNetwork/elrond-go/core/parsers"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 func (host *vmHost) handleAsyncCallBreakpoint() error {
@@ -89,14 +89,15 @@ func (host *vmHost) executeSyncDestinationCall(asyncCallInfo *arwen.AsyncCallInf
 }
 
 func (host *vmHost) executeSyncCallbackCall(
-	asyncCallInfo *arwen.AsyncCallInfo,
+	asyncCallInfo arwen.AsyncCallInfoHandler,
 	destinationVMOutput *vmcommon.VMOutput,
 	destinationErr error,
 ) (*vmcommon.VMOutput, error) {
 	callbackCallInput, err := host.createCallbackContractCallInput(
+		asyncCallInfo,
 		destinationVMOutput,
-		asyncCallInfo.Destination,
-		arwen.CallbackDefault,
+		asyncCallInfo.GetDestination(),
+		arwen.CallbackFunctionName,
 		destinationErr,
 	)
 	if err != nil {
@@ -123,6 +124,7 @@ func (host *vmHost) sendAsyncCallToDestination(asyncCallInfo arwen.AsyncCallInfo
 		asyncCallInfo.GetDestination(),
 		runtime.GetSCAddress(),
 		asyncCallInfo.GetGasLimit(),
+		asyncCallInfo.GetGasLocked(),
 		big.NewInt(0).SetBytes(asyncCallInfo.GetValueBytes()),
 		asyncCallInfo.GetData(),
 		vmcommon.AsynchronousCall,
@@ -137,6 +139,7 @@ func (host *vmHost) sendAsyncCallToDestination(asyncCallInfo arwen.AsyncCallInfo
 	return nil
 }
 
+// TODO add locked gas during future refactoring, if needed
 func (host *vmHost) sendCallbackToCurrentCaller() error {
 	runtime := host.Runtime()
 	output := host.Output()
@@ -152,6 +155,7 @@ func (host *vmHost) sendCallbackToCurrentCaller() error {
 		currentCall.CallerAddr,
 		runtime.GetSCAddress(),
 		metering.GasLeft(),
+		0,
 		currentCall.CallValue,
 		retData,
 		vmcommon.AsynchronousCallBack,
@@ -175,6 +179,7 @@ func (host *vmHost) sendStorageCallbackToDestination(callerAddress, returnData [
 		callerAddress,
 		runtime.GetSCAddress(),
 		metering.GasLeft(),
+		0,
 		currentCall.CallValue,
 		returnData,
 		vmcommon.AsynchronousCallBack,
@@ -191,19 +196,13 @@ func (host *vmHost) sendStorageCallbackToDestination(callerAddress, returnData [
 func (host *vmHost) createDestinationContractCallInput(asyncCallInfo arwen.AsyncCallInfoHandler) (*vmcommon.ContractCallInput, error) {
 	runtime := host.Runtime()
 	sender := runtime.GetSCAddress()
+	metering := host.Metering()
 
 	argParser := parsers.NewCallArgsParser()
 	function, arguments, err := argParser.ParseData(string(asyncCallInfo.GetData()))
 	if err != nil {
 		return nil, err
 	}
-
-	gasLimit := asyncCallInfo.GetGasLimit()
-	gasToUse := host.Metering().GasSchedule().ElrondAPICost.AsyncCallStep
-	if gasLimit <= gasToUse {
-		return nil, arwen.ErrNotEnoughGas
-	}
-	gasLimit -= gasToUse
 
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
@@ -212,7 +211,8 @@ func (host *vmHost) createDestinationContractCallInput(asyncCallInfo arwen.Async
 			CallValue:      big.NewInt(0).SetBytes(asyncCallInfo.GetValueBytes()),
 			CallType:       vmcommon.AsynchronousCall,
 			GasPrice:       runtime.GetVMInput().GasPrice,
-			GasProvided:    gasLimit,
+			GasProvided:    metering.GasLeft(),
+			GasLocked:      asyncCallInfo.GetGasLocked(),
 			CurrentTxHash:  runtime.GetCurrentTxHash(),
 			OriginalTxHash: runtime.GetOriginalTxHash(),
 		},
@@ -224,12 +224,14 @@ func (host *vmHost) createDestinationContractCallInput(asyncCallInfo arwen.Async
 }
 
 func (host *vmHost) createCallbackContractCallInput(
+	asyncCallInfo arwen.AsyncCallInfoHandler,
 	destinationVMOutput *vmcommon.VMOutput,
 	callbackInitiator []byte,
 	callbackFunction string,
 	destinationErr error,
 ) (*vmcommon.ContractCallInput, error) {
 	metering := host.Metering()
+	gasSchedule := metering.GasSchedule()
 	runtime := host.Runtime()
 
 	// always provide return code as the first argument to callback function
@@ -246,11 +248,11 @@ func (host *vmHost) createCallbackContractCallInput(
 		arguments = append(arguments, []byte(destinationVMOutput.ReturnMessage))
 	}
 
-	gasLimit := destinationVMOutput.GasRemaining
+	gasLimit := destinationVMOutput.GasRemaining + asyncCallInfo.GetGasLocked()
 	dataLength := host.computeDataLengthFromArguments(callbackFunction, arguments)
 
-	gasToUse := metering.GasSchedule().ElrondAPICost.AsyncCallStep
-	gasToUse += metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(dataLength)
+	gasToUse := gasSchedule.ElrondAPICost.AsyncCallStep
+	gasToUse += gasSchedule.BaseOperationCost.DataCopyPerByte * uint64(dataLength)
 	if gasLimit <= gasToUse {
 		return nil, arwen.ErrNotEnoughGas
 	}
@@ -399,6 +401,7 @@ func (host *vmHost) callbackAsync(asyncCall *arwen.AsyncGeneratedCall, vmOutput 
 	}
 
 	callbackCallInput, err := host.createCallbackContractCallInput(
+		asyncCall,
 		vmOutput,
 		asyncCall.Destination,
 		callbackFunction,
@@ -582,10 +585,12 @@ func (host *vmHost) processCallbackStack() error {
 	}
 
 	// The caller is in the same shard, execute it's callback
+	// TODO nil pointer exception warning: must refactor
 	callbackCallInput, err := host.createCallbackContractCallInput(
+		nil,
 		host.Output().GetVMOutput(),
 		asyncInfo.CallerAddr,
-		arwen.CallbackDefault,
+		arwen.CallbackFunctionName,
 		nil,
 	)
 	if err != nil {

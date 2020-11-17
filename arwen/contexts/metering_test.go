@@ -7,7 +7,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
 )
 
@@ -45,22 +45,23 @@ func TestMeteringContext_UseGas(t *testing.T) {
 	t.Parallel()
 
 	mockRuntime := &mock.RuntimeContextMock{}
-	vmInput := &vmcommon.VMInput{GasProvided: 0}
-	mockRuntime.SetVMInput(vmInput)
 	host := &mock.VmHostMock{
 		RuntimeContext: mockRuntime,
 	}
 	meteringContext, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000))
 
+	gasProvided := uint64(1001)
+	vmInput := &vmcommon.VMInput{GasProvided: gasProvided}
+	mockRuntime.SetVMInput(vmInput)
 	gas := uint64(1000)
 	meteringContext.UseGas(gas)
 	require.Equal(t, mockRuntime.GetPointsUsed(), gas)
-	require.Equal(t, uint64(0), meteringContext.GasLeft())
+	require.Equal(t, uint64(1), meteringContext.GasLeft())
 
-	gasProvided := uint64(10000)
+	gasProvided = uint64(10000)
 	vmInput = &vmcommon.VMInput{GasProvided: gasProvided}
-	mockRuntime.SetVMInput(vmInput)
 	mockRuntime.SetPointsUsed(0)
+	mockRuntime.SetVMInput(vmInput)
 	meteringContext, _ = NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000))
 
 	require.Equal(t, gasProvided, meteringContext.GasLeft())
@@ -210,14 +211,14 @@ func TestMeteringContext_AsyncCallGasLocking(t *testing.T) {
 	t.Parallel()
 
 	mockRuntime := &mock.RuntimeContextMock{}
-	contractCode := []byte("contractCode")
-	input := &vmcommon.ContractCreateInput{
+	contractSize := uint64(1000)
+	input := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallType: vmcommon.AsynchronousCall,
 		},
-		ContractCode: contractCode,
 	}
 
+	mockRuntime.SCCodeSize = contractSize
 	mockRuntime.SetVMInput(&input.VMInput)
 	mockRuntime.SetPointsUsed(0)
 
@@ -227,17 +228,23 @@ func TestMeteringContext_AsyncCallGasLocking(t *testing.T) {
 
 	meteringContext, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000))
 
-	input.GasProvided = 2
-	err := meteringContext.DeductAndLockGasIfAsyncStep()
+	input.GasProvided = 1
+	err := meteringContext.UseGasForAsyncStep()
 	require.Equal(t, arwen.ErrNotEnoughGas, err)
 
+	mockRuntime.SetPointsUsed(0)
 	gasProvided := uint64(1_000_000)
 	input.GasProvided = gasProvided
-	err = meteringContext.DeductAndLockGasIfAsyncStep()
+	gasToLock := meteringContext.ComputeGasLockedForAsync()
+	err = meteringContext.UseGasBounded(gasToLock)
 	require.Nil(t, err)
-	require.Equal(t, uint64(config.AsyncCallbackGasLockForTests+1), meteringContext.gasLockedForAsyncStep)
-	require.Equal(t, gasProvided-config.AsyncCallbackGasLockForTests-2, meteringContext.GasLeft())
+	expectedGasLeft := gasProvided - gasToLock
+	require.Equal(t, expectedGasLeft, meteringContext.GasLeft())
 
-	meteringContext.UnlockGasIfAsyncStep()
+	mockRuntime.VmInput.CallType = vmcommon.AsynchronousCallBack
+	mockRuntime.VmInput.GasLocked = gasToLock
+	meteringContext.UnlockGasIfAsyncCallback()
+	err = meteringContext.UseGasForAsyncStep()
+	require.Nil(t, err)
 	require.Equal(t, gasProvided-1, meteringContext.GasLeft())
 }

@@ -4,7 +4,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 var _ arwen.VMHost = (*VmHostMock)(nil)
@@ -59,6 +59,10 @@ func (host *VmHostMock) IsArwenV2Enabled() bool {
 }
 
 func (host *VmHostMock) IsAheadOfTimeCompileEnabled() bool {
+	return true
+}
+
+func (host *VmHostMock) IsDynamicGasLockingEnabled() bool {
 	return true
 }
 

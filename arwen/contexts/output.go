@@ -5,7 +5,7 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 var _ arwen.OutputContext = (*outputContext)(nil)
@@ -230,7 +230,7 @@ func (context *outputContext) TransferValueOnly(destination []byte, sender []byt
 // Transfer handles any necessary value transfer required and takes
 // the necessary steps to create accounts and reverses the state in case of an
 // execution error or failed value transfer.
-func (context *outputContext) Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte, callType vmcommon.CallType) error {
+func (context *outputContext) Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, input []byte, callType vmcommon.CallType) error {
 	err := context.TransferValueOnly(destination, sender, value)
 	if err != nil {
 		return err
@@ -238,10 +238,11 @@ func (context *outputContext) Transfer(destination []byte, sender []byte, gasLim
 
 	destAcc, _ := context.GetOutputAccount(destination)
 	outputTransfer := vmcommon.OutputTransfer{
-		Value:    big.NewInt(0).Set(value),
-		GasLimit: gasLimit,
-		Data:     input,
-		CallType: callType,
+		Value:     big.NewInt(0).Set(value),
+		GasLimit:  gasLimit,
+		GasLocked: gasLocked,
+		Data:      input,
+		CallType:  callType,
 	}
 	destAcc.OutputTransfers = append(destAcc.OutputTransfers, outputTransfer)
 
@@ -263,7 +264,7 @@ func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 	if context.outputState.ReturnCode == vmcommon.Ok {
 		context.outputState.GasRemaining = context.host.Metering().GasLeft()
 	} else {
-		context.outputState.GasRemaining = context.host.Metering().GetGasLockedForAsyncStep()
+		context.outputState.GasRemaining = context.host.Metering().GetGasLocked()
 	}
 
 	context.removeNonUpdatedCode(context.outputState)
@@ -299,7 +300,7 @@ func (context *outputContext) CreateVMOutputInCaseOfError(err error) *vmcommon.V
 	returnCode := context.resolveReturnCodeFromError(err)
 
 	return &vmcommon.VMOutput{
-		GasRemaining:  metering.GetGasLockedForAsyncStep(),
+		GasRemaining:  metering.GetGasLocked(),
 		GasRefund:     big.NewInt(0),
 		ReturnCode:    returnCode,
 		ReturnMessage: message,

@@ -2,7 +2,7 @@ package arwen
 
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 type BreakpointValue uint64
@@ -23,7 +23,7 @@ const (
 	AsyncUnknown
 )
 
-const CallbackDefault = "callBack"
+const CallbackFunctionName = "callBack"
 const TimeLockKeyPrefix = "timelock"
 const AsyncDataPrefix = "asyncCalls"
 
@@ -53,6 +53,7 @@ type VMHostParameters struct {
 	ElrondProtectedKeyPrefix []byte
 	ArwenV2EnableEpoch       uint32
 	AheadOfTimeEnableEpoch   uint32
+	DynGasLockEnableEpoch    uint32
 	UseWarmInstance          bool
 }
 
@@ -61,6 +62,7 @@ type AsyncCallInfo struct {
 	Destination []byte
 	Data        []byte
 	GasLimit    uint64
+	GasLocked   uint64
 	ValueBytes  []byte
 }
 
@@ -74,6 +76,10 @@ func (aci *AsyncCallInfo) GetData() []byte {
 
 func (aci *AsyncCallInfo) GetGasLimit() uint64 {
 	return aci.GasLimit
+}
+
+func (aci *AsyncCallInfo) GetGasLocked() uint64 {
+	return aci.GasLocked
 }
 
 func (aci *AsyncCallInfo) GetValueBytes() []byte {
@@ -120,6 +126,10 @@ func (ac *AsyncGeneratedCall) GetData() []byte {
 // GetGasLimit returns the gas limit of the current async call
 func (ac *AsyncGeneratedCall) GetGasLimit() uint64 {
 	return ac.GasLimit
+}
+
+func (ac *AsyncGeneratedCall) GetGasLocked() uint64 {
+	return 0
 }
 
 // GetValueBytes returns the byte representation of the value of the async call

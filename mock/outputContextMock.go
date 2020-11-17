@@ -4,7 +4,7 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 var _ arwen.OutputContext = (*OutputContextMock)(nil)
@@ -130,7 +130,7 @@ func (o *OutputContextMock) TransferValueOnly(_ []byte, _ []byte, _ *big.Int) er
 	return o.TransferResult
 }
 
-func (o *OutputContextMock) Transfer(_ []byte, _ []byte, _ uint64, _ *big.Int, _ []byte, _ vmcommon.CallType) error {
+func (o *OutputContextMock) Transfer(_ []byte, _ []byte, _ uint64, _ uint64, _ *big.Int, _ []byte, _ vmcommon.CallType) error {
 	return o.TransferResult
 }
 

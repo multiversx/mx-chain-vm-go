@@ -7,7 +7,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
 )
 
@@ -385,7 +385,7 @@ func TestBlockchainContext_IsPayable(t *testing.T) {
 	host := &mock.VmHostMock{}
 	blockchainHook := mock.NewBlockchainHookMock()
 	accounts := []*mock.AccountMock{
-		{Address: []byte("test"), CodeMetadata: []byte{0, vmcommon.METADATA_PAYABLE}},
+		{Address: []byte("test"), CodeMetadata: []byte{0, vmcommon.MetadataPayable}},
 	}
 	blockchainHook.AddAccounts(accounts)
 

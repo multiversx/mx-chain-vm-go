@@ -8,7 +8,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
 )
 
@@ -17,6 +17,10 @@ var receiver = []byte("receiver")
 var scAddress = []byte("erc20")
 
 func Test_RunERC20Benchmark(t *testing.T) {
+	if testing.Short() {
+		t.Skip("not a short test")
+	}
+
 	runERC20Benchmark(t, 1000, 4)
 }
 

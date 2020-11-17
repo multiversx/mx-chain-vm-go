@@ -2,6 +2,7 @@ package host
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/contexts"
@@ -12,7 +13,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-go/core/atomic"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 var log = logger.GetOrCreate("arwen/host")
@@ -29,6 +30,7 @@ type CatchFunction func(error)
 type vmHost struct {
 	blockChainHook vmcommon.BlockchainHook
 	cryptoHook     crypto.VMCrypto
+	mutExecution   sync.RWMutex
 
 	ethInput []byte
 
@@ -47,6 +49,9 @@ type vmHost struct {
 
 	aotEnableEpoch  uint32
 	flagAheadOfTime atomic.Flag
+
+	dynGasLockEnableEpoch uint32
+	flagDynGasLock        atomic.Flag
 }
 
 // NewArwenVM creates a new Arwen vmHost
@@ -68,6 +73,7 @@ func NewArwenVM(
 		protocolBuiltinFunctions: hostParameters.ProtocolBuiltinFunctions,
 		arwenV2EnableEpoch:       hostParameters.ArwenV2EnableEpoch,
 		aotEnableEpoch:           hostParameters.AheadOfTimeEnableEpoch,
+		dynGasLockEnableEpoch:    hostParameters.DynGasLockEnableEpoch,
 	}
 
 	var err error
@@ -184,6 +190,10 @@ func (host *vmHost) IsAheadOfTimeCompileEnabled() bool {
 	return host.flagAheadOfTime.IsSet()
 }
 
+func (host *vmHost) IsDynamicGasLockingEnabled() bool {
+	return host.flagDynGasLock.IsSet()
+}
+
 func (host *vmHost) GetContexts() (
 	arwen.BigIntContext,
 	arwen.BlockchainContext,
@@ -208,6 +218,9 @@ func (host *vmHost) InitState() {
 
 	host.flagAheadOfTime.Toggle(currentEpoch >= host.aotEnableEpoch)
 	log.Trace("aheadOfTime compile", "enabled", host.flagAheadOfTime.IsSet())
+
+	host.flagDynGasLock.Toggle(currentEpoch >= host.dynGasLockEnableEpoch)
+	log.Trace("dynamic gas locking", "enabled", host.flagDynGasLock.IsSet())
 }
 
 func (host *vmHost) initContexts() {
@@ -242,7 +255,26 @@ func (host *vmHost) GetProtocolBuiltinFunctions() vmcommon.FunctionNames {
 	return host.protocolBuiltinFunctions
 }
 
+func (host *vmHost) GasScheduleChange(newGasSchedule map[string]map[string]uint64) {
+	host.mutExecution.Lock()
+	defer host.mutExecution.Unlock()
+
+	gasCostConfig, err := config.CreateGasConfig(newGasSchedule)
+	if err != nil {
+		log.Error("cannot apply new gas config remained with old one")
+		return
+	}
+
+	opcodeCosts := gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray()
+	wasmer.SetOpcodeCosts(&opcodeCosts)
+
+	host.meteringContext.SetGasSchedule(newGasSchedule)
+}
+
 func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error) {
+	host.mutExecution.RLock()
+	defer host.mutExecution.RUnlock()
+
 	log.Trace("RunSmartContractCreate begin", "len(code)", len(input.ContractCode), "metadata", input.ContractCodeMetadata)
 
 	try := func() {
@@ -263,6 +295,9 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 }
 
 func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
+	host.mutExecution.RLock()
+	defer host.mutExecution.RUnlock()
+
 	log.Trace("RunSmartContractCall begin", "function", input.Function)
 
 	tryUpgrade := func() {
@@ -290,10 +325,6 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 		TryCatch(tryCall, catch, "arwen.RunSmartContractCall")
 	}
 
-	if vmOutput != nil {
-		log.Debug("RunSmartContractCall end", "returnCode", vmOutput.ReturnCode, "returnMessage", vmOutput.ReturnMessage, "function", input.Function)
-	}
-
 	return
 }
 
@@ -319,4 +350,9 @@ func (host *vmHost) hasRetriableExecutionError(vmOutput *vmcommon.VMOutput) bool
 	}
 
 	return vmOutput.ReturnMessage == "allocation error"
+}
+
+// IsInterfaceNil returns true if there is no value under the interface
+func (host *vmHost) IsInterfaceNil() bool {
+	return host == nil
 }

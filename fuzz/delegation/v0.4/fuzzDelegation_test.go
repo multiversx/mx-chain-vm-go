@@ -10,7 +10,7 @@ import (
 	"time"
 
 	fuzzutil "github.com/ElrondNetwork/arwen-wasm-vm/fuzz/util"
-	mc "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/controller"
+	mc "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/controller"
 	"github.com/stretchr/testify/require"
 )
 

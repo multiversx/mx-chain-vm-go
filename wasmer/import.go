@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"unsafe"
 
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 // ImportedFunctionError represents any kind of errors related to a
@@ -183,6 +183,7 @@ type InstanceContext struct {
 	memory  Memory
 }
 
+// NewInstanceContext creates a new wasmer context given a cWasmerInstance and a memory
 func NewInstanceContext(ctx *cWasmerInstanceContextT, mem Memory) *InstanceContext {
 	return &InstanceContext{
 		context: ctx,

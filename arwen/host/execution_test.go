@@ -10,7 +10,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -223,6 +223,10 @@ func TestExecution_DeployWASM_Init_Errors(t *testing.T) {
 }
 
 func TestExecution_ManyDeployments(t *testing.T) {
+	if testing.Short() {
+		t.Skip("not a short test")
+	}
+
 	ownerNonce := uint64(23)
 	newAddress := "new smartcontract"
 	stubBlockchainHook := &mock.BlockchainHookStub{}
@@ -1027,7 +1031,7 @@ func TestExecution_AsyncCall(t *testing.T) {
 	parentSCBalance := big.NewInt(1000)
 
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
-	// SC and pass some arguments using executeOnDestContext().
+	// SC and pass some arguments using asyncCall().
 	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode, parentSCBalance)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
@@ -1056,7 +1060,7 @@ func TestExecution_AsyncCall_ChildFails(t *testing.T) {
 	parentSCBalance := big.NewInt(1000)
 
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
-	// SC and pass some arguments using executeOnDestContext().
+	// SC and pass some arguments using asyncCall().
 	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode, parentSCBalance)
 	host.Metering().GasSchedule().ElrondAPICost.AsyncCallbackGasLock = 3000
 
@@ -1079,16 +1083,14 @@ func TestExecution_AsyncCall_ChildFails(t *testing.T) {
 
 func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 	// Scenario
-	// Identical to TestExecution_AsyncCall(), except that the child is
+	// Identical to TestExecution_AsyncCall(), except that the callback is
 	// instructed to call signalError().
-	// Because "vault" was not received by the callBack(), the Parent sends 4 ERD
-	// to the Vault directly.
 	parentCode := GetTestSCCode("async-call-parent", "../../")
 	childCode := GetTestSCCode("async-call-child", "../../")
 	parentSCBalance := big.NewInt(1000)
 
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
-	// SC and pass some arguments using executeOnDestContext().
+	// SC and pass some arguments using asyncCall().
 	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode, parentSCBalance)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress

@@ -67,13 +67,14 @@ import "C"
 
 import (
 	"encoding/hex"
+	"errors"
 	"math/big"
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/parsers"
+	"github.com/ElrondNetwork/elrond-go/core/parsers"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 // ElrondEIImports creates a new wasmer.Imports populated with the ElrondEI API methods
@@ -515,7 +516,7 @@ func transferValue(context unsafe.Pointer, destOffset int32, valueOffset int32, 
 		return 1
 	}
 
-	err = output.Transfer(dest, send, 0, big.NewInt(0).SetBytes(valueBytes), data, vmcommon.DirectCall)
+	err = output.Transfer(dest, send, 0, 0, big.NewInt(0).SetBytes(valueBytes), data, vmcommon.DirectCall)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -735,26 +736,14 @@ func asyncCall(context unsafe.Pointer, destOffset int32, valueOffset int32, data
 		return
 	}
 
-	gasLimit := metering.GasLeft()
-
-	minAsyncCallCost := 2*gasSchedule.ElrondAPICost.AsyncCallStep + gasSchedule.ElrondAPICost.AsyncCallbackGasLock
-	if gasLimit < minAsyncCallCost {
+	err = runtime.ExecuteAsyncCall(calledSCAddress, data, value)
+	if errors.Is(err, arwen.ErrNotEnoughGas) {
 		runtime.SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
 		return
 	}
-
-	// Set up the async call as if it is not known whether the called SC
-	// is in the same shard with the caller or not. This will be later resolved
-	// in the handler for BreakpointAsyncCall.
-	runtime.SetAsyncCallInfo(&arwen.AsyncCallInfo{
-		Destination: calledSCAddress,
-		Data:        data,
-		GasLimit:    gasLimit,
-		ValueBytes:  value,
-	})
-
-	// Instruct Wasmer to interrupt the execution of the caller SC.
-	runtime.SetRuntimeBreakpointValue(arwen.BreakpointAsyncCall)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return
+	}
 }
 
 //export getArgumentLength
