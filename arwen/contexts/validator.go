@@ -9,21 +9,21 @@ import (
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
-const NoArity = -1
+const noArity = -1
 
-// WASMValidator is a validator for WASM SmartContracts
-type WASMValidator struct {
+// wasmValidator is a validator for WASM SmartContracts
+type wasmValidator struct {
 	reserved *ReservedFunctions
 }
 
-// NewWASMValidator creates a new WASMValidator
-func NewWASMValidator(scAPINames vmcommon.FunctionNames, protocolBuiltinFunctions vmcommon.FunctionNames) *WASMValidator {
-	return &WASMValidator{
+// newWASMValidator creates a new WASMValidator
+func newWASMValidator(scAPINames vmcommon.FunctionNames, protocolBuiltinFunctions vmcommon.FunctionNames) *wasmValidator {
+	return &wasmValidator{
 		reserved: NewReservedFunctions(scAPINames, protocolBuiltinFunctions),
 	}
 }
 
-func (validator *WASMValidator) verifyMemoryDeclaration(instance *wasmer.Instance) error {
+func (validator *wasmValidator) verifyMemoryDeclaration(instance *wasmer.Instance) error {
 	if !instance.HasMemory() {
 		return arwen.ErrMemoryDeclarationMissing
 	}
@@ -31,7 +31,7 @@ func (validator *WASMValidator) verifyMemoryDeclaration(instance *wasmer.Instanc
 	return nil
 }
 
-func (validator *WASMValidator) verifyFunctions(instance *wasmer.Instance) error {
+func (validator *wasmValidator) verifyFunctions(instance *wasmer.Instance) error {
 	for functionName := range instance.Exports {
 		err := validator.verifyValidFunctionName(functionName)
 		if err != nil {
@@ -47,7 +47,7 @@ func (validator *WASMValidator) verifyFunctions(instance *wasmer.Instance) error
 	return nil
 }
 
-func (validator *WASMValidator) verifyVoidFunction(instance *wasmer.Instance, functionName string) error {
+func (validator *wasmValidator) verifyVoidFunction(instance *wasmer.Instance, functionName string) error {
 	inArity, err := validator.getInputArity(instance, functionName)
 	if err != nil {
 		return err
@@ -65,23 +65,23 @@ func (validator *WASMValidator) verifyVoidFunction(instance *wasmer.Instance, fu
 	return nil
 }
 
-func (validator *WASMValidator) getInputArity(instance *wasmer.Instance, functionName string) (int, error) {
+func (validator *wasmValidator) getInputArity(instance *wasmer.Instance, functionName string) (int, error) {
 	signature, ok := instance.Signatures[functionName]
 	if !ok {
-		return NoArity, fmt.Errorf("%w: %s", arwen.ErrFuncNotFound, functionName)
+		return noArity, fmt.Errorf("%w: %s", arwen.ErrFuncNotFound, functionName)
 	}
 	return signature.InputArity, nil
 }
 
-func (validator *WASMValidator) getOutputArity(instance *wasmer.Instance, functionName string) (int, error) {
+func (validator *wasmValidator) getOutputArity(instance *wasmer.Instance, functionName string) (int, error) {
 	signature, ok := instance.Signatures[functionName]
 	if !ok {
-		return NoArity, fmt.Errorf("%w: %s", arwen.ErrFuncNotFound, functionName)
+		return noArity, fmt.Errorf("%w: %s", arwen.ErrFuncNotFound, functionName)
 	}
 	return signature.OutputArity, nil
 }
 
-func (validator *WASMValidator) verifyValidFunctionName(functionName string) error {
+func (validator *wasmValidator) verifyValidFunctionName(functionName string) error {
 	const maxLengthOfFunctionName = 256
 
 	errInvalidName := fmt.Errorf("%w: %s", arwen.ErrInvalidFunctionName, functionName)

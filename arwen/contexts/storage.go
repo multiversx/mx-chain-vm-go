@@ -9,8 +9,6 @@ import (
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
-const lockKeyContext string = "timelock"
-
 type storageContext struct {
 	host                     arwen.VMHost
 	blockChainHook           vmcommon.BlockchainHook
@@ -38,39 +36,55 @@ func NewStorageContext(
 	return context, nil
 }
 
+// InitState does nothing
 func (context *storageContext) InitState() {
 }
 
+// PushState appends the current address to the state stack.
 func (context *storageContext) PushState() {
 	context.stateStack = append(context.stateStack, context.address)
 }
 
+// PopSetActiveState removes the latest entry from the state stack and sets it as the current address
 func (context *storageContext) PopSetActiveState() {
 	stateStackLen := len(context.stateStack)
+	if stateStackLen == 0 {
+		return
+	}
+
 	prevAddress := context.stateStack[stateStackLen-1]
 	context.stateStack = context.stateStack[:stateStackLen-1]
 
 	context.address = prevAddress
 }
 
+// PopDiscard removes the latest entry from the state stack
 func (context *storageContext) PopDiscard() {
 	stateStackLen := len(context.stateStack)
+	if stateStackLen == 0 {
+		return
+	}
+
 	context.stateStack = context.stateStack[:stateStackLen-1]
 }
 
+// ClearStateStack clears the state stack from the current context.
 func (context *storageContext) ClearStateStack() {
 	context.stateStack = make([][]byte, 0)
 }
 
+// SetAddress sets the given address as the address for the current context.
 func (context *storageContext) SetAddress(address []byte) {
 	context.address = address
 }
 
+// GetStorageUpdates returns the storage updates for the account mapped to the given address.
 func (context *storageContext) GetStorageUpdates(address []byte) map[string]*vmcommon.StorageUpdate {
 	account, _ := context.host.Output().GetOutputAccount(address)
 	return account.StorageUpdates
 }
 
+// GetStorage returns the storage data mapped to the given key.
 func (context *storageContext) GetStorage(key []byte) []byte {
 	metering := context.host.Metering()
 
@@ -88,6 +102,7 @@ func (context *storageContext) GetStorage(key []byte) []byte {
 	return value
 }
 
+// GetStorageFromAddress returns the data under the given key from the account mapped to the given address.
 func (context *storageContext) GetStorageFromAddress(address []byte, key []byte) []byte {
 	metering := context.host.Metering()
 
@@ -134,6 +149,7 @@ func (context *storageContext) getStorageFromAddressUnmetered(address []byte, ke
 	return value
 }
 
+// GetStorageUnmetered returns the data under the given key.
 func (context *storageContext) GetStorageUnmetered(key []byte) []byte {
 	return context.getStorageFromAddressUnmetered(context.address, key)
 }
@@ -142,6 +158,7 @@ func (context *storageContext) isElrondReservedKey(key []byte) bool {
 	return bytes.HasPrefix(key, context.elrondProtectedKeyPrefix)
 }
 
+// SetStorage sets the given value at the given key.
 func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.StorageStatus, error) {
 	if context.isElrondReservedKey(key) {
 		return arwen.StorageUnchanged, arwen.ErrStoreElrondReservedKey
