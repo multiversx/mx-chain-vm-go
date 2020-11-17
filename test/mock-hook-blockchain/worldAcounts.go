@@ -20,7 +20,7 @@ type Account struct {
 	AsyncCallData   string
 	OwnerAddress    []byte
 	Username        []byte
-	ShardID         uint32
+	ShardID         uint64
 	IsSmartContract bool
 }
 

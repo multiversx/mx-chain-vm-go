@@ -108,3 +108,9 @@ var ErrNilContract = errors.New("nil contract")
 var ErrBuiltinCallOnSameContextDisallowed = errors.New("calling built-in function on the same context is disallowed")
 
 var ErrSyncExecutionNotInSameShard = errors.New("sync execution request is not in the same shard")
+
+var ErrInvalidAsyncCallGroupID = errors.New("invalid async call group identifier")
+
+var ErrOnlyOneLegacyAsyncCallAllowed = errors.New("only one legacy async call allowed")
+
+var ErrLegacyAsyncCallInvalid = errors.New("legacy async call invalid")

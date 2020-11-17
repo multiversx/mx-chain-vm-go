@@ -40,6 +40,11 @@ func (p *Parser) processAccount(acctRaw oj.OJsonObject) (*mj.Account, error) {
 			if err != nil {
 				return nil, errors.New("invalid account nonce")
 			}
+		case "shard":
+			acct.Shard, err = p.processUint64(kvp.Value)
+			if err != nil {
+				return nil, fmt.Errorf("invalid shard number: %w", err)
+			}
 		case "balance":
 			acct.Balance, err = p.processBigInt(kvp.Value, bigIntUnsignedBytes)
 			if err != nil {

@@ -2,7 +2,9 @@ package contexts
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
+	"math"
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -616,23 +618,29 @@ func (context *runtimeContext) GetDefaultAsyncCall() *arwen.AsyncCall {
 	return context.defaultAsyncCall
 }
 
-// ExecuteAsyncCall builds an AsyncCall struct from its arguments, sets it as
+// PrepareLegacyAsyncCall builds an AsyncCall struct from its arguments, sets it as
 // the default async call and informs Wasmer to stop contract execution with BreakpointAsyncCall
-func (context *runtimeContext) ExecuteAsyncCall(address []byte, data []byte, value []byte) error {
-	metering := context.host.Metering()
+func (context *runtimeContext) PrepareLegacyAsyncCall(address []byte, data []byte, value []byte) error {
+	legacyGroupID := []byte(arwen.LegacyAsyncCallGroupID)
+	legacyCallback := []byte(arwen.CallbackFunctionName)
 
-	gasToLock, err := context.prepareGasForAsyncCall()
+	_, err := context.GetAsyncCallGroup(legacyGroupID)
+	if !errors.Is(err, arwen.ErrAsyncCallGroupDoesNotExist) {
+		return arwen.ErrOnlyOneLegacyAsyncCallAllowed
+	}
+
+	err = context.CreateAndAddAsyncCall(legacyGroupID,
+		address,
+		data,
+		value,
+		legacyCallback,
+		legacyCallback,
+		math.MaxUint64,
+	)
 	if err != nil {
 		return err
 	}
 
-	context.SetDefaultAsyncCall(&arwen.AsyncCall{
-		Destination: address,
-		Data:        data,
-		GasLimit:    metering.GasLeft(),
-		GasLocked:   gasToLock,
-		ValueBytes:  value,
-	})
 	context.SetRuntimeBreakpointValue(arwen.BreakpointAsyncCall)
 
 	return nil
@@ -653,6 +661,11 @@ func (context *runtimeContext) CreateAndAddAsyncCall(
 	gasToLock, err := context.prepareGasForAsyncCall()
 	if err != nil {
 		return err
+	}
+
+	if gas == math.MaxUint64 {
+		metering := context.host.Metering()
+		gas = metering.GasLeft()
 	}
 
 	return context.AddAsyncCall(groupID, &arwen.AsyncCall{
@@ -698,7 +711,6 @@ func (context *runtimeContext) prepareGasForAsyncCall() (uint64, error) {
 
 // AddAsyncCall adds an AsyncCall to the specified group
 func (context *runtimeContext) AddAsyncCall(groupIDBytes []byte, asyncCall *arwen.AsyncCall) error {
-	groupID := string(groupIDBytes)
 	if context.host.IsBuiltinFunctionName(asyncCall.SuccessCallback) {
 		return arwen.ErrCannotUseBuiltinAsCallback
 	}
@@ -706,6 +718,7 @@ func (context *runtimeContext) AddAsyncCall(groupIDBytes []byte, asyncCall *arwe
 		return arwen.ErrCannotUseBuiltinAsCallback
 	}
 
+	groupID := string(groupIDBytes)
 	asyncCallGroup, ok := context.asyncContext.GetAsyncCallGroup(groupID)
 	if !ok {
 		asyncCallGroup = arwen.NewAsyncCallGroup(groupID)

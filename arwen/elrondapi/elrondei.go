@@ -553,6 +553,11 @@ func createAsyncCall(context unsafe.Pointer,
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
+	if string(groupID) == arwen.LegacyAsyncCallGroupID {
+		err = arwen.ErrInvalidAsyncCallGroupID
+		arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
+		return
+	}
 
 	calledSCAddress, err := runtime.MemLoad(destOffset, arwen.AddressLen)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -608,6 +613,11 @@ func setAsyncContextCallback(context unsafe.Pointer,
 	// groupID, err := runtime.MemLoad(groupIDOffset, identifierLength)
 	// if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 	// 	return -1
+	// }
+	// if string(groupID) == arwen.LegacyAsyncCallGroupID {
+	// 	err = arwen.ErrInvalidAsyncCallGroupID
+	// 	arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
+	// 	return
 	// }
 
 	// asyncCallGroup, err := runtime.GetAsyncCallGroup(groupID)
@@ -753,7 +763,7 @@ func asyncCall(context unsafe.Pointer, destOffset int32, valueOffset int32, data
 		return
 	}
 
-	err = runtime.ExecuteAsyncCall(calledSCAddress, data, value)
+	err = runtime.PrepareLegacyAsyncCall(calledSCAddress, data, value)
 	if errors.Is(err, arwen.ErrNotEnoughGas) {
 		runtime.SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
 		return

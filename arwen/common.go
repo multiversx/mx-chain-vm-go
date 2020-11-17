@@ -17,6 +17,10 @@ const TimeLockKeyPrefix = "timelock"
 // storage; protected by Arwen explicitly, and implicitly by the Elrond node due to '@'
 const AsyncDataPrefix = "ARWEN@"
 
+// LegacyAsyncCallGroupID is the AsyncCallGroup identifier reserved for the
+// implementation of the legacy asyncCall() EEI function
+const LegacyAsyncCallGroupID = "LegacyAsync"
+
 // BreakpointValue encodes Wasmer runtime breakpoint types
 type BreakpointValue uint64
 

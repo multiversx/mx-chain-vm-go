@@ -173,7 +173,7 @@ func (b *BlockchainHookMock) GetShardOfAddress(address []byte) uint32 {
 		return 0
 	}
 
-	return account.ShardID
+	return uint32(account.ShardID)
 }
 
 // IsSmartContract -
