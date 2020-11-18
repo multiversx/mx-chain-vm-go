@@ -100,16 +100,15 @@ func (host *vmHost) postprocessCrossShardCallback() error {
 		return err
 	}
 
-	// If the asyncContext is empty, but execution has reached here, it means
-	// that we're executing a legacy callback, which should be reconstructed.
-	// TODO this might be completely unnecessary
-	if !asyncContext.HasPendingCallGroups() {
-		host.addLegacyCallback(asyncContext)
+	runtime := host.Runtime()
+	if runtime.Function() == arwen.CallbackFunctionName {
+		// Legacy callbacks do not require postprocessing.
+		return nil
 	}
 
 	// TODO FindAsyncCallByDestination() only returns the first matched AsyncCall
 	// by destination, but there could be multiple matches in an AsyncContext.
-	vmInput := host.Runtime().GetVMInput()
+	vmInput := runtime.GetVMInput()
 	currentGroupID, asyncCallIndex, err := asyncContext.FindAsyncCallByDestination(vmInput.CallerAddr)
 	if err != nil {
 		return err
@@ -137,28 +136,6 @@ func (host *vmHost) postprocessCrossShardCallback() error {
 	}
 
 	return host.executeAsyncContextCallback(asyncContext)
-}
-
-// addLegacyCallback reconstructs the legacy AsyncCall, because it is not saved to storage
-// TODO reconstructing the legacy AsyncCall may be completely unnecessary
-func (host *vmHost) addLegacyCallback(asyncContext *arwen.AsyncContext) error {
-	legacyGroup := arwen.NewAsyncCallGroup(arwen.LegacyAsyncCallGroupID)
-	asyncContext.AddAsyncGroup(legacyGroup)
-
-	vmInput := host.Runtime().GetVMInput()
-
-	legacyGroup.AddAsyncCall(&arwen.AsyncCall{
-		Status:          arwen.AsyncCallPending,
-		Destination:     vmInput.CallerAddr,
-		Data:            []byte{}, // irrelevant, the callback was already executed
-		ValueBytes:      []byte{}, // irrelevant, the callback was already executed
-		SuccessCallback: arwen.CallbackFunctionName,
-		ErrorCallback:   arwen.CallbackFunctionName,
-		ProvidedGas:     0, // irrelevant, the callback was already executed
-		GasLocked:       0, // irrelevant, the callback was already executed
-	})
-
-	return nil
 }
 
 // executeAsyncContextCallback will either execute a sync call (in-shard) to

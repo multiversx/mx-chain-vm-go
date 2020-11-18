@@ -26,7 +26,7 @@ func convertAccount(testAcct *mj.Account) *worldhook.Account {
 	return &worldhook.Account{
 		Address:       testAcct.Address.Value,
 		Nonce:         testAcct.Nonce.Value,
-		ShardID:       testAcct.Shard.Value,
+		ShardID:       uint32(testAcct.Shard.Value),
 		Balance:       big.NewInt(0).Set(testAcct.Balance.Value),
 		Storage:       storage,
 		Code:          []byte(testAcct.Code.Value),
