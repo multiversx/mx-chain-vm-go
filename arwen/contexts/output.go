@@ -297,8 +297,6 @@ func (context *outputContext) AddTxValueToAccount(address []byte, value *big.Int
 func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 	if context.outputState.ReturnCode == vmcommon.Ok {
 		context.outputState.GasRemaining = context.host.Metering().GasLeft()
-	} else {
-		context.outputState.GasRemaining = context.host.Metering().GetGasLocked()
 	}
 
 	context.removeNonUpdatedCode(context.outputState)
@@ -319,7 +317,6 @@ func (context *outputContext) DeployCode(input arwen.CodeDeployInput) {
 
 // CreateVMOutputInCaseOfError creates a new vmOutput with the given error set as return message.
 func (context *outputContext) CreateVMOutputInCaseOfError(err error) *vmcommon.VMOutput {
-	metering := context.host.Metering()
 	var message string
 
 	if err == arwen.ErrSignalError {
@@ -336,7 +333,7 @@ func (context *outputContext) CreateVMOutputInCaseOfError(err error) *vmcommon.V
 	returnCode := context.resolveReturnCodeFromError(err)
 
 	return &vmcommon.VMOutput{
-		GasRemaining:  metering.GetGasLocked(),
+		GasRemaining:  0,
 		GasRefund:     big.NewInt(0),
 		ReturnCode:    returnCode,
 		ReturnMessage: message,
