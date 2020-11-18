@@ -272,7 +272,7 @@ func TestDelegation_v0_5(t *testing.T) {
 	}
 }
 
-func TestDnsContract(t *testing.T) {
+func TestRustDnsContract(t *testing.T) {
 	if testing.Short() {
 		t.Skip("not a short test")
 	}
@@ -285,7 +285,7 @@ func TestDnsContract(t *testing.T) {
 	)
 	err = runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
-		"dns",
+		"dns-rust",
 		".scen.json",
 		[]string{})
 
