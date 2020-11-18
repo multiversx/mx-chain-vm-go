@@ -27,6 +27,7 @@
 .vscode
 
 tags
+*.backup
 
 # SmartContract compilation artefacts
 *.hex*
