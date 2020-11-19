@@ -46,8 +46,7 @@ func (host *vmHost) executeCurrentAsyncContext() error {
 			return err
 		}
 
-		shouldDeleteGroup := group.IsCompleted() || group.Identifier == arwen.LegacyAsyncCallGroupID
-		if shouldDeleteGroup {
+		if group.IsCompleted() {
 			asyncContext.DeleteAsyncCallGroup(groupIndex)
 		}
 	}
@@ -70,6 +69,8 @@ func (host *vmHost) executeCurrentAsyncContext() error {
 			return err
 		}
 	}
+
+	asyncContext.DeleteAsyncCallGroupByID(arwen.LegacyAsyncCallGroupID)
 
 	err = host.saveAsyncContext(asyncContext)
 	if err != nil {
@@ -125,9 +126,6 @@ func (host *vmHost) executeAsyncCall(
 		// the callback. Information from this vmOutput should be preserved in the
 		// pending AsyncCallGroup, and made available to the callback of the
 		// AsyncCallGroup (currently not implemented).
-		// Either way, host.executeSyncCallback() calls
-		// host.ExecuteOnDestContext(), which merges the vmOutput of the callback
-		// into the main output (such as OutputAccounts).
 		callbackVMOutput, callbackErr := host.executeSyncCallback(asyncCall, vmOutput, err)
 		host.finishSyncExecution(callbackVMOutput, callbackErr)
 		return nil
