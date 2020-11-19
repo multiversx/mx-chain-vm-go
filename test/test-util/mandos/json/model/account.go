@@ -5,6 +5,7 @@ import "bytes"
 // Account is a json object representing an account.
 type Account struct {
 	Address       JSONBytesFromString
+	Shard         JSONUint64
 	Comment       string
 	Nonce         JSONUint64
 	Balance       JSONBigInt

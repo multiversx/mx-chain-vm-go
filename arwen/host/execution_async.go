@@ -12,12 +12,14 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 	runtime := host.Runtime()
 	runtime.SetRuntimeBreakpointValue(arwen.BreakpointNone)
 
-	// TODO ensure the default async call is deleted either by
-	// executeSyncCallback() or by postprocessCrossShardCallback()
-	asyncCall := runtime.GetDefaultAsyncCall()
-	err := host.executeAsyncCall(asyncCall, false)
+	legacyGroupID := []byte(arwen.LegacyAsyncCallGroupID)
+	legacyGroup, err := runtime.GetAsyncCallGroup(legacyGroupID)
 	if err != nil {
 		return err
+	}
+
+	if legacyGroup.IsCompleted() {
+		return arwen.ErrLegacyAsyncCallInvalid
 	}
 
 	return nil
@@ -98,12 +100,18 @@ func (host *vmHost) postprocessCrossShardCallback() error {
 		return err
 	}
 
+	runtime := host.Runtime()
+	if runtime.Function() == arwen.CallbackFunctionName {
+		// Legacy callbacks do not require postprocessing.
+		return nil
+	}
+
 	// TODO FindAsyncCallByDestination() only returns the first matched AsyncCall
 	// by destination, but there could be multiple matches in an AsyncContext.
-	vmInput := host.Runtime().GetVMInput()
+	vmInput := runtime.GetVMInput()
 	currentGroupID, asyncCallIndex, err := asyncContext.FindAsyncCallByDestination(vmInput.CallerAddr)
 	if err != nil {
-		return arwen.ErrCallBackFuncNotExpected
+		return err
 	}
 
 	currentCallGroup, ok := asyncContext.GetAsyncCallGroup(currentGroupID)

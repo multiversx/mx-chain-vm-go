@@ -126,7 +126,7 @@ type RuntimeContext interface {
 	ElrondSyncExecAPIErrorShouldFailExecution() bool
 	CryptoAPIErrorShouldFailExecution() bool
 	BigIntAPIErrorShouldFailExecution() bool
-	ExecuteAsyncCall(address []byte, data []byte, value []byte) error
+	PrepareLegacyAsyncCall(address []byte, data []byte, value []byte) error
 }
 
 type BigIntContext interface {

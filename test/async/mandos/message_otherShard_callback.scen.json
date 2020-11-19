@@ -6,17 +6,26 @@
             "accounts": {
                 "0xa94f5374fce5edbc8e2a8697c15331677e6ebffefefefefefefefefefefe1234": {
                     "nonce": "0",
+                    "shard": "0",
                     "balance": "0x10000000000000e8d4a51000",
                     "storage": {},
                     "code": ""
                 },
                 "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1234": {
                     "nonce": "0",
+                    "shard": "0",
                     "balance": "0",
                     "storage": {
                         "0x0000000000000000000000000000000000000000000000000000000000000000": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb5555"
                     },
                     "code": "file:../async-alice/output/alice.wasm"
+                },
+                "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb5555": {
+                    "nonce": "0",
+                    "shard": "1",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
                 }
             }
         },

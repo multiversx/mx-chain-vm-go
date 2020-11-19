@@ -106,7 +106,7 @@ func TestMeteringContext_BoundGasLimit(t *testing.T) {
 
 	gasLimit := uint64(5000)
 	limit := meteringContext.BoundGasLimit(gasLimit)
-	require.Equal(t, uint64(gasLimit), limit)
+	require.Equal(t, gasLimit, limit)
 
 	gasLimit = 25000
 	limit = meteringContext.BoundGasLimit(gasLimit)

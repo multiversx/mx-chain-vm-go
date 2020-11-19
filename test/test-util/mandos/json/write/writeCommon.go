@@ -16,6 +16,7 @@ func accountsToOJ(accounts []*mj.Account) oj.OJsonObject {
 			acctOJ.Put("comment", stringToOJ(account.Comment))
 		}
 		acctOJ.Put("nonce", uint64ToOJ(account.Nonce))
+		acctOJ.Put("shard", uint64ToOJ(account.Shard))
 		acctOJ.Put("balance", bigIntToOJ(account.Balance))
 		storageOJ := oj.NewMap()
 		for _, st := range account.Storage {

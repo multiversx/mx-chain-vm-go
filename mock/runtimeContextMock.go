@@ -30,6 +30,7 @@ type RuntimeContextMock struct {
 	RunningInstances       uint64
 	CurrentTxHash          []byte
 	OriginalTxHash         []byte
+	PrevTxHash             []byte
 }
 
 func (r *RuntimeContextMock) InitState() {
@@ -127,6 +128,10 @@ func (r *RuntimeContextMock) GetOriginalTxHash() []byte {
 	return r.OriginalTxHash
 }
 
+func (r *RuntimeContextMock) GetPrevTxHash() []byte {
+	return r.PrevTxHash
+}
+
 func (r *RuntimeContextMock) ExtractCodeUpgradeFromArgs() ([]byte, []byte, error) {
 	arguments := r.VmInput.Arguments
 	if len(arguments) < 2 {
@@ -149,7 +154,7 @@ func (r *RuntimeContextMock) GetRuntimeBreakpointValue() arwen.BreakpointValue {
 	return r.CurrentBreakpointValue
 }
 
-func (r *RuntimeContextMock) ExecuteAsyncCall(address []byte, data []byte, value []byte) error {
+func (r *RuntimeContextMock) PrepareLegacyAsyncCall(address []byte, data []byte, value []byte) error {
 	return r.Err
 }
 

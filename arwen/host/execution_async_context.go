@@ -34,16 +34,19 @@ func (host *vmHost) executeCurrentAsyncContext() error {
 
 	// Step 1: execute all AsyncCalls that can be executed synchronously
 	// (includes smart contracts and built-in functions in the same shard)
-	host.setupAsyncCallsGas(asyncContext)
+	err := host.setupAsyncCallsGas(asyncContext)
+	if err != nil {
+		return err
+	}
 
-	for groupIndex, asyncCallGroup := range asyncContext.AsyncCallGroups {
+	for groupIndex, group := range asyncContext.AsyncCallGroups {
 		// Execute the call group strictly synchronously (no asynchronous calls allowed)
-		err := host.executeAsyncCallGroup(asyncCallGroup, true)
+		err := host.executeAsyncCallGroup(group, true)
 		if err != nil {
 			return err
 		}
 
-		if asyncCallGroup.IsCompleted() {
+		if group.IsCompleted() {
 			asyncContext.DeleteAsyncCallGroup(groupIndex)
 		}
 	}
@@ -54,17 +57,25 @@ func (host *vmHost) executeCurrentAsyncContext() error {
 	//   destinations, whereby the cross-shard OutputAccount entries are generated
 	// * call host.sendAsyncCallCrossShard() for each pending AsyncCall, to
 	//   generate the corresponding cross-shard OutputAccount entries
-	host.setupAsyncCallsGas(asyncContext)
+	err = host.setupAsyncCallsGas(asyncContext)
+	if err != nil {
+		return err
+	}
 
-	for _, asyncCallGroup := range asyncContext.AsyncCallGroups {
+	for _, group := range asyncContext.AsyncCallGroups {
 		// Execute the call group allowing asynchronous (cross-shard) calls as well
-		err := host.executeAsyncCallGroup(asyncCallGroup, false)
+		err = host.executeAsyncCallGroup(group, false)
 		if err != nil {
 			return err
 		}
 	}
 
-	host.saveAsyncContext(asyncContext)
+	asyncContext.DeleteAsyncCallGroupByID(arwen.LegacyAsyncCallGroupID)
+
+	err = host.saveAsyncContext(asyncContext)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -72,24 +83,24 @@ func (host *vmHost) executeCurrentAsyncContext() error {
 // TODO split into two different functions, for sync execution and async
 // execution, and remove parameter syncExecutionOnly
 func (host *vmHost) executeAsyncCallGroup(
-	asyncCallGroup *arwen.AsyncCallGroup,
+	group *arwen.AsyncCallGroup,
 	syncExecutionOnly bool,
 ) error {
-	for _, asyncCall := range asyncCallGroup.AsyncCalls {
+	for _, asyncCall := range group.AsyncCalls {
 		err := host.executeAsyncCall(asyncCall, syncExecutionOnly)
 		if err != nil {
 			return err
 		}
 	}
 
-	asyncCallGroup.DeleteCompletedAsyncCalls()
+	group.DeleteCompletedAsyncCalls()
 
 	// If ALL the AsyncCalls in the AsyncCallGroup were executed synchronously,
 	// then the AsyncCallGroup can have its callback executed.
-	if asyncCallGroup.IsCompleted() {
+	if group.IsCompleted() {
 		// TODO reenable this, after allowing a gas limit for it and deciding what
 		// arguments it receives (this method is currently a NOP and returns nil)
-		return host.executeAsyncCallGroupCallback(asyncCallGroup)
+		return host.executeAsyncCallGroupCallback(group)
 	}
 
 	return nil
@@ -106,15 +117,15 @@ func (host *vmHost) executeAsyncCall(
 
 	if execMode == arwen.SyncExecution {
 		vmOutput, err := host.executeSyncCall(asyncCall)
+
+		// The vmOutput instance returned by host.executeSyncCall() is never nil,
+		// by design. Using it without checking for err is safe here.
 		asyncCall.UpdateStatus(vmOutput.ReturnCode)
 
 		// TODO host.executeSyncCallback() returns a vmOutput produced by executing
 		// the callback. Information from this vmOutput should be preserved in the
 		// pending AsyncCallGroup, and made available to the callback of the
 		// AsyncCallGroup (currently not implemented).
-		// Either way, host.executeSyncCallback() calls
-		// host.ExecuteOnDestContext(), which merges the vmOutput of the callback
-		// into the main output (such as OutputAccounts).
 		callbackVMOutput, callbackErr := host.executeSyncCallback(asyncCall, vmOutput, err)
 		host.finishSyncExecution(callbackVMOutput, callbackErr)
 		return nil
@@ -134,13 +145,17 @@ func (host *vmHost) executeAsyncCall(
 		// status of the AsyncCall is not updated here - it will be updated by
 		// postprocessCrossShardCallback(), when the cross-shard call returns.
 		vmOutput, err := host.executeSyncCall(asyncCall)
+		if err != nil {
+			return err
+		}
+
 		if vmOutput.ReturnCode != vmcommon.Ok {
 			asyncCall.UpdateStatus(vmOutput.ReturnCode)
 			callbackVMOutput, callbackErr := host.executeSyncCallback(asyncCall, vmOutput, err)
 			host.finishSyncExecution(callbackVMOutput, callbackErr)
 		}
 
-		return err
+		return nil
 	}
 
 	if execMode == arwen.AsyncUnknown {
@@ -186,9 +201,7 @@ func (host *vmHost) executeSyncCall(asyncCall *arwen.AsyncCall) (*vmcommon.VMOut
 		return nil, err
 	}
 
-	vmOutput, err := host.ExecuteOnDestContext(destinationCallInput)
-
-	return vmOutput, err
+	return host.ExecuteOnDestContext(destinationCallInput)
 }
 
 func (host *vmHost) executeSyncCallback(
@@ -202,11 +215,10 @@ func (host *vmHost) executeSyncCallback(
 		return nil, err
 	}
 
-	callbackVMOutput, callBackErr := host.ExecuteOnDestContext(callbackInput)
-	return callbackVMOutput, callBackErr
+	return host.ExecuteOnDestContext(callbackInput)
 }
 
-func (host *vmHost) executeAsyncCallGroupCallback(asyncCallGroup *arwen.AsyncCallGroup) error {
+func (host *vmHost) executeAsyncCallGroupCallback(group *arwen.AsyncCallGroup) error {
 	// TODO implement this
 	return nil
 }
@@ -333,8 +345,8 @@ func (host *vmHost) setupAsyncCallsGas(asyncContext *arwen.AsyncContext) error {
 	gasNeeded := uint64(0)
 	callsWithZeroGas := uint64(0)
 
-	for _, asyncCallGroup := range asyncContext.AsyncCallGroups {
-		for _, asyncCall := range asyncCallGroup.AsyncCalls {
+	for _, group := range asyncContext.AsyncCallGroups {
+		for _, asyncCall := range group.AsyncCalls {
 			var err error
 			gasNeeded, err = math.AddUint64(gasNeeded, asyncCall.ProvidedGas)
 			if err != nil {
@@ -363,8 +375,8 @@ func (host *vmHost) setupAsyncCallsGas(asyncContext *arwen.AsyncContext) error {
 	}
 
 	gasShare := (gasLeft - gasNeeded) / callsWithZeroGas
-	for _, asyncCallGroup := range asyncContext.AsyncCallGroups {
-		for _, asyncCall := range asyncCallGroup.AsyncCalls {
+	for _, group := range asyncContext.AsyncCallGroups {
+		for _, asyncCall := range group.AsyncCalls {
 			if asyncCall.ProvidedGas == 0 {
 				asyncCall.GasLimit = gasShare
 			}

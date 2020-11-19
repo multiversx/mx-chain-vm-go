@@ -33,6 +33,7 @@ func NewMeteringContext(
 	return context, nil
 }
 
+// GasSchedule returns the entire gas schedule
 func (context *meteringContext) GasSchedule() *config.GasCost {
 	return context.gasSchedule
 }
@@ -46,11 +47,13 @@ func (context *meteringContext) SetGasSchedule(gasMap config.GasScheduleMap) {
 	context.gasSchedule = gasSchedule
 }
 
+// UseGas consumes the specified amount of gas on the currently running Wasmer instance
 func (context *meteringContext) UseGas(gas uint64) {
 	gasUsed := context.host.Runtime().GetPointsUsed() + gas
 	context.host.Runtime().SetPointsUsed(gasUsed)
 }
 
+// RestoreGas deducts the specified amount of gas from the gas currently spent on the running Wasmer instance
 func (context *meteringContext) RestoreGas(gas uint64) {
 	gasUsed := context.host.Runtime().GetPointsUsed()
 	if gas <= gasUsed {
@@ -59,11 +62,13 @@ func (context *meteringContext) RestoreGas(gas uint64) {
 	}
 }
 
+// FreeGas refunds the specified amount of gas to the caller
 func (context *meteringContext) FreeGas(gas uint64) {
 	refund := context.host.Output().GetRefund() + gas
 	context.host.Output().SetRefund(refund)
 }
 
+// GasLeft computes the amount of gas left on the currently running Wasmer instance
 func (context *meteringContext) GasLeft() uint64 {
 	gasProvided := context.host.Runtime().GetVMInput().GasProvided
 	gasUsed := context.host.Runtime().GetPointsUsed()
@@ -75,6 +80,8 @@ func (context *meteringContext) GasLeft() uint64 {
 	return gasProvided - gasUsed
 }
 
+// BoundGasLimit returns the maximum between the provided amount and the gas
+// left on the currently running Wasmer instance
 func (context *meteringContext) BoundGasLimit(limit uint64) uint64 {
 	gasLeft := context.GasLeft()
 
@@ -92,6 +99,8 @@ func (context *meteringContext) UseGasForAsyncStep() error {
 	return context.UseGasBounded(gasToDeduct)
 }
 
+// UseGasBounded consumes the specified amount of gas on the currently running
+// Wasmer instance, but returns an error if there is not enough gas left
 func (context *meteringContext) UseGasBounded(gasToUse uint64) error {
 	if context.GasLeft() <= gasToUse {
 		return arwen.ErrNotEnoughGas
@@ -123,6 +132,8 @@ func (context *meteringContext) ComputeGasLockedForAsync() uint64 {
 	return compilationGasLock + executionGasLock
 }
 
+// UnlockGasIfAsyncCallback adds the locked gas to the gas provided for
+// execution, before execution starts
 func (context *meteringContext) UnlockGasIfAsyncCallback() {
 	input := context.host.Runtime().GetVMInput()
 	if input.CallType != vmcommon.AsynchronousCallBack {
@@ -133,11 +144,13 @@ func (context *meteringContext) UnlockGasIfAsyncCallback() {
 	input.GasLocked = 0
 }
 
+// GetGasLocked returns the amount of gas locked during the current execution
 func (context *meteringContext) GetGasLocked() uint64 {
 	input := context.host.Runtime().GetVMInput()
 	return input.GasLocked
 }
 
+// BlockGasLimit returns the maximum amount of gas allowed to be consumed in a block
 func (context *meteringContext) BlockGasLimit() uint64 {
 	return context.blockGasLimit
 }

@@ -6,16 +6,17 @@
             "accounts": {
                 "''node_address__________________s1": {
                     "nonce": "0",
+                    "shard": "0",
                     "balance": "1,000,000,000",
                     "storage": {},
                     "code": ""
                 },
                 "''delegation_contract___________s1": {
                     "nonce": "0",
+                    "shard": "1",
                     "balance": "789,000,000,000",
                     "storage": {
                         "''owner": "''node_address__________________s1",
-                        
                         "''num_nodes": "2",
                         "''stake_per_node": "394,500,000,000",
                         "''node_share": "3455",

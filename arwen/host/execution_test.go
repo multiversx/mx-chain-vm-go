@@ -360,6 +360,7 @@ func TestExecution_Call_Successful(t *testing.T) {
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
 	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 	require.Len(t, vmOutput.OutputAccounts, 1)
 	require.Len(t, vmOutput.OutputAccounts[string(parentAddress)].StorageUpdates, 1)
 
