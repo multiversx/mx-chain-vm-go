@@ -58,7 +58,7 @@ func (host *vmHost) sendAsyncCallbackToCaller() error {
 	return nil
 }
 
-func (host *vmHost) sendContextCallbackToOriginalCaller(asyncContext *arwen.AsyncContext) error {
+func (host *vmHost) sendContextCallbackToOriginalCaller(asyncContext *arwen.AsyncContextS) error {
 	runtime := host.Runtime()
 	output := host.Output()
 	metering := host.Metering()
@@ -141,7 +141,7 @@ func (host *vmHost) postprocessCrossShardCallback() error {
 // executeAsyncContextCallback will either execute a sync call (in-shard) to
 // the original caller by invoking its callback directly, or will dispatch a
 // cross-shard callback to it.
-func (host *vmHost) executeAsyncContextCallback(asyncContext *arwen.AsyncContext) error {
+func (host *vmHost) executeAsyncContextCallback(asyncContext *arwen.AsyncContextS) error {
 	execMode, err := host.determineExecutionMode(asyncContext.CallerAddr, asyncContext.ReturnData)
 	if err != nil {
 		return err
@@ -160,7 +160,7 @@ func (host *vmHost) executeAsyncContextCallback(asyncContext *arwen.AsyncContext
 	return nil
 }
 
-func (host *vmHost) createSyncContextCallbackInput(asyncContext *arwen.AsyncContext) *vmcommon.ContractCallInput {
+func (host *vmHost) createSyncContextCallbackInput(asyncContext *arwen.AsyncContextS) *vmcommon.ContractCallInput {
 	runtime := host.Runtime()
 	metering := host.Metering()
 
@@ -188,11 +188,11 @@ func (host *vmHost) createSyncContextCallbackInput(asyncContext *arwen.AsyncCont
 	return input
 }
 
-func (host *vmHost) loadCurrentAsyncContext() (*arwen.AsyncContext, error) {
+func (host *vmHost) loadCurrentAsyncContext() (*arwen.AsyncContextS, error) {
 	runtime := host.Runtime()
 	storage := host.Storage()
 
-	asyncContext := &arwen.AsyncContext{}
+	asyncContext := &arwen.AsyncContextS{}
 	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, runtime.GetPrevTxHash())
 	buff := storage.GetStorage(storageKey)
 	if len(buff) == 0 {

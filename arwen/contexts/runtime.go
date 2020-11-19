@@ -35,7 +35,7 @@ type runtimeContext struct {
 	maxWasmerInstances uint64
 
 	defaultAsyncCall *arwen.AsyncCall
-	asyncContext     *arwen.AsyncContext
+	asyncContext     *arwen.AsyncContextS
 
 	validator *WASMValidator
 
@@ -613,6 +613,7 @@ func (context *runtimeContext) SetDefaultAsyncCall(asyncCall *arwen.AsyncCall) {
 	context.defaultAsyncCall = asyncCall
 }
 
+// TODO delete context.defaultAsyncCall entirely
 // GetDefaultAsyncCall returns the currently set default async call information
 func (context *runtimeContext) GetDefaultAsyncCall() *arwen.AsyncCall {
 	return context.defaultAsyncCall
@@ -731,7 +732,7 @@ func (context *runtimeContext) AddAsyncCall(groupIDBytes []byte, asyncCall *arwe
 }
 
 // GetAsyncContext returns the current AsyncContext
-func (context *runtimeContext) GetAsyncContext() *arwen.AsyncContext {
+func (context *runtimeContext) GetAsyncContext() *arwen.AsyncContextS {
 	return context.asyncContext
 }
 

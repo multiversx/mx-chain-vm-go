@@ -340,7 +340,7 @@ func (host *vmHost) sendAsyncCallCrossShard(asyncCall arwen.AsyncCallHandler) er
  *  SC developer. The remaining gas is split between the async calls where the developer
  *  did not specify any gas amount
  */
-func (host *vmHost) setupAsyncCallsGas(asyncContext *arwen.AsyncContext) error {
+func (host *vmHost) setupAsyncCallsGas(asyncContext *arwen.AsyncContextS) error {
 	gasLeft := host.Metering().GasLeft()
 	gasNeeded := uint64(0)
 	callsWithZeroGas := uint64(0)
@@ -409,7 +409,7 @@ func (host *vmHost) finishSyncExecution(vmOutput *vmcommon.VMOutput, err error) 
 /**
  * saveAsyncContext takes a list of pending async calls and save them to storage so the info will be available on callback
  */
-func (host *vmHost) saveAsyncContext(asyncContext *arwen.AsyncContext) error {
+func (host *vmHost) saveAsyncContext(asyncContext *arwen.AsyncContextS) error {
 	if len(asyncContext.AsyncCallGroups) == 0 {
 		return nil
 	}

@@ -74,7 +74,7 @@ func (host *VmHostMock) CreateNewContract(_ *vmcommon.ContractCreateInput) ([]by
 	return nil, nil
 }
 
-func (host *VmHostMock) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*arwen.AsyncContext, error) {
+func (host *VmHostMock) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*arwen.AsyncContextS, error) {
 	return nil, nil
 }
 

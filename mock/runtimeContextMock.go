@@ -239,7 +239,7 @@ func (r *RuntimeContextMock) AddAsyncCall(_ []byte, _ *arwen.AsyncCall) error {
 	return nil
 }
 
-func (r *RuntimeContextMock) GetAsyncContext() *arwen.AsyncContext {
+func (r *RuntimeContextMock) GetAsyncContext() *arwen.AsyncContextS {
 	return nil
 }
 

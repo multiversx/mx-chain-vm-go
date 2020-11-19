@@ -36,7 +36,7 @@ type VMHost interface {
 	IsDynamicGasLockingEnabled() bool
 
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
-	ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*AsyncContext, error)
+	ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*AsyncContextS, error)
 	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
 	EthereumCallData() []byte
 	GetAPIMethods() *wasmer.Imports
@@ -101,7 +101,7 @@ type RuntimeContext interface {
 	GetDefaultAsyncCall() *AsyncCall
 	SetDefaultAsyncCall(asyncCallInfo *AsyncCall)
 	AddAsyncCall(contextIdentifier []byte, asyncCall *AsyncCall) error
-	GetAsyncContext() *AsyncContext
+	GetAsyncContext() *AsyncContextS
 	GetAsyncCallGroup(groupID []byte) (*AsyncCallGroup, error)
 	PushInstance()
 	PopInstance()
@@ -127,6 +127,27 @@ type RuntimeContext interface {
 	CryptoAPIErrorShouldFailExecution() bool
 	BigIntAPIErrorShouldFailExecution() bool
 	PrepareLegacyAsyncCall(address []byte, data []byte, value []byte) error
+}
+
+type AsyncContext interface {
+	StateStack
+
+	AddCall(groupID string, call *AsyncCall)
+	AddCallGroup(group *AsyncCallGroup)
+	// CreateAndAddCall?
+	HasPendingCallGroups() bool
+	IsComplete() bool
+	GetPendingOnly() AsyncContext
+	FindCall(destination []byte) (string, int, error)
+	GetCallGroup(groupID string) (*AsyncCallGroup, bool)
+	DeleteCallGroupByID(groupID string)
+	DeleteCallGroup(index int)
+	PostProcessCrossShardCallback() error
+	Load() error
+	Save() error
+	Delete() error
+	Execute() error
+	DetermineExecutionMode(destination []byte, data []byte) (AsyncCallExecutionMode, error)
 }
 
 type BigIntContext interface {
