@@ -30,6 +30,7 @@ package elrondapi
 // extern void returnData(void* context, int32_t dataOffset, int32_t length);
 // extern void signalError(void* context, int32_t messageOffset, int32_t messageLength);
 // extern long long getGasLeft(void *context);
+// extern void myDebug(void* context, int32_t dataOffset, int32_t length);
 //
 // extern int32_t executeOnDestContext(void *context, long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t executeOnSameContext(void *context, long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
@@ -68,6 +69,7 @@ import "C"
 import (
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"math/big"
 	"unsafe"
 
@@ -223,6 +225,11 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("finish", returnData, C.returnData)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("myDebug", myDebug, C.myDebug)
 	if err != nil {
 		return nil, err
 	}
@@ -1257,6 +1264,22 @@ func returnData(context unsafe.Pointer, pointer int32, length int32) {
 	}
 
 	output.Finish(data)
+}
+
+//export myDebug
+func myDebug(context unsafe.Pointer, pointer int32, length int32) {
+	runtime := arwen.GetRuntimeContext(context)
+	//output := arwen.GetOutputContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.Finish
+	gasToUse += metering.GasSchedule().BaseOperationCost.PersistPerByte * uint64(length)
+	metering.UseGas(gasToUse)
+
+	data, err := runtime.MemLoad(pointer, length)
+
+	fmt.Println("Pointer:", pointer, " Length: ", length)
+	fmt.Println("Data: ", data, " Error: ", err)
 }
 
 //export executeOnSameContext

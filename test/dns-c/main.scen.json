@@ -1,0 +1,17 @@
+{
+    "name": "big dns test",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "dns_init.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "dns_init_check.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "register_name_ok.steps.json"
+        }
+    ]
+}

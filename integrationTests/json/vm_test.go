@@ -294,6 +294,28 @@ func TestRustDnsContract(t *testing.T) {
 	}
 }
 
+func TestCDnsContract(t *testing.T) {
+	if testing.Short() {
+		t.Skip("not a short test")
+	}
+
+	executor, err := am.NewArwenTestExecutor()
+	require.Nil(t, err)
+	runner := mc.NewScenarioRunner(
+		executor,
+		mc.NewDefaultFileResolver(),
+	)
+	err = runner.RunAllJSONScenariosInDirectory(
+		getTestRoot(),
+		"dns-c",
+		".scen.json",
+		[]string{})
+
+	if err != nil {
+		t.Error(err)
+	}
+}
+
 func TestTimelocks(t *testing.T) {
 	executor, err := am.NewArwenTestExecutor()
 	require.Nil(t, err)
