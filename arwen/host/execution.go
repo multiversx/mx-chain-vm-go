@@ -632,8 +632,10 @@ func (host *vmHost) callInitFunction() error {
 }
 
 func (host *vmHost) callSCMethod() error {
+	// async:= host.Async()
 	runtime := host.Runtime()
 
+	// async.Load()
 	err := host.verifyAllowedFunctionCall()
 	if err != nil {
 		return err

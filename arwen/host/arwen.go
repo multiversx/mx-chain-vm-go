@@ -39,6 +39,7 @@ type vmHost struct {
 
 	blockchainContext arwen.BlockchainContext
 	runtimeContext    arwen.RuntimeContext
+	asyncContext      arwen.AsyncContext
 	outputContext     arwen.OutputContext
 	meteringContext   arwen.MeteringContext
 	storageContext    arwen.StorageContext
@@ -71,6 +72,7 @@ func NewArwenVM(
 		cryptoHook:               cryptoHook,
 		meteringContext:          nil,
 		runtimeContext:           nil,
+		asyncContext:             nil,
 		blockchainContext:        nil,
 		storageContext:           nil,
 		bigIntContext:            nil,
@@ -125,6 +127,8 @@ func NewArwenVM(
 		return nil, err
 	}
 
+	host.asyncContext = contexts.NewAsyncContext(host)
+
 	host.meteringContext, err = contexts.NewMeteringContext(host, hostParameters.GasSchedule, hostParameters.BlockGasLimit)
 	if err != nil {
 		return nil, err
@@ -173,6 +177,11 @@ func (host *vmHost) Blockchain() arwen.BlockchainContext {
 // Runtime returns the RuntimeContext instance of the host
 func (host *vmHost) Runtime() arwen.RuntimeContext {
 	return host.runtimeContext
+}
+
+// Async returns the AsyncContext instance of the host
+func (host *vmHost) Async() arwen.AsyncContext {
+	return host.asyncContext
 }
 
 // Output returns the OutputContext instance of the host
@@ -251,6 +260,7 @@ func (host *vmHost) initContexts() {
 	host.bigIntContext.InitState()
 	host.outputContext.InitState()
 	host.runtimeContext.InitState()
+	host.asyncContext.InitState()
 	host.storageContext.InitState()
 	host.ethInput = nil
 }
@@ -260,6 +270,7 @@ func (host *vmHost) ClearContextStateStack() {
 	host.bigIntContext.ClearStateStack()
 	host.outputContext.ClearStateStack()
 	host.runtimeContext.ClearStateStack()
+	host.asyncContext.ClearStateStack()
 	host.storageContext.ClearStateStack()
 }
 

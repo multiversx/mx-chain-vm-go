@@ -132,17 +132,17 @@ type RuntimeContext interface {
 type AsyncContext interface {
 	StateStack
 
-	AddCall(groupID string, call *AsyncCall)
-	AddCallGroup(group *AsyncCallGroup)
+	AddCall(groupID string, call *AsyncCall) error
+	AddCallGroup(group *AsyncCallGroup) error
 	// CreateAndAddCall?
 	HasPendingCallGroups() bool
 	IsComplete() bool
-	GetPendingOnly() AsyncContext
+	GetPendingOnly() []*AsyncCallGroup
 	FindCall(destination []byte) (string, int, error)
 	GetCallGroup(groupID string) (*AsyncCallGroup, bool)
 	DeleteCallGroupByID(groupID string)
 	DeleteCallGroup(index int)
-	PostProcessCrossShardCallback() error
+	PostprocessCrossShardCallback() error
 	Load() error
 	Save() error
 	Delete() error
