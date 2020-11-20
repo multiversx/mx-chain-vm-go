@@ -79,29 +79,6 @@
             }
         },
         {
-            "step": "checkState",
-            "accounts": {
-                "''cool_address__________________sz": {
-                    "nonce": "*",
-                    "balance": "0",
-                    "storage": {
-                        "''name": "``coolname0001"
-                    },
-                    "code": "file:user-mock.wasm"
-                },
-                "''dns____________________________|0xb9": {
-                    "nonce": "*",
-                    "balance": "123,000",
-                    "storage": {
-                        "str:REGISTRATION_COST": "123,000",
-                        "str:VALUE_STATE|keccak256:''coolname0001": "u32:2|''cool_address__________________sz"
-                    },
-                    "code": "file:dns.wasm"
-                },
-                "+": ""
-            }
-        },
-        {
             "step": "scCall",
             "txId": "resolve-coolname0001",
             "tx": {
@@ -125,6 +102,7 @@
         },
         {
             "step": "checkState",
+            "comment": "Value 2 (Commited) is in little endian for some reason",
             "accounts": {
                 "''cool_address__________________sz": {
                     "nonce": "*",
@@ -138,8 +116,8 @@
                     "nonce": "*",
                     "balance": "123,000",
                     "storage": {
-                        "''REGISTRATION_COST": "123,000",
-                        "keccak256:``coolname0001": "u32:2|''cool_address__________________sz"
+                        "str:REGISTRATION_COST": "123,000",
+                        "str:VALUE_STATE|keccak256:''coolname0001": "0x02000000|''cool_address__________________sz"
                     },
                     "code": "file:dns.wasm"
                 },
