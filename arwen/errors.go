@@ -103,6 +103,8 @@ var ErrInvalidPublicKeySize = errors.New("invalid public key size")
 
 var ErrNilCallbackFunction = errors.New("nil callback function")
 
+var ErrCannotInterpretCallbackArgs = errors.New("cannot interpret callback args")
+
 var ErrUpgradeNotAllowed = errors.New("upgrade not allowed")
 
 var ErrNilContract = errors.New("nil contract")
@@ -114,6 +116,8 @@ var ErrSyncExecutionNotInSameShard = errors.New("sync execution request is not i
 var ErrInvalidAsyncCallGroupID = errors.New("invalid async call group identifier")
 
 var ErrOnlyOneLegacyAsyncCallAllowed = errors.New("only one legacy async call allowed")
+
+var ErrLegacyAsyncCallNotFound = errors.New("legacy async call not found")
 
 var ErrLegacyAsyncCallInvalid = errors.New("legacy async call invalid")
 

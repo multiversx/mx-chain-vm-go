@@ -2,10 +2,11 @@ package contexts
 
 import (
 	"encoding/json"
+	"math"
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/math"
+	extramath "github.com/ElrondNetwork/arwen-wasm-vm/math"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
@@ -29,6 +30,14 @@ func NewAsyncContext(host arwen.VMHost) *asyncContext {
 		ReturnData:      nil,
 		AsyncCallGroups: make([]*arwen.AsyncCallGroup, 0),
 	}
+}
+
+func (context *asyncContext) GetCallerAddress() []byte {
+	return context.CallerAddr
+}
+
+func (context *asyncContext) GetReturnData() []byte {
+	return context.ReturnData
 }
 
 func (context *asyncContext) GetCallGroup(groupID string) (*arwen.AsyncCallGroup, bool) {
@@ -104,6 +113,31 @@ func (context *asyncContext) FindCall(destination []byte) (string, int, error) {
 	return "", -1, arwen.ErrAsyncCallNotFound
 }
 
+func (context *asyncContext) UpdateCurrentCallStatus() (*arwen.AsyncCall, error) {
+	vmInput := context.host.Runtime().GetVMInput()
+	if vmInput.CallType != vmcommon.AsynchronousCallBack {
+		return nil, nil
+	}
+
+	if len(vmInput.Arguments) == 0 {
+		return nil, arwen.ErrCannotInterpretCallbackArgs
+	}
+
+	// The first argument of the callback is the return code of the destination call
+	destReturnCode := big.NewInt(0).SetBytes(vmInput.Arguments[0]).Uint64()
+
+	groupID, index, err := context.FindCall(vmInput.CallerAddr)
+	if err != nil {
+		return nil, err
+	}
+
+	group, _ := context.GetCallGroup(groupID)
+	call := group.AsyncCalls[index]
+	call.UpdateStatus(vmcommon.ReturnCode(destReturnCode))
+
+	return call, nil
+}
+
 // GetPendingOnly creates a new asyncContext containing only
 // the pending AsyncCallGroups, without deleting anything from the initial asyncContext
 func (context *asyncContext) GetPendingOnly() []*arwen.AsyncCallGroup {
@@ -129,9 +163,24 @@ func (context *asyncContext) GetPendingOnly() []*arwen.AsyncCallGroup {
 }
 
 func (context *asyncContext) InitState() {
+	context.CallerAddr = make([]byte, 0)
+	context.ReturnData = make([]byte, 0)
+	context.AsyncCallGroups = make([]*arwen.AsyncCallGroup, 0)
+}
+
+func (context *asyncContext) SetCaller(caller []byte) {
+	context.CallerAddr = caller
 }
 
 func (context *asyncContext) PushState() {
+	// TODO the call groups must be cloned, not just referenced
+	newState := &asyncContext{
+		CallerAddr:      context.CallerAddr,
+		ReturnData:      context.ReturnData,
+		AsyncCallGroups: context.AsyncCallGroups,
+	}
+
+	context.stateStack = append(context.stateStack, newState)
 }
 
 func (context *asyncContext) PopDiscard() {
@@ -212,6 +261,97 @@ func (context *asyncContext) Execute() error {
 	}
 
 	return nil
+}
+
+// PrepareLegacyAsyncCall builds an AsyncCall struct from its arguments, sets it as
+// the default async call and informs Wasmer to stop contract execution with BreakpointAsyncCall
+func (context *asyncContext) PrepareLegacyAsyncCall(address []byte, data []byte, value []byte) error {
+	legacyGroupID := arwen.LegacyAsyncCallGroupID
+	legacyCallback := []byte(arwen.CallbackFunctionName)
+
+	_, exists := context.GetCallGroup(legacyGroupID)
+	if exists {
+		return arwen.ErrOnlyOneLegacyAsyncCallAllowed
+	}
+
+	err := context.CreateAndAddCall(legacyGroupID,
+		address,
+		data,
+		value,
+		legacyCallback,
+		legacyCallback,
+		math.MaxUint64,
+	)
+	if err != nil {
+		return err
+	}
+
+	context.host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointAsyncCall)
+
+	return nil
+}
+
+// CreateAndAddAsyncCall creates a new AsyncCall from its arguments and adds it
+// to the specified group
+func (context *asyncContext) CreateAndAddCall(
+	groupID string,
+	address []byte,
+	data []byte,
+	value []byte,
+	successCallback []byte,
+	errorCallback []byte,
+	gas uint64,
+) error {
+
+	gasToLock, err := context.prepareGasForAsyncCall()
+	if err != nil {
+		return err
+	}
+
+	if gas == math.MaxUint64 {
+		metering := context.host.Metering()
+		gas = metering.GasLeft()
+	}
+
+	return context.AddCall(groupID, &arwen.AsyncCall{
+		Status:          arwen.AsyncCallPending,
+		Destination:     address,
+		Data:            data,
+		ValueBytes:      value,
+		SuccessCallback: string(successCallback),
+		ErrorCallback:   string(errorCallback),
+		ProvidedGas:     gas,
+		GasLocked:       gasToLock,
+	})
+}
+
+func (context *asyncContext) prepareGasForAsyncCall() (uint64, error) {
+	metering := context.host.Metering()
+	err := metering.UseGasForAsyncStep()
+	if err != nil {
+		return 0, err
+	}
+
+	var shouldLockGas bool
+
+	if !context.host.IsDynamicGasLockingEnabled() {
+		// Legacy mode: static gas locking, always enabled
+		shouldLockGas = true
+	} else {
+		// Dynamic mode: lock only if callBack() exists
+		shouldLockGas = context.host.Runtime().HasCallbackMethod()
+	}
+
+	gasToLock := uint64(0)
+	if shouldLockGas {
+		gasToLock = metering.ComputeGasLockedForAsync()
+		err = metering.UseGasBounded(gasToLock)
+		if err != nil {
+			return 0, err
+		}
+	}
+
+	return gasToLock, nil
 }
 
 /**
@@ -523,9 +663,12 @@ func (context *asyncContext) createSyncCallbackInput(
 	runtime := context.host.Runtime()
 
 	// always provide return code as the first argument to callback function
-	arguments := [][]byte{
-		big.NewInt(int64(vmOutput.ReturnCode)).Bytes(),
+	retCodeBytes := big.NewInt(int64(vmOutput.ReturnCode)).Bytes()
+	if len(retCodeBytes) == 0 {
+		retCodeBytes = []byte{0}
 	}
+
+	arguments := [][]byte{retCodeBytes}
 	if destinationErr == nil {
 		// when execution went Ok, callBack arguments are:
 		// [0, result1, result2, ....]
@@ -683,7 +826,7 @@ func (context *asyncContext) setupAsyncCallsGas() error {
 	for _, group := range context.AsyncCallGroups {
 		for _, asyncCall := range group.AsyncCalls {
 			var err error
-			gasNeeded, err = math.AddUint64(gasNeeded, asyncCall.ProvidedGas)
+			gasNeeded, err = extramath.AddUint64(gasNeeded, asyncCall.ProvidedGas)
 			if err != nil {
 				return err
 			}

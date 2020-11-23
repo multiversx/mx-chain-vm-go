@@ -17,6 +17,7 @@ type VmHostMock struct {
 
 	BlockchainContext arwen.BlockchainContext
 	RuntimeContext    arwen.RuntimeContext
+	AsyncContext      arwen.AsyncContext
 	OutputContext     arwen.OutputContext
 	MeteringContext   arwen.MeteringContext
 	StorageContext    arwen.StorageContext
@@ -36,6 +37,10 @@ func (host *VmHostMock) Blockchain() arwen.BlockchainContext {
 
 func (host *VmHostMock) Runtime() arwen.RuntimeContext {
 	return host.RuntimeContext
+}
+
+func (host *VmHostMock) Async() arwen.AsyncContext {
+	return host.AsyncContext
 }
 
 func (host *VmHostMock) Output() arwen.OutputContext {
@@ -74,8 +79,8 @@ func (host *VmHostMock) CreateNewContract(_ *vmcommon.ContractCreateInput) ([]by
 	return nil, nil
 }
 
-func (host *VmHostMock) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*arwen.AsyncContextS, error) {
-	return nil, nil
+func (host *VmHostMock) ExecuteOnSameContext(input *vmcommon.ContractCallInput) error {
+	return nil
 }
 
 func (host *VmHostMock) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
