@@ -663,12 +663,9 @@ func (context *asyncContext) createSyncCallbackInput(
 	runtime := context.host.Runtime()
 
 	// always provide return code as the first argument to callback function
-	retCodeBytes := big.NewInt(int64(vmOutput.ReturnCode)).Bytes()
-	if len(retCodeBytes) == 0 {
-		retCodeBytes = []byte{0}
+	arguments := [][]byte{
+		big.NewInt(int64(vmOutput.ReturnCode)).Bytes(),
 	}
-
-	arguments := [][]byte{retCodeBytes}
 	if destinationErr == nil {
 		// when execution went Ok, callBack arguments are:
 		// [0, result1, result2, ....]
