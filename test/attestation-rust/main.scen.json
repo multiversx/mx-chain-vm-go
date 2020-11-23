@@ -1,0 +1,13 @@
+{
+    "name": "all tests",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "attestation_init_steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "register_ok.steps.json"
+        }
+    ]
+}

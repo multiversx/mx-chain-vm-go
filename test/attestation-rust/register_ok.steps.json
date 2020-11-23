@@ -1,0 +1,63 @@
+{
+    "name": "register ok",
+    "steps": [
+        {
+            "step": "setState",
+            "accounts": {
+                "address:acc1": {
+                    "nonce": "0",
+                    "balance": "1,000,000",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "register-ok",
+            "tx": {
+                "from": "address:acc1",
+                "to": "address:contract",
+                "value": "500,000",
+                "function": "register",
+                "arguments": [
+                    "keccak256:str:secret_data"
+                ],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "comment": "u64:0 x 4 is to emulate a 256-bit zero address instead of writing 0x000...",
+            "accounts": {
+                "address:acc1": {
+                    "nonce": "1",
+                    "balance": "500,000",
+                    "storage": {},
+                    "code": ""
+                },
+                "address:contract": {
+                    "nonce": "0",
+                    "balance": "500,000",
+                    "storage": {
+                        "str:registration_cost": "500,000",
+                        "str:attestator|address:owner": "3",
+                        "str:max_nonce_diff": "1000",
+                        "str:attestator_list": "address:owner",
+                        "str:user|keccak256:str:secret_data": "u64:1|u64:0|u64:0|u64:0|u64:0|address:acc1|address:owner|u64:0"
+                    },
+                    "code": "file:attestation.wasm"
+                },
+                "+": ""
+            }
+        }
+    ]
+}
