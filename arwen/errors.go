@@ -79,6 +79,8 @@ var ErrAsyncCallsDisallowed = errors.New("async calls disallowed")
 
 var ErrAsyncContextDoesNotExist = errors.New("async context does not exist")
 
+var ErrAsyncCallGroupExistsAlready = errors.New("async call group exists already")
+
 var ErrAsyncCallGroupDoesNotExist = errors.New("async call group does not exist")
 
 var ErrNilCallbackVMOutput = errors.New("nil callback VMOutput")
@@ -101,6 +103,8 @@ var ErrInvalidPublicKeySize = errors.New("invalid public key size")
 
 var ErrNilCallbackFunction = errors.New("nil callback function")
 
+var ErrCannotInterpretCallbackArgs = errors.New("cannot interpret callback args")
+
 var ErrUpgradeNotAllowed = errors.New("upgrade not allowed")
 
 var ErrNilContract = errors.New("nil contract")
@@ -113,4 +117,8 @@ var ErrInvalidAsyncCallGroupID = errors.New("invalid async call group identifier
 
 var ErrOnlyOneLegacyAsyncCallAllowed = errors.New("only one legacy async call allowed")
 
+var ErrLegacyAsyncCallNotFound = errors.New("legacy async call not found")
+
 var ErrLegacyAsyncCallInvalid = errors.New("legacy async call invalid")
+
+var ErrNoStoredAsyncContextFound = errors.New("no async context found in storage")

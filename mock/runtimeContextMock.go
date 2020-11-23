@@ -31,6 +31,7 @@ type RuntimeContextMock struct {
 	CurrentTxHash          []byte
 	OriginalTxHash         []byte
 	PrevTxHash             []byte
+	HasCallback            bool
 }
 
 func (r *RuntimeContextMock) InitState() {
@@ -227,25 +228,9 @@ func (r *RuntimeContextMock) BigIntAPIErrorShouldFailExecution() bool {
 func (r *RuntimeContextMock) FailExecution(_ error) {
 }
 
-func (r *RuntimeContextMock) GetDefaultAsyncCall() *arwen.AsyncCall {
-	return r.DefaultAsyncCall
-}
-
-func (r *RuntimeContextMock) SetDefaultAsyncCall(asyncCall *arwen.AsyncCall) {
-	r.DefaultAsyncCall = asyncCall
-}
-
-func (r *RuntimeContextMock) AddAsyncCall(_ []byte, _ *arwen.AsyncCall) error {
-	return nil
-}
-
-func (r *RuntimeContextMock) GetAsyncContext() *arwen.AsyncContext {
-	return nil
-}
-
-func (r *RuntimeContextMock) GetAsyncCallGroup(_ []byte) (*arwen.AsyncCallGroup, error) {
-	return nil, nil
-}
-
 func (r *RuntimeContextMock) SetCustomCallFunction(_ string) {
+}
+
+func (r *RuntimeContextMock) HasCallbackMethod() bool {
+	return r.HasCallback
 }

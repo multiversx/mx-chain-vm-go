@@ -7,7 +7,6 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/contexts"
-	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	"github.com/ElrondNetwork/elrond-go-logger/check"
 	"github.com/ElrondNetwork/elrond-go/core"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
@@ -145,6 +144,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	log.Trace("ExecuteOnDestContext", "function", input.Function)
 
+	// TODO Discuss and handle the Async stack
 	bigInt, _, _, output, runtime, storage := host.GetContexts()
 
 	bigInt.PushState()
@@ -156,6 +156,11 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vm
 
 	runtime.PushState()
 	runtime.InitStateFromContractCallInput(input)
+
+	async := host.Async()
+	async.PushState()
+	async.InitState()
+	async.SetCaller(input.CallerAddr)
 
 	storage.PushState()
 	storage.SetAddress(runtime.GetSCAddress())
@@ -172,11 +177,12 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vm
 		return host.finishExecuteOnDestContext(gasUsed, err)
 	}
 
-	err = host.executeCurrentAsyncContext()
+	err = host.Async().Execute()
 	return host.finishExecuteOnDestContext(gasUsed, err)
 }
 
 func (host *vmHost) finishExecuteOnDestContext(gasUsed uint64, executeErr error) (*vmcommon.VMOutput, error) {
+	// TODO Discuss and handle the Async stack
 	bigInt, _, _, output, runtime, storage := host.GetContexts()
 
 	// Extract the VMOutput produced by the execution in isolation, before
@@ -191,6 +197,7 @@ func (host *vmHost) finishExecuteOnDestContext(gasUsed uint64, executeErr error)
 		bigInt.PopSetActiveState()
 		output.PopSetActiveState()
 		runtime.PopSetActiveState()
+		host.Async().PopSetActiveState()
 		storage.PopSetActiveState()
 
 		return vmOutput, executeErr
@@ -247,19 +254,20 @@ func computeGasUsedByCurrentSC(
 	return gasUsed, nil
 }
 
-func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*arwen.AsyncContext, error) {
+func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) error {
 	log.Trace("ExecuteOnSameContext", "function", input.Function)
 
 	if host.IsBuiltinFunctionName(input.Function) {
-		return nil, arwen.ErrBuiltinCallOnSameContextDisallowed
+		return arwen.ErrBuiltinCallOnSameContextDisallowed
 	}
 
 	var err error
 
+	// TODO Discuss and handle the Async stack
 	bigInt, _, _, output, runtime, _ := host.GetContexts()
 
-	// Back up the states of the contexts (except Storage, which isn't affected
-	// by ExecuteOnSameContext())
+	// Back up the states of the contexts (except Storage and Async, which aren't
+	// affected by ExecuteOnSameContext())
 	bigInt.PushState()
 	output.PushState()
 	runtime.PushState()
@@ -272,20 +280,22 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*ar
 	err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue)
 	if err != nil {
 		host.finishExecuteOnSameContext(0, err)
-		return nil, err
+		return err
 	}
 
 	gasUsed, err := host.execute(input)
 	if err != nil {
 		host.finishExecuteOnSameContext(gasUsed, err)
-		return nil, err
+		return err
 	}
 
+	err = host.Async().Execute()
 	host.finishExecuteOnSameContext(gasUsed, err)
-	return runtime.GetAsyncContext(), nil
+	return nil
 }
 
 func (host *vmHost) finishExecuteOnSameContext(gasUsed uint64, executeErr error) {
+	// TODO Discuss and handle the Async stack
 	bigInt, _, _, output, runtime, _ := host.GetContexts()
 
 	gasUsedBySC, err := computeGasUsedByCurrentSC(gasUsed, output, executeErr)
@@ -633,18 +643,27 @@ func (host *vmHost) callInitFunction() error {
 
 func (host *vmHost) callSCMethod() error {
 	runtime := host.Runtime()
+	vmInput := runtime.GetVMInput()
+	async := host.Async()
+	callType := vmInput.CallType
+
+	if callType == vmcommon.AsynchronousCallBack {
+		async.Load()
+		asyncCall, err := async.UpdateCurrentCallStatus()
+		if err != nil {
+			return async.PostprocessCrossShardCallback()
+		}
+
+		runtime.SetCustomCallFunction(asyncCall.GetCallbackName())
+	}
 
 	err := host.verifyAllowedFunctionCall()
 	if err != nil {
 		return err
 	}
 
-	callType := runtime.GetVMInput().CallType
-	function, err := host.getFunctionByCallType(callType)
+	function, err := runtime.GetFunctionToCall()
 	if err != nil {
-		if callType == vmcommon.AsynchronousCallBack && errors.Is(err, arwen.ErrNilCallbackFunction) {
-			return host.postprocessCrossShardCallback()
-		}
 		return err
 	}
 
@@ -656,7 +675,7 @@ func (host *vmHost) callSCMethod() error {
 		return err
 	}
 
-	err = host.executeCurrentAsyncContext()
+	err = async.Execute()
 	if err != nil {
 		return err
 	}
@@ -667,47 +686,12 @@ func (host *vmHost) callSCMethod() error {
 	case vmcommon.AsynchronousCall:
 		err = host.sendAsyncCallbackToCaller()
 	case vmcommon.AsynchronousCallBack:
-		err = host.postprocessCrossShardCallback()
+		err = async.PostprocessCrossShardCallback()
 	default:
 		err = arwen.ErrUnknownCallType
 	}
 
 	return err
-}
-
-// TODO move into RuntimeContext
-func (host *vmHost) getFunctionByCallType(callType vmcommon.CallType) (wasmer.ExportedFunctionCallback, error) {
-	runtime := host.Runtime()
-
-	if callType != vmcommon.AsynchronousCallBack {
-		return runtime.GetFunctionToCall()
-	}
-
-	asyncContext, err := host.loadCurrentAsyncContext()
-	if err != nil {
-		return nil, err
-	}
-
-	vmInput := runtime.GetVMInput()
-
-	customCallback := false
-	for _, asyncCallGroup := range asyncContext.AsyncCallGroups {
-		for _, asyncCall := range asyncCallGroup.AsyncCalls {
-			if bytes.Equal(vmInput.CallerAddr, asyncCall.Destination) {
-				customCallback = true
-				// TODO why asyncCall.SuccessCallback? why not check for error as well,
-				// and set asyncCall.ErrorCallback?
-				runtime.SetCustomCallFunction(asyncCall.SuccessCallback)
-				break
-			}
-		}
-
-		if customCallback {
-			break
-		}
-	}
-
-	return runtime.GetFunctionToCall()
 }
 
 func (host *vmHost) verifyAllowedFunctionCall() error {

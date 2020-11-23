@@ -2,9 +2,7 @@ package contexts
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
-	"math"
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -33,9 +31,6 @@ type runtimeContext struct {
 	instanceStack []*wasmer.Instance
 
 	maxWasmerInstances uint64
-
-	defaultAsyncCall *arwen.AsyncCall
-	asyncContext     *arwen.AsyncContext
 
 	validator *wasmValidator
 
@@ -72,8 +67,6 @@ func (context *runtimeContext) InitState() {
 	context.callFunction = ""
 	context.verifyCode = false
 	context.readOnly = false
-	context.defaultAsyncCall = nil
-	context.asyncContext = arwen.NewAsyncContext()
 }
 
 func (context *runtimeContext) setWarmInstanceWhenNeeded(gasLimit uint64) bool {
@@ -271,8 +264,6 @@ func (context *runtimeContext) InitStateFromContractCallInput(input *vmcommon.Co
 	context.scAddress = input.RecipientAddr
 	context.callFunction = input.Function
 
-	context.asyncContext = arwen.NewAsyncContext()
-	context.asyncContext.CallerAddr = input.CallerAddr
 }
 
 // SetCustomCallFunction sets a custom function to be called next, instead of
@@ -284,12 +275,10 @@ func (context *runtimeContext) SetCustomCallFunction(callFunction string) {
 // PushState pushes the current state of the runtime context onto its state stack.
 func (context *runtimeContext) PushState() {
 	newState := &runtimeContext{
-		vmInput:          context.vmInput,
-		scAddress:        context.scAddress,
-		callFunction:     context.callFunction,
-		readOnly:         context.readOnly,
-		defaultAsyncCall: context.defaultAsyncCall,
-		asyncContext:     context.asyncContext,
+		vmInput:      context.vmInput,
+		scAddress:    context.scAddress,
+		callFunction: context.callFunction,
+		readOnly:     context.readOnly,
 	}
 
 	context.stateStack = append(context.stateStack, newState)
@@ -309,8 +298,6 @@ func (context *runtimeContext) PopSetActiveState() {
 	context.scAddress = prevState.scAddress
 	context.callFunction = prevState.callFunction
 	context.readOnly = prevState.readOnly
-	context.defaultAsyncCall = prevState.defaultAsyncCall
-	context.asyncContext = prevState.asyncContext
 }
 
 // PopDiscard pops the state at the top of the state stack and discards it.
@@ -622,144 +609,6 @@ func (context *runtimeContext) GetInitFunction() wasmer.ExportedFunctionCallback
 	return nil
 }
 
-// SetDefaultAsyncCall sets the default async call information, in case of BreakpointAsyncCall.
-func (context *runtimeContext) SetDefaultAsyncCall(asyncCall *arwen.AsyncCall) {
-	context.defaultAsyncCall = asyncCall
-}
-
-// GetDefaultAsyncCall returns the currently set default async call information.
-func (context *runtimeContext) GetDefaultAsyncCall() *arwen.AsyncCall {
-	return context.defaultAsyncCall
-}
-
-// PrepareLegacyAsyncCall builds an AsyncCall struct from its arguments, sets it as
-// the default async call and informs Wasmer to stop contract execution with BreakpointAsyncCall.
-func (context *runtimeContext) PrepareLegacyAsyncCall(address []byte, data []byte, value []byte) error {
-	legacyGroupID := []byte(arwen.LegacyAsyncCallGroupID)
-	legacyCallback := []byte(arwen.CallbackFunctionName)
-
-	_, err := context.GetAsyncCallGroup(legacyGroupID)
-	if !errors.Is(err, arwen.ErrAsyncCallGroupDoesNotExist) {
-		return arwen.ErrOnlyOneLegacyAsyncCallAllowed
-	}
-
-	err = context.CreateAndAddAsyncCall(legacyGroupID,
-		address,
-		data,
-		value,
-		legacyCallback,
-		legacyCallback,
-		math.MaxUint64,
-	)
-	if err != nil {
-		return err
-	}
-
-	context.SetRuntimeBreakpointValue(arwen.BreakpointAsyncCall)
-
-	return nil
-}
-
-// CreateAndAddAsyncCall creates a new AsyncCall from its arguments and adds it
-// to the specified group.
-func (context *runtimeContext) CreateAndAddAsyncCall(
-	groupID []byte,
-	address []byte,
-	data []byte,
-	value []byte,
-	successCallback []byte,
-	errorCallback []byte,
-	gas uint64,
-) error {
-
-	gasToLock, err := context.prepareGasForAsyncCall()
-	if err != nil {
-		return err
-	}
-
-	if gas == math.MaxUint64 {
-		metering := context.host.Metering()
-		gas = metering.GasLeft()
-	}
-
-	return context.AddAsyncCall(groupID, &arwen.AsyncCall{
-		Status:          arwen.AsyncCallPending,
-		Destination:     address,
-		Data:            data,
-		ValueBytes:      value,
-		SuccessCallback: string(successCallback),
-		ErrorCallback:   string(errorCallback),
-		ProvidedGas:     gas,
-		GasLocked:       gasToLock,
-	})
-}
-
-func (context *runtimeContext) prepareGasForAsyncCall() (uint64, error) {
-	metering := context.host.Metering()
-	err := metering.UseGasForAsyncStep()
-	if err != nil {
-		return 0, err
-	}
-
-	var shouldLockGas bool
-
-	if !context.host.IsDynamicGasLockingEnabled() {
-		// Legacy mode: static gas locking, always enabled
-		shouldLockGas = true
-	} else {
-		// Dynamic mode: lock only if callBack() exists
-		shouldLockGas = context.HasCallbackMethod()
-	}
-
-	gasToLock := uint64(0)
-	if shouldLockGas {
-		gasToLock = metering.ComputeGasLockedForAsync()
-		err = metering.UseGasBounded(gasToLock)
-		if err != nil {
-			return 0, err
-		}
-	}
-
-	return gasToLock, nil
-}
-
-// AddAsyncCall adds an AsyncCall to the specified group
-func (context *runtimeContext) AddAsyncCall(groupIDBytes []byte, asyncCall *arwen.AsyncCall) error {
-	if context.host.IsBuiltinFunctionName(asyncCall.SuccessCallback) {
-		return arwen.ErrCannotUseBuiltinAsCallback
-	}
-	if context.host.IsBuiltinFunctionName(asyncCall.ErrorCallback) {
-		return arwen.ErrCannotUseBuiltinAsCallback
-	}
-
-	groupID := string(groupIDBytes)
-	asyncCallGroup, ok := context.asyncContext.GetAsyncCallGroup(groupID)
-	if !ok {
-		asyncCallGroup = arwen.NewAsyncCallGroup(groupID)
-		context.asyncContext.AddAsyncGroup(asyncCallGroup)
-	}
-
-	asyncCallGroup.AddAsyncCall(asyncCall)
-
-	return nil
-}
-
-// GetAsyncContext returns the current AsyncContext.
-func (context *runtimeContext) GetAsyncContext() *arwen.AsyncContext {
-	return context.asyncContext
-}
-
-// GetAsyncCallGroup returns the AsyncCallGroup with the specified identifier from within the current AsyncContext.
-func (context *runtimeContext) GetAsyncCallGroup(groupID []byte) (*arwen.AsyncCallGroup, error) {
-	asyncCallGroup, ok := context.asyncContext.GetAsyncCallGroup(string(groupID))
-	if !ok {
-		return nil, arwen.ErrAsyncCallGroupDoesNotExist
-	}
-
-	return asyncCallGroup, nil
-}
-
-// HasCallbackMethod returns true if the current wasmer instance exports has a callback method.
 func (context *runtimeContext) HasCallbackMethod() bool {
 	_, ok := context.instance.Exports[arwen.CallbackFunctionName]
 	return ok

@@ -27,6 +27,7 @@ type VMHost interface {
 	Crypto() crypto.VMCrypto
 	Blockchain() BlockchainContext
 	Runtime() RuntimeContext
+	Async() AsyncContext
 	BigInt() BigIntContext
 	Output() OutputContext
 	Metering() MeteringContext
@@ -36,7 +37,7 @@ type VMHost interface {
 	IsDynamicGasLockingEnabled() bool
 
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
-	ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*AsyncContext, error)
+	ExecuteOnSameContext(input *vmcommon.ContractCallInput) error
 	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
 	EthereumCallData() []byte
 	GetAPIMethods() *wasmer.Imports
@@ -89,6 +90,7 @@ type RuntimeContext interface {
 	GetVMType() []byte
 	Function() string
 	Arguments() [][]byte
+	HasCallbackMethod() bool
 	GetCurrentTxHash() []byte
 	GetOriginalTxHash() []byte
 	GetPrevTxHash() []byte
@@ -98,11 +100,6 @@ type RuntimeContext interface {
 	MustVerifyNextContractCode()
 	SetRuntimeBreakpointValue(value BreakpointValue)
 	GetRuntimeBreakpointValue() BreakpointValue
-	GetDefaultAsyncCall() *AsyncCall
-	SetDefaultAsyncCall(asyncCallInfo *AsyncCall)
-	AddAsyncCall(contextIdentifier []byte, asyncCall *AsyncCall) error
-	GetAsyncContext() *AsyncContext
-	GetAsyncCallGroup(groupID []byte) (*AsyncCallGroup, error)
 	PushInstance()
 	PopInstance()
 	RunningInstancesCount() uint64
@@ -126,7 +123,40 @@ type RuntimeContext interface {
 	ElrondSyncExecAPIErrorShouldFailExecution() bool
 	CryptoAPIErrorShouldFailExecution() bool
 	BigIntAPIErrorShouldFailExecution() bool
+}
+
+type AsyncContext interface {
+	StateStack
+
+	AddCall(groupID string, call *AsyncCall) error
+	AddCallGroup(group *AsyncCallGroup) error
+	CreateAndAddCall(
+		groupID string,
+		address []byte,
+		data []byte,
+		value []byte,
+		successCallback []byte,
+		errorCallback []byte,
+		gas uint64,
+	) error
+	HasPendingCallGroups() bool
+	IsComplete() bool
+	GetPendingOnly() []*AsyncCallGroup
+	FindCall(destination []byte) (string, int, error)
+	GetCallGroup(groupID string) (*AsyncCallGroup, bool)
+	DeleteCallGroupByID(groupID string)
+	DeleteCallGroup(index int)
+	SetCaller(caller []byte)
+	PostprocessCrossShardCallback() error
+	GetCallerAddress() []byte
+	GetReturnData() []byte
+	Load() error
+	Save() error
+	Delete() error
+	Execute() error
+	DetermineExecutionMode(destination []byte, data []byte) (AsyncCallExecutionMode, error)
 	PrepareLegacyAsyncCall(address []byte, data []byte, value []byte) error
+	UpdateCurrentCallStatus() (*AsyncCall, error)
 }
 
 type BigIntContext interface {

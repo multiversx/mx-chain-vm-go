@@ -546,14 +546,16 @@ func createAsyncCall(context unsafe.Pointer,
 ) {
 	host := arwen.GetVmContext(context)
 	runtime := host.Runtime()
+	async := host.Async()
 
 	// TODO consume gas
 
-	groupID, err := runtime.MemLoad(groupIDOffset, identifierLength)
+	groupIDBytes, err := runtime.MemLoad(groupIDOffset, identifierLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
-	if string(groupID) == arwen.LegacyAsyncCallGroupID {
+	groupID := string(groupIDBytes)
+	if groupID == arwen.LegacyAsyncCallGroupID {
 		err = arwen.ErrInvalidAsyncCallGroupID
 		arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
 		return
@@ -584,7 +586,7 @@ func createAsyncCall(context unsafe.Pointer,
 		return
 	}
 
-	err = runtime.AddAsyncCall(groupID, &arwen.AsyncCall{
+	err = async.AddCall(groupID, &arwen.AsyncCall{
 		Status:          arwen.AsyncCallPending,
 		Destination:     calledSCAddress,
 		Data:            data,
@@ -739,6 +741,7 @@ func upgradeContract(
 func asyncCall(context unsafe.Pointer, destOffset int32, valueOffset int32, dataOffset int32, length int32) {
 	host := arwen.GetVmContext(context)
 	runtime := host.Runtime()
+	async := host.Async()
 	metering := host.Metering()
 
 	gasSchedule := metering.GasSchedule()
@@ -763,7 +766,7 @@ func asyncCall(context unsafe.Pointer, destOffset int32, valueOffset int32, data
 		return
 	}
 
-	err = runtime.PrepareLegacyAsyncCall(calledSCAddress, data, value)
+	err = async.PrepareLegacyAsyncCall(calledSCAddress, data, value)
 	if errors.Is(err, arwen.ErrNotEnoughGas) {
 		runtime.SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
 		return
@@ -1351,7 +1354,7 @@ func executeOnSameContext(
 		Function:      function,
 	}
 
-	_, err = host.ExecuteOnSameContext(contractCallInput)
+	err = host.ExecuteOnSameContext(contractCallInput)
 	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -1532,7 +1535,7 @@ func delegateExecution(
 		Function:      function,
 	}
 
-	_, err = host.ExecuteOnSameContext(contractCallInput)
+	err = host.ExecuteOnSameContext(contractCallInput)
 	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -1611,7 +1614,7 @@ func executeReadOnly(
 		Function:      function,
 	}
 
-	_, err = host.ExecuteOnSameContext(contractCallInput)
+	err = host.ExecuteOnSameContext(contractCallInput)
 	runtime.SetReadOnly(false)
 	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 		return 1

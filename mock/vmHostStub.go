@@ -22,8 +22,9 @@ type VmHostStub struct {
 	OutputCalled                      func() arwen.OutputContext
 	MeteringCalled                    func() arwen.MeteringContext
 	StorageCalled                     func() arwen.StorageContext
+	AsyncCalled                       func() arwen.AsyncContext
 	CreateNewContractCalled           func(input *vmcommon.ContractCreateInput) ([]byte, error)
-	ExecuteOnSameContextCalled        func(input *vmcommon.ContractCallInput) (*arwen.AsyncContext, error)
+	ExecuteOnSameContextCalled        func(input *vmcommon.ContractCallInput) error
 	ExecuteOnDestContextCalled        func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
 	EthereumCallDataCalled            func() []byte
 	GetAPIMethodsCalled               func() *wasmer.Imports
@@ -73,6 +74,13 @@ func (vhs *VmHostStub) Blockchain() arwen.BlockchainContext {
 func (vhs *VmHostStub) Runtime() arwen.RuntimeContext {
 	if vhs.RuntimeCalled != nil {
 		return vhs.RuntimeCalled()
+	}
+	return nil
+}
+
+func (vhs *VmHostStub) Async() arwen.AsyncContext {
+	if vhs.AsyncCalled != nil {
+		return vhs.AsyncCalled()
 	}
 	return nil
 }
@@ -131,11 +139,11 @@ func (vhs *VmHostStub) CreateNewContract(input *vmcommon.ContractCreateInput) ([
 	return nil, nil
 }
 
-func (vhs *VmHostStub) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*arwen.AsyncContext, error) {
+func (vhs *VmHostStub) ExecuteOnSameContext(input *vmcommon.ContractCallInput) error {
 	if vhs.ExecuteOnSameContextCalled != nil {
 		return vhs.ExecuteOnSameContextCalled(input)
 	}
-	return nil, nil
+	return nil
 }
 
 func (vhs *VmHostStub) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
