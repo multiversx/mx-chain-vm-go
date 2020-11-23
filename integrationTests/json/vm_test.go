@@ -250,7 +250,7 @@ func TestDelegation_v0_4_genesis(t *testing.T) {
 	}
 }
 
-func TestDelegation_v0_5(t *testing.T) {
+func TestDelegation_v0_5_2_full(t *testing.T) {
 	if testing.Short() {
 		t.Skip("not a short test")
 	}
@@ -263,7 +263,29 @@ func TestDelegation_v0_5(t *testing.T) {
 	)
 	err = runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
-		"delegation/v0_5",
+		"delegation/v0_5_2_full",
+		".scen.json",
+		[]string{})
+
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestDelegation_v0_5_2_update(t *testing.T) {
+	if testing.Short() {
+		t.Skip("not a short test")
+	}
+
+	executor, err := am.NewArwenTestExecutor()
+	require.Nil(t, err)
+	runner := mc.NewScenarioRunner(
+		executor,
+		mc.NewDefaultFileResolver(),
+	)
+	err = runner.RunAllJSONScenariosInDirectory(
+		getTestRoot(),
+		"delegation/v0_5_2_update",
 		".scen.json",
 		[]string{})
 
