@@ -28,7 +28,7 @@
                 "contractCode": "file:attestation.wasm",
                 "arguments": [
                     "500,000",
-                    "address:owner",
+                    "address:attester",
                     "1,000"
                 ],
                 "gasLimit": "100,000",
@@ -56,9 +56,9 @@
                     "balance": "0",
                     "storage": {
                         "str:registration_cost": "500,000",
-                        "str:attestator|address:owner": "3",
                         "str:max_nonce_diff": "1000",
-                        "str:attestator_list": "address:owner"
+                        "str:attestator|address:attester": "3",
+                        "str:attestator_list": "address:attester"
                     },
                     "code": "file:attestation.wasm"
                 }
