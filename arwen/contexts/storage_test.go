@@ -260,3 +260,21 @@ func TestStorageContext_LoadGasStoreGasPerKey(t *testing.T) {
 func TestStorageContext_StoreGasPerKey(t *testing.T) {
 	// TODO
 }
+
+func TestStorageContext_PopSetActiveStateIfStackIsEmptyShouldNotPanic(t *testing.T) {
+	t.Parallel()
+
+	storageContext, _ := NewStorageContext(&mock.VmHostMock{}, &mock.BlockchainHookStub{}, elrondReservedTestPrefix)
+	storageContext.PopSetActiveState()
+
+	require.Equal(t, 0, len(storageContext.stateStack))
+}
+
+func TestStorageContext_PopDiscardIfStackIsEmptyShouldNotPanic(t *testing.T) {
+	t.Parallel()
+
+	storageContext, _ := NewStorageContext(&mock.VmHostMock{}, &mock.BlockchainHookStub{}, elrondReservedTestPrefix)
+	storageContext.PopDiscard()
+
+	require.Equal(t, 0, len(storageContext.stateStack))
+}

@@ -29,6 +29,7 @@ func NewOutputContext(host arwen.VMHost) (*outputContext, error) {
 	return context, nil
 }
 
+// InitState initializes the output state and the code updates.
 func (context *outputContext) InitState() {
 	context.outputState = newVMOutput()
 	context.codeUpdates = make(map[string]struct{})
@@ -48,6 +49,7 @@ func newVMOutput() *vmcommon.VMOutput {
 	}
 }
 
+// NewVMOutputAccount creates a new output account and sets the given address
 func NewVMOutputAccount(address []byte) *vmcommon.OutputAccount {
 	return &vmcommon.OutputAccount{
 		Address:        address,
@@ -58,28 +60,37 @@ func NewVMOutputAccount(address []byte) *vmcommon.OutputAccount {
 	}
 }
 
+// PushState appends the current vmOutput to the state stack
 func (context *outputContext) PushState() {
 	newState := newVMOutput()
 	mergeVMOutputs(newState, context.outputState)
 	context.stateStack = append(context.stateStack, newState)
 }
 
+// PopSetActiveState removes the latest entry from the state stack and sets it as the current vm output
 func (context *outputContext) PopSetActiveState() {
 	stateStackLen := len(context.stateStack)
+	if stateStackLen == 0 {
+		return
+	}
+
 	prevState := context.stateStack[stateStackLen-1]
 	context.stateStack = context.stateStack[:stateStackLen-1]
 
 	context.outputState = prevState
 }
 
+// PopMergeActiveState merges the current state into the head of the stateStack,
+// then pop the head of the stateStack into the current state.
+// Doing this allows the VM to execute a SmartContract into a context on top
+// of an existing context (a previous SC) without allowing access to it, but
+// later merging the output of the two SCs in chronological order.
 func (context *outputContext) PopMergeActiveState() {
 	stateStackLen := len(context.stateStack)
+	if stateStackLen == 0 {
+		return
+	}
 
-	// Merge the current state into the head of the stateStack,
-	// then pop the head of the stateStack into the current state.
-	// Doing this allows the VM to execute a SmartContract into a context on top
-	// of an existing context (a previous SC) without allowing access to it, but
-	// later merging the output of the two SCs in chronological order.
 	prevState := context.stateStack[stateStackLen-1]
 	context.stateStack = context.stateStack[:stateStackLen-1]
 
@@ -88,11 +99,17 @@ func (context *outputContext) PopMergeActiveState() {
 	mergeVMOutputs(context.outputState, prevState)
 }
 
+// PopDiscard removes the latest entry from the state stack
 func (context *outputContext) PopDiscard() {
 	stateStackLen := len(context.stateStack)
+	if stateStackLen == 0 {
+		return
+	}
+
 	context.stateStack = context.stateStack[:stateStackLen-1]
 }
 
+// ClearStateStack reinitializes the state stack.
 func (context *outputContext) ClearStateStack() {
 	context.stateStack = make([]*vmcommon.VMOutput, 0)
 }
@@ -121,6 +138,9 @@ func (context *outputContext) ResetGas() {
 	}
 }
 
+// GetOutputAccount returns the output account present at the given address,
+// and a bool that is true if the account is new. If no output account is present at that address,
+// a new account will be created and added to the output accounts.
 func (context *outputContext) GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool) {
 	accountIsNew := false
 	account, ok := context.outputState.OutputAccounts[string(address)]
@@ -133,50 +153,63 @@ func (context *outputContext) GetOutputAccount(address []byte) (*vmcommon.Output
 	return account, accountIsNew
 }
 
+// DeleteOutputAccount removes the given address from the output accounts and code updates
 func (context *outputContext) DeleteOutputAccount(address []byte) {
 	delete(context.outputState.OutputAccounts, string(address))
 	delete(context.codeUpdates, string(address))
 }
 
+// GetRefund returns the value of the gas refund for the current output state.
 func (context *outputContext) GetRefund() uint64 {
 	return uint64(context.outputState.GasRefund.Int64())
 }
 
+// SetRefund sets the given value as gas refund for the current output state.
 func (context *outputContext) SetRefund(refund uint64) {
 	context.outputState.GasRefund = big.NewInt(int64(refund))
 }
 
+// ReturnData returns the data of the current output state.
 func (context *outputContext) ReturnData() [][]byte {
 	return context.outputState.ReturnData
 }
 
+// ReturnCode returns the code of the current output state
 func (context *outputContext) ReturnCode() vmcommon.ReturnCode {
 	return context.outputState.ReturnCode
 }
 
+// SetReturnCode sets the given return code as the return code for the current output state.
 func (context *outputContext) SetReturnCode(returnCode vmcommon.ReturnCode) {
 	context.outputState.ReturnCode = returnCode
 }
 
+// ReturnMessage returns a string that represents the return message for the current output state.
 func (context *outputContext) ReturnMessage() string {
 	return context.outputState.ReturnMessage
 }
 
+// SetReturnMessage sets the given string as a return message for the current output state.
 func (context *outputContext) SetReturnMessage(returnMessage string) {
 	context.outputState.ReturnMessage = returnMessage
 }
 
+// ClearReturnData reinitializes the return data for the current output state.
 func (context *outputContext) ClearReturnData() {
 	context.outputState.ReturnData = make([][]byte, 0)
 }
 
+// SelfDestruct does nothing
+// TODO change comment when the function is implemented
 func (context *outputContext) SelfDestruct(_ []byte, _ []byte) {
 }
 
+// Finish appends the given data to the return data of the current output state.
 func (context *outputContext) Finish(data []byte) {
 	context.outputState.ReturnData = append(context.outputState.ReturnData, data)
 }
 
+// WriteLog creates a new LogEntry and appends it to the logs of the current output state.
 func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []byte) {
 	if context.host.Runtime().ReadOnly() {
 		return
@@ -254,6 +287,7 @@ func (context *outputContext) hasSufficientBalance(address []byte, value *big.In
 	return senderBalance.Cmp(value) >= 0
 }
 
+// AddTxValueToAccount adds the given value to the BalanceDelta of the account that is mapped to the given address
 func (context *outputContext) AddTxValueToAccount(address []byte, value *big.Int) {
 	destAcc, _ := context.GetOutputAccount(address)
 	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
@@ -263,8 +297,6 @@ func (context *outputContext) AddTxValueToAccount(address []byte, value *big.Int
 func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 	if context.outputState.ReturnCode == vmcommon.Ok {
 		context.outputState.GasRemaining = context.host.Metering().GasLeft()
-	} else {
-		context.outputState.GasRemaining = context.host.Metering().GetGasLocked()
 	}
 
 	context.removeNonUpdatedCode(context.outputState)
@@ -272,6 +304,7 @@ func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 	return context.outputState
 }
 
+// DeployCode sets the given code to a an account, and creates a new codeUpdates entry at the accounts address.
 func (context *outputContext) DeployCode(input arwen.CodeDeployInput) {
 	newSCAccount, _ := context.GetOutputAccount(input.ContractAddress)
 	newSCAccount.Code = input.ContractCode
@@ -282,8 +315,8 @@ func (context *outputContext) DeployCode(input arwen.CodeDeployInput) {
 	context.codeUpdates[string(input.ContractAddress)] = empty
 }
 
+// CreateVMOutputInCaseOfError creates a new vmOutput with the given error set as return message.
 func (context *outputContext) CreateVMOutputInCaseOfError(err error) *vmcommon.VMOutput {
-	metering := context.host.Metering()
 	var message string
 
 	if err == arwen.ErrSignalError {
@@ -300,7 +333,7 @@ func (context *outputContext) CreateVMOutputInCaseOfError(err error) *vmcommon.V
 	returnCode := context.resolveReturnCodeFromError(err)
 
 	return &vmcommon.VMOutput{
-		GasRemaining:  metering.GetGasLocked(),
+		GasRemaining:  0,
 		GasRefund:     big.NewInt(0),
 		ReturnCode:    returnCode,
 		ReturnMessage: message,
@@ -360,6 +393,7 @@ func (context *outputContext) resolveReturnCodeFromError(err error) vmcommon.Ret
 	return vmcommon.ExecutionFailed
 }
 
+// AddToActiveState merges the given vmOutput with the outputState.
 func (context *outputContext) AddToActiveState(rightOutput *vmcommon.VMOutput) {
 	rightOutput.GasRemaining = 0
 	if rightOutput.GasRefund != nil {
