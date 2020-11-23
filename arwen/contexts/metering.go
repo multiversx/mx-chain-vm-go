@@ -33,11 +33,12 @@ func NewMeteringContext(
 	return context, nil
 }
 
-// GasSchedule returns the entire gas schedule
+// GasSchedule returns the entire gas schedule.
 func (context *meteringContext) GasSchedule() *config.GasCost {
 	return context.gasSchedule
 }
 
+// SetGasSchedule sets the gas schedule to the given gas map
 func (context *meteringContext) SetGasSchedule(gasMap config.GasScheduleMap) {
 	gasSchedule, err := config.CreateGasConfig(gasMap)
 	if err != nil {
@@ -47,13 +48,13 @@ func (context *meteringContext) SetGasSchedule(gasMap config.GasScheduleMap) {
 	context.gasSchedule = gasSchedule
 }
 
-// UseGas consumes the specified amount of gas on the currently running Wasmer instance
+// UseGas consumes the specified amount of gas on the currently running Wasmer instance.
 func (context *meteringContext) UseGas(gas uint64) {
 	gasUsed := context.host.Runtime().GetPointsUsed() + gas
 	context.host.Runtime().SetPointsUsed(gasUsed)
 }
 
-// RestoreGas deducts the specified amount of gas from the gas currently spent on the running Wasmer instance
+// RestoreGas deducts the specified amount of gas from the gas currently spent on the running Wasmer instance.
 func (context *meteringContext) RestoreGas(gas uint64) {
 	gasUsed := context.host.Runtime().GetPointsUsed()
 	if gas <= gasUsed {
@@ -62,13 +63,13 @@ func (context *meteringContext) RestoreGas(gas uint64) {
 	}
 }
 
-// FreeGas refunds the specified amount of gas to the caller
+// FreeGas refunds the specified amount of gas to the caller.
 func (context *meteringContext) FreeGas(gas uint64) {
 	refund := context.host.Output().GetRefund() + gas
 	context.host.Output().SetRefund(refund)
 }
 
-// GasLeft computes the amount of gas left on the currently running Wasmer instance
+// GasLeft computes the amount of gas left on the currently running Wasmer instance.
 func (context *meteringContext) GasLeft() uint64 {
 	gasProvided := context.host.Runtime().GetVMInput().GasProvided
 	gasUsed := context.host.Runtime().GetPointsUsed()
@@ -81,7 +82,7 @@ func (context *meteringContext) GasLeft() uint64 {
 }
 
 // BoundGasLimit returns the maximum between the provided amount and the gas
-// left on the currently running Wasmer instance
+// left on the currently running Wasmer instance.
 func (context *meteringContext) BoundGasLimit(limit uint64) uint64 {
 	gasLeft := context.GasLeft()
 
@@ -100,7 +101,7 @@ func (context *meteringContext) UseGasForAsyncStep() error {
 }
 
 // UseGasBounded consumes the specified amount of gas on the currently running
-// Wasmer instance, but returns an error if there is not enough gas left
+// Wasmer instance, but returns an error if there is not enough gas left.
 func (context *meteringContext) UseGasBounded(gasToUse uint64) error {
 	if context.GasLeft() <= gasToUse {
 		return arwen.ErrNotEnoughGas
@@ -109,7 +110,7 @@ func (context *meteringContext) UseGasBounded(gasToUse uint64) error {
 	return nil
 }
 
-// ComputeGasToLockForAsync calculates the minimum amount of gas to lock for async callbacks
+// ComputeGasLockedForAsync calculates the minimum amount of gas to lock for async callbacks
 func (context *meteringContext) ComputeGasLockedForAsync() uint64 {
 	baseGasSchedule := context.GasSchedule().BaseOperationCost
 	apiGasSchedule := context.GasSchedule().ElrondAPICost
@@ -132,8 +133,7 @@ func (context *meteringContext) ComputeGasLockedForAsync() uint64 {
 	return compilationGasLock + executionGasLock
 }
 
-// UnlockGasIfAsyncCallback adds the locked gas to the gas provided for
-// execution, before execution starts
+// UnlockGasIfAsyncCallback adds the locked gas to the gas provided for execution, before execution starts.
 func (context *meteringContext) UnlockGasIfAsyncCallback() {
 	input := context.host.Runtime().GetVMInput()
 	if input.CallType != vmcommon.AsynchronousCallBack {
@@ -144,13 +144,13 @@ func (context *meteringContext) UnlockGasIfAsyncCallback() {
 	input.GasLocked = 0
 }
 
-// GetGasLocked returns the amount of gas locked during the current execution
+// GetGasLocked returns the amount of gas locked during the current execution, as specified by the VMInput.
 func (context *meteringContext) GetGasLocked() uint64 {
 	input := context.host.Runtime().GetVMInput()
 	return input.GasLocked
 }
 
-// BlockGasLimit returns the maximum amount of gas allowed to be consumed in a block
+// BlockGasLimit returns the maximum amount of gas allowed to be consumed in a block.
 func (context *meteringContext) BlockGasLimit() uint64 {
 	return context.blockGasLimit
 }

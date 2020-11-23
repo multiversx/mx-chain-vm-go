@@ -361,9 +361,6 @@ func TestOutputContext_VMOutputError(t *testing.T) {
 	t.Parallel()
 
 	host := &mock.VmHostMock{}
-	host.MeteringContext = &mock.MeteringContextMock{
-		GasLockedMock: 1001,
-	}
 
 	outputContext, _ := NewOutputContext(host)
 
@@ -371,7 +368,7 @@ func TestOutputContext_VMOutputError(t *testing.T) {
 	returnMessage := arwen.ErrContractNotFound.Error()
 
 	expected := &vmcommon.VMOutput{
-		GasRemaining:  1001,
+		GasRemaining:  0,
 		GasRefund:     big.NewInt(0),
 		ReturnCode:    returnCode,
 		ReturnMessage: returnMessage,
@@ -547,4 +544,31 @@ func TestOutputContext_WriteLog(t *testing.T) {
 	outputContext.WriteLog(address, topics, data)
 
 	require.Equal(t, outputContext.outputState.Logs[2].Topics, [][]byte{topic})
+}
+
+func TestOutputContext_PopSetActiveStateIfStackIsEmptyShouldNotPanic(t *testing.T) {
+	t.Parallel()
+
+	bigIntContext, _ := NewOutputContext(&mock.VmHostMock{})
+	bigIntContext.PopSetActiveState()
+
+	require.Equal(t, 0, len(bigIntContext.stateStack))
+}
+
+func TestOutputContext_PopMergeActiveStateIfStackIsEmptyShouldNotPanic(t *testing.T) {
+	t.Parallel()
+
+	bigIntContext, _ := NewOutputContext(&mock.VmHostMock{})
+	bigIntContext.PopMergeActiveState()
+
+	require.Equal(t, 0, len(bigIntContext.stateStack))
+}
+
+func TestOutputContext_PopDiscardIfStackIsEmptyShouldNotPanic(t *testing.T) {
+	t.Parallel()
+
+	bigIntContext, _ := NewOutputContext(&mock.VmHostMock{})
+	bigIntContext.PopDiscard()
+
+	require.Equal(t, 0, len(bigIntContext.stateStack))
 }
