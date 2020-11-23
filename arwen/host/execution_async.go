@@ -58,28 +58,3 @@ func (host *vmHost) sendAsyncCallbackToCaller() error {
 
 	return nil
 }
-
-func (host *vmHost) sendContextCallbackToOriginalCaller() error {
-	async := host.Async()
-	runtime := host.Runtime()
-	output := host.Output()
-	metering := host.Metering()
-	currentCall := runtime.GetVMInput()
-
-	err := output.Transfer(
-		async.GetCallerAddress(),
-		runtime.GetSCAddress(),
-		metering.GasLeft(),
-		0,
-		currentCall.CallValue,
-		async.GetReturnData(),
-		vmcommon.AsynchronousCallBack,
-	)
-	if err != nil {
-		metering.UseGas(metering.GasLeft())
-		runtime.FailExecution(err)
-		return err
-	}
-
-	return nil
-}
