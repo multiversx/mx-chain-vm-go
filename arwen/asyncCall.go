@@ -5,6 +5,7 @@ import "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 // AsyncCall holds the information about an individual async call
 type AsyncCall struct {
 	Status          AsyncCallStatus
+	ExecutionMode   AsyncCallExecutionMode
 	Destination     []byte
 	Data            []byte
 	GasLimit        uint64

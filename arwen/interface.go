@@ -130,18 +130,8 @@ type AsyncContext interface {
 
 	AddCall(groupID string, call *AsyncCall) error
 	AddCallGroup(group *AsyncCallGroup) error
-	CreateAndAddCall(
-		groupID string,
-		address []byte,
-		data []byte,
-		value []byte,
-		successCallback []byte,
-		errorCallback []byte,
-		gas uint64,
-	) error
 	HasPendingCallGroups() bool
 	IsComplete() bool
-	GetPendingOnly() []*AsyncCallGroup
 	FindCall(destination []byte) (string, int, error)
 	GetCallGroup(groupID string) (*AsyncCallGroup, bool)
 	DeleteCallGroupByID(groupID string)
@@ -154,7 +144,6 @@ type AsyncContext interface {
 	Save() error
 	Delete() error
 	Execute() error
-	DetermineExecutionMode(destination []byte, data []byte) (AsyncCallExecutionMode, error)
 	PrepareLegacyAsyncCall(address []byte, data []byte, value []byte) error
 	UpdateCurrentCallStatus() (*AsyncCall, error)
 }
