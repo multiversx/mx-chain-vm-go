@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 
-	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/test/mock-hook-blockchain"
+	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/model"
 )
 

@@ -12,7 +12,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/ethapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
-	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
+	"github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"

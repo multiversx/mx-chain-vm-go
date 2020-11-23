@@ -7,7 +7,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/nodepart"
-	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
+	"github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"

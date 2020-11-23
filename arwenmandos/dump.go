@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sort"
 
-	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/test/mock-hook-blockchain"
+	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 )
 
 func dumpWorld(world *worldhook.BlockchainHookMock) error {

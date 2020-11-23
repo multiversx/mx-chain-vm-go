@@ -4,7 +4,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/test/mock-hook-blockchain"
+	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	mc "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/controller"
 	fr "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/fileresolver"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"

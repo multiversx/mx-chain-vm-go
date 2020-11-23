@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	am "github.com/ElrondNetwork/arwen-wasm-vm/arwenmandos"
-	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/test/mock-hook-blockchain"
+	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	fr "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/fileresolver"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/model"
 	mjparse "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/parse"
