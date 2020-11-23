@@ -606,3 +606,39 @@ func TestRuntimeContext_MemLoadStoreVsInstanceStack(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, []byte("test data3"), memContents)
 }
+
+func TestRuntimeContext_PopSetActiveStateIfStackIsEmptyShouldNotPanic(t *testing.T) {
+	t.Parallel()
+
+	host := InitializeArwenAndWasmer()
+
+	vmType := []byte("type")
+	runtimeContext, _ := NewRuntimeContext(host, vmType, false)
+	runtimeContext.PopSetActiveState()
+
+	require.Equal(t, 0, len(runtimeContext.stateStack))
+}
+
+func TestRuntimeContext_PopDiscardIfStackIsEmptyShouldNotPanic(t *testing.T) {
+	t.Parallel()
+
+	host := InitializeArwenAndWasmer()
+
+	vmType := []byte("type")
+	runtimeContext, _ := NewRuntimeContext(host, vmType, false)
+	runtimeContext.PopDiscard()
+
+	require.Equal(t, 0, len(runtimeContext.stateStack))
+}
+
+func TestRuntimeContext_PopInstanceIfStackIsEmptyShouldNotPanic(t *testing.T) {
+	t.Parallel()
+
+	host := InitializeArwenAndWasmer()
+
+	vmType := []byte("type")
+	runtimeContext, _ := NewRuntimeContext(host, vmType, false)
+	runtimeContext.PopInstance()
+
+	require.Equal(t, 0, len(runtimeContext.stateStack))
+}
