@@ -1,0 +1,109 @@
+{
+    "name": "stake pt 1",
+    "steps": [
+        {
+            "step": "transfer",
+            "txId": "supply delegator 3",
+            "tx": {
+                "from": "address:endless_sack_of_erd",
+                "to": "address:delegator3",
+                "value": "200,000,000,000,000"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "delegator 3 stake",
+            "tx": {
+                "from": "address:delegator3",
+                "to": "address:delegation_contract",
+                "value": "200,000,000,000,000",
+                "function": "stake",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [
+                    {
+                        "address": "address:delegation_contract",
+                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000001",
+                        "topics": [
+                            "address:delegator3"
+                        ],
+                        "data": "200,000,000,000,000"
+                    }
+                ],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "check-stake-by-type-total",
+            "tx": {
+                "from": "address:someone",
+                "to": "address:delegation_contract",
+                "value": "0",
+                "function": "getTotalStakeByType",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                   "0",  "150,000,000,000,000", "300,000,000,000,000", "0", "50,001,000,000,000"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "check-stake-by-type",
+            "tx": {
+                "from": "address:someone",
+                "to": "address:delegation_contract",
+                "value": "0",
+                "function": "getUserStakeByType",
+                "arguments": [
+                    "address:delegator3"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "0", "150,000,000,000,000", "50,000,000,000,000","0","0"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "check-total_stake",
+            "tx": {
+                "from": "address:someone",
+                "to": "address:delegation_contract",
+                "value": "0",
+                "function": "totalStake",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [ "500,001,000,000,000" ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        }
+    ]
+}

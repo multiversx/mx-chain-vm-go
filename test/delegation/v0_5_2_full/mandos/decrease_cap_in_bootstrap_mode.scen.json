@@ -1,0 +1,149 @@
+{
+    "name": "activate nodes scenario",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "steps/init_accounts.steps.json"
+        },
+        {
+            "step": "setState",
+            "newAddresses": [
+                {
+                    "creatorAddress": "address:node_address",
+                    "creatorNonce": "0",
+                    "newAddress": "address:delegation_contract"
+                }
+            ]
+        },
+        {
+            "step": "scDeploy",
+            "txId": "deploy-1",
+            "tx": {
+                "from": "address:node_address",
+                "value": "0",
+                "contractCode": "file:../output/delegation_v0_5_2_full.wasm",
+                "arguments": [
+                    "address:auction_contract",
+                    "5000",
+                    "0",
+                    "60",
+                    "1,000,000,000",
+                    "200,000,000,000"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "supply delegator 1",
+            "tx": {
+                "from": "address:endless_sack_of_erd",
+                "to": "address:delegator1",
+                "value": "150,000,000,000"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "delegator 1 stake",
+            "tx": {
+                "from": "address:delegator1",
+                "to": "address:delegation_contract",
+                "value": "150,000,000,000",
+                "function": "stake",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [
+                    {
+                        "address": "address:delegation_contract",
+                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000001",
+                        "topics": [
+                            "address:delegator1"
+                        ],
+                        "data": "150,000,000,000"
+                    }
+                ],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "check-stake-by-type-total",
+            "tx": {
+                "from": "address:someone",
+                "to": "address:delegation_contract",
+                "value": "0",
+                "function": "getTotalStakeByType",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                   "0",  "0", "150,000,000,000", "0", "0"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "change-delegation-cap",
+            "tx": {
+                "from": "address:node_address",
+                "to": "address:delegation_contract",
+                "value": "0",
+                "function": "modifyTotalDelegationCap",
+                "arguments": [
+                    "130,000,000,000"
+                ],
+                "gasLimit": "1,000,000,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": ["0"],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "check-stake-by-type-total-2",
+            "tx": {
+                "from": "address:someone",
+                "to": "address:delegation_contract",
+                "value": "0",
+                "function": "getTotalStakeByType",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                   "0",  "0", "130,000,000,000", "0", "20,000,000,000"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        }
+    ]
+}

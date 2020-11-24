@@ -1,0 +1,81 @@
+{
+    "name": "stake pt 1",
+    "steps": [
+        {
+            "step": "transfer",
+            "txId": "supply delegator 1",
+            "tx": {
+                "from": "address:endless_sack_of_erd",
+                "to": "address:delegator1",
+                "value": "100,001,000,000,000"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "supply delegator 2",
+            "tx": {
+                "from": "address:endless_sack_of_erd",
+                "to": "address:delegator2",
+                "value": "200,000,000,000,000"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "delegator 1 stake",
+            "tx": {
+                "from": "address:delegator1",
+                "to": "address:delegation_contract",
+                "value": "100,001,000,000,000",
+                "function": "stake",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [
+                    {
+                        "address": "address:delegation_contract",
+                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000001",
+                        "topics": [
+                            "address:delegator1"
+                        ],
+                        "data": "100,001,000,000,000"
+                    }
+                ],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "delegator 2 stake 1",
+            "tx": {
+                "from": "address:delegator2",
+                "to": "address:delegation_contract",
+                "value": "200,000,000,000,000",
+                "function": "stake",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [
+                    {
+                        "address": "address:delegation_contract",
+                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000001",
+                        "topics": [
+                            "address:delegator2"
+                        ],
+                        "data": "200,000,000,000,000"
+                    }
+                ],
+                "gas": "*",
+                "refund": "*"
+            }
+        }
+    ]
+}
