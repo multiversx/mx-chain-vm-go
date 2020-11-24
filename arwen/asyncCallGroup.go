@@ -5,18 +5,40 @@ import "bytes"
 // AsyncCallGroup is a structure containing a group of async calls and a callback
 // that should be called when all these async calls are resolved
 type AsyncCallGroup struct {
-	// TODO re-enable AsyncCallGroup.Callback after the rest of the functionality works
-	// Callback string
-	Identifier string
-	AsyncCalls []*AsyncCall
+	Callback     string
+	GasLocked    uint64
+	CallbackData []byte
+	Identifier   string
+	AsyncCalls   []*AsyncCall
 }
 
 // NewAsyncCallGroup creates a new instance of AsyncCallGroup
 func NewAsyncCallGroup(identifier string) *AsyncCallGroup {
 	return &AsyncCallGroup{
-		Identifier: identifier,
-		AsyncCalls: make([]*AsyncCall, 0),
+		Callback:     "",
+		GasLocked:    0,
+		CallbackData: make([]byte, 0),
+		Identifier:   identifier,
+		AsyncCalls:   make([]*AsyncCall, 0),
 	}
+}
+
+func (acg *AsyncCallGroup) Clone() *AsyncCallGroup {
+	callCount := len(acg.AsyncCalls)
+	clone := &AsyncCallGroup{
+		Callback:   acg.Callback,
+		GasLocked:  acg.GasLocked,
+		Identifier: acg.Identifier,
+		AsyncCalls: make([]*AsyncCall, callCount),
+	}
+
+	copy(clone.CallbackData, acg.CallbackData)
+
+	for i := 0; i < callCount; i++ {
+		clone.AsyncCalls[i] = acg.AsyncCalls[i].Clone()
+	}
+
+	return clone
 }
 
 // AddAsyncCall adds a given AsyncCall to the AsyncCallGroup

@@ -25,13 +25,7 @@ func (context *asyncContext) executeSynchronousCalls() error {
 		// If all the AsyncCalls in the AsyncCallGroup were executed synchronously,
 		// then the AsyncCallGroup can have its callback executed.
 		if group.IsCompleted() {
-			// TODO reenable this, after allowing a gas limit for it and deciding what
-			// arguments it receives (this method is currently a NOP and returns nil)
-			err := context.executeAsyncCallGroupCallback(group)
-			if err != nil {
-				return err
-			}
-
+			context.executeCallGroupCallback(group)
 			context.DeleteCallGroup(groupIndex)
 		}
 	}
@@ -46,14 +40,10 @@ func (context *asyncContext) executeSyncCall(asyncCall *arwen.AsyncCall) error {
 
 	vmOutput, err := context.host.ExecuteOnDestContext(destinationCallInput)
 
-	// The vmOutput instance returned by host.executeSyncCall() is never nil,
+	// The vmOutput instance returned by host.ExecuteOnDestContext() is never nil,
 	// by design. Using it without checking for err is safe here.
 	asyncCall.UpdateStatus(vmOutput.ReturnCode)
 
-	// TODO host.executeSyncCallback() returns a vmOutput produced by executing
-	// the callback. Information from this vmOutput should be preserved in the
-	// pending AsyncCallGroup, and made available to the callback of the
-	// AsyncCallGroup (currently not implemented).
 	callbackVMOutput, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, err)
 	context.finishSyncExecution(callbackVMOutput, callbackErr)
 
@@ -72,6 +62,18 @@ func (context *asyncContext) executeSyncCallback(
 	}
 
 	return context.host.ExecuteOnDestContext(callbackInput)
+}
+
+// executeCallGroupCallback synchronously executes the designated callback of
+// the AsyncCallGroup, as it was set with SetGroupCallback().
+//
+// Gas for the execution has been already paid for when SetGroupCallback() was
+// set. The remaining gas is refunded to context.CallerAddr, which initiated
+// the call and paid for the gas in the first place.
+func (context *asyncContext) executeCallGroupCallback(group *arwen.AsyncCallGroup) {
+	input := context.createGroupCallbackInput(group)
+	vmOutput, err := context.host.ExecuteOnDestContext(input)
+	context.finishSyncExecution(vmOutput, err)
 }
 
 func (context *asyncContext) finishSyncExecution(vmOutput *vmcommon.VMOutput, err error) {
@@ -184,6 +186,26 @@ func (context *asyncContext) createSyncCallbackInput(
 	return contractCallInput, nil
 }
 
+func (context *asyncContext) createGroupCallbackInput(group *arwen.AsyncCallGroup) *vmcommon.ContractCallInput {
+	runtime := context.host.Runtime()
+	input := &vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			CallerAddr:     context.CallerAddr,
+			Arguments:      [][]byte{group.CallbackData},
+			CallValue:      big.NewInt(0),
+			GasPrice:       context.GasPrice,
+			GasProvided:    group.GasLocked,
+			CurrentTxHash:  runtime.GetCurrentTxHash(),
+			OriginalTxHash: runtime.GetOriginalTxHash(),
+			PrevTxHash:     runtime.GetPrevTxHash(),
+		},
+		RecipientAddr: runtime.GetSCAddress(),
+		Function:      group.Callback,
+	}
+
+	return input
+}
+
 func (context *asyncContext) createSyncContextCallbackInput() *vmcommon.ContractCallInput {
 	host := context.host
 	runtime := host.Runtime()
@@ -208,7 +230,10 @@ func (context *asyncContext) createSyncContextCallbackInput() *vmcommon.Contract
 			PrevTxHash:     runtime.GetPrevTxHash(),
 		},
 		RecipientAddr: context.CallerAddr,
-		Function:      arwen.CallbackFunctionName, // TODO currently default; will customize in AsynContext
+
+		// TODO this come from the serialized AsyncContext stored by the original
+		// caller
+		Function: arwen.CallbackFunctionName,
 	}
 	return input
 }

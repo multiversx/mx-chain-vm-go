@@ -98,6 +98,7 @@ type RuntimeContext interface {
 	SignalUserError(message string)
 	FailExecution(err error)
 	MustVerifyNextContractCode()
+	ValidateCallbackName(callbackName string) error
 	SetRuntimeBreakpointValue(value BreakpointValue)
 	GetRuntimeBreakpointValue() BreakpointValue
 	PushInstance()
@@ -137,6 +138,8 @@ type AsyncContext interface {
 	DeleteCallGroupByID(groupID string)
 	DeleteCallGroup(index int)
 	SetCaller(caller []byte)
+	SetGasPrice(gasPrice uint64)
+	SetGroupCallback(groupID string, callbackName string, data []byte, gas uint64) error
 	PostprocessCrossShardCallback() error
 	GetCallerAddress() []byte
 	GetReturnData() []byte

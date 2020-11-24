@@ -16,6 +16,7 @@ type asyncContext struct {
 	stateStack []*asyncContext
 
 	CallerAddr      []byte
+	GasPrice        uint64
 	ReturnData      []byte
 	AsyncCallGroups []*arwen.AsyncCallGroup
 }
@@ -41,21 +42,48 @@ func (context *asyncContext) SetCaller(caller []byte) {
 	context.CallerAddr = caller
 }
 
+func (context *asyncContext) SetGasPrice(gasPrice uint64) {
+	context.GasPrice = gasPrice
+}
+
 func (context *asyncContext) PushState() {
-	// TODO the call groups must be cloned, not just referenced
 	newState := &asyncContext{
 		CallerAddr:      context.CallerAddr,
+		GasPrice:        context.GasPrice,
 		ReturnData:      context.ReturnData,
-		AsyncCallGroups: context.AsyncCallGroups,
+		AsyncCallGroups: context.cloneCallGroups(),
 	}
 
 	context.stateStack = append(context.stateStack, newState)
+}
+
+func (context *asyncContext) cloneCallGroups() []*arwen.AsyncCallGroup {
+	groupCount := len(context.AsyncCallGroups)
+	clonedGroups := make([]*arwen.AsyncCallGroup, groupCount)
+
+	for i := 0; i < groupCount; i++ {
+		clonedGroups[i] = context.AsyncCallGroups[i].Clone()
+	}
+
+	return clonedGroups
 }
 
 func (context *asyncContext) PopDiscard() {
 }
 
 func (context *asyncContext) PopSetActiveState() {
+	stateStackLen := len(context.stateStack)
+	if stateStackLen == 0 {
+		return
+	}
+
+	prevState := context.stateStack[stateStackLen-1]
+	context.stateStack = context.stateStack[:stateStackLen-1]
+
+	context.CallerAddr = prevState.CallerAddr
+	context.GasPrice = prevState.GasPrice
+	context.ReturnData = prevState.ReturnData
+	context.AsyncCallGroups = prevState.AsyncCallGroups
 }
 
 func (context *asyncContext) PopMergeActiveState() {
@@ -88,6 +116,31 @@ func (context *asyncContext) AddCallGroup(group *arwen.AsyncCallGroup) error {
 	}
 
 	context.AsyncCallGroups = append(context.AsyncCallGroups, group)
+	return nil
+}
+
+func (context *asyncContext) SetGroupCallback(groupID string, callbackName string, data []byte, gas uint64) error {
+	group, exists := context.GetCallGroup(groupID)
+	if !exists {
+		return arwen.ErrAsyncCallGroupDoesNotExist
+	}
+
+	err := context.host.Runtime().ValidateCallbackName(callbackName)
+	if err != nil {
+		return err
+	}
+
+	metering := context.host.Metering()
+	gasToLock := metering.ComputeGasLockedForAsync() + gas
+	err = metering.UseGasBounded(gasToLock)
+	if err != nil {
+		return err
+	}
+
+	group.Callback = callbackName
+	group.GasLocked = gasToLock
+	group.CallbackData = data
+
 	return nil
 }
 
@@ -130,6 +183,8 @@ func (context *asyncContext) AddCall(groupID string, call *arwen.AsyncCall) erro
 		context.AddCallGroup(group)
 	}
 
+	// TODO lock gas for callback
+
 	execMode, err := context.determineExecutionMode(call.Destination, call.Data)
 	if err != nil {
 		return err
@@ -139,6 +194,17 @@ func (context *asyncContext) AddCall(groupID string, call *arwen.AsyncCall) erro
 	group.AddAsyncCall(call)
 
 	return nil
+}
+
+func (context *asyncContext) isValidCallbackName(callback string) bool {
+	if callback == arwen.InitFunctionName {
+		return false
+	}
+	if context.host.IsBuiltinFunctionName(callback) {
+		return false
+	}
+
+	return true
 }
 
 func (context *asyncContext) FindCall(destination []byte) (string, int, error) {
@@ -319,11 +385,6 @@ func (context *asyncContext) executeAsyncCall(asyncCall *arwen.AsyncCall) error 
 	return nil
 }
 
-func (context *asyncContext) executeAsyncCallGroupCallback(group *arwen.AsyncCallGroup) error {
-	// TODO implement this
-	return nil
-}
-
 func (context *asyncContext) prepareGasForAsyncCall() (uint64, error) {
 	metering := context.host.Metering()
 	err := metering.UseGasForAsyncStep()
@@ -359,11 +420,6 @@ func (context *asyncContext) prepareGasForAsyncCall() (uint64, error) {
  * which means that the AsyncContext corresponding to the original transaction
  * must be loaded from storage, and then the corresponding AsyncCall must be
  * deleted from the current AsyncContext.
-
- * TODO because individual AsyncCalls are contained by AsyncCallGroups, we
- * must verify whether the containing AsyncCallGroup has any remaining calls
- * pending. If not, the final callback of the containing AsyncCallGroup must be
- * executed as well.
  */
 func (context *asyncContext) PostprocessCrossShardCallback() error {
 	runtime := context.host.Runtime()
@@ -392,11 +448,7 @@ func (context *asyncContext) PostprocessCrossShardCallback() error {
 
 	// The current group expects no more callbacks, so its own callback can be
 	// executed now.
-	err = context.executeAsyncCallGroupCallback(currentCallGroup)
-	if err != nil {
-		return err
-	}
-
+	context.executeCallGroupCallback(currentCallGroup)
 	context.DeleteCallGroupByID(currentGroupID)
 	// Are we still waiting for callbacks to return?
 	if context.HasPendingCallGroups() {
@@ -410,7 +462,7 @@ func (context *asyncContext) PostprocessCrossShardCallback() error {
 		return err
 	}
 
-	return context.executeAsyncContextCallback()
+	return context.executeContextCallback()
 }
 
 func (context *asyncContext) HasPendingCallGroups() bool {
@@ -500,6 +552,9 @@ func (context *asyncContext) determineExecutionMode(destination []byte, data []b
 	return arwen.AsyncUnknown, nil
 }
 
+// TODO decide whether this function is necessary at all, because unspent gas should
+// be accummulated into the AsyncContext, then refunded to the original caller.
+// Redistribution of gas among calls in the same group should not be necessary.
 func (context *asyncContext) setupAsyncCallsGas() error {
 	gasLeft := context.host.Metering().GasLeft()
 	gasNeeded := uint64(0)
@@ -573,7 +628,7 @@ func (context *asyncContext) sendAsyncCallCrossShard(asyncCall arwen.AsyncCallHa
 // executeAsyncContextCallback will either execute a sync call (in-shard) to
 // the original caller by invoking its callback directly, or will dispatch a
 // cross-shard callback to it.
-func (context *asyncContext) executeAsyncContextCallback() error {
+func (context *asyncContext) executeContextCallback() error {
 	execMode, err := context.determineExecutionMode(context.CallerAddr, context.ReturnData)
 	if err != nil {
 		return err
