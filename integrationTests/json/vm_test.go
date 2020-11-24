@@ -334,6 +334,28 @@ func TestRustAttestation(t *testing.T) {
 	}
 }
 
+func TestCAttestation(t *testing.T) {
+	if testing.Short() {
+		t.Skip("not a short test")
+	}
+
+	executor, err := am.NewArwenTestExecutor()
+	require.Nil(t, err)
+	runner := mc.NewScenarioRunner(
+		executor,
+		mc.NewDefaultFileResolver(),
+	)
+	err = runner.RunAllJSONScenariosInDirectory(
+		getTestRoot(),
+		"attestation-c",
+		".scen.json",
+		[]string{})
+
+	if err != nil {
+		t.Error(err)
+	}
+}
+
 // func TestPromises(t *testing.T) {
 // 	executor, err := am.NewArwenTestExecutor()
 // 	require.Nil(t, err)
