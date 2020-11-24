@@ -7,8 +7,10 @@
                 "address:features_contract": {
                     "nonce": "0",
                     "balance": "0",
-                    "storage": {},
-                    "code": "file:../output/features.wasm"
+                    "storage": {
+                        "``opt_addr": ["1", "``____________address_too_long____________"]
+                    },
+                    "code": "file:../output/basic-features.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
@@ -16,6 +18,27 @@
                     "storage": {},
                     "code": ""
                 }
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "load-val",
+            "tx": {
+                "from": "address:an_account",
+                "to": "address:features_contract",
+                "value": "0",
+                "function": "load_opt_addr",
+                "arguments": [],
+                "gasLimit": "0x100000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "4",
+                "message": "str:storage decode error: input too long",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
             }
         },
         {
@@ -49,7 +72,7 @@
                     "storage": {
                         "``opt_addr": "1|``____________address_____________"
                     },
-                    "code": "file:../output/features.wasm"
+                    "code": "file:../output/basic-features.wasm"
                 },
                 "+": ""
             }
@@ -68,6 +91,26 @@
             },
             "expect": {
                 "out": [ "``____________address_____________" ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "is-empty-false",
+            "tx": {
+                "from": "address:an_account",
+                "to": "address:features_contract",
+                "value": "0",
+                "function": "is_empty_opt_addr",
+                "arguments": [],
+                "gasLimit": "0x100000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [ "false" ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -96,6 +139,26 @@
             }
         },
         {
+            "step": "scCall",
+            "txId": "is-empty-true",
+            "tx": {
+                "from": "address:an_account",
+                "to": "address:features_contract",
+                "value": "0",
+                "function": "is_empty_opt_addr",
+                "arguments": [],
+                "gasLimit": "0x100000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [ "true" ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
             "step": "checkState",
             "accounts": {
                 "address:features_contract": {
@@ -104,7 +167,7 @@
                     "storage": {
                         "``opt_addr": ""
                     },
-                    "code": "file:../output/features.wasm"
+                    "code": "file:../output/basic-features.wasm"
                 },
                 "+": ""
             }
