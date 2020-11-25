@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
+	world "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
 )
@@ -58,7 +58,7 @@ func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int) {
 			require.Equal(tb, vmcommon.Ok, vmOutput.ReturnCode)
 			require.Equal(tb, "", vmOutput.ReturnMessage)
 
-			mockBlockchainHook.UpdateAccounts(vmOutput.OutputAccounts)
+			mockBlockchainHook.UpdateAccounts(vmOutput.OutputAccounts, nil)
 		}
 		elapsedTime := time.Since(start)
 		fmt.Printf("Executing %d ERC20 transfers: %s\n", nTransfers, elapsedTime.String())
@@ -67,13 +67,19 @@ func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int) {
 	verifyTransfers(tb, mockBlockchainHook, totalTokenSupply)
 }
 
-func deploy(tb testing.TB, totalTokenSupply *big.Int) (*vmHost, *mock.BlockchainHookMock) {
+func deploy(tb testing.TB, totalTokenSupply *big.Int) (*vmHost, *world.BlockchainHookMock) {
 	// Prepare the host
-	mockBlockchainHook := mock.NewBlockchainHookMock()
-	mockBlockchainHook.AddAccount(&mock.AccountMock{
+	mockBlockchainHook := world.NewMock()
+	ownerAccount := &world.Account{
 		Address: owner,
 		Nonce:   1024,
 		Balance: big.NewInt(0),
+	}
+	mockBlockchainHook.AcctMap.PutAccount(ownerAccount)
+	mockBlockchainHook.NewAddressMocks = append(mockBlockchainHook.NewAddressMocks, &world.NewAddressMock{
+		CreatorAddress: owner,
+		CreatorNonce:   ownerAccount.Nonce,
+		NewAddress:     scAddress,
 	})
 
 	gasMap, err := LoadGasScheduleConfig("../../test/gasSchedule.toml")
@@ -103,7 +109,7 @@ func deploy(tb testing.TB, totalTokenSupply *big.Int) (*vmHost, *mock.Blockchain
 		ContractCode: GetTestSCCode("erc20", "../../"),
 	}
 
-	mockBlockchainHook.NewAddr = scAddress
+	ownerAccount.Nonce++ // nonce increases before deploy
 	vmOutput, err := host.RunSmartContractCreate(deployInput)
 	require.Nil(tb, err)
 	require.NotNil(tb, vmOutput)
@@ -111,15 +117,15 @@ func deploy(tb testing.TB, totalTokenSupply *big.Int) (*vmHost, *mock.Blockchain
 	require.Equal(tb, vmcommon.Ok, vmOutput.ReturnCode)
 
 	// Ensure the deployment persists in the mock BlockchainHook
-	mockBlockchainHook.UpdateAccounts(vmOutput.OutputAccounts)
+	mockBlockchainHook.UpdateAccounts(vmOutput.OutputAccounts, nil)
 	return host, mockBlockchainHook
 }
 
-func verifyTransfers(tb testing.TB, mockBlockchainHook *mock.BlockchainHookMock, totalTokenSupply *big.Int) {
+func verifyTransfers(tb testing.TB, mockBlockchainHook *world.BlockchainHookMock, totalTokenSupply *big.Int) {
 	ownerKey := createERC20Key("owner")
 	receiverKey := createERC20Key("receiver")
 
-	scStorage := mockBlockchainHook.Accounts[string(scAddress)].Storage
+	scStorage := mockBlockchainHook.AcctMap.GetAccount(scAddress).Storage
 	ownerTokens := big.NewInt(0).SetBytes(scStorage[ownerKey])
 	receiverTokens := big.NewInt(0).SetBytes(scStorage[receiverKey])
 	require.Equal(tb, arwen.Zero, ownerTokens)
