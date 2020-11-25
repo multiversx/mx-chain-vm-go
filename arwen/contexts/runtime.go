@@ -258,7 +258,7 @@ func (context *runtimeContext) SetMaxInstanceCount(maxInstances uint64) {
 	context.maxWasmerInstances = maxInstances
 }
 
-// InitStateFromContractCallInput initializes the state of the runtime context
+// InitStateFromInput initializes the state of the runtime context
 // (and the async context) from the provided ContractCallInput.
 func (context *runtimeContext) InitStateFromInput(input *vmcommon.ContractCallInput) {
 	context.SetVMInput(&input.VMInput)
