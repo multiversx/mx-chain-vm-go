@@ -1,24 +1,18 @@
 {
-    "name": "save public info ok",
+    "name": "attest ok",
     "steps": [
         {
-            "step": "setState",
-            "currentBlockInfo": {
-                "blockNonce": "50"
-            }
-        },
-        {
             "step": "scCall",
-            "txId": "save-public-info-ok",
-            "comment": "args are keccak256(keccak256(str:0123 456 789)), keccak256(str:secret_data) respectively",
+            "txId": "attest-ok",
+            "comment": "args are keccak256(keccak256(str:0123 456 789)), str:secret_data respectively",
             "tx": {
-                "from": "address:attester",
+                "from": "address:acc1",
                 "to": "address:contract",
                 "value": "0",
-                "function": "savePublicInfo",
+                "function": "attest",
                 "arguments": [
                     "0x6d2ff32e31b14e2edbdfe411d3873edc90d77bd0a3b5779355686ff82a171a8d",
-                    "0x18805c46852ee738c3daba511a465c4b42cbe6306a9491b037b8194bc7d6c13b"
+                    "str:secret_data"
                 ],
                 "gasLimit": "100,000",
                 "gasPrice": "0"
@@ -34,9 +28,9 @@
         {
             "step": "checkState",
             "accounts": {
-                "address:attester": {
-                    "nonce": "1",
-                    "balance": "1,000,000",
+                "address:acc1": {
+                    "nonce": "2",
+                    "balance": "500,000",
                     "storage": {},
                     "code": ""
                 },
@@ -48,9 +42,16 @@
                         "str:max_nonce_diff": "1000",
                         "str:attestator|address:attester": "3",
                         "str:attestator_list": "address:attester",
-                        "str:user|0x6d2ff32e31b14e2edbdfe411d3873edc90d77bd0a3b5779355686ff82a171a8d": "u64:2|0x18805c46852ee738c3daba511a465c4b42cbe6306a9491b037b8194bc7d6c13b|address:acc1|address:attester|u64:50"
+                        "str:user|0x6d2ff32e31b14e2edbdfe411d3873edc90d77bd0a3b5779355686ff82a171a8d": [
+                            "u8:3",
+                            "0x18805c46852ee738c3daba511a465c4b42cbe6306a9491b037b8194bc7d6c13b",
+                            "u32:11|str:secret_data",
+                            "address:acc1",
+                            "address:attester",
+                            "u64:50"
+                        ]
                     },
-                    "code": "file:attestation.wasm"
+                    "code": "file:../output/attestation.wasm"
                 },
                 "+": ""
             }

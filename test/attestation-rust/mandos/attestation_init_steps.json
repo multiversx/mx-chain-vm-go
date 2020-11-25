@@ -25,7 +25,7 @@
             "tx": {
                 "from": "address:owner",
                 "value": "0",
-                "contractCode": "file:attestation.wasm",
+                "contractCode": "file:../output/attestation.wasm",
                 "arguments": [
                     "500,000",
                     "address:attester",
@@ -60,7 +60,7 @@
                         "str:attestator|address:attester": "3",
                         "str:attestator_list": "address:attester"
                     },
-                    "code": "file:attestation.wasm"
+                    "code": "file:../output/attestation.wasm"
                 }
             }
         }
