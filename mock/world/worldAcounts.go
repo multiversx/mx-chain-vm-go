@@ -26,15 +26,22 @@ type Account struct {
 
 var storageDefaultValue = []byte{}
 
-// NewAccountMap creates a new AccountMap instance
+// NewAccountMap creates a new AccountMap instance.
 func NewAccountMap() AccountMap {
 	return AccountMap(make(map[string]*Account))
 }
 
-// PutAccount inserts account based on address
-func (am AccountMap) PutAccount(acct *Account) {
+// PutAccount inserts account based on address.
+func (am AccountMap) PutAccount(account *Account) {
 	mp := (map[string]*Account)(am)
-	mp[addressKey(acct.Address)] = acct
+	mp[addressKey(account.Address)] = account
+}
+
+// PutAccounts inserts multiple accounts based on address.
+func (am AccountMap) PutAccounts(accounts []*Account) {
+	for _, account := range accounts {
+		am.PutAccount(account)
+	}
 }
 
 // GetAccount retrieves account based on address

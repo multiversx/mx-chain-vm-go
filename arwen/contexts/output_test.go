@@ -5,7 +5,8 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
+	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
+	world "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
 )
@@ -386,8 +387,8 @@ func TestOutputContext_Transfer(t *testing.T) {
 	valueToTransfer := big.NewInt(1000)
 
 	host := &mock.VmHostMock{}
-	mockBlockchainHook := mock.NewBlockchainHookMock()
-	mockBlockchainHook.AddAccount(&mock.AccountMock{
+	mockBlockchainHook := world.NewMock()
+	mockBlockchainHook.AcctMap.PutAccount(&world.Account{
 		Address: sender,
 		Nonce:   42,
 		Balance: balance,
@@ -419,8 +420,8 @@ func TestOutputContext_Transfer_Errors_And_Checks(t *testing.T) {
 	sender := []byte("sender")
 	receiver := []byte("receiver")
 
-	mockBlockchainHook := mock.NewBlockchainHookMock()
-	mockBlockchainHook.AddAccount(&mock.AccountMock{
+	mockBlockchainHook := world.NewMock()
+	mockBlockchainHook.AcctMap.PutAccount(&world.Account{
 		Address: sender,
 		Nonce:   88,
 		Balance: big.NewInt(2000),
@@ -468,25 +469,27 @@ func TestOutputContext_Transfer_IsAccountPayable(t *testing.T) {
 	receiverPayable := make([]byte, 32)
 	receiverPayable[31] = 1
 
-	mockBlockchainHook := mock.NewBlockchainHookMock()
-	mockBlockchainHook.AddAccounts([]*mock.AccountMock{
+	mockBlockchainHook := world.NewMock()
+	mockBlockchainHook.AcctMap.PutAccounts([]*world.Account{
 		{
 			Address: sender,
 			Nonce:   0,
 			Balance: big.NewInt(2000),
 		},
 		{
-			Address: receiverNonPayable,
-			Nonce:   0,
-			Balance: big.NewInt(0),
-			Code:    []byte("contract_code"),
+			Address:         receiverNonPayable,
+			Nonce:           0,
+			Balance:         big.NewInt(0),
+			Code:            []byte("contract_code"),
+			IsSmartContract: true,
 		},
 		{
-			Address:      receiverPayable,
-			Nonce:        0,
-			Balance:      big.NewInt(0),
-			Code:         []byte("contract_code"),
-			CodeMetadata: []byte{0, vmcommon.MetadataPayable},
+			Address:         receiverPayable,
+			Nonce:           0,
+			Balance:         big.NewInt(0),
+			Code:            []byte("contract_code"),
+			CodeMetadata:    []byte{0, vmcommon.MetadataPayable},
+			IsSmartContract: true,
 		},
 	})
 

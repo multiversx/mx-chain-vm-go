@@ -203,15 +203,8 @@ func (ae *ArwenTestExecutor) updateStateAfterTx(
 		_ = ae.World.UpdateBalanceWithDelta(tx.From.Value, big.NewInt(0).Neg(tx.Value.Value))
 	}
 
-	accountsSlice := make([]*vmi.OutputAccount, len(output.OutputAccounts))
-	i := 0
-	for _, account := range output.OutputAccounts {
-		accountsSlice[i] = account
-		i++
-	}
-
 	// update accounts based on deltas
-	updErr := ae.World.UpdateAccounts(accountsSlice, output.DeletedAccounts, tx.From.Value)
+	updErr := ae.World.UpdateAccounts(output.OutputAccounts, output.DeletedAccounts)
 	if updErr != nil {
 		return updErr
 	}

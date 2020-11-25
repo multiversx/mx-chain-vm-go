@@ -12,7 +12,8 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/ethapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
-	"github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
+	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
+	world "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
@@ -44,7 +45,7 @@ func InitializeArwenAndWasmer() *mock.VmHostMock {
 	mockMetering := &mock.MeteringContextMock{}
 	mockMetering.SetGasSchedule(gasSchedule)
 	host.MeteringContext = mockMetering
-	host.BlockchainContext, _ = NewBlockchainContext(host, mock.NewBlockchainHookMock())
+	host.BlockchainContext, _ = NewBlockchainContext(host, world.NewMock())
 	host.OutputContext, _ = NewOutputContext(host)
 	host.CryptoHook = crypto.NewVMCrypto()
 	return host

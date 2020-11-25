@@ -4,6 +4,7 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	world "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
@@ -42,7 +43,7 @@ func (o *OutputContextMock) NewVMOutputAccount(address []byte) *vmcommon.OutputA
 	}
 }
 
-func (o *OutputContextMock) NewVMOutputAccountFromMockAccount(account *AccountMock) *vmcommon.OutputAccount {
+func (o *OutputContextMock) NewVMOutputAccountFromMockAccount(account *world.Account) *vmcommon.OutputAccount {
 	return &vmcommon.OutputAccount{
 		Address:        account.Address,
 		Nonce:          account.Nonce,

@@ -11,7 +11,8 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/marshaling"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/nodepart"
-	"github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
+	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
+	world "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -44,7 +45,7 @@ func TestArwenPart_SendCallRequest(t *testing.T) {
 	blockchain := &mock.BlockchainHookStub{}
 
 	blockchain.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
-		return &mock.AccountMock{Code: bytecodeCounter}, nil
+		return &world.Account{Code: bytecodeCounter}, nil
 	}
 
 	response, err := doContractRequest(t, "3", createCallRequest("increment"), blockchain)

@@ -7,7 +7,8 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/nodepart"
-	"github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
+	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
+	world "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
@@ -41,7 +42,7 @@ func TestArwenDriver_RestartsIfStopped(t *testing.T) {
 	driver := newDriver(t, blockchain)
 
 	blockchain.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
-		return &mock.AccountMock{Code: bytecodeCounter}, nil
+		return &world.Account{Code: bytecodeCounter}, nil
 	}
 
 	vmOutput, err := driver.RunSmartContractCreate(createDeployInput(bytecodeCounter))

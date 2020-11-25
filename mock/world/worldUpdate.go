@@ -4,7 +4,7 @@ import (
 	"errors"
 	"math/big"
 
-	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 // UpdateBalance sets a new balance to an account
@@ -50,11 +50,10 @@ func (b *BlockchainHookMock) UpdateWorldStateBefore(
 
 // UpdateAccounts should be called after the VM test has run, to update world state
 func (b *BlockchainHookMock) UpdateAccounts(
-	modifiedAccounts []*vmi.OutputAccount,
-	accountsToDelete [][]byte,
-	callerAddress []byte) error {
+	outputAccounts map[string]*vmcommon.OutputAccount,
+	accountsToDelete [][]byte) error {
 
-	for _, modAcct := range modifiedAccounts {
+	for _, modAcct := range outputAccounts {
 		acct := b.AcctMap.GetAccount(modAcct.Address)
 		if acct == nil {
 			acct = &Account{
@@ -64,7 +63,7 @@ func (b *BlockchainHookMock) UpdateAccounts(
 				Balance:      zero,
 				Storage:      make(map[string][]byte),
 				Code:         nil,
-				OwnerAddress: callerAddress,
+				OwnerAddress: modAcct.CodeDeployerAddress,
 			}
 			b.AcctMap.PutAccount(acct)
 		}

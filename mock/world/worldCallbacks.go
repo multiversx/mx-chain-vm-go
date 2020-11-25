@@ -16,6 +16,11 @@ var zero = big.NewInt(0)
 
 // NewAddress adapts between K model and elrond function
 func (b *BlockchainHookMock) NewAddress(creatorAddress []byte, creatorNonce uint64, _ []byte) ([]byte, error) {
+	// custom error
+	if b.Err != nil {
+		return nil, b.Err
+	}
+
 	// explicit new address mocks
 	for _, newAddressMock := range b.NewAddressMocks {
 		if bytes.Equal(creatorAddress, newAddressMock.CreatorAddress) && creatorNonce == newAddressMock.CreatorNonce {
@@ -45,6 +50,11 @@ func (b *BlockchainHookMock) NewAddress(creatorAddress []byte, creatorNonce uint
 // GetStorageData yields the storage value for a certain account and index.
 // Should return an empty byte array if the key is missing from the account storage
 func (b *BlockchainHookMock) GetStorageData(accountAddress []byte, index []byte) ([]byte, error) {
+	// custom error
+	if b.Err != nil {
+		return nil, b.Err
+	}
+
 	acct := b.AcctMap.GetAccount(accountAddress)
 	if acct == nil {
 		return []byte{}, nil
@@ -55,9 +65,16 @@ func (b *BlockchainHookMock) GetStorageData(accountAddress []byte, index []byte)
 // GetBlockhash should return the hash of the nth previous blockchain.
 // Offset specifies how many blocks we need to look back.
 func (b *BlockchainHookMock) GetBlockhash(nonce uint64) ([]byte, error) {
-	offsetInt32 := int(nonce)
+	if b.Err != nil {
+		return nil, b.Err
+	}
+	currentNonce := b.CurrentNonce()
+	if nonce > currentNonce {
+		return nil, errors.New("blockhash nonce exceeds current nonce")
+	}
+	offsetInt32 := int(currentNonce - nonce)
 	if offsetInt32 >= len(b.Blockhashes) {
-		return nil, errors.New("blockhash offset exceeds the blockhashes slice")
+		return nil, errors.New("blockhash nonce is older than what is available")
 	}
 	return b.Blockhashes[offsetInt32], nil
 }
@@ -88,7 +105,10 @@ func (b *BlockchainHookMock) LastTimeStamp() uint64 {
 
 // LastRandomSeed returns the random seed from the last committed block
 func (b *BlockchainHookMock) LastRandomSeed() []byte {
-	return nil
+	if b.PreviousBlockInfo == nil {
+		return nil
+	}
+	return b.PreviousBlockInfo.RandomSeed
 }
 
 // LastEpoch returns the epoch from the last committed block
@@ -101,7 +121,7 @@ func (b *BlockchainHookMock) LastEpoch() uint32 {
 
 // GetStateRootHash returns the state root hash from the last committed block
 func (b *BlockchainHookMock) GetStateRootHash() []byte {
-	return nil
+	return b.StateRootHash
 }
 
 // CurrentNonce returns the nonce from the current block
@@ -130,7 +150,10 @@ func (b *BlockchainHookMock) CurrentTimeStamp() uint64 {
 
 // CurrentRandomSeed returns the random seed from the current header
 func (b *BlockchainHookMock) CurrentRandomSeed() []byte {
-	return nil
+	if b.CurrentBlockInfo == nil {
+		return nil
+	}
+	return b.CurrentBlockInfo.RandomSeed
 }
 
 // CurrentEpoch returns the current epoch
@@ -142,7 +165,19 @@ func (b *BlockchainHookMock) CurrentEpoch() uint32 {
 }
 
 // ProcessBuiltInFunction -
-func (b *BlockchainHookMock) ProcessBuiltInFunction(_ *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+func (b *BlockchainHookMock) ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+	// custom error
+	if b.Err != nil {
+		return nil, b.Err
+	}
+
+	// outPutAccounts := make(map[string]*vmcommon.OutputAccount)
+	// outPutAccounts[string(input.CallerAddr)] = &vmcommon.OutputAccount{BalanceDelta: b.Value}
+
+	// return &vmcommon.VMOutput{
+	// 	GasRemaining:   b.Gas,
+	// 	OutputAccounts: outPutAccounts,
+	// }, nil
 	return &vmcommon.VMOutput{}, nil
 }
 
@@ -158,6 +193,11 @@ func (b *BlockchainHookMock) GetAllState(_ []byte) (map[string][]byte, error) {
 
 // GetUserAccount retrieves account info from map, or error if not found.
 func (b *BlockchainHookMock) GetUserAccount(address []byte) (vmcommon.UserAccountHandler, error) {
+	// custom error
+	if b.Err != nil {
+		return nil, b.Err
+	}
+
 	account := b.AcctMap.GetAccount(address)
 	if account == nil {
 		return nil, fmt.Errorf("account not found: %s", hex.EncodeToString(address))

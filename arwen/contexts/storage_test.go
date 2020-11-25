@@ -7,7 +7,8 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
+	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
+	world "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
 )
@@ -18,7 +19,7 @@ func TestNewStorageContext(t *testing.T) {
 	t.Parallel()
 
 	host := &mock.VmHostMock{}
-	mockBlockchain := &mock.BlockchainHookMock{}
+	mockBlockchain := &world.BlockchainHookMock{}
 
 	storageContext, err := NewStorageContext(host, mockBlockchain, elrondReservedTestPrefix)
 	require.Nil(t, err)
@@ -109,7 +110,7 @@ func TestStorageContext_GetStorageUpdates(t *testing.T) {
 		OutputContext: mockOutput,
 	}
 
-	mockBlockchainHook := &mock.BlockchainHookMock{}
+	mockBlockchainHook := &world.BlockchainHookMock{}
 	storageContext, _ := NewStorageContext(host, mockBlockchainHook, elrondReservedTestPrefix)
 
 	storageUpdates := storageContext.GetStorageUpdates([]byte("account"))
@@ -227,10 +228,10 @@ func TestStorageContext_GetStorageFromAddress(t *testing.T) {
 	bcHook := &mock.BlockchainHookStub{
 		GetUserAccountCalled: func(address []byte) (vmcommon.UserAccountHandler, error) {
 			if bytes.Equal(readable, address) {
-				return &mock.AccountMock{CodeMetadata: []byte{4, 0}}, nil
+				return &world.Account{CodeMetadata: []byte{4, 0}}, nil
 			}
 			if bytes.Equal(nonreadable, address) || bytes.Equal(scAddress, address) {
-				return &mock.AccountMock{CodeMetadata: []byte{0, 0}}, nil
+				return &world.Account{CodeMetadata: []byte{0, 0}}, nil
 			}
 			return nil, nil
 		},

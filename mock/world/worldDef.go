@@ -13,6 +13,7 @@ type BlockInfo struct {
 	BlockNonce     uint64
 	BlockRound     uint64
 	BlockEpoch     uint32
+	RandomSeed     []byte
 }
 
 // BlockchainHookMock provides a mock representation of the blockchain to be used in VM tests.
@@ -23,6 +24,8 @@ type BlockchainHookMock struct {
 	Blockhashes                  [][]byte
 	mockAddressGenerationEnabled bool
 	NewAddressMocks              []*NewAddressMock
+	StateRootHash                []byte
+	Err                          error
 }
 
 // NewMock creates a new mock instance
@@ -49,4 +52,11 @@ func (b *BlockchainHookMock) Clear() {
 // EnableMockAddressGeneration causes the mock to generate its own new addresses.
 func (b *BlockchainHookMock) EnableMockAddressGeneration() {
 	b.mockAddressGenerationEnabled = true
+}
+
+func (b *BlockchainHookMock) SetCurrentBlockHash(blockHash []byte) {
+	if b.CurrentBlockInfo == nil {
+		b.CurrentBlockInfo = &BlockInfo{}
+	}
+	b.Blockhashes = [][]byte{blockHash}
 }
