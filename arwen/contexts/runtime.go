@@ -260,14 +260,10 @@ func (context *runtimeContext) SetMaxInstanceCount(maxInstances uint64) {
 
 // InitStateFromContractCallInput initializes the state of the runtime context
 // (and the async context) from the provided ContractCallInput.
-func (context *runtimeContext) InitStateFromContractCallInput(input *vmcommon.ContractCallInput) {
+func (context *runtimeContext) InitStateFromInput(input *vmcommon.ContractCallInput) {
 	context.SetVMInput(&input.VMInput)
 	context.scAddress = input.RecipientAddr
 	context.callFunction = input.Function
-
-	async := context.host.Async()
-	async.SetCaller(input.CallerAddr)
-	async.SetGasPrice(input.GasPrice)
 }
 
 // SetCustomCallFunction sets a custom function to be called next, instead of

@@ -38,6 +38,12 @@ func (context *asyncContext) InitState() {
 	context.AsyncCallGroups = make([]*arwen.AsyncCallGroup, 0)
 }
 
+func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInput) {
+	context.InitState()
+	context.SetCaller(input.CallerAddr)
+	context.SetGasPrice(input.GasPrice)
+}
+
 func (context *asyncContext) SetCaller(caller []byte) {
 	context.CallerAddr = caller
 }

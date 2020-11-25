@@ -71,6 +71,10 @@ func (context *asyncContext) executeSyncCallback(
 // set. The remaining gas is refunded to context.CallerAddr, which initiated
 // the call and paid for the gas in the first place.
 func (context *asyncContext) executeCallGroupCallback(group *arwen.AsyncCallGroup) {
+	if !group.HasCallback() {
+		return
+	}
+
 	input := context.createGroupCallbackInput(group)
 	vmOutput, err := context.host.ExecuteOnDestContext(input)
 	context.finishSyncExecution(vmOutput, err)

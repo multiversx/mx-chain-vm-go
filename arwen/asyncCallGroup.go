@@ -57,6 +57,11 @@ func (acg *AsyncCallGroup) IsCompleted() bool {
 	return len(acg.AsyncCalls) == 0
 }
 
+// HasCallback verifies whether a callback function has been set for this AsyncCallGroup
+func (acg *AsyncCallGroup) HasCallback() bool {
+	return acg.Callback != ""
+}
+
 // FindByDestination returns the index of an AsyncCall in this AsyncCallGroup
 // that matches the provided destination
 func (acg *AsyncCallGroup) FindByDestination(destination []byte) (int, bool) {

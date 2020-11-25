@@ -81,7 +81,7 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 
 	_, _, _, output, runtime, storage := host.GetContexts()
 
-	runtime.InitStateFromContractCallInput(input)
+	runtime.InitStateFromInput(input)
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
 	storage.SetAddress(runtime.GetSCAddress())
 
@@ -110,7 +110,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 
 	_, _, metering, output, runtime, storage := host.GetContexts()
 
-	runtime.InitStateFromContractCallInput(input)
+	runtime.InitStateFromInput(input)
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
 	storage.SetAddress(runtime.GetSCAddress())
 
@@ -146,6 +146,7 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vm
 
 	// TODO Discuss and handle the Async stack
 	bigInt, _, _, output, runtime, storage := host.GetContexts()
+	async := host.Async()
 
 	bigInt.PushState()
 	bigInt.InitState()
@@ -155,15 +156,12 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vm
 	output.ResetGas()
 
 	runtime.PushState()
-	runtime.InitStateFromContractCallInput(input)
-
-	async := host.Async()
-	async.PushState()
+	runtime.InitStateFromInput(input)
 
 	// TODO LoadOrInit(), not just Init; the contract invoked here likely has a
 	// persisted AsyncContext of its own.
-	async.InitState()
-	async.SetCaller(input.CallerAddr)
+	async.PushState()
+	async.InitStateFromInput(input)
 
 	storage.PushState()
 	storage.SetAddress(runtime.GetSCAddress())
@@ -277,7 +275,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) erro
 	runtime.PushState()
 
 	output.ResetGas()
-	runtime.InitStateFromContractCallInput(input)
+	runtime.InitStateFromInput(input)
 
 	// Perform a value transfer to the called SC. If the execution fails, this
 	// transfer will not persist.
@@ -571,7 +569,7 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) (uint64, error) {
 		}
 
 		if newVMInput != nil {
-			runtime.InitStateFromContractCallInput(newVMInput)
+			runtime.InitStateFromInput(newVMInput)
 			storage.SetAddress(runtime.GetSCAddress())
 			return host.executeSmartContractCall(newVMInput, metering, runtime, output, false)
 		}

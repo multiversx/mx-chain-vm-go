@@ -39,10 +39,9 @@ package elrondapi
 // extern int32_t executeReadOnly(void *context, long long gas, int32_t addressOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t createContract(void *context, long long gas, int32_t valueOffset, int32_t codeOffset, int32_t codeMetadataOffset, int32_t length, int32_t resultOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern void upgradeContract(void *context, int32_t dstOffset, long long gas, int32_t valueOffset, int32_t codeOffset, int32_t codeMetadataOffset, int32_t length, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
-
 // extern void asyncCall(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
-// extern void createAsyncCall(void *context, int32_t identifierOffset, int32_t identifierLength, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length, int32_t successCallback, int32_t successLength, int32_t errorCallback, int32_t errorLength, int64 gas);
-// extern int32_t setAsyncGroupCallback(void *context, int32_t identifierOffset, int32_t identifierLength, int32_t callback, int32_t callbackLength, int32_t gas);
+// extern void createAsyncCall(void *context, int32_t groupIDOffset, int32_t groupIDLength, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length, int32_t successCallback, int32_t successLength, int32_t errorCallback, int32_t errorLength, int64 gas);
+// extern int32_t setAsyncGroupCallback(void *context, int32_t groupIDOffset, int32_t groupIDLength, int32_t callback, int32_t callbackLength, int32_t data, int32_t dataLength, int32_t gas);
 //
 // extern int32_t getNumReturnData(void *context);
 // extern int32_t getReturnDataSize(void *context, int32_t resultID);
@@ -534,7 +533,7 @@ func transferValue(context unsafe.Pointer, destOffset int32, valueOffset int32, 
 //export createAsyncCall
 func createAsyncCall(context unsafe.Pointer,
 	groupIDOffset int32,
-	identifierLength int32,
+	groupIDLength int32,
 	destOffset int32,
 	valueOffset int32,
 	dataOffset int32,
@@ -551,7 +550,7 @@ func createAsyncCall(context unsafe.Pointer,
 	runtime := host.Runtime()
 	async := host.Async()
 
-	groupIDBytes, err := runtime.MemLoad(groupIDOffset, identifierLength)
+	groupIDBytes, err := runtime.MemLoad(groupIDOffset, groupIDLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
@@ -605,7 +604,7 @@ func createAsyncCall(context unsafe.Pointer,
 //export setAsyncGroupCallback
 func setAsyncGroupCallback(context unsafe.Pointer,
 	groupIDOffset int32,
-	identifierLength int32,
+	groupIDLength int32,
 	callback int32,
 	callbackLength int32,
 	data int32,
@@ -619,7 +618,7 @@ func setAsyncGroupCallback(context unsafe.Pointer,
 	runtime := host.Runtime()
 	async := host.Async()
 
-	groupIDBytes, err := runtime.MemLoad(groupIDOffset, identifierLength)
+	groupIDBytes, err := runtime.MemLoad(groupIDOffset, groupIDLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
@@ -628,7 +627,7 @@ func setAsyncGroupCallback(context unsafe.Pointer,
 	if groupID == arwen.LegacyAsyncCallGroupID {
 		err = arwen.ErrInvalidAsyncCallGroupID
 		arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
-		return
+		return -1
 	}
 
 	callbackNameBytes, err := runtime.MemLoad(callback, callbackLength)
@@ -641,13 +640,15 @@ func setAsyncGroupCallback(context unsafe.Pointer,
 		return -1
 	}
 
-	group, err := async.GetCallGroup(groupID)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	_, exists := async.GetCallGroup(groupID)
+	if !exists {
+		err = arwen.ErrAsyncCallGroupDoesNotExist
+		arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
 		return -1
 	}
 
 	callbackName := string(callbackNameBytes)
-	err = async.SetGroupCallback(groupID, callbackName, dataBytes, gas)
+	err = async.SetGroupCallback(groupID, callbackName, dataBytes, uint64(gas))
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}

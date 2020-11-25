@@ -79,7 +79,7 @@ type BlockchainContext interface {
 type RuntimeContext interface {
 	StateStack
 
-	InitStateFromContractCallInput(input *vmcommon.ContractCallInput)
+	InitStateFromInput(input *vmcommon.ContractCallInput)
 	SetCustomCallFunction(callFunction string)
 	GetVMInput() *vmcommon.VMInput
 	SetVMInput(vmInput *vmcommon.VMInput)
@@ -129,6 +129,7 @@ type RuntimeContext interface {
 type AsyncContext interface {
 	StateStack
 
+	InitStateFromInput(input *vmcommon.ContractCallInput)
 	AddCall(groupID string, call *AsyncCall) error
 	AddCallGroup(group *AsyncCallGroup) error
 	HasPendingCallGroups() bool
