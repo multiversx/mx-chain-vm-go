@@ -15,7 +15,6 @@ panic = "abort"
 
 [dependencies.rawrs]
 path = ".."
-default-features = false
 
 [dependencies.elrond-wasm-output]
 version = "0.7.2"
