@@ -368,6 +368,20 @@ func TestExecution_Call_Successful(t *testing.T) {
 	require.Equal(t, big.NewInt(1002).Bytes(), storedBytes)
 }
 
+func TestExecution_RawRustContract(t *testing.T) {
+	code := GetTestSCCode("rawrs", "../../")
+	host, _ := DefaultTestArwenForCall(t, code, nil)
+	input := DefaultTestContractCallInput()
+	input.GasProvided = 1000
+	input.Function = "method"
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+	require.Equal(t, [][]byte{{4}}, vmOutput.ReturnData)
+}
+
 func TestExecution_Call_GasConsumptionOnLocals(t *testing.T) {
 	gasWithZeroLocals, gasSchedule := callCustomSCAndGetGasUsed(t, 0)
 	costPerLocal := uint64(gasSchedule.WASMOpcodeCost.LocalAllocate)
