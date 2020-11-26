@@ -42,7 +42,7 @@ func TestFunctionsGuard_isValidFunctionName(t *testing.T) {
 }
 
 func TestFunctionsGuard_Arity(t *testing.T) {
-	host := InitializeArwenAndWasmer()
+	host := InitializeArwenAndWasmer_RuntimeContext()
 	imports := host.SCAPIMethods
 
 	validator := newWASMValidator(imports.Names(), make(vmcommon.FunctionNames))

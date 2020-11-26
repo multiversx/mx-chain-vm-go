@@ -4,12 +4,40 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
+	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
+	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
 )
 
+func InitializeArwenAndWasmer_AsyncContext() (*mock.VmHostMock, *mock.BlockchainHookMock) {
+	imports := MakeAPIImports()
+	_ = wasmer.SetImports(imports)
+
+	gasSchedule := config.MakeGasMapForTests()
+	gasCostConfig, _ := config.CreateGasConfig(gasSchedule)
+	opcodeCosts := gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray()
+	wasmer.SetOpcodeCosts(&opcodeCosts)
+
+	host := &mock.VmHostMock{}
+	host.SCAPIMethods = imports
+
+	mockMetering := &mock.MeteringContextMock{}
+	mockMetering.SetGasSchedule(gasSchedule)
+	host.MeteringContext = mockMetering
+
+	blockchainHookMock := mock.NewBlockchainHookMock()
+	host.BlockchainContext, _ = NewBlockchainContext(host, blockchainHookMock)
+	host.RuntimeContext, _ = NewRuntimeContext(host, []byte("vm"), false)
+	host.OutputContext, _ = NewOutputContext(host)
+	host.CryptoHook = crypto.NewVMCrypto()
+	return host, blockchainHookMock
+}
+
 func TestNewAsyncContext(t *testing.T) {
-	host := InitializeArwenAndWasmer()
+	host, _ := InitializeArwenAndWasmer_AsyncContext()
 	async := NewAsyncContext(host)
 	require.NotNil(t, async)
 
@@ -22,7 +50,7 @@ func TestNewAsyncContext(t *testing.T) {
 }
 
 func TestAsyncContext_InitState(t *testing.T) {
-	host := InitializeArwenAndWasmer()
+	host, _ := InitializeArwenAndWasmer_AsyncContext()
 	async := NewAsyncContext(host)
 	require.NotNil(t, async)
 
@@ -43,7 +71,7 @@ func TestAsyncContext_InitState(t *testing.T) {
 }
 
 func TestAsyncContext_InitStateFromInput(t *testing.T) {
-	host := InitializeArwenAndWasmer()
+	host, _ := InitializeArwenAndWasmer_AsyncContext()
 	async := NewAsyncContext(host)
 	require.NotNil(t, async)
 
@@ -70,7 +98,7 @@ func TestAsyncContext_InitStateFromInput(t *testing.T) {
 }
 
 func TestAsyncContext_GettersAndSetters(t *testing.T) {
-	host := InitializeArwenAndWasmer()
+	host, _ := InitializeArwenAndWasmer_AsyncContext()
 	async := NewAsyncContext(host)
 	require.NotNil(t, async)
 
@@ -87,7 +115,7 @@ func TestAsyncContext_GettersAndSetters(t *testing.T) {
 }
 
 func TestAsyncContext_AddCall_NewGroup(t *testing.T) {
-	host := InitializeArwenAndWasmer()
+	host, _ := InitializeArwenAndWasmer_AsyncContext()
 	vmType := []byte("type")
 	runtime, err := NewRuntimeContext(host, vmType, false)
 	require.Nil(t, err)
@@ -121,7 +149,7 @@ func TestAsyncContext_AddCall_NewGroup(t *testing.T) {
 }
 
 func TestAsyncContext_AddCall_ExistingGroup(t *testing.T) {
-	host := InitializeArwenAndWasmer()
+	host, _ := InitializeArwenAndWasmer_AsyncContext()
 	vmType := []byte("type")
 	runtime, err := NewRuntimeContext(host, vmType, false)
 	require.Nil(t, err)
@@ -148,8 +176,85 @@ func TestAsyncContext_AddCall_ExistingGroup(t *testing.T) {
 	require.False(t, async.IsComplete())
 }
 
+func TestAsyncContext_AddCall_ValidationAndFields(t *testing.T) {
+	// TODO execution mode
+	// TODO non-nil destination
+	// TODO locked gas
+}
+
 func TestAsyncContext_SetGroupCallback_Errors(t *testing.T) {
 }
 
-func TestAsyncContext_AddCall_ValidationAndFields(t *testing.T) {
+func TestAsyncContext_SetGroupCallback_Success(t *testing.T) {
+}
+
+func TestAsyncContext_DetermineExecutionMode(t *testing.T) {
+	leftAddress := []byte("left")
+	leftAccount := &mock.AccountMock{
+		Address: leftAddress,
+		ShardID: 0,
+	}
+
+	rightAddress := []byte("right")
+	rightAccount := &mock.AccountMock{
+		Address: rightAddress,
+		ShardID: 0,
+	}
+
+	host, bhm := InitializeArwenAndWasmer_AsyncContext()
+	bhm.AddAccount(leftAccount)
+	bhm.AddAccount(rightAccount)
+	runtime := host.Runtime()
+	async := NewAsyncContext(host)
+
+	runtime.SetSCAddress(leftAddress)
+	execMode, err := async.determineExecutionMode(rightAddress, []byte("func"))
+	require.Nil(t, err)
+	require.Equal(t, arwen.SyncExecution, execMode)
+
+	execMode, err = async.determineExecutionMode(rightAddress, []byte(""))
+	require.NotNil(t, err)
+	require.Equal(t, arwen.AsyncUnknown, execMode)
+
+	execMode, err = async.determineExecutionMode(rightAddress, []byte(""))
+	require.NotNil(t, err)
+	require.Equal(t, arwen.AsyncUnknown, execMode)
+
+	host.IsBuiltinFunc = true
+	runtime.SetSCAddress(leftAddress)
+	execMode, err = async.determineExecutionMode(rightAddress, []byte("func"))
+	require.Nil(t, err)
+	require.Equal(t, arwen.SyncExecution, execMode)
+
+	host.IsBuiltinFunc = false
+	rightAccount.ShardID = 1
+	runtime.SetSCAddress(leftAddress)
+	execMode, err = async.determineExecutionMode(rightAddress, []byte("func"))
+	require.Nil(t, err)
+	require.Equal(t, arwen.AsyncUnknown, execMode)
+
+	host.IsBuiltinFunc = true
+	rightAccount.ShardID = 1
+	runtime.SetSCAddress(leftAddress)
+	execMode, err = async.determineExecutionMode(rightAddress, []byte("func"))
+	require.Nil(t, err)
+	require.Equal(t, arwen.AsyncBuiltinFunc, execMode)
+}
+
+func TestAsyncContext_DeleteCallGroup(t *testing.T) {
+}
+
+func TestAsyncContext_IsValidCallbackName(t *testing.T) {
+}
+
+func TestAsyncContext_FindCall(t *testing.T) {
+}
+
+func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
+}
+
+func TestAsyncContext_PrepareLegacyAsyncCall(t *testing.T) {
+}
+
+func TestAsyncContext_SendAsyncCallCrossShard(t *testing.T) {
 }
