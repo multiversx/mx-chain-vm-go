@@ -8,7 +8,7 @@ import (
 )
 
 func (context *asyncContext) executeSynchronousCalls() error {
-	for groupIndex, group := range context.AsyncCallGroups {
+	for groupIndex, group := range context.asyncCallGroups {
 		for _, call := range group.AsyncCalls {
 			if call.ExecutionMode != arwen.SyncExecution {
 				continue
@@ -24,7 +24,7 @@ func (context *asyncContext) executeSynchronousCalls() error {
 
 		// If all the AsyncCalls in the AsyncCallGroup were executed synchronously,
 		// then the AsyncCallGroup can have its callback executed.
-		if group.IsCompleted() {
+		if group.IsComplete() {
 			context.executeCallGroupCallback(group)
 			context.DeleteCallGroup(groupIndex)
 		}
@@ -68,7 +68,7 @@ func (context *asyncContext) executeSyncCallback(
 // the AsyncCallGroup, as it was set with SetGroupCallback().
 //
 // Gas for the execution has been already paid for when SetGroupCallback() was
-// set. The remaining gas is refunded to context.CallerAddr, which initiated
+// set. The remaining gas is refunded to context.callerAddr, which initiated
 // the call and paid for the gas in the first place.
 func (context *asyncContext) executeCallGroupCallback(group *arwen.AsyncCallGroup) {
 	if !group.HasCallback() {
@@ -194,10 +194,10 @@ func (context *asyncContext) createGroupCallbackInput(group *arwen.AsyncCallGrou
 	runtime := context.host.Runtime()
 	input := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
-			CallerAddr:     context.CallerAddr,
+			CallerAddr:     context.callerAddr,
 			Arguments:      [][]byte{group.CallbackData},
 			CallValue:      big.NewInt(0),
-			GasPrice:       context.GasPrice,
+			GasPrice:       context.gasPrice,
 			GasProvided:    group.GasLocked,
 			CurrentTxHash:  runtime.GetCurrentTxHash(),
 			OriginalTxHash: runtime.GetOriginalTxHash(),
@@ -215,9 +215,9 @@ func (context *asyncContext) createSyncContextCallbackInput() *vmcommon.Contract
 	runtime := host.Runtime()
 	metering := host.Metering()
 
-	_, arguments, err := host.CallArgsParser().ParseData(string(context.ReturnData))
+	_, arguments, err := host.CallArgsParser().ParseData(string(context.returnData))
 	if err != nil {
-		arguments = [][]byte{context.ReturnData}
+		arguments = [][]byte{context.returnData}
 	}
 
 	// TODO ensure a new value for VMInput.CurrentTxHash
@@ -233,7 +233,7 @@ func (context *asyncContext) createSyncContextCallbackInput() *vmcommon.Contract
 			OriginalTxHash: runtime.GetOriginalTxHash(),
 			PrevTxHash:     runtime.GetPrevTxHash(),
 		},
-		RecipientAddr: context.CallerAddr,
+		RecipientAddr: context.callerAddr,
 
 		// TODO this come from the serialized AsyncContext stored by the original
 		// caller

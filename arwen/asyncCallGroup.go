@@ -53,7 +53,7 @@ func (acg *AsyncCallGroup) HasPendingCalls() bool {
 }
 
 // IsCompleted verifies whether all AsyncCalls have been completed
-func (acg *AsyncCallGroup) IsCompleted() bool {
+func (acg *AsyncCallGroup) IsComplete() bool {
 	return len(acg.AsyncCalls) == 0
 }
 

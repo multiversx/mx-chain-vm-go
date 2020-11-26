@@ -371,6 +371,7 @@ func TestExecution_Call_Successful(t *testing.T) {
 func TestExecution_RawRustContract(t *testing.T) {
 	code := GetTestSCCode("rawrs", "../../")
 	host, _ := DefaultTestArwenForCall(t, code, nil)
+
 	input := DefaultTestContractCallInput()
 	input.GasProvided = 1000
 	input.Function = "method"

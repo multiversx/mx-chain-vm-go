@@ -131,25 +131,27 @@ type AsyncContext interface {
 
 	InitStateFromInput(input *vmcommon.ContractCallInput)
 	AddCall(groupID string, call *AsyncCall) error
-	AddCallGroup(group *AsyncCallGroup) error
 	HasPendingCallGroups() bool
-	IsComplete() bool
 	FindCall(destination []byte) (string, int, error)
 	GetCallGroup(groupID string) (*AsyncCallGroup, bool)
+	SetGroupCallback(groupID string, callbackName string, data []byte, gas uint64) error
 	DeleteCallGroupByID(groupID string)
 	DeleteCallGroup(index int)
-	SetCaller(caller []byte)
-	SetGasPrice(gasPrice uint64)
-	SetGroupCallback(groupID string, callbackName string, data []byte, gas uint64) error
-	PostprocessCrossShardCallback() error
+	IsComplete() bool
+
 	GetCallerAddress() []byte
 	GetReturnData() []byte
+	SetReturnData(data []byte)
+	GetGasPrice() uint64
+
+	Execute() error
+	PostprocessCrossShardCallback() error
+	PrepareLegacyAsyncCall(address []byte, data []byte, value []byte) error
+	UpdateCurrentCallStatus() (*AsyncCall, error)
+
 	Load() error
 	Save() error
 	Delete() error
-	Execute() error
-	PrepareLegacyAsyncCall(address []byte, data []byte, value []byte) error
-	UpdateCurrentCallStatus() (*AsyncCall, error)
 }
 
 type BigIntContext interface {

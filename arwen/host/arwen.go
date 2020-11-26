@@ -224,13 +224,14 @@ func (host *vmHost) IsDynamicGasLockingEnabled() bool {
 	return host.flagDynGasLock.IsSet()
 }
 
-// GetContexts returns the main contexts of the host
-func (host *vmHost) GetContexts() (
+// GetHostContexts returns the all the host contexts at once
+func (host *vmHost) GetHostContexts() (
 	arwen.BigIntContext,
 	arwen.BlockchainContext,
 	arwen.MeteringContext,
 	arwen.OutputContext,
 	arwen.RuntimeContext,
+	arwen.AsyncContext,
 	arwen.StorageContext,
 ) {
 	return host.bigIntContext,
@@ -238,6 +239,7 @@ func (host *vmHost) GetContexts() (
 		host.meteringContext,
 		host.outputContext,
 		host.runtimeContext,
+		host.asyncContext,
 		host.storageContext
 }
 

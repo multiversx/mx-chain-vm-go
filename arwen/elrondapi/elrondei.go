@@ -588,7 +588,6 @@ func createAsyncCall(context unsafe.Pointer,
 	}
 
 	err = async.AddCall(groupID, &arwen.AsyncCall{
-		Status:          arwen.AsyncCallPending,
 		Destination:     calledSCAddress,
 		Data:            data,
 		ValueBytes:      value,
