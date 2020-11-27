@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
-	world "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
 )
@@ -15,7 +15,7 @@ import (
 var errAccountFault = errors.New("account fault")
 var errTestError = errors.New("some test error")
 
-var testAccounts = []*world.Account{
+var testAccounts = []*worldmock.Account{
 	{Address: []byte("account_old"), Nonce: 12, Balance: big.NewInt(0)},
 	{Address: []byte("account_newer"), Nonce: 8, Balance: big.NewInt(0)},
 	{Address: []byte("account_new"), Nonce: 0, Balance: big.NewInt(0)},
@@ -28,8 +28,8 @@ var testAccounts = []*world.Account{
 func TestNewBlockchainContext(t *testing.T) {
 	t.Parallel()
 
-	host := &mock.VmHostStub{}
-	blockchainHook := world.NewMock()
+	host := &contextmock.VmHostStub{}
+	blockchainHook := worldmock.NewMock()
 
 	blockchainContext, err := NewBlockchainContext(host, blockchainHook)
 	require.Nil(t, err)
@@ -39,8 +39,8 @@ func TestNewBlockchainContext(t *testing.T) {
 func TestBlockchainContext_AccountExists(t *testing.T) {
 	t.Parallel()
 
-	host := &mock.VmHostStub{}
-	blockchainHook := world.NewMock()
+	host := &contextmock.VmHostStub{}
+	blockchainHook := worldmock.NewMock()
 	blockchainHook.AcctMap.PutAccounts(testAccounts)
 
 	blockchainContext, _ := NewBlockchainContext(host, blockchainHook)
@@ -56,10 +56,10 @@ func TestBlockchainContext_AccountExists(t *testing.T) {
 func TestBlockchainContext_GetBalance(t *testing.T) {
 	t.Parallel()
 
-	blockchainHook := world.NewMock()
+	blockchainHook := worldmock.NewMock()
 	blockchainHook.AcctMap.PutAccounts(testAccounts)
-	mockOutput := &mock.OutputContextMock{}
-	host := &mock.VmHostMock{}
+	mockOutput := &contextmock.OutputContextMock{}
+	host := &contextmock.VmHostMock{}
 	host.OutputContext = mockOutput
 	blockchainContext, _ := NewBlockchainContext(host, blockchainHook)
 
@@ -106,10 +106,10 @@ func TestBlockchainContext_GetBalance(t *testing.T) {
 func TestBlockchainContext_GetBalance_Updates(t *testing.T) {
 	t.Parallel()
 
-	blockchainHook := world.NewMock()
+	blockchainHook := worldmock.NewMock()
 	blockchainHook.AcctMap.PutAccounts(testAccounts)
-	mockOutput := &mock.OutputContextMock{}
-	host := &mock.VmHostMock{}
+	mockOutput := &contextmock.OutputContextMock{}
+	host := &contextmock.VmHostMock{}
 	host.OutputContext = mockOutput
 	blockchainContext, _ := NewBlockchainContext(host, blockchainHook)
 
@@ -139,12 +139,12 @@ func TestBlockchainContext_GetNonceAndIncrease(t *testing.T) {
 		Nonce: 3,
 	}
 
-	host := &mock.VmHostMock{}
+	host := &contextmock.VmHostMock{}
 
-	mockOutput := &mock.OutputContextMock{}
+	mockOutput := &contextmock.OutputContextMock{}
 	host.OutputContext = mockOutput
 
-	blockchainHook := world.NewMock()
+	blockchainHook := worldmock.NewMock()
 	blockchainHook.AcctMap.PutAccounts(testAccounts)
 	blockchainContext, _ := NewBlockchainContext(host, blockchainHook)
 
@@ -190,14 +190,14 @@ func TestBlockchainContext_GetNonceAndIncrease(t *testing.T) {
 func TestBlockchainContext_GetCodeHashAndSize(t *testing.T) {
 	t.Parallel()
 
-	mockCrypto := &mock.CryptoHookMock{}
+	mockCrypto := &contextmock.CryptoHookMock{}
 
-	blockchainHook := world.NewMock()
+	blockchainHook := worldmock.NewMock()
 	blockchainHook.AcctMap.PutAccounts(testAccounts)
 
-	outputContext := &mock.OutputContextMock{}
+	outputContext := &contextmock.OutputContextMock{}
 
-	host := &mock.VmHostMock{}
+	host := &contextmock.VmHostMock{}
 	host.CryptoHook = mockCrypto
 	host.OutputContext = outputContext
 
@@ -257,15 +257,15 @@ func TestBlockchainContext_GetCodeHashAndSize(t *testing.T) {
 func TestBlockchainContext_NewAddress(t *testing.T) {
 	t.Parallel()
 
-	mockOutput := &mock.OutputContextMock{}
+	mockOutput := &contextmock.OutputContextMock{}
 
-	blockchainHook := world.NewMock()
+	blockchainHook := worldmock.NewMock()
 	blockchainHook.AcctMap.PutAccounts(testAccounts)
 
-	mockRuntime := &mock.RuntimeContextMock{}
+	mockRuntime := &contextmock.RuntimeContextMock{}
 	mockRuntime.VmType = []byte{0xF, 0xF}
 
-	host := &mock.VmHostMock{
+	host := &contextmock.VmHostMock{
 		OutputContext:  mockOutput,
 		RuntimeContext: mockRuntime,
 	}
@@ -293,7 +293,7 @@ func TestBlockchainContext_NewAddress(t *testing.T) {
 	mockOutput.OutputAccountIsNew = true
 
 	expectedCreatorAddres := creatorAddress
-	stubBlockchain := &mock.BlockchainHookStub{
+	stubBlockchain := &contextmock.BlockchainHookStub{
 		GetUserAccountCalled: blockchainHook.GetUserAccount,
 		NewAddressCalled: func(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error) {
 			require.Equal(t, expectedCreatorAddres, creatorAddress)
@@ -316,7 +316,7 @@ func TestBlockchainContext_NewAddress(t *testing.T) {
 	mockOutput.OutputAccountIsNew = false
 
 	expectedCreatorAddres = creatorAddress
-	stubBlockchain = &mock.BlockchainHookStub{
+	stubBlockchain = &contextmock.BlockchainHookStub{
 		GetUserAccountCalled: blockchainHook.GetUserAccount,
 		NewAddressCalled: func(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error) {
 			require.Equal(t, expectedCreatorAddres, creatorAddress)
@@ -339,7 +339,7 @@ func TestBlockchainContext_NewAddress(t *testing.T) {
 	mockOutput.OutputAccountIsNew = false
 
 	expectedCreatorAddres = creatorAddress
-	stubBlockchain = &mock.BlockchainHookStub{
+	stubBlockchain = &contextmock.BlockchainHookStub{
 		GetUserAccountCalled: blockchainHook.GetUserAccount,
 		NewAddressCalled: func(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error) {
 			require.Equal(t, expectedCreatorAddres, creatorAddress)
@@ -358,8 +358,8 @@ func TestBlockchainContext_NewAddress(t *testing.T) {
 func TestBlockchainContext_BlockHash(t *testing.T) {
 	t.Parallel()
 
-	host := &mock.VmHostMock{}
-	blockchainHook := world.NewMock()
+	host := &contextmock.VmHostMock{}
+	blockchainHook := worldmock.NewMock()
 	blockchainContext, _ := NewBlockchainContext(host, blockchainHook)
 
 	blockchainHook.Err = errTestError
@@ -383,9 +383,9 @@ func TestBlockchainContext_BlockHash(t *testing.T) {
 func TestBlockchainContext_IsPayable(t *testing.T) {
 	t.Parallel()
 
-	host := &mock.VmHostMock{}
-	blockchainHook := world.NewMock()
-	accounts := []*world.Account{
+	host := &contextmock.VmHostMock{}
+	blockchainHook := worldmock.NewMock()
+	accounts := []*worldmock.Account{
 		{Address: []byte("test"), CodeMetadata: []byte{0, vmcommon.MetadataPayable}},
 	}
 	blockchainHook.AcctMap.PutAccounts(accounts)
@@ -400,16 +400,16 @@ func TestBlockchainContext_IsPayable(t *testing.T) {
 func TestBlockchainContext_Getters(t *testing.T) {
 	t.Parallel()
 
-	host := &mock.VmHostMock{}
-	blockchainHook := &world.BlockchainHookMock{
-		PreviousBlockInfo: &world.BlockInfo{
+	host := &contextmock.VmHostMock{}
+	blockchainHook := &worldmock.BlockchainHookMock{
+		PreviousBlockInfo: &worldmock.BlockInfo{
 			BlockTimestamp: 6749,
 			BlockNonce:     90,
 			BlockRound:     96,
 			BlockEpoch:     3,
 			RandomSeed:     []byte("last random seed"),
 		},
-		CurrentBlockInfo: &world.BlockInfo{
+		CurrentBlockInfo: &worldmock.BlockInfo{
 			BlockTimestamp: 6800,
 			BlockNonce:     98,
 			BlockRound:     99,

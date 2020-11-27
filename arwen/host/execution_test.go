@@ -9,7 +9,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -19,7 +19,7 @@ var counterKey = []byte("COUNTER")
 var WASMLocalsLimit = uint64(4000)
 
 func TestNewArwen(t *testing.T) {
-	host, err := DefaultTestArwen(t, &mock.BlockchainHookStub{})
+	host, err := DefaultTestArwen(t, &contextmock.BlockchainHookStub{})
 	require.Nil(t, err)
 	require.NotNil(t, host)
 }
@@ -46,7 +46,7 @@ func TestSCMem(t *testing.T) {
 }
 
 func TestExecution_DeployNewAddressErr(t *testing.T) {
-	stubBlockchainHook := &mock.BlockchainHookStub{}
+	stubBlockchainHook := &contextmock.BlockchainHookStub{}
 
 	errNewAddress := errors.New("new address error")
 
@@ -54,7 +54,7 @@ func TestExecution_DeployNewAddressErr(t *testing.T) {
 	input := DefaultTestContractCreateInput()
 	stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
 		require.Equal(t, input.CallerAddr, address)
-		return &mock.AccountMock{}, nil
+		return &contextmock.AccountMock{}, nil
 	}
 	stubBlockchainHook.NewAddressCalled = func(creatorAddress []byte, nonce uint64, vmType []byte) ([]byte, error) {
 		require.Equal(t, input.CallerAddr, creatorAddress)
@@ -229,9 +229,9 @@ func TestExecution_ManyDeployments(t *testing.T) {
 
 	ownerNonce := uint64(23)
 	newAddress := "new smartcontract"
-	stubBlockchainHook := &mock.BlockchainHookStub{}
+	stubBlockchainHook := &contextmock.BlockchainHookStub{}
 	stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
-		return &mock.AccountMock{Nonce: ownerNonce}, nil
+		return &contextmock.AccountMock{Nonce: ownerNonce}, nil
 	}
 	stubBlockchainHook.NewAddressCalled = func(creatorAddress []byte, nonce uint64, vmType []byte) ([]byte, error) {
 		ownerNonce++
@@ -274,7 +274,7 @@ func TestExecution_Deploy_DisallowFloatingPoint(t *testing.T) {
 }
 
 func TestExecution_CallGetUserAccountErr(t *testing.T) {
-	stubBlockchainHook := &mock.BlockchainHookStub{}
+	stubBlockchainHook := &contextmock.BlockchainHookStub{}
 
 	errGetAccount := errors.New("get code error")
 

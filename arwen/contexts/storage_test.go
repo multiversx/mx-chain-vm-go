@@ -7,8 +7,8 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
-	world "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
 )
@@ -18,8 +18,8 @@ var elrondReservedTestPrefix = []byte("RESERVED")
 func TestNewStorageContext(t *testing.T) {
 	t.Parallel()
 
-	host := &mock.VmHostMock{}
-	mockBlockchain := &world.BlockchainHookMock{}
+	host := &contextmock.VmHostMock{}
+	mockBlockchain := worldmock.NewMock()
 
 	storageContext, err := NewStorageContext(host, mockBlockchain, elrondReservedTestPrefix)
 	require.Nil(t, err)
@@ -31,7 +31,7 @@ func TestStorageContext_SetAddress(t *testing.T) {
 
 	addressA := []byte("accountA")
 	addressB := []byte("accountB")
-	stubOutput := &mock.OutputContextStub{}
+	stubOutput := &contextmock.OutputContextStub{}
 	accountA := &vmcommon.OutputAccount{
 		Address:        addressA,
 		Nonce:          0,
@@ -56,17 +56,17 @@ func TestStorageContext_SetAddress(t *testing.T) {
 		return nil, false
 	}
 
-	mockRuntime := &mock.RuntimeContextMock{}
-	mockMetering := &mock.MeteringContextMock{}
+	mockRuntime := &contextmock.RuntimeContextMock{}
+	mockMetering := &contextmock.MeteringContextMock{}
 	mockMetering.SetGasSchedule(config.MakeGasMapForTests())
 	mockMetering.BlockGasLimitMock = uint64(15000)
 
-	host := &mock.VmHostMock{
+	host := &contextmock.VmHostMock{
 		OutputContext:   stubOutput,
 		MeteringContext: mockMetering,
 		RuntimeContext:  mockRuntime,
 	}
-	bcHook := &mock.BlockchainHookStub{}
+	bcHook := &contextmock.BlockchainHookStub{}
 
 	storageContext, _ := NewStorageContext(host, bcHook, elrondReservedTestPrefix)
 
@@ -96,7 +96,7 @@ func TestStorageContext_SetAddress(t *testing.T) {
 func TestStorageContext_GetStorageUpdates(t *testing.T) {
 	t.Parallel()
 
-	mockOutput := &mock.OutputContextMock{}
+	mockOutput := &contextmock.OutputContextMock{}
 	account := mockOutput.NewVMOutputAccount([]byte("account"))
 	mockOutput.OutputAccountMock = account
 	mockOutput.OutputAccountIsNew = false
@@ -106,11 +106,11 @@ func TestStorageContext_GetStorageUpdates(t *testing.T) {
 		Data:   []byte("some data"),
 	}
 
-	host := &mock.VmHostMock{
+	host := &contextmock.VmHostMock{
 		OutputContext: mockOutput,
 	}
 
-	mockBlockchainHook := &world.BlockchainHookMock{}
+	mockBlockchainHook := worldmock.NewMock()
 	storageContext, _ := NewStorageContext(host, mockBlockchainHook, elrondReservedTestPrefix)
 
 	storageUpdates := storageContext.GetStorageUpdates([]byte("account"))
@@ -123,22 +123,22 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	t.Parallel()
 
 	address := []byte("account")
-	mockOutput := &mock.OutputContextMock{}
+	mockOutput := &contextmock.OutputContextMock{}
 	account := mockOutput.NewVMOutputAccount(address)
 	mockOutput.OutputAccountMock = account
 	mockOutput.OutputAccountIsNew = false
 
-	mockRuntime := &mock.RuntimeContextMock{}
-	mockMetering := &mock.MeteringContextMock{}
+	mockRuntime := &contextmock.RuntimeContextMock{}
+	mockMetering := &contextmock.MeteringContextMock{}
 	mockMetering.SetGasSchedule(config.MakeGasMapForTests())
 	mockMetering.BlockGasLimitMock = uint64(15000)
 
-	host := &mock.VmHostMock{
+	host := &contextmock.VmHostMock{
 		OutputContext:   mockOutput,
 		MeteringContext: mockMetering,
 		RuntimeContext:  mockRuntime,
 	}
-	bcHook := &mock.BlockchainHookStub{}
+	bcHook := &contextmock.BlockchainHookStub{}
 
 	storageContext, _ := NewStorageContext(host, bcHook, elrondReservedTestPrefix)
 	storageContext.SetAddress(address)
@@ -205,17 +205,17 @@ func TestStorageContext_GetStorageFromAddress(t *testing.T) {
 	t.Parallel()
 
 	scAddress := []byte("account")
-	mockOutput := &mock.OutputContextMock{}
+	mockOutput := &contextmock.OutputContextMock{}
 	account := mockOutput.NewVMOutputAccount(scAddress)
 	mockOutput.OutputAccountMock = account
 	mockOutput.OutputAccountIsNew = false
 
-	mockRuntime := &mock.RuntimeContextMock{}
-	mockMetering := &mock.MeteringContextMock{}
+	mockRuntime := &contextmock.RuntimeContextMock{}
+	mockMetering := &contextmock.MeteringContextMock{}
 	mockMetering.SetGasSchedule(config.MakeGasMapForTests())
 	mockMetering.BlockGasLimitMock = uint64(15000)
 
-	host := &mock.VmHostMock{
+	host := &contextmock.VmHostMock{
 		OutputContext:   mockOutput,
 		MeteringContext: mockMetering,
 		RuntimeContext:  mockRuntime,
@@ -225,13 +225,13 @@ func TestStorageContext_GetStorageFromAddress(t *testing.T) {
 	nonreadable := []byte("nonreadable")
 	internalData := []byte("internalData")
 
-	bcHook := &mock.BlockchainHookStub{
+	bcHook := &contextmock.BlockchainHookStub{
 		GetUserAccountCalled: func(address []byte) (vmcommon.UserAccountHandler, error) {
 			if bytes.Equal(readable, address) {
-				return &world.Account{CodeMetadata: []byte{4, 0}}, nil
+				return &worldmock.Account{CodeMetadata: []byte{4, 0}}, nil
 			}
 			if bytes.Equal(nonreadable, address) || bytes.Equal(scAddress, address) {
-				return &world.Account{CodeMetadata: []byte{0, 0}}, nil
+				return &worldmock.Account{CodeMetadata: []byte{0, 0}}, nil
 			}
 			return nil, nil
 		},
@@ -265,7 +265,7 @@ func TestStorageContext_StoreGasPerKey(t *testing.T) {
 func TestStorageContext_PopSetActiveStateIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	t.Parallel()
 
-	storageContext, _ := NewStorageContext(&mock.VmHostMock{}, &mock.BlockchainHookStub{}, elrondReservedTestPrefix)
+	storageContext, _ := NewStorageContext(&contextmock.VmHostMock{}, &contextmock.BlockchainHookStub{}, elrondReservedTestPrefix)
 	storageContext.PopSetActiveState()
 
 	require.Equal(t, 0, len(storageContext.stateStack))
@@ -274,7 +274,7 @@ func TestStorageContext_PopSetActiveStateIfStackIsEmptyShouldNotPanic(t *testing
 func TestStorageContext_PopDiscardIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	t.Parallel()
 
-	storageContext, _ := NewStorageContext(&mock.VmHostMock{}, &mock.BlockchainHookStub{}, elrondReservedTestPrefix)
+	storageContext, _ := NewStorageContext(&contextmock.VmHostMock{}, &contextmock.BlockchainHookStub{}, elrondReservedTestPrefix)
 	storageContext.PopDiscard()
 
 	require.Equal(t, 0, len(storageContext.stateStack))

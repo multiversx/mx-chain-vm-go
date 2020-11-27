@@ -12,7 +12,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/pelletier/go-toml"
 	"github.com/stretchr/testify/require"
@@ -45,9 +45,9 @@ func GetTestSCCode(scName string, prefixToTestSCs string) []byte {
 
 // DefaultTestArwenForDeployment creates an Arwen vmHost configured for testing deployments
 func DefaultTestArwenForDeployment(t *testing.T, _ uint64, newAddress []byte) *vmHost {
-	stubBlockchainHook := &mock.BlockchainHookStub{}
+	stubBlockchainHook := &contextmock.BlockchainHookStub{}
 	stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
-		return &mock.AccountMock{
+		return &contextmock.AccountMock{
 			Nonce: 24,
 		}, nil
 	}
@@ -59,11 +59,11 @@ func DefaultTestArwenForDeployment(t *testing.T, _ uint64, newAddress []byte) *v
 	return host
 }
 
-func DefaultTestArwenForCall(tb testing.TB, code []byte, balance *big.Int) (*vmHost, *mock.BlockchainHookStub) {
-	stubBlockchainHook := &mock.BlockchainHookStub{}
+func DefaultTestArwenForCall(tb testing.TB, code []byte, balance *big.Int) (*vmHost, *contextmock.BlockchainHookStub) {
+	stubBlockchainHook := &contextmock.BlockchainHookStub{}
 	stubBlockchainHook.GetUserAccountCalled = func(scAddress []byte) (vmcommon.UserAccountHandler, error) {
 		if bytes.Equal(scAddress, parentAddress) {
-			return &mock.AccountMock{
+			return &contextmock.AccountMock{
 				Code:    code,
 				Balance: balance,
 			}, nil
@@ -76,18 +76,18 @@ func DefaultTestArwenForCall(tb testing.TB, code []byte, balance *big.Int) (*vmH
 }
 
 // DefaultTestArwenForTwoSCs creates an Arwen vmHost configured for testing calls between 2 SmartContracts
-func DefaultTestArwenForTwoSCs(t *testing.T, parentCode []byte, childCode []byte, parentSCBalance *big.Int) (*vmHost, *mock.BlockchainHookStub) {
-	stubBlockchainHook := &mock.BlockchainHookStub{}
+func DefaultTestArwenForTwoSCs(t *testing.T, parentCode []byte, childCode []byte, parentSCBalance *big.Int) (*vmHost, *contextmock.BlockchainHookStub) {
+	stubBlockchainHook := &contextmock.BlockchainHookStub{}
 
 	stubBlockchainHook.GetUserAccountCalled = func(scAddress []byte) (vmcommon.UserAccountHandler, error) {
 		if bytes.Equal(scAddress, parentAddress) {
-			return &mock.AccountMock{
+			return &contextmock.AccountMock{
 				Code:    parentCode,
 				Balance: parentSCBalance,
 			}, nil
 		}
 		if bytes.Equal(scAddress, childAddress) {
-			return &mock.AccountMock{
+			return &contextmock.AccountMock{
 				Code: childCode,
 			}, nil
 		}

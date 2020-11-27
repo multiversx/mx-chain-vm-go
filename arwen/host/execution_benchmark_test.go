@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	world "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
 )
@@ -67,16 +67,16 @@ func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int) {
 	verifyTransfers(tb, mockBlockchainHook, totalTokenSupply)
 }
 
-func deploy(tb testing.TB, totalTokenSupply *big.Int) (*vmHost, *world.BlockchainHookMock) {
+func deploy(tb testing.TB, totalTokenSupply *big.Int) (*vmHost, *worldmock.BlockchainHookMock) {
 	// Prepare the host
-	mockBlockchainHook := world.NewMock()
-	ownerAccount := &world.Account{
+	mockBlockchainHook := worldmock.NewMock()
+	ownerAccount := &worldmock.Account{
 		Address: owner,
 		Nonce:   1024,
 		Balance: big.NewInt(0),
 	}
 	mockBlockchainHook.AcctMap.PutAccount(ownerAccount)
-	mockBlockchainHook.NewAddressMocks = append(mockBlockchainHook.NewAddressMocks, &world.NewAddressMock{
+	mockBlockchainHook.NewAddressMocks = append(mockBlockchainHook.NewAddressMocks, &worldmock.NewAddressMock{
 		CreatorAddress: owner,
 		CreatorNonce:   ownerAccount.Nonce,
 		NewAddress:     scAddress,
@@ -121,7 +121,7 @@ func deploy(tb testing.TB, totalTokenSupply *big.Int) (*vmHost, *world.Blockchai
 	return host, mockBlockchainHook
 }
 
-func verifyTransfers(tb testing.TB, mockBlockchainHook *world.BlockchainHookMock, totalTokenSupply *big.Int) {
+func verifyTransfers(tb testing.TB, mockBlockchainHook *worldmock.BlockchainHookMock, totalTokenSupply *big.Int) {
 	ownerKey := createERC20Key("owner")
 	receiverKey := createERC20Key("receiver")
 

@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
-	world "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
 )
@@ -14,7 +14,7 @@ import (
 func TestNewOutputContext(t *testing.T) {
 	t.Parallel()
 
-	host := &mock.VmHostStub{}
+	host := &contextmock.VmHostStub{}
 
 	outputContext, err := NewOutputContext(host)
 	require.Nil(t, err)
@@ -43,7 +43,7 @@ func TestNewOutputContext(t *testing.T) {
 func TestOutputContext_PushPopState(t *testing.T) {
 	t.Parallel()
 
-	host := &mock.VmHostStub{}
+	host := &contextmock.VmHostStub{}
 	outputContext, _ := NewOutputContext(host)
 
 	address1 := []byte("address1")
@@ -106,7 +106,7 @@ func TestOutputContext_PushPopState(t *testing.T) {
 func TestOutputContext_GetOutputAccount(t *testing.T) {
 	t.Parallel()
 
-	host := &mock.VmHostStub{}
+	host := &contextmock.VmHostStub{}
 	outputContext, _ := NewOutputContext(host)
 	require.Zero(t, len(outputContext.outputState.OutputAccounts))
 
@@ -134,7 +134,7 @@ func TestOutputContext_GetOutputAccount(t *testing.T) {
 }
 
 func TestOutputContext_GettersAndSetters(t *testing.T) {
-	host := &mock.VmHostStub{}
+	host := &contextmock.VmHostStub{}
 	outputContext, _ := NewOutputContext(host)
 
 	outputContext.SetRefund(24)
@@ -148,7 +148,7 @@ func TestOutputContext_GettersAndSetters(t *testing.T) {
 }
 
 func TestOutputContext_FinishReturnData(t *testing.T) {
-	host := &mock.VmHostStub{}
+	host := &contextmock.VmHostStub{}
 	outputContext, _ := NewOutputContext(host)
 
 	require.Zero(t, len(outputContext.ReturnData()))
@@ -361,7 +361,7 @@ func TestOutputContext_MergeVMOutputs(t *testing.T) {
 func TestOutputContext_VMOutputError(t *testing.T) {
 	t.Parallel()
 
-	host := &mock.VmHostMock{}
+	host := &contextmock.VmHostMock{}
 
 	outputContext, _ := NewOutputContext(host)
 
@@ -386,9 +386,9 @@ func TestOutputContext_Transfer(t *testing.T) {
 	balance := big.NewInt(10000)
 	valueToTransfer := big.NewInt(1000)
 
-	host := &mock.VmHostMock{}
-	mockBlockchainHook := world.NewMock()
-	mockBlockchainHook.AcctMap.PutAccount(&world.Account{
+	host := &contextmock.VmHostMock{}
+	mockBlockchainHook := worldmock.NewMock()
+	mockBlockchainHook.AcctMap.PutAccount(&worldmock.Account{
 		Address: sender,
 		Nonce:   42,
 		Balance: balance,
@@ -420,14 +420,14 @@ func TestOutputContext_Transfer_Errors_And_Checks(t *testing.T) {
 	sender := []byte("sender")
 	receiver := []byte("receiver")
 
-	mockBlockchainHook := world.NewMock()
-	mockBlockchainHook.AcctMap.PutAccount(&world.Account{
+	mockBlockchainHook := worldmock.NewMock()
+	mockBlockchainHook.AcctMap.PutAccount(&worldmock.Account{
 		Address: sender,
 		Nonce:   88,
 		Balance: big.NewInt(2000),
 	})
 
-	host := &mock.VmHostMock{}
+	host := &contextmock.VmHostMock{}
 	outputContext, _ := NewOutputContext(host)
 	blockchainContext, _ := NewBlockchainContext(host, mockBlockchainHook)
 
@@ -469,8 +469,8 @@ func TestOutputContext_Transfer_IsAccountPayable(t *testing.T) {
 	receiverPayable := make([]byte, 32)
 	receiverPayable[31] = 1
 
-	mockBlockchainHook := world.NewMock()
-	mockBlockchainHook.AcctMap.PutAccounts([]*world.Account{
+	mockBlockchainHook := worldmock.NewMock()
+	mockBlockchainHook.AcctMap.PutAccounts([]*worldmock.Account{
 		{
 			Address: sender,
 			Nonce:   0,
@@ -493,7 +493,7 @@ func TestOutputContext_Transfer_IsAccountPayable(t *testing.T) {
 		},
 	})
 
-	host := &mock.VmHostMock{}
+	host := &contextmock.VmHostMock{}
 	oc, _ := NewOutputContext(host)
 	bc, _ := NewBlockchainContext(host, mockBlockchainHook)
 
@@ -519,8 +519,8 @@ func TestOutputContext_Transfer_IsAccountPayable(t *testing.T) {
 func TestOutputContext_WriteLog(t *testing.T) {
 	t.Parallel()
 
-	host := &mock.VmHostMock{
-		RuntimeContext: &mock.RuntimeContextMock{},
+	host := &contextmock.VmHostMock{
+		RuntimeContext: &contextmock.RuntimeContextMock{},
 	}
 	outputContext, _ := NewOutputContext(host)
 
@@ -552,7 +552,7 @@ func TestOutputContext_WriteLog(t *testing.T) {
 func TestOutputContext_PopSetActiveStateIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	t.Parallel()
 
-	bigIntContext, _ := NewOutputContext(&mock.VmHostMock{})
+	bigIntContext, _ := NewOutputContext(&contextmock.VmHostMock{})
 	bigIntContext.PopSetActiveState()
 
 	require.Equal(t, 0, len(bigIntContext.stateStack))
@@ -561,7 +561,7 @@ func TestOutputContext_PopSetActiveStateIfStackIsEmptyShouldNotPanic(t *testing.
 func TestOutputContext_PopMergeActiveStateIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	t.Parallel()
 
-	bigIntContext, _ := NewOutputContext(&mock.VmHostMock{})
+	bigIntContext, _ := NewOutputContext(&contextmock.VmHostMock{})
 	bigIntContext.PopMergeActiveState()
 
 	require.Equal(t, 0, len(bigIntContext.stateStack))
@@ -570,7 +570,7 @@ func TestOutputContext_PopMergeActiveStateIfStackIsEmptyShouldNotPanic(t *testin
 func TestOutputContext_PopDiscardIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	t.Parallel()
 
-	bigIntContext, _ := NewOutputContext(&mock.VmHostMock{})
+	bigIntContext, _ := NewOutputContext(&contextmock.VmHostMock{})
 	bigIntContext.PopDiscard()
 
 	require.Equal(t, 0, len(bigIntContext.stateStack))
