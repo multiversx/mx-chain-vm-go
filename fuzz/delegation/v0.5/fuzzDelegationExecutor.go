@@ -12,10 +12,10 @@ import (
 
 	am "github.com/ElrondNetwork/arwen-wasm-vm/arwenmandos"
 	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
-	fr "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/fileresolver"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/model"
-	mjparse "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/parse"
-	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/write"
+	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/fileresolver"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
+	mjparse "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/parse"
+	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/write"
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
 )

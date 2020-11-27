@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/model"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
 )
 
 func checkAccounts(

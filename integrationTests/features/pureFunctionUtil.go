@@ -11,7 +11,7 @@ import (
 	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/model"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"

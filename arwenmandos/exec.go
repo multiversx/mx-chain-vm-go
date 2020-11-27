@@ -5,8 +5,8 @@ import (
 	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
-	mc "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/controller"
-	fr "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/fileresolver"
+	mc "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/controller"
+	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/fileresolver"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
