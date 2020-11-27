@@ -132,6 +132,10 @@ func (context *asyncContext) SetGroupCallback(groupID string, callbackName strin
 		return arwen.ErrAsyncCallGroupDoesNotExist
 	}
 
+	if group.IsComplete() {
+		return arwen.ErrAsyncCallGroupAlreadyComplete
+	}
+
 	err := context.host.Runtime().ValidateCallbackName(callbackName)
 	if err != nil {
 		return err
@@ -217,6 +221,11 @@ func (context *asyncContext) isValidCallbackName(callback string) bool {
 		return false
 	}
 	if context.host.IsBuiltinFunctionName(callback) {
+		return false
+	}
+
+	err := context.host.Runtime().ValidateCallbackName(callback)
+	if err != nil {
 		return false
 	}
 
