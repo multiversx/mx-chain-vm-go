@@ -26,6 +26,8 @@ type BlockchainHookMock struct {
 	NewAddressMocks              []*NewAddressMock
 	StateRootHash                []byte
 	Err                          error
+	LastCreatedContractAddress   []byte
+	CompiledCode                 map[string][]byte
 }
 
 // NewMock creates a new mock instance
@@ -37,6 +39,7 @@ func NewMock() *BlockchainHookMock {
 		Blockhashes:                  nil,
 		mockAddressGenerationEnabled: false,
 		NewAddressMocks:              nil,
+		CompiledCode:                 make(map[string][]byte),
 	}
 }
 
@@ -47,6 +50,7 @@ func (b *BlockchainHookMock) Clear() {
 	b.CurrentBlockInfo = nil
 	b.Blockhashes = nil
 	b.NewAddressMocks = nil
+	b.CompiledCode = make(map[string][]byte)
 }
 
 // EnableMockAddressGeneration causes the mock to generate its own new addresses.

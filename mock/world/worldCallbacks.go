@@ -24,23 +24,15 @@ func (b *BlockchainHookMock) NewAddress(creatorAddress []byte, creatorNonce uint
 	// explicit new address mocks
 	for _, newAddressMock := range b.NewAddressMocks {
 		if bytes.Equal(creatorAddress, newAddressMock.CreatorAddress) && creatorNonce == newAddressMock.CreatorNonce {
+			b.LastCreatedContractAddress = newAddressMock.NewAddress
 			return newAddressMock.NewAddress, nil
 		}
 	}
 
 	// a simple mock algorithm
 	if b.mockAddressGenerationEnabled {
-		result := make([]byte, 32)
-		result[10] = 0x11
-		result[11] = 0x11
-		result[12] = 0x11
-		result[13] = 0x11
-		copy(result[14:29], creatorAddress)
-
-		result[29] = byte(creatorNonce)
-
-		copy(result[30:], creatorAddress[30:])
-
+		result := GenerateMockAddress(creatorAddress, creatorNonce)
+		b.LastCreatedContractAddress = result
 		return result, nil
 	}
 	// empty byte array signals not implemented, fallback to default
@@ -186,9 +178,13 @@ func (b *BlockchainHookMock) GetBuiltinFunctionNames() vmcommon.FunctionNames {
 	return make(vmcommon.FunctionNames)
 }
 
-// GetAllState -
-func (b *BlockchainHookMock) GetAllState(_ []byte) (map[string][]byte, error) {
-	return make(map[string][]byte), nil
+// GetAllState simply returns the storage as-is.
+func (b *BlockchainHookMock) GetAllState(accountAddress []byte) (map[string][]byte, error) {
+	account := b.AcctMap.GetAccount(accountAddress)
+	if account == nil {
+		return nil, fmt.Errorf("account not found: %s", hex.EncodeToString(accountAddress))
+	}
+	return account.Storage, nil
 }
 
 // GetUserAccount retrieves account info from map, or error if not found.
@@ -240,14 +236,17 @@ func (b *BlockchainHookMock) IsPayable(address []byte) (bool, error) {
 	return metadata.Payable, nil
 }
 
-func (b *BlockchainHookMock) SaveCompiledCode(_ []byte, _ []byte) {
+func (b *BlockchainHookMock) SaveCompiledCode(codeHash []byte, code []byte) {
+	b.CompiledCode[string(codeHash)] = code
 }
 
-func (b *BlockchainHookMock) GetCompiledCode(_ []byte) (bool, []byte) {
-	return false, nil
+func (b *BlockchainHookMock) GetCompiledCode(codeHash []byte) (bool, []byte) {
+	code, found := b.CompiledCode[string(codeHash)]
+	return found, code
 }
 
 func (b *BlockchainHookMock) ClearCompiledCodes() {
+	b.CompiledCode = make(map[string][]byte)
 }
 
 // IsInterfaceNil returns true if underlying implementation is nil

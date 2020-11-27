@@ -4,7 +4,7 @@ import (
 	"math/big"
 )
 
-// AccountMock holds the account info
+// AccountMock is used with the blockchain stub in arwen context tests.
 type AccountMock struct {
 	Address      []byte
 	Nonce        uint64
