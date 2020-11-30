@@ -111,13 +111,15 @@ func resultToOJ(res *mj.TransactionResult) oj.OJsonObject {
 	if !res.Message.IsDefault() {
 		resultOJ.Put("message", checkBytesToOJ(res.Message))
 	}
-	if res.IgnoreLogs {
-		resultOJ.Put("logs", stringToOJ("*"))
-	} else {
-		if len(res.LogHash) > 0 {
-			resultOJ.Put("logs", stringToOJ(res.LogHash))
+	if !res.LogsUnspecified {
+		if res.LogsStar {
+			resultOJ.Put("logs", stringToOJ("*"))
 		} else {
-			resultOJ.Put("logs", logsToOJ(res.Logs))
+			if len(res.LogHash) > 0 {
+				resultOJ.Put("logs", stringToOJ(res.LogHash))
+			} else {
+				resultOJ.Put("logs", logsToOJ(res.Logs))
+			}
 		}
 	}
 	if !res.Gas.IsDefault() {

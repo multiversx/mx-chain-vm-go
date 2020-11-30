@@ -169,6 +169,24 @@
             }
         },
         {
+            "step": "scCall",
+            "txId": "1c",
+            "comment": "without logs",
+            "tx": {
+                "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
+                "to": "0x1000000000000000000000000000000000000000000000000000000000000000",
+                "value": "0x00",
+                "function": "someFunctionName",
+                "arguments": [],
+                "gasLimit": "0x100000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": ""
+            }
+        },
+        {
             "step": "scDeploy",
             "txId": "2",
             "comment": "another",

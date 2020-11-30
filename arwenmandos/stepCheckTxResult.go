@@ -59,7 +59,7 @@ func checkTxResults(
 	}
 
 	// "logs": "*" means any value is accepted, log check ignored
-	if blResult.IgnoreLogs {
+	if blResult.LogsStar {
 		return nil
 	}
 
