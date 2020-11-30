@@ -131,13 +131,9 @@ type AsyncContext interface {
 
 	InitStateFromInput(input *vmcommon.ContractCallInput)
 	AddCall(groupID string, call *AsyncCall) error
-	AddCallGroup(group *AsyncCallGroup) error
 	HasPendingCallGroups() bool
 	IsComplete() bool
-	FindCall(destination []byte) (string, int, error)
 	GetCallGroup(groupID string) (*AsyncCallGroup, bool)
-	DeleteCallGroupByID(groupID string)
-	DeleteCallGroup(index int)
 	SetCaller(caller []byte)
 	SetGasPrice(gasPrice uint64)
 	SetGroupCallback(groupID string, callbackName string, data []byte, gas uint64) error
@@ -233,5 +229,5 @@ type AsyncCallHandler interface {
 	GetData() []byte
 	GetGasLimit() uint64
 	GetGasLocked() uint64
-	GetValueBytes() []byte
+	GetValue() []byte
 }

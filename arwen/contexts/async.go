@@ -21,7 +21,7 @@ type asyncContext struct {
 	AsyncCallGroups []*arwen.AsyncCallGroup
 }
 
-// NewAsyncContext creates a new asyncContext
+// NewAsyncContext creates a new asyncContext.
 func NewAsyncContext(host arwen.VMHost) *asyncContext {
 	return &asyncContext{
 		host:            host,
@@ -32,26 +32,33 @@ func NewAsyncContext(host arwen.VMHost) *asyncContext {
 	}
 }
 
+// InitState initializes the internal state of the AsyncContext.
 func (context *asyncContext) InitState() {
 	context.CallerAddr = make([]byte, 0)
 	context.ReturnData = make([]byte, 0)
 	context.AsyncCallGroups = make([]*arwen.AsyncCallGroup, 0)
 }
 
+// InitStateFromInput initializes the internal state of the AsyncContext with
+// information provided by a ContractCallInput.
 func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInput) {
 	context.InitState()
 	context.SetCaller(input.CallerAddr)
 	context.SetGasPrice(input.GasPrice)
 }
 
+// SetCaller sets the address of the original caller.
 func (context *asyncContext) SetCaller(caller []byte) {
 	context.CallerAddr = caller
 }
 
+// SetGasPrice sets the gas price.
 func (context *asyncContext) SetGasPrice(gasPrice uint64) {
 	context.GasPrice = gasPrice
 }
 
+// PushState creates a deep clone of the internal state and pushes it onto the
+// internal state stack.
 func (context *asyncContext) PushState() {
 	newState := &asyncContext{
 		CallerAddr:      context.CallerAddr,
@@ -74,9 +81,12 @@ func (context *asyncContext) cloneCallGroups() []*arwen.AsyncCallGroup {
 	return clonedGroups
 }
 
+// PopDiscard is a no-operation for the AsyncContext.
 func (context *asyncContext) PopDiscard() {
 }
 
+// PopSetActiveState pops the state found at the top of the internal state
+// stack and sets it as the 'active' state of the AsyncContext.
 func (context *asyncContext) PopSetActiveState() {
 	stateStackLen := len(context.stateStack)
 	if stateStackLen == 0 {
@@ -92,21 +102,26 @@ func (context *asyncContext) PopSetActiveState() {
 	context.AsyncCallGroups = prevState.AsyncCallGroups
 }
 
+// PopMergeActiveState is a no-operation for the AsyncContext.
 func (context *asyncContext) PopMergeActiveState() {
 }
 
+// ClearStateStack deletes all the states stored on the internal state stack.
 func (context *asyncContext) ClearStateStack() {
 	context.stateStack = make([]*asyncContext, 0)
 }
 
+// GetCallerAddress returns the address of the original caller.
 func (context *asyncContext) GetCallerAddress() []byte {
 	return context.CallerAddr
 }
 
+// GetReturnData returns the data to be sent back to the original caller.
 func (context *asyncContext) GetReturnData() []byte {
 	return context.ReturnData
 }
 
+// GetCallGroup retrieves an AsyncCallGroup by its ID.
 func (context *asyncContext) GetCallGroup(groupID string) (*arwen.AsyncCallGroup, bool) {
 	index, ok := context.findGroupByID(groupID)
 	if ok {
@@ -115,7 +130,8 @@ func (context *asyncContext) GetCallGroup(groupID string) (*arwen.AsyncCallGroup
 	return nil, false
 }
 
-func (context *asyncContext) AddCallGroup(group *arwen.AsyncCallGroup) error {
+// addCallGroup adds the provided AsyncCallGroup to the AsyncContext, if it does not exist already.
+func (context *asyncContext) addCallGroup(group *arwen.AsyncCallGroup) error {
 	_, exists := context.findGroupByID(group.Identifier)
 	if exists {
 		return arwen.ErrAsyncCallGroupExistsAlready
@@ -125,6 +141,7 @@ func (context *asyncContext) AddCallGroup(group *arwen.AsyncCallGroup) error {
 	return nil
 }
 
+// SetGroupCallback registers the name of the callback method to be called upon the completion of the specified AsyncCallGroup.
 func (context *asyncContext) SetGroupCallback(groupID string, callbackName string, data []byte, gas uint64) error {
 	group, exists := context.GetCallGroup(groupID)
 	if !exists {
@@ -150,16 +167,16 @@ func (context *asyncContext) SetGroupCallback(groupID string, callbackName strin
 	return nil
 }
 
-func (context *asyncContext) DeleteCallGroupByID(groupID string) {
+func (context *asyncContext) deleteCallGroupByID(groupID string) {
 	index, ok := context.findGroupByID(groupID)
 	if !ok {
 		return
 	}
 
-	context.DeleteCallGroup(index)
+	context.deleteCallGroup(index)
 }
 
-func (context *asyncContext) DeleteCallGroup(index int) {
+func (context *asyncContext) deleteCallGroup(index int) {
 	groups := context.AsyncCallGroups
 	if len(groups) == 0 {
 		return
@@ -175,6 +192,7 @@ func (context *asyncContext) DeleteCallGroup(index int) {
 	context.AsyncCallGroups = groups
 }
 
+// AddCall adds the provided AsyncCall to the specified AsyncCallGroup
 func (context *asyncContext) AddCall(groupID string, call *arwen.AsyncCall) error {
 	if context.host.IsBuiltinFunctionName(call.SuccessCallback) {
 		return arwen.ErrCannotUseBuiltinAsCallback
@@ -186,7 +204,10 @@ func (context *asyncContext) AddCall(groupID string, call *arwen.AsyncCall) erro
 	group, ok := context.GetCallGroup(groupID)
 	if !ok {
 		group = arwen.NewAsyncCallGroup(groupID)
-		context.AddCallGroup(group)
+		err := context.addCallGroup(group)
+		if err != nil {
+			return err
+		}
 	}
 
 	// TODO lock gas for callback
@@ -213,7 +234,7 @@ func (context *asyncContext) isValidCallbackName(callback string) bool {
 	return true
 }
 
-func (context *asyncContext) FindCall(destination []byte) (string, int, error) {
+func (context *asyncContext) findCall(destination []byte) (string, int, error) {
 	for _, group := range context.AsyncCallGroups {
 		callIndex, ok := group.FindByDestination(destination)
 		if ok {
@@ -224,6 +245,9 @@ func (context *asyncContext) FindCall(destination []byte) (string, int, error) {
 	return "", -1, arwen.ErrAsyncCallNotFound
 }
 
+// UpdateCurrentCallStatus detects the AsyncCall returning as callback,
+// extracts the ReturnCode from data provided by the destination call, and updates
+// the status of the AsyncCall with its value.
 func (context *asyncContext) UpdateCurrentCallStatus() (*arwen.AsyncCall, error) {
 	vmInput := context.host.Runtime().GetVMInput()
 	if vmInput.CallType != vmcommon.AsynchronousCallBack {
@@ -237,7 +261,7 @@ func (context *asyncContext) UpdateCurrentCallStatus() (*arwen.AsyncCall, error)
 	// The first argument of the callback is the return code of the destination call
 	destReturnCode := big.NewInt(0).SetBytes(vmInput.Arguments[0]).Uint64()
 
-	groupID, index, err := context.FindCall(vmInput.CallerAddr)
+	groupID, index, err := context.findCall(vmInput.CallerAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -259,7 +283,7 @@ func (context *asyncContext) PrepareLegacyAsyncCall(address []byte, data []byte,
 		return arwen.ErrOnlyOneLegacyAsyncCallAllowed
 	}
 
-	gasToLock, err := context.prepareGasForAsyncCall()
+	gasToLock, err := context.prepareGasForLegacyAsyncCall()
 	if err != nil {
 		return err
 	}
@@ -341,7 +365,7 @@ func (context *asyncContext) Execute() error {
 		}
 	}
 
-	context.DeleteCallGroupByID(arwen.LegacyAsyncCallGroupID)
+	context.deleteCallGroupByID(arwen.LegacyAsyncCallGroupID)
 
 	err = context.Save()
 	if err != nil {
@@ -351,47 +375,18 @@ func (context *asyncContext) Execute() error {
 	return nil
 }
 
-// executeAsyncCall executes asynchronous cross-shard calls to built-in
-// functions and contracts
 func (context *asyncContext) executeAsyncCall(asyncCall *arwen.AsyncCall) error {
-	if asyncCall.ExecutionMode == arwen.AsyncUnknown {
-		return context.sendAsyncCallCrossShard(asyncCall)
-	}
-
 	if asyncCall.ExecutionMode == arwen.AsyncBuiltinFunc {
-		// Built-in functions will handle cross-shard calls themselves, by
-		// generating entries in vmOutput.OutputAccounts, but they need to be
-		// executed synchronously to do that. It is not necessary to call
-		// sendAsyncCallCrossShard(). The vmOutput produced by the built-in
-		// function, containing the cross-shard call, has ALREADY been merged into
-		// the main output by the inner call to host.ExecuteOnDestContext().  The
-		// status of the AsyncCall is not updated here - it will be updated by
-		// PostprocessCrossShardCallback(), when the cross-shard call returns.
-		destinationCallInput, err := context.createSyncCallInput(asyncCall)
+		err := context.executeSyncHalfOfBuiltinFunction(asyncCall)
 		if err != nil {
 			return err
 		}
-
-		vmOutput, err := context.host.ExecuteOnDestContext(destinationCallInput)
-		if err != nil {
-			return err
-		}
-
-		// If the synchronous half of the built-in function call has failed, go no
-		// further and execute the error callback of this AsyncCall.
-		if vmOutput.ReturnCode != vmcommon.Ok {
-			asyncCall.UpdateStatus(vmOutput.ReturnCode)
-			callbackVMOutput, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, err)
-			context.finishSyncExecution(callbackVMOutput, callbackErr)
-		}
-
-		return nil
 	}
 
-	return nil
+	return context.sendAsyncCallCrossShard(asyncCall)
 }
 
-func (context *asyncContext) prepareGasForAsyncCall() (uint64, error) {
+func (context *asyncContext) prepareGasForLegacyAsyncCall() (uint64, error) {
 	metering := context.host.Metering()
 	err := metering.UseGasForAsyncStep()
 	if err != nil {
@@ -420,13 +415,11 @@ func (context *asyncContext) prepareGasForAsyncCall() (uint64, error) {
 	return gasToLock, nil
 }
 
-/**
- * postprocessCrossShardCallback() is called by host.callSCMethod() after it
- * has locally executed the callback of a returning cross-shard AsyncCall,
- * which means that the AsyncContext corresponding to the original transaction
- * must be loaded from storage, and then the corresponding AsyncCall must be
- * deleted from the current AsyncContext.
- */
+// PostprocessCrossShardCallback() is called by host.callSCMethod() after it
+// has locally executed the callback of a returning cross-shard AsyncCall,
+// which means that the AsyncContext corresponding to the original transaction
+// must be loaded from storage, and then the corresponding AsyncCall must be
+// deleted from the current AsyncContext.
 func (context *asyncContext) PostprocessCrossShardCallback() error {
 	runtime := context.host.Runtime()
 	if runtime.Function() == arwen.CallbackFunctionName {
@@ -437,7 +430,7 @@ func (context *asyncContext) PostprocessCrossShardCallback() error {
 	// TODO FindAsyncCallByDestination() only returns the first matched AsyncCall
 	// by destination, but there could be multiple matches in an AsyncContext.
 	vmInput := runtime.GetVMInput()
-	currentGroupID, asyncCallIndex, err := context.FindCall(vmInput.CallerAddr)
+	currentGroupID, asyncCallIndex, err := context.findCall(vmInput.CallerAddr)
 	if err != nil {
 		return err
 	}
@@ -455,7 +448,7 @@ func (context *asyncContext) PostprocessCrossShardCallback() error {
 	// The current group expects no more callbacks, so its own callback can be
 	// executed now.
 	context.executeCallGroupCallback(currentCallGroup)
-	context.DeleteCallGroupByID(currentGroupID)
+	context.deleteCallGroupByID(currentGroupID)
 	// Are we still waiting for callbacks to return?
 	if context.HasPendingCallGroups() {
 		return nil
@@ -471,14 +464,17 @@ func (context *asyncContext) PostprocessCrossShardCallback() error {
 	return context.executeContextCallback()
 }
 
+// HasPendingCallGroups returns true if the AsyncContext still contains AsyncCallGroup.
 func (context *asyncContext) HasPendingCallGroups() bool {
 	return len(context.AsyncCallGroups) > 0
 }
 
+// IsComplete returns true if there are no more AsyncCallGroups contained in the AsyncContext.
 func (context *asyncContext) IsComplete() bool {
 	return len(context.AsyncCallGroups) == 0
 }
 
+// Save serializes and saves the AsyncContext to the storage of the contract, under a protected key.
 func (context *asyncContext) Save() error {
 	if len(context.AsyncCallGroups) == 0 {
 		return nil
@@ -501,6 +497,7 @@ func (context *asyncContext) Save() error {
 	return nil
 }
 
+// Load restores the internal state of the AsyncContext from the storage of the contract.
 func (context *asyncContext) Load() error {
 	runtime := context.host.Runtime()
 	storage := context.host.Storage()
@@ -523,6 +520,7 @@ func (context *asyncContext) Load() error {
 	return nil
 }
 
+// Delete deletes the persisted state of the AsyncContext from the contract storage.
 func (context *asyncContext) Delete() error {
 	runtime := context.host.Runtime()
 	storage := context.host.Storage()
@@ -617,7 +615,7 @@ func (context *asyncContext) sendAsyncCallCrossShard(asyncCall arwen.AsyncCallHa
 		runtime.GetSCAddress(),
 		asyncCall.GetGasLimit(),
 		asyncCall.GetGasLocked(),
-		big.NewInt(0).SetBytes(asyncCall.GetValueBytes()),
+		big.NewInt(0).SetBytes(asyncCall.GetValue()),
 		asyncCall.GetData(),
 		vmcommon.AsynchronousCall,
 	)
@@ -645,10 +643,7 @@ func (context *asyncContext) executeContextCallback() error {
 	}
 
 	// The caller is in the same shard, execute its callback
-	callbackCallInput := context.createSyncContextCallbackInput()
-
-	callbackVMOutput, callBackErr := context.host.ExecuteOnDestContext(callbackCallInput)
-	context.finishSyncExecution(callbackVMOutput, callBackErr)
+	context.executeSyncContextCallback()
 
 	return nil
 }
