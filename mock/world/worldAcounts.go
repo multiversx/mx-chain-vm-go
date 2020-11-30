@@ -22,6 +22,13 @@ type Account struct {
 	Username        []byte
 	ShardID         uint32
 	IsSmartContract bool
+	ESDTData        map[string]ESDTData
+}
+
+// ESDTData models an account holding an ESDT token
+type ESDTData struct {
+	Balance *big.Int
+	Frozen  bool
 }
 
 var storageDefaultValue = []byte{}
@@ -128,7 +135,7 @@ func (a *Account) GetOwnerAddress() []byte {
 	return a.OwnerAddress
 }
 
-// GetOwnerAddress -
+// GetUserName -
 func (a *Account) GetUserName() []byte {
 	return a.Username
 }

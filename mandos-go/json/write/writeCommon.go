@@ -22,6 +22,20 @@ func accountsToOJ(accounts []*mj.Account) oj.OJsonObject {
 			storageOJ.Put(bytesFromStringToString(st.Key), bytesFromTreeToOJ(st.Value))
 		}
 		acctOJ.Put("storage", storageOJ)
+		esdtOJ := oj.NewMap()
+		for _, esdtItem := range account.ESDTData {
+			if len(esdtItem.Frozen.Original) == 0 {
+				esdtOJ.Put(bytesFromStringToString(esdtItem.Ticker), bigIntToOJ(esdtItem.Balance))
+			} else {
+				esdtItemOJ := oj.NewMap()
+				esdtItemOJ.Put("balance", bigIntToOJ(esdtItem.Balance))
+				esdtItemOJ.Put("frozen", uint64ToOJ(esdtItem.Frozen))
+				esdtOJ.Put(bytesFromStringToString(esdtItem.Ticker), esdtItemOJ)
+			}
+		}
+		if esdtOJ.Size() > 0 {
+			acctOJ.Put("esdt", esdtOJ)
+		}
 		acctOJ.Put("code", bytesFromStringToOJ(account.Code))
 		if len(account.AsyncCallData) > 0 {
 			acctOJ.Put("asyncCallData", stringToOJ(account.AsyncCallData))
