@@ -26,14 +26,14 @@ func (context *asyncContext) executeSynchronousCalls() error {
 		// then the AsyncCallGroup can have its callback executed.
 		if group.IsComplete() {
 			context.executeCallGroupCallback(group)
-			context.DeleteCallGroup(groupIndex)
+			context.deleteCallGroup(groupIndex)
 		}
 	}
 	return nil
 }
 
 func (context *asyncContext) executeSyncCall(asyncCall *arwen.AsyncCall) error {
-	destinationCallInput, err := context.createSyncCallInput(asyncCall)
+	destinationCallInput, err := context.createContractCallInput(asyncCall)
 	if err != nil {
 		return err
 	}
@@ -80,6 +80,47 @@ func (context *asyncContext) executeCallGroupCallback(group *arwen.AsyncCallGrou
 	context.finishSyncExecution(vmOutput, err)
 }
 
+// executeSyncHalfOfBuiltinFunction will synchronously call the requested
+// built-in function. This is required for all cross-shard calls to built-in
+// functions, because they will handle cross-shard calls themselves, by
+// generating entries in vmOutput.OutputAccounts, and they need to be executed
+// synchronously to do that. As a consequence, it is not necessary to call
+// sendAsyncCallCrossShard(). The vmOutput produced by the built-in function,
+// containing the cross-shard call, has ALREADY been merged into the main
+// output by the inner call to host.ExecuteOnDestContext(). Moreover, the
+// status of the AsyncCall is not updated here - it will be updated by
+// PostprocessCrossShardCallback(), when the cross-shard call returns.
+func (context *asyncContext) executeSyncHalfOfBuiltinFunction(asyncCall *arwen.AsyncCall) error {
+	destinationCallInput, err := context.createContractCallInput(asyncCall)
+	if err != nil {
+		return err
+	}
+
+	vmOutput, err := context.host.ExecuteOnDestContext(destinationCallInput)
+	if err != nil {
+		return err
+	}
+
+	// If the synchronous half of the built-in function call has failed, go no
+	// further and execute the error callback of this AsyncCall.
+	if vmOutput.ReturnCode != vmcommon.Ok {
+		asyncCall.UpdateStatus(vmOutput.ReturnCode)
+		callbackVMOutput, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, err)
+		context.finishSyncExecution(callbackVMOutput, callbackErr)
+	}
+
+	return nil
+}
+
+// executeSyncContextCallback will execute the callback of the original caller
+// synchronously, already assuming the original caller is in the same shard
+func (context *asyncContext) executeSyncContextCallback() {
+	callbackCallInput := context.createContextCallbackInput()
+	callbackVMOutput, callBackErr := context.host.ExecuteOnDestContext(callbackCallInput)
+	context.finishSyncExecution(callbackVMOutput, callBackErr)
+}
+
+// TODO return values are never used by code that calls finishSyncExecution
 func (context *asyncContext) finishSyncExecution(vmOutput *vmcommon.VMOutput, err error) {
 	if err == nil {
 		return
@@ -95,12 +136,11 @@ func (context *asyncContext) finishSyncExecution(vmOutput *vmcommon.VMOutput, er
 	}
 
 	output.SetReturnMessage(vmOutput.ReturnMessage)
-
 	output.Finish([]byte(vmOutput.ReturnCode.String()))
 	output.Finish(runtime.GetCurrentTxHash())
 }
 
-func (context *asyncContext) createSyncCallInput(asyncCall arwen.AsyncCallHandler) (*vmcommon.ContractCallInput, error) {
+func (context *asyncContext) createContractCallInput(asyncCall arwen.AsyncCallHandler) (*vmcommon.ContractCallInput, error) {
 	host := context.host
 	runtime := host.Runtime()
 	sender := runtime.GetSCAddress()
@@ -121,7 +161,7 @@ func (context *asyncContext) createSyncCallInput(asyncCall arwen.AsyncCallHandle
 		VMInput: vmcommon.VMInput{
 			CallerAddr:     sender,
 			Arguments:      arguments,
-			CallValue:      big.NewInt(0).SetBytes(asyncCall.GetValueBytes()),
+			CallValue:      big.NewInt(0).SetBytes(asyncCall.GetValue()),
 			CallType:       vmcommon.AsynchronousCall,
 			GasPrice:       runtime.GetVMInput().GasPrice,
 			GasProvided:    gasLimit,
@@ -210,7 +250,7 @@ func (context *asyncContext) createGroupCallbackInput(group *arwen.AsyncCallGrou
 	return input
 }
 
-func (context *asyncContext) createSyncContextCallbackInput() *vmcommon.ContractCallInput {
+func (context *asyncContext) createContextCallbackInput() *vmcommon.ContractCallInput {
 	host := context.host
 	runtime := host.Runtime()
 	metering := host.Metering()
@@ -235,8 +275,7 @@ func (context *asyncContext) createSyncContextCallbackInput() *vmcommon.Contract
 		},
 		RecipientAddr: context.callerAddr,
 
-		// TODO this come from the serialized AsyncContext stored by the original
-		// caller
+		// TODO Function is not actually necessary, because the original caller will decide the appropriate callback function
 		Function: arwen.CallbackFunctionName,
 	}
 	return input

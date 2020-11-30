@@ -291,7 +291,6 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) erro
 		return err
 	}
 
-	// err = host.Async().Execute()
 	host.finishExecuteOnSameContext(gasUsed, err)
 	return nil
 }

@@ -23,6 +23,7 @@ func NewAsyncCallGroup(identifier string) *AsyncCallGroup {
 	}
 }
 
+// Clone creates a deep clone of the AsyncCallGroup
 func (acg *AsyncCallGroup) Clone() *AsyncCallGroup {
 	callCount := len(acg.AsyncCalls)
 	clone := &AsyncCallGroup{

@@ -18,6 +18,7 @@ type AsyncCall struct {
 	ProvidedGas uint64
 }
 
+// Clone creates a deep clone of the AsyncCall
 func (ac *AsyncCall) Clone() *AsyncCall {
 	clone := &AsyncCall{
 		Status:          ac.Status,
@@ -59,8 +60,8 @@ func (ac *AsyncCall) GetGasLocked() uint64 {
 	return ac.GasLocked
 }
 
-// GetValueBytes returns the byte representation of the value of the async call
-func (ac *AsyncCall) GetValueBytes() []byte {
+// GetValue returns the byte representation of the value of the async call
+func (ac *AsyncCall) GetValue() []byte {
 	return ac.ValueBytes
 }
 

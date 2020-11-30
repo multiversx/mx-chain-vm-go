@@ -524,6 +524,7 @@ func (context *runtimeContext) VerifyContractCode() error {
 	return nil
 }
 
+// ValidateCallbackName verifies whether the provided function name may be used as AsyncCall callback
 func (context *runtimeContext) ValidateCallbackName(callbackName string) error {
 	if callbackName == arwen.InitFunctionName {
 		return arwen.ErrInvalidFunctionName
