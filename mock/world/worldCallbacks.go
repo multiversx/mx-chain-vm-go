@@ -163,13 +163,6 @@ func (b *BlockchainHookMock) ProcessBuiltInFunction(input *vmcommon.ContractCall
 		return nil, b.Err
 	}
 
-	// outPutAccounts := make(map[string]*vmcommon.OutputAccount)
-	// outPutAccounts[string(input.CallerAddr)] = &vmcommon.OutputAccount{BalanceDelta: b.Value}
-
-	// return &vmcommon.VMOutput{
-	// 	GasRemaining:   b.Gas,
-	// 	OutputAccounts: outPutAccounts,
-	// }, nil
 	return &vmcommon.VMOutput{}, nil
 }
 
