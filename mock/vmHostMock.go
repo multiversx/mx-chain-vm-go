@@ -26,6 +26,12 @@ type VmHostMock struct {
 
 	SCAPIMethods  *wasmer.Imports
 	IsBuiltinFunc bool
+
+	StoredInputs []*vmcommon.ContractCallInput
+
+	VMOutputQueue    []*vmcommon.VMOutput
+	VMOutputToReturn int
+	Err              error
 }
 
 func (host *VmHostMock) Crypto() crypto.VMCrypto {
@@ -77,15 +83,19 @@ func (host *VmHostMock) IsDynamicGasLockingEnabled() bool {
 }
 
 func (host *VmHostMock) CreateNewContract(_ *vmcommon.ContractCreateInput) ([]byte, error) {
-	return nil, nil
+	return nil, host.Err
 }
 
 func (host *VmHostMock) ExecuteOnSameContext(input *vmcommon.ContractCallInput) error {
-	return nil
+	return host.Err
 }
 
 func (host *VmHostMock) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
-	return nil, nil
+	if host.Err != nil {
+		return nil, host.Err
+	}
+	host.StoreInput(input)
+	return host.GetVMOutputFromQueue(), nil
 }
 
 func (host *VmHostMock) EthereumCallData() []byte {
@@ -114,4 +124,32 @@ func (host *VmHostMock) GetProtocolBuiltinFunctions() vmcommon.FunctionNames {
 
 func (host *VmHostMock) IsBuiltinFunctionName(_ string) bool {
 	return host.IsBuiltinFunc
+}
+
+func (host *VmHostMock) StoreInput(input *vmcommon.ContractCallInput) {
+	if host.StoredInputs == nil {
+		host.StoredInputs = make([]*vmcommon.ContractCallInput, 0)
+	}
+	host.StoredInputs = append(host.StoredInputs, input)
+}
+
+func (host *VmHostMock) EnqueueVMOutput(vmOutput *vmcommon.VMOutput) {
+	if host.VMOutputQueue == nil {
+		host.VMOutputQueue = make([]*vmcommon.VMOutput, 1)
+		host.VMOutputQueue[0] = vmOutput
+		host.VMOutputToReturn = 0
+		return
+	}
+
+	host.VMOutputQueue = append(host.VMOutputQueue, vmOutput)
+}
+
+func (host *VmHostMock) GetVMOutputFromQueue() *vmcommon.VMOutput {
+	if host.VMOutputToReturn >= len(host.VMOutputQueue) {
+		return nil
+	}
+
+	vmOutput := host.VMOutputQueue[host.VMOutputToReturn]
+	host.VMOutputToReturn += 1
+	return vmOutput
 }

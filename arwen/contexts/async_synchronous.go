@@ -56,7 +56,7 @@ func (context *asyncContext) executeSyncCallback(
 	err error,
 ) (*vmcommon.VMOutput, error) {
 
-	callbackInput, err := context.createSyncCallbackInput(asyncCall, vmOutput, err)
+	callbackInput, err := context.createCallbackInput(asyncCall, vmOutput, err)
 	if err != nil {
 		return nil, err
 	}
@@ -176,7 +176,7 @@ func (context *asyncContext) createContractCallInput(asyncCall arwen.AsyncCallHa
 	return contractCallInput, nil
 }
 
-func (context *asyncContext) createSyncCallbackInput(
+func (context *asyncContext) createCallbackInput(
 	asyncCall *arwen.AsyncCall,
 	vmOutput *vmcommon.VMOutput,
 	destinationErr error,
@@ -185,9 +185,12 @@ func (context *asyncContext) createSyncCallbackInput(
 	runtime := context.host.Runtime()
 
 	// always provide return code as the first argument to callback function
-	arguments := [][]byte{
-		big.NewInt(int64(vmOutput.ReturnCode)).Bytes(),
+	retCodeBytes := big.NewInt(int64(vmOutput.ReturnCode)).Bytes()
+	if len(retCodeBytes) == 0 {
+		retCodeBytes = []byte{0}
 	}
+	arguments := [][]byte{retCodeBytes}
+
 	if destinationErr == nil {
 		// when execution went Ok, callBack arguments are:
 		// [0, result1, result2, ....]

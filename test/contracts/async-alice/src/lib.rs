@@ -8,6 +8,16 @@ use elrond_wasm_node::ArwenApiImpl;
 
 pub static EEI: ArwenApiImpl = ArwenApiImpl{};
 
+#[no_mangle]
+pub extern "C" fn no_async() {
+    EEI.finish_i64(42);
+}
+
+#[no_mangle]
+pub extern "C" fn one_async_call_no_cb() {
+
+}
+
 extern {
     fn createAsyncCall(
         groupIDOffset: *const u8, groupIDLength: i32,
@@ -45,15 +55,4 @@ pub fn create_async_call(
             gas
         )
     }
-}
-
-
-#[no_mangle]
-pub extern "C" fn no_async() {
-    EEI.finish_i64(42);
-}
-
-#[no_mangle]
-pub extern "C" fn one_async_call_no_cb() {
-
 }

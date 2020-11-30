@@ -15,14 +15,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "async-context-wasm"
-version = "0.0.0"
-dependencies = [
- "async-context",
- "elrond-wasm-output",
-]
-
-[[package]]
 name = "cfg-if"
 version = "0.1.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -56,16 +48,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a10e4831fee336a7550163faa12d906a3b6efc102ddacb6c7a4f273d59999780"
 dependencies = [
  "elrond-wasm",
-]
-
-[[package]]
-name = "elrond-wasm-output"
-version = "0.7.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4ce8e9986bec1b8c5ba296cc773f666b9decd5ad494e1fce73255bdee08e72aa"
-dependencies = [
- "elrond-wasm-node",
- "wee_alloc",
 ]
 
 [[package]]

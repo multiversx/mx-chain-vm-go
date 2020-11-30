@@ -85,6 +85,8 @@ var ErrAsyncCallGroupDoesNotExist = errors.New("async call group does not exist"
 
 var ErrAsyncCallGroupAlreadyComplete = errors.New("async call group already complete")
 
+var ErrOnlyOneAsyncCallAllowedToAddress = errors.New("only one async call allowed to an address")
+
 var ErrNilCallbackVMOutput = errors.New("nil callback VMOutput")
 
 var ErrAsyncCallNotFound = errors.New("async call not found")

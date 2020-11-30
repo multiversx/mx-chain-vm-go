@@ -2,6 +2,7 @@ package contexts
 
 import (
 	"encoding/json"
+	"errors"
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -197,6 +198,9 @@ func (context *asyncContext) deleteCallGroup(index int) {
 
 // AddCall adds the provided AsyncCall to the specified AsyncCallGroup
 func (context *asyncContext) AddCall(groupID string, call *arwen.AsyncCall) error {
+	if context.callExists(call.Destination) {
+		return arwen.ErrOnlyOneAsyncCallAllowedToAddress
+	}
 	if context.host.IsBuiltinFunctionName(call.SuccessCallback) {
 		return arwen.ErrCannotUseBuiltinAsCallback
 	}
@@ -240,6 +244,14 @@ func (context *asyncContext) isValidCallbackName(callback string) bool {
 		return false
 	}
 
+	return true
+}
+
+func (context *asyncContext) callExists(destination []byte) bool {
+	_, _, err := context.findCall(destination)
+	if errors.Is(err, arwen.ErrAsyncCallNotFound) {
+		return false
+	}
 	return true
 }
 
