@@ -18,6 +18,8 @@ var OriginalCaller = []byte("address_original_caller")
 var Alice = []byte("address_alice")
 var Bob = []byte("address_bob")
 
+const GasForAsyncStep = config.GasValueForTests
+
 func InitializeArwenAndWasmer_AsyncContext() (*mock.VmHostMock, *mock.BlockchainHookMock) {
 	imports := MakeAPIImports()
 	_ = wasmer.SetImports(imports)
@@ -402,15 +404,15 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 
 	// CallType == DirectCall, async.UpdateCurrentCallStatus() does nothing
 	host.Runtime().InitStateFromInput(vmInput)
-	call, err := async.UpdateCurrentCallStatus()
-	require.Nil(t, call)
+	asyncCall, err := async.UpdateCurrentCallStatus()
+	require.Nil(t, asyncCall)
 	require.Nil(t, err)
 
 	// CallType == AsynchronousCall, async.UpdateCurrentCallStatus() does nothing
 	vmInput.CallType = vmcommon.AsynchronousCall
 	host.Runtime().InitStateFromInput(vmInput)
-	call, err = async.UpdateCurrentCallStatus()
-	require.Nil(t, call)
+	asyncCall, err = async.UpdateCurrentCallStatus()
+	require.Nil(t, asyncCall)
 	require.Nil(t, err)
 
 	// CallType == AsynchronousCallback, but no AsyncCalls registered in the
@@ -418,8 +420,8 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	vmInput.CallType = vmcommon.AsynchronousCallBack
 	vmInput.Arguments = nil
 	host.Runtime().InitStateFromInput(vmInput)
-	call, err = async.UpdateCurrentCallStatus()
-	require.Nil(t, call)
+	asyncCall, err = async.UpdateCurrentCallStatus()
+	require.Nil(t, asyncCall)
 	require.True(t, errors.Is(err, arwen.ErrCannotInterpretCallbackArgs))
 
 	// CallType == AsynchronousCallback, but no AsyncCalls registered in the
@@ -427,8 +429,8 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	vmInput.CallType = vmcommon.AsynchronousCallBack
 	vmInput.Arguments = [][]byte{{0}}
 	host.Runtime().InitStateFromInput(vmInput)
-	call, err = async.UpdateCurrentCallStatus()
-	require.Nil(t, call)
+	asyncCall, err = async.UpdateCurrentCallStatus()
+	require.Nil(t, asyncCall)
 	require.True(t, errors.Is(err, arwen.ErrAsyncCallNotFound))
 
 	// CallType == AsynchronousCallback, and there is an AsyncCall registered,
@@ -442,8 +444,8 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	vmInput.CallType = vmcommon.AsynchronousCallBack
 	vmInput.Arguments = [][]byte{{0}}
 	host.Runtime().InitStateFromInput(vmInput)
-	call, err = async.UpdateCurrentCallStatus()
-	require.Nil(t, call)
+	asyncCall, err = async.UpdateCurrentCallStatus()
+	require.Nil(t, asyncCall)
 	require.True(t, errors.Is(err, arwen.ErrAsyncCallNotFound))
 
 	// CallType == AsynchronousCallback, but this time there is a corresponding AsyncCall
@@ -457,10 +459,10 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	vmInput.CallType = vmcommon.AsynchronousCallBack
 	vmInput.Arguments = [][]byte{{0}}
 	host.Runtime().InitStateFromInput(vmInput)
-	call, err = async.UpdateCurrentCallStatus()
+	asyncCall, err = async.UpdateCurrentCallStatus()
 	require.Nil(t, err)
-	require.NotNil(t, call)
-	require.Equal(t, arwen.AsyncCallResolved, call.Status)
+	require.NotNil(t, asyncCall)
+	require.Equal(t, arwen.AsyncCallResolved, asyncCall.Status)
 
 	// CallType == AsynchronousCallback, there is a corresponding AsyncCall
 	// registered, causing async.UpdateCurrentCallStatus() to find and update the
@@ -468,10 +470,10 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	vmInput.CallType = vmcommon.AsynchronousCallBack
 	vmInput.Arguments = [][]byte{{1}}
 	host.Runtime().InitStateFromInput(vmInput)
-	call, err = async.UpdateCurrentCallStatus()
+	asyncCall, err = async.UpdateCurrentCallStatus()
 	require.Nil(t, err)
-	require.NotNil(t, call)
-	require.Equal(t, arwen.AsyncCallRejected, call.Status)
+	require.NotNil(t, asyncCall)
+	require.Equal(t, arwen.AsyncCallRejected, asyncCall.Status)
 }
 
 func TestAsyncContext_SendAsyncCallCrossShard(t *testing.T) {
@@ -484,7 +486,7 @@ func TestAsyncContext_SendAsyncCallCrossShard(t *testing.T) {
 	host.Runtime().SetSCAddress([]byte("smartcontract"))
 	async := NewAsyncContext(host)
 
-	call := &arwen.AsyncCall{
+	asyncCall := &arwen.AsyncCall{
 		Destination: []byte("destination"),
 		GasLimit:    42,
 		GasLocked:   98,
@@ -492,7 +494,7 @@ func TestAsyncContext_SendAsyncCallCrossShard(t *testing.T) {
 		Data:        []byte("some_data"),
 	}
 
-	err := async.sendAsyncCallCrossShard(call)
+	err := async.sendAsyncCallCrossShard(asyncCall)
 	require.Nil(t, err)
 
 	vmOutput := host.Output().GetVMOutput()
@@ -515,90 +517,141 @@ func TestAsyncContext_SendAsyncCallCrossShard(t *testing.T) {
 }
 
 func TestAsyncContext_ExecuteSyncCall(t *testing.T) {
+	// This test performs a number of calls to async.executeSyncCall(). It
+	// simulates the behavior of two smart contracts "Alice" and "Bob" using
+	// host.EnqueueVMOutput():
+	// * Alice calls Bob by creating an AsyncCall
+	// * the AsyncCall is passed to async.executeSyncCall(), which calls:
+	//		* host.ExecuteOnDestContext() for Bob (the destination call)
+	//		* host.ExecuteOnDestContext() for Alice (the callback)
+	// The VmHostMock will contain two queued VMOutputs to be returned by the
+	// mocked host.ExecuteOnDestContext() implementation in each of the two cases.
+	// Moreover, each call to the mocked host.ExecuteOnDestContext() method, the
+	// ContractCallInput instance passed as argument is stored on the VmHostMock,
+	// and it can be inspected and subjected to assertions.
 	host, _, originalVMInput := InitializeArwenAndWasmer_AsyncContext_AliceAndBob()
 	host.Runtime().InitStateFromInput(originalVMInput)
 	async := NewAsyncContext(host)
-	call := &arwen.AsyncCall{
-		Destination: Bob,
-		ValueBytes:  big.NewInt(88).Bytes(),
+	asyncCall := &arwen.AsyncCall{
+		Destination:     Bob,
+		ValueBytes:      big.NewInt(88).Bytes(),
+		SuccessCallback: "successCallback",
+		ErrorCallback:   "errorCallback",
 	}
 
-	// Test error propagation from async.createContractCallInput()
-	call.Data = []byte("function")
-	call.GasLimit = 1
-	err := async.executeSyncCall(call)
+	// Scenario 1
+	// Assert error propagation in async.executeSyncCall() from
+	// async.createContractCallInput()
+	asyncCall.Data = []byte("function")
+	asyncCall.GasLimit = 1
+	err := async.executeSyncCall(asyncCall)
 	require.True(t, errors.Is(err, arwen.ErrNotEnoughGas))
 
-	// Successful destination execution, but not enough gas for callback execution
+	// Scenario 2
+	// Successful execution at destination, but not enough gas for callback execution
+	// (this situation should not happen in practice, due to dynamic gas locking)
+	host.VMOutputQueue = nil
 	host.EnqueueVMOutput(&vmcommon.VMOutput{
 		ReturnCode: vmcommon.Ok,
 	})
-	call.Data = []byte("function")
-	call.GasLimit = 1
-	call.GasLocked = 1
-	_ = async.executeSyncCall(call)
+	asyncCall.Data = []byte("function@0A0B0C@03")
+	asyncCall.GasLimit = 2
+	asyncCall.GasLocked = 1
+	err = async.executeSyncCall(asyncCall)
+	require.Nil(t, err)
+	require.Equal(t, arwen.AsyncCallResolved, asyncCall.Status)
 
-	expectedDestinationInput := &vmcommon.ContractCallInput{
-		VMInput: vmcommon.VMInput{
-			CallerAddr:     originalVMInput.RecipientAddr,
-			Arguments:      [][]byte{[]byte("\x0A\x0B\x0C"), []byte("\x03")},
-			CallValue:      big.NewInt(88),
-			CallType:       vmcommon.AsynchronousCall,
-			GasPrice:       originalVMInput.GasPrice,
-			GasProvided:    1,
-			CurrentTxHash:  originalVMInput.CurrentTxHash,
-			PrevTxHash:     originalVMInput.PrevTxHash,
-			OriginalTxHash: originalVMInput.OriginalTxHash,
-		},
-		RecipientAddr: Bob,
-		Function:      "function",
-	}
-
+	// Only one ContractCallInput was stored by the VmHostMock, because the
+	// callback failed before reaching host.ExecutionOnDestContext()
 	require.Len(t, host.StoredInputs, 1)
-	require.Equal(t, expectedDestinationInput, host.StoredInputs[0])
+
+	// The ContractCallInput generated to execute the destination call synchronously
+	destInput := arwen.MakeContractCallInput(Alice, Bob, "function", 88)
+	arwen.CopyTxHashes(destInput, originalVMInput)
+	arwen.AddArgument(destInput, []byte{10, 11, 12})
+	arwen.AddArgument(destInput, []byte{3})
+	destInput.CallType = vmcommon.AsynchronousCall
+	destInput.GasProvided = 1
+	require.Equal(t, destInput, host.StoredInputs[0])
+
+	// The final VMOutput, containing the failed callback execution
+	expectedVMOutput := arwen.MakeVMOutput()
+	expectedVMOutput.ReturnCode = vmcommon.OutOfGas
+	expectedVMOutput.ReturnMessage = "not enough gas"
+	arwen.AddFinishData(expectedVMOutput, []byte("out of gas"))
+	arwen.AddFinishData(expectedVMOutput, originalVMInput.CurrentTxHash)
+	vmOutput := host.Output().GetVMOutput()
+	require.Equal(t, expectedVMOutput, vmOutput)
+
+	// Scenario 3
+	// Successful execution at destination, and successful callback execution;
+	// the AsyncCall contains suficient gas this time.
+	asyncCall = defaultAsyncCall_AliceToBob()
+	asyncCall.GasLimit = 40
+	asyncCall.GasLocked = 40
+	gasConsumedByDestination := uint64(23)
+	gasConsumedByCallback := uint64(22)
+
+	// The expected input passed to host.ExecuteOnDestContext() to call Bob as destination
+	destInput = defaultCallInput_AliceToBob(originalVMInput)
+	destInput.GasProvided = asyncCall.GasLimit
+
+	// Prepare the output of Bob (the destination call)
+	destOutput := defaultDestOutput_Ok()
+	destOutput.GasRemaining = asyncCall.GasLimit - GasForAsyncStep - gasConsumedByDestination
+
+	// Prepare the input to Alice's callback
+	callbackInput := defaultCallbackInput_BobToAlice(originalVMInput)
+	callbackInput.GasProvided = destOutput.GasRemaining + asyncCall.GasLocked
+
+	// Prepare the output of Alice's callback
+	callbackOutput := defaultCallbackOutput_Ok()
+	callbackOutput.GasRemaining = destOutput.GasRemaining + asyncCall.GasLocked - GasForAsyncStep - gasConsumedByCallback
+
+	// Enqueue the prepared VMOutputs
+	host.StoredInputs = nil
+	host.VMOutputQueue = nil
+	host.EnqueueVMOutput(destOutput)
+	host.EnqueueVMOutput(callbackOutput)
+
+	err = async.executeSyncCall(asyncCall)
+	require.Nil(t, err)
+	require.Equal(t, arwen.AsyncCallResolved, asyncCall.Status)
+
+	// There were two calls to host.ExecuteOnDestContext()
+	require.Len(t, host.StoredInputs, 2)
+	require.Equal(t, destInput, host.StoredInputs[0])
+	require.Equal(t, callbackInput, host.StoredInputs[1])
 }
 
 func TestAsyncContext_CreateContractCallInput(t *testing.T) {
 	host, _, originalVMInput := InitializeArwenAndWasmer_AsyncContext_AliceAndBob()
 	host.Runtime().InitStateFromInput(originalVMInput)
 	async := NewAsyncContext(host)
-	call := &arwen.AsyncCall{
+	asyncCall := &arwen.AsyncCall{
 		Destination: Bob,
 		ValueBytes:  big.NewInt(88).Bytes(),
 	}
 
-	call.Data = []byte{}
-	input, err := async.createContractCallInput(call)
+	asyncCall.Data = []byte{}
+	input, err := async.createContractCallInput(asyncCall)
 	require.Nil(t, input)
 	require.Error(t, err)
 
-	call.Data = []byte("function")
-	call.GasLimit = 1
-	input, err = async.createContractCallInput(call)
+	asyncCall.Data = []byte("function")
+	asyncCall.GasLimit = 1
+	input, err = async.createContractCallInput(asyncCall)
 	require.Nil(t, input)
 	require.True(t, errors.Is(err, arwen.ErrNotEnoughGas))
 
-	call.Data = []byte("function@0A0B0C@03")
-	call.GasLimit = 2
-	input, err = async.createContractCallInput(call)
+	asyncCall.Data = []byte("function@0A0B0C@03")
+	asyncCall.GasLimit = 2
+	input, err = async.createContractCallInput(asyncCall)
 	require.Nil(t, err)
 	require.NotNil(t, input)
 
-	expectedInput := &vmcommon.ContractCallInput{
-		VMInput: vmcommon.VMInput{
-			CallerAddr:     Alice,
-			Arguments:      [][]byte{[]byte("\x0A\x0B\x0C"), []byte("\x03")},
-			CallValue:      big.NewInt(88),
-			CallType:       vmcommon.AsynchronousCall,
-			GasPrice:       originalVMInput.GasPrice,
-			GasProvided:    1,
-			CurrentTxHash:  originalVMInput.CurrentTxHash,
-			PrevTxHash:     originalVMInput.PrevTxHash,
-			OriginalTxHash: originalVMInput.OriginalTxHash,
-		},
-		RecipientAddr: Bob,
-		Function:      "function",
-	}
+	expectedInput := defaultCallInput_AliceToBob(originalVMInput)
+	expectedInput.GasProvided = 1
 	require.Equal(t, expectedInput, input)
 }
 
@@ -606,56 +659,24 @@ func TestAsyncContext_CreateCallbackInput_DestinationCallSuccessful(t *testing.T
 	host, _, originalVMInput := InitializeArwenAndWasmer_AsyncContext_AliceAndBob()
 	host.Runtime().InitStateFromInput(originalVMInput)
 	async := NewAsyncContext(host)
-	call := &arwen.AsyncCall{
-		Destination:     Bob,
-		GasLocked:       82,
-		ValueBytes:      big.NewInt(88).Bytes(),
-		SuccessCallback: "successCallback",
-		ErrorCallback:   "errorCallback",
-		Status:          arwen.AsyncCallResolved,
-	}
-	vmOutput := &vmcommon.VMOutput{
-		ReturnCode: vmcommon.Ok,
-		ReturnData: [][]byte{
-			[]byte("first"),
-			[]byte("second"),
-			{},
-			[]byte("third"),
-		},
-		ReturnMessage: "a message",
-		GasRemaining:  12,
-	}
+
+	asyncCall := defaultAsyncCall_AliceToBob()
+	asyncCall.Status = arwen.AsyncCallResolved
+	asyncCall.GasLocked = 82
+
+	vmOutput := defaultDestOutput_Ok()
+	vmOutput.GasRemaining = 12
+
 	destinationErr := error(nil)
-	callbackInput, err := async.createCallbackInput(call, vmOutput, destinationErr)
+	callbackInput, err := async.createCallbackInput(asyncCall, vmOutput, destinationErr)
 	require.Nil(t, err)
 
-	dataLength := len("successCallback") + 1 + len("first") + len("second") + len("third")
-	separators := 5
-	expectedGasProvided := call.GasLocked + vmOutput.GasRemaining
-	expectedGasProvided -= uint64(dataLength + separators)
+	expectedGasProvided := asyncCall.GasLocked + vmOutput.GasRemaining
+	expectedGasProvided -= defaultOutputDataLengthAsArgs(asyncCall, vmOutput)
 	expectedGasProvided -= host.Metering().GasSchedule().ElrondAPICost.AsyncCallStep
 
-	expectedInput := &vmcommon.ContractCallInput{
-		VMInput: vmcommon.VMInput{
-			CallerAddr: Bob,
-			Arguments: [][]byte{
-				{byte(vmcommon.Ok)},
-				[]byte("first"),
-				[]byte("second"),
-				{},
-				[]byte("third"),
-			},
-			CallValue:      big.NewInt(0),
-			CallType:       vmcommon.AsynchronousCallBack,
-			GasPrice:       originalVMInput.GasPrice,
-			GasProvided:    expectedGasProvided,
-			CurrentTxHash:  originalVMInput.CurrentTxHash,
-			PrevTxHash:     originalVMInput.PrevTxHash,
-			OriginalTxHash: originalVMInput.OriginalTxHash,
-		},
-		RecipientAddr: Alice,
-		Function:      "successCallback",
-	}
+	expectedInput := defaultCallbackInput_BobToAlice(originalVMInput)
+	expectedInput.GasProvided = expectedGasProvided
 	require.Equal(t, expectedInput, callbackInput)
 }
 
@@ -663,48 +684,26 @@ func TestAsyncContext_CreateCallbackInput_DestinationCallFailed(t *testing.T) {
 	host, _, originalVMInput := InitializeArwenAndWasmer_AsyncContext_AliceAndBob()
 	host.Runtime().InitStateFromInput(originalVMInput)
 	async := NewAsyncContext(host)
-	call := &arwen.AsyncCall{
-		Destination:     Bob,
-		GasLocked:       82,
-		ValueBytes:      big.NewInt(88).Bytes(),
-		SuccessCallback: "successCallback",
-		ErrorCallback:   "errorCallback",
-		Status:          arwen.AsyncCallRejected,
-	}
-	vmOutput := &vmcommon.VMOutput{
-		ReturnCode:    vmcommon.UserError,
-		ReturnData:    [][]byte{},
-		ReturnMessage: "there was a user error",
-		GasRemaining:  0,
-	}
+
+	asyncCall := defaultAsyncCall_AliceToBob()
+	asyncCall.Status = arwen.AsyncCallRejected
+	asyncCall.GasLocked = 82
+
+	vmOutput := defaultDestOutput_UserError()
 	destinationErr := arwen.ErrSignalError
-	callbackInput, err := async.createCallbackInput(call, vmOutput, destinationErr)
+	callbackInput, err := async.createCallbackInput(asyncCall, vmOutput, destinationErr)
 	require.Nil(t, err)
 
-	dataLength := len("errorCallback") + 1 + len(vmOutput.ReturnMessage)
-	separators := 2
-	expectedGasProvided := call.GasLocked + vmOutput.GasRemaining
-	expectedGasProvided -= uint64(dataLength + separators)
+	expectedGasProvided := asyncCall.GasLocked + vmOutput.GasRemaining
+	expectedGasProvided -= defaultOutputDataLengthAsArgs(asyncCall, vmOutput)
 	expectedGasProvided -= host.Metering().GasSchedule().ElrondAPICost.AsyncCallStep
 
-	expectedInput := &vmcommon.ContractCallInput{
-		VMInput: vmcommon.VMInput{
-			CallerAddr: Bob,
-			Arguments: [][]byte{
-				{byte(vmcommon.UserError)},
-				[]byte(vmOutput.ReturnMessage),
-			},
-			CallValue:      big.NewInt(0),
-			CallType:       vmcommon.AsynchronousCallBack,
-			GasPrice:       originalVMInput.GasPrice,
-			GasProvided:    expectedGasProvided,
-			CurrentTxHash:  originalVMInput.CurrentTxHash,
-			PrevTxHash:     originalVMInput.PrevTxHash,
-			OriginalTxHash: originalVMInput.OriginalTxHash,
-		},
-		RecipientAddr: Alice,
-		Function:      "errorCallback",
-	}
+	expectedInput := arwen.MakeContractCallInput(Bob, Alice, "errorCallback", 0)
+	arwen.AddArgument(expectedInput, []byte{byte(vmcommon.UserError)})
+	arwen.AddArgument(expectedInput, []byte(vmOutput.ReturnMessage))
+	arwen.CopyTxHashes(expectedInput, originalVMInput)
+	expectedInput.GasProvided = expectedGasProvided
+	expectedInput.CallType = vmcommon.AsynchronousCallBack
 	require.Equal(t, expectedInput, callbackInput)
 }
 
@@ -713,22 +712,105 @@ func TestAsyncContext_CreateCallbackInput_NotEnoughGas(t *testing.T) {
 	host, _, originalVMInput := InitializeArwenAndWasmer_AsyncContext_AliceAndBob()
 	host.Runtime().InitStateFromInput(originalVMInput)
 	async := NewAsyncContext(host)
-	call := &arwen.AsyncCall{
-		Destination:     Bob,
-		GasLocked:       0,
-		ValueBytes:      big.NewInt(88).Bytes(),
-		SuccessCallback: "successCallback",
-		ErrorCallback:   "errorCallback",
-		Status:          arwen.AsyncCallRejected,
-	}
+
+	asyncCall := defaultAsyncCall_AliceToBob()
+	asyncCall.Status = arwen.AsyncCallRejected
+
 	vmOutput := &vmcommon.VMOutput{
 		ReturnCode:    vmcommon.UserError,
 		ReturnData:    [][]byte{},
 		ReturnMessage: "there was a user error",
 		GasRemaining:  0,
 	}
+
 	destinationErr := arwen.ErrSignalError
-	callbackInput, err := async.createCallbackInput(call, vmOutput, destinationErr)
+	callbackInput, err := async.createCallbackInput(asyncCall, vmOutput, destinationErr)
 	require.Nil(t, callbackInput)
 	require.True(t, errors.Is(err, arwen.ErrNotEnoughGas))
+}
+
+func defaultAsyncCall_AliceToBob() *arwen.AsyncCall {
+	return &arwen.AsyncCall{
+		Destination:     Bob,
+		Data:            []byte("function@0A0B0C@03"),
+		GasLimit:        0,
+		GasLocked:       0,
+		ValueBytes:      big.NewInt(88).Bytes(),
+		SuccessCallback: "successCallback",
+		ErrorCallback:   "errorCallback",
+		Status:          arwen.AsyncCallPending,
+	}
+}
+
+func defaultCallInput_AliceToBob(originalVMInput *vmcommon.ContractCallInput) *vmcommon.ContractCallInput {
+	destInput := arwen.MakeContractCallInput(Alice, Bob, "function", 88)
+	arwen.CopyTxHashes(destInput, originalVMInput)
+	arwen.AddArgument(destInput, []byte{10, 11, 12})
+	arwen.AddArgument(destInput, []byte{3})
+	destInput.CallType = vmcommon.AsynchronousCall
+
+	return destInput
+}
+
+func defaultDestOutput_UserError() *vmcommon.VMOutput {
+	return &vmcommon.VMOutput{
+		ReturnCode:    vmcommon.UserError,
+		ReturnData:    [][]byte{},
+		ReturnMessage: "there was a user error",
+		GasRemaining:  0,
+	}
+}
+
+func defaultDestOutput_Ok() *vmcommon.VMOutput {
+	return &vmcommon.VMOutput{
+		ReturnCode: vmcommon.Ok,
+		ReturnData: [][]byte{
+			[]byte("first"),
+			[]byte("second"),
+			{},
+			[]byte("third"),
+		},
+		ReturnMessage: "a message",
+		GasRemaining:  0,
+	}
+}
+
+func defaultCallbackInput_BobToAlice(originalVMInput *vmcommon.ContractCallInput) *vmcommon.ContractCallInput {
+	input := arwen.MakeContractCallInput(Bob, Alice, "successCallback", 0)
+	arwen.AddArgument(input, []byte{byte(vmcommon.Ok)})
+	arwen.AddArgument(input, []byte("first"))
+	arwen.AddArgument(input, []byte("second"))
+	arwen.AddArgument(input, []byte{})
+	arwen.AddArgument(input, []byte("third"))
+	arwen.CopyTxHashes(input, originalVMInput)
+	input.CallType = vmcommon.AsynchronousCallBack
+	return input
+}
+
+func defaultCallbackOutput_Ok() *vmcommon.VMOutput {
+	vmOutput := arwen.MakeVMOutput()
+	arwen.AddFinishData(vmOutput, []byte("cbFirst"))
+	arwen.AddFinishData(vmOutput, []byte("cbSecond"))
+
+	return vmOutput
+}
+
+func defaultOutputDataLengthAsArgs(asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput) uint64 {
+	separator := 1
+	hexSize := 2
+	returnCode := 1 * hexSize
+
+	dataLength := 0
+	if vmOutput.ReturnCode == vmcommon.Ok {
+		dataLength += len(asyncCall.SuccessCallback) + separator + returnCode
+		for _, data := range vmOutput.ReturnData {
+			dataLength += separator
+			dataLength += len(data) * hexSize
+		}
+	} else {
+		dataLength += len(asyncCall.ErrorCallback) + separator + returnCode
+		dataLength += separator + len(vmOutput.ReturnMessage)*hexSize
+	}
+
+	return uint64(dataLength)
 }

@@ -4,11 +4,14 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math/big"
+	"os"
 	"path/filepath"
 	"time"
 	"unsafe"
 
 	logger "github.com/ElrondNetwork/elrond-go-logger"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	"github.com/pelletier/go-toml"
 )
 
 var logDuration = logger.GetOrCreate("arwen/duration")
@@ -98,9 +101,75 @@ func WithFault(err error, context unsafe.Pointer, failExecution bool) bool {
 	return true
 }
 
+// GetSCCode retrieves the bytecode of a WASM module from a file
 func GetSCCode(fileName string) []byte {
-	code, _ := ioutil.ReadFile(filepath.Clean(fileName))
+	code, err := ioutil.ReadFile(filepath.Clean(fileName))
+	if err != nil {
+		panic(fmt.Sprintf("GetSCCode(): %s", fileName))
+	}
+
 	return code
+}
+
+// GetTestSCCode retrieves the bytecode of a WASM testing module
+func GetTestSCCode(scName string, prefixToTestSCs string) []byte {
+	pathToSC := prefixToTestSCs + "test/contracts/" + scName + "/output/" + scName + ".wasm"
+	return GetSCCode(pathToSC)
+}
+
+// OpenFile method opens the file from given path - does not close the file
+func OpenFile(relativePath string) (*os.File, error) {
+	path, err := filepath.Abs(relativePath)
+	if err != nil {
+		fmt.Printf("cannot create absolute path for the provided file: %s", err.Error())
+		return nil, err
+	}
+	f, err := os.Open(filepath.Clean(path))
+	if err != nil {
+		return nil, err
+	}
+
+	return f, nil
+}
+
+// LoadTomlFileToMap opens and decodes a toml file as a map[string]interface{}
+func LoadTomlFileToMap(relativePath string) (map[string]interface{}, error) {
+	f, err := OpenFile(relativePath)
+	if err != nil {
+		return nil, err
+	}
+
+	fileinfo, err := f.Stat()
+	if err != nil {
+		fmt.Printf("cannot stat file: %s", err.Error())
+		return nil, err
+	}
+
+	filesize := fileinfo.Size()
+	buffer := make([]byte, filesize)
+
+	_, err = f.Read(buffer)
+	if err != nil {
+		fmt.Printf("cannot read from file: %s", err.Error())
+		return nil, err
+	}
+
+	defer func() {
+		err = f.Close()
+		if err != nil {
+			fmt.Printf("cannot close file: %s", err.Error())
+		}
+	}()
+
+	loadedTree, err := toml.Load(string(buffer))
+	if err != nil {
+		fmt.Printf("cannot interpret file contents as toml: %s", err.Error())
+		return nil, err
+	}
+
+	loadedMap := loadedTree.ToMap()
+
+	return loadedMap, nil
 }
 
 func TimeTrack(start time.Time, message string) {
@@ -143,4 +212,109 @@ func IfNil(checker nilInterfaceChecker) bool {
 
 type nilInterfaceChecker interface {
 	IsInterfaceNil() bool
+}
+
+// MakeVMOutput creates a vmcommon.VMOutput struct with default values
+func MakeVMOutput() *vmcommon.VMOutput {
+	return &vmcommon.VMOutput{
+		ReturnCode:      vmcommon.Ok,
+		ReturnMessage:   "",
+		ReturnData:      make([][]byte, 0),
+		GasRemaining:    0,
+		GasRefund:       big.NewInt(0),
+		DeletedAccounts: make([][]byte, 0),
+		TouchedAccounts: make([][]byte, 0),
+		Logs:            make([]*vmcommon.LogEntry, 0),
+		OutputAccounts:  make(map[string]*vmcommon.OutputAccount),
+	}
+}
+
+// AddFinishData appends the provided []byte to the ReturnData of the given vmOutput
+func AddFinishData(vmOutput *vmcommon.VMOutput, data []byte) {
+	vmOutput.ReturnData = append(vmOutput.ReturnData, data)
+}
+
+// AddNewOutputAccount creates a new vmcommon.OutputAccount from the provided arguments and adds it to OutputAccounts of the provided vmOutput
+func AddNewOutputAccount(vmOutput *vmcommon.VMOutput, address []byte, balanceDelta int64, data []byte) *vmcommon.OutputAccount {
+	account := &vmcommon.OutputAccount{
+		Address:        address,
+		Nonce:          0,
+		BalanceDelta:   big.NewInt(balanceDelta),
+		Balance:        nil,
+		StorageUpdates: make(map[string]*vmcommon.StorageUpdate),
+		Code:           nil,
+	}
+	if data != nil {
+		account.OutputTransfers = []vmcommon.OutputTransfer{
+			{
+				Data:  data,
+				Value: big.NewInt(balanceDelta),
+			},
+		}
+	}
+	vmOutput.OutputAccounts[string(address)] = account
+	return account
+}
+
+// SetStorageUpdate sets a storage update to the provided vmcommon.OutputAccount
+func SetStorageUpdate(account *vmcommon.OutputAccount, key []byte, data []byte) {
+	keyString := string(key)
+	update, exists := account.StorageUpdates[keyString]
+	if !exists {
+		update = &vmcommon.StorageUpdate{}
+		account.StorageUpdates[keyString] = update
+	}
+	update.Offset = key
+	update.Data = data
+}
+
+// SetStorageUpdateStrings sets a storage update to the provided vmcommon.OutputAccount, from string arguments
+func SetStorageUpdateStrings(account *vmcommon.OutputAccount, key string, data string) {
+	SetStorageUpdate(account, []byte(key), []byte(data))
+}
+
+func MakeEmptyContractCallInput() *vmcommon.ContractCallInput {
+	return &vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			CallerAddr:  nil,
+			Arguments:   make([][]byte, 0),
+			CallValue:   big.NewInt(0),
+			CallType:    vmcommon.DirectCall,
+			GasPrice:    1,
+			GasProvided: 0,
+		},
+		RecipientAddr: nil,
+		Function:      "",
+	}
+}
+
+func MakeContractCallInput(
+	caller []byte,
+	recipient []byte,
+	function string,
+	value int,
+) *vmcommon.ContractCallInput {
+	input := MakeEmptyContractCallInput()
+	SetCallParties(input, caller, recipient)
+	input.Function = function
+	input.CallValue = big.NewInt(int64(value))
+	return input
+}
+
+func SetCallParties(input *vmcommon.ContractCallInput, caller []byte, recipient []byte) {
+	input.CallerAddr = caller
+	input.RecipientAddr = recipient
+}
+
+func AddArgument(input *vmcommon.ContractCallInput, argument []byte) {
+	if input.Arguments == nil {
+		input.Arguments = make([][]byte, 0)
+	}
+	input.Arguments = append(input.Arguments, argument)
+}
+
+func CopyTxHashes(input *vmcommon.ContractCallInput, sourceInput *vmcommon.ContractCallInput) {
+	input.CurrentTxHash = sourceInput.CurrentTxHash
+	input.PrevTxHash = sourceInput.PrevTxHash
+	input.OriginalTxHash = sourceInput.OriginalTxHash
 }

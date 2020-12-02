@@ -135,6 +135,7 @@ func (context *asyncContext) finishSyncExecution(vmOutput *vmcommon.VMOutput, er
 		vmOutput = output.CreateVMOutputInCaseOfError(err)
 	}
 
+	output.SetReturnCode(vmOutput.ReturnCode)
 	output.SetReturnMessage(vmOutput.ReturnMessage)
 	output.Finish([]byte(vmOutput.ReturnCode.String()))
 	output.Finish(runtime.GetCurrentTxHash())

@@ -3,12 +3,13 @@ package host
 import (
 	"testing"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
 )
 
 func TestAsync_NoAsyncCalls(t *testing.T) {
-	code := GetTestSCCode("async-alice", "../../")
+	code := arwen.GetTestSCCode("async-alice", "../../")
 	host, _ := DefaultTestArwenForCall(t, code, nil)
 
 	input := DefaultTestContractCallInput()
@@ -29,7 +30,7 @@ func TestAsync_NoAsyncCalls(t *testing.T) {
 }
 
 func TestAsync_OneAsyncCall(t *testing.T) {
-	code := GetTestSCCode("async-alice", "../../")
+	code := arwen.GetTestSCCode("async-alice", "../../")
 	host, _ := DefaultTestArwenForCall(t, code, nil)
 
 	input := DefaultTestContractCallInput()

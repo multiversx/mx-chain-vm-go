@@ -726,14 +726,17 @@ func (context *asyncContext) findGroupByID(groupID string) (int, bool) {
 
 func computeDataLengthFromArguments(function string, arguments [][]byte) int {
 	// Calculate what length would the Data field have, were it of the
-	// form "callback@arg1@arg4...
+	// form "callback@arg1hex@arg2hex...
 
-	// TODO this needs tests, especially for the case when the arguments slice
-	// contains an empty []byte
-	numSeparators := len(arguments)
-	dataLength := len(function) + numSeparators
-	for _, element := range arguments {
-		dataLength += len(element)
+	// TODO breaking change below, if there were any async calls ever
+	// TODO add condition on a host flag
+	separator := 1
+	hexSize := 2
+	dataLength := 0
+	dataLength += len(function)
+	for _, data := range arguments {
+		dataLength += separator
+		dataLength += len(data) * hexSize
 	}
 
 	return dataLength

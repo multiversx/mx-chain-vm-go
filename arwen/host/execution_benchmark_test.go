@@ -100,7 +100,7 @@ func deploy(tb testing.TB, totalTokenSupply *big.Int) (*vmHost, *mock.Blockchain
 			GasPrice:    0,
 			GasProvided: 0xFFFFFFFFFFFFFFFF,
 		},
-		ContractCode: GetTestSCCode("erc20", "../../"),
+		ContractCode: arwen.GetTestSCCode("erc20", "../../"),
 	}
 
 	mockBlockchainHook.NewAddr = scAddress
