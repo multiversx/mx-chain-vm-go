@@ -258,12 +258,12 @@ func (context *runtimeContext) SetMaxInstanceCount(maxInstances uint64) {
 	context.maxWasmerInstances = maxInstances
 }
 
-// InitStateFromContractCallInput initializes the state of the runtime context from the provided ContractCallInput.
-func (context *runtimeContext) InitStateFromContractCallInput(input *vmcommon.ContractCallInput) {
+// InitStateFromInput initializes the state of the runtime context
+// (and the async context) from the provided ContractCallInput.
+func (context *runtimeContext) InitStateFromInput(input *vmcommon.ContractCallInput) {
 	context.SetVMInput(&input.VMInput)
 	context.scAddress = input.RecipientAddr
 	context.callFunction = input.Function
-
 }
 
 // SetCustomCallFunction sets a custom function to be called next, instead of
@@ -522,6 +522,15 @@ func (context *runtimeContext) VerifyContractCode() error {
 	}
 
 	return nil
+}
+
+// ValidateCallbackName verifies whether the provided function name may be used as AsyncCall callback
+func (context *runtimeContext) ValidateCallbackName(callbackName string) error {
+	if callbackName == arwen.InitFunctionName {
+		return arwen.ErrInvalidFunctionName
+	}
+
+	return context.validator.verifyValidFunctionName(callbackName)
 }
 
 // ELrondAPIErrorShouldFailExecution specifies whether an error in the EEI should abort contract execution.

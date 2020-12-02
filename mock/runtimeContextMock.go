@@ -44,7 +44,7 @@ func (r *RuntimeContextMock) StartWasmerInstance(_ []byte, _ uint64, _ bool) err
 	return nil
 }
 
-func (r *RuntimeContextMock) InitStateFromContractCallInput(_ *vmcommon.ContractCallInput) {
+func (r *RuntimeContextMock) InitStateFromInput(_ *vmcommon.ContractCallInput) {
 }
 
 func (r *RuntimeContextMock) PushState() {
@@ -83,6 +83,10 @@ func (r *RuntimeContextMock) SetMaxInstanceCount(uint64) {
 }
 
 func (r *RuntimeContextMock) ClearInstanceStack() {
+}
+
+func (r *RuntimeContextMock) ValidateCallbackName(callbackName string) error {
+	return nil
 }
 
 func (r *RuntimeContextMock) GetVMType() []byte {

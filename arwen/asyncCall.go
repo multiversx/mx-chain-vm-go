@@ -5,6 +5,7 @@ import "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 // AsyncCall holds the information about an individual async call
 type AsyncCall struct {
 	Status          AsyncCallStatus
+	ExecutionMode   AsyncCallExecutionMode
 	Destination     []byte
 	Data            []byte
 	GasLimit        uint64
@@ -12,7 +13,31 @@ type AsyncCall struct {
 	ValueBytes      []byte
 	SuccessCallback string
 	ErrorCallback   string
-	ProvidedGas     uint64
+
+	// TODO this will be deleted when asyncContext.setupAsyncCallsGas() is deleted
+	ProvidedGas uint64
+}
+
+// Clone creates a deep clone of the AsyncCall
+func (ac *AsyncCall) Clone() *AsyncCall {
+	clone := &AsyncCall{
+		Status:          ac.Status,
+		ExecutionMode:   ac.ExecutionMode,
+		Destination:     make([]byte, len(ac.Destination)),
+		Data:            make([]byte, len(ac.Data)),
+		GasLimit:        ac.GasLimit,
+		GasLocked:       ac.GasLocked,
+		ValueBytes:      make([]byte, len(ac.ValueBytes)),
+		SuccessCallback: ac.SuccessCallback,
+		ErrorCallback:   ac.ErrorCallback,
+		ProvidedGas:     ac.ProvidedGas,
+	}
+
+	copy(clone.Destination, ac.Destination)
+	copy(clone.Data, ac.Data)
+	copy(clone.ValueBytes, ac.ValueBytes)
+
+	return clone
 }
 
 // GetDestination returns the destination of an async call
@@ -35,8 +60,8 @@ func (ac *AsyncCall) GetGasLocked() uint64 {
 	return ac.GasLocked
 }
 
-// GetValueBytes returns the byte representation of the value of the async call
-func (ac *AsyncCall) GetValueBytes() []byte {
+// GetValue returns the byte representation of the value of the async call
+func (ac *AsyncCall) GetValue() []byte {
 	return ac.ValueBytes
 }
 

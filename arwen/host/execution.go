@@ -81,7 +81,7 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 
 	_, _, _, output, runtime, storage := host.GetContexts()
 
-	runtime.InitStateFromContractCallInput(input)
+	runtime.InitStateFromInput(input)
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
 	storage.SetAddress(runtime.GetSCAddress())
 
@@ -110,7 +110,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 
 	_, _, metering, output, runtime, storage := host.GetContexts()
 
-	runtime.InitStateFromContractCallInput(input)
+	runtime.InitStateFromInput(input)
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
 	storage.SetAddress(runtime.GetSCAddress())
 
@@ -146,6 +146,7 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vm
 
 	// TODO Discuss and handle the Async stack
 	bigInt, _, _, output, runtime, storage := host.GetContexts()
+	async := host.Async()
 
 	bigInt.PushState()
 	bigInt.InitState()
@@ -155,12 +156,12 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vm
 	output.ResetGas()
 
 	runtime.PushState()
-	runtime.InitStateFromContractCallInput(input)
+	runtime.InitStateFromInput(input)
 
-	async := host.Async()
+	// TODO LoadOrInit(), not just Init; the contract invoked here likely has a
+	// persisted AsyncContext of its own.
 	async.PushState()
-	async.InitState()
-	async.SetCaller(input.CallerAddr)
+	async.InitStateFromInput(input)
 
 	storage.PushState()
 	storage.SetAddress(runtime.GetSCAddress())
@@ -211,6 +212,7 @@ func (host *vmHost) finishExecuteOnDestContext(gasUsed uint64, executeErr error)
 	bigInt.PopSetActiveState()
 	runtime.PopSetActiveState()
 	storage.PopSetActiveState()
+	host.Async().PopSetActiveState()
 
 	if vmOutput.ReturnCode == vmcommon.Ok {
 		output.PopMergeActiveState()
@@ -255,6 +257,7 @@ func computeGasUsedByCurrentSC(
 }
 
 func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) error {
+	// TODO lock the AsyncContext when entering ExecuteOnSameContext()
 	log.Trace("ExecuteOnSameContext", "function", input.Function)
 
 	if host.IsBuiltinFunctionName(input.Function) {
@@ -263,7 +266,6 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) erro
 
 	var err error
 
-	// TODO Discuss and handle the Async stack
 	bigInt, _, _, output, runtime, _ := host.GetContexts()
 
 	// Back up the states of the contexts (except Storage and Async, which aren't
@@ -273,7 +275,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) erro
 	runtime.PushState()
 
 	output.ResetGas()
-	runtime.InitStateFromContractCallInput(input)
+	runtime.InitStateFromInput(input)
 
 	// Perform a value transfer to the called SC. If the execution fails, this
 	// transfer will not persist.
@@ -289,13 +291,12 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) erro
 		return err
 	}
 
-	err = host.Async().Execute()
 	host.finishExecuteOnSameContext(gasUsed, err)
 	return nil
 }
 
 func (host *vmHost) finishExecuteOnSameContext(gasUsed uint64, executeErr error) {
-	// TODO Discuss and handle the Async stack
+	// TODO unlock the AsyncContext when exiting ExecuteOnSameContext()
 	bigInt, _, _, output, runtime, _ := host.GetContexts()
 
 	gasUsedBySC, err := computeGasUsedByCurrentSC(gasUsed, output, executeErr)
@@ -567,7 +568,7 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) (uint64, error) {
 		}
 
 		if newVMInput != nil {
-			runtime.InitStateFromContractCallInput(newVMInput)
+			runtime.InitStateFromInput(newVMInput)
 			storage.SetAddress(runtime.GetSCAddress())
 			return host.executeSmartContractCall(newVMInput, metering, runtime, output, false)
 		}
