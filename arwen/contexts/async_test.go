@@ -516,105 +516,103 @@ func TestAsyncContext_SendAsyncCallCrossShard(t *testing.T) {
 	require.Equal(t, vmcommon.AsynchronousCall, asyncTransfer.CallType)
 }
 
-func TestAsyncContext_ExecuteSyncCall(t *testing.T) {
-	// This test performs a number of calls to async.executeSyncCall(). It
-	// simulates the behavior of two smart contracts "Alice" and "Bob" using
-	// host.EnqueueVMOutput():
-	// * Alice calls Bob by creating an AsyncCall
-	// * the AsyncCall is passed to async.executeSyncCall(), which calls:
-	//		* host.ExecuteOnDestContext() for Bob (the destination call)
-	//		* host.ExecuteOnDestContext() for Alice (the callback)
-	// The VmHostMock will contain two queued VMOutputs to be returned by the
-	// mocked host.ExecuteOnDestContext() implementation in each of the two cases.
-	// Moreover, each call to the mocked host.ExecuteOnDestContext() method, the
-	// ContractCallInput instance passed as argument is stored on the VmHostMock,
-	// and it can be inspected and subjected to assertions.
-	host, _, originalVMInput := InitializeArwenAndWasmer_AsyncContext_AliceAndBob()
-	host.Runtime().InitStateFromInput(originalVMInput)
-	async := NewAsyncContext(host)
-	asyncCall := &arwen.AsyncCall{
-		Destination:     Bob,
-		ValueBytes:      big.NewInt(88).Bytes(),
-		SuccessCallback: "successCallback",
-		ErrorCallback:   "errorCallback",
-	}
-
+func TestAsyncContext_ExecuteSyncCall_EarlyOutOfGas(t *testing.T) {
 	// Scenario 1
 	// Assert error propagation in async.executeSyncCall() from
 	// async.createContractCallInput()
+	host, _, originalVMInput := InitializeArwenAndWasmer_AsyncContext_AliceAndBob()
+	host.Runtime().InitStateFromInput(originalVMInput)
+	async := NewAsyncContext(host)
+
+	asyncCall := defaultAsyncCall_AliceToBob()
 	asyncCall.Data = []byte("function")
 	asyncCall.GasLimit = 1
 	err := async.executeSyncCall(asyncCall)
 	require.True(t, errors.Is(err, arwen.ErrNotEnoughGas))
+}
 
+func TestAsyncContext_ExecuteSyncCall_NoDynamicGasLocking_Simulation(t *testing.T) {
 	// Scenario 2
 	// Successful execution at destination, but not enough gas for callback execution
 	// (this situation should not happen in practice, due to dynamic gas locking)
-	host.VMOutputQueue = nil
-	host.EnqueueVMOutput(&vmcommon.VMOutput{
-		ReturnCode: vmcommon.Ok,
-	})
-	asyncCall.Data = []byte("function@0A0B0C@03")
-	asyncCall.GasLimit = 2
-	asyncCall.GasLocked = 1
-	err = async.executeSyncCall(asyncCall)
+	host, _, originalVMInput := InitializeArwenAndWasmer_AsyncContext_AliceAndBob()
+	host.Runtime().InitStateFromInput(originalVMInput)
+	async := NewAsyncContext(host)
+
+	asyncCall := defaultAsyncCall_AliceToBob()
+	asyncCall.GasLimit = 10
+	asyncCall.GasLocked = 5
+
+	gasConsumedByDestination := uint64(3)
+	destOutput := &vmcommon.VMOutput{
+		ReturnCode:   vmcommon.Ok,
+		GasRemaining: asyncCall.GasLimit - gasConsumedByDestination,
+	}
+	host.EnqueueVMOutput(destOutput)
+
+	err := async.executeSyncCall(asyncCall)
 	require.Nil(t, err)
 	require.Equal(t, arwen.AsyncCallResolved, asyncCall.Status)
 
-	// Only one ContractCallInput was stored by the VmHostMock, because the
-	// callback failed before reaching host.ExecutionOnDestContext()
+	// Only one ContractCallInput was stored by the VmHostMock: constructing the
+	// ContractCallInput for the callback has failed with insufficient gas before
+	// reaching host.ExecutionOnDestContext()
 	require.Len(t, host.StoredInputs, 1)
 
 	// The ContractCallInput generated to execute the destination call synchronously
-	destInput := arwen.MakeContractCallInput(Alice, Bob, "function", 88)
-	arwen.CopyTxHashes(destInput, originalVMInput)
-	arwen.AddArgument(destInput, []byte{10, 11, 12})
-	arwen.AddArgument(destInput, []byte{3})
-	destInput.CallType = vmcommon.AsynchronousCall
-	destInput.GasProvided = 1
+	destInput := defaultCallInput_AliceToBob(originalVMInput)
+	destInput.GasProvided = asyncCall.GasLimit - GasForAsyncStep
 	require.Equal(t, destInput, host.StoredInputs[0])
 
-	// The final VMOutput, containing the failed callback execution
-	expectedVMOutput := arwen.MakeVMOutput()
-	expectedVMOutput.ReturnCode = vmcommon.OutOfGas
-	expectedVMOutput.ReturnMessage = "not enough gas"
-	arwen.AddFinishData(expectedVMOutput, []byte("out of gas"))
-	arwen.AddFinishData(expectedVMOutput, originalVMInput.CurrentTxHash)
+	// Verify the final VMOutput, containing the failure
+	expectedOutput := arwen.MakeVMOutput()
+	expectedOutput.ReturnCode = vmcommon.OutOfGas
+	expectedOutput.ReturnMessage = "not enough gas"
+	expectedOutput.GasRemaining = 0
+	arwen.AddFinishData(expectedOutput, []byte("out of gas"))
+	arwen.AddFinishData(expectedOutput, originalVMInput.CurrentTxHash)
 	vmOutput := host.Output().GetVMOutput()
-	require.Equal(t, expectedVMOutput, vmOutput)
+	require.Equal(t, expectedOutput, vmOutput)
+}
 
+func TestAsyncContext_ExecuteSyncCall_Successful(t *testing.T) {
 	// Scenario 3
 	// Successful execution at destination, and successful callback execution;
 	// the AsyncCall contains suficient gas this time.
-	asyncCall = defaultAsyncCall_AliceToBob()
-	asyncCall.GasLimit = 40
-	asyncCall.GasLocked = 40
+	host, _, originalVMInput := InitializeArwenAndWasmer_AsyncContext_AliceAndBob()
+	host.Runtime().InitStateFromInput(originalVMInput)
+	async := NewAsyncContext(host)
+	asyncCall := defaultAsyncCall_AliceToBob()
+	asyncCall.GasLimit = 100
+	asyncCall.GasLocked = 90
 	gasConsumedByDestination := uint64(23)
 	gasConsumedByCallback := uint64(22)
 
 	// The expected input passed to host.ExecuteOnDestContext() to call Bob as destination
-	destInput = defaultCallInput_AliceToBob(originalVMInput)
-	destInput.GasProvided = asyncCall.GasLimit
+	destInput := defaultCallInput_AliceToBob(originalVMInput)
+	destInput.GasProvided = asyncCall.GasLimit - GasForAsyncStep
+	destInput.GasLocked = asyncCall.GasLocked
 
 	// Prepare the output of Bob (the destination call)
 	destOutput := defaultDestOutput_Ok()
-	destOutput.GasRemaining = asyncCall.GasLimit - GasForAsyncStep - gasConsumedByDestination
+	destOutput.GasRemaining = destInput.GasProvided - gasConsumedByDestination
 
 	// Prepare the input to Alice's callback
 	callbackInput := defaultCallbackInput_BobToAlice(originalVMInput)
 	callbackInput.GasProvided = destOutput.GasRemaining + asyncCall.GasLocked
+	callbackInput.GasProvided -= defaultOutputDataLengthAsArgs(asyncCall, destOutput)
+	callbackInput.GasProvided -= GasForAsyncStep
+	callbackInput.GasLocked = 0
 
 	// Prepare the output of Alice's callback
 	callbackOutput := defaultCallbackOutput_Ok()
-	callbackOutput.GasRemaining = destOutput.GasRemaining + asyncCall.GasLocked - GasForAsyncStep - gasConsumedByCallback
+	callbackOutput.GasRemaining = callbackInput.GasProvided - gasConsumedByCallback
 
 	// Enqueue the prepared VMOutputs
-	host.StoredInputs = nil
-	host.VMOutputQueue = nil
 	host.EnqueueVMOutput(destOutput)
 	host.EnqueueVMOutput(callbackOutput)
 
-	err = async.executeSyncCall(asyncCall)
+	err := async.executeSyncCall(asyncCall)
 	require.Nil(t, err)
 	require.Equal(t, arwen.AsyncCallResolved, asyncCall.Status)
 
@@ -622,6 +620,17 @@ func TestAsyncContext_ExecuteSyncCall(t *testing.T) {
 	require.Len(t, host.StoredInputs, 2)
 	require.Equal(t, destInput, host.StoredInputs[0])
 	require.Equal(t, callbackInput, host.StoredInputs[1])
+
+	// Verify the final output of the execution; GasRemaining is set to 0 because
+	// the test uses a mocked host.ExecuteOnDestContext(), which does not know to
+	// manipulate the state stack of the OutputContext, therefore VMOutputs are
+	// not merged between executions.
+	expectedOutput := arwen.MakeVMOutput()
+	expectedOutput.ReturnCode = vmcommon.Ok
+	expectedOutput.GasRemaining = 0
+
+	actualOutput := host.Output().GetVMOutput()
+	require.Equal(t, expectedOutput, actualOutput)
 }
 
 func TestAsyncContext_CreateContractCallInput(t *testing.T) {
@@ -729,6 +738,9 @@ func TestAsyncContext_CreateCallbackInput_NotEnoughGas(t *testing.T) {
 	require.True(t, errors.Is(err, arwen.ErrNotEnoughGas))
 }
 
+func TestAsyncContext_FinishSyncExecution(t *testing.T) {
+}
+
 func defaultAsyncCall_AliceToBob() *arwen.AsyncCall {
 	return &arwen.AsyncCall{
 		Destination:     Bob,
@@ -756,7 +768,7 @@ func defaultDestOutput_UserError() *vmcommon.VMOutput {
 	return &vmcommon.VMOutput{
 		ReturnCode:    vmcommon.UserError,
 		ReturnData:    [][]byte{},
-		ReturnMessage: "there was a user error",
+		ReturnMessage: "user error occurred",
 		GasRemaining:  0,
 	}
 }

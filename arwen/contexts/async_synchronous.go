@@ -166,6 +166,7 @@ func (context *asyncContext) createContractCallInput(asyncCall arwen.AsyncCallHa
 			CallType:       vmcommon.AsynchronousCall,
 			GasPrice:       runtime.GetVMInput().GasPrice,
 			GasProvided:    gasLimit,
+			GasLocked:      asyncCall.GetGasLocked(),
 			CurrentTxHash:  runtime.GetCurrentTxHash(),
 			OriginalTxHash: runtime.GetOriginalTxHash(),
 			PrevTxHash:     runtime.GetPrevTxHash(),

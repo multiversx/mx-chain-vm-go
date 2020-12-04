@@ -66,6 +66,24 @@ func (host *VmHostMock) BigInt() arwen.BigIntContext {
 	return host.BigIntContext
 }
 
+func (host *VmHostMock) GetHostContexts() (
+	arwen.BigIntContext,
+	arwen.BlockchainContext,
+	arwen.MeteringContext,
+	arwen.OutputContext,
+	arwen.RuntimeContext,
+	arwen.AsyncContext,
+	arwen.StorageContext,
+) {
+	return host.BigIntContext,
+		host.BlockchainContext,
+		host.MeteringContext,
+		host.OutputContext,
+		host.RuntimeContext,
+		host.AsyncContext,
+		host.StorageContext
+}
+
 func (host *VmHostMock) CallArgsParser() arwen.CallArgsParser {
 	return parsers.NewCallArgsParser()
 }

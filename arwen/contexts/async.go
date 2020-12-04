@@ -217,6 +217,7 @@ func (context *asyncContext) AddCall(groupID string, call *arwen.AsyncCall) erro
 		}
 	}
 
+	// TODO consume gas for the data field
 	// TODO lock gas for callback
 
 	execMode, err := context.determineExecutionMode(call.Destination, call.Data)
@@ -728,8 +729,8 @@ func computeDataLengthFromArguments(function string, arguments [][]byte) int {
 	// Calculate what length would the Data field have, were it of the
 	// form "callback@arg1hex@arg2hex...
 
-	// TODO breaking change below, if there were any async calls ever
-	// TODO add condition on a host flag
+	// TODO breaking change below, if there has ever been an async call, otherwise ok
+	// TODO add condition on a host flag for an epoch
 	separator := 1
 	hexSize := 2
 	dataLength := 0
