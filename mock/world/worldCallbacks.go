@@ -1,4 +1,4 @@
-package callbackblockchain
+package worldmock
 
 import (
 	"bytes"
@@ -10,12 +10,13 @@ import (
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
-var _ vmcommon.BlockchainHook = (*BlockchainHookMock)(nil)
+var _ vmcommon.BlockchainHook = (*MockWorld)(nil)
 
 var zero = big.NewInt(0)
 
-// NewAddress adapts between K model and elrond function
-func (b *BlockchainHookMock) NewAddress(creatorAddress []byte, creatorNonce uint64, _ []byte) ([]byte, error) {
+// NewAddress provides the address for a new account.
+// It looks up the explicit new address mocks, if none found generates one using a fake but realistic algorithm.
+func (b *MockWorld) NewAddress(creatorAddress []byte, creatorNonce uint64, _ []byte) ([]byte, error) {
 	// custom error
 	if b.Err != nil {
 		return nil, b.Err
@@ -29,7 +30,8 @@ func (b *BlockchainHookMock) NewAddress(creatorAddress []byte, creatorNonce uint
 		}
 	}
 
-	// a simple mock algorithm
+	// If a mock address wasn't registered for the specified creatorAddress, generate one automatically.
+	// This is not the real algorithm but it's simple and close enough.
 	if b.mockAddressGenerationEnabled {
 		result := GenerateMockAddress(creatorAddress, creatorNonce)
 		b.LastCreatedContractAddress = result
@@ -39,9 +41,9 @@ func (b *BlockchainHookMock) NewAddress(creatorAddress []byte, creatorNonce uint
 	return []byte{}, nil
 }
 
-// GetStorageData yields the storage value for a certain account and index.
+// GetStorageData yields the storage value for a certain account and storage key.
 // Should return an empty byte array if the key is missing from the account storage
-func (b *BlockchainHookMock) GetStorageData(accountAddress []byte, index []byte) ([]byte, error) {
+func (b *MockWorld) GetStorageData(accountAddress []byte, key []byte) ([]byte, error) {
 	// custom error
 	if b.Err != nil {
 		return nil, b.Err
@@ -51,12 +53,12 @@ func (b *BlockchainHookMock) GetStorageData(accountAddress []byte, index []byte)
 	if acct == nil {
 		return []byte{}, nil
 	}
-	return acct.StorageValue(string(index)), nil
+	return acct.StorageValue(string(key)), nil
 }
 
 // GetBlockhash should return the hash of the nth previous blockchain.
 // Offset specifies how many blocks we need to look back.
-func (b *BlockchainHookMock) GetBlockhash(nonce uint64) ([]byte, error) {
+func (b *MockWorld) GetBlockhash(nonce uint64) ([]byte, error) {
 	if b.Err != nil {
 		return nil, b.Err
 	}
@@ -66,13 +68,13 @@ func (b *BlockchainHookMock) GetBlockhash(nonce uint64) ([]byte, error) {
 	}
 	offsetInt32 := int(currentNonce - nonce)
 	if offsetInt32 >= len(b.Blockhashes) {
-		return nil, errors.New("blockhash nonce is older than what is available")
+		return nil, errors.New("requested nonce is older than the oldest available block nonce")
 	}
 	return b.Blockhashes[offsetInt32], nil
 }
 
 // LastNonce returns the nonce from from the last committed block
-func (b *BlockchainHookMock) LastNonce() uint64 {
+func (b *MockWorld) LastNonce() uint64 {
 	if b.PreviousBlockInfo == nil {
 		return 0
 	}
@@ -80,7 +82,7 @@ func (b *BlockchainHookMock) LastNonce() uint64 {
 }
 
 // LastRound returns the round from the last committed block
-func (b *BlockchainHookMock) LastRound() uint64 {
+func (b *MockWorld) LastRound() uint64 {
 	if b.PreviousBlockInfo == nil {
 		return 0
 	}
@@ -88,7 +90,7 @@ func (b *BlockchainHookMock) LastRound() uint64 {
 }
 
 // LastTimeStamp returns the timeStamp from the last committed block
-func (b *BlockchainHookMock) LastTimeStamp() uint64 {
+func (b *MockWorld) LastTimeStamp() uint64 {
 	if b.PreviousBlockInfo == nil {
 		return 0
 	}
@@ -96,7 +98,7 @@ func (b *BlockchainHookMock) LastTimeStamp() uint64 {
 }
 
 // LastRandomSeed returns the random seed from the last committed block
-func (b *BlockchainHookMock) LastRandomSeed() []byte {
+func (b *MockWorld) LastRandomSeed() []byte {
 	if b.PreviousBlockInfo == nil {
 		return nil
 	}
@@ -104,7 +106,7 @@ func (b *BlockchainHookMock) LastRandomSeed() []byte {
 }
 
 // LastEpoch returns the epoch from the last committed block
-func (b *BlockchainHookMock) LastEpoch() uint32 {
+func (b *MockWorld) LastEpoch() uint32 {
 	if b.PreviousBlockInfo == nil {
 		return 0
 	}
@@ -112,12 +114,12 @@ func (b *BlockchainHookMock) LastEpoch() uint32 {
 }
 
 // GetStateRootHash returns the state root hash from the last committed block
-func (b *BlockchainHookMock) GetStateRootHash() []byte {
+func (b *MockWorld) GetStateRootHash() []byte {
 	return b.StateRootHash
 }
 
 // CurrentNonce returns the nonce from the current block
-func (b *BlockchainHookMock) CurrentNonce() uint64 {
+func (b *MockWorld) CurrentNonce() uint64 {
 	if b.CurrentBlockInfo == nil {
 		return 0
 	}
@@ -125,7 +127,7 @@ func (b *BlockchainHookMock) CurrentNonce() uint64 {
 }
 
 // CurrentRound returns the round from the current block
-func (b *BlockchainHookMock) CurrentRound() uint64 {
+func (b *MockWorld) CurrentRound() uint64 {
 	if b.CurrentBlockInfo == nil {
 		return 0
 	}
@@ -133,7 +135,7 @@ func (b *BlockchainHookMock) CurrentRound() uint64 {
 }
 
 // CurrentTimeStamp return the timestamp from the current block
-func (b *BlockchainHookMock) CurrentTimeStamp() uint64 {
+func (b *MockWorld) CurrentTimeStamp() uint64 {
 	if b.CurrentBlockInfo == nil {
 		return 0
 	}
@@ -141,7 +143,7 @@ func (b *BlockchainHookMock) CurrentTimeStamp() uint64 {
 }
 
 // CurrentRandomSeed returns the random seed from the current header
-func (b *BlockchainHookMock) CurrentRandomSeed() []byte {
+func (b *MockWorld) CurrentRandomSeed() []byte {
 	if b.CurrentBlockInfo == nil {
 		return nil
 	}
@@ -149,7 +151,7 @@ func (b *BlockchainHookMock) CurrentRandomSeed() []byte {
 }
 
 // CurrentEpoch returns the current epoch
-func (b *BlockchainHookMock) CurrentEpoch() uint32 {
+func (b *MockWorld) CurrentEpoch() uint32 {
 	if b.CurrentBlockInfo == nil {
 		return 0
 	}
@@ -157,7 +159,7 @@ func (b *BlockchainHookMock) CurrentEpoch() uint32 {
 }
 
 // ProcessBuiltInFunction -
-func (b *BlockchainHookMock) ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+func (b *MockWorld) ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	// custom error
 	if b.Err != nil {
 		return nil, b.Err
@@ -167,12 +169,12 @@ func (b *BlockchainHookMock) ProcessBuiltInFunction(input *vmcommon.ContractCall
 }
 
 // GetBuiltinFunctionNames -
-func (b *BlockchainHookMock) GetBuiltinFunctionNames() vmcommon.FunctionNames {
+func (b *MockWorld) GetBuiltinFunctionNames() vmcommon.FunctionNames {
 	return make(vmcommon.FunctionNames)
 }
 
 // GetAllState simply returns the storage as-is.
-func (b *BlockchainHookMock) GetAllState(accountAddress []byte) (map[string][]byte, error) {
+func (b *MockWorld) GetAllState(accountAddress []byte) (map[string][]byte, error) {
 	account := b.AcctMap.GetAccount(accountAddress)
 	if account == nil {
 		return nil, fmt.Errorf("account not found: %s", hex.EncodeToString(accountAddress))
@@ -181,7 +183,7 @@ func (b *BlockchainHookMock) GetAllState(accountAddress []byte) (map[string][]by
 }
 
 // GetUserAccount retrieves account info from map, or error if not found.
-func (b *BlockchainHookMock) GetUserAccount(address []byte) (vmcommon.UserAccountHandler, error) {
+func (b *MockWorld) GetUserAccount(address []byte) (vmcommon.UserAccountHandler, error) {
 	// custom error
 	if b.Err != nil {
 		return nil, b.Err
@@ -196,7 +198,7 @@ func (b *BlockchainHookMock) GetUserAccount(address []byte) (vmcommon.UserAccoun
 }
 
 // GetShardOfAddress -
-func (b *BlockchainHookMock) GetShardOfAddress(address []byte) uint32 {
+func (b *MockWorld) GetShardOfAddress(address []byte) uint32 {
 	account := b.AcctMap.GetAccount(address)
 	if account == nil {
 		return 0
@@ -206,7 +208,7 @@ func (b *BlockchainHookMock) GetShardOfAddress(address []byte) uint32 {
 }
 
 // IsSmartContract -
-func (b *BlockchainHookMock) IsSmartContract(address []byte) bool {
+func (b *MockWorld) IsSmartContract(address []byte) bool {
 	account := b.AcctMap.GetAccount(address)
 	if account == nil {
 		return false
@@ -215,7 +217,7 @@ func (b *BlockchainHookMock) IsSmartContract(address []byte) bool {
 	return account.IsSmartContract
 }
 
-func (b *BlockchainHookMock) IsPayable(address []byte) (bool, error) {
+func (b *MockWorld) IsPayable(address []byte) (bool, error) {
 	account := b.AcctMap.GetAccount(address)
 	if account == nil {
 		return true, nil
@@ -229,20 +231,20 @@ func (b *BlockchainHookMock) IsPayable(address []byte) (bool, error) {
 	return metadata.Payable, nil
 }
 
-func (b *BlockchainHookMock) SaveCompiledCode(codeHash []byte, code []byte) {
+func (b *MockWorld) SaveCompiledCode(codeHash []byte, code []byte) {
 	b.CompiledCode[string(codeHash)] = code
 }
 
-func (b *BlockchainHookMock) GetCompiledCode(codeHash []byte) (bool, []byte) {
+func (b *MockWorld) GetCompiledCode(codeHash []byte) (bool, []byte) {
 	code, found := b.CompiledCode[string(codeHash)]
 	return found, code
 }
 
-func (b *BlockchainHookMock) ClearCompiledCodes() {
+func (b *MockWorld) ClearCompiledCodes() {
 	b.CompiledCode = make(map[string][]byte)
 }
 
 // IsInterfaceNil returns true if underlying implementation is nil
-func (b *BlockchainHookMock) IsInterfaceNil() bool {
+func (b *MockWorld) IsInterfaceNil() bool {
 	return b == nil
 }

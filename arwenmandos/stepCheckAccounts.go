@@ -11,7 +11,7 @@ import (
 
 func checkAccounts(
 	checkAccounts *mj.CheckAccounts,
-	world *worldhook.BlockchainHookMock,
+	world *worldhook.MockWorld,
 ) error {
 
 	if !checkAccounts.OtherAccountsAllowed {

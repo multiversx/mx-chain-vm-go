@@ -41,7 +41,7 @@ type fuzzDelegationExecutorInitArgs struct {
 
 type fuzzDelegationExecutor struct {
 	arwenTestExecutor *am.ArwenTestExecutor
-	world             *worldhook.BlockchainHookMock
+	world             *worldhook.MockWorld
 	vm                vmi.VMExecutionHandler
 	mandosParser      mjparse.Parser
 	txIndex           int

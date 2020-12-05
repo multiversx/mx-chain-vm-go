@@ -19,7 +19,7 @@ func TestNewStorageContext(t *testing.T) {
 	t.Parallel()
 
 	host := &contextmock.VmHostMock{}
-	mockBlockchain := worldmock.NewMock()
+	mockBlockchain := worldmock.NewMockWorld()
 
 	storageContext, err := NewStorageContext(host, mockBlockchain, elrondReservedTestPrefix)
 	require.Nil(t, err)
@@ -110,7 +110,7 @@ func TestStorageContext_GetStorageUpdates(t *testing.T) {
 		OutputContext: mockOutput,
 	}
 
-	mockBlockchainHook := worldmock.NewMock()
+	mockBlockchainHook := worldmock.NewMockWorld()
 	storageContext, _ := NewStorageContext(host, mockBlockchainHook, elrondReservedTestPrefix)
 
 	storageUpdates := storageContext.GetStorageUpdates([]byte("account"))

@@ -387,14 +387,14 @@ func TestOutputContext_Transfer(t *testing.T) {
 	valueToTransfer := big.NewInt(1000)
 
 	host := &contextmock.VmHostMock{}
-	mockBlockchainHook := worldmock.NewMock()
-	mockBlockchainHook.AcctMap.PutAccount(&worldmock.Account{
+	mockWorld := worldmock.NewMockWorld()
+	mockWorld.AcctMap.PutAccount(&worldmock.Account{
 		Address: sender,
 		Nonce:   42,
 		Balance: balance,
 	})
 
-	blockchainContext, _ := NewBlockchainContext(host, mockBlockchainHook)
+	blockchainContext, _ := NewBlockchainContext(host, mockWorld)
 	outputContext, _ := NewOutputContext(host)
 
 	host.OutputContext = outputContext
@@ -420,8 +420,8 @@ func TestOutputContext_Transfer_Errors_And_Checks(t *testing.T) {
 	sender := []byte("sender")
 	receiver := []byte("receiver")
 
-	mockBlockchainHook := worldmock.NewMock()
-	mockBlockchainHook.AcctMap.PutAccount(&worldmock.Account{
+	mockWorld := worldmock.NewMockWorld()
+	mockWorld.AcctMap.PutAccount(&worldmock.Account{
 		Address: sender,
 		Nonce:   88,
 		Balance: big.NewInt(2000),
@@ -429,7 +429,7 @@ func TestOutputContext_Transfer_Errors_And_Checks(t *testing.T) {
 
 	host := &contextmock.VmHostMock{}
 	outputContext, _ := NewOutputContext(host)
-	blockchainContext, _ := NewBlockchainContext(host, mockBlockchainHook)
+	blockchainContext, _ := NewBlockchainContext(host, mockWorld)
 
 	host.OutputContext = outputContext
 	host.BlockchainContext = blockchainContext
@@ -469,8 +469,8 @@ func TestOutputContext_Transfer_IsAccountPayable(t *testing.T) {
 	receiverPayable := make([]byte, 32)
 	receiverPayable[31] = 1
 
-	mockBlockchainHook := worldmock.NewMock()
-	mockBlockchainHook.AcctMap.PutAccounts([]*worldmock.Account{
+	mockWorld := worldmock.NewMockWorld()
+	mockWorld.AcctMap.PutAccounts([]*worldmock.Account{
 		{
 			Address: sender,
 			Nonce:   0,
@@ -495,7 +495,7 @@ func TestOutputContext_Transfer_IsAccountPayable(t *testing.T) {
 
 	host := &contextmock.VmHostMock{}
 	oc, _ := NewOutputContext(host)
-	bc, _ := NewBlockchainContext(host, mockBlockchainHook)
+	bc, _ := NewBlockchainContext(host, mockWorld)
 
 	host.OutputContext = oc
 	host.BlockchainContext = bc

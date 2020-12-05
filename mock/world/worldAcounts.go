@@ -1,4 +1,4 @@
-package callbackblockchain
+package worldmock
 
 import (
 	"math/big"

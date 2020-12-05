@@ -1,4 +1,4 @@
-package callbackblockchain
+package worldmock
 
 import (
 	"errors"
@@ -8,7 +8,7 @@ import (
 )
 
 // UpdateBalance sets a new balance to an account
-func (b *BlockchainHookMock) UpdateBalance(address []byte, newBalance *big.Int) error {
+func (b *MockWorld) UpdateBalance(address []byte, newBalance *big.Int) error {
 	acct := b.AcctMap.GetAccount(address)
 	if acct == nil {
 		return errors.New("method UpdateBalance expects an existing address")
@@ -18,7 +18,7 @@ func (b *BlockchainHookMock) UpdateBalance(address []byte, newBalance *big.Int) 
 }
 
 // UpdateBalanceWithDelta changes balance of an account by a given amount
-func (b *BlockchainHookMock) UpdateBalanceWithDelta(address []byte, balanceDelta *big.Int) error {
+func (b *MockWorld) UpdateBalanceWithDelta(address []byte, balanceDelta *big.Int) error {
 	acct := b.AcctMap.GetAccount(address)
 	if acct == nil {
 		return errors.New("method UpdateBalanceWithDelta expects an existing address")
@@ -28,7 +28,7 @@ func (b *BlockchainHookMock) UpdateBalanceWithDelta(address []byte, balanceDelta
 }
 
 // UpdateWorldStateBefore performs gas payment, before transaction
-func (b *BlockchainHookMock) UpdateWorldStateBefore(
+func (b *MockWorld) UpdateWorldStateBefore(
 	fromAddr []byte,
 	gasLimit uint64,
 	gasPrice uint64) error {
@@ -49,7 +49,7 @@ func (b *BlockchainHookMock) UpdateWorldStateBefore(
 }
 
 // UpdateAccounts should be called after the VM test has run, to update world state
-func (b *BlockchainHookMock) UpdateAccounts(
+func (b *MockWorld) UpdateAccounts(
 	outputAccounts map[string]*vmcommon.OutputAccount,
 	accountsToDelete [][]byte) error {
 
