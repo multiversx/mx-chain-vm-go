@@ -89,7 +89,7 @@ func (p *Parser) processAccount(acctRaw oj.OJsonObject) (*mj.Account, error) {
 				if err != nil {
 					return nil, fmt.Errorf("invalid esdt value: %w", err)
 				}
-				esdtData.Ticker = mj.NewJSONBytesFromString(tickerStr, esdtKvp.Key)
+				esdtData.TokenName = mj.NewJSONBytesFromString(tickerStr, esdtKvp.Key)
 				acct.ESDTData = append(acct.ESDTData, esdtData)
 			}
 		default:
@@ -202,7 +202,7 @@ func (p *Parser) processCheckAccount(acctRaw oj.OJsonObject) (*mj.CheckAccount, 
 				if err != nil {
 					return nil, fmt.Errorf("invalid esdt value: %w", err)
 				}
-				esdtData.Ticker = mj.NewJSONBytesFromString(tickerStr, esdtKvp.Key)
+				esdtData.TokenName = mj.NewJSONBytesFromString(tickerStr, esdtKvp.Key)
 				acct.ESDTData = append(acct.ESDTData, esdtData)
 			}
 		default:

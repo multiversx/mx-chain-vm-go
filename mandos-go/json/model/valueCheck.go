@@ -119,3 +119,12 @@ func (jcu JSONCheckUint64) Check(other uint64) bool {
 	}
 	return jcu.Value == other
 }
+
+// CheckBool interprets own value as bool (true = anything > 0, false = 0),
+// We are using JSONCheckUint64 for bool too so we don't create another type.
+func (jcu JSONCheckUint64) CheckBool(other bool) bool {
+	if jcu.IsStar {
+		return true
+	}
+	return jcu.Value > 0 == other
+}

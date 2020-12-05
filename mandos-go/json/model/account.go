@@ -22,7 +22,7 @@ type StorageKeyValuePair struct {
 
 // ESDTData models an account holding an ESDT token
 type ESDTData struct {
-	Ticker  JSONBytesFromString
+	TokenName  JSONBytesFromString
 	Balance JSONBigInt
 	Frozen  JSONUint64
 }
@@ -42,7 +42,7 @@ type CheckAccount struct {
 
 // CheckESDTData checks the ESDT tokens held by an account
 type CheckESDTData struct {
-	Ticker  JSONBytesFromString
+	TokenName  JSONBytesFromString
 	Balance JSONCheckBigInt
 	Frozen  JSONCheckUint64
 }

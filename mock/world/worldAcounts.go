@@ -22,13 +22,14 @@ type Account struct {
 	Username        []byte
 	ShardID         uint32
 	IsSmartContract bool
-	ESDTData        map[string]ESDTData
+	ESDTData        map[string]*ESDTData
 }
 
 // ESDTData models an account holding an ESDT token
 type ESDTData struct {
-	Balance *big.Int
-	Frozen  bool
+	Balance      *big.Int
+	BalanceDelta *big.Int
+	Frozen       bool
 }
 
 var storageDefaultValue = []byte{}

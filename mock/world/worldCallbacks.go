@@ -163,12 +163,12 @@ func (b *BlockchainHookMock) ProcessBuiltInFunction(input *vmcommon.ContractCall
 		return nil, b.Err
 	}
 
-	return &vmcommon.VMOutput{}, nil
+	return b.processBuiltInFunction(input)
 }
 
 // GetBuiltinFunctionNames -
 func (b *BlockchainHookMock) GetBuiltinFunctionNames() vmcommon.FunctionNames {
-	return make(vmcommon.FunctionNames)
+	return getBuiltinFunctionNames()
 }
 
 // GetAllState simply returns the storage as-is.

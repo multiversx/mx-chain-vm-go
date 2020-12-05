@@ -14,7 +14,10 @@ func (p *Parser) processTx(txType mj.TransactionType, blrRaw oj.OJsonObject) (*m
 		return nil, errors.New("unmarshalled transaction is not a map")
 	}
 
-	blt := mj.Transaction{Type: txType}
+	blt := mj.Transaction{
+		Type:      txType,
+		ESDTValue: mj.JSONBigIntZero(),
+	}
 	var err error
 	for _, kvp := range bltMap.OrderedKV {
 
