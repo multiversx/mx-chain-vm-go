@@ -16,7 +16,7 @@ var TestVMType = []byte{0, 0}
 // ArwenTestExecutor parses, interprets and executes both .test.json tests and .scen.json scenarios with Arwen.
 type ArwenTestExecutor struct {
 	fileResolver fr.FileResolver
-	World        *worldhook.BlockchainHookMock
+	World        *worldhook.MockWorld
 	vm           vmi.VMExecutionHandler
 	checkGas     bool
 }
@@ -26,7 +26,7 @@ var _ mc.ScenarioExecutor = (*ArwenTestExecutor)(nil)
 
 // NewArwenTestExecutor prepares a new ArwenTestExecutor instance.
 func NewArwenTestExecutor() (*ArwenTestExecutor, error) {
-	world := worldhook.NewMock()
+	world := worldhook.NewMockWorld()
 	world.EnableMockAddressGeneration()
 
 	blockGasLimit := uint64(10000000)

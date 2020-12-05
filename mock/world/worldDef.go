@@ -1,4 +1,4 @@
-package callbackblockchain
+package worldmock
 
 // NewAddressMock allows tests to specify what new addresses to generate
 type NewAddressMock struct {
@@ -7,7 +7,7 @@ type NewAddressMock struct {
 	NewAddress     []byte
 }
 
-// BlockInfo contains mock data about the corent block
+// BlockInfo contains metadata about a mocked block
 type BlockInfo struct {
 	BlockTimestamp uint64
 	BlockNonce     uint64
@@ -16,8 +16,8 @@ type BlockInfo struct {
 	RandomSeed     []byte
 }
 
-// BlockchainHookMock provides a mock representation of the blockchain to be used in VM tests.
-type BlockchainHookMock struct {
+// MockWorld provides a mock representation of the blockchain to be used in VM tests.
+type MockWorld struct {
 	AcctMap                      AccountMap
 	PreviousBlockInfo            *BlockInfo
 	CurrentBlockInfo             *BlockInfo
@@ -30,9 +30,9 @@ type BlockchainHookMock struct {
 	CompiledCode                 map[string][]byte
 }
 
-// NewMock creates a new mock instance
-func NewMock() *BlockchainHookMock {
-	return &BlockchainHookMock{
+// NewMockWorld creates a new mock instance
+func NewMockWorld() *MockWorld {
+	return &MockWorld{
 		AcctMap:                      NewAccountMap(),
 		PreviousBlockInfo:            nil,
 		CurrentBlockInfo:             nil,
@@ -44,7 +44,7 @@ func NewMock() *BlockchainHookMock {
 }
 
 // Clear resets all mock data between tests.
-func (b *BlockchainHookMock) Clear() {
+func (b *MockWorld) Clear() {
 	b.AcctMap = NewAccountMap()
 	b.PreviousBlockInfo = nil
 	b.CurrentBlockInfo = nil
@@ -54,11 +54,11 @@ func (b *BlockchainHookMock) Clear() {
 }
 
 // EnableMockAddressGeneration causes the mock to generate its own new addresses.
-func (b *BlockchainHookMock) EnableMockAddressGeneration() {
+func (b *MockWorld) EnableMockAddressGeneration() {
 	b.mockAddressGenerationEnabled = true
 }
 
-func (b *BlockchainHookMock) SetCurrentBlockHash(blockHash []byte) {
+func (b *MockWorld) SetCurrentBlockHash(blockHash []byte) {
 	if b.CurrentBlockInfo == nil {
 		b.CurrentBlockInfo = &BlockInfo{}
 	}

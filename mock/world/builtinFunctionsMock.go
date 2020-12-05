@@ -1,4 +1,4 @@
-package callbackblockchain
+package worldmock
 
 import (
 	"encoding/hex"
@@ -20,7 +20,7 @@ func getBuiltinFunctionNames() vmcommon.FunctionNames {
 	return builtinFunctionNames
 }
 
-func (b *BlockchainHookMock) processBuiltInFunction(input *vmcommon.ContractCallInput) (*vmi.VMOutput, error) {
+func (b *MockWorld) processBuiltInFunction(input *vmcommon.ContractCallInput) (*vmi.VMOutput, error) {
 	if input.Function == BuiltInFunctionESDTTransfer {
 		output, err := b.runESDTTransferCall(input)
 		return output, err
@@ -31,7 +31,7 @@ func (b *BlockchainHookMock) processBuiltInFunction(input *vmcommon.ContractCall
 
 // StartTransferESDT updates ESDT balance deltas, without changing the actual balances.
 // The deltas need to be committed afterwards.
-func (b *BlockchainHookMock) StartTransferESDT(from, to []byte, tokenName string, amount *big.Int) (bool, error) {
+func (b *MockWorld) StartTransferESDT(from, to []byte, tokenName string, amount *big.Int) (bool, error) {
 	sender := b.AcctMap.GetAccount(from)
 	senderESDT := sender.ESDTData[tokenName]
 	if senderESDT == nil {
@@ -63,7 +63,7 @@ func (b *BlockchainHookMock) StartTransferESDT(from, to []byte, tokenName string
 	return true, nil
 }
 
-func (b *BlockchainHookMock) runESDTTransferCall(input *vmcommon.ContractCallInput) (*vmi.VMOutput, error) {
+func (b *MockWorld) runESDTTransferCall(input *vmcommon.ContractCallInput) (*vmi.VMOutput, error) {
 	if len(input.Arguments) != 2 {
 		return nil, errors.New("ESDTTransfer expects 2 arguments")
 	}

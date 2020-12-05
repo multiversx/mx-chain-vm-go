@@ -15,7 +15,7 @@ type worldDataModel struct {
 
 type world struct {
 	id             string
-	blockchainHook *worldmock.BlockchainHookMock
+	blockchainHook *worldmock.MockWorld
 	vm             vmcommon.VMExecutionHandler
 }
 
@@ -28,7 +28,7 @@ func newWorldDataModel(worldID string) *worldDataModel {
 
 // newWorld creates a new debugging world
 func newWorld(dataModel *worldDataModel) (*world, error) {
-	blockchainHook := worldmock.NewMock()
+	blockchainHook := worldmock.NewMockWorld()
 	blockchainHook.EnableMockAddressGeneration()
 	blockchainHook.AcctMap = dataModel.Accounts
 
@@ -121,7 +121,6 @@ func (w *world) querySmartContract(request QueryRequest) *QueryResponse {
 func (w *world) createAccount(request CreateAccountRequest) *CreateAccountResponse {
 	log.Trace("w.createAccount()", "request", prettyJson(request))
 
-	// account := NewAccount(request.Address, request.Nonce, request.BalanceAsBigInt)
 	account := worldmock.Account{
 		Address: request.Address,
 		Nonce:   request.Nonce,

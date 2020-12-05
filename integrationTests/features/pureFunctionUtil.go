@@ -31,14 +31,14 @@ type resultInterpreter func([]byte) *big.Int
 type logProgress func(testCaseIndex, testCaseCount int)
 
 type pureFunctionExecutor struct {
-	world           *worldhook.BlockchainHookMock
+	world           *worldhook.MockWorld
 	vm              vmi.VMExecutionHandler
 	contractAddress []byte
 	userAddress     []byte
 }
 
 func newPureFunctionExecutor() (*pureFunctionExecutor, error) {
-	world := worldhook.NewMock()
+	world := worldhook.NewMockWorld()
 	world.EnableMockAddressGeneration()
 
 	blockGasLimit := uint64(10000000)
