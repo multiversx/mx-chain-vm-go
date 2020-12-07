@@ -8,7 +8,7 @@
                     "nonce": "0",
                     "balance": "0x100",
                     "storage": {},
-                    "code": "file:../output/features.wasm"
+                    "code": "file:../output/basic-features.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
@@ -33,7 +33,7 @@
             "expect": {
                 "out": [],
                 "status": "0x04",
-                "message": "str:panic occurred: example panic message",
+                "message": "str:panic occurred",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"
@@ -46,7 +46,7 @@
                     "nonce": "0",
                     "balance": "0x100",
                     "storage": {},
-                    "code": "file:../output/features.wasm"
+                    "code": "file:../output/basic-features.wasm"
                 },
                 "address:an_account": {
                     "nonce": "1",
