@@ -1,0 +1,177 @@
+{
+    "name": "unstake-5",
+    "comment":"check that unstake from waiting list takes funds in reverse order",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "steps/init_accounts.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "steps/deploy.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "steps/add_nodes.steps.json"
+        }, 
+        {
+            "step": "externalSteps",
+            "path": "steps/stake_1.steps.json"
+        }, 
+        {
+            "step": "externalSteps",
+            "path": "steps/increase_cap.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "steps/unstake.steps.json"
+        },
+        {
+            "step": "transfer",
+            "txId": "supply delegator 3",
+            "tx": {
+                "from": "address:endless_sack_of_erd",
+                "to": "address:delegator3",
+                "value": "500,000,000,000,000"
+            }
+        },
+        {
+            "step": "setState",
+            "comment": "time of stake 1",
+            "currentBlockInfo": {
+                "blockNonce": "501"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "delegator 3 stake 1",
+            "tx": {
+                "from": "address:delegator3",
+                "to": "address:delegation_contract",
+                "value": "200,000,000,000,000",
+                "function": "stake",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [
+                    {
+                        "address": "address:delegation_contract",
+                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000001",
+                        "topics": [
+                            "address:delegator3"
+                        ],
+                        "data": "200,000,000,000,000"
+                    }
+                ],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "setState",
+            "comment": "time of stake 2",
+            "currentBlockInfo": {
+                "blockNonce": "502"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "delegator 3 stake 2",
+            "tx": {
+                "from": "address:delegator3",
+                "to": "address:delegation_contract",
+                "value": "300,000,000,000,000",
+                "function": "stake",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [
+                    {
+                        "address": "address:delegation_contract",
+                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000001",
+                        "topics": [
+                            "address:delegator3"
+                        ],
+                        "data": "300,000,000,000,000"
+                    }
+                ],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "getFullWaitingList-before-unstake",
+            "tx": {
+                "from": "address:node_address",
+                "to": "address:delegation_contract",
+                "value": "0",
+                "function": "getFullWaitingList",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "address:delegator3", "150,000,000,000,000", "501",
+                    "address:delegator3", "300,000,000,000,000", "502"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "user-unstake",
+            "tx": {
+                "from": "address:delegator3",
+                "to": "address:delegation_contract",
+                "value": "0",
+                "function": "unStake",
+                "arguments": ["10,000,000,000,000"],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "getFullWaitingList-after-unstake",
+            "tx": {
+                "from": "address:node_address",
+                "to": "address:delegation_contract",
+                "value": "0",
+                "function": "getFullWaitingList",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "address:delegator3", "150,000,000,000,000", "501",
+                    "address:delegator3", "290,000,000,000,000", "502"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        }
+    ]
+}
