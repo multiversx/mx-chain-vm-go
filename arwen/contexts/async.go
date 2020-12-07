@@ -457,6 +457,9 @@ func (context *asyncContext) PostprocessCrossShardCallback() error {
 		return arwen.ErrCallBackFuncNotExpected
 	}
 
+	// TODO accumulate remaining gas from the callback into the AsyncContext,
+	// after fixing the bug caught by TestExecution_ExecuteOnDestContext_GasRemaining().
+
 	currentCallGroup.DeleteAsyncCall(asyncCallIndex)
 	if currentCallGroup.HasPendingCalls() {
 		return nil
