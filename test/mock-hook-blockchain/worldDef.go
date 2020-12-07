@@ -33,13 +33,17 @@ func NewMock() *BlockchainHookMock {
 		CurrentBlockInfo:             nil,
 		Blockhashes:                  nil,
 		mockAddressGenerationEnabled: false,
+		NewAddressMocks:              nil,
 	}
 }
 
 // Clear resets all mock data between tests.
 func (b *BlockchainHookMock) Clear() {
 	b.AcctMap = NewAccountMap()
+	b.PreviousBlockInfo = nil
+	b.CurrentBlockInfo = nil
 	b.Blockhashes = nil
+	b.NewAddressMocks = nil
 }
 
 // EnableMockAddressGeneration causes the mock to generate its own new addresses.
