@@ -258,7 +258,6 @@ func (context *asyncContext) createGroupCallbackInput(group *arwen.AsyncCallGrou
 func (context *asyncContext) createContextCallbackInput() *vmcommon.ContractCallInput {
 	host := context.host
 	runtime := host.Runtime()
-	metering := host.Metering()
 
 	_, arguments, err := host.CallArgsParser().ParseData(string(context.returnData))
 	if err != nil {
@@ -273,7 +272,7 @@ func (context *asyncContext) createContextCallbackInput() *vmcommon.ContractCall
 			CallValue:      runtime.GetVMInput().CallValue,
 			CallType:       vmcommon.AsynchronousCallBack,
 			GasPrice:       runtime.GetVMInput().GasPrice,
-			GasProvided:    metering.GasLeft(),
+			GasProvided:    context.gasRemaining,
 			CurrentTxHash:  runtime.GetCurrentTxHash(),
 			OriginalTxHash: runtime.GetOriginalTxHash(),
 			PrevTxHash:     runtime.GetPrevTxHash(),

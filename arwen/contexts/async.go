@@ -6,7 +6,6 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	extramath "github.com/ElrondNetwork/arwen-wasm-vm/math"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
@@ -18,6 +17,7 @@ type asyncContext struct {
 
 	callerAddr      []byte
 	gasPrice        uint64
+	gasRemaining    uint64
 	returnData      []byte
 	asyncCallGroups []*arwen.AsyncCallGroup
 }
@@ -28,6 +28,8 @@ func NewAsyncContext(host arwen.VMHost) *asyncContext {
 		host:            host,
 		stateStack:      nil,
 		callerAddr:      nil,
+		gasPrice:        0,
+		gasRemaining:    0,
 		returnData:      nil,
 		asyncCallGroups: make([]*arwen.AsyncCallGroup, 0),
 	}
@@ -37,6 +39,7 @@ func NewAsyncContext(host arwen.VMHost) *asyncContext {
 func (context *asyncContext) InitState() {
 	context.callerAddr = make([]byte, 0)
 	context.gasPrice = 0
+	context.gasRemaining = 0
 	context.returnData = make([]byte, 0)
 	context.asyncCallGroups = make([]*arwen.AsyncCallGroup, 0)
 }
@@ -47,6 +50,7 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 	context.InitState()
 	context.callerAddr = input.CallerAddr
 	context.gasPrice = input.GasPrice
+	context.gasRemaining = 0
 }
 
 // PushState creates a deep clone of the internal state and pushes it onto the
@@ -55,6 +59,7 @@ func (context *asyncContext) PushState() {
 	newState := &asyncContext{
 		callerAddr:      context.callerAddr,
 		gasPrice:        context.gasPrice,
+		gasRemaining:    context.gasRemaining,
 		returnData:      context.returnData,
 		asyncCallGroups: context.cloneCallGroups(),
 	}
@@ -90,6 +95,7 @@ func (context *asyncContext) PopSetActiveState() {
 
 	context.callerAddr = prevState.callerAddr
 	context.gasPrice = prevState.gasPrice
+	context.gasRemaining = prevState.gasRemaining
 	context.returnData = prevState.returnData
 	context.asyncCallGroups = prevState.asyncCallGroups
 }
@@ -357,27 +363,16 @@ func (context *asyncContext) Execute() error {
 
 	// Step 1: execute all AsyncCalls that can be executed synchronously
 	// (includes smart contracts and built-in functions in the same shard)
-	err := context.setupAsyncCallsGas()
+	err := context.executeSynchronousCalls()
 	if err != nil {
 		return err
 	}
 
-	err = context.executeSynchronousCalls()
-	if err != nil {
-		return err
-	}
-
-	// Step 2: redistribute unspent gas; then, in one combined step, do the
-	// following:
+	// Step 2: in one combined step, do the following:
 	// * locally execute built-in functions with cross-shard
 	//   destinations, whereby the cross-shard OutputAccount entries are generated
 	// * call host.sendAsyncCallCrossShard() for each pending AsyncCall, to
 	//   generate the corresponding cross-shard OutputAccount entries
-	err = context.setupAsyncCallsGas()
-	if err != nil {
-		return err
-	}
-
 	for _, group := range context.asyncCallGroups {
 		for _, call := range group.AsyncCalls {
 			err = context.executeAsyncCall(call)
@@ -578,55 +573,6 @@ func (context *asyncContext) determineExecutionMode(destination []byte, data []b
 	return arwen.AsyncUnknown, nil
 }
 
-// TODO decide whether this function is necessary at all, because unspent gas should
-// be accummulated into the AsyncContext, then refunded to the original caller.
-// Redistribution of gas among calls in the same group should not be necessary.
-func (context *asyncContext) setupAsyncCallsGas() error {
-	gasLeft := context.host.Metering().GasLeft()
-	gasNeeded := uint64(0)
-	callsWithZeroGas := uint64(0)
-
-	for _, group := range context.asyncCallGroups {
-		for _, asyncCall := range group.AsyncCalls {
-			var err error
-			gasNeeded, err = extramath.AddUint64(gasNeeded, asyncCall.ProvidedGas)
-			if err != nil {
-				return err
-			}
-
-			if gasNeeded > gasLeft {
-				return arwen.ErrNotEnoughGas
-			}
-
-			if asyncCall.ProvidedGas == 0 {
-				callsWithZeroGas++
-				continue
-			}
-
-			asyncCall.GasLimit = asyncCall.ProvidedGas
-		}
-	}
-
-	if callsWithZeroGas == 0 {
-		return nil
-	}
-
-	if gasLeft <= gasNeeded {
-		return arwen.ErrNotEnoughGas
-	}
-
-	gasShare := (gasLeft - gasNeeded) / callsWithZeroGas
-	for _, group := range context.asyncCallGroups {
-		for _, asyncCall := range group.AsyncCalls {
-			if asyncCall.ProvidedGas == 0 {
-				asyncCall.GasLimit = gasShare
-			}
-		}
-	}
-
-	return nil
-}
-
 func (context *asyncContext) sendAsyncCallCrossShard(asyncCall arwen.AsyncCallHandler) error {
 	host := context.host
 	runtime := host.Runtime()
@@ -680,7 +626,7 @@ func (context *asyncContext) sendContextCallbackToOriginalCaller() error {
 	err := output.Transfer(
 		context.callerAddr,
 		runtime.GetSCAddress(),
-		metering.GasLeft(),
+		context.gasRemaining,
 		0,
 		currentCall.CallValue,
 		context.returnData,
@@ -700,6 +646,8 @@ func (context *asyncContext) serialize() ([]byte, error) {
 		host:            nil,
 		stateStack:      nil,
 		callerAddr:      context.callerAddr,
+		gasPrice:        context.gasPrice,
+		gasRemaining:    context.gasRemaining,
 		returnData:      context.returnData,
 		asyncCallGroups: context.asyncCallGroups,
 	}
