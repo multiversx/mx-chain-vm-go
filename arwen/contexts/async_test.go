@@ -738,27 +738,48 @@ func TestAsyncContext_CreateCallbackInput_NotEnoughGas(t *testing.T) {
 	require.True(t, errors.Is(err, arwen.ErrNotEnoughGas))
 }
 
-func TestAsyncContext_FinishSyncExecution_NilError(t *testing.T) {
+func TestAsyncContext_FinishSyncExecution_NilError_NilVMOutput(t *testing.T) {
+	host, _, originalVMInput := InitializeArwenAndWasmer_AsyncContext_AliceAndBob()
+	host.Runtime().InitStateFromInput(originalVMInput)
+	async := NewAsyncContext(host)
+	async.finishSyncExecution(nil, nil)
+	expectedOutput := arwen.MakeVMOutput()
+	require.Equal(t, expectedOutput, host.Output().GetVMOutput())
+}
+
+func TestAsyncContext_FinishSyncExecution_Error_NilVMOutput(t *testing.T) {
 	host, _, originalVMInput := InitializeArwenAndWasmer_AsyncContext_AliceAndBob()
 	host.Runtime().InitStateFromInput(originalVMInput)
 	async := NewAsyncContext(host)
 
+	syncExecErr := arwen.ErrNotEnoughGas
+	async.finishSyncExecution(nil, syncExecErr)
+
 	expectedOutput := arwen.MakeVMOutput()
-	async.finishSyncExecution(nil, nil)
-	vmOutput := host.Output().GetVMOutput()
-	require.Equal(t, expectedOutput, vmOutput)
+	expectedOutput.ReturnCode = vmcommon.OutOfGas
+	expectedOutput.ReturnMessage = syncExecErr.Error()
+	arwen.AddFinishData(expectedOutput, []byte(vmcommon.OutOfGas.String()))
+	arwen.AddFinishData(expectedOutput, originalVMInput.CurrentTxHash)
+	require.Equal(t, expectedOutput, host.Output().GetVMOutput())
 }
 
-func TestAsyncContext_FinishSyncExecution_VMOutputAndError(t *testing.T) {
+func TestAsyncContext_FinishSyncExecution_ErrorAndVMOutput(t *testing.T) {
 	host, _, originalVMInput := InitializeArwenAndWasmer_AsyncContext_AliceAndBob()
 	host.Runtime().InitStateFromInput(originalVMInput)
 	async := NewAsyncContext(host)
 
 	syncExecOutput := arwen.MakeVMOutput()
+	syncExecOutput.ReturnCode = vmcommon.UserError
+	syncExecOutput.ReturnMessage = "user made an error"
+	syncExecErr := arwen.ErrSignalError
+	async.finishSyncExecution(syncExecOutput, syncExecErr)
 
-	async.finishSyncExecution(syncExecOutput, nil)
-	vmOutput := host.Output().GetVMOutput()
-	require.Equal(t, expectedOutput, vmOutput)
+	expectedOutput := arwen.MakeVMOutput()
+	expectedOutput.ReturnCode = vmcommon.UserError
+	expectedOutput.ReturnMessage = "user made an error"
+	arwen.AddFinishData(expectedOutput, []byte(vmcommon.UserError.String()))
+	arwen.AddFinishData(expectedOutput, originalVMInput.CurrentTxHash)
+	require.Equal(t, expectedOutput, host.Output().GetVMOutput())
 }
 
 func defaultAsyncCall_AliceToBob() *arwen.AsyncCall {
