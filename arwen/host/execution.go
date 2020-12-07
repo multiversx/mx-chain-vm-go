@@ -142,6 +142,8 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	return
 }
 
+// ExecuteOnDestContext pushes each context to the corresponding stack
+// and initializes new contexts for executing the contract call with the given input
 func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, asyncInfo *arwen.AsyncContextInfo, err error) {
 	log.Trace("ExecuteOnDestContext", "function", input.Function)
 
@@ -253,6 +255,8 @@ func (host *vmHost) finishExecuteOnDestContext(gasUsed uint64, executeErr error)
 	return vmOutput
 }
 
+// ExecuteOnSameContext executes the contract call with the given input
+// on the same runtime context. Some other contexts are backed up.
 func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asyncInfo *arwen.AsyncContextInfo, err error) {
 	log.Trace("ExecuteOnSameContext", "function", input.Function)
 
@@ -334,6 +338,7 @@ func (host *vmHost) isBuiltinFunctionBeingCalled() bool {
 	return host.IsBuiltinFunctionName(functionName)
 }
 
+// IsBuiltinFunctionName returns true if the given function name is the same as any protocol builtin function
 func (host *vmHost) IsBuiltinFunctionName(functionName string) bool {
 	_, ok := host.protocolBuiltinFunctions[functionName]
 	return ok
@@ -617,6 +622,7 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmc
 	return newVMInput, nil
 }
 
+// EthereumCallData creates and returns the input data as to be compatible with Ethereum
 func (host *vmHost) EthereumCallData() []byte {
 	if host.ethInput == nil {
 		host.ethInput = host.createETHCallInput()
@@ -673,10 +679,8 @@ func (host *vmHost) callSCMethod() error {
 		if len(pendingMap.AsyncContextMap) == 0 {
 			err = host.sendCallbackToCurrentCaller()
 		}
-		break
 	case vmcommon.AsynchronousCallBack:
 		err = host.processCallbackStack()
-		break
 	default:
 		_, err = host.processAsyncInfo(runtime.GetAsyncContextInfo())
 	}

@@ -5,21 +5,18 @@ import (
 	"io/ioutil"
 	"math/big"
 	"path/filepath"
-	"time"
 	"unsafe"
-
-	logger "github.com/ElrondNetwork/elrond-go-logger"
 )
-
-var logDuration = logger.GetOrCreate("arwen/duration")
 
 // Zero is the big integer 0
 var Zero = big.NewInt(0)
 
+// CustomStorageKey appends the given key type to the given associated key
 func CustomStorageKey(keyType string, associatedKey []byte) []byte {
 	return append(associatedKey, []byte(keyType)...)
 }
 
+// BooleanToInt returns 1 if the given bool is true, 0 otherwise
 func BooleanToInt(b bool) int {
 	if b {
 		return 1
@@ -27,6 +24,7 @@ func BooleanToInt(b bool) int {
 	return 0
 }
 
+// GuardedMakeByteSlice2D creates a new two-dimensional byte slice of the given dimension.
 func GuardedMakeByteSlice2D(length int32) ([][]byte, error) {
 	if length < 0 {
 		return nil, fmt.Errorf("GuardedMakeByteSlice2D: negative length (%d)", length)
@@ -36,6 +34,7 @@ func GuardedMakeByteSlice2D(length int32) ([][]byte, error) {
 	return result, nil
 }
 
+// GuardedGetBytesSlice returns a chunk from the given data
 func GuardedGetBytesSlice(data []byte, offset int32, length int32) ([]byte, error) {
 	dataLength := uint32(len(data))
 	isOffsetTooSmall := offset < 0
@@ -56,6 +55,7 @@ func GuardedGetBytesSlice(data []byte, offset int32, length int32) ([]byte, erro
 	return result, nil
 }
 
+// PadBytesLeft adds a padding of the given size to the left the byte slice
 func PadBytesLeft(data []byte, size int) []byte {
 	if data == nil {
 		return nil
@@ -73,6 +73,7 @@ func PadBytesLeft(data []byte, size int) []byte {
 	return paddedBytes
 }
 
+// InverseBytes reverses the bytes of the given byte slice
 func InverseBytes(data []byte) []byte {
 	length := len(data)
 	invBytes := make([]byte, length)
@@ -82,6 +83,7 @@ func InverseBytes(data []byte) []byte {
 	return invBytes
 }
 
+// WithFault returns true if the error is not nil, and uses the remaining gas if the execution has failed
 func WithFault(err error, context unsafe.Pointer, failExecution bool) bool {
 	if err == nil {
 		return false
@@ -98,21 +100,10 @@ func WithFault(err error, context unsafe.Pointer, failExecution bool) bool {
 	return true
 }
 
+// GetSCCode returns the SC code from a given file
 func GetSCCode(fileName string) []byte {
 	code, _ := ioutil.ReadFile(filepath.Clean(fileName))
 	return code
-}
-
-func TimeTrack(start time.Time, message string) {
-	elapsed := time.Since(start)
-	logDuration.Trace(message, "duration", elapsed)
-}
-
-func U64MulToBigInt(x, y uint64) *big.Int {
-	bx := big.NewInt(0).SetUint64(x)
-	by := big.NewInt(0).SetUint64(y)
-
-	return big.NewInt(0).Mul(bx, by)
 }
 
 // U64ToLEB128 encodes an uint64 using LEB128 (Little Endian Base 128), used in WASM bytecode

@@ -289,7 +289,7 @@ func ethgetBlockHash(context unsafe.Pointer, number int64, resultOffset int32) i
 
 //export ethcallDataCopy
 func ethcallDataCopy(context unsafe.Pointer, resultOffset int32, dataOffset int32, length int32) {
-	host := arwen.GetVmContext(context)
+	host := arwen.GetVMContext(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
 
@@ -311,7 +311,7 @@ func ethcallDataCopy(context unsafe.Pointer, resultOffset int32, dataOffset int3
 
 //export ethgetCallDataSize
 func ethgetCallDataSize(context unsafe.Pointer) int32 {
-	host := arwen.GetVmContext(context)
+	host := arwen.GetVMContext(context)
 	metering := host.Metering()
 
 	gasToUse := metering.GasSchedule().EthAPICost.GetCallDataSize
@@ -752,7 +752,7 @@ func ethgetBlockDifficulty(context unsafe.Pointer, resultOffset int32) {
 
 //export ethcall
 func ethcall(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueOffset int32, dataOffset int32, dataLength int32) int32 {
-	host := arwen.GetVmContext(context)
+	host := arwen.GetVMContext(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
 
@@ -802,7 +802,7 @@ func ethcall(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueO
 
 //export ethcallCode
 func ethcallCode(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueOffset int32, dataOffset int32, dataLength int32) int32 {
-	host := arwen.GetVmContext(context)
+	host := arwen.GetVMContext(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
 
@@ -852,7 +852,7 @@ func ethcallCode(context unsafe.Pointer, gasLimit int64, addressOffset int32, va
 
 //export ethcallDelegate
 func ethcallDelegate(context unsafe.Pointer, gasLimit int64, addressOffset int32, dataOffset int32, dataLength int32) int32 {
-	host := arwen.GetVmContext(context)
+	host := arwen.GetVMContext(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
 
@@ -897,7 +897,7 @@ func ethcallDelegate(context unsafe.Pointer, gasLimit int64, addressOffset int32
 
 //export ethcallStatic
 func ethcallStatic(context unsafe.Pointer, gasLimit int64, addressOffset int32, dataOffset int32, dataLength int32) int32 {
-	host := arwen.GetVmContext(context)
+	host := arwen.GetVMContext(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
 
@@ -955,7 +955,7 @@ func ethcallStatic(context unsafe.Pointer, gasLimit int64, addressOffset int32, 
 
 //export ethcreate
 func ethcreate(context unsafe.Pointer, valueOffset int32, dataOffset int32, length int32, resultOffset int32) int32 {
-	host := arwen.GetVmContext(context)
+	host := arwen.GetVMContext(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
 

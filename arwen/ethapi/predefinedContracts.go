@@ -45,7 +45,7 @@ func CallPredefinedContract(context unsafe.Pointer, address []byte, data []byte)
 	return nil
 }
 
-func ecrecover(context unsafe.Pointer, data []byte) ([]byte, error) {
+func ecrecover(_ unsafe.Pointer, _ []byte) ([]byte, error) {
 	return nil, fmt.Errorf("EEI system contract not implemented: ecrecover")
 }
 
@@ -59,7 +59,7 @@ func ripemd160(context unsafe.Pointer, data []byte) ([]byte, error) {
 	return crypto.Ripemd160(data)
 }
 
-func identity(context unsafe.Pointer, data []byte) ([]byte, error) {
+func identity(_ unsafe.Pointer, data []byte) ([]byte, error) {
 	return data, nil
 }
 

@@ -76,7 +76,7 @@ func deploy(tb testing.TB, totalTokenSupply *big.Int) (*vmHost, *mock.Blockchain
 		Balance: big.NewInt(0),
 	})
 
-	gasMap, err := LoadGasScheduleConfig("../../test/gasSchedule.toml")
+	gasMap, err := loadGasScheduleConfig("../../test/gasSchedule.toml")
 	require.Nil(tb, err)
 
 	host, err := NewArwenVM(mockBlockchainHook, &arwen.VMHostParameters{
