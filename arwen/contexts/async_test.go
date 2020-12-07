@@ -738,7 +738,27 @@ func TestAsyncContext_CreateCallbackInput_NotEnoughGas(t *testing.T) {
 	require.True(t, errors.Is(err, arwen.ErrNotEnoughGas))
 }
 
-func TestAsyncContext_FinishSyncExecution(t *testing.T) {
+func TestAsyncContext_FinishSyncExecution_NilError(t *testing.T) {
+	host, _, originalVMInput := InitializeArwenAndWasmer_AsyncContext_AliceAndBob()
+	host.Runtime().InitStateFromInput(originalVMInput)
+	async := NewAsyncContext(host)
+
+	expectedOutput := arwen.MakeVMOutput()
+	async.finishSyncExecution(nil, nil)
+	vmOutput := host.Output().GetVMOutput()
+	require.Equal(t, expectedOutput, vmOutput)
+}
+
+func TestAsyncContext_FinishSyncExecution_VMOutputAndError(t *testing.T) {
+	host, _, originalVMInput := InitializeArwenAndWasmer_AsyncContext_AliceAndBob()
+	host.Runtime().InitStateFromInput(originalVMInput)
+	async := NewAsyncContext(host)
+
+	syncExecOutput := arwen.MakeVMOutput()
+
+	async.finishSyncExecution(syncExecOutput, nil)
+	vmOutput := host.Output().GetVMOutput()
+	require.Equal(t, expectedOutput, vmOutput)
 }
 
 func defaultAsyncCall_AliceToBob() *arwen.AsyncCall {
