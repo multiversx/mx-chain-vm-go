@@ -43,6 +43,8 @@ type VMHost interface {
 	GetAPIMethods() *wasmer.Imports
 	GetProtocolBuiltinFunctions() vmcommon.FunctionNames
 	IsBuiltinFunctionName(functionName string) bool
+	AreInSameShard(leftAddress []byte, rightAddress []byte)
+	GetArgumentsFromMemory(funcOffset int32, funcLen int32, numArgs int32, argLensOffset int32, dataOffset int32) (string, [][]byte, int32, error)
 }
 
 // BlockchainContext defines the functionality needed for interacting with the blockchain context

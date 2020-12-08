@@ -653,7 +653,7 @@ func upgradeContract(
 		return
 	}
 
-	_, data, actualLen, err := getArgumentsFromMemory(
+	_, data, actualLen, err := host.GetArgumentsFromMemory(
 		context,
 		0,
 		0,
@@ -1284,7 +1284,7 @@ func executeOnSameContext(
 		return 1
 	}
 
-	if !areInSameShard(host, sender, destination) {
+	if !host.AreInSameShard(sender, destination) {
 		err = arwen.ErrSyncExecutionNotInSameShard
 		arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution())
 		return 1
@@ -1295,7 +1295,7 @@ func executeOnSameContext(
 		return 1
 	}
 
-	function, data, actualLen, err := getArgumentsFromMemory(
+	function, data, actualLen, err := host.GetArgumentsFromMemory(
 		context,
 		functionOffset,
 		functionLength,
@@ -1352,12 +1352,13 @@ func executeOnDestContext(
 	metering.UseGas(gasToUse)
 
 	sender := runtime.GetSCAddress()
+
 	destination, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
 	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
-	if !areInSameShard(host, sender, destination) {
+	if !host.AreInSameShard(sender, destination) {
 		err = arwen.ErrSyncExecutionNotInSameShard
 		arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution())
 		return 1
@@ -1368,7 +1369,7 @@ func executeOnDestContext(
 		return 1
 	}
 
-	function, data, actualLen, err := getArgumentsFromMemory(
+	function, data, actualLen, err := host.GetArgumentsFromMemory(
 		context,
 		functionOffset,
 		functionLength,
@@ -1404,47 +1405,6 @@ func executeOnDestContext(
 	return 0
 }
 
-func getArgumentsFromMemory(
-	context unsafe.Pointer,
-	functionOffset int32,
-	functionLength int32,
-	numArguments int32,
-	argumentsLengthOffset int32,
-	dataOffset int32,
-) (string, [][]byte, int32, error) {
-	runtime := arwen.GetRuntimeContext(context)
-
-	function, err := runtime.MemLoad(functionOffset, functionLength)
-	if err != nil {
-		return "", nil, 0, err
-	}
-
-	argumentsLengthData, err := runtime.MemLoad(argumentsLengthOffset, numArguments*4)
-	if err != nil {
-		return "", nil, 0, err
-	}
-
-	currOffset := dataOffset
-	data, err := arwen.GuardedMakeByteSlice2D(numArguments)
-	if err != nil {
-		return "", nil, 0, err
-	}
-
-	for i := int32(0); i < numArguments; i++ {
-		currArgLenData := argumentsLengthData[i*4 : i*4+4]
-		actualLen := bytesToInt32(currArgLenData)
-
-		data[i], err = runtime.MemLoad(currOffset, actualLen)
-		if err != nil {
-			return "", nil, 0, err
-		}
-
-		currOffset += actualLen
-	}
-
-	return string(function), data, currOffset - dataOffset, nil
-}
-
 //export delegateExecution
 func delegateExecution(
 	context unsafe.Pointer,
@@ -1469,13 +1429,13 @@ func delegateExecution(
 		return 1
 	}
 
-	if !areInSameShard(host, sender, destination) {
+	if !host.AreInSameShard(sender, destination) {
 		err = arwen.ErrSyncExecutionNotInSameShard
 		arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution())
 		return 1
 	}
 
-	function, data, actualLen, err := getArgumentsFromMemory(
+	function, data, actualLen, err := host.GetArgumentsFromMemory(
 		context,
 		functionOffset,
 		functionLength,
@@ -1513,15 +1473,6 @@ func delegateExecution(
 	return 0
 }
 
-func bytesToInt32(data []byte) int32 {
-	actualLen := int32(0)
-	for i := len(data) - 1; i >= 0; i-- {
-		actualLen = (actualLen << 8) + int32(data[i])
-	}
-
-	return actualLen
-}
-
 //export executeReadOnly
 func executeReadOnly(
 	context unsafe.Pointer,
@@ -1546,13 +1497,13 @@ func executeReadOnly(
 		return 1
 	}
 
-	if !areInSameShard(host, sender, destination) {
+	if !host.AreInSameShard(sender, destination) {
 		err = arwen.ErrSyncExecutionNotInSameShard
 		arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution())
 		return 1
 	}
 
-	function, data, actualLen, err := getArgumentsFromMemory(
+	function, data, actualLen, err := host.GetArgumentsFromMemory(
 		context,
 		functionOffset,
 		functionLength,
@@ -1629,7 +1580,7 @@ func createContract(
 		return 1
 	}
 
-	_, data, actualLen, err := getArgumentsFromMemory(
+	_, data, actualLen, err := host.GetArgumentsFromMemory(
 		context,
 		0,
 		0,
@@ -1730,12 +1681,4 @@ func getOriginalTxHash(context unsafe.Pointer, dataOffset int32) {
 
 	err := runtime.MemStore(dataOffset, runtime.GetOriginalTxHash())
 	_ = arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
-}
-
-func areInSameShard(host arwen.VMHost, leftAddress []byte, rightAddress []byte) bool {
-	blockchain := host.Blockchain()
-	leftShard := blockchain.GetShardOfAddress(leftAddress)
-	rightShard := blockchain.GetShardOfAddress(rightAddress)
-
-	return leftShard == rightShard
 }
