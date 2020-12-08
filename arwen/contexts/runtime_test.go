@@ -9,7 +9,6 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/cryptoapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/elrondapi"
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/ethapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
@@ -25,7 +24,6 @@ func MakeAPIImports() *wasmer.Imports {
 	imports, _ := elrondapi.ElrondEIImports()
 	imports, _ = elrondapi.BigIntImports(imports)
 	imports, _ = elrondapi.SmallIntImports(imports)
-	imports, _ = ethapi.EthereumImports(imports)
 	imports, _ = cryptoapi.CryptoImports(imports)
 	return imports
 }

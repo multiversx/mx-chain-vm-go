@@ -25,7 +25,6 @@ type VmHostStub struct {
 	CreateNewContractCalled           func(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContextCalled        func(input *vmcommon.ContractCallInput) (*arwen.AsyncContextInfo, error)
 	ExecuteOnDestContextCalled        func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *arwen.AsyncContextInfo, error)
-	EthereumCallDataCalled            func() []byte
 	GetAPIMethodsCalled               func() *wasmer.Imports
 	GetProtocolBuiltinFunctionsCalled func() vmcommon.FunctionNames
 	IsBuiltinFunctionNameCalled       func(functionName string) bool
@@ -135,13 +134,6 @@ func (vhs *VmHostStub) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (
 		return vhs.ExecuteOnDestContextCalled(input)
 	}
 	return nil, nil, nil
-}
-
-func (vhs *VmHostStub) EthereumCallData() []byte {
-	if vhs.EthereumCallDataCalled != nil {
-		return vhs.EthereumCallDataCalled()
-	}
-	return nil
 }
 
 func (vhs *VmHostStub) GetAPIMethods() *wasmer.Imports {

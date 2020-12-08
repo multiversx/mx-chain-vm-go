@@ -622,14 +622,6 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmc
 	return newVMInput, nil
 }
 
-// EthereumCallData creates and returns the input data as to be compatible with Ethereum
-func (host *vmHost) EthereumCallData() []byte {
-	if host.ethInput == nil {
-		host.ethInput = host.createETHCallInput()
-	}
-	return host.ethInput
-}
-
 func (host *vmHost) callInitFunction() error {
 	runtime := host.Runtime()
 	init := runtime.GetInitFunction()
@@ -704,30 +696,6 @@ func (host *vmHost) verifyAllowedFunctionCall() error {
 	}
 
 	return nil
-}
-
-// The first four bytes is the method selector. The rest of the input data are method arguments in chunks of 32 bytes.
-// The method selector is the kecccak256 hash of the method signature.
-func (host *vmHost) createETHCallInput() []byte {
-	newInput := make([]byte, 0)
-
-	function := host.Runtime().Function()
-	if len(function) > 0 {
-		hashOfFunction, err := host.cryptoHook.Keccak256([]byte(function))
-		if err != nil {
-			return nil
-		}
-
-		newInput = append(newInput, hashOfFunction[0:4]...)
-	}
-
-	for _, arg := range host.Runtime().Arguments() {
-		paddedArg := make([]byte, arwen.ArgumentLenEth)
-		copy(paddedArg[arwen.ArgumentLenEth-len(arg):], arg)
-		newInput = append(newInput, paddedArg...)
-	}
-
-	return newInput
 }
 
 func isSCExecutionAfterBuiltInFunc(

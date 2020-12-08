@@ -40,7 +40,6 @@ type VMHost interface {
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*AsyncContextInfo, error)
 	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *AsyncContextInfo, error)
-	EthereumCallData() []byte
 	GetAPIMethods() *wasmer.Imports
 	GetProtocolBuiltinFunctions() vmcommon.FunctionNames
 	IsBuiltinFunctionName(functionName string) bool
