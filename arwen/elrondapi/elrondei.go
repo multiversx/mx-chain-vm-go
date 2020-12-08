@@ -511,8 +511,8 @@ func transferValue(context unsafe.Pointer, destOffset int32, valueOffset int32, 
 
 	// TODO write test for this, after removing vmContextMap
 	argParser := parsers.NewCallArgsParser()
-	functionName, _, err := argParser.ParseData(string(data))
-	if host.IsBuiltinFunctionName(functionName) || arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	functionName, _, _ := argParser.ParseData(string(data))
+	if host.IsBuiltinFunctionName(functionName) {
 		return 1
 	}
 
