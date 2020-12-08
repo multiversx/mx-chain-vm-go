@@ -168,6 +168,7 @@ func (host *vmHost) sendCallbackToCurrentCaller() error {
 		return err
 	}
 
+	metering.UseGas(metering.GasLeft())
 	return nil
 }
 
