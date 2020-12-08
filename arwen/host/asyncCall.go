@@ -136,6 +136,8 @@ func (host *vmHost) sendAsyncCallToDestination(asyncCallInfo arwen.AsyncCallInfo
 		return err
 	}
 
+	metering := host.Metering()
+	metering.UseGas(metering.GasLeft())
 	return nil
 }
 

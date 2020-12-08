@@ -1014,6 +1014,40 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 	}
 }
 
+func TestExecution_AsyncCall_GasLimitConsumed(t *testing.T) {
+	parentCode := GetTestSCCode("async-call-parent", "../../")
+	childCode := GetTestSCCode("async-call-child", "../../")
+	parentSCBalance := big.NewInt(1000)
+
+	host, stubBlockchainHook := defaultTestArwenForTwoSCs(t, parentCode, childCode, parentSCBalance)
+	stubBlockchainHook.GetUserAccountCalled = func(scAddress []byte) (vmcommon.UserAccountHandler, error) {
+		if bytes.Equal(scAddress, parentAddress) {
+			return &mock.AccountMock{
+				Code:    parentCode,
+				Balance: parentSCBalance,
+			}, nil
+		}
+		return nil, errAccountNotFound
+	}
+	stubBlockchainHook.GetShardOfAddressCalled = func(address []byte) uint32 {
+		if bytes.Equal(address, parentAddress) {
+			return 0
+		}
+		return 1
+	}
+
+	input := DefaultTestContractCallInput()
+	input.RecipientAddr = parentAddress
+	input.Function = parentPerformAsyncCall
+	input.GasProvided = 1000000
+	input.Arguments = [][]byte{{0}}
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Zero(t, vmOutput.GasRemaining)
+}
+
 func TestExecution_AsyncCall(t *testing.T) {
 	// Scenario
 	// Parent SC calls Child SC
