@@ -78,6 +78,10 @@ func (host *VmHostMock) ExecuteOnDestContext(_ *vmcommon.ContractCallInput) (*vm
 	return nil, nil, nil
 }
 
+func (host *VmHostMock) AreInSameShard(left []byte, right []byte) bool {
+	return true
+}
+
 func (host *VmHostMock) InitState() {
 }
 

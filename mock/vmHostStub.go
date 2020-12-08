@@ -28,6 +28,7 @@ type VmHostStub struct {
 	GetAPIMethodsCalled               func() *wasmer.Imports
 	GetProtocolBuiltinFunctionsCalled func() vmcommon.FunctionNames
 	IsBuiltinFunctionNameCalled       func(functionName string) bool
+	AreInSameShardCalled              func(left []byte, right []byte) bool
 }
 
 func (vhs *VmHostStub) InitState() {
@@ -134,6 +135,13 @@ func (vhs *VmHostStub) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (
 		return vhs.ExecuteOnDestContextCalled(input)
 	}
 	return nil, nil, nil
+}
+
+func (vhs *VmHostStub) AreInSameShard(left []byte, right []byte) bool {
+	if vhs.AreInSameShardCalled != nil {
+		return vhs.AreInSameShardCalled(left, right)
+	}
+	return true
 }
 
 func (vhs *VmHostStub) GetAPIMethods() *wasmer.Imports {

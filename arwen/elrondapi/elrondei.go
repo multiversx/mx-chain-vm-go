@@ -659,8 +659,8 @@ func upgradeContract(
 		return
 	}
 
-	_, data, actualLen, err := host.GetArgumentsFromMemory(
-		context,
+	_, data, actualLen, err := getArgumentsFromMemory(
+		host,
 		0,
 		0,
 		numArguments,
@@ -1291,7 +1291,8 @@ func executeOnSameContext(
 
 	sender := runtime.GetSCAddress()
 	bigIntVal := big.NewInt(0).SetBytes(value)
-	contractCallInput, err := host.prepareIndirectContractCallInput(
+	contractCallInput, err := prepareIndirectContractCallInput(
+		host,
 		sender,
 		bigIntVal,
 		gasLimit,
@@ -1340,7 +1341,8 @@ func executeOnDestContext(
 
 	sender := runtime.GetSCAddress()
 	bigIntVal := big.NewInt(0).SetBytes(value)
-	contractCallInput, err := host.prepareIndirectContractCallInput(
+	contractCallInput, err := prepareIndirectContractCallInput(
+		host,
 		sender,
 		bigIntVal,
 		gasLimit,
@@ -1389,7 +1391,8 @@ func executeOnDestContextByCaller(
 
 	sender := runtime.GetVMInput().CallerAddr
 	bigIntVal := big.NewInt(0).SetBytes(value)
-	contractCallInput, err := host.prepareIndirectContractCallInput(
+	contractCallInput, err := prepareIndirectContractCallInput(
+		host,
 		sender,
 		bigIntVal,
 		gasLimit,
@@ -1433,7 +1436,8 @@ func delegateExecution(
 	sender := runtime.GetSCAddress()
 	value := runtime.GetVMInput().CallValue
 	bigIntVal := big.NewInt(0).Set(value)
-	contractCallInput, err := host.prepareIndirectContractCallInput(
+	contractCallInput, err := prepareIndirectContractCallInput(
+		host,
 		sender,
 		bigIntVal,
 		gasLimit,
@@ -1478,7 +1482,8 @@ func executeReadOnly(
 	value := runtime.GetVMInput().CallValue
 	bigIntVal := big.NewInt(0).Set(value)
 
-	contractCallInput, err := host.prepareIndirectContractCallInput(
+	contractCallInput, err := prepareIndirectContractCallInput(
+		host,
 		sender,
 		bigIntVal,
 		gasLimit,
@@ -1539,8 +1544,8 @@ func createContract(
 		return 1
 	}
 
-	_, data, actualLen, err := host.GetArgumentsFromMemory(
-		context,
+	_, data, actualLen, err := getArgumentsFromMemory(
+		host,
 		0,
 		0,
 		numArguments,
@@ -1640,4 +1645,107 @@ func getOriginalTxHash(context unsafe.Pointer, dataOffset int32) {
 
 	err := runtime.MemStore(dataOffset, runtime.GetOriginalTxHash())
 	_ = arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
+}
+
+func prepareIndirectContractCallInput(
+	host arwen.VMHost,
+	sender []byte,
+	value *big.Int,
+	gasLimit int64,
+	addressOffset int32,
+	functionOffset int32,
+	functionLength int32,
+	numArguments int32,
+	argumentsLengthOffset int32,
+	dataOffset int32,
+) (*vmcommon.ContractCallInput, error) {
+	runtime := host.Runtime()
+	metering := host.Metering()
+
+	destination, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
+	if err != nil {
+		return nil, err
+	}
+
+	if !host.AreInSameShard(sender, destination) {
+		return nil, arwen.ErrSyncExecutionNotInSameShard
+	}
+
+	function, data, actualLen, err := getArgumentsFromMemory(
+		host,
+		functionOffset,
+		functionLength,
+		numArguments,
+		argumentsLengthOffset,
+		dataOffset,
+	)
+	gasToUse := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
+	metering.UseGas(gasToUse)
+	if err != nil {
+		return nil, err
+	}
+
+	contractCallInput := &vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			CallerAddr:  sender,
+			Arguments:   data,
+			CallValue:   value,
+			GasPrice:    0,
+			GasProvided: metering.BoundGasLimit(gasLimit),
+		},
+		RecipientAddr: destination,
+		Function:      function,
+	}
+
+	return contractCallInput, nil
+}
+
+func getArgumentsFromMemory(
+	host arwen.VMHost,
+	functionOffset int32,
+	functionLength int32,
+	numArguments int32,
+	argumentsLengthOffset int32,
+	dataOffset int32,
+) (string, [][]byte, int32, error) {
+	runtime := host.Runtime()
+
+	function, err := runtime.MemLoad(functionOffset, functionLength)
+	if err != nil {
+		return "", nil, 0, err
+	}
+
+	argumentsLengthData, err := runtime.MemLoad(argumentsLengthOffset, numArguments*4)
+	if err != nil {
+		return "", nil, 0, err
+	}
+
+	currOffset := dataOffset
+	data, err := arwen.GuardedMakeByteSlice2D(numArguments)
+	if err != nil {
+		return "", nil, 0, err
+	}
+
+	for i := int32(0); i < numArguments; i++ {
+		currArgLenData := argumentsLengthData[i*4 : i*4+4]
+		actualLen := bytesToInt32(currArgLenData)
+
+		data[i], err = runtime.MemLoad(currOffset, actualLen)
+		if err != nil {
+			return "", nil, 0, err
+		}
+
+		currOffset += actualLen
+	}
+
+	return string(function), data, currOffset - dataOffset, nil
+}
+
+func bytesToInt32(data []byte) int32 {
+	actualLen := int32(0)
+	for i := len(data) - 1; i >= 0; i-- {
+		actualLen = (actualLen << 8) + int32(data[i])
+	}
+
+	return actualLen
 }
