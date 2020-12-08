@@ -21,7 +21,7 @@ func TestExecution_ExecuteOnSameContext_BuiltinFunctions(t *testing.T) {
 	code := GetTestSCCode("exec-same-ctx-builtin", "../../")
 	scBalance := big.NewInt(1000)
 
-	host, stubBlockchainHook := DefaultTestArwenForCall(t, code, scBalance)
+	host, stubBlockchainHook := defaultTestArwenForCall(t, code, scBalance)
 	stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
 	host.protocolBuiltinFunctions = getDummyBuiltinFunctionNames()
 
@@ -36,7 +36,7 @@ func TestExecution_ExecuteOnSameContext_BuiltinFunctions(t *testing.T) {
 	require.Nil(t, err)
 
 	require.NotNil(t, vmOutput)
-	expectedVMOutput := expectedVMOutput_SameCtx_BuiltinFunctions_1(code)
+	expectedVMOutput := expectedVMOutputSameCtxBuiltinFunctions1(code)
 	require.Equal(t, expectedVMOutput, vmOutput)
 
 	// Run function testBuiltins2
@@ -47,7 +47,7 @@ func TestExecution_ExecuteOnSameContext_BuiltinFunctions(t *testing.T) {
 	require.Nil(t, err)
 
 	require.NotNil(t, vmOutput)
-	expectedVMOutput = expectedVMOutput_SameCtx_BuiltinFunctions_2(code)
+	expectedVMOutput = expectedVMOutputSameCtxBuiltinFunctions2(code)
 	require.Equal(t, expectedVMOutput, vmOutput)
 
 	// Run function testBuiltins3
@@ -58,7 +58,7 @@ func TestExecution_ExecuteOnSameContext_BuiltinFunctions(t *testing.T) {
 	require.Nil(t, err)
 
 	require.NotNil(t, vmOutput)
-	expectedVMOutput = expectedVMOutput_SameCtx_BuiltinFunctions_3(code)
+	expectedVMOutput = expectedVMOutputSameCtxBuiltinFunctions3(code)
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
@@ -66,7 +66,7 @@ func TestExecution_AsyncCall_BuiltinFails(t *testing.T) {
 	code := GetTestSCCode("async-call-builtin", "../../")
 	scBalance := big.NewInt(1000)
 
-	host, stubBlockchainHook := DefaultTestArwenForCall(t, code, scBalance)
+	host, stubBlockchainHook := defaultTestArwenForCall(t, code, scBalance)
 	stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
 	host.protocolBuiltinFunctions = getDummyBuiltinFunctionNames()
 
@@ -88,7 +88,7 @@ func TestESDT_GettersAPI(t *testing.T) {
 	code := GetTestSCCode("exchange", "../../")
 	scBalance := big.NewInt(1000)
 
-	host, _ := DefaultTestArwenForCall(t, code, scBalance)
+	host, _ := defaultTestArwenForCall(t, code, scBalance)
 
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
@@ -110,7 +110,7 @@ func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 	scBalance := big.NewInt(1000)
 	esdtValue := int64(5)
 
-	host, stubBlockchainHook := DefaultTestArwenForCall(t, exchangeCode, scBalance)
+	host, stubBlockchainHook := defaultTestArwenForCall(t, exchangeCode, scBalance)
 	stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
 	host.protocolBuiltinFunctions = getDummyBuiltinFunctionNames()
 
