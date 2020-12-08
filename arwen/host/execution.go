@@ -797,19 +797,23 @@ func (host *vmHost) prepareIndirectContractCallInput(
 	)
 	gasToUse := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
 	metering.UseGas(gasToUse)
+	if err != nil {
+		return nil, err
+	}
 
-	bigIntVal := big.NewInt(0).SetBytes(value)
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallerAddr:  sender,
 			Arguments:   data,
-			CallValue:   bigIntVal,
+			CallValue:   value,
 			GasPrice:    0,
 			GasProvided: metering.BoundGasLimit(gasLimit),
 		},
 		RecipientAddr: destination,
 		Function:      function,
 	}
+
+	return contractCallInput, nil
 }
 
 func (host *vmHost) GetArgumentsFromMemory(
