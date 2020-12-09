@@ -61,7 +61,7 @@ func (b *MockWorld) GetBlockhash(nonce uint64) ([]byte, error) {
 	}
 	currentNonce := b.CurrentNonce()
 	if nonce > currentNonce {
-		return nil, errors.New("blockhash nonce exceeds current nonce")
+		return nil, errors.New("requested nonce is greater than current nonce")
 	}
 	offsetInt32 := int(currentNonce - nonce)
 	if offsetInt32 >= len(b.Blockhashes) {
