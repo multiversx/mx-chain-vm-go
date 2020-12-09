@@ -63,7 +63,7 @@ func TestExecution_DeployNewAddressErr(t *testing.T) {
 	input := DefaultTestContractCreateInput()
 	stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
 		require.Equal(t, input.CallerAddr, address)
-		return &contextmock.AccountMock{}, nil
+		return &contextmock.StubAccount{}, nil
 	}
 	stubBlockchainHook.NewAddressCalled = func(creatorAddress []byte, nonce uint64, vmType []byte) ([]byte, error) {
 		require.Equal(t, input.CallerAddr, creatorAddress)
@@ -240,7 +240,7 @@ func TestExecution_ManyDeployments(t *testing.T) {
 	newAddress := "new smartcontract"
 	stubBlockchainHook := &contextmock.BlockchainHookStub{}
 	stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
-		return &contextmock.AccountMock{Nonce: ownerNonce}, nil
+		return &contextmock.StubAccount{Nonce: ownerNonce}, nil
 	}
 	stubBlockchainHook.NewAddressCalled = func(creatorAddress []byte, nonce uint64, vmType []byte) ([]byte, error) {
 		ownerNonce++
@@ -1023,7 +1023,7 @@ func TestExecution_AsyncCall_GasLimitConsumed(t *testing.T) {
 	host, stubBlockchainHook := defaultTestArwenForTwoSCs(t, parentCode, childCode, parentSCBalance)
 	stubBlockchainHook.GetUserAccountCalled = func(scAddress []byte) (vmcommon.UserAccountHandler, error) {
 		if bytes.Equal(scAddress, parentAddress) {
-			return &contextmock.AccountMock{
+			return &contextmock.StubAccount{
 				Code:    parentCode,
 				Balance: parentSCBalance,
 			}, nil

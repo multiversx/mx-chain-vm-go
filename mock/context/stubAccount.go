@@ -4,8 +4,9 @@ import (
 	"math/big"
 )
 
-// AccountMock is used with the blockchain stub in arwen context tests.
-type AccountMock struct {
+// StubAccount is used with the blockchain stub in arwen context tests.
+// It has minimal functionality.
+type StubAccount struct {
 	Address      []byte
 	Nonce        uint64
 	Balance      *big.Int
@@ -21,37 +22,37 @@ type AccountMock struct {
 }
 
 // AddressBytes -
-func (a *AccountMock) AddressBytes() []byte {
+func (a *StubAccount) AddressBytes() []byte {
 	return a.Address
 }
 
 // GetNonce -
-func (a *AccountMock) GetNonce() uint64 {
+func (a *StubAccount) GetNonce() uint64 {
 	return a.Nonce
 }
 
 // GetCode -
-func (a *AccountMock) GetCode() []byte {
+func (a *StubAccount) GetCode() []byte {
 	return a.Code
 }
 
 // GetCodeMetadata -
-func (a *AccountMock) GetCodeMetadata() []byte {
+func (a *StubAccount) GetCodeMetadata() []byte {
 	return a.CodeMetadata
 }
 
 // GetCodeHash -
-func (a *AccountMock) GetCodeHash() []byte {
+func (a *StubAccount) GetCodeHash() []byte {
 	return a.CodeHash
 }
 
 // GetRootHash -
-func (a *AccountMock) GetRootHash() []byte {
+func (a *StubAccount) GetRootHash() []byte {
 	return []byte{}
 }
 
 // GetBalance -
-func (a *AccountMock) GetBalance() *big.Int {
+func (a *StubAccount) GetBalance() *big.Int {
 	if a.Balance == nil {
 		return big.NewInt(0)
 	}
@@ -59,21 +60,21 @@ func (a *AccountMock) GetBalance() *big.Int {
 }
 
 // GetDeveloperReward -
-func (a *AccountMock) GetDeveloperReward() *big.Int {
+func (a *StubAccount) GetDeveloperReward() *big.Int {
 	return big.NewInt(0)
 }
 
 // GetOwnerAddress -
-func (a *AccountMock) GetOwnerAddress() []byte {
+func (a *StubAccount) GetOwnerAddress() []byte {
 	return a.OwnerAddress
 }
 
 // GetOwnerAddress -
-func (a *AccountMock) GetUserName() []byte {
+func (a *StubAccount) GetUserName() []byte {
 	return a.UserName
 }
 
 // IsInterfaceNil -
-func (a *AccountMock) IsInterfaceNil() bool {
+func (a *StubAccount) IsInterfaceNil() bool {
 	return a == nil
 }
