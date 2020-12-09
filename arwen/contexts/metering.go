@@ -1,8 +1,11 @@
 package contexts
 
 import (
+	builtinMath "math"
+
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/math"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
@@ -50,7 +53,16 @@ func (context *meteringContext) SetGasSchedule(gasMap config.GasScheduleMap) {
 
 // UseGas sets in the runtime context the given gas as gas used
 func (context *meteringContext) UseGas(gas uint64) {
-	gasUsed := context.host.Runtime().GetPointsUsed() + gas
+	gasUsed, err := math.AddUint64(context.host.Runtime().GetPointsUsed(), gas)
+	if err != nil || gasUsed > builtinMath.MaxUint64 {
+		log.Error("UseGas overflow",
+			"gasUsed = ", context.host.Runtime().GetPointsUsed(),
+			"gasToUse = ", gas,
+		)
+		context.host.Runtime().SetPointsUsed(builtinMath.MaxUint64)
+		return
+	}
+
 	context.host.Runtime().SetPointsUsed(gasUsed)
 }
 
@@ -65,7 +77,16 @@ func (context *meteringContext) RestoreGas(gas uint64) {
 
 // FreeGas adds the given gas to the refunded gas.
 func (context *meteringContext) FreeGas(gas uint64) {
-	refund := context.host.Output().GetRefund() + gas
+	refund, err := math.AddUint64(context.host.Output().GetRefund(), gas)
+	if err != nil || refund > builtinMath.MaxUint64 {
+		log.Error("FreeGas overflow",
+			"gasUsed = ", context.host.Runtime().GetPointsUsed(),
+			"gasToUse = ", gas,
+		)
+		context.host.Runtime().SetPointsUsed(builtinMath.MaxUint64)
+		return
+	}
+
 	context.host.Output().SetRefund(refund)
 }
 
@@ -124,13 +145,40 @@ func (context *meteringContext) ComputeGasLockedForAsync() uint64 {
 	// Exact amount of gas required to compile this SC again, to execute the callback
 	compilationGasLock := uint64(0)
 	if context.host.IsDynamicGasLockingEnabled() {
-		compilationGasLock = codeSize * costPerByte
+		var err error
+		compilationGasLock, err = math.MulUint64(codeSize, costPerByte)
+		if err != nil {
+			log.Error("ComputeGasLockedForAsync overflow",
+				"codeSize = ", codeSize,
+				"costPerByte = ", costPerByte,
+			)
+
+			return builtinMath.MaxUint64
+		}
 	}
 
 	// Minimum amount required to execute the callback
-	executionGasLock := apiGasSchedule.AsyncCallStep + apiGasSchedule.AsyncCallbackGasLock
+	executionGasLock, err := math.AddUint64(apiGasSchedule.AsyncCallStep, apiGasSchedule.AsyncCallbackGasLock)
+	if err != nil {
+		log.Error("ComputeGasLockedForAsync overflow",
+			"AsyncCallStep = ", apiGasSchedule.AsyncCallStep,
+			"AsyncCallbackGasLock = ", apiGasSchedule.AsyncCallbackGasLock,
+		)
 
-	return compilationGasLock + executionGasLock
+		return builtinMath.MaxUint64
+	}
+
+	gasLockedForAsync, err := math.AddUint64(compilationGasLock, executionGasLock)
+	if err != nil {
+		log.Error("ComputeGasLockedForAsync overflow",
+			"compilationGasLock = ", compilationGasLock,
+			"executionGasLock = ", executionGasLock,
+		)
+
+		return builtinMath.MaxUint64
+	}
+
+	return gasLockedForAsync
 }
 
 // UnlockGasIfAsyncCallback unlocks the locked gas if the call type is async callback
@@ -140,7 +188,17 @@ func (context *meteringContext) UnlockGasIfAsyncCallback() {
 		return
 	}
 
-	input.GasProvided += input.GasLocked
+	gasProvided, err := math.AddUint64(input.GasProvided, input.GasLocked)
+	if err != nil {
+		log.Error("UnlockGasIfAsyncCallback overflow",
+			"GasProvided = ", input.GasProvided,
+			"GasLocked = ", input.GasLocked,
+		)
+
+		gasProvided = builtinMath.MaxUint64
+	}
+
+	input.GasProvided = gasProvided
 	input.GasLocked = 0
 }
 
@@ -194,8 +252,25 @@ func (context *meteringContext) deductInitialGas(
 ) error {
 	input := context.host.Runtime().GetVMInput()
 	codeLength := uint64(len(code))
-	codeCost := codeLength * costPerByte
-	initialCost := baseCost + codeCost
+	codeCost, err := math.MulUint64(codeLength, costPerByte)
+	if err != nil {
+		log.Error("deductInitialGas overflow",
+			"codeLength = ", codeLength,
+			"costPerByte = ", costPerByte,
+		)
+
+		return arwen.ErrNotEnoughGas
+	}
+
+	initialCost, err := math.AddUint64(baseCost, codeCost)
+	if err != nil {
+		log.Error("deductInitialGas overflow",
+			"baseCost = ", baseCost,
+			"codeCost = ", codeCost,
+		)
+
+		return arwen.ErrNotEnoughGas
+	}
 
 	if initialCost > input.GasProvided {
 		return arwen.ErrNotEnoughGas

@@ -7,6 +7,7 @@ import (
 
 var _ arwen.MeteringContext = (*MeteringContextMock)(nil)
 
+// MeteringContextMock -
 type MeteringContextMock struct {
 	GasCost           *config.GasCost
 	GasLeftMock       uint64
@@ -16,28 +17,35 @@ type MeteringContextMock struct {
 	Err               error
 }
 
+// SetGasSchedule -
 func (m *MeteringContextMock) SetGasSchedule(gasSchedule config.GasScheduleMap) {
 	gasCostConfig, _ := config.CreateGasConfig(gasSchedule)
 	m.GasCost = gasCostConfig
 }
 
+// GasSchedule -
 func (m *MeteringContextMock) GasSchedule() *config.GasCost {
 	return m.GasCost
 }
 
-func (m *MeteringContextMock) UseGas(gas uint64) {
+// UseGas -
+func (m *MeteringContextMock) UseGas(_ uint64) {
 }
 
-func (m *MeteringContextMock) FreeGas(gas uint64) {
+// FreeGas -
+func (m *MeteringContextMock) FreeGas(_ uint64) {
 }
 
-func (m *MeteringContextMock) RestoreGas(gas uint64) {
+// RestoreGas -
+func (m *MeteringContextMock) RestoreGas(_ uint64) {
 }
 
+// GasLeft -
 func (m *MeteringContextMock) GasLeft() uint64 {
 	return m.GasLeftMock
 }
 
+// BoundGasLimit -
 func (m *MeteringContextMock) BoundGasLimit(value int64) uint64 {
 	gasLeft := m.GasLeft()
 	limit := uint64(value)
@@ -48,44 +56,55 @@ func (m *MeteringContextMock) BoundGasLimit(value int64) uint64 {
 	return limit
 }
 
+// ComputeGasLockedForAsync -
 func (m *MeteringContextMock) ComputeGasLockedForAsync() uint64 {
 	return m.GasComputedToLock
 }
 
+// DeductGasIfAsyncStep -
 func (m *MeteringContextMock) DeductGasIfAsyncStep() error {
 	return m.Err
 }
 
-func (m *MeteringContextMock) UseGasBounded(gas uint64) error {
+// UseGasBounded -
+func (m *MeteringContextMock) UseGasBounded(_ uint64) error {
 	return m.Err
 }
 
+// UnlockGasIfAsyncCallback -
 func (m *MeteringContextMock) UnlockGasIfAsyncCallback() {
 }
 
+// UseGasForAsyncStep -
 func (m *MeteringContextMock) UseGasForAsyncStep() error {
 	return m.Err
 }
 
+// UnlockGasIfAsyncStep -
 func (m *MeteringContextMock) UnlockGasIfAsyncStep() {
 }
 
+// GetGasLocked -
 func (m *MeteringContextMock) GetGasLocked() uint64 {
 	return m.GasLockedMock
 }
 
+// BlockGasLimit -
 func (m *MeteringContextMock) BlockGasLimit() uint64 {
 	return m.BlockGasLimitMock
 }
 
-func (m *MeteringContextMock) DeductInitialGasForExecution(contract []byte) error {
+// DeductInitialGasForExecution -
+func (m *MeteringContextMock) DeductInitialGasForExecution(_ []byte) error {
 	return m.Err
 }
 
-func (m *MeteringContextMock) DeductInitialGasForDirectDeployment(input arwen.CodeDeployInput) error {
+// DeductInitialGasForDirectDeployment -
+func (m *MeteringContextMock) DeductInitialGasForDirectDeployment(_ arwen.CodeDeployInput) error {
 	return m.Err
 }
 
-func (m *MeteringContextMock) DeductInitialGasForIndirectDeployment(input arwen.CodeDeployInput) error {
+// DeductInitialGasForIndirectDeployment -
+func (m *MeteringContextMock) DeductInitialGasForIndirectDeployment(_ arwen.CodeDeployInput) error {
 	return m.Err
 }
