@@ -4,9 +4,9 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	mc "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/controller"
 	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/fileresolver"
+	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
@@ -28,7 +28,6 @@ var _ mc.ScenarioExecutor = (*ArwenTestExecutor)(nil)
 // NewArwenTestExecutor prepares a new ArwenTestExecutor instance.
 func NewArwenTestExecutor() (*ArwenTestExecutor, error) {
 	world := worldhook.NewMockWorld()
-	world.EnableMockAddressGeneration()
 
 	blockGasLimit := uint64(10000000)
 	gasSchedule := config.MakeGasMapForTests()

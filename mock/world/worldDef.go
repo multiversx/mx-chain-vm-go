@@ -18,28 +18,26 @@ type BlockInfo struct {
 
 // MockWorld provides a mock representation of the blockchain to be used in VM tests.
 type MockWorld struct {
-	AcctMap                      AccountMap
-	PreviousBlockInfo            *BlockInfo
-	CurrentBlockInfo             *BlockInfo
-	Blockhashes                  [][]byte
-	mockAddressGenerationEnabled bool
-	NewAddressMocks              []*NewAddressMock
-	StateRootHash                []byte
-	Err                          error
-	LastCreatedContractAddress   []byte
-	CompiledCode                 map[string][]byte
+	AcctMap                    AccountMap
+	PreviousBlockInfo          *BlockInfo
+	CurrentBlockInfo           *BlockInfo
+	Blockhashes                [][]byte
+	NewAddressMocks            []*NewAddressMock
+	StateRootHash              []byte
+	Err                        error
+	LastCreatedContractAddress []byte
+	CompiledCode               map[string][]byte
 }
 
 // NewMockWorld creates a new mock instance
 func NewMockWorld() *MockWorld {
 	return &MockWorld{
-		AcctMap:                      NewAccountMap(),
-		PreviousBlockInfo:            nil,
-		CurrentBlockInfo:             nil,
-		Blockhashes:                  nil,
-		mockAddressGenerationEnabled: false,
-		NewAddressMocks:              nil,
-		CompiledCode:                 make(map[string][]byte),
+		AcctMap:           NewAccountMap(),
+		PreviousBlockInfo: nil,
+		CurrentBlockInfo:  nil,
+		Blockhashes:       nil,
+		NewAddressMocks:   nil,
+		CompiledCode:      make(map[string][]byte),
 	}
 }
 
@@ -51,11 +49,6 @@ func (b *MockWorld) Clear() {
 	b.Blockhashes = nil
 	b.NewAddressMocks = nil
 	b.CompiledCode = make(map[string][]byte)
-}
-
-// EnableMockAddressGeneration causes the mock to generate its own new addresses.
-func (b *MockWorld) EnableMockAddressGeneration() {
-	b.mockAddressGenerationEnabled = true
 }
 
 func (b *MockWorld) SetCurrentBlockHash(blockHash []byte) {

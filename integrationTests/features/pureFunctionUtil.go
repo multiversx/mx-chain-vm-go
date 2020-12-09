@@ -10,8 +10,8 @@ import (
 	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
+	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
@@ -39,7 +39,6 @@ type pureFunctionExecutor struct {
 
 func newPureFunctionExecutor() (*pureFunctionExecutor, error) {
 	world := worldhook.NewMockWorld()
-	world.EnableMockAddressGeneration()
 
 	blockGasLimit := uint64(10000000)
 	gasSchedule := config.MakeGasMapForTests()
