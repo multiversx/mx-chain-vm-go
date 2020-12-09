@@ -184,6 +184,10 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	return
 }
 
+// computeGasUsedByCurrentSC isolates the gas that was exclusively used for
+// contract execution, subtracting any gas that was sent to other contracts as
+// GasLimit for asynchronous calls, or any GasLocked for asynchronous callbacks.
+// TODO move this into the OutputContext
 func computeGasUsedByCurrentSC(
 	gasUsed uint64,
 	output arwen.OutputContext,
@@ -199,24 +203,25 @@ func computeGasUsedByCurrentSC(
 	}
 
 	for _, outAcc := range vmOutput.OutputAccounts {
-		accumulatedGasLimit := uint64(0)
+		accumulatedGasLimitsAndGasLocks := uint64(0)
 		for _, outTransfer := range outAcc.OutputTransfers {
-			accumulatedGasLimit += outTransfer.GasLimit
+			accumulatedGasLimitsAndGasLocks += outTransfer.GasLimit
+			accumulatedGasLimitsAndGasLocks += outTransfer.GasLocked
 		}
 
-		if gasUsed < outAcc.GasUsed+accumulatedGasLimit {
+		if gasUsed < outAcc.GasUsed+accumulatedGasLimitsAndGasLocks {
 			return 0, arwen.ErrGasUsageError
 		}
 
 		gasUsed -= outAcc.GasUsed
-		gasUsed -= accumulatedGasLimit
+		gasUsed -= accumulatedGasLimitsAndGasLocks
 	}
 
 	return gasUsed, nil
 }
 
 func (host *vmHost) finishExecuteOnDestContext(gasUsed uint64, executeErr error) *vmcommon.VMOutput {
-	bigInt, _, _, output, runtime, storage := host.GetContexts()
+	bigInt, _, metering, output, runtime, storage := host.GetContexts()
 
 	// Extract the VMOutput produced by the execution in isolation, before
 	// restoring the contexts. This needs to be done before popping any state
@@ -230,11 +235,14 @@ func (host *vmHost) finishExecuteOnDestContext(gasUsed uint64, executeErr error)
 		bigInt.PopSetActiveState()
 		output.PopSetActiveState()
 		runtime.PopSetActiveState()
+		runtime.PopInstance()
 		storage.PopSetActiveState()
 
 		return vmOutput
 	}
 
+	// Retrieve the VMOutput before popping the Runtime state and the previous
+	// instance, to ensure accurate GasRemaining
 	vmOutput := output.GetVMOutput()
 
 	// Restore the previous context states, except Output, which will be merged
@@ -242,7 +250,11 @@ func (host *vmHost) finishExecuteOnDestContext(gasUsed uint64, executeErr error)
 	// returned vmcommon.Ok.
 	bigInt.PopSetActiveState()
 	runtime.PopSetActiveState()
+	runtime.PopInstance()
 	storage.PopSetActiveState()
+
+	// Restore remaining gas to the caller Wasmer instance
+	metering.RestoreGas(vmOutput.GasRemaining)
 
 	if vmOutput.ReturnCode == vmcommon.Ok {
 		output.PopMergeActiveState()
@@ -298,7 +310,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 }
 
 func (host *vmHost) finishExecuteOnSameContext(gasUsed uint64, executeErr error) {
-	bigInt, _, _, output, runtime, _ := host.GetContexts()
+	bigInt, _, metering, output, runtime, _ := host.GetContexts()
 
 	gasUsedBySC, err := computeGasUsedByCurrentSC(gasUsed, output, executeErr)
 	if output.ReturnCode() != vmcommon.Ok || err != nil {
@@ -306,21 +318,30 @@ func (host *vmHost) finishExecuteOnSameContext(gasUsed uint64, executeErr error)
 		bigInt.PopSetActiveState()
 		output.PopSetActiveState()
 		runtime.PopSetActiveState()
+		runtime.PopInstance()
 
 		return
 	}
 
+	// Retrieve the VMOutput before popping the Runtime state and the previous
+	// instance, to ensure accurate GasRemaining
 	scAddress := string(runtime.GetSCAddress())
+	vmOutput := output.GetVMOutput()
+	accumulateGasUsedByContract(vmOutput, scAddress, gasUsedBySC)
+
 	// Execution successful: discard the backups made at the beginning and
 	// resume from the new state.
 	bigInt.PopDiscard()
 	output.PopDiscard()
 	runtime.PopSetActiveState()
+	runtime.PopInstance()
 
-	vmOutput := output.GetVMOutput()
-	accumulateGasUsedByContract(vmOutput, scAddress, gasUsedBySC)
+	// Restore remaining gas to the caller Wasmer instance
+	metering.RestoreGas(vmOutput.GasRemaining)
+
 }
 
+// TODO move this into the OutputContext
 func accumulateGasUsedByContract(vmOutput *vmcommon.VMOutput, scAddress string, gasUsed uint64) {
 	if _, ok := vmOutput.OutputAccounts[scAddress]; !ok {
 		vmOutput.OutputAccounts[scAddress] = contexts.NewVMOutputAccount([]byte(scAddress))
