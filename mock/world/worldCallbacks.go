@@ -23,6 +23,7 @@ func (b *MockWorld) NewAddress(creatorAddress []byte, creatorNonce uint64, _ []b
 	}
 
 	// explicit new address mocks
+	// matched by creator address and nonce
 	for _, newAddressMock := range b.NewAddressMocks {
 		if bytes.Equal(creatorAddress, newAddressMock.CreatorAddress) && creatorNonce == newAddressMock.CreatorNonce {
 			b.LastCreatedContractAddress = newAddressMock.NewAddress
@@ -32,13 +33,9 @@ func (b *MockWorld) NewAddress(creatorAddress []byte, creatorNonce uint64, _ []b
 
 	// If a mock address wasn't registered for the specified creatorAddress, generate one automatically.
 	// This is not the real algorithm but it's simple and close enough.
-	if b.mockAddressGenerationEnabled {
-		result := GenerateMockAddress(creatorAddress, creatorNonce)
-		b.LastCreatedContractAddress = result
-		return result, nil
-	}
-	// empty byte array signals not implemented, fallback to default
-	return []byte{}, nil
+	result := GenerateMockAddress(creatorAddress, creatorNonce)
+	b.LastCreatedContractAddress = result
+	return result, nil
 }
 
 // GetStorageData yields the storage value for a certain account and storage key.
@@ -64,7 +61,7 @@ func (b *MockWorld) GetBlockhash(nonce uint64) ([]byte, error) {
 	}
 	currentNonce := b.CurrentNonce()
 	if nonce > currentNonce {
-		return nil, errors.New("blockhash nonce exceeds current nonce")
+		return nil, errors.New("requested nonce is greater than current nonce")
 	}
 	offsetInt32 := int(currentNonce - nonce)
 	if offsetInt32 >= len(b.Blockhashes) {

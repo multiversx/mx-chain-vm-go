@@ -29,7 +29,6 @@ func newWorldDataModel(worldID string) *worldDataModel {
 // newWorld creates a new debugging world
 func newWorld(dataModel *worldDataModel) (*world, error) {
 	blockchainHook := worldmock.NewMockWorld()
-	blockchainHook.EnableMockAddressGeneration()
 	blockchainHook.AcctMap = dataModel.Accounts
 
 	vm, err := host.NewArwenVM(

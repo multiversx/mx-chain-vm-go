@@ -7,9 +7,10 @@ import (
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
-var _ arwen.VMHost = (*VmHostStub)(nil)
+var _ arwen.VMHost = (*VMHostStub)(nil)
 
-type VmHostStub struct {
+// VMHostStub is used in tests to check the VMHost interface method calls
+type VMHostStub struct {
 	InitStateCalled       func()
 	PushStateCalled       func()
 	PopStateCalled        func()
@@ -25,140 +26,152 @@ type VmHostStub struct {
 	CreateNewContractCalled           func(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContextCalled        func(input *vmcommon.ContractCallInput) (*arwen.AsyncContextInfo, error)
 	ExecuteOnDestContextCalled        func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *arwen.AsyncContextInfo, error)
-	EthereumCallDataCalled            func() []byte
 	GetAPIMethodsCalled               func() *wasmer.Imports
 	GetProtocolBuiltinFunctionsCalled func() vmcommon.FunctionNames
 	IsBuiltinFunctionNameCalled       func(functionName string) bool
 }
 
-func (vhs *VmHostStub) InitState() {
+// InitState mocked method
+func (vhs *VMHostStub) InitState() {
 	if vhs.InitStateCalled != nil {
 		vhs.InitStateCalled()
 	}
 }
 
-func (vhs *VmHostStub) PushState() {
+// PushState mocked method
+func (vhs *VMHostStub) PushState() {
 	if vhs.PushStateCalled != nil {
 		vhs.PushStateCalled()
 	}
 }
 
-func (vhs *VmHostStub) PopState() {
+// PopState mocked method
+func (vhs *VMHostStub) PopState() {
 	if vhs.PopStateCalled != nil {
 		vhs.PopStateCalled()
 	}
 }
 
-func (vhs *VmHostStub) ClearStateStack() {
+// ClearStateStack mocked method
+func (vhs *VMHostStub) ClearStateStack() {
 	if vhs.ClearStateStackCalled != nil {
 		vhs.ClearStateStackCalled()
 	}
 }
 
-func (vhs *VmHostStub) Crypto() crypto.VMCrypto {
+// Crypto mocked method
+func (vhs *VMHostStub) Crypto() crypto.VMCrypto {
 	if vhs.CryptoCalled != nil {
 		return vhs.CryptoCalled()
 	}
 	return nil
 }
 
-func (vhs *VmHostStub) Blockchain() arwen.BlockchainContext {
+// Blockchain mocked method
+func (vhs *VMHostStub) Blockchain() arwen.BlockchainContext {
 	if vhs.BlockchainCalled != nil {
 		return vhs.BlockchainCalled()
 	}
 	return nil
 }
 
-func (vhs *VmHostStub) Runtime() arwen.RuntimeContext {
+// Runtime mocked method
+func (vhs *VMHostStub) Runtime() arwen.RuntimeContext {
 	if vhs.RuntimeCalled != nil {
 		return vhs.RuntimeCalled()
 	}
 	return nil
 }
 
-func (vhs *VmHostStub) BigInt() arwen.BigIntContext {
+// BigInt mocked method
+func (vhs *VMHostStub) BigInt() arwen.BigIntContext {
 	if vhs.BigIntCalled != nil {
 		return vhs.BigIntCalled()
 	}
 	return nil
 }
 
-func (vhs *VmHostStub) IsArwenV2Enabled() bool {
+// IsArwenV2Enabled mocked method
+func (vhs *VMHostStub) IsArwenV2Enabled() bool {
 	return true
 }
 
-func (host *VmHostStub) IsAheadOfTimeCompileEnabled() bool {
+// IsAheadOfTimeCompileEnabled mocked method
+func (vhs *VMHostStub) IsAheadOfTimeCompileEnabled() bool {
 	return true
 }
 
-func (host *VmHostStub) IsDynamicGasLockingEnabled() bool {
+// IsDynamicGasLockingEnabled mocked method
+func (vhs *VMHostStub) IsDynamicGasLockingEnabled() bool {
 	return true
 }
 
-func (vhs *VmHostStub) Output() arwen.OutputContext {
+// Output mocked method
+func (vhs *VMHostStub) Output() arwen.OutputContext {
 	if vhs.OutputCalled != nil {
 		return vhs.OutputCalled()
 	}
 	return nil
 }
 
-func (vhs *VmHostStub) Metering() arwen.MeteringContext {
+// Metering mocked method
+func (vhs *VMHostStub) Metering() arwen.MeteringContext {
 	if vhs.MeteringCalled != nil {
 		return vhs.MeteringCalled()
 	}
 	return nil
 }
 
-func (vhs *VmHostStub) Storage() arwen.StorageContext {
+// Storage mocked method
+func (vhs *VMHostStub) Storage() arwen.StorageContext {
 	if vhs.StorageCalled != nil {
 		return vhs.StorageCalled()
 	}
 	return nil
 }
 
-func (vhs *VmHostStub) CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error) {
+// CreateNewContract mocked method
+func (vhs *VMHostStub) CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error) {
 	if vhs.CreateNewContractCalled != nil {
 		return vhs.CreateNewContractCalled(input)
 	}
 	return nil, nil
 }
 
-func (vhs *VmHostStub) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*arwen.AsyncContextInfo, error) {
+// ExecuteOnSameContext mocked method
+func (vhs *VMHostStub) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*arwen.AsyncContextInfo, error) {
 	if vhs.ExecuteOnSameContextCalled != nil {
 		return vhs.ExecuteOnSameContextCalled(input)
 	}
 	return nil, nil
 }
 
-func (vhs *VmHostStub) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *arwen.AsyncContextInfo, error) {
+// ExecuteOnDestContext mocked method
+func (vhs *VMHostStub) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *arwen.AsyncContextInfo, error) {
 	if vhs.ExecuteOnDestContextCalled != nil {
 		return vhs.ExecuteOnDestContextCalled(input)
 	}
 	return nil, nil, nil
 }
 
-func (vhs *VmHostStub) EthereumCallData() []byte {
-	if vhs.EthereumCallDataCalled != nil {
-		return vhs.EthereumCallDataCalled()
-	}
-	return nil
-}
-
-func (vhs *VmHostStub) GetAPIMethods() *wasmer.Imports {
+// GetAPIMethods mocked method
+func (vhs *VMHostStub) GetAPIMethods() *wasmer.Imports {
 	if vhs.GetAPIMethodsCalled != nil {
 		return vhs.GetAPIMethodsCalled()
 	}
 	return nil
 }
 
-func (vhs *VmHostStub) GetProtocolBuiltinFunctions() vmcommon.FunctionNames {
+// GetProtocolBuiltinFunctions mocked method
+func (vhs *VMHostStub) GetProtocolBuiltinFunctions() vmcommon.FunctionNames {
 	if vhs.GetProtocolBuiltinFunctionsCalled != nil {
 		return vhs.GetProtocolBuiltinFunctionsCalled()
 	}
 	return make(vmcommon.FunctionNames)
 }
 
-func (vhs *VmHostStub) IsBuiltinFunctionName(functionName string) bool {
+// IsBuiltinFunctionName mocked method
+func (vhs *VMHostStub) IsBuiltinFunctionName(functionName string) bool {
 	if vhs.IsBuiltinFunctionNameCalled != nil {
 		return vhs.IsBuiltinFunctionNameCalled(functionName)
 	}

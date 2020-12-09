@@ -7,9 +7,10 @@ import (
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
-var _ arwen.VMHost = (*VmHostMock)(nil)
+var _ arwen.VMHost = (*VMHostMock)(nil)
 
-type VmHostMock struct {
+// VMHostMock is used in tests to check the VMHost interface method calls
+type VMHostMock struct {
 	BlockChainHook vmcommon.BlockchainHook
 	CryptoHook     crypto.VMCrypto
 
@@ -26,82 +27,98 @@ type VmHostMock struct {
 	IsBuiltinFunc bool
 }
 
-func (host *VmHostMock) Crypto() crypto.VMCrypto {
+// Crypto mocked method
+func (host *VMHostMock) Crypto() crypto.VMCrypto {
 	return host.CryptoHook
 }
 
-func (host *VmHostMock) Blockchain() arwen.BlockchainContext {
+// Blockchain mocked method
+func (host *VMHostMock) Blockchain() arwen.BlockchainContext {
 	return host.BlockchainContext
 }
 
-func (host *VmHostMock) Runtime() arwen.RuntimeContext {
+// Runtime mocked method
+func (host *VMHostMock) Runtime() arwen.RuntimeContext {
 	return host.RuntimeContext
 }
 
-func (host *VmHostMock) Output() arwen.OutputContext {
+// Output mocked method
+func (host *VMHostMock) Output() arwen.OutputContext {
 	return host.OutputContext
 }
 
-func (host *VmHostMock) Metering() arwen.MeteringContext {
+// Metering mocked method
+func (host *VMHostMock) Metering() arwen.MeteringContext {
 	return host.MeteringContext
 }
 
-func (host *VmHostMock) Storage() arwen.StorageContext {
+// Storage mocked method
+func (host *VMHostMock) Storage() arwen.StorageContext {
 	return host.StorageContext
 }
 
-func (host *VmHostMock) BigInt() arwen.BigIntContext {
+// BigInt mocked method
+func (host *VMHostMock) BigInt() arwen.BigIntContext {
 	return host.BigIntContext
 }
 
-func (host *VmHostMock) IsArwenV2Enabled() bool {
+// IsArwenV2Enabled mocked method
+func (host *VMHostMock) IsArwenV2Enabled() bool {
 	return true
 }
 
-func (host *VmHostMock) IsAheadOfTimeCompileEnabled() bool {
+// IsAheadOfTimeCompileEnabled mocked method
+func (host *VMHostMock) IsAheadOfTimeCompileEnabled() bool {
 	return true
 }
 
-func (host *VmHostMock) IsDynamicGasLockingEnabled() bool {
+// IsDynamicGasLockingEnabled mocked method
+func (host *VMHostMock) IsDynamicGasLockingEnabled() bool {
 	return true
 }
 
-func (host *VmHostMock) CreateNewContract(_ *vmcommon.ContractCreateInput) ([]byte, error) {
+// CreateNewContract mocked method
+func (host *VMHostMock) CreateNewContract(_ *vmcommon.ContractCreateInput) ([]byte, error) {
 	return nil, nil
 }
 
-func (host *VmHostMock) ExecuteOnSameContext(_ *vmcommon.ContractCallInput) (*arwen.AsyncContextInfo, error) {
+// ExecuteOnSameContext mocked method
+func (host *VMHostMock) ExecuteOnSameContext(_ *vmcommon.ContractCallInput) (*arwen.AsyncContextInfo, error) {
 	return nil, nil
 }
 
-func (host *VmHostMock) ExecuteOnDestContext(_ *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *arwen.AsyncContextInfo, error) {
+// ExecuteOnDestContext mocked method
+func (host *VMHostMock) ExecuteOnDestContext(_ *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *arwen.AsyncContextInfo, error) {
 	return nil, nil, nil
 }
 
-func (host *VmHostMock) EthereumCallData() []byte {
-	return host.EthInput
+// InitState mocked method
+func (host *VMHostMock) InitState() {
 }
 
-func (host *VmHostMock) InitState() {
+// PushState mocked method
+func (host *VMHostMock) PushState() {
 }
 
-func (host *VmHostMock) PushState() {
+// PopState mocked method
+func (host *VMHostMock) PopState() {
 }
 
-func (host *VmHostMock) PopState() {
+// ClearStateStack mocked method
+func (host *VMHostMock) ClearStateStack() {
 }
 
-func (host *VmHostMock) ClearStateStack() {
-}
-
-func (host *VmHostMock) GetAPIMethods() *wasmer.Imports {
+// GetAPIMethods mocked method
+func (host *VMHostMock) GetAPIMethods() *wasmer.Imports {
 	return host.SCAPIMethods
 }
 
-func (host *VmHostMock) GetProtocolBuiltinFunctions() vmcommon.FunctionNames {
+// GetProtocolBuiltinFunctions mocked method
+func (host *VMHostMock) GetProtocolBuiltinFunctions() vmcommon.FunctionNames {
 	return make(vmcommon.FunctionNames)
 }
 
-func (host *VmHostMock) IsBuiltinFunctionName(_ string) bool {
+// IsBuiltinFunctionName mocked method
+func (host *VMHostMock) IsBuiltinFunctionName(_ string) bool {
 	return host.IsBuiltinFunc
 }

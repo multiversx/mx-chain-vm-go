@@ -27,7 +27,6 @@ var _ mc.ScenarioExecutor = (*ArwenTestExecutor)(nil)
 // NewArwenTestExecutor prepares a new ArwenTestExecutor instance.
 func NewArwenTestExecutor() (*ArwenTestExecutor, error) {
 	world := worldhook.NewMockWorld()
-	world.EnableMockAddressGeneration()
 
 	blockGasLimit := uint64(10000000)
 	gasSchedule := config.MakeGasMapForTests()
