@@ -13,7 +13,7 @@ const noArity = -1
 
 // wasmValidator is a validator for WASM SmartContracts
 type wasmValidator struct {
-	reserved *ReservedFunctions
+	reserved *reservedFunctions
 }
 
 // newWASMValidator creates a new WASMValidator

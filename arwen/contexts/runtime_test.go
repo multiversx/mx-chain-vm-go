@@ -9,7 +9,6 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/cryptoapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/elrondapi"
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/ethapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
@@ -20,12 +19,12 @@ import (
 )
 
 const WASMPageSize = 65536
+const counterWasmCode = "./../../test/contracts/counter/output/counter.wasm"
 
 func MakeAPIImports() *wasmer.Imports {
 	imports, _ := elrondapi.ElrondEIImports()
 	imports, _ = elrondapi.BigIntImports(imports)
 	imports, _ = elrondapi.SmallIntImports(imports)
-	imports, _ = ethapi.EthereumImports(imports)
 	imports, _ = cryptoapi.CryptoImports(imports)
 	return imports
 }
@@ -102,7 +101,7 @@ func TestRuntimeContext_NewWasmerInstance(t *testing.T) {
 	runtimeContext.SetMaxInstanceCount(1)
 
 	gasLimit := uint64(100000000)
-	dummy := []byte{}
+	var dummy []byte
 	err = runtimeContext.StartWasmerInstance(dummy, gasLimit, false)
 	require.NotNil(t, err)
 	require.True(t, errors.Is(err, wasmer.ErrInvalidBytecode))
@@ -112,7 +111,7 @@ func TestRuntimeContext_NewWasmerInstance(t *testing.T) {
 	err = runtimeContext.StartWasmerInstance(dummy, gasLimit, false)
 	require.NotNil(t, err)
 
-	path := "./../../test/contracts/counter/output/counter.wasm"
+	path := counterWasmCode
 	contractCode := arwen.GetSCCode(path)
 	err = runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
@@ -166,7 +165,7 @@ func TestRuntimeContext_PushPopInstance(t *testing.T) {
 	runtimeContext.SetMaxInstanceCount(1)
 
 	gasLimit := uint64(100000000)
-	path := "./../../test/contracts/counter/output/counter.wasm"
+	path := counterWasmCode
 	contractCode := arwen.GetSCCode(path)
 	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
@@ -255,7 +254,7 @@ func TestRuntimeContext_Instance(t *testing.T) {
 	runtimeContext.SetMaxInstanceCount(1)
 
 	gasLimit := uint64(100000000)
-	path := "./../../test/contracts/counter/output/counter.wasm"
+	path := counterWasmCode
 	contractCode := arwen.GetSCCode(path)
 	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
@@ -307,7 +306,7 @@ func TestRuntimeContext_Breakpoints(t *testing.T) {
 	runtimeContext.SetMaxInstanceCount(1)
 
 	gasLimit := uint64(100000000)
-	path := "./../../test/contracts/counter/output/counter.wasm"
+	path := counterWasmCode
 	contractCode := arwen.GetSCCode(path)
 	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
@@ -360,7 +359,7 @@ func TestRuntimeContext_MemLoadStoreOk(t *testing.T) {
 	runtimeContext.SetMaxInstanceCount(1)
 
 	gasLimit := uint64(100000000)
-	path := "./../../test/contracts/counter/output/counter.wasm"
+	path := counterWasmCode
 	contractCode := arwen.GetSCCode(path)
 	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
@@ -422,7 +421,7 @@ func TestRuntimeContext_MemLoadCases(t *testing.T) {
 	runtimeContext.SetMaxInstanceCount(1)
 
 	gasLimit := uint64(100000000)
-	path := "./../../test/contracts/counter/output/counter.wasm"
+	path := counterWasmCode
 	contractCode := arwen.GetSCCode(path)
 	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
@@ -474,6 +473,7 @@ func TestRuntimeContext_MemLoadCases(t *testing.T) {
 	offset = int32(memory.Length() - 8)
 	length = 0
 	memContents, err = runtimeContext.MemLoad(offset, length)
+	require.Nil(t, err)
 	require.Equal(t, []byte{}, memContents)
 }
 
@@ -485,7 +485,7 @@ func TestRuntimeContext_MemStoreCases(t *testing.T) {
 	runtimeContext.SetMaxInstanceCount(1)
 
 	gasLimit := uint64(100000000)
-	path := "./../../test/contracts/counter/output/counter.wasm"
+	path := counterWasmCode
 	contractCode := arwen.GetSCCode(path)
 	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
@@ -550,7 +550,7 @@ func TestRuntimeContext_MemLoadStoreVsInstanceStack(t *testing.T) {
 	runtimeContext.SetMaxInstanceCount(2)
 
 	gasLimit := uint64(100000000)
-	path := "./../../test/contracts/counter/output/counter.wasm"
+	path := counterWasmCode
 	contractCode := arwen.GetSCCode(path)
 	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)

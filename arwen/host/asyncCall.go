@@ -78,7 +78,7 @@ func (host *vmHost) determineAsyncCallExecutionMode(asyncCallInfo *arwen.AsyncCa
 	return arwen.AsyncUnknown, nil
 }
 
-func (host *vmHost) executeSyncDestinationCall(asyncCallInfo *arwen.AsyncCallInfo) (*vmcommon.VMOutput, error) {
+func (host *vmHost) executeSyncDestinationCall(asyncCallInfo arwen.AsyncCallInfoHandler) (*vmcommon.VMOutput, error) {
 	destinationCallInput, err := host.createDestinationContractCallInput(asyncCallInfo)
 	if err != nil {
 		return nil, err
@@ -136,6 +136,8 @@ func (host *vmHost) sendAsyncCallToDestination(asyncCallInfo arwen.AsyncCallInfo
 		return err
 	}
 
+	metering := host.Metering()
+	metering.UseGas(metering.GasLeft())
 	return nil
 }
 
@@ -166,6 +168,7 @@ func (host *vmHost) sendCallbackToCurrentCaller() error {
 		return err
 	}
 
+	metering.UseGas(metering.GasLeft())
 	return nil
 }
 

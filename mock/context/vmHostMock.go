@@ -78,10 +78,6 @@ func (host *VmHostMock) ExecuteOnDestContext(_ *vmcommon.ContractCallInput) (*vm
 	return nil, nil, nil
 }
 
-func (host *VmHostMock) EthereumCallData() []byte {
-	return host.EthInput
-}
-
 func (host *VmHostMock) InitState() {
 }
 

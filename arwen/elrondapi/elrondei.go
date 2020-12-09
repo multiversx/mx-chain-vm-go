@@ -482,7 +482,7 @@ func blockHash(context unsafe.Pointer, nonce int64, resultOffset int32) int32 {
 
 //export transferValue
 func transferValue(context unsafe.Pointer, destOffset int32, valueOffset int32, dataOffset int32, length int32) int32 {
-	host := arwen.GetVmContext(context)
+	host := arwen.GetVMContext(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
 	output := host.Output()
@@ -511,7 +511,7 @@ func transferValue(context unsafe.Pointer, destOffset int32, valueOffset int32, 
 
 	// TODO write test for this, after removing vmContextMap
 	argParser := parsers.NewCallArgsParser()
-	functionName, _, err := argParser.ParseData(string(data))
+	functionName, _, _ := argParser.ParseData(string(data))
 	if host.IsBuiltinFunctionName(functionName) {
 		return 1
 	}
@@ -538,7 +538,7 @@ func createAsyncCall(context unsafe.Pointer,
 	errorLength int32,
 	gas int64,
 ) {
-	host := arwen.GetVmContext(context)
+	host := arwen.GetVMContext(context)
 	runtime := host.Runtime()
 
 	// TODO consume gas
@@ -593,7 +593,7 @@ func setAsyncContextCallback(context unsafe.Pointer,
 	callback int32,
 	callbackLength int32,
 ) int32 {
-	host := arwen.GetVmContext(context)
+	host := arwen.GetVMContext(context)
 	runtime := host.Runtime()
 
 	// TODO consume gas
@@ -631,7 +631,7 @@ func upgradeContract(
 	argumentsLengthOffset int32,
 	dataOffset int32,
 ) {
-	host := arwen.GetVmContext(context)
+	host := arwen.GetVMContext(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
 
@@ -710,7 +710,7 @@ func upgradeContract(
 
 //export asyncCall
 func asyncCall(context unsafe.Pointer, destOffset int32, valueOffset int32, dataOffset int32, length int32) {
-	host := arwen.GetVmContext(context)
+	host := arwen.GetVMContext(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
 
@@ -1271,7 +1271,7 @@ func executeOnSameContext(
 	argumentsLengthOffset int32,
 	dataOffset int32,
 ) int32 {
-	host := arwen.GetVmContext(context)
+	host := arwen.GetVMContext(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
 
@@ -1344,7 +1344,7 @@ func executeOnDestContext(
 	argumentsLengthOffset int32,
 	dataOffset int32,
 ) int32 {
-	host := arwen.GetVmContext(context)
+	host := arwen.GetVMContext(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
 
@@ -1456,7 +1456,7 @@ func delegateExecution(
 	argumentsLengthOffset int32,
 	dataOffset int32,
 ) int32 {
-	host := arwen.GetVmContext(context)
+	host := arwen.GetVMContext(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
 
@@ -1533,7 +1533,7 @@ func executeReadOnly(
 	argumentsLengthOffset int32,
 	dataOffset int32,
 ) int32 {
-	host := arwen.GetVmContext(context)
+	host := arwen.GetVMContext(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
 
@@ -1606,7 +1606,7 @@ func createContract(
 	argumentsLengthOffset int32,
 	dataOffset int32,
 ) int32 {
-	host := arwen.GetVmContext(context)
+	host := arwen.GetVMContext(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
 
