@@ -69,6 +69,7 @@ import "C"
 import (
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"math/big"
 	"unsafe"
 
@@ -1710,6 +1711,10 @@ func getArgumentsFromMemory(
 ) (string, [][]byte, int32, error) {
 	runtime := host.Runtime()
 
+	if numArguments < 0 {
+		return "", nil, 0, fmt.Errorf("negative numArguments (%d)", numArguments)
+	}
+
 	function, err := runtime.MemLoad(functionOffset, functionLength)
 	if err != nil {
 		return "", nil, 0, err
@@ -1720,25 +1725,30 @@ func getArgumentsFromMemory(
 		return "", nil, 0, err
 	}
 
-	currOffset := dataOffset
-	data, err := arwen.GuardedMakeByteSlice2D(numArguments)
+	argumentLengths := createInt32Array(argumentsLengthData, numArguments)
+	data, err := runtime.MemLoadMultiple(dataOffset, argumentLengths)
 	if err != nil {
 		return "", nil, 0, err
 	}
 
-	for i := int32(0); i < numArguments; i++ {
-		currArgLenData := argumentsLengthData[i*4 : i*4+4]
-		actualLen := bytesToInt32(currArgLenData)
-
-		data[i], err = runtime.MemLoad(currOffset, actualLen)
-		if err != nil {
-			return "", nil, 0, err
-		}
-
-		currOffset += actualLen
+	totalArgumentBytes := int32(0)
+	for _, length := range argumentLengths {
+		totalArgumentBytes += length
 	}
 
-	return string(function), data, currOffset - dataOffset, nil
+	return string(function), data, totalArgumentBytes, nil
+}
+
+func createInt32Array(rawData []byte, numIntegers int32) []int32 {
+	integers := make([]int32, numIntegers)
+	index := 0
+	for cursor := 0; cursor < len(rawData); cursor += 4 {
+		rawInt := rawData[cursor : cursor+4]
+		actualInt := bytesToInt32(rawInt)
+		integers[index] = actualInt
+		index++
+	}
+	return integers
 }
 
 func bytesToInt32(data []byte) int32 {

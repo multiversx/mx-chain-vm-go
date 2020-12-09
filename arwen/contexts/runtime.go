@@ -711,6 +711,26 @@ func (context *runtimeContext) MemLoad(offset int32, length int32) ([]byte, erro
 	return result, nil
 }
 
+func (context *runtimeContext) MemLoadMultiple(offset int32, lengths []int32) ([][]byte, error) {
+	if len(lengths) == 0 {
+		return [][]byte{}, nil
+	}
+
+	results := make([][]byte, len(lengths))
+
+	for i, length := range lengths {
+		result, err := context.MemLoad(offset, length)
+		if err != nil {
+			return nil, err
+		}
+
+		results[i] = result
+		offset += length
+	}
+
+	return results, nil
+}
+
 // MemStore stores the given data in the memory of the wasmer instance at the given offset.
 func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 	dataLength := int32(len(data))
