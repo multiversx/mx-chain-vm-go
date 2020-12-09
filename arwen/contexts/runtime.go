@@ -279,7 +279,8 @@ func (context *runtimeContext) SetCustomCallFunction(callFunction string) {
 	context.callFunction = callFunction
 }
 
-// PushState appends the current runtime state to the state stack.
+// PushState appends the current runtime state to the state stack; this
+// includes the currently running Wasmer instance.
 func (context *runtimeContext) PushState() {
 	newState := &runtimeContext{
 		vmInput:          context.vmInput,
@@ -291,6 +292,12 @@ func (context *runtimeContext) PushState() {
 	}
 
 	context.stateStack = append(context.stateStack, newState)
+
+	// Also preserve the currently running Wasmer instance at the top of the
+	// instance stack; when the corresponding call to popInstance() is made, a
+	// check is made to ensure that the running instance will not be cleaned
+	// while still required for execution.
+	context.pushInstance()
 }
 
 // PopSetActiveState removes the latest entry from the state stack and sets it as the current
@@ -310,6 +317,7 @@ func (context *runtimeContext) PopSetActiveState() {
 	context.readOnly = prevState.readOnly
 	context.asyncCallInfo = prevState.asyncCallInfo
 	context.asyncContextInfo = prevState.asyncContextInfo
+	context.popInstance()
 }
 
 // PopDiscard removes the latest entry from the state stack
@@ -320,6 +328,7 @@ func (context *runtimeContext) PopDiscard() {
 	}
 
 	context.stateStack = context.stateStack[:stateStackLen-1]
+	context.popInstance()
 }
 
 // ClearStateStack reinitializes the state stack.
@@ -327,14 +336,14 @@ func (context *runtimeContext) ClearStateStack() {
 	context.stateStack = make([]*runtimeContext, 0)
 }
 
-// PushInstance appends the current wasmer instance to the instance stack.
-func (context *runtimeContext) PushInstance() {
+// pushInstance appends the current wasmer instance to the instance stack.
+func (context *runtimeContext) pushInstance() {
 	context.instanceStack = append(context.instanceStack, context.instance)
 }
 
-// PopInstance removes the latest entry from the wasmer instance stack and sets it
+// popInstance removes the latest entry from the wasmer instance stack and sets it
 // as the current wasmer instance
-func (context *runtimeContext) PopInstance() {
+func (context *runtimeContext) popInstance() {
 	instanceStackLen := len(context.instanceStack)
 	if instanceStackLen == 0 {
 		return
@@ -343,6 +352,16 @@ func (context *runtimeContext) PopInstance() {
 	prevInstance := context.instanceStack[instanceStackLen-1]
 	context.instanceStack = context.instanceStack[:instanceStackLen-1]
 
+	if prevInstance == context.instance {
+		// The current Wasmer instance was previously pushed on the instance stack,
+		// but a new Wasmer instance has not been created in the meantime. This
+		// means that the instance at the top of the stack is the same as the
+		// current instance, so it cannot be cleaned, because the execution will
+		// resume on it. Popping will therefore only remove the top of the stack,
+		// without cleaning anything.
+		return
+	}
+
 	context.CleanWasmerInstance()
 	context.instance = prevInstance
 }
@@ -350,14 +369,6 @@ func (context *runtimeContext) PopInstance() {
 // RunningInstancesCount returns the length of the instance stack.
 func (context *runtimeContext) RunningInstancesCount() uint64 {
 	return uint64(len(context.instanceStack))
-}
-
-// ClearInstanceStack reinitializes the wasmer instance stack.
-func (context *runtimeContext) ClearInstanceStack() {
-	for _, instance := range context.instanceStack {
-		instance.Clean()
-	}
-	context.instanceStack = make([]*wasmer.Instance, 0)
 }
 
 // GetVMType returns the vm type for the current context.

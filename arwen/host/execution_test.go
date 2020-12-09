@@ -936,7 +936,7 @@ func TestExecution_ExecuteOnDestContext_GasRemaining(t *testing.T) {
 	childOutput, _, err := host.ExecuteOnDestContext(childInput)
 	require.Nil(t, err)
 	require.NotNil(t, childOutput)
-	require.Equal(t, uint64(5590), childOutput.GasRemaining)
+	require.Equal(t, uint64(7753), childOutput.GasRemaining)
 
 	host.Clean()
 }

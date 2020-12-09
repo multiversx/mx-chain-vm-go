@@ -235,7 +235,6 @@ func (host *vmHost) finishExecuteOnDestContext(gasUsed uint64, executeErr error)
 		bigInt.PopSetActiveState()
 		output.PopSetActiveState()
 		runtime.PopSetActiveState()
-		runtime.PopInstance()
 		storage.PopSetActiveState()
 
 		return vmOutput
@@ -250,7 +249,6 @@ func (host *vmHost) finishExecuteOnDestContext(gasUsed uint64, executeErr error)
 	// returned vmcommon.Ok.
 	bigInt.PopSetActiveState()
 	runtime.PopSetActiveState()
-	runtime.PopInstance()
 	storage.PopSetActiveState()
 
 	// Restore remaining gas to the caller Wasmer instance
@@ -305,7 +303,6 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 	}
 
 	asyncInfo = runtime.GetAsyncContextInfo()
-
 	return
 }
 
@@ -318,7 +315,6 @@ func (host *vmHost) finishExecuteOnSameContext(gasUsed uint64, executeErr error)
 		bigInt.PopSetActiveState()
 		output.PopSetActiveState()
 		runtime.PopSetActiveState()
-		runtime.PopInstance()
 
 		return
 	}
@@ -334,7 +330,6 @@ func (host *vmHost) finishExecuteOnSameContext(gasUsed uint64, executeErr error)
 	bigInt.PopDiscard()
 	output.PopDiscard()
 	runtime.PopSetActiveState()
-	runtime.PopInstance()
 
 	// Restore remaining gas to the caller Wasmer instance
 	metering.RestoreGas(vmOutput.GasRemaining)
@@ -454,7 +449,8 @@ func (host *vmHost) checkUpgradePermission(vmInput *vmcommon.ContractCallInput) 
 	return arwen.ErrUpgradeNotAllowed
 }
 
-// executeUpgrade upgrades a contract indirectly (from another contract)
+// executeUpgrade upgrades a contract indirectly (from another contract). This
+// function follows the convention of executeSmartContractCall().
 func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) (uint64, error) {
 	_, _, metering, output, runtime, _ := host.GetContexts()
 
@@ -482,7 +478,6 @@ func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) (uint64, e
 		return 0, err
 	}
 
-	runtime.PushInstance()
 	runtime.MustVerifyNextContractCode()
 
 	vmInput := runtime.GetVMInput()
@@ -531,9 +526,8 @@ func (host *vmHost) executeSmartContractCall(
 		return 0, arwen.ErrInitFuncCalledInRun
 	}
 
-	// Use all gas initially, on the Wasmer instance of the caller
-	// (runtime.PushInstance() is called later). In case of successful execution,
-	// the unused gas will be restored.
+	// Use all gas initially, on the Wasmer instance of the caller. In case of
+	// successful execution, the unused gas will be restored.
 	metering.UnlockGasIfAsyncCallback()
 	initialGasProvided := input.GasProvided
 	metering.UseGas(initialGasProvided)
@@ -555,9 +549,11 @@ func (host *vmHost) executeSmartContractCall(
 		}
 	}
 
-	runtime.PushInstance()
-
 	gasForExecution := runtime.GetVMInput().GasProvided
+
+	// Replace the current Wasmer instance of the Runtime with a new one; this
+	// assumes that the instance was preserved on the Runtime instance stack
+	// before calling executeSmartContractCall().
 	err = runtime.StartWasmerInstance(contract, gasForExecution, false)
 	if err != nil {
 		return 0, err

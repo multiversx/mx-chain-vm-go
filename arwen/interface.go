@@ -105,10 +105,7 @@ type RuntimeContext interface {
 	AddAsyncContextCall(contextIdentifier []byte, asyncCall *AsyncGeneratedCall) error
 	GetAsyncContextInfo() *AsyncContextInfo
 	GetAsyncContext(contextIdentifier []byte) (*AsyncContext, error)
-	PushInstance()
-	PopInstance()
 	RunningInstancesCount() uint64
-	ClearInstanceStack()
 	IsWarmInstance() bool
 	ResetWarmInstance()
 	ReadOnly() bool
