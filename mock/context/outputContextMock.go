@@ -10,6 +10,7 @@ import (
 
 var _ arwen.OutputContext = (*OutputContextMock)(nil)
 
+// OutputContextMock is used in tests to check the OutputContext interface method calls
 type OutputContextMock struct {
 	OutputStateMock    *vmcommon.VMOutput
 	ReturnDataMock     [][]byte
@@ -27,12 +28,15 @@ type OutputContextMock struct {
 	TransferResult     error
 }
 
+// AddToActiveState mocked method
 func (o *OutputContextMock) AddToActiveState(_ *vmcommon.VMOutput) {
 }
 
+// InitState mocked method
 func (o *OutputContextMock) InitState() {
 }
 
+// NewVMOutputAccount mocked method
 func (o *OutputContextMock) NewVMOutputAccount(address []byte) *vmcommon.OutputAccount {
 	return &vmcommon.OutputAccount{
 		Address:        address,
@@ -43,6 +47,7 @@ func (o *OutputContextMock) NewVMOutputAccount(address []byte) *vmcommon.OutputA
 	}
 }
 
+// NewVMOutputAccountFromMockAccount mocked method
 func (o *OutputContextMock) NewVMOutputAccountFromMockAccount(account *worldmock.Account) *vmcommon.OutputAccount {
 	return &vmcommon.OutputAccount{
 		Address:        account.Address,
@@ -53,98 +58,125 @@ func (o *OutputContextMock) NewVMOutputAccountFromMockAccount(account *worldmock
 	}
 }
 
+// PushState mocked method
 func (o *OutputContextMock) PushState() {
 }
 
+// PopSetActiveState mocked method
 func (o *OutputContextMock) PopSetActiveState() {
 }
 
+// PopMergeActiveState mocked method
 func (o *OutputContextMock) PopMergeActiveState() {
 }
 
+// PopDiscard mocked method
 func (o *OutputContextMock) PopDiscard() {
 }
 
+// ClearStateStack mocked method
 func (o *OutputContextMock) ClearStateStack() {
 }
 
+// CopyTopOfStackToActiveState mocked method
 func (o *OutputContextMock) CopyTopOfStackToActiveState() {
 }
 
+// CensorVMOutput mocked method
 func (o *OutputContextMock) CensorVMOutput() {
 }
 
+// ResetGas mocked method
 func (o *OutputContextMock) ResetGas() {
 }
 
+// GetOutputAccount mocked method
 func (o *OutputContextMock) GetOutputAccount(_ []byte) (*vmcommon.OutputAccount, bool) {
 	return o.OutputAccountMock, o.OutputAccountIsNew
 }
 
+// DeleteOutputAccount mocked method
 func (o *OutputContextMock) DeleteOutputAccount(_ []byte) {
 }
 
+// GetRefund mocked method
 func (o *OutputContextMock) GetRefund() uint64 {
 	return uint64(o.GasRefund.Int64())
 }
 
+// SetRefund mocked method
 func (o *OutputContextMock) SetRefund(refund uint64) {
 	o.GasRefund = big.NewInt(int64(refund))
 }
 
+// ReturnData mocked method
 func (o *OutputContextMock) ReturnData() [][]byte {
 	return o.ReturnDataMock
 }
 
+// ReturnCode mocked method
 func (o *OutputContextMock) ReturnCode() vmcommon.ReturnCode {
 	return o.ReturnCodeMock
 }
 
+// SetReturnCode mocked method
 func (o *OutputContextMock) SetReturnCode(returnCode vmcommon.ReturnCode) {
 	o.ReturnCodeMock = returnCode
 }
 
+// ReturnMessage mocked method
 func (o *OutputContextMock) ReturnMessage() string {
 	return o.ReturnMessageMock
 }
 
+// SetReturnMessage mocked method
 func (o *OutputContextMock) SetReturnMessage(returnMessage string) {
 	o.ReturnMessageMock = returnMessage
 }
 
+// ClearReturnData mocked method
 func (o *OutputContextMock) ClearReturnData() {
 	o.ReturnDataMock = make([][]byte, 0)
 }
 
+// SelfDestruct mocked method
 func (o *OutputContextMock) SelfDestruct(_ []byte, _ []byte) {
 	panic("not implemented")
 }
 
+// Finish mocked method
 func (o *OutputContextMock) Finish(data []byte) {
 	o.ReturnDataMock = append(o.ReturnDataMock, data)
 }
 
+// WriteLog mocked method
 func (o *OutputContextMock) WriteLog(_ []byte, _ [][]byte, _ []byte) {
 }
 
+// TransferValueOnly mocked method
 func (o *OutputContextMock) TransferValueOnly(_ []byte, _ []byte, _ *big.Int) error {
 	return o.TransferResult
 }
 
+// Transfer mocked method
 func (o *OutputContextMock) Transfer(_ []byte, _ []byte, _ uint64, _ uint64, _ *big.Int, _ []byte, _ vmcommon.CallType) error {
 	return o.TransferResult
 }
 
+// AddTxValueToAccount mocked method
 func (o *OutputContextMock) AddTxValueToAccount(_ []byte, _ *big.Int) {
 }
 
+// GetVMOutput mocked method
 func (o *OutputContextMock) GetVMOutput() *vmcommon.VMOutput {
 	return o.OutputStateMock
 }
 
+// DeployCode mocked method
 func (o *OutputContextMock) DeployCode(_ arwen.CodeDeployInput) {
 }
 
+// CreateVMOutputInCaseOfError mocked method
 func (o *OutputContextMock) CreateVMOutputInCaseOfError(_ error) *vmcommon.VMOutput {
 	return o.OutputStateMock
 }

@@ -69,7 +69,7 @@ func (a *StubAccount) GetOwnerAddress() []byte {
 	return a.OwnerAddress
 }
 
-// GetOwnerAddress -
+// GetUserName -
 func (a *StubAccount) GetUserName() []byte {
 	return a.UserName
 }

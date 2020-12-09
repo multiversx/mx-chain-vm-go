@@ -29,7 +29,7 @@ func MakeAPIImports() *wasmer.Imports {
 	return imports
 }
 
-func InitializeArwenAndWasmer() *contextmock.VmHostMock {
+func InitializeArwenAndWasmer() *contextmock.VMHostMock {
 	imports := MakeAPIImports()
 	_ = wasmer.SetImports(imports)
 
@@ -38,7 +38,7 @@ func InitializeArwenAndWasmer() *contextmock.VmHostMock {
 	opcodeCosts := gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray()
 	wasmer.SetOpcodeCosts(&opcodeCosts)
 
-	host := &contextmock.VmHostMock{}
+	host := &contextmock.VMHostMock{}
 	host.SCAPIMethods = imports
 
 	mockMetering := &contextmock.MeteringContextMock{}
@@ -120,7 +120,7 @@ func TestRuntimeContext_NewWasmerInstance(t *testing.T) {
 
 func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
 	imports := MakeAPIImports()
-	host := &contextmock.VmHostMock{}
+	host := &contextmock.VMHostMock{}
 	host.SCAPIMethods = imports
 
 	vmType := []byte("type")
@@ -189,7 +189,7 @@ func TestRuntimeContext_PushPopInstance(t *testing.T) {
 
 func TestRuntimeContext_PushPopState(t *testing.T) {
 	imports := MakeAPIImports()
-	host := &contextmock.VmHostMock{}
+	host := &contextmock.VMHostMock{}
 	host.SCAPIMethods = imports
 
 	vmType := []byte("type")

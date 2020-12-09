@@ -6,6 +6,7 @@ import (
 
 var _ vmcommon.BlockchainHook = (*BlockchainHookStub)(nil)
 
+// BlockchainHookStub is used in tests to check that interface methods were called
 type BlockchainHookStub struct {
 	NewAddressCalled              func(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error)
 	GetStorageDataCalled          func(accountsAddress []byte, index []byte) ([]byte, error)
@@ -32,6 +33,7 @@ type BlockchainHookStub struct {
 	SaveCompiledCodeCalled        func(codeHash []byte, code []byte)
 }
 
+// NewAddress mocked method
 func (b *BlockchainHookStub) NewAddress(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error) {
 	if b.NewAddressCalled != nil {
 		return b.NewAddressCalled(creatorAddress, creatorNonce, vmType)
@@ -39,6 +41,7 @@ func (b *BlockchainHookStub) NewAddress(creatorAddress []byte, creatorNonce uint
 	return []byte("newAddress"), nil
 }
 
+// GetStorageData mocked method
 func (b *BlockchainHookStub) GetStorageData(accountAddress []byte, index []byte) ([]byte, error) {
 	if b.GetStorageDataCalled != nil {
 		return b.GetStorageDataCalled(accountAddress, index)
@@ -46,6 +49,7 @@ func (b *BlockchainHookStub) GetStorageData(accountAddress []byte, index []byte)
 	return nil, nil
 }
 
+// GetBlockhash mocked method
 func (b *BlockchainHookStub) GetBlockhash(nonce uint64) ([]byte, error) {
 	if b.GetBlockHashCalled != nil {
 		return b.GetBlockHashCalled(nonce)
@@ -53,6 +57,7 @@ func (b *BlockchainHookStub) GetBlockhash(nonce uint64) ([]byte, error) {
 	return []byte("roothash"), nil
 }
 
+// LastNonce mocked method
 func (b *BlockchainHookStub) LastNonce() uint64 {
 	if b.LastNonceCalled != nil {
 		return b.LastNonceCalled()
@@ -60,6 +65,7 @@ func (b *BlockchainHookStub) LastNonce() uint64 {
 	return 0
 }
 
+// LastRound mocked method
 func (b *BlockchainHookStub) LastRound() uint64 {
 	if b.LastRoundCalled != nil {
 		return b.LastRoundCalled()
@@ -67,6 +73,7 @@ func (b *BlockchainHookStub) LastRound() uint64 {
 	return 0
 }
 
+// LastTimeStamp mocked method
 func (b *BlockchainHookStub) LastTimeStamp() uint64 {
 	if b.LastTimeStampCalled != nil {
 		return b.LastTimeStampCalled()
@@ -74,6 +81,7 @@ func (b *BlockchainHookStub) LastTimeStamp() uint64 {
 	return 0
 }
 
+// LastRandomSeed mocked method
 func (b *BlockchainHookStub) LastRandomSeed() []byte {
 	if b.LastRandomSeedCalled != nil {
 		return b.LastRandomSeedCalled()
@@ -81,6 +89,7 @@ func (b *BlockchainHookStub) LastRandomSeed() []byte {
 	return []byte("seed")
 }
 
+// LastEpoch mocked method
 func (b *BlockchainHookStub) LastEpoch() uint32 {
 	if b.LastEpochCalled != nil {
 		return b.LastEpochCalled()
@@ -88,6 +97,7 @@ func (b *BlockchainHookStub) LastEpoch() uint32 {
 	return 0
 }
 
+// GetStateRootHash mocked method
 func (b *BlockchainHookStub) GetStateRootHash() []byte {
 	if b.GetStateRootHashCalled != nil {
 		return b.GetStateRootHashCalled()
@@ -95,6 +105,7 @@ func (b *BlockchainHookStub) GetStateRootHash() []byte {
 	return []byte("roothash")
 }
 
+// CurrentNonce mocked method
 func (b *BlockchainHookStub) CurrentNonce() uint64 {
 	if b.CurrentNonceCalled != nil {
 		return b.CurrentNonceCalled()
@@ -102,6 +113,7 @@ func (b *BlockchainHookStub) CurrentNonce() uint64 {
 	return 0
 }
 
+// CurrentRound mocked method
 func (b *BlockchainHookStub) CurrentRound() uint64 {
 	if b.CurrentRoundCalled != nil {
 		return b.CurrentRoundCalled()
@@ -109,6 +121,7 @@ func (b *BlockchainHookStub) CurrentRound() uint64 {
 	return 0
 }
 
+// CurrentTimeStamp mocked method
 func (b *BlockchainHookStub) CurrentTimeStamp() uint64 {
 	if b.CurrentTimeStampCalled != nil {
 		return b.CurrentTimeStampCalled()
@@ -116,6 +129,7 @@ func (b *BlockchainHookStub) CurrentTimeStamp() uint64 {
 	return 0
 }
 
+// CurrentRandomSeed mocked method
 func (b *BlockchainHookStub) CurrentRandomSeed() []byte {
 	if b.CurrentRandomSeedCalled != nil {
 		return b.CurrentRandomSeedCalled()
@@ -123,6 +137,7 @@ func (b *BlockchainHookStub) CurrentRandomSeed() []byte {
 	return []byte("seed")
 }
 
+// CurrentEpoch mocked method
 func (b *BlockchainHookStub) CurrentEpoch() uint32 {
 	if b.CurrentEpochCalled != nil {
 		return b.CurrentEpochCalled()
@@ -130,6 +145,7 @@ func (b *BlockchainHookStub) CurrentEpoch() uint32 {
 	return 0
 }
 
+// ProcessBuiltInFunction mocked method
 func (b *BlockchainHookStub) ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	if b.ProcessBuiltInFunctionCalled != nil {
 		return b.ProcessBuiltInFunctionCalled(input)
@@ -137,6 +153,7 @@ func (b *BlockchainHookStub) ProcessBuiltInFunction(input *vmcommon.ContractCall
 	return &vmcommon.VMOutput{}, nil
 }
 
+// GetBuiltinFunctionNames mocked method
 func (b *BlockchainHookStub) GetBuiltinFunctionNames() vmcommon.FunctionNames {
 	if b.GetBuiltinFunctionNamesCalled != nil {
 		return b.GetBuiltinFunctionNamesCalled()
@@ -144,6 +161,7 @@ func (b *BlockchainHookStub) GetBuiltinFunctionNames() vmcommon.FunctionNames {
 	return make(vmcommon.FunctionNames)
 }
 
+// GetAllState mocked method
 func (b *BlockchainHookStub) GetAllState(address []byte) (map[string][]byte, error) {
 	if b.GetAllStateCalled != nil {
 		return b.GetAllStateCalled(address)
@@ -151,6 +169,7 @@ func (b *BlockchainHookStub) GetAllState(address []byte) (map[string][]byte, err
 	return nil, nil
 }
 
+// GetUserAccount mocked method
 func (b *BlockchainHookStub) GetUserAccount(address []byte) (vmcommon.UserAccountHandler, error) {
 	if b.GetUserAccountCalled != nil {
 		return b.GetUserAccountCalled(address)
@@ -158,6 +177,7 @@ func (b *BlockchainHookStub) GetUserAccount(address []byte) (vmcommon.UserAccoun
 	return nil, nil
 }
 
+// GetShardOfAddress mocked method
 func (b *BlockchainHookStub) GetShardOfAddress(address []byte) uint32 {
 	if b.GetShardOfAddressCalled != nil {
 		return b.GetShardOfAddressCalled(address)
@@ -165,6 +185,7 @@ func (b *BlockchainHookStub) GetShardOfAddress(address []byte) uint32 {
 	return 0
 }
 
+// IsSmartContract mocked method
 func (b *BlockchainHookStub) IsSmartContract(address []byte) bool {
 	if b.IsSmartContractCalled != nil {
 		return b.IsSmartContractCalled(address)
@@ -172,6 +193,7 @@ func (b *BlockchainHookStub) IsSmartContract(address []byte) bool {
 	return false
 }
 
+// IsPayable mocked method
 func (b *BlockchainHookStub) IsPayable(address []byte) (bool, error) {
 	if b.IsPayableCalled != nil {
 		return b.IsPayableCalled(address)
@@ -179,12 +201,14 @@ func (b *BlockchainHookStub) IsPayable(address []byte) (bool, error) {
 	return true, nil
 }
 
+// SaveCompiledCode mocked method
 func (b *BlockchainHookStub) SaveCompiledCode(codeHash []byte, code []byte) {
 	if b.SaveCompiledCodeCalled != nil {
 		b.SaveCompiledCodeCalled(codeHash, code)
 	}
 }
 
+// GetCompiledCode mocked method
 func (b *BlockchainHookStub) GetCompiledCode(codeHash []byte) (bool, []byte) {
 	if b.GetCompiledCodeCalled != nil {
 		return b.GetCompiledCodeCalled(codeHash)
@@ -192,9 +216,11 @@ func (b *BlockchainHookStub) GetCompiledCode(codeHash []byte) (bool, []byte) {
 	return false, nil
 }
 
+// ClearCompiledCodes mocked method
 func (b *BlockchainHookStub) ClearCompiledCodes() {
 }
 
+// IsInterfaceNil mocked method
 func (b *BlockchainHookStub) IsInterfaceNil() bool {
 	return b == nil
 }

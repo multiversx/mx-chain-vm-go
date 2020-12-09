@@ -18,7 +18,7 @@ var elrondReservedTestPrefix = []byte("RESERVED")
 func TestNewStorageContext(t *testing.T) {
 	t.Parallel()
 
-	host := &contextmock.VmHostMock{}
+	host := &contextmock.VMHostMock{}
 	mockBlockchain := worldmock.NewMockWorld()
 
 	storageContext, err := NewStorageContext(host, mockBlockchain, elrondReservedTestPrefix)
@@ -61,7 +61,7 @@ func TestStorageContext_SetAddress(t *testing.T) {
 	mockMetering.SetGasSchedule(config.MakeGasMapForTests())
 	mockMetering.BlockGasLimitMock = uint64(15000)
 
-	host := &contextmock.VmHostMock{
+	host := &contextmock.VMHostMock{
 		OutputContext:   stubOutput,
 		MeteringContext: mockMetering,
 		RuntimeContext:  mockRuntime,
@@ -106,7 +106,7 @@ func TestStorageContext_GetStorageUpdates(t *testing.T) {
 		Data:   []byte("some data"),
 	}
 
-	host := &contextmock.VmHostMock{
+	host := &contextmock.VMHostMock{
 		OutputContext: mockOutput,
 	}
 
@@ -133,7 +133,7 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	mockMetering.SetGasSchedule(config.MakeGasMapForTests())
 	mockMetering.BlockGasLimitMock = uint64(15000)
 
-	host := &contextmock.VmHostMock{
+	host := &contextmock.VMHostMock{
 		OutputContext:   mockOutput,
 		MeteringContext: mockMetering,
 		RuntimeContext:  mockRuntime,
@@ -215,7 +215,7 @@ func TestStorageContext_GetStorageFromAddress(t *testing.T) {
 	mockMetering.SetGasSchedule(config.MakeGasMapForTests())
 	mockMetering.BlockGasLimitMock = uint64(15000)
 
-	host := &contextmock.VmHostMock{
+	host := &contextmock.VMHostMock{
 		OutputContext:   mockOutput,
 		MeteringContext: mockMetering,
 		RuntimeContext:  mockRuntime,
@@ -265,7 +265,7 @@ func TestStorageContext_StoreGasPerKey(t *testing.T) {
 func TestStorageContext_PopSetActiveStateIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	t.Parallel()
 
-	storageContext, _ := NewStorageContext(&contextmock.VmHostMock{}, &contextmock.BlockchainHookStub{}, elrondReservedTestPrefix)
+	storageContext, _ := NewStorageContext(&contextmock.VMHostMock{}, &contextmock.BlockchainHookStub{}, elrondReservedTestPrefix)
 	storageContext.PopSetActiveState()
 
 	require.Equal(t, 0, len(storageContext.stateStack))
@@ -274,7 +274,7 @@ func TestStorageContext_PopSetActiveStateIfStackIsEmptyShouldNotPanic(t *testing
 func TestStorageContext_PopDiscardIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	t.Parallel()
 
-	storageContext, _ := NewStorageContext(&contextmock.VmHostMock{}, &contextmock.BlockchainHookStub{}, elrondReservedTestPrefix)
+	storageContext, _ := NewStorageContext(&contextmock.VMHostMock{}, &contextmock.BlockchainHookStub{}, elrondReservedTestPrefix)
 	storageContext.PopDiscard()
 
 	require.Equal(t, 0, len(storageContext.stateStack))
