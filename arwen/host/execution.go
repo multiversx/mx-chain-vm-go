@@ -468,30 +468,37 @@ func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) (uint64, e
 	err = runtime.StartWasmerInstance(codeDeployInput.ContractCode, vmInput.GasProvided, true)
 	if err != nil {
 		log.Debug("performCodeDeployment/StartWasmerInstance", "err", err)
-		runtime.PopInstance()
 		return 0, arwen.ErrContractInvalid
 	}
 
 	err = host.callInitFunction()
 	if err != nil {
-		runtime.PopInstance()
 		return 0, err
 	}
 
 	output.DeployCode(codeDeployInput)
 	if output.ReturnCode() != vmcommon.Ok {
-		runtime.PopInstance()
 		return 0, arwen.ErrReturnCodeNotOk
 	}
 
 	gasToRestoreToCaller := metering.GasLeft()
-
-	runtime.PopInstance()
-	metering.RestoreGas(gasToRestoreToCaller)
-
 	return initialGasProvided - gasToRestoreToCaller, nil
 }
 
+// executeSmartContractCall executes an indirect call to a smart contract,
+// assuming there is an already-running Wasmer instance with another contract
+// that has requested the indirect call. This method creates a new Wasmer
+// instance and pushes the previous one onto the Runtime instance stack, but it
+// will not pop the previous instance back - that remains the responsibility of
+// the calling code. Also, this method does not restore the gas remaining after
+// the indirect call, it does not push the states of any Host Context onto
+// their respective stacks, nor does it pop any state stack. Handling the state
+// stacks and the remaining gas are responsibilities of the calling code, which
+// must push and pop as required, before and after calling this method, and
+// handle the remaining gas. These principles also apply to indirect contract
+// upgrading (via host.executeUpgrade(), which also does not pop the previous
+// instance from the Runtime instance stack, nor does it restore the remaining
+// gas).
 func (host *vmHost) executeSmartContractCall(
 	input *vmcommon.ContractCallInput,
 	metering arwen.MeteringContext,
@@ -532,26 +539,19 @@ func (host *vmHost) executeSmartContractCall(
 	gasForExecution := runtime.GetVMInput().GasProvided
 	err = runtime.StartWasmerInstance(contract, gasForExecution, false)
 	if err != nil {
-		runtime.PopInstance()
 		return 0, err
 	}
 
 	err = host.callSCMethodIndirect()
 	if err != nil {
-		runtime.PopInstance()
 		return 0, err
 	}
 
 	if output.ReturnCode() != vmcommon.Ok {
-		runtime.PopInstance()
 		return 0, arwen.ErrReturnCodeNotOk
 	}
 
 	gasToRestoreToCaller := metering.GasLeft()
-
-	runtime.PopInstance()
-	metering.RestoreGas(gasToRestoreToCaller)
-
 	return initialGasProvided - gasToRestoreToCaller, nil
 }
 
