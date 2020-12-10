@@ -67,7 +67,6 @@ package elrondapi
 import "C"
 
 import (
-	"encoding/binary"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -1745,9 +1744,18 @@ func createInt32Array(rawData []byte, numIntegers int32) []int32 {
 	index := 0
 	for cursor := 0; cursor < len(rawData); cursor += 4 {
 		rawInt := rawData[cursor : cursor+4]
-		actualInt := binary.BigEndian.Uint32(rawInt)
-		integers[index] = int32(actualInt)
+		actualInt := bytesToInt32(rawInt)
+		integers[index] = actualInt
 		index++
 	}
 	return integers
+}
+
+func bytesToInt32(data []byte) int32 {
+	actualLen := int32(0)
+	for i := len(data) - 1; i >= 0; i-- {
+		actualLen = (actualLen << 8) + int32(data[i])
+	}
+
+	return actualLen
 }
