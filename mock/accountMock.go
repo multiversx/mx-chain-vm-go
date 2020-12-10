@@ -68,7 +68,7 @@ func (a *AccountMock) GetOwnerAddress() []byte {
 	return a.OwnerAddress
 }
 
-// GetOwnerAddress -
+// GetUserName -
 func (a *AccountMock) GetUserName() []byte {
 	return a.UserName
 }

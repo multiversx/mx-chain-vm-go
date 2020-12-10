@@ -1668,7 +1668,7 @@ func prepareIndirectContractCallInput(
 		return nil, err
 	}
 
-	if !host.AreInSameShard(sender, destination) {
+	if !host.AreInSameShard(runtime.GetSCAddress(), destination) {
 		return nil, arwen.ErrSyncExecutionNotInSameShard
 	}
 
