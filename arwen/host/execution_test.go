@@ -882,7 +882,6 @@ func TestExecution_ExecuteOnDestContext_GasRemaining(t *testing.T) {
 
 	parentCode := GetTestSCCode("exec-dest-ctx-parent", "../../")
 	childCode := GetTestSCCode("exec-dest-ctx-child", "../../")
-	parentSCBalance := big.NewInt(1000)
 
 	// Pretend that the execution of the parent SC was requested, with the
 	// following ContractCallInput:
@@ -894,7 +893,7 @@ func TestExecution_ExecuteOnDestContext_GasRemaining(t *testing.T) {
 	// Initialize the VM with the parent SC and child SC, but without really
 	// executing the parent. The initialization emulates the behavior of
 	// host.doRunSmartContractCall(). Gas cost for compilation is skipped.
-	host, _ := defaultTestArwenForTwoSCs(t, parentCode, childCode, parentSCBalance)
+	host, _ := defaultTestArwenForTwoSCs(t, parentCode, childCode, nil, nil)
 	host.InitState()
 
 	_, _, metering, output, runtime, storage := host.GetContexts()
