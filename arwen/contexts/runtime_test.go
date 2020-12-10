@@ -11,7 +11,8 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/elrondapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
-	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
@@ -28,7 +29,7 @@ func MakeAPIImports() *wasmer.Imports {
 	return imports
 }
 
-func InitializeArwenAndWasmer() *mock.VmHostMock {
+func InitializeArwenAndWasmer() *contextmock.VMHostMock {
 	imports := MakeAPIImports()
 	_ = wasmer.SetImports(imports)
 
@@ -37,13 +38,13 @@ func InitializeArwenAndWasmer() *mock.VmHostMock {
 	opcodeCosts := gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray()
 	wasmer.SetOpcodeCosts(&opcodeCosts)
 
-	host := &mock.VmHostMock{}
+	host := &contextmock.VMHostMock{}
 	host.SCAPIMethods = imports
 
-	mockMetering := &mock.MeteringContextMock{}
+	mockMetering := &contextmock.MeteringContextMock{}
 	mockMetering.SetGasSchedule(gasSchedule)
 	host.MeteringContext = mockMetering
-	host.BlockchainContext, _ = NewBlockchainContext(host, mock.NewBlockchainHookMock())
+	host.BlockchainContext, _ = NewBlockchainContext(host, worldmock.NewMockWorld())
 	host.OutputContext, _ = NewOutputContext(host)
 	host.CryptoHook = crypto.NewVMCrypto()
 	return host
@@ -119,7 +120,7 @@ func TestRuntimeContext_NewWasmerInstance(t *testing.T) {
 
 func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
 	imports := MakeAPIImports()
-	host := &mock.VmHostMock{}
+	host := &contextmock.VMHostMock{}
 	host.SCAPIMethods = imports
 
 	vmType := []byte("type")
@@ -188,7 +189,7 @@ func TestRuntimeContext_PushPopInstance(t *testing.T) {
 
 func TestRuntimeContext_PushPopState(t *testing.T) {
 	imports := MakeAPIImports()
-	host := &mock.VmHostMock{}
+	host := &contextmock.VMHostMock{}
 	host.SCAPIMethods = imports
 
 	vmType := []byte("type")
@@ -292,7 +293,7 @@ func TestRuntimeContext_Instance(t *testing.T) {
 func TestRuntimeContext_Breakpoints(t *testing.T) {
 	host := InitializeArwenAndWasmer()
 
-	mockOutput := &mock.OutputContextMock{
+	mockOutput := &contextmock.OutputContextMock{
 		OutputAccountMock: NewVMOutputAccount([]byte("address")),
 	}
 	mockOutput.OutputAccountMock.Code = []byte("code")
