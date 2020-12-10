@@ -4,31 +4,32 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 type worldDataModel struct {
 	ID       string
-	Accounts AccountsMap
+	Accounts worldmock.AccountMap
 }
 
 type world struct {
 	id             string
-	blockchainHook *BlockchainHookMock
+	blockchainHook *worldmock.MockWorld
 	vm             vmcommon.VMExecutionHandler
 }
 
 func newWorldDataModel(worldID string) *worldDataModel {
 	return &worldDataModel{
 		ID:       worldID,
-		Accounts: make(AccountsMap),
+		Accounts: worldmock.NewAccountMap(),
 	}
 }
 
 // newWorld creates a new debugging world
 func newWorld(dataModel *worldDataModel) (*world, error) {
-	blockchainHook := NewBlockchainHookMock()
-	blockchainHook.Accounts = dataModel.Accounts
+	blockchainHook := worldmock.NewMockWorld()
+	blockchainHook.AcctMap = dataModel.Accounts
 
 	vm, err := host.NewArwenVM(
 		blockchainHook,
@@ -60,7 +61,7 @@ func (w *world) deploySmartContract(request DeployRequest) *DeployResponse {
 
 	vmOutput, err := w.vm.RunSmartContractCreate(input)
 	if err == nil {
-		w.blockchainHook.UpdateAccounts(vmOutput.OutputAccounts)
+		w.blockchainHook.UpdateAccounts(vmOutput.OutputAccounts, nil)
 	}
 
 	response := &DeployResponse{}
@@ -77,7 +78,7 @@ func (w *world) upgradeSmartContract(request UpgradeRequest) *UpgradeResponse {
 
 	vmOutput, err := w.vm.RunSmartContractCall(input)
 	if err == nil {
-		w.blockchainHook.UpdateAccounts(vmOutput.OutputAccounts)
+		w.blockchainHook.UpdateAccounts(vmOutput.OutputAccounts, nil)
 	}
 
 	response := &UpgradeResponse{}
@@ -93,7 +94,7 @@ func (w *world) runSmartContract(request RunRequest) *RunResponse {
 
 	vmOutput, err := w.vm.RunSmartContractCall(input)
 	if err == nil {
-		w.blockchainHook.UpdateAccounts(vmOutput.OutputAccounts)
+		w.blockchainHook.UpdateAccounts(vmOutput.OutputAccounts, nil)
 	}
 
 	response := &RunResponse{}
@@ -119,14 +120,18 @@ func (w *world) querySmartContract(request QueryRequest) *QueryResponse {
 func (w *world) createAccount(request CreateAccountRequest) *CreateAccountResponse {
 	log.Trace("w.createAccount()", "request", prettyJson(request))
 
-	account := NewAccount(request.Address, request.Nonce, request.BalanceAsBigInt)
-	w.blockchainHook.AddAccount(account)
-	return &CreateAccountResponse{Account: account}
+	account := worldmock.Account{
+		Address: request.Address,
+		Nonce:   request.Nonce,
+		Balance: request.BalanceAsBigInt,
+	}
+	w.blockchainHook.AcctMap.PutAccount(&account)
+	return &CreateAccountResponse{Account: &account}
 }
 
 func (w *world) toDataModel() *worldDataModel {
 	return &worldDataModel{
 		ID:       w.id,
-		Accounts: w.blockchainHook.Accounts,
+		Accounts: w.blockchainHook.AcctMap,
 	}
 }

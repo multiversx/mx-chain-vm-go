@@ -9,7 +9,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -27,7 +27,8 @@ const (
 )
 
 func TestNewArwen(t *testing.T) {
-	host, err := defaultTestArwen(t, &mock.BlockchainHookStub{})
+	// host, err := DefaultTestArwen(t, &contextmock.BlockchainHookStub{})
+	host, err := defaultTestArwen(t, &contextmock.BlockchainHookStub{})
 	require.Nil(t, err)
 	require.NotNil(t, host)
 }
@@ -54,7 +55,7 @@ func TestSCMem(t *testing.T) {
 }
 
 func TestExecution_DeployNewAddressErr(t *testing.T) {
-	stubBlockchainHook := &mock.BlockchainHookStub{}
+	stubBlockchainHook := &contextmock.BlockchainHookStub{}
 
 	errNewAddress := errors.New("new address error")
 
@@ -62,7 +63,7 @@ func TestExecution_DeployNewAddressErr(t *testing.T) {
 	input := DefaultTestContractCreateInput()
 	stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
 		require.Equal(t, input.CallerAddr, address)
-		return &mock.AccountMock{}, nil
+		return &contextmock.StubAccount{}, nil
 	}
 	stubBlockchainHook.NewAddressCalled = func(creatorAddress []byte, nonce uint64, vmType []byte) ([]byte, error) {
 		require.Equal(t, input.CallerAddr, creatorAddress)
@@ -237,9 +238,9 @@ func TestExecution_ManyDeployments(t *testing.T) {
 
 	ownerNonce := uint64(23)
 	newAddress := "new smartcontract"
-	stubBlockchainHook := &mock.BlockchainHookStub{}
+	stubBlockchainHook := &contextmock.BlockchainHookStub{}
 	stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
-		return &mock.AccountMock{Nonce: ownerNonce}, nil
+		return &contextmock.StubAccount{Nonce: ownerNonce}, nil
 	}
 	stubBlockchainHook.NewAddressCalled = func(creatorAddress []byte, nonce uint64, vmType []byte) ([]byte, error) {
 		ownerNonce++
@@ -282,7 +283,7 @@ func TestExecution_Deploy_DisallowFloatingPoint(t *testing.T) {
 }
 
 func TestExecution_CallGetUserAccountErr(t *testing.T) {
-	stubBlockchainHook := &mock.BlockchainHookStub{}
+	stubBlockchainHook := &contextmock.BlockchainHookStub{}
 
 	errGetAccount := errors.New("get code error")
 
@@ -1036,7 +1037,7 @@ func TestExecution_AsyncCall_GasLimitConsumed(t *testing.T) {
 	host, stubBlockchainHook := defaultTestArwenForTwoSCs(t, parentCode, childCode, nil, nil)
 	stubBlockchainHook.GetUserAccountCalled = func(scAddress []byte) (vmcommon.UserAccountHandler, error) {
 		if bytes.Equal(scAddress, parentAddress) {
-			return &mock.AccountMock{
+			return &contextmock.StubAccount{
 				Code:    parentCode,
 				Balance: big.NewInt(1000),
 			}, nil
