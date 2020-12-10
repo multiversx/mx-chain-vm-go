@@ -828,6 +828,13 @@ func expectedVMOutputDestCtxByCallerSimpleTransfer(value int64) *vmcommon.VMOutp
 		nil,
 	)
 	userAccount.BalanceDelta = big.NewInt(value)
+	userAccount.OutputTransfers = append(userAccount.OutputTransfers, vmcommon.OutputTransfer{
+		Value:     big.NewInt(value),
+		GasLimit:  0,
+		GasLocked: 0,
+		Data:      []byte{},
+		CallType:  vmcommon.DirectCall,
+	})
 
 	AddFinishData(vmOutput, []byte("sent"))
 	AddFinishData(vmOutput, []byte("child called"))
@@ -849,16 +856,15 @@ func expectedVMOutputAsyncCall(_ []byte, _ []byte) *vmcommon.VMOutput {
 	AddFinishData(vmOutput, parentFinishA)
 	AddFinishData(vmOutput, parentFinishB)
 
-	_ = AddNewOutputAccount(
+	thirdPartyAccount := AddNewOutputAccount(
 		vmOutput,
 		thirdPartyAddress,
 		3,
 		[]byte("hello"),
 	)
 	outTransfer := vmcommon.OutputTransfer{Data: []byte(" there"), Value: big.NewInt(3)}
-	outAcc := vmOutput.OutputAccounts[string(thirdPartyAddress)]
-	outAcc.OutputTransfers = append(outAcc.OutputTransfers, outTransfer)
-	outAcc.BalanceDelta = big.NewInt(6)
+	thirdPartyAccount.OutputTransfers = append(thirdPartyAccount.OutputTransfers, outTransfer)
+	thirdPartyAccount.BalanceDelta = big.NewInt(6)
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,

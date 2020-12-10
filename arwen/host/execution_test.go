@@ -1005,18 +1005,28 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 }
 
 func TestExecution_ExecuteOnDestContextByCaller_SimpleTransfer(t *testing.T) {
+	// The child contract is designed to send some tokens back to its caller, as
+	// many as requested. The parent calls the child using
+	// executeOnDestContextByCaller(), which means that the child will not see
+	// the parent as its caller, but the original caller of the transaction
+	// instead. Thus the original caller (the user address) will receive 42
+	// tokens, and not the parent, even if the parent is the one making the call
+	// to the child.
 	parentCode := GetTestSCCodeModule("exec-dest-ctx-by-caller/parent", "parent", "../../")
 	childCode := GetTestSCCodeModule("exec-dest-ctx-by-caller/child", "child", "../../")
 
 	host, _ := defaultTestArwenForTwoSCs(t, parentCode, childCode, nil, nil)
 	input := DefaultTestContractCallInput()
 	input.Function = "call_child"
-	input.GasProvided = 8000000
+	input.GasProvided = 2000
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
 
+	// TODO calculate expected remaining gas properly, instead of copying it from
+	// the actual vmOutput.
 	expectedVMOutput := expectedVMOutputDestCtxByCallerSimpleTransfer(42)
+	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
