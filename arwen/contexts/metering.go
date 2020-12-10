@@ -1,8 +1,6 @@
 package contexts
 
 import (
-	builtinMath "math"
-
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/math"
@@ -53,16 +51,7 @@ func (context *meteringContext) SetGasSchedule(gasMap config.GasScheduleMap) {
 
 // UseGas sets in the runtime context the given gas as gas used
 func (context *meteringContext) UseGas(gas uint64) {
-	gasUsed, err := math.AddInt64(int64(context.host.Runtime().GetPointsUsed()), int64(gas))
-	if err != nil {
-		log.Error("UseGas overflow",
-			"gasUsed = ", context.host.Runtime().GetPointsUsed(),
-			"gasToUse = ", gas,
-		)
-		context.host.Runtime().SetPointsUsed(builtinMath.MaxInt64)
-		return
-	}
-
+	gasUsed := math.AddInt64(int64(context.host.Runtime().GetPointsUsed()), int64(gas))
 	context.host.Runtime().SetPointsUsed(uint64(gasUsed))
 }
 
@@ -77,16 +66,7 @@ func (context *meteringContext) RestoreGas(gas uint64) {
 
 // FreeGas adds the given gas to the refunded gas.
 func (context *meteringContext) FreeGas(gas uint64) {
-	refund, err := math.AddInt64(int64(context.host.Output().GetRefund()), int64(gas))
-	if err != nil {
-		log.Error("FreeGas overflow",
-			"gasUsed = ", context.host.Runtime().GetPointsUsed(),
-			"gasToUse = ", gas,
-		)
-		context.host.Runtime().SetPointsUsed(builtinMath.MaxUint64)
-		return
-	}
-
+	refund := math.AddInt64(int64(context.host.Output().GetRefund()), int64(gas))
 	context.host.Output().SetRefund(uint64(refund))
 }
 
@@ -145,38 +125,12 @@ func (context *meteringContext) ComputeGasLockedForAsync() uint64 {
 	// Exact amount of gas required to compile this SC again, to execute the callback
 	compilationGasLock := uint64(0)
 	if context.host.IsDynamicGasLockingEnabled() {
-		var err error
-		compilationGasLock, err = math.MulUint64(codeSize, costPerByte)
-		if err != nil {
-			log.Error("ComputeGasLockedForAsync overflow",
-				"codeSize = ", codeSize,
-				"costPerByte = ", costPerByte,
-			)
-
-			return builtinMath.MaxUint64
-		}
+		compilationGasLock = math.MulUint64(codeSize, costPerByte)
 	}
 
 	// Minimum amount required to execute the callback
-	executionGasLock, err := math.AddUint64(apiGasSchedule.AsyncCallStep, apiGasSchedule.AsyncCallbackGasLock)
-	if err != nil {
-		log.Error("ComputeGasLockedForAsync overflow",
-			"AsyncCallStep = ", apiGasSchedule.AsyncCallStep,
-			"AsyncCallbackGasLock = ", apiGasSchedule.AsyncCallbackGasLock,
-		)
-
-		return builtinMath.MaxUint64
-	}
-
-	gasLockedForAsync, err := math.AddUint64(compilationGasLock, executionGasLock)
-	if err != nil {
-		log.Error("ComputeGasLockedForAsync overflow",
-			"compilationGasLock = ", compilationGasLock,
-			"executionGasLock = ", executionGasLock,
-		)
-
-		return builtinMath.MaxUint64
-	}
+	executionGasLock := math.AddUint64(apiGasSchedule.AsyncCallStep, apiGasSchedule.AsyncCallbackGasLock)
+	gasLockedForAsync := math.AddUint64(compilationGasLock, executionGasLock)
 
 	return gasLockedForAsync
 }
@@ -188,15 +142,7 @@ func (context *meteringContext) UnlockGasIfAsyncCallback() {
 		return
 	}
 
-	gasProvided, err := math.AddUint64(input.GasProvided, input.GasLocked)
-	if err != nil {
-		log.Error("UnlockGasIfAsyncCallback overflow",
-			"GasProvided = ", input.GasProvided,
-			"GasLocked = ", input.GasLocked,
-		)
-
-		gasProvided = builtinMath.MaxUint64
-	}
+	gasProvided := math.AddUint64(input.GasProvided, input.GasLocked)
 
 	input.GasProvided = gasProvided
 	input.GasLocked = 0
@@ -252,7 +198,7 @@ func (context *meteringContext) deductInitialGas(
 ) error {
 	input := context.host.Runtime().GetVMInput()
 	codeLength := uint64(len(code))
-	codeCost, err := math.MulUint64(codeLength, costPerByte)
+	codeCost, err := math.MulUint64WithErr(codeLength, costPerByte)
 	if err != nil {
 		log.Error("deductInitialGas overflow",
 			"codeLength = ", codeLength,
@@ -262,7 +208,7 @@ func (context *meteringContext) deductInitialGas(
 		return arwen.ErrNotEnoughGas
 	}
 
-	initialCost, err := math.AddUint64(baseCost, codeCost)
+	initialCost, err := math.AddUint64WithErr(baseCost, codeCost)
 	if err != nil {
 		log.Error("deductInitialGas overflow",
 			"baseCost = ", baseCost,

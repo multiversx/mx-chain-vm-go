@@ -622,7 +622,7 @@ func (host *vmHost) setupAsyncCallsGas(asyncInfo *arwen.AsyncContextInfo) error 
 	for identifier, asyncContext := range asyncInfo.AsyncContextMap {
 		for index, asyncCall := range asyncContext.AsyncCalls {
 			var err error
-			gasNeeded, err = math.AddUint64(gasNeeded, asyncCall.ProvidedGas)
+			gasNeeded, err = math.AddUint64WithErr(gasNeeded, asyncCall.ProvidedGas)
 			if err != nil {
 				return err
 			}
