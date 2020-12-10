@@ -190,7 +190,7 @@ func expectedVMOutputSameCtxSuccessfulChildCall(parentCode []byte, _ []byte) *vm
 		3,
 		nil,
 	)
-	childAccount.Balance = big.NewInt(0)
+	childAccount.Balance = big.NewInt(1000)
 
 	executeAPICost := uint64(39)
 	childExecutionCost := uint64(436)
@@ -397,7 +397,7 @@ func expectedVMOutputSameCtxRecursiveMutualSCs(_ []byte, _ []byte, recursiveCall
 		0,
 		nil,
 	)
-	childAccount.Balance = big.NewInt(0)
+	childAccount.Balance = big.NewInt(1000)
 	childAccount.GasUsed = 5437
 
 	if recursiveCalls%2 == 1 {
@@ -593,7 +593,7 @@ func expectedVMOutputDestCtxSuccessfulChildCall(parentCode []byte, _ []byte) *vm
 		99-12,
 		nil,
 	)
-	childAccount.Balance = big.NewInt(0)
+	childAccount.Balance = big.NewInt(1000)
 
 	_ = AddNewOutputAccount(
 		vmOutput,
@@ -763,7 +763,7 @@ func expectedVMOutputDestCtxRecursiveMutualSCs(_ []byte, _ []byte, recursiveCall
 		0,
 		nil,
 	)
-	childAccount.Balance = big.NewInt(0)
+	childAccount.Balance = big.NewInt(1000)
 	childAccount.BalanceDelta = big.NewInt(balanceDelta)
 
 	for i := 0; i <= recursiveCalls; i++ {
@@ -801,6 +801,39 @@ func expectedVMOutputDestCtxRecursiveMutualSCs(_ []byte, _ []byte, recursiveCall
 	return vmOutput
 }
 
+func expectedVMOutputDestCtxByCallerSimpleTransfer(value int64) *vmcommon.VMOutput {
+	vmOutput := MakeVMOutput()
+
+	parentAccount := AddNewOutputAccount(
+		vmOutput,
+		parentAddress,
+		0,
+		nil,
+	)
+	parentAccount.Balance = nil
+
+	childAccount := AddNewOutputAccount(
+		vmOutput,
+		childAddress,
+		0,
+		nil,
+	)
+	childAccount.Balance = big.NewInt(1000)
+	childAccount.BalanceDelta = big.NewInt(-value)
+
+	userAccount := AddNewOutputAccount(
+		vmOutput,
+		userAddress,
+		0,
+		nil,
+	)
+	userAccount.BalanceDelta = big.NewInt(value)
+
+	AddFinishData(vmOutput, []byte("sent"))
+	AddFinishData(vmOutput, []byte("child called"))
+	return vmOutput
+}
+
 func expectedVMOutputAsyncCall(_ []byte, _ []byte) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 
@@ -833,7 +866,7 @@ func expectedVMOutputAsyncCall(_ []byte, _ []byte) *vmcommon.VMOutput {
 		0,
 		nil,
 	)
-	childAccount.Balance = big.NewInt(0)
+	childAccount.Balance = big.NewInt(1000)
 	SetStorageUpdate(childAccount, childKey, childData)
 
 	_ = AddNewOutputAccount(
@@ -880,7 +913,7 @@ func expectedVMOutputAsyncCallChildFails(_ []byte, _ []byte) *vmcommon.VMOutput 
 		0,
 		nil,
 	)
-	childAccount.Balance = big.NewInt(0)
+	childAccount.Balance = big.NewInt(1000)
 
 	_ = AddNewOutputAccount(
 		vmOutput,
@@ -926,7 +959,7 @@ func expectedVMOutputAsyncCallCallBackFails(_ []byte, _ []byte) *vmcommon.VMOutp
 		0,
 		nil,
 	)
-	childAccount.Balance = big.NewInt(0)
+	childAccount.Balance = big.NewInt(1000)
 	childAccount.BalanceDelta = big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1))
 	SetStorageUpdate(childAccount, childKey, childData)
 

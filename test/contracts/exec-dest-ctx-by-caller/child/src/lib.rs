@@ -11,8 +11,9 @@ pub static EEI: ArwenApiImpl = ArwenApiImpl{};
 
 #[no_mangle]
 pub extern "C" fn give() {
+    let value_to_give = EEI.get_argument_u8(0);
     let caller: Address = EEI.get_caller();
-    let value = ArwenBigUint::from(42 as u64);
+    let value = ArwenBigUint::from(value_to_give as u64);
     EEI.send_tx(&caller, &value, "");
-    EEI.finish_slice_u8(b"sent 42");
+    EEI.finish_slice_u8(b"sent");
 }
