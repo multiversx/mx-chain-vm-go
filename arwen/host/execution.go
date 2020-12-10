@@ -7,6 +7,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/contexts"
+	"github.com/ElrondNetwork/arwen-wasm-vm/math"
 	"github.com/ElrondNetwork/elrond-go-logger/check"
 	"github.com/ElrondNetwork/elrond-go/core"
 	"github.com/ElrondNetwork/elrond-go/core/parsers"
@@ -201,10 +202,10 @@ func computeGasUsedByCurrentSC(
 	for _, outAcc := range vmOutput.OutputAccounts {
 		accumulatedGasLimit := uint64(0)
 		for _, outTransfer := range outAcc.OutputTransfers {
-			accumulatedGasLimit += outTransfer.GasLimit
+			accumulatedGasLimit = math.AddUint64(accumulatedGasLimit, outTransfer.GasLimit)
 		}
 
-		if gasUsed < outAcc.GasUsed+accumulatedGasLimit {
+		if gasUsed < math.AddUint64(outAcc.GasUsed, accumulatedGasLimit) {
 			return 0, arwen.ErrGasUsageError
 		}
 
@@ -489,7 +490,7 @@ func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) (uint64, e
 	runtime.PopInstance()
 	metering.RestoreGas(gasToRestoreToCaller)
 
-	return initialGasProvided - gasToRestoreToCaller, nil
+	return math.SubUint64(initialGasProvided, gasToRestoreToCaller), nil
 }
 
 func (host *vmHost) executeSmartContractCall(
@@ -552,7 +553,7 @@ func (host *vmHost) executeSmartContractCall(
 	runtime.PopInstance()
 	metering.RestoreGas(gasToRestoreToCaller)
 
-	return initialGasProvided - gasToRestoreToCaller, nil
+	return math.SubUint64(initialGasProvided, gasToRestoreToCaller), nil
 }
 
 func (host *vmHost) execute(input *vmcommon.ContractCallInput) (uint64, error) {
@@ -607,7 +608,7 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmc
 		return nil, err
 	}
 
-	gasConsumed := input.GasProvided - vmOutput.GasRemaining
+	gasConsumed := math.SubUint64(input.GasProvided, vmOutput.GasRemaining)
 	if vmOutput.GasRemaining < input.GasProvided {
 		metering.UseGas(gasConsumed)
 	}

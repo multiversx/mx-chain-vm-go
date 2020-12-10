@@ -36,7 +36,19 @@ func AddInt64(a, b int64) int64 {
 		return s
 	}
 
+	//TODO log err
 	return builtinMath.MaxInt64
+}
+
+// SubUint64 performs subtraction on uint64 and logs an error if the subtraction overflows
+func SubUint64(a, b uint64) uint64 {
+	res := a - b
+	if res <= a {
+		return res
+	}
+
+	// TODO log err
+	return 0
 }
 
 // MulUint64 performs multiplication on uint64 and logs an error if the multiplication overflows
@@ -80,5 +92,6 @@ func SubInt(a, b int) int {
 		return res
 	}
 
+	//TODO log err
 	return builtinMath.MinInt64
 }
