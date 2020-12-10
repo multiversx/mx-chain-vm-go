@@ -1745,7 +1745,7 @@ func createInt32Array(rawData []byte, numIntegers int32) []int32 {
 	index := 0
 	for cursor := 0; cursor < len(rawData); cursor += 4 {
 		rawInt := rawData[cursor : cursor+4]
-		actualInt := binary.BigEndian.Uint32(rawInt)
+		actualInt := binary.LittleEndian.Uint32(rawInt)
 		integers[index] = int32(actualInt)
 		index++
 	}
