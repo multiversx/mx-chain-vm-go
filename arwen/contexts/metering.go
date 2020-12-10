@@ -53,17 +53,17 @@ func (context *meteringContext) SetGasSchedule(gasMap config.GasScheduleMap) {
 
 // UseGas sets in the runtime context the given gas as gas used
 func (context *meteringContext) UseGas(gas uint64) {
-	gasUsed, err := math.AddUint64(context.host.Runtime().GetPointsUsed(), gas)
-	if err != nil || gasUsed > builtinMath.MaxUint64 {
+	gasUsed, err := math.AddInt64(int64(context.host.Runtime().GetPointsUsed()), int64(gas))
+	if err != nil {
 		log.Error("UseGas overflow",
 			"gasUsed = ", context.host.Runtime().GetPointsUsed(),
 			"gasToUse = ", gas,
 		)
-		context.host.Runtime().SetPointsUsed(builtinMath.MaxUint64)
+		context.host.Runtime().SetPointsUsed(builtinMath.MaxInt64)
 		return
 	}
 
-	context.host.Runtime().SetPointsUsed(gasUsed)
+	context.host.Runtime().SetPointsUsed(uint64(gasUsed))
 }
 
 // RestoreGas subtracts the given gas from the gas used that is set in the runtime context.
@@ -77,8 +77,8 @@ func (context *meteringContext) RestoreGas(gas uint64) {
 
 // FreeGas adds the given gas to the refunded gas.
 func (context *meteringContext) FreeGas(gas uint64) {
-	refund, err := math.AddUint64(context.host.Output().GetRefund(), gas)
-	if err != nil || refund > builtinMath.MaxUint64 {
+	refund, err := math.AddInt64(int64(context.host.Output().GetRefund()), int64(gas))
+	if err != nil {
 		log.Error("FreeGas overflow",
 			"gasUsed = ", context.host.Runtime().GetPointsUsed(),
 			"gasToUse = ", gas,
@@ -87,7 +87,7 @@ func (context *meteringContext) FreeGas(gas uint64) {
 		return
 	}
 
-	context.host.Output().SetRefund(refund)
+	context.host.Output().SetRefund(uint64(refund))
 }
 
 // GasLeft returns how much gas is left.

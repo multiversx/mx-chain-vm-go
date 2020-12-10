@@ -3,8 +3,10 @@ package contexts
 import (
 	"bytes"
 	"errors"
+	builtinMath "math"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/math"
 	"github.com/ElrondNetwork/elrond-go-logger/check"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
@@ -90,13 +92,28 @@ func (context *storageContext) GetStorage(key []byte) []byte {
 
 	extraBytes := len(key) - arwen.AddressLen
 	if extraBytes > 0 {
-		gasToUse := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(extraBytes)
+		gasToUse, err := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(extraBytes))
+		if err != nil {
+			log.Error("GetStorage overflow",
+				"DataCopyPerByte = ", metering.GasSchedule().BaseOperationCost.DataCopyPerByte,
+				"extraBytes = ", uint64(extraBytes),
+			)
+			gasToUse = builtinMath.MaxUint64
+		}
 		metering.UseGas(gasToUse)
 	}
 
 	value := context.GetStorageUnmetered(key)
 
-	gasToUse := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(value))
+	gasToUse, err := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(value)))
+	if err != nil {
+		log.Error("GetStorage overflow",
+			"DataCopyPerByte = ", metering.GasSchedule().BaseOperationCost.DataCopyPerByte,
+			"value = ", uint64(len(value)),
+		)
+		gasToUse = builtinMath.MaxUint64
+	}
+
 	metering.UseGas(gasToUse)
 
 	return value
@@ -108,7 +125,14 @@ func (context *storageContext) GetStorageFromAddress(address []byte, key []byte)
 
 	extraBytes := len(key) - arwen.AddressLen
 	if extraBytes > 0 {
-		gasToUse := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(extraBytes)
+		gasToUse, err := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(extraBytes))
+		if err != nil {
+			log.Error("GetStorageFromAddress overflow",
+				"DataCopyPerByte = ", metering.GasSchedule().BaseOperationCost.DataCopyPerByte,
+				"extraBytes = ", uint64(extraBytes),
+			)
+			gasToUse = builtinMath.MaxUint64
+		}
 		metering.UseGas(gasToUse)
 	}
 
@@ -126,7 +150,14 @@ func (context *storageContext) GetStorageFromAddress(address []byte, key []byte)
 
 	value := context.getStorageFromAddressUnmetered(address, key)
 
-	gasToUse := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(value))
+	gasToUse, err := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(value)))
+	if err != nil {
+		log.Error("GetStorageFromAddress overflow",
+			"DataCopyPerByte = ", metering.GasSchedule().BaseOperationCost.DataCopyPerByte,
+			"value = ", uint64(len(value)),
+		)
+		gasToUse = builtinMath.MaxUint64
+	}
 	metering.UseGas(gasToUse)
 
 	return value
@@ -172,7 +203,14 @@ func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.Stora
 
 	extraBytes := len(key) - arwen.AddressLen
 	if extraBytes > 0 {
-		gasToUse := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(extraBytes)
+		gasToUse, err := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(extraBytes))
+		if err != nil {
+			log.Error("SetStorage overflow",
+				"DataCopyPerByte = ", metering.GasSchedule().BaseOperationCost.DataCopyPerByte,
+				"extraBytes = ", uint64(extraBytes),
+			)
+			gasToUse = builtinMath.MaxUint64
+		}
 		metering.UseGas(gasToUse)
 	}
 
@@ -194,7 +232,14 @@ func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.Stora
 
 	lengthOldValue := len(oldValue)
 	if bytes.Equal(oldValue, value) {
-		useGas := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(length)
+		useGas, err := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(length))
+		if err != nil {
+			log.Error("SetStorage overflow",
+				"DataCopyPerByte = ", metering.GasSchedule().BaseOperationCost.DataCopyPerByte,
+				"length = ", uint64(length),
+			)
+			useGas = builtinMath.MaxUint64
+		}
 		metering.UseGas(useGas)
 		return arwen.StorageUnchanged, nil
 	}
@@ -207,29 +252,91 @@ func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.Stora
 	storageUpdates[strKey] = newUpdate
 
 	if bytes.Equal(oldValue, zero) {
-		useGas := metering.GasSchedule().BaseOperationCost.StorePerByte * uint64(length)
+		useGas, err := math.MulUint64(metering.GasSchedule().BaseOperationCost.StorePerByte, uint64(length))
+		if err != nil {
+			log.Error("SetStorage overflow",
+				"StorePerByte = ", metering.GasSchedule().BaseOperationCost.StorePerByte,
+				"length = ", uint64(length),
+			)
+			useGas = builtinMath.MaxUint64
+		}
 		metering.UseGas(useGas)
 		return arwen.StorageAdded, nil
 	}
 	if bytes.Equal(value, zero) {
-		freeGas := metering.GasSchedule().BaseOperationCost.ReleasePerByte * uint64(lengthOldValue)
+		freeGas, err := math.MulUint64(metering.GasSchedule().BaseOperationCost.ReleasePerByte, uint64(lengthOldValue))
+		if err != nil {
+			log.Error("SetStorage overflow",
+				"ReleasePerByte = ", metering.GasSchedule().BaseOperationCost.ReleasePerByte,
+				"lengthOldValue = ", uint64(lengthOldValue),
+			)
+			freeGas = builtinMath.MaxUint64
+		}
 		metering.FreeGas(freeGas)
 		return arwen.StorageDeleted, nil
 	}
 
-	newValueExtraLength := length - lengthOldValue
-	if newValueExtraLength > 0 {
-		useGas := metering.GasSchedule().BaseOperationCost.PersistPerByte * uint64(lengthOldValue)
-		useGas += metering.GasSchedule().BaseOperationCost.StorePerByte * uint64(newValueExtraLength)
-		metering.UseGas(useGas)
+	newValueExtraLength, err := math.SubInt(length, lengthOldValue)
+	if err != nil {
+		log.Error("SetStorage underflow",
+			"length = ", length,
+			"lengthOldValue = ", lengthOldValue,
+		)
+		newValueExtraLength = builtinMath.MinInt32
 	}
+
+	if newValueExtraLength > 0 {
+		useGas, err := math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(lengthOldValue))
+		if err != nil {
+			log.Error("SetStorage overflow",
+				"PersistPerByte = ", metering.GasSchedule().BaseOperationCost.PersistPerByte,
+				"lengthOldValue = ", uint64(lengthOldValue),
+			)
+			useGas = builtinMath.MaxUint64
+		}
+
+		newValStoreUseGas, err := math.MulUint64(metering.GasSchedule().BaseOperationCost.StorePerByte, uint64(newValueExtraLength))
+		if err != nil {
+			log.Error("SetStorage overflow",
+				"StorePerByte = ", metering.GasSchedule().BaseOperationCost.StorePerByte,
+				"newValueExtraLength = ", uint64(newValueExtraLength),
+			)
+			newValStoreUseGas = builtinMath.MaxUint64
+		}
+
+		gasUsed, err := math.AddUint64(useGas, newValStoreUseGas)
+		if err != nil {
+			log.Error("SetStorage overflow",
+				"useGas = ", useGas,
+				"newValStoreUseGas = ", newValStoreUseGas,
+			)
+			gasUsed = builtinMath.MaxUint64
+		}
+
+		metering.UseGas(gasUsed)
+	}
+
 	if newValueExtraLength < 0 {
 		newValueExtraLength = -newValueExtraLength
 
-		useGas := metering.GasSchedule().BaseOperationCost.PersistPerByte * uint64(length)
+		useGas, err := math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(length))
+		if err != nil {
+			log.Error("SetStorage overflow",
+				"PersistPerByte = ", metering.GasSchedule().BaseOperationCost.PersistPerByte,
+				"length = ", uint64(length),
+			)
+			useGas = builtinMath.MaxUint64
+		}
 		metering.UseGas(useGas)
 
-		freeGas := metering.GasSchedule().BaseOperationCost.ReleasePerByte * uint64(newValueExtraLength)
+		freeGas, err := math.MulUint64(metering.GasSchedule().BaseOperationCost.ReleasePerByte, uint64(newValueExtraLength))
+		if err != nil {
+			log.Error("SetStorage overflow",
+				"ReleasePerByte = ", metering.GasSchedule().BaseOperationCost.ReleasePerByte,
+				"newValueExtraLength = ", uint64(newValueExtraLength),
+			)
+			freeGas = builtinMath.MaxUint64
+		}
 		metering.FreeGas(freeGas)
 	}
 

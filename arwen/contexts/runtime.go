@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/math"
+
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
@@ -688,10 +690,14 @@ func (context *runtimeContext) MemLoad(offset int32, length int32) ([]byte, erro
 	memory := context.instance.InstanceCtx.Memory()
 	memoryView := memory.Data()
 	memoryLength := memory.Length()
-	requestedEnd := uint32(offset + length)
+	requestedEnd, err := math.AddInt32(offset, length)
+	if err != nil {
+		return nil, fmt.Errorf("mem load: %w", err)
+	}
+
 	isOffsetTooSmall := offset < 0
 	isOffsetTooLarge := uint32(offset) > memoryLength
-	isRequestedEndTooLarge := requestedEnd > memoryLength
+	isRequestedEndTooLarge := uint32(requestedEnd) > memoryLength
 	isLengthNegative := length < 0
 
 	if isOffsetTooSmall || isOffsetTooLarge {
@@ -721,9 +727,13 @@ func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 	memory := context.instance.InstanceCtx.Memory()
 	memoryView := memory.Data()
 	memoryLength := memory.Length()
-	requestedEnd := uint32(offset + dataLength)
+	requestedEnd, err := math.AddInt32(offset, dataLength)
+	if err != nil {
+		return fmt.Errorf("mem store: %w", err)
+	}
+
 	isOffsetTooSmall := offset < 0
-	isNewPageNecessary := requestedEnd > memoryLength
+	isNewPageNecessary := uint32(requestedEnd) > memoryLength
 
 	if isOffsetTooSmall {
 		return arwen.ErrBadLowerBounds
@@ -738,7 +748,7 @@ func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 		memoryLength = memory.Length()
 	}
 
-	isRequestedEndTooLarge := requestedEnd > memoryLength
+	isRequestedEndTooLarge := uint32(requestedEnd) > memoryLength
 	if isRequestedEndTooLarge {
 		return arwen.ErrBadUpperBounds
 	}
