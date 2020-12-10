@@ -11,14 +11,8 @@ const (
 	// AddressLen specifies the length of the address
 	AddressLen = 32
 
-	// AddressLenEth specifies the length of an Ethereum address
-	AddressLenEth = 20
-
 	// HashLen specifies the lenghth of a hash
 	HashLen = 32
-
-	// ArgumentLenEth specifies the length of an argument for Ethereum
-	ArgumentLenEth = 32
 
 	// BalanceLen specifies the number of bytes on which the balance is stored
 	BalanceLen = 32

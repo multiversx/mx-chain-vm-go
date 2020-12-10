@@ -72,6 +72,16 @@ func MulUint64WithErr(a, b uint64) (uint64, error) {
 	return 0, ErrMultiplicationOverflow
 }
 
+// AddUint32 performs addition on uint32 and logs an error if the addition overflows
+func AddUint32(a, b uint32) uint32 {
+	s := a + b
+	if s >= a && s >= b {
+		return s
+	}
+
+	return builtinMath.MaxUint32
+}
+
 // AddInt32 performs addition on int32 and returns an error if the addition overflows
 func AddInt32(a, b int32) (int32, error) {
 	res := a + b
