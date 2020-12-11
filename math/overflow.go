@@ -29,14 +29,14 @@ func AddUint64WithErr(a, b uint64) (uint64, error) {
 	return s, ErrAdditionOverflow
 }
 
-// AddInt64 performs addition on int64 and returns an error if the addition overflows
+// AddInt64 performs addition on int64 and logs an error if the addition overflows
 func AddInt64(a, b int64) int64 {
-	s := a + b
-	if s >= a && s >= b {
-		return s
+	res := a + b
+	if (res > a) == (b > 0) {
+		return res
 	}
 
-	//TODO log err
+	log.Error("AddInt64 overflow", a, b)
 	return builtinMath.MaxInt64
 }
 
@@ -47,7 +47,7 @@ func SubUint64(a, b uint64) uint64 {
 		return res
 	}
 
-	// TODO log err
+	log.Error("SubUint64 underflow", a, b)
 	return 0
 }
 
@@ -72,36 +72,23 @@ func MulUint64WithErr(a, b uint64) (uint64, error) {
 	return 0, ErrMultiplicationOverflow
 }
 
-// AddUint32 performs addition on uint32 and logs an error if the addition overflows
-func AddUint32(a, b uint32) uint32 {
-	s := a + b
-	if s >= a && s >= b {
-		return s
-	}
-
-	return builtinMath.MaxUint32
-}
-
 // AddInt32 performs addition on int32 and returns an error if the addition overflows
 func AddInt32(a, b int32) (int32, error) {
 	res := a + b
-	if a < 0 && b < 0 && res > 0 {
-		return 0, ErrAdditionOverflow
-	}
-	if a > 0 && b > 0 && res < 0 {
-		return 0, ErrAdditionOverflow
+	if (res > a) == (b > 0) {
+		return res, nil
 	}
 
-	return res, nil
+	return 0, ErrAdditionOverflow
 }
 
-// SubInt performs subtraction on int and returns an error if the subtraction overflows
+// SubInt performs subtraction on int and logs an error if the subtraction overflows
 func SubInt(a, b int) int {
 	res := a - b
-	if res <= a {
+	if (res < a) == (b > 0) {
 		return res
 	}
 
-	//TODO log err
+	log.Error("SubInt underflow", a, b)
 	return builtinMath.MinInt64
 }
