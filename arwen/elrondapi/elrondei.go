@@ -34,6 +34,7 @@ package elrondapi
 // extern int64 getGasLeft(void *context);
 //
 // extern int32_t executeOnDestContext(void *context, long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern int32_t executeOnDestContextByCaller(void *context, long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t executeOnSameContext(void *context, long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t delegateExecution(void *context, long long gas, int32_t addressOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t executeReadOnly(void *context, long long gas, int32_t addressOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
@@ -69,8 +70,10 @@ package elrondapi
 import "C"
 
 import (
+	"encoding/binary"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"math/big"
 	"unsafe"
 
@@ -309,6 +312,11 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 		return nil, err
 	}
 
+	imports, err = imports.Append("executeOnDestContextByCaller", executeOnDestContextByCaller, C.executeOnDestContextByCaller)
+	if err != nil {
+		return nil, err
+	}
+
 	imports, err = imports.Append("executeOnSameContext", executeOnSameContext, C.executeOnSameContext)
 	if err != nil {
 		return nil, err
@@ -489,7 +497,7 @@ func blockHash(context unsafe.Pointer, nonce int64, resultOffset int32) int32 {
 
 //export transferValue
 func transferValue(context unsafe.Pointer, destOffset int32, valueOffset int32, dataOffset int32, length int32) int32 {
-	host := arwen.GetVmContext(context)
+	host := arwen.GetVMContext(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
 	output := host.Output()
@@ -546,7 +554,7 @@ func createAsyncCall(context unsafe.Pointer,
 ) {
 	// TODO Create new API cost for this method
 
-	host := arwen.GetVmContext(context)
+	host := arwen.GetVMContext(context)
 	runtime := host.Runtime()
 	async := host.Async()
 
@@ -611,10 +619,9 @@ func setAsyncGroupCallback(context unsafe.Pointer,
 	dataLength int32,
 	gas int32,
 ) int32 {
-
 	// TODO Create new API cost for this method
 
-	host := arwen.GetVmContext(context)
+	host := arwen.GetVMContext(context)
 	runtime := host.Runtime()
 	async := host.Async()
 
@@ -669,7 +676,7 @@ func upgradeContract(
 	argumentsLengthOffset int32,
 	dataOffset int32,
 ) {
-	host := arwen.GetVmContext(context)
+	host := arwen.GetVMContext(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
 
@@ -692,7 +699,7 @@ func upgradeContract(
 	}
 
 	_, data, actualLen, err := getArgumentsFromMemory(
-		context,
+		host,
 		0,
 		0,
 		numArguments,
@@ -750,7 +757,7 @@ func upgradeContract(
 
 //export asyncCall
 func asyncCall(context unsafe.Pointer, destOffset int32, valueOffset int32, dataOffset int32, length int32) {
-	host := arwen.GetVmContext(context)
+	host := arwen.GetVMContext(context)
 	runtime := host.Runtime()
 	async := host.Async()
 	metering := host.Metering()
@@ -1312,57 +1319,34 @@ func executeOnSameContext(
 	argumentsLengthOffset int32,
 	dataOffset int32,
 ) int32 {
-	host := arwen.GetVmContext(context)
+	host := arwen.GetVMContext(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.ExecuteOnSameContext
 	metering.UseGas(gasToUse)
 
-	sender := runtime.GetSCAddress()
-	destination, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
-	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
-		return 1
-	}
-
-	if !areInSameShard(host, sender, destination) {
-		err = arwen.ErrSyncExecutionNotInSameShard
-		arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution())
-		return 1
-	}
-
 	value, err := runtime.MemLoad(valueOffset, arwen.BalanceLen)
 	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
-	function, data, actualLen, err := getArgumentsFromMemory(
-		context,
+	sender := runtime.GetSCAddress()
+	bigIntVal := big.NewInt(0).SetBytes(value)
+	contractCallInput, err := prepareIndirectContractCallInput(
+		host,
+		sender,
+		bigIntVal,
+		gasLimit,
+		addressOffset,
 		functionOffset,
 		functionLength,
 		numArguments,
 		argumentsLengthOffset,
 		dataOffset,
 	)
-
-	gasToUse = metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
-	metering.UseGas(gasToUse)
-
 	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 		return 1
-	}
-
-	bigIntVal := big.NewInt(0).SetBytes(value)
-	contractCallInput := &vmcommon.ContractCallInput{
-		VMInput: vmcommon.VMInput{
-			CallerAddr:  sender,
-			Arguments:   data,
-			CallValue:   bigIntVal,
-			GasPrice:    0,
-			GasProvided: metering.BoundGasLimit(uint64(gasLimit)),
-		},
-		RecipientAddr: destination,
-		Function:      function,
 	}
 
 	err = host.ExecuteOnSameContext(contractCallInput)
@@ -1385,56 +1369,34 @@ func executeOnDestContext(
 	argumentsLengthOffset int32,
 	dataOffset int32,
 ) int32 {
-	host := arwen.GetVmContext(context)
+	host := arwen.GetVMContext(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.ExecuteOnDestContext
 	metering.UseGas(gasToUse)
 
-	sender := runtime.GetSCAddress()
-	destination, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
-	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
-		return 1
-	}
-
-	if !areInSameShard(host, sender, destination) {
-		err = arwen.ErrSyncExecutionNotInSameShard
-		arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution())
-		return 1
-	}
-
 	value, err := runtime.MemLoad(valueOffset, arwen.BalanceLen)
 	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
-	function, data, actualLen, err := getArgumentsFromMemory(
-		context,
+	sender := runtime.GetSCAddress()
+	bigIntVal := big.NewInt(0).SetBytes(value)
+	contractCallInput, err := prepareIndirectContractCallInput(
+		host,
+		sender,
+		bigIntVal,
+		gasLimit,
+		addressOffset,
 		functionOffset,
 		functionLength,
 		numArguments,
 		argumentsLengthOffset,
 		dataOffset,
 	)
-	gasToUse = metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
-	metering.UseGas(gasToUse)
-
 	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 		return 1
-	}
-
-	bigIntVal := big.NewInt(0).SetBytes(value)
-	contractCallInput := &vmcommon.ContractCallInput{
-		VMInput: vmcommon.VMInput{
-			CallerAddr:  sender,
-			Arguments:   data,
-			CallValue:   bigIntVal,
-			GasPrice:    0,
-			GasProvided: metering.BoundGasLimit(uint64(gasLimit)),
-		},
-		RecipientAddr: destination,
-		Function:      function,
 	}
 
 	_, err = host.ExecuteOnDestContext(contractCallInput)
@@ -1445,45 +1407,54 @@ func executeOnDestContext(
 	return 0
 }
 
-func getArgumentsFromMemory(
+//export executeOnDestContextByCaller
+func executeOnDestContextByCaller(
 	context unsafe.Pointer,
+	gasLimit int64,
+	addressOffset int32,
+	valueOffset int32,
 	functionOffset int32,
 	functionLength int32,
 	numArguments int32,
 	argumentsLengthOffset int32,
 	dataOffset int32,
-) (string, [][]byte, int32, error) {
-	runtime := arwen.GetRuntimeContext(context)
+) int32 {
+	host := arwen.GetVMContext(context)
+	runtime := host.Runtime()
+	metering := host.Metering()
 
-	function, err := runtime.MemLoad(functionOffset, functionLength)
-	if err != nil {
-		return "", nil, 0, err
+	gasToUse := metering.GasSchedule().ElrondAPICost.ExecuteOnDestContext
+	metering.UseGas(gasToUse)
+
+	value, err := runtime.MemLoad(valueOffset, arwen.BalanceLen)
+	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
+		return 1
 	}
 
-	argumentsLengthData, err := runtime.MemLoad(argumentsLengthOffset, numArguments*4)
-	if err != nil {
-		return "", nil, 0, err
+	sender := runtime.GetVMInput().CallerAddr
+	bigIntVal := big.NewInt(0).SetBytes(value)
+	contractCallInput, err := prepareIndirectContractCallInput(
+		host,
+		sender,
+		bigIntVal,
+		gasLimit,
+		addressOffset,
+		functionOffset,
+		functionLength,
+		numArguments,
+		argumentsLengthOffset,
+		dataOffset,
+	)
+	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
+		return 1
 	}
 
-	currOffset := dataOffset
-	data, err := arwen.GuardedMakeByteSlice2D(numArguments)
-	if err != nil {
-		return "", nil, 0, err
+	_, err = host.ExecuteOnDestContext(contractCallInput)
+	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
+		return 1
 	}
 
-	for i := int32(0); i < numArguments; i++ {
-		currArgLenData := argumentsLengthData[i*4 : i*4+4]
-		actualLen := bytesToInt32(currArgLenData)
-
-		data[i], err = runtime.MemLoad(currOffset, actualLen)
-		if err != nil {
-			return "", nil, 0, err
-		}
-
-		currOffset += actualLen
-	}
-
-	return string(function), data, currOffset - dataOffset, nil
+	return 0
 }
 
 //export delegateExecution
@@ -1497,7 +1468,7 @@ func delegateExecution(
 	argumentsLengthOffset int32,
 	dataOffset int32,
 ) int32 {
-	host := arwen.GetVmContext(context)
+	host := arwen.GetVMContext(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
 
@@ -1505,45 +1476,22 @@ func delegateExecution(
 	metering.UseGas(gasToUse)
 
 	sender := runtime.GetSCAddress()
-	destination, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
-	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
-		return 1
-	}
-
-	if !areInSameShard(host, sender, destination) {
-		err = arwen.ErrSyncExecutionNotInSameShard
-		arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution())
-		return 1
-	}
-
-	function, data, actualLen, err := getArgumentsFromMemory(
-		context,
+	value := runtime.GetVMInput().CallValue
+	bigIntVal := big.NewInt(0).Set(value)
+	contractCallInput, err := prepareIndirectContractCallInput(
+		host,
+		sender,
+		bigIntVal,
+		gasLimit,
+		addressOffset,
 		functionOffset,
 		functionLength,
 		numArguments,
 		argumentsLengthOffset,
 		dataOffset,
 	)
-
-	gasToUse = metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
-	metering.UseGas(gasToUse)
-
 	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 		return 1
-	}
-
-	value := runtime.GetVMInput().CallValue
-	bigIntVal := big.NewInt(0).Set(value)
-	contractCallInput := &vmcommon.ContractCallInput{
-		VMInput: vmcommon.VMInput{
-			CallerAddr:  sender,
-			Arguments:   data,
-			CallValue:   bigIntVal,
-			GasPrice:    0,
-			GasProvided: metering.BoundGasLimit(uint64(gasLimit)),
-		},
-		RecipientAddr: destination,
-		Function:      function,
 	}
 
 	err = host.ExecuteOnSameContext(contractCallInput)
@@ -1552,15 +1500,6 @@ func delegateExecution(
 	}
 
 	return 0
-}
-
-func bytesToInt32(data []byte) int32 {
-	actualLen := int32(0)
-	for i := len(data) - 1; i >= 0; i-- {
-		actualLen = (actualLen << 8) + int32(data[i])
-	}
-
-	return actualLen
 }
 
 //export executeReadOnly
@@ -1574,7 +1513,7 @@ func executeReadOnly(
 	argumentsLengthOffset int32,
 	dataOffset int32,
 ) int32 {
-	host := arwen.GetVmContext(context)
+	host := arwen.GetVMContext(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
 
@@ -1582,49 +1521,26 @@ func executeReadOnly(
 	metering.UseGas(gasToUse)
 
 	sender := runtime.GetSCAddress()
-	destination, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
-	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
-		return 1
-	}
+	value := runtime.GetVMInput().CallValue
+	bigIntVal := big.NewInt(0).Set(value)
 
-	if !areInSameShard(host, sender, destination) {
-		err = arwen.ErrSyncExecutionNotInSameShard
-		arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution())
-		return 1
-	}
-
-	function, data, actualLen, err := getArgumentsFromMemory(
-		context,
+	contractCallInput, err := prepareIndirectContractCallInput(
+		host,
+		sender,
+		bigIntVal,
+		gasLimit,
+		addressOffset,
 		functionOffset,
 		functionLength,
 		numArguments,
 		argumentsLengthOffset,
 		dataOffset,
 	)
-
-	gasToUse = metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
-	metering.UseGas(gasToUse)
-
 	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
 	runtime.SetReadOnly(true)
-
-	value := runtime.GetVMInput().CallValue
-	bigIntVal := big.NewInt(0).Set(value)
-	contractCallInput := &vmcommon.ContractCallInput{
-		VMInput: vmcommon.VMInput{
-			CallerAddr:  sender,
-			Arguments:   data,
-			CallValue:   bigIntVal,
-			GasPrice:    0,
-			GasProvided: metering.BoundGasLimit(uint64(gasLimit)),
-		},
-		RecipientAddr: destination,
-		Function:      function,
-	}
-
 	err = host.ExecuteOnSameContext(contractCallInput)
 	runtime.SetReadOnly(false)
 	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
@@ -1647,7 +1563,7 @@ func createContract(
 	argumentsLengthOffset int32,
 	dataOffset int32,
 ) int32 {
-	host := arwen.GetVmContext(context)
+	host := arwen.GetVMContext(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
 
@@ -1671,7 +1587,7 @@ func createContract(
 	}
 
 	_, data, actualLen, err := getArgumentsFromMemory(
-		context,
+		host,
 		0,
 		0,
 		numArguments,
@@ -1785,10 +1701,105 @@ func getPrevTxHash(context unsafe.Pointer, dataOffset int32) {
 	_ = arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
 }
 
-func areInSameShard(host arwen.VMHost, leftAddress []byte, rightAddress []byte) bool {
-	blockchain := host.Blockchain()
-	leftShard := blockchain.GetShardOfAddress(leftAddress)
-	rightShard := blockchain.GetShardOfAddress(rightAddress)
+func prepareIndirectContractCallInput(
+	host arwen.VMHost,
+	sender []byte,
+	value *big.Int,
+	gasLimit int64,
+	addressOffset int32,
+	functionOffset int32,
+	functionLength int32,
+	numArguments int32,
+	argumentsLengthOffset int32,
+	dataOffset int32,
+) (*vmcommon.ContractCallInput, error) {
+	runtime := host.Runtime()
+	metering := host.Metering()
 
-	return leftShard == rightShard
+	destination, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
+	if err != nil {
+		return nil, err
+	}
+
+	if !host.AreInSameShard(runtime.GetSCAddress(), destination) {
+		return nil, arwen.ErrSyncExecutionNotInSameShard
+	}
+
+	function, data, actualLen, err := getArgumentsFromMemory(
+		host,
+		functionOffset,
+		functionLength,
+		numArguments,
+		argumentsLengthOffset,
+		dataOffset,
+	)
+	gasToUse := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
+	metering.UseGas(gasToUse)
+	if err != nil {
+		return nil, err
+	}
+
+	contractCallInput := &vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			CallerAddr:  sender,
+			Arguments:   data,
+			CallValue:   value,
+			GasPrice:    0,
+			GasProvided: metering.BoundGasLimit(uint64(gasLimit)),
+		},
+		RecipientAddr: destination,
+		Function:      function,
+	}
+
+	return contractCallInput, nil
+}
+
+func getArgumentsFromMemory(
+	host arwen.VMHost,
+	functionOffset int32,
+	functionLength int32,
+	numArguments int32,
+	argumentsLengthOffset int32,
+	dataOffset int32,
+) (string, [][]byte, int32, error) {
+	runtime := host.Runtime()
+
+	if numArguments < 0 {
+		return "", nil, 0, fmt.Errorf("negative numArguments (%d)", numArguments)
+	}
+
+	function, err := runtime.MemLoad(functionOffset, functionLength)
+	if err != nil {
+		return "", nil, 0, err
+	}
+
+	argumentsLengthData, err := runtime.MemLoad(argumentsLengthOffset, numArguments*4)
+	if err != nil {
+		return "", nil, 0, err
+	}
+
+	argumentLengths := createInt32Array(argumentsLengthData, numArguments)
+	data, err := runtime.MemLoadMultiple(dataOffset, argumentLengths)
+	if err != nil {
+		return "", nil, 0, err
+	}
+
+	totalArgumentBytes := int32(0)
+	for _, length := range argumentLengths {
+		totalArgumentBytes += length
+	}
+
+	return string(function), data, totalArgumentBytes, nil
+}
+
+func createInt32Array(rawData []byte, numIntegers int32) []int32 {
+	integers := make([]int32, numIntegers)
+	index := 0
+	for cursor := 0; cursor < len(rawData); cursor += 4 {
+		rawInt := rawData[cursor : cursor+4]
+		actualInt := binary.LittleEndian.Uint32(rawInt)
+		integers[index] = int32(actualInt)
+		index++
+	}
+	return integers
 }

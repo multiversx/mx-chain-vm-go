@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"math/big"
 
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/model"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
@@ -205,15 +205,8 @@ func (ae *ArwenTestExecutor) updateStateAfterTx(
 		_ = ae.World.UpdateBalanceWithDelta(tx.From.Value, big.NewInt(0).Neg(tx.Value.Value))
 	}
 
-	accountsSlice := make([]*vmi.OutputAccount, len(output.OutputAccounts))
-	i := 0
-	for _, account := range output.OutputAccounts {
-		accountsSlice[i] = account
-		i++
-	}
-
 	// update accounts based on deltas
-	updErr := ae.World.UpdateAccounts(accountsSlice, output.DeletedAccounts, tx.From.Value)
+	updErr := ae.World.UpdateAccounts(output.OutputAccounts, output.DeletedAccounts)
 	if updErr != nil {
 		return updErr
 	}

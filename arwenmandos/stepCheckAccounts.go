@@ -5,13 +5,13 @@ import (
 	"encoding/hex"
 	"fmt"
 
-	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/test/mock-hook-blockchain"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/model"
+	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
 )
 
 func checkAccounts(
 	checkAccounts *mj.CheckAccounts,
-	world *worldhook.BlockchainHookMock,
+	world *worldhook.MockWorld,
 ) error {
 
 	if !checkAccounts.OtherAccountsAllowed {

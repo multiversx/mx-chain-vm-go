@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"math/big"
 
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/model"
-	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/write"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
+	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/write"
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 

@@ -7,7 +7,7 @@ import (
 
 func (part *NodePart) replyToBlockchainNewAddress(request common.MessageHandler) common.MessageHandler {
 	typedRequest := request.(*common.MessageBlockchainNewAddressRequest)
-	result, err := part.blockchain.NewAddress(typedRequest.CreatorAddress, typedRequest.CreatorNonce, typedRequest.VmType)
+	result, err := part.blockchain.NewAddress(typedRequest.CreatorAddress, typedRequest.CreatorNonce, typedRequest.VMType)
 	response := common.NewMessageBlockchainNewAddressResponse(result, err)
 	return response
 }

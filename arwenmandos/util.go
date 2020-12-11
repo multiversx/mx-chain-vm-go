@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"math/big"
 
-	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/test/mock-hook-blockchain"
+	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/model"
-	oj "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/orderedjson"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
+	oj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/orderedjson"
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
