@@ -172,19 +172,17 @@ func TestRuntimeContext_PushPopInstance(t *testing.T) {
 
 	instance := runtimeContext.instance
 
-	runtimeContext.PushInstance()
+	runtimeContext.pushInstance()
 	runtimeContext.instance = nil
 	require.Equal(t, 1, len(runtimeContext.instanceStack))
 
-	runtimeContext.PopInstance()
+	runtimeContext.popInstance()
 	require.NotNil(t, runtimeContext.instance)
 	require.Equal(t, instance, runtimeContext.instance)
 	require.Equal(t, 0, len(runtimeContext.instanceStack))
 
-	runtimeContext.PushInstance()
+	runtimeContext.pushInstance()
 	require.Equal(t, 1, len(runtimeContext.instanceStack))
-	runtimeContext.ClearInstanceStack()
-	require.Equal(t, 0, len(runtimeContext.instanceStack))
 }
 
 func TestRuntimeContext_PushPopState(t *testing.T) {
@@ -565,7 +563,7 @@ func TestRuntimeContext_MemLoadStoreVsInstanceStack(t *testing.T) {
 	require.Equal(t, []byte("test data1"), memContents)
 
 	// Push the current instance down the instance stack
-	runtimeContext.PushInstance()
+	runtimeContext.pushInstance()
 	require.Equal(t, 1, len(runtimeContext.instanceStack))
 
 	// Create a new Wasmer instance
@@ -583,7 +581,7 @@ func TestRuntimeContext_MemLoadStoreVsInstanceStack(t *testing.T) {
 	require.Equal(t, []byte("test data2"), memContents)
 
 	// Pop the initial instance from the stack, making it the 'current instance'
-	runtimeContext.PopInstance()
+	runtimeContext.popInstance()
 	require.Equal(t, 0, len(runtimeContext.instanceStack))
 
 	// Check whether the previously-written string "test data1" is still in the
@@ -633,7 +631,7 @@ func TestRuntimeContext_PopInstanceIfStackIsEmptyShouldNotPanic(t *testing.T) {
 
 	vmType := []byte("type")
 	runtimeContext, _ := NewRuntimeContext(host, vmType, false)
-	runtimeContext.PopInstance()
+	runtimeContext.popInstance()
 
 	require.Equal(t, 0, len(runtimeContext.stateStack))
 }

@@ -875,6 +875,65 @@ func TestExecution_ExecuteOnDestContext_Successful(t *testing.T) {
 	assert.Equal(t, expectedVMOutput, vmOutput)
 }
 
+func TestExecution_ExecuteOnDestContext_GasRemaining(t *testing.T) {
+	// This test ensures that host.ExecuteOnDestContext() calls
+	// metering.GasLeft() on the Wasmer instance of the child, and not of the
+	// parent.
+
+	parentCode := GetTestSCCode("exec-dest-ctx-parent", "../../")
+	childCode := GetTestSCCode("exec-dest-ctx-child", "../../")
+
+	// Pretend that the execution of the parent SC was requested, with the
+	// following ContractCallInput:
+	input := DefaultTestContractCallInput()
+	input.RecipientAddr = parentAddress
+	input.Function = "parentFunctionChildCall"
+	input.GasProvided = gasProvided
+
+	// Initialize the VM with the parent SC and child SC, but without really
+	// executing the parent. The initialization emulates the behavior of
+	// host.doRunSmartContractCall(). Gas cost for compilation is skipped.
+	host, _ := defaultTestArwenForTwoSCs(t, parentCode, childCode, nil, nil)
+	host.InitState()
+
+	_, _, metering, output, runtime, storage := host.GetContexts()
+	runtime.InitStateFromContractCallInput(input)
+	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
+	storage.SetAddress(runtime.GetSCAddress())
+
+	contract, err := runtime.GetSCCode()
+	require.Nil(t, err)
+
+	vmInput := runtime.GetVMInput()
+	err = runtime.StartWasmerInstance(contract, vmInput.GasProvided, false)
+	require.Nil(t, err)
+
+	// Use a lot of gas on the parent contract
+	metering.UseGas(500000)
+	require.Equal(t, input.GasProvided-500000, metering.GasLeft())
+
+	// Create a second ContractCallInput, used to call the child SC using
+	// host.ExecuteOnDestContext().
+	childInput := DefaultTestContractCallInput()
+	childInput.CallerAddr = parentAddress
+	childInput.CallValue = big.NewInt(99)
+	childInput.Function = "childFunction"
+	childInput.RecipientAddr = childAddress
+	childInput.Arguments = [][]byte{
+		[]byte("some data"),
+		[]byte("argument"),
+		[]byte("another argument"),
+	}
+	childInput.GasProvided = 10000
+
+	childOutput, _, err := host.ExecuteOnDestContext(childInput)
+	require.Nil(t, err)
+	require.NotNil(t, childOutput)
+	require.Equal(t, uint64(7753), childOutput.GasRemaining)
+
+	host.Clean()
+}
+
 func TestExecution_ExecuteOnDestContext_Successful_BigInts(t *testing.T) {
 	parentCode := GetTestSCCode("exec-dest-ctx-parent", "../../")
 	childCode := GetTestSCCode("exec-dest-ctx-child", "../../")
