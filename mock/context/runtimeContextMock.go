@@ -23,6 +23,7 @@ type RuntimeContextMock struct {
 	PointsUsed             uint64
 	InstanceCtxID          int
 	MemLoadResult          []byte
+	MemLoadMultipleResult  [][]byte
 	FailCryptoAPI          bool
 	FailElrondAPI          bool
 	FailElrondSyncExecAPI  bool
@@ -240,6 +241,15 @@ func (r *RuntimeContextMock) MemLoad(_ int32, _ int32) ([]byte, error) {
 	}
 
 	return r.MemLoadResult, nil
+}
+
+// MemLoadMultiple mocked method
+func (r *RuntimeContextMock) MemLoadMultiple(_ int32, _ []int32) ([][]byte, error) {
+	if r.Err != nil {
+		return nil, r.Err
+	}
+
+	return r.MemLoadMultipleResult, nil
 }
 
 // MemStore mocked method

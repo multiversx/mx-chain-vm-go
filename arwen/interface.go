@@ -43,6 +43,7 @@ type VMHost interface {
 	GetAPIMethods() *wasmer.Imports
 	GetProtocolBuiltinFunctions() vmcommon.FunctionNames
 	IsBuiltinFunctionName(functionName string) bool
+	AreInSameShard(leftAddress []byte, rightAddress []byte) bool
 }
 
 // BlockchainContext defines the functionality needed for interacting with the blockchain context
@@ -123,6 +124,7 @@ type RuntimeContext interface {
 	SetPointsUsed(gasPoints uint64)
 	MemStore(offset int32, data []byte) error
 	MemLoad(offset int32, length int32) ([]byte, error)
+	MemLoadMultiple(offset int32, lengths []int32) ([][]byte, error)
 	ElrondAPIErrorShouldFailExecution() bool
 	ElrondSyncExecAPIErrorShouldFailExecution() bool
 	CryptoAPIErrorShouldFailExecution() bool

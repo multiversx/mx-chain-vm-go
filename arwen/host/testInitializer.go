@@ -37,9 +37,16 @@ func GetSCCode(fileName string) []byte {
 	return code
 }
 
-// GetTestSCCode retrieves the bytecode of a WASM testing module
+// GetTestSCCode retrieves the bytecode of a WASM testing contract
 func GetTestSCCode(scName string, prefixToTestSCs string) []byte {
 	pathToSC := prefixToTestSCs + "test/contracts/" + scName + "/output/" + scName + ".wasm"
+	return GetSCCode(pathToSC)
+}
+
+// GetTestSCCodeModule retrieves the bytecode of a WASM testing contract, given
+// a specific name of the WASM module
+func GetTestSCCodeModule(scName string, moduleName string, prefixToTestSCs string) []byte {
+	pathToSC := prefixToTestSCs + "test/contracts/" + scName + "/output/" + moduleName + ".wasm"
 	return GetSCCode(pathToSC)
 }
 
@@ -75,9 +82,23 @@ func defaultTestArwenForCall(tb testing.TB, code []byte, balance *big.Int) (*vmH
 	return host, stubBlockchainHook
 }
 
-// DefaultTestArwenForTwoSCs creates an Arwen vmHost configured for testing calls between 2 SmartContracts
-func defaultTestArwenForTwoSCs(t *testing.T, parentCode []byte, childCode []byte, parentSCBalance *big.Int) (*vmHost, *contextmock.BlockchainHookStub) {
+// defaultTestArwenForTwoSCs creates an Arwen vmHost configured for testing calls between 2 SmartContracts
+func defaultTestArwenForTwoSCs(
+	t *testing.T,
+	parentCode []byte,
+	childCode []byte,
+	parentSCBalance *big.Int,
+	childSCBalance *big.Int,
+) (*vmHost, *contextmock.BlockchainHookStub) {
 	stubBlockchainHook := &contextmock.BlockchainHookStub{}
+
+	if parentSCBalance == nil {
+		parentSCBalance = big.NewInt(1000)
+	}
+
+	if childSCBalance == nil {
+		childSCBalance = big.NewInt(1000)
+	}
 
 	stubBlockchainHook.GetUserAccountCalled = func(scAddress []byte) (vmcommon.UserAccountHandler, error) {
 		if bytes.Equal(scAddress, parentAddress) {
@@ -88,7 +109,8 @@ func defaultTestArwenForTwoSCs(t *testing.T, parentCode []byte, childCode []byte
 		}
 		if bytes.Equal(scAddress, childAddress) {
 			return &contextmock.StubAccount{
-				Code: childCode,
+				Code:    childCode,
+				Balance: childSCBalance,
 			}, nil
 		}
 

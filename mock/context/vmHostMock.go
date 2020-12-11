@@ -77,6 +77,11 @@ func (host *VMHostMock) IsDynamicGasLockingEnabled() bool {
 	return true
 }
 
+// AreInSameShard mocked method
+func (host *VMHostMock) AreInSameShard(left []byte, right []byte) bool {
+	return true
+}
+
 // CreateNewContract mocked method
 func (host *VMHostMock) CreateNewContract(_ *vmcommon.ContractCreateInput) ([]byte, error) {
 	return nil, nil

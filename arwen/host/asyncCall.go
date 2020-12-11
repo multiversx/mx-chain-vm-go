@@ -64,9 +64,7 @@ func (host *vmHost) determineAsyncCallExecutionMode(asyncCallInfo *arwen.AsyncCa
 		return arwen.SyncCall, nil
 	}
 
-	shardOfSC := blockchain.GetShardOfAddress(runtime.GetSCAddress())
-	shardOfDest := blockchain.GetShardOfAddress(asyncCallInfo.Destination)
-	sameShard := shardOfSC == shardOfDest
+	sameShard := host.AreInSameShard(runtime.GetSCAddress(), asyncCallInfo.Destination)
 
 	if host.IsBuiltinFunctionName(functionName) {
 		if sameShard {
