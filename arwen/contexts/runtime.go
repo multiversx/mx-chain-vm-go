@@ -679,7 +679,7 @@ func (context *runtimeContext) HasCallbackMethod() bool {
 	return ok
 }
 
-// MemLoad returns the contents from the given offset of the wasmer instance memory.
+// MemLoad returns the contents from the given offset of the WASM memory.
 func (context *runtimeContext) MemLoad(offset int32, length int32) ([]byte, error) {
 	if length == 0 {
 		return []byte{}, nil
@@ -711,6 +711,7 @@ func (context *runtimeContext) MemLoad(offset int32, length int32) ([]byte, erro
 	return result, nil
 }
 
+// MemLoadMultiple returns multiple byte slices loaded from the WASM memory, starting at the given offset and having the provided lengths.
 func (context *runtimeContext) MemLoadMultiple(offset int32, lengths []int32) ([][]byte, error) {
 	if len(lengths) == 0 {
 		return [][]byte{}, nil
@@ -731,7 +732,7 @@ func (context *runtimeContext) MemLoadMultiple(offset int32, lengths []int32) ([
 	return results, nil
 }
 
-// MemStore stores the given data in the memory of the wasmer instance at the given offset.
+// MemStore stores the given data in the WASM memory at the given offset.
 func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 	dataLength := int32(len(data))
 	if dataLength == 0 {
