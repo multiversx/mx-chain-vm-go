@@ -538,11 +538,21 @@ func (context *runtimeContext) VerifyContractCode() error {
 
 // ValidateCallbackName verifies whether the provided function name may be used as AsyncCall callback
 func (context *runtimeContext) ValidateCallbackName(callbackName string) error {
+	err := context.validator.verifyValidFunctionName(callbackName)
+	if err != nil {
+		return arwen.ErrInvalidFunctionName
+	}
 	if callbackName == arwen.InitFunctionName {
 		return arwen.ErrInvalidFunctionName
 	}
+	if context.host.IsBuiltinFunctionName(callbackName) {
+		return arwen.ErrCannotUseBuiltinAsCallback
+	}
+	if !context.HasFunction(callbackName) {
+		return arwen.ErrFuncNotFound
+	}
 
-	return context.validator.verifyValidFunctionName(callbackName)
+	return nil
 }
 
 // ELrondAPIErrorShouldFailExecution specifies whether an error in the EEI should abort contract execution.
@@ -630,8 +640,8 @@ func (context *runtimeContext) GetInitFunction() wasmer.ExportedFunctionCallback
 	return nil
 }
 
-func (context *runtimeContext) HasCallbackMethod() bool {
-	_, ok := context.instance.Exports[arwen.CallbackFunctionName]
+func (context *runtimeContext) HasFunction(functionName string) bool {
+	_, ok := context.instance.Exports[functionName]
 	return ok
 }
 
