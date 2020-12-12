@@ -12,7 +12,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/pelletier/go-toml"
 	"github.com/stretchr/testify/require"
@@ -25,7 +25,7 @@ var userAddress = []byte("userAccount.....................")
 var parentAddress = []byte("\x00\x00\x00\x00\x00\x00\x00\x00\x0f\x0fparentSC..............")
 var childAddress = []byte("\x00\x00\x00\x00\x00\x00\x00\x00\x0f\x0fchildSC...............")
 
-var CustomGasSchedule = config.GasScheduleMap(nil)
+var customGasSchedule = config.GasScheduleMap(nil)
 
 // GetSCCode retrieves the bytecode of a WASM module from a file
 func GetSCCode(fileName string) []byte {
@@ -37,17 +37,24 @@ func GetSCCode(fileName string) []byte {
 	return code
 }
 
-// GetTestSCCode retrieves the bytecode of a WASM testing module
+// GetTestSCCode retrieves the bytecode of a WASM testing contract
 func GetTestSCCode(scName string, prefixToTestSCs string) []byte {
 	pathToSC := prefixToTestSCs + "test/contracts/" + scName + "/output/" + scName + ".wasm"
 	return GetSCCode(pathToSC)
 }
 
-// DefaultTestArwenForDeployment creates an Arwen vmHost configured for testing deployments
-func DefaultTestArwenForDeployment(t *testing.T, _ uint64, newAddress []byte) *vmHost {
-	stubBlockchainHook := &mock.BlockchainHookStub{}
+// GetTestSCCodeModule retrieves the bytecode of a WASM testing contract, given
+// a specific name of the WASM module
+func GetTestSCCodeModule(scName string, moduleName string, prefixToTestSCs string) []byte {
+	pathToSC := prefixToTestSCs + "test/contracts/" + scName + "/output/" + moduleName + ".wasm"
+	return GetSCCode(pathToSC)
+}
+
+// defaultTestArwenForDeployment creates an Arwen vmHost configured for testing deployments
+func defaultTestArwenForDeployment(t *testing.T, _ uint64, newAddress []byte) *vmHost {
+	stubBlockchainHook := &contextmock.BlockchainHookStub{}
 	stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
-		return &mock.AccountMock{
+		return &contextmock.StubAccount{
 			Nonce: 24,
 		}, nil
 	}
@@ -55,15 +62,15 @@ func DefaultTestArwenForDeployment(t *testing.T, _ uint64, newAddress []byte) *v
 		return newAddress, nil
 	}
 
-	host, _ := DefaultTestArwen(t, stubBlockchainHook)
+	host, _ := defaultTestArwen(t, stubBlockchainHook)
 	return host
 }
 
-func DefaultTestArwenForCall(tb testing.TB, code []byte, balance *big.Int) (*vmHost, *mock.BlockchainHookStub) {
-	stubBlockchainHook := &mock.BlockchainHookStub{}
+func defaultTestArwenForCall(tb testing.TB, code []byte, balance *big.Int) (*vmHost, *contextmock.BlockchainHookStub) {
+	stubBlockchainHook := &contextmock.BlockchainHookStub{}
 	stubBlockchainHook.GetUserAccountCalled = func(scAddress []byte) (vmcommon.UserAccountHandler, error) {
 		if bytes.Equal(scAddress, parentAddress) {
-			return &mock.AccountMock{
+			return &contextmock.StubAccount{
 				Code:    code,
 				Balance: balance,
 			}, nil
@@ -71,36 +78,51 @@ func DefaultTestArwenForCall(tb testing.TB, code []byte, balance *big.Int) (*vmH
 		return nil, errAccountNotFound
 	}
 
-	host, _ := DefaultTestArwen(tb, stubBlockchainHook)
+	host, _ := defaultTestArwen(tb, stubBlockchainHook)
 	return host, stubBlockchainHook
 }
 
-// DefaultTestArwenForTwoSCs creates an Arwen vmHost configured for testing calls between 2 SmartContracts
-func DefaultTestArwenForTwoSCs(t *testing.T, parentCode []byte, childCode []byte, parentSCBalance *big.Int) (*vmHost, *mock.BlockchainHookStub) {
-	stubBlockchainHook := &mock.BlockchainHookStub{}
+// defaultTestArwenForTwoSCs creates an Arwen vmHost configured for testing calls between 2 SmartContracts
+func defaultTestArwenForTwoSCs(
+	t *testing.T,
+	parentCode []byte,
+	childCode []byte,
+	parentSCBalance *big.Int,
+	childSCBalance *big.Int,
+) (*vmHost, *contextmock.BlockchainHookStub) {
+	stubBlockchainHook := &contextmock.BlockchainHookStub{}
+
+	if parentSCBalance == nil {
+		parentSCBalance = big.NewInt(1000)
+	}
+
+	if childSCBalance == nil {
+		childSCBalance = big.NewInt(1000)
+	}
 
 	stubBlockchainHook.GetUserAccountCalled = func(scAddress []byte) (vmcommon.UserAccountHandler, error) {
 		if bytes.Equal(scAddress, parentAddress) {
-			return &mock.AccountMock{
+			return &contextmock.StubAccount{
 				Code:    parentCode,
 				Balance: parentSCBalance,
 			}, nil
 		}
 		if bytes.Equal(scAddress, childAddress) {
-			return &mock.AccountMock{
-				Code: childCode,
+			return &contextmock.StubAccount{
+				Code:    childCode,
+				Balance: childSCBalance,
 			}, nil
 		}
 
 		return nil, errAccountNotFound
 	}
 
-	host, _ := DefaultTestArwen(t, stubBlockchainHook)
+	host, _ := defaultTestArwen(t, stubBlockchainHook)
 	return host, stubBlockchainHook
 }
 
-func DefaultTestArwen(tb testing.TB, blockchain vmcommon.BlockchainHook) (*vmHost, error) {
-	gasSchedule := CustomGasSchedule
+func defaultTestArwen(tb testing.TB, blockchain vmcommon.BlockchainHook) (*vmHost, error) {
+	gasSchedule := customGasSchedule
 	if gasSchedule == nil {
 		gasSchedule = config.MakeGasMapForTests()
 	}
@@ -267,7 +289,7 @@ func LoadTomlFileToMap(relativePath string) (map[string]interface{}, error) {
 	return loadedMap, nil
 }
 
-func LoadGasScheduleConfig(filepath string) (config.GasScheduleMap, error) {
+func loadGasScheduleConfig(filepath string) (config.GasScheduleMap, error) {
 	gasScheduleConfig, err := LoadTomlFileToMap(filepath)
 	if err != nil {
 		return nil, err

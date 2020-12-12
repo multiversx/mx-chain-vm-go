@@ -272,7 +272,8 @@ func (context *runtimeContext) SetCustomCallFunction(callFunction string) {
 	context.callFunction = callFunction
 }
 
-// PushState pushes the current state of the runtime context onto its state stack.
+// PushState appends the current runtime state to the state stack; this
+// includes the currently running Wasmer instance.
 func (context *runtimeContext) PushState() {
 	newState := &runtimeContext{
 		vmInput:      context.vmInput,
@@ -282,6 +283,12 @@ func (context *runtimeContext) PushState() {
 	}
 
 	context.stateStack = append(context.stateStack, newState)
+
+	// Also preserve the currently running Wasmer instance at the top of the
+	// instance stack; when the corresponding call to popInstance() is made, a
+	// check is made to ensure that the running instance will not be cleaned
+	// while still required for execution.
+	context.pushInstance()
 }
 
 // PopSetActiveState pops the state at the top of the state stack and sets it as the current state.
@@ -298,6 +305,8 @@ func (context *runtimeContext) PopSetActiveState() {
 	context.scAddress = prevState.scAddress
 	context.callFunction = prevState.callFunction
 	context.readOnly = prevState.readOnly
+
+	context.popInstance()
 }
 
 // PopDiscard pops the state at the top of the state stack and discards it.
@@ -308,6 +317,7 @@ func (context *runtimeContext) PopDiscard() {
 	}
 
 	context.stateStack = context.stateStack[:stateStackLen-1]
+	context.popInstance()
 }
 
 // ClearStateStack discards the entire state state stack and initializes it anew.
@@ -315,13 +325,13 @@ func (context *runtimeContext) ClearStateStack() {
 	context.stateStack = make([]*runtimeContext, 0)
 }
 
-// PushInstance pushes the current Wasmer instance on the instance stack (separate from the state stack).
-func (context *runtimeContext) PushInstance() {
+// pushInstance pushes the current Wasmer instance on the instance stack (separate from the state stack).
+func (context *runtimeContext) pushInstance() {
 	context.instanceStack = append(context.instanceStack, context.instance)
 }
 
-// PopInstance pops the Wasmer instance off the top of the instance stack, and sets it as the current Wasmer instance.
-func (context *runtimeContext) PopInstance() {
+// popInstance pops the Wasmer instance off the top of the instance stack, and sets it as the current Wasmer instance.
+func (context *runtimeContext) popInstance() {
 	instanceStackLen := len(context.instanceStack)
 	if instanceStackLen == 0 {
 		return
@@ -329,6 +339,16 @@ func (context *runtimeContext) PopInstance() {
 
 	prevInstance := context.instanceStack[instanceStackLen-1]
 	context.instanceStack = context.instanceStack[:instanceStackLen-1]
+
+	if prevInstance == context.instance {
+		// The current Wasmer instance was previously pushed on the instance stack,
+		// but a new Wasmer instance has not been created in the meantime. This
+		// means that the instance at the top of the stack is the same as the
+		// current instance, so it cannot be cleaned, because the execution will
+		// resume on it. Popping will therefore only remove the top of the stack,
+		// without cleaning anything.
+		return
+	}
 
 	context.CleanWasmerInstance()
 	context.instance = prevInstance
@@ -339,15 +359,7 @@ func (context *runtimeContext) RunningInstancesCount() uint64 {
 	return uint64(len(context.instanceStack))
 }
 
-// ClearInstanceStack closes and removes all Wasmer instances from the instance stack
-func (context *runtimeContext) ClearInstanceStack() {
-	for _, instance := range context.instanceStack {
-		instance.Clean()
-	}
-	context.instanceStack = make([]*wasmer.Instance, 0)
-}
-
-// GetVMType returns the bytes that identify the Arwen VM
+// GetVMType returns the vm type for the current context.
 func (context *runtimeContext) GetVMType() []byte {
 	return context.vmType
 }
@@ -623,8 +635,7 @@ func (context *runtimeContext) HasCallbackMethod() bool {
 	return ok
 }
 
-// MemLoad reads a specified number of bytes from the given offset from the
-// WASM memory of the currently running Wasmer instance.
+// MemLoad returns the contents from the given offset of the WASM memory.
 func (context *runtimeContext) MemLoad(offset int32, length int32) ([]byte, error) {
 	if length == 0 {
 		return []byte{}, nil
@@ -656,8 +667,28 @@ func (context *runtimeContext) MemLoad(offset int32, length int32) ([]byte, erro
 	return result, nil
 }
 
-// MemStore writes the specified data bytes at the given offset in the WASM
-// memory of the currently running Wasmer instance.
+// MemLoadMultiple returns multiple byte slices loaded from the WASM memory, starting at the given offset and having the provided lengths.
+func (context *runtimeContext) MemLoadMultiple(offset int32, lengths []int32) ([][]byte, error) {
+	if len(lengths) == 0 {
+		return [][]byte{}, nil
+	}
+
+	results := make([][]byte, len(lengths))
+
+	for i, length := range lengths {
+		result, err := context.MemLoad(offset, length)
+		if err != nil {
+			return nil, err
+		}
+
+		results[i] = result
+		offset += length
+	}
+
+	return results, nil
+}
+
+// MemStore stores the given data in the WASM memory at the given offset.
 func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 	dataLength := int32(len(data))
 	if dataLength == 0 {

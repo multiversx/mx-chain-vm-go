@@ -31,13 +31,13 @@ const (
 	// BreakpointExecutionFailed means that Wasmer must stop immediately due to failure indicated by Arwen
 	BreakpointExecutionFailed
 
-	// BreakpointExecutionFailed means that Wasmer must stop immediately so Arwen can execute an AsyncCall
+	// BreakpointAsyncCall means that Wasmer must stop immediately so Arwen can execute an AsyncCall
 	BreakpointAsyncCall
 
-	// BreakpointExecutionFailed means that Wasmer must stop immediately due to a contract-signalled error
+	// BreakpointSignalError means that Wasmer must stop immediately due to a contract-signalled error
 	BreakpointSignalError
 
-	// BreakpointExecutionFailed means that Wasmer must stop immediately due to gas being exhausted
+	// BreakpointOutOfGas means that Wasmer must stop immediately due to gas being exhausted
 	BreakpointOutOfGas
 )
 

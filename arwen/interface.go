@@ -9,6 +9,7 @@ import (
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
+// StateStack defines the functionality for working with a state stack
 type StateStack interface {
 	InitState()
 	PushState()
@@ -23,6 +24,7 @@ type CallArgsParser interface {
 	IsInterfaceNil() bool
 }
 
+// VMHost defines the functionality for working with the VM
 type VMHost interface {
 	Crypto() crypto.VMCrypto
 	Blockchain() BlockchainContext
@@ -39,13 +41,14 @@ type VMHost interface {
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContext(input *vmcommon.ContractCallInput) error
 	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
-	EthereumCallData() []byte
 	GetAPIMethods() *wasmer.Imports
 	GetProtocolBuiltinFunctions() vmcommon.FunctionNames
 	IsBuiltinFunctionName(functionName string) bool
 	CallArgsParser() CallArgsParser
+	AreInSameShard(leftAddress []byte, rightAddress []byte) bool
 }
 
+// BlockchainContext defines the functionality needed for interacting with the blockchain context
 type BlockchainContext interface {
 	NewAddress(creatorAddress []byte) ([]byte, error)
 	AccountExists(addr []byte) bool
@@ -76,6 +79,7 @@ type BlockchainContext interface {
 	GetCompiledCode(codeHash []byte) (bool, []byte)
 }
 
+// RuntimeContext defines the functionality needed for interacting with the runtime context
 type RuntimeContext interface {
 	StateStack
 
@@ -101,10 +105,7 @@ type RuntimeContext interface {
 	ValidateCallbackName(callbackName string) error
 	SetRuntimeBreakpointValue(value BreakpointValue)
 	GetRuntimeBreakpointValue() BreakpointValue
-	PushInstance()
-	PopInstance()
 	RunningInstancesCount() uint64
-	ClearInstanceStack()
 	IsWarmInstance() bool
 	ResetWarmInstance()
 	ReadOnly() bool
@@ -120,6 +121,7 @@ type RuntimeContext interface {
 	SetPointsUsed(gasPoints uint64)
 	MemStore(offset int32, data []byte) error
 	MemLoad(offset int32, length int32) ([]byte, error)
+	MemLoadMultiple(offset int32, lengths []int32) ([][]byte, error)
 	ElrondAPIErrorShouldFailExecution() bool
 	ElrondSyncExecAPIErrorShouldFailExecution() bool
 	CryptoAPIErrorShouldFailExecution() bool
@@ -148,6 +150,7 @@ type AsyncContext interface {
 	UpdateCurrentCallStatus() (*AsyncCall, error)
 }
 
+// BigIntContext defines the functionality needed for interacting with the big int context
 type BigIntContext interface {
 	StateStack
 
@@ -157,6 +160,7 @@ type BigIntContext interface {
 	GetThree(id1, id2, id3 int32) (*big.Int, *big.Int, *big.Int)
 }
 
+// OutputContext defines the functionality needed for interacting with the output context
 type OutputContext interface {
 	StateStack
 	PopMergeActiveState()
@@ -185,6 +189,7 @@ type OutputContext interface {
 	CreateVMOutputInCaseOfError(err error) *vmcommon.VMOutput
 }
 
+// MeteringContext defines the functionality needed for interacting with the metering context
 type MeteringContext interface {
 	SetGasSchedule(gasMap config.GasScheduleMap)
 	GasSchedule() *config.GasCost
@@ -204,15 +209,24 @@ type MeteringContext interface {
 	GetGasLocked() uint64
 }
 
+// StorageStatus defines the states the storage can be in
 type StorageStatus int
 
 const (
+	// StorageUnchanged signals that the storage was not changed
 	StorageUnchanged StorageStatus = iota
+
+	// StorageModified signals that the storage has been modified
 	StorageModified
+
+	// StorageAdded signals that something was added to storage
 	StorageAdded
+
+	// StorageDeleted signals that something was removed from storage
 	StorageDeleted
 )
 
+// StorageContext defines the functionality needed for interacting with the storage context
 type StorageContext interface {
 	StateStack
 
@@ -224,6 +238,7 @@ type StorageContext interface {
 	SetStorage(key []byte, value []byte) (StorageStatus, error)
 }
 
+// AsyncCallHandler defines the functionality for working with AsyncCallInfo
 type AsyncCallHandler interface {
 	GetDestination() []byte
 	GetData() []byte
