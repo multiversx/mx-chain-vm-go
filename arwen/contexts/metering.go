@@ -1,8 +1,6 @@
 package contexts
 
 import (
-	"math"
-
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
@@ -52,14 +50,7 @@ func (context *meteringContext) SetGasSchedule(gasMap config.GasScheduleMap) {
 
 // UseGas consumes the specified amount of gas on the currently running Wasmer instance.
 func (context *meteringContext) UseGas(gas uint64) {
-	// TODO add unit test
-	gasUsed := context.host.Runtime().GetPointsUsed()
-	if gas > math.MaxUint64-gasUsed {
-		gasUsed = math.MaxUint64
-	} else {
-		gasUsed += gas
-	}
-
+	gasUsed := context.host.Runtime().GetPointsUsed() + gas
 	context.host.Runtime().SetPointsUsed(gasUsed)
 }
 
