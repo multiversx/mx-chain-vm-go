@@ -10,11 +10,12 @@ import (
 )
 
 type storageContext struct {
-	host                     arwen.VMHost
-	blockChainHook           vmcommon.BlockchainHook
-	address                  []byte
-	stateStack               [][]byte
-	elrondProtectedKeyPrefix []byte
+	host                          arwen.VMHost
+	blockChainHook                vmcommon.BlockchainHook
+	address                       []byte
+	stateStack                    [][]byte
+	elrondProtectedKeyPrefix      []byte
+	arwenStorageProtectionEnabled bool
 }
 
 // NewStorageContext creates a new storageContext
@@ -27,10 +28,11 @@ func NewStorageContext(
 		return nil, errors.New("elrondProtectedKeyPrefix cannot be empty")
 	}
 	context := &storageContext{
-		host:                     host,
-		blockChainHook:           blockChainHook,
-		stateStack:               make([][]byte, 0),
-		elrondProtectedKeyPrefix: elrondProtectedKeyPrefix,
+		host:                          host,
+		blockChainHook:                blockChainHook,
+		stateStack:                    make([][]byte, 0),
+		elrondProtectedKeyPrefix:      elrondProtectedKeyPrefix,
+		arwenStorageProtectionEnabled: true,
 	}
 
 	return context, nil
@@ -154,18 +156,34 @@ func (context *storageContext) GetStorageUnmetered(key []byte) []byte {
 	return context.getStorageFromAddressUnmetered(context.address, key)
 }
 
+// EnableStorageProtection will prevent writing to protected keys
+func (context *storageContext) EnableStorageProtection() {
+	context.arwenStorageProtectionEnabled = true
+}
+
+// DisableStorageProtection will prevent writing to protected keys
+func (context *storageContext) DisableStorageProtection() {
+	context.arwenStorageProtectionEnabled = false
+}
+
+func (context *storageContext) isArwenProtectedKey(key []byte) bool {
+	return bytes.HasPrefix(key, []byte(arwen.ProtectedStoragePrefix))
+}
+
 func (context *storageContext) isElrondReservedKey(key []byte) bool {
 	return bytes.HasPrefix(key, context.elrondProtectedKeyPrefix)
 }
 
 // SetStorage sets the given value at the given key.
 func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.StorageStatus, error) {
+	if context.host.Runtime().ReadOnly() {
+		return arwen.StorageUnchanged, nil
+	}
 	if context.isElrondReservedKey(key) {
 		return arwen.StorageUnchanged, arwen.ErrStoreElrondReservedKey
 	}
-
-	if context.host.Runtime().ReadOnly() {
-		return arwen.StorageUnchanged, nil
+	if context.isArwenProtectedKey(key) && context.arwenStorageProtectionEnabled {
+		return arwen.StorageUnchanged, arwen.ErrCannotWriteProtectedKey
 	}
 
 	metering := context.host.Metering()

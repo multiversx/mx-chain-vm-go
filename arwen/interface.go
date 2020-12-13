@@ -209,6 +209,8 @@ const (
 type StorageContext interface {
 	StateStack
 
+	EnableStorageProtection()
+	DisableStorageProtection()
 	SetAddress(address []byte)
 	GetStorageUpdates(address []byte) map[string]*vmcommon.StorageUpdate
 	GetStorageFromAddress(address []byte, key []byte) []byte

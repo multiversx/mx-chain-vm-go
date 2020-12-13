@@ -935,7 +935,9 @@ func setStorageLock(context unsafe.Pointer, keyOffset int32, keyLength int32, lo
 
 	timeLockKey := arwen.CustomStorageKey(arwen.TimeLockKeyPrefix, key)
 	bigTimestamp := big.NewInt(0).SetInt64(lockTimestamp)
+	storage.DisableStorageProtection()
 	storageStatus, err := storage.SetStorage(timeLockKey, bigTimestamp.Bytes())
+	storage.EnableStorageProtection()
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
