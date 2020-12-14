@@ -232,13 +232,13 @@ func TestStorageContext_StorageProtection(t *testing.T) {
 	require.True(t, errors.Is(err, arwen.ErrCannotWriteProtectedKey))
 	require.Len(t, storageContext.GetStorageUpdates(address), 0)
 
-	storageContext.DisableStorageProtection()
+	storageContext.disableStorageProtection()
 	storageStatus, err = storageContext.SetStorage(key, value)
 	require.Nil(t, err)
 	require.Equal(t, arwen.StorageAdded, storageStatus)
 	require.Len(t, storageContext.GetStorageUpdates(address), 1)
 
-	storageContext.EnableStorageProtection()
+	storageContext.enableStorageProtection()
 	storageStatus, err = storageContext.SetStorage(key, value)
 	require.Equal(t, arwen.StorageUnchanged, storageStatus)
 	require.True(t, errors.Is(err, arwen.ErrCannotWriteProtectedKey))

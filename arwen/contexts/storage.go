@@ -156,13 +156,13 @@ func (context *storageContext) GetStorageUnmetered(key []byte) []byte {
 	return context.getStorageFromAddressUnmetered(context.address, key)
 }
 
-// EnableStorageProtection will prevent writing to protected keys
-func (context *storageContext) EnableStorageProtection() {
+// enableStorageProtection will prevent writing to protected keys
+func (context *storageContext) enableStorageProtection() {
 	context.arwenStorageProtectionEnabled = true
 }
 
-// DisableStorageProtection will prevent writing to protected keys
-func (context *storageContext) DisableStorageProtection() {
+// disableStorageProtection will prevent writing to protected keys
+func (context *storageContext) disableStorageProtection() {
 	context.arwenStorageProtectionEnabled = false
 }
 
@@ -172,6 +172,13 @@ func (context *storageContext) isArwenProtectedKey(key []byte) bool {
 
 func (context *storageContext) isElrondReservedKey(key []byte) bool {
 	return bytes.HasPrefix(key, context.elrondProtectedKeyPrefix)
+}
+
+func (context *storageContext) SetProtectedStorage(key []byte, value []byte) (arwen.StorageStatus, error) {
+	context.disableStorageProtection()
+	defer context.enableStorageProtection()
+
+	return context.SetStorage(key, value)
 }
 
 // SetStorage sets the given value at the given key.

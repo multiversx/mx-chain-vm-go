@@ -209,14 +209,13 @@ const (
 type StorageContext interface {
 	StateStack
 
-	EnableStorageProtection()
-	DisableStorageProtection()
 	SetAddress(address []byte)
 	GetStorageUpdates(address []byte) map[string]*vmcommon.StorageUpdate
 	GetStorageFromAddress(address []byte, key []byte) []byte
 	GetStorage(key []byte) []byte
 	GetStorageUnmetered(key []byte) []byte
 	SetStorage(key []byte, value []byte) (StorageStatus, error)
+	SetProtectedStorage(key []byte, value []byte) (StorageStatus, error)
 }
 
 // AsyncCallInfoHandler defines the functionality for working with AsyncCallInfo

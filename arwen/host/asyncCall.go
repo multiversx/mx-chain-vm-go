@@ -439,9 +439,7 @@ func (host *vmHost) savePendingAsyncCalls(pendingAsyncMap *arwen.AsyncContextInf
 		return err
 	}
 
-	storage.DisableStorageProtection()
-	_, err = storage.SetStorage(asyncCallStorageKey, data)
-	storage.EnableStorageProtection()
+	_, err = storage.SetProtectedStorage(asyncCallStorageKey, data)
 	if err != nil {
 		return err
 	}
@@ -572,10 +570,7 @@ func (host *vmHost) processCallbackStack() error {
 		return nil
 	}
 
-	storage.DisableStorageProtection()
-	_, err = storage.SetStorage(storageKey, nil)
-	storage.EnableStorageProtection()
-
+	_, err = storage.SetProtectedStorage(storageKey, nil)
 	if err != nil {
 		return err
 	}
