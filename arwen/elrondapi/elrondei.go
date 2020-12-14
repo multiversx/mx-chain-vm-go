@@ -1687,7 +1687,7 @@ func prepareIndirectContractCallInput(
 		dataOffset,
 	)
 
-	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(actualLen))
+	gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(actualLen))
 	metering.UseGas(gasToUse)
 	if err != nil {
 		return nil, err

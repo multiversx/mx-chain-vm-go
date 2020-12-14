@@ -570,7 +570,7 @@ func (host *vmHost) executeSmartContractCall(
 	}
 
 	gasToRestoreToCaller := metering.GasLeft()
-	math.SubUint64(initialGasProvided, gasToRestoreToCaller), nil
+	return math.SubUint64(initialGasProvided, gasToRestoreToCaller), nil
 }
 
 func (host *vmHost) execute(input *vmcommon.ContractCallInput) (uint64, error) {
