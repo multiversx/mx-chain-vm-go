@@ -89,6 +89,9 @@ func (context *asyncContext) executeCallGroupCallback(group *arwen.AsyncCallGrou
 	input := context.createGroupCallbackInput(group)
 	vmOutput, err := context.host.ExecuteOnDestContext(input)
 	context.finishSyncExecution(vmOutput, err)
+
+	// TODO accumulate remaining gas from the callback into the AsyncContext,
+	// after fixing the bug caught by TestExecution_ExecuteOnDestContext_GasRemaining().
 }
 
 // executeSyncHalfOfBuiltinFunction will synchronously call the requested
@@ -129,11 +132,18 @@ func (context *asyncContext) executeSyncContextCallback() {
 	callbackCallInput := context.createContextCallbackInput()
 	callbackVMOutput, callBackErr := context.host.ExecuteOnDestContext(callbackCallInput)
 	context.finishSyncExecution(callbackVMOutput, callBackErr)
+
+	// TODO accumulate remaining gas from the callback into the AsyncContext,
+	// after fixing the bug caught by TestExecution_ExecuteOnDestContext_GasRemaining().
 }
 
 // TODO return values are never used by code that calls finishSyncExecution
 func (context *asyncContext) finishSyncExecution(vmOutput *vmcommon.VMOutput, err error) {
 	if err == nil {
+		if vmOutput != nil {
+			context.accumulateRemainingGas(vmOutput.GasRemaining)
+		}
+
 		return
 	}
 

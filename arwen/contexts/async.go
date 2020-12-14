@@ -137,6 +137,10 @@ func (context *asyncContext) SetReturnData(data []byte) {
 	context.returnData = data
 }
 
+func (context *asyncContext) accumulateRemainingGas(gas uint64) {
+	context.gasRemaining = math.AddUint64(context.gasRemaining, gas)
+}
+
 // GetCallGroup retrieves an AsyncCallGroup by its ID.
 func (context *asyncContext) GetCallGroup(groupID string) (*arwen.AsyncCallGroup, bool) {
 	index, ok := context.findGroupByID(groupID)
