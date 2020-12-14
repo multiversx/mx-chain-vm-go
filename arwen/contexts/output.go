@@ -301,10 +301,18 @@ func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 
 	context.removeNonUpdatedCode(context.outputState)
 
+	return context.checkGas()
+}
+
+func (context *outputContext) checkGas() *vmcommon.VMOutput {
 	gasUsed := uint64(0)
 	for _, outputAccount := range context.outputState.OutputAccounts {
 		// TODO use safe math here
 		gasUsed += outputAccount.GasUsed
+		for _, outputTransfer := range outputAccount.OutputTransfers {
+			gasUsed += outputTransfer.GasLimit
+			gasUsed += outputTransfer.GasLocked
+		}
 	}
 
 	gasProvided := context.host.Runtime().GetVMInput().GasProvided
