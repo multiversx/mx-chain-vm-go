@@ -113,7 +113,7 @@ func (host *VmHostMock) ExecuteOnDestContext(input *vmcommon.ContractCallInput) 
 		return nil, host.Err
 	}
 	host.StoreInput(input)
-	return host.GetVMOutputFromQueue(), nil
+	return host.GetNextVMOutput(), nil
 }
 
 func (host *VmHostMock) EthereumCallData() []byte {
@@ -162,7 +162,7 @@ func (host *VmHostMock) EnqueueVMOutput(vmOutput *vmcommon.VMOutput) {
 	host.VMOutputQueue = append(host.VMOutputQueue, vmOutput)
 }
 
-func (host *VmHostMock) GetVMOutputFromQueue() *vmcommon.VMOutput {
+func (host *VmHostMock) GetNextVMOutput() *vmcommon.VMOutput {
 	if host.VMOutputToReturn >= len(host.VMOutputQueue) {
 		return nil
 	}

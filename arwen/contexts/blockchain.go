@@ -170,10 +170,6 @@ func (context *blockchainContext) GetCodeSize(address []byte) (int32, error) {
 
 // BlockHash returns the hash of the block that has the given nonce.
 func (context *blockchainContext) BlockHash(number uint64) []byte {
-	if number < 0 {
-		return nil
-	}
-
 	block, err := context.blockChainHook.GetBlockhash(number)
 	if err != nil {
 		return nil

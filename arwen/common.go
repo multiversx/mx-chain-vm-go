@@ -9,7 +9,7 @@ import (
 // function of a smart contract
 const CallbackFunctionName = "callBack"
 
-// TimeLockKeyPrevix is the storage key prefix used for timelock-related storage;
+// TimeLockKeyPrefix is the storage key prefix used for timelock-related storage;
 // not protected by Arwen, nor by the Elrond node
 const TimeLockKeyPrefix = "ARWEN@TIMELOCK"
 
@@ -31,13 +31,13 @@ const (
 	// BreakpointExecutionFailed means that Wasmer must stop immediately due to failure indicated by Arwen
 	BreakpointExecutionFailed
 
-	// BreakpointExecutionFailed means that Wasmer must stop immediately so Arwen can execute an AsyncCall
+	// BreakpointAsyncCall means that Wasmer must stop immediately so Arwen can execute an AsyncCall
 	BreakpointAsyncCall
 
-	// BreakpointExecutionFailed means that Wasmer must stop immediately due to a contract-signalled error
+	// BreakpointSignalError means that Wasmer must stop immediately due to a contract-signalled error
 	BreakpointSignalError
 
-	// BreakpointExecutionFailed means that Wasmer must stop immediately due to gas being exhausted
+	// BreakpointOutOfGas means that Wasmer must stop immediately due to gas being exhausted
 	BreakpointOutOfGas
 )
 

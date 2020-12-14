@@ -196,7 +196,8 @@ func TestAsyncContext_AddCall_ExistingGroup(t *testing.T) {
 	require.NotNil(t, async)
 	require.Equal(t, 0, len(async.asyncCallGroups))
 
-	async.addCallGroup(arwen.NewAsyncCallGroup("testGroup"))
+	err := async.addCallGroup(arwen.NewAsyncCallGroup("testGroup"))
+	require.Nil(t, err)
 	require.Equal(t, 1, len(async.asyncCallGroups))
 	require.False(t, async.IsComplete())
 
@@ -204,7 +205,7 @@ func TestAsyncContext_AddCall_ExistingGroup(t *testing.T) {
 	require.NotNil(t, group)
 	require.True(t, exists)
 
-	err := async.AddCall("testGroup", &arwen.AsyncCall{
+	err = async.AddCall("testGroup", &arwen.AsyncCall{
 		Destination: []byte("somewhere"),
 		Data:        []byte("something"),
 	})
@@ -238,6 +239,7 @@ func TestAsyncContext_SetGroupCallback_OutOfGas(t *testing.T) {
 		Destination: []byte("somewhere"),
 		Data:        []byte("something"),
 	})
+	require.Nil(t, err)
 
 	err = async.SetGroupCallback("testGroup", "callbackFunction", []byte{}, 0)
 	require.True(t, errors.Is(err, arwen.ErrNotEnoughGas))

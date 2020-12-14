@@ -19,6 +19,7 @@ var logDuration = logger.GetOrCreate("arwen/duration")
 // Zero is the big integer 0
 var Zero = big.NewInt(0)
 
+// CustomStorageKey generates a storage key of a specific type.
 func CustomStorageKey(keyType string, associatedKey []byte) []byte {
 	return append(associatedKey, []byte(keyType)...)
 }
@@ -30,6 +31,9 @@ func BooleanToInt(b bool) int {
 	return 0
 }
 
+// GuardedMakeByteSlice2D instantiates a [][]byte slice of the specified
+// length, guarding against negative argument.
+// TODO find usages and see if this function can be removed.
 func GuardedMakeByteSlice2D(length int32) ([][]byte, error) {
 	if length < 0 {
 		return nil, fmt.Errorf("GuardedMakeByteSlice2D: negative length (%d)", length)
@@ -39,6 +43,7 @@ func GuardedMakeByteSlice2D(length int32) ([][]byte, error) {
 	return result, nil
 }
 
+// GuardedGetBytesSlice extracts a subslice from a given slice, guarding against overstepping the bounds.
 func GuardedGetBytesSlice(data []byte, offset int32, length int32) ([]byte, error) {
 	dataLength := uint32(len(data))
 	isOffsetTooSmall := offset < 0
@@ -59,6 +64,7 @@ func GuardedGetBytesSlice(data []byte, offset int32, length int32) ([]byte, erro
 	return result, nil
 }
 
+// PadBytesLeft adds a specified number of zeros to the left of a byte slice.
 func PadBytesLeft(data []byte, size int) []byte {
 	if data == nil {
 		return nil
@@ -76,6 +82,7 @@ func PadBytesLeft(data []byte, size int) []byte {
 	return paddedBytes
 }
 
+// InverseBytes reverses the order of a byte slice.
 func InverseBytes(data []byte) []byte {
 	length := len(data)
 	invBytes := make([]byte, length)
@@ -85,6 +92,8 @@ func InverseBytes(data []byte) []byte {
 	return invBytes
 }
 
+// WithFault handles an error, taking into account whether it should completely
+// fail the execution of a contract or not.
 func WithFault(err error, context unsafe.Pointer, failExecution bool) bool {
 	if err == nil {
 		return false
@@ -172,6 +181,8 @@ func LoadTomlFileToMap(relativePath string) (map[string]interface{}, error) {
 	return loadedMap, nil
 }
 
+// TimeTrack writes a trace message to the log showing how much time has
+// elapsed since the provided start time
 func TimeTrack(start time.Time, message string) {
 	elapsed := time.Since(start)
 	logDuration.Trace(message, "duration", elapsed)
@@ -273,6 +284,7 @@ func SetStorageUpdateStrings(account *vmcommon.OutputAccount, key string, data s
 	SetStorageUpdate(account, []byte(key), []byte(data))
 }
 
+// MakeEmptyContractCallInput instantiates an empty ContractCallInput
 func MakeEmptyContractCallInput() *vmcommon.ContractCallInput {
 	return &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
@@ -288,6 +300,7 @@ func MakeEmptyContractCallInput() *vmcommon.ContractCallInput {
 	}
 }
 
+// MakeContractCallInput creates a ContractCallInput and sets the provided arguments
 func MakeContractCallInput(
 	caller []byte,
 	recipient []byte,
@@ -301,11 +314,13 @@ func MakeContractCallInput(
 	return input
 }
 
+// SetCallParties sets the caller and recipient of the given ContractCallInput
 func SetCallParties(input *vmcommon.ContractCallInput, caller []byte, recipient []byte) {
 	input.CallerAddr = caller
 	input.RecipientAddr = recipient
 }
 
+// AddArgument adds the provided argument to the ContractCallInput
 func AddArgument(input *vmcommon.ContractCallInput, argument []byte) {
 	if input.Arguments == nil {
 		input.Arguments = make([][]byte, 0)
@@ -313,6 +328,7 @@ func AddArgument(input *vmcommon.ContractCallInput, argument []byte) {
 	input.Arguments = append(input.Arguments, argument)
 }
 
+// CopyTxHashes copies the tx hashes from a source ContractCallInput into another
 func CopyTxHashes(input *vmcommon.ContractCallInput, sourceInput *vmcommon.ContractCallInput) {
 	input.CurrentTxHash = sourceInput.CurrentTxHash
 	input.PrevTxHash = sourceInput.PrevTxHash

@@ -229,7 +229,7 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 
 	runtimeContext.PopSetActiveState()
 
-	//check state was restored correctly
+	// check state was restored correctly
 	require.Equal(t, scAddress, runtimeContext.GetSCAddress())
 	require.Equal(t, funcName, runtimeContext.Function())
 	require.Equal(t, &vmInput, runtimeContext.GetVMInput())
@@ -476,6 +476,7 @@ func TestRuntimeContext_MemLoadCases(t *testing.T) {
 	offset = int32(memory.Length() - 8)
 	length = 0
 	memContents, err = runtimeContext.MemLoad(offset, length)
+	require.Nil(t, err)
 	require.Equal(t, []byte{}, memContents)
 }
 
