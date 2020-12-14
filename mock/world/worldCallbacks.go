@@ -162,12 +162,12 @@ func (b *MockWorld) ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*
 		return nil, b.Err
 	}
 
-	return &vmcommon.VMOutput{}, nil
+	return b.processBuiltInFunction(input)
 }
 
 // GetBuiltinFunctionNames -
 func (b *MockWorld) GetBuiltinFunctionNames() vmcommon.FunctionNames {
-	return make(vmcommon.FunctionNames)
+	return getBuiltinFunctionNames()
 }
 
 // GetAllState simply returns the storage as-is.

@@ -97,7 +97,9 @@ func (host *VMHostMock) IsDynamicGasLockingEnabled() bool {
 
 // AreInSameShard mocked method
 func (host *VMHostMock) AreInSameShard(left []byte, right []byte) bool {
-	return true
+	leftShard := host.BlockchainContext.GetShardOfAddress(left)
+	rightShard := host.BlockchainContext.GetShardOfAddress(right)
+	return leftShard == rightShard
 }
 
 // CreateNewContract mocked method

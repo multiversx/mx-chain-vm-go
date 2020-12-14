@@ -95,6 +95,12 @@ func transactionToScenarioOJ(tx *mj.Transaction) oj.OJsonObject {
 		transactionOJ.Put("to", bytesFromStringToOJ(tx.To))
 	}
 	transactionOJ.Put("value", bigIntToOJ(tx.Value))
+	if len(tx.ESDTValue.Original) > 0 {
+		transactionOJ.Put("esdtValue", bigIntToOJ(tx.ESDTValue))
+	}
+	if len(tx.ESDTTokenName.Original) > 0 {
+		transactionOJ.Put("esdtTokenName", bytesFromStringToOJ(tx.ESDTTokenName))
+	}
 	if tx.Type == mj.ScCall {
 		transactionOJ.Put("function", stringToOJ(tx.Function))
 	}

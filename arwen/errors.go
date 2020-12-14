@@ -92,6 +92,9 @@ var ErrMaxInstancesReached = fmt.Errorf("%w (max instances reached)", ErrExecuti
 // ErrStoreElrondReservedKey signals that an attempt to write under an reserved key has been made
 var ErrStoreElrondReservedKey = errors.New("cannot write to storage under Elrond reserved key")
 
+// ErrCannotWriteProtectedKey signals an attempt to write to a protected key, while storage protection is enforced
+var ErrCannotWriteProtectedKey = errors.New("cannot write to protected key")
+
 // ErrArgIndexOutOfRange signals that the argument index is out of range
 var ErrArgIndexOutOfRange = errors.New("argument index out of range")
 

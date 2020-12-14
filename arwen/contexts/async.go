@@ -5,6 +5,7 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/math"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
@@ -546,7 +547,7 @@ func (context *asyncContext) Save() error {
 		return err
 	}
 
-	_, err = storage.SetStorage(storageKey, data)
+	_, err = storage.SetProtectedStorage(storageKey, data)
 	if err != nil {
 		return err
 	}
@@ -583,13 +584,12 @@ func (context *asyncContext) Delete() error {
 	storage := context.host.Storage()
 
 	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, runtime.GetPrevTxHash())
-	_, err := storage.SetStorage(storageKey, nil)
+	_, err := storage.SetProtectedStorage(storageKey, nil)
 	return err
 }
 
 func (context *asyncContext) determineExecutionMode(destination []byte, data []byte) (arwen.AsyncCallExecutionMode, error) {
 	runtime := context.host.Runtime()
-	blockchain := context.host.Blockchain()
 
 	// If ArgParser cannot read the Data field, then this is neither a SC call,
 	// nor a built-in function call.
@@ -598,10 +598,7 @@ func (context *asyncContext) determineExecutionMode(destination []byte, data []b
 		return arwen.AsyncUnknown, err
 	}
 
-	shardOfSC := blockchain.GetShardOfAddress(runtime.GetSCAddress())
-	shardOfDest := blockchain.GetShardOfAddress(destination)
-	sameShard := shardOfSC == shardOfDest
-
+	sameShard := context.host.AreInSameShard(runtime.GetSCAddress(), destination)
 	if sameShard {
 		return arwen.SyncExecution, nil
 	}
@@ -733,14 +730,14 @@ func computeDataLengthFromArguments(function string, arguments [][]byte) int {
 
 	// TODO breaking change below, if there has ever been an async call, otherwise ok
 	// TODO add condition on a host flag for an epoch
-	separator := 1
-	hexSize := 2
-	dataLength := 0
-	dataLength += len(function)
-	for _, data := range arguments {
-		dataLength += separator
-		dataLength += len(data) * hexSize
+	separator := uint64(1)
+	hexSize := uint64(2)
+	dataLength := uint64(len(function))
+	for _, argument := range arguments {
+		dataLength = math.AddUint64(dataLength, separator)
+		encodedArgumentLength := math.MulUint64(uint64(len(argument)), hexSize)
+		dataLength = math.AddUint64(dataLength, encodedArgumentLength)
 	}
 
-	return dataLength
+	return int(dataLength)
 }

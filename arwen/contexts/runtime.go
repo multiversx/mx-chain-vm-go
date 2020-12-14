@@ -3,9 +3,11 @@ package contexts
 import (
 	"bytes"
 	"fmt"
+	builtinMath "math"
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
@@ -585,6 +587,9 @@ func (context *runtimeContext) GetPointsUsed() uint64 {
 
 // SetPointsUsed directly sets the gas amount already spent by the currently running Wasmer instance.
 func (context *runtimeContext) SetPointsUsed(gasPoints uint64) {
+	if gasPoints > builtinMath.MaxInt64 {
+		gasPoints = builtinMath.MaxInt64
+	}
 	context.instance.SetPointsUsed(gasPoints)
 }
 
@@ -654,10 +659,11 @@ func (context *runtimeContext) MemLoad(offset int32, length int32) ([]byte, erro
 	memory := context.instance.InstanceCtx.Memory()
 	memoryView := memory.Data()
 	memoryLength := memory.Length()
-	requestedEnd := uint32(offset + length)
+	requestedEnd := math.AddInt32(offset, length)
+
 	isOffsetTooSmall := offset < 0
 	isOffsetTooLarge := uint32(offset) > memoryLength
-	isRequestedEndTooLarge := requestedEnd > memoryLength
+	isRequestedEndTooLarge := uint32(requestedEnd) > memoryLength
 	isLengthNegative := length < 0
 
 	if isOffsetTooSmall || isOffsetTooLarge {
@@ -708,9 +714,10 @@ func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 	memory := context.instance.InstanceCtx.Memory()
 	memoryView := memory.Data()
 	memoryLength := memory.Length()
-	requestedEnd := uint32(offset + dataLength)
+	requestedEnd := math.AddInt32(offset, dataLength)
+
 	isOffsetTooSmall := offset < 0
-	isNewPageNecessary := requestedEnd > memoryLength
+	isNewPageNecessary := uint32(requestedEnd) > memoryLength
 
 	if isOffsetTooSmall {
 		return arwen.ErrBadLowerBounds
@@ -725,7 +732,7 @@ func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 		memoryLength = memory.Length()
 	}
 
-	isRequestedEndTooLarge := requestedEnd > memoryLength
+	isRequestedEndTooLarge := uint32(requestedEnd) > memoryLength
 	if isRequestedEndTooLarge {
 		return arwen.ErrBadUpperBounds
 	}

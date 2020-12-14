@@ -5,16 +5,18 @@ import (
 	"errors"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/math"
 	"github.com/ElrondNetwork/elrond-go-logger/check"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 type storageContext struct {
-	host                     arwen.VMHost
-	blockChainHook           vmcommon.BlockchainHook
-	address                  []byte
-	stateStack               [][]byte
-	elrondProtectedKeyPrefix []byte
+	host                          arwen.VMHost
+	blockChainHook                vmcommon.BlockchainHook
+	address                       []byte
+	stateStack                    [][]byte
+	elrondProtectedKeyPrefix      []byte
+	arwenStorageProtectionEnabled bool
 }
 
 // NewStorageContext creates a new storageContext
@@ -27,10 +29,11 @@ func NewStorageContext(
 		return nil, errors.New("elrondProtectedKeyPrefix cannot be empty")
 	}
 	context := &storageContext{
-		host:                     host,
-		blockChainHook:           blockChainHook,
-		stateStack:               make([][]byte, 0),
-		elrondProtectedKeyPrefix: elrondProtectedKeyPrefix,
+		host:                          host,
+		blockChainHook:                blockChainHook,
+		stateStack:                    make([][]byte, 0),
+		elrondProtectedKeyPrefix:      elrondProtectedKeyPrefix,
+		arwenStorageProtectionEnabled: true,
 	}
 
 	return context, nil
@@ -90,13 +93,13 @@ func (context *storageContext) GetStorage(key []byte) []byte {
 
 	extraBytes := len(key) - arwen.AddressLen
 	if extraBytes > 0 {
-		gasToUse := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(extraBytes)
+		gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(extraBytes))
 		metering.UseGas(gasToUse)
 	}
 
 	value := context.GetStorageUnmetered(key)
 
-	gasToUse := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(value))
+	gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(value)))
 	metering.UseGas(gasToUse)
 
 	return value
@@ -108,7 +111,7 @@ func (context *storageContext) GetStorageFromAddress(address []byte, key []byte)
 
 	extraBytes := len(key) - arwen.AddressLen
 	if extraBytes > 0 {
-		gasToUse := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(extraBytes)
+		gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(extraBytes))
 		metering.UseGas(gasToUse)
 	}
 
@@ -126,7 +129,7 @@ func (context *storageContext) GetStorageFromAddress(address []byte, key []byte)
 
 	value := context.getStorageFromAddressUnmetered(address, key)
 
-	gasToUse := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(value))
+	gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(value)))
 	metering.UseGas(gasToUse)
 
 	return value
@@ -154,27 +157,50 @@ func (context *storageContext) GetStorageUnmetered(key []byte) []byte {
 	return context.getStorageFromAddressUnmetered(context.address, key)
 }
 
+// enableStorageProtection will prevent writing to protected keys
+func (context *storageContext) enableStorageProtection() {
+	context.arwenStorageProtectionEnabled = true
+}
+
+// disableStorageProtection will prevent writing to protected keys
+func (context *storageContext) disableStorageProtection() {
+	context.arwenStorageProtectionEnabled = false
+}
+
+func (context *storageContext) isArwenProtectedKey(key []byte) bool {
+	return bytes.HasPrefix(key, []byte(arwen.ProtectedStoragePrefix))
+}
+
 func (context *storageContext) isElrondReservedKey(key []byte) bool {
 	prefixElrond := bytes.HasPrefix(key, context.elrondProtectedKeyPrefix)
 	prefixArwen := bytes.HasPrefix(key, []byte(arwen.AsyncDataPrefix))
 	return prefixElrond || prefixArwen
 }
 
+func (context *storageContext) SetProtectedStorage(key []byte, value []byte) (arwen.StorageStatus, error) {
+	context.disableStorageProtection()
+	defer context.enableStorageProtection()
+
+	return context.SetStorage(key, value)
+}
+
 // SetStorage sets the given value at the given key.
 func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.StorageStatus, error) {
+	if context.host.Runtime().ReadOnly() {
+		return arwen.StorageUnchanged, nil
+	}
 	if context.isElrondReservedKey(key) {
 		return arwen.StorageUnchanged, arwen.ErrStoreElrondReservedKey
 	}
-
-	if context.host.Runtime().ReadOnly() {
-		return arwen.StorageUnchanged, nil
+	if context.isArwenProtectedKey(key) && context.arwenStorageProtectionEnabled {
+		return arwen.StorageUnchanged, arwen.ErrCannotWriteProtectedKey
 	}
 
 	metering := context.host.Metering()
 
 	extraBytes := len(key) - arwen.AddressLen
 	if extraBytes > 0 {
-		gasToUse := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(extraBytes)
+		gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(extraBytes))
 		metering.UseGas(gasToUse)
 	}
 
@@ -196,7 +222,7 @@ func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.Stora
 
 	lengthOldValue := len(oldValue)
 	if bytes.Equal(oldValue, value) {
-		useGas := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(length)
+		useGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(length))
 		metering.UseGas(useGas)
 		return arwen.StorageUnchanged, nil
 	}
@@ -209,29 +235,33 @@ func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.Stora
 	storageUpdates[strKey] = newUpdate
 
 	if bytes.Equal(oldValue, zero) {
-		useGas := metering.GasSchedule().BaseOperationCost.StorePerByte * uint64(length)
+		useGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.StorePerByte, uint64(length))
 		metering.UseGas(useGas)
 		return arwen.StorageAdded, nil
 	}
 	if bytes.Equal(value, zero) {
-		freeGas := metering.GasSchedule().BaseOperationCost.ReleasePerByte * uint64(lengthOldValue)
+		freeGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.ReleasePerByte, uint64(lengthOldValue))
 		metering.FreeGas(freeGas)
 		return arwen.StorageDeleted, nil
 	}
 
-	newValueExtraLength := length - lengthOldValue
+	newValueExtraLength := math.SubInt(length, lengthOldValue)
+
 	if newValueExtraLength > 0 {
-		useGas := metering.GasSchedule().BaseOperationCost.PersistPerByte * uint64(lengthOldValue)
-		useGas += metering.GasSchedule().BaseOperationCost.StorePerByte * uint64(newValueExtraLength)
-		metering.UseGas(useGas)
+		useGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(lengthOldValue))
+		newValStoreUseGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.StorePerByte, uint64(newValueExtraLength))
+		gasUsed := math.AddUint64(useGas, newValStoreUseGas)
+
+		metering.UseGas(gasUsed)
 	}
+
 	if newValueExtraLength < 0 {
 		newValueExtraLength = -newValueExtraLength
 
-		useGas := metering.GasSchedule().BaseOperationCost.PersistPerByte * uint64(length)
+		useGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(length))
 		metering.UseGas(useGas)
 
-		freeGas := metering.GasSchedule().BaseOperationCost.ReleasePerByte * uint64(newValueExtraLength)
+		freeGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.ReleasePerByte, uint64(newValueExtraLength))
 		metering.FreeGas(freeGas)
 	}
 

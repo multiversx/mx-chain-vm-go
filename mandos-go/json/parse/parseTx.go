@@ -11,10 +11,13 @@ import (
 func (p *Parser) processTx(txType mj.TransactionType, blrRaw oj.OJsonObject) (*mj.Transaction, error) {
 	bltMap, isMap := blrRaw.(*oj.OJsonMap)
 	if !isMap {
-		return nil, errors.New("unmarshalled block transaction is not a map")
+		return nil, errors.New("unmarshalled transaction is not a map")
 	}
 
-	blt := mj.Transaction{Type: txType}
+	blt := mj.Transaction{
+		Type:      txType,
+		ESDTValue: mj.JSONBigIntZero(),
+	}
 	var err error
 	for _, kvp := range bltMap.OrderedKV {
 
@@ -22,7 +25,7 @@ func (p *Parser) processTx(txType mj.TransactionType, blrRaw oj.OJsonObject) (*m
 		case "nonce":
 			blt.Nonce, err = p.processUint64(kvp.Value)
 			if err != nil {
-				return nil, fmt.Errorf("invalid block transaction nonce: %w", err)
+				return nil, fmt.Errorf("invalid transaction nonce: %w", err)
 			}
 		case "from":
 			if !txType.HasSender() {
@@ -30,18 +33,17 @@ func (p *Parser) processTx(txType mj.TransactionType, blrRaw oj.OJsonObject) (*m
 			}
 			fromStr, err := p.parseString(kvp.Value)
 			if err != nil {
-				return nil, fmt.Errorf("invalid block transaction from: %w", err)
+				return nil, fmt.Errorf("invalid transaction from: %w", err)
 			}
 			var fromErr error
 			blt.From, fromErr = p.parseAccountAddress(fromStr)
 			if fromErr != nil {
 				return nil, fromErr
 			}
-
 		case "to":
 			toStr, err := p.parseString(kvp.Value)
 			if err != nil {
-				return nil, fmt.Errorf("invalid block transaction to: %w", err)
+				return nil, fmt.Errorf("invalid transaction to: %w", err)
 			}
 
 			if txType == mj.ScDeploy {
@@ -57,7 +59,7 @@ func (p *Parser) processTx(txType mj.TransactionType, blrRaw oj.OJsonObject) (*m
 		case "function":
 			blt.Function, err = p.parseString(kvp.Value)
 			if err != nil {
-				return nil, fmt.Errorf("invalid block transaction function: %w", err)
+				return nil, fmt.Errorf("invalid transaction function: %w", err)
 			}
 			if txType == mj.ScDeploy && len(blt.Function) > 0 {
 				return nil, errors.New("transaction function field not allowed for scDeploy transactions")
@@ -68,12 +70,22 @@ func (p *Parser) processTx(txType mj.TransactionType, blrRaw oj.OJsonObject) (*m
 		case "value":
 			blt.Value, err = p.processBigInt(kvp.Value, bigIntUnsignedBytes)
 			if err != nil {
-				return nil, fmt.Errorf("invalid block transaction value: %w", err)
+				return nil, fmt.Errorf("invalid transaction value: %w", err)
+			}
+		case "esdtValue":
+			blt.ESDTValue, err = p.processBigInt(kvp.Value, bigIntUnsignedBytes)
+			if err != nil {
+				return nil, fmt.Errorf("invalid transaction ESDT value: %w", err)
+			}
+		case "esdtTokenName":
+			blt.ESDTTokenName, err = p.processStringAsByteArray(kvp.Value)
+			if err != nil {
+				return nil, fmt.Errorf("invalid transaction ESDT token name: %w", err)
 			}
 		case "arguments":
 			blt.Arguments, err = p.parseSubTreeList(kvp.Value)
 			if err != nil {
-				return nil, fmt.Errorf("invalid block transaction arguments: %w", err)
+				return nil, fmt.Errorf("invalid transaction arguments: %w", err)
 			}
 			if txType == mj.Transfer && len(blt.Arguments) > 0 {
 				return nil, errors.New("function arguments not allowed for transfer transactions")
@@ -81,7 +93,7 @@ func (p *Parser) processTx(txType mj.TransactionType, blrRaw oj.OJsonObject) (*m
 		case "contractCode":
 			blt.Code, err = p.processStringAsByteArray(kvp.Value)
 			if err != nil {
-				return nil, fmt.Errorf("invalid block transaction contract code: %w", err)
+				return nil, fmt.Errorf("invalid transaction contract code: %w", err)
 			}
 			if txType != mj.ScDeploy && len(blt.Code.Value) > 0 {
 				return nil, errors.New("transaction contractCode field only allowed int scDeploy transactions")
@@ -89,12 +101,12 @@ func (p *Parser) processTx(txType mj.TransactionType, blrRaw oj.OJsonObject) (*m
 		case "gasPrice":
 			blt.GasPrice, err = p.processUint64(kvp.Value)
 			if err != nil {
-				return nil, fmt.Errorf("invalid block transaction gasPrice: %w", err)
+				return nil, fmt.Errorf("invalid transaction gasPrice: %w", err)
 			}
 		case "gasLimit":
 			blt.GasLimit, err = p.processUint64(kvp.Value)
 			if err != nil {
-				return nil, fmt.Errorf("invalid block transaction gasLimit: %w", err)
+				return nil, fmt.Errorf("invalid transaction gasLimit: %w", err)
 			}
 		default:
 			return nil, fmt.Errorf("unknown field in transaction: %w", err)

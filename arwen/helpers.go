@@ -2,14 +2,14 @@ package arwen
 
 import (
 	"fmt"
+	"github.com/ElrondNetwork/arwen-wasm-vm/math"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	"github.com/pelletier/go-toml"
 	"io/ioutil"
 	"math/big"
 	"os"
 	"path/filepath"
 	"unsafe"
-
-	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
-	"github.com/pelletier/go-toml"
 )
 
 // Zero is the big integer 0
@@ -45,8 +45,8 @@ func GuardedGetBytesSlice(data []byte, offset int32, length int32) ([]byte, erro
 	dataLength := uint32(len(data))
 	isOffsetTooSmall := offset < 0
 	isOffsetTooLarge := uint32(offset) > dataLength
-	requestedEnd := uint32(offset + length)
-	isRequestedEndTooLarge := requestedEnd > dataLength
+	requestedEnd := math.AddInt32(offset, length)
+	isRequestedEndTooLarge := uint32(requestedEnd) > dataLength
 	isLengthNegative := length < 0
 
 	if isOffsetTooSmall || isOffsetTooLarge || isRequestedEndTooLarge {
@@ -57,7 +57,7 @@ func GuardedGetBytesSlice(data []byte, offset int32, length int32) ([]byte, erro
 		return nil, fmt.Errorf("GuardedGetBytesSlice: negative length")
 	}
 
-	result := data[offset : offset+length]
+	result := data[offset:requestedEnd]
 	return result, nil
 }
 
@@ -69,7 +69,7 @@ func PadBytesLeft(data []byte, size int) []byte {
 	if len(data) == 0 {
 		return []byte{}
 	}
-	padSize := size - len(data)
+	padSize := math.SubInt(size, len(data))
 	if padSize <= 0 {
 		return data
 	}
