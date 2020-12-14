@@ -439,7 +439,7 @@ func (host *vmHost) savePendingAsyncCalls(pendingAsyncMap *arwen.AsyncContextInf
 		return err
 	}
 
-	_, err = storage.SetStorage(asyncCallStorageKey, data)
+	_, err = storage.SetProtectedStorage(asyncCallStorageKey, data)
 	if err != nil {
 		return err
 	}
@@ -570,7 +570,7 @@ func (host *vmHost) processCallbackStack() error {
 		return nil
 	}
 
-	_, err = storage.SetStorage(storageKey, nil)
+	_, err = storage.SetProtectedStorage(storageKey, nil)
 	if err != nil {
 		return err
 	}

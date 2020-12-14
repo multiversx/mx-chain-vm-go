@@ -215,6 +215,7 @@ type StorageContext interface {
 	GetStorage(key []byte) []byte
 	GetStorageUnmetered(key []byte) []byte
 	SetStorage(key []byte, value []byte) (StorageStatus, error)
+	SetProtectedStorage(key []byte, value []byte) (StorageStatus, error)
 }
 
 // AsyncCallInfoHandler defines the functionality for working with AsyncCallInfo
