@@ -6,7 +6,6 @@ import (
 	"math/big"
 	"os"
 	"path/filepath"
-	"time"
 	"unsafe"
 
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
@@ -177,13 +176,6 @@ func LoadTomlFileToMap(relativePath string) (map[string]interface{}, error) {
 	loadedMap := loadedTree.ToMap()
 
 	return loadedMap, nil
-}
-
-// TimeTrack writes a trace message to the log showing how much time has
-// elapsed since the provided start time
-func TimeTrack(start time.Time, message string) {
-	elapsed := time.Since(start)
-	logDuration.Trace(message, "duration", elapsed)
 }
 
 func U64MulToBigInt(x, y uint64) *big.Int {
