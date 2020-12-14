@@ -139,3 +139,7 @@ var ErrBuiltinCallOnSameContextDisallowed = errors.New("calling built-in functio
 
 // ErrSyncExecutionNotInSameShard signals that the sync execution request is not in the same shard
 var ErrSyncExecutionNotInSameShard = errors.New("sync execution request is not in the same shard")
+
+// ErrInputAndOutputGasDoesNotMatch is raised when the output gas (gas used + gas locked + gas remaining)
+// is not equal to the input gas
+var ErrInputAndOutputGasDoesNotMatch = errors.New("input and output gas does not match")

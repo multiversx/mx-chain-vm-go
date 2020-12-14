@@ -301,6 +301,18 @@ func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 
 	context.removeNonUpdatedCode(context.outputState)
 
+	gasUsed := uint64(0)
+	for _, outputAccount := range context.outputState.OutputAccounts {
+		// TODO use safe math here
+		gasUsed += outputAccount.GasUsed
+	}
+
+	gasProvided := context.host.Runtime().GetVMInput().GasProvided
+	totalGas := gasUsed + context.outputState.GasRemaining + context.host.Metering().GetGasLocked()
+	if totalGas != gasProvided {
+		return context.CreateVMOutputInCaseOfError(arwen.ErrInputAndOutputGasDoesNotMatch)
+	}
+
 	return context.outputState
 }
 
