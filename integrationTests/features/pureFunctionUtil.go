@@ -10,8 +10,8 @@ import (
 	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/test/mock-hook-blockchain"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/model"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
+	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
@@ -31,15 +31,14 @@ type resultInterpreter func([]byte) *big.Int
 type logProgress func(testCaseIndex, testCaseCount int)
 
 type pureFunctionExecutor struct {
-	world           *worldhook.BlockchainHookMock
+	world           *worldhook.MockWorld
 	vm              vmi.VMExecutionHandler
 	contractAddress []byte
 	userAddress     []byte
 }
 
 func newPureFunctionExecutor() (*pureFunctionExecutor, error) {
-	world := worldhook.NewMock()
-	world.EnableMockAddressGeneration()
+	world := worldhook.NewMockWorld()
 
 	blockGasLimit := uint64(10000000)
 	gasSchedule := config.MakeGasMapForTests()

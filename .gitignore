@@ -34,5 +34,5 @@ tags
 *.ll
 *.o
 wasm32-unknown-unknown
-test/contracts/*/target
-test/contracts/*/wasm/target
+test/contracts/**/target
+test/contracts/**/wasm/target

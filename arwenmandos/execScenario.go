@@ -1,9 +1,9 @@
 package arwenmandos
 
 import (
-	mc "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/controller"
-	fr "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/fileresolver"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/model"
+	mc "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/controller"
+	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/fileresolver"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 

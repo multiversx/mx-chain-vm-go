@@ -4,9 +4,9 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/test/mock-hook-blockchain"
-	mc "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/controller"
-	fr "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/fileresolver"
+	mc "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/controller"
+	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/fileresolver"
+	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
@@ -17,7 +17,7 @@ var TestVMType = []byte{0, 0}
 // ArwenTestExecutor parses, interprets and executes both .test.json tests and .scen.json scenarios with Arwen.
 type ArwenTestExecutor struct {
 	fileResolver fr.FileResolver
-	World        *worldhook.BlockchainHookMock
+	World        *worldhook.MockWorld
 	vm           vmi.VMExecutionHandler
 	checkGas     bool
 }
@@ -27,8 +27,7 @@ var _ mc.ScenarioExecutor = (*ArwenTestExecutor)(nil)
 
 // NewArwenTestExecutor prepares a new ArwenTestExecutor instance.
 func NewArwenTestExecutor() (*ArwenTestExecutor, error) {
-	world := worldhook.NewMock()
-	world.EnableMockAddressGeneration()
+	world := worldhook.NewMockWorld()
 
 	blockGasLimit := uint64(10000000)
 	gasSchedule := config.MakeGasMapForTests()

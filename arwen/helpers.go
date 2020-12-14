@@ -9,12 +9,9 @@ import (
 	"time"
 	"unsafe"
 
-	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/pelletier/go-toml"
 )
-
-var logDuration = logger.GetOrCreate("arwen/duration")
 
 // Zero is the big integer 0
 var Zero = big.NewInt(0)
@@ -24,6 +21,7 @@ func CustomStorageKey(keyType string, associatedKey []byte) []byte {
 	return append(associatedKey, []byte(keyType)...)
 }
 
+// BooleanToInt returns 1 if the given bool is true, 0 otherwise
 func BooleanToInt(b bool) int {
 	if b {
 		return 1
@@ -110,7 +108,7 @@ func WithFault(err error, context unsafe.Pointer, failExecution bool) bool {
 	return true
 }
 
-// GetSCCode retrieves the bytecode of a WASM module from a file
+// GetSCCode retrieves the bytecode of a WASM module from a file.
 func GetSCCode(fileName string) []byte {
 	code, err := ioutil.ReadFile(filepath.Clean(fileName))
 	if err != nil {
@@ -120,7 +118,7 @@ func GetSCCode(fileName string) []byte {
 	return code
 }
 
-// GetTestSCCode retrieves the bytecode of a WASM testing module
+// GetTestSCCode retrieves the bytecode of a WASM testing module.
 func GetTestSCCode(scName string, prefixToTestSCs string) []byte {
 	pathToSC := prefixToTestSCs + "test/contracts/" + scName + "/output/" + scName + ".wasm"
 	return GetSCCode(pathToSC)

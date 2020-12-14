@@ -9,7 +9,7 @@ type MessageBlockchainNewAddressRequest struct {
 	Message
 	CreatorAddress []byte
 	CreatorNonce   uint64
-	VmType         []byte
+	VMType         []byte
 }
 
 // NewMessageBlockchainNewAddressRequest creates a request message
@@ -18,7 +18,7 @@ func NewMessageBlockchainNewAddressRequest(creatorAddress []byte, creatorNonce u
 	message.Kind = BlockchainNewAddressRequest
 	message.CreatorAddress = creatorAddress
 	message.CreatorNonce = creatorNonce
-	message.VmType = vmType
+	message.VMType = vmType
 	return message
 }
 
