@@ -595,11 +595,12 @@ func createAsyncCall(context unsafe.Pointer,
 		return
 	}
 
-	err = async.AddCall(groupID, &arwen.AsyncCall{
+	err = async.RegisterAsyncCall(groupID, &arwen.AsyncCall{
+		Status:          arwen.AsyncCallPending,
 		Destination:     calledSCAddress,
 		Data:            data,
 		ValueBytes:      value,
-		ProvidedGas:     uint64(gas),
+		GasLimit:        uint64(gas),
 		SuccessCallback: string(successFunc),
 		ErrorCallback:   string(errorFunc),
 	})
@@ -783,7 +784,7 @@ func asyncCall(context unsafe.Pointer, destOffset int32, valueOffset int32, data
 		return
 	}
 
-	err = async.PrepareLegacyAsyncCall(calledSCAddress, data, value)
+	err = async.RegisterLegacyAsyncCall(calledSCAddress, data, value)
 	if errors.Is(err, arwen.ErrNotEnoughGas) {
 		runtime.SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
 		return

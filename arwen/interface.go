@@ -94,7 +94,7 @@ type RuntimeContext interface {
 	GetVMType() []byte
 	Function() string
 	Arguments() [][]byte
-	HasCallbackMethod() bool
+	HasFunction(functionName string) bool
 	GetCurrentTxHash() []byte
 	GetOriginalTxHash() []byte
 	GetPrevTxHash() []byte
@@ -132,7 +132,6 @@ type AsyncContext interface {
 	StateStack
 
 	InitStateFromInput(input *vmcommon.ContractCallInput)
-	AddCall(groupID string, call *AsyncCall) error
 	HasPendingCallGroups() bool
 	IsComplete() bool
 	GetCallGroup(groupID string) (*AsyncCallGroup, bool)
@@ -143,8 +142,8 @@ type AsyncContext interface {
 	GetGasPrice() uint64
 
 	Execute() error
-	PostprocessCrossShardCallback() error
-	PrepareLegacyAsyncCall(address []byte, data []byte, value []byte) error
+	RegisterAsyncCall(groupID string, call *AsyncCall) error
+	RegisterLegacyAsyncCall(address []byte, data []byte, value []byte) error
 	UpdateCurrentCallStatus() (*AsyncCall, error)
 
 	Load() error

@@ -228,7 +228,7 @@ func TestMeteringContext_AsyncCallGasLocking(t *testing.T) {
 
 	meteringContext, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000))
 
-	input.GasProvided = 1
+	input.GasProvided = 0
 	err := meteringContext.UseGasForAsyncStep()
 	require.Equal(t, arwen.ErrNotEnoughGas, err)
 
