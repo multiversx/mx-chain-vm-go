@@ -17,9 +17,20 @@
                     "shard": "3",
                     "balance": "0xe8d4a51000",
                     "storage": {},
+                    "esdt": {
+                        "str:MyToken": "400,000,000,000",
+                        "str:AnotherToken": {
+                            "balance": "400,000,000,000",
+                            "frozen": "false"
+                        },
+                        "str:AnotherTokenThatIsFrozen": {
+                            "balance": "400,000,000,000",
+                            "frozen": "true"
+                        }
+                    },
                     "code": ""
                 },
-                "``smart_contract_address________s1": {
+                "address:smart_contract_address": {
                     "nonce": "0x00",
                     "shard": "12",
                     "balance": "23,000",
@@ -44,9 +55,9 @@
             },
             "newAddresses": [
                 {
-                    "creatorAddress": "``creator_addr____________________",
+                    "creatorAddress": "address:creator",
                     "creatorNonce": "1234",
-                    "newAddress": "``creator_addr____________________"
+                    "newAddress": "address:creator"
                 }
             ],
             "blockHashes": [
@@ -111,7 +122,7 @@
                 "status": "",
                 "logs": [
                     {
-                        "address": "``smart_contract_address________s1",
+                        "address": "address:smart_contract_address",
                         "identifier": "0xf099cd8bde557814842a3121e8ddfd433a539b8c9f14bf31ebf108d12e6196e9",
                         "topics": [
                             "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
@@ -132,6 +143,8 @@
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
                 "to": "0x1000000000000000000000000000000000000000000000000000000000000000",
                 "value": "0x00",
+                "esdtValue": "250,000,000,000",
+                "esdtTokenName": "str:MyToken",
                 "function": "someFunctionName",
                 "arguments": [],
                 "gasLimit": "0x100000",
@@ -158,12 +171,32 @@
             }
         },
         {
+            "step": "scCall",
+            "txId": "1c",
+            "comment": "without logs",
+            "tx": {
+                "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
+                "to": "0x1000000000000000000000000000000000000000000000000000000000000000",
+                "value": "0x00",
+                "function": "someFunctionName",
+                "arguments": [],
+                "gasLimit": "0x100000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": ""
+            }
+        },
+        {
             "step": "scDeploy",
             "txId": "2",
             "comment": "another",
             "tx": {
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
                 "value": "0x00",
+                "esdtValue": "250,000,000,000",
+                "esdtTokenName": "str:CrowdToken",
                 "contractCode": "``new contract code here",
                 "arguments": [
                     "0x1234123400000000000000000000000000000000000000000000000000000004",
@@ -189,7 +222,9 @@
             "tx": {
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
                 "to": "0x1000000000000000000000000000000000000000000000000000000000000000",
-                "value": "1234"
+                "value": "1234",
+                "esdtValue": "250,000,000,000",
+                "esdtTokenName": "str:MyToken"
             }
         },
         {
@@ -212,7 +247,10 @@
                     "storage": {},
                     "code": ""
                 },
-                "``smart_contract_address________s1": {
+                "address:account_with_defaults": {
+                    "storage": "*"
+                },
+                "address:smart_contract_address": {
                     "nonce": "0x00",
                     "balance": "23,000",
                     "storage": {
@@ -229,7 +267,7 @@
                     },
                     "code": "file:smart-contract.wasm"
                 },
-                "``smart_contract_address_2______s1": {
+                "address:smart_contract_address_2": {
                     "nonce": "*",
                     "balance": "*",
                     "storage": "*",
@@ -244,7 +282,7 @@
         },
         {
             "step": "dumpState",
-            "comment": "print everything to consolecd"
+            "comment": "print everything to console"
         }
     ]
 }

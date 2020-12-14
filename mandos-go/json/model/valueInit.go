@@ -43,6 +43,14 @@ type JSONBigInt struct {
 	Original string
 }
 
+// JSONBigIntZero provides an unitialized zero value.
+func JSONBigIntZero() JSONBigInt {
+	return JSONBigInt{
+		Value:    big.NewInt(0),
+		Original: "",
+	}
+}
+
 // JSONUint64 stores the parsed uint64 value but also the original parsed string
 type JSONUint64 struct {
 	Value    uint64

@@ -7,7 +7,6 @@ import (
 	mc "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/controller"
 	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/fileresolver"
 	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
-	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
@@ -35,7 +34,7 @@ func NewArwenTestExecutor() (*ArwenTestExecutor, error) {
 		VMType:                   TestVMType,
 		BlockGasLimit:            blockGasLimit,
 		GasSchedule:              gasSchedule,
-		ProtocolBuiltinFunctions: make(vmcommon.FunctionNames),
+		ProtocolBuiltinFunctions: world.GetBuiltinFunctionNames(),
 		ElrondProtectedKeyPrefix: []byte(ElrondProtectedKeyPrefix),
 	})
 	if err != nil {

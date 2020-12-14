@@ -64,6 +64,7 @@ func (b *MockWorld) UpdateAccounts(
 				Storage:      make(map[string][]byte),
 				Code:         nil,
 				OwnerAddress: modAcct.CodeDeployerAddress,
+				ESDTData:     make(map[string]*ESDTData),
 			}
 			b.AcctMap.PutAccount(acct)
 		}
@@ -88,10 +89,29 @@ func (b *MockWorld) UpdateAccounts(
 		}
 	}
 
+	// commit ESDT data
+	for _, acct := range b.AcctMap {
+		for _, esdtData := range acct.ESDTData {
+			esdtData.Balance = esdtData.Balance.Add(esdtData.Balance, esdtData.BalanceDelta)
+			esdtData.BalanceDelta = big.NewInt(0)
+		}
+	}
+
 	for _, delAddr := range accountsToDelete {
 		b.AcctMap.DeleteAccount(delAddr)
 	}
 
 	return nil
 
+}
+
+// RollbackChanges should be called after the VM test has run, if the tx has failed
+func (b *MockWorld) RollbackChanges() {
+	// discard ESDT deltas
+	// so they don't interfere with future txs
+	for _, acct := range b.AcctMap {
+		for _, esdtData := range acct.ESDTData {
+			esdtData.BalanceDelta = big.NewInt(0)
+		}
+	}
 }

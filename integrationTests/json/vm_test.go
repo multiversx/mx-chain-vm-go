@@ -352,3 +352,21 @@ func TestPromises(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+func TestCrowdfundingEsdt(t *testing.T) {
+	executor, err := am.NewArwenTestExecutor()
+	require.Nil(t, err)
+	runner := mc.NewScenarioRunner(
+		executor,
+		mc.NewDefaultFileResolver(),
+	)
+	err = runner.RunAllJSONScenariosInDirectory(
+		getTestRoot(),
+		"crowdfunding-esdt",
+		".scen.json",
+		[]string{})
+
+	if err != nil {
+		t.Error(err)
+	}
+}

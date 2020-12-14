@@ -2,6 +2,7 @@ package contexts
 
 import (
 	"bytes"
+	"errors"
 	"math/big"
 	"testing"
 
@@ -201,6 +202,49 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	storageStatus, err = storageContext.SetStorage(key, value)
 	require.Equal(t, arwen.StorageUnchanged, storageStatus)
 	require.Equal(t, arwen.ErrStoreElrondReservedKey, err)
+}
+
+func TestStorageContext_StorageProtection(t *testing.T) {
+	address := []byte("account")
+	mockOutput := &contextmock.OutputContextMock{}
+	account := mockOutput.NewVMOutputAccount(address)
+	mockOutput.OutputAccountMock = account
+	mockOutput.OutputAccountIsNew = false
+
+	mockRuntime := &contextmock.RuntimeContextMock{}
+	mockMetering := &contextmock.MeteringContextMock{}
+	mockMetering.SetGasSchedule(config.MakeGasMapForTests())
+	mockMetering.BlockGasLimitMock = uint64(15000)
+
+	host := &contextmock.VMHostMock{
+		OutputContext:   mockOutput,
+		MeteringContext: mockMetering,
+		RuntimeContext:  mockRuntime,
+	}
+	bcHook := &contextmock.BlockchainHookStub{}
+
+	storageContext, _ := NewStorageContext(host, bcHook, elrondReservedTestPrefix)
+	storageContext.SetAddress(address)
+
+	key := []byte(arwen.ProtectedStoragePrefix + "something")
+	value := []byte("data")
+
+	storageStatus, err := storageContext.SetStorage(key, value)
+	require.Equal(t, arwen.StorageUnchanged, storageStatus)
+	require.True(t, errors.Is(err, arwen.ErrCannotWriteProtectedKey))
+	require.Len(t, storageContext.GetStorageUpdates(address), 0)
+
+	storageContext.disableStorageProtection()
+	storageStatus, err = storageContext.SetStorage(key, value)
+	require.Nil(t, err)
+	require.Equal(t, arwen.StorageAdded, storageStatus)
+	require.Len(t, storageContext.GetStorageUpdates(address), 1)
+
+	storageContext.enableStorageProtection()
+	storageStatus, err = storageContext.SetStorage(key, value)
+	require.Equal(t, arwen.StorageUnchanged, storageStatus)
+	require.True(t, errors.Is(err, arwen.ErrCannotWriteProtectedKey))
+	require.Len(t, storageContext.GetStorageUpdates(address), 1)
 }
 
 func TestStorageContext_GetStorageFromAddress(t *testing.T) {
