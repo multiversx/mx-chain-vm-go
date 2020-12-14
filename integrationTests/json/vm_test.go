@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	am "github.com/ElrondNetwork/arwen-wasm-vm/arwenmandos"
-	mc "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/controller"
+	mc "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/controller"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/stretchr/testify/require"
 )
@@ -351,3 +351,21 @@ func TestTimelocks(t *testing.T) {
 // 		t.Error(err)
 // 	}
 // }
+
+func TestCrowdfundingEsdt(t *testing.T) {
+	executor, err := am.NewArwenTestExecutor()
+	require.Nil(t, err)
+	runner := mc.NewScenarioRunner(
+		executor,
+		mc.NewDefaultFileResolver(),
+	)
+	err = runner.RunAllJSONScenariosInDirectory(
+		getTestRoot(),
+		"crowdfunding-esdt",
+		".scen.json",
+		[]string{})
+
+	if err != nil {
+		t.Error(err)
+	}
+}

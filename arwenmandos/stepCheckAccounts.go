@@ -5,13 +5,13 @@ import (
 	"encoding/hex"
 	"fmt"
 
-	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/test/mock-hook-blockchain"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/model"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
+	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 )
 
 func checkAccounts(
 	checkAccounts *mj.CheckAccounts,
-	world *worldhook.BlockchainHookMock,
+	world *worldhook.MockWorld,
 ) error {
 
 	if !checkAccounts.OtherAccountsAllowed {
@@ -58,6 +58,11 @@ func checkAccounts(
 		if err != nil {
 			return err
 		}
+
+		err = checkAccountESDT(expectedAcct, matchingAcct)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -91,8 +96,44 @@ func checkAccountStorage(expectedAcct *mj.CheckAccount, matchingAcct *worldhook.
 		}
 	}
 	if len(storageError) > 0 {
-		return fmt.Errorf("wrong account storage for account 0x%s:%s",
+		return fmt.Errorf("wrong account storage for account \"%s\":%s",
 			expectedAcct.Address.Original, storageError)
+	}
+	return nil
+}
+
+func checkAccountESDT(expectedAcct *mj.CheckAccount, matchingAcct *worldhook.Account) error {
+	// check for unexpected tokens
+	expectedTokenNames := make(map[string]bool)
+	for _, expectedTokenData := range expectedAcct.ESDTData {
+		tokenNameStr := string(expectedTokenData.TokenName.Value)
+		expectedTokenNames[tokenNameStr] = true
+	}
+	for tokenName := range matchingAcct.ESDTData {
+		if !expectedTokenNames[tokenName] {
+			return fmt.Errorf("unexpected ESDT token: %s", tokenName)
+		}
+	}
+
+	esdtError := ""
+	for _, expectedTokenData := range expectedAcct.ESDTData {
+		tokenNameStr := string(expectedTokenData.TokenName.Value)
+		have := matchingAcct.ESDTData[tokenNameStr]
+		if !expectedTokenData.Balance.Check(have.Balance) {
+			esdtError += fmt.Sprintf(
+				"\n  bad ESDT balance. Token %s: Want: %d. Have: %d",
+				tokenNameStr, expectedTokenData.Balance.Value, have.Balance)
+		}
+
+		if !expectedTokenData.Frozen.CheckBool(have.Frozen) {
+			esdtError += fmt.Sprintf(
+				"\n  bad ESDT frozen flag. Token %s: Want: %t. Have: %t",
+				tokenNameStr, expectedTokenData.Frozen.Value > 0, have.Frozen)
+		}
+	}
+	if len(esdtError) > 0 {
+		return fmt.Errorf("wrong ESDT token state for account \"%s\":%s",
+			expectedAcct.Address.Original, esdtError)
 	}
 	return nil
 }

@@ -372,6 +372,15 @@ func (host *vmHost) hasRetriableExecutionError(vmOutput *vmcommon.VMOutput) bool
 	return vmOutput.ReturnMessage == "allocation error"
 }
 
+// AreInSameShard returns true if the provided addresses are part of the same shard
+func (host *vmHost) AreInSameShard(leftAddress []byte, rightAddress []byte) bool {
+	blockchain := host.Blockchain()
+	leftShard := blockchain.GetShardOfAddress(leftAddress)
+	rightShard := blockchain.GetShardOfAddress(rightAddress)
+
+	return leftShard == rightShard
+}
+
 // IsInterfaceNil returns true if there is no value under the interface
 func (host *vmHost) IsInterfaceNil() bool {
 	return host == nil

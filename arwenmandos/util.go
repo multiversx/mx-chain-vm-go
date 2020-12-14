@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"math/big"
 
-	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/test/mock-hook-blockchain"
+	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/model"
-	oj "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/orderedjson"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
+	oj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/orderedjson"
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
@@ -23,6 +23,15 @@ func convertAccount(testAcct *mj.Account) *worldhook.Account {
 		panic("bad test: account address should be 32 bytes long")
 	}
 
+	convertedESDTData := make(map[string]*worldhook.ESDTData)
+	for _, mandosESDTData := range testAcct.ESDTData {
+		convertedESDTData[string(mandosESDTData.TokenName.Value)] = &worldhook.ESDTData{
+			Balance:      mandosESDTData.Balance.Value,
+			BalanceDelta: big.NewInt(0),
+			Frozen:       mandosESDTData.Frozen.Value > 0,
+		}
+	}
+
 	return &worldhook.Account{
 		Address:       testAcct.Address.Value,
 		Nonce:         testAcct.Nonce.Value,
@@ -30,6 +39,7 @@ func convertAccount(testAcct *mj.Account) *worldhook.Account {
 		Storage:       storage,
 		Code:          []byte(testAcct.Code.Value),
 		AsyncCallData: testAcct.AsyncCallData,
+		ESDTData:      convertedESDTData,
 	}
 }
 
