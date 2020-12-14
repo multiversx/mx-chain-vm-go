@@ -253,7 +253,8 @@ func (host *vmHost) createCallbackContractCallInput(
 	dataLength := host.computeDataLengthFromArguments(callbackFunction, arguments)
 
 	gasToUse := gasSchedule.ElrondAPICost.AsyncCallStep
-	gasToUse += gasSchedule.BaseOperationCost.DataCopyPerByte * uint64(dataLength)
+	gas := math.MulUint64(gasSchedule.BaseOperationCost.DataCopyPerByte, uint64(dataLength))
+	gasToUse = math.AddUint64(gasToUse, gas)
 	if gasLimit <= gasToUse {
 		return nil, arwen.ErrNotEnoughGas
 	}
@@ -306,12 +307,12 @@ func (host *vmHost) computeDataLengthFromArguments(function string, arguments []
 	// TODO this needs tests, especially for the case when the arguments slice
 	// contains an empty []byte
 	numSeparators := len(arguments)
-	dataLength := len(function) + numSeparators
+	dataLength := math.AddUint64(uint64(len(function)), uint64(numSeparators))
 	for _, element := range arguments {
-		dataLength += len(element)
+		dataLength = math.AddUint64(dataLength, uint64(len(element)))
 	}
 
-	return dataLength
+	return int(dataLength)
 }
 
 /**
@@ -556,9 +557,12 @@ func (host *vmHost) processCallbackStack() error {
 
 	// Remove current async call from the pending list
 	currentContextCalls := asyncInfo.AsyncContextMap[currentContextIdentifier].AsyncCalls
-	currentContextCalls[asyncCallPosition] = currentContextCalls[len(currentContextCalls)-1]
-	currentContextCalls[len(currentContextCalls)-1] = nil
-	currentContextCalls = currentContextCalls[:len(currentContextCalls)-1]
+	contextCallId := len(currentContextCalls) - 1
+	if contextCallId >= 0 {
+		currentContextCalls[asyncCallPosition] = currentContextCalls[contextCallId]
+		currentContextCalls[contextCallId] = nil
+		currentContextCalls = currentContextCalls[:contextCallId]
+	}
 
 	if len(currentContextCalls) == 0 {
 		// call OUR callback for resolving a full context
@@ -620,7 +624,7 @@ func (host *vmHost) setupAsyncCallsGas(asyncInfo *arwen.AsyncContextInfo) error 
 	for identifier, asyncContext := range asyncInfo.AsyncContextMap {
 		for index, asyncCall := range asyncContext.AsyncCalls {
 			var err error
-			gasNeeded, err = math.AddUint64(gasNeeded, asyncCall.ProvidedGas)
+			gasNeeded, err = math.AddUint64WithErr(gasNeeded, asyncCall.ProvidedGas)
 			if err != nil {
 				return err
 			}
