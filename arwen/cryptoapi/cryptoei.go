@@ -18,6 +18,7 @@ import (
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 )
 
@@ -71,8 +72,8 @@ func sha256(context unsafe.Pointer, dataOffset int32, length int32, resultOffset
 	crypto := arwen.GetCryptoContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	memLoadGas := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(length)
-	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256 + memLoadGas
+	memLoadGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(length))
+	gasToUse := math.AddUint64(metering.GasSchedule().CryptoAPICost.SHA256, memLoadGas)
 	metering.UseGas(gasToUse)
 
 	data, err := runtime.MemLoad(dataOffset, length)
@@ -99,8 +100,8 @@ func keccak256(context unsafe.Pointer, dataOffset int32, length int32, resultOff
 	crypto := arwen.GetCryptoContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	memLoadGas := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(length)
-	gasToUse := metering.GasSchedule().CryptoAPICost.Keccak256 + memLoadGas
+	memLoadGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(length))
+	gasToUse := math.AddUint64(metering.GasSchedule().CryptoAPICost.Keccak256, memLoadGas)
 	metering.UseGas(gasToUse)
 
 	data, err := runtime.MemLoad(dataOffset, length)
@@ -127,8 +128,8 @@ func ripemd160(context unsafe.Pointer, dataOffset int32, length int32, resultOff
 	crypto := arwen.GetCryptoContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	memLoadGas := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(length)
-	gasToUse := metering.GasSchedule().CryptoAPICost.Ripemd160 + memLoadGas
+	memLoadGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(length))
+	gasToUse := math.AddUint64(metering.GasSchedule().CryptoAPICost.Ripemd160, memLoadGas)
 	metering.UseGas(gasToUse)
 
 	data, err := runtime.MemLoad(dataOffset, length)
@@ -169,7 +170,7 @@ func verifyBLS(
 		return 1
 	}
 
-	gasToUse = metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(messageLength)
+	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(messageLength))
 	metering.UseGas(gasToUse)
 
 	message, err := runtime.MemLoad(messageOffset, messageLength)
@@ -210,7 +211,7 @@ func verifyEd25519(
 		return 1
 	}
 
-	gasToUse = metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(messageLength)
+	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(messageLength))
 	metering.UseGas(gasToUse)
 
 	message, err := runtime.MemLoad(messageOffset, messageLength)
@@ -257,7 +258,7 @@ func verifySecp256k1(
 		return 1
 	}
 
-	gasToUse = metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(messageLength)
+	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(messageLength))
 	metering.UseGas(gasToUse)
 
 	message, err := runtime.MemLoad(messageOffset, messageLength)

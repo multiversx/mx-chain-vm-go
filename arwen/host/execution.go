@@ -7,6 +7,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/contexts"
+	"github.com/ElrondNetwork/arwen-wasm-vm/math"
 	"github.com/ElrondNetwork/elrond-go-logger/check"
 	"github.com/ElrondNetwork/elrond-go/core"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
@@ -253,11 +254,11 @@ func computeGasUsedByCurrentSC(
 	for _, outAcc := range vmOutput.OutputAccounts {
 		accumulatedGasLimitsAndGasLocks := uint64(0)
 		for _, outTransfer := range outAcc.OutputTransfers {
-			accumulatedGasLimitsAndGasLocks += outTransfer.GasLimit
-			accumulatedGasLimitsAndGasLocks += outTransfer.GasLocked
+			accumulatedGasLimitsAndGasLocks = math.AddUint64(accumulatedGasLimitsAndGasLocks, outTransfer.GasLimit)
+			accumulatedGasLimitsAndGasLocks = math.AddUint64(accumulatedGasLimitsAndGasLocks, outTransfer.GasLocked)
 		}
 
-		if gasUsed < outAcc.GasUsed+accumulatedGasLimitsAndGasLocks {
+		if gasUsed < math.AddUint64(outAcc.GasUsed, accumulatedGasLimitsAndGasLocks) {
 			return 0, arwen.ErrGasUsageError
 		}
 
@@ -501,7 +502,7 @@ func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) (uint64, e
 	}
 
 	gasToRestoreToCaller := metering.GasLeft()
-	return initialGasProvided - gasToRestoreToCaller, nil
+	return math.SubUint64(initialGasProvided, gasToRestoreToCaller), nil
 }
 
 // executeSmartContractCall executes an indirect call to a smart contract,
@@ -572,7 +573,7 @@ func (host *vmHost) executeSmartContractCall(
 	}
 
 	gasToRestoreToCaller := metering.GasLeft()
-	return initialGasProvided - gasToRestoreToCaller, nil
+	return math.SubUint64(initialGasProvided, gasToRestoreToCaller), nil
 }
 
 func (host *vmHost) execute(input *vmcommon.ContractCallInput) (uint64, error) {
@@ -627,7 +628,7 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmc
 		return nil, err
 	}
 
-	gasConsumed := input.GasProvided - vmOutput.GasRemaining
+	gasConsumed := math.SubUint64(input.GasProvided, vmOutput.GasRemaining)
 	if vmOutput.GasRemaining < input.GasProvided {
 		metering.UseGas(gasConsumed)
 	}

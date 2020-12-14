@@ -78,6 +78,7 @@ import (
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
@@ -516,7 +517,7 @@ func transferValue(context unsafe.Pointer, destOffset int32, valueOffset int32, 
 		return 1
 	}
 
-	gasToUse = metering.GasSchedule().BaseOperationCost.PersistPerByte * uint64(length)
+	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(length))
 	metering.UseGas(gasToUse)
 
 	data, err := runtime.MemLoad(dataOffset, length)
@@ -707,7 +708,7 @@ func upgradeContract(
 		dataOffset,
 	)
 
-	gasToUse = metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
+	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(actualLen))
 	metering.UseGas(gasToUse)
 
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -723,10 +724,12 @@ func upgradeContract(
 	// 	return
 	// }
 
-	gasToUse = gasSchedule.BaseOperationCost.DataCopyPerByte * uint64(length)
+	gasToUse = math.MulUint64(gasSchedule.BaseOperationCost.DataCopyPerByte, uint64(length))
 	metering.UseGas(gasToUse)
 
-	minAsyncCallCost := 2*gasSchedule.ElrondAPICost.AsyncCallStep + gasSchedule.ElrondAPICost.AsyncCallbackGasLock
+	minAsyncCallCost := math.AddUint64(
+		math.MulUint64(2, gasSchedule.ElrondAPICost.AsyncCallStep),
+		gasSchedule.ElrondAPICost.AsyncCallbackGasLock)
 	if uint64(gasLimit) < minAsyncCallCost {
 		runtime.SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
 		return
@@ -776,7 +779,7 @@ func asyncCall(context unsafe.Pointer, destOffset int32, valueOffset int32, data
 		return
 	}
 
-	gasToUse = gasSchedule.BaseOperationCost.DataCopyPerByte * uint64(length)
+	gasToUse = math.MulUint64(gasSchedule.BaseOperationCost.DataCopyPerByte, uint64(length))
 	metering.UseGas(gasToUse)
 
 	data, err := runtime.MemLoad(dataOffset, length)
@@ -1136,7 +1139,8 @@ func writeLog(context unsafe.Pointer, pointer int32, length int32, topicPtr int3
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Log
-	gasToUse += metering.GasSchedule().BaseOperationCost.PersistPerByte * uint64(numTopics*arwen.HashLen+length)
+	gas := math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(numTopics*arwen.HashLen+length))
+	gasToUse = math.AddUint64(gasToUse, gas)
 	metering.UseGas(gasToUse)
 
 	log, err := runtime.MemLoad(pointer, length)
@@ -1296,7 +1300,8 @@ func returnData(context unsafe.Pointer, pointer int32, length int32) {
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Finish
-	gasToUse += metering.GasSchedule().BaseOperationCost.PersistPerByte * uint64(length)
+	gas := math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(length))
+	gasToUse = math.AddUint64(gasToUse, gas)
 	metering.UseGas(gasToUse)
 
 	data, err := runtime.MemLoad(pointer, length)
@@ -1595,7 +1600,7 @@ func createContract(
 		dataOffset,
 	)
 
-	gasToUse = metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
+	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(actualLen))
 	metering.UseGas(gasToUse)
 
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -1733,7 +1738,8 @@ func prepareIndirectContractCallInput(
 		argumentsLengthOffset,
 		dataOffset,
 	)
-	gasToUse := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(actualLen)
+
+	gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(actualLen))
 	metering.UseGas(gasToUse)
 	if err != nil {
 		return nil, err

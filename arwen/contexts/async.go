@@ -5,6 +5,7 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/math"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
@@ -729,14 +730,14 @@ func computeDataLengthFromArguments(function string, arguments [][]byte) int {
 
 	// TODO breaking change below, if there has ever been an async call, otherwise ok
 	// TODO add condition on a host flag for an epoch
-	separator := 1
-	hexSize := 2
-	dataLength := 0
-	dataLength += len(function)
-	for _, data := range arguments {
-		dataLength += separator
-		dataLength += len(data) * hexSize
+	separator := uint64(1)
+	hexSize := uint64(2)
+	dataLength := uint64(len(function))
+	for _, argument := range arguments {
+		dataLength = math.AddUint64(dataLength, separator)
+		encodedArgumentLength := math.MulUint64(uint64(len(argument)), hexSize)
+		dataLength = math.AddUint64(dataLength, encodedArgumentLength)
 	}
 
-	return dataLength
+	return int(dataLength)
 }
