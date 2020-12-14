@@ -20,6 +20,14 @@ func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmi
 		if beforeErr != nil {
 			return nil, fmt.Errorf("Could not set up tx %s: %w", txIndex, beforeErr)
 		}
+
+		if tx.ESDTValue.Value.Sign() > 0 {
+			ae.World.StartTransferESDT(
+				tx.From.Value,
+				tx.To.Value,
+				string(tx.ESDTTokenName.Value),
+				tx.ESDTValue.Value)
+		}
 	}
 
 	// we also use fake vm outputs for transactions that don't use the VM, just for convenience
@@ -65,6 +73,8 @@ func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmi
 		if err != nil {
 			return nil, err
 		}
+	} else {
+		ae.World.RollbackChanges()
 	}
 
 	return output, nil
@@ -161,6 +171,8 @@ func (ae *ArwenTestExecutor) scCreate(txIndex string, tx *mj.Transaction) (*vmi.
 			GasProvided:    tx.GasLimit.Value,
 			OriginalTxHash: txHash,
 			CurrentTxHash:  txHash,
+			ESDTValue:      tx.ESDTValue.Value,
+			ESDTTokenName:  tx.ESDTTokenName.Value,
 		},
 	}
 
@@ -187,6 +199,8 @@ func (ae *ArwenTestExecutor) scCall(txIndex string, tx *mj.Transaction) (*vmi.VM
 			GasProvided:    tx.GasLimit.Value,
 			OriginalTxHash: txHash,
 			CurrentTxHash:  txHash,
+			ESDTValue:      tx.ESDTValue.Value,
+			ESDTTokenName:  tx.ESDTTokenName.Value,
 		},
 	}
 

@@ -15,10 +15,12 @@ func (p *Parser) processTxExpectedResult(blrRaw oj.OJsonObject) (*mj.Transaction
 	}
 
 	blr := mj.TransactionResult{
-		Status:  mj.JSONCheckBigIntDefault(),
-		Message: mj.JSONCheckBytesDefault(),
-		Gas:     mj.JSONCheckUint64Default(),
-		Refund:  mj.JSONCheckBigIntDefault(),
+		Status:          mj.JSONCheckBigIntDefault(),
+		Message:         mj.JSONCheckBytesDefault(),
+		Gas:             mj.JSONCheckUint64Default(),
+		Refund:          mj.JSONCheckBigIntDefault(),
+		LogsStar:        true,
+		LogsUnspecified: true,
 	}
 	var err error
 	for _, kvp := range blrMap.OrderedKV {
@@ -39,10 +41,11 @@ func (p *Parser) processTxExpectedResult(blrRaw oj.OJsonObject) (*mj.Transaction
 				return nil, fmt.Errorf("invalid block result message: %w", err)
 			}
 		case "logs":
+			blr.LogsUnspecified = false
 			if IsStar(kvp.Value) {
-				blr.IgnoreLogs = true
+				blr.LogsStar = true
 			} else {
-				blr.IgnoreLogs = false
+				blr.LogsStar = false
 				blr.LogHash, err = p.parseString(kvp.Value)
 				if err != nil {
 					var logListErr error

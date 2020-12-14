@@ -27,7 +27,6 @@ const (
 )
 
 func TestNewArwen(t *testing.T) {
-	// host, err := DefaultTestArwen(t, &contextmock.BlockchainHookStub{})
 	host, err := defaultTestArwen(t, &contextmock.BlockchainHookStub{})
 	require.Nil(t, err)
 	require.NotNil(t, host)
