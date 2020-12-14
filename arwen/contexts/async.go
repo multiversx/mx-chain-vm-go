@@ -5,7 +5,6 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	extramath "github.com/ElrondNetwork/arwen-wasm-vm/math"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
@@ -192,37 +191,6 @@ func (context *asyncContext) deleteCallGroup(index int) {
 	context.AsyncCallGroups = groups
 }
 
-// AddCall adds the provided AsyncCall to the specified AsyncCallGroup
-func (context *asyncContext) AddCall(groupID string, call *arwen.AsyncCall) error {
-	if context.host.IsBuiltinFunctionName(call.SuccessCallback) {
-		return arwen.ErrCannotUseBuiltinAsCallback
-	}
-	if context.host.IsBuiltinFunctionName(call.ErrorCallback) {
-		return arwen.ErrCannotUseBuiltinAsCallback
-	}
-
-	group, ok := context.GetCallGroup(groupID)
-	if !ok {
-		group = arwen.NewAsyncCallGroup(groupID)
-		err := context.addCallGroup(group)
-		if err != nil {
-			return err
-		}
-	}
-
-	// TODO lock gas for callback
-
-	execMode, err := context.determineExecutionMode(call.Destination, call.Data)
-	if err != nil {
-		return err
-	}
-
-	call.ExecutionMode = execMode
-	group.AddAsyncCall(call)
-
-	return nil
-}
-
 func (context *asyncContext) isValidCallbackName(callback string) bool {
 	if callback == arwen.InitFunctionName {
 		return false
@@ -273,9 +241,47 @@ func (context *asyncContext) UpdateCurrentCallStatus() (*arwen.AsyncCall, error)
 	return call, nil
 }
 
-// PrepareLegacyAsyncCall builds an AsyncCall struct from its arguments, sets it as
-// the default async call and informs Wasmer to stop contract execution with BreakpointAsyncCall
-func (context *asyncContext) PrepareLegacyAsyncCall(address []byte, data []byte, value []byte) error {
+// RegisterAsyncCall validates the provided AsyncCall adds it to the specified
+// group (adding the AsyncCall consumes its gas entirely).
+func (context *asyncContext) RegisterAsyncCall(groupID string, call *arwen.AsyncCall) error {
+	runtime := context.host.Runtime()
+	metering := context.host.Metering()
+
+	// Lock gas only if a callback is defined (either for success or for error).
+	shouldLockGas := false
+	if call.SuccessCallback != "" {
+		err := runtime.ValidateCallbackName(call.SuccessCallback)
+		if err != nil {
+			return err
+		}
+		shouldLockGas = true
+	}
+	if call.ErrorCallback != "" {
+		err := runtime.ValidateCallbackName(call.ErrorCallback)
+		if err != nil {
+			return err
+		}
+		shouldLockGas = true
+	}
+
+	if shouldLockGas {
+		call.GasLocked = metering.ComputeGasLockedForAsync()
+	}
+
+	err := context.addAsyncCall(groupID, call)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// RegisterLegacyAsyncCall builds a legacy AsyncCall from provided arguments,
+// computes the gas to lock depending on legacy configuration (non-dynamic gas
+// locking), then adds the AsyncCall to the predefined legacy
+// call group and informs Wasmer to stop contract execution with
+// BreakpointAsyncCall (adding the AsyncCall consumes its gas entirely).
+func (context *asyncContext) RegisterLegacyAsyncCall(address []byte, data []byte, value []byte) error {
 	legacyGroupID := arwen.LegacyAsyncCallGroupID
 
 	_, exists := context.GetCallGroup(legacyGroupID)
@@ -283,22 +289,22 @@ func (context *asyncContext) PrepareLegacyAsyncCall(address []byte, data []byte,
 		return arwen.ErrOnlyOneLegacyAsyncCallAllowed
 	}
 
-	gasToLock, err := context.prepareGasForLegacyAsyncCall()
+	gasToLock, err := context.computeGasLockForLegacyAsyncCall()
 	if err != nil {
 		return err
 	}
 
 	metering := context.host.Metering()
-	gas := metering.GasLeft()
+	gasLimit := metering.GasLeft() - gasToLock
 
-	err = context.AddCall(legacyGroupID, &arwen.AsyncCall{
+	err = context.addAsyncCall(legacyGroupID, &arwen.AsyncCall{
 		Status:          arwen.AsyncCallPending,
 		Destination:     address,
 		Data:            data,
 		ValueBytes:      value,
 		SuccessCallback: arwen.CallbackFunctionName,
 		ErrorCallback:   arwen.CallbackFunctionName,
-		ProvidedGas:     gas,
+		GasLimit:        gasLimit,
 		GasLocked:       gasToLock,
 	})
 	if err != nil {
@@ -306,6 +312,37 @@ func (context *asyncContext) PrepareLegacyAsyncCall(address []byte, data []byte,
 	}
 
 	context.host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointAsyncCall)
+
+	return nil
+}
+
+// addAsyncCall adds the provided AsyncCall to the specified AsyncCallGroup
+func (context *asyncContext) addAsyncCall(groupID string, call *arwen.AsyncCall) error {
+	metering := context.host.Metering()
+
+	err := metering.UseGasBounded(call.GasLocked)
+	if err != nil {
+		return err
+	}
+	err = metering.UseGasBounded(call.GasLimit)
+	if err != nil {
+		return err
+	}
+	execMode, err := context.determineExecutionMode(call.Destination, call.Data)
+	if err != nil {
+		return err
+	}
+
+	call.ExecutionMode = execMode
+	group, ok := context.GetCallGroup(groupID)
+	if !ok {
+		group = arwen.NewAsyncCallGroup(groupID)
+		err := context.addCallGroup(group)
+		if err != nil {
+			return err
+		}
+	}
+	group.AddAsyncCall(call)
 
 	return nil
 }
@@ -386,7 +423,7 @@ func (context *asyncContext) executeAsyncCall(asyncCall *arwen.AsyncCall) error 
 	return context.sendAsyncCallCrossShard(asyncCall)
 }
 
-func (context *asyncContext) prepareGasForLegacyAsyncCall() (uint64, error) {
+func (context *asyncContext) computeGasLockForLegacyAsyncCall() (uint64, error) {
 	metering := context.host.Metering()
 	err := metering.UseGasForAsyncStep()
 	if err != nil {
@@ -394,22 +431,17 @@ func (context *asyncContext) prepareGasForLegacyAsyncCall() (uint64, error) {
 	}
 
 	var shouldLockGas bool
-
 	if !context.host.IsDynamicGasLockingEnabled() {
 		// Legacy mode: static gas locking, always enabled
 		shouldLockGas = true
 	} else {
 		// Dynamic mode: lock only if callBack() exists
-		shouldLockGas = context.host.Runtime().HasCallbackMethod()
+		shouldLockGas = context.host.Runtime().HasFunction(arwen.CallbackFunctionName)
 	}
 
 	gasToLock := uint64(0)
 	if shouldLockGas {
 		gasToLock = metering.ComputeGasLockedForAsync()
-		err = metering.UseGasBounded(gasToLock)
-		if err != nil {
-			return 0, err
-		}
 	}
 
 	return gasToLock, nil
@@ -560,48 +592,9 @@ func (context *asyncContext) determineExecutionMode(destination []byte, data []b
 // be accummulated into the AsyncContext, then refunded to the original caller.
 // Redistribution of gas among calls in the same group should not be necessary.
 func (context *asyncContext) setupAsyncCallsGas() error {
-	gasLeft := context.host.Metering().GasLeft()
-	gasNeeded := uint64(0)
-	callsWithZeroGas := uint64(0)
-
-	for _, group := range context.AsyncCallGroups {
-		for _, asyncCall := range group.AsyncCalls {
-			var err error
-			gasNeeded, err = extramath.AddUint64(gasNeeded, asyncCall.ProvidedGas)
-			if err != nil {
-				return err
-			}
-
-			if gasNeeded > gasLeft {
-				return arwen.ErrNotEnoughGas
-			}
-
-			if asyncCall.ProvidedGas == 0 {
-				callsWithZeroGas++
-				continue
-			}
-
-			asyncCall.GasLimit = asyncCall.ProvidedGas
-		}
-	}
-
-	if callsWithZeroGas == 0 {
-		return nil
-	}
-
-	if gasLeft <= gasNeeded {
-		return arwen.ErrNotEnoughGas
-	}
-
-	gasShare := (gasLeft - gasNeeded) / callsWithZeroGas
-	for _, group := range context.AsyncCallGroups {
-		for _, asyncCall := range group.AsyncCalls {
-			if asyncCall.ProvidedGas == 0 {
-				asyncCall.GasLimit = gasShare
-			}
-		}
-	}
-
+	// TODO this method is already removed on a separate branch, where gas
+	// redistribution has been replaced with gas accummulation; the method is
+	// kept here only to simplify conflicts when merging;
 	return nil
 }
 

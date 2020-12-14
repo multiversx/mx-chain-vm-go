@@ -33,7 +33,7 @@ type RuntimeContextMock struct {
 	CurrentTxHash          []byte
 	OriginalTxHash         []byte
 	PrevTxHash             []byte
-	HasCallback            bool
+	HasFunctionResult      bool
 }
 
 // InitState mocked method
@@ -296,6 +296,6 @@ func (r *RuntimeContextMock) SetCustomCallFunction(_ string) {
 }
 
 // HasCallbackMethod mocked method
-func (r *RuntimeContextMock) HasCallbackMethod() bool {
-	return r.HasCallback
+func (r *RuntimeContextMock) HasFunction(functionName string) bool {
+	return r.HasFunctionResult
 }
