@@ -30,6 +30,7 @@ func TestAsync_NoAsyncCalls(t *testing.T) {
 }
 
 func TestAsync_OneAsyncCall(t *testing.T) {
+	t.Skip()
 	code := arwen.GetTestSCCode("async-alice", "../../")
 	host, _ := defaultTestArwenForCall(t, code, nil)
 

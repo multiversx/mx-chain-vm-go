@@ -136,6 +136,7 @@ type AsyncContext interface {
 	IsComplete() bool
 	GetCallGroup(groupID string) (*AsyncCallGroup, bool)
 	SetGroupCallback(groupID string, callbackName string, data []byte, gas uint64) error
+	PostprocessCrossShardCallback() error
 	GetCallerAddress() []byte
 	GetReturnData() []byte
 	SetReturnData(data []byte)

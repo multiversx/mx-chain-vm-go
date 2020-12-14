@@ -15,6 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var mockWasmerInstance *wasmer.Instance
 var OriginalCaller = []byte("address_original_caller")
 var Alice = []byte("address_alice")
 var Bob = []byte("address_bob")
@@ -39,7 +40,14 @@ func InitializeArwenAndWasmer_AsyncContext() (*contextmock.VMHostMock, *worldmoc
 
 	world := worldmock.NewMockWorld()
 	host.BlockchainContext, _ = NewBlockchainContext(host, world)
-	host.RuntimeContext, _ = NewRuntimeContext(host, []byte("vm"), false)
+
+	mockWasmerInstance = &wasmer.Instance{
+		Exports: make(wasmer.ExportsMap),
+	}
+	runtimeContext, _ := NewRuntimeContext(host, []byte("vm"), false)
+	runtimeContext.instance = mockWasmerInstance
+	host.RuntimeContext = runtimeContext
+
 	host.OutputContext, _ = NewOutputContext(host)
 	host.CryptoHook = crypto.NewVMCrypto()
 	return host, world
@@ -155,7 +163,7 @@ func TestAsyncContext_GettersAndSetters(t *testing.T) {
 	require.Equal(t, []byte("rockets"), async.GetReturnData())
 }
 
-func TestAsyncContext_AddCall_NewGroup_DeleteGroup(t *testing.T) {
+func TestAsyncContext_RegisterAsyncCall_NewGroup_DeleteGroup(t *testing.T) {
 	host, _ := InitializeArwenAndWasmer_AsyncContext()
 
 	async := NewAsyncContext(host)
@@ -168,7 +176,7 @@ func TestAsyncContext_AddCall_NewGroup_DeleteGroup(t *testing.T) {
 	require.Nil(t, group)
 	require.False(t, exists)
 
-	err := async.AddCall("testGroup", &arwen.AsyncCall{
+	err := async.RegisterAsyncCall("testGroup", &arwen.AsyncCall{
 		Destination: []byte("somewhere"),
 		Data:        []byte("something"),
 	})
@@ -190,7 +198,7 @@ func TestAsyncContext_AddCall_NewGroup_DeleteGroup(t *testing.T) {
 	require.False(t, exists)
 }
 
-func TestAsyncContext_AddCall_ExistingGroup(t *testing.T) {
+func TestAsyncContext_RegisterAsyncCall_ExistingGroup(t *testing.T) {
 	host, _ := InitializeArwenAndWasmer_AsyncContext()
 
 	async := NewAsyncContext(host)
@@ -206,7 +214,7 @@ func TestAsyncContext_AddCall_ExistingGroup(t *testing.T) {
 	require.NotNil(t, group)
 	require.True(t, exists)
 
-	err = async.AddCall("testGroup", &arwen.AsyncCall{
+	err = async.RegisterAsyncCall("testGroup", &arwen.AsyncCall{
 		Destination: []byte("somewhere"),
 		Data:        []byte("something"),
 	})
@@ -215,7 +223,7 @@ func TestAsyncContext_AddCall_ExistingGroup(t *testing.T) {
 	require.False(t, async.IsComplete())
 }
 
-func TestAsyncContext_AddCall_ValidationAndFields(t *testing.T) {
+func TestAsyncContext_RegisterAsyncCall_ValidationAndFields(t *testing.T) {
 	// TODO execution mode
 	// TODO non-nil destination
 	// TODO locked gas
@@ -225,6 +233,7 @@ func TestAsyncContext_SetGroupCallback_GroupDoesntExist(t *testing.T) {
 	host, _ := InitializeArwenAndWasmer_AsyncContext()
 	async := NewAsyncContext(host)
 
+	mockWasmerInstance.Exports["callbackFunction"] = nil
 	err := async.SetGroupCallback("testGroup", "callbackFunction", []byte{}, 0)
 	require.True(t, errors.Is(err, arwen.ErrAsyncCallGroupDoesNotExist))
 }
@@ -233,15 +242,16 @@ func TestAsyncContext_SetGroupCallback_OutOfGas(t *testing.T) {
 	host, _ := InitializeArwenAndWasmer_AsyncContext()
 	async := NewAsyncContext(host)
 
-	mockMetering := host.Metering().(*contextmock.MeteringContextMock)
-	mockMetering.Err = arwen.ErrNotEnoughGas
-
-	err := async.AddCall("testGroup", &arwen.AsyncCall{
+	err := async.RegisterAsyncCall("testGroup", &arwen.AsyncCall{
 		Destination: []byte("somewhere"),
 		Data:        []byte("something"),
 	})
 	require.Nil(t, err)
 
+	mockMetering := host.Metering().(*contextmock.MeteringContextMock)
+	mockMetering.Err = arwen.ErrNotEnoughGas
+
+	mockWasmerInstance.Exports["callbackFunction"] = nil
 	err = async.SetGroupCallback("testGroup", "callbackFunction", []byte{}, 0)
 	require.True(t, errors.Is(err, arwen.ErrNotEnoughGas))
 }
@@ -253,12 +263,13 @@ func TestAsyncContext_SetGroupCallback_Success(t *testing.T) {
 	mockMetering := host.Metering().(*contextmock.MeteringContextMock)
 	mockMetering.GasComputedToLock = 42
 
-	err := async.AddCall("testGroup", &arwen.AsyncCall{
+	err := async.RegisterAsyncCall("testGroup", &arwen.AsyncCall{
 		Destination: []byte("somewhere"),
 		Data:        []byte("something"),
 	})
 	require.Nil(t, err)
 
+	mockWasmerInstance.Exports["callbackFunction"] = nil
 	err = async.SetGroupCallback("testGroup", "callbackFunction", []byte{}, 0)
 	require.Nil(t, err)
 
@@ -328,6 +339,13 @@ func TestAsyncContext_IsValidCallbackName(t *testing.T) {
 	host, _ := InitializeArwenAndWasmer_AsyncContext()
 	async := NewAsyncContext(host)
 
+	mockWasmerInstance.Exports["a"] = nil
+	mockWasmerInstance.Exports["my_contract_method_22"] = nil
+	mockWasmerInstance.Exports["not_builtin"] = nil
+	mockWasmerInstance.Exports["callBack"] = nil
+	mockWasmerInstance.Exports["callback"] = nil
+	mockWasmerInstance.Exports["function_do"] = nil
+
 	require.True(t, async.isValidCallbackName("a"))
 	require.True(t, async.isValidCallbackName("my_contract_method_22"))
 
@@ -359,7 +377,7 @@ func TestAsyncContext_FindCall(t *testing.T) {
 	require.Equal(t, -1, index)
 	require.True(t, errors.Is(err, arwen.ErrAsyncCallNotFound))
 
-	err = async.AddCall("testGroup", &arwen.AsyncCall{
+	err = async.RegisterAsyncCall("testGroup", &arwen.AsyncCall{
 		Destination: []byte("somewhere"),
 		Data:        []byte("something"),
 	})
@@ -370,7 +388,7 @@ func TestAsyncContext_FindCall(t *testing.T) {
 	require.Equal(t, "testGroup", groupID)
 	require.Equal(t, 0, index)
 
-	err = async.AddCall("testGroup", &arwen.AsyncCall{
+	err = async.RegisterAsyncCall("testGroup", &arwen.AsyncCall{
 		Destination: []byte("somewhere_else"),
 		Data:        []byte("something"),
 	})
@@ -381,7 +399,7 @@ func TestAsyncContext_FindCall(t *testing.T) {
 	require.Equal(t, "testGroup", groupID)
 	require.Equal(t, 1, index)
 
-	err = async.AddCall("another_testGroup", &arwen.AsyncCall{
+	err = async.RegisterAsyncCall("another_testGroup", &arwen.AsyncCall{
 		Destination: []byte("somewhere_else_entirely"),
 		Data:        []byte("something"),
 	})
@@ -438,7 +456,7 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 
 	// CallType == AsynchronousCallback, and there is an AsyncCall registered,
 	// but it's not the expected one.
-	err = async.AddCall("testGroup", &arwen.AsyncCall{
+	err = async.RegisterAsyncCall("testGroup", &arwen.AsyncCall{
 		Destination: []byte("some_address"),
 		Data:        []byte("function"),
 	})
@@ -453,7 +471,7 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 
 	// CallType == AsynchronousCallback, but this time there is a corresponding AsyncCall
 	// registered, causing async.UpdateCurrentCallStatus() to find and update the AsyncCall
-	err = async.AddCall("testGroup", &arwen.AsyncCall{
+	err = async.RegisterAsyncCall("testGroup", &arwen.AsyncCall{
 		Destination: vmInput.CallerAddr,
 		Data:        []byte("function"),
 	})
