@@ -3,6 +3,7 @@ package contexts
 import (
 	"bytes"
 	"fmt"
+	builtinMath "math"
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -550,6 +551,9 @@ func (context *runtimeContext) GetPointsUsed() uint64 {
 
 // SetPointsUsed sets the given gas points as the gas points used by the current wasmer instance.
 func (context *runtimeContext) SetPointsUsed(gasPoints uint64) {
+	if gasPoints > builtinMath.MaxInt64 {
+		gasPoints = builtinMath.MaxInt64
+	}
 	context.instance.SetPointsUsed(gasPoints)
 }
 
@@ -689,10 +693,7 @@ func (context *runtimeContext) MemLoad(offset int32, length int32) ([]byte, erro
 	memory := context.instance.InstanceCtx.Memory()
 	memoryView := memory.Data()
 	memoryLength := memory.Length()
-	requestedEnd, err := math.AddInt32(offset, length)
-	if err != nil {
-		return nil, fmt.Errorf("mem load: %w", err)
-	}
+	requestedEnd := math.AddInt32(offset, length)
 
 	isOffsetTooSmall := offset < 0
 	isOffsetTooLarge := uint32(offset) > memoryLength
@@ -726,10 +727,7 @@ func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 	memory := context.instance.InstanceCtx.Memory()
 	memoryView := memory.Data()
 	memoryLength := memory.Length()
-	requestedEnd, err := math.AddInt32(offset, dataLength)
-	if err != nil {
-		return fmt.Errorf("mem store: %w", err)
-	}
+	requestedEnd := math.AddInt32(offset, dataLength)
 
 	isOffsetTooSmall := offset < 0
 	isNewPageNecessary := uint32(requestedEnd) > memoryLength

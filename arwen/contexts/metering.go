@@ -51,8 +51,8 @@ func (context *meteringContext) SetGasSchedule(gasMap config.GasScheduleMap) {
 
 // UseGas sets in the runtime context the given gas as gas used
 func (context *meteringContext) UseGas(gas uint64) {
-	gasUsed := math.AddInt64(int64(context.host.Runtime().GetPointsUsed()), int64(gas))
-	context.host.Runtime().SetPointsUsed(uint64(gasUsed))
+	gasUsed := math.AddUint64(context.host.Runtime().GetPointsUsed(), gas)
+	context.host.Runtime().SetPointsUsed(gasUsed)
 }
 
 // RestoreGas subtracts the given gas from the gas used that is set in the runtime context.
@@ -66,8 +66,8 @@ func (context *meteringContext) RestoreGas(gas uint64) {
 
 // FreeGas adds the given gas to the refunded gas.
 func (context *meteringContext) FreeGas(gas uint64) {
-	refund := math.AddInt64(int64(context.host.Output().GetRefund()), int64(gas))
-	context.host.Output().SetRefund(uint64(refund))
+	refund := math.AddUint64(context.host.Output().GetRefund(), gas)
+	context.host.Output().SetRefund(refund)
 }
 
 // GasLeft returns how much gas is left.
@@ -198,25 +198,8 @@ func (context *meteringContext) deductInitialGas(
 ) error {
 	input := context.host.Runtime().GetVMInput()
 	codeLength := uint64(len(code))
-	codeCost, err := math.MulUint64WithErr(codeLength, costPerByte)
-	if err != nil {
-		log.Error("deductInitialGas overflow",
-			"codeLength = ", codeLength,
-			"costPerByte = ", costPerByte,
-		)
-
-		return arwen.ErrNotEnoughGas
-	}
-
-	initialCost, err := math.AddUint64WithErr(baseCost, codeCost)
-	if err != nil {
-		log.Error("deductInitialGas overflow",
-			"baseCost = ", baseCost,
-			"codeCost = ", codeCost,
-		)
-
-		return arwen.ErrNotEnoughGas
-	}
+	codeCost := math.MulUint64(codeLength, costPerByte)
+	initialCost := math.AddUint64(baseCost, codeCost)
 
 	if initialCost > input.GasProvided {
 		return arwen.ErrNotEnoughGas

@@ -41,11 +41,7 @@ func GuardedGetBytesSlice(data []byte, offset int32, length int32) ([]byte, erro
 	dataLength := uint32(len(data))
 	isOffsetTooSmall := offset < 0
 	isOffsetTooLarge := uint32(offset) > dataLength
-	requestedEnd, err := math.AddInt32(offset, length)
-	if err != nil {
-		return nil, fmt.Errorf("GuardedGetBytesSlice: %s", err.Error())
-	}
-
+	requestedEnd := math.AddInt32(offset, length)
 	isRequestedEndTooLarge := uint32(requestedEnd) > dataLength
 	isLengthNegative := length < 0
 
