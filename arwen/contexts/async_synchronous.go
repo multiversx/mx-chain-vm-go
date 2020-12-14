@@ -8,7 +8,7 @@ import (
 )
 
 func (context *asyncContext) executeSynchronousCalls() error {
-	for groupIndex, group := range context.AsyncCallGroups {
+	for groupIndex, group := range context.asyncCallGroups {
 		for _, call := range group.AsyncCalls {
 			if call.ExecutionMode != arwen.SyncExecution {
 				continue
@@ -24,7 +24,7 @@ func (context *asyncContext) executeSynchronousCalls() error {
 
 		// If all the AsyncCalls in the AsyncCallGroup were executed synchronously,
 		// then the AsyncCallGroup can have its callback executed.
-		if group.IsCompleted() {
+		if group.IsComplete() {
 			context.executeCallGroupCallback(group)
 			context.deleteCallGroup(groupIndex)
 		}
@@ -54,6 +54,9 @@ func (context *asyncContext) executeSyncCall(asyncCall *arwen.AsyncCall) error {
 	callbackVMOutput, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, err)
 	context.finishSyncExecution(callbackVMOutput, callbackErr)
 
+	// TODO accumulate remaining gas from the callback into the AsyncContext,
+	// after fixing the bug caught by TestExecution_ExecuteOnDestContext_GasRemaining().
+
 	return nil
 }
 
@@ -63,7 +66,7 @@ func (context *asyncContext) executeSyncCallback(
 	err error,
 ) (*vmcommon.VMOutput, error) {
 
-	callbackInput, err := context.createSyncCallbackInput(asyncCall, vmOutput, err)
+	callbackInput, err := context.createCallbackInput(asyncCall, vmOutput, err)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +78,7 @@ func (context *asyncContext) executeSyncCallback(
 // the AsyncCallGroup, as it was set with SetGroupCallback().
 //
 // Gas for the execution has been already paid for when SetGroupCallback() was
-// set. The remaining gas is refunded to context.CallerAddr, which initiated
+// set. The remaining gas is refunded to context.callerAddr, which initiated
 // the call and paid for the gas in the first place.
 func (context *asyncContext) executeCallGroupCallback(group *arwen.AsyncCallGroup) {
 	if !group.HasCallback() {
@@ -142,6 +145,7 @@ func (context *asyncContext) finishSyncExecution(vmOutput *vmcommon.VMOutput, er
 		vmOutput = output.CreateVMOutputInCaseOfError(err)
 	}
 
+	output.SetReturnCode(vmOutput.ReturnCode)
 	output.SetReturnMessage(vmOutput.ReturnMessage)
 	output.Finish([]byte(vmOutput.ReturnCode.String()))
 	output.Finish(runtime.GetCurrentTxHash())
@@ -172,6 +176,7 @@ func (context *asyncContext) createContractCallInput(asyncCall arwen.AsyncCallHa
 			CallType:       vmcommon.AsynchronousCall,
 			GasPrice:       runtime.GetVMInput().GasPrice,
 			GasProvided:    gasLimit,
+			GasLocked:      asyncCall.GetGasLocked(),
 			CurrentTxHash:  runtime.GetCurrentTxHash(),
 			OriginalTxHash: runtime.GetOriginalTxHash(),
 			PrevTxHash:     runtime.GetPrevTxHash(),
@@ -183,7 +188,7 @@ func (context *asyncContext) createContractCallInput(asyncCall arwen.AsyncCallHa
 	return contractCallInput, nil
 }
 
-func (context *asyncContext) createSyncCallbackInput(
+func (context *asyncContext) createCallbackInput(
 	asyncCall *arwen.AsyncCall,
 	vmOutput *vmcommon.VMOutput,
 	destinationErr error,
@@ -192,9 +197,12 @@ func (context *asyncContext) createSyncCallbackInput(
 	runtime := context.host.Runtime()
 
 	// always provide return code as the first argument to callback function
-	arguments := [][]byte{
-		big.NewInt(int64(vmOutput.ReturnCode)).Bytes(),
+	retCodeBytes := big.NewInt(int64(vmOutput.ReturnCode)).Bytes()
+	if len(retCodeBytes) == 0 {
+		retCodeBytes = []byte{0}
 	}
+	arguments := [][]byte{retCodeBytes}
+
 	if destinationErr == nil {
 		// when execution went Ok, callBack arguments are:
 		// [0, result1, result2, ....]
@@ -241,10 +249,10 @@ func (context *asyncContext) createGroupCallbackInput(group *arwen.AsyncCallGrou
 	runtime := context.host.Runtime()
 	input := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
-			CallerAddr:     context.CallerAddr,
+			CallerAddr:     context.callerAddr,
 			Arguments:      [][]byte{group.CallbackData},
 			CallValue:      big.NewInt(0),
-			GasPrice:       context.GasPrice,
+			GasPrice:       context.gasPrice,
 			GasProvided:    group.GasLocked,
 			CurrentTxHash:  runtime.GetCurrentTxHash(),
 			OriginalTxHash: runtime.GetOriginalTxHash(),
@@ -260,11 +268,10 @@ func (context *asyncContext) createGroupCallbackInput(group *arwen.AsyncCallGrou
 func (context *asyncContext) createContextCallbackInput() *vmcommon.ContractCallInput {
 	host := context.host
 	runtime := host.Runtime()
-	metering := host.Metering()
 
-	_, arguments, err := host.CallArgsParser().ParseData(string(context.ReturnData))
+	_, arguments, err := host.CallArgsParser().ParseData(string(context.returnData))
 	if err != nil {
-		arguments = [][]byte{context.ReturnData}
+		arguments = [][]byte{context.returnData}
 	}
 
 	// TODO ensure a new value for VMInput.CurrentTxHash
@@ -275,12 +282,12 @@ func (context *asyncContext) createContextCallbackInput() *vmcommon.ContractCall
 			CallValue:      runtime.GetVMInput().CallValue,
 			CallType:       vmcommon.AsynchronousCallBack,
 			GasPrice:       runtime.GetVMInput().GasPrice,
-			GasProvided:    metering.GasLeft(),
+			GasProvided:    context.gasRemaining,
 			CurrentTxHash:  runtime.GetCurrentTxHash(),
 			OriginalTxHash: runtime.GetOriginalTxHash(),
 			PrevTxHash:     runtime.GetPrevTxHash(),
 		},
-		RecipientAddr: context.CallerAddr,
+		RecipientAddr: context.callerAddr,
 
 		// TODO Function is not actually necessary, because the original caller will decide the appropriate callback function
 		Function: arwen.CallbackFunctionName,

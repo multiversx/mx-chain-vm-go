@@ -135,19 +135,21 @@ type AsyncContext interface {
 	HasPendingCallGroups() bool
 	IsComplete() bool
 	GetCallGroup(groupID string) (*AsyncCallGroup, bool)
-	SetCaller(caller []byte)
-	SetGasPrice(gasPrice uint64)
 	SetGroupCallback(groupID string, callbackName string, data []byte, gas uint64) error
 	PostprocessCrossShardCallback() error
 	GetCallerAddress() []byte
 	GetReturnData() []byte
-	Load() error
-	Save() error
-	Delete() error
+	SetReturnData(data []byte)
+	GetGasPrice() uint64
+
 	Execute() error
 	RegisterAsyncCall(groupID string, call *AsyncCall) error
 	RegisterLegacyAsyncCall(address []byte, data []byte, value []byte) error
 	UpdateCurrentCallStatus() (*AsyncCall, error)
+
+	Load() error
+	Save() error
+	Delete() error
 }
 
 // BigIntContext defines the functionality needed for interacting with the big int context

@@ -19,7 +19,7 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 
 	}
 
-	if legacyGroup.IsCompleted() {
+	if legacyGroup.IsComplete() {
 		return arwen.ErrLegacyAsyncCallInvalid
 	}
 

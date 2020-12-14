@@ -26,6 +26,10 @@ func TestFunctionsGuard_isValidFunctionName(t *testing.T) {
 	require.Nil(t, validator.verifyValidFunctionName("i"))
 
 	require.NotNil(t, validator.verifyValidFunctionName(""))
+	require.NotNil(t, validator.verifyValidFunctionName("3"))
+	require.NotNil(t, validator.verifyValidFunctionName("π"))
+	require.NotNil(t, validator.verifyValidFunctionName("2foo"))
+	require.NotNil(t, validator.verifyValidFunctionName("-"))
 	require.NotNil(t, validator.verifyValidFunctionName("â"))
 	require.NotNil(t, validator.verifyValidFunctionName("ș"))
 	require.NotNil(t, validator.verifyValidFunctionName("Ä"))
@@ -42,7 +46,7 @@ func TestFunctionsGuard_isValidFunctionName(t *testing.T) {
 }
 
 func TestFunctionsGuard_Arity(t *testing.T) {
-	host := InitializeArwenAndWasmer()
+	host := InitializeArwenAndWasmer_RuntimeContext()
 	imports := host.SCAPIMethods
 
 	validator := newWASMValidator(imports.Names(), make(vmcommon.FunctionNames))

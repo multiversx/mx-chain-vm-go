@@ -334,20 +334,21 @@ func TestTimelocks(t *testing.T) {
 	}
 }
 
-// func TestPromises(t *testing.T) {
-// 	executor, err := am.NewArwenTestExecutor()
-// 	require.Nil(t, err)
-// 	runner := mc.NewScenarioRunner(
-// 		executor,
-// 		mc.NewDefaultFileResolver(),
-// 	)
-// 	err = runner.RunAllJSONScenariosInDirectory(
-// 		getTestRoot(),
-// 		"promises",
-// 		".scen.json",
-// 		[]string{})
+func TestPromises(t *testing.T) {
+	t.Skip()
+	executor, err := am.NewArwenTestExecutor()
+	require.Nil(t, err)
+	runner := mc.NewScenarioRunner(
+		executor,
+		mc.NewDefaultFileResolver(),
+	)
+	err = runner.RunAllJSONScenariosInDirectory(
+		getTestRoot(),
+		"promises",
+		".scen.json",
+		[]string{})
 
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
-// }
+	if err != nil {
+		t.Error(err)
+	}
+}

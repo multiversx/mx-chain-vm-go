@@ -27,6 +27,12 @@ type VMHostMock struct {
 
 	SCAPIMethods  *wasmer.Imports
 	IsBuiltinFunc bool
+
+	StoredInputs []*vmcommon.ContractCallInput
+
+	VMOutputQueue    []*vmcommon.VMOutput
+	VMOutputToReturn int
+	Err              error
 }
 
 // Crypto mocked method
@@ -105,8 +111,12 @@ func (host *VMHostMock) ExecuteOnSameContext(_ *vmcommon.ContractCallInput) erro
 }
 
 // ExecuteOnDestContext mocked method
-func (host *VMHostMock) ExecuteOnDestContext(_ *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
-	return nil, nil
+func (host *VMHostMock) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+	if host.Err != nil {
+		return nil, host.Err
+	}
+	host.StoreInput(input)
+	return host.GetNextVMOutput(), nil
 }
 
 // InitState mocked method
@@ -138,4 +148,32 @@ func (host *VMHostMock) GetProtocolBuiltinFunctions() vmcommon.FunctionNames {
 // IsBuiltinFunctionName mocked method
 func (host *VMHostMock) IsBuiltinFunctionName(_ string) bool {
 	return host.IsBuiltinFunc
+}
+
+func (host *VMHostMock) StoreInput(input *vmcommon.ContractCallInput) {
+	if host.StoredInputs == nil {
+		host.StoredInputs = make([]*vmcommon.ContractCallInput, 0)
+	}
+	host.StoredInputs = append(host.StoredInputs, input)
+}
+
+func (host *VMHostMock) EnqueueVMOutput(vmOutput *vmcommon.VMOutput) {
+	if host.VMOutputQueue == nil {
+		host.VMOutputQueue = make([]*vmcommon.VMOutput, 1)
+		host.VMOutputQueue[0] = vmOutput
+		host.VMOutputToReturn = 0
+		return
+	}
+
+	host.VMOutputQueue = append(host.VMOutputQueue, vmOutput)
+}
+
+func (host *VMHostMock) GetNextVMOutput() *vmcommon.VMOutput {
+	if host.VMOutputToReturn >= len(host.VMOutputQueue) {
+		return nil
+	}
+
+	vmOutput := host.VMOutputQueue[host.VMOutputToReturn]
+	host.VMOutputToReturn += 1
+	return vmOutput
 }

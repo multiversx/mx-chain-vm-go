@@ -82,7 +82,7 @@ func deploy(tb testing.TB, totalTokenSupply *big.Int) (*vmHost, *worldmock.MockW
 		NewAddress:     scAddress,
 	})
 
-	gasMap, err := loadGasScheduleConfig("../../test/gasSchedule.toml")
+	gasMap, err := LoadGasScheduleConfig("../../test/gasSchedule.toml")
 	require.Nil(tb, err)
 
 	host, err := NewArwenVM(mockWorld, &arwen.VMHostParameters{
@@ -106,7 +106,7 @@ func deploy(tb testing.TB, totalTokenSupply *big.Int) (*vmHost, *worldmock.MockW
 			GasPrice:    0,
 			GasProvided: 0xFFFFFFFFFFFFFFFF,
 		},
-		ContractCode: GetTestSCCode("erc20", "../../"),
+		ContractCode: arwen.GetTestSCCode("erc20", "../../"),
 	}
 
 	ownerAccount.Nonce++ // nonce increases before deploy

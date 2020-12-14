@@ -9,13 +9,13 @@ import (
 // function of a smart contract
 const CallbackFunctionName = "callBack"
 
-// TimeLockKeyPrevix is the storage key prefix used for timelock-related storage;
+// TimeLockKeyPrefix is the storage key prefix used for timelock-related storage;
 // not protected by Arwen, nor by the Elrond node
-const TimeLockKeyPrefix = "timelock"
+const TimeLockKeyPrefix = "ARWEN@TIMELOCK"
 
 // AsyncDataPrefix is the storage key prefix used for AsyncContext-related
 // storage; protected by Arwen explicitly, and implicitly by the Elrond node due to '@'
-const AsyncDataPrefix = "ARWEN@"
+const AsyncDataPrefix = "ARWEN@ASYNC"
 
 // LegacyAsyncCallGroupID is the AsyncCallGroup identifier reserved for the
 // implementation of the legacy asyncCall() EEI function

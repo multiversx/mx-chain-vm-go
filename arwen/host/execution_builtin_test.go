@@ -18,7 +18,7 @@ func TestExecution_ExecuteOnSameContext_BuiltinFunctions(t *testing.T) {
 	// TODO rewrite to use ExecuteOnDestContext(). It is disallowed to call a
 	// built-in function with ExecuteOnSameContext().
 	t.Skip()
-	code := GetTestSCCode("exec-same-ctx-builtin", "../../")
+	code := arwen.GetTestSCCode("exec-same-ctx-builtin", "../../")
 	scBalance := big.NewInt(1000)
 
 	host, stubBlockchainHook := defaultTestArwenForCall(t, code, scBalance)
@@ -62,7 +62,7 @@ func TestExecution_ExecuteOnSameContext_BuiltinFunctions(t *testing.T) {
 }
 
 func TestExecution_AsyncCall_BuiltinFails(t *testing.T) {
-	code := GetTestSCCode("async-call-builtin", "../../")
+	code := arwen.GetTestSCCode("async-call-builtin", "../../")
 	scBalance := big.NewInt(1000)
 
 	host, stubBlockchainHook := defaultTestArwenForCall(t, code, scBalance)
@@ -83,7 +83,7 @@ func TestExecution_AsyncCall_BuiltinFails(t *testing.T) {
 }
 
 func TestESDT_GettersAPI(t *testing.T) {
-	code := GetTestSCCode("exchange", "../../")
+	code := arwen.GetTestSCCode("exchange", "../../")
 	scBalance := big.NewInt(1000)
 
 	host, _ := defaultTestArwenForCall(t, code, scBalance)
@@ -102,8 +102,8 @@ func TestESDT_GettersAPI(t *testing.T) {
 }
 
 func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
-	dummyCode := GetTestSCCode("init-simple", "../../")
-	exchangeCode := GetTestSCCode("exchange", "../../")
+	dummyCode := arwen.GetTestSCCode("init-simple", "../../")
+	exchangeCode := arwen.GetTestSCCode("exchange", "../../")
 	scBalance := big.NewInt(1000)
 	esdtValue := int64(5)
 

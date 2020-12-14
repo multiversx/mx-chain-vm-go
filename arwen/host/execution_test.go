@@ -26,15 +26,8 @@ const (
 	parentFunctionChildCall = "parentFunctionChildCall"
 )
 
-func TestNewArwen(t *testing.T) {
-	// host, err := DefaultTestArwen(t, &contextmock.BlockchainHookStub{})
-	host, err := defaultTestArwen(t, &contextmock.BlockchainHookStub{})
-	require.Nil(t, err)
-	require.NotNil(t, host)
-}
-
 func TestSCMem(t *testing.T) {
-	code := GetTestSCCode("misc", "../../")
+	code := arwen.GetTestSCCode("misc", "../../")
 	host, _ := defaultTestArwenForCall(t, code, nil)
 	input := DefaultTestContractCallInput()
 	input.GasProvided = 100000
@@ -108,7 +101,7 @@ func TestExecution_DeployWASM_WithoutMemory(t *testing.T) {
 	host := defaultTestArwenForDeployment(t, 24, newAddress)
 	input := DefaultTestContractCreateInput()
 	input.GasProvided = 1000
-	input.ContractCode = GetTestSCCode("memoryless", "../../")
+	input.ContractCode = arwen.GetTestSCCode("memoryless", "../../")
 	vmOutput, err := host.RunSmartContractCreate(input)
 	require.Nil(t, err)
 	require.NotNil(t, vmOutput)
@@ -120,7 +113,7 @@ func TestExecution_DeployWASM_WrongInit(t *testing.T) {
 	host := defaultTestArwenForDeployment(t, 24, newAddress)
 	input := DefaultTestContractCreateInput()
 	input.GasProvided = 1000
-	input.ContractCode = GetTestSCCode("init-wrong", "../../")
+	input.ContractCode = arwen.GetTestSCCode("init-wrong", "../../")
 	vmOutput, err := host.RunSmartContractCreate(input)
 	require.Nil(t, err)
 	require.NotNil(t, vmOutput)
@@ -132,7 +125,7 @@ func TestExecution_DeployWASM_WrongMethods(t *testing.T) {
 	host := defaultTestArwenForDeployment(t, 24, newAddress)
 	input := DefaultTestContractCreateInput()
 	input.GasProvided = 1000
-	input.ContractCode = GetTestSCCode("signatures", "../../")
+	input.ContractCode = arwen.GetTestSCCode("signatures", "../../")
 	vmOutput, err := host.RunSmartContractCreate(input)
 	require.Nil(t, err)
 	require.NotNil(t, vmOutput)
@@ -145,7 +138,7 @@ func TestExecution_DeployWASM_Successful(t *testing.T) {
 	input := DefaultTestContractCreateInput()
 	input.CallValue = big.NewInt(88)
 	input.GasProvided = 1000
-	input.ContractCode = GetTestSCCode("init-correct", "../../")
+	input.ContractCode = arwen.GetTestSCCode("init-correct", "../../")
 	input.Arguments = [][]byte{{0}}
 
 	vmOutput, err := host.RunSmartContractCreate(input)
@@ -167,7 +160,7 @@ func TestExecution_DeployWASM_Popcnt(t *testing.T) {
 	input := DefaultTestContractCreateInput()
 	input.CallValue = big.NewInt(88)
 	input.GasProvided = 1000
-	input.ContractCode = GetTestSCCode("init-simple-popcnt", "../../")
+	input.ContractCode = arwen.GetTestSCCode("init-simple-popcnt", "../../")
 	input.Arguments = [][]byte{}
 
 	vmOutput, err := host.RunSmartContractCreate(input)
@@ -214,7 +207,7 @@ func TestExecution_DeployWASM_Init_Errors(t *testing.T) {
 	input := DefaultTestContractCreateInput()
 	input.CallValue = big.NewInt(88)
 	input.GasProvided = 1000
-	input.ContractCode = GetTestSCCode("init-correct", "../../")
+	input.ContractCode = arwen.GetTestSCCode("init-correct", "../../")
 
 	// init() calls signalError()
 	input.Arguments = [][]byte{{1}}
@@ -252,7 +245,7 @@ func TestExecution_ManyDeployments(t *testing.T) {
 	input.CallerAddr = []byte("owner")
 	input.Arguments = make([][]byte, 0)
 	input.CallValue = big.NewInt(88)
-	input.ContractCode = GetTestSCCode("init-simple", "../../")
+	input.ContractCode = arwen.GetTestSCCode("init-simple", "../../")
 
 	numDeployments := 100000
 	for i := 0; i < numDeployments; i++ {
@@ -274,7 +267,7 @@ func TestExecution_Deploy_DisallowFloatingPoint(t *testing.T) {
 	input := DefaultTestContractCreateInput()
 	input.CallValue = big.NewInt(88)
 	input.GasProvided = 1000
-	input.ContractCode = GetTestSCCode("num-with-fp", "../../")
+	input.ContractCode = arwen.GetTestSCCode("num-with-fp", "../../")
 
 	vmOutput, err := host.RunSmartContractCreate(input)
 	require.Nil(t, err)
@@ -301,7 +294,7 @@ func TestExecution_CallGetUserAccountErr(t *testing.T) {
 }
 
 func TestExecution_CallOutOfGas(t *testing.T) {
-	code := GetTestSCCode("counter", "../../")
+	code := arwen.GetTestSCCode("counter", "../../")
 	host, _ := defaultTestArwenForCall(t, code, nil)
 	input := DefaultTestContractCallInput()
 	input.Function = increment
@@ -327,7 +320,7 @@ func TestExecution_CallWasmerError(t *testing.T) {
 }
 
 func TestExecution_CallSCMethod(t *testing.T) {
-	code := GetTestSCCode("counter", "../../")
+	code := arwen.GetTestSCCode("counter", "../../")
 	host, _ := defaultTestArwenForCall(t, code, nil)
 	input := DefaultTestContractCallInput()
 	input.GasProvided = 100000
@@ -357,7 +350,7 @@ func TestExecution_CallSCMethod(t *testing.T) {
 }
 
 func TestExecution_Call_Successful(t *testing.T) {
-	code := GetTestSCCode("counter", "../../")
+	code := arwen.GetTestSCCode("counter", "../../")
 	host, stubBlockchainHook := defaultTestArwenForCall(t, code, nil)
 	stubBlockchainHook.GetStorageDataCalled = func(scAddress []byte, key []byte) ([]byte, error) {
 		return big.NewInt(1001).Bytes(), nil
@@ -375,6 +368,21 @@ func TestExecution_Call_Successful(t *testing.T) {
 
 	storedBytes := vmOutput.OutputAccounts[string(parentAddress)].StorageUpdates[string(counterKey)].Data
 	require.Equal(t, big.NewInt(1002).Bytes(), storedBytes)
+}
+
+func TestExecution_RawRustContract(t *testing.T) {
+	code := arwen.GetTestSCCode("rawrs", "../../")
+	host, _ := defaultTestArwenForCall(t, code, nil)
+
+	input := DefaultTestContractCallInput()
+	input.GasProvided = 1000
+	input.Function = "method"
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+	require.Equal(t, [][]byte{{4}}, vmOutput.ReturnData)
 }
 
 func TestExecution_Call_GasConsumptionOnLocals(t *testing.T) {
@@ -420,8 +428,8 @@ func callCustomSCAndGetGasUsed(t *testing.T, locals uint64) (uint64, *config.Gas
 }
 
 func TestExecution_ExecuteOnSameContext_Simple(t *testing.T) {
-	parentCode := GetTestSCCode("exec-same-ctx-simple-parent", "../../")
-	childCode := GetTestSCCode("exec-same-ctx-simple-child", "../../")
+	parentCode := arwen.GetTestSCCode("exec-same-ctx-simple-parent", "../../")
+	childCode := arwen.GetTestSCCode("exec-same-ctx-simple-child", "../../")
 
 	host, _ := defaultTestArwenForTwoSCs(t, parentCode, childCode, nil, nil)
 	input := DefaultTestContractCallInput()
@@ -439,7 +447,7 @@ func TestExecution_ExecuteOnSameContext_Simple(t *testing.T) {
 func TestExecution_Call_Breakpoints(t *testing.T) {
 	t.Parallel()
 
-	code := GetTestSCCode("breakpoint", "../../")
+	code := arwen.GetTestSCCode("breakpoint", "../../")
 	host, _ := defaultTestArwenForCall(t, code, nil)
 	input := DefaultTestContractCallInput()
 	input.GasProvided = 100000
@@ -467,7 +475,7 @@ func TestExecution_Call_Breakpoints(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnSameContext_Prepare(t *testing.T) {
-	parentCode := GetTestSCCode("exec-same-ctx-parent", "../../")
+	parentCode := arwen.GetTestSCCode("exec-same-ctx-parent", "../../")
 	parentSCBalance := big.NewInt(1000)
 
 	// Execute the parent SC method "parentFunctionPrepare", which sets storage,
@@ -488,7 +496,7 @@ func TestExecution_ExecuteOnSameContext_Prepare(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnSameContext_Wrong(t *testing.T) {
-	parentCode := GetTestSCCode("exec-same-ctx-parent", "../../")
+	parentCode := arwen.GetTestSCCode("exec-same-ctx-parent", "../../")
 	parentSCBalance := big.NewInt(1000)
 
 	// Call parentFunctionWrongCall() of the parent SC, which will try to call a
@@ -524,8 +532,8 @@ func TestExecution_ExecuteOnSameContext_OutOfGas(t *testing.T) {
 	// Assertions: modifications made by the child are did not take effect
 	// Assertions: the value sent by the parent to the child was returned to the parent
 	// Assertions: the parent lost all the gas provided to executeOnSameContext
-	parentCode := GetTestSCCode("exec-same-ctx-parent", "../../")
-	childCode := GetTestSCCode("exec-same-ctx-child", "../../")
+	parentCode := arwen.GetTestSCCode("exec-same-ctx-parent", "../../")
+	childCode := arwen.GetTestSCCode("exec-same-ctx-child", "../../")
 
 	// Call parentFunctionChildCall_OutOfGas() of the parent SC, which will call
 	// the child SC using executeOnSameContext() with sufficient gas for
@@ -553,8 +561,8 @@ func TestExecution_ExecuteOnSameContext_OutOfGas(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnSameContext_Successful(t *testing.T) {
-	parentCode := GetTestSCCode("exec-same-ctx-parent", "../../")
-	childCode := GetTestSCCode("exec-same-ctx-child", "../../")
+	parentCode := arwen.GetTestSCCode("exec-same-ctx-parent", "../../")
+	childCode := arwen.GetTestSCCode("exec-same-ctx-child", "../../")
 
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using executeOnSameContext().
@@ -571,8 +579,8 @@ func TestExecution_ExecuteOnSameContext_Successful(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnSameContext_Successful_BigInts(t *testing.T) {
-	parentCode := GetTestSCCode("exec-same-ctx-parent", "../../")
-	childCode := GetTestSCCode("exec-same-ctx-child", "../../")
+	parentCode := arwen.GetTestSCCode("exec-same-ctx-parent", "../../")
+	childCode := arwen.GetTestSCCode("exec-same-ctx-child", "../../")
 
 	// Call parentFunctionChildCall_BigInts() of the parent SC, which will call a
 	// method of the child SC that takes some big Int references as arguments and
@@ -602,7 +610,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct(t *testing.T) {
 	// Assertions: the VMOutput must contain as many StorageUpdates as the argument requires
 	// Assertions: the VMOutput must contain as many finished values as the argument requires
 	// Assertions: there must be a StorageUpdate with the value of the bigInt counter
-	code := GetTestSCCode("exec-same-ctx-recursive", "../../")
+	code := arwen.GetTestSCCode("exec-same-ctx-recursive", "../../")
 	scBalance := big.NewInt(1000)
 
 	host, _ := defaultTestArwenForCall(t, code, scBalance)
@@ -628,7 +636,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnSameContext_Recursive_Direct_ErrMaxInstances(t *testing.T) {
-	code := GetTestSCCode("exec-same-ctx-recursive", "../../")
+	code := arwen.GetTestSCCode("exec-same-ctx-recursive", "../../")
 	scBalance := big.NewInt(1000)
 
 	host, _ := defaultTestArwenForCall(t, code, scBalance)
@@ -677,7 +685,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_Methods(t *testing.T) {
 	// Assertions: the VMOutput must contain as many StorageUpdates as the argument requires
 	// Assertions: the VMOutput must contain as many finished values as the argument requires
 	// Assertions: there must be a StorageUpdate with the value of the bigInt counter
-	code := GetTestSCCode("exec-same-ctx-recursive", "../../")
+	code := arwen.GetTestSCCode("exec-same-ctx-recursive", "../../")
 	scBalance := big.NewInt(1000)
 
 	host, _ := defaultTestArwenForCall(t, code, scBalance)
@@ -713,8 +721,8 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs(t *testing.T) {
 	//		child:	finish "CfinishNNN"
 	//		both:		increment a shared bigInt counter
 	//		both:		whoever exits must save the shared bigInt counter to storage
-	parentCode := GetTestSCCode("exec-same-ctx-recursive-parent", "../../")
-	childCode := GetTestSCCode("exec-same-ctx-recursive-child", "../../")
+	parentCode := arwen.GetTestSCCode("exec-same-ctx-recursive-parent", "../../")
+	childCode := arwen.GetTestSCCode("exec-same-ctx-recursive-child", "../../")
 
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using executeOnDestContext().
@@ -741,8 +749,8 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs_OutOfGas(t *testing.T) {
-	parentCode := GetTestSCCode("exec-same-ctx-recursive-parent", "../../")
-	childCode := GetTestSCCode("exec-same-ctx-recursive-child", "../../")
+	parentCode := arwen.GetTestSCCode("exec-same-ctx-recursive-parent", "../../")
+	childCode := arwen.GetTestSCCode("exec-same-ctx-recursive-child", "../../")
 
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using executeOnDestContext().
@@ -771,7 +779,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 }
 
 func TestExecution_ExecuteOnDestContext_Prepare(t *testing.T) {
-	parentCode := GetTestSCCode("exec-dest-ctx-parent", "../../")
+	parentCode := arwen.GetTestSCCode("exec-dest-ctx-parent", "../../")
 	parentSCBalance := big.NewInt(1000)
 
 	// Execute the parent SC method "parentFunctionPrepare", which sets storage,
@@ -793,7 +801,7 @@ func TestExecution_ExecuteOnDestContext_Prepare(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnDestContext_Wrong(t *testing.T) {
-	parentCode := GetTestSCCode("exec-dest-ctx-parent", "../../")
+	parentCode := arwen.GetTestSCCode("exec-dest-ctx-parent", "../../")
 	parentSCBalance := big.NewInt(1000)
 
 	// Call parentFunctionWrongCall() of the parent SC, which will try to call a
@@ -829,8 +837,8 @@ func TestExecution_ExecuteOnDestContext_OutOfGas(t *testing.T) {
 	// Assertions: modifications made by the child are did not take effect (no OutputAccount is created)
 	// Assertions: the value sent by the parent to the child was returned to the parent
 	// Assertions: the parent lost all the gas provided to executeOnDestContext
-	parentCode := GetTestSCCode("exec-dest-ctx-parent", "../../")
-	childCode := GetTestSCCode("exec-dest-ctx-child", "../../")
+	parentCode := arwen.GetTestSCCode("exec-dest-ctx-parent", "../../")
+	childCode := arwen.GetTestSCCode("exec-dest-ctx-child", "../../")
 
 	// Call parentFunctionChildCall_OutOfGas() of the parent SC, which will call
 	// the child SC using executeOnDestContext() with sufficient gas for
@@ -858,8 +866,8 @@ func TestExecution_ExecuteOnDestContext_OutOfGas(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnDestContext_Successful(t *testing.T) {
-	parentCode := GetTestSCCode("exec-dest-ctx-parent", "../../")
-	childCode := GetTestSCCode("exec-dest-ctx-child", "../../")
+	parentCode := arwen.GetTestSCCode("exec-dest-ctx-parent", "../../")
+	childCode := arwen.GetTestSCCode("exec-dest-ctx-child", "../../")
 
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using executeOnDestContext().
@@ -881,14 +889,14 @@ func TestExecution_ExecuteOnDestContext_GasRemaining(t *testing.T) {
 	// metering.GasLeft() on the Wasmer instance of the child, and not of the
 	// parent.
 
-	parentCode := GetTestSCCode("exec-dest-ctx-parent", "../../")
-	childCode := GetTestSCCode("exec-dest-ctx-child", "../../")
+	parentCode := arwen.GetTestSCCode("exec-dest-ctx-parent", "../../")
+	childCode := arwen.GetTestSCCode("exec-dest-ctx-child", "../../")
 
 	// Pretend that the execution of the parent SC was requested, with the
 	// following ContractCallInput:
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
-	input.Function = "parentFunctionChildCall"
+	input.Function = "parentFunctionChildCall_BigInts"
 	input.GasProvided = gasProvided
 
 	// Initialize the VM with the parent SC and child SC, but without really
@@ -897,8 +905,9 @@ func TestExecution_ExecuteOnDestContext_GasRemaining(t *testing.T) {
 	host, _ := defaultTestArwenForTwoSCs(t, parentCode, childCode, nil, nil)
 	host.InitState()
 
-	_, _, metering, output, runtime, storage := host.GetContexts()
+	_, _, metering, output, runtime, async, storage := host.GetHostContexts()
 	runtime.InitStateFromInput(input)
+	async.InitStateFromInput(input)
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
 	storage.SetAddress(runtime.GetSCAddress())
 
@@ -915,16 +924,10 @@ func TestExecution_ExecuteOnDestContext_GasRemaining(t *testing.T) {
 
 	// Create a second ContractCallInput, used to call the child SC using
 	// host.ExecuteOnDestContext().
-	childInput := DefaultTestContractCallInput()
-	childInput.CallerAddr = parentAddress
-	childInput.CallValue = big.NewInt(99)
-	childInput.Function = "childFunction"
-	childInput.RecipientAddr = childAddress
-	childInput.Arguments = [][]byte{
-		[]byte("some data"),
-		[]byte("argument"),
-		[]byte("another argument"),
-	}
+	childInput := arwen.MakeContractCallInput(parentAddress, childAddress, "childFunction", 99)
+	arwen.AddArgument(childInput, []byte("some data"))
+	arwen.AddArgument(childInput, []byte("argument"))
+	arwen.AddArgument(childInput, []byte("another argument"))
 	childInput.GasProvided = 10000
 
 	childOutput, err := host.ExecuteOnDestContext(childInput)
@@ -936,8 +939,8 @@ func TestExecution_ExecuteOnDestContext_GasRemaining(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnDestContext_Successful_BigInts(t *testing.T) {
-	parentCode := GetTestSCCode("exec-dest-ctx-parent", "../../")
-	childCode := GetTestSCCode("exec-dest-ctx-child", "../../")
+	parentCode := arwen.GetTestSCCode("exec-dest-ctx-parent", "../../")
+	childCode := arwen.GetTestSCCode("exec-dest-ctx-child", "../../")
 
 	// Call parentFunctionChildCall_BigInts() of the parent SC, which will call a
 	// method of the child SC that takes some big Int references as arguments and
@@ -955,7 +958,7 @@ func TestExecution_ExecuteOnDestContext_Successful_BigInts(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnDestContext_Recursive_Direct(t *testing.T) {
-	code := GetTestSCCode("exec-dest-ctx-recursive", "../../")
+	code := arwen.GetTestSCCode("exec-dest-ctx-recursive", "../../")
 	scBalance := big.NewInt(1000)
 
 	host, _ := defaultTestArwenForCall(t, code, scBalance)
@@ -981,7 +984,7 @@ func TestExecution_ExecuteOnDestContext_Recursive_Direct(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnDestContext_Recursive_Mutual_Methods(t *testing.T) {
-	code := GetTestSCCode("exec-dest-ctx-recursive", "../../")
+	code := arwen.GetTestSCCode("exec-dest-ctx-recursive", "../../")
 	scBalance := big.NewInt(1000)
 
 	host, _ := defaultTestArwenForCall(t, code, scBalance)
@@ -1007,8 +1010,8 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_Methods(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs(t *testing.T) {
-	parentCode := GetTestSCCode("exec-dest-ctx-recursive-parent", "../../")
-	childCode := GetTestSCCode("exec-dest-ctx-recursive-child", "../../")
+	parentCode := arwen.GetTestSCCode("exec-dest-ctx-recursive-parent", "../../")
+	childCode := arwen.GetTestSCCode("exec-dest-ctx-recursive-child", "../../")
 
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using executeOnDestContext().
@@ -1035,8 +1038,8 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs_OutOfGas(t *testing.T) {
-	parentCode := GetTestSCCode("exec-dest-ctx-recursive-parent", "../../")
-	childCode := GetTestSCCode("exec-dest-ctx-recursive-child", "../../")
+	parentCode := arwen.GetTestSCCode("exec-dest-ctx-recursive-parent", "../../")
+	childCode := arwen.GetTestSCCode("exec-dest-ctx-recursive-child", "../../")
 
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using executeOnDestContext().
@@ -1073,8 +1076,8 @@ func TestExecution_ExecuteOnDestContextByCaller_SimpleTransfer(t *testing.T) {
 	// instead. Thus the original caller (the user address) will receive 42
 	// tokens, and not the parent, even if the parent is the one making the call
 	// to the child.
-	parentCode := GetTestSCCodeModule("exec-dest-ctx-by-caller/parent", "parent", "../../")
-	childCode := GetTestSCCodeModule("exec-dest-ctx-by-caller/child", "child", "../../")
+	parentCode := arwen.GetTestSCCodeModule("exec-dest-ctx-by-caller/parent", "parent", "../../")
+	childCode := arwen.GetTestSCCodeModule("exec-dest-ctx-by-caller/child", "child", "../../")
 
 	host, _ := defaultTestArwenForTwoSCs(t, parentCode, childCode, nil, nil)
 	input := DefaultTestContractCallInput()
@@ -1092,8 +1095,8 @@ func TestExecution_ExecuteOnDestContextByCaller_SimpleTransfer(t *testing.T) {
 }
 
 func TestExecution_AsyncCall_GasLimitConsumed(t *testing.T) {
-	parentCode := GetTestSCCode("async-call-parent", "../../")
-	childCode := GetTestSCCode("async-call-child", "../../")
+	parentCode := arwen.GetTestSCCode("async-call-parent", "../../")
+	childCode := arwen.GetTestSCCode("async-call-child", "../../")
 	host, stubBlockchainHook := defaultTestArwenForTwoSCs(t, parentCode, childCode, nil, nil)
 	stubBlockchainHook.GetUserAccountCalled = func(scAddress []byte) (vmcommon.UserAccountHandler, error) {
 		if bytes.Equal(scAddress, parentAddress) {
@@ -1143,8 +1146,8 @@ func TestExecution_AsyncCall(t *testing.T) {
 	//		* Child: zero balance delta, storage
 	//		* ThirdParty: positive balance delta
 	//		* Vault
-	parentCode := GetTestSCCode("async-call-parent", "../../")
-	childCode := GetTestSCCode("async-call-child", "../../")
+	parentCode := arwen.GetTestSCCode("async-call-parent", "../../")
+	childCode := arwen.GetTestSCCode("async-call-child", "../../")
 
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using asyncCall().
@@ -1171,8 +1174,8 @@ func TestExecution_AsyncCall_ChildFails(t *testing.T) {
 	// instructed to call signalError().
 	// Because "vault" was not received by the callBack(), the Parent sends 4 ERD
 	// to the Vault directly.
-	parentCode := GetTestSCCode("async-call-parent", "../../")
-	childCode := GetTestSCCode("async-call-child", "../../")
+	parentCode := arwen.GetTestSCCode("async-call-parent", "../../")
+	childCode := arwen.GetTestSCCode("async-call-child", "../../")
 
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using asyncCall().
@@ -1200,8 +1203,8 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 	// Scenario
 	// Identical to TestExecution_AsyncCall(), except that the callback is
 	// instructed to call signalError().
-	parentCode := GetTestSCCode("async-call-parent", "../../")
-	childCode := GetTestSCCode("async-call-child", "../../")
+	parentCode := arwen.GetTestSCCode("async-call-parent", "../../")
+	childCode := arwen.GetTestSCCode("async-call-child", "../../")
 
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using asyncCall().
@@ -1224,8 +1227,8 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 }
 
 func TestExecution_CreateNewContract_Success(t *testing.T) {
-	parentCode := GetTestSCCode("deployer", "../../")
-	childCode := GetTestSCCode("init-correct", "../../")
+	parentCode := arwen.GetTestSCCode("deployer", "../../")
+	childCode := arwen.GetTestSCCode("init-correct", "../../")
 	parentBalance := big.NewInt(1000)
 
 	host, stubBlockchainHook := defaultTestArwenForCall(t, parentCode, parentBalance)
@@ -1256,8 +1259,8 @@ func TestExecution_CreateNewContract_Success(t *testing.T) {
 }
 
 func TestExecution_CreateNewContract_Fail(t *testing.T) {
-	parentCode := GetTestSCCode("deployer", "../../")
-	childCode := GetTestSCCode("init-correct", "../../")
+	parentCode := arwen.GetTestSCCode("deployer", "../../")
+	childCode := arwen.GetTestSCCode("init-correct", "../../")
 	parentBalance := big.NewInt(1000)
 
 	host, stubBlockchainHook := defaultTestArwenForCall(t, parentCode, parentBalance)
@@ -1290,7 +1293,7 @@ func TestExecution_CreateNewContract_Fail(t *testing.T) {
 // makeBytecodeWithLocals rewrites the bytecode of "answer" to change the
 // number of i64 locals it instantiates
 func makeBytecodeWithLocals(numLocals uint64) []byte {
-	originalCode := GetTestSCCode("answer", "../../")
+	originalCode := arwen.GetTestSCCode("answer", "../../")
 	firstSlice := originalCode[:0x5B]
 	secondSlice := originalCode[0x5C:]
 
