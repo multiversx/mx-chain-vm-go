@@ -10,7 +10,7 @@ import (
 
 func TestAsync_NoAsyncCalls(t *testing.T) {
 	code := arwen.GetTestSCCode("async-alice", "../../")
-	host, _ := DefaultTestArwenForCall(t, code, nil)
+	host, _ := defaultTestArwenForCall(t, code, nil)
 
 	input := DefaultTestContractCallInput()
 	input.GasProvided = 1000
@@ -31,7 +31,7 @@ func TestAsync_NoAsyncCalls(t *testing.T) {
 
 func TestAsync_OneAsyncCall(t *testing.T) {
 	code := arwen.GetTestSCCode("async-alice", "../../")
-	host, _ := DefaultTestArwenForCall(t, code, nil)
+	host, _ := defaultTestArwenForCall(t, code, nil)
 
 	input := DefaultTestContractCallInput()
 	input.GasProvided = 1000

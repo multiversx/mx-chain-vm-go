@@ -26,13 +26,6 @@ const (
 	parentFunctionChildCall = "parentFunctionChildCall"
 )
 
-func TestNewArwen(t *testing.T) {
-	// host, err := DefaultTestArwen(t, &contextmock.BlockchainHookStub{})
-	host, err := defaultTestArwen(t, &contextmock.BlockchainHookStub{})
-	require.Nil(t, err)
-	require.NotNil(t, host)
-}
-
 func TestSCMem(t *testing.T) {
 	code := arwen.GetTestSCCode("misc", "../../")
 	host, _ := defaultTestArwenForCall(t, code, nil)
@@ -379,7 +372,7 @@ func TestExecution_Call_Successful(t *testing.T) {
 
 func TestExecution_RawRustContract(t *testing.T) {
 	code := arwen.GetTestSCCode("rawrs", "../../")
-	host, _ := DefaultTestArwenForCall(t, code, nil)
+	host, _ := defaultTestArwenForCall(t, code, nil)
 
 	input := DefaultTestContractCallInput()
 	input.GasProvided = 1000
@@ -909,7 +902,7 @@ func TestExecution_ExecuteOnDestContext_GasRemaining(t *testing.T) {
 	// Initialize the VM with the parent SC and child SC, but without really
 	// executing the parent. The initialization emulates the behavior of
 	// host.doRunSmartContractCall(). Gas cost for compilation is skipped.
-	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode, parentSCBalance)
+	host, _ := defaultTestArwenForTwoSCs(t, parentCode, childCode, nil, nil)
 	host.InitState()
 
 	_, _, metering, output, runtime, async, storage := host.GetHostContexts()
@@ -940,7 +933,7 @@ func TestExecution_ExecuteOnDestContext_GasRemaining(t *testing.T) {
 	childOutput, err := host.ExecuteOnDestContext(childInput)
 	require.Nil(t, err)
 	require.NotNil(t, childOutput)
-	require.Equal(t, uint64(5590), childOutput.GasRemaining)
+	require.Equal(t, uint64(7753), childOutput.GasRemaining)
 
 	host.Clean()
 }
@@ -1083,8 +1076,8 @@ func TestExecution_ExecuteOnDestContextByCaller_SimpleTransfer(t *testing.T) {
 	// instead. Thus the original caller (the user address) will receive 42
 	// tokens, and not the parent, even if the parent is the one making the call
 	// to the child.
-	parentCode := GetTestSCCodeModule("exec-dest-ctx-by-caller/parent", "parent", "../../")
-	childCode := GetTestSCCodeModule("exec-dest-ctx-by-caller/child", "child", "../../")
+	parentCode := arwen.GetTestSCCodeModule("exec-dest-ctx-by-caller/parent", "parent", "../../")
+	childCode := arwen.GetTestSCCodeModule("exec-dest-ctx-by-caller/child", "child", "../../")
 
 	host, _ := defaultTestArwenForTwoSCs(t, parentCode, childCode, nil, nil)
 	input := DefaultTestContractCallInput()
@@ -1102,8 +1095,8 @@ func TestExecution_ExecuteOnDestContextByCaller_SimpleTransfer(t *testing.T) {
 }
 
 func TestExecution_AsyncCall_GasLimitConsumed(t *testing.T) {
-	parentCode := GetTestSCCode("async-call-parent", "../../")
-	childCode := GetTestSCCode("async-call-child", "../../")
+	parentCode := arwen.GetTestSCCode("async-call-parent", "../../")
+	childCode := arwen.GetTestSCCode("async-call-child", "../../")
 	host, stubBlockchainHook := defaultTestArwenForTwoSCs(t, parentCode, childCode, nil, nil)
 	stubBlockchainHook.GetUserAccountCalled = func(scAddress []byte) (vmcommon.UserAccountHandler, error) {
 		if bytes.Equal(scAddress, parentAddress) {

@@ -8,7 +8,8 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
-	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
@@ -20,7 +21,7 @@ var Bob = []byte("address_bob")
 
 const GasForAsyncStep = config.GasValueForTests
 
-func InitializeArwenAndWasmer_AsyncContext() (*mock.VmHostMock, *mock.BlockchainHookMock) {
+func InitializeArwenAndWasmer_AsyncContext() (*contextmock.VMHostMock, *worldmock.MockWorld) {
 	imports := MakeAPIImports()
 	_ = wasmer.SetImports(imports)
 
@@ -29,32 +30,32 @@ func InitializeArwenAndWasmer_AsyncContext() (*mock.VmHostMock, *mock.Blockchain
 	opcodeCosts := gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray()
 	wasmer.SetOpcodeCosts(&opcodeCosts)
 
-	host := &mock.VmHostMock{}
+	host := &contextmock.VMHostMock{}
 	host.SCAPIMethods = imports
 
-	mockMetering := &mock.MeteringContextMock{}
+	mockMetering := &contextmock.MeteringContextMock{}
 	mockMetering.SetGasSchedule(gasSchedule)
 	host.MeteringContext = mockMetering
 
-	bhm := mock.NewBlockchainHookMock()
-	host.BlockchainContext, _ = NewBlockchainContext(host, bhm)
+	world := worldmock.NewMockWorld()
+	host.BlockchainContext, _ = NewBlockchainContext(host, world)
 	host.RuntimeContext, _ = NewRuntimeContext(host, []byte("vm"), false)
 	host.OutputContext, _ = NewOutputContext(host)
 	host.CryptoHook = crypto.NewVMCrypto()
-	return host, bhm
+	return host, world
 }
 
 func InitializeArwenAndWasmer_AsyncContext_AliceAndBob() (
-	*mock.VmHostMock,
-	*mock.BlockchainHookMock,
+	*contextmock.VMHostMock,
+	*worldmock.MockWorld,
 	*vmcommon.ContractCallInput,
 ) {
-	host, bhm := InitializeArwenAndWasmer_AsyncContext()
-	bhm.AddAccount(&mock.AccountMock{
+	host, world := InitializeArwenAndWasmer_AsyncContext()
+	world.AcctMap.PutAccount(&worldmock.Account{
 		Address: Alice,
 		Balance: big.NewInt(88),
 	})
-	bhm.AddAccount(&mock.AccountMock{
+	world.AcctMap.PutAccount(&worldmock.Account{
 		Address: Bob,
 		Balance: big.NewInt(12),
 	})
@@ -73,7 +74,7 @@ func InitializeArwenAndWasmer_AsyncContext_AliceAndBob() (
 		Function:      "alice_function",
 	}
 
-	return host, bhm, originalVMInput
+	return host, world, originalVMInput
 }
 
 func TestNewAsyncContext(t *testing.T) {
@@ -232,7 +233,7 @@ func TestAsyncContext_SetGroupCallback_OutOfGas(t *testing.T) {
 	host, _ := InitializeArwenAndWasmer_AsyncContext()
 	async := NewAsyncContext(host)
 
-	mockMetering := host.Metering().(*mock.MeteringContextMock)
+	mockMetering := host.Metering().(*contextmock.MeteringContextMock)
 	mockMetering.Err = arwen.ErrNotEnoughGas
 
 	err := async.AddCall("testGroup", &arwen.AsyncCall{
@@ -249,7 +250,7 @@ func TestAsyncContext_SetGroupCallback_Success(t *testing.T) {
 	host, _ := InitializeArwenAndWasmer_AsyncContext()
 	async := NewAsyncContext(host)
 
-	mockMetering := host.Metering().(*mock.MeteringContextMock)
+	mockMetering := host.Metering().(*contextmock.MeteringContextMock)
 	mockMetering.GasComputedToLock = 42
 
 	err := async.AddCall("testGroup", &arwen.AsyncCall{
@@ -271,20 +272,20 @@ func TestAsyncContext_SetGroupCallback_Success(t *testing.T) {
 
 func TestAsyncContext_DetermineExecutionMode(t *testing.T) {
 	leftAddress := []byte("left")
-	leftAccount := &mock.AccountMock{
+	leftAccount := &worldmock.Account{
 		Address: leftAddress,
 		ShardID: 0,
 	}
 
 	rightAddress := []byte("right")
-	rightAccount := &mock.AccountMock{
+	rightAccount := &worldmock.Account{
 		Address: rightAddress,
 		ShardID: 0,
 	}
 
-	host, bhm := InitializeArwenAndWasmer_AsyncContext()
-	bhm.AddAccount(leftAccount)
-	bhm.AddAccount(rightAccount)
+	host, world := InitializeArwenAndWasmer_AsyncContext()
+	world.AcctMap.PutAccount(leftAccount)
+	world.AcctMap.PutAccount(rightAccount)
 	runtime := host.Runtime()
 
 	async := NewAsyncContext(host)
@@ -479,8 +480,8 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 }
 
 func TestAsyncContext_SendAsyncCallCrossShard(t *testing.T) {
-	host, bhm := InitializeArwenAndWasmer_AsyncContext()
-	bhm.AddAccount(&mock.AccountMock{
+	host, world := InitializeArwenAndWasmer_AsyncContext()
+	world.AcctMap.PutAccount(&worldmock.Account{
 		Address: []byte("smartcontract"),
 		Balance: big.NewInt(88),
 	})
@@ -543,7 +544,6 @@ func TestAsyncContext_ExecuteSyncCall_NoDynamicGasLocking_Simulation(t *testing.
 
 	asyncCall := defaultAsyncCall_AliceToBob()
 	asyncCall.GasLimit = 10
-	asyncCall.GasLocked = 5
 
 	gasConsumedByDestination := uint64(3)
 	destOutput := &vmcommon.VMOutput{

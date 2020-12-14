@@ -123,6 +123,13 @@ func GetTestSCCode(scName string, prefixToTestSCs string) []byte {
 	return GetSCCode(pathToSC)
 }
 
+// GetTestSCCodeModule retrieves the bytecode of a WASM testing contract, given
+// a specific name of the WASM module
+func GetTestSCCodeModule(scName string, moduleName string, prefixToTestSCs string) []byte {
+	pathToSC := prefixToTestSCs + "test/contracts/" + scName + "/output/" + moduleName + ".wasm"
+	return GetSCCode(pathToSC)
+}
+
 // OpenFile method opens the file from given path - does not close the file
 func OpenFile(relativePath string) (*os.File, error) {
 	path, err := filepath.Abs(relativePath)
