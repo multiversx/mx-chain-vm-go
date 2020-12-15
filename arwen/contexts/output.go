@@ -4,6 +4,8 @@ import (
 	"errors"
 	"math/big"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/math"
+
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
@@ -307,16 +309,16 @@ func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 func (context *outputContext) checkGas() *vmcommon.VMOutput {
 	gasUsed := uint64(0)
 	for _, outputAccount := range context.outputState.OutputAccounts {
-		// TODO use safe math here
-		gasUsed += outputAccount.GasUsed
+		gasUsed = math.AddUint64(gasUsed, outputAccount.GasUsed)
 		for _, outputTransfer := range outputAccount.OutputTransfers {
-			gasUsed += outputTransfer.GasLimit
-			gasUsed += outputTransfer.GasLocked
+			gasUsed = math.AddUint64(gasUsed, outputTransfer.GasLimit)
+			gasUsed = math.AddUint64(gasUsed, outputTransfer.GasLocked)
 		}
 	}
 
 	gasProvided := context.host.Runtime().GetVMInput().GasProvided
-	totalGas := gasUsed + context.outputState.GasRemaining + context.host.Metering().GetGasLocked()
+	totalGas := math.AddUint64(gasUsed, context.outputState.GasRemaining)
+	totalGas = math.AddUint64(totalGas, context.host.Metering().GetGasLocked())
 	if totalGas != gasProvided {
 		return context.CreateVMOutputInCaseOfError(arwen.ErrInputAndOutputGasDoesNotMatch)
 	}
