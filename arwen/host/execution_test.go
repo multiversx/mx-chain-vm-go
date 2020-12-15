@@ -1287,6 +1287,7 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 	parentInstance.Exports["callChild"] = func(...interface{}) (wasmer.Value, error) {
 		host.Output().Finish([]byte("parent returns this"))
 		host.Metering().UseGas(500)
+		host.Storage().SetStorage([]byte("parent"), []byte("parent storage"))
 		childInput := DefaultTestContractCallInput()
 		childInput.CallerAddr = parentAddress
 		childInput.RecipientAddr = childAddress
@@ -1302,18 +1303,21 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 	childInstance.Exports["doSomething"] = func(...interface{}) (wasmer.Value, error) {
 		host.Output().Finish([]byte("child returns this"))
 		host.Metering().UseGas(100)
+		host.Storage().SetStorage([]byte("child"), []byte("child storage"))
 		return wasmer.Void(), nil
 	}
 
 	input := DefaultTestContractCallInput()
 	input.Function = "callChild"
-	input.GasProvided = 3032
+	input.GasProvided = 1000
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
 	require.NotNil(t, vmOutput)
 
-	fmt.Println(vmOutput.GasRemaining)
+	expectedVMOutput := expectedVMOutputMockedWasmerInstances()
+	expectedVMOutput.GasRemaining = 309
+	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
 // makeBytecodeWithLocals rewrites the bytecode of "answer" to change the
