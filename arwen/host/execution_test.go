@@ -10,6 +10,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
+	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -25,12 +26,6 @@ const (
 	parentPerformAsyncCall  = "parentPerformAsyncCall"
 	parentFunctionChildCall = "parentFunctionChildCall"
 )
-
-func TestNewArwen(t *testing.T) {
-	host, err := defaultTestArwen(t, &contextmock.BlockchainHookStub{})
-	require.Nil(t, err)
-	require.NotNil(t, host)
-}
 
 func TestSCMem(t *testing.T) {
 	code := GetTestSCCode("misc", "../../")
@@ -58,7 +53,7 @@ func TestExecution_DeployNewAddressErr(t *testing.T) {
 
 	errNewAddress := errors.New("new address error")
 
-	host, _ := defaultTestArwen(t, stubBlockchainHook)
+	host := defaultTestArwen(t, stubBlockchainHook)
 	input := DefaultTestContractCreateInput()
 	stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
 		require.Equal(t, input.CallerAddr, address)
@@ -246,7 +241,7 @@ func TestExecution_ManyDeployments(t *testing.T) {
 		return []byte(newAddress + " " + fmt.Sprint(ownerNonce)), nil
 	}
 
-	host, _ := defaultTestArwen(t, stubBlockchainHook)
+	host := defaultTestArwen(t, stubBlockchainHook)
 	input := DefaultTestContractCreateInput()
 	input.CallerAddr = []byte("owner")
 	input.Arguments = make([][]byte, 0)
@@ -286,7 +281,7 @@ func TestExecution_CallGetUserAccountErr(t *testing.T) {
 
 	errGetAccount := errors.New("get code error")
 
-	host, _ := defaultTestArwen(t, stubBlockchainHook)
+	host := defaultTestArwen(t, stubBlockchainHook)
 	input := DefaultTestContractCallInput()
 	stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
 		return nil, errGetAccount
@@ -1283,6 +1278,42 @@ func TestExecution_CreateNewContract_Fail(t *testing.T) {
 	// the actual vmOutput.
 	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
+}
+
+func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
+	host, _, ibm := defaultTestArwenForCallWithInstanceMocks(t)
+
+	parentInstance := ibm.CreateAndStoreInstanceMock(parentAddress)
+	parentInstance.Exports["callChild"] = func(...interface{}) (wasmer.Value, error) {
+		host.Output().Finish([]byte("parent returns this"))
+		host.Metering().UseGas(500)
+		childInput := DefaultTestContractCallInput()
+		childInput.CallerAddr = parentAddress
+		childInput.RecipientAddr = childAddress
+		childInput.CallValue = big.NewInt(4)
+		childInput.Function = "doSomething"
+		childInput.GasProvided = 1000
+		_, _, err := host.ExecuteOnDestContext(childInput)
+		require.Nil(t, err)
+		return wasmer.Void(), nil
+	}
+
+	childInstance := ibm.CreateAndStoreInstanceMock(childAddress)
+	childInstance.Exports["doSomething"] = func(...interface{}) (wasmer.Value, error) {
+		host.Output().Finish([]byte("child returns this"))
+		host.Metering().UseGas(100)
+		return wasmer.Void(), nil
+	}
+
+	input := DefaultTestContractCallInput()
+	input.Function = "callChild"
+	input.GasProvided = 3032
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+
+	fmt.Println(vmOutput.GasRemaining)
 }
 
 // makeBytecodeWithLocals rewrites the bytecode of "answer" to change the

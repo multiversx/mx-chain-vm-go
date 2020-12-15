@@ -38,6 +38,10 @@ type RuntimeContextMock struct {
 func (r *RuntimeContextMock) InitState() {
 }
 
+// ReplaceInstanceBuilder mocked method()
+func (r *RuntimeContextMock) ReplaceInstanceBuilder(_ arwen.InstanceBuilder) {
+}
+
 // StartWasmerInstance mocked method
 func (r *RuntimeContextMock) StartWasmerInstance(_ []byte, _ uint64, _ bool) error {
 	if r.Err != nil {

@@ -42,6 +42,8 @@ type runtimeContext struct {
 	useWarmInstance     bool
 	warmInstanceAddress []byte
 	warmInstance        *wasmer.Instance
+
+	instanceBuilder arwen.InstanceBuilder
 }
 
 // NewRuntimeContext creates a new runtimeContext
@@ -60,6 +62,7 @@ func NewRuntimeContext(host arwen.VMHost, vmType []byte, useWarmInstance bool) (
 		warmInstance:        nil,
 	}
 
+	context.instanceBuilder = &wasmerInstanceBuilder{}
 	context.InitState()
 
 	return context, nil
@@ -76,6 +79,14 @@ func (context *runtimeContext) InitState() {
 	context.asyncContextInfo = &arwen.AsyncContextInfo{
 		AsyncContextMap: make(map[string]*arwen.AsyncContext),
 	}
+}
+
+// ReplaceInstanceBuilder replaces the instance builder, allowing the creation
+// of mocked Wasmer instances
+// TODO remove after implementing proper mocking of
+// Wasmer instances; this is used for tests only
+func (context *runtimeContext) ReplaceInstanceBuilder(builder arwen.InstanceBuilder) {
+	context.instanceBuilder = builder
 }
 
 func (context *runtimeContext) setWarmInstanceWhenNeeded(gasLimit uint64) bool {
@@ -119,7 +130,7 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(codeHash []byte, gas
 		Metering:           true,
 		RuntimeBreakpoints: true,
 	}
-	newInstance, err := wasmer.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
+	newInstance, err := context.instanceBuilder.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
 	if err != nil {
 		log.Warn("NewInstanceFromCompiledCodeWithOptions", "error", err)
 		return false
@@ -167,7 +178,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 		Metering:           true,
 		RuntimeBreakpoints: true,
 	}
-	newInstance, err := wasmer.NewInstanceWithOptions(contract, options)
+	newInstance, err := context.instanceBuilder.NewInstanceWithOptions(contract, options)
 	if err != nil {
 		context.instance = nil
 		return err
@@ -785,3 +796,8 @@ func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 	copy(memoryView[offset:requestedEnd], data)
 	return nil
 }
+
+// SetWarmInstance overwrites the warm Wasmer instance with the provided one.
+// TODO remove after implementing proper mocking of Wasmer instances; this is
+// used for tests only
+// func (context *runtimeContext) SetWarmInstance(address []byte, instanc e
