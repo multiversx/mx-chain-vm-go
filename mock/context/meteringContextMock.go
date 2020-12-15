@@ -3,6 +3,7 @@ package mock
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 var _ arwen.MeteringContext = (*MeteringContextMock)(nil)
@@ -15,6 +16,26 @@ type MeteringContextMock struct {
 	GasComputedToLock uint64
 	BlockGasLimitMock uint64
 	Err               error
+}
+
+// InitState mocked method
+func (m *MeteringContextMock) InitState() {
+}
+
+// PushState mocked method
+func (m *MeteringContextMock) PushState() {
+}
+
+// PopSetActiveState mocked method
+func (m *MeteringContextMock) PopSetActiveState() {
+}
+
+// PopDiscard mocked method
+func (m *MeteringContextMock) PopDiscard() {
+}
+
+// ClearStateStack mocked method
+func (m *MeteringContextMock) ClearStateStack() {
 }
 
 // SetGasSchedule mocked method
@@ -43,6 +64,24 @@ func (m *MeteringContextMock) RestoreGas(gas uint64) {
 // GasLeft mocked method
 func (m *MeteringContextMock) GasLeft() uint64 {
 	return m.GasLeftMock
+}
+
+// GasForwarded mocked method
+func (m *MeteringContextMock) GasForwarded() uint64 {
+	return 0
+}
+
+// ForwardGas mocked method
+func (m *MeteringContextMock) ForwardGas(_ uint64) {
+}
+
+// InitStateFromContractCallInput mocked method
+func (m *MeteringContextMock) InitStateFromContractCallInput(input *vmcommon.ContractCallInput) {
+}
+
+// MeteringContextMock mocked method
+func (context *MeteringContextMock) GasUsedByContract() uint64 {
+	return 0
 }
 
 // BoundGasLimit mocked method

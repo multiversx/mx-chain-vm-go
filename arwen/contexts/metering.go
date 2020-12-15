@@ -8,9 +8,12 @@ import (
 )
 
 type meteringContext struct {
-	gasSchedule   *config.GasCost
-	blockGasLimit uint64
-	host          arwen.VMHost
+	host               arwen.VMHost
+	stateStack         []*meteringContext
+	gasSchedule        *config.GasCost
+	blockGasLimit      uint64
+	initialGasProvided uint64
+	gasForwarded       uint64
 }
 
 // NewMeteringContext creates a new meteringContext
@@ -26,12 +29,72 @@ func NewMeteringContext(
 	}
 
 	context := &meteringContext{
+		host:          host,
+		stateStack:    make([]*meteringContext, 0),
 		gasSchedule:   gasSchedule,
 		blockGasLimit: blockGasLimit,
-		host:          host,
 	}
 
+	context.InitState()
+
 	return context, nil
+}
+
+func (context *meteringContext) InitState() {
+	context.initialGasProvided = 0
+	context.gasForwarded = 0
+}
+
+func (context *meteringContext) PushState() {
+	newState := &meteringContext{
+		initialGasProvided: context.initialGasProvided,
+		gasForwarded:       context.gasForwarded,
+	}
+
+	context.stateStack = append(context.stateStack, newState)
+}
+
+func (context *meteringContext) PopSetActiveState() {
+	stateStackLen := len(context.stateStack)
+	if stateStackLen == 0 {
+		return
+	}
+
+	prevState := context.stateStack[stateStackLen-1]
+	context.stateStack = context.stateStack[:stateStackLen-1]
+
+	context.initialGasProvided = prevState.initialGasProvided
+	context.gasForwarded = prevState.gasForwarded
+}
+
+func (context *meteringContext) PopDiscard() {
+	stateStackLen := len(context.stateStack)
+	if stateStackLen == 0 {
+		return
+	}
+
+	context.stateStack = context.stateStack[:stateStackLen-1]
+}
+
+func (context *meteringContext) ClearStateStack() {
+	context.stateStack = make([]*meteringContext, 0)
+}
+
+func (context *meteringContext) InitStateFromContractCallInput(input *vmcommon.ContractCallInput) {
+	context.unlockGasIfAsyncCallback(input)
+	context.initialGasProvided = input.GasProvided
+}
+
+// unlockGasIfAsyncCallback unlocks the locked gas if the call type is async callback
+func (context *meteringContext) unlockGasIfAsyncCallback(input *vmcommon.ContractCallInput) {
+	if input.CallType != vmcommon.AsynchronousCallBack {
+		return
+	}
+
+	gasProvided := math.AddUint64(input.GasProvided, input.GasLocked)
+
+	input.GasProvided = gasProvided
+	input.GasLocked = 0
 }
 
 // GasSchedule returns the current gas schedule
@@ -80,6 +143,29 @@ func (context *meteringContext) GasLeft() uint64 {
 	}
 
 	return gasProvided - gasUsed
+}
+
+// GasForwarded returns the amount of gas used by the current contract for the
+// execution of other contracts
+func (context *meteringContext) GasForwarded() uint64 {
+	return context.gasForwarded
+}
+
+// ForwardGas accumulates the gas forwarded by the current contract for the execution of other contracts
+func (context *meteringContext) ForwardGas(gas uint64) {
+	context.gasForwarded = math.AddUint64(context.gasForwarded, gas)
+}
+
+func (context *meteringContext) GasUsedByContract() uint64 {
+	runtime := context.host.Runtime()
+	compilationGas := math.SubUint64(context.initialGasProvided, runtime.GetVMInput().GasProvided)
+	executionGasUsed := runtime.GetPointsUsed()
+
+	gasUsed := uint64(0)
+	gasUsed = math.AddUint64(compilationGas, executionGasUsed)
+	gasUsed = math.SubUint64(gasUsed, context.gasForwarded)
+
+	return gasUsed
 }
 
 // BoundGasLimit returns the gas left if it is less than the given limit, or the given value otherwise.
@@ -133,19 +219,6 @@ func (context *meteringContext) ComputeGasLockedForAsync() uint64 {
 	gasLockedForAsync := math.AddUint64(compilationGasLock, executionGasLock)
 
 	return gasLockedForAsync
-}
-
-// UnlockGasIfAsyncCallback unlocks the locked gas if the call type is async callback
-func (context *meteringContext) UnlockGasIfAsyncCallback() {
-	input := context.host.Runtime().GetVMInput()
-	if input.CallType != vmcommon.AsynchronousCallBack {
-		return
-	}
-
-	gasProvided := math.AddUint64(input.GasProvided, input.GasLocked)
-
-	input.GasProvided = gasProvided
-	input.GasLocked = 0
 }
 
 // GetGasLocked returns the locked gas

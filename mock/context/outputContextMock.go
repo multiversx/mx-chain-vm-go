@@ -86,10 +86,6 @@ func (o *OutputContextMock) CopyTopOfStackToActiveState() {
 func (o *OutputContextMock) CensorVMOutput() {
 }
 
-// ResetGas mocked method
-func (o *OutputContextMock) ResetGas() {
-}
-
 // GetOutputAccount mocked method
 func (o *OutputContextMock) GetOutputAccount(_ []byte) (*vmcommon.OutputAccount, bool) {
 	return o.OutputAccountMock, o.OutputAccountIsNew

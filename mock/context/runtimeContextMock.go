@@ -50,6 +50,10 @@ func (r *RuntimeContextMock) StartWasmerInstance(_ []byte, _ uint64, _ bool) err
 	return nil
 }
 
+// SetCaching mocked method
+func (context *RuntimeContextMock) SetCaching(_ bool) {
+}
+
 // InitStateFromContractCallInput mocked method
 func (r *RuntimeContextMock) InitStateFromContractCallInput(_ *vmcommon.ContractCallInput) {
 }
