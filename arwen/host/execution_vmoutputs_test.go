@@ -54,6 +54,7 @@ func expectedVMOutputSameCtxPrepare(_ []byte) *vmcommon.VMOutput {
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
+	parentAccount.GasUsed = 3404
 
 	_ = AddNewOutputAccount(
 		vmOutput,
@@ -155,6 +156,7 @@ func expectedVMOutputSameCtxSimple(parentCode []byte, childCode []byte) *vmcommo
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
+	parentAccount.GasUsed = 3954
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,
@@ -183,6 +185,7 @@ func expectedVMOutputSameCtxSuccessfulChildCall(parentCode []byte, _ []byte) *vm
 
 	parentAccount := vmOutput.OutputAccounts[string(parentAddress)]
 	parentAccount.BalanceDelta = big.NewInt(-141)
+	parentAccount.GasUsed = 3611
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,
@@ -246,7 +249,7 @@ func expectedVMOutputSameCtxSuccessfulChildCallBigInts(_ []byte, _ []byte) *vmco
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
-	// parentAccount.BalanceDelta = big.NewInt(-99)
+	parentAccount.GasUsed = 3460
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,
@@ -288,7 +291,7 @@ func expectedVMOutputSameCtxRecursiveDirect(_ []byte, recursiveCalls int) *vmcom
 	)
 	account.Balance = big.NewInt(1000)
 	account.BalanceDelta = big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1))
-	account.GasUsed = 21187
+	account.GasUsed = 50812
 
 	for i := recursiveCalls; i >= 0; i-- {
 		finishString := fmt.Sprintf("Rfinish%03d", i)
@@ -345,7 +348,7 @@ func expectedVMOutputSameCtxRecursiveMutualMethods(_ []byte, recursiveCalls int)
 	)
 	account.Balance = big.NewInt(1000)
 	account.BalanceDelta = big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1))
-	account.GasUsed = 25412
+	account.GasUsed = 67668
 
 	SetStorageUpdate(account, recursiveIterationCounterKey, []byte{byte(recursiveCalls + 1)})
 	SetStorageUpdate(account, recursiveIterationBigCounterKey, big.NewInt(int64(recursiveCalls+1)).Bytes())
@@ -389,7 +392,7 @@ func expectedVMOutputSameCtxRecursiveMutualSCs(_ []byte, _ []byte, recursiveCall
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
-	parentAccount.GasUsed = 3650
+	parentAccount.GasUsed = 10936
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,
@@ -398,7 +401,7 @@ func expectedVMOutputSameCtxRecursiveMutualSCs(_ []byte, _ []byte, recursiveCall
 		nil,
 	)
 	childAccount.Balance = big.NewInt(1000)
-	childAccount.GasUsed = 5437
+	childAccount.GasUsed = 10836
 
 	if recursiveCalls%2 == 1 {
 		parentAccount.BalanceDelta = big.NewInt(-5)
@@ -501,6 +504,7 @@ func expectedVMOutputDestCtxPrepare(_ []byte) *vmcommon.VMOutput {
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
+	parentAccount.GasUsed = 3092
 
 	_ = AddNewOutputAccount(
 		vmOutput,
@@ -586,6 +590,7 @@ func expectedVMOutputDestCtxSuccessfulChildCall(parentCode []byte, _ []byte) *vm
 
 	parentAccount := vmOutput.OutputAccounts[string(parentAddress)]
 	parentAccount.BalanceDelta = big.NewInt(-141)
+	parentAccount.GasUsed = 3227
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,
@@ -594,6 +599,7 @@ func expectedVMOutputDestCtxSuccessfulChildCall(parentCode []byte, _ []byte) *vm
 		nil,
 	)
 	childAccount.Balance = big.NewInt(1000)
+	childAccount.GasUsed = 2255
 
 	_ = AddNewOutputAccount(
 		vmOutput,
@@ -634,13 +640,15 @@ func expectedVMOutputDestCtxSuccessfulChildCallBigInts(_ []byte, _ []byte) *vmco
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
+	parentAccount.GasUsed = 3149
 
-	_ = AddNewOutputAccount(
+	childAccount := AddNewOutputAccount(
 		vmOutput,
 		childAddress,
 		99,
 		nil,
 	)
+	childAccount.GasUsed = 2264
 
 	// The child SC will output "child ok" if it could NOT read the Big Ints from
 	// the parent's context.
@@ -674,6 +682,7 @@ func expectedVMOutputDestCtxRecursiveDirect(_ []byte, recursiveCalls int) *vmcom
 	)
 	account.Balance = big.NewInt(1000)
 	account.BalanceDelta = big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1))
+	account.GasUsed = 67754
 
 	for i := recursiveCalls; i >= 0; i-- {
 		finishString := fmt.Sprintf("Rfinish%03d", i)
@@ -707,6 +716,7 @@ func expectedVMOutputDestCtxRecursiveMutualMethods(_ []byte, recursiveCalls int)
 	)
 	account.Balance = big.NewInt(1000)
 	account.BalanceDelta = big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1))
+	account.GasUsed = 105826
 
 	SetStorageUpdate(account, recursiveIterationCounterKey, []byte{byte(recursiveCalls + 1)})
 	SetStorageUpdate(account, recursiveIterationBigCounterKey, big.NewInt(int64(1)).Bytes())
@@ -756,6 +766,7 @@ func expectedVMOutputDestCtxRecursiveMutualSCs(_ []byte, _ []byte, recursiveCall
 	)
 	parentAccount.Balance = big.NewInt(1000)
 	parentAccount.BalanceDelta = big.NewInt(-balanceDelta)
+	parentAccount.GasUsed = 18084
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,
@@ -765,6 +776,7 @@ func expectedVMOutputDestCtxRecursiveMutualSCs(_ []byte, _ []byte, recursiveCall
 	)
 	childAccount.Balance = big.NewInt(1000)
 	childAccount.BalanceDelta = big.NewInt(balanceDelta)
+	childAccount.GasUsed = 10936
 
 	for i := 0; i <= recursiveCalls; i++ {
 		var finishData string
@@ -811,6 +823,7 @@ func expectedVMOutputDestCtxByCallerSimpleTransfer(value int64) *vmcommon.VMOutp
 		nil,
 	)
 	parentAccount.Balance = nil
+	parentAccount.GasUsed = 761
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,
@@ -820,6 +833,7 @@ func expectedVMOutputDestCtxByCallerSimpleTransfer(value int64) *vmcommon.VMOutp
 	)
 	childAccount.Balance = big.NewInt(1000)
 	childAccount.BalanceDelta = big.NewInt(-value)
+	childAccount.GasUsed = 666
 
 	userAccount := AddNewOutputAccount(
 		vmOutput,
@@ -851,6 +865,7 @@ func expectedVMOutputAsyncCall(_ []byte, _ []byte) *vmcommon.VMOutput {
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
+	parentAccount.GasUsed = 106047
 	SetStorageUpdate(parentAccount, parentKeyA, parentDataA)
 	SetStorageUpdate(parentAccount, parentKeyB, parentDataB)
 	AddFinishData(vmOutput, parentFinishA)
@@ -873,6 +888,7 @@ func expectedVMOutputAsyncCall(_ []byte, _ []byte) *vmcommon.VMOutput {
 		nil,
 	)
 	childAccount.Balance = big.NewInt(1000)
+	childAccount.GasUsed = 1295
 	SetStorageUpdate(childAccount, childKey, childData)
 
 	_ = AddNewOutputAccount(
@@ -901,6 +917,7 @@ func expectedVMOutputAsyncCallChildFails(_ []byte, _ []byte) *vmcommon.VMOutput 
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
+	parentAccount.GasUsed = 1002048
 	SetStorageUpdate(parentAccount, parentKeyA, parentDataA)
 	SetStorageUpdate(parentAccount, parentKeyB, parentDataB)
 	AddFinishData(vmOutput, parentFinishA)
@@ -943,6 +960,7 @@ func expectedVMOutputAsyncCallCallBackFails(_ []byte, _ []byte) *vmcommon.VMOutp
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
+	parentAccount.GasUsed = 2098677
 	SetStorageUpdate(parentAccount, parentKeyA, parentDataA)
 	SetStorageUpdate(parentAccount, parentKeyB, parentDataB)
 	AddFinishData(vmOutput, parentFinishA)
@@ -967,6 +985,7 @@ func expectedVMOutputAsyncCallCallBackFails(_ []byte, _ []byte) *vmcommon.VMOutp
 	)
 	childAccount.Balance = big.NewInt(1000)
 	childAccount.BalanceDelta = big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1))
+	childAccount.GasUsed = 1295
 	SetStorageUpdate(childAccount, childKey, childData)
 
 	_ = AddNewOutputAccount(
@@ -996,6 +1015,7 @@ func expectedVMOutputCreateNewContractSuccess(_ []byte, childCode []byte) *vmcom
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
+	parentAccount.GasUsed = 6536
 	parentAccount.Nonce = 1
 	SetStorageUpdate(parentAccount, []byte{'A'}, childCode)
 
@@ -1006,6 +1026,7 @@ func expectedVMOutputCreateNewContractSuccess(_ []byte, childCode []byte) *vmcom
 		nil,
 	)
 	childAccount.Code = childCode
+	childAccount.GasUsed = 471
 	childAccount.CodeMetadata = []byte{1, 0}
 	childAccount.CodeDeployerAddress = parentAddress
 
@@ -1026,11 +1047,42 @@ func expectedVMOutputCreateNewContractFail(_ []byte, childCode []byte) *vmcommon
 		nil,
 	)
 	parentAccount.Nonce = 0
+	parentAccount.GasUsed = 8536
 	SetStorageUpdate(parentAccount, []byte{'A'}, childCode)
 
 	l := len(childCode)
 	AddFinishData(vmOutput, []byte{byte(l / 256), byte(l % 256)})
 	AddFinishData(vmOutput, []byte("fail"))
+
+	return vmOutput
+}
+
+func expectedVMOutputMockedWasmerInstances() *vmcommon.VMOutput {
+	vmOutput := MakeVMOutput()
+
+	parentAccount := AddNewOutputAccount(
+		vmOutput,
+		parentAddress,
+		0,
+		nil,
+	)
+	parentAccount.Balance = big.NewInt(1000)
+	parentAccount.BalanceDelta = big.NewInt(-4)
+	parentAccount.GasUsed = 546
+	SetStorageUpdate(parentAccount, []byte("parent"), []byte("parent storage"))
+
+	childAccount := AddNewOutputAccount(
+		vmOutput,
+		childAddress,
+		0,
+		nil,
+	)
+	childAccount.BalanceDelta = big.NewInt(4)
+	childAccount.GasUsed = 145
+	SetStorageUpdate(childAccount, []byte("child"), []byte("child storage"))
+
+	AddFinishData(vmOutput, []byte("parent returns this"))
+	AddFinishData(vmOutput, []byte("child returns this"))
 
 	return vmOutput
 }

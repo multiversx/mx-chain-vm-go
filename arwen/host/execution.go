@@ -6,7 +6,6 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/contexts"
 	"github.com/ElrondNetwork/arwen-wasm-vm/math"
 	"github.com/ElrondNetwork/elrond-go-logger/check"
 	"github.com/ElrondNetwork/elrond-go/core"
@@ -42,6 +41,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	if err != nil {
 		return output.CreateVMOutputInCaseOfError(err)
 	}
+
 	return vmOutput
 }
 
@@ -81,9 +81,10 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 	host.InitState()
 	defer host.Clean()
 
-	_, _, _, output, runtime, storage := host.GetContexts()
+	_, _, metering, output, runtime, storage := host.GetContexts()
 
 	runtime.InitStateFromContractCallInput(input)
+	metering.InitStateFromContractCallInput(input)
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
 	storage.SetAddress(runtime.GetSCAddress())
 
@@ -113,6 +114,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	_, _, metering, output, runtime, storage := host.GetContexts()
 
 	runtime.InitStateFromContractCallInput(input)
+	metering.InitStateFromContractCallInput(input)
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
 	storage.SetAddress(runtime.GetSCAddress())
 
@@ -121,7 +123,6 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 		return output.CreateVMOutputInCaseOfError(arwen.ErrContractNotFound)
 	}
 
-	metering.UnlockGasIfAsyncCallback()
 	err = metering.DeductInitialGasForExecution(contract)
 	if err != nil {
 		return output.CreateVMOutputInCaseOfError(arwen.ErrNotEnoughGas)
@@ -148,24 +149,25 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, asyncInfo *arwen.AsyncContextInfo, err error) {
 	log.Trace("ExecuteOnDestContext", "function", input.Function)
 
-	bigInt, _, _, output, runtime, storage := host.GetContexts()
+	bigInt, _, metering, output, runtime, storage := host.GetContexts()
 
 	bigInt.PushState()
 	bigInt.InitState()
 
 	output.PushState()
 	output.CensorVMOutput()
-	output.ResetGas()
 
 	runtime.PushState()
 	runtime.InitStateFromContractCallInput(input)
 
+	metering.PushState()
+	metering.InitStateFromContractCallInput(input)
+
 	storage.PushState()
 	storage.SetAddress(runtime.GetSCAddress())
 
-	gasUsed := uint64(0)
 	defer func() {
-		vmOutput = host.finishExecuteOnDestContext(gasUsed, err)
+		vmOutput = host.finishExecuteOnDestContext(err)
 	}()
 
 	// Perform a value transfer to the called SC. If the execution fails, this
@@ -175,7 +177,7 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 		return
 	}
 
-	gasUsed, err = host.execute(input)
+	err = host.execute(input)
 	if err != nil {
 		return
 	}
@@ -185,76 +187,45 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	return
 }
 
-// computeGasUsedByCurrentSC isolates the gas that was exclusively used for
-// contract execution, subtracting any gas that was sent to other contracts as
-// GasLimit for asynchronous calls, or any GasLocked for asynchronous callbacks.
-// TODO move this into the OutputContext
-func computeGasUsedByCurrentSC(
-	gasUsed uint64,
-	vmOutput *vmcommon.VMOutput,
-	executeErr error,
-) (uint64, error) {
-	if executeErr != nil {
-		return 0, executeErr
-	}
-
-	if vmOutput.ReturnCode != vmcommon.Ok || gasUsed == 0 {
-		return 0, nil
-	}
-
-	for _, outAcc := range vmOutput.OutputAccounts {
-		accumulatedGasLimitsAndGasLocks := uint64(0)
-		for _, outTransfer := range outAcc.OutputTransfers {
-			accumulatedGasLimitsAndGasLocks = math.AddUint64(accumulatedGasLimitsAndGasLocks, outTransfer.GasLimit)
-			accumulatedGasLimitsAndGasLocks = math.AddUint64(accumulatedGasLimitsAndGasLocks, outTransfer.GasLocked)
-		}
-
-		if gasUsed < math.AddUint64(outAcc.GasUsed, accumulatedGasLimitsAndGasLocks) {
-			return 0, arwen.ErrGasUsageError
-		}
-
-		gasUsed -= outAcc.GasUsed
-		gasUsed -= accumulatedGasLimitsAndGasLocks
-	}
-
-	return gasUsed, nil
-}
-
-func (host *vmHost) finishExecuteOnDestContext(gasUsed uint64, executeErr error) *vmcommon.VMOutput {
+func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOutput {
 	bigInt, _, metering, output, runtime, storage := host.GetContexts()
 
 	// Extract the VMOutput produced by the execution in isolation, before
 	// restoring the contexts. This needs to be done before popping any state
 	// stacks.
-	vmOutput := output.GetVMOutput()
-	gasUsedBySC, err := computeGasUsedByCurrentSC(gasUsed, vmOutput, executeErr)
-	if err != nil {
+	if executeErr != nil {
 		// Execution failed: restore contexts as if the execution didn't happen,
 		// but first create a vmOutput to capture the error.
-		vmOutput := output.CreateVMOutputInCaseOfError(err)
+		vmOutput := output.CreateVMOutputInCaseOfError(executeErr)
 
 		bigInt.PopSetActiveState()
 		output.PopSetActiveState()
+		metering.PopSetActiveState()
 		runtime.PopSetActiveState()
 		storage.PopSetActiveState()
 
 		return vmOutput
 	}
 
+	// Retrieve the VMOutput before popping the Runtime state and the previous
+	// instance, to ensure accurate GasRemaining
+	vmOutput := output.GetVMOutput()
+	gasUsedByContract := metering.GasUsedByContract()
+
 	// Restore the previous context states, except Output, which will be merged
 	// into the initial state (VMOutput), but only if it the child execution
 	// returned vmcommon.Ok.
 	bigInt.PopSetActiveState()
+	metering.PopSetActiveState()
 	runtime.PopSetActiveState()
 	storage.PopSetActiveState()
 
 	// Restore remaining gas to the caller Wasmer instance
 	metering.RestoreGas(vmOutput.GasRemaining)
+	metering.ForwardGas(gasUsedByContract)
 
 	if vmOutput.ReturnCode == vmcommon.Ok {
 		output.PopMergeActiveState()
-		scAddress := string(runtime.GetSCAddress())
-		accumulateGasUsedByContract(vmOutput, scAddress, gasUsedBySC)
 	} else {
 		output.PopSetActiveState()
 	}
@@ -271,20 +242,21 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 		return nil, arwen.ErrBuiltinCallOnSameContextDisallowed
 	}
 
-	bigInt, _, _, output, runtime, _ := host.GetContexts()
+	bigInt, _, metering, output, runtime, _ := host.GetContexts()
 
 	// Back up the states of the contexts (except Storage, which isn't affected
 	// by ExecuteOnSameContext())
 	bigInt.PushState()
 	output.PushState()
-	runtime.PushState()
 
-	output.ResetGas()
+	runtime.PushState()
 	runtime.InitStateFromContractCallInput(input)
 
-	gasUsed := uint64(0)
+	metering.PushState()
+	metering.InitStateFromContractCallInput(input)
+
 	defer func() {
-		host.finishExecuteOnSameContext(gasUsed, err)
+		host.finishExecuteOnSameContext(err)
 	}()
 
 	// Perform a value transfer to the called SC. If the execution fails, this
@@ -294,7 +266,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 		return
 	}
 
-	gasUsed, err = host.execute(input)
+	err = host.execute(input)
 	if err != nil {
 		return
 	}
@@ -303,14 +275,13 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 	return
 }
 
-func (host *vmHost) finishExecuteOnSameContext(gasUsed uint64, executeErr error) {
+func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
 	bigInt, _, metering, output, runtime, _ := host.GetContexts()
 
-	vmOutput := output.GetVMOutput()
-	gasUsedBySC, err := computeGasUsedByCurrentSC(gasUsed, vmOutput, executeErr)
-	if output.ReturnCode() != vmcommon.Ok || err != nil {
+	if output.ReturnCode() != vmcommon.Ok || executeErr != nil {
 		// Execution failed: restore contexts as if the execution didn't happen.
 		bigInt.PopSetActiveState()
+		metering.PopSetActiveState()
 		output.PopSetActiveState()
 		runtime.PopSetActiveState()
 
@@ -319,26 +290,19 @@ func (host *vmHost) finishExecuteOnSameContext(gasUsed uint64, executeErr error)
 
 	// Retrieve the VMOutput before popping the Runtime state and the previous
 	// instance, to ensure accurate GasRemaining
-	scAddress := string(runtime.GetSCAddress())
-	accumulateGasUsedByContract(vmOutput, scAddress, gasUsedBySC)
+	vmOutput := output.GetVMOutput()
+	gasUsedByContract := metering.GasUsedByContract()
 
 	// Execution successful: discard the backups made at the beginning and
 	// resume from the new state.
 	bigInt.PopDiscard()
 	output.PopDiscard()
+	metering.PopSetActiveState()
 	runtime.PopSetActiveState()
 
 	// Restore remaining gas to the caller Wasmer instance
 	metering.RestoreGas(vmOutput.GasRemaining)
-
-}
-
-// TODO move this into the OutputContext
-func accumulateGasUsedByContract(vmOutput *vmcommon.VMOutput, scAddress string, gasUsed uint64) {
-	if _, ok := vmOutput.OutputAccounts[scAddress]; !ok {
-		vmOutput.OutputAccounts[scAddress] = contexts.NewVMOutputAccount([]byte(scAddress))
-	}
-	vmOutput.OutputAccounts[scAddress].GasUsed += gasUsed
+	metering.ForwardGas(gasUsedByContract)
 }
 
 func (host *vmHost) isInitFunctionBeingCalled() bool {
@@ -448,18 +412,17 @@ func (host *vmHost) checkUpgradePermission(vmInput *vmcommon.ContractCallInput) 
 
 // executeUpgrade upgrades a contract indirectly (from another contract). This
 // function follows the convention of executeSmartContractCall().
-func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) (uint64, error) {
+func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) error {
 	_, _, metering, output, runtime, _ := host.GetContexts()
 
-	initialGasProvided := input.GasProvided
 	err := host.checkUpgradePermission(input)
 	if err != nil {
-		return 0, err
+		return err
 	}
 
 	code, codeMetadata, err := runtime.ExtractCodeUpgradeFromArgs()
 	if err != nil {
-		return 0, arwen.ErrInvalidUpgradeArguments
+		return arwen.ErrInvalidUpgradeArguments
 	}
 
 	codeDeployInput := arwen.CodeDeployInput{
@@ -472,7 +435,7 @@ func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) (uint64, e
 	err = metering.DeductInitialGasForDirectDeployment(codeDeployInput)
 	if err != nil {
 		output.SetReturnCode(vmcommon.OutOfGas)
-		return 0, err
+		return err
 	}
 
 	runtime.MustVerifyNextContractCode()
@@ -481,21 +444,20 @@ func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) (uint64, e
 	err = runtime.StartWasmerInstance(codeDeployInput.ContractCode, vmInput.GasProvided, true)
 	if err != nil {
 		log.Debug("performCodeDeployment/StartWasmerInstance", "err", err)
-		return 0, arwen.ErrContractInvalid
+		return arwen.ErrContractInvalid
 	}
 
 	err = host.callInitFunction()
 	if err != nil {
-		return 0, err
+		return err
 	}
 
 	output.DeployCode(codeDeployInput)
 	if output.ReturnCode() != vmcommon.Ok {
-		return 0, arwen.ErrReturnCodeNotOk
+		return arwen.ErrReturnCodeNotOk
 	}
 
-	gasToRestoreToCaller := metering.GasLeft()
-	return math.SubUint64(initialGasProvided, gasToRestoreToCaller), nil
+	return nil
 }
 
 // executeSmartContractCall executes an indirect call to a smart contract,
@@ -518,16 +480,14 @@ func (host *vmHost) executeSmartContractCall(
 	runtime arwen.RuntimeContext,
 	output arwen.OutputContext,
 	withInitialGasDeduct bool,
-) (uint64, error) {
+) error {
 	if host.isInitFunctionBeingCalled() && !input.AllowInitFunction {
-		return 0, arwen.ErrInitFuncCalledInRun
+		return arwen.ErrInitFuncCalledInRun
 	}
 
 	// Use all gas initially, on the Wasmer instance of the caller. In case of
 	// successful execution, the unused gas will be restored.
-	metering.UnlockGasIfAsyncCallback()
-	initialGasProvided := input.GasProvided
-	metering.UseGas(initialGasProvided)
+	metering.UseGas(input.GasProvided)
 
 	isUpgrade := input.Function == arwen.UpgradeFunctionName
 	if isUpgrade {
@@ -536,13 +496,13 @@ func (host *vmHost) executeSmartContractCall(
 
 	contract, err := runtime.GetSCCode()
 	if err != nil {
-		return 0, err
+		return err
 	}
 
 	if withInitialGasDeduct {
 		err = metering.DeductInitialGasForExecution(contract)
 		if err != nil {
-			return 0, err
+			return err
 		}
 	}
 
@@ -553,43 +513,43 @@ func (host *vmHost) executeSmartContractCall(
 	// before calling executeSmartContractCall().
 	err = runtime.StartWasmerInstance(contract, gasForExecution, false)
 	if err != nil {
-		return 0, err
+		return err
 	}
 
 	err = host.callSCMethodIndirect()
 	if err != nil {
-		return 0, err
+		return err
 	}
 
 	if output.ReturnCode() != vmcommon.Ok {
-		return 0, arwen.ErrReturnCodeNotOk
+		return arwen.ErrReturnCodeNotOk
 	}
 
-	gasToRestoreToCaller := metering.GasLeft()
-	return math.SubUint64(initialGasProvided, gasToRestoreToCaller), nil
+	return nil
 }
 
-func (host *vmHost) execute(input *vmcommon.ContractCallInput) (uint64, error) {
+func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 	_, _, metering, output, runtime, storage := host.GetContexts()
 
 	if host.isBuiltinFunctionBeingCalled() {
 		err := metering.UseGasForAsyncStep()
 		if err != nil {
-			return 0, err
+			return err
 		}
 
 		newVMInput, err := host.callBuiltinFunction(input)
 		if err != nil {
-			return 0, err
+			return err
 		}
 
 		if newVMInput != nil {
 			runtime.InitStateFromContractCallInput(newVMInput)
+			metering.InitStateFromContractCallInput(newVMInput)
 			storage.SetAddress(runtime.GetSCAddress())
 			return host.executeSmartContractCall(newVMInput, metering, runtime, output, false)
 		}
 
-		return 0, nil
+		return nil
 	}
 
 	return host.executeSmartContractCall(input, metering, runtime, output, true)

@@ -128,17 +128,6 @@ func (context *outputContext) CensorVMOutput() {
 	context.outputState.Logs = make([]*vmcommon.LogEntry, 0)
 }
 
-// ResetGas will set to 0 all gas used from output accounts, in order
-// to properly calculate the actual used gas of one smart contract when called in sync
-func (context *outputContext) ResetGas() {
-	for _, outAcc := range context.outputState.OutputAccounts {
-		outAcc.GasUsed = 0
-		for _, outTransfer := range outAcc.OutputTransfers {
-			outTransfer.GasLimit = 0
-		}
-	}
-}
-
 // GetOutputAccount returns the output account present at the given address,
 // and a bool that is true if the account is new. If no output account is present at that address,
 // a new account will be created and added to the output accounts.
@@ -297,7 +286,13 @@ func (context *outputContext) AddTxValueToAccount(address []byte, value *big.Int
 // GetVMOutput updates the current VMOutput and returns it
 func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 	if context.outputState.ReturnCode == vmcommon.Ok {
-		context.outputState.GasRemaining = context.host.Metering().GasLeft()
+		runtime := context.host.Runtime()
+		metering := context.host.Metering()
+
+		gasUsed := metering.GasUsedByContract()
+		account, _ := context.GetOutputAccount(runtime.GetSCAddress())
+		account.GasUsed = math.AddUint64(account.GasUsed, gasUsed)
+		context.outputState.GasRemaining = metering.GasLeft()
 	}
 
 	context.removeNonUpdatedCode(context.outputState)

@@ -38,7 +38,6 @@ type OutputContextStub struct {
 	DeployCodeCalled                  func(input arwen.CodeDeployInput)
 	CreateVMOutputInCaseOfErrorCalled func(err error) *vmcommon.VMOutput
 	AddToActiveStateCalled            func(vmOutput *vmcommon.VMOutput)
-	ResetConsumedGasCalled            func()
 	TransferValueOnlyCalled           func(destination []byte, sender []byte, value *big.Int) error
 }
 
@@ -102,13 +101,6 @@ func (o *OutputContextStub) CopyTopOfStackToActiveState() {
 func (o *OutputContextStub) CensorVMOutput() {
 	if o.CensorVMOutputCalled != nil {
 		o.CensorVMOutputCalled()
-	}
-}
-
-// ResetGas mocked method
-func (o *OutputContextStub) ResetGas() {
-	if o.ResetConsumedGasCalled != nil {
-		o.ResetConsumedGasCalled()
 	}
 }
 
