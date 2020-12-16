@@ -55,6 +55,7 @@ import (
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 )
@@ -252,7 +253,7 @@ func useExtraGasForOperations(metering arwen.MeteringContext, values []*big.Int)
 	for _, val := range values {
 		byteLen := val.BitLen() / 8
 		if byteLen > maxBigIntByteLenForNormalCost {
-			metering.UseGas(uint64(byteLen) * metering.GasSchedule().BaseOperationCost.DataCopyPerByte)
+			metering.UseGas(math.MulUint64(uint64(byteLen), metering.GasSchedule().BaseOperationCost.DataCopyPerByte))
 		}
 	}
 }
@@ -451,7 +452,7 @@ func bigIntGetUnsignedBytes(context unsafe.Pointer, reference int32, byteOffset 
 		return 0
 	}
 
-	gasToUse = metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(bytes))
+	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(bytes)))
 	metering.UseGas(gasToUse)
 
 	return int32(len(bytes))
@@ -474,7 +475,7 @@ func bigIntGetSignedBytes(context unsafe.Pointer, reference int32, byteOffset in
 		return 0
 	}
 
-	gasToUse = metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(bytes))
+	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(bytes)))
 	metering.UseGas(gasToUse)
 
 	return int32(len(bytes))
@@ -497,7 +498,7 @@ func bigIntSetUnsignedBytes(context unsafe.Pointer, destination int32, byteOffse
 	value := bigInt.GetOne(destination)
 	value.SetBytes(bytes)
 
-	gasToUse = metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(bytes))
+	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(bytes)))
 	metering.UseGas(gasToUse)
 }
 
@@ -518,7 +519,7 @@ func bigIntSetSignedBytes(context unsafe.Pointer, destination int32, byteOffset 
 	value := bigInt.GetOne(destination)
 	twos.SetBytes(value, bytes)
 
-	gasToUse = metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(len(bytes))
+	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(bytes)))
 	metering.UseGas(gasToUse)
 }
 
@@ -847,7 +848,7 @@ func bigIntFinishUnsigned(context unsafe.Pointer, reference int32) {
 	bigIntBytes := value.Bytes()
 	output.Finish(bigIntBytes)
 
-	gasToUse = metering.GasSchedule().BaseOperationCost.PersistPerByte * uint64(len(value.Bytes()))
+	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(len(value.Bytes())))
 	metering.UseGas(gasToUse)
 }
 
@@ -864,6 +865,6 @@ func bigIntFinishSigned(context unsafe.Pointer, reference int32) {
 	bigInt2cBytes := twos.ToBytes(value)
 	output.Finish(bigInt2cBytes)
 
-	gasToUse = metering.GasSchedule().BaseOperationCost.PersistPerByte * uint64(len(bigInt2cBytes))
+	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(len(bigInt2cBytes)))
 	metering.UseGas(gasToUse)
 }

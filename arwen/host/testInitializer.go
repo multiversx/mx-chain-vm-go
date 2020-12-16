@@ -62,7 +62,7 @@ func defaultTestArwenForDeployment(t *testing.T, _ uint64, newAddress []byte) *v
 		return newAddress, nil
 	}
 
-	host, _ := defaultTestArwen(t, stubBlockchainHook)
+	host := defaultTestArwen(t, stubBlockchainHook)
 	return host
 }
 
@@ -78,8 +78,26 @@ func defaultTestArwenForCall(tb testing.TB, code []byte, balance *big.Int) (*vmH
 		return nil, errAccountNotFound
 	}
 
-	host, _ := defaultTestArwen(tb, stubBlockchainHook)
+	host := defaultTestArwen(tb, stubBlockchainHook)
 	return host, stubBlockchainHook
+}
+
+func defaultTestArwenForCallWithInstanceMocks(tb testing.TB) (*vmHost, *contextmock.BlockchainHookStub, *contextmock.InstanceBuilderMock) {
+	stubBlockchainHook := &contextmock.BlockchainHookStub{}
+	stubBlockchainHook.GetUserAccountCalled = func(scAddress []byte) (vmcommon.UserAccountHandler, error) {
+		return &contextmock.StubAccount{
+			Code:    scAddress,
+			Balance: big.NewInt(1000),
+		}, nil
+	}
+
+	host := defaultTestArwen(tb, stubBlockchainHook)
+
+	code := GetTestSCCode("counter", "../../")
+	instanceBuilderMock := contextmock.NewInstanceBuilderMock(tb, code)
+	host.Runtime().ReplaceInstanceBuilder(instanceBuilderMock)
+
+	return host, stubBlockchainHook, instanceBuilderMock
 }
 
 // defaultTestArwenForTwoSCs creates an Arwen vmHost configured for testing calls between 2 SmartContracts
@@ -117,11 +135,11 @@ func defaultTestArwenForTwoSCs(
 		return nil, errAccountNotFound
 	}
 
-	host, _ := defaultTestArwen(t, stubBlockchainHook)
+	host := defaultTestArwen(t, stubBlockchainHook)
 	return host, stubBlockchainHook
 }
 
-func defaultTestArwen(tb testing.TB, blockchain vmcommon.BlockchainHook) (*vmHost, error) {
+func defaultTestArwen(tb testing.TB, blockchain vmcommon.BlockchainHook) *vmHost {
 	gasSchedule := customGasSchedule
 	if gasSchedule == nil {
 		gasSchedule = config.MakeGasMapForTests()
@@ -138,7 +156,7 @@ func defaultTestArwen(tb testing.TB, blockchain vmcommon.BlockchainHook) (*vmHos
 	})
 	require.Nil(tb, err)
 	require.NotNil(tb, host)
-	return host, err
+	return host
 }
 
 // DefaultTestContractCreateInput creates a vmcommon.ContractCreateInput struct with default values

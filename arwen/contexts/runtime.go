@@ -3,9 +3,11 @@ package contexts
 import (
 	"bytes"
 	"fmt"
+	builtinMath "math"
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
@@ -40,6 +42,8 @@ type runtimeContext struct {
 	useWarmInstance     bool
 	warmInstanceAddress []byte
 	warmInstance        *wasmer.Instance
+
+	instanceBuilder arwen.InstanceBuilder
 }
 
 // NewRuntimeContext creates a new runtimeContext
@@ -58,6 +62,7 @@ func NewRuntimeContext(host arwen.VMHost, vmType []byte, useWarmInstance bool) (
 		warmInstance:        nil,
 	}
 
+	context.instanceBuilder = &wasmerInstanceBuilder{}
 	context.InitState()
 
 	return context, nil
@@ -74,6 +79,14 @@ func (context *runtimeContext) InitState() {
 	context.asyncContextInfo = &arwen.AsyncContextInfo{
 		AsyncContextMap: make(map[string]*arwen.AsyncContext),
 	}
+}
+
+// ReplaceInstanceBuilder replaces the instance builder, allowing the creation
+// of mocked Wasmer instances
+// TODO remove after implementing proper mocking of
+// Wasmer instances; this is used for tests only
+func (context *runtimeContext) ReplaceInstanceBuilder(builder arwen.InstanceBuilder) {
+	context.instanceBuilder = builder
 }
 
 func (context *runtimeContext) setWarmInstanceWhenNeeded(gasLimit uint64) bool {
@@ -117,7 +130,7 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(codeHash []byte, gas
 		Metering:           true,
 		RuntimeBreakpoints: true,
 	}
-	newInstance, err := wasmer.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
+	newInstance, err := context.instanceBuilder.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
 	if err != nil {
 		log.Warn("NewInstanceFromCompiledCodeWithOptions", "error", err)
 		return false
@@ -165,7 +178,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 		Metering:           true,
 		RuntimeBreakpoints: true,
 	}
-	newInstance, err := wasmer.NewInstanceWithOptions(contract, options)
+	newInstance, err := context.instanceBuilder.NewInstanceWithOptions(contract, options)
 	if err != nil {
 		context.instance = nil
 		return err
@@ -560,6 +573,9 @@ func (context *runtimeContext) GetPointsUsed() uint64 {
 
 // SetPointsUsed sets the given gas points as the gas points used by the current wasmer instance.
 func (context *runtimeContext) SetPointsUsed(gasPoints uint64) {
+	if gasPoints > builtinMath.MaxInt64 {
+		gasPoints = builtinMath.MaxInt64
+	}
 	context.instance.SetPointsUsed(gasPoints)
 }
 
@@ -699,10 +715,11 @@ func (context *runtimeContext) MemLoad(offset int32, length int32) ([]byte, erro
 	memory := context.instance.InstanceCtx.Memory()
 	memoryView := memory.Data()
 	memoryLength := memory.Length()
-	requestedEnd := uint32(offset + length)
+	requestedEnd := math.AddInt32(offset, length)
+
 	isOffsetTooSmall := offset < 0
 	isOffsetTooLarge := uint32(offset) > memoryLength
-	isRequestedEndTooLarge := requestedEnd > memoryLength
+	isRequestedEndTooLarge := uint32(requestedEnd) > memoryLength
 	isLengthNegative := length < 0
 
 	if isOffsetTooSmall || isOffsetTooLarge {
@@ -753,9 +770,10 @@ func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 	memory := context.instance.InstanceCtx.Memory()
 	memoryView := memory.Data()
 	memoryLength := memory.Length()
-	requestedEnd := uint32(offset + dataLength)
+	requestedEnd := math.AddInt32(offset, dataLength)
+
 	isOffsetTooSmall := offset < 0
-	isNewPageNecessary := requestedEnd > memoryLength
+	isNewPageNecessary := uint32(requestedEnd) > memoryLength
 
 	if isOffsetTooSmall {
 		return arwen.ErrBadLowerBounds
@@ -770,7 +788,7 @@ func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 		memoryLength = memory.Length()
 	}
 
-	isRequestedEndTooLarge := requestedEnd > memoryLength
+	isRequestedEndTooLarge := uint32(requestedEnd) > memoryLength
 	if isRequestedEndTooLarge {
 		return arwen.ErrBadUpperBounds
 	}
@@ -778,3 +796,8 @@ func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 	copy(memoryView[offset:requestedEnd], data)
 	return nil
 }
+
+// SetWarmInstance overwrites the warm Wasmer instance with the provided one.
+// TODO remove after implementing proper mocking of Wasmer instances; this is
+// used for tests only
+// func (context *runtimeContext) SetWarmInstance(address []byte, instanc e

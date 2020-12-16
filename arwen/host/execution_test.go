@@ -10,6 +10,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
+	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -25,12 +26,6 @@ const (
 	parentPerformAsyncCall  = "parentPerformAsyncCall"
 	parentFunctionChildCall = "parentFunctionChildCall"
 )
-
-func TestNewArwen(t *testing.T) {
-	host, err := defaultTestArwen(t, &contextmock.BlockchainHookStub{})
-	require.Nil(t, err)
-	require.NotNil(t, host)
-}
 
 func TestSCMem(t *testing.T) {
 	code := GetTestSCCode("misc", "../../")
@@ -58,7 +53,7 @@ func TestExecution_DeployNewAddressErr(t *testing.T) {
 
 	errNewAddress := errors.New("new address error")
 
-	host, _ := defaultTestArwen(t, stubBlockchainHook)
+	host := defaultTestArwen(t, stubBlockchainHook)
 	input := DefaultTestContractCreateInput()
 	stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
 		require.Equal(t, input.CallerAddr, address)
@@ -246,7 +241,7 @@ func TestExecution_ManyDeployments(t *testing.T) {
 		return []byte(newAddress + " " + fmt.Sprint(ownerNonce)), nil
 	}
 
-	host, _ := defaultTestArwen(t, stubBlockchainHook)
+	host := defaultTestArwen(t, stubBlockchainHook)
 	input := DefaultTestContractCreateInput()
 	input.CallerAddr = []byte("owner")
 	input.Arguments = make([][]byte, 0)
@@ -286,7 +281,7 @@ func TestExecution_CallGetUserAccountErr(t *testing.T) {
 
 	errGetAccount := errors.New("get code error")
 
-	host, _ := defaultTestArwen(t, stubBlockchainHook)
+	host := defaultTestArwen(t, stubBlockchainHook)
 	input := DefaultTestContractCallInput()
 	stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
 		return nil, errGetAccount
@@ -1283,6 +1278,125 @@ func TestExecution_CreateNewContract_Fail(t *testing.T) {
 	// the actual vmOutput.
 	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
+}
+
+func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
+	host, _, ibm := defaultTestArwenForCallWithInstanceMocks(t)
+
+	parentInstance := ibm.CreateAndStoreInstanceMock(parentAddress)
+	parentInstance.Exports["callChild"] = mockMethod(func() {
+		host.Output().Finish([]byte("parent returns this"))
+		host.Metering().UseGas(500)
+		_, err := host.Storage().SetStorage([]byte("parent"), []byte("parent storage"))
+		require.Nil(t, err)
+		childInput := DefaultTestContractCallInput()
+		childInput.CallerAddr = parentAddress
+		childInput.RecipientAddr = childAddress
+		childInput.CallValue = big.NewInt(4)
+		childInput.Function = "doSomething"
+		childInput.GasProvided = 1000
+		_, _, err = host.ExecuteOnDestContext(childInput)
+		require.Nil(t, err)
+	})
+
+	childInstance := ibm.CreateAndStoreInstanceMock(childAddress)
+	childInstance.Exports["doSomething"] = mockMethod(func() {
+		host.Output().Finish([]byte("child returns this"))
+		host.Metering().UseGas(100)
+		_, err := host.Storage().SetStorage([]byte("child"), []byte("child storage"))
+		require.Nil(t, err)
+	})
+
+	input := DefaultTestContractCallInput()
+	input.Function = "callChild"
+	input.GasProvided = 1000
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+
+	expectedVMOutput := expectedVMOutputMockedWasmerInstances()
+	expectedVMOutput.GasRemaining = 309
+	require.Equal(t, expectedVMOutput, vmOutput)
+}
+
+func TestExecution_GasUsed_SingleContract(t *testing.T) {
+	host, _, ibm := defaultTestArwenForCallWithInstanceMocks(t)
+	host.Metering().GasSchedule().BaseOperationCost.CompilePerByte = 0
+	host.Metering().GasSchedule().BaseOperationCost.AoTPreparePerByte = 0
+
+	gasProvided := uint64(1000)
+	gasUsedByParent := uint64(400)
+
+	parentInstance := ibm.CreateAndStoreInstanceMock(parentAddress)
+	parentInstance.Exports["doSomething"] = mockMethod(func() {
+		host.Metering().UseGas(gasUsedByParent)
+	})
+
+	input := DefaultTestContractCallInput()
+	input.Function = "doSomething"
+	input.GasProvided = gasProvided
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, gasProvided-gasUsedByParent, vmOutput.GasRemaining)
+
+	parentAccount := vmOutput.OutputAccounts[string(parentAddress)]
+	require.Equal(t, gasUsedByParent, parentAccount.GasUsed)
+}
+
+func TestExecution_GasUsed_ExecuteOnSameCtx(t *testing.T) {
+	host, _, ibm := defaultTestArwenForCallWithInstanceMocks(t)
+	host.Metering().GasSchedule().BaseOperationCost.CompilePerByte = 1
+	host.Metering().GasSchedule().BaseOperationCost.AoTPreparePerByte = 1
+
+	gasProvided := uint64(1000)
+	contractCompilationCost := uint64(32)
+	gasUsedByParentExec := uint64(400)
+	gasUsedByChildExec := uint64(200)
+	gasUsedByParent := contractCompilationCost + gasUsedByParentExec
+	gasUsedByChild := contractCompilationCost + gasUsedByChildExec
+
+	parentInstance := ibm.CreateAndStoreInstanceMock(parentAddress)
+	parentInstance.Exports["function"] = mockMethod(func() {
+		host.Metering().UseGas(gasUsedByParentExec)
+		childInput := DefaultTestContractCallInput()
+		childInput.CallerAddr = parentAddress
+		childInput.RecipientAddr = childAddress
+		childInput.GasProvided = 300
+		_, err := host.ExecuteOnSameContext(childInput)
+		require.Nil(t, err)
+	})
+
+	childInstance := ibm.CreateAndStoreInstanceMock(childAddress)
+	childInstance.Exports["function"] = mockMethod(func() {
+		host.Metering().UseGas(gasUsedByChildExec)
+	})
+
+	input := DefaultTestContractCallInput()
+	input.Function = "function"
+	input.GasProvided = gasProvided
+
+	expectedGasRemaining := gasProvided - gasUsedByParent - gasUsedByChild
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, expectedGasRemaining, vmOutput.GasRemaining)
+
+	parentAccount := vmOutput.OutputAccounts[string(parentAddress)]
+	require.Equal(t, gasUsedByParent, parentAccount.GasUsed)
+
+	childAccount := vmOutput.OutputAccounts[string(childAddress)]
+	require.Equal(t, gasUsedByChild, childAccount.GasUsed)
+}
+
+func mockMethod(method func()) wasmer.ExportedFunctionCallback {
+	wrappedMethod := func(...interface{}) (wasmer.Value, error) {
+		method()
+		return wasmer.Void(), nil
+	}
+	return wrappedMethod
 }
 
 // makeBytecodeWithLocals rewrites the bytecode of "answer" to change the

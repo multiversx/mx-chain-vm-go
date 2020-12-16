@@ -240,6 +240,7 @@ func (host *vmHost) initContexts() {
 	host.ClearContextStateStack()
 	host.bigIntContext.InitState()
 	host.outputContext.InitState()
+	host.meteringContext.InitState()
 	host.runtimeContext.InitState()
 	host.storageContext.InitState()
 	host.ethInput = nil
@@ -249,6 +250,7 @@ func (host *vmHost) initContexts() {
 func (host *vmHost) ClearContextStateStack() {
 	host.bigIntContext.ClearStateStack()
 	host.outputContext.ClearStateStack()
+	host.meteringContext.ClearStateStack()
 	host.runtimeContext.ClearStateStack()
 	host.storageContext.ClearStateStack()
 }
