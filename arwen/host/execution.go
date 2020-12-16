@@ -248,8 +248,8 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 	// by ExecuteOnSameContext())
 	bigInt.PushState()
 	output.PushState()
-	runtime.PushState()
 
+	runtime.PushState()
 	runtime.InitStateFromContractCallInput(input)
 
 	metering.PushState()

@@ -13,6 +13,7 @@ type meteringContext struct {
 	gasSchedule        *config.GasCost
 	blockGasLimit      uint64
 	initialGasProvided uint64
+	initialCost        uint64
 	gasForwarded       uint64
 }
 
@@ -44,6 +45,7 @@ func NewMeteringContext(
 func (context *meteringContext) InitState() {
 	context.initialGasProvided = 0
 	context.gasForwarded = 0
+	context.initialCost = 0
 }
 
 // PushState pushes the current state of the MeteringContext on its internal state stack
@@ -51,6 +53,7 @@ func (context *meteringContext) PushState() {
 	newState := &meteringContext{
 		initialGasProvided: context.initialGasProvided,
 		gasForwarded:       context.gasForwarded,
+		initialCost:        context.initialCost,
 	}
 
 	context.stateStack = append(context.stateStack, newState)
@@ -69,6 +72,7 @@ func (context *meteringContext) PopSetActiveState() {
 
 	context.initialGasProvided = prevState.initialGasProvided
 	context.gasForwarded = prevState.gasForwarded
+	context.initialCost = prevState.initialCost
 }
 
 // PopDiscard pops the state at the top of the internal state stack, and discards it
@@ -166,11 +170,14 @@ func (context *meteringContext) ForwardGas(gas uint64) {
 
 func (context *meteringContext) GasUsedByContract() uint64 {
 	runtime := context.host.Runtime()
-	compilationGas := math.SubUint64(context.initialGasProvided, runtime.GetVMInput().GasProvided)
 	executionGasUsed := runtime.GetPointsUsed()
 
 	gasUsed := uint64(0)
-	gasUsed = math.AddUint64(compilationGas, executionGasUsed)
+	if context.host.IsArwenV2Enabled() {
+		gasUsed = context.initialCost
+	}
+
+	gasUsed = math.AddUint64(gasUsed, executionGasUsed)
 	gasUsed = math.SubUint64(gasUsed, context.gasForwarded)
 
 	return gasUsed
@@ -286,6 +293,7 @@ func (context *meteringContext) deductInitialGas(
 		return arwen.ErrNotEnoughGas
 	}
 
+	context.initialCost = initialCost
 	input.GasProvided -= initialCost
 	return nil
 }
