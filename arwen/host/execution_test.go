@@ -894,6 +894,7 @@ func TestExecution_ExecuteOnDestContext_GasRemaining(t *testing.T) {
 	runtime.InitStateFromContractCallInput(input)
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
 	storage.SetAddress(runtime.GetSCAddress())
+	_ = metering.DeductInitialGasForExecution([]byte{})
 
 	contract, err := runtime.GetSCCode()
 	require.Nil(t, err)

@@ -51,18 +51,16 @@ func TestMeteringContext_UseGas(t *testing.T) {
 	meteringContext, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000))
 
 	gasProvided := uint64(1001)
-	vmInput := &vmcommon.VMInput{GasProvided: gasProvided}
-	mockRuntime.SetVMInput(vmInput)
+	meteringContext.gasForExecution = gasProvided
 	gas := uint64(1000)
 	meteringContext.UseGas(gas)
 	require.Equal(t, mockRuntime.GetPointsUsed(), gas)
 	require.Equal(t, uint64(1), meteringContext.GasLeft())
 
 	gasProvided = uint64(10000)
-	vmInput = &vmcommon.VMInput{GasProvided: gasProvided}
 	mockRuntime.SetPointsUsed(0)
-	mockRuntime.SetVMInput(vmInput)
 	meteringContext, _ = NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000))
+	meteringContext.gasForExecution = gasProvided
 
 	require.Equal(t, gasProvided, meteringContext.GasLeft())
 	meteringContext.UseGas(gas)
@@ -100,8 +98,7 @@ func TestMeteringContext_BoundGasLimit(t *testing.T) {
 	meteringContext, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000))
 
 	gasProvided := uint64(10000)
-	vmInput := &vmcommon.VMInput{GasProvided: gasProvided}
-	mockRuntime.SetVMInput(vmInput)
+	meteringContext.gasForExecution = gasProvided
 	mockRuntime.SetPointsUsed(0)
 
 	gasLimit := 5000
@@ -235,6 +232,7 @@ func TestMeteringContext_AsyncCallGasLocking(t *testing.T) {
 	mockRuntime.SetPointsUsed(0)
 	gasProvided := uint64(1_000_000)
 	input.GasProvided = gasProvided
+	meteringContext.gasForExecution = gasProvided
 	gasToLock := meteringContext.ComputeGasLockedForAsync()
 	err = meteringContext.UseGasBounded(gasToLock)
 	require.Nil(t, err)

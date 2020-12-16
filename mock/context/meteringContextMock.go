@@ -50,15 +50,15 @@ func (m *MeteringContextMock) GasSchedule() *config.GasCost {
 }
 
 // UseGas mocked method
-func (m *MeteringContextMock) UseGas(gas uint64) {
+func (m *MeteringContextMock) UseGas(_ uint64) {
 }
 
 // FreeGas mocked method
-func (m *MeteringContextMock) FreeGas(gas uint64) {
+func (m *MeteringContextMock) FreeGas(_ uint64) {
 }
 
 // RestoreGas mocked method
-func (m *MeteringContextMock) RestoreGas(gas uint64) {
+func (m *MeteringContextMock) RestoreGas(_ uint64) {
 }
 
 // GasLeft mocked method
@@ -76,11 +76,16 @@ func (m *MeteringContextMock) ForwardGas(_ uint64) {
 }
 
 // InitStateFromContractCallInput mocked method
-func (m *MeteringContextMock) InitStateFromContractCallInput(input *vmcommon.ContractCallInput) {
+func (m *MeteringContextMock) InitStateFromContractCallInput(_ *vmcommon.ContractCallInput) {
 }
 
-// MeteringContextMock mocked method
+// GasUsedByContract mocked method
 func (m *MeteringContextMock) GasUsedByContract() uint64 {
+	return 0
+}
+
+// GetGasForExecution mocked method
+func (m *MeteringContextMock) GetGasForExecution() uint64 {
 	return 0
 }
 
@@ -106,7 +111,7 @@ func (m *MeteringContextMock) DeductGasIfAsyncStep() error {
 }
 
 // UseGasBounded mocked method
-func (m *MeteringContextMock) UseGasBounded(gas uint64) error {
+func (m *MeteringContextMock) UseGasBounded(_ uint64) error {
 	return m.Err
 }
 
@@ -134,16 +139,16 @@ func (m *MeteringContextMock) BlockGasLimit() uint64 {
 }
 
 // DeductInitialGasForExecution mocked method
-func (m *MeteringContextMock) DeductInitialGasForExecution(contract []byte) error {
+func (m *MeteringContextMock) DeductInitialGasForExecution(_ []byte) error {
 	return m.Err
 }
 
 // DeductInitialGasForDirectDeployment mocked method
-func (m *MeteringContextMock) DeductInitialGasForDirectDeployment(input arwen.CodeDeployInput) error {
+func (m *MeteringContextMock) DeductInitialGasForDirectDeployment(_ arwen.CodeDeployInput) error {
 	return m.Err
 }
 
 // DeductInitialGasForIndirectDeployment mocked method
-func (m *MeteringContextMock) DeductInitialGasForIndirectDeployment(input arwen.CodeDeployInput) error {
+func (m *MeteringContextMock) DeductInitialGasForIndirectDeployment(_ arwen.CodeDeployInput) error {
 	return m.Err
 }

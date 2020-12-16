@@ -185,6 +185,7 @@ type MeteringContext interface {
 	GasForwarded() uint64
 	ForwardGas(gas uint64)
 	GasUsedByContract() uint64
+	GetGasForExecution() uint64
 	BoundGasLimit(value int64) uint64
 	BlockGasLimit() uint64
 	DeductInitialGasForExecution(contract []byte) error

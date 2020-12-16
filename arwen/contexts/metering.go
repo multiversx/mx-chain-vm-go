@@ -15,6 +15,7 @@ type meteringContext struct {
 	initialGasProvided uint64
 	initialCost        uint64
 	gasForwarded       uint64
+	gasForExecution    uint64
 }
 
 // NewMeteringContext creates a new meteringContext
@@ -46,6 +47,7 @@ func (context *meteringContext) InitState() {
 	context.initialGasProvided = 0
 	context.gasForwarded = 0
 	context.initialCost = 0
+	context.gasForExecution = 0
 }
 
 // PushState pushes the current state of the MeteringContext on its internal state stack
@@ -54,6 +56,7 @@ func (context *meteringContext) PushState() {
 		initialGasProvided: context.initialGasProvided,
 		gasForwarded:       context.gasForwarded,
 		initialCost:        context.initialCost,
+		gasForExecution:    context.gasForExecution,
 	}
 
 	context.stateStack = append(context.stateStack, newState)
@@ -73,6 +76,7 @@ func (context *meteringContext) PopSetActiveState() {
 	context.initialGasProvided = prevState.initialGasProvided
 	context.gasForwarded = prevState.gasForwarded
 	context.initialCost = prevState.initialCost
+	context.gasForExecution = prevState.gasForExecution
 }
 
 // PopDiscard pops the state at the top of the internal state stack, and discards it
@@ -105,6 +109,7 @@ func (context *meteringContext) unlockGasIfAsyncCallback(input *vmcommon.Contrac
 
 	gasProvided := math.AddUint64(input.GasProvided, input.GasLocked)
 
+	context.gasForExecution = gasProvided
 	input.GasProvided = gasProvided
 	input.GasLocked = 0
 }
@@ -147,7 +152,7 @@ func (context *meteringContext) FreeGas(gas uint64) {
 
 // GasLeft returns how much gas is left.
 func (context *meteringContext) GasLeft() uint64 {
-	gasProvided := context.host.Runtime().GetVMInput().GasProvided
+	gasProvided := context.gasForExecution
 	gasUsed := context.host.Runtime().GetPointsUsed()
 
 	if gasProvided < gasUsed {
@@ -168,6 +173,7 @@ func (context *meteringContext) ForwardGas(gas uint64) {
 	context.gasForwarded = math.AddUint64(context.gasForwarded, gas)
 }
 
+// GasUsedByContract returns the gas used by the current contract.
 func (context *meteringContext) GasUsedByContract() uint64 {
 	runtime := context.host.Runtime()
 	executionGasUsed := runtime.GetPointsUsed()
@@ -181,6 +187,11 @@ func (context *meteringContext) GasUsedByContract() uint64 {
 	gasUsed = math.SubUint64(gasUsed, context.gasForwarded)
 
 	return gasUsed
+}
+
+// GetGasForExecution returns the gas left after the deduction of the initial gas from the provided gas
+func (context *meteringContext) GetGasForExecution() uint64 {
+	return context.gasForExecution
 }
 
 // BoundGasLimit returns the gas left if it is less than the given limit, or the given value otherwise.
@@ -294,6 +305,6 @@ func (context *meteringContext) deductInitialGas(
 	}
 
 	context.initialCost = initialCost
-	input.GasProvided -= initialCost
+	context.gasForExecution = input.GasProvided - initialCost
 	return nil
 }
