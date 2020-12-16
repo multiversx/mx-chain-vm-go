@@ -127,6 +127,10 @@ type RuntimeContext interface {
 	CryptoAPIErrorShouldFailExecution() bool
 	BigIntAPIErrorShouldFailExecution() bool
 	ExecuteAsyncCall(address []byte, data []byte, value []byte) error
+
+	// TODO remove after implementing proper mocking of Wasmer instances; this is
+	// used for tests only
+	ReplaceInstanceBuilder(builder InstanceBuilder)
 }
 
 // BigIntContext defines the functionality needed for interacting with the big int context
@@ -225,4 +229,10 @@ type AsyncCallInfoHandler interface {
 	GetGasLimit() uint64
 	GetGasLocked() uint64
 	GetValueBytes() []byte
+}
+
+// InstanceBuilder defines the functionality needed to create Wasmer instances
+type InstanceBuilder interface {
+	NewInstanceWithOptions(contractCode []byte, options wasmer.CompilationOptions) (*wasmer.Instance, error)
+	NewInstanceFromCompiledCodeWithOptions(compiledCode []byte, options wasmer.CompilationOptions) (*wasmer.Instance, error)
 }

@@ -1034,3 +1034,31 @@ func expectedVMOutputCreateNewContractFail(_ []byte, childCode []byte) *vmcommon
 
 	return vmOutput
 }
+
+func expectedVMOutputMockedWasmerInstances() *vmcommon.VMOutput {
+	vmOutput := MakeVMOutput()
+
+	parentAccount := AddNewOutputAccount(
+		vmOutput,
+		parentAddress,
+		0,
+		nil,
+	)
+	parentAccount.Balance = big.NewInt(1000)
+	parentAccount.BalanceDelta = big.NewInt(-4)
+	SetStorageUpdate(parentAccount, []byte("parent"), []byte("parent storage"))
+
+	childAccount := AddNewOutputAccount(
+		vmOutput,
+		childAddress,
+		0,
+		nil,
+	)
+	childAccount.BalanceDelta = big.NewInt(4)
+	SetStorageUpdate(childAccount, []byte("child"), []byte("child storage"))
+
+	AddFinishData(vmOutput, []byte("parent returns this"))
+	AddFinishData(vmOutput, []byte("child returns this"))
+
+	return vmOutput
+}
