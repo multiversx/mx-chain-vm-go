@@ -40,11 +40,13 @@ func NewMeteringContext(
 	return context, nil
 }
 
+// InitState resets the internal state of the MeteringContext
 func (context *meteringContext) InitState() {
 	context.initialGasProvided = 0
 	context.gasForwarded = 0
 }
 
+// PushState pushes the current state of the MeteringContext on its internal state stack
 func (context *meteringContext) PushState() {
 	newState := &meteringContext{
 		initialGasProvided: context.initialGasProvided,
@@ -54,6 +56,8 @@ func (context *meteringContext) PushState() {
 	context.stateStack = append(context.stateStack, newState)
 }
 
+// PopSetActiveState pops the state at the top of the internal state stack, and
+// sets it as the current state
 func (context *meteringContext) PopSetActiveState() {
 	stateStackLen := len(context.stateStack)
 	if stateStackLen == 0 {
@@ -67,6 +71,7 @@ func (context *meteringContext) PopSetActiveState() {
 	context.gasForwarded = prevState.gasForwarded
 }
 
+// PopDiscard pops the state at the top of the internal state stack, and discards it
 func (context *meteringContext) PopDiscard() {
 	stateStackLen := len(context.stateStack)
 	if stateStackLen == 0 {
@@ -76,10 +81,13 @@ func (context *meteringContext) PopDiscard() {
 	context.stateStack = context.stateStack[:stateStackLen-1]
 }
 
+// ClearStateStack reinitializes the internal state stack to an empty stack
 func (context *meteringContext) ClearStateStack() {
 	context.stateStack = make([]*meteringContext, 0)
 }
 
+// InitStateFromContractCallInput initializes the internal state of the
+// MeteringContext using values taken from the provided ContractCallInput
 func (context *meteringContext) InitStateFromContractCallInput(input *vmcommon.ContractCallInput) {
 	context.unlockGasIfAsyncCallback(input)
 	context.initialGasProvided = input.GasProvided

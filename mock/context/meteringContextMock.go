@@ -80,7 +80,7 @@ func (m *MeteringContextMock) InitStateFromContractCallInput(input *vmcommon.Con
 }
 
 // MeteringContextMock mocked method
-func (context *MeteringContextMock) GasUsedByContract() uint64 {
+func (m *MeteringContextMock) GasUsedByContract() uint64 {
 	return 0
 }
 

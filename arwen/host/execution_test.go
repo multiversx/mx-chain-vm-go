@@ -1287,14 +1287,15 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 	parentInstance.Exports["callChild"] = mockMethod(func() {
 		host.Output().Finish([]byte("parent returns this"))
 		host.Metering().UseGas(500)
-		host.Storage().SetStorage([]byte("parent"), []byte("parent storage"))
+		_, err := host.Storage().SetStorage([]byte("parent"), []byte("parent storage"))
+		require.Nil(t, err)
 		childInput := DefaultTestContractCallInput()
 		childInput.CallerAddr = parentAddress
 		childInput.RecipientAddr = childAddress
 		childInput.CallValue = big.NewInt(4)
 		childInput.Function = "doSomething"
 		childInput.GasProvided = 1000
-		_, _, err := host.ExecuteOnDestContext(childInput)
+		_, _, err = host.ExecuteOnDestContext(childInput)
 		require.Nil(t, err)
 	})
 
@@ -1302,7 +1303,8 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 	childInstance.Exports["doSomething"] = mockMethod(func() {
 		host.Output().Finish([]byte("child returns this"))
 		host.Metering().UseGas(100)
-		host.Storage().SetStorage([]byte("child"), []byte("child storage"))
+		_, err := host.Storage().SetStorage([]byte("child"), []byte("child storage"))
+		require.Nil(t, err)
 	})
 
 	input := DefaultTestContractCallInput()
