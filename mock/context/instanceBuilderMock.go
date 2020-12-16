@@ -18,6 +18,7 @@ type InstanceBuilderMock struct {
 // NewInstanceBuilderMock constructs a new InstanceBuilderMock
 func NewInstanceBuilderMock(tb testing.TB, defaultCode []byte) *InstanceBuilderMock {
 	return &InstanceBuilderMock{
+		tb:          tb,
 		InstanceMap: make(map[string]*wasmer.Instance),
 		DefaultCode: defaultCode,
 	}
@@ -75,8 +76,8 @@ func (builder *InstanceBuilderMock) NewInstanceWithOptions(
 	return wasmer.NewInstanceWithOptions(contractCode, options)
 }
 
-// NewInstanceWithOptions attempts to load a prepared instance using
-// GetStoredInstanceMock; if it doesn't exist, it creates a true Wasmer
+// NewInstanceFromCompiledCodeWithOptions attempts to load a prepared instance
+// using GetStoredInstanceMock; if it doesn't exist, it creates a true Wasmer
 // instance with the provided precompiled code.
 func (builder *InstanceBuilderMock) NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
