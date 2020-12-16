@@ -92,6 +92,12 @@ var ErrMaxInstancesReached = fmt.Errorf("%w (max instances reached)", ErrExecuti
 // ErrStoreElrondReservedKey signals that an attempt to write under an reserved key has been made
 var ErrStoreElrondReservedKey = errors.New("cannot write to storage under Elrond reserved key")
 
+// ErrNonPayableFunctionEgld signals that a non-payable function received non-zero call value
+var ErrNonPayableFunctionEgld = errors.New("function does not accept EGLD payment")
+
+// ErrNonPayableFunctionEsdt signals that a non-payable function received non-zero ESDT call value
+var ErrNonPayableFunctionEsdt = errors.New("function does not accept ESDT payment")
+
 // ErrArgIndexOutOfRange signals that the argument index is out of range
 var ErrArgIndexOutOfRange = errors.New("argument index out of range")
 
