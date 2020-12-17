@@ -1,6 +1,8 @@
 package contexts
 
 import (
+	"fmt"
+
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/math"
@@ -88,6 +90,16 @@ func (context *meteringContext) PopDiscard() {
 // ClearStateStack reinitializes the internal state stack to an empty stack
 func (context *meteringContext) ClearStateStack() {
 	context.stateStack = make([]*meteringContext, 0)
+}
+
+func (context *meteringContext) Debug(msg string) {
+	fmt.Println(msg)
+	fmt.Println("initialGasProvided\t", context.initialGasProvided)
+	fmt.Println("initialCost\t\t", context.initialCost)
+	fmt.Println("gasForwarded so far\t", context.gasForwarded)
+	fmt.Println("currently used points\t", context.host.Runtime().GetPointsUsed())
+	fmt.Println("gasRemaining\t\t", context.GasLeft())
+	fmt.Println()
 }
 
 // InitStateFromContractCallInput initializes the internal state of the

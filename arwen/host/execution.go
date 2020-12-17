@@ -140,6 +140,8 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	}
 
 	vmOutput = output.GetVMOutput()
+	metering.Debug("final metering")
+
 	runtime.CleanWasmerInstance()
 	return
 }
