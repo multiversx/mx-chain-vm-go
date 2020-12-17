@@ -157,7 +157,6 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 
 	output.PushState()
 	output.CensorVMOutput()
-	output.ResetGas()
 
 	runtime.PushState()
 	runtime.InitStateFromContractCallInput(input)
@@ -255,7 +254,6 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 	// by ExecuteOnSameContext())
 	bigInt.PushState()
 	output.PushState()
-	output.ResetGas()
 
 	runtime.PushState()
 	runtime.InitStateFromContractCallInput(input)
