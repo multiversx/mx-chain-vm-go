@@ -2,6 +2,7 @@ package host
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/contexts"
@@ -306,5 +307,8 @@ func (host *vmHost) hasRetriableExecutionError(vmOutput *vmcommon.VMOutput) bool
 		return false
 	}
 
-	return vmOutput.ReturnMessage == "allocation error"
+	hasAllocationError := strings.Contains(vmOutput.ReturnMessage, "allocation error")
+	hasUnknownError := strings.Contains(vmOutput.ReturnMessage, "unknown error")
+	shouldRetry := hasAllocationError || hasUnknownError
+	return shouldRetry
 }
