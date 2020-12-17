@@ -253,6 +253,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 	// by ExecuteOnSameContext())
 	bigInt.PushState()
 	output.PushState()
+	output.ResetGas()
 
 	runtime.PushState()
 	runtime.InitStateFromContractCallInput(input)
@@ -299,7 +300,8 @@ func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
 	gasUsedByChildContract := metering.GasUsedByContract()
 
 	// Execution successful: discard the backups made at the beginning and
-	// resume from the new state.
+	// resume from the new state. However, output.PopDiscard() will ensure that
+	// all GasUsed records will be restored, undoing the action of output.ResetGas()
 	bigInt.PopDiscard()
 	output.PopDiscard()
 	metering.PopSetActiveState()

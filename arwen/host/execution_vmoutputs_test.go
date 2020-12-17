@@ -156,7 +156,7 @@ func expectedVMOutputSameCtxSimple(parentCode []byte, childCode []byte) *vmcommo
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
-	parentAccount.GasUsed = 3954
+	parentAccount.GasUsed = 520
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,
@@ -164,11 +164,9 @@ func expectedVMOutputSameCtxSimple(parentCode []byte, childCode []byte) *vmcommo
 		198,
 		nil,
 	)
-	childAccount.GasUsed = 3434
+	childAccount.GasUsed = 6868
 
-	parentGasUsed := uint64(3107)
-	childGasUsed := childAccount.GasUsed
-	executionCost := parentGasUsed + childGasUsed
+	executionCost := parentAccount.GasUsed + childAccount.GasUsed
 
 	gas := gasProvided
 	gas -= uint64(len(parentCode))

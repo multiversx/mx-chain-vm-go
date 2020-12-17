@@ -102,14 +102,28 @@ func (context *outputContext) PopMergeActiveState() {
 	mergeVMOutputs(context.outputState, prevState)
 }
 
-// PopDiscard removes the latest entry from the state stack
+// PopDiscard removes the latest entry from the state stack, but maintaining
+// all GasUsed values.
 func (context *outputContext) PopDiscard() {
 	stateStackLen := len(context.stateStack)
 	if stateStackLen == 0 {
 		return
 	}
 
+	prevState := context.stateStack[stateStackLen-1]
 	context.stateStack = context.stateStack[:stateStackLen-1]
+
+	mergeGasUsedAndGasLimits(context.outputState, prevState)
+}
+
+func mergeGasUsedAndGasLimits(leftOutput *vmcommon.VMOutput, rightOutput *vmcommon.VMOutput) {
+	for _, rightAccount := range rightOutput.OutputAccounts {
+		leftAccount, _ := leftOutput.OutputAccounts[string(rightAccount.Address)]
+		leftAccount.GasUsed = math.AddUint64(leftAccount.GasUsed, rightAccount.GasUsed)
+		for index, rightTransfer := range rightAccount.OutputTransfers {
+			leftAccount.OutputTransfers[index].GasLimit = rightTransfer.GasLimit
+		}
+	}
 }
 
 // ClearStateStack reinitializes the state stack.
@@ -507,7 +521,7 @@ func mergeOutputAccounts(
 		leftAccount.OutputTransfers = append(leftAccount.OutputTransfers, rightAccount.OutputTransfers[lenLeftOutTransfers:]...)
 	}
 
-	leftAccount.GasUsed += rightAccount.GasUsed
+	leftAccount.GasUsed = math.AddUint64(leftAccount.GasUsed, rightAccount.GasUsed)
 
 	if rightAccount.CodeDeployerAddress != nil {
 		leftAccount.CodeDeployerAddress = rightAccount.CodeDeployerAddress
