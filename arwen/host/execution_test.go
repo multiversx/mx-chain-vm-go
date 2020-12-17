@@ -716,9 +716,9 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs(t *testing.T) {
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = parentCallsChild
-	input.GasProvided = 10000
+	input.GasProvided = gasProvided
 
-	recursiveCalls := byte(2)
+	recursiveCalls := byte(4)
 	input.Arguments = [][]byte{
 		{recursiveCalls},
 	}

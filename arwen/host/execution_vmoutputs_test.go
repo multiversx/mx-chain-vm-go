@@ -283,7 +283,7 @@ func expectedVMOutputSameCtxRecursiveDirect(_ []byte, recursiveCalls int) *vmcom
 	)
 	account.Balance = big.NewInt(1000)
 	account.BalanceDelta = big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1))
-	account.GasUsed = 50812
+	account.GasUsed = 25418
 
 	for i := recursiveCalls; i >= 0; i-- {
 		finishString := fmt.Sprintf("Rfinish%03d", i)
@@ -340,7 +340,7 @@ func expectedVMOutputSameCtxRecursiveMutualMethods(_ []byte, recursiveCalls int)
 	)
 	account.Balance = big.NewInt(1000)
 	account.BalanceDelta = big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1))
-	account.GasUsed = 67668
+	account.GasUsed = 29586
 
 	SetStorageUpdate(account, recursiveIterationCounterKey, []byte{byte(recursiveCalls + 1)})
 	SetStorageUpdate(account, recursiveIterationBigCounterKey, big.NewInt(int64(recursiveCalls+1)).Bytes())
@@ -384,7 +384,7 @@ func expectedVMOutputSameCtxRecursiveMutualSCs(_ []byte, _ []byte, recursiveCall
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
-	parentAccount.GasUsed = 10936
+	parentAccount.GasUsed = 5423
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,
@@ -393,7 +393,7 @@ func expectedVMOutputSameCtxRecursiveMutualSCs(_ []byte, _ []byte, recursiveCall
 		nil,
 	)
 	childAccount.Balance = big.NewInt(1000)
-	childAccount.GasUsed = 10836
+	childAccount.GasUsed = 3650
 
 	if recursiveCalls%2 == 1 {
 		parentAccount.BalanceDelta = big.NewInt(-5)
@@ -674,7 +674,7 @@ func expectedVMOutputDestCtxRecursiveDirect(_ []byte, recursiveCalls int) *vmcom
 	)
 	account.Balance = big.NewInt(1000)
 	account.BalanceDelta = big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1))
-	account.GasUsed = 67754
+	account.GasUsed = 29663
 
 	for i := recursiveCalls; i >= 0; i-- {
 		finishString := fmt.Sprintf("Rfinish%03d", i)
@@ -708,7 +708,7 @@ func expectedVMOutputDestCtxRecursiveMutualMethods(_ []byte, recursiveCalls int)
 	)
 	account.Balance = big.NewInt(1000)
 	account.BalanceDelta = big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1))
-	account.GasUsed = 105826
+	account.GasUsed = 38074
 
 	SetStorageUpdate(account, recursiveIterationCounterKey, []byte{byte(recursiveCalls + 1)})
 	SetStorageUpdate(account, recursiveIterationBigCounterKey, big.NewInt(int64(1)).Bytes())
@@ -758,7 +758,7 @@ func expectedVMOutputDestCtxRecursiveMutualSCs(_ []byte, _ []byte, recursiveCall
 	)
 	parentAccount.Balance = big.NewInt(1000)
 	parentAccount.BalanceDelta = big.NewInt(-balanceDelta)
-	parentAccount.GasUsed = 18084
+	parentAccount.GasUsed = 7248
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,
@@ -768,7 +768,7 @@ func expectedVMOutputDestCtxRecursiveMutualSCs(_ []byte, _ []byte, recursiveCall
 	)
 	childAccount.Balance = big.NewInt(1000)
 	childAccount.BalanceDelta = big.NewInt(balanceDelta)
-	childAccount.GasUsed = 10936
+	childAccount.GasUsed = 5461
 
 	for i := 0; i <= recursiveCalls; i++ {
 		var finishData string

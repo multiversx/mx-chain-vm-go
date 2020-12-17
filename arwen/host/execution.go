@@ -211,6 +211,14 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 	// instance, to ensure accurate GasRemaining
 	vmOutput := output.GetVMOutput()
 
+	// Gas spent on builtin functions is never forwarded, because they
+	// cannot generate developer rewards.
+	childContract := runtime.GetSCAddress()
+	gasSpentByContract := uint64(0)
+	if !host.IsBuiltinFunctionName(runtime.Function()) {
+		gasSpentByContract = metering.GasSpentByContract()
+	}
+
 	// Restore the previous context states, except Output, which will be merged
 	// into the initial state (VMOutput), but only if it the child execution
 	// returned vmcommon.Ok.
@@ -221,6 +229,7 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 
 	// Restore remaining gas to the caller Wasmer instance
 	metering.RestoreGas(vmOutput.GasRemaining)
+	metering.ForwardGas(runtime.GetSCAddress(), childContract, gasSpentByContract)
 
 	if vmOutput.ReturnCode == vmcommon.Ok {
 		output.PopMergeActiveState()
@@ -290,6 +299,8 @@ func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
 	// Retrieve the VMOutput before popping the Runtime state and the previous
 	// instance, to ensure accurate GasRemaining
 	vmOutput := output.GetVMOutput()
+	childContract := runtime.GetSCAddress()
+	gasSpentByContract := metering.GasSpentByContract()
 
 	// Execution successful: discard the backups made at the beginning and
 	// resume from the new state. However, output.PopDiscard() will ensure that
@@ -301,6 +312,7 @@ func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
 
 	// Restore remaining gas to the caller Wasmer instance
 	metering.RestoreGas(vmOutput.GasRemaining)
+	metering.ForwardGas(runtime.GetSCAddress(), childContract, gasSpentByContract)
 }
 
 func (host *vmHost) isInitFunctionBeingCalled() bool {

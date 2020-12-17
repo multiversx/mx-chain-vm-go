@@ -180,15 +180,14 @@ func (context *meteringContext) GasLeft() uint64 {
 
 // ForwardGas accumulates the gas forwarded by the current contract for the execution of other contracts
 func (context *meteringContext) ForwardGas(sourceAddress []byte, destAddress []byte, gas uint64) {
-	runtime := context.host.Runtime()
-
-	// Gas forwarded to any contract (including self-forwarding is recorded for
-	// the current contract.
-	context.addForwardedGas(sourceAddress, gas)
 
 	if bytes.Equal(sourceAddress, destAddress) {
 		return
 	}
+
+	// Gas forwarded to any contract (excluding self-forwarding) is recorded for
+	// the current contract.
+	context.addForwardedGas(sourceAddress, gas)
 
 	// If the address to which the gas is being forwarded already exists on the
 	// execution stack, but is not directly below the current contract, it means
@@ -246,6 +245,22 @@ func (context *meteringContext) GasUsedByContract() uint64 {
 	gasUsed = math.SubUint64(gasUsed, totalGasForwarded)
 
 	return gasUsed
+}
+
+// GasSpentByContract calculates the entire gas consumption of the contract,
+// without any gas forwarding.
+func (context *meteringContext) GasSpentByContract() uint64 {
+	runtime := context.host.Runtime()
+	executionGasUsed := runtime.GetPointsUsed()
+
+	gasSpent := uint64(0)
+	if context.host.IsArwenV2Enabled() {
+		gasSpent = context.initialCost
+	}
+
+	gasSpent = math.AddUint64(gasSpent, executionGasUsed)
+
+	return gasSpent
 }
 
 // GetGasForExecution returns the gas left after the deduction of the initial gas from the provided gas

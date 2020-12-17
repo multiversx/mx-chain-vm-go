@@ -82,6 +82,11 @@ func (m *MeteringContextMock) GasUsedByContract() uint64 {
 	return 0
 }
 
+// GasUsedByContract mocked method
+func (m *MeteringContextMock) GasSpentByContract() uint64 {
+	return 0
+}
+
 // GetGasForExecution mocked method
 func (m *MeteringContextMock) GetGasForExecution() uint64 {
 	return 0
