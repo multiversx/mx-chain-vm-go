@@ -1047,7 +1047,7 @@ func expectedVMOutputCreateNewContractFail(_ []byte, childCode []byte) *vmcommon
 		nil,
 	)
 	parentAccount.Nonce = 0
-	parentAccount.GasUsed = 8536
+	parentAccount.GasUsed = 2885
 	SetStorageUpdate(parentAccount, []byte{'A'}, childCode)
 
 	l := len(childCode)
