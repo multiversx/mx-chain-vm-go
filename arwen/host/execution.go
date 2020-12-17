@@ -382,12 +382,11 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newC
 		AllowInitFunction: true,
 		VMInput:           input.VMInput,
 	}
-	vmOutput, _, err := host.ExecuteOnDestContext(initCallInput)
+	_, _, err = host.ExecuteOnDestContext(initCallInput)
 	if err != nil {
 		return
 	}
 
-	metering.RestoreGas(vmOutput.GasRemaining)
 	blockchain.IncreaseNonce(input.CallerAddr)
 
 	return
