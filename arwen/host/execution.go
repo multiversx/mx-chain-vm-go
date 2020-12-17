@@ -197,18 +197,11 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 		// but first create a vmOutput to capture the error.
 		vmOutput := output.CreateVMOutputInCaseOfError(executeErr)
 
-		//gasUsedByChildContract := uint64(0)
-		//if !host.IsBuiltinFunctionName(runtime.Function()) {
-		//	gasUsedByChildContract = metering.GetGasProvided()
-		//}
-
 		bigInt.PopSetActiveState()
 		metering.PopSetActiveState()
 		runtime.PopSetActiveState()
 		storage.PopSetActiveState()
 
-		//metering.RestoreGas(0)
-		//metering.ForwardGas(gasUsedByChildContract)
 		output.PopSetActiveState()
 
 		return vmOutput
@@ -220,6 +213,7 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 
 	// Gas spent on builtin functions is never forwarded, because they
 	// cannot generate developer rewards.
+	childContract := runtime.GetSCAddress()
 	gasUsedByChildContract := uint64(0)
 	if !host.IsBuiltinFunctionName(runtime.Function()) {
 		gasUsedByChildContract = metering.GasUsedByContract()
@@ -235,7 +229,7 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 
 	// Restore remaining gas to the caller Wasmer instance
 	metering.RestoreGas(vmOutput.GasRemaining)
-	metering.ForwardGas(gasUsedByChildContract)
+	metering.ForwardGas(childContract, gasUsedByChildContract)
 
 	if vmOutput.ReturnCode == vmcommon.Ok {
 		output.PopMergeActiveState()
@@ -305,6 +299,7 @@ func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
 	// Retrieve the VMOutput before popping the Runtime state and the previous
 	// instance, to ensure accurate GasRemaining
 	vmOutput := output.GetVMOutput()
+	childContract := runtime.GetSCAddress()
 	gasUsedByChildContract := metering.GasUsedByContract()
 
 	// Execution successful: discard the backups made at the beginning and
@@ -317,7 +312,7 @@ func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
 
 	// Restore remaining gas to the caller Wasmer instance
 	metering.RestoreGas(vmOutput.GasRemaining)
-	metering.ForwardGas(gasUsedByChildContract)
+	metering.ForwardGas(childContract, gasUsedByChildContract)
 }
 
 func (host *vmHost) isInitFunctionBeingCalled() bool {

@@ -1,6 +1,8 @@
 package contexts
 
 import (
+	"bytes"
+
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/math"
@@ -14,8 +16,13 @@ type meteringContext struct {
 	blockGasLimit      uint64
 	initialGasProvided uint64
 	initialCost        uint64
-	gasForwarded       uint64
 	gasForExecution    uint64
+	gasStates          map[string]*contractGasState
+}
+
+type contractGasState struct {
+	forwarded uint64
+	returned  uint64
 }
 
 // NewMeteringContext creates a new meteringContext
@@ -33,6 +40,7 @@ func NewMeteringContext(
 	context := &meteringContext{
 		host:          host,
 		stateStack:    make([]*meteringContext, 0),
+		gasStates:     make(map[string]*contractGasState),
 		gasSchedule:   gasSchedule,
 		blockGasLimit: blockGasLimit,
 	}
@@ -45,7 +53,6 @@ func NewMeteringContext(
 // InitState resets the internal state of the MeteringContext
 func (context *meteringContext) InitState() {
 	context.initialGasProvided = 0
-	context.gasForwarded = 0
 	context.initialCost = 0
 	context.gasForExecution = 0
 }
@@ -54,7 +61,6 @@ func (context *meteringContext) InitState() {
 func (context *meteringContext) PushState() {
 	newState := &meteringContext{
 		initialGasProvided: context.initialGasProvided,
-		gasForwarded:       context.gasForwarded,
 		initialCost:        context.initialCost,
 		gasForExecution:    context.gasForExecution,
 	}
@@ -74,7 +80,6 @@ func (context *meteringContext) PopSetActiveState() {
 	context.stateStack = context.stateStack[:stateStackLen-1]
 
 	context.initialGasProvided = prevState.initialGasProvided
-	context.gasForwarded = prevState.gasForwarded
 	context.initialCost = prevState.initialCost
 	context.gasForExecution = prevState.gasForExecution
 }
@@ -98,7 +103,6 @@ func (context *meteringContext) Debug(msg string) {
 	// fmt.Println(msg)
 	// fmt.Println("initialGasProvided\t", context.initialGasProvided)
 	// fmt.Println("initialCost\t\t", context.initialCost)
-	// fmt.Println("gasForwarded so far\t", context.gasForwarded)
 	// fmt.Println("currently used points\t", context.host.Runtime().GetPointsUsed())
 	// fmt.Println("gasRemaining\t\t", context.GasLeft())
 	// fmt.Println()
@@ -174,15 +178,56 @@ func (context *meteringContext) GasLeft() uint64 {
 	return gasProvided - gasUsed
 }
 
-// GasForwarded returns the amount of gas used by the current contract for the
-// execution of other contracts
-func (context *meteringContext) GasForwarded() uint64 {
-	return context.gasForwarded
+// ForwardGas accumulates the gas forwarded by the current contract for the execution of other contracts
+func (context *meteringContext) ForwardGas(address []byte, gas uint64) {
+	runtime := context.host.Runtime()
+
+	// Gas forwarded to any contract (including self-forwarding is recorded for
+	// the current contract.
+	context.addForwardedGas(runtime.GetSCAddress(), gas)
+
+	if bytes.Equal(address, runtime.GetSCAddress()) {
+		return
+	}
+
+	// If the address to which the gas is being forwarded already exists on the
+	// execution stack, but is not directly below the current contract, it means
+	// that any gas that has been forwarded to it is in fact returning via the
+	// current contract.
+	alreadyOnExecutionStack := context.host.Runtime().IsContractOnTheStack(address)
+	if alreadyOnExecutionStack {
+		context.addReturnedGas(address, gas)
+	}
 }
 
-// ForwardGas accumulates the gas forwarded by the current contract for the execution of other contracts
-func (context *meteringContext) ForwardGas(gas uint64) {
-	context.gasForwarded = math.AddUint64(context.gasForwarded, gas)
+func (context *meteringContext) addForwardedGas(address []byte, gas uint64) {
+	state := context.getContractGasState(address)
+	state.forwarded = math.AddUint64(state.forwarded, gas)
+}
+
+func (context *meteringContext) addReturnedGas(address []byte, gas uint64) {
+	state := context.getContractGasState(address)
+	state.returned = math.AddUint64(state.returned, gas)
+}
+
+func (context *meteringContext) getTotalForwardedGas(address []byte) uint64 {
+	state := context.getContractGasState(address)
+	total := math.SubUint64(state.forwarded, state.returned)
+	return total
+}
+
+func (context *meteringContext) getContractGasState(address []byte) *contractGasState {
+	key := string(address)
+	state, exists := context.gasStates[key]
+	if !exists {
+		state = &contractGasState{
+			forwarded: 0,
+			returned:  0,
+		}
+		context.gasStates[key] = state
+	}
+
+	return state
 }
 
 // GasUsedByContract returns the gas used by the current contract.
@@ -196,7 +241,9 @@ func (context *meteringContext) GasUsedByContract() uint64 {
 	}
 
 	gasUsed = math.AddUint64(gasUsed, executionGasUsed)
-	gasUsed = math.SubUint64(gasUsed, context.gasForwarded)
+
+	totalGasForwarded := context.getTotalForwardedGas(runtime.GetSCAddress())
+	gasUsed = math.SubUint64(gasUsed, totalGasForwarded)
 
 	return gasUsed
 }

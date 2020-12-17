@@ -616,6 +616,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct(t *testing.T) {
 	// tests
 	expectedVMOutput := expectedVMOutputSameCtxRecursiveDirect(code, int(recursiveCalls))
 	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 	require.Equal(t, expectedVMOutput, vmOutput)
 	require.Equal(t, int64(recursiveCalls+1), host.BigInt().GetOne(16).Int64())
 }

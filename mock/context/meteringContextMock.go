@@ -66,16 +66,11 @@ func (m *MeteringContextMock) GasLeft() uint64 {
 	return m.GasLeftMock
 }
 
-// GasForwarded mocked method
-func (m *MeteringContextMock) GasForwarded() uint64 {
-	return 0
-}
-
 func (m *MeteringContextMock) Debug(_ string) {
 }
 
 // ForwardGas mocked method
-func (m *MeteringContextMock) ForwardGas(_ uint64) {
+func (m *MeteringContextMock) ForwardGas(_ []byte, _ uint64) {
 }
 
 // InitStateFromContractCallInput mocked method

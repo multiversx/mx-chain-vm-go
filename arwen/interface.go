@@ -100,6 +100,7 @@ type RuntimeContext interface {
 	MustVerifyNextContractCode()
 	SetRuntimeBreakpointValue(value BreakpointValue)
 	GetRuntimeBreakpointValue() BreakpointValue
+	IsContractOnTheStack(address []byte) bool
 	GetAsyncCallInfo() *AsyncCallInfo
 	SetAsyncCallInfo(asyncCallInfo *AsyncCallInfo)
 	AddAsyncContextCall(contextIdentifier []byte, asyncCall *AsyncGeneratedCall) error
@@ -183,8 +184,7 @@ type MeteringContext interface {
 	FreeGas(gas uint64)
 	RestoreGas(gas uint64)
 	GasLeft() uint64
-	GasForwarded() uint64
-	ForwardGas(gas uint64)
+	ForwardGas(address []byte, gas uint64)
 	GasUsedByContract() uint64
 	GetGasForExecution() uint64
 	GetGasProvided() uint64
