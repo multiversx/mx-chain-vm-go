@@ -1022,7 +1022,7 @@ func checkNoPayment(context unsafe.Pointer) {
 		arwen.WithFault(arwen.ErrNonPayableFunctionEgld, context, runtime.ElrondAPIErrorShouldFailExecution())
 		return
 	}
-	if vmInput.ESDTValue.Sign() > 0 {
+	if vmInput.ESDTValue != nil && vmInput.ESDTValue.Sign() > 0 {
 		runtime := arwen.GetRuntimeContext(context)
 		arwen.WithFault(arwen.ErrNonPayableFunctionEsdt, context, runtime.ElrondAPIErrorShouldFailExecution())
 		return
