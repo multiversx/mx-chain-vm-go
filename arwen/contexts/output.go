@@ -301,6 +301,10 @@ func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 }
 
 func (context *outputContext) checkGas() *vmcommon.VMOutput {
+	if context.host.IsArwenV2Enabled() == false {
+		return context.outputState
+	}
+
 	gasUsed := uint64(0)
 	for _, outputAccount := range context.outputState.OutputAccounts {
 		gasUsed = math.AddUint64(gasUsed, outputAccount.GasUsed)
@@ -310,7 +314,7 @@ func (context *outputContext) checkGas() *vmcommon.VMOutput {
 		}
 	}
 
-	gasProvided := context.host.Runtime().GetVMInput().GasProvided
+	gasProvided := context.host.Metering().GetGasForExecution()
 	totalGas := math.AddUint64(gasUsed, context.outputState.GasRemaining)
 	totalGas = math.AddUint64(totalGas, context.host.Metering().GetGasLocked())
 	if totalGas != gasProvided {
