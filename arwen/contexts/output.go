@@ -312,7 +312,12 @@ func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 
 	context.removeNonUpdatedCode(context.outputState)
 
-	return context.checkGas()
+	err := context.checkGas()
+	if err != nil {
+		return context.CreateVMOutputInCaseOfError(err)
+	}
+
+	return context.outputState
 }
 
 func (context *outputContext) handleGasForwarding(gasUsedByContract uint64) {
@@ -330,9 +335,9 @@ func (context *outputContext) handleGasForwarding(gasUsedByContract uint64) {
 	metering.ForwardGas(source, dest, gasUsedByContract)
 }
 
-func (context *outputContext) checkGas() *vmcommon.VMOutput {
+func (context *outputContext) checkGas() error {
 	if context.host.IsArwenV2Enabled() == false {
-		return context.outputState
+		return nil
 	}
 
 	gasUsed := uint64(0)
@@ -348,10 +353,10 @@ func (context *outputContext) checkGas() *vmcommon.VMOutput {
 	totalGas := math.AddUint64(gasUsed, context.outputState.GasRemaining)
 	if totalGas != gasProvided {
 		logMetering.Error("gas usage mismatch", "total gas used", totalGas, "gas provided", gasProvided)
-		return context.CreateVMOutputInCaseOfError(arwen.ErrInputAndOutputGasDoesNotMatch)
+		return arwen.ErrInputAndOutputGasDoesNotMatch
 	}
 
-	return context.outputState
+	return nil
 }
 
 // DeployCode sets the given code to a an account, and creates a new codeUpdates entry at the accounts address.
