@@ -175,7 +175,7 @@ type OutputContext interface {
 type MeteringContext interface {
 	StateStack
 
-	InitStateFromContractCallInput(input *vmcommon.ContractCallInput)
+	InitStateFromContractCallInput(input *vmcommon.VMInput)
 	SetGasSchedule(gasMap config.GasScheduleMap)
 	GasSchedule() *config.GasCost
 	UseGas(gas uint64)

@@ -241,7 +241,7 @@ func TestMeteringContext_AsyncCallGasLocking(t *testing.T) {
 
 	mockRuntime.VMInput.CallType = vmcommon.AsynchronousCallBack
 	mockRuntime.VMInput.GasLocked = gasToLock
-	meteringContext.unlockGasIfAsyncCallback(input)
+	meteringContext.unlockGasIfAsyncCallback(&input.VMInput)
 	err = meteringContext.UseGasForAsyncStep()
 	require.Nil(t, err)
 	require.Equal(t, gasProvided-1, meteringContext.GasLeft())
@@ -266,10 +266,10 @@ func TestMeteringContext_GasUsed_NoStacking(t *testing.T) {
 	metering, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000))
 
 	input.GasProvided = 2000
-	metering.InitStateFromContractCallInput(input)
+	metering.InitStateFromContractCallInput(&input.VMInput)
 	require.Equal(t, uint64(2000), metering.initialGasProvided)
 
-	metering.DeductInitialGasForExecution(contract)
+	_ = metering.DeductInitialGasForExecution(contract)
 	require.Equal(t, uint64(1000), metering.GasLeft())
 
 	metering.UseGas(400)
@@ -298,10 +298,10 @@ func TestMeteringContext_GasUsed_StackOneLevel(t *testing.T) {
 	metering, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000))
 
 	parentInput.GasProvided = 4000
-	metering.InitStateFromContractCallInput(parentInput)
+	metering.InitStateFromContractCallInput(&parentInput.VMInput)
 	require.Equal(t, uint64(4000), metering.initialGasProvided)
 
-	metering.DeductInitialGasForExecution(contract)
+	_ = metering.DeductInitialGasForExecution(contract)
 	require.Equal(t, uint64(3000), metering.GasLeft())
 
 	metering.UseGas(400)
@@ -321,10 +321,10 @@ func TestMeteringContext_GasUsed_StackOneLevel(t *testing.T) {
 	mockRuntime.SetPointsUsed(0)
 	mockRuntime.SetVMInput(&childInput.VMInput)
 	metering.PushState()
-	metering.InitStateFromContractCallInput(childInput)
+	metering.InitStateFromContractCallInput(&childInput.VMInput)
 	require.Equal(t, uint64(500), metering.initialGasProvided)
 
-	metering.DeductInitialGasForExecution(make([]byte, 100))
+	_ = metering.DeductInitialGasForExecution(make([]byte, 100))
 	require.Equal(t, uint64(400), metering.GasLeft())
 
 	metering.UseGas(50)

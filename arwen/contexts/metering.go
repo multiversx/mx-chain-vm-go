@@ -106,14 +106,14 @@ func (context *meteringContext) Debug(msg string) {
 
 // InitStateFromContractCallInput initializes the internal state of the
 // MeteringContext using values taken from the provided ContractCallInput
-func (context *meteringContext) InitStateFromContractCallInput(input *vmcommon.ContractCallInput) {
+func (context *meteringContext) InitStateFromContractCallInput(input *vmcommon.VMInput) {
 	context.InitState()
 	context.unlockGasIfAsyncCallback(input)
 	context.initialGasProvided = input.GasProvided
 }
 
 // unlockGasIfAsyncCallback unlocks the locked gas if the call type is async callback
-func (context *meteringContext) unlockGasIfAsyncCallback(input *vmcommon.ContractCallInput) {
+func (context *meteringContext) unlockGasIfAsyncCallback(input *vmcommon.VMInput) {
 	if input.CallType != vmcommon.AsynchronousCallBack {
 		return
 	}
