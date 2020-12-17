@@ -76,7 +76,7 @@ func (m *MeteringContextMock) ForwardGas(_ uint64) {
 }
 
 // InitStateFromContractCallInput mocked method
-func (m *MeteringContextMock) InitStateFromContractCallInput(_ *vmcommon.ContractCallInput) {
+func (m *MeteringContextMock) InitStateFromContractCallInput(_ *vmcommon.VMInput) {
 }
 
 // GasUsedByContract mocked method

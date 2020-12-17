@@ -17,7 +17,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	host.InitState()
 	defer host.Clean()
 
-	_, blockchain, _, output, runtime, storage := host.GetContexts()
+	_, blockchain, metering, output, runtime, storage := host.GetContexts()
 
 	address, err := blockchain.NewAddress(input.CallerAddr)
 	if err != nil {
@@ -26,6 +26,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 
 	runtime.SetVMInput(&input.VMInput)
 	runtime.SetSCAddress(address)
+	metering.InitStateFromContractCallInput(&input.VMInput)
 
 	output.AddTxValueToAccount(address, input.CallValue)
 	storage.SetAddress(runtime.GetSCAddress())
@@ -83,7 +84,7 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 	_, _, metering, output, runtime, storage := host.GetContexts()
 
 	runtime.InitStateFromContractCallInput(input)
-	metering.InitStateFromContractCallInput(input)
+	metering.InitStateFromContractCallInput(&input.VMInput)
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
 	storage.SetAddress(runtime.GetSCAddress())
 
@@ -113,7 +114,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	_, _, metering, output, runtime, storage := host.GetContexts()
 
 	runtime.InitStateFromContractCallInput(input)
-	metering.InitStateFromContractCallInput(input)
+	metering.InitStateFromContractCallInput(&input.VMInput)
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
 	storage.SetAddress(runtime.GetSCAddress())
 
@@ -159,7 +160,7 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	runtime.InitStateFromContractCallInput(input)
 
 	metering.PushState()
-	metering.InitStateFromContractCallInput(input)
+	metering.InitStateFromContractCallInput(&input.VMInput)
 
 	storage.PushState()
 	storage.SetAddress(runtime.GetSCAddress())
@@ -251,7 +252,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 	runtime.InitStateFromContractCallInput(input)
 
 	metering.PushState()
-	metering.InitStateFromContractCallInput(input)
+	metering.InitStateFromContractCallInput(&input.VMInput)
 
 	defer func() {
 		host.finishExecuteOnSameContext(err)
@@ -539,7 +540,7 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 
 		if newVMInput != nil {
 			runtime.InitStateFromContractCallInput(newVMInput)
-			metering.InitStateFromContractCallInput(newVMInput)
+			metering.InitStateFromContractCallInput(&newVMInput.VMInput)
 			storage.SetAddress(runtime.GetSCAddress())
 			return host.executeSmartContractCall(newVMInput, metering, runtime, output, false)
 		}
