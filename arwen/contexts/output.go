@@ -6,10 +6,12 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/math"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 var _ arwen.OutputContext = (*outputContext)(nil)
+var logMetering = logger.GetOrCreate("arwen/metering")
 
 type outputContext struct {
 	host        arwen.VMHost
@@ -126,6 +128,17 @@ func (context *outputContext) CensorVMOutput() {
 	context.outputState.GasRemaining = 0
 	context.outputState.GasRefund = big.NewInt(0)
 	context.outputState.Logs = make([]*vmcommon.LogEntry, 0)
+}
+
+// ResetGas will set to 0 all gas used from output accounts, in order
+// to properly calculate the actual used gas of one smart contract when called in sync
+func (context *outputContext) ResetGas() {
+	for _, outAcc := range context.outputState.OutputAccounts {
+		outAcc.GasUsed = 0
+		for _, outTransfer := range outAcc.OutputTransfers {
+			outTransfer.GasLimit = 0
+		}
+	}
 }
 
 // GetOutputAccount returns the output account present at the given address,
@@ -285,14 +298,16 @@ func (context *outputContext) AddTxValueToAccount(address []byte, value *big.Int
 
 // GetVMOutput updates the current VMOutput and returns it
 func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
-	if context.outputState.ReturnCode == vmcommon.Ok {
-		runtime := context.host.Runtime()
-		metering := context.host.Metering()
+	runtime := context.host.Runtime()
+	metering := context.host.Metering()
 
+	account, _ := context.GetOutputAccount(runtime.GetSCAddress())
+	if context.outputState.ReturnCode == vmcommon.Ok {
 		gasUsed := metering.GasUsedByContract()
-		account, _ := context.GetOutputAccount(runtime.GetSCAddress())
 		account.GasUsed = math.AddUint64(account.GasUsed, gasUsed)
 		context.outputState.GasRemaining = metering.GasLeft()
+	} else {
+		account.GasUsed = math.AddUint64(account.GasUsed, metering.GetGasForExecution())
 	}
 
 	context.removeNonUpdatedCode(context.outputState)
@@ -316,8 +331,8 @@ func (context *outputContext) checkGas() *vmcommon.VMOutput {
 
 	gasProvided := context.host.Metering().GetGasProvided()
 	totalGas := math.AddUint64(gasUsed, context.outputState.GasRemaining)
-	totalGas = math.AddUint64(totalGas, context.host.Metering().GetGasLocked())
 	if totalGas != gasProvided {
+		logMetering.Error("gas usage mismatch", "total gas used", totalGas, "gas provided", gasProvided)
 		return context.CreateVMOutputInCaseOfError(arwen.ErrInputAndOutputGasDoesNotMatch)
 	}
 
@@ -492,7 +507,7 @@ func mergeOutputAccounts(
 		leftAccount.OutputTransfers = append(leftAccount.OutputTransfers, rightAccount.OutputTransfers[lenLeftOutTransfers:]...)
 	}
 
-	leftAccount.GasUsed = rightAccount.GasUsed
+	leftAccount.GasUsed += rightAccount.GasUsed
 
 	if rightAccount.CodeDeployerAddress != nil {
 		leftAccount.CodeDeployerAddress = rightAccount.CodeDeployerAddress

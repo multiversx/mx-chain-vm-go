@@ -110,6 +110,7 @@ func (context *meteringContext) InitStateFromContractCallInput(input *vmcommon.V
 	context.InitState()
 	context.unlockGasIfAsyncCallback(input)
 	context.initialGasProvided = input.GasProvided
+	context.gasForExecution = input.GasProvided
 }
 
 // unlockGasIfAsyncCallback unlocks the locked gas if the call type is async callback

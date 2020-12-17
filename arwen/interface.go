@@ -148,6 +148,7 @@ type OutputContext interface {
 	StateStack
 	PopMergeActiveState()
 	CensorVMOutput()
+	ResetGas()
 	AddToActiveState(rightOutput *vmcommon.VMOutput)
 
 	GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool)

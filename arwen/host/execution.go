@@ -157,6 +157,7 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 
 	output.PushState()
 	output.CensorVMOutput()
+	output.ResetGas()
 
 	runtime.PushState()
 	runtime.InitStateFromContractCallInput(input)
@@ -191,12 +192,7 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOutput {
 	bigInt, _, metering, output, runtime, storage := host.GetContexts()
 
-	// Retrieve the VMOutput before popping the Runtime state and the previous
-	// instance, to ensure accurate GasRemaining
-	vmOutput := output.GetVMOutput()
-	gasUsedByChildContract := metering.GasUsedByContract()
-
-	if executeErr != nil || vmOutput.ReturnCode != vmcommon.Ok {
+	if executeErr != nil {
 		// Execution failed: restore contexts as if the execution didn't happen,
 		// but first create a vmOutput to capture the error.
 		vmOutput := output.CreateVMOutputInCaseOfError(executeErr)
@@ -208,6 +204,17 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 		storage.PopSetActiveState()
 
 		return vmOutput
+	}
+
+	// Retrieve the VMOutput before popping the Runtime state and the previous
+	// instance, to ensure accurate GasRemaining
+	vmOutput := output.GetVMOutput()
+
+	// Gas spent on builtin functions is never forwarded, because they
+	// cannot generate developer rewards.
+	gasUsedByChildContract := uint64(0)
+	if !host.IsBuiltinFunctionName(runtime.Function()) {
+		gasUsedByChildContract = metering.GasUsedByContract()
 	}
 
 	// Restore the previous context states, except Output, which will be merged
