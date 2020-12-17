@@ -167,13 +167,7 @@ func expectedVMOutputSameCtxSimple(parentCode []byte, childCode []byte) *vmcommo
 	childAccount.GasUsed = 6868
 
 	executionCost := parentAccount.GasUsed + childAccount.GasUsed
-
-	gas := gasProvided
-	gas -= uint64(len(parentCode))
-	gas -= uint64(len(childCode))
-	gas -= executionCost
-
-	vmOutput.GasRemaining = gas
+	vmOutput.GasRemaining = gasProvided - executionCost
 
 	return vmOutput
 }
