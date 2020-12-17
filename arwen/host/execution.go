@@ -203,12 +203,13 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 		}
 
 		bigInt.PopSetActiveState()
-		output.PopSetActiveState()
 		metering.PopSetActiveState()
 		runtime.PopSetActiveState()
 		storage.PopSetActiveState()
 
+		metering.RestoreGas(0)
 		metering.ForwardGas(gasUsedByChildContract)
+		output.PopSetActiveState()
 
 		return vmOutput
 	}
