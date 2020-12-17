@@ -95,6 +95,12 @@ var ErrStoreElrondReservedKey = errors.New("cannot write to storage under Elrond
 // ErrCannotWriteProtectedKey signals an attempt to write to a protected key, while storage protection is enforced
 var ErrCannotWriteProtectedKey = errors.New("cannot write to protected key")
 
+// ErrNonPayableFunctionEgld signals that a non-payable function received non-zero call value
+var ErrNonPayableFunctionEgld = errors.New("function does not accept EGLD payment")
+
+// ErrNonPayableFunctionEsdt signals that a non-payable function received non-zero ESDT call value
+var ErrNonPayableFunctionEsdt = errors.New("function does not accept ESDT payment")
+
 // ErrArgIndexOutOfRange signals that the argument index is out of range
 var ErrArgIndexOutOfRange = errors.New("argument index out of range")
 
