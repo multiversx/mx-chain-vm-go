@@ -110,20 +110,7 @@ func (context *outputContext) PopDiscard() {
 		return
 	}
 
-	prevState := context.stateStack[stateStackLen-1]
 	context.stateStack = context.stateStack[:stateStackLen-1]
-
-	mergeGasUsedAndGasLimits(context.outputState, prevState)
-}
-
-func mergeGasUsedAndGasLimits(leftOutput *vmcommon.VMOutput, rightOutput *vmcommon.VMOutput) {
-	for _, rightAccount := range rightOutput.OutputAccounts {
-		leftAccount, _ := leftOutput.OutputAccounts[string(rightAccount.Address)]
-		leftAccount.GasUsed = math.AddUint64(leftAccount.GasUsed, rightAccount.GasUsed)
-		for index, rightTransfer := range rightAccount.OutputTransfers {
-			leftAccount.OutputTransfers[index].GasLimit = rightTransfer.GasLimit
-		}
-	}
 }
 
 // ClearStateStack reinitializes the state stack.
@@ -317,10 +304,8 @@ func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 
 	account, _ := context.GetOutputAccount(runtime.GetSCAddress())
 	if context.outputState.ReturnCode == vmcommon.Ok {
-		gasUsed := metering.GasUsedByContract()
-		account.GasUsed = math.AddUint64(account.GasUsed, gasUsed)
+		account.GasUsed = metering.GasUsedByContract()
 		context.outputState.GasRemaining = metering.GasLeft()
-		context.handleGasForwarding(gasUsed)
 	} else {
 		account.GasUsed = math.AddUint64(account.GasUsed, metering.GetGasForExecution())
 	}
