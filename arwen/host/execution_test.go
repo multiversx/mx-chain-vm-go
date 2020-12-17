@@ -1203,7 +1203,7 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = parentPerformAsyncCall
-	input.GasProvided = 1000000
+	input.GasProvided = 200000
 	input.Arguments = [][]byte{{0, 3}}
 	input.CurrentTxHash = []byte("txhash")
 

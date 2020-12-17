@@ -71,6 +71,9 @@ func (m *MeteringContextMock) GasForwarded() uint64 {
 	return 0
 }
 
+func (m *MeteringContextMock) Debug(_ string) {
+}
+
 // ForwardGas mocked method
 func (m *MeteringContextMock) ForwardGas(_ uint64) {
 }
