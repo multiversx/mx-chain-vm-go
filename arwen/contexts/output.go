@@ -314,7 +314,7 @@ func (context *outputContext) checkGas() *vmcommon.VMOutput {
 		}
 	}
 
-	gasProvided := context.host.Metering().GetGasForExecution()
+	gasProvided := context.host.Metering().GetGasProvided()
 	totalGas := math.AddUint64(gasUsed, context.outputState.GasRemaining)
 	totalGas = math.AddUint64(totalGas, context.host.Metering().GetGasLocked())
 	if totalGas != gasProvided {
