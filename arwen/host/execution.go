@@ -197,18 +197,18 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 		// but first create a vmOutput to capture the error.
 		vmOutput := output.CreateVMOutputInCaseOfError(executeErr)
 
-		gasUsedByChildContract := uint64(0)
-		if !host.IsBuiltinFunctionName(runtime.Function()) {
-			gasUsedByChildContract = metering.GetGasProvided()
-		}
+		//gasUsedByChildContract := uint64(0)
+		//if !host.IsBuiltinFunctionName(runtime.Function()) {
+		//	gasUsedByChildContract = metering.GetGasProvided()
+		//}
 
 		bigInt.PopSetActiveState()
 		metering.PopSetActiveState()
 		runtime.PopSetActiveState()
 		storage.PopSetActiveState()
 
-		metering.RestoreGas(0)
-		metering.ForwardGas(gasUsedByChildContract)
+		//metering.RestoreGas(0)
+		//metering.ForwardGas(gasUsedByChildContract)
 		output.PopSetActiveState()
 
 		return vmOutput
