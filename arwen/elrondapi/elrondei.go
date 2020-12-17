@@ -22,7 +22,7 @@ package elrondapi
 // extern int32_t storageLoad(void *context, int32_t keyOffset, int32_t keyLength , int32_t dataOffset);
 // extern int32_t storageLoadFromAddress(void *context, int32_t addressOffset, int32_t keyOffset, int32_t keyLength , int32_t dataOffset);
 // extern void getCaller(void *context, int32_t resultOffset);
-// extern void nonPayableFuncCheck(void *context);
+// extern void checkNoPayment(void *context);
 // extern int32_t callValue(void *context, int32_t resultOffset);
 // extern int32_t getESDTValue(void *context, int32_t resultOffset);
 // extern int32_t getESDTTokenName(void *context, int32_t resultOffset);
@@ -202,7 +202,7 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 		return nil, err
 	}
 
-	imports, err = imports.Append("nonPayableFuncCheck", nonPayableFuncCheck, C.nonPayableFuncCheck)
+	imports, err = imports.Append("checkNoPayment", checkNoPayment, C.checkNoPayment)
 	if err != nil {
 		return nil, err
 	}
@@ -1008,8 +1008,8 @@ func getCaller(context unsafe.Pointer, resultOffset int32) {
 	}
 }
 
-//export nonPayableFuncCheck
-func nonPayableFuncCheck(context unsafe.Pointer) {
+//export checkNoPayment
+func checkNoPayment(context unsafe.Pointer) {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
