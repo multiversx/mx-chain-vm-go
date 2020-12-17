@@ -208,7 +208,7 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 	// Retrieve the VMOutput before popping the Runtime state and the previous
 	// instance, to ensure accurate GasRemaining
 	vmOutput := output.GetVMOutput()
-	gasUsedByContract := metering.GasUsedByContract()
+	gasUsedByChildContract := metering.GasUsedByContract()
 
 	// Restore the previous context states, except Output, which will be merged
 	// into the initial state (VMOutput), but only if it the child execution
@@ -220,7 +220,7 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 
 	// Restore remaining gas to the caller Wasmer instance
 	metering.RestoreGas(vmOutput.GasRemaining)
-	metering.ForwardGas(gasUsedByContract)
+	metering.ForwardGas(gasUsedByChildContract)
 
 	if vmOutput.ReturnCode == vmcommon.Ok {
 		output.PopMergeActiveState()
@@ -289,7 +289,7 @@ func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
 	// Retrieve the VMOutput before popping the Runtime state and the previous
 	// instance, to ensure accurate GasRemaining
 	vmOutput := output.GetVMOutput()
-	gasUsedByContract := metering.GasUsedByContract()
+	gasUsedByChildContract := metering.GasUsedByContract()
 
 	// Execution successful: discard the backups made at the beginning and
 	// resume from the new state.
@@ -300,7 +300,7 @@ func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
 
 	// Restore remaining gas to the caller Wasmer instance
 	metering.RestoreGas(vmOutput.GasRemaining)
-	metering.ForwardGas(gasUsedByContract)
+	metering.ForwardGas(gasUsedByChildContract)
 }
 
 func (host *vmHost) isInitFunctionBeingCalled() bool {
