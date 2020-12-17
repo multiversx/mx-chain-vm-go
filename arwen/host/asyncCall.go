@@ -139,7 +139,7 @@ func (host *vmHost) sendAsyncCallToDestination(asyncCallInfo arwen.AsyncCallInfo
 
 	metering := host.Metering()
 	gasLeft := metering.GasLeft()
-	metering.ForwardGas(asyncCallInfo.GetDestination(), gasLeft)
+	metering.ForwardGas(runtime.GetSCAddress(), asyncCallInfo.GetDestination(), gasLeft)
 	metering.UseGas(gasLeft)
 	return nil
 }
@@ -172,7 +172,7 @@ func (host *vmHost) sendCallbackToCurrentCaller() error {
 	}
 
 	gasLeft := metering.GasLeft()
-	metering.ForwardGas(currentCall.CallerAddr, gasLeft)
+	metering.ForwardGas(runtime.GetSCAddress(), currentCall.CallerAddr, gasLeft)
 	metering.UseGas(gasLeft)
 	return nil
 }

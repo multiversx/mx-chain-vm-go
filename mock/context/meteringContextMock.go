@@ -70,7 +70,7 @@ func (m *MeteringContextMock) Debug(_ string) {
 }
 
 // ForwardGas mocked method
-func (m *MeteringContextMock) ForwardGas(_ []byte, _ uint64) {
+func (m *MeteringContextMock) ForwardGas(_ []byte, _ []byte, _ uint64) {
 }
 
 // InitStateFromContractCallInput mocked method

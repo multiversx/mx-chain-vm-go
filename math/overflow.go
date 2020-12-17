@@ -12,7 +12,7 @@ var log = logger.GetOrCreate("arwen/overflow")
 func AddUint64(a, b uint64) uint64 {
 	res, err := AddUint64WithErr(a, b)
 	if err != nil {
-		log.Error("AddUint64 overflow", a, b)
+		log.Error("AddUint64 overflow", "a", a, "b", b)
 		return builtinMath.MaxUint64
 	}
 
@@ -36,7 +36,7 @@ func AddInt64(a, b int64) int64 {
 		return res
 	}
 
-	log.Error("AddInt64 overflow", a, b)
+	log.Error("AddInt64 overflow", "a", a, "b", b)
 	return builtinMath.MaxInt64
 }
 
@@ -44,7 +44,7 @@ func AddInt64(a, b int64) int64 {
 func SubUint64(a, b uint64) uint64 {
 	res, err := SubUint64WithError(a, b)
 	if err != nil {
-		log.Error("SubUint64 underflow", a, b)
+		log.Error("SubUint64 underflow", "a", a, "b", b)
 		return 0
 	}
 
@@ -65,7 +65,7 @@ func SubUint64WithError(a, b uint64) (uint64, error) {
 func MulUint64(a, b uint64) uint64 {
 	res, err := MulUint64WithErr(a, b)
 	if err != nil {
-		log.Error("MulUint64 overflow", a, b)
+		log.Error("MulUint64 overflow", "a", a, "b", b)
 		return builtinMath.MaxUint64
 	}
 
@@ -86,7 +86,7 @@ func MulUint64WithErr(a, b uint64) (uint64, error) {
 func AddInt32(a, b int32) int32 {
 	res, err := AddInt32WithError(a, b)
 	if err != nil {
-		log.Error("AddInt32 overflow", a, b)
+		log.Error("AddInt32 overflow", "a", a, "b", b)
 		return builtinMath.MaxInt32
 	}
 
@@ -110,6 +110,6 @@ func SubInt(a, b int) int {
 		return res
 	}
 
-	log.Error("SubInt underflow", a, b)
+	log.Error("SubInt underflow", "a", a, "b", b)
 	return builtinMath.MinInt64
 }

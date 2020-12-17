@@ -320,6 +320,7 @@ func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 		gasUsed := metering.GasUsedByContract()
 		account.GasUsed = math.AddUint64(account.GasUsed, gasUsed)
 		context.outputState.GasRemaining = metering.GasLeft()
+		context.handleGasForwarding(gasUsed)
 	} else {
 		account.GasUsed = math.AddUint64(account.GasUsed, metering.GetGasForExecution())
 	}
@@ -327,6 +328,21 @@ func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 	context.removeNonUpdatedCode(context.outputState)
 
 	return context.checkGas()
+}
+
+func (context *outputContext) handleGasForwarding(gasUsedByContract uint64) {
+	runtime := context.host.Runtime()
+	metering := context.host.Metering()
+
+	// Gas spent on builtin functions is never forwarded, because they
+	// cannot generate developer rewards.
+	if context.host.IsBuiltinFunctionName(runtime.Function()) {
+		return
+	}
+
+	source := runtime.GetVMInput().CallerAddr
+	dest := runtime.GetSCAddress()
+	metering.ForwardGas(source, dest, gasUsedByContract)
 }
 
 func (context *outputContext) checkGas() *vmcommon.VMOutput {

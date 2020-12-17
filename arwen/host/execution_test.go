@@ -730,6 +730,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs(t *testing.T) {
 	// tests
 	expectedVMOutput := expectedVMOutputSameCtxRecursiveMutualSCs(parentCode, childCode, int(recursiveCalls))
 	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 	require.Equal(t, expectedVMOutput, vmOutput)
 	require.Equal(t, int64(recursiveCalls+1), host.BigInt().GetOne(88).Int64())
 }
