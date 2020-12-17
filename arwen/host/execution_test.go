@@ -424,6 +424,8 @@ func TestExecution_ExecuteOnSameContext_Simple(t *testing.T) {
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 
 	expectedVMOutput := expectedVMOutputSameCtxSimple(parentCode, childCode)
 	require.Equal(t, expectedVMOutput, vmOutput)

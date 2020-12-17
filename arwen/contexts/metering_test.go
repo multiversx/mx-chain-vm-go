@@ -344,7 +344,7 @@ func TestMeteringContext_GasUsed_StackOneLevel(t *testing.T) {
 
 	metering.RestoreGas(gasRemaining)
 	mockRuntime.IsContractOnStack = false
-	metering.ForwardGas([]byte("child"), gasUsedByContract)
+	metering.ForwardGas([]byte("parent"), []byte("child"), gasUsedByContract)
 	require.Equal(t, uint64(2450), metering.GasLeft())
 
 	gasUsedByContract = metering.GasUsedByContract()
