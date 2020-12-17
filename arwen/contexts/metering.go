@@ -1,8 +1,6 @@
 package contexts
 
 import (
-	"fmt"
-
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/math"
@@ -97,18 +95,19 @@ func (context *meteringContext) ClearStateStack() {
 }
 
 func (context *meteringContext) Debug(msg string) {
-	fmt.Println(msg)
-	fmt.Println("initialGasProvided\t", context.initialGasProvided)
-	fmt.Println("initialCost\t\t", context.initialCost)
-	fmt.Println("gasForwarded so far\t", context.gasForwarded)
-	fmt.Println("currently used points\t", context.host.Runtime().GetPointsUsed())
-	fmt.Println("gasRemaining\t\t", context.GasLeft())
-	fmt.Println()
+	// fmt.Println(msg)
+	// fmt.Println("initialGasProvided\t", context.initialGasProvided)
+	// fmt.Println("initialCost\t\t", context.initialCost)
+	// fmt.Println("gasForwarded so far\t", context.gasForwarded)
+	// fmt.Println("currently used points\t", context.host.Runtime().GetPointsUsed())
+	// fmt.Println("gasRemaining\t\t", context.GasLeft())
+	// fmt.Println()
 }
 
 // InitStateFromContractCallInput initializes the internal state of the
 // MeteringContext using values taken from the provided ContractCallInput
 func (context *meteringContext) InitStateFromContractCallInput(input *vmcommon.ContractCallInput) {
+	context.InitState()
 	context.unlockGasIfAsyncCallback(input)
 	context.initialGasProvided = input.GasProvided
 }

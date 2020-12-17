@@ -1146,7 +1146,7 @@ func TestExecution_AsyncCall(t *testing.T) {
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = parentPerformAsyncCall
-	input.GasProvided = 1000000
+	input.GasProvided = 116000
 	input.Arguments = [][]byte{{0}}
 
 	vmOutput, err := host.RunSmartContractCall(input)
