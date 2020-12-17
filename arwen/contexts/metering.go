@@ -206,6 +206,16 @@ func (context *meteringContext) GetGasForExecution() uint64 {
 	return context.gasForExecution
 }
 
+// GetGasProvided returns the fully provided gas for the sc execution
+func (context *meteringContext) GetGasProvided() uint64 {
+	return context.initialGasProvided
+}
+
+// GetSCPrepareInitialCost return the initial prepare cost for the sc execution
+func (context *meteringContext) GetSCPrepareInitialCost() uint64 {
+	return context.initialCost
+}
+
 // BoundGasLimit returns the gas left if it is less than the given limit, or the given value otherwise.
 func (context *meteringContext) BoundGasLimit(value int64) uint64 {
 	gasLeft := context.GasLeft()

@@ -92,6 +92,16 @@ func (m *MeteringContextMock) GetGasForExecution() uint64 {
 	return 0
 }
 
+// GetGasProvided mocked method
+func (m *MeteringContextMock) GetGasProvided() uint64 {
+	return 0
+}
+
+// GetSCPrepareInitialCost mocked method
+func (m *MeteringContextMock) GetSCPrepareInitialCost() uint64 {
+	return 0
+}
+
 // BoundGasLimit mocked method
 func (m *MeteringContextMock) BoundGasLimit(value int64) uint64 {
 	gasLeft := m.GasLeft()
