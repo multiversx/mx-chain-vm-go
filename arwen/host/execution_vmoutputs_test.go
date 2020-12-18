@@ -857,7 +857,7 @@ func expectedVMOutputAsyncCall(_ []byte, _ []byte) *vmcommon.VMOutput {
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
-	parentAccount.GasUsed = 106047
+	parentAccount.GasUsed = 2686
 	SetStorageUpdate(parentAccount, parentKeyA, parentDataA)
 	SetStorageUpdate(parentAccount, parentKeyB, parentDataB)
 	AddFinishData(vmOutput, parentFinishA)
@@ -909,7 +909,7 @@ func expectedVMOutputAsyncCallChildFails(_ []byte, _ []byte) *vmcommon.VMOutput 
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
-	parentAccount.GasUsed = 1002048
+	parentAccount.GasUsed = 3926
 	SetStorageUpdate(parentAccount, parentKeyA, parentDataA)
 	SetStorageUpdate(parentAccount, parentKeyB, parentDataB)
 	AddFinishData(vmOutput, parentFinishA)
@@ -952,7 +952,7 @@ func expectedVMOutputAsyncCallCallBackFails(_ []byte, _ []byte) *vmcommon.VMOutp
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
-	parentAccount.GasUsed = 2098677
+	parentAccount.GasUsed = 197194
 	SetStorageUpdate(parentAccount, parentKeyA, parentDataA)
 	SetStorageUpdate(parentAccount, parentKeyB, parentDataB)
 	AddFinishData(vmOutput, parentFinishA)
