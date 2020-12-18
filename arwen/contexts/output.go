@@ -528,7 +528,7 @@ func mergeOutputAccounts(
 		leftAccount.OutputTransfers = append(leftAccount.OutputTransfers, rightAccount.OutputTransfers[lenLeftOutTransfers:]...)
 	}
 
-	leftAccount.GasUsed = math.AddUint64(leftAccount.GasUsed, rightAccount.GasUsed)
+	leftAccount.GasUsed = rightAccount.GasUsed
 
 	if rightAccount.CodeDeployerAddress != nil {
 		leftAccount.CodeDeployerAddress = rightAccount.CodeDeployerAddress

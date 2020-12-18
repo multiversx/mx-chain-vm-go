@@ -225,7 +225,7 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 	runtime.PopSetActiveState()
 	storage.PopSetActiveState()
 
-	forwardedGas := metering.GetForwardedGas(runtime.GetSCAddress())
+	//forwardedGas := metering.GetForwardedGas(runtime.GetSCAddress())
 	// Restore remaining gas to the caller Wasmer instance
 	metering.RestoreGas(vmOutput.GasRemaining)
 	metering.ForwardGas(runtime.GetSCAddress(), childContract, gasSpentByContract)
@@ -236,9 +236,9 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 		output.PopSetActiveState()
 	}
 
-	if bytes.Equal(runtime.GetSCAddress(), childContract) {
+	/*if bytes.Equal(runtime.GetSCAddress(), childContract) {
 		metering.SubForwardedGas(runtime.GetSCAddress(), forwardedGas)
-	}
+	}*/
 
 	return vmOutput
 }
