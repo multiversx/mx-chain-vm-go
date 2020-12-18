@@ -584,6 +584,13 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmc
 	}
 
 	gasConsumed, _ := math.SubUint64(input.GasProvided, vmOutput.GasRemaining)
+	for _, outAcc := range vmOutput.OutputAccounts {
+		for _, outTransfer := range outAcc.OutputTransfers {
+			gasConsumed, _ = math.SubUint64(gasConsumed, outTransfer.GasLocked)
+			gasConsumed, _ = math.SubUint64(gasConsumed, outTransfer.GasLimit)
+		}
+	}
+
 	if vmOutput.GasRemaining < input.GasProvided {
 		metering.UseGas(gasConsumed)
 	}
