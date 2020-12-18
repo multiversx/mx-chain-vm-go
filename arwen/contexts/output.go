@@ -352,9 +352,6 @@ func (context *outputContext) checkGas(remainedFromForwarded uint64) error {
 
 	context.outputState.GasRemaining, remainedFromForwarded = math.SubUint64(context.outputState.GasRemaining, remainedFromForwarded)
 	totalGas := math.AddUint64(gasUsed, context.outputState.GasRemaining)
-	// anything remains can be taken out of total used gas - we have protection even after this check
-	// that there was no overuse of gas
-	totalGas, _ = math.SubUint64(totalGas, remainedFromForwarded)
 	if totalGas > gasProvided {
 		log.Error("gas usage mismatch", "total gas used", totalGas, "gas provided", gasProvided)
 		return arwen.ErrInputAndOutputGasDoesNotMatch
