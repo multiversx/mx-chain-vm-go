@@ -572,6 +572,7 @@ func (host *vmHost) callSCMethodIndirect() error {
 func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmcommon.ContractCallInput, error) {
 	_, _, metering, output, runtime, _ := host.GetContexts()
 
+	runtime.SetPointsUsed(0)
 	vmOutput, err := host.blockChainHook.ProcessBuiltInFunction(input)
 	if err != nil {
 		metering.UseGas(input.GasProvided)
