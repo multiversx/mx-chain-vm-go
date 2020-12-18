@@ -294,6 +294,9 @@ func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
 	vmOutput := output.GetVMOutput()
 	childContract := runtime.GetSCAddress()
 	gasSpentByContract := metering.GasSpentByContract()
+	if vmOutput.ReturnCode != vmcommon.Ok {
+		gasSpentByContract = 0
+	}
 
 	// Execution successful: discard the backups made at the beginning and
 	// resume from the new state. However, output.PopDiscard() will ensure that
