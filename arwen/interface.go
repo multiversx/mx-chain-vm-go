@@ -199,8 +199,8 @@ type MeteringContext interface {
 	UseGasForAsyncStep() error
 	UseGasBounded(gasToUse uint64) error
 	GetGasLocked() uint64
-
-	Debug(msg string)
+	SubForwardedGas(address []byte, gas uint64)
+	GetForwardedGas(address []byte) uint64
 }
 
 // StorageStatus defines the states the storage can be in

@@ -138,6 +138,7 @@ func (context *outputContext) ResetGas() {
 		outAcc.GasUsed = 0
 		for _, outTransfer := range outAcc.OutputTransfers {
 			outTransfer.GasLimit = 0
+			outTransfer.GasLocked = 0
 		}
 	}
 }

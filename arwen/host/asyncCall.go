@@ -34,14 +34,11 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 		return err
 	}
 
-	host.Metering().Debug("before sync dest call")
 	// Start calling the destination SC, synchronously.
 	destinationVMOutput, destinationErr := host.executeSyncDestinationCall(asyncCallInfo)
 
-	host.Metering().Debug("before sync callback call")
 	callbackVMOutput, callBackErr := host.executeSyncCallbackCall(asyncCallInfo, destinationVMOutput, destinationErr)
 
-	host.Metering().Debug("after sync exec")
 	err = host.processCallbackVMOutput(callbackVMOutput, callBackErr)
 	if err != nil {
 		return err

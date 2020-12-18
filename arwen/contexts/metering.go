@@ -100,15 +100,6 @@ func (context *meteringContext) ClearStateStack() {
 	context.stateStack = make([]*meteringContext, 0)
 }
 
-func (context *meteringContext) Debug(msg string) {
-	// fmt.Println(msg)
-	// fmt.Println("initialGasProvided\t", context.initialGasProvided)
-	// fmt.Println("initialCost\t\t", context.initialCost)
-	// fmt.Println("currently used points\t", context.host.Runtime().GetPointsUsed())
-	// fmt.Println("gasRemaining\t\t", context.GasLeft())
-	// fmt.Println()
-}
-
 // InitStateFromContractCallInput initializes the internal state of the
 // MeteringContext using values taken from the provided ContractCallInput
 func (context *meteringContext) InitStateFromContractCallInput(input *vmcommon.VMInput) {
@@ -177,6 +168,18 @@ func (context *meteringContext) GasLeft() uint64 {
 	}
 
 	return gasProvided - gasUsed
+}
+
+// ResetForwardedGas will set forwarded gas to 0 for given contract
+func (context *meteringContext) SubForwardedGas(address []byte, gas uint64) {
+	state := context.getContractGasState(address)
+	state.forwarded = math.AddUint64(state.forwarded, gas)
+}
+
+// GetForwardedGas will return the currently forwarded gas to this address
+func (context *meteringContext) GetForwardedGas(address []byte) uint64 {
+	state := context.getContractGasState(address)
+	return state.forwarded
 }
 
 // ForwardGas accumulates the gas forwarded by the current contract for the execution of other contracts
