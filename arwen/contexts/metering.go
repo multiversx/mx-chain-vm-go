@@ -206,7 +206,7 @@ func (context *meteringContext) addReturnedGas(address []byte, gas uint64) {
 
 func (context *meteringContext) getTotalForwardedGas(address []byte) uint64 {
 	state := context.getContractGasState(address)
-	total := math.SubUint64(state.forwarded, state.returned)
+	total, _ := math.SubUint64(state.forwarded, state.returned)
 	return total
 }
 
@@ -231,7 +231,7 @@ func (context *meteringContext) getContractGasState(address []byte) *contractGas
 }
 
 // GasUsedByContract returns the gas used by the current contract.
-func (context *meteringContext) GasUsedByContract() uint64 {
+func (context *meteringContext) GasUsedByContract() (uint64, uint64) {
 	runtime := context.host.Runtime()
 	executionGasUsed := runtime.GetPointsUsed()
 
@@ -243,10 +243,11 @@ func (context *meteringContext) GasUsedByContract() uint64 {
 	gasUsed = math.AddUint64(gasUsed, executionGasUsed)
 
 	totalGasForwarded := context.getTotalForwardedGas(runtime.GetSCAddress())
-	gasUsed = math.SubUint64(gasUsed, totalGasForwarded)
+	remainedFromForwarded := uint64(0)
+	gasUsed, remainedFromForwarded = math.SubUint64(gasUsed, totalGasForwarded)
 	gasUsed = math.AddUint64(gasUsed, context.getGasUsed(runtime.GetSCAddress()))
 
-	return gasUsed
+	return gasUsed, remainedFromForwarded
 }
 
 // GasSpentByContract calculates the entire gas consumption of the contract,

@@ -41,24 +41,12 @@ func AddInt64(a, b int64) int64 {
 }
 
 // SubUint64 performs subtraction on uint64 and logs an error if the subtraction overflows
-func SubUint64(a, b uint64) uint64 {
-	res, err := SubUint64WithError(a, b)
-	if err != nil {
-		log.Error("SubUint64 underflow", "a", a, "b", b)
-		return 0
+func SubUint64(a, b uint64) (uint64, uint64) {
+	if a >= b {
+		return a - b, 0
 	}
 
-	return res
-}
-
-// SubUint64WithError performs subtraction on uint64 and returns an error if the subtraction overflows
-func SubUint64WithError(a, b uint64) (uint64, error) {
-	res := a - b
-	if res <= a {
-		return res, nil
-	}
-
-	return 0, ErrSubtractionUnderflow
+	return 0, b - a
 }
 
 // MulUint64 performs multiplication on uint64 and logs an error if the multiplication overflows

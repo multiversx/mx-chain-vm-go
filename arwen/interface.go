@@ -185,7 +185,7 @@ type MeteringContext interface {
 	RestoreGas(gas uint64)
 	GasLeft() uint64
 	ForwardGas(sourceAddress []byte, destAddress []byte, gas uint64)
-	GasUsedByContract() uint64
+	GasUsedByContract() (uint64, uint64)
 	GasSpentByContract() uint64
 	GetGasForExecution() uint64
 	GetGasProvided() uint64

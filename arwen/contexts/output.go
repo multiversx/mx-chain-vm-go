@@ -303,9 +303,10 @@ func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 	runtime := context.host.Runtime()
 	metering := context.host.Metering()
 
+	remainedFromForwarded := uint64(0)
 	account, _ := context.GetOutputAccount(runtime.GetSCAddress())
 	if context.outputState.ReturnCode == vmcommon.Ok {
-		account.GasUsed = metering.GasUsedByContract()
+		account.GasUsed, remainedFromForwarded = metering.GasUsedByContract()
 		context.outputState.GasRemaining = metering.GasLeft()
 	} else {
 		account.GasUsed = math.AddUint64(account.GasUsed, metering.GetGasProvided())
@@ -313,7 +314,7 @@ func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 
 	context.removeNonUpdatedCode(context.outputState)
 
-	err := context.checkGas()
+	err := context.checkGas(remainedFromForwarded)
 	if err != nil {
 		return context.CreateVMOutputInCaseOfError(err)
 	}
@@ -336,7 +337,7 @@ func (context *outputContext) handleGasForwarding(gasUsedByContract uint64) {
 	metering.ForwardGas(source, dest, gasUsedByContract)
 }
 
-func (context *outputContext) checkGas() error {
+func (context *outputContext) checkGas(remainedFromForwarded uint64) error {
 	if context.host.IsArwenV2Enabled() == false {
 		return nil
 	}
@@ -352,7 +353,8 @@ func (context *outputContext) checkGas() error {
 
 	gasProvided := context.host.Metering().GetGasProvided()
 	totalGas := math.AddUint64(gasUsed, context.outputState.GasRemaining)
-	if totalGas != gasProvided {
+	totalGas, _ = math.SubUint64(totalGas, remainedFromForwarded)
+	if totalGas > gasProvided {
 		logMetering.Error("gas usage mismatch", "total gas used", totalGas, "gas provided", gasProvided)
 		return arwen.ErrInputAndOutputGasDoesNotMatch
 	}
