@@ -40,7 +40,7 @@ func AddInt64(a, b int64) int64 {
 	return builtinMath.MaxInt64
 }
 
-// SubUint64 performs subtraction on uint64 and logs an error if the subtraction overflows
+// SubUint64 performs subtraction on uint64, in case of underflow returns the difference
 func SubUint64(a, b uint64) (uint64, uint64) {
 	if a >= b {
 		return a - b, 0

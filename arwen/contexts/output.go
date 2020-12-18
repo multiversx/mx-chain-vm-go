@@ -6,12 +6,10 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/math"
-	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 var _ arwen.OutputContext = (*outputContext)(nil)
-var logMetering = logger.GetOrCreate("arwen/metering")
 
 type outputContext struct {
 	host        arwen.VMHost
@@ -355,7 +353,7 @@ func (context *outputContext) checkGas(remainedFromForwarded uint64) error {
 	totalGas := math.AddUint64(gasUsed, context.outputState.GasRemaining)
 	totalGas, _ = math.SubUint64(totalGas, remainedFromForwarded)
 	if totalGas > gasProvided {
-		logMetering.Error("gas usage mismatch", "total gas used", totalGas, "gas provided", gasProvided)
+		log.Error("gas usage mismatch", "total gas used", totalGas, "gas provided", gasProvided)
 		return arwen.ErrInputAndOutputGasDoesNotMatch
 	}
 
