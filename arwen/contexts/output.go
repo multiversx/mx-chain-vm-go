@@ -306,6 +306,11 @@ func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 	if context.outputState.ReturnCode == vmcommon.Ok {
 		account.GasUsed, remainedFromForwarded = metering.GasUsedByContract()
 		context.outputState.GasRemaining = metering.GasLeft()
+
+		// backward compatibility
+		if !context.host.IsArwenV2Enabled() && account.GasUsed > metering.GetGasProvided() {
+			return context.CreateVMOutputInCaseOfError(arwen.ErrNotEnoughGas)
+		}
 	} else {
 		account.GasUsed = math.AddUint64(account.GasUsed, metering.GetGasProvided())
 	}
