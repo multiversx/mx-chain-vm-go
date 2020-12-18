@@ -23,7 +23,6 @@ type meteringContext struct {
 type contractGasState struct {
 	forwarded uint64
 	returned  uint64
-	gasUsed   uint64
 }
 
 // NewMeteringContext creates a new meteringContext
@@ -171,12 +170,6 @@ func (context *meteringContext) GasLeft() uint64 {
 	return gasProvided - gasUsed
 }
 
-// AddToUsedGas will add gas used by current contract
-func (context *meteringContext) AddToUsedGas(address []byte, gas uint64) {
-	state := context.getContractGasState(address)
-	state.gasUsed = math.AddUint64(state.gasUsed, gas)
-}
-
 // ForwardGas accumulates the gas forwarded by the current contract for the execution of other contracts
 func (context *meteringContext) ForwardGas(sourceAddress []byte, destAddress []byte, gas uint64) {
 	// Gas forwarded to any contract (including self-forwarding) is recorded for
@@ -210,11 +203,6 @@ func (context *meteringContext) getTotalForwardedGas(address []byte) uint64 {
 	return total
 }
 
-func (context *meteringContext) getGasUsed(address []byte) uint64 {
-	state := context.getContractGasState(address)
-	return state.gasUsed
-}
-
 func (context *meteringContext) getContractGasState(address []byte) *contractGasState {
 	key := string(address)
 	state, exists := context.gasStates[key]
@@ -222,7 +210,6 @@ func (context *meteringContext) getContractGasState(address []byte) *contractGas
 		state = &contractGasState{
 			forwarded: 0,
 			returned:  0,
-			gasUsed:   0,
 		}
 		context.gasStates[key] = state
 	}
@@ -245,7 +232,6 @@ func (context *meteringContext) GasUsedByContract() (uint64, uint64) {
 	totalGasForwarded := context.getTotalForwardedGas(runtime.GetSCAddress())
 	remainedFromForwarded := uint64(0)
 	gasUsed, remainedFromForwarded = math.SubUint64(gasUsed, totalGasForwarded)
-	gasUsed = math.AddUint64(gasUsed, context.getGasUsed(runtime.GetSCAddress()))
 
 	return gasUsed, remainedFromForwarded
 }

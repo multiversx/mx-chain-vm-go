@@ -331,17 +331,30 @@ func (context *outputContext) checkGas(remainedFromForwarded uint64) error {
 	}
 
 	gasUsed := uint64(0)
+	gasLockSentForward := false
 	for _, outputAccount := range context.outputState.OutputAccounts {
 		gasUsed = math.AddUint64(gasUsed, outputAccount.GasUsed)
 		for _, outputTransfer := range outputAccount.OutputTransfers {
 			gasUsed = math.AddUint64(gasUsed, outputTransfer.GasLimit)
 			gasUsed = math.AddUint64(gasUsed, outputTransfer.GasLocked)
+
+			if outputTransfer.GasLocked > 0 {
+				gasLockSentForward = true
+			}
 		}
 	}
 
 	gasProvided := context.host.Metering().GetGasProvided()
-	context.outputState.GasRemaining, _ = math.SubUint64(context.outputState.GasRemaining, remainedFromForwarded)
+	if gasLockSentForward &&
+		context.host.IsBuiltinFunctionName(context.host.Runtime().Function()) {
+		gasProvided = math.AddUint64(gasProvided, context.host.Metering().GetGasLocked())
+	}
+
+	context.outputState.GasRemaining, remainedFromForwarded = math.SubUint64(context.outputState.GasRemaining, remainedFromForwarded)
 	totalGas := math.AddUint64(gasUsed, context.outputState.GasRemaining)
+	// anything remains can be taken out of total used gas - we have protection even after this check
+	// that there was no overuse of gas
+	totalGas, _ = math.SubUint64(totalGas, remainedFromForwarded)
 	if totalGas > gasProvided {
 		log.Error("gas usage mismatch", "total gas used", totalGas, "gas provided", gasProvided)
 		return arwen.ErrInputAndOutputGasDoesNotMatch
