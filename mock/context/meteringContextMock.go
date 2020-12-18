@@ -67,7 +67,7 @@ func (m *MeteringContextMock) GasLeft() uint64 {
 }
 
 // ResetForwardedGas -
-func (m *MeteringContextMock) SubForwardedGas(_ []byte, _ uint64) {
+func (m *MeteringContextMock) AddToUsedGas(_ []byte, _ uint64) {
 }
 
 // ForwardGas mocked method

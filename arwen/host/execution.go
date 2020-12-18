@@ -190,31 +190,27 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOutput {
 	bigInt, _, metering, output, runtime, storage := host.GetContexts()
 
+	var vmOutput *vmcommon.VMOutput
 	if executeErr != nil {
 		// Execution failed: restore contexts as if the execution didn't happen,
 		// but first create a vmOutput to capture the error.
-		vmOutput := output.CreateVMOutputInCaseOfError(executeErr)
-
-		bigInt.PopSetActiveState()
-		metering.PopSetActiveState()
-		runtime.PopSetActiveState()
-		storage.PopSetActiveState()
-
-		output.PopSetActiveState()
-
-		return vmOutput
+		vmOutput = output.CreateVMOutputInCaseOfError(executeErr)
+	} else {
+		// Retrieve the VMOutput before popping the Runtime state and the previous
+		// instance, to ensure accurate GasRemaining
+		vmOutput = output.GetVMOutput()
 	}
-
-	// Retrieve the VMOutput before popping the Runtime state and the previous
-	// instance, to ensure accurate GasRemaining
-	vmOutput := output.GetVMOutput()
 
 	// Gas spent on builtin functions is never forwarded, because they
 	// cannot generate developer rewards.
 	childContract := runtime.GetSCAddress()
-	gasSpentByContract := uint64(0)
+	gasSpentByChildContract := uint64(0)
 	if !host.IsBuiltinFunctionName(runtime.Function()) {
-		gasSpentByContract = metering.GasSpentByContract()
+		gasSpentByChildContract = metering.GasSpentByContract()
+	}
+
+	if vmOutput.ReturnCode != vmcommon.Ok {
+		gasSpentByChildContract = 0
 	}
 
 	// Restore the previous context states, except Output, which will be merged
@@ -225,20 +221,15 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 	runtime.PopSetActiveState()
 	storage.PopSetActiveState()
 
-	//forwardedGas := metering.GetForwardedGas(runtime.GetSCAddress())
 	// Restore remaining gas to the caller Wasmer instance
 	metering.RestoreGas(vmOutput.GasRemaining)
-	metering.ForwardGas(runtime.GetSCAddress(), childContract, gasSpentByContract)
+	metering.ForwardGas(runtime.GetSCAddress(), childContract, gasSpentByChildContract)
 
 	if vmOutput.ReturnCode == vmcommon.Ok {
 		output.PopMergeActiveState()
 	} else {
 		output.PopSetActiveState()
 	}
-
-	/*if bytes.Equal(runtime.GetSCAddress(), childContract) {
-		metering.SubForwardedGas(runtime.GetSCAddress(), forwardedGas)
-	}*/
 
 	return vmOutput
 }

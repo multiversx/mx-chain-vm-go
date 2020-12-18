@@ -308,7 +308,7 @@ func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 		account.GasUsed = metering.GasUsedByContract()
 		context.outputState.GasRemaining = metering.GasLeft()
 	} else {
-		account.GasUsed = math.AddUint64(account.GasUsed, metering.GetGasForExecution())
+		account.GasUsed = math.AddUint64(account.GasUsed, metering.GetGasProvided())
 	}
 
 	context.removeNonUpdatedCode(context.outputState)
@@ -387,13 +387,14 @@ func (context *outputContext) CreateVMOutputInCaseOfError(err error) *vmcommon.V
 	}
 
 	returnCode := context.resolveReturnCodeFromError(err)
-
-	return &vmcommon.VMOutput{
+	vmOutput := &vmcommon.VMOutput{
 		GasRemaining:  0,
 		GasRefund:     big.NewInt(0),
 		ReturnCode:    returnCode,
 		ReturnMessage: message,
 	}
+
+	return vmOutput
 }
 
 func (context *outputContext) removeNonUpdatedCode(vmOutput *vmcommon.VMOutput) {
