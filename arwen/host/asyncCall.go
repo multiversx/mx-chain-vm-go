@@ -34,14 +34,11 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 		return err
 	}
 
-	host.Metering().Debug("before sync dest call")
 	// Start calling the destination SC, synchronously.
 	destinationVMOutput, destinationErr := host.executeSyncDestinationCall(asyncCallInfo)
 
-	host.Metering().Debug("before sync callback call")
 	callbackVMOutput, callBackErr := host.executeSyncCallbackCall(asyncCallInfo, destinationVMOutput, destinationErr)
 
-	host.Metering().Debug("after sync exec")
 	err = host.processCallbackVMOutput(callbackVMOutput, callBackErr)
 	if err != nil {
 		return err
@@ -105,6 +102,8 @@ func (host *vmHost) executeSyncCallbackCall(
 		return nil, err
 	}
 
+	// used points should be reset before actually entering the callback execution
+	host.runtimeContext.SetPointsUsed(0)
 	callbackVMOutput, _, callBackErr := host.ExecuteOnDestContext(callbackCallInput)
 	return callbackVMOutput, callBackErr
 }
@@ -139,7 +138,7 @@ func (host *vmHost) sendAsyncCallToDestination(asyncCallInfo arwen.AsyncCallInfo
 
 	metering := host.Metering()
 	gasLeft := metering.GasLeft()
-	metering.ForwardGas(gasLeft)
+	metering.ForwardGas(runtime.GetSCAddress(), asyncCallInfo.GetDestination(), gasLeft+asyncCallInfo.GetGasLocked())
 	metering.UseGas(gasLeft)
 	return nil
 }
@@ -172,7 +171,7 @@ func (host *vmHost) sendCallbackToCurrentCaller() error {
 	}
 
 	gasLeft := metering.GasLeft()
-	metering.ForwardGas(gasLeft)
+	metering.ForwardGas(runtime.GetSCAddress(), currentCall.CallerAddr, gasLeft)
 	metering.UseGas(gasLeft)
 	return nil
 }

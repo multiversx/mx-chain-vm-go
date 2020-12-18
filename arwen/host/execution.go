@@ -139,7 +139,6 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	}
 
 	vmOutput = output.GetVMOutput()
-	metering.Debug("final metering")
 
 	runtime.CleanWasmerInstance()
 	return
@@ -157,7 +156,6 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 
 	output.PushState()
 	output.CensorVMOutput()
-	output.ResetGas()
 
 	runtime.PushState()
 	runtime.InitStateFromContractCallInput(input)
@@ -192,37 +190,27 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOutput {
 	bigInt, _, metering, output, runtime, storage := host.GetContexts()
 
+	var vmOutput *vmcommon.VMOutput
 	if executeErr != nil {
 		// Execution failed: restore contexts as if the execution didn't happen,
 		// but first create a vmOutput to capture the error.
-		vmOutput := output.CreateVMOutputInCaseOfError(executeErr)
-
-		//gasUsedByChildContract := uint64(0)
-		//if !host.IsBuiltinFunctionName(runtime.Function()) {
-		//	gasUsedByChildContract = metering.GetGasProvided()
-		//}
-
-		bigInt.PopSetActiveState()
-		metering.PopSetActiveState()
-		runtime.PopSetActiveState()
-		storage.PopSetActiveState()
-
-		//metering.RestoreGas(0)
-		//metering.ForwardGas(gasUsedByChildContract)
-		output.PopSetActiveState()
-
-		return vmOutput
+		vmOutput = output.CreateVMOutputInCaseOfError(executeErr)
+	} else {
+		// Retrieve the VMOutput before popping the Runtime state and the previous
+		// instance, to ensure accurate GasRemaining
+		vmOutput = output.GetVMOutput()
 	}
-
-	// Retrieve the VMOutput before popping the Runtime state and the previous
-	// instance, to ensure accurate GasRemaining
-	vmOutput := output.GetVMOutput()
 
 	// Gas spent on builtin functions is never forwarded, because they
 	// cannot generate developer rewards.
-	gasUsedByChildContract := uint64(0)
+	childContract := runtime.GetSCAddress()
+	gasSpentByChildContract := uint64(0)
 	if !host.IsBuiltinFunctionName(runtime.Function()) {
-		gasUsedByChildContract = metering.GasUsedByContract()
+		gasSpentByChildContract = metering.GasSpentByContract()
+	}
+
+	if vmOutput.ReturnCode != vmcommon.Ok {
+		gasSpentByChildContract = 0
 	}
 
 	// Restore the previous context states, except Output, which will be merged
@@ -235,7 +223,7 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 
 	// Restore remaining gas to the caller Wasmer instance
 	metering.RestoreGas(vmOutput.GasRemaining)
-	metering.ForwardGas(gasUsedByChildContract)
+	metering.ForwardGas(runtime.GetSCAddress(), childContract, gasSpentByChildContract)
 
 	if vmOutput.ReturnCode == vmcommon.Ok {
 		output.PopMergeActiveState()
@@ -261,7 +249,6 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 	// by ExecuteOnSameContext())
 	bigInt.PushState()
 	output.PushState()
-	output.ResetGas()
 
 	runtime.PushState()
 	runtime.InitStateFromContractCallInput(input)
@@ -305,7 +292,11 @@ func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
 	// Retrieve the VMOutput before popping the Runtime state and the previous
 	// instance, to ensure accurate GasRemaining
 	vmOutput := output.GetVMOutput()
-	gasUsedByChildContract := metering.GasUsedByContract()
+	childContract := runtime.GetSCAddress()
+	gasSpentByContract := metering.GasSpentByContract()
+	if vmOutput.ReturnCode != vmcommon.Ok {
+		gasSpentByContract = 0
+	}
 
 	// Execution successful: discard the backups made at the beginning and
 	// resume from the new state. However, output.PopDiscard() will ensure that
@@ -317,7 +308,7 @@ func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
 
 	// Restore remaining gas to the caller Wasmer instance
 	metering.RestoreGas(vmOutput.GasRemaining)
-	metering.ForwardGas(gasUsedByChildContract)
+	metering.ForwardGas(runtime.GetSCAddress(), childContract, gasSpentByContract)
 }
 
 func (host *vmHost) isInitFunctionBeingCalled() bool {
@@ -592,7 +583,7 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmc
 		return nil, err
 	}
 
-	gasConsumed := math.SubUint64(input.GasProvided, vmOutput.GasRemaining)
+	gasConsumed, _ := math.SubUint64(input.GasProvided, vmOutput.GasRemaining)
 	if vmOutput.GasRemaining < input.GasProvided {
 		metering.UseGas(gasConsumed)
 	}

@@ -275,7 +275,7 @@ func TestMeteringContext_GasUsed_NoStacking(t *testing.T) {
 	metering.UseGas(400)
 	require.Equal(t, uint64(600), metering.GasLeft())
 
-	gasUsedByContract := metering.GasUsedByContract()
+	gasUsedByContract, _ := metering.GasUsedByContract()
 	require.Equal(t, uint64(1400), gasUsedByContract)
 }
 
@@ -290,6 +290,7 @@ func TestMeteringContext_GasUsed_StackOneLevel(t *testing.T) {
 	contractSize := uint64(1000)
 	contract := make([]byte, contractSize)
 	mockRuntime.SCCodeSize = contractSize
+	mockRuntime.SCAddress = []byte("parent")
 
 	mockRuntime.SetPointsUsed(0)
 	parentInput := &vmcommon.ContractCallInput{VMInput: vmcommon.VMInput{}}
@@ -307,7 +308,7 @@ func TestMeteringContext_GasUsed_StackOneLevel(t *testing.T) {
 	metering.UseGas(400)
 	require.Equal(t, uint64(2600), metering.GasLeft())
 
-	gasUsedByContract := metering.GasUsedByContract()
+	gasUsedByContract, _ := metering.GasUsedByContract()
 	require.Equal(t, uint64(1400), gasUsedByContract)
 
 	// simulate executing another contract on top of the parent
@@ -318,6 +319,7 @@ func TestMeteringContext_GasUsed_StackOneLevel(t *testing.T) {
 	parentPointsBeforeStacking := mockRuntime.GetPointsUsed()
 
 	// child execution begins
+	mockRuntime.SCAddress = []byte("child")
 	mockRuntime.SetPointsUsed(0)
 	mockRuntime.SetVMInput(&childInput.VMInput)
 	metering.PushState()
@@ -331,24 +333,26 @@ func TestMeteringContext_GasUsed_StackOneLevel(t *testing.T) {
 	gasRemaining := metering.GasLeft()
 	require.Equal(t, uint64(350), gasRemaining)
 
-	gasUsedByContract = metering.GasUsedByContract()
+	gasUsedByContract, _ = metering.GasUsedByContract()
 	require.Equal(t, uint64(150), gasUsedByContract)
 
 	// return to the parent
+	mockRuntime.SCAddress = []byte("parent")
 	metering.PopSetActiveState()
 	mockRuntime.SetPointsUsed(parentPointsBeforeStacking)
 	mockRuntime.SetVMInput(&parentInput.VMInput)
 
 	metering.RestoreGas(gasRemaining)
-	metering.ForwardGas(gasUsedByContract)
+	mockRuntime.IsContractOnStack = false
+	metering.ForwardGas([]byte("parent"), []byte("child"), gasUsedByContract)
 	require.Equal(t, uint64(2450), metering.GasLeft())
 
-	gasUsedByContract = metering.GasUsedByContract()
+	gasUsedByContract, _ = metering.GasUsedByContract()
 	require.Equal(t, uint64(1400), gasUsedByContract)
 
 	metering.UseGas(50)
 	require.Equal(t, uint64(2400), metering.GasLeft())
 
-	gasUsedByContract = metering.GasUsedByContract()
+	gasUsedByContract, _ = metering.GasUsedByContract()
 	require.Equal(t, uint64(1450), gasUsedByContract)
 }

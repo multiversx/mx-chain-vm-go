@@ -110,20 +110,7 @@ func (context *outputContext) PopDiscard() {
 		return
 	}
 
-	prevState := context.stateStack[stateStackLen-1]
 	context.stateStack = context.stateStack[:stateStackLen-1]
-
-	mergeGasUsedAndGasLimits(context.outputState, prevState)
-}
-
-func mergeGasUsedAndGasLimits(leftOutput *vmcommon.VMOutput, rightOutput *vmcommon.VMOutput) {
-	for _, rightAccount := range rightOutput.OutputAccounts {
-		leftAccount, _ := leftOutput.OutputAccounts[string(rightAccount.Address)]
-		leftAccount.GasUsed = math.AddUint64(leftAccount.GasUsed, rightAccount.GasUsed)
-		for index, rightTransfer := range rightAccount.OutputTransfers {
-			leftAccount.OutputTransfers[index].GasLimit = rightTransfer.GasLimit
-		}
-	}
 }
 
 // ClearStateStack reinitializes the state stack.
@@ -151,6 +138,7 @@ func (context *outputContext) ResetGas() {
 		outAcc.GasUsed = 0
 		for _, outTransfer := range outAcc.OutputTransfers {
 			outTransfer.GasLimit = 0
+			outTransfer.GasLocked = 0
 		}
 	}
 }
@@ -315,23 +303,43 @@ func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 	runtime := context.host.Runtime()
 	metering := context.host.Metering()
 
+	remainedFromForwarded := uint64(0)
 	account, _ := context.GetOutputAccount(runtime.GetSCAddress())
 	if context.outputState.ReturnCode == vmcommon.Ok {
-		gasUsed := metering.GasUsedByContract()
-		account.GasUsed = math.AddUint64(account.GasUsed, gasUsed)
+		account.GasUsed, remainedFromForwarded = metering.GasUsedByContract()
 		context.outputState.GasRemaining = metering.GasLeft()
 	} else {
-		account.GasUsed = math.AddUint64(account.GasUsed, metering.GetGasForExecution())
+		account.GasUsed = math.AddUint64(account.GasUsed, metering.GetGasProvided())
 	}
 
 	context.removeNonUpdatedCode(context.outputState)
 
-	return context.checkGas()
+	err := context.checkGas(remainedFromForwarded)
+	if err != nil {
+		return context.CreateVMOutputInCaseOfError(err)
+	}
+
+	return context.outputState
 }
 
-func (context *outputContext) checkGas() *vmcommon.VMOutput {
+func (context *outputContext) handleGasForwarding(gasUsedByContract uint64) {
+	runtime := context.host.Runtime()
+	metering := context.host.Metering()
+
+	// Gas spent on builtin functions is never forwarded, because they
+	// cannot generate developer rewards.
+	if context.host.IsBuiltinFunctionName(runtime.Function()) {
+		return
+	}
+
+	source := runtime.GetVMInput().CallerAddr
+	dest := runtime.GetSCAddress()
+	metering.ForwardGas(source, dest, gasUsedByContract)
+}
+
+func (context *outputContext) checkGas(remainedFromForwarded uint64) error {
 	if context.host.IsArwenV2Enabled() == false {
-		return context.outputState
+		return nil
 	}
 
 	gasUsed := uint64(0)
@@ -345,12 +353,13 @@ func (context *outputContext) checkGas() *vmcommon.VMOutput {
 
 	gasProvided := context.host.Metering().GetGasProvided()
 	totalGas := math.AddUint64(gasUsed, context.outputState.GasRemaining)
-	if totalGas != gasProvided {
+	totalGas, _ = math.SubUint64(totalGas, remainedFromForwarded)
+	if totalGas > gasProvided {
 		logMetering.Error("gas usage mismatch", "total gas used", totalGas, "gas provided", gasProvided)
-		return context.CreateVMOutputInCaseOfError(arwen.ErrInputAndOutputGasDoesNotMatch)
+		return arwen.ErrInputAndOutputGasDoesNotMatch
 	}
 
-	return context.outputState
+	return nil
 }
 
 // DeployCode sets the given code to a an account, and creates a new codeUpdates entry at the accounts address.
@@ -380,13 +389,14 @@ func (context *outputContext) CreateVMOutputInCaseOfError(err error) *vmcommon.V
 	}
 
 	returnCode := context.resolveReturnCodeFromError(err)
-
-	return &vmcommon.VMOutput{
+	vmOutput := &vmcommon.VMOutput{
 		GasRemaining:  0,
 		GasRefund:     big.NewInt(0),
 		ReturnCode:    returnCode,
 		ReturnMessage: message,
 	}
+
+	return vmOutput
 }
 
 func (context *outputContext) removeNonUpdatedCode(vmOutput *vmcommon.VMOutput) {
@@ -521,7 +531,7 @@ func mergeOutputAccounts(
 		leftAccount.OutputTransfers = append(leftAccount.OutputTransfers, rightAccount.OutputTransfers[lenLeftOutTransfers:]...)
 	}
 
-	leftAccount.GasUsed = math.AddUint64(leftAccount.GasUsed, rightAccount.GasUsed)
+	leftAccount.GasUsed = rightAccount.GasUsed
 
 	if rightAccount.CodeDeployerAddress != nil {
 		leftAccount.CodeDeployerAddress = rightAccount.CodeDeployerAddress

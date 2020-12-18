@@ -66,16 +66,17 @@ func (m *MeteringContextMock) GasLeft() uint64 {
 	return m.GasLeftMock
 }
 
-// GasForwarded mocked method
-func (m *MeteringContextMock) GasForwarded() uint64 {
-	return 0
-}
-
-func (m *MeteringContextMock) Debug(_ string) {
+// ResetForwardedGas -
+func (m *MeteringContextMock) AddToUsedGas(_ []byte, _ uint64) {
 }
 
 // ForwardGas mocked method
-func (m *MeteringContextMock) ForwardGas(_ uint64) {
+func (m *MeteringContextMock) ForwardGas(_ []byte, _ []byte, _ uint64) {
+}
+
+// GetForwardedGas -
+func (m *MeteringContextMock) GetForwardedGas(_ []byte) uint64 {
+	return 0
 }
 
 // InitStateFromContractCallInput mocked method
@@ -83,7 +84,12 @@ func (m *MeteringContextMock) InitStateFromContractCallInput(_ *vmcommon.VMInput
 }
 
 // GasUsedByContract mocked method
-func (m *MeteringContextMock) GasUsedByContract() uint64 {
+func (m *MeteringContextMock) GasUsedByContract() (uint64, uint64) {
+	return 0, 0
+}
+
+// GasUsedByContract mocked method
+func (m *MeteringContextMock) GasSpentByContract() uint64 {
 	return 0
 }
 
