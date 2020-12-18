@@ -325,21 +325,6 @@ func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 	return context.outputState
 }
 
-func (context *outputContext) handleGasForwarding(gasUsedByContract uint64) {
-	runtime := context.host.Runtime()
-	metering := context.host.Metering()
-
-	// Gas spent on builtin functions is never forwarded, because they
-	// cannot generate developer rewards.
-	if context.host.IsBuiltinFunctionName(runtime.Function()) {
-		return
-	}
-
-	source := runtime.GetVMInput().CallerAddr
-	dest := runtime.GetSCAddress()
-	metering.ForwardGas(source, dest, gasUsedByContract)
-}
-
 func (context *outputContext) checkGas(remainedFromForwarded uint64) error {
 	if context.host.IsArwenV2Enabled() == false {
 		return nil

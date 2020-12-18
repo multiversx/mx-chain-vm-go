@@ -201,13 +201,8 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 		vmOutput = output.GetVMOutput()
 	}
 
-	// Gas spent on builtin functions is never forwarded, because they
-	// cannot generate developer rewards.
 	childContract := runtime.GetSCAddress()
-	gasSpentByChildContract := uint64(0)
-	if !host.IsBuiltinFunctionName(runtime.Function()) {
-		gasSpentByChildContract = metering.GasSpentByContract()
-	}
+	gasSpentByChildContract := metering.GasSpentByContract()
 
 	if vmOutput.ReturnCode != vmcommon.Ok {
 		gasSpentByChildContract = 0
@@ -575,7 +570,7 @@ func (host *vmHost) callSCMethodIndirect() error {
 }
 
 func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmcommon.ContractCallInput, error) {
-	_, _, metering, output, _, _ := host.GetContexts()
+	_, _, metering, output, runtime, _ := host.GetContexts()
 
 	vmOutput, err := host.blockChainHook.ProcessBuiltInFunction(input)
 	if err != nil {
@@ -586,8 +581,10 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmc
 	gasConsumed, _ := math.SubUint64(input.GasProvided, vmOutput.GasRemaining)
 	for _, outAcc := range vmOutput.OutputAccounts {
 		for _, outTransfer := range outAcc.OutputTransfers {
-			gasConsumed, _ = math.SubUint64(gasConsumed, outTransfer.GasLocked)
-			gasConsumed, _ = math.SubUint64(gasConsumed, outTransfer.GasLimit)
+			if outTransfer.GasLimit > 0 || outTransfer.GasLocked > 0 {
+				gasForwarded := math.AddUint64(outTransfer.GasLocked, outTransfer.GasLimit)
+				metering.ForwardGas(runtime.GetSCAddress(), nil, gasForwarded)
+			}
 		}
 	}
 
