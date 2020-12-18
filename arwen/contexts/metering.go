@@ -52,6 +52,7 @@ func NewMeteringContext(
 
 // InitState resets the internal state of the MeteringContext
 func (context *meteringContext) InitState() {
+	context.gasStates = make(map[string]*contractGasState)
 	context.initialGasProvided = 0
 	context.initialCost = 0
 	context.gasForExecution = 0
@@ -111,10 +112,10 @@ func (context *meteringContext) Debug(msg string) {
 // InitStateFromContractCallInput initializes the internal state of the
 // MeteringContext using values taken from the provided ContractCallInput
 func (context *meteringContext) InitStateFromContractCallInput(input *vmcommon.VMInput) {
-	context.InitState()
 	context.unlockGasIfAsyncCallback(input)
 	context.initialGasProvided = input.GasProvided
 	context.gasForExecution = input.GasProvided
+	context.initialCost = 0
 }
 
 // unlockGasIfAsyncCallback unlocks the locked gas if the call type is async callback
