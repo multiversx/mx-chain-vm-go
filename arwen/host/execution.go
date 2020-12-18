@@ -585,6 +585,7 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmc
 			if outTransfer.GasLimit > 0 || outTransfer.GasLocked > 0 {
 				gasForwarded := math.AddUint64(outTransfer.GasLocked, outTransfer.GasLimit)
 				metering.ForwardGas(runtime.GetSCAddress(), nil, gasForwarded)
+				gasConsumed = math.AddUint64(gasConsumed, outTransfer.GasLocked)
 			}
 		}
 	}
