@@ -15,4 +15,5 @@ type InstanceHandler interface {
 	GetSignature(functionName string) (*ExportedFunctionSignature, bool)
 	GetData() *int
 	GetInstanceCtxMemory() *Memory
+	GetMemory() *Memory
 }

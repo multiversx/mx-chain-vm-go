@@ -305,3 +305,8 @@ func (instance *Instance) GetData() *int {
 func (instance *Instance) GetInstanceCtxMemory() *Memory {
 	return instance.InstanceCtx.Memory()
 }
+
+// GetMemory returns the memory for the instance
+func (instance *Instance) GetMemory() *Memory {
+	return instance.Memory
+}

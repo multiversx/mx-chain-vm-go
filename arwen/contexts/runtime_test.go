@@ -362,7 +362,7 @@ func TestRuntimeContext_MemLoadStoreOk(t *testing.T) {
 	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
-	memory := runtimeContext.instance.Memory
+	memory := runtimeContext.instance.GetMemory()
 
 	memContents, err := runtimeContext.MemLoad(10, 10)
 	require.Nil(t, err)
@@ -394,7 +394,7 @@ func TestRuntimeContext_MemoryIsBlank(t *testing.T) {
 	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
-	memory := runtimeContext.instance.Memory
+	memory := runtimeContext.instance.GetMemory()
 	err = memory.Grow(30)
 	require.Nil(t, err)
 
@@ -424,7 +424,7 @@ func TestRuntimeContext_MemLoadCases(t *testing.T) {
 	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
-	memory := runtimeContext.instance.Memory
+	memory := runtimeContext.instance.GetMemory()
 
 	var offset int32
 	var length int32
@@ -489,7 +489,7 @@ func TestRuntimeContext_MemStoreCases(t *testing.T) {
 	require.Nil(t, err)
 
 	pageSize := uint32(65536)
-	memory := runtimeContext.instance.Memory
+	memory := runtimeContext.instance.GetMemory()
 	require.Equal(t, 2*pageSize, memory.Length())
 
 	// Bad lower bounds

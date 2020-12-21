@@ -345,9 +345,9 @@ func (context *outputContext) checkGas(remainedFromForwarded uint64) error {
 	}
 
 	gasProvided := context.host.Metering().GetGasProvided()
-	wasBultInFuncWhichForwardedGas := gasLockSentForward &&
+	wasBuiltInFuncWhichForwardedGas := gasLockSentForward &&
 		context.host.IsBuiltinFunctionName(context.host.Runtime().Function())
-	if wasBultInFuncWhichForwardedGas {
+	if wasBuiltInFuncWhichForwardedGas {
 		gasProvided = math.AddUint64(gasProvided, context.host.Metering().GetGasLocked())
 	}
 
