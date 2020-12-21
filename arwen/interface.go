@@ -237,6 +237,6 @@ type AsyncCallInfoHandler interface {
 
 // InstanceBuilder defines the functionality needed to create Wasmer instances
 type InstanceBuilder interface {
-	NewInstanceWithOptions(contractCode []byte, options wasmer.CompilationOptions) (*wasmer.Instance, error)
-	NewInstanceFromCompiledCodeWithOptions(compiledCode []byte, options wasmer.CompilationOptions) (*wasmer.Instance, error)
+	NewInstanceWithOptions(contractCode []byte, options wasmer.CompilationOptions) (wasmer.InstanceHandler, error)
+	NewInstanceFromCompiledCodeWithOptions(compiledCode []byte, options wasmer.CompilationOptions) (wasmer.InstanceHandler, error)
 }

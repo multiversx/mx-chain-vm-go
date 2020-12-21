@@ -32,7 +32,7 @@ func NewInstanceBuilderMock(tb testing.TB, defaultCode []byte) *InstanceBuilderM
 // It is necessary to call CreateAndStoreInstanceMock() for any contract that is
 // to be called, or at least manually populate the InstanceMap appropriately
 // (real WASM contracts may be used to populate it, as well).
-func (builder *InstanceBuilderMock) CreateAndStoreInstanceMock(code []byte) *wasmer.Instance {
+func (builder *InstanceBuilderMock) CreateAndStoreInstanceMock(code []byte) wasmer.InstanceHandler {
 	options := wasmer.CompilationOptions{
 		GasLimit:           1000000000,
 		UnmeteredLocals:    4000,
@@ -51,7 +51,7 @@ func (builder *InstanceBuilderMock) CreateAndStoreInstanceMock(code []byte) *was
 
 // GetStoredInstanceMock retrieves and initializes a stored Wasmer instance, or
 // nil if it doesn't exist
-func (builder *InstanceBuilderMock) GetStoredInstanceMock(code []byte, gasLimit uint64) (*wasmer.Instance, bool) {
+func (builder *InstanceBuilderMock) GetStoredInstanceMock(code []byte, gasLimit uint64) (wasmer.InstanceHandler, bool) {
 	instance, ok := builder.InstanceMap[string(code)]
 	if ok {
 		instance.SetPointsUsed(0)
@@ -67,7 +67,7 @@ func (builder *InstanceBuilderMock) GetStoredInstanceMock(code []byte, gasLimit 
 func (builder *InstanceBuilderMock) NewInstanceWithOptions(
 	contractCode []byte,
 	options wasmer.CompilationOptions,
-) (*wasmer.Instance, error) {
+) (wasmer.InstanceHandler, error) {
 
 	instance, ok := builder.GetStoredInstanceMock(contractCode, options.GasLimit)
 	if ok {
@@ -82,7 +82,7 @@ func (builder *InstanceBuilderMock) NewInstanceWithOptions(
 func (builder *InstanceBuilderMock) NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
 	options wasmer.CompilationOptions,
-) (*wasmer.Instance, error) {
+) (wasmer.InstanceHandler, error) {
 	instance, ok := builder.GetStoredInstanceMock(compiledCode, options.GasLimit)
 	if ok {
 		return instance, nil

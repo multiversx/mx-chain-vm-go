@@ -1284,7 +1284,7 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 	host, _, ibm := defaultTestArwenForCallWithInstanceMocks(t)
 
 	parentInstance := ibm.CreateAndStoreInstanceMock(parentAddress)
-	parentInstance.Exports["callChild"] = mockMethod(func() {
+	parentInstance.GetExports()["callChild"] = mockMethod(func() {
 		host.Output().Finish([]byte("parent returns this"))
 		host.Metering().UseGas(500)
 		_, err := host.Storage().SetStorage([]byte("parent"), []byte("parent storage"))
@@ -1300,7 +1300,7 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 	})
 
 	childInstance := ibm.CreateAndStoreInstanceMock(childAddress)
-	childInstance.Exports["doSomething"] = mockMethod(func() {
+	childInstance.GetExports()["doSomething"] = mockMethod(func() {
 		host.Output().Finish([]byte("child returns this"))
 		host.Metering().UseGas(100)
 		_, err := host.Storage().SetStorage([]byte("child"), []byte("child storage"))
@@ -1329,7 +1329,7 @@ func TestExecution_GasUsed_SingleContract(t *testing.T) {
 	gasUsedByParent := uint64(400)
 
 	parentInstance := ibm.CreateAndStoreInstanceMock(parentAddress)
-	parentInstance.Exports["doSomething"] = mockMethod(func() {
+	parentInstance.GetExports()["doSomething"] = mockMethod(func() {
 		host.Metering().UseGas(gasUsedByParent)
 	})
 
@@ -1359,7 +1359,7 @@ func TestExecution_GasUsed_ExecuteOnSameCtx(t *testing.T) {
 	gasUsedByChild := contractCompilationCost + gasUsedByChildExec
 
 	parentInstance := ibm.CreateAndStoreInstanceMock(parentAddress)
-	parentInstance.Exports["function"] = mockMethod(func() {
+	parentInstance.GetExports()["function"] = mockMethod(func() {
 		host.Metering().UseGas(gasUsedByParentExec)
 		childInput := DefaultTestContractCallInput()
 		childInput.CallerAddr = parentAddress
@@ -1370,7 +1370,7 @@ func TestExecution_GasUsed_ExecuteOnSameCtx(t *testing.T) {
 	})
 
 	childInstance := ibm.CreateAndStoreInstanceMock(childAddress)
-	childInstance.Exports["function"] = mockMethod(func() {
+	childInstance.GetExports()["function"] = mockMethod(func() {
 		host.Metering().UseGas(gasUsedByChildExec)
 	})
 

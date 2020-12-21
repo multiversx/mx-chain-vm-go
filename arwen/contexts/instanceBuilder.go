@@ -12,7 +12,7 @@ type wasmerInstanceBuilder struct {
 func (builder *wasmerInstanceBuilder) NewInstanceWithOptions(
 	contractCode []byte,
 	options wasmer.CompilationOptions,
-) (*wasmer.Instance, error) {
+) (wasmer.InstanceHandler, error) {
 	return wasmer.NewInstanceWithOptions(contractCode, options)
 }
 
@@ -21,6 +21,6 @@ func (builder *wasmerInstanceBuilder) NewInstanceWithOptions(
 func (builder *wasmerInstanceBuilder) NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
 	options wasmer.CompilationOptions,
-) (*wasmer.Instance, error) {
+) (wasmer.InstanceHandler, error) {
 	return wasmer.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
 }
