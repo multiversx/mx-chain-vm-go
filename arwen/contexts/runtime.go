@@ -605,6 +605,17 @@ func (context *runtimeContext) CleanWasmerInstance() {
 	context.instance = nil
 }
 
+// IsContractOnTheStack iterates over the state stack to find whether the
+// provided SC address is already in execution, below the current instance.
+func (context *runtimeContext) IsContractOnTheStack(address []byte) bool {
+	for _, state := range context.stateStack {
+		if bytes.Equal(address, state.scAddress) {
+			return true
+		}
+	}
+	return false
+}
+
 // GetFunctionToCall returns the function to call from the wasmer instance exports.
 func (context *runtimeContext) GetFunctionToCall() (wasmer.ExportedFunctionCallback, error) {
 	exports := context.instance.GetExports()

@@ -19,6 +19,7 @@ type OutputContextStub struct {
 	ClearStateStackCalled             func()
 	CopyTopOfStackToActiveStateCalled func()
 	CensorVMOutputCalled              func()
+	ResetGasCalled                    func()
 	GetOutputAccountCalled            func(address []byte) (*vmcommon.OutputAccount, bool)
 	DeleteOutputAccountCalled         func(address []byte)
 	WriteLogCalled                    func(address []byte, topics [][]byte, data []byte)
@@ -101,6 +102,13 @@ func (o *OutputContextStub) CopyTopOfStackToActiveState() {
 func (o *OutputContextStub) CensorVMOutput() {
 	if o.CensorVMOutputCalled != nil {
 		o.CensorVMOutputCalled()
+	}
+}
+
+// ResetGas mocked method
+func (o *OutputContextStub) ResetGas() {
+	if o.ResetGasCalled != nil {
+		o.ResetGasCalled()
 	}
 }
 
