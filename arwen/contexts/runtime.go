@@ -19,7 +19,7 @@ var _ arwen.RuntimeContext = (*runtimeContext)(nil)
 
 type runtimeContext struct {
 	host         arwen.VMHost
-	instance     *wasmer.Instance
+	instance     wasmer.InstanceHandler
 	vmInput      *vmcommon.VMInput
 	scAddress    []byte
 	codeSize     uint64
@@ -30,7 +30,7 @@ type runtimeContext struct {
 	verifyCode bool
 
 	stateStack    []*runtimeContext
-	instanceStack []*wasmer.Instance
+	instanceStack []wasmer.InstanceHandler
 
 	maxWasmerInstances uint64
 
@@ -41,7 +41,7 @@ type runtimeContext struct {
 
 	useWarmInstance     bool
 	warmInstanceAddress []byte
-	warmInstance        *wasmer.Instance
+	warmInstance        wasmer.InstanceHandler
 
 	instanceBuilder arwen.InstanceBuilder
 }
@@ -55,7 +55,7 @@ func NewRuntimeContext(host arwen.VMHost, vmType []byte, useWarmInstance bool) (
 		host:                host,
 		vmType:              vmType,
 		stateStack:          make([]*runtimeContext, 0),
-		instanceStack:       make([]*wasmer.Instance, 0),
+		instanceStack:       make([]wasmer.InstanceHandler, 0),
 		validator:           newWASMValidator(scAPINames, protocolBuiltinFunctions),
 		useWarmInstance:     useWarmInstance,
 		warmInstanceAddress: nil,
@@ -257,7 +257,7 @@ func (context *runtimeContext) ResetWarmInstance() {
 		return
 	}
 
-	arwen.RemoveHostContext(*context.instance.Data)
+	arwen.RemoveHostContext(*context.instance.GetData())
 	context.instance.Clean()
 
 	context.instance = nil
@@ -591,7 +591,7 @@ func (context *runtimeContext) SetReadOnly(readOnly bool) {
 
 // GetInstanceExports returns the current wasmer instance exports.
 func (context *runtimeContext) GetInstanceExports() wasmer.ExportsMap {
-	return context.instance.Exports
+	return context.instance.GetExports()
 }
 
 // CleanWasmerInstance cleans the current wasmer instance.
@@ -600,7 +600,7 @@ func (context *runtimeContext) CleanWasmerInstance() {
 		return
 	}
 
-	arwen.RemoveHostContext(*context.instance.Data)
+	arwen.RemoveHostContext(*context.instance.GetData())
 	context.instance.Clean()
 	context.instance = nil
 }
@@ -618,7 +618,7 @@ func (context *runtimeContext) IsContractOnTheStack(address []byte) bool {
 
 // GetFunctionToCall returns the function to call from the wasmer instance exports.
 func (context *runtimeContext) GetFunctionToCall() (wasmer.ExportedFunctionCallback, error) {
-	exports := context.instance.Exports
+	exports := context.instance.GetExports()
 	if function, ok := exports[context.callFunction]; ok {
 		return function, nil
 	}
@@ -632,7 +632,7 @@ func (context *runtimeContext) GetFunctionToCall() (wasmer.ExportedFunctionCallb
 
 // GetInitFunction returns the init function from the current wasmer instance exports.
 func (context *runtimeContext) GetInitFunction() wasmer.ExportedFunctionCallback {
-	exports := context.instance.Exports
+	exports := context.instance.GetExports()
 	if init, ok := exports[arwen.InitFunctionName]; ok {
 		return init
 	}
@@ -713,7 +713,7 @@ func (context *runtimeContext) GetAsyncCallInfo() *arwen.AsyncCallInfo {
 
 // HasCallbackMethod returns true if the current wasmer instance exports has a callback method.
 func (context *runtimeContext) HasCallbackMethod() bool {
-	_, ok := context.instance.Exports[arwen.CallbackFunctionName]
+	_, ok := context.instance.GetExports()[arwen.CallbackFunctionName]
 	return ok
 }
 
@@ -723,7 +723,7 @@ func (context *runtimeContext) MemLoad(offset int32, length int32) ([]byte, erro
 		return []byte{}, nil
 	}
 
-	memory := context.instance.InstanceCtx.Memory()
+	memory := context.instance.GetInstanceCtxMemory()
 	memoryView := memory.Data()
 	memoryLength := memory.Length()
 	requestedEnd := math.AddInt32(offset, length)
@@ -778,7 +778,7 @@ func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 		return nil
 	}
 
-	memory := context.instance.InstanceCtx.Memory()
+	memory := context.instance.GetInstanceCtxMemory()
 	memoryView := memory.Data()
 	memoryLength := memory.Length()
 	requestedEnd := math.AddInt32(offset, dataLength)
