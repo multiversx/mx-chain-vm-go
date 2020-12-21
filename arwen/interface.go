@@ -100,6 +100,7 @@ type RuntimeContext interface {
 	MustVerifyNextContractCode()
 	SetRuntimeBreakpointValue(value BreakpointValue)
 	GetRuntimeBreakpointValue() BreakpointValue
+	IsContractOnTheStack(address []byte) bool
 	GetAsyncCallInfo() *AsyncCallInfo
 	SetAsyncCallInfo(asyncCallInfo *AsyncCallInfo)
 	AddAsyncContextCall(contextIdentifier []byte, asyncCall *AsyncGeneratedCall) error
@@ -148,6 +149,7 @@ type OutputContext interface {
 	StateStack
 	PopMergeActiveState()
 	CensorVMOutput()
+	ResetGas()
 	AddToActiveState(rightOutput *vmcommon.VMOutput)
 
 	GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool)
@@ -175,16 +177,19 @@ type OutputContext interface {
 type MeteringContext interface {
 	StateStack
 
-	InitStateFromContractCallInput(input *vmcommon.ContractCallInput)
+	InitStateFromContractCallInput(input *vmcommon.VMInput)
 	SetGasSchedule(gasMap config.GasScheduleMap)
 	GasSchedule() *config.GasCost
 	UseGas(gas uint64)
 	FreeGas(gas uint64)
 	RestoreGas(gas uint64)
 	GasLeft() uint64
-	GasForwarded() uint64
-	ForwardGas(gas uint64)
-	GasUsedByContract() uint64
+	ForwardGas(sourceAddress []byte, destAddress []byte, gas uint64)
+	GasUsedByContract() (uint64, uint64)
+	GasSpentByContract() uint64
+	GetGasForExecution() uint64
+	GetGasProvided() uint64
+	GetSCPrepareInitialCost() uint64
 	BoundGasLimit(value int64) uint64
 	BlockGasLimit() uint64
 	DeductInitialGasForExecution(contract []byte) error
