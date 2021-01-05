@@ -701,7 +701,8 @@ func isSCExecutionAfterBuiltInFunc(
 	}
 
 	callType := vmInput.CallType
-	txData := prependCallbackToTxDataIfAsyncCall(outAcc.OutputTransfers[0].Data, callType)
+	scCallOutTransfer := outAcc.OutputTransfers[0]
+	txData := prependCallbackToTxDataIfAsyncCall(scCallOutTransfer.Data, callType)
 
 	argParser := parsers.NewCallArgsParser()
 	function, arguments, err := argParser.ParseData(txData)
@@ -716,7 +717,8 @@ func isSCExecutionAfterBuiltInFunc(
 			CallValue:      big.NewInt(0),
 			CallType:       callType,
 			GasPrice:       vmInput.GasPrice,
-			GasProvided:    vmOutput.GasRemaining,
+			GasProvided:    scCallOutTransfer.GasLimit,
+			GasLocked:      scCallOutTransfer.GasLocked,
 			OriginalTxHash: vmInput.OriginalTxHash,
 			CurrentTxHash:  vmInput.CurrentTxHash,
 		},
