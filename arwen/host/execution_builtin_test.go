@@ -170,7 +170,7 @@ func dummyProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.V
 	}
 	if input.Function == core.BuiltInFunctionESDTTransfer {
 		vmOutput := &vmcommon.VMOutput{
-			GasRemaining: input.GasProvided - ESDTTransferGasCost + input.GasLocked,
+			GasRemaining: 0,
 		}
 		function := string(input.Arguments[2])
 		esdtTransferTxData := function
@@ -179,7 +179,7 @@ func dummyProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.V
 		}
 		outTransfer := vmcommon.OutputTransfer{
 			Value:    big.NewInt(0),
-			GasLimit: 0,
+			GasLimit: input.GasProvided - ESDTTransferGasCost + input.GasLocked,
 			Data:     []byte(esdtTransferTxData),
 			CallType: vmcommon.AsynchronousCall,
 		}
