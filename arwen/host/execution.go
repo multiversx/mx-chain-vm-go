@@ -594,7 +594,7 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmc
 		metering.UseGas(gasConsumed)
 	}
 
-	newVMInput, err := isSCExecutionAfterBuiltInFunc(input, vmOutput)
+	newVMInput, err := host.isSCExecutionAfterBuiltInFunc(input, vmOutput)
 	if err != nil {
 		return nil, err
 	}
@@ -680,7 +680,7 @@ func (host *vmHost) verifyAllowedFunctionCall() error {
 	return nil
 }
 
-func isSCExecutionAfterBuiltInFunc(
+func (host *vmHost) isSCExecutionAfterBuiltInFunc(
 	vmInput *vmcommon.ContractCallInput,
 	vmOutput *vmcommon.VMOutput,
 ) (*vmcommon.ContractCallInput, error) {
@@ -689,6 +689,10 @@ func isSCExecutionAfterBuiltInFunc(
 	}
 
 	if !core.IsSmartContractAddress(vmInput.RecipientAddr) {
+		return nil, nil
+	}
+
+	if !host.AreInSameShard(vmInput.CallerAddr, vmInput.RecipientAddr) {
 		return nil, nil
 	}
 
