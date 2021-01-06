@@ -307,8 +307,9 @@ func (host *vmHost) hasRetriableExecutionError(vmOutput *vmcommon.VMOutput) bool
 		return false
 	}
 
+	isExecutionFailed := vmOutput.ReturnCode == vmcommon.ExecutionFailed
 	hasAllocationError := strings.Contains(vmOutput.ReturnMessage, "allocation error")
 	hasUnknownError := strings.Contains(vmOutput.ReturnMessage, "unknown error")
-	shouldRetry := hasAllocationError || hasUnknownError
+	shouldRetry := isExecutionFailed || hasAllocationError || hasUnknownError
 	return shouldRetry
 }
