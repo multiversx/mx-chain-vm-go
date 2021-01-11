@@ -396,7 +396,7 @@ func (context *runtimeContext) GetVMInput() *vmcommon.VMInput {
 
 // SetVMInput sets the given vm input as the current context vm input.
 func (context *runtimeContext) SetVMInput(vmInput *vmcommon.VMInput) {
-	if !context.host.IsArwenV2Enabled() || vmInput == nil {
+	if vmInput == nil {
 		context.vmInput = vmInput
 		return
 	}
