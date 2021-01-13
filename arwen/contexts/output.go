@@ -325,6 +325,17 @@ func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 	return context.outputState
 }
 
+func (context *outputContext) isBuiltInExecution() bool {
+	if context.host.IsBuiltinFunctionName(context.host.Runtime().Function()) {
+		return true
+	}
+	if len(context.host.Runtime().GetVMInput().ESDTTokenName) > 0 {
+		return true
+	}
+
+	return false
+}
+
 func (context *outputContext) checkGas(remainedFromForwarded uint64) error {
 	if context.host.IsArwenV2Enabled() == false {
 		return nil
@@ -345,8 +356,7 @@ func (context *outputContext) checkGas(remainedFromForwarded uint64) error {
 	}
 
 	gasProvided := context.host.Metering().GetGasProvided()
-	wasBuiltInFuncWhichForwardedGas := gasLockSentForward &&
-		context.host.IsBuiltinFunctionName(context.host.Runtime().Function())
+	wasBuiltInFuncWhichForwardedGas := gasLockSentForward && context.isBuiltInExecution()
 	if wasBuiltInFuncWhichForwardedGas {
 		gasProvided = math.AddUint64(gasProvided, context.host.Metering().GetGasLocked())
 	}
