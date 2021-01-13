@@ -112,6 +112,19 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 	return vmOutput
 }
 
+func (host *vmHost) checkGasForGetCode(input *vmcommon.ContractCallInput, metering arwen.MeteringContext) error {
+	if !host.IsArwenV2Enabled() {
+		return nil
+	}
+
+	getCodeBaseCost := metering.GasSchedule().BaseOperationCost.GetCode
+	if input.GasProvided < getCodeBaseCost {
+		return arwen.ErrNotEnoughGas
+	}
+
+	return nil
+}
+
 func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput) {
 	host.InitState()
 	defer host.Clean()
@@ -122,6 +135,11 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	metering.InitStateFromContractCallInput(&input.VMInput)
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
 	storage.SetAddress(runtime.GetSCAddress())
+
+	err := host.checkGasForGetCode(input, metering)
+	if err != nil {
+		return output.CreateVMOutputInCaseOfError(arwen.ErrNotEnoughGas)
+	}
 
 	contract, err := runtime.GetSCCode()
 	if err != nil {
