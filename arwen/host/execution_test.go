@@ -287,11 +287,25 @@ func TestExecution_CallGetUserAccountErr(t *testing.T) {
 		return nil, errGetAccount
 	}
 
+	input.GasProvided = 100
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
 	require.NotNil(t, vmOutput)
 	require.Equal(t, vmcommon.ContractNotFound, vmOutput.ReturnCode)
 	require.Equal(t, arwen.ErrContractNotFound.Error(), vmOutput.ReturnMessage)
+}
+
+func TestExecution_NotEnoughGasForGetCode(t *testing.T) {
+	stubBlockchainHook := &contextmock.BlockchainHookStub{}
+
+	host := defaultTestArwen(t, stubBlockchainHook)
+	input := DefaultTestContractCallInput()
+
+	input.GasProvided = 0
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.OutOfGas, vmOutput.ReturnCode)
 }
 
 func TestExecution_CallOutOfGas(t *testing.T) {
