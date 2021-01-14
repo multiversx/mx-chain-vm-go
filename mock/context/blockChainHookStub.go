@@ -178,7 +178,7 @@ func (b *BlockchainHookStub) GetUserAccount(address []byte) (vmcommon.UserAccoun
 	return nil, nil
 }
 
-// GetUserAccount mocked method
+// GetCode mocked method
 func (b *BlockchainHookStub) GetCode(account vmcommon.UserAccountHandler) []byte {
 	if b.GetCodeCalled != nil {
 		return b.GetCodeCalled(account)
