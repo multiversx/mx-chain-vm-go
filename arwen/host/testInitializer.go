@@ -71,11 +71,13 @@ func defaultTestArwenForCall(tb testing.TB, code []byte, balance *big.Int) (*vmH
 	stubBlockchainHook.GetUserAccountCalled = func(scAddress []byte) (vmcommon.UserAccountHandler, error) {
 		if bytes.Equal(scAddress, parentAddress) {
 			return &contextmock.StubAccount{
-				Code:    code,
 				Balance: balance,
 			}, nil
 		}
 		return nil, errAccountNotFound
+	}
+	stubBlockchainHook.GetCodeCalled = func(account vmcommon.UserAccountHandler) []byte {
+		return code
 	}
 
 	host := defaultTestArwen(tb, stubBlockchainHook)
@@ -86,9 +88,12 @@ func defaultTestArwenForCallWithInstanceMocks(tb testing.TB) (*vmHost, *contextm
 	stubBlockchainHook := &contextmock.BlockchainHookStub{}
 	stubBlockchainHook.GetUserAccountCalled = func(scAddress []byte) (vmcommon.UserAccountHandler, error) {
 		return &contextmock.StubAccount{
-			Code:    scAddress,
+			Address: scAddress,
 			Balance: big.NewInt(1000),
 		}, nil
+	}
+	stubBlockchainHook.GetCodeCalled = func(account vmcommon.UserAccountHandler) []byte {
+		return account.AddressBytes()
 	}
 
 	host := defaultTestArwen(tb, stubBlockchainHook)
@@ -121,18 +126,27 @@ func defaultTestArwenForTwoSCs(
 	stubBlockchainHook.GetUserAccountCalled = func(scAddress []byte) (vmcommon.UserAccountHandler, error) {
 		if bytes.Equal(scAddress, parentAddress) {
 			return &contextmock.StubAccount{
-				Code:    parentCode,
+				Address: parentAddress,
 				Balance: parentSCBalance,
 			}, nil
 		}
 		if bytes.Equal(scAddress, childAddress) {
 			return &contextmock.StubAccount{
-				Code:    childCode,
+				Address: childAddress,
 				Balance: childSCBalance,
 			}, nil
 		}
 
 		return nil, errAccountNotFound
+	}
+	stubBlockchainHook.GetCodeCalled = func(account vmcommon.UserAccountHandler) []byte {
+		if bytes.Equal(account.AddressBytes(), parentAddress) {
+			return parentCode
+		}
+		if bytes.Equal(account.AddressBytes(), childAddress) {
+			return childCode
+		}
+		return nil
 	}
 
 	host := defaultTestArwen(t, stubBlockchainHook)

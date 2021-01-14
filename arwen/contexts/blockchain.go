@@ -148,7 +148,7 @@ func (context *blockchainContext) GetCode(address []byte) ([]byte, error) {
 		return nil, arwen.ErrInvalidAccount
 	}
 
-	code := account.GetCode()
+	code := context.blockChainHook.GetCode(account)
 	if len(code) == 0 {
 		return nil, arwen.ErrContractNotFound
 	}
@@ -165,7 +165,7 @@ func (context *blockchainContext) GetCodeSize(address []byte) (int32, error) {
 		return 0, err
 	}
 
-	code := account.GetCode()
+	code := context.blockChainHook.GetCode(account)
 	result := int32(len(code))
 	return result, nil
 }

@@ -1135,11 +1135,17 @@ func TestExecution_AsyncCall_GasLimitConsumed(t *testing.T) {
 	stubBlockchainHook.GetUserAccountCalled = func(scAddress []byte) (vmcommon.UserAccountHandler, error) {
 		if bytes.Equal(scAddress, parentAddress) {
 			return &contextmock.StubAccount{
-				Code:    parentCode,
+				Address: parentAddress,
 				Balance: big.NewInt(1000),
 			}, nil
 		}
 		return nil, errAccountNotFound
+	}
+	stubBlockchainHook.GetCodeCalled = func(account vmcommon.UserAccountHandler) []byte {
+		if bytes.Equal(parentAddress, account.AddressBytes()) {
+			return parentCode
+		}
+		return nil
 	}
 	stubBlockchainHook.GetShardOfAddressCalled = func(address []byte) uint32 {
 		if bytes.Equal(address, parentAddress) {
