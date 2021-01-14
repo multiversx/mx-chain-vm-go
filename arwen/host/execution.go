@@ -570,7 +570,12 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 			runtime.InitStateFromContractCallInput(newVMInput)
 			metering.InitStateFromContractCallInput(&newVMInput.VMInput)
 			storage.SetAddress(runtime.GetSCAddress())
-			return host.executeSmartContractCall(newVMInput, metering, runtime, output, false)
+			err = host.executeSmartContractCall(newVMInput, metering, runtime, output, false)
+			if err != nil {
+				host.revertESDTTransfer(input)
+			}
+
+			return err
 		}
 
 		return nil
@@ -594,6 +599,42 @@ func (host *vmHost) callSCMethodIndirect() error {
 	}
 
 	return err
+}
+
+func (host *vmHost) revertESDTTransfer(input *vmcommon.ContractCallInput) {
+	if input.Function != core.BuiltInFunctionESDTTransfer {
+		return
+	}
+	if len(input.Arguments) < 2 {
+		return
+	}
+
+	revertInput := &vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			CallerAddr:     input.RecipientAddr,
+			Arguments:      input.Arguments[:2],
+			CallValue:      big.NewInt(0),
+			CallType:       vmcommon.DirectCall,
+			GasPrice:       input.GasPrice,
+			GasProvided:    input.GasProvided,
+			GasLocked:      0,
+			OriginalTxHash: input.OriginalTxHash,
+			CurrentTxHash:  input.CurrentTxHash,
+			ESDTValue:      big.NewInt(0),
+			ESDTTokenName:  nil,
+		},
+		RecipientAddr:     input.CallerAddr,
+		Function:          input.Function,
+		AllowInitFunction: false,
+	}
+
+	vmOutput, err := host.blockChainHook.ProcessBuiltInFunction(revertInput)
+	if err != nil {
+		log.Error("revertESDTTransfer failed", "error", err)
+	}
+	if vmOutput.ReturnCode != vmcommon.Ok {
+		log.Error("revertESDTTransfer failed", "returnCode", vmOutput.ReturnCode, "returnMessage", vmOutput.ReturnMessage)
+	}
 }
 
 func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmcommon.ContractCallInput, error) {
@@ -624,6 +665,12 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmc
 	newVMInput, err := host.isSCExecutionAfterBuiltInFunc(input, vmOutput)
 	if err != nil {
 		return nil, err
+	}
+
+	if newVMInput != nil {
+		for _, outAcc := range vmOutput.OutputAccounts {
+			outAcc.OutputTransfers = make([]vmcommon.OutputTransfer, 0)
+		}
 	}
 
 	output.AddToActiveState(vmOutput)
