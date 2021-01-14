@@ -338,7 +338,7 @@ func (blockchain *BlockchainHookGateway) GetCode(account vmcommon.UserAccountHan
 		return nil
 	}
 
-	if rawResponse.GetKind() != common.BlockchainGetUserAccountResponse {
+	if rawResponse.GetKind() != common.BlockchainGetCodeResponse {
 		return nil
 	}
 
