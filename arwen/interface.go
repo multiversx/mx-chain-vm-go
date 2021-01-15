@@ -39,7 +39,7 @@ type VMHost interface {
 
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*AsyncContextInfo, error)
-	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *AsyncContextInfo, error)
+	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *AsyncContextInfo, uint64, error)
 	GetAPIMethods() *wasmer.Imports
 	GetProtocolBuiltinFunctions() vmcommon.FunctionNames
 	IsBuiltinFunctionName(functionName string) bool
@@ -186,6 +186,7 @@ type MeteringContext interface {
 	GasLeft() uint64
 	ForwardGas(sourceAddress []byte, destAddress []byte, gas uint64)
 	GasUsedByContract() (uint64, uint64)
+	GasUsedForExecution() uint64
 	GasSpentByContract() uint64
 	GetGasForExecution() uint64
 	GetGasProvided() uint64

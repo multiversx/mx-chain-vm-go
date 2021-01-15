@@ -78,7 +78,7 @@ func (host *VMHostMock) IsDynamicGasLockingEnabled() bool {
 }
 
 // AreInSameShard mocked method
-func (host *VMHostMock) AreInSameShard(left []byte, right []byte) bool {
+func (host *VMHostMock) AreInSameShard(_ []byte, _ []byte) bool {
 	return true
 }
 
@@ -93,8 +93,8 @@ func (host *VMHostMock) ExecuteOnSameContext(_ *vmcommon.ContractCallInput) (*ar
 }
 
 // ExecuteOnDestContext mocked method
-func (host *VMHostMock) ExecuteOnDestContext(_ *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *arwen.AsyncContextInfo, error) {
-	return nil, nil, nil
+func (host *VMHostMock) ExecuteOnDestContext(_ *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *arwen.AsyncContextInfo, uint64, error) {
+	return nil, nil, 0, nil
 }
 
 // InitState mocked method
