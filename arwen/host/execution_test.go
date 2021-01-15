@@ -937,7 +937,7 @@ func TestExecution_ExecuteOnDestContext_GasRemaining(t *testing.T) {
 
 	// Use a lot of gas on the parent contract
 	metering.UseGas(500000)
-	require.Equal(t, input.GasProvided-500000, metering.GasLeft())
+	require.Equal(t, input.GasProvided-500001, metering.GasLeft())
 
 	// Create a second ContractCallInput, used to call the child SC using
 	// host.ExecuteOnDestContext().
@@ -956,7 +956,7 @@ func TestExecution_ExecuteOnDestContext_GasRemaining(t *testing.T) {
 	childOutput, _, _, err := host.ExecuteOnDestContext(childInput)
 	require.Nil(t, err)
 	require.NotNil(t, childOutput)
-	require.Equal(t, uint64(7753), childOutput.GasRemaining)
+	require.Equal(t, uint64(7752), childOutput.GasRemaining)
 
 	host.Clean()
 }
@@ -1377,7 +1377,7 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 
 	expectedVMOutput := expectedVMOutputMockedWasmerInstances()
-	expectedVMOutput.GasRemaining = 309
+	expectedVMOutput.GasRemaining = 307
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
@@ -1387,7 +1387,7 @@ func TestExecution_GasUsed_SingleContract(t *testing.T) {
 	host.Metering().GasSchedule().BaseOperationCost.AoTPreparePerByte = 0
 
 	gasProvided := uint64(1000)
-	gasUsedByParent := uint64(400)
+	gasUsedByParent := uint64(401)
 
 	parentInstance := ibm.CreateAndStoreInstanceMock(parentAddress)
 	parentInstance.GetExports()["doSomething"] = mockMethod(func() {
@@ -1401,10 +1401,10 @@ func TestExecution_GasUsed_SingleContract(t *testing.T) {
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
 	require.NotNil(t, vmOutput)
-	require.Equal(t, gasProvided-gasUsedByParent, vmOutput.GasRemaining)
+	require.Equal(t, gasProvided-gasUsedByParent-1, vmOutput.GasRemaining)
 
 	parentAccount := vmOutput.OutputAccounts[string(parentAddress)]
-	require.Equal(t, gasUsedByParent, parentAccount.GasUsed)
+	require.Equal(t, gasUsedByParent+1, parentAccount.GasUsed)
 }
 
 func TestExecution_GasUsed_ExecuteOnSameCtx(t *testing.T) {
@@ -1416,7 +1416,7 @@ func TestExecution_GasUsed_ExecuteOnSameCtx(t *testing.T) {
 	contractCompilationCost := uint64(32)
 	gasUsedByParentExec := uint64(400)
 	gasUsedByChildExec := uint64(200)
-	gasUsedByParent := contractCompilationCost + gasUsedByParentExec
+	gasUsedByParent := contractCompilationCost + gasUsedByParentExec + 1
 	gasUsedByChild := contractCompilationCost + gasUsedByChildExec
 
 	parentInstance := ibm.CreateAndStoreInstanceMock(parentAddress)
@@ -1439,7 +1439,7 @@ func TestExecution_GasUsed_ExecuteOnSameCtx(t *testing.T) {
 	input.Function = "function"
 	input.GasProvided = gasProvided
 
-	expectedGasRemaining := gasProvided - gasUsedByParent - gasUsedByChild
+	expectedGasRemaining := gasProvided - gasUsedByParent - gasUsedByChild - 1
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
 	require.NotNil(t, vmOutput)
@@ -1449,7 +1449,7 @@ func TestExecution_GasUsed_ExecuteOnSameCtx(t *testing.T) {
 	require.Equal(t, gasUsedByParent, parentAccount.GasUsed)
 
 	childAccount := vmOutput.OutputAccounts[string(childAddress)]
-	require.Equal(t, gasUsedByChild, childAccount.GasUsed)
+	require.Equal(t, gasUsedByChild+1, childAccount.GasUsed)
 }
 
 func mockMethod(method func()) wasmer.ExportedFunctionCallback {
