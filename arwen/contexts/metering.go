@@ -236,6 +236,13 @@ func (context *meteringContext) GasUsedByContract() (uint64, uint64) {
 	return gasUsed, remainedFromForwarded
 }
 
+// GasUsedForExecution returns the actual gas used for execution for the contract which needs to be restored
+func (context *meteringContext) GasUsedForExecution() uint64 {
+	gasUsed, _ := context.GasUsedByContract()
+	gasUsed, _ = math.SubUint64(gasUsed, context.initialCost)
+	return gasUsed
+}
+
 // GasSpentByContract calculates the entire gas consumption of the contract,
 // without any gas forwarding.
 func (context *meteringContext) GasSpentByContract() uint64 {

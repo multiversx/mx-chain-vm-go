@@ -173,7 +173,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 
 // ExecuteOnDestContext pushes each context to the corresponding stack
 // and initializes new contexts for executing the contract call with the given input
-func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, asyncInfo *arwen.AsyncContextInfo, err error) {
+func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, asyncInfo *arwen.AsyncContextInfo, gasUsedBeforeReset uint64, err error) {
 	log.Trace("ExecuteOnDestContext", "function", input.Function)
 
 	bigInt, _, metering, output, runtime, storage := host.GetContexts()
@@ -204,7 +204,7 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 		return
 	}
 
-	err = host.execute(input)
+	gasUsedBeforeReset, err = host.execute(input)
 	if err != nil {
 		return
 	}
@@ -289,7 +289,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 		return
 	}
 
-	err = host.execute(input)
+	_, err = host.execute(input)
 	if err != nil {
 		return
 	}
@@ -405,7 +405,7 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newC
 		AllowInitFunction: true,
 		VMInput:           input.VMInput,
 	}
-	_, _, err = host.ExecuteOnDestContext(initCallInput)
+	_, _, _, err = host.ExecuteOnDestContext(initCallInput)
 	if err != nil {
 		return
 	}
@@ -552,18 +552,13 @@ func (host *vmHost) executeSmartContractCall(
 	return nil
 }
 
-func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
+func (host *vmHost) execute(input *vmcommon.ContractCallInput) (uint64, error) {
 	_, _, metering, output, runtime, storage := host.GetContexts()
 
 	if host.isBuiltinFunctionBeingCalled() {
-		err := metering.UseGasForAsyncStep()
+		newVMInput, gasUsedBeforeReset, err := host.callBuiltinFunction(input)
 		if err != nil {
-			return err
-		}
-
-		newVMInput, err := host.callBuiltinFunction(input)
-		if err != nil {
-			return err
+			return gasUsedBeforeReset, err
 		}
 
 		if newVMInput != nil {
@@ -575,13 +570,13 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 				host.revertESDTTransfer(input)
 			}
 
-			return err
+			return gasUsedBeforeReset, err
 		}
 
-		return nil
+		return gasUsedBeforeReset, nil
 	}
 
-	return host.executeSmartContractCall(input, metering, runtime, output, true)
+	return 0, host.executeSmartContractCall(input, metering, runtime, output, true)
 }
 
 func (host *vmHost) callSCMethodIndirect() error {
@@ -637,14 +632,15 @@ func (host *vmHost) revertESDTTransfer(input *vmcommon.ContractCallInput) {
 	}
 }
 
-func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmcommon.ContractCallInput, error) {
+func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmcommon.ContractCallInput, uint64, error) {
 	_, _, metering, output, runtime, _ := host.GetContexts()
 
+	gasConsumedForExecution := host.computeGasUsedInExecutionBeforeReset(input)
 	runtime.SetPointsUsed(0)
 	vmOutput, err := host.blockChainHook.ProcessBuiltInFunction(input)
 	if err != nil {
 		metering.UseGas(input.GasProvided)
-		return nil, err
+		return nil, gasConsumedForExecution, err
 	}
 
 	gasConsumed, _ := math.SubUint64(input.GasProvided, vmOutput.GasRemaining)
@@ -664,7 +660,7 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmc
 
 	newVMInput, err := host.isSCExecutionAfterBuiltInFunc(input, vmOutput)
 	if err != nil {
-		return nil, err
+		return nil, gasConsumedForExecution, err
 	}
 
 	if newVMInput != nil {
@@ -675,7 +671,7 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmc
 
 	output.AddToActiveState(vmOutput)
 
-	return newVMInput, nil
+	return newVMInput, gasConsumedForExecution, nil
 }
 
 func (host *vmHost) callInitFunction() error {

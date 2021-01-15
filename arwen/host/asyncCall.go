@@ -29,15 +29,18 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 
 	// Cross-shard calls for built-in functions must be executed in both the
 	// sender and destination shards.
-	if execMode == arwen.AsyncBuiltinFunc {
-		_, err := host.executeSyncDestinationCall(asyncCallInfo)
+	if execMode == arwen.AsyncBuiltinFuncCrossShard {
+		vmOutput, gasUsedBeforeReset, err := host.executeSyncDestinationCall(asyncCallInfo)
+		if err == nil && vmOutput.ReturnCode == vmcommon.Ok {
+			host.meteringContext.UseGas(gasUsedBeforeReset)
+		}
 		return err
 	}
 
 	// Start calling the destination SC, synchronously.
-	destinationVMOutput, destinationErr := host.executeSyncDestinationCall(asyncCallInfo)
+	destinationVMOutput, _, destinationErr := host.executeSyncDestinationCall(asyncCallInfo)
 
-	callbackVMOutput, callBackErr := host.executeSyncCallbackCall(asyncCallInfo, destinationVMOutput, destinationErr)
+	callbackVMOutput, callBackErr := host.executeSyncCallbackCall(asyncCallInfo, destinationVMOutput, destinationErr, execMode)
 
 	err = host.processCallbackVMOutput(callbackVMOutput, callBackErr)
 	if err != nil {
@@ -59,37 +62,42 @@ func (host *vmHost) determineAsyncCallExecutionMode(asyncCallInfo *arwen.AsyncCa
 		return arwen.AsyncUnknown, err
 	}
 
+	sameShard := host.AreInSameShard(runtime.GetSCAddress(), asyncCallInfo.Destination)
+	if host.IsBuiltinFunctionName(functionName) {
+		if sameShard {
+			return arwen.AsyncBuiltinFuncIntraShard, nil
+		}
+		return arwen.AsyncBuiltinFuncCrossShard, nil
+	}
+
 	code, err := blockchain.GetCode(asyncCallInfo.Destination)
 	if len(code) > 0 && err == nil {
 		return arwen.SyncCall, nil
 	}
 
-	sameShard := host.AreInSameShard(runtime.GetSCAddress(), asyncCallInfo.Destination)
-
-	if host.IsBuiltinFunctionName(functionName) {
-		if sameShard {
-			return arwen.SyncCall, nil
-		}
-		return arwen.AsyncBuiltinFunc, nil
-	}
-
 	return arwen.AsyncUnknown, nil
 }
 
-func (host *vmHost) executeSyncDestinationCall(asyncCallInfo arwen.AsyncCallInfoHandler) (*vmcommon.VMOutput, error) {
+func (host *vmHost) executeSyncDestinationCall(asyncCallInfo arwen.AsyncCallInfoHandler) (*vmcommon.VMOutput, uint64, error) {
 	destinationCallInput, err := host.createDestinationContractCallInput(asyncCallInfo)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	destinationVMOutput, _, err := host.ExecuteOnDestContext(destinationCallInput)
-	return destinationVMOutput, err
+	destinationVMOutput, _, gasUsedBeforeReset, err := host.ExecuteOnDestContext(destinationCallInput)
+	return destinationVMOutput, gasUsedBeforeReset, err
+}
+
+func (host *vmHost) computeGasUsedInExecutionBeforeReset(vmInput *vmcommon.ContractCallInput) uint64 {
+	gasUsedForExecution, _ := math.SubUint64(host.meteringContext.GasUsedForExecution(), vmInput.GasLocked)
+	return gasUsedForExecution
 }
 
 func (host *vmHost) executeSyncCallbackCall(
 	asyncCallInfo arwen.AsyncCallInfoHandler,
 	destinationVMOutput *vmcommon.VMOutput,
 	destinationErr error,
+	execMode arwen.AsyncCallExecutionMode,
 ) (*vmcommon.VMOutput, error) {
 	callbackCallInput, err := host.createCallbackContractCallInput(
 		asyncCallInfo,
@@ -102,9 +110,17 @@ func (host *vmHost) executeSyncCallbackCall(
 		return nil, err
 	}
 
+	gasConsumedForExecution := host.computeGasUsedInExecutionBeforeReset(callbackCallInput)
 	// used points should be reset before actually entering the callback execution
 	host.runtimeContext.SetPointsUsed(0)
-	callbackVMOutput, _, callBackErr := host.ExecuteOnDestContext(callbackCallInput)
+	callbackVMOutput, _, _, callBackErr := host.ExecuteOnDestContext(callbackCallInput)
+
+	noErrorOnCallback := callBackErr == nil && callbackVMOutput.ReturnCode == vmcommon.Ok
+	noErrorOnAsyncCall := destinationErr == nil && destinationVMOutput.ReturnCode == vmcommon.Ok
+	if noErrorOnCallback && noErrorOnAsyncCall && execMode != arwen.AsyncBuiltinFuncIntraShard {
+		host.meteringContext.UseGas(gasConsumedForExecution)
+	}
+
 	return callbackVMOutput, callBackErr
 }
 
@@ -387,7 +403,7 @@ func (host *vmHost) processAsyncInfo(asyncInfo *arwen.AsyncContextInfo) (*arwen.
  */
 func (host *vmHost) processAsyncCall(asyncCall *arwen.AsyncGeneratedCall) error {
 	input, _ := host.createDestinationContractCallInput(asyncCall)
-	output, asyncMap, executionError := host.ExecuteOnDestContext(input)
+	output, asyncMap, _, executionError := host.ExecuteOnDestContext(input)
 
 	pendingMap := host.getPendingAsyncCalls(asyncMap)
 	if len(pendingMap.AsyncContextMap) == 0 {
@@ -420,7 +436,7 @@ func (host *vmHost) callbackAsync(asyncCall *arwen.AsyncGeneratedCall, vmOutput 
 	}
 
 	// Callback omits for now any async call - TODO: take into consideration async calls generated from callbacks
-	callbackVMOutput, _, callBackErr := host.ExecuteOnDestContext(callbackCallInput)
+	callbackVMOutput, _, _, callBackErr := host.ExecuteOnDestContext(callbackCallInput)
 	err = host.processCallbackVMOutput(callbackVMOutput, callBackErr)
 	if err != nil {
 		return err
@@ -608,7 +624,7 @@ func (host *vmHost) processCallbackStack() error {
 		return err
 	}
 
-	callbackVMOutput, _, callBackErr := host.ExecuteOnDestContext(callbackCallInput)
+	callbackVMOutput, _, _, callBackErr := host.ExecuteOnDestContext(callbackCallInput)
 	err = host.processCallbackVMOutput(callbackVMOutput, callBackErr)
 	if err != nil {
 		return err

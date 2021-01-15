@@ -953,7 +953,7 @@ func TestExecution_ExecuteOnDestContext_GasRemaining(t *testing.T) {
 	}
 	childInput.GasProvided = 10000
 
-	childOutput, _, err := host.ExecuteOnDestContext(childInput)
+	childOutput, _, _, err := host.ExecuteOnDestContext(childInput)
 	require.Nil(t, err)
 	require.NotNil(t, childOutput)
 	require.Equal(t, uint64(7753), childOutput.GasRemaining)
@@ -1355,7 +1355,7 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 		childInput.CallValue = big.NewInt(4)
 		childInput.Function = "doSomething"
 		childInput.GasProvided = 1000
-		_, _, err = host.ExecuteOnDestContext(childInput)
+		_, _, _, err = host.ExecuteOnDestContext(childInput)
 		require.Nil(t, err)
 	})
 

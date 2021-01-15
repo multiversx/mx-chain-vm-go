@@ -1391,7 +1391,7 @@ func executeOnDestContext(
 		return 1
 	}
 
-	_, _, err = host.ExecuteOnDestContext(contractCallInput)
+	_, _, _, err = host.ExecuteOnDestContext(contractCallInput)
 	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -1441,7 +1441,7 @@ func executeOnDestContextByCaller(
 		return 1
 	}
 
-	_, _, err = host.ExecuteOnDestContext(contractCallInput)
+	_, _, _, err = host.ExecuteOnDestContext(contractCallInput)
 	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 		return 1
 	}
