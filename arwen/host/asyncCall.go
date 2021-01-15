@@ -9,7 +9,6 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
-	"github.com/ElrondNetwork/elrond-go/core"
 	"github.com/ElrondNetwork/elrond-go/core/parsers"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
@@ -90,7 +89,7 @@ func (host *vmHost) executeSyncDestinationCall(asyncCallInfo arwen.AsyncCallInfo
 }
 
 func (host *vmHost) computeGasUsedInExecutionBeforeReset(vmInput *vmcommon.ContractCallInput) uint64 {
-	gasUsedForExecution, _ := core.SafeSubUint64(host.meteringContext.GasUsedForExecution(), vmInput.GasLocked)
+	gasUsedForExecution, _ := math.SubUint64(host.meteringContext.GasUsedForExecution(), vmInput.GasLocked)
 	return gasUsedForExecution
 }
 

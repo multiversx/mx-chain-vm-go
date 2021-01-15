@@ -33,7 +33,7 @@ const (
 	// with its corresponding callback
 	SyncCall AsyncCallExecutionMode = iota
 
-	// AsyncBuiltinFuncCrossShard indicates that the async call is an intra-shard built in function call
+	// AsyncBuiltinFuncIntraShard indicates that the async call is an intra-shard built in function call
 	AsyncBuiltinFuncIntraShard
 
 	// AsyncBuiltinFuncCrossShard indicates that the async call is a cross-shard call to a
