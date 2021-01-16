@@ -675,6 +675,10 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmc
 }
 
 func (host *vmHost) checkFinalGasAfterExit() error {
+	if !host.IsArwenV2Enabled() {
+		return nil
+	}
+
 	if host.Runtime().GetPointsUsed() > host.Metering().GetGasForExecution() {
 		return arwen.ErrNotEnoughGas
 	}
