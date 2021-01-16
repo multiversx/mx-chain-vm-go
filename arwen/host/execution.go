@@ -674,6 +674,18 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmc
 	return newVMInput, gasConsumedForExecution, nil
 }
 
+func (host *vmHost) checkFinalGasAfterExit() error {
+	if !host.IsArwenV2Enabled() {
+		return nil
+	}
+
+	if host.Runtime().GetPointsUsed() > host.Metering().GetGasForExecution() {
+		return arwen.ErrNotEnoughGas
+	}
+
+	return nil
+}
+
 func (host *vmHost) callInitFunction() error {
 	runtime := host.Runtime()
 	init := runtime.GetInitFunction()
@@ -684,6 +696,10 @@ func (host *vmHost) callInitFunction() error {
 	_, err := init()
 	if err != nil {
 		err = host.handleBreakpointIfAny(err)
+	}
+
+	if err == nil {
+		err = host.checkFinalGasAfterExit()
 	}
 
 	return err
@@ -709,6 +725,9 @@ func (host *vmHost) callSCMethod() error {
 	_, err = function()
 	if err != nil {
 		err = host.handleBreakpointIfAny(err)
+	}
+	if err == nil {
+		err = host.checkFinalGasAfterExit()
 	}
 	if err != nil {
 		return err
