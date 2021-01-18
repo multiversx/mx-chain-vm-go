@@ -44,6 +44,7 @@ type vmHost struct {
 
 	scAPIMethods             *wasmer.Imports
 	protocolBuiltinFunctions vmcommon.FunctionNames
+	outOfProcessArwen        bool
 
 	arwenV2EnableEpoch uint32
 	flagArwenV2        atomic.Flag
@@ -75,6 +76,7 @@ func NewArwenVM(
 		arwenV2EnableEpoch:       hostParameters.ArwenV2EnableEpoch,
 		aotEnableEpoch:           hostParameters.AheadOfTimeEnableEpoch,
 		dynGasLockEnableEpoch:    hostParameters.DynGasLockEnableEpoch,
+		outOfProcessArwen:        hostParameters.OutOfProcess,
 	}
 
 	var err error

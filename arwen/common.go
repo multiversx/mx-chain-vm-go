@@ -93,6 +93,7 @@ type VMHostParameters struct {
 	AheadOfTimeEnableEpoch   uint32
 	DynGasLockEnableEpoch    uint32
 	UseWarmInstance          bool
+	OutOfProcess             bool
 }
 
 // AsyncCallInfo contains the information required to handle the asynchronous call of another SmartContract
