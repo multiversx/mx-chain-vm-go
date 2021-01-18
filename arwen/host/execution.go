@@ -105,10 +105,6 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 		return output.CreateVMOutputInCaseOfError(err)
 	}
 
-	if !host.IsArwenV2Enabled() {
-		input.GasProvided = metering.GetGasForExecution()
-	}
-
 	return vmOutput
 }
 
@@ -162,10 +158,6 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	}
 
 	vmOutput = output.GetVMOutput()
-
-	if !host.IsArwenV2Enabled() {
-		input.GasProvided = metering.GetGasForExecution()
-	}
 
 	runtime.CleanWasmerInstance()
 	return
