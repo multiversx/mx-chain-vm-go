@@ -1,6 +1,7 @@
 package arwen
 
 import (
+	"fmt"
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"

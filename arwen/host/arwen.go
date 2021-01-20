@@ -42,6 +42,8 @@ type vmHost struct {
 	storageContext    arwen.StorageContext
 	bigIntContext     arwen.BigIntContext
 
+	index uint64
+
 	scAPIMethods             *wasmer.Imports
 	protocolBuiltinFunctions vmcommon.FunctionNames
 
@@ -99,7 +101,9 @@ func NewArwenVM(
 		return nil, err
 	}
 
-	err = wasmer.SetImports(imports)
+	host.index = wasmer.GetIndex()
+
+	err = wasmer.SetImports(imports, host.index)
 	if err != nil {
 		return nil, err
 	}
@@ -153,6 +157,11 @@ func NewArwenVM(
 	host.initContexts()
 
 	return host, nil
+}
+
+// Index returns the internal identifier required by Wasmer's import object registrar
+func (host *vmHost) Index() uint64 {
+	return host.index
 }
 
 // Crypto returns the VMCrypto instance of the host

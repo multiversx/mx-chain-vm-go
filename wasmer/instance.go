@@ -91,6 +91,7 @@ type Instance struct {
 }
 
 type CompilationOptions struct {
+	ImportObjectIndex  uint64
 	GasLimit           uint64
 	UnmeteredLocals    uint64
 	OpcodeTrace        bool
@@ -110,12 +111,19 @@ func newWrappedError(target error) error {
 	return fmt.Errorf("%w: %s", target, lastError)
 }
 
-func SetImports(imports *Imports) error {
+func GetIndex() uint64 {
+	index := cWasmerImportObjectNewIndex()
+	fmt.Println("cWasmerImportObjectNewIndex ->", index)
+	return index
+}
+
+func SetImports(imports *Imports, index uint64) error {
 	wasmImportsCPointer, numberOfImports := generateWasmerImports(imports)
 
-	var result = cWasmerCacheImportObjectFromImports(
+	var result = cWasmerCacheImportObjectSet(
 		wasmImportsCPointer,
 		cInt(numberOfImports),
+		index,
 	)
 
 	if result != cWasmerOk {
@@ -139,6 +147,7 @@ func NewInstanceWithOptions(
 		return emptyInstance, newWrappedError(ErrInvalidBytecode)
 	}
 
+	fmt.Println("NewInstanceWithOptions options.ImportObjectIndex ->", options.ImportObjectIndex)
 	cOptions := unsafe.Pointer(&options)
 	var compileResult = cWasmerInstantiateWithOptions(
 		&c_instance,
