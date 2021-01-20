@@ -8,6 +8,8 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/marshaling"
 	"github.com/ElrondNetwork/elrond-go-logger/pipes"
+	nodeConfig "github.com/ElrondNetwork/elrond-go/config"
+	"github.com/ElrondNetwork/elrond-go/health"
 )
 
 const (
@@ -30,6 +32,8 @@ func main() {
 
 // doMain returns (error code, error message)
 func doMain() (int, string) {
+	startHealthService()
+
 	arwenInitFile := getPipeFile(fileDescriptorArwenInit)
 	if arwenInitFile == nil {
 		return common.ErrCodeCannotCreateFile, "Cannot get pipe file: [arwenInitFile]"
@@ -93,6 +97,21 @@ func doMain() (int, string) {
 
 	// This is never reached, actually. Arwen is supposed to run an infinite message loop.
 	return common.ErrCodeSuccess, ""
+}
+
+func startHealthService() {
+	workingDirectory := fmt.Sprintf("arwen_%d", os.Getpid())
+
+	healthService := health.NewHealthService(nodeConfig.HealthServiceConfig{
+		IntervalVerifyMemoryInSeconds:             5,
+		IntervalDiagnoseComponentsInSeconds:       60,
+		IntervalDiagnoseComponentsDeeplyInSeconds: 60,
+		MemoryUsageToCreateProfiles:               2415919104,
+		NumMemoryUsageRecordsToKeep:               100,
+		FolderPath:                                "health-records",
+	}, workingDirectory)
+
+	healthService.Start()
 }
 
 func getPipeFile(fileDescriptor uintptr) *os.File {
