@@ -87,7 +87,7 @@ func startHealthService() {
 		IntervalVerifyMemoryInSeconds:             5,
 		IntervalDiagnoseComponentsInSeconds:       60,
 		IntervalDiagnoseComponentsDeeplyInSeconds: 60,
-		MemoryUsageToCreateProfiles:               2 * 1024 * 1024,
+		MemoryUsageToCreateProfiles:               1 * 1024 * 1024,
 		NumMemoryUsageRecordsToKeep:               100,
 		FolderPath:                                "health-records",
 	}, getWorkingDirectory())
