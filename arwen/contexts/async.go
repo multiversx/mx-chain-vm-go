@@ -329,7 +329,7 @@ func (context *asyncContext) RegisterLegacyAsyncCall(address []byte, data []byte
 	}
 
 	metering := context.host.Metering()
-	gasLimit := metering.GasLeft() - gasToLock
+	gasLimit, _ := math.SubUint64(metering.GasLeft(), gasToLock)
 
 	err = context.addAsyncCall(legacyGroupID, &arwen.AsyncCall{
 		Status:          arwen.AsyncCallPending,

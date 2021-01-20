@@ -284,3 +284,29 @@ func (instance *Instance) Cache() ([]byte, error) {
 
 	return goBytes, nil
 }
+
+// GetExports returns the exports map for the current instance
+func (instance *Instance) GetExports() ExportsMap {
+	return instance.Exports
+}
+
+// GetSignature returns the signature for the given functionName
+func (instance *Instance) GetSignature(functionName string) (*ExportedFunctionSignature, bool) {
+	signature, ok := instance.Signatures[functionName]
+	return signature, ok
+}
+
+// GetData returns a pointer for the current instance's data
+func (instance *Instance) GetData() *int {
+	return instance.Data
+}
+
+// GetInstanceCtxMemory returns the memory for the instance context
+func (instance *Instance) GetInstanceCtxMemory() *Memory {
+	return instance.InstanceCtx.Memory()
+}
+
+// GetMemory returns the memory for the instance
+func (instance *Instance) GetMemory() *Memory {
+	return instance.Memory
+}
