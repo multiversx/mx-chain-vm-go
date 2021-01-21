@@ -248,7 +248,7 @@ func TestExecution_ManyDeployments(t *testing.T) {
 	input.CallValue = big.NewInt(88)
 	input.ContractCode = GetTestSCCode("init-simple", "../../")
 
-	numDeployments := 100000000
+	numDeployments := 1000000000
 	for i := 0; i < numDeployments; i++ {
 		input.GasProvided = 100000
 		vmOutput, err := host.RunSmartContractCreate(input)

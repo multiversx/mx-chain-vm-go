@@ -1,5 +1,6 @@
 package wasmer
 
+// #include <stdlib.h>
 import "C"
 import (
 	"fmt"
@@ -280,8 +281,12 @@ func (instance *Instance) Cache() ([]byte, error) {
 	}
 
 	goBytes := C.GoBytes(unsafe.Pointer(cacheBytes), C.int(cacheLen))
-	cacheBytes = nil
 
+	hackMap := make(map[unsafe.Pointer]interface{})
+	hackMap[unsafe.Pointer(cacheBytes)] = struct{}{}
+
+	delete(hackMap, unsafe.Pointer(cacheBytes))
+	C.free(unsafe.Pointer(cacheBytes))
 	return goBytes, nil
 }
 
