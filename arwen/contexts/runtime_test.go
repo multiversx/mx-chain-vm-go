@@ -658,11 +658,17 @@ func TestInstanceMemoryLeakage(t *testing.T) {
 
 	newInstance.Clean()
 
-	for i := 0; i < 10000000; i++ {
-		fmt.Printf("number of try %d", i)
+	for i := 0; i < 1000000000; i++ {
 		newInstance, err = wasmer.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
 		assert.Nil(t, err)
 
+		//function := newInstance.Exports["init"]
+		//_, _ = function()
+
 		newInstance.Clean()
+
+		if i%10000 == 0 {
+			fmt.Printf("number of try %d \n", i)
+		}
 	}
 }
