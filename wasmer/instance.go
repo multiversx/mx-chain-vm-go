@@ -223,11 +223,8 @@ func NewInstanceFromCompiledCodeWithOptions(
 		instance.InstanceCtx = IntoInstanceContextDirect(c_instance_context)
 	}
 
-	hackMap := make(map[unsafe.Pointer]interface{})
-	hackMap[pointerToDestroy] = struct{}{}
-
-	delete(hackMap, pointerToDestroy)
 	C.free(pointerToDestroy)
+	pointerToDestroy = nil
 
 	return instance, err
 }
@@ -290,11 +287,8 @@ func (instance *Instance) Cache() ([]byte, error) {
 
 	goBytes := C.GoBytes(unsafe.Pointer(cacheBytes), C.int(cacheLen))
 
-	hackMap := make(map[unsafe.Pointer]interface{})
-	hackMap[unsafe.Pointer(cacheBytes)] = struct{}{}
-
-	delete(hackMap, unsafe.Pointer(cacheBytes))
 	C.free(unsafe.Pointer(cacheBytes))
+	cacheBytes = nil
 	return goBytes, nil
 }
 
