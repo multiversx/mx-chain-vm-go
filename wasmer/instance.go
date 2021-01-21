@@ -203,6 +203,7 @@ func NewInstanceFromCompiledCodeWithOptions(
 		return emptyInstance, newWrappedError(ErrInvalidBytecode)
 	}
 
+	pointerToDestroy := unsafe.Pointer(&compiledCode[0])
 	cOptions := unsafe.Pointer(&options)
 	var instantiateResult = cWasmerInstanceFromCache(
 		&c_instance,
@@ -221,6 +222,13 @@ func NewInstanceFromCompiledCodeWithOptions(
 		c_instance_context := cWasmerInstanceContextGet(c_instance)
 		instance.InstanceCtx = IntoInstanceContextDirect(c_instance_context)
 	}
+
+	hackMap := make(map[unsafe.Pointer]interface{})
+	hackMap[pointerToDestroy] = struct{}{}
+
+	delete(hackMap, pointerToDestroy)
+	C.free(pointerToDestroy)
+
 	return instance, err
 }
 

@@ -411,9 +411,6 @@ func TestRuntimeContext_MemoryIsBlank(t *testing.T) {
 			require.Fail(t, msg)
 		}
 	}
-
-	runtimeContext.CleanWasmerInstance()
-	assert.Equal(t, 0, len(memory.Data()))
 }
 
 func TestRuntimeContext_MemLoadCases(t *testing.T) {
