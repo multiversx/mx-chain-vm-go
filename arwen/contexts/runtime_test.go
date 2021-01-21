@@ -411,6 +411,9 @@ func TestRuntimeContext_MemoryIsBlank(t *testing.T) {
 			require.Fail(t, msg)
 		}
 	}
+
+	memory.Destroy()
+	assert.Equal(t, len(memory.Data()), 0)
 }
 
 func TestRuntimeContext_MemLoadCases(t *testing.T) {
@@ -661,9 +664,6 @@ func TestInstanceMemoryLeakage(t *testing.T) {
 	for i := 0; i < 1000000000; i++ {
 		newInstance, err = wasmer.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
 		assert.Nil(t, err)
-
-		//function := newInstance.Exports["init"]
-		//_, _ = function()
 
 		newInstance.Clean()
 
