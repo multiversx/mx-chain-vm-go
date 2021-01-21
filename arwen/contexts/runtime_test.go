@@ -3,7 +3,6 @@ package contexts
 import (
 	"errors"
 	"fmt"
-	"math"
 	"math/big"
 	"testing"
 
@@ -16,7 +15,6 @@ import (
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -636,36 +634,4 @@ func TestRuntimeContext_PopInstanceIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	runtimeContext.popInstance()
 
 	require.Equal(t, 0, len(runtimeContext.stateStack))
-}
-
-func TestInstanceMemoryLeakage(t *testing.T) {
-	_ = InitializeArwenAndWasmer()
-
-	path := "./../../test/contracts/init-simple/output/init-simple.wasm"
-	contract := arwen.GetSCCode(path)
-	options := wasmer.CompilationOptions{
-		GasLimit:           math.MaxInt64,
-		UnmeteredLocals:    uint64(100),
-		OpcodeTrace:        false,
-		Metering:           true,
-		RuntimeBreakpoints: true,
-	}
-	newInstance, err := wasmer.NewInstanceWithOptions(contract, options)
-	assert.Nil(t, err)
-
-	compiledCode, err := newInstance.Cache()
-	assert.Nil(t, err)
-
-	newInstance.Clean()
-
-	for i := 0; i < 1000000000; i++ {
-		newInstance, err = wasmer.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
-		assert.Nil(t, err)
-
-		newInstance.Clean()
-
-		if i%10000 == 0 {
-			fmt.Printf("number of try %d \n", i)
-		}
-	}
 }
