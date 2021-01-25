@@ -305,6 +305,8 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 	host.mutExecution.RLock()
 	defer host.mutExecution.RUnlock()
 
+	fmt.Println("create on host", host.Index())
+
 	log.Trace("RunSmartContractCreate begin", "len(code)", len(input.ContractCode), "metadata", input.ContractCodeMetadata)
 
 	try := func() {
@@ -328,6 +330,8 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
 	host.mutExecution.RLock()
 	defer host.mutExecution.RUnlock()
+
+	fmt.Println("call > start on host", host.Index(), ":", input.Function)
 
 	log.Trace("RunSmartContractCall begin", "function", input.Function)
 
@@ -355,6 +359,8 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 	} else {
 		TryCatch(tryCall, catch, "arwen.RunSmartContractCall")
 	}
+
+	fmt.Println("call < end on host", host.Index())
 
 	return
 }
