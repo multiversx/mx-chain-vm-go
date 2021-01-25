@@ -121,7 +121,7 @@ func (host *vmHost) checkGasForGetCode(input *vmcommon.ContractCallInput, meteri
 	return nil
 }
 
-func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput) {
+func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) *vmcommon.VMOutput {
 	host.InitState()
 	defer host.Clean()
 
@@ -157,15 +157,14 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 		return output.CreateVMOutputInCaseOfError(err)
 	}
 
-	vmOutput = output.GetVMOutput()
-
+	vmOutput := output.GetVMOutput()
 	runtime.CleanWasmerInstance()
-	return
+	return vmOutput
 }
 
 // ExecuteOnDestContext pushes each context to the corresponding stack
 // and initializes new contexts for executing the contract call with the given input
-func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, asyncInfo *arwen.AsyncContextInfo, gasUsedBeforeReset uint64, err error) {
+func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *arwen.AsyncContextInfo, uint64, error) {
 	log.Trace("ExecuteOnDestContext", "function", input.Function)
 
 	bigInt, _, metering, output, runtime, storage := host.GetContexts()
@@ -185,25 +184,26 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	storage.PushState()
 	storage.SetAddress(runtime.GetSCAddress())
 
-	defer func() {
-		vmOutput = host.finishExecuteOnDestContext(err)
-	}()
+	gasUsedBeforeReset := uint64(0)
 
 	// Perform a value transfer to the called SC. If the execution fails, this
 	// transfer will not persist.
-	err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue)
+	err := output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue)
 	if err != nil {
-		return
+		vmOutput := host.finishExecuteOnDestContext(err)
+		return vmOutput, nil, gasUsedBeforeReset, err
 	}
 
 	gasUsedBeforeReset, err = host.execute(input)
 	if err != nil {
-		return
+		vmOutput := host.finishExecuteOnDestContext(err)
+		return vmOutput, nil, gasUsedBeforeReset, err
 	}
 
-	asyncInfo = runtime.GetAsyncContextInfo()
+	asyncInfo := runtime.GetAsyncContextInfo()
 	_, err = host.processAsyncInfo(asyncInfo)
-	return
+	vmOutput := host.finishExecuteOnDestContext(err)
+	return vmOutput, asyncInfo, gasUsedBeforeReset, err
 }
 
 func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOutput {
@@ -250,7 +250,7 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 
 // ExecuteOnSameContext executes the contract call with the given input
 // on the same runtime context. Some other contexts are backed up.
-func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asyncInfo *arwen.AsyncContextInfo, err error) {
+func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*arwen.AsyncContextInfo, error) {
 	log.Trace("ExecuteOnSameContext", "function", input.Function)
 
 	if host.IsBuiltinFunctionName(input.Function) {
@@ -270,24 +270,23 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 	metering.PushState()
 	metering.InitStateFromContractCallInput(&input.VMInput)
 
-	defer func() {
-		host.finishExecuteOnSameContext(err)
-	}()
-
 	// Perform a value transfer to the called SC. If the execution fails, this
 	// transfer will not persist.
-	err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue)
+	err := output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue)
 	if err != nil {
-		return
+		host.finishExecuteOnSameContext(err)
+		return nil, err
 	}
 
 	_, err = host.execute(input)
 	if err != nil {
-		return
+		host.finishExecuteOnSameContext(err)
+		return nil, err
 	}
 
-	asyncInfo = runtime.GetAsyncContextInfo()
-	return
+	asyncInfo := runtime.GetAsyncContextInfo()
+	host.finishExecuteOnSameContext(nil)
+	return asyncInfo, nil
 }
 
 func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
