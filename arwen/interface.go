@@ -151,7 +151,6 @@ type AsyncContext interface {
 	Load() error
 	Save() error
 	Delete() error
-	ExecuteAsyncCall(address []byte, data []byte, value []byte) error
 
 	// TODO remove after implementing proper mocking of Wasmer instances; this is
 	// used for tests only
