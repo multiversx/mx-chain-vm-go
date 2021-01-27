@@ -167,6 +167,7 @@ type OutputContext interface {
 	ReturnData() [][]byte
 	ClearReturnData()
 	Finish(data []byte)
+	PrependFinish(data []byte)
 	GetVMOutput() *vmcommon.VMOutput
 	AddTxValueToAccount(address []byte, value *big.Int)
 	DeployCode(input CodeDeployInput)

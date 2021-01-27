@@ -212,6 +212,11 @@ func (context *outputContext) Finish(data []byte) {
 	context.outputState.ReturnData = append(context.outputState.ReturnData, data)
 }
 
+// PrependFinish appends the given data to the return data of the current output state.
+func (context *outputContext) PrependFinish(data []byte) {
+	context.outputState.ReturnData = append([][]byte{data}, context.outputState.ReturnData...)
+}
+
 // WriteLog creates a new LogEntry and appends it to the logs of the current output state.
 func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []byte) {
 	if context.host.Runtime().ReadOnly() {

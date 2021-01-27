@@ -149,6 +149,11 @@ func (o *OutputContextMock) Finish(data []byte) {
 	o.ReturnDataMock = append(o.ReturnDataMock, data)
 }
 
+// PrependFinish mocked method
+func (o *OutputContextMock) PrependFinish(data []byte) {
+	o.ReturnDataMock = append([][]byte{data}, o.ReturnDataMock...)
+}
+
 // WriteLog mocked method
 func (o *OutputContextMock) WriteLog(_ []byte, _ [][]byte, _ []byte) {
 }
