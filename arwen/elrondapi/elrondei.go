@@ -495,6 +495,12 @@ func blockHash(context unsafe.Pointer, nonce int64, resultOffset int32) int32 {
 	return 0
 }
 
+func isBuiltInCall(data string, host arwen.VMHost) bool {
+	argParser := parsers.NewCallArgsParser()
+	functionName, _, _ := argParser.ParseData(data)
+	return host.IsBuiltinFunctionName(functionName)
+}
+
 //export transferValue
 func transferValue(context unsafe.Pointer, destOffset int32, valueOffset int32, dataOffset int32, length int32) int32 {
 	host := arwen.GetVMContext(context)
@@ -524,10 +530,7 @@ func transferValue(context unsafe.Pointer, destOffset int32, valueOffset int32, 
 		return 1
 	}
 
-	// TODO write test for this, after removing vmContextMap
-	argParser := parsers.NewCallArgsParser()
-	functionName, _, _ := argParser.ParseData(string(data))
-	if host.IsBuiltinFunctionName(functionName) {
+	if isBuiltInCall(string(data), host) {
 		return 1
 	}
 
@@ -1341,6 +1344,10 @@ func executeOnSameContext(
 		return 1
 	}
 
+	if isBuiltInCall(contractCallInput.Function, host) {
+		return 1
+	}
+
 	_, err = host.ExecuteOnSameContext(contractCallInput)
 	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 		return 1
@@ -1441,6 +1448,10 @@ func executeOnDestContextByCaller(
 		return 1
 	}
 
+	if isBuiltInCall(contractCallInput.Function, host) {
+		return 1
+	}
+
 	_, _, _, err = host.ExecuteOnDestContext(contractCallInput)
 	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 		return 1
@@ -1483,6 +1494,10 @@ func delegateExecution(
 		dataOffset,
 	)
 	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	if isBuiltInCall(contractCallInput.Function, host) {
 		return 1
 	}
 
@@ -1529,6 +1544,10 @@ func executeReadOnly(
 		dataOffset,
 	)
 	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	if isBuiltInCall(contractCallInput.Function, host) {
 		return 1
 	}
 
