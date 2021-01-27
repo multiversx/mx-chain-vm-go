@@ -1,6 +1,8 @@
 package mock
 
 import (
+	"math/big"
+
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
@@ -80,6 +82,11 @@ func (host *VMHostMock) IsDynamicGasLockingEnabled() bool {
 // AreInSameShard mocked method
 func (host *VMHostMock) AreInSameShard(_ []byte, _ []byte) bool {
 	return true
+}
+
+// ExecuteESDTTransfer mocked method
+func (host *VMHostMock) ExecuteESDTTransfer(_ []byte, _ []byte, _ []byte, _ *big.Int) error {
+	return nil
 }
 
 // CreateNewContract mocked method

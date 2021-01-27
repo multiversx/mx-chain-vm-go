@@ -168,6 +168,11 @@ func (o *OutputContextMock) Transfer(_ []byte, _ []byte, _ uint64, _ uint64, _ *
 	return o.TransferResult
 }
 
+// TransferESDT mocked method
+func (o *OutputContextMock) TransferESDT(_ []byte, _ []byte, _ []byte, _ *big.Int, _ []byte, _ uint64) error {
+	return nil
+}
+
 // AddTxValueToAccount mocked method
 func (o *OutputContextMock) AddTxValueToAccount(_ []byte, _ *big.Int) {
 }

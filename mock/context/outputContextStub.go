@@ -24,6 +24,7 @@ type OutputContextStub struct {
 	DeleteOutputAccountCalled         func(address []byte)
 	WriteLogCalled                    func(address []byte, topics [][]byte, data []byte)
 	TransferCalled                    func(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, input []byte) error
+	TransferESDTCalled                func(destination []byte, sender []byte, tokenIdentifier []byte, value *big.Int, gasLimit uint64, input []byte) error
 	SelfDestructCalled                func(address []byte, beneficiary []byte)
 	GetRefundCalled                   func() uint64
 	SetRefundCalled                   func(refund uint64)
@@ -150,6 +151,14 @@ func (o *OutputContextStub) Transfer(destination []byte, sender []byte, gasLimit
 		return o.TransferCalled(destination, sender, gasLimit, gasLocked, value, input)
 	}
 
+	return nil
+}
+
+// TransferESDT mocked method
+func (o *OutputContextStub) TransferESDT(destination []byte, sender []byte, tokenIdentifier []byte, value *big.Int, input []byte, gasLimit uint64) error {
+	if o.TransferESDTCalled != nil {
+		return o.TransferESDTCalled(destination, sender, tokenIdentifier, value, gasLimit, input)
+	}
 	return nil
 }
 

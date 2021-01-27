@@ -1,6 +1,8 @@
 package mock
 
 import (
+	"math/big"
+
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
@@ -23,6 +25,7 @@ type VMHostStub struct {
 	OutputCalled                      func() arwen.OutputContext
 	MeteringCalled                    func() arwen.MeteringContext
 	StorageCalled                     func() arwen.StorageContext
+	ExecuteESDTTransferCalled         func(destination []byte, sender []byte, tokenIdentifier []byte, value *big.Int) error
 	CreateNewContractCalled           func(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContextCalled        func(input *vmcommon.ContractCallInput) (*arwen.AsyncContextInfo, error)
 	ExecuteOnDestContextCalled        func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *arwen.AsyncContextInfo, uint64, error)
@@ -127,6 +130,14 @@ func (vhs *VMHostStub) Metering() arwen.MeteringContext {
 func (vhs *VMHostStub) Storage() arwen.StorageContext {
 	if vhs.StorageCalled != nil {
 		return vhs.StorageCalled()
+	}
+	return nil
+}
+
+// ExecuteESDTTransfer
+func (vhs *VMHostStub) ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, value *big.Int) error {
+	if vhs.ExecuteESDTTransferCalled != nil {
+		return vhs.ExecuteESDTTransferCalled(destination, sender, tokenIdentifier, value)
 	}
 	return nil
 }

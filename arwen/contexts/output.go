@@ -1,11 +1,13 @@
 package contexts
 
 import (
+	"encoding/hex"
 	"errors"
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/math"
+	"github.com/ElrondNetwork/elrond-go/core"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
@@ -284,6 +286,37 @@ func (context *outputContext) Transfer(destination []byte, sender []byte, gasLim
 		GasLocked: gasLocked,
 		Data:      input,
 		CallType:  callType,
+	}
+	destAcc.OutputTransfers = append(destAcc.OutputTransfers, outputTransfer)
+
+	return nil
+}
+
+// TransferESDT makes the asynchronous call and exports the data if it is cross shard
+func (context *outputContext) TransferESDT(destination []byte, sender []byte, tokenIdentifier []byte, value *big.Int, input []byte, gasLimit uint64) error {
+	err := context.host.ExecuteESDTTransfer(destination, sender, tokenIdentifier, value)
+	if err != nil {
+		return err
+	}
+
+	if context.host.Blockchain().IsSmartContract(destination) && !context.host.AreInSameShard(sender, destination) {
+		if gasLimit > context.host.Metering().GasLeft() {
+			return arwen.ErrNotEnoughGas
+		}
+
+		context.host.Metering().ForwardGas(sender, destination, gasLimit)
+		context.host.Metering().UseGas(gasLimit)
+	} else {
+		gasLimit = 0
+	}
+
+	destAcc, _ := context.GetOutputAccount(destination)
+	outputTransfer := vmcommon.OutputTransfer{
+		Value:     big.NewInt(0),
+		GasLimit:  gasLimit,
+		GasLocked: 0,
+		Data:      []byte(core.BuiltInFunctionESDTTransfer + "@" + hex.EncodeToString(tokenIdentifier) + "@" + hex.EncodeToString(value.Bytes()) + "@" + string(input)),
+		CallType:  vmcommon.DirectCall,
 	}
 	destAcc.OutputTransfers = append(destAcc.OutputTransfers, outputTransfer)
 
