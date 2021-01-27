@@ -40,6 +40,9 @@ const (
 	// built-in function, which is executed half in-shard, half cross-shard
 	AsyncBuiltinFuncCrossShard
 
+	// ESDTTransferOnCallBack indicated that the async call is actually a callback with ESDT transfer
+	ESDTTransferOnCallBack
+
 	// AsyncUnknown indicates that the async call cannot be executed locally, and
 	// must be forwarded to the destination account
 	AsyncUnknown

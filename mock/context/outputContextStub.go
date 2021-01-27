@@ -24,6 +24,7 @@ type OutputContextStub struct {
 	DeleteOutputAccountCalled         func(address []byte)
 	WriteLogCalled                    func(address []byte, topics [][]byte, data []byte)
 	TransferCalled                    func(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, input []byte) error
+	TransferESDTCalled                func(destination []byte, sender []byte, tokenIdentifier []byte, value *big.Int, gasLimit uint64, input []byte) error
 	SelfDestructCalled                func(address []byte, beneficiary []byte)
 	GetRefundCalled                   func() uint64
 	SetRefundCalled                   func(refund uint64)
@@ -34,6 +35,7 @@ type OutputContextStub struct {
 	ReturnDataCalled                  func() [][]byte
 	ClearReturnDataCalled             func()
 	FinishCalled                      func(data []byte)
+	PrependFinishCalled               func(data []byte)
 	GetVMOutputCalled                 func() *vmcommon.VMOutput
 	AddTxValueToAccountCalled         func(address []byte, value *big.Int)
 	DeployCodeCalled                  func(input arwen.CodeDeployInput)
@@ -152,6 +154,14 @@ func (o *OutputContextStub) Transfer(destination []byte, sender []byte, gasLimit
 	return nil
 }
 
+// TransferESDT mocked method
+func (o *OutputContextStub) TransferESDT(destination []byte, sender []byte, tokenIdentifier []byte, value *big.Int, input []byte, gasLimit uint64) error {
+	if o.TransferESDTCalled != nil {
+		return o.TransferESDTCalled(destination, sender, tokenIdentifier, value, gasLimit, input)
+	}
+	return nil
+}
+
 // SelfDestruct mocked method
 func (o *OutputContextStub) SelfDestruct(address []byte, beneficiary []byte) {
 	if o.SelfDestructCalled != nil {
@@ -223,6 +233,13 @@ func (o *OutputContextStub) ClearReturnData() {
 func (o *OutputContextStub) Finish(data []byte) {
 	if o.FinishCalled != nil {
 		o.FinishCalled(data)
+	}
+}
+
+// PrependFinish mocked method
+func (o *OutputContextStub) PrependFinish(data []byte) {
+	if o.PrependFinishCalled != nil {
+		o.PrependFinishCalled(data)
 	}
 }
 
