@@ -13,6 +13,7 @@ package elrondapi
 // extern void getExternalBalance(void *context, int32_t addressOffset, int32_t resultOffset);
 // extern int32_t blockHash(void *context, long long nonce, int32_t resultOffset);
 // extern int32_t transferValue(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
+// extern int32_t transferESDT(void *context, int32_t dstOffset, int32_t tokenIdOffset, int32_t tokenIdLen, int32_t valueOffset, int32_t dataOffset, int32_t length);
 // extern int32_t getArgumentLength(void *context, int32_t id);
 // extern int32_t getArgument(void *context, int32_t id, int32_t argOffset);
 // extern int32_t getFunction(void *context, int32_t functionOffset);
@@ -118,6 +119,11 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("transferValue", transferValue, C.transferValue)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("transferESDT", transferESDT, C.transferESDT)
 	if err != nil {
 		return nil, err
 	}
@@ -503,6 +509,47 @@ func isBuiltInCall(data string, host arwen.VMHost) bool {
 
 //export transferValue
 func transferValue(context unsafe.Pointer, destOffset int32, valueOffset int32, dataOffset int32, length int32) int32 {
+	host := arwen.GetVMContext(context)
+	runtime := host.Runtime()
+	metering := host.Metering()
+	output := host.Output()
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.TransferValue
+	metering.UseGas(gasToUse)
+
+	send := runtime.GetSCAddress()
+	dest, err := runtime.MemLoad(destOffset, arwen.AddressLen)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	valueBytes, err := runtime.MemLoad(valueOffset, arwen.BalanceLen)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(length))
+	metering.UseGas(gasToUse)
+
+	data, err := runtime.MemLoad(dataOffset, length)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	if isBuiltInCall(string(data), host) {
+		return 1
+	}
+
+	err = output.Transfer(dest, send, 0, 0, big.NewInt(0).SetBytes(valueBytes), data, vmcommon.DirectCall)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	return 0
+}
+
+//export transferESDT
+func transferESDT(context unsafe.Pointer, destOffset int32, tokenIdOffset int32, tokenIDLen int32, valueOffset int32, dataOffset int32, length int32) int32 {
 	host := arwen.GetVMContext(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
