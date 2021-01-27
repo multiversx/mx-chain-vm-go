@@ -590,6 +590,7 @@ func (context *asyncContext) Delete() error {
 
 func (context *asyncContext) determineExecutionMode(destination []byte, data []byte) (arwen.AsyncCallExecutionMode, error) {
 	runtime := context.host.Runtime()
+	blockchain := context.host.Blockchain()
 
 	// If ArgParser cannot read the Data field, then this is neither a SC call,
 	// nor a built-in function call.
@@ -599,12 +600,17 @@ func (context *asyncContext) determineExecutionMode(destination []byte, data []b
 	}
 
 	sameShard := context.host.AreInSameShard(runtime.GetSCAddress(), destination)
-	if sameShard {
-		return arwen.SyncExecution, nil
-	}
 
 	if context.host.IsBuiltinFunctionName(functionName) {
-		return arwen.AsyncBuiltinFunc, nil
+		if sameShard {
+			return arwen.AsyncBuiltinFuncIntraShard, nil
+		}
+		return arwen.AsyncBuiltinFuncCrossShard, nil
+	}
+
+	code, err := blockchain.GetCode(destination)
+	if len(code) > 0 && err == nil {
+		return arwen.SyncExecution
 	}
 
 	return arwen.AsyncUnknown, nil
@@ -614,6 +620,7 @@ func (context *asyncContext) sendAsyncCallCrossShard(asyncCall arwen.AsyncCallHa
 	host := context.host
 	runtime := host.Runtime()
 	output := host.Output()
+	metering := host.Metering()
 
 	err := output.Transfer(
 		asyncCall.GetDestination(),
@@ -625,11 +632,14 @@ func (context *asyncContext) sendAsyncCallCrossShard(asyncCall arwen.AsyncCallHa
 		vmcommon.AsynchronousCall,
 	)
 	if err != nil {
-		metering := host.Metering()
 		metering.UseGas(metering.GasLeft())
 		runtime.FailExecution(err)
 		return err
 	}
+
+	gasLeft := metering.GasLeft()
+	metering.ForwardGas(runtime.GetSCAddress(), asyncCall.Destination, gasLeft+asyncCall.GasLocked)
+	metering.UseGas(gasLeft)
 
 	return nil
 }
@@ -674,6 +684,10 @@ func (context *asyncContext) sendContextCallbackToOriginalCaller() error {
 		runtime.FailExecution(err)
 		return err
 	}
+
+	gasLeft := metering.GasLeft()
+	metering.ForwardGas(runtime.GetSCAddress(), currentCall.CallerAddr, gasLeft)
+	metering.UseGas(gasLeft)
 
 	return nil
 }

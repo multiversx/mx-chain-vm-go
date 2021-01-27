@@ -40,7 +40,7 @@ type VMHost interface {
 
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContext(input *vmcommon.ContractCallInput) error
-	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
+	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, uint64, error)
 	GetAPIMethods() *wasmer.Imports
 	GetProtocolBuiltinFunctions() vmcommon.FunctionNames
 	IsBuiltinFunctionName(functionName string) bool
@@ -83,7 +83,7 @@ type BlockchainContext interface {
 type RuntimeContext interface {
 	StateStack
 
-	InitStateFromInput(input *vmcommon.ContractCallInput)
+	InitStateFromContractCallInput(input *vmcommon.ContractCallInput)
 	SetCustomCallFunction(callFunction string)
 	GetVMInput() *vmcommon.VMInput
 	SetVMInput(vmInput *vmcommon.VMInput)
@@ -105,6 +105,7 @@ type RuntimeContext interface {
 	ValidateCallbackName(callbackName string) error
 	SetRuntimeBreakpointValue(value BreakpointValue)
 	GetRuntimeBreakpointValue() BreakpointValue
+	IsContractOnTheStack(address []byte) bool
 	RunningInstancesCount() uint64
 	IsWarmInstance() bool
 	ResetWarmInstance()
@@ -150,6 +151,11 @@ type AsyncContext interface {
 	Load() error
 	Save() error
 	Delete() error
+	ExecuteAsyncCall(address []byte, data []byte, value []byte) error
+
+	// TODO remove after implementing proper mocking of Wasmer instances; this is
+	// used for tests only
+	ReplaceInstanceBuilder(builder InstanceBuilder)
 }
 
 // BigIntContext defines the functionality needed for interacting with the big int context
@@ -193,6 +199,9 @@ type OutputContext interface {
 
 // MeteringContext defines the functionality needed for interacting with the metering context
 type MeteringContext interface {
+	StateStack
+
+	InitStateFromContractCallInput(input *vmcommon.VMInput)
 	SetGasSchedule(gasMap config.GasScheduleMap)
 	GasSchedule() *config.GasCost
 	UseGas(gas uint64)
@@ -200,6 +209,13 @@ type MeteringContext interface {
 	RestoreGas(gas uint64)
 	GasLeft() uint64
 	BoundGasLimit(limit uint64) uint64
+	ForwardGas(sourceAddress []byte, destAddress []byte, gas uint64)
+	GasUsedByContract() (uint64, uint64)
+	GasUsedForExecution() uint64
+	GasSpentByContract() uint64
+	GetGasForExecution() uint64
+	GetGasProvided() uint64
+	GetSCPrepareInitialCost() uint64
 	BlockGasLimit() uint64
 	DeductInitialGasForExecution(contract []byte) error
 	DeductInitialGasForDirectDeployment(input CodeDeployInput) error
@@ -207,7 +223,6 @@ type MeteringContext interface {
 	ComputeGasLockedForAsync() uint64
 	UseGasForAsyncStep() error
 	UseGasBounded(gasToUse uint64) error
-	UnlockGasIfAsyncCallback()
 	GetGasLocked() uint64
 }
 
@@ -248,4 +263,10 @@ type AsyncCallHandler interface {
 	GetGasLimit() uint64
 	GetGasLocked() uint64
 	GetValue() []byte
+}
+
+// InstanceBuilder defines the functionality needed to create Wasmer instances
+type InstanceBuilder interface {
+	NewInstanceWithOptions(contractCode []byte, options wasmer.CompilationOptions) (wasmer.InstanceHandler, error)
+	NewInstanceFromCompiledCodeWithOptions(compiledCode []byte, options wasmer.CompilationOptions) (wasmer.InstanceHandler, error)
 }

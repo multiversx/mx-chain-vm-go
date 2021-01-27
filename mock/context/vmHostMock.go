@@ -118,7 +118,7 @@ func (host *VMHostMock) ExecuteOnDestContext(input *vmcommon.ContractCallInput) 
 		return nil, host.Err
 	}
 	host.StoreInput(input)
-	return host.GetNextVMOutput(), nil
+	return host.GetNextVMOutput(), 0, nil
 }
 
 // InitState mocked method

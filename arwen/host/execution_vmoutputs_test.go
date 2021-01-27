@@ -55,6 +55,7 @@ func expectedVMOutputSameCtxPrepare(_ []byte) *vmcommon.VMOutput {
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
+	parentAccount.GasUsed = 3405
 
 	_ = arwen.AddNewOutputAccount(
 		vmOutput,
@@ -70,7 +71,7 @@ func expectedVMOutputSameCtxPrepare(_ []byte) *vmcommon.VMOutput {
 	arwen.AddFinishData(vmOutput, parentFinishB)
 	arwen.AddFinishData(vmOutput, []byte("succ"))
 
-	expectedExecutionCost := uint64(137)
+	expectedExecutionCost := uint64(138)
 	gas := gasProvided
 	gas -= parentCompilationCostSameCtx
 	gas -= expectedExecutionCost
@@ -132,7 +133,7 @@ func expectedVMOutputSameCtxOutOfGas(_ []byte, _ []byte) *vmcommon.VMOutput {
 	return vmOutput
 }
 
-func expectedVMOutputSameCtxSimple(parentCode []byte, childCode []byte) *vmcommon.VMOutput {
+func expectedVMOutputSameCtxSimple(_ []byte, _ []byte) *vmcommon.VMOutput {
 	vmOutput := arwen.MakeVMOutput()
 
 	arwen.AddFinishData(vmOutput, []byte("child"))
@@ -156,6 +157,7 @@ func expectedVMOutputSameCtxSimple(parentCode []byte, childCode []byte) *vmcommo
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
+	parentAccount.GasUsed = 521
 
 	childAccount := arwen.AddNewOutputAccount(
 		vmOutput,
@@ -163,18 +165,10 @@ func expectedVMOutputSameCtxSimple(parentCode []byte, childCode []byte) *vmcommo
 		198,
 		nil,
 	)
-	childAccount.GasUsed = 3434
+	childAccount.GasUsed = 3435 // TODO: double this when fixed
 
-	parentGasUsed := uint64(3107)
-	childGasUsed := childAccount.GasUsed
-	executionCost := parentGasUsed + childGasUsed
-
-	gas := gasProvided
-	gas -= uint64(len(parentCode))
-	gas -= uint64(len(childCode))
-	gas -= executionCost
-
-	vmOutput.GasRemaining = gas
+	executionCost := parentAccount.GasUsed + 2*childAccount.GasUsed
+	vmOutput.GasRemaining = gasProvided - executionCost
 
 	return vmOutput
 }
@@ -184,6 +178,7 @@ func expectedVMOutputSameCtxSuccessfulChildCall(parentCode []byte, _ []byte) *vm
 
 	parentAccount := vmOutput.OutputAccounts[string(parentAddress)]
 	parentAccount.BalanceDelta = big.NewInt(-141)
+	parentAccount.GasUsed = 3612
 
 	childAccount := arwen.AddNewOutputAccount(
 		vmOutput,
@@ -194,7 +189,7 @@ func expectedVMOutputSameCtxSuccessfulChildCall(parentCode []byte, _ []byte) *vm
 	childAccount.Balance = big.NewInt(1000)
 
 	executeAPICost := uint64(39)
-	childExecutionCost := uint64(436)
+	childExecutionCost := uint64(437)
 	childAccount.GasUsed = childCompilationCostSameCtx + childExecutionCost
 
 	_ = arwen.AddNewOutputAccount(
@@ -222,7 +217,7 @@ func expectedVMOutputSameCtxSuccessfulChildCall(parentCode []byte, _ []byte) *vm
 	arwen.AddFinishData(vmOutput, []byte("succ"))
 	arwen.AddFinishData(vmOutput, []byte("succ"))
 
-	parentGasBeforeExecuteAPI := uint64(171)
+	parentGasBeforeExecuteAPI := uint64(172)
 	finalCost := uint64(134)
 	gas := gasProvided
 	gas -= parentCompilationCostSameCtx
@@ -247,7 +242,7 @@ func expectedVMOutputSameCtxSuccessfulChildCallBigInts(_ []byte, _ []byte) *vmco
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
-	// parentAccount.BalanceDelta = big.NewInt(-99)
+	parentAccount.GasUsed = 3461
 
 	childAccount := arwen.AddNewOutputAccount(
 		vmOutput,
@@ -255,7 +250,7 @@ func expectedVMOutputSameCtxSuccessfulChildCallBigInts(_ []byte, _ []byte) *vmco
 		99,
 		nil,
 	)
-	childExecutionCost := uint64(107)
+	childExecutionCost := uint64(108)
 	childAccount.GasUsed = childCompilationCostSameCtx + childExecutionCost
 
 	// The child SC will output "child ok" if it could read some expected Big
@@ -264,7 +259,7 @@ func expectedVMOutputSameCtxSuccessfulChildCallBigInts(_ []byte, _ []byte) *vmco
 	arwen.AddFinishData(vmOutput, []byte("succ"))
 	arwen.AddFinishData(vmOutput, []byte("succ"))
 
-	parentGasBeforeExecuteAPI := uint64(113)
+	parentGasBeforeExecuteAPI := uint64(114)
 	executeAPICost := uint64(13)
 	finalCost := uint64(67)
 	gas := gasProvided
@@ -289,7 +284,7 @@ func expectedVMOutputSameCtxRecursiveDirect(_ []byte, recursiveCalls int) *vmcom
 	)
 	account.Balance = big.NewInt(1000)
 	account.BalanceDelta = big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1))
-	account.GasUsed = 21187
+	account.GasUsed = 25424
 
 	for i := recursiveCalls; i >= 0; i-- {
 		finishString := fmt.Sprintf("Rfinish%03d", i)
@@ -346,7 +341,7 @@ func expectedVMOutputSameCtxRecursiveMutualMethods(_ []byte, recursiveCalls int)
 	)
 	account.Balance = big.NewInt(1000)
 	account.BalanceDelta = big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1))
-	account.GasUsed = 25412
+	account.GasUsed = 29593
 
 	arwen.SetStorageUpdate(account, recursiveIterationCounterKey, []byte{byte(recursiveCalls + 1)})
 	arwen.SetStorageUpdate(account, recursiveIterationBigCounterKey, big.NewInt(int64(recursiveCalls+1)).Bytes())
@@ -390,7 +385,7 @@ func expectedVMOutputSameCtxRecursiveMutualSCs(_ []byte, _ []byte, recursiveCall
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
-	parentAccount.GasUsed = 3650
+	parentAccount.GasUsed = 5426
 
 	childAccount := arwen.AddNewOutputAccount(
 		vmOutput,
@@ -399,7 +394,7 @@ func expectedVMOutputSameCtxRecursiveMutualSCs(_ []byte, _ []byte, recursiveCall
 		nil,
 	)
 	childAccount.Balance = big.NewInt(1000)
-	childAccount.GasUsed = 5437
+	childAccount.GasUsed = 3652
 
 	if recursiveCalls%2 == 1 {
 		parentAccount.BalanceDelta = big.NewInt(-5)
@@ -449,8 +444,8 @@ func expectedVMOutputSameCtxBuiltinFunctions1(_ []byte) *vmcommon.VMOutput {
 	account.Balance = big.NewInt(1000)
 
 	arwen.AddFinishData(vmOutput, []byte("succ"))
-	gasConsumed_builtinClaim := 100
-	vmOutput.GasRemaining = uint64(98504 - gasConsumed_builtinClaim)
+	gasConsumedBuiltinClaim := 100
+	vmOutput.GasRemaining = uint64(98504 - gasConsumedBuiltinClaim)
 
 	return vmOutput
 }
@@ -502,6 +497,7 @@ func expectedVMOutputDestCtxPrepare(_ []byte) *vmcommon.VMOutput {
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
+	parentAccount.GasUsed = 3093
 
 	_ = arwen.AddNewOutputAccount(
 		vmOutput,
@@ -517,7 +513,7 @@ func expectedVMOutputDestCtxPrepare(_ []byte) *vmcommon.VMOutput {
 	arwen.AddFinishData(vmOutput, parentFinishB)
 	arwen.AddFinishData(vmOutput, []byte("succ"))
 
-	expectedExecutionCost := uint64(137)
+	expectedExecutionCost := uint64(138)
 	gas := gasProvided
 	gas -= parentCompilationCostDestCtx
 	gas -= expectedExecutionCost
@@ -587,6 +583,7 @@ func expectedVMOutputDestCtxSuccessfulChildCall(parentCode []byte, _ []byte) *vm
 
 	parentAccount := vmOutput.OutputAccounts[string(parentAddress)]
 	parentAccount.BalanceDelta = big.NewInt(-141)
+	parentAccount.GasUsed = 3228
 
 	childAccount := arwen.AddNewOutputAccount(
 		vmOutput,
@@ -595,6 +592,7 @@ func expectedVMOutputDestCtxSuccessfulChildCall(parentCode []byte, _ []byte) *vm
 		nil,
 	)
 	childAccount.Balance = big.NewInt(1000)
+	childAccount.GasUsed = 2256
 
 	_ = arwen.AddNewOutputAccount(
 		vmOutput,
@@ -609,7 +607,7 @@ func expectedVMOutputDestCtxSuccessfulChildCall(parentCode []byte, _ []byte) *vm
 	arwen.AddFinishData(vmOutput, []byte("succ"))
 	arwen.AddFinishData(vmOutput, []byte("succ"))
 
-	parentGasBeforeExecuteAPI := uint64(166)
+	parentGasBeforeExecuteAPI := uint64(168)
 	executeAPICost := uint64(42)
 	childExecutionCost := uint64(91)
 	finalCost := uint64(65)
@@ -635,13 +633,15 @@ func expectedVMOutputDestCtxSuccessfulChildCallBigInts(_ []byte, _ []byte) *vmco
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
+	parentAccount.GasUsed = 3150
 
-	_ = arwen.AddNewOutputAccount(
+	childAccount := arwen.AddNewOutputAccount(
 		vmOutput,
 		childAddress,
 		99,
 		nil,
 	)
+	childAccount.GasUsed = 2265
 
 	// The child SC will output "child ok" if it could NOT read the Big Ints from
 	// the parent's context.
@@ -649,7 +649,7 @@ func expectedVMOutputDestCtxSuccessfulChildCallBigInts(_ []byte, _ []byte) *vmco
 	arwen.AddFinishData(vmOutput, []byte("succ"))
 	arwen.AddFinishData(vmOutput, []byte("succ"))
 
-	parentGasBeforeExecuteAPI := uint64(113)
+	parentGasBeforeExecuteAPI := uint64(115)
 	executeAPICost := uint64(13)
 	childExecutionCost := uint64(101)
 	finalCost := uint64(68)
@@ -675,6 +675,7 @@ func expectedVMOutputDestCtxRecursiveDirect(_ []byte, recursiveCalls int) *vmcom
 	)
 	account.Balance = big.NewInt(1000)
 	account.BalanceDelta = big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1))
+	account.GasUsed = 29670
 
 	for i := recursiveCalls; i >= 0; i-- {
 		finishString := fmt.Sprintf("Rfinish%03d", i)
@@ -708,6 +709,7 @@ func expectedVMOutputDestCtxRecursiveMutualMethods(_ []byte, recursiveCalls int)
 	)
 	account.Balance = big.NewInt(1000)
 	account.BalanceDelta = big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1))
+	account.GasUsed = 38083
 
 	arwen.SetStorageUpdate(account, recursiveIterationCounterKey, []byte{byte(recursiveCalls + 1)})
 	arwen.SetStorageUpdate(account, recursiveIterationBigCounterKey, big.NewInt(int64(1)).Bytes())
@@ -757,6 +759,7 @@ func expectedVMOutputDestCtxRecursiveMutualSCs(_ []byte, _ []byte, recursiveCall
 	)
 	parentAccount.Balance = big.NewInt(1000)
 	parentAccount.BalanceDelta = big.NewInt(-balanceDelta)
+	parentAccount.GasUsed = 7252
 
 	childAccount := arwen.AddNewOutputAccount(
 		vmOutput,
@@ -766,6 +769,7 @@ func expectedVMOutputDestCtxRecursiveMutualSCs(_ []byte, _ []byte, recursiveCall
 	)
 	childAccount.Balance = big.NewInt(1000)
 	childAccount.BalanceDelta = big.NewInt(balanceDelta)
+	childAccount.GasUsed = 5464
 
 	for i := 0; i <= recursiveCalls; i++ {
 		var finishData string
@@ -812,6 +816,7 @@ func expectedVMOutputDestCtxByCallerSimpleTransfer(value int64) *vmcommon.VMOutp
 		nil,
 	)
 	parentAccount.Balance = nil
+	parentAccount.GasUsed = 762
 
 	childAccount := arwen.AddNewOutputAccount(
 		vmOutput,
@@ -821,6 +826,7 @@ func expectedVMOutputDestCtxByCallerSimpleTransfer(value int64) *vmcommon.VMOutp
 	)
 	childAccount.Balance = big.NewInt(1000)
 	childAccount.BalanceDelta = big.NewInt(-value)
+	childAccount.GasUsed = 667
 
 	userAccount := arwen.AddNewOutputAccount(
 		vmOutput,
@@ -852,6 +858,7 @@ func expectedVMOutputAsyncCall(_ []byte, _ []byte) *vmcommon.VMOutput {
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
+	parentAccount.GasUsed = 104753
 	arwen.SetStorageUpdate(parentAccount, parentKeyA, parentDataA)
 	arwen.SetStorageUpdate(parentAccount, parentKeyB, parentDataB)
 	arwen.AddFinishData(vmOutput, parentFinishA)
@@ -874,6 +881,7 @@ func expectedVMOutputAsyncCall(_ []byte, _ []byte) *vmcommon.VMOutput {
 		nil,
 	)
 	childAccount.Balance = big.NewInt(1000)
+	childAccount.GasUsed = 1296
 	arwen.SetStorageUpdate(childAccount, childKey, childData)
 
 	_ = arwen.AddNewOutputAccount(
@@ -902,6 +910,7 @@ func expectedVMOutputAsyncCallChildFails(_ []byte, _ []byte) *vmcommon.VMOutput 
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
+	parentAccount.GasUsed = 3928
 	arwen.SetStorageUpdate(parentAccount, parentKeyA, parentDataA)
 	arwen.SetStorageUpdate(parentAccount, parentKeyB, parentDataB)
 	arwen.AddFinishData(vmOutput, parentFinishA)
@@ -945,6 +954,7 @@ func expectedVMOutputAsyncCallCallBackFails(_ []byte, _ []byte) *vmcommon.VMOutp
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
+	parentAccount.GasUsed = 197192
 	arwen.SetStorageUpdate(parentAccount, parentKeyA, parentDataA)
 	arwen.SetStorageUpdate(parentAccount, parentKeyB, parentDataB)
 	arwen.AddFinishData(vmOutput, parentFinishA)
@@ -969,6 +979,7 @@ func expectedVMOutputAsyncCallCallBackFails(_ []byte, _ []byte) *vmcommon.VMOutp
 	)
 	childAccount.Balance = big.NewInt(1000)
 	childAccount.BalanceDelta = big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1))
+	childAccount.GasUsed = 1296
 	arwen.SetStorageUpdate(childAccount, childKey, childData)
 
 	_ = arwen.AddNewOutputAccount(
@@ -998,6 +1009,7 @@ func expectedVMOutputCreateNewContractSuccess(_ []byte, childCode []byte) *vmcom
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
+	parentAccount.GasUsed = 885
 	parentAccount.Nonce = 1
 	arwen.SetStorageUpdate(parentAccount, []byte{'A'}, childCode)
 
@@ -1008,6 +1020,7 @@ func expectedVMOutputCreateNewContractSuccess(_ []byte, childCode []byte) *vmcom
 		nil,
 	)
 	childAccount.Code = childCode
+	childAccount.GasUsed = 472
 	childAccount.CodeMetadata = []byte{1, 0}
 	childAccount.CodeDeployerAddress = parentAddress
 
@@ -1028,11 +1041,42 @@ func expectedVMOutputCreateNewContractFail(_ []byte, childCode []byte) *vmcommon
 		nil,
 	)
 	parentAccount.Nonce = 0
+	parentAccount.GasUsed = 2885
 	arwen.SetStorageUpdate(parentAccount, []byte{'A'}, childCode)
 
 	l := len(childCode)
 	arwen.AddFinishData(vmOutput, []byte{byte(l / 256), byte(l % 256)})
 	arwen.AddFinishData(vmOutput, []byte("fail"))
+
+	return vmOutput
+}
+
+func expectedVMOutputMockedWasmerInstances() *vmcommon.VMOutput {
+	vmOutput := MakeVMOutput()
+
+	parentAccount := AddNewOutputAccount(
+		vmOutput,
+		parentAddress,
+		0,
+		nil,
+	)
+	parentAccount.Balance = big.NewInt(1000)
+	parentAccount.BalanceDelta = big.NewInt(-4)
+	parentAccount.GasUsed = 547
+	SetStorageUpdate(parentAccount, []byte("parent"), []byte("parent storage"))
+
+	childAccount := AddNewOutputAccount(
+		vmOutput,
+		childAddress,
+		0,
+		nil,
+	)
+	childAccount.BalanceDelta = big.NewInt(4)
+	childAccount.GasUsed = 146
+	SetStorageUpdate(childAccount, []byte("child"), []byte("child storage"))
+
+	AddFinishData(vmOutput, []byte("parent returns this"))
+	AddFinishData(vmOutput, []byte("child returns this"))
 
 	return vmOutput
 }

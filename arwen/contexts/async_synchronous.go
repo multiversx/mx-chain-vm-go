@@ -46,7 +46,7 @@ func (context *asyncContext) executeSyncCall(asyncCall *arwen.AsyncCall) error {
 		return err
 	}
 
-	vmOutput, err := context.host.ExecuteOnDestContext(destinationCallInput)
+	vmOutput, _, err := context.host.ExecuteOnDestContext(destinationCallInput)
 
 	// The vmOutput instance returned by host.ExecuteOnDestContext() is never nil,
 	// by design. Using it without checking for err is safe here.
@@ -72,7 +72,24 @@ func (context *asyncContext) executeSyncCallback(
 		return nil, err
 	}
 
-	return context.host.ExecuteOnDestContext(callbackInput)
+	gasConsumedForExecution := host.computeGasUsedInExecutionBeforeReset(callbackCallInput)
+	// used points should be reset before actually entering the callback execution
+	host.Runtime().SetPointsUsed(0)
+	callbackVMOutput, _, callBackErr := host.ExecuteOnDestContext(callbackCallInput)
+
+	execMode := asyncCall.ExecutionMode
+	noErrorOnCallback := callBackErr == nil && callbackVMOutput.ReturnCode == vmcommon.Ok
+	noErrorOnAsyncCall := destinationErr == nil && destinationVMOutput.ReturnCode == vmcommon.Ok
+	if noErrorOnCallback && noErrorOnAsyncCall && execMode != arwen.AsyncBuiltinFuncIntraShard {
+		host.Metering().UseGas(gasConsumedForExecution)
+	}
+
+	return vmOutput, err
+}
+
+func (host *vmHost) computeGasUsedInExecutionBeforeReset(vmInput *vmcommon.ContractCallInput) uint64 {
+	gasUsedForExecution, _ := math.SubUint64(host.Metering().GasUsedForExecution(), vmInput.GasLocked)
+	return gasUsedForExecution
 }
 
 // executeCallGroupCallback synchronously executes the designated callback of
@@ -87,7 +104,7 @@ func (context *asyncContext) executeCallGroupCallback(group *arwen.AsyncCallGrou
 	}
 
 	input := context.createGroupCallbackInput(group)
-	vmOutput, err := context.host.ExecuteOnDestContext(input)
+	vmOutput, _, err := context.host.ExecuteOnDestContext(input)
 	context.finishSyncExecution(vmOutput, err)
 }
 
@@ -107,7 +124,7 @@ func (context *asyncContext) executeSyncHalfOfBuiltinFunction(asyncCall *arwen.A
 		return err
 	}
 
-	vmOutput, err := context.host.ExecuteOnDestContext(destinationCallInput)
+	vmOutput, gasUsedBeforeReset, err := context.host.ExecuteOnDestContext(destinationCallInput)
 	if err != nil {
 		return err
 	}
@@ -119,6 +136,8 @@ func (context *asyncContext) executeSyncHalfOfBuiltinFunction(asyncCall *arwen.A
 		callbackVMOutput, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, err)
 		context.finishSyncExecution(callbackVMOutput, callbackErr)
 	}
+
+	context.host.Metering().UseGas(gasUsedBeforeReset)
 
 	return nil
 }
@@ -216,11 +235,12 @@ func (context *asyncContext) createCallbackInput(
 
 	callbackFunction := asyncCall.GetCallbackName()
 
-	gasLimit := vmOutput.GasRemaining + asyncCall.GetGasLocked()
+	gasLimit := math.AddUint64(vmOutput.GasRemaining, asyncCall.GetGasLocked())
 	dataLength := computeDataLengthFromArguments(callbackFunction, arguments)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.AsyncCallStep
-	gas := metering.GasSchedule().BaseOperationCost.DataCopyPerByte * uint64(dataLength)
+	copyPerByte := metering.GasSchedule().BaseOperationCost.DataCopyPerByte
+	gas := math.MulUint64(copyPerByte, uint64(dataLength))
 	gasToUse = math.AddUint64(gasToUse, gas)
 	if gasLimit <= gasToUse {
 		return nil, arwen.ErrNotEnoughGas
