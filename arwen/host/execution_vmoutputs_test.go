@@ -432,9 +432,10 @@ func expectedVMOutputSameCtxRecursiveMutualSCs(_ []byte, _ []byte, recursiveCall
 	return vmOutput
 }
 
-func expectedVMOutputSameCtxBuiltinFunctions1(_ []byte) *vmcommon.VMOutput {
+func expectedVMOutputDestCtxBuiltinFunctions1(_ []byte) *vmcommon.VMOutput {
 	vmOutput := arwen.MakeVMOutput()
 
+	gasProvided := uint64(100000)
 	account := arwen.AddNewOutputAccount(
 		vmOutput,
 		parentAddress,
@@ -442,17 +443,19 @@ func expectedVMOutputSameCtxBuiltinFunctions1(_ []byte) *vmcommon.VMOutput {
 		nil,
 	)
 	account.Balance = big.NewInt(1000)
+	account.GasUsed = 1541
+
+	vmOutput.GasRemaining = gasProvided - account.GasUsed
 
 	arwen.AddFinishData(vmOutput, []byte("succ"))
-	gasConsumedBuiltinClaim := 100
-	vmOutput.GasRemaining = uint64(98504 - gasConsumedBuiltinClaim)
 
 	return vmOutput
 }
 
-func expectedVMOutputSameCtxBuiltinFunctions2(_ []byte) *vmcommon.VMOutput {
+func expectedVMOutputDestCtxBuiltinFunctions2(_ []byte) *vmcommon.VMOutput {
 	vmOutput := arwen.MakeVMOutput()
 
+	gasProvided := uint64(100000)
 	account := arwen.AddNewOutputAccount(
 		vmOutput,
 		parentAddress,
@@ -461,27 +464,27 @@ func expectedVMOutputSameCtxBuiltinFunctions2(_ []byte) *vmcommon.VMOutput {
 	)
 	account.Balance = big.NewInt(1000)
 	account.BalanceDelta = big.NewInt(0)
+	account.GasUsed = 1541
 
 	arwen.AddFinishData(vmOutput, []byte("succ"))
 
-	gasConsumedBuiltinDoSomething := 0
-	vmOutput.GasRemaining = uint64(98500 - gasConsumedBuiltinDoSomething)
+	vmOutput.GasRemaining = 98459
+	vmOutput.GasRemaining = gasProvided - account.GasUsed
 
 	return vmOutput
 }
 
-func expectedVMOutputSameCtxBuiltinFunctions3(_ []byte) *vmcommon.VMOutput {
+func expectedVMOutputDestCtxBuiltinFunctions3(_ []byte) *vmcommon.VMOutput {
 	vmOutput := arwen.MakeVMOutput()
 
-	_ = arwen.AddNewOutputAccount(
-		vmOutput,
-		parentAddress,
-		0,
-		nil,
-	)
-
-	arwen.AddFinishData(vmOutput, []byte("fail"))
-	vmOutput.GasRemaining = 98000
+	vmOutput.ReturnCode = vmcommon.ExecutionFailed
+	vmOutput.ReturnMessage = "not enough gas"
+	vmOutput.GasRemaining = 0
+	vmOutput.ReturnData = nil
+	vmOutput.OutputAccounts = nil
+	vmOutput.TouchedAccounts = nil
+	vmOutput.DeletedAccounts = nil
+	vmOutput.Logs = nil
 
 	return vmOutput
 }
