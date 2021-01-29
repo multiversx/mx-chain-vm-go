@@ -436,7 +436,7 @@ func (context *asyncContext) Execute() error {
 }
 
 func (context *asyncContext) executeAsyncCall(asyncCall *arwen.AsyncCall) error {
-	if asyncCall.ExecutionMode == arwen.AsyncBuiltinFunc {
+	if asyncCall.ExecutionMode == arwen.AsyncBuiltinFuncCrossShard {
 		err := context.executeSyncHalfOfBuiltinFunction(asyncCall)
 		if err != nil {
 			return err
@@ -610,13 +610,13 @@ func (context *asyncContext) determineExecutionMode(destination []byte, data []b
 
 	code, err := blockchain.GetCode(destination)
 	if len(code) > 0 && err == nil {
-		return arwen.SyncExecution
+		return arwen.SyncExecution, nil
 	}
 
 	return arwen.AsyncUnknown, nil
 }
 
-func (context *asyncContext) sendAsyncCallCrossShard(asyncCall arwen.AsyncCallHandler) error {
+func (context *asyncContext) sendAsyncCallCrossShard(asyncCall *arwen.AsyncCall) error {
 	host := context.host
 	runtime := host.Runtime()
 	output := host.Output()

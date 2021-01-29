@@ -135,6 +135,16 @@ var ErrUnknownCallType = errors.New("unknown call type")
 
 var ErrCannotUseBuiltinAsCallback = errors.New("cannot use built-in function as callback")
 
+var ErrInvalidAsyncCallGroupID = errors.New("invalid async call group identifier")
+
+var ErrOnlyOneLegacyAsyncCallAllowed = errors.New("only one legacy async call allowed")
+
+var ErrLegacyAsyncCallNotFound = errors.New("legacy async call not found")
+
+var ErrLegacyAsyncCallInvalid = errors.New("legacy async call invalid")
+
+var ErrNoStoredAsyncContextFound = errors.New("no async context found in storage")
+
 // ErrInvalidAccount signals that a certain account does not exist
 var ErrInvalidAccount = errors.New("account does not exist")
 

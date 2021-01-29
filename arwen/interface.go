@@ -127,6 +127,10 @@ type RuntimeContext interface {
 	ElrondSyncExecAPIErrorShouldFailExecution() bool
 	CryptoAPIErrorShouldFailExecution() bool
 	BigIntAPIErrorShouldFailExecution() bool
+
+	// TODO remove after implementing proper mocking of
+	// Wasmer instances; this is used for tests only
+	ReplaceInstanceBuilder(builder InstanceBuilder)
 }
 
 type AsyncContext interface {
@@ -151,10 +155,6 @@ type AsyncContext interface {
 	Load() error
 	Save() error
 	Delete() error
-
-	// TODO remove after implementing proper mocking of Wasmer instances; this is
-	// used for tests only
-	ReplaceInstanceBuilder(builder InstanceBuilder)
 }
 
 // BigIntContext defines the functionality needed for interacting with the big int context
@@ -253,15 +253,6 @@ type StorageContext interface {
 	GetStorageUnmetered(key []byte) []byte
 	SetStorage(key []byte, value []byte) (StorageStatus, error)
 	SetProtectedStorage(key []byte, value []byte) (StorageStatus, error)
-}
-
-// AsyncCallHandler defines the functionality for working with AsyncCallInfo
-type AsyncCallHandler interface {
-	GetDestination() []byte
-	GetData() []byte
-	GetGasLimit() uint64
-	GetGasLocked() uint64
-	GetValue() []byte
 }
 
 // InstanceBuilder defines the functionality needed to create Wasmer instances

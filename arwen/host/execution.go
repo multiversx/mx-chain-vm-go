@@ -666,6 +666,12 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmc
 	return newVMInput, gasConsumedForExecution, nil
 }
 
+func (host *vmHost) computeGasUsedInExecutionBeforeReset(vmInput *vmcommon.ContractCallInput) uint64 {
+	metering := host.Metering()
+	gasUsedForExecution, _ := math.SubUint64(metering.GasUsedForExecution(), vmInput.GasLocked)
+	return gasUsedForExecution
+}
+
 func (host *vmHost) checkFinalGasAfterExit() error {
 	if !host.IsArwenV2Enabled() {
 		return nil

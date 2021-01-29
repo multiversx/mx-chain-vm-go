@@ -135,7 +135,7 @@ func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
 		Function:      "test function",
 	}
 
-	runtimeContext.InitStateFromInput(callInput)
+	runtimeContext.InitStateFromContractCallInput(callInput)
 	require.Equal(t, []byte("caller"), runtimeContext.GetVMInput().CallerAddr)
 	require.Equal(t, []byte("recipient"), runtimeContext.GetSCAddress())
 	require.Equal(t, "test function", runtimeContext.Function())
@@ -205,7 +205,7 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 		RecipientAddr: scAddress,
 		Function:      funcName,
 	}
-	runtimeContext.InitStateFromInput(input)
+	runtimeContext.InitStateFromContractCallInput(input)
 
 	runtimeContext.PushState()
 	require.Equal(t, 1, len(runtimeContext.stateStack))
@@ -266,14 +266,14 @@ func TestRuntimeContext_Instance(t *testing.T) {
 		RecipientAddr: []byte("addr"),
 		Function:      funcName,
 	}
-	runtimeContext.InitStateFromInput(input)
+	runtimeContext.InitStateFromContractCallInput(input)
 
 	f, err := runtimeContext.GetFunctionToCall()
 	require.Nil(t, err)
 	require.NotNil(t, f)
 
 	input.Function = "func"
-	runtimeContext.InitStateFromInput(input)
+	runtimeContext.InitStateFromContractCallInput(input)
 	f, err = runtimeContext.GetFunctionToCall()
 	require.Equal(t, arwen.ErrFuncNotFound, err)
 	require.Nil(t, f)

@@ -325,17 +325,6 @@ func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 	return context.outputState
 }
 
-func (context *outputContext) isBuiltInExecution() bool {
-	if context.host.IsBuiltinFunctionName(context.host.Runtime().Function()) {
-		return true
-	}
-	if len(context.host.Runtime().GetVMInput().ESDTTokenName) > 0 {
-		return true
-	}
-
-	return false
-}
-
 func (context *outputContext) checkGas(remainedFromForwarded uint64) error {
 	if context.host.IsArwenV2Enabled() == false {
 		return nil
@@ -370,6 +359,17 @@ func (context *outputContext) checkGas(remainedFromForwarded uint64) error {
 	}
 
 	return nil
+}
+
+func (context *outputContext) isBuiltInExecution() bool {
+	if context.host.IsBuiltinFunctionName(context.host.Runtime().Function()) {
+		return true
+	}
+	if len(context.host.Runtime().GetVMInput().ESDTTokenName) > 0 {
+		return true
+	}
+
+	return false
 }
 
 // DeployCode sets the given code to a an account, and creates a new codeUpdates entry at the accounts address.

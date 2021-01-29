@@ -63,32 +63,36 @@ func (context *asyncContext) executeSyncCall(asyncCall *arwen.AsyncCall) error {
 
 func (context *asyncContext) executeSyncCallback(
 	asyncCall *arwen.AsyncCall,
-	vmOutput *vmcommon.VMOutput,
-	err error,
+	destinationVMOutput *vmcommon.VMOutput,
+	destinationErr error,
 ) (*vmcommon.VMOutput, error) {
+	metering := context.host.Metering()
+	runtime := context.host.Runtime()
 
-	callbackInput, err := context.createCallbackInput(asyncCall, vmOutput, err)
+	callbackInput, err := context.createCallbackInput(asyncCall, destinationVMOutput, destinationErr)
 	if err != nil {
 		return nil, err
 	}
 
-	gasConsumedForExecution := host.computeGasUsedInExecutionBeforeReset(callbackCallInput)
+	gasConsumedForExecution := context.computeGasUsedInExecutionBeforeReset(callbackInput)
 	// used points should be reset before actually entering the callback execution
-	host.Runtime().SetPointsUsed(0)
-	callbackVMOutput, _, callBackErr := host.ExecuteOnDestContext(callbackCallInput)
+	runtime.SetPointsUsed(0)
+	callbackVMOutput, _, callBackErr := context.host.ExecuteOnDestContext(callbackInput)
 
 	execMode := asyncCall.ExecutionMode
 	noErrorOnCallback := callBackErr == nil && callbackVMOutput.ReturnCode == vmcommon.Ok
 	noErrorOnAsyncCall := destinationErr == nil && destinationVMOutput.ReturnCode == vmcommon.Ok
 	if noErrorOnCallback && noErrorOnAsyncCall && execMode != arwen.AsyncBuiltinFuncIntraShard {
-		host.Metering().UseGas(gasConsumedForExecution)
+		metering.UseGas(gasConsumedForExecution)
 	}
 
-	return vmOutput, err
+	return callbackVMOutput, callBackErr
 }
 
-func (host *vmHost) computeGasUsedInExecutionBeforeReset(vmInput *vmcommon.ContractCallInput) uint64 {
-	gasUsedForExecution, _ := math.SubUint64(host.Metering().GasUsedForExecution(), vmInput.GasLocked)
+// TODO refactor this computation
+func (context *asyncContext) computeGasUsedInExecutionBeforeReset(vmInput *vmcommon.ContractCallInput) uint64 {
+	metering := context.host.Metering()
+	gasUsedForExecution, _ := math.SubUint64(metering.GasUsedForExecution(), vmInput.GasLocked)
 	return gasUsedForExecution
 }
 
@@ -146,7 +150,7 @@ func (context *asyncContext) executeSyncHalfOfBuiltinFunction(asyncCall *arwen.A
 // synchronously, already assuming the original caller is in the same shard
 func (context *asyncContext) executeSyncContextCallback() {
 	callbackCallInput := context.createContextCallbackInput()
-	callbackVMOutput, callBackErr := context.host.ExecuteOnDestContext(callbackCallInput)
+	callbackVMOutput, _, callBackErr := context.host.ExecuteOnDestContext(callbackCallInput)
 	context.finishSyncExecution(callbackVMOutput, callBackErr)
 }
 
@@ -171,7 +175,7 @@ func (context *asyncContext) finishSyncExecution(vmOutput *vmcommon.VMOutput, er
 	output.Finish(runtime.GetCurrentTxHash())
 }
 
-func (context *asyncContext) createContractCallInput(asyncCall arwen.AsyncCallHandler) (*vmcommon.ContractCallInput, error) {
+func (context *asyncContext) createContractCallInput(asyncCall *arwen.AsyncCall) (*vmcommon.ContractCallInput, error) {
 	host := context.host
 	runtime := host.Runtime()
 	sender := runtime.GetSCAddress()

@@ -1052,9 +1052,9 @@ func expectedVMOutputCreateNewContractFail(_ []byte, childCode []byte) *vmcommon
 }
 
 func expectedVMOutputMockedWasmerInstances() *vmcommon.VMOutput {
-	vmOutput := MakeVMOutput()
+	vmOutput := arwen.MakeVMOutput()
 
-	parentAccount := AddNewOutputAccount(
+	parentAccount := arwen.AddNewOutputAccount(
 		vmOutput,
 		parentAddress,
 		0,
@@ -1063,9 +1063,9 @@ func expectedVMOutputMockedWasmerInstances() *vmcommon.VMOutput {
 	parentAccount.Balance = big.NewInt(1000)
 	parentAccount.BalanceDelta = big.NewInt(-4)
 	parentAccount.GasUsed = 547
-	SetStorageUpdate(parentAccount, []byte("parent"), []byte("parent storage"))
+	arwen.SetStorageUpdate(parentAccount, []byte("parent"), []byte("parent storage"))
 
-	childAccount := AddNewOutputAccount(
+	childAccount := arwen.AddNewOutputAccount(
 		vmOutput,
 		childAddress,
 		0,
@@ -1073,10 +1073,10 @@ func expectedVMOutputMockedWasmerInstances() *vmcommon.VMOutput {
 	)
 	childAccount.BalanceDelta = big.NewInt(4)
 	childAccount.GasUsed = 146
-	SetStorageUpdate(childAccount, []byte("child"), []byte("child storage"))
+	arwen.SetStorageUpdate(childAccount, []byte("child"), []byte("child storage"))
 
-	AddFinishData(vmOutput, []byte("parent returns this"))
-	AddFinishData(vmOutput, []byte("child returns this"))
+	arwen.AddFinishData(vmOutput, []byte("parent returns this"))
+	arwen.AddFinishData(vmOutput, []byte("child returns this"))
 
 	return vmOutput
 }

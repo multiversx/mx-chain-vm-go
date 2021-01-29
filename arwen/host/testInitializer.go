@@ -70,7 +70,7 @@ func defaultTestArwenForCallWithInstanceMocks(tb testing.TB) (*vmHost, *contextm
 
 	host := defaultTestArwen(tb, stubBlockchainHook)
 
-	code := GetTestSCCode("counter", "../../")
+	code := arwen.GetTestSCCode("counter", "../../")
 	instanceBuilderMock := contextmock.NewInstanceBuilderMock(tb, code)
 	host.Runtime().ReplaceInstanceBuilder(instanceBuilderMock)
 

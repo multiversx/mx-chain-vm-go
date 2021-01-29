@@ -113,9 +113,9 @@ func (host *VMHostMock) ExecuteOnSameContext(_ *vmcommon.ContractCallInput) erro
 }
 
 // ExecuteOnDestContext mocked method
-func (host *VMHostMock) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+func (host *VMHostMock) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, uint64, error) {
 	if host.Err != nil {
-		return nil, host.Err
+		return nil, 0, host.Err
 	}
 	host.StoreInput(input)
 	return host.GetNextVMOutput(), 0, nil

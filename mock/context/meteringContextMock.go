@@ -11,6 +11,7 @@ var _ arwen.MeteringContext = (*MeteringContextMock)(nil)
 // MeteringContextMock is used in tests to check the MeteringContext interface method calls
 type MeteringContextMock struct {
 	GasCost           *config.GasCost
+	GasProvidedMock   uint64
 	GasLeftMock       uint64
 	GasLockedMock     uint64
 	GasComputedToLock uint64
@@ -105,7 +106,7 @@ func (m *MeteringContextMock) GetGasForExecution() uint64 {
 
 // GetGasProvided mocked method
 func (m *MeteringContextMock) GetGasProvided() uint64 {
-	return 0
+	return m.GasProvidedMock
 }
 
 // GetSCPrepareInitialCost mocked method
