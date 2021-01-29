@@ -1,16 +1,16 @@
 {
-    "name": "echo_async_result_empty",
+    "name": "storage",
     "steps": [
         {
             "step": "setState",
             "accounts": {
                 "address:features_contract": {
                     "nonce": "0",
-                    "balance": "0x100",
+                    "balance": "0",
                     "storage": {},
                     "code": "file:../output/basic-features.wasm"
                 },
-                "address:an_account": {
+                "address:viewer": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {},
@@ -20,20 +20,18 @@
         },
         {
             "step": "scCall",
-            "txId": "1-ok",
+            "txId": "0",
             "tx": {
-                "from": "address:an_account",
+                "from": "address:viewer",
                 "to": "address:features_contract",
                 "value": "0",
-                "function": "echo_async_result_empty",
-                "arguments": [
-                    "0"
-                ],
-                "gasLimit": "1,000,000",
+                "function": "storage_load_cumulated_validator_reward",
+                "arguments": [],
+                "gasLimit": "0x100000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [],
+                "out": [ "0" ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -41,47 +39,56 @@
             }
         },
         {
-            "step": "scCall",
-            "txId": "2-err",
+            "step": "validatorReward",
+            "txId": "validatorReward-1",
             "tx": {
-                "from": "address:an_account",
+                "to": "address:features_contract",
+                "value": "100,000,000"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "0",
+            "tx": {
+                "from": "address:viewer",
                 "to": "address:features_contract",
                 "value": "0",
-                "function": "echo_async_result_empty",
-                "arguments": [
-                    "5",
-                    "''message"
-                ],
-                "gasLimit": "1,000,000",
+                "function": "storage_load_cumulated_validator_reward",
+                "arguments": [],
+                "gasLimit": "0x100000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [],
-                "status": "4",
-                "message": "str:message",
+                "out": [ "100,000,000" ],
+                "status": "",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"
             }
         },
         {
-            "step": "scCall",
-            "txId": "2-err-no-message",
+            "step": "validatorReward",
+            "txId": "validatorReward-1",
             "tx": {
-                "from": "address:an_account",
+                "to": "address:features_contract",
+                "value": "300"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "0",
+            "tx": {
+                "from": "address:viewer",
                 "to": "address:features_contract",
                 "value": "0",
-                "function": "echo_async_result_empty",
-                "arguments": [
-                    "5"
-                ],
-                "gasLimit": "1,000,000",
+                "function": "storage_load_cumulated_validator_reward",
+                "arguments": [],
+                "gasLimit": "0x100000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [],
-                "status": "4",
-                "message": "",
+                "out": [ "100,000,300" ],
+                "status": "",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"
