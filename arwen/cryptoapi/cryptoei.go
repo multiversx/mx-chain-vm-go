@@ -11,7 +11,7 @@ package cryptoapi
 // extern int32_t ripemd160(void *context, int32_t dataOffset, int32_t length, int32_t resultOffset);
 // extern int32_t verifyBLS(void *context, int32_t keyOffset, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
 // extern int32_t verifyEd25519(void *context, int32_t keyOffset, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
-// extern int32_t verifySecp256k1(void *context, int32_t keyOffset, int32_t keyLength, int32_t messageOffset, int32_t messageLength, int32_t sigOffset, int32_t sigLength);
+// extern int32_t verifySecp256k1(void *context, int32_t keyOffset, int32_t keyLength, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
 import "C"
 
 import (
@@ -240,7 +240,6 @@ func verifySecp256k1(
 	messageOffset int32,
 	messageLength int32,
 	sigOffset int32,
-	sigLength int32,
 ) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	crypto := arwen.GetCryptoContext(context)
@@ -267,6 +266,15 @@ func verifySecp256k1(
 		return 1
 	}
 
+	// read the 2 leading bytes first
+	// byte1: 0x30, header
+	// byte2: the remaining buffer length
+	const sigHeaderLength = 2
+	sigHeader, err := runtime.MemLoad(sigOffset, sigHeaderLength)
+	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return 1
+	}
+	sigLength := int32(sigHeader[1]) + sigHeaderLength
 	sig, err := runtime.MemLoad(sigOffset, sigLength)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
