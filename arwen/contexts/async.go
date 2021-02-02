@@ -436,11 +436,8 @@ func (context *asyncContext) Execute() error {
 }
 
 func (context *asyncContext) executeAsyncCall(asyncCall *arwen.AsyncCall) error {
-	if asyncCall.ExecutionMode == arwen.AsyncBuiltinFuncCrossShard {
-		err := context.executeSyncHalfOfBuiltinFunction(asyncCall)
-		if err != nil {
-			return err
-		}
+	if asyncCall.ExecutionMode == arwen.AsyncBuiltinFuncIntraShard {
+		return context.executeSyncHalfOfBuiltinFunction(asyncCall)
 	}
 
 	return context.sendAsyncCallCrossShard(asyncCall)

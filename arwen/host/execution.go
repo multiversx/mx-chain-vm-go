@@ -543,11 +543,6 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) (uint64, error) {
 	_, _, metering, output, runtime, _, storage := host.GetContexts()
 
 	if host.isBuiltinFunctionBeingCalled() {
-		err := metering.UseGasForAsyncStep()
-		if err != nil {
-			return 0, err
-		}
-
 		newVMInput, gasUsedBeforeReset, err := host.callBuiltinFunction(input)
 		if err != nil {
 			return gasUsedBeforeReset, err
