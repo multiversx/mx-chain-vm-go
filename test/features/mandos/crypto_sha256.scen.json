@@ -1,12 +1,12 @@
 {
-    "name": "eventA1",
+    "name": "crypto",
     "steps": [
         {
             "step": "setState",
             "accounts": {
                 "address:features_contract": {
-                    "nonce": "1000",
-                    "balance": "200",
+                    "nonce": "0",
+                    "balance": "0",
                     "storage": {},
                     "code": "file:../output/basic-features.wasm"
                 },
@@ -20,67 +20,50 @@
         },
         {
             "step": "scCall",
-            "txId": "not-enough",
+            "txId": "1",
             "tx": {
                 "from": "address:an_account",
                 "to": "address:features_contract",
                 "value": "0",
-                "function": "send_tx_endpoint",
+                "function": "computeSha256",
                 "arguments": [
-                    "address:an_account",
-                    "10000"
+                    "0x010203"
                 ],
                 "gasLimit": "0x100000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [],
-                "status": "*",
-                "message": "str:failed transfer (insufficient funds)",
-                "logs": []
+                "out": [
+                    "0x039058c6f2c0cb492c533b0a4d14ef77cc0f78abccced5287d84a1a2011cfb81"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
             }
         },
         {
             "step": "scCall",
-            "txId": "without-message",
+            "txId": "2",
             "tx": {
                 "from": "address:an_account",
                 "to": "address:features_contract",
                 "value": "0",
-                "function": "send_tx_endpoint",
+                "function": "computeSha256",
                 "arguments": [
-                    "address:an_account",
-                    "100"
+                    "0x0102030405060708"
                 ],
                 "gasLimit": "0x100000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [],
-                "status": "",
-                "logs": []
-            }
-        },
-        {
-            "step": "scCall",
-            "txId": "with-message",
-            "tx": {
-                "from": "address:an_account",
-                "to": "address:features_contract",
-                "value": "0",
-                "function": "send_tx_endpoint",
-                "arguments": [
-                    "address:an_account",
-                    "100",
-                    "str:send tx message here"
+                "out": [
+                    "0x66840dda154e8a113c31dd0ad32f7f3a366a80e8136979d8f5a101d3d29d6f72"
                 ],
-                "gasLimit": "0x100000",
-                "gasPrice": "0"
-            },
-            "expect": {
-                "out": [],
                 "status": "",
-                "logs": []
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
             }
         }
     ]
