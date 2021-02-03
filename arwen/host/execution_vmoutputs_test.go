@@ -957,7 +957,7 @@ func expectedVMOutputAsyncCallCallBackFails(_ []byte, _ []byte) *vmcommon.VMOutp
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
-	parentAccount.GasUsed = 197192
+	parentAccount.GasUsed = 200000
 	arwen.SetStorageUpdate(parentAccount, parentKeyA, parentDataA)
 	arwen.SetStorageUpdate(parentAccount, parentKeyB, parentDataB)
 	arwen.AddFinishData(vmOutput, parentFinishA)

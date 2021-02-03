@@ -436,8 +436,19 @@ func (context *asyncContext) Execute() error {
 }
 
 func (context *asyncContext) executeAsyncCall(asyncCall *arwen.AsyncCall) error {
+	// Cross-shard calls to built-in functions have two halves: an intra-shard
+	// half, followed by sending the call across shards.
 	if asyncCall.ExecutionMode == arwen.AsyncBuiltinFuncIntraShard {
-		return context.executeSyncHalfOfBuiltinFunction(asyncCall)
+		err := context.executeSyncHalfOfBuiltinFunction(asyncCall)
+		if err != nil {
+			return err
+		}
+
+		// If the intra-shard half of the built-in function has failed, stop here
+		// and do not send the built-in call across shards.
+		if asyncCall.Status != arwen.AsyncCallPending {
+			return nil
+		}
 	}
 
 	return context.sendAsyncCallCrossShard(asyncCall)
