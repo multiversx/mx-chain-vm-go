@@ -128,12 +128,12 @@ func (context *asyncContext) executeSyncHalfOfBuiltinFunction(asyncCall *arwen.A
 		return err
 	}
 
-	vmOutput, gasUsedBeforeReset, err := context.host.ExecuteOnDestContext(destinationCallInput)
+	vmOutput, _, err := context.host.ExecuteOnDestContext(destinationCallInput)
 	if err != nil {
 		return err
 	}
 
-	// If the synchronous half of the built-in function call has failed, go no
+	// If the in-shard half of the built-in function call has failed, go no
 	// further and execute the error callback of this AsyncCall.
 	if vmOutput.ReturnCode != vmcommon.Ok {
 		asyncCall.UpdateStatus(vmOutput.ReturnCode)
@@ -141,7 +141,9 @@ func (context *asyncContext) executeSyncHalfOfBuiltinFunction(asyncCall *arwen.A
 		context.finishSyncExecution(callbackVMOutput, callbackErr)
 	}
 
-	context.host.Metering().UseGas(gasUsedBeforeReset)
+	// The gas that remains after executing the in-shard half of the built-in
+	// function is provided to the cross-shard half.
+	asyncCall.GasLimit = vmOutput.GasRemaining
 
 	return nil
 }
@@ -169,7 +171,12 @@ func (context *asyncContext) finishSyncExecution(vmOutput *vmcommon.VMOutput, er
 		vmOutput = output.CreateVMOutputInCaseOfError(err)
 	}
 
-	output.SetReturnCode(vmOutput.ReturnCode)
+	// TODO Discuss whether consistency between in-shard and cross-shard results
+	// TODO of the callback, and how they're accessible to the caller / user.
+	// TODO Currently, a failed callback in-shard leaves the ReturnCode to
+	// TODO vmcommon.Ok, unless the following line is uncommented.
+	// output.SetReturnCode(vmOutput.ReturnCode)
+
 	output.SetReturnMessage(vmOutput.ReturnMessage)
 	output.Finish([]byte(vmOutput.ReturnCode.String()))
 	output.Finish(runtime.GetCurrentTxHash())
@@ -260,6 +267,7 @@ func (context *asyncContext) createCallbackInput(
 			CallType:       vmcommon.AsynchronousCallBack,
 			GasPrice:       runtime.GetVMInput().GasPrice,
 			GasProvided:    gasLimit,
+			GasLocked:      0,
 			CurrentTxHash:  runtime.GetCurrentTxHash(),
 			OriginalTxHash: runtime.GetOriginalTxHash(),
 			PrevTxHash:     runtime.GetPrevTxHash(),

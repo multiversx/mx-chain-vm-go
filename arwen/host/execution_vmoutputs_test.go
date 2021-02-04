@@ -948,7 +948,6 @@ func expectedVMOutputAsyncCallChildFails(_ []byte, _ []byte) *vmcommon.VMOutput 
 
 func expectedVMOutputAsyncCallCallBackFails(_ []byte, _ []byte) *vmcommon.VMOutput {
 	vmOutput := arwen.MakeVMOutput()
-	vmOutput.ReturnCode = vmcommon.UserError
 
 	parentAccount := arwen.AddNewOutputAccount(
 		vmOutput,
@@ -957,7 +956,7 @@ func expectedVMOutputAsyncCallCallBackFails(_ []byte, _ []byte) *vmcommon.VMOutp
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
-	parentAccount.GasUsed = 200000
+	parentAccount.GasUsed = 197173
 	arwen.SetStorageUpdate(parentAccount, parentKeyA, parentDataA)
 	arwen.SetStorageUpdate(parentAccount, parentKeyB, parentDataB)
 	arwen.AddFinishData(vmOutput, parentFinishA)

@@ -640,15 +640,10 @@ func (context *asyncContext) sendAsyncCallCrossShard(asyncCall *arwen.AsyncCall)
 		vmcommon.AsynchronousCall,
 	)
 	if err != nil {
-		metering.UseGas(metering.GasLeft())
-		runtime.FailExecution(err)
 		return err
 	}
 
-	gasLeft := metering.GasLeft()
-	metering.ForwardGas(runtime.GetSCAddress(), asyncCall.Destination, gasLeft+asyncCall.GasLocked)
-	metering.UseGas(gasLeft)
-
+	metering.ForwardGas(runtime.GetSCAddress(), asyncCall.Destination, asyncCall.GetTotalGas())
 	return nil
 }
 

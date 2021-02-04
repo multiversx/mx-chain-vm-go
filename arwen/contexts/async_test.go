@@ -608,7 +608,7 @@ func TestAsyncContext_ExecuteSyncCall_NoDynamicGasLocking_Simulation(t *testing.
 
 	// Verify the final VMOutput, containing the failure.
 	expectedOutput := arwen.MakeVMOutput()
-	expectedOutput.ReturnCode = vmcommon.OutOfGas
+	expectedOutput.ReturnCode = vmcommon.Ok
 	expectedOutput.ReturnMessage = "not enough gas"
 	expectedOutput.GasRemaining = 0
 	arwen.AddFinishData(expectedOutput, []byte("out of gas"))
@@ -818,7 +818,7 @@ func TestAsyncContext_FinishSyncExecution_Error_NilVMOutput(t *testing.T) {
 	async.finishSyncExecution(nil, syncExecErr)
 
 	expectedOutput := arwen.MakeVMOutput()
-	expectedOutput.ReturnCode = vmcommon.OutOfGas
+	expectedOutput.ReturnCode = vmcommon.Ok
 	expectedOutput.ReturnMessage = syncExecErr.Error()
 	arwen.AddFinishData(expectedOutput, []byte(vmcommon.OutOfGas.String()))
 	arwen.AddFinishData(expectedOutput, originalVMInput.CurrentTxHash)
@@ -844,7 +844,7 @@ func TestAsyncContext_FinishSyncExecution_ErrorAndVMOutput(t *testing.T) {
 	async.finishSyncExecution(syncExecOutput, syncExecErr)
 
 	expectedOutput := arwen.MakeVMOutput()
-	expectedOutput.ReturnCode = vmcommon.UserError
+	expectedOutput.ReturnCode = vmcommon.Ok
 	expectedOutput.ReturnMessage = "user made an error"
 	arwen.AddFinishData(expectedOutput, []byte(vmcommon.UserError.String()))
 	arwen.AddFinishData(expectedOutput, originalVMInput.CurrentTxHash)
