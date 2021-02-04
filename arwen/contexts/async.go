@@ -688,6 +688,7 @@ func (context *asyncContext) sendContextCallbackToOriginalCaller() error {
 		return err
 	}
 
+	// TODO it is imperative to test gas forwarding here, before merging into master
 	gasLeft := metering.GasLeft()
 	metering.ForwardGas(runtime.GetSCAddress(), currentCall.CallerAddr, gasLeft)
 	metering.UseGas(gasLeft)
