@@ -1,6 +1,5 @@
 {
-    "name": "count ones",
-    "comment": "should fail if the processor doesn't support the `count ones` instruction",
+    "name": "storage",
     "steps": [
         {
             "step": "setState",
@@ -17,36 +16,22 @@
                     "storage": {},
                     "code": ""
                 }
-            },
-            "previousBlockInfo": {
-                "blockTimestamp": "506",
-                "blockNonce": "521",
-                "blockRound": "532",
-                "blockEpoch": "544",
-                "blockRandomSeed": "u64:0|u64:0|u64:0|u64:0|u64:0|u64:0"
-            },
-            "currentBlockInfo": {
-                "blockTimestamp": "511",
-                "blockNonce": "522",
-                "blockRound": "533",
-                "blockEpoch": "544",
-                "blockRandomSeed": "u64:42|u64:12345|u64:64|u64:7"
             }
         },
         {
             "step": "scCall",
-            "txId": "get_prev_block_timestamp",
+            "txId": "before",
             "tx": {
                 "from": "address:an_account",
                 "to": "address:features_contract",
                 "value": "0",
-                "function": "get_prev_block_timestamp",
+                "function": "vec_mapper",
                 "arguments": [],
                 "gasLimit": "0x100000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "506" ],
+                "out": [],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -55,18 +40,18 @@
         },
         {
             "step": "scCall",
-            "txId": "get_prev_block_nonce",
+            "txId": "increment-1",
             "tx": {
                 "from": "address:an_account",
                 "to": "address:features_contract",
                 "value": "0",
-                "function": "get_prev_block_nonce",
-                "arguments": [],
+                "function": "vec_mapper_push",
+                "arguments": [ "123" ],
                 "gasLimit": "0x100000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "521" ],
+                "out": [],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -75,18 +60,18 @@
         },
         {
             "step": "scCall",
-            "txId": "get_prev_block_round",
+            "txId": "after-1",
             "tx": {
                 "from": "address:an_account",
                 "to": "address:features_contract",
                 "value": "0",
-                "function": "get_prev_block_round",
+                "function": "vec_mapper",
                 "arguments": [],
                 "gasLimit": "0x100000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "532" ],
+                "out": [ "123" ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -95,18 +80,18 @@
         },
         {
             "step": "scCall",
-            "txId": "get_prev_block_epoch",
+            "txId": "increment-2",
             "tx": {
                 "from": "address:an_account",
                 "to": "address:features_contract",
                 "value": "0",
-                "function": "get_prev_block_epoch",
-                "arguments": [],
+                "function": "vec_mapper_push",
+                "arguments": [ "111" ],
                 "gasLimit": "0x100000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "544" ],
+                "out": [],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -115,39 +100,18 @@
         },
         {
             "step": "scCall",
-            "txId": "get_prev_block_random_seed",
+            "txId": "after-2",
             "tx": {
                 "from": "address:an_account",
                 "to": "address:features_contract",
                 "value": "0",
-                "function": "get_prev_block_random_seed",
+                "function": "vec_mapper",
                 "arguments": [],
                 "gasLimit": "0x100000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "u64:0|u64:0|u64:0|u64:0|u64:0|u64:0" ],
-                "status": "",
-                "logs": [],
-                "gas": "*",
-                "refund": "*"
-            }
-        },
-
-        {
-            "step": "scCall",
-            "txId": "get_block_timestamp",
-            "tx": {
-                "from": "address:an_account",
-                "to": "address:features_contract",
-                "value": "0",
-                "function": "get_block_timestamp",
-                "arguments": [],
-                "gasLimit": "0x100000",
-                "gasPrice": "0"
-            },
-            "expect": {
-                "out": [ "511" ],
+                "out": [ "123", "111" ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -155,20 +119,42 @@
             }
         },
         {
+            "step": "checkState",
+            "accounts": {
+                "address:features_contract": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {
+                        "``vec_mapper|u32:0": "2",
+                        "``vec_mapper|u32:1": "123",
+                        "``vec_mapper|u32:2": "111"
+                    },
+                    "code": "file:../output/basic-features.wasm"
+                },
+                "address:an_account": {
+                    "nonce": "*",
+                    "balance": "*",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
             "step": "scCall",
-            "txId": "get_block_nonce",
+            "txId": "index-0",
             "tx": {
                 "from": "address:an_account",
                 "to": "address:features_contract",
                 "value": "0",
-                "function": "get_block_nonce",
-                "arguments": [],
+                "function": "vec_mapper_get",
+                "arguments": [ "0" ],
                 "gasLimit": "0x100000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "522" ],
-                "status": "",
+                "out": [],
+                "status": "4",
+                "message": "str:index out of range",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"
@@ -176,38 +162,18 @@
         },
         {
             "step": "scCall",
-            "txId": "get_block_round",
+            "txId": "index-2",
             "tx": {
                 "from": "address:an_account",
                 "to": "address:features_contract",
                 "value": "0",
-                "function": "get_block_round",
-                "arguments": [],
+                "function": "vec_mapper_get",
+                "arguments": [ "2" ],
                 "gasLimit": "0x100000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "533" ],
-                "status": "",
-                "logs": [],
-                "gas": "*",
-                "refund": "*"
-            }
-        },
-        {
-            "step": "scCall",
-            "txId": "get_block_epoch",
-            "tx": {
-                "from": "address:an_account",
-                "to": "address:features_contract",
-                "value": "0",
-                "function": "get_block_epoch",
-                "arguments": [],
-                "gasLimit": "0x100000",
-                "gasPrice": "0"
-            },
-            "expect": {
-                "out": [ "544" ],
+                "out": [ "111" ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -216,20 +182,20 @@
         },
         {
             "step": "scCall",
-            "txId": "get_block_random_seed",
-            "comment": "0-padding added in out-value",
+            "txId": "index-3",
             "tx": {
                 "from": "address:an_account",
                 "to": "address:features_contract",
                 "value": "0",
-                "function": "get_block_random_seed",
-                "arguments": [],
+                "function": "vec_mapper_get",
+                "arguments": [ "3" ],
                 "gasLimit": "0x100000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "u64:0|u64:0|u64:42|u64:12345|u64:64|u64:7" ],
-                "status": "",
+                "out": [],
+                "status": "4",
+                "message": "str:index out of range",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"

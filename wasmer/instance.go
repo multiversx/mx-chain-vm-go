@@ -1,5 +1,6 @@
 package wasmer
 
+// #include <stdlib.h>
 import "C"
 import (
 	"fmt"
@@ -220,6 +221,7 @@ func NewInstanceFromCompiledCodeWithOptions(
 		c_instance_context := cWasmerInstanceContextGet(c_instance)
 		instance.InstanceCtx = IntoInstanceContextDirect(c_instance_context)
 	}
+
 	return instance, err
 }
 
@@ -280,8 +282,9 @@ func (instance *Instance) Cache() ([]byte, error) {
 	}
 
 	goBytes := C.GoBytes(unsafe.Pointer(cacheBytes), C.int(cacheLen))
-	cacheBytes = nil
 
+	C.free(unsafe.Pointer(cacheBytes))
+	cacheBytes = nil
 	return goBytes, nil
 }
 

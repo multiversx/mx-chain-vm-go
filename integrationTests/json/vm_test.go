@@ -97,7 +97,7 @@ func TestMultisig(t *testing.T) {
 	}
 }
 
-func TestRustFeatures(t *testing.T) {
+func TestRustFeaturesLatest(t *testing.T) {
 	if testing.Short() {
 		t.Skip("not a short test")
 	}

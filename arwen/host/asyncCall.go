@@ -9,6 +9,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
+	"github.com/ElrondNetwork/elrond-go/core"
 	"github.com/ElrondNetwork/elrond-go/core/parsers"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
@@ -35,6 +36,12 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 			host.meteringContext.UseGas(gasUsedBeforeReset)
 		}
 		return err
+	}
+
+	if execMode == arwen.ESDTTransferOnCallBack {
+		// return but keep async call info
+		host.outputContext.PrependFinish(asyncCallInfo.Data)
+		return nil
 	}
 
 	// Start calling the destination SC, synchronously.
@@ -65,6 +72,12 @@ func (host *vmHost) determineAsyncCallExecutionMode(asyncCallInfo *arwen.AsyncCa
 	sameShard := host.AreInSameShard(runtime.GetSCAddress(), asyncCallInfo.Destination)
 	if host.IsBuiltinFunctionName(functionName) {
 		if sameShard {
+			if functionName == core.BuiltInFunctionESDTTransfer &&
+				runtime.GetVMInput().CallType == vmcommon.AsynchronousCall &&
+				bytes.Equal(runtime.GetVMInput().CallerAddr, asyncCallInfo.Destination) {
+				return arwen.ESDTTransferOnCallBack, nil
+			}
+
 			return arwen.AsyncBuiltinFuncIntraShard, nil
 		}
 		return arwen.AsyncBuiltinFuncCrossShard, nil
@@ -257,6 +270,7 @@ func (host *vmHost) createCallbackContractCallInput(
 	gasSchedule := metering.GasSchedule()
 	runtime := host.Runtime()
 
+	isESDTOnCallBack := false
 	// always provide return code as the first argument to callback function
 	arguments := [][]byte{
 		big.NewInt(int64(destinationVMOutput.ReturnCode)).Bytes(),
@@ -264,6 +278,7 @@ func (host *vmHost) createCallbackContractCallInput(
 	if destinationErr == nil && destinationVMOutput.ReturnCode == vmcommon.Ok {
 		// when execution went Ok, callBack arguments are:
 		// [0, result1, result2, ....]
+		isESDTOnCallBack = len(destinationVMOutput.ReturnData) > 2 && core.BuiltInFunctionESDTTransfer == string(destinationVMOutput.ReturnData[0])
 		arguments = append(arguments, destinationVMOutput.ReturnData...)
 	} else {
 		// when execution returned error, callBack arguments are:
@@ -296,6 +311,17 @@ func (host *vmHost) createCallbackContractCallInput(
 		},
 		RecipientAddr: runtime.GetSCAddress(),
 		Function:      callbackFunction,
+	}
+
+	if isESDTOnCallBack {
+		contractCallInput.Function = core.BuiltInFunctionESDTTransfer
+		contractCallInput.Arguments = make([][]byte, 0, len(arguments))
+		contractCallInput.Arguments = append(contractCallInput.Arguments, destinationVMOutput.ReturnData[1], destinationVMOutput.ReturnData[2])
+		contractCallInput.Arguments = append(contractCallInput.Arguments, []byte(hex.EncodeToString([]byte(callbackFunction))))
+		contractCallInput.Arguments = append(contractCallInput.Arguments, big.NewInt(int64(destinationVMOutput.ReturnCode)).Bytes())
+		if len(destinationVMOutput.ReturnData) > 3 {
+			contractCallInput.Arguments = append(contractCallInput.Arguments, destinationVMOutput.ReturnData[3:]...)
+		}
 	}
 
 	return contractCallInput, nil
