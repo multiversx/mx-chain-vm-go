@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"sync"
 	"syscall"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
@@ -38,6 +39,15 @@ type ArwenDriver struct {
 	command  *exec.Cmd
 	part     *NodePart
 	logsPart ParentLogsPart
+
+	// When the ArwenDriver is used to resolve contract queries, it might happen that a query request executes concurrently with other operations (such as "GasScheduleChange").
+	// Query requests are ordered sequentially within the API layer (see the QueryService dispatcher and other related components), but this sequence of queries might
+	// interleave with Arwen-management operations, which are or might be triggered within a different flow (e.g. the processing flow). For example, "GasScheduleChange" is triggered synchronously
+	// with the processing flow (on a certain epoch change), but in asynchronicity with the querying flow.
+	// This might lead to issues (such as interleaving message sequences on the communication pipes).
+	// A solution is to use a operationsMutex, and treat each operation within a critical section (in the ArwenDriver, thus on node's part).
+	// Thus, for any two concurrent operations, the first one reaching the operationsMutex also wins the pipe and holds ownership upon its completion.
+	operationsMutex sync.Mutex
 }
 
 // NewArwenDriver creates a new driver
@@ -200,7 +210,11 @@ func (driver *ArwenDriver) IsClosed() bool {
 	return err != nil
 }
 
+// GetVersion gets the Arwen version
 func (driver *ArwenDriver) GetVersion() (string, error) {
+	driver.operationsMutex.Lock()
+	defer driver.operationsMutex.Unlock()
+
 	log.Trace("GetVersion")
 
 	err := driver.RestartArwenIfNecessary()
@@ -221,7 +235,11 @@ func (driver *ArwenDriver) GetVersion() (string, error) {
 	return typedResponse.Version, nil
 }
 
+// GasScheduleChange sends a "gas change" request to Arwen and waits for the output
 func (driver *ArwenDriver) GasScheduleChange(newGasSchedule map[string]map[string]uint64) {
+	driver.operationsMutex.Lock()
+	defer driver.operationsMutex.Unlock()
+
 	driver.arwenArguments.GasSchedule = newGasSchedule
 	err := driver.RestartArwenIfNecessary()
 	if err != nil {
@@ -246,6 +264,9 @@ func (driver *ArwenDriver) GasScheduleChange(newGasSchedule map[string]map[strin
 
 // RunSmartContractCreate sends a deploy request to Arwen and waits for the output
 func (driver *ArwenDriver) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (*vmcommon.VMOutput, error) {
+	driver.operationsMutex.Lock()
+	defer driver.operationsMutex.Unlock()
+
 	driver.counterDeploy++
 	log.Trace("RunSmartContractCreate", "counter", driver.counterDeploy)
 
@@ -273,6 +294,9 @@ func (driver *ArwenDriver) RunSmartContractCreate(input *vmcommon.ContractCreate
 
 // RunSmartContractCall sends an execution request to Arwen and waits for the output
 func (driver *ArwenDriver) RunSmartContractCall(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+	driver.operationsMutex.Lock()
+	defer driver.operationsMutex.Unlock()
+
 	driver.counterCall++
 	log.Trace("RunSmartContractCall", "counter", driver.counterCall, "func", input.Function, "sc", input.RecipientAddr)
 
@@ -300,6 +324,9 @@ func (driver *ArwenDriver) RunSmartContractCall(input *vmcommon.ContractCallInpu
 
 // DiagnoseWait sends a diagnose message to Arwen
 func (driver *ArwenDriver) DiagnoseWait(milliseconds uint32) error {
+	driver.operationsMutex.Lock()
+	defer driver.operationsMutex.Unlock()
+
 	err := driver.RestartArwenIfNecessary()
 	if err != nil {
 		return common.WrapCriticalError(err)
