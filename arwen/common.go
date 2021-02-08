@@ -95,6 +95,7 @@ type VMHostParameters struct {
 	ArwenV2EnableEpoch       uint32
 	AheadOfTimeEnableEpoch   uint32
 	DynGasLockEnableEpoch    uint32
+	ArwenV3EnableEpoch       uint32
 	UseWarmInstance          bool
 }
 

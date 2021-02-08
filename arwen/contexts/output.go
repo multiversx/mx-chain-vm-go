@@ -292,20 +292,32 @@ func (context *outputContext) Transfer(destination []byte, sender []byte, gasLim
 	return nil
 }
 
-// TransferESDT makes the asynchronous call and exports the data if it is cross shard
-func (context *outputContext) TransferESDT(destination []byte, sender []byte, tokenIdentifier []byte, value *big.Int, input []byte, gasLimit uint64) error {
+// TransferESDT makes the esdt transfer and subsequent call and exports the data if it is cross shard
+func (context *outputContext) TransferESDT(
+	destination []byte,
+	sender []byte,
+	tokenIdentifier []byte,
+	value *big.Int,
+	callInput *vmcommon.ContractCallInput,
+	gasLimit uint64,
+) error {
 	err := context.host.ExecuteESDTTransfer(destination, sender, tokenIdentifier, value)
 	if err != nil {
 		return err
 	}
 
-	if context.host.Blockchain().IsSmartContract(destination) && !context.host.AreInSameShard(sender, destination) {
-		if gasLimit > context.host.Metering().GasLeft() {
-			return arwen.ErrNotEnoughGas
-		}
+	if context.host.Blockchain().IsSmartContract(destination) && len(callInput) > 0 {
+		if !context.host.AreInSameShard(sender, destination) {
+			if gasLimit > context.host.Metering().GasLeft() {
+				return arwen.ErrNotEnoughGas
+			}
 
-		context.host.Metering().ForwardGas(sender, destination, gasLimit)
-		context.host.Metering().UseGas(gasLimit)
+			context.host.Metering().ForwardGas(sender, destination, gasLimit)
+			context.host.Metering().UseGas(gasLimit)
+		} else {
+			// here we should execute on destination context without caring about the feedback
+
+		}
 	} else {
 		gasLimit = 0
 	}
@@ -315,7 +327,7 @@ func (context *outputContext) TransferESDT(destination []byte, sender []byte, to
 		Value:     big.NewInt(0),
 		GasLimit:  gasLimit,
 		GasLocked: 0,
-		Data:      []byte(core.BuiltInFunctionESDTTransfer + "@" + hex.EncodeToString(tokenIdentifier) + "@" + hex.EncodeToString(value.Bytes()) + "@" + string(input)),
+		Data:      []byte(core.BuiltInFunctionESDTTransfer + "@" + hex.EncodeToString(tokenIdentifier) + "@" + hex.EncodeToString(value.Bytes()) + "@" + string(callInput)),
 		CallType:  vmcommon.DirectCall,
 	}
 	destAcc.OutputTransfers = append(destAcc.OutputTransfers, outputTransfer)

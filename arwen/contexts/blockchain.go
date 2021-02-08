@@ -35,7 +35,8 @@ func (context *blockchainContext) NewAddress(creatorAddress []byte) ([]byte, err
 		return nil, err
 	}
 
-	if nonce > 0 {
+	isIndirectDeployment := context.IsSmartContract(creatorAddress) && context.host.IsArwenV3Enabled()
+	if !isIndirectDeployment && nonce > 0 {
 		nonce--
 	}
 

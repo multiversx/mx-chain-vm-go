@@ -155,9 +155,9 @@ func (o *OutputContextStub) Transfer(destination []byte, sender []byte, gasLimit
 }
 
 // TransferESDT mocked method
-func (o *OutputContextStub) TransferESDT(destination []byte, sender []byte, tokenIdentifier []byte, value *big.Int, input []byte, gasLimit uint64) error {
+func (o *OutputContextStub) TransferESDT(destination []byte, sender []byte, tokenIdentifier []byte, value *big.Int, callInput *vmcommon.ContractCallInput, gasLimit uint64) error {
 	if o.TransferESDTCalled != nil {
-		return o.TransferESDTCalled(destination, sender, tokenIdentifier, value, gasLimit, input)
+		return o.TransferESDTCalled(destination, sender, tokenIdentifier, value, gasLimit, callInput)
 	}
 	return nil
 }
