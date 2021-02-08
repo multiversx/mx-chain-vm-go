@@ -3,7 +3,8 @@
 #![allow(unused_attributes)]
 #![feature(lang_items)]
 
-use elrond_wasm::{ContractIOApi, Address};
+//use elrond_wasm::api::ContractIOApi;
+use elrond_wasm::api::EndpointFinishApi;
 use elrond_wasm_node::ArwenApiImpl;
 
 pub static EEI: ArwenApiImpl = ArwenApiImpl{};

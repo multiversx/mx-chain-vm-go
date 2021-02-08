@@ -28,7 +28,7 @@ pub extern "C" fn one_async_call_no_cb() {
     create_async_call("testgroup",
                       &Address::from(CHILD_ADDRESS),
                       &value,
-                      b"some data",
+                      b"answer",
                       "",
                       "",
                       100000);

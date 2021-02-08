@@ -1,5 +1,5 @@
 [package]
-name = "async-bob"
+name = "child-simple"
 version = "0.0.0"
 edition = "2018"
 
