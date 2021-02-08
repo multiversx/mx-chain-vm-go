@@ -14,7 +14,7 @@ package elrondapi
 // extern int32_t blockHash(void *context, long long nonce, int32_t resultOffset);
 // extern int32_t transferValue(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
 // extern int32_t transferESDTExecute(void *context, int32_t dstOffset, int32_t tokenIdOffset, int32_t tokenIdLen, int32_t valueOffset, long long gasLimit, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
-// extern int32_t transferValueExecute(void *context, int32_t dstOffset, int32_t tokenIdOffset, int32_t tokenIdLen, int32_t valueOffset, long long gasLimit, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern int32_t transferValueExecute(void *context, int32_t dstOffset, int32_t valueOffset, long long gasLimit, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t getArgumentLength(void *context, int32_t id);
 // extern int32_t getArgument(void *context, int32_t id, int32_t argOffset);
 // extern int32_t getFunction(void *context, int32_t functionOffset);

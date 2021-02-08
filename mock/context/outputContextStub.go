@@ -24,7 +24,7 @@ type OutputContextStub struct {
 	DeleteOutputAccountCalled         func(address []byte)
 	WriteLogCalled                    func(address []byte, topics [][]byte, data []byte)
 	TransferCalled                    func(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, input []byte) error
-	TransferESDTCalled                func(destination []byte, sender []byte, tokenIdentifier []byte, value *big.Int, gasLimit uint64, input []byte) error
+	TransferESDTCalled                func(destination []byte, sender []byte, tokenIdentifier []byte, value *big.Int, gasLimit uint64, input *vmcommon.ContractCallInput) error
 	SelfDestructCalled                func(address []byte, beneficiary []byte)
 	GetRefundCalled                   func() uint64
 	SetRefundCalled                   func(refund uint64)
