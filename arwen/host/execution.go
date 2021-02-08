@@ -191,9 +191,11 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 
 	// Perform a value transfer to the called SC. If the execution fails, this
 	// transfer will not persist.
-	err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue)
-	if err != nil {
-		return
+	if input.CallType != vmcommon.AsynchronousCallBack {
+		err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue)
+		if err != nil {
+			return
+		}
 	}
 
 	gasUsedBeforeReset, err = host.execute(input)

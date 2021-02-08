@@ -259,6 +259,27 @@ func (host *vmHost) createDestinationContractCallInput(asyncCallInfo arwen.Async
 	return contractCallInput, nil
 }
 
+func (host *vmHost) computeCallValueFromVMOutput(destinationVMOutput *vmcommon.VMOutput) *big.Int {
+	if !host.IsArwenV3Enabled() {
+		return big.NewInt(0)
+	}
+
+	returnTransfer := big.NewInt(0)
+	callBackReceiver := host.Runtime().GetSCAddress()
+	outAcc, ok := destinationVMOutput.OutputAccounts[string(callBackReceiver)]
+	if !ok {
+		return returnTransfer
+	}
+
+	for _, outTransfer := range outAcc.OutputTransfers {
+		if outTransfer.Value != nil {
+			returnTransfer.Add(returnTransfer, outTransfer.Value)
+		}
+	}
+
+	return returnTransfer
+}
+
 func (host *vmHost) createCallbackContractCallInput(
 	asyncCallInfo arwen.AsyncCallInfoHandler,
 	destinationVMOutput *vmcommon.VMOutput,
@@ -302,7 +323,7 @@ func (host *vmHost) createCallbackContractCallInput(
 		VMInput: vmcommon.VMInput{
 			CallerAddr:     callbackInitiator,
 			Arguments:      arguments,
-			CallValue:      big.NewInt(0),
+			CallValue:      host.computeCallValueFromVMOutput(destinationVMOutput),
 			CallType:       vmcommon.AsynchronousCallBack,
 			GasPrice:       runtime.GetVMInput().GasPrice,
 			GasProvided:    gasLimit,
@@ -322,6 +343,9 @@ func (host *vmHost) createCallbackContractCallInput(
 		if len(destinationVMOutput.ReturnData) > 3 {
 			contractCallInput.Arguments = append(contractCallInput.Arguments, destinationVMOutput.ReturnData[3:]...)
 		}
+		contractCallInput.ESDTTokenName = destinationVMOutput.ReturnData[1]
+		contractCallInput.ESDTValue = big.NewInt(0).SetBytes(destinationVMOutput.ReturnData[2])
+		contractCallInput.CallValue = big.NewInt(0)
 	}
 
 	return contractCallInput, nil

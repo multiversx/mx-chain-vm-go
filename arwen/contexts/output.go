@@ -306,7 +306,7 @@ func (context *outputContext) TransferESDT(
 		return err
 	}
 
-	if context.host.Blockchain().IsSmartContract(destination) && len(callInput) > 0 {
+	if context.host.Blockchain().IsSmartContract(destination) && callInput != nil {
 		if !context.host.AreInSameShard(sender, destination) {
 			if gasLimit > context.host.Metering().GasLeft() {
 				return arwen.ErrNotEnoughGas
@@ -327,7 +327,7 @@ func (context *outputContext) TransferESDT(
 		Value:     big.NewInt(0),
 		GasLimit:  gasLimit,
 		GasLocked: 0,
-		Data:      []byte(core.BuiltInFunctionESDTTransfer + "@" + hex.EncodeToString(tokenIdentifier) + "@" + hex.EncodeToString(value.Bytes()) + "@" + string(callInput)),
+		Data:      []byte(core.BuiltInFunctionESDTTransfer + "@" + hex.EncodeToString(tokenIdentifier) + "@" + hex.EncodeToString(value.Bytes())),
 		CallType:  vmcommon.DirectCall,
 	}
 	destAcc.OutputTransfers = append(destAcc.OutputTransfers, outputTransfer)
