@@ -45,8 +45,8 @@ type ArwenDriver struct {
 	// interleave with Arwen-management operations, which are or might be triggered within a different flow (e.g. the processing flow). For example, "GasScheduleChange" is triggered synchronously
 	// with the processing flow (on a certain epoch change), but in asynchronicity with the querying flow.
 	// This might lead to issues (such as interleaving message sequences on the communication pipes).
-	// A solution is to use a operationsMutex, and treat each operation within a critical section (in the ArwenDriver, thus on node's part).
-	// Thus, for any two concurrent operations, the first one reaching the operationsMutex also wins the pipe and holds ownership upon its completion.
+	// A solution is to use a mutex, and treat each operation within a critical section (in the ArwenDriver, thus on node's part).
+	// Thus, for any two concurrent operations, the first one reaching the mutex also wins the pipe and holds ownership upon its completion.
 	operationsMutex sync.Mutex
 }
 
