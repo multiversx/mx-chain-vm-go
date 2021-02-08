@@ -717,6 +717,11 @@ func (context *runtimeContext) HasCallbackMethod() bool {
 	return ok
 }
 
+// IsFunctionImported returns true if the WASM module imports the specified function.
+func (context *runtimeContext) IsFunctionImported(name string) bool {
+	return context.instance.IsFunctionImported(name)
+}
+
 // MemLoad returns the contents from the given offset of the WASM memory.
 func (context *runtimeContext) MemLoad(offset int32, length int32) ([]byte, error) {
 	if length == 0 {

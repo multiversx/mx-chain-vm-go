@@ -16,4 +16,5 @@ type InstanceHandler interface {
 	GetData() *int
 	GetInstanceCtxMemory() *Memory
 	GetMemory() *Memory
+	IsFunctionImported(name string) bool
 }

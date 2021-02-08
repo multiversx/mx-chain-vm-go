@@ -116,6 +116,10 @@ func TestRuntimeContext_NewWasmerInstance(t *testing.T) {
 	err = runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 	require.Equal(t, arwen.BreakpointNone, runtimeContext.GetRuntimeBreakpointValue())
+
+	require.True(t, runtimeContext.IsFunctionImported("int64finish"))
+	require.False(t, runtimeContext.IsFunctionImported("asyncCall"))
+	require.False(t, runtimeContext.IsFunctionImported("doesNotExist"))
 }
 
 func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
