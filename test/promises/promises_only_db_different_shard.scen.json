@@ -15,13 +15,13 @@
           "nonce": "0",
           "balance": "0",
           "storage": {},
-          "code": "file:../contracts/promises-train/output/train.wasm"
+          "code": "file:../contracts/promises/tourist-train/output/train.wasm"
         },
         "``promiseSC.......................": {
           "nonce": "0",
           "balance": "0",
           "storage": {},
-          "code": "file:../contracts/promises/output/promises.wasm"
+          "code": "file:../contracts/promises/tourist-bookings/output/bookings.wasm"
         }
       }
     },
@@ -62,7 +62,7 @@
             "0x73746f726167650074696d656c6f636b": "0x015180",
             "``1-promise-diff-shard............asyncCalls": "file:promises_only_db_different_shard.sc_promise.async-call.json"
           },
-          "code": "file:../contracts/promises/output/promises.wasm",
+          "code": "file:../contracts/promises/tourist-bookings/output/bookings.wasm",
           "asyncCallData": ""
         },
         "``trainSC.........................": {
@@ -72,7 +72,7 @@
             "0x73746f726167650074696d656c6f636b": "0x015180",
             "``1-promise-diff-shard............asyncCalls": "file:promises_only_db_different_shard.sc_train.async-call.json"
           },
-          "code": "file:../contracts/promises-train/output/train.wasm",
+          "code": "file:../contracts/promises/tourist-train/output/train.wasm",
           "asyncCallData": ""
         },
         "``dataSC..........................": {

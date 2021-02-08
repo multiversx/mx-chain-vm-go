@@ -1,5 +1,5 @@
 [package]
-name = "async-bob-wasm"
+name = "parent-simple-wasm"
 version = "0.0.0"
 edition = "2018"
 
@@ -13,7 +13,7 @@ lto = true
 debug = false
 panic = "abort"
 
-[dependencies.async-bob]
+[dependencies.parent-simple]
 path = ".."
 
 [dependencies.elrond-wasm-output]

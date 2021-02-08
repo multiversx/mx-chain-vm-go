@@ -15,7 +15,7 @@
           "nonce": "0",
           "balance": "0",
           "storage": {},
-          "code": "file:../contracts/promises/output/promises.wasm"
+          "code": "file:../contracts/promises/tourist-bookings/output/bookings.wasm"
         }
       }
     },
@@ -56,7 +56,7 @@
             "0x73746f726167650074696d656c6f636b": "0x015180",
             "``promises-1......................asyncCalls": "file:promises_different_shards.async-call.json"
           },
-          "code": "file:../contracts/promises/output/promises.wasm",
+          "code": "file:../contracts/promises/tourist-bookings/output/bookings.wasm",
           "asyncCallData": ""
         },
         "``trainSC.........................": {

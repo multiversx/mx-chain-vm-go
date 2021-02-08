@@ -1,5 +1,5 @@
 [package]
-name = "async-alice-wasm"
+name = "async-bob-wasm"
 version = "0.0.0"
 edition = "2018"
 
@@ -13,11 +13,11 @@ lto = true
 debug = false
 panic = "abort"
 
-[dependencies.async-alice]
+[dependencies.async-bob]
 path = ".."
 
 [dependencies.elrond-wasm-output]
-version = "0.7.2"
+version = "0.11.0"
 features = ["wasm-output-mode"]
 
 [workspace]

@@ -1,6 +1,7 @@
 package host
 
 import (
+	"math/big"
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -9,11 +10,11 @@ import (
 )
 
 func TestAsync_NoAsyncCalls(t *testing.T) {
-	code := arwen.GetTestSCCode("async-alice", "../../")
+	code := arwen.GetTestSCCodeModule("promises/parent-simple", "parent-simple", "../../")
 	host, _ := defaultTestArwenForCall(t, code, nil)
 
 	input := DefaultTestContractCallInput()
-	input.GasProvided = 1000
+	input.GasProvided = 10000000
 	input.Function = "no_async"
 
 	vmOutput, err := host.RunSmartContractCall(input)
@@ -30,12 +31,12 @@ func TestAsync_NoAsyncCalls(t *testing.T) {
 }
 
 func TestAsync_OneAsyncCall(t *testing.T) {
-	t.Skip()
-	code := arwen.GetTestSCCode("async-alice", "../../")
-	host, _ := defaultTestArwenForCall(t, code, nil)
+	code := arwen.GetTestSCCodeModule("promises/parent-simple", "parent-simple", "../../")
+	balance := big.NewInt(100)
+	host, _ := defaultTestArwenForCall(t, code, balance)
 
 	input := DefaultTestContractCallInput()
-	input.GasProvided = 1000
+	input.GasProvided = 10000000
 	input.Function = "one_async_call_no_cb"
 
 	vmOutput, err := host.RunSmartContractCall(input)
