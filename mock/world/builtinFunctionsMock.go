@@ -76,25 +76,14 @@ func (b *MockWorld) runESDTTransferCall(input *vmcommon.ContractCallInput) (*vmi
 	}
 
 	if !enoughFunds {
-		// TODO: figure out what the actual error message is
-		return &vmcommon.VMOutput{
-			ReturnData:      make([][]byte, 0),
-			ReturnCode:      vmcommon.OutOfFunds,
-			ReturnMessage:   fmt.Sprintf("Sender does not hold enough ESDT token %s", tokenName),
-			GasRemaining:    0,
-			GasRefund:       big.NewInt(0),
-			OutputAccounts:  make(map[string]*vmcommon.OutputAccount),
-			DeletedAccounts: make([][]byte, 0),
-			TouchedAccounts: make([][]byte, 0),
-			Logs:            make([]*vmcommon.LogEntry, 0),
-		}, nil
+		return nil, ErrInsufficientFunds
 	}
 
 	return &vmcommon.VMOutput{
 		ReturnData:      make([][]byte, 0),
 		ReturnCode:      vmcommon.Ok,
 		ReturnMessage:   "",
-		GasRemaining:    0,
+		GasRemaining:    input.GasProvided - input.GasLocked,
 		GasRefund:       big.NewInt(0),
 		OutputAccounts:  make(map[string]*vmcommon.OutputAccount),
 		DeletedAccounts: make([][]byte, 0),
