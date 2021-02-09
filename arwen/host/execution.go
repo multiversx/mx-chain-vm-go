@@ -653,7 +653,7 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, token
 		AllowInitFunction: false,
 	}
 
-	esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, []byte(tokenIdentifier), value.Bytes())
+	esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, tokenIdentifier, value.Bytes())
 	vmOutput, err := host.blockChainHook.ProcessBuiltInFunction(esdtTransferInput)
 	if err != nil {
 		return err
