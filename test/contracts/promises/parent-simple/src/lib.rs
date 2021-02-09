@@ -11,6 +11,7 @@ use promises_common::*;
 pub static EEI: ArwenApiImpl = ArwenApiImpl{};
 
 const SUCCESS_CALLBACK_ARGUMENT_KEY: &[u8] = b"SuccessCallbackArg";
+const FAIL_CALLBACK_ARGUMENT_KEY: &[u8] = b"FailCallbackArg";
 
 #[no_mangle]
 pub extern "C" fn no_async() {
@@ -53,7 +54,7 @@ pub extern "C" fn one_async_call_no_cb_fail_with_call_value() {
                       b"fail",
                       "",
                       "",
-                      1000000);
+                      100000);
 }
 
 #[no_mangle]
@@ -67,6 +68,18 @@ pub extern "C" fn one_async_call_success_cb() {
                       100000);
 }
 
+#[no_mangle]
+pub extern "C" fn one_async_call_fail_cb() {
+    create_async_call("testgroup",
+                      &Address::from(CHILD_ADDRESS),
+                      &ZERO,
+                      b"answer",
+                      "",
+                      "fail_callback",
+                      100000);
+}
+
+// callbacks
 
 // first argument is "0" for success, followed by data passed by finish() in callee contract
 #[no_mangle]
@@ -79,5 +92,19 @@ pub extern "C" fn success_callback_one_arg() {
         let storage_key = construct_storage_key(&[SUCCESS_CALLBACK_ARGUMENT_KEY, &[arg_index as u8]]);
     
         EEI.storage_store_u64(&storage_key, arg);
+    }
+}
+
+// first argument is error code, followed by error message
+#[no_mangle]
+pub extern "C" fn fail_callback() {
+    let expected_num_args = 2;
+    EEI.check_num_arguments(expected_num_args);
+
+    for arg_index in 0..expected_num_args {
+        let arg = EEI.get_argument_vec_u8(arg_index);
+        let storage_key = construct_storage_key(&[FAIL_CALLBACK_ARGUMENT_KEY, &[arg_index as u8]]);
+    
+        EEI.storage_store_slice_u8(&storage_key, &arg);
     }
 }
