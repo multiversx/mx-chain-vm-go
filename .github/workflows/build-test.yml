@@ -7,6 +7,8 @@ on:
   pull_request:
 
 jobs:
+  env:
+    ARWEN_PATH: ${GITHUB_WORKSPACE}/arwen
   test:
     strategy:
       matrix:
