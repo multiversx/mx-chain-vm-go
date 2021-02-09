@@ -53,7 +53,7 @@ pub extern "C" fn one_async_call_no_cb_fail_with_call_value() {
                       b"fail",
                       "",
                       "",
-                      100000);
+                      1000000);
 }
 
 #[no_mangle]
