@@ -69,6 +69,15 @@ func (ac *AsyncCall) GetValue() []byte {
 	return ac.ValueBytes
 }
 
+// HasCallback returns true if there is a callback to execute, depending on the status of the async call
+func (ac *AsyncCall) HasCallback() bool {
+	callback := ac.GetCallbackName()
+	if len(callback) == 0 {
+		return false
+	}
+	return true
+}
+
 // IsInterfaceNil returns true if there is no value under the interface
 func (ac *AsyncCall) IsInterfaceNil() bool {
 	return ac == nil

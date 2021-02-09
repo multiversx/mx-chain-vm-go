@@ -714,30 +714,34 @@ func (host *vmHost) callSCMethod() error {
 		runtime.SetCustomCallFunction(asyncCall.GetCallbackName())
 	}
 
-	err := host.verifyAllowedFunctionCall()
-	if err != nil {
-		return err
-	}
+	// TODO refactor this
+	var err error
+	if runtime.Function() != "" {
+		err = host.verifyAllowedFunctionCall()
+		if err != nil {
+			return err
+		}
 
-	function, err := runtime.GetFunctionToCall()
-	if err != nil {
-		return err
-	}
+		function, err := runtime.GetFunctionToCall()
+		if err != nil {
+			return err
+		}
 
-	_, err = function()
-	if err != nil {
-		err = host.handleBreakpointIfAny(err)
-	}
-	if err == nil {
-		err = host.checkFinalGasAfterExit()
-	}
-	if err != nil {
-		return err
-	}
+		_, err = function()
+		if err != nil {
+			err = host.handleBreakpointIfAny(err)
+		}
+		if err == nil {
+			err = host.checkFinalGasAfterExit()
+		}
+		if err != nil {
+			return err
+		}
 
-	err = async.Execute()
-	if err != nil {
-		return err
+		err = async.Execute()
+		if err != nil {
+			return err
+		}
 	}
 
 	switch callType {
