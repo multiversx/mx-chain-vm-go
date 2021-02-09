@@ -610,7 +610,7 @@ func transferValueExecute(
 		}
 	}
 
-	if host.AreInSameShard(send, dest) && contractCallInput != nil {
+	if host.AreInSameShard(send, dest) && contractCallInput != nil && host.Blockchain().IsSmartContract(dest) {
 		_, _, _, err = host.ExecuteOnDestContext(contractCallInput)
 		if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 			return 1
@@ -680,7 +680,7 @@ func transferESDTExecute(
 	}
 
 	var contractCallInput *vmcommon.ContractCallInput
-	if functionLength > 0 && host.Blockchain().IsSmartContract(dest) {
+	if functionLength > 0 {
 		contractCallInput, err = prepareIndirectContractCallInput(
 			host,
 			sender,
@@ -706,7 +706,7 @@ func transferESDTExecute(
 		return 1
 	}
 
-	if host.AreInSameShard(sender, dest) && contractCallInput != nil {
+	if host.AreInSameShard(sender, dest) && contractCallInput != nil && host.Blockchain().IsSmartContract(dest) {
 		_, _, _, err = host.ExecuteOnDestContext(contractCallInput)
 		if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 			return 1
