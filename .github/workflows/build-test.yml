@@ -23,4 +23,5 @@ jobs:
     - name: Test
       run: |
           export ARWEN_PATH=${GITHUB_WORKSPACE}/Arwen/arwen
+          mkdir ${GITHUB_WORKSPACE}/Arwen
           make test
