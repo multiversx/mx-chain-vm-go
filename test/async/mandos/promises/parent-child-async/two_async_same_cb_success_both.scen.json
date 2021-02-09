@@ -1,5 +1,5 @@
 {
-    "name": "one_async_call_success_cb",
+    "name": "two_async_same_cb_success_both",
     "steps": [
         {
             "step": "setState",
@@ -26,18 +26,21 @@
         },
         {
             "step": "scCall",
-            "txId": "one_async_call_success_cb",
+            "txId": "two_async_same_cb_success_both",
             "tx": {
                 "from": "address:user",
                 "to": "0x00000000000000000f0f706172656e7453432e2e2e2e2e2e2e2e2e2e2e2e2e2e",
                 "value": "0",
-                "function": "one_async_call_success_cb",
+                "function": "two_async_same_cb_success_both",
                 "arguments": [],
                 "gasLimit": "0x1000000000000",
                 "gasPrice": "0x00"
             },
             "expect": {
-                "out": ["42"],
+                "out": [
+                    "0x01",
+                    "0x02"
+                ],
                 "status": "0",
                 "message": "",
                 "logs": [],
@@ -59,8 +62,10 @@
                     "balance": "0",
                     "storage": {
                         "str:SuccessCallbackArg|u8:0": "0",
-                        "str:SuccessCallbackArg|u8:1": "42",
-                        "str:CurrentStorageIndex": "2"
+                        "str:SuccessCallbackArg|u8:1": "0x01",
+                        "str:SuccessCallbackArg|u8:2": "0",
+                        "str:SuccessCallbackArg|u8:3": "0x02",
+                        "str:CurrentStorageIndex": "4"
                     },
                     "code": "file:../../../../contracts/promises/parent-simple/output/parent-simple.wasm"
                 },

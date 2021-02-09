@@ -58,8 +58,9 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "FailCallbackArg|u8:0": "4",
-                        "FailCallbackArg|u8:1": "str:fail"
+                        "str:FailCallbackArg|u8:0": "4",
+                        "str:FailCallbackArg|u8:1": "str:fail",
+                        "str:CurrentStorageIndex": "2"
                     },
                     "code": "file:../../../../contracts/promises/parent-simple/output/parent-simple.wasm"
                 },
