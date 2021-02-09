@@ -605,6 +605,9 @@ func (host *vmHost) revertESDTTransfer(input *vmcommon.ContractCallInput) {
 	if len(input.Arguments) < 2 {
 		return
 	}
+	if input.CallType == vmcommon.AsynchronousCallBack {
+		return
+	}
 
 	revertInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
@@ -687,8 +690,13 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmc
 		for _, outTransfer := range outAcc.OutputTransfers {
 			if outTransfer.GasLimit > 0 || outTransfer.GasLocked > 0 {
 				gasForwarded := math.AddUint64(outTransfer.GasLocked, outTransfer.GasLimit)
-				metering.ForwardGas(runtime.GetSCAddress(), nil, gasForwarded)
 				gasConsumed = math.AddUint64(gasConsumed, outTransfer.GasLocked)
+
+				if input.CallType != vmcommon.AsynchronousCallBack {
+					metering.ForwardGas(runtime.GetSCAddress(), nil, gasForwarded)
+				} else {
+					gasConsumed, _ = math.SubUint64(gasConsumed, outTransfer.GasLimit)
+				}
 			}
 		}
 	}
@@ -718,7 +726,8 @@ func (host *vmHost) checkFinalGasAfterExit() error {
 		return nil
 	}
 
-	if host.Runtime().GetPointsUsed() > host.Metering().GetGasForExecution() {
+	totalUsedPoints := host.Runtime().GetPointsUsed()
+	if totalUsedPoints > host.Metering().GetGasForExecution() {
 		return arwen.ErrNotEnoughGas
 	}
 
