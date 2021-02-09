@@ -13,6 +13,7 @@ package elrondapi
 // extern void getExternalBalance(void *context, int32_t addressOffset, int32_t resultOffset);
 // extern int32_t blockHash(void *context, long long nonce, int32_t resultOffset);
 // extern int32_t transferValue(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
+// extern int32_t transferESDT(void *context, int32_t dstOffset, int32_t tokenIdOffset, int32_t tokenIdLen, int32_t valueOffset, long long gasLimit, int32_t dataOffset, int32_t length);
 // extern int32_t transferESDTExecute(void *context, int32_t dstOffset, int32_t tokenIdOffset, int32_t tokenIdLen, int32_t valueOffset, long long gasLimit, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t transferValueExecute(void *context, int32_t dstOffset, int32_t valueOffset, long long gasLimit, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t getArgumentLength(void *context, int32_t id);
@@ -125,6 +126,11 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("transferESDTExecute", transferESDTExecute, C.transferESDTExecute)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("transferESDT", transferESDT, C.transferESDT)
 	if err != nil {
 		return nil, err
 	}
@@ -639,6 +645,29 @@ func makeCrossShardCallFromInput(vmInput *vmcommon.ContractCallInput) string {
 	}
 
 	return txData
+}
+
+//export transferESDT
+func transferESDT(
+	context unsafe.Pointer,
+	destOffset int32,
+	tokenIdOffset int32,
+	tokenIDLen int32,
+	valueOffset int32,
+	gasLimit int64,
+	dataOffset int32,
+	length int32,
+) int32 {
+	host := arwen.GetVMContext(context)
+	metering := host.Metering()
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.TransferValue
+	metering.UseGas(gasToUse)
+
+	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(length))
+	metering.UseGas(gasToUse)
+	// this is only for backward compatibility - function deprecated
+	return 1
 }
 
 //export transferESDTExecute
