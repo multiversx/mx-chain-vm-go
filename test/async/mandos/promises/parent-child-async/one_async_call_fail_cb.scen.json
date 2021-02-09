@@ -38,8 +38,8 @@
             },
             "expect": {
                 "out": [],
-                "status": "4",
-                "message": "str:fail",
+                "status": "0",
+                "message": "",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"

@@ -76,7 +76,7 @@ pub extern "C" fn one_async_call_fail_cb() {
     create_async_call("testgroup",
                       &Address::from(CHILD_ADDRESS),
                       &ZERO,
-                      b"answer",
+                      b"fail",
                       "",
                       "fail_callback",
                       100000);
