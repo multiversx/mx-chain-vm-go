@@ -680,7 +680,7 @@ func transferESDTExecute(
 	}
 
 	var contractCallInput *vmcommon.ContractCallInput
-	if functionLength > 0 {
+	if functionLength > 0 && host.Blockchain().IsSmartContract(dest) {
 		contractCallInput, err = prepareIndirectContractCallInput(
 			host,
 			sender,
