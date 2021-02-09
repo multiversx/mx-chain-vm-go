@@ -57,6 +57,20 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 	return nil
 }
 
+func isESDTTransferOnData(data []byte) (bool, [][]byte) {
+	argParser := parsers.NewCallArgsParser()
+	functionName, args, err := argParser.ParseData(string(data))
+	if err != nil {
+		return false, nil
+	}
+
+	if len(args) < 2 {
+		return false, nil
+	}
+
+	return functionName == core.BuiltInFunctionESDTTransfer, args
+}
+
 func (host *vmHost) determineAsyncCallExecutionMode(asyncCallInfo *arwen.AsyncCallInfo) (arwen.AsyncCallExecutionMode, error) {
 	runtime := host.Runtime()
 	blockchain := host.Blockchain()
@@ -295,6 +309,7 @@ func (host *vmHost) createCallbackContractCallInput(
 	runtime := host.Runtime()
 
 	isESDTOnCallBack := false
+	esdtArgs := make([][]byte, 0)
 	// always provide return code as the first argument to callback function
 	arguments := [][]byte{
 		big.NewInt(int64(destinationVMOutput.ReturnCode)).Bytes(),
@@ -302,7 +317,9 @@ func (host *vmHost) createCallbackContractCallInput(
 	if destinationErr == nil && destinationVMOutput.ReturnCode == vmcommon.Ok {
 		// when execution went Ok, callBack arguments are:
 		// [0, result1, result2, ....]
-		isESDTOnCallBack = len(destinationVMOutput.ReturnData) > 2 && core.BuiltInFunctionESDTTransfer == string(destinationVMOutput.ReturnData[0])
+		if len(destinationVMOutput.ReturnData) > 0 {
+			isESDTOnCallBack, esdtArgs = isESDTTransferOnData(destinationVMOutput.ReturnData[0])
+		}
 		arguments = append(arguments, destinationVMOutput.ReturnData...)
 	} else {
 		// when execution returned error, callBack arguments are:
@@ -340,14 +357,17 @@ func (host *vmHost) createCallbackContractCallInput(
 	if isESDTOnCallBack {
 		contractCallInput.Function = core.BuiltInFunctionESDTTransfer
 		contractCallInput.Arguments = make([][]byte, 0, len(arguments))
-		contractCallInput.Arguments = append(contractCallInput.Arguments, destinationVMOutput.ReturnData[1], destinationVMOutput.ReturnData[2])
-		contractCallInput.Arguments = append(contractCallInput.Arguments, []byte(hex.EncodeToString([]byte(callbackFunction))))
+		contractCallInput.Arguments = append(contractCallInput.Arguments, esdtArgs[0], esdtArgs[1])
+		contractCallInput.Arguments = append(contractCallInput.Arguments, []byte(callbackFunction))
 		contractCallInput.Arguments = append(contractCallInput.Arguments, big.NewInt(int64(destinationVMOutput.ReturnCode)).Bytes())
-		if len(destinationVMOutput.ReturnData) > 3 {
-			contractCallInput.Arguments = append(contractCallInput.Arguments, destinationVMOutput.ReturnData[3:]...)
+		if len(destinationVMOutput.ReturnData) > 1 {
+			contractCallInput.Arguments = append(contractCallInput.Arguments, destinationVMOutput.ReturnData[1:]...)
 		}
-		contractCallInput.ESDTTokenName = destinationVMOutput.ReturnData[1]
-		contractCallInput.ESDTValue = big.NewInt(0).SetBytes(destinationVMOutput.ReturnData[2])
+		if len(esdtArgs) > 2 {
+			contractCallInput.Arguments = append(contractCallInput.Arguments, esdtArgs[2:]...)
+		}
+		contractCallInput.ESDTTokenName = esdtArgs[0]
+		contractCallInput.ESDTValue = big.NewInt(0).SetBytes(esdtArgs[1])
 		contractCallInput.CallValue = big.NewInt(0)
 	}
 

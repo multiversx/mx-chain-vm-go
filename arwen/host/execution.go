@@ -834,10 +834,9 @@ func (host *vmHost) isSCExecutionAfterBuiltInFunc(
 
 	callType := vmInput.CallType
 	scCallOutTransfer := outAcc.OutputTransfers[0]
-	txData := prependCallbackToTxDataIfAsyncCall(scCallOutTransfer.Data, callType)
 
 	argParser := parsers.NewCallArgsParser()
-	function, arguments, err := argParser.ParseData(txData)
+	function, arguments, err := argParser.ParseData(string(scCallOutTransfer.Data))
 	if err != nil {
 		return nil, err
 	}
@@ -871,12 +870,4 @@ func fillWithESDTValue(fullVMInput *vmcommon.ContractCallInput, newVMInput *vmco
 
 	newVMInput.ESDTTokenName = fullVMInput.Arguments[0]
 	newVMInput.ESDTValue = big.NewInt(0).SetBytes(fullVMInput.Arguments[1])
-}
-
-func prependCallbackToTxDataIfAsyncCall(txData []byte, callType vmcommon.CallType) string {
-	if callType == vmcommon.AsynchronousCallBack {
-		return string(append([]byte(arwen.CallbackFunctionName), txData...))
-	}
-
-	return string(txData)
 }
