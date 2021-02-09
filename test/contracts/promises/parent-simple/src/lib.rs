@@ -102,6 +102,60 @@ pub extern "C" fn two_async_same_cb_success_both() {
                       100000);
 }
 
+pub extern "C" fn two_async_same_cb_success_first_fail_second() {
+    create_async_call("testgroup",
+                      &Address::from(CHILD_ADDRESS),
+                      &ZERO,
+                      b"echo@0x01",
+                      "success_callback_one_arg",
+                      "fail_callback",
+                      100000);
+    
+    create_async_call("testgroup",
+                      &Address::from(CHILD_ADDRESS),
+                      &ZERO,
+                      b"fail",
+                      "success_callback_one_arg",
+                      "fail_callback",
+                      100000);
+}
+
+pub extern "C" fn two_async_same_cb_fail_first_success_second() {
+    create_async_call("testgroup",
+                      &Address::from(CHILD_ADDRESS),
+                      &ZERO,
+                      b"fail",
+                      "success_callback_one_arg",
+                      "fail_callback",
+                      100000);
+    
+    create_async_call("testgroup",
+                      &Address::from(CHILD_ADDRESS),
+                      &ZERO,
+                      b"echo@0x02",
+                      "success_callback_one_arg",
+                      "fail_callback",
+                      100000);
+}
+
+pub extern "C" fn two_async_same_cb_fail_both() {
+    create_async_call("testgroup",
+                      &Address::from(CHILD_ADDRESS),
+                      &ZERO,
+                      b"fail",
+                      "success_callback_one_arg",
+                      "fail_callback",
+                      100000);
+    
+    create_async_call("testgroup",
+                      &Address::from(CHILD_ADDRESS),
+                      &ZERO,
+                      b"fail",
+                      "success_callback_one_arg",
+                      "fail_callback",
+                      100000);
+}
+
 // callbacks
 
 // first argument is "0" for success, followed by data passed by finish() in callee contract
