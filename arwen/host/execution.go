@@ -181,12 +181,14 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 
 	metering.PushState()
 	metering.InitStateFromContractCallInput(&input.VMInput)
+	host.computeGasUsedBefore()
 
 	storage.PushState()
 	storage.SetAddress(runtime.GetSCAddress())
 
 	defer func() {
 		vmOutput = host.finishExecuteOnDestContext(err)
+		metering.SetTotalUsedGas(0)
 	}()
 
 	// Perform a value transfer to the called SC. If the execution fails, this
@@ -571,6 +573,12 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) (uint64, error) {
 	}
 
 	return 0, host.executeSmartContractCall(input, metering, runtime, output, true)
+}
+
+func (host *vmHost) computeGasUsedBefore() {
+	_, _, metering, output, _, _ := host.GetContexts()
+	gasUsed, _ := output.GetCurrentTotalUsedGas()
+	metering.SetTotalUsedGas(gasUsed)
 }
 
 func (host *vmHost) callSCMethodIndirect() error {

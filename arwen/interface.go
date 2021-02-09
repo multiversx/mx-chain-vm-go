@@ -175,6 +175,7 @@ type OutputContext interface {
 	AddTxValueToAccount(address []byte, value *big.Int)
 	DeployCode(input CodeDeployInput)
 	CreateVMOutputInCaseOfError(err error) *vmcommon.VMOutput
+	GetCurrentTotalUsedGas() (uint64, bool)
 }
 
 // MeteringContext defines the functionality needed for interacting with the metering context
@@ -204,6 +205,8 @@ type MeteringContext interface {
 	UseGasForAsyncStep() error
 	UseGasBounded(gasToUse uint64) error
 	GetGasLocked() uint64
+	SetTotalUsedGas(total uint64)
+	GetTotalUsedGas() uint64
 }
 
 // StorageStatus defines the states the storage can be in

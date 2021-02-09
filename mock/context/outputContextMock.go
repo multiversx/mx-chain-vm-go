@@ -169,7 +169,7 @@ func (o *OutputContextMock) Transfer(_ []byte, _ []byte, _ uint64, _ uint64, _ *
 }
 
 // TransferESDT mocked method
-func (o *OutputContextMock) TransferESDT(destination []byte, sender []byte, tokenIdentifier []byte, value *big.Int, callInput *vmcommon.ContractCallInput, gasLimit uint64) error {
+func (o *OutputContextMock) TransferESDT(_ []byte, _ []byte, _ []byte, _ *big.Int, _ *vmcommon.ContractCallInput, _ uint64) error {
 	return nil
 }
 
@@ -189,4 +189,9 @@ func (o *OutputContextMock) DeployCode(_ arwen.CodeDeployInput) {
 // CreateVMOutputInCaseOfError mocked method
 func (o *OutputContextMock) CreateVMOutputInCaseOfError(_ error) *vmcommon.VMOutput {
 	return o.OutputStateMock
+}
+
+// GetCurrentTotalUsedGas mocked method
+func (o *OutputContextMock) GetCurrentTotalUsedGas() (uint64, bool) {
+	return 0, false
 }

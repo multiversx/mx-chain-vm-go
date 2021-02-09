@@ -42,6 +42,7 @@ type OutputContextStub struct {
 	CreateVMOutputInCaseOfErrorCalled func(err error) *vmcommon.VMOutput
 	AddToActiveStateCalled            func(vmOutput *vmcommon.VMOutput)
 	TransferValueOnlyCalled           func(destination []byte, sender []byte, value *big.Int) error
+	GetCurrentTotalUsedGasCalled      func() (uint64, bool)
 }
 
 // AddToActiveState mocked method
@@ -271,4 +272,12 @@ func (o *OutputContextStub) CreateVMOutputInCaseOfError(err error) *vmcommon.VMO
 		return o.CreateVMOutputInCaseOfErrorCalled(err)
 	}
 	return nil
+}
+
+// GetCurrentTotalUsedGas mocked method
+func (o *OutputContextStub) GetCurrentTotalUsedGas() (uint64, bool) {
+	if o.GetCurrentTotalUsedGasCalled != nil {
+		return o.GetCurrentTotalUsedGasCalled()
+	}
+	return 0, false
 }

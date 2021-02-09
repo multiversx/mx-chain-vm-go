@@ -352,6 +352,25 @@ func (context *outputContext) AddTxValueToAccount(address []byte, value *big.Int
 	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
 }
 
+// GetCurrentTotalUsedGas returns the current total used gas from the merged vm outputs
+func (context *outputContext) GetCurrentTotalUsedGas() (uint64, bool) {
+	gasUsed := uint64(0)
+	gasLockSentForward := false
+	for _, outputAccount := range context.outputState.OutputAccounts {
+		gasUsed = math.AddUint64(gasUsed, outputAccount.GasUsed)
+		for _, outputTransfer := range outputAccount.OutputTransfers {
+			gasUsed = math.AddUint64(gasUsed, outputTransfer.GasLimit)
+			gasUsed = math.AddUint64(gasUsed, outputTransfer.GasLocked)
+
+			if outputTransfer.GasLocked > 0 {
+				gasLockSentForward = true
+			}
+		}
+	}
+
+	return gasUsed, gasLockSentForward
+}
+
 // GetVMOutput updates the current VMOutput and returns it
 func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 	runtime := context.host.Runtime()
@@ -397,21 +416,9 @@ func (context *outputContext) checkGas(remainedFromForwarded uint64) error {
 		return nil
 	}
 
-	gasUsed := uint64(0)
-	gasLockSentForward := false
-	for _, outputAccount := range context.outputState.OutputAccounts {
-		gasUsed = math.AddUint64(gasUsed, outputAccount.GasUsed)
-		for _, outputTransfer := range outputAccount.OutputTransfers {
-			gasUsed = math.AddUint64(gasUsed, outputTransfer.GasLimit)
-			gasUsed = math.AddUint64(gasUsed, outputTransfer.GasLocked)
-
-			if outputTransfer.GasLocked > 0 {
-				gasLockSentForward = true
-			}
-		}
-	}
-
+	gasUsed, gasLockSentForward := context.GetCurrentTotalUsedGas()
 	gasProvided := context.host.Metering().GetGasProvided()
+
 	wasBuiltInFuncWhichForwardedGas := gasLockSentForward && context.isBuiltInExecution()
 	if wasBuiltInFuncWhichForwardedGas {
 		gasProvided = math.AddUint64(gasProvided, context.host.Metering().GetGasLocked())
