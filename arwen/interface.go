@@ -108,6 +108,7 @@ type RuntimeContext interface {
 	GetAsyncContextInfo() *AsyncContextInfo
 	GetAsyncContext(contextIdentifier []byte) (*AsyncContext, error)
 	RunningInstancesCount() uint64
+	IsFunctionImported(name string) bool
 	IsWarmInstance() bool
 	ResetWarmInstance()
 	ReadOnly() bool

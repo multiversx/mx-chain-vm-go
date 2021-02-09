@@ -92,6 +92,14 @@ func cWasmerInstanceGetBreakpointValue(instance *cWasmerInstanceT) uint64 {
 	))
 }
 
+func cWasmerInstanceIsFunctionImported(instance *cWasmerInstanceT, name string) bool {
+	var functionName = cCString(name)
+	return bool(C.wasmer_instance_is_function_imported(
+		(*C.wasmer_instance_t)(instance),
+		(*C.char)(unsafe.Pointer(functionName)),
+	))
+}
+
 func cWasmerInstanceCache(
 	instance *cWasmerInstanceT,
 	cacheBytes **cUchar,

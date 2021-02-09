@@ -288,6 +288,11 @@ func (instance *Instance) Cache() ([]byte, error) {
 	return goBytes, nil
 }
 
+// IsFunctionImported returns true if the instance imports the specified function
+func (instance *Instance) IsFunctionImported(name string) bool {
+	return cWasmerInstanceIsFunctionImported(instance.instance, name)
+}
+
 // GetExports returns the exports map for the current instance
 func (instance *Instance) GetExports() ExportsMap {
 	return instance.Exports
