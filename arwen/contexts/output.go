@@ -256,8 +256,9 @@ func (context *outputContext) TransferValueOnly(destination []byte, sender []byt
 		return err
 	}
 
+	isAsyncCall := context.host.IsArwenV3Enabled() && context.host.Runtime().GetVMInput().CallType == vmcommon.AsynchronousCall
 	hasValue := value.Cmp(big.NewInt(0)) == 1
-	if !payable && hasValue {
+	if !payable && hasValue && !isAsyncCall {
 		return arwen.ErrAccountNotPayable
 	}
 
