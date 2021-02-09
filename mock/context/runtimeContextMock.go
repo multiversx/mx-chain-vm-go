@@ -323,3 +323,8 @@ func (r *RuntimeContextMock) GetAsyncContext(_ []byte) (*arwen.AsyncContext, err
 // SetCustomCallFunction mocked method
 func (r *RuntimeContextMock) SetCustomCallFunction(_ string) {
 }
+
+// IsFunctionImported mocked method
+func (r *RuntimeContextMock) IsFunctionImported(_ string) bool {
+	return true
+}
