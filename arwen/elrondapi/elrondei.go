@@ -663,7 +663,7 @@ func transferESDTExecute(
 	gasToUse := metering.GasSchedule().ElrondAPICost.TransferValue
 	metering.UseGas(gasToUse)
 
-	send := runtime.GetSCAddress()
+	sender := runtime.GetSCAddress()
 	dest, err := runtime.MemLoad(destOffset, arwen.AddressLen)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
@@ -674,11 +674,16 @@ func transferESDTExecute(
 		return 1
 	}
 
+	tokenIdentifier, err := runtime.MemLoad(tokenIdOffset, tokenIDLen)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
 	var contractCallInput *vmcommon.ContractCallInput
 	if functionLength > 0 {
 		contractCallInput, err = prepareIndirectContractCallInput(
 			host,
-			send,
+			sender,
 			big.NewInt(0),
 			gasLimit,
 			destOffset,
@@ -691,16 +696,23 @@ func transferESDTExecute(
 		if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 			return 1
 		}
+
+		contractCallInput.ESDTValue = big.NewInt(0).SetBytes(valueBytes)
+		contractCallInput.ESDTTokenName = tokenIdentifier
 	}
 
-	tokenIdentifier, err := runtime.MemLoad(tokenIdOffset, tokenIDLen)
+	err = output.TransferESDT(dest, sender, tokenIdentifier, big.NewInt(0).SetBytes(valueBytes), contractCallInput, uint64(gasLimit))
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
-	err = output.TransferESDT(dest, send, tokenIdentifier, big.NewInt(0).SetBytes(valueBytes), contractCallInput, uint64(gasLimit))
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return 1
+	if host.AreInSameShard(sender, dest) && contractCallInput != nil {
+		_, _, _, err = host.ExecuteOnDestContext(contractCallInput)
+		if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
+			return 1
+		}
+
+		return 0
 	}
 
 	return 0

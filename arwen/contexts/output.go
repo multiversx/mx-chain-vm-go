@@ -292,7 +292,7 @@ func (context *outputContext) Transfer(destination []byte, sender []byte, gasLim
 	return nil
 }
 
-// TransferESDT makes the esdt transfer and subsequent call and exports the data if it is cross shard
+// TransferESDT makes the esdt transfer and exports the data if it is cross shard
 func (context *outputContext) TransferESDT(
 	destination []byte,
 	sender []byte,
@@ -307,16 +307,13 @@ func (context *outputContext) TransferESDT(
 	}
 
 	if context.host.Blockchain().IsSmartContract(destination) && callInput != nil {
-		if !context.host.AreInSameShard(sender, destination) {
-			if gasLimit > context.host.Metering().GasLeft() {
-				return arwen.ErrNotEnoughGas
-			}
+		if gasLimit > context.host.Metering().GasLeft() {
+			return arwen.ErrNotEnoughGas
+		}
 
+		if !context.host.AreInSameShard(sender, destination) {
 			context.host.Metering().ForwardGas(sender, destination, gasLimit)
 			context.host.Metering().UseGas(gasLimit)
-		} else {
-			// here we should execute on destination context without caring about the feedback
-
 		}
 	} else {
 		gasLimit = 0
@@ -330,6 +327,15 @@ func (context *outputContext) TransferESDT(
 		Data:      []byte(core.BuiltInFunctionESDTTransfer + "@" + hex.EncodeToString(tokenIdentifier) + "@" + hex.EncodeToString(value.Bytes())),
 		CallType:  vmcommon.DirectCall,
 	}
+
+	if callInput != nil {
+		scCallData := "@" + hex.EncodeToString([]byte(callInput.Function))
+		for _, arg := range callInput.Arguments {
+			scCallData += "@" + hex.EncodeToString(arg)
+		}
+		outputTransfer.Data = append(outputTransfer.Data, []byte(scCallData)...)
+	}
+
 	destAcc.OutputTransfers = append(destAcc.OutputTransfers, outputTransfer)
 
 	return nil
