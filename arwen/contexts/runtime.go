@@ -543,6 +543,19 @@ func (context *runtimeContext) VerifyContractCode() error {
 		return err
 	}
 
+	err = context.checkBackwardCompatibility()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (context *runtimeContext) checkBackwardCompatibility() error {
+	if context.host.IsArwenV3Enabled() {
+		return nil
+	}
+
 	return nil
 }
 

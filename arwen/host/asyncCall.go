@@ -271,6 +271,10 @@ func (host *vmHost) computeCallValueFromVMOutput(destinationVMOutput *vmcommon.V
 		return returnTransfer
 	}
 
+	if len(outAcc.OutputTransfers) == 0 {
+		return returnTransfer
+	}
+
 	lastOutTransfer := outAcc.OutputTransfers[len(outAcc.OutputTransfers)-1]
 	if len(lastOutTransfer.Data) == 0 {
 		returnTransfer.Set(lastOutTransfer.Value)
