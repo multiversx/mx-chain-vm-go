@@ -556,6 +556,13 @@ func (context *runtimeContext) checkBackwardCompatibility() error {
 		return nil
 	}
 
+	if context.instance.IsFunctionImported("transferESDTExecute") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("transferValueExecute") {
+		return arwen.ErrContractInvalid
+	}
+
 	return nil
 }
 
