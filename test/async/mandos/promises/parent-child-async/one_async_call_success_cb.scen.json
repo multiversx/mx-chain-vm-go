@@ -1,5 +1,5 @@
 {
-    "name": "one_async_call_no_cb_with_call_value",
+    "name": "one_async_call_success_cb",
     "steps": [
         {
             "step": "setState",
@@ -12,7 +12,7 @@
                 },
                 "0x00000000000000000f0f706172656e7453432e2e2e2e2e2e2e2e2e2e2e2e2e2e": {
                     "nonce": "0",
-                    "balance": "16",
+                    "balance": "0",
                     "storage": {},
                     "code": "file:../../../../contracts/promises/parent-simple/output/parent-simple.wasm"
                 },
@@ -26,18 +26,18 @@
         },
         {
             "step": "scCall",
-            "txId": "one-async-call-no-callback-with-call-value",
+            "txId": "one_async_call_success_cb",
             "tx": {
                 "from": "address:user",
                 "to": "0x00000000000000000f0f706172656e7453432e2e2e2e2e2e2e2e2e2e2e2e2e2e",
                 "value": "0",
-                "function": "one_async_call_no_cb_with_call_value",
+                "function": "one_async_call_success_cb",
                 "arguments": [],
                 "gasLimit": "0x1000000000000",
                 "gasPrice": "0x00"
             },
             "expect": {
-                "out": [],
+                "out": ["42"],
                 "status": "0",
                 "message": "",
                 "logs": [],
@@ -57,12 +57,14 @@
                 "0x00000000000000000f0f706172656e7453432e2e2e2e2e2e2e2e2e2e2e2e2e2e": {
                     "nonce": "0",
                     "balance": "0",
-                    "storage": {},
+                    "storage": {
+                        "str:SuccessCallbackArg|u8:1": "42"
+                    },
                     "code": "file:../../../../contracts/promises/parent-simple/output/parent-simple.wasm"
                 },
                 "0x00000000000000000f0f6368696c6453432e2e2e2e2e2e2e2e2e2e2e2e2e2e2e": {
                     "nonce": "0",
-                    "balance": "16",
+                    "balance": "0",
                     "storage": {},
                     "code": "file:../../../../contracts/promises/child-simple/output/child-simple.wasm"
                 }

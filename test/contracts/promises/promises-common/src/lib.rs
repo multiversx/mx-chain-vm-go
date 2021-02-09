@@ -1,6 +1,6 @@
 #![no_std]
 
-use elrond_wasm::Address;
+pub use elrond_wasm::{Address, Vec};
 
 pub const PARENT_ADDRESS: [u8; 32] = [
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0F, 0x0F, b'p', b'a', b'r', b'e', b'n', b't',
@@ -12,6 +12,17 @@ pub const CHILD_ADDRESS: [u8; 32] = [
     b'C', b'.', b'.', b'.', b'.', b'.', b'.', b'.', b'.', b'.', b'.', b'.', b'.', b'.', b'.', b'.',
 ];
 
+pub const ZERO: [u8; 32] = [0u8; 32];
+
+pub fn construct_storage_key(key_parts: &[&[u8]]) -> Vec<u8> {
+    let mut key = Vec::new();
+
+    for part in key_parts {
+        key.extend_from_slice(part);
+    }
+
+    key
+}
 
 pub fn create_async_call(
     group_id: &str,
