@@ -52,8 +52,10 @@ func (context *asyncContext) executeSyncCall(asyncCall *arwen.AsyncCall) error {
 	// by design. Using it without checking for err is safe here.
 	asyncCall.UpdateStatus(vmOutput.ReturnCode)
 
-	callbackVMOutput, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, err)
-	context.finishSyncExecution(callbackVMOutput, callbackErr)
+	if asyncCall.HasCallback() {
+		callbackVMOutput, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, err)
+		context.finishSyncExecution(callbackVMOutput, callbackErr)
+	}
 
 	// TODO accumulate remaining gas from the callback into the AsyncContext,
 	// after fixing the bug caught by TestExecution_ExecuteOnDestContext_GasRemaining().
