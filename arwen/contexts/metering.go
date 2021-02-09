@@ -398,6 +398,6 @@ func (context *meteringContext) SetTotalUsedGas(total uint64) {
 }
 
 // GetTotalUsedGas return the total used gas before the current execution
-func (context *meteringContext) GetTotalUsedGas() uint64 {
+func (context *meteringContext) GetPreviousTotalUsedGas() uint64 {
 	return context.totalUsedGas
 }

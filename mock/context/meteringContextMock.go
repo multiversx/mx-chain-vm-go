@@ -182,6 +182,6 @@ func (m *MeteringContextMock) SetTotalUsedGas(_ uint64) {
 }
 
 // GetTotalUsedGas mocked method
-func (m *MeteringContextMock) GetTotalUsedGas() uint64 {
+func (m *MeteringContextMock) GetPreviousTotalUsedGas() uint64 {
 	return 0
 }

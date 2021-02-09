@@ -206,7 +206,7 @@ type MeteringContext interface {
 	UseGasBounded(gasToUse uint64) error
 	GetGasLocked() uint64
 	SetTotalUsedGas(total uint64)
-	GetTotalUsedGas() uint64
+	GetPreviousTotalUsedGas() uint64
 }
 
 // StorageStatus defines the states the storage can be in

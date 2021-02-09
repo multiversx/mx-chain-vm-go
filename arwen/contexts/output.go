@@ -416,6 +416,7 @@ func (context *outputContext) checkGas(remainedFromForwarded uint64) error {
 		return nil
 	}
 
+	previousGasUsed := context.host.Metering().GetPreviousTotalUsedGas()
 	gasUsed, gasLockSentForward := context.GetCurrentTotalUsedGas()
 	gasProvided := context.host.Metering().GetGasProvided()
 
@@ -427,6 +428,7 @@ func (context *outputContext) checkGas(remainedFromForwarded uint64) error {
 	context.outputState.GasRemaining, remainedFromForwarded = math.SubUint64(context.outputState.GasRemaining, remainedFromForwarded)
 	totalGas := math.AddUint64(gasUsed, context.outputState.GasRemaining)
 	totalGas, _ = math.SubUint64(totalGas, remainedFromForwarded)
+	totalGas, _ = math.SubUint64(totalGas, previousGasUsed)
 	if totalGas > gasProvided {
 		log.Error("gas usage mismatch", "total gas used", totalGas, "gas provided", gasProvided)
 		return arwen.ErrInputAndOutputGasDoesNotMatch
