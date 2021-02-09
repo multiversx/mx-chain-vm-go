@@ -19,14 +19,38 @@ pub extern "C" fn no_async() {
 
 #[no_mangle]
 pub extern "C" fn one_async_call_no_cb_with_call_value() {
-    let mut value: [u8; 32] = [0; 32];
-
+    let mut value = [0u8; 32];
     value[31] = 16;
 
     create_async_call("testgroup",
                       &Address::from(CHILD_ADDRESS),
                       &value,
                       b"answer",
+                      "",
+                      "",
+                      100000);
+}
+
+#[no_mangle]
+pub extern "C" fn one_async_call_no_cb_fail() {
+    create_async_call("testgroup",
+                      &Address::from(CHILD_ADDRESS),
+                      &ZERO,
+                      b"fail",
+                      "",
+                      "",
+                      100000);
+}
+
+#[no_mangle]
+pub extern "C" fn one_async_call_no_cb_fail_with_call_value() {
+    let mut value = [0u8; 32];
+    value[31] = 16;
+
+    create_async_call("testgroup",
+                      &Address::from(CHILD_ADDRESS),
+                      &value,
+                      b"fail",
                       "",
                       "",
                       100000);
@@ -44,14 +68,16 @@ pub extern "C" fn one_async_call_success_cb() {
 }
 
 
-// first argument is group id, followed by data passed by finish() in callee contract
+// first argument is "0" for success, followed by data passed by finish() in callee contract
 #[no_mangle]
 pub extern "C" fn success_callback_one_arg() {
-    EEI.check_num_arguments(2);
+    let expected_num_args = 2;
+    EEI.check_num_arguments(expected_num_args);
 
-    let arg_index = 1u8;
-    let arg = EEI.get_argument_i64(arg_index as i32);
-    let storage_key = construct_storage_key(&[SUCCESS_CALLBACK_ARGUMENT_KEY, &[arg_index]]);
-
-    EEI.storage_store_i64(&storage_key, arg);
+    for arg_index in 0..expected_num_args {
+        let arg = EEI.get_argument_u64(arg_index);
+        let storage_key = construct_storage_key(&[SUCCESS_CALLBACK_ARGUMENT_KEY, &[arg_index as u8]]);
+    
+        EEI.storage_store_u64(&storage_key, arg);
+    }
 }
