@@ -7,8 +7,6 @@ on:
   pull_request:
 
 jobs:
-  env:
-    ARWEN_PATH: ${GITHUB_WORKSPACE}/arwen
   test:
     strategy:
       matrix:
@@ -23,4 +21,6 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
     - name: Test
-      run: make test
+      run: |
+          export ARWEN_PATH=${GITHUB_WORKSPACE}/arwen
+          make test
