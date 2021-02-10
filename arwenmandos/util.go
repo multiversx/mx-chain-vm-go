@@ -64,6 +64,10 @@ func convertBlockInfo(testBlockInfo *mj.BlockInfo) *worldhook.BlockInfo {
 		BlockNonce:     testBlockInfo.BlockNonce.Value,
 		BlockRound:     testBlockInfo.BlockRound.Value,
 		BlockEpoch:     uint32(testBlockInfo.BlockEpoch.Value),
+		RandomSeed:     nil,
+	}
+	if testBlockInfo.BlockRandomSeed != nil {
+		result.RandomSeed = testBlockInfo.BlockRandomSeed.Value
 	}
 
 	return result
