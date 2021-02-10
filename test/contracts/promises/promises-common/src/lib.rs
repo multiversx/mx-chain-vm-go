@@ -13,6 +13,7 @@ pub const CHILD_ADDRESS: [u8; 32] = [
 ];
 
 pub const ZERO: [u8; 32] = [0u8; 32];
+pub const EMPTY_SLICE: &[u8] = &[];
 
 pub fn construct_storage_key(key_parts: &[&[u8]]) -> Vec<u8> {
     let mut key = Vec::new();
@@ -25,25 +26,25 @@ pub fn construct_storage_key(key_parts: &[&[u8]]) -> Vec<u8> {
 }
 
 pub fn create_async_call(
-    group_id: &str,
+    group_id: &[u8],
     destination: &Address,
     value: &[u8],
     data: &[u8],
-    success_callback_name: &str,
-    error_callback_name: &str,
+    success_callback_name: &[u8],
+    error_callback_name: &[u8],
     gas: i64) 
 {
     unsafe {
         createAsyncCall(
-            group_id.as_ptr(),
+            group_id.as_ref().as_ptr(),
             group_id.len() as i32,
             destination.as_ref().as_ptr(),
             value.as_ref().as_ptr(),
             data.as_ref().as_ptr(),
             data.len() as i32,
-            success_callback_name.as_ptr(),
+            success_callback_name.as_ref().as_ptr(),
             success_callback_name.len() as i32,
-            error_callback_name.as_ptr(),
+            error_callback_name.as_ref().as_ptr(),
             error_callback_name.len() as i32,
             gas
         )
