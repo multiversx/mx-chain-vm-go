@@ -151,7 +151,7 @@ pub extern "C" fn two_async_same_cb_fail_both() {
                       &Address::from(CHILD_ADDRESS),
                       &ZERO,
                       b"fail",
-                      SUCCESS_CALLBACK_ONE_ARG_NAME,
+                      EMPTY_SLICE,
                       FAIL_CALLBACK_NAME,
                       100000);
     
@@ -159,7 +159,7 @@ pub extern "C" fn two_async_same_cb_fail_both() {
                       &Address::from(CHILD_ADDRESS),
                       &ZERO,
                       b"fail",
-                      SUCCESS_CALLBACK_ONE_ARG_NAME,
+                      EMPTY_SLICE,
                       FAIL_CALLBACK_NAME,
                       100000);
 }

@@ -58,10 +58,10 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "str:SuccessCallbackArg|u8:0": "4",
-                        "str:SuccessCallbackArg|u8:1": "str:fail",
-                        "str:SuccessCallbackArg|u8:2": "4",
-                        "str:SuccessCallbackArg|u8:3": "str:fail",
+                        "str:FailCallbackArg|u8:0": "4",
+                        "str:FailCallbackArg|u8:1": "str:fail",
+                        "str:FailCallbackArg|u8:2": "4",
+                        "str:FailCallbackArg|u8:3": "str:fail",
                         "str:CurrentStorageIndex": "4"
                     },
                     "code": "file:../../../../contracts/promises/parent-simple/output/parent-simple.wasm"
