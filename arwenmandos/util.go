@@ -59,15 +59,18 @@ func convertBlockInfo(testBlockInfo *mj.BlockInfo) *worldhook.BlockInfo {
 	if testBlockInfo == nil {
 		return nil
 	}
+
+	var randomsSeed [48]byte
+	if testBlockInfo.BlockRandomSeed != nil {
+		copy(randomsSeed[:], testBlockInfo.BlockRandomSeed.Value)
+	}
+
 	result := &worldhook.BlockInfo{
 		BlockTimestamp: testBlockInfo.BlockTimestamp.Value,
 		BlockNonce:     testBlockInfo.BlockNonce.Value,
 		BlockRound:     testBlockInfo.BlockRound.Value,
 		BlockEpoch:     uint32(testBlockInfo.BlockEpoch.Value),
-		RandomSeed:     nil,
-	}
-	if testBlockInfo.BlockRandomSeed != nil {
-		result.RandomSeed = testBlockInfo.BlockRandomSeed.Value
+		RandomSeed:     &randomsSeed,
 	}
 
 	return result
