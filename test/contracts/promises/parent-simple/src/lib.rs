@@ -88,6 +88,7 @@ pub extern "C" fn one_async_call_fail_cb() {
 
 // two async calls
 
+#[no_mangle]
 pub extern "C" fn two_async_same_cb_success_both() {
     create_async_call(COMMON_GROUP_ID,
                       &Address::from(CHILD_ADDRESS),
@@ -106,6 +107,7 @@ pub extern "C" fn two_async_same_cb_success_both() {
                       100000);
 }
 
+#[no_mangle]
 pub extern "C" fn two_async_same_cb_success_first_fail_second() {
     create_async_call(COMMON_GROUP_ID,
                       &Address::from(CHILD_ADDRESS),
@@ -124,6 +126,7 @@ pub extern "C" fn two_async_same_cb_success_first_fail_second() {
                       100000);
 }
 
+#[no_mangle]
 pub extern "C" fn two_async_same_cb_fail_first_success_second() {
     create_async_call(COMMON_GROUP_ID,
                       &Address::from(CHILD_ADDRESS),
@@ -142,6 +145,7 @@ pub extern "C" fn two_async_same_cb_fail_first_success_second() {
                       100000);
 }
 
+#[no_mangle]
 pub extern "C" fn two_async_same_cb_fail_both() {
     create_async_call(COMMON_GROUP_ID,
                       &Address::from(CHILD_ADDRESS),
@@ -199,4 +203,3 @@ pub extern "C" fn fail_callback() {
 
     EEI.storage_store_u64(&CURRENT_STORAGE_INDEX_KEY, storage_index);
 }
-
