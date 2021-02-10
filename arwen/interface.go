@@ -36,6 +36,7 @@ type VMHost interface {
 	IsArwenV2Enabled() bool
 	IsAheadOfTimeCompileEnabled() bool
 	IsDynamicGasLockingEnabled() bool
+	IsArwenV3Enabled() bool
 
 	ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, value *big.Int) error
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
@@ -159,7 +160,7 @@ type OutputContext interface {
 	WriteLog(address []byte, topics [][]byte, data []byte)
 	TransferValueOnly(destination []byte, sender []byte, value *big.Int) error
 	Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, input []byte, callType vmcommon.CallType) error
-	TransferESDT(destination []byte, sender []byte, tokenIdentifier []byte, value *big.Int, input []byte, gasLimit uint64) error
+	TransferESDT(destination []byte, sender []byte, tokenIdentifier []byte, value *big.Int, callInput *vmcommon.ContractCallInput, gasLimit uint64) error
 	SelfDestruct(address []byte, beneficiary []byte)
 	GetRefund() uint64
 	SetRefund(refund uint64)
@@ -175,6 +176,7 @@ type OutputContext interface {
 	AddTxValueToAccount(address []byte, value *big.Int)
 	DeployCode(input CodeDeployInput)
 	CreateVMOutputInCaseOfError(err error) *vmcommon.VMOutput
+	GetCurrentTotalUsedGas() (uint64, bool)
 }
 
 // MeteringContext defines the functionality needed for interacting with the metering context
@@ -204,6 +206,8 @@ type MeteringContext interface {
 	UseGasForAsyncStep() error
 	UseGasBounded(gasToUse uint64) error
 	GetGasLocked() uint64
+	SetTotalUsedGas(total uint64)
+	GetPreviousTotalUsedGas() uint64
 }
 
 // StorageStatus defines the states the storage can be in

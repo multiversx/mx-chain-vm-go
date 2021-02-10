@@ -35,7 +35,8 @@ func (context *blockchainContext) NewAddress(creatorAddress []byte) ([]byte, err
 		return nil, err
 	}
 
-	if nonce > 0 {
+	isIndirectDeployment := context.IsSmartContract(creatorAddress) && context.host.IsArwenV3Enabled()
+	if !isIndirectDeployment && nonce > 0 {
 		nonce--
 	}
 
@@ -91,12 +92,10 @@ func (context *blockchainContext) GetBalanceBigInt(address []byte) *big.Int {
 
 // GetNonce returns the nonce at which the account mapped to the given address is.
 func (context *blockchainContext) GetNonce(address []byte) (uint64, error) {
-	// TODO verify if Nonce is 0, which means the outputAccount was cached, but
-	// its Nonce not yet retrieved from the BlockchainHook; more generally,
-	// create a list of accounts that have been cached, but not yet fully updated
-	// from the BlockchainHook (they might have uninitialized Nonce and Balance).
 	outputAccount, isNew := context.host.Output().GetOutputAccount(address)
-	if !isNew {
+
+	readNonceFromBlockChain := isNew || (outputAccount.Nonce == 0 && context.host.IsArwenV3Enabled())
+	if !readNonceFromBlockChain {
 		return outputAccount.Nonce, nil
 	}
 

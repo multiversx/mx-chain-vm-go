@@ -69,6 +69,11 @@ func (host *VMHostMock) IsArwenV2Enabled() bool {
 	return true
 }
 
+// IsArwenV3Enabled mocked method
+func (host *VMHostMock) IsArwenV3Enabled() bool {
+	return true
+}
+
 // IsAheadOfTimeCompileEnabled mocked method
 func (host *VMHostMock) IsAheadOfTimeCompileEnabled() bool {
 	return true

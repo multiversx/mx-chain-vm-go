@@ -24,7 +24,7 @@ type OutputContextStub struct {
 	DeleteOutputAccountCalled         func(address []byte)
 	WriteLogCalled                    func(address []byte, topics [][]byte, data []byte)
 	TransferCalled                    func(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, input []byte) error
-	TransferESDTCalled                func(destination []byte, sender []byte, tokenIdentifier []byte, value *big.Int, gasLimit uint64, input []byte) error
+	TransferESDTCalled                func(destination []byte, sender []byte, tokenIdentifier []byte, value *big.Int, gasLimit uint64, input *vmcommon.ContractCallInput) error
 	SelfDestructCalled                func(address []byte, beneficiary []byte)
 	GetRefundCalled                   func() uint64
 	SetRefundCalled                   func(refund uint64)
@@ -42,6 +42,7 @@ type OutputContextStub struct {
 	CreateVMOutputInCaseOfErrorCalled func(err error) *vmcommon.VMOutput
 	AddToActiveStateCalled            func(vmOutput *vmcommon.VMOutput)
 	TransferValueOnlyCalled           func(destination []byte, sender []byte, value *big.Int) error
+	GetCurrentTotalUsedGasCalled      func() (uint64, bool)
 }
 
 // AddToActiveState mocked method
@@ -155,9 +156,9 @@ func (o *OutputContextStub) Transfer(destination []byte, sender []byte, gasLimit
 }
 
 // TransferESDT mocked method
-func (o *OutputContextStub) TransferESDT(destination []byte, sender []byte, tokenIdentifier []byte, value *big.Int, input []byte, gasLimit uint64) error {
+func (o *OutputContextStub) TransferESDT(destination []byte, sender []byte, tokenIdentifier []byte, value *big.Int, callInput *vmcommon.ContractCallInput, gasLimit uint64) error {
 	if o.TransferESDTCalled != nil {
-		return o.TransferESDTCalled(destination, sender, tokenIdentifier, value, gasLimit, input)
+		return o.TransferESDTCalled(destination, sender, tokenIdentifier, value, gasLimit, callInput)
 	}
 	return nil
 }
@@ -271,4 +272,12 @@ func (o *OutputContextStub) CreateVMOutputInCaseOfError(err error) *vmcommon.VMO
 		return o.CreateVMOutputInCaseOfErrorCalled(err)
 	}
 	return nil
+}
+
+// GetCurrentTotalUsedGas mocked method
+func (o *OutputContextStub) GetCurrentTotalUsedGas() (uint64, bool) {
+	if o.GetCurrentTotalUsedGasCalled != nil {
+		return o.GetCurrentTotalUsedGasCalled()
+	}
+	return 0, false
 }
