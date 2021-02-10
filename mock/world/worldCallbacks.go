@@ -99,7 +99,7 @@ func (b *MockWorld) LastRandomSeed() []byte {
 	if b.PreviousBlockInfo == nil {
 		return nil
 	}
-	return b.PreviousBlockInfo.RandomSeed
+	return b.PreviousBlockInfo.RandomSeed[:]
 }
 
 // LastEpoch returns the epoch from the last committed block
@@ -144,7 +144,7 @@ func (b *MockWorld) CurrentRandomSeed() []byte {
 	if b.CurrentBlockInfo == nil {
 		return nil
 	}
-	return b.CurrentBlockInfo.RandomSeed
+	return b.CurrentBlockInfo.RandomSeed[:]
 }
 
 // CurrentEpoch returns the current epoch

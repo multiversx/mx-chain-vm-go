@@ -399,20 +399,25 @@ func TestBlockchainContext_Getters(t *testing.T) {
 	t.Parallel()
 
 	host := &contextmock.VMHostMock{}
+	var randomSeed1 [48]byte
+	copy(randomSeed1[:], []byte("last random seed                                "))
+	var randomSeed2 [48]byte
+	copy(randomSeed2[:], []byte("current random seed                             "))
+
 	mockWorld := &worldmock.MockWorld{
 		PreviousBlockInfo: &worldmock.BlockInfo{
 			BlockTimestamp: 6749,
 			BlockNonce:     90,
 			BlockRound:     96,
 			BlockEpoch:     3,
-			RandomSeed:     []byte("last random seed"),
+			RandomSeed:     &randomSeed1,
 		},
 		CurrentBlockInfo: &worldmock.BlockInfo{
 			BlockTimestamp: 6800,
 			BlockNonce:     98,
 			BlockRound:     99,
 			BlockEpoch:     4,
-			RandomSeed:     []byte("current random seed"),
+			RandomSeed:     &randomSeed2,
 		},
 		StateRootHash: []byte("root hash"),
 	}
@@ -432,6 +437,6 @@ func TestBlockchainContext_Getters(t *testing.T) {
 	require.Equal(t, uint64(6800), blockchainContext.CurrentTimeStamp())
 
 	require.Equal(t, []byte("root hash"), blockchainContext.GetStateRootHash())
-	require.Equal(t, []byte("last random seed"), blockchainContext.LastRandomSeed())
-	require.Equal(t, []byte("current random seed"), blockchainContext.CurrentRandomSeed())
+	require.Equal(t, randomSeed1[:], blockchainContext.LastRandomSeed())
+	require.Equal(t, randomSeed2[:], blockchainContext.CurrentRandomSeed())
 }
