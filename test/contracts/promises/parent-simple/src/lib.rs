@@ -18,6 +18,10 @@ const COMMON_GROUP_ID: &[u8] = b"testgroup";
 const SUCCESS_CALLBACK_ONE_ARG_NAME: &[u8] = b"success_callback_one_arg";
 const FAIL_CALLBACK_NAME: &[u8] = b"fail_callback";
 
+const GAS_100K: i64 = 100000;
+const GAS_5M: i64 = 5000000;
+const GAS_10M: i64 = 10000000;
+
 #[no_mangle]
 pub extern "C" fn no_async() {
     EEI.finish_i64(42);
@@ -36,7 +40,7 @@ pub extern "C" fn one_async_call_no_cb_with_call_value() {
                       b"answer",
                       EMPTY_SLICE,
                       EMPTY_SLICE,
-                      100000);
+                      GAS_100K);
 }
 
 #[no_mangle]
@@ -47,7 +51,7 @@ pub extern "C" fn one_async_call_no_cb_fail() {
                       b"fail",
                       EMPTY_SLICE,
                       EMPTY_SLICE,
-                      100000);
+                      GAS_100K);
 }
 
 #[no_mangle]
@@ -61,7 +65,7 @@ pub extern "C" fn one_async_call_no_cb_fail_with_call_value() {
                       b"fail",
                       EMPTY_SLICE,
                       EMPTY_SLICE,
-                      100000);
+                      GAS_100K);
 }
 
 #[no_mangle]
@@ -72,7 +76,7 @@ pub extern "C" fn one_async_call_success_cb() {
                       b"answer",
                       SUCCESS_CALLBACK_ONE_ARG_NAME,
                       EMPTY_SLICE,
-                      100000);
+                      GAS_100K);
 }
 
 #[no_mangle]
@@ -83,7 +87,7 @@ pub extern "C" fn one_async_call_fail_cb() {
                       b"fail",
                       EMPTY_SLICE,
                       FAIL_CALLBACK_NAME,
-                      100000);
+                      GAS_100K);
 }
 
 // two async calls
@@ -93,18 +97,18 @@ pub extern "C" fn two_async_same_cb_success_both() {
     create_async_call(COMMON_GROUP_ID,
                       &Address::from(CHILD_ADDRESS),
                       &ZERO,
-                      b"echo@0x01",
+                      b"echo@01",
                       SUCCESS_CALLBACK_ONE_ARG_NAME,
                       FAIL_CALLBACK_NAME,
-                      100000);
+                      GAS_10M);
     
     create_async_call(COMMON_GROUP_ID,
                       &Address::from(CHILD_ADDRESS),
                       &ZERO,
-                      b"echo@0x02",
+                      b"echo@02",
                       SUCCESS_CALLBACK_ONE_ARG_NAME,
                       FAIL_CALLBACK_NAME,
-                      100000);
+                      GAS_10M);
 }
 
 #[no_mangle]
@@ -112,10 +116,10 @@ pub extern "C" fn two_async_same_cb_success_first_fail_second() {
     create_async_call(COMMON_GROUP_ID,
                       &Address::from(CHILD_ADDRESS),
                       &ZERO,
-                      b"echo@0x01",
+                      b"echo@01",
                       SUCCESS_CALLBACK_ONE_ARG_NAME,
                       FAIL_CALLBACK_NAME,
-                      100000);
+                      GAS_5M);
     
     create_async_call(COMMON_GROUP_ID,
                       &Address::from(CHILD_ADDRESS),
@@ -123,7 +127,7 @@ pub extern "C" fn two_async_same_cb_success_first_fail_second() {
                       b"fail",
                       SUCCESS_CALLBACK_ONE_ARG_NAME,
                       FAIL_CALLBACK_NAME,
-                      100000);
+                      GAS_5M);
 }
 
 #[no_mangle]
@@ -134,15 +138,15 @@ pub extern "C" fn two_async_same_cb_fail_first_success_second() {
                       b"fail",
                       SUCCESS_CALLBACK_ONE_ARG_NAME,
                       FAIL_CALLBACK_NAME,
-                      100000);
+                      100000000);
     
     create_async_call(COMMON_GROUP_ID,
                       &Address::from(CHILD_ADDRESS),
                       &ZERO,
-                      b"echo@0x02",
+                      b"echo@02",
                       SUCCESS_CALLBACK_ONE_ARG_NAME,
                       FAIL_CALLBACK_NAME,
-                      100000);
+                      100000000);
 }
 
 #[no_mangle]
@@ -153,7 +157,7 @@ pub extern "C" fn two_async_same_cb_fail_both() {
                       b"fail",
                       EMPTY_SLICE,
                       FAIL_CALLBACK_NAME,
-                      100000);
+                      GAS_100K);
     
     create_async_call(COMMON_GROUP_ID,
                       &Address::from(CHILD_ADDRESS),
@@ -161,7 +165,7 @@ pub extern "C" fn two_async_same_cb_fail_both() {
                       b"fail",
                       EMPTY_SLICE,
                       FAIL_CALLBACK_NAME,
-                      100000);
+                      GAS_100K);
 }
 
 // callbacks

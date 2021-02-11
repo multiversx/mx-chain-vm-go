@@ -25,6 +25,7 @@ pub fn construct_storage_key(key_parts: &[&[u8]]) -> Vec<u8> {
     key
 }
 
+#[inline(always)]
 pub fn create_async_call(
     group_id: &[u8],
     destination: &Address,
