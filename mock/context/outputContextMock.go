@@ -149,6 +149,11 @@ func (o *OutputContextMock) Finish(data []byte) {
 	o.ReturnDataMock = append(o.ReturnDataMock, data)
 }
 
+// PrependFinish mocked method
+func (o *OutputContextMock) PrependFinish(data []byte) {
+	o.ReturnDataMock = append([][]byte{data}, o.ReturnDataMock...)
+}
+
 // WriteLog mocked method
 func (o *OutputContextMock) WriteLog(_ []byte, _ [][]byte, _ []byte) {
 }
@@ -161,6 +166,11 @@ func (o *OutputContextMock) TransferValueOnly(_ []byte, _ []byte, _ *big.Int) er
 // Transfer mocked method
 func (o *OutputContextMock) Transfer(_ []byte, _ []byte, _ uint64, _ uint64, _ *big.Int, _ []byte, _ vmcommon.CallType) error {
 	return o.TransferResult
+}
+
+// TransferESDT mocked method
+func (o *OutputContextMock) TransferESDT(_ []byte, _ []byte, _ []byte, _ *big.Int, _ *vmcommon.ContractCallInput, _ uint64) error {
+	return nil
 }
 
 // AddTxValueToAccount mocked method
@@ -179,4 +189,9 @@ func (o *OutputContextMock) DeployCode(_ arwen.CodeDeployInput) {
 // CreateVMOutputInCaseOfError mocked method
 func (o *OutputContextMock) CreateVMOutputInCaseOfError(_ error) *vmcommon.VMOutput {
 	return o.OutputStateMock
+}
+
+// GetCurrentTotalUsedGas mocked method
+func (o *OutputContextMock) GetCurrentTotalUsedGas() (uint64, bool) {
+	return 0, false
 }

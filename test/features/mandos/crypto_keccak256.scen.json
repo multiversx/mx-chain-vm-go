@@ -6,13 +6,13 @@
             "accounts": {
                 "address:features_contract": {
                     "nonce": "0",
-                    "balance": "0x100",
+                    "balance": "0",
                     "storage": {},
                     "code": "file:../output/basic-features.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
-                    "balance": "0x300abc",
+                    "balance": "0",
                     "storage": {},
                     "code": ""
                 }
@@ -30,7 +30,7 @@
                     "0x61"
                 ],
                 "gasLimit": "0x100000",
-                "gasPrice": "0x01"
+                "gasPrice": "0"
             },
             "expect": {
                 "out": [
@@ -54,33 +54,16 @@
                     "0x0102030405060708"
                 ],
                 "gasLimit": "0x100000",
-                "gasPrice": "0x01"
+                "gasPrice": "0"
             },
             "expect": {
                 "out": [
-                    "0xfec062278915ba5c3c3af6ebf470b5afc94fedadf39fe78eea427b9aa5df9692"
+                    "keccak256:0x0102030405060708"
                 ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"
-            }
-        },
-        {
-            "step": "checkState",
-            "accounts": {
-                "address:features_contract": {
-                    "nonce": "0",
-                    "balance": "0x100",
-                    "storage": {},
-                    "code": "file:../output/basic-features.wasm"
-                },
-                "address:an_account": {
-                    "nonce": "2",
-                    "balance": "0x100abc",
-                    "storage": {},
-                    "code": ""
-                }
             }
         }
     ]

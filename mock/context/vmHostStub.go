@@ -1,6 +1,8 @@
 package mock
 
 import (
+	"math/big"
+
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
@@ -24,6 +26,7 @@ type VMHostStub struct {
 	MeteringCalled                    func() arwen.MeteringContext
 	StorageCalled                     func() arwen.StorageContext
 	AsyncCalled                       func() arwen.AsyncContext
+	ExecuteESDTTransferCalled         func(destination []byte, sender []byte, tokenIdentifier []byte, value *big.Int) error
 	CreateNewContractCalled           func(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContextCalled        func(input *vmcommon.ContractCallInput) error
 	ExecuteOnDestContextCalled        func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, uint64, error)
@@ -115,6 +118,11 @@ func (vhs *VMHostStub) IsArwenV2Enabled() bool {
 	return true
 }
 
+// IsArwenV3Enabled mocked method
+func (vhs *VMHostStub) IsArwenV3Enabled() bool {
+	return true
+}
+
 // IsAheadOfTimeCompileEnabled mocked method
 func (vhs *VMHostStub) IsAheadOfTimeCompileEnabled() bool {
 	return true
@@ -145,6 +153,14 @@ func (vhs *VMHostStub) Metering() arwen.MeteringContext {
 func (vhs *VMHostStub) Storage() arwen.StorageContext {
 	if vhs.StorageCalled != nil {
 		return vhs.StorageCalled()
+	}
+	return nil
+}
+
+// ExecuteESDTTransfer
+func (vhs *VMHostStub) ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, value *big.Int) error {
+	if vhs.ExecuteESDTTransferCalled != nil {
+		return vhs.ExecuteESDTTransferCalled(destination, sender, tokenIdentifier, value)
 	}
 	return nil
 }

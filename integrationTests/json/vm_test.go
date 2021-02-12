@@ -97,7 +97,7 @@ func TestMultisig(t *testing.T) {
 	}
 }
 
-func TestRustFeatures(t *testing.T) {
+func TestRustFeaturesLatest(t *testing.T) {
 	if testing.Short() {
 		t.Skip("not a short test")
 	}
@@ -112,7 +112,7 @@ func TestRustFeatures(t *testing.T) {
 		getTestRoot(),
 		"features/mandos",
 		".scen.json",
-		[]string{})
+		[]string{"features/mandos/block_info.scen.json"}) // TODO: implement block random seed in mandos, then un-skip
 
 	if err != nil {
 		t.Error(err)

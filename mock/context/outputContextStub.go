@@ -24,6 +24,7 @@ type OutputContextStub struct {
 	DeleteOutputAccountCalled         func(address []byte)
 	WriteLogCalled                    func(address []byte, topics [][]byte, data []byte)
 	TransferCalled                    func(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, input []byte) error
+	TransferESDTCalled                func(destination []byte, sender []byte, tokenIdentifier []byte, value *big.Int, gasLimit uint64, input *vmcommon.ContractCallInput) error
 	SelfDestructCalled                func(address []byte, beneficiary []byte)
 	GetRefundCalled                   func() uint64
 	SetRefundCalled                   func(refund uint64)
@@ -34,12 +35,14 @@ type OutputContextStub struct {
 	ReturnDataCalled                  func() [][]byte
 	ClearReturnDataCalled             func()
 	FinishCalled                      func(data []byte)
+	PrependFinishCalled               func(data []byte)
 	GetVMOutputCalled                 func() *vmcommon.VMOutput
 	AddTxValueToAccountCalled         func(address []byte, value *big.Int)
 	DeployCodeCalled                  func(input arwen.CodeDeployInput)
 	CreateVMOutputInCaseOfErrorCalled func(err error) *vmcommon.VMOutput
 	AddToActiveStateCalled            func(vmOutput *vmcommon.VMOutput)
 	TransferValueOnlyCalled           func(destination []byte, sender []byte, value *big.Int) error
+	GetCurrentTotalUsedGasCalled      func() (uint64, bool)
 }
 
 // AddToActiveState mocked method
@@ -152,6 +155,14 @@ func (o *OutputContextStub) Transfer(destination []byte, sender []byte, gasLimit
 	return nil
 }
 
+// TransferESDT mocked method
+func (o *OutputContextStub) TransferESDT(destination []byte, sender []byte, tokenIdentifier []byte, value *big.Int, callInput *vmcommon.ContractCallInput, gasLimit uint64) error {
+	if o.TransferESDTCalled != nil {
+		return o.TransferESDTCalled(destination, sender, tokenIdentifier, value, gasLimit, callInput)
+	}
+	return nil
+}
+
 // SelfDestruct mocked method
 func (o *OutputContextStub) SelfDestruct(address []byte, beneficiary []byte) {
 	if o.SelfDestructCalled != nil {
@@ -226,6 +237,13 @@ func (o *OutputContextStub) Finish(data []byte) {
 	}
 }
 
+// PrependFinish mocked method
+func (o *OutputContextStub) PrependFinish(data []byte) {
+	if o.PrependFinishCalled != nil {
+		o.PrependFinishCalled(data)
+	}
+}
+
 // GetVMOutput mocked method
 func (o *OutputContextStub) GetVMOutput() *vmcommon.VMOutput {
 	if o.GetVMOutputCalled != nil {
@@ -254,4 +272,12 @@ func (o *OutputContextStub) CreateVMOutputInCaseOfError(err error) *vmcommon.VMO
 		return o.CreateVMOutputInCaseOfErrorCalled(err)
 	}
 	return nil
+}
+
+// GetCurrentTotalUsedGas mocked method
+func (o *OutputContextStub) GetCurrentTotalUsedGas() (uint64, bool) {
+	if o.GetCurrentTotalUsedGasCalled != nil {
+		return o.GetCurrentTotalUsedGasCalled()
+	}
+	return 0, false
 }

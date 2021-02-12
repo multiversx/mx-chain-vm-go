@@ -176,3 +176,12 @@ func (m *MeteringContextMock) DeductInitialGasForDirectDeployment(_ arwen.CodeDe
 func (m *MeteringContextMock) DeductInitialGasForIndirectDeployment(_ arwen.CodeDeployInput) error {
 	return m.Err
 }
+
+// SetTotalUsedGas mocked method
+func (m *MeteringContextMock) SetTotalUsedGas(_ uint64) {
+}
+
+// GetTotalUsedGas mocked method
+func (m *MeteringContextMock) GetPreviousTotalUsedGas() uint64 {
+	return 0
+}

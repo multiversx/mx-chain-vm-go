@@ -38,6 +38,15 @@ func (p *Parser) processBlockInfo(blockInfoRaw oj.OJsonObject) (*mj.BlockInfo, e
 			if err != nil {
 				return nil, fmt.Errorf("error parsing blockEpoch: %w", err)
 			}
+		case "blockRandomSeed":
+			blockRandomSeed, err := p.processSubTreeAsByteArray(kvp.Value)
+			if err != nil {
+				return nil, fmt.Errorf("error parsing blockEpoch: %w", err)
+			}
+			if len(blockRandomSeed.Value) != 48 {
+				return nil, fmt.Errorf("blockRandomSeed must be 48 bytes long. Actual length: %d", len(blockRandomSeed.Value))
+			}
+			blockInfo.BlockRandomSeed = &blockRandomSeed
 		default:
 			return nil, fmt.Errorf("unknown block info field: %s", kvp.Key)
 		}

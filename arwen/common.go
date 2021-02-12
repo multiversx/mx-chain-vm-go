@@ -59,6 +59,9 @@ const (
 	// built-in function, which is executed half in-shard, half cross-shard
 	AsyncBuiltinFuncCrossShard
 
+	// ESDTTransferOnCallBack indicated that the async call is actually a callback with ESDT transfer
+	ESDTTransferOnCallBack
+
 	// AsyncUnknown indicates that the async call cannot be executed locally, and
 	// must be forwarded to the destination account
 	AsyncUnknown
@@ -96,5 +99,6 @@ type VMHostParameters struct {
 	ArwenV2EnableEpoch       uint32
 	AheadOfTimeEnableEpoch   uint32
 	DynGasLockEnableEpoch    uint32
+	ArwenV3EnableEpoch       uint32
 	UseWarmInstance          bool
 }

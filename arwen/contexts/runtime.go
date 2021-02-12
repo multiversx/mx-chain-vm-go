@@ -546,6 +546,26 @@ func (context *runtimeContext) VerifyContractCode() error {
 		return err
 	}
 
+	err = context.checkBackwardCompatibility()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (context *runtimeContext) checkBackwardCompatibility() error {
+	if context.host.IsArwenV3Enabled() {
+		return nil
+	}
+
+	if context.instance.IsFunctionImported("transferESDTExecute") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("transferValueExecute") {
+		return arwen.ErrContractInvalid
+	}
+
 	return nil
 }
 
@@ -670,6 +690,11 @@ func (context *runtimeContext) GetInitFunction() wasmer.ExportedFunctionCallback
 func (context *runtimeContext) HasFunction(functionName string) bool {
 	_, ok := context.instance.GetExports()[functionName]
 	return ok
+}
+
+// IsFunctionImported returns true if the WASM module imports the specified function.
+func (context *runtimeContext) IsFunctionImported(name string) bool {
+	return context.instance.IsFunctionImported(name)
 }
 
 // MemLoad returns the contents from the given offset of the WASM memory.

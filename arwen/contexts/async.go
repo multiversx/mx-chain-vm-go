@@ -6,6 +6,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/math"
+	"github.com/ElrondNetwork/elrond-go/core"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
@@ -611,6 +612,15 @@ func (context *asyncContext) determineExecutionMode(destination []byte, data []b
 
 	if context.host.IsBuiltinFunctionName(functionName) {
 		if sameShard {
+			vmInput := runtime.GetVMInput()
+			isESDTTransfer := functionName == core.BuiltInFunctionESDTTransfer
+			isAsyncCall := vmInput.CallType == vmcommon.AsynchronousCall
+			isReturningCall := bytes.Equal(vmInput.CallerAddr, destination)
+
+			if isESDTTransfer && isAsyncCall && isReturningCall {
+				return arwen.ESDTTransferOnCallback
+			}
+
 			return arwen.AsyncBuiltinFuncIntraShard, nil
 		}
 		return arwen.AsyncBuiltinFuncCrossShard, nil

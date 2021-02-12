@@ -152,6 +152,9 @@ func blockInfoToOJ(blockInfo *mj.BlockInfo) oj.OJsonObject {
 	if len(blockInfo.BlockEpoch.Original) > 0 {
 		blockInfoOJ.Put("blockEpoch", uint64ToOJ(blockInfo.BlockEpoch))
 	}
+	if blockInfo.BlockRandomSeed != nil {
+		blockInfoOJ.Put("blockRandomSeed", bytesFromTreeToOJ(*blockInfo.BlockRandomSeed))
+	}
 
 	return blockInfoOJ
 }

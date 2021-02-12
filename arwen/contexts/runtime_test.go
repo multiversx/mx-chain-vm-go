@@ -115,6 +115,39 @@ func TestRuntimeContext_NewWasmerInstance(t *testing.T) {
 	require.Equal(t, arwen.BreakpointNone, runtimeContext.GetRuntimeBreakpointValue())
 }
 
+func TestRuntimeContext_IsFunctionImported(t *testing.T) {
+	host := InitializeArwenAndWasmer()
+	vmType := []byte("type")
+
+	runtimeContext, err := NewRuntimeContext(host, vmType, false)
+	require.Nil(t, err)
+
+	runtimeContext.SetMaxInstanceCount(1)
+
+	gasLimit := uint64(100000000)
+	path := counterWasmCode
+	contractCode := arwen.GetSCCode(path)
+	err = runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
+	require.Nil(t, err)
+	require.Equal(t, arwen.BreakpointNone, runtimeContext.GetRuntimeBreakpointValue())
+
+	// These API functions exist, and are imported by 'counter'
+	require.True(t, runtimeContext.IsFunctionImported("int64storageLoad"))
+	require.True(t, runtimeContext.IsFunctionImported("int64storageStore"))
+	require.True(t, runtimeContext.IsFunctionImported("int64finish"))
+
+	// These API functions exist, but are not imported by 'counter'
+	require.False(t, runtimeContext.IsFunctionImported("transferValue"))
+	require.False(t, runtimeContext.IsFunctionImported("executeOnSameContext"))
+	require.False(t, runtimeContext.IsFunctionImported("asyncCall"))
+
+	// These API functions don't even exist
+	require.False(t, runtimeContext.IsFunctionImported(""))
+	require.False(t, runtimeContext.IsFunctionImported("*"))
+	require.False(t, runtimeContext.IsFunctionImported("$@%"))
+	require.False(t, runtimeContext.IsFunctionImported("doesNotExist"))
+}
+
 func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
 	imports := MakeAPIImports()
 	host := &contextmock.VMHostMock{}

@@ -1,6 +1,8 @@
 package mock
 
 import (
+	"math/big"
+
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
@@ -85,6 +87,11 @@ func (host *VMHostMock) IsArwenV2Enabled() bool {
 	return true
 }
 
+// IsArwenV3Enabled mocked method
+func (host *VMHostMock) IsArwenV3Enabled() bool {
+	return true
+}
+
 // IsAheadOfTimeCompileEnabled mocked method
 func (host *VMHostMock) IsAheadOfTimeCompileEnabled() bool {
 	return true
@@ -100,6 +107,11 @@ func (host *VMHostMock) AreInSameShard(left []byte, right []byte) bool {
 	leftShard := host.BlockchainContext.GetShardOfAddress(left)
 	rightShard := host.BlockchainContext.GetShardOfAddress(right)
 	return leftShard == rightShard
+}
+
+// ExecuteESDTTransfer mocked method
+func (host *VMHostMock) ExecuteESDTTransfer(_ []byte, _ []byte, _ []byte, _ *big.Int) error {
+	return nil
 }
 
 // CreateNewContract mocked method

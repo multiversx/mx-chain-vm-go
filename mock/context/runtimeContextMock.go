@@ -309,3 +309,8 @@ func (r *RuntimeContextMock) SetCustomCallFunction(_ string) {
 func (r *RuntimeContextMock) HasFunction(functionName string) bool {
 	return r.HasFunctionResult
 }
+
+// IsFunctionImported mocked method
+func (r *RuntimeContextMock) IsFunctionImported(_ string) bool {
+	return true
+}

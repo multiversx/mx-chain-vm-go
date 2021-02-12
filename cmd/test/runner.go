@@ -35,7 +35,7 @@ func main() {
 	jsonFilePath, isDir, err := resolveArgument(os.Args[1])
 	if err != nil {
 		fmt.Println(err)
-		return
+		os.Exit(1)
 	}
 
 	// init
@@ -75,5 +75,6 @@ func main() {
 		fmt.Println("SUCCESS")
 	} else {
 		fmt.Printf("ERROR: %s\n", err.Error())
+		os.Exit(1)
 	}
 }

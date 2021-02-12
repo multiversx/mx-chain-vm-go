@@ -230,16 +230,25 @@ func (context *asyncContext) createCallbackInput(
 	runtime := context.host.Runtime()
 
 	// always provide return code as the first argument to callback function
+	// TODO backwards compatibility issues? these lines ensure that the first
+	// TODO argument of the callback is the return code of the destination call, even
+	// TODO when the return code is 0
 	retCodeBytes := big.NewInt(int64(vmOutput.ReturnCode)).Bytes()
 	if len(retCodeBytes) == 0 {
 		retCodeBytes = []byte{0}
 	}
 	arguments := [][]byte{retCodeBytes}
 
-	if destinationErr == nil {
+	isESDTOnCallBack := false
+	esdtArgs := make([][]byte, 0)
+	if destinationErr == nil && vmOutput.ReturnCode == vmcommon.Ok {
 		// when execution went Ok, callBack arguments are:
 		// [0, result1, result2, ....]
 		arguments = append(arguments, vmOutput.ReturnData...)
+
+		if len(vmOutput.ReturnData) > 0 {
+			isESDTOnCallBack, esdtArgs = isESDTTransferOnData(vmOutput.ReturnData[0])
+		}
 	} else {
 		// when execution returned error, callBack arguments are:
 		// [error code, error message]
@@ -265,7 +274,7 @@ func (context *asyncContext) createCallbackInput(
 		VMInput: vmcommon.VMInput{
 			CallerAddr:     asyncCall.Destination,
 			Arguments:      arguments,
-			CallValue:      big.NewInt(0),
+			CallValue:      context.computeCallValueFromVMOutput(vmOutput),
 			CallType:       vmcommon.AsynchronousCallBack,
 			GasPrice:       runtime.GetVMInput().GasPrice,
 			GasProvided:    gasLimit,
@@ -276,6 +285,23 @@ func (context *asyncContext) createCallbackInput(
 		},
 		RecipientAddr: runtime.GetSCAddress(),
 		Function:      callbackFunction,
+	}
+
+	if isESDTOnCallBack {
+		contractCallInput.Function = core.BuiltInFunctionESDTTransfer
+		contractCallInput.Arguments = make([][]byte, 0, len(arguments))
+		contractCallInput.Arguments = append(contractCallInput.Arguments, esdtArgs[0], esdtArgs[1])
+		contractCallInput.Arguments = append(contractCallInput.Arguments, []byte(callbackFunction))
+		contractCallInput.Arguments = append(contractCallInput.Arguments, big.NewInt(int64(destinationVMOutput.ReturnCode)).Bytes())
+		if len(destinationVMOutput.ReturnData) > 1 {
+			contractCallInput.Arguments = append(contractCallInput.Arguments, destinationVMOutput.ReturnData[1:]...)
+		}
+		if len(esdtArgs) > 2 {
+			contractCallInput.Arguments = append(contractCallInput.Arguments, esdtArgs[2:]...)
+		}
+		contractCallInput.ESDTTokenName = esdtArgs[0]
+		contractCallInput.ESDTValue = big.NewInt(0).SetBytes(esdtArgs[1])
+		contractCallInput.CallValue = big.NewInt(0)
 	}
 
 	return contractCallInput, nil
@@ -329,4 +355,42 @@ func (context *asyncContext) createContextCallbackInput() *vmcommon.ContractCall
 		Function: arwen.CallbackFunctionName,
 	}
 	return input
+}
+
+func isESDTTransferOnData(data []byte) (bool, [][]byte) {
+	argParser := parsers.NewCallArgsParser()
+	functionName, args, err := argParser.ParseData(string(data))
+	if err != nil {
+		return false, nil
+	}
+
+	if len(args) < 2 {
+		return false, nil
+	}
+
+	return functionName == core.BuiltInFunctionESDTTransfer, args
+}
+
+func (context *vmHost) computeCallValueFromVMOutput(destinationVMOutput *vmcommon.VMOutput) *big.Int {
+	if !host.IsArwenV3Enabled() {
+		return big.NewInt(0)
+	}
+
+	returnTransfer := big.NewInt(0)
+	callBackReceiver := context.host.Runtime().GetSCAddress()
+	outAcc, ok := destinationVMOutput.OutputAccounts[string(callBackReceiver)]
+	if !ok {
+		return returnTransfer
+	}
+
+	if len(outAcc.OutputTransfers) == 0 {
+		return returnTransfer
+	}
+
+	lastOutTransfer := outAcc.OutputTransfers[len(outAcc.OutputTransfers)-1]
+	if len(lastOutTransfer.Data) == 0 {
+		returnTransfer.Set(lastOutTransfer.Value)
+	}
+
+	return returnTransfer
 }
