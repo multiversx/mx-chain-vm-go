@@ -191,10 +191,6 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vm
 	storage.SetAddress(runtime.GetSCAddress())
 
 	gasUsedBeforeReset := uint64(0)
-	defer func() {
-		vmOutput = host.finishExecuteOnDestContext(err)
-		metering.SetTotalUsedGas(0)
-	}()
 
 	// Perform a value transfer to the called SC. If the execution fails, this
 	// transfer will not persist.
@@ -206,7 +202,7 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vm
 		}
 	}
 
-	gasUsedBeforeReset, err = host.execute(input)
+	gasUsedBeforeReset, err := host.execute(input)
 	if err != nil {
 		vmOutput := host.finishExecuteOnDestContext(err)
 		return vmOutput, gasUsedBeforeReset, err
@@ -250,6 +246,7 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 	// Restore remaining gas to the caller Wasmer instance
 	metering.RestoreGas(vmOutput.GasRemaining)
 	metering.ForwardGas(runtime.GetSCAddress(), childContract, gasSpentByChildContract)
+	metering.SetTotalUsedGas(0)
 
 	if vmOutput.ReturnCode == vmcommon.Ok {
 		output.PopMergeActiveState()
@@ -574,7 +571,7 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) (uint64, error) {
 }
 
 func (host *vmHost) computeGasUsedBefore() {
-	_, _, metering, output, _, _ := host.GetContexts()
+	_, _, metering, output, _, _, _ := host.GetContexts()
 	gasUsed, _ := output.GetCurrentTotalUsedGas()
 	metering.SetTotalUsedGas(gasUsed)
 }
@@ -637,7 +634,7 @@ func (host *vmHost) revertESDTTransfer(input *vmcommon.ContractCallInput) {
 
 // ExecuteESDTTransfer calls the process built in function with the given transfer
 func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, value *big.Int) error {
-	_, _, metering, _, runtime, _ := host.GetContexts()
+	_, _, metering, _, runtime, _, _ := host.GetContexts()
 
 	esdtTransferInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{

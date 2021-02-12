@@ -116,7 +116,7 @@ func TestRuntimeContext_NewWasmerInstance(t *testing.T) {
 }
 
 func TestRuntimeContext_IsFunctionImported(t *testing.T) {
-	host := InitializeArwenAndWasmer()
+	host := InitializeArwenAndWasmer_RuntimeContext()
 	vmType := []byte("type")
 
 	runtimeContext, err := NewRuntimeContext(host, vmType, false)

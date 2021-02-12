@@ -5,6 +5,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/math"
+	"github.com/ElrondNetwork/elrond-go/core"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
@@ -247,7 +248,7 @@ func (context *asyncContext) createCallbackInput(
 		arguments = append(arguments, vmOutput.ReturnData...)
 
 		if len(vmOutput.ReturnData) > 0 {
-			isESDTOnCallBack, esdtArgs = isESDTTransferOnData(vmOutput.ReturnData[0])
+			isESDTOnCallBack, esdtArgs = context.isESDTTransferOnData(vmOutput.ReturnData[0])
 		}
 	} else {
 		// when execution returned error, callBack arguments are:
@@ -292,9 +293,9 @@ func (context *asyncContext) createCallbackInput(
 		contractCallInput.Arguments = make([][]byte, 0, len(arguments))
 		contractCallInput.Arguments = append(contractCallInput.Arguments, esdtArgs[0], esdtArgs[1])
 		contractCallInput.Arguments = append(contractCallInput.Arguments, []byte(callbackFunction))
-		contractCallInput.Arguments = append(contractCallInput.Arguments, big.NewInt(int64(destinationVMOutput.ReturnCode)).Bytes())
-		if len(destinationVMOutput.ReturnData) > 1 {
-			contractCallInput.Arguments = append(contractCallInput.Arguments, destinationVMOutput.ReturnData[1:]...)
+		contractCallInput.Arguments = append(contractCallInput.Arguments, big.NewInt(int64(vmOutput.ReturnCode)).Bytes())
+		if len(vmOutput.ReturnData) > 1 {
+			contractCallInput.Arguments = append(contractCallInput.Arguments, vmOutput.ReturnData[1:]...)
 		}
 		if len(esdtArgs) > 2 {
 			contractCallInput.Arguments = append(contractCallInput.Arguments, esdtArgs[2:]...)
@@ -357,8 +358,8 @@ func (context *asyncContext) createContextCallbackInput() *vmcommon.ContractCall
 	return input
 }
 
-func isESDTTransferOnData(data []byte) (bool, [][]byte) {
-	argParser := parsers.NewCallArgsParser()
+func (context *asyncContext) isESDTTransferOnData(data []byte) (bool, [][]byte) {
+	argParser := context.host.CallArgsParser()
 	functionName, args, err := argParser.ParseData(string(data))
 	if err != nil {
 		return false, nil
@@ -371,8 +372,8 @@ func isESDTTransferOnData(data []byte) (bool, [][]byte) {
 	return functionName == core.BuiltInFunctionESDTTransfer, args
 }
 
-func (context *vmHost) computeCallValueFromVMOutput(destinationVMOutput *vmcommon.VMOutput) *big.Int {
-	if !host.IsArwenV3Enabled() {
+func (context *asyncContext) computeCallValueFromVMOutput(destinationVMOutput *vmcommon.VMOutput) *big.Int {
+	if !context.host.IsArwenV3Enabled() {
 		return big.NewInt(0)
 	}
 
