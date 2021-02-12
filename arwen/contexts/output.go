@@ -1,11 +1,13 @@
 package contexts
 
 import (
+	"encoding/hex"
 	"errors"
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/math"
+	"github.com/ElrondNetwork/elrond-go/core"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
@@ -212,6 +214,11 @@ func (context *outputContext) Finish(data []byte) {
 	context.outputState.ReturnData = append(context.outputState.ReturnData, data)
 }
 
+// PrependFinish appends the given data to the return data of the current output state.
+func (context *outputContext) PrependFinish(data []byte) {
+	context.outputState.ReturnData = append([][]byte{data}, context.outputState.ReturnData...)
+}
+
 // WriteLog creates a new LogEntry and appends it to the logs of the current output state.
 func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []byte) {
 	if context.host.Runtime().ReadOnly() {
@@ -249,8 +256,9 @@ func (context *outputContext) TransferValueOnly(destination []byte, sender []byt
 		return err
 	}
 
+	isAsyncCall := context.host.IsArwenV3Enabled() && context.host.Runtime().GetVMInput().CallType == vmcommon.AsynchronousCall
 	hasValue := value.Cmp(big.NewInt(0)) == 1
-	if !payable && hasValue {
+	if !payable && hasValue && !isAsyncCall {
 		return arwen.ErrAccountNotPayable
 	}
 
@@ -285,6 +293,55 @@ func (context *outputContext) Transfer(destination []byte, sender []byte, gasLim
 	return nil
 }
 
+// TransferESDT makes the esdt transfer and exports the data if it is cross shard
+func (context *outputContext) TransferESDT(
+	destination []byte,
+	sender []byte,
+	tokenIdentifier []byte,
+	value *big.Int,
+	callInput *vmcommon.ContractCallInput,
+	gasLimit uint64,
+) error {
+	err := context.host.ExecuteESDTTransfer(destination, sender, tokenIdentifier, value)
+	if err != nil {
+		return err
+	}
+
+	if context.host.Blockchain().IsSmartContract(destination) && callInput != nil {
+		if gasLimit > context.host.Metering().GasLeft() {
+			return arwen.ErrNotEnoughGas
+		}
+
+		if !context.host.AreInSameShard(sender, destination) {
+			context.host.Metering().ForwardGas(sender, destination, gasLimit)
+			context.host.Metering().UseGas(gasLimit)
+		}
+	} else {
+		gasLimit = 0
+	}
+
+	destAcc, _ := context.GetOutputAccount(destination)
+	outputTransfer := vmcommon.OutputTransfer{
+		Value:     big.NewInt(0),
+		GasLimit:  gasLimit,
+		GasLocked: 0,
+		Data:      []byte(core.BuiltInFunctionESDTTransfer + "@" + hex.EncodeToString(tokenIdentifier) + "@" + hex.EncodeToString(value.Bytes())),
+		CallType:  vmcommon.DirectCall,
+	}
+
+	if callInput != nil {
+		scCallData := "@" + hex.EncodeToString([]byte(callInput.Function))
+		for _, arg := range callInput.Arguments {
+			scCallData += "@" + hex.EncodeToString(arg)
+		}
+		outputTransfer.Data = append(outputTransfer.Data, []byte(scCallData)...)
+	}
+
+	destAcc.OutputTransfers = append(destAcc.OutputTransfers, outputTransfer)
+
+	return nil
+}
+
 func (context *outputContext) hasSufficientBalance(address []byte, value *big.Int) bool {
 	senderBalance := context.host.Blockchain().GetBalanceBigInt(address)
 	return senderBalance.Cmp(value) >= 0
@@ -294,6 +351,25 @@ func (context *outputContext) hasSufficientBalance(address []byte, value *big.In
 func (context *outputContext) AddTxValueToAccount(address []byte, value *big.Int) {
 	destAcc, _ := context.GetOutputAccount(address)
 	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
+}
+
+// GetCurrentTotalUsedGas returns the current total used gas from the merged vm outputs
+func (context *outputContext) GetCurrentTotalUsedGas() (uint64, bool) {
+	gasUsed := uint64(0)
+	gasLockSentForward := false
+	for _, outputAccount := range context.outputState.OutputAccounts {
+		gasUsed = math.AddUint64(gasUsed, outputAccount.GasUsed)
+		for _, outputTransfer := range outputAccount.OutputTransfers {
+			gasUsed = math.AddUint64(gasUsed, outputTransfer.GasLimit)
+			gasUsed = math.AddUint64(gasUsed, outputTransfer.GasLocked)
+
+			if outputTransfer.GasLocked > 0 {
+				gasLockSentForward = true
+			}
+		}
+	}
+
+	return gasUsed, gasLockSentForward
 }
 
 // GetVMOutput updates the current VMOutput and returns it
@@ -330,21 +406,10 @@ func (context *outputContext) checkGas(remainedFromForwarded uint64) error {
 		return nil
 	}
 
-	gasUsed := uint64(0)
-	gasLockSentForward := false
-	for _, outputAccount := range context.outputState.OutputAccounts {
-		gasUsed = math.AddUint64(gasUsed, outputAccount.GasUsed)
-		for _, outputTransfer := range outputAccount.OutputTransfers {
-			gasUsed = math.AddUint64(gasUsed, outputTransfer.GasLimit)
-			gasUsed = math.AddUint64(gasUsed, outputTransfer.GasLocked)
-
-			if outputTransfer.GasLocked > 0 {
-				gasLockSentForward = true
-			}
-		}
-	}
-
+	previousGasUsed := context.host.Metering().GetPreviousTotalUsedGas()
+	gasUsed, gasLockSentForward := context.GetCurrentTotalUsedGas()
 	gasProvided := context.host.Metering().GetGasProvided()
+
 	wasBuiltInFuncWhichForwardedGas := gasLockSentForward && context.isBuiltInExecution()
 	if wasBuiltInFuncWhichForwardedGas {
 		gasProvided = math.AddUint64(gasProvided, context.host.Metering().GetGasLocked())
@@ -353,6 +418,7 @@ func (context *outputContext) checkGas(remainedFromForwarded uint64) error {
 	context.outputState.GasRemaining, remainedFromForwarded = math.SubUint64(context.outputState.GasRemaining, remainedFromForwarded)
 	totalGas := math.AddUint64(gasUsed, context.outputState.GasRemaining)
 	totalGas, _ = math.SubUint64(totalGas, remainedFromForwarded)
+	totalGas, _ = math.SubUint64(totalGas, previousGasUsed)
 
 	// TODO Consider using != instead of > in this condition, for strictness.
 	// Only two trivial tests fail with !=.

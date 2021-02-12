@@ -266,7 +266,16 @@ func verifySecp256k1(
 		return 1
 	}
 
-	sig, err := runtime.MemLoad(sigOffset, secp256k1SignatureLength)
+	// read the 2 leading bytes first
+	// byte1: 0x30, header
+	// byte2: the remaining buffer length
+	const sigHeaderLength = 2
+	sigHeader, err := runtime.MemLoad(sigOffset, sigHeaderLength)
+	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return 1
+	}
+	sigLength := int32(sigHeader[1]) + sigHeaderLength
+	sig, err := runtime.MemLoad(sigOffset, sigLength)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}

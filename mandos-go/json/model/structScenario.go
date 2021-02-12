@@ -22,10 +22,11 @@ type NewAddressMock struct {
 
 // BlockInfo contains data for the block info hooks
 type BlockInfo struct {
-	BlockTimestamp JSONUint64
-	BlockNonce     JSONUint64
-	BlockRound     JSONUint64
-	BlockEpoch     JSONUint64
+	BlockTimestamp  JSONUint64
+	BlockNonce      JSONUint64
+	BlockRound      JSONUint64
+	BlockEpoch      JSONUint64
+	BlockRandomSeed *JSONBytesFromTree
 }
 
 // ExternalStepsStep allows including steps from another file

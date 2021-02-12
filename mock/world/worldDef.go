@@ -13,7 +13,7 @@ type BlockInfo struct {
 	BlockNonce     uint64
 	BlockRound     uint64
 	BlockEpoch     uint32
-	RandomSeed     []byte
+	RandomSeed     *[48]byte
 }
 
 // MockWorld provides a mock representation of the blockchain to be used in VM tests.

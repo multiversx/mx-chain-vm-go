@@ -185,18 +185,25 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vm
 
 	metering.PushState()
 	metering.InitStateFromContractCallInput(&input.VMInput)
+	host.computeGasUsedBefore()
 
 	storage.PushState()
 	storage.SetAddress(runtime.GetSCAddress())
 
 	gasUsedBeforeReset := uint64(0)
+	defer func() {
+		vmOutput = host.finishExecuteOnDestContext(err)
+		metering.SetTotalUsedGas(0)
+	}()
 
 	// Perform a value transfer to the called SC. If the execution fails, this
 	// transfer will not persist.
-	err := output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue)
-	if err != nil {
-		vmOutput := host.finishExecuteOnDestContext(err)
-		return vmOutput, gasUsedBeforeReset, err
+	if input.CallType != vmcommon.AsynchronousCallBack || input.CallValue.Cmp(arwen.Zero) == 0 {
+		err := output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue)
+		if err != nil {
+			vmOutput := host.finishExecuteOnDestContext(err)
+			return vmOutput, gasUsedBeforeReset, err
+		}
 	}
 
 	gasUsedBeforeReset, err = host.execute(input)
@@ -566,6 +573,12 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) (uint64, error) {
 	return 0, host.executeSmartContractCall(input, metering, runtime, output, true)
 }
 
+func (host *vmHost) computeGasUsedBefore() {
+	_, _, metering, output, _, _ := host.GetContexts()
+	gasUsed, _ := output.GetCurrentTotalUsedGas()
+	metering.SetTotalUsedGas(gasUsed)
+}
+
 func (host *vmHost) callSCMethodIndirect() error {
 	function, err := host.Runtime().GetFunctionToCall()
 	if err != nil {
@@ -588,6 +601,9 @@ func (host *vmHost) revertESDTTransfer(input *vmcommon.ContractCallInput) {
 		return
 	}
 	if len(input.Arguments) < 2 {
+		return
+	}
+	if input.CallType == vmcommon.AsynchronousCallBack {
 		return
 	}
 
@@ -619,6 +635,43 @@ func (host *vmHost) revertESDTTransfer(input *vmcommon.ContractCallInput) {
 	}
 }
 
+// ExecuteESDTTransfer calls the process built in function with the given transfer
+func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, value *big.Int) error {
+	_, _, metering, _, runtime, _ := host.GetContexts()
+
+	esdtTransferInput := &vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			CallerAddr:  sender,
+			Arguments:   make([][]byte, 0),
+			CallValue:   big.NewInt(0),
+			CallType:    vmcommon.DirectCall,
+			GasPrice:    runtime.GetVMInput().GasPrice,
+			GasProvided: metering.GasLeft(),
+			GasLocked:   0,
+		},
+		RecipientAddr:     destination,
+		Function:          core.BuiltInFunctionESDTTransfer,
+		AllowInitFunction: false,
+	}
+
+	esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, tokenIdentifier, value.Bytes())
+	vmOutput, err := host.blockChainHook.ProcessBuiltInFunction(esdtTransferInput)
+	if err != nil {
+		return err
+	}
+	if vmOutput.ReturnCode != vmcommon.Ok {
+		return arwen.ErrExecutionFailed
+	}
+
+	gasConsumed, _ := math.SubUint64(esdtTransferInput.GasProvided, vmOutput.GasRemaining)
+	if metering.GasLeft() < gasConsumed {
+		return arwen.ErrNotEnoughGas
+	}
+	metering.UseGas(gasConsumed)
+
+	return nil
+}
+
 func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmcommon.ContractCallInput, uint64, error) {
 	_, _, metering, output, runtime, _, _ := host.GetContexts()
 
@@ -635,8 +688,13 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmc
 		for _, outTransfer := range outAcc.OutputTransfers {
 			if outTransfer.GasLimit > 0 || outTransfer.GasLocked > 0 {
 				gasForwarded := math.AddUint64(outTransfer.GasLocked, outTransfer.GasLimit)
-				metering.ForwardGas(runtime.GetSCAddress(), nil, gasForwarded)
 				gasConsumed = math.AddUint64(gasConsumed, outTransfer.GasLocked)
+
+				if input.CallType != vmcommon.AsynchronousCallBack {
+					metering.ForwardGas(runtime.GetSCAddress(), nil, gasForwarded)
+				} else {
+					gasConsumed, _ = math.SubUint64(gasConsumed, outTransfer.GasLimit)
+				}
 			}
 		}
 	}
@@ -672,7 +730,8 @@ func (host *vmHost) checkFinalGasAfterExit() error {
 		return nil
 	}
 
-	if host.Runtime().GetPointsUsed() > host.Metering().GetGasForExecution() {
+	totalUsedPoints := host.Runtime().GetPointsUsed()
+	if totalUsedPoints > host.Metering().GetGasForExecution() {
 		return arwen.ErrNotEnoughGas
 	}
 
@@ -798,9 +857,9 @@ func (host *vmHost) isSCExecutionAfterBuiltInFunc(
 
 	callType := vmInput.CallType
 	scCallOutTransfer := outAcc.OutputTransfers[0]
-	txData := prependCallbackToTxDataIfAsyncCall(scCallOutTransfer.Data, callType)
 
-	function, arguments, err := host.CallArgsParser().ParseData(txData)
+	argParser := host.CallArgsParser()
+	function, arguments, err := argParser.ParseData(string(scCallOutTransfer.Data))
 	if err != nil {
 		return nil, err
 	}
@@ -838,12 +897,4 @@ func fillWithESDTValue(fullVMInput *vmcommon.ContractCallInput, newVMInput *vmco
 
 	newVMInput.ESDTTokenName = fullVMInput.Arguments[0]
 	newVMInput.ESDTValue = big.NewInt(0).SetBytes(fullVMInput.Arguments[1])
-}
-
-func prependCallbackToTxDataIfAsyncCall(txData []byte, callType vmcommon.CallType) string {
-	if callType == vmcommon.AsynchronousCallBack {
-		return string(append([]byte(arwen.CallbackFunctionName), txData...))
-	}
-
-	return string(txData)
 }

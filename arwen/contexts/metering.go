@@ -18,6 +18,7 @@ type meteringContext struct {
 	initialCost        uint64
 	gasForExecution    uint64
 	gasStates          map[string]*contractGasState
+	totalUsedGas       uint64
 }
 
 type contractGasState struct {
@@ -403,4 +404,14 @@ func (context *meteringContext) deductInitialGas(
 	context.initialCost = initialCost
 	context.gasForExecution = input.GasProvided - initialCost
 	return nil
+}
+
+// SetTotalUsedGas sets the total used gas before the next execution
+func (context *meteringContext) SetTotalUsedGas(total uint64) {
+	context.totalUsedGas = total
+}
+
+// GetTotalUsedGas return the total used gas before the current execution
+func (context *meteringContext) GetPreviousTotalUsedGas() uint64 {
+	return context.totalUsedGas
 }
