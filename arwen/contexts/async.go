@@ -1,6 +1,7 @@
 package contexts
 
 import (
+	"bytes"
 	"encoding/json"
 	"math/big"
 
@@ -618,7 +619,7 @@ func (context *asyncContext) determineExecutionMode(destination []byte, data []b
 			isReturningCall := bytes.Equal(vmInput.CallerAddr, destination)
 
 			if isESDTTransfer && isAsyncCall && isReturningCall {
-				return arwen.ESDTTransferOnCallback
+				return arwen.ESDTTransferOnCallBack, nil
 			}
 
 			return arwen.AsyncBuiltinFuncIntraShard, nil

@@ -521,8 +521,7 @@ func blockHash(context unsafe.Pointer, nonce int64, resultOffset int32) int32 {
 }
 
 func isBuiltInCall(data string, host arwen.VMHost) bool {
-	argParser := host.CallArgsParser().NewCallArgsParser()
-	functionName, _, _ := argParser.ParseData(data)
+	functionName, _, _ := host.CallArgsParser().ParseData(data)
 	return host.IsBuiltinFunctionName(functionName)
 }
 
@@ -624,7 +623,7 @@ func transferValueExecute(
 	}
 
 	if host.AreInSameShard(send, dest) && contractCallInput != nil && host.Blockchain().IsSmartContract(dest) {
-		_, _, _, err = host.ExecuteOnDestContext(contractCallInput)
+		_, _, err = host.ExecuteOnDestContext(contractCallInput)
 		if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 			return 1
 		}
@@ -743,7 +742,7 @@ func transferESDTExecute(
 	}
 
 	if host.AreInSameShard(sender, dest) && contractCallInput != nil && host.Blockchain().IsSmartContract(dest) {
-		_, _, _, err = host.ExecuteOnDestContext(contractCallInput)
+		_, _, err = host.ExecuteOnDestContext(contractCallInput)
 		if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 			return 1
 		}
