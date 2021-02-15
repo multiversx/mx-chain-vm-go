@@ -770,7 +770,8 @@ func (host *vmHost) callSCMethod() error {
 		runtime.SetCustomCallFunction(asyncCall.GetCallbackName())
 	}
 
-	// TODO refactor this
+	// TODO refactor this, and apply this condition in other places where a
+	// function is called
 	var err error
 	if runtime.Function() != "" {
 		err = host.verifyAllowedFunctionCall()

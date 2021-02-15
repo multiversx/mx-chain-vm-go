@@ -31,13 +31,14 @@ func TestAsync_NoAsyncCalls(t *testing.T) {
 }
 
 func TestAsync_OneAsyncCall(t *testing.T) {
-	code := arwen.GetTestSCCodeModule("promises/parent-simple", "parent-simple", "../../")
+	parentCode := arwen.GetTestSCCodeModule("promises/parent-simple", "parent-simple", "../../")
+	childCode := arwen.GetTestSCCodeModule("promises/child-simple", "child-simple", "../../")
 	balance := big.NewInt(100)
-	host, _ := defaultTestArwenForCall(t, code, balance)
+	host, _ := defaultTestArwenForTwoSCs(t, parentCode, childCode, balance, balance)
 
 	input := DefaultTestContractCallInput()
 	input.GasProvided = 10000000
-	input.Function = "one_async_call_no_cb"
+	input.Function = "one_async_call_no_cb_with_call_value"
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
@@ -48,5 +49,5 @@ func TestAsync_OneAsyncCall(t *testing.T) {
 	require.Equal(t, input.CallerAddr, async.GetCallerAddress())
 	require.Equal(t, input.GasPrice, async.GetGasPrice())
 	require.Empty(t, async.GetReturnData())
-	require.False(t, async.IsComplete())
+	require.True(t, async.IsComplete())
 }
