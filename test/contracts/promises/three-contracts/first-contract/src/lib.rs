@@ -49,7 +49,7 @@ pub extern "C" fn call_second_contract() {
         call_data.as_slice(),
         SUCCESS_CALLBACK_NAME,
         FAIL_CALLBACK_NAME,
-        GAS_100K);
+        GAS_100M);
 }
 
 // receives call data as arguments

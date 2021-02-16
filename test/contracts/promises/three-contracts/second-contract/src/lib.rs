@@ -33,7 +33,7 @@ pub extern "C" fn call_caller() {
         b"answer",
         SUCCESS_CALLBACK_NAME,
         FAIL_CALLBACK_NAME,
-        GAS_100K);
+        GAS_100M);
 }
 
 // receives call data as argument

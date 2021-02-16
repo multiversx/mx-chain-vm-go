@@ -27,6 +27,7 @@ pub const THIRD_CONTRACT_ADDRESS: [u8; 32] = [
 pub const GAS_100K: i64 = 100000;
 pub const GAS_5M: i64 = 5000000;
 pub const GAS_10M: i64 = 10000000;
+pub const GAS_100M: i64 = 100000000;
 
 pub const ZERO: [u8; 32] = [0u8; 32];
 pub const EMPTY_SLICE: &[u8] = &[];
