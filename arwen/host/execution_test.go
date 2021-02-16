@@ -1354,7 +1354,7 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 	host, _, ibm := defaultTestArwenForCallWithInstanceMocks(t)
 
 	parentInstance := ibm.CreateAndStoreInstanceMock(parentAddress)
-	parentInstance.GetExports()["callChild"] = mockMethod(func() {
+	parentInstance.AddMockMethod("callChild", func() {
 		host.Output().Finish([]byte("parent returns this"))
 		host.Metering().UseGas(500)
 		_, err := host.Storage().SetStorage([]byte("parent"), []byte("parent storage"))
@@ -1370,7 +1370,7 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 	})
 
 	childInstance := ibm.CreateAndStoreInstanceMock(childAddress)
-	childInstance.GetExports()["doSomething"] = mockMethod(func() {
+	childInstance.AddMockMethod("doSomething", func() {
 		host.Output().Finish([]byte("child returns this"))
 		host.Metering().UseGas(100)
 		_, err := host.Storage().SetStorage([]byte("child"), []byte("child storage"))
@@ -1400,7 +1400,7 @@ func TestExecution_GasUsed_SingleContract(t *testing.T) {
 	gasUsedByParent := uint64(401)
 
 	parentInstance := ibm.CreateAndStoreInstanceMock(parentAddress)
-	parentInstance.GetExports()["doSomething"] = mockMethod(func() {
+	parentInstance.AddMockMethod("doSomething", func() {
 		host.Metering().UseGas(gasUsedByParent)
 	})
 
@@ -1430,7 +1430,7 @@ func TestExecution_GasUsed_ExecuteOnSameCtx(t *testing.T) {
 	gasUsedByChild := contractCompilationCost + gasUsedByChildExec
 
 	parentInstance := ibm.CreateAndStoreInstanceMock(parentAddress)
-	parentInstance.GetExports()["function"] = mockMethod(func() {
+	parentInstance.AddMockMethod("function", func() {
 		host.Metering().UseGas(gasUsedByParentExec)
 		childInput := DefaultTestContractCallInput()
 		childInput.CallerAddr = parentAddress
@@ -1441,7 +1441,7 @@ func TestExecution_GasUsed_ExecuteOnSameCtx(t *testing.T) {
 	})
 
 	childInstance := ibm.CreateAndStoreInstanceMock(childAddress)
-	childInstance.GetExports()["function"] = mockMethod(func() {
+	childInstance.AddMockMethod("function", func() {
 		host.Metering().UseGas(gasUsedByChildExec)
 	})
 
