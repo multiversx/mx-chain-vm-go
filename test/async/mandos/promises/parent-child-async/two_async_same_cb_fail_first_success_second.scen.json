@@ -37,10 +37,7 @@
                 "gasPrice": "0x00"
             },
             "expect": {
-                "out": [
-                    "str:fail",
-                    "0x02"
-                ],
+                "out": ["0x02"],
                 "status": "0",
                 "message": "",
                 "logs": [],
@@ -61,8 +58,8 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "str:SuccessCallbackArg|u8:0": "4",
-                        "str:SuccessCallbackArg|u8:1": "str:fail",
+                        "str:FailCallbackArg|u8:0": "4",
+                        "str:FailCallbackArg|u8:1": "str:fail",
                         "str:SuccessCallbackArg|u8:2": "0",
                         "str:SuccessCallbackArg|u8:3": "0x02",
                         "str:CurrentStorageIndex": "4"
