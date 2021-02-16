@@ -6,11 +6,27 @@ pub const PARENT_ADDRESS: [u8; 32] = [
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0F, 0x0F, b'p', b'a', b'r', b'e', b'n', b't',
     b'S', b'C', b'.', b'.', b'.', b'.', b'.', b'.', b'.', b'.', b'.', b'.', b'.', b'.', b'.', b'.',
 ];
-
 pub const CHILD_ADDRESS: [u8; 32] = [
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0F, 0x0F, b'c', b'h', b'i', b'l', b'd', b'S',
     b'C', b'.', b'.', b'.', b'.', b'.', b'.', b'.', b'.', b'.', b'.', b'.', b'.', b'.', b'.', b'.',
 ];
+
+pub const FIRST_CONTRACT_ADDRESS: [u8; 32] = [
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0F, 0x0F, b'f', b'i', b'r', b's', b't', b'C',
+    b'o', b'n', b't', b'r', b'a', b'c', b't', b'.', b'.', b'.', b'.', b'.', b'.', b'.', b'.', b'.',
+];
+pub const SECOND_CONTRACT_ADDRESS: [u8; 32] = [
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0F, 0x0F, b's', b'e', b'c', b'o', b'n', b'd',
+    b'C',b'o', b'n', b't', b'r', b'a', b'c', b't', b'.', b'.', b'.', b'.', b'.', b'.', b'.', b'.',
+];
+pub const THIRD_CONTRACT_ADDRESS: [u8; 32] = [
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0F, 0x0F, b't', b'h', b'i', b'r', b'd', b'C',
+    b'o', b'n', b't', b'r', b'a', b'c', b't', b'.', b'.', b'.', b'.', b'.', b'.', b'.', b'.', b'.',
+];
+
+pub const GAS_100K: i64 = 100000;
+pub const GAS_5M: i64 = 5000000;
+pub const GAS_10M: i64 = 10000000;
 
 pub const ZERO: [u8; 32] = [0u8; 32];
 pub const EMPTY_SLICE: &[u8] = &[];
