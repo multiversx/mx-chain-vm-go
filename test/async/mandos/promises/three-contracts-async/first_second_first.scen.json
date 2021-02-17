@@ -20,7 +20,7 @@
                 "gasPrice": "0x00"
             },
             "expect": {
-                "out": [],
+                "out": ["42"],
                 "status": "0",
                 "message": "",
                 "logs": [],
@@ -41,6 +41,7 @@
                     "balance": "0",
                     "storage": {
                         "str:SuccessCallbackArg|u8:0": "0",
+                        "str:SuccessCallbackArg|u8:1": "42",
                         "str:CurrentStorageIndex": "2"
                     },
                     "code": "file:../../../../contracts/promises/three-contracts/first-contract/output/first-contract.wasm"
