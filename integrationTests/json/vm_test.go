@@ -200,6 +200,24 @@ func TestRustParentChildAsyncCalls(t *testing.T) {
 	}
 }
 
+func TestRustThreeContractsAsyncCalls(t *testing.T) {
+	executor, err := am.NewArwenTestExecutor()
+	require.Nil(t, err)
+	runner := mc.NewScenarioRunner(
+		executor,
+		mc.NewDefaultFileResolver(),
+	)
+	err = runner.RunAllJSONScenariosInDirectory(
+		getTestRoot(),
+		"async/mandos/promises/three-contracts-async",
+		".scen.json",
+		[]string{})
+
+	if err != nil {
+		t.Error(err)
+	}
+}
+
 func TestDelegation_v0_2(t *testing.T) {
 	if testing.Short() {
 		t.Skip("not a short test")
