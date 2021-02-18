@@ -10,18 +10,30 @@ import (
 )
 
 func TestAsync_NoAsyncCalls(t *testing.T) {
-	code := arwen.GetTestSCCodeModule("promises/parent-simple", "parent-simple", "../../")
-	host, _ := defaultTestArwenForCall(t, code, nil)
+	host, _, ibm := defaultTestArwenForCallWithInstanceMocks(t)
+
+	mockExecutionGas := uint64(100)
+	parentSC := ibm.CreateAndStoreInstanceMock(parentAddress)
+	parentSC.AddMockMethod("no_async", func() {
+		finish := []byte("forty two")
+		host.Output().Finish(finish)
+		host.Metering().UseGasBounded(uint64(len(finish)))
+		host.Metering().UseGasBounded(mockExecutionGas)
+	})
 
 	input := DefaultTestContractCallInput()
-	input.GasProvided = 10000000
+	input.GasProvided = 1000
 	input.Function = "no_async"
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
 	require.NotNil(t, vmOutput)
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
-	require.Equal(t, [][]byte{{42}}, vmOutput.ReturnData)
+	require.Equal(t, [][]byte{[]byte("forty two")}, vmOutput.ReturnData)
+
+	initialGas := 1 + len(parentAddress)
+	gasUsedByContract := initialGas + 100 + len("forty two")
+	require.Equal(t, input.GasProvided-uint64(gasUsedByContract), vmOutput.GasRemaining)
 
 	async := host.Async()
 	require.Equal(t, input.CallerAddr, async.GetCallerAddress())
