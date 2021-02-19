@@ -1,6 +1,7 @@
 package mock
 
 import (
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 )
 
@@ -8,26 +9,27 @@ import (
 // create mocked Wasmer instances.
 type InstanceBuilderMock struct {
 	InstanceMap map[string]wasmer.InstanceHandler
+	World       *worldmock.MockWorld
 }
 
 // NewInstanceBuilderMock constructs a new InstanceBuilderMock
-func NewInstanceBuilderMock() *InstanceBuilderMock {
+func NewInstanceBuilderMock(world *worldmock.MockWorld) *InstanceBuilderMock {
 	return &InstanceBuilderMock{
 		InstanceMap: make(map[string]wasmer.InstanceHandler),
+		World:       world,
 	}
 }
 
-// CreateAndStoreInstanceMock creates a real Wasmer instance using the
-// DefaultCode and returns it, so that a test may alter its Exports map to
-// inject new contract methods; afterwards, the RuntimeContext will call
-// NewInstanceWithOptions() and obtain the instance with the injected methods.
-//
-// It is necessary to call CreateAndStoreInstanceMock() for any contract that is
-// to be called, or at least manually populate the InstanceMap appropriately
-// (real WASM contracts may be used to populate it, as well).
-func (builder *InstanceBuilderMock) CreateAndStoreInstanceMock(code []byte) *InstanceMock {
+// CreateAndStoreInstanceMock creates a new InstanceMock and registers it as a
+// smart contract account in the World, using `code` as the address of the account
+func (builder *InstanceBuilderMock) CreateAndStoreInstanceMock(code []byte, balance int64) *InstanceMock {
 	instance := NewInstanceMock(code)
 	builder.InstanceMap[string(code)] = instance
+
+	account := builder.World.AcctMap.CreateAccount(code)
+	account.IsSmartContract = true
+	account.SetBalance(balance)
+	account.Code = code
 
 	return instance
 }

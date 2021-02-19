@@ -5,61 +5,135 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
 )
 
 func TestAsync_NoAsyncCalls(t *testing.T) {
 	host, _, ibm := defaultTestArwenForCallWithInstanceMocks(t)
+	hostGasTester := mock.NewHostGasTester(t, host, 32)
 
-	mockExecutionGas := uint64(100)
-	parentSC := ibm.CreateAndStoreInstanceMock(parentAddress)
+	parentSC := ibm.CreateAndStoreInstanceMock(parentAddress, 0)
 	parentSC.AddMockMethod("no_async", func() {
+		hostGasTester.UseGas(100)
+
 		finish := []byte("forty two")
 		host.Output().Finish(finish)
-		host.Metering().UseGasBounded(uint64(len(finish)))
-		host.Metering().UseGasBounded(mockExecutionGas)
+		hostGasTester.UseGasForLastFinish()
 	})
+	hostGasTester.UseGasForContractCode()
 
-	input := DefaultTestContractCallInput()
-	input.GasProvided = 1000
-	input.Function = "no_async"
+	vmInput := DefaultTestContractCallInput()
+	vmInput.GasProvided = 1000
+	vmInput.Function = "no_async"
 
-	vmOutput, err := host.RunSmartContractCall(input)
+	vmOutput, err := host.RunSmartContractCall(vmInput)
 	require.Nil(t, err)
 	require.NotNil(t, vmOutput)
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 	require.Equal(t, [][]byte{[]byte("forty two")}, vmOutput.ReturnData)
 
-	initialGas := 1 + len(parentAddress)
-	gasUsedByContract := initialGas + 100 + len("forty two")
-	require.Equal(t, input.GasProvided-uint64(gasUsedByContract), vmOutput.GasRemaining)
+	hostGasTester.Validate(vmInput, vmOutput)
 
 	async := host.Async()
-	require.Equal(t, input.CallerAddr, async.GetCallerAddress())
-	require.Equal(t, input.GasPrice, async.GetGasPrice())
+	require.Equal(t, vmInput.CallerAddr, async.GetCallerAddress())
+	require.Equal(t, vmInput.GasPrice, async.GetGasPrice())
 	require.Empty(t, async.GetReturnData())
 	require.True(t, async.IsComplete())
 }
 
-func TestAsync_OneAsyncCall(t *testing.T) {
-	parentCode := arwen.GetTestSCCodeModule("promises/parent-simple", "parent-simple", "../../")
-	childCode := arwen.GetTestSCCodeModule("promises/child-simple", "child-simple", "../../")
-	balance := big.NewInt(100)
-	host, _ := defaultTestArwenForTwoSCs(t, parentCode, childCode, balance, balance)
+func TestAsync_SimpleAsyncCall_NoCallbacks(t *testing.T) {
+	host, _, ibm := defaultTestArwenForCallWithInstanceMocks(t)
+	hostGasTester := mock.NewHostGasTester(t, host, 32)
 
-	input := DefaultTestContractCallInput()
-	input.GasProvided = 10000000
-	input.Function = "one_async_call_no_cb_with_call_value"
+	parentSC := ibm.CreateAndStoreInstanceMock(parentAddress, 40)
+	parentSC.AddMockMethod("register_async_call_no_callbacks", func() {
+		hostGasTester.UseGas(300)
 
-	vmOutput, err := host.RunSmartContractCall(input)
+		host.Async().RegisterAsyncCall("testgroup", &arwen.AsyncCall{
+			Destination:     childAddress,
+			Data:            []byte("childmethod"),
+			GasLimit:        100,
+			ValueBytes:      big.NewInt(10).Bytes(),
+			SuccessCallback: "",
+			ErrorCallback:   "",
+		})
+		hostGasTester.UseGasForAPI()
+	})
+	hostGasTester.UseGasForContractCode()
+
+	childSC := ibm.CreateAndStoreInstanceMock(childAddress, 0)
+	childSC.AddMockMethod("childmethod", func() {
+		hostGasTester.UseGasForAPI() // AsyncCallStep
+
+		require.Nil(t, host.Runtime().Arguments())
+		require.Equal(t, big.NewInt(10), host.Runtime().GetVMInput().CallValue)
+
+		hostGasTester.UseGas(100)
+	})
+	hostGasTester.UseGasForContractCode()
+
+	vmInput := DefaultTestContractCallInput()
+	vmInput.GasProvided = 1000
+	vmInput.Function = "register_async_call_no_callbacks"
+
+	vmOutput, err := host.RunSmartContractCall(vmInput)
 	require.Nil(t, err)
 	require.NotNil(t, vmOutput)
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+	require.True(t, host.Async().IsComplete())
 
-	async := host.Async()
-	require.Equal(t, input.CallerAddr, async.GetCallerAddress())
-	require.Equal(t, input.GasPrice, async.GetGasPrice())
-	require.Empty(t, async.GetReturnData())
-	require.True(t, async.IsComplete())
+	hostGasTester.Validate(vmInput, vmOutput)
+}
+
+func TestAsync_AsyncCall_NoCallbacks(t *testing.T) {
+	host, _, ibm := defaultTestArwenForCallWithInstanceMocks(t)
+	hostGasTester := mock.NewHostGasTester(t, host, 32)
+
+	parentSC := ibm.CreateAndStoreInstanceMock(parentAddress, 40)
+	parentSC.AddMockMethod("register_async_call_no_callbacks", func() {
+
+		host.Async().RegisterAsyncCall("testgroup", &arwen.AsyncCall{
+			Destination:     childAddress,
+			Data:            []byte("childmethod@02"),
+			GasLimit:        100,
+			ValueBytes:      big.NewInt(10).Bytes(),
+			SuccessCallback: "",
+			ErrorCallback:   "",
+		})
+
+		hostGasTester.UseGas(300)
+	})
+	hostGasTester.UseGasForContractCode()
+
+	// This method must exist, but must not be called.
+	parentSC.AddMockMethod("callBack", func() {
+		host.Output().Finish([]byte("callback called but shouldn't have been"))
+		hostGasTester.UseGasForLastFinish()
+		hostGasTester.UseGas(29)
+	})
+
+	childSC := ibm.CreateAndStoreInstanceMock(childAddress, 0)
+	childSC.AddMockMethod("childmethod", func() {
+		require.Equal(t, [][]byte{{2}}, host.Runtime().Arguments())
+		require.Equal(t, big.NewInt(10), host.Runtime().GetVMInput().CallValue)
+
+		host.Output().Finish([]byte("childmethod called"))
+		hostGasTester.UseGasForLastFinish()
+		hostGasTester.UseGas(20)
+	})
+	hostGasTester.UseGasForContractCode()
+
+	vmInput := DefaultTestContractCallInput()
+	vmInput.GasProvided = 1000
+	vmInput.Function = "register_async_call_no_callbacks"
+
+	vmOutput, err := host.RunSmartContractCall(vmInput)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+	require.True(t, host.Async().IsComplete())
+
+	hostGasTester.Validate(vmInput, vmOutput)
 }

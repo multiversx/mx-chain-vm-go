@@ -1353,7 +1353,7 @@ func TestExecution_CreateNewContract_Fail(t *testing.T) {
 func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 	host, _, ibm := defaultTestArwenForCallWithInstanceMocks(t)
 
-	parentInstance := ibm.CreateAndStoreInstanceMock(parentAddress)
+	parentInstance := ibm.CreateAndStoreInstanceMock(parentAddress, 0)
 	parentInstance.AddMockMethod("callChild", func() {
 		host.Output().Finish([]byte("parent returns this"))
 		host.Metering().UseGas(500)
@@ -1369,7 +1369,7 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 		require.Nil(t, err)
 	})
 
-	childInstance := ibm.CreateAndStoreInstanceMock(childAddress)
+	childInstance := ibm.CreateAndStoreInstanceMock(childAddress, 0)
 	childInstance.AddMockMethod("doSomething", func() {
 		host.Output().Finish([]byte("child returns this"))
 		host.Metering().UseGas(100)
@@ -1399,7 +1399,7 @@ func TestExecution_GasUsed_SingleContract(t *testing.T) {
 	gasProvided := uint64(1000)
 	gasUsedByParent := uint64(401)
 
-	parentInstance := ibm.CreateAndStoreInstanceMock(parentAddress)
+	parentInstance := ibm.CreateAndStoreInstanceMock(parentAddress, 0)
 	parentInstance.AddMockMethod("doSomething", func() {
 		host.Metering().UseGas(gasUsedByParent)
 	})
@@ -1429,7 +1429,7 @@ func TestExecution_GasUsed_ExecuteOnSameCtx(t *testing.T) {
 	gasUsedByParent := contractCompilationCost + gasUsedByParentExec + 1
 	gasUsedByChild := contractCompilationCost + gasUsedByChildExec
 
-	parentInstance := ibm.CreateAndStoreInstanceMock(parentAddress)
+	parentInstance := ibm.CreateAndStoreInstanceMock(parentAddress, 0)
 	parentInstance.AddMockMethod("function", func() {
 		host.Metering().UseGas(gasUsedByParentExec)
 		childInput := DefaultTestContractCallInput()
@@ -1440,7 +1440,7 @@ func TestExecution_GasUsed_ExecuteOnSameCtx(t *testing.T) {
 		require.Nil(t, err)
 	})
 
-	childInstance := ibm.CreateAndStoreInstanceMock(childAddress)
+	childInstance := ibm.CreateAndStoreInstanceMock(childAddress, 0)
 	childInstance.AddMockMethod("function", func() {
 		host.Metering().UseGas(gasUsedByChildExec)
 	})

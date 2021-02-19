@@ -9,6 +9,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
 )
@@ -56,24 +57,14 @@ func defaultTestArwenForCall(tb testing.TB, code []byte, balance *big.Int) (*vmH
 	return host, stubBlockchainHook
 }
 
-func defaultTestArwenForCallWithInstanceMocks(tb testing.TB) (*vmHost, *contextmock.BlockchainHookStub, *contextmock.InstanceBuilderMock) {
-	stubBlockchainHook := &contextmock.BlockchainHookStub{}
-	stubBlockchainHook.GetUserAccountCalled = func(scAddress []byte) (vmcommon.UserAccountHandler, error) {
-		return &contextmock.StubAccount{
-			Address: scAddress,
-			Balance: big.NewInt(1000),
-		}, nil
-	}
-	stubBlockchainHook.GetCodeCalled = func(account vmcommon.UserAccountHandler) []byte {
-		return account.AddressBytes()
-	}
+func defaultTestArwenForCallWithInstanceMocks(tb testing.TB) (*vmHost, *worldmock.MockWorld, *contextmock.InstanceBuilderMock) {
+	world := worldmock.NewMockWorld()
+	host := defaultTestArwen(tb, world)
 
-	host := defaultTestArwen(tb, stubBlockchainHook)
-
-	instanceBuilderMock := contextmock.NewInstanceBuilderMock()
+	instanceBuilderMock := contextmock.NewInstanceBuilderMock(world)
 	host.Runtime().ReplaceInstanceBuilder(instanceBuilderMock)
 
-	return host, stubBlockchainHook, instanceBuilderMock
+	return host, world, instanceBuilderMock
 }
 
 // defaultTestArwenForTwoSCs creates an Arwen vmHost configured for testing calls between 2 SmartContracts
