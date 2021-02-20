@@ -1,6 +1,6 @@
 package wasmer
 
-// InstanceHandler defines the functionality for working with WASM Instances
+// InstanceHandler defines the functionality of a Wasmer instance
 type InstanceHandler interface {
 	HasMemory() bool
 	SetContextData(data int)
@@ -14,7 +14,15 @@ type InstanceHandler interface {
 	GetExports() ExportsMap
 	GetSignature(functionName string) (*ExportedFunctionSignature, bool)
 	GetData() *int
-	GetInstanceCtxMemory() *Memory
-	GetMemory() *Memory
+	GetInstanceCtxMemory() MemoryHandler
+	GetMemory() MemoryHandler
 	IsFunctionImported(name string) bool
+}
+
+// MemoryHandler defines the functionality of the memory of a Wasmer instance
+type MemoryHandler interface {
+	Length() uint32
+	Data() []byte
+	Grow(pages uint32) error
+	Destroy()
 }
