@@ -3,6 +3,7 @@ package mock
 import (
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 // InstanceBuilderMock can be passed to RuntimeContext as an InstanceBuilder to
@@ -30,6 +31,7 @@ func (builder *InstanceBuilderMock) CreateAndStoreInstanceMock(code []byte, bala
 	account.IsSmartContract = true
 	account.SetBalance(balance)
 	account.Code = code
+	account.CodeMetadata = []byte{0, vmcommon.MetadataPayable}
 
 	return instance
 }

@@ -2,6 +2,8 @@ package worldmock
 
 import (
 	"math/big"
+
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 // AccountMap is a map from address to account
@@ -65,6 +67,7 @@ func (am AccountMap) CreateSmartContractAccount(owner []byte, address []byte, co
 	newAccount.Code = code
 	newAccount.IsSmartContract = true
 	newAccount.OwnerAddress = owner
+	newAccount.CodeMetadata = []byte{0, vmcommon.MetadataPayable}
 
 	return newAccount
 }

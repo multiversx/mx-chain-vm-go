@@ -1388,7 +1388,7 @@ func TestExecution_CreateNewContract_Fail(t *testing.T) {
 func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 	host, _, ibm := defaultTestArwenForCallWithInstanceMocks(t)
 
-	parentInstance := ibm.CreateAndStoreInstanceMock(parentAddress, 0)
+	parentInstance := ibm.CreateAndStoreInstanceMock(parentAddress, 1000)
 	parentInstance.AddMockMethod("callChild", func() {
 		host.Output().Finish([]byte("parent returns this"))
 		host.Metering().UseGas(500)
