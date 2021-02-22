@@ -10,7 +10,8 @@ const (
 	// ScCall describes a regular smart contract call
 	ScCall
 
-	// ScQuery describes a regular smart contract call
+	// ScQuery simulates an off-chain call.
+	// It is like a SCCall, but without a sender and with infinite gas.
 	ScQuery
 
 	// Transfer is an ERD transfer transaction without calling a smart contract
