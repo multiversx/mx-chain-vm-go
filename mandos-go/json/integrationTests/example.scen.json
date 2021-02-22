@@ -215,6 +215,20 @@
             }
         },
         {
+            "step": "scQuery",
+            "txId": "1b",
+            "comment": "a query, as would be performed off-chain",
+            "tx": {
+                "to": "address:the_smart_contract",
+                "function": "someFunctionName",
+                "arguments": []
+            },
+            "expect": {
+                "out": [],
+                "status": ""
+            }
+        },
+        {
             "step": "transfer",
             "txId": "3",
             "comment": "simple transfer, no VM",

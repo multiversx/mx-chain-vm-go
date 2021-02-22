@@ -94,21 +94,23 @@ func transactionToScenarioOJ(tx *mj.Transaction) oj.OJsonObject {
 	if tx.Type.HasReceiver() {
 		transactionOJ.Put("to", bytesFromStringToOJ(tx.To))
 	}
-	transactionOJ.Put("value", bigIntToOJ(tx.Value))
+	if tx.Type.HasValue() {
+		transactionOJ.Put("value", bigIntToOJ(tx.Value))
+	}
 	if len(tx.ESDTValue.Original) > 0 {
 		transactionOJ.Put("esdtValue", bigIntToOJ(tx.ESDTValue))
 	}
 	if len(tx.ESDTTokenName.Original) > 0 {
 		transactionOJ.Put("esdtTokenName", bytesFromStringToOJ(tx.ESDTTokenName))
 	}
-	if tx.Type == mj.ScCall {
+	if tx.Type.HasFunction() {
 		transactionOJ.Put("function", stringToOJ(tx.Function))
 	}
 	if tx.Type == mj.ScDeploy {
 		transactionOJ.Put("contractCode", bytesFromStringToOJ(tx.Code))
 	}
 
-	if tx.Type == mj.ScCall || tx.Type == mj.ScDeploy {
+	if tx.Type.HasFunction() || tx.Type == mj.ScDeploy {
 		var argList []oj.OJsonObject
 		for _, arg := range tx.Arguments {
 			argList = append(argList, bytesFromTreeToOJ(arg))
@@ -117,7 +119,7 @@ func transactionToScenarioOJ(tx *mj.Transaction) oj.OJsonObject {
 		transactionOJ.Put("arguments", &argOJ)
 	}
 
-	if tx.Type.IsSmartContractTx() {
+	if tx.Type.HasGas() {
 		transactionOJ.Put("gasLimit", uint64ToOJ(tx.GasLimit))
 		transactionOJ.Put("gasPrice", uint64ToOJ(tx.GasPrice))
 	}
