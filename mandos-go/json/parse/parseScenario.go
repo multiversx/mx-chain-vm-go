@@ -194,6 +194,8 @@ func (p *Parser) processScenarioStep(stepObj oj.OJsonObject) (mj.Step, error) {
 		return p.parseTxStep(mj.ScCall, stepMap)
 	case mj.StepNameScDeploy:
 		return p.parseTxStep(mj.ScDeploy, stepMap)
+	case mj.StepNameScQuery:
+		return p.parseTxStep(mj.ScQuery, stepMap)
 	case mj.StepNameTransfer:
 		return p.parseTxStep(mj.Transfer, stepMap)
 	case mj.StepNameValidatorReward:

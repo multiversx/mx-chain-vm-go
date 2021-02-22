@@ -19,6 +19,7 @@ func (p *Parser) processTx(txType mj.TransactionType, blrRaw oj.OJsonObject) (*m
 		Value:     mj.JSONBigIntZero(),
 		ESDTValue: mj.JSONBigIntZero(),
 	}
+
 	var err error
 	for _, kvp := range bltMap.OrderedKV {
 
@@ -62,23 +63,29 @@ func (p *Parser) processTx(txType mj.TransactionType, blrRaw oj.OJsonObject) (*m
 			if err != nil {
 				return nil, fmt.Errorf("invalid transaction function: %w", err)
 			}
-			if txType == mj.ScDeploy && len(blt.Function) > 0 {
-				return nil, errors.New("transaction function field not allowed for scDeploy transactions")
-			}
-			if txType == mj.Transfer && len(blt.Function) > 0 {
-				return nil, errors.New("transaction function field not allowed for transfer transactions")
+			if !txType.HasFunction() && len(blt.Function) > 0 {
+				return nil, errors.New("transaction function field not allowed in this context")
 			}
 		case "value":
+			if !txType.HasValue() {
+				return nil, errors.New("`value` not allowed in this context")
+			}
 			blt.Value, err = p.processBigInt(kvp.Value, bigIntUnsignedBytes)
 			if err != nil {
 				return nil, fmt.Errorf("invalid transaction value: %w", err)
 			}
 		case "esdtValue":
+			if !txType.HasESDT() {
+				return nil, errors.New("`esdtValue` not allowed in this context")
+			}
 			blt.ESDTValue, err = p.processBigInt(kvp.Value, bigIntUnsignedBytes)
 			if err != nil {
 				return nil, fmt.Errorf("invalid transaction ESDT value: %w", err)
 			}
 		case "esdtTokenName":
+			if !txType.HasESDT() {
+				return nil, errors.New("`esdtTokenName` not allowed in this context")
+			}
 			blt.ESDTTokenName, err = p.processStringAsByteArray(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("invalid transaction ESDT token name: %w", err)
@@ -100,11 +107,17 @@ func (p *Parser) processTx(txType mj.TransactionType, blrRaw oj.OJsonObject) (*m
 				return nil, errors.New("transaction contractCode field only allowed int scDeploy transactions")
 			}
 		case "gasPrice":
+			if !txType.HasGas() {
+				return nil, errors.New("`gasPrice` not allowed in this context")
+			}
 			blt.GasPrice, err = p.processUint64(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("invalid transaction gasPrice: %w", err)
 			}
 		case "gasLimit":
+			if !txType.HasGas() {
+				return nil, errors.New("`gasLimit` not allowed in this context")
+			}
 			blt.GasLimit, err = p.processUint64(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("invalid transaction gasLimit: %w", err)

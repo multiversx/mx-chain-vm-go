@@ -107,6 +107,9 @@ const StepNameScCall = "scCall"
 // StepNameScDeploy is a json step type name.
 const StepNameScDeploy = "scDeploy"
 
+// StepNameScQuery is a json step type name.
+const StepNameScQuery = "scQuery"
+
 // StepNameTransfer is a json step type name.
 const StepNameTransfer = "transfer"
 
@@ -120,6 +123,8 @@ func (t *TxStep) StepTypeName() string {
 		return StepNameScCall
 	case ScDeploy:
 		return StepNameScDeploy
+	case ScQuery:
+		return StepNameScQuery
 	case Transfer:
 		return StepNameTransfer
 	case ValidatorReward:

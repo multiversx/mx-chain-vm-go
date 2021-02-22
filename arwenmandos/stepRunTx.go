@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"math"
 	"math/big"
 
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
@@ -44,6 +45,13 @@ func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmi
 			if err != nil {
 				return nil, err
 			}
+		case mj.ScQuery:
+			// imitates the behaviour of the protocol
+			// the sender is the contract itself during SC queries
+			tx.From = tx.To
+			// gas restrictions waived during SC queries
+			tx.GasLimit.Value = math.MaxUint64
+			fallthrough
 		case mj.ScCall:
 			var err error
 			output, err = ae.scCall(txIndex, tx)

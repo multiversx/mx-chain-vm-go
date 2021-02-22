@@ -10,6 +10,9 @@ const (
 	// ScCall describes a regular smart contract call
 	ScCall
 
+	// ScQuery describes a regular smart contract call
+	ScQuery
+
 	// Transfer is an ERD transfer transaction without calling a smart contract
 	Transfer
 
@@ -20,7 +23,7 @@ const (
 
 // HasSender is a helper function to indicate if transaction has `to` field.
 func (tt TransactionType) HasSender() bool {
-	return tt != ValidatorReward
+	return tt != ScQuery && tt != ValidatorReward
 }
 
 // HasReceiver is a helper function to indicate if transaction has receiver.
@@ -30,6 +33,26 @@ func (tt TransactionType) HasReceiver() bool {
 
 // IsSmartContractTx indicates whether tx type allows an `expect` field.
 func (tt TransactionType) IsSmartContractTx() bool {
+	return tt == ScDeploy || tt == ScCall || tt == ScQuery
+}
+
+// HasValue indicates whether tx type allows a `value` field.
+func (tt TransactionType) HasValue() bool {
+	return tt != ScQuery
+}
+
+// HasESDT is a helper function to indicate if transaction has `esdtValue` or `esdtToken` fields.
+func (tt TransactionType) HasESDT() bool {
+	return tt != ScQuery && tt != ValidatorReward
+}
+
+// HasFunction indicates whether tx type allows a `function` field.
+func (tt TransactionType) HasFunction() bool {
+	return tt == ScCall || tt == ScQuery
+}
+
+// HasGas is a helper function to indicate if transaction has `esdtValue` or `esdtToken` fields.
+func (tt TransactionType) HasGas() bool {
 	return tt == ScDeploy || tt == ScCall
 }
 
