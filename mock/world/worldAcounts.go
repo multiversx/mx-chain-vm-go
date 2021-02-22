@@ -71,7 +71,7 @@ func (am AccountMap) CreateSmartContractAccount(owner []byte, address []byte, co
 
 // PutAccount inserts account based on address.
 func (am AccountMap) PutAccount(account *Account) {
-	am[addressKey(account.Address)] = account
+	am[string(account.Address)] = account
 }
 
 // PutAccounts inserts multiple accounts based on address.
@@ -83,16 +83,12 @@ func (am AccountMap) PutAccounts(accounts []*Account) {
 
 // GetAccount retrieves account based on address
 func (am AccountMap) GetAccount(address []byte) *Account {
-	return am[addressKey(address)]
+	return am[string(address)]
 }
 
 // DeleteAccount removes account based on address
 func (am AccountMap) DeleteAccount(address []byte) {
-	delete(am, addressKey(address))
-}
-
-func addressKey(address []byte) string {
-	return string(address)
+	delete(am, string(address))
 }
 
 // StorageValue yields the storage value for key, default 0

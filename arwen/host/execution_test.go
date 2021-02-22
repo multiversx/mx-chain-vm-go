@@ -1110,10 +1110,10 @@ func TestExecution_ExecuteOnDestContext_MultipleChildren(t *testing.T) {
 	gammaCode := GetTestSCCodeModule("exec-sync-ctx-multiple/gamma", "gamma", "../../")
 	deltaCode := GetTestSCCodeModule("exec-sync-ctx-multiple/delta", "delta", "../../")
 
-	alpha := AddTestSmartContractToWorld(world, "alpha", alphaCode)
-	beta := AddTestSmartContractToWorld(world, "beta", betaCode)
-	gamma := AddTestSmartContractToWorld(world, "gamma", gammaCode)
-	delta := AddTestSmartContractToWorld(world, "delta", deltaCode)
+	alpha := AddTestSmartContractToWorld(world, "alphaSC", alphaCode)
+	beta := AddTestSmartContractToWorld(world, "betaSC", betaCode)
+	gamma := AddTestSmartContractToWorld(world, "gammaSC", gammaCode)
+	delta := AddTestSmartContractToWorld(world, "deltaSC", deltaCode)
 
 	fmt.Println(hex.EncodeToString(alpha.Address))
 	fmt.Println(hex.EncodeToString(beta.Address))
