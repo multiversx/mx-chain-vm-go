@@ -22,9 +22,26 @@ const GAS_100K: i64 = 100000;
 const GAS_5M: i64 = 5000000;
 const GAS_10M: i64 = 10000000;
 
+const ASYNC_CALL_LIMIT: usize = 10;
+
 #[no_mangle]
 pub extern "C" fn no_async() {
     EEI.finish_i64(42);
+}
+
+// too many
+
+#[no_mangle]
+pub extern "C" fn too_many_async_calls() {
+    for _ in 0..=ASYNC_CALL_LIMIT {
+        create_async_call(COMMON_GROUP_ID,
+            &Address::from(CHILD_ADDRESS),
+            &ZERO,
+            b"answer",
+            EMPTY_SLICE,
+            EMPTY_SLICE,
+            GAS_100K);
+    }
 }
 
 // one async call
