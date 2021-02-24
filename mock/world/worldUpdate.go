@@ -58,14 +58,16 @@ func (b *MockWorld) UpdateAccounts(
 		acct := b.AcctMap.GetAccount(modAcct.Address)
 		if acct == nil {
 			acct = &Account{
-				Exists:       false,
-				Address:      modAcct.Address,
-				Nonce:        0,
-				Balance:      zero,
-				Storage:      make(map[string][]byte),
-				Code:         nil,
-				OwnerAddress: modAcct.CodeDeployerAddress,
-				ESDTData:     make(map[string]*ESDTData),
+				Exists:          false,
+				Address:         modAcct.Address,
+				Nonce:           0,
+				Balance:         zero,
+				Storage:         make(map[string][]byte),
+				Code:            nil,
+				OwnerAddress:    modAcct.CodeDeployerAddress,
+				ESDTData:        make(map[string]*ESDTData),
+				ShardID:         0,
+				IsSmartContract: false,
 			}
 			b.AcctMap.PutAccount(acct)
 		}
@@ -82,6 +84,7 @@ func (b *MockWorld) UpdateAccounts(
 			acct.Code = modAcct.Code
 			hasher := hashing.NewHasher()
 			acct.CodeHash, _ = hasher.Sha256(acct.Code)
+			acct.IsSmartContract = true
 		}
 		if len(modAcct.OutputTransfers) > 0 && len(modAcct.OutputTransfers[0].Data) > 0 {
 			acct.AsyncCallData = string(modAcct.OutputTransfers[0].Data)
