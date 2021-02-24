@@ -109,9 +109,9 @@ func checkAccountESDT(expectedAcct *mj.CheckAccount, matchingAcct *worldhook.Acc
 		tokenNameStr := string(expectedTokenData.TokenName.Value)
 		expectedTokenNames[tokenNameStr] = true
 	}
-	for tokenName := range matchingAcct.ESDTData {
-		if !expectedTokenNames[tokenName] {
-			return fmt.Errorf("unexpected ESDT token: %s", tokenName)
+	for tokenName, tokenData := range matchingAcct.ESDTData {
+		if tokenData.Balance.Sign() > 0 && !expectedTokenNames[tokenName] {
+			return fmt.Errorf("unexpected ESDT token %s for account %s", tokenName, expectedAcct.Address.Original)
 		}
 	}
 
