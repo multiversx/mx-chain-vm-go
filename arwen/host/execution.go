@@ -307,11 +307,13 @@ func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
 		return
 	}
 
+	childContract := runtime.GetSCAddress()
+
 	// Retrieve the VMOutput before popping the Runtime state and the previous
 	// instance, to ensure accurate GasRemaining
 	vmOutput := output.GetVMOutput()
-	childContract := runtime.GetSCAddress()
 	gasSpentByContract := metering.GasSpentByContract()
+	log.Info("gas spent by contract", "sc", string(childContract), "gas", gasSpentByContract)
 	if vmOutput.ReturnCode != vmcommon.Ok {
 		gasSpentByContract = 0
 	}

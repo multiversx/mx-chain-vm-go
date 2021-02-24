@@ -173,6 +173,10 @@ func (context *meteringContext) GasLeft() uint64 {
 
 // ForwardGas accumulates the gas forwarded by the current contract for the execution of other contracts
 func (context *meteringContext) ForwardGas(sourceAddress []byte, destAddress []byte, gas uint64) {
+	log.Info("gas forwarding",
+		"src", string(sourceAddress),
+		"dst", string(destAddress),
+		"gas", gas)
 	// Gas forwarded to any contract (including self-forwarding) is recorded for
 	// the current contract.
 	context.addForwardedGas(sourceAddress, gas)
@@ -184,6 +188,7 @@ func (context *meteringContext) ForwardGas(sourceAddress []byte, destAddress []b
 	selfCall := bytes.Equal(sourceAddress, destAddress)
 	alreadyOnExecutionStack := context.host.Runtime().IsContractOnTheStack(destAddress)
 	if selfCall || alreadyOnExecutionStack {
+		log.Info("gas returned", "dst", destAddress, "gas", gas)
 		context.addReturnedGas(destAddress, gas)
 	}
 }

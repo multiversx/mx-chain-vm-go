@@ -56,3 +56,48 @@ void callChildrenDirectly_DestCtx() {
 	);
 	finishResult(result);
 }
+
+void callChildrenDirectly_SameCtx() {
+  u32 argumentLengths[] = {4};
+  byte argumentData[] = "argx";
+	int result = 0;
+
+  argumentData[3] = '1';
+  result = executeOnSameContext(
+			10000,
+			betaSC,
+			callValue,
+			betaMethod,
+			10,
+			1,
+			(byte*)argumentLengths,
+			argumentData
+	);
+	finishResult(result);
+
+  argumentData[3] = '2';
+  result = executeOnSameContext(
+			10000,
+			gammaSC,
+			callValue,
+			gammaMethod,
+			11,
+			1,
+			(byte*)argumentLengths,
+			argumentData
+	);
+	finishResult(result);
+
+  argumentData[3] = '3';
+  result = executeOnSameContext(
+			10000,
+			deltaSC,
+			callValue,
+			deltaMethod,
+			11,
+			1,
+			(byte*)argumentLengths,
+			argumentData
+	);
+	finishResult(result);
+}

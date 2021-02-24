@@ -2,7 +2,6 @@ package host
 
 import (
 	"bytes"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"math/big"
@@ -1101,35 +1100,23 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 	}
 }
 
-func TestExecution_ExecuteOnDestContext_MultipleChildren(t *testing.T) {
+func TestExecution_ExecuteOnSameContext_MultipleChildren(t *testing.T) {
+	t.Skip("needs gas forwarding fixes")
+
 	world := worldmock.NewMockWorld()
 	host := defaultTestArwen(t, world)
 
 	alphaCode := GetTestSCCodeModule("exec-sync-ctx-multiple/alpha", "alpha", "../../")
+	alpha := AddTestSmartContractToWorld(world, "alphaSC", alphaCode)
+	alpha.Balance = big.NewInt(100)
+
 	betaCode := GetTestSCCodeModule("exec-sync-ctx-multiple/beta", "beta", "../../")
 	gammaCode := GetTestSCCodeModule("exec-sync-ctx-multiple/gamma", "gamma", "../../")
 	deltaCode := GetTestSCCodeModule("exec-sync-ctx-multiple/delta", "delta", "../../")
 
-	alpha := AddTestSmartContractToWorld(world, "alphaSC", alphaCode)
-	beta := AddTestSmartContractToWorld(world, "betaSC", betaCode)
-	gamma := AddTestSmartContractToWorld(world, "gammaSC", gammaCode)
-	delta := AddTestSmartContractToWorld(world, "deltaSC", deltaCode)
-
-	fmt.Println(hex.EncodeToString(alpha.Address))
-	fmt.Println(hex.EncodeToString(beta.Address))
-	fmt.Println(hex.EncodeToString(gamma.Address))
-	fmt.Println(hex.EncodeToString(delta.Address))
-
-	alpha.Balance = big.NewInt(100)
-
-	input := DefaultTestContractCallInput()
-	input.Function = "callChildrenDirectly_DestCtx"
-	input.GasProvided = 1000000
-	input.RecipientAddr = alpha.Address
-
-	vmOutput, err := host.RunSmartContractCall(input)
-	require.Nil(t, err)
-	require.NotNil(t, vmOutput)
+	_ = AddTestSmartContractToWorld(world, "betaSC", betaCode)
+	_ = AddTestSmartContractToWorld(world, "gammaSC", gammaCode)
+	_ = AddTestSmartContractToWorld(world, "deltaSC", deltaCode)
 
 	expectedReturnData := [][]byte{
 		[]byte("arg1"),
@@ -1139,6 +1126,59 @@ func TestExecution_ExecuteOnDestContext_MultipleChildren(t *testing.T) {
 		[]byte("arg3"),
 		[]byte("succ"),
 	}
+
+	// Alpha uses executeOnSameContext() to call beta, gamma and delta one after
+	// the other, in the same transaction.
+	input := DefaultTestContractCallInput()
+	input.Function = "callChildrenDirectly_SameCtx"
+	input.GasProvided = 1000000
+	input.RecipientAddr = alpha.Address
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+
+	require.Equal(t, "", vmOutput.ReturnMessage)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+	require.Equal(t, expectedReturnData, vmOutput.ReturnData)
+
+}
+
+func TestExecution_ExecuteOnDestContext_MultipleChildren(t *testing.T) {
+	world := worldmock.NewMockWorld()
+	host := defaultTestArwen(t, world)
+
+	alphaCode := GetTestSCCodeModule("exec-sync-ctx-multiple/alpha", "alpha", "../../")
+	alpha := AddTestSmartContractToWorld(world, "alphaSC", alphaCode)
+	alpha.Balance = big.NewInt(100)
+
+	betaCode := GetTestSCCodeModule("exec-sync-ctx-multiple/beta", "beta", "../../")
+	gammaCode := GetTestSCCodeModule("exec-sync-ctx-multiple/gamma", "gamma", "../../")
+	deltaCode := GetTestSCCodeModule("exec-sync-ctx-multiple/delta", "delta", "../../")
+
+	_ = AddTestSmartContractToWorld(world, "betaSC", betaCode)
+	_ = AddTestSmartContractToWorld(world, "gammaSC", gammaCode)
+	_ = AddTestSmartContractToWorld(world, "deltaSC", deltaCode)
+
+	expectedReturnData := [][]byte{
+		[]byte("arg1"),
+		[]byte("succ"),
+		[]byte("arg2"),
+		[]byte("succ"),
+		[]byte("arg3"),
+		[]byte("succ"),
+	}
+
+	// Alpha uses executeOnDestContext() to call beta, gamma and delta one after
+	// the other, in the same transaction.
+	input := DefaultTestContractCallInput()
+	input.Function = "callChildrenDirectly_DestCtx"
+	input.GasProvided = 1000000
+	input.RecipientAddr = alpha.Address
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
 
 	require.Equal(t, "", vmOutput.ReturnMessage)
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
