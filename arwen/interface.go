@@ -39,6 +39,7 @@ type VMHost interface {
 	IsArwenV3Enabled() bool
 
 	ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, value *big.Int) (uint64, error)
+	RevertESDTTransfer(input *vmcommon.ContractCallInput)
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*AsyncContextInfo, error)
 	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *AsyncContextInfo, uint64, error)

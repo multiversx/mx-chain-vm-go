@@ -1,11 +1,14 @@
 package mock
 
+// MemoryMock mocks the linear memory of a Wasmer instance and is used by the
+// InstanceMock.
 type MemoryMock struct {
 	Pages    uint32
 	PageSize uint32
 	Contents []byte
 }
 
+// NewMemoryMock creates a new MemoryMock instance
 func NewMemoryMock() *MemoryMock {
 	memory := &MemoryMock{}
 	memory.Pages = 2

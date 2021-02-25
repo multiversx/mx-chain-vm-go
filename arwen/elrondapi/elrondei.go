@@ -739,6 +739,7 @@ func transferESDTExecute(
 		contractCallInput.GasProvided = gasLimitForExec
 		_, _, _, err = host.ExecuteOnDestContext(contractCallInput)
 		if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
+			host.RevertESDTTransfer(contractCallInput)
 			return 1
 		}
 

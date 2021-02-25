@@ -313,7 +313,6 @@ func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
 	// instance, to ensure accurate GasRemaining
 	vmOutput := output.GetVMOutput()
 	gasSpentByContract := metering.GasSpentByContract()
-	log.Info("gas spent by contract", "sc", string(childContract), "gas", gasSpentByContract)
 	if vmOutput.ReturnCode != vmcommon.Ok {
 		gasSpentByContract = 0
 	}
@@ -565,7 +564,7 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) (uint64, error) {
 			storage.SetAddress(runtime.GetSCAddress())
 			err = host.executeSmartContractCall(newVMInput, metering, runtime, output, false)
 			if err != nil {
-				host.revertESDTTransfer(input)
+				host.RevertESDTTransfer(input)
 			}
 
 			return gasUsedBeforeReset, err
@@ -600,7 +599,7 @@ func (host *vmHost) callSCMethodIndirect() error {
 	return err
 }
 
-func (host *vmHost) revertESDTTransfer(input *vmcommon.ContractCallInput) {
+func (host *vmHost) RevertESDTTransfer(input *vmcommon.ContractCallInput) {
 	if input.Function != core.BuiltInFunctionESDTTransfer {
 		return
 	}
@@ -632,10 +631,10 @@ func (host *vmHost) revertESDTTransfer(input *vmcommon.ContractCallInput) {
 
 	vmOutput, err := host.blockChainHook.ProcessBuiltInFunction(revertInput)
 	if err != nil {
-		log.Error("revertESDTTransfer failed", "error", err)
+		log.Error("RevertESDTTransfer failed", "error", err)
 	}
 	if vmOutput.ReturnCode != vmcommon.Ok {
-		log.Error("revertESDTTransfer failed", "returnCode", vmOutput.ReturnCode, "returnMessage", vmOutput.ReturnMessage)
+		log.Error("RevertESDTTransfer failed", "returnCode", vmOutput.ReturnCode, "returnMessage", vmOutput.ReturnMessage)
 	}
 }
 

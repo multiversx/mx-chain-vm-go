@@ -306,27 +306,27 @@ func (context *outputContext) TransferESDT(
 		return 0, err
 	}
 
-	gasLimit := callInput.GasProvided - gasConsumedByTransfer
+	gasRemaining := callInput.GasProvided - gasConsumedByTransfer
 
 	isSmartContract := context.host.Blockchain().IsSmartContract(destination)
 	sameShard := context.host.AreInSameShard(sender, destination)
 	isExecution := isSmartContract && callInput != nil
 
 	if isExecution {
-		if gasLimit > context.host.Metering().GasLeft() {
+		if gasRemaining > context.host.Metering().GasLeft() {
 			return 0, arwen.ErrNotEnoughGas
 		}
 
 		if !sameShard {
-			context.host.Metering().ForwardGas(sender, destination, gasLimit)
-			context.host.Metering().UseGas(gasLimit)
+			context.host.Metering().ForwardGas(sender, destination, gasRemaining)
+			context.host.Metering().UseGas(gasRemaining)
 		}
 	}
 
 	destAcc, _ := context.GetOutputAccount(destination)
 	outputTransfer := vmcommon.OutputTransfer{
 		Value:     big.NewInt(0),
-		GasLimit:  gasLimit,
+		GasLimit:  gasRemaining,
 		GasLocked: 0,
 		Data:      []byte(core.BuiltInFunctionESDTTransfer + "@" + hex.EncodeToString(tokenIdentifier) + "@" + hex.EncodeToString(value.Bytes())),
 		CallType:  vmcommon.DirectCall,
@@ -346,7 +346,7 @@ func (context *outputContext) TransferESDT(
 
 	destAcc.OutputTransfers = append(destAcc.OutputTransfers, outputTransfer)
 
-	return gasLimit, nil
+	return gasRemaining, nil
 }
 
 func (context *outputContext) hasSufficientBalance(address []byte, value *big.Int) bool {

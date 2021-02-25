@@ -4,6 +4,8 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 )
 
+// InstanceMock is a mock for Wasmer instances; it allows creating mock smart
+// contracts within tests, without needing actual WASM smart contracts.
 type InstanceMock struct {
 	Code            []byte
 	Exports         wasmer.ExportsMap
@@ -14,6 +16,7 @@ type InstanceMock struct {
 	Memory          wasmer.MemoryHandler
 }
 
+// NewInstanceMock creates a new InstanceMock
 func NewInstanceMock(code []byte) *InstanceMock {
 	return &InstanceMock{
 		Code:            code,
@@ -26,6 +29,7 @@ func NewInstanceMock(code []byte) *InstanceMock {
 	}
 }
 
+// AddMockMethod adds the provided function as a mocked method to the instance under the specified name.
 func (instance *InstanceMock) AddMockMethod(name string, method func()) {
 	wrappedMethod := func(...interface{}) (wasmer.Value, error) {
 		method()

@@ -36,7 +36,7 @@ func (builder *InstanceBuilderMock) CreateAndStoreInstanceMock(code []byte, bala
 	return instance
 }
 
-// GetStoredInstanc retrieves and initializes a stored Wasmer instance, or
+// GetStoredInstance retrieves and initializes a stored Wasmer instance, or
 // nil if it doesn't exist
 func (builder *InstanceBuilderMock) GetStoredInstance(code []byte, gasLimit uint64) (wasmer.InstanceHandler, bool) {
 	instance, ok := builder.InstanceMap[string(code)]
