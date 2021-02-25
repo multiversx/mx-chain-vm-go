@@ -306,7 +306,11 @@ func (context *outputContext) TransferESDT(
 		return 0, err
 	}
 
-	gasRemaining := callInput.GasProvided - gasConsumedByTransfer
+	gasRemaining := uint64(0)
+
+	if callInput != nil {
+		gasRemaining = callInput.GasProvided - gasConsumedByTransfer
+	}
 
 	isSmartContract := context.host.Blockchain().IsSmartContract(destination)
 	sameShard := context.host.AreInSameShard(sender, destination)
