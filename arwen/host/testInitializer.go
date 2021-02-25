@@ -28,8 +28,8 @@ var userAddress = []byte("userAccount.....................")
 const AddressSize = 32
 
 var SCAddressPrefix = []byte("\x00\x00\x00\x00\x00\x00\x00\x00\x0f\x0f")
-var parentAddress = []byte("\x00\x00\x00\x00\x00\x00\x00\x00\x0f\x0fparentSC..............")
-var childAddress = []byte("\x00\x00\x00\x00\x00\x00\x00\x00\x0f\x0fchildSC...............")
+var parentAddress = MakeTestSCAddress("parentSC")
+var childAddress = MakeTestSCAddress("childSC")
 
 var customGasSchedule = config.GasScheduleMap(nil)
 
