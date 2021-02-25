@@ -25,7 +25,8 @@ type VMHostStub struct {
 	OutputCalled                      func() arwen.OutputContext
 	MeteringCalled                    func() arwen.MeteringContext
 	StorageCalled                     func() arwen.StorageContext
-	ExecuteESDTTransferCalled         func(destination []byte, sender []byte, tokenIdentifier []byte, value *big.Int) error
+	RevertESDTTransferCalled          func(input *vmcommon.ContractCallInput)
+	ExecuteESDTTransferCalled         func(destination []byte, sender []byte, tokenIdentifier []byte, value *big.Int) (uint64, error)
 	CreateNewContractCalled           func(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContextCalled        func(input *vmcommon.ContractCallInput) (*arwen.AsyncContextInfo, error)
 	ExecuteOnDestContextCalled        func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *arwen.AsyncContextInfo, uint64, error)
@@ -139,12 +140,19 @@ func (vhs *VMHostStub) Storage() arwen.StorageContext {
 	return nil
 }
 
-// ExecuteESDTTransfer
-func (vhs *VMHostStub) ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, value *big.Int) error {
+// RevertESDTTransfer mocked method
+func (vhs *VMHostStub) RevertESDTTransfer(input *vmcommon.ContractCallInput) {
+	if vhs.RevertESDTTransferCalled != nil {
+		vhs.RevertESDTTransferCalled(input)
+	}
+}
+
+// ExecuteESDTTransfer mocked method
+func (vhs *VMHostStub) ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, value *big.Int) (uint64, error) {
 	if vhs.ExecuteESDTTransferCalled != nil {
 		return vhs.ExecuteESDTTransferCalled(destination, sender, tokenIdentifier, value)
 	}
-	return nil
+	return 0, nil
 }
 
 // CreateNewContract mocked method

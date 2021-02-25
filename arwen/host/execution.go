@@ -307,10 +307,11 @@ func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
 		return
 	}
 
+	childContract := runtime.GetSCAddress()
+
 	// Retrieve the VMOutput before popping the Runtime state and the previous
 	// instance, to ensure accurate GasRemaining
 	vmOutput := output.GetVMOutput()
-	childContract := runtime.GetSCAddress()
 	gasSpentByContract := metering.GasSpentByContract()
 	if vmOutput.ReturnCode != vmcommon.Ok {
 		gasSpentByContract = 0
@@ -563,7 +564,7 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) (uint64, error) {
 			storage.SetAddress(runtime.GetSCAddress())
 			err = host.executeSmartContractCall(newVMInput, metering, runtime, output, false)
 			if err != nil {
-				host.revertESDTTransfer(input)
+				host.RevertESDTTransfer(input)
 			}
 
 			return gasUsedBeforeReset, err
@@ -598,7 +599,7 @@ func (host *vmHost) callSCMethodIndirect() error {
 	return err
 }
 
-func (host *vmHost) revertESDTTransfer(input *vmcommon.ContractCallInput) {
+func (host *vmHost) RevertESDTTransfer(input *vmcommon.ContractCallInput) {
 	if input.Function != core.BuiltInFunctionESDTTransfer {
 		return
 	}
@@ -630,15 +631,15 @@ func (host *vmHost) revertESDTTransfer(input *vmcommon.ContractCallInput) {
 
 	vmOutput, err := host.blockChainHook.ProcessBuiltInFunction(revertInput)
 	if err != nil {
-		log.Error("revertESDTTransfer failed", "error", err)
+		log.Error("RevertESDTTransfer failed", "error", err)
 	}
 	if vmOutput.ReturnCode != vmcommon.Ok {
-		log.Error("revertESDTTransfer failed", "returnCode", vmOutput.ReturnCode, "returnMessage", vmOutput.ReturnMessage)
+		log.Error("RevertESDTTransfer failed", "returnCode", vmOutput.ReturnCode, "returnMessage", vmOutput.ReturnMessage)
 	}
 }
 
 // ExecuteESDTTransfer calls the process built in function with the given transfer
-func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, value *big.Int) error {
+func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, value *big.Int) (uint64, error) {
 	_, _, metering, _, runtime, _ := host.GetContexts()
 
 	esdtTransferInput := &vmcommon.ContractCallInput{
@@ -659,19 +660,19 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, token
 	esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, tokenIdentifier, value.Bytes())
 	vmOutput, err := host.blockChainHook.ProcessBuiltInFunction(esdtTransferInput)
 	if err != nil {
-		return err
+		return esdtTransferInput.GasProvided, err
 	}
 	if vmOutput.ReturnCode != vmcommon.Ok {
-		return arwen.ErrExecutionFailed
+		return esdtTransferInput.GasProvided, arwen.ErrExecutionFailed
 	}
 
 	gasConsumed, _ := math.SubUint64(esdtTransferInput.GasProvided, vmOutput.GasRemaining)
 	if metering.GasLeft() < gasConsumed {
-		return arwen.ErrNotEnoughGas
+		return esdtTransferInput.GasProvided, arwen.ErrNotEnoughGas
 	}
 	metering.UseGas(gasConsumed)
 
-	return nil
+	return gasConsumed, nil
 }
 
 func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmcommon.ContractCallInput, uint64, error) {

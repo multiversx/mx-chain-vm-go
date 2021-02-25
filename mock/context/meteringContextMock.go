@@ -66,7 +66,7 @@ func (m *MeteringContextMock) GasLeft() uint64 {
 	return m.GasLeftMock
 }
 
-// ResetForwardedGas -
+// AddToUsedGas -
 func (m *MeteringContextMock) AddToUsedGas(_ []byte, _ uint64) {
 }
 
@@ -93,7 +93,7 @@ func (m *MeteringContextMock) GasUsedForExecution() uint64 {
 	return 0
 }
 
-// GasUsedByContract mocked method
+// GasSpentByContract mocked method
 func (m *MeteringContextMock) GasSpentByContract() uint64 {
 	return 0
 }
@@ -181,7 +181,7 @@ func (m *MeteringContextMock) DeductInitialGasForIndirectDeployment(_ arwen.Code
 func (m *MeteringContextMock) SetTotalUsedGas(_ uint64) {
 }
 
-// GetTotalUsedGas mocked method
+// GetPreviousTotalUsedGas mocked method
 func (m *MeteringContextMock) GetPreviousTotalUsedGas() uint64 {
 	return 0
 }

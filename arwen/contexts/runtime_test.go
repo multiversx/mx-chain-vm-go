@@ -257,7 +257,7 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 
 	runtimeContext.PopSetActiveState()
 
-	//check state was restored correctly
+	// check state was restored correctly
 	require.Equal(t, scAddress, runtimeContext.GetSCAddress())
 	require.Equal(t, funcName, runtimeContext.Function())
 	require.Equal(t, &vmInput, runtimeContext.GetVMInput())
