@@ -45,7 +45,7 @@ pub extern "C" fn call_first_contract_to_call_third() {
         b"call_third_contract",
         SUCCESS_CALLBACK_NAME,
         FAIL_CALLBACK_NAME,
-        GAS_100K);
+        GAS_50M);
 }
 
 // receives call data as argument
