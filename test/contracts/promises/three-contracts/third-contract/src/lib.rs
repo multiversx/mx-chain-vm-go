@@ -36,17 +36,12 @@ pub extern "C" fn call_caller() {
         GAS_100K);
 }
 
-// receives call data as argument
 #[no_mangle]
 pub extern "C" fn call_first_contract() {
-    EEI.check_num_arguments(1);
-
-    let call_data = EEI.get_argument_vec_u8(0);
-
     create_async_call(COMMON_GROUP_ID,
         &Address::from(FIRST_CONTRACT_ADDRESS),
         &ZERO,
-        call_data.as_slice(),
+        b"answer",
         SUCCESS_CALLBACK_NAME,
         FAIL_CALLBACK_NAME,
         GAS_100K);
