@@ -5,10 +5,7 @@
             "accounts": {
                 "address:a_user": {
                     "nonce": "0",
-                    "balance": "0",
-                    "esdt": {
-                        "str:TEST-TOKEN": "1000"
-                    },
+                    "balance": "1000",
                     "storage": {},
                     "code": ""
                 },
@@ -32,9 +29,7 @@
             "tx": {
                 "from": "address:a_user",
                 "to": "address:forwarder",
-                "value": "0",
-                "esdtValue": "1000",
-                "esdtTokenName": "str:TEST-TOKEN",
+                "value": "1000",
                 "function": "forward_async_call",
                 "arguments": [
                     "address:vault",
@@ -57,19 +52,13 @@
                 "address:a_user": {
                     "nonce": "*",
                     "balance": "0",
-                    "esdt": {
-                        "str:TEST-TOKEN": "0"
-                    },
                     "storage": {},
                     "code": ""
                 },
                 "address:vault": {
                     "nonce": "0",
-                    "balance": "0",
+                    "balance": "1000",
                     "storage": {},
-                    "esdt": {
-                        "str:TEST-TOKEN": "1000"
-                    },
                     "code": "file:../vault/output/vault.wasm"
                 },
                 "address:forwarder": {
