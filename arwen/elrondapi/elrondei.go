@@ -31,7 +31,7 @@ package elrondapi
 // extern int32_t getESDTTokenName(void *context, int32_t resultOffset);
 // extern int32_t getCallValueTokenName(void *context, int32_t callValueOffset, int32_t tokenNameOffset);
 // extern void writeLog(void *context, int32_t pointer, int32_t length, int32_t topicPtr, int32_t numTopics);
-// extern void writeEventLog(void *context, int32_t numTopics, int32_t topicLengthOffset, int32_t topicOffset, int32_t dataOffset, int32_t dataLength);
+// extern void writeEventLog(void *context, int32_t numTopics, int32_t topicLengthsOffset, int32_t topicOffset, int32_t dataOffset, int32_t dataLength);
 // extern void returnData(void* context, int32_t dataOffset, int32_t length);
 // extern void signalError(void* context, int32_t messageOffset, int32_t messageLength);
 // extern long long getGasLeft(void *context);
@@ -1370,7 +1370,7 @@ func writeLog(context unsafe.Pointer, dataPointer int32, dataLength int32, topic
 func writeEventLog(
 	context unsafe.Pointer,
 	numTopics int32,
-	topicLengthOffset int32,
+	topicLengthsOffset int32,
 	topicOffset int32,
 	dataOffset int32,
 	dataLength int32) {
@@ -1383,7 +1383,7 @@ func writeEventLog(
 	topics, topicDataTotalLen, err := getArgumentsFromMemory(
 		host,
 		numTopics,
-		topicLengthOffset,
+		topicLengthsOffset,
 		topicOffset,
 	)
 
