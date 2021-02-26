@@ -25,6 +25,7 @@ pub const THIRD_CONTRACT_ADDRESS: [u8; 32] = [
 ];
 
 pub const GAS_100K: i64 = 100000;
+pub const GAS_500K: i64 = 500000;
 pub const GAS_5M: i64 = 5000000;
 pub const GAS_10M: i64 = 10000000;
 pub const GAS_50M: i64 = 50000000;

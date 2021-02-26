@@ -64,6 +64,44 @@ pub extern "C" fn call_third_contract() {
         GAS_100K);
 }
 
+#[no_mangle]
+pub extern "C" fn call_third_contract_twice_simple() {
+    create_async_call(COMMON_GROUP_ID,
+        &Address::from(THIRD_CONTRACT_ADDRESS),
+        &ZERO,
+        b"answer",
+        SUCCESS_CALLBACK_NAME,
+        FAIL_CALLBACK_NAME,
+        GAS_500K);
+
+    create_async_call(COMMON_GROUP_ID,
+        &Address::from(THIRD_CONTRACT_ADDRESS),
+        &ZERO,
+        b"answer",
+        SUCCESS_CALLBACK_NAME,
+        FAIL_CALLBACK_NAME,
+        GAS_500K);
+}
+
+#[no_mangle]
+pub extern "C" fn call_third_contract_twice_complex() {
+    create_async_call(COMMON_GROUP_ID,
+        &Address::from(THIRD_CONTRACT_ADDRESS),
+        &ZERO,
+        b"call_first_contract",
+        SUCCESS_CALLBACK_NAME,
+        FAIL_CALLBACK_NAME,
+        GAS_10M);
+
+    create_async_call(COMMON_GROUP_ID,
+        &Address::from(THIRD_CONTRACT_ADDRESS),
+        &ZERO,
+        b"answer",
+        SUCCESS_CALLBACK_NAME,
+        FAIL_CALLBACK_NAME,
+        GAS_500K);
+}
+
 // receives call data as arguments
 #[no_mangle]
 pub extern "C" fn call_first_and_third_contract() {
