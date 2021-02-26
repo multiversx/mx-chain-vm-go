@@ -10,7 +10,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
-	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -1100,6 +1100,91 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 	}
 }
 
+func TestExecution_ExecuteOnSameContext_MultipleChildren(t *testing.T) {
+	t.Skip("needs gas forwarding fixes")
+
+	world := worldmock.NewMockWorld()
+	host := defaultTestArwen(t, world)
+
+	alphaCode := GetTestSCCodeModule("exec-sync-ctx-multiple/alpha", "alpha", "../../")
+	alpha := AddTestSmartContractToWorld(world, "alphaSC", alphaCode)
+	alpha.Balance = big.NewInt(100)
+
+	betaCode := GetTestSCCodeModule("exec-sync-ctx-multiple/beta", "beta", "../../")
+	gammaCode := GetTestSCCodeModule("exec-sync-ctx-multiple/gamma", "gamma", "../../")
+	deltaCode := GetTestSCCodeModule("exec-sync-ctx-multiple/delta", "delta", "../../")
+
+	_ = AddTestSmartContractToWorld(world, "betaSC", betaCode)
+	_ = AddTestSmartContractToWorld(world, "gammaSC", gammaCode)
+	_ = AddTestSmartContractToWorld(world, "deltaSC", deltaCode)
+
+	expectedReturnData := [][]byte{
+		[]byte("arg1"),
+		[]byte("succ"),
+		[]byte("arg2"),
+		[]byte("succ"),
+		[]byte("arg3"),
+		[]byte("succ"),
+	}
+
+	// Alpha uses executeOnSameContext() to call beta, gamma and delta one after
+	// the other, in the same transaction.
+	input := DefaultTestContractCallInput()
+	input.Function = "callChildrenDirectly_SameCtx"
+	input.GasProvided = 1000000
+	input.RecipientAddr = alpha.Address
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+
+	require.Equal(t, "", vmOutput.ReturnMessage)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+	require.Equal(t, expectedReturnData, vmOutput.ReturnData)
+
+}
+
+func TestExecution_ExecuteOnDestContext_MultipleChildren(t *testing.T) {
+	world := worldmock.NewMockWorld()
+	host := defaultTestArwen(t, world)
+
+	alphaCode := GetTestSCCodeModule("exec-sync-ctx-multiple/alpha", "alpha", "../../")
+	alpha := AddTestSmartContractToWorld(world, "alphaSC", alphaCode)
+	alpha.Balance = big.NewInt(100)
+
+	betaCode := GetTestSCCodeModule("exec-sync-ctx-multiple/beta", "beta", "../../")
+	gammaCode := GetTestSCCodeModule("exec-sync-ctx-multiple/gamma", "gamma", "../../")
+	deltaCode := GetTestSCCodeModule("exec-sync-ctx-multiple/delta", "delta", "../../")
+
+	_ = AddTestSmartContractToWorld(world, "betaSC", betaCode)
+	_ = AddTestSmartContractToWorld(world, "gammaSC", gammaCode)
+	_ = AddTestSmartContractToWorld(world, "deltaSC", deltaCode)
+
+	expectedReturnData := [][]byte{
+		[]byte("arg1"),
+		[]byte("succ"),
+		[]byte("arg2"),
+		[]byte("succ"),
+		[]byte("arg3"),
+		[]byte("succ"),
+	}
+
+	// Alpha uses executeOnDestContext() to call beta, gamma and delta one after
+	// the other, in the same transaction.
+	input := DefaultTestContractCallInput()
+	input.Function = "callChildrenDirectly_DestCtx"
+	input.GasProvided = 1000000
+	input.RecipientAddr = alpha.Address
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+
+	require.Equal(t, "", vmOutput.ReturnMessage)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+	require.Equal(t, expectedReturnData, vmOutput.ReturnData)
+}
+
 func TestExecution_ExecuteOnDestContextByCaller_SimpleTransfer(t *testing.T) {
 	// The child contract is designed to send some tokens back to its caller, as
 	// many as requested. The parent calls the child using
@@ -1343,8 +1428,8 @@ func TestExecution_CreateNewContract_Fail(t *testing.T) {
 func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 	host, _, ibm := defaultTestArwenForCallWithInstanceMocks(t)
 
-	parentInstance := ibm.CreateAndStoreInstanceMock(parentAddress)
-	parentInstance.GetExports()["callChild"] = mockMethod(func() {
+	parentInstance := ibm.CreateAndStoreInstanceMock(parentAddress, 1000)
+	parentInstance.AddMockMethod("callChild", func() {
 		host.Output().Finish([]byte("parent returns this"))
 		host.Metering().UseGas(500)
 		_, err := host.Storage().SetStorage([]byte("parent"), []byte("parent storage"))
@@ -1359,8 +1444,8 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 		require.Nil(t, err)
 	})
 
-	childInstance := ibm.CreateAndStoreInstanceMock(childAddress)
-	childInstance.GetExports()["doSomething"] = mockMethod(func() {
+	childInstance := ibm.CreateAndStoreInstanceMock(childAddress, 0)
+	childInstance.AddMockMethod("doSomething", func() {
 		host.Output().Finish([]byte("child returns this"))
 		host.Metering().UseGas(100)
 		_, err := host.Storage().SetStorage([]byte("child"), []byte("child storage"))
@@ -1389,8 +1474,8 @@ func TestExecution_GasUsed_SingleContract(t *testing.T) {
 	gasProvided := uint64(1000)
 	gasUsedByParent := uint64(401)
 
-	parentInstance := ibm.CreateAndStoreInstanceMock(parentAddress)
-	parentInstance.GetExports()["doSomething"] = mockMethod(func() {
+	parentInstance := ibm.CreateAndStoreInstanceMock(parentAddress, 0)
+	parentInstance.AddMockMethod("doSomething", func() {
 		host.Metering().UseGas(gasUsedByParent)
 	})
 
@@ -1419,8 +1504,8 @@ func TestExecution_GasUsed_ExecuteOnSameCtx(t *testing.T) {
 	gasUsedByParent := contractCompilationCost + gasUsedByParentExec + 1
 	gasUsedByChild := contractCompilationCost + gasUsedByChildExec
 
-	parentInstance := ibm.CreateAndStoreInstanceMock(parentAddress)
-	parentInstance.GetExports()["function"] = mockMethod(func() {
+	parentInstance := ibm.CreateAndStoreInstanceMock(parentAddress, 0)
+	parentInstance.AddMockMethod("function", func() {
 		host.Metering().UseGas(gasUsedByParentExec)
 		childInput := DefaultTestContractCallInput()
 		childInput.CallerAddr = parentAddress
@@ -1430,8 +1515,8 @@ func TestExecution_GasUsed_ExecuteOnSameCtx(t *testing.T) {
 		require.Nil(t, err)
 	})
 
-	childInstance := ibm.CreateAndStoreInstanceMock(childAddress)
-	childInstance.GetExports()["function"] = mockMethod(func() {
+	childInstance := ibm.CreateAndStoreInstanceMock(childAddress, 0)
+	childInstance.AddMockMethod("function", func() {
 		host.Metering().UseGas(gasUsedByChildExec)
 	})
 
@@ -1450,14 +1535,6 @@ func TestExecution_GasUsed_ExecuteOnSameCtx(t *testing.T) {
 
 	childAccount := vmOutput.OutputAccounts[string(childAddress)]
 	require.Equal(t, gasUsedByChild+1, childAccount.GasUsed)
-}
-
-func mockMethod(method func()) wasmer.ExportedFunctionCallback {
-	wrappedMethod := func(...interface{}) (wasmer.Value, error) {
-		method()
-		return wasmer.Void(), nil
-	}
-	return wrappedMethod
 }
 
 // makeBytecodeWithLocals rewrites the bytecode of "answer" to change the

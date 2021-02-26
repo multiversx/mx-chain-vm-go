@@ -8,11 +8,13 @@ import (
 	"math/big"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/pelletier/go-toml"
 	"github.com/stretchr/testify/require"
@@ -22,10 +24,21 @@ var defaultVMType = []byte{0xF, 0xF}
 var errAccountNotFound = errors.New("account not found")
 
 var userAddress = []byte("userAccount.....................")
-var parentAddress = []byte("\x00\x00\x00\x00\x00\x00\x00\x00\x0f\x0fparentSC..............")
-var childAddress = []byte("\x00\x00\x00\x00\x00\x00\x00\x00\x0f\x0fchildSC...............")
+
+const AddressSize = 32
+
+var SCAddressPrefix = []byte("\x00\x00\x00\x00\x00\x00\x00\x00\x0f\x0f")
+var parentAddress = MakeTestSCAddress("parentSC")
+var childAddress = MakeTestSCAddress("childSC")
 
 var customGasSchedule = config.GasScheduleMap(nil)
+
+func MakeTestSCAddress(identifier string) []byte {
+	numberOfTrailingDots := AddressSize - len(SCAddressPrefix) - len(identifier)
+	leftBytes := SCAddressPrefix
+	rightBytes := []byte(identifier + strings.Repeat(".", numberOfTrailingDots))
+	return append(leftBytes, rightBytes...)
+}
 
 // GetSCCode retrieves the bytecode of a WASM module from a file
 func GetSCCode(fileName string) []byte {
@@ -84,25 +97,14 @@ func defaultTestArwenForCall(tb testing.TB, code []byte, balance *big.Int) (*vmH
 	return host, stubBlockchainHook
 }
 
-func defaultTestArwenForCallWithInstanceMocks(tb testing.TB) (*vmHost, *contextmock.BlockchainHookStub, *contextmock.InstanceBuilderMock) {
-	stubBlockchainHook := &contextmock.BlockchainHookStub{}
-	stubBlockchainHook.GetUserAccountCalled = func(scAddress []byte) (vmcommon.UserAccountHandler, error) {
-		return &contextmock.StubAccount{
-			Address: scAddress,
-			Balance: big.NewInt(1000),
-		}, nil
-	}
-	stubBlockchainHook.GetCodeCalled = func(account vmcommon.UserAccountHandler) []byte {
-		return account.AddressBytes()
-	}
+func defaultTestArwenForCallWithInstanceMocks(tb testing.TB) (*vmHost, *worldmock.MockWorld, *contextmock.InstanceBuilderMock) {
+	world := worldmock.NewMockWorld()
+	host := defaultTestArwen(tb, world)
 
-	host := defaultTestArwen(tb, stubBlockchainHook)
-
-	code := GetTestSCCode("counter", "../../")
-	instanceBuilderMock := contextmock.NewInstanceBuilderMock(tb, code)
+	instanceBuilderMock := contextmock.NewInstanceBuilderMock(world)
 	host.Runtime().ReplaceInstanceBuilder(instanceBuilderMock)
 
-	return host, stubBlockchainHook, instanceBuilderMock
+	return host, world, instanceBuilderMock
 }
 
 // defaultTestArwenForTwoSCs creates an Arwen vmHost configured for testing calls between 2 SmartContracts
@@ -171,6 +173,11 @@ func defaultTestArwen(tb testing.TB, blockchain vmcommon.BlockchainHook) *vmHost
 	require.Nil(tb, err)
 	require.NotNil(tb, host)
 	return host
+}
+
+func AddTestSmartContractToWorld(world *worldmock.MockWorld, identifier string, code []byte) *worldmock.Account {
+	address := MakeTestSCAddress(identifier)
+	return world.AcctMap.CreateSmartContractAccount(userAddress, address, code)
 }
 
 // DefaultTestContractCreateInput creates a vmcommon.ContractCreateInput struct with default values
