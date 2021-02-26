@@ -63,14 +63,14 @@ func (b *MockWorld) StartTransferESDT(from, to []byte, tokenName string, amount 
 	return true, nil
 }
 
-func (b *MockWorld) runESDTTransferCall(input *vmcommon.ContractCallInput) (*vmi.VMOutput, error) {
-	if len(input.Arguments) != 2 {
-		return nil, errors.New("ESDTTransfer expects 2 arguments")
+func (b *MockWorld) runESDTTransferCall(vmInput *vmcommon.ContractCallInput) (*vmi.VMOutput, error) {
+	if len(vmInput.Arguments) < 2 {
+		return nil, errors.New("ESDTTransfer expects at least 2 arguments")
 	}
-	tokenName := string(input.Arguments[0])
-	amount := big.NewInt(0).SetBytes(input.Arguments[1])
+	tokenName := string(vmInput.Arguments[0])
+	amount := big.NewInt(0).SetBytes(vmInput.Arguments[1])
 
-	enoughFunds, err := b.StartTransferESDT(input.CallerAddr, input.RecipientAddr, tokenName, amount)
+	enoughFunds, err := b.StartTransferESDT(vmInput.CallerAddr, vmInput.RecipientAddr, tokenName, amount)
 	if err != nil {
 		return nil, err
 	}
@@ -79,15 +79,58 @@ func (b *MockWorld) runESDTTransferCall(input *vmcommon.ContractCallInput) (*vmi
 		return nil, ErrInsufficientFunds
 	}
 
-	return &vmcommon.VMOutput{
+	vmOutput := &vmcommon.VMOutput{
 		ReturnData:      make([][]byte, 0),
 		ReturnCode:      vmcommon.Ok,
 		ReturnMessage:   "",
-		GasRemaining:    input.GasProvided - input.GasLocked,
+		GasRemaining:    vmInput.GasProvided - vmInput.GasLocked,
 		GasRefund:       big.NewInt(0),
 		OutputAccounts:  make(map[string]*vmcommon.OutputAccount),
 		DeletedAccounts: make([][]byte, 0),
 		TouchedAccounts: make([][]byte, 0),
 		Logs:            make([]*vmcommon.LogEntry, 0),
-	}, nil
+	}
+
+	isSCCallAfter := len(vmInput.Arguments) > 2 && b.IsSmartContract(vmInput.RecipientAddr)
+
+	if isSCCallAfter {
+		var callArgs [][]byte
+		if len(vmInput.Arguments) > 3 {
+			callArgs = vmInput.Arguments[3:]
+		}
+		addOutputTransferToVMOutput(
+			string(vmInput.Arguments[2]),
+			callArgs,
+			vmInput.RecipientAddr,
+			vmInput.GasLocked,
+			vmOutput)
+	}
+
+	return vmOutput, nil
+}
+
+func addOutputTransferToVMOutput(
+	function string,
+	arguments [][]byte,
+	recipient []byte,
+	gasLocked uint64,
+	vmOutput *vmcommon.VMOutput,
+) {
+	esdtTransferTxData := function
+	for _, arg := range arguments {
+		esdtTransferTxData += "@" + hex.EncodeToString(arg)
+	}
+	outTransfer := vmcommon.OutputTransfer{
+		Value:     big.NewInt(0),
+		GasLimit:  vmOutput.GasRemaining,
+		GasLocked: gasLocked,
+		Data:      []byte(esdtTransferTxData),
+		CallType:  vmcommon.AsynchronousCall,
+	}
+	vmOutput.OutputAccounts = make(map[string]*vmcommon.OutputAccount)
+	vmOutput.OutputAccounts[string(recipient)] = &vmcommon.OutputAccount{
+		Address:         recipient,
+		OutputTransfers: []vmcommon.OutputTransfer{outTransfer},
+	}
+	vmOutput.GasRemaining = 0
 }
