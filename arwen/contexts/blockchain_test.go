@@ -400,9 +400,9 @@ func TestBlockchainContext_Getters(t *testing.T) {
 
 	host := &contextmock.VMHostMock{}
 	var randomSeed1 [48]byte
-	copy(randomSeed1[:], []byte("last random seed                                "))
+	copy(randomSeed1[:], "last random seed                                ")
 	var randomSeed2 [48]byte
-	copy(randomSeed2[:], []byte("current random seed                             "))
+	copy(randomSeed2[:], "current random seed                             ")
 
 	mockWorld := &worldmock.MockWorld{
 		PreviousBlockInfo: &worldmock.BlockInfo{

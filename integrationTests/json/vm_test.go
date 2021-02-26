@@ -25,76 +25,19 @@ func getTestRoot() string {
 }
 
 func TestRustErc20(t *testing.T) {
-	fileResolver := mc.NewDefaultFileResolver()
-	executor, err := am.NewArwenTestExecutor()
-	require.Nil(t, err)
-	runner := mc.NewScenarioRunner(
-		executor,
-		fileResolver,
-	)
-	err = runner.RunAllJSONScenariosInDirectory(
-		getTestRoot(),
-		"erc20-rust/mandos",
-		".scen.json",
-		[]string{})
-	if err != nil {
-		t.Error(err)
-	}
+	runAllTestsInFolder(t, "erc20-rust/mandos")
 }
 
 func TestCErc20(t *testing.T) {
-	fileResolver := mc.NewDefaultFileResolver()
-	executor, err := am.NewArwenTestExecutor()
-	require.Nil(t, err)
-	runner := mc.NewScenarioRunner(
-		executor,
-		fileResolver,
-	)
-	err = runner.RunAllJSONScenariosInDirectory(
-		getTestRoot(),
-		"erc20-c",
-		".scen.json",
-		[]string{})
-
-	if err != nil {
-		t.Error(err)
-	}
+	runAllTestsInFolder(t, "erc20-c")
 }
 
 func TestRustAdder(t *testing.T) {
-	executor, err := am.NewArwenTestExecutor()
-	require.Nil(t, err)
-	runner := mc.NewScenarioRunner(
-		executor,
-		mc.NewDefaultFileResolver(),
-	)
-	err = runner.RunAllJSONScenariosInDirectory(
-		getTestRoot(),
-		"adder/mandos",
-		".scen.json",
-		[]string{})
-
-	if err != nil {
-		t.Error(err)
-	}
+	runAllTestsInFolder(t, "adder/mandos")
 }
 
 func TestMultisig(t *testing.T) {
-	executor, err := am.NewArwenTestExecutor()
-	require.Nil(t, err)
-	runner := mc.NewScenarioRunner(
-		executor,
-		mc.NewDefaultFileResolver(),
-	)
-	err = runner.RunAllJSONScenariosInDirectory(
-		getTestRoot(),
-		"multisig/mandos",
-		".scen.json",
-		[]string{})
-
-	if err != nil {
-		t.Error(err)
-	}
+	runAllTestsInFolder(t, "multisig/mandos")
 }
 
 func TestRustFeaturesLatest(t *testing.T) {
@@ -102,21 +45,10 @@ func TestRustFeaturesLatest(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	executor, err := am.NewArwenTestExecutor()
-	require.Nil(t, err)
-	runner := mc.NewScenarioRunner(
-		executor,
-		mc.NewDefaultFileResolver(),
-	)
-	err = runner.RunAllJSONScenariosInDirectory(
-		getTestRoot(),
-		"features/mandos",
-		".scen.json",
-		[]string{"features/mandos/block_info.scen.json"}) // TODO: implement block random seed in mandos, then un-skip
-
-	if err != nil {
-		t.Error(err)
-	}
+	runTestsInFolder(t, "features/mandos", []string{
+		// TODO: implement block random seed in mandos, then un-skip
+		"features/mandos/block_info.scen.json",
+	})
 }
 
 func TestRustFeaturesNoSmallIntApi(t *testing.T) {
@@ -124,21 +56,7 @@ func TestRustFeaturesNoSmallIntApi(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	executor, err := am.NewArwenTestExecutor()
-	require.Nil(t, err)
-	runner := mc.NewScenarioRunner(
-		executor,
-		mc.NewDefaultFileResolver(),
-	)
-	err = runner.RunAllJSONScenariosInDirectory(
-		getTestRoot(),
-		"features-no-small-int-api/mandos",
-		".scen.json",
-		[]string{})
-
-	if err != nil {
-		t.Error(err)
-	}
+	runAllTestsInFolder(t, "features-no-small-int-api/mandos")
 }
 
 // Backwards compatibility.
@@ -147,39 +65,11 @@ func TestRustFeaturesLegacy(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	executor, err := am.NewArwenTestExecutor()
-	require.Nil(t, err)
-	runner := mc.NewScenarioRunner(
-		executor,
-		mc.NewDefaultFileResolver(),
-	)
-	err = runner.RunAllJSONScenariosInDirectory(
-		getTestRoot(),
-		"features-legacy/mandos",
-		".scen.json",
-		[]string{})
-
-	if err != nil {
-		t.Error(err)
-	}
+	runAllTestsInFolder(t, "features-legacy/mandos")
 }
 
 func TestRustAsyncCalls(t *testing.T) {
-	executor, err := am.NewArwenTestExecutor()
-	require.Nil(t, err)
-	runner := mc.NewScenarioRunner(
-		executor,
-		mc.NewDefaultFileResolver(),
-	)
-	err = runner.RunAllJSONScenariosInDirectory(
-		getTestRoot(),
-		"async/mandos",
-		".scen.json",
-		[]string{})
-
-	if err != nil {
-		t.Error(err)
-	}
+	runAllTestsInFolder(t, "async/mandos")
 }
 
 func TestDelegation_v0_2(t *testing.T) {
@@ -187,21 +77,7 @@ func TestDelegation_v0_2(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	executor, err := am.NewArwenTestExecutor()
-	require.Nil(t, err)
-	runner := mc.NewScenarioRunner(
-		executor,
-		mc.NewDefaultFileResolver(),
-	)
-	err = runner.RunAllJSONScenariosInDirectory(
-		getTestRoot(),
-		"delegation/v0_2",
-		".scen.json",
-		[]string{})
-
-	if err != nil {
-		t.Error(err)
-	}
+	runAllTestsInFolder(t, "delegation/v0_2")
 }
 
 func TestDelegation_v0_3(t *testing.T) {
@@ -209,23 +85,9 @@ func TestDelegation_v0_3(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	executor, err := am.NewArwenTestExecutor()
-	require.Nil(t, err)
-	runner := mc.NewScenarioRunner(
-		executor,
-		mc.NewDefaultFileResolver(),
-	)
-	err = runner.RunAllJSONScenariosInDirectory(
-		getTestRoot(),
-		"delegation/v0_3",
-		".scen.json",
-		[]string{
-			"delegation/v0_3/test/integration/genesis/genesis.scen.json",
-		})
-
-	if err != nil {
-		t.Error(err)
-	}
+	runTestsInFolder(t, "delegation/v0_3", []string{
+		"delegation/v0_3/test/integration/genesis/genesis.scen.json",
+	})
 }
 
 func TestDelegation_v0_4_genesis(t *testing.T) {
@@ -233,21 +95,7 @@ func TestDelegation_v0_4_genesis(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	executor, err := am.NewArwenTestExecutor()
-	require.Nil(t, err)
-	runner := mc.NewScenarioRunner(
-		executor,
-		mc.NewDefaultFileResolver(),
-	)
-	err = runner.RunAllJSONScenariosInDirectory(
-		getTestRoot(),
-		"delegation/v0_4_genesis",
-		".scen.json",
-		[]string{})
-
-	if err != nil {
-		t.Error(err)
-	}
+	runAllTestsInFolder(t, "delegation/v0_4_genesis")
 }
 
 func TestDelegation_v0_5_2_full(t *testing.T) {
@@ -255,21 +103,7 @@ func TestDelegation_v0_5_2_full(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	executor, err := am.NewArwenTestExecutor()
-	require.Nil(t, err)
-	runner := mc.NewScenarioRunner(
-		executor,
-		mc.NewDefaultFileResolver(),
-	)
-	err = runner.RunAllJSONScenariosInDirectory(
-		getTestRoot(),
-		"delegation/v0_5_2_full",
-		".scen.json",
-		[]string{})
-
-	if err != nil {
-		t.Error(err)
-	}
+	runAllTestsInFolder(t, "delegation/v0_5_2_full")
 }
 
 func TestDelegation_v0_5_2_update(t *testing.T) {
@@ -277,21 +111,7 @@ func TestDelegation_v0_5_2_update(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	executor, err := am.NewArwenTestExecutor()
-	require.Nil(t, err)
-	runner := mc.NewScenarioRunner(
-		executor,
-		mc.NewDefaultFileResolver(),
-	)
-	err = runner.RunAllJSONScenariosInDirectory(
-		getTestRoot(),
-		"delegation/v0_5_2_update",
-		".scen.json",
-		[]string{})
-
-	if err != nil {
-		t.Error(err)
-	}
+	runAllTestsInFolder(t, "delegation/v0_5_2_update")
 }
 
 func TestDnsContract(t *testing.T) {
@@ -299,39 +119,11 @@ func TestDnsContract(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	executor, err := am.NewArwenTestExecutor()
-	require.Nil(t, err)
-	runner := mc.NewScenarioRunner(
-		executor,
-		mc.NewDefaultFileResolver(),
-	)
-	err = runner.RunAllJSONScenariosInDirectory(
-		getTestRoot(),
-		"dns",
-		".scen.json",
-		[]string{})
-
-	if err != nil {
-		t.Error(err)
-	}
+	runAllTestsInFolder(t, "dns")
 }
 
 func TestTimelocks(t *testing.T) {
-	executor, err := am.NewArwenTestExecutor()
-	require.Nil(t, err)
-	runner := mc.NewScenarioRunner(
-		executor,
-		mc.NewDefaultFileResolver(),
-	)
-	err = runner.RunAllJSONScenariosInDirectory(
-		getTestRoot(),
-		"timelocks",
-		".scen.json",
-		[]string{})
-
-	if err != nil {
-		t.Error(err)
-	}
+	runAllTestsInFolder(t, "timelocks")
 }
 
 // func TestPromises(t *testing.T) {
@@ -353,17 +145,26 @@ func TestTimelocks(t *testing.T) {
 // }
 
 func TestCrowdfundingEsdt(t *testing.T) {
+	runAllTestsInFolder(t, "crowdfunding-esdt")
+}
+
+func runAllTestsInFolder(t *testing.T, folder string) {
+	runTestsInFolder(t, folder, []string{})
+}
+
+func runTestsInFolder(t *testing.T, folder string, exclusions []string) {
 	executor, err := am.NewArwenTestExecutor()
 	require.Nil(t, err)
 	runner := mc.NewScenarioRunner(
 		executor,
 		mc.NewDefaultFileResolver(),
 	)
+
 	err = runner.RunAllJSONScenariosInDirectory(
 		getTestRoot(),
-		"crowdfunding-esdt",
+		folder,
 		".scen.json",
-		[]string{})
+		exclusions)
 
 	if err != nil {
 		t.Error(err)

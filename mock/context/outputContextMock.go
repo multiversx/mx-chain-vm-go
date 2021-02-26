@@ -169,8 +169,8 @@ func (o *OutputContextMock) Transfer(_ []byte, _ []byte, _ uint64, _ uint64, _ *
 }
 
 // TransferESDT mocked method
-func (o *OutputContextMock) TransferESDT(_ []byte, _ []byte, _ []byte, _ *big.Int, _ *vmcommon.ContractCallInput, _ uint64) error {
-	return nil
+func (o *OutputContextMock) TransferESDT(_ []byte, _ []byte, _ []byte, _ *big.Int, _ *vmcommon.ContractCallInput) (uint64, error) {
+	return 0, nil
 }
 
 // AddTxValueToAccount mocked method

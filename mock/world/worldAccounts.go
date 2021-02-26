@@ -2,6 +2,8 @@ package worldmock
 
 import (
 	"math/big"
+
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 // AccountMap is a map from address to account
@@ -40,10 +42,39 @@ func NewAccountMap() AccountMap {
 	return AccountMap(make(map[string]*Account))
 }
 
+// CreateAccount instantiates an empty account for the given address.
+func (am AccountMap) CreateAccount(address []byte) *Account {
+	newAccount := &Account{
+		Nonce:           0,
+		Balance:         big.NewInt(0),
+		BalanceDelta:    big.NewInt(0),
+		Storage:         make(map[string][]byte),
+		IsSmartContract: false,
+		ShardID:         0,
+	}
+
+	newAccount.Address = make([]byte, len(address))
+	copy(newAccount.Address, address)
+	am.PutAccount(newAccount)
+
+	return newAccount
+}
+
+// CreateSmartContractAccount instantiates an account for a smart contract with
+// the given address and WASM bytecode.
+func (am AccountMap) CreateSmartContractAccount(owner []byte, address []byte, code []byte) *Account {
+	newAccount := am.CreateAccount(address)
+	newAccount.Code = code
+	newAccount.IsSmartContract = true
+	newAccount.OwnerAddress = owner
+	newAccount.CodeMetadata = []byte{0, vmcommon.MetadataPayable}
+
+	return newAccount
+}
+
 // PutAccount inserts account based on address.
 func (am AccountMap) PutAccount(account *Account) {
-	mp := (map[string]*Account)(am)
-	mp[addressKey(account.Address)] = account
+	am[string(account.Address)] = account
 }
 
 // PutAccounts inserts multiple accounts based on address.
@@ -55,18 +86,12 @@ func (am AccountMap) PutAccounts(accounts []*Account) {
 
 // GetAccount retrieves account based on address
 func (am AccountMap) GetAccount(address []byte) *Account {
-	mp := (map[string]*Account)(am)
-	return mp[addressKey(address)]
+	return am[string(address)]
 }
 
 // DeleteAccount removes account based on address
 func (am AccountMap) DeleteAccount(address []byte) {
-	mp := (map[string]*Account)(am)
-	delete(mp, addressKey(address))
-}
-
-func addressKey(address []byte) string {
-	return string(address)
+	delete(am, string(address))
 }
 
 // StorageValue yields the storage value for key, default 0
@@ -111,6 +136,11 @@ func (a *Account) GetRootHash() []byte {
 // GetBalance -
 func (a *Account) GetBalance() *big.Int {
 	return a.Balance
+}
+
+// SetBalance -
+func (a *Account) SetBalance(balance int64) {
+	a.Balance = big.NewInt(balance)
 }
 
 // GetDeveloperReward -

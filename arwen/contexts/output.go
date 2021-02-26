@@ -300,33 +300,44 @@ func (context *outputContext) TransferESDT(
 	tokenIdentifier []byte,
 	value *big.Int,
 	callInput *vmcommon.ContractCallInput,
-	gasLimit uint64,
-) error {
-	err := context.host.ExecuteESDTTransfer(destination, sender, tokenIdentifier, value)
+) (uint64, error) {
+	gasConsumedByTransfer, err := context.host.ExecuteESDTTransfer(destination, sender, tokenIdentifier, value)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	if context.host.Blockchain().IsSmartContract(destination) && callInput != nil {
-		if gasLimit > context.host.Metering().GasLeft() {
-			return arwen.ErrNotEnoughGas
+	gasRemaining := uint64(0)
+
+	if callInput != nil {
+		gasRemaining = callInput.GasProvided - gasConsumedByTransfer
+	}
+
+	isSmartContract := context.host.Blockchain().IsSmartContract(destination)
+	sameShard := context.host.AreInSameShard(sender, destination)
+	isExecution := isSmartContract && callInput != nil
+
+	if isExecution {
+		if gasRemaining > context.host.Metering().GasLeft() {
+			return 0, arwen.ErrNotEnoughGas
 		}
 
-		if !context.host.AreInSameShard(sender, destination) {
-			context.host.Metering().ForwardGas(sender, destination, gasLimit)
-			context.host.Metering().UseGas(gasLimit)
+		if !sameShard {
+			context.host.Metering().ForwardGas(sender, destination, gasRemaining)
+			context.host.Metering().UseGas(gasRemaining)
 		}
-	} else {
-		gasLimit = 0
 	}
 
 	destAcc, _ := context.GetOutputAccount(destination)
 	outputTransfer := vmcommon.OutputTransfer{
 		Value:     big.NewInt(0),
-		GasLimit:  gasLimit,
+		GasLimit:  gasRemaining,
 		GasLocked: 0,
 		Data:      []byte(core.BuiltInFunctionESDTTransfer + "@" + hex.EncodeToString(tokenIdentifier) + "@" + hex.EncodeToString(value.Bytes())),
 		CallType:  vmcommon.DirectCall,
+	}
+
+	if sameShard {
+		outputTransfer.GasLimit = 0
 	}
 
 	if callInput != nil {
@@ -339,7 +350,7 @@ func (context *outputContext) TransferESDT(
 
 	destAcc.OutputTransfers = append(destAcc.OutputTransfers, outputTransfer)
 
-	return nil
+	return gasRemaining, nil
 }
 
 func (context *outputContext) hasSufficientBalance(address []byte, value *big.Int) bool {

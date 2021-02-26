@@ -736,14 +736,16 @@ func transferESDTExecute(
 		contractCallInput.ESDTTokenName = tokenIdentifier
 	}
 
-	err = output.TransferESDT(dest, sender, tokenIdentifier, big.NewInt(0).SetBytes(valueBytes), contractCallInput, uint64(gasLimit))
+	gasLimitForExec, err := output.TransferESDT(dest, sender, tokenIdentifier, big.NewInt(0).SetBytes(valueBytes), contractCallInput)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
 	if host.AreInSameShard(sender, dest) && contractCallInput != nil && host.Blockchain().IsSmartContract(dest) {
+		contractCallInput.GasProvided = gasLimitForExec
 		_, _, _, err = host.ExecuteOnDestContext(contractCallInput)
 		if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
+			host.RevertESDTTransfer(contractCallInput)
 			return 1
 		}
 
