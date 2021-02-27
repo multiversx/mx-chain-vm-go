@@ -31,6 +31,7 @@ package elrondapi
 // extern int32_t getESDTTokenName(void *context, int32_t resultOffset);
 // extern int32_t getCallValueTokenName(void *context, int32_t callValueOffset, int32_t tokenNameOffset);
 // extern void writeLog(void *context, int32_t pointer, int32_t length, int32_t topicPtr, int32_t numTopics);
+// extern void writeEventLog(void *context, int32_t numTopics, int32_t topicLengthsOffset, int32_t topicOffset, int32_t dataOffset, int32_t dataLength);
 // extern void returnData(void* context, int32_t dataOffset, int32_t length);
 // extern void signalError(void* context, int32_t messageOffset, int32_t messageLength);
 // extern long long getGasLeft(void *context);
@@ -246,6 +247,11 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("writeLog", writeLog, C.writeLog)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("writeEventLog", writeEventLog, C.writeEventLog)
 	if err != nil {
 		return nil, err
 	}
@@ -878,10 +884,8 @@ func upgradeContract(
 		return
 	}
 
-	_, data, actualLen, err := getArgumentsFromMemory(
+	data, actualLen, err := getArgumentsFromMemory(
 		host,
-		0,
-		0,
 		numArguments,
 		argumentsLengthOffset,
 		dataOffset,
@@ -1331,17 +1335,18 @@ func getCallValueTokenName(context unsafe.Pointer, callValueOffset int32, tokenN
 }
 
 //export writeLog
-func writeLog(context unsafe.Pointer, pointer int32, length int32, topicPtr int32, numTopics int32) {
+func writeLog(context unsafe.Pointer, dataPointer int32, dataLength int32, topicPtr int32, numTopics int32) {
+	// note: deprecated
 	runtime := arwen.GetRuntimeContext(context)
 	output := arwen.GetOutputContext(context)
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Log
-	gas := math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(numTopics*arwen.HashLen+length))
+	gas := math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(numTopics*arwen.HashLen+dataLength))
 	gasToUse = math.AddUint64(gasToUse, gas)
 	metering.UseGas(gasToUse)
 
-	log, err := runtime.MemLoad(pointer, length)
+	log, err := runtime.MemLoad(dataPointer, dataLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
@@ -1359,6 +1364,42 @@ func writeLog(context unsafe.Pointer, pointer int32, length int32, topicPtr int3
 	}
 
 	output.WriteLog(runtime.GetSCAddress(), topics, log)
+}
+
+//export writeEventLog
+func writeEventLog(
+	context unsafe.Pointer,
+	numTopics int32,
+	topicLengthsOffset int32,
+	topicOffset int32,
+	dataOffset int32,
+	dataLength int32) {
+
+	host := arwen.GetVMContext(context)
+	runtime := arwen.GetRuntimeContext(context)
+	output := arwen.GetOutputContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	topics, topicDataTotalLen, err := getArgumentsFromMemory(
+		host,
+		numTopics,
+		topicLengthsOffset,
+		topicOffset,
+	)
+
+	data, err := runtime.MemLoad(dataOffset, dataLength)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return
+	}
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.Log
+	gasForData := math.MulUint64(
+		metering.GasSchedule().BaseOperationCost.DataCopyPerByte,
+		uint64(topicDataTotalLen+dataLength))
+	gasToUse = math.AddUint64(gasToUse, gasForData)
+	metering.UseGas(metering.GasSchedule().ElrondAPICost.Log)
+
+	output.WriteLog(runtime.GetSCAddress(), topics, data)
 }
 
 //export getBlockTimestamp
@@ -1805,10 +1846,8 @@ func createContract(
 		return 1
 	}
 
-	_, data, actualLen, err := getArgumentsFromMemory(
+	data, actualLen, err := getArgumentsFromMemory(
 		host,
-		0,
-		0,
 		numArguments,
 		argumentsLengthOffset,
 		dataOffset,
@@ -1932,10 +1971,13 @@ func prepareIndirectContractCallInput(
 		return nil, arwen.ErrSyncExecutionNotInSameShard
 	}
 
-	function, data, actualLen, err := getArgumentsFromMemory(
+	function, err := runtime.MemLoad(functionOffset, functionLength)
+	if err != nil {
+		return nil, err
+	}
+
+	data, actualLen, err := getArgumentsFromMemory(
 		host,
-		functionOffset,
-		functionLength,
 		numArguments,
 		argumentsLengthOffset,
 		dataOffset,
@@ -1956,7 +1998,7 @@ func prepareIndirectContractCallInput(
 			GasProvided: metering.BoundGasLimit(gasLimit),
 		},
 		RecipientAddr: destination,
-		Function:      function,
+		Function:      string(function),
 	}
 
 	return contractCallInput, nil
@@ -1964,32 +2006,25 @@ func prepareIndirectContractCallInput(
 
 func getArgumentsFromMemory(
 	host arwen.VMHost,
-	functionOffset int32,
-	functionLength int32,
 	numArguments int32,
 	argumentsLengthOffset int32,
 	dataOffset int32,
-) (string, [][]byte, int32, error) {
+) ([][]byte, int32, error) {
 	runtime := host.Runtime()
 
 	if numArguments < 0 {
-		return "", nil, 0, fmt.Errorf("negative numArguments (%d)", numArguments)
-	}
-
-	function, err := runtime.MemLoad(functionOffset, functionLength)
-	if err != nil {
-		return "", nil, 0, err
+		return nil, 0, fmt.Errorf("negative numArguments (%d)", numArguments)
 	}
 
 	argumentsLengthData, err := runtime.MemLoad(argumentsLengthOffset, numArguments*4)
 	if err != nil {
-		return "", nil, 0, err
+		return nil, 0, err
 	}
 
 	argumentLengths := createInt32Array(argumentsLengthData, numArguments)
 	data, err := runtime.MemLoadMultiple(dataOffset, argumentLengths)
 	if err != nil {
-		return "", nil, 0, err
+		return nil, 0, err
 	}
 
 	totalArgumentBytes := int32(0)
@@ -1997,7 +2032,7 @@ func getArgumentsFromMemory(
 		totalArgumentBytes += length
 	}
 
-	return string(function), data, totalArgumentBytes, nil
+	return data, totalArgumentBytes, nil
 }
 
 func createInt32Array(rawData []byte, numIntegers int32) []int32 {
