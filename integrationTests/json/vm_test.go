@@ -2,6 +2,7 @@ package vmjsonintegrationtest
 
 import (
 	"os"
+	"path"
 	"path/filepath"
 	"testing"
 
@@ -166,6 +167,23 @@ func runTestsInFolder(t *testing.T, folder string, exclusions []string) {
 		".scen.json",
 		exclusions)
 
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func runSingleTest(t *testing.T, folder string, filename string) {
+	executor, err := am.NewArwenTestExecutor()
+	require.Nil(t, err)
+	runner := mc.NewScenarioRunner(
+		executor,
+		mc.NewDefaultFileResolver(),
+	)
+
+	fullPath := path.Join(getTestRoot(), folder)
+	fullPath = path.Join(fullPath, filename)
+
+	err = runner.RunSingleJSONScenario(fullPath)
 	if err != nil {
 		t.Error(err)
 	}
