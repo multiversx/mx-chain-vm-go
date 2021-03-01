@@ -94,12 +94,13 @@ func (b *MockWorld) runESDTTransferCall(vmInput *vmcommon.ContractCallInput) (*v
 	isSCCallAfter := len(vmInput.Arguments) > 2 && b.IsSmartContract(vmInput.RecipientAddr)
 
 	if isSCCallAfter {
+		endpointName := string(vmInput.Arguments[2])
 		var callArgs [][]byte
 		if len(vmInput.Arguments) > 3 {
 			callArgs = vmInput.Arguments[3:]
 		}
 		addOutputTransferToVMOutput(
-			string(vmInput.Arguments[2]),
+			endpointName,
 			callArgs,
 			vmInput.RecipientAddr,
 			vmInput.GasLocked,
