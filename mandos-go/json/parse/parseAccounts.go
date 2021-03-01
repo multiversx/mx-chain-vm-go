@@ -40,12 +40,6 @@ func (p *Parser) processAccount(acctRaw oj.OJsonObject) (*mj.Account, error) {
 			if err != nil {
 				return nil, fmt.Errorf("invalid shard number: %w", err)
 			}
-		case "isSmartContract":
-			jsonInt, err := p.processUint64(kvp.Value)
-			if err != nil {
-				return nil, fmt.Errorf("invalid boolean isContract: %w", err)
-			}
-			acct.IsSmartContract = jsonInt.Value != 0
 		case "nonce":
 			acct.Nonce, err = p.processUint64(kvp.Value)
 			if err != nil {

@@ -85,6 +85,12 @@ func (b *MockWorld) UpdateAccounts(
 			hasher := hashing.NewHasher()
 			acct.CodeHash, _ = hasher.Sha256(acct.Code)
 			acct.IsSmartContract = true
+			// TODO: set CodeMetadata according to code metdata coming from VM
+			acct.CodeMetadata = (&vmcommon.CodeMetadata{
+				Payable:     true,
+				Upgradeable: true,
+				Readable:    true,
+			}).ToBytes()
 		}
 		if len(modAcct.OutputTransfers) > 0 && len(modAcct.OutputTransfers[0].Data) > 0 {
 			acct.AsyncCallData = string(modAcct.OutputTransfers[0].Data)

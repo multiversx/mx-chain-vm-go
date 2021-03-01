@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"math/big"
 
-	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
-
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
 	oj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/orderedjson"
-	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 func convertAccount(testAcct *mj.Account) *worldhook.Account {
@@ -34,14 +33,19 @@ func convertAccount(testAcct *mj.Account) *worldhook.Account {
 
 	return &worldhook.Account{
 		Address:         testAcct.Address.Value,
-		ShardID:         uint32(testAcct.Shard.Value),
-		IsSmartContract: len(testAcct.Code.Value) > 0,
 		Nonce:           testAcct.Nonce.Value,
 		Balance:         big.NewInt(0).Set(testAcct.Balance.Value),
 		Storage:         storage,
 		Code:            []byte(testAcct.Code.Value),
 		AsyncCallData:   testAcct.AsyncCallData,
 		ESDTData:        convertedESDTData,
+		ShardID:         uint32(testAcct.Shard.Value),
+		IsSmartContract: len(testAcct.Code.Value) > 0,
+		CodeMetadata: (&vmcommon.CodeMetadata{
+			Payable:     true,
+			Upgradeable: true,
+			Readable:    true,
+		}).ToBytes(), // TODO: add explicit fields in mandos json
 	}
 }
 
@@ -78,7 +82,7 @@ func convertBlockInfo(testBlockInfo *mj.BlockInfo) *worldhook.BlockInfo {
 	return result
 }
 
-func convertLogToTestFormat(outputLog *vmi.LogEntry) *mj.LogEntry {
+func convertLogToTestFormat(outputLog *vmcommon.LogEntry) *mj.LogEntry {
 	testLog := mj.LogEntry{
 		Address:    mj.JSONBytesFromString{Value: outputLog.Address},
 		Identifier: mj.JSONBytesFromString{Value: outputLog.Identifier},
