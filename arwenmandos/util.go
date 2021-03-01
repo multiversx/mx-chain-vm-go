@@ -34,14 +34,14 @@ func convertAccount(testAcct *mj.Account) *worldhook.Account {
 
 	return &worldhook.Account{
 		Address:         testAcct.Address.Value,
+		ShardID:         uint32(testAcct.Shard.Value),
+		IsSmartContract: len(testAcct.Code.Value) > 0,
 		Nonce:           testAcct.Nonce.Value,
 		Balance:         big.NewInt(0).Set(testAcct.Balance.Value),
 		Storage:         storage,
 		Code:            []byte(testAcct.Code.Value),
 		AsyncCallData:   testAcct.AsyncCallData,
 		ESDTData:        convertedESDTData,
-		ShardID:         0,
-		IsSmartContract: len(testAcct.Code.Value) > 0,
 	}
 }
 

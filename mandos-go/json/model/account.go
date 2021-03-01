@@ -4,14 +4,16 @@ import "bytes"
 
 // Account is a json object representing an account.
 type Account struct {
-	Address       JSONBytesFromString
-	Comment       string
-	Nonce         JSONUint64
-	Balance       JSONBigInt
-	Storage       []*StorageKeyValuePair
-	Code          JSONBytesFromString
-	AsyncCallData string
-	ESDTData      []*ESDTData
+	Address         JSONBytesFromString
+	Shard           JSONUint64
+	IsSmartContract bool
+	Comment         string
+	Nonce           JSONUint64
+	Balance         JSONBigInt
+	Storage         []*StorageKeyValuePair
+	Code            JSONBytesFromString
+	AsyncCallData   string
+	ESDTData        []*ESDTData
 }
 
 // StorageKeyValuePair is a json key value pair in the storage map.
@@ -22,9 +24,9 @@ type StorageKeyValuePair struct {
 
 // ESDTData models an account holding an ESDT token
 type ESDTData struct {
-	TokenName  JSONBytesFromString
-	Balance JSONBigInt
-	Frozen  JSONUint64
+	TokenName JSONBytesFromString
+	Balance   JSONBigInt
+	Frozen    JSONUint64
 }
 
 // CheckAccount is a json object representing checks for an account.
@@ -42,9 +44,9 @@ type CheckAccount struct {
 
 // CheckESDTData checks the ESDT tokens held by an account
 type CheckESDTData struct {
-	TokenName  JSONBytesFromString
-	Balance JSONCheckBigInt
-	Frozen  JSONCheckUint64
+	TokenName JSONBytesFromString
+	Balance   JSONCheckBigInt
+	Frozen    JSONCheckUint64
 }
 
 // CheckAccounts encodes rules to check mock accounts.

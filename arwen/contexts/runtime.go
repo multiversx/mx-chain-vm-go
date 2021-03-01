@@ -296,13 +296,13 @@ func (context *runtimeContext) SetCustomCallFunction(callFunction string) {
 // includes the currently running Wasmer instance.
 func (context *runtimeContext) PushState() {
 	newState := &runtimeContext{
-		vmInput:          context.vmInput,
 		scAddress:        context.scAddress,
 		callFunction:     context.callFunction,
 		readOnly:         context.readOnly,
 		asyncCallInfo:    context.asyncCallInfo,
 		asyncContextInfo: context.asyncContextInfo,
 	}
+	newState.SetVMInput(context.vmInput)
 
 	context.stateStack = append(context.stateStack, newState)
 
@@ -324,7 +324,7 @@ func (context *runtimeContext) PopSetActiveState() {
 	prevState := context.stateStack[stateStackLen-1]
 	context.stateStack = context.stateStack[:stateStackLen-1]
 
-	context.vmInput = prevState.vmInput
+	context.SetVMInput(prevState.vmInput)
 	context.scAddress = prevState.scAddress
 	context.callFunction = prevState.callFunction
 	context.readOnly = prevState.readOnly
