@@ -45,15 +45,18 @@ func NewAccountMap() AccountMap {
 // CreateAccount instantiates an empty account for the given address.
 func (am AccountMap) CreateAccount(address []byte) *Account {
 	newAccount := &Account{
+		Exists:          true,
+		Address:         make([]byte, len(address)),
 		Nonce:           0,
 		Balance:         big.NewInt(0),
 		BalanceDelta:    big.NewInt(0),
 		Storage:         make(map[string][]byte),
-		IsSmartContract: false,
+		Code:            nil,
+		OwnerAddress:    nil,
+		ESDTData:        make(map[string]*ESDTData),
 		ShardID:         0,
+		IsSmartContract: false,
 	}
-
-	newAccount.Address = make([]byte, len(address))
 	copy(newAccount.Address, address)
 	am.PutAccount(newAccount)
 
