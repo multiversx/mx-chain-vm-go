@@ -826,7 +826,7 @@ func (host *vmHost) isSCExecutionAfterBuiltInFunc(
 		return nil, nil
 	}
 
-	if !core.IsSmartContractAddress(vmInput.RecipientAddr) {
+	if !host.Blockchain().IsSmartContract(vmInput.RecipientAddr) {
 		return nil, nil
 	}
 

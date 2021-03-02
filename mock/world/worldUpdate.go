@@ -4,7 +4,6 @@ import (
 	"errors"
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/crypto/hashing"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
@@ -55,41 +54,7 @@ func (b *MockWorld) UpdateAccounts(
 	accountsToDelete [][]byte) error {
 
 	for _, modAcct := range outputAccounts {
-		acct := b.AcctMap.GetAccount(modAcct.Address)
-		if acct == nil {
-			acct = &Account{
-				Exists:       false,
-				Address:      modAcct.Address,
-				Nonce:        0,
-				Balance:      zero,
-				Storage:      make(map[string][]byte),
-				Code:         nil,
-				OwnerAddress: modAcct.CodeDeployerAddress,
-				ESDTData:     make(map[string]*ESDTData),
-			}
-			b.AcctMap.PutAccount(acct)
-		}
-		acct.Exists = true
-		if modAcct.BalanceDelta != nil {
-			acct.Balance = big.NewInt(0).Add(acct.Balance, modAcct.BalanceDelta)
-		} else {
-			acct.Balance = modAcct.Balance
-		}
-		if modAcct.Nonce > acct.Nonce {
-			acct.Nonce = modAcct.Nonce
-		}
-		if len(modAcct.Code) > 0 {
-			acct.Code = modAcct.Code
-			hasher := hashing.NewHasher()
-			acct.CodeHash, _ = hasher.Sha256(acct.Code)
-		}
-		if len(modAcct.OutputTransfers) > 0 && len(modAcct.OutputTransfers[0].Data) > 0 {
-			acct.AsyncCallData = string(modAcct.OutputTransfers[0].Data)
-		}
-
-		for _, stu := range modAcct.StorageUpdates {
-			acct.Storage[string(stu.Offset)] = stu.Data
-		}
+		b.UpdateAccountFromOutputAccount(modAcct)
 	}
 
 	// commit ESDT data
@@ -105,7 +70,40 @@ func (b *MockWorld) UpdateAccounts(
 	}
 
 	return nil
+}
 
+// UpdateAccountFromOutputAccount updates a single account from a transaction output.
+func (b *MockWorld) UpdateAccountFromOutputAccount(modAcct *vmcommon.OutputAccount) {
+	acct := b.AcctMap.GetAccount(modAcct.Address)
+	if acct == nil {
+		acct = b.AcctMap.CreateAccount(modAcct.Address)
+		acct.OwnerAddress = modAcct.CodeDeployerAddress
+		b.AcctMap.PutAccount(acct)
+	}
+	acct.Exists = true
+	if modAcct.BalanceDelta != nil {
+		acct.Balance = big.NewInt(0).Add(acct.Balance, modAcct.BalanceDelta)
+	} else {
+		acct.Balance = modAcct.Balance
+	}
+	if modAcct.Nonce > acct.Nonce {
+		acct.Nonce = modAcct.Nonce
+	}
+	if len(modAcct.Code) > 0 {
+		// TODO: set CodeMetadata according to code metdata coming from VM
+		acct.SetCode(modAcct.Code, &vmcommon.CodeMetadata{
+			Payable:     true,
+			Upgradeable: true,
+			Readable:    true,
+		})
+	}
+	if len(modAcct.OutputTransfers) > 0 && len(modAcct.OutputTransfers[0].Data) > 0 {
+		acct.AsyncCallData = string(modAcct.OutputTransfers[0].Data)
+	}
+
+	for _, stu := range modAcct.StorageUpdates {
+		acct.Storage[string(stu.Offset)] = stu.Data
+	}
 }
 
 // RollbackChanges should be called after the VM test has run, if the tx has failed

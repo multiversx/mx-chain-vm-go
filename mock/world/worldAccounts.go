@@ -3,6 +3,7 @@ package worldmock
 import (
 	"math/big"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/crypto/hashing"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
@@ -45,15 +46,18 @@ func NewAccountMap() AccountMap {
 // CreateAccount instantiates an empty account for the given address.
 func (am AccountMap) CreateAccount(address []byte) *Account {
 	newAccount := &Account{
+		Exists:          true,
+		Address:         make([]byte, len(address)),
 		Nonce:           0,
 		Balance:         big.NewInt(0),
 		BalanceDelta:    big.NewInt(0),
 		Storage:         make(map[string][]byte),
-		IsSmartContract: false,
+		Code:            nil,
+		OwnerAddress:    nil,
+		ESDTData:        make(map[string]*ESDTData),
 		ShardID:         0,
+		IsSmartContract: false,
 	}
-
-	newAccount.Address = make([]byte, len(address))
 	copy(newAccount.Address, address)
 	am.PutAccount(newAccount)
 
@@ -101,6 +105,17 @@ func (a *Account) StorageValue(key string) []byte {
 		return storageDefaultValue
 	}
 	return value
+}
+
+// SetCode changes the account code, as well as all fields depending on it:
+// CodeHash, IsSmartContract, CodeMetadata.
+// The code metadata must be given explicitly.
+func (a *Account) SetCode(code []byte, codeMetadata *vmcommon.CodeMetadata) {
+	a.Code = code
+	hasher := hashing.NewHasher()
+	a.CodeHash, _ = hasher.Sha256(code)
+	a.IsSmartContract = true
+	a.CodeMetadata = codeMetadata.ToBytes()
 }
 
 // AddressBytes -
