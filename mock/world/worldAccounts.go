@@ -3,6 +3,7 @@ package worldmock
 import (
 	"math/big"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/crypto/hashing"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
@@ -104,6 +105,17 @@ func (a *Account) StorageValue(key string) []byte {
 		return storageDefaultValue
 	}
 	return value
+}
+
+// SetCode changes the account code, as well as all fields depending on it:
+// CodeHash, IsSmartContract, CodeMetadata.
+// The code metadata must be given explicitly.
+func (a *Account) SetCode(code []byte, codeMetadata *vmcommon.CodeMetadata) {
+	a.Code = code
+	hasher := hashing.NewHasher()
+	a.CodeHash, _ = hasher.Sha256(code)
+	a.IsSmartContract = true
+	a.CodeMetadata = codeMetadata.ToBytes()
 }
 
 // AddressBytes -
