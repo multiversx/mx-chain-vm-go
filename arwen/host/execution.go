@@ -40,8 +40,14 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 
 	vmOutput, err := host.performCodeDeployment(codeDeployInput)
 	if err != nil {
+		log.Error("doRunSmartContractCreate", "error", err)
 		return output.CreateVMOutputInCaseOfError(err)
 	}
+
+	log.Trace("doRunSmartContractCreate",
+		"retCode", vmOutput.ReturnCode,
+		"message", vmOutput.ReturnMessage,
+		"data", vmOutput.ReturnData)
 
 	return vmOutput
 }
@@ -102,6 +108,7 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 
 	vmOutput, err := host.performCodeDeployment(codeDeployInput)
 	if err != nil {
+		log.Error("doRunSmartContractUpgrade", "error", err)
 		return output.CreateVMOutputInCaseOfError(err)
 	}
 
@@ -134,16 +141,19 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 
 	err := host.checkGasForGetCode(input, metering)
 	if err != nil {
+		log.Error("doRunSmartContractCall get code", "error", arwen.ErrNotEnoughGas)
 		return output.CreateVMOutputInCaseOfError(arwen.ErrNotEnoughGas)
 	}
 
 	contract, err := runtime.GetSCCode()
 	if err != nil {
+		log.Error("doRunSmartContractCall get code", "error", arwen.ErrContractNotFound)
 		return output.CreateVMOutputInCaseOfError(arwen.ErrContractNotFound)
 	}
 
 	err = metering.DeductInitialGasForExecution(contract)
 	if err != nil {
+		log.Error("doRunSmartContractCall initial gas", "error", arwen.ErrNotEnoughGas)
 		return output.CreateVMOutputInCaseOfError(arwen.ErrNotEnoughGas)
 	}
 
@@ -154,10 +164,16 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 
 	err = host.callSCMethod()
 	if err != nil {
+		log.Error("doRunSmartContractCall", "error", err)
 		return output.CreateVMOutputInCaseOfError(err)
 	}
 
 	vmOutput = output.GetVMOutput()
+
+	log.Trace("doRunSmartContractCall",
+		"retCode", vmOutput.ReturnCode,
+		"message", vmOutput.ReturnMessage,
+		"data", vmOutput.ReturnData)
 
 	runtime.CleanWasmerInstance()
 	return
@@ -166,7 +182,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 // ExecuteOnDestContext pushes each context to the corresponding stack
 // and initializes new contexts for executing the contract call with the given input
 func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, asyncInfo *arwen.AsyncContextInfo, gasUsedBeforeReset uint64, err error) {
-	log.Trace("ExecuteOnDestContext", "function", input.Function)
+	log.Trace("ExecuteOnDestContext", "caller", input.CallerAddr, "dest", input.RecipientAddr, "function", input.Function)
 
 	bigInt, _, metering, output, runtime, storage := host.GetContexts()
 
@@ -196,12 +212,14 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	if input.CallType != vmcommon.AsynchronousCallBack || input.CallValue.Cmp(arwen.Zero) == 0 {
 		err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue)
 		if err != nil {
+			log.Error("ExecuteOnDestContext", "error", err)
 			return
 		}
 	}
 
 	gasUsedBeforeReset, err = host.execute(input)
 	if err != nil {
+		log.Error("ExecuteOnDestContext", "error", err)
 		return
 	}
 
@@ -248,6 +266,8 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 	} else {
 		output.PopSetActiveState()
 	}
+
+	log.Trace("ExecuteOnDestContext finished", "gas spent", gasSpentByChildContract)
 
 	return vmOutput
 }
@@ -659,15 +679,20 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, token
 
 	esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, tokenIdentifier, value.Bytes())
 	vmOutput, err := host.blockChainHook.ProcessBuiltInFunction(esdtTransferInput)
+	log.Trace("ESDT transfer", "sender", sender, "dest", destination)
+	log.Trace("ESDT transfer", "token", tokenIdentifier, "value", value)
 	if err != nil {
+		log.Error("ESDT transfer", "error", err)
 		return esdtTransferInput.GasProvided, err
 	}
 	if vmOutput.ReturnCode != vmcommon.Ok {
+		log.Error("ESDT transfer", "error", err, "retcode", vmOutput.ReturnCode, "message", vmOutput.ReturnMessage)
 		return esdtTransferInput.GasProvided, arwen.ErrExecutionFailed
 	}
 
 	gasConsumed, _ := math.SubUint64(esdtTransferInput.GasProvided, vmOutput.GasRemaining)
 	if metering.GasLeft() < gasConsumed {
+		log.Error("ESDT transfer", "error", arwen.ErrNotEnoughGas)
 		return esdtTransferInput.GasProvided, arwen.ErrNotEnoughGas
 	}
 	metering.UseGas(gasConsumed)
@@ -757,8 +782,15 @@ func (host *vmHost) callInitFunction() error {
 func (host *vmHost) callSCMethod() error {
 	runtime := host.Runtime()
 
+	log.Trace("call SC method")
+
+	//TODO host.verifyAllowedFunctionCall() performs some checks, but then the
+	//function itself is changed by host.getFunctionByCallType(). Order must be
+	//reversed, and `getFunctionByCallType()` must be decomposed into smaller functions.
+
 	err := host.verifyAllowedFunctionCall()
 	if err != nil {
+		log.Error("call SC method failed", "error", err)
 		return err
 	}
 
@@ -766,8 +798,11 @@ func (host *vmHost) callSCMethod() error {
 	function, err := host.getFunctionByCallType(callType)
 	if err != nil {
 		if callType == vmcommon.AsynchronousCallBack && errors.Is(err, arwen.ErrNilCallbackFunction) {
-			return host.processCallbackStack()
+			err = host.processCallbackStack()
+			log.LogIfError(err, "call SC method failed", "error", err)
+			return err
 		}
+		log.Error("call SC method failed", "error", err)
 		return err
 	}
 
@@ -779,6 +814,7 @@ func (host *vmHost) callSCMethod() error {
 		err = host.checkFinalGasAfterExit()
 	}
 	if err != nil {
+		log.Error("call SC method failed", "error", err)
 		return err
 	}
 
@@ -786,6 +822,7 @@ func (host *vmHost) callSCMethod() error {
 	case vmcommon.AsynchronousCall:
 		pendingMap, paiErr := host.processAsyncInfo(runtime.GetAsyncContextInfo())
 		if paiErr != nil {
+			log.Error("call SC method failed", "error", paiErr)
 			return paiErr
 		}
 		if len(pendingMap.AsyncContextMap) == 0 {
@@ -797,6 +834,7 @@ func (host *vmHost) callSCMethod() error {
 		_, err = host.processAsyncInfo(runtime.GetAsyncContextInfo())
 	}
 
+	log.LogIfError(err, "call SC method failed", "error", err)
 	return err
 }
 

@@ -6,8 +6,11 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/math"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
+
+var logMetering = logger.GetOrCreate("arwen/metering")
 
 type meteringContext struct {
 	host               arwen.VMHost
@@ -132,7 +135,7 @@ func (context *meteringContext) GasSchedule() *config.GasCost {
 func (context *meteringContext) SetGasSchedule(gasMap config.GasScheduleMap) {
 	gasSchedule, err := config.CreateGasConfig(gasMap)
 	if err != nil {
-		log.Error("SetGasSchedule createGasConfig", "error", err)
+		logMetering.Error("SetGasSchedule createGasConfig", "error", err)
 		return
 	}
 	context.gasSchedule = gasSchedule

@@ -15,17 +15,23 @@ import (
 )
 
 func (host *vmHost) handleAsyncCallBreakpoint() error {
+	log.Trace("async call begin")
 	runtime := host.Runtime()
 	runtime.SetRuntimeBreakpointValue(arwen.BreakpointNone)
 
 	asyncCallInfo := runtime.GetAsyncCallInfo()
 	execMode, err := host.determineAsyncCallExecutionMode(asyncCallInfo)
 	if err != nil {
+		log.Error("async call failed", "error", err)
 		return err
 	}
 
+	log.Trace("async call", "execMode", execMode)
+
 	if execMode == arwen.AsyncUnknown {
-		return host.sendAsyncCallToDestination(asyncCallInfo)
+		err = host.sendAsyncCallToDestination(asyncCallInfo)
+		log.LogIfError(err, "async call failed: send cross-shard", "error", err)
+		return err
 	}
 
 	// Cross-shard calls for built-in functions must be executed in both the
@@ -35,12 +41,16 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 		if err == nil && vmOutput.ReturnCode == vmcommon.Ok {
 			host.meteringContext.UseGas(gasUsedBeforeReset)
 		}
+		log.LogIfError(err, "async call failed: sync built-in", "error", err,
+			"retCode", vmOutput.ReturnCode,
+			"message", vmOutput.ReturnMessage)
 		return err
 	}
 
 	if execMode == arwen.ESDTTransferOnCallBack {
 		// return but keep async call info
 		host.outputContext.PrependFinish(asyncCallInfo.Data)
+		log.Trace("esdt transfer on callback")
 		return nil
 	}
 
@@ -108,10 +118,23 @@ func (host *vmHost) determineAsyncCallExecutionMode(asyncCallInfo *arwen.AsyncCa
 func (host *vmHost) executeSyncDestinationCall(asyncCallInfo arwen.AsyncCallInfoHandler) (*vmcommon.VMOutput, uint64, error) {
 	destinationCallInput, err := host.createDestinationContractCallInput(asyncCallInfo)
 	if err != nil {
+		log.Error("async call: sync dest call failed", "error", err)
 		return nil, 0, err
 	}
 
+	log.Trace("async call: sync dest call",
+		"caller", destinationCallInput.CallerAddr,
+		"dest", destinationCallInput.RecipientAddr,
+		"func", destinationCallInput.Function,
+		"args", destinationCallInput.Arguments)
+
 	destinationVMOutput, _, gasUsedBeforeReset, err := host.ExecuteOnDestContext(destinationCallInput)
+
+	log.Trace("async call: sync dest call",
+		"retCode", destinationVMOutput.ReturnCode,
+		"message", destinationVMOutput.ReturnMessage,
+		"data", destinationVMOutput.ReturnData,
+		"error", err)
 	return destinationVMOutput, gasUsedBeforeReset, err
 }
 
@@ -134,8 +157,15 @@ func (host *vmHost) executeSyncCallbackCall(
 		destinationErr,
 	)
 	if err != nil {
+		log.Error("async call: sync callback failed", "error", err)
 		return nil, err
 	}
+
+	log.Trace("async call: sync callback",
+		"caller", callbackCallInput.CallerAddr,
+		"dest", callbackCallInput.RecipientAddr,
+		"func", callbackCallInput.Function,
+		"args", callbackCallInput.Arguments)
 
 	gasConsumedForExecution := host.computeGasUsedInExecutionBeforeReset(callbackCallInput)
 	// used points should be reset before actually entering the callback execution
@@ -148,6 +178,11 @@ func (host *vmHost) executeSyncCallbackCall(
 		host.meteringContext.UseGas(gasConsumedForExecution)
 	}
 
+	log.Trace("async call: sync dest call",
+		"retCode", callbackVMOutput.ReturnCode,
+		"message", callbackVMOutput.ReturnMessage,
+		"data", callbackVMOutput.ReturnData,
+		"error", callBackErr)
 	return callbackVMOutput, callBackErr
 }
 
@@ -788,6 +823,7 @@ func (host *vmHost) getFunctionByCallType(callType vmcommon.CallType) (wasmer.Ex
 
 	function, err := runtime.GetFunctionToCall()
 	if err != nil && !customCallback {
+		log.Error("get function by call type", "error", arwen.ErrNilCallbackFunction)
 		return nil, arwen.ErrNilCallbackFunction
 	}
 

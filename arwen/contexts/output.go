@@ -7,11 +7,14 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/math"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-go/core"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 var _ arwen.OutputContext = (*outputContext)(nil)
+
+var logOutput = logger.GetOrCreate("arwen/output")
 
 type outputContext struct {
 	host        arwen.VMHost
@@ -79,7 +82,6 @@ func (context *outputContext) PopSetActiveState() {
 
 	prevState := context.stateStack[stateStackLen-1]
 	context.stateStack = context.stateStack[:stateStackLen-1]
-
 	context.outputState = prevState
 }
 
@@ -129,6 +131,8 @@ func (context *outputContext) CensorVMOutput() {
 	context.outputState.GasRemaining = 0
 	context.outputState.GasRefund = big.NewInt(0)
 	context.outputState.Logs = make([]*vmcommon.LogEntry, 0)
+
+	logOutput.Trace("state content censored")
 }
 
 // ResetGas will set to 0 all gas used from output accounts, in order
@@ -141,6 +145,8 @@ func (context *outputContext) ResetGas() {
 			outTransfer.GasLocked = 0
 		}
 	}
+
+	logOutput.Trace("state gas reset")
 }
 
 // GetOutputAccount returns the output account present at the given address,
@@ -222,6 +228,7 @@ func (context *outputContext) PrependFinish(data []byte) {
 // WriteLog creates a new LogEntry and appends it to the logs of the current output state.
 func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []byte) {
 	if context.host.Runtime().ReadOnly() {
+		logOutput.Error("log entry", "error", "cannot write logs in readonly mode")
 		return
 	}
 
@@ -229,6 +236,7 @@ func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []b
 		Address: address,
 		Data:    data,
 	}
+	logOutput.Trace("log entry", "address", address, "data", data)
 
 	if len(topics) == 0 {
 		context.outputState.Logs = append(context.outputState.Logs, newLogEntry)
@@ -239,26 +247,33 @@ func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []b
 	newLogEntry.Topics = topics[1:]
 
 	context.outputState.Logs = append(context.outputState.Logs, newLogEntry)
+	logOutput.Trace("log entry", "identifier", newLogEntry.Identifier, "topics", newLogEntry.Topics)
 }
 
 // TransferValueOnly will transfer the big.int value and checks if it is possible
 func (context *outputContext) TransferValueOnly(destination []byte, sender []byte, value *big.Int) error {
+	logOutput.Trace("transfer value", "sender", sender, "dest", destination, "value", value)
+
 	if value.Cmp(arwen.Zero) < 0 {
+		logOutput.Error("transfer value", "error", arwen.ErrTransferNegativeValue)
 		return arwen.ErrTransferNegativeValue
 	}
 
 	if !context.hasSufficientBalance(sender, value) {
+		logOutput.Error("transfer value", "error", arwen.ErrTransferInsufficientFunds)
 		return arwen.ErrTransferInsufficientFunds
 	}
 
 	payable, err := context.host.Blockchain().IsPayable(destination)
 	if err != nil {
+		logOutput.Error("transfer value", "error", err)
 		return err
 	}
 
 	isAsyncCall := context.host.IsArwenV3Enabled() && context.host.Runtime().GetVMInput().CallType == vmcommon.AsynchronousCall
 	hasValue := value.Cmp(big.NewInt(0)) == 1
 	if !payable && hasValue && !isAsyncCall {
+		logOutput.Error("transfer value", "error", arwen.ErrAccountNotPayable)
 		return arwen.ErrAccountNotPayable
 	}
 
@@ -290,6 +305,7 @@ func (context *outputContext) Transfer(destination []byte, sender []byte, gasLim
 	}
 	destAcc.OutputTransfers = append(destAcc.OutputTransfers, outputTransfer)
 
+	logOutput.Trace("transfer value added")
 	return nil
 }
 
@@ -318,6 +334,7 @@ func (context *outputContext) TransferESDT(
 
 	if isExecution {
 		if gasRemaining > context.host.Metering().GasLeft() {
+			logOutput.Error("ESDT post-transfer execution", "error", arwen.ErrNotEnoughGas)
 			return 0, arwen.ErrNotEnoughGas
 		}
 
@@ -442,7 +459,7 @@ func (context *outputContext) checkGas(remainedFromForwarded uint64) error {
 	totalGas, _ = math.SubUint64(totalGas, remainedFromForwarded)
 	totalGas, _ = math.SubUint64(totalGas, previousGasUsed)
 	if totalGas > gasProvided {
-		log.Error("gas usage mismatch", "total gas used", totalGas, "gas provided", gasProvided)
+		logOutput.Error("gas usage mismatch", "total gas used", totalGas, "gas provided", gasProvided)
 		return arwen.ErrInputAndOutputGasDoesNotMatch
 	}
 
