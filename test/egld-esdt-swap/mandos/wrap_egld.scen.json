@@ -16,8 +16,8 @@
                         "str:WEGLD-abcdef": "2000"
                     },
                     "storage": {
-                        "str:wrappedEgldTokenIdentifier": "str:WEGLD-abcdef",
-                        "str:wrappedEgldRemaining": "2000"
+                        "str:wrapped_egld_token_id": "str:WEGLD-abcdef",
+                        "str:unused_wrapped_egld": "2000"
                     },
                     "code": "file:../output/egld-esdt-swap.wasm"
                 }
@@ -38,6 +38,16 @@
             "expect": {
                 "status": "0",
                 "message": "",
+                "logs": [
+                    {
+                        "address": "address:contract",
+                        "identifier": "str:wrap-egld",
+                        "topics": [
+                            "address:user"
+                        ],
+                        "data": "500"
+                    }
+                ],
                 "gas": "*",
                 "refund": "*"
             }
@@ -60,8 +70,8 @@
                         "str:WEGLD-abcdef": "1500"
                     },
                     "storage": {
-                        "str:wrappedEgldTokenIdentifier": "str:WEGLD-abcdef",
-                        "str:wrappedEgldRemaining": "1500"
+                        "str:wrapped_egld_token_id": "str:WEGLD-abcdef",
+                        "str:unused_wrapped_egld": "1500"
                     },
                     "code": "file:../output/egld-esdt-swap.wasm"
                 }
