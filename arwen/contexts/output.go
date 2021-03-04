@@ -71,7 +71,6 @@ func (context *outputContext) PushState() {
 	newState := newVMOutput()
 	mergeVMOutputs(newState, context.outputState)
 	context.stateStack = append(context.stateStack, newState)
-	logOutput.Trace("state pushed onto stack")
 }
 
 // PopSetActiveState removes the latest entry from the state stack and sets it as the current vm output
@@ -84,8 +83,6 @@ func (context *outputContext) PopSetActiveState() {
 	prevState := context.stateStack[stateStackLen-1]
 	context.stateStack = context.stateStack[:stateStackLen-1]
 	context.outputState = prevState
-
-	logOutput.Trace("state popped from stack (set as active state)")
 }
 
 // PopMergeActiveState merges the current state into the head of the stateStack,
@@ -105,8 +102,6 @@ func (context *outputContext) PopMergeActiveState() {
 	mergeVMOutputs(prevState, context.outputState)
 	context.outputState = newVMOutput()
 	mergeVMOutputs(context.outputState, prevState)
-
-	logOutput.Trace("state popped from stack (merged into active state)")
 }
 
 // PopDiscard removes the latest entry from the state stack, but maintaining
@@ -118,14 +113,11 @@ func (context *outputContext) PopDiscard() {
 	}
 
 	context.stateStack = context.stateStack[:stateStackLen-1]
-
-	logOutput.Trace("state popped from stack (discarded)")
 }
 
 // ClearStateStack reinitializes the state stack.
 func (context *outputContext) ClearStateStack() {
 	context.stateStack = make([]*vmcommon.VMOutput, 0)
-	logOutput.Trace("state stack cleared")
 }
 
 // CensorVMOutput will cause the next executed SC to appear isolated, as if

@@ -60,8 +60,6 @@ func (context *meteringContext) InitState() {
 	context.initialGasProvided = 0
 	context.initialCost = 0
 	context.gasForExecution = 0
-
-	logMetering.Trace("init state")
 }
 
 // PushState pushes the current state of the MeteringContext on its internal state stack
@@ -73,8 +71,6 @@ func (context *meteringContext) PushState() {
 	}
 
 	context.stateStack = append(context.stateStack, newState)
-
-	logMetering.Trace("state pushed onto stack")
 }
 
 // PopSetActiveState pops the state at the top of the internal state stack, and
@@ -91,8 +87,6 @@ func (context *meteringContext) PopSetActiveState() {
 	context.initialGasProvided = prevState.initialGasProvided
 	context.initialCost = prevState.initialCost
 	context.gasForExecution = prevState.gasForExecution
-
-	logMetering.Trace("state popped from stack (set as active state)")
 }
 
 // PopDiscard pops the state at the top of the internal state stack, and discards it
@@ -103,14 +97,11 @@ func (context *meteringContext) PopDiscard() {
 	}
 
 	context.stateStack = context.stateStack[:stateStackLen-1]
-
-	logMetering.Trace("state popped from stack (discarded)")
 }
 
 // ClearStateStack reinitializes the internal state stack to an empty stack
 func (context *meteringContext) ClearStateStack() {
 	context.stateStack = make([]*meteringContext, 0)
-	logMetering.Trace("state stack cleared")
 }
 
 // InitStateFromContractCallInput initializes the internal state of the
@@ -120,8 +111,6 @@ func (context *meteringContext) InitStateFromContractCallInput(input *vmcommon.V
 	context.initialGasProvided = input.GasProvided
 	context.gasForExecution = input.GasProvided
 	context.initialCost = 0
-
-	logMetering.Trace("init state from call input", "caller", input.CallerAddr)
 }
 
 // unlockGasIfAsyncCallback unlocks the locked gas if the call type is async callback

@@ -44,13 +44,11 @@ func NewStorageContext(
 
 // InitState does nothing
 func (context *storageContext) InitState() {
-	logStorage.Trace("init state")
 }
 
 // PushState appends the current address to the state stack.
 func (context *storageContext) PushState() {
 	context.stateStack = append(context.stateStack, context.address)
-	logStorage.Trace("state pushed onto stack")
 }
 
 // PopSetActiveState removes the latest entry from the state stack and sets it as the current address
@@ -64,8 +62,6 @@ func (context *storageContext) PopSetActiveState() {
 	context.stateStack = context.stateStack[:stateStackLen-1]
 
 	context.address = prevAddress
-
-	logStorage.Trace("state popped from stack (set as active state)")
 }
 
 // PopDiscard removes the latest entry from the state stack
@@ -76,14 +72,11 @@ func (context *storageContext) PopDiscard() {
 	}
 
 	context.stateStack = context.stateStack[:stateStackLen-1]
-
-	logStorage.Trace("state popped from stack (discarded)")
 }
 
 // ClearStateStack clears the state stack from the current context.
 func (context *storageContext) ClearStateStack() {
 	context.stateStack = make([][]byte, 0)
-	logStorage.Trace("state stack cleared")
 }
 
 // SetAddress sets the given address as the address for the current context.

@@ -297,7 +297,11 @@ func (context *runtimeContext) InitStateFromContractCallInput(input *vmcommon.Co
 		AsyncContextMap: make(map[string]*arwen.AsyncContext),
 	}
 
-	logRuntime.Trace("init state from call input", "caller", input.CallerAddr)
+	logRuntime.Trace("init state from call input",
+		"caller", input.CallerAddr,
+		"contract", input.RecipientAddr,
+		"func", input.Function,
+		"args", input.Arguments)
 }
 
 // SetCustomCallFunction sets the given string as the callFunction field.
@@ -325,8 +329,6 @@ func (context *runtimeContext) PushState() {
 	// check is made to ensure that the running instance will not be cleaned
 	// while still required for execution.
 	context.pushInstance()
-
-	logRuntime.Trace("state pushed onto stack")
 }
 
 // PopSetActiveState removes the latest entry from the state stack and sets it as the current
@@ -347,8 +349,6 @@ func (context *runtimeContext) PopSetActiveState() {
 	context.asyncCallInfo = prevState.asyncCallInfo
 	context.asyncContextInfo = prevState.asyncContextInfo
 	context.popInstance()
-
-	logRuntime.Trace("state popped from stack (set as active state)")
 }
 
 // PopDiscard removes the latest entry from the state stack
@@ -360,20 +360,16 @@ func (context *runtimeContext) PopDiscard() {
 
 	context.stateStack = context.stateStack[:stateStackLen-1]
 	context.popInstance()
-
-	logRuntime.Trace("state popped from stack (discarded)")
 }
 
 // ClearStateStack reinitializes the state stack.
 func (context *runtimeContext) ClearStateStack() {
 	context.stateStack = make([]*runtimeContext, 0)
-	logRuntime.Trace("state stack cleared")
 }
 
 // pushInstance appends the current wasmer instance to the instance stack.
 func (context *runtimeContext) pushInstance() {
 	context.instanceStack = append(context.instanceStack, context.instance)
-	logRuntime.Trace("instance pushed onto stack")
 }
 
 // popInstance removes the latest entry from the wasmer instance stack and sets it
@@ -394,13 +390,11 @@ func (context *runtimeContext) popInstance() {
 		// current instance, so it cannot be cleaned, because the execution will
 		// resume on it. Popping will therefore only remove the top of the stack,
 		// without cleaning anything.
-		logRuntime.Trace("instance popped from stack (identical to prevInstance, no cleaning)")
 		return
 	}
 
 	context.CleanWasmerInstance()
 	context.instance = prevInstance
-	logRuntime.Trace("instance popped from stack")
 }
 
 // RunningInstancesCount returns the length of the instance stack.
@@ -725,7 +719,7 @@ func (context *runtimeContext) ExecuteAsyncCall(address []byte, data []byte, val
 	})
 	context.SetRuntimeBreakpointValue(arwen.BreakpointAsyncCall)
 
-	logRuntime.Trace("executing async call",
+	logRuntime.Trace("prepare async call",
 		"caller", context.GetSCAddress(),
 		"dest", address,
 		"value", big.NewInt(0).SetBytes(value),
