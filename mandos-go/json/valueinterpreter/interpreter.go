@@ -27,6 +27,8 @@ const i32Prefix = "i32:"
 const i16Prefix = "i16:"
 const i8Prefix = "i8:"
 
+const biguintPrefix = "biguint:"
+
 // ValueInterpreter provides context for computing Mandos values.
 type ValueInterpreter struct {
 	FileResolver fr.FileResolver
@@ -275,6 +277,13 @@ func (vi *ValueInterpreter) tryInterpretFixedWidth(strRaw string) (bool, []byte,
 	if strings.HasPrefix(strRaw, i8Prefix) {
 		r, err := vi.interpretNumber(strRaw[len(i8Prefix):], 1)
 		return true, r, err
+	}
+
+	if strings.HasPrefix(strRaw, biguintPrefix) {
+		r, err := vi.interpretUnsignedNumber(strRaw[len(biguintPrefix):])
+		lengthBytes := big.NewInt(int64(len(r))).Bytes()
+		encodedLength := twos.CopyAlignRight(lengthBytes, 4)
+		return true, append(encodedLength, r...), err
 	}
 
 	return false, []byte{}, nil
