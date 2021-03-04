@@ -255,25 +255,25 @@ func (context *outputContext) TransferValueOnly(destination []byte, sender []byt
 	logOutput.Trace("transfer value", "sender", sender, "dest", destination, "value", value)
 
 	if value.Cmp(arwen.Zero) < 0 {
-		logOutput.Trace("transfer value", "error", arwen.ErrTransferNegativeValue)
+		logOutput.Error("transfer value", "error", arwen.ErrTransferNegativeValue)
 		return arwen.ErrTransferNegativeValue
 	}
 
 	if !context.hasSufficientBalance(sender, value) {
-		logOutput.Trace("transfer value", "error", arwen.ErrTransferInsufficientFunds)
+		logOutput.Error("transfer value", "error", arwen.ErrTransferInsufficientFunds)
 		return arwen.ErrTransferInsufficientFunds
 	}
 
 	payable, err := context.host.Blockchain().IsPayable(destination)
 	if err != nil {
-		logOutput.Trace("transfer value", "error", err)
+		logOutput.Error("transfer value", "error", err)
 		return err
 	}
 
 	isAsyncCall := context.host.IsArwenV3Enabled() && context.host.Runtime().GetVMInput().CallType == vmcommon.AsynchronousCall
 	hasValue := value.Cmp(big.NewInt(0)) == 1
 	if !payable && hasValue && !isAsyncCall {
-		logOutput.Trace("transfer value", "error", arwen.ErrAccountNotPayable)
+		logOutput.Error("transfer value", "error", arwen.ErrAccountNotPayable)
 		return arwen.ErrAccountNotPayable
 	}
 
@@ -334,7 +334,7 @@ func (context *outputContext) TransferESDT(
 
 	if isExecution {
 		if gasRemaining > context.host.Metering().GasLeft() {
-			logOutput.Trace("ESDT post-transfer execution", "error", arwen.ErrNotEnoughGas)
+			logOutput.Error("ESDT post-transfer execution", "error", arwen.ErrNotEnoughGas)
 			return 0, arwen.ErrNotEnoughGas
 		}
 

@@ -143,7 +143,7 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(codeHash []byte, gas
 	blockchain := context.host.Blockchain()
 	found, compiledCode := blockchain.GetCompiledCode(codeHash)
 	if !found {
-		logRuntime.Trace("instance creation", "code", "cached compilation", "error", "compiled code was not found")
+		logRuntime.Error("instance creation", "code", "cached compilation", "error", "compiled code was not found")
 		return false
 	}
 

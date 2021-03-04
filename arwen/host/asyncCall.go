@@ -22,7 +22,7 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 	asyncCallInfo := runtime.GetAsyncCallInfo()
 	execMode, err := host.determineAsyncCallExecutionMode(asyncCallInfo)
 	if err != nil {
-		log.Trace("async call failed", "error", err)
+		log.Error("async call failed", "error", err)
 		return err
 	}
 
@@ -118,7 +118,7 @@ func (host *vmHost) determineAsyncCallExecutionMode(asyncCallInfo *arwen.AsyncCa
 func (host *vmHost) executeSyncDestinationCall(asyncCallInfo arwen.AsyncCallInfoHandler) (*vmcommon.VMOutput, uint64, error) {
 	destinationCallInput, err := host.createDestinationContractCallInput(asyncCallInfo)
 	if err != nil {
-		log.Trace("async call: sync dest call failed", "error", err)
+		log.Error("async call: sync dest call failed", "error", err)
 		return nil, 0, err
 	}
 
@@ -157,7 +157,7 @@ func (host *vmHost) executeSyncCallbackCall(
 		destinationErr,
 	)
 	if err != nil {
-		log.Trace("async call: sync callback failed", "error", err)
+		log.Error("async call: sync callback failed", "error", err)
 		return nil, err
 	}
 

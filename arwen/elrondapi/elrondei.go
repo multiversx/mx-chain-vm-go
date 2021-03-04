@@ -629,7 +629,7 @@ func transferValueExecute(
 		logEEI.Trace("eGLD pre-transfer execution begin")
 		_, _, _, err = host.ExecuteOnDestContext(contractCallInput)
 		if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
-			logEEI.Trace("eGLD pre-transfer execution failed", "error", err)
+			logEEI.Error("eGLD pre-transfer execution failed", "error", err)
 			return 1
 		}
 
@@ -752,7 +752,7 @@ func transferESDTExecute(
 		logEEI.Trace("ESDT post-transfer execution begin")
 		_, _, _, err = host.ExecuteOnDestContext(contractCallInput)
 		if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
-			logEEI.Trace("ESDT post-transfer execution failed", "error", err)
+			logEEI.Error("ESDT post-transfer execution failed", "error", err)
 			host.RevertESDTTransfer(contractCallInput)
 			return 1
 		}

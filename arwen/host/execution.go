@@ -40,8 +40,14 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 
 	vmOutput, err := host.performCodeDeployment(codeDeployInput)
 	if err != nil {
+		log.Error("doRunSmartContractCreate", "error", err)
 		return output.CreateVMOutputInCaseOfError(err)
 	}
+
+	log.Trace("doRunSmartContractCreate",
+		"retCode", vmOutput.ReturnCode,
+		"message", vmOutput.ReturnMessage,
+		"data", vmOutput.ReturnData)
 
 	return vmOutput
 }
@@ -102,6 +108,7 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 
 	vmOutput, err := host.performCodeDeployment(codeDeployInput)
 	if err != nil {
+		log.Error("doRunSmartContractUpgrade", "error", err)
 		return output.CreateVMOutputInCaseOfError(err)
 	}
 
@@ -157,10 +164,16 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 
 	err = host.callSCMethod()
 	if err != nil {
+		log.Error("doRunSmartContractCall", "error", err)
 		return output.CreateVMOutputInCaseOfError(err)
 	}
 
 	vmOutput = output.GetVMOutput()
+
+	log.Trace("doRunSmartContractCall",
+		"retCode", vmOutput.ReturnCode,
+		"message", vmOutput.ReturnMessage,
+		"data", vmOutput.ReturnData)
 
 	runtime.CleanWasmerInstance()
 	return
@@ -769,12 +782,15 @@ func (host *vmHost) callInitFunction() error {
 func (host *vmHost) callSCMethod() error {
 	runtime := host.Runtime()
 
+	log.Trace("call SC method")
+
 	//TODO host.verifyAllowedFunctionCall() performs some checks, but then the
 	//function itself is changed by host.getFunctionByCallType(). Order must be
 	//reversed, and `getFunctionByCallType()` must be decomposed into smaller functions.
 
 	err := host.verifyAllowedFunctionCall()
 	if err != nil {
+		log.Error("call SC method failed", "error", err)
 		return err
 	}
 
@@ -782,8 +798,11 @@ func (host *vmHost) callSCMethod() error {
 	function, err := host.getFunctionByCallType(callType)
 	if err != nil {
 		if callType == vmcommon.AsynchronousCallBack && errors.Is(err, arwen.ErrNilCallbackFunction) {
-			return host.processCallbackStack()
+			err = host.processCallbackStack()
+			log.LogIfError(err, "call SC method failed", "error", err)
+			return err
 		}
+		log.Error("call SC method failed", "error", err)
 		return err
 	}
 
@@ -795,6 +814,7 @@ func (host *vmHost) callSCMethod() error {
 		err = host.checkFinalGasAfterExit()
 	}
 	if err != nil {
+		log.Error("call SC method failed", "error", err)
 		return err
 	}
 
@@ -802,6 +822,7 @@ func (host *vmHost) callSCMethod() error {
 	case vmcommon.AsynchronousCall:
 		pendingMap, paiErr := host.processAsyncInfo(runtime.GetAsyncContextInfo())
 		if paiErr != nil {
+			log.Error("call SC method failed", "error", paiErr)
 			return paiErr
 		}
 		if len(pendingMap.AsyncContextMap) == 0 {
@@ -813,6 +834,7 @@ func (host *vmHost) callSCMethod() error {
 		_, err = host.processAsyncInfo(runtime.GetAsyncContextInfo())
 	}
 
+	log.LogIfError(err, "call SC method failed", "error", err)
 	return err
 }
 
