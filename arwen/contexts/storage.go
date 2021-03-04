@@ -6,9 +6,12 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/math"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-go-logger/check"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
+
+var logStorage = logger.GetOrCreate("arwen/storage")
 
 type storageContext struct {
 	host                          arwen.VMHost
@@ -41,11 +44,13 @@ func NewStorageContext(
 
 // InitState does nothing
 func (context *storageContext) InitState() {
+	logStorage.Trace("init state")
 }
 
 // PushState appends the current address to the state stack.
 func (context *storageContext) PushState() {
 	context.stateStack = append(context.stateStack, context.address)
+	logStorage.Trace("state pushed onto stack")
 }
 
 // PopSetActiveState removes the latest entry from the state stack and sets it as the current address
@@ -59,6 +64,8 @@ func (context *storageContext) PopSetActiveState() {
 	context.stateStack = context.stateStack[:stateStackLen-1]
 
 	context.address = prevAddress
+
+	logStorage.Trace("state popped from stack (set as active state)")
 }
 
 // PopDiscard removes the latest entry from the state stack
@@ -69,16 +76,20 @@ func (context *storageContext) PopDiscard() {
 	}
 
 	context.stateStack = context.stateStack[:stateStackLen-1]
+
+	logStorage.Trace("state popped from stack (discarded)")
 }
 
 // ClearStateStack clears the state stack from the current context.
 func (context *storageContext) ClearStateStack() {
 	context.stateStack = make([][]byte, 0)
+	logStorage.Trace("state stack cleared")
 }
 
 // SetAddress sets the given address as the address for the current context.
 func (context *storageContext) SetAddress(address []byte) {
 	context.address = address
+	logStorage.Trace("storage under address set", "address", address)
 }
 
 // GetStorageUpdates returns the storage updates for the account mapped to the given address.
@@ -101,6 +112,8 @@ func (context *storageContext) GetStorage(key []byte) []byte {
 
 	gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(value)))
 	metering.UseGas(gasToUse)
+
+	logStorage.Trace("get", "key", key, "value", value)
 
 	return value
 }
@@ -132,6 +145,7 @@ func (context *storageContext) GetStorageFromAddress(address []byte, key []byte)
 	gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(value)))
 	metering.UseGas(gasToUse)
 
+	logStorage.Trace("get from address", "address", address, "key", key, "value", value)
 	return value
 }
 
@@ -185,12 +199,15 @@ func (context *storageContext) SetProtectedStorage(key []byte, value []byte) (ar
 // SetStorage sets the given value at the given key.
 func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.StorageStatus, error) {
 	if context.host.Runtime().ReadOnly() {
+		logStorage.Error("storage set", "error", "cannot set storage in readonly mode")
 		return arwen.StorageUnchanged, nil
 	}
 	if context.isElrondReservedKey(key) {
+		logStorage.Error("storage set", "error", arwen.ErrStoreElrondReservedKey, "key", key)
 		return arwen.StorageUnchanged, arwen.ErrStoreElrondReservedKey
 	}
 	if context.isArwenProtectedKey(key) && context.arwenStorageProtectionEnabled {
+		logStorage.Error("storage set", "error", arwen.ErrCannotWriteProtectedKey, "key", key)
 		return arwen.StorageUnchanged, arwen.ErrCannotWriteProtectedKey
 	}
 
@@ -222,6 +239,7 @@ func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.Stora
 	if bytes.Equal(oldValue, value) {
 		useGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(length))
 		metering.UseGas(useGas)
+		logStorage.Trace("storage set to identical value")
 		return arwen.StorageUnchanged, nil
 	}
 
@@ -235,11 +253,13 @@ func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.Stora
 	if bytes.Equal(oldValue, zero) {
 		useGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.StorePerByte, uint64(length))
 		metering.UseGas(useGas)
+		logStorage.Trace("storage added", "key", key, "value", value)
 		return arwen.StorageAdded, nil
 	}
 	if bytes.Equal(value, zero) {
 		freeGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.ReleasePerByte, uint64(lengthOldValue))
 		metering.FreeGas(freeGas)
+		logStorage.Trace("storage deleted", "key", key)
 		return arwen.StorageDeleted, nil
 	}
 
@@ -263,5 +283,6 @@ func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.Stora
 		metering.FreeGas(freeGas)
 	}
 
+	logStorage.Trace("storage modified", "key", key, "value", value, "lengthDelta", newValueExtraLength)
 	return arwen.StorageModified, nil
 }

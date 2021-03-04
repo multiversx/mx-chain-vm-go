@@ -788,6 +788,7 @@ func (host *vmHost) getFunctionByCallType(callType vmcommon.CallType) (wasmer.Ex
 
 	function, err := runtime.GetFunctionToCall()
 	if err != nil && !customCallback {
+		log.Error("get function by call type", "error", arwen.ErrNilCallbackFunction)
 		return nil, arwen.ErrNilCallbackFunction
 	}
 
