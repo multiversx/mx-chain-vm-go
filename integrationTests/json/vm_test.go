@@ -149,6 +149,10 @@ func TestCrowdfundingEsdt(t *testing.T) {
 	runAllTestsInFolder(t, "crowdfunding-esdt")
 }
 
+func TestEgldEsdtSwap(t *testing.T) {
+	runAllTestsInFolder(t, "egld-esdt-swap")
+}
+
 func runAllTestsInFolder(t *testing.T, folder string) {
 	runTestsInFolder(t, folder, []string{})
 }
