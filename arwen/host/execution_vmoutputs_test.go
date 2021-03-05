@@ -496,7 +496,7 @@ func expectedVMOutputDestCtxPrepare(_ []byte) *vmcommon.VMOutput {
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
-	parentAccount.GasUsed = 3093
+	parentAccount.GasUsed = 4309
 
 	_ = AddNewOutputAccount(
 		vmOutput,
@@ -582,7 +582,7 @@ func expectedVMOutputDestCtxSuccessfulChildCall(parentCode []byte, _ []byte) *vm
 
 	parentAccount := vmOutput.OutputAccounts[string(parentAddress)]
 	parentAccount.BalanceDelta = big.NewInt(-141)
-	parentAccount.GasUsed = 4289
+	parentAccount.GasUsed = 4444
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,
@@ -678,7 +678,7 @@ func expectedVMOutputDestCtxSuccessfulChildCallBigInts(_ []byte, _ []byte) *vmco
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
-	parentAccount.GasUsed = 3150
+	parentAccount.GasUsed = 4366
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,
