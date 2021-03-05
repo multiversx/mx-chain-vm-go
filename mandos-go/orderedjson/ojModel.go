@@ -1,6 +1,7 @@
 package orderedjson
 
 import (
+	"sort"
 	"strings"
 )
 
@@ -60,6 +61,14 @@ func (j *OJsonMap) RefreshKeySet() {
 	for _, kv := range j.OrderedKV {
 		j.KeySet[kv.Key] = true
 	}
+}
+
+// KeyValuePairsSortedByKey returns the list of key-value pairs sorted by key.
+func (j *OJsonMap) KeyValuePairsSortedByKey() []*OJsonKeyValuePair {
+	sortedKVP := make([]*OJsonKeyValuePair, len(j.OrderedKV))
+	copy(sortedKVP[:], j.OrderedKV[:])
+	sort.Slice(sortedKVP, func(i, j int) bool { return sortedKVP[i].Key < sortedKVP[j].Key })
+	return sortedKVP
 }
 
 // AsList converts a JSON list to a slice of objects.

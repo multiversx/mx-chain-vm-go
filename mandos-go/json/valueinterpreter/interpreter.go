@@ -59,8 +59,12 @@ func (vi *ValueInterpreter) InterpretSubTree(obj oj.OJsonObject) ([]byte, error)
 
 	if mp, isMap := obj.(*oj.OJsonMap); isMap {
 		var concat []byte
-		for _, kvp := range mp.OrderedKV {
-			// keys are ignored, they do not form the value but act like documentation
+
+		// keys are ignored, they do not form the value but act like documentation
+		// but we sort by keys, because other JSON implementations cannot retain key order
+		// and we need consistency
+		sortedKVP := mp.KeyValuePairsSortedByKey()
+		for _, kvp := range sortedKVP {
 			value, err := vi.InterpretSubTree(kvp.Value)
 			if err != nil {
 				return []byte{}, err
