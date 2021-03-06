@@ -140,17 +140,17 @@ func LogToString(logEntry *mj.LogEntry) string {
 
 func logToOJ(logEntry *mj.LogEntry) oj.OJsonObject {
 	logOJ := oj.NewMap()
-	logOJ.Put("address", bytesFromStringToOJ(logEntry.Address))
-	logOJ.Put("identifier", bytesFromStringToOJ(logEntry.Identifier))
+	logOJ.Put("address", checkBytesToOJ(logEntry.Address))
+	logOJ.Put("identifier", checkBytesToOJ(logEntry.Identifier))
 
 	var topicsList []oj.OJsonObject
 	for _, topic := range logEntry.Topics {
-		topicsList = append(topicsList, bytesFromStringToOJ(topic))
+		topicsList = append(topicsList, checkBytesToOJ(topic))
 	}
 	topicsOJ := oj.OJsonList(topicsList)
 	logOJ.Put("topics", &topicsOJ)
 
-	logOJ.Put("data", bytesFromStringToOJ(logEntry.Data))
+	logOJ.Put("data", checkBytesToOJ(logEntry.Data))
 
 	return logOJ
 }

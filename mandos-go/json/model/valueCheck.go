@@ -34,6 +34,15 @@ func JSONCheckBytesExplicitStar() JSONCheckBytes {
 	}
 }
 
+// JSONCheckBytesReconstructed creates a JSONCheckBytes without an original JSON source.
+func JSONCheckBytesReconstructed(value []byte) JSONCheckBytes {
+	return JSONCheckBytes{
+		Value:    value,
+		IsStar:   false,
+		Original: &oj.OJsonString{Value: ""},
+	}
+}
+
 // OriginalEmpty returns true if original = "".
 func (jcbytes JSONCheckBytes) OriginalEmpty() bool {
 	if str, isStr := jcbytes.Original.(*oj.OJsonString); isStr {
