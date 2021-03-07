@@ -70,7 +70,10 @@ func TestRustFeaturesLegacy(t *testing.T) {
 }
 
 func TestRustAsyncCalls(t *testing.T) {
-	runAllTestsInFolder(t, "async/mandos")
+	runTestsInFolder(t, "async/mandos", []string{
+		"async/mandos/recursive_caller_esdt_2.scen.json",
+		"async/mandos/recursive_caller_esdt_x.scen.json",
+	})
 }
 
 func TestDelegation_v0_2(t *testing.T) {
