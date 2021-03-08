@@ -21,8 +21,10 @@ func (p *Parser) ParseScenarioFile(jsonString []byte) (*mj.Scenario, error) {
 	}
 
 	scenario := &mj.Scenario{
-		CheckGas: true,
+		CheckGas:    true,
+		GasSchedule: mj.GasScheduleDefault,
 	}
+
 	for _, kvp := range topMap.OrderedKV {
 		switch kvp.Key {
 		case "name":
@@ -41,16 +43,40 @@ func (p *Parser) ParseScenarioFile(jsonString []byte) (*mj.Scenario, error) {
 				return nil, errors.New("scenario checkGas flag is not boolean")
 			}
 			scenario.CheckGas = bool(*checkGasOJ)
+		case "gasSchedule":
+			scenario.GasSchedule, err = p.parseGasSchedule(kvp.Value)
+			if err != nil {
+				return nil, fmt.Errorf("bad scenario gasSchedule: %w", err)
+			}
 		case "steps":
 			scenario.Steps, err = p.processScenarioStepList(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("error processing steps: %w", err)
 			}
 		default:
-			return nil, fmt.Errorf("unknown step field: %s", kvp.Key)
+			return nil, fmt.Errorf("unknown scenario field: %s", kvp.Key)
 		}
 	}
 	return scenario, nil
+}
+
+func (p *Parser) parseGasSchedule(value oj.OJsonObject) (mj.GasSchedule, error) {
+	gasScheduleStr, err := p.parseString(value)
+	if err != nil {
+		return mj.GasScheduleDummy, fmt.Errorf("gasSchedule type not a string: %w", err)
+	}
+	switch gasScheduleStr {
+	case "default":
+		return mj.GasScheduleDefault, nil
+	case "dummy":
+		return mj.GasScheduleDummy, nil
+	case "v1":
+		return mj.GasScheduleV1, nil
+	case "v2":
+		return mj.GasScheduleV2, nil
+	default:
+		return mj.GasScheduleDummy, fmt.Errorf("invalid gasSchedule: %s", gasScheduleStr)
+	}
 }
 
 func (p *Parser) processScenarioStepList(obj interface{}) ([]mj.Step, error) {

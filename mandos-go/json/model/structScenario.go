@@ -2,10 +2,11 @@ package mandosjsonmodel
 
 // Scenario is a json object representing a test scenario with steps.
 type Scenario struct {
-	Name     string
-	Comment  string
-	CheckGas bool
-	Steps    []Step
+	Name        string
+	Comment     string
+	CheckGas    bool
+	GasSchedule GasSchedule
+	Steps       []Step
 }
 
 // Step is the basic block of a scenario.

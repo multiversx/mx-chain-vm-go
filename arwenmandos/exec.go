@@ -1,11 +1,14 @@
 package arwenmandos
 
 import (
+	"fmt"
+
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	mc "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/controller"
 	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/fileresolver"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
 	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
@@ -55,4 +58,30 @@ func NewArwenTestExecutor() (*ArwenTestExecutor, error) {
 // GetVM yields a reference to the VMExecutionHandler used.
 func (ae *ArwenTestExecutor) GetVM() vmi.VMExecutionHandler {
 	return ae.vm
+}
+
+func gasScheduleMapFromMandos(mandosGasSchedule mj.GasSchedule) (config.GasScheduleMap, error) {
+	switch mandosGasSchedule {
+	case mj.GasScheduleDefault:
+		return config.MakeGasMapForTests(), nil // TODO: change to v2 after all tests pass
+		// return arwenHost.LoadGasScheduleConfig("../../arwenmandos/gasSchedules/gasScheduleV2.toml")
+	case mj.GasScheduleDummy:
+		return config.MakeGasMapForTests(), nil
+	case mj.GasScheduleV1:
+		return arwenHost.LoadGasScheduleConfig("../../arwenmandos/gasSchedules/gasScheduleV1.toml")
+	case mj.GasScheduleV2:
+		return arwenHost.LoadGasScheduleConfig("../../arwenmandos/gasSchedules/gasScheduleV2.toml")
+	default:
+		return nil, fmt.Errorf("unknown mandos GasSchedule: %d", mandosGasSchedule)
+	}
+}
+
+// SetGasSchedule updates the gas costs based on the mandos scenario config.
+func (ae *ArwenTestExecutor) setGasSchedule(mandosGasSchedule mj.GasSchedule) error {
+	gasSchedule, err := gasScheduleMapFromMandos(mandosGasSchedule)
+	if err != nil {
+		return err
+	}
+	ae.vm.GasScheduleChange(gasSchedule)
+	return nil
 }
