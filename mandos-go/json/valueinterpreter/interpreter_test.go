@@ -280,6 +280,19 @@ func TestBigUint(t *testing.T) {
 	result, err = vi.InterpretString("biguint:0x01FF")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0x00, 0x00, 0x00, 0x02, 0x01, 0xFF}, result)
+
+	// should be positive
+	result, err = vi.InterpretString("biguint:-0x01")
+	require.NotNil(t, err)
+
+	result, err = vi.InterpretString("nested:0x0102030405")
+	require.Nil(t, err)
+	require.Equal(t, []byte{0x00, 0x00, 0x00, 0x05, 0x01, 0x02, 0x03, 0x04, 0x05}, result)
+
+	// accepts any argument
+	result, err = vi.InterpretString("nested:-0x01")
+	require.Nil(t, err)
+	require.Equal(t, []byte{0x00, 0x00, 0x00, 0x01, 0xFF}, result)
 }
 
 func TestConcat(t *testing.T) {
