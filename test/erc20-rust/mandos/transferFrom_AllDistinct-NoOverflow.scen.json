@@ -19,7 +19,7 @@
                         "``balance|``account_2_____________________s1": "0x0a",
                         "``total_supply": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
                     },
-                    "code": "file:../output/simple-erc20.wasm"
+                    "code": "file:../output/erc20.wasm"
                 }
             }
         },
@@ -73,7 +73,7 @@
                         "``balance|``account_2_____________________s1": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
                         "``total_supply": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
                     },
-                    "code": "file:../output/simple-erc20.wasm"
+                    "code": "file:../output/erc20.wasm"
                 }
             }
         }

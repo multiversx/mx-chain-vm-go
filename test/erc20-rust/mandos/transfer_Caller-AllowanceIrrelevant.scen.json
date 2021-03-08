@@ -17,7 +17,7 @@
                         "``balance|``account_1_____________________s1": "0x2710",
                         "``total_supply": "0x2710"
                     },
-                    "code": "file:../output/simple-erc20.wasm"
+                    "code": "file:../output/erc20.wasm"
                 }
             }
         },
@@ -104,7 +104,7 @@
                         "``allowance|``account_1_____________________s1|``account_1_____________________s1": "0x14",
                         "``total_supply": "0x2710"
                     },
-                    "code": "file:../output/simple-erc20.wasm"
+                    "code": "file:../output/erc20.wasm"
                 }
             }
         }

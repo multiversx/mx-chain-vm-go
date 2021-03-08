@@ -18,7 +18,7 @@
                         "``balance|``coin_holder_1_________________sx": "0x2710",
                         "``total_supply": "0x2710"
                     },
-                    "code": "file:../output/simple-erc20.wasm"
+                    "code": "file:../output/erc20.wasm"
                 }
             }
         },
@@ -74,7 +74,7 @@
                         "``balance|``coin_holder_2_________________sx": "0x17",
                         "``total_supply": "0x2710"
                     },
-                    "code": "file:../output/simple-erc20.wasm"
+                    "code": "file:../output/erc20.wasm"
                 }
             }
         }

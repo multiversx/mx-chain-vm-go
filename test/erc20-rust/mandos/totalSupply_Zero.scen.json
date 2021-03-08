@@ -14,7 +14,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {},
-                    "code": "file:../output/simple-erc20.wasm"
+                    "code": "file:../output/erc20.wasm"
                 }
             }
         },
@@ -51,7 +51,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {},
-                    "code": "file:../output/simple-erc20.wasm"
+                    "code": "file:../output/erc20.wasm"
                 }
             }
         }
