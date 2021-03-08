@@ -9,7 +9,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/marshaling"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/nodepart"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
 )
 
@@ -128,6 +128,34 @@ func TestGateway_IsPayable(t *testing.T) {
 	handleHookCall := func(request common.MessageHandler) common.MessageHandler {
 		require.Equal(t, "contract", string(request.(*common.MessageBlockchainIsPayableRequest).Address))
 		return common.NewMessageBlockchainIsPayableResponse(true, nil)
+	}
+
+	runHookScenario(t, callHook, handleHookCall)
+}
+
+func TestBlockchainHookGateway_GetCompiledCode(t *testing.T) {
+	callHook := func(gateway *BlockchainHookGateway) {
+		result, code := gateway.GetCompiledCode([]byte("contract"))
+		require.True(t, result)
+		require.Equal(t, code, []byte("contract"))
+	}
+
+	handleHookCall := func(request common.MessageHandler) common.MessageHandler {
+		require.Equal(t, "contract", string(request.(*common.MessageBlockchainGetCompiledCodeRequest).CodeHash))
+		return common.NewMessageBlockchainGetCompiledCodeResponse(true, []byte("contract"))
+	}
+
+	runHookScenario(t, callHook, handleHookCall)
+}
+
+func TestBlockchainHookGateway_SaveCompiledCode(t *testing.T) {
+	callHook := func(gateway *BlockchainHookGateway) {
+		gateway.SaveCompiledCode([]byte("contract"), []byte("contract"))
+	}
+
+	handleHookCall := func(request common.MessageHandler) common.MessageHandler {
+		require.Equal(t, "contract", string(request.(*common.MessageBlockchainSaveCompiledCodeRequest).CodeHash))
+		return common.NewMessageBlockchainSaveCompiledCodeResponse()
 	}
 
 	runHookScenario(t, callHook, handleHookCall)

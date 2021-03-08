@@ -1,9 +1,10 @@
 [BaseOperationCost]
-    StorePerByte    = 10
-    DataCopyPerByte = 10
-    CompilePerByte  = 10
-    PersitPerByte   = 10
-    ReleasePerByte  = 10
+    StorePerByte      = 10
+    DataCopyPerByte   = 10
+    CompilePerByte    = 10
+    PersitPerByte     = 10
+    ReleasePerByte    = 10
+    AoTPreparePerByte = 10
 
 [ElrondAPICost]
     GetSCAddress       = 10

@@ -8,7 +8,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {},
-                    "code": "file:../output/features.wasm"
+                    "code": "file:../output/basic-features.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
@@ -34,7 +34,7 @@
             },
             "expect": {
                 "out": [],
-                "status": "10",
+                "status": "*",
                 "message": "str:cannot write to storage under Elrond reserved key",
                 "logs": [],
                 "gas": "*",
@@ -57,7 +57,7 @@
             },
             "expect": {
                 "out": [],
-                "status": "10",
+                "status": "*",
                 "message": "str:cannot write to storage under Elrond reserved key",
                 "logs": [],
                 "gas": "*",
@@ -80,7 +80,7 @@
             },
             "expect": {
                 "out": [],
-                "status": "10",
+                "status": "*",
                 "message": "str:cannot write to storage under Elrond reserved key",
                 "logs": [],
                 "gas": "*",

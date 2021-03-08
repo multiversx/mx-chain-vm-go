@@ -346,8 +346,11 @@ wasmer_result_t wasmer_compile(wasmer_module_t **module,
 /// and `wasmer_last_error_message` to get an error message.
 wasmer_result_t wasmer_compile_with_gas_metering(wasmer_module_t **module,
                                                  uint8_t *wasm_bytes,
-                                                 uint32_t wasm_bytes_len,
-                                                 uint64_t gas_limit);
+                                                 uint32_t wasm_bytes_len);
+
+wasmer_result_t wasmer_compile_with_gas_metering(wasmer_module_t **module,
+                                                 uint8_t *wasm_bytes,
+                                                 uint32_t wasm_bytes_len);
 
 #if defined(WASMER_EMSCRIPTEN_ENABLED)
 /// Convenience function for setting up arguments and calling the Emscripten
@@ -669,6 +672,10 @@ wasmer_import_object_iter_t *wasmer_import_object_iterate_functions(const wasmer
 /// See also `wasmer_import_object_append`
 wasmer_import_object_t *wasmer_import_object_new();
 
+wasmer_result_t wasmer_instance_cache(wasmer_instance_t *instance,
+                                      const uint8_t **cache_bytes,
+                                      uint32_t *cache_len);
+
 /// Calls an exported function of a WebAssembly instance by `name`
 /// with the provided parameters. The exported function results are
 /// stored on the provided `results` pointer.
@@ -868,9 +875,19 @@ void wasmer_instance_destroy(wasmer_instance_t *instance);
 /// ```
 void wasmer_instance_exports(wasmer_instance_t *instance, wasmer_exports_t **exports);
 
+wasmer_result_t wasmer_instance_from_cache(wasmer_instance_t **instance,
+                                           uint8_t *cache_bytes,
+                                           uint32_t cache_len,
+                                           const wasmer_compilation_options_t *options);
+
 uint64_t wasmer_instance_get_points_used(wasmer_instance_t *instance);
 
 uint64_t wasmer_instance_get_runtime_breakpoint_value(wasmer_instance_t *instance);
+
+/// Verifies whether the specified function name is imported by the given instance.
+bool wasmer_instance_is_function_imported(wasmer_instance_t *instance, const char *name);
+
+void wasmer_instance_set_points_limit(wasmer_instance_t *instance, uint64_t limit);
 
 void wasmer_instance_set_points_used(wasmer_instance_t *instance, uint64_t new_gas);
 

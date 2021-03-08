@@ -1,14 +1,20 @@
 package contexts
 
 import (
+	"encoding/hex"
 	"errors"
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/arwen-wasm-vm/math"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
+	"github.com/ElrondNetwork/elrond-go/core"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 var _ arwen.OutputContext = (*outputContext)(nil)
+
+var logOutput = logger.GetOrCreate("arwen/output")
 
 type outputContext struct {
 	host        arwen.VMHost
@@ -29,6 +35,7 @@ func NewOutputContext(host arwen.VMHost) (*outputContext, error) {
 	return context, nil
 }
 
+// InitState initializes the output state and the code updates.
 func (context *outputContext) InitState() {
 	context.outputState = newVMOutput()
 	context.codeUpdates = make(map[string]struct{})
@@ -48,6 +55,7 @@ func newVMOutput() *vmcommon.VMOutput {
 	}
 }
 
+// NewVMOutputAccount creates a new output account and sets the given address
 func NewVMOutputAccount(address []byte) *vmcommon.OutputAccount {
 	return &vmcommon.OutputAccount{
 		Address:        address,
@@ -58,28 +66,36 @@ func NewVMOutputAccount(address []byte) *vmcommon.OutputAccount {
 	}
 }
 
+// PushState appends the current vmOutput to the state stack
 func (context *outputContext) PushState() {
 	newState := newVMOutput()
 	mergeVMOutputs(newState, context.outputState)
 	context.stateStack = append(context.stateStack, newState)
 }
 
+// PopSetActiveState removes the latest entry from the state stack and sets it as the current vm output
 func (context *outputContext) PopSetActiveState() {
 	stateStackLen := len(context.stateStack)
+	if stateStackLen == 0 {
+		return
+	}
+
 	prevState := context.stateStack[stateStackLen-1]
 	context.stateStack = context.stateStack[:stateStackLen-1]
-
 	context.outputState = prevState
 }
 
+// PopMergeActiveState merges the current state into the head of the stateStack,
+// then pop the head of the stateStack into the current state.
+// Doing this allows the VM to execute a SmartContract into a context on top
+// of an existing context (a previous SC) without allowing access to it, but
+// later merging the output of the two SCs in chronological order.
 func (context *outputContext) PopMergeActiveState() {
 	stateStackLen := len(context.stateStack)
+	if stateStackLen == 0 {
+		return
+	}
 
-	// Merge the current state into the head of the stateStack,
-	// then pop the head of the stateStack into the current state.
-	// Doing this allows the VM to execute a SmartContract into a context on top
-	// of an existing context (a previous SC) without allowing access to it, but
-	// later merging the output of the two SCs in chronological order.
 	prevState := context.stateStack[stateStackLen-1]
 	context.stateStack = context.stateStack[:stateStackLen-1]
 
@@ -88,11 +104,18 @@ func (context *outputContext) PopMergeActiveState() {
 	mergeVMOutputs(context.outputState, prevState)
 }
 
+// PopDiscard removes the latest entry from the state stack, but maintaining
+// all GasUsed values.
 func (context *outputContext) PopDiscard() {
 	stateStackLen := len(context.stateStack)
+	if stateStackLen == 0 {
+		return
+	}
+
 	context.stateStack = context.stateStack[:stateStackLen-1]
 }
 
+// ClearStateStack reinitializes the state stack.
 func (context *outputContext) ClearStateStack() {
 	context.stateStack = make([]*vmcommon.VMOutput, 0)
 }
@@ -108,6 +131,8 @@ func (context *outputContext) CensorVMOutput() {
 	context.outputState.GasRemaining = 0
 	context.outputState.GasRefund = big.NewInt(0)
 	context.outputState.Logs = make([]*vmcommon.LogEntry, 0)
+
+	logOutput.Trace("state content censored")
 }
 
 // ResetGas will set to 0 all gas used from output accounts, in order
@@ -117,10 +142,16 @@ func (context *outputContext) ResetGas() {
 		outAcc.GasUsed = 0
 		for _, outTransfer := range outAcc.OutputTransfers {
 			outTransfer.GasLimit = 0
+			outTransfer.GasLocked = 0
 		}
 	}
+
+	logOutput.Trace("state gas reset")
 }
 
+// GetOutputAccount returns the output account present at the given address,
+// and a bool that is true if the account is new. If no output account is present at that address,
+// a new account will be created and added to the output accounts.
 func (context *outputContext) GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool) {
 	accountIsNew := false
 	account, ok := context.outputState.OutputAccounts[string(address)]
@@ -133,52 +164,71 @@ func (context *outputContext) GetOutputAccount(address []byte) (*vmcommon.Output
 	return account, accountIsNew
 }
 
+// DeleteOutputAccount removes the given address from the output accounts and code updates
 func (context *outputContext) DeleteOutputAccount(address []byte) {
 	delete(context.outputState.OutputAccounts, string(address))
 	delete(context.codeUpdates, string(address))
 }
 
+// GetRefund returns the value of the gas refund for the current output state.
 func (context *outputContext) GetRefund() uint64 {
 	return uint64(context.outputState.GasRefund.Int64())
 }
 
+// SetRefund sets the given value as gas refund for the current output state.
 func (context *outputContext) SetRefund(refund uint64) {
 	context.outputState.GasRefund = big.NewInt(int64(refund))
 }
 
+// ReturnData returns the data of the current output state.
 func (context *outputContext) ReturnData() [][]byte {
 	return context.outputState.ReturnData
 }
 
+// ReturnCode returns the code of the current output state
 func (context *outputContext) ReturnCode() vmcommon.ReturnCode {
 	return context.outputState.ReturnCode
 }
 
+// SetReturnCode sets the given return code as the return code for the current output state.
 func (context *outputContext) SetReturnCode(returnCode vmcommon.ReturnCode) {
 	context.outputState.ReturnCode = returnCode
 }
 
+// ReturnMessage returns a string that represents the return message for the current output state.
 func (context *outputContext) ReturnMessage() string {
 	return context.outputState.ReturnMessage
 }
 
+// SetReturnMessage sets the given string as a return message for the current output state.
 func (context *outputContext) SetReturnMessage(returnMessage string) {
 	context.outputState.ReturnMessage = returnMessage
 }
 
+// ClearReturnData reinitializes the return data for the current output state.
 func (context *outputContext) ClearReturnData() {
 	context.outputState.ReturnData = make([][]byte, 0)
 }
 
+// SelfDestruct does nothing
+// TODO change comment when the function is implemented
 func (context *outputContext) SelfDestruct(_ []byte, _ []byte) {
 }
 
+// Finish appends the given data to the return data of the current output state.
 func (context *outputContext) Finish(data []byte) {
 	context.outputState.ReturnData = append(context.outputState.ReturnData, data)
 }
 
+// PrependFinish appends the given data to the return data of the current output state.
+func (context *outputContext) PrependFinish(data []byte) {
+	context.outputState.ReturnData = append([][]byte{data}, context.outputState.ReturnData...)
+}
+
+// WriteLog creates a new LogEntry and appends it to the logs of the current output state.
 func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []byte) {
 	if context.host.Runtime().ReadOnly() {
+		logOutput.Error("log entry", "error", "cannot write logs in readonly mode")
 		return
 	}
 
@@ -186,6 +236,7 @@ func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []b
 		Address: address,
 		Data:    data,
 	}
+	logOutput.Trace("log entry", "address", address, "data", data)
 
 	if len(topics) == 0 {
 		context.outputState.Logs = append(context.outputState.Logs, newLogEntry)
@@ -196,25 +247,33 @@ func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []b
 	newLogEntry.Topics = topics[1:]
 
 	context.outputState.Logs = append(context.outputState.Logs, newLogEntry)
+	logOutput.Trace("log entry", "identifier", newLogEntry.Identifier, "topics", newLogEntry.Topics)
 }
 
 // TransferValueOnly will transfer the big.int value and checks if it is possible
 func (context *outputContext) TransferValueOnly(destination []byte, sender []byte, value *big.Int) error {
+	logOutput.Trace("transfer value", "sender", sender, "dest", destination, "value", value)
+
 	if value.Cmp(arwen.Zero) < 0 {
+		logOutput.Error("transfer value", "error", arwen.ErrTransferNegativeValue)
 		return arwen.ErrTransferNegativeValue
 	}
 
 	if !context.hasSufficientBalance(sender, value) {
+		logOutput.Error("transfer value", "error", arwen.ErrTransferInsufficientFunds)
 		return arwen.ErrTransferInsufficientFunds
 	}
 
 	payable, err := context.host.Blockchain().IsPayable(destination)
 	if err != nil {
+		logOutput.Error("transfer value", "error", err)
 		return err
 	}
 
+	isAsyncCall := context.host.IsArwenV3Enabled() && context.host.Runtime().GetVMInput().CallType == vmcommon.AsynchronousCall
 	hasValue := value.Cmp(big.NewInt(0)) == 1
-	if !payable && hasValue {
+	if !payable && hasValue && !isAsyncCall {
+		logOutput.Error("transfer value", "error", arwen.ErrAccountNotPayable)
 		return arwen.ErrAccountNotPayable
 	}
 
@@ -230,7 +289,7 @@ func (context *outputContext) TransferValueOnly(destination []byte, sender []byt
 // Transfer handles any necessary value transfer required and takes
 // the necessary steps to create accounts and reverses the state in case of an
 // execution error or failed value transfer.
-func (context *outputContext) Transfer(destination []byte, sender []byte, gasLimit uint64, value *big.Int, input []byte, callType vmcommon.CallType) error {
+func (context *outputContext) Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, input []byte, callType vmcommon.CallType) error {
 	err := context.TransferValueOnly(destination, sender, value)
 	if err != nil {
 		return err
@@ -238,14 +297,77 @@ func (context *outputContext) Transfer(destination []byte, sender []byte, gasLim
 
 	destAcc, _ := context.GetOutputAccount(destination)
 	outputTransfer := vmcommon.OutputTransfer{
-		Value:    big.NewInt(0).Set(value),
-		GasLimit: gasLimit,
-		Data:     input,
-		CallType: callType,
+		Value:     big.NewInt(0).Set(value),
+		GasLimit:  gasLimit,
+		GasLocked: gasLocked,
+		Data:      input,
+		CallType:  callType,
 	}
 	destAcc.OutputTransfers = append(destAcc.OutputTransfers, outputTransfer)
 
+	logOutput.Trace("transfer value added")
 	return nil
+}
+
+// TransferESDT makes the esdt transfer and exports the data if it is cross shard
+func (context *outputContext) TransferESDT(
+	destination []byte,
+	sender []byte,
+	tokenIdentifier []byte,
+	value *big.Int,
+	callInput *vmcommon.ContractCallInput,
+) (uint64, error) {
+	gasConsumedByTransfer, err := context.host.ExecuteESDTTransfer(destination, sender, tokenIdentifier, value)
+	if err != nil {
+		return 0, err
+	}
+
+	gasRemaining := uint64(0)
+
+	if callInput != nil {
+		gasRemaining = callInput.GasProvided - gasConsumedByTransfer
+	}
+
+	isSmartContract := context.host.Blockchain().IsSmartContract(destination)
+	sameShard := context.host.AreInSameShard(sender, destination)
+	isExecution := isSmartContract && callInput != nil
+
+	if isExecution {
+		if gasRemaining > context.host.Metering().GasLeft() {
+			logOutput.Error("ESDT post-transfer execution", "error", arwen.ErrNotEnoughGas)
+			return 0, arwen.ErrNotEnoughGas
+		}
+
+		if !sameShard {
+			context.host.Metering().ForwardGas(sender, destination, gasRemaining)
+			context.host.Metering().UseGas(gasRemaining)
+		}
+	}
+
+	destAcc, _ := context.GetOutputAccount(destination)
+	outputTransfer := vmcommon.OutputTransfer{
+		Value:     big.NewInt(0),
+		GasLimit:  gasRemaining,
+		GasLocked: 0,
+		Data:      []byte(core.BuiltInFunctionESDTTransfer + "@" + hex.EncodeToString(tokenIdentifier) + "@" + hex.EncodeToString(value.Bytes())),
+		CallType:  vmcommon.DirectCall,
+	}
+
+	if sameShard {
+		outputTransfer.GasLimit = 0
+	}
+
+	if callInput != nil {
+		scCallData := "@" + hex.EncodeToString([]byte(callInput.Function))
+		for _, arg := range callInput.Arguments {
+			scCallData += "@" + hex.EncodeToString(arg)
+		}
+		outputTransfer.Data = append(outputTransfer.Data, []byte(scCallData)...)
+	}
+
+	destAcc.OutputTransfers = append(destAcc.OutputTransfers, outputTransfer)
+
+	return gasRemaining, nil
 }
 
 func (context *outputContext) hasSufficientBalance(address []byte, value *big.Int) bool {
@@ -253,24 +375,98 @@ func (context *outputContext) hasSufficientBalance(address []byte, value *big.In
 	return senderBalance.Cmp(value) >= 0
 }
 
+// AddTxValueToAccount adds the given value to the BalanceDelta of the account that is mapped to the given address
 func (context *outputContext) AddTxValueToAccount(address []byte, value *big.Int) {
 	destAcc, _ := context.GetOutputAccount(address)
 	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
 }
 
+// GetCurrentTotalUsedGas returns the current total used gas from the merged vm outputs
+func (context *outputContext) GetCurrentTotalUsedGas() (uint64, bool) {
+	gasUsed := uint64(0)
+	gasLockSentForward := false
+	for _, outputAccount := range context.outputState.OutputAccounts {
+		gasUsed = math.AddUint64(gasUsed, outputAccount.GasUsed)
+		for _, outputTransfer := range outputAccount.OutputTransfers {
+			gasUsed = math.AddUint64(gasUsed, outputTransfer.GasLimit)
+			gasUsed = math.AddUint64(gasUsed, outputTransfer.GasLocked)
+
+			if outputTransfer.GasLocked > 0 {
+				gasLockSentForward = true
+			}
+		}
+	}
+
+	return gasUsed, gasLockSentForward
+}
+
 // GetVMOutput updates the current VMOutput and returns it
 func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
+	runtime := context.host.Runtime()
+	metering := context.host.Metering()
+
+	remainedFromForwarded := uint64(0)
+	account, _ := context.GetOutputAccount(runtime.GetSCAddress())
 	if context.outputState.ReturnCode == vmcommon.Ok {
-		context.outputState.GasRemaining = context.host.Metering().GasLeft()
+		account.GasUsed, remainedFromForwarded = metering.GasUsedByContract()
+		context.outputState.GasRemaining = metering.GasLeft()
+
+		// backward compatibility
+		if !context.host.IsArwenV2Enabled() && account.GasUsed > metering.GetGasProvided() {
+			return context.CreateVMOutputInCaseOfError(arwen.ErrNotEnoughGas)
+		}
 	} else {
-		context.outputState.GasRemaining = context.host.Metering().GetGasLockedForAsyncStep()
+		account.GasUsed = math.AddUint64(account.GasUsed, metering.GetGasProvided())
 	}
 
 	context.removeNonUpdatedCode(context.outputState)
 
+	err := context.checkGas(remainedFromForwarded)
+	if err != nil {
+		return context.CreateVMOutputInCaseOfError(err)
+	}
+
 	return context.outputState
 }
 
+func (context *outputContext) isBuiltInExecution() bool {
+	if context.host.IsBuiltinFunctionName(context.host.Runtime().Function()) {
+		return true
+	}
+	if len(context.host.Runtime().GetVMInput().ESDTTokenName) > 0 {
+		return true
+	}
+
+	return false
+}
+
+func (context *outputContext) checkGas(remainedFromForwarded uint64) error {
+	if context.host.IsArwenV2Enabled() == false {
+		return nil
+	}
+
+	previousGasUsed := context.host.Metering().GetPreviousTotalUsedGas()
+	gasUsed, gasLockSentForward := context.GetCurrentTotalUsedGas()
+	gasProvided := context.host.Metering().GetGasProvided()
+
+	wasBuiltInFuncWhichForwardedGas := gasLockSentForward && context.isBuiltInExecution()
+	if wasBuiltInFuncWhichForwardedGas {
+		gasProvided = math.AddUint64(gasProvided, context.host.Metering().GetGasLocked())
+	}
+
+	context.outputState.GasRemaining, remainedFromForwarded = math.SubUint64(context.outputState.GasRemaining, remainedFromForwarded)
+	totalGas := math.AddUint64(gasUsed, context.outputState.GasRemaining)
+	totalGas, _ = math.SubUint64(totalGas, remainedFromForwarded)
+	totalGas, _ = math.SubUint64(totalGas, previousGasUsed)
+	if totalGas > gasProvided {
+		logOutput.Error("gas usage mismatch", "total gas used", totalGas, "gas provided", gasProvided)
+		return arwen.ErrInputAndOutputGasDoesNotMatch
+	}
+
+	return nil
+}
+
+// DeployCode sets the given code to a an account, and creates a new codeUpdates entry at the accounts address.
 func (context *outputContext) DeployCode(input arwen.CodeDeployInput) {
 	newSCAccount, _ := context.GetOutputAccount(input.ContractAddress)
 	newSCAccount.Code = input.ContractCode
@@ -281,11 +477,11 @@ func (context *outputContext) DeployCode(input arwen.CodeDeployInput) {
 	context.codeUpdates[string(input.ContractAddress)] = empty
 }
 
+// CreateVMOutputInCaseOfError creates a new vmOutput with the given error set as return message.
 func (context *outputContext) CreateVMOutputInCaseOfError(err error) *vmcommon.VMOutput {
-	metering := context.host.Metering()
 	var message string
 
-	if err == arwen.ErrSignalError {
+	if errors.Is(err, arwen.ErrSignalError) {
 		message = context.ReturnMessage()
 	} else {
 		if len(context.outputState.ReturnMessage) > 0 {
@@ -297,13 +493,14 @@ func (context *outputContext) CreateVMOutputInCaseOfError(err error) *vmcommon.V
 	}
 
 	returnCode := context.resolveReturnCodeFromError(err)
-
-	return &vmcommon.VMOutput{
-		GasRemaining:  metering.GetGasLockedForAsyncStep(),
+	vmOutput := &vmcommon.VMOutput{
+		GasRemaining:  0,
 		GasRefund:     big.NewInt(0),
 		ReturnCode:    returnCode,
 		ReturnMessage: message,
 	}
+
+	return vmOutput
 }
 
 func (context *outputContext) removeNonUpdatedCode(vmOutput *vmcommon.VMOutput) {
@@ -353,6 +550,7 @@ func (context *outputContext) resolveReturnCodeFromError(err error) vmcommon.Ret
 	return vmcommon.ExecutionFailed
 }
 
+// AddToActiveState merges the given vmOutput with the outputState.
 func (context *outputContext) AddToActiveState(rightOutput *vmcommon.VMOutput) {
 	rightOutput.GasRemaining = 0
 	if rightOutput.GasRefund != nil {

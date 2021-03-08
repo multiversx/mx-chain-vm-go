@@ -15,6 +15,8 @@ const (
 	ContractDeployRequest
 	ContractCallRequest
 	ContractResponse
+	GasScheduleChangeRequest
+	GasScheduleChangeResponse
 	BlockchainNewAddressRequest
 	BlockchainNewAddressResponse
 	BlockchainGetStorageDataRequest
@@ -51,12 +53,18 @@ const (
 	BlockchainGetAllStateResponse
 	BlockchainGetUserAccountRequest
 	BlockchainGetUserAccountResponse
+	BlockchainGetCodeRequest
+	BlockchainGetCodeResponse
 	BlockchainGetShardOfAddressRequest
 	BlockchainGetShardOfAddressResponse
 	BlockchainIsPayableRequest
 	BlockchainIsPayableResponse
 	BlockchainIsSmartContractRequest
 	BlockchainIsSmartContractResponse
+	BlockchainSaveCompiledCodeRequest
+	BlockchainSaveCompiledCodeResponse
+	BlockchainGetCompiledCodeRequest
+	BlockchainGetCompiledCodeResponse
 	DiagnoseWaitRequest
 	DiagnoseWaitResponse
 	VersionRequest
@@ -74,6 +82,8 @@ func init() {
 	messageKindNameByID[ContractDeployRequest] = "ContractDeployRequest"
 	messageKindNameByID[ContractCallRequest] = "ContractCallRequest"
 	messageKindNameByID[ContractResponse] = "ContractResponse"
+	messageKindNameByID[GasScheduleChangeRequest] = "GasScheduleChangeRequest"
+	messageKindNameByID[GasScheduleChangeResponse] = "GasScheduleChangeResponse"
 	messageKindNameByID[BlockchainNewAddressRequest] = "BlockchainNewAddressRequest"
 	messageKindNameByID[BlockchainNewAddressResponse] = "BlockchainNewAddressResponse"
 	messageKindNameByID[BlockchainGetStorageDataRequest] = "BlockchainGetStorageDataRequest"
@@ -110,12 +120,18 @@ func init() {
 	messageKindNameByID[BlockchainGetAllStateResponse] = "BlockchainGetAllStateResponse"
 	messageKindNameByID[BlockchainGetUserAccountRequest] = "BlockchainGetUserAccountRequest"
 	messageKindNameByID[BlockchainGetUserAccountResponse] = "BlockchainGetUserAccountResponse"
+	messageKindNameByID[BlockchainGetCodeRequest] = "BlockchainGetCodeRequest"
+	messageKindNameByID[BlockchainGetCodeResponse] = "BlockchainGetCodeResponse"
 	messageKindNameByID[BlockchainGetShardOfAddressRequest] = "BlockchainGetShardOfAddressRequest"
 	messageKindNameByID[BlockchainGetShardOfAddressResponse] = "BlockchainGetShardOfAddressResponse"
 	messageKindNameByID[BlockchainIsSmartContractRequest] = "BlockchainIsSmartContractRequest"
 	messageKindNameByID[BlockchainIsSmartContractResponse] = "BlockchainIsSmartContractResponse"
 	messageKindNameByID[BlockchainIsPayableRequest] = "BlockchainIsPayableRequest"
 	messageKindNameByID[BlockchainIsPayableResponse] = "BlockchainIsPayableResponse"
+	messageKindNameByID[BlockchainGetCompiledCodeResponse] = "BlockchainGetCompiledCodeResponse"
+	messageKindNameByID[BlockchainGetCompiledCodeRequest] = "BlockchainGetCompiledCodeRequest"
+	messageKindNameByID[BlockchainSaveCompiledCodeRequest] = "BlockchainSaveCompiledCodeRequest"
+	messageKindNameByID[BlockchainSaveCompiledCodeResponse] = "BlockchainSaveCompiledCodeResponse"
 	messageKindNameByID[DiagnoseWaitRequest] = "DiagnoseWaitRequest"
 	messageKindNameByID[DiagnoseWaitResponse] = "DiagnoseWaitResponse"
 	messageKindNameByID[VersionRequest] = "VersionRequest"
@@ -246,7 +262,7 @@ func CreateReplySlots(noopReplier MessageReplier) []MessageReplier {
 // IsHookCall returns whether a message is a hook call
 func IsHookCall(message MessageHandler) bool {
 	kind := message.GetKind()
-	return kind >= BlockchainNewAddressRequest && kind <= BlockchainIsSmartContractResponse
+	return kind >= BlockchainNewAddressRequest && kind <= BlockchainGetCompiledCodeResponse
 }
 
 // IsStopRequest returns whether a message is a stop request
@@ -254,6 +270,7 @@ func IsStopRequest(message MessageHandler) bool {
 	return message.GetKind() == Stop
 }
 
+// IsVersionResponse returns version response
 func IsVersionResponse(message MessageHandler) bool {
 	return message.GetKind() == VersionResponse
 }
@@ -261,6 +278,11 @@ func IsVersionResponse(message MessageHandler) bool {
 // IsContractResponse returns whether a message is a contract response
 func IsContractResponse(message MessageHandler) bool {
 	return message.GetKind() == ContractResponse
+}
+
+// IsGasScheduleChangeResponse returns a message with gas schedule response
+func IsGasScheduleChangeResponse(message MessageHandler) bool {
+	return message.GetKind() == GasScheduleChangeResponse
 }
 
 // IsDiagnose returns whether a message is a diagnose request

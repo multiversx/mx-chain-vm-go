@@ -72,6 +72,13 @@ func cWasmerInstanceSetPointsUsed(instance *cWasmerInstanceT, points uint64) {
 	)
 }
 
+func cWasmerInstanceSetGasLimit(instance *cWasmerInstanceT, gasLimit uint64) {
+	C.wasmer_instance_set_points_limit(
+		(*C.wasmer_instance_t)(instance),
+		(C.uint64_t)(gasLimit),
+	)
+}
+
 func cWasmerInstanceSetBreakpointValue(instance *cWasmerInstanceT, value uint64) {
 	C.wasmer_instance_set_runtime_breakpoint_value(
 		(*C.wasmer_instance_t)(instance),
@@ -82,6 +89,40 @@ func cWasmerInstanceSetBreakpointValue(instance *cWasmerInstanceT, value uint64)
 func cWasmerInstanceGetBreakpointValue(instance *cWasmerInstanceT) uint64 {
 	return uint64(C.wasmer_instance_get_runtime_breakpoint_value(
 		(*C.wasmer_instance_t)(instance),
+	))
+}
+
+func cWasmerInstanceIsFunctionImported(instance *cWasmerInstanceT, name string) bool {
+	var functionName = cCString(name)
+	return bool(C.wasmer_instance_is_function_imported(
+		(*C.wasmer_instance_t)(instance),
+		(*C.char)(unsafe.Pointer(functionName)),
+	))
+}
+
+func cWasmerInstanceCache(
+	instance *cWasmerInstanceT,
+	cacheBytes **cUchar,
+	cacheLen *cUint32T,
+) cWasmerResultT {
+	return (cWasmerResultT)(C.wasmer_instance_cache(
+		(*C.wasmer_instance_t)(instance),
+		(**C.uchar)(unsafe.Pointer(cacheBytes)),
+		(*C.uint32_t)(cacheLen),
+	))
+}
+
+func cWasmerInstanceFromCache(
+	instance **cWasmerInstanceT,
+	cacheBytes *cUchar,
+	cacheLen cUint32T,
+	options *cWasmerCompilationOptions,
+) cWasmerResultT {
+	return (cWasmerResultT)(C.wasmer_instance_from_cache(
+		(**C.wasmer_instance_t)(unsafe.Pointer(instance)),
+		(*C.uchar)(cacheBytes),
+		(C.uint32_t)(cacheLen),
+		(*C.wasmer_compilation_options_t)(options),
 	))
 }
 

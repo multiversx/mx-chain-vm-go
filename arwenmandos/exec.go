@@ -1,13 +1,13 @@
 package arwenmandos
 
 import (
-	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	vmi "github.com/ElrondNetwork/elrond-vm-common"
-	worldhook "github.com/ElrondNetwork/elrond-vm-util/mock-hook-blockchain"
-	mc "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/controller"
-	fr "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/fileresolver"
+	"github.com/ElrondNetwork/arwen-wasm-vm/config"
+	mc "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/controller"
+	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/fileresolver"
+	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
+	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 // TestVMType is the VM type argument we use in tests.
@@ -16,7 +16,7 @@ var TestVMType = []byte{0, 0}
 // ArwenTestExecutor parses, interprets and executes both .test.json tests and .scen.json scenarios with Arwen.
 type ArwenTestExecutor struct {
 	fileResolver fr.FileResolver
-	World        *worldhook.BlockchainHookMock
+	World        *worldhook.MockWorld
 	vm           vmi.VMExecutionHandler
 	checkGas     bool
 }
@@ -26,20 +26,19 @@ var _ mc.ScenarioExecutor = (*ArwenTestExecutor)(nil)
 
 // NewArwenTestExecutor prepares a new ArwenTestExecutor instance.
 func NewArwenTestExecutor() (*ArwenTestExecutor, error) {
-	world := worldhook.NewMock()
-	world.EnableMockAddressGeneration()
+	world := worldhook.NewMockWorld()
 
 	blockGasLimit := uint64(10000000)
-	// gasSchedule := config.MakeGasMapForTests()
-	gasMap, err := arwenHost.LoadGasScheduleConfig("../../test/gasSchedule.toml")
-	if err != nil {
-		return nil, err
-	}
+	gasSchedule := config.MakeGasMapForTests()
+	// gasSchedule, err := arwenHost.LoadGasScheduleConfig("../../test/gasSchedule.toml")
+	// if err != nil {
+	// 	return nil, err
+	// }
 	vm, err := arwenHost.NewArwenVM(world, &arwen.VMHostParameters{
 		VMType:                   TestVMType,
 		BlockGasLimit:            blockGasLimit,
-		GasSchedule:              gasMap,
-		ProtocolBuiltinFunctions: make(vmcommon.FunctionNames),
+		GasSchedule:              gasSchedule,
+		ProtocolBuiltinFunctions: world.GetBuiltinFunctionNames(),
 		ElrondProtectedKeyPrefix: []byte(ElrondProtectedKeyPrefix),
 	})
 	if err != nil {

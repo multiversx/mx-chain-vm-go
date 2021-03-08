@@ -27,8 +27,12 @@
 .vscode
 
 tags
+*.backup
 
 # SmartContract compilation artefacts
 *.hex*
 *.ll
 *.o
+wasm32-unknown-unknown
+test/contracts/**/target
+test/contracts/**/wasm/target

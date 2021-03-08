@@ -6,7 +6,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
 )
 
@@ -18,7 +18,7 @@ func TestFunctionsGuard_isValidFunctionName(t *testing.T) {
 		"fromProtocolBar": {},
 	}
 
-	validator := NewWASMValidator(imports.Names(), protocolBuiltinFunctions)
+	validator := newWASMValidator(imports.Names(), protocolBuiltinFunctions)
 
 	require.Nil(t, validator.verifyValidFunctionName("foo"))
 	require.Nil(t, validator.verifyValidFunctionName("_"))
@@ -45,7 +45,7 @@ func TestFunctionsGuard_Arity(t *testing.T) {
 	host := InitializeArwenAndWasmer()
 	imports := host.SCAPIMethods
 
-	validator := NewWASMValidator(imports.Names(), make(vmcommon.FunctionNames))
+	validator := newWASMValidator(imports.Names(), make(vmcommon.FunctionNames))
 
 	gasLimit := uint64(100000000)
 	path := "./../../test/contracts/signatures/output/signatures.wasm"

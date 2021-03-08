@@ -1,5 +1,7 @@
 package wasmer
 
+// #include <stdlib.h>
+import "C"
 import (
 	"fmt"
 	"unsafe"
@@ -81,7 +83,7 @@ type Instance struct {
 	Signatures ExportSignaturesMap
 
 	// The exported memory of a WebAssembly instance.
-	Memory *Memory
+	Memory MemoryHandler
 
 	Data        *int
 	DataPointer unsafe.Pointer
@@ -190,6 +192,39 @@ func (instance *Instance) HasMemory() bool {
 	return nil != instance.Memory
 }
 
+func NewInstanceFromCompiledCodeWithOptions(
+	compiledCode []byte,
+	options CompilationOptions,
+) (*Instance, error) {
+	var c_instance *cWasmerInstanceT
+
+	if len(compiledCode) == 0 {
+		var emptyInstance = &Instance{instance: nil, Exports: nil, Memory: nil}
+		return emptyInstance, newWrappedError(ErrInvalidBytecode)
+	}
+
+	cOptions := unsafe.Pointer(&options)
+	var instantiateResult = cWasmerInstanceFromCache(
+		&c_instance,
+		(*cUchar)(unsafe.Pointer(&compiledCode[0])),
+		cUint32T(len(compiledCode)),
+		(*cWasmerCompilationOptions)(cOptions),
+	)
+
+	if instantiateResult != cWasmerOk {
+		var emptyInstance = &Instance{instance: nil, Exports: nil, Memory: nil}
+		return emptyInstance, newWrappedError(ErrFailedInstantiation)
+	}
+
+	instance, err := newInstance(c_instance)
+	if instance != nil && instance.Memory != nil {
+		c_instance_context := cWasmerInstanceContextGet(c_instance)
+		instance.InstanceCtx = IntoInstanceContextDirect(c_instance_context)
+	}
+
+	return instance, err
+}
+
 // SetContextData assigns a data that can be used by all imported
 // functions. Indeed, each imported function receives as its first
 // argument an instance context (see `InstanceContext`). An instance
@@ -220,10 +255,66 @@ func (instance *Instance) SetPointsUsed(points uint64) {
 	cWasmerInstanceSetPointsUsed(instance.instance, points)
 }
 
+func (instance *Instance) SetGasLimit(gasLimit uint64) {
+	cWasmerInstanceSetGasLimit(instance.instance, gasLimit)
+}
+
 func (instance *Instance) SetBreakpointValue(value uint64) {
 	cWasmerInstanceSetBreakpointValue(instance.instance, value)
 }
 
 func (instance *Instance) GetBreakpointValue() uint64 {
 	return cWasmerInstanceGetBreakpointValue(instance.instance)
+}
+
+func (instance *Instance) Cache() ([]byte, error) {
+	var cacheBytes *cUchar
+	var cacheLen cUint32T
+
+	var cacheResult = cWasmerInstanceCache(
+		instance.instance,
+		&cacheBytes,
+		&cacheLen,
+	)
+
+	if cacheResult != cWasmerOk {
+		return nil, ErrCachingFailed
+	}
+
+	goBytes := C.GoBytes(unsafe.Pointer(cacheBytes), C.int(cacheLen))
+
+	C.free(unsafe.Pointer(cacheBytes))
+	cacheBytes = nil
+	return goBytes, nil
+}
+
+// IsFunctionImported returns true if the instance imports the specified function
+func (instance *Instance) IsFunctionImported(name string) bool {
+	return cWasmerInstanceIsFunctionImported(instance.instance, name)
+}
+
+// GetExports returns the exports map for the current instance
+func (instance *Instance) GetExports() ExportsMap {
+	return instance.Exports
+}
+
+// GetSignature returns the signature for the given functionName
+func (instance *Instance) GetSignature(functionName string) (*ExportedFunctionSignature, bool) {
+	signature, ok := instance.Signatures[functionName]
+	return signature, ok
+}
+
+// GetData returns a pointer for the current instance's data
+func (instance *Instance) GetData() *int {
+	return instance.Data
+}
+
+// GetInstanceCtxMemory returns the memory for the instance context
+func (instance *Instance) GetInstanceCtxMemory() MemoryHandler {
+	return instance.InstanceCtx.Memory()
+}
+
+// GetMemory returns the memory for the instance
+func (instance *Instance) GetMemory() MemoryHandler {
+	return instance.Memory
 }

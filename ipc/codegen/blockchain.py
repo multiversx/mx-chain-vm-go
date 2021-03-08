@@ -195,7 +195,7 @@ import (
     "math/big"
 
     "github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
-    vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+    "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 var _ vmcommon.BlockchainHook = (*BlockchainHookGateway)(nil)

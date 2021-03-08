@@ -11,8 +11,9 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/marshaling"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/nodepart"
-	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -25,7 +26,7 @@ type testFiles struct {
 }
 
 func TestArwenPart_SendDeployRequest(t *testing.T) {
-	blockchain := &mock.BlockchainHookStub{}
+	blockchain := &contextmock.BlockchainHookStub{}
 
 	response, err := doContractRequest(t, "2", createDeployRequest(bytecodeCounter), blockchain)
 	require.NotNil(t, response)
@@ -33,7 +34,7 @@ func TestArwenPart_SendDeployRequest(t *testing.T) {
 }
 
 func TestArwenPart_SendCallRequestWhenNoContract(t *testing.T) {
-	blockchain := &mock.BlockchainHookStub{}
+	blockchain := &contextmock.BlockchainHookStub{}
 
 	response, err := doContractRequest(t, "3", createCallRequest("increment"), blockchain)
 	require.NotNil(t, response)
@@ -41,10 +42,10 @@ func TestArwenPart_SendCallRequestWhenNoContract(t *testing.T) {
 }
 
 func TestArwenPart_SendCallRequest(t *testing.T) {
-	blockchain := &mock.BlockchainHookStub{}
+	blockchain := &contextmock.BlockchainHookStub{}
 
 	blockchain.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
-		return &mock.AccountMock{Code: bytecodeCounter}, nil
+		return &worldmock.Account{Code: bytecodeCounter}, nil
 	}
 
 	response, err := doContractRequest(t, "3", createCallRequest("increment"), blockchain)

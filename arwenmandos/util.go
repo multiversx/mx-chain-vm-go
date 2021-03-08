@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"math/big"
 
-	worldhook "github.com/ElrondNetwork/elrond-vm-util/mock-hook-blockchain"
-
-	vmi "github.com/ElrondNetwork/elrond-vm-common"
-	mj "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/model"
-	oj "github.com/ElrondNetwork/elrond-vm-util/test-util/orderedjson"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
+	oj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/orderedjson"
+	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 func convertAccount(testAcct *mj.Account) *worldhook.Account {
@@ -23,13 +22,30 @@ func convertAccount(testAcct *mj.Account) *worldhook.Account {
 		panic("bad test: account address should be 32 bytes long")
 	}
 
+	convertedESDTData := make(map[string]*worldhook.ESDTData)
+	for _, mandosESDTData := range testAcct.ESDTData {
+		convertedESDTData[string(mandosESDTData.TokenName.Value)] = &worldhook.ESDTData{
+			Balance:      mandosESDTData.Balance.Value,
+			BalanceDelta: big.NewInt(0),
+			Frozen:       mandosESDTData.Frozen.Value > 0,
+		}
+	}
+
 	return &worldhook.Account{
-		Address:       testAcct.Address.Value,
-		Nonce:         testAcct.Nonce.Value,
-		Balance:       big.NewInt(0).Set(testAcct.Balance.Value),
-		Storage:       storage,
-		Code:          []byte(testAcct.Code.Value),
-		AsyncCallData: testAcct.AsyncCallData,
+		Address:         testAcct.Address.Value,
+		Nonce:           testAcct.Nonce.Value,
+		Balance:         big.NewInt(0).Set(testAcct.Balance.Value),
+		Storage:         storage,
+		Code:            []byte(testAcct.Code.Value),
+		AsyncCallData:   testAcct.AsyncCallData,
+		ESDTData:        convertedESDTData,
+		ShardID:         uint32(testAcct.Shard.Value),
+		IsSmartContract: len(testAcct.Code.Value) > 0,
+		CodeMetadata: (&vmcommon.CodeMetadata{
+			Payable:     true,
+			Upgradeable: true,
+			Readable:    true,
+		}).ToBytes(), // TODO: add explicit fields in mandos json
 	}
 }
 
@@ -49,17 +65,24 @@ func convertBlockInfo(testBlockInfo *mj.BlockInfo) *worldhook.BlockInfo {
 	if testBlockInfo == nil {
 		return nil
 	}
+
+	var randomsSeed [48]byte
+	if testBlockInfo.BlockRandomSeed != nil {
+		copy(randomsSeed[:], testBlockInfo.BlockRandomSeed.Value)
+	}
+
 	result := &worldhook.BlockInfo{
 		BlockTimestamp: testBlockInfo.BlockTimestamp.Value,
 		BlockNonce:     testBlockInfo.BlockNonce.Value,
 		BlockRound:     testBlockInfo.BlockRound.Value,
 		BlockEpoch:     uint32(testBlockInfo.BlockEpoch.Value),
+		RandomSeed:     &randomsSeed,
 	}
 
 	return result
 }
 
-func convertLogToTestFormat(outputLog *vmi.LogEntry) *mj.LogEntry {
+func convertLogToTestFormat(outputLog *vmcommon.LogEntry) *mj.LogEntry {
 	testLog := mj.LogEntry{
 		Address:    mj.JSONBytesFromString{Value: outputLog.Address},
 		Identifier: mj.JSONBytesFromString{Value: outputLog.Identifier},

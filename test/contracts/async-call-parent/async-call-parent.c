@@ -9,9 +9,9 @@ byte parentDataB[] = "parentDataB";
 byte parentFinishA[] = "parentFinishA";
 byte parentFinishB[] = "parentFinishB";
 
-byte childAddress[] = "childSC.........................";
-byte vaultAddress[] = "vaultAddress....................";
-byte thirdPartyAddress[] = "thirdPartyAddress...............";
+byte childAddress[] = "\0\0\0\0\0\0\0\0\x0F\x0F" "childSC...............";
+byte vaultAddress[] = "\0\0\0\0\0\0\0\0\x0F\x0F" "vaultAddress..........";
+byte thirdPartyAddress[] = "\0\0\0\0\0\0\0\0\x0F\x0F" "thirdPartyAddress.....";
 
 byte value[32] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
@@ -30,6 +30,7 @@ void parentPerformAsyncCall() {
 	byte transferData[] = "hello";
 	transferValue(thirdPartyAddress, value, transferData, 5);
 	
+	// 207468657265 is the word 'there', hex-encoded ASCII
 	byte callData[] = "transferToThirdParty@03@207468657265@00";
 	callData[38] = int64getArgument(0) + '0';
 

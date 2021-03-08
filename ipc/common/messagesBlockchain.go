@@ -1,7 +1,7 @@
 package common
 
 import (
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 // MessageBlockchainNewAddressRequest represents a request message
@@ -9,7 +9,7 @@ type MessageBlockchainNewAddressRequest struct {
 	Message
 	CreatorAddress []byte
 	CreatorNonce   uint64
-	VmType         []byte
+	VMType         []byte
 }
 
 // NewMessageBlockchainNewAddressRequest creates a request message
@@ -18,7 +18,7 @@ func NewMessageBlockchainNewAddressRequest(creatorAddress []byte, creatorNonce u
 	message.Kind = BlockchainNewAddressRequest
 	message.CreatorAddress = creatorAddress
 	message.CreatorNonce = creatorNonce
-	message.VmType = vmType
+	message.VMType = vmType
 	return message
 }
 
@@ -510,6 +510,34 @@ func NewMessageBlockchainGetUserAccountResponse(account *Account, err error) *Me
 	return message
 }
 
+// NewMessageBlockchainGetCodeRequest represents a request message
+type MessageBlockchainGetCodeRequest struct {
+	Message
+	Account *Account
+}
+
+// NewMessageBlockchainGetCodeRequest creates a request message
+func NewMessageBlockchainGetCodeRequest(account *Account) *MessageBlockchainGetCodeRequest {
+	message := &MessageBlockchainGetCodeRequest{}
+	message.Kind = BlockchainGetCodeRequest
+	message.Account = account
+	return message
+}
+
+// MessageBlockchainGetCodeResponse represents a response message
+type MessageBlockchainGetCodeResponse struct {
+	Message
+	Code []byte
+}
+
+// NewMessageBlockchainGetCodeResponse creates a response message
+func NewMessageBlockchainGetCodeResponse(code []byte) *MessageBlockchainGetCodeResponse {
+	message := &MessageBlockchainGetCodeResponse{}
+	message.Kind = BlockchainGetCodeResponse
+	message.Code = code
+	return message
+}
+
 // MessageBlockchainGetShardOfAddressRequest represents a request message
 type MessageBlockchainGetShardOfAddressRequest struct {
 	Message
@@ -592,5 +620,63 @@ func NewMessageBlockchainIsPayableResponse(result bool, err error) *MessageBlock
 	message.Kind = BlockchainIsPayableResponse
 	message.Result = result
 	message.SetError(err)
+	return message
+}
+
+// MessageBlockchainSaveCompiledCodeRequest represents a request message
+type MessageBlockchainSaveCompiledCodeRequest struct {
+	Message
+	CodeHash []byte
+	Code     []byte
+}
+
+// NewMessageBlockchainSaveCompiledCodeRequest creates a request message
+func NewMessageBlockchainSaveCompiledCodeRequest(codeHash []byte, code []byte) *MessageBlockchainSaveCompiledCodeRequest {
+	message := &MessageBlockchainSaveCompiledCodeRequest{}
+	message.Kind = BlockchainSaveCompiledCodeRequest
+	message.CodeHash = codeHash
+	message.Code = code
+	return message
+}
+
+// MessageBlockchainSaveCompiledCodeResponse represents a response message
+type MessageBlockchainSaveCompiledCodeResponse struct {
+	Message
+}
+
+// NewMessageBlockchainSaveCompiledCodeResponse creates a response message
+func NewMessageBlockchainSaveCompiledCodeResponse() *MessageBlockchainSaveCompiledCodeResponse {
+	message := &MessageBlockchainSaveCompiledCodeResponse{}
+	message.Kind = BlockchainSaveCompiledCodeResponse
+	return message
+}
+
+// MessageBlockchainGetCompiledCodeRequest represents a request message
+type MessageBlockchainGetCompiledCodeRequest struct {
+	Message
+	CodeHash []byte
+}
+
+// NewMessageBlockchainGetCompiledCodeRequest creates a request message
+func NewMessageBlockchainGetCompiledCodeRequest(codeHash []byte) *MessageBlockchainGetCompiledCodeRequest {
+	message := &MessageBlockchainGetCompiledCodeRequest{}
+	message.Kind = BlockchainGetCompiledCodeRequest
+	message.CodeHash = codeHash
+	return message
+}
+
+// MessageBlockchainGetCompiledCodeResponse represents a response message
+type MessageBlockchainGetCompiledCodeResponse struct {
+	Message
+	Found bool
+	Code  []byte
+}
+
+// NewMessageBlockchainGetCompiledCodeResponse creates a response message
+func NewMessageBlockchainGetCompiledCodeResponse(result bool, code []byte) *MessageBlockchainGetCompiledCodeResponse {
+	message := &MessageBlockchainGetCompiledCodeResponse{}
+	message.Kind = BlockchainGetCompiledCodeResponse
+	message.Found = result
+	message.Code = code
 	return message
 }

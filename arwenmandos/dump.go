@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"sort"
 
-	worldhook "github.com/ElrondNetwork/elrond-vm-util/mock-hook-blockchain"
+	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 )
 
-func dumpWorld(world *worldhook.BlockchainHookMock) error {
+func dumpWorld(world *worldhook.MockWorld) error {
 	fmt.Print("world state dump:\n")
 	for addr, account := range world.AcctMap {
 		fmt.Printf("\t%s\n", byteArrayPretty([]byte(addr)))

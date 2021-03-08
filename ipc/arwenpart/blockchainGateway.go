@@ -2,7 +2,7 @@ package arwenpart
 
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 var _ vmcommon.BlockchainHook = (*BlockchainHookGateway)(nil)
@@ -318,6 +318,34 @@ func (blockchain *BlockchainHookGateway) GetUserAccount(address []byte) (vmcommo
 	return response.Account, response.GetError()
 }
 
+// GetCode forwards a message to the actual hook
+func (blockchain *BlockchainHookGateway) GetCode(account vmcommon.UserAccountHandler) []byte {
+	requestAccount := &common.Account{
+		Nonce:           account.GetNonce(),
+		Balance:         account.GetBalance(),
+		CodeHash:        account.GetCodeHash(),
+		RootHash:        account.GetRootHash(),
+		Address:         account.AddressBytes(),
+		DeveloperReward: account.GetDeveloperReward(),
+		OwnerAddress:    account.GetOwnerAddress(),
+		UserName:        account.GetUserName(),
+		CodeMetadata:    account.GetCodeMetadata(),
+	}
+
+	request := common.NewMessageBlockchainGetCodeRequest(requestAccount)
+	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if err != nil {
+		return nil
+	}
+
+	if rawResponse.GetKind() != common.BlockchainGetCodeResponse {
+		return nil
+	}
+
+	response := rawResponse.(*common.MessageBlockchainGetCodeResponse)
+	return response.Code
+}
+
 // GetShardOfAddress forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) GetShardOfAddress(address []byte) uint32 {
 	request := common.NewMessageBlockchainGetShardOfAddressRequest(address)
@@ -366,4 +394,42 @@ func (blockchain *BlockchainHookGateway) IsPayable(address []byte) (bool, error)
 
 	response := rawResponse.(*common.MessageBlockchainIsPayableResponse)
 	return response.Result, response.GetError()
+}
+
+// SaveCompiledCode forwards a message to the actual hook
+func (blockchain *BlockchainHookGateway) SaveCompiledCode(codeHash []byte, code []byte) {
+	request := common.NewMessageBlockchainSaveCompiledCodeRequest(codeHash, code)
+	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if err != nil {
+		return
+	}
+
+	if rawResponse.GetKind() != common.BlockchainSaveCompiledCodeResponse {
+		log.Error("SaveCompiledCode", "err", common.ErrBadHookResponseFromNode)
+	}
+}
+
+// GetCompiledCode forwards a message to the actual hook
+func (blockchain *BlockchainHookGateway) GetCompiledCode(codeHash []byte) (bool, []byte) {
+	request := common.NewMessageBlockchainGetCompiledCodeRequest(codeHash)
+	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if err != nil {
+		return false, nil
+	}
+
+	if rawResponse.GetKind() != common.BlockchainGetCompiledCodeResponse {
+		return false, nil
+	}
+
+	response := rawResponse.(*common.MessageBlockchainGetCompiledCodeResponse)
+	return response.Found, response.Code
+}
+
+// ClearCompiledCodes nothing to do - this needs to be called by nodepart only
+func (blockchain *BlockchainHookGateway) ClearCompiledCodes() {
+}
+
+// IsInterfaceNil returns true if underlying implementation is nil
+func (blockchain *BlockchainHookGateway) IsInterfaceNil() bool {
+	return blockchain == nil
 }

@@ -4,11 +4,12 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"math"
 	"math/big"
 
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	vmi "github.com/ElrondNetwork/elrond-vm-common"
-	mj "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/model"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmi.VMOutput, error) {
@@ -19,6 +20,14 @@ func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmi
 			tx.GasPrice.Value)
 		if beforeErr != nil {
 			return nil, fmt.Errorf("Could not set up tx %s: %w", txIndex, beforeErr)
+		}
+
+		if tx.ESDTValue.Value.Sign() > 0 {
+			ae.World.StartTransferESDT(
+				tx.From.Value,
+				tx.To.Value,
+				string(tx.ESDTTokenName.Value),
+				tx.ESDTValue.Value)
 		}
 	}
 
@@ -36,6 +45,13 @@ func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmi
 			if err != nil {
 				return nil, err
 			}
+		case mj.ScQuery:
+			// imitates the behaviour of the protocol
+			// the sender is the contract itself during SC queries
+			tx.From = tx.To
+			// gas restrictions waived during SC queries
+			tx.GasLimit.Value = math.MaxUint64
+			fallthrough
 		case mj.ScCall:
 			var err error
 			output, err = ae.scCall(txIndex, tx)
@@ -65,6 +81,8 @@ func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmi
 		if err != nil {
 			return nil, err
 		}
+	} else {
+		ae.World.RollbackChanges()
 	}
 
 	return output, nil
@@ -161,6 +179,8 @@ func (ae *ArwenTestExecutor) scCreate(txIndex string, tx *mj.Transaction) (*vmi.
 			GasProvided:    tx.GasLimit.Value,
 			OriginalTxHash: txHash,
 			CurrentTxHash:  txHash,
+			ESDTValue:      tx.ESDTValue.Value,
+			ESDTTokenName:  tx.ESDTTokenName.Value,
 		},
 	}
 
@@ -187,6 +207,8 @@ func (ae *ArwenTestExecutor) scCall(txIndex string, tx *mj.Transaction) (*vmi.VM
 			GasProvided:    tx.GasLimit.Value,
 			OriginalTxHash: txHash,
 			CurrentTxHash:  txHash,
+			ESDTValue:      tx.ESDTValue.Value,
+			ESDTTokenName:  tx.ESDTTokenName.Value,
 		},
 	}
 
@@ -203,15 +225,8 @@ func (ae *ArwenTestExecutor) updateStateAfterTx(
 		_ = ae.World.UpdateBalanceWithDelta(tx.From.Value, big.NewInt(0).Neg(tx.Value.Value))
 	}
 
-	accountsSlice := make([]*vmi.OutputAccount, len(output.OutputAccounts))
-	i := 0
-	for _, account := range output.OutputAccounts {
-		accountsSlice[i] = account
-		i++
-	}
-
 	// update accounts based on deltas
-	updErr := ae.World.UpdateAccounts(accountsSlice, output.DeletedAccounts, tx.From.Value)
+	updErr := ae.World.UpdateAccounts(output.OutputAccounts, output.DeletedAccounts)
 	if updErr != nil {
 		return updErr
 	}

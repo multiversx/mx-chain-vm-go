@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math/big"
 
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 var parentKeyA = []byte("parentKeyA......................")
@@ -16,8 +16,8 @@ var childData = []byte("childData")
 var parentFinishA = []byte("parentFinishA")
 var parentFinishB = []byte("parentFinishB")
 var childFinish = []byte("childFinish")
-var parentTransferReceiver = []byte("parentTransferReceiver..........")
-var childTransferReceiver = []byte("childTransferReceiver...........")
+var parentTransferReceiver = []byte("\x00\x00\x00\x00\x00\x00\x00\x00\x0f\x0fparentTransferReceiver")
+var childTransferReceiver = []byte("\x00\x00\x00\x00\x00\x00\x00\x00\x0f\x0fchildTransferReceiver.")
 var parentTransferValue = int64(42)
 var parentTransferData = []byte("parentTransferData")
 
@@ -26,24 +26,24 @@ var recursiveIterationBigCounterKey = []byte("recursiveIterationBigCounter....")
 
 var gasProvided = uint64(1000000)
 
-var parentCompilationCost_SameCtx uint64
-var childCompilationCost_SameCtx uint64
+var parentCompilationCostSameCtx uint64
+var childCompilationCostSameCtx uint64
 
-var parentCompilationCost_DestCtx uint64
-var childCompilationCost_DestCtx uint64
+var parentCompilationCostDestCtx uint64
+var childCompilationCostDestCtx uint64
 
-var vaultAddress = []byte("vaultAddress....................")
-var thirdPartyAddress = []byte("thirdPartyAddress...............")
+var vaultAddress = []byte("\x00\x00\x00\x00\x00\x00\x00\x00\x0f\x0fvaultAddress..........")
+var thirdPartyAddress = []byte("\x00\x00\x00\x00\x00\x00\x00\x00\x0f\x0fthirdPartyAddress.....")
 
 func init() {
-	parentCompilationCost_SameCtx = uint64(len(GetTestSCCode("exec-same-ctx-parent", "../../")))
-	childCompilationCost_SameCtx = uint64(len(GetTestSCCode("exec-same-ctx-child", "../../")))
+	parentCompilationCostSameCtx = uint64(len(GetTestSCCode("exec-same-ctx-parent", "../../")))
+	childCompilationCostSameCtx = uint64(len(GetTestSCCode("exec-same-ctx-child", "../../")))
 
-	parentCompilationCost_DestCtx = uint64(len(GetTestSCCode("exec-dest-ctx-parent", "../../")))
-	childCompilationCost_DestCtx = uint64(len(GetTestSCCode("exec-dest-ctx-child", "../../")))
+	parentCompilationCostDestCtx = uint64(len(GetTestSCCode("exec-dest-ctx-parent", "../../")))
+	childCompilationCostDestCtx = uint64(len(GetTestSCCode("exec-dest-ctx-child", "../../")))
 }
 
-func expectedVMOutput_SameCtx_Prepare(_ []byte) *vmcommon.VMOutput {
+func expectedVMOutputSameCtxPrepare(_ []byte) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 	vmOutput.ReturnCode = vmcommon.Ok
 
@@ -54,6 +54,7 @@ func expectedVMOutput_SameCtx_Prepare(_ []byte) *vmcommon.VMOutput {
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
+	parentAccount.GasUsed = 3405
 
 	_ = AddNewOutputAccount(
 		vmOutput,
@@ -69,26 +70,26 @@ func expectedVMOutput_SameCtx_Prepare(_ []byte) *vmcommon.VMOutput {
 	AddFinishData(vmOutput, parentFinishB)
 	AddFinishData(vmOutput, []byte("succ"))
 
-	expectedExecutionCost := uint64(137)
+	expectedExecutionCost := uint64(138)
 	gas := gasProvided
-	gas -= parentCompilationCost_SameCtx
+	gas -= parentCompilationCostSameCtx
 	gas -= expectedExecutionCost
 	vmOutput.GasRemaining = gas
 
 	return vmOutput
 }
 
-func expectedVMOutput_SameCtx_WrongContractCalled(code []byte) *vmcommon.VMOutput {
-	vmOutput := expectedVMOutput_SameCtx_Prepare(code)
+func expectedVMOutputSameCtxWrongContractCalled(code []byte) *vmcommon.VMOutput {
+	vmOutput := expectedVMOutputSameCtxPrepare(code)
 
 	AddFinishData(vmOutput, []byte("fail"))
 
-	executionCostBeforeExecuteAPI := uint64(182)
+	executionCostBeforeExecuteAPI := uint64(156)
 	executeAPICost := uint64(39)
 	gasLostOnFailure := uint64(50000)
 	finalCost := uint64(44)
 	gas := gasProvided
-	gas -= parentCompilationCost_SameCtx
+	gas -= parentCompilationCostSameCtx
 	gas -= executionCostBeforeExecuteAPI
 	gas -= executeAPICost
 	gas -= gasLostOnFailure
@@ -98,7 +99,7 @@ func expectedVMOutput_SameCtx_WrongContractCalled(code []byte) *vmcommon.VMOutpu
 	return vmOutput
 }
 
-func expectedVMOutput_SameCtx_OutOfGas(_ []byte, _ []byte) *vmcommon.VMOutput {
+func expectedVMOutputSameCtxOutOfGas(_ []byte, _ []byte) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 
 	vmOutput.ReturnCode = vmcommon.Ok
@@ -116,12 +117,12 @@ func expectedVMOutput_SameCtx_OutOfGas(_ []byte, _ []byte) *vmcommon.VMOutput {
 
 	AddFinishData(vmOutput, []byte("fail"))
 
-	executionCostBeforeExecuteAPI := uint64(128)
+	executionCostBeforeExecuteAPI := uint64(90)
 	executeAPICost := uint64(1)
 	gasLostOnFailure := uint64(3500)
 	finalCost := uint64(54)
 	gas := gasProvided
-	gas -= parentCompilationCost_SameCtx
+	gas -= parentCompilationCostSameCtx
 	gas -= executionCostBeforeExecuteAPI
 	gas -= executeAPICost
 	gas -= gasLostOnFailure
@@ -131,11 +132,52 @@ func expectedVMOutput_SameCtx_OutOfGas(_ []byte, _ []byte) *vmcommon.VMOutput {
 	return vmOutput
 }
 
-func expectedVMOutput_SameCtx_SuccessfulChildCall(parentCode []byte, _ []byte) *vmcommon.VMOutput {
-	vmOutput := expectedVMOutput_SameCtx_Prepare(parentCode)
+func expectedVMOutputSameCtxSimple(_ []byte, _ []byte) *vmcommon.VMOutput {
+	vmOutput := MakeVMOutput()
+
+	AddFinishData(vmOutput, []byte("child"))
+	AddFinishData(vmOutput, []byte{})
+	for i := 1; i < 100; i++ {
+		AddFinishData(vmOutput, []byte{byte(i)})
+	}
+	AddFinishData(vmOutput, []byte{})
+	AddFinishData(vmOutput, []byte("child"))
+	AddFinishData(vmOutput, []byte{})
+	for i := 1; i < 100; i++ {
+		AddFinishData(vmOutput, []byte{byte(i)})
+	}
+	AddFinishData(vmOutput, []byte{})
+	AddFinishData(vmOutput, []byte("parent"))
+
+	parentAccount := AddNewOutputAccount(
+		vmOutput,
+		parentAddress,
+		-198,
+		nil,
+	)
+	parentAccount.Balance = big.NewInt(1000)
+	parentAccount.GasUsed = 521
+
+	childAccount := AddNewOutputAccount(
+		vmOutput,
+		childAddress,
+		198,
+		nil,
+	)
+	childAccount.GasUsed = 3435 // TODO: double this when fixed
+
+	executionCost := parentAccount.GasUsed + 2*childAccount.GasUsed
+	vmOutput.GasRemaining = gasProvided - executionCost
+
+	return vmOutput
+}
+
+func expectedVMOutputSameCtxSuccessfulChildCall(parentCode []byte, _ []byte) *vmcommon.VMOutput {
+	vmOutput := expectedVMOutputSameCtxPrepare(parentCode)
 
 	parentAccount := vmOutput.OutputAccounts[string(parentAddress)]
 	parentAccount.BalanceDelta = big.NewInt(-141)
+	parentAccount.GasUsed = 3612
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,
@@ -143,11 +185,11 @@ func expectedVMOutput_SameCtx_SuccessfulChildCall(parentCode []byte, _ []byte) *
 		3,
 		nil,
 	)
-	childAccount.Balance = big.NewInt(0)
+	childAccount.Balance = big.NewInt(1000)
 
 	executeAPICost := uint64(39)
-	childExecutionCost := uint64(436)
-	childAccount.GasUsed = childCompilationCost_SameCtx + childExecutionCost
+	childExecutionCost := uint64(437)
+	childAccount.GasUsed = childCompilationCostSameCtx + childExecutionCost
 
 	_ = AddNewOutputAccount(
 		vmOutput,
@@ -174,13 +216,13 @@ func expectedVMOutput_SameCtx_SuccessfulChildCall(parentCode []byte, _ []byte) *
 	AddFinishData(vmOutput, []byte("succ"))
 	AddFinishData(vmOutput, []byte("succ"))
 
-	parentGasBeforeExecuteAPI := uint64(197)
+	parentGasBeforeExecuteAPI := uint64(172)
 	finalCost := uint64(134)
 	gas := gasProvided
-	gas -= parentCompilationCost_SameCtx
+	gas -= parentCompilationCostSameCtx
 	gas -= parentGasBeforeExecuteAPI
 	gas -= executeAPICost
-	gas -= childCompilationCost_SameCtx
+	gas -= childCompilationCostSameCtx
 	gas -= childExecutionCost
 	gas -= finalCost
 	vmOutput.GasRemaining = gas
@@ -188,7 +230,7 @@ func expectedVMOutput_SameCtx_SuccessfulChildCall(parentCode []byte, _ []byte) *
 	return vmOutput
 }
 
-func expectedVMOutput_SameCtx_SuccessfulChildCall_BigInts(_ []byte, _ []byte) *vmcommon.VMOutput {
+func expectedVMOutputSameCtxSuccessfulChildCallBigInts(_ []byte, _ []byte) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 	vmOutput.ReturnCode = vmcommon.Ok
 
@@ -199,7 +241,7 @@ func expectedVMOutput_SameCtx_SuccessfulChildCall_BigInts(_ []byte, _ []byte) *v
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
-	// parentAccount.BalanceDelta = big.NewInt(-99)
+	parentAccount.GasUsed = 3461
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,
@@ -207,8 +249,8 @@ func expectedVMOutput_SameCtx_SuccessfulChildCall_BigInts(_ []byte, _ []byte) *v
 		99,
 		nil,
 	)
-	childExecutionCost := uint64(107)
-	childAccount.GasUsed = childCompilationCost_SameCtx + childExecutionCost
+	childExecutionCost := uint64(108)
+	childAccount.GasUsed = childCompilationCostSameCtx + childExecutionCost
 
 	// The child SC will output "child ok" if it could read some expected Big
 	// Ints directly from the parent's context.
@@ -216,21 +258,21 @@ func expectedVMOutput_SameCtx_SuccessfulChildCall_BigInts(_ []byte, _ []byte) *v
 	AddFinishData(vmOutput, []byte("succ"))
 	AddFinishData(vmOutput, []byte("succ"))
 
-	parentGasBeforeExecuteAPI := uint64(143)
+	parentGasBeforeExecuteAPI := uint64(114)
 	executeAPICost := uint64(13)
 	finalCost := uint64(67)
 	gas := gasProvided
-	gas -= parentCompilationCost_SameCtx
+	gas -= parentCompilationCostSameCtx
 	gas -= parentGasBeforeExecuteAPI
 	gas -= executeAPICost
-	gas -= childCompilationCost_SameCtx
+	gas -= childCompilationCostSameCtx
 	gas -= childExecutionCost
 	gas -= finalCost
 	vmOutput.GasRemaining = gas
 	return vmOutput
 }
 
-func expectedVMOutput_SameCtx_Recursive_Direct(_ []byte, recursiveCalls int) *vmcommon.VMOutput {
+func expectedVMOutputSameCtxRecursiveDirect(_ []byte, recursiveCalls int) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 
 	account := AddNewOutputAccount(
@@ -241,7 +283,7 @@ func expectedVMOutput_SameCtx_Recursive_Direct(_ []byte, recursiveCalls int) *vm
 	)
 	account.Balance = big.NewInt(1000)
 	account.BalanceDelta = big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1))
-	account.GasUsed = 21187
+	account.GasUsed = 25424
 
 	for i := recursiveCalls; i >= 0; i-- {
 		finishString := fmt.Sprintf("Rfinish%03d", i)
@@ -264,7 +306,7 @@ func expectedVMOutput_SameCtx_Recursive_Direct(_ []byte, recursiveCalls int) *vm
 	return vmOutput
 }
 
-func expectedVMOutput_SameCtx_Recursive_Direct_ErrMaxInstances(_ []byte, recursiveCalls int) *vmcommon.VMOutput {
+func expectedVMOutputSameCtxRecursiveDirectErrMaxInstances(_ []byte, recursiveCalls int) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 
 	account := AddNewOutputAccount(
@@ -287,7 +329,7 @@ func expectedVMOutput_SameCtx_Recursive_Direct_ErrMaxInstances(_ []byte, recursi
 	return vmOutput
 }
 
-func expectedVMOutput_SameCtx_Recursive_MutualMethods(_ []byte, recursiveCalls int) *vmcommon.VMOutput {
+func expectedVMOutputSameCtxRecursiveMutualMethods(_ []byte, recursiveCalls int) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 
 	account := AddNewOutputAccount(
@@ -298,7 +340,7 @@ func expectedVMOutput_SameCtx_Recursive_MutualMethods(_ []byte, recursiveCalls i
 	)
 	account.Balance = big.NewInt(1000)
 	account.BalanceDelta = big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1))
-	account.GasUsed = 25412
+	account.GasUsed = 29593
 
 	SetStorageUpdate(account, recursiveIterationCounterKey, []byte{byte(recursiveCalls + 1)})
 	SetStorageUpdate(account, recursiveIterationBigCounterKey, big.NewInt(int64(recursiveCalls+1)).Bytes())
@@ -332,7 +374,7 @@ func expectedVMOutput_SameCtx_Recursive_MutualMethods(_ []byte, recursiveCalls i
 	return vmOutput
 }
 
-func expectedVMOutput_SameCtx_Recursive_MutualSCs(_ []byte, _ []byte, recursiveCalls int) *vmcommon.VMOutput {
+func expectedVMOutputSameCtxRecursiveMutualSCs(_ []byte, _ []byte, recursiveCalls int) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 
 	parentAccount := AddNewOutputAccount(
@@ -342,7 +384,7 @@ func expectedVMOutput_SameCtx_Recursive_MutualSCs(_ []byte, _ []byte, recursiveC
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
-	parentAccount.GasUsed = 3650
+	parentAccount.GasUsed = 5426
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,
@@ -350,8 +392,8 @@ func expectedVMOutput_SameCtx_Recursive_MutualSCs(_ []byte, _ []byte, recursiveC
 		0,
 		nil,
 	)
-	childAccount.Balance = big.NewInt(0)
-	childAccount.GasUsed = 5437
+	childAccount.Balance = big.NewInt(1000)
+	childAccount.GasUsed = 3652
 
 	if recursiveCalls%2 == 1 {
 		parentAccount.BalanceDelta = big.NewInt(-5)
@@ -389,7 +431,7 @@ func expectedVMOutput_SameCtx_Recursive_MutualSCs(_ []byte, _ []byte, recursiveC
 	return vmOutput
 }
 
-func expectedVMOutput_SameCtx_BuiltinFunctions_1(_ []byte) *vmcommon.VMOutput {
+func expectedVMOutputSameCtxBuiltinFunctions1(_ []byte) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 
 	account := AddNewOutputAccount(
@@ -401,13 +443,13 @@ func expectedVMOutput_SameCtx_BuiltinFunctions_1(_ []byte) *vmcommon.VMOutput {
 	account.Balance = big.NewInt(1000)
 
 	AddFinishData(vmOutput, []byte("succ"))
-	gasConsumed_builtinClaim := 100
-	vmOutput.GasRemaining = uint64(98504 - gasConsumed_builtinClaim)
+	gasConsumedBuiltinClaim := 100
+	vmOutput.GasRemaining = uint64(98504 - gasConsumedBuiltinClaim)
 
 	return vmOutput
 }
 
-func expectedVMOutput_SameCtx_BuiltinFunctions_2(_ []byte) *vmcommon.VMOutput {
+func expectedVMOutputSameCtxBuiltinFunctions2(_ []byte) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 
 	account := AddNewOutputAccount(
@@ -421,13 +463,13 @@ func expectedVMOutput_SameCtx_BuiltinFunctions_2(_ []byte) *vmcommon.VMOutput {
 
 	AddFinishData(vmOutput, []byte("succ"))
 
-	gasConsumed_builtinDoSomething := 0
-	vmOutput.GasRemaining = uint64(98500 - gasConsumed_builtinDoSomething)
+	gasConsumedBuiltinDoSomething := 0
+	vmOutput.GasRemaining = uint64(98500 - gasConsumedBuiltinDoSomething)
 
 	return vmOutput
 }
 
-func expectedVMOutput_SameCtx_BuiltinFunctions_3(_ []byte) *vmcommon.VMOutput {
+func expectedVMOutputSameCtxBuiltinFunctions3(_ []byte) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 
 	_ = AddNewOutputAccount(
@@ -443,7 +485,7 @@ func expectedVMOutput_SameCtx_BuiltinFunctions_3(_ []byte) *vmcommon.VMOutput {
 	return vmOutput
 }
 
-func expectedVMOutput_DestCtx_Prepare(_ []byte) *vmcommon.VMOutput {
+func expectedVMOutputDestCtxPrepare(_ []byte) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 	vmOutput.ReturnCode = vmcommon.Ok
 
@@ -454,6 +496,7 @@ func expectedVMOutput_DestCtx_Prepare(_ []byte) *vmcommon.VMOutput {
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
+	parentAccount.GasUsed = 4309
 
 	_ = AddNewOutputAccount(
 		vmOutput,
@@ -469,29 +512,29 @@ func expectedVMOutput_DestCtx_Prepare(_ []byte) *vmcommon.VMOutput {
 	AddFinishData(vmOutput, parentFinishB)
 	AddFinishData(vmOutput, []byte("succ"))
 
-	expectedExecutionCost := uint64(137)
+	expectedExecutionCost := uint64(138)
 	gas := gasProvided
-	gas -= parentCompilationCost_DestCtx
+	gas -= parentCompilationCostDestCtx
 	gas -= expectedExecutionCost
 	vmOutput.GasRemaining = gas
 
 	return vmOutput
 }
 
-func expectedVMOutput_DestCtx_WrongContractCalled(parentCode []byte) *vmcommon.VMOutput {
-	vmOutput := expectedVMOutput_SameCtx_Prepare(parentCode)
+func expectedVMOutputDestCtxWrongContractCalled(parentCode []byte) *vmcommon.VMOutput {
+	vmOutput := expectedVMOutputSameCtxPrepare(parentCode)
 
 	parentAccount := vmOutput.OutputAccounts[string(parentAddress)]
 	parentAccount.BalanceDelta = big.NewInt(-42)
 
 	AddFinishData(vmOutput, []byte("fail"))
 
-	executionCostBeforeExecuteAPI := uint64(182)
+	executionCostBeforeExecuteAPI := uint64(156)
 	executeAPICost := uint64(42)
 	gasLostOnFailure := uint64(10000)
 	finalCost := uint64(44)
 	gas := gasProvided
-	gas -= parentCompilationCost_DestCtx
+	gas -= parentCompilationCostDestCtx
 	gas -= executionCostBeforeExecuteAPI
 	gas -= executeAPICost
 	gas -= gasLostOnFailure
@@ -501,7 +544,7 @@ func expectedVMOutput_DestCtx_WrongContractCalled(parentCode []byte) *vmcommon.V
 	return vmOutput
 }
 
-func expectedVMOutput_DestCtx_OutOfGas(_ []byte) *vmcommon.VMOutput {
+func expectedVMOutputDestCtxOutOfGas(_ []byte) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 
 	vmOutput.ReturnCode = vmcommon.Ok
@@ -519,12 +562,12 @@ func expectedVMOutput_DestCtx_OutOfGas(_ []byte) *vmcommon.VMOutput {
 
 	AddFinishData(vmOutput, []byte("fail"))
 
-	executionCostBeforeExecuteAPI := uint64(128)
+	executionCostBeforeExecuteAPI := uint64(90)
 	executeAPICost := uint64(1)
 	gasLostOnFailure := uint64(3500)
 	finalCost := uint64(54)
 	gas := gasProvided
-	gas -= parentCompilationCost_DestCtx
+	gas -= parentCompilationCostDestCtx
 	gas -= executionCostBeforeExecuteAPI
 	gas -= executeAPICost
 	gas -= gasLostOnFailure
@@ -534,11 +577,12 @@ func expectedVMOutput_DestCtx_OutOfGas(_ []byte) *vmcommon.VMOutput {
 	return vmOutput
 }
 
-func expectedVMOutput_DestCtx_SuccessfulChildCall(parentCode []byte, _ []byte) *vmcommon.VMOutput {
-	vmOutput := expectedVMOutput_SameCtx_Prepare(parentCode)
+func expectedVMOutputDestCtxSuccessfulChildCall(parentCode []byte, _ []byte) *vmcommon.VMOutput {
+	vmOutput := expectedVMOutputSameCtxPrepare(parentCode)
 
 	parentAccount := vmOutput.OutputAccounts[string(parentAddress)]
 	parentAccount.BalanceDelta = big.NewInt(-141)
+	parentAccount.GasUsed = 4444
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,
@@ -546,7 +590,54 @@ func expectedVMOutput_DestCtx_SuccessfulChildCall(parentCode []byte, _ []byte) *
 		99-12,
 		nil,
 	)
-	childAccount.Balance = big.NewInt(0)
+	childAccount.Balance = big.NewInt(1000)
+	childAccount.GasUsed = 2256
+
+	_ = AddNewOutputAccount(
+		vmOutput,
+		childTransferReceiver,
+		12,
+		[]byte("Second sentence."),
+	)
+
+	SetStorageUpdate(parentAccount, childKey, nil)
+	SetStorageUpdate(childAccount, childKey, childData)
+
+	AddFinishData(vmOutput, childFinish)
+	AddFinishData(vmOutput, []byte("succ"))
+	AddFinishData(vmOutput, []byte("succ"))
+
+	parentGasBeforeExecuteAPI := uint64(168)
+	executeAPICost := uint64(42)
+	childExecutionCost := uint64(91)
+	finalCost := uint64(65)
+	gas := gasProvided
+	gas -= parentCompilationCostDestCtx
+	gas -= parentGasBeforeExecuteAPI
+	gas -= executeAPICost
+	gas -= childCompilationCostDestCtx
+	gas -= childExecutionCost
+	gas -= finalCost
+	vmOutput.GasRemaining = gas
+	return vmOutput
+}
+
+func expectedVMOutputDestCtxSuccessfulChildCall_ChildReturns(parentCode []byte, _ []byte) *vmcommon.VMOutput {
+
+	vmOutput := expectedVMOutputSameCtxPrepare(parentCode)
+
+	parentAccount := vmOutput.OutputAccounts[string(parentAddress)]
+	parentAccount.BalanceDelta = big.NewInt(-141)
+	parentAccount.GasUsed = 4652
+
+	childAccount := AddNewOutputAccount(
+		vmOutput,
+		childAddress,
+		99-12,
+		nil,
+	)
+	childAccount.Balance = big.NewInt(1000)
+	childAccount.GasUsed = 2256
 
 	_ = AddNewOutputAccount(
 		vmOutput,
@@ -559,24 +650,24 @@ func expectedVMOutput_DestCtx_SuccessfulChildCall(parentCode []byte, _ []byte) *
 
 	AddFinishData(vmOutput, childFinish)
 	AddFinishData(vmOutput, []byte("succ"))
-	AddFinishData(vmOutput, []byte("succ"))
 
-	parentGasBeforeExecuteAPI := uint64(192)
+	parentGasBeforeExecuteAPI := uint64(168)
 	executeAPICost := uint64(42)
 	childExecutionCost := uint64(91)
-	finalCost := uint64(65)
+	parentGasAfterExecuteAPI := uint64(273)
 	gas := gasProvided
-	gas -= parentCompilationCost_DestCtx
+	gas -= parentCompilationCostDestCtx
 	gas -= parentGasBeforeExecuteAPI
 	gas -= executeAPICost
-	gas -= childCompilationCost_DestCtx
+	gas -= childCompilationCostDestCtx
 	gas -= childExecutionCost
-	gas -= finalCost
+	gas -= parentGasAfterExecuteAPI
 	vmOutput.GasRemaining = gas
+
 	return vmOutput
 }
 
-func expectedVMOutput_DestCtx_SuccessfulChildCall_BigInts(_ []byte, _ []byte) *vmcommon.VMOutput {
+func expectedVMOutputDestCtxSuccessfulChildCallBigInts(_ []byte, _ []byte) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 	vmOutput.ReturnCode = vmcommon.Ok
 
@@ -587,13 +678,15 @@ func expectedVMOutput_DestCtx_SuccessfulChildCall_BigInts(_ []byte, _ []byte) *v
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
+	parentAccount.GasUsed = 4366
 
-	_ = AddNewOutputAccount(
+	childAccount := AddNewOutputAccount(
 		vmOutput,
 		childAddress,
 		99,
 		nil,
 	)
+	childAccount.GasUsed = 2265
 
 	// The child SC will output "child ok" if it could NOT read the Big Ints from
 	// the parent's context.
@@ -601,22 +694,22 @@ func expectedVMOutput_DestCtx_SuccessfulChildCall_BigInts(_ []byte, _ []byte) *v
 	AddFinishData(vmOutput, []byte("succ"))
 	AddFinishData(vmOutput, []byte("succ"))
 
-	parentGasBeforeExecuteAPI := uint64(143)
+	parentGasBeforeExecuteAPI := uint64(115)
 	executeAPICost := uint64(13)
 	childExecutionCost := uint64(101)
 	finalCost := uint64(68)
 	gas := gasProvided
-	gas -= parentCompilationCost_DestCtx
+	gas -= parentCompilationCostDestCtx
 	gas -= parentGasBeforeExecuteAPI
 	gas -= executeAPICost
-	gas -= childCompilationCost_DestCtx
+	gas -= childCompilationCostDestCtx
 	gas -= childExecutionCost
 	gas -= finalCost
 	vmOutput.GasRemaining = gas
 	return vmOutput
 }
 
-func expectedVMOutput_DestCtx_Recursive_Direct(_ []byte, recursiveCalls int) *vmcommon.VMOutput {
+func expectedVMOutputDestCtxRecursiveDirect(_ []byte, recursiveCalls int) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 
 	account := AddNewOutputAccount(
@@ -627,6 +720,7 @@ func expectedVMOutput_DestCtx_Recursive_Direct(_ []byte, recursiveCalls int) *vm
 	)
 	account.Balance = big.NewInt(1000)
 	account.BalanceDelta = big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1))
+	account.GasUsed = 29670
 
 	for i := recursiveCalls; i >= 0; i-- {
 		finishString := fmt.Sprintf("Rfinish%03d", i)
@@ -649,7 +743,7 @@ func expectedVMOutput_DestCtx_Recursive_Direct(_ []byte, recursiveCalls int) *vm
 	return vmOutput
 }
 
-func expectedVMOutput_DestCtx_Recursive_MutualMethods(_ []byte, recursiveCalls int) *vmcommon.VMOutput {
+func expectedVMOutputDestCtxRecursiveMutualMethods(_ []byte, recursiveCalls int) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 
 	account := AddNewOutputAccount(
@@ -660,6 +754,7 @@ func expectedVMOutput_DestCtx_Recursive_MutualMethods(_ []byte, recursiveCalls i
 	)
 	account.Balance = big.NewInt(1000)
 	account.BalanceDelta = big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1))
+	account.GasUsed = 38083
 
 	SetStorageUpdate(account, recursiveIterationCounterKey, []byte{byte(recursiveCalls + 1)})
 	SetStorageUpdate(account, recursiveIterationBigCounterKey, big.NewInt(int64(1)).Bytes())
@@ -693,7 +788,7 @@ func expectedVMOutput_DestCtx_Recursive_MutualMethods(_ []byte, recursiveCalls i
 	return vmOutput
 }
 
-func expectedVMOutput_DestCtx_Recursive_MutualSCs(_ []byte, _ []byte, recursiveCalls int) *vmcommon.VMOutput {
+func expectedVMOutputDestCtxRecursiveMutualSCs(_ []byte, _ []byte, recursiveCalls int) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 
 	parentIterations := (recursiveCalls / 2) + (recursiveCalls % 2)
@@ -709,6 +804,7 @@ func expectedVMOutput_DestCtx_Recursive_MutualSCs(_ []byte, _ []byte, recursiveC
 	)
 	parentAccount.Balance = big.NewInt(1000)
 	parentAccount.BalanceDelta = big.NewInt(-balanceDelta)
+	parentAccount.GasUsed = 7252
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,
@@ -716,8 +812,9 @@ func expectedVMOutput_DestCtx_Recursive_MutualSCs(_ []byte, _ []byte, recursiveC
 		0,
 		nil,
 	)
-	childAccount.Balance = big.NewInt(0)
+	childAccount.Balance = big.NewInt(1000)
 	childAccount.BalanceDelta = big.NewInt(balanceDelta)
+	childAccount.GasUsed = 5464
 
 	for i := 0; i <= recursiveCalls; i++ {
 		var finishData string
@@ -754,7 +851,49 @@ func expectedVMOutput_DestCtx_Recursive_MutualSCs(_ []byte, _ []byte, recursiveC
 	return vmOutput
 }
 
-func expectedVMOutput_AsyncCall(_ []byte, _ []byte) *vmcommon.VMOutput {
+func expectedVMOutputDestCtxByCallerSimpleTransfer(value int64) *vmcommon.VMOutput {
+	vmOutput := MakeVMOutput()
+
+	parentAccount := AddNewOutputAccount(
+		vmOutput,
+		parentAddress,
+		0,
+		nil,
+	)
+	parentAccount.Balance = nil
+	parentAccount.GasUsed = 762
+
+	childAccount := AddNewOutputAccount(
+		vmOutput,
+		childAddress,
+		0,
+		nil,
+	)
+	childAccount.Balance = big.NewInt(1000)
+	childAccount.BalanceDelta = big.NewInt(-value)
+	childAccount.GasUsed = 667
+
+	userAccount := AddNewOutputAccount(
+		vmOutput,
+		userAddress,
+		0,
+		nil,
+	)
+	userAccount.BalanceDelta = big.NewInt(value)
+	userAccount.OutputTransfers = append(userAccount.OutputTransfers, vmcommon.OutputTransfer{
+		Value:     big.NewInt(value),
+		GasLimit:  0,
+		GasLocked: 0,
+		Data:      []byte{},
+		CallType:  vmcommon.DirectCall,
+	})
+
+	AddFinishData(vmOutput, []byte("sent"))
+	AddFinishData(vmOutput, []byte("child called"))
+	return vmOutput
+}
+
+func expectedVMOutputAsyncCall(_ []byte, _ []byte) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 
 	parentAccount := AddNewOutputAccount(
@@ -764,21 +903,21 @@ func expectedVMOutput_AsyncCall(_ []byte, _ []byte) *vmcommon.VMOutput {
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
+	parentAccount.GasUsed = 104753
 	SetStorageUpdate(parentAccount, parentKeyA, parentDataA)
 	SetStorageUpdate(parentAccount, parentKeyB, parentDataB)
 	AddFinishData(vmOutput, parentFinishA)
 	AddFinishData(vmOutput, parentFinishB)
 
-	_ = AddNewOutputAccount(
+	thirdPartyAccount := AddNewOutputAccount(
 		vmOutput,
 		thirdPartyAddress,
 		3,
 		[]byte("hello"),
 	)
 	outTransfer := vmcommon.OutputTransfer{Data: []byte(" there"), Value: big.NewInt(3)}
-	outAcc := vmOutput.OutputAccounts[string(thirdPartyAddress)]
-	outAcc.OutputTransfers = append(outAcc.OutputTransfers, outTransfer)
-	outAcc.BalanceDelta = big.NewInt(6)
+	thirdPartyAccount.OutputTransfers = append(thirdPartyAccount.OutputTransfers, outTransfer)
+	thirdPartyAccount.BalanceDelta = big.NewInt(6)
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,
@@ -786,7 +925,8 @@ func expectedVMOutput_AsyncCall(_ []byte, _ []byte) *vmcommon.VMOutput {
 		0,
 		nil,
 	)
-	childAccount.Balance = big.NewInt(0)
+	childAccount.Balance = big.NewInt(1000)
+	childAccount.GasUsed = 1296
 	SetStorageUpdate(childAccount, childKey, childData)
 
 	_ = AddNewOutputAccount(
@@ -805,7 +945,7 @@ func expectedVMOutput_AsyncCall(_ []byte, _ []byte) *vmcommon.VMOutput {
 	return vmOutput
 }
 
-func expectedVMOutput_AsyncCall_ChildFails(_ []byte, _ []byte) *vmcommon.VMOutput {
+func expectedVMOutputAsyncCallChildFails(_ []byte, _ []byte) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 
 	parentAccount := AddNewOutputAccount(
@@ -815,6 +955,7 @@ func expectedVMOutput_AsyncCall_ChildFails(_ []byte, _ []byte) *vmcommon.VMOutpu
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
+	parentAccount.GasUsed = 3928
 	SetStorageUpdate(parentAccount, parentKeyA, parentDataA)
 	SetStorageUpdate(parentAccount, parentKeyB, parentDataB)
 	AddFinishData(vmOutput, parentFinishA)
@@ -833,7 +974,7 @@ func expectedVMOutput_AsyncCall_ChildFails(_ []byte, _ []byte) *vmcommon.VMOutpu
 		0,
 		nil,
 	)
-	childAccount.Balance = big.NewInt(0)
+	childAccount.Balance = big.NewInt(1000)
 
 	_ = AddNewOutputAccount(
 		vmOutput,
@@ -847,7 +988,7 @@ func expectedVMOutput_AsyncCall_ChildFails(_ []byte, _ []byte) *vmcommon.VMOutpu
 	return vmOutput
 }
 
-func expectedVMOutput_AsyncCall_CallBackFails(_ []byte, _ []byte) *vmcommon.VMOutput {
+func expectedVMOutputAsyncCallCallBackFails(_ []byte, _ []byte) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 
 	parentAccount := AddNewOutputAccount(
@@ -857,6 +998,7 @@ func expectedVMOutput_AsyncCall_CallBackFails(_ []byte, _ []byte) *vmcommon.VMOu
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
+	parentAccount.GasUsed = 197192
 	SetStorageUpdate(parentAccount, parentKeyA, parentDataA)
 	SetStorageUpdate(parentAccount, parentKeyB, parentDataB)
 	AddFinishData(vmOutput, parentFinishA)
@@ -879,8 +1021,9 @@ func expectedVMOutput_AsyncCall_CallBackFails(_ []byte, _ []byte) *vmcommon.VMOu
 		0,
 		nil,
 	)
-	childAccount.Balance = big.NewInt(0)
+	childAccount.Balance = big.NewInt(1000)
 	childAccount.BalanceDelta = big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1))
+	childAccount.GasUsed = 1296
 	SetStorageUpdate(childAccount, childKey, childData)
 
 	_ = AddNewOutputAccount(
@@ -901,7 +1044,7 @@ func expectedVMOutput_AsyncCall_CallBackFails(_ []byte, _ []byte) *vmcommon.VMOu
 	return vmOutput
 }
 
-func expectedVMOutput_CreateNewContract_Success(_ []byte, childCode []byte) *vmcommon.VMOutput {
+func expectedVMOutputCreateNewContractSuccess(_ []byte, childCode []byte) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 	parentAccount := AddNewOutputAccount(
 		vmOutput,
@@ -910,6 +1053,7 @@ func expectedVMOutput_CreateNewContract_Success(_ []byte, childCode []byte) *vmc
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
+	parentAccount.GasUsed = 885
 	parentAccount.Nonce = 1
 	SetStorageUpdate(parentAccount, []byte{'A'}, childCode)
 
@@ -920,6 +1064,7 @@ func expectedVMOutput_CreateNewContract_Success(_ []byte, childCode []byte) *vmc
 		nil,
 	)
 	childAccount.Code = childCode
+	childAccount.GasUsed = 472
 	childAccount.CodeMetadata = []byte{1, 0}
 	childAccount.CodeDeployerAddress = parentAddress
 
@@ -931,7 +1076,7 @@ func expectedVMOutput_CreateNewContract_Success(_ []byte, childCode []byte) *vmc
 	return vmOutput
 }
 
-func expectedVMOutput_CreateNewContract_Fail(_ []byte, childCode []byte) *vmcommon.VMOutput {
+func expectedVMOutputCreateNewContractFail(_ []byte, childCode []byte) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 	parentAccount := AddNewOutputAccount(
 		vmOutput,
@@ -940,11 +1085,42 @@ func expectedVMOutput_CreateNewContract_Fail(_ []byte, childCode []byte) *vmcomm
 		nil,
 	)
 	parentAccount.Nonce = 0
+	parentAccount.GasUsed = 2885
 	SetStorageUpdate(parentAccount, []byte{'A'}, childCode)
 
 	l := len(childCode)
 	AddFinishData(vmOutput, []byte{byte(l / 256), byte(l % 256)})
 	AddFinishData(vmOutput, []byte("fail"))
+
+	return vmOutput
+}
+
+func expectedVMOutputMockedWasmerInstances() *vmcommon.VMOutput {
+	vmOutput := MakeVMOutput()
+
+	parentAccount := AddNewOutputAccount(
+		vmOutput,
+		parentAddress,
+		0,
+		nil,
+	)
+	parentAccount.Balance = big.NewInt(1000)
+	parentAccount.BalanceDelta = big.NewInt(-4)
+	parentAccount.GasUsed = 547
+	SetStorageUpdate(parentAccount, []byte("parent"), []byte("parent storage"))
+
+	childAccount := AddNewOutputAccount(
+		vmOutput,
+		childAddress,
+		0,
+		nil,
+	)
+	childAccount.BalanceDelta = big.NewInt(4)
+	childAccount.GasUsed = 146
+	SetStorageUpdate(childAccount, []byte("child"), []byte("child storage"))
+
+	AddFinishData(vmOutput, []byte("parent returns this"))
+	AddFinishData(vmOutput, []byte("child returns this"))
 
 	return vmOutput
 }

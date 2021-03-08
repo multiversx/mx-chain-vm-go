@@ -2,17 +2,17 @@ package contexts
 
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
-// ReservedFunctions holds the reserved function names
-type ReservedFunctions struct {
+// reservedFunctions holds the reserved function names
+type reservedFunctions struct {
 	functionNames vmcommon.FunctionNames
 }
 
-// NewReservedFunctions creates a new ReservedFunctions
-func NewReservedFunctions(scAPINames vmcommon.FunctionNames, protocolBuiltinFunctions vmcommon.FunctionNames) *ReservedFunctions {
-	result := &ReservedFunctions{
+// NewReservedFunctions creates a new reservedFunctions
+func NewReservedFunctions(scAPINames vmcommon.FunctionNames, protocolBuiltinFunctions vmcommon.FunctionNames) *reservedFunctions {
+	result := &reservedFunctions{
 		functionNames: make(vmcommon.FunctionNames),
 	}
 
@@ -31,7 +31,7 @@ func NewReservedFunctions(scAPINames vmcommon.FunctionNames, protocolBuiltinFunc
 }
 
 // IsReserved returns whether a function is reserved
-func (reservedFunctions *ReservedFunctions) IsReserved(functionName string) bool {
+func (reservedFunctions *reservedFunctions) IsReserved(functionName string) bool {
 	if _, ok := reservedFunctions.functionNames[functionName]; ok {
 		return true
 	}
@@ -40,7 +40,7 @@ func (reservedFunctions *ReservedFunctions) IsReserved(functionName string) bool
 }
 
 // GetReserved gets the reserved functions as a slice of strings
-func (reservedFunctions *ReservedFunctions) GetReserved() []string {
+func (reservedFunctions *reservedFunctions) GetReserved() []string {
 	keys := make([]string, len(reservedFunctions.functionNames))
 
 	i := 0

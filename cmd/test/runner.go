@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	am "github.com/ElrondNetwork/arwen-wasm-vm/arwenmandos"
-	mc "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/controller"
+	mc "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/controller"
 )
 
 func resolveArgument(arg string) (string, bool, error) {
@@ -35,7 +35,7 @@ func main() {
 	jsonFilePath, isDir, err := resolveArgument(os.Args[1])
 	if err != nil {
 		fmt.Println(err)
-		return
+		os.Exit(1)
 	}
 
 	// init
@@ -75,5 +75,6 @@ func main() {
 		fmt.Println("SUCCESS")
 	} else {
 		fmt.Printf("ERROR: %s\n", err.Error())
+		os.Exit(1)
 	}
 }

@@ -3,7 +3,7 @@ package common
 import (
 	"math/big"
 
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 type SerializableVMOutput struct {
@@ -76,10 +76,11 @@ type SerializableOutputAccount struct {
 }
 
 type SerializableOutputTransfer struct {
-	Value    *big.Int
-	Data     []byte
-	GasLimit uint64
-	CallType vmcommon.CallType
+	Value     *big.Int
+	Data      []byte
+	GasLimit  uint64
+	GasLocked uint64
+	CallType  vmcommon.CallType
 }
 
 func NewSerializableOutputAccount(account *vmcommon.OutputAccount) *SerializableOutputAccount {
@@ -98,10 +99,11 @@ func NewSerializableOutputAccount(account *vmcommon.OutputAccount) *Serializable
 	a.Transfers = make([]SerializableOutputTransfer, len(account.OutputTransfers))
 	for i, transfer := range account.OutputTransfers {
 		serializableTransfer := SerializableOutputTransfer{
-			Value:    transfer.Value,
-			Data:     transfer.Data,
-			GasLimit: transfer.GasLimit,
-			CallType: transfer.CallType,
+			Value:     transfer.Value,
+			Data:      transfer.Data,
+			GasLimit:  transfer.GasLimit,
+			GasLocked: transfer.GasLocked,
+			CallType:  transfer.CallType,
 		}
 		a.Transfers[i] = serializableTransfer
 	}
@@ -134,10 +136,11 @@ func (a *SerializableOutputAccount) ConvertToOutputAccount() *vmcommon.OutputAcc
 	outAcc.OutputTransfers = make([]vmcommon.OutputTransfer, len(a.Transfers))
 	for i, transfer := range a.Transfers {
 		outPutTransfer := vmcommon.OutputTransfer{
-			Value:    transfer.Value,
-			GasLimit: transfer.GasLimit,
-			Data:     transfer.Data,
-			CallType: transfer.CallType,
+			Value:     transfer.Value,
+			GasLimit:  transfer.GasLimit,
+			GasLocked: transfer.GasLocked,
+			Data:      transfer.Data,
+			CallType:  transfer.CallType,
 		}
 		outAcc.OutputTransfers[i] = outPutTransfer
 	}

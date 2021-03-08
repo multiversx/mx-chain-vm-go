@@ -9,25 +9,27 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/cryptoapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/elrondapi"
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/ethapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
+	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
 )
 
 const WASMPageSize = 65536
+const counterWasmCode = "./../../test/contracts/counter/output/counter.wasm"
 
 func MakeAPIImports() *wasmer.Imports {
 	imports, _ := elrondapi.ElrondEIImports()
 	imports, _ = elrondapi.BigIntImports(imports)
-	imports, _ = ethapi.EthereumImports(imports)
+	imports, _ = elrondapi.SmallIntImports(imports)
 	imports, _ = cryptoapi.CryptoImports(imports)
 	return imports
 }
 
-func InitializeArwenAndWasmer() *mock.VmHostMock {
+func InitializeArwenAndWasmer() *contextmock.VMHostMock {
 	imports := MakeAPIImports()
 	_ = wasmer.SetImports(imports)
 
@@ -36,13 +38,15 @@ func InitializeArwenAndWasmer() *mock.VmHostMock {
 	opcodeCosts := gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray()
 	wasmer.SetOpcodeCosts(&opcodeCosts)
 
-	host := &mock.VmHostMock{}
+	host := &contextmock.VMHostMock{}
 	host.SCAPIMethods = imports
 
-	mockMetering := &mock.MeteringContextMock{}
+	mockMetering := &contextmock.MeteringContextMock{}
 	mockMetering.SetGasSchedule(gasSchedule)
 	host.MeteringContext = mockMetering
-
+	host.BlockchainContext, _ = NewBlockchainContext(host, worldmock.NewMockWorld())
+	host.OutputContext, _ = NewOutputContext(host)
+	host.CryptoHook = crypto.NewVMCrypto()
 	return host
 }
 
@@ -51,7 +55,7 @@ func TestNewRuntimeContext(t *testing.T) {
 
 	vmType := []byte("type")
 
-	runtimeContext, err := NewRuntimeContext(host, vmType)
+	runtimeContext, err := NewRuntimeContext(host, vmType, false)
 	require.Nil(t, err)
 	require.NotNil(t, runtimeContext)
 
@@ -67,7 +71,7 @@ func TestRuntimeContext_InitState(t *testing.T) {
 
 	vmType := []byte("type")
 
-	runtimeContext, err := NewRuntimeContext(host, vmType)
+	runtimeContext, err := NewRuntimeContext(host, vmType, false)
 	require.Nil(t, err)
 	require.NotNil(t, runtimeContext)
 
@@ -91,36 +95,69 @@ func TestRuntimeContext_NewWasmerInstance(t *testing.T) {
 
 	vmType := []byte("type")
 
-	runtimeContext, err := NewRuntimeContext(host, vmType)
+	runtimeContext, err := NewRuntimeContext(host, vmType, false)
 	require.Nil(t, err)
 
 	runtimeContext.SetMaxInstanceCount(1)
 
 	gasLimit := uint64(100000000)
-	dummy := []byte{}
-	err = runtimeContext.StartWasmerInstance(dummy, gasLimit)
+	var dummy []byte
+	err = runtimeContext.StartWasmerInstance(dummy, gasLimit, false)
 	require.NotNil(t, err)
 	require.True(t, errors.Is(err, wasmer.ErrInvalidBytecode))
 
 	gasLimit = uint64(100000000)
 	dummy = []byte("contract")
-	err = runtimeContext.StartWasmerInstance(dummy, gasLimit)
+	err = runtimeContext.StartWasmerInstance(dummy, gasLimit, false)
 	require.NotNil(t, err)
 
-	path := "./../../test/contracts/counter/output/counter.wasm"
+	path := counterWasmCode
 	contractCode := arwen.GetSCCode(path)
-	err = runtimeContext.StartWasmerInstance(contractCode, gasLimit)
+	err = runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 	require.Equal(t, arwen.BreakpointNone, runtimeContext.GetRuntimeBreakpointValue())
 }
 
+func TestRuntimeContext_IsFunctionImported(t *testing.T) {
+	host := InitializeArwenAndWasmer()
+	vmType := []byte("type")
+
+	runtimeContext, err := NewRuntimeContext(host, vmType, false)
+	require.Nil(t, err)
+
+	runtimeContext.SetMaxInstanceCount(1)
+
+	gasLimit := uint64(100000000)
+	path := counterWasmCode
+	contractCode := arwen.GetSCCode(path)
+	err = runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
+	require.Nil(t, err)
+	require.Equal(t, arwen.BreakpointNone, runtimeContext.GetRuntimeBreakpointValue())
+
+	// These API functions exist, and are imported by 'counter'
+	require.True(t, runtimeContext.IsFunctionImported("int64storageLoad"))
+	require.True(t, runtimeContext.IsFunctionImported("int64storageStore"))
+	require.True(t, runtimeContext.IsFunctionImported("int64finish"))
+
+	// These API functions exist, but are not imported by 'counter'
+	require.False(t, runtimeContext.IsFunctionImported("transferValue"))
+	require.False(t, runtimeContext.IsFunctionImported("executeOnSameContext"))
+	require.False(t, runtimeContext.IsFunctionImported("asyncCall"))
+
+	// These API functions don't even exist
+	require.False(t, runtimeContext.IsFunctionImported(""))
+	require.False(t, runtimeContext.IsFunctionImported("*"))
+	require.False(t, runtimeContext.IsFunctionImported("$@%"))
+	require.False(t, runtimeContext.IsFunctionImported("doesNotExist"))
+}
+
 func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
 	imports := MakeAPIImports()
-	host := &mock.VmHostMock{}
+	host := &contextmock.VMHostMock{}
 	host.SCAPIMethods = imports
 
 	vmType := []byte("type")
-	runtimeContext, _ := NewRuntimeContext(host, vmType)
+	runtimeContext, _ := NewRuntimeContext(host, vmType, false)
 
 	arguments := [][]byte{[]byte("argument 1"), []byte("argument 2")}
 	vmInput := vmcommon.VMInput{
@@ -157,45 +194,44 @@ func TestRuntimeContext_PushPopInstance(t *testing.T) {
 	host := InitializeArwenAndWasmer()
 
 	vmType := []byte("type")
-	runtimeContext, _ := NewRuntimeContext(host, vmType)
+	runtimeContext, _ := NewRuntimeContext(host, vmType, false)
 	runtimeContext.SetMaxInstanceCount(1)
 
 	gasLimit := uint64(100000000)
-	path := "./../../test/contracts/counter/output/counter.wasm"
+	path := counterWasmCode
 	contractCode := arwen.GetSCCode(path)
-	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit)
+	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
 	instance := runtimeContext.instance
 
-	runtimeContext.PushInstance()
+	runtimeContext.pushInstance()
 	runtimeContext.instance = nil
 	require.Equal(t, 1, len(runtimeContext.instanceStack))
 
-	runtimeContext.PopInstance()
+	runtimeContext.popInstance()
 	require.NotNil(t, runtimeContext.instance)
 	require.Equal(t, instance, runtimeContext.instance)
 	require.Equal(t, 0, len(runtimeContext.instanceStack))
 
-	runtimeContext.PushInstance()
+	runtimeContext.pushInstance()
 	require.Equal(t, 1, len(runtimeContext.instanceStack))
-	runtimeContext.ClearInstanceStack()
-	require.Equal(t, 0, len(runtimeContext.instanceStack))
 }
 
 func TestRuntimeContext_PushPopState(t *testing.T) {
 	imports := MakeAPIImports()
-	host := &mock.VmHostMock{}
+	host := &contextmock.VMHostMock{}
 	host.SCAPIMethods = imports
 
 	vmType := []byte("type")
-	runtimeContext, _ := NewRuntimeContext(host, vmType)
+	runtimeContext, _ := NewRuntimeContext(host, vmType, false)
 	runtimeContext.SetMaxInstanceCount(1)
 
 	vmInput := vmcommon.VMInput{
 		CallerAddr:  []byte("caller"),
 		GasProvided: 1000,
 		CallValue:   big.NewInt(0),
+		ESDTValue:   big.NewInt(0),
 	}
 
 	funcName := "test_func"
@@ -221,7 +257,7 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 
 	runtimeContext.PopSetActiveState()
 
-	//check state was restored correctly
+	// check state was restored correctly
 	require.Equal(t, scAddress, runtimeContext.GetSCAddress())
 	require.Equal(t, funcName, runtimeContext.Function())
 	require.Equal(t, &vmInput, runtimeContext.GetVMInput())
@@ -245,13 +281,13 @@ func TestRuntimeContext_Instance(t *testing.T) {
 	host := InitializeArwenAndWasmer()
 
 	vmType := []byte("type")
-	runtimeContext, _ := NewRuntimeContext(host, vmType)
+	runtimeContext, _ := NewRuntimeContext(host, vmType, false)
 	runtimeContext.SetMaxInstanceCount(1)
 
 	gasLimit := uint64(100000000)
-	path := "./../../test/contracts/counter/output/counter.wasm"
+	path := counterWasmCode
 	contractCode := arwen.GetSCCode(path)
-	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit)
+	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
 	gasPoints := uint64(100)
@@ -288,19 +324,22 @@ func TestRuntimeContext_Instance(t *testing.T) {
 func TestRuntimeContext_Breakpoints(t *testing.T) {
 	host := InitializeArwenAndWasmer()
 
-	mockOutput := &mock.OutputContextMock{}
+	mockOutput := &contextmock.OutputContextMock{
+		OutputAccountMock: NewVMOutputAccount([]byte("address")),
+	}
+	mockOutput.OutputAccountMock.Code = []byte("code")
 	mockOutput.SetReturnMessage("")
 
 	host.OutputContext = mockOutput
 
 	vmType := []byte("type")
-	runtimeContext, _ := NewRuntimeContext(host, vmType)
+	runtimeContext, _ := NewRuntimeContext(host, vmType, false)
 	runtimeContext.SetMaxInstanceCount(1)
 
 	gasLimit := uint64(100000000)
-	path := "./../../test/contracts/counter/output/counter.wasm"
+	path := counterWasmCode
 	contractCode := arwen.GetSCCode(path)
-	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit)
+	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
 	// Set and get curent breakpoint value
@@ -347,16 +386,16 @@ func TestRuntimeContext_MemLoadStoreOk(t *testing.T) {
 	host := InitializeArwenAndWasmer()
 
 	vmType := []byte("type")
-	runtimeContext, _ := NewRuntimeContext(host, vmType)
+	runtimeContext, _ := NewRuntimeContext(host, vmType, false)
 	runtimeContext.SetMaxInstanceCount(1)
 
 	gasLimit := uint64(100000000)
-	path := "./../../test/contracts/counter/output/counter.wasm"
+	path := counterWasmCode
 	contractCode := arwen.GetSCCode(path)
-	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit)
+	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
-	memory := runtimeContext.instance.Memory
+	memory := runtimeContext.instance.GetMemory()
 
 	memContents, err := runtimeContext.MemLoad(10, 10)
 	require.Nil(t, err)
@@ -379,16 +418,16 @@ func TestRuntimeContext_MemoryIsBlank(t *testing.T) {
 	host := InitializeArwenAndWasmer()
 
 	vmType := []byte("type")
-	runtimeContext, _ := NewRuntimeContext(host, vmType)
+	runtimeContext, _ := NewRuntimeContext(host, vmType, false)
 	runtimeContext.SetMaxInstanceCount(1)
 
 	gasLimit := uint64(100000000)
 	path := "./../../test/contracts/init-simple/output/init-simple.wasm"
 	contractCode := arwen.GetSCCode(path)
-	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit)
+	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
-	memory := runtimeContext.instance.Memory
+	memory := runtimeContext.instance.GetMemory()
 	err = memory.Grow(30)
 	require.Nil(t, err)
 
@@ -409,16 +448,16 @@ func TestRuntimeContext_MemLoadCases(t *testing.T) {
 	host := InitializeArwenAndWasmer()
 
 	vmType := []byte("type")
-	runtimeContext, _ := NewRuntimeContext(host, vmType)
+	runtimeContext, _ := NewRuntimeContext(host, vmType, false)
 	runtimeContext.SetMaxInstanceCount(1)
 
 	gasLimit := uint64(100000000)
-	path := "./../../test/contracts/counter/output/counter.wasm"
+	path := counterWasmCode
 	contractCode := arwen.GetSCCode(path)
-	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit)
+	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
-	memory := runtimeContext.instance.Memory
+	memory := runtimeContext.instance.GetMemory()
 
 	var offset int32
 	var length int32
@@ -465,6 +504,7 @@ func TestRuntimeContext_MemLoadCases(t *testing.T) {
 	offset = int32(memory.Length() - 8)
 	length = 0
 	memContents, err = runtimeContext.MemLoad(offset, length)
+	require.Nil(t, err)
 	require.Equal(t, []byte{}, memContents)
 }
 
@@ -472,17 +512,17 @@ func TestRuntimeContext_MemStoreCases(t *testing.T) {
 	host := InitializeArwenAndWasmer()
 
 	vmType := []byte("type")
-	runtimeContext, _ := NewRuntimeContext(host, vmType)
+	runtimeContext, _ := NewRuntimeContext(host, vmType, false)
 	runtimeContext.SetMaxInstanceCount(1)
 
 	gasLimit := uint64(100000000)
-	path := "./../../test/contracts/counter/output/counter.wasm"
+	path := counterWasmCode
 	contractCode := arwen.GetSCCode(path)
-	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit)
+	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
 	pageSize := uint32(65536)
-	memory := runtimeContext.instance.Memory
+	memory := runtimeContext.instance.GetMemory()
 	require.Equal(t, 2*pageSize, memory.Length())
 
 	// Bad lower bounds
@@ -537,13 +577,13 @@ func TestRuntimeContext_MemLoadStoreVsInstanceStack(t *testing.T) {
 	host := InitializeArwenAndWasmer()
 
 	vmType := []byte("type")
-	runtimeContext, _ := NewRuntimeContext(host, vmType)
+	runtimeContext, _ := NewRuntimeContext(host, vmType, false)
 	runtimeContext.SetMaxInstanceCount(2)
 
 	gasLimit := uint64(100000000)
-	path := "./../../test/contracts/counter/output/counter.wasm"
+	path := counterWasmCode
 	contractCode := arwen.GetSCCode(path)
-	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit)
+	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
 	// Write "test data1" to the WASM memory of the current instance
@@ -556,12 +596,12 @@ func TestRuntimeContext_MemLoadStoreVsInstanceStack(t *testing.T) {
 	require.Equal(t, []byte("test data1"), memContents)
 
 	// Push the current instance down the instance stack
-	runtimeContext.PushInstance()
+	runtimeContext.pushInstance()
 	require.Equal(t, 1, len(runtimeContext.instanceStack))
 
 	// Create a new Wasmer instance
 	contractCode = arwen.GetSCCode(path)
-	err = runtimeContext.StartWasmerInstance(contractCode, gasLimit)
+	err = runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
 	// Write "test data2" to the WASM memory of the new instance
@@ -574,7 +614,7 @@ func TestRuntimeContext_MemLoadStoreVsInstanceStack(t *testing.T) {
 	require.Equal(t, []byte("test data2"), memContents)
 
 	// Pop the initial instance from the stack, making it the 'current instance'
-	runtimeContext.PopInstance()
+	runtimeContext.popInstance()
 	require.Equal(t, 0, len(runtimeContext.instanceStack))
 
 	// Check whether the previously-written string "test data1" is still in the
@@ -591,4 +631,40 @@ func TestRuntimeContext_MemLoadStoreVsInstanceStack(t *testing.T) {
 	memContents, err = runtimeContext.MemLoad(10, 10)
 	require.Nil(t, err)
 	require.Equal(t, []byte("test data3"), memContents)
+}
+
+func TestRuntimeContext_PopSetActiveStateIfStackIsEmptyShouldNotPanic(t *testing.T) {
+	t.Parallel()
+
+	host := InitializeArwenAndWasmer()
+
+	vmType := []byte("type")
+	runtimeContext, _ := NewRuntimeContext(host, vmType, false)
+	runtimeContext.PopSetActiveState()
+
+	require.Equal(t, 0, len(runtimeContext.stateStack))
+}
+
+func TestRuntimeContext_PopDiscardIfStackIsEmptyShouldNotPanic(t *testing.T) {
+	t.Parallel()
+
+	host := InitializeArwenAndWasmer()
+
+	vmType := []byte("type")
+	runtimeContext, _ := NewRuntimeContext(host, vmType, false)
+	runtimeContext.PopDiscard()
+
+	require.Equal(t, 0, len(runtimeContext.stateStack))
+}
+
+func TestRuntimeContext_PopInstanceIfStackIsEmptyShouldNotPanic(t *testing.T) {
+	t.Parallel()
+
+	host := InitializeArwenAndWasmer()
+
+	vmType := []byte("type")
+	runtimeContext, _ := NewRuntimeContext(host, vmType, false)
+	runtimeContext.popInstance()
+
+	require.Equal(t, 0, len(runtimeContext.stateStack))
 }

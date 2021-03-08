@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"math/big"
 
-	vmi "github.com/ElrondNetwork/elrond-vm-common"
-	mj "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/model"
-	mjwrite "github.com/ElrondNetwork/elrond-vm-util/test-util/mandos/json/write"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
+	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/write"
+	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 func checkTxResults(
@@ -59,7 +59,7 @@ func checkTxResults(
 	}
 
 	// "logs": "*" means any value is accepted, log check ignored
-	if blResult.IgnoreLogs {
+	if blResult.LogsStar {
 		return nil
 	}
 

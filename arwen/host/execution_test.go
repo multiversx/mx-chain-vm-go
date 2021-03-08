@@ -9,8 +9,9 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -18,15 +19,17 @@ import (
 var counterKey = []byte("COUNTER")
 var WASMLocalsLimit = uint64(4000)
 
-func TestNewArwen(t *testing.T) {
-	host, err := DefaultTestArwen(t, &mock.BlockchainHookStub{})
-	require.Nil(t, err)
-	require.NotNil(t, host)
-}
+const (
+	increment               = "increment"
+	callRecursive           = "callRecursive"
+	parentCallsChild        = "parentCallsChild"
+	parentPerformAsyncCall  = "parentPerformAsyncCall"
+	parentFunctionChildCall = "parentFunctionChildCall"
+)
 
 func TestSCMem(t *testing.T) {
 	code := GetTestSCCode("misc", "../../")
-	host, _ := DefaultTestArwenForCall(t, code, nil)
+	host, _ := defaultTestArwenForCall(t, code, nil)
 	input := DefaultTestContractCallInput()
 	input.GasProvided = 100000
 	input.Function = "iterate_over_byte_array"
@@ -46,15 +49,15 @@ func TestSCMem(t *testing.T) {
 }
 
 func TestExecution_DeployNewAddressErr(t *testing.T) {
-	stubBlockchainHook := &mock.BlockchainHookStub{}
+	stubBlockchainHook := &contextmock.BlockchainHookStub{}
 
 	errNewAddress := errors.New("new address error")
 
-	host, _ := DefaultTestArwen(t, stubBlockchainHook)
+	host := defaultTestArwen(t, stubBlockchainHook)
 	input := DefaultTestContractCreateInput()
 	stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
 		require.Equal(t, input.CallerAddr, address)
-		return &mock.AccountMock{}, nil
+		return &contextmock.StubAccount{}, nil
 	}
 	stubBlockchainHook.NewAddressCalled = func(creatorAddress []byte, nonce uint64, vmType []byte) ([]byte, error) {
 		require.Equal(t, input.CallerAddr, creatorAddress)
@@ -72,7 +75,7 @@ func TestExecution_DeployNewAddressErr(t *testing.T) {
 
 func TestExecution_DeployOutOfGas(t *testing.T) {
 	newAddress := []byte("new smartcontract")
-	host := DefaultTestArwenForDeployment(t, 24, newAddress)
+	host := defaultTestArwenForDeployment(t, 24, newAddress)
 	input := DefaultTestContractCreateInput()
 	input.GasProvided = 8 // default deployment requires 9 units of Gas
 	vmOutput, err := host.RunSmartContractCreate(input)
@@ -84,7 +87,7 @@ func TestExecution_DeployOutOfGas(t *testing.T) {
 
 func TestExecution_DeployNotWASM(t *testing.T) {
 	newAddress := []byte("new smartcontract")
-	host := DefaultTestArwenForDeployment(t, 24, newAddress)
+	host := defaultTestArwenForDeployment(t, 24, newAddress)
 	input := DefaultTestContractCreateInput()
 	input.GasProvided = 9
 	input.ContractCode = []byte("not WASM")
@@ -96,7 +99,7 @@ func TestExecution_DeployNotWASM(t *testing.T) {
 
 func TestExecution_DeployWASM_WithoutMemory(t *testing.T) {
 	newAddress := []byte("new smartcontract")
-	host := DefaultTestArwenForDeployment(t, 24, newAddress)
+	host := defaultTestArwenForDeployment(t, 24, newAddress)
 	input := DefaultTestContractCreateInput()
 	input.GasProvided = 1000
 	input.ContractCode = GetTestSCCode("memoryless", "../../")
@@ -108,7 +111,7 @@ func TestExecution_DeployWASM_WithoutMemory(t *testing.T) {
 
 func TestExecution_DeployWASM_WrongInit(t *testing.T) {
 	newAddress := []byte("new smartcontract")
-	host := DefaultTestArwenForDeployment(t, 24, newAddress)
+	host := defaultTestArwenForDeployment(t, 24, newAddress)
 	input := DefaultTestContractCreateInput()
 	input.GasProvided = 1000
 	input.ContractCode = GetTestSCCode("init-wrong", "../../")
@@ -120,7 +123,7 @@ func TestExecution_DeployWASM_WrongInit(t *testing.T) {
 
 func TestExecution_DeployWASM_WrongMethods(t *testing.T) {
 	newAddress := []byte("new smartcontract")
-	host := DefaultTestArwenForDeployment(t, 24, newAddress)
+	host := defaultTestArwenForDeployment(t, 24, newAddress)
 	input := DefaultTestContractCreateInput()
 	input.GasProvided = 1000
 	input.ContractCode = GetTestSCCode("signatures", "../../")
@@ -132,7 +135,7 @@ func TestExecution_DeployWASM_WrongMethods(t *testing.T) {
 
 func TestExecution_DeployWASM_Successful(t *testing.T) {
 	newAddress := []byte("new smartcontract")
-	host := DefaultTestArwenForDeployment(t, 24, newAddress)
+	host := defaultTestArwenForDeployment(t, 24, newAddress)
 	input := DefaultTestContractCreateInput()
 	input.CallValue = big.NewInt(88)
 	input.GasProvided = 1000
@@ -148,13 +151,13 @@ func TestExecution_DeployWASM_Successful(t *testing.T) {
 	require.Equal(t, uint64(528), vmOutput.GasRemaining)
 	require.Len(t, vmOutput.OutputAccounts, 2)
 	require.Equal(t, uint64(24), vmOutput.OutputAccounts["caller"].Nonce)
-	require.Equal(t, input.ContractCode, vmOutput.OutputAccounts["new smartcontract"].Code)
-	require.Equal(t, big.NewInt(88), vmOutput.OutputAccounts["new smartcontract"].BalanceDelta)
+	require.Equal(t, input.ContractCode, vmOutput.OutputAccounts[string(newAddress)].Code)
+	require.Equal(t, big.NewInt(88), vmOutput.OutputAccounts[string(newAddress)].BalanceDelta)
 }
 
 func TestExecution_DeployWASM_Popcnt(t *testing.T) {
 	newAddress := []byte("new smartcontract")
-	host := DefaultTestArwenForDeployment(t, 24, newAddress)
+	host := defaultTestArwenForDeployment(t, 24, newAddress)
 	input := DefaultTestContractCreateInput()
 	input.CallValue = big.NewInt(88)
 	input.GasProvided = 1000
@@ -165,14 +168,13 @@ func TestExecution_DeployWASM_Popcnt(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, vmOutput)
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
-	fmt.Println(vmOutput.ReturnData)
 	require.Len(t, vmOutput.ReturnData, 1)
 	require.Equal(t, []byte{3}, vmOutput.ReturnData[0])
 }
 
 func TestExecution_DeployWASM_AtMaximumLocals(t *testing.T) {
 	newAddress := []byte("new smartcontract")
-	host := DefaultTestArwenForDeployment(t, 24, newAddress)
+	host := defaultTestArwenForDeployment(t, 24, newAddress)
 	input := DefaultTestContractCreateInput()
 	input.CallValue = big.NewInt(88)
 	input.GasProvided = 1000
@@ -187,7 +189,7 @@ func TestExecution_DeployWASM_AtMaximumLocals(t *testing.T) {
 
 func TestExecution_DeployWASM_MoreThanMaximumLocals(t *testing.T) {
 	newAddress := []byte("new smartcontract")
-	host := DefaultTestArwenForDeployment(t, 24, newAddress)
+	host := defaultTestArwenForDeployment(t, 24, newAddress)
 	input := DefaultTestContractCreateInput()
 	input.CallValue = big.NewInt(88)
 	input.GasProvided = 1000
@@ -202,7 +204,7 @@ func TestExecution_DeployWASM_MoreThanMaximumLocals(t *testing.T) {
 
 func TestExecution_DeployWASM_Init_Errors(t *testing.T) {
 	newAddress := []byte("new smartcontract")
-	host := DefaultTestArwenForDeployment(t, 24, newAddress)
+	host := defaultTestArwenForDeployment(t, 24, newAddress)
 	input := DefaultTestContractCreateInput()
 	input.CallValue = big.NewInt(88)
 	input.GasProvided = 1000
@@ -224,25 +226,29 @@ func TestExecution_DeployWASM_Init_Errors(t *testing.T) {
 }
 
 func TestExecution_ManyDeployments(t *testing.T) {
+	if testing.Short() {
+		t.Skip("not a short test")
+	}
+
 	ownerNonce := uint64(23)
 	newAddress := "new smartcontract"
-	stubBlockchainHook := &mock.BlockchainHookStub{}
+	stubBlockchainHook := &contextmock.BlockchainHookStub{}
 	stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
-		return &mock.AccountMock{Nonce: ownerNonce}, nil
+		return &contextmock.StubAccount{Nonce: ownerNonce}, nil
 	}
 	stubBlockchainHook.NewAddressCalled = func(creatorAddress []byte, nonce uint64, vmType []byte) ([]byte, error) {
 		ownerNonce++
 		return []byte(newAddress + " " + fmt.Sprint(ownerNonce)), nil
 	}
 
-	host, _ := DefaultTestArwen(t, stubBlockchainHook)
+	host := defaultTestArwen(t, stubBlockchainHook)
 	input := DefaultTestContractCreateInput()
 	input.CallerAddr = []byte("owner")
 	input.Arguments = make([][]byte, 0)
 	input.CallValue = big.NewInt(88)
 	input.ContractCode = GetTestSCCode("init-simple", "../../")
 
-	numDeployments := 100000
+	numDeployments := 1000
 	for i := 0; i < numDeployments; i++ {
 		input.GasProvided = 100000
 		vmOutput, err := host.RunSmartContractCreate(input)
@@ -258,7 +264,7 @@ func TestExecution_ManyDeployments(t *testing.T) {
 
 func TestExecution_Deploy_DisallowFloatingPoint(t *testing.T) {
 	newAddress := []byte("new smartcontract")
-	host := DefaultTestArwenForDeployment(t, 24, newAddress)
+	host := defaultTestArwenForDeployment(t, 24, newAddress)
 	input := DefaultTestContractCreateInput()
 	input.CallValue = big.NewInt(88)
 	input.GasProvided = 1000
@@ -271,16 +277,17 @@ func TestExecution_Deploy_DisallowFloatingPoint(t *testing.T) {
 }
 
 func TestExecution_CallGetUserAccountErr(t *testing.T) {
-	stubBlockchainHook := &mock.BlockchainHookStub{}
+	stubBlockchainHook := &contextmock.BlockchainHookStub{}
 
 	errGetAccount := errors.New("get code error")
 
-	host, _ := DefaultTestArwen(t, stubBlockchainHook)
+	host := defaultTestArwen(t, stubBlockchainHook)
 	input := DefaultTestContractCallInput()
 	stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
 		return nil, errGetAccount
 	}
 
+	input.GasProvided = 100
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
 	require.NotNil(t, vmOutput)
@@ -288,11 +295,24 @@ func TestExecution_CallGetUserAccountErr(t *testing.T) {
 	require.Equal(t, arwen.ErrContractNotFound.Error(), vmOutput.ReturnMessage)
 }
 
+func TestExecution_NotEnoughGasForGetCode(t *testing.T) {
+	stubBlockchainHook := &contextmock.BlockchainHookStub{}
+
+	host := defaultTestArwen(t, stubBlockchainHook)
+	input := DefaultTestContractCallInput()
+
+	input.GasProvided = 0
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.OutOfGas, vmOutput.ReturnCode)
+}
+
 func TestExecution_CallOutOfGas(t *testing.T) {
 	code := GetTestSCCode("counter", "../../")
-	host, _ := DefaultTestArwenForCall(t, code, nil)
+	host, _ := defaultTestArwenForCall(t, code, nil)
 	input := DefaultTestContractCallInput()
-	input.Function = "increment"
+	input.Function = increment
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
@@ -303,10 +323,10 @@ func TestExecution_CallOutOfGas(t *testing.T) {
 
 func TestExecution_CallWasmerError(t *testing.T) {
 	code := []byte("not WASM")
-	host, _ := DefaultTestArwenForCall(t, code, nil)
+	host, _ := defaultTestArwenForCall(t, code, nil)
 	input := DefaultTestContractCallInput()
 	input.GasProvided = 100000
-	input.Function = "increment"
+	input.Function = increment
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
@@ -316,7 +336,7 @@ func TestExecution_CallWasmerError(t *testing.T) {
 
 func TestExecution_CallSCMethod(t *testing.T) {
 	code := GetTestSCCode("counter", "../../")
-	host, _ := DefaultTestArwenForCall(t, code, nil)
+	host, _ := defaultTestArwenForCall(t, code, nil)
 	input := DefaultTestContractCallInput()
 	input.GasProvided = 100000
 
@@ -346,13 +366,13 @@ func TestExecution_CallSCMethod(t *testing.T) {
 
 func TestExecution_Call_Successful(t *testing.T) {
 	code := GetTestSCCode("counter", "../../")
-	host, stubBlockchainHook := DefaultTestArwenForCall(t, code, nil)
+	host, stubBlockchainHook := defaultTestArwenForCall(t, code, nil)
 	stubBlockchainHook.GetStorageDataCalled = func(scAddress []byte, key []byte) ([]byte, error) {
 		return big.NewInt(1001).Bytes(), nil
 	}
 	input := DefaultTestContractCallInput()
 	input.GasProvided = 100000
-	input.Function = "increment"
+	input.Function = increment
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
@@ -373,24 +393,24 @@ func TestExecution_Call_GasConsumptionOnLocals(t *testing.T) {
 	// Any number of local variables below `UnmeteredLocals` must be instantiated
 	// without metering, i.e. gas-free.
 	for _, locals := range []uint64{1, UnmeteredLocals / 2, UnmeteredLocals} {
-		gasUsed, _ := callCustomSCAndGetGasUsed(t, uint64(locals))
+		gasUsed, _ := callCustomSCAndGetGasUsed(t, locals)
 		require.Equal(t, gasWithZeroLocals, gasUsed)
 	}
 
 	// Any number of local variables above `UnmeteredLocals` must be instantiated
 	// with metering, i.e. will cost gas.
 	for _, locals := range []uint64{UnmeteredLocals + 1, UnmeteredLocals * 2, UnmeteredLocals * 4} {
-		gasUsed, _ := callCustomSCAndGetGasUsed(t, uint64(locals))
-		metered_locals := locals - UnmeteredLocals
-		costOfLocals := costPerLocal * uint64(metered_locals)
+		gasUsed, _ := callCustomSCAndGetGasUsed(t, locals)
+		meteredLocals := locals - UnmeteredLocals
+		costOfLocals := costPerLocal * meteredLocals
 		expectedGasUsed := gasWithZeroLocals + costOfLocals
 		require.Equal(t, expectedGasUsed, gasUsed)
 	}
 }
 
 func callCustomSCAndGetGasUsed(t *testing.T, locals uint64) (uint64, *config.GasCost) {
-	code := makeBytecodeWithLocals(uint64(locals))
-	host, _ := DefaultTestArwenForCall(t, code, nil)
+	code := makeBytecodeWithLocals(locals)
+	host, _ := defaultTestArwenForCall(t, code, nil)
 	gasSchedule := host.Metering().GasSchedule()
 
 	gasLimit := uint64(100000)
@@ -410,24 +430,26 @@ func TestExecution_ExecuteOnSameContext_Simple(t *testing.T) {
 	parentCode := GetTestSCCode("exec-same-ctx-simple-parent", "../../")
 	childCode := GetTestSCCode("exec-same-ctx-simple-child", "../../")
 
-	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode, nil)
+	host, _ := defaultTestArwenForTwoSCs(t, parentCode, childCode, nil, nil)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
-	input.Function = "parentFunctionChildCall"
+	input.Function = parentFunctionChildCall
 	input.GasProvided = gasProvided
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
-	require.Equal(t, "", vmOutput.ReturnMessage)
-	fmt.Println(vmOutput.ReturnMessage)
+
+	expectedVMOutput := expectedVMOutputSameCtxSimple(parentCode, childCode)
+	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
 func TestExecution_Call_Breakpoints(t *testing.T) {
 	t.Parallel()
 
 	code := GetTestSCCode("breakpoint", "../../")
-	host, _ := DefaultTestArwenForCall(t, code, nil)
+	host, _ := defaultTestArwenForCall(t, code, nil)
 	input := DefaultTestContractCallInput()
 	input.GasProvided = 100000
 	input.Function = "testFunc"
@@ -460,7 +482,7 @@ func TestExecution_ExecuteOnSameContext_Prepare(t *testing.T) {
 	// Execute the parent SC method "parentFunctionPrepare", which sets storage,
 	// finish data and performs a transfer. This step validates the test to the
 	// actual call to ExecuteOnSameContext().
-	host, _ := DefaultTestArwenForCall(t, parentCode, parentSCBalance)
+	host, _ := defaultTestArwenForCall(t, parentCode, parentSCBalance)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionPrepare"
@@ -468,10 +490,9 @@ func TestExecution_ExecuteOnSameContext_Prepare(t *testing.T) {
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
-	fmt.Println(vmOutput.ReturnMessage)
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 
-	expectedVMOutput := expectedVMOutput_SameCtx_Prepare(parentCode)
+	expectedVMOutput := expectedVMOutputSameCtxPrepare(parentCode)
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
@@ -481,7 +502,7 @@ func TestExecution_ExecuteOnSameContext_Wrong(t *testing.T) {
 
 	// Call parentFunctionWrongCall() of the parent SC, which will try to call a
 	// non-existing SC.
-	host, _ := DefaultTestArwenForCall(t, parentCode, parentSCBalance)
+	host, _ := defaultTestArwenForCall(t, parentCode, parentSCBalance)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionWrongCall"
@@ -489,8 +510,17 @@ func TestExecution_ExecuteOnSameContext_Wrong(t *testing.T) {
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
-	expectedVMOutput := expectedVMOutput_SameCtx_WrongContractCalled(parentCode)
-	require.Equal(t, expectedVMOutput, vmOutput)
+	require.NotNil(t, vmOutput)
+
+	if host.Runtime().ElrondSyncExecAPIErrorShouldFailExecution() == false {
+		require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+		expectedVMOutput := expectedVMOutputSameCtxWrongContractCalled(parentCode)
+		require.Equal(t, expectedVMOutput, vmOutput)
+	} else {
+		require.Equal(t, vmcommon.ExecutionFailed, vmOutput.ReturnCode)
+		require.Equal(t, "account not found", vmOutput.ReturnMessage)
+		require.Zero(t, vmOutput.GasRemaining)
+	}
 }
 
 func TestExecution_ExecuteOnSameContext_OutOfGas(t *testing.T) {
@@ -506,13 +536,12 @@ func TestExecution_ExecuteOnSameContext_OutOfGas(t *testing.T) {
 	// Assertions: the parent lost all the gas provided to executeOnSameContext
 	parentCode := GetTestSCCode("exec-same-ctx-parent", "../../")
 	childCode := GetTestSCCode("exec-same-ctx-child", "../../")
-	parentSCBalance := big.NewInt(1000)
 
 	// Call parentFunctionChildCall_OutOfGas() of the parent SC, which will call
 	// the child SC using executeOnSameContext() with sufficient gas for
 	// compilation and starting, but the child starts an infinite loop which will
 	// end in OutOfGas.
-	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode, parentSCBalance)
+	host, _ := defaultTestArwenForTwoSCs(t, parentCode, childCode, nil, nil)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionChildCall_OutOfGas"
@@ -520,39 +549,46 @@ func TestExecution_ExecuteOnSameContext_OutOfGas(t *testing.T) {
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
-	expectedVMOutput := expectedVMOutput_SameCtx_OutOfGas(parentCode, childCode)
-	assert.Equal(t, int64(42), host.BigInt().GetOne(0).Int64())
-	require.Equal(t, expectedVMOutput, vmOutput)
+	require.NotNil(t, vmOutput)
+
+	if host.Runtime().ElrondSyncExecAPIErrorShouldFailExecution() == false {
+		require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+		expectedVMOutput := expectedVMOutputSameCtxOutOfGas(parentCode, childCode)
+		require.Equal(t, expectedVMOutput, vmOutput)
+	} else {
+		require.Equal(t, vmcommon.ExecutionFailed, vmOutput.ReturnCode)
+		require.Equal(t, arwen.ErrNotEnoughGas.Error(), vmOutput.ReturnMessage)
+		require.Zero(t, vmOutput.GasRemaining)
+	}
 }
 
 func TestExecution_ExecuteOnSameContext_Successful(t *testing.T) {
 	parentCode := GetTestSCCode("exec-same-ctx-parent", "../../")
 	childCode := GetTestSCCode("exec-same-ctx-child", "../../")
-	parentSCBalance := big.NewInt(1000)
 
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using executeOnSameContext().
-	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode, parentSCBalance)
+	host, _ := defaultTestArwenForTwoSCs(t, parentCode, childCode, nil, nil)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
-	input.Function = "parentFunctionChildCall"
+	input.Function = parentFunctionChildCall
 	input.GasProvided = gasProvided
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
-	expectedVMOutput := expectedVMOutput_SameCtx_SuccessfulChildCall(parentCode, childCode)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+	expectedVMOutput := expectedVMOutputSameCtxSuccessfulChildCall(parentCode, childCode)
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
 func TestExecution_ExecuteOnSameContext_Successful_BigInts(t *testing.T) {
 	parentCode := GetTestSCCode("exec-same-ctx-parent", "../../")
 	childCode := GetTestSCCode("exec-same-ctx-child", "../../")
-	parentSCBalance := big.NewInt(1000)
 
 	// Call parentFunctionChildCall_BigInts() of the parent SC, which will call a
 	// method of the child SC that takes some big Int references as arguments and
 	// produce a new big Int out of the arguments.
-	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode, parentSCBalance)
+	host, _ := defaultTestArwenForTwoSCs(t, parentCode, childCode, nil, nil)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionChildCall_BigInts"
@@ -560,7 +596,8 @@ func TestExecution_ExecuteOnSameContext_Successful_BigInts(t *testing.T) {
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
-	expectedVMOutput := expectedVMOutput_SameCtx_SuccessfulChildCall_BigInts(parentCode, childCode)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+	expectedVMOutput := expectedVMOutputSameCtxSuccessfulChildCallBigInts(parentCode, childCode)
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
@@ -580,10 +617,10 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct(t *testing.T) {
 	code := GetTestSCCode("exec-same-ctx-recursive", "../../")
 	scBalance := big.NewInt(1000)
 
-	host, _ := DefaultTestArwenForCall(t, code, scBalance)
+	host, _ := defaultTestArwenForCall(t, code, scBalance)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
-	input.Function = "callRecursive"
+	input.Function = callRecursive
 	input.GasProvided = gasProvided
 
 	recursiveCalls := byte(5)
@@ -593,10 +630,12 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct(t *testing.T) {
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 
 	// TODO set proper gas calculation in the expectedVMOutput, like the other
 	// tests
-	expectedVMOutput := expectedVMOutput_SameCtx_Recursive_Direct(code, int(recursiveCalls))
+	expectedVMOutput := expectedVMOutputSameCtxRecursiveDirect(code, int(recursiveCalls))
 	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
 	require.Equal(t, int64(recursiveCalls+1), host.BigInt().GetOne(16).Int64())
@@ -606,10 +645,10 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct_ErrMaxInstances(t *test
 	code := GetTestSCCode("exec-same-ctx-recursive", "../../")
 	scBalance := big.NewInt(1000)
 
-	host, _ := DefaultTestArwenForCall(t, code, scBalance)
+	host, _ := defaultTestArwenForCall(t, code, scBalance)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
-	input.Function = "callRecursive"
+	input.Function = callRecursive
 	input.GasProvided = gasProvided
 
 	recursiveCalls := byte(11)
@@ -619,11 +658,18 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct_ErrMaxInstances(t *test
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
-
-	expectedVMOutput := expectedVMOutput_SameCtx_Recursive_Direct_ErrMaxInstances(code, int(recursiveCalls))
-	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
-	require.Equal(t, expectedVMOutput, vmOutput)
-	require.Equal(t, int64(1), host.BigInt().GetOne(16).Int64())
+	require.NotNil(t, vmOutput)
+	if host.Runtime().ElrondSyncExecAPIErrorShouldFailExecution() == false {
+		require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+		expectedVMOutput := expectedVMOutputSameCtxRecursiveDirectErrMaxInstances(code, int(recursiveCalls))
+		expectedVMOutput.GasRemaining = vmOutput.GasRemaining
+		require.Equal(t, expectedVMOutput, vmOutput)
+		require.Equal(t, int64(1), host.BigInt().GetOne(16).Int64())
+	} else {
+		require.Equal(t, vmcommon.ExecutionFailed, vmOutput.ReturnCode)
+		require.Equal(t, arwen.ErrExecutionFailed.Error(), vmOutput.ReturnMessage)
+		require.Zero(t, vmOutput.GasRemaining)
+	}
 }
 
 func TestExecution_ExecuteOnSameContext_Recursive_Mutual_Methods(t *testing.T) {
@@ -649,7 +695,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_Methods(t *testing.T) {
 	code := GetTestSCCode("exec-same-ctx-recursive", "../../")
 	scBalance := big.NewInt(1000)
 
-	host, _ := DefaultTestArwenForCall(t, code, scBalance)
+	host, _ := defaultTestArwenForCall(t, code, scBalance)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "callRecursiveMutualMethods"
@@ -662,9 +708,12 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_Methods(t *testing.T) {
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+
 	// TODO set proper gas calculation in the expectedVMOutput, like the other
 	// tests
-	expectedVMOutput := expectedVMOutput_SameCtx_Recursive_MutualMethods(code, int(recursiveCalls))
+	expectedVMOutput := expectedVMOutputSameCtxRecursiveMutualMethods(code, int(recursiveCalls))
 	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
 	require.Equal(t, int64(recursiveCalls+1), host.BigInt().GetOne(16).Int64())
@@ -684,27 +733,28 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs(t *testing.T) {
 	//		both:		whoever exits must save the shared bigInt counter to storage
 	parentCode := GetTestSCCode("exec-same-ctx-recursive-parent", "../../")
 	childCode := GetTestSCCode("exec-same-ctx-recursive-child", "../../")
-	parentSCBalance := big.NewInt(1000)
 
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using executeOnDestContext().
-	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode, parentSCBalance)
+	host, _ := defaultTestArwenForTwoSCs(t, parentCode, childCode, nil, nil)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
-	input.Function = "parentCallsChild"
+	input.Function = parentCallsChild
 	input.GasProvided = gasProvided
 
-	recursiveCalls := byte(5)
+	recursiveCalls := byte(4)
 	input.Arguments = [][]byte{
 		{recursiveCalls},
 	}
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 
 	// TODO set proper gas calculation in the expectedVMOutput, like the other
 	// tests
-	expectedVMOutput := expectedVMOutput_SameCtx_Recursive_MutualSCs(parentCode, childCode, int(recursiveCalls))
+	expectedVMOutput := expectedVMOutputSameCtxRecursiveMutualSCs(parentCode, childCode, int(recursiveCalls))
 	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
 	require.Equal(t, int64(recursiveCalls+1), host.BigInt().GetOne(88).Int64())
@@ -713,14 +763,13 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs(t *testing.T) {
 func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs_OutOfGas(t *testing.T) {
 	parentCode := GetTestSCCode("exec-same-ctx-recursive-parent", "../../")
 	childCode := GetTestSCCode("exec-same-ctx-recursive-child", "../../")
-	parentSCBalance := big.NewInt(1000)
 
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using executeOnDestContext().
-	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode, parentSCBalance)
+	host, _ := defaultTestArwenForTwoSCs(t, parentCode, childCode, nil, nil)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
-	input.Function = "parentCallsChild"
+	input.Function = parentCallsChild
 	input.GasProvided = 10000
 
 	recursiveCalls := byte(5)
@@ -730,90 +779,15 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
-
 	require.NotNil(t, vmOutput)
-	require.Equal(t, vmcommon.OutOfGas, vmOutput.ReturnCode)
-	require.Equal(t, arwen.ErrNotEnoughGas.Error(), vmOutput.ReturnMessage)
-}
 
-func TestExecution_ExecuteOnSameContext_BuiltinFunctions(t *testing.T) {
-	code := GetTestSCCode("exec-same-ctx-builtin", "../../")
-	scBalance := big.NewInt(1000)
-
-	host, stubBlockchainHook := DefaultTestArwenForCall(t, code, scBalance)
-	stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
-	host.protocolBuiltinFunctions = getDummyBuiltinFunctionNames()
-
-	input := DefaultTestContractCallInput()
-	input.RecipientAddr = parentAddress
-
-	// Run function testBuiltins1
-	input.Function = "testBuiltins1"
-	input.GasProvided = 100000
-
-	vmOutput, err := host.RunSmartContractCall(input)
-	require.Nil(t, err)
-
-	require.NotNil(t, vmOutput)
-	expectedVMOutput := expectedVMOutput_SameCtx_BuiltinFunctions_1(code)
-	require.Equal(t, expectedVMOutput, vmOutput)
-
-	// Run function testBuiltins2
-	input.Function = "testBuiltins2"
-	input.GasProvided = 100000
-
-	vmOutput, err = host.RunSmartContractCall(input)
-	require.Nil(t, err)
-
-	require.NotNil(t, vmOutput)
-	expectedVMOutput = expectedVMOutput_SameCtx_BuiltinFunctions_2(code)
-	require.Equal(t, expectedVMOutput, vmOutput)
-
-	// Run function testBuiltins3
-	input.Function = "testBuiltins3"
-	input.GasProvided = 100000
-
-	vmOutput, err = host.RunSmartContractCall(input)
-	require.Nil(t, err)
-
-	require.NotNil(t, vmOutput)
-	expectedVMOutput = expectedVMOutput_SameCtx_BuiltinFunctions_3(code)
-	require.Equal(t, expectedVMOutput, vmOutput)
-}
-
-func dummyProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
-	outPutAccounts := make(map[string]*vmcommon.OutputAccount)
-	outPutAccounts[string(parentAddress)] = &vmcommon.OutputAccount{
-		BalanceDelta: big.NewInt(0),
-		Address:      parentAddress}
-
-	if input.Function == "builtinClaim" {
-		outPutAccounts[string(parentAddress)].BalanceDelta = big.NewInt(42)
-		return &vmcommon.VMOutput{GasRemaining: 400, OutputAccounts: outPutAccounts}, nil
+	if host.Runtime().ElrondSyncExecAPIErrorShouldFailExecution() == false {
+		require.Equal(t, vmcommon.OutOfGas, vmOutput.ReturnCode)
+		require.Equal(t, arwen.ErrNotEnoughGas.Error(), vmOutput.ReturnMessage)
+	} else {
+		require.Equal(t, vmcommon.ExecutionFailed, vmOutput.ReturnCode)
+		require.Equal(t, arwen.ErrExecutionFailed.Error(), vmOutput.ReturnMessage)
 	}
-	if input.Function == "builtinDoSomething" {
-		return &vmcommon.VMOutput{OutputAccounts: outPutAccounts, GasRemaining: input.GasProvided}, nil
-	}
-	if input.Function == "builtinFail" {
-		return &vmcommon.VMOutput{
-			GasRemaining:  0,
-			GasRefund:     big.NewInt(0),
-			ReturnCode:    vmcommon.UserError,
-			ReturnMessage: "whatdidyoudo",
-		}, nil
-	}
-
-	return nil, arwen.ErrFuncNotFound
-}
-
-func getDummyBuiltinFunctionNames() vmcommon.FunctionNames {
-	names := make(vmcommon.FunctionNames)
-
-	var empty struct{}
-	names["builtinClaim"] = empty
-	names["builtinDoSomething"] = empty
-	names["builtinFail"] = empty
-	return names
 }
 
 func TestExecution_ExecuteOnDestContext_Prepare(t *testing.T) {
@@ -823,7 +797,7 @@ func TestExecution_ExecuteOnDestContext_Prepare(t *testing.T) {
 	// Execute the parent SC method "parentFunctionPrepare", which sets storage,
 	// finish data and performs a transfer. This step validates the test to the
 	// actual call to ExecuteOnSameContext().
-	host, _ := DefaultTestArwenForCall(t, parentCode, parentSCBalance)
+	host, _ := defaultTestArwenForCall(t, parentCode, parentSCBalance)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionPrepare"
@@ -831,10 +805,10 @@ func TestExecution_ExecuteOnDestContext_Prepare(t *testing.T) {
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
-	fmt.Println(vmOutput.ReturnMessage)
+	require.NotNil(t, vmOutput)
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 
-	expectedVMOutput := expectedVMOutput_DestCtx_Prepare(parentCode)
+	expectedVMOutput := expectedVMOutputDestCtxPrepare(parentCode)
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
@@ -844,7 +818,7 @@ func TestExecution_ExecuteOnDestContext_Wrong(t *testing.T) {
 
 	// Call parentFunctionWrongCall() of the parent SC, which will try to call a
 	// non-existing SC.
-	host, _ := DefaultTestArwenForCall(t, parentCode, parentSCBalance)
+	host, _ := defaultTestArwenForCall(t, parentCode, parentSCBalance)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionWrongCall"
@@ -852,8 +826,17 @@ func TestExecution_ExecuteOnDestContext_Wrong(t *testing.T) {
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
-	expectedVMOutput := expectedVMOutput_DestCtx_WrongContractCalled(parentCode)
-	require.Equal(t, expectedVMOutput, vmOutput)
+	require.NotNil(t, vmOutput)
+
+	if host.Runtime().ElrondSyncExecAPIErrorShouldFailExecution() == false {
+		require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+		expectedVMOutput := expectedVMOutputDestCtxWrongContractCalled(parentCode)
+		require.Equal(t, expectedVMOutput, vmOutput)
+	} else {
+		require.Equal(t, vmcommon.ExecutionFailed, vmOutput.ReturnCode)
+		require.Equal(t, "account not found", vmOutput.ReturnMessage)
+		require.Zero(t, vmOutput.GasRemaining)
+	}
 }
 
 func TestExecution_ExecuteOnDestContext_OutOfGas(t *testing.T) {
@@ -869,13 +852,12 @@ func TestExecution_ExecuteOnDestContext_OutOfGas(t *testing.T) {
 	// Assertions: the parent lost all the gas provided to executeOnDestContext
 	parentCode := GetTestSCCode("exec-dest-ctx-parent", "../../")
 	childCode := GetTestSCCode("exec-dest-ctx-child", "../../")
-	parentSCBalance := big.NewInt(1000)
 
 	// Call parentFunctionChildCall_OutOfGas() of the parent SC, which will call
 	// the child SC using executeOnDestContext() with sufficient gas for
 	// compilation and starting, but the child starts an infinite loop which will
 	// end in OutOfGas.
-	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode, parentSCBalance)
+	host, _ := defaultTestArwenForTwoSCs(t, parentCode, childCode, nil, nil)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionChildCall_OutOfGas"
@@ -883,40 +865,130 @@ func TestExecution_ExecuteOnDestContext_OutOfGas(t *testing.T) {
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
-	expectedVMOutput := expectedVMOutput_DestCtx_OutOfGas(parentCode)
-	require.Equal(t, expectedVMOutput, vmOutput)
-	require.Equal(t, int64(42), host.BigInt().GetOne(12).Int64())
+	require.NotNil(t, vmOutput)
+
+	if host.Runtime().ElrondSyncExecAPIErrorShouldFailExecution() == false {
+		require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+		expectedVMOutput := expectedVMOutputDestCtxOutOfGas(parentCode)
+		require.Equal(t, expectedVMOutput, vmOutput)
+		require.Equal(t, int64(42), host.BigInt().GetOne(12).Int64())
+	} else {
+		require.Equal(t, vmcommon.ExecutionFailed, vmOutput.ReturnCode)
+		require.Equal(t, arwen.ErrNotEnoughGas.Error(), vmOutput.ReturnMessage)
+		require.Zero(t, vmOutput.GasRemaining)
+	}
 }
 
 func TestExecution_ExecuteOnDestContext_Successful(t *testing.T) {
 	parentCode := GetTestSCCode("exec-dest-ctx-parent", "../../")
 	childCode := GetTestSCCode("exec-dest-ctx-child", "../../")
-	parentSCBalance := big.NewInt(1000)
 
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using executeOnDestContext().
-	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode, parentSCBalance)
+	host, _ := defaultTestArwenForTwoSCs(t, parentCode, childCode, nil, nil)
+	input := DefaultTestContractCallInput()
+	input.RecipientAddr = parentAddress
+	input.Function = parentFunctionChildCall
+	input.GasProvided = gasProvided
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+
+	expectedVMOutput := expectedVMOutputDestCtxSuccessfulChildCall(parentCode, childCode)
+	assert.Equal(t, expectedVMOutput, vmOutput)
+}
+
+func TestExecution_ExecuteOnDestContext_Successful_ChildReturns(t *testing.T) {
+	parentCode := GetTestSCCode("exec-dest-ctx-parent", "../../")
+	childCode := GetTestSCCode("exec-dest-ctx-child", "../../")
+
+	// Call parentFunctionChildCall() of the parent SC, which will call the child
+	// SC and pass some arguments using executeOnDestContext().
+	host, _ := defaultTestArwenForTwoSCs(t, parentCode, childCode, nil, nil)
+	input := DefaultTestContractCallInput()
+	input.RecipientAddr = parentAddress
+	input.Function = "parentFunctionChildCall_ReturnedData"
+	input.GasProvided = gasProvided
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+
+	expectedVMOutput := expectedVMOutputDestCtxSuccessfulChildCall_ChildReturns(parentCode, childCode)
+	assert.Equal(t, expectedVMOutput, vmOutput)
+}
+
+func TestExecution_ExecuteOnDestContext_GasRemaining(t *testing.T) {
+	// This test ensures that host.ExecuteOnDestContext() calls
+	// metering.GasLeft() on the Wasmer instance of the child, and not of the
+	// parent.
+
+	parentCode := GetTestSCCode("exec-dest-ctx-parent", "../../")
+	childCode := GetTestSCCode("exec-dest-ctx-child", "../../")
+
+	// Pretend that the execution of the parent SC was requested, with the
+	// following ContractCallInput:
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionChildCall"
 	input.GasProvided = gasProvided
 
-	vmOutput, err := host.RunSmartContractCall(input)
+	// Initialize the VM with the parent SC and child SC, but without really
+	// executing the parent. The initialization emulates the behavior of
+	// host.doRunSmartContractCall(). Gas cost for compilation is skipped.
+	host, _ := defaultTestArwenForTwoSCs(t, parentCode, childCode, nil, nil)
+	host.InitState()
+
+	_, _, metering, output, runtime, storage := host.GetContexts()
+	runtime.InitStateFromContractCallInput(input)
+	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
+	storage.SetAddress(runtime.GetSCAddress())
+	_ = metering.DeductInitialGasForExecution([]byte{})
+
+	contract, err := runtime.GetSCCode()
 	require.Nil(t, err)
-	expectedVMOutput := expectedVMOutput_DestCtx_SuccessfulChildCall(parentCode, childCode)
-	expectedVMOutput.OutputAccounts[string(parentAddress)].StorageUpdates[string(childKey)] = &vmcommon.StorageUpdate{Offset: childKey, Data: nil}
-	assert.Equal(t, expectedVMOutput, vmOutput)
+
+	vmInput := runtime.GetVMInput()
+	err = runtime.StartWasmerInstance(contract, vmInput.GasProvided, false)
+	require.Nil(t, err)
+
+	// Use a lot of gas on the parent contract
+	metering.UseGas(500000)
+	require.Equal(t, input.GasProvided-500001, metering.GasLeft())
+
+	// Create a second ContractCallInput, used to call the child SC using
+	// host.ExecuteOnDestContext().
+	childInput := DefaultTestContractCallInput()
+	childInput.CallerAddr = parentAddress
+	childInput.CallValue = big.NewInt(99)
+	childInput.Function = "childFunction"
+	childInput.RecipientAddr = childAddress
+	childInput.Arguments = [][]byte{
+		[]byte("some data"),
+		[]byte("argument"),
+		[]byte("another argument"),
+	}
+	childInput.GasProvided = 10000
+
+	childOutput, _, _, err := host.ExecuteOnDestContext(childInput)
+	require.Nil(t, err)
+	require.NotNil(t, childOutput)
+	require.Equal(t, uint64(7752), childOutput.GasRemaining)
+
+	host.Clean()
 }
 
 func TestExecution_ExecuteOnDestContext_Successful_BigInts(t *testing.T) {
 	parentCode := GetTestSCCode("exec-dest-ctx-parent", "../../")
 	childCode := GetTestSCCode("exec-dest-ctx-child", "../../")
-	parentSCBalance := big.NewInt(1000)
 
 	// Call parentFunctionChildCall_BigInts() of the parent SC, which will call a
 	// method of the child SC that takes some big Int references as arguments and
 	// produce a new big Int out of the arguments.
-	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode, parentSCBalance)
+	host, _ := defaultTestArwenForTwoSCs(t, parentCode, childCode, nil, nil)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "parentFunctionChildCall_BigInts"
@@ -924,7 +996,10 @@ func TestExecution_ExecuteOnDestContext_Successful_BigInts(t *testing.T) {
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
-	expectedVMOutput := expectedVMOutput_DestCtx_SuccessfulChildCall_BigInts(parentCode, childCode)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+
+	expectedVMOutput := expectedVMOutputDestCtxSuccessfulChildCallBigInts(parentCode, childCode)
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
@@ -932,10 +1007,10 @@ func TestExecution_ExecuteOnDestContext_Recursive_Direct(t *testing.T) {
 	code := GetTestSCCode("exec-dest-ctx-recursive", "../../")
 	scBalance := big.NewInt(1000)
 
-	host, _ := DefaultTestArwenForCall(t, code, scBalance)
+	host, _ := defaultTestArwenForCall(t, code, scBalance)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
-	input.Function = "callRecursive"
+	input.Function = callRecursive
 	input.GasProvided = gasProvided
 
 	recursiveCalls := byte(6)
@@ -945,10 +1020,12 @@ func TestExecution_ExecuteOnDestContext_Recursive_Direct(t *testing.T) {
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 
 	// TODO set proper gas calculation in the expectedVMOutput, like the other
 	// tests
-	expectedVMOutput := expectedVMOutput_DestCtx_Recursive_Direct(code, int(recursiveCalls))
+	expectedVMOutput := expectedVMOutputDestCtxRecursiveDirect(code, int(recursiveCalls))
 	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
 	require.Equal(t, int64(1), host.BigInt().GetOne(16).Int64())
@@ -958,7 +1035,7 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_Methods(t *testing.T) {
 	code := GetTestSCCode("exec-dest-ctx-recursive", "../../")
 	scBalance := big.NewInt(1000)
 
-	host, _ := DefaultTestArwenForCall(t, code, scBalance)
+	host, _ := defaultTestArwenForCall(t, code, scBalance)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "callRecursiveMutualMethods"
@@ -971,10 +1048,12 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_Methods(t *testing.T) {
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 
 	// TODO set proper gas calculation in the expectedVMOutput, like the other
 	// tests
-	expectedVMOutput := expectedVMOutput_DestCtx_Recursive_MutualMethods(code, int(recursiveCalls))
+	expectedVMOutput := expectedVMOutputDestCtxRecursiveMutualMethods(code, int(recursiveCalls))
 	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
 	require.Equal(t, int64(0), host.BigInt().GetOne(16).Int64())
@@ -983,14 +1062,13 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_Methods(t *testing.T) {
 func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs(t *testing.T) {
 	parentCode := GetTestSCCode("exec-dest-ctx-recursive-parent", "../../")
 	childCode := GetTestSCCode("exec-dest-ctx-recursive-child", "../../")
-	parentSCBalance := big.NewInt(1000)
 
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using executeOnDestContext().
-	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode, parentSCBalance)
+	host, _ := defaultTestArwenForTwoSCs(t, parentCode, childCode, nil, nil)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
-	input.Function = "parentCallsChild"
+	input.Function = parentCallsChild
 	input.GasProvided = gasProvided
 
 	recursiveCalls := byte(6)
@@ -1000,10 +1078,12 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs(t *testing.T) {
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 
 	// TODO set proper gas calculation in the expectedVMOutput, like the other
 	// tests
-	expectedVMOutput := expectedVMOutput_DestCtx_Recursive_MutualSCs(parentCode, childCode, int(recursiveCalls))
+	expectedVMOutput := expectedVMOutputDestCtxRecursiveMutualSCs(parentCode, childCode, int(recursiveCalls))
 	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
 	require.Equal(t, int64(1), host.BigInt().GetOne(88).Int64())
@@ -1012,14 +1092,13 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs(t *testing.T) {
 func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs_OutOfGas(t *testing.T) {
 	parentCode := GetTestSCCode("exec-dest-ctx-recursive-parent", "../../")
 	childCode := GetTestSCCode("exec-dest-ctx-recursive-child", "../../")
-	parentSCBalance := big.NewInt(1000)
 
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using executeOnDestContext().
-	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode, parentSCBalance)
+	host, _ := defaultTestArwenForTwoSCs(t, parentCode, childCode, nil, nil)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
-	input.Function = "parentCallsChild"
+	input.Function = parentCallsChild
 	input.GasProvided = 10000
 
 	recursiveCalls := byte(5)
@@ -1029,10 +1108,167 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
-
 	require.NotNil(t, vmOutput)
-	require.Equal(t, vmcommon.OutOfGas, vmOutput.ReturnCode)
-	require.Equal(t, arwen.ErrNotEnoughGas.Error(), vmOutput.ReturnMessage)
+
+	if host.Runtime().ElrondSyncExecAPIErrorShouldFailExecution() == false {
+		require.Equal(t, vmcommon.OutOfGas, vmOutput.ReturnCode)
+		require.Equal(t, arwen.ErrNotEnoughGas.Error(), vmOutput.ReturnMessage)
+	} else {
+		require.Equal(t, vmcommon.ExecutionFailed, vmOutput.ReturnCode)
+		require.Equal(t, arwen.ErrExecutionFailed.Error(), vmOutput.ReturnMessage)
+		require.Zero(t, vmOutput.GasRemaining)
+	}
+}
+
+func TestExecution_ExecuteOnSameContext_MultipleChildren(t *testing.T) {
+	t.Skip("needs gas forwarding fixes")
+
+	world := worldmock.NewMockWorld()
+	host := defaultTestArwen(t, world)
+
+	alphaCode := GetTestSCCodeModule("exec-sync-ctx-multiple/alpha", "alpha", "../../")
+	alpha := AddTestSmartContractToWorld(world, "alphaSC", alphaCode)
+	alpha.Balance = big.NewInt(100)
+
+	betaCode := GetTestSCCodeModule("exec-sync-ctx-multiple/beta", "beta", "../../")
+	gammaCode := GetTestSCCodeModule("exec-sync-ctx-multiple/gamma", "gamma", "../../")
+	deltaCode := GetTestSCCodeModule("exec-sync-ctx-multiple/delta", "delta", "../../")
+
+	_ = AddTestSmartContractToWorld(world, "betaSC", betaCode)
+	_ = AddTestSmartContractToWorld(world, "gammaSC", gammaCode)
+	_ = AddTestSmartContractToWorld(world, "deltaSC", deltaCode)
+
+	expectedReturnData := [][]byte{
+		[]byte("arg1"),
+		[]byte("succ"),
+		[]byte("arg2"),
+		[]byte("succ"),
+		[]byte("arg3"),
+		[]byte("succ"),
+	}
+
+	// Alpha uses executeOnSameContext() to call beta, gamma and delta one after
+	// the other, in the same transaction.
+	input := DefaultTestContractCallInput()
+	input.Function = "callChildrenDirectly_SameCtx"
+	input.GasProvided = 1000000
+	input.RecipientAddr = alpha.Address
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+
+	require.Equal(t, "", vmOutput.ReturnMessage)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+	require.Equal(t, expectedReturnData, vmOutput.ReturnData)
+
+}
+
+func TestExecution_ExecuteOnDestContext_MultipleChildren(t *testing.T) {
+	world := worldmock.NewMockWorld()
+	host := defaultTestArwen(t, world)
+
+	alphaCode := GetTestSCCodeModule("exec-sync-ctx-multiple/alpha", "alpha", "../../")
+	alpha := AddTestSmartContractToWorld(world, "alphaSC", alphaCode)
+	alpha.Balance = big.NewInt(100)
+
+	betaCode := GetTestSCCodeModule("exec-sync-ctx-multiple/beta", "beta", "../../")
+	gammaCode := GetTestSCCodeModule("exec-sync-ctx-multiple/gamma", "gamma", "../../")
+	deltaCode := GetTestSCCodeModule("exec-sync-ctx-multiple/delta", "delta", "../../")
+
+	_ = AddTestSmartContractToWorld(world, "betaSC", betaCode)
+	_ = AddTestSmartContractToWorld(world, "gammaSC", gammaCode)
+	_ = AddTestSmartContractToWorld(world, "deltaSC", deltaCode)
+
+	expectedReturnData := [][]byte{
+		[]byte("arg1"),
+		[]byte("succ"),
+		[]byte("arg2"),
+		[]byte("succ"),
+		[]byte("arg3"),
+		[]byte("succ"),
+	}
+
+	// Alpha uses executeOnDestContext() to call beta, gamma and delta one after
+	// the other, in the same transaction.
+	input := DefaultTestContractCallInput()
+	input.Function = "callChildrenDirectly_DestCtx"
+	input.GasProvided = 1000000
+	input.RecipientAddr = alpha.Address
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+
+	require.Equal(t, "", vmOutput.ReturnMessage)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+	require.Equal(t, expectedReturnData, vmOutput.ReturnData)
+}
+
+func TestExecution_ExecuteOnDestContextByCaller_SimpleTransfer(t *testing.T) {
+	// The child contract is designed to send some tokens back to its caller, as
+	// many as requested. The parent calls the child using
+	// executeOnDestContextByCaller(), which means that the child will not see
+	// the parent as its caller, but the original caller of the transaction
+	// instead. Thus the original caller (the user address) will receive 42
+	// tokens, and not the parent, even if the parent is the one making the call
+	// to the child.
+	parentCode := GetTestSCCodeModule("exec-dest-ctx-by-caller/parent", "parent", "../../")
+	childCode := GetTestSCCodeModule("exec-dest-ctx-by-caller/child", "child", "../../")
+
+	host, _ := defaultTestArwenForTwoSCs(t, parentCode, childCode, nil, nil)
+	input := DefaultTestContractCallInput()
+	input.Function = "call_child"
+	input.GasProvided = 2000
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+
+	// TODO calculate expected remaining gas properly, instead of copying it from
+	// the actual vmOutput.
+	expectedVMOutput := expectedVMOutputDestCtxByCallerSimpleTransfer(42)
+	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
+	require.Equal(t, expectedVMOutput, vmOutput)
+}
+
+func TestExecution_AsyncCall_GasLimitConsumed(t *testing.T) {
+	parentCode := GetTestSCCode("async-call-parent", "../../")
+	childCode := GetTestSCCode("async-call-child", "../../")
+	host, stubBlockchainHook := defaultTestArwenForTwoSCs(t, parentCode, childCode, nil, nil)
+	stubBlockchainHook.GetUserAccountCalled = func(scAddress []byte) (vmcommon.UserAccountHandler, error) {
+		if bytes.Equal(scAddress, parentAddress) {
+			return &contextmock.StubAccount{
+				Address: parentAddress,
+				Balance: big.NewInt(1000),
+			}, nil
+		}
+		return nil, errAccountNotFound
+	}
+	stubBlockchainHook.GetCodeCalled = func(account vmcommon.UserAccountHandler) []byte {
+		if bytes.Equal(parentAddress, account.AddressBytes()) {
+			return parentCode
+		}
+		return nil
+	}
+	stubBlockchainHook.GetShardOfAddressCalled = func(address []byte) uint32 {
+		if bytes.Equal(address, parentAddress) {
+			return 0
+		}
+		return 1
+	}
+
+	input := DefaultTestContractCallInput()
+	input.RecipientAddr = parentAddress
+	input.Function = parentPerformAsyncCall
+	input.GasProvided = 1000000
+	input.Arguments = [][]byte{{0}}
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Zero(t, vmOutput.GasRemaining)
 }
 
 func TestExecution_AsyncCall(t *testing.T) {
@@ -1057,23 +1293,24 @@ func TestExecution_AsyncCall(t *testing.T) {
 	//		* Vault
 	parentCode := GetTestSCCode("async-call-parent", "../../")
 	childCode := GetTestSCCode("async-call-child", "../../")
-	parentSCBalance := big.NewInt(1000)
 
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
-	// SC and pass some arguments using executeOnDestContext().
-	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode, parentSCBalance)
+	// SC and pass some arguments using asyncCall().
+	host, _ := defaultTestArwenForTwoSCs(t, parentCode, childCode, nil, nil)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
-	input.Function = "parentPerformAsyncCall"
-	input.GasProvided = 1_000_000
+	input.Function = parentPerformAsyncCall
+	input.GasProvided = 116000
 	input.Arguments = [][]byte{{0}}
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 
 	// TODO calculate expected remaining gas properly, instead of copying it from
 	// the actual vmOutput.
-	expectedVMOutput := expectedVMOutput_AsyncCall(parentCode, childCode)
+	expectedVMOutput := expectedVMOutputAsyncCall(parentCode, childCode)
 	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
@@ -1086,105 +1323,58 @@ func TestExecution_AsyncCall_ChildFails(t *testing.T) {
 	// to the Vault directly.
 	parentCode := GetTestSCCode("async-call-parent", "../../")
 	childCode := GetTestSCCode("async-call-child", "../../")
-	parentSCBalance := big.NewInt(1000)
 
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
-	// SC and pass some arguments using executeOnDestContext().
-	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode, parentSCBalance)
+	// SC and pass some arguments using asyncCall().
+	host, _ := defaultTestArwenForTwoSCs(t, parentCode, childCode, nil, nil)
 	host.Metering().GasSchedule().ElrondAPICost.AsyncCallbackGasLock = 3000
 
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
-	input.Function = "parentPerformAsyncCall"
-	input.GasProvided = 1_000_000
+	input.Function = parentPerformAsyncCall
+	input.GasProvided = 1000000
 	input.Arguments = [][]byte{{1}}
 	input.CurrentTxHash = []byte("txhash")
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 
 	// TODO calculate expected remaining gas properly, instead of copying it from
 	// the actual vmOutput.
-	expectedVMOutput := expectedVMOutput_AsyncCall_ChildFails(parentCode, childCode)
+	expectedVMOutput := expectedVMOutputAsyncCallChildFails(parentCode, childCode)
 	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
 func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 	// Scenario
-	// Identical to TestExecution_AsyncCall(), except that the child is
+	// Identical to TestExecution_AsyncCall(), except that the callback is
 	// instructed to call signalError().
-	// Because "vault" was not received by the callBack(), the Parent sends 4 ERD
-	// to the Vault directly.
 	parentCode := GetTestSCCode("async-call-parent", "../../")
 	childCode := GetTestSCCode("async-call-child", "../../")
-	parentSCBalance := big.NewInt(1000)
 
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
-	// SC and pass some arguments using executeOnDestContext().
-	host, _ := DefaultTestArwenForTwoSCs(t, parentCode, childCode, parentSCBalance)
+	// SC and pass some arguments using asyncCall().
+	host, _ := defaultTestArwenForTwoSCs(t, parentCode, childCode, nil, nil)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
-	input.Function = "parentPerformAsyncCall"
-	input.GasProvided = 1_000_000
+	input.Function = parentPerformAsyncCall
+	input.GasProvided = 200000
 	input.Arguments = [][]byte{{0, 3}}
 	input.CurrentTxHash = []byte("txhash")
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 
 	// TODO calculate expected remaining gas properly, instead of copying it from
 	// the actual vmOutput.
-	expectedVMOutput := expectedVMOutput_AsyncCall_CallBackFails(parentCode, childCode)
+	expectedVMOutput := expectedVMOutputAsyncCallCallBackFails(parentCode, childCode)
 	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
-}
-
-func TestExecution_AsyncCall_BuiltinFails(t *testing.T) {
-	code := GetTestSCCode("async-call-builtin", "../../")
-	scBalance := big.NewInt(1000)
-
-	host, stubBlockchainHook := DefaultTestArwenForCall(t, code, scBalance)
-	stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
-	host.protocolBuiltinFunctions = getDummyBuiltinFunctionNames()
-
-	input := DefaultTestContractCallInput()
-	input.RecipientAddr = parentAddress
-	input.Function = "performAsyncCallToBuiltin"
-	input.Arguments = [][]byte{{1}}
-	input.GasProvided = 1000000
-
-	vmOutput, err := host.RunSmartContractCall(input)
-	require.Nil(t, err)
-
-	require.NotNil(t, vmOutput)
-	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
-	require.Equal(t, [][]byte{[]byte("hello"), {4}}, vmOutput.ReturnData)
-}
-
-func TestExecution_AsyncCall_CallBackFailsBeforeExecution(t *testing.T) {
-	config.AsyncCallbackGasLockForTests = uint64(2)
-
-	code := GetTestSCCode("async-call-builtin", "../../")
-	scBalance := big.NewInt(1000)
-
-	host, stubBlockchainHook := DefaultTestArwenForCall(t, code, scBalance)
-	stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
-	host.protocolBuiltinFunctions = getDummyBuiltinFunctionNames()
-
-	input := DefaultTestContractCallInput()
-	input.RecipientAddr = parentAddress
-	input.Function = "performAsyncCallToBuiltin"
-	input.Arguments = [][]byte{{1}}
-	input.GasProvided = 1000000
-	input.CurrentTxHash = []byte("txhash")
-
-	vmOutput, err := host.RunSmartContractCall(input)
-	require.Nil(t, err)
-
-	require.NotNil(t, vmOutput)
-	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
-	require.Equal(t, [][]byte{[]byte("hello"), []byte("out of gas"), []byte("txhash")}, vmOutput.ReturnData)
 }
 
 func TestExecution_CreateNewContract_Success(t *testing.T) {
@@ -1192,7 +1382,7 @@ func TestExecution_CreateNewContract_Success(t *testing.T) {
 	childCode := GetTestSCCode("init-correct", "../../")
 	parentBalance := big.NewInt(1000)
 
-	host, stubBlockchainHook := DefaultTestArwenForCall(t, parentCode, parentBalance)
+	host, stubBlockchainHook := defaultTestArwenForCall(t, parentCode, parentBalance)
 	stubBlockchainHook.GetStorageDataCalled = func(address []byte, key []byte) ([]byte, error) {
 		if bytes.Equal(address, parentAddress) {
 			if bytes.Equal(key, []byte{'A'}) {
@@ -1210,8 +1400,10 @@ func TestExecution_CreateNewContract_Success(t *testing.T) {
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 
-	expectedVMOutput := expectedVMOutput_CreateNewContract_Success(parentCode, childCode)
+	expectedVMOutput := expectedVMOutputCreateNewContractSuccess(parentCode, childCode)
 
 	// TODO calculate expected remaining gas properly, instead of copying it from
 	// the actual vmOutput.
@@ -1224,7 +1416,7 @@ func TestExecution_CreateNewContract_Fail(t *testing.T) {
 	childCode := GetTestSCCode("init-correct", "../../")
 	parentBalance := big.NewInt(1000)
 
-	host, stubBlockchainHook := DefaultTestArwenForCall(t, parentCode, parentBalance)
+	host, stubBlockchainHook := defaultTestArwenForCall(t, parentCode, parentBalance)
 	stubBlockchainHook.GetStorageDataCalled = func(address []byte, key []byte) ([]byte, error) {
 		if bytes.Equal(address, parentAddress) {
 			if bytes.Equal(key, []byte{'A'}) {
@@ -1242,13 +1434,127 @@ func TestExecution_CreateNewContract_Fail(t *testing.T) {
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 
-	expectedVMOutput := expectedVMOutput_CreateNewContract_Fail(parentCode, childCode)
+	expectedVMOutput := expectedVMOutputCreateNewContractFail(parentCode, childCode)
 
 	// TODO calculate expected remaining gas properly, instead of copying it from
 	// the actual vmOutput.
 	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
+}
+
+func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
+	host, _, ibm := defaultTestArwenForCallWithInstanceMocks(t)
+
+	parentInstance := ibm.CreateAndStoreInstanceMock(parentAddress, 1000)
+	parentInstance.AddMockMethod("callChild", func() {
+		host.Output().Finish([]byte("parent returns this"))
+		host.Metering().UseGas(500)
+		_, err := host.Storage().SetStorage([]byte("parent"), []byte("parent storage"))
+		require.Nil(t, err)
+		childInput := DefaultTestContractCallInput()
+		childInput.CallerAddr = parentAddress
+		childInput.RecipientAddr = childAddress
+		childInput.CallValue = big.NewInt(4)
+		childInput.Function = "doSomething"
+		childInput.GasProvided = 1000
+		_, _, _, err = host.ExecuteOnDestContext(childInput)
+		require.Nil(t, err)
+	})
+
+	childInstance := ibm.CreateAndStoreInstanceMock(childAddress, 0)
+	childInstance.AddMockMethod("doSomething", func() {
+		host.Output().Finish([]byte("child returns this"))
+		host.Metering().UseGas(100)
+		_, err := host.Storage().SetStorage([]byte("child"), []byte("child storage"))
+		require.Nil(t, err)
+	})
+
+	input := DefaultTestContractCallInput()
+	input.Function = "callChild"
+	input.GasProvided = 1000
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+
+	expectedVMOutput := expectedVMOutputMockedWasmerInstances()
+	expectedVMOutput.GasRemaining = 307
+	require.Equal(t, expectedVMOutput, vmOutput)
+}
+
+func TestExecution_GasUsed_SingleContract(t *testing.T) {
+	host, _, ibm := defaultTestArwenForCallWithInstanceMocks(t)
+	host.Metering().GasSchedule().BaseOperationCost.CompilePerByte = 0
+	host.Metering().GasSchedule().BaseOperationCost.AoTPreparePerByte = 0
+
+	gasProvided := uint64(1000)
+	gasUsedByParent := uint64(401)
+
+	parentInstance := ibm.CreateAndStoreInstanceMock(parentAddress, 0)
+	parentInstance.AddMockMethod("doSomething", func() {
+		host.Metering().UseGas(gasUsedByParent)
+	})
+
+	input := DefaultTestContractCallInput()
+	input.Function = "doSomething"
+	input.GasProvided = gasProvided
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, gasProvided-gasUsedByParent-1, vmOutput.GasRemaining)
+
+	parentAccount := vmOutput.OutputAccounts[string(parentAddress)]
+	require.Equal(t, gasUsedByParent+1, parentAccount.GasUsed)
+}
+
+func TestExecution_GasUsed_ExecuteOnSameCtx(t *testing.T) {
+	host, _, ibm := defaultTestArwenForCallWithInstanceMocks(t)
+	host.Metering().GasSchedule().BaseOperationCost.CompilePerByte = 1
+	host.Metering().GasSchedule().BaseOperationCost.AoTPreparePerByte = 1
+
+	gasProvided := uint64(1000)
+	contractCompilationCost := uint64(32)
+	gasUsedByParentExec := uint64(400)
+	gasUsedByChildExec := uint64(200)
+	gasUsedByParent := contractCompilationCost + gasUsedByParentExec + 1
+	gasUsedByChild := contractCompilationCost + gasUsedByChildExec
+
+	parentInstance := ibm.CreateAndStoreInstanceMock(parentAddress, 0)
+	parentInstance.AddMockMethod("function", func() {
+		host.Metering().UseGas(gasUsedByParentExec)
+		childInput := DefaultTestContractCallInput()
+		childInput.CallerAddr = parentAddress
+		childInput.RecipientAddr = childAddress
+		childInput.GasProvided = 300
+		_, err := host.ExecuteOnSameContext(childInput)
+		require.Nil(t, err)
+	})
+
+	childInstance := ibm.CreateAndStoreInstanceMock(childAddress, 0)
+	childInstance.AddMockMethod("function", func() {
+		host.Metering().UseGas(gasUsedByChildExec)
+	})
+
+	input := DefaultTestContractCallInput()
+	input.Function = "function"
+	input.GasProvided = gasProvided
+
+	expectedGasRemaining := gasProvided - gasUsedByParent - gasUsedByChild - 1
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, expectedGasRemaining, vmOutput.GasRemaining)
+
+	parentAccount := vmOutput.OutputAccounts[string(parentAddress)]
+	require.Equal(t, gasUsedByParent, parentAccount.GasUsed)
+
+	childAccount := vmOutput.OutputAccounts[string(childAddress)]
+	require.Equal(t, gasUsedByChild+1, childAccount.GasUsed)
 }
 
 // makeBytecodeWithLocals rewrites the bytecode of "answer" to change the
