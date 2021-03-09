@@ -897,7 +897,27 @@ func TestExecution_ExecuteOnDestContext_Successful(t *testing.T) {
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 
 	expectedVMOutput := expectedVMOutputDestCtxSuccessfulChildCall(parentCode, childCode)
-	expectedVMOutput.OutputAccounts[string(parentAddress)].StorageUpdates[string(childKey)] = &vmcommon.StorageUpdate{Offset: childKey, Data: nil}
+	assert.Equal(t, expectedVMOutput, vmOutput)
+}
+
+func TestExecution_ExecuteOnDestContext_Successful_ChildReturns(t *testing.T) {
+	parentCode := GetTestSCCode("exec-dest-ctx-parent", "../../")
+	childCode := GetTestSCCode("exec-dest-ctx-child", "../../")
+
+	// Call parentFunctionChildCall() of the parent SC, which will call the child
+	// SC and pass some arguments using executeOnDestContext().
+	host, _ := defaultTestArwenForTwoSCs(t, parentCode, childCode, nil, nil)
+	input := DefaultTestContractCallInput()
+	input.RecipientAddr = parentAddress
+	input.Function = "parentFunctionChildCall_ReturnedData"
+	input.GasProvided = gasProvided
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+
+	expectedVMOutput := expectedVMOutputDestCtxSuccessfulChildCall_ChildReturns(parentCode, childCode)
 	assert.Equal(t, expectedVMOutput, vmOutput)
 }
 

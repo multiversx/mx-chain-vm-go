@@ -496,7 +496,7 @@ func expectedVMOutputDestCtxPrepare(_ []byte) *vmcommon.VMOutput {
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
-	parentAccount.GasUsed = 3093
+	parentAccount.GasUsed = 4309
 
 	_ = AddNewOutputAccount(
 		vmOutput,
@@ -582,7 +582,7 @@ func expectedVMOutputDestCtxSuccessfulChildCall(parentCode []byte, _ []byte) *vm
 
 	parentAccount := vmOutput.OutputAccounts[string(parentAddress)]
 	parentAccount.BalanceDelta = big.NewInt(-141)
-	parentAccount.GasUsed = 3228
+	parentAccount.GasUsed = 4444
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,
@@ -600,6 +600,7 @@ func expectedVMOutputDestCtxSuccessfulChildCall(parentCode []byte, _ []byte) *vm
 		[]byte("Second sentence."),
 	)
 
+	SetStorageUpdate(parentAccount, childKey, nil)
 	SetStorageUpdate(childAccount, childKey, childData)
 
 	AddFinishData(vmOutput, childFinish)
@@ -621,6 +622,51 @@ func expectedVMOutputDestCtxSuccessfulChildCall(parentCode []byte, _ []byte) *vm
 	return vmOutput
 }
 
+func expectedVMOutputDestCtxSuccessfulChildCall_ChildReturns(parentCode []byte, _ []byte) *vmcommon.VMOutput {
+
+	vmOutput := expectedVMOutputSameCtxPrepare(parentCode)
+
+	parentAccount := vmOutput.OutputAccounts[string(parentAddress)]
+	parentAccount.BalanceDelta = big.NewInt(-141)
+	parentAccount.GasUsed = 4652
+
+	childAccount := AddNewOutputAccount(
+		vmOutput,
+		childAddress,
+		99-12,
+		nil,
+	)
+	childAccount.Balance = big.NewInt(1000)
+	childAccount.GasUsed = 2256
+
+	_ = AddNewOutputAccount(
+		vmOutput,
+		childTransferReceiver,
+		12,
+		[]byte("Second sentence."),
+	)
+
+	SetStorageUpdate(childAccount, childKey, childData)
+
+	AddFinishData(vmOutput, childFinish)
+	AddFinishData(vmOutput, []byte("succ"))
+
+	parentGasBeforeExecuteAPI := uint64(168)
+	executeAPICost := uint64(42)
+	childExecutionCost := uint64(91)
+	parentGasAfterExecuteAPI := uint64(273)
+	gas := gasProvided
+	gas -= parentCompilationCostDestCtx
+	gas -= parentGasBeforeExecuteAPI
+	gas -= executeAPICost
+	gas -= childCompilationCostDestCtx
+	gas -= childExecutionCost
+	gas -= parentGasAfterExecuteAPI
+	vmOutput.GasRemaining = gas
+
+	return vmOutput
+}
+
 func expectedVMOutputDestCtxSuccessfulChildCallBigInts(_ []byte, _ []byte) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 	vmOutput.ReturnCode = vmcommon.Ok
@@ -632,7 +678,7 @@ func expectedVMOutputDestCtxSuccessfulChildCallBigInts(_ []byte, _ []byte) *vmco
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
-	parentAccount.GasUsed = 3150
+	parentAccount.GasUsed = 4366
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,

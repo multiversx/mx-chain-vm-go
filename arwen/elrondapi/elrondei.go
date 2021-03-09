@@ -82,9 +82,12 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-go/core/parsers"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
+
+var logEEI = logger.GetOrCreate("arwen/eei")
 
 // ElrondEIImports creates a new wasmer.Imports populated with the ElrondEI API methods
 func ElrondEIImports() (*wasmer.Imports, error) {
@@ -623,8 +626,10 @@ func transferValueExecute(
 	}
 
 	if host.AreInSameShard(send, dest) && contractCallInput != nil && host.Blockchain().IsSmartContract(dest) {
+		logEEI.Trace("eGLD pre-transfer execution begin")
 		_, _, _, err = host.ExecuteOnDestContext(contractCallInput)
 		if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
+			logEEI.Error("eGLD pre-transfer execution failed", "error", err)
 			return 1
 		}
 
@@ -672,6 +677,7 @@ func transferESDT(
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(length))
 	metering.UseGas(gasToUse)
+	logEEI.Warn("transferESDT() is deprecated")
 	// this is only for backward compatibility - function deprecated
 	return 1
 }
@@ -743,8 +749,10 @@ func transferESDTExecute(
 
 	if host.AreInSameShard(sender, dest) && contractCallInput != nil && host.Blockchain().IsSmartContract(dest) {
 		contractCallInput.GasProvided = gasLimitForExec
+		logEEI.Trace("ESDT post-transfer execution begin")
 		_, _, _, err = host.ExecuteOnDestContext(contractCallInput)
 		if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
+			logEEI.Error("ESDT post-transfer execution failed", "error", err)
 			host.RevertESDTTransfer(contractCallInput)
 			return 1
 		}

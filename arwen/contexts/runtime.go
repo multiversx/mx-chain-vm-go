@@ -13,7 +13,7 @@ import (
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
-var log = logger.GetOrCreate("arwen/runtime")
+var logRuntime = logger.GetOrCreate("arwen/runtime")
 
 var _ arwen.RuntimeContext = (*runtimeContext)(nil)
 
@@ -79,6 +79,8 @@ func (context *runtimeContext) InitState() {
 	context.asyncContextInfo = &arwen.AsyncContextInfo{
 		AsyncContextMap: make(map[string]*arwen.AsyncContext),
 	}
+
+	logRuntime.Trace("init state")
 }
 
 // ReplaceInstanceBuilder replaces the instance builder, allowing the creation
@@ -93,7 +95,7 @@ func (context *runtimeContext) setWarmInstanceWhenNeeded(gasLimit uint64) bool {
 	scAddress := context.GetSCAddress()
 	useWarm := context.useWarmInstance && context.warmInstanceAddress != nil && bytes.Equal(scAddress, context.warmInstanceAddress)
 	if scAddress != nil && useWarm {
-		log.Trace("Reusing the warm Wasmer instance")
+		logRuntime.Trace("reusing warm instance")
 
 		context.instance = context.warmInstance
 		context.SetPointsUsed(0)
@@ -106,49 +108,11 @@ func (context *runtimeContext) setWarmInstanceWhenNeeded(gasLimit uint64) bool {
 	return false
 }
 
-func (context *runtimeContext) makeInstanceFromCompiledCode(codeHash []byte, gasLimit uint64, newCode bool) bool {
-	if !context.host.IsAheadOfTimeCompileEnabled() {
-		return false
-	}
-
-	if newCode || len(codeHash) == 0 {
-		return false
-	}
-
-	blockchain := context.host.Blockchain()
-	found, compiledCode := blockchain.GetCompiledCode(codeHash)
-	if !found {
-		log.Debug("compiled code was not found")
-		return false
-	}
-
-	gasSchedule := context.host.Metering().GasSchedule()
-	options := wasmer.CompilationOptions{
-		GasLimit:           gasLimit,
-		UnmeteredLocals:    uint64(gasSchedule.WASMOpcodeCost.LocalsUnmetered),
-		OpcodeTrace:        false,
-		Metering:           true,
-		RuntimeBreakpoints: true,
-	}
-	newInstance, err := context.instanceBuilder.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
-	if err != nil {
-		log.Warn("NewInstanceFromCompiledCodeWithOptions", "error", err)
-		return false
-	}
-
-	context.instance = newInstance
-
-	idContext := arwen.AddHostContext(context.host)
-	context.instance.SetContextData(idContext)
-	context.verifyCode = false
-
-	return true
-}
-
 // StartWasmerInstance creates a new wasmer instance if the maxWasmerInstances has not been reached.
 func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uint64, newCode bool) error {
 	if context.RunningInstancesCount() >= context.maxWasmerInstances {
 		context.instance = nil
+		logRuntime.Error("create instance", "error", arwen.ErrMaxInstancesReached)
 		return arwen.ErrMaxInstancesReached
 	}
 
@@ -167,9 +131,47 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 	return context.makeInstanceFromContractByteCode(contract, codeHash, gasLimit, newCode)
 }
 
-func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte, codeHash []byte, gasLimit uint64, newCode bool) error {
-	log.Trace("Creating a new Wasmer instance")
+func (context *runtimeContext) makeInstanceFromCompiledCode(codeHash []byte, gasLimit uint64, newCode bool) bool {
+	if !context.host.IsAheadOfTimeCompileEnabled() {
+		return false
+	}
 
+	if newCode || len(codeHash) == 0 {
+		return false
+	}
+
+	blockchain := context.host.Blockchain()
+	found, compiledCode := blockchain.GetCompiledCode(codeHash)
+	if !found {
+		logRuntime.Trace("instance creation", "code", "cached compilation", "error", "compiled code was not found")
+		return false
+	}
+
+	gasSchedule := context.host.Metering().GasSchedule()
+	options := wasmer.CompilationOptions{
+		GasLimit:           gasLimit,
+		UnmeteredLocals:    uint64(gasSchedule.WASMOpcodeCost.LocalsUnmetered),
+		OpcodeTrace:        false,
+		Metering:           true,
+		RuntimeBreakpoints: true,
+	}
+	newInstance, err := context.instanceBuilder.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
+	if err != nil {
+		logRuntime.Error("instance creation", "code", "cached compilation", "error", err)
+		return false
+	}
+
+	context.instance = newInstance
+
+	idContext := arwen.AddHostContext(context.host)
+	context.instance.SetContextData(idContext)
+	context.verifyCode = false
+
+	logRuntime.Trace("new instance created", "code", "cached compilation")
+	return true
+}
+
+func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte, codeHash []byte, gasLimit uint64, newCode bool) error {
 	gasSchedule := context.host.Metering().GasSchedule()
 	options := wasmer.CompilationOptions{
 		GasLimit:           gasLimit,
@@ -181,6 +183,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 	newInstance, err := context.instanceBuilder.NewInstanceWithOptions(contract, options)
 	if err != nil {
 		context.instance = nil
+		logRuntime.Error("instance creation", "code", "bytecode", "error", err)
 		return err
 	}
 
@@ -190,6 +193,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 		codeHash, err = context.host.Crypto().Sha256(contract)
 		if err != nil {
 			context.CleanWasmerInstance()
+			logRuntime.Error("instance creation", "code", "bytecode", "error", err)
 			return err
 		}
 	}
@@ -203,6 +207,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 		err = context.VerifyContractCode()
 		if err != nil {
 			context.CleanWasmerInstance()
+			logRuntime.Error("instance creation", "code", "bytecode", "error", err)
 			return err
 		}
 	}
@@ -210,7 +215,10 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 	if context.useWarmInstance {
 		context.warmInstanceAddress = context.GetSCAddress()
 		context.warmInstance = context.instance
+		logRuntime.Trace("updated warm instance")
 	}
+
+	logRuntime.Trace("new instance created", "code", "bytecode")
 
 	return nil
 }
@@ -235,7 +243,9 @@ func (context *runtimeContext) GetSCCodeSize() uint64 {
 func (context *runtimeContext) saveCompiledCode(codeHash []byte) {
 	compiledCode, err := context.instance.Cache()
 	if err != nil {
-		log.Error("getCompiledCode from instance", "error", err)
+		logRuntime.Error("getCompiledCode from instance", "error", err)
+
+		return
 	}
 
 	blockchain := context.host.Blockchain()
@@ -263,6 +273,7 @@ func (context *runtimeContext) ResetWarmInstance() {
 	context.instance = nil
 	context.warmInstanceAddress = nil
 	context.warmInstance = nil
+	logRuntime.Trace("warm instance cleaned")
 }
 
 // MustVerifyNextContractCode sets the verifyCode field to true
@@ -285,11 +296,18 @@ func (context *runtimeContext) InitStateFromContractCallInput(input *vmcommon.Co
 		CallerAddr:      input.CallerAddr,
 		AsyncContextMap: make(map[string]*arwen.AsyncContext),
 	}
+
+	logRuntime.Trace("init state from call input",
+		"caller", input.CallerAddr,
+		"contract", input.RecipientAddr,
+		"func", input.Function,
+		"args", input.Arguments)
 }
 
 // SetCustomCallFunction sets the given string as the callFunction field.
 func (context *runtimeContext) SetCustomCallFunction(callFunction string) {
 	context.callFunction = callFunction
+	logRuntime.Trace("set custom call function", "function", callFunction)
 }
 
 // PushState appends the current runtime state to the state stack; this
@@ -506,6 +524,8 @@ func (context *runtimeContext) FailExecution(err error) {
 
 	context.host.Output().SetReturnMessage(message)
 	context.SetRuntimeBreakpointValue(arwen.BreakpointExecutionFailed)
+
+	logRuntime.Error("execution failed", "message", message)
 }
 
 // SignalUserError sets the returnMessage, returnCode and runtimeBreakpoint according an user error.
@@ -513,11 +533,13 @@ func (context *runtimeContext) SignalUserError(message string) {
 	context.host.Output().SetReturnCode(vmcommon.UserError)
 	context.host.Output().SetReturnMessage(message)
 	context.SetRuntimeBreakpointValue(arwen.BreakpointSignalError)
+	logRuntime.Error("user error signalled", "message", message)
 }
 
 // SetRuntimeBreakpointValue sets the given value as a breakpoint value.
 func (context *runtimeContext) SetRuntimeBreakpointValue(value arwen.BreakpointValue) {
 	context.instance.SetBreakpointValue(uint64(value))
+	logRuntime.Trace("runtime breakpoint set", "breakpoint", value)
 }
 
 // GetRuntimeBreakpointValue returns the breakpoint value for the current wasmer instance.
@@ -535,18 +557,23 @@ func (context *runtimeContext) VerifyContractCode() error {
 
 	err := context.validator.verifyMemoryDeclaration(context.instance)
 	if err != nil {
+		logRuntime.Error("verify contract code", "error", err)
 		return err
 	}
 
 	err = context.validator.verifyFunctions(context.instance)
 	if err != nil {
+		logRuntime.Error("verify contract code", "error", err)
 		return err
 	}
 
 	err = context.checkBackwardCompatibility()
 	if err != nil {
+		logRuntime.Error("verify contract code", "error", err)
 		return err
 	}
+
+	logRuntime.Trace("verified contract code")
 
 	return nil
 }
@@ -623,6 +650,8 @@ func (context *runtimeContext) CleanWasmerInstance() {
 	arwen.RemoveHostContext(*context.instance.GetData())
 	context.instance.Clean()
 	context.instance = nil
+
+	logRuntime.Trace("instance cleaned")
 }
 
 // IsContractOnTheStack iterates over the state stack to find whether the
@@ -639,11 +668,14 @@ func (context *runtimeContext) IsContractOnTheStack(address []byte) bool {
 // GetFunctionToCall returns the function to call from the wasmer instance exports.
 func (context *runtimeContext) GetFunctionToCall() (wasmer.ExportedFunctionCallback, error) {
 	exports := context.instance.GetExports()
+	logRuntime.Trace("get function to call", "function", context.callFunction)
 	if function, ok := exports[context.callFunction]; ok {
 		return function, nil
 	}
 
 	if context.callFunction == arwen.CallbackFunctionName {
+		// TODO rewrite this condition, until the AsyncContext is merged
+		logRuntime.Error("get function to call", "error", arwen.ErrNilCallbackFunction)
 		return nil, arwen.ErrNilCallbackFunction
 	}
 
@@ -687,6 +719,11 @@ func (context *runtimeContext) ExecuteAsyncCall(address []byte, data []byte, val
 	})
 	context.SetRuntimeBreakpointValue(arwen.BreakpointAsyncCall)
 
+	logRuntime.Trace("prepare async call",
+		"caller", context.GetSCAddress(),
+		"dest", address,
+		"value", big.NewInt(0).SetBytes(value),
+		"data", data)
 	return nil
 }
 
