@@ -38,7 +38,7 @@ type VMHost interface {
 	IsDynamicGasLockingEnabled() bool
 	IsArwenV3Enabled() bool
 
-	ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, value *big.Int) (uint64, error)
+	ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int) (*vmcommon.VMOutput, uint64, error)
 	RevertESDTTransfer(input *vmcommon.ContractCallInput)
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*AsyncContextInfo, error)
@@ -161,7 +161,7 @@ type OutputContext interface {
 	WriteLog(address []byte, topics [][]byte, data []byte)
 	TransferValueOnly(destination []byte, sender []byte, value *big.Int) error
 	Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, input []byte, callType vmcommon.CallType) error
-	TransferESDT(destination []byte, sender []byte, tokenIdentifier []byte, value *big.Int, callInput *vmcommon.ContractCallInput) (uint64, error)
+	TransferESDT(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callInput *vmcommon.ContractCallInput) (uint64, error)
 	SelfDestruct(address []byte, beneficiary []byte)
 	GetRefund() uint64
 	SetRefund(refund uint64)

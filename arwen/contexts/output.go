@@ -309,15 +309,16 @@ func (context *outputContext) Transfer(destination []byte, sender []byte, gasLim
 	return nil
 }
 
-// TransferESDT makes the esdt transfer and exports the data if it is cross shard
+// TransferESDT makes the esdt/nft transfer and exports the data if it is cross shard
 func (context *outputContext) TransferESDT(
 	destination []byte,
 	sender []byte,
 	tokenIdentifier []byte,
+	nonce uint64,
 	value *big.Int,
 	callInput *vmcommon.ContractCallInput,
 ) (uint64, error) {
-	gasConsumedByTransfer, err := context.host.ExecuteESDTTransfer(destination, sender, tokenIdentifier, value)
+	vmOutput, gasConsumedByTransfer, err := context.host.ExecuteESDTTransfer(destination, sender, tokenIdentifier, nonce, value)
 	if err != nil {
 		return 0, err
 	}
@@ -351,6 +352,21 @@ func (context *outputContext) TransferESDT(
 		GasLocked: 0,
 		Data:      []byte(core.BuiltInFunctionESDTTransfer + "@" + hex.EncodeToString(tokenIdentifier) + "@" + hex.EncodeToString(value.Bytes())),
 		CallType:  vmcommon.DirectCall,
+	}
+
+	if nonce > 0 {
+		nonceAsBytes := big.NewInt(0).SetUint64(nonce).Bytes()
+		outputTransfer.Data = []byte(core.BuiltInFunctionESDTNFTTransfer + "@" + hex.EncodeToString(tokenIdentifier) +
+			"@" + hex.EncodeToString(nonceAsBytes) + "@" + hex.EncodeToString(value.Bytes()))
+		if sameShard {
+			outputTransfer.Data = append(outputTransfer.Data, []byte("@"+hex.EncodeToString(destination))...)
+		} else {
+			outTransfer, ok := vmOutput.OutputAccounts[string(destination)]
+			if ok && len(outTransfer.OutputTransfers) == 1 {
+				outputTransfer.Data = outTransfer.OutputTransfers[0].Data
+			}
+		}
+
 	}
 
 	if sameShard {

@@ -15,6 +15,7 @@ package elrondapi
 // extern int32_t transferValue(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
 // extern int32_t transferESDT(void *context, int32_t dstOffset, int32_t tokenIdOffset, int32_t tokenIdLen, int32_t valueOffset, long long gasLimit, int32_t dataOffset, int32_t length);
 // extern int32_t transferESDTExecute(void *context, int32_t dstOffset, int32_t tokenIdOffset, int32_t tokenIdLen, int32_t valueOffset, long long gasLimit, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern int32_t transferESDTNFTExecute(void *context, int32_t dstOffset, int32_t tokenIdOffset, int32_t tokenIdLen, int32_t valueOffset, long long nonce, long long gasLimit, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t transferValueExecute(void *context, int32_t dstOffset, int32_t valueOffset, long long gasLimit, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t getArgumentLength(void *context, int32_t id);
 // extern int32_t getArgument(void *context, int32_t id, int32_t argOffset);
@@ -130,6 +131,11 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("transferESDTExecute", transferESDTExecute, C.transferESDTExecute)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("transferESDTNFTExecute", transferESDTNFTExecute, C.transferESDTNFTExecute)
 	if err != nil {
 		return nil, err
 	}
@@ -696,6 +702,25 @@ func transferESDTExecute(
 	argumentsLengthOffset int32,
 	dataOffset int32,
 ) int32 {
+	return transferESDTNFTExecute(context, destOffset, tokenIdOffset, tokenIDLen, valueOffset, 0,
+		gasLimit, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
+}
+
+//export transferESDTNFTExecute
+func transferESDTNFTExecute(
+	context unsafe.Pointer,
+	destOffset int32,
+	tokenIdOffset int32,
+	tokenIDLen int32,
+	valueOffset int32,
+	nonce int64,
+	gasLimit int64,
+	functionOffset int32,
+	functionLength int32,
+	numArguments int32,
+	argumentsLengthOffset int32,
+	dataOffset int32,
+) int32 {
 	host := arwen.GetVMContext(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
@@ -742,7 +767,7 @@ func transferESDTExecute(
 		contractCallInput.ESDTTokenName = tokenIdentifier
 	}
 
-	gasLimitForExec, err := output.TransferESDT(dest, sender, tokenIdentifier, big.NewInt(0).SetBytes(valueBytes), contractCallInput)
+	gasLimitForExec, err := output.TransferESDT(dest, sender, tokenIdentifier, uint64(nonce), big.NewInt(0).SetBytes(valueBytes), contractCallInput)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}

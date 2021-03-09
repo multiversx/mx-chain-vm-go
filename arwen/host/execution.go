@@ -619,21 +619,27 @@ func (host *vmHost) callSCMethodIndirect() error {
 	return err
 }
 
+// RevertESDTTransfer calls the ESDT/ESDTNFT transfer with reverted arguments
 func (host *vmHost) RevertESDTTransfer(input *vmcommon.ContractCallInput) {
-	if input.Function != core.BuiltInFunctionESDTTransfer {
-		return
-	}
-	if len(input.Arguments) < 2 {
+	isESDTTransfer := input.Function == core.BuiltInFunctionESDTTransfer || input.Function == core.BuiltInFunctionESDTNFTTransfer
+	if !isESDTTransfer {
 		return
 	}
 	if input.CallType == vmcommon.AsynchronousCallBack {
+		return
+	}
+	numArgsForTransfer := 2
+	if input.Function == core.BuiltInFunctionESDTNFTTransfer {
+		numArgsForTransfer = 4
+	}
+	if len(input.Arguments) < numArgsForTransfer {
 		return
 	}
 
 	revertInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallerAddr:     input.RecipientAddr,
-			Arguments:      input.Arguments[:2],
+			Arguments:      input.Arguments[:numArgsForTransfer],
 			CallValue:      big.NewInt(0),
 			CallType:       vmcommon.DirectCall,
 			GasPrice:       input.GasPrice,
@@ -648,6 +654,11 @@ func (host *vmHost) RevertESDTTransfer(input *vmcommon.ContractCallInput) {
 		Function:          input.Function,
 		AllowInitFunction: false,
 	}
+	if input.Function == core.BuiltInFunctionESDTNFTTransfer {
+		revertInput.RecipientAddr = revertInput.CallerAddr
+		// in esdt nft transfer the 4th arguments is actually the destination address
+		revertInput.Arguments[numArgsForTransfer-1] = input.CallerAddr
+	}
 
 	vmOutput, err := host.blockChainHook.ProcessBuiltInFunction(revertInput)
 	if err != nil {
@@ -658,8 +669,9 @@ func (host *vmHost) RevertESDTTransfer(input *vmcommon.ContractCallInput) {
 	}
 }
 
-// ExecuteESDTTransfer calls the process built in function with the given transfer
-func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, value *big.Int) (uint64, error) {
+// ExecuteESDTTransfer calls the process built in function with the given transfer for ESDT/ESDTNFT if nonce > 0
+// there are no NFTs with nonce == 0
+func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int) (*vmcommon.VMOutput, uint64, error) {
 	_, _, metering, _, runtime, _ := host.GetContexts()
 
 	esdtTransferInput := &vmcommon.ContractCallInput{
@@ -677,27 +689,35 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, token
 		AllowInitFunction: false,
 	}
 
-	esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, tokenIdentifier, value.Bytes())
+	if nonce > 0 {
+		esdtTransferInput.Function = core.BuiltInFunctionESDTNFTTransfer
+		esdtTransferInput.RecipientAddr = esdtTransferInput.CallerAddr
+		nonceAsBytes := big.NewInt(0).SetUint64(nonce).Bytes()
+		esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, tokenIdentifier, nonceAsBytes, value.Bytes(), destination)
+	} else {
+		esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, tokenIdentifier, value.Bytes())
+	}
+
 	vmOutput, err := host.blockChainHook.ProcessBuiltInFunction(esdtTransferInput)
 	log.Trace("ESDT transfer", "sender", sender, "dest", destination)
 	log.Trace("ESDT transfer", "token", tokenIdentifier, "value", value)
 	if err != nil {
 		log.Error("ESDT transfer", "error", err)
-		return esdtTransferInput.GasProvided, err
+		return vmOutput, esdtTransferInput.GasProvided, err
 	}
 	if vmOutput.ReturnCode != vmcommon.Ok {
 		log.Error("ESDT transfer", "error", err, "retcode", vmOutput.ReturnCode, "message", vmOutput.ReturnMessage)
-		return esdtTransferInput.GasProvided, arwen.ErrExecutionFailed
+		return vmOutput, esdtTransferInput.GasProvided, arwen.ErrExecutionFailed
 	}
 
 	gasConsumed, _ := math.SubUint64(esdtTransferInput.GasProvided, vmOutput.GasRemaining)
 	if metering.GasLeft() < gasConsumed {
 		log.Error("ESDT transfer", "error", arwen.ErrNotEnoughGas)
-		return esdtTransferInput.GasProvided, arwen.ErrNotEnoughGas
+		return vmOutput, esdtTransferInput.GasProvided, arwen.ErrNotEnoughGas
 	}
 	metering.UseGas(gasConsumed)
 
-	return gasConsumed, nil
+	return vmOutput, gasConsumed, nil
 }
 
 func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmcommon.ContractCallInput, uint64, error) {
@@ -863,16 +883,18 @@ func (host *vmHost) isSCExecutionAfterBuiltInFunc(
 	if vmOutput.ReturnCode != vmcommon.Ok {
 		return nil, nil
 	}
-
-	if !host.Blockchain().IsSmartContract(vmInput.RecipientAddr) {
-		return nil, nil
-	}
-
 	if !host.AreInSameShard(vmInput.CallerAddr, vmInput.RecipientAddr) {
 		return nil, nil
 	}
+	recipient := vmInput.RecipientAddr
+	if vmInput.Function == core.BuiltInFunctionESDTNFTTransfer && bytes.Equal(vmInput.CallerAddr, vmInput.RecipientAddr) {
+		recipient = vmInput.Arguments[3]
+	}
+	if !host.Blockchain().IsSmartContract(recipient) {
+		return nil, nil
+	}
 
-	outAcc, ok := vmOutput.OutputAccounts[string(vmInput.RecipientAddr)]
+	outAcc, ok := vmOutput.OutputAccounts[string(recipient)]
 	if !ok {
 		return nil, nil
 	}
@@ -901,7 +923,7 @@ func (host *vmHost) isSCExecutionAfterBuiltInFunc(
 			OriginalTxHash: vmInput.OriginalTxHash,
 			CurrentTxHash:  vmInput.CurrentTxHash,
 		},
-		RecipientAddr:     vmInput.RecipientAddr,
+		RecipientAddr:     recipient,
 		Function:          function,
 		AllowInitFunction: false,
 	}
@@ -912,10 +934,17 @@ func (host *vmHost) isSCExecutionAfterBuiltInFunc(
 }
 
 func fillWithESDTValue(fullVMInput *vmcommon.ContractCallInput, newVMInput *vmcommon.ContractCallInput) {
-	if fullVMInput.Function != core.BuiltInFunctionESDTTransfer {
+	isESDTTransfer := fullVMInput.Function == core.BuiltInFunctionESDTTransfer || fullVMInput.Function == core.BuiltInFunctionESDTNFTTransfer
+	if !isESDTTransfer {
 		return
 	}
 
 	newVMInput.ESDTTokenName = fullVMInput.Arguments[0]
 	newVMInput.ESDTValue = big.NewInt(0).SetBytes(fullVMInput.Arguments[1])
+
+	if fullVMInput.Function == core.BuiltInFunctionESDTNFTTransfer {
+		newVMInput.ESDTTokenNonce = big.NewInt(0).SetBytes(fullVMInput.Arguments[1]).Uint64()
+		newVMInput.ESDTValue = big.NewInt(0).SetBytes(fullVMInput.Arguments[2])
+		newVMInput.ESDTTokenType = uint32(core.NonFungible)
+	}
 }
