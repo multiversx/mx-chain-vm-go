@@ -120,8 +120,7 @@ func (context *blockchainContext) IncreaseNonce(address []byte) {
 
 // GetESDTToken returns the unmarshalled esdt token for the given address and nonce for NFTs
 func (context *blockchainContext) GetESDTToken(address []byte, tokenID []byte, nonce uint64) (*esdt.ESDigitalToken, error) {
-	//TODO: implement
-	return nil, nil
+	return context.blockChainHook.GetESDTToken(address, tokenID, nonce)
 }
 
 // GetCodeHash returns the code hash that is set tho the given account

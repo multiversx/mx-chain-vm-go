@@ -2,6 +2,7 @@ package common
 
 import (
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	"github.com/ElrondNetwork/elrond-go/data/esdt"
 )
 
 // MessageBlockchainNewAddressRequest represents a request message
@@ -420,6 +421,40 @@ func NewMessageBlockchainProcessBuiltinFunctionResponse(vmOutput *vmcommon.VMOut
 	message := &MessageBlockchainProcessBuiltinFunctionResponse{}
 	message.Kind = BlockchainProcessBuiltinFunctionResponse
 	message.SerializableVMOutput = NewSerializableVMOutput(vmOutput)
+	message.SetError(err)
+	return message
+}
+
+// MessageBlockchainGetESDTTokenRequest represents a request message
+type MessageBlockchainGetESDTTokenRequest struct {
+	Message
+	Address []byte
+	TokenID []byte
+	Nonce   uint64
+}
+
+// NewMessageBlockchainGetESDTTokenRequest creates a request message
+func NewMessageBlockchainGetESDTTokenRequest(address []byte, tokenID []byte, nonce uint64) *MessageBlockchainGetESDTTokenRequest {
+	message := &MessageBlockchainGetESDTTokenRequest{}
+	message.Kind = BlockchainGetESDTTokenRequest
+	message.Address = address
+	message.TokenID = tokenID
+	message.Nonce = nonce
+
+	return message
+}
+
+// MessageBlockchainGetESDTTokenResponse represents a response message
+type MessageBlockchainGetESDTTokenResponse struct {
+	Message
+	ESDTData *esdt.ESDigitalToken
+}
+
+// NewMessageBlockchainGetESDTTokenResponse creates a response message
+func NewMessageBlockchainGetESDTTokenResponse(esdtData *esdt.ESDigitalToken, err error) *MessageBlockchainGetESDTTokenResponse {
+	message := &MessageBlockchainGetESDTTokenResponse{}
+	message.Kind = BlockchainProcessBuiltinFunctionResponse
+	message.ESDTData = esdtData
 	message.SetError(err)
 	return message
 }

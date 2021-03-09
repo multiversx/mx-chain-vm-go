@@ -8,6 +8,7 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	"github.com/ElrondNetwork/elrond-go/data/esdt"
 )
 
 var _ vmcommon.BlockchainHook = (*MockWorld)(nil)
@@ -163,6 +164,16 @@ func (b *MockWorld) ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*
 	}
 
 	return b.processBuiltInFunction(input)
+}
+
+// GetESDTToken -
+func (b *MockWorld) GetESDTToken(_ []byte, _ []byte, _ uint64) (*esdt.ESDigitalToken, error) {
+	// custom error
+	if b.Err != nil {
+		return nil, b.Err
+	}
+
+	return &esdt.ESDigitalToken{Value: big.NewInt(0)}, nil
 }
 
 // GetBuiltinFunctionNames -

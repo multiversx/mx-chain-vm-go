@@ -47,6 +47,8 @@ const (
 	BlockchainCurrentEpochResponse
 	BlockchainProcessBuiltinFunctionRequest
 	BlockchainProcessBuiltinFunctionResponse
+	BlockchainGetESDTTokenRequest
+	BlockchainGetESDTTokenResponse
 	BlockchainGetBuiltinFunctionNamesRequest
 	BlockchainGetBuiltinFunctionNamesResponse
 	BlockchainGetAllStateRequest
@@ -114,6 +116,8 @@ func init() {
 	messageKindNameByID[BlockchainCurrentEpochResponse] = "BlockchainCurrentEpochResponse"
 	messageKindNameByID[BlockchainProcessBuiltinFunctionRequest] = "BlockchainProcessBuiltinFunctionRequest"
 	messageKindNameByID[BlockchainProcessBuiltinFunctionResponse] = "BlockchainProcessBuiltinFunctionResponse"
+	messageKindNameByID[BlockchainGetESDTTokenRequest] = "BlockchainGetESDTTokenRequest"
+	messageKindNameByID[BlockchainGetESDTTokenResponse] = "BlockchainGetESDTTokenResponse"
 	messageKindNameByID[BlockchainGetBuiltinFunctionNamesRequest] = "BlockchainGetBuiltinFunctionNamesRequest"
 	messageKindNameByID[BlockchainGetBuiltinFunctionNamesResponse] = "BlockchainGetBuiltinFunctionNamesResponse"
 	messageKindNameByID[BlockchainGetAllStateRequest] = "BlockchainGetAllStateRequest"
