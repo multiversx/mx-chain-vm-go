@@ -5,6 +5,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	"github.com/ElrondNetwork/elrond-go/data/esdt"
 )
 
 type blockchainContext struct {
@@ -115,6 +116,12 @@ func (context *blockchainContext) IncreaseNonce(address []byte) {
 	nonce, _ := context.GetNonce(address)
 	outputAccount, _ := context.host.Output().GetOutputAccount(address)
 	outputAccount.Nonce = nonce + 1
+}
+
+// GetESDTToken returns the unmarshalled esdt token for the given address and nonce for NFTs
+func (context *blockchainContext) GetESDTToken(address []byte, tokenID []byte, nonce uint64) (*esdt.ESDigitalToken, error) {
+	//TODO: implement
+	return nil, nil
 }
 
 // GetCodeHash returns the code hash that is set tho the given account
