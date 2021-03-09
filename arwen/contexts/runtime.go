@@ -533,7 +533,7 @@ func (context *runtimeContext) SignalUserError(message string) {
 	context.host.Output().SetReturnCode(vmcommon.UserError)
 	context.host.Output().SetReturnMessage(message)
 	context.SetRuntimeBreakpointValue(arwen.BreakpointSignalError)
-	logRuntime.Error("user error signalled", "message", message)
+	logRuntime.Trace("user error signalled", "message", message)
 }
 
 // SetRuntimeBreakpointValue sets the given value as a breakpoint value.

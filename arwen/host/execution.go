@@ -40,7 +40,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 
 	vmOutput, err := host.performCodeDeployment(codeDeployInput)
 	if err != nil {
-		log.Error("doRunSmartContractCreate", "error", err)
+		log.Trace("doRunSmartContractCreate", "error", err)
 		return output.CreateVMOutputInCaseOfError(err)
 	}
 
@@ -108,7 +108,7 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 
 	vmOutput, err := host.performCodeDeployment(codeDeployInput)
 	if err != nil {
-		log.Error("doRunSmartContractUpgrade", "error", err)
+		log.Trace("doRunSmartContractUpgrade", "error", err)
 		return output.CreateVMOutputInCaseOfError(err)
 	}
 
@@ -141,19 +141,19 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 
 	err := host.checkGasForGetCode(input, metering)
 	if err != nil {
-		log.Error("doRunSmartContractCall get code", "error", arwen.ErrNotEnoughGas)
+		log.Trace("doRunSmartContractCall get code", "error", arwen.ErrNotEnoughGas)
 		return output.CreateVMOutputInCaseOfError(arwen.ErrNotEnoughGas)
 	}
 
 	contract, err := runtime.GetSCCode()
 	if err != nil {
-		log.Error("doRunSmartContractCall get code", "error", arwen.ErrContractNotFound)
+		log.Trace("doRunSmartContractCall get code", "error", arwen.ErrContractNotFound)
 		return output.CreateVMOutputInCaseOfError(arwen.ErrContractNotFound)
 	}
 
 	err = metering.DeductInitialGasForExecution(contract)
 	if err != nil {
-		log.Error("doRunSmartContractCall initial gas", "error", arwen.ErrNotEnoughGas)
+		log.Trace("doRunSmartContractCall initial gas", "error", arwen.ErrNotEnoughGas)
 		return output.CreateVMOutputInCaseOfError(arwen.ErrNotEnoughGas)
 	}
 
@@ -164,7 +164,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 
 	err = host.callSCMethod()
 	if err != nil {
-		log.Error("doRunSmartContractCall", "error", err)
+		log.Trace("doRunSmartContractCall", "error", err)
 		return output.CreateVMOutputInCaseOfError(err)
 	}
 
@@ -212,14 +212,14 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	if input.CallType != vmcommon.AsynchronousCallBack || input.CallValue.Cmp(arwen.Zero) == 0 {
 		err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue)
 		if err != nil {
-			log.Error("ExecuteOnDestContext", "error", err)
+			log.Trace("ExecuteOnDestContext", "error", err)
 			return
 		}
 	}
 
 	gasUsedBeforeReset, err = host.execute(input)
 	if err != nil {
-		log.Error("ExecuteOnDestContext", "error", err)
+		log.Trace("ExecuteOnDestContext", "error", err)
 		return
 	}
 
@@ -702,17 +702,17 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, token
 	log.Trace("ESDT transfer", "sender", sender, "dest", destination)
 	log.Trace("ESDT transfer", "token", tokenIdentifier, "value", value)
 	if err != nil {
-		log.Error("ESDT transfer", "error", err)
+		log.Trace("ESDT transfer", "error", err)
 		return vmOutput, esdtTransferInput.GasProvided, err
 	}
 	if vmOutput.ReturnCode != vmcommon.Ok {
-		log.Error("ESDT transfer", "error", err, "retcode", vmOutput.ReturnCode, "message", vmOutput.ReturnMessage)
+		log.Trace("ESDT transfer", "error", err, "retcode", vmOutput.ReturnCode, "message", vmOutput.ReturnMessage)
 		return vmOutput, esdtTransferInput.GasProvided, arwen.ErrExecutionFailed
 	}
 
 	gasConsumed, _ := math.SubUint64(esdtTransferInput.GasProvided, vmOutput.GasRemaining)
 	if metering.GasLeft() < gasConsumed {
-		log.Error("ESDT transfer", "error", arwen.ErrNotEnoughGas)
+		log.Trace("ESDT transfer", "error", arwen.ErrNotEnoughGas)
 		return vmOutput, esdtTransferInput.GasProvided, arwen.ErrNotEnoughGas
 	}
 	metering.UseGas(gasConsumed)
@@ -810,7 +810,7 @@ func (host *vmHost) callSCMethod() error {
 
 	err := host.verifyAllowedFunctionCall()
 	if err != nil {
-		log.Error("call SC method failed", "error", err)
+		log.Trace("call SC method failed", "error", err)
 		return err
 	}
 
@@ -819,10 +819,13 @@ func (host *vmHost) callSCMethod() error {
 	if err != nil {
 		if callType == vmcommon.AsynchronousCallBack && errors.Is(err, arwen.ErrNilCallbackFunction) {
 			err = host.processCallbackStack()
-			log.LogIfError(err, "call SC method failed", "error", err)
+			if err != nil {
+				log.Trace("call SC method failed", "error", err)
+			}
+
 			return err
 		}
-		log.Error("call SC method failed", "error", err)
+		log.Trace("call SC method failed", "error", err)
 		return err
 	}
 
@@ -834,7 +837,7 @@ func (host *vmHost) callSCMethod() error {
 		err = host.checkFinalGasAfterExit()
 	}
 	if err != nil {
-		log.Error("call SC method failed", "error", err)
+		log.Trace("call SC method failed", "error", err)
 		return err
 	}
 
@@ -842,7 +845,7 @@ func (host *vmHost) callSCMethod() error {
 	case vmcommon.AsynchronousCall:
 		pendingMap, paiErr := host.processAsyncInfo(runtime.GetAsyncContextInfo())
 		if paiErr != nil {
-			log.Error("call SC method failed", "error", paiErr)
+			log.Trace("call SC method failed", "error", paiErr)
 			return paiErr
 		}
 		if len(pendingMap.AsyncContextMap) == 0 {
@@ -854,7 +857,10 @@ func (host *vmHost) callSCMethod() error {
 		_, err = host.processAsyncInfo(runtime.GetAsyncContextInfo())
 	}
 
-	log.LogIfError(err, "call SC method failed", "error", err)
+	if err != nil {
+		log.Trace("call SC method failed", "error", err)
+	}
+
 	return err
 }
 
