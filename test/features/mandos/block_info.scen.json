@@ -1,7 +1,7 @@
 {
     "name": "count ones",
     "comment": "should fail if the processor doesn't support the `count ones` instruction",
-    "gasSchedule": "dummy",
+    "gasSchedule": "v2",
     "steps": [
         {
             "step": "setState",
@@ -43,7 +43,7 @@
                 "value": "0",
                 "function": "get_prev_block_timestamp",
                 "arguments": [],
-                "gasLimit": "0x100000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -63,7 +63,7 @@
                 "value": "0",
                 "function": "get_prev_block_nonce",
                 "arguments": [],
-                "gasLimit": "0x100000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -83,7 +83,7 @@
                 "value": "0",
                 "function": "get_prev_block_round",
                 "arguments": [],
-                "gasLimit": "0x100000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -103,7 +103,7 @@
                 "value": "0",
                 "function": "get_prev_block_epoch",
                 "arguments": [],
-                "gasLimit": "0x100000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -123,7 +123,7 @@
                 "value": "0",
                 "function": "get_prev_block_random_seed",
                 "arguments": [],
-                "gasLimit": "0x100000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -144,7 +144,7 @@
                 "value": "0",
                 "function": "get_block_timestamp",
                 "arguments": [],
-                "gasLimit": "0x100000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -164,7 +164,7 @@
                 "value": "0",
                 "function": "get_block_nonce",
                 "arguments": [],
-                "gasLimit": "0x100000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -184,7 +184,7 @@
                 "value": "0",
                 "function": "get_block_round",
                 "arguments": [],
-                "gasLimit": "0x100000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -204,7 +204,7 @@
                 "value": "0",
                 "function": "get_block_epoch",
                 "arguments": [],
-                "gasLimit": "0x100000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -225,7 +225,7 @@
                 "value": "0",
                 "function": "get_block_random_seed",
                 "arguments": [],
-                "gasLimit": "0x100000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {

@@ -1,6 +1,6 @@
 {
     "name": "storage",
-    "gasSchedule": "dummy",
+    "gasSchedule": "v2",
     "steps": [
         {
             "step": "setState",
@@ -28,7 +28,7 @@
                 "value": "0",
                 "function": "map_my_single_value_mapper",
                 "arguments": [],
-                "gasLimit": "0x100000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -48,7 +48,7 @@
                 "value": "0",
                 "function": "my_single_value_mapper_increment",
                 "arguments": [ "123" ],
-                "gasLimit": "0x100000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -68,7 +68,7 @@
                 "value": "0",
                 "function": "map_my_single_value_mapper",
                 "arguments": [],
-                "gasLimit": "0x100000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -88,7 +88,7 @@
                 "value": "0",
                 "function": "my_single_value_mapper_increment",
                 "arguments": [ "111" ],
-                "gasLimit": "0x100000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -108,7 +108,7 @@
                 "value": "0",
                 "function": "map_my_single_value_mapper",
                 "arguments": [],
-                "gasLimit": "0x100000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {

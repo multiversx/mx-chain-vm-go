@@ -1,6 +1,6 @@
 {
     "name": "isSmartContract hook check",
-    "gasSchedule": "dummy",
+    "gasSchedule": "v2",
     "steps": [
         {
             "step": "setState",
@@ -70,7 +70,7 @@
                 "value": "0",
                 "contractCode": "file:../output/basic-features.wasm",
                 "arguments": [],
-                "gasLimit": "100,000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {

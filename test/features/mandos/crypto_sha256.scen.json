@@ -1,6 +1,6 @@
 {
     "name": "crypto",
-    "gasSchedule": "dummy",
+    "gasSchedule": "v2",
     "steps": [
         {
             "step": "setState",
@@ -30,7 +30,7 @@
                 "arguments": [
                     "0x010203"
                 ],
-                "gasLimit": "0x100000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -54,7 +54,7 @@
                 "arguments": [
                     "0x0102030405060708"
                 ],
-                "gasLimit": "0x100000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {

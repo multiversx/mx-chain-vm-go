@@ -1,6 +1,6 @@
 {
     "name": "storage",
-    "gasSchedule": "dummy",
+    "gasSchedule": "v2",
     "steps": [
         {
             "step": "setState",
@@ -28,7 +28,7 @@
                 "value": "0",
                 "function": "storage_load_cumulated_validator_reward",
                 "arguments": [],
-                "gasLimit": "0x100000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -56,7 +56,7 @@
                 "value": "0",
                 "function": "storage_load_cumulated_validator_reward",
                 "arguments": [],
-                "gasLimit": "0x100000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -84,7 +84,7 @@
                 "value": "0",
                 "function": "storage_load_cumulated_validator_reward",
                 "arguments": [],
-                "gasLimit": "0x100000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
