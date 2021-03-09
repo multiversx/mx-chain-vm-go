@@ -1,5 +1,6 @@
 {
     "name": "multisig",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "externalSteps",

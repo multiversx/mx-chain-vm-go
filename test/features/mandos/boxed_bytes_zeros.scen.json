@@ -1,5 +1,6 @@
 {
     "name": "boxed_bytes_zeros",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "setState",

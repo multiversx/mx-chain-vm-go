@@ -1,5 +1,6 @@
 {
     "name": "unbonding scenario",
+    "gasSchedule": "v2",
     "steps": [
         {
             "step": "externalSteps",

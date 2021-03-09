@@ -1,6 +1,7 @@
 {
     "name": "unstake-3",
     "comment":"unstake more than it is delegated",
+    "gasSchedule": "v2",
     "steps": [
         {
             "step": "externalSteps",

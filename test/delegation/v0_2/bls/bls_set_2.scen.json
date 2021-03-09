@@ -1,5 +1,6 @@
 {
     "name": "bls_set_2",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "setState",

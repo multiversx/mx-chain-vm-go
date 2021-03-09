@@ -1,5 +1,6 @@
 {
     "name": "big dns test",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "externalSteps",

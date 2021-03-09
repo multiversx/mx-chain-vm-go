@@ -1,5 +1,6 @@
 {
     "name": "claim_node",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "setState",

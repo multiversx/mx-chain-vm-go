@@ -1,5 +1,6 @@
 {
     "name": "purchase_buy_zero",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "setState",

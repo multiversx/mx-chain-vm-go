@@ -1,5 +1,6 @@
 {
     "name": "computeAllRewards",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "setState",

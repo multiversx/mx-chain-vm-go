@@ -1,5 +1,6 @@
 {
     "name": "claim rewards after stake modification scenario",
+    "gasSchedule": "v2",
     "steps": [
         {
             "step": "externalSteps",

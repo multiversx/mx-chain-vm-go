@@ -1,5 +1,6 @@
 {
     "name": "echo_varags_u32",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "setState",

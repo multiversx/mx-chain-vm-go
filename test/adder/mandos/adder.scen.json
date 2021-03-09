@@ -1,6 +1,7 @@
 {
     "name": "adder",
     "comment": "add then check",
+    "gasSchedule": "v2",
     "steps": [
         {
             "step": "setState",

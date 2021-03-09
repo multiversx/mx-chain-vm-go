@@ -1,5 +1,6 @@
 {
     "name": "bls_overwrite",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "setState",

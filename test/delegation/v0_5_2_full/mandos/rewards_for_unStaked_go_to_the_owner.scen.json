@@ -1,5 +1,6 @@
 {
     "name": "rewards for unstaked funds go to the owner",
+    "gasSchedule": "v2",
     "steps": [
         {
             "step": "externalSteps",

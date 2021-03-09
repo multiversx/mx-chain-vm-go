@@ -1,6 +1,7 @@
 {
     "name": "count ones",
     "comment": "should fail if the processor doesn't support the `count ones` instruction",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "setState",

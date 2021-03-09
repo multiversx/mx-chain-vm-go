@@ -1,5 +1,6 @@
 {
     "name": "unstake-3",
+    "gasSchedule": "v2",
     "steps": [
         {
             "step": "externalSteps",

@@ -1,5 +1,6 @@
 {
     "name": "check that owner share argument works",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "externalSteps",

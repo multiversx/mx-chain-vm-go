@@ -1,6 +1,7 @@
 {
     "name": "unstake-1",
     "comment":"unstake a portion, and check that it is replaced from waiting",
+    "gasSchedule": "v2",
     "steps": [
         {
             "step": "externalSteps",

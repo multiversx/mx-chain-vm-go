@@ -1,5 +1,6 @@
 {
     "name": "getNrDelegators0",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "setState",

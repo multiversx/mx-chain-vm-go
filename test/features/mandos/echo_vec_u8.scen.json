@@ -1,5 +1,6 @@
 {
     "name": "echo_vec_u8",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "setState",

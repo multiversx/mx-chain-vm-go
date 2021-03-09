@@ -1,5 +1,6 @@
 {
     "name": "init_stake",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "setState",

@@ -1,5 +1,6 @@
 {
     "name": "test getters",
+    "gasSchedule": "v2",
     "steps": [
         {
             "step": "externalSteps",

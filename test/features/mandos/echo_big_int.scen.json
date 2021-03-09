@@ -1,5 +1,6 @@
 {
     "name": "echo_big_int",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "setState",

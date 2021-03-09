@@ -1,5 +1,6 @@
 {
     "name": "send_egld",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "setState",

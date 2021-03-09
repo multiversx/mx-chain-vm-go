@@ -1,6 +1,7 @@
 {
     "name": "unstake-5",
     "comment":"check that unstake from waiting list takes funds in reverse order",
+    "gasSchedule": "v2",
     "steps": [
         {
             "step": "externalSteps",

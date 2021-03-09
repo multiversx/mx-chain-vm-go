@@ -1,5 +1,6 @@
 {
     "name": "main scenario, happy path",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "externalSteps",

@@ -1,5 +1,6 @@
 {
     "name": "echo_string",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "setState",

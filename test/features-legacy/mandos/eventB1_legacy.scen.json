@@ -1,5 +1,6 @@
 {
     "name": "eventB1",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "setState",

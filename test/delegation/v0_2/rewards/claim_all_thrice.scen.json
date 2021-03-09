@@ -1,5 +1,6 @@
 {
     "name": "claim_all_thrice",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "setState",

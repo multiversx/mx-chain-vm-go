@@ -1,5 +1,6 @@
 {
     "name": "unjail nodes scenario",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "externalSteps",

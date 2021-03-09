@@ -1,5 +1,6 @@
 {
     "name": "init_bad_node_share",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "setState",

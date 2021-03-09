@@ -1,5 +1,6 @@
 {
     "name": "stake_partial_err",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "externalSteps",

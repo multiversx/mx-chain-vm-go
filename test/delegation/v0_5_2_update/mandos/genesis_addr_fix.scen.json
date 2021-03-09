@@ -1,5 +1,6 @@
 {
     "name": "genesis big scenario",
+    "gasSchedule": "v2",
     "steps": [
         {
             "step": "setState",

@@ -1,6 +1,7 @@
 {
     "name": "payable",
     "comment": "deprecated endpoint, will be removed",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "setState",

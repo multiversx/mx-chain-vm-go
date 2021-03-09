@@ -1,5 +1,6 @@
 {
     "name": "getClaimable_node",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "setState",

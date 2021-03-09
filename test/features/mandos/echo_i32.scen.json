@@ -1,5 +1,6 @@
 {
     "name": "echo_i32",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "setState",

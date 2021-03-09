@@ -1,5 +1,6 @@
 {
     "name": "owner with stake claims rewards scenario",
+    "gasSchedule": "v2",
     "steps": [
         {
             "step": "externalSteps",

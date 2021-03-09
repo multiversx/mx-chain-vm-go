@@ -1,6 +1,7 @@
 {
     "name": "adder",
     "comment": "add then check",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "externalSteps",

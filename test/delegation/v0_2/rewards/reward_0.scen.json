@@ -1,6 +1,7 @@
 {
     "name": "reward",
     "comment": "this is not really a test of the contract, just to see that the ELRONDreward mock works",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "setState",

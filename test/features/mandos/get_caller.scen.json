@@ -1,5 +1,6 @@
 {
     "name": "get caller",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "setState",
