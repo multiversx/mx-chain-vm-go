@@ -9,7 +9,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {},
-                    "code": "file:../output/basic-features.wasm"
+                    "code": "file:../output/payable-features.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
