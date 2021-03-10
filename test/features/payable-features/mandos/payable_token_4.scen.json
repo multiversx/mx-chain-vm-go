@@ -16,7 +16,7 @@
                     "balance": "1,000,000,000,000",
                     "storage": {},
                     "esdt": {
-                        "str:BASIC-FEATURES-TOKEN": "1,000,000,000,000",
+                        "str:PAYABLE-FEATURES-TOKEN": "1,000,000,000,000",
                         "str:OTHER-TOKEN": "1,000,000,000,000"
                     },
                     "code": ""
@@ -72,7 +72,7 @@
                 "from": "address:an_account",
                 "to": "address:features_contract",
                 "value": "0",
-                "esdtTokenName": "str:BASIC-FEATURES-TOKEN",
+                "esdtTokenName": "str:PAYABLE-FEATURES-TOKEN",
                 "esdtValue": "100",
                 "function": "payable_token_4",
                 "arguments": [],
@@ -80,7 +80,7 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "100", "str:BASIC-FEATURES-TOKEN" ],
+                "out": [ "100", "str:PAYABLE-FEATURES-TOKEN" ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -94,7 +94,7 @@
                 "from": "address:an_account",
                 "to": "address:features_contract",
                 "value": "0",
-                "esdtTokenName": "str:BASIC-FEATURES-TOKEN",
+                "esdtTokenName": "str:PAYABLE-FEATURES-TOKEN",
                 "esdtValue": "0",
                 "function": "payable_token_4",
                 "arguments": [],
@@ -102,7 +102,7 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "0", "str:BASIC-FEATURES-TOKEN" ],
+                "out": [ "0", "str:PAYABLE-FEATURES-TOKEN" ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
