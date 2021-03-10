@@ -41,7 +41,7 @@
                         "address": "address:features_contract",
                         "identifier": "0x0123456789abcdef0123456789abcdef0123456789abcdef000000000000000a",
                         "topics": [],
-                        "data": "0x000000000000000000000000000000000000000000000000000000001234abc"
+                        "data": "0x1234abc"
                     }
                 ],
                 "gas": "*",

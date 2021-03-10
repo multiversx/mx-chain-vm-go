@@ -24,7 +24,7 @@
                         "``balance|``account_1_____________________s1": "0x2710",
                         "``total_supply": "0x2710"
                     },
-                    "code": "file:../output/simple-erc20.wasm"
+                    "code": "file:../output/erc20.wasm"
                 }
             }
         },
@@ -72,7 +72,7 @@
                 "logs": [
                     {
                         "address": "``busd__________________________s1",
-                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000002",
+                        "identifier": "str:approve",
                         "topics": [
                             "0x82a978b3f5962a5b0957d9ee9eef472ee55b42f1000000000000000000000000",
                             "``account_1_____________________s1"
@@ -132,7 +132,7 @@
                         "``allowance|0x82a978b3f5962a5b0957d9ee9eef472ee55b42f1000000000000000000000000|``account_1_____________________s1": "0x19",
                         "``total_supply": "0x2710"
                     },
-                    "code": "file:../output/simple-erc20.wasm"
+                    "code": "file:../output/erc20.wasm"
                 }
             }
         }

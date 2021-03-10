@@ -72,11 +72,11 @@
                         "``quorum": "2",
                         "``action_last_index": "3",
                         "``action_data|u32:3": {
-                            "discriminant": "0x06",
-                            "amount": "u32:0",
-                            "code": "u32:772|file:../test-contracts/factorial.wasm",
-                            "code_metadata": "0x0000",
-                            "arguments": "u32:0"
+                            "0-discriminant": "0x06",
+                            "1-amount": "u32:0",
+                            "2-code": "u32:772|file:../test-contracts/factorial.wasm",
+                            "3-code_metadata": "0x0000",
+                            "4-arguments": "u32:0"
                         }
                     },
                     "code": "file:../output/multisig.wasm"

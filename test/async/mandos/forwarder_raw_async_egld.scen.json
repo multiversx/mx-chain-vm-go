@@ -42,7 +42,28 @@
             "expect": {
                 "out": [],
                 "status": "0",
-                "logs": [],
+                "logs": [
+                    {
+                        "address": "address:vault",
+                        "identifier": "str:accept_funds",
+                        "topics": [
+                            "str:EGLD",
+                            "1000"
+                        ],
+                        "data": ""
+                    },
+                    {
+                        "address": "address:forwarder",
+                        "identifier": "str:callback_raw",
+                        "topics": [
+                            "str:EGLD",
+                            "0"
+                        ],
+                        "data": {
+                            "0-status": "biguint:0"
+                        }
+                    }
+                ],
                 "gas": "*",
                 "refund": "*"
             }
