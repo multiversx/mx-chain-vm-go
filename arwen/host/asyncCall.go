@@ -69,26 +69,22 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 	return nil
 }
 
-func isESDTTransferOnData(data []byte) (bool, string, [][]byte) {
+func isESDTTransferOnDataWithNoAdditionalArgs(data []byte) (bool, string, [][]byte) {
 	argParser := parsers.NewCallArgsParser()
 	functionName, args, err := argParser.ParseData(string(data))
 	if err != nil {
 		return false, "", nil
 	}
 
-	if len(args) < 2 {
-		return false, "", nil
-	}
-
-	if functionName == core.BuiltInFunctionESDTTransfer {
+	if functionName == core.BuiltInFunctionESDTTransfer && len(args) == 2 {
 		return true, functionName, args
 	}
 
-	if len(args) < 4 {
-		return false, "", nil
+	if functionName == core.BuiltInFunctionESDTNFTTransfer && len(args) == 4 {
+		return true, functionName, args
 	}
 
-	return true, functionName, args
+	return false, functionName, args
 }
 
 func (host *vmHost) determineAsyncCallExecutionMode(asyncCallInfo *arwen.AsyncCallInfo) (arwen.AsyncCallExecutionMode, error) {
@@ -370,7 +366,7 @@ func (host *vmHost) createCallbackContractCallInput(
 		// when execution went Ok, callBack arguments are:
 		// [0, result1, result2, ....]
 		if len(destinationVMOutput.ReturnData) > 0 {
-			isESDTOnCallBack, functionName, esdtArgs = isESDTTransferOnData(destinationVMOutput.ReturnData[0])
+			isESDTOnCallBack, functionName, esdtArgs = isESDTTransferOnDataWithNoAdditionalArgs(destinationVMOutput.ReturnData[0])
 		}
 		arguments = append(arguments, destinationVMOutput.ReturnData...)
 	} else {
@@ -418,13 +414,7 @@ func (host *vmHost) createCallbackContractCallInput(
 		if len(destinationVMOutput.ReturnData) > 1 {
 			contractCallInput.Arguments = append(contractCallInput.Arguments, destinationVMOutput.ReturnData[1:]...)
 		}
-		numArgsForTransfer := 2
-		if functionName == core.BuiltInFunctionESDTNFTTransfer {
-			numArgsForTransfer = 4
-		}
-		if len(esdtArgs) > numArgsForTransfer {
-			contractCallInput.Arguments = append(contractCallInput.Arguments, esdtArgs[numArgsForTransfer:]...)
-		}
+
 		contractCallInput.ESDTTokenName = esdtArgs[0]
 		contractCallInput.ESDTValue = big.NewInt(0).SetBytes(esdtArgs[1])
 		contractCallInput.CallValue = big.NewInt(0)
