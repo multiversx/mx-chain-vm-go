@@ -69,9 +69,27 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 	return nil
 }
 
-func isESDTTransferOnDataWithNoAdditionalArgs(data []byte) (bool, string, [][]byte) {
+func (host *vmHost) isESDTTransferOnLastOutTransferWithNoAdditionalData(destinationVMOutput *vmcommon.VMOutput) (bool, string, [][]byte) {
+	if len(destinationVMOutput.ReturnData) > 0 {
+		return false, "", nil
+	}
+
+	callBackReceiver := host.Runtime().GetSCAddress()
+	outAcc, ok := destinationVMOutput.OutputAccounts[string(callBackReceiver)]
+	if !ok {
+		return false, "", nil
+	}
+
+	if len(outAcc.OutputTransfers) == 0 {
+		return false, "", nil
+	}
+
+	lastOutTransfer := outAcc.OutputTransfers[len(outAcc.OutputTransfers)-1]
+	if len(lastOutTransfer.Data) == 0 {
+		return false, "", nil
+	}
 	argParser := parsers.NewCallArgsParser()
-	functionName, args, err := argParser.ParseData(string(data))
+	functionName, args, err := argParser.ParseData(string(lastOutTransfer.Data))
 	if err != nil {
 		return false, "", nil
 	}
@@ -320,8 +338,11 @@ func (host *vmHost) createDestinationContractCallInput(asyncCallInfo arwen.Async
 	return contractCallInput, nil
 }
 
-func (host *vmHost) computeCallValueFromVMOutput(destinationVMOutput *vmcommon.VMOutput) *big.Int {
+func (host *vmHost) computeCallValueFromLastOutputTransfer(destinationVMOutput *vmcommon.VMOutput) *big.Int {
 	if !host.IsArwenV3Enabled() {
+		return big.NewInt(0)
+	}
+	if len(destinationVMOutput.ReturnData) > 0 {
 		return big.NewInt(0)
 	}
 
@@ -365,9 +386,7 @@ func (host *vmHost) createCallbackContractCallInput(
 	if destinationErr == nil && destinationVMOutput.ReturnCode == vmcommon.Ok {
 		// when execution went Ok, callBack arguments are:
 		// [0, result1, result2, ....]
-		if len(destinationVMOutput.ReturnData) > 0 {
-			isESDTOnCallBack, functionName, esdtArgs = isESDTTransferOnDataWithNoAdditionalArgs(destinationVMOutput.ReturnData[0])
-		}
+		isESDTOnCallBack, functionName, esdtArgs = host.isESDTTransferOnLastOutTransferWithNoAdditionalData(destinationVMOutput)
 		arguments = append(arguments, destinationVMOutput.ReturnData...)
 	} else {
 		// when execution returned error, callBack arguments are:
@@ -391,7 +410,7 @@ func (host *vmHost) createCallbackContractCallInput(
 		VMInput: vmcommon.VMInput{
 			CallerAddr:     callbackInitiator,
 			Arguments:      arguments,
-			CallValue:      host.computeCallValueFromVMOutput(destinationVMOutput),
+			CallValue:      host.computeCallValueFromLastOutputTransfer(destinationVMOutput),
 			CallType:       vmcommon.AsynchronousCallBack,
 			GasPrice:       runtime.GetVMInput().GasPrice,
 			GasProvided:    gasLimit,
@@ -403,6 +422,7 @@ func (host *vmHost) createCallbackContractCallInput(
 	}
 
 	if isESDTOnCallBack {
+		contractCallInput.CallValue = big.NewInt(0)
 		contractCallInput.Function = functionName
 		contractCallInput.Arguments = make([][]byte, 0, len(arguments))
 		contractCallInput.Arguments = append(contractCallInput.Arguments, esdtArgs[0], esdtArgs[1])
