@@ -17,7 +17,7 @@
                         "``balance|``account_1_____________________s1": "0x2710",
                         "``total_supply": "0x2710"
                     },
-                    "code": "file:../output/simple-erc20.wasm"
+                    "code": "file:../output/erc20.wasm"
                 }
             }
         },
@@ -42,7 +42,7 @@
                 "logs": [
                     {
                         "address": "``busd__________________________s1",
-                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000001",
+                        "identifier": "str:transfer",
                         "topics": [
                             "``account_1_____________________s1",
                             "``account_7_____________________sz"
@@ -70,7 +70,7 @@
                         "``balance|``account_7_____________________sz": "0x2710",
                         "``total_supply": "0x2710"
                     },
-                    "code": "file:../output/simple-erc20.wasm"
+                    "code": "file:../output/erc20.wasm"
                 }
             }
         }

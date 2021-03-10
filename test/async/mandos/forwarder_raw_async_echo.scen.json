@@ -46,7 +46,23 @@
                     "2"
                 ],
                 "status": "0",
-                "logs": [],
+                "logs": [
+                    {
+                        "address": "address:forwarder",
+                        "identifier": "str:callback_raw",
+                        "topics": [
+                            "str:EGLD",
+                            "0"
+                        ],
+                        "data": {
+                            "0-status": "biguint:0",
+                            "1-echoed-args": [
+                                "biguint:1",
+                                "biguint:2"
+                            ]
+                        }
+                    }
+                ],
                 "gas": "*",
                 "refund": "*"
             }
@@ -71,14 +87,16 @@
                     "balance": "0",
                     "storage": {
                         "str:callback_data|u32:0": "1",
-                        "str:callback_data|u32:1": [
-                            "u32:4", "str:EGLD",
-                            "u32:0",
-                            "u32:3",
-                            "u32:0",
-                            "u32:1", "1",
-                            "u32:1", "2"
-                        ]
+                        "str:callback_data|u32:1": {
+                            "0-token": ["u32:4", "str:EGLD"],
+                            "1-payment": "u32:0",
+                            "2-num-arguments": "u32:3",
+                            "3-arguments": [
+                                "biguint:0",
+                                "biguint:1",
+                                "biguint:2"
+                            ]
+                        }
                     },
                     "code": "file:../forwarder-raw/output/forwarder-raw.wasm"
                 }

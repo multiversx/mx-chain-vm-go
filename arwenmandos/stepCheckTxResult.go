@@ -1,7 +1,6 @@
 package arwenmandos
 
 import (
-	"bytes"
 	"fmt"
 	"math/big"
 
@@ -72,13 +71,13 @@ func checkTxResults(
 	}
 	for i, outLog := range output.Logs {
 		testLog := blResult.Logs[i]
-		if !bytes.Equal(outLog.Address, testLog.Address.Value) {
+		if !testLog.Address.Check(outLog.Address) {
 			return fmt.Errorf("bad log address. Tx %s. Want:\n%s\nGot:\n%s",
 				txIndex,
 				mjwrite.LogToString(testLog),
 				mjwrite.LogToString(convertLogToTestFormat(outLog)))
 		}
-		if !bytes.Equal(outLog.Identifier, testLog.Identifier.Value) {
+		if !testLog.Identifier.Check(outLog.Identifier) {
 			return fmt.Errorf("bad log identifier. Tx %s. Want:\n%s\nGot:\n%s",
 				txIndex,
 				mjwrite.LogToString(testLog),
@@ -91,14 +90,14 @@ func checkTxResults(
 				mjwrite.LogToString(convertLogToTestFormat(outLog)))
 		}
 		for ti := range outLog.Topics {
-			if !bytes.Equal(outLog.Topics[ti], testLog.Topics[ti].Value) {
+			if !testLog.Topics[ti].Check(outLog.Topics[ti]) {
 				return fmt.Errorf("bad log topic. Tx %s. Want:\n%s\nGot:\n%s",
 					txIndex,
 					mjwrite.LogToString(testLog),
 					mjwrite.LogToString(convertLogToTestFormat(outLog)))
 			}
 		}
-		if big.NewInt(0).SetBytes(outLog.Data).Cmp(big.NewInt(0).SetBytes(testLog.Data.Value)) != 0 {
+		if !testLog.Data.Check(outLog.Data) {
 			return fmt.Errorf("bad log data. Tx %s. Want:\n%s\nGot:\n%s",
 				txIndex,
 				mjwrite.LogToString(testLog),

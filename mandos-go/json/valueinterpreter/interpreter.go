@@ -27,6 +27,9 @@ const i32Prefix = "i32:"
 const i16Prefix = "i16:"
 const i8Prefix = "i8:"
 
+const biguintPrefix = "biguint:"
+const nestedPrefix = "nested:"
+
 // ValueInterpreter provides context for computing Mandos values.
 type ValueInterpreter struct {
 	FileResolver fr.FileResolver
@@ -57,8 +60,12 @@ func (vi *ValueInterpreter) InterpretSubTree(obj oj.OJsonObject) ([]byte, error)
 
 	if mp, isMap := obj.(*oj.OJsonMap); isMap {
 		var concat []byte
-		for _, kvp := range mp.OrderedKV {
-			// keys are ignored, they do not form the value but act like documentation
+
+		// keys are ignored, they do not form the value but act like documentation
+		// but we sort by keys, because other JSON implementations cannot retain key order
+		// and we need consistency
+		sortedKVP := mp.KeyValuePairsSortedByKey()
+		for _, kvp := range sortedKVP {
 			value, err := vi.InterpretSubTree(kvp.Value)
 			if err != nil {
 				return []byte{}, err
@@ -224,6 +231,10 @@ func (vi *ValueInterpreter) interpretUnsignedNumber(strRaw string) ([]byte, erro
 		return []byte{}, fmt.Errorf("could not parse base 10 value: %s", strRaw)
 	}
 
+	if result.Sign() < 0 {
+		return []byte{}, fmt.Errorf("negative numbers not allowed in this context: %s", strRaw)
+	}
+
 	return result.Bytes(), nil
 }
 
@@ -275,6 +286,20 @@ func (vi *ValueInterpreter) tryInterpretFixedWidth(strRaw string) (bool, []byte,
 	if strings.HasPrefix(strRaw, i8Prefix) {
 		r, err := vi.interpretNumber(strRaw[len(i8Prefix):], 1)
 		return true, r, err
+	}
+
+	if strings.HasPrefix(strRaw, biguintPrefix) {
+		biBytes, err := vi.interpretUnsignedNumber(strRaw[len(biguintPrefix):])
+		lengthBytes := big.NewInt(int64(len(biBytes))).Bytes()
+		encodedLength := twos.CopyAlignRight(lengthBytes, 4)
+		return true, append(encodedLength, biBytes...), err
+	}
+
+	if strings.HasPrefix(strRaw, nestedPrefix) {
+		nestedBytes, err := vi.InterpretString(strRaw[len(nestedPrefix):])
+		lengthBytes := big.NewInt(int64(len(nestedBytes))).Bytes()
+		encodedLength := twos.CopyAlignRight(lengthBytes, 4)
+		return true, append(encodedLength, nestedBytes...), err
 	}
 
 	return false, []byte{}, nil
