@@ -75,10 +75,10 @@ func TestRustPayableFeaturesLatest(t *testing.T) {
 }
 
 func TestRustAsyncCalls(t *testing.T) {
-	runTestsInFolder(t, "async/mandos", []string{
-		"async/mandos/forwarder_send_twice_esdt.scen.json",
-		"async/mandos/recursive_caller_esdt_2.scen.json",
-		"async/mandos/recursive_caller_esdt_x.scen.json",
+	runTestsInFolder(t, "features/async/mandos", []string{
+		"features/async/mandos/forwarder_send_twice_esdt.scen.json",
+		"features/async/mandos/recursive_caller_esdt_2.scen.json",
+		"features/async/mandos/recursive_caller_esdt_x.scen.json",
 	})
 }
 
@@ -160,6 +160,10 @@ func TestCrowdfundingEsdt(t *testing.T) {
 
 func TestEgldEsdtSwap(t *testing.T) {
 	runAllTestsInFolder(t, "egld-esdt-swap")
+}
+
+func TestPingPongEgld(t *testing.T) {
+	runAllTestsInFolder(t, "ping-pong-egld")
 }
 
 func runAllTestsInFolder(t *testing.T, folder string) {
