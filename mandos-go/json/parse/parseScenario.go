@@ -131,6 +131,11 @@ func (p *Parser) processScenarioStep(stepObj oj.OJsonObject) (mj.Step, error) {
 		for _, kvp := range stepMap.OrderedKV {
 			switch kvp.Key {
 			case "step":
+			case "comment":
+				step.Comment, err = p.parseString(kvp.Value)
+				if err != nil {
+					return nil, fmt.Errorf("bad externalSteps step comment: %w", err)
+				}
 			case "path":
 				step.Path, err = p.parseString(kvp.Value)
 				if err != nil {

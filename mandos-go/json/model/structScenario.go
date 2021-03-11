@@ -32,7 +32,8 @@ type BlockInfo struct {
 
 // ExternalStepsStep allows including steps from another file
 type ExternalStepsStep struct {
-	Path string
+	Comment string
+	Path    string
 }
 
 // SetStateStep is a step where data is saved to the blockchain mock.

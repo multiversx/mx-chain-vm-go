@@ -6,6 +6,7 @@
     "steps": [
         {
             "step": "externalSteps",
+            "comment": "include comment",
             "path": "other.scen.json"
         },
         {
