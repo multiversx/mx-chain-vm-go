@@ -32,15 +32,10 @@ func NewArwenTestExecutor() (*ArwenTestExecutor, error) {
 	world := worldhook.NewMockWorld()
 
 	blockGasLimit := uint64(10000000)
-	gasSchedule := config.MakeGasMapForTests()
-	// gasSchedule, err := arwenHost.LoadGasScheduleConfig("../../test/gasSchedule.toml")
-	// if err != nil {
-	// 	return nil, err
-	// }
 	vm, err := arwenHost.NewArwenVM(world, &arwen.VMHostParameters{
 		VMType:                   TestVMType,
 		BlockGasLimit:            blockGasLimit,
-		GasSchedule:              gasSchedule,
+		GasSchedule:              config.MakeGasMapForTests(),
 		ProtocolBuiltinFunctions: world.GetBuiltinFunctionNames(),
 		ElrondProtectedKeyPrefix: []byte(ElrondProtectedKeyPrefix),
 	})
