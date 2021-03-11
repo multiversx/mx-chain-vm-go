@@ -22,7 +22,7 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 	asyncCallInfo := runtime.GetAsyncCallInfo()
 	execMode, err := host.determineAsyncCallExecutionMode(asyncCallInfo)
 	if err != nil {
-		log.Error("async call failed", "error", err)
+		log.Trace("async call failed", "error", err)
 		return err
 	}
 
@@ -69,27 +69,13 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 	return nil
 }
 
-func (host *vmHost) isESDTTransferOnLastOutTransferWithNoAdditionalData(destinationVMOutput *vmcommon.VMOutput) (bool, string, [][]byte) {
-	if len(destinationVMOutput.ReturnData) > 0 {
+func isESDTTransferOnReturnDataWithNoAdditionalData(destinationVMOutput *vmcommon.VMOutput) (bool, string, [][]byte) {
+	if len(destinationVMOutput.ReturnData) == 0 {
 		return false, "", nil
 	}
 
-	callBackReceiver := host.Runtime().GetSCAddress()
-	outAcc, ok := destinationVMOutput.OutputAccounts[string(callBackReceiver)]
-	if !ok {
-		return false, "", nil
-	}
-
-	if len(outAcc.OutputTransfers) == 0 {
-		return false, "", nil
-	}
-
-	lastOutTransfer := outAcc.OutputTransfers[len(outAcc.OutputTransfers)-1]
-	if len(lastOutTransfer.Data) == 0 {
-		return false, "", nil
-	}
 	argParser := parsers.NewCallArgsParser()
-	functionName, args, err := argParser.ParseData(string(lastOutTransfer.Data))
+	functionName, args, err := argParser.ParseData(string(destinationVMOutput.ReturnData[0]))
 	if err != nil {
 		return false, "", nil
 	}
@@ -142,7 +128,7 @@ func (host *vmHost) determineAsyncCallExecutionMode(asyncCallInfo *arwen.AsyncCa
 func (host *vmHost) executeSyncDestinationCall(asyncCallInfo arwen.AsyncCallInfoHandler) (*vmcommon.VMOutput, uint64, error) {
 	destinationCallInput, err := host.createDestinationContractCallInput(asyncCallInfo)
 	if err != nil {
-		log.Error("async call: sync dest call failed", "error", err)
+		log.Trace("async call: sync dest call failed", "error", err)
 		return nil, 0, err
 	}
 
@@ -184,7 +170,7 @@ func (host *vmHost) executeSyncCallbackCall(
 		destinationErr,
 	)
 	if err != nil {
-		log.Error("async call: sync callback failed", "error", err)
+		log.Trace("async call: sync callback failed", "error", err)
 		return nil, err
 	}
 
@@ -386,7 +372,7 @@ func (host *vmHost) createCallbackContractCallInput(
 	if destinationErr == nil && destinationVMOutput.ReturnCode == vmcommon.Ok {
 		// when execution went Ok, callBack arguments are:
 		// [0, result1, result2, ....]
-		isESDTOnCallBack, functionName, esdtArgs = host.isESDTTransferOnLastOutTransferWithNoAdditionalData(destinationVMOutput)
+		isESDTOnCallBack, functionName, esdtArgs = isESDTTransferOnReturnDataWithNoAdditionalData(destinationVMOutput)
 		arguments = append(arguments, destinationVMOutput.ReturnData...)
 	} else {
 		// when execution returned error, callBack arguments are:
@@ -422,18 +408,30 @@ func (host *vmHost) createCallbackContractCallInput(
 	}
 
 	if isESDTOnCallBack {
-		contractCallInput.ESDTTokenName = esdtArgs[0]
-		contractCallInput.ESDTValue = big.NewInt(0).SetBytes(esdtArgs[1])
-		contractCallInput.CallValue = big.NewInt(0)
+		/*		contractCallInput.ESDTTokenName = esdtArgs[0]
+				contractCallInput.ESDTValue = big.NewInt(0).SetBytes(esdtArgs[1])
+				contractCallInput.CallValue = big.NewInt(0)
 
+				if functionName == core.BuiltInFunctionESDTNFTTransfer {
+					contractCallInput.ESDTTokenNonce = big.NewInt(0).SetBytes(esdtArgs[1]).Uint64()
+					contractCallInput.ESDTTokenType = uint32(core.NonFungible)
+					contractCallInput.ESDTValue = big.NewInt(0).SetBytes(esdtArgs[2])
+
+					if host.AreInSameShard(contractCallInput.CallerAddr, contractCallInput.RecipientAddr) {
+						contractCallInput.RecipientAddr = contractCallInput.CallerAddr
+					}
+				}
+		*/
+		contractCallInput.Function = functionName
+		contractCallInput.Arguments = make([][]byte, 0, len(arguments))
+		contractCallInput.Arguments = append(contractCallInput.Arguments, esdtArgs[0], esdtArgs[1])
 		if functionName == core.BuiltInFunctionESDTNFTTransfer {
-			contractCallInput.ESDTTokenNonce = big.NewInt(0).SetBytes(esdtArgs[1]).Uint64()
-			contractCallInput.ESDTTokenType = uint32(core.NonFungible)
-			contractCallInput.ESDTValue = big.NewInt(0).SetBytes(esdtArgs[2])
-
-			if host.AreInSameShard(contractCallInput.CallerAddr, contractCallInput.RecipientAddr) {
-				contractCallInput.RecipientAddr = contractCallInput.CallerAddr
-			}
+			contractCallInput.Arguments = append(contractCallInput.Arguments, esdtArgs[2], esdtArgs[3])
+		}
+		contractCallInput.Arguments = append(contractCallInput.Arguments, []byte(callbackFunction))
+		contractCallInput.Arguments = append(contractCallInput.Arguments, big.NewInt(int64(destinationVMOutput.ReturnCode)).Bytes())
+		if len(destinationVMOutput.ReturnData) > 1 {
+			contractCallInput.Arguments = append(contractCallInput.Arguments, destinationVMOutput.ReturnData[1:]...)
 		}
 	}
 
@@ -854,7 +852,7 @@ func (host *vmHost) getFunctionByCallType(callType vmcommon.CallType) (wasmer.Ex
 
 	function, err := runtime.GetFunctionToCall()
 	if err != nil && !customCallback {
-		log.Error("get function by call type", "error", arwen.ErrNilCallbackFunction)
+		log.Trace("get function by call type", "error", arwen.ErrNilCallbackFunction)
 		return nil, arwen.ErrNilCallbackFunction
 	}
 

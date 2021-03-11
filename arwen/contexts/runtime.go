@@ -244,7 +244,6 @@ func (context *runtimeContext) saveCompiledCode(codeHash []byte) {
 	compiledCode, err := context.instance.Cache()
 	if err != nil {
 		logRuntime.Error("getCompiledCode from instance", "error", err)
-
 		return
 	}
 
@@ -557,19 +556,19 @@ func (context *runtimeContext) VerifyContractCode() error {
 
 	err := context.validator.verifyMemoryDeclaration(context.instance)
 	if err != nil {
-		logRuntime.Error("verify contract code", "error", err)
+		logRuntime.Trace("verify contract code", "error", err)
 		return err
 	}
 
 	err = context.validator.verifyFunctions(context.instance)
 	if err != nil {
-		logRuntime.Error("verify contract code", "error", err)
+		logRuntime.Trace("verify contract code", "error", err)
 		return err
 	}
 
 	err = context.checkBackwardCompatibility()
 	if err != nil {
-		logRuntime.Error("verify contract code", "error", err)
+		logRuntime.Trace("verify contract code", "error", err)
 		return err
 	}
 
