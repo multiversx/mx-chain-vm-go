@@ -2,6 +2,7 @@ package host
 
 import (
 	"bytes"
+	"encoding/hex"
 	"errors"
 	"math/big"
 
@@ -760,11 +761,66 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmc
 		for _, outAcc := range vmOutput.OutputAccounts {
 			outAcc.OutputTransfers = make([]vmcommon.OutputTransfer, 0)
 		}
+	} else {
 	}
 
 	output.AddToActiveState(vmOutput)
 
 	return newVMInput, gasConsumedForExecution, nil
+}
+
+// add output transfer of esdt transfer when needed - sc calling another sc intra shard without extra call
+func (host *vmHost) addESDTTransferToVMOutputSCIntraShardCall(
+	input *vmcommon.ContractCallInput,
+	output *vmcommon.VMOutput,
+) {
+	if output.ReturnCode != vmcommon.Ok {
+		return
+	}
+	if !host.AreInSameShard(input.RecipientAddr, input.CallerAddr) {
+		return
+	}
+	isESDTTransfer := input.Function == core.BuiltInFunctionESDTTransfer || input.Function == core.BuiltInFunctionESDTNFTTransfer
+	if !isESDTTransfer {
+		return
+	}
+
+	recipientAddr := input.RecipientAddr
+	if input.Function == core.BuiltInFunctionESDTNFTTransfer {
+		if len(input.Arguments) != 4 {
+			return
+		}
+		recipientAddr = input.Arguments[3]
+	}
+	addOutputTransferToVMOutput(input.Function, input.Arguments, recipientAddr, input.CallType, output)
+}
+
+func addOutputTransferToVMOutput(
+	function string,
+	arguments [][]byte,
+	recipient []byte,
+	callType vmcommon.CallType,
+	vmOutput *vmcommon.VMOutput,
+) {
+	esdtTransferTxData := function
+	for _, arg := range arguments {
+		esdtTransferTxData += "@" + hex.EncodeToString(arg)
+	}
+	outTransfer := vmcommon.OutputTransfer{
+		Value:    big.NewInt(0),
+		Data:     []byte(esdtTransferTxData),
+		CallType: callType,
+	}
+
+	outAcc, ok := vmOutput.OutputAccounts[string(recipient)]
+	if !ok {
+		outAcc = &vmcommon.OutputAccount{
+			Address:         recipient,
+			OutputTransfers: make([]vmcommon.OutputTransfer, 0),
+		}
+	}
+	outAcc.OutputTransfers = append(outAcc.OutputTransfers, outTransfer)
+	vmOutput.OutputAccounts[string(recipient)] = outAcc
 }
 
 func (host *vmHost) checkFinalGasAfterExit() error {

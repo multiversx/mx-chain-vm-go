@@ -422,19 +422,6 @@ func (host *vmHost) createCallbackContractCallInput(
 	}
 
 	if isESDTOnCallBack {
-		contractCallInput.CallValue = big.NewInt(0)
-		contractCallInput.Function = functionName
-		contractCallInput.Arguments = make([][]byte, 0, len(arguments))
-		contractCallInput.Arguments = append(contractCallInput.Arguments, esdtArgs[0], esdtArgs[1])
-		if functionName == core.BuiltInFunctionESDTNFTTransfer {
-			contractCallInput.Arguments = append(contractCallInput.Arguments, esdtArgs[2], esdtArgs[3])
-		}
-		contractCallInput.Arguments = append(contractCallInput.Arguments, []byte(callbackFunction))
-		contractCallInput.Arguments = append(contractCallInput.Arguments, big.NewInt(int64(destinationVMOutput.ReturnCode)).Bytes())
-		if len(destinationVMOutput.ReturnData) > 1 {
-			contractCallInput.Arguments = append(contractCallInput.Arguments, destinationVMOutput.ReturnData[1:]...)
-		}
-
 		contractCallInput.ESDTTokenName = esdtArgs[0]
 		contractCallInput.ESDTValue = big.NewInt(0).SetBytes(esdtArgs[1])
 		contractCallInput.CallValue = big.NewInt(0)
