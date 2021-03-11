@@ -70,7 +70,11 @@ func TestRustFeaturesLegacy(t *testing.T) {
 }
 
 func TestRustAsyncCalls(t *testing.T) {
-	runAllTestsInFolder(t, "async/mandos")
+	runTestsInFolder(t, "async/mandos", []string{
+		"async/mandos/forwarder_send_twice_esdt.scen.json",
+		"async/mandos/recursive_caller_esdt_2.scen.json",
+		"async/mandos/recursive_caller_esdt_x.scen.json",
+	})
 }
 
 func TestDelegation_v0_2(t *testing.T) {
@@ -147,6 +151,10 @@ func TestTimelocks(t *testing.T) {
 
 func TestCrowdfundingEsdt(t *testing.T) {
 	runAllTestsInFolder(t, "crowdfunding-esdt")
+}
+
+func TestEgldEsdtSwap(t *testing.T) {
+	runAllTestsInFolder(t, "egld-esdt-swap")
 }
 
 func runAllTestsInFolder(t *testing.T, folder string) {

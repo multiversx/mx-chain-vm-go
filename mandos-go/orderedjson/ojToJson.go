@@ -32,7 +32,9 @@ func (j *OJsonMap) writeJSON(sb *strings.Builder, indent int) {
 		sb.WriteString("\"")
 		sb.WriteString(child.Key)
 		sb.WriteString("\": ")
-		child.Value.writeJSON(sb, indent+1)
+		if child.Value != nil {
+			child.Value.writeJSON(sb, indent+1)
+		}
 		if i < len(j.OrderedKV)-1 {
 			sb.WriteString(",")
 		}

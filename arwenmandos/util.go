@@ -82,15 +82,16 @@ func convertBlockInfo(testBlockInfo *mj.BlockInfo) *worldhook.BlockInfo {
 	return result
 }
 
+// this is a small hack, so we can reuse mandos's JSON printing in error messages
 func convertLogToTestFormat(outputLog *vmcommon.LogEntry) *mj.LogEntry {
 	testLog := mj.LogEntry{
-		Address:    mj.JSONBytesFromString{Value: outputLog.Address},
-		Identifier: mj.JSONBytesFromString{Value: outputLog.Identifier},
-		Data:       mj.JSONBytesFromString{Value: outputLog.Data},
-		Topics:     make([]mj.JSONBytesFromString, len(outputLog.Topics)),
+		Address:    mj.JSONCheckBytesReconstructed(outputLog.Address),
+		Identifier: mj.JSONCheckBytesReconstructed(outputLog.Identifier),
+		Data:       mj.JSONCheckBytesReconstructed(outputLog.Data),
+		Topics:     make([]mj.JSONCheckBytes, len(outputLog.Topics)),
 	}
 	for i, topic := range outputLog.Topics {
-		testLog.Topics[i] = mj.JSONBytesFromString{Value: topic}
+		testLog.Topics[i] = mj.JSONCheckBytesReconstructed(topic)
 	}
 
 	return &testLog

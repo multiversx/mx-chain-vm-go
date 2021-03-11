@@ -88,8 +88,8 @@ type TransactionResult struct {
 
 // LogEntry is a json object representing an expected transaction result log entry.
 type LogEntry struct {
-	Address    JSONBytesFromString
-	Identifier JSONBytesFromString
-	Topics     []JSONBytesFromString
-	Data       JSONBytesFromString
+	Address    JSONCheckBytes
+	Identifier JSONCheckBytes
+	Topics     []JSONCheckBytes
+	Data       JSONCheckBytes
 }
