@@ -1,5 +1,5 @@
 {
-    "name": "call get_user_addresses in order to check who registered",
+    "name": "call getUserAddresses in order to check who registered",
     "gasSchedule": "v2",
     "steps": [
         {
@@ -12,7 +12,7 @@
                 "from": "address:participant1",
                 "to": "address:the_ping_pong_contract",
                 "value": "0",
-                "function": "get_user_addresses",
+                "function": "getUserAddresses",
                 "arguments": [],
                 "gasLimit": "10,000,000",
                 "gasPrice": "0"
