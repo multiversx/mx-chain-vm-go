@@ -38,6 +38,7 @@ type VMHost interface {
 	IsAheadOfTimeCompileEnabled() bool
 	IsDynamicGasLockingEnabled() bool
 	IsArwenV3Enabled() bool
+	IsESDTFunctionsEnabled() bool
 
 	ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int) (*vmcommon.VMOutput, uint64, error)
 	RevertESDTTransfer(input *vmcommon.ContractCallInput)

@@ -84,6 +84,11 @@ func (host *VMHostMock) IsDynamicGasLockingEnabled() bool {
 	return true
 }
 
+// IsESDTFunctionsEnabled mocked method
+func (host *VMHostMock) IsESDTFunctionsEnabled() bool {
+	return true
+}
+
 // AreInSameShard mocked method
 func (host *VMHostMock) AreInSameShard(_ []byte, _ []byte) bool {
 	return true

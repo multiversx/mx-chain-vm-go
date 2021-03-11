@@ -578,7 +578,7 @@ func (context *runtimeContext) VerifyContractCode() error {
 }
 
 func (context *runtimeContext) checkBackwardCompatibility() error {
-	if context.host.IsArwenV3Enabled() {
+	if context.host.IsESDTFunctionsEnabled() {
 		return nil
 	}
 
@@ -595,6 +595,15 @@ func (context *runtimeContext) checkBackwardCompatibility() error {
 		return arwen.ErrContractInvalid
 	}
 	if context.instance.IsFunctionImported("getESDTTokenData") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("getESDTTokenType") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("getESDTTokenNonce") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("getCurrentESDTNFTNonce") {
 		return arwen.ErrContractInvalid
 	}
 

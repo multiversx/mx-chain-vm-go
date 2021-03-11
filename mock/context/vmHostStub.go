@@ -116,6 +116,11 @@ func (vhs *VMHostStub) IsDynamicGasLockingEnabled() bool {
 	return true
 }
 
+// IsESDTFunctionsEnabled mocked method
+func (vhs *VMHostStub) IsESDTFunctionsEnabled() bool {
+	return true
+}
+
 // Output mocked method
 func (vhs *VMHostStub) Output() arwen.OutputContext {
 	if vhs.OutputCalled != nil {

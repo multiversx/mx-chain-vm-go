@@ -56,6 +56,9 @@ type vmHost struct {
 
 	arwenV3EnableEpoch uint32
 	flagArwenV3        atomic.Flag
+
+	eSDTFunctionsEnableEpoch uint32
+	flagESDTFunctions        atomic.Flag
 }
 
 // NewArwenVM creates a new Arwen vmHost
@@ -79,6 +82,7 @@ func NewArwenVM(
 		aotEnableEpoch:           hostParameters.AheadOfTimeEnableEpoch,
 		arwenV3EnableEpoch:       hostParameters.ArwenV3EnableEpoch,
 		dynGasLockEnableEpoch:    hostParameters.DynGasLockEnableEpoch,
+		eSDTFunctionsEnableEpoch: hostParameters.ArwenESDTFunctionsEnableEpoch,
 	}
 
 	var err error
@@ -214,6 +218,11 @@ func (host *vmHost) IsDynamicGasLockingEnabled() bool {
 	return host.flagDynGasLock.IsSet()
 }
 
+// IsESDTFunctionsEnabled returns whether ESDT functions are enabled
+func (host *vmHost) IsESDTFunctionsEnabled() bool {
+	return host.flagESDTFunctions.IsSet()
+}
+
 // GetContexts returns the main contexts of the host
 func (host *vmHost) GetContexts() (
 	arwen.BigIntContext,
@@ -246,6 +255,9 @@ func (host *vmHost) InitState() {
 
 	host.flagArwenV3.Toggle(currentEpoch >= host.arwenV3EnableEpoch)
 	log.Trace("arwen v3 improvement", "enabled", host.flagArwenV3.IsSet())
+
+	host.flagESDTFunctions.Toggle(currentEpoch >= host.eSDTFunctionsEnableEpoch)
+	log.Trace("esdt functions", "enabled", host.flagESDTFunctions.IsSet())
 }
 
 func (host *vmHost) initContexts() {
