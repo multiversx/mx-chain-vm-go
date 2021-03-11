@@ -761,15 +761,15 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmc
 		for _, outAcc := range vmOutput.OutputAccounts {
 			outAcc.OutputTransfers = make([]vmcommon.OutputTransfer, 0)
 		}
-	} else {
 	}
 
+	host.addESDTTransferToVMOutputSCIntraShardCall(input, vmOutput)
 	output.AddToActiveState(vmOutput)
 
 	return newVMInput, gasConsumedForExecution, nil
 }
 
-// add output transfer of esdt transfer when needed - sc calling another sc intra shard without extra call
+// add output transfer of esdt transfer when sc calling another sc intra shard to log the transfer information
 func (host *vmHost) addESDTTransferToVMOutputSCIntraShardCall(
 	input *vmcommon.ContractCallInput,
 	output *vmcommon.VMOutput,
@@ -812,6 +812,9 @@ func addOutputTransferToVMOutput(
 		CallType: callType,
 	}
 
+	if len(vmOutput.OutputAccounts) == 0 {
+		vmOutput.OutputAccounts = make(map[string]*vmcommon.OutputAccount)
+	}
 	outAcc, ok := vmOutput.OutputAccounts[string(recipient)]
 	if !ok {
 		outAcc = &vmcommon.OutputAccount{
