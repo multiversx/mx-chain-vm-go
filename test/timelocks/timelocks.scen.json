@@ -1,6 +1,7 @@
 {
   "name": "timelocks",
   "comment": "increment, block, try to increment, release, increment again",
+  "gasSchedule": "dummy",
   "steps": [
     {
       "step": "setState",

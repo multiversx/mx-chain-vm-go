@@ -18,10 +18,11 @@ var TestVMType = []byte{0, 0}
 
 // ArwenTestExecutor parses, interprets and executes both .test.json tests and .scen.json scenarios with Arwen.
 type ArwenTestExecutor struct {
-	fileResolver fr.FileResolver
-	World        *worldhook.MockWorld
-	vm           vmi.VMExecutionHandler
-	checkGas     bool
+	fileResolver            fr.FileResolver
+	World                   *worldhook.MockWorld
+	vm                      vmi.VMExecutionHandler
+	checkGas                bool
+	mandosGasScheduleLoaded bool
 }
 
 var _ mc.TestExecutor = (*ArwenTestExecutor)(nil)
@@ -43,10 +44,11 @@ func NewArwenTestExecutor() (*ArwenTestExecutor, error) {
 		return nil, err
 	}
 	return &ArwenTestExecutor{
-		fileResolver: nil,
-		World:        world,
-		vm:           vm,
-		checkGas:     true,
+		fileResolver:            nil,
+		World:                   world,
+		vm:                      vm,
+		checkGas:                true,
+		mandosGasScheduleLoaded: false,
 	}, nil
 }
 
@@ -58,8 +60,7 @@ func (ae *ArwenTestExecutor) GetVM() vmi.VMExecutionHandler {
 func gasScheduleMapFromMandos(mandosGasSchedule mj.GasSchedule) (config.GasScheduleMap, error) {
 	switch mandosGasSchedule {
 	case mj.GasScheduleDefault:
-		return config.MakeGasMapForTests(), nil // TODO: change to v2 after all tests pass
-		// return arwenHost.LoadGasScheduleConfig("../../arwenmandos/gasSchedules/gasScheduleV2.toml")
+		return arwenHost.LoadGasScheduleConfig("../../arwenmandos/gasSchedules/gasScheduleV2.toml")
 	case mj.GasScheduleDummy:
 		return config.MakeGasMapForTests(), nil
 	case mj.GasScheduleV1:
@@ -71,9 +72,15 @@ func gasScheduleMapFromMandos(mandosGasSchedule mj.GasSchedule) (config.GasSched
 	}
 }
 
-// SetGasSchedule updates the gas costs based on the mandos scenario config.
-func (ae *ArwenTestExecutor) setGasSchedule(mandosGasSchedule mj.GasSchedule) error {
-	gasSchedule, err := gasScheduleMapFromMandos(mandosGasSchedule)
+// updates the gas costs based on the mandos scenario config
+// only changes the gas schedule once,
+// this prevents subsequent gasSchedule declarations in externalSteps to overwrite
+func (ae *ArwenTestExecutor) setGasSchedule(newGasSchedule mj.GasSchedule) error {
+	if ae.mandosGasScheduleLoaded {
+		return nil
+	}
+	ae.mandosGasScheduleLoaded = true
+	gasSchedule, err := gasScheduleMapFromMandos(newGasSchedule)
 	if err != nil {
 		return err
 	}
