@@ -3,6 +3,7 @@ package arwenpart
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	"github.com/ElrondNetwork/elrond-go/data/esdt"
 )
 
 var _ vmcommon.BlockchainHook = (*BlockchainHookGateway)(nil)
@@ -267,6 +268,22 @@ func (blockchain *BlockchainHookGateway) ProcessBuiltInFunction(input *vmcommon.
 
 	response := rawResponse.(*common.MessageBlockchainProcessBuiltinFunctionResponse)
 	return response.SerializableVMOutput.ConvertToVMOutput(), response.GetError()
+}
+
+// ProcessBuiltInFunction forwards a message to the actual hook
+func (blockchain *BlockchainHookGateway) GetESDTToken(address []byte, tokenID []byte, nonce uint64) (*esdt.ESDigitalToken, error) {
+	request := common.NewMessageBlockchainGetESDTTokenRequest(address, tokenID, nonce)
+	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if err != nil {
+		return nil, err
+	}
+
+	if rawResponse.GetKind() != common.BlockchainGetESDTTokenResponse {
+		return nil, common.ErrBadHookResponseFromNode
+	}
+
+	response := rawResponse.(*common.MessageBlockchainGetESDTTokenResponse)
+	return response.ESDTData, response.GetError()
 }
 
 // GetBuiltinFunctionNames forwards a message to the actual hook

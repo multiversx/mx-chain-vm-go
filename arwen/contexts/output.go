@@ -228,7 +228,7 @@ func (context *outputContext) PrependFinish(data []byte) {
 // WriteLog creates a new LogEntry and appends it to the logs of the current output state.
 func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []byte) {
 	if context.host.Runtime().ReadOnly() {
-		logOutput.Error("log entry", "error", "cannot write logs in readonly mode")
+		logOutput.Trace("log entry", "error", "cannot write logs in readonly mode")
 		return
 	}
 
@@ -255,25 +255,25 @@ func (context *outputContext) TransferValueOnly(destination []byte, sender []byt
 	logOutput.Trace("transfer value", "sender", sender, "dest", destination, "value", value)
 
 	if value.Cmp(arwen.Zero) < 0 {
-		logOutput.Error("transfer value", "error", arwen.ErrTransferNegativeValue)
+		logOutput.Trace("transfer value", "error", arwen.ErrTransferNegativeValue)
 		return arwen.ErrTransferNegativeValue
 	}
 
 	if !context.hasSufficientBalance(sender, value) {
-		logOutput.Error("transfer value", "error", arwen.ErrTransferInsufficientFunds)
+		logOutput.Trace("transfer value", "error", arwen.ErrTransferInsufficientFunds)
 		return arwen.ErrTransferInsufficientFunds
 	}
 
 	payable, err := context.host.Blockchain().IsPayable(destination)
 	if err != nil {
-		logOutput.Error("transfer value", "error", err)
+		logOutput.Trace("transfer value", "error", err)
 		return err
 	}
 
 	isAsyncCall := context.host.IsArwenV3Enabled() && context.host.Runtime().GetVMInput().CallType == vmcommon.AsynchronousCall
 	hasValue := value.Cmp(big.NewInt(0)) == 1
 	if !payable && hasValue && !isAsyncCall {
-		logOutput.Error("transfer value", "error", arwen.ErrAccountNotPayable)
+		logOutput.Trace("transfer value", "error", arwen.ErrAccountNotPayable)
 		return arwen.ErrAccountNotPayable
 	}
 
@@ -309,15 +309,16 @@ func (context *outputContext) Transfer(destination []byte, sender []byte, gasLim
 	return nil
 }
 
-// TransferESDT makes the esdt transfer and exports the data if it is cross shard
+// TransferESDT makes the esdt/nft transfer and exports the data if it is cross shard
 func (context *outputContext) TransferESDT(
 	destination []byte,
 	sender []byte,
 	tokenIdentifier []byte,
+	nonce uint64,
 	value *big.Int,
 	callInput *vmcommon.ContractCallInput,
 ) (uint64, error) {
-	gasConsumedByTransfer, err := context.host.ExecuteESDTTransfer(destination, sender, tokenIdentifier, value)
+	vmOutput, gasConsumedByTransfer, err := context.host.ExecuteESDTTransfer(destination, sender, tokenIdentifier, nonce, value)
 	if err != nil {
 		return 0, err
 	}
@@ -334,7 +335,7 @@ func (context *outputContext) TransferESDT(
 
 	if isExecution {
 		if gasRemaining > context.host.Metering().GasLeft() {
-			logOutput.Error("ESDT post-transfer execution", "error", arwen.ErrNotEnoughGas)
+			logOutput.Trace("ESDT post-transfer execution", "error", arwen.ErrNotEnoughGas)
 			return 0, arwen.ErrNotEnoughGas
 		}
 
@@ -351,6 +352,21 @@ func (context *outputContext) TransferESDT(
 		GasLocked: 0,
 		Data:      []byte(core.BuiltInFunctionESDTTransfer + "@" + hex.EncodeToString(tokenIdentifier) + "@" + hex.EncodeToString(value.Bytes())),
 		CallType:  vmcommon.DirectCall,
+	}
+
+	if nonce > 0 {
+		nonceAsBytes := big.NewInt(0).SetUint64(nonce).Bytes()
+		outputTransfer.Data = []byte(core.BuiltInFunctionESDTNFTTransfer + "@" + hex.EncodeToString(tokenIdentifier) +
+			"@" + hex.EncodeToString(nonceAsBytes) + "@" + hex.EncodeToString(value.Bytes()))
+		if sameShard {
+			outputTransfer.Data = append(outputTransfer.Data, []byte("@"+hex.EncodeToString(destination))...)
+		} else {
+			outTransfer, ok := vmOutput.OutputAccounts[string(destination)]
+			if ok && len(outTransfer.OutputTransfers) == 1 {
+				outputTransfer.Data = outTransfer.OutputTransfers[0].Data
+			}
+		}
+
 	}
 
 	if sameShard {

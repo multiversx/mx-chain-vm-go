@@ -26,7 +26,7 @@ type VMHostStub struct {
 	MeteringCalled                    func() arwen.MeteringContext
 	StorageCalled                     func() arwen.StorageContext
 	RevertESDTTransferCalled          func(input *vmcommon.ContractCallInput)
-	ExecuteESDTTransferCalled         func(destination []byte, sender []byte, tokenIdentifier []byte, value *big.Int) (uint64, error)
+	ExecuteESDTTransferCalled         func(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int) (*vmcommon.VMOutput, uint64, error)
 	CreateNewContractCalled           func(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContextCalled        func(input *vmcommon.ContractCallInput) (*arwen.AsyncContextInfo, error)
 	ExecuteOnDestContextCalled        func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *arwen.AsyncContextInfo, uint64, error)
@@ -116,6 +116,11 @@ func (vhs *VMHostStub) IsDynamicGasLockingEnabled() bool {
 	return true
 }
 
+// IsESDTFunctionsEnabled mocked method
+func (vhs *VMHostStub) IsESDTFunctionsEnabled() bool {
+	return true
+}
+
 // Output mocked method
 func (vhs *VMHostStub) Output() arwen.OutputContext {
 	if vhs.OutputCalled != nil {
@@ -148,11 +153,11 @@ func (vhs *VMHostStub) RevertESDTTransfer(input *vmcommon.ContractCallInput) {
 }
 
 // ExecuteESDTTransfer mocked method
-func (vhs *VMHostStub) ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, value *big.Int) (uint64, error) {
+func (vhs *VMHostStub) ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int) (*vmcommon.VMOutput, uint64, error) {
 	if vhs.ExecuteESDTTransferCalled != nil {
-		return vhs.ExecuteESDTTransferCalled(destination, sender, tokenIdentifier, value)
+		return vhs.ExecuteESDTTransferCalled(destination, sender, tokenIdentifier, nonce, value)
 	}
-	return 0, nil
+	return nil, 0, nil
 }
 
 // CreateNewContract mocked method

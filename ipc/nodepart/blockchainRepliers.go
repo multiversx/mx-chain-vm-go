@@ -99,6 +99,13 @@ func (part *NodePart) replyToBlockchainProcessBuiltinFunction(request common.Mes
 	return response
 }
 
+func (part *NodePart) replyToBlockchainGetESDTToken(request common.MessageHandler) common.MessageHandler {
+	typedRequest := request.(*common.MessageBlockchainGetESDTTokenRequest)
+	esdtData, err := part.blockchain.GetESDTToken(typedRequest.Address, typedRequest.TokenID, typedRequest.Nonce)
+	response := common.NewMessageBlockchainGetESDTTokenResponse(esdtData, err)
+	return response
+}
+
 func (part *NodePart) replyToBlockchainGetBuiltinFunctionNames(_ common.MessageHandler) common.MessageHandler {
 	functionNames := part.blockchain.GetBuiltinFunctionNames()
 	response := common.NewMessageBlockchainGetBuiltinFunctionNamesResponse(functionNames)

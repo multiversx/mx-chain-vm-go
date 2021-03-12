@@ -192,15 +192,15 @@ func (context *storageContext) SetProtectedStorage(key []byte, value []byte) (ar
 // SetStorage sets the given value at the given key.
 func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.StorageStatus, error) {
 	if context.host.Runtime().ReadOnly() {
-		logStorage.Error("storage set", "error", "cannot set storage in readonly mode")
+		logStorage.Trace("storage set", "error", "cannot set storage in readonly mode")
 		return arwen.StorageUnchanged, nil
 	}
 	if context.isElrondReservedKey(key) {
-		logStorage.Error("storage set", "error", arwen.ErrStoreElrondReservedKey, "key", key)
+		logStorage.Trace("storage set", "error", arwen.ErrStoreElrondReservedKey, "key", key)
 		return arwen.StorageUnchanged, arwen.ErrStoreElrondReservedKey
 	}
 	if context.isArwenProtectedKey(key) && context.arwenStorageProtectionEnabled {
-		logStorage.Error("storage set", "error", arwen.ErrCannotWriteProtectedKey, "key", key)
+		logStorage.Trace("storage set", "error", arwen.ErrCannotWriteProtectedKey, "key", key)
 		return arwen.StorageUnchanged, arwen.ErrCannotWriteProtectedKey
 	}
 

@@ -15,6 +15,7 @@ package elrondapi
 // extern int32_t transferValue(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
 // extern int32_t transferESDT(void *context, int32_t dstOffset, int32_t tokenIdOffset, int32_t tokenIdLen, int32_t valueOffset, long long gasLimit, int32_t dataOffset, int32_t length);
 // extern int32_t transferESDTExecute(void *context, int32_t dstOffset, int32_t tokenIdOffset, int32_t tokenIdLen, int32_t valueOffset, long long gasLimit, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern int32_t transferESDTNFTExecute(void *context, int32_t dstOffset, int32_t tokenIdOffset, int32_t tokenIdLen, int32_t valueOffset, long long nonce, long long gasLimit, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t transferValueExecute(void *context, int32_t dstOffset, int32_t valueOffset, long long gasLimit, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t getArgumentLength(void *context, int32_t id);
 // extern int32_t getArgument(void *context, int32_t id, int32_t argOffset);
@@ -29,12 +30,17 @@ package elrondapi
 // extern int32_t callValue(void *context, int32_t resultOffset);
 // extern int32_t getESDTValue(void *context, int32_t resultOffset);
 // extern int32_t getESDTTokenName(void *context, int32_t resultOffset);
+// extern long long getESDTTokenNonce(void *context);
+// extern int32_t getESDTTokenType(void *context);
+// extern long long getCurrentESDTNFTNonce(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen);
 // extern int32_t getCallValueTokenName(void *context, int32_t callValueOffset, int32_t tokenNameOffset);
 // extern void writeLog(void *context, int32_t pointer, int32_t length, int32_t topicPtr, int32_t numTopics);
 // extern void writeEventLog(void *context, int32_t numTopics, int32_t topicLengthsOffset, int32_t topicOffset, int32_t dataOffset, int32_t dataLength);
 // extern void returnData(void* context, int32_t dataOffset, int32_t length);
 // extern void signalError(void* context, int32_t messageOffset, int32_t messageLength);
 // extern long long getGasLeft(void *context);
+// extern int32_t getESDTBalance(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce, int32_t resultOffset);
+// extern int32_t getESDTTokenData(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce, int32_t valueOffset, int32_t propertiesOffset, int32_t hashOffset, int32_t nameOffset, int32_t attributesOffset, int32_t creatorOffset, int32_t royaltiesOffset, int32_t urisOffset);
 //
 // extern int32_t executeOnDestContext(void *context, long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t executeOnDestContextByCaller(void *context, long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
@@ -83,8 +89,10 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
+	"github.com/ElrondNetwork/elrond-go/core"
 	"github.com/ElrondNetwork/elrond-go/core/parsers"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	"github.com/ElrondNetwork/elrond-go/data/esdt"
 )
 
 var logEEI = logger.GetOrCreate("arwen/eei")
@@ -130,6 +138,11 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("transferESDTExecute", transferESDTExecute, C.transferESDTExecute)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("transferESDTNFTExecute", transferESDTNFTExecute, C.transferESDTNFTExecute)
 	if err != nil {
 		return nil, err
 	}
@@ -240,6 +253,21 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("getESDTTokenName", getESDTTokenName, C.getESDTTokenName)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getESDTTokenType", getESDTTokenType, C.getESDTTokenType)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getESDTTokenNonce", getESDTTokenNonce, C.getESDTTokenNonce)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getCurrentESDTNFTNonce", getCurrentESDTNFTNonce, C.getCurrentESDTNFTNonce)
 	if err != nil {
 		return nil, err
 	}
@@ -380,6 +408,16 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("getReturnData", getReturnData, C.getReturnData)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getESDTBalance", getESDTBalance, C.getESDTBalance)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getESDTTokenData", getESDTTokenData, C.getESDTTokenData)
 	if err != nil {
 		return nil, err
 	}
@@ -528,6 +566,122 @@ func isBuiltInCall(data string, host arwen.VMHost) bool {
 	return host.IsBuiltinFunctionName(functionName)
 }
 
+func getESDTDataFromBlockchainHook(
+	context unsafe.Pointer,
+	addressOffset int32,
+	tokenIDOffset int32,
+	tokenIDLen int32,
+	nonce int64,
+) (*esdt.ESDigitalToken, error) {
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+	blockchain := arwen.GetBlockchainContext(context)
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.GetExternalBalance
+	metering.UseGas(gasToUse)
+
+	address, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
+	if err != nil {
+		return nil, err
+	}
+
+	tokenID, err := runtime.MemLoad(tokenIDOffset, tokenIDLen)
+	if err != nil {
+		return nil, err
+	}
+
+	esdtToken, err := blockchain.GetESDTToken(address, tokenID, uint64(nonce))
+	if err != nil {
+		return nil, err
+	}
+
+	return esdtToken, err
+}
+
+//export getESDTBalance
+func getESDTBalance(
+	context unsafe.Pointer,
+	addressOffset int32,
+	tokenIDOffset int32,
+	tokenIDLen int32,
+	nonce int64,
+	resultOffset int32,
+) int32 {
+	runtime := arwen.GetRuntimeContext(context)
+	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 0
+	}
+	err = runtime.MemStore(resultOffset, esdtData.Value.Bytes())
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 0
+	}
+
+	return int32(len(esdtData.Value.Bytes()))
+}
+
+//export getESDTTokenData
+func getESDTTokenData(
+	context unsafe.Pointer,
+	addressOffset int32,
+	tokenIDOffset int32,
+	tokenIDLen int32,
+	nonce int64,
+	valueOffset int32,
+	propertiesOffset int32,
+	hashOffset int32,
+	nameOffset int32,
+	attributesOffset int32,
+	creatorOffset int32,
+	royaltiesOffset int32,
+	urisOffset int32,
+) int32 {
+	runtime := arwen.GetRuntimeContext(context)
+	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 0
+	}
+
+	err = runtime.MemStore(valueOffset, esdtData.Value.Bytes())
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 0
+	}
+	err = runtime.MemStore(propertiesOffset, esdtData.Properties)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 0
+	}
+
+	if esdtData.TokenMetaData != nil {
+		err = runtime.MemStore(hashOffset, esdtData.TokenMetaData.Hash)
+		if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+			return 0
+		}
+		err = runtime.MemStore(nameOffset, esdtData.TokenMetaData.Name)
+		if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+			return 0
+		}
+		err = runtime.MemStore(attributesOffset, esdtData.TokenMetaData.Attributes)
+		if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+			return 0
+		}
+		err = runtime.MemStore(creatorOffset, esdtData.TokenMetaData.Creator)
+		if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+			return 0
+		}
+		err = runtime.MemStore(royaltiesOffset, big.NewInt(int64(esdtData.TokenMetaData.Royalties)).Bytes())
+		if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+			return 0
+		}
+		if len(esdtData.TokenMetaData.URIs) > 0 {
+			err = runtime.MemStore(urisOffset, esdtData.TokenMetaData.URIs[0])
+			if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+				return 0
+			}
+		}
+	}
+	return int32(len(esdtData.Value.Bytes()))
+}
+
 //export transferValue
 func transferValue(context unsafe.Pointer, destOffset int32, valueOffset int32, dataOffset int32, length int32) int32 {
 	host := arwen.GetVMContext(context)
@@ -629,7 +783,7 @@ func transferValueExecute(
 		logEEI.Trace("eGLD pre-transfer execution begin")
 		_, _, _, err = host.ExecuteOnDestContext(contractCallInput)
 		if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
-			logEEI.Error("eGLD pre-transfer execution failed", "error", err)
+			logEEI.Trace("eGLD pre-transfer execution failed", "error", err)
 			return 1
 		}
 
@@ -696,6 +850,25 @@ func transferESDTExecute(
 	argumentsLengthOffset int32,
 	dataOffset int32,
 ) int32 {
+	return transferESDTNFTExecute(context, destOffset, tokenIdOffset, tokenIDLen, valueOffset, 0,
+		gasLimit, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
+}
+
+//export transferESDTNFTExecute
+func transferESDTNFTExecute(
+	context unsafe.Pointer,
+	destOffset int32,
+	tokenIdOffset int32,
+	tokenIDLen int32,
+	valueOffset int32,
+	nonce int64,
+	gasLimit int64,
+	functionOffset int32,
+	functionLength int32,
+	numArguments int32,
+	argumentsLengthOffset int32,
+	dataOffset int32,
+) int32 {
 	host := arwen.GetVMContext(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
@@ -742,7 +915,7 @@ func transferESDTExecute(
 		contractCallInput.ESDTTokenName = tokenIdentifier
 	}
 
-	gasLimitForExec, err := output.TransferESDT(dest, sender, tokenIdentifier, big.NewInt(0).SetBytes(valueBytes), contractCallInput)
+	gasLimitForExec, err := output.TransferESDT(dest, sender, tokenIdentifier, uint64(nonce), big.NewInt(0).SetBytes(valueBytes), contractCallInput)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -752,7 +925,7 @@ func transferESDTExecute(
 		logEEI.Trace("ESDT post-transfer execution begin")
 		_, _, _, err = host.ExecuteOnDestContext(contractCallInput)
 		if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
-			logEEI.Error("ESDT post-transfer execution failed", "error", err)
+			logEEI.Trace("ESDT post-transfer execution failed", "error", err)
 			host.RevertESDTTransfer(contractCallInput)
 			return 1
 		}
@@ -1310,6 +1483,54 @@ func getESDTTokenName(context unsafe.Pointer, resultOffset int32) int32 {
 	}
 
 	return int32(len(tokenName))
+}
+
+//export getESDTTokenNonce
+func getESDTTokenNonce(context unsafe.Pointer) int64 {
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.GetCallValue
+	metering.UseGas(gasToUse)
+
+	return int64(runtime.GetVMInput().ESDTTokenNonce)
+}
+
+//export getCurrentESDTNFTNonce
+func getCurrentESDTNFTNonce(context unsafe.Pointer, addressOffset int32, tokenIDOffset int32, tokenIDLen int32) int64 {
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+	storage := arwen.GetStorageContext(context)
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.StorageLoad
+	metering.UseGas(gasToUse)
+
+	destination, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
+	if err != nil {
+		return 0
+	}
+
+	tokenID, err := runtime.MemLoad(tokenIDOffset, tokenIDLen)
+	if err != nil {
+		return 0
+	}
+
+	key := []byte(core.ElrondProtectedKeyPrefix + core.ESDTNFTLatestNonceIdentifier + string(tokenID))
+	data := storage.GetStorageFromAddress(destination, key)
+
+	nonce := big.NewInt(0).SetBytes(data).Uint64()
+	return int64(nonce)
+}
+
+//export getESDTTokenType
+func getESDTTokenType(context unsafe.Pointer) int32 {
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.GetCallValue
+	metering.UseGas(gasToUse)
+
+	return int32(runtime.GetVMInput().ESDTTokenType)
 }
 
 //export getCallValueTokenName

@@ -50,6 +50,7 @@ func NewNodePart(
 	part.Repliers[common.BlockchainCurrentRandomSeedRequest] = part.replyToBlockchainCurrentRandomSeed
 	part.Repliers[common.BlockchainCurrentEpochRequest] = part.replyToBlockchainCurrentEpoch
 	part.Repliers[common.BlockchainProcessBuiltinFunctionRequest] = part.replyToBlockchainProcessBuiltinFunction
+	part.Repliers[common.BlockchainGetESDTTokenRequest] = part.replyToBlockchainGetESDTToken
 	part.Repliers[common.BlockchainGetBuiltinFunctionNamesRequest] = part.replyToBlockchainGetBuiltinFunctionNames
 	part.Repliers[common.BlockchainGetAllStateRequest] = part.replyToBlockchainGetAllState
 	part.Repliers[common.BlockchainGetUserAccountRequest] = part.replyToBlockchainGetUserAccount

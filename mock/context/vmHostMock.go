@@ -84,6 +84,11 @@ func (host *VMHostMock) IsDynamicGasLockingEnabled() bool {
 	return true
 }
 
+// IsESDTFunctionsEnabled mocked method
+func (host *VMHostMock) IsESDTFunctionsEnabled() bool {
+	return true
+}
+
 // AreInSameShard mocked method
 func (host *VMHostMock) AreInSameShard(_ []byte, _ []byte) bool {
 	return true
@@ -94,8 +99,8 @@ func (host *VMHostMock) RevertESDTTransfer(_ *vmcommon.ContractCallInput) {
 }
 
 // ExecuteESDTTransfer mocked method
-func (host *VMHostMock) ExecuteESDTTransfer(_ []byte, _ []byte, _ []byte, _ *big.Int) (uint64, error) {
-	return 0, nil
+func (host *VMHostMock) ExecuteESDTTransfer(_ []byte, _ []byte, _ []byte, _ uint64, _ *big.Int) (*vmcommon.VMOutput, uint64, error) {
+	return nil, 0, nil
 }
 
 // CreateNewContract mocked method

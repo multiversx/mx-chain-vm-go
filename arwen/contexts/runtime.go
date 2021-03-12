@@ -244,7 +244,6 @@ func (context *runtimeContext) saveCompiledCode(codeHash []byte) {
 	compiledCode, err := context.instance.Cache()
 	if err != nil {
 		logRuntime.Error("getCompiledCode from instance", "error", err)
-
 		return
 	}
 
@@ -525,7 +524,7 @@ func (context *runtimeContext) FailExecution(err error) {
 	context.host.Output().SetReturnMessage(message)
 	context.SetRuntimeBreakpointValue(arwen.BreakpointExecutionFailed)
 
-	logRuntime.Error("execution failed", "message", message)
+	logRuntime.Trace("execution failed", "message", message)
 }
 
 // SignalUserError sets the returnMessage, returnCode and runtimeBreakpoint according an user error.
@@ -533,7 +532,7 @@ func (context *runtimeContext) SignalUserError(message string) {
 	context.host.Output().SetReturnCode(vmcommon.UserError)
 	context.host.Output().SetReturnMessage(message)
 	context.SetRuntimeBreakpointValue(arwen.BreakpointSignalError)
-	logRuntime.Error("user error signalled", "message", message)
+	logRuntime.Trace("user error signalled", "message", message)
 }
 
 // SetRuntimeBreakpointValue sets the given value as a breakpoint value.
@@ -557,19 +556,19 @@ func (context *runtimeContext) VerifyContractCode() error {
 
 	err := context.validator.verifyMemoryDeclaration(context.instance)
 	if err != nil {
-		logRuntime.Error("verify contract code", "error", err)
+		logRuntime.Trace("verify contract code", "error", err)
 		return err
 	}
 
 	err = context.validator.verifyFunctions(context.instance)
 	if err != nil {
-		logRuntime.Error("verify contract code", "error", err)
+		logRuntime.Trace("verify contract code", "error", err)
 		return err
 	}
 
 	err = context.checkBackwardCompatibility()
 	if err != nil {
-		logRuntime.Error("verify contract code", "error", err)
+		logRuntime.Trace("verify contract code", "error", err)
 		return err
 	}
 
@@ -579,14 +578,32 @@ func (context *runtimeContext) VerifyContractCode() error {
 }
 
 func (context *runtimeContext) checkBackwardCompatibility() error {
-	if context.host.IsArwenV3Enabled() {
+	if context.host.IsESDTFunctionsEnabled() {
 		return nil
 	}
 
 	if context.instance.IsFunctionImported("transferESDTExecute") {
 		return arwen.ErrContractInvalid
 	}
+	if context.instance.IsFunctionImported("transferESDTNFTExecute") {
+		return arwen.ErrContractInvalid
+	}
 	if context.instance.IsFunctionImported("transferValueExecute") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("getESDTBalance") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("getESDTTokenData") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("getESDTTokenType") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("getESDTTokenNonce") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("getCurrentESDTNFTNonce") {
 		return arwen.ErrContractInvalid
 	}
 

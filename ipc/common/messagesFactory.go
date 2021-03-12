@@ -71,6 +71,8 @@ func init() {
 	messageCreators[BlockchainCurrentEpochResponse] = createMessageBlockchainCurrentEpochResponse
 	messageCreators[BlockchainProcessBuiltinFunctionRequest] = createMessageBlockchainProcessBuiltinFunctionRequest
 	messageCreators[BlockchainProcessBuiltinFunctionResponse] = createMessageBlockchainProcessBuiltinFunctionResponse
+	messageCreators[BlockchainGetESDTTokenRequest] = createMessageBlockchainGetESDTTokenRequest
+	messageCreators[BlockchainGetESDTTokenResponse] = createMessageBlockchainGetESDTTokenResponse
 	messageCreators[BlockchainGetBuiltinFunctionNamesRequest] = createMessageBlockchainGetBuiltinFunctionNamesRequest
 	messageCreators[BlockchainGetBuiltinFunctionNamesResponse] = createMessageBlockchainGetBuiltinFunctionNamesResponse
 	messageCreators[BlockchainGetAllStateRequest] = createMessageBlockchainGetAllStateRequest
@@ -256,6 +258,14 @@ func createMessageBlockchainProcessBuiltinFunctionRequest() MessageHandler {
 
 func createMessageBlockchainProcessBuiltinFunctionResponse() MessageHandler {
 	return &MessageBlockchainProcessBuiltinFunctionResponse{}
+}
+
+func createMessageBlockchainGetESDTTokenRequest() MessageHandler {
+	return &MessageBlockchainGetESDTTokenRequest{}
+}
+
+func createMessageBlockchainGetESDTTokenResponse() MessageHandler {
+	return &MessageBlockchainGetESDTTokenResponse{}
 }
 
 func createMessageBlockchainGetBuiltinFunctionNamesRequest() MessageHandler {
