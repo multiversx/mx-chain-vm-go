@@ -9,7 +9,7 @@ const (
 	GasScheduleDefault GasSchedule = iota
 
 	// GasScheduleDummy is a dummy model, with all costs set to 1.
-	GasScheduleDummy GasSchedule = iota
+	GasScheduleDummy
 
 	// GasScheduleV1 was previously used on mainnet.
 	GasScheduleV1
