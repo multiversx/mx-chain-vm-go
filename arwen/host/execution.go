@@ -667,7 +667,7 @@ func (host *vmHost) RevertESDTTransfer(input *vmcommon.ContractCallInput) {
 		log.Error("RevertESDTTransfer failed", "error", err)
 		return
 	}
-	if vmOutput.ReturnCode != vmcommon.Ok {
+	if vmOutput != nil && vmOutput.ReturnCode != vmcommon.Ok {
 		log.Error("RevertESDTTransfer failed", "returnCode", vmOutput.ReturnCode, "returnMessage", vmOutput.ReturnMessage)
 	}
 }
