@@ -642,7 +642,7 @@ func (host *vmHost) RevertESDTTransfer(input *vmcommon.ContractCallInput) {
 			CallerAddr:     input.RecipientAddr,
 			Arguments:      input.Arguments[:numArgsForTransfer],
 			CallValue:      big.NewInt(0),
-			CallType:       vmcommon.DirectCall,
+			CallType:       vmcommon.AsynchronousCallBack,
 			GasPrice:       input.GasPrice,
 			GasProvided:    input.GasProvided,
 			GasLocked:      0,
@@ -660,10 +660,12 @@ func (host *vmHost) RevertESDTTransfer(input *vmcommon.ContractCallInput) {
 		// in esdt nft transfer the 4th arguments is actually the destination address
 		revertInput.Arguments[numArgsForTransfer-1] = input.CallerAddr
 	}
+	revertInput.Arguments = append(revertInput.Arguments, []byte("revert"))
 
 	vmOutput, err := host.blockChainHook.ProcessBuiltInFunction(revertInput)
 	if err != nil {
 		log.Error("RevertESDTTransfer failed", "error", err)
+		return
 	}
 	if vmOutput.ReturnCode != vmcommon.Ok {
 		log.Error("RevertESDTTransfer failed", "returnCode", vmOutput.ReturnCode, "returnMessage", vmOutput.ReturnMessage)
