@@ -47,6 +47,7 @@ package elrondapi
 // extern void bigIntGetSignedArgument(void *context, int32_t id, int32_t destination);
 // extern void bigIntGetCallValue(void *context, int32_t destination);
 // extern void bigIntGetESDTCallValue(void *context, int32_t destination);
+// extern void bigIntGetESDTExternalBalance(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce, int32_t result);
 // extern void bigIntGetExternalBalance(void *context, int32_t addressOffset, int32_t result);
 import "C"
 
@@ -239,6 +240,11 @@ func BigIntImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 		return nil, err
 	}
 
+	imports, err = imports.Append("bigIntGetESDTExternalBalance", bigIntGetESDTExternalBalance, C.bigIntGetESDTExternalBalance)
+	if err != nil {
+		return nil, err
+	}
+
 	imports, err = imports.Append("bigIntGetExternalBalance", bigIntGetExternalBalance, C.bigIntGetExternalBalance)
 	if err != nil {
 		return nil, err
@@ -394,6 +400,27 @@ func bigIntGetExternalBalance(context unsafe.Pointer, addressOffset int32, resul
 	value := bigInt.GetOne(result)
 
 	value.SetBytes(balance)
+}
+
+//export bigIntGetESDTExternalBalance
+func bigIntGetESDTExternalBalance(context unsafe.Pointer, addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64, result int32) {
+	bigInt := arwen.GetBigIntContext(context)
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetExternalBalance
+	metering.UseGas(gasToUse)
+
+	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
+	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return
+	}
+	if esdtData == nil {
+		return
+	}
+
+	value := bigInt.GetOne(result)
+	value.Set(esdtData.Value)
 }
 
 //export bigIntNew
