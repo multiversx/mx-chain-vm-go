@@ -40,6 +40,9 @@ package elrondapi
 // extern void signalError(void* context, int32_t messageOffset, int32_t messageLength);
 // extern long long getGasLeft(void *context);
 // extern int32_t getESDTBalance(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce, int32_t resultOffset);
+// extern int32_t getESDTNFTNameLength(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce);
+// extern int32_t getESDTNFTAttributeLength(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce);
+// extern int32_t getESDTNFTURILength(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce);
 // extern int32_t getESDTTokenData(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce, int32_t valueOffset, int32_t propertiesOffset, int32_t hashOffset, int32_t nameOffset, int32_t attributesOffset, int32_t creatorOffset, int32_t royaltiesOffset, int32_t urisOffset);
 //
 // extern int32_t executeOnDestContext(void *context, long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
@@ -422,6 +425,21 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 		return nil, err
 	}
 
+	imports, err = imports.Append("getESDTNFTNameLength", getESDTNFTNameLength, C.getESDTNFTNameLength)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getESDTNFTAttributeLength", getESDTNFTAttributeLength, C.getESDTNFTAttributeLength)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getESDTNFTURILength", getESDTNFTURILength, C.getESDTNFTURILength)
+	if err != nil {
+		return nil, err
+	}
+
 	return imports, nil
 }
 
@@ -595,7 +613,7 @@ func getESDTDataFromBlockchainHook(
 		return nil, err
 	}
 
-	return esdtToken, err
+	return esdtToken, nil
 }
 
 //export getESDTBalance
@@ -618,6 +636,69 @@ func getESDTBalance(
 	}
 
 	return int32(len(esdtData.Value.Bytes()))
+}
+
+//export getESDTNFTNameLength
+func getESDTNFTNameLength(
+	context unsafe.Pointer,
+	addressOffset int32,
+	tokenIDOffset int32,
+	tokenIDLen int32,
+	nonce int64,
+) int32 {
+	runtime := arwen.GetRuntimeContext(context)
+	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 0
+	}
+	if esdtData == nil || esdtData.TokenMetaData == nil {
+		return 0
+	}
+
+	return int32(len(esdtData.TokenMetaData.Name))
+}
+
+//export getESDTNFTAttributeLength
+func getESDTNFTAttributeLength(
+	context unsafe.Pointer,
+	addressOffset int32,
+	tokenIDOffset int32,
+	tokenIDLen int32,
+	nonce int64,
+) int32 {
+	runtime := arwen.GetRuntimeContext(context)
+	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 0
+	}
+	if esdtData == nil || esdtData.TokenMetaData == nil {
+		return 0
+	}
+
+	return int32(len(esdtData.TokenMetaData.Attributes))
+}
+
+//export getESDTNFTURILength
+func getESDTNFTURILength(
+	context unsafe.Pointer,
+	addressOffset int32,
+	tokenIDOffset int32,
+	tokenIDLen int32,
+	nonce int64,
+) int32 {
+	runtime := arwen.GetRuntimeContext(context)
+	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 0
+	}
+	if esdtData == nil || esdtData.TokenMetaData == nil {
+		return 0
+	}
+	if len(esdtData.TokenMetaData.URIs) == 0 {
+		return 0
+	}
+
+	return int32(len(esdtData.TokenMetaData.URIs[0]))
 }
 
 //export getESDTTokenData

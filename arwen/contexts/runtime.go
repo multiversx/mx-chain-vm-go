@@ -606,6 +606,18 @@ func (context *runtimeContext) checkBackwardCompatibility() error {
 	if context.instance.IsFunctionImported("getCurrentESDTNFTNonce") {
 		return arwen.ErrContractInvalid
 	}
+	if context.instance.IsFunctionImported("getESDTNFTNameLength") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("getESDTNFTAttributeLength") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("getESDTNFTURILength") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("bigIntGetESDTExternalBalance") {
+		return arwen.ErrContractInvalid
+	}
 
 	return nil
 }
