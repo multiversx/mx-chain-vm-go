@@ -1,6 +1,7 @@
 {
     "name": "fuzz generated",
     "checkGas": false,
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "setState",

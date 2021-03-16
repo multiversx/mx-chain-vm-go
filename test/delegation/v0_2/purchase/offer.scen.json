@@ -1,5 +1,6 @@
 {
     "name": "purchase_offer",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "setState",

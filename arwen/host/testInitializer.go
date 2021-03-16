@@ -328,7 +328,8 @@ func LoadTomlFileToMap(relativePath string) (map[string]interface{}, error) {
 	return loadedMap, nil
 }
 
-func loadGasScheduleConfig(filepath string) (config.GasScheduleMap, error) {
+// LoadGasScheduleConfig parses and prepares a gas schedule read from file.
+func LoadGasScheduleConfig(filepath string) (config.GasScheduleMap, error) {
 	gasScheduleConfig, err := LoadTomlFileToMap(filepath)
 	if err != nil {
 		return nil, err

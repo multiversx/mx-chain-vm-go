@@ -1,5 +1,6 @@
 {
     "name": "trying to claim too early",
+    "gasSchedule": "dummy",
     "steps": [
       {
         "step": "externalSteps",

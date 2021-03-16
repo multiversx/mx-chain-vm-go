@@ -1,5 +1,6 @@
 {
     "name": "purchase_buy_tooMuch1",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "setState",

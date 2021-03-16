@@ -1,5 +1,6 @@
 {
     "name": "trying to fund one block too late",
+    "gasSchedule": "dummy",
     "steps": [
       {
         "step": "externalSteps",

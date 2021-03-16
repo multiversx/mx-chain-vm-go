@@ -1,13 +1,14 @@
 {
     "name": "adder",
     "comment": "add then check",
+    "gasSchedule": "v2",
     "steps": [
         {
             "step": "setState",
             "accounts": {
                 "address:owner": {
                     "nonce": "5",
-                    "balance": "0x500000",
+                    "balance": "0",
                     "storage": {},
                     "code": ""
                 }
@@ -30,8 +31,8 @@
                 "arguments": [
                     "0x05"
                 ],
-                "gasLimit": "0x100000",
-                "gasPrice": "0x01"
+                "gasLimit": "5,000,000",
+                "gasPrice": "0"
             },
             "expect": {
                 "out": [],
@@ -42,25 +43,19 @@
             }
         },
         {
-            "step": "scCall",
+            "step": "scQuery",
             "txId": "2",
             "tx": {
-                "from": "address:owner",
                 "to": "address:adder_address",
-                "value": "0",
                 "function": "getSum",
-                "arguments": [],
-                "gasLimit": "0x100000",
-                "gasPrice": "0x01"
+                "arguments": []
             },
             "expect": {
                 "out": [
                     "5"
                 ],
                 "status": "",
-                "logs": [],
-                "gas": "*",
-                "refund": "*"
+                "logs": []
             }
         },
         {
@@ -74,8 +69,8 @@
                 "arguments": [
                     "3"
                 ],
-                "gasLimit": "0x100000",
-                "gasPrice": "0x01"
+                "gasLimit": "5,000,000",
+                "gasPrice": "0"
             },
             "expect": {
                 "out": [],
@@ -89,8 +84,8 @@
             "step": "checkState",
             "accounts": {
                 "address:owner": {
-                    "nonce": "8",
-                    "balance": "0x200000",
+                    "nonce": "7",
+                    "balance": "0",
                     "storage": {},
                     "code": ""
                 },

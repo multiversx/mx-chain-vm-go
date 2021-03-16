@@ -1,5 +1,6 @@
 {
     "name": "continue global operation scenarios",
+    "gasSchedule": "v2",
     "steps": [
         {
             "step": "externalSteps",

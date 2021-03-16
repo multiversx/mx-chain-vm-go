@@ -2,10 +2,11 @@ package mandosjsonmodel
 
 // Scenario is a json object representing a test scenario with steps.
 type Scenario struct {
-	Name     string
-	Comment  string
-	CheckGas bool
-	Steps    []Step
+	Name        string
+	Comment     string
+	CheckGas    bool
+	GasSchedule GasSchedule
+	Steps       []Step
 }
 
 // Step is the basic block of a scenario.
@@ -31,7 +32,8 @@ type BlockInfo struct {
 
 // ExternalStepsStep allows including steps from another file
 type ExternalStepsStep struct {
-	Path string
+	Comment string
+	Path    string
 }
 
 // SetStateStep is a step where data is saved to the blockchain mock.

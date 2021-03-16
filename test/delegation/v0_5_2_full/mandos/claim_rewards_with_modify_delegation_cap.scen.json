@@ -1,5 +1,6 @@
 {
     "name": "claim rewards after total delegation cap decreased scenario",
+    "gasSchedule": "v2",
     "steps": [
         {
             "step": "externalSteps",

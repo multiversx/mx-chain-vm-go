@@ -1,5 +1,6 @@
 {
     "name": "getStake_node_0",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "setState",

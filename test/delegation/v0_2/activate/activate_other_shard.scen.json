@@ -1,5 +1,6 @@
 {
     "name": "activate_other_shard",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "setState",

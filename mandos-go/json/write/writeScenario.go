@@ -28,6 +28,8 @@ func ScenarioToOrderedJSON(scenario *mj.Scenario) oj.OJsonObject {
 		scenarioOJ.Put("checkGas", &ojFalse)
 	}
 
+	scenarioOJ.Put("gasSchedule", gasScheduleToOJ(scenario.GasSchedule))
+
 	var stepOJList []oj.OJsonObject
 
 	for _, generalStep := range scenario.Steps {
@@ -35,6 +37,9 @@ func ScenarioToOrderedJSON(scenario *mj.Scenario) oj.OJsonObject {
 		stepOJ.Put("step", stringToOJ(generalStep.StepTypeName()))
 		switch step := generalStep.(type) {
 		case *mj.ExternalStepsStep:
+			if len(step.Comment) > 0 {
+				stepOJ.Put("comment", stringToOJ(step.Comment))
+			}
 			stepOJ.Put("path", stringToOJ(step.Path))
 		case *mj.SetStateStep:
 			if len(step.Comment) > 0 {
@@ -159,4 +164,19 @@ func blockInfoToOJ(blockInfo *mj.BlockInfo) oj.OJsonObject {
 	}
 
 	return blockInfoOJ
+}
+
+func gasScheduleToOJ(gasSchedule mj.GasSchedule) oj.OJsonObject {
+	switch gasSchedule {
+	case mj.GasScheduleDefault:
+		return stringToOJ("default")
+	case mj.GasScheduleDummy:
+		return stringToOJ("dummy")
+	case mj.GasScheduleV1:
+		return stringToOJ("v1")
+	case mj.GasScheduleV2:
+		return stringToOJ("v2")
+	default:
+		return stringToOJ("")
+	}
 }

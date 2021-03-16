@@ -1,5 +1,6 @@
 {
     "name": "claim rewards after service fee changed scenario",
+    "gasSchedule": "v2",
     "steps": [
         {
             "step": "externalSteps",

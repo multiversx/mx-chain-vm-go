@@ -41,39 +41,44 @@ func TestMultisig(t *testing.T) {
 	runAllTestsInFolder(t, "multisig/mandos")
 }
 
-func TestRustFeaturesLatest(t *testing.T) {
+func TestRustBasicFeaturesLatest(t *testing.T) {
 	if testing.Short() {
 		t.Skip("not a short test")
 	}
 
-	runTestsInFolder(t, "features/mandos", []string{
-		// TODO: implement block random seed in mandos, then un-skip
-		"features/mandos/block_info.scen.json",
-	})
+	runAllTestsInFolder(t, "features/basic-features/mandos")
 }
 
-func TestRustFeaturesNoSmallIntApi(t *testing.T) {
+func TestRustBasicFeaturesNoSmallIntApi(t *testing.T) {
 	if testing.Short() {
 		t.Skip("not a short test")
 	}
 
-	runAllTestsInFolder(t, "features-no-small-int-api/mandos")
+	runAllTestsInFolder(t, "features/basic-features-no-small-int-api/mandos")
 }
 
 // Backwards compatibility.
-func TestRustFeaturesLegacy(t *testing.T) {
+func TestRustBasicFeaturesLegacy(t *testing.T) {
 	if testing.Short() {
 		t.Skip("not a short test")
 	}
 
-	runAllTestsInFolder(t, "features-legacy/mandos")
+	runAllTestsInFolder(t, "features/basic-features-legacy/mandos")
+}
+
+func TestRustPayableFeaturesLatest(t *testing.T) {
+	if testing.Short() {
+		t.Skip("not a short test")
+	}
+
+	runAllTestsInFolder(t, "features/payable-features/mandos")
 }
 
 func TestRustAsyncCalls(t *testing.T) {
-	runTestsInFolder(t, "async/mandos", []string{
-		"async/mandos/forwarder_send_twice_esdt.scen.json",
-		"async/mandos/recursive_caller_esdt_2.scen.json",
-		"async/mandos/recursive_caller_esdt_x.scen.json",
+	runTestsInFolder(t, "features/async/mandos", []string{
+		"features/async/mandos/forwarder_send_twice_esdt.scen.json",
+		"features/async/mandos/recursive_caller_esdt_2.scen.json",
+		"features/async/mandos/recursive_caller_esdt_x.scen.json",
 	})
 }
 
@@ -155,6 +160,10 @@ func TestCrowdfundingEsdt(t *testing.T) {
 
 func TestEgldEsdtSwap(t *testing.T) {
 	runAllTestsInFolder(t, "egld-esdt-swap")
+}
+
+func TestPingPongEgld(t *testing.T) {
+	runAllTestsInFolder(t, "ping-pong-egld")
 }
 
 func runAllTestsInFolder(t *testing.T, folder string) {

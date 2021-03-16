@@ -2,6 +2,7 @@
     "name": "fuzz generated",
     "comment": "a bug concerning purchaseStake + computeRewards was found using fuzzing in this generated scenario",
     "checkGas": false,
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "setState",

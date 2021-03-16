@@ -1,5 +1,6 @@
 {
     "name": "claim_1",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "setState",

@@ -1,6 +1,7 @@
 {
     "name": "init_bad_args",
     "comment": "init with no arguments, just to make sure it crashes",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "setState",

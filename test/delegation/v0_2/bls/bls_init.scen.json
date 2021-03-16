@@ -1,5 +1,6 @@
 {
     "name": "bls_init",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "setState",

@@ -1,5 +1,6 @@
 {
     "name": "crowdfunding funding",
+    "gasSchedule": "dummy",
     "steps": [
       {
         "step": "externalSteps",

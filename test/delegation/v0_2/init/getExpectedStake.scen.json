@@ -1,5 +1,6 @@
 {
     "name": "getExpectedStake",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "setState",

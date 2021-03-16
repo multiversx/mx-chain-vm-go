@@ -1,5 +1,6 @@
 {
     "name": "increase delegation cap scenario",
+    "gasSchedule": "v2",
     "steps": [
         {
             "step": "externalSteps",
