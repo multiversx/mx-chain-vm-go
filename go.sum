@@ -45,8 +45,6 @@ github.com/ElrondNetwork/elrond-go v1.1.28-0.20210223113334-ca37e112bec9/go.mod 
 github.com/ElrondNetwork/elrond-go v1.1.28-0.20210223140840-1bf7cdc66a37/go.mod h1:n12dVuNcz8xMm6X9jI81GZqW9Z1dYWTIK0Osfo+YMVE=
 github.com/ElrondNetwork/elrond-go v1.1.28 h1:QsKAPU0fFJeAPGdsFOJjLOsY7c6knuyYA52SK/tO2Sw=
 github.com/ElrondNetwork/elrond-go v1.1.28/go.mod h1:MGuNmnaeY9ouMN23z0UT5Rn08QyDo9QN/mEUllGPn+I=
-github.com/ElrondNetwork/elrond-go v1.1.35-0.20210309151807-68470735c815 h1:sCQK4yvKRw8n9c3jxi4Kfw9R4DsANHrfYregjumPBok=
-github.com/ElrondNetwork/elrond-go v1.1.35-0.20210309151807-68470735c815/go.mod h1:lOnqWyDWelbgWjN4fxBdwWwPCgVrh0t0MclIzWkoKZ4=
 github.com/ElrondNetwork/elrond-go v1.1.35-0.20210309180253-d6a695494538 h1:v6NNiMpALeetdQ5iROBwdhvalH6Io56i0XR6Tdnw3uo=
 github.com/ElrondNetwork/elrond-go v1.1.35-0.20210309180253-d6a695494538/go.mod h1:lOnqWyDWelbgWjN4fxBdwWwPCgVrh0t0MclIzWkoKZ4=
 github.com/ElrondNetwork/elrond-go v1.1.35-0.20210311082958-d0d0b72ef7d2 h1:iy/FJbCEHCKAZQsfCle/JhijOZd+zBMcLxoUqhHCghk=

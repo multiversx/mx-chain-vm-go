@@ -1957,9 +1957,12 @@ func executeOnDestContext(
 		return 1
 	}
 
-	_, _, _, err = host.ExecuteOnDestContext(contractCallInput)
+	vmOutput, _, gasUsedBeforeReset, err := host.ExecuteOnDestContext(contractCallInput)
 	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 		return 1
+	}
+	if err == nil && vmOutput.ReturnCode == vmcommon.Ok {
+		metering.UseGas(gasUsedBeforeReset)
 	}
 
 	return 0
