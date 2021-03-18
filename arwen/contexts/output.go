@@ -318,7 +318,11 @@ func (context *outputContext) TransferESDT(
 	value *big.Int,
 	callInput *vmcommon.ContractCallInput,
 ) (uint64, error) {
-	vmOutput, gasConsumedByTransfer, err := context.host.ExecuteESDTTransfer(destination, sender, tokenIdentifier, nonce, value)
+	isSmartContract := context.host.Blockchain().IsSmartContract(destination)
+	sameShard := context.host.AreInSameShard(sender, destination)
+	isExecution := isSmartContract && callInput != nil
+
+	vmOutput, gasConsumedByTransfer, err := context.host.ExecuteESDTTransfer(destination, sender, tokenIdentifier, nonce, value, isExecution)
 	if err != nil {
 		return 0, err
 	}
@@ -328,10 +332,6 @@ func (context *outputContext) TransferESDT(
 	if callInput != nil {
 		gasRemaining = callInput.GasProvided - gasConsumedByTransfer
 	}
-
-	isSmartContract := context.host.Blockchain().IsSmartContract(destination)
-	sameShard := context.host.AreInSameShard(sender, destination)
-	isExecution := isSmartContract && callInput != nil
 
 	if isExecution {
 		if gasRemaining > context.host.Metering().GasLeft() {
