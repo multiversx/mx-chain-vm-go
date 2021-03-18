@@ -115,7 +115,7 @@ func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 	host.protocolBuiltinFunctions = getDummyBuiltinFunctionNames()
 
 	input := DefaultTestContractCallInput()
-	err := host.Output().TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue)
+	err := host.Output().TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue, false)
 	require.Nil(t, err)
 
 	input.RecipientAddr = parentAddress

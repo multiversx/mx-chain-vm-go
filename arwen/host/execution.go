@@ -206,12 +206,16 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	defer func() {
 		vmOutput = host.finishExecuteOnDestContext(err)
 		metering.SetTotalUsedGas(0)
+
+		if err == nil && vmOutput.ReturnCode != vmcommon.Ok {
+			err = arwen.ErrExecutionFailed
+		}
 	}()
 
 	// Perform a value transfer to the called SC. If the execution fails, this
 	// transfer will not persist.
 	if input.CallType != vmcommon.AsynchronousCallBack || input.CallValue.Cmp(arwen.Zero) == 0 {
-		err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue)
+		err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue, false)
 		if err != nil {
 			log.Trace("ExecuteOnDestContext", "error", err)
 			return
@@ -301,7 +305,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 
 	// Perform a value transfer to the called SC. If the execution fails, this
 	// transfer will not persist.
-	err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue)
+	err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue, false)
 	if err != nil {
 		return
 	}

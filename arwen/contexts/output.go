@@ -251,7 +251,7 @@ func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []b
 }
 
 // TransferValueOnly will transfer the big.int value and checks if it is possible
-func (context *outputContext) TransferValueOnly(destination []byte, sender []byte, value *big.Int) error {
+func (context *outputContext) TransferValueOnly(destination []byte, sender []byte, value *big.Int, checkPayable bool) error {
 	logOutput.Trace("transfer value", "sender", sender, "dest", destination, "value", value)
 
 	if value.Cmp(arwen.Zero) < 0 {
@@ -271,8 +271,9 @@ func (context *outputContext) TransferValueOnly(destination []byte, sender []byt
 	}
 
 	isAsyncCall := context.host.IsArwenV3Enabled() && context.host.Runtime().GetVMInput().CallType == vmcommon.AsynchronousCall
-	hasValue := value.Cmp(big.NewInt(0)) == 1
-	if !payable && hasValue && !isAsyncCall {
+	skipPayableCheck := context.host.IsESDTFunctionsEnabled() && !checkPayable
+	hasValue := value.Cmp(arwen.Zero) > 0
+	if !payable && hasValue && !isAsyncCall && !skipPayableCheck {
 		logOutput.Trace("transfer value", "error", arwen.ErrAccountNotPayable)
 		return arwen.ErrAccountNotPayable
 	}
@@ -290,7 +291,7 @@ func (context *outputContext) TransferValueOnly(destination []byte, sender []byt
 // the necessary steps to create accounts and reverses the state in case of an
 // execution error or failed value transfer.
 func (context *outputContext) Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, input []byte, callType vmcommon.CallType) error {
-	err := context.TransferValueOnly(destination, sender, value)
+	err := context.TransferValueOnly(destination, sender, value, gasLimit > 0 && callType != vmcommon.AsynchronousCallBack)
 	if err != nil {
 		return err
 	}

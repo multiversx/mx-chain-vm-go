@@ -848,6 +848,7 @@ func transferValueExecute(
 			numArguments,
 			argumentsLengthOffset,
 			dataOffset,
+			false,
 		)
 		if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 			return 1
@@ -987,6 +988,7 @@ func transferESDTNFTExecute(
 			numArguments,
 			argumentsLengthOffset,
 			dataOffset,
+			false,
 		)
 		if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 			return 1
@@ -994,6 +996,10 @@ func transferESDTNFTExecute(
 
 		contractCallInput.ESDTValue = big.NewInt(0).SetBytes(valueBytes)
 		contractCallInput.ESDTTokenName = tokenIdentifier
+		contractCallInput.ESDTTokenNonce = uint64(nonce)
+		if nonce > 0 {
+			contractCallInput.ESDTTokenType = uint32(core.NonFungible)
+		}
 	}
 
 	gasLimitForExec, err := output.TransferESDT(dest, sender, tokenIdentifier, uint64(nonce), big.NewInt(0).SetBytes(valueBytes), contractCallInput)
@@ -1898,6 +1904,7 @@ func executeOnSameContext(
 		numArguments,
 		argumentsLengthOffset,
 		dataOffset,
+		true,
 	)
 	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 		return 1
@@ -1952,17 +1959,15 @@ func executeOnDestContext(
 		numArguments,
 		argumentsLengthOffset,
 		dataOffset,
+		true,
 	)
 	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
-	vmOutput, _, gasUsedBeforeReset, err := host.ExecuteOnDestContext(contractCallInput)
+	_, _, _, err = host.ExecuteOnDestContext(contractCallInput)
 	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 		return 1
-	}
-	if err == nil && vmOutput.ReturnCode == vmcommon.Ok {
-		metering.UseGas(gasUsedBeforeReset)
 	}
 
 	return 0
@@ -2005,6 +2010,7 @@ func executeOnDestContextByCaller(
 		numArguments,
 		argumentsLengthOffset,
 		dataOffset,
+		true,
 	)
 	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 		return 1
@@ -2054,6 +2060,7 @@ func delegateExecution(
 		numArguments,
 		argumentsLengthOffset,
 		dataOffset,
+		true,
 	)
 	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 		return 1
@@ -2104,6 +2111,7 @@ func executeReadOnly(
 		numArguments,
 		argumentsLengthOffset,
 		dataOffset,
+		true,
 	)
 	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 		return 1
@@ -2271,6 +2279,7 @@ func prepareIndirectContractCallInput(
 	numArguments int32,
 	argumentsLengthOffset int32,
 	dataOffset int32,
+	syncExecution bool,
 ) (*vmcommon.ContractCallInput, error) {
 	runtime := host.Runtime()
 	metering := host.Metering()
@@ -2280,7 +2289,7 @@ func prepareIndirectContractCallInput(
 		return nil, err
 	}
 
-	if !host.AreInSameShard(runtime.GetSCAddress(), destination) {
+	if syncExecution && !host.AreInSameShard(runtime.GetSCAddress(), destination) {
 		return nil, arwen.ErrSyncExecutionNotInSameShard
 	}
 
