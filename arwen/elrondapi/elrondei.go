@@ -1944,10 +1944,12 @@ func doESDTTransferAndExecuteSynchronously(
 	value *big.Int,
 	function string,
 	args [][]byte,
+	gasLimit int64,
 ) int32 {
 	host := arwen.GetVMContext(context)
 	runtime := host.Runtime()
 	output := host.Output()
+	metering := host.Metering()
 
 	if value.Cmp(arwen.Zero) > 0 {
 		if arwen.WithFault(arwen.ErrTransferValueOnESDTCall, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
@@ -1963,10 +1965,11 @@ func doESDTTransferAndExecuteSynchronously(
 	sender := runtime.GetSCAddress()
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
-			CallerAddr: sender,
-			Arguments:  make([][]byte, 0),
-			CallValue:  big.NewInt(0),
-			CallType:   vmcommon.DirectCall,
+			CallerAddr:  sender,
+			Arguments:   make([][]byte, 0),
+			CallValue:   big.NewInt(0),
+			CallType:    vmcommon.DirectCall,
+			GasProvided: metering.BoundGasLimit(gasLimit),
 		},
 		RecipientAddr: destination,
 		Function:      "",
@@ -2093,7 +2096,7 @@ func executeOnDestContext(
 				return 1
 			}
 
-			return doESDTTransferAndExecuteSynchronously(context, destination, big.NewInt(0).SetBytes(value), string(function), data)
+			return doESDTTransferAndExecuteSynchronously(context, destination, big.NewInt(0).SetBytes(value), string(function), data, gasLimit)
 		}
 
 	}
