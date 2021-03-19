@@ -1014,7 +1014,7 @@ func transferESDTNFTExecute(
 		_, _, _, err = host.ExecuteOnDestContext(contractCallInput)
 		if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 			logEEI.Trace("ESDT post-transfer execution failed", "error", err)
-			host.RevertESDTTransfer(contractCallInput)
+			_, _, _ = host.ExecuteESDTTransfer(sender, dest, tokenIdentifier, uint64(nonce), big.NewInt(0).SetBytes(valueBytes), vmcommon.AsynchronousCallBack)
 			return 1
 		}
 
@@ -2030,7 +2030,7 @@ func doESDTTransferAndExecuteSynchronously(
 		_, _, _, err = host.ExecuteOnDestContext(contractCallInput)
 		if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 			logEEI.Trace("ESDT post-transfer execution failed", "error", err)
-			host.RevertESDTTransfer(contractCallInput)
+			_, _, _ = host.ExecuteESDTTransfer(sender, destination, tokenID, nonce, esdtValue, vmcommon.AsynchronousCallBack)
 			return 1
 		}
 	}

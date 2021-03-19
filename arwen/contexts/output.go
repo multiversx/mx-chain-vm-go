@@ -321,9 +321,13 @@ func (context *outputContext) TransferESDT(
 ) (uint64, error) {
 	isSmartContract := context.host.Blockchain().IsSmartContract(destination)
 	sameShard := context.host.AreInSameShard(sender, destination)
+	callType := vmcommon.DirectCall
 	isExecution := isSmartContract && callInput != nil
+	if isExecution {
+		callType = vmcommon.ESDTTransferAndExecute
+	}
 
-	vmOutput, gasConsumedByTransfer, err := context.host.ExecuteESDTTransfer(destination, sender, tokenIdentifier, nonce, value, isExecution)
+	vmOutput, gasConsumedByTransfer, err := context.host.ExecuteESDTTransfer(destination, sender, tokenIdentifier, nonce, value, callType)
 	if err != nil {
 		return 0, err
 	}
