@@ -41,7 +41,7 @@ type OutputContextStub struct {
 	DeployCodeCalled                  func(input arwen.CodeDeployInput)
 	CreateVMOutputInCaseOfErrorCalled func(err error) *vmcommon.VMOutput
 	AddToActiveStateCalled            func(vmOutput *vmcommon.VMOutput)
-	TransferValueOnlyCalled           func(destination []byte, sender []byte, value *big.Int) error
+	TransferValueOnlyCalled           func(destination []byte, sender []byte, value *big.Int, checkPayable bool) error
 	GetCurrentTotalUsedGasCalled      func() (uint64, bool)
 }
 
@@ -138,9 +138,9 @@ func (o *OutputContextStub) WriteLog(address []byte, topics [][]byte, data []byt
 }
 
 // TransferValueOnly mocked method
-func (o *OutputContextStub) TransferValueOnly(destination []byte, sender []byte, value *big.Int) error {
+func (o *OutputContextStub) TransferValueOnly(destination []byte, sender []byte, value *big.Int, checkPayable bool) error {
 	if o.TransferValueOnlyCalled != nil {
-		return o.TransferValueOnlyCalled(destination, sender, value)
+		return o.TransferValueOnlyCalled(destination, sender, value, checkPayable)
 	}
 
 	return nil

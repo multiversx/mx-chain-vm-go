@@ -5,9 +5,6 @@ import (
 	"fmt"
 )
 
-// ErrGasUsageError signals that there was an error associated with the gas usage
-var ErrGasUsageError = errors.New("gas use error")
-
 // ErrReturnCodeNotOk signals that the returned code is different than vmcommon.Ok
 var ErrReturnCodeNotOk = errors.New("return code is not ok")
 
@@ -25,9 +22,6 @@ var ErrSignalError = errors.New("error signalled by smartcontract")
 
 // ErrExecutionFailed signals that the execution failed
 var ErrExecutionFailed = errors.New("execution failed")
-
-// ErrInvalidAPICall signals that there was an invalid API call
-var ErrInvalidAPICall = errors.New("invalid API call")
 
 // ErrBadBounds signals that a certain variable is out of bounds
 var ErrBadBounds = errors.New("bad bounds")
@@ -152,3 +146,6 @@ var ErrSyncExecutionNotInSameShard = errors.New("sync execution request is not i
 // ErrInputAndOutputGasDoesNotMatch is raised when the output gas (gas used + gas locked + gas remaining)
 // is not equal to the input gas
 var ErrInputAndOutputGasDoesNotMatch = errors.New("input and output gas does not match")
+
+// ErrTransferValueOnESDTCall signals that balance transfer was given in esdt call
+var ErrTransferValueOnESDTCall = errors.New("transfer value on esdt call")
