@@ -213,14 +213,14 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	if input.CallType != vmcommon.AsynchronousCallBack || input.CallValue.Cmp(arwen.Zero) == 0 {
 		err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue)
 		if err != nil {
-			log.Trace("ExecuteOnDestContext", "error", err)
+			log.Trace("ExecuteOnDestContext transfer", "error", err)
 			return
 		}
 	}
 
 	gasUsedBeforeReset, err = host.execute(input)
 	if err != nil {
-		log.Trace("ExecuteOnDestContext", "error", err)
+		log.Trace("ExecuteOnDestContext execution", "error", err)
 		return
 	}
 

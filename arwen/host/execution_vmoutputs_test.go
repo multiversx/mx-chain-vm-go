@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
@@ -431,7 +432,7 @@ func expectedVMOutputSameCtxRecursiveMutualSCs(_ []byte, _ []byte, recursiveCall
 	return vmOutput
 }
 
-func expectedVMOutputSameCtxBuiltinFunctions1(_ []byte) *vmcommon.VMOutput {
+func expectedVMOutputDestCtxBuiltinClaim(input *vmcommon.ContractCallInput, code []byte) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 
 	account := AddNewOutputAccount(
@@ -441,15 +442,17 @@ func expectedVMOutputSameCtxBuiltinFunctions1(_ []byte) *vmcommon.VMOutput {
 		nil,
 	)
 	account.Balance = big.NewInt(1000)
+	account.GasUsed = 1988
 
 	AddFinishData(vmOutput, []byte("succ"))
-	gasConsumedBuiltinClaim := 100
-	vmOutput.GasRemaining = uint64(98504 - gasConsumedBuiltinClaim)
+
+	vmOutput.GasRemaining = input.GasProvided
+	vmOutput.GasRemaining -= account.GasUsed
 
 	return vmOutput
 }
 
-func expectedVMOutputSameCtxBuiltinFunctions2(_ []byte) *vmcommon.VMOutput {
+func expectedVMOutputDestCtxBuiltinDoSomething(input *vmcommon.ContractCallInput, code []byte) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 
 	account := AddNewOutputAccount(
@@ -460,27 +463,26 @@ func expectedVMOutputSameCtxBuiltinFunctions2(_ []byte) *vmcommon.VMOutput {
 	)
 	account.Balance = big.NewInt(1000)
 	account.BalanceDelta = big.NewInt(0)
+	account.GasUsed = 1992
 
 	AddFinishData(vmOutput, []byte("succ"))
 
-	gasConsumedBuiltinDoSomething := 0
-	vmOutput.GasRemaining = uint64(98500 - gasConsumedBuiltinDoSomething)
+	vmOutput.GasRemaining = input.GasProvided
+	vmOutput.GasRemaining -= account.GasUsed
 
 	return vmOutput
 }
 
-func expectedVMOutputSameCtxBuiltinFunctions3(_ []byte) *vmcommon.VMOutput {
-	vmOutput := MakeVMOutput()
+func expectedVMOutputDestCtxBuiltinNonexistent(input *vmcommon.ContractCallInput, code []byte) *vmcommon.VMOutput {
+	vmOutput := MakeVMOutputError()
+	vmOutput.ReturnMessage = arwen.ErrFuncNotFound.Error()
 
-	_ = AddNewOutputAccount(
-		vmOutput,
-		parentAddress,
-		0,
-		nil,
-	)
+	return vmOutput
+}
 
-	AddFinishData(vmOutput, []byte("fail"))
-	vmOutput.GasRemaining = 98000
+func expectedVMOutputDestCtxBuiltinFail(input *vmcommon.ContractCallInput, code []byte) *vmcommon.VMOutput {
+	vmOutput := MakeVMOutputError()
+	vmOutput.ReturnMessage = "whatdidyoudo"
 
 	return vmOutput
 }

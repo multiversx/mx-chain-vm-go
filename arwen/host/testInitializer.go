@@ -229,6 +229,22 @@ func MakeVMOutput() *vmcommon.VMOutput {
 	}
 }
 
+// MakeVMOutputError creates a vmcommon.VMOutput struct with default values
+// for errors
+func MakeVMOutputError() *vmcommon.VMOutput {
+	return &vmcommon.VMOutput{
+		ReturnCode:      vmcommon.ExecutionFailed,
+		ReturnMessage:   "",
+		ReturnData:      nil,
+		GasRemaining:    0,
+		GasRefund:       big.NewInt(0),
+		DeletedAccounts: nil,
+		TouchedAccounts: nil,
+		Logs:            nil,
+		OutputAccounts:  nil,
+	}
+}
+
 // AddFinishData appends the provided []byte to the ReturnData of the given vmOutput
 func AddFinishData(vmOutput *vmcommon.VMOutput, data []byte) {
 	vmOutput.ReturnData = append(vmOutput.ReturnData, data)

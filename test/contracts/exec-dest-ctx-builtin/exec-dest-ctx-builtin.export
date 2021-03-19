@@ -1,3 +1,4 @@
-testBuiltins1
-testBuiltins2
-testBuiltins3
+callBuiltinClaim
+callBuiltinDoSomething
+callNonexistingBuiltin
+callBuiltinFail
