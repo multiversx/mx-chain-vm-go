@@ -83,7 +83,7 @@ func (b *MockWorld) runESDTTransferCall(vmInput *vmcommon.ContractCallInput) (*v
 		ReturnData:      make([][]byte, 0),
 		ReturnCode:      vmcommon.Ok,
 		ReturnMessage:   "",
-		GasRemaining:    vmInput.GasProvided - vmInput.GasLocked,
+		GasRemaining:    vmInput.GasProvided - 0,
 		GasRefund:       big.NewInt(0),
 		OutputAccounts:  make(map[string]*vmcommon.OutputAccount),
 		DeletedAccounts: make([][]byte, 0),
@@ -124,7 +124,7 @@ func addOutputTransferToVMOutput(
 	outTransfer := vmcommon.OutputTransfer{
 		Value:     big.NewInt(0),
 		GasLimit:  vmOutput.GasRemaining,
-		GasLocked: gasLocked,
+		GasLocked: 0,
 		Data:      []byte(esdtTransferTxData),
 		CallType:  vmcommon.AsynchronousCall,
 	}
@@ -133,5 +133,4 @@ func addOutputTransferToVMOutput(
 		Address:         recipient,
 		OutputTransfers: []vmcommon.OutputTransfer{outTransfer},
 	}
-	vmOutput.GasRemaining = 0
 }
