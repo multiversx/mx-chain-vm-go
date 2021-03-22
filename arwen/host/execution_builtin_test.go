@@ -122,7 +122,7 @@ func TestExecution_AsyncCall_BuiltinFails(t *testing.T) {
 
 	require.NotNil(t, vmOutput)
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
-	require.Equal(t, [][]byte{[]byte("hello"), {4}}, vmOutput.ReturnData)
+	require.Equal(t, [][]byte{[]byte("hello"), {10}}, vmOutput.ReturnData)
 }
 
 func TestESDT_GettersAPI(t *testing.T) {
