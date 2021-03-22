@@ -914,11 +914,12 @@ func expectedVMOutputDestCtxByCallerSimpleTransfer(value int64) *vmcommon.VMOutp
 	)
 	userAccount.BalanceDelta = big.NewInt(value)
 	userAccount.OutputTransfers = append(userAccount.OutputTransfers, vmcommon.OutputTransfer{
-		Value:     big.NewInt(value),
-		GasLimit:  0,
-		GasLocked: 0,
-		Data:      []byte{},
-		CallType:  vmcommon.DirectCall,
+		Value:         big.NewInt(value),
+		GasLimit:      0,
+		GasLocked:     0,
+		Data:          []byte{},
+		CallType:      vmcommon.DirectCall,
+		SenderAddress: childAddress,
 	})
 
 	AddFinishData(vmOutput, []byte("sent"))
@@ -950,13 +951,13 @@ func expectedVMOutputAsyncCall(_ []byte, _ []byte) *vmcommon.VMOutput {
 		3,
 		[]byte("hello"),
 	)
-	outTransfer := vmcommon.OutputTransfer{Data: []byte(" there"), Value: big.NewInt(3), SenderAddress: parentAddress}
+	outTransfer := vmcommon.OutputTransfer{Data: []byte(" there"), Value: big.NewInt(3), SenderAddress: childAddress}
 	thirdPartyAccount.OutputTransfers = append(thirdPartyAccount.OutputTransfers, outTransfer)
 	thirdPartyAccount.BalanceDelta = big.NewInt(6)
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,
-		parentAddress,
+		childAddress,
 		childAddress,
 		0,
 		nil,
@@ -1053,7 +1054,7 @@ func expectedVMOutputAsyncCallCallBackFails(_ []byte, _ []byte) *vmcommon.VMOutp
 		3,
 		[]byte("hello"),
 	)
-	outTransfer2 := vmcommon.OutputTransfer{Value: big.NewInt(3), Data: []byte(" there"), SenderAddress: parentAddress}
+	outTransfer2 := vmcommon.OutputTransfer{Value: big.NewInt(3), Data: []byte(" there"), SenderAddress: childAddress}
 	outAcc := vmOutput.OutputAccounts[string(thirdPartyAddress)]
 	outAcc.OutputTransfers = append(outAcc.OutputTransfers, outTransfer2)
 	outAcc.BalanceDelta = big.NewInt(6)
@@ -1072,7 +1073,7 @@ func expectedVMOutputAsyncCallCallBackFails(_ []byte, _ []byte) *vmcommon.VMOutp
 
 	_ = AddNewOutputAccount(
 		vmOutput,
-		parentAddress,
+		childAddress,
 		vaultAddress,
 		4,
 		[]byte{},
