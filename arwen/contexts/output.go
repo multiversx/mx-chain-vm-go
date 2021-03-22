@@ -299,11 +299,12 @@ func (context *outputContext) Transfer(destination []byte, sender []byte, gasLim
 
 	destAcc, _ := context.GetOutputAccount(destination)
 	outputTransfer := vmcommon.OutputTransfer{
-		Value:     big.NewInt(0).Set(value),
-		GasLimit:  gasLimit,
-		GasLocked: gasLocked,
-		Data:      input,
-		CallType:  callType,
+		Value:         big.NewInt(0).Set(value),
+		GasLimit:      gasLimit,
+		GasLocked:     gasLocked,
+		Data:          input,
+		CallType:      callType,
+		SenderAddress: sender,
 	}
 	destAcc.OutputTransfers = append(destAcc.OutputTransfers, outputTransfer)
 
@@ -353,11 +354,12 @@ func (context *outputContext) TransferESDT(
 
 	destAcc, _ := context.GetOutputAccount(destination)
 	outputTransfer := vmcommon.OutputTransfer{
-		Value:     big.NewInt(0),
-		GasLimit:  gasRemaining,
-		GasLocked: 0,
-		Data:      []byte(core.BuiltInFunctionESDTTransfer + "@" + hex.EncodeToString(tokenIdentifier) + "@" + hex.EncodeToString(value.Bytes())),
-		CallType:  vmcommon.DirectCall,
+		Value:         big.NewInt(0),
+		GasLimit:      gasRemaining,
+		GasLocked:     0,
+		Data:          []byte(core.BuiltInFunctionESDTTransfer + "@" + hex.EncodeToString(tokenIdentifier) + "@" + hex.EncodeToString(value.Bytes())),
+		CallType:      vmcommon.DirectCall,
+		SenderAddress: sender,
 	}
 
 	if nonce > 0 {

@@ -917,7 +917,7 @@ func TestExecution_ExecuteOnDestContext_Successful_ChildReturns(t *testing.T) {
 	require.NotNil(t, vmOutput)
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 
-	expectedVMOutput := expectedVMOutputDestCtxSuccessfulChildCall_ChildReturns(parentCode, childCode)
+	expectedVMOutput := expectedVMOutputDestCtxSuccessfulChildCallChildReturns(parentCode, childCode)
 	assert.Equal(t, expectedVMOutput, vmOutput)
 }
 

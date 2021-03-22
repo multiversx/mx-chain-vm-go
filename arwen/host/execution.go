@@ -803,12 +803,13 @@ func (host *vmHost) addESDTTransferToVMOutputSCIntraShardCall(
 		}
 		recipientAddr = input.Arguments[3]
 	}
-	addOutputTransferToVMOutput(input.Function, input.Arguments, recipientAddr, input.CallType, output)
+	addOutputTransferToVMOutput(input.Function, input.Arguments, input.CallerAddr, recipientAddr, input.CallType, output)
 }
 
 func addOutputTransferToVMOutput(
 	function string,
 	arguments [][]byte,
+	sender []byte,
 	recipient []byte,
 	callType vmcommon.CallType,
 	vmOutput *vmcommon.VMOutput,
@@ -818,9 +819,10 @@ func addOutputTransferToVMOutput(
 		esdtTransferTxData += "@" + hex.EncodeToString(arg)
 	}
 	outTransfer := vmcommon.OutputTransfer{
-		Value:    big.NewInt(0),
-		Data:     []byte(esdtTransferTxData),
-		CallType: callType,
+		Value:         big.NewInt(0),
+		Data:          []byte(esdtTransferTxData),
+		CallType:      callType,
+		SenderAddress: sender,
 	}
 
 	if len(vmOutput.OutputAccounts) == 0 {
