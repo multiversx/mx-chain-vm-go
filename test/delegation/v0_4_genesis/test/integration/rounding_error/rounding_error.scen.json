@@ -128,12 +128,16 @@
             "comment": "delegator 1 gets another 1",
             "accounts": {
                 "''delegation_contract___________s1": {
-                    "balance": "1"
+                    "nonce": "*",
+                    "balance": "1",
+                    "code": "*"
                 },
                 "''node_address__________________s1": {
+                    "nonce": "*",
                     "balance": "1"
                 },
                 "''delegator_1___________________s1": {
+                    "nonce": "*",
                     "balance": "0"
                 },
                 "+": ""

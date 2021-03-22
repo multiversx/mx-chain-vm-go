@@ -134,11 +134,11 @@ func (p *Parser) processCheckAccount(acctRaw oj.OJsonObject) (*mj.CheckAccount, 
 	}
 
 	acct := mj.CheckAccount{
-		Nonce:         mj.JSONCheckUint64Default(),
-		Balance:       mj.JSONCheckBigIntDefault(),
+		Nonce:         mj.JSONCheckUint64Unspecified(),
+		Balance:       mj.JSONCheckBigIntUnspecified(),
 		IgnoreStorage: true,
-		Code:          mj.JSONCheckBytesDefault(),
-		AsyncCallData: mj.JSONCheckBytesDefault(),
+		Code:          mj.JSONCheckBytesUnspecified(),
+		AsyncCallData: mj.JSONCheckBytesUnspecified(),
 	}
 	var err error
 

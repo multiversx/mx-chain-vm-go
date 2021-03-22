@@ -49,7 +49,8 @@ func checkTxResults(
 	}
 
 	// check gas
-	if checkGas && !blResult.Gas.Check(output.GasRemaining) {
+	// unlike other checks, if unspecified the remaining gas check is ignored
+	if checkGas && !blResult.Gas.IsUnspecified() && !blResult.Gas.Check(output.GasRemaining) {
 		return fmt.Errorf("result gas mismatch. Tx %s. Want: %s. Got: %d (0x%x)",
 			txIndex,
 			blResult.Gas.Original,
