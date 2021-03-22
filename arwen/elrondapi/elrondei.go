@@ -2038,6 +2038,67 @@ func doESDTTransferAndExecuteSynchronously(
 	return 0
 }
 
+func detectSyncESDTTransfer(
+	context unsafe.Pointer,
+	functionOffset int32,
+	functionLength int32,
+) (string, bool, error) {
+	host := arwen.GetVMContext(context)
+	runtime := host.Runtime()
+
+	if !host.IsESDTFunctionsEnabled() {
+		return "", false, nil
+	}
+
+	function, err := runtime.MemLoad(functionOffset, functionLength)
+	if err != nil {
+		return "", false, err
+	}
+
+	if string(function) == core.BuiltInFunctionESDTTransfer ||
+		string(function) == core.BuiltInFunctionESDTNFTTransfer {
+		return string(function), true, nil
+	}
+
+	return "", false, nil
+}
+
+func getDestinationAndArguments(
+	context unsafe.Pointer,
+	numArguments int32,
+	argumentsLengthOffset int32,
+	addressOffset int32,
+	dataOffset int32,
+) ([]byte, [][]byte, error) {
+	host := arwen.GetVMContext(context)
+	runtime := host.Runtime()
+	metering := host.Metering()
+
+	destination, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if !host.AreInSameShard(runtime.GetSCAddress(), destination) {
+		return nil, nil, arwen.ErrSyncExecutionNotInSameShard
+	}
+
+	data, actualLen, err := getArgumentsFromMemory(
+		host,
+		numArguments,
+		argumentsLengthOffset,
+		dataOffset,
+	)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(actualLen))
+	metering.UseGas(gasToUse)
+
+	return destination, data, nil
+}
+
 //export executeOnDestContext
 func executeOnDestContext(
 	context unsafe.Pointer,
@@ -2062,43 +2123,18 @@ func executeOnDestContext(
 		return 1
 	}
 
-	if host.IsESDTFunctionsEnabled() {
-		function, err := runtime.MemLoad(functionOffset, functionLength)
+	function, isSyncESDT, err := detectSyncESDTTransfer(context, functionOffset, functionLength)
+	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	if isSyncESDT {
+		destination, data, err := getDestinationAndArguments(context, numArguments, argumentsLengthOffset, addressOffset, dataOffset)
 		if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 			return 1
 		}
 
-		if string(function) == core.BuiltInFunctionESDTTransfer || string(function) == core.BuiltInFunctionESDTNFTTransfer {
-			destination, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
-			if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
-				return 1
-			}
-
-			if !host.AreInSameShard(runtime.GetSCAddress(), destination) {
-				if arwen.WithFault(arwen.ErrSyncExecutionNotInSameShard, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
-					return 1
-				}
-			}
-
-			data, actualLen, err := getArgumentsFromMemory(
-				host,
-				numArguments,
-				argumentsLengthOffset,
-				dataOffset,
-			)
-			if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
-				return 1
-			}
-
-			gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(actualLen))
-			metering.UseGas(gasToUse)
-			if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
-				return 1
-			}
-
-			return doESDTTransferAndExecuteSynchronously(context, destination, big.NewInt(0).SetBytes(value), string(function), data, gasLimit)
-		}
-
+		return doESDTTransferAndExecuteSynchronously(context, destination, big.NewInt(0).SetBytes(value), function, data, gasLimit)
 	}
 
 	sender := runtime.GetSCAddress()
@@ -2435,7 +2471,7 @@ func prepareIndirectContractCallInput(
 	numArguments int32,
 	argumentsLengthOffset int32,
 	dataOffset int32,
-	syncExecution bool,
+	syncExecutionRequired bool,
 ) (*vmcommon.ContractCallInput, error) {
 	runtime := host.Runtime()
 	metering := host.Metering()
@@ -2445,7 +2481,7 @@ func prepareIndirectContractCallInput(
 		return nil, err
 	}
 
-	if syncExecution && !host.AreInSameShard(runtime.GetSCAddress(), destination) {
+	if syncExecutionRequired && !host.AreInSameShard(runtime.GetSCAddress(), destination) {
 		return nil, arwen.ErrSyncExecutionNotInSameShard
 	}
 
