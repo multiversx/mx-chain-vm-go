@@ -123,7 +123,7 @@ func addOutputTransferToVMOutput(
 	outTransfer := vmcommon.OutputTransfer{
 		Value:     big.NewInt(0),
 		GasLimit:  vmOutput.GasRemaining,
-		GasLocked: 0,
+		GasLocked: gasLocked,
 		Data:      []byte(esdtTransferTxData),
 		CallType:  vmcommon.AsynchronousCall,
 	}
