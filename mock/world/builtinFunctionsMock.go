@@ -83,7 +83,7 @@ func (b *MockWorld) runESDTTransferCall(vmInput *vmcommon.ContractCallInput) (*v
 		ReturnData:      make([][]byte, 0),
 		ReturnCode:      vmcommon.Ok,
 		ReturnMessage:   "",
-		GasRemaining:    vmInput.GasProvided - 0,
+		GasRemaining:    vmInput.GasProvided,
 		GasRefund:       big.NewInt(0),
 		OutputAccounts:  make(map[string]*vmcommon.OutputAccount),
 		DeletedAccounts: make([][]byte, 0),
