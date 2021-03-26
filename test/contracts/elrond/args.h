@@ -3,7 +3,7 @@
 
 #include "types.h"
 
-const byte Base16Figs[] = {
+const byte Base16Figures[] = {
 	'0', '1', '2', '3',
 	'4', '5', '6', '7',
 	'8', '9', 'A', 'B',
@@ -41,9 +41,9 @@ int SerializeBinaryArgs(BinaryArgs *args, byte *result) {
 		for (int j = 0; j < args->lengths[i]; j++) {
 			byte b = args->arguments[i][j];
 
-			result[cursor] = Base16Figs[b / 16];
+			result[cursor] = Base16Figures[b / 16];
 			cursor += 1;
-			result[cursor] = Base16Figs[b % 16];
+			result[cursor] = Base16Figures[b % 16];
 			cursor += 1;
 		}
 
