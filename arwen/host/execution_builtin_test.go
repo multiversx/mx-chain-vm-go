@@ -15,7 +15,7 @@ import (
 var ESDTTransferGasCost = uint64(1)
 var ESDTTestTokenName = []byte("TT")
 
-func TestExecution_ExecuteOnDestContext_BuiltinFunctions_Claim(t *testing.T) {
+func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_Claim(t *testing.T) {
 	code := GetTestSCCode("exec-dest-ctx-builtin", "../../")
 	scBalance := big.NewInt(1000)
 
@@ -37,7 +37,7 @@ func TestExecution_ExecuteOnDestContext_BuiltinFunctions_Claim(t *testing.T) {
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
-func TestExecution_ExecuteOnDestContext_BuiltinFunctions_DoSomething(t *testing.T) {
+func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_DoSomething(t *testing.T) {
 	code := GetTestSCCode("exec-dest-ctx-builtin", "../../")
 	scBalance := big.NewInt(1000)
 
@@ -59,7 +59,7 @@ func TestExecution_ExecuteOnDestContext_BuiltinFunctions_DoSomething(t *testing.
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
-func TestExecution_ExecuteOnDestContext_BuiltinFunctions_Nonexistent(t *testing.T) {
+func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_Nonexistent(t *testing.T) {
 	code := GetTestSCCode("exec-dest-ctx-builtin", "../../")
 	scBalance := big.NewInt(1000)
 
@@ -81,7 +81,7 @@ func TestExecution_ExecuteOnDestContext_BuiltinFunctions_Nonexistent(t *testing.
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
-func TestExecution_ExecuteOnDestContext_BuiltinFunctions_Fail(t *testing.T) {
+func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_Fail(t *testing.T) {
 	code := GetTestSCCode("exec-dest-ctx-builtin", "../../")
 	scBalance := big.NewInt(1000)
 
@@ -103,7 +103,7 @@ func TestExecution_ExecuteOnDestContext_BuiltinFunctions_Fail(t *testing.T) {
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
-func TestExecution_AsyncCall_BuiltinFails(t *testing.T) {
+func TestExecution_AsyncCall_MockBuiltinFails(t *testing.T) {
 	code := GetTestSCCode("async-call-builtin", "../../")
 	scBalance := big.NewInt(1000)
 
