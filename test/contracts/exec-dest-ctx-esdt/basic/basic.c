@@ -22,7 +22,7 @@ void basic_transfer() {
 	AddBinaryArg(&args, arg1, 4);
 	AddBinaryArg(&args, arg2, 5);
 
-	byte result[100];
-	int argsLen = SerializeBinaryArgs(&args, result);
-	finish(result, argsLen);
+	byte arguments[100];
+	int argsLen = SerializeBinaryArgs(&args, arguments);
+	finish(arguments, argsLen);
 }
