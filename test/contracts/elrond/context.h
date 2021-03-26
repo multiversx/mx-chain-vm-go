@@ -50,10 +50,15 @@ int storageLoad(byte *key, int keyLength, byte *data);
 int int64storageStore(byte *key, int keyLength, long long value);
 long long int64storageLoad(byte *key, int keyLength);
 
-// Timelocks related functions
+// Timelocks-related functions
 int setStorageLock(byte *key, int keyLen, long long timeLock);
 long long getStorageLock(byte *key, int keyLen);
 int isStorageLocked(byte *key, int keyLen);
 int clearStorageLock(byte *key, int keyLen);
+
+// ESDT-related functions
+int getESDTTokenName(byte *name);
+int getESDTValue(byte *value);
+int getESDTBalance(byte *address, byte *tokenName, int tokenNameLen, long long nonce, byte *result);
 
 #endif

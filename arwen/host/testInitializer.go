@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"math/big"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -61,6 +62,18 @@ func GetTestSCCode(scName string, prefixToTestSCs string) []byte {
 func GetTestSCCodeModule(scName string, moduleName string, prefixToTestSCs string) []byte {
 	pathToSC := prefixToTestSCs + "test/contracts/" + scName + "/output/" + moduleName + ".wasm"
 	return GetSCCode(pathToSC)
+}
+
+// BuildSCModule invokes erdpy to build the contract into a WASM module
+func BuildSCModule(scName string, prefixToTestSCs string) {
+	pathToSCDir := prefixToTestSCs + "test/contracts/" + scName
+	out, err := exec.Command("erdpy", "contract", "build", pathToSCDir).Output()
+	if err != nil {
+		log.Error("error building contract", "err", err, "contract", pathToSCDir)
+		return
+	}
+
+	log.Info("contract built", "output", fmt.Sprintf("\n%s", out))
 }
 
 // defaultTestArwenForDeployment creates an Arwen vmHost configured for testing deployments
