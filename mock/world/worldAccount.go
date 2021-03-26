@@ -1,14 +1,20 @@
 package worldmock
 
 import (
+	"bytes"
+	"errors"
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/crypto/hashing"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	"github.com/ElrondNetwork/elrond-go/data"
+	"github.com/ElrondNetwork/elrond-go/data/state"
 )
 
-// AccountMap is a map from address to account
-type AccountMap map[string]*Account
+var ErrOperationNotPermitted = errors.New("operation not permitted")
+var ErrInvalidAddressLength = errors.New("invalid address length")
+
+var _ state.AccountHandler = (*Account)(nil)
 
 // Account holds the account info
 type Account struct {
@@ -18,12 +24,14 @@ type Account struct {
 	Balance         *big.Int
 	BalanceDelta    *big.Int
 	Storage         map[string][]byte
+	RootHash        []byte
 	Code            []byte
 	CodeHash        []byte
 	CodeMetadata    []byte
 	AsyncCallData   string
 	OwnerAddress    []byte
 	Username        []byte
+	DeveloperReward *big.Int
 	ShardID         uint32
 	IsSmartContract bool
 	ESDTData        map[string]*ESDTData
@@ -37,66 +45,6 @@ type ESDTData struct {
 }
 
 var storageDefaultValue = []byte{}
-
-// NewAccountMap creates a new AccountMap instance.
-func NewAccountMap() AccountMap {
-	return AccountMap(make(map[string]*Account))
-}
-
-// CreateAccount instantiates an empty account for the given address.
-func (am AccountMap) CreateAccount(address []byte) *Account {
-	newAccount := &Account{
-		Exists:          true,
-		Address:         make([]byte, len(address)),
-		Nonce:           0,
-		Balance:         big.NewInt(0),
-		BalanceDelta:    big.NewInt(0),
-		Storage:         make(map[string][]byte),
-		Code:            nil,
-		OwnerAddress:    nil,
-		ESDTData:        make(map[string]*ESDTData),
-		ShardID:         0,
-		IsSmartContract: false,
-	}
-	copy(newAccount.Address, address)
-	am.PutAccount(newAccount)
-
-	return newAccount
-}
-
-// CreateSmartContractAccount instantiates an account for a smart contract with
-// the given address and WASM bytecode.
-func (am AccountMap) CreateSmartContractAccount(owner []byte, address []byte, code []byte) *Account {
-	newAccount := am.CreateAccount(address)
-	newAccount.Code = code
-	newAccount.IsSmartContract = true
-	newAccount.OwnerAddress = owner
-	newAccount.CodeMetadata = []byte{0, vmcommon.MetadataPayable}
-
-	return newAccount
-}
-
-// PutAccount inserts account based on address.
-func (am AccountMap) PutAccount(account *Account) {
-	am[string(account.Address)] = account
-}
-
-// PutAccounts inserts multiple accounts based on address.
-func (am AccountMap) PutAccounts(accounts []*Account) {
-	for _, account := range accounts {
-		am.PutAccount(account)
-	}
-}
-
-// GetAccount retrieves account based on address
-func (am AccountMap) GetAccount(address []byte) *Account {
-	return am[string(address)]
-}
-
-// DeleteAccount removes account based on address
-func (am AccountMap) DeleteAccount(address []byte) {
-	delete(am, string(address))
-}
 
 // StorageValue yields the storage value for key, default 0
 func (a *Account) StorageValue(key string) []byte {
@@ -145,7 +93,7 @@ func (a *Account) GetCodeHash() []byte {
 
 // GetRootHash -
 func (a *Account) GetRootHash() []byte {
-	return []byte{}
+	return a.RootHash
 }
 
 // GetBalance -
@@ -176,4 +124,88 @@ func (a *Account) GetUserName() []byte {
 // IsInterfaceNil -
 func (a *Account) IsInterfaceNil() bool {
 	return a == nil
+}
+
+func (a *Account) SetCodeMetadata(codeMetadata []byte) {
+	a.CodeMetadata = codeMetadata
+}
+
+func (a *Account) SetCodeHash(hash []byte) {
+	a.CodeHash = hash
+}
+
+func (a *Account) SetRootHash(hash []byte) {
+	a.RootHash = hash
+}
+
+func (a *Account) SetDataTrie(trie data.Trie) {
+}
+
+func (a *Account) DataTrie() data.Trie {
+	return nil
+}
+
+func (a *Account) DataTrieTracker() state.DataTrieTracker {
+	return nil
+}
+
+func (a *Account) AddToBalance(value *big.Int) error {
+	newBalance := big.NewInt(0).Add(a.Balance, value)
+	if newBalance.Cmp(zero) < 0 {
+		return ErrInsufficientFunds
+	}
+
+	a.Balance = newBalance
+	return nil
+}
+
+func (a *Account) SubFromBalance(value *big.Int) error {
+	newBalance := big.NewInt(0).Sub(a.Balance, value)
+	if newBalance.Cmp(zero) < 0 {
+		return ErrInsufficientFunds
+	}
+
+	a.Balance = newBalance
+	return nil
+}
+
+func (a *Account) ClaimDeveloperRewards(sender []byte) (*big.Int, error) {
+	if !bytes.Equal(sender, a.OwnerAddress) {
+		return nil, ErrOperationNotPermitted
+	}
+
+	oldValue := big.NewInt(0).Set(a.DeveloperReward)
+	a.DeveloperReward = big.NewInt(0)
+
+	return oldValue, nil
+}
+
+func (a *Account) AddToDeveloperReward(value *big.Int) {
+	a.DeveloperReward = big.NewInt(0).Add(a.DeveloperReward, value)
+}
+
+func (a *Account) ChangeOwnerAddress(sender []byte, newAddress []byte) error {
+	if !bytes.Equal(sender, a.OwnerAddress) {
+		return ErrOperationNotPermitted
+	}
+	if len(newAddress) != len(a.Address) {
+		return ErrInvalidAddressLength
+	}
+
+	a.OwnerAddress = newAddress
+
+	return nil
+}
+
+func (a *Account) SetOwnerAddress(address []byte) {
+	a.OwnerAddress = address
+}
+
+func (a *Account) SetUserName(userName []byte) {
+	a.Username = make([]byte, len(userName))
+	copy(a.Username, userName)
+}
+
+func (a *Account) IncreaseNonce(nonce uint64) {
+	a.Nonce = a.Nonce + nonce
 }
