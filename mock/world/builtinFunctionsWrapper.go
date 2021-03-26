@@ -1,7 +1,10 @@
 package worldmock
 
 import (
+	"errors"
+
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/ElrondNetwork/elrond-go/data/state"
 	integrationTests "github.com/ElrondNetwork/elrond-go/integrationTests/mock"
 	"github.com/ElrondNetwork/elrond-go/process"
@@ -44,4 +47,9 @@ func NewBuiltinFunctionsWrapper(
 	}
 
 	return builtinFuncsWrapper, nil
+}
+
+func (bf *BuiltinFunctionsWrapper) ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+	// TODO implement
+	return nil, errors.New("not implemented")
 }

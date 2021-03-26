@@ -21,6 +21,10 @@ func getBuiltinFunctionNames() vmcommon.FunctionNames {
 }
 
 func (b *MockWorld) processBuiltInFunction(input *vmcommon.ContractCallInput) (*vmi.VMOutput, error) {
+	if b.BuiltinFuncs != nil {
+		return b.BuiltinFuncs.ProcessBuiltInFunction(input)
+	}
+
 	if input.Function == BuiltInFunctionESDTTransfer {
 		output, err := b.runESDTTransferCall(input)
 		return output, err
