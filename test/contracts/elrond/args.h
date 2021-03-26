@@ -3,10 +3,12 @@
 
 #include "types.h"
 
-const byte Base16Figs[] = {'0', '1', '2', '3', 
-	                         '4', '5', '6', '7',
-													 '8', '9', 'A', 'B',
-													 'C', 'D', 'E', 'F'};
+const byte Base16Figs[] = {
+	'0', '1', '2', '3',
+	'4', '5', '6', '7',
+	'8', '9', 'A', 'B',
+	'C', 'D', 'E', 'F'
+};
 
 typedef struct binaryArgs {
 	byte *arguments[10];
