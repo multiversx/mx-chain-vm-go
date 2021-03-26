@@ -3,13 +3,13 @@
 
 byte value[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
-void testBuiltins1() {
+void callBuiltinClaim() {
 	byte scAddress[] = "\0\0\0\0\0\0\0\0\x0f\x0fparentSC..............";
 	byte functionName[] = "builtinClaim";
 	byte functionLength = 12;
 
 	value[31] = 96;
-	u64 result = executeOnSameContext(
+	u64 result = executeOnDestContext(
 			500,
 			scAddress,
 			value,
@@ -23,13 +23,13 @@ void testBuiltins1() {
 	finishResult(result);
 }
 
-void testBuiltins2() {
+void callBuiltinDoSomething() {
 	byte scAddress[] = "\0\0\0\0\0\0\0\0\x0f\x0fparentSC..............";
 	byte functionName[] = "builtinDoSomething";
 	byte functionLength = 18;
 
 	value[31] = 100;
-	u64 result = executeOnSameContext(
+	u64 result = executeOnDestContext(
 			500,
 			scAddress,
 			value,
@@ -43,13 +43,33 @@ void testBuiltins2() {
 	finishResult(result);
 }
 
-void testBuiltins3() {
+void callNonexistingBuiltin() {
 	byte scAddress[] = "\0\0\0\0\0\0\0\0\x0f\x0fparentSC..............";
 	byte functionName[] = "builtinDoesntExist";
 	byte functionLength = 18;
 
 	value[31] = 11;
-	u64 result = executeOnSameContext(
+	u64 result = executeOnDestContext(
+			4000,
+			scAddress,
+			value,
+			functionName,
+			functionLength,
+			0,
+			0,
+			0
+	);
+
+	finishResult(result);
+}
+
+void callBuiltinFail() {
+	byte scAddress[] = "\0\0\0\0\0\0\0\0\x0f\x0fparentSC..............";
+	byte functionName[] = "builtinFail";
+	byte functionLength = 11;
+
+	value[31] = 11;
+	u64 result = executeOnDestContext(
 			500,
 			scAddress,
 			value,

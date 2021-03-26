@@ -2,6 +2,7 @@ package host
 
 import (
 	"encoding/hex"
+	"errors"
 	"math/big"
 	"testing"
 
@@ -14,11 +15,8 @@ import (
 var ESDTTransferGasCost = uint64(1)
 var ESDTTestTokenName = []byte("TT")
 
-func TestExecution_ExecuteOnSameContext_BuiltinFunctions(t *testing.T) {
-	// TODO rewrite to use ExecuteOnDestContext(). It is disallowed to call a
-	// built-in function with ExecuteOnSameContext().
-	t.Skip()
-	code := GetTestSCCode("exec-same-ctx-builtin", "../../")
+func TestExecution_ExecuteOnDestContext_BuiltinFunctions_Claim(t *testing.T) {
+	code := GetTestSCCode("exec-dest-ctx-builtin", "../../")
 	scBalance := big.NewInt(1000)
 
 	host, stubBlockchainHook := defaultTestArwenForCall(t, code, scBalance)
@@ -28,37 +26,80 @@ func TestExecution_ExecuteOnSameContext_BuiltinFunctions(t *testing.T) {
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 
-	// Run function testBuiltins1
-	input.Function = "testBuiltins1"
+	input.Function = "callBuiltinClaim"
 	input.GasProvided = 100000
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
 
 	require.NotNil(t, vmOutput)
-	expectedVMOutput := expectedVMOutputSameCtxBuiltinFunctions1(code)
+	expectedVMOutput := expectedVMOutputDestCtxBuiltinClaim(input, code)
 	require.Equal(t, expectedVMOutput, vmOutput)
+}
 
-	// Run function testBuiltins2
-	input.Function = "testBuiltins2"
+func TestExecution_ExecuteOnDestContext_BuiltinFunctions_DoSomething(t *testing.T) {
+	code := GetTestSCCode("exec-dest-ctx-builtin", "../../")
+	scBalance := big.NewInt(1000)
+
+	host, stubBlockchainHook := defaultTestArwenForCall(t, code, scBalance)
+	stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
+	host.protocolBuiltinFunctions = getDummyBuiltinFunctionNames()
+
+	input := DefaultTestContractCallInput()
+	input.RecipientAddr = parentAddress
+
+	input.Function = "callBuiltinDoSomething"
 	input.GasProvided = 100000
 
-	vmOutput, err = host.RunSmartContractCall(input)
+	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
 
 	require.NotNil(t, vmOutput)
-	expectedVMOutput = expectedVMOutputSameCtxBuiltinFunctions2(code)
+	expectedVMOutput := expectedVMOutputDestCtxBuiltinDoSomething(input, code)
 	require.Equal(t, expectedVMOutput, vmOutput)
+}
 
-	// Run function testBuiltins3
-	input.Function = "testBuiltins3"
+func TestExecution_ExecuteOnDestContext_BuiltinFunctions_Nonexistent(t *testing.T) {
+	code := GetTestSCCode("exec-dest-ctx-builtin", "../../")
+	scBalance := big.NewInt(1000)
+
+	host, stubBlockchainHook := defaultTestArwenForCall(t, code, scBalance)
+	stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
+	host.protocolBuiltinFunctions = getDummyBuiltinFunctionNames()
+
+	input := DefaultTestContractCallInput()
+	input.RecipientAddr = parentAddress
+
+	input.Function = "callNonexistingBuiltin"
 	input.GasProvided = 100000
 
-	vmOutput, err = host.RunSmartContractCall(input)
+	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
 
 	require.NotNil(t, vmOutput)
-	expectedVMOutput = expectedVMOutputSameCtxBuiltinFunctions3(code)
+	expectedVMOutput := expectedVMOutputDestCtxBuiltinNonexistent(input, code)
+	require.Equal(t, expectedVMOutput, vmOutput)
+}
+
+func TestExecution_ExecuteOnDestContext_BuiltinFunctions_Fail(t *testing.T) {
+	code := GetTestSCCode("exec-dest-ctx-builtin", "../../")
+	scBalance := big.NewInt(1000)
+
+	host, stubBlockchainHook := defaultTestArwenForCall(t, code, scBalance)
+	stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
+	host.protocolBuiltinFunctions = getDummyBuiltinFunctionNames()
+
+	input := DefaultTestContractCallInput()
+	input.RecipientAddr = parentAddress
+
+	input.Function = "callBuiltinFail"
+	input.GasProvided = 100000
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+
+	require.NotNil(t, vmOutput)
+	expectedVMOutput := expectedVMOutputDestCtxBuiltinFail(input, code)
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
@@ -81,7 +122,7 @@ func TestExecution_AsyncCall_BuiltinFails(t *testing.T) {
 
 	require.NotNil(t, vmOutput)
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
-	require.Equal(t, [][]byte{[]byte("hello"), {4}}, vmOutput.ReturnData)
+	require.Equal(t, [][]byte{[]byte("hello"), {10}}, vmOutput.ReturnData)
 }
 
 func TestESDT_GettersAPI(t *testing.T) {
@@ -161,12 +202,7 @@ func dummyProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.V
 		}, nil
 	}
 	if input.Function == "builtinFail" {
-		return &vmcommon.VMOutput{
-			GasRemaining:  0 + input.GasLocked,
-			GasRefund:     big.NewInt(0),
-			ReturnCode:    vmcommon.UserError,
-			ReturnMessage: "whatdidyoudo",
-		}, nil
+		return nil, errors.New("whatdidyoudo")
 	}
 	if input.Function == core.BuiltInFunctionESDTTransfer {
 		vmOutput := &vmcommon.VMOutput{
