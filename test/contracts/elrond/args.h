@@ -38,6 +38,7 @@ int SerializeBinaryArgs(BinaryArgs *args, byte *result) {
 	for (int i = 0; i < args->numArgs; i++) {
 		for (int j = 0; j < args->lengths[i]; j++) {
 			byte b = args->arguments[i][j];
+
 			result[cursor] = Base16Figs[b / 16];
 			cursor += 1;
 			result[cursor] = Base16Figs[b % 16];
