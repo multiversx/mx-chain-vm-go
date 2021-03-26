@@ -3,14 +3,15 @@ package worldmock
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/elrond-go/data/state"
-	"github.com/ElrondNetwork/elrond-go/integrationTests/mock"
+	integrationTests "github.com/ElrondNetwork/elrond-go/integrationTests/mock"
 	"github.com/ElrondNetwork/elrond-go/process"
 	"github.com/ElrondNetwork/elrond-go/process/smartContract/builtInFunctions"
 	"github.com/ElrondNetwork/elrond-go/sharding"
 )
 
 type BuiltinFunctionsWrapper struct {
-	Container process.BuiltInFunctionContainer
+	Container       process.BuiltInFunctionContainer
+	MapDNSAddresses map[string]struct{}
 }
 
 func NewBuiltinFunctionsWrapper(
@@ -18,21 +19,15 @@ func NewBuiltinFunctionsWrapper(
 	accounts state.AccountsAdapter,
 	gasMap config.GasScheduleMap,
 ) (*BuiltinFunctionsWrapper, error) {
-	mapDNSAddresses := make(map[string]struct{})
-	// if !check.IfNil(tpn.SmartContractParser) {
-	// 	mapDNSAddresses, _ = tpn.SmartContractParser.GetDeployedSCAddresses(genesis.DNSType)
-	// }
 
-	// defaults.FillGasMapInternal(gasMap, 1)
-	// gasSchedule := mock.NewGasScheduleNotifierMock(gasMap)
-	gasSchedule := mock.NewGasScheduleNotifierMock(gasMap)
 	argsBuiltIn := builtInFunctions.ArgsCreateBuiltInFunctionContainer{
-		GasSchedule:      gasSchedule,
-		MapDNSAddresses:  mapDNSAddresses,
+		GasSchedule:      integrationTests.NewGasScheduleNotifierMock(gasMap),
+		MapDNSAddresses:  make(map[string]struct{}),
 		Marshalizer:      nil,
 		Accounts:         accounts,
 		ShardCoordinator: shardCoordinator,
 	}
+
 	builtInFuncFactory, err := builtInFunctions.NewBuiltInFunctionsFactory(argsBuiltIn)
 	if err != nil {
 		return nil, err
@@ -44,7 +39,8 @@ func NewBuiltinFunctionsWrapper(
 	}
 
 	builtinFuncsWrapper := &BuiltinFunctionsWrapper{
-		Container: builtInFuncs,
+		Container:       builtInFuncs,
+		MapDNSAddresses: argsBuiltIn.MapDNSAddresses,
 	}
 
 	return builtinFuncsWrapper, nil
