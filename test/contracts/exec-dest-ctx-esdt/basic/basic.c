@@ -14,6 +14,8 @@ void basic_transfer() {
 	byte esdtValue[32] = {0};
 	int esdtValueLen = getESDTValue(esdtValue);
 
+	esdtValue[31] -= 1;
+
 	BinaryArgs args = NewBinaryArgs();
 
 	int lastArg = 0;
