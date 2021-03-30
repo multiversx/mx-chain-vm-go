@@ -25,9 +25,6 @@ void basic_transfer() {
 
 	byte arguments[100];
 	int argsLen = SerializeBinaryArgs(&args, arguments);
-	finish(arguments, argsLen);
-	finish(args.lengths, 2);
-	finish((byte*)args.lengthsAsI32, 8);
 
 	int result = executeOnDestContext(
 			1000000,

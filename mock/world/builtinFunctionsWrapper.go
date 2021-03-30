@@ -14,17 +14,19 @@ type BuiltinFunctionsWrapper struct {
 	Container       process.BuiltInFunctionContainer
 	MapDNSAddresses map[string]struct{}
 	World           *MockWorld
+	Marshalizer     marshal.Marshalizer
 }
 
 func NewBuiltinFunctionsWrapper(
 	world *MockWorld,
 	gasMap config.GasScheduleMap,
 ) (*BuiltinFunctionsWrapper, error) {
+	marshalizer := &marshal.GogoProtoMarshalizer{}
 
 	argsBuiltIn := builtInFunctions.ArgsCreateBuiltInFunctionContainer{
 		GasSchedule:      integrationTests.NewGasScheduleNotifierMock(gasMap),
 		MapDNSAddresses:  make(map[string]struct{}),
-		Marshalizer:      &marshal.GogoProtoMarshalizer{},
+		Marshalizer:      marshalizer,
 		Accounts:         NewMockAccountsAdapter(world.AcctMap),
 		ShardCoordinator: world,
 	}
@@ -43,6 +45,7 @@ func NewBuiltinFunctionsWrapper(
 		Container:       builtInFuncs,
 		MapDNSAddresses: argsBuiltIn.MapDNSAddresses,
 		World:           world,
+		Marshalizer:     marshalizer,
 	}
 
 	return builtinFuncsWrapper, nil

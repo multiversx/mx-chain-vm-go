@@ -10,6 +10,7 @@ import (
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-go/core"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	"github.com/ElrondNetwork/elrond-go/data/esdt"
 	"github.com/stretchr/testify/require"
 )
 
@@ -22,7 +23,14 @@ func TestExecution_ExecuteOnDestContext_ESDT_Basic(t *testing.T) {
 	BuildSCModule("exec-dest-ctx-esdt/basic", "../../")
 	code := GetTestSCCodeModule("exec-dest-ctx-esdt/basic", "basic", "../../")
 	scBalance := big.NewInt(1000)
-	host, _ := defaultTestArwenForCallWithWorldMock(t, code, scBalance)
+	host, world := defaultTestArwenForCallWithWorldMock(t, code, scBalance)
+
+	tokenKey := world.BuiltinFuncs.MakeTokenKey(ESDTTestTokenName)
+	world.BuiltinFuncs.SetTokenData(parentAddress, tokenKey, &esdt.ESDigitalToken{
+		Value: big.NewInt(100),
+		Type:  uint32(core.Fungible),
+	})
+
 	input := DefaultTestContractCallInput()
 	input.Function = "basic_transfer"
 	input.GasProvided = 100000

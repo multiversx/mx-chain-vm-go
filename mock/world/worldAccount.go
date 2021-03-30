@@ -76,6 +76,18 @@ func (a *Account) SetCodeAndMetadata(code []byte, codeMetadata *vmcommon.CodeMet
 	a.CodeMetadata = codeMetadata.ToBytes()
 }
 
+func (a *Account) SetPayable(payable bool) {
+	if a.CodeMetadata == nil {
+		a.CodeMetadata = []byte{0, 0}
+	}
+
+	if payable {
+		a.CodeMetadata[1] |= vmcommon.MetadataPayable
+	} else {
+		a.CodeMetadata[1] &^= vmcommon.MetadataPayable
+	}
+}
+
 // AddressBytes -
 func (a *Account) AddressBytes() []byte {
 	return a.Address

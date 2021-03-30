@@ -129,8 +129,7 @@ func defaultTestArwenForCallWithWorldMock(tb testing.TB, code []byte, balance *b
 
 	host.protocolBuiltinFunctions = world.BuiltinFuncs.GetBuiltinFunctionNames()
 
-	parentAccount := world.AcctMap.CreateAccount(parentAddress)
-	parentAccount.Code = code
+	parentAccount := world.AcctMap.CreateSmartContractAccount(userAddress, parentAddress, code)
 	parentAccount.Balance = balance
 
 	return host, world
