@@ -185,6 +185,7 @@ func defaultTestArwen(tb testing.TB, blockchain vmcommon.BlockchainHook) *vmHost
 	})
 	require.Nil(tb, err)
 	require.NotNil(tb, host)
+
 	return host
 }
 
