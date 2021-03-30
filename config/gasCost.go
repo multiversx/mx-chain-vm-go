@@ -2,6 +2,15 @@ package config
 
 import "github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 
+type GasCost struct {
+	BaseOperationCost BaseOperationCost
+	BigIntAPICost     BigIntAPICost
+	EthAPICost        EthAPICost
+	ElrondAPICost     ElrondAPICost
+	CryptoAPICost     CryptoAPICost
+	WASMOpcodeCost    WASMOpcodeCost
+}
+
 type BaseOperationCost struct {
 	StorePerByte      uint64
 	ReleasePerByte    uint64
@@ -586,15 +595,6 @@ type WASMOpcodeCost struct {
 	I16x8RoundingAverageU  uint32
 	LocalAllocate          uint32
 	LocalsUnmetered        uint32
-}
-
-type GasCost struct {
-	BaseOperationCost BaseOperationCost
-	BigIntAPICost     BigIntAPICost
-	EthAPICost        EthAPICost
-	ElrondAPICost     ElrondAPICost
-	CryptoAPICost     CryptoAPICost
-	WASMOpcodeCost    WASMOpcodeCost
 }
 
 func (opcode_costs_struct *WASMOpcodeCost) ToOpcodeCostsArray() [wasmer.OPCODE_COUNT]uint32 {
