@@ -11,13 +11,14 @@ import (
 	"github.com/ElrondNetwork/elrond-go/core"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/ElrondNetwork/elrond-go/data/esdt"
+	"github.com/ElrondNetwork/elrond-go/process"
 	"github.com/stretchr/testify/require"
 )
 
 var ESDTTransferGasCost = uint64(1)
 var ESDTTestTokenName = []byte("TT")
 
-func TestExecution_ExecuteOnDestContext_ESDT_Basic(t *testing.T) {
+func TestExecution_ExecuteOnDestContext_ESDTTransferWithoutExecute(t *testing.T) {
 	logger.SetLogLevel("*:TRACE")
 	logger.ToggleLoggerName(true)
 	BuildSCModule("exec-dest-ctx-esdt/basic", "../../")
@@ -44,7 +45,8 @@ func TestExecution_ExecuteOnDestContext_ESDT_Basic(t *testing.T) {
 	log.Info("ReturnData", "data", vmOutput.ReturnData)
 	log.Info("ReturnMessage", "msg", vmOutput.ReturnMessage)
 
-	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+	require.Equal(t, vmcommon.ExecutionFailed, vmOutput.ReturnCode)
+	require.Equal(t, process.ErrAccountNotPayable.Error(), vmOutput.ReturnMessage)
 }
 
 func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_Claim(t *testing.T) {
