@@ -1,6 +1,3 @@
-#ifndef _CBUILTINS_H_
-#define _CBUILTINS_H_
-
 #include "types.h"
 
 void* memset(void *dest, int c, unsigned long n) {
@@ -10,5 +7,3 @@ void* memset(void *dest, int c, unsigned long n) {
 	}
 	return dest;
 }
-
-#endif

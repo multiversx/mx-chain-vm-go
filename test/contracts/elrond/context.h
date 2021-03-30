@@ -17,10 +17,46 @@ void writeLog(byte *pointer, int length, byte *topicPtr, int numTopics);
 void asyncCall(byte *destination, byte *value, byte *data, int length);
 void signalError(byte *message, int length);
 
-int executeOnSameContext(long long gas, byte *address, byte *value, byte *function, int functionLength, int numArguments, byte *argumentsLengths, byte *arguments);
-int executeOnDestContext(long long gas, byte *address, byte *value, byte *function, int functionLength, int numArguments, byte *argumentsLengths, byte *arguments);
-int executeOnDestContextByCaller(long long gas, byte *address, byte *value, byte *function, int functionLength, int numArguments, byte *argumentsLengths, byte *arguments);
-int createContract(long long gas, byte *value, byte *code, byte *codeMetadata, int codeSize, byte *newAddress, int numInitArgs, byte *initArgLengths, byte *initArgs);
+int executeOnSameContext(
+		long long gas,
+		byte *address,
+		byte *value,
+		byte *function,
+		int functionLength,
+		int numArguments,
+		byte *argumentsLengths,
+		byte *arguments);
+
+int executeOnDestContext(
+		long long gas,
+		byte *address,
+		byte *value,
+		byte *function,
+		int functionLength,
+		int numArguments,
+		byte *argumentsLengths,
+		byte *arguments);
+
+int executeOnDestContextByCaller(
+		long long gas,
+		byte *address,
+		byte *value,
+		byte *function,
+		int functionLength,
+		int numArguments,
+		byte *argumentsLengths,
+		byte *arguments);
+
+int createContract(
+		long long gas,
+		byte *value,
+		byte *code,
+		byte *codeMetadata,
+		int codeSize,
+		byte *newAddress,
+		int numInitArgs,
+		byte *initArgLengths,
+		byte *initArgs);
 
 // Return-related functions
 void finish(byte *data, int length);
@@ -59,6 +95,11 @@ int clearStorageLock(byte *key, int keyLen);
 // ESDT-related functions
 int getESDTTokenName(byte *name);
 int getESDTValue(byte *value);
-int getESDTBalance(byte *address, byte *tokenName, int tokenNameLen, long long nonce, byte *result);
+int getESDTBalance(
+		byte *address,
+		byte *tokenName,
+		int tokenNameLen,
+		long long nonce,
+		byte *result);
 
 #endif

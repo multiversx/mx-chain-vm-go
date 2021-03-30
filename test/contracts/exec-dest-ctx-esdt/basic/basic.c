@@ -1,28 +1,36 @@
 #include "../../elrond/context.h"
 #include "../../elrond/test_utils.h"
 #include "../../elrond/args.h"
-#include "../../elrond/cbuiltins.h"
 
 byte executeValue[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+byte self[32] = "\0\0\0\0\0\0\0\0\x0f\x0f" "parentSC..............";
 byte vaultSC[] = "\0\0\0\0\0\0\0\0\x0F\x0F" "vaultSC...............";
-
+byte ESDTTransfer[] = "ESDTTransfer";
 
 void basic_transfer() {
 	byte tokenName[265] = {0};
 	int tokenNameLen = getESDTTokenName(tokenName);
 	finish(tokenName, tokenNameLen);
 
-	bigInt callValue = bigIntNew(0);
-	bigIntGetESDTCallValue(callValue);
-	bigIntFinishUnsigned(callValue);
+	byte callValue[32] = {0};
+	int callValueLen = getCallValue(callValue);
 
 	BinaryArgs args = NewBinaryArgs();
-	byte arg1[] = {1, 2, 3, 4};
-	byte arg2[] = "hello";
-	AddBinaryArg(&args, arg1, 4);
-	AddBinaryArg(&args, arg2, 5);
+	AddBinaryArg(&args, tokenName, tokenNameLen);
+	AddBinaryArg(&args, callValue, callValueLen);
 
 	byte arguments[100];
 	int argsLen = SerializeBinaryArgs(&args, arguments);
 	finish(arguments, argsLen);
+
+	int result = executeOnDestContext(
+			1000000,
+			self,
+			callValue,
+			ESDTTransfer,
+			sizeof ESDTTransfer - 1,
+			args.numArgs,
+			args.lengths,
+			args.serialized
+	);
 }
