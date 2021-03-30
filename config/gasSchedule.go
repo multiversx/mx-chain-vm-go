@@ -131,6 +131,17 @@ func FillGasMap_BuiltInCosts(value uint64) map[string]uint64 {
 	gasMap := make(map[string]uint64)
 	gasMap["ChangeOwnerAddress"] = value
 	gasMap["ClaimDeveloperRewards"] = value
+	gasMap["SaveUserName"] = value
+	gasMap["SaveKeyValue"] = value
+	gasMap["ESDTTransfer"] = value
+	gasMap["ESDTBurn"] = value
+	gasMap["ESDTLocalMint"] = value
+	gasMap["ESDTLocalBurn"] = value
+	gasMap["ESDTNFTCreate"] = value
+	gasMap["ESDTNFTAddQuantity"] = value
+	gasMap["ESDTNFTBurn"] = value
+	gasMap["ESDTNFTTransfer"] = value
+	gasMap["ESDTNFTChangeCreateOwner"] = value
 
 	return gasMap
 }
