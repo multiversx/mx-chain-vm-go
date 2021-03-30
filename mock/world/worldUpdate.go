@@ -91,7 +91,7 @@ func (b *MockWorld) UpdateAccountFromOutputAccount(modAcct *vmcommon.OutputAccou
 	}
 	if len(modAcct.Code) > 0 {
 		// TODO: set CodeMetadata according to code metdata coming from VM
-		acct.SetCode(modAcct.Code, &vmcommon.CodeMetadata{
+		acct.SetCodeAndMetadata(modAcct.Code, &vmcommon.CodeMetadata{
 			Payable:     true,
 			Upgradeable: true,
 			Readable:    true,

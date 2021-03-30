@@ -3,17 +3,21 @@
 
 #include "types.h"
 
+static const int MAX_BINARY_ARGS = 10;
+
 typedef struct binaryArgs {
-	byte *arguments[10];
-	byte lengths[10];
+	byte *arguments[MAX_BINARY_ARGS];
+	byte lengths[MAX_BINARY_ARGS];
+	unsigned int lengthsAsI32[MAX_BINARY_ARGS];
 	int numArgs;
 	byte *serialized;
 	int lenSerialized;
 } BinaryArgs;
 
 BinaryArgs NewBinaryArgs();
-void AddBinaryArg(BinaryArgs *args, byte *arg, int arglen);
+int AddBinaryArg(BinaryArgs *args, byte *arg, int arglen);
+int TrimLeftZeros(BinaryArgs *args, int argIndex);
 int SerializeBinaryArgs(BinaryArgs *args, byte *result);
-void* memset(void *str, int c, unsigned long n);
+int SerializeBinaryArgsToDataString(BinaryArgs *args, byte *result);
 
 #endif

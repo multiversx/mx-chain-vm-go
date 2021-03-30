@@ -6,6 +6,7 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/crypto/hashing"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/ElrondNetwork/elrond-go/data"
 	"github.com/ElrondNetwork/elrond-go/data/state"
@@ -59,13 +60,18 @@ func (a *Account) StorageValue(key string) []byte {
 	return value
 }
 
-// SetCode changes the account code, as well as all fields depending on it:
+// SetCodeAndMetadata changes the account code, as well as all fields depending on it:
 // CodeHash, IsSmartContract, CodeMetadata.
 // The code metadata must be given explicitly.
-func (a *Account) SetCode(code []byte, codeMetadata *vmcommon.CodeMetadata) {
+func (a *Account) SetCodeAndMetadata(code []byte, codeMetadata *vmcommon.CodeMetadata) {
 	a.Code = code
 	hasher := hashing.NewHasher()
-	a.CodeHash, _ = hasher.Sha256(code)
+	hash, err := hasher.Sha256(code)
+	if err != nil {
+		logger.GetOrCreate("worldAccount").Trace("Account.SetCodeAndMetadata", "error", err)
+	}
+
+	a.CodeHash = hash
 	a.IsSmartContract = true
 	a.CodeMetadata = codeMetadata.ToBytes()
 }
@@ -128,6 +134,13 @@ func (a *Account) GetUserName() []byte {
 // IsInterfaceNil -
 func (a *Account) IsInterfaceNil() bool {
 	return a == nil
+}
+
+func (a *Account) SetCode(code []byte) {
+	a.Code = code
+	hasher := hashing.NewHasher()
+	a.CodeHash, _ = hasher.Sha256(code)
+	a.IsSmartContract = true
 }
 
 func (a *Account) SetCodeMetadata(codeMetadata []byte) {

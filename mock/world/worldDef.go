@@ -52,8 +52,7 @@ func NewMockWorld() *MockWorld {
 }
 
 func (b *MockWorld) InitBuiltinFunctions(gasMap config.GasScheduleMap) error {
-	accountsAdapter := NewMockAccountsAdapter(b.AcctMap)
-	wrapper, err := NewBuiltinFunctionsWrapper(b, accountsAdapter, gasMap)
+	wrapper, err := NewBuiltinFunctionsWrapper(b, gasMap)
 	if err != nil {
 		return err
 	}

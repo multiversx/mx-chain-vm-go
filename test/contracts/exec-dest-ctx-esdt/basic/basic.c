@@ -10,27 +10,31 @@ byte ESDTTransfer[] = "ESDTTransfer";
 void basic_transfer() {
 	byte tokenName[265] = {0};
 	int tokenNameLen = getESDTTokenName(tokenName);
-	finish(tokenName, tokenNameLen);
 
-	byte callValue[32] = {0};
-	int callValueLen = getCallValue(callValue);
+	byte esdtValue[32] = {0};
+	int esdtValueLen = getESDTValue(esdtValue);
 
 	BinaryArgs args = NewBinaryArgs();
-	AddBinaryArg(&args, tokenName, tokenNameLen);
-	AddBinaryArg(&args, callValue, callValueLen);
+
+	int lastArg = 0;
+	lastArg = AddBinaryArg(&args, tokenName, tokenNameLen);
+	lastArg = AddBinaryArg(&args, esdtValue, esdtValueLen);
+	TrimLeftZeros(&args, lastArg);
 
 	byte arguments[100];
 	int argsLen = SerializeBinaryArgs(&args, arguments);
 	finish(arguments, argsLen);
+	finish(args.lengths, 2);
+	finish((byte*)args.lengthsAsI32, 8);
 
 	int result = executeOnDestContext(
 			1000000,
 			self,
-			callValue,
+			executeValue,
 			ESDTTransfer,
 			sizeof ESDTTransfer - 1,
 			args.numArgs,
-			args.lengths,
+		  (byte*)args.lengthsAsI32,
 			args.serialized
 	);
 }

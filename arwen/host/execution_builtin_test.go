@@ -18,6 +18,7 @@ var ESDTTestTokenName = []byte("TT")
 
 func TestExecution_ExecuteOnDestContext_ESDT_Basic(t *testing.T) {
 	logger.SetLogLevel("*:TRACE")
+	logger.ToggleLoggerName(true)
 	BuildSCModule("exec-dest-ctx-esdt/basic", "../../")
 	code := GetTestSCCodeModule("exec-dest-ctx-esdt/basic", "basic", "../../")
 	scBalance := big.NewInt(1000)
@@ -25,6 +26,8 @@ func TestExecution_ExecuteOnDestContext_ESDT_Basic(t *testing.T) {
 	input := DefaultTestContractCallInput()
 	input.Function = "basic_transfer"
 	input.GasProvided = 100000
+	input.ESDTTokenName = ESDTTestTokenName
+	input.ESDTValue = big.NewInt(16)
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)

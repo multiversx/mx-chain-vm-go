@@ -8,17 +8,16 @@ import (
 	"github.com/ElrondNetwork/elrond-go/marshal"
 	"github.com/ElrondNetwork/elrond-go/process"
 	"github.com/ElrondNetwork/elrond-go/process/smartContract/builtInFunctions"
-	"github.com/ElrondNetwork/elrond-go/sharding"
 )
 
 type BuiltinFunctionsWrapper struct {
 	Container       process.BuiltInFunctionContainer
 	MapDNSAddresses map[string]struct{}
+	World           *MockWorld
 }
 
 func NewBuiltinFunctionsWrapper(
-	shardCoordinator sharding.Coordinator,
-	accounts state.AccountsAdapter,
+	world *MockWorld,
 	gasMap config.GasScheduleMap,
 ) (*BuiltinFunctionsWrapper, error) {
 
@@ -26,8 +25,8 @@ func NewBuiltinFunctionsWrapper(
 		GasSchedule:      integrationTests.NewGasScheduleNotifierMock(gasMap),
 		MapDNSAddresses:  make(map[string]struct{}),
 		Marshalizer:      &marshal.GogoProtoMarshalizer{},
-		Accounts:         accounts,
-		ShardCoordinator: shardCoordinator,
+		Accounts:         NewMockAccountsAdapter(world.AcctMap),
+		ShardCoordinator: world,
 	}
 
 	builtInFuncFactory, err := builtInFunctions.NewBuiltInFunctionsFactory(argsBuiltIn)
@@ -43,16 +42,33 @@ func NewBuiltinFunctionsWrapper(
 	builtinFuncsWrapper := &BuiltinFunctionsWrapper{
 		Container:       builtInFuncs,
 		MapDNSAddresses: argsBuiltIn.MapDNSAddresses,
+		World:           world,
 	}
 
 	return builtinFuncsWrapper, nil
 }
 
 func (bf *BuiltinFunctionsWrapper) ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
-	// TODO implement
-	panic("not implemented")
+	caller := bf.getAccountSharded(input.CallerAddr)
+	recipient := bf.getAccountSharded(input.RecipientAddr)
+
+	function, err := bf.Container.Get(input.Function)
+	if err != nil {
+		return nil, err
+	}
+
+	return function.ProcessBuiltinFunction(caller, recipient, input)
 }
 
 func (bf *BuiltinFunctionsWrapper) GetBuiltinFunctionNames() vmcommon.FunctionNames {
 	return bf.Container.Keys()
+}
+
+// TODO change AccountMap to support this instead
+func (bf *BuiltinFunctionsWrapper) getAccountSharded(address []byte) state.UserAccountHandler {
+	accountShard := bf.World.ComputeId(address)
+	if accountShard != bf.World.SelfId() {
+		return nil
+	}
+	return bf.World.AcctMap.GetAccount(address)
 }
