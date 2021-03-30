@@ -120,6 +120,22 @@ func defaultTestArwenForCallWithInstanceMocks(tb testing.TB) (*vmHost, *worldmoc
 	return host, world, instanceBuilderMock
 }
 
+func defaultTestArwenForCallWithWorldMock(tb testing.TB, code []byte, balance *big.Int) (*vmHost, *worldmock.MockWorld) {
+	world := worldmock.NewMockWorld()
+	host := defaultTestArwen(tb, world)
+
+	err := world.InitBuiltinFunctions(host.GetGasScheduleMap())
+	require.Nil(tb, err)
+
+	host.protocolBuiltinFunctions = world.BuiltinFuncs.GetBuiltinFunctionNames()
+
+	parentAccount := world.AcctMap.CreateAccount(parentAddress)
+	parentAccount.Code = code
+	parentAccount.Balance = balance
+
+	return host, world
+}
+
 // defaultTestArwenForTwoSCs creates an Arwen vmHost configured for testing calls between 2 SmartContracts
 func defaultTestArwenForTwoSCs(
 	t *testing.T,

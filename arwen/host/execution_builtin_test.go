@@ -21,7 +21,7 @@ func TestExecution_ExecuteOnDestContext_ESDT_Basic(t *testing.T) {
 	BuildSCModule("exec-dest-ctx-esdt/basic", "../../")
 	code := GetTestSCCodeModule("exec-dest-ctx-esdt/basic", "basic", "../../")
 	scBalance := big.NewInt(1000)
-	host, _ := defaultTestArwenForCall(t, code, scBalance)
+	host, _ := defaultTestArwenForCallWithWorldMock(t, code, scBalance)
 	input := DefaultTestContractCallInput()
 	input.Function = "basic_transfer"
 	input.GasProvided = 100000
@@ -31,7 +31,6 @@ func TestExecution_ExecuteOnDestContext_ESDT_Basic(t *testing.T) {
 
 	require.NotNil(t, vmOutput)
 	log.Info("ReturnData", "data", vmOutput.ReturnData)
-	log.Info("ReturnData[2]", "data", string(vmOutput.ReturnData[2]))
 	log.Info("ReturnMessage", "msg", vmOutput.ReturnMessage)
 
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
