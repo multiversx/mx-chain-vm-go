@@ -16,6 +16,8 @@ var ErrInvalidAddressLength = errors.New("invalid address length")
 
 var _ state.AccountHandler = (*Account)(nil)
 
+type MockTrieData = map[string][]byte
+
 // Account holds the account info
 type Account struct {
 	Exists          bool
@@ -35,6 +37,8 @@ type Account struct {
 	ShardID         uint32
 	IsSmartContract bool
 	ESDTData        map[string]*ESDTData
+	TrieData        MockTrieData
+	TrieTracker     state.DataTrieTracker
 }
 
 // ESDTData models an account holding an ESDT token
@@ -146,7 +150,7 @@ func (a *Account) DataTrie() data.Trie {
 }
 
 func (a *Account) DataTrieTracker() state.DataTrieTracker {
-	return nil
+	return a.TrieTracker
 }
 
 func (a *Account) AddToBalance(value *big.Int) error {

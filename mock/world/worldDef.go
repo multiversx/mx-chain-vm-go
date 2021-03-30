@@ -37,7 +37,7 @@ type MockWorld struct {
 	BuiltinFuncs               *BuiltinFunctionsWrapper
 }
 
-// NewMockWorld creates a new mock instance
+// NewMockWorld creates a new MockWorld instance
 func NewMockWorld() *MockWorld {
 	return &MockWorld{
 		SelfShardID:       0,

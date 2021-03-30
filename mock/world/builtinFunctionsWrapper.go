@@ -1,12 +1,11 @@
 package worldmock
 
 import (
-	"errors"
-
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/ElrondNetwork/elrond-go/data/state"
 	integrationTests "github.com/ElrondNetwork/elrond-go/integrationTests/mock"
+	"github.com/ElrondNetwork/elrond-go/marshal"
 	"github.com/ElrondNetwork/elrond-go/process"
 	"github.com/ElrondNetwork/elrond-go/process/smartContract/builtInFunctions"
 	"github.com/ElrondNetwork/elrond-go/sharding"
@@ -26,7 +25,7 @@ func NewBuiltinFunctionsWrapper(
 	argsBuiltIn := builtInFunctions.ArgsCreateBuiltInFunctionContainer{
 		GasSchedule:      integrationTests.NewGasScheduleNotifierMock(gasMap),
 		MapDNSAddresses:  make(map[string]struct{}),
-		Marshalizer:      nil,
+		Marshalizer:      &marshal.GogoProtoMarshalizer{},
 		Accounts:         accounts,
 		ShardCoordinator: shardCoordinator,
 	}
@@ -51,5 +50,9 @@ func NewBuiltinFunctionsWrapper(
 
 func (bf *BuiltinFunctionsWrapper) ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	// TODO implement
-	return nil, errors.New("not implemented")
+	panic("not implemented")
+}
+
+func (bf *BuiltinFunctionsWrapper) GetBuiltinFunctionNames() vmcommon.FunctionNames {
+	return bf.Container.Keys()
 }

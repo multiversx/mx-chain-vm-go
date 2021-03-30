@@ -163,7 +163,13 @@ func (b *MockWorld) ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*
 		return nil, b.Err
 	}
 
-	return b.processBuiltInFunction(input)
+	if b.BuiltinFuncs != nil {
+		return b.BuiltinFuncs.ProcessBuiltInFunction(input)
+	}
+
+	return nil, fmt.Errorf(
+		"builtin function %s not found or container not initialized",
+		input.Function)
 }
 
 // GetESDTToken -
@@ -178,7 +184,7 @@ func (b *MockWorld) GetESDTToken(_ []byte, _ []byte, _ uint64) (*esdt.ESDigitalT
 
 // GetBuiltinFunctionNames -
 func (b *MockWorld) GetBuiltinFunctionNames() vmcommon.FunctionNames {
-	return getBuiltinFunctionNames()
+	return b.BuiltinFuncs.GetBuiltinFunctionNames()
 }
 
 // GetAllState simply returns the storage as-is.

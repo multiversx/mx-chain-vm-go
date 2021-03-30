@@ -30,7 +30,9 @@ func (am AccountMap) CreateAccount(address []byte) *Account {
 		ShardID:         0,
 		IsSmartContract: false,
 		DeveloperReward: big.NewInt(0),
+		TrieData:        make(MockTrieData),
 	}
+	newAccount.TrieTracker = NewMockTrieTracker(newAccount.TrieData)
 	copy(newAccount.Address, address)
 	am.PutAccount(newAccount)
 
