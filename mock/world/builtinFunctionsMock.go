@@ -7,6 +7,7 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 // BuiltInFunctionESDTTransfer is the key for the elrond standard digital token transfer built-in function
@@ -19,7 +20,7 @@ func getBuiltinFunctionNames() vmcommon.FunctionNames {
 	return builtinFunctionNames
 }
 
-func (b *MockWorld) processBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+func (b *MockWorld) processBuiltInFunction(input *vmcommon.ContractCallInput) (*vmi.VMOutput, error) {
 	if input.Function == BuiltInFunctionESDTTransfer {
 		output, err := b.runESDTTransferCall(input)
 		return output, err
@@ -46,7 +47,7 @@ func (b *MockWorld) StartTransferESDT(from, to []byte, tokenName string, amount 
 
 	recipient := b.AcctMap.GetAccount(to)
 	if recipient == nil {
-		return true, fmt.Errorf("tx recipient (address: %s) does not exist", hex.EncodeToString(to))
+		return true, fmt.Errorf("Tx recipient (address: %s) does not exist", hex.EncodeToString(to))
 	}
 	recipientESDT := recipient.ESDTData[tokenName]
 	if recipientESDT == nil {
@@ -62,7 +63,7 @@ func (b *MockWorld) StartTransferESDT(from, to []byte, tokenName string, amount 
 	return true, nil
 }
 
-func (b *MockWorld) runESDTTransferCall(vmInput *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+func (b *MockWorld) runESDTTransferCall(vmInput *vmcommon.ContractCallInput) (*vmi.VMOutput, error) {
 	if len(vmInput.Arguments) < 2 {
 		return nil, errors.New("ESDTTransfer expects at least 2 arguments")
 	}
@@ -82,7 +83,7 @@ func (b *MockWorld) runESDTTransferCall(vmInput *vmcommon.ContractCallInput) (*v
 		ReturnData:      make([][]byte, 0),
 		ReturnCode:      vmcommon.Ok,
 		ReturnMessage:   "",
-		GasRemaining:    vmInput.GasProvided,
+		GasRemaining:    vmInput.GasProvided - vmInput.GasLocked,
 		GasRefund:       big.NewInt(0),
 		OutputAccounts:  make(map[string]*vmcommon.OutputAccount),
 		DeletedAccounts: make([][]byte, 0),
@@ -132,4 +133,5 @@ func addOutputTransferToVMOutput(
 		Address:         recipient,
 		OutputTransfers: []vmcommon.OutputTransfer{outTransfer},
 	}
+	vmOutput.GasRemaining = 0
 }
