@@ -9,19 +9,17 @@ import (
 
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
-	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
-func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmi.VMOutput, error) {
+func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmcommon.VMOutput, error) {
 	gasForExecution := uint64(0)
-
 	if tx.Type.HasSender() {
 		beforeErr := ae.World.UpdateWorldStateBefore(
 			tx.From.Value,
 			tx.GasLimit.Value,
 			tx.GasPrice.Value)
 		if beforeErr != nil {
-			return nil, fmt.Errorf("Could not set up tx %s: %w", txIndex, beforeErr)
+			return nil, fmt.Errorf("could not set up tx %s: %w", txIndex, beforeErr)
 		}
 
 		gasForExecution = tx.GasLimit.Value
@@ -37,7 +35,7 @@ func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmi
 	}
 
 	// we also use fake vm outputs for transactions that don't use the VM, just for convenience
-	var output *vmi.VMOutput
+	var output *vmcommon.VMOutput
 
 	if !ae.senderHasEnoughBalance(tx) {
 		// out of funds is handled by the protocol, so it needs to be mocked here
@@ -82,7 +80,7 @@ func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmi
 
 	}
 
-	if output.ReturnCode == vmi.Ok {
+	if output.ReturnCode == vmcommon.Ok {
 		err := ae.updateStateAfterTx(tx, output)
 		if err != nil {
 			return nil, err
@@ -102,7 +100,7 @@ func (ae *ArwenTestExecutor) senderHasEnoughBalance(tx *mj.Transaction) bool {
 	return sender.Balance.Cmp(tx.Value.Value) >= 0
 }
 
-func (ae *ArwenTestExecutor) simpleTransferOutput(tx *mj.Transaction) (*vmi.VMOutput, error) {
+func (ae *ArwenTestExecutor) simpleTransferOutput(tx *mj.Transaction) (*vmcommon.VMOutput, error) {
 	outputAccounts := make(map[string]*vmcommon.OutputAccount)
 	outputAccounts[string(tx.To.Value)] = &vmcommon.OutputAccount{
 		Address:      tx.To.Value,
@@ -122,11 +120,11 @@ func (ae *ArwenTestExecutor) simpleTransferOutput(tx *mj.Transaction) (*vmi.VMOu
 	}, nil
 }
 
-func (ae *ArwenTestExecutor) validatorRewardOutput(tx *mj.Transaction) (*vmi.VMOutput, error) {
+func (ae *ArwenTestExecutor) validatorRewardOutput(tx *mj.Transaction) (*vmcommon.VMOutput, error) {
 	reward := tx.Value.Value
 	recipient := ae.World.AcctMap.GetAccount(tx.To.Value)
 	if recipient == nil {
-		return nil, fmt.Errorf("Tx recipient (address: %s) does not exist", hex.EncodeToString(tx.To.Value))
+		return nil, fmt.Errorf("tx recipient (address: %s) does not exist", hex.EncodeToString(tx.To.Value))
 	}
 	recipient.BalanceDelta = reward
 	storageElrondReward := recipient.StorageValue(ElrondRewardKey)
@@ -138,7 +136,7 @@ func (ae *ArwenTestExecutor) validatorRewardOutput(tx *mj.Transaction) (*vmi.VMO
 	outputAccounts[string(tx.To.Value)] = &vmcommon.OutputAccount{
 		Address:      tx.To.Value,
 		BalanceDelta: tx.Value.Value,
-		StorageUpdates: map[string]*vmi.StorageUpdate{
+		StorageUpdates: map[string]*vmcommon.StorageUpdate{
 			ElrondRewardKey: {
 				Offset: []byte(ElrondRewardKey),
 				Data:   storageElrondReward,
@@ -159,7 +157,7 @@ func (ae *ArwenTestExecutor) validatorRewardOutput(tx *mj.Transaction) (*vmi.VMO
 	}, nil
 }
 
-func outOfFundsResult() *vmi.VMOutput {
+func outOfFundsResult() *vmcommon.VMOutput {
 	return &vmcommon.VMOutput{
 		ReturnData:      make([][]byte, 0),
 		ReturnCode:      vmcommon.OutOfFunds,
@@ -173,11 +171,11 @@ func outOfFundsResult() *vmi.VMOutput {
 	}
 }
 
-func (ae *ArwenTestExecutor) scCreate(txIndex string, tx *mj.Transaction, gasLimit uint64) (*vmi.VMOutput, error) {
+func (ae *ArwenTestExecutor) scCreate(txIndex string, tx *mj.Transaction, gasLimit uint64) (*vmcommon.VMOutput, error) {
 	txHash := generateTxHash(txIndex)
-	input := &vmi.ContractCreateInput{
+	input := &vmcommon.ContractCreateInput{
 		ContractCode: tx.Code.Value,
-		VMInput: vmi.VMInput{
+		VMInput: vmcommon.VMInput{
 			CallerAddr:     tx.From.Value,
 			Arguments:      mj.JSONBytesFromTreeValues(tx.Arguments),
 			CallValue:      tx.Value.Value,
@@ -193,19 +191,19 @@ func (ae *ArwenTestExecutor) scCreate(txIndex string, tx *mj.Transaction, gasLim
 	return ae.vm.RunSmartContractCreate(input)
 }
 
-func (ae *ArwenTestExecutor) scCall(txIndex string, tx *mj.Transaction, gasLimit uint64) (*vmi.VMOutput, error) {
+func (ae *ArwenTestExecutor) scCall(txIndex string, tx *mj.Transaction, gasLimit uint64) (*vmcommon.VMOutput, error) {
 	recipient := ae.World.AcctMap.GetAccount(tx.To.Value)
 	if recipient == nil {
-		return nil, fmt.Errorf("Tx recipient (address: %s) does not exist", hex.EncodeToString(tx.To.Value))
+		return nil, fmt.Errorf("tx recipient (address: %s) does not exist", hex.EncodeToString(tx.To.Value))
 	}
 	if len(recipient.Code) == 0 {
-		return nil, fmt.Errorf("Tx recipient (address: %s) is not a smart contract", hex.EncodeToString(tx.To.Value))
+		return nil, fmt.Errorf("tx recipient (address: %s) is not a smart contract", hex.EncodeToString(tx.To.Value))
 	}
 	txHash := generateTxHash(txIndex)
-	input := &vmi.ContractCallInput{
+	input := &vmcommon.ContractCallInput{
 		RecipientAddr: tx.To.Value,
 		Function:      tx.Function,
-		VMInput: vmi.VMInput{
+		VMInput: vmcommon.VMInput{
 			CallerAddr:     tx.From.Value,
 			Arguments:      mj.JSONBytesFromTreeValues(tx.Arguments),
 			CallValue:      tx.Value.Value,
@@ -234,7 +232,7 @@ func (ae *ArwenTestExecutor) directESDTTransferFromTx(tx *mj.Transaction) (uint6
 
 func (ae *ArwenTestExecutor) updateStateAfterTx(
 	tx *mj.Transaction,
-	output *vmi.VMOutput) error {
+	output *vmcommon.VMOutput) error {
 
 	// subtract call value from sender (this is not reflected in the delta)
 	// except for validatorReward, there is no sender there

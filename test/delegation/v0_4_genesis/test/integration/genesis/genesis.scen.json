@@ -46,6 +46,9 @@
             "step": "checkState",
             "accounts": {
                 "``delegation_contract___________s1": {
+                    "nonce": "0",
+                    "balance": "588,000,000",
+                    "code": "*",
                     "storage": {
                         "``ELRONDreward": "888,000,000",
                         "``auction_addr": "``auction_contract______________s1",

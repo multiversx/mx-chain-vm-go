@@ -7,6 +7,9 @@
                 "address:a_user": {
                     "nonce": "0",
                     "balance": "0",
+                    "esdt": {
+                        "str:TEST-TOKEN": "1000"
+                    },
                     "storage": {},
                     "code": ""
                 },
@@ -20,7 +23,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {},
-                    "code": "file:../forwarder-raw/output/forwarder-raw.wasm"
+                    "code": "file:../forwarder/output/forwarder.wasm"
                 }
             }
         },
@@ -31,37 +34,27 @@
                 "from": "address:a_user",
                 "to": "address:forwarder",
                 "value": "0",
-                "function": "forward_async_call",
+                "esdtValue": "1000",
+                "esdtTokenName": "str:TEST-TOKEN",
+                "function": "forward_sync_accept_funds",
                 "arguments": [
-                    "address:vault",
-                    "str:echo_arguments",
-                    "1",
-                    "2"
+                    "address:vault"
                 ],
                 "gasLimit": "1,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [
-                    "1",
-                    "2"
-                ],
+                "out": [],
                 "status": "0",
                 "logs": [
                     {
-                        "address": "address:forwarder",
-                        "identifier": "str:callback_raw",
+                        "address": "address:vault",
+                        "identifier": "str:accept_funds",
                         "topics": [
-                            "str:EGLD",
-                            "0"
+                            "str:TEST-TOKEN",
+                            "1000"
                         ],
-                        "data": {
-                            "0-status": "biguint:0",
-                            "1-echoed-args": [
-                                "biguint:1",
-                                "biguint:2"
-                            ]
-                        }
+                        "data": ""
                     }
                 ],
                 "gas": "*",
@@ -74,6 +67,9 @@
                 "address:a_user": {
                     "nonce": "*",
                     "balance": "0",
+                    "esdt": {
+                        "str:TEST-TOKEN": "0"
+                    },
                     "storage": {},
                     "code": ""
                 },
@@ -81,25 +77,16 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {},
+                    "esdt": {
+                        "str:TEST-TOKEN": "1000"
+                    },
                     "code": "file:../vault/output/vault.wasm"
                 },
                 "address:forwarder": {
                     "nonce": "0",
                     "balance": "0",
-                    "storage": {
-                        "str:callback_data.len": "1",
-                        "str:callback_data.item|u32:1": {
-                            "0-token": ["u32:4", "str:EGLD"],
-                            "1-payment": "u32:0",
-                            "2-num-arguments": "u32:3",
-                            "3-arguments": [
-                                "biguint:0",
-                                "biguint:1",
-                                "biguint:2"
-                            ]
-                        }
-                    },
-                    "code": "file:../forwarder-raw/output/forwarder-raw.wasm"
+                    "storage": {},
+                    "code": "file:../forwarder/output/forwarder.wasm"
                 }
             }
         }
