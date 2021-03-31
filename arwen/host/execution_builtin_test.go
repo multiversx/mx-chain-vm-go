@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-go/core"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
@@ -26,7 +27,7 @@ func TestExecution_ExecuteOnDestContext_ESDTTransferWithoutExecute(t *testing.T)
 	scBalance := big.NewInt(1000)
 	host, world := defaultTestArwenForCallWithWorldMock(t, code, scBalance)
 
-	tokenKey := world.BuiltinFuncs.MakeTokenKey(ESDTTestTokenName)
+	tokenKey := worldmock.MakeTokenKey(ESDTTestTokenName)
 	world.BuiltinFuncs.SetTokenData(parentAddress, tokenKey, &esdt.ESDigitalToken{
 		Value: big.NewInt(100),
 		Type:  uint32(core.Fungible),
