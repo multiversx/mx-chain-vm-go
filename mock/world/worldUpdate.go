@@ -57,14 +57,6 @@ func (b *MockWorld) UpdateAccounts(
 		b.UpdateAccountFromOutputAccount(modAcct)
 	}
 
-	// commit ESDT data
-	for _, acct := range b.AcctMap {
-		for _, esdtData := range acct.ESDTData {
-			esdtData.Balance = esdtData.Balance.Add(esdtData.Balance, esdtData.BalanceDelta)
-			esdtData.BalanceDelta = big.NewInt(0)
-		}
-	}
-
 	for _, delAddr := range accountsToDelete {
 		b.AcctMap.DeleteAccount(delAddr)
 	}
@@ -106,13 +98,11 @@ func (b *MockWorld) UpdateAccountFromOutputAccount(modAcct *vmcommon.OutputAccou
 	}
 }
 
+func (b *MockWorld) CreateStateBackup() {
+	b.AccountsAdapter.SnapshotState(nil, nil)
+}
+
 // RollbackChanges should be called after the VM test has run, if the tx has failed
-func (b *MockWorld) RollbackChanges() {
-	// discard ESDT deltas
-	// so they don't interfere with future txs
-	for _, acct := range b.AcctMap {
-		for _, esdtData := range acct.ESDTData {
-			esdtData.BalanceDelta = big.NewInt(0)
-		}
-	}
+func (b *MockWorld) RollbackChanges() error {
+	return b.AccountsAdapter.RevertToSnapshot(0)
 }

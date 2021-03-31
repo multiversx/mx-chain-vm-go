@@ -26,7 +26,6 @@ func (am AccountMap) CreateAccount(address []byte) *Account {
 		Storage:         make(map[string][]byte),
 		Code:            nil,
 		OwnerAddress:    nil,
-		ESDTData:        make(map[string]*ESDTData),
 		ShardID:         0,
 		IsSmartContract: false,
 		DeveloperReward: big.NewInt(0),
@@ -69,4 +68,12 @@ func (am AccountMap) GetAccount(address []byte) *Account {
 // DeleteAccount removes account based on address
 func (am AccountMap) DeleteAccount(address []byte) {
 	delete(am, string(address))
+}
+
+func (am AccountMap) Clone() AccountMap {
+	clone := make(AccountMap, len(am))
+	for address, account := range am {
+		clone[address] = account.Clone()
+	}
+	return clone
 }

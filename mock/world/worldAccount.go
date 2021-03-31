@@ -36,15 +36,6 @@ type Account struct {
 	DeveloperReward *big.Int
 	ShardID         uint32
 	IsSmartContract bool
-	ESDTData        map[string]*ESDTData
-	TrieTracker     state.DataTrieTracker
-}
-
-// ESDTData models an account holding an ESDT token
-type ESDTData struct {
-	Balance      *big.Int
-	BalanceDelta *big.Int
-	Frozen       bool
 }
 
 var storageDefaultValue = []byte{}
@@ -251,4 +242,40 @@ func (a *Account) ClearDataCaches() {
 
 func (a *Account) DirtyData() map[string][]byte {
 	return a.Storage
+}
+
+func (a *Account) Clone() *Account {
+	return &Account{
+		Exists:          a.Exists,
+		Address:         a.Address,
+		Nonce:           a.Nonce,
+		Balance:         big.NewInt(0).Set(a.Balance),
+		BalanceDelta:    big.NewInt(0).Set(a.BalanceDelta),
+		Storage:         a.cloneStorage(),
+		RootHash:        cloneBytes(a.RootHash),
+		Code:            cloneBytes(a.Code),
+		CodeHash:        cloneBytes(a.CodeHash),
+		CodeMetadata:    cloneBytes(a.CodeMetadata),
+		AsyncCallData:   a.AsyncCallData,
+		OwnerAddress:    cloneBytes(a.OwnerAddress),
+		Username:        cloneBytes(a.Username),
+		DeveloperReward: big.NewInt(0).Set(a.DeveloperReward),
+		ShardID:         a.ShardID,
+		IsSmartContract: a.IsSmartContract,
+	}
+}
+
+func (a *Account) cloneStorage() map[string][]byte {
+	clone := make(map[string][]byte, len(a.Storage))
+	for key, value := range a.Storage {
+		clone[key] = cloneBytes(value)
+	}
+
+	return clone
+}
+
+func cloneBytes(b []byte) []byte {
+	clone := make([]byte, len(b))
+	copy(clone, b)
+	return clone
 }

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/elrond-go/core"
@@ -15,19 +16,19 @@ var ErrSnapshotsNotImplemented = errors.New("snapshots not implemented")
 var ErrTrieHandlingNotImplemented = errors.New("trie handling not implemented")
 
 type MockAccountsAdapter struct {
-	CurrentSnapshot AccountMap
-	Snapshots       []AccountMap
+	CurrentState AccountMap
+	Snapshots    []AccountMap
 }
 
 func NewMockAccountsAdapter(accounts AccountMap) *MockAccountsAdapter {
 	return &MockAccountsAdapter{
-		CurrentSnapshot: accounts,
-		Snapshots:       []AccountMap{accounts},
+		CurrentState: accounts,
+		Snapshots:    []AccountMap{accounts},
 	}
 }
 
-func (a *MockAccountsAdapter) GetExistingAccount(address []byte) (state.AccountHandler, error) {
-	account, exists := a.CurrentSnapshot[string(address)]
+func (m *MockAccountsAdapter) GetExistingAccount(address []byte) (state.AccountHandler, error) {
+	account, exists := m.CurrentState[string(address)]
 	if !exists {
 		return nil, arwen.ErrInvalidAccount
 	}
@@ -35,48 +36,61 @@ func (a *MockAccountsAdapter) GetExistingAccount(address []byte) (state.AccountH
 	return account, nil
 }
 
-func (a *MockAccountsAdapter) LoadAccount(address []byte) (state.AccountHandler, error) {
-	return a.GetExistingAccount(address)
+func (m *MockAccountsAdapter) LoadAccount(address []byte) (state.AccountHandler, error) {
+	return m.GetExistingAccount(address)
 }
 
-func (a *MockAccountsAdapter) SaveAccount(account state.AccountHandler) error {
+func (m *MockAccountsAdapter) SaveAccount(account state.AccountHandler) error {
 	mockAccount, ok := account.(*Account)
 	if !ok {
 		return errors.New("invalid account to save")
 	}
 
-	a.CurrentSnapshot.PutAccount(mockAccount)
+	m.CurrentState.PutAccount(mockAccount)
 	return nil
 }
 
-func (a *MockAccountsAdapter) RemoveAccount(address []byte) error {
-	_, exists := a.CurrentSnapshot[string(address)]
+func (m *MockAccountsAdapter) RemoveAccount(address []byte) error {
+	_, exists := m.CurrentState[string(address)]
 	if !exists {
 		return arwen.ErrInvalidAccount
 	}
 
-	a.CurrentSnapshot.DeleteAccount(address)
+	m.CurrentState.DeleteAccount(address)
 	return nil
 }
 
-func (a *MockAccountsAdapter) Commit() ([]byte, error) {
-	return nil, ErrSnapshotsNotImplemented
+func (m *MockAccountsAdapter) Commit() ([]byte, error) {
+	return nil, nil
 }
 
-func (a *MockAccountsAdapter) JournalLen() int {
+func (m *MockAccountsAdapter) JournalLen() int {
 	return 1
 }
 
-func (a *MockAccountsAdapter) RevertToSnapshot(snapshot int) error {
-	return ErrSnapshotsNotImplemented
+func (m *MockAccountsAdapter) RevertToSnapshot(snapshotIndex int) error {
+	if len(m.Snapshots) == 0 {
+		return errors.New("no snapshots")
+	}
+
+	if snapshotIndex >= len(m.Snapshots) || snapshotIndex < 0 {
+		return fmt.Errorf(
+			"snapshot %d out of bounds (min 0, max %d)",
+			snapshotIndex,
+			len(m.Snapshots)-1)
+	}
+
+	m.CurrentState = m.Snapshots[snapshotIndex]
+	m.Snapshots = m.Snapshots[:snapshotIndex]
+	return nil
 }
 
-func (a *MockAccountsAdapter) GetNumCheckpoints() uint32 {
-	return 1
+func (m *MockAccountsAdapter) GetNumCheckpoints() uint32 {
+	return uint32(len(m.Snapshots))
 }
 
 func (m *MockAccountsAdapter) GetCode(codeHash []byte) []byte {
-	for _, account := range m.CurrentSnapshot {
+	for _, account := range m.CurrentState {
 		if bytes.Equal(account.GetCodeHash(), codeHash) {
 			return account.GetCode()
 		}
@@ -100,6 +114,8 @@ func (m *MockAccountsAdapter) CancelPrune(rootHash []byte, identifier data.TrieP
 }
 
 func (m *MockAccountsAdapter) SnapshotState(rootHash []byte, ctx context.Context) {
+	snapshot := m.CurrentState.Clone()
+	m.Snapshots = append(m.Snapshots, snapshot)
 }
 
 func (m *MockAccountsAdapter) SetStateCheckpoint(rootHash []byte, ctx context.Context) {

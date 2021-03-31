@@ -41,6 +41,7 @@ func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmc
 		// out of funds is handled by the protocol, so it needs to be mocked here
 		output = outOfFundsResult()
 	} else {
+		ae.World.CreateStateBackup()
 		switch tx.Type {
 		case mj.ScDeploy:
 			var err error
@@ -86,7 +87,11 @@ func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmc
 			return nil, err
 		}
 	} else {
-		ae.World.RollbackChanges()
+		err := ae.World.RollbackChanges()
+		if err != nil {
+			return nil, err
+		}
+
 	}
 
 	return output, nil

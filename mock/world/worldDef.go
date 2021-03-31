@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
+	"github.com/ElrondNetwork/elrond-go/data/state"
 )
 
 // NewAddressMock allows tests to specify what new addresses to generate
@@ -26,6 +27,7 @@ type BlockInfo struct {
 type MockWorld struct {
 	SelfShardID                uint32
 	AcctMap                    AccountMap
+	AccountsAdapter            state.AccountsAdapter
 	PreviousBlockInfo          *BlockInfo
 	CurrentBlockInfo           *BlockInfo
 	Blockhashes                [][]byte
@@ -39,9 +41,11 @@ type MockWorld struct {
 
 // NewMockWorld creates a new MockWorld instance
 func NewMockWorld() *MockWorld {
+	accountMap := NewAccountMap()
 	return &MockWorld{
 		SelfShardID:       0,
-		AcctMap:           NewAccountMap(),
+		AcctMap:           accountMap,
+		AccountsAdapter:   NewMockAccountsAdapter(accountMap),
 		PreviousBlockInfo: nil,
 		CurrentBlockInfo:  nil,
 		Blockhashes:       nil,
