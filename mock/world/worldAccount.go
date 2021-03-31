@@ -16,8 +16,7 @@ var ErrOperationNotPermitted = errors.New("operation not permitted")
 var ErrInvalidAddressLength = errors.New("invalid address length")
 
 var _ state.AccountHandler = (*Account)(nil)
-
-type MockTrieData = map[string][]byte
+var _ state.DataTrieTracker = (*Account)(nil)
 
 // Account holds the account info
 type Account struct {
@@ -38,7 +37,6 @@ type Account struct {
 	ShardID         uint32
 	IsSmartContract bool
 	ESDTData        map[string]*ESDTData
-	TrieData        MockTrieData
 	TrieTracker     state.DataTrieTracker
 }
 
@@ -167,15 +165,8 @@ func (a *Account) SetRootHash(hash []byte) {
 	a.RootHash = hash
 }
 
-func (a *Account) SetDataTrie(trie data.Trie) {
-}
-
-func (a *Account) DataTrie() data.Trie {
-	return nil
-}
-
 func (a *Account) DataTrieTracker() state.DataTrieTracker {
-	return a.TrieTracker
+	return a
 }
 
 func (a *Account) AddToBalance(value *big.Int) error {
@@ -237,4 +228,27 @@ func (a *Account) SetUserName(userName []byte) {
 
 func (a *Account) IncreaseNonce(nonce uint64) {
 	a.Nonce = a.Nonce + nonce
+}
+
+func (a *Account) RetrieveValue(key []byte) ([]byte, error) {
+	return a.Storage[string(key)], nil
+}
+
+func (a *Account) SaveKeyValue(key []byte, value []byte) error {
+	a.Storage[string(key)] = value
+	return nil
+}
+
+func (a *Account) SetDataTrie(tr data.Trie) {
+}
+
+func (a *Account) DataTrie() data.Trie {
+	return nil
+}
+
+func (a *Account) ClearDataCaches() {
+}
+
+func (a *Account) DirtyData() map[string][]byte {
+	return a.Storage
 }

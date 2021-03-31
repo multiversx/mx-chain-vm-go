@@ -166,6 +166,12 @@ func TestPingPongEgld(t *testing.T) {
 	runAllTestsInFolder(t, "ping-pong-egld")
 }
 
+func TestSingleJSON_NonPayableESDT(t *testing.T) {
+	logger.SetLogLevel("*:TRACE")
+	logger.ToggleLoggerName(true)
+	runSingleTest(t, "erc20-rust/mandos", "not_payable_esdt.scen.json")
+}
+
 func runAllTestsInFolder(t *testing.T, folder string) {
 	runTestsInFolder(t, folder, []string{})
 }

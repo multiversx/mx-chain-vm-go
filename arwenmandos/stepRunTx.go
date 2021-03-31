@@ -13,6 +13,8 @@ import (
 )
 
 func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmi.VMOutput, error) {
+	gasForExecution := uint64(0)
+
 	if tx.Type.HasSender() {
 		beforeErr := ae.World.UpdateWorldStateBefore(
 			tx.From.Value,
@@ -22,12 +24,15 @@ func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmi
 			return nil, fmt.Errorf("Could not set up tx %s: %w", txIndex, beforeErr)
 		}
 
+		gasForExecution = tx.GasLimit.Value
+
 		if tx.ESDTValue.Value.Sign() > 0 {
-			ae.World.StartTransferESDT(
-				tx.From.Value,
-				tx.To.Value,
-				string(tx.ESDTTokenName.Value),
-				tx.ESDTValue.Value)
+			gasRemaining, err := ae.directESDTTransferFromTx(tx)
+			if err != nil {
+				return nil, err
+			}
+
+			gasForExecution = gasRemaining
 		}
 	}
 
@@ -41,7 +46,7 @@ func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmi
 		switch tx.Type {
 		case mj.ScDeploy:
 			var err error
-			output, err = ae.scCreate(txIndex, tx)
+			output, err = ae.scCreate(txIndex, tx, gasForExecution)
 			if err != nil {
 				return nil, err
 			}
@@ -51,10 +56,11 @@ func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmi
 			tx.From = tx.To
 			// gas restrictions waived during SC queries
 			tx.GasLimit.Value = math.MaxUint64
+			gasForExecution = math.MaxUint64
 			fallthrough
 		case mj.ScCall:
 			var err error
-			output, err = ae.scCall(txIndex, tx)
+			output, err = ae.scCall(txIndex, tx, gasForExecution)
 			if err != nil {
 				return nil, err
 			}
@@ -133,7 +139,7 @@ func (ae *ArwenTestExecutor) validatorRewardOutput(tx *mj.Transaction) (*vmi.VMO
 		Address:      tx.To.Value,
 		BalanceDelta: tx.Value.Value,
 		StorageUpdates: map[string]*vmi.StorageUpdate{
-			ElrondRewardKey: &vmi.StorageUpdate{
+			ElrondRewardKey: {
 				Offset: []byte(ElrondRewardKey),
 				Data:   storageElrondReward,
 			},
@@ -167,7 +173,7 @@ func outOfFundsResult() *vmi.VMOutput {
 	}
 }
 
-func (ae *ArwenTestExecutor) scCreate(txIndex string, tx *mj.Transaction) (*vmi.VMOutput, error) {
+func (ae *ArwenTestExecutor) scCreate(txIndex string, tx *mj.Transaction, gasLimit uint64) (*vmi.VMOutput, error) {
 	txHash := generateTxHash(txIndex)
 	input := &vmi.ContractCreateInput{
 		ContractCode: tx.Code.Value,
@@ -176,7 +182,7 @@ func (ae *ArwenTestExecutor) scCreate(txIndex string, tx *mj.Transaction) (*vmi.
 			Arguments:      mj.JSONBytesFromTreeValues(tx.Arguments),
 			CallValue:      tx.Value.Value,
 			GasPrice:       tx.GasPrice.Value,
-			GasProvided:    tx.GasLimit.Value,
+			GasProvided:    gasLimit,
 			OriginalTxHash: txHash,
 			CurrentTxHash:  txHash,
 			ESDTValue:      tx.ESDTValue.Value,
@@ -187,7 +193,7 @@ func (ae *ArwenTestExecutor) scCreate(txIndex string, tx *mj.Transaction) (*vmi.
 	return ae.vm.RunSmartContractCreate(input)
 }
 
-func (ae *ArwenTestExecutor) scCall(txIndex string, tx *mj.Transaction) (*vmi.VMOutput, error) {
+func (ae *ArwenTestExecutor) scCall(txIndex string, tx *mj.Transaction, gasLimit uint64) (*vmi.VMOutput, error) {
 	recipient := ae.World.AcctMap.GetAccount(tx.To.Value)
 	if recipient == nil {
 		return nil, fmt.Errorf("Tx recipient (address: %s) does not exist", hex.EncodeToString(tx.To.Value))
@@ -204,7 +210,7 @@ func (ae *ArwenTestExecutor) scCall(txIndex string, tx *mj.Transaction) (*vmi.VM
 			Arguments:      mj.JSONBytesFromTreeValues(tx.Arguments),
 			CallValue:      tx.Value.Value,
 			GasPrice:       tx.GasPrice.Value,
-			GasProvided:    tx.GasLimit.Value,
+			GasProvided:    gasLimit,
 			OriginalTxHash: txHash,
 			CurrentTxHash:  txHash,
 			ESDTValue:      tx.ESDTValue.Value,
@@ -213,6 +219,17 @@ func (ae *ArwenTestExecutor) scCall(txIndex string, tx *mj.Transaction) (*vmi.VM
 	}
 
 	return ae.vm.RunSmartContractCall(input)
+}
+
+func (ae *ArwenTestExecutor) directESDTTransferFromTx(tx *mj.Transaction) (uint64, error) {
+	return ae.World.BuiltinFuncs.PerformDirectESDTTransfer(
+		tx.From.Value,
+		tx.To.Value,
+		tx.ESDTTokenName.Value,
+		tx.ESDTValue.Value,
+		vmcommon.DirectCall,
+		tx.GasLimit.Value,
+		tx.GasPrice.Value)
 }
 
 func (ae *ArwenTestExecutor) updateStateAfterTx(
