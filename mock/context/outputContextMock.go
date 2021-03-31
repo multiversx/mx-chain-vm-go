@@ -159,7 +159,7 @@ func (o *OutputContextMock) WriteLog(_ []byte, _ [][]byte, _ []byte) {
 }
 
 // TransferValueOnly mocked method
-func (o *OutputContextMock) TransferValueOnly(_ []byte, _ []byte, _ *big.Int) error {
+func (o *OutputContextMock) TransferValueOnly(_ []byte, _ []byte, _ *big.Int, _ bool) error {
 	return o.TransferResult
 }
 

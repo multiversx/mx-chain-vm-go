@@ -251,7 +251,7 @@ func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []b
 }
 
 // TransferValueOnly will transfer the big.int value and checks if it is possible
-func (context *outputContext) TransferValueOnly(destination []byte, sender []byte, value *big.Int) error {
+func (context *outputContext) TransferValueOnly(destination []byte, sender []byte, value *big.Int, checkPayable bool) error {
 	logOutput.Trace("transfer value", "sender", sender, "dest", destination, "value", value)
 
 	if value.Cmp(arwen.Zero) < 0 {
@@ -271,8 +271,9 @@ func (context *outputContext) TransferValueOnly(destination []byte, sender []byt
 	}
 
 	isAsyncCall := context.host.IsArwenV3Enabled() && context.host.Runtime().GetVMInput().CallType == vmcommon.AsynchronousCall
-	hasValue := value.Cmp(big.NewInt(0)) == 1
-	if !payable && hasValue && !isAsyncCall {
+	checkPayable = checkPayable || !context.host.IsESDTFunctionsEnabled()
+	hasValue := value.Cmp(arwen.Zero) > 0
+	if checkPayable && !payable && hasValue && !isAsyncCall {
 		logOutput.Trace("transfer value", "error", arwen.ErrAccountNotPayable)
 		return arwen.ErrAccountNotPayable
 	}
@@ -290,18 +291,20 @@ func (context *outputContext) TransferValueOnly(destination []byte, sender []byt
 // the necessary steps to create accounts and reverses the state in case of an
 // execution error or failed value transfer.
 func (context *outputContext) Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, input []byte, callType vmcommon.CallType) error {
-	err := context.TransferValueOnly(destination, sender, value)
+	checkPayableIfNotCallback := gasLimit > 0 && callType != vmcommon.AsynchronousCallBack
+	err := context.TransferValueOnly(destination, sender, value, checkPayableIfNotCallback)
 	if err != nil {
 		return err
 	}
 
 	destAcc, _ := context.GetOutputAccount(destination)
 	outputTransfer := vmcommon.OutputTransfer{
-		Value:     big.NewInt(0).Set(value),
-		GasLimit:  gasLimit,
-		GasLocked: gasLocked,
-		Data:      input,
-		CallType:  callType,
+		Value:         big.NewInt(0).Set(value),
+		GasLimit:      gasLimit,
+		GasLocked:     gasLocked,
+		Data:          input,
+		CallType:      callType,
+		SenderAddress: sender,
 	}
 	destAcc.OutputTransfers = append(destAcc.OutputTransfers, outputTransfer)
 
@@ -318,7 +321,15 @@ func (context *outputContext) TransferESDT(
 	value *big.Int,
 	callInput *vmcommon.ContractCallInput,
 ) (uint64, error) {
-	vmOutput, gasConsumedByTransfer, err := context.host.ExecuteESDTTransfer(destination, sender, tokenIdentifier, nonce, value)
+	isSmartContract := context.host.Blockchain().IsSmartContract(destination)
+	sameShard := context.host.AreInSameShard(sender, destination)
+	callType := vmcommon.DirectCall
+	isExecution := isSmartContract && callInput != nil
+	if isExecution {
+		callType = vmcommon.ESDTTransferAndExecute
+	}
+
+	vmOutput, gasConsumedByTransfer, err := context.host.ExecuteESDTTransfer(destination, sender, tokenIdentifier, nonce, value, callType)
 	if err != nil {
 		return 0, err
 	}
@@ -328,10 +339,6 @@ func (context *outputContext) TransferESDT(
 	if callInput != nil {
 		gasRemaining = callInput.GasProvided - gasConsumedByTransfer
 	}
-
-	isSmartContract := context.host.Blockchain().IsSmartContract(destination)
-	sameShard := context.host.AreInSameShard(sender, destination)
-	isExecution := isSmartContract && callInput != nil
 
 	if isExecution {
 		if gasRemaining > context.host.Metering().GasLeft() {
@@ -347,11 +354,12 @@ func (context *outputContext) TransferESDT(
 
 	destAcc, _ := context.GetOutputAccount(destination)
 	outputTransfer := vmcommon.OutputTransfer{
-		Value:     big.NewInt(0),
-		GasLimit:  gasRemaining,
-		GasLocked: 0,
-		Data:      []byte(core.BuiltInFunctionESDTTransfer + "@" + hex.EncodeToString(tokenIdentifier) + "@" + hex.EncodeToString(value.Bytes())),
-		CallType:  vmcommon.DirectCall,
+		Value:         big.NewInt(0),
+		GasLimit:      gasRemaining,
+		GasLocked:     0,
+		Data:          []byte(core.BuiltInFunctionESDTTransfer + "@" + hex.EncodeToString(tokenIdentifier) + "@" + hex.EncodeToString(value.Bytes())),
+		CallType:      vmcommon.DirectCall,
+		SenderAddress: sender,
 	}
 
 	if nonce > 0 {

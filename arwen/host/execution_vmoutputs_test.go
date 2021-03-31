@@ -50,6 +50,7 @@ func expectedVMOutputSameCtxPrepare(_ []byte) *vmcommon.VMOutput {
 	parentAccount := AddNewOutputAccount(
 		vmOutput,
 		parentAddress,
+		parentAddress,
 		-parentTransferValue,
 		nil,
 	)
@@ -58,6 +59,7 @@ func expectedVMOutputSameCtxPrepare(_ []byte) *vmcommon.VMOutput {
 
 	_ = AddNewOutputAccount(
 		vmOutput,
+		parentAddress,
 		parentTransferReceiver,
 		parentTransferValue,
 		parentTransferData,
@@ -107,6 +109,7 @@ func expectedVMOutputSameCtxOutOfGas(_ []byte, _ []byte) *vmcommon.VMOutput {
 	parentAccount := AddNewOutputAccount(
 		vmOutput,
 		parentAddress,
+		parentAddress,
 		0,
 		nil,
 	)
@@ -152,6 +155,7 @@ func expectedVMOutputSameCtxSimple(_ []byte, _ []byte) *vmcommon.VMOutput {
 	parentAccount := AddNewOutputAccount(
 		vmOutput,
 		parentAddress,
+		parentAddress,
 		-198,
 		nil,
 	)
@@ -160,6 +164,7 @@ func expectedVMOutputSameCtxSimple(_ []byte, _ []byte) *vmcommon.VMOutput {
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,
+		parentAddress,
 		childAddress,
 		198,
 		nil,
@@ -181,6 +186,7 @@ func expectedVMOutputSameCtxSuccessfulChildCall(parentCode []byte, _ []byte) *vm
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,
+		parentAddress,
 		childAddress,
 		3,
 		nil,
@@ -193,6 +199,7 @@ func expectedVMOutputSameCtxSuccessfulChildCall(parentCode []byte, _ []byte) *vm
 
 	_ = AddNewOutputAccount(
 		vmOutput,
+		childAddress,
 		childTransferReceiver,
 		96,
 		[]byte("qwerty"),
@@ -237,6 +244,7 @@ func expectedVMOutputSameCtxSuccessfulChildCallBigInts(_ []byte, _ []byte) *vmco
 	parentAccount := AddNewOutputAccount(
 		vmOutput,
 		parentAddress,
+		parentAddress,
 		-99,
 		nil,
 	)
@@ -245,6 +253,7 @@ func expectedVMOutputSameCtxSuccessfulChildCallBigInts(_ []byte, _ []byte) *vmco
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,
+		parentAddress,
 		childAddress,
 		99,
 		nil,
@@ -277,6 +286,7 @@ func expectedVMOutputSameCtxRecursiveDirect(_ []byte, recursiveCalls int) *vmcom
 
 	account := AddNewOutputAccount(
 		vmOutput,
+		parentAddress,
 		parentAddress,
 		0,
 		nil,
@@ -312,6 +322,7 @@ func expectedVMOutputSameCtxRecursiveDirectErrMaxInstances(_ []byte, recursiveCa
 	account := AddNewOutputAccount(
 		vmOutput,
 		parentAddress,
+		parentAddress,
 		0,
 		nil,
 	)
@@ -334,6 +345,7 @@ func expectedVMOutputSameCtxRecursiveMutualMethods(_ []byte, recursiveCalls int)
 
 	account := AddNewOutputAccount(
 		vmOutput,
+		parentAddress,
 		parentAddress,
 		0,
 		nil,
@@ -380,6 +392,7 @@ func expectedVMOutputSameCtxRecursiveMutualSCs(_ []byte, _ []byte, recursiveCall
 	parentAccount := AddNewOutputAccount(
 		vmOutput,
 		parentAddress,
+		parentAddress,
 		0,
 		nil,
 	)
@@ -388,6 +401,7 @@ func expectedVMOutputSameCtxRecursiveMutualSCs(_ []byte, _ []byte, recursiveCall
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,
+		parentAddress,
 		childAddress,
 		0,
 		nil,
@@ -437,6 +451,7 @@ func expectedVMOutputSameCtxBuiltinFunctions1(_ []byte) *vmcommon.VMOutput {
 	account := AddNewOutputAccount(
 		vmOutput,
 		parentAddress,
+		parentAddress,
 		42,
 		nil,
 	)
@@ -454,6 +469,7 @@ func expectedVMOutputSameCtxBuiltinFunctions2(_ []byte) *vmcommon.VMOutput {
 
 	account := AddNewOutputAccount(
 		vmOutput,
+		parentAddress,
 		parentAddress,
 		0,
 		nil,
@@ -475,6 +491,7 @@ func expectedVMOutputSameCtxBuiltinFunctions3(_ []byte) *vmcommon.VMOutput {
 	_ = AddNewOutputAccount(
 		vmOutput,
 		parentAddress,
+		parentAddress,
 		0,
 		nil,
 	)
@@ -492,6 +509,7 @@ func expectedVMOutputDestCtxPrepare(_ []byte) *vmcommon.VMOutput {
 	parentAccount := AddNewOutputAccount(
 		vmOutput,
 		parentAddress,
+		parentAddress,
 		-parentTransferValue,
 		nil,
 	)
@@ -500,6 +518,7 @@ func expectedVMOutputDestCtxPrepare(_ []byte) *vmcommon.VMOutput {
 
 	_ = AddNewOutputAccount(
 		vmOutput,
+		parentAddress,
 		parentTransferReceiver,
 		parentTransferValue,
 		parentTransferData,
@@ -552,6 +571,7 @@ func expectedVMOutputDestCtxOutOfGas(_ []byte) *vmcommon.VMOutput {
 	parentAccount := AddNewOutputAccount(
 		vmOutput,
 		parentAddress,
+		parentAddress,
 		0,
 		nil,
 	)
@@ -586,6 +606,7 @@ func expectedVMOutputDestCtxSuccessfulChildCall(parentCode []byte, _ []byte) *vm
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,
+		parentAddress,
 		childAddress,
 		99-12,
 		nil,
@@ -595,6 +616,7 @@ func expectedVMOutputDestCtxSuccessfulChildCall(parentCode []byte, _ []byte) *vm
 
 	_ = AddNewOutputAccount(
 		vmOutput,
+		childAddress,
 		childTransferReceiver,
 		12,
 		[]byte("Second sentence."),
@@ -622,7 +644,7 @@ func expectedVMOutputDestCtxSuccessfulChildCall(parentCode []byte, _ []byte) *vm
 	return vmOutput
 }
 
-func expectedVMOutputDestCtxSuccessfulChildCall_ChildReturns(parentCode []byte, _ []byte) *vmcommon.VMOutput {
+func expectedVMOutputDestCtxSuccessfulChildCallChildReturns(parentCode []byte, _ []byte) *vmcommon.VMOutput {
 
 	vmOutput := expectedVMOutputSameCtxPrepare(parentCode)
 
@@ -632,6 +654,7 @@ func expectedVMOutputDestCtxSuccessfulChildCall_ChildReturns(parentCode []byte, 
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,
+		parentAddress,
 		childAddress,
 		99-12,
 		nil,
@@ -641,6 +664,7 @@ func expectedVMOutputDestCtxSuccessfulChildCall_ChildReturns(parentCode []byte, 
 
 	_ = AddNewOutputAccount(
 		vmOutput,
+		childAddress,
 		childTransferReceiver,
 		12,
 		[]byte("Second sentence."),
@@ -674,6 +698,7 @@ func expectedVMOutputDestCtxSuccessfulChildCallBigInts(_ []byte, _ []byte) *vmco
 	parentAccount := AddNewOutputAccount(
 		vmOutput,
 		parentAddress,
+		parentAddress,
 		-99,
 		nil,
 	)
@@ -682,6 +707,7 @@ func expectedVMOutputDestCtxSuccessfulChildCallBigInts(_ []byte, _ []byte) *vmco
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,
+		parentAddress,
 		childAddress,
 		99,
 		nil,
@@ -714,6 +740,7 @@ func expectedVMOutputDestCtxRecursiveDirect(_ []byte, recursiveCalls int) *vmcom
 
 	account := AddNewOutputAccount(
 		vmOutput,
+		parentAddress,
 		parentAddress,
 		0,
 		nil,
@@ -748,6 +775,7 @@ func expectedVMOutputDestCtxRecursiveMutualMethods(_ []byte, recursiveCalls int)
 
 	account := AddNewOutputAccount(
 		vmOutput,
+		parentAddress,
 		parentAddress,
 		0,
 		nil,
@@ -799,6 +827,7 @@ func expectedVMOutputDestCtxRecursiveMutualSCs(_ []byte, _ []byte, recursiveCall
 	parentAccount := AddNewOutputAccount(
 		vmOutput,
 		parentAddress,
+		parentAddress,
 		0,
 		nil,
 	)
@@ -808,6 +837,7 @@ func expectedVMOutputDestCtxRecursiveMutualSCs(_ []byte, _ []byte, recursiveCall
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,
+		parentAddress,
 		childAddress,
 		0,
 		nil,
@@ -857,6 +887,7 @@ func expectedVMOutputDestCtxByCallerSimpleTransfer(value int64) *vmcommon.VMOutp
 	parentAccount := AddNewOutputAccount(
 		vmOutput,
 		parentAddress,
+		parentAddress,
 		0,
 		nil,
 	)
@@ -865,6 +896,7 @@ func expectedVMOutputDestCtxByCallerSimpleTransfer(value int64) *vmcommon.VMOutp
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,
+		parentAddress,
 		childAddress,
 		0,
 		nil,
@@ -875,17 +907,19 @@ func expectedVMOutputDestCtxByCallerSimpleTransfer(value int64) *vmcommon.VMOutp
 
 	userAccount := AddNewOutputAccount(
 		vmOutput,
+		childAddress,
 		userAddress,
 		0,
 		nil,
 	)
 	userAccount.BalanceDelta = big.NewInt(value)
 	userAccount.OutputTransfers = append(userAccount.OutputTransfers, vmcommon.OutputTransfer{
-		Value:     big.NewInt(value),
-		GasLimit:  0,
-		GasLocked: 0,
-		Data:      []byte{},
-		CallType:  vmcommon.DirectCall,
+		Value:         big.NewInt(value),
+		GasLimit:      0,
+		GasLocked:     0,
+		Data:          []byte{},
+		CallType:      vmcommon.DirectCall,
+		SenderAddress: childAddress,
 	})
 
 	AddFinishData(vmOutput, []byte("sent"))
@@ -899,6 +933,7 @@ func expectedVMOutputAsyncCall(_ []byte, _ []byte) *vmcommon.VMOutput {
 	parentAccount := AddNewOutputAccount(
 		vmOutput,
 		parentAddress,
+		parentAddress,
 		-10,
 		nil,
 	)
@@ -911,16 +946,18 @@ func expectedVMOutputAsyncCall(_ []byte, _ []byte) *vmcommon.VMOutput {
 
 	thirdPartyAccount := AddNewOutputAccount(
 		vmOutput,
+		parentAddress,
 		thirdPartyAddress,
 		3,
 		[]byte("hello"),
 	)
-	outTransfer := vmcommon.OutputTransfer{Data: []byte(" there"), Value: big.NewInt(3)}
+	outTransfer := vmcommon.OutputTransfer{Data: []byte(" there"), Value: big.NewInt(3), SenderAddress: childAddress}
 	thirdPartyAccount.OutputTransfers = append(thirdPartyAccount.OutputTransfers, outTransfer)
 	thirdPartyAccount.BalanceDelta = big.NewInt(6)
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,
+		childAddress,
 		childAddress,
 		0,
 		nil,
@@ -931,6 +968,7 @@ func expectedVMOutputAsyncCall(_ []byte, _ []byte) *vmcommon.VMOutput {
 
 	_ = AddNewOutputAccount(
 		vmOutput,
+		childAddress,
 		vaultAddress,
 		4,
 		[]byte{},
@@ -951,6 +989,7 @@ func expectedVMOutputAsyncCallChildFails(_ []byte, _ []byte) *vmcommon.VMOutput 
 	parentAccount := AddNewOutputAccount(
 		vmOutput,
 		parentAddress,
+		parentAddress,
 		-7,
 		nil,
 	)
@@ -963,6 +1002,7 @@ func expectedVMOutputAsyncCallChildFails(_ []byte, _ []byte) *vmcommon.VMOutput 
 
 	_ = AddNewOutputAccount(
 		vmOutput,
+		parentAddress,
 		thirdPartyAddress,
 		3,
 		[]byte("hello"),
@@ -970,6 +1010,7 @@ func expectedVMOutputAsyncCallChildFails(_ []byte, _ []byte) *vmcommon.VMOutput 
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,
+		parentAddress,
 		childAddress,
 		0,
 		nil,
@@ -978,6 +1019,7 @@ func expectedVMOutputAsyncCallChildFails(_ []byte, _ []byte) *vmcommon.VMOutput 
 
 	_ = AddNewOutputAccount(
 		vmOutput,
+		parentAddress,
 		vaultAddress,
 		4,
 		[]byte{},
@@ -994,6 +1036,7 @@ func expectedVMOutputAsyncCallCallBackFails(_ []byte, _ []byte) *vmcommon.VMOutp
 	parentAccount := AddNewOutputAccount(
 		vmOutput,
 		parentAddress,
+		parentAddress,
 		-10,
 		nil,
 	)
@@ -1006,17 +1049,19 @@ func expectedVMOutputAsyncCallCallBackFails(_ []byte, _ []byte) *vmcommon.VMOutp
 
 	_ = AddNewOutputAccount(
 		vmOutput,
+		parentAddress,
 		thirdPartyAddress,
 		3,
 		[]byte("hello"),
 	)
-	outTransfer2 := vmcommon.OutputTransfer{Value: big.NewInt(3), Data: []byte(" there")}
+	outTransfer2 := vmcommon.OutputTransfer{Value: big.NewInt(3), Data: []byte(" there"), SenderAddress: childAddress}
 	outAcc := vmOutput.OutputAccounts[string(thirdPartyAddress)]
 	outAcc.OutputTransfers = append(outAcc.OutputTransfers, outTransfer2)
 	outAcc.BalanceDelta = big.NewInt(6)
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,
+		parentAddress,
 		childAddress,
 		0,
 		nil,
@@ -1028,6 +1073,7 @@ func expectedVMOutputAsyncCallCallBackFails(_ []byte, _ []byte) *vmcommon.VMOutp
 
 	_ = AddNewOutputAccount(
 		vmOutput,
+		childAddress,
 		vaultAddress,
 		4,
 		[]byte{},
@@ -1049,6 +1095,7 @@ func expectedVMOutputCreateNewContractSuccess(_ []byte, childCode []byte) *vmcom
 	parentAccount := AddNewOutputAccount(
 		vmOutput,
 		parentAddress,
+		parentAddress,
 		-42,
 		nil,
 	)
@@ -1059,6 +1106,7 @@ func expectedVMOutputCreateNewContractSuccess(_ []byte, childCode []byte) *vmcom
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,
+		parentAddress,
 		[]byte("newAddress"),
 		42,
 		nil,
@@ -1081,6 +1129,7 @@ func expectedVMOutputCreateNewContractFail(_ []byte, childCode []byte) *vmcommon
 	parentAccount := AddNewOutputAccount(
 		vmOutput,
 		parentAddress,
+		parentAddress,
 		0,
 		nil,
 	)
@@ -1101,6 +1150,7 @@ func expectedVMOutputMockedWasmerInstances() *vmcommon.VMOutput {
 	parentAccount := AddNewOutputAccount(
 		vmOutput,
 		parentAddress,
+		parentAddress,
 		0,
 		nil,
 	)
@@ -1111,6 +1161,7 @@ func expectedVMOutputMockedWasmerInstances() *vmcommon.VMOutput {
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,
+		parentAddress,
 		childAddress,
 		0,
 		nil,

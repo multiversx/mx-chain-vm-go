@@ -206,12 +206,16 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	defer func() {
 		vmOutput = host.finishExecuteOnDestContext(err)
 		metering.SetTotalUsedGas(0)
+
+		if err == nil && vmOutput.ReturnCode != vmcommon.Ok {
+			err = arwen.ErrExecutionFailed
+		}
 	}()
 
 	// Perform a value transfer to the called SC. If the execution fails, this
 	// transfer will not persist.
 	if input.CallType != vmcommon.AsynchronousCallBack || input.CallValue.Cmp(arwen.Zero) == 0 {
-		err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue)
+		err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue, false)
 		if err != nil {
 			log.Trace("ExecuteOnDestContext", "error", err)
 			return
@@ -301,7 +305,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 
 	// Perform a value transfer to the called SC. If the execution fails, this
 	// transfer will not persist.
-	err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue)
+	err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue, false)
 	if err != nil {
 		return
 	}
@@ -629,9 +633,9 @@ func (host *vmHost) RevertESDTTransfer(input *vmcommon.ContractCallInput) {
 	if input.CallType == vmcommon.AsynchronousCallBack {
 		return
 	}
-	numArgsForTransfer := 2
+	numArgsForTransfer := core.MinLenArgumentsESDTTransfer
 	if input.Function == core.BuiltInFunctionESDTNFTTransfer {
-		numArgsForTransfer = 4
+		numArgsForTransfer = core.MinLenArgumentsESDTNFTTransfer
 	}
 	if len(input.Arguments) < numArgsForTransfer {
 		return
@@ -640,7 +644,7 @@ func (host *vmHost) RevertESDTTransfer(input *vmcommon.ContractCallInput) {
 	revertInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallerAddr:     input.RecipientAddr,
-			Arguments:      input.Arguments[:numArgsForTransfer],
+			Arguments:      make([][]byte, numArgsForTransfer),
 			CallValue:      big.NewInt(0),
 			CallType:       vmcommon.AsynchronousCallBack,
 			GasPrice:       input.GasPrice,
@@ -655,12 +659,15 @@ func (host *vmHost) RevertESDTTransfer(input *vmcommon.ContractCallInput) {
 		Function:          input.Function,
 		AllowInitFunction: false,
 	}
+	copy(revertInput.Arguments, input.Arguments)
 	if input.Function == core.BuiltInFunctionESDTNFTTransfer {
-		revertInput.RecipientAddr = revertInput.CallerAddr
-		// in esdt nft transfer the 4th arguments is actually the destination address
-		revertInput.Arguments[numArgsForTransfer-1] = input.CallerAddr
+		actualRecipient := input.CallerAddr
+		actualSender := input.Arguments[numArgsForTransfer-1]
+
+		revertInput.RecipientAddr = actualSender
+		revertInput.CallerAddr = actualSender
+		revertInput.Arguments[numArgsForTransfer-1] = actualRecipient
 	}
-	revertInput.Arguments = append(revertInput.Arguments, []byte("revert"))
 
 	vmOutput, err := host.blockChainHook.ProcessBuiltInFunction(revertInput)
 	if err != nil {
@@ -674,7 +681,7 @@ func (host *vmHost) RevertESDTTransfer(input *vmcommon.ContractCallInput) {
 
 // ExecuteESDTTransfer calls the process built in function with the given transfer for ESDT/ESDTNFT if nonce > 0
 // there are no NFTs with nonce == 0
-func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int) (*vmcommon.VMOutput, uint64, error) {
+func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callType vmcommon.CallType) (*vmcommon.VMOutput, uint64, error) {
 	_, _, metering, _, runtime, _ := host.GetContexts()
 
 	esdtTransferInput := &vmcommon.ContractCallInput{
@@ -682,7 +689,7 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, token
 			CallerAddr:  sender,
 			Arguments:   make([][]byte, 0),
 			CallValue:   big.NewInt(0),
-			CallType:    vmcommon.DirectCall,
+			CallType:    callType,
 			GasPrice:    runtime.GetVMInput().GasPrice,
 			GasProvided: metering.GasLeft(),
 			GasLocked:   0,
@@ -714,11 +721,13 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, token
 	}
 
 	gasConsumed, _ := math.SubUint64(esdtTransferInput.GasProvided, vmOutput.GasRemaining)
-	if metering.GasLeft() < gasConsumed {
-		log.Trace("ESDT transfer", "error", arwen.ErrNotEnoughGas)
-		return vmOutput, esdtTransferInput.GasProvided, arwen.ErrNotEnoughGas
+	if callType != vmcommon.AsynchronousCallBack {
+		if metering.GasLeft() < gasConsumed {
+			log.Trace("ESDT transfer", "error", arwen.ErrNotEnoughGas)
+			return vmOutput, esdtTransferInput.GasProvided, arwen.ErrNotEnoughGas
+		}
+		metering.UseGas(gasConsumed)
 	}
-	metering.UseGas(gasConsumed)
 
 	return vmOutput, gasConsumed, nil
 }
@@ -794,12 +803,13 @@ func (host *vmHost) addESDTTransferToVMOutputSCIntraShardCall(
 		}
 		recipientAddr = input.Arguments[3]
 	}
-	addOutputTransferToVMOutput(input.Function, input.Arguments, recipientAddr, input.CallType, output)
+	addOutputTransferToVMOutput(input.Function, input.Arguments, input.CallerAddr, recipientAddr, input.CallType, output)
 }
 
 func addOutputTransferToVMOutput(
 	function string,
 	arguments [][]byte,
+	sender []byte,
 	recipient []byte,
 	callType vmcommon.CallType,
 	vmOutput *vmcommon.VMOutput,
@@ -809,9 +819,10 @@ func addOutputTransferToVMOutput(
 		esdtTransferTxData += "@" + hex.EncodeToString(arg)
 	}
 	outTransfer := vmcommon.OutputTransfer{
-		Value:    big.NewInt(0),
-		Data:     []byte(esdtTransferTxData),
-		CallType: callType,
+		Value:         big.NewInt(0),
+		Data:          []byte(esdtTransferTxData),
+		CallType:      callType,
+		SenderAddress: sender,
 	}
 
 	if len(vmOutput.OutputAccounts) == 0 {
@@ -950,12 +961,12 @@ func (host *vmHost) isSCExecutionAfterBuiltInFunc(
 	if vmOutput.ReturnCode != vmcommon.Ok {
 		return nil, nil
 	}
-	if !host.AreInSameShard(vmInput.CallerAddr, vmInput.RecipientAddr) {
-		return nil, nil
-	}
 	recipient := vmInput.RecipientAddr
 	if vmInput.Function == core.BuiltInFunctionESDTNFTTransfer && bytes.Equal(vmInput.CallerAddr, vmInput.RecipientAddr) {
 		recipient = vmInput.Arguments[3]
+	}
+	if !host.AreInSameShard(vmInput.CallerAddr, recipient) {
+		return nil, nil
 	}
 	if !host.Blockchain().IsSmartContract(recipient) {
 		return nil, nil

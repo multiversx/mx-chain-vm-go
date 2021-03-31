@@ -115,7 +115,7 @@ func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 	host.protocolBuiltinFunctions = getDummyBuiltinFunctionNames()
 
 	input := DefaultTestContractCallInput()
-	err := host.Output().TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue)
+	err := host.Output().TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue, false)
 	require.Nil(t, err)
 
 	input.RecipientAddr = parentAddress
@@ -178,10 +178,11 @@ func dummyProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.V
 			esdtTransferTxData += "@" + hex.EncodeToString(arg)
 		}
 		outTransfer := vmcommon.OutputTransfer{
-			Value:    big.NewInt(0),
-			GasLimit: input.GasProvided - ESDTTransferGasCost + input.GasLocked,
-			Data:     []byte(esdtTransferTxData),
-			CallType: vmcommon.AsynchronousCall,
+			Value:         big.NewInt(0),
+			GasLimit:      input.GasProvided - ESDTTransferGasCost + input.GasLocked,
+			Data:          []byte(esdtTransferTxData),
+			CallType:      vmcommon.AsynchronousCall,
+			SenderAddress: input.CallerAddr,
 		}
 		vmOutput.OutputAccounts = make(map[string]*vmcommon.OutputAccount)
 		vmOutput.OutputAccounts[string(input.RecipientAddr)] = &vmcommon.OutputAccount{

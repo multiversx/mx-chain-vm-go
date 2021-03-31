@@ -453,7 +453,7 @@ type MessageBlockchainGetESDTTokenResponse struct {
 // NewMessageBlockchainGetESDTTokenResponse creates a response message
 func NewMessageBlockchainGetESDTTokenResponse(esdtData *esdt.ESDigitalToken, err error) *MessageBlockchainGetESDTTokenResponse {
 	message := &MessageBlockchainGetESDTTokenResponse{}
-	message.Kind = BlockchainProcessBuiltinFunctionResponse
+	message.Kind = BlockchainGetESDTTokenResponse
 	message.ESDTData = esdtData
 	message.SetError(err)
 	return message

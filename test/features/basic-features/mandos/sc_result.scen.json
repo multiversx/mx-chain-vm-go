@@ -1,6 +1,5 @@
 {
-    "name": "count ones",
-    "comment": "should fail if the processor doesn't support the `count ones` instruction",
+    "name": "SCResult test",
     "gasSchedule": "v2",
     "steps": [
         {

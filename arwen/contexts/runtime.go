@@ -183,7 +183,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 	newInstance, err := context.instanceBuilder.NewInstanceWithOptions(contract, options)
 	if err != nil {
 		context.instance = nil
-		logRuntime.Error("instance creation", "code", "bytecode", "error", err)
+		logRuntime.Trace("instance creation", "code", "bytecode", "error", err)
 		return err
 	}
 
@@ -207,7 +207,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 		err = context.VerifyContractCode()
 		if err != nil {
 			context.CleanWasmerInstance()
-			logRuntime.Error("instance creation", "code", "bytecode", "error", err)
+			logRuntime.Trace("instance creation", "code", "bytecode", "error", err)
 			return err
 		}
 	}
