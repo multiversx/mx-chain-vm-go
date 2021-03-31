@@ -25,6 +25,7 @@ type StorageKeyValuePair struct {
 // ESDTData models an account holding an ESDT token
 type ESDTData struct {
 	TokenName JSONBytesFromString
+	Nonce     JSONUint64
 	Balance   JSONBigInt
 	Frozen    JSONUint64
 }

@@ -8,31 +8,69 @@ import (
 	oj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/orderedjson"
 )
 
-func (p *Parser) processESDTData(esdtDataRaw oj.OJsonObject) (*mj.ESDTData, error) {
-	esdtData := mj.ESDTData{}
+func (p *Parser) processAppendESDTData(tokenName []byte, esdtDataRaw oj.OJsonObject, output []*mj.ESDTData) ([]*mj.ESDTData, error) {
 	var err error
 
-	if _, isStr := esdtDataRaw.(*oj.OJsonString); isStr {
+	switch data := esdtDataRaw.(type) {
+	case *oj.OJsonString:
 		// simple string representing balance "400,000,000,000"
+		esdtData := mj.ESDTData{}
+		esdtData.TokenName = mj.NewJSONBytesFromString(tokenName, string(tokenName))
 		esdtData.Balance, err = p.processBigInt(esdtDataRaw, bigIntUnsignedBytes)
 		if err != nil {
-			return nil, fmt.Errorf("invalid ESDT balance: %w", err)
+			return output, fmt.Errorf("invalid ESDT balance: %w", err)
 		}
-		return &esdtData, nil
-	}
 
-	// map containing other fields too, e.g.:
-	// {
-	// 	"balance": "400,000,000,000",
-	// 	"frozen": "true"
-	// }
-	esdtDataMap, isMap := esdtDataRaw.(*oj.OJsonMap)
-	if !isMap {
-		return nil, errors.New("account ESDT data should be either JSON string or map")
+		output = append(output, &esdtData)
+		return output, nil
+	case *oj.OJsonMap:
+		esdtData, err := p.processESDTDataMap(tokenName, data)
+		if err != nil {
+			return output, err
+		}
+		output = append(output, esdtData)
+		return output, nil
+	case *oj.OJsonList:
+		for _, item := range data.AsList() {
+			itemAsMap, isMap := item.(*oj.OJsonMap)
+			if !isMap {
+				return nil, errors.New("JSON map expected in ESDT list")
+			}
+			esdtData, err := p.processESDTDataMap(tokenName, itemAsMap)
+			if err != nil {
+				return output, err
+			}
+			output = append(output, esdtData)
+		}
+		return output, nil
+	default:
+		return output, errors.New("invalid JSON object for ESDT")
 	}
+}
+
+// map containing other fields too, e.g.:
+// {
+// 	"balance": "400,000,000,000",
+// 	"frozen": "true"
+// }
+func (p *Parser) processESDTDataMap(tokenName []byte, esdtDataMap *oj.OJsonMap) (*mj.ESDTData, error) {
+	esdtData := mj.ESDTData{
+		TokenName: mj.NewJSONBytesFromString(tokenName, ""),
+	}
+	var err error
 
 	for _, kvp := range esdtDataMap.OrderedKV {
 		switch kvp.Key {
+		case "tokenName":
+			esdtData.TokenName, err = p.processStringAsByteArray(kvp.Value)
+			if err != nil {
+				return nil, fmt.Errorf("invalid ESDT token name: %w", err)
+			}
+		case "nonce":
+			esdtData.Nonce, err = p.processUint64(kvp.Value)
+			if err != nil {
+				return nil, errors.New("invalid account nonce")
+			}
 		case "balance":
 			esdtData.Balance, err = p.processBigInt(kvp.Value, bigIntUnsignedBytes)
 			if err != nil {

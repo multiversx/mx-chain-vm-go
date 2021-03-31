@@ -86,16 +86,14 @@ func (p *Parser) processAccount(acctRaw oj.OJsonObject) (*mj.Account, error) {
 				return nil, errors.New("invalid ESDT map")
 			}
 			for _, esdtKvp := range esdtMap.OrderedKV {
-				tickerStr, err := p.ValueInterpreter.InterpretString(esdtKvp.Key)
+				tokenNameStr, err := p.ValueInterpreter.InterpretString(esdtKvp.Key)
 				if err != nil {
 					return nil, fmt.Errorf("invalid esdt ticker: %w", err)
 				}
-				esdtData, err := p.processESDTData(esdtKvp.Value)
+				acct.ESDTData, err = p.processAppendESDTData(tokenNameStr, esdtKvp.Value, acct.ESDTData)
 				if err != nil {
 					return nil, fmt.Errorf("invalid esdt value: %w", err)
 				}
-				esdtData.TokenName = mj.NewJSONBytesFromString(tickerStr, esdtKvp.Key)
-				acct.ESDTData = append(acct.ESDTData, esdtData)
 			}
 		default:
 			return nil, fmt.Errorf("unknown account field: %s", kvp.Key)
