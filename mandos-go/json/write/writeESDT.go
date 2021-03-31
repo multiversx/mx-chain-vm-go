@@ -51,10 +51,13 @@ func appendESDTToOJ(esdtItems []*mj.ESDTData, parentOj *oj.OJsonMap) {
 }
 
 func isCompactESDT(esdtItem *mj.ESDTData) bool {
+	if len(esdtItem.Nonce.Original) > 0 {
+		return false
+	}
 	if len(esdtItem.Frozen.Original) > 0 {
 		return false
 	}
-	return false
+	return true
 }
 
 func groupESDTIntoMap(esdtItems []*mj.ESDTData) map[string]map[int]*mj.ESDTData {
@@ -73,8 +76,14 @@ func groupESDTIntoMap(esdtItems []*mj.ESDTData) map[string]map[int]*mj.ESDTData 
 
 func esdtToFullMapOJ(esdtItem *mj.ESDTData) *oj.OJsonMap {
 	esdtItemOJ := oj.NewMap()
-	esdtItemOJ.Put("nonce", uint64ToOJ(esdtItem.Nonce))
-	esdtItemOJ.Put("balance", bigIntToOJ(esdtItem.Balance))
-	esdtItemOJ.Put("frozen", uint64ToOJ(esdtItem.Frozen))
+	if len(esdtItem.Nonce.Original) > 0 {
+		esdtItemOJ.Put("nonce", uint64ToOJ(esdtItem.Nonce))
+	}
+	if len(esdtItem.Balance.Original) > 0 {
+		esdtItemOJ.Put("balance", bigIntToOJ(esdtItem.Balance))
+	}
+	if len(esdtItem.Frozen.Original) > 0 {
+		esdtItemOJ.Put("frozen", uint64ToOJ(esdtItem.Frozen))
+	}
 	return esdtItemOJ
 }
