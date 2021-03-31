@@ -54,10 +54,10 @@ func checkAccountsToOJ(checkAccounts *mj.CheckAccounts) oj.OJsonObject {
 		if len(checkAccount.Comment) > 0 {
 			acctOJ.Put("comment", stringToOJ(checkAccount.Comment))
 		}
-		if !checkAccount.Nonce.IsDefault() {
+		if !checkAccount.Nonce.IsUnspecified() {
 			acctOJ.Put("nonce", checkUint64ToOJ(checkAccount.Nonce))
 		}
-		if !checkAccount.Balance.IsDefault() {
+		if !checkAccount.Balance.IsUnspecified() {
 			acctOJ.Put("balance", checkBigIntToOJ(checkAccount.Balance))
 		}
 		storageOJ := oj.NewMap()
@@ -69,10 +69,10 @@ func checkAccountsToOJ(checkAccounts *mj.CheckAccounts) oj.OJsonObject {
 		} else {
 			acctOJ.Put("storage", storageOJ)
 		}
-		if !checkAccount.Code.IsDefault() {
+		if !checkAccount.Code.IsUnspecified() {
 			acctOJ.Put("code", checkBytesToOJ(checkAccount.Code))
 		}
-		if !checkAccount.AsyncCallData.IsDefault() {
+		if !checkAccount.AsyncCallData.IsUnspecified() {
 			acctOJ.Put("asyncCallData", checkBytesToOJ(checkAccount.AsyncCallData))
 		}
 
@@ -105,10 +105,10 @@ func resultToOJ(res *mj.TransactionResult) oj.OJsonObject {
 	outOJ := oj.OJsonList(outList)
 	resultOJ.Put("out", &outOJ)
 
-	if !res.Status.IsDefault() {
+	if !res.Status.IsUnspecified() {
 		resultOJ.Put("status", checkBigIntToOJ(res.Status))
 	}
-	if !res.Message.IsDefault() {
+	if !res.Message.IsUnspecified() {
 		resultOJ.Put("message", checkBytesToOJ(res.Message))
 	}
 	if !res.LogsUnspecified {
@@ -122,10 +122,10 @@ func resultToOJ(res *mj.TransactionResult) oj.OJsonObject {
 			}
 		}
 	}
-	if !res.Gas.IsDefault() {
+	if !res.Gas.IsUnspecified() {
 		resultOJ.Put("gas", checkUint64ToOJ(res.Gas))
 	}
-	if !res.Refund.IsDefault() {
+	if !res.Refund.IsUnspecified() {
 		resultOJ.Put("refund", checkBigIntToOJ(res.Refund))
 	}
 

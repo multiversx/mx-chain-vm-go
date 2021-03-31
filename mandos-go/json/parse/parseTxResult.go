@@ -15,10 +15,10 @@ func (p *Parser) processTxExpectedResult(blrRaw oj.OJsonObject) (*mj.Transaction
 	}
 
 	blr := mj.TransactionResult{
-		Status:          mj.JSONCheckBigIntDefault(),
-		Message:         mj.JSONCheckBytesDefault(),
-		Gas:             mj.JSONCheckUint64Default(),
-		Refund:          mj.JSONCheckBigIntDefault(),
+		Status:          mj.JSONCheckBigIntUnspecified(),
+		Message:         mj.JSONCheckBytesUnspecified(),
+		Gas:             mj.JSONCheckUint64Unspecified(),
+		Refund:          mj.JSONCheckBigIntUnspecified(),
 		LogsStar:        true,
 		LogsUnspecified: true,
 	}

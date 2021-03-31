@@ -23,7 +23,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {},
-                    "code": "file:../forwarder-raw/output/forwarder-raw.wasm"
+                    "code": "file:../forwarder/output/forwarder.wasm"
                 }
             }
         },
@@ -36,10 +36,9 @@
                 "value": "0",
                 "esdtValue": "1000",
                 "esdtTokenName": "str:TEST-TOKEN",
-                "function": "forward_async_call",
+                "function": "forward_async_accept_funds",
                 "arguments": [
-                    "address:vault",
-                    "str:accept_funds"
+                    "address:vault"
                 ],
                 "gasLimit": "1,000,000",
                 "gasPrice": "0"
@@ -56,17 +55,6 @@
                             "1000"
                         ],
                         "data": ""
-                    },
-                    {
-                        "address": "address:forwarder",
-                        "identifier": "str:callback_raw",
-                        "topics": [
-                            "str:EGLD",
-                            "0"
-                        ],
-                        "data": {
-                            "0-status": "biguint:0"
-                        }
                     }
                 ],
                 "gas": "*",
@@ -97,16 +85,8 @@
                 "address:forwarder": {
                     "nonce": "0",
                     "balance": "0",
-                    "storage": {
-                        "str:callback_data|u32:0": "1",
-                        "str:callback_data|u32:1": [
-                            "u32:4", "str:EGLD",
-                            "u32:0",
-                            "u32:1",
-                            "u32:0"
-                        ]
-                    },
-                    "code": "file:../forwarder-raw/output/forwarder-raw.wasm"
+                    "storage": {},
+                    "code": "file:../forwarder/output/forwarder.wasm"
                 }
             }
         }

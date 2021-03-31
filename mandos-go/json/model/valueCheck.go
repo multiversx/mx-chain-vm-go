@@ -11,35 +11,39 @@ import (
 // Values are checked for equality.
 // "*" allows all values.
 type JSONCheckBytes struct {
-	Value    []byte
-	IsStar   bool
-	Original oj.OJsonObject
+	Value       []byte
+	IsStar      bool
+	Original    oj.OJsonObject
+	Unspecified bool
 }
 
-// JSONCheckBytesDefault yields JSONCheckBytes default "*" value.
-func JSONCheckBytesDefault() JSONCheckBytes {
+// JSONCheckBytesUnspecified yields JSONCheckBytes default "*" value.
+func JSONCheckBytesUnspecified() JSONCheckBytes {
 	return JSONCheckBytes{
-		Value:    []byte{},
-		IsStar:   true,
-		Original: &oj.OJsonString{Value: ""},
+		Value:       []byte{},
+		IsStar:      false,
+		Original:    &oj.OJsonString{Value: ""},
+		Unspecified: true,
 	}
 }
 
 // JSONCheckBytesExplicitStar yields JSONCheckBytes explicit "*" value.
 func JSONCheckBytesExplicitStar() JSONCheckBytes {
 	return JSONCheckBytes{
-		Value:    []byte{},
-		IsStar:   true,
-		Original: &oj.OJsonString{Value: "*"},
+		Value:       []byte{},
+		IsStar:      true,
+		Original:    &oj.OJsonString{Value: "*"},
+		Unspecified: false,
 	}
 }
 
 // JSONCheckBytesReconstructed creates a JSONCheckBytes without an original JSON source.
 func JSONCheckBytesReconstructed(value []byte) JSONCheckBytes {
 	return JSONCheckBytes{
-		Value:    value,
-		IsStar:   false,
-		Original: &oj.OJsonString{Value: ""},
+		Value:       value,
+		IsStar:      false,
+		Original:    &oj.OJsonString{Value: ""},
+		Unspecified: false,
 	}
 }
 
@@ -51,9 +55,9 @@ func (jcbytes JSONCheckBytes) OriginalEmpty() bool {
 	return false
 }
 
-// IsDefault yields true if the field was originally unspecified.
-func (jcbytes JSONCheckBytes) IsDefault() bool {
-	return jcbytes.IsStar && jcbytes.OriginalEmpty()
+// IsUnspecified yields true if the field was originally unspecified.
+func (jcbytes JSONCheckBytes) IsUnspecified() bool {
+	return jcbytes.Unspecified
 }
 
 // Check returns true if condition expressed in object holds for another value.
@@ -69,23 +73,25 @@ func (jcbytes JSONCheckBytes) Check(other []byte) bool {
 // Values are checked for equality.
 // "*" allows all values.
 type JSONCheckBigInt struct {
-	Value    *big.Int
-	IsStar   bool
-	Original string
+	Value       *big.Int
+	IsStar      bool
+	Original    string
+	Unspecified bool
 }
 
-// JSONCheckBigIntDefault yields JSONCheckBigInt default "*" value.
-func JSONCheckBigIntDefault() JSONCheckBigInt {
+// JSONCheckBigIntUnspecified yields JSONCheckBigInt default "*" value.
+func JSONCheckBigIntUnspecified() JSONCheckBigInt {
 	return JSONCheckBigInt{
-		Value:    nil,
-		IsStar:   true,
-		Original: "",
+		Value:       big.NewInt(0),
+		IsStar:      false,
+		Original:    "",
+		Unspecified: true,
 	}
 }
 
-// IsDefault yields true if the field was originally unspecified.
-func (jcbi JSONCheckBigInt) IsDefault() bool {
-	return jcbi.IsStar && len(jcbi.Original) == 0
+// IsUnspecified yields true if the field was originally unspecified.
+func (jcbi JSONCheckBigInt) IsUnspecified() bool {
+	return jcbi.Unspecified
 }
 
 // Check returns true if condition expressed in object holds for another value.
@@ -101,23 +107,25 @@ func (jcbi JSONCheckBigInt) Check(other *big.Int) bool {
 // Values are checked for equality.
 // "*" allows all values.
 type JSONCheckUint64 struct {
-	Value    uint64
-	IsStar   bool
-	Original string
+	Value       uint64
+	IsStar      bool
+	Original    string
+	Unspecified bool
 }
 
-// JSONCheckUint64Default yields JSONCheckBigInt default "*" value.
-func JSONCheckUint64Default() JSONCheckUint64 {
+// JSONCheckUint64Unspecified yields JSONCheckBigInt default "*" value.
+func JSONCheckUint64Unspecified() JSONCheckUint64 {
 	return JSONCheckUint64{
-		Value:    0,
-		IsStar:   true,
-		Original: "",
+		Value:       0,
+		IsStar:      false,
+		Original:    "",
+		Unspecified: true,
 	}
 }
 
-// IsDefault yields true if the field was originally unspecified.
-func (jcu JSONCheckUint64) IsDefault() bool {
-	return jcu.IsStar && len(jcu.Original) == 0
+// IsUnspecified yields true if the field was originally unspecified.
+func (jcu JSONCheckUint64) IsUnspecified() bool {
+	return jcu.Unspecified
 }
 
 // Check returns true if condition expressed in object holds for another value.

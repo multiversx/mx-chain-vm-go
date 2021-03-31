@@ -49,7 +49,9 @@ func checkAccounts(
 				hex.EncodeToString(matchingAcct.Address), expectedAcct.Code.Original, string(matchingAcct.Code))
 		}
 
-		if !expectedAcct.AsyncCallData.Check([]byte(matchingAcct.AsyncCallData)) {
+		// currently ignoring asyncCallData that is unspecified in the json
+		if !expectedAcct.AsyncCallData.IsUnspecified() &&
+			!expectedAcct.AsyncCallData.Check([]byte(matchingAcct.AsyncCallData)) {
 			return fmt.Errorf("bad async call data. Account: %s. Want: [%s]. Have: [%s]",
 				hex.EncodeToString(matchingAcct.Address), expectedAcct.AsyncCallData.Original, matchingAcct.AsyncCallData)
 		}
@@ -87,7 +89,7 @@ func checkAccountStorage(expectedAcct *mj.CheckAccount, matchingAcct *worldhook.
 	}
 	storageError := ""
 	for k := range allKeys {
-		want, _ := expectedStorage[k]
+		want := expectedStorage[k]
 		have := matchingAcct.StorageValue(k)
 		if !bytes.Equal(want, have) {
 			storageError += fmt.Sprintf(
