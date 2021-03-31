@@ -17,18 +17,31 @@
                     "comment": "we can comment on individual account initializations",
                     "nonce": "0",
                     "balance": "0xe8d4a51000",
-                    "storage": {},
                     "esdt": {
-                        "str:MyToken": "400,000,000,000",
-                        "str:AnotherToken": {
+                        "str:1-MyToken": "400,000,000,000",
+                        "str:2-AnotherToken": {
                             "balance": "400,000,000,000",
                             "frozen": "false"
                         },
-                        "str:AnotherTokenThatIsFrozen": {
+                        "str:3-AnotherTokenThatIsFrozen": {
+                            "nonce": "0",
                             "balance": "400,000,000,000",
                             "frozen": "true"
-                        }
+                        },
+                        "str:4-SimpleNFT": {
+                            "nonce": "1023"
+                        },
+                        "str:5-SeveralNFTs": [
+                            {
+                                "nonce": "1"
+                            },
+                            {
+                                "nonce": "5",
+                                "balance": "3"
+                            }
+                        ]
                     },
+                    "storage": {},
                     "code": ""
                 },
                 "address:smart_contract_address": {

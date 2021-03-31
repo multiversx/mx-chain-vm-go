@@ -42,7 +42,7 @@ func TestWriteTest(t *testing.T) {
 	serialized := mjwrite.TestToJSONString(testTopLevel)
 
 	// good for debugging:
-	// _ = ioutil.WriteFile("example.re__.json", []byte(serialized), 0644)
+	_ = ioutil.WriteFile("serialized.test.json", []byte(serialized), 0644)
 
 	require.Equal(t, contents, []byte(serialized))
 }
