@@ -75,5 +75,6 @@ func (am AccountMap) Clone() AccountMap {
 	for address, account := range am {
 		clone[address] = account.Clone()
 	}
+
 	return clone
 }

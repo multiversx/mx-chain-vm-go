@@ -178,6 +178,9 @@
                 "``account_1_____________________s1": {
                     "nonce": "6",
                     "balance": "0xfa00000",
+                    "esdt": {
+                        "str:ANY_TOKEN": "1000"
+                    },
                     "storage": {},
                     "code": ""
                 },

@@ -29,6 +29,8 @@ func convertAccount(testAcct *mj.Account) *worldmock.Account {
 		Address:         testAcct.Address.Value,
 		Nonce:           testAcct.Nonce.Value,
 		Balance:         big.NewInt(0).Set(testAcct.Balance.Value),
+		BalanceDelta:    big.NewInt(0),
+		DeveloperReward: big.NewInt(0),
 		Storage:         storage,
 		Code:            []byte(testAcct.Code.Value),
 		AsyncCallData:   testAcct.AsyncCallData,

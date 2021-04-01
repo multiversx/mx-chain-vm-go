@@ -93,7 +93,7 @@ func checkAccountStorage(expectedAcct *mj.CheckAccount, matchingAcct *worldmock.
 	for k := range allKeys {
 		want := expectedStorage[k]
 		have := matchingAcct.StorageValue(k)
-		if !bytes.Equal(want, have) {
+		if !bytes.Equal(want, have) && !worldmock.IsTokenKey([]byte(k)) {
 			storageError += fmt.Sprintf(
 				"\n  for key %s: Want: %s. Have: %s",
 				byteArrayPretty([]byte(k)), byteArrayPretty(want), byteArrayPretty(have))
@@ -127,7 +127,7 @@ func checkAccountESDT(expectedAcct *mj.CheckAccount, matchingAcct *worldmock.Acc
 	errors := checkAccountState(expectedTokens, accountTokens)
 	errorString := makeErrorString(errors)
 	if len(errorString) > 0 {
-		return fmt.Errorf("mismatch for account %s: %w", accountAddress, err)
+		return fmt.Errorf("mismatch for account %s: %s", accountAddress, errorString)
 	}
 
 	return nil
