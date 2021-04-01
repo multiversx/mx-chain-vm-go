@@ -98,7 +98,15 @@ func (a *Account) GetAllTokenData() (map[string]*esdt.ESDigitalToken, error) {
 			return nil, err
 		}
 
-		tokenDataMap[string(tokenData.TokenMetaData.Name)] = tokenData
+		if tokenData.TokenMetaData == nil {
+			tokenData.TokenMetaData = &esdt.MetaData{
+				Name:  GetTokenNameFromKey(tokenKey),
+				Nonce: 0,
+			}
+		}
+
+		tokenName := string(tokenData.TokenMetaData.Name)
+		tokenDataMap[tokenName] = tokenData
 	}
 
 	return tokenDataMap, nil

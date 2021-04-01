@@ -32,18 +32,23 @@ func NewBuiltinFunctionsWrapper(
 		ShardCoordinator: world,
 	}
 
-	builtInFuncFactory, err := builtInFunctions.NewBuiltInFunctionsFactory(argsBuiltIn)
+	builtinFuncFactory, err := builtInFunctions.NewBuiltInFunctionsFactory(argsBuiltIn)
 	if err != nil {
 		return nil, err
 	}
 
-	builtInFuncs, err := builtInFuncFactory.CreateBuiltInFunctionContainer()
+	builtinFuncs, err := builtinFuncFactory.CreateBuiltInFunctionContainer()
+	if err != nil {
+		return nil, err
+	}
+
+	err = builtInFunctions.SetPayableHandler(builtinFuncs, world)
 	if err != nil {
 		return nil, err
 	}
 
 	builtinFuncsWrapper := &BuiltinFunctionsWrapper{
-		Container:       builtInFuncs,
+		Container:       builtinFuncs,
 		MapDNSAddresses: argsBuiltIn.MapDNSAddresses,
 		World:           world,
 	}

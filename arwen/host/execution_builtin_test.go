@@ -7,12 +7,10 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
-	logger "github.com/ElrondNetwork/elrond-go-logger"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	"github.com/ElrondNetwork/elrond-go/core"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/ElrondNetwork/elrond-go/data/esdt"
-	"github.com/ElrondNetwork/elrond-go/process"
 	"github.com/stretchr/testify/require"
 )
 
@@ -20,9 +18,6 @@ var ESDTTransferGasCost = uint64(1)
 var ESDTTestTokenName = []byte("TT")
 
 func TestExecution_ExecuteOnDestContext_ESDTTransferWithoutExecute(t *testing.T) {
-	logger.SetLogLevel("*:TRACE")
-	logger.ToggleLoggerName(true)
-	BuildSCModule("exec-dest-ctx-esdt/basic", "../../")
 	code := GetTestSCCodeModule("exec-dest-ctx-esdt/basic", "basic", "../../")
 	scBalance := big.NewInt(1000)
 	host, world := defaultTestArwenForCallWithWorldMock(t, code, scBalance)
@@ -43,11 +38,8 @@ func TestExecution_ExecuteOnDestContext_ESDTTransferWithoutExecute(t *testing.T)
 	require.Nil(t, err)
 
 	require.NotNil(t, vmOutput)
-	log.Info("ReturnData", "data", vmOutput.ReturnData)
-	log.Info("ReturnMessage", "msg", vmOutput.ReturnMessage)
-
-	require.Equal(t, vmcommon.ExecutionFailed, vmOutput.ReturnCode)
-	require.Equal(t, process.ErrAccountNotPayable.Error(), vmOutput.ReturnMessage)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+	require.Equal(t, "", vmOutput.ReturnMessage)
 }
 
 func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_Claim(t *testing.T) {

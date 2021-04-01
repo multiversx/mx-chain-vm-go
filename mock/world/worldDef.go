@@ -71,6 +71,7 @@ func (b *MockWorld) InitBuiltinFunctions(gasMap config.GasScheduleMap) error {
 // Clear resets all mock data between tests.
 func (b *MockWorld) Clear() {
 	b.AcctMap = NewAccountMap()
+	b.AccountsAdapter = NewMockAccountsAdapter(b)
 	b.PreviousBlockInfo = nil
 	b.CurrentBlockInfo = nil
 	b.Blockhashes = nil

@@ -57,7 +57,6 @@ func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmc
 	} else {
 		switch tx.Type {
 		case mj.ScDeploy:
-			var err error
 			output, err = ae.scCreate(txIndex, tx, gasForExecution)
 			if err != nil {
 				return nil, err
@@ -71,19 +70,16 @@ func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmc
 			gasForExecution = math.MaxUint64
 			fallthrough
 		case mj.ScCall:
-			var err error
 			output, err = ae.scCall(txIndex, tx, gasForExecution)
 			if err != nil {
 				return nil, err
 			}
 		case mj.Transfer:
-			var err error
 			output, err = ae.simpleTransferOutput(tx)
 			if err != nil {
 				return nil, err
 			}
 		case mj.ValidatorReward:
-			var err error
 			output, err = ae.validatorRewardOutput(tx)
 			if err != nil {
 				return nil, err
@@ -247,7 +243,7 @@ func (ae *ArwenTestExecutor) directESDTTransferFromTx(tx *mj.Transaction) (uint6
 		tx.To.Value,
 		tx.ESDTValue.TokenIdentifier.Value,
 		tx.ESDTValue.Value.Value,
-		vmcommon.ESDTTransferAndExecute,
+		vmcommon.DirectCall,
 		tx.GasLimit.Value,
 		tx.GasPrice.Value)
 }
