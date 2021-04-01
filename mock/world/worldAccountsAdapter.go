@@ -84,6 +84,8 @@ func (m *MockAccountsAdapter) RevertToSnapshot(snapshotIndex int) error {
 	m.Snapshots = m.Snapshots[:snapshotIndex]
 
 	m.World.AcctMap.LoadAccountStorageFrom(snapshot)
+
+	// TODO should probably set BalanceDelta of all accounts to 0 as well
 	return nil
 }
 
