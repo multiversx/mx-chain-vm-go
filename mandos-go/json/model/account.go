@@ -22,13 +22,6 @@ type StorageKeyValuePair struct {
 	Value JSONBytesFromTree
 }
 
-// ESDTData models an account holding an ESDT token
-type ESDTData struct {
-	TokenName JSONBytesFromString
-	Balance   JSONBigInt
-	Frozen    JSONUint64
-}
-
 // CheckAccount is a json object representing checks for an account.
 type CheckAccount struct {
 	Address       JSONBytesFromString
@@ -39,14 +32,8 @@ type CheckAccount struct {
 	CheckStorage  []*StorageKeyValuePair
 	Code          JSONCheckBytes
 	AsyncCallData JSONCheckBytes
-	ESDTData      []*CheckESDTData
-}
-
-// CheckESDTData checks the ESDT tokens held by an account
-type CheckESDTData struct {
-	TokenName JSONBytesFromString
-	Balance   JSONCheckBigInt
-	Frozen    JSONCheckUint64
+	IgnoreESDT    bool
+	CheckESDTData []*CheckESDTData
 }
 
 // CheckAccounts encodes rules to check mock accounts.

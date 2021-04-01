@@ -1,6 +1,7 @@
 package mandosjsontest
 
 import (
+	"io/ioutil"
 	"testing"
 
 	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/fileresolver"
@@ -24,7 +25,7 @@ func TestWriteScenario(t *testing.T) {
 	serialized := mjwrite.ScenarioToJSONString(scenario)
 
 	// good for debugging:
-	// _ = ioutil.WriteFile("example_re.scen.json", []byte(serialized), 0644)
+	_ = ioutil.WriteFile("serialized.scen.json", []byte(serialized), 0644)
 
 	require.Equal(t, contents, []byte(serialized))
 }

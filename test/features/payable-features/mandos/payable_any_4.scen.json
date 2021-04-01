@@ -70,8 +70,10 @@
                 "from": "address:an_account",
                 "to": "address:features_contract",
                 "value": "0",
-                "esdtTokenName": "str:PAYABLE-FEATURES-TOKEN",
-                "esdtValue": "100",
+                "esdt": {
+                    "tokenIdentifier": "str:PAYABLE-FEATURES-TOKEN",
+                    "value": "100"
+                },
                 "function": "payable_any_4",
                 "arguments": [],
                 "gasLimit": "50,000,000",
@@ -92,8 +94,10 @@
                 "from": "address:an_account",
                 "to": "address:features_contract",
                 "value": "0",
-                "esdtTokenName": "str:PAYABLE-FEATURES-TOKEN",
-                "esdtValue": "0",
+                "esdt": {
+                    "tokenIdentifier": "str:PAYABLE-FEATURES-TOKEN",
+                    "value": "0"
+                },
                 "function": "payable_any_4",
                 "arguments": [],
                 "gasLimit": "50,000,000",
