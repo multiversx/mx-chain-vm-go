@@ -15,8 +15,8 @@ func (p *Parser) processAppendESDTData(tokenName []byte, esdtDataRaw oj.OJsonObj
 	case *oj.OJsonString:
 		// simple string representing balance "400,000,000,000"
 		esdtData := mj.ESDTData{}
-		esdtData.TokenName = mj.NewJSONBytesFromString(tokenName, string(tokenName))
-		esdtData.Balance, err = p.processBigInt(esdtDataRaw, bigIntUnsignedBytes)
+		esdtData.TokenIdentifier = mj.NewJSONBytesFromString(tokenName, string(tokenName))
+		esdtData.Value, err = p.processBigInt(esdtDataRaw, bigIntUnsignedBytes)
 		if err != nil {
 			return output, fmt.Errorf("invalid ESDT balance: %w", err)
 		}
@@ -48,21 +48,29 @@ func (p *Parser) processAppendESDTData(tokenName []byte, esdtDataRaw oj.OJsonObj
 	}
 }
 
+func (p *Parser) processTxESDT(esdtRaw oj.OJsonObject) (*mj.ESDTData, error) {
+	esdtDataMap, isMap := esdtRaw.(*oj.OJsonMap)
+	if !isMap {
+		return nil, errors.New("unmarshalled account object is not a map")
+	}
+	return p.processESDTDataMap([]byte{}, esdtDataMap)
+}
+
 // map containing other fields too, e.g.:
 // {
 // 	"balance": "400,000,000,000",
 // 	"frozen": "true"
 // }
-func (p *Parser) processESDTDataMap(tokenName []byte, esdtDataMap *oj.OJsonMap) (*mj.ESDTData, error) {
+func (p *Parser) processESDTDataMap(tokenNameKey []byte, esdtDataMap *oj.OJsonMap) (*mj.ESDTData, error) {
 	esdtData := mj.ESDTData{
-		TokenName: mj.NewJSONBytesFromString(tokenName, ""),
+		TokenIdentifier: mj.NewJSONBytesFromString(tokenNameKey, ""),
 	}
 	var err error
 
 	for _, kvp := range esdtDataMap.OrderedKV {
 		switch kvp.Key {
-		case "tokenName":
-			esdtData.TokenName, err = p.processStringAsByteArray(kvp.Value)
+		case "tokenIdentifier":
+			esdtData.TokenIdentifier, err = p.processStringAsByteArray(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("invalid ESDT token name: %w", err)
 			}
@@ -71,8 +79,8 @@ func (p *Parser) processESDTDataMap(tokenName []byte, esdtDataMap *oj.OJsonMap) 
 			if err != nil {
 				return nil, errors.New("invalid account nonce")
 			}
-		case "balance":
-			esdtData.Balance, err = p.processBigInt(kvp.Value, bigIntUnsignedBytes)
+		case "value":
+			esdtData.Value, err = p.processBigInt(kvp.Value, bigIntUnsignedBytes)
 			if err != nil {
 				return nil, fmt.Errorf("invalid ESDT balance: %w", err)
 			}

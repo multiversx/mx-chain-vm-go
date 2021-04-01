@@ -42,8 +42,8 @@ func convertAccount(testAcct *mj.Account) *worldmock.Account {
 	}
 
 	for _, mandosESDTData := range testAcct.ESDTData {
-		tokenName := mandosESDTData.TokenName.Value
-		tokenValue := mandosESDTData.Balance.Value
+		tokenName := mandosESDTData.TokenIdentifier.Value
+		tokenValue := mandosESDTData.Value.Value
 		isFrozen := mandosESDTData.Frozen.Value > 0
 		tokenKey := worldmock.MakeTokenKey(tokenName)
 		tokenData := &esdt.ESDigitalToken{
@@ -168,4 +168,13 @@ func checkBytesListPretty(jcbs []mj.JSONCheckBytes) string {
 		str += "\"" + oj.JSONString(jcb.Original) + "\""
 	}
 	return str + "]"
+}
+
+func addESDTToVMInput(esdtData *mj.ESDTData, vmInput *vmcommon.VMInput) {
+	if esdtData != nil {
+		vmInput.ESDTTokenName = esdtData.TokenIdentifier.Value
+		vmInput.ESDTValue = esdtData.Value.Value
+		vmInput.ESDTTokenNonce = esdtData.Nonce.Value
+		// TODO: ESDTType
+	}
 }

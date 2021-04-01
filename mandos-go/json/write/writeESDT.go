@@ -23,7 +23,7 @@ func appendESDTToOJ(esdtItems []*mj.ESDTData, parentOj *oj.OJsonMap) {
 		case 1:
 			for _, esdtItem := range nonceMap {
 				if isCompactESDT(esdtItem) {
-					esdtOJ.Put(tokenNameKey, bigIntToOJ(esdtItem.Balance))
+					esdtOJ.Put(tokenNameKey, bigIntToOJ(esdtItem.Value))
 				} else {
 					esdtItemOJ := esdtToFullMapOJ(esdtItem)
 					esdtOJ.Put(tokenNameKey, esdtItemOJ)
@@ -64,10 +64,10 @@ func groupESDTIntoMap(esdtItems []*mj.ESDTData) map[string]map[int]*mj.ESDTData 
 	m := make(map[string]map[int]*mj.ESDTData)
 	for _, item := range esdtItems {
 		var nonceMap map[int]*mj.ESDTData
-		nonceMap, isPresent := m[string(item.TokenName.Value)]
+		nonceMap, isPresent := m[string(item.TokenIdentifier.Value)]
 		if !isPresent {
 			nonceMap = make(map[int]*mj.ESDTData)
-			m[string(item.TokenName.Value)] = nonceMap
+			m[string(item.TokenIdentifier.Value)] = nonceMap
 		}
 		nonceMap[int(item.Nonce.Value)] = item
 	}
@@ -76,11 +76,14 @@ func groupESDTIntoMap(esdtItems []*mj.ESDTData) map[string]map[int]*mj.ESDTData 
 
 func esdtToFullMapOJ(esdtItem *mj.ESDTData) *oj.OJsonMap {
 	esdtItemOJ := oj.NewMap()
+	if len(esdtItem.TokenIdentifier.Original) > 0 {
+		esdtItemOJ.Put("tokenIdentifier", bytesFromStringToOJ(esdtItem.TokenIdentifier))
+	}
 	if len(esdtItem.Nonce.Original) > 0 {
 		esdtItemOJ.Put("nonce", uint64ToOJ(esdtItem.Nonce))
 	}
-	if len(esdtItem.Balance.Original) > 0 {
-		esdtItemOJ.Put("balance", bigIntToOJ(esdtItem.Balance))
+	if len(esdtItem.Value.Original) > 0 {
+		esdtItemOJ.Put("value", bigIntToOJ(esdtItem.Value))
 	}
 	if len(esdtItem.Frozen.Original) > 0 {
 		esdtItemOJ.Put("frozen", uint64ToOJ(esdtItem.Frozen))

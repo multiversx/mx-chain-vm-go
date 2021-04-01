@@ -20,12 +20,12 @@
                     "esdt": {
                         "str:1-MyToken": "400,000,000,000",
                         "str:2-AnotherToken": {
-                            "balance": "400,000,000,000",
+                            "value": "400,000,000,000",
                             "frozen": "false"
                         },
                         "str:3-AnotherTokenThatIsFrozen": {
                             "nonce": "0",
-                            "balance": "400,000,000,000",
+                            "value": "400,000,000,000",
                             "frozen": "true"
                         },
                         "str:4-SimpleNFT": {
@@ -37,7 +37,7 @@
                             },
                             {
                                 "nonce": "5",
-                                "balance": "3"
+                                "value": "3"
                             }
                         ]
                     },
@@ -157,8 +157,10 @@
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
                 "to": "0x1000000000000000000000000000000000000000000000000000000000000000",
                 "value": "0x00",
-                "esdtValue": "250,000,000,000",
-                "esdtTokenName": "str:MyToken",
+                "esdt": {
+                    "tokenIdentifier": "str:MyToken",
+                    "value": "250,000,000,000"
+                },
                 "function": "someFunctionName",
                 "arguments": [],
                 "gasLimit": "0x100000",
@@ -209,8 +211,10 @@
             "tx": {
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
                 "value": "0x00",
-                "esdtValue": "250,000,000,000",
-                "esdtTokenName": "str:CrowdToken",
+                "esdt": {
+                    "tokenIdentifier": "str:CrowdToken",
+                    "value": "250,000,000,000"
+                },
                 "contractCode": "``new contract code here",
                 "arguments": [
                     "0x1234123400000000000000000000000000000000000000000000000000000004",
@@ -251,8 +255,10 @@
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
                 "to": "0x1000000000000000000000000000000000000000000000000000000000000000",
                 "value": "1234",
-                "esdtValue": "250,000,000,000",
-                "esdtTokenName": "str:MyToken"
+                "esdt": {
+                    "tokenIdentifier": "str:MyToken",
+                    "value": "250,000,000,000"
+                }
             }
         },
         {

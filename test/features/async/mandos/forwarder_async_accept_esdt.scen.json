@@ -34,8 +34,10 @@
                 "from": "address:a_user",
                 "to": "address:forwarder",
                 "value": "0",
-                "esdtValue": "1000",
-                "esdtTokenName": "str:TEST-TOKEN",
+                "esdt": {
+                    "tokenIdentifier": "str:TEST-TOKEN",
+                    "value": "1000"
+                },
                 "function": "forward_async_accept_funds",
                 "arguments": [
                     "address:vault"

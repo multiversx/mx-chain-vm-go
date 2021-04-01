@@ -17,7 +17,7 @@ func (p *Parser) processTx(txType mj.TransactionType, blrRaw oj.OJsonObject) (*m
 	blt := mj.Transaction{
 		Type:      txType,
 		Value:     mj.JSONBigIntZero(),
-		ESDTValue: mj.JSONBigIntZero(),
+		ESDTValue: nil,
 	}
 
 	var err error
@@ -74,21 +74,13 @@ func (p *Parser) processTx(txType mj.TransactionType, blrRaw oj.OJsonObject) (*m
 			if err != nil {
 				return nil, fmt.Errorf("invalid transaction value: %w", err)
 			}
-		case "esdtValue":
+		case "esdt":
 			if !txType.HasESDT() {
-				return nil, errors.New("`esdtValue` not allowed in this context")
+				return nil, errors.New("`esdt` not allowed in this context")
 			}
-			blt.ESDTValue, err = p.processBigInt(kvp.Value, bigIntUnsignedBytes)
+			blt.ESDTValue, err = p.processTxESDT(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("invalid transaction ESDT value: %w", err)
-			}
-		case "esdtTokenName":
-			if !txType.HasESDT() {
-				return nil, errors.New("`esdtTokenName` not allowed in this context")
-			}
-			blt.ESDTTokenName, err = p.processStringAsByteArray(kvp.Value)
-			if err != nil {
-				return nil, fmt.Errorf("invalid transaction ESDT token name: %w", err)
 			}
 		case "arguments":
 			blt.Arguments, err = p.parseSubTreeList(kvp.Value)
@@ -123,7 +115,7 @@ func (p *Parser) processTx(txType mj.TransactionType, blrRaw oj.OJsonObject) (*m
 				return nil, fmt.Errorf("invalid transaction gasLimit: %w", err)
 			}
 		default:
-			return nil, fmt.Errorf("unknown field in transaction: %w", err)
+			return nil, fmt.Errorf("unknown field in transaction: %s", kvp.Key)
 		}
 	}
 

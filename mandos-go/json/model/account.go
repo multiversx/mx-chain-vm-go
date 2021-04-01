@@ -22,14 +22,6 @@ type StorageKeyValuePair struct {
 	Value JSONBytesFromTree
 }
 
-// ESDTData models an account holding an ESDT token
-type ESDTData struct {
-	TokenName JSONBytesFromString
-	Nonce     JSONUint64
-	Balance   JSONBigInt
-	Frozen    JSONUint64
-}
-
 // CheckAccount is a json object representing checks for an account.
 type CheckAccount struct {
 	Address       JSONBytesFromString

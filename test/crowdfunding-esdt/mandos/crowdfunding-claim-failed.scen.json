@@ -26,8 +26,10 @@
             "from": "address:donor2",
             "to": "address:the_crowdfunding_contract",
             "value": "0",
-            "esdtTokenName": "str:CrowdToken",
-            "esdtValue": "200,000,000,000",
+            "esdt": {
+              "tokenIdentifier": "str:CrowdToken",
+              "value": "200,000,000,000"
+            },
             "function": "fund",
             "arguments": [],
             "gasLimit": "100,000,000",

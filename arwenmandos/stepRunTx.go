@@ -24,7 +24,7 @@ func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmc
 
 		gasForExecution = tx.GasLimit.Value
 
-		if tx.ESDTValue.Value.Sign() > 0 {
+		if tx.ESDTValue != nil {
 			gasRemaining, err := ae.directESDTTransferFromTx(tx)
 			if err != nil {
 				return nil, err
@@ -178,19 +178,22 @@ func outOfFundsResult() *vmcommon.VMOutput {
 
 func (ae *ArwenTestExecutor) scCreate(txIndex string, tx *mj.Transaction, gasLimit uint64) (*vmcommon.VMOutput, error) {
 	txHash := generateTxHash(txIndex)
+	vmInput := vmcommon.VMInput{
+		CallerAddr:     tx.From.Value,
+		Arguments:      mj.JSONBytesFromTreeValues(tx.Arguments),
+		CallValue:      tx.Value.Value,
+		GasPrice:       tx.GasPrice.Value,
+		GasProvided:    gasLimit,
+		OriginalTxHash: txHash,
+		CurrentTxHash:  txHash,
+		ESDTValue:      big.NewInt(0),
+		ESDTTokenName:  nil,
+		ESDTTokenNonce: 0,
+	}
+	addESDTToVMInput(tx.ESDTValue, &vmInput)
 	input := &vmcommon.ContractCreateInput{
 		ContractCode: tx.Code.Value,
-		VMInput: vmcommon.VMInput{
-			CallerAddr:     tx.From.Value,
-			Arguments:      mj.JSONBytesFromTreeValues(tx.Arguments),
-			CallValue:      tx.Value.Value,
-			GasPrice:       tx.GasPrice.Value,
-			GasProvided:    gasLimit,
-			OriginalTxHash: txHash,
-			CurrentTxHash:  txHash,
-			ESDTValue:      tx.ESDTValue.Value,
-			ESDTTokenName:  tx.ESDTTokenName.Value,
-		},
+		VMInput:      vmInput,
 	}
 
 	return ae.vm.RunSmartContractCreate(input)
@@ -205,20 +208,23 @@ func (ae *ArwenTestExecutor) scCall(txIndex string, tx *mj.Transaction, gasLimit
 		return nil, fmt.Errorf("tx recipient (address: %s) is not a smart contract", hex.EncodeToString(tx.To.Value))
 	}
 	txHash := generateTxHash(txIndex)
+	vmInput := vmcommon.VMInput{
+		CallerAddr:     tx.From.Value,
+		Arguments:      mj.JSONBytesFromTreeValues(tx.Arguments),
+		CallValue:      tx.Value.Value,
+		GasPrice:       tx.GasPrice.Value,
+		GasProvided:    gasLimit,
+		OriginalTxHash: txHash,
+		CurrentTxHash:  txHash,
+		ESDTValue:      big.NewInt(0),
+		ESDTTokenName:  nil,
+		ESDTTokenNonce: 0,
+	}
+	addESDTToVMInput(tx.ESDTValue, &vmInput)
 	input := &vmcommon.ContractCallInput{
 		RecipientAddr: tx.To.Value,
 		Function:      tx.Function,
-		VMInput: vmcommon.VMInput{
-			CallerAddr:     tx.From.Value,
-			Arguments:      mj.JSONBytesFromTreeValues(tx.Arguments),
-			CallValue:      tx.Value.Value,
-			GasPrice:       tx.GasPrice.Value,
-			GasProvided:    gasLimit,
-			OriginalTxHash: txHash,
-			CurrentTxHash:  txHash,
-			ESDTValue:      tx.ESDTValue.Value,
-			ESDTTokenName:  tx.ESDTTokenName.Value,
-		},
+		VMInput:       vmInput,
 	}
 
 	return ae.vm.RunSmartContractCall(input)
@@ -228,8 +234,8 @@ func (ae *ArwenTestExecutor) directESDTTransferFromTx(tx *mj.Transaction) (uint6
 	return ae.World.BuiltinFuncs.PerformDirectESDTTransfer(
 		tx.From.Value,
 		tx.To.Value,
-		tx.ESDTTokenName.Value,
-		tx.ESDTValue.Value,
+		tx.ESDTValue.TokenIdentifier.Value,
+		tx.ESDTValue.Value.Value,
 		vmcommon.DirectCall,
 		tx.GasLimit.Value,
 		tx.GasPrice.Value)
