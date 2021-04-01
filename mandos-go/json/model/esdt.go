@@ -7,3 +7,11 @@ type ESDTData struct {
 	Value           JSONBigInt
 	Frozen          JSONUint64
 }
+
+// CheckESDTData checks the ESDT tokens held by an account
+type CheckESDTData struct {
+	TokenIdentifier JSONBytesFromString
+	Nonce           JSONCheckUint64
+	Value           JSONCheckBigInt
+	Frozen          JSONCheckUint64
+}

@@ -278,10 +278,35 @@
                     "comment": "we can comment on individual account checks",
                     "nonce": "1",
                     "balance": "0xe8d4951000",
+                    "esdt": {
+                        "str:1-MyToken": "400,000,000,000",
+                        "str:2-AnotherToken": {
+                            "value": "400,000,000,000",
+                            "frozen": "*"
+                        },
+                        "str:3-AnotherTokenThatIsFrozen": {
+                            "nonce": "*",
+                            "value": "*",
+                            "frozen": "true"
+                        },
+                        "str:4-SimpleNFT": {
+                            "nonce": "1023"
+                        },
+                        "str:5-SeveralNFTs": [
+                            {
+                                "nonce": "*"
+                            },
+                            {
+                                "nonce": "1",
+                                "value": "3"
+                            }
+                        ]
+                    },
                     "storage": {},
                     "code": ""
                 },
                 "address:account_with_defaults": {
+                    "esdt": "*",
                     "storage": "*"
                 },
                 "address:smart_contract_address": {

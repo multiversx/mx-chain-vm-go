@@ -44,13 +44,18 @@ func checkAccountsToOJ(checkAccounts *mj.CheckAccounts) oj.OJsonObject {
 		if !checkAccount.Balance.IsUnspecified() {
 			acctOJ.Put("balance", checkBigIntToOJ(checkAccount.Balance))
 		}
-		storageOJ := oj.NewMap()
-		for _, st := range checkAccount.CheckStorage {
-			storageOJ.Put(bytesFromStringToString(st.Key), bytesFromTreeToOJ(st.Value))
+		if checkAccount.IgnoreESDT {
+			acctOJ.Put("esdt", stringToOJ("*"))
+		} else {
+			appendCheckESDTToOJ(checkAccount.CheckESDTData, acctOJ)
 		}
 		if checkAccount.IgnoreStorage {
 			acctOJ.Put("storage", stringToOJ("*"))
 		} else {
+			storageOJ := oj.NewMap()
+			for _, st := range checkAccount.CheckStorage {
+				storageOJ.Put(bytesFromStringToString(st.Key), bytesFromTreeToOJ(st.Value))
+			}
 			acctOJ.Put("storage", storageOJ)
 		}
 		if !checkAccount.Code.IsUnspecified() {

@@ -32,14 +32,8 @@ type CheckAccount struct {
 	CheckStorage  []*StorageKeyValuePair
 	Code          JSONCheckBytes
 	AsyncCallData JSONCheckBytes
-	ESDTData      []*CheckESDTData
-}
-
-// CheckESDTData checks the ESDT tokens held by an account
-type CheckESDTData struct {
-	TokenName JSONBytesFromString
-	Balance   JSONCheckBigInt
-	Frozen    JSONCheckUint64
+	IgnoreESDT    bool
+	CheckESDTData []*CheckESDTData
 }
 
 // CheckAccounts encodes rules to check mock accounts.

@@ -107,6 +107,10 @@ func checkAccountStorage(expectedAcct *mj.CheckAccount, matchingAcct *worldmock.
 }
 
 func checkAccountESDT(expectedAcct *mj.CheckAccount, matchingAcct *worldmock.Account) error {
+	if expectedAcct.IgnoreESDT {
+		return nil
+	}
+
 	accountAddress := expectedAcct.Address.Original
 	expectedTokens := getExpectedTokens(expectedAcct)
 	accountTokens, err := matchingAcct.GetAllTokenData()
@@ -140,9 +144,9 @@ func checkAccountState(
 	errors := make([]error, 0)
 	for tokenName, accountTokenData := range accountTokens {
 		expectedTokenData := expectedTokens[tokenName]
-		if !expectedTokenData.Balance.Check(accountTokenData.Value) {
+		if !expectedTokenData.Value.Check(accountTokenData.Value) {
 			err := fmt.Errorf("bad ESDT balance. Token %s: Want: %d. Have: %d",
-				tokenName, expectedTokenData.Balance.Value, accountTokenData.Value)
+				tokenName, expectedTokenData.Value.Value, accountTokenData.Value)
 			errors = append(errors, err)
 		}
 
@@ -158,8 +162,8 @@ func checkAccountState(
 
 func getExpectedTokens(expectedAcct *mj.CheckAccount) map[string]*mj.CheckESDTData {
 	expectedTokens := make(map[string]*mj.CheckESDTData)
-	for _, expectedTokenData := range expectedAcct.ESDTData {
-		tokenNameStr := string(expectedTokenData.TokenName.Value)
+	for _, expectedTokenData := range expectedAcct.CheckESDTData {
+		tokenNameStr := string(expectedTokenData.TokenIdentifier.Value)
 		expectedTokens[tokenNameStr] = expectedTokenData
 	}
 
@@ -186,7 +190,7 @@ func detectMissingTokens(
 ) error {
 	for tokenName, expectedTokenData := range expectedTokens {
 		_, isFound := expectedTokens[tokenName]
-		if !isFound && expectedTokenData.Balance.Value.Sign() > 0 {
+		if !isFound && expectedTokenData.Value.Value.Sign() > 0 {
 			return fmt.Errorf("missing ESDT token %ss", tokenName)
 		}
 	}
