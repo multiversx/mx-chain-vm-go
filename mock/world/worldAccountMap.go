@@ -1,6 +1,8 @@
 package worldmock
 
 import (
+	"encoding/hex"
+	"fmt"
 	"math/big"
 
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
@@ -77,4 +79,18 @@ func (am AccountMap) Clone() AccountMap {
 	}
 
 	return clone
+}
+
+func (am AccountMap) LoadAccountStorageFrom(otherAM AccountMap) error {
+	for address, account := range am {
+		otherAccount, otherExists := otherAM[address]
+		if !otherExists {
+			return fmt.Errorf(
+				"account %s could not be loaded from AccountMap",
+				hex.EncodeToString([]byte(address)))
+		}
+		account.Storage = otherAccount.Storage
+	}
+
+	return nil
 }

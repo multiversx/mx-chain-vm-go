@@ -12,14 +12,28 @@ import (
 )
 
 func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmcommon.VMOutput, error) {
+	ae.World.CreateStateBackup()
+
+	var err error
+	defer func() {
+		if err != nil {
+			errRollback := ae.World.RollbackChanges()
+			if errRollback != nil {
+				err = errRollback
+			}
+		}
+	}()
+
 	gasForExecution := uint64(0)
+
 	if tx.Type.HasSender() {
 		beforeErr := ae.World.UpdateWorldStateBefore(
 			tx.From.Value,
 			tx.GasLimit.Value,
 			tx.GasPrice.Value)
 		if beforeErr != nil {
-			return nil, fmt.Errorf("could not set up tx %s: %w", txIndex, beforeErr)
+			err = fmt.Errorf("could not set up tx %s: %w", txIndex, beforeErr)
+			return nil, err
 		}
 
 		gasForExecution = tx.GasLimit.Value
@@ -41,7 +55,6 @@ func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmc
 		// out of funds is handled by the protocol, so it needs to be mocked here
 		output = outOfFundsResult()
 	} else {
-		ae.World.CreateStateBackup()
 		switch tx.Type {
 		case mj.ScDeploy:
 			var err error
@@ -87,11 +100,9 @@ func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmc
 			return nil, err
 		}
 	} else {
-		err := ae.World.RollbackChanges()
-		if err != nil {
-			return nil, err
-		}
-
+		err = fmt.Errorf(
+			"tx step failed: retcode=%d, msg=%s",
+			output.ReturnCode, output.ReturnMessage)
 	}
 
 	return output, nil

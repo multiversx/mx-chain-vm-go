@@ -16,19 +16,19 @@ var ErrSnapshotsNotImplemented = errors.New("snapshots not implemented")
 var ErrTrieHandlingNotImplemented = errors.New("trie handling not implemented")
 
 type MockAccountsAdapter struct {
-	CurrentState AccountMap
-	Snapshots    []AccountMap
+	World     *MockWorld
+	Snapshots []AccountMap
 }
 
-func NewMockAccountsAdapter(accounts AccountMap) *MockAccountsAdapter {
+func NewMockAccountsAdapter(world *MockWorld) *MockAccountsAdapter {
 	return &MockAccountsAdapter{
-		CurrentState: accounts,
-		Snapshots:    []AccountMap{accounts},
+		World:     world,
+		Snapshots: make([]AccountMap, 0),
 	}
 }
 
 func (m *MockAccountsAdapter) GetExistingAccount(address []byte) (state.AccountHandler, error) {
-	account, exists := m.CurrentState[string(address)]
+	account, exists := m.World.AcctMap[string(address)]
 	if !exists {
 		return nil, arwen.ErrInvalidAccount
 	}
@@ -46,17 +46,17 @@ func (m *MockAccountsAdapter) SaveAccount(account state.AccountHandler) error {
 		return errors.New("invalid account to save")
 	}
 
-	m.CurrentState.PutAccount(mockAccount)
+	m.World.AcctMap.PutAccount(mockAccount)
 	return nil
 }
 
 func (m *MockAccountsAdapter) RemoveAccount(address []byte) error {
-	_, exists := m.CurrentState[string(address)]
+	_, exists := m.World.AcctMap[string(address)]
 	if !exists {
 		return arwen.ErrInvalidAccount
 	}
 
-	m.CurrentState.DeleteAccount(address)
+	m.World.AcctMap.DeleteAccount(address)
 	return nil
 }
 
@@ -80,8 +80,10 @@ func (m *MockAccountsAdapter) RevertToSnapshot(snapshotIndex int) error {
 			len(m.Snapshots)-1)
 	}
 
-	m.CurrentState = m.Snapshots[snapshotIndex]
+	snapshot := m.Snapshots[snapshotIndex]
 	m.Snapshots = m.Snapshots[:snapshotIndex]
+
+	m.World.AcctMap.LoadAccountStorageFrom(snapshot)
 	return nil
 }
 
@@ -90,7 +92,7 @@ func (m *MockAccountsAdapter) GetNumCheckpoints() uint32 {
 }
 
 func (m *MockAccountsAdapter) GetCode(codeHash []byte) []byte {
-	for _, account := range m.CurrentState {
+	for _, account := range m.World.AcctMap {
 		if bytes.Equal(account.GetCodeHash(), codeHash) {
 			return account.GetCode()
 		}
@@ -114,7 +116,7 @@ func (m *MockAccountsAdapter) CancelPrune(rootHash []byte, identifier data.TrieP
 }
 
 func (m *MockAccountsAdapter) SnapshotState(rootHash []byte, ctx context.Context) {
-	snapshot := m.CurrentState.Clone()
+	snapshot := m.World.AcctMap.Clone()
 	m.Snapshots = append(m.Snapshots, snapshot)
 }
 

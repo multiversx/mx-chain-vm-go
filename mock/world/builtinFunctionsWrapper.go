@@ -28,7 +28,7 @@ func NewBuiltinFunctionsWrapper(
 		GasSchedule:      integrationTests.NewGasScheduleNotifierMock(gasMap),
 		MapDNSAddresses:  make(map[string]struct{}),
 		Marshalizer:      WorldMarshalizer,
-		Accounts:         NewMockAccountsAdapter(world.AcctMap),
+		Accounts:         world.AccountsAdapter,
 		ShardCoordinator: world,
 	}
 

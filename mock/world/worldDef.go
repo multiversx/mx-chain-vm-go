@@ -42,10 +42,10 @@ type MockWorld struct {
 // NewMockWorld creates a new MockWorld instance
 func NewMockWorld() *MockWorld {
 	accountMap := NewAccountMap()
-	return &MockWorld{
+	world := &MockWorld{
 		SelfShardID:       0,
 		AcctMap:           accountMap,
-		AccountsAdapter:   NewMockAccountsAdapter(accountMap),
+		AccountsAdapter:   nil,
 		PreviousBlockInfo: nil,
 		CurrentBlockInfo:  nil,
 		Blockhashes:       nil,
@@ -53,6 +53,9 @@ func NewMockWorld() *MockWorld {
 		CompiledCode:      make(map[string][]byte),
 		BuiltinFuncs:      nil,
 	}
+	world.AccountsAdapter = NewMockAccountsAdapter(world)
+
+	return world
 }
 
 func (b *MockWorld) InitBuiltinFunctions(gasMap config.GasScheduleMap) error {

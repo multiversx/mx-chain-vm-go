@@ -30,6 +30,11 @@ func GetTokenNameFromKey(key []byte) []byte {
 	return key[len(ESDTKeyPrefix):]
 }
 
+func (a *Account) GetTokenBalanceByName(tokenName string) (*big.Int, error) {
+	tokenKey := MakeTokenKey([]byte(tokenName))
+	return a.GetTokenBalance(tokenKey)
+}
+
 func (a *Account) GetTokenBalance(tokenKey []byte) (*big.Int, error) {
 	tokenData, err := a.GetTokenData(tokenKey)
 	if err != nil {

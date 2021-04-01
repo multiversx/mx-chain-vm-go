@@ -31,6 +31,8 @@ func (bf *BuiltinFunctionsWrapper) SetTokenData(address []byte, tokenKey []byte,
 	return account.SetTokenData(tokenKey, tokenData)
 }
 
+// TODO rewrite to simulate what the SCProcessor does when executing a tx with
+// data "ESDTTransfer@token@value@contractfunc@contractargs..."
 func (bf *BuiltinFunctionsWrapper) PerformDirectESDTTransfer(
 	sender []byte,
 	receiver []byte,
