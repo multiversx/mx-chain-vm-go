@@ -1,51 +1,65 @@
 {
-	"name": "accept esdt payment",
+	"name": "unstake",
 	"steps": [
 		{
 			"step": "externalSteps",
-			"path": "complete_setup.scen.json"
+			"path": "stake.scen.json"
+		},
+		{
+			"step": "externalSteps",
+			"path": "swap_fixed_input.scen.json"
+		},
+		{
+			"step": "externalSteps",
+			"path": "swap_fixed_input.scen.json"
+		},
+		{
+			"step": "externalSteps",
+			"path": "swap_fixed_input.scen.json"
+		},
+		{
+			"step": "externalSteps",
+			"path": "swap_fixed_input.scen.json"
 		},
 		{
 			"step": "scCall",
-			"txId": "acceptEsdtPayment",
+			"txId": "unstake",
 			"tx": {
 				"from": "address:user1",
-				"to": "address:pair_contract",
+				"to": "address:staking_contract",
 				"value": "0",
+				"function": "unstake",
 				"esdt": {
 					"tokenIdentifier": "str:ALC-abcdef",
-					"value": "2,000,000,000"
+					"value": "100,000",
+					"nonce": "1"
 				},
-				"function": "acceptEsdtPayment",
 				"arguments": [],
 				"gasLimit": "100,000,000",
 				"gasPrice": "0"
 			},
 			"expect": {
 				"out": [],
-				"status": "",
+				"status": "0",
+				"message": "",
 				"gas": "*",
 				"refund": "*"
 			}
 		},
 		{
 			"step": "scCall",
-			"txId": "acceptEsdtPayment",
+			"txId": "get-virtual-reserves",
 			"tx": {
 				"from": "address:user1",
-				"to": "address:pair_contract",
+				"to": "address:staking_contract",
 				"value": "0",
-				"esdt": {
-					"tokenIdentifier": "str:WEGLD-abcdef",
-					"value": "2,000,000,000"
-				},
-				"function": "acceptEsdtPayment",
+				"function": "getVirtualReserves",
 				"arguments": [],
 				"gasLimit": "100,000,000",
 				"gasPrice": "0"
 			},
 			"expect": {
-				"out": [],
+				"out": ["0"],
 				"status": "",
 				"gas": "*",
 				"refund": "*"
@@ -53,21 +67,18 @@
 		},
 		{
 			"step": "scCall",
-			"txId": "getTemporaryFunds",
+			"txId": "get-unbond-epoch",
 			"tx": {
 				"from": "address:user1",
-				"to": "address:pair_contract",
+				"to": "address:staking_contract",
 				"value": "0",
-				"function": "getTemporaryFunds",
-				"arguments": [
-					"address:user1",
-					"str:ALC-abcdef"
-				],
+				"function": "getUnbondEpoch",
+				"arguments": [],
 				"gasLimit": "100,000,000",
 				"gasPrice": "0"
 			},
 			"expect": {
-				"out": ["2,000,000,000"],
+				"out": ["0"],
 				"status": "",
 				"gas": "*",
 				"refund": "*"
@@ -75,21 +86,21 @@
 		},
 		{
 			"step": "scCall",
-			"txId": "getTemporaryFunds",
+			"txId": "get-unstake-amount",
 			"tx": {
 				"from": "address:user1",
-				"to": "address:pair_contract",
+				"to": "address:staking_contract",
 				"value": "0",
-				"function": "getTemporaryFunds",
+				"function": "getUnstakeAmount",
 				"arguments": [
 					"address:user1",
-					"str:WEGLD-abcdef"
+					"str:LPTOK-abcdef"
 				],
 				"gasLimit": "100,000,000",
 				"gasPrice": "0"
 			},
 			"expect": {
-				"out": ["2,000,000,000"],
+				"out": ["0"],
 				"status": "",
 				"gas": "*",
 				"refund": "*"

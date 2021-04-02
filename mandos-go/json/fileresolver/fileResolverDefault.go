@@ -11,7 +11,6 @@ var _ FileResolver = (*DefaultFileResolver)(nil)
 type DefaultFileResolver struct {
 	contextPath              string
 	contractPathReplacements map[string]string
-	pfe                      interface{}
 }
 
 // NewDefaultFileResolver yields a new DefaultFileResolver instance.

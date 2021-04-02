@@ -1,15 +1,15 @@
 {
-	"name": "swap fixed output",
+	"name": "unbond",
 	"steps": [
 		{
 			"step": "externalSteps",
-			"path": "add_liquidity.scen.json"
+			"path": "unstake.scen.json"
 		},
 		{
 			"step": "scCall",
 			"txId": "swap-fixed-output",
 			"tx": {
-				"from": "address:user2",
+				"from": "address:user1",
 				"to": "address:pair_contract",
 				"value": "0",
 				"function": "swapTokensFixedOutput",

@@ -1,44 +1,49 @@
 {
-	"name": "set local roles staking",
+	"name": "swap fixed input",
 	"steps": [
 		{
+			"step": "externalSteps",
+			"path": "add_liquidity.scen.json"
+		},
+		{
 			"step": "scCall",
-			"txId": "set-local-roles",
+			"txId": "stake",
 			"tx": {
-				"from": "address:owner",
+				"from": "address:user1",
 				"to": "address:staking_contract",
 				"value": "0",
-				"function": "setLocalRoles",
-				"arguments": [
-					"0x03", "0x04", "0x05"
-				],
+				"function": "stake",
+				"esdt": {
+					"tokenIdentifier": "str:ALC-abcdef",
+					"value": "100,000"
+				},
+				"arguments": [],
 				"gasLimit": "100,000,000",
 				"gasPrice": "0"
 			},
 			"expect": {
 				"out": [],
-				"status": "4",
-				"message": "*",
+				"status": "0",
+				"message": "",
 				"gas": "*",
 				"refund": "*"
 			}
 		},
 		{
 			"step": "scCall",
-			"txId": "get-last-error-message",
+			"txId": "get-virtual-reserves",
 			"tx": {
-				"from": "address:owner",
+				"from": "address:user1",
 				"to": "address:staking_contract",
 				"value": "0",
-				"function": "getLastErrorMessage",
+				"function": "getVirtualReserves",
 				"arguments": [],
 				"gasLimit": "100,000,000",
 				"gasPrice": "0"
 			},
 			"expect": {
-				"out": [""],
-				"status": "0",
-				"message": "",
+				"out": ["0"],
+				"status": "",
 				"gas": "*",
 				"refund": "*"
 			}

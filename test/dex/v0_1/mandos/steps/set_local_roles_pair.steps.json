@@ -16,11 +16,9 @@
 				"gasPrice": "0"
 			},
 			"expect": {
-				"out": [
-					"0x45474c44"
-				],
-				"status": "0",
-				"message": "",
+				"out": [],
+				"status": "4",
+				"message": "*",
 				"gas": "*",
 				"refund": "*"
 			}
@@ -44,10 +42,6 @@
 				"gas": "*",
 				"refund": "*"
 			}
-		},
-		{
-			"step": "externalSteps",
-			"path": "hackish.steps.json"
 		}
 	]
 }

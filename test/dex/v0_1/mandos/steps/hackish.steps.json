@@ -15,12 +15,96 @@
 						"str:token_b_name": "str:ALC-abcdef",
 						"str:state" : "1",
 						"str:lpTokenIdentifier": "str:LPTOK-abcdef",
-						"str:staking_address": "address:staking_contract",
-						"str:staking_token": "str:WEGLD-abcdef",
-						"str:router_address": "address:router_contract"
+						"str:router_address": "address:router_contract",
+						"str:fee_state": "1",
+						"str:fee_to_address": "address:staking",
+						"str:fee_token_identifier": "str:WEGLD-abcdef"
 					},
 					"code": "file:../../output/elrond_dex_pair.wasm"
+				},
+				"address:staking_contract": {
+					"nonce": "0",
+					"balance": "0",
+					"esdt": {
+						"str:STAKING-abcdef": {
+							"nonce": "0"
+						}
+					},
+					"storage": {
+						"str:wegld_token_identifier": "str:WEGLD-abcdef",
+						"str:sft_staking_token_identifier": "str:STAKING-abcdef",
+						"str:router_address": "address:router_contract",
+						"str:state": "1"
+					},
+					"code": "file:../../output/elrond_dex_staking.wasm"
 				}
+			}
+		},
+		{
+			"step": "scCall",
+			"txId": "add-pair",
+			"tx": {
+				"from": "address:router_contract",
+				"to": "address:staking_contract",
+				"value": "0",
+				"function": "add_pair",
+				"arguments": [
+					"address:pair_contract",
+					"str:LPTOK-abcdef"
+				],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [],
+				"status": "0",
+				"message": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "scCall",
+			"txId": "get-lp-for-address",
+			"tx": {
+				"from": "address:owner",
+				"to": "address:staking_contract",
+				"value": "0",
+				"function": "getLpTokenForPair",
+				"arguments": [
+					"address:pair_contract"
+				],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": ["str:LPTOK-abcdef"],
+				"status": "0",
+				"message": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "scCall",
+			"txId": "get-PairForLpToken",
+			"tx": {
+				"from": "address:owner",
+				"to": "address:staking_contract",
+				"value": "0",
+				"function": "getPairForLpToken",
+				"arguments": [
+					"str:LPTOK-abcdef"
+				],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": ["address:pair_contract"],
+				"status": "0",
+				"message": "",
+				"gas": "*",
+				"refund": "*"
 			}
 		}
 	]
