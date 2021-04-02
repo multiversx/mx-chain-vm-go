@@ -1,6 +1,6 @@
 package worldmock
 
-/// GenerateMockAddress simulates creation of a new address by the protocol.
+// GenerateMockAddress simulates creation of a new address by the protocol.
 func GenerateMockAddress(creatorAddress []byte, creatorNonce uint64) []byte {
 	result := make([]byte, 32)
 	result[10] = 0x11

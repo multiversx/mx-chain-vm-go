@@ -9,29 +9,43 @@ import (
 	"github.com/ElrondNetwork/elrond-go/data/esdt"
 )
 
+// ESDTKeyPrefix is the prefix of storage keys belonging to ESDT tokens
 var ESDTKeyPrefix = []byte(core.ElrondProtectedKeyPrefix + core.ESDTKeyIdentifier)
+
+// ESDTRoleKeyPrefix is the prefix of storage keys belonging to ESDT roles
 var ESDTRoleKeyPrefix = []byte(core.ElrondProtectedKeyPrefix + core.ESDTRoleIdentifier + core.ESDTKeyIdentifier)
 
+// GetTokenBalance returns the ESDT balance of an account for the given token
+// key (token keys are built from the token identifier using MakeTokenKey).
 func (bf *BuiltinFunctionsWrapper) GetTokenBalance(address []byte, tokenKey []byte) (*big.Int, error) {
 	account := bf.World.AcctMap.GetAccount(address)
 	return account.GetTokenBalance(tokenKey)
 }
 
+// SetTokenBalance sets the ESDT balance of an account for the given token
+// key (token keys are built from the token identifier using MakeTokenKey).
 func (bf *BuiltinFunctionsWrapper) SetTokenBalance(address []byte, tokenKey []byte, balance *big.Int) error {
 	account := bf.World.AcctMap.GetAccount(address)
 	return account.SetTokenBalance(tokenKey, balance)
 }
 
+// GetTokenData gets the ESDT information related to a token from the storage of an account
+// (token keys are built from the token identifier using MakeTokenKey).
 func (bf *BuiltinFunctionsWrapper) GetTokenData(address []byte, tokenKey []byte) (*esdt.ESDigitalToken, error) {
 	account := bf.World.AcctMap.GetAccount(address)
 	return account.GetTokenData(tokenKey)
 }
 
+// SetTokenData sets the ESDT information related to a token from the storage of an account
+// (token keys are built from the token identifier using MakeTokenKey).
 func (bf *BuiltinFunctionsWrapper) SetTokenData(address []byte, tokenKey []byte, tokenData *esdt.ESDigitalToken) error {
 	account := bf.World.AcctMap.GetAccount(address)
 	return account.SetTokenData(tokenKey, tokenData)
 }
 
+// PerformDirectESDTTransfer calls the real ESDTTransfer function immediately;
+// only works for in-shard transfers for now, but it will be expanded to
+// cross-shard.
 // TODO rewrite to simulate what the SCProcessor does when executing a tx with
 // data "ESDTTransfer@token@value@contractfunc@contractargs..."
 func (bf *BuiltinFunctionsWrapper) PerformDirectESDTTransfer(

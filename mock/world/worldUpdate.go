@@ -98,10 +98,12 @@ func (b *MockWorld) UpdateAccountFromOutputAccount(modAcct *vmcommon.OutputAccou
 	}
 }
 
+// CreateStateBackup -
 func (b *MockWorld) CreateStateBackup() {
 	b.AccountsAdapter.SnapshotState(nil, nil)
 }
 
+// CommitChanges -
 func (b *MockWorld) CommitChanges() error {
 	_, err := b.AccountsAdapter.Commit()
 	return err

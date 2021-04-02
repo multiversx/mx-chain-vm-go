@@ -10,8 +10,12 @@ import (
 	"github.com/ElrondNetwork/elrond-go/process/smartContract/builtInFunctions"
 )
 
+// WorldMarshalizer is the global marshalizer to be used by the components of
+// the BuiltinFunctionsWrapper.
 var WorldMarshalizer = &marshal.GogoProtoMarshalizer{}
 
+// BuiltinFunctionsWrapper manages and initializes a BuiltInFunctionContainer
+// along with its dependencies
 type BuiltinFunctionsWrapper struct {
 	Container       process.BuiltInFunctionContainer
 	MapDNSAddresses map[string]struct{}
@@ -19,6 +23,8 @@ type BuiltinFunctionsWrapper struct {
 	Marshalizer     marshal.Marshalizer
 }
 
+// NewBuiltinFunctionsWrapper creates a new BuiltinFunctionsWrapper with
+// default dependencies.
 func NewBuiltinFunctionsWrapper(
 	world *MockWorld,
 	gasMap config.GasScheduleMap,
@@ -56,6 +62,8 @@ func NewBuiltinFunctionsWrapper(
 	return builtinFuncsWrapper, nil
 }
 
+// ProcessBuiltInFunction delegates the execution of a real builtin function to
+// the inner BuiltInFunctionContainer.
 func (bf *BuiltinFunctionsWrapper) ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	caller := bf.getAccountSharded(input.CallerAddr)
 	recipient := bf.getAccountSharded(input.RecipientAddr)
@@ -68,6 +76,7 @@ func (bf *BuiltinFunctionsWrapper) ProcessBuiltInFunction(input *vmcommon.Contra
 	return function.ProcessBuiltinFunction(caller, recipient, input)
 }
 
+// GetBuiltinFunctionNames returns the list of defined builtin-in functions.
 func (bf *BuiltinFunctionsWrapper) GetBuiltinFunctionNames() vmcommon.FunctionNames {
 	return bf.Container.Keys()
 }
