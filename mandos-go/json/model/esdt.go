@@ -15,3 +15,9 @@ type CheckESDTData struct {
 	Value           JSONCheckBigInt
 	Frozen          JSONCheckUint64
 }
+
+// ESDTRoles specifies token role initializations
+type ESDTRoles struct {
+	TokenIdentifier JSONBytesFromString
+	Roles           []string
+}

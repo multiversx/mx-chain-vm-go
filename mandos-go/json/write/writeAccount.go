@@ -15,6 +15,9 @@ func accountsToOJ(accounts []*mj.Account) oj.OJsonObject {
 		acctOJ.Put("nonce", uint64ToOJ(account.Nonce))
 		acctOJ.Put("balance", bigIntToOJ(account.Balance))
 		appendESDTToOJ(account.ESDTData, acctOJ)
+		if len(account.ESDTRoles) > 0 {
+			acctOJ.Put("esdtRoles", esdtRolesToMapOJ(account.ESDTRoles))
+		}
 		storageOJ := oj.NewMap()
 		for _, st := range account.Storage {
 			storageOJ.Put(bytesFromStringToString(st.Key), bytesFromTreeToOJ(st.Value))

@@ -14,6 +14,7 @@ type Account struct {
 	Code            JSONBytesFromString
 	AsyncCallData   string
 	ESDTData        []*ESDTData
+	ESDTRoles       []*ESDTRoles
 }
 
 // StorageKeyValuePair is a json key value pair in the storage map.

@@ -41,6 +41,20 @@
                             }
                         ]
                     },
+                    "esdtRoles": {
+                        "str:tokenID1": [
+                            "role1",
+                            "role2"
+                        ],
+                        "str:tokenID2": [],
+                        "str:tokenID3": [
+                            "ESDTRoleLocalMint",
+                            "ESDTRoleLocalBurn",
+                            "ESDTRoleNFTCreate",
+                            "ESDTRoleNFTAddQuantity",
+                            "ESDTRoleNFTBurn"
+                        ]
+                    },
                     "storage": {},
                     "code": ""
                 },
