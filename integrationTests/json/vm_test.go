@@ -171,12 +171,6 @@ func TestPingPongEgld(t *testing.T) {
 	runAllTestsInFolder(t, "ping-pong-egld")
 }
 
-func TestSingleJSON(t *testing.T) {
-	logger.SetLogLevel("*:TRACE")
-	logger.ToggleLoggerName(true)
-	runSingleTest(t, "erc20-rust/mandos", "transferFrom_Exploratory-MultipleTransfersThrow.scen.json")
-}
-
 func runAllTestsInFolder(t *testing.T, folder string) {
 	runTestsInFolder(t, folder, []string{})
 }

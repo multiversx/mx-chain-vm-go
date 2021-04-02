@@ -102,6 +102,11 @@ func (b *MockWorld) CreateStateBackup() {
 	b.AccountsAdapter.SnapshotState(nil, nil)
 }
 
+func (b *MockWorld) CommitChanges() error {
+	_, err := b.AccountsAdapter.Commit()
+	return err
+}
+
 // RollbackChanges should be called after the VM test has run, if the tx has failed
 func (b *MockWorld) RollbackChanges() error {
 	return b.AccountsAdapter.RevertToSnapshot(0)
