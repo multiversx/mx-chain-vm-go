@@ -6,20 +6,23 @@
 			"path": "stake.scen.json"
 		},
 		{
-			"step": "externalSteps",
-			"path": "swap_fixed_input.scen.json"
-		},
-		{
-			"step": "externalSteps",
-			"path": "swap_fixed_input.scen.json"
-		},
-		{
-			"step": "externalSteps",
-			"path": "swap_fixed_input.scen.json"
-		},
-		{
-			"step": "externalSteps",
-			"path": "swap_fixed_input.scen.json"
+			"step": "checkState",
+			"accounts": {
+				"address:user1": {
+					"nonce": "8",
+					"balance": "1000000000000000000000000000000",
+					"esdt": {
+						"str:ALC-abcdef": "3000000000",
+						"str:WEGLD-abcdef": "3000000000",
+						"str:LPTOK-abcdef": "1899999000",
+						"": {
+							"nonce": "1",
+							"value": "99999000"
+						}
+					}
+				},
+				"+": ""
+			}
 		},
 		{
 			"step": "scCall",
@@ -30,7 +33,7 @@
 				"value": "0",
 				"function": "unstake",
 				"esdt": {
-					"tokenIdentifier": "str:ALC-abcdef",
+					"tokenIdentifier": "",
 					"value": "100,000",
 					"nonce": "1"
 				},

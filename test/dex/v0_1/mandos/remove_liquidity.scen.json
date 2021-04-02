@@ -12,6 +12,10 @@
 				"from": "address:user1",
 				"to": "address:pair_contract",
 				"value": "0",
+				"esdt": {
+					"tokenIdentifier": "str:LPTOK-abcdef",
+					"value": "1,999,999,000"
+				},
 				"function": "removeLiquidity",
 				"arguments": [
 					"500,000,000",

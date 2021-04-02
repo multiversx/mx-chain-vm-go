@@ -7,8 +7,11 @@
 				"address:pair_contract": {
 					"nonce": "0",
 					"balance": "0",
-					"esdt": {
-						"str:LPTOK-abcdef": "5,000,000,000,000,000,000"
+					"esdtRoles": {
+						"str:LPTOK-abcdef": [
+							"ESDTRoleLocalMint",
+							"ESDTRoleLocalBurn"
+						]
 					},
 					"storage": {
 						"str:token_a_name": "str:WEGLD-abcdef",
@@ -17,7 +20,7 @@
 						"str:lpTokenIdentifier": "str:LPTOK-abcdef",
 						"str:router_address": "address:router_contract",
 						"str:fee_state": "1",
-						"str:fee_to_address": "address:staking",
+						"str:fee_address": "address:staking_contract",
 						"str:fee_token_identifier": "str:WEGLD-abcdef"
 					},
 					"code": "file:../../output/elrond_dex_pair.wasm"
@@ -25,10 +28,12 @@
 				"address:staking_contract": {
 					"nonce": "0",
 					"balance": "0",
-					"esdt": {
-						"str:STAKING-abcdef": {
-							"nonce": "0"
-						}
+					"esdtRoles": {
+						"str:STAKING-abcdef": [
+							"ESDTRoleNFTCreate",
+							"ESDTRoleNFTAddQuantity",
+							"ESDTRoleNFTBurn"
+						]
 					},
 					"storage": {
 						"str:wegld_token_identifier": "str:WEGLD-abcdef",
