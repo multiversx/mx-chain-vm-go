@@ -21,6 +21,11 @@ func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmc
 			if errRollback != nil {
 				err = errRollback
 			}
+		} else {
+			errCommit := ae.World.CommitChanges()
+			if errCommit != nil {
+				err = errCommit
+			}
 		}
 	}()
 

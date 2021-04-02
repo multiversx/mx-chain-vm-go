@@ -128,7 +128,7 @@ func checkAccountESDT(expectedAcct *mj.CheckAccount, matchingAcct *worldmock.Acc
 		return fmt.Errorf("mismatch for account %s: %w", accountAddress, err)
 	}
 
-	errors := checkAccountState(expectedTokens, accountTokens)
+	errors := checkTokensState(expectedTokens, accountTokens)
 	errorString := makeErrorString(errors)
 	if len(errorString) > 0 {
 		return fmt.Errorf("mismatch for account %s: %s", accountAddress, errorString)
@@ -137,26 +137,20 @@ func checkAccountESDT(expectedAcct *mj.CheckAccount, matchingAcct *worldmock.Acc
 	return nil
 }
 
-func checkAccountState(
+func checkTokensState(
 	expectedTokens map[string]*mj.CheckESDTData,
 	accountTokens map[string]*esdt.ESDigitalToken,
 ) []error {
 	errors := make([]error, 0)
-	for tokenName, accountTokenData := range accountTokens {
+	for tokenName := range accountTokens {
 		expectedTokenData := expectedTokens[tokenName]
-		if !expectedTokenData.Value.Check(accountTokenData.Value) {
-			err := fmt.Errorf("bad ESDT balance. Token %s: Want: %d. Have: %d",
-				tokenName, expectedTokenData.Value.Value, accountTokenData.Value)
-			errors = append(errors, err)
-		}
-
-		metadataFromBytes := builtInFunctions.ESDTUserMetadataFromBytes(accountTokenData.Properties)
-		if !expectedTokenData.Frozen.CheckBool(metadataFromBytes.Frozen) {
-			err := fmt.Errorf("bad ESDT frozen flag. Token %s: Want: %t. Have: %t",
-				tokenName, expectedTokenData.Frozen.Value > 0, metadataFromBytes.Frozen)
+		accountTokenData := accountTokens[tokenName]
+		err := checkTokenState(tokenName, expectedTokenData, accountTokenData)
+		if err != nil {
 			errors = append(errors, err)
 		}
 	}
+
 	return errors
 }
 
@@ -193,6 +187,30 @@ func detectMissingTokens(
 		if !isFound && expectedTokenData.Value.Value.Sign() > 0 {
 			return fmt.Errorf("missing ESDT token %ss", tokenName)
 		}
+	}
+
+	return nil
+}
+
+func checkTokenState(tokenName string, expectedTokenData *mj.CheckESDTData, accountTokenData *esdt.ESDigitalToken) error {
+	if expectedTokenData == nil {
+		if accountTokenData.Value.Sign() != 0 {
+			return fmt.Errorf("bad ESDT balance. Token %s: Want: %d. Have: %d",
+				tokenName, 0, accountTokenData.Value)
+		}
+
+		return nil
+	}
+
+	if !expectedTokenData.Value.Check(accountTokenData.Value) {
+		return fmt.Errorf("bad ESDT balance. Token %s: Want: %d. Have: %d",
+			tokenName, expectedTokenData.Value.Value, accountTokenData.Value)
+	}
+
+	metadataFromBytes := builtInFunctions.ESDTUserMetadataFromBytes(accountTokenData.Properties)
+	if !expectedTokenData.Frozen.CheckBool(metadataFromBytes.Frozen) {
+		return fmt.Errorf("bad ESDT frozen flag. Token %s: Want: %t. Have: %t",
+			tokenName, expectedTokenData.Frozen.Value > 0, metadataFromBytes.Frozen)
 	}
 
 	return nil

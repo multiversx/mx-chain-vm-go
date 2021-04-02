@@ -61,6 +61,7 @@ func (m *MockAccountsAdapter) RemoveAccount(address []byte) error {
 }
 
 func (m *MockAccountsAdapter) Commit() ([]byte, error) {
+	m.Snapshots = make([]AccountMap, 0)
 	return nil, nil
 }
 

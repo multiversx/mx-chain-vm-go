@@ -170,7 +170,7 @@ func TestPingPongEgld(t *testing.T) {
 func TestSingleJSON(t *testing.T) {
 	logger.SetLogLevel("*:TRACE")
 	logger.ToggleLoggerName(true)
-	runSingleTest(t, "erc20-rust/mandos", "transferFrom_Exploratory-MultipleTransfersThrow.scen.json")
+	runSingleTest(t, "features/async/mandos", "forwarder_raw_direct_esdt.scen.json")
 }
 
 func runAllTestsInFolder(t *testing.T, folder string) {
