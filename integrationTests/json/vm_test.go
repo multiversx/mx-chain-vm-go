@@ -25,6 +25,11 @@ func getTestRoot() string {
 	return arwenTestRoot
 }
 
+// Tests Mandos consistency, no smart contracts.
+func TestMandosSelfTest(t *testing.T) {
+	runAllTestsInFolder(t, "mandos-self-test")
+}
+
 func TestRustErc20(t *testing.T) {
 	runAllTestsInFolder(t, "erc20-rust/mandos")
 }
