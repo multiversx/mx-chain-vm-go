@@ -15,7 +15,7 @@
 						"str:ALC-abcdef": "3000000000",
 						"str:WEGLD-abcdef": "3000000000",
 						"str:LPTOK-abcdef": "1899999000",
-						"": {
+						"str:STAKING-abcdef": {
 							"nonce": "1",
 							"value": "99999000"
 						}
@@ -33,7 +33,7 @@
 				"value": "0",
 				"function": "unstake",
 				"esdt": {
-					"tokenIdentifier": "",
+					"tokenIdentifier": "str:STAKING-abcdef",
 					"value": "100,000",
 					"nonce": "1"
 				},
