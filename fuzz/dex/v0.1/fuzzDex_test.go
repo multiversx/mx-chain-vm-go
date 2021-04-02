@@ -66,6 +66,9 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 	err = pfe.createPairs()
 	require.Nil(t, err)
 
+	err = pfe.doHackishSteps()
+	require.Nil(t, err)
+
 	//Pais are created. Set fee on for each pair that has WEGLD-abcdef as a token.
 	err = pfe.setFeeOn()
 	require.Nil(t, err)
@@ -74,7 +77,7 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 	require.Nil(t, err)
 
 	re := fuzzutil.NewRandomEventProvider()
-	for stepIndex := 0; stepIndex < 2500; stepIndex++ {
+	for stepIndex := 0; stepIndex < 100; stepIndex++ {
 		generateRandomEvent(t, pfe, r, re)
 	}
 }
@@ -91,13 +94,13 @@ func generateRandomEvent(
 	tokenA := ""
 	tokenB := ""
 
-	tokenAIndex := r.Intn(pfe.numTokens * 2)
+	tokenAIndex := r.Intn(pfe.numTokens * 2) + 1
 	if tokenAIndex > pfe.numTokens {
 		tokenA = pfe.wegldTokenId
 	} else {
 		tokenA = pfe.tokenTicker(tokenAIndex)
 	}
-	tokenBIndex := r.Intn(pfe.numTokens)
+	tokenBIndex := r.Intn(pfe.numTokens) + 1
 	tokenB = pfe.tokenTicker(tokenBIndex)
 
 	userId := r.Intn(pfe.numUsers) + 1
@@ -119,7 +122,8 @@ func generateRandomEvent(
 				tokenB = aux
 			}
 
-			fixedInput = r.Intn(2) != 0
+			//fixedInput = r.Intn(2) != 0
+			fixedInput = true
 			seed := r.Intn(1000000000000)
 			amountA = seed
 			amountB = seed / 10000

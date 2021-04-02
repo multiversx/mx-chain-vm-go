@@ -294,38 +294,38 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 		return err
 	}
 
-	//// set local roles
-	//_, err = pfe.executeTxStep(fmt.Sprintf(`
-	//{
-	//	"step": "scCall",
-	//	"txId": "set-local-roles",
-	//	"tx": {
-	//		"from": "''%s",
-	//		"to": "''%s",
-	//		"value": "0",
-	//		"function": "setLocalRoles",
-	//		"arguments": [
-	//			"0x03",
-	//			"0x04"
-	//			"0x05"
-	//		],
-	//		"gasLimit": "10,000,000",
-	//		"gasPrice": "0"
-	//	},
-	//	"expect": {
-	//		"out": [],
-	//		"status": "",
-	//		"logs": [],
-	//		"gas": "*",
-	//		"refund": "*"
-	//	}
-	//}`,
-	//	string(pfe.ownerAddress),
-	//	string(pfe.stakingAddress),
-	//))
-	//if err != nil {
-	//	return err
-	//}
+	// set local roles
+	_, err = pfe.executeTxStep(fmt.Sprintf(`
+	{
+		"step": "scCall",
+		"txId": "set-local-roles-staking",
+		"tx": {
+			"from": "''%s",
+			"to": "''%s",
+			"value": "0",
+			"function": "setLocalRoles",
+			"arguments": [
+				"0x03",
+				"0x04"
+				"0x05"
+			],
+			"gasLimit": "10,000,000",
+			"gasPrice": "0"
+		},
+		"expect": {
+			"out": [],
+			"status": "4",
+			"message": "*",
+			"gas": "*",
+			"refund": "*"
+		}
+	}`,
+		string(pfe.ownerAddress),
+		string(pfe.stakingAddress),
+	))
+	if err != nil {
+		return err
+	}
 
 	pfe.log("init ok")
 	return nil

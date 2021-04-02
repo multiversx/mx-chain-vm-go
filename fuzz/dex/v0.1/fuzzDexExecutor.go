@@ -424,62 +424,196 @@ func Use(vals ...interface{}) {
 func (pfe *fuzzDexExecutor) swapFixedInput(user string, tokenA string, amountA int, tokenB string, amountB int) error {
 	pfe.log("swapFixedInput %s -> %s", tokenA, tokenB)
 
-	output, err := pfe.executeTxStep("")
-	if err != nil {
-		return err
-	}
-
-	if output.ReturnCode != vmi.Ok {
-		pfe.log("could not remove node because %s", output.ReturnMessage)
-		return nil
-	}
+	//if tokenA == tokenB {
+	//	return nil
+	//}
+	//
+	//rawResponse, err := pfe.querySingleResult(pfe.ownerAddress, pfe.routerAddress,
+	//	"getPair", fmt.Sprintf("\"str:%s\", \"str:%s\"", tokenA, tokenB))
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//pairHexStr := "0x"
+	//for i := 0; i < len(rawResponse[0]); i++ {
+	//	toAppend := fmt.Sprintf("%02x", rawResponse[0][i])
+	//	pairHexStr += toAppend
+	//}
+	//
+	//
+	//output, err := pfe.executeTxStep(fmt.Sprintf(`
+	//{
+	//		"step": "scCall",
+	//		"txId": "swap-fixed-input",
+	//		"tx": {
+	//			"from": "str:%s",
+	//			"to": "%s",
+	//			"value": "0",
+	//			"function": "swapTokensFixedInput",
+	//			"esdt": {
+	//				"tokenIdentifier": "str:%s",
+	//				"value": "%d"
+	//			},
+	//			"arguments": [
+	//				"str:%s",
+	//				"%d"
+	//			],
+	//			"gasLimit": "100,000,000",
+	//			"gasPrice": "0"
+	//		},
+	//		"expect": {
+	//			"out": [],
+	//			"status": "0",
+	//			"message": "",
+	//			"gas": "*",
+	//			"refund": "*"
+	//		}
+	//}`,
+	//	user,
+	//	pairHexStr,
+	//	tokenA,
+	//	amountA,
+	//	tokenB,
+	//	amountB,
+	//))
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//if output.ReturnCode != vmi.Ok {
+	//	pfe.log("could not remove node because %s", output.ReturnMessage)
+	//	return nil
+	//}
 
 	return nil
 }
 
 func (pfe *fuzzDexExecutor) swapFixedOutput(user string, tokenA string, amountA int, tokenB string, amountB int) error {
-	pfe.log("swapFixedInput %s -> %s", tokenA, tokenB)
+	pfe.log("swapFixedOutput %s -> %s", tokenA, tokenB)
 
-	output, err := pfe.executeTxStep("")
-	if err != nil {
-		return err
-	}
-
-	if output.ReturnCode != vmi.Ok {
-		pfe.log("could not remove node because %s", output.ReturnMessage)
-		return nil
-	}
+	//output, err := pfe.executeTxStep("")
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//if output.ReturnCode != vmi.Ok {
+	//	pfe.log("could not remove node because %s", output.ReturnMessage)
+	//	return nil
+	//}
 
 	return nil
 }
 
 func (pfe *fuzzDexExecutor) addLiquidity(user string, tokenA string, tokenB string, amountA int, amountB int , amountAmin int, amountBmin int) error {
-	pfe.log("swapFixedInput %s -> %s", tokenA, tokenB)
+	pfe.log("add liquidity %s -> %s", tokenA, tokenB)
 
-	output, err := pfe.executeTxStep("")
-	if err != nil {
-		return err
-	}
-
-	if output.ReturnCode != vmi.Ok {
-		pfe.log("could not remove node because %s", output.ReturnMessage)
-		return nil
-	}
+	//output, err := pfe.executeTxStep("")
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//if output.ReturnCode != vmi.Ok {
+	//	pfe.log("could not remove node because %s", output.ReturnMessage)
+	//	return nil
+	//}
 
 	return nil
 }
 
 func (pfe *fuzzDexExecutor) removeLiquidity(user string, tokenA string, tokenB string, amount int, amountAmin int, amountBmin int) error {
-	pfe.log("swapFixedInput %s -> %s", tokenA, tokenB)
+	pfe.log("removeLiquidity %s -> %s", tokenA, tokenB)
 
-	output, err := pfe.executeTxStep("")
+	//output, err := pfe.executeTxStep("")
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//if output.ReturnCode != vmi.Ok {
+	//	pfe.log("could not remove node because %s", output.ReturnMessage)
+	//	return nil
+	//}
+
+	return nil
+}
+
+func (pfe *fuzzDexExecutor) doHackishSteps() error {
+	lpTokenIndex := 1
+	for i := 1; i < pfe.numTokens; i++ {
+		for j := i; j < pfe.numTokens; j++ {
+			err := pfe.doHackishStep(pfe.tokenTicker(j), pfe.tokenTicker(j+1), lpTokenIndex)
+			lpTokenIndex += 1
+			if err != nil {
+				return err
+			}
+		}
+	}
+	for i := 1; i <= pfe.numTokens; i++ {
+		err := pfe.doHackishStep("WEGLD-abcdef", pfe.tokenTicker(i), lpTokenIndex)
+		lpTokenIndex += 1
+		if err != nil {
+			return err
+		}
+	}
+
+	//TODO: Also do hackish step for STAKING!!!!
+	return nil
+}
+
+func (pfe *fuzzDexExecutor) doHackishStep(tokenA string, tokenB string, index int) error {
+	lpTokenName := "LPTOK-" + fmt.Sprintf("%06d", index)
+
+
+	rawResponse, err := pfe.querySingleResult(pfe.ownerAddress, pfe.routerAddress,
+		"getPair", fmt.Sprintf("\"str:%s\", \"str:%s\"", tokenA, tokenB))
 	if err != nil {
 		return err
 	}
 
-	if output.ReturnCode != vmi.Ok {
-		pfe.log("could not remove node because %s", output.ReturnMessage)
-		return nil
+	pairHexStr := "0x"
+	for i := 0; i < len(rawResponse[0]); i++ {
+		toAppend := fmt.Sprintf("%02x", rawResponse[0][i])
+		pairHexStr += toAppend
+	}
+
+	err = pfe.executeStep(fmt.Sprintf(`
+	{
+		"step": "setState",
+		"comment": "test",
+		"accounts": {
+			"%s": {
+				"nonce": "0",
+				"balance": "0",
+				"esdtRoles": {
+					"str:%s": [
+						"ESDTRoleLocalMint",
+						"ESDTRoleLocalBurn"
+					]
+				},
+				"storage": {
+					"str:token_a_name": "str:%s",
+					"str:token_b_name": "str:%s",
+					"str:state": "1",
+					"str:lpTokenIdentifier": "str:%s",
+					"str:router_address": "''%s",
+					"str:fee_state": "1",
+					"str:fee_address": "''%s",
+					"str:fee_token_identifier": "str:%s"
+				},
+				"code": "file:../../../test/dex/v0_1/output/elrond_dex_pair.wasm"
+			}
+		}
+	}`,
+		pairHexStr,
+		lpTokenName,
+		tokenA,
+		tokenB,
+		lpTokenName,
+		string(pfe.routerAddress),
+		string(pfe.stakingAddress),
+		pfe.wegldTokenId,
+	))
+	if err != nil {
+		return err
 	}
 
 	return nil

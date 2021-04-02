@@ -39,11 +39,11 @@
 		},
 		{
 			"step": "externalSteps",
-			"path": "steps/set_fee_on.steps.json"
+			"path": "steps/hackish.steps.json"
 		},
 		{
 			"step": "externalSteps",
-			"path": "steps/hackish.steps.json"
+			"path": "steps/set_fee_on.steps.json"
 		}
 	]
 }
