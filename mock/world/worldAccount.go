@@ -12,7 +12,11 @@ import (
 	"github.com/ElrondNetwork/elrond-go/data/state"
 )
 
+// ErrOperationNotPermitted indicates an operation rejected due to insufficient
+// permissions.
 var ErrOperationNotPermitted = errors.New("operation not permitted")
+
+// ErrInvalidAddressLength indicates an incorrect length given for an address.
 var ErrInvalidAddressLength = errors.New("invalid address length")
 
 var _ state.AccountHandler = (*Account)(nil)
@@ -63,18 +67,6 @@ func (a *Account) SetCodeAndMetadata(code []byte, codeMetadata *vmcommon.CodeMet
 	a.CodeHash = hash
 	a.IsSmartContract = true
 	a.CodeMetadata = codeMetadata.ToBytes()
-}
-
-func (a *Account) SetPayable(payable bool) {
-	if a.CodeMetadata == nil {
-		a.CodeMetadata = []byte{0, 0}
-	}
-
-	if payable {
-		a.CodeMetadata[1] |= vmcommon.MetadataPayable
-	} else {
-		a.CodeMetadata[1] &^= vmcommon.MetadataPayable
-	}
 }
 
 // AddressBytes -
@@ -137,6 +129,7 @@ func (a *Account) IsInterfaceNil() bool {
 	return a == nil
 }
 
+// SetCode -
 func (a *Account) SetCode(code []byte) {
 	a.Code = code
 	hasher := hashing.NewHasher()
@@ -144,22 +137,27 @@ func (a *Account) SetCode(code []byte) {
 	a.IsSmartContract = true
 }
 
+// SetCodeMetadata -
 func (a *Account) SetCodeMetadata(codeMetadata []byte) {
 	a.CodeMetadata = codeMetadata
 }
 
+// SetCodeHash -
 func (a *Account) SetCodeHash(hash []byte) {
 	a.CodeHash = hash
 }
 
+// SetRootHash -
 func (a *Account) SetRootHash(hash []byte) {
 	a.RootHash = hash
 }
 
+// DataTrieTracker -
 func (a *Account) DataTrieTracker() state.DataTrieTracker {
 	return a
 }
 
+// AddToBalance -
 func (a *Account) AddToBalance(value *big.Int) error {
 	newBalance := big.NewInt(0).Add(a.Balance, value)
 	if newBalance.Cmp(zero) < 0 {
@@ -170,6 +168,7 @@ func (a *Account) AddToBalance(value *big.Int) error {
 	return nil
 }
 
+// SubFromBalance -
 func (a *Account) SubFromBalance(value *big.Int) error {
 	newBalance := big.NewInt(0).Sub(a.Balance, value)
 	if newBalance.Cmp(zero) < 0 {
@@ -180,6 +179,7 @@ func (a *Account) SubFromBalance(value *big.Int) error {
 	return nil
 }
 
+// ClaimDeveloperRewards -
 func (a *Account) ClaimDeveloperRewards(sender []byte) (*big.Int, error) {
 	if !bytes.Equal(sender, a.OwnerAddress) {
 		return nil, ErrOperationNotPermitted
@@ -191,10 +191,12 @@ func (a *Account) ClaimDeveloperRewards(sender []byte) (*big.Int, error) {
 	return oldValue, nil
 }
 
+// AddToDeveloperReward -
 func (a *Account) AddToDeveloperReward(value *big.Int) {
 	a.DeveloperReward = big.NewInt(0).Add(a.DeveloperReward, value)
 }
 
+// ChangeOwnerAddress -
 func (a *Account) ChangeOwnerAddress(sender []byte, newAddress []byte) error {
 	if !bytes.Equal(sender, a.OwnerAddress) {
 		return ErrOperationNotPermitted
@@ -208,42 +210,52 @@ func (a *Account) ChangeOwnerAddress(sender []byte, newAddress []byte) error {
 	return nil
 }
 
+// SetOwnerAddress -
 func (a *Account) SetOwnerAddress(address []byte) {
 	a.OwnerAddress = address
 }
 
+// SetUserName -
 func (a *Account) SetUserName(userName []byte) {
 	a.Username = make([]byte, len(userName))
 	copy(a.Username, userName)
 }
 
+// IncreaseNonce -
 func (a *Account) IncreaseNonce(nonce uint64) {
-	a.Nonce = a.Nonce + nonce
+	a.Nonce += nonce
 }
 
+// RetrieveValue -
 func (a *Account) RetrieveValue(key []byte) ([]byte, error) {
 	return a.Storage[string(key)], nil
 }
 
+// SaveKeyValue -
 func (a *Account) SaveKeyValue(key []byte, value []byte) error {
 	a.Storage[string(key)] = value
 	return nil
 }
 
+// SetDataTrie -
 func (a *Account) SetDataTrie(tr data.Trie) {
 }
 
+// DataTrie -
 func (a *Account) DataTrie() data.Trie {
 	return nil
 }
 
+// ClearDataCaches -
 func (a *Account) ClearDataCaches() {
 }
 
+// DirtyData -
 func (a *Account) DirtyData() map[string][]byte {
 	return a.Storage
 }
 
+// Clone -
 func (a *Account) Clone() *Account {
 	return &Account{
 		Exists:          a.Exists,

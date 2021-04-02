@@ -241,6 +241,7 @@ func (b *MockWorld) IsSmartContract(address []byte) bool {
 	return account.IsSmartContract
 }
 
+// IsPayable -
 func (b *MockWorld) IsPayable(address []byte) (bool, error) {
 	account := b.AcctMap.GetAccount(address)
 	if account == nil {
@@ -255,15 +256,18 @@ func (b *MockWorld) IsPayable(address []byte) (bool, error) {
 	return metadata.Payable, nil
 }
 
+// SaveCompiledCode -
 func (b *MockWorld) SaveCompiledCode(codeHash []byte, code []byte) {
 	b.CompiledCode[string(codeHash)] = code
 }
 
+// GetCompiledCode -
 func (b *MockWorld) GetCompiledCode(codeHash []byte) (bool, []byte) {
 	code, found := b.CompiledCode[string(codeHash)]
 	return found, code
 }
 
+// ClearCompiledCodes -
 func (b *MockWorld) ClearCompiledCodes() {
 	b.CompiledCode = make(map[string][]byte)
 }

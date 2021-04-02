@@ -72,6 +72,7 @@ func (am AccountMap) DeleteAccount(address []byte) {
 	delete(am, string(address))
 }
 
+// Clone creates a deep clone of the entire AccountMap.
 func (am AccountMap) Clone() AccountMap {
 	clone := make(AccountMap, len(am))
 	for address, account := range am {
@@ -81,6 +82,8 @@ func (am AccountMap) Clone() AccountMap {
 	return clone
 }
 
+// LoadAccountStorageFrom reassigns the storage of the accounts to the storage
+// of the accounts found in otherAM; it only does a reference change, not a deep copy.
 func (am AccountMap) LoadAccountStorageFrom(otherAM AccountMap) error {
 	for address, account := range am {
 		otherAccount, otherExists := otherAM[address]

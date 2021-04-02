@@ -183,7 +183,7 @@ func detectMissingTokens(
 	accountTokens map[string]*esdt.ESDigitalToken,
 ) error {
 	for tokenName, expectedTokenData := range expectedTokens {
-		_, isFound := expectedTokens[tokenName]
+		_, isFound := accountTokens[tokenName]
 		if !isFound && expectedTokenData.Value.Value.Sign() > 0 {
 			return fmt.Errorf("missing ESDT token %ss", tokenName)
 		}
