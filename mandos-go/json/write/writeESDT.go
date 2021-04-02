@@ -90,3 +90,16 @@ func esdtToFullMapOJ(esdtItem *mj.ESDTData) *oj.OJsonMap {
 	}
 	return esdtItemOJ
 }
+
+func esdtRolesToMapOJ(esdtRoles []*mj.ESDTRoles) *oj.OJsonMap {
+	esdtRolesOJ := oj.NewMap()
+	for _, rolesItem := range esdtRoles {
+		var convertedList []oj.OJsonObject
+		for _, roleStr := range rolesItem.Roles {
+			convertedList = append(convertedList, &oj.OJsonString{Value: roleStr})
+		}
+		rolesOJList := oj.OJsonList(convertedList)
+		esdtRolesOJ.Put(rolesItem.TokenIdentifier.Original, &rolesOJList)
+	}
+	return esdtRolesOJ
+}

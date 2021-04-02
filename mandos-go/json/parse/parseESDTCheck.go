@@ -8,19 +8,19 @@ import (
 	oj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/orderedjson"
 )
 
-func (p *Parser) processAppendESDTData(
+func (p *Parser) processAppendCheckESDTData(
 	tokenName []byte,
 	esdtDataRaw oj.OJsonObject,
-	output []*mj.ESDTData) ([]*mj.ESDTData, error) {
+	output []*mj.CheckESDTData) ([]*mj.CheckESDTData, error) {
 
 	var err error
 
 	switch data := esdtDataRaw.(type) {
 	case *oj.OJsonString:
 		// simple string representing balance "400,000,000,000"
-		esdtData := mj.ESDTData{}
+		esdtData := mj.CheckESDTData{}
 		esdtData.TokenIdentifier = mj.NewJSONBytesFromString(tokenName, string(tokenName))
-		esdtData.Value, err = p.processBigInt(esdtDataRaw, bigIntUnsignedBytes)
+		esdtData.Value, err = p.processCheckBigInt(esdtDataRaw, bigIntUnsignedBytes)
 		if err != nil {
 			return output, fmt.Errorf("invalid ESDT balance: %w", err)
 		}
@@ -28,7 +28,7 @@ func (p *Parser) processAppendESDTData(
 		output = append(output, &esdtData)
 		return output, nil
 	case *oj.OJsonMap:
-		esdtData, err := p.processESDTDataMap(tokenName, data)
+		esdtData, err := p.processCheckESDTDataMap(tokenName, data)
 		if err != nil {
 			return output, err
 		}
@@ -40,7 +40,7 @@ func (p *Parser) processAppendESDTData(
 			if !isMap {
 				return nil, errors.New("JSON map expected in ESDT list")
 			}
-			esdtData, err := p.processESDTDataMap(tokenName, itemAsMap)
+			esdtData, err := p.processCheckESDTDataMap(tokenName, itemAsMap)
 			if err != nil {
 				return output, err
 			}
@@ -52,21 +52,13 @@ func (p *Parser) processAppendESDTData(
 	}
 }
 
-func (p *Parser) processTxESDT(esdtRaw oj.OJsonObject) (*mj.ESDTData, error) {
-	esdtDataMap, isMap := esdtRaw.(*oj.OJsonMap)
-	if !isMap {
-		return nil, errors.New("unmarshalled account object is not a map")
-	}
-	return p.processESDTDataMap([]byte{}, esdtDataMap)
-}
-
 // map containing other fields too, e.g.:
 // {
 // 	"balance": "400,000,000,000",
 // 	"frozen": "true"
 // }
-func (p *Parser) processESDTDataMap(tokenNameKey []byte, esdtDataMap *oj.OJsonMap) (*mj.ESDTData, error) {
-	esdtData := mj.ESDTData{
+func (p *Parser) processCheckESDTDataMap(tokenNameKey []byte, esdtDataMap *oj.OJsonMap) (*mj.CheckESDTData, error) {
+	esdtData := mj.CheckESDTData{
 		TokenIdentifier: mj.NewJSONBytesFromString(tokenNameKey, ""),
 	}
 	var err error
@@ -79,17 +71,17 @@ func (p *Parser) processESDTDataMap(tokenNameKey []byte, esdtDataMap *oj.OJsonMa
 				return nil, fmt.Errorf("invalid ESDT token name: %w", err)
 			}
 		case "nonce":
-			esdtData.Nonce, err = p.processUint64(kvp.Value)
+			esdtData.Nonce, err = p.processCheckUint64(kvp.Value)
 			if err != nil {
 				return nil, errors.New("invalid account nonce")
 			}
 		case "value":
-			esdtData.Value, err = p.processBigInt(kvp.Value, bigIntUnsignedBytes)
+			esdtData.Value, err = p.processCheckBigInt(kvp.Value, bigIntUnsignedBytes)
 			if err != nil {
 				return nil, fmt.Errorf("invalid ESDT balance: %w", err)
 			}
 		case "frozen":
-			esdtData.Frozen, err = p.processUint64(kvp.Value)
+			esdtData.Frozen, err = p.processCheckUint64(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("invalid ESDT frozen flag: %w", err)
 			}
@@ -99,28 +91,4 @@ func (p *Parser) processESDTDataMap(tokenNameKey []byte, esdtDataMap *oj.OJsonMa
 	}
 
 	return &esdtData, nil
-}
-
-func (p *Parser) processESDTRoles(esdtRolesRaw oj.OJsonObject) ([]*mj.ESDTRoles, error) {
-	var rolesList []*mj.ESDTRoles
-	esdtRolesMap, isMap := esdtRolesRaw.(*oj.OJsonMap)
-	if !isMap {
-		return nil, errors.New("ESDTRoles object is not a map")
-	}
-	for _, kvp := range esdtRolesMap.OrderedKV {
-		tokenNameStr, err := p.ValueInterpreter.InterpretString(kvp.Key)
-		if err != nil {
-			return nil, fmt.Errorf("invalid esdt token identifer: %w", err)
-		}
-		tokenRoles, err := p.processStringList(kvp.Value)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse esdtRoles: %w", err)
-		}
-		rolesList = append(rolesList, &mj.ESDTRoles{
-			TokenIdentifier: mj.NewJSONBytesFromString(tokenNameStr, kvp.Key),
-			Roles:           tokenRoles,
-		})
-	}
-
-	return rolesList, nil
 }
