@@ -1,0 +1,51 @@
+{
+	"name": "resume staking",
+	"steps": [
+		{
+			"step": "externalSteps",
+			"path": "router_pause_staking.scen.json"
+		},
+		{
+			"step": "scCall",
+			"txId": "resume",
+			"tx": {
+				"from": "address:owner",
+				"to": "address:router_contract",
+				"value": "0",
+				"function": "resume",
+				"arguments": [
+					"address:staking_contract"
+				],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [],
+				"status": "0",
+				"message": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "scCall",
+			"txId": "get-state",
+			"tx": {
+				"from": "address:owner",
+				"to": "address:staking_contract",
+				"value": "0",
+				"function": "getState",
+				"arguments": [],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": ["1"],
+				"status": "0",
+				"message": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		}
+	]
+}

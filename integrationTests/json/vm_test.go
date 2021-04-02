@@ -137,6 +137,10 @@ func TestTimelocks(t *testing.T) {
 	runAllTestsInFolder(t, "timelocks")
 }
 
+func TestDex_v0_1(t *testing.T) {
+	runAllTestsInFolder(t, "dex/v0_1")
+}
+
 // func TestPromises(t *testing.T) {
 // 	executor, err := am.NewArwenTestExecutor()
 // 	require.Nil(t, err)

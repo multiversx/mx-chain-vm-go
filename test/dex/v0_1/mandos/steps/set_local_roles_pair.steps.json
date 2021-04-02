@@ -1,0 +1,53 @@
+{
+	"name": "set local roles pair",
+	"steps": [
+		{
+			"step": "scCall",
+			"txId": "set-local-roles",
+			"tx": {
+				"from": "address:owner",
+				"to": "address:router_contract",
+				"value": "0",
+				"function": "setLocalRoles",
+				"arguments": [
+					"address:pair_contract"
+				],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [
+					"0x45474c44"
+				],
+				"status": "0",
+				"message": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "scCall",
+			"txId": "get-last-error-message",
+			"tx": {
+				"from": "address:owner",
+				"to": "address:router_contract",
+				"value": "0",
+				"function": "getLastErrorMessage",
+				"arguments": [],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [""],
+				"status": "0",
+				"message": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "externalSteps",
+			"path": "hackish.steps.json"
+		}
+	]
+}

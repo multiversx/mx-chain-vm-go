@@ -1,0 +1,27 @@
+{
+	"name": "hackish step dont commit",
+	"steps": [
+		{
+			"step": "setState",
+			"accounts": {
+				"address:pair_contract": {
+					"nonce": "0",
+					"balance": "0",
+					"esdt": {
+						"str:LPTOK-abcdef": "5,000,000,000,000,000,000"
+					},
+					"storage": {
+						"str:token_a_name": "str:WEGLD-abcdef",
+						"str:token_b_name": "str:ALC-abcdef",
+						"str:state" : "1",
+						"str:lpTokenIdentifier": "str:LPTOK-abcdef",
+						"str:staking_address": "address:staking_contract",
+						"str:staking_token": "str:WEGLD-abcdef",
+						"str:router_address": "address:router_contract"
+					},
+					"code": "file:../../output/elrond_dex_pair.wasm"
+				}
+			}
+		}
+	]
+}

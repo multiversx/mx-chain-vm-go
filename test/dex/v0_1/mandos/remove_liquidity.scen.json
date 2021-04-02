@@ -1,0 +1,32 @@
+{
+	"name": "remove liquidity",
+	"steps": [
+		{
+			"step": "externalSteps",
+			"path": "add_liquidity.scen.json"
+		},
+		{
+			"step": "scCall",
+			"txId": "remove-liquidity",
+			"tx": {
+				"from": "address:user1",
+				"to": "address:pair_contract",
+				"value": "0",
+				"function": "removeLiquidity",
+				"arguments": [
+					"500,000,000",
+					"500,000,000"
+				],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [],
+				"status": "0",
+				"message": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		}
+	]
+}

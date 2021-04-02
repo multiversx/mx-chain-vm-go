@@ -1,0 +1,62 @@
+{
+	"name": "deploy router",
+	"steps": [
+		{
+			"step": "setState",
+			"newAddresses": [
+				{
+					"creatorAddress": "address:owner",
+					"creatorNonce": "0",
+					"newAddress": "address:router_contract"
+				},
+				{
+					"creatorAddress": "address:owner",
+					"creatorNonce": "1",
+					"newAddress": "address:staking_contract"
+				}
+			]
+		},
+		{
+			"step": "scDeploy",
+			"txId": "deploy-router",
+			"tx": {
+				"from": "address:owner",
+				"value": "0",
+				"contractCode": "file:../../output/elrond_dex_router.wasm",
+				"arguments": [
+				],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [],
+				"status": "",
+				"logs": [],
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "scDeploy",
+			"txId": "deploy-staking",
+			"tx": {
+				"from": "address:owner",
+				"value": "0",
+				"contractCode": "file:../../output/elrond_dex_staking.wasm",
+				"arguments": [
+					"str:WEGLD-abcdef",
+					"address:router_contract"
+				],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [],
+				"status": "",
+				"logs": [],
+				"gas": "*",
+				"refund": "*"
+			}
+		}
+	]
+}

@@ -30,7 +30,7 @@ func newExecutorWithPaths() *fuzzDelegationExecutor {
 	fileResolver := mc.NewDefaultFileResolver().
 		ReplacePath(
 			"delegation.wasm",
-			filepath.Join(getTestRoot(), "delegation/v0_5/output/delegation_v0_5_full.wasm")).
+			filepath.Join(getTestRoot(), "delegation/v0_5_2_full/output/delegation_v0_5_2_full.wasm")).
 		ReplacePath(
 			"auction-mock.wasm",
 			filepath.Join(getTestRoot(), "delegation/auction-mock/output/auction-mock.wasm"))
@@ -43,9 +43,9 @@ func newExecutorWithPaths() *fuzzDelegationExecutor {
 }
 
 func TestFuzzDelegation_v0_5(t *testing.T) {
-	if !*fuzz {
-		t.Skip("skipping test; only run with --fuzz argument")
-	}
+	//if !*fuzz {
+	//	t.Skip("skipping test; only run with --fuzz argument")
+	//}
 
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 

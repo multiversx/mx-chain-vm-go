@@ -1,0 +1,65 @@
+{
+	"name": "create pair twice",
+	"steps": [
+		{
+			"step": "externalSteps",
+			"path": "steps/init_accounts.steps.json"
+		},
+		{
+			"step": "externalSteps",
+			"path": "steps/deploy_contracts.steps.json"
+		},
+		{
+			"step": "externalSteps",
+			"path": "steps/construct_code.steps.json"
+		},
+		{
+			"step": "externalSteps",
+			"path": "steps/create_pair.steps.json"
+		},
+		{
+			"step": "scCall",
+			"txId": "create-pair",
+			"tx": {
+				"from": "address:owner",
+				"to": "address:router_contract",
+				"value": "0",
+				"function": "createPair",
+				"arguments": [
+					"str:ALC-abcdef",
+					"str:WEGLD-abcdef"
+				],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"status": "4",
+				"message": "str:Pair already existent",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "scCall",
+			"txId": "create-pair",
+			"tx": {
+				"from": "address:owner",
+				"to": "address:router_contract",
+				"value": "0",
+				"function": "createPair",
+				"arguments": [
+					"str:WEGLD-abcdef",
+					"str:ALC-abcdef"
+				],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"status": "4",
+				"message": "str:Pair already existent",
+				"gas": "*",
+				"refund": "*"
+			}
+		}
+	]
+}
