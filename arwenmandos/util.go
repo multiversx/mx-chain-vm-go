@@ -60,6 +60,12 @@ func convertAccount(testAcct *mj.Account) *worldmock.Account {
 		account.SetTokenData(tokenKey, tokenData)
 	}
 
+	for _, mandosESDTRoles := range testAcct.ESDTRoles {
+		tokenName := mandosESDTRoles.TokenIdentifier.Value
+		tokenRolesAsStrings := mandosESDTRoles.Roles
+		account.SetTokenRolesAsStrings(tokenName, tokenRolesAsStrings)
+	}
+
 	return account
 }
 

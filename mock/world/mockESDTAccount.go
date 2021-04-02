@@ -14,6 +14,11 @@ func MakeTokenKey(tokenName []byte) []byte {
 	return tokenKey
 }
 
+func MakeTokenRolesKey(tokenName []byte) []byte {
+	tokenRolesKey := append(ESDTRoleKeyPrefix, tokenName...)
+	return tokenRolesKey
+}
+
 func IsTokenKey(key []byte) bool {
 	if len(key) <= len(ESDTKeyPrefix) {
 		return false
@@ -88,6 +93,49 @@ func (a *Account) SetTokenData(tokenKey []byte, tokenData *esdt.ESDigitalToken) 
 	}
 
 	return a.DataTrieTracker().SaveKeyValue(tokenKey, marshaledData)
+}
+
+func (a *Account) SetTokenRoles(tokenName []byte, roles [][]byte) error {
+	tokenRolesKey := MakeTokenRolesKey(tokenName)
+	tokenRolesData := &esdt.ESDTRoles{
+		Roles: roles,
+	}
+
+	marshaledData, err := WorldMarshalizer.Marshal(tokenRolesData)
+	if err != nil {
+		return err
+	}
+
+	return a.DataTrieTracker().SaveKeyValue(tokenRolesKey, marshaledData)
+}
+
+func (a *Account) SetTokenRolesAsStrings(tokenName []byte, rolesAsStrings []string) error {
+	roles := make([][]byte, len(rolesAsStrings))
+	for i := 0; i < len(roles); i++ {
+		roles[i] = []byte(rolesAsStrings[i])
+	}
+
+	return a.SetTokenRoles(tokenName, roles)
+}
+
+func (a *Account) GetTokenRoles(tokenName []byte) ([][]byte, error) {
+	tokenRolesKey := MakeTokenRolesKey(tokenName)
+	tokenRolesData := &esdt.ESDTRoles{
+		Roles: make([][]byte, 0),
+	}
+
+	marshaledData, err := a.DataTrieTracker().RetrieveValue(tokenRolesKey)
+	if err != nil || len(marshaledData) == 0 {
+		return tokenRolesData.Roles, nil
+	}
+
+	err = WorldMarshalizer.Unmarshal(tokenRolesData, marshaledData)
+	if err != nil {
+		return nil, err
+	}
+
+	return tokenRolesData.Roles, nil
+
 }
 
 func (a *Account) GetAllTokenData() (map[string]*esdt.ESDigitalToken, error) {
