@@ -55,7 +55,8 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 		&fuzzDexExecutorInitArgs{
 			wegldTokenId: "WEGLD-abcdef",
 			numUsers: 10,
-			numTokens: 5,
+			numTokens: 3,
+			numEvents: 1500,
 		},
 	)
 	require.Nil(t, err)
@@ -73,21 +74,31 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 	err = pfe.setFeeOn()
 	require.Nil(t, err)
 
-	err = pfe.increaseBlockNonce(r.Intn(10000))
-	require.Nil(t, err)
+	stats := eventsStatistics{
+		swapFixedInputHits:    0,
+		swapFixedInputMisses:  0,
+		swapFixedOutputHits:   0,
+		swapFixedOutputMisses: 0,
+		addLiquidityHits:      0,
+		addLiquidityMisses:    0,
+		removeLiquidityHits:   0,
+		removeLiquidityMisses: 0,
+	}
 
 	re := fuzzutil.NewRandomEventProvider()
-	for stepIndex := 0; stepIndex < 100; stepIndex++ {
-		generateRandomEvent(t, pfe, r, re)
+	for stepIndex := 0; stepIndex < pfe.numEvents; stepIndex++ {
+		generateRandomEvent(t, pfe, r, re, &stats)
 	}
-}
 
+	printStatistics(&stats, pfe)
+}
 
 func generateRandomEvent(
 	t *testing.T,
 	pfe *fuzzDexExecutor,
 	r *rand.Rand,
 	re *fuzzutil.RandomEventProvider,
+	statistics *eventsStatistics,
 ) {
 	re.Reset()
 
@@ -106,59 +117,80 @@ func generateRandomEvent(
 	userId := r.Intn(pfe.numUsers) + 1
 	user := string(pfe.userAddress(userId))
 
+	fromAtoB := r.Intn(2) != 0
+	if fromAtoB == false {
+		aux := tokenA
+		tokenA = tokenB
+		tokenB = aux
+	}
+
 	switch {
-		//swap
-		case re.WithProbability(0.4):
-
-			fixedInput := false
-			fromAtoB := false
-			amountA := 0
-			amountB := 0
-
-			fromAtoB = r.Intn(2) != 0
-			if fromAtoB == false {
-				aux := tokenA
-				tokenA = tokenB
-				tokenB = aux
-			}
-
-			//fixedInput = r.Intn(2) != 0
-			fixedInput = true
-			seed := r.Intn(1000000000000)
-			amountA = seed
-			amountB = seed / 10000
-
-			if fixedInput {
-				err := pfe.swapFixedInput(user, tokenA, amountA, tokenB, amountB)
-				require.Nil(t, err)
-			} else {
-				err := pfe.swapFixedOutput(user, tokenA, amountA, tokenB, amountB)
-				require.Nil(t, err)
-			}
-
 		//add liquidity
 		case re.WithProbability(0.2):
 
 			seed := r.Intn(1000000000000)
 			amountA := seed
 			amountB := seed
-			amountAmin := seed / 10000
-			amountBmin := seed / 10000
+			amountAmin := seed / 100
+			amountBmin := seed / 100
 
-			err := pfe.addLiquidity(user, tokenA, tokenB, amountA, amountB, amountAmin, amountBmin)
+			err := pfe.addLiquidity(user, tokenA, tokenB, amountA, amountB, amountAmin, amountBmin, statistics)
 			require.Nil(t, err)
 
 		//remove liquidity
 		case re.WithProbability(0.2):
 
-			seed := r.Intn(10000000000)
+			seed := r.Intn(1000000000)
 			amount := seed
-			amountAmin := seed / 10000
-			amountBmin := seed / 10000
+			amountAmin := 2
+			amountBmin := 2
 
-			err := pfe.removeLiquidity(user, tokenA, tokenB, amount, amountAmin, amountBmin)
-			require.Nil(t, err)
+			numProviders := len(pfe.liqProviders)
+			if numProviders != 0 {
+				provIndex := r.Intn(numProviders)
+				tokenA = pfe.liqProviders[provIndex].tokenA
+				tokenB = pfe.liqProviders[provIndex].tokenB
+				user = pfe.liqProviders[provIndex].user
 
+				err := pfe.removeLiquidity(user, tokenA, tokenB, amount, amountAmin, amountBmin, statistics)
+				require.Nil(t, err)
+			}
+
+		//swap
+		case re.WithProbability(0.4):
+
+			fixedInput := false
+			amountA := 0
+			amountB := 0
+
+			fixedInput = r.Intn(2) != 0
+			seed := r.Intn(1000000000000)
+			amountA = seed
+			amountB = seed / 100
+
+			if fixedInput {
+				err := pfe.swapFixedInput(user, tokenA, amountA, tokenB, amountB, statistics)
+				require.Nil(t, err)
+			} else {
+				err := pfe.swapFixedOutput(user, tokenA, amountA, tokenB, amountB, statistics)
+				require.Nil(t, err)
+			}
 	default:
 	}
+}
+
+func printStatistics(statistics *eventsStatistics, pfe *fuzzDexExecutor) {
+	pfe.log("\nStatistics:")
+	pfe.log("\tswapFixedInputHits %d", statistics.swapFixedInputHits)
+	pfe.log("\tswapFixedInputMisses %d", statistics.swapFixedInputMisses)
+	pfe.log("\tswapFixedOutputHits %d", statistics.swapFixedOutputHits)
+	pfe.log("\tswapFixedOutputMisses %d", statistics.swapFixedOutputMisses)
+	pfe.log("\taddLiquidityHits %d", statistics.addLiquidityHits)
+	pfe.log("\taddLiquidityMisses %d", statistics.addLiquidityMisses)
+	pfe.log("\tremoveLiquidityHits %d", statistics.removeLiquidityHits)
+	pfe.log("\tremoveLiquidityMisses %d", statistics.removeLiquidityMisses)
+}
+
+func RemoveIndex(s []LiquidityProvider, index int) []LiquidityProvider {
+	return append(s[:index], s[index+1:]...)
 }

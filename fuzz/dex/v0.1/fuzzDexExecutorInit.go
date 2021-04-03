@@ -10,6 +10,7 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 	pfe.wegldTokenId = args.wegldTokenId
 	pfe.numTokens = args.numTokens
 	pfe.numUsers = args.numUsers
+	pfe.numEvents = args.numEvents
 
 	pfe.world.Clear()
 

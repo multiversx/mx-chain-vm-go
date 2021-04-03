@@ -9,7 +9,8 @@
 					"balance": "1,000,000,000,000,000,000,000,000,000,000",
 					"esdt": {
 						"str:WEGLD-abcdef": "5,000,000,000",
-						"str:ALC-abcdef": "5,000,000,000"
+						"str:ALC-abcdef": "5,000,000,000",
+						"str:BLC-abcdef": "5,000,000,000"
 					},
 					"storage": {}
 				},
@@ -18,7 +19,8 @@
 					"balance": "1,000,000,000,000,000,000,000,000,000,000",
 					"esdt": {
 						"str:WEGLD-abcdef": "5,000,000,000",
-						"str:ALC-abcdef": "5,000,000,000"
+						"str:ALC-abcdef": "5,000,000,000",
+						"str:BLC-abcdef": "5,000,000,000"
 					},
 					"storage": {}
 				},
@@ -27,7 +29,8 @@
 					"balance": "1,000,000,000,000,000,000,000,000,000,000",
 					"esdt": {
 						"str:WEGLD-abcdef": "5,000,000,000",
-						"str:ALC-abcdef": "5,000,000,000"
+						"str:ALC-abcdef": "5,000,000,000",
+						"str:BLC-abcdef": "5,000,000,000"
 					},
 					"storage": {}
 				}
@@ -41,11 +44,13 @@
 					"balance": "1,000,000,000,000,000,000,000,000,000,000",
 					"esdt": {
 						"str:WEGLD-abcdef": "5,000,000,000",
-						"str:ALC-abcdef": "5,000,000,000"
+						"str:ALC-abcdef": "5,000,000,000",
+						"str:BLC-abcdef": "5,000,000,000"
 					},
 					"storage": {
 						"``ELRONDesdtWEGLD-abcdef": "0x120600012a05f2001a020000220e120c5745474c442d616263646566",
-						"``ELRONDesdtALC-abcdef": "0x120600012a05f2001a020000220c120a414c432d616263646566"
+						"``ELRONDesdtALC-abcdef": "0x120600012a05f2001a020000220c120a414c432d616263646566",
+						"``ELRONDesdtBLC-abcdef": "0x120600012a05f2001a020000220c120a424c432d616263646566"
 					}
 				},
 				"address:user1": {
@@ -53,11 +58,13 @@
 					"balance": "1,000,000,000,000,000,000,000,000,000,000",
 					"esdt": {
 						"str:WEGLD-abcdef": "5,000,000,000",
-						"str:ALC-abcdef": "5,000,000,000"
+						"str:ALC-abcdef": "5,000,000,000",
+						"str:BLC-abcdef": "5,000,000,000"
 					},
 					"storage": {
 						"``ELRONDesdtWEGLD-abcdef": "0x120600012a05f2001a020000220e120c5745474c442d616263646566",
-						"``ELRONDesdtALC-abcdef": "0x120600012a05f2001a020000220c120a414c432d616263646566"
+						"``ELRONDesdtALC-abcdef": "0x120600012a05f2001a020000220c120a414c432d616263646566",
+						"``ELRONDesdtBLC-abcdef": "0x120600012a05f2001a020000220c120a424c432d616263646566"
 					}
 				},
 				"address:user2": {
@@ -65,11 +72,13 @@
 					"balance": "1,000,000,000,000,000,000,000,000,000,000",
 					"esdt": {
 						"str:WEGLD-abcdef": "5,000,000,000",
-						"str:ALC-abcdef": "5,000,000,000"
+						"str:ALC-abcdef": "5,000,000,000",
+						"str:BLC-abcdef": "5,000,000,000"
 					},
 					"storage": {
 						"``ELRONDesdtWEGLD-abcdef": "0x120600012a05f2001a020000220e120c5745474c442d616263646566",
-						"``ELRONDesdtALC-abcdef": "0x120600012a05f2001a020000220c120a414c432d616263646566"
+						"``ELRONDesdtALC-abcdef": "0x120600012a05f2001a020000220c120a414c432d616263646566",
+						"``ELRONDesdtBLC-abcdef": "0x120600012a05f2001a020000220c120a424c432d616263646566"
 					}
 				}
 			}

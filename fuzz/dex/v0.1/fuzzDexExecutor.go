@@ -1,6 +1,7 @@
 package dex
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	am "github.com/ElrondNetwork/arwen-wasm-vm/arwenmandos"
@@ -17,6 +18,7 @@ type fuzzDexExecutorInitArgs struct {
 	wegldTokenId				string
 	numUsers					int
 	numTokens					int
+	numEvents					int
 }
 
 type fuzzDexExecutor struct {
@@ -32,7 +34,29 @@ type fuzzDexExecutor struct {
 	stakingAddress				[]byte
 	numUsers					int
 	numTokens					int
+	numEvents					int
+	liqProviders				[]LiquidityProvider
 	generatedScenario           *mj.Scenario
+}
+
+type eventsStatistics struct {
+	swapFixedInputHits			int
+	swapFixedInputMisses		int
+
+	swapFixedOutputHits			int
+	swapFixedOutputMisses		int
+
+	addLiquidityHits			int
+	addLiquidityMisses			int
+
+	removeLiquidityHits			int
+	removeLiquidityMisses		int
+}
+
+type LiquidityProvider struct {
+	user 						string
+	tokenA						string
+	tokenB						string
 }
 
 func newFuzzDexExecutor(fileResolver fr.FileResolver) (*fuzzDexExecutor, error) {
@@ -120,8 +144,8 @@ func (pfe *fuzzDexExecutor) fullOfEsdtWalletString() string {
 
 func (pfe *fuzzDexExecutor) createPairs() error {
 	for i := 1; i < pfe.numTokens; i++ {
-		for j := i; j < pfe.numTokens; j++ {
-			err := pfe.createPair(pfe.tokenTicker(j), pfe.tokenTicker(j+1))
+		for j := i + 1; j <= pfe.numTokens; j++ {
+			err := pfe.createPair(pfe.tokenTicker(i), pfe.tokenTicker(j))
 			if err != nil {
 				return err
 			}
@@ -154,6 +178,13 @@ func (pfe *fuzzDexExecutor) createPair(tokenA string, tokenB string) error {
 			],
 			"gasLimit": "10,000,000",
 			"gasPrice": "0"
+		},
+		"expect": {
+			"out": [ "*" ],
+			"status": "0",
+			"logs": [],
+			"gas": "*",
+			"refund": "*"
 		}
 	}`,
 		string(pfe.ownerAddress),
@@ -302,6 +333,45 @@ func (pfe *fuzzDexExecutor) querySingleResult(from []byte, to []byte, funcName s
 	return output.ReturnData, nil
 }
 
+
+func (pfe *fuzzDexExecutor) querySingleResultStringAddr(from []byte, to string, funcName string, args string) ([][]byte, error) {
+	output, err := pfe.executeTxStep(fmt.Sprintf(`
+	{
+		"step": "scCall",
+		"txId": "%s",
+		"tx": {
+			"from": "''%s",
+			"to": "%s",
+			"value": "0",
+			"function": "%s",
+			"arguments": [
+				%s
+			],
+			"gasLimit": "10,000,000",
+			"gasPrice": "0"
+		},
+		"expect": {
+			"out": [ "*" ],
+			"status": "",
+			"logs": [],
+			"gas": "*",
+			"refund": "*"
+		}
+	}`,
+		funcName,
+		string(from),
+		to,
+		funcName,
+		args,
+	))
+	if err != nil {
+		return [][]byte{}, err
+	}
+
+	return output.ReturnData, nil
+}
+
+
 func (pfe *fuzzDexExecutor) setFeeOn() error {
 	for i := 1; i <= pfe.numTokens; i++ {
 		tokenA := pfe.wegldTokenId
@@ -421,117 +491,409 @@ func Use(vals ...interface{}) {
 	}
 }
 
-func (pfe *fuzzDexExecutor) swapFixedInput(user string, tokenA string, amountA int, tokenB string, amountB int) error {
-	pfe.log("swapFixedInput %s -> %s", tokenA, tokenB)
+func (pfe *fuzzDexExecutor) swapFixedInput(user string, tokenA string, amountA int, tokenB string,
+	amountB int, statistics *eventsStatistics) error {
 
-	//if tokenA == tokenB {
-	//	return nil
-	//}
-	//
-	//rawResponse, err := pfe.querySingleResult(pfe.ownerAddress, pfe.routerAddress,
-	//	"getPair", fmt.Sprintf("\"str:%s\", \"str:%s\"", tokenA, tokenB))
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//pairHexStr := "0x"
-	//for i := 0; i < len(rawResponse[0]); i++ {
-	//	toAppend := fmt.Sprintf("%02x", rawResponse[0][i])
-	//	pairHexStr += toAppend
-	//}
-	//
-	//
-	//output, err := pfe.executeTxStep(fmt.Sprintf(`
-	//{
-	//		"step": "scCall",
-	//		"txId": "swap-fixed-input",
-	//		"tx": {
-	//			"from": "str:%s",
-	//			"to": "%s",
-	//			"value": "0",
-	//			"function": "swapTokensFixedInput",
-	//			"esdt": {
-	//				"tokenIdentifier": "str:%s",
-	//				"value": "%d"
-	//			},
-	//			"arguments": [
-	//				"str:%s",
-	//				"%d"
-	//			],
-	//			"gasLimit": "100,000,000",
-	//			"gasPrice": "0"
-	//		},
-	//		"expect": {
-	//			"out": [],
-	//			"status": "0",
-	//			"message": "",
-	//			"gas": "*",
-	//			"refund": "*"
-	//		}
-	//}`,
-	//	user,
-	//	pairHexStr,
-	//	tokenA,
-	//	amountA,
-	//	tokenB,
-	//	amountB,
-	//))
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//if output.ReturnCode != vmi.Ok {
-	//	pfe.log("could not remove node because %s", output.ReturnMessage)
-	//	return nil
-	//}
+	if tokenA == tokenB {
+		return nil
+	}
 
-	return nil
-}
+	rawResponse, err := pfe.querySingleResult(pfe.ownerAddress, pfe.routerAddress,
+		"getPair", fmt.Sprintf("\"str:%s\", \"str:%s\"", tokenA, tokenB))
+	if err != nil {
+		return err
+	}
 
-func (pfe *fuzzDexExecutor) swapFixedOutput(user string, tokenA string, amountA int, tokenB string, amountB int) error {
-	pfe.log("swapFixedOutput %s -> %s", tokenA, tokenB)
+	pairHexStr := "0x"
+	for i := 0; i < len(rawResponse[0]); i++ {
+		toAppend := fmt.Sprintf("%02x", rawResponse[0][i])
+		pairHexStr += toAppend
+	}
 
-	//output, err := pfe.executeTxStep("")
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//if output.ReturnCode != vmi.Ok {
-	//	pfe.log("could not remove node because %s", output.ReturnMessage)
-	//	return nil
-	//}
+	output, err := pfe.executeTxStep(fmt.Sprintf(`
+	{
+		"step": "scCall",
+		"txId": "swap-fixed-input",
+		"tx": {
+			"from": "''%s",
+			"to": "%s",
+			"value": "0",
+			"function": "swapTokensFixedInput",
+			"esdt": {
+				"tokenIdentifier": "str:%s",
+				"value": "%d"
+			},
+			"arguments": [
+				"str:%s",
+				"%d"
+			],
+			"gasLimit": "100,000,000",
+			"gasPrice": "0"
+		}
+	}`,
+		user,
+		pairHexStr,
+		tokenA,
+		amountA,
+		tokenB,
+		amountB,
+	))
+	if output != nil {
+		if output.ReturnMessage != "" {
+			statistics.swapFixedInputMisses += 1
+			pfe.log("swapFixedInput %s -> %s", tokenA, tokenB)
+			pfe.log("could not swap because %s", output.ReturnMessage)
+
+			if output.ReturnMessage == "K invariant failed" {
+				return errors.New(output.ReturnMessage)
+			}
+		} else {
+			statistics.swapFixedInputHits += 1
+		}
+	} else {
+		return errors.New("NULL output")
+	}
 
 	return nil
 }
 
-func (pfe *fuzzDexExecutor) addLiquidity(user string, tokenA string, tokenB string, amountA int, amountB int , amountAmin int, amountBmin int) error {
-	pfe.log("add liquidity %s -> %s", tokenA, tokenB)
+func (pfe *fuzzDexExecutor) swapFixedOutput(user string, tokenA string, amountA int, tokenB string,
+	amountB int, statistics *eventsStatistics) error {
 
-	//output, err := pfe.executeTxStep("")
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//if output.ReturnCode != vmi.Ok {
-	//	pfe.log("could not remove node because %s", output.ReturnMessage)
-	//	return nil
-	//}
+	if tokenA == tokenB {
+		return nil
+	}
+
+	rawResponse, err := pfe.querySingleResult(pfe.ownerAddress, pfe.routerAddress,
+		"getPair", fmt.Sprintf("\"str:%s\", \"str:%s\"", tokenA, tokenB))
+	if err != nil {
+		return err
+	}
+
+	pairHexStr := "0x"
+	for i := 0; i < len(rawResponse[0]); i++ {
+		toAppend := fmt.Sprintf("%02x", rawResponse[0][i])
+		pairHexStr += toAppend
+	}
+
+	output, err := pfe.executeTxStep(fmt.Sprintf(`
+	{
+		"step": "scCall",
+		"txId": "swap-fixed-input",
+		"tx": {
+			"from": "''%s",
+			"to": "%s",
+			"value": "0",
+			"function": "swapTokensFixedOutput",
+			"esdt": {
+				"tokenIdentifier": "str:%s",
+				"value": "%d"
+			},
+			"arguments": [
+				"str:%s",
+				"%d"
+			],
+			"gasLimit": "100,000,000",
+			"gasPrice": "0"
+		}
+	}`,
+		user,
+		pairHexStr,
+		tokenA,
+		amountA,
+		tokenB,
+		amountB,
+	))
+	if output != nil {
+		if output.ReturnMessage != "" {
+			statistics.swapFixedOutputMisses += 1
+			pfe.log("swapFixedOutput %s -> %s", tokenA, tokenB)
+			pfe.log("could not swap because %s", output.ReturnMessage)
+
+			if output.ReturnMessage == "K invariant failed" {
+				return errors.New(output.ReturnMessage)
+			}
+		} else {
+			statistics.swapFixedOutputHits += 1
+		}
+	} else {
+		return errors.New("NULL output")
+	}
 
 	return nil
 }
 
-func (pfe *fuzzDexExecutor) removeLiquidity(user string, tokenA string, tokenB string, amount int, amountAmin int, amountBmin int) error {
-	pfe.log("removeLiquidity %s -> %s", tokenA, tokenB)
+func (pfe *fuzzDexExecutor) addLiquidity(user string, tokenA string, tokenB string, amountA int,
+	amountB int , amountAmin int, amountBmin int, statistics *eventsStatistics) error {
 
-	//output, err := pfe.executeTxStep("")
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//if output.ReturnCode != vmi.Ok {
-	//	pfe.log("could not remove node because %s", output.ReturnMessage)
-	//	return nil
-	//}
+	if tokenA == tokenB {
+		return nil
+	}
+
+	rawResponse, err := pfe.querySingleResult(pfe.ownerAddress, pfe.routerAddress,
+		"getPair", fmt.Sprintf("\"str:%s\", \"str:%s\"", tokenA, tokenB))
+	if err != nil {
+		return err
+	}
+
+	pairHexStr := "0x"
+	for i := 0; i < len(rawResponse[0]); i++ {
+		toAppend := fmt.Sprintf("%02x", rawResponse[0][i])
+		pairHexStr += toAppend
+	}
+
+	rawEquivalent, errEquivalent := pfe.querySingleResultStringAddr(pfe.ownerAddress, pairHexStr,
+		"getEquivalent", fmt.Sprintf("\"str:%s\", \"%d\"", tokenA, 1000))
+
+	output, err := pfe.executeTxStep(fmt.Sprintf(`
+	{
+		"step": "scCall",
+		"txId": "accept-esdt-payment",
+		"tx": {
+			"from": "''%s",
+			"to": "%s",
+			"value": "0",
+			"function": "acceptEsdtPayment",
+			"esdt": {
+				"tokenIdentifier": "str:%s",
+				"value": "%d"
+			},
+			"arguments": [
+			],
+			"gasLimit": "100,000,000",
+			"gasPrice": "0"
+		},
+		"expect": {
+			"out": [],
+			"status": "0",
+			"message": "",
+			"gas": "*",
+			"refund": "*"
+		}
+	}`,
+		user,
+		pairHexStr,
+		tokenA,
+		amountA,
+	))
+	if err != nil {
+		return err
+	}
+
+	output, err = pfe.executeTxStep(fmt.Sprintf(`
+	{
+		"step": "scCall",
+		"txId": "accept-esdt-payment",
+		"tx": {
+			"from": "''%s",
+			"to": "%s",
+			"value": "0",
+			"function": "acceptEsdtPayment",
+			"esdt": {
+				"tokenIdentifier": "str:%s",
+				"value": "%d"
+			},
+			"arguments": [
+			],
+			"gasLimit": "100,000,000",
+			"gasPrice": "0"
+		},
+		"expect": {
+			"out": [],
+			"status": "0",
+			"message": "",
+			"gas": "*",
+			"refund": "*"
+		}
+	}`,
+		user,
+		pairHexStr,
+		tokenB,
+		amountB,
+	))
+	if err != nil {
+		return err
+	}
+
+	output, err = pfe.executeTxStep(fmt.Sprintf(`
+	{
+		"step": "scCall",
+		"txId": "add-liquidity",
+		"tx": {
+			"from": "''%s",
+			"to": "%s",
+			"value": "0",
+			"function": "addLiquidity",
+			"arguments": [
+				"%d",
+				"%d",
+				"%d",
+				"%d"
+			],
+			"gasLimit": "100,000,000",
+			"gasPrice": "0"
+		}
+	}`,
+		user,
+		pairHexStr,
+		amountA,
+		amountB,
+		amountAmin,
+		amountBmin,
+	))
+	if output == nil {
+		return errors.New("NULL output")
+	}
+
+	if output.ReturnMessage != "" {
+		statistics.addLiquidityMisses += 1
+		pfe.log("add liquidity %s -> %s", tokenA, tokenB)
+		pfe.log("could not add because %s", output.ReturnMessage)
+
+		//In case we get these errors but values are !=0, its an error
+		if (output.ReturnMessage == "PAIR: INSSUFICIENT TOKEN A FUNDS SENT" ||
+			output.ReturnMessage == "PAIR: INSSUFICIENT TOKEN B FUNDS SENT" ||
+			output.ReturnMessage == "PAIR: NO AVAILABLE TOKEN A FUNDS" ||
+			output.ReturnMessage == "PAIR: NO AVAILABLE TOKEN B FUNDS") &&
+				(amountA > 0 && amountB > 0) {
+			return errors.New(output.ReturnMessage)
+		}
+
+		if output.ReturnMessage == "Pair: FIRST TOKENS NEEDS TO BE GRATER THAN MINIMUM LIQUIDITY: 1000 * 1000e-18" &&
+			amountA > 1000 && amountB > 1000 {
+			return errors.New(output.ReturnMessage)
+		}
+
+		//No way we should receive this
+		if output.ReturnMessage == "K invariant failed" {
+			return errors.New(output.ReturnMessage)
+		}
+
+		// Other errors are fine
+	} else {
+		// Add liquidity is good
+		statistics.addLiquidityHits += 1
+
+		// Get New price
+		rawResponse, err = pfe.querySingleResultStringAddr(pfe.ownerAddress, pairHexStr,
+			"getEquivalent", fmt.Sprintf("\"str:%s\", \"%d\"", tokenA, 1000))
+		if err != nil {
+			return err
+		}
+
+		// New and old prices should be the same
+		if errEquivalent == nil && !equalMatrix(rawResponse, rawEquivalent) {
+			return errors.New("PRICE CHANGED after add liquidity")
+		}
+
+		newLp := LiquidityProvider{
+			user:    user,
+			tokenA:  tokenA,
+			tokenB:  tokenB,
+		}
+		pfe.liqProviders = append(pfe.liqProviders, newLp)
+	}
+
+	output, err = pfe.executeTxStep(fmt.Sprintf(`
+	{
+		"step": "scCall",
+		"txId": "reclaim-temporary-funds",
+		"tx": {
+			"from": "''%s",
+			"to": "%s",
+			"value": "0",
+			"function": "reclaimTemporaryFunds",
+			"arguments": [],
+			"gasLimit": "100,000,000",
+			"gasPrice": "0"
+		},
+		"expect": {
+			"out": [],
+			"status": "0",
+			"message": "",
+			"gas": "*",
+			"refund": "*"
+		}
+	}`,
+		user,
+		pairHexStr,
+	))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (pfe *fuzzDexExecutor) removeLiquidity(user string, tokenA string, tokenB string, amount int, amountAmin int,
+	amountBmin int, statistics *eventsStatistics) error {
+
+	rawResponse, err := pfe.querySingleResult(pfe.ownerAddress, pfe.routerAddress,
+		"getPair", fmt.Sprintf("\"str:%s\", \"str:%s\"", tokenA, tokenB))
+	if err != nil {
+		return err
+	}
+
+
+	pairHexStr := "0x"
+	for i := 0; i < len(rawResponse[0]); i++ {
+		toAppend := fmt.Sprintf("%02x", rawResponse[0][i])
+		pairHexStr += toAppend
+	}
+
+	rawResponse, err = pfe.querySingleResultStringAddr(pfe.ownerAddress, pairHexStr,
+		"get_lp_token_identifier", "")
+
+	rawEquivalent, errEquivalent := pfe.querySingleResultStringAddr(pfe.ownerAddress, pairHexStr,
+		"getEquivalent", fmt.Sprintf("\"str:%s\", \"%d\"", tokenA, 1000))
+
+	lpToken := rawResponse[0]
+	output, err := pfe.executeTxStep(fmt.Sprintf(`
+	{
+		"step": "scCall",
+		"txId": "remove-liq",
+		"tx": {
+			"from": "''%s",
+			"to": "%s",
+			"value": "0",
+			"function": "removeLiquidity",
+			"esdt": {
+				"tokenIdentifier": "str:%s",
+				"value": "%d"
+			},
+			"arguments": [
+				"%d",
+				"%d"
+			],
+			"gasLimit": "100,000,000",
+			"gasPrice": "0"
+		}
+	}`,
+		user,
+		pairHexStr,
+		string(lpToken),
+		amount,
+		amountAmin,
+		amountBmin,
+	))
+	if output == nil {
+		return errors.New("NULL Output")
+	}
+
+	if output.ReturnMessage != "" {
+		pfe.log("add liquidity %s -> %s", tokenA, tokenB)
+		pfe.log("could not add because %s", output.ReturnMessage)
+		statistics.removeLiquidityMisses += 1
+	} else {
+		statistics.removeLiquidityHits += 1
+
+		rawOutput, err := pfe.querySingleResultStringAddr(pfe.ownerAddress, pairHexStr,
+			"getEquivalent", fmt.Sprintf("\"str:%s\", \"%d\"", tokenA, 1000))
+
+		if errEquivalent != nil && err != nil && !equalMatrix(rawEquivalent, rawOutput) {
+			return errors.New("PRICE CHANGED after success remove")
+		}
+	}
 
 	return nil
 }
@@ -539,8 +901,8 @@ func (pfe *fuzzDexExecutor) removeLiquidity(user string, tokenA string, tokenB s
 func (pfe *fuzzDexExecutor) doHackishSteps() error {
 	lpTokenIndex := 1
 	for i := 1; i < pfe.numTokens; i++ {
-		for j := i; j < pfe.numTokens; j++ {
-			err := pfe.doHackishStep(pfe.tokenTicker(j), pfe.tokenTicker(j+1), lpTokenIndex)
+		for j := i + 1; j <= pfe.numTokens; j++ {
+			err := pfe.doHackishStep(pfe.tokenTicker(i), pfe.tokenTicker(j), lpTokenIndex)
 			lpTokenIndex += 1
 			if err != nil {
 				return err
@@ -548,20 +910,23 @@ func (pfe *fuzzDexExecutor) doHackishSteps() error {
 		}
 	}
 	for i := 1; i <= pfe.numTokens; i++ {
-		err := pfe.doHackishStep("WEGLD-abcdef", pfe.tokenTicker(i), lpTokenIndex)
+		err := pfe.doHackishStep(pfe.wegldTokenId, pfe.tokenTicker(i), lpTokenIndex)
 		lpTokenIndex += 1
 		if err != nil {
 			return err
 		}
 	}
 
-	//TODO: Also do hackish step for STAKING!!!!
+	err := pfe.doHachishStepStaking()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (pfe *fuzzDexExecutor) doHackishStep(tokenA string, tokenB string, index int) error {
 	lpTokenName := "LPTOK-" + fmt.Sprintf("%06d", index)
-
 
 	rawResponse, err := pfe.querySingleResult(pfe.ownerAddress, pfe.routerAddress,
 		"getPair", fmt.Sprintf("\"str:%s\", \"str:%s\"", tokenA, tokenB))
@@ -619,3 +984,55 @@ func (pfe *fuzzDexExecutor) doHackishStep(tokenA string, tokenB string, index in
 	return nil
 }
 
+func (pfe *fuzzDexExecutor) doHachishStepStaking() error {
+	err := pfe.executeStep(fmt.Sprintf(`
+	{
+		"step": "setState",
+		"comment": "test",
+		"accounts": {
+			"''%s": {
+				"nonce": "0",
+				"balance": "0",
+				"esdtRoles": {
+					"str:%s": [
+						"ESDTRoleNFTCreate",
+						"ESDTRoleNFTAddQuantity",
+						"ESDTRoleNFTBurn"
+					]
+				},
+				"storage": {
+					"str:wegld_token_identifier": "str:%s",
+					"str:sft_staking_token_identifier": "str:%s",
+					"str:router_address": "''%s",
+					"str:state": "1"
+				},
+				"code": "file:../../../test/dex/v0_1/output/elrond_dex_staking.wasm"
+			}
+		}
+	}`,
+		string(pfe.stakingAddress),
+		"STAKING-abcdef",
+		pfe.wegldTokenId,
+		"STAKING-abcdef",
+		string(pfe.routerAddress),
+	))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func equalMatrix(left [][]byte, right [][]byte) bool {
+	if len(left) != len(right) {
+		return false
+	}
+
+	for i := 0; i < len(left); i++ {
+		if !bytes.Equal(left[i], right[i]) {
+			return false
+		}
+	}
+
+	return true
+}
