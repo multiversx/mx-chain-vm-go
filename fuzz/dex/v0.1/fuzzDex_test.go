@@ -53,10 +53,17 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 
 	err := pfe.init(
 		&fuzzDexExecutorInitArgs{
-			wegldTokenId: "WEGLD-abcdef",
-			numUsers: 10,
-			numTokens: 3,
-			numEvents: 1500,
+			wegldTokenId:				"WEGLD-abcdef",
+			numUsers:					10,
+			numTokens:					3,
+			numEvents:					1500,
+			removeLiquidityProb:		0.1,
+			addLiquidityProb:			0.3,
+			swapProb:					0.5,
+			queryPairsProb:				0.1,
+			removeLiquidityMaxValue:	1000000000,
+			addLiquidityMaxValue: 		1000000000,
+			swapMaxValue: 				10000000,
 		},
 	)
 	require.Nil(t, err)
@@ -130,9 +137,9 @@ func generateRandomEvent(
 
 	switch {
 		//remove liquidity
-		case re.WithProbability(0.1):
+		case re.WithProbability(pfe.removeLiquidityProb):
 
-			seed := r.Intn(1000000000000)
+			seed := r.Intn(pfe.removeLiquidityMaxValue) + 1
 			amount := seed
 			amountAmin := seed / 100
 			amountBmin := seed / 100
@@ -141,9 +148,9 @@ func generateRandomEvent(
 			require.Nil(t, err)
 
 		//add liquidity
-		case re.WithProbability(0.3):
+		case re.WithProbability(pfe.addLiquidityProb):
 
-			seed := r.Intn(1000000000000)
+			seed := r.Intn(pfe.addLiquidityMaxValue) + 1
 			amountA := seed
 			amountB := seed
 			amountAmin := seed / 100
@@ -153,14 +160,14 @@ func generateRandomEvent(
 			require.Nil(t, err)
 
 		//swap
-		case re.WithProbability(0.4):
+		case re.WithProbability(pfe.swapProb):
 
 			fixedInput := false
 			amountA := 0
 			amountB := 0
 
 			fixedInput = r.Intn(2) != 0
-			seed := r.Intn(1000000000000)
+			seed := r.Intn(pfe.swapMaxValue) + 1
 			amountA = seed
 			amountB = seed / 100
 
@@ -173,7 +180,7 @@ func generateRandomEvent(
 			}
 
 		// pair views
-		case re.WithProbability(0.2):
+		case re.WithProbability(pfe.queryPairsProb):
 
 			err := pfe.checkPairViews(user, tokenA, tokenB, statistics)
 			require.Nil(t, err)

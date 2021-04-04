@@ -19,6 +19,13 @@ type fuzzDexExecutorInitArgs struct {
 	numUsers					int
 	numTokens					int
 	numEvents					int
+	removeLiquidityProb			float32
+	addLiquidityProb			float32
+	swapProb					float32
+	queryPairsProb				float32
+	removeLiquidityMaxValue		int
+	addLiquidityMaxValue 		int
+	swapMaxValue 				int
 }
 
 type fuzzDexExecutor struct {
@@ -35,6 +42,13 @@ type fuzzDexExecutor struct {
 	numUsers					int
 	numTokens					int
 	numEvents					int
+	removeLiquidityProb			float32
+	addLiquidityProb			float32
+	swapProb					float32
+	queryPairsProb				float32
+	removeLiquidityMaxValue		int
+	addLiquidityMaxValue 		int
+	swapMaxValue 				int
 	generatedScenario           *mj.Scenario
 }
 
@@ -1098,6 +1112,7 @@ func (pfe *fuzzDexExecutor) doHachishStepStaking() error {
 	return nil
 }
 
+// This function allows equality with a += 1
 func equalMatrix(left [][]byte, right [][]byte) bool {
 	if len(left) != len(right) {
 		return false
@@ -1105,7 +1120,21 @@ func equalMatrix(left [][]byte, right [][]byte) bool {
 
 	for i := 0; i < len(left); i++ {
 		if !bytes.Equal(left[i], right[i]) {
-			return false
+			if i == len(left) - 1 {
+				leftIncreased := make([]byte, len(left[i]))
+				copy(leftIncreased, left[i])
+				if len(leftIncreased) > 0 {
+					leftIncreased[len(leftIncreased)-1] += 1
+				}
+
+				rightIncreased := make([]byte, len(right[i]))
+				copy(rightIncreased, right[i])
+				if len(rightIncreased) > 0 {
+					rightIncreased[len(rightIncreased)-1] += 1
+				}
+
+				return bytes.Equal(leftIncreased, right[i]) || bytes.Equal(left[i], rightIncreased)
+			}
 		}
 	}
 

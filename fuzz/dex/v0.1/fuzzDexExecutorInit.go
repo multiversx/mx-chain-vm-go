@@ -11,6 +11,13 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 	pfe.numTokens = args.numTokens
 	pfe.numUsers = args.numUsers
 	pfe.numEvents = args.numEvents
+	pfe.removeLiquidityProb = args.removeLiquidityProb
+	pfe.addLiquidityProb = args.addLiquidityProb
+	pfe.swapProb = args.swapProb
+	pfe.queryPairsProb = args.queryPairsProb
+	pfe.removeLiquidityMaxValue = args.removeLiquidityMaxValue
+	pfe.addLiquidityMaxValue = args.addLiquidityMaxValue
+	pfe.swapMaxValue = args.swapMaxValue
 
 	pfe.world.Clear()
 
