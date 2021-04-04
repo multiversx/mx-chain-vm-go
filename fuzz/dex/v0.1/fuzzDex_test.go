@@ -75,16 +75,18 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 	require.Nil(t, err)
 
 	stats := eventsStatistics{
-		swapFixedInputHits:    0,
-		swapFixedInputMisses:  0,
-		swapFixedOutputHits:   0,
-		swapFixedOutputMisses: 0,
-		addLiquidityHits:      0,
-		addLiquidityMisses:    0,
-		removeLiquidityHits:   0,
-		removeLiquidityMisses: 0,
-		queryPairsHits: 	   0,
-		queryPairsMisses: 	   0,
+		swapFixedInputHits:				0,
+		swapFixedInputMisses:			0,
+		swapFixedOutputHits:			0,
+		swapFixedOutputMisses:			0,
+		addLiquidityHits:				0,
+		addLiquidityMisses:				0,
+		addLiquidityPriceChecks:		0,
+		removeLiquidityHits:			0,
+		removeLiquidityMisses:			0,
+		removeLiquidityPriceChecks: 	0,
+		queryPairsHits:					0,
+		queryPairsMisses:				0,
 	}
 
 	re := fuzzutil.NewRandomEventProvider()
@@ -182,14 +184,20 @@ func generateRandomEvent(
 
 func printStatistics(statistics *eventsStatistics, pfe *fuzzDexExecutor) {
 	pfe.log("\nStatistics:")
-	pfe.log("\tswapFixedInputHits %d", statistics.swapFixedInputHits)
-	pfe.log("\tswapFixedInputMisses %d", statistics.swapFixedInputMisses)
-	pfe.log("\tswapFixedOutputHits %d", statistics.swapFixedOutputHits)
-	pfe.log("\tswapFixedOutputMisses %d", statistics.swapFixedOutputMisses)
-	pfe.log("\taddLiquidityHits %d", statistics.addLiquidityHits)
-	pfe.log("\taddLiquidityMisses %d", statistics.addLiquidityMisses)
-	pfe.log("\tremoveLiquidityHits %d", statistics.removeLiquidityHits)
-	pfe.log("\tremoveLiquidityMisses %d", statistics.removeLiquidityMisses)
-	pfe.log("\tqueryPairHits %d", statistics.queryPairsHits)
-	pfe.log("\tqueryPairMisses %d", statistics.queryPairsMisses)
+	pfe.log("\tswapFixedInputHits			%d", statistics.swapFixedInputHits)
+	pfe.log("\tswapFixedInputMisses		%d", statistics.swapFixedInputMisses)
+	pfe.log("")
+	pfe.log("\tswapFixedOutputHits			%d", statistics.swapFixedOutputHits)
+	pfe.log("\tswapFixedOutputMissed		%d", statistics.swapFixedOutputMisses)
+	pfe.log("")
+	pfe.log("\taddLiquidityHits			%d", statistics.addLiquidityHits)
+	pfe.log("\taddLiquidityMisses			%d", statistics.addLiquidityMisses)
+	pfe.log("\taddLiquidityPriceChecks 	%d", statistics.addLiquidityPriceChecks)
+	pfe.log("")
+	pfe.log("\tremoveLiquidityHits			%d", statistics.removeLiquidityHits)
+	pfe.log("\tremoveLiquidityMisses		%d", statistics.removeLiquidityMisses)
+	pfe.log("\tremoveLiquidityPriceChecks	%d", statistics.removeLiquidityPriceChecks)
+	pfe.log("")
+	pfe.log("\tqueryPairHits				%d", statistics.queryPairsHits)
+	pfe.log("\tqueryPairMisses				%d", statistics.queryPairsMisses)
 }

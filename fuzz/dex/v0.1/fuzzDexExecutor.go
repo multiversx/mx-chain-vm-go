@@ -47,9 +47,11 @@ type eventsStatistics struct {
 
 	addLiquidityHits			int
 	addLiquidityMisses			int
+	addLiquidityPriceChecks		int
 
 	removeLiquidityHits			int
 	removeLiquidityMisses		int
+	removeLiquidityPriceChecks	int
 
 	queryPairsHits				int
 	queryPairsMisses			int
@@ -788,8 +790,11 @@ func (pfe *fuzzDexExecutor) addLiquidity(user string, tokenA string, tokenB stri
 		}
 
 		// New and old prices should be the same
-		if errEquivalent == nil && !equalMatrix(rawResponse, rawEquivalent) {
-			return errors.New("PRICE CHANGED after add liquidity")
+		if errEquivalent == nil {
+			statistics.addLiquidityPriceChecks += 1
+			if  !equalMatrix(rawResponse, rawEquivalent) {
+				return errors.New("PRICE CHANGED after add liquidity")
+			}
 		}
 	}
 
@@ -890,11 +895,14 @@ func (pfe *fuzzDexExecutor) removeLiquidity(user string, tokenA string, tokenB s
 	} else {
 		statistics.removeLiquidityHits += 1
 
-		rawOutput, err := pfe.querySingleResultStringAddr(pfe.ownerAddress, pairHexStr,
+		rawOutput, erro := pfe.querySingleResultStringAddr(pfe.ownerAddress, pairHexStr,
 			"getEquivalent", fmt.Sprintf("\"str:%s\", \"%d\"", tokenA, 1000))
 
-		if errEquivalent != nil && err != nil && !equalMatrix(rawEquivalent, rawOutput) {
-			return errors.New("PRICE CHANGED after success remove")
+		if errEquivalent == nil && erro == nil {
+			statistics.removeLiquidityPriceChecks += 1
+			if !equalMatrix(rawEquivalent, rawOutput) {
+				return errors.New("PRICE CHANGED after success remove")
+			}
 		}
 	}
 
