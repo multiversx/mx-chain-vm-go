@@ -552,6 +552,10 @@ func (pfe *fuzzDexExecutor) swapFixedInput(user string, tokenA string, amountA i
 			pfe.log("swapFixedInput %s -> %s", tokenA, tokenB)
 			pfe.log("could not swap because %s", output.ReturnMessage)
 
+			if output.ReturnMessage == "insufficient funds" {
+				return errors.New(output.ReturnMessage)
+			}
+
 			if output.ReturnMessage == "K invariant failed" {
 				return errors.New(output.ReturnMessage)
 			}
@@ -617,6 +621,10 @@ func (pfe *fuzzDexExecutor) swapFixedOutput(user string, tokenA string, amountA 
 			statistics.swapFixedOutputMisses += 1
 			pfe.log("swapFixedOutput %s -> %s", tokenA, tokenB)
 			pfe.log("could not swap because %s", output.ReturnMessage)
+
+			if output.ReturnMessage == "insufficient funds" {
+				return errors.New(output.ReturnMessage)
+			}
 
 			if output.ReturnMessage == "K invariant failed" {
 				return errors.New(output.ReturnMessage)
@@ -777,6 +785,10 @@ func (pfe *fuzzDexExecutor) addLiquidity(user string, tokenA string, tokenB stri
 			return errors.New(output.ReturnMessage)
 		}
 
+		if output.ReturnMessage == "insufficient funds" {
+			return errors.New(output.ReturnMessage)
+		}
+
 		// Other errors are fine
 	} else {
 		// Add liquidity is good
@@ -892,6 +904,10 @@ func (pfe *fuzzDexExecutor) removeLiquidity(user string, tokenA string, tokenB s
 		pfe.log("remove liquidity %s -> %s", tokenA, tokenB)
 		pfe.log("could not remove because %s", output.ReturnMessage)
 		statistics.removeLiquidityMisses += 1
+
+		if output.ReturnMessage == "insufficient funds" {
+			return errors.New(output.ReturnMessage)
+		}
 	} else {
 		statistics.removeLiquidityHits += 1
 

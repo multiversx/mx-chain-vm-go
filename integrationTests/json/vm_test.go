@@ -141,8 +141,8 @@ func TestDex_v0_1(t *testing.T) {
 	runAllTestsInFolder(t, "dex/v0_1")
 }
 
-func TestDex_v0_1_removeLiq(t *testing.T) {
-	runSingleTest(t, "dex/v0_1/mandos", "remove_liquidity_twice.scen.json")
+func TestDex_v0_1_singleTest(t *testing.T) {
+	runSingleTest(t, "dex/v0_1/mandos", "send_with_no_funds.scen.json")
 }
 
 // func TestPromises(t *testing.T) {
