@@ -83,6 +83,8 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 		addLiquidityMisses:    0,
 		removeLiquidityHits:   0,
 		removeLiquidityMisses: 0,
+		queryPairsHits: 	   0,
+		queryPairsMisses: 	   0,
 	}
 
 	re := fuzzutil.NewRandomEventProvider()
@@ -125,8 +127,19 @@ func generateRandomEvent(
 	}
 
 	switch {
+		//remove liquidity
+		case re.WithProbability(0.1):
+
+			seed := r.Intn(1000000000000)
+			amount := seed
+			amountAmin := seed / 100
+			amountBmin := seed / 100
+
+			err := pfe.removeLiquidity(user, tokenA, tokenB, amount, amountAmin, amountBmin, statistics)
+			require.Nil(t, err)
+
 		//add liquidity
-		case re.WithProbability(0.2):
+		case re.WithProbability(0.3):
 
 			seed := r.Intn(1000000000000)
 			amountA := seed
@@ -136,25 +149,6 @@ func generateRandomEvent(
 
 			err := pfe.addLiquidity(user, tokenA, tokenB, amountA, amountB, amountAmin, amountBmin, statistics)
 			require.Nil(t, err)
-
-		//remove liquidity
-		case re.WithProbability(0.2):
-
-			seed := r.Intn(1000000000)
-			amount := seed
-			amountAmin := 2
-			amountBmin := 2
-
-			numProviders := len(pfe.liqProviders)
-			if numProviders != 0 {
-				provIndex := r.Intn(numProviders)
-				tokenA = pfe.liqProviders[provIndex].tokenA
-				tokenB = pfe.liqProviders[provIndex].tokenB
-				user = pfe.liqProviders[provIndex].user
-
-				err := pfe.removeLiquidity(user, tokenA, tokenB, amount, amountAmin, amountBmin, statistics)
-				require.Nil(t, err)
-			}
 
 		//swap
 		case re.WithProbability(0.4):
@@ -175,6 +169,13 @@ func generateRandomEvent(
 				err := pfe.swapFixedOutput(user, tokenA, amountA, tokenB, amountB, statistics)
 				require.Nil(t, err)
 			}
+
+		// pair views
+		case re.WithProbability(0.2):
+
+			err := pfe.checkPairViews(user, tokenA, tokenB, statistics)
+			require.Nil(t, err)
+
 	default:
 	}
 }
@@ -189,8 +190,6 @@ func printStatistics(statistics *eventsStatistics, pfe *fuzzDexExecutor) {
 	pfe.log("\taddLiquidityMisses %d", statistics.addLiquidityMisses)
 	pfe.log("\tremoveLiquidityHits %d", statistics.removeLiquidityHits)
 	pfe.log("\tremoveLiquidityMisses %d", statistics.removeLiquidityMisses)
-}
-
-func RemoveIndex(s []LiquidityProvider, index int) []LiquidityProvider {
-	return append(s[:index], s[index+1:]...)
+	pfe.log("\tqueryPairHits %d", statistics.queryPairsHits)
+	pfe.log("\tqueryPairMisses %d", statistics.queryPairsMisses)
 }

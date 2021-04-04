@@ -35,7 +35,6 @@ type fuzzDexExecutor struct {
 	numUsers					int
 	numTokens					int
 	numEvents					int
-	liqProviders				[]LiquidityProvider
 	generatedScenario           *mj.Scenario
 }
 
@@ -51,12 +50,9 @@ type eventsStatistics struct {
 
 	removeLiquidityHits			int
 	removeLiquidityMisses		int
-}
 
-type LiquidityProvider struct {
-	user 						string
-	tokenA						string
-	tokenB						string
+	queryPairsHits				int
+	queryPairsMisses			int
 }
 
 func newFuzzDexExecutor(fileResolver fr.FileResolver) (*fuzzDexExecutor, error) {
@@ -131,6 +127,11 @@ func (pfe *fuzzDexExecutor) tokenTicker(index int) string {
 	return fmt.Sprintf("TOKEN-%06d", index)
 }
 
+func (pfe *fuzzDexExecutor) lpTokenTicker(index int) string {
+	return fmt.Sprintf("LPTOK-%06d", index)
+}
+
+
 func (pfe *fuzzDexExecutor) fullOfEsdtWalletString() string {
 	esdtString := ""
 	for i := 1; i <= pfe.numTokens; i++ {
@@ -138,7 +139,12 @@ func (pfe *fuzzDexExecutor) fullOfEsdtWalletString() string {
 						"str:%s": "1,000,000,000,000,000,000,000,000,000,000",`, pfe.tokenTicker(i))
 	}
 	esdtString += fmt.Sprintf(`
-						"str:%s": "1,000,000,000,000,000,000,000,000,000,000"`, pfe.wegldTokenId)
+						"str:%s": "1,000,000,000,000,000,000,000,000,000,000",`, pfe.wegldTokenId)
+	for i := 1; i <= (pfe.numTokens * (pfe.numTokens + 1) / 2); i++ {
+		esdtString += fmt.Sprintf(`
+						"str:%s": "1,000,000,000,000,000,000,000,000,000,000",`, pfe.lpTokenTicker(i))
+	}
+	esdtString = esdtString[:len(esdtString)-1]
 	return esdtString
 }
 
@@ -785,13 +791,6 @@ func (pfe *fuzzDexExecutor) addLiquidity(user string, tokenA string, tokenB stri
 		if errEquivalent == nil && !equalMatrix(rawResponse, rawEquivalent) {
 			return errors.New("PRICE CHANGED after add liquidity")
 		}
-
-		newLp := LiquidityProvider{
-			user:    user,
-			tokenA:  tokenA,
-			tokenB:  tokenB,
-		}
-		pfe.liqProviders = append(pfe.liqProviders, newLp)
 	}
 
 	output, err = pfe.executeTxStep(fmt.Sprintf(`
@@ -827,6 +826,10 @@ func (pfe *fuzzDexExecutor) addLiquidity(user string, tokenA string, tokenB stri
 
 func (pfe *fuzzDexExecutor) removeLiquidity(user string, tokenA string, tokenB string, amount int, amountAmin int,
 	amountBmin int, statistics *eventsStatistics) error {
+
+	if tokenA == tokenB {
+		return nil
+	}
 
 	rawResponse, err := pfe.querySingleResult(pfe.ownerAddress, pfe.routerAddress,
 		"getPair", fmt.Sprintf("\"str:%s\", \"str:%s\"", tokenA, tokenB))
@@ -881,8 +884,8 @@ func (pfe *fuzzDexExecutor) removeLiquidity(user string, tokenA string, tokenB s
 	}
 
 	if output.ReturnMessage != "" {
-		pfe.log("add liquidity %s -> %s", tokenA, tokenB)
-		pfe.log("could not add because %s", output.ReturnMessage)
+		pfe.log("remove liquidity %s -> %s", tokenA, tokenB)
+		pfe.log("could not remove because %s", output.ReturnMessage)
 		statistics.removeLiquidityMisses += 1
 	} else {
 		statistics.removeLiquidityHits += 1
@@ -925,8 +928,56 @@ func (pfe *fuzzDexExecutor) doHackishSteps() error {
 	return nil
 }
 
+func (pfe *fuzzDexExecutor) checkPairViews(user string, tokenA string, tokenB string, stats *eventsStatistics) error {
+	if tokenA == tokenB {
+		return nil
+	}
+
+	rawResponse, err := pfe.querySingleResult(pfe.ownerAddress, pfe.routerAddress,
+		"getPair", fmt.Sprintf("\"str:%s\", \"str:%s\"", tokenA, tokenB))
+	if err != nil {
+		return err
+	}
+
+	pairHexStr := "0x"
+	for i := 0; i < len(rawResponse[0]); i++ {
+		toAppend := fmt.Sprintf("%02x", rawResponse[0][i])
+		pairHexStr += toAppend
+	}
+
+	outputAmountInA, errAmountInA := pfe.querySingleResultStringAddr(pfe.ownerAddress, pairHexStr,
+		"getAmountIn", fmt.Sprintf("\"str:%s\", \"%d\"", tokenA, 1000))
+
+	outputAmountOutA, errAmountOutA := pfe.querySingleResultStringAddr(pfe.ownerAddress, pairHexStr,
+		"getAmountOut", fmt.Sprintf("\"str:%s\", \"%d\"", tokenA, 1000))
+
+	outputEquivalentOutA, errEquivalentA := pfe.querySingleResultStringAddr(pfe.ownerAddress, pairHexStr,
+		"getEquivalent", fmt.Sprintf("\"str:%s\", \"%d\"", tokenA, 1000))
+
+	outputAmountInB, errAmountInB := pfe.querySingleResultStringAddr(pfe.ownerAddress, pairHexStr,
+		"getAmountIn", fmt.Sprintf("\"str:%s\", \"%d\"", tokenB, 1000))
+
+	outputAmountOutB, errAmountOutB := pfe.querySingleResultStringAddr(pfe.ownerAddress, pairHexStr,
+		"getAmountOut", fmt.Sprintf("\"str:%s\", \"%d\"", tokenB, 1000))
+
+	outputEquivalentOutB, errEquivalentB := pfe.querySingleResultStringAddr(pfe.ownerAddress, pairHexStr,
+		"getEquivalent", fmt.Sprintf("\"str:%s\", \"%d\"", tokenB, 1000))
+
+	if errAmountInA != nil || errAmountInB != nil || errAmountOutA != nil || errAmountOutB != nil ||
+		errEquivalentA != nil || errEquivalentB != nil {
+		pfe.log("some query returned errors")
+		stats.queryPairsMisses += 1
+	} else {
+		stats.queryPairsHits += 1
+	}
+
+	Use(outputAmountInA, outputAmountInB, outputAmountOutA, outputAmountOutB, outputEquivalentOutA, outputEquivalentOutB)
+
+	return nil
+}
+
 func (pfe *fuzzDexExecutor) doHackishStep(tokenA string, tokenB string, index int) error {
-	lpTokenName := "LPTOK-" + fmt.Sprintf("%06d", index)
+	lpTokenName := pfe.lpTokenTicker(index)
 
 	rawResponse, err := pfe.querySingleResult(pfe.ownerAddress, pfe.routerAddress,
 		"getPair", fmt.Sprintf("\"str:%s\", \"str:%s\"", tokenA, tokenB))
