@@ -56,7 +56,7 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 			wegldTokenId:				"WEGLD-abcdef",
 			numUsers:					10,
 			numTokens:					3,
-			numEvents:					1500,
+			numEvents:					15000,
 			removeLiquidityProb:		0.1,
 			addLiquidityProb:			0.3,
 			swapProb:					0.5,
@@ -64,6 +64,7 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 			removeLiquidityMaxValue:	1000000000,
 			addLiquidityMaxValue: 		1000000000,
 			swapMaxValue: 				10000000,
+			tokensCheckFrequency:		100,
 		},
 	)
 	require.Nil(t, err)
@@ -99,7 +100,15 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 	re := fuzzutil.NewRandomEventProvider()
 	for stepIndex := 0; stepIndex < pfe.numEvents; stepIndex++ {
 		generateRandomEvent(t, pfe, r, re, &stats)
+
+		if stepIndex != 0 && stepIndex % pfe.tokensCheckFrequency == 0 {
+			err = pfe.checkTokens()
+			require.Nil(t, err)
+		}
 	}
+
+	err = pfe.checkTokens()
+	require.Nil(t, err)
 
 	printStatistics(&stats, pfe)
 }

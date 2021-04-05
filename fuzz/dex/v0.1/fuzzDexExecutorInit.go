@@ -18,6 +18,7 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 	pfe.removeLiquidityMaxValue = args.removeLiquidityMaxValue
 	pfe.addLiquidityMaxValue = args.addLiquidityMaxValue
 	pfe.swapMaxValue = args.swapMaxValue
+	pfe.tokensCheckFrequency = args.tokensCheckFrequency
 
 	pfe.world.Clear()
 
