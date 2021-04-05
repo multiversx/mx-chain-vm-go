@@ -160,7 +160,8 @@ func (a *Account) GetTokenRoles(tokenName []byte) ([][]byte, error) {
 // GetAllTokenData returns the information about all the ESDT tokens held by the account.
 func (a *Account) GetAllTokenData() (map[string]*esdt.ESDigitalToken, error) {
 	tokenDataMap := make(map[string]*esdt.ESDigitalToken)
-	for _, tokenKey := range a.GetTokenKeys() {
+	tokenKeys := a.GetTokenKeys()
+	for _, tokenKey := range tokenKeys {
 		tokenData, err := a.GetTokenData(tokenKey)
 		if err != nil {
 			return nil, err
@@ -168,13 +169,12 @@ func (a *Account) GetAllTokenData() (map[string]*esdt.ESDigitalToken, error) {
 
 		if tokenData.TokenMetaData == nil {
 			tokenData.TokenMetaData = &esdt.MetaData{
-				Name:  GetTokenNameFromKey(tokenKey),
 				Nonce: 0,
 			}
 		}
 
-		tokenName := string(tokenData.TokenMetaData.Name)
-		tokenDataMap[tokenName] = tokenData
+		tokenKeyStr := string(tokenKey)
+		tokenDataMap[tokenKeyStr] = tokenData
 	}
 
 	return tokenDataMap, nil

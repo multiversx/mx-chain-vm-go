@@ -157,8 +157,11 @@ func checkTokensState(
 func getExpectedTokens(expectedAcct *mj.CheckAccount) map[string]*mj.CheckESDTData {
 	expectedTokens := make(map[string]*mj.CheckESDTData)
 	for _, expectedTokenData := range expectedAcct.CheckESDTData {
-		tokenNameStr := string(expectedTokenData.TokenIdentifier.Value)
-		expectedTokens[tokenNameStr] = expectedTokenData
+		tokenName := expectedTokenData.TokenIdentifier.Value
+		tokenNonce := expectedTokenData.Nonce.Value
+		tokenKeyStr := string(worldmock.MakeTokenKey(tokenName, tokenNonce))
+
+		expectedTokens[tokenKeyStr] = expectedTokenData
 	}
 
 	return expectedTokens
