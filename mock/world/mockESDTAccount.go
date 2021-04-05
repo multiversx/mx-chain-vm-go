@@ -10,8 +10,10 @@ import (
 )
 
 // MakeTokenKey creates the storage key corresponding to the given tokenName.
-func MakeTokenKey(tokenName []byte) []byte {
+func MakeTokenKey(tokenName []byte, nonce uint64) []byte {
+	nonceBytes := big.NewInt(0).SetUint64(nonce).Bytes()
 	tokenKey := append(ESDTKeyPrefix, tokenName...)
+	tokenKey = append(tokenKey, nonceBytes...)
 	return tokenKey
 }
 
@@ -44,7 +46,7 @@ func GetTokenNameFromKey(key []byte) []byte {
 // GetTokenBalanceByName returns the ESDT balance of the account, specified by
 // the token name.
 func (a *Account) GetTokenBalanceByName(tokenName string) (*big.Int, error) {
-	tokenKey := MakeTokenKey([]byte(tokenName))
+	tokenKey := MakeTokenKey([]byte(tokenName), 0)
 	return a.GetTokenBalance(tokenKey)
 }
 

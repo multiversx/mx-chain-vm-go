@@ -22,7 +22,7 @@ func TestExecution_ExecuteOnDestContext_ESDTTransferWithoutExecute(t *testing.T)
 	scBalance := big.NewInt(1000)
 	host, world := defaultTestArwenForCallWithWorldMock(t, code, scBalance)
 
-	tokenKey := worldmock.MakeTokenKey(ESDTTestTokenName)
+	tokenKey := worldmock.MakeTokenKey(ESDTTestTokenName, 0)
 	world.BuiltinFuncs.SetTokenData(parentAddress, tokenKey, &esdt.ESDigitalToken{
 		Value: big.NewInt(100),
 		Type:  uint32(core.Fungible),
