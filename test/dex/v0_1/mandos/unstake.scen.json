@@ -13,6 +13,7 @@
 					"balance": "1000000000000000000000000000000",
 					"esdt": {
 						"str:ALC-abcdef": "3000000000",
+						"str:BLC-abcdef": "5000000000",
 						"str:WEGLD-abcdef": "3000000000",
 						"str:LPTOK-abcdef": "1899999000",
 						"str:STAKING-abcdef": {
