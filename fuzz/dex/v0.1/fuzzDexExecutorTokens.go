@@ -7,8 +7,13 @@ import (
 	"math/big"
 )
 
+func (pfe *fuzzDexExecutor) getTokensWithNonce(address []byte, toktik string, nonce int) (*big.Int, error) {
+	token := worldmock.MakeTokenKey([]byte(toktik), uint64(nonce))
+	return pfe.world.BuiltinFuncs.GetTokenBalance(address, token)
+}
+
 func (pfe *fuzzDexExecutor) getTokens(address []byte, toktik string) (*big.Int, error) {
-	token := worldmock.MakeTokenKey([]byte(toktik))
+	token := worldmock.MakeTokenKey([]byte(toktik), 0)
 	return pfe.world.BuiltinFuncs.GetTokenBalance(address, token)
 }
 
