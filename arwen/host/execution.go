@@ -171,7 +171,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 
 	vmOutput = output.GetVMOutput()
 
-	log.Trace("doRunSmartContractCall",
+	log.Trace("doRunSmartContractCall finished",
 		"retCode", vmOutput.ReturnCode,
 		"message", vmOutput.ReturnMessage,
 		"data", vmOutput.ReturnData)

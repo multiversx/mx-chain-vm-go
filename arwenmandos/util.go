@@ -46,15 +46,16 @@ func convertAccount(testAcct *mj.Account) *worldmock.Account {
 	for _, mandosESDTData := range testAcct.ESDTData {
 		tokenName := mandosESDTData.TokenIdentifier.Value
 		tokenValue := mandosESDTData.Value.Value
+		tokenNonce := mandosESDTData.Nonce.Value
 		isFrozen := mandosESDTData.Frozen.Value > 0
-		tokenKey := worldmock.MakeTokenKey(tokenName)
+		tokenKey := worldmock.MakeTokenKey(tokenName, tokenNonce)
 		tokenData := &esdt.ESDigitalToken{
 			Value:      tokenValue,
 			Type:       uint32(core.Fungible),
 			Properties: makeESDTUserMetadataBytes(isFrozen),
 			TokenMetaData: &esdt.MetaData{
 				Name:  tokenName,
-				Nonce: 0,
+				Nonce: tokenNonce,
 			},
 		}
 		account.SetTokenData(tokenKey, tokenData)

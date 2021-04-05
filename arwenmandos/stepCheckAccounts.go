@@ -171,7 +171,7 @@ func detectUnexpectedTokens(
 	for tokenName, accountTokenData := range accountTokens {
 		_, isExpected := expectedTokens[tokenName]
 		if !isExpected && accountTokenData.Value.Sign() > 0 {
-			return fmt.Errorf("unexpected ESDT token %s", tokenName)
+			return fmt.Errorf("unexpected ESDT token `%s` found on the account", tokenName)
 		}
 	}
 
