@@ -1,0 +1,33 @@
+{
+  "name": "stake",
+  "steps": [
+    {
+      "step": "externalSteps",
+      "path": "complete_setup.scen.json"
+    },
+    {
+      "step": "scCall",
+      "txId": "unstake",
+      "tx": {
+        "from": "address:user1",
+        "to": "address:staking_contract",
+        "value": "0",
+        "function": "stake",
+        "esdt": {
+          "tokenIdentifier": "str:ALC-abcdef",
+          "value": "1"
+        },
+        "arguments": [],
+        "gasLimit": "100,000,000",
+        "gasPrice": "0"
+      },
+      "expect": {
+        "out": [],
+        "status": "4",
+        "message": "str:Unknown lp token",
+        "gas": "*",
+        "refund": "*"
+      }
+    }
+  ]
+}
