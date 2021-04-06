@@ -147,7 +147,7 @@ func TestDex_v0_1(t *testing.T) {
 }
 
 func TestDex_v0_1_singleTest(t *testing.T) {
-	runSingleTest(t, "dex/v0_1/mandos", "unstake.scen.json")
+	runSingleTest(t, "dex/v0_1/mandos", "unbond.scen.json")
 }
 
 // func TestPromises(t *testing.T) {

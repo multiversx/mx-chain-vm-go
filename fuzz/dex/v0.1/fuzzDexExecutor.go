@@ -621,6 +621,7 @@ func (pfe *fuzzDexExecutor) doHachishStepStaking() error {
 					"str:wegld_token_identifier": "str:%s",
 					"str:sft_staking_token_identifier": "str:%s",
 					"str:router_address": "''%s",
+					"str:virtual_token_id": "str:%s",
 					"str:state": "1"
 				},
 				"code": "file:../../../test/dex/v0_1/output/elrond_dex_staking.wasm"
@@ -632,6 +633,7 @@ func (pfe *fuzzDexExecutor) doHachishStepStaking() error {
 		pfe.wegldTokenId,
 		"STAKING-abcdef",
 		string(pfe.routerAddress),
+		pfe.wegldTokenId,
 	))
 	if err != nil {
 		return err

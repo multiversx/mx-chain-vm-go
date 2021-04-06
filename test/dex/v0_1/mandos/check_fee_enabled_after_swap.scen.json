@@ -48,6 +48,7 @@
 						"str:wegld_token_identifier": "str:WEGLD-abcdef",
 						"str:sft_staking_token_identifier": "str:STAKING-abcdef",
 						"str:router_address": "address:router_contract",
+						"str:virtual_token_id": "str:WEGLD-abcdef",
 						"str:state": "1"
 					},
 					"code": "file:../output/elrond_dex_staking.wasm"

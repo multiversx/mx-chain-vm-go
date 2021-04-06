@@ -7,19 +7,42 @@
 		},
 		{
 			"step": "scCall",
-			"txId": "swap-fixed-output",
+			"txId": "unbond",
 			"tx": {
 				"from": "address:user1",
-				"to": "address:pair_contract",
+				"to": "address:staking_contract",
 				"value": "0",
-				"function": "swapTokensFixedOutput",
-				"esdt": {
-					"tokenIdentifier": "str:ALC-abcdef",
-					"value": "100,000"
-				},
+				"function": "unbond",
 				"arguments": [
-					"str:WEGLD-abcdef",
-					"50,000"
+					"str:LPTOK-abcdef"
+				],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [],
+				"status": "4",
+				"message": "str:Unbond called too early",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "setState",
+			"currentBlockInfo": {
+				"blockEpoch": "10"
+			}
+		},
+		{
+			"step": "scCall",
+			"txId": "unbond",
+			"tx": {
+				"from": "address:user1",
+				"to": "address:staking_contract",
+				"value": "0",
+				"function": "unbond",
+				"arguments": [
+					"str:LPTOK-abcdef"
 				],
 				"gasLimit": "100,000,000",
 				"gasPrice": "0"
