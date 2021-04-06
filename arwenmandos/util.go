@@ -186,6 +186,8 @@ func addESDTToVMInput(esdtData *mj.ESDTData, vmInput *vmcommon.VMInput) {
 		vmInput.ESDTTokenNonce = esdtData.Nonce.Value
 		if vmInput.ESDTTokenNonce != 0 {
 			vmInput.ESDTTokenType = uint32(core.NonFungible)
+		} else {
+			vmInput.ESDTTokenType = uint32(core.Fungible)
 		}
 	}
 }

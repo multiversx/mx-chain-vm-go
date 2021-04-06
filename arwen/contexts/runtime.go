@@ -471,6 +471,9 @@ func (context *runtimeContext) SetVMInput(vmInput *vmcommon.VMInput) {
 			copy(context.vmInput.Arguments[i], arg)
 		}
 	}
+
+	context.vmInput.ESDTTokenType = vmInput.ESDTTokenType
+	context.vmInput.ESDTTokenNonce = vmInput.ESDTTokenNonce
 }
 
 // GetSCAddress returns the SC address from the current context.
