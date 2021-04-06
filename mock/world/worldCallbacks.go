@@ -12,6 +12,7 @@ import (
 )
 
 var _ vmcommon.BlockchainHook = (*MockWorld)(nil)
+var ErrBuiltinFuncWrapperNotInitialized = errors.New("builtin function not found or container not initialized")
 
 var zero = big.NewInt(0)
 
@@ -163,23 +164,26 @@ func (b *MockWorld) ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*
 		return nil, b.Err
 	}
 
-	if b.BuiltinFuncs != nil {
-		return b.BuiltinFuncs.ProcessBuiltInFunction(input)
+	if b.BuiltinFuncs == nil {
+		return nil, ErrBuiltinFuncWrapperNotInitialized
 	}
 
-	return nil, fmt.Errorf(
-		"builtin function %s not found or container not initialized",
-		input.Function)
+	return b.BuiltinFuncs.ProcessBuiltInFunction(input)
 }
 
 // GetESDTToken -
-func (b *MockWorld) GetESDTToken(_ []byte, _ []byte, _ uint64) (*esdt.ESDigitalToken, error) {
+func (b *MockWorld) GetESDTToken(address []byte, tokenName []byte, nonce uint64) (*esdt.ESDigitalToken, error) {
 	// custom error
 	if b.Err != nil {
 		return nil, b.Err
 	}
 
-	return &esdt.ESDigitalToken{Value: big.NewInt(0)}, nil
+	if b.BuiltinFuncs == nil {
+		return nil, ErrBuiltinFuncWrapperNotInitialized
+	}
+
+	tokenKey := MakeTokenKey(tokenName, nonce)
+	return b.BuiltinFuncs.GetTokenData(address, tokenKey)
 }
 
 // GetBuiltinFunctionNames -
