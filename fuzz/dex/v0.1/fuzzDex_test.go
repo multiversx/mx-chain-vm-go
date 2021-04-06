@@ -56,14 +56,21 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 			wegldTokenId:				"WEGLD-abcdef",
 			numUsers:					10,
 			numTokens:					3,
-			numEvents:					15000,
-			removeLiquidityProb:		0.1,
-			addLiquidityProb:			0.3,
-			swapProb:					0.5,
-			queryPairsProb:				0.1,
+			numEvents:					5000,
+			removeLiquidityProb:		0.05,
+			addLiquidityProb:			0.25,
+			swapProb:					0.35,
+			queryPairsProb:				0.05,
+			stakeProb:					0.20,
+			unstakeProb:				0.085,
+			unbondProb:					0.005,
+			increaseEpochProb:			0.005,
 			removeLiquidityMaxValue:	1000000000,
 			addLiquidityMaxValue: 		1000000000,
 			swapMaxValue: 				10000000,
+			stakeMaxValue:				100000000,
+			unstakeMaxValue:			100000000,
+			blockEpochIncrease: 		10,
 			tokensCheckFrequency:		100,
 		},
 	)
@@ -95,6 +102,13 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 		removeLiquidityPriceChecks: 	0,
 		queryPairsHits:					0,
 		queryPairsMisses:				0,
+		stakeHits:		 				0,
+		stakeMisses:					0,
+		unstakeHits:					0,
+		unstakeMisses:					0,
+		unstakeWithRewards:				0,
+		unbondHits:	 					0,
+		unbondMisses:					0,
 	}
 
 	re := fuzzutil.NewRandomEventProvider()
@@ -102,6 +116,7 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 		generateRandomEvent(t, pfe, r, re, &stats)
 
 		if stepIndex != 0 && stepIndex % pfe.tokensCheckFrequency == 0 {
+			pfe.log("Current step index: %d", stepIndex)
 			err = pfe.checkTokens()
 			require.Nil(t, err)
 		}
@@ -194,6 +209,32 @@ func generateRandomEvent(
 			err := pfe.checkPairViews(user, tokenA, tokenB, statistics)
 			require.Nil(t, err)
 
+		// stake
+		case re.WithProbability(pfe.stakeProb):
+
+			seed := r.Intn(pfe.stakeMaxValue) + 1
+			err := pfe.stake(user, tokenA, "WEGLD-abcdef", seed, statistics)
+			require.Nil(t, err)
+
+		// unstake
+		case re.WithProbability(pfe.unstakeProb):
+
+			seed := r.Intn(pfe.removeLiquidityMaxValue) + 1
+
+			err := pfe.unstake(seed, statistics, r)
+			require.Nil(t, err)
+
+		// unbond
+		case re.WithProbability(pfe.unbondProb):
+
+			err := pfe.unbond(user, tokenA, tokenB, statistics)
+			require.Nil(t, err)
+
+		// increase block epoch. required for unbond
+		case re.WithProbability(pfe.increaseEpochProb):
+
+			err := pfe.increaseBlockEpoch(pfe.blockEpochIncrease)
+			require.Nil(t, err)
 	default:
 	}
 }
@@ -216,4 +257,15 @@ func printStatistics(statistics *eventsStatistics, pfe *fuzzDexExecutor) {
 	pfe.log("")
 	pfe.log("\tqueryPairHits				%d", statistics.queryPairsHits)
 	pfe.log("\tqueryPairMisses				%d", statistics.queryPairsMisses)
+	pfe.log("")
+	pfe.log("\tstakeHits					%d", statistics.stakeHits)
+	pfe.log("\tstakeMisses					%d", statistics.stakeMisses)
+	pfe.log("")
+	pfe.log("\tunstakeHits					%d", statistics.unstakeHits)
+	pfe.log("\tunstakeMisses				%d", statistics.unstakeMisses)
+	pfe.log("\tunstakeWithRewards			%d", statistics.unstakeWithRewards)
+	pfe.log("")
+	pfe.log("\tunbondHits					%d", statistics.unbondHits)
+	pfe.log("\tunbondMisses				%d", statistics.unbondMisses)
+	pfe.log("")
 }

@@ -15,10 +15,18 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 	pfe.addLiquidityProb = args.addLiquidityProb
 	pfe.swapProb = args.swapProb
 	pfe.queryPairsProb = args.queryPairsProb
+	pfe.stakeProb = args.stakeProb
+	pfe.unstakeProb = args.unstakeProb
+	pfe.unbondProb = args.unbondProb
+	pfe.increaseEpochProb = args.increaseEpochProb
 	pfe.removeLiquidityMaxValue = args.removeLiquidityMaxValue
 	pfe.addLiquidityMaxValue = args.addLiquidityMaxValue
 	pfe.swapMaxValue = args.swapMaxValue
+	pfe.stakeMaxValue = args.stakeMaxValue
+	pfe.unstakeMaxValue = args.unstakeMaxValue
+	pfe.blockEpochIncrease = args.blockEpochIncrease
 	pfe.tokensCheckFrequency = args.tokensCheckFrequency
+	pfe.stakers = make(map[int]StakeInfo)
 
 	pfe.world.Clear()
 
