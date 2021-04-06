@@ -247,6 +247,7 @@ func (ae *ArwenTestExecutor) directESDTTransferFromTx(tx *mj.Transaction) (uint6
 		tx.From.Value,
 		tx.To.Value,
 		tx.ESDTValue.TokenIdentifier.Value,
+		tx.ESDTValue.Nonce.Value,
 		tx.ESDTValue.Value.Value,
 		vmcommon.DirectCall,
 		tx.GasLimit.Value,

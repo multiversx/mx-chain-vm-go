@@ -48,10 +48,12 @@ func (bf *BuiltinFunctionsWrapper) SetTokenData(address []byte, tokenKey []byte,
 // cross-shard.
 // TODO rewrite to simulate what the SCProcessor does when executing a tx with
 // data "ESDTTransfer@token@value@contractfunc@contractargs..."
+// TODO this function duplicates code from host.ExecuteESDTTransfer(), must refactor
 func (bf *BuiltinFunctionsWrapper) PerformDirectESDTTransfer(
 	sender []byte,
 	receiver []byte,
 	token []byte,
+	nonce uint64,
 	value *big.Int,
 	callType vmcommon.CallType,
 	gasLimit uint64,
@@ -72,7 +74,15 @@ func (bf *BuiltinFunctionsWrapper) PerformDirectESDTTransfer(
 		AllowInitFunction: false,
 	}
 
-	esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, token, value.Bytes())
+	if nonce > 0 {
+		esdtTransferInput.Function = core.BuiltInFunctionESDTNFTTransfer
+		esdtTransferInput.RecipientAddr = esdtTransferInput.CallerAddr
+		nonceAsBytes := big.NewInt(0).SetUint64(nonce).Bytes()
+		esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, token, nonceAsBytes, value.Bytes(), receiver)
+	} else {
+		esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, token, value.Bytes())
+	}
+
 	vmOutput, err := bf.ProcessBuiltInFunction(esdtTransferInput)
 	if err != nil {
 		return 0, err
