@@ -446,6 +446,14 @@ func (context *runtimeContext) SetVMInput(vmInput *vmcommon.VMInput) {
 		copy(context.vmInput.ESDTTokenName, vmInput.ESDTTokenName)
 	}
 
+	if vmInput.ESDTTokenType != 0 {
+		context.vmInput.ESDTTokenType = vmInput.ESDTTokenType
+	}
+
+	if vmInput.ESDTTokenNonce != 0 {
+		context.vmInput.ESDTTokenNonce = vmInput.ESDTTokenNonce
+	}
+
 	if len(vmInput.OriginalTxHash) > 0 {
 		context.vmInput.OriginalTxHash = make([]byte, len(vmInput.OriginalTxHash))
 		copy(context.vmInput.OriginalTxHash, vmInput.OriginalTxHash)
