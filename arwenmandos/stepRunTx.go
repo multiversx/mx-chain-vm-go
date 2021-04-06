@@ -229,8 +229,8 @@ func (ae *ArwenTestExecutor) scCall(txIndex string, tx *mj.Transaction, gasLimit
 		OriginalTxHash: txHash,
 		CurrentTxHash:  txHash,
 		ESDTValue:      big.NewInt(0),
-		ESDTTokenName:  nil,
-		ESDTTokenNonce: 0,
+		ESDTTokenName:  tx.ESDTValue.TokenIdentifier.Value,
+		ESDTTokenNonce: tx.ESDTValue.Nonce.Value,
 	}
 	addESDTToVMInput(tx.ESDTValue, &vmInput)
 	input := &vmcommon.ContractCallInput{
