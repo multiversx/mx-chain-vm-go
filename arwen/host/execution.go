@@ -180,7 +180,10 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	return
 }
 
-func copyTxHashesFromContext(runtime arwen.RuntimeContext, input *vmcommon.ContractCallInput) {
+func copyTxHashesFromContext(copyEnabled bool, runtime arwen.RuntimeContext, input *vmcommon.ContractCallInput) {
+	if !copyEnabled {
+		return
+	}
 	currentVMInput := runtime.GetVMInput()
 	if len(currentVMInput.OriginalTxHash) > 0 {
 		input.OriginalTxHash = currentVMInput.OriginalTxHash
@@ -204,7 +207,7 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	output.PushState()
 	output.CensorVMOutput()
 
-	copyTxHashesFromContext(runtime, input)
+	copyTxHashesFromContext(host.IsESDTFunctionsEnabled(), runtime, input)
 	runtime.PushState()
 	runtime.InitStateFromContractCallInput(input)
 
@@ -305,7 +308,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 	bigInt.PushState()
 	output.PushState()
 
-	copyTxHashesFromContext(runtime, input)
+	copyTxHashesFromContext(host.IsESDTFunctionsEnabled(), runtime, input)
 	runtime.PushState()
 	runtime.InitStateFromContractCallInput(input)
 
