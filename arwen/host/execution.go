@@ -188,10 +188,13 @@ func copyTxHashesFromContext(copyEnabled bool, runtime arwen.RuntimeContext, inp
 	if len(currentVMInput.OriginalTxHash) > 0 {
 		input.OriginalTxHash = currentVMInput.OriginalTxHash
 	}
-
 	if len(currentVMInput.CurrentTxHash) > 0 {
 		input.CurrentTxHash = currentVMInput.CurrentTxHash
 	}
+	if len(currentVMInput.PrevTxHash) > 0 {
+		input.PrevTxHash = currentVMInput.PrevTxHash
+	}
+
 }
 
 // ExecuteOnDestContext pushes each context to the corresponding stack
