@@ -3,6 +3,7 @@ package dex
 import (
 	"errors"
 	"fmt"
+	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"math/big"
 	"math/rand"
 )
@@ -72,7 +73,7 @@ func (pfe *fuzzDexExecutor) unstake(amountMax int, statistics *eventsStatistics,
 		return errors.New("NULL Output")
 	}
 
-	success := output.ReturnMessage == ""
+	success := output.ReturnCode == vmi.Ok
 	if success {
 		statistics.unstakeHits += 1
 

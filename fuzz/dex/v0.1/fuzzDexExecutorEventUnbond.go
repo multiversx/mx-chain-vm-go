@@ -3,6 +3,7 @@ package dex
 import (
 	"errors"
 	"fmt"
+	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 func (pfe *fuzzDexExecutor) unbond(user string, tokenA string, tokenB string, statistics *eventsStatistics) error {
@@ -53,7 +54,7 @@ func (pfe *fuzzDexExecutor) unbond(user string, tokenA string, tokenB string, st
 		return errors.New("NULL Output")
 	}
 
-	success := output.ReturnMessage == ""
+	success := output.ReturnCode == vmi.Ok
 	if success {
 		statistics.unbondHits += 1
 	} else {

@@ -3,6 +3,7 @@ package dex
 import (
 	"errors"
 	"fmt"
+	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"math/big"
 )
 
@@ -78,7 +79,7 @@ func (pfe *fuzzDexExecutor) swapFixedInput(user string, tokenA string, amountA i
 		return nil
 	}
 
-	success := output.ReturnMessage == ""
+	success := output.ReturnCode == vmi.Ok
 	if success {
 		statistics.swapFixedInputHits += 1
 

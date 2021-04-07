@@ -3,6 +3,7 @@ package dex
 import (
 	"errors"
 	"fmt"
+	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 func (pfe *fuzzDexExecutor) stake(user string, tokenA string, tokenB string, amount int, statistics *eventsStatistics) error {
@@ -56,7 +57,7 @@ func (pfe *fuzzDexExecutor) stake(user string, tokenA string, tokenB string, amo
 		return errors.New("NULL Output")
 	}
 
-	success := output.ReturnMessage == ""
+	success := output.ReturnCode == vmi.Ok
 	if success {
 		statistics.stakeHits += 1
 

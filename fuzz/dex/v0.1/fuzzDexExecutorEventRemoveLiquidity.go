@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 func (pfe *fuzzDexExecutor) removeLiquidity(user string, tokenA string, tokenB string, amount int, amountAmin int,
@@ -102,7 +103,7 @@ func (pfe *fuzzDexExecutor) removeLiquidity(user string, tokenA string, tokenB s
 		return err
 	}
 
-	success := output.ReturnMessage == ""
+	success := output.ReturnCode == vmi.Ok
 	if success {
 		statistics.removeLiquidityHits += 1
 
