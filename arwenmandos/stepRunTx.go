@@ -42,7 +42,6 @@ func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmc
 		}
 
 		gasForExecution = tx.GasLimit.Value
-
 		if tx.ESDTValue != nil {
 			gasRemaining, err := ae.directESDTTransferFromTx(tx)
 			if err != nil {

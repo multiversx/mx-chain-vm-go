@@ -27,7 +27,7 @@ func (ae *ArwenTestExecutor) ExecuteScenario(scenario *mj.Scenario, fileResolver
 
 	txIndex := 0
 	for _, generalStep := range scenario.Steps {
-		err := ae.executeStep(generalStep)
+		err := ae.ExecuteStep(generalStep)
 		if err != nil {
 			return err
 		}
@@ -38,27 +38,28 @@ func (ae *ArwenTestExecutor) ExecuteScenario(scenario *mj.Scenario, fileResolver
 	return nil
 }
 
-func (ae *ArwenTestExecutor) executeStep(generalStep mj.Step) error {
+func (ae *ArwenTestExecutor) ExecuteStep(generalStep mj.Step) error {
 	err := error(nil)
 
 	switch step := generalStep.(type) {
 	case *mj.ExternalStepsStep:
-		err = ae.executeExternalStep(step)
+		err = ae.ExecuteExternalStep(step)
 	case *mj.SetStateStep:
-		ae.executeSetStateStep(step)
+		ae.ExecuteSetStateStep(step)
 	case *mj.CheckStateStep:
 		log.Trace("CheckStateStep", "comment", step.Comment)
 		err = ae.checkStateStep(step)
 	case *mj.TxStep:
-		_, err = ae.executeTxStep(step)
+		_, err = ae.ExecuteTxStep(step)
 	case *mj.DumpStateStep:
-		err = ae.dumpWorld()
+		err = ae.DumpWorld()
 	}
 
 	return err
 }
 
-func (ae *ArwenTestExecutor) executeExternalStep(step *mj.ExternalStepsStep) error {
+// ExecuteExternalStep executes an external step referenced by the scenario.
+func (ae *ArwenTestExecutor) ExecuteExternalStep(step *mj.ExternalStepsStep) error {
 	log.Trace("ExternalStepsStep", "path", step.Path)
 	if len(step.Comment) > 0 {
 		log.Trace("ExternalStepsStep", "comment", step.Comment)
@@ -79,7 +80,8 @@ func (ae *ArwenTestExecutor) executeExternalStep(step *mj.ExternalStepsStep) err
 	return nil
 }
 
-func (ae *ArwenTestExecutor) executeSetStateStep(step *mj.SetStateStep) {
+// ExecuteSetStateStep executes a SetStateStep.
+func (ae *ArwenTestExecutor) ExecuteSetStateStep(step *mj.SetStateStep) {
 	if len(step.Comment) > 0 {
 		log.Trace("SetStateStep", "comment", step.Comment)
 	}
@@ -99,7 +101,8 @@ func (ae *ArwenTestExecutor) executeSetStateStep(step *mj.SetStateStep) {
 	ae.World.NewAddressMocks = append(ae.World.NewAddressMocks, addressMocksToAdd...)
 }
 
-func (ae *ArwenTestExecutor) executeTxStep(step *mj.TxStep) (*vmi.VMOutput, error) {
+// ExecuteTxStep executes a TxStep.
+func (ae *ArwenTestExecutor) ExecuteTxStep(step *mj.TxStep) (*vmi.VMOutput, error) {
 	log.Trace("ExecuteTxStep", "id", step.TxIdent)
 	if len(step.Comment) > 0 {
 		log.Trace("ExecuteTxStep", "comment", step.Comment)
@@ -121,7 +124,8 @@ func (ae *ArwenTestExecutor) executeTxStep(step *mj.TxStep) (*vmi.VMOutput, erro
 	return output, nil
 }
 
-func (ae *ArwenTestExecutor) dumpWorld() error {
+// DumpWorld prints the state of the MockWorld to stdout.
+func (ae *ArwenTestExecutor) DumpWorld() error {
 	fmt.Print("world state dump:\n")
 
 	for addr, account := range ae.World.AcctMap {

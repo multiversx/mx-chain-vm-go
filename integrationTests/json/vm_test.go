@@ -30,6 +30,12 @@ func TestMandosSelfTest(t *testing.T) {
 	runAllTestsInFolder(t, "mandos-self-test")
 }
 
+func TestSingleFeature(t *testing.T) {
+	logger.SetLogLevel("*:TRACE")
+	logger.ToggleLoggerName(true)
+	runSingleTest(t, "features/async/mandos", "forwarder_nft_create.scen.json")
+}
+
 func TestRustErc20(t *testing.T) {
 	runAllTestsInFolder(t, "erc20-rust/mandos")
 }
