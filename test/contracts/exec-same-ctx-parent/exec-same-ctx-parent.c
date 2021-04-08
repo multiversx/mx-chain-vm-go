@@ -60,6 +60,7 @@ void parentFunctionChildCall() {
 	parentFunctionPrepare();
 	byte* childAddress = childSC;
 	byte functionName[] = "childFunction";
+
 	int result = executeOnSameContext(
 			200000,
 			childAddress,

@@ -229,7 +229,7 @@ func (ae *ArwenTestExecutor) scCall(txIndex string, tx *mj.Transaction, gasLimit
 		OriginalTxHash: txHash,
 		CurrentTxHash:  txHash,
 		ESDTValue:      big.NewInt(0),
-		ESDTTokenName:	nil,
+		ESDTTokenName:  nil,
 		ESDTTokenNonce: 0,
 	}
 	addESDTToVMInput(tx.ESDTValue, &vmInput)

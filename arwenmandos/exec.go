@@ -10,8 +10,11 @@ import (
 	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/fileresolver"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
 	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
+
+var log = logger.GetOrCreate("arwen/mandos")
 
 // TestVMType is the VM type argument we use in tests.
 var TestVMType = []byte{0, 0}

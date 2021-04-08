@@ -11,13 +11,17 @@ import (
 	"github.com/ElrondNetwork/elrond-go/process/smartContract/builtInFunctions"
 )
 
-func checkAccounts(
-	checkAccounts *mj.CheckAccounts,
-	world *worldmock.MockWorld,
-) error {
+func (ae *ArwenTestExecutor) checkStateStep(step *mj.CheckStateStep) error {
+	if len(step.Comment) > 0 {
+		log.Trace("CheckStateStep", "comment", step.Comment)
+	}
 
+	return ae.checkAccounts(step.CheckAccounts)
+}
+
+func (ae *ArwenTestExecutor) checkAccounts(checkAccounts *mj.CheckAccounts) error {
 	if !checkAccounts.OtherAccountsAllowed {
-		for worldAcctAddr := range world.AcctMap {
+		for worldAcctAddr := range ae.World.AcctMap {
 			postAcctMatch := mj.FindCheckAccount(checkAccounts.Accounts, []byte(worldAcctAddr))
 			if postAcctMatch == nil {
 				return fmt.Errorf("unexpected account address: %s", hex.EncodeToString([]byte(worldAcctAddr)))
@@ -26,7 +30,7 @@ func checkAccounts(
 	}
 
 	for _, expectedAcct := range checkAccounts.Accounts {
-		matchingAcct, isMatch := world.AcctMap[string(expectedAcct.Address.Value)]
+		matchingAcct, isMatch := ae.World.AcctMap[string(expectedAcct.Address.Value)]
 		if !isMatch {
 			return fmt.Errorf("account %s expected but not found after running test",
 				hex.EncodeToString(expectedAcct.Address.Value))
