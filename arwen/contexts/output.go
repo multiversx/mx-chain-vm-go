@@ -336,7 +336,7 @@ func (context *outputContext) TransferESDT(
 
 	gasRemaining := uint64(0)
 
-	if callInput != nil {
+	if callInput != nil && isSmartContract {
 		gasRemaining = callInput.GasProvided - gasConsumedByTransfer
 	}
 
