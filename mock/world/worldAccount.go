@@ -34,8 +34,8 @@ type Account struct {
 	Code            []byte
 	CodeHash        []byte
 	CodeMetadata    []byte
-	AsyncCallData   string
 	OwnerAddress    []byte
+	AsyncCallData   string
 	Username        []byte
 	DeveloperReward *big.Int
 	ShardID         uint32
