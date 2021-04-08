@@ -740,6 +740,11 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, token
 	}
 
 	gasConsumed, _ := math.SubUint64(esdtTransferInput.GasProvided, vmOutput.GasRemaining)
+	for _, outAcc := range vmOutput.OutputAccounts {
+		for _, transfer := range outAcc.OutputTransfers {
+			gasConsumed, _ = math.SubUint64(gasConsumed, transfer.GasLimit)
+		}
+	}
 	if callType != vmcommon.AsynchronousCallBack {
 		if metering.GasLeft() < gasConsumed {
 			log.Trace("ESDT transfer", "error", arwen.ErrNotEnoughGas)
