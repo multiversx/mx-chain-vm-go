@@ -337,6 +337,10 @@ func (context *outputContext) TransferESDT(
 	gasRemaining := uint64(0)
 
 	if callInput != nil && isSmartContract {
+		if gasConsumedByTransfer > callInput.GasProvided {
+			logOutput.Trace("ESDT post-transfer execution", "error", arwen.ErrNotEnoughGas)
+			return 0, arwen.ErrNotEnoughGas
+		}
 		gasRemaining = callInput.GasProvided - gasConsumedByTransfer
 	}
 
