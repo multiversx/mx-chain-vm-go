@@ -1,14 +1,14 @@
 {
-	"name": "set local roles staking",
+	"name": "set local roles stake token",
 	"steps": [
 		{
 			"step": "scCall",
-			"txId": "set-local-roles",
+			"txId": "set-local-roles-unstake",
 			"tx": {
 				"from": "address:owner",
 				"to": "address:staking_contract",
 				"value": "0",
-				"function": "setLocalRoles",
+				"function": "setLocalRolesUnstakeToken",
 				"arguments": [
 					"0x03", "0x04", "0x05"
 				],

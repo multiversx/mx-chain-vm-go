@@ -24,9 +24,11 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 	pfe.swapMaxValue = args.swapMaxValue
 	pfe.stakeMaxValue = args.stakeMaxValue
 	pfe.unstakeMaxValue = args.unstakeMaxValue
+	pfe.unbondMaxValue = args.unbondMaxValue
 	pfe.blockEpochIncrease = args.blockEpochIncrease
 	pfe.tokensCheckFrequency = args.tokensCheckFrequency
 	pfe.stakers = make(map[int]StakeInfo)
+	pfe.unstakers = make(map[int]UnstakeInfo)
 
 	pfe.world.Clear()
 
@@ -279,16 +281,16 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 		return err
 	}
 
-	// issue staking token
+	// issue stake token
 	_, err = pfe.executeTxStep(fmt.Sprintf(`
 	{
 		"step": "scCall",
-		"txId": "issue-staking-token",
+		"txId": "issue-stake-token",
 		"tx": {
 			"from": "''%s",
 			"to": "''%s",
 			"value": "5,000,000,000,000,000,000",
-			"function": "sftIssue",
+			"function": "issueStakeToken",
 			"arguments": [
 				"0x53656d6946756e6769626c65",
 				"0x53454d4946554e47"
@@ -320,7 +322,72 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 			"from": "''%s",
 			"to": "''%s",
 			"value": "0",
-			"function": "setLocalRoles",
+			"function": "setLocalRolesStakeToken",
+			"arguments": [
+				"0x03",
+				"0x04"
+				"0x05"
+			],
+			"gasLimit": "10,000,000",
+			"gasPrice": "0"
+		},
+		"expect": {
+			"out": [],
+			"status": "4",
+			"message": "*",
+			"gas": "*",
+			"refund": "*"
+		}
+	}`,
+		string(pfe.ownerAddress),
+		string(pfe.stakingAddress),
+	))
+	if err != nil {
+		return err
+	}
+
+	// issue unstake token
+	_, err = pfe.executeTxStep(fmt.Sprintf(`
+	{
+		"step": "scCall",
+		"txId": "issue-unstake-token",
+		"tx": {
+			"from": "''%s",
+			"to": "''%s",
+			"value": "5,000,000,000,000,000,000",
+			"function": "issueUnstakeToken",
+			"arguments": [
+				"0x53656d6946756e6769626c65",
+				"0x53454d4946554e47"
+			],
+			"gasLimit": "10,000,000",
+			"gasPrice": "0"
+		},
+		"expect": {
+			"out": [],
+			"status": "",
+			"logs": [],
+			"gas": "*",
+			"refund": "*"
+		}
+	}`,
+		string(pfe.ownerAddress),
+		string(pfe.stakingAddress),
+	))
+	if err != nil {
+		return err
+	}
+
+	// set local roles
+	_, err = pfe.executeTxStep(fmt.Sprintf(`
+	{
+		"step": "scCall",
+		"txId": "set-local-roles-unstake",
+		"tx": {
+			"from": "''%s",
+			"to": "''%s",
+			"value": "0",
+			"function": "setLocalRolesUnstakeToken",
 			"arguments": [
 				"0x03",
 				"0x04"

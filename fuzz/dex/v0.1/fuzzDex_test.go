@@ -70,8 +70,9 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 			swapMaxValue: 				10000000,
 			stakeMaxValue:				100000000,
 			unstakeMaxValue:			100000000,
+			unbondMaxValue:				100000000,
 			blockEpochIncrease: 		10,
-			tokensCheckFrequency:		100,
+			tokensCheckFrequency:		10000,
 		},
 	)
 	require.Nil(t, err)
@@ -227,7 +228,9 @@ func generateRandomEvent(
 		// unbond
 		case re.WithProbability(pfe.unbondProb):
 
-			err := pfe.unbond(user, tokenA, tokenB, statistics)
+			seed := r.Intn(pfe.unbondMaxValue) + 1
+
+			err := pfe.unbond(seed, statistics, r)
 			require.Nil(t, err)
 
 		// increase block epoch. required for unbond

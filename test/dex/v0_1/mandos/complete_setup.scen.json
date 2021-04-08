@@ -31,11 +31,19 @@
 		},
 		{
 			"step": "externalSteps",
-			"path": "steps/issue_staking_token.steps.json"
+			"path": "steps/issue_stake_token.steps.json"
 		},
 		{
 			"step": "externalSteps",
-			"path": "steps/set_local_roles_staking.steps.json"
+			"path": "steps/set_local_roles_stake_token.steps.json"
+		},
+		{
+			"step": "externalSteps",
+			"path": "steps/issue_unstake_token.steps.json"
+		},
+		{
+			"step": "externalSteps",
+			"path": "steps/set_local_roles_unstake_token.steps.json"
 		},
 		{
 			"step": "externalSteps",

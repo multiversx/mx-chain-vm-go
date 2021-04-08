@@ -32,6 +32,7 @@ type fuzzDexExecutorInitArgs struct {
 	swapMaxValue 				int
 	stakeMaxValue				int
 	unstakeMaxValue				int
+	unbondMaxValue				int
 	blockEpochIncrease			int
 	tokensCheckFrequency		int
 }
@@ -39,6 +40,13 @@ type fuzzDexExecutorInitArgs struct {
 type StakeInfo struct {
 	user						string
 	value						int64
+	lpToken						string
+}
+
+type UnstakeInfo struct {
+	user						string
+	value						int64
+	lpToken						string
 }
 
 type fuzzDexExecutor struct {
@@ -68,10 +76,13 @@ type fuzzDexExecutor struct {
 	swapMaxValue 				int
 	stakeMaxValue				int
 	unstakeMaxValue				int
+	unbondMaxValue				int
 	blockEpochIncrease			int
 	tokensCheckFrequency		int
-	currentNftNonce				int
+	currentStakeTokenNonce		int
 	stakers						map[int]StakeInfo
+	currentUnstakeTokenNonce	int
+	unstakers					map[int]UnstakeInfo
 	generatedScenario           *mj.Scenario
 }
 
@@ -646,11 +657,17 @@ func (pfe *fuzzDexExecutor) doHachishStepStaking() error {
 						"ESDTRoleNFTCreate",
 						"ESDTRoleNFTAddQuantity",
 						"ESDTRoleNFTBurn"
+					],
+					"str:%s": [
+						"ESDTRoleNFTCreate",
+						"ESDTRoleNFTAddQuantity",
+						"ESDTRoleNFTBurn"
 					]
 				},
 				"storage": {
-					"str:wegld_token_identifier": "str:%s",
-					"str:sft_staking_token_identifier": "str:%s",
+					"str:wegld_token_id": "str:%s",
+					"str:stake_token_id": "str:%s",
+					"str:unstake_token_id": "str:%s",
 					"str:router_address": "''%s",
 					"str:virtual_token_id": "str:%s",
 					"str:state": "1"
@@ -661,8 +678,10 @@ func (pfe *fuzzDexExecutor) doHachishStepStaking() error {
 	}`,
 		string(pfe.stakingAddress),
 		"STAKING-abcdef",
+		"UNSTAK-abcdef",
 		pfe.wegldTokenId,
 		"STAKING-abcdef",
+		"UNSTAK-abcdef",
 		string(pfe.routerAddress),
 		pfe.wegldTokenId,
 	))

@@ -23,7 +23,7 @@
 				"gasPrice": "0"
 			},
 			"expect": {
-				"out": [],
+				"out": ["0x01"],
 				"status": "0",
 				"message": "",
 				"gas": "*",
@@ -44,50 +44,6 @@
 			},
 			"expect": {
 				"out": ["199,900,000"],
-				"status": "",
-				"gas": "*",
-				"refund": "*"
-			}
-		},
-		{
-			"step": "scCall",
-			"txId": "get-unbond-epoch",
-			"tx": {
-				"from": "address:user1",
-				"to": "address:staking_contract",
-				"value": "0",
-				"function": "getUnbondEpoch",
-				"arguments": [
-					"address:user1",
-					"str:LPTOK-abcdef"
-				],
-				"gasLimit": "100,000,000",
-				"gasPrice": "0"
-			},
-			"expect": {
-				"out": ["0x0a"],
-				"status": "",
-				"gas": "*",
-				"refund": "*"
-			}
-		},
-		{
-			"step": "scCall",
-			"txId": "get-unstake-amount",
-			"tx": {
-				"from": "address:user1",
-				"to": "address:staking_contract",
-				"value": "0",
-				"function": "getUnstakeAmount",
-				"arguments": [
-					"address:user1",
-					"str:LPTOK-abcdef"
-				],
-				"gasLimit": "100,000,000",
-				"gasPrice": "0"
-			},
-			"expect": {
-				"out": ["0x0186a0"],
 				"status": "",
 				"gas": "*",
 				"refund": "*"

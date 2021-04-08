@@ -61,8 +61,8 @@ func (pfe *fuzzDexExecutor) stake(user string, tokenA string, tokenB string, amo
 	if success {
 		statistics.stakeHits += 1
 
-		pfe.currentNftNonce += 1
-		nonce := pfe.currentNftNonce
+		pfe.currentStakeTokenNonce += 1
+		nonce := pfe.currentStakeTokenNonce
 		bigint, errGet := pfe.getTokensWithNonce([]byte(user), "STAKING-abcdef", nonce)
 		if errGet != nil {
 			return errGet
@@ -70,6 +70,7 @@ func (pfe *fuzzDexExecutor) stake(user string, tokenA string, tokenB string, amo
 		pfe.stakers[nonce] = StakeInfo{
 			user: user,
 			value: bigint.Int64(),
+			lpToken: string(lpTokenRaw[0]),
 		}
 	} else {
 		statistics.stakeMisses += 1

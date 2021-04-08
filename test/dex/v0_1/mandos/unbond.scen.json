@@ -12,10 +12,13 @@
 				"from": "address:user1",
 				"to": "address:staking_contract",
 				"value": "0",
+				"esdt": {
+					"tokenIdentifier": "str:UNSTAK-abcdef",
+					"value": "100,000",
+					"nonce": "1"
+				},
 				"function": "unbond",
-				"arguments": [
-					"str:LPTOK-abcdef"
-				],
+				"arguments": [],
 				"gasLimit": "100,000,000",
 				"gasPrice": "0"
 			},
@@ -40,10 +43,13 @@
 				"from": "address:user1",
 				"to": "address:staking_contract",
 				"value": "0",
+				"esdt": {
+					"tokenIdentifier": "str:UNSTAK-abcdef",
+					"value": "100,000",
+					"nonce": "1"
+				},
 				"function": "unbond",
-				"arguments": [
-					"str:LPTOK-abcdef"
-				],
+				"arguments": [],
 				"gasLimit": "100,000,000",
 				"gasPrice": "0"
 			},

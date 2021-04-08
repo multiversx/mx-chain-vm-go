@@ -27,9 +27,11 @@ func (pfe *fuzzDexExecutor) unstake(amountMax int, statistics *eventsStatistics,
 	} else {
 		unstakeAmount = int64(amountMax)
 	}
+	lpToken := pfe.stakers[nonce].lpToken
 	pfe.stakers[nonce] = StakeInfo{
 		value: amount - unstakeAmount,
 		user: user,
+		lpToken: lpToken,
 	}
 
 	wegldBefore, err := pfe.getTokens([]byte(user), pfe.wegldTokenId)
@@ -90,6 +92,18 @@ func (pfe *fuzzDexExecutor) unstake(amountMax int, statistics *eventsStatistics,
 
 		if wegldAfter.Cmp(big.NewInt(0).Add(wegldBefore, big.NewInt(0).SetBytes(reward[0]))) != 0 {
 			return errors.New("BAD reward received")
+		}
+
+		pfe.currentUnstakeTokenNonce += 1
+		nonce = pfe.currentUnstakeTokenNonce
+		bigint, errGet := pfe.getTokensWithNonce([]byte(user), "UNSTAK-abcdef", nonce)
+		if errGet != nil {
+			return errGet
+		}
+		pfe.unstakers[nonce] = UnstakeInfo{
+			user: user,
+			value: bigint.Int64(),
+			lpToken: lpToken,
 		}
 
 	} else {

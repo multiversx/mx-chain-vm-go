@@ -33,11 +33,17 @@
 							"ESDTRoleNFTCreate",
 							"ESDTRoleNFTAddQuantity",
 							"ESDTRoleNFTBurn"
+						],
+						"str:UNSTAK-abcdef": [
+							"ESDTRoleNFTCreate",
+							"ESDTRoleNFTAddQuantity",
+							"ESDTRoleNFTBurn"
 						]
 					},
 					"storage": {
-						"str:wegld_token_identifier": "str:WEGLD-abcdef",
-						"str:sft_staking_token_identifier": "str:STAKING-abcdef",
+						"str:wegld_token_id": "str:WEGLD-abcdef",
+						"str:stake_token_id": "str:STAKING-abcdef",
+						"str:unstake_token_id": "str:UNSTAK-abcdef",
 						"str:router_address": "address:router_contract",
 						"str:virtual_token_id": "str:WEGLD-abcdef",
 						"str:state": "1"
