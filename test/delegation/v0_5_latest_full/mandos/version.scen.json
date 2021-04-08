@@ -1,0 +1,28 @@
+{
+    "name": "check version",
+    "gasSchedule": "v2",
+    "steps": [
+        {
+            "step": "setState",
+            "accounts": {
+                "address:delegation_contract": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": "file:../output/delegation_latest_full.wasm"
+                }
+            }
+        },
+        {
+            "step": "scQuery",
+            "txId": "version",
+            "tx": {
+                "to": "address:delegation_contract",
+                "function": "version"
+            },
+            "expect": {
+                "out": [ "str:0.5.4" ]
+            }
+        }
+    ]
+}

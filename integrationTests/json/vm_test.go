@@ -109,20 +109,20 @@ func TestDelegation_v0_4_genesis(t *testing.T) {
 	runAllTestsInFolder(t, "delegation/v0_4_genesis")
 }
 
-func TestDelegation_v0_5_5_full(t *testing.T) {
+func TestDelegation_v0_5_latest_full(t *testing.T) {
 	if testing.Short() {
 		t.Skip("not a short test")
 	}
 
-	runAllTestsInFolder(t, "delegation/v0_5_5_full")
+	runAllTestsInFolder(t, "delegation/v0_5_latest_full")
 }
 
-func TestDelegation_v0_5_5_update(t *testing.T) {
+func TestDelegation_v0_5_latest_update(t *testing.T) {
 	if testing.Short() {
 		t.Skip("not a short test")
 	}
 
-	runAllTestsInFolder(t, "delegation/v0_5_5_update")
+	runAllTestsInFolder(t, "delegation/v0_5_latest_update")
 }
 
 func TestDnsContract(t *testing.T) {

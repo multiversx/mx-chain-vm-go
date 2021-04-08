@@ -139,7 +139,7 @@
                     "nonce": "*",
                     "balance": "1,000,000,000",
                     "storage": "*",
-                    "code": "file:../../output/delegation_v0_5_2_full.wasm"
+                    "code": "file:../../output/delegation_latest_full.wasm"
                 },
                 "address:auction_contract": {
                     "nonce": "0",
