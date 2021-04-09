@@ -95,6 +95,11 @@ func (p *Parser) processAccount(acctRaw oj.OJsonObject) (*mj.Account, error) {
 			if err != nil {
 				return nil, fmt.Errorf("invalid account code: %w", err)
 			}
+		case "owner":
+			acct.Owner, err = p.processStringAsByteArray(kvp.Value)
+			if err != nil {
+				return nil, fmt.Errorf("invalid account owner: %w", err)
+			}
 		case "asyncCallData":
 			acct.AsyncCallData, err = p.parseString(kvp.Value)
 			if err != nil {
