@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	fuzzutil "github.com/ElrondNetwork/arwen-wasm-vm/fuzz/util"
 	mc "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/controller"
@@ -14,7 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var fuzz = flag.Bool("fuzz", true, "fuzz")
+var fuzz = flag.Bool("fuzz", false, "fuzz")
 
 func getTestRoot() string {
 	exePath, err := os.Getwd()
@@ -49,8 +50,8 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 	pfe := newExecutorWithPaths()
 	defer pfe.saveGeneratedScenario()
 
-	// seed := time.Now().UnixNano()
-	seed := int64(1617992497512090274) // to replay fuzzing scenario
+	seed := time.Now().UnixNano()
+	// seed := int64(1617992497512090274) // to replay fuzzing scenario
 	pfe.log("Random seed: %d\n", seed)
 	r := rand.New(rand.NewSource(seed))
 	// r.Seed(seed)
