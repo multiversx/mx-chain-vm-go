@@ -19,6 +19,11 @@
                 "address:forwarder": {
                     "nonce": "0",
                     "balance": "0",
+                    "esdtRoles": {
+                      "str:NFT-0001": [
+                        "ESDTRoleNFTCreate"
+                      ]
+                    },
                     "esdt": {
                         "str:NFT-0001": {
                             "nonce": "1",
@@ -50,7 +55,7 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [],
+                "out": ["1"],
                 "status": "0",
                 "gas": "*",
                 "refund": "*"
@@ -76,10 +81,6 @@
                     "balance": "0",
                     "esdt": {
                         "str:NFT-0001": [
-                            {
-                                "nonce": "1",
-                                "value": "1"
-                            },
                             {
                                 "nonce": "1",
                                 "value": "2"

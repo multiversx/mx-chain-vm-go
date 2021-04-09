@@ -11,7 +11,7 @@ import (
 	"github.com/ElrondNetwork/elrond-go/process/smartContract/builtInFunctions"
 )
 
-func (ae *ArwenTestExecutor) checkStateStep(step *mj.CheckStateStep) error {
+func (ae *ArwenTestExecutor) ExecuteCheckStateStep(step *mj.CheckStateStep) error {
 	if len(step.Comment) > 0 {
 		log.Trace("CheckStateStep", "comment", step.Comment)
 	}
@@ -97,7 +97,7 @@ func checkAccountStorage(expectedAcct *mj.CheckAccount, matchingAcct *worldmock.
 	for k := range allKeys {
 		want := expectedStorage[k]
 		have := matchingAcct.StorageValue(k)
-		if !bytes.Equal(want, have) && !worldmock.IsTokenKey([]byte(k)) {
+		if !bytes.Equal(want, have) && !worldmock.IsESDTKey([]byte(k)) {
 			storageError += fmt.Sprintf(
 				"\n  for key %s: Want: %s. Have: %s",
 				byteArrayPretty([]byte(k)), byteArrayPretty(want), byteArrayPretty(have))

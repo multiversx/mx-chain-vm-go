@@ -10,10 +10,13 @@ import (
 )
 
 // ESDTKeyPrefix is the prefix of storage keys belonging to ESDT tokens
-var ESDTKeyPrefix = []byte(core.ElrondProtectedKeyPrefix + core.ESDTKeyIdentifier)
+var ESDTTokenKeyPrefix = []byte(core.ElrondProtectedKeyPrefix + core.ESDTKeyIdentifier)
 
 // ESDTRoleKeyPrefix is the prefix of storage keys belonging to ESDT roles
 var ESDTRoleKeyPrefix = []byte(core.ElrondProtectedKeyPrefix + core.ESDTRoleIdentifier + core.ESDTKeyIdentifier)
+
+// ESDTRoleKeyPrefix is the prefix of storage keys belonging to ESDT roles
+var ESDTNonceKeyPrefix = []byte(core.ElrondProtectedKeyPrefix + core.ESDTNFTLatestNonceIdentifier)
 
 // GetTokenBalance returns the ESDT balance of an account for the given token
 // key (token keys are built from the token identifier using MakeTokenKey).

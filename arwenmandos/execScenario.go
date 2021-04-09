@@ -47,8 +47,7 @@ func (ae *ArwenTestExecutor) ExecuteStep(generalStep mj.Step) error {
 	case *mj.SetStateStep:
 		ae.ExecuteSetStateStep(step)
 	case *mj.CheckStateStep:
-		log.Trace("CheckStateStep", "comment", step.Comment)
-		err = ae.checkStateStep(step)
+		err = ae.ExecuteCheckStateStep(step)
 	case *mj.TxStep:
 		_, err = ae.ExecuteTxStep(step)
 	case *mj.DumpStateStep:
