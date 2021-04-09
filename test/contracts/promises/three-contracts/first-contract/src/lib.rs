@@ -52,6 +52,18 @@ pub extern "C" fn call_second_contract() {
         GAS_100M);
 }
 
+// receives call data as argument
+#[no_mangle]
+pub extern "C" fn call_third_contract() {
+    create_async_call(COMMON_GROUP_ID,
+        &Address::from(SECOND_CONTRACT_ADDRESS),
+        &ZERO,
+        b"answer",
+        SUCCESS_CALLBACK_NAME,
+        FAIL_CALLBACK_NAME,
+        GAS_10M);
+}
+
 // receives call data as arguments
 #[no_mangle]
 pub extern "C" fn call_second_and_third_contract() {
