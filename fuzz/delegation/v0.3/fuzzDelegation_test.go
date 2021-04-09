@@ -67,7 +67,7 @@ func TestFuzzDelegation(t *testing.T) {
 	maxStake := big.NewInt(0).Mul(pfe.stakePerNode, big.NewInt(2))
 	maxSystemReward := big.NewInt(1000000000)
 
-	re := fuzzutil.NewRandomEventProvider()
+	re := fuzzutil.NewRandomEventProvider(r)
 	for stepIndex := 0; stepIndex < 500; stepIndex++ {
 		re.Reset()
 		switch {

@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-	"time"
 
 	fuzzutil "github.com/ElrondNetwork/arwen-wasm-vm/fuzz/util"
 	mc "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/controller"
@@ -15,7 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var fuzz = flag.Bool("fuzz", false, "fuzz")
+var fuzz = flag.Bool("fuzz", true, "fuzz")
 
 func getTestRoot() string {
 	exePath, err := os.Getwd()
@@ -30,7 +29,7 @@ func newExecutorWithPaths() *fuzzDelegationExecutor {
 	fileResolver := mc.NewDefaultFileResolver().
 		ReplacePath(
 			"delegation.wasm",
-			filepath.Join(getTestRoot(), "delegation/v0_5/output/delegation_v0_5_full.wasm")).
+			filepath.Join(getTestRoot(), "delegation/v0_5_latest_full/output/delegation_latest_full.wasm")).
 		ReplacePath(
 			"auction-mock.wasm",
 			filepath.Join(getTestRoot(), "delegation/auction-mock/output/auction-mock.wasm"))
@@ -47,10 +46,14 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 		t.Skip("skipping test; only run with --fuzz argument")
 	}
 
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-
 	pfe := newExecutorWithPaths()
 	defer pfe.saveGeneratedScenario()
+
+	// seed := time.Now().UnixNano()
+	seed := int64(1617992497512090274) // to replay fuzzing scenario
+	pfe.log("Random seed: %d\n", seed)
+	r := rand.New(rand.NewSource(seed))
+	// r.Seed(seed)
 
 	stakePerNode := big.NewInt(1000000000)
 	numDelegators := 10
@@ -73,7 +76,7 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 	err = pfe.increaseBlockNonce(r.Intn(10000))
 	require.Nil(t, err)
 
-	re := fuzzutil.NewRandomEventProvider()
+	re := fuzzutil.NewRandomEventProvider(r)
 	for stepIndex := 0; stepIndex < 1500; stepIndex++ {
 		generateRandomEvent(t, pfe, r, re, maxDelegationCap)
 	}
