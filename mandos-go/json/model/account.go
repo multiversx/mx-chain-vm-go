@@ -12,6 +12,7 @@ type Account struct {
 	Balance         JSONBigInt
 	Storage         []*StorageKeyValuePair
 	Code            JSONBytesFromString
+	Owner           JSONBytesFromString
 	AsyncCallData   string
 	ESDTData        []*ESDTData
 	ESDTRoles       []*ESDTRoles
@@ -32,6 +33,7 @@ type CheckAccount struct {
 	IgnoreStorage bool
 	CheckStorage  []*StorageKeyValuePair
 	Code          JSONCheckBytes
+	Owner         JSONCheckBytes
 	AsyncCallData JSONCheckBytes
 	IgnoreESDT    bool
 	CheckESDTData []*CheckESDTData

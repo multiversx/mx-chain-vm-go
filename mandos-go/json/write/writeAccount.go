@@ -24,6 +24,9 @@ func accountsToOJ(accounts []*mj.Account) oj.OJsonObject {
 		}
 		acctOJ.Put("storage", storageOJ)
 		acctOJ.Put("code", bytesFromStringToOJ(account.Code))
+		if len(account.Owner.Value) > 0 {
+			acctOJ.Put("owner", bytesFromStringToOJ(account.Owner))
+		}
 		if len(account.AsyncCallData) > 0 {
 			acctOJ.Put("asyncCallData", stringToOJ(account.AsyncCallData))
 		}
@@ -63,6 +66,9 @@ func checkAccountsToOJ(checkAccounts *mj.CheckAccounts) oj.OJsonObject {
 		}
 		if !checkAccount.Code.IsUnspecified() {
 			acctOJ.Put("code", checkBytesToOJ(checkAccount.Code))
+		}
+		if !checkAccount.Owner.IsUnspecified() {
+			acctOJ.Put("owner", checkBytesToOJ(checkAccount.Owner))
 		}
 		if !checkAccount.AsyncCallData.IsUnspecified() {
 			acctOJ.Put("asyncCallData", checkBytesToOJ(checkAccount.AsyncCallData))
