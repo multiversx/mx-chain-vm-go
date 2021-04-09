@@ -31,8 +31,6 @@ func TestMandosSelfTest(t *testing.T) {
 }
 
 func TestSingleFeature(t *testing.T) {
-	logger.SetLogLevel("*:TRACE")
-	logger.ToggleLoggerName(true)
 	runSingleTest(t, "features/async/mandos", "forwarder_nft_create.scen.json")
 }
 

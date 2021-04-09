@@ -24,6 +24,11 @@ func MakeTokenRolesKey(tokenName []byte) []byte {
 	return tokenRolesKey
 }
 
+func MakeLastNonceKey(tokenName []byte) []byte {
+	tokenNonceKey := append(ESDTNonceKeyPrefix, tokenName...)
+	return tokenNonceKey
+}
+
 // IsESDTKey returns true if the given storage key is ESDT-related
 func IsESDTKey(key []byte) bool {
 	return IsTokenKey(key) || IsRoleKey(key) || IsNonceKey(key)
@@ -139,6 +144,21 @@ func (a *Account) SetTokenRolesAsStrings(tokenName []byte, rolesAsStrings []stri
 	}
 
 	return a.SetTokenRoles(tokenName, roles)
+}
+
+// SetLastNonces writes the last nonces of each specified ESDT into the storage.
+func (a *Account) SetLastNonces(lastNonces map[string]uint64) error {
+	for tokenName, nonce := range lastNonces {
+		tokenNonceKey := MakeLastNonceKey([]byte(tokenName))
+		nonceBytes := big.NewInt(0).SetUint64(nonce).Bytes()
+
+		err := a.DataTrieTracker().SaveKeyValue(tokenNonceKey, nonceBytes)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // GetTokenRoles returns the roles of the account for the specified tokenName.

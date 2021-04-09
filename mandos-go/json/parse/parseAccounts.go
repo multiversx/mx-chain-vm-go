@@ -70,6 +70,15 @@ func (p *Parser) processAccount(acctRaw oj.OJsonObject) (*mj.Account, error) {
 			if err != nil {
 				return nil, fmt.Errorf("invalid esdtRoles: %w", err)
 			}
+		case "esdtLastNonces":
+			esdtMap, esdtOk := kvp.Value.(*oj.OJsonMap)
+			if !esdtOk {
+				return nil, errors.New("invalid ESDT map for last nonces")
+			}
+			acct.ESDTLastNonces, err = p.processESDTLastNonces(esdtMap)
+			if err != nil {
+				return nil, fmt.Errorf("invalid esdtLastNonces: %w", err)
+			}
 		case "storage":
 			storageMap, storageOk := kvp.Value.(*oj.OJsonMap)
 			if !storageOk {

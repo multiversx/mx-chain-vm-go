@@ -124,3 +124,21 @@ func (p *Parser) processESDTRoles(esdtRolesRaw oj.OJsonObject) ([]*mj.ESDTRoles,
 
 	return rolesList, nil
 }
+
+func (p *Parser) processESDTLastNonces(esdtLastNonces *oj.OJsonMap) (map[string]*mj.JSONUint64, error) {
+	lastNonces := make(map[string]*mj.JSONUint64)
+	for _, kvp := range esdtLastNonces.OrderedKV {
+		tokenNameStr, err := p.ValueInterpreter.InterpretString(kvp.Key)
+		if err != nil {
+			return nil, fmt.Errorf("invalid esdt token identifer: %w", err)
+		}
+		nonce, err := p.processUint64(kvp.Value)
+		if err != nil {
+			return nil, fmt.Errorf("invalid esdt last nonce: %w", err)
+		}
+
+		lastNonces[string(tokenNameStr)] = &nonce
+	}
+
+	return lastNonces, nil
+}

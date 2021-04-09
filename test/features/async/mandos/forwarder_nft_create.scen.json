@@ -24,6 +24,9 @@
                         "ESDTRoleNFTCreate"
                       ]
                     },
+                    "esdtLastNonces": {
+                        "str:NFT-0001": "1"
+                    },
                     "esdt": {
                         "str:NFT-0001": {
                             "nonce": "1",
@@ -55,7 +58,7 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["1"],
+                "out": ["2"],
                 "status": "0",
                 "gas": "*",
                 "refund": "*"
@@ -83,7 +86,11 @@
                         "str:NFT-0001": [
                             {
                                 "nonce": "1",
-                                "value": "2"
+                                "value": "1"
+                            },
+														{
+                                "nonce": "2",
+                                "value": "1"
                             }
                         ]
                     },

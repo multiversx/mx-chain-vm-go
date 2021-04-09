@@ -45,7 +45,7 @@ func (ae *ArwenTestExecutor) ExecuteStep(generalStep mj.Step) error {
 	case *mj.ExternalStepsStep:
 		err = ae.ExecuteExternalStep(step)
 	case *mj.SetStateStep:
-		ae.ExecuteSetStateStep(step)
+		err = ae.ExecuteSetStateStep(step)
 	case *mj.CheckStateStep:
 		err = ae.ExecuteCheckStateStep(step)
 	case *mj.TxStep:
@@ -80,14 +80,19 @@ func (ae *ArwenTestExecutor) ExecuteExternalStep(step *mj.ExternalStepsStep) err
 }
 
 // ExecuteSetStateStep executes a SetStateStep.
-func (ae *ArwenTestExecutor) ExecuteSetStateStep(step *mj.SetStateStep) {
+func (ae *ArwenTestExecutor) ExecuteSetStateStep(step *mj.SetStateStep) error {
 	if len(step.Comment) > 0 {
 		log.Trace("SetStateStep", "comment", step.Comment)
 	}
 
 	// append accounts
 	for _, acct := range step.Accounts {
-		ae.World.AcctMap.PutAccount(convertAccount(acct))
+		account, err := convertAccount(acct)
+		if err != nil {
+			return err
+		}
+
+		ae.World.AcctMap.PutAccount(account)
 	}
 
 	// replace block info
@@ -98,6 +103,8 @@ func (ae *ArwenTestExecutor) ExecuteSetStateStep(step *mj.SetStateStep) {
 	// append NewAddressMocks
 	addressMocksToAdd := convertNewAddressMocks(step.NewAddressMocks)
 	ae.World.NewAddressMocks = append(ae.World.NewAddressMocks, addressMocksToAdd...)
+
+	return nil
 }
 
 // ExecuteTxStep executes a TxStep.
