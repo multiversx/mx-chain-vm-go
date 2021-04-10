@@ -614,14 +614,16 @@ func (pfe *fuzzDexExecutor) doHackishStep(tokenA string, tokenB string, index in
 					]
 				},
 				"storage": {
-					"str:token_a_name": "str:%s",
-					"str:token_b_name": "str:%s",
+					"str:first_token_id": "str:%s",
+					"str:second_token_id": "str:%s",
 					"str:state": "1",
 					"str:lpTokenIdentifier": "str:%s",
 					"str:router_address": "''%s",
 					"str:fee_state": "1",
 					"str:fee_address": "''%s",
-					"str:fee_token_identifier": "str:%s"
+					"str:fee_token_identifier": "str:%s",
+					"str:total_fee_precent": "3",
+					"str:special_fee_precent": "1"
 				},
 				"code": "file:../../../test/dex/v0_1/output/elrond_dex_pair.wasm"
 			}

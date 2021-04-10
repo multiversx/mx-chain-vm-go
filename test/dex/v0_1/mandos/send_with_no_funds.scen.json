@@ -38,14 +38,16 @@
 						"str:ALC-abcdef": "5,000,000,000"
 					},
 					"storage": {
-						"str:token_a_name": "str:WEGLD-abcdef",
-						"str:token_b_name": "str:ALC-abcdef",
+						"str:first_token_id": "str:WEGLD-abcdef",
+						"str:second_token_id": "str:ALC-abcdef",
 						"str:state" : "1",
 						"str:lpTokenIdentifier": "str:LPTOK-abcdef",
 						"str:router_address": "address:router_contract",
 						"str:fee_state": "1",
 						"str:fee_address": "address:staking_contract",
 						"str:fee_token_identifier": "str:WEGLD-abcdef",
+						"str:total_fee_precent": "3",
+						"str:special_fee_precent": "1",
 						"``ELRONDesdtALC-abcdef": "0x120600012a05f2001a020000220c120a414c432d616263646566",
 						"0x66756e647375736572315f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f0000000a414c432d616263646566":
 							"0x012a05f200",
@@ -65,6 +67,8 @@
 					"esdt": {
 					},
 					"storage": {
+						"str:first_token_id": "str:WEGLD-abcdef",
+						"str:second_token_id": "str:ALC-abcdef",
 						"str:token_a_name": "str:WEGLD-abcdef",
 						"str:token_b_name": "str:ALC-abcdef",
 						"str:state" : "1",
@@ -73,6 +77,8 @@
 						"str:fee_state": "1",
 						"str:fee_address": "address:staking_contract",
 						"str:fee_token_identifier": "str:WEGLD-abcdef",
+						"str:total_fee_precent": "3",
+						"str:special_fee_precent": "1",
 						"0x66756e647375736572315f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f0000000a414c432d616263646566":
 						"0x012a05f200",
 						"0x454c524f4e44726f6c65657364744c50544f4b2d616263646566": "0x0a1145534454526f6c654c6f63616c4d696e740a1145534454526f6c654c6f63616c4275726e"

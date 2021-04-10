@@ -14,14 +14,16 @@
 						]
 					},
 					"storage": {
-						"str:token_a_name": "str:WEGLD-abcdef",
-						"str:token_b_name": "str:ALC-abcdef",
+						"str:first_token_id": "str:WEGLD-abcdef",
+						"str:second_token_id": "str:ALC-abcdef",
 						"str:state" : "1",
 						"str:lpTokenIdentifier": "str:LPTOK-abcdef",
 						"str:router_address": "address:router_contract",
 						"str:fee_state": "1",
 						"str:fee_address": "address:staking_contract",
-						"str:fee_token_identifier": "str:WEGLD-abcdef"
+						"str:fee_token_identifier": "str:WEGLD-abcdef",
+						"str:total_fee_precent": "3",
+						"str:special_fee_precent": "1"
 					},
 					"code": "file:../../output/elrond_dex_pair.wasm"
 				},
