@@ -10,10 +10,6 @@ import (
 func (pfe *fuzzDexExecutor) removeLiquidity(user string, tokenA string, tokenB string, amount int, amountAmin int,
 	amountBmin int, statistics *eventsStatistics) error {
 
-	if tokenA == tokenB {
-		return nil
-	}
-
 	pairAddressRaw, err := pfe.querySingleResult(pfe.ownerAddress, pfe.routerAddress,
 		"getPair", fmt.Sprintf("\"str:%s\", \"str:%s\"", tokenA, tokenB))
 	if err != nil {
@@ -24,6 +20,14 @@ func (pfe *fuzzDexExecutor) removeLiquidity(user string, tokenA string, tokenB s
 	for i := 0; i < len(pairAddressRaw[0]); i++ {
 		toAppend := fmt.Sprintf("%02x", pairAddressRaw[0][i])
 		pairHexStr += toAppend
+	}
+
+	if pairHexStr == "0x0000000000000000000000000000000000000000000000000000000000000000" && tokenA != tokenB {
+		return errors.New("NULL pair for different tokens")
+	}
+
+	if tokenA == tokenB {
+		return nil
 	}
 
 	rawLpResponse, err := pfe.querySingleResultStringAddr(pfe.ownerAddress, pairHexStr,

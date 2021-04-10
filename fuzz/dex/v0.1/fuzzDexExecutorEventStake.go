@@ -7,15 +7,24 @@ import (
 )
 
 func (pfe *fuzzDexExecutor) stake(user string, tokenA string, tokenB string, amount int, statistics *eventsStatistics) error {
-
-	if tokenA == tokenB {
-		return nil
-	}
-
 	pairAddressRaw, err := pfe.querySingleResult(pfe.ownerAddress, pfe.routerAddress,
 		"getPair", fmt.Sprintf("\"str:%s\", \"str:%s\"", tokenA, tokenB))
 	if err != nil {
 		return err
+	}
+
+	pairHexStr := "0x"
+	for i := 0; i < len(pairAddressRaw[0]); i++ {
+		toAppend := fmt.Sprintf("%02x", pairAddressRaw[0][i])
+		pairHexStr += toAppend
+	}
+
+	if pairHexStr == "0x0000000000000000000000000000000000000000000000000000000000000000" && tokenA != tokenB {
+		return errors.New("NULL pair for different tokens")
+	}
+
+	if tokenA == tokenB {
+		return nil
 	}
 
 	lpTokenRaw, err := pfe.querySingleResult(pfe.ownerAddress, pairAddressRaw[0],

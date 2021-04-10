@@ -9,11 +9,6 @@ import (
 
 func (pfe *fuzzDexExecutor) swapFixedInput(user string, tokenA string, amountA int, tokenB string,
 	amountB int, statistics *eventsStatistics) error {
-
-	if tokenA == tokenB {
-		return nil
-	}
-
 	pairAddressRaw, err := pfe.querySingleResult(pfe.ownerAddress, pfe.routerAddress,
 		"getPair", fmt.Sprintf("\"str:%s\", \"str:%s\"", tokenA, tokenB))
 	if err != nil {
@@ -26,6 +21,13 @@ func (pfe *fuzzDexExecutor) swapFixedInput(user string, tokenA string, amountA i
 		pairHexStr += toAppend
 	}
 
+	if pairHexStr == "0x0000000000000000000000000000000000000000000000000000000000000000" && tokenA != tokenB {
+		return errors.New("NULL pair for different tokens")
+	}
+
+	if tokenA == tokenB {
+		return nil
+	}
 	tokenABefore, err := pfe.getTokens([]byte(user), tokenA)
 	if err != nil {
 		return nil
@@ -117,10 +119,6 @@ func (pfe *fuzzDexExecutor) swapFixedInput(user string, tokenA string, amountA i
 func (pfe *fuzzDexExecutor) swapFixedOutput(user string, tokenA string, amountA int, tokenB string,
 	amountB int, statistics *eventsStatistics) error {
 
-	if tokenA == tokenB {
-		return nil
-	}
-
 	pairAddressRaw, err := pfe.querySingleResult(pfe.ownerAddress, pfe.routerAddress,
 		"getPair", fmt.Sprintf("\"str:%s\", \"str:%s\"", tokenA, tokenB))
 	if err != nil {
@@ -131,6 +129,14 @@ func (pfe *fuzzDexExecutor) swapFixedOutput(user string, tokenA string, amountA 
 	for i := 0; i < len(pairAddressRaw[0]); i++ {
 		toAppend := fmt.Sprintf("%02x", pairAddressRaw[0][i])
 		pairHexStr += toAppend
+	}
+
+	if pairHexStr == "0x0000000000000000000000000000000000000000000000000000000000000000" && tokenA != tokenB {
+		return errors.New("NULL pair for different tokens")
+	}
+
+	if tokenA == tokenB {
+		return nil
 	}
 
 	tokenABefore, err := pfe.getTokens([]byte(user), tokenA)
