@@ -77,29 +77,6 @@
 				"gas": "*",
 				"refund": "*"
 			}
-		},
-		{
-			"step": "scCall",
-			"txId": "calculateRewards",
-			"tx": {
-				"from": "address:user1",
-				"to": "address:staking_contract",
-				"value": "0",
-				"function": "validateExistingEsdtTokens",
-				"arguments": [
-					"0x01f3",
-					"str:WEGLD-abcdef"
-				],
-				"gasLimit": "100,000,000",
-				"gasPrice": "0"
-			},
-			"expect": {
-				"out": [],
-				"status": "0",
-				"message": "",
-				"gas": "*",
-				"refund": "*"
-			}
 		}
 	]
 }
