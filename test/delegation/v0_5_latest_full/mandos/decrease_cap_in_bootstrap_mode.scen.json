@@ -117,7 +117,7 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["0"],
+                "out": ["str:completed"],
                 "status": "",
                 "logs": [],
                 "gas": "*",

@@ -431,7 +431,13 @@ func (pfe *fuzzDelegationExecutor) continueGlobalOperation() error {
 		}
 		pfe.log("continue global operation %x", output.ReturnData[0])
 
-		completed = len(output.ReturnData[0]) == 0
+		if bytes.Equal(output.ReturnData[0], []byte("completed")) {
+			completed = true
+		} else if bytes.Equal(output.ReturnData[0], []byte("interrupted")) {
+			completed = false
+		} else {
+			return fmt.Errorf("unexpected global operation status: %x", output.ReturnData[0])
+		}
 	}
 
 	return nil
