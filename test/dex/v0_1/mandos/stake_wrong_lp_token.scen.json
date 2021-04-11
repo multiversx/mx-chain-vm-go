@@ -24,7 +24,7 @@
       "expect": {
         "out": [],
         "status": "4",
-        "message": "str:Unknown lp token",
+        "message": "str:Unknown LP token",
         "gas": "*",
         "refund": "*"
       }

@@ -69,7 +69,7 @@
 			"expect": {
 				"out": [],
 				"status": "4",
-				"message": "str:Zero reserves",
+				"message": "str:Zero reserves for first token",
 				"gas": "*",
 				"refund": "*"
 			}
@@ -92,7 +92,7 @@
 			"expect": {
 				"out": [],
 				"status": "4",
-				"message": "str:Zero reserves",
+				"message": "str:Zero reserves for first token",
 				"gas": "*",
 				"refund": "*"
 			}
@@ -138,7 +138,7 @@
 			"expect": {
 				"out": [],
 				"status": "4",
-				"message": "str:Not enough reserves",
+				"message": "str:Not enough reserves for second token",
 				"gas": "*",
 				"refund": "*"
 			}
@@ -161,7 +161,7 @@
 			"expect": {
 				"out": [],
 				"status": "4",
-				"message": "str:Not enough reserves",
+				"message": "str:Not enough reserves for second token",
 				"gas": "*",
 				"refund": "*"
 			}
@@ -253,7 +253,7 @@
 			"expect": {
 				"out": [],
 				"status": "4",
-				"message": "str:Not enough reserves",
+				"message": "str:Not enough reserves for first token",
 				"gas": "*",
 				"refund": "*"
 			}
@@ -276,7 +276,7 @@
 			"expect": {
 				"out": [],
 				"status": "4",
-				"message": "str:Not enough reserves",
+				"message": "str:Not enough reserves for first token",
 				"gas": "*",
 				"refund": "*"
 			}
@@ -299,7 +299,7 @@
 			"expect": {
 				"out": [],
 				"status": "4",
-				"message": "str:Not enough reserves",
+				"message": "str:Not enough reserves for first token",
 				"gas": "*",
 				"refund": "*"
 			}

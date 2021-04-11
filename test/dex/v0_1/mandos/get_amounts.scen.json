@@ -161,7 +161,7 @@
 			"expect": {
 				"out": [],
 				"status": "4",
-				"message": "str:Not enough reserves",
+				"message": "str:Not enough reserves for second token",
 				"gas": "*",
 				"refund": "*"
 			}
