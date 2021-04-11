@@ -21,7 +21,7 @@
                 "function": "version"
             },
             "expect": {
-                "out": [ "str:0.5.4" ]
+                "out": [ "str:0.5.5" ]
             }
         }
     ]
