@@ -647,6 +647,9 @@ func (context *runtimeContext) CryptoAPIErrorShouldFailExecution() bool {
 
 // GetPointsUsed returns the gas points used by the current wasmer instance.
 func (context *runtimeContext) GetPointsUsed() uint64 {
+	if context.instance == nil {
+		return 0
+	}
 	return context.instance.GetPointsUsed()
 }
 
