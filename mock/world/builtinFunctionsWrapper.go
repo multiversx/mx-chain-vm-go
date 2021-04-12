@@ -14,6 +14,8 @@ import (
 // the BuiltinFunctionsWrapper.
 var WorldMarshalizer = &marshal.GogoProtoMarshalizer{}
 
+var numDNSAddresses = uint8(0xFF)
+
 // BuiltinFunctionsWrapper manages and initializes a BuiltInFunctionContainer
 // along with its dependencies
 type BuiltinFunctionsWrapper struct {
@@ -30,9 +32,11 @@ func NewBuiltinFunctionsWrapper(
 	gasMap config.GasScheduleMap,
 ) (*BuiltinFunctionsWrapper, error) {
 
+	dnsMap := makeDNSAddresses(numDNSAddresses)
+
 	argsBuiltIn := builtInFunctions.ArgsCreateBuiltInFunctionContainer{
 		GasSchedule:      integrationTests.NewGasScheduleNotifierMock(gasMap),
-		MapDNSAddresses:  make(map[string]struct{}),
+		MapDNSAddresses:  dnsMap,
 		Marshalizer:      WorldMarshalizer,
 		Accounts:         world.AccountsAdapter,
 		ShardCoordinator: world,
@@ -88,4 +92,15 @@ func (bf *BuiltinFunctionsWrapper) getAccountSharded(address []byte) state.UserA
 		return nil
 	}
 	return bf.World.AcctMap.GetAccount(address)
+}
+
+func makeDNSAddresses(numAddresses uint8) map[string]struct{} {
+	dnsMap := make(map[string]struct{}, numAddresses)
+	dnsAddressBase := []byte("dns____________________________")
+	for i := uint8(0); i < numAddresses; i++ {
+		dnsAddress := string(append(dnsAddressBase, byte(i)))
+		dnsMap[dnsAddress] = struct{}{}
+	}
+
+	return dnsMap
 }

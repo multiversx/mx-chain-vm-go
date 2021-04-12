@@ -63,9 +63,6 @@
                 "''cool_address__________________sz": {
                     "nonce": "*",
                     "balance": "0",
-                    "storage": {
-                        "''name": "``coolname0001"
-                    },
                     "code": "file:user-mock.wasm"
                 },
                 "''dns____________________________|0xb9": {

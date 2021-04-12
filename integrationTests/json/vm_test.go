@@ -27,11 +27,9 @@ func getTestRoot() string {
 
 // Tests Mandos consistency, no smart contracts.
 func TestMandosSelfTest(t *testing.T) {
-	runAllTestsInFolder(t, "mandos-self-test")
-}
-
-func TestSingleFeature(t *testing.T) {
-	runSingleTest(t, "features/async/mandos", "forwarder_nft_create.scen.json")
+	runTestsInFolder(t, "mandos-self-test", []string{
+		"mandos-self-test/builtin-func-esdt-transfer.scen.json",
+	})
 }
 
 func TestRustErc20(t *testing.T) {

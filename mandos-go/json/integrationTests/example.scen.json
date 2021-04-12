@@ -273,7 +273,9 @@
                 "esdt": {
                     "tokenIdentifier": "str:MyToken",
                     "value": "250,000,000,000"
-                }
+                },
+                "gasLimit": "",
+                "gasPrice": ""
             }
         },
         {
