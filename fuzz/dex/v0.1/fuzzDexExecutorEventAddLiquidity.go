@@ -35,7 +35,7 @@ func (pfe *fuzzDexExecutor) addLiquidity(user string, tokenA string, tokenB stri
 		"getEquivalent", fmt.Sprintf("\"str:%s\", \"%d\"", tokenA, 1000))
 
 	rawLpToken, errLpToken := pfe.querySingleResultStringAddr(pfe.ownerAddress, pairHexStr,
-		"get_lp_token_identifier", "")
+		"getLpTokenIdentifier", "")
 	if errLpToken != nil {
 		return errLpToken
 	}

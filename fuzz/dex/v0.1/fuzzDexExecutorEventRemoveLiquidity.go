@@ -31,7 +31,7 @@ func (pfe *fuzzDexExecutor) removeLiquidity(user string, tokenA string, tokenB s
 	}
 
 	rawLpResponse, err := pfe.querySingleResultStringAddr(pfe.ownerAddress, pairHexStr,
-		"get_lp_token_identifier", "")
+		"getLpTokenIdentifier", "")
 	if err != nil {
 		return err
 	}

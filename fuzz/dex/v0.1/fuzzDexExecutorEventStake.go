@@ -28,7 +28,7 @@ func (pfe *fuzzDexExecutor) stake(user string, tokenA string, tokenB string, amo
 	}
 
 	lpTokenRaw, err := pfe.querySingleResult(pfe.ownerAddress, pairAddressRaw[0],
-		"get_lp_token_identifier", "")
+		"getLpTokenIdentifier", "")
 	if err != nil {
 		return err
 	}

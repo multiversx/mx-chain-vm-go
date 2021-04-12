@@ -309,7 +309,7 @@ func (pfe *fuzzDexExecutor) createPair(tokenA string, tokenB string) error {
 			"from": "''%s",
 			"to": "%s",
 			"value": "0",
-			"function": "get_lp_token_identifier",
+			"function": "getLpTokenIdentifier",
 			"arguments": [],
 			"gasLimit": "10,000,000",
 			"gasPrice": "0"

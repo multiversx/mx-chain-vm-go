@@ -32,7 +32,7 @@
 				"from": "address:owner",
 				"to": "address:pair_contract",
 				"value": "0",
-				"function": "get_lp_token_identifier",
+				"function": "getLpTokenIdentifier",
 				"arguments": [],
 				"gasLimit": "100,000,000",
 				"gasPrice": "0"
