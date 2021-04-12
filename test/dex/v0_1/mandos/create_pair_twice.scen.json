@@ -22,7 +22,7 @@
 			},
 			"expect": {
 				"status": "4",
-				"message": "str:Pair already existent",
+				"message": "str:Pair already exists",
 				"gas": "*",
 				"refund": "*"
 			}
@@ -44,7 +44,7 @@
 			},
 			"expect": {
 				"status": "4",
-				"message": "str:Pair already existent",
+				"message": "str:Pair already exists",
 				"gas": "*",
 				"refund": "*"
 			}
