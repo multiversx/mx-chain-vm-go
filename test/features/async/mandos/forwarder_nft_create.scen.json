@@ -16,7 +16,7 @@
                     "storage": {},
                     "code": ""
                 },
-                "address:forwarder": {
+                "sc:forwarder": {
                     "nonce": "0",
                     "balance": "0",
                     "esdtRoles": {
@@ -43,7 +43,7 @@
             "txId": "1",
             "tx": {
                 "from": "address:a_user",
-                "to": "address:forwarder",
+                "to": "sc:forwarder",
                 "function": "nft_create",
                 "arguments": [
                     "str:NFT-0001",
@@ -79,7 +79,7 @@
                     "storage": {},
                     "code": ""
                 },
-                "address:forwarder": {
+                "sc:forwarder": {
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {

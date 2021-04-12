@@ -10,7 +10,7 @@
                     "storage": {},
                     "code": ""
                 },
-                "address:vault": {
+                "sc:vault": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {},
@@ -36,7 +36,7 @@
                 "value": "0",
                 "function": "recursive_send_funds",
                 "arguments": [
-                    "address:vault",
+                    "sc:vault",
                     "str:REC-TOKEN",
                     "1",
                     "2"
@@ -61,7 +61,7 @@
                     "storage": {},
                     "code": ""
                 },
-                "address:vault": {
+                "sc:vault": {
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {

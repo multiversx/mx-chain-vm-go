@@ -16,7 +16,7 @@
                     "storage": {},
                     "code": ""
                 },
-                "address:forwarder": {
+                "sc:forwarder": {
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
@@ -35,7 +35,7 @@
             "txId": "1",
             "tx": {
                 "from": "address:a_user",
-                "to": "address:forwarder",
+                "to": "sc:forwarder",
                 "function": "transfer_nft_via_async_call",
                 "arguments": [
                     "address:a_user",
@@ -69,7 +69,7 @@
                     "storage": {},
                     "code": ""
                 },
-                "address:forwarder": {
+                "sc:forwarder": {
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {

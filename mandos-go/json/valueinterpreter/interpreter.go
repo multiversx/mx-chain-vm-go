@@ -15,6 +15,8 @@ import (
 var strPrefixes = []string{"str:", "``", "''"}
 
 const addrPrefix = "address:"
+const scAddrPrefix = "sc:"
+
 const filePrefix = "file:"
 const keccak256Prefix = "keccak256:"
 
@@ -85,6 +87,7 @@ func (vi *ValueInterpreter) InterpretSubTree(obj oj.OJsonObject) ([]byte, error)
 // - ascii strings as "str:...", "``...", "''..."
 // - "true"/"false"
 // - "address:..."
+// - "sc:..." (also an address)
 // - "file:..."
 // - "keccak256:..."
 // - concatenation using |
@@ -156,6 +159,12 @@ func (vi *ValueInterpreter) InterpretString(strRaw string) ([]byte, error) {
 	if strings.HasPrefix(strRaw, addrPrefix) {
 		addrName := strRaw[len(addrPrefix):]
 		return address([]byte(addrName))
+	}
+
+	// smart contract address (different format)
+	if strings.HasPrefix(strRaw, scAddrPrefix) {
+		addrName := strRaw[len(scAddrPrefix):]
+		return sc_address([]byte(addrName))
 	}
 
 	// fixed width numbers
