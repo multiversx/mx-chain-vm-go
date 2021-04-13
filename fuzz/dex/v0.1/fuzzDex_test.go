@@ -54,6 +54,7 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 	err := pfe.init(
 		&fuzzDexExecutorInitArgs{
 			wegldTokenId:				"WEGLD-abcdef",
+			mexTokenId:					"MEX-abcdef",
 			numUsers:					10,
 			numTokens:					3,
 			numEvents:					5000,
@@ -72,7 +73,7 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 			unstakeMaxValue:			100000000,
 			unbondMaxValue:				100000000,
 			blockEpochIncrease: 		10,
-			tokensCheckFrequency:		10000,
+			tokensCheckFrequency:		4999,
 		},
 	)
 	require.Nil(t, err)
@@ -141,14 +142,22 @@ func generateRandomEvent(
 	tokenA := ""
 	tokenB := ""
 
-	tokenAIndex := r.Intn(pfe.numTokens * 2) + 1
-	if tokenAIndex > pfe.numTokens {
+	tokenAIndex := r.Intn(pfe.numTokens + 2) + 1
+	if tokenAIndex == pfe.numTokens + 2 {
 		tokenA = pfe.wegldTokenId
+	} else if tokenAIndex == pfe.numTokens + 1 {
+		tokenA = pfe.mexTokenId
 	} else {
 		tokenA = pfe.tokenTicker(tokenAIndex)
 	}
-	tokenBIndex := r.Intn(pfe.numTokens) + 1
-	tokenB = pfe.tokenTicker(tokenBIndex)
+	tokenBIndex := r.Intn(pfe.numTokens + 2) + 1
+	if tokenBIndex == pfe.numTokens + 2 {
+		tokenB = pfe.wegldTokenId
+	} else if tokenBIndex == pfe.numTokens + 1 {
+		tokenB = pfe.mexTokenId
+	} else {
+		tokenB = pfe.tokenTicker(tokenBIndex)
+	}
 
 	userId := r.Intn(pfe.numUsers) + 1
 	user := string(pfe.userAddress(userId))

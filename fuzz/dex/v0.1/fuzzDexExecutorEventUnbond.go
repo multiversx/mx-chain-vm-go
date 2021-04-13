@@ -60,7 +60,7 @@ func (pfe *fuzzDexExecutor) unbond(amountMax int, statistics *eventsStatistics, 
 		}
 	}`,
 		user,
-		string(pfe.stakingAddress),
+		string(pfe.wegldStakingAddress),
 		"UNSTAK-abcdef",
 		unbondAmount,
 		nonce,

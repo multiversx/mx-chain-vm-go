@@ -8,6 +8,7 @@ import (
 
 func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 	pfe.wegldTokenId = args.wegldTokenId
+	pfe.mexTokenId = args.mexTokenId
 	pfe.numTokens = args.numTokens
 	pfe.numUsers = args.numUsers
 	pfe.numEvents = args.numEvents
@@ -34,7 +35,8 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 
 	pfe.ownerAddress = []byte("fuzz_owner_addr_______________s1")
 	pfe.routerAddress = []byte("fuzz_dex_router_addr__________s1")
-	pfe.stakingAddress = []byte("fuzz_dex_staking_addr_________s1")
+	pfe.wegldStakingAddress = []byte("fuzz_dex_wegld_staking_addr___s1")
+	pfe.mexStakingAddress = []byte("fuzz_dex_mex_staking_addr_____s1")
 
 	// users
 	esdtString := pfe.fullOfEsdtWalletString()
@@ -83,6 +85,11 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 				"creatorAddress": "''%s",
 				"creatorNonce": "1",
 				"newAddress": "''%s"
+			},
+			{
+				"creatorAddress": "''%s",
+				"creatorNonce": "2",
+				"newAddress": "''%s"
 			}
 		]
 	}`,
@@ -90,7 +97,9 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 		string(pfe.ownerAddress),
 		string(pfe.routerAddress),
 		string(pfe.ownerAddress),
-		string(pfe.stakingAddress),
+		string(pfe.wegldStakingAddress),
+		string(pfe.ownerAddress),
+		string(pfe.mexStakingAddress),
 	))
 	if err != nil {
 		return err
@@ -124,7 +133,7 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 		return err
 	}
 
-	// deploy staking
+	// deploy wegld staking
 	_, err = pfe.executeTxStep(fmt.Sprintf(`
 	{
 		"step": "scDeploy",
@@ -150,6 +159,38 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 	}`,
 		string(pfe.ownerAddress),
 		pfe.wegldTokenId,
+		string(pfe.routerAddress),
+	))
+	if err != nil {
+		return err
+	}
+
+	// deploy mex staking
+	_, err = pfe.executeTxStep(fmt.Sprintf(`
+	{
+		"step": "scDeploy",
+		"txId": "-staking-deploy-",
+		"tx": {
+			"from": "''%s",
+			"value": "0",
+			"contractCode": "file:elrond_dex_staking.wasm",
+			"arguments": [
+				"str:%s",
+				"''%s"
+			],
+			"gasLimit": "1,000,000",
+			"gasPrice": "0"
+		},
+		"expect": {
+			"out": [],
+			"status": "",
+			"logs": [],
+			"gas": "*",
+			"refund": "*"
+		}
+	}`,
+		string(pfe.ownerAddress),
+		pfe.mexTokenId,
 		string(pfe.routerAddress),
 	))
 	if err != nil {
@@ -273,7 +314,7 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 		}
 	}`,
 		string(pfe.ownerAddress),
-		string(pfe.stakingAddress),
+		string(pfe.wegldStakingAddress),
 	))
 	if err != nil {
 		return err
@@ -306,7 +347,7 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 		}
 	}`,
 		string(pfe.ownerAddress),
-		string(pfe.stakingAddress),
+		string(pfe.wegldStakingAddress),
 	))
 	if err != nil {
 		return err
@@ -338,7 +379,7 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 		}
 	}`,
 		string(pfe.ownerAddress),
-		string(pfe.stakingAddress),
+		string(pfe.wegldStakingAddress),
 	))
 	if err != nil {
 		return err
@@ -371,7 +412,7 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 		}
 	}`,
 		string(pfe.ownerAddress),
-		string(pfe.stakingAddress),
+		string(pfe.wegldStakingAddress),
 	))
 	if err != nil {
 		return err

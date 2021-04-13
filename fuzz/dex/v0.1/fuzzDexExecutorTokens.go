@@ -30,7 +30,7 @@ func (pfe *fuzzDexExecutor) checkTokens() error {
 	}
 
 	for i := 1; i <= pfe.numTokens; i++ {
-		sum, err := pfe.getSumForToken(pfe.tokenTicker(i))
+		sum, err = pfe.getSumForToken(pfe.tokenTicker(i))
 		if err != nil {
 			return err
 		}
@@ -81,6 +81,38 @@ func (pfe* fuzzDexExecutor) getSumForToken(tokenTicker string) (string, error) {
 
 		totalSum = big.NewInt(0).Add(totalSum, result)
 	}
+	for i := 1; i <= pfe.numTokens; i++ {
+		tokenA := pfe.mexTokenId
+		tokenB := pfe.tokenTicker(i)
+
+		rawResponse, err := pfe.querySingleResult(pfe.ownerAddress, pfe.routerAddress,
+			"getPair", fmt.Sprintf("\"str:%s\", \"str:%s\"", tokenA, tokenB))
+		if err != nil {
+			return "", err
+		}
+
+		result, err := pfe.getTokens(rawResponse[0], tokenTicker)
+		if err != nil {
+			return "", err
+		}
+
+		totalSum = big.NewInt(0).Add(totalSum, result)
+	}
+	tokenA := pfe.wegldTokenId
+	tokenB := pfe.mexTokenId
+
+	rawResponse, err := pfe.querySingleResult(pfe.ownerAddress, pfe.routerAddress,
+		"getPair", fmt.Sprintf("\"str:%s\", \"str:%s\"", tokenA, tokenB))
+	if err != nil {
+		return "", err
+	}
+
+	result, err := pfe.getTokens(rawResponse[0], tokenTicker)
+	if err != nil {
+		return "", err
+	}
+
+	totalSum = big.NewInt(0).Add(totalSum, result)
 
 	for i := 1; i <= pfe.numUsers; i++ {
 		user := pfe.userAddress(i)
@@ -93,13 +125,21 @@ func (pfe* fuzzDexExecutor) getSumForToken(tokenTicker string) (string, error) {
 	}
 
 	//STAKING
-	result, err := pfe.getTokens(pfe.stakingAddress, tokenTicker)
+	result, err = pfe.getTokens(pfe.wegldStakingAddress, tokenTicker)
 	if err != nil {
 		return "", err
 	}
 
 	totalSum = big.NewInt(0).Add(totalSum, result)
 	totalSumString := totalSum.String()
+
+	result, err = pfe.getTokens(pfe.mexStakingAddress, tokenTicker)
+	if err != nil {
+		return "", err
+	}
+
+	totalSum = big.NewInt(0).Add(totalSum, result)
+	totalSumString = totalSum.String()
 
 	return totalSumString, nil
 }

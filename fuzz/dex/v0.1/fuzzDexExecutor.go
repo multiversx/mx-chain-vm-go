@@ -16,6 +16,7 @@ import (
 
 type fuzzDexExecutorInitArgs struct {
 	wegldTokenId				string
+	mexTokenId					string
 	numUsers					int
 	numTokens					int
 	numEvents					int
@@ -35,6 +36,12 @@ type fuzzDexExecutorInitArgs struct {
 	unbondMaxValue				int
 	blockEpochIncrease			int
 	tokensCheckFrequency		int
+}
+
+type PairMetadata struct {
+	tokenA						string
+	tokenB						string
+	addr 						string
 }
 
 type StakeInfo struct {
@@ -57,9 +64,11 @@ type fuzzDexExecutor struct {
 	txIndex           			int
 
 	wegldTokenId				string
+	mexTokenId					string
 	ownerAddress				[]byte
 	routerAddress				[]byte
-	stakingAddress				[]byte
+	wegldStakingAddress 		[]byte
+	mexStakingAddress			[]byte
 	numUsers					int
 	numTokens					int
 	numEvents					int
@@ -200,7 +209,9 @@ func (pfe *fuzzDexExecutor) fullOfEsdtWalletString() string {
 	}
 	esdtString += fmt.Sprintf(`
 						"str:%s": "1,000,000,000,000,000,000,000,000,000,000",`, pfe.wegldTokenId)
-	for i := 1; i <= (pfe.numTokens * (pfe.numTokens + 1) / 2); i++ {
+	esdtString += fmt.Sprintf(`
+						"str:%s": "1,000,000,000,000,000,000,000,000,000,000",`, pfe.mexTokenId)
+	for i := 1; i <= ((pfe.numTokens + 1) * (pfe.numTokens + 2) / 2); i++ {
 		esdtString += fmt.Sprintf(`
 						"str:%s": "1,000,000,000,000,000,000,000,000,000,000",`, pfe.lpTokenTicker(i))
 	}
@@ -218,10 +229,20 @@ func (pfe *fuzzDexExecutor) createPairs() error {
 		}
 	}
 	for i := 1; i <= pfe.numTokens; i++ {
-		err := pfe.createPair("WEGLD-abcdef", pfe.tokenTicker(i))
+		err := pfe.createPair(pfe.wegldTokenId, pfe.tokenTicker(i))
 		if err != nil {
 			return err
 		}
+	}
+	for i := 1; i <= pfe.numTokens; i++ {
+		err := pfe.createPair(pfe.mexTokenId, pfe.tokenTicker(i))
+		if err != nil {
+			return err
+		}
+	}
+	err := pfe.createPair(pfe.mexTokenId, pfe.wegldTokenId)
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -439,24 +460,132 @@ func (pfe *fuzzDexExecutor) querySingleResultStringAddr(from []byte, to string, 
 
 
 func (pfe *fuzzDexExecutor) setFeeOn() error {
-	for i := 1; i <= pfe.numTokens; i++ {
-		tokenA := pfe.wegldTokenId
-		tokenB := pfe.tokenTicker(i)
+	var stakeTokens [2]string
+	stakeTokens[0] = pfe.wegldTokenId
+	stakeTokens[1] = pfe.mexTokenId
 
-		rawResponse, err := pfe.querySingleResult(pfe.ownerAddress, pfe.routerAddress,
-			"getPair", fmt.Sprintf("\"str:%s\", \"str:%s\"", tokenA, tokenB))
-		if err != nil {
-			return err
+	pairs := make([]PairMetadata, 0)
+
+	for j := 0; j < len(stakeTokens); j++ {
+		for i := 1; i <= pfe.numTokens; i++ {
+			tokenA := stakeTokens[j]
+			tokenB := pfe.tokenTicker(i)
+
+			pairHexStr, err := pfe.setFeeOnPair(tokenA, tokenB)
+			if err != nil {
+				return err
+			}
+			elem := PairMetadata{
+				tokenA: tokenA,
+				tokenB: tokenB,
+				addr:   pairHexStr,
+			}
+			pairs = append(pairs, elem)
 		}
+	}
 
-		pairHexStr := "0x"
-		for i := 0; i < len(rawResponse[0]); i++ {
-			toAppend := fmt.Sprintf("%02x", rawResponse[0][i])
-			pairHexStr += toAppend
+	pairHex, err := pfe.setFeeOnPair(pfe.wegldTokenId, pfe.mexTokenId)
+	if err != nil {
+		return err
+	}
+	elem := PairMetadata{
+		tokenA: pfe.wegldTokenId,
+		tokenB: pfe.mexTokenId,
+		addr:   pairHex,
+	}
+	pairs = append(pairs, elem)
+
+	for i := 0; i < len(pairs); i++ {
+		for j := 0; j < len(pairs); j++ {
+
+			_, err := pfe.executeTxStep(fmt.Sprintf(`
+		{
+			"step": "scCall",
+			"txId": "whitelist",
+			"tx": {
+				"from": "''%s",
+				"to": "%s",
+				"value": "0",
+				"function": "whitelist",
+				"arguments": [
+					"%s"
+				],
+				"gasLimit": "10,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [],
+				"status": "",
+				"logs": [],
+				"gas": "*",
+				"refund": "*"
+			}
+		}`,
+				string(pfe.ownerAddress),
+				pairs[i].addr,
+				pairs[j].addr,
+			))
+			if err != nil {
+				return err
+			}
+
+
+			_, err = pfe.executeTxStep(fmt.Sprintf(`
+		{
+			"step": "scCall",
+			"txId": "whitelist",
+			"tx": {
+				"from": "''%s",
+				"to": "%s",
+				"value": "0",
+				"function": "cachePair",
+				"arguments": [
+					"%s",
+					"str:%s",
+					"str:%s"
+				],
+				"gasLimit": "10,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [],
+				"status": "",
+				"logs": [],
+				"gas": "*",
+				"refund": "*"
+			}
+		}`,
+				string(pfe.ownerAddress),
+				pairs[i].addr,
+				pairs[j].addr,
+				pairs[j].tokenA,
+				pairs[j].tokenB,
+			))
+			if err != nil {
+				return err
+			}
+
 		}
+	}
 
-		// set staking info
-		_, err = pfe.executeTxStep(fmt.Sprintf(`
+	return nil
+}
+
+func (pfe *fuzzDexExecutor) setFeeOnPair(tokenA string, tokenB string) (string, error) {
+	rawResponse, err := pfe.querySingleResult(pfe.ownerAddress, pfe.routerAddress,
+		"getPair", fmt.Sprintf("\"str:%s\", \"str:%s\"", tokenA, tokenB))
+	if err != nil {
+		return "", err
+	}
+
+	pairHexStr := "0x"
+	for i := 0; i < len(rawResponse[0]); i++ {
+		toAppend := fmt.Sprintf("%02x", rawResponse[0][i])
+		pairHexStr += toAppend
+	}
+
+	// set staking info
+	_, err = pfe.executeTxStep(fmt.Sprintf(`
 		{
 			"step": "scCall",
 			"txId": "set-fee-on",
@@ -481,17 +610,53 @@ func (pfe *fuzzDexExecutor) setFeeOn() error {
 				"refund": "*"
 			}
 		}`,
-			string(pfe.ownerAddress),
-			string(pfe.routerAddress),
-			pairHexStr,
-			string(pfe.stakingAddress),
-			pfe.wegldTokenId,
-		))
-		if err != nil {
-			return err
-		}
+		string(pfe.ownerAddress),
+		string(pfe.routerAddress),
+		pairHexStr,
+		string(pfe.wegldStakingAddress),
+		pfe.wegldTokenId,
+	))
+	if err != nil {
+		return "", err
+	}
 
-		rawOutput, err := pfe.executeTxStep(fmt.Sprintf(`
+	// set staking info
+	_, err = pfe.executeTxStep(fmt.Sprintf(`
+		{
+			"step": "scCall",
+			"txId": "set-fee-on",
+			"tx": {
+				"from": "''%s",
+				"to": "''%s",
+				"value": "0",
+				"function": "setFeeOn",
+				"arguments": [
+					"%s",
+					"''%s",
+					"str:%s"
+				],
+				"gasLimit": "10,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": ["*"],
+				"status": "",
+				"logs": [],
+				"gas": "*",
+				"refund": "*"
+			}
+		}`,
+		string(pfe.ownerAddress),
+		string(pfe.routerAddress),
+		pairHexStr,
+		string(pfe.mexStakingAddress),
+		pfe.mexTokenId,
+	))
+	if err != nil {
+		return "", err
+	}
+
+	rawOutput, err := pfe.executeTxStep(fmt.Sprintf(`
 		{
 			"step": "scCall",
 			"txId": "",
@@ -512,17 +677,15 @@ func (pfe *fuzzDexExecutor) setFeeOn() error {
 				"refund": "*"
 			}
 		}`,
-			string(pfe.ownerAddress),
-			pairHexStr,
-		))
-		if err != nil {
-			return err
-		}
-
-		Use(rawOutput)
+		string(pfe.ownerAddress),
+		pairHexStr,
+	))
+	if err != nil {
+		return "", err
 	}
 
-	return nil
+	Use(rawOutput)
+	return pairHexStr, nil
 }
 
 func (pfe *fuzzDexExecutor) increaseBlockEpoch(epochDelta int) error {
@@ -579,8 +742,20 @@ func (pfe *fuzzDexExecutor) doHackishSteps() error {
 			return err
 		}
 	}
+	for i := 1; i <= pfe.numTokens; i++ {
+		err := pfe.doHackishStep(pfe.mexTokenId, pfe.tokenTicker(i), lpTokenIndex)
+		lpTokenIndex += 1
+		if err != nil {
+			return err
+		}
+	}
+	err := pfe.doHackishStep(pfe.mexTokenId, pfe.wegldTokenId, lpTokenIndex)
+	lpTokenIndex += 1
+	if err != nil {
+		return err
+	}
 
-	err := pfe.doHachishStepStaking()
+	err = pfe.doHachishStepStaking()
 	if err != nil {
 		return err
 	}
@@ -628,7 +803,7 @@ func (pfe *fuzzDexExecutor) doHackishStep(tokenA string, tokenB string, index in
 					"str:fee_token_identifier": "str:%s",
 					"str:total_fee_precent": "300",
 					"str:special_fee_precent": "100",
-					"str:router_owner_address": "address:owner"
+					"str:router_owner_address": "''%s"
 				},
 				"code": "file:../../../test/dex/v0_1/output/elrond_dex_pair.wasm"
 			}
@@ -640,8 +815,9 @@ func (pfe *fuzzDexExecutor) doHackishStep(tokenA string, tokenB string, index in
 		tokenB,
 		lpTokenName,
 		string(pfe.routerAddress),
-		string(pfe.stakingAddress),
+		string(pfe.wegldStakingAddress),
 		pfe.wegldTokenId,
+		string(pfe.ownerAddress),
 	))
 	if err != nil {
 		return err
@@ -683,7 +859,7 @@ func (pfe *fuzzDexExecutor) doHachishStepStaking() error {
 			}
 		}
 	}`,
-		string(pfe.stakingAddress),
+		string(pfe.wegldStakingAddress),
 		"STAKING-abcdef",
 		"UNSTAK-abcdef",
 		pfe.wegldTokenId,
@@ -691,6 +867,51 @@ func (pfe *fuzzDexExecutor) doHachishStepStaking() error {
 		"UNSTAK-abcdef",
 		string(pfe.routerAddress),
 		pfe.wegldTokenId,
+	))
+	if err != nil {
+		return err
+	}
+
+	err = pfe.executeStep(fmt.Sprintf(`
+	{
+		"step": "setState",
+		"comment": "test",
+		"accounts": {
+			"''%s": {
+				"nonce": "0",
+				"balance": "0",
+				"esdtRoles": {
+					"str:%s": [
+						"ESDTRoleNFTCreate",
+						"ESDTRoleNFTAddQuantity",
+						"ESDTRoleNFTBurn"
+					],
+					"str:%s": [
+						"ESDTRoleNFTCreate",
+						"ESDTRoleNFTAddQuantity",
+						"ESDTRoleNFTBurn"
+					]
+				},
+				"storage": {
+					"str:staking_pool_token_id": "str:%s",
+					"str:stake_token_id": "str:%s",
+					"str:unstake_token_id": "str:%s",
+					"str:router_address": "''%s",
+					"str:virtual_token_id": "str:%s",
+					"str:state": "1"
+				},
+				"code": "file:../../../test/dex/v0_1/output/elrond_dex_staking.wasm"
+			}
+		}
+	}`,
+		string(pfe.mexStakingAddress),
+		"STAKING-abcdef",
+		"UNSTAK-abcdef",
+		pfe.mexTokenId,
+		"STAKING-abcdef",
+		"UNSTAK-abcdef",
+		string(pfe.routerAddress),
+		pfe.mexTokenId,
 	))
 	if err != nil {
 		return err

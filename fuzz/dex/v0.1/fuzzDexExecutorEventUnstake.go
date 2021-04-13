@@ -40,7 +40,7 @@ func (pfe *fuzzDexExecutor) unstake(amountMax int, statistics *eventsStatistics,
 	}
 
 
-	reward, err := pfe.querySingleResult(pfe.ownerAddress, pfe.stakingAddress,
+	reward, err := pfe.querySingleResult(pfe.ownerAddress, pfe.wegldStakingAddress,
 		"calculateRewardsForGivenPosition", fmt.Sprintf(`"%d", "%d"`, nonce, unstakeAmount))
 	if err != nil {
 		return err
@@ -66,7 +66,7 @@ func (pfe *fuzzDexExecutor) unstake(amountMax int, statistics *eventsStatistics,
 		}
 	}`,
 		user,
-		pfe.stakingAddress,
+		pfe.wegldStakingAddress,
 		"STAKING-abcdef",
 		unstakeAmount,
 		nonce,

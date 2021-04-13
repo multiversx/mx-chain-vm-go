@@ -58,7 +58,7 @@ func (pfe *fuzzDexExecutor) stake(user string, tokenA string, tokenB string, amo
 		}
 	}`,
 		user,
-		pfe.stakingAddress,
+		pfe.wegldStakingAddress,
 		lpTokenHex,
 		amount,
 	))
