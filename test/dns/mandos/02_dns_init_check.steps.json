@@ -21,7 +21,7 @@
                 "value": "0",
                 "function": "version",
                 "arguments": [],
-                "gasLimit": "100,000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -41,7 +41,7 @@
                 "value": "0",
                 "function": "getContractOwner",
                 "arguments": [],
-                "gasLimit": "100,000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {

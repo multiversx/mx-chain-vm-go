@@ -12,7 +12,7 @@
                 "arguments": [
                     "str:bogusname000.elrond"
                 ],
-                "gasLimit": "100,000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
