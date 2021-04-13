@@ -11,6 +11,7 @@ import (
 	"github.com/ElrondNetwork/elrond-go/process/smartContract/builtInFunctions"
 )
 
+// ExecuteCheckStateStep executes a CheckStateStep defined by the current scenario.
 func (ae *ArwenTestExecutor) ExecuteCheckStateStep(step *mj.CheckStateStep) error {
 	if len(step.Comment) > 0 {
 		log.Trace("CheckStateStep", "comment", step.Comment)

@@ -900,9 +900,9 @@ func (host *vmHost) callSCMethod() error {
 
 	log.Trace("call SC method")
 
-	//TODO host.verifyAllowedFunctionCall() performs some checks, but then the
-	//function itself is changed by host.getFunctionByCallType(). Order must be
-	//reversed, and `getFunctionByCallType()` must be decomposed into smaller functions.
+	// TODO host.verifyAllowedFunctionCall() performs some checks, but then the
+	// function itself is changed by host.getFunctionByCallType(). Order must be
+	// reversed, and `getFunctionByCallType()` must be decomposed into smaller functions.
 
 	err := host.verifyAllowedFunctionCall()
 	if err != nil {

@@ -26,14 +26,18 @@ var errAccountNotFound = errors.New("account not found")
 
 var userAddress = []byte("userAccount.....................")
 
+// AddressSize is the size of an account address, in bytes.
 const AddressSize = 32
 
+// SCAddressPrefix is the prefix of any smart contract address used for testing.
 var SCAddressPrefix = []byte("\x00\x00\x00\x00\x00\x00\x00\x00\x0f\x0f")
 var parentAddress = MakeTestSCAddress("parentSC")
 var childAddress = MakeTestSCAddress("childSC")
 
 var customGasSchedule = config.GasScheduleMap(nil)
 
+// MakeTestSCAddress generates a new smart contract address to be used for
+// testing based on the given identifier.
 func MakeTestSCAddress(identifier string) []byte {
 	numberOfTrailingDots := AddressSize - len(SCAddressPrefix) - len(identifier)
 	leftBytes := SCAddressPrefix
@@ -204,12 +208,15 @@ func defaultTestArwen(tb testing.TB, blockchain vmcommon.BlockchainHook) *vmHost
 	return host
 }
 
+// AddTestSmartContractToWorld directly deploys the provided code into the
+// given MockWorld under a SC address built with the given identifier.
 func AddTestSmartContractToWorld(world *worldmock.MockWorld, identifier string, code []byte) *worldmock.Account {
 	address := MakeTestSCAddress(identifier)
 	return world.AcctMap.CreateSmartContractAccount(userAddress, address, code)
 }
 
-// DefaultTestContractCreateInput creates a vmcommon.ContractCreateInput struct with default values
+// DefaultTestContractCreateInput creates a vmcommon.ContractCreateInput struct
+// with default values.
 func DefaultTestContractCreateInput() *vmcommon.ContractCreateInput {
 	return &vmcommon.ContractCreateInput{
 		VMInput: vmcommon.VMInput{
@@ -227,7 +234,8 @@ func DefaultTestContractCreateInput() *vmcommon.ContractCreateInput {
 	}
 }
 
-// DefaultTestContractCallInput creates a vmcommon.ContractCallInput struct with default values
+// DefaultTestContractCallInput creates a vmcommon.ContractCallInput struct
+// with default values.
 func DefaultTestContractCallInput() *vmcommon.ContractCallInput {
 	return &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{

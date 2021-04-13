@@ -13,9 +13,9 @@ package elrondapi
 // extern void getExternalBalance(void *context, int32_t addressOffset, int32_t resultOffset);
 // extern int32_t blockHash(void *context, long long nonce, int32_t resultOffset);
 // extern int32_t transferValue(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
-// extern int32_t transferESDT(void *context, int32_t dstOffset, int32_t tokenIdOffset, int32_t tokenIdLen, int32_t valueOffset, long long gasLimit, int32_t dataOffset, int32_t length);
-// extern int32_t transferESDTExecute(void *context, int32_t dstOffset, int32_t tokenIdOffset, int32_t tokenIdLen, int32_t valueOffset, long long gasLimit, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
-// extern int32_t transferESDTNFTExecute(void *context, int32_t dstOffset, int32_t tokenIdOffset, int32_t tokenIdLen, int32_t valueOffset, long long nonce, long long gasLimit, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern int32_t transferESDT(void *context, int32_t dstOffset, int32_t tokenIDOffset, int32_t tokenIdLen, int32_t valueOffset, long long gasLimit, int32_t dataOffset, int32_t length);
+// extern int32_t transferESDTExecute(void *context, int32_t dstOffset, int32_t tokenIDOffset, int32_t tokenIdLen, int32_t valueOffset, long long gasLimit, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern int32_t transferESDTNFTExecute(void *context, int32_t dstOffset, int32_t tokenIDOffset, int32_t tokenIdLen, int32_t valueOffset, long long nonce, long long gasLimit, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t transferValueExecute(void *context, int32_t dstOffset, int32_t valueOffset, long long gasLimit, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t getArgumentLength(void *context, int32_t id);
 // extern int32_t getArgument(void *context, int32_t id, int32_t argOffset);
@@ -899,7 +899,7 @@ func makeCrossShardCallFromInput(vmInput *vmcommon.ContractCallInput) string {
 func transferESDT(
 	context unsafe.Pointer,
 	destOffset int32,
-	tokenIdOffset int32,
+	tokenIDOffset int32,
 	tokenIDLen int32,
 	valueOffset int32,
 	gasLimit int64,
@@ -923,7 +923,7 @@ func transferESDT(
 func transferESDTExecute(
 	context unsafe.Pointer,
 	destOffset int32,
-	tokenIdOffset int32,
+	tokenIDOffset int32,
 	tokenIDLen int32,
 	valueOffset int32,
 	gasLimit int64,
@@ -933,7 +933,7 @@ func transferESDTExecute(
 	argumentsLengthOffset int32,
 	dataOffset int32,
 ) int32 {
-	return transferESDTNFTExecute(context, destOffset, tokenIdOffset, tokenIDLen, valueOffset, 0,
+	return transferESDTNFTExecute(context, destOffset, tokenIDOffset, tokenIDLen, valueOffset, 0,
 		gasLimit, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 }
 
@@ -941,7 +941,7 @@ func transferESDTExecute(
 func transferESDTNFTExecute(
 	context unsafe.Pointer,
 	destOffset int32,
-	tokenIdOffset int32,
+	tokenIDOffset int32,
 	tokenIDLen int32,
 	valueOffset int32,
 	nonce int64,
@@ -971,7 +971,7 @@ func transferESDTNFTExecute(
 		return 1
 	}
 
-	tokenIdentifier, err := runtime.MemLoad(tokenIdOffset, tokenIDLen)
+	tokenIdentifier, err := runtime.MemLoad(tokenIDOffset, tokenIDLen)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -1703,6 +1703,9 @@ func writeEventLog(
 		topicLengthsOffset,
 		topicOffset,
 	)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return
+	}
 
 	data, err := runtime.MemLoad(dataOffset, dataLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -1714,7 +1717,7 @@ func writeEventLog(
 		metering.GasSchedule().BaseOperationCost.DataCopyPerByte,
 		uint64(topicDataTotalLen+dataLength))
 	gasToUse = math.AddUint64(gasToUse, gasForData)
-	metering.UseGas(metering.GasSchedule().ElrondAPICost.Log)
+	metering.UseGas(gasToUse)
 
 	output.WriteLog(runtime.GetSCAddress(), topics, data)
 }

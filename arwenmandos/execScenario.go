@@ -38,6 +38,7 @@ func (ae *ArwenTestExecutor) ExecuteScenario(scenario *mj.Scenario, fileResolver
 	return nil
 }
 
+// ExecuteStep executes an individual step from a scenario.
 func (ae *ArwenTestExecutor) ExecuteStep(generalStep mj.Step) error {
 	err := error(nil)
 

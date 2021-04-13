@@ -9,13 +9,13 @@ import (
 	"github.com/ElrondNetwork/elrond-go/data/esdt"
 )
 
-// ESDTKeyPrefix is the prefix of storage keys belonging to ESDT tokens
+// ESDTTokenKeyPrefix is the prefix of storage keys belonging to ESDT tokens.
 var ESDTTokenKeyPrefix = []byte(core.ElrondProtectedKeyPrefix + core.ESDTKeyIdentifier)
 
-// ESDTRoleKeyPrefix is the prefix of storage keys belonging to ESDT roles
+// ESDTRoleKeyPrefix is the prefix of storage keys belonging to ESDT roles.
 var ESDTRoleKeyPrefix = []byte(core.ElrondProtectedKeyPrefix + core.ESDTRoleIdentifier + core.ESDTKeyIdentifier)
 
-// ESDTRoleKeyPrefix is the prefix of storage keys belonging to ESDT roles
+// ESDTNonceKeyPrefix is the prefix of storage keys belonging to ESDT nonces.
 var ESDTNonceKeyPrefix = []byte(core.ElrondProtectedKeyPrefix + core.ESDTNFTLatestNonceIdentifier)
 
 // GetTokenBalance returns the ESDT balance of an account for the given token
