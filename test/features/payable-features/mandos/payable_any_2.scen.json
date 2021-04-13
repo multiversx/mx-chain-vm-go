@@ -70,8 +70,10 @@
                 "from": "address:an_account",
                 "to": "address:features_contract",
                 "value": "0",
-                "esdtTokenName": "str:PAYABLE-FEATURES-TOKEN",
-                "esdtValue": "100",
+                "esdt": {
+                    "tokenIdentifier": "str:PAYABLE-FEATURES-TOKEN",
+                    "value": "100"
+                },
                 "function": "payable_any_2",
                 "arguments": [],
                 "gasLimit": "50,000,000",
@@ -79,28 +81,6 @@
             },
             "expect": {
                 "out": [ "100", "str:PAYABLE-FEATURES-TOKEN" ],
-                "status": "",
-                "logs": [],
-                "gas": "*",
-                "refund": "*"
-            }
-        },
-        {
-            "step": "scCall",
-            "txId": "payable_any_2.4",
-            "tx": {
-                "from": "address:an_account",
-                "to": "address:features_contract",
-                "value": "0",
-                "esdtTokenName": "str:PAYABLE-FEATURES-TOKEN",
-                "esdtValue": "0",
-                "function": "payable_any_2",
-                "arguments": [],
-                "gasLimit": "50,000,000",
-                "gasPrice": "0"
-            },
-            "expect": {
-                "out": [ "0", "str:PAYABLE-FEATURES-TOKEN" ],
                 "status": "",
                 "logs": [],
                 "gas": "*",

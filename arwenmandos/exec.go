@@ -10,8 +10,11 @@ import (
 	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/fileresolver"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
 	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
+
+var log = logger.GetOrCreate("arwen/mandos")
 
 // TestVMType is the VM type argument we use in tests.
 var TestVMType = []byte{0, 0}
@@ -32,17 +35,21 @@ var _ mc.ScenarioExecutor = (*ArwenTestExecutor)(nil)
 func NewArwenTestExecutor() (*ArwenTestExecutor, error) {
 	world := worldhook.NewMockWorld()
 
+	gasScheduleMap := config.MakeGasMapForTests()
+	world.InitBuiltinFunctions(gasScheduleMap)
+
 	blockGasLimit := uint64(10000000)
 	vm, err := arwenHost.NewArwenVM(world, &arwen.VMHostParameters{
 		VMType:                   TestVMType,
 		BlockGasLimit:            blockGasLimit,
-		GasSchedule:              config.MakeGasMapForTests(),
+		GasSchedule:              gasScheduleMap,
 		ProtocolBuiltinFunctions: world.GetBuiltinFunctionNames(),
 		ElrondProtectedKeyPrefix: []byte(ElrondProtectedKeyPrefix),
 	})
 	if err != nil {
 		return nil, err
 	}
+
 	return &ArwenTestExecutor{
 		fileResolver:            nil,
 		World:                   world,

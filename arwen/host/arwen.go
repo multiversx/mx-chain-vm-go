@@ -42,6 +42,7 @@ type vmHost struct {
 	storageContext    arwen.StorageContext
 	bigIntContext     arwen.BigIntContext
 
+	gasSchedule              config.GasScheduleMap
 	scAPIMethods             *wasmer.Imports
 	protocolBuiltinFunctions vmcommon.FunctionNames
 
@@ -76,6 +77,7 @@ func NewArwenVM(
 		blockchainContext:        nil,
 		storageContext:           nil,
 		bigIntContext:            nil,
+		gasSchedule:              hostParameters.GasSchedule,
 		scAPIMethods:             nil,
 		protocolBuiltinFunctions: hostParameters.ProtocolBuiltinFunctions,
 		arwenV2EnableEpoch:       hostParameters.ArwenV2EnableEpoch,
@@ -148,7 +150,7 @@ func NewArwenVM(
 		return nil, err
 	}
 
-	gasCostConfig, err := config.CreateGasConfig(hostParameters.GasSchedule)
+	gasCostConfig, err := config.CreateGasConfig(host.gasSchedule)
 	if err != nil {
 		return nil, err
 	}
@@ -299,10 +301,11 @@ func (host *vmHost) GetProtocolBuiltinFunctions() vmcommon.FunctionNames {
 }
 
 // GasScheduleChange applies a new gas schedule to the host
-func (host *vmHost) GasScheduleChange(newGasSchedule map[string]map[string]uint64) {
+func (host *vmHost) GasScheduleChange(newGasSchedule config.GasScheduleMap) {
 	host.mutExecution.Lock()
 	defer host.mutExecution.Unlock()
 
+	host.gasSchedule = newGasSchedule
 	gasCostConfig, err := config.CreateGasConfig(newGasSchedule)
 	if err != nil {
 		log.Error("cannot apply new gas config remained with old one")
@@ -313,6 +316,11 @@ func (host *vmHost) GasScheduleChange(newGasSchedule map[string]map[string]uint6
 	wasmer.SetOpcodeCosts(&opcodeCosts)
 
 	host.meteringContext.SetGasSchedule(newGasSchedule)
+}
+
+// GetGasScheduleMap returns the currently stored gas schedule
+func (host *vmHost) GetGasScheduleMap() config.GasScheduleMap {
+	return host.gasSchedule
 }
 
 // RunSmartContractCreate executes the deployment of a new contract

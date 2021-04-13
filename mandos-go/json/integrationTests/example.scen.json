@@ -17,18 +17,45 @@
                     "comment": "we can comment on individual account initializations",
                     "nonce": "0",
                     "balance": "0xe8d4a51000",
-                    "storage": {},
                     "esdt": {
-                        "str:MyToken": "400,000,000,000",
-                        "str:AnotherToken": {
-                            "balance": "400,000,000,000",
+                        "str:1-MyToken": "400,000,000,000",
+                        "str:2-AnotherToken": {
+                            "value": "400,000,000,000",
                             "frozen": "false"
                         },
-                        "str:AnotherTokenThatIsFrozen": {
-                            "balance": "400,000,000,000",
+                        "str:3-AnotherTokenThatIsFrozen": {
+                            "nonce": "0",
+                            "value": "400,000,000,000",
                             "frozen": "true"
-                        }
+                        },
+                        "str:4-SimpleNFT": {
+                            "nonce": "1023"
+                        },
+                        "str:5-SeveralNFTs": [
+                            {
+                                "nonce": "1"
+                            },
+                            {
+                                "nonce": "5",
+                                "value": "3"
+                            }
+                        ]
                     },
+                    "esdtRoles": {
+                        "str:tokenID1": [
+                            "role1",
+                            "role2"
+                        ],
+                        "str:tokenID2": [],
+                        "str:tokenID3": [
+                            "ESDTRoleLocalMint",
+                            "ESDTRoleLocalBurn",
+                            "ESDTRoleNFTCreate",
+                            "ESDTRoleNFTAddQuantity",
+                            "ESDTRoleNFTBurn"
+                        ]
+                    },
+                    "storage": {},
                     "code": ""
                 },
                 "address:smart_contract_address": {
@@ -50,7 +77,8 @@
                             ]
                         }
                     },
-                    "code": "file:smart-contract.wasm"
+                    "code": "file:smart-contract.wasm",
+                    "owner": "address:alice"
                 }
             },
             "newAddresses": [
@@ -144,8 +172,10 @@
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
                 "to": "0x1000000000000000000000000000000000000000000000000000000000000000",
                 "value": "0x00",
-                "esdtValue": "250,000,000,000",
-                "esdtTokenName": "str:MyToken",
+                "esdt": {
+                    "tokenIdentifier": "str:MyToken",
+                    "value": "250,000,000,000"
+                },
                 "function": "someFunctionName",
                 "arguments": [],
                 "gasLimit": "0x100000",
@@ -196,8 +226,10 @@
             "tx": {
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
                 "value": "0x00",
-                "esdtValue": "250,000,000,000",
-                "esdtTokenName": "str:CrowdToken",
+                "esdt": {
+                    "tokenIdentifier": "str:CrowdToken",
+                    "value": "250,000,000,000"
+                },
                 "contractCode": "``new contract code here",
                 "arguments": [
                     "0x1234123400000000000000000000000000000000000000000000000000000004",
@@ -238,8 +270,12 @@
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
                 "to": "0x1000000000000000000000000000000000000000000000000000000000000000",
                 "value": "1234",
-                "esdtValue": "250,000,000,000",
-                "esdtTokenName": "str:MyToken"
+                "esdt": {
+                    "tokenIdentifier": "str:MyToken",
+                    "value": "250,000,000,000"
+                },
+                "gasLimit": "",
+                "gasPrice": ""
             }
         },
         {
@@ -259,10 +295,35 @@
                     "comment": "we can comment on individual account checks",
                     "nonce": "1",
                     "balance": "0xe8d4951000",
+                    "esdt": {
+                        "str:1-MyToken": "400,000,000,000",
+                        "str:2-AnotherToken": {
+                            "value": "400,000,000,000",
+                            "frozen": "*"
+                        },
+                        "str:3-AnotherTokenThatIsFrozen": {
+                            "nonce": "*",
+                            "value": "*",
+                            "frozen": "true"
+                        },
+                        "str:4-SimpleNFT": {
+                            "nonce": "1023"
+                        },
+                        "str:5-SeveralNFTs": [
+                            {
+                                "nonce": "*"
+                            },
+                            {
+                                "nonce": "1",
+                                "value": "3"
+                            }
+                        ]
+                    },
                     "storage": {},
                     "code": ""
                 },
                 "address:account_with_defaults": {
+                    "esdt": "*",
                     "storage": "*"
                 },
                 "address:smart_contract_address": {
@@ -280,13 +341,15 @@
                             ]
                         }
                     },
-                    "code": "file:smart-contract.wasm"
+                    "code": "file:smart-contract.wasm",
+                    "owner": "address:bob"
                 },
                 "address:smart_contract_address_2": {
                     "nonce": "*",
                     "balance": "*",
                     "storage": "*",
                     "code": "*",
+                    "owner": "*",
                     "asyncCallData": "``func@arg1@arg2"
                 },
                 "``account_with_defaults___________": {

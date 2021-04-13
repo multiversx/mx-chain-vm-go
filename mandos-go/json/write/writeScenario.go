@@ -102,11 +102,9 @@ func transactionToScenarioOJ(tx *mj.Transaction) oj.OJsonObject {
 	if tx.Type.HasValue() {
 		transactionOJ.Put("value", bigIntToOJ(tx.Value))
 	}
-	if len(tx.ESDTValue.Original) > 0 {
-		transactionOJ.Put("esdtValue", bigIntToOJ(tx.ESDTValue))
-	}
-	if len(tx.ESDTTokenName.Original) > 0 {
-		transactionOJ.Put("esdtTokenName", bytesFromStringToOJ(tx.ESDTTokenName))
+	if tx.ESDTValue != nil {
+		esdtItemOJ := esdtToFullMapOJ(tx.ESDTValue)
+		transactionOJ.Put("esdt", esdtItemOJ)
 	}
 	if tx.Type.HasFunction() {
 		transactionOJ.Put("function", stringToOJ(tx.Function))

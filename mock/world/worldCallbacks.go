@@ -12,6 +12,7 @@ import (
 )
 
 var _ vmcommon.BlockchainHook = (*MockWorld)(nil)
+var ErrBuiltinFuncWrapperNotInitialized = errors.New("builtin function not found or container not initialized")
 
 var zero = big.NewInt(0)
 
@@ -163,22 +164,31 @@ func (b *MockWorld) ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*
 		return nil, b.Err
 	}
 
-	return b.processBuiltInFunction(input)
+	if b.BuiltinFuncs == nil {
+		return nil, ErrBuiltinFuncWrapperNotInitialized
+	}
+
+	return b.BuiltinFuncs.ProcessBuiltInFunction(input)
 }
 
 // GetESDTToken -
-func (b *MockWorld) GetESDTToken(_ []byte, _ []byte, _ uint64) (*esdt.ESDigitalToken, error) {
+func (b *MockWorld) GetESDTToken(address []byte, tokenName []byte, nonce uint64) (*esdt.ESDigitalToken, error) {
 	// custom error
 	if b.Err != nil {
 		return nil, b.Err
 	}
 
-	return &esdt.ESDigitalToken{Value: big.NewInt(0)}, nil
+	if b.BuiltinFuncs == nil {
+		return nil, ErrBuiltinFuncWrapperNotInitialized
+	}
+
+	tokenKey := MakeTokenKey(tokenName, nonce)
+	return b.BuiltinFuncs.GetTokenData(address, tokenKey)
 }
 
 // GetBuiltinFunctionNames -
 func (b *MockWorld) GetBuiltinFunctionNames() vmcommon.FunctionNames {
-	return getBuiltinFunctionNames()
+	return b.BuiltinFuncs.GetBuiltinFunctionNames()
 }
 
 // GetAllState simply returns the storage as-is.
@@ -235,6 +245,7 @@ func (b *MockWorld) IsSmartContract(address []byte) bool {
 	return account.IsSmartContract
 }
 
+// IsPayable -
 func (b *MockWorld) IsPayable(address []byte) (bool, error) {
 	account := b.AcctMap.GetAccount(address)
 	if account == nil {
@@ -249,15 +260,18 @@ func (b *MockWorld) IsPayable(address []byte) (bool, error) {
 	return metadata.Payable, nil
 }
 
+// SaveCompiledCode -
 func (b *MockWorld) SaveCompiledCode(codeHash []byte, code []byte) {
 	b.CompiledCode[string(codeHash)] = code
 }
 
+// GetCompiledCode -
 func (b *MockWorld) GetCompiledCode(codeHash []byte) (bool, []byte) {
 	code, found := b.CompiledCode[string(codeHash)]
 	return found, code
 }
 
+// ClearCompiledCodes -
 func (b *MockWorld) ClearCompiledCodes() {
 	b.CompiledCode = make(map[string][]byte)
 }

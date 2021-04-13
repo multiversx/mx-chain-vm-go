@@ -13,7 +13,12 @@ func (ae *ArwenTestExecutor) ExecuteTest(test *mj.Test) error {
 	ae.World.Blockhashes = mj.JSONBytesFromStringValues(test.BlockHashes)
 
 	for _, acct := range test.Pre {
-		ae.World.AcctMap.PutAccount(convertAccount(acct))
+		account, err := convertAccount(acct)
+		if err != nil {
+			return err
+		}
+
+		ae.World.AcctMap.PutAccount(account)
 	}
 
 	for _, block := range test.Blocks {
@@ -36,5 +41,5 @@ func (ae *ArwenTestExecutor) ExecuteTest(test *mj.Test) error {
 		}
 	}
 
-	return checkAccounts(test.PostState, ae.World)
+	return ae.checkAccounts(test.PostState)
 }

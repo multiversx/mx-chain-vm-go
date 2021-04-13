@@ -1,0 +1,82 @@
+{
+    "comment": "direct builtin function call",
+    "steps": [
+        {
+            "step": "setState",
+            "accounts": {
+                "address:A": {
+                    "nonce": "0",
+                    "balance": "150",
+                    "storage": {},
+                    "code": ""
+                },
+                "address:B": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "1",
+            "tx": {
+                "from": "address:A",
+                "to": "address:B",
+                "function": "ESDTTransfer",
+                "arguments": [ "100" ],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "address:A": {
+                    "nonce": "1",
+                    "balance": "50",
+                    "storage": {},
+                    "code": ""
+                },
+                "address:B": {
+                    "nonce": "0",
+                    "balance": "100",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "2",
+            "tx": {
+                "from": "address:A",
+                "to": "address:B",
+                "value": "50"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "address:A": {
+                    "nonce": "2",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                },
+                "address:B": {
+                    "nonce": "0",
+                    "balance": "150",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        }
+    ]
+}

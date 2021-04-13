@@ -57,14 +57,6 @@ func (b *MockWorld) UpdateAccounts(
 		b.UpdateAccountFromOutputAccount(modAcct)
 	}
 
-	// commit ESDT data
-	for _, acct := range b.AcctMap {
-		for _, esdtData := range acct.ESDTData {
-			esdtData.Balance = esdtData.Balance.Add(esdtData.Balance, esdtData.BalanceDelta)
-			esdtData.BalanceDelta = big.NewInt(0)
-		}
-	}
-
 	for _, delAddr := range accountsToDelete {
 		b.AcctMap.DeleteAccount(delAddr)
 	}
@@ -91,7 +83,7 @@ func (b *MockWorld) UpdateAccountFromOutputAccount(modAcct *vmcommon.OutputAccou
 	}
 	if len(modAcct.Code) > 0 {
 		// TODO: set CodeMetadata according to code metdata coming from VM
-		acct.SetCode(modAcct.Code, &vmcommon.CodeMetadata{
+		acct.SetCodeAndMetadata(modAcct.Code, &vmcommon.CodeMetadata{
 			Payable:     true,
 			Upgradeable: true,
 			Readable:    true,
@@ -106,13 +98,18 @@ func (b *MockWorld) UpdateAccountFromOutputAccount(modAcct *vmcommon.OutputAccou
 	}
 }
 
+// CreateStateBackup -
+func (b *MockWorld) CreateStateBackup() {
+	b.AccountsAdapter.SnapshotState(nil, nil)
+}
+
+// CommitChanges -
+func (b *MockWorld) CommitChanges() error {
+	_, err := b.AccountsAdapter.Commit()
+	return err
+}
+
 // RollbackChanges should be called after the VM test has run, if the tx has failed
-func (b *MockWorld) RollbackChanges() {
-	// discard ESDT deltas
-	// so they don't interfere with future txs
-	for _, acct := range b.AcctMap {
-		for _, esdtData := range acct.ESDTData {
-			esdtData.BalanceDelta = big.NewInt(0)
-		}
-	}
+func (b *MockWorld) RollbackChanges() error {
+	return b.AccountsAdapter.RevertToSnapshot(0)
 }

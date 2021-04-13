@@ -171,7 +171,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 
 	vmOutput = output.GetVMOutput()
 
-	log.Trace("doRunSmartContractCall",
+	log.Trace("doRunSmartContractCall finished",
 		"retCode", vmOutput.ReturnCode,
 		"message", vmOutput.ReturnMessage,
 		"data", vmOutput.ReturnData)
@@ -235,14 +235,14 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	if input.CallType != vmcommon.AsynchronousCallBack || input.CallValue.Cmp(arwen.Zero) == 0 {
 		err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue, false)
 		if err != nil {
-			log.Trace("ExecuteOnDestContext", "error", err)
+			log.Trace("ExecuteOnDestContext transfer", "error", err)
 			return
 		}
 	}
 
 	gasUsedBeforeReset, err = host.execute(input)
 	if err != nil {
-		log.Trace("ExecuteOnDestContext", "error", err)
+		log.Trace("ExecuteOnDestContext execution", "error", err)
 		return
 	}
 

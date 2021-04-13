@@ -2,16 +2,20 @@ package arwenmandos
 
 import (
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"math/big"
 
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
 	oj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/orderedjson"
-	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
+	"github.com/ElrondNetwork/elrond-go/core"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	"github.com/ElrondNetwork/elrond-go/data/esdt"
+	"github.com/ElrondNetwork/elrond-go/process/smartContract/builtInFunctions"
 )
 
-func convertAccount(testAcct *mj.Account) *worldhook.Account {
+func convertAccount(testAcct *mj.Account) (*worldmock.Account, error) {
 	storage := make(map[string][]byte)
 	for _, stkvp := range testAcct.Storage {
 		key := string(stkvp.Key.Value)
@@ -19,26 +23,19 @@ func convertAccount(testAcct *mj.Account) *worldhook.Account {
 	}
 
 	if len(testAcct.Address.Value) != 32 {
-		panic("bad test: account address should be 32 bytes long")
+		return nil, errors.New("bad test: account address should be 32 bytes long")
 	}
 
-	convertedESDTData := make(map[string]*worldhook.ESDTData)
-	for _, mandosESDTData := range testAcct.ESDTData {
-		convertedESDTData[string(mandosESDTData.TokenName.Value)] = &worldhook.ESDTData{
-			Balance:      mandosESDTData.Balance.Value,
-			BalanceDelta: big.NewInt(0),
-			Frozen:       mandosESDTData.Frozen.Value > 0,
-		}
-	}
-
-	return &worldhook.Account{
+	account := &worldmock.Account{
 		Address:         testAcct.Address.Value,
 		Nonce:           testAcct.Nonce.Value,
 		Balance:         big.NewInt(0).Set(testAcct.Balance.Value),
+		BalanceDelta:    big.NewInt(0),
+		DeveloperReward: big.NewInt(0),
 		Storage:         storage,
-		Code:            []byte(testAcct.Code.Value),
+		Code:            testAcct.Code.Value,
+		OwnerAddress:    testAcct.Owner.Value,
 		AsyncCallData:   testAcct.AsyncCallData,
-		ESDTData:        convertedESDTData,
 		ShardID:         uint32(testAcct.Shard.Value),
 		IsSmartContract: len(testAcct.Code.Value) > 0,
 		CodeMetadata: (&vmcommon.CodeMetadata{
@@ -47,12 +44,66 @@ func convertAccount(testAcct *mj.Account) *worldhook.Account {
 			Readable:    true,
 		}).ToBytes(), // TODO: add explicit fields in mandos json
 	}
+
+	for _, mandosESDTData := range testAcct.ESDTData {
+		tokenName := mandosESDTData.TokenIdentifier.Value
+		tokenValue := mandosESDTData.Value.Value
+		tokenNonce := mandosESDTData.Nonce.Value
+		isFrozen := mandosESDTData.Frozen.Value > 0
+		tokenKey := worldmock.MakeTokenKey(tokenName, tokenNonce)
+		tokenData := &esdt.ESDigitalToken{
+			Value:      tokenValue,
+			Type:       uint32(core.Fungible),
+			Properties: makeESDTUserMetadataBytes(isFrozen),
+			TokenMetaData: &esdt.MetaData{
+				Name:  tokenName,
+				Nonce: tokenNonce,
+			},
+		}
+		err := account.SetTokenData(tokenKey, tokenData)
+		if err != nil {
+			return nil, err
+		}
+
+	}
+
+	for _, mandosESDTRoles := range testAcct.ESDTRoles {
+		tokenName := mandosESDTRoles.TokenIdentifier.Value
+		tokenRolesAsStrings := mandosESDTRoles.Roles
+		err := account.SetTokenRolesAsStrings(tokenName, tokenRolesAsStrings)
+		if err != nil {
+			return nil, err
+		}
+
+	}
+
+	if len(testAcct.ESDTLastNonces) > 0 {
+		lastNonces := make(map[string]uint64)
+		for tokenName, jsonNonce := range testAcct.ESDTLastNonces {
+			lastNonces[tokenName] = jsonNonce.Value
+		}
+
+		err := account.SetLastNonces(lastNonces)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return account, nil
 }
 
-func convertNewAddressMocks(testNAMs []*mj.NewAddressMock) []*worldhook.NewAddressMock {
-	var result []*worldhook.NewAddressMock
+func makeESDTUserMetadataBytes(frozen bool) []byte {
+	metadata := &builtInFunctions.ESDTUserMetadata{
+		Frozen: frozen,
+	}
+
+	return metadata.ToBytes()
+}
+
+func convertNewAddressMocks(testNAMs []*mj.NewAddressMock) []*worldmock.NewAddressMock {
+	var result []*worldmock.NewAddressMock
 	for _, testNAM := range testNAMs {
-		result = append(result, &worldhook.NewAddressMock{
+		result = append(result, &worldmock.NewAddressMock{
 			CreatorAddress: testNAM.CreatorAddress.Value,
 			CreatorNonce:   testNAM.CreatorNonce.Value,
 			NewAddress:     testNAM.NewAddress.Value,
@@ -61,7 +112,7 @@ func convertNewAddressMocks(testNAMs []*mj.NewAddressMock) []*worldhook.NewAddre
 	return result
 }
 
-func convertBlockInfo(testBlockInfo *mj.BlockInfo) *worldhook.BlockInfo {
+func convertBlockInfo(testBlockInfo *mj.BlockInfo) *worldmock.BlockInfo {
 	if testBlockInfo == nil {
 		return nil
 	}
@@ -71,7 +122,7 @@ func convertBlockInfo(testBlockInfo *mj.BlockInfo) *worldhook.BlockInfo {
 		copy(randomsSeed[:], testBlockInfo.BlockRandomSeed.Value)
 	}
 
-	result := &worldhook.BlockInfo{
+	result := &worldmock.BlockInfo{
 		BlockTimestamp: testBlockInfo.BlockTimestamp.Value,
 		BlockNonce:     testBlockInfo.BlockNonce.Value,
 		BlockRound:     testBlockInfo.BlockRound.Value,
@@ -148,4 +199,17 @@ func checkBytesListPretty(jcbs []mj.JSONCheckBytes) string {
 		str += "\"" + oj.JSONString(jcb.Original) + "\""
 	}
 	return str + "]"
+}
+
+func addESDTToVMInput(esdtData *mj.ESDTData, vmInput *vmcommon.VMInput) {
+	if esdtData != nil {
+		vmInput.ESDTTokenName = esdtData.TokenIdentifier.Value
+		vmInput.ESDTValue = esdtData.Value.Value
+		vmInput.ESDTTokenNonce = esdtData.Nonce.Value
+		if vmInput.ESDTTokenNonce != 0 {
+			vmInput.ESDTTokenType = uint32(core.NonFungible)
+		} else {
+			vmInput.ESDTTokenType = uint32(core.Fungible)
+		}
+	}
 }

@@ -12,21 +12,43 @@ import (
 )
 
 func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmcommon.VMOutput, error) {
+	ae.World.CreateStateBackup()
+
+	var err error
+	defer func() {
+		if err != nil {
+			errRollback := ae.World.RollbackChanges()
+			if errRollback != nil {
+				err = errRollback
+			}
+		} else {
+			errCommit := ae.World.CommitChanges()
+			if errCommit != nil {
+				err = errCommit
+			}
+		}
+	}()
+
+	gasForExecution := uint64(0)
+
 	if tx.Type.HasSender() {
 		beforeErr := ae.World.UpdateWorldStateBefore(
 			tx.From.Value,
 			tx.GasLimit.Value,
 			tx.GasPrice.Value)
 		if beforeErr != nil {
-			return nil, fmt.Errorf("could not set up tx %s: %w", txIndex, beforeErr)
+			err = fmt.Errorf("could not set up tx %s: %w", txIndex, beforeErr)
+			return nil, err
 		}
 
-		if tx.ESDTValue.Value.Sign() > 0 {
-			ae.World.StartTransferESDT(
-				tx.From.Value,
-				tx.To.Value,
-				string(tx.ESDTTokenName.Value),
-				tx.ESDTValue.Value)
+		gasForExecution = tx.GasLimit.Value
+		if tx.ESDTValue != nil {
+			gasRemaining, err := ae.directESDTTransferFromTx(tx)
+			if err != nil {
+				return nil, err
+			}
+
+			gasForExecution = gasRemaining
 		}
 	}
 
@@ -39,8 +61,7 @@ func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmc
 	} else {
 		switch tx.Type {
 		case mj.ScDeploy:
-			var err error
-			output, err = ae.scCreate(txIndex, tx)
+			output, err = ae.scCreate(txIndex, tx, gasForExecution)
 			if err != nil {
 				return nil, err
 			}
@@ -50,21 +71,19 @@ func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmc
 			tx.From = tx.To
 			// gas restrictions waived during SC queries
 			tx.GasLimit.Value = math.MaxUint64
+			gasForExecution = math.MaxUint64
 			fallthrough
 		case mj.ScCall:
-			var err error
-			output, err = ae.scCall(txIndex, tx)
+			output, err = ae.scCall(txIndex, tx, gasForExecution)
 			if err != nil {
 				return nil, err
 			}
 		case mj.Transfer:
-			var err error
 			output, err = ae.simpleTransferOutput(tx)
 			if err != nil {
 				return nil, err
 			}
 		case mj.ValidatorReward:
-			var err error
 			output, err = ae.validatorRewardOutput(tx)
 			if err != nil {
 				return nil, err
@@ -81,7 +100,9 @@ func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmc
 			return nil, err
 		}
 	} else {
-		ae.World.RollbackChanges()
+		err = fmt.Errorf(
+			"tx step failed: retcode=%d, msg=%s",
+			output.ReturnCode, output.ReturnMessage)
 	}
 
 	return output, nil
@@ -166,27 +187,30 @@ func outOfFundsResult() *vmcommon.VMOutput {
 	}
 }
 
-func (ae *ArwenTestExecutor) scCreate(txIndex string, tx *mj.Transaction) (*vmcommon.VMOutput, error) {
+func (ae *ArwenTestExecutor) scCreate(txIndex string, tx *mj.Transaction, gasLimit uint64) (*vmcommon.VMOutput, error) {
 	txHash := generateTxHash(txIndex)
+	vmInput := vmcommon.VMInput{
+		CallerAddr:     tx.From.Value,
+		Arguments:      mj.JSONBytesFromTreeValues(tx.Arguments),
+		CallValue:      tx.Value.Value,
+		GasPrice:       tx.GasPrice.Value,
+		GasProvided:    gasLimit,
+		OriginalTxHash: txHash,
+		CurrentTxHash:  txHash,
+		ESDTValue:      big.NewInt(0),
+		ESDTTokenName:  nil,
+		ESDTTokenNonce: 0,
+	}
+	addESDTToVMInput(tx.ESDTValue, &vmInput)
 	input := &vmcommon.ContractCreateInput{
 		ContractCode: tx.Code.Value,
-		VMInput: vmcommon.VMInput{
-			CallerAddr:     tx.From.Value,
-			Arguments:      mj.JSONBytesFromTreeValues(tx.Arguments),
-			CallValue:      tx.Value.Value,
-			GasPrice:       tx.GasPrice.Value,
-			GasProvided:    tx.GasLimit.Value,
-			OriginalTxHash: txHash,
-			CurrentTxHash:  txHash,
-			ESDTValue:      tx.ESDTValue.Value,
-			ESDTTokenName:  tx.ESDTTokenName.Value,
-		},
+		VMInput:      vmInput,
 	}
 
 	return ae.vm.RunSmartContractCreate(input)
 }
 
-func (ae *ArwenTestExecutor) scCall(txIndex string, tx *mj.Transaction) (*vmcommon.VMOutput, error) {
+func (ae *ArwenTestExecutor) scCall(txIndex string, tx *mj.Transaction, gasLimit uint64) (*vmcommon.VMOutput, error) {
 	recipient := ae.World.AcctMap.GetAccount(tx.To.Value)
 	if recipient == nil {
 		return nil, fmt.Errorf("tx recipient (address: %s) does not exist", hex.EncodeToString(tx.To.Value))
@@ -195,23 +219,38 @@ func (ae *ArwenTestExecutor) scCall(txIndex string, tx *mj.Transaction) (*vmcomm
 		return nil, fmt.Errorf("tx recipient (address: %s) is not a smart contract", hex.EncodeToString(tx.To.Value))
 	}
 	txHash := generateTxHash(txIndex)
+	vmInput := vmcommon.VMInput{
+		CallerAddr:     tx.From.Value,
+		Arguments:      mj.JSONBytesFromTreeValues(tx.Arguments),
+		CallValue:      tx.Value.Value,
+		GasPrice:       tx.GasPrice.Value,
+		GasProvided:    gasLimit,
+		OriginalTxHash: txHash,
+		CurrentTxHash:  txHash,
+		ESDTValue:      big.NewInt(0),
+		ESDTTokenName:  nil,
+		ESDTTokenNonce: 0,
+	}
+	addESDTToVMInput(tx.ESDTValue, &vmInput)
 	input := &vmcommon.ContractCallInput{
 		RecipientAddr: tx.To.Value,
 		Function:      tx.Function,
-		VMInput: vmcommon.VMInput{
-			CallerAddr:     tx.From.Value,
-			Arguments:      mj.JSONBytesFromTreeValues(tx.Arguments),
-			CallValue:      tx.Value.Value,
-			GasPrice:       tx.GasPrice.Value,
-			GasProvided:    tx.GasLimit.Value,
-			OriginalTxHash: txHash,
-			CurrentTxHash:  txHash,
-			ESDTValue:      tx.ESDTValue.Value,
-			ESDTTokenName:  tx.ESDTTokenName.Value,
-		},
+		VMInput:       vmInput,
 	}
 
 	return ae.vm.RunSmartContractCall(input)
+}
+
+func (ae *ArwenTestExecutor) directESDTTransferFromTx(tx *mj.Transaction) (uint64, error) {
+	return ae.World.BuiltinFuncs.PerformDirectESDTTransfer(
+		tx.From.Value,
+		tx.To.Value,
+		tx.ESDTValue.TokenIdentifier.Value,
+		tx.ESDTValue.Nonce.Value,
+		tx.ESDTValue.Value.Value,
+		vmcommon.DirectCall,
+		tx.GasLimit.Value,
+		tx.GasPrice.Value)
 }
 
 func (ae *ArwenTestExecutor) updateStateAfterTx(

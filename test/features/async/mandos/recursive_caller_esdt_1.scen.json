@@ -10,7 +10,7 @@
                     "storage": {},
                     "code": ""
                 },
-                "address:vault": {
+                "sc:vault": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {},
@@ -36,7 +36,7 @@
                 "value": "0",
                 "function": "recursive_send_funds",
                 "arguments": [
-                    "address:vault",
+                    "sc:vault",
                     "str:REC-TOKEN",
                     "1",
                     "1"
@@ -52,14 +52,14 @@
                         "address": "address:recursive-caller",
                         "identifier": "str:recursive_send_funds",
                         "topics": [
-                            "address:vault",
+                            "sc:vault",
                             "str:REC-TOKEN",
                             "1"
                         ],
                         "data": "1"
                     },
                     {
-                        "address": "address:vault",
+                        "address": "sc:vault",
                         "identifier": "str:accept_funds",
                         "topics": [
                             "str:REC-TOKEN",
@@ -71,7 +71,7 @@
                         "address": "address:recursive-caller",
                         "identifier": "str:recursive_send_funds_callback",
                         "topics": [
-                            "address:vault",
+                            "sc:vault",
                             "str:REC-TOKEN",
                             "1"
                         ],
@@ -91,7 +91,7 @@
                     "storage": {},
                     "code": ""
                 },
-                "address:vault": {
+                "sc:vault": {
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {

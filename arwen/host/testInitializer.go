@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"math/big"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -63,6 +64,18 @@ func GetTestSCCodeModule(scName string, moduleName string, prefixToTestSCs strin
 	return GetSCCode(pathToSC)
 }
 
+// BuildSCModule invokes erdpy to build the contract into a WASM module
+func BuildSCModule(scName string, prefixToTestSCs string) {
+	pathToSCDir := prefixToTestSCs + "test/contracts/" + scName
+	out, err := exec.Command("erdpy", "contract", "build", pathToSCDir).Output()
+	if err != nil {
+		log.Error("error building contract", "err", err, "contract", pathToSCDir)
+		return
+	}
+
+	log.Info("contract built", "output", fmt.Sprintf("\n%s", out))
+}
+
 // defaultTestArwenForDeployment creates an Arwen vmHost configured for testing deployments
 func defaultTestArwenForDeployment(t *testing.T, _ uint64, newAddress []byte) *vmHost {
 	stubBlockchainHook := &contextmock.BlockchainHookStub{}
@@ -105,6 +118,21 @@ func defaultTestArwenForCallWithInstanceMocks(tb testing.TB) (*vmHost, *worldmoc
 	host.Runtime().ReplaceInstanceBuilder(instanceBuilderMock)
 
 	return host, world, instanceBuilderMock
+}
+
+func defaultTestArwenForCallWithWorldMock(tb testing.TB, code []byte, balance *big.Int) (*vmHost, *worldmock.MockWorld) {
+	world := worldmock.NewMockWorld()
+	host := defaultTestArwen(tb, world)
+
+	err := world.InitBuiltinFunctions(host.GetGasScheduleMap())
+	require.Nil(tb, err)
+
+	host.protocolBuiltinFunctions = world.BuiltinFuncs.GetBuiltinFunctionNames()
+
+	parentAccount := world.AcctMap.CreateSmartContractAccount(userAddress, parentAddress, code)
+	parentAccount.Balance = balance
+
+	return host, world
 }
 
 // defaultTestArwenForTwoSCs creates an Arwen vmHost configured for testing calls between 2 SmartContracts
@@ -172,6 +200,7 @@ func defaultTestArwen(tb testing.TB, blockchain vmcommon.BlockchainHook) *vmHost
 	})
 	require.Nil(tb, err)
 	require.NotNil(tb, host)
+
 	return host
 }
 
@@ -226,6 +255,22 @@ func MakeVMOutput() *vmcommon.VMOutput {
 		TouchedAccounts: make([][]byte, 0),
 		Logs:            make([]*vmcommon.LogEntry, 0),
 		OutputAccounts:  make(map[string]*vmcommon.OutputAccount),
+	}
+}
+
+// MakeVMOutputError creates a vmcommon.VMOutput struct with default values
+// for errors
+func MakeVMOutputError() *vmcommon.VMOutput {
+	return &vmcommon.VMOutput{
+		ReturnCode:      vmcommon.ExecutionFailed,
+		ReturnMessage:   "",
+		ReturnData:      nil,
+		GasRemaining:    0,
+		GasRefund:       big.NewInt(0),
+		DeletedAccounts: nil,
+		TouchedAccounts: nil,
+		Logs:            nil,
+		OutputAccounts:  nil,
 	}
 }
 

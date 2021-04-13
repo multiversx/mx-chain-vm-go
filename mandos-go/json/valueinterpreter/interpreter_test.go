@@ -96,9 +96,26 @@ func TestAddress(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, []byte("12345678901234567890123456789012"), result)
 
+	// trims excess
 	result, err = vi.InterpretString("address:123456789012345678901234567890123")
 	require.Nil(t, err)
 	require.Equal(t, []byte("12345678901234567890123456789012"), result)
+}
+
+func TestSCAddress(t *testing.T) {
+	vi := ValueInterpreter{}
+	result, err := vi.InterpretString("sc:a")
+	require.Nil(t, err)
+	require.Equal(t, []byte("\x00\x00\x00\x00\x00\x00\x00\x00a_______________________"), result)
+
+	result, err = vi.InterpretString("sc:123456789012345678901234")
+	require.Nil(t, err)
+	require.Equal(t, []byte("\x00\x00\x00\x00\x00\x00\x00\x00123456789012345678901234"), result)
+
+	// trims excess
+	result, err = vi.InterpretString("sc:123456789012345678901234x")
+	require.Nil(t, err)
+	require.Equal(t, []byte("\x00\x00\x00\x00\x00\x00\x00\x00123456789012345678901234"), result)
 }
 
 func TestUnsignedNumber(t *testing.T) {
