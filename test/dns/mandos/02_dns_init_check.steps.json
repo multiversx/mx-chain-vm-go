@@ -4,7 +4,7 @@
         {
             "step": "setState",
             "accounts": {
-                "''an_account____________________sy": {
+                "address:viewer": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {},
@@ -16,7 +16,7 @@
             "step": "scCall",
             "txId": "check-version",
             "tx": {
-                "from": "''an_account____________________sy",
+                "from": "address:viewer",
                 "to": "''dns____________________________|0x00",
                 "value": "0",
                 "function": "version",
@@ -25,7 +25,7 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "''0.3.0" ],
+                "out": [ "''0.3.1" ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -36,7 +36,7 @@
             "step": "scCall",
             "txId": "check-owner",
             "tx": {
-                "from": "''an_account____________________sy",
+                "from": "address:viewer",
                 "to": "''dns____________________________|0x00",
                 "value": "0",
                 "function": "getContractOwner",
@@ -45,7 +45,7 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "''dns_owner_______________________" ],
+                "out": [ "address:dns_owner" ],
                 "status": "",
                 "logs": [],
                 "gas": "*",

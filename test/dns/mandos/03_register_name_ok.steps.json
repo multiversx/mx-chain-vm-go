@@ -4,11 +4,9 @@
         {
             "step": "setState",
             "accounts": {
-                "''cool_address__________________sz": {
+                "address:cool_address": {
                     "nonce": "0",
-                    "balance": "123,000",
-                    "storage": {},
-                    "code": "file:user-mock.wasm"
+                    "balance": "246,000"
                 }
             }
         },
@@ -16,18 +14,18 @@
             "step": "scCall",
             "txId": "check-hash",
             "tx": {
-                "from": "''an_account____________________sy",
+                "from": "address:viewer",
                 "to": "''dns____________________________|0x00",
                 "value": "0",
                 "function": "nameHash",
                 "arguments": [
-                    "''coolname0001"
+                    "str:coolname0001.elrond"
                 ],
                 "gasLimit": "100,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "keccak256:``coolname0001" ],
+                "out": [ "keccak256:str:coolname0001.elrond" ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -38,18 +36,18 @@
             "step": "scCall",
             "txId": "check-shard",
             "tx": {
-                "from": "''an_account____________________sy",
+                "from": "address:viewer",
                 "to": "''dns____________________________|0x00",
                 "value": "0",
                 "function": "nameShard",
                 "arguments": [
-                    "''coolname0001"
+                    "str:coolname0001.elrond"
                 ],
                 "gasLimit": "100,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "0xb9" ],
+                "out": [ "0x87" ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -60,12 +58,12 @@
             "step": "scCall",
             "txId": "register-coolname0001",
             "tx": {
-                "from": "''cool_address__________________sz",
-                "to": "''dns____________________________|0xb9",
+                "from": "address:cool_address",
+                "to": "''dns____________________________|0x87",
                 "value": "123,000",
                 "function": "register",
                 "arguments": [
-                    "''coolname0001"
+                    "str:coolname0001.elrond"
                 ],
                 "gasLimit": "10,000,000",
                 "gasPrice": "0"
@@ -82,18 +80,18 @@
             "step": "scCall",
             "txId": "resolve-coolname0001",
             "tx": {
-                "from": "''an_account____________________sy",
-                "to": "''dns____________________________|0xb9",
+                "from": "address:viewer",
+                "to": "''dns____________________________|0x87",
                 "value": "0",
                 "function": "resolve",
                 "arguments": [
-                    "''coolname0001"
+                    "str:coolname0001.elrond"
                 ],
                 "gasLimit": "100,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "str:cool_address__________________sz" ],
+                "out": [ "address:cool_address" ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -102,22 +100,21 @@
         },
         {
             "step": "checkState",
-            "comment": "after resolve-coolname0001",
             "accounts": {
-                "''cool_address__________________sz": {
+                "address:cool_address": {
                     "nonce": "*",
-                    "balance": "0",
-                    "code": "file:user-mock.wasm"
+                    "balance": "123,000",
+                    "username": "str:coolname0001.elrond"
                 },
-                "''dns____________________________|0xb9": {
+                "''dns____________________________|0x87": {
                     "nonce": "*",
                     "balance": "123,000",
                     "storage": {
                         "''registration_cost": "123,000",
                         "''feat:register": "1",
-                        "''value_state|keccak256:``coolname0001": "''cool_address__________________sz"
+                        "''value_state|keccak256:str:coolname0001.elrond": "u8:2|address:cool_address"
                     },
-                    "code": "file:dns.wasm"
+                    "code": "file:../output/dns.wasm"
                 },
                 "+": ""
             }

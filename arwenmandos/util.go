@@ -32,6 +32,7 @@ func convertAccount(testAcct *mj.Account) (*worldmock.Account, error) {
 		Balance:         big.NewInt(0).Set(testAcct.Balance.Value),
 		BalanceDelta:    big.NewInt(0),
 		DeveloperReward: big.NewInt(0),
+		Username:        testAcct.Username.Value,
 		Storage:         storage,
 		Code:            testAcct.Code.Value,
 		OwnerAddress:    testAcct.Owner.Value,

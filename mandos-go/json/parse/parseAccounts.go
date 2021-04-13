@@ -79,6 +79,11 @@ func (p *Parser) processAccount(acctRaw oj.OJsonObject) (*mj.Account, error) {
 			if err != nil {
 				return nil, fmt.Errorf("invalid esdtLastNonces: %w", err)
 			}
+		case "username":
+			acct.Username, err = p.processStringAsByteArray(kvp.Value)
+			if err != nil {
+				return nil, fmt.Errorf("invalid account username: %w", err)
+			}
 		case "storage":
 			storageMap, storageOk := kvp.Value.(*oj.OJsonMap)
 			if !storageOk {

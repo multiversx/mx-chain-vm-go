@@ -5,8 +5,8 @@
             "step": "scCall",
             "txId": "claim",
             "tx": {
-                "from": "''dns_owner_______________________",
-                "to": "''dns____________________________|0xb9",
+                "from": "address:dns_owner",
+                "to": "''dns____________________________|0x87",
                 "value": "0",
                 "function": "claim",
                 "arguments": [],
@@ -24,18 +24,18 @@
         {
             "step": "checkState",
             "accounts": {
-                "''dns_owner_______________________": {
+                "address:dns_owner": {
                     "nonce": "*",
                     "balance": "123,000",
                     "storage": {},
                     "code": "",
                     "asyncCallData": "str:dns claim"
                 },
-                "''dns____________________________|0xb9": {
+                "''dns____________________________|0x87": {
                     "nonce": "*",
                     "balance": "0",
                     "storage": "*",
-                    "code": "file:dns.wasm"
+                    "code": "file:../output/dns.wasm"
                 },
                 "+": ""
             }

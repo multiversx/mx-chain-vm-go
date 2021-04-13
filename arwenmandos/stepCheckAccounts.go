@@ -51,6 +51,11 @@ func (ae *ArwenTestExecutor) checkAccounts(checkAccounts *mj.CheckAccounts) erro
 				hex.EncodeToString(matchingAcct.Address), expectedAcct.Balance.Original, bigIntPretty(matchingAcct.Balance))
 		}
 
+		if !expectedAcct.Username.Check(matchingAcct.Username) {
+			return fmt.Errorf("bad account username. Account: %s. Want: %s. Have: \"%s\"",
+				hex.EncodeToString(matchingAcct.Address), expectedAcct.Username.Original, string(matchingAcct.Username))
+		}
+
 		if !expectedAcct.Code.Check(matchingAcct.Code) {
 			return fmt.Errorf("bad account code. Account: %s. Want: [%s]. Have: [%s]",
 				hex.EncodeToString(matchingAcct.Address), expectedAcct.Code.Original, string(matchingAcct.Code))

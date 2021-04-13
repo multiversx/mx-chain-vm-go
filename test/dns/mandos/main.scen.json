@@ -4,23 +4,23 @@
     "steps": [
         {
             "step": "externalSteps",
-            "path": "dns_init.steps.json"
+            "path": "01_dns_init.steps.json"
         },
         {
             "step": "externalSteps",
-            "path": "dns_init_check.steps.json"
+            "path": "02_dns_init_check.steps.json"
         },
         {
             "step": "externalSteps",
-            "path": "register_name_ok.steps.json"
+            "path": "03_register_name_ok.steps.json"
         },
         {
             "step": "externalSteps",
-            "path": "register_name_again.steps.json"
+            "path": "04_register_name_again.steps.json"
         },
         {
             "step": "externalSteps",
-            "path": "claim.steps.json"
+            "path": "05_claim.steps.json"
         }
     ]
 }

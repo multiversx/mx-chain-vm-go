@@ -10,6 +10,7 @@ type Account struct {
 	Comment         string
 	Nonce           JSONUint64
 	Balance         JSONBigInt
+	Username        JSONBytesFromString
 	Storage         []*StorageKeyValuePair
 	Code            JSONBytesFromString
 	Owner           JSONBytesFromString
@@ -31,6 +32,7 @@ type CheckAccount struct {
 	Comment       string
 	Nonce         JSONCheckUint64
 	Balance       JSONCheckBigInt
+	Username      JSONCheckBytes
 	IgnoreStorage bool
 	CheckStorage  []*StorageKeyValuePair
 	Code          JSONCheckBytes
