@@ -119,7 +119,7 @@ func U64ToLEB128(n uint64) (out []byte) {
 		if n == 0 {
 			more = false
 		} else {
-			b = b | 0x80
+			b |= 0x80
 		}
 		out = append(out, b)
 	}

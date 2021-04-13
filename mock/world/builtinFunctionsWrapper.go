@@ -98,7 +98,7 @@ func makeDNSAddresses(numAddresses uint8) map[string]struct{} {
 	dnsMap := make(map[string]struct{}, numAddresses)
 	dnsAddressBase := []byte("dns____________________________")
 	for i := uint8(0); i < numAddresses; i++ {
-		dnsAddress := string(append(dnsAddressBase, byte(i)))
+		dnsAddress := string(append(dnsAddressBase, i))
 		dnsMap[dnsAddress] = struct{}{}
 	}
 

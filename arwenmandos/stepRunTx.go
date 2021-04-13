@@ -79,10 +79,7 @@ func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmc
 				return nil, err
 			}
 		case mj.Transfer:
-			output, err = ae.simpleTransferOutput(tx)
-			if err != nil {
-				return nil, err
-			}
+			output = ae.simpleTransferOutput(tx)
 		case mj.ValidatorReward:
 			output, err = ae.validatorRewardOutput(tx)
 			if err != nil {
@@ -91,7 +88,6 @@ func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmc
 		default:
 			return nil, errors.New("unknown transaction type")
 		}
-
 	}
 
 	if output.ReturnCode == vmcommon.Ok {
@@ -116,7 +112,7 @@ func (ae *ArwenTestExecutor) senderHasEnoughBalance(tx *mj.Transaction) bool {
 	return sender.Balance.Cmp(tx.Value.Value) >= 0
 }
 
-func (ae *ArwenTestExecutor) simpleTransferOutput(tx *mj.Transaction) (*vmcommon.VMOutput, error) {
+func (ae *ArwenTestExecutor) simpleTransferOutput(tx *mj.Transaction) *vmcommon.VMOutput {
 	outputAccounts := make(map[string]*vmcommon.OutputAccount)
 	outputAccounts[string(tx.To.Value)] = &vmcommon.OutputAccount{
 		Address:      tx.To.Value,
@@ -133,7 +129,7 @@ func (ae *ArwenTestExecutor) simpleTransferOutput(tx *mj.Transaction) (*vmcommon
 		DeletedAccounts: make([][]byte, 0),
 		TouchedAccounts: make([][]byte, 0),
 		Logs:            make([]*vmcommon.LogEntry, 0),
-	}, nil
+	}
 }
 
 func (ae *ArwenTestExecutor) validatorRewardOutput(tx *mj.Transaction) (*vmcommon.VMOutput, error) {

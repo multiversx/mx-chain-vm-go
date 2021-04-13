@@ -24,6 +24,8 @@ func MakeTokenRolesKey(tokenName []byte) []byte {
 	return tokenRolesKey
 }
 
+// MakeLastNonceKey creates the storage key corresponding to the last nonce of
+// the given tokenName.
 func MakeLastNonceKey(tokenName []byte) []byte {
 	tokenNonceKey := append(ESDTNonceKeyPrefix, tokenName...)
 	return tokenNonceKey
@@ -34,15 +36,17 @@ func IsESDTKey(key []byte) bool {
 	return IsTokenKey(key) || IsRoleKey(key) || IsNonceKey(key)
 }
 
-// IsTokenKey returns true if the given storage key belongs to an ESDT token or not.
+// IsTokenKey returns true if the given storage key belongs to an ESDT token.
 func IsTokenKey(key []byte) bool {
 	return bytes.HasPrefix(key, ESDTTokenKeyPrefix)
 }
 
+// IsRoleKey returns true if the given storage key belongs to an ESDT role.
 func IsRoleKey(key []byte) bool {
 	return bytes.HasPrefix(key, ESDTRoleKeyPrefix)
 }
 
+// IsNonceKey returns true if the given storage key belongs to an ESDT nonce.
 func IsNonceKey(key []byte) bool {
 	return bytes.HasPrefix(key, ESDTNonceKeyPrefix)
 }

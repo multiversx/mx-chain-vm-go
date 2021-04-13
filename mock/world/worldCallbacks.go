@@ -12,6 +12,8 @@ import (
 )
 
 var _ vmcommon.BlockchainHook = (*MockWorld)(nil)
+
+// ErrBuiltinFuncWrapperNotInitialized means that the builtin function wrapper was used before initialization.
 var ErrBuiltinFuncWrapperNotInitialized = errors.New("builtin function not found or container not initialized")
 
 var zero = big.NewInt(0)

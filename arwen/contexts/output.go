@@ -469,7 +469,7 @@ func (context *outputContext) isBuiltInExecution() bool {
 }
 
 func (context *outputContext) checkGas(remainedFromForwarded uint64) error {
-	if context.host.IsArwenV2Enabled() == false {
+	if !context.host.IsArwenV2Enabled() {
 		return nil
 	}
 

@@ -1,6 +1,7 @@
 package contexts
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"math/big"
@@ -14,6 +15,7 @@ import (
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
+	"github.com/ElrondNetwork/elrond-go/core"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
 )
@@ -161,9 +163,13 @@ func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
 
 	arguments := [][]byte{[]byte("argument 1"), []byte("argument 2")}
 	vmInput := vmcommon.VMInput{
-		CallerAddr: []byte("caller"),
-		Arguments:  arguments,
-		CallValue:  big.NewInt(0),
+		CallerAddr:     []byte("caller"),
+		Arguments:      arguments,
+		CallValue:      big.NewInt(0),
+		ESDTValue:      big.NewInt(4242),
+		ESDTTokenName:  []byte("random_token"),
+		ESDTTokenType:  uint32(core.NonFungible),
+		ESDTTokenNonce: 94,
 	}
 	callInput := &vmcommon.ContractCallInput{
 		VMInput:       vmInput,
@@ -177,6 +183,12 @@ func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
 	require.Equal(t, "test function", runtimeContext.Function())
 	require.Equal(t, vmType, runtimeContext.GetVMType())
 	require.Equal(t, arguments, runtimeContext.Arguments())
+
+	runtimeInput := runtimeContext.GetVMInput()
+	require.Zero(t, big.NewInt(4242).Cmp(runtimeInput.ESDTValue))
+	require.True(t, bytes.Equal([]byte("random_token"), runtimeInput.ESDTTokenName))
+	require.Equal(t, uint32(core.NonFungible), runtimeInput.ESDTTokenType)
+	require.Equal(t, uint64(94), runtimeInput.ESDTTokenNonce)
 
 	vmInput2 := vmcommon.VMInput{
 		CallerAddr: []byte("caller2"),
