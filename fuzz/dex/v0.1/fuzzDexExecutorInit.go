@@ -156,40 +156,6 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 		return err
 	}
 
-	// set staking info
-	_, err = pfe.executeTxStep(fmt.Sprintf(`
-	{
-		"step": "scCall",
-		"txId": "set-staking-info",
-		"tx": {
-			"from": "''%s",
-			"to": "''%s",
-			"value": "0",
-			"function": "setStakingInfo",
-			"arguments": [
-				"''%s",
-				"str:%s"
-			],
-			"gasLimit": "10,000,000",
-			"gasPrice": "0"
-		},
-		"expect": {
-			"out": [],
-			"status": "",
-			"logs": [],
-			"gas": "*",
-			"refund": "*"
-		}
-	}`,
-		string(pfe.ownerAddress),
-		string(pfe.routerAddress),
-		string(pfe.stakingAddress),
-		pfe.wegldTokenId,
-	))
-	if err != nil {
-		return err
-	}
-
 	// setup pair code
 	fileBytes, err := ioutil.ReadFile("../../../test/dex/v0_1/output/elrond_dex_pair.wasm")
 	if err != nil {

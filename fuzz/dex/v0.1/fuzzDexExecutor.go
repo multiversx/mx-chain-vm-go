@@ -466,7 +466,9 @@ func (pfe *fuzzDexExecutor) setFeeOn() error {
 				"value": "0",
 				"function": "setFeeOn",
 				"arguments": [
-					"%s"
+					"%s",
+					"''%s",
+					"str:%s"
 				],
 				"gasLimit": "10,000,000",
 				"gasPrice": "0"
@@ -482,6 +484,8 @@ func (pfe *fuzzDexExecutor) setFeeOn() error {
 			string(pfe.ownerAddress),
 			string(pfe.routerAddress),
 			pairHexStr,
+			string(pfe.stakingAddress),
+			pfe.wegldTokenId,
 		))
 		if err != nil {
 			return err

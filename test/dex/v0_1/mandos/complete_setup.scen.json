@@ -19,10 +19,6 @@
 		},
 		{
 			"step": "externalSteps",
-			"path": "steps/set_staking_info.steps.json"
-		},
-		{
-			"step": "externalSteps",
 			"path": "steps/issue_lp_token.steps.json"
 		},
 		{

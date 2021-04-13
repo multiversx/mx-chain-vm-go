@@ -14,20 +14,14 @@
 			"path": "steps/construct_code.steps.json"
 		},
 		{
-			"step": "externalSteps",
-			"path": "steps/set_staking_info.steps.json"
-		},
-		{
 			"step": "scCall",
 			"txId": "pause",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:router_contract",
+				"to": "address:staking_contract",
 				"value": "0",
 				"function": "pause",
-				"arguments": [
-					"address:staking_contract"
-				],
+				"arguments": [],
 				"gasLimit": "100,000,000",
 				"gasPrice": "0"
 			},

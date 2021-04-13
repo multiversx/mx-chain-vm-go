@@ -1,0 +1,1293 @@
+{
+	"name": "",
+	"steps": [
+		{
+			"step": "setState",
+			"accounts": {
+				"address:owner": {
+					"nonce": "0",
+					"balance": "1,000,000,000,000,000,000,000,000,000,000",
+					"esdt": {
+						"str:WEGLD-abcdef": "5,000,000,000",
+						"str:MEX-abcdef": "5,000,000,000",
+						"str:BUSD-abcdef": "5,000,000,000"
+					},
+					"storage": {}
+				},
+				"address:user1": {
+					"nonce": "0",
+					"balance": "1,000,000,000,000,000,000,000,000,000,000",
+					"esdt": {
+						"str:WEGLD-abcdef": "5,000,000,000",
+						"str:MEX-abcdef": "5,000,000,000",
+						"str:BUSD-abcdef": "5,000,000,000"
+					},
+					"storage": {}
+				},
+				"address:user2": {
+					"nonce": "0",
+					"balance": "1,000,000,000,000,000,000,000,000,000,000",
+					"esdt": {
+						"str:WEGLD-abcdef": "5,000,000,000",
+						"str:MEX-abcdef": "5,000,000,000",
+						"str:BUSD-abcdef": "5,000,000,000"
+					},
+					"storage": {}
+				},
+				"address:user_with_lp": {
+					"nonce": "0",
+					"balance": "1,000,000,000,000,000,000,000,000,000,000",
+					"esdt": {
+						"str:LPWEBU-abcdef": "5,000,000,000",
+						"str:LPWEME-abcdef": "5,000,000,000",
+						"str:LPMEBU-abcdef": "5,000,000,000"
+					},
+					"storage": {}
+				}
+			}
+		},
+		{
+			"step": "checkState",
+			"accounts": {
+				"address:owner": {
+					"nonce": "0",
+					"balance": "1,000,000,000,000,000,000,000,000,000,000",
+					"esdt": {
+						"str:WEGLD-abcdef": "5,000,000,000",
+						"str:MEX-abcdef": "5,000,000,000",
+						"str:BUSD-abcdef": "5,000,000,000"
+					}
+				},
+				"address:user1": {
+					"nonce": "0",
+					"balance": "1,000,000,000,000,000,000,000,000,000,000",
+					"esdt": {
+						"str:WEGLD-abcdef": "5,000,000,000",
+						"str:MEX-abcdef": "5,000,000,000",
+						"str:BUSD-abcdef": "5,000,000,000"
+					}
+				},
+				"address:user2": {
+					"nonce": "0",
+					"balance": "1,000,000,000,000,000,000,000,000,000,000",
+					"esdt": {
+						"str:WEGLD-abcdef": "5,000,000,000",
+						"str:MEX-abcdef": "5,000,000,000",
+						"str:BUSD-abcdef": "5,000,000,000"
+					}
+				},
+				"address:user_with_lp": {
+					"nonce": "0",
+					"balance": "1,000,000,000,000,000,000,000,000,000,000",
+					"esdt": {
+						"str:LPWEBU-abcdef": "5,000,000,000",
+						"str:LPWEME-abcdef": "5,000,000,000",
+						"str:LPMEBU-abcdef": "5,000,000,000"
+					}
+				}
+			}
+		},
+		{
+			"step": "setState",
+			"newAddresses": [
+				{
+					"creatorAddress": "address:owner",
+					"creatorNonce": "0",
+					"newAddress": "address:router_contract"
+				},
+				{
+					"creatorAddress": "address:owner",
+					"creatorNonce": "1",
+					"newAddress": "address:wegld_staking_contract"
+				},
+				{
+					"creatorAddress": "address:owner",
+					"creatorNonce": "2",
+					"newAddress": "address:mex_staking_contract"
+				}
+			]
+		},
+		{
+			"step": "scDeploy",
+			"txId": "deploy-router",
+			"tx": {
+				"from": "address:owner",
+				"value": "0",
+				"contractCode": "file:../output/elrond_dex_router.wasm",
+				"arguments": [
+				],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [],
+				"status": "",
+				"logs": [],
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "scDeploy",
+			"txId": "deploy-staking",
+			"tx": {
+				"from": "address:owner",
+				"value": "0",
+				"contractCode": "file:../output/elrond_dex_staking.wasm",
+				"arguments": [
+					"str:WEGLD-abcdef",
+					"address:router_contract"
+				],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [],
+				"status": "",
+				"logs": [],
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "scDeploy",
+			"txId": "deploy-staking",
+			"tx": {
+				"from": "address:owner",
+				"value": "0",
+				"contractCode": "file:../output/elrond_dex_staking.wasm",
+				"arguments": [
+					"str:MEX-abcdef",
+					"address:router_contract"
+				],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [],
+				"status": "",
+				"logs": [],
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "setState",
+			"newAddresses": [
+				{
+					"creatorAddress": "address:router_contract",
+					"creatorNonce": "0",
+					"newAddress": "address:webu_pair_contract"
+				},
+				{
+					"creatorAddress": "address:router_contract",
+					"creatorNonce": "1",
+					"newAddress": "address:weme_pair_contract"
+				},
+				{
+					"creatorAddress": "address:router_contract",
+					"creatorNonce": "2",
+					"newAddress": "address:mebu_pair_contract"
+				}
+			]
+		},
+		{
+			"step": "externalSteps",
+			"path": "steps/construct_code.steps.json"
+		},
+		{
+			"step": "scCall",
+			"txId": "create-pair",
+			"tx": {
+				"from": "address:owner",
+				"to": "address:router_contract",
+				"value": "0",
+				"function": "createPair",
+				"arguments": [
+					"str:WEGLD-abcdef",
+					"str:BUSD-abcdef"
+				],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [
+					"address:webu_pair_contract"
+				],
+				"status": "0",
+				"message": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "scCall",
+			"txId": "get-pair",
+			"tx": {
+				"from": "address:owner",
+				"to": "address:router_contract",
+				"value": "0",
+				"function": "getPair",
+				"arguments": [
+					"str:WEGLD-abcdef",
+					"str:BUSD-abcdef"
+				],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [
+					"address:webu_pair_contract"
+				],
+				"status": "0",
+				"message": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "scCall",
+			"txId": "create-pair",
+			"tx": {
+				"from": "address:owner",
+				"to": "address:router_contract",
+				"value": "0",
+				"function": "createPair",
+				"arguments": [
+					"str:WEGLD-abcdef",
+					"str:MEX-abcdef"
+				],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [
+					"address:weme_pair_contract"
+				],
+				"status": "0",
+				"message": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "scCall",
+			"txId": "get-pair",
+			"tx": {
+				"from": "address:owner",
+				"to": "address:router_contract",
+				"value": "0",
+				"function": "getPair",
+				"arguments": [
+					"str:WEGLD-abcdef",
+					"str:MEX-abcdef"
+				],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [
+					"address:weme_pair_contract"
+				],
+				"status": "0",
+				"message": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "scCall",
+			"txId": "create-pair",
+			"tx": {
+				"from": "address:owner",
+				"to": "address:router_contract",
+				"value": "0",
+				"function": "createPair",
+				"arguments": [
+					"str:MEX-abcdef",
+					"str:BUSD-abcdef"
+				],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [
+					"address:mebu_pair_contract"
+				],
+				"status": "0",
+				"message": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "scCall",
+			"txId": "get-pair",
+			"tx": {
+				"from": "address:owner",
+				"to": "address:router_contract",
+				"value": "0",
+				"function": "getPair",
+				"arguments": [
+					"str:MEX-abcdef",
+					"str:BUSD-abcdef"
+				],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [
+					"address:mebu_pair_contract"
+				],
+				"status": "0",
+				"message": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "setState",
+			"accounts": {
+				"address:webu_pair_contract": {
+					"nonce": "0",
+					"balance": "0",
+					"esdtRoles": {
+						"str:LPWEBU-abcdef": [
+							"ESDTRoleLocalMint",
+							"ESDTRoleLocalBurn"
+						]
+					},
+					"storage": {
+						"str:first_token_id": "str:WEGLD-abcdef",
+						"str:second_token_id": "str:BUSD-abcdef",
+						"str:state" : "1",
+						"str:lpTokenIdentifier": "str:LPWEBU-abcdef",
+						"str:router_address": "address:router_contract",
+						"str:total_fee_precent": "3",
+						"str:special_fee_precent": "1"
+					},
+					"code": "file:../output/elrond_dex_pair.wasm"
+				},
+				"address:weme_pair_contract": {
+					"nonce": "0",
+					"balance": "0",
+					"esdtRoles": {
+						"str:LPWEME-abcdef": [
+							"ESDTRoleLocalMint",
+							"ESDTRoleLocalBurn"
+						]
+					},
+					"storage": {
+						"str:first_token_id": "str:WEGLD-abcdef",
+						"str:second_token_id": "str:MEX-abcdef",
+						"str:state" : "1",
+						"str:lpTokenIdentifier": "str:LPWEME-abcdef",
+						"str:router_address": "address:router_contract",
+						"str:total_fee_precent": "3",
+						"str:special_fee_precent": "1"
+					},
+					"code": "file:../output/elrond_dex_pair.wasm"
+				},
+				"address:mebu_pair_contract": {
+					"nonce": "0",
+					"balance": "0",
+					"esdtRoles": {
+						"str:LPMEBU-abcdef": [
+							"ESDTRoleLocalMint",
+							"ESDTRoleLocalBurn"
+						]
+					},
+					"storage": {
+						"str:first_token_id": "str:MEX-abcdef",
+						"str:second_token_id": "str:BUSD-abcdef",
+						"str:state" : "1",
+						"str:lpTokenIdentifier": "str:LPMEBU-abcdef",
+						"str:router_address": "address:router_contract",
+						"str:total_fee_precent": "3",
+						"str:special_fee_precent": "1"
+					},
+					"code": "file:../output/elrond_dex_pair.wasm"
+				},
+				"address:wegld_staking_contract": {
+					"nonce": "0",
+					"balance": "0",
+					"esdtRoles": {
+						"str:STWEGLD-abcdef": [
+							"ESDTRoleNFTCreate",
+							"ESDTRoleNFTAddQuantity",
+							"ESDTRoleNFTBurn"
+						],
+						"str:USTSTWEGLD-abcdef": [
+							"ESDTRoleNFTCreate",
+							"ESDTRoleNFTAddQuantity",
+							"ESDTRoleNFTBurn"
+						]
+					},
+					"storage": {
+						"str:wegld_token_id": "str:WEGLD-abcdef",
+						"str:stake_token_id": "str:STWEGLD-abcdef",
+						"str:unstake_token_id": "str:USTSTWEGLD-abcdef",
+						"str:router_address": "address:router_contract",
+						"str:state": "1"
+					},
+					"code": "file:../output/elrond_dex_staking.wasm"
+				},
+				"address:mex_staking_contract": {
+					"nonce": "0",
+					"balance": "0",
+					"esdtRoles": {
+						"str:STMEX-abcdef": [
+							"ESDTRoleNFTCreate",
+							"ESDTRoleNFTAddQuantity",
+							"ESDTRoleNFTBurn"
+						],
+						"str:USTMEX-abcdef": [
+							"ESDTRoleNFTCreate",
+							"ESDTRoleNFTAddQuantity",
+							"ESDTRoleNFTBurn"
+						]
+					},
+					"storage": {
+						"str:wegld_token_id": "str:WEGLD-abcdef",
+						"str:stake_token_id": "str:STMEX-abcdef",
+						"str:unstake_token_id": "str:USTMEX-abcdef",
+						"str:router_address": "address:router_contract",
+						"str:state": "1"
+					},
+					"code": "file:../output/elrond_dex_staking.wasm"
+				}
+			}
+		},
+		{
+			"step": "scCall",
+			"txId": "set-fee-on",
+			"tx": {
+				"from": "address:owner",
+				"to": "address:router_contract",
+				"value": "0",
+				"function": "setFeeOn",
+				"arguments": [
+					"address:webu_pair_contract",
+					"address:wegld_staking_contract",
+					"str:WEGLD-abcdef"
+				],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": ["0x4c50574542552d616263646566"],
+				"status": "0",
+				"message": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "scCall",
+			"txId": "set-fee-on",
+			"tx": {
+				"from": "address:owner",
+				"to": "address:router_contract",
+				"value": "0",
+				"function": "setFeeOn",
+				"arguments": [
+					"address:webu_pair_contract",
+					"address:mex_staking_contract",
+					"str:MEX-abcdef"
+				],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": ["0x4c50574542552d616263646566"],
+				"status": "0",
+				"message": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "scCall",
+			"txId": "set-fee-on",
+			"tx": {
+				"from": "address:owner",
+				"to": "address:router_contract",
+				"value": "0",
+				"function": "setFeeOn",
+				"arguments": [
+					"address:weme_pair_contract",
+					"address:wegld_staking_contract",
+					"str:WEGLD-abcdef"
+				],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": ["0x4c5057454d452d616263646566"],
+				"status": "0",
+				"message": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "scCall",
+			"txId": "set-fee-on",
+			"tx": {
+				"from": "address:owner",
+				"to": "address:router_contract",
+				"value": "0",
+				"function": "setFeeOn",
+				"arguments": [
+					"address:weme_pair_contract",
+					"address:mex_staking_contract",
+					"str:MEX-abcdef"
+				],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": ["0x4c5057454d452d616263646566"],
+				"status": "0",
+				"message": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "scCall",
+			"txId": "set-fee-on",
+			"tx": {
+				"from": "address:owner",
+				"to": "address:router_contract",
+				"value": "0",
+				"function": "setFeeOn",
+				"arguments": [
+					"address:mebu_pair_contract",
+					"address:wegld_staking_contract",
+					"str:WEGLD-abcdef"
+				],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": ["0x4c504d4542552d616263646566"],
+				"status": "0",
+				"message": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "scCall",
+			"txId": "set-fee-on",
+			"tx": {
+				"from": "address:owner",
+				"to": "address:router_contract",
+				"value": "0",
+				"function": "setFeeOn",
+				"arguments": [
+					"address:mebu_pair_contract",
+					"address:mex_staking_contract",
+					"str:MEX-abcdef"
+				],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": ["0x4c504d4542552d616263646566"],
+				"status": "0",
+				"message": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "scCall",
+			"txId": "acceptEsdtPayment",
+			"tx": {
+				"from": "address:user1",
+				"to": "address:webu_pair_contract",
+				"value": "0",
+				"esdt": {
+					"tokenIdentifier": "str:WEGLD-abcdef",
+					"value": "2,000,000,000"
+				},
+				"function": "acceptEsdtPayment",
+				"arguments": [],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [],
+				"status": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "scCall",
+			"txId": "acceptEsdtPayment",
+			"tx": {
+				"from": "address:user1",
+				"to": "address:webu_pair_contract",
+				"value": "0",
+				"esdt": {
+					"tokenIdentifier": "str:BUSD-abcdef",
+					"value": "2,000,000,000"
+				},
+				"function": "acceptEsdtPayment",
+				"arguments": [],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [],
+				"status": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "scCall",
+			"txId": "add-liquidity",
+			"tx": {
+				"from": "address:user1",
+				"to": "address:webu_pair_contract",
+				"value": "0",
+				"function": "addLiquidity",
+				"arguments": [
+					"2,000,000,000",
+					"2,000,000,000",
+					"1,000,000,000",
+					"1,000,000,000"
+				],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [],
+				"status": "0",
+				"message": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "scCall",
+			"txId": "acceptEsdtPayment",
+			"tx": {
+				"from": "address:user1",
+				"to": "address:weme_pair_contract",
+				"value": "0",
+				"esdt": {
+					"tokenIdentifier": "str:WEGLD-abcdef",
+					"value": "2,000,000,000"
+				},
+				"function": "acceptEsdtPayment",
+				"arguments": [],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [],
+				"status": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "scCall",
+			"txId": "acceptEsdtPayment",
+			"tx": {
+				"from": "address:user1",
+				"to": "address:weme_pair_contract",
+				"value": "0",
+				"esdt": {
+					"tokenIdentifier": "str:MEX-abcdef",
+					"value": "2,000,000,000"
+				},
+				"function": "acceptEsdtPayment",
+				"arguments": [],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [],
+				"status": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "scCall",
+			"txId": "add-liquidity",
+			"tx": {
+				"from": "address:user1",
+				"to": "address:weme_pair_contract",
+				"value": "0",
+				"function": "addLiquidity",
+				"arguments": [
+					"2,000,000,000",
+					"2,000,000,000",
+					"1,000,000,000",
+					"1,000,000,000"
+				],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [],
+				"status": "0",
+				"message": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "scCall",
+			"txId": "acceptEsdtPayment",
+			"tx": {
+				"from": "address:user1",
+				"to": "address:mebu_pair_contract",
+				"value": "0",
+				"esdt": {
+					"tokenIdentifier": "str:MEX-abcdef",
+					"value": "2,000,000,000"
+				},
+				"function": "acceptEsdtPayment",
+				"arguments": [],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [],
+				"status": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "scCall",
+			"txId": "acceptEsdtPayment",
+			"tx": {
+				"from": "address:user1",
+				"to": "address:mebu_pair_contract",
+				"value": "0",
+				"esdt": {
+					"tokenIdentifier": "str:BUSD-abcdef",
+					"value": "2,000,000,000"
+				},
+				"function": "acceptEsdtPayment",
+				"arguments": [],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [],
+				"status": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "scCall",
+			"txId": "add-liquidity",
+			"tx": {
+				"from": "address:user1",
+				"to": "address:mebu_pair_contract",
+				"value": "0",
+				"function": "addLiquidity",
+				"arguments": [
+					"2,000,000,000",
+					"2,000,000,000",
+					"1,000,000,000",
+					"1,000,000,000"
+				],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [],
+				"status": "0",
+				"message": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "scCall",
+			"txId": "swap-fixed-input",
+			"tx": {
+				"from": "address:user2",
+				"to": "address:weme_pair_contract",
+				"value": "0",
+				"function": "swapTokensFixedInput",
+				"esdt": {
+					"tokenIdentifier": "str:WEGLD-abcdef",
+					"value": "100,000"
+				},
+				"arguments": [
+					"str:MEX-abcdef",
+					"50,000"
+				],
+				"gasLimit": "14,000,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [],
+				"status": "0",
+				"message": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "checkState",
+			"accounts": {
+				"address:wegld_staking_contract": {
+					"nonce": "0",
+					"balance": "",
+					"esdt": {
+						"str:WEGLD-abcdef": "50"
+					},
+					"storage": {
+						"0x454c524f4e44726f6c656573647455535453545745474c442d616263646566": "0x0a1145534454526f6c654e46544372656174650a1645534454526f6c654e46544164645175616e746974790a0f45534454526f6c654e46544275726e",
+						"0x706169725f666f725f6c705f746f6b656e0000000d4c50574542552d616263646566" : "0x776562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x706169725f666f725f6c705f746f6b656e0000000d4c504d4542552d616263646566": "0x6d6562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x6c705f746f6b656e5f666f725f706169726d6562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f": "0x4c504d4542552d616263646566",
+						"0x7765676c645f746f6b656e5f6964": "0x5745474c442d616263646566",
+						"0x726f757465725f61646472657373": "0x726f757465725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x454c524f4e44726f6c656573647453545745474c442d616263646566": "0x0a1145534454526f6c654e46544372656174650a1645534454526f6c654e46544164645175616e746974790a0f45534454526f6c654e46544275726e",
+						"0x7374616b655f746f6b656e5f6964": "0x53545745474c442d616263646566",
+						"0x756e7374616b655f746f6b656e5f6964": "0x55535453545745474c442d616263646566",
+						"0x6c705f746f6b656e5f666f725f70616972776562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f": "0x4c50574542552d616263646566",
+						"0x6c705f746f6b656e5f666f725f7061697277656d655f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f": "0x4c5057454d452d616263646566",
+						"0x706169725f666f725f6c705f746f6b656e0000000d4c5057454d452d616263646566": "0x77656d655f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x7374617465": "0x01"
+					},
+					"code": "file:../output/elrond_dex_staking.wasm"
+				},
+				"address:mex_staking_contract": {
+					"nonce": "0",
+					"balance": "",
+					"esdt": {
+						"str:MEX-abcdef": "49"
+					},
+					"storage": {
+						"0x7374616b655f746f6b656e5f6964": "0x53544d45582d616263646566",
+						"0x756e7374616b655f746f6b656e5f6964": "0x5553544d45582d616263646566",
+						"0x454c524f4e44726f6c65657364745553544d45582d616263646566": "0x0a1145534454526f6c654e46544372656174650a1645534454526f6c654e46544164645175616e746974790a0f45534454526f6c654e46544275726e",
+						"0x454c524f4e44726f6c656573647453544d45582d616263646566": "0x0a1145534454526f6c654e46544372656174650a1645534454526f6c654e46544164645175616e746974790a0f45534454526f6c654e46544275726e",
+						"0x706169725f666f725f6c705f746f6b656e0000000d4c504d4542552d616263646566": "0x6d6562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x6c705f746f6b656e5f666f725f7061697277656d655f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f": "0x4c5057454d452d616263646566",
+						"0x6c705f746f6b656e5f666f725f706169726d6562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f": "0x4c504d4542552d616263646566",
+						"0x6c705f746f6b656e5f666f725f70616972776562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f": "0x4c50574542552d616263646566",
+						"0x706169725f666f725f6c705f746f6b656e0000000d4c5057454d452d616263646566": "0x77656d655f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x726f757465725f61646472657373": "0x726f757465725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x7374617465": "0x01",
+						"0x7765676c645f746f6b656e5f6964": "0x5745474c442d616263646566",
+						"0x706169725f666f725f6c705f746f6b656e0000000d4c50574542552d616263646566": "0x776562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f"
+					},
+					"code": "file:../output/elrond_dex_staking.wasm"
+				},
+				"+": ""
+			}
+		},
+		{
+			"step": "scCall",
+			"txId": "swap-fixed-input",
+			"tx": {
+				"from": "address:user2",
+				"to": "address:weme_pair_contract",
+				"value": "0",
+				"function": "swapTokensFixedInput",
+				"esdt": {
+					"tokenIdentifier": "str:MEX-abcdef",
+					"value": "100,000"
+				},
+				"arguments": [
+					"str:WEGLD-abcdef",
+					"50,000"
+				],
+				"gasLimit": "14,000,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [],
+				"status": "0",
+				"message": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "checkState",
+			"accounts": {
+				"address:wegld_staking_contract": {
+					"nonce": "0",
+					"balance": "",
+					"esdt": {
+						"str:WEGLD-abcdef": "100"
+					},
+					"storage": {
+						"0x454c524f4e44726f6c656573647455535453545745474c442d616263646566": "0x0a1145534454526f6c654e46544372656174650a1645534454526f6c654e46544164645175616e746974790a0f45534454526f6c654e46544275726e",
+						"0x706169725f666f725f6c705f746f6b656e0000000d4c50574542552d616263646566" : "0x776562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x706169725f666f725f6c705f746f6b656e0000000d4c504d4542552d616263646566": "0x6d6562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x6c705f746f6b656e5f666f725f706169726d6562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f": "0x4c504d4542552d616263646566",
+						"0x7765676c645f746f6b656e5f6964": "0x5745474c442d616263646566",
+						"0x726f757465725f61646472657373": "0x726f757465725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x454c524f4e44726f6c656573647453545745474c442d616263646566": "0x0a1145534454526f6c654e46544372656174650a1645534454526f6c654e46544164645175616e746974790a0f45534454526f6c654e46544275726e",
+						"0x7374616b655f746f6b656e5f6964": "0x53545745474c442d616263646566",
+						"0x756e7374616b655f746f6b656e5f6964": "0x55535453545745474c442d616263646566",
+						"0x6c705f746f6b656e5f666f725f70616972776562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f": "0x4c50574542552d616263646566",
+						"0x6c705f746f6b656e5f666f725f7061697277656d655f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f": "0x4c5057454d452d616263646566",
+						"0x706169725f666f725f6c705f746f6b656e0000000d4c5057454d452d616263646566": "0x77656d655f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x7374617465": "0x01"
+					},
+					"code": "file:../output/elrond_dex_staking.wasm"
+				},
+				"address:mex_staking_contract": {
+					"nonce": "0",
+					"balance": "",
+					"esdt": {
+						"str:MEX-abcdef": "99"
+					},
+					"storage": {
+						"0x7374616b655f746f6b656e5f6964": "0x53544d45582d616263646566",
+						"0x756e7374616b655f746f6b656e5f6964": "0x5553544d45582d616263646566",
+						"0x454c524f4e44726f6c65657364745553544d45582d616263646566": "0x0a1145534454526f6c654e46544372656174650a1645534454526f6c654e46544164645175616e746974790a0f45534454526f6c654e46544275726e",
+						"0x454c524f4e44726f6c656573647453544d45582d616263646566": "0x0a1145534454526f6c654e46544372656174650a1645534454526f6c654e46544164645175616e746974790a0f45534454526f6c654e46544275726e",
+						"0x706169725f666f725f6c705f746f6b656e0000000d4c504d4542552d616263646566": "0x6d6562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x6c705f746f6b656e5f666f725f7061697277656d655f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f": "0x4c5057454d452d616263646566",
+						"0x6c705f746f6b656e5f666f725f706169726d6562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f": "0x4c504d4542552d616263646566",
+						"0x6c705f746f6b656e5f666f725f70616972776562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f": "0x4c50574542552d616263646566",
+						"0x706169725f666f725f6c705f746f6b656e0000000d4c5057454d452d616263646566": "0x77656d655f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x726f757465725f61646472657373": "0x726f757465725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x7374617465": "0x01",
+						"0x7765676c645f746f6b656e5f6964": "0x5745474c442d616263646566",
+						"0x706169725f666f725f6c705f746f6b656e0000000d4c50574542552d616263646566": "0x776562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f"
+					},
+					"code": "file:../output/elrond_dex_staking.wasm"
+				},
+				"+": ""
+			}
+		},
+		{
+			"step": "scCall",
+			"txId": "swap-fixed-input",
+			"tx": {
+				"from": "address:user2",
+				"to": "address:webu_pair_contract",
+				"value": "0",
+				"function": "swapTokensFixedInput",
+				"esdt": {
+					"tokenIdentifier": "str:WEGLD-abcdef",
+					"value": "100,000"
+				},
+				"arguments": [
+					"str:BUSD-abcdef",
+					"50,000"
+				],
+				"gasLimit": "300,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": ["0x77656d655f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f"],
+				"status": "0",
+				"message": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "checkState",
+			"accounts": {
+				"address:wegld_staking_contract": {
+					"nonce": "0",
+					"balance": "",
+					"esdt": {
+						"str:WEGLD-abcdef": "150"
+					},
+					"storage": {
+						"0x454c524f4e44726f6c656573647455535453545745474c442d616263646566": "0x0a1145534454526f6c654e46544372656174650a1645534454526f6c654e46544164645175616e746974790a0f45534454526f6c654e46544275726e",
+						"0x706169725f666f725f6c705f746f6b656e0000000d4c50574542552d616263646566" : "0x776562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x706169725f666f725f6c705f746f6b656e0000000d4c504d4542552d616263646566": "0x6d6562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x6c705f746f6b656e5f666f725f706169726d6562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f": "0x4c504d4542552d616263646566",
+						"0x7765676c645f746f6b656e5f6964": "0x5745474c442d616263646566",
+						"0x726f757465725f61646472657373": "0x726f757465725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x454c524f4e44726f6c656573647453545745474c442d616263646566": "0x0a1145534454526f6c654e46544372656174650a1645534454526f6c654e46544164645175616e746974790a0f45534454526f6c654e46544275726e",
+						"0x7374616b655f746f6b656e5f6964": "0x53545745474c442d616263646566",
+						"0x756e7374616b655f746f6b656e5f6964": "0x55535453545745474c442d616263646566",
+						"0x6c705f746f6b656e5f666f725f70616972776562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f": "0x4c50574542552d616263646566",
+						"0x6c705f746f6b656e5f666f725f7061697277656d655f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f": "0x4c5057454d452d616263646566",
+						"0x706169725f666f725f6c705f746f6b656e0000000d4c5057454d452d616263646566": "0x77656d655f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x7374617465": "0x01"
+					},
+					"code": "file:../output/elrond_dex_staking.wasm"
+				},
+				"address:mex_staking_contract": {
+					"nonce": "0",
+					"balance": "",
+					"esdt": {
+						"str:MEX-abcdef": "148"
+					},
+					"storage": {
+						"0x7374616b655f746f6b656e5f6964": "0x53544d45582d616263646566",
+						"0x756e7374616b655f746f6b656e5f6964": "0x5553544d45582d616263646566",
+						"0x454c524f4e44726f6c65657364745553544d45582d616263646566": "0x0a1145534454526f6c654e46544372656174650a1645534454526f6c654e46544164645175616e746974790a0f45534454526f6c654e46544275726e",
+						"0x454c524f4e44726f6c656573647453544d45582d616263646566": "0x0a1145534454526f6c654e46544372656174650a1645534454526f6c654e46544164645175616e746974790a0f45534454526f6c654e46544275726e",
+						"0x706169725f666f725f6c705f746f6b656e0000000d4c504d4542552d616263646566": "0x6d6562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x6c705f746f6b656e5f666f725f7061697277656d655f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f": "0x4c5057454d452d616263646566",
+						"0x6c705f746f6b656e5f666f725f706169726d6562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f": "0x4c504d4542552d616263646566",
+						"0x6c705f746f6b656e5f666f725f70616972776562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f": "0x4c50574542552d616263646566",
+						"0x706169725f666f725f6c705f746f6b656e0000000d4c5057454d452d616263646566": "0x77656d655f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x726f757465725f61646472657373": "0x726f757465725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x7374617465": "0x01",
+						"0x7765676c645f746f6b656e5f6964": "0x5745474c442d616263646566",
+						"0x706169725f666f725f6c705f746f6b656e0000000d4c50574542552d616263646566": "0x776562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f"
+					},
+					"code": "file:../output/elrond_dex_staking.wasm"
+				},
+				"+": ""
+			}
+		},
+		{
+			"step": "scCall",
+			"txId": "swap-fixed-input",
+			"tx": {
+				"from": "address:user2",
+				"to": "address:webu_pair_contract",
+				"value": "0",
+				"function": "swapTokensFixedInput",
+				"esdt": {
+					"tokenIdentifier": "str:BUSD-abcdef",
+					"value": "100,000"
+				},
+				"arguments": [
+					"str:WEGLD-abcdef",
+					"50,000"
+				],
+				"gasLimit": "300,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": ["0x6d6562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f"],
+				"status": "0",
+				"message": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "checkState",
+			"accounts": {
+				"address:wegld_staking_contract": {
+					"nonce": "0",
+					"balance": "",
+					"esdt": {
+						"str:WEGLD-abcdef": "199"
+					},
+					"storage": {
+						"0x454c524f4e44726f6c656573647455535453545745474c442d616263646566": "0x0a1145534454526f6c654e46544372656174650a1645534454526f6c654e46544164645175616e746974790a0f45534454526f6c654e46544275726e",
+						"0x706169725f666f725f6c705f746f6b656e0000000d4c50574542552d616263646566": "0x776562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x706169725f666f725f6c705f746f6b656e0000000d4c504d4542552d616263646566": "0x6d6562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x6c705f746f6b656e5f666f725f706169726d6562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f": "0x4c504d4542552d616263646566",
+						"0x7765676c645f746f6b656e5f6964": "0x5745474c442d616263646566",
+						"0x726f757465725f61646472657373": "0x726f757465725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x454c524f4e44726f6c656573647453545745474c442d616263646566": "0x0a1145534454526f6c654e46544372656174650a1645534454526f6c654e46544164645175616e746974790a0f45534454526f6c654e46544275726e",
+						"0x7374616b655f746f6b656e5f6964": "0x53545745474c442d616263646566",
+						"0x756e7374616b655f746f6b656e5f6964": "0x55535453545745474c442d616263646566",
+						"0x6c705f746f6b656e5f666f725f70616972776562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f": "0x4c50574542552d616263646566",
+						"0x6c705f746f6b656e5f666f725f7061697277656d655f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f": "0x4c5057454d452d616263646566",
+						"0x706169725f666f725f6c705f746f6b656e0000000d4c5057454d452d616263646566": "0x77656d655f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x7374617465": "0x01"
+					},
+					"code": "file:../output/elrond_dex_staking.wasm"
+				},
+				"address:mex_staking_contract": {
+					"nonce": "0",
+					"balance": "",
+					"esdt": {
+						"str:MEX-abcdef": "197"
+					},
+					"storage": {
+						"0x7374616b655f746f6b656e5f6964": "0x53544d45582d616263646566",
+						"0x756e7374616b655f746f6b656e5f6964": "0x5553544d45582d616263646566",
+						"0x454c524f4e44726f6c65657364745553544d45582d616263646566": "0x0a1145534454526f6c654e46544372656174650a1645534454526f6c654e46544164645175616e746974790a0f45534454526f6c654e46544275726e",
+						"0x454c524f4e44726f6c656573647453544d45582d616263646566": "0x0a1145534454526f6c654e46544372656174650a1645534454526f6c654e46544164645175616e746974790a0f45534454526f6c654e46544275726e",
+						"0x706169725f666f725f6c705f746f6b656e0000000d4c504d4542552d616263646566": "0x6d6562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x6c705f746f6b656e5f666f725f7061697277656d655f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f": "0x4c5057454d452d616263646566",
+						"0x6c705f746f6b656e5f666f725f706169726d6562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f": "0x4c504d4542552d616263646566",
+						"0x6c705f746f6b656e5f666f725f70616972776562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f": "0x4c50574542552d616263646566",
+						"0x706169725f666f725f6c705f746f6b656e0000000d4c5057454d452d616263646566": "0x77656d655f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x726f757465725f61646472657373": "0x726f757465725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x7374617465": "0x01",
+						"0x7765676c645f746f6b656e5f6964": "0x5745474c442d616263646566",
+						"0x706169725f666f725f6c705f746f6b656e0000000d4c50574542552d616263646566": "0x776562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f"
+					},
+					"code": "file:../output/elrond_dex_staking.wasm"
+				},
+				"+": ""
+			}
+		},
+		{
+			"step": "scCall",
+			"txId": "swap-fixed-input",
+			"tx": {
+				"from": "address:user2",
+				"to": "address:mebu_pair_contract",
+				"value": "0",
+				"function": "swapTokensFixedInput",
+				"esdt": {
+					"tokenIdentifier": "str:MEX-abcdef",
+					"value": "100,000"
+				},
+				"arguments": [
+					"str:BUSD-abcdef",
+					"50,000"
+				],
+				"gasLimit": "14,000,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": ["0x77656d655f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f"],
+				"status": "0",
+				"message": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "checkState",
+			"accounts": {
+				"address:wegld_staking_contract": {
+					"nonce": "0",
+					"balance": "",
+					"esdt": {
+						"str:WEGLD-abcdef": "249"
+					},
+					"storage": {
+						"0x454c524f4e44726f6c656573647455535453545745474c442d616263646566": "0x0a1145534454526f6c654e46544372656174650a1645534454526f6c654e46544164645175616e746974790a0f45534454526f6c654e46544275726e",
+						"0x706169725f666f725f6c705f746f6b656e0000000d4c50574542552d616263646566" : "0x776562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x706169725f666f725f6c705f746f6b656e0000000d4c504d4542552d616263646566": "0x6d6562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x6c705f746f6b656e5f666f725f706169726d6562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f": "0x4c504d4542552d616263646566",
+						"0x7765676c645f746f6b656e5f6964": "0x5745474c442d616263646566",
+						"0x726f757465725f61646472657373": "0x726f757465725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x454c524f4e44726f6c656573647453545745474c442d616263646566": "0x0a1145534454526f6c654e46544372656174650a1645534454526f6c654e46544164645175616e746974790a0f45534454526f6c654e46544275726e",
+						"0x7374616b655f746f6b656e5f6964": "0x53545745474c442d616263646566",
+						"0x756e7374616b655f746f6b656e5f6964": "0x55535453545745474c442d616263646566",
+						"0x6c705f746f6b656e5f666f725f70616972776562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f": "0x4c50574542552d616263646566",
+						"0x6c705f746f6b656e5f666f725f7061697277656d655f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f": "0x4c5057454d452d616263646566",
+						"0x706169725f666f725f6c705f746f6b656e0000000d4c5057454d452d616263646566": "0x77656d655f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x7374617465": "0x01"
+					},
+					"code": "file:../output/elrond_dex_staking.wasm"
+				},
+				"address:mex_staking_contract": {
+					"nonce": "0",
+					"balance": "",
+					"esdt": {
+						"str:MEX-abcdef": "247"
+					},
+					"storage": {
+						"0x7374616b655f746f6b656e5f6964": "0x53544d45582d616263646566",
+						"0x756e7374616b655f746f6b656e5f6964": "0x5553544d45582d616263646566",
+						"0x454c524f4e44726f6c65657364745553544d45582d616263646566": "0x0a1145534454526f6c654e46544372656174650a1645534454526f6c654e46544164645175616e746974790a0f45534454526f6c654e46544275726e",
+						"0x454c524f4e44726f6c656573647453544d45582d616263646566": "0x0a1145534454526f6c654e46544372656174650a1645534454526f6c654e46544164645175616e746974790a0f45534454526f6c654e46544275726e",
+						"0x706169725f666f725f6c705f746f6b656e0000000d4c504d4542552d616263646566": "0x6d6562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x6c705f746f6b656e5f666f725f7061697277656d655f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f": "0x4c5057454d452d616263646566",
+						"0x6c705f746f6b656e5f666f725f706169726d6562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f": "0x4c504d4542552d616263646566",
+						"0x6c705f746f6b656e5f666f725f70616972776562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f": "0x4c50574542552d616263646566",
+						"0x706169725f666f725f6c705f746f6b656e0000000d4c5057454d452d616263646566": "0x77656d655f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x726f757465725f61646472657373": "0x726f757465725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x7374617465": "0x01",
+						"0x7765676c645f746f6b656e5f6964": "0x5745474c442d616263646566",
+						"0x706169725f666f725f6c705f746f6b656e0000000d4c50574542552d616263646566": "0x776562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f"
+					},
+					"code": "file:../output/elrond_dex_staking.wasm"
+				},
+				"+": ""
+			}
+		},
+		{
+			"step": "scCall",
+			"txId": "swap-fixed-input",
+			"tx": {
+				"from": "address:user2",
+				"to": "address:mebu_pair_contract",
+				"value": "0",
+				"function": "swapTokensFixedInput",
+				"esdt": {
+					"tokenIdentifier": "str:BUSD-abcdef",
+					"value": "100,000"
+				},
+				"arguments": [
+					"str:MEX-abcdef",
+					"50,000"
+				],
+				"gasLimit": "14,000,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": ["0x776562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f"],
+				"status": "0",
+				"message": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "checkState",
+			"accounts": {
+				"address:wegld_staking_contract": {
+					"nonce": "0",
+					"balance": "",
+					"esdt": {
+						"str:WEGLD-abcdef": "298"
+					},
+					"storage": {
+						"0x454c524f4e44726f6c656573647455535453545745474c442d616263646566": "0x0a1145534454526f6c654e46544372656174650a1645534454526f6c654e46544164645175616e746974790a0f45534454526f6c654e46544275726e",
+						"0x706169725f666f725f6c705f746f6b656e0000000d4c50574542552d616263646566" : "0x776562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x706169725f666f725f6c705f746f6b656e0000000d4c504d4542552d616263646566": "0x6d6562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x6c705f746f6b656e5f666f725f706169726d6562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f": "0x4c504d4542552d616263646566",
+						"0x7765676c645f746f6b656e5f6964": "0x5745474c442d616263646566",
+						"0x726f757465725f61646472657373": "0x726f757465725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x454c524f4e44726f6c656573647453545745474c442d616263646566": "0x0a1145534454526f6c654e46544372656174650a1645534454526f6c654e46544164645175616e746974790a0f45534454526f6c654e46544275726e",
+						"0x7374616b655f746f6b656e5f6964": "0x53545745474c442d616263646566",
+						"0x756e7374616b655f746f6b656e5f6964": "0x55535453545745474c442d616263646566",
+						"0x6c705f746f6b656e5f666f725f70616972776562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f": "0x4c50574542552d616263646566",
+						"0x6c705f746f6b656e5f666f725f7061697277656d655f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f": "0x4c5057454d452d616263646566",
+						"0x706169725f666f725f6c705f746f6b656e0000000d4c5057454d452d616263646566": "0x77656d655f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x7374617465": "0x01"
+					},
+					"code": "file:../output/elrond_dex_staking.wasm"
+				},
+				"address:mex_staking_contract": {
+					"nonce": "0",
+					"balance": "",
+					"esdt": {
+						"str:MEX-abcdef": "296"
+					},
+					"storage": {
+						"0x7374616b655f746f6b656e5f6964": "0x53544d45582d616263646566",
+						"0x756e7374616b655f746f6b656e5f6964": "0x5553544d45582d616263646566",
+						"0x454c524f4e44726f6c65657364745553544d45582d616263646566": "0x0a1145534454526f6c654e46544372656174650a1645534454526f6c654e46544164645175616e746974790a0f45534454526f6c654e46544275726e",
+						"0x454c524f4e44726f6c656573647453544d45582d616263646566": "0x0a1145534454526f6c654e46544372656174650a1645534454526f6c654e46544164645175616e746974790a0f45534454526f6c654e46544275726e",
+						"0x706169725f666f725f6c705f746f6b656e0000000d4c504d4542552d616263646566": "0x6d6562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x6c705f746f6b656e5f666f725f7061697277656d655f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f": "0x4c5057454d452d616263646566",
+						"0x6c705f746f6b656e5f666f725f706169726d6562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f": "0x4c504d4542552d616263646566",
+						"0x6c705f746f6b656e5f666f725f70616972776562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f": "0x4c50574542552d616263646566",
+						"0x706169725f666f725f6c705f746f6b656e0000000d4c5057454d452d616263646566": "0x77656d655f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x726f757465725f61646472657373": "0x726f757465725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x7374617465": "0x01",
+						"0x7765676c645f746f6b656e5f6964": "0x5745474c442d616263646566",
+						"0x706169725f666f725f6c705f746f6b656e0000000d4c50574542552d616263646566": "0x776562755f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f"
+					},
+					"code": "file:../output/elrond_dex_staking.wasm"
+				},
+				"+": ""
+			}
+		}
+	]
+}

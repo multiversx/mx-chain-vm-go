@@ -3,19 +3,17 @@
 	"steps": [
 		{
 			"step": "externalSteps",
-			"path": "router_pause_staking.scen.json"
+			"path": "owner_pause_staking.scen.json"
 		},
 		{
 			"step": "scCall",
 			"txId": "resume",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:router_contract",
+				"to": "address:staking_contract",
 				"value": "0",
 				"function": "resume",
-				"arguments": [
-					"address:staking_contract"
-				],
+				"arguments": [],
 				"gasLimit": "100,000,000",
 				"gasPrice": "0"
 			},
