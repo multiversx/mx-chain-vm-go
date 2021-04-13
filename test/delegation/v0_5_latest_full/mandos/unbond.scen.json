@@ -29,18 +29,18 @@
         {
             "step": "scCall",
             "comment": "unbond before unbonding period over should not unbond",
-            "txId": "unBond",
+            "txId": "unBond-before",
             "tx": {
                 "from": "address:delegator1",
                 "to": "address:delegation_contract",
                 "value": "0",
                 "function": "unBond",
                 "arguments": [],
-                "gasLimit": "100,000,000",
+                "gasLimit": "500,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [],
+                "out": [ "0" ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -93,7 +93,7 @@
         {
             "step": "scCall",
             "comment": "unbond after unbonding period over should work",
-            "txId": "unBond",
+            "txId": "unBond-after",
             "tx": {
                 "from": "address:delegator1",
                 "to": "address:delegation_contract",
@@ -104,7 +104,7 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [],
+                "out": [ "1,000,000,000" ],
                 "status": "",
                 "logs": [],
                 "gas": "*",

@@ -1,5 +1,5 @@
 {
-    "name": "continue global operation scenarios",
+    "name": "claim rewards after total delegation cap decreased scenario",
     "gasSchedule": "v2",
     "steps": [
         {
@@ -24,166 +24,19 @@
         },
         {
             "step": "scCall",
-            "txId": "isBootstrapMode?",
+            "comment": "unStake 1,000,000,000 from delegator_1 so that the first delegator has 33,(3)% stake, and the second one 66,(6)%",
+            "txId": "user-unstake",
             "tx": {
-                "from": "address:node_address",
+                "from": "address:delegator1",
                 "to": "address:delegation_contract",
                 "value": "0",
-                "function": "isBootstrapMode",
-                "arguments": [],
-                "gasLimit": "100,000,000",
-                "gasPrice": "0"
-            },
-            "expect": {
-                "out": ["false"],
-                "status": "",
-                "logs": [],
-                "gas": "*",
-                "refund": "*"
-            }
-        },
-        {
-            "step": "scCall",
-            "txId": "continue global operation with no operation in progress",
-            "tx": {
-                "from": "address:node_address",
-                "to": "address:delegation_contract",
-                "value": "0",
-                "function": "continueGlobalOperation",
-                "arguments": [],
-                "gasLimit": "1,000,000,000",
-                "gasPrice": "0"
-            },
-            "expect": {
-                "out": ["0"],
-                "status": "",
-                "logs": [],
-                "gas": "*",
-                "refund": "*"
-            }
-        },
-        {
-            "step": "scCall",
-            "txId": "-get-service-fee-",
-            "tx": {
-                "from": "address:node_address",
-                "to": "address:delegation_contract",
-                "value": "0",
-                "function": "getServiceFee",
-                "arguments": [],
-                "gasLimit": "100,000,000",
-                "gasPrice": "0"
-            },
-            "expect": {
-                "out": ["5000"],
-                "status": "",
-                "logs": [],
-                "gas": "*",
-                "refund": "*"
-            }
-        },
-        {
-            "step": "scCall",
-            "txId": "-get-total-delegation-cap-",
-            "tx": {
-                "from": "address:node_address",
-                "to": "address:delegation_contract",
-                "value": "0",
-                "function": "getTotalDelegationCap",
-                "arguments": [],
-                "gasLimit": "100,000,000",
-                "gasPrice": "0"
-            },
-            "expect": {
-                "out": ["300,000,000,000,000"],
-                "status": "",
-                "logs": [],
-                "gas": "*",
-                "refund": "*"
-            }
-        },
-        {
-            "step": "scCall",
-            "txId": "-set-service-fee-out-of-gas-1",
-            "tx": {
-                "from": "address:node_address",
-                "to": "address:delegation_contract",
-                "value": "0",
-                "function": "setServiceFee",
-                "arguments": [
-                    "2000"
-                ],
-                "gasLimit": "90,000,000",
-                "gasPrice": "0"
-            },
-            "expect": {
-                "out": ["1"],
-                "status": "",
-                "logs": [],
-                "gas": "*",
-                "refund": "*"
-            }
-        },
-        {
-            "step": "scCall",
-            "txId": "-set-total-delegation-cap-",
-            "tx": {
-                "from": "address:node_address",
-                "to": "address:delegation_contract",
-                "value": "0",
-                "function": "modifyTotalDelegationCap",
-                "arguments": [
-                    "200,000,000,000,000"
-                ],
+                "function": "unStake",
+                "arguments": ["1,000,000,000"],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
                 "out": [],
-                "status": "4",
-                "message": "''cannot modify total delegation cap when last is in progress",
-                "logs": [],
-                "gas": "*",
-                "refund": "*"
-            }
-        },
-        {
-            "step": "scCall",
-            "txId": "-set-service-fee-2",
-            "tx": {
-                "from": "address:node_address",
-                "to": "address:delegation_contract",
-                "value": "0",
-                "function": "setServiceFee",
-                "arguments": [
-                    "1000"
-                ],
-                "gasLimit": "100,000,000",
-                "gasPrice": "0"
-            },
-            "expect": {
-                "out": [],
-                "status": "4",
-                "message":"''global checkpoint is in progress",
-                "logs": [],
-                "gas": "*",
-                "refund": "*"
-            }
-        },
-        {
-            "step": "scCall",
-            "txId": "continue-out-of-gas",
-            "tx": {
-                "from": "address:node_address",
-                "to": "address:delegation_contract",
-                "value": "0",
-                "function": "continueGlobalOperation",
-                "arguments": [],
-                "gasLimit": "90,000,000",
-                "gasPrice": "0"
-            },
-            "expect": {
-                "out": ["1"],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -191,92 +44,16 @@
             }
         },
         {
-            "step": "externalSteps",
-            "path": "steps/node_operations_paused.steps.json"
-        }, 
-        {
-            "step": "scCall",
-            "txId": "-get-service-fee-",
+            "step": "validatorReward",
+            "txId": "validatorReward-1",
             "tx": {
-                "from": "address:node_address",
                 "to": "address:delegation_contract",
-                "value": "0",
-                "function": "getServiceFee",
-                "arguments": [],
-                "gasLimit": "100,000,000",
-                "gasPrice": "0"
-            },
-            "expect": {
-                "out": ["5000"],
-                "status": "",
-                "logs": [],
-                "gas": "*",
-                "refund": "*"
+                "value": "100,000,000"
             }
         },
         {
             "step": "scCall",
-            "txId": "continue",
-            "tx": {
-                "from": "address:node_address",
-                "to": "address:delegation_contract",
-                "value": "0",
-                "function": "continueGlobalOperation",
-                "arguments": [],
-                "gasLimit": "1,000,000,000",
-                "gasPrice": "0"
-            },
-            "expect": {
-                "out": ["0"],
-                "status": "",
-                "logs": [],
-                "gas": "*",
-                "refund": "*"
-            }
-        },
-        {
-            "step": "scCall",
-            "txId": "-get-service-fee-",
-            "tx": {
-                "from": "address:node_address",
-                "to": "address:delegation_contract",
-                "value": "0",
-                "function": "getServiceFee",
-                "arguments": [],
-                "gasLimit": "100,000,000",
-                "gasPrice": "0"
-            },
-            "expect": {
-                "out": ["2000"],
-                "status": "",
-                "logs": [],
-                "gas": "*",
-                "refund": "*"
-            }
-        },
-        {
-            "step": "scCall",
-            "txId": "-get-total-delegation-cap-",
-            "tx": {
-                "from": "address:node_address",
-                "to": "address:delegation_contract",
-                "value": "0",
-                "function": "getTotalDelegationCap",
-                "arguments": [],
-                "gasLimit": "100,000,000",
-                "gasPrice": "0"
-            },
-            "expect": {
-                "out": ["300,000,000,000,000"],
-                "status": "",
-                "logs": [],
-                "gas": "*",
-                "refund": "*"
-            }
-        },
-        {
-            "step": "scCall",
-            "txId": "-set-total-delegation-cap-",
+            "txId": "-set-service-fee-",
             "tx": {
                 "from": "address:node_address",
                 "to": "address:delegation_contract",
@@ -289,7 +66,37 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["0"],
+                "out": ["str:completed"],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "validatorReward",
+            "txId": "validatorReward-2",
+            "tx": {
+                "to": "address:delegation_contract",
+                "value": "100,000,000"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "get-total-cumulated-1",
+            "tx": {
+                "from": "address:someone",
+                "to": "address:delegation_contract",
+                "value": "0",
+                "function": "getTotalCumulatedRewards",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "200,000,000"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -298,18 +105,187 @@
         },
         {
             "step": "scCall",
-            "txId": "-get-total-delegation-cap-",
+            "txId": "claimable-0",
             "tx": {
-                "from": "address:node_address",
+                "from": "address:someone",
                 "to": "address:delegation_contract",
                 "value": "0",
-                "function": "getTotalDelegationCap",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "address:node_address"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "100,000,001"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "claimable-1",
+            "tx": {
+                "from": "address:someone",
+                "to": "address:delegation_contract",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "address:delegator1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "41,666,666"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "claimable-2",
+            "tx": {
+                "from": "address:someone",
+                "to": "address:delegation_contract",
+                "value": "0",
+                "function": "getClaimableRewards",
+                "arguments": [
+                    "address:delegator2"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "58,333,333"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "delegator 1 claim 1",
+            "tx": {
+                "from": "address:delegator1",
+                "to": "address:delegation_contract",
+                "value": "0",
+                "function": "claimRewards",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["200,000,000,000,000"],
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "delegator 2 claim 1",
+            "tx": {
+                "from": "address:delegator2",
+                "to": "address:delegation_contract",
+                "value": "0",
+                "function": "claimRewards",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "delegator 0 claim 1",
+            "tx": {
+                "from": "address:node_address",
+                "to": "address:delegation_contract",
+                "value": "0",
+                "function": "claimRewards",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "comment": "check that rewards were received",
+            "accounts": {
+                "address:delegation_contract": {
+                    "comment": "inactive stake + unclaimed rewards",
+                    "nonce": "*",
+                    "balance": "300,001,000,000,000",
+                    "storage": "*",
+                    "code": "file:../output/delegation_latest_full.wasm"
+                },
+                "address:delegator1": {
+                    "nonce": "*",
+                    "balance": "41,666,666",
+                    "storage": {},
+                    "code": "",
+                    "asyncCallData": "''delegation rewards claim"
+                },
+                "address:delegator2": {
+                    "nonce": "*",
+                    "balance": "58,333,333",
+                    "storage": {},
+                    "code": ""
+                },
+                "address:node_address": {
+                    "nonce": "*",
+                    "balance": "100,000,001",
+                    "storage": {},
+                    "code": ""
+                },
+                "+": ""
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "check-stake-by-type-2",
+            "tx": {
+                "from": "address:someone",
+                "to": "address:delegation_contract",
+                "value": "0",
+                "function": "getUserStakeByType",
+                "arguments": [
+                    "address:delegator2"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "0", "0","100,000,000,000,000", "0","100,000,000,000,000"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",

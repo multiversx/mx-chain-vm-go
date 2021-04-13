@@ -72,10 +72,10 @@ func gasScheduleMapFromMandos(mandosGasSchedule mj.GasSchedule) (config.GasSched
 	}
 }
 
-// updates the gas costs based on the mandos scenario config
+// SetMandosGasSchedule updates the gas costs based on the mandos scenario config
 // only changes the gas schedule once,
 // this prevents subsequent gasSchedule declarations in externalSteps to overwrite
-func (ae *ArwenTestExecutor) setGasSchedule(newGasSchedule mj.GasSchedule) error {
+func (ae *ArwenTestExecutor) SetMandosGasSchedule(newGasSchedule mj.GasSchedule) error {
 	if ae.mandosGasScheduleLoaded {
 		return nil
 	}

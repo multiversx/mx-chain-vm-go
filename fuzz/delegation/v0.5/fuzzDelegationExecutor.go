@@ -11,11 +11,11 @@ import (
 	"testing"
 
 	am "github.com/ElrondNetwork/arwen-wasm-vm/arwenmandos"
-	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/fileresolver"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
 	mjparse "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/parse"
 	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/write"
+	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
 )
@@ -69,6 +69,7 @@ func newFuzzDelegationExecutor(fileResolver fr.FileResolver) (*fuzzDelegationExe
 	if err != nil {
 		return nil, err
 	}
+	arwenTestExecutor.SetMandosGasSchedule(mj.GasScheduleV2)
 
 	parser := mjparse.NewParser(fileResolver)
 
@@ -241,7 +242,7 @@ func blsKey(index int) string {
 
 func blsSignature(index int) string {
 	return fmt.Sprintf(
-		"bls key signature %5d ........",
+		"bls key signature %5d ........................",
 		index)
 }
 
@@ -402,32 +403,40 @@ func (pfe *fuzzDelegationExecutor) setServiceFee(newServiceFee int) error {
 }
 
 func (pfe *fuzzDelegationExecutor) continueGlobalOperation() error {
-	pfe.log("continue global operation")
-	output, err := pfe.executeTxStep(fmt.Sprintf(`
-	{
-		"step": "scCall",
-		"txId": "-continue-global-operation-",
-		"tx": {
-			"from": "''%s",
-			"to": "''%s",
-			"value": "0",
-			"function": "continueGlobalOperation",
-			"arguments": [],
-			"gasLimit": "900,000",
-			"gasPrice": "0"
-		}
-	}`,
-		string(pfe.ownerAddress),
-		string(pfe.delegationContractAddress),
-	))
-	if err != nil {
-		return err
-	}
-
-	if output.ReturnCode == vmi.OutOfGas {
-		err = pfe.continueGlobalOperation()
+	completed := false
+	for !completed {
+		output, err := pfe.executeTxStep(fmt.Sprintf(`
+		{
+			"step": "scCall",
+			"txId": "-continue-global-operation-",
+			"tx": {
+				"from": "''%s",
+				"to": "''%s",
+				"value": "0",
+				"function": "continueGlobalOperation",
+				"arguments": [],
+				"gasLimit": "200,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [ "*" ],
+				"refund": "*"
+			}
+		}`,
+			string(pfe.ownerAddress),
+			string(pfe.delegationContractAddress),
+		))
 		if err != nil {
 			return err
+		}
+		pfe.log("continue global operation %x", output.ReturnData[0])
+
+		if bytes.Equal(output.ReturnData[0], []byte("completed")) {
+			completed = true
+		} else if bytes.Equal(output.ReturnData[0], []byte("interrupted")) {
+			completed = false
+		} else {
+			return fmt.Errorf("unexpected global operation status: %x", output.ReturnData[0])
 		}
 	}
 

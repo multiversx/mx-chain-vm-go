@@ -22,7 +22,7 @@
             "tx": {
                 "from": "address:node_address",
                 "value": "0",
-                "contractCode": "file:../output/delegation_v0_5_2_full.wasm",
+                "contractCode": "file:../output/delegation_latest_full.wasm",
                 "arguments": [
                     "address:auction_contract",
                     "5000",
@@ -117,7 +117,7 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["0"],
+                "out": ["str:completed"],
                 "status": "",
                 "logs": [],
                 "gas": "*",

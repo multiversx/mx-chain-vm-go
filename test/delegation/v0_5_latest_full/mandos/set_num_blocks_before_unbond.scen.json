@@ -32,12 +32,12 @@
         },
         {
             "step": "scCall",
-            "txId": "-setNumBlocksBeforeUnbond-",
+            "txId": "-setNumBlocksBeforeUnBond-",
             "tx": {
                 "from": "address:node_address",
                 "to": "address:delegation_contract",
                 "value": "0",
-                "function": "setNumBlocksBeforeUnbond",
+                "function": "setNumBlocksBeforeUnBond",
                 "arguments": [
                     "15"
                 ],

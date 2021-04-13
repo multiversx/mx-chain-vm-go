@@ -1,5 +1,5 @@
 {
-    "name": "claim rewards after stake modification scenario",
+    "name": "owner with stake claims rewards scenario",
     "gasSchedule": "v2",
     "steps": [
         {
@@ -23,6 +23,65 @@
             "path": "steps/increase_cap.steps.json"
         },
         {
+            "step": "scCall",
+            "comment": "unStake 1,000,000,000 from delegator_1 so that the first delegator has 33,(3)% stake, and the secon one 66,(6)%",
+            "txId": "user-unstake",
+            "tx": {
+                "from": "address:delegator1",
+                "to": "address:delegation_contract",
+                "value": "0",
+                "function": "unStake",
+                "arguments": ["1,000,000,000"],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "supply owner",
+            "tx": {
+                "from": "address:endless_sack_of_erd",
+                "to": "address:node_address",
+                "value": "100,000,000,000,000"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "owner stake",
+            "tx": {
+                "from": "address:node_address",
+                "to": "address:delegation_contract",
+                "value": "100,000,000,000,000",
+                "function": "stake",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [
+                    {
+                        "address": "address:delegation_contract",
+                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000001",
+                        "topics": [
+                            "address:node_address"
+                        ],
+                        "data": "100,000,000,000,000"
+                    }
+                ],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
             "step": "validatorReward",
             "txId": "validatorReward-1",
             "tx": {
@@ -32,14 +91,13 @@
         },
         {
             "step": "scCall",
-            "comment": "unStake 1,000,000,000 from delegator_1 so that the first delegator has 33,(3)% stake, and the second one 66,(6)%",
             "txId": "user-unstake",
             "tx": {
-                "from": "address:delegator1",
+                "from": "address:delegator2",
                 "to": "address:delegation_contract",
                 "value": "0",
                 "function": "unStake",
-                "arguments": ["1,000,000,000"],
+                "arguments": ["100,000,000,000,000"],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
@@ -97,7 +155,7 @@
             },
             "expect": {
                 "out": [
-                    "100,000,000"
+                    "116,666,666"
                 ],
                 "status": "",
                 "logs": [],
@@ -121,7 +179,7 @@
             },
             "expect": {
                 "out": [
-                    "33,333,499"
+                    "33,333,333"
                 ],
                 "status": "",
                 "logs": [],
@@ -145,7 +203,7 @@
             },
             "expect": {
                 "out": [
-                    "66,666,499"
+                    "49,999,999"
                 ],
                 "status": "",
                 "logs": [],
@@ -220,26 +278,26 @@
                 "address:delegation_contract": {
                     "comment": "inactive stake + unclaimed rewards",
                     "nonce": "*",
-                    "balance": "300,001,000,000,002",
+                    "balance": "400,001,000,000,002",
                     "storage": "*",
-                    "code": "file:../output/delegation_v0_5_2_full.wasm"
+                    "code": "file:../output/delegation_latest_full.wasm"
                 },
                 "address:delegator1": {
                     "nonce": "*",
-                    "balance": "33,333,499",
+                    "balance": "33,333,333",
                     "storage": {},
                     "code": "",
                     "asyncCallData": "''delegation rewards claim"
                 },
                 "address:delegator2": {
                     "nonce": "*",
-                    "balance": "66,666,499",
+                    "balance": "49,999,999",
                     "storage": {},
                     "code": ""
                 },
                 "address:node_address": {
                     "nonce": "*",
-                    "balance": "100,000,000",
+                    "balance": "116,666,666",
                     "storage": {},
                     "code": ""
                 },

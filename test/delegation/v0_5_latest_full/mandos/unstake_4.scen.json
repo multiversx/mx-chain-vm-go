@@ -44,47 +44,66 @@
             }
         },
         {
-            "step": "scCall",
+            "step": "scQuery",
             "txId": "check-stake-by-type-1",
             "tx": {
-                "from": "address:someone",
                 "to": "address:delegation_contract",
-                "value": "0",
                 "function": "getUserStakeByType",
                 "arguments": [
                     "address:delegator1"
-                ],
-                "gasLimit": "100,000,000",
-                "gasPrice": "0"
+                ]
             },
             "expect": {
                 "out": [
                     "0","0", "100,001,000,000,000", "0", "0"
-                ],
-                "status": "",
-                "logs": [],
-                "gas": "*",
-                "refund": "*"
+                ]
             }
         },
         {
-            "step": "scCall",
+            "step": "scQuery",
             "txId": "check-stake-by-type-2",
             "tx": {
-                "from": "address:someone",
                 "to": "address:delegation_contract",
-                "value": "0",
                 "function": "getUserStakeByType",
                 "arguments": [
                     "address:delegator2"
-                ],
-                "gasLimit": "100,000,000",
-                "gasPrice": "0"
+                ]
             },
             "expect": {
                 "out": [
                     "1,000,000,000", "0","0", "199,999,000,000,000","0"
-                ],
+                ]
+            }
+        },
+        {
+            "step": "scQuery",
+            "txId": "check-stake-by-type-total",
+            "tx": {
+                "to": "address:delegation_contract",
+                "function": "getTotalStakeByType",
+                "arguments": []
+            },
+            "expect": {
+                "out": [
+                   "1,000,000,000", "0", "100,001,000,000,000",  "199,999,000,000,000", "0"
+                ]
+            }
+        },
+        {
+            "step": "scCall",
+            "comment": "test partial unbond first",
+            "txId": "partial-unBond-out-of-gas",
+            "tx": {
+                "from": "address:delegator2",
+                "to": "address:delegation_contract",
+                "value": "0",
+                "function": "unBond",
+                "arguments": [],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [ "0" ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -92,31 +111,25 @@
             }
         },
         {
-            "step": "scCall",
-            "txId": "check-stake-by-type-total",
+            "step": "scQuery",
+            "txId": "check-stake-by-type-3a",
             "tx": {
-                "from": "address:someone",
                 "to": "address:delegation_contract",
-                "value": "0",
-                "function": "getTotalStakeByType",
-                "arguments": [],
-                "gasLimit": "100,000,000",
-                "gasPrice": "0"
+                "function": "getUserStakeByType",
+                "arguments": [
+                    "address:delegator2"
+                ]
             },
             "expect": {
                 "out": [
-                   "1,000,000,000", "0", "100,001,000,000,000",  "199,999,000,000,000", "0"
-                ],
-                "status": "",
-                "logs": [],
-                "gas": "*",
-                "refund": "*"
+                    "1,000,000,000", "0","0", "199,999,000,000,000","0"
+                ]
             }
         },
         {
             "step": "scCall",
             "comment": "unbond after unbonding period over should work",
-            "txId": "unBond",
+            "txId": "unBond-ok",
             "tx": {
                 "from": "address:delegator2",
                 "to": "address:delegation_contract",
@@ -127,7 +140,7 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [],
+                "out": [ "1,000,000,000" ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -136,7 +149,7 @@
         },
         {
             "step": "scCall",
-            "txId": "check-stake-by-type-3",
+            "txId": "check-stake-by-type-3b",
             "tx": {
                 "from": "address:someone",
                 "to": "address:delegation_contract",
@@ -219,7 +232,7 @@
         {
             "step": "scCall",
             "comment": "unbond after unbonding period over should work",
-            "txId": "unBond",
+            "txId": "unBond-more",
             "tx": {
                 "from": "address:delegator2",
                 "to": "address:delegation_contract",
@@ -230,7 +243,7 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [],
+                "out": [ "199,999,000,000,000" ],
                 "status": "",
                 "logs": [],
                 "gas": "*",

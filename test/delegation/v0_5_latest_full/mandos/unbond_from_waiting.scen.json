@@ -78,7 +78,7 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [],
+                "out": [ "1,000,000,000" ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
