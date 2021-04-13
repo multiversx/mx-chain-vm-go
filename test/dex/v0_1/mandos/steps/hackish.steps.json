@@ -19,6 +19,7 @@
 						"str:state" : "1",
 						"str:lpTokenIdentifier": "str:LPTOK-abcdef",
 						"str:router_address": "address:router_contract",
+						"str:router_owner_address": "address:owner",
 						"str:fee_state": "1",
 						"str:fee_address": "address:staking_contract",
 						"str:fee_token_identifier": "str:WEGLD-abcdef",

@@ -626,8 +626,9 @@ func (pfe *fuzzDexExecutor) doHackishStep(tokenA string, tokenB string, index in
 					"str:fee_state": "1",
 					"str:fee_address": "''%s",
 					"str:fee_token_identifier": "str:%s",
-					"str:total_fee_precent": "3",
-					"str:special_fee_precent": "1"
+					"str:total_fee_precent": "300",
+					"str:special_fee_precent": "100",
+					"str:router_owner_address": "address:owner"
 				},
 				"code": "file:../../../test/dex/v0_1/output/elrond_dex_pair.wasm"
 			}
