@@ -23,8 +23,8 @@
 						"str:fee_state": "1",
 						"str:fee_address": "address:staking_contract",
 						"str:fee_token_identifier": "str:WEGLD-abcdef",
-						"str:total_fee_precent": "3",
-						"str:special_fee_precent": "1"
+						"str:total_fee_precent": "300",
+						"str:special_fee_precent": "100"
 					},
 					"code": "file:../../output/elrond_dex_pair.wasm"
 				},
@@ -44,7 +44,7 @@
 						]
 					},
 					"storage": {
-						"str:wegld_token_id": "str:WEGLD-abcdef",
+						"str:staking_pool_token_id": "str:WEGLD-abcdef",
 						"str:stake_token_id": "str:STAKING-abcdef",
 						"str:unstake_token_id": "str:UNSTAK-abcdef",
 						"str:router_address": "address:router_contract",

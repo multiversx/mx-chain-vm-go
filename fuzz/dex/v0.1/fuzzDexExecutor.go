@@ -672,7 +672,7 @@ func (pfe *fuzzDexExecutor) doHachishStepStaking() error {
 					]
 				},
 				"storage": {
-					"str:wegld_token_id": "str:%s",
+					"str:staking_pool_token_id": "str:%s",
 					"str:stake_token_id": "str:%s",
 					"str:unstake_token_id": "str:%s",
 					"str:router_address": "''%s",
