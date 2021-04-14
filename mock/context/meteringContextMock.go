@@ -83,6 +83,15 @@ func (m *MeteringContextMock) GetForwardedGas(_ []byte) uint64 {
 func (m *MeteringContextMock) InitStateFromContractCallInput(_ *vmcommon.VMInput) {
 }
 
+// AddGasUsedByBuiltinFunctions mocked method
+func (m *MeteringContextMock) AddGasUsedByBuiltinFunctions(_ uint64) {
+}
+
+// GetGasUsedByBuiltinFunctions mocked method
+func (m *MeteringContextMock) GetGasUsedByBuiltinFunctions() uint64 {
+	return 0
+}
+
 // GasUsedByContract mocked method
 func (m *MeteringContextMock) GasUsedByContract() (uint64, uint64) {
 	return 0, 0

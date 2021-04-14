@@ -13,15 +13,16 @@ import (
 var logMetering = logger.GetOrCreate("arwen/metering")
 
 type meteringContext struct {
-	host               arwen.VMHost
-	stateStack         []*meteringContext
-	gasSchedule        *config.GasCost
-	blockGasLimit      uint64
-	initialGasProvided uint64
-	initialCost        uint64
-	gasForExecution    uint64
-	gasStates          map[string]*contractGasState
-	totalUsedGas       uint64
+	host                      arwen.VMHost
+	stateStack                []*meteringContext
+	gasSchedule               *config.GasCost
+	blockGasLimit             uint64
+	initialGasProvided        uint64
+	initialCost               uint64
+	gasForExecution           uint64
+	gasUsedByBuiltinFunctions uint64
+	gasStates                 map[string]*contractGasState
+	totalUsedGas              uint64
 }
 
 type contractGasState struct {
@@ -42,11 +43,12 @@ func NewMeteringContext(
 	}
 
 	context := &meteringContext{
-		host:          host,
-		stateStack:    make([]*meteringContext, 0),
-		gasStates:     make(map[string]*contractGasState),
-		gasSchedule:   gasSchedule,
-		blockGasLimit: blockGasLimit,
+		host:                      host,
+		stateStack:                make([]*meteringContext, 0),
+		gasStates:                 make(map[string]*contractGasState),
+		gasSchedule:               gasSchedule,
+		blockGasLimit:             blockGasLimit,
+		gasUsedByBuiltinFunctions: 0,
 	}
 
 	context.InitState()
@@ -60,14 +62,16 @@ func (context *meteringContext) InitState() {
 	context.initialGasProvided = 0
 	context.initialCost = 0
 	context.gasForExecution = 0
+	context.gasUsedByBuiltinFunctions = 0
 }
 
 // PushState pushes the current state of the MeteringContext on its internal state stack
 func (context *meteringContext) PushState() {
 	newState := &meteringContext{
-		initialGasProvided: context.initialGasProvided,
-		initialCost:        context.initialCost,
-		gasForExecution:    context.gasForExecution,
+		initialGasProvided:        context.initialGasProvided,
+		initialCost:               context.initialCost,
+		gasForExecution:           context.gasForExecution,
+		gasUsedByBuiltinFunctions: context.gasUsedByBuiltinFunctions,
 	}
 
 	context.stateStack = append(context.stateStack, newState)
@@ -87,6 +91,7 @@ func (context *meteringContext) PopSetActiveState() {
 	context.initialGasProvided = prevState.initialGasProvided
 	context.initialCost = prevState.initialCost
 	context.gasForExecution = prevState.gasForExecution
+	context.gasUsedByBuiltinFunctions += prevState.gasUsedByBuiltinFunctions
 }
 
 // PopDiscard pops the state at the top of the internal state stack, and discards it
@@ -111,6 +116,7 @@ func (context *meteringContext) InitStateFromContractCallInput(input *vmcommon.V
 	context.initialGasProvided = input.GasProvided
 	context.gasForExecution = input.GasProvided
 	context.initialCost = 0
+	context.gasUsedByBuiltinFunctions = 0
 }
 
 // unlockGasIfAsyncCallback unlocks the locked gas if the call type is async callback
@@ -174,6 +180,14 @@ func (context *meteringContext) GasLeft() uint64 {
 	return gasProvided - gasUsed
 }
 
+func (context *meteringContext) AddGasUsedByBuiltinFunctions(gas uint64) {
+	context.gasUsedByBuiltinFunctions = math.AddUint64(context.gasUsedByBuiltinFunctions, gas)
+}
+
+func (context *meteringContext) GetGasUsedByBuiltinFunctions() uint64 {
+	return context.gasUsedByBuiltinFunctions
+}
+
 // ForwardGas accumulates the gas forwarded by the current contract for the execution of other contracts
 func (context *meteringContext) ForwardGas(sourceAddress []byte, destAddress []byte, gas uint64) {
 	// Gas forwarded to any contract (including self-forwarding) is recorded for
@@ -232,6 +246,7 @@ func (context *meteringContext) GasUsedByContract() (uint64, uint64) {
 	}
 
 	gasUsed = math.AddUint64(gasUsed, executionGasUsed)
+	gasUsed, _ = math.SubUint64(gasUsed, context.gasUsedByBuiltinFunctions)
 
 	// totalGasForwarded := context.getTotalForwardedGas(runtime.GetSCAddress())
 	// remainedFromForwarded := uint64(0)
