@@ -130,7 +130,6 @@ func (context *outputContext) CensorVMOutput() {
 	context.outputState.ReturnMessage = ""
 	context.outputState.GasRemaining = 0
 	context.outputState.GasRefund = big.NewInt(0)
-	context.outputState.Logs = make([]*vmcommon.LogEntry, 0)
 
 	logOutput.Trace("state content censored")
 }
@@ -417,7 +416,9 @@ func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 	remainedFromForwarded := uint64(0)
 	account, _ := context.GetOutputAccount(runtime.GetSCAddress())
 	if context.outputState.ReturnCode == vmcommon.Ok {
-		account.GasUsed, remainedFromForwarded = metering.GasUsedByContract()
+		gasUsedByContract, _ := metering.GasUsedByContract()
+		gasUsedByOthers := context.GetGasUsedByAllOtherContracts()
+		account.GasUsed, _ = math.SubUint64(gasUsedByContract, gasUsedByOthers)
 		context.outputState.GasRemaining = metering.GasLeft()
 
 		// backward compatibility
@@ -443,21 +444,12 @@ func (context *outputContext) checkGas(remainedFromForwarded uint64) error {
 		return nil
 	}
 
-	previousGasUsed := context.host.Metering().GetPreviousTotalUsedGas()
-	gasUsed, gasLockSentForward := context.GetCurrentTotalUsedGas()
+	gasUsed, _ := context.GetCurrentTotalUsedGas()
+	gasRemaining := context.outputState.GasRemaining
 	gasProvided := context.host.Metering().GetGasProvided()
 
-	wasBuiltInFuncWhichForwardedGas := gasLockSentForward && context.isBuiltInExecution()
-	if wasBuiltInFuncWhichForwardedGas {
-		gasProvided = math.AddUint64(gasProvided, context.host.Metering().GetGasLocked())
-	}
-
-	context.outputState.GasRemaining, remainedFromForwarded = math.SubUint64(context.outputState.GasRemaining, remainedFromForwarded)
-	totalGas := math.AddUint64(gasUsed, context.outputState.GasRemaining)
-	totalGas, _ = math.SubUint64(totalGas, remainedFromForwarded)
-	totalGas, _ = math.SubUint64(totalGas, previousGasUsed)
-	if totalGas > gasProvided {
-		logOutput.Error("gas usage mismatch", "total gas used", totalGas, "gas provided", gasProvided)
+	if gasUsed+gasRemaining != gasProvided {
+		logOutput.Error("gas usage mismatch", "total gas used", gasUsed, "gas provided", gasProvided)
 		return arwen.ErrInputAndOutputGasDoesNotMatch
 	}
 
@@ -486,7 +478,28 @@ func (context *outputContext) GetCurrentTotalUsedGas() (uint64, bool) {
 // GetGasUsedByAllOtherContracts returns the total gas used by all the
 // contracts that aren't the current contract.
 func (context *outputContext) GetGasUsedByAllOtherContracts() uint64 {
-	return 0
+	gasUsed := uint64(0)
+	currentContractAddress := string(context.host.Runtime().GetSCAddress())
+	for address, account := range context.outputState.OutputAccounts {
+		if address == currentContractAddress {
+			continue
+		}
+
+		gasUsed += context.getTotalGasUsedByOutputAccount(account)
+	}
+
+	return gasUsed
+}
+
+func (context *outputContext) getTotalGasUsedByOutputAccount(account *vmcommon.OutputAccount) uint64 {
+	gasUsed := uint64(0)
+	gasUsed = math.AddUint64(gasUsed, account.GasUsed)
+
+	for _, outputTransfer := range account.OutputTransfers {
+		gasUsed = math.AddUint64(gasUsed, outputTransfer.GasLimit)
+		gasUsed = math.AddUint64(gasUsed, outputTransfer.GasLocked)
+	}
+	return gasUsed
 }
 
 func (context *outputContext) isBuiltInExecution() bool {
@@ -669,7 +682,7 @@ func mergeOutputAccounts(
 		leftAccount.OutputTransfers = append(leftAccount.OutputTransfers, rightAccount.OutputTransfers[lenLeftOutTransfers:]...)
 	}
 
-	leftAccount.GasUsed = rightAccount.GasUsed
+	leftAccount.GasUsed += rightAccount.GasUsed
 
 	if rightAccount.CodeDeployerAddress != nil {
 		leftAccount.CodeDeployerAddress = rightAccount.CodeDeployerAddress

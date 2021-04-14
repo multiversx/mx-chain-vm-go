@@ -209,6 +209,7 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 
 	output.PushState()
 	output.CensorVMOutput()
+	output.ResetGas()
 
 	copyTxHashesFromContext(host.IsESDTFunctionsEnabled(), runtime, input)
 	runtime.PushState()

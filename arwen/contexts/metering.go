@@ -233,11 +233,13 @@ func (context *meteringContext) GasUsedByContract() (uint64, uint64) {
 
 	gasUsed = math.AddUint64(gasUsed, executionGasUsed)
 
-	totalGasForwarded := context.getTotalForwardedGas(runtime.GetSCAddress())
-	remainedFromForwarded := uint64(0)
-	gasUsed, remainedFromForwarded = math.SubUint64(gasUsed, totalGasForwarded)
+	// totalGasForwarded := context.getTotalForwardedGas(runtime.GetSCAddress())
+	// remainedFromForwarded := uint64(0)
+	// gasUsed, remainedFromForwarded = math.SubUint64(gasUsed, totalGasForwarded)
 
-	return gasUsed, remainedFromForwarded
+	// return gasUsed, remainedFromForwarded
+
+	return gasUsed, 0
 }
 
 // GasUsedForExecution returns the actual gas used for execution for the contract which needs to be restored
