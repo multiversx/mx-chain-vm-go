@@ -9,6 +9,7 @@ import (
 	mc "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/controller"
 	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/fileresolver"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
+	vr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/valuereconstructor"
 	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
@@ -26,6 +27,7 @@ type ArwenTestExecutor struct {
 	vm                      vmi.VMExecutionHandler
 	checkGas                bool
 	mandosGasScheduleLoaded bool
+	valueReconstructor      vr.ValueReconstructor
 }
 
 var _ mc.TestExecutor = (*ArwenTestExecutor)(nil)
@@ -59,6 +61,7 @@ func NewArwenTestExecutor() (*ArwenTestExecutor, error) {
 		vm:                      vm,
 		checkGas:                true,
 		mandosGasScheduleLoaded: false,
+		valueReconstructor:      vr.ValueReconstructor{},
 	}, nil
 }
 

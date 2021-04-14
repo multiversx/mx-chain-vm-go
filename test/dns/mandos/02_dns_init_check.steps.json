@@ -17,7 +17,7 @@
             "txId": "check-version",
             "tx": {
                 "from": "address:viewer",
-                "to": "''dns____________________________|0x00",
+                "to": "sc:dns#00",
                 "value": "0",
                 "function": "version",
                 "arguments": [],
@@ -37,7 +37,7 @@
             "txId": "check-owner",
             "tx": {
                 "from": "address:viewer",
-                "to": "''dns____________________________|0x00",
+                "to": "sc:dns#00",
                 "value": "0",
                 "function": "getContractOwner",
                 "arguments": [],

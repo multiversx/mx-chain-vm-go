@@ -117,7 +117,7 @@ func (vi *ValueInterpreter) InterpretString(strRaw string) ([]byte, error) {
 		if err != nil {
 			return []byte{}, fmt.Errorf("cannot parse keccak256 argument: %w", err)
 		}
-		hash, err := keccak256(arg)
+		hash, err := Keccak256(arg)
 		if err != nil {
 			return []byte{}, fmt.Errorf("error computing keccak256: %w", err)
 		}
@@ -157,14 +157,14 @@ func (vi *ValueInterpreter) InterpretString(strRaw string) ([]byte, error) {
 
 	// address
 	if strings.HasPrefix(strRaw, addrPrefix) {
-		addrName := strRaw[len(addrPrefix):]
-		return address([]byte(addrName))
+		addrArgument := strRaw[len(addrPrefix):]
+		return addressExpression(addrArgument)
 	}
 
 	// smart contract address (different format)
 	if strings.HasPrefix(strRaw, scAddrPrefix) {
-		addrName := strRaw[len(scAddrPrefix):]
-		return sc_address([]byte(addrName))
+		addrArgument := strRaw[len(scAddrPrefix):]
+		return scExpression(addrArgument)
 	}
 
 	// fixed width numbers

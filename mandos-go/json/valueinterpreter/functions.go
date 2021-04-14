@@ -1,44 +1,72 @@
 package mandosvalueinterpreter
 
 import (
+	"encoding/hex"
+	"fmt"
+	"strings"
+
 	"golang.org/x/crypto/sha3"
 )
 
 // Keccak256 cryptographic function
 // TODO: externalize the same way as the file resolver
-func keccak256(data []byte) ([]byte, error) {
+func Keccak256(data []byte) ([]byte, error) {
 	hash := sha3.NewLegacyKeccak256()
 	hash.Write(data)
 	result := hash.Sum(nil)
 	return result, nil
 }
 
-// Generates a 32-byte EOA address based on the input.
-func address(data []byte) ([]byte, error) {
-	if len(data) > 32 {
-		return data[:32], nil
+func decodeShardId(shardIdRaw string) (byte, error) {
+	shardId, err := hex.DecodeString(shardIdRaw)
+	if err != nil {
+		return 0, fmt.Errorf("could not parse address shard id: %w", err)
 	}
-	var result [32]byte
-	i := 0
-	for ; i < len(data); i++ {
-		result[i] = data[i]
+	if len(shardId) != 1 {
+		return 0, fmt.Errorf("bad address shard id length: %s", shardIdRaw)
 	}
-	for ; i < 32; i++ {
-		result[i] = byte('_')
-	}
-	return result[:], nil
+	return shardId[0], nil
 }
 
-const scAddressNumLeadingZeros = 8
-
-// Generates a 32-byte smart contract address based on the input.
-func sc_address(data []byte) ([]byte, error) {
+func createAddressFromPrefix(prefix []byte, startIndex, endIndex int) *[32]byte {
 	var result [32]byte
-	for i := 0; i < len(data) && i < 32-scAddressNumLeadingZeros; i++ {
-		result[i+scAddressNumLeadingZeros] = data[i]
+	for i := 0; i < len(prefix) && i < endIndex-startIndex; i++ {
+		result[i+startIndex] = prefix[i]
 	}
-	for i := len(data) + scAddressNumLeadingZeros; i < 32; i++ {
+	for i := len(prefix) + startIndex; i < endIndex; i++ {
 		result[i] = byte('_')
 	}
-	return result[:], nil
+	return &result
+}
+
+func createAddressOptionalShardId(input string, numLeadingZeros int) ([]byte, error) {
+	tokens := strings.Split(input, "#")
+	switch len(tokens) {
+	case 1:
+		address := createAddressFromPrefix([]byte(tokens[0]), numLeadingZeros, 32)
+		return address[:], nil
+	case 2:
+		shardId, err := decodeShardId(tokens[1])
+		if err != nil {
+			return []byte{}, err
+		}
+		address := createAddressFromPrefix([]byte(tokens[0]), numLeadingZeros, 32)
+		address[31] = shardId
+		return address[:], nil
+	default:
+		return []byte{}, fmt.Errorf("only one shard id separator allowed in address expression. Got: `%s`", input)
+	}
+}
+
+// SCAddressNumLeadingZeros is the number of zer obytes every smart contract address begins with
+const SCAddressNumLeadingZeros = 8
+
+// Generates a 32-byte EOA address based on the input.
+func addressExpression(input string) ([]byte, error) {
+	return createAddressOptionalShardId(input, 0)
+}
+
+// Generates a 32-byte smart contract address based on the input.
+func scExpression(input string) ([]byte, error) {
+	return createAddressOptionalShardId(input, SCAddressNumLeadingZeros)
 }

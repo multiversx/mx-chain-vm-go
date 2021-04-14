@@ -6,7 +6,7 @@
             "txId": "bogus-name",
             "tx": {
                 "from": "address:viewer",
-                "to": "''dns____________________________|0xbb",
+                "to": "sc:dns#bb",
                 "value": "0",
                 "function": "resolve",
                 "arguments": [
