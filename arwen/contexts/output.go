@@ -409,25 +409,6 @@ func (context *outputContext) AddTxValueToAccount(address []byte, value *big.Int
 	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
 }
 
-// GetCurrentTotalUsedGas returns the current total used gas from the merged vm outputs
-func (context *outputContext) GetCurrentTotalUsedGas() (uint64, bool) {
-	gasUsed := uint64(0)
-	gasLockSentForward := false
-	for _, outputAccount := range context.outputState.OutputAccounts {
-		gasUsed = math.AddUint64(gasUsed, outputAccount.GasUsed)
-		for _, outputTransfer := range outputAccount.OutputTransfers {
-			gasUsed = math.AddUint64(gasUsed, outputTransfer.GasLimit)
-			gasUsed = math.AddUint64(gasUsed, outputTransfer.GasLocked)
-
-			if outputTransfer.GasLocked > 0 {
-				gasLockSentForward = true
-			}
-		}
-	}
-
-	return gasUsed, gasLockSentForward
-}
-
 // GetVMOutput updates the current VMOutput and returns it
 func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 	runtime := context.host.Runtime()
@@ -457,17 +438,6 @@ func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 	return context.outputState
 }
 
-func (context *outputContext) isBuiltInExecution() bool {
-	if context.host.IsBuiltinFunctionName(context.host.Runtime().Function()) {
-		return true
-	}
-	if len(context.host.Runtime().GetVMInput().ESDTTokenName) > 0 {
-		return true
-	}
-
-	return false
-}
-
 func (context *outputContext) checkGas(remainedFromForwarded uint64) error {
 	if !context.host.IsArwenV2Enabled() {
 		return nil
@@ -492,6 +462,42 @@ func (context *outputContext) checkGas(remainedFromForwarded uint64) error {
 	}
 
 	return nil
+}
+
+// GetCurrentTotalUsedGas returns the current total used gas from the merged vm outputs
+func (context *outputContext) GetCurrentTotalUsedGas() (uint64, bool) {
+	gasUsed := uint64(0)
+	gasLockSentForward := false
+	for _, outputAccount := range context.outputState.OutputAccounts {
+		gasUsed = math.AddUint64(gasUsed, outputAccount.GasUsed)
+		for _, outputTransfer := range outputAccount.OutputTransfers {
+			gasUsed = math.AddUint64(gasUsed, outputTransfer.GasLimit)
+			gasUsed = math.AddUint64(gasUsed, outputTransfer.GasLocked)
+
+			if outputTransfer.GasLocked > 0 {
+				gasLockSentForward = true
+			}
+		}
+	}
+
+	return gasUsed, gasLockSentForward
+}
+
+// GetGasUsedByAllOtherContracts returns the total gas used by all the
+// contracts that aren't the current contract.
+func (context *outputContext) GetGasUsedByAllOtherContracts() uint64 {
+	return 0
+}
+
+func (context *outputContext) isBuiltInExecution() bool {
+	if context.host.IsBuiltinFunctionName(context.host.Runtime().Function()) {
+		return true
+	}
+	if len(context.host.Runtime().GetVMInput().ESDTTokenName) > 0 {
+		return true
+	}
+
+	return false
 }
 
 // DeployCode sets the given code to a an account, and creates a new codeUpdates entry at the accounts address.
