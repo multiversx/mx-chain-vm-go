@@ -538,7 +538,7 @@ func (pfe *fuzzDexExecutor) setFeeOn() error {
 				"from": "''%s",
 				"to": "%s",
 				"value": "0",
-				"function": "cachePair",
+				"function": "addTrustedSwapPair",
 				"arguments": [
 					"%s",
 					"str:%s",
