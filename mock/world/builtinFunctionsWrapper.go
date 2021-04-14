@@ -2,9 +2,9 @@ package worldmock
 
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/ElrondNetwork/elrond-go/data/state"
-	integrationTests "github.com/ElrondNetwork/elrond-go/integrationTests/mock"
 	"github.com/ElrondNetwork/elrond-go/marshal"
 	"github.com/ElrondNetwork/elrond-go/process"
 	"github.com/ElrondNetwork/elrond-go/process/smartContract/builtInFunctions"
@@ -35,7 +35,7 @@ func NewBuiltinFunctionsWrapper(
 	dnsMap := makeDNSAddresses(numDNSAddresses)
 
 	argsBuiltIn := builtInFunctions.ArgsCreateBuiltInFunctionContainer{
-		GasSchedule:      integrationTests.NewGasScheduleNotifierMock(gasMap),
+		GasSchedule:      mock.NewGasScheduleNotifierMock(gasMap),
 		MapDNSAddresses:  dnsMap,
 		Marshalizer:      WorldMarshalizer,
 		Accounts:         world.AccountsAdapter,
