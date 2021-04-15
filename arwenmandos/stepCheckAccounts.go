@@ -28,7 +28,7 @@ func (ae *ArwenTestExecutor) checkAccounts(checkAccounts *mj.CheckAccounts) erro
 			postAcctMatch := mj.FindCheckAccount(checkAccounts.Accounts, []byte(worldAcctAddr))
 			if postAcctMatch == nil {
 				return fmt.Errorf("unexpected account address: %s",
-					ae.valueReconstructor.Reconstruct(
+					ae.exprReconstructor.Reconstruct(
 						[]byte(worldAcctAddr),
 						er.AddressHint))
 			}
@@ -39,14 +39,14 @@ func (ae *ArwenTestExecutor) checkAccounts(checkAccounts *mj.CheckAccounts) erro
 		matchingAcct, isMatch := ae.World.AcctMap[string(expectedAcct.Address.Value)]
 		if !isMatch {
 			return fmt.Errorf("account %s expected but not found after running test",
-				ae.valueReconstructor.Reconstruct(
+				ae.exprReconstructor.Reconstruct(
 					expectedAcct.Address.Value,
 					er.AddressHint))
 		}
 
 		if !bytes.Equal(matchingAcct.Address, expectedAcct.Address.Value) {
 			return fmt.Errorf("bad account address %s",
-				ae.valueReconstructor.Reconstruct(
+				ae.exprReconstructor.Reconstruct(
 					matchingAcct.Address,
 					er.AddressHint))
 		}
@@ -62,14 +62,14 @@ func (ae *ArwenTestExecutor) checkAccounts(checkAccounts *mj.CheckAccounts) erro
 			return fmt.Errorf("bad account balance. Account: %s. Want: \"%s\". Have: \"%s\"",
 				hex.EncodeToString(matchingAcct.Address),
 				expectedAcct.Balance.Original,
-				ae.valueReconstructor.ReconstructFromBigInt(matchingAcct.Balance))
+				ae.exprReconstructor.ReconstructFromBigInt(matchingAcct.Balance))
 		}
 
 		if !expectedAcct.Username.Check(matchingAcct.Username) {
 			return fmt.Errorf("bad account username. Account: %s. Want: %s. Have: \"%s\"",
 				hex.EncodeToString(matchingAcct.Address),
 				oj.JSONString(expectedAcct.Username.Original),
-				ae.valueReconstructor.Reconstruct(
+				ae.exprReconstructor.Reconstruct(
 					matchingAcct.Username,
 					er.StrHint))
 		}
@@ -128,9 +128,9 @@ func (ae *ArwenTestExecutor) checkAccountStorage(expectedAcct *mj.CheckAccount, 
 		if !bytes.Equal(want, have) && !worldmock.IsESDTKey([]byte(k)) {
 			storageError += fmt.Sprintf(
 				"\n  for key %s: Want: %s. Have: %s",
-				ae.valueReconstructor.Reconstruct([]byte(k), er.NoHint),
-				ae.valueReconstructor.Reconstruct(want, er.NoHint),
-				ae.valueReconstructor.Reconstruct(have, er.NoHint))
+				ae.exprReconstructor.Reconstruct([]byte(k), er.NoHint),
+				ae.exprReconstructor.Reconstruct(want, er.NoHint),
+				ae.exprReconstructor.Reconstruct(have, er.NoHint))
 		}
 	}
 	if len(storageError) > 0 {

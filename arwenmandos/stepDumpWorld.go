@@ -12,7 +12,7 @@ func (ae *ArwenTestExecutor) DumpWorld() error {
 	fmt.Print("world state dump:\n")
 
 	for addr, account := range ae.World.AcctMap {
-		fmt.Printf("\t%s\n", ae.valueReconstructor.Reconstruct([]byte(addr), er.AddressHint))
+		fmt.Printf("\t%s\n", ae.exprReconstructor.Reconstruct([]byte(addr), er.AddressHint))
 		fmt.Printf("\t\tnonce: %d\n", account.Nonce)
 		fmt.Printf("\t\tbalance: %d\n", account.Balance)
 
@@ -28,8 +28,8 @@ func (ae *ArwenTestExecutor) DumpWorld() error {
 				value := account.Storage[key]
 				if len(value) > 0 {
 					fmt.Printf("\t\t\t%s => %s\n",
-						ae.valueReconstructor.Reconstruct([]byte(key), er.NoHint),
-						ae.valueReconstructor.Reconstruct(value, er.NoHint))
+						ae.exprReconstructor.Reconstruct([]byte(key), er.NoHint),
+						ae.exprReconstructor.Reconstruct(value, er.NoHint))
 				}
 			}
 		}

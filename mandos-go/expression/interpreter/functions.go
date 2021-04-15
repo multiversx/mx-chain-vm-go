@@ -1,4 +1,4 @@
-package mandosvalueinterpreter
+package mandosexpressioninterpreter
 
 import (
 	"encoding/hex"

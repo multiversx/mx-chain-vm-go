@@ -22,12 +22,12 @@ var TestVMType = []byte{0, 0}
 
 // ArwenTestExecutor parses, interprets and executes both .test.json tests and .scen.json scenarios with Arwen.
 type ArwenTestExecutor struct {
-	fileResolver            fr.FileResolver
 	World                   *worldhook.MockWorld
 	vm                      vmi.VMExecutionHandler
 	checkGas                bool
 	mandosGasScheduleLoaded bool
-	valueReconstructor      er.ExprReconstructor
+	fileResolver            fr.FileResolver
+	exprReconstructor       er.ExprReconstructor
 }
 
 var _ mc.TestExecutor = (*ArwenTestExecutor)(nil)
@@ -56,12 +56,12 @@ func NewArwenTestExecutor() (*ArwenTestExecutor, error) {
 	}
 
 	return &ArwenTestExecutor{
-		fileResolver:            nil,
 		World:                   world,
 		vm:                      vm,
 		checkGas:                true,
 		mandosGasScheduleLoaded: false,
-		valueReconstructor:      er.ExprReconstructor{},
+		fileResolver:            nil,
+		exprReconstructor:       er.ExprReconstructor{},
 	}, nil
 }
 
