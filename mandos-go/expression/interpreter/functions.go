@@ -8,6 +8,9 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
+// SCAddressNumLeadingZeros is the number of zer obytes every smart contract address begins with
+const SCAddressNumLeadingZeros = 8
+
 // Keccak256 cryptographic function
 // TODO: externalize the same way as the file resolver
 func Keccak256(data []byte) ([]byte, error) {
@@ -57,9 +60,6 @@ func createAddressOptionalShardId(input string, numLeadingZeros int) ([]byte, er
 		return []byte{}, fmt.Errorf("only one shard id separator allowed in address expression. Got: `%s`", input)
 	}
 }
-
-// SCAddressNumLeadingZeros is the number of zer obytes every smart contract address begins with
-const SCAddressNumLeadingZeros = 8
 
 // Generates a 32-byte EOA address based on the input.
 func addressExpression(input string) ([]byte, error) {
