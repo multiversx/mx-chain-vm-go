@@ -329,7 +329,6 @@ func (context *outputContext) TransferESDT(
 	}
 
 	vmOutput, gasConsumedByTransfer, err := context.host.ExecuteESDTTransfer(destination, sender, tokenIdentifier, nonce, value, callType)
-	context.host.Metering().AddGasUsedByBuiltinFunctions(gasConsumedByTransfer)
 	if err != nil {
 		return 0, err
 	}
@@ -446,11 +445,9 @@ func (context *outputContext) checkGas(remainedFromForwarded uint64) error {
 	}
 
 	gasUsed, _ := context.GetCurrentTotalUsedGas()
-	gasUsedByBuiltinFunctions := context.host.Metering().GetGasUsedByBuiltinFunctions()
 	gasRemaining := context.outputState.GasRemaining
 
-	totalGas := math.AddUint64(gasUsed, gasUsedByBuiltinFunctions)
-	totalGas = math.AddUint64(totalGas, gasRemaining)
+	totalGas := math.AddUint64(gasUsed, gasRemaining)
 
 	gasProvided := context.host.Metering().GetGasProvided()
 

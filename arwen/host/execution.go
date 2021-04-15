@@ -786,7 +786,6 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmc
 
 	if vmOutput.GasRemaining < input.GasProvided {
 		metering.UseGas(gasConsumed)
-		metering.AddGasUsedByBuiltinFunctions(gasConsumed)
 	}
 
 	newVMInput, err := host.isSCExecutionAfterBuiltInFunc(input, vmOutput)

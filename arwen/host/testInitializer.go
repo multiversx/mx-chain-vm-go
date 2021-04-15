@@ -187,6 +187,17 @@ func defaultTestArwenForTwoSCs(
 	return host, stubBlockchainHook
 }
 
+func defaultTestArwenWithWorldMock(tb testing.TB) (*vmHost, *worldmock.MockWorld) {
+	world := worldmock.NewMockWorld()
+	host := defaultTestArwen(tb, world)
+
+	err := world.InitBuiltinFunctions(host.GetGasScheduleMap())
+	require.Nil(tb, err)
+
+	host.protocolBuiltinFunctions = world.BuiltinFuncs.GetBuiltinFunctionNames()
+	return host, world
+}
+
 func defaultTestArwen(tb testing.TB, blockchain vmcommon.BlockchainHook) *vmHost {
 	gasSchedule := customGasSchedule
 	if gasSchedule == nil {

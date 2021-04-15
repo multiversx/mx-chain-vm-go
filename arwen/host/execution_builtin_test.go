@@ -16,6 +16,7 @@ import (
 
 var ESDTTransferGasCost = uint64(1)
 var ESDTTestTokenName = []byte("TT")
+var ESDTTestTokenKey = worldmock.MakeTokenKey(ESDTTestTokenName, 0)
 
 func TestExecution_ExecuteOnDestContext_ESDTTransferWithoutExecute(t *testing.T) {
 	code := GetTestSCCodeModule("exec-dest-ctx-esdt/basic", "basic", "../../")
@@ -174,38 +175,47 @@ func TestESDT_GettersAPI(t *testing.T) {
 }
 
 func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
+	host, world := defaultTestArwenWithWorldMock(t)
+
+	// Deploy the "parent" contract, which will call the exchange; the actual
+	// code of the contract is not important, because the exchange will be called
+	// by the "parent" using a manual call to host.ExecuteOnDestContext().
 	dummyCode := GetTestSCCode("init-simple", "../../")
+	parentAccount := world.AcctMap.CreateSmartContractAccount(userAddress, parentAddress, dummyCode)
+	parentAccount.SetTokenBalanceUint64(ESDTTestTokenKey, 1000)
+
+	// Deploy the exchange contract, which will receive ESDT and verify that it
+	// can see the received token amount and token name.
+	exchangeAddress := MakeTestSCAddress("exchange")
 	exchangeCode := GetTestSCCode("exchange", "../../")
-	scBalance := big.NewInt(1000)
-	esdtValue := int64(5)
+	exchange := world.AcctMap.CreateSmartContractAccount(userAddress, exchangeAddress, exchangeCode)
+	exchange.Balance = big.NewInt(1000)
 
-	host, stubBlockchainHook := defaultTestArwenForCall(t, exchangeCode, scBalance)
-	stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
-	host.protocolBuiltinFunctions = getDummyBuiltinFunctionNames()
+	host.InitState()
 
+	// Prepare Arwen to appear as if the parent contract is being executed
 	input := DefaultTestContractCallInput()
+	host.Runtime().InitStateFromContractCallInput(input)
+	_ = host.Runtime().StartWasmerInstance(dummyCode, input.GasProvided, true)
 	err := host.Output().TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue, false)
 	require.Nil(t, err)
 
-	input.RecipientAddr = parentAddress
+	// Transfer ESDT to the exchange and call its "validateGetters" method
+	esdtValue := int64(5)
+	input.CallerAddr = parentAddress
+	input.RecipientAddr = exchangeAddress
 	input.Function = core.BuiltInFunctionESDTTransfer
-	input.GasProvided = 1000000
+	input.GasProvided = 10000
 	input.Arguments = [][]byte{
 		ESDTTestTokenName,
 		big.NewInt(esdtValue).Bytes(),
 		[]byte("validateGetters"),
 	}
 
-	host.InitState()
-
-	_ = host.Runtime().StartWasmerInstance(dummyCode, input.GasProvided, true)
 	vmOutput, asyncInfo, _, err := host.ExecuteOnDestContext(input)
-
 	require.Nil(t, err)
 	require.NotNil(t, vmOutput)
-
 	require.Zero(t, len(asyncInfo.AsyncContextMap))
-
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 	host.Clean()
 }
