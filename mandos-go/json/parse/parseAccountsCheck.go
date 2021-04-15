@@ -50,7 +50,7 @@ func (p *Parser) processCheckAccount(acctRaw oj.OJsonObject) (*mj.CheckAccount, 
 					return nil, errors.New("invalid ESDT map")
 				}
 				for _, esdtKvp := range esdtMap.OrderedKV {
-					tokenNameStr, err := p.ValueInterpreter.InterpretString(esdtKvp.Key)
+					tokenNameStr, err := p.ExprInterpreter.InterpretString(esdtKvp.Key)
 					if err != nil {
 						return nil, fmt.Errorf("invalid esdt token identifer: %w", err)
 					}
@@ -74,7 +74,7 @@ func (p *Parser) processCheckAccount(acctRaw oj.OJsonObject) (*mj.CheckAccount, 
 					return nil, errors.New("invalid account storage")
 				}
 				for _, storageKvp := range storageMap.OrderedKV {
-					byteKey, err := p.ValueInterpreter.InterpretString(storageKvp.Key)
+					byteKey, err := p.ExprInterpreter.InterpretString(storageKvp.Key)
 					if err != nil {
 						return nil, fmt.Errorf("invalid account storage key: %w", err)
 					}

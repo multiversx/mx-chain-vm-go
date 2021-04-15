@@ -7,14 +7,14 @@ import (
 	"math/big"
 	"strings"
 
-	vi "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/valueinterpreter"
+	ei "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/expression/interpreter"
 )
 
-type ValueReconstructorHint uint64
+type ExprReconstructorHint uint64
 
 const (
 	// NoHint indicates that the type if not known
-	NoHint ValueReconstructorHint = iota
+	NoHint ExprReconstructorHint = iota
 
 	// NumberHint hints that value should be a number
 	NumberHint
@@ -26,10 +26,10 @@ const (
 	StrHint
 )
 
-// ValueReconstructor is a component that attempts to convert raw bytes to a human-readable format.
-type ValueReconstructor struct{}
+// ExprReconstructor is a component that attempts to convert raw bytes to a human-readable format.
+type ExprReconstructor struct{}
 
-func (vr *ValueReconstructor) Reconstruct(value []byte, hint ValueReconstructorHint) string {
+func (er *ExprReconstructor) Reconstruct(value []byte, hint ExprReconstructorHint) string {
 	switch hint {
 	case NumberHint:
 		return fmt.Sprintf("%d", big.NewInt(0).SetBytes(value))
@@ -42,12 +42,12 @@ func (vr *ValueReconstructor) Reconstruct(value []byte, hint ValueReconstructorH
 	}
 }
 
-func (vr *ValueReconstructor) ReconstructFromBigInt(value *big.Int) string {
-	return vr.Reconstruct(value.Bytes(), NumberHint)
+func (er *ExprReconstructor) ReconstructFromBigInt(value *big.Int) string {
+	return er.Reconstruct(value.Bytes(), NumberHint)
 }
 
-func (vr *ValueReconstructor) ReconstructFromUint64(value uint64) string {
-	return vr.Reconstruct(big.NewInt(0).SetUint64(value).Bytes(), NumberHint)
+func (er *ExprReconstructor) ReconstructFromUint64(value uint64) string {
+	return er.Reconstruct(big.NewInt(0).SetUint64(value).Bytes(), NumberHint)
 }
 
 func unknownByteArrayPretty(bytes []byte) string {
@@ -69,15 +69,15 @@ func addressPretty(value []byte) string {
 	}
 
 	// smart contract addresses
-	leadingZeros := make([]byte, vi.SCAddressNumLeadingZeros)
-	if bytes.Equal(value[:vi.SCAddressNumLeadingZeros], leadingZeros) {
+	leadingZeros := make([]byte, ei.SCAddressNumLeadingZeros)
+	if bytes.Equal(value[:ei.SCAddressNumLeadingZeros], leadingZeros) {
 		if value[31] == byte('_') {
-			addrStr := string(value[vi.SCAddressNumLeadingZeros:])
+			addrStr := string(value[ei.SCAddressNumLeadingZeros:])
 			addrStr = strings.TrimRight(addrStr, "_")
 			return fmt.Sprintf("sc:%s", addrStr)
 		} else {
 			// last byte is the shard id and is explicit
-			addrStr := string(value[vi.SCAddressNumLeadingZeros:31])
+			addrStr := string(value[ei.SCAddressNumLeadingZeros:31])
 			addrStr = strings.TrimRight(addrStr, "_")
 			shard_id := value[31]
 			return fmt.Sprintf("sc:%s#%x", addrStr, shard_id)

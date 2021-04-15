@@ -108,7 +108,7 @@ func (p *Parser) processESDTRoles(esdtRolesRaw oj.OJsonObject) ([]*mj.ESDTRoles,
 		return nil, errors.New("ESDTRoles object is not a map")
 	}
 	for _, kvp := range esdtRolesMap.OrderedKV {
-		tokenNameStr, err := p.ValueInterpreter.InterpretString(kvp.Key)
+		tokenNameStr, err := p.ExprInterpreter.InterpretString(kvp.Key)
 		if err != nil {
 			return nil, fmt.Errorf("invalid esdt token identifer: %w", err)
 		}
@@ -128,7 +128,7 @@ func (p *Parser) processESDTRoles(esdtRolesRaw oj.OJsonObject) ([]*mj.ESDTRoles,
 func (p *Parser) processESDTLastNonces(esdtLastNonces *oj.OJsonMap) (map[string]*mj.JSONUint64, error) {
 	lastNonces := make(map[string]*mj.JSONUint64)
 	for _, kvp := range esdtLastNonces.OrderedKV {
-		tokenNameStr, err := p.ValueInterpreter.InterpretString(kvp.Key)
+		tokenNameStr, err := p.ExprInterpreter.InterpretString(kvp.Key)
 		if err != nil {
 			return nil, fmt.Errorf("invalid esdt token identifer: %w", err)
 		}

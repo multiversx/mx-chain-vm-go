@@ -5,8 +5,8 @@ import (
 	"encoding/hex"
 	"fmt"
 
+	er "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/expression/reconstructor"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
-	vr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/valuereconstructor"
 	oj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/orderedjson"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	"github.com/ElrondNetwork/elrond-go/data/esdt"
@@ -30,7 +30,7 @@ func (ae *ArwenTestExecutor) checkAccounts(checkAccounts *mj.CheckAccounts) erro
 				return fmt.Errorf("unexpected account address: %s",
 					ae.valueReconstructor.Reconstruct(
 						[]byte(worldAcctAddr),
-						vr.AddressHint))
+						er.AddressHint))
 			}
 		}
 	}
@@ -41,14 +41,14 @@ func (ae *ArwenTestExecutor) checkAccounts(checkAccounts *mj.CheckAccounts) erro
 			return fmt.Errorf("account %s expected but not found after running test",
 				ae.valueReconstructor.Reconstruct(
 					expectedAcct.Address.Value,
-					vr.AddressHint))
+					er.AddressHint))
 		}
 
 		if !bytes.Equal(matchingAcct.Address, expectedAcct.Address.Value) {
 			return fmt.Errorf("bad account address %s",
 				ae.valueReconstructor.Reconstruct(
 					matchingAcct.Address,
-					vr.AddressHint))
+					er.AddressHint))
 		}
 
 		if !expectedAcct.Nonce.Check(matchingAcct.Nonce) {
@@ -71,7 +71,7 @@ func (ae *ArwenTestExecutor) checkAccounts(checkAccounts *mj.CheckAccounts) erro
 				oj.JSONString(expectedAcct.Username.Original),
 				ae.valueReconstructor.Reconstruct(
 					matchingAcct.Username,
-					vr.StrHint))
+					er.StrHint))
 		}
 
 		if !expectedAcct.Code.Check(matchingAcct.Code) {
@@ -128,9 +128,9 @@ func (ae *ArwenTestExecutor) checkAccountStorage(expectedAcct *mj.CheckAccount, 
 		if !bytes.Equal(want, have) && !worldmock.IsESDTKey([]byte(k)) {
 			storageError += fmt.Sprintf(
 				"\n  for key %s: Want: %s. Have: %s",
-				ae.valueReconstructor.Reconstruct([]byte(k), vr.NoHint),
-				ae.valueReconstructor.Reconstruct(want, vr.NoHint),
-				ae.valueReconstructor.Reconstruct(have, vr.NoHint))
+				ae.valueReconstructor.Reconstruct([]byte(k), er.NoHint),
+				ae.valueReconstructor.Reconstruct(want, er.NoHint),
+				ae.valueReconstructor.Reconstruct(have, er.NoHint))
 		}
 	}
 	if len(storageError) > 0 {

@@ -7,9 +7,9 @@ import (
 	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	mc "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/controller"
-	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/fileresolver"
+	er "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/expression/reconstructor"
+	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/fileresolver"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
-	vr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/valuereconstructor"
 	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
@@ -27,7 +27,7 @@ type ArwenTestExecutor struct {
 	vm                      vmi.VMExecutionHandler
 	checkGas                bool
 	mandosGasScheduleLoaded bool
-	valueReconstructor      vr.ValueReconstructor
+	valueReconstructor      er.ExprReconstructor
 }
 
 var _ mc.TestExecutor = (*ArwenTestExecutor)(nil)
@@ -61,7 +61,7 @@ func NewArwenTestExecutor() (*ArwenTestExecutor, error) {
 		vm:                      vm,
 		checkGas:                true,
 		mandosGasScheduleLoaded: false,
-		valueReconstructor:      vr.ValueReconstructor{},
+		valueReconstructor:      er.ExprReconstructor{},
 	}, nil
 }
 

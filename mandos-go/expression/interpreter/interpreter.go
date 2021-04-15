@@ -7,7 +7,7 @@ import (
 	"math/big"
 	"strings"
 
-	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/fileresolver"
+	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/fileresolver"
 	oj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/orderedjson"
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 )
@@ -32,8 +32,8 @@ const i8Prefix = "i8:"
 const biguintPrefix = "biguint:"
 const nestedPrefix = "nested:"
 
-// ValueInterpreter provides context for computing Mandos values.
-type ValueInterpreter struct {
+// ExprInterpreter provides context for computing Mandos values.
+type ExprInterpreter struct {
 	FileResolver fr.FileResolver
 }
 
@@ -43,15 +43,15 @@ type ValueInterpreter struct {
 // Lists are evaluated by concatenating their items' representations.
 // Maps are evaluated by concatenating their values' representations (keys are ignored).
 // See InterpretString on how strings are being interpreted.
-func (vi *ValueInterpreter) InterpretSubTree(obj oj.OJsonObject) ([]byte, error) {
+func (ei *ExprInterpreter) InterpretSubTree(obj oj.OJsonObject) ([]byte, error) {
 	if str, isStr := obj.(*oj.OJsonString); isStr {
-		return vi.InterpretString(str.Value)
+		return ei.InterpretString(str.Value)
 	}
 
 	if list, isList := obj.(*oj.OJsonList); isList {
 		var concat []byte
 		for _, item := range list.AsList() {
-			value, err := vi.InterpretSubTree(item)
+			value, err := ei.InterpretSubTree(item)
 			if err != nil {
 				return []byte{}, err
 			}
@@ -68,7 +68,7 @@ func (vi *ValueInterpreter) InterpretSubTree(obj oj.OJsonObject) ([]byte, error)
 		// and we need consistency
 		sortedKVP := mp.KeyValuePairsSortedByKey()
 		for _, kvp := range sortedKVP {
-			value, err := vi.InterpretSubTree(kvp.Value)
+			value, err := ei.InterpretSubTree(kvp.Value)
 			if err != nil {
 				return []byte{}, err
 			}
@@ -92,7 +92,7 @@ func (vi *ValueInterpreter) InterpretSubTree(obj oj.OJsonObject) ([]byte, error)
 // - "keccak256:..."
 // - concatenation using |
 //
-func (vi *ValueInterpreter) InterpretString(strRaw string) ([]byte, error) {
+func (ei *ExprInterpreter) InterpretString(strRaw string) ([]byte, error) {
 	if len(strRaw) == 0 {
 		return []byte{}, nil
 	}
@@ -100,10 +100,10 @@ func (vi *ValueInterpreter) InterpretString(strRaw string) ([]byte, error) {
 	// file contents
 	// TODO: make this part of a proper parser
 	if strings.HasPrefix(strRaw, filePrefix) {
-		if vi.FileResolver == nil {
+		if ei.FileResolver == nil {
 			return []byte{}, errors.New("parser FileResolver not provided")
 		}
-		fileContents, err := vi.FileResolver.ResolveFileValue(strRaw[len(filePrefix):])
+		fileContents, err := ei.FileResolver.ResolveFileValue(strRaw[len(filePrefix):])
 		if err != nil {
 			return []byte{}, err
 		}
@@ -113,7 +113,7 @@ func (vi *ValueInterpreter) InterpretString(strRaw string) ([]byte, error) {
 	// keccak256
 	// TODO: make this part of a proper parser
 	if strings.HasPrefix(strRaw, keccak256Prefix) {
-		arg, err := vi.InterpretString(strRaw[len(keccak256Prefix):])
+		arg, err := ei.InterpretString(strRaw[len(keccak256Prefix):])
 		if err != nil {
 			return []byte{}, fmt.Errorf("cannot parse keccak256 argument: %w", err)
 		}
@@ -130,7 +130,7 @@ func (vi *ValueInterpreter) InterpretString(strRaw string) ([]byte, error) {
 	if len(parts) > 1 {
 		concat := make([]byte, 0)
 		for _, part := range parts {
-			eval, err := vi.InterpretString(part)
+			eval, err := ei.InterpretString(part)
 			if err != nil {
 				return []byte{}, err
 			}
@@ -168,7 +168,7 @@ func (vi *ValueInterpreter) InterpretString(strRaw string) ([]byte, error) {
 	}
 
 	// fixed width numbers
-	parsed, result, err := vi.tryInterpretFixedWidth(strRaw)
+	parsed, result, err := ei.tryInterpretFixedWidth(strRaw)
 	if err != nil {
 		return nil, err
 	}
@@ -177,14 +177,14 @@ func (vi *ValueInterpreter) InterpretString(strRaw string) ([]byte, error) {
 	}
 
 	// general numbers, arbitrary length
-	return vi.interpretNumber(strRaw, 0)
+	return ei.interpretNumber(strRaw, 0)
 }
 
 // targetWidth = 0 means minimum length that can contain the result
-func (vi *ValueInterpreter) interpretNumber(strRaw string, targetWidth int) ([]byte, error) {
+func (ei *ExprInterpreter) interpretNumber(strRaw string, targetWidth int) ([]byte, error) {
 	// signed numbers
 	if strRaw[0] == '-' || strRaw[0] == '+' {
-		numberBytes, err := vi.interpretUnsignedNumber(strRaw[1:])
+		numberBytes, err := ei.interpretUnsignedNumber(strRaw[1:])
 		if err != nil {
 			return []byte{}, err
 		}
@@ -201,13 +201,13 @@ func (vi *ValueInterpreter) interpretNumber(strRaw string, targetWidth int) ([]b
 
 	// unsigned numbers
 	if targetWidth == 0 {
-		return vi.interpretUnsignedNumber(strRaw)
+		return ei.interpretUnsignedNumber(strRaw)
 	}
 
-	return vi.interpretUnsignedNumberFixedWidth(strRaw, targetWidth)
+	return ei.interpretUnsignedNumberFixedWidth(strRaw, targetWidth)
 }
 
-func (vi *ValueInterpreter) interpretUnsignedNumber(strRaw string) ([]byte, error) {
+func (ei *ExprInterpreter) interpretUnsignedNumber(strRaw string) ([]byte, error) {
 	str := strings.ReplaceAll(strRaw, "_", "") // allow underscores, to group digits
 	str = strings.ReplaceAll(str, ",", "")     // also allow commas to group digits
 
@@ -247,8 +247,8 @@ func (vi *ValueInterpreter) interpretUnsignedNumber(strRaw string) ([]byte, erro
 	return result.Bytes(), nil
 }
 
-func (vi *ValueInterpreter) interpretUnsignedNumberFixedWidth(strRaw string, targetWidth int) ([]byte, error) {
-	numberBytes, err := vi.interpretUnsignedNumber(strRaw)
+func (ei *ExprInterpreter) interpretUnsignedNumberFixedWidth(strRaw string, targetWidth int) ([]byte, error) {
+	numberBytes, err := ei.interpretUnsignedNumber(strRaw)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -262,50 +262,50 @@ func (vi *ValueInterpreter) interpretUnsignedNumberFixedWidth(strRaw string, tar
 	return twos.CopyAlignRight(numberBytes, targetWidth), nil
 }
 
-func (vi *ValueInterpreter) tryInterpretFixedWidth(strRaw string) (bool, []byte, error) {
+func (ei *ExprInterpreter) tryInterpretFixedWidth(strRaw string) (bool, []byte, error) {
 	if strings.HasPrefix(strRaw, u64Prefix) {
-		r, err := vi.interpretUnsignedNumberFixedWidth(strRaw[len(u64Prefix):], 8)
+		r, err := ei.interpretUnsignedNumberFixedWidth(strRaw[len(u64Prefix):], 8)
 		return true, r, err
 	}
 	if strings.HasPrefix(strRaw, u32Prefix) {
-		r, err := vi.interpretUnsignedNumberFixedWidth(strRaw[len(u32Prefix):], 4)
+		r, err := ei.interpretUnsignedNumberFixedWidth(strRaw[len(u32Prefix):], 4)
 		return true, r, err
 	}
 	if strings.HasPrefix(strRaw, u16Prefix) {
-		r, err := vi.interpretUnsignedNumberFixedWidth(strRaw[len(u16Prefix):], 2)
+		r, err := ei.interpretUnsignedNumberFixedWidth(strRaw[len(u16Prefix):], 2)
 		return true, r, err
 	}
 	if strings.HasPrefix(strRaw, u8Prefix) {
-		r, err := vi.interpretUnsignedNumberFixedWidth(strRaw[len(u8Prefix):], 1)
+		r, err := ei.interpretUnsignedNumberFixedWidth(strRaw[len(u8Prefix):], 1)
 		return true, r, err
 	}
 
 	if strings.HasPrefix(strRaw, i64Prefix) {
-		r, err := vi.interpretNumber(strRaw[len(i64Prefix):], 8)
+		r, err := ei.interpretNumber(strRaw[len(i64Prefix):], 8)
 		return true, r, err
 	}
 	if strings.HasPrefix(strRaw, i32Prefix) {
-		r, err := vi.interpretNumber(strRaw[len(i32Prefix):], 4)
+		r, err := ei.interpretNumber(strRaw[len(i32Prefix):], 4)
 		return true, r, err
 	}
 	if strings.HasPrefix(strRaw, i16Prefix) {
-		r, err := vi.interpretNumber(strRaw[len(i16Prefix):], 2)
+		r, err := ei.interpretNumber(strRaw[len(i16Prefix):], 2)
 		return true, r, err
 	}
 	if strings.HasPrefix(strRaw, i8Prefix) {
-		r, err := vi.interpretNumber(strRaw[len(i8Prefix):], 1)
+		r, err := ei.interpretNumber(strRaw[len(i8Prefix):], 1)
 		return true, r, err
 	}
 
 	if strings.HasPrefix(strRaw, biguintPrefix) {
-		biBytes, err := vi.interpretUnsignedNumber(strRaw[len(biguintPrefix):])
+		biBytes, err := ei.interpretUnsignedNumber(strRaw[len(biguintPrefix):])
 		lengthBytes := big.NewInt(int64(len(biBytes))).Bytes()
 		encodedLength := twos.CopyAlignRight(lengthBytes, 4)
 		return true, append(encodedLength, biBytes...), err
 	}
 
 	if strings.HasPrefix(strRaw, nestedPrefix) {
-		nestedBytes, err := vi.InterpretString(strRaw[len(nestedPrefix):])
+		nestedBytes, err := ei.InterpretString(strRaw[len(nestedPrefix):])
 		lengthBytes := big.NewInt(int64(len(nestedBytes))).Bytes()
 		encodedLength := twos.CopyAlignRight(lengthBytes, 4)
 		return true, append(encodedLength, nestedBytes...), err

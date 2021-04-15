@@ -34,7 +34,7 @@ func (r *TestRunner) RunSingleJSONTest(contextPath string) error {
 		return err
 	}
 
-	r.Parser.ValueInterpreter.FileResolver.SetContext(contextPath)
+	r.Parser.ExprInterpreter.FileResolver.SetContext(contextPath)
 	top, parseErr := r.Parser.ParseTestFile(byteValue)
 	if parseErr != nil {
 		return parseErr
