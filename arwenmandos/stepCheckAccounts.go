@@ -11,13 +11,18 @@ import (
 	"github.com/ElrondNetwork/elrond-go/process/smartContract/builtInFunctions"
 )
 
-func checkAccounts(
-	checkAccounts *mj.CheckAccounts,
-	world *worldmock.MockWorld,
-) error {
+// ExecuteCheckStateStep executes a CheckStateStep defined by the current scenario.
+func (ae *ArwenTestExecutor) ExecuteCheckStateStep(step *mj.CheckStateStep) error {
+	if len(step.Comment) > 0 {
+		log.Trace("CheckStateStep", "comment", step.Comment)
+	}
 
+	return ae.checkAccounts(step.CheckAccounts)
+}
+
+func (ae *ArwenTestExecutor) checkAccounts(checkAccounts *mj.CheckAccounts) error {
 	if !checkAccounts.OtherAccountsAllowed {
-		for worldAcctAddr := range world.AcctMap {
+		for worldAcctAddr := range ae.World.AcctMap {
 			postAcctMatch := mj.FindCheckAccount(checkAccounts.Accounts, []byte(worldAcctAddr))
 			if postAcctMatch == nil {
 				return fmt.Errorf("unexpected account address: %s", hex.EncodeToString([]byte(worldAcctAddr)))
@@ -26,7 +31,7 @@ func checkAccounts(
 	}
 
 	for _, expectedAcct := range checkAccounts.Accounts {
-		matchingAcct, isMatch := world.AcctMap[string(expectedAcct.Address.Value)]
+		matchingAcct, isMatch := ae.World.AcctMap[string(expectedAcct.Address.Value)]
 		if !isMatch {
 			return fmt.Errorf("account %s expected but not found after running test",
 				hex.EncodeToString(expectedAcct.Address.Value))
@@ -93,7 +98,7 @@ func checkAccountStorage(expectedAcct *mj.CheckAccount, matchingAcct *worldmock.
 	for k := range allKeys {
 		want := expectedStorage[k]
 		have := matchingAcct.StorageValue(k)
-		if !bytes.Equal(want, have) && !worldmock.IsTokenKey([]byte(k)) {
+		if !bytes.Equal(want, have) && !worldmock.IsESDTKey([]byte(k)) {
 			storageError += fmt.Sprintf(
 				"\n  for key %s: Want: %s. Have: %s",
 				byteArrayPretty([]byte(k)), byteArrayPretty(want), byteArrayPretty(have))

@@ -77,7 +77,8 @@
                             ]
                         }
                     },
-                    "code": "file:smart-contract.wasm"
+                    "code": "file:smart-contract.wasm",
+                    "owner": "address:alice"
                 }
             },
             "newAddresses": [
@@ -272,7 +273,9 @@
                 "esdt": {
                     "tokenIdentifier": "str:MyToken",
                     "value": "250,000,000,000"
-                }
+                },
+                "gasLimit": "",
+                "gasPrice": ""
             }
         },
         {
@@ -338,13 +341,15 @@
                             ]
                         }
                     },
-                    "code": "file:smart-contract.wasm"
+                    "code": "file:smart-contract.wasm",
+                    "owner": "address:bob"
                 },
                 "address:smart_contract_address_2": {
                     "nonce": "*",
                     "balance": "*",
                     "storage": "*",
                     "code": "*",
+                    "owner": "*",
                     "asyncCallData": "``func@arg1@arg2"
                 },
                 "``account_with_defaults___________": {

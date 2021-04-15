@@ -27,7 +27,9 @@ func getTestRoot() string {
 
 // Tests Mandos consistency, no smart contracts.
 func TestMandosSelfTest(t *testing.T) {
-	runAllTestsInFolder(t, "mandos-self-test")
+	runTestsInFolder(t, "mandos-self-test", []string{
+		"mandos-self-test/builtin-func-esdt-transfer.scen.json",
+	})
 }
 
 func TestRustErc20(t *testing.T) {
@@ -114,20 +116,20 @@ func TestDelegation_v0_4_genesis(t *testing.T) {
 	runAllTestsInFolder(t, "delegation/v0_4_genesis")
 }
 
-func TestDelegation_v0_5_2_full(t *testing.T) {
+func TestDelegation_v0_5_latest_full(t *testing.T) {
 	if testing.Short() {
 		t.Skip("not a short test")
 	}
 
-	runAllTestsInFolder(t, "delegation/v0_5_2_full")
+	runAllTestsInFolder(t, "delegation/v0_5_latest_full")
 }
 
-func TestDelegation_v0_5_2_update(t *testing.T) {
+func TestDelegation_v0_5_latest_update(t *testing.T) {
 	if testing.Short() {
 		t.Skip("not a short test")
 	}
 
-	runAllTestsInFolder(t, "delegation/v0_5_2_update")
+	runAllTestsInFolder(t, "delegation/v0_5_latest_update")
 }
 
 func TestDnsContract(t *testing.T) {

@@ -6,7 +6,7 @@
             "accounts": {
                 "address:A": {
                     "nonce": "0",
-                    "balance": "0",
+                    "balance": "0x1000000000",
                     "esdt": {
                         "str:TOK-123": "150"
                     },
@@ -30,14 +30,18 @@
                 "esdt": {
                     "tokenIdentifier": "str:TOK-123",
                     "value": "100"
-                }
+                },
+                "gasLimit": "0x100000000",
+                "gasPrice": "0x01"
             }
         },
         {
             "step": "checkState",
+            "comment": "check after tx 1",
             "accounts": {
                 "address:A": {
                     "nonce": "1",
+                    "balance": "0xf00000000",
                     "esdt": {
                         "str:TOK-123": "50"
                     },
@@ -63,15 +67,18 @@
                 "esdt": {
                     "tokenIdentifier": "str:TOK-123",
                     "value": "50"
-                }
+                },
+                "gasLimit": "0x100000000",
+                "gasPrice": "0x01"
             }
         },
         {
             "step": "checkState",
+            "comment": "check after tx 2",
             "accounts": {
                 "address:A": {
                     "nonce": "2",
-                    "balance": "0",
+                    "balance": "0xe00000000",
                     "esdt": {
                         "str:TOK-123": "0"
                     },

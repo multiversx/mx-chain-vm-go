@@ -94,7 +94,7 @@ func TestFuzzDelegation_v0_4_0_genesis(t *testing.T) {
 
 	// after genesis
 	pfe.increaseBlockNonce(r.Intn(10000))
-	re := fuzzutil.NewRandomEventProvider()
+	re := fuzzutil.NewRandomEventProvider(r)
 
 	for stepIndex := 0; stepIndex < 500; stepIndex++ {
 		re.Reset()

@@ -2,6 +2,7 @@ package arwenmandos
 
 import (
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"math/big"
 
@@ -14,7 +15,7 @@ import (
 	"github.com/ElrondNetwork/elrond-go/process/smartContract/builtInFunctions"
 )
 
-func convertAccount(testAcct *mj.Account) *worldmock.Account {
+func convertAccount(testAcct *mj.Account) (*worldmock.Account, error) {
 	storage := make(map[string][]byte)
 	for _, stkvp := range testAcct.Storage {
 		key := string(stkvp.Key.Value)
@@ -22,7 +23,7 @@ func convertAccount(testAcct *mj.Account) *worldmock.Account {
 	}
 
 	if len(testAcct.Address.Value) != 32 {
-		panic("bad test: account address should be 32 bytes long")
+		return nil, errors.New("bad test: account address should be 32 bytes long")
 	}
 
 	account := &worldmock.Account{
@@ -32,7 +33,8 @@ func convertAccount(testAcct *mj.Account) *worldmock.Account {
 		BalanceDelta:    big.NewInt(0),
 		DeveloperReward: big.NewInt(0),
 		Storage:         storage,
-		Code:            []byte(testAcct.Code.Value),
+		Code:            testAcct.Code.Value,
+		OwnerAddress:    testAcct.Owner.Value,
 		AsyncCallData:   testAcct.AsyncCallData,
 		ShardID:         uint32(testAcct.Shard.Value),
 		IsSmartContract: len(testAcct.Code.Value) > 0,
@@ -58,16 +60,36 @@ func convertAccount(testAcct *mj.Account) *worldmock.Account {
 				Nonce: tokenNonce,
 			},
 		}
-		account.SetTokenData(tokenKey, tokenData)
+		err := account.SetTokenData(tokenKey, tokenData)
+		if err != nil {
+			return nil, err
+		}
+
 	}
 
 	for _, mandosESDTRoles := range testAcct.ESDTRoles {
 		tokenName := mandosESDTRoles.TokenIdentifier.Value
 		tokenRolesAsStrings := mandosESDTRoles.Roles
-		account.SetTokenRolesAsStrings(tokenName, tokenRolesAsStrings)
+		err := account.SetTokenRolesAsStrings(tokenName, tokenRolesAsStrings)
+		if err != nil {
+			return nil, err
+		}
+
 	}
 
-	return account
+	if len(testAcct.ESDTLastNonces) > 0 {
+		lastNonces := make(map[string]uint64)
+		for tokenName, jsonNonce := range testAcct.ESDTLastNonces {
+			lastNonces[tokenName] = jsonNonce.Value
+		}
+
+		err := account.SetLastNonces(lastNonces)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return account, nil
 }
 
 func makeESDTUserMetadataBytes(frozen bool) []byte {

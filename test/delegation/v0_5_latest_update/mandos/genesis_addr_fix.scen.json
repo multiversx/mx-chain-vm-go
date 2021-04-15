@@ -74,7 +74,7 @@
                         "``user_id|``node_address__________________s1": "1",
                         "``total_delegation_cap": "444,000,000,000,000"
                     },
-                    "code": "file:../output/delegation_v0_5_2_update.wasm"
+                    "code": "file:../output/delegation_latest_update.wasm"
                 }
             }
         },

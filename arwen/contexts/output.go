@@ -336,7 +336,11 @@ func (context *outputContext) TransferESDT(
 
 	gasRemaining := uint64(0)
 
-	if callInput != nil {
+	if callInput != nil && isSmartContract {
+		if gasConsumedByTransfer > callInput.GasProvided {
+			logOutput.Trace("ESDT post-transfer execution", "error", arwen.ErrNotEnoughGas)
+			return 0, arwen.ErrNotEnoughGas
+		}
 		gasRemaining = callInput.GasProvided - gasConsumedByTransfer
 	}
 
@@ -465,7 +469,7 @@ func (context *outputContext) isBuiltInExecution() bool {
 }
 
 func (context *outputContext) checkGas(remainedFromForwarded uint64) error {
-	if context.host.IsArwenV2Enabled() == false {
+	if !context.host.IsArwenV2Enabled() {
 		return nil
 	}
 

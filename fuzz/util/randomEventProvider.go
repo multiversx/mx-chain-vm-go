@@ -2,7 +2,6 @@ package fuzzutil
 
 import (
 	"math/rand"
-	"time"
 )
 
 // RandomEventProvider fuzzing utility.
@@ -13,9 +12,9 @@ type RandomEventProvider struct {
 }
 
 // NewRandomEventProvider is a RandomEventProvider constructor.
-func NewRandomEventProvider() *RandomEventProvider {
+func NewRandomEventProvider(r *rand.Rand) *RandomEventProvider {
 	re := &RandomEventProvider{
-		randProvider: rand.New(rand.NewSource(time.Now().UnixNano())),
+		randProvider: r,
 	}
 	re.Reset()
 	return re

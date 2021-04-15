@@ -13,7 +13,7 @@ func keccak256(data []byte) ([]byte, error) {
 	return result, nil
 }
 
-// Generates a 32-byte address based on the input.
+// Generates a 32-byte EOA address based on the input.
 func address(data []byte) ([]byte, error) {
 	if len(data) > 32 {
 		return data[:32], nil
@@ -24,6 +24,20 @@ func address(data []byte) ([]byte, error) {
 		result[i] = data[i]
 	}
 	for ; i < 32; i++ {
+		result[i] = byte('_')
+	}
+	return result[:], nil
+}
+
+const scAddressNumLeadingZeros = 8
+
+// Generates a 32-byte smart contract address based on the input.
+func sc_address(data []byte) ([]byte, error) {
+	var result [32]byte
+	for i := 0; i < len(data) && i < 32-scAddressNumLeadingZeros; i++ {
+		result[i+scAddressNumLeadingZeros] = data[i]
+	}
+	for i := len(data) + scAddressNumLeadingZeros; i < 32; i++ {
 		result[i] = byte('_')
 	}
 	return result[:], nil

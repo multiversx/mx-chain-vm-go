@@ -419,13 +419,15 @@ func (context *runtimeContext) SetVMInput(vmInput *vmcommon.VMInput) {
 	}
 
 	context.vmInput = &vmcommon.VMInput{
-		CallType:      vmInput.CallType,
-		GasPrice:      vmInput.GasPrice,
-		GasProvided:   vmInput.GasProvided,
-		GasLocked:     vmInput.GasLocked,
-		CallValue:     big.NewInt(0),
-		ESDTValue:     big.NewInt(0),
-		ESDTTokenName: nil,
+		CallType:       vmInput.CallType,
+		GasPrice:       vmInput.GasPrice,
+		GasProvided:    vmInput.GasProvided,
+		GasLocked:      vmInput.GasLocked,
+		CallValue:      big.NewInt(0),
+		ESDTValue:      big.NewInt(0),
+		ESDTTokenName:  nil,
+		ESDTTokenType:  vmInput.ESDTTokenType,
+		ESDTTokenNonce: vmInput.ESDTTokenNonce,
 	}
 
 	if vmInput.CallValue != nil {
@@ -471,9 +473,6 @@ func (context *runtimeContext) SetVMInput(vmInput *vmcommon.VMInput) {
 			copy(context.vmInput.Arguments[i], arg)
 		}
 	}
-
-	context.vmInput.ESDTTokenType = vmInput.ESDTTokenType
-	context.vmInput.ESDTTokenNonce = vmInput.ESDTTokenNonce
 }
 
 // GetSCAddress returns the SC address from the current context.
@@ -655,6 +654,9 @@ func (context *runtimeContext) CryptoAPIErrorShouldFailExecution() bool {
 
 // GetPointsUsed returns the gas points used by the current wasmer instance.
 func (context *runtimeContext) GetPointsUsed() uint64 {
+	if context.instance == nil {
+		return 0
+	}
 	return context.instance.GetPointsUsed()
 }
 

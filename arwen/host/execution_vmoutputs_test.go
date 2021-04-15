@@ -446,7 +446,7 @@ func expectedVMOutputSameCtxRecursiveMutualSCs(_ []byte, _ []byte, recursiveCall
 	return vmOutput
 }
 
-func expectedVMOutputDestCtxBuiltinClaim(input *vmcommon.ContractCallInput, code []byte) *vmcommon.VMOutput {
+func expectedVMOutputDestCtxBuiltinClaim(input *vmcommon.ContractCallInput, _ []byte) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 
 	account := AddNewOutputAccount(
@@ -467,7 +467,7 @@ func expectedVMOutputDestCtxBuiltinClaim(input *vmcommon.ContractCallInput, code
 	return vmOutput
 }
 
-func expectedVMOutputDestCtxBuiltinDoSomething(input *vmcommon.ContractCallInput, code []byte) *vmcommon.VMOutput {
+func expectedVMOutputDestCtxBuiltinDoSomething(input *vmcommon.ContractCallInput, _ []byte) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 
 	account := AddNewOutputAccount(
@@ -489,14 +489,14 @@ func expectedVMOutputDestCtxBuiltinDoSomething(input *vmcommon.ContractCallInput
 	return vmOutput
 }
 
-func expectedVMOutputDestCtxBuiltinNonexistent(input *vmcommon.ContractCallInput, code []byte) *vmcommon.VMOutput {
+func expectedVMOutputDestCtxBuiltinNonexistent(_ *vmcommon.ContractCallInput, _ []byte) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutputError()
 	vmOutput.ReturnMessage = arwen.ErrFuncNotFound.Error()
 
 	return vmOutput
 }
 
-func expectedVMOutputDestCtxBuiltinFail(input *vmcommon.ContractCallInput, code []byte) *vmcommon.VMOutput {
+func expectedVMOutputDestCtxBuiltinFail(_ *vmcommon.ContractCallInput, _ []byte) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutputError()
 	vmOutput.ReturnMessage = "whatdidyoudo"
 

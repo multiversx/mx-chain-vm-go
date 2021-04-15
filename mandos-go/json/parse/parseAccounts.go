@@ -70,6 +70,15 @@ func (p *Parser) processAccount(acctRaw oj.OJsonObject) (*mj.Account, error) {
 			if err != nil {
 				return nil, fmt.Errorf("invalid esdtRoles: %w", err)
 			}
+		case "esdtLastNonces":
+			esdtMap, esdtOk := kvp.Value.(*oj.OJsonMap)
+			if !esdtOk {
+				return nil, errors.New("invalid ESDT map for last nonces")
+			}
+			acct.ESDTLastNonces, err = p.processESDTLastNonces(esdtMap)
+			if err != nil {
+				return nil, fmt.Errorf("invalid esdtLastNonces: %w", err)
+			}
 		case "storage":
 			storageMap, storageOk := kvp.Value.(*oj.OJsonMap)
 			if !storageOk {
@@ -94,6 +103,11 @@ func (p *Parser) processAccount(acctRaw oj.OJsonObject) (*mj.Account, error) {
 			acct.Code, err = p.processStringAsByteArray(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("invalid account code: %w", err)
+			}
+		case "owner":
+			acct.Owner, err = p.processStringAsByteArray(kvp.Value)
+			if err != nil {
+				return nil, fmt.Errorf("invalid account owner: %w", err)
 			}
 		case "asyncCallData":
 			acct.AsyncCallData, err = p.parseString(kvp.Value)

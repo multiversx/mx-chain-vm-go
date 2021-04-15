@@ -86,30 +86,6 @@
                 "gas": "*",
                 "refund": "*"
             }
-        },
-        {
-            "step": "scCall",
-            "txId": "payable_any_3.4",
-            "tx": {
-                "from": "address:an_account",
-                "to": "address:features_contract",
-                "value": "0",
-                "esdt": {
-                    "tokenIdentifier": "str:PAYABLE-FEATURES-TOKEN",
-                    "value": "0"
-                },
-                "function": "payable_any_3",
-                "arguments": [],
-                "gasLimit": "50,000,000",
-                "gasPrice": "0"
-            },
-            "expect": {
-                "out": [ "0", "str:PAYABLE-FEATURES-TOKEN" ],
-                "status": "",
-                "logs": [],
-                "gas": "*",
-                "refund": "*"
-            }
         }
     ]
 }

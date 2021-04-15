@@ -103,3 +103,12 @@ func esdtRolesToMapOJ(esdtRoles []*mj.ESDTRoles) *oj.OJsonMap {
 	}
 	return esdtRolesOJ
 }
+
+func esdtLastNoncesToMapOJ(lastNonces map[string]*mj.JSONUint64) *oj.OJsonMap {
+	esdtLastNonces := oj.NewMap()
+	for tokenName, nonce := range lastNonces {
+		esdtLastNonces.Put(tokenName, uint64ToOJ(*nonce))
+	}
+
+	return esdtLastNonces
+}

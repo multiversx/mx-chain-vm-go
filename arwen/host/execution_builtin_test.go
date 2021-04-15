@@ -23,10 +23,11 @@ func TestExecution_ExecuteOnDestContext_ESDTTransferWithoutExecute(t *testing.T)
 	host, world := defaultTestArwenForCallWithWorldMock(t, code, scBalance)
 
 	tokenKey := worldmock.MakeTokenKey(ESDTTestTokenName, 0)
-	world.BuiltinFuncs.SetTokenData(parentAddress, tokenKey, &esdt.ESDigitalToken{
+	err := world.BuiltinFuncs.SetTokenData(parentAddress, tokenKey, &esdt.ESDigitalToken{
 		Value: big.NewInt(100),
 		Type:  uint32(core.Fungible),
 	})
+	require.Nil(t, err)
 
 	input := DefaultTestContractCallInput()
 	input.Function = "basic_transfer"

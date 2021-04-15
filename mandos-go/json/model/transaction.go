@@ -54,7 +54,7 @@ func (tt TransactionType) HasFunction() bool {
 
 // HasGas is a helper function to indicate if transaction has `esdtValue` or `esdtToken` fields.
 func (tt TransactionType) HasGas() bool {
-	return tt == ScDeploy || tt == ScCall
+	return tt == ScDeploy || tt == ScCall || tt.HasESDT()
 }
 
 // Transaction is a json object representing a transaction.
