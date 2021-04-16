@@ -180,16 +180,9 @@ func (host *vmHost) executeSyncCallbackCall(
 		"func", callbackCallInput.Function,
 		"args", callbackCallInput.Arguments)
 
-	gasConsumedForExecution := host.computeGasUsedInExecutionBeforeReset(callbackCallInput)
 	// used points should be reset before actually entering the callback execution
 	host.runtimeContext.SetPointsUsed(0)
 	callbackVMOutput, _, _, callBackErr := host.ExecuteOnDestContext(callbackCallInput)
-
-	noErrorOnCallback := callBackErr == nil && callbackVMOutput.ReturnCode == vmcommon.Ok
-	noErrorOnAsyncCall := destinationErr == nil && destinationVMOutput.ReturnCode == vmcommon.Ok
-	if noErrorOnCallback && noErrorOnAsyncCall && execMode != arwen.AsyncBuiltinFuncIntraShard {
-		host.meteringContext.UseGas(gasConsumedForExecution)
-	}
 
 	if callbackVMOutput != nil {
 		log.Trace("async call: sync dest call",
@@ -232,7 +225,6 @@ func (host *vmHost) sendAsyncCallToDestination(asyncCallInfo arwen.AsyncCallInfo
 
 	metering := host.Metering()
 	gasLeft := metering.GasLeft()
-	metering.ForwardGas(runtime.GetSCAddress(), asyncCallInfo.GetDestination(), gasLeft+asyncCallInfo.GetGasLocked())
 	metering.UseGas(gasLeft)
 	return nil
 }
@@ -265,7 +257,6 @@ func (host *vmHost) sendCallbackToCurrentCaller() error {
 	}
 
 	gasLeft := metering.GasLeft()
-	metering.ForwardGas(runtime.GetSCAddress(), currentCall.CallerAddr, gasLeft)
 	metering.UseGas(gasLeft)
 	return nil
 }

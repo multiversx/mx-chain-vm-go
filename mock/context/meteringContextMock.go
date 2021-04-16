@@ -30,6 +30,10 @@ func (m *MeteringContextMock) PushState() {
 func (m *MeteringContextMock) PopSetActiveState() {
 }
 
+// PopMergeActiveState mocked method
+func (m *MeteringContextMock) PopMergeActiveState() {
+}
+
 // PopDiscard mocked method
 func (m *MeteringContextMock) PopDiscard() {
 }
@@ -66,30 +70,15 @@ func (m *MeteringContextMock) GasLeft() uint64 {
 	return m.GasLeftMock
 }
 
-// AddToUsedGas -
-func (m *MeteringContextMock) AddToUsedGas(_ []byte, _ uint64) {
+func (m *MeteringContextMock) UpdateGasStateOnSuccess(_ *vmcommon.VMOutput) error {
+	return nil
 }
 
-// ForwardGas mocked method
-func (m *MeteringContextMock) ForwardGas(_ []byte, _ []byte, _ uint64) {
-}
-
-// GetForwardedGas -
-func (m *MeteringContextMock) GetForwardedGas(_ []byte) uint64 {
-	return 0
+func (m *MeteringContextMock) UpdateGasStateOnFailure(_ *vmcommon.VMOutput) {
 }
 
 // InitStateFromContractCallInput mocked method
 func (m *MeteringContextMock) InitStateFromContractCallInput(_ *vmcommon.VMInput) {
-}
-
-// AddGasUsedByBuiltinFunctions mocked method
-func (m *MeteringContextMock) AddGasUsedByBuiltinFunctions(_ uint64) {
-}
-
-// GetGasUsedByBuiltinFunctions mocked method
-func (m *MeteringContextMock) GetGasUsedByBuiltinFunctions() uint64 {
-	return 0
 }
 
 // GasUsedByContract mocked method
@@ -184,13 +173,4 @@ func (m *MeteringContextMock) DeductInitialGasForDirectDeployment(_ arwen.CodeDe
 // DeductInitialGasForIndirectDeployment mocked method
 func (m *MeteringContextMock) DeductInitialGasForIndirectDeployment(_ arwen.CodeDeployInput) error {
 	return m.Err
-}
-
-// SetTotalUsedGas mocked method
-func (m *MeteringContextMock) SetTotalUsedGas(_ uint64) {
-}
-
-// GetPreviousTotalUsedGas mocked method
-func (m *MeteringContextMock) GetPreviousTotalUsedGas() uint64 {
-	return 0
 }

@@ -23,11 +23,12 @@ func NewVMOutputVerifier(t testing.TB, vmOutput *vmcommon.VMOutput, err error) *
 	}
 }
 
-func (a *VMOutputVerifier) GasUsed(address []byte, gas uint64) {
-	account := a.vmOutput.OutputAccounts[string(address)]
-	require.Equal(a.T, gas, account.GasUsed)
+func (v *VMOutputVerifier) GasUsed(address []byte, gas uint64) {
+	account := v.vmOutput.OutputAccounts[string(address)]
+	require.NotNil(v.T, account)
+	require.Equal(v.T, int(gas), int(account.GasUsed))
 }
 
-func (a *VMOutputVerifier) GasRemaining(gas uint64) {
-	require.Equal(a.T, gas, a.vmOutput.GasRemaining)
+func (v *VMOutputVerifier) GasRemaining(gas uint64) {
+	require.Equal(v.T, int(gas), int(v.vmOutput.GasRemaining))
 }

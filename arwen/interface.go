@@ -156,10 +156,10 @@ type OutputContext interface {
 	StateStack
 	PopMergeActiveState()
 	CensorVMOutput()
-	ResetGas()
 	AddToActiveState(rightOutput *vmcommon.VMOutput)
 
 	GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool)
+	GetOutputAccounts() map[string]*vmcommon.OutputAccount
 	DeleteOutputAccount(address []byte)
 	WriteLog(address []byte, topics [][]byte, data []byte)
 	TransferValueOnly(destination []byte, sender []byte, value *big.Int, checkPayable bool) error
@@ -180,12 +180,12 @@ type OutputContext interface {
 	AddTxValueToAccount(address []byte, value *big.Int)
 	DeployCode(input CodeDeployInput)
 	CreateVMOutputInCaseOfError(err error) *vmcommon.VMOutput
-	GetCurrentTotalUsedGas() (uint64, bool)
 }
 
 // MeteringContext defines the functionality needed for interacting with the metering context
 type MeteringContext interface {
 	StateStack
+	PopMergeActiveState()
 
 	InitStateFromContractCallInput(input *vmcommon.VMInput)
 	SetGasSchedule(gasMap config.GasScheduleMap)
@@ -194,8 +194,6 @@ type MeteringContext interface {
 	FreeGas(gas uint64)
 	RestoreGas(gas uint64)
 	GasLeft() uint64
-	ForwardGas(sourceAddress []byte, destAddress []byte, gas uint64)
-	GasUsedByContract() (uint64, uint64)
 	GasUsedForExecution() uint64
 	GasSpentByContract() uint64
 	GetGasForExecution() uint64
@@ -210,8 +208,8 @@ type MeteringContext interface {
 	UseGasForAsyncStep() error
 	UseGasBounded(gasToUse uint64) error
 	GetGasLocked() uint64
-	SetTotalUsedGas(total uint64)
-	GetPreviousTotalUsedGas() uint64
+	UpdateGasStateOnSuccess(vmOutput *vmcommon.VMOutput) error
+	UpdateGasStateOnFailure(vmOutput *vmcommon.VMOutput)
 }
 
 // StorageStatus defines the states the storage can be in

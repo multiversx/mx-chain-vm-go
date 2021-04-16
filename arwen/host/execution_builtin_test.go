@@ -221,22 +221,22 @@ func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 }
 
 func dummyProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
-	outPutAccounts := make(map[string]*vmcommon.OutputAccount)
-	outPutAccounts[string(parentAddress)] = &vmcommon.OutputAccount{
+	outputAccounts := make(map[string]*vmcommon.OutputAccount)
+	outputAccounts[string(parentAddress)] = &vmcommon.OutputAccount{
 		BalanceDelta: big.NewInt(0),
 		Address:      parentAddress}
 
 	if input.Function == "builtinClaim" {
-		outPutAccounts[string(parentAddress)].BalanceDelta = big.NewInt(42)
+		outputAccounts[string(parentAddress)].BalanceDelta = big.NewInt(42)
 		return &vmcommon.VMOutput{
 			GasRemaining:   400 + input.GasLocked,
-			OutputAccounts: outPutAccounts,
+			OutputAccounts: outputAccounts,
 		}, nil
 	}
 	if input.Function == "builtinDoSomething" {
 		return &vmcommon.VMOutput{
 			GasRemaining:   400 + input.GasLocked,
-			OutputAccounts: outPutAccounts,
+			OutputAccounts: outputAccounts,
 		}, nil
 	}
 	if input.Function == "builtinFail" {
