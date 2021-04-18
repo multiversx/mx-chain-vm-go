@@ -103,7 +103,7 @@ func transactionToScenarioOJ(tx *mj.Transaction) oj.OJsonObject {
 		transactionOJ.Put("value", bigIntToOJ(tx.Value))
 	}
 	if tx.ESDTValue != nil {
-		esdtItemOJ := esdtToFullMapOJ(tx.ESDTValue)
+		esdtItemOJ := esdtTxDataToOJ(tx.ESDTValue)
 		transactionOJ.Put("esdt", esdtItemOJ)
 	}
 	if tx.Type.HasFunction() {

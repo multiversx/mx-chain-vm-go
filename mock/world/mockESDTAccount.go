@@ -150,13 +150,17 @@ func (a *Account) SetTokenRolesAsStrings(tokenName []byte, rolesAsStrings []stri
 	return a.SetTokenRoles(tokenName, roles)
 }
 
+// SetLastNonce writes the last nonce of a specified ESDT into the storage.
+func (a *Account) SetLastNonce(tokenName []byte, lastNonce uint64) error {
+	tokenNonceKey := MakeLastNonceKey(tokenName)
+	nonceBytes := big.NewInt(0).SetUint64(lastNonce).Bytes()
+	return a.DataTrieTracker().SaveKeyValue(tokenNonceKey, nonceBytes)
+}
+
 // SetLastNonces writes the last nonces of each specified ESDT into the storage.
 func (a *Account) SetLastNonces(lastNonces map[string]uint64) error {
 	for tokenName, nonce := range lastNonces {
-		tokenNonceKey := MakeLastNonceKey([]byte(tokenName))
-		nonceBytes := big.NewInt(0).SetUint64(nonce).Bytes()
-
-		err := a.DataTrieTracker().SaveKeyValue(tokenNonceKey, nonceBytes)
+		err := a.SetLastNonce([]byte(tokenName), nonce)
 		if err != nil {
 			return err
 		}

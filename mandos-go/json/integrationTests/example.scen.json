@@ -20,40 +20,40 @@
                     "esdt": {
                         "str:1-MyToken": "400,000,000,000",
                         "str:2-AnotherToken": {
-                            "value": "400,000,000,000",
+                            "balance": "400,000,000,000",
                             "frozen": "false"
                         },
                         "str:3-AnotherTokenThatIsFrozen": {
-                            "nonce": "0",
-                            "value": "400,000,000,000",
+                            "balance": "400,000,000,000",
                             "frozen": "true"
                         },
                         "str:4-SimpleNFT": {
-                            "nonce": "1023"
+                            "nonce": "1023",
+                            "roles": [
+                                "role1",
+                                "role2"
+                            ]
                         },
-                        "str:5-SeveralNFTs": [
-                            {
-                                "nonce": "1"
-                            },
-                            {
-                                "nonce": "5",
-                                "value": "3"
-                            }
-                        ]
-                    },
-                    "esdtRoles": {
-                        "str:tokenID1": [
-                            "role1",
-                            "role2"
-                        ],
-                        "str:tokenID2": [],
-                        "str:tokenID3": [
-                            "ESDTRoleLocalMint",
-                            "ESDTRoleLocalBurn",
-                            "ESDTRoleNFTCreate",
-                            "ESDTRoleNFTAddQuantity",
-                            "ESDTRoleNFTBurn"
-                        ]
+                        "str:5-SeveralNFTs": {
+                            "instances": [
+                                {
+                                    "nonce": "1"
+                                },
+                                {
+                                    "nonce": "1",
+                                    "balance": "3"
+                                }
+                            ],
+                            "lastNonce": "7",
+                            "roles": [
+                                "ESDTRoleLocalMint",
+                                "ESDTRoleLocalBurn",
+                                "ESDTRoleNFTCreate",
+                                "ESDTRoleNFTAddQuantity",
+                                "ESDTRoleNFTBurn"
+                            ],
+                            "frozen": "false"
+                        }
                     },
                     "username": "str:myusername.elrond",
                     "storage": {},
@@ -300,26 +300,41 @@
                     "esdt": {
                         "str:1-MyToken": "400,000,000,000",
                         "str:2-AnotherToken": {
-                            "value": "400,000,000,000",
+                            "balance": "400,000,000,000",
                             "frozen": "*"
                         },
                         "str:3-AnotherTokenThatIsFrozen": {
                             "nonce": "*",
-                            "value": "*",
+                            "balance": "*",
                             "frozen": "true"
                         },
                         "str:4-SimpleNFT": {
-                            "nonce": "1023"
+                            "nonce": "1023",
+                            "roles": [
+                                "role1",
+                                "role2"
+                            ]
                         },
-                        "str:5-SeveralNFTs": [
-                            {
-                                "nonce": "*"
-                            },
-                            {
-                                "nonce": "1",
-                                "value": "3"
-                            }
-                        ]
+                        "str:5-SeveralNFTs": {
+                            "instances": [
+                                {
+                                    "nonce": "*"
+                                },
+                                {
+                                    "nonce": "1",
+                                    "balance": "3"
+                                }
+                            ],
+                            "lastNonce": "*",
+                            "roles": [
+                                "ESDTRoleLocalMint",
+                                "ESDTRoleLocalBurn",
+                                "ESDTRoleNFTCreate",
+                                "ESDTRoleNFTAddQuantity",
+                                "ESDTRoleNFTBurn"
+                            ],
+                            "frozen": "false"
+                        }
                     },
                     "username": "str:check.elrond",
                     "storage": {},
