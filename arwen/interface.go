@@ -210,6 +210,9 @@ type MeteringContext interface {
 	GetGasLocked() uint64
 	UpdateGasStateOnSuccess(vmOutput *vmcommon.VMOutput) error
 	UpdateGasStateOnFailure(vmOutput *vmcommon.VMOutput)
+
+	BeginBuiltinFunction()
+	TrackGasUsedByBuiltinFunction(gas uint64)
 }
 
 // StorageStatus defines the states the storage can be in

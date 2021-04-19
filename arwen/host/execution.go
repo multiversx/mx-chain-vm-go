@@ -735,14 +735,15 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, token
 }
 
 func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmcommon.ContractCallInput, uint64, error) {
-	_, _, metering, output, runtime, _ := host.GetContexts()
+	_, _, metering, output, _, _ := host.GetContexts()
 
-	gasConsumedForExecution := host.computeGasUsedInExecutionBeforeReset(input)
-	runtime.SetPointsUsed(0)
+	// TODO move into a specially-named method of Metering
+	// runtime.SetPointsUsed(0)
+
 	vmOutput, err := host.blockChainHook.ProcessBuiltInFunction(input)
 	if err != nil {
 		metering.UseGas(input.GasProvided)
-		return nil, gasConsumedForExecution, err
+		return nil, 0, err
 	}
 
 	gasConsumed, _ := math.SubUint64(input.GasProvided, vmOutput.GasRemaining)
@@ -758,13 +759,13 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmc
 		}
 	}
 
-	if vmOutput.GasRemaining < input.GasProvided {
-		metering.UseGas(gasConsumed)
-	}
+	// if vmOutput.GasRemaining < input.GasProvided {
+	// 	metering.UseGas(gasConsumed)
+	// }
 
 	newVMInput, err := host.isSCExecutionAfterBuiltInFunc(input, vmOutput)
 	if err != nil {
-		return nil, gasConsumedForExecution, err
+		return nil, 0, err
 	}
 
 	if newVMInput != nil {
@@ -776,7 +777,7 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmc
 	host.addESDTTransferToVMOutputSCIntraShardCall(input, vmOutput)
 	output.AddToActiveState(vmOutput)
 
-	return newVMInput, gasConsumedForExecution, nil
+	return newVMInput, 0, nil
 }
 
 // add output transfer of esdt transfer when sc calling another sc intra shard to log the transfer information

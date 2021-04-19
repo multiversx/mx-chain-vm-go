@@ -13,7 +13,7 @@ import (
 var gasUsedByParent = uint64(400)
 var gasUsedByChild = uint64(200)
 var gasProvidedToChild = uint64(300)
-var gasUsedByBuiltinClaim = uint64(150)
+var gasUsedByBuiltinClaim = uint64(120)
 
 func TestGasUsed_SingleContract(t *testing.T) {
 	host, _, ibm := defaultTestArwenForCallWithInstanceMocks(t)
@@ -207,7 +207,7 @@ func createMockBuiltinFunctions(tb testing.TB, host *vmHost, world *worldmock.Mo
 	require.Nil(tb, err)
 
 	world.BuiltinFuncs.Container.Add("builtinClaim", &MockClaimBuiltin{
-		AmountToGive: big.NewInt(42),
+		AmountToGive: 42,
 		GasCost:      gasUsedByBuiltinClaim,
 	})
 

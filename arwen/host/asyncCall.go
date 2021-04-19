@@ -151,11 +151,6 @@ func (host *vmHost) executeSyncDestinationCall(asyncCallInfo arwen.AsyncCallInfo
 	return destinationVMOutput, gasUsedBeforeReset, err
 }
 
-func (host *vmHost) computeGasUsedInExecutionBeforeReset(vmInput *vmcommon.ContractCallInput) uint64 {
-	gasUsedForExecution, _ := math.SubUint64(host.meteringContext.GasUsedForExecution(), vmInput.GasLocked)
-	return gasUsedForExecution
-}
-
 func (host *vmHost) executeSyncCallbackCall(
 	asyncCallInfo arwen.AsyncCallInfoHandler,
 	destinationVMOutput *vmcommon.VMOutput,

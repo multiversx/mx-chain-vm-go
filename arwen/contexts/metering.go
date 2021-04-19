@@ -13,14 +13,15 @@ import (
 var logMetering = logger.GetOrCreate("arwen/metering")
 
 type meteringContext struct {
-	host               arwen.VMHost
-	stateStack         []*meteringContext
-	gasSchedule        *config.GasCost
-	blockGasLimit      uint64
-	initialGasProvided uint64
-	initialCost        uint64
-	gasForExecution    uint64
-	gasUsedByAccounts  map[string]uint64
+	host                     arwen.VMHost
+	stateStack               []*meteringContext
+	gasSchedule              *config.GasCost
+	blockGasLimit            uint64
+	initialGasProvided       uint64
+	initialCost              uint64
+	gasForExecution          uint64
+	gasUsedByAccounts        map[string]uint64
+	gasUsedByBuiltinFunction uint64
 }
 
 // NewMeteringContext creates a new meteringContext
@@ -36,11 +37,12 @@ func NewMeteringContext(
 	}
 
 	context := &meteringContext{
-		host:              host,
-		stateStack:        make([]*meteringContext, 0),
-		gasUsedByAccounts: make(map[string]uint64),
-		gasSchedule:       gasSchedule,
-		blockGasLimit:     blockGasLimit,
+		host:                     host,
+		stateStack:               make([]*meteringContext, 0),
+		gasSchedule:              gasSchedule,
+		blockGasLimit:            blockGasLimit,
+		gasUsedByAccounts:        make(map[string]uint64),
+		gasUsedByBuiltinFunction: 0,
 	}
 
 	context.InitState()
@@ -54,6 +56,8 @@ func (context *meteringContext) InitState() {
 	context.initialGasProvided = 0
 	context.initialCost = 0
 	context.gasForExecution = 0
+	context.gasUsedByAccounts = make(map[string]uint64)
+	context.gasUsedByBuiltinFunction = 0
 }
 
 // PushState pushes the current state of the MeteringContext on its internal state stack
