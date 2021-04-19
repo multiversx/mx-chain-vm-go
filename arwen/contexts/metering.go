@@ -63,10 +63,11 @@ func (context *meteringContext) InitState() {
 // PushState pushes the current state of the MeteringContext on its internal state stack
 func (context *meteringContext) PushState() {
 	newState := &meteringContext{
-		initialGasProvided: context.initialGasProvided,
-		initialCost:        context.initialCost,
-		gasForExecution:    context.gasForExecution,
-		gasUsedByAccounts:  context.cloneGasUsedByAccounts(),
+		initialGasProvided:       context.initialGasProvided,
+		initialCost:              context.initialCost,
+		gasForExecution:          context.gasForExecution,
+		gasUsedByAccounts:        context.cloneGasUsedByAccounts(),
+		gasUsedByBuiltinFunction: context.gasUsedByBuiltinFunction,
 	}
 
 	context.stateStack = append(context.stateStack, newState)
@@ -87,6 +88,7 @@ func (context *meteringContext) PopSetActiveState() {
 	context.initialCost = prevState.initialCost
 	context.gasForExecution = prevState.gasForExecution
 	context.gasUsedByAccounts = prevState.gasUsedByAccounts
+	context.gasUsedByBuiltinFunction = prevState.gasUsedByBuiltinFunction
 }
 
 // PopDiscard pops the state at the top of the internal state stack, and discards it
