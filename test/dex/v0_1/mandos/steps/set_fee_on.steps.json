@@ -18,7 +18,30 @@
 				"gasPrice": "0"
 			},
 			"expect": {
-				"out": ["0x4c50544f4b2d616263646566"],
+				"out": [],
+				"status": "0",
+				"message": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "scCall",
+			"txId": "add-pair",
+			"tx": {
+				"from": "address:owner",
+				"to": "address:staking_contract",
+				"value": "0",
+				"function": "addAcceptedPairAddressAndLpToken",
+				"arguments": [
+					"address:pair_contract",
+					"str:LPTOK-abcdef"
+				],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [],
 				"status": "0",
 				"message": "",
 				"gas": "*",

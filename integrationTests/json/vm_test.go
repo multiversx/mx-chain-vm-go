@@ -148,8 +148,12 @@ func TestDex_v0_1(t *testing.T) {
 	runAllTestsInFolder(t, "dex/v0_1")
 }
 
+func TestDistribution(t *testing.T) {
+	runAllTestsInFolder(t, "distribution")
+}
+
 func TestDex_v0_1_singleTest(t *testing.T) {
-	runSingleTest(t, "dex/v0_1/mandos", "complex_add_bad_trusted_swap_pair.scen.json")
+	runSingleTest(t, "dex/v0_1/mandos", "complex_setup_from_zero.scen.json")
 }
 
 // func TestPromises(t *testing.T) {

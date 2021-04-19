@@ -119,7 +119,8 @@
 						"str:unstake_token_id": "str:UNSTAK-abcdef",
 						"str:router_address": "address:router_contract",
 						"str:virtual_token_id": "str:WEGLD-abcdef",
-						"str:state": "1"
+						"str:state": "1",
+						"str:owner": "address:owner"
 					},
 					"code": "file:../output/elrond_dex_staking.wasm"
 				},

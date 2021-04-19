@@ -68,12 +68,12 @@
 					"str:MEX-abcdef",
 					"50,000"
 				],
-				"gasLimit": "50,000,000",
+				"gasLimit": "60,000,000",
 				"gasPrice": "0"
 			},
 			"expect": {
 				"out": [],
-				"status": "10",
+				"status": "0",
 				"message": "*",
 				"gas": "*",
 				"refund": "*"
@@ -142,12 +142,12 @@
 					"str:MEX-abcdef",
 					"50,000"
 				],
-				"gasLimit": "50,000,000",
+				"gasLimit": "60,000,000",
 				"gasPrice": "0"
 			},
 			"expect": {
 				"out": [],
-				"status": "10",
+				"status": "0",
 				"message": "*",
 				"gas": "*",
 				"refund": "*"

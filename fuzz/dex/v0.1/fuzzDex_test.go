@@ -113,7 +113,7 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 		unbondMisses:					0,
 	}
 
-	re := fuzzutil.NewRandomEventProvider()
+	re := fuzzutil.NewRandomEventProvider(r)
 	for stepIndex := 0; stepIndex < pfe.numEvents; stepIndex++ {
 		generateRandomEvent(t, pfe, r, re, &stats)
 

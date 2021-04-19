@@ -584,7 +584,38 @@ func (pfe *fuzzDexExecutor) setFeeOnPair(tokenA string, tokenB string) (string, 
 		pairHexStr += toAppend
 	}
 
-	// set staking info
+	rawOutput, err := pfe.executeTxStep(fmt.Sprintf(`
+	{
+		"step": "scCall",
+		"txId": "get_lp_token_identifier",
+		"tx": {
+			"from": "''%s",
+			"to": "%s",
+			"value": "0",
+			"function": "getLpTokenIdentifier",
+			"arguments": [],
+			"gasLimit": "10,000,000",
+			"gasPrice": "0"
+		},
+		"expect": {
+			"out": [ "*" ],
+			"status": "",
+			"logs": [],
+			"gas": "*",
+			"refund": "*"
+		}
+	}`,
+		string(pfe.routerAddress),
+		pairHexStr,
+	))
+
+	rawResponse = rawOutput.ReturnData
+	lpTokenHexStr := "0x"
+	for i := 0; i < len(rawResponse[0]); i++ {
+		toAppend := fmt.Sprintf("%02x", rawResponse[0][i])
+		lpTokenHexStr += toAppend
+	}
+
 	_, err = pfe.executeTxStep(fmt.Sprintf(`
 		{
 			"step": "scCall",
@@ -603,7 +634,7 @@ func (pfe *fuzzDexExecutor) setFeeOnPair(tokenA string, tokenB string) (string, 
 				"gasPrice": "0"
 			},
 			"expect": {
-				"out": ["*"],
+				"out": [],
 				"status": "",
 				"logs": [],
 				"gas": "*",
@@ -620,7 +651,41 @@ func (pfe *fuzzDexExecutor) setFeeOnPair(tokenA string, tokenB string) (string, 
 		return "", err
 	}
 
-	// set staking info
+	if tokenA == pfe.wegldTokenId || tokenB == pfe.wegldTokenId {
+		_, err = pfe.executeTxStep(fmt.Sprintf(`
+		{
+			"step": "scCall",
+			"txId": "add-accepted-pair-address-and-lp-token",
+			"tx": {
+				"from": "''%s",
+				"to": "''%s",
+				"value": "0",
+				"function": "addAcceptedPairAddressAndLpToken",
+				"arguments": [
+					"%s",
+					"%s"
+				],
+				"gasLimit": "10,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [],
+				"status": "",
+				"logs": [],
+				"gas": "*",
+				"refund": "*"
+			}
+		}`,
+			string(pfe.ownerAddress),
+			string(pfe.wegldStakingAddress),
+			pairHexStr,
+			lpTokenHexStr,
+		))
+		if err != nil {
+			return "", err
+		}
+	}
+
 	_, err = pfe.executeTxStep(fmt.Sprintf(`
 		{
 			"step": "scCall",
@@ -639,7 +704,7 @@ func (pfe *fuzzDexExecutor) setFeeOnPair(tokenA string, tokenB string) (string, 
 				"gasPrice": "0"
 			},
 			"expect": {
-				"out": ["*"],
+				"out": [],
 				"status": "",
 				"logs": [],
 				"gas": "*",
@@ -656,7 +721,42 @@ func (pfe *fuzzDexExecutor) setFeeOnPair(tokenA string, tokenB string) (string, 
 		return "", err
 	}
 
-	rawOutput, err := pfe.executeTxStep(fmt.Sprintf(`
+	if tokenA == pfe.mexTokenId || tokenB == pfe.mexTokenId {
+		_, err = pfe.executeTxStep(fmt.Sprintf(`
+		{
+			"step": "scCall",
+			"txId": "add-accepted-pair-address-and-lp-token",
+			"tx": {
+				"from": "''%s",
+				"to": "''%s",
+				"value": "0",
+				"function": "addAcceptedPairAddressAndLpToken",
+				"arguments": [
+					"%s",
+					"%s"
+				],
+				"gasLimit": "10,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [],
+				"status": "",
+				"logs": [],
+				"gas": "*",
+				"refund": "*"
+			}
+		}`,
+			string(pfe.ownerAddress),
+			string(pfe.mexStakingAddress),
+			pairHexStr,
+			lpTokenHexStr,
+		))
+		if err != nil {
+			return "", err
+		}
+	}
+
+	rawOutput, err = pfe.executeTxStep(fmt.Sprintf(`
 		{
 			"step": "scCall",
 			"txId": "",
@@ -853,7 +953,8 @@ func (pfe *fuzzDexExecutor) doHachishStepStaking() error {
 					"str:unstake_token_id": "str:%s",
 					"str:router_address": "''%s",
 					"str:virtual_token_id": "str:%s",
-					"str:state": "1"
+					"str:state": "1",
+					"str:owner": "''%s"
 				},
 				"code": "file:../../../test/dex/v0_1/output/elrond_dex_staking.wasm"
 			}
@@ -867,6 +968,7 @@ func (pfe *fuzzDexExecutor) doHachishStepStaking() error {
 		"UNSTAK-abcdef",
 		string(pfe.routerAddress),
 		pfe.wegldTokenId,
+		string(pfe.ownerAddress),
 	))
 	if err != nil {
 		return err
@@ -898,7 +1000,8 @@ func (pfe *fuzzDexExecutor) doHachishStepStaking() error {
 					"str:unstake_token_id": "str:%s",
 					"str:router_address": "''%s",
 					"str:virtual_token_id": "str:%s",
-					"str:state": "1"
+					"str:state": "1",
+					"str:owner": "''%s"
 				},
 				"code": "file:../../../test/dex/v0_1/output/elrond_dex_staking.wasm"
 			}
@@ -912,6 +1015,7 @@ func (pfe *fuzzDexExecutor) doHachishStepStaking() error {
 		"UNSTAK-abcdef",
 		string(pfe.routerAddress),
 		pfe.mexTokenId,
+		string(pfe.ownerAddress),
 	))
 	if err != nil {
 		return err
