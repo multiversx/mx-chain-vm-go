@@ -867,10 +867,6 @@ func transferValueExecute(
 		_, _, _, err = host.ExecuteOnDestContext(contractCallInput)
 		if err != nil {
 			logEEI.Trace("eGLD pre-transfer execution failed", "error", err)
-			err = output.TransferValueOnly(send, dest, big.NewInt(0).SetBytes(valueBytes), false)
-			if err != nil {
-				_ = arwen.WithFault(err, context, true)
-			}
 			return 1
 		}
 
