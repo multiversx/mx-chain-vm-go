@@ -14,8 +14,6 @@ import (
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
-const gasLimitToUseForRevertESDT = uint64(1_500_000_000)
-
 func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput) *vmcommon.VMOutput {
 	host.InitState()
 	defer host.Clean()
@@ -669,7 +667,7 @@ func (host *vmHost) RevertESDTTransfer(input *vmcommon.ContractCallInput) {
 			CallValue:      big.NewInt(0),
 			CallType:       vmcommon.AsynchronousCallBack,
 			GasPrice:       input.GasPrice,
-			GasProvided:    gasLimitToUseForRevertESDT,
+			GasProvided:    host.meteringContext.BlockGasLimit(),
 			GasLocked:      0,
 			OriginalTxHash: input.OriginalTxHash,
 			CurrentTxHash:  input.CurrentTxHash,
@@ -734,7 +732,7 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, token
 	}
 
 	if isRevert {
-		esdtTransferInput.GasProvided = gasLimitToUseForRevertESDT
+		esdtTransferInput.GasProvided = metering.BlockGasLimit()
 	}
 
 	vmOutput, err := host.blockChainHook.ProcessBuiltInFunction(esdtTransferInput)
