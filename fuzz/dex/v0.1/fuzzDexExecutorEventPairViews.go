@@ -6,16 +6,9 @@ import (
 )
 
 func (pfe *fuzzDexExecutor) checkPairViews(user string, tokenA string, tokenB string, stats *eventsStatistics) error {
-	pairAddressRaw, err := pfe.querySingleResult(pfe.ownerAddress, pfe.routerAddress,
-		"getPair", fmt.Sprintf("\"str:%s\", \"str:%s\"", tokenA, tokenB))
+	err, _, pairHexStr := pfe.getPair(tokenA, tokenB)
 	if err != nil {
 		return err
-	}
-
-	pairHexStr := "0x"
-	for i := 0; i < len(pairAddressRaw[0]); i++ {
-		toAppend := fmt.Sprintf("%02x", pairAddressRaw[0][i])
-		pairHexStr += toAppend
 	}
 
 	if pairHexStr == "0x0000000000000000000000000000000000000000000000000000000000000000" && tokenA != tokenB {

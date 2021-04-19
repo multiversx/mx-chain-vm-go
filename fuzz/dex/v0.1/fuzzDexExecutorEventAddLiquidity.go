@@ -1,7 +1,6 @@
 package dex
 
 import (
-	"encoding/hex"
 	"errors"
 	"fmt"
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
@@ -10,21 +9,9 @@ import (
 func (pfe *fuzzDexExecutor) addLiquidity(user string, tokenA string, tokenB string, amountA int,
 	amountB int , amountAmin int, amountBmin int, statistics *eventsStatistics) error {
 
-
-	pairAddressRaw, err := pfe.querySingleResult(pfe.ownerAddress, pfe.routerAddress,
-		"getPair", fmt.Sprintf("\"str:%s\", \"str:%s\"", tokenA, tokenB))
+	err, _, pairHexStr := pfe.getPair(tokenA, tokenB)
 	if err != nil {
 		return err
-	}
-
-	pairHexStr := "0x"
-	for i := 0; i < len(pairAddressRaw[0]); i++ {
-		toAppend := fmt.Sprintf("%02x", pairAddressRaw[0][i])
-		pairHexStr += toAppend
-	}
-
-	if (pairHexStr == "0x0000000000000000000000000000000000000000000000000000000000000000") && (tokenA != tokenB) {
-		return errors.New("NULL pair for different tokens")
 	}
 
 	if tokenA == tokenB {
@@ -34,10 +21,9 @@ func (pfe *fuzzDexExecutor) addLiquidity(user string, tokenA string, tokenB stri
 	rawEquivalent, errEquivalent := pfe.querySingleResultStringAddr(pfe.ownerAddress, pairHexStr,
 		"getEquivalent", fmt.Sprintf("\"str:%s\", \"%d\"", tokenA, 1000))
 
-	rawLpToken, errLpToken := pfe.querySingleResultStringAddr(pfe.ownerAddress, pairHexStr,
-		"getLpTokenIdentifier", "")
-	if errLpToken != nil {
-		return errLpToken
+	err, lpTokenStr, _ := pfe.getLpTokenIdentifier(pairHexStr)
+	if err != nil {
+		return err
 	}
 
 	tokenABefore, err := pfe.getTokens([]byte(user), tokenA)
@@ -48,16 +34,6 @@ func (pfe *fuzzDexExecutor) addLiquidity(user string, tokenA string, tokenB stri
 	if err != nil {
 		return nil
 	}
-	lpTokenHex := ""
-	for i := 0; i < len(rawLpToken[0]); i++ {
-		toAppend := fmt.Sprintf("%02x", rawLpToken[0][i])
-		lpTokenHex += toAppend
-	}
-	lpToken, err := hex.DecodeString(lpTokenHex)
-	if err != nil {
-		return err
-	}
-	lpTokenStr := string(lpToken)
 	tokenLpBefore, err := pfe.getTokens([]byte(user), lpTokenStr)
 	if err != nil {
 		return err

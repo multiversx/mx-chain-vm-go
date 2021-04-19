@@ -2,6 +2,7 @@ package dex
 
 import (
 	"bytes"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	am "github.com/ElrondNetwork/arwen-wasm-vm/arwenmandos"
@@ -283,16 +284,9 @@ func (pfe *fuzzDexExecutor) createPair(tokenA string, tokenB string) error {
 		return err
 	}
 
-	rawResponse, err := pfe.querySingleResult(pfe.ownerAddress, pfe.routerAddress,
-		"getPair", fmt.Sprintf("\"str:%s\", \"str:%s\"", tokenA, tokenB))
+	err, _, pairHexStr := pfe.getPair(tokenA, tokenB)
 	if err != nil {
 		return err
-	}
-
-	pairHexStr := "0x"
-	for i := 0; i < len(rawResponse[0]); i++ {
-		toAppend := fmt.Sprintf("%02x", rawResponse[0][i])
-		pairHexStr += toAppend
 	}
 
 	// issue lp token for pair
@@ -322,36 +316,9 @@ func (pfe *fuzzDexExecutor) createPair(tokenA string, tokenB string) error {
 		return err
 	}
 
-	rawOutput, err := pfe.executeTxStep(fmt.Sprintf(`
-	{
-		"step": "scCall",
-		"txId": "get_lp_token_identifier",
-		"tx": {
-			"from": "''%s",
-			"to": "%s",
-			"value": "0",
-			"function": "getLpTokenIdentifier",
-			"arguments": [],
-			"gasLimit": "10,000,000",
-			"gasPrice": "0"
-		},
-		"expect": {
-			"out": [ "*" ],
-			"status": "",
-			"logs": [],
-			"gas": "*",
-			"refund": "*"
-		}
-	}`,
-		string(pfe.routerAddress),
-		pairHexStr,
-	))
-
-	rawResponse = rawOutput.ReturnData
-	lpTokenHexStr := "0x"
-	for i := 0; i < len(rawResponse[0]); i++ {
-		toAppend := fmt.Sprintf("%02x", rawResponse[0][i])
-		lpTokenHexStr += toAppend
+	err, _, _ = pfe.getLpTokenIdentifier(pairHexStr)
+	if err != nil {
+		return err
 	}
 
 	// set local roles for pair + lp token
@@ -572,48 +539,14 @@ func (pfe *fuzzDexExecutor) setFeeOn() error {
 }
 
 func (pfe *fuzzDexExecutor) setFeeOnPair(tokenA string, tokenB string) (string, error) {
-	rawResponse, err := pfe.querySingleResult(pfe.ownerAddress, pfe.routerAddress,
-		"getPair", fmt.Sprintf("\"str:%s\", \"str:%s\"", tokenA, tokenB))
+	err, _, pairHexStr := pfe.getPair(tokenA, tokenB)
 	if err != nil {
 		return "", err
 	}
 
-	pairHexStr := "0x"
-	for i := 0; i < len(rawResponse[0]); i++ {
-		toAppend := fmt.Sprintf("%02x", rawResponse[0][i])
-		pairHexStr += toAppend
-	}
-
-	rawOutput, err := pfe.executeTxStep(fmt.Sprintf(`
-	{
-		"step": "scCall",
-		"txId": "get_lp_token_identifier",
-		"tx": {
-			"from": "''%s",
-			"to": "%s",
-			"value": "0",
-			"function": "getLpTokenIdentifier",
-			"arguments": [],
-			"gasLimit": "10,000,000",
-			"gasPrice": "0"
-		},
-		"expect": {
-			"out": [ "*" ],
-			"status": "",
-			"logs": [],
-			"gas": "*",
-			"refund": "*"
-		}
-	}`,
-		string(pfe.routerAddress),
-		pairHexStr,
-	))
-
-	rawResponse = rawOutput.ReturnData
-	lpTokenHexStr := "0x"
-	for i := 0; i < len(rawResponse[0]); i++ {
-		toAppend := fmt.Sprintf("%02x", rawResponse[0][i])
-		lpTokenHexStr += toAppend
+	err, _, lpTokenHexStr := pfe.getLpTokenIdentifier(pairHexStr)
+	if err != nil {
+		return "", err
 	}
 
 	_, err = pfe.executeTxStep(fmt.Sprintf(`
@@ -756,7 +689,7 @@ func (pfe *fuzzDexExecutor) setFeeOnPair(tokenA string, tokenB string) (string, 
 		}
 	}
 
-	rawOutput, err = pfe.executeTxStep(fmt.Sprintf(`
+	rawOutput, err := pfe.executeTxStep(fmt.Sprintf(`
 		{
 			"step": "scCall",
 			"txId": "",
@@ -866,16 +799,9 @@ func (pfe *fuzzDexExecutor) doHackishSteps() error {
 func (pfe *fuzzDexExecutor) doHackishStep(tokenA string, tokenB string, index int) error {
 	lpTokenName := pfe.lpTokenTicker(index)
 
-	rawResponse, err := pfe.querySingleResult(pfe.ownerAddress, pfe.routerAddress,
-		"getPair", fmt.Sprintf("\"str:%s\", \"str:%s\"", tokenA, tokenB))
+	err, _, pairHexStr := pfe.getPair(tokenA, tokenB)
 	if err != nil {
 		return err
-	}
-
-	pairHexStr := "0x"
-	for i := 0; i < len(rawResponse[0]); i++ {
-		toAppend := fmt.Sprintf("%02x", rawResponse[0][i])
-		pairHexStr += toAppend
 	}
 
 	err = pfe.executeStep(fmt.Sprintf(`
@@ -1051,4 +977,43 @@ func equalMatrix(left [][]byte, right [][]byte) bool {
 	}
 
 	return true
+}
+
+func (pfe *fuzzDexExecutor) getPair(tokenA string, tokenB string) (error, string, string) {
+	rawResponse, err := pfe.querySingleResult(pfe.ownerAddress, pfe.routerAddress,
+		"getPair", fmt.Sprintf("\"str:%s\", \"str:%s\"", tokenA, tokenB))
+	if err != nil {
+		return err, "", ""
+	}
+
+	pairHexStr := "0x"
+	for i := 0; i < len(rawResponse[0]); i++ {
+		toAppend := fmt.Sprintf("%02x", rawResponse[0][i])
+		pairHexStr += toAppend
+	}
+
+	if (pairHexStr == "0x0000000000000000000000000000000000000000000000000000000000000000") && (tokenA != tokenB) {
+		return errors.New("NULL pair for different tokens"), "", ""
+	}
+
+	return nil, string(rawResponse[0]), pairHexStr
+}
+
+func (pfe *fuzzDexExecutor) getLpTokenIdentifier(pairHexStr string) (error, string, string) {
+	rawLpToken, errLpToken := pfe.querySingleResultStringAddr(pfe.ownerAddress, pairHexStr,
+		"getLpTokenIdentifier", "")
+	if errLpToken != nil {
+		return errLpToken, "", ""
+	}
+	lpTokenHex := ""
+	for i := 0; i < len(rawLpToken[0]); i++ {
+		toAppend := fmt.Sprintf("%02x", rawLpToken[0][i])
+		lpTokenHex += toAppend
+	}
+	lpToken, err := hex.DecodeString(lpTokenHex)
+	if err != nil {
+		return err, "", ""
+	}
+	lpTokenHex = "0x" + lpTokenHex
+	return nil, string(lpToken), lpTokenHex
 }

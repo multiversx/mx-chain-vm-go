@@ -50,13 +50,12 @@ func (pfe* fuzzDexExecutor) getSumForToken(tokenTicker string) (string, error) {
 			tokenA := pfe.tokenTicker(i)
 			tokenB := pfe.tokenTicker(j)
 
-			rawResponse, err := pfe.querySingleResult(pfe.ownerAddress, pfe.routerAddress,
-				"getPair", fmt.Sprintf("\"str:%s\", \"str:%s\"", tokenA, tokenB))
+			err, pairRawStr, _ := pfe.getPair(tokenA, tokenB)
 			if err != nil {
 				return "", err
 			}
 
-			result, err := pfe.getTokens(rawResponse[0], tokenTicker)
+			result, err := pfe.getTokens([]byte(pairRawStr), tokenTicker)
 			if err != nil {
 				return "", err
 			}

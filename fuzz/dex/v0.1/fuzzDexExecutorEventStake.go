@@ -7,36 +7,18 @@ import (
 )
 
 func (pfe *fuzzDexExecutor) stake(user string, tokenA string, tokenB string, amount int, statistics *eventsStatistics) error {
-	pairAddressRaw, err := pfe.querySingleResult(pfe.ownerAddress, pfe.routerAddress,
-		"getPair", fmt.Sprintf("\"str:%s\", \"str:%s\"", tokenA, tokenB))
+	err, _, pairHexStr := pfe.getPair(tokenA, tokenB)
 	if err != nil {
 		return err
-	}
-
-	pairHexStr := "0x"
-	for i := 0; i < len(pairAddressRaw[0]); i++ {
-		toAppend := fmt.Sprintf("%02x", pairAddressRaw[0][i])
-		pairHexStr += toAppend
-	}
-
-	if pairHexStr == "0x0000000000000000000000000000000000000000000000000000000000000000" && tokenA != tokenB {
-		return errors.New("NULL pair for different tokens")
 	}
 
 	if tokenA == tokenB {
 		return nil
 	}
 
-	lpTokenRaw, err := pfe.querySingleResult(pfe.ownerAddress, pairAddressRaw[0],
-		"getLpTokenIdentifier", "")
+	err, lpTokenStr, lpTokenHexStr := pfe.getLpTokenIdentifier(pairHexStr)
 	if err != nil {
 		return err
-	}
-
-	lpTokenHex := "0x"
-	for i := 0; i < len(lpTokenRaw[0]); i++ {
-		toAppend := fmt.Sprintf("%02x", lpTokenRaw[0][i])
-		lpTokenHex += toAppend
 	}
 
 	output, err := pfe.executeTxStep(fmt.Sprintf(`
@@ -59,7 +41,7 @@ func (pfe *fuzzDexExecutor) stake(user string, tokenA string, tokenB string, amo
 	}`,
 		user,
 		pfe.wegldStakingAddress,
-		lpTokenHex,
+		lpTokenHexStr,
 		amount,
 	))
 	if output == nil {
@@ -79,7 +61,7 @@ func (pfe *fuzzDexExecutor) stake(user string, tokenA string, tokenB string, amo
 		pfe.stakers[nonce] = StakeInfo{
 			user: user,
 			value: bigint.Int64(),
-			lpToken: string(lpTokenRaw[0]),
+			lpToken: lpTokenStr,
 		}
 	} else {
 		statistics.stakeMisses += 1
