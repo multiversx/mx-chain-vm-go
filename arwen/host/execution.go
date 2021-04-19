@@ -14,6 +14,8 @@ import (
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
+const gasLimitToUseForRevertESDT = uint64(1_500_000_000)
+
 func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput) *vmcommon.VMOutput {
 	host.InitState()
 	defer host.Clean()
@@ -667,7 +669,7 @@ func (host *vmHost) RevertESDTTransfer(input *vmcommon.ContractCallInput) {
 			CallValue:      big.NewInt(0),
 			CallType:       vmcommon.AsynchronousCallBack,
 			GasPrice:       input.GasPrice,
-			GasProvided:    input.GasProvided,
+			GasProvided:    gasLimitToUseForRevertESDT,
 			GasLocked:      0,
 			OriginalTxHash: input.OriginalTxHash,
 			CurrentTxHash:  input.CurrentTxHash,
@@ -691,16 +693,20 @@ func (host *vmHost) RevertESDTTransfer(input *vmcommon.ContractCallInput) {
 	vmOutput, err := host.blockChainHook.ProcessBuiltInFunction(revertInput)
 	if err != nil {
 		log.Error("RevertESDTTransfer failed", "error", err)
+		host.meteringContext.UseGas(host.meteringContext.GasLeft())
+		host.runtimeContext.FailExecution(err)
 		return
 	}
 	if vmOutput != nil && vmOutput.ReturnCode != vmcommon.Ok {
 		log.Error("RevertESDTTransfer failed", "returnCode", vmOutput.ReturnCode, "returnMessage", vmOutput.ReturnMessage)
+		host.meteringContext.UseGas(host.meteringContext.GasLeft())
+		host.runtimeContext.FailExecution(errors.New(vmOutput.ReturnMessage))
 	}
 }
 
 // ExecuteESDTTransfer calls the process built in function with the given transfer for ESDT/ESDTNFT if nonce > 0
 // there are no NFTs with nonce == 0
-func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callType vmcommon.CallType) (*vmcommon.VMOutput, uint64, error) {
+func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callType vmcommon.CallType, isRevert bool) (*vmcommon.VMOutput, uint64, error) {
 	_, _, metering, _, runtime, _ := host.GetContexts()
 
 	esdtTransferInput := &vmcommon.ContractCallInput{
@@ -727,6 +733,10 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, token
 		esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, tokenIdentifier, value.Bytes())
 	}
 
+	if isRevert {
+		esdtTransferInput.GasProvided = gasLimitToUseForRevertESDT
+	}
+
 	vmOutput, err := host.blockChainHook.ProcessBuiltInFunction(esdtTransferInput)
 	log.Trace("ESDT transfer", "sender", sender, "dest", destination)
 	log.Trace("ESDT transfer", "token", tokenIdentifier, "value", value)
@@ -745,7 +755,7 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, token
 			gasConsumed, _ = math.SubUint64(gasConsumed, transfer.GasLimit)
 		}
 	}
-	if callType != vmcommon.AsynchronousCallBack {
+	if callType != vmcommon.AsynchronousCallBack && !isRevert {
 		if metering.GasLeft() < gasConsumed {
 			log.Trace("ESDT transfer", "error", arwen.ErrNotEnoughGas)
 			return vmOutput, esdtTransferInput.GasProvided, arwen.ErrNotEnoughGas
