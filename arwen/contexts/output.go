@@ -399,6 +399,7 @@ func (context *outputContext) AddTxValueToAccount(address []byte, value *big.Int
 // GetVMOutput updates the current VMOutput and returns it
 func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 	metering := context.host.Metering()
+	context.outputState.GasRemaining = metering.GasLeft()
 
 	err := metering.UpdateGasStateOnSuccess(context.outputState)
 	if err != nil {

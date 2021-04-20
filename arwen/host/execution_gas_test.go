@@ -34,9 +34,6 @@ func TestGasUsed_SingleContract(t *testing.T) {
 }
 
 func TestGasUsed_SingleContract_BuiltinCall(t *testing.T) {
-	logger.SetLogLevel("*:TRACE")
-	logger.ToggleLoggerName(true)
-
 	host, world, ibm := defaultTestArwenForCallWithInstanceMocks(t)
 	createTestParentContract(t, host, ibm)
 	createMockBuiltinFunctions(t, host, world)

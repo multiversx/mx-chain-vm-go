@@ -478,7 +478,7 @@ func expectedVMOutputDestCtxBuiltinDoSomething(input *vmcommon.ContractCallInput
 		nil,
 	)
 	account.Balance = big.NewInt(1000)
-	account.BalanceDelta = big.NewInt(0)
+	account.BalanceDelta = big.NewInt(0).Sub(arwen.One, arwen.One)
 	account.GasUsed = 1992
 
 	AddFinishData(vmOutput, []byte("succ"))

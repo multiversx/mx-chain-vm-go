@@ -13,6 +13,9 @@ import (
 // Zero is the big integer 0
 var Zero = big.NewInt(0)
 
+// One is the big integer 1
+var One = big.NewInt(1)
+
 // CustomStorageKey appends the given key type to the given associated key
 func CustomStorageKey(keyType string, associatedKey []byte) []byte {
 	return append(associatedKey, []byte(keyType)...)
