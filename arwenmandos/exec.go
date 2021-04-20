@@ -73,13 +73,15 @@ func (ae *ArwenTestExecutor) GetVM() vmi.VMExecutionHandler {
 func (ae *ArwenTestExecutor) gasScheduleMapFromMandos(mandosGasSchedule mj.GasSchedule) (config.GasScheduleMap, error) {
 	switch mandosGasSchedule {
 	case mj.GasScheduleDefault:
-		return arwenHost.LoadGasScheduleConfig(filepath.Join(ae.arwenmandosPath, "gasSchedules/gasScheduleV2.toml"))
+		return arwenHost.LoadGasScheduleConfig(filepath.Join(ae.arwenmandosPath, "gasSchedules/gasScheduleV3.toml"))
 	case mj.GasScheduleDummy:
 		return config.MakeGasMapForTests(), nil
 	case mj.GasScheduleV1:
 		return arwenHost.LoadGasScheduleConfig(filepath.Join(ae.arwenmandosPath, "gasSchedules/gasScheduleV1.toml"))
 	case mj.GasScheduleV2:
 		return arwenHost.LoadGasScheduleConfig(filepath.Join(ae.arwenmandosPath, "gasSchedules/gasScheduleV2.toml"))
+	case mj.GasScheduleV3:
+		return arwenHost.LoadGasScheduleConfig(filepath.Join(ae.arwenmandosPath, "gasSchedules/gasScheduleV3.toml"))
 	default:
 		return nil, fmt.Errorf("unknown mandos GasSchedule: %d", mandosGasSchedule)
 	}
