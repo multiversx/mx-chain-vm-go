@@ -33,12 +33,11 @@
 			"txId": "swap-fixed-input",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:mebu_pair_contract",
+				"to": "address:weme_pair_contract",
 				"value": "0",
-				"function": "removeTrustedSwapPair",
+				"function": "removeWhitelist",
 				"arguments": [
-					"str:WEGLD-abcdef",
-					"str:MEX-abcdef"
+					"address:mebu_pair_contract"
 				],
 				"gasLimit": "50,000,000",
 				"gasPrice": "0"
@@ -67,7 +66,7 @@
 					"str:MEX-abcdef",
 					"50,000"
 				],
-				"gasLimit": "50,000,000",
+				"gasLimit": "60,000,000",
 				"gasPrice": "0"
 			},
 			"expect": {
