@@ -612,28 +612,7 @@ func (host *vmHost) executeSmartContractCall(
 }
 
 func (host *vmHost) execute(input *vmcommon.ContractCallInput) (uint64, error) {
-	_, _, metering, output, runtime, storage := host.GetContexts()
-
-	if host.isBuiltinFunctionBeingCalled() {
-		newVMInput, gasUsedBeforeReset, err := host.callBuiltinFunction(input)
-		if err != nil {
-			return gasUsedBeforeReset, err
-		}
-
-		if newVMInput != nil {
-			runtime.InitStateFromContractCallInput(newVMInput)
-			metering.InitStateFromContractCallInput(&newVMInput.VMInput)
-			storage.SetAddress(runtime.GetSCAddress())
-			err = host.executeSmartContractCall(newVMInput, metering, runtime, output, false)
-			if err != nil {
-				host.RevertESDTTransfer(input)
-			}
-
-			return gasUsedBeforeReset, err
-		}
-
-		return gasUsedBeforeReset, nil
-	}
+	_, _, metering, output, runtime, _ := host.GetContexts()
 
 	return 0, host.executeSmartContractCall(input, metering, runtime, output, true)
 }
@@ -919,7 +898,7 @@ func (host *vmHost) callSCMethod() error {
 		err = host.handleBreakpointIfAny(err)
 	}
 	if err == nil {
-		err = host.checkFinalGasAfterExit()
+		// err = host.checkFinalGasAfterExit()
 	}
 	if err != nil {
 		log.Trace("call SC method failed", "error", err)
