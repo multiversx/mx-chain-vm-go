@@ -153,7 +153,7 @@ func TestDistribution(t *testing.T) {
 }
 
 func TestDex_v0_1_singleTest(t *testing.T) {
-	runSingleTest(t, "dex/v0_1/mandos", "complex_extern_swap_after_local_swap_remove_whitelist.scen.json")
+	runSingleTest(t, "dex/v0_1/mandos", "complex_add_oracle_pair.scen.json")
 }
 
 // func TestPromises(t *testing.T) {

@@ -1,0 +1,102 @@
+{
+	"name": "create pair twice",
+	"steps": [
+		{
+			"step": "externalSteps",
+			"path": "complex_setup_from_zero.scen.json"
+		},
+		{
+			"step": "scCall",
+			"txId": "swap-fixed-input",
+			"tx": {
+				"from": "address:owner",
+				"to": "address:wegld_staking_contract",
+				"value": "0",
+				"function": "addAcceptedPairAddressAndLpToken",
+				"arguments": [
+					"address:mebu_pair_contract",
+					"str:LPMEBU-abcdef"
+				],
+				"gasLimit": "60,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [],
+				"status": "0",
+				"message": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "scCall",
+			"txId": "swap-fixed-input",
+			"tx": {
+				"from": "address:owner",
+				"to": "address:wegld_staking_contract",
+				"value": "0",
+				"function": "getStakeContribution",
+				"arguments": [
+					"str:LPMEBU-abcdef",
+					"100"
+				],
+				"gasLimit": "50,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [],
+				"status": "4",
+				"message": "*",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "scCall",
+			"txId": "swap-fixed-input",
+			"tx": {
+				"from": "address:owner",
+				"to": "address:wegld_staking_contract",
+				"value": "0",
+				"function": "addTrustedPairAsOracle",
+				"arguments": [
+					"str:WEGLD-abcdef",
+					"str:BUSD-abcdef",
+					"address:webu_pair_contract"
+				],
+				"gasLimit": "60,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [],
+				"status": "0",
+				"message": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "scCall",
+			"txId": "swap-fixed-input",
+			"tx": {
+				"from": "address:owner",
+				"to": "address:wegld_staking_contract",
+				"value": "0",
+				"function": "getStakeContribution",
+				"arguments": [
+					"str:LPMEBU-abcdef",
+					"100"
+				],
+				"gasLimit": "50,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": ["0x0000000a4d45582d6162636465660000000163", "0x0000000b425553442d6162636465660000000164", "0x63", "0x63"],
+				"status": "0",
+				"message": "*",
+				"gas": "*",
+				"refund": "*"
+			}
+		}
+	]
+}
