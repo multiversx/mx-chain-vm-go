@@ -87,7 +87,7 @@
 					"str:LPMEBU-abcdef",
 					"100"
 				],
-				"gasLimit": "50,000,000",
+				"gasLimit": "60,000,000",
 				"gasPrice": "0"
 			},
 			"expect": {

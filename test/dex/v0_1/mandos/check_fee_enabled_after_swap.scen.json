@@ -43,8 +43,11 @@
 					},
 					"storage": {
 						"``ELRONDroleesdtFARM-abcdef": "0x0a1145534454526f6c654e46544372656174650a1645534454526f6c654e46544164645175616e746974790a0f45534454526f6c654e46544275726e",
-						"0x706169725f666f725f6c705f746f6b656e0000000c4c50544f4b2d616263646566": "0x706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f",
-						"0x6c705f746f6b656e5f666f725f70616972706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f": "0x4c50544f4b2d616263646566",
+						"str:pair_address_for_accepted_lp_token.info": "0x00000001000000010000000100000001",
+						"str:pair_address_for_accepted_lp_token.mappedLPTOK-abcdef": "``pair_contract___________________",
+						"str:pair_address_for_accepted_lp_token.node_idLPTOK-abcdef": "1",
+						"0x706169725f616464726573735f666f725f61636365707465645f6c705f746f6b656e2e76616c756500000001": "str:LPTOK-abcdef",
+						"0x706169725f616464726573735f666f725f61636365707465645f6c705f746f6b656e2e6e6f64655f6c696e6b7300000001": "0x0000000000000000",
 						"str:farming_pool_token_id": "str:WEGLD-abcdef",
 						"str:farm_token_id": "str:FARM-abcdef",
 						"str:router_address": "address:router_contract",
