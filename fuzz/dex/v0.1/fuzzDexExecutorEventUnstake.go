@@ -93,19 +93,6 @@ func (pfe *fuzzDexExecutor) unstake(amountMax int, statistics *eventsStatistics,
 		if wegldAfter.Cmp(big.NewInt(0).Add(wegldBefore, big.NewInt(0).SetBytes(reward[0]))) != 0 {
 			return errors.New("BAD reward received")
 		}
-
-		pfe.currentUnstakeTokenNonce += 1
-		nonce = pfe.currentUnstakeTokenNonce
-		bigint, errGet := pfe.getTokensWithNonce([]byte(user), "UNSTAK-abcdef", nonce)
-		if errGet != nil {
-			return errGet
-		}
-		pfe.unstakers[nonce] = UnstakeInfo{
-			user: user,
-			value: bigint.Int64(),
-			lpToken: lpToken,
-		}
-
 	} else {
 		statistics.unstakeMisses += 1
 		pfe.log("unstake")

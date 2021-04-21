@@ -35,14 +35,6 @@
 		},
 		{
 			"step": "externalSteps",
-			"path": "steps/issue_unstake_token.steps.json"
-		},
-		{
-			"step": "externalSteps",
-			"path": "steps/set_local_roles_unstake_token.steps.json"
-		},
-		{
-			"step": "externalSteps",
 			"path": "steps/hackish.steps.json"
 		},
 		{

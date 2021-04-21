@@ -8,7 +8,7 @@
 				"from": "address:owner",
 				"to": "address:staking_contract",
 				"value": "0",
-				"function": "setLocalRolesUnstakeToken",
+				"function": "setLocalRolesStakeToken",
 				"arguments": [
 					"0x03", "0x04", "0x05"
 				],

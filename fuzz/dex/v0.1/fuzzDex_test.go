@@ -57,21 +57,19 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 			mexTokenId:					"MEX-abcdef",
 			numUsers:					10,
 			numTokens:					3,
-			numEvents:					5000,
+			numEvents:					500,
 			removeLiquidityProb:		0.05,
 			addLiquidityProb:			0.25,
 			swapProb:					0.35,
 			queryPairsProb:				0.05,
 			stakeProb:					0.20,
 			unstakeProb:				0.085,
-			unbondProb:					0.005,
 			increaseEpochProb:			0.005,
 			removeLiquidityMaxValue:	1000000000,
 			addLiquidityMaxValue: 		1000000000,
 			swapMaxValue: 				10000000,
 			stakeMaxValue:				100000000,
 			unstakeMaxValue:			100000000,
-			unbondMaxValue:				100000000,
 			blockEpochIncrease: 		10,
 			tokensCheckFrequency:		4999,
 		},
@@ -109,8 +107,6 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 		unstakeHits:					0,
 		unstakeMisses:					0,
 		unstakeWithRewards:				0,
-		unbondHits:	 					0,
-		unbondMisses:					0,
 	}
 
 	re := fuzzutil.NewRandomEventProvider(r)
@@ -234,14 +230,6 @@ func generateRandomEvent(
 			err := pfe.unstake(seed, statistics, r)
 			require.Nil(t, err)
 
-		// unbond
-		case re.WithProbability(pfe.unbondProb):
-
-			seed := r.Intn(pfe.unbondMaxValue) + 1
-
-			err := pfe.unbond(seed, statistics, r)
-			require.Nil(t, err)
-
 		// increase block epoch. required for unbond
 		case re.WithProbability(pfe.increaseEpochProb):
 
@@ -276,8 +264,5 @@ func printStatistics(statistics *eventsStatistics, pfe *fuzzDexExecutor) {
 	pfe.log("\tunstakeHits					%d", statistics.unstakeHits)
 	pfe.log("\tunstakeMisses				%d", statistics.unstakeMisses)
 	pfe.log("\tunstakeWithRewards			%d", statistics.unstakeWithRewards)
-	pfe.log("")
-	pfe.log("\tunbondHits					%d", statistics.unbondHits)
-	pfe.log("\tunbondMisses				%d", statistics.unbondMisses)
 	pfe.log("")
 }

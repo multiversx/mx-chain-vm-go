@@ -113,10 +113,8 @@
 					},
 					"storage": {
 						"``ELRONDroleesdtSTAKING-abcdef": "0x0a1145534454526f6c654e46544372656174650a1645534454526f6c654e46544164645175616e746974790a0f45534454526f6c654e46544275726e",
-						"``ELRONDroleesdtUNSTAK-abcdef": "0x0a1145534454526f6c654e46544372656174650a1645534454526f6c654e46544164645175616e746974790a0f45534454526f6c654e46544275726e",
 						"str:staking_pool_token_id": "str:WEGLD-abcdef",
 						"str:stake_token_id": "str:STAKING-abcdef",
-						"str:unstake_token_id": "str:UNSTAK-abcdef",
 						"str:router_address": "address:router_contract",
 						"str:virtual_token_id": "str:WEGLD-abcdef",
 						"str:state": "1",
