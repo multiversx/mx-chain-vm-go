@@ -1,6 +1,6 @@
 {
     "name": "call getUserAddresses in order to check who registered",
-    "gasSchedule": "v2",
+    "gasSchedule": "v3",
     "steps": [
         {
             "step": "externalSteps",

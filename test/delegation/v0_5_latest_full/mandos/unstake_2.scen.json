@@ -1,7 +1,7 @@
 {
     "name": "unstake-2",
     "comment":"unstake more than available in waiting, and check that staked is changed to unstaked",
-    "gasSchedule": "v2",
+    "gasSchedule": "v3",
     "steps": [
         {
             "step": "externalSteps",
