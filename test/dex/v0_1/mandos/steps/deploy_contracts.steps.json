@@ -45,7 +45,8 @@
 				"contractCode": "file:../../output/elrond_dex_farm.wasm",
 				"arguments": [
 					"str:WEGLD-abcdef",
-					"address:router_contract"
+					"address:router_contract",
+					"0x01"
 				],
 				"gasLimit": "100,000,000",
 				"gasPrice": "0"

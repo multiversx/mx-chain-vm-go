@@ -142,7 +142,8 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 			"contractCode": "file:elrond_dex_farm.wasm",
 			"arguments": [
 				"str:%s",
-				"''%s"
+				"''%s",
+				"1"
 			],
 			"gasLimit": "1,000,000",
 			"gasPrice": "0"
@@ -174,7 +175,8 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 			"contractCode": "file:elrond_dex_farm.wasm",
 			"arguments": [
 				"str:%s",
-				"''%s"
+				"''%s",
+				"1"
 			],
 			"gasLimit": "1,000,000",
 			"gasPrice": "0"

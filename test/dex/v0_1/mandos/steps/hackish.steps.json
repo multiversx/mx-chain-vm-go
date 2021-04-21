@@ -41,7 +41,8 @@
 						"str:router_address": "address:router_contract",
 						"str:virtual_token_id": "str:WEGLD-abcdef",
 						"str:state": "1",
-						"str:owner": "address:owner"
+						"str:owner": "address:owner",
+						"str:farm_with_lp_tokens": "1"
 					},
 					"code": "file:../../output/elrond_dex_farm.wasm"
 				}

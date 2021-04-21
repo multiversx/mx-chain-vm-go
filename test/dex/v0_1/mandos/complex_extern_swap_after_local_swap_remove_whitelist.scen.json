@@ -97,7 +97,8 @@
 						"0x6c705f746f6b656e5f666f725f7061697277656d655f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f": "0x4c5057454d452d616263646566",
 						"0x706169725f666f725f6c705f746f6b656e0000000d4c5057454d452d616263646566": "0x77656d655f706169725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f",
 						"0x7374617465": "0x01",
-						"str:owner": "address:owner"
+						"str:owner": "address:owner",
+						"str:farm_with_lp_tokens": "1"
 					},
 					"code": "file:../output/elrond_dex_farm.wasm"
 				},
@@ -118,7 +119,8 @@
 						"0x726f757465725f61646472657373": "0x726f757465725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f",
 						"0x7374617465": "0x01",
 						"str:owner": "address:owner",
-						"0x6661726d696e675f706f6f6c5f746f6b656e5f6964": "0x4d45582d616263646566"
+						"0x6661726d696e675f706f6f6c5f746f6b656e5f6964": "0x4d45582d616263646566",
+						"str:farm_with_lp_tokens": "1"
 					},
 					"code": "file:../output/elrond_dex_farm.wasm"
 				},

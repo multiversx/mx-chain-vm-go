@@ -856,7 +856,8 @@ func (pfe *fuzzDexExecutor) doHachishStepStaking() error {
 					"str:farm_token_id": "str:%s",
 					"str:router_address": "''%s",
 					"str:state": "1",
-					"str:owner": "''%s"
+					"str:owner": "''%s",
+					"str:farm_with_lp_tokens": "1"
 				},
 				"code": "file:../../../test/dex/v0_1/output/elrond_dex_farm.wasm"
 			}
@@ -886,21 +887,15 @@ func (pfe *fuzzDexExecutor) doHachishStepStaking() error {
 						"ESDTRoleNFTCreate",
 						"ESDTRoleNFTAddQuantity",
 						"ESDTRoleNFTBurn"
-					],
-					"str:%s": [
-						"ESDTRoleNFTCreate",
-						"ESDTRoleNFTAddQuantity",
-						"ESDTRoleNFTBurn"
 					]
 				},
 				"storage": {
-					"str:staking_pool_token_id": "str:%s",
-					"str:stake_token_id": "str:%s",
-					"str:unstake_token_id": "str:%s",
+					"str:farming_pool_token_id": "str:%s",
+					"str:farm_token_id": "str:%s",
 					"str:router_address": "''%s",
-					"str:virtual_token_id": "str:%s",
 					"str:state": "1",
-					"str:owner": "''%s"
+					"str:owner": "''%s",
+					"str:farm_with_lp_tokens": "1"
 				},
 				"code": "file:../../../test/dex/v0_1/output/elrond_dex_farm.wasm"
 			}
@@ -908,12 +903,9 @@ func (pfe *fuzzDexExecutor) doHachishStepStaking() error {
 	}`,
 		string(pfe.mexFarmingAddress),
 		"FARM-abcdef",
-		"UNSTAK-abcdef",
 		pfe.mexTokenId,
 		"FARM-abcdef",
-		"UNSTAK-abcdef",
 		string(pfe.routerAddress),
-		pfe.mexTokenId,
 		string(pfe.ownerAddress),
 	))
 	if err != nil {
