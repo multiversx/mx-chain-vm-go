@@ -281,7 +281,7 @@ func TestExecution_MultipleArwens_OverlapingContractInstanceData(t *testing.T) {
 	require.NotNil(t, vmOutput)
 
 	var host1InstancesData = make(map[interface{}]bool)
-	for _, instance := range instanceRecorder1.GetInstances(code) {
+	for _, instance := range instanceRecorder1.GetContractInstances(code) {
 		host1InstancesData[instance.GetData()] = true
 	}
 
@@ -296,7 +296,7 @@ func TestExecution_MultipleArwens_OverlapingContractInstanceData(t *testing.T) {
 		require.NotNil(t, vmOutput)
 	}
 
-	for _, instance := range instanceRecorder2.GetInstances(code) {
+	for _, instance := range instanceRecorder2.GetContractInstances(code) {
 		_, found := host1InstancesData[instance.GetData()]
 		require.False(t, found)
 	}

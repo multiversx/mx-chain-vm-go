@@ -17,30 +17,32 @@ func NewInstanceBuilderRecorderMock() *InstanceBuilderRecorderMock {
 	}
 }
 
+// see InstanceBuilderMock.NewInstanceWithOptions()
 func (builder *InstanceBuilderRecorderMock) NewInstanceWithOptions(
 	contractCode []byte,
 	options wasmer.CompilationOptions,
 ) (wasmer.InstanceHandler, error) {
 	instance, err := wasmer.NewInstanceWithOptions(contractCode, options)
 	if err == nil {
-		builder.addInstanceToInstanceMap(contractCode, instance)
+		builder.addContractInstanceToInstanceMap(contractCode, instance)
 	}
 	return instance, err
 }
 
+// see InstanceBuilderMock.NewInstanceFromCompiledCodeWithOptions()
 func (builder *InstanceBuilderRecorderMock) NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
 	options wasmer.CompilationOptions,
 ) (wasmer.InstanceHandler, error) {
 	instance, err := wasmer.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
 	if err == nil {
-		builder.addInstanceToInstanceMap(compiledCode, instance)
+		builder.addContractInstanceToInstanceMap(compiledCode, instance)
 	}
 	return instance, err
 }
 
-// add contract instance to the instance map
-func (builder *InstanceBuilderRecorderMock) addInstanceToInstanceMap(code []byte, instance wasmer.InstanceHandler) {
+// add contract instance to the instance map for the given code
+func (builder *InstanceBuilderRecorderMock) addContractInstanceToInstanceMap(code []byte, instance wasmer.InstanceHandler) {
 	instances, ok := builder.InstanceMap[string(code)]
 	if ok {
 		instances = append(instances, instance)
@@ -50,6 +52,7 @@ func (builder *InstanceBuilderRecorderMock) addInstanceToInstanceMap(code []byte
 	builder.InstanceMap[string(code)] = instances
 }
 
-func (builder *InstanceBuilderRecorderMock) GetInstances(code []byte) []wasmer.InstanceHandler {
+// get contract instances for code
+func (builder *InstanceBuilderRecorderMock) GetContractInstances(code []byte) []wasmer.InstanceHandler {
 	return builder.InstanceMap[string(code)]
 }
