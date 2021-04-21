@@ -1,6 +1,9 @@
 package mock
 
 import (
+	"testing"
+
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 )
 
@@ -14,6 +17,9 @@ type InstanceMock struct {
 	GasLimit        uint64
 	BreakpointValue uint64
 	Memory          wasmer.MemoryHandler
+	Host            arwen.VMHost
+	T               testing.TB
+	Address         []byte
 }
 
 // NewInstanceMock creates a new InstanceMock

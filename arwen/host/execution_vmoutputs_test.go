@@ -170,9 +170,9 @@ func expectedVMOutputSameCtxSimple(_ []byte, _ []byte) *vmcommon.VMOutput {
 		198,
 		nil,
 	)
-	childAccount.GasUsed = 3435 // TODO: double this when fixed
+	childAccount.GasUsed = 6870
 
-	executionCost := parentAccount.GasUsed + 2*childAccount.GasUsed
+	executionCost := parentAccount.GasUsed + childAccount.GasUsed
 	vmOutput.GasRemaining = gasProvided - executionCost
 
 	return vmOutput

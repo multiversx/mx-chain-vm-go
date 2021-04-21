@@ -4,9 +4,9 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
-	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/stretchr/testify/require"
 )
 
@@ -29,8 +29,8 @@ func TestGasUsed_SingleContract(t *testing.T) {
 	vmOutput, err := host.RunSmartContractCall(input)
 
 	verify := NewVMOutputVerifier(t, vmOutput, err)
+	verify.Ok().GasRemaining(gasProvided - gasUsedByParent)
 	verify.GasUsed(parentAddress, gasUsedByParent)
-	verify.GasRemaining(gasProvided - gasUsedByParent)
 }
 
 func TestGasUsed_SingleContract_BuiltinCall(t *testing.T) {
@@ -43,17 +43,18 @@ func TestGasUsed_SingleContract_BuiltinCall(t *testing.T) {
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.GasProvided = gasProvided
-	input.Function = "execBuiltinDestCtx"
+	input.Function = "execOnDestCtx"
 	input.Arguments = [][]byte{
-		big.NewInt(0).SetUint64(1).Bytes(),
+		parentAddress,
 		[]byte("builtinClaim"),
+		arwen.One.Bytes(),
 	}
 
 	vmOutput, err := host.RunSmartContractCall(input)
 
 	verify := NewVMOutputVerifier(t, vmOutput, err)
+	verify.Ok().GasRemaining(gasProvided - gasUsedByParent - gasUsedByBuiltinClaim)
 	verify.GasUsed(parentAddress, gasUsedByParent+gasUsedByBuiltinClaim)
-	verify.GasRemaining(gasProvided - gasUsedByParent - gasUsedByBuiltinClaim)
 }
 
 func TestGasUsed_TwoContracts_ExecuteOnSameCtx(t *testing.T) {
@@ -63,25 +64,28 @@ func TestGasUsed_TwoContracts_ExecuteOnSameCtx(t *testing.T) {
 	zeroCodeCosts(host)
 
 	gasProvided := uint64(1000)
-	for numChildCalls := uint64(0); numChildCalls < 3; numChildCalls++ {
-		expectedGasRemaining := gasProvided - gasUsedByParent - gasUsedByChild*numChildCalls
+	input := DefaultTestContractCallInput()
+	input.RecipientAddr = parentAddress
+	input.GasProvided = gasProvided
+	input.Function = "execOnSameCtx"
 
-		input := DefaultTestContractCallInput()
-		input.RecipientAddr = parentAddress
-		input.GasProvided = gasProvided
-		input.Function = "execChildSameCtx"
+	for numCalls := uint64(0); numCalls < 3; numCalls++ {
+		expectedGasRemaining := gasProvided - gasUsedByParent - gasUsedByChild*numCalls
+
+		numCallsBytes := big.NewInt(0).SetUint64(numCalls).Bytes()
 		input.Arguments = [][]byte{
-			big.NewInt(0).SetUint64(numChildCalls).Bytes(),
+			childAddress,
 			[]byte("wasteGas"),
+			numCallsBytes,
 		}
 
 		vmOutput, err := host.RunSmartContractCall(input)
 
 		verify := NewVMOutputVerifier(t, vmOutput, err)
-		verify.GasRemaining(expectedGasRemaining)
+		verify.Ok().GasRemaining(expectedGasRemaining)
 		verify.GasUsed(parentAddress, gasUsedByParent)
-		if numChildCalls > 0 {
-			verify.GasUsed(childAddress, gasUsedByChild*numChildCalls)
+		if numCalls > 0 {
+			verify.GasUsed(childAddress, gasUsedByChild*numCalls)
 		}
 	}
 }
@@ -93,110 +97,91 @@ func TestGasUsed_TwoContracts_ExecuteOnDestCtx(t *testing.T) {
 	zeroCodeCosts(host)
 
 	gasProvided := uint64(1000)
+	input := DefaultTestContractCallInput()
+	input.RecipientAddr = parentAddress
+	input.GasProvided = gasProvided
+	input.Function = "execOnDestCtx"
 
-	for numChildCalls := uint64(0); numChildCalls < 3; numChildCalls++ {
-		expectedGasRemaining := gasProvided - gasUsedByParent - gasUsedByChild*numChildCalls
+	for numCalls := uint64(0); numCalls < 3; numCalls++ {
+		expectedGasRemaining := gasProvided - gasUsedByParent - gasUsedByChild*numCalls
 
-		input := DefaultTestContractCallInput()
-		input.RecipientAddr = parentAddress
-		input.GasProvided = gasProvided
-		input.Function = "execChildDestCtx"
+		numCallsBytes := big.NewInt(0).SetUint64(numCalls).Bytes()
 		input.Arguments = [][]byte{
-			big.NewInt(0).SetUint64(numChildCalls).Bytes(),
+			childAddress,
 			[]byte("wasteGas"),
+			numCallsBytes,
 		}
 
 		vmOutput, err := host.RunSmartContractCall(input)
 
 		verify := NewVMOutputVerifier(t, vmOutput, err)
-		verify.GasRemaining(expectedGasRemaining)
+		verify.Ok().GasRemaining(expectedGasRemaining)
 		verify.GasUsed(parentAddress, gasUsedByParent)
-		if numChildCalls > 0 {
-			verify.GasUsed(childAddress, gasUsedByChild*numChildCalls)
+		if numCalls > 0 {
+			verify.GasUsed(childAddress, gasUsedByChild*numCalls)
 		}
 	}
 }
 
-func createTestParentContract(t testing.TB, host *vmHost, ibm *mock.InstanceBuilderMock) {
-	log := logger.GetOrCreate("arwen/testParent")
+func TestGasUsed_ThreeContracts_ExecuteOnDestCtx(t *testing.T) {
+	host, _, ibm := defaultTestArwenForCallWithInstanceMocks(t)
+	zeroCodeCosts(host)
 
+	alphaAddress := MakeTestSCAddress("alpha")
+	betaAddress := MakeTestSCAddress("beta")
+	gammaAddress := MakeTestSCAddress("gamma")
+
+	gasProvided := uint64(1000)
+	alphaCallGas := uint64(400)
+	alphaGasToForwardToReceivers := uint64(300)
+	receiverCallGas := uint64(200)
+
+	expectedGasRemaining := gasProvided - alphaCallGas - 2*receiverCallGas
+
+	alpha := ibm.CreateAndStoreInstanceMock(t, host, alphaAddress, 0)
+	addForwarderMethodsToInstanceMock(alpha, alphaCallGas, alphaGasToForwardToReceivers)
+
+	beta := ibm.CreateAndStoreInstanceMock(t, host, betaAddress, 0)
+	gamma := ibm.CreateAndStoreInstanceMock(t, host, gammaAddress, 0)
+	addDummyMethodsToInstanceMock(beta, receiverCallGas)
+	addDummyMethodsToInstanceMock(gamma, receiverCallGas)
+
+	input := DefaultTestContractCallInput()
+	input.RecipientAddr = alphaAddress
+	input.GasProvided = gasProvided
+	input.Function = "execOnDestCtx"
+	input.Arguments = [][]byte{
+		betaAddress,
+		[]byte("wasteGas"),
+		arwen.One.Bytes(),
+		gammaAddress,
+		[]byte("wasteGas"),
+		arwen.One.Bytes(),
+	}
+
+	vmOutput, err := host.RunSmartContractCall(input)
+
+	verify := NewVMOutputVerifier(t, vmOutput, err)
+	verify.GasUsed(alphaAddress, alphaCallGas)
+	verify.GasUsed(betaAddress, receiverCallGas)
+	verify.GasUsed(gammaAddress, receiverCallGas)
+	verify.Ok().GasRemaining(expectedGasRemaining)
+}
+
+func createTestParentContract(t testing.TB, host *vmHost, ibm *mock.InstanceBuilderMock) {
 	gasUsedByParent := uint64(400)
 	gasProvidedToChild := uint64(300)
 
-	parentInstance := ibm.CreateAndStoreInstanceMock(parentAddress, 0)
-
-	parentInstance.AddMockMethod("wasteGas", func() {
-		host.Metering().UseGas(gasUsedByParent)
-	})
-
-	parentInstance.AddMockMethod("execChildSameCtx", func() {
-		host.Metering().UseGas(gasUsedByParent)
-
-		arguments := host.Runtime().Arguments()
-		numChildCalls := big.NewInt(0).SetBytes(arguments[0]).Uint64()
-		childFunction := string(arguments[1])
-
-		childInput := DefaultTestContractCallInput()
-		childInput.CallerAddr = parentAddress
-		childInput.RecipientAddr = childAddress
-		childInput.Function = childFunction
-		childInput.GasProvided = gasProvidedToChild
-
-		for i := uint64(0); i < numChildCalls; i++ {
-			log.Trace("ExecuteOnSameContext child call", "index", i)
-			_, err := host.ExecuteOnSameContext(childInput)
-			require.Nil(t, err)
-		}
-	})
-
-	parentInstance.AddMockMethod("execChildDestCtx", func() {
-		host.Metering().UseGas(gasUsedByParent)
-
-		arguments := host.Runtime().Arguments()
-		numChildCalls := big.NewInt(0).SetBytes(arguments[0]).Uint64()
-		childFunction := string(arguments[1])
-
-		childInput := DefaultTestContractCallInput()
-		childInput.CallerAddr = parentAddress
-		childInput.RecipientAddr = childAddress
-		childInput.Function = childFunction
-		childInput.GasProvided = gasProvidedToChild
-
-		for i := uint64(0); i < numChildCalls; i++ {
-			log.Trace("ExecuteOnDestContext child call", "index", i)
-			_, _, _, err := host.ExecuteOnDestContext(childInput)
-			require.Nil(t, err)
-		}
-	})
-
-	parentInstance.AddMockMethod("execBuiltinDestCtx", func() {
-		host.Metering().UseGas(gasUsedByParent)
-
-		arguments := host.Runtime().Arguments()
-		numBuiltinCalls := big.NewInt(0).SetBytes(arguments[0]).Uint64()
-		builtinFunction := string(arguments[1])
-
-		builtinInput := DefaultTestContractCallInput()
-		builtinInput.CallerAddr = parentAddress
-		builtinInput.RecipientAddr = parentAddress
-		builtinInput.Function = builtinFunction
-		builtinInput.GasProvided = gasProvidedToChild
-
-		for i := uint64(0); i < numBuiltinCalls; i++ {
-			log.Trace("ExecuteOnDestContext builtin call", "index", i)
-			_, _, _, err := host.ExecuteOnDestContext(builtinInput)
-			require.Nil(t, err)
-		}
-	})
+	parentInstance := ibm.CreateAndStoreInstanceMock(t, host, parentAddress, 0)
+	addDummyMethodsToInstanceMock(parentInstance, gasUsedByParent)
+	addForwarderMethodsToInstanceMock(parentInstance, gasUsedByParent, gasProvidedToChild)
 }
 
-func createTestChildContract(tb testing.TB, host *vmHost, ibm *mock.InstanceBuilderMock) {
+func createTestChildContract(t testing.TB, host *vmHost, ibm *mock.InstanceBuilderMock) {
 	gasUsedByChild := uint64(200)
 
-	childInstance := ibm.CreateAndStoreInstanceMock(childAddress, 0)
-	childInstance.AddMockMethod("wasteGas", func() {
-		host.Metering().UseGas(gasUsedByChild)
-	})
+	childInstance := ibm.CreateAndStoreInstanceMock(t, host, childAddress, 0)
+	addDummyMethodsToInstanceMock(childInstance, gasUsedByChild)
 }
 
 func createMockBuiltinFunctions(tb testing.TB, host *vmHost, world *worldmock.MockWorld) {
@@ -209,6 +194,61 @@ func createMockBuiltinFunctions(tb testing.TB, host *vmHost, world *worldmock.Mo
 	})
 
 	host.protocolBuiltinFunctions = world.BuiltinFuncs.GetBuiltinFunctionNames()
+}
+
+func addDummyMethodsToInstanceMock(instance *mock.InstanceMock, gasPerCall uint64) {
+	instance.AddMockMethod("wasteGas", func() {
+		host := instance.Host
+		host.Metering().UseGas(gasPerCall)
+	})
+}
+
+func addForwarderMethodsToInstanceMock(instance *mock.InstanceMock, gasPerCall uint64, gasToForward uint64) {
+	input := DefaultTestContractCallInput()
+	input.GasProvided = gasToForward
+
+	t := instance.T
+
+	instance.AddMockMethod("execOnSameCtx", func() {
+		host := instance.Host
+		host.Metering().UseGas(gasPerCall)
+
+		arguments := host.Runtime().Arguments()
+		input.CallerAddr = instance.Address
+		input.RecipientAddr = arguments[0]
+		input.Function = string(arguments[1])
+		numCalls := big.NewInt(0).SetBytes(arguments[2]).Uint64()
+
+		for i := uint64(0); i < numCalls; i++ {
+			_, err := host.ExecuteOnSameContext(input)
+			require.Nil(t, err)
+		}
+	})
+
+	instance.AddMockMethod("execOnDestCtx", func() {
+		host := instance.Host
+		host.Metering().UseGas(gasPerCall)
+
+		argsPerCall := 3
+		arguments := host.Runtime().Arguments()
+		if len(arguments)%argsPerCall != 0 {
+			host.Runtime().SignalUserError("need 3 arguments per individual call")
+			return
+		}
+
+		input.CallerAddr = instance.Address
+
+		for callIndex := 0; callIndex < len(arguments); callIndex += argsPerCall {
+			input.RecipientAddr = arguments[callIndex+0]
+			input.Function = string(arguments[callIndex+1])
+			numCalls := big.NewInt(0).SetBytes(arguments[callIndex+2]).Uint64()
+
+			for i := uint64(0); i < numCalls; i++ {
+				_, _, _, err := host.ExecuteOnDestContext(input)
+				require.Nil(t, err)
+			}
+		}
+	})
 }
 
 func zeroCodeCosts(host *vmHost) {

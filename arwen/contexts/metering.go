@@ -289,12 +289,20 @@ func (context *meteringContext) getGasTransferredByAccount(account *vmcommon.Out
 }
 
 func (context *meteringContext) setGasUsedToOutputAccounts(vmOutput *vmcommon.VMOutput) error {
-	for address, gasUsed := range context.gasUsedByAccounts {
-		account, exists := vmOutput.OutputAccounts[address]
+	for address, account := range vmOutput.OutputAccounts {
+		gasUsed, exists := context.gasUsedByAccounts[address]
+		if exists {
+			account.GasUsed = gasUsed
+		} else {
+			account.GasUsed = 0
+		}
+	}
+
+	for address := range context.gasUsedByAccounts {
+		_, exists := vmOutput.OutputAccounts[address]
 		if !exists {
 			return fmt.Errorf("expected OutputAccount has used gas but is missing")
 		}
-		account.GasUsed = gasUsed
 	}
 
 	return nil
