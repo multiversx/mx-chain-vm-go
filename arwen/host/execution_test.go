@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"math"
 	"math/big"
 	"testing"
 
@@ -18,7 +19,7 @@ import (
 
 var counterKey = []byte("COUNTER")
 var WASMLocalsLimit = uint64(4000)
-var maxUint8 = int(^uint8(0))
+var maxUint8AsInt = int(math.MaxUint8)
 
 const (
 	get                     = "get"
@@ -264,7 +265,7 @@ func TestExecution_ManyDeployments(t *testing.T) {
 	}
 }
 
-func TestExecution_MultipleArwens_OverlapingContractInstanceData(t *testing.T) {
+func TestExecution_MultipleArwens_OverlappingContractInstanceData(t *testing.T) {
 	code := GetTestSCCode("counter", "../../")
 
 	input := DefaultTestContractCallInput()
@@ -276,9 +277,11 @@ func TestExecution_MultipleArwens_OverlapingContractInstanceData(t *testing.T) {
 	runtimeContextMock.CleanWasmerInstanceFunc = func() {}
 	host1.runtimeContext = runtimeContextMock
 
-	vmOutput, err := host1.RunSmartContractCall(input)
-	require.Nil(t, err)
-	require.NotNil(t, vmOutput)
+	for i := 0; i < 5; i++ {
+		vmOutput, err := host1.RunSmartContractCall(input)
+		require.Nil(t, err)
+		require.NotNil(t, vmOutput)
+	}
 
 	var host1InstancesData = make(map[interface{}]bool)
 	for _, instance := range instanceRecorder1.GetContractInstances(code) {
@@ -288,10 +291,13 @@ func TestExecution_MultipleArwens_OverlapingContractInstanceData(t *testing.T) {
 	host2, instanceRecorder2 := defaultTestArwenForCallWithInstanceRecorderMock(t, code, nil)
 	runtimeContextMock = contextmock.NewRuntimeContextWrapper(&host2.runtimeContext)
 	runtimeContextMock.CleanWasmerInstanceFunc = func() {}
+	runtimeContextMock.GetSCCodeFunc = func() ([]byte, error) {
+		return code, nil
+	}
 	host2.runtimeContext = runtimeContextMock
 
-	for i := 0; i < maxUint8+1; i++ {
-		vmOutput, err = host2.RunSmartContractCall(input)
+	for i := 0; i < maxUint8AsInt+1; i++ {
+		vmOutput, err := host2.RunSmartContractCall(input)
 		require.Nil(t, err)
 		require.NotNil(t, vmOutput)
 	}

@@ -164,7 +164,7 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(codeHash []byte, gas
 
 	context.instance = newInstance
 
-        hostReference := uintptr(unsafe.Pointer(&context.host))
+	hostReference := uintptr(unsafe.Pointer(&context.host))
 	context.instance.SetContextData(hostReference)
 	context.verifyCode = false
 
@@ -201,7 +201,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 
 	context.saveCompiledCode(codeHash)
 
-        hostReference := uintptr(unsafe.Pointer(&context.host))
+	hostReference := uintptr(unsafe.Pointer(&context.host))
 	context.instance.SetContextData(hostReference)
 
 	if newCode {
