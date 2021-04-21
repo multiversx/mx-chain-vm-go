@@ -71,7 +71,36 @@
 				"gasPrice": "0"
 			},
 			"expect": {
-				"out": ["0x01f3"],
+				"out": ["449"],
+				"status": "0",
+				"message": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "setState",
+			"currentBlockInfo": {
+				"blockEpoch": "4"
+			}
+		},
+		{
+			"step": "scCall",
+			"txId": "calculateRewards",
+			"tx": {
+				"from": "address:user1",
+				"to": "address:farm_contract",
+				"value": "0",
+				"function": "calculateRewardsForGivenPosition",
+				"arguments": [
+					"2",
+					"100,000,000"
+				],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": ["499"],
 				"status": "0",
 				"message": "",
 				"gas": "*",
