@@ -164,7 +164,8 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(codeHash []byte, gas
 
 	context.instance = newInstance
 
-	context.instance.SetContextData(uintptr(unsafe.Pointer(&context.host)))
+        hostReference := uintptr(unsafe.Pointer(&context.host))
+	context.instance.SetContextData(hostReference)
 	context.verifyCode = false
 
 	logRuntime.Trace("new instance created", "code", "cached compilation")
