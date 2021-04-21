@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	am "github.com/ElrondNetwork/arwen-wasm-vm/arwenmandos"
-	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/fileresolver"
+	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/fileresolver"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
 	mjparse "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/parse"
 	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/write"

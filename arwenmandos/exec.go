@@ -8,7 +8,8 @@ import (
 	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	mc "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/controller"
-	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/fileresolver"
+	er "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/expression/reconstructor"
+	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/fileresolver"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
 	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
@@ -26,8 +27,9 @@ type ArwenTestExecutor struct {
 	vm                      vmi.VMExecutionHandler
 	checkGas                bool
 	arwenmandosPath         string
-	fileResolver            fr.FileResolver
 	mandosGasScheduleLoaded bool
+	fileResolver            fr.FileResolver
+	exprReconstructor       er.ExprReconstructor
 }
 
 var _ mc.TestExecutor = (*ArwenTestExecutor)(nil)
@@ -60,8 +62,9 @@ func NewArwenTestExecutor(arwenmandosPath string) (*ArwenTestExecutor, error) {
 		vm:                      vm,
 		checkGas:                true,
 		arwenmandosPath:         arwenmandosPath,
-		fileResolver:            nil,
 		mandosGasScheduleLoaded: false,
+		fileResolver:            nil,
+		exprReconstructor:       er.ExprReconstructor{},
 	}, nil
 }
 

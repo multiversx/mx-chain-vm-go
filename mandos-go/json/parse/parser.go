@@ -1,19 +1,19 @@
 package mandosjsonparse
 
 import (
-	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/fileresolver"
-	vi "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/valueinterpreter"
+	ei "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/expression/interpreter"
+	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/fileresolver"
 )
 
 // Parser performs parsing of both json tests (older) and scenarios (new).
 type Parser struct {
-	ValueInterpreter vi.ValueInterpreter
+	ExprInterpreter ei.ExprInterpreter
 }
 
 // NewParser provides a new Parser instance.
 func NewParser(fileResolver fr.FileResolver) Parser {
 	return Parser{
-		ValueInterpreter: vi.ValueInterpreter{
+		ExprInterpreter: ei.ExprInterpreter{
 			FileResolver: fileResolver,
 		},
 	}
