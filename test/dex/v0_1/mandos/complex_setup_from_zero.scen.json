@@ -1767,6 +1767,44 @@
 				},
 				"+": ""
 			}
+		},
+		{
+			"step": "scCall",
+			"txId": "get-virtual-reserves",
+			"tx": {
+				"from": "address:user1",
+				"to": "address:wegld_farm_contract",
+				"value": "0",
+				"function": "getAllAcceptedTokens",
+				"arguments": [],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": ["0x4c50574542552d616263646566", "0x4c5057454d452d616263646566"],
+				"status": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "scCall",
+			"txId": "get-virtual-reserves",
+			"tx": {
+				"from": "address:user1",
+				"to": "address:mex_farm_contract",
+				"value": "0",
+				"function": "getAllAcceptedTokens",
+				"arguments": [],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": ["0x4c5057454d452d616263646566", "0x4c504d4542552d616263646566"],
+				"status": "",
+				"gas": "*",
+				"refund": "*"
+			}
 		}
 	]
 }

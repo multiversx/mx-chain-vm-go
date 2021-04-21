@@ -123,6 +123,25 @@
 				},
 				"+": ""
 			}
+		},
+		{
+			"step": "scCall",
+			"txId": "get-virtual-reserves",
+			"tx": {
+				"from": "address:user1",
+				"to": "address:egld_farm_contract",
+				"value": "0",
+				"function": "getAllAcceptedTokens",
+				"arguments": [],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": ["0x5745474c442d616263646566"],
+				"status": "",
+				"gas": "*",
+				"refund": "*"
+			}
 		}
 	]
 }
