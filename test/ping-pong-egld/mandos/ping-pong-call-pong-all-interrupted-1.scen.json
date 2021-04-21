@@ -1,6 +1,6 @@
 {
     "comment": "initially, the gas is not enough to even perform a single pong",
-    "gasSchedule": "v2",
+    "gasSchedule": "v3",
     "steps": [
         {
             "step": "externalSteps",

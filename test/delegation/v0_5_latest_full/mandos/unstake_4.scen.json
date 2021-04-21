@@ -1,7 +1,7 @@
 {
     "name": "unstake-4",
     "comment":"unstake more than it is in active, but less or equal to the user total delegation",
-    "gasSchedule": "v2",
+    "gasSchedule": "v3",
     "steps": [
         {
             "step": "externalSteps",

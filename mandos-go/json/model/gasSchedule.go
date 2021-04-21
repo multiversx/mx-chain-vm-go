@@ -14,6 +14,9 @@ const (
 	// GasScheduleV1 was previously used on mainnet.
 	GasScheduleV1
 
-	// GasScheduleV2 is currently used on mainnet.
+	// GasScheduleV2 was previously used on mainnet.
 	GasScheduleV2
+
+	// GasScheduleV3 is currently used on mainnet.
+	GasScheduleV3
 )
