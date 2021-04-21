@@ -1,6 +1,6 @@
 {
     "name": "change service fee scenario",
-    "gasSchedule": "v2",
+    "gasSchedule": "v3",
     "steps": [
         {
             "step": "externalSteps",

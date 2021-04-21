@@ -1,6 +1,6 @@
 {
     "name": "staking scenario",
-    "gasSchedule": "v2",
+    "gasSchedule": "v3",
     "steps": [
         {
             "step": "externalSteps",

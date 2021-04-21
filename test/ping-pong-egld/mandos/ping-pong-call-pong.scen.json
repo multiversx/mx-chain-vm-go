@@ -1,6 +1,6 @@
 {
     "name": "extracting the funds by calling pong after the deadline has passed",
-    "gasSchedule": "v2",
+    "gasSchedule": "v3",
     "steps": [
         {
             "step": "externalSteps",

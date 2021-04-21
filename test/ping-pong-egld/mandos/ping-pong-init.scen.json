@@ -1,6 +1,6 @@
 {
     "name": "ping-pong deployment test",
-    "gasSchedule": "v2",
+    "gasSchedule": "v3",
     "steps": [
       {
         "step": "setState",

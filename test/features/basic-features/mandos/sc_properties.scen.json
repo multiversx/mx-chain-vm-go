@@ -1,6 +1,6 @@
 {
     "name": "smart contract properties: is_smart_contract, owner, more to follow",
-    "gasSchedule": "v2",
+    "gasSchedule": "v3",
     "steps": [
         {
             "step": "setState",

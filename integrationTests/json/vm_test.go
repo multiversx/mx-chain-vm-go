@@ -179,7 +179,7 @@ func runAllTestsInFolder(t *testing.T, folder string) {
 }
 
 func runTestsInFolder(t *testing.T, folder string, exclusions []string) {
-	executor, err := am.NewArwenTestExecutor()
+	executor, err := am.NewArwenTestExecutor("../../arwenmandos")
 	require.Nil(t, err)
 	runner := mc.NewScenarioRunner(
 		executor,
@@ -198,7 +198,7 @@ func runTestsInFolder(t *testing.T, folder string, exclusions []string) {
 }
 
 func runSingleTest(t *testing.T, folder string, filename string) {
-	executor, err := am.NewArwenTestExecutor()
+	executor, err := am.NewArwenTestExecutor("../../arwenmandos")
 	require.Nil(t, err)
 	runner := mc.NewScenarioRunner(
 		executor,

@@ -1,6 +1,6 @@
 {
     "name": "crypto",
-    "gasSchedule": "v2",
+    "gasSchedule": "v3",
     "steps": [
         {
             "step": "setState",

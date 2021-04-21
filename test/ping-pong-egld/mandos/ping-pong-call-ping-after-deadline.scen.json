@@ -1,6 +1,6 @@
 {
     "name": "try to ping before the contract has begun",
-    "gasSchedule": "v2",
+    "gasSchedule": "v3",
     "steps": [
         {
             "step": "externalSteps",
