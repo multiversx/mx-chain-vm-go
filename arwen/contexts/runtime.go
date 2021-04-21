@@ -201,7 +201,8 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 
 	context.saveCompiledCode(codeHash)
 
-	context.instance.SetContextData(uintptr(unsafe.Pointer(&context.host)))
+        hostReference := uintptr(unsafe.Pointer(&context.host))
+	context.instance.SetContextData(hostReference)
 
 	if newCode {
 		err = context.VerifyContractCode()
