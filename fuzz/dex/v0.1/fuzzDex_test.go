@@ -32,8 +32,8 @@ func newExecutorWithPaths() *fuzzDexExecutor {
 			"elrond_dex_pair.wasm",
 			filepath.Join(getTestRoot(), "dex/v0_1/output/elrond_dex_pair.wasm")).
 		ReplacePath(
-			"elrond_dex_staking.wasm",
-			filepath.Join(getTestRoot(), "dex/v0_1/output/elrond_dex_staking.wasm"))
+			"elrond_dex_farm.wasm",
+			filepath.Join(getTestRoot(), "dex/v0_1/output/elrond_dex_farm.wasm"))
 
 	pfe, err := newFuzzDexExecutor(fileResolver)
 	if err != nil {
@@ -62,14 +62,14 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 			addLiquidityProb:			0.25,
 			swapProb:					0.35,
 			queryPairsProb:				0.05,
-			stakeProb:					0.20,
-			unstakeProb:				0.085,
+			enterFarmProb:				0.20,
+			exitFarmProb:				0.085,
 			increaseEpochProb:			0.005,
 			removeLiquidityMaxValue:	1000000000,
 			addLiquidityMaxValue: 		1000000000,
 			swapMaxValue: 				10000000,
-			stakeMaxValue:				100000000,
-			unstakeMaxValue:			100000000,
+			enterFarmMaxValue:			100000000,
+			exitFarmMaxValue:			100000000,
 			blockEpochIncrease: 		10,
 			tokensCheckFrequency:		4999,
 		},
@@ -102,11 +102,11 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 		removeLiquidityPriceChecks: 	0,
 		queryPairsHits:					0,
 		queryPairsMisses:				0,
-		stakeHits:		 				0,
-		stakeMisses:					0,
-		unstakeHits:					0,
-		unstakeMisses:					0,
-		unstakeWithRewards:				0,
+		enterFarmHits:	 				0,
+		enterFarmMisses:				0,
+		exitFarmHits:					0,
+		exitFarmMisses:					0,
+		exitFarmWithRewards:			0,
 	}
 
 	re := fuzzutil.NewRandomEventProvider(r)
@@ -215,19 +215,19 @@ func generateRandomEvent(
 			err := pfe.checkPairViews(user, tokenA, tokenB, statistics)
 			require.Nil(t, err)
 
-		// stake
-		case re.WithProbability(pfe.stakeProb):
+		// enterFarm
+		case re.WithProbability(pfe.enterFarmProb):
 
-			seed := r.Intn(pfe.stakeMaxValue) + 1
-			err := pfe.stake(user, tokenA, "WEGLD-abcdef", seed, statistics)
+			seed := r.Intn(pfe.enterFarmMaxValue) + 1
+			err := pfe.enterFarm(user, tokenA, "WEGLD-abcdef", seed, statistics)
 			require.Nil(t, err)
 
-		// unstake
-		case re.WithProbability(pfe.unstakeProb):
+		// exitFarm
+		case re.WithProbability(pfe.exitFarmProb):
 
 			seed := r.Intn(pfe.removeLiquidityMaxValue) + 1
 
-			err := pfe.unstake(seed, statistics, r)
+			err := pfe.exitFarm(seed, statistics, r)
 			require.Nil(t, err)
 
 		// increase block epoch. required for unbond
@@ -258,11 +258,11 @@ func printStatistics(statistics *eventsStatistics, pfe *fuzzDexExecutor) {
 	pfe.log("\tqueryPairHits				%d", statistics.queryPairsHits)
 	pfe.log("\tqueryPairMisses				%d", statistics.queryPairsMisses)
 	pfe.log("")
-	pfe.log("\tstakeHits					%d", statistics.stakeHits)
-	pfe.log("\tstakeMisses					%d", statistics.stakeMisses)
+	pfe.log("\tenterFarmHits				%d", statistics.enterFarmHits)
+	pfe.log("\tenterFarmMisses				%d", statistics.enterFarmMisses)
 	pfe.log("")
-	pfe.log("\tunstakeHits					%d", statistics.unstakeHits)
-	pfe.log("\tunstakeMisses				%d", statistics.unstakeMisses)
-	pfe.log("\tunstakeWithRewards			%d", statistics.unstakeWithRewards)
+	pfe.log("\texitFarmHits				%d", statistics.exitFarmHits)
+	pfe.log("\texitFarmMisses				%d", statistics.exitFarmMisses)
+	pfe.log("\texitFarmWithRewards			%d", statistics.exitFarmWithRewards)
 	pfe.log("")
 }

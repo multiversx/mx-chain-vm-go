@@ -16,26 +16,25 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 	pfe.addLiquidityProb = args.addLiquidityProb
 	pfe.swapProb = args.swapProb
 	pfe.queryPairsProb = args.queryPairsProb
-	pfe.stakeProb = args.stakeProb
-	pfe.unstakeProb = args.unstakeProb
+	pfe.enterFarmProb = args.enterFarmProb
+	pfe.exitFarmProb = args.exitFarmProb
 	pfe.unbondProb = args.unbondProb
 	pfe.increaseEpochProb = args.increaseEpochProb
 	pfe.removeLiquidityMaxValue = args.removeLiquidityMaxValue
 	pfe.addLiquidityMaxValue = args.addLiquidityMaxValue
 	pfe.swapMaxValue = args.swapMaxValue
-	pfe.stakeMaxValue = args.stakeMaxValue
-	pfe.unstakeMaxValue = args.unstakeMaxValue
-	pfe.unbondMaxValue = args.unbondMaxValue
+	pfe.enterFarmMaxValue = args.enterFarmMaxValue
+	pfe.exitFarmMaxValue = args.exitFarmMaxValue
 	pfe.blockEpochIncrease = args.blockEpochIncrease
 	pfe.tokensCheckFrequency = args.tokensCheckFrequency
-	pfe.stakers = make(map[int]StakeInfo)
+	pfe.farmers = make(map[int]FarmerInfo)
 
 	pfe.world.Clear()
 
 	pfe.ownerAddress = []byte("fuzz_owner_addr_______________s1")
 	pfe.routerAddress = []byte("fuzz_dex_router_addr__________s1")
-	pfe.wegldStakingAddress = []byte("fuzz_dex_wegld_staking_addr___s1")
-	pfe.mexStakingAddress = []byte("fuzz_dex_mex_staking_addr_____s1")
+	pfe.wegldFarmingAddress = []byte("fuzz_dex_wegld_farming_addr___s1")
+	pfe.mexFarmingAddress = []byte("fuzz_dex_mex_farming_addr_____s1")
 
 	// users
 	esdtString := pfe.fullOfEsdtWalletString()
@@ -96,9 +95,9 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 		string(pfe.ownerAddress),
 		string(pfe.routerAddress),
 		string(pfe.ownerAddress),
-		string(pfe.wegldStakingAddress),
+		string(pfe.wegldFarmingAddress),
 		string(pfe.ownerAddress),
-		string(pfe.mexStakingAddress),
+		string(pfe.mexFarmingAddress),
 	))
 	if err != nil {
 		return err
@@ -132,15 +131,15 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 		return err
 	}
 
-	// deploy wegld staking
+	// deploy wegld farming
 	_, err = pfe.executeTxStep(fmt.Sprintf(`
 	{
 		"step": "scDeploy",
-		"txId": "-staking-deploy-",
+		"txId": "-farm-deploy-",
 		"tx": {
 			"from": "''%s",
 			"value": "0",
-			"contractCode": "file:elrond_dex_staking.wasm",
+			"contractCode": "file:elrond_dex_farm.wasm",
 			"arguments": [
 				"str:%s",
 				"''%s"
@@ -164,15 +163,15 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 		return err
 	}
 
-	// deploy mex staking
+	// deploy mex farming
 	_, err = pfe.executeTxStep(fmt.Sprintf(`
 	{
 		"step": "scDeploy",
-		"txId": "-staking-deploy-",
+		"txId": "-farm-deploy-",
 		"tx": {
 			"from": "''%s",
 			"value": "0",
-			"contractCode": "file:elrond_dex_staking.wasm",
+			"contractCode": "file:elrond_dex_farm.wasm",
 			"arguments": [
 				"str:%s",
 				"''%s"
@@ -296,7 +295,7 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 			"from": "''%s",
 			"to": "''%s",
 			"value": "5,000,000,000,000,000,000",
-			"function": "issueStakeToken",
+			"function": "issueFarmToken",
 			"arguments": [
 				"0x53656d6946756e6769626c65",
 				"0x53454d4946554e47"
@@ -313,7 +312,7 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 		}
 	}`,
 		string(pfe.ownerAddress),
-		string(pfe.wegldStakingAddress),
+		string(pfe.wegldFarmingAddress),
 	))
 	if err != nil {
 		return err
@@ -328,12 +327,8 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 			"from": "''%s",
 			"to": "''%s",
 			"value": "0",
-			"function": "setLocalRolesStakeToken",
-			"arguments": [
-				"0x03",
-				"0x04"
-				"0x05"
-			],
+			"function": "setLocalRolesFarmToken",
+			"arguments": [],
 			"gasLimit": "10,000,000",
 			"gasPrice": "0"
 		},
@@ -346,7 +341,7 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 		}
 	}`,
 		string(pfe.ownerAddress),
-		string(pfe.wegldStakingAddress),
+		string(pfe.wegldFarmingAddress),
 	))
 	if err != nil {
 		return err

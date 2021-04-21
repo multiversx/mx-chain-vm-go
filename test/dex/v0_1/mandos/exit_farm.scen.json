@@ -1,20 +1,20 @@
 {
-	"name": "unstake",
+	"name": "exit farm",
 	"steps": [
 		{
 			"step": "externalSteps",
-			"path": "stake.scen.json"
+			"path": "enter_farm.scen.json"
 		},
 		{
 			"step": "scCall",
 			"txId": "unstake",
 			"tx": {
 				"from": "address:user1",
-				"to": "address:staking_contract",
+				"to": "address:farm_contract",
 				"value": "0",
-				"function": "unstake",
+				"function": "exitFarm",
 				"esdt": {
-					"tokenIdentifier": "str:STAKING-abcdef",
+					"tokenIdentifier": "str:FARM-abcdef",
 					"value": "100,000",
 					"nonce": "2"
 				},
@@ -35,7 +35,7 @@
 			"txId": "get-virtual-reserves",
 			"tx": {
 				"from": "address:user1",
-				"to": "address:staking_contract",
+				"to": "address:farm_contract",
 				"value": "0",
 				"function": "getVirtualReserves",
 				"arguments": [],

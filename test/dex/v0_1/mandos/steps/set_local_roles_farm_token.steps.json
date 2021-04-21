@@ -1,44 +1,40 @@
 {
-	"name": "resume staking",
+	"name": "set local roles farm token",
 	"steps": [
 		{
-			"step": "externalSteps",
-			"path": "owner_pause_staking.scen.json"
-		},
-		{
 			"step": "scCall",
-			"txId": "resume",
+			"txId": "set-local-roles",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:staking_contract",
+				"to": "address:farm_contract",
 				"value": "0",
-				"function": "resume",
+				"function": "setLocalRolesFarmToken",
 				"arguments": [],
 				"gasLimit": "100,000,000",
 				"gasPrice": "0"
 			},
 			"expect": {
 				"out": [],
-				"status": "0",
-				"message": "",
+				"status": "4",
+				"message": "*",
 				"gas": "*",
 				"refund": "*"
 			}
 		},
 		{
 			"step": "scCall",
-			"txId": "get-state",
+			"txId": "get-last-error-message",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:staking_contract",
+				"to": "address:farm_contract",
 				"value": "0",
-				"function": "getState",
+				"function": "getLastErrorMessage",
 				"arguments": [],
 				"gasLimit": "100,000,000",
 				"gasPrice": "0"
 			},
 			"expect": {
-				"out": ["1"],
+				"out": [""],
 				"status": "0",
 				"message": "",
 				"gas": "*",

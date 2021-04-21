@@ -10,7 +10,7 @@
 			"txId": "swap-fixed-input",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:wegld_staking_contract",
+				"to": "address:wegld_farm_contract",
 				"value": "0",
 				"function": "addAcceptedPairAddressAndLpToken",
 				"arguments": [
@@ -33,9 +33,9 @@
 			"txId": "swap-fixed-input",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:wegld_staking_contract",
+				"to": "address:wegld_farm_contract",
 				"value": "0",
-				"function": "getStakeContribution",
+				"function": "getFarmContribution",
 				"arguments": [
 					"str:LPMEBU-abcdef",
 					"100"
@@ -56,7 +56,7 @@
 			"txId": "swap-fixed-input",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:wegld_staking_contract",
+				"to": "address:wegld_farm_contract",
 				"value": "0",
 				"function": "addTrustedPairAsOracle",
 				"arguments": [
@@ -80,9 +80,9 @@
 			"txId": "swap-fixed-input",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:wegld_staking_contract",
+				"to": "address:wegld_farm_contract",
 				"value": "0",
-				"function": "getStakeContribution",
+				"function": "getFarmContribution",
 				"arguments": [
 					"str:LPMEBU-abcdef",
 					"100"

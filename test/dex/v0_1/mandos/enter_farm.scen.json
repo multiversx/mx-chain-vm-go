@@ -1,5 +1,5 @@
 {
-	"name": "stake",
+	"name": "enter farm",
 	"steps": [
 		{
 			"step": "externalSteps",
@@ -7,12 +7,12 @@
 		},
 		{
 			"step": "scCall",
-			"txId": "stake",
+			"txId": "enter farm",
 			"tx": {
 				"from": "address:user1",
-				"to": "address:staking_contract",
+				"to": "address:farm_contract",
 				"value": "0",
-				"function": "stake",
+				"function": "enterFarm",
 				"esdt": {
 					"tokenIdentifier": "str:LPTOK-abcdef",
 					"value": "100,000,000"
@@ -34,7 +34,7 @@
 			"txId": "get-virtual-reserves",
 			"tx": {
 				"from": "address:user1",
-				"to": "address:staking_contract",
+				"to": "address:farm_contract",
 				"value": "0",
 				"function": "getVirtualReserves",
 				"arguments": [],
@@ -53,9 +53,9 @@
 			"txId": "stake",
 			"tx": {
 				"from": "address:user1",
-				"to": "address:staking_contract",
+				"to": "address:farm_contract",
 				"value": "0",
-				"function": "stake",
+				"function": "enterFarm",
 				"esdt": {
 					"tokenIdentifier": "str:LPTOK-abcdef",
 					"value": "100,000,000"
@@ -77,7 +77,7 @@
 			"txId": "get-virtual-reserves",
 			"tx": {
 				"from": "address:user1",
-				"to": "address:staking_contract",
+				"to": "address:farm_contract",
 				"value": "0",
 				"function": "getVirtualReserves",
 				"arguments": [],

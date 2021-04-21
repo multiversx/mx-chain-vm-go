@@ -1,5 +1,5 @@
 {
-  "name": "stake",
+  "name": "farm",
   "steps": [
     {
       "step": "externalSteps",
@@ -7,12 +7,12 @@
     },
     {
       "step": "scCall",
-      "txId": "unstake",
+      "txId": "farm",
       "tx": {
         "from": "address:user1",
-        "to": "address:staking_contract",
+        "to": "address:farm_contract",
         "value": "0",
-        "function": "stake",
+        "function": "enterFarm",
         "esdt": {
           "tokenIdentifier": "str:ALC-abcdef",
           "value": "1"

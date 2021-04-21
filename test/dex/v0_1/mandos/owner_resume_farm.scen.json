@@ -1,18 +1,19 @@
 {
-	"name": "issue stake token",
+	"name": "resume farm",
 	"steps": [
 		{
+			"step": "externalSteps",
+			"path": "owner_pause_farm.scen.json"
+		},
+		{
 			"step": "scCall",
-			"txId": "issue-stake-token",
+			"txId": "resume",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:staking_contract",
-				"value": "5,000,000,000,000,000,000",
-				"function": "issueStakeToken",
-				"arguments": [
-					"0x4c49515544495459504f4f4c544f4b454e",
-					"0x4c50544f4b454e"
-				],
+				"to": "address:farm_contract",
+				"value": "0",
+				"function": "resume",
+				"arguments": [],
 				"gasLimit": "100,000,000",
 				"gasPrice": "0"
 			},
@@ -26,18 +27,18 @@
 		},
 		{
 			"step": "scCall",
-			"txId": "get-issued-lp-token",
+			"txId": "get-state",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:staking_contract",
+				"to": "address:farm_contract",
 				"value": "0",
-				"function": "getStakeTokenId",
+				"function": "getState",
 				"arguments": [],
 				"gasLimit": "100,000,000",
 				"gasPrice": "0"
 			},
 			"expect": {
-				"out": ["0x45474c44"],
+				"out": ["1"],
 				"status": "0",
 				"message": "",
 				"gas": "*",

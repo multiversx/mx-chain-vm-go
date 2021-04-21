@@ -6,7 +6,7 @@ import (
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
-func (pfe *fuzzDexExecutor) stake(user string, tokenA string, tokenB string, amount int, statistics *eventsStatistics) error {
+func (pfe *fuzzDexExecutor) enterFarm(user string, tokenA string, tokenB string, amount int, statistics *eventsStatistics) error {
 	err, _, pairHexStr := pfe.getPair(tokenA, tokenB)
 	if err != nil {
 		return err
@@ -29,7 +29,7 @@ func (pfe *fuzzDexExecutor) stake(user string, tokenA string, tokenB string, amo
 			"from": "''%s",
 			"to": "''%s",
 			"value": "0",
-			"function": "stake",
+			"function": "enterFarm",
 			"esdt": {
 				"tokenIdentifier": "%s",
 				"value": "%d"
@@ -40,7 +40,7 @@ func (pfe *fuzzDexExecutor) stake(user string, tokenA string, tokenB string, amo
 		}
 	}`,
 		user,
-		pfe.wegldStakingAddress,
+		pfe.wegldFarmingAddress,
 		lpTokenHexStr,
 		amount,
 	))
@@ -50,23 +50,23 @@ func (pfe *fuzzDexExecutor) stake(user string, tokenA string, tokenB string, amo
 
 	success := output.ReturnCode == vmi.Ok
 	if success {
-		statistics.stakeHits += 1
+		statistics.enterFarmHits += 1
 
-		pfe.currentStakeTokenNonce += 1
-		nonce := pfe.currentStakeTokenNonce
-		bigint, errGet := pfe.getTokensWithNonce([]byte(user), "STAKING-abcdef", nonce)
+		pfe.currentFarmTokenNonce += 1
+		nonce := pfe.currentFarmTokenNonce
+		bigint, errGet := pfe.getTokensWithNonce([]byte(user), "FARM-abcdef", nonce)
 		if errGet != nil {
 			return errGet
 		}
-		pfe.stakers[nonce] = StakeInfo{
+		pfe.farmers[nonce] = FarmerInfo{
 			user: user,
 			value: bigint.Int64(),
 			lpToken: lpTokenStr,
 		}
 	} else {
-		statistics.stakeMisses += 1
+		statistics.enterFarmMisses += 1
 		pfe.log("stake %s -> %s", tokenA, tokenB)
-		pfe.log("could stake add because %s", output.ReturnMessage)
+		pfe.log("could enter farm add because %s", output.ReturnMessage)
 
 		if output.ReturnMessage == "insufficient funds" {
 			return errors.New(output.ReturnMessage)

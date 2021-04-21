@@ -1,27 +1,18 @@
 {
-	"name": "pause staking",
+	"name": "issue farm token",
 	"steps": [
 		{
-			"step": "externalSteps",
-			"path": "steps/init_accounts.steps.json"
-		},
-		{
-			"step": "externalSteps",
-			"path": "steps/deploy_contracts.steps.json"
-		},
-		{
-			"step": "externalSteps",
-			"path": "steps/construct_code.steps.json"
-		},
-		{
 			"step": "scCall",
-			"txId": "pause",
+			"txId": "issue-farm-token",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:staking_contract",
-				"value": "0",
-				"function": "pause",
-				"arguments": [],
+				"to": "address:farm_contract",
+				"value": "5,000,000,000,000,000,000",
+				"function": "issueFarmToken",
+				"arguments": [
+					"0x4c49515544495459504f4f4c544f4b454e",
+					"0x4c50544f4b454e"
+				],
 				"gasLimit": "100,000,000",
 				"gasPrice": "0"
 			},
@@ -35,18 +26,18 @@
 		},
 		{
 			"step": "scCall",
-			"txId": "get-state",
+			"txId": "get-issued-lp-token",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:staking_contract",
+				"to": "address:farm_contract",
 				"value": "0",
-				"function": "getState",
+				"function": "getFarmTokenId",
 				"arguments": [],
 				"gasLimit": "100,000,000",
 				"gasPrice": "0"
 			},
 			"expect": {
-				"out": [""],
+				"out": ["0x45474c44"],
 				"status": "0",
 				"message": "",
 				"gas": "*",

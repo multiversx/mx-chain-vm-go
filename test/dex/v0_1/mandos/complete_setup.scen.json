@@ -27,11 +27,11 @@
 		},
 		{
 			"step": "externalSteps",
-			"path": "steps/issue_stake_token.steps.json"
+			"path": "steps/issue_farm_token.steps.json"
 		},
 		{
 			"step": "externalSteps",
-			"path": "steps/set_local_roles_stake_token.steps.json"
+			"path": "steps/set_local_roles_farm_token.steps.json"
 		},
 		{
 			"step": "externalSteps",

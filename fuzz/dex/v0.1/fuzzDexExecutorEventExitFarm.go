@@ -8,16 +8,16 @@ import (
 	"math/rand"
 )
 
-func (pfe *fuzzDexExecutor) unstake(amountMax int, statistics *eventsStatistics, rand *rand.Rand) error {
-	stakersLen := len(pfe.stakers)
+func (pfe *fuzzDexExecutor) exitFarm(amountMax int, statistics *eventsStatistics, rand *rand.Rand) error {
+	stakersLen := len(pfe.farmers)
 	if stakersLen == 0 {
 		return nil
 	}
 
 	nonce := rand.Intn(stakersLen)
-	user := pfe.stakers[nonce].user
-	amount := pfe.stakers[nonce].value
-	if pfe.stakers[nonce].value == 0 {
+	user := pfe.farmers[nonce].user
+	amount := pfe.farmers[nonce].value
+	if pfe.farmers[nonce].value == 0 {
 		return nil
 	}
 
@@ -27,8 +27,8 @@ func (pfe *fuzzDexExecutor) unstake(amountMax int, statistics *eventsStatistics,
 	} else {
 		unstakeAmount = int64(amountMax)
 	}
-	lpToken := pfe.stakers[nonce].lpToken
-	pfe.stakers[nonce] = StakeInfo{
+	lpToken := pfe.farmers[nonce].lpToken
+	pfe.farmers[nonce] = FarmerInfo{
 		value: amount - unstakeAmount,
 		user: user,
 		lpToken: lpToken,
@@ -40,7 +40,7 @@ func (pfe *fuzzDexExecutor) unstake(amountMax int, statistics *eventsStatistics,
 	}
 
 
-	reward, err := pfe.querySingleResult(pfe.ownerAddress, pfe.wegldStakingAddress,
+	reward, err := pfe.querySingleResult(pfe.ownerAddress, pfe.wegldFarmingAddress,
 		"calculateRewardsForGivenPosition", fmt.Sprintf(`"%d", "%d"`, nonce, unstakeAmount))
 	if err != nil {
 		return err
@@ -54,7 +54,7 @@ func (pfe *fuzzDexExecutor) unstake(amountMax int, statistics *eventsStatistics,
 			"from": "''%s",
 			"to": "''%s",
 			"value": "0",
-			"function": "unstake",
+			"function": "exitFarm",
 			"esdt": {
 				"tokenIdentifier": "str:%s",
 				"value": "%d",
@@ -66,8 +66,8 @@ func (pfe *fuzzDexExecutor) unstake(amountMax int, statistics *eventsStatistics,
 		}
 	}`,
 		user,
-		pfe.wegldStakingAddress,
-		"STAKING-abcdef",
+		pfe.wegldFarmingAddress,
+		"FARM-abcdef",
 		unstakeAmount,
 		nonce,
 	))
@@ -77,7 +77,7 @@ func (pfe *fuzzDexExecutor) unstake(amountMax int, statistics *eventsStatistics,
 
 	success := output.ReturnCode == vmi.Ok
 	if success {
-		statistics.unstakeHits += 1
+		statistics.exitFarmHits += 1
 
 		wegldAfter, err := pfe.getTokens([]byte(user), pfe.wegldTokenId)
 		if err != nil {
@@ -85,7 +85,7 @@ func (pfe *fuzzDexExecutor) unstake(amountMax int, statistics *eventsStatistics,
 		}
 
 		if wegldAfter.Cmp(wegldBefore) == 1 {
-			statistics.unstakeWithRewards += 1
+			statistics.exitFarmWithRewards += 1
 		} else if wegldAfter.Cmp(wegldBefore) == -1 {
 			return errors.New("LOST wegld while unstake")
 		}
@@ -94,9 +94,9 @@ func (pfe *fuzzDexExecutor) unstake(amountMax int, statistics *eventsStatistics,
 			return errors.New("BAD reward received")
 		}
 	} else {
-		statistics.unstakeMisses += 1
-		pfe.log("unstake")
-		pfe.log("could not unstake because %s", output.ReturnMessage)
+		statistics.exitFarmMisses += 1
+		pfe.log("exitFarm")
+		pfe.log("could not exitFarm because %s", output.ReturnMessage)
 
 		if output.ReturnMessage == "insufficient funds" {
 			return errors.New(output.ReturnMessage)

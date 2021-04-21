@@ -11,7 +11,7 @@
 				"function": "setFeeOff",
 				"arguments": [
 					"address:pair_contract",
-					"address:staking_contract",
+					"address:farm_contract",
 					"str:WEGLD-abcdef"
 				],
 				"gasLimit": "100,000,000",
@@ -30,7 +30,7 @@
 			"txId": "remove-pair",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:staking_contract",
+				"to": "address:farm_contract",
 				"value": "0",
 				"function": "removeAcceptedPairAddressAndLpToken",
 				"arguments": [
@@ -74,7 +74,7 @@
 			"txId": "get-lp-for-address",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:staking_contract",
+				"to": "address:farm_contract",
 				"value": "0",
 				"function": "getLpTokenForPair",
 				"arguments": [
@@ -96,7 +96,7 @@
 			"txId": "get-PairForLpToken",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:staking_contract",
+				"to": "address:farm_contract",
 				"value": "0",
 				"function": "getPairForLpToken",
 				"arguments": [

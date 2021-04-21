@@ -3,14 +3,14 @@
 	"steps": [
 		{
 			"step": "externalSteps",
-			"path": "stake.scen.json"
+			"path": "enter_farm.scen.json"
 		},
 		{
 			"step": "scCall",
 			"txId": "calculateRewards",
 			"tx": {
 				"from": "address:user1",
-				"to": "address:staking_contract",
+				"to": "address:farm_contract",
 				"value": "0",
 				"function": "calculateRewardsForGivenPosition",
 				"arguments": [
@@ -60,7 +60,7 @@
 			"txId": "calculateRewards",
 			"tx": {
 				"from": "address:user1",
-				"to": "address:staking_contract",
+				"to": "address:farm_contract",
 				"value": "0",
 				"function": "calculateRewardsForGivenPosition",
 				"arguments": [

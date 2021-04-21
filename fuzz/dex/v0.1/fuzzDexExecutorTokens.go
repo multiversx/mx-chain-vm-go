@@ -124,7 +124,7 @@ func (pfe* fuzzDexExecutor) getSumForToken(tokenTicker string) (string, error) {
 	}
 
 	//STAKING
-	result, err = pfe.getTokens(pfe.wegldStakingAddress, tokenTicker)
+	result, err = pfe.getTokens(pfe.wegldFarmingAddress, tokenTicker)
 	if err != nil {
 		return "", err
 	}
@@ -132,7 +132,7 @@ func (pfe* fuzzDexExecutor) getSumForToken(tokenTicker string) (string, error) {
 	totalSum = big.NewInt(0).Add(totalSum, result)
 	totalSumString := totalSum.String()
 
-	result, err = pfe.getTokens(pfe.mexStakingAddress, tokenTicker)
+	result, err = pfe.getTokens(pfe.mexFarmingAddress, tokenTicker)
 	if err != nil {
 		return "", err
 	}

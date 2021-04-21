@@ -12,7 +12,7 @@
 				{
 					"creatorAddress": "address:owner",
 					"creatorNonce": "1",
-					"newAddress": "address:staking_contract"
+					"newAddress": "address:farm_contract"
 				}
 			]
 		},
@@ -42,7 +42,7 @@
 			"tx": {
 				"from": "address:owner",
 				"value": "0",
-				"contractCode": "file:../../output/elrond_dex_staking.wasm",
+				"contractCode": "file:../../output/elrond_dex_farm.wasm",
 				"arguments": [
 					"str:WEGLD-abcdef",
 					"address:router_contract"

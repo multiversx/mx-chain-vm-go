@@ -11,7 +11,7 @@
 				"function": "setFeeOn",
 				"arguments": [
 					"address:pair_contract",
-					"address:staking_contract",
+					"address:farm_contract",
 					"str:WEGLD-abcdef"
 				],
 				"gasLimit": "100,000,000",
@@ -30,7 +30,7 @@
 			"txId": "add-pair",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:staking_contract",
+				"to": "address:farm_contract",
 				"value": "0",
 				"function": "addAcceptedPairAddressAndLpToken",
 				"arguments": [
