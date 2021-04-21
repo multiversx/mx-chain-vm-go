@@ -63,7 +63,7 @@ func convertAccount(testAcct *mj.Account) (*worldmock.Account, error) {
 			if err != nil {
 				return nil, err
 			}
-			err = account.SetLastNonce(tokenKey, mandosESDTData.LastNonce.Value)
+			err = account.SetLastNonce(tokenName, mandosESDTData.LastNonce.Value)
 			if err != nil {
 				return nil, err
 			}
