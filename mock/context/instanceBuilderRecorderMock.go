@@ -17,7 +17,7 @@ func NewInstanceBuilderRecorderMock() *InstanceBuilderRecorderMock {
 	}
 }
 
-// see InstanceBuilderMock.NewInstanceWithOptions()
+// NewInstanceWithOptions - see InstanceBuilderMock.NewInstanceWithOptions()
 func (builder *InstanceBuilderRecorderMock) NewInstanceWithOptions(
 	contractCode []byte,
 	options wasmer.CompilationOptions,
@@ -29,7 +29,7 @@ func (builder *InstanceBuilderRecorderMock) NewInstanceWithOptions(
 	return instance, err
 }
 
-// see InstanceBuilderMock.NewInstanceFromCompiledCodeWithOptions()
+// NewInstanceFromCompiledCodeWithOptions - see InstanceBuilderMock.NewInstanceFromCompiledCodeWithOptions()
 func (builder *InstanceBuilderRecorderMock) NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
 	options wasmer.CompilationOptions,
@@ -52,7 +52,7 @@ func (builder *InstanceBuilderRecorderMock) addContractInstanceToInstanceMap(cod
 	builder.InstanceMap[string(code)] = instances
 }
 
-// get contract instances for code
+// GetContractInstances gets contract instances for code
 func (builder *InstanceBuilderRecorderMock) GetContractInstances(code []byte) []wasmer.InstanceHandler {
 	return builder.InstanceMap[string(code)]
 }
