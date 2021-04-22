@@ -75,6 +75,27 @@ const (
 
 	// AsyncCallRejected is the status of an async call that was executed completely but unsuccessfully
 	AsyncCallRejected
+
+	// AddressLen specifies the length of the address
+	AddressLen = 32
+
+	// HashLen specifies the lenghth of a hash
+	HashLen = 32
+
+	// BalanceLen specifies the number of bytes on which the balance is stored
+	BalanceLen = 32
+
+	// CodeMetadataLen specifies the length of the code metadata
+	CodeMetadataLen = 2
+
+	// InitFunctionName specifies the name for the init function
+	InitFunctionName = "init"
+
+	// InitFunctionNameEth specifies the name for the init function on Ethereum
+	InitFunctionNameEth = "solidity.ctor"
+
+	// UpgradeFunctionName specifies if the call is an upgradeContract call
+	UpgradeFunctionName = "upgradeContract"
 )
 
 // CodeDeployInput contains code deploy state, whether it comes from a ContractCreateInput or a ContractCallInput
