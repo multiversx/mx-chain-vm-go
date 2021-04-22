@@ -6,70 +6,121 @@ import (
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
-var _ RuntimeContextWrapper = (*runtimeContextWrapper)(nil)
-
-type RuntimeContextWrapper interface {
-	arwen.RuntimeContext
-}
+// making sure we implement all functions of RuntimeContext
+var _ arwen.RuntimeContext = (*runtimeContextWrapper)(nil)
 
 type runtimeContextWrapper struct {
 	runtimeContext arwen.RuntimeContext
 
-	InitStateFromContractCallInputFunc            func(input *vmcommon.ContractCallInput)
-	SetCustomCallFunctionFunc                     func(callFunction string)
-	GetVMInputFunc                                func() *vmcommon.VMInput
-	SetVMInputFunc                                func(vmInput *vmcommon.VMInput)
-	GetSCAddressFunc                              func() []byte
-	SetSCAddressFunc                              func(scAddress []byte)
-	GetSCCodeFunc                                 func() ([]byte, error)
-	GetSCCodeSizeFunc                             func() uint64
-	GetVMTypeFunc                                 func() []byte
-	FunctionFunc                                  func() string
-	ArgumentsFunc                                 func() [][]byte
-	GetCurrentTxHashFunc                          func() []byte
-	GetOriginalTxHashFunc                         func() []byte
-	ExtractCodeUpgradeFromArgsFunc                func() ([]byte, []byte, error)
-	SignalUserErrorFunc                           func(message string)
-	FailExecutionFunc                             func(err error)
-	MustVerifyNextContractCodeFunc                func()
-	SetRuntimeBreakpointValueFunc                 func(value arwen.BreakpointValue)
-	GetRuntimeBreakpointValueFunc                 func() arwen.BreakpointValue
-	IsContractOnTheStackFunc                      func(address []byte) bool
-	GetAsyncCallInfoFunc                          func() *arwen.AsyncCallInfo
-	SetAsyncCallInfoFunc                          func(asyncCallInfo *arwen.AsyncCallInfo)
-	AddAsyncContextCallFunc                       func(contextIdentifier []byte, asyncCall *arwen.AsyncGeneratedCall) error
-	GetAsyncContextInfoFunc                       func() *arwen.AsyncContextInfo
-	GetAsyncContextFunc                           func(contextIdentifier []byte) (*arwen.AsyncContext, error)
-	RunningInstancesCountFunc                     func() uint64
-	IsFunctionImportedFunc                        func(name string) bool
-	IsWarmInstanceFunc                            func() bool
-	ResetWarmInstanceFunc                         func()
-	ReadOnlyFunc                                  func() bool
-	SetReadOnlyFunc                               func(readOnly bool)
-	StartWasmerInstanceFunc                       func(contract []byte, gasLimit uint64, newCode bool) error
-	CleanWasmerInstanceFunc                       func()
-	SetMaxInstanceCountFunc                       func(maxInstances uint64)
-	VerifyContractCodeFunc                        func() error
-	GetInstanceExportsFunc                        func() wasmer.ExportsMap
-	GetInitFunctionFunc                           func() wasmer.ExportedFunctionCallback
-	GetFunctionToCallFunc                         func() (wasmer.ExportedFunctionCallback, error)
-	GetPointsUsedFunc                             func() uint64
-	SetPointsUsedFunc                             func(gasPoints uint64)
-	MemStoreFunc                                  func(offset int32, data []byte) error
-	MemLoadFunc                                   func(offset int32, length int32) ([]byte, error)
-	MemLoadMultipleFunc                           func(offset int32, lengths []int32) ([][]byte, error)
-	ElrondAPIErrorShouldFailExecutionFunc         func() bool
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	InitStateFromContractCallInputFunc func(input *vmcommon.ContractCallInput)
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	SetCustomCallFunctionFunc func(callFunction string)
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	GetVMInputFunc func() *vmcommon.VMInput
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	SetVMInputFunc func(vmInput *vmcommon.VMInput)
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	GetSCAddressFunc func() []byte
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	SetSCAddressFunc func(scAddress []byte)
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	GetSCCodeFunc func() ([]byte, error)
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	GetSCCodeSizeFunc func() uint64
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	GetVMTypeFunc func() []byte
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	FunctionFunc func() string
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	ArgumentsFunc func() [][]byte
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	GetCurrentTxHashFunc func() []byte
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	GetOriginalTxHashFunc func() []byte
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	ExtractCodeUpgradeFromArgsFunc func() ([]byte, []byte, error)
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	SignalUserErrorFunc func(message string)
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	FailExecutionFunc func(err error)
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	MustVerifyNextContractCodeFunc func()
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	SetRuntimeBreakpointValueFunc func(value arwen.BreakpointValue)
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	GetRuntimeBreakpointValueFunc func() arwen.BreakpointValue
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	IsContractOnTheStackFunc func(address []byte) bool
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	GetAsyncCallInfoFunc func() *arwen.AsyncCallInfo
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	SetAsyncCallInfoFunc func(asyncCallInfo *arwen.AsyncCallInfo)
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	AddAsyncContextCallFunc func(contextIdentifier []byte, asyncCall *arwen.AsyncGeneratedCall) error
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	GetAsyncContextInfoFunc func() *arwen.AsyncContextInfo
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	GetAsyncContextFunc func(contextIdentifier []byte) (*arwen.AsyncContext, error)
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	RunningInstancesCountFunc func() uint64
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	IsFunctionImportedFunc func(name string) bool
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	IsWarmInstanceFunc func() bool
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	ResetWarmInstanceFunc func()
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	ReadOnlyFunc func() bool
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	SetReadOnlyFunc func(readOnly bool)
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	StartWasmerInstanceFunc func(contract []byte, gasLimit uint64, newCode bool) error
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	CleanWasmerInstanceFunc func()
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	SetMaxInstanceCountFunc func(maxInstances uint64)
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	VerifyContractCodeFunc func() error
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	GetInstanceExportsFunc func() wasmer.ExportsMap
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	GetInitFunctionFunc func() wasmer.ExportedFunctionCallback
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	GetFunctionToCallFunc func() (wasmer.ExportedFunctionCallback, error)
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	GetPointsUsedFunc func() uint64
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	SetPointsUsedFunc func(gasPoints uint64)
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	MemStoreFunc func(offset int32, data []byte) error
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	MemLoadFunc func(offset int32, length int32) ([]byte, error)
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	MemLoadMultipleFunc func(offset int32, lengths []int32) ([][]byte, error)
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	ElrondAPIErrorShouldFailExecutionFunc func() bool
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	ElrondSyncExecAPIErrorShouldFailExecutionFunc func() bool
-	CryptoAPIErrorShouldFailExecutionFunc         func() bool
-	BigIntAPIErrorShouldFailExecutionFunc         func() bool
-	ExecuteAsyncCallFunc                          func(address []byte, data []byte, value []byte) error
-	ReplaceInstanceBuilderFunc                    func(builder arwen.InstanceBuilder)
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	CryptoAPIErrorShouldFailExecutionFunc func() bool
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	BigIntAPIErrorShouldFailExecutionFunc func() bool
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	ExecuteAsyncCallFunc func(address []byte, data []byte, value []byte) error
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	ReplaceInstanceBuilderFunc func(builder arwen.InstanceBuilder)
 
-	InitStateFunc         func()
-	PushStateFunc         func()
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	InitStateFunc func()
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	PushStateFunc func()
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	PopSetActiveStateFunc func()
-	PopDiscardFunc        func()
-	ClearStateStackFunc   func()
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	PopDiscardFunc func()
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	ClearStateStackFunc func()
 }
 
 func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *runtimeContextWrapper {
