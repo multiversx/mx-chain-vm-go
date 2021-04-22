@@ -152,7 +152,7 @@ func (pfe *fuzzDexExecutor) addLiquidity(user string, tokenA string, tokenB stri
 		}
 
 		// New and old prices should be the same
-		if errEquivalent == nil {
+		if errEquivalent == nil && !(len(rawEquivalent) == 1 && len(rawEquivalent[0]) == 0) {
 			statistics.addLiquidityPriceChecks += 1
 			if  !equalMatrix(rawEquivalentAfter, rawEquivalent) {
 				return errors.New("PRICE CHANGED after add liquidity")

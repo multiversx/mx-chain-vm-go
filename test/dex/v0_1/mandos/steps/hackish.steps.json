@@ -33,6 +33,9 @@
 							"ESDTRoleNFTCreate",
 							"ESDTRoleNFTAddQuantity",
 							"ESDTRoleNFTBurn"
+						],
+						"str:LPTOK-abcdef": [
+							"ESDTRoleLocalBurn"
 						]
 					},
 					"storage": {

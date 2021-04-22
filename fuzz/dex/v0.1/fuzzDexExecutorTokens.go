@@ -21,16 +21,8 @@ func (pfe *fuzzDexExecutor) checkTokens() error {
 	expectedSumString := fmt.Sprintf("%d", pfe.numUsers)
 	expectedSumString += "000000000000000000000000000000"
 
-	sum, err := pfe.getSumForToken(pfe.wegldTokenId)
-	if err != nil {
-		return err
-	}
-	if sum != expectedSumString {
-		return errors.New("sum differs")
-	}
-
 	for i := 1; i <= pfe.numTokens; i++ {
-		sum, err = pfe.getSumForToken(pfe.tokenTicker(i))
+		sum, err := pfe.getSumForToken(pfe.tokenTicker(i))
 		if err != nil {
 			return err
 		}

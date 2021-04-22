@@ -836,6 +836,22 @@ func (pfe *fuzzDexExecutor) doHackishStep(tokenA string, tokenB string, index in
 }
 
 func (pfe *fuzzDexExecutor) doHachishStepStaking() error {
+	esdt_role_string := ""
+	for i := 1; i <= ((pfe.numTokens + 1) * (pfe.numTokens + 2) / 2); i++ {
+		esdt_role_string += fmt.Sprintf(`
+					"str:%s": [
+						"ESDTRoleLocalBurn"
+					],`, pfe.lpTokenTicker(i))
+	}
+	esdt_role_string += fmt.Sprintf(`
+					"str:%s": [
+						"ESDTRoleLocalBurn"
+					],`, pfe.wegldTokenId)
+	esdt_role_string += fmt.Sprintf(`
+					"str:%s": [
+						"ESDTRoleLocalBurn"
+					]`, pfe.mexTokenId)
+
 	err := pfe.executeStep(fmt.Sprintf(`
 	{
 		"step": "setState",
@@ -849,7 +865,7 @@ func (pfe *fuzzDexExecutor) doHachishStepStaking() error {
 						"ESDTRoleNFTCreate",
 						"ESDTRoleNFTAddQuantity",
 						"ESDTRoleNFTBurn"
-					]
+					],%s
 				},
 				"storage": {
 					"str:farming_pool_token_id": "str:%s",
@@ -865,6 +881,7 @@ func (pfe *fuzzDexExecutor) doHachishStepStaking() error {
 	}`,
 		string(pfe.wegldFarmingAddress),
 		"FARM-abcdef",
+		esdt_role_string,
 		pfe.wegldTokenId,
 		"FARM-abcdef",
 		string(pfe.routerAddress),
@@ -887,7 +904,7 @@ func (pfe *fuzzDexExecutor) doHachishStepStaking() error {
 						"ESDTRoleNFTCreate",
 						"ESDTRoleNFTAddQuantity",
 						"ESDTRoleNFTBurn"
-					]
+					],%s
 				},
 				"storage": {
 					"str:farming_pool_token_id": "str:%s",
@@ -903,6 +920,7 @@ func (pfe *fuzzDexExecutor) doHachishStepStaking() error {
 	}`,
 		string(pfe.mexFarmingAddress),
 		"FARM-abcdef",
+		esdt_role_string,
 		pfe.mexTokenId,
 		"FARM-abcdef",
 		string(pfe.routerAddress),

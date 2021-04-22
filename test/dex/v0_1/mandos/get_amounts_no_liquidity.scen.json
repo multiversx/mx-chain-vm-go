@@ -228,8 +228,8 @@
 				"gasPrice": "0"
 			},
 			"expect": {
-				"out": [],
-				"status": "4",
+				"out": ["0"],
+				"status": "0",
 				"message": "*",
 				"gas": "*",
 				"refund": "*"
@@ -251,9 +251,9 @@
 				"gasPrice": "0"
 			},
 			"expect": {
-				"out": [],
-				"status": "4",
-				"message": "str:Not enough reserves for first token",
+				"out": ["0"],
+				"status": "0",
+				"message": "*",
 				"gas": "*",
 				"refund": "*"
 			}
@@ -274,9 +274,9 @@
 				"gasPrice": "0"
 			},
 			"expect": {
-				"out": [],
-				"status": "4",
-				"message": "str:Not enough reserves for first token",
+				"out": ["0"],
+				"status": "0",
+				"message": "",
 				"gas": "*",
 				"refund": "*"
 			}
@@ -297,9 +297,9 @@
 				"gasPrice": "0"
 			},
 			"expect": {
-				"out": [],
-				"status": "4",
-				"message": "str:Not enough reserves for first token",
+				"out": ["0"],
+				"status": "0",
+				"message": "",
 				"gas": "*",
 				"refund": "*"
 			}

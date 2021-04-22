@@ -96,7 +96,7 @@ func (pfe *fuzzDexExecutor) removeLiquidity(user string, tokenA string, tokenB s
 			tokenLpBefore.Cmp(tokenLpAfter) < 1 {
 			return errors.New("FAILED remove liquidity balances on success")
 		}
-		if errEquivalent == nil && erro == nil {
+		if errEquivalent == nil && erro == nil && !(len(rawEquivalent) == 1 && len(rawEquivalent[0]) == 0) {
 			statistics.removeLiquidityPriceChecks += 1
 			if !equalMatrix(rawEquivalent, rawOutput) {
 				return errors.New("PRICE CHANGED after success remove")
