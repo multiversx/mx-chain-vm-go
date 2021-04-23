@@ -133,12 +133,7 @@ func (context *meteringContext) cloneGasUsedByAccounts() map[string]uint64 {
 
 func (context *meteringContext) addToGasUsedByAccounts(gasUsed map[string]uint64) {
 	for address, gas := range gasUsed {
-		_, exists := context.gasUsedByAccounts[address]
-		if !exists {
-			context.gasUsedByAccounts[address] = gas
-		} else {
-			context.gasUsedByAccounts[address] += gas
-		}
+		context.gasUsedByAccounts[address] += gas
 	}
 }
 
@@ -290,12 +285,7 @@ func (context *meteringContext) getGasTransferredByAccount(account *vmcommon.Out
 
 func (context *meteringContext) setGasUsedToOutputAccounts(vmOutput *vmcommon.VMOutput) error {
 	for address, account := range vmOutput.OutputAccounts {
-		gasUsed, exists := context.gasUsedByAccounts[address]
-		if exists {
-			account.GasUsed = gasUsed
-		} else {
-			account.GasUsed = 0
-		}
+		account.GasUsed = context.gasUsedByAccounts[address]
 	}
 
 	for address := range context.gasUsedByAccounts {

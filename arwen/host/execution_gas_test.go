@@ -16,8 +16,8 @@ var gasProvidedToChild = uint64(300)
 var gasUsedByBuiltinClaim = uint64(120)
 
 func TestGasUsed_SingleContract(t *testing.T) {
-	host, _, ibm := defaultTestArwenForCallWithInstanceMocks(t)
-	createTestParentContract(t, host, ibm)
+	host, _, imb := defaultTestArwenForCallWithInstanceMocks(t)
+	createTestParentContract(t, host, imb)
 	zeroCodeCosts(host)
 
 	gasProvided := uint64(1000)
@@ -34,8 +34,8 @@ func TestGasUsed_SingleContract(t *testing.T) {
 }
 
 func TestGasUsed_SingleContract_BuiltinCall(t *testing.T) {
-	host, world, ibm := defaultTestArwenForCallWithInstanceMocks(t)
-	createTestParentContract(t, host, ibm)
+	host, world, imb := defaultTestArwenForCallWithInstanceMocks(t)
+	createTestParentContract(t, host, imb)
 	createMockBuiltinFunctions(t, host, world)
 	zeroCodeCosts(host)
 
@@ -58,9 +58,9 @@ func TestGasUsed_SingleContract_BuiltinCall(t *testing.T) {
 }
 
 func TestGasUsed_TwoContracts_ExecuteOnSameCtx(t *testing.T) {
-	host, _, ibm := defaultTestArwenForCallWithInstanceMocks(t)
-	createTestParentContract(t, host, ibm)
-	createTestChildContract(t, host, ibm)
+	host, _, imb := defaultTestArwenForCallWithInstanceMocks(t)
+	createTestParentContract(t, host, imb)
+	createTestChildContract(t, host, imb)
 	zeroCodeCosts(host)
 
 	gasProvided := uint64(1000)
@@ -91,9 +91,9 @@ func TestGasUsed_TwoContracts_ExecuteOnSameCtx(t *testing.T) {
 }
 
 func TestGasUsed_TwoContracts_ExecuteOnDestCtx(t *testing.T) {
-	host, _, ibm := defaultTestArwenForCallWithInstanceMocks(t)
-	createTestParentContract(t, host, ibm)
-	createTestChildContract(t, host, ibm)
+	host, _, imb := defaultTestArwenForCallWithInstanceMocks(t)
+	createTestParentContract(t, host, imb)
+	createTestChildContract(t, host, imb)
 	zeroCodeCosts(host)
 
 	gasProvided := uint64(1000)
@@ -124,7 +124,7 @@ func TestGasUsed_TwoContracts_ExecuteOnDestCtx(t *testing.T) {
 }
 
 func TestGasUsed_ThreeContracts_ExecuteOnDestCtx(t *testing.T) {
-	host, _, ibm := defaultTestArwenForCallWithInstanceMocks(t)
+	host, _, imb := defaultTestArwenForCallWithInstanceMocks(t)
 	zeroCodeCosts(host)
 
 	alphaAddress := MakeTestSCAddress("alpha")
@@ -138,11 +138,11 @@ func TestGasUsed_ThreeContracts_ExecuteOnDestCtx(t *testing.T) {
 
 	expectedGasRemaining := gasProvided - alphaCallGas - 2*receiverCallGas
 
-	alpha := ibm.CreateAndStoreInstanceMock(t, host, alphaAddress, 0)
+	alpha := imb.CreateAndStoreInstanceMock(t, host, alphaAddress, 0)
 	addForwarderMethodsToInstanceMock(alpha, alphaCallGas, alphaGasToForwardToReceivers)
 
-	beta := ibm.CreateAndStoreInstanceMock(t, host, betaAddress, 0)
-	gamma := ibm.CreateAndStoreInstanceMock(t, host, gammaAddress, 0)
+	beta := imb.CreateAndStoreInstanceMock(t, host, betaAddress, 0)
+	gamma := imb.CreateAndStoreInstanceMock(t, host, gammaAddress, 0)
 	addDummyMethodsToInstanceMock(beta, receiverCallGas)
 	addDummyMethodsToInstanceMock(gamma, receiverCallGas)
 
@@ -168,19 +168,19 @@ func TestGasUsed_ThreeContracts_ExecuteOnDestCtx(t *testing.T) {
 	verify.Ok().GasRemaining(expectedGasRemaining)
 }
 
-func createTestParentContract(t testing.TB, host *vmHost, ibm *mock.InstanceBuilderMock) {
+func createTestParentContract(t testing.TB, host *vmHost, imb *mock.InstanceBuilderMock) {
 	gasUsedByParent := uint64(400)
 	gasProvidedToChild := uint64(300)
 
-	parentInstance := ibm.CreateAndStoreInstanceMock(t, host, parentAddress, 0)
+	parentInstance := imb.CreateAndStoreInstanceMock(t, host, parentAddress, 0)
 	addDummyMethodsToInstanceMock(parentInstance, gasUsedByParent)
 	addForwarderMethodsToInstanceMock(parentInstance, gasUsedByParent, gasProvidedToChild)
 }
 
-func createTestChildContract(t testing.TB, host *vmHost, ibm *mock.InstanceBuilderMock) {
+func createTestChildContract(t testing.TB, host *vmHost, imb *mock.InstanceBuilderMock) {
 	gasUsedByChild := uint64(200)
 
-	childInstance := ibm.CreateAndStoreInstanceMock(t, host, childAddress, 0)
+	childInstance := imb.CreateAndStoreInstanceMock(t, host, childAddress, 0)
 	addDummyMethodsToInstanceMock(childInstance, gasUsedByChild)
 }
 

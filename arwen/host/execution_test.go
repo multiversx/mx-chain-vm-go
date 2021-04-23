@@ -1437,9 +1437,9 @@ func TestExecution_CreateNewContract_Fail(t *testing.T) {
 }
 
 func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
-	host, _, ibm := defaultTestArwenForCallWithInstanceMocks(t)
+	host, _, imb := defaultTestArwenForCallWithInstanceMocks(t)
 
-	parentInstance := ibm.CreateAndStoreInstanceMock(t, host, parentAddress, 1000)
+	parentInstance := imb.CreateAndStoreInstanceMock(t, host, parentAddress, 1000)
 	parentInstance.AddMockMethod("callChild", func() {
 		host.Output().Finish([]byte("parent returns this"))
 		host.Metering().UseGas(500)
@@ -1455,7 +1455,7 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 		require.Nil(t, err)
 	})
 
-	childInstance := ibm.CreateAndStoreInstanceMock(t, host, childAddress, 0)
+	childInstance := imb.CreateAndStoreInstanceMock(t, host, childAddress, 0)
 	childInstance.AddMockMethod("doSomething", func() {
 		host.Output().Finish([]byte("child returns this"))
 		host.Metering().UseGas(100)
@@ -1475,6 +1475,13 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 	expectedVMOutput := expectedVMOutputMockedWasmerInstances()
 	expectedVMOutput.GasRemaining = 307
 	require.Equal(t, expectedVMOutput, vmOutput)
+}
+
+func TestZeroEquality(t *testing.T) {
+	zero := big.NewInt(0)
+	one := big.NewInt(1)
+	zERO := big.NewInt(0).Sub(one, one)
+	require.Equal(t, zero, zERO)
 }
 
 // makeBytecodeWithLocals rewrites the bytecode of "answer" to change the

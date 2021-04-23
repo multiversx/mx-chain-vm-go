@@ -900,7 +900,7 @@ func (host *vmHost) callSCMethod() error {
 		err = host.handleBreakpointIfAny(err)
 	}
 	if err == nil {
-		// err = host.checkFinalGasAfterExit()
+		err = host.checkFinalGasAfterExit()
 	}
 	if err != nil {
 		log.Trace("call SC method failed", "error", err)
