@@ -212,6 +212,7 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 			return vmOutput, nil, 0, builtinErr
 		}
 
+		vmOutput = builtinOutput
 		output.AddToActiveState(builtinOutput)
 
 		if postBuiltinInput == nil {
@@ -219,7 +220,8 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 				err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue, false)
 				if err != nil {
 					log.Trace("ExecuteOnDestContext transfer", "error", err)
-					return
+					vmOutput = output.CreateVMOutputInCaseOfError(builtinErr)
+					return vmOutput, nil, 0, builtinErr
 				}
 			}
 

@@ -351,7 +351,7 @@ func (context *meteringContext) UseGas(gas uint64) {
 func (context *meteringContext) RestoreGas(gas uint64) {
 	gasUsed := context.host.Runtime().GetPointsUsed()
 	if gas <= gasUsed {
-		gasUsed -= gas
+		gasUsed, _ = math.SubUint64(gasUsed, gas)
 		context.host.Runtime().SetPointsUsed(gasUsed)
 	}
 }

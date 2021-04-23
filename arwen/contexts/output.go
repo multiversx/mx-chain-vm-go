@@ -129,6 +129,7 @@ func (context *outputContext) CensorVMOutput() {
 	context.outputState.ReturnMessage = ""
 	context.outputState.GasRemaining = 0
 	context.outputState.GasRefund = big.NewInt(0)
+	context.outputState.Logs = make([]*vmcommon.LogEntry, 0)
 
 	logOutput.Trace("state content censored")
 }

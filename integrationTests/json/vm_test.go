@@ -32,6 +32,10 @@ func TestMandosSelfTest(t *testing.T) {
 	})
 }
 
+func TestSingleScenario(t *testing.T) {
+	runSingleTest(t, "features/async/mandos", "recursive_caller_egld_x.scen.json")
+}
+
 func TestRustErc20(t *testing.T) {
 	runAllTestsInFolder(t, "erc20-rust/mandos")
 }

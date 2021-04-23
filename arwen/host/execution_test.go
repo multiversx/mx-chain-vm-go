@@ -1308,10 +1308,7 @@ func TestExecution_AsyncCall(t *testing.T) {
 	require.NotNil(t, vmOutput)
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 
-	// TODO calculate expected remaining gas properly, instead of copying it from
-	// the actual vmOutput.
 	expectedVMOutput := expectedVMOutputAsyncCall(parentCode, childCode)
-	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
@@ -1341,10 +1338,7 @@ func TestExecution_AsyncCall_ChildFails(t *testing.T) {
 	require.NotNil(t, vmOutput)
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 
-	// TODO calculate expected remaining gas properly, instead of copying it from
-	// the actual vmOutput.
 	expectedVMOutput := expectedVMOutputAsyncCallChildFails(parentCode, childCode)
-	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
@@ -1370,10 +1364,7 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 	require.NotNil(t, vmOutput)
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 
-	// TODO calculate expected remaining gas properly, instead of copying it from
-	// the actual vmOutput.
 	expectedVMOutput := expectedVMOutputAsyncCallCallBackFails(parentCode, childCode)
-	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 

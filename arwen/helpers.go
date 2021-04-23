@@ -8,6 +8,7 @@ import (
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/math"
+	"github.com/ElrondNetwork/elrond-go-logger"
 )
 
 // Zero is the big integer 0
@@ -109,6 +110,12 @@ func WithFault(err error, context unsafe.Pointer, failExecution bool) bool {
 func GetSCCode(fileName string) []byte {
 	code, _ := ioutil.ReadFile(filepath.Clean(fileName))
 	return code
+}
+
+// SetLoggingForTests configures the logger package with *:TRACE and enabled logger names
+func SetLoggingForTests() {
+	logger.SetLogLevel("*:TRACE")
+	logger.ToggleLoggerName(true)
 }
 
 // U64ToLEB128 encodes an uint64 using LEB128 (Little Endian Base 128), used in WASM bytecode
