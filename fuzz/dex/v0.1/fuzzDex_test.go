@@ -57,7 +57,7 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 			mexTokenId:					"MEX-abcdef",
 			numUsers:					10,
 			numTokens:					3,
-			numEvents:					500,
+			numEvents:					3000,
 			removeLiquidityProb:		0.05,
 			addLiquidityProb:			0.25,
 			swapProb:					0.35,
@@ -71,7 +71,7 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 			enterFarmMaxValue:			100000000,
 			exitFarmMaxValue:			100000000,
 			blockEpochIncrease: 		10,
-			tokensCheckFrequency:		4999,
+			tokensCheckFrequency:		999,
 		},
 	)
 	require.Nil(t, err)

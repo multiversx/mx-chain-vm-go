@@ -149,11 +149,11 @@ func TestDex_v0_1(t *testing.T) {
 }
 
 func TestDistribution(t *testing.T) {
-	runAllTestsInFolder(t, "distribution")
+	runAllTestsInFolder(t, "distribution/v0_1")
 }
 
 func TestDex_v0_1_singleTest(t *testing.T) {
-	runSingleTest(t, "dex/v0_1/mandos", "complex_add_oracle_pair.scen.json")
+	runSingleTest(t, "distribution/v0_1/mandos", "unlock_assets_basic.scen.json")
 }
 
 // func TestPromises(t *testing.T) {

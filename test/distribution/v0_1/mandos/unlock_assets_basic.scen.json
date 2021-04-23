@@ -1,0 +1,40 @@
+{
+    "name": "sc_distribution_rs",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "claim_locked_assets_basic.scen.json"
+        },
+        {
+            "step": "setState",
+            "currentBlockInfo": {
+                "blockEpoch": "31"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "2",
+            "tx": {
+                "from": "address:user1",
+                "to": "address:dist_contract",
+                "value": "0",
+                "function": "unlockAssets",
+                "esdt": {
+                    "tokenIdentifier": "str:LKMEX-abcdef",
+                    "value": "1,000",
+                    "nonce": "1"
+                },
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": ["*"],
+                "status": "0",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        }
+    ]
+}
