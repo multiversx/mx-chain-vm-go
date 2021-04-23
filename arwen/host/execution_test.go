@@ -1121,8 +1121,6 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 }
 
 func TestExecution_ExecuteOnSameContext_MultipleChildren(t *testing.T) {
-	t.Skip("needs gas forwarding fixes")
-
 	world := worldmock.NewMockWorld()
 	host := defaultTestArwen(t, world)
 
