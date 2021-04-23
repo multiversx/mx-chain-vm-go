@@ -274,7 +274,7 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 		}
 	}
 
-	_, err = host.execute(input)
+	err = host.execute(input)
 	if err != nil {
 		log.Trace("ExecuteOnDestContext execution", "error", err)
 		return
@@ -358,7 +358,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 		return
 	}
 
-	_, err = host.execute(input)
+	err = host.execute(input)
 	if err != nil {
 		return
 	}
@@ -547,27 +547,23 @@ func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) error {
 	return nil
 }
 
-// executeSmartContractCall executes an indirect call to a smart contract,
-// assuming there is an already-running Wasmer instance with another contract
-// that has requested the indirect call. This method creates a new Wasmer
-// instance and pushes the previous one onto the Runtime instance stack, but it
-// will not pop the previous instance back - that remains the responsibility of
-// the calling code. Also, this method does not restore the gas remaining after
-// the indirect call, it does not push the states of any Host Context onto
-// their respective stacks, nor does it pop any state stack. Handling the state
+// execute executes an indirect call to a smart contract, assuming there is an
+// already-running Wasmer instance of another contract that has requested the
+// indirect call. This method creates a new Wasmer instance and pushes the
+// previous one onto the Runtime instance stack, but it will not pop the
+// previous instance back - that remains the responsibility of the calling
+// code. Also, this method does not restore the gas remaining after the
+// indirect call, it does not push the states of any Host Context onto their
+// respective stacks, nor does it pop any state stack. Handling the state
 // stacks and the remaining gas are responsibilities of the calling code, which
 // must push and pop as required, before and after calling this method, and
 // handle the remaining gas. These principles also apply to indirect contract
 // upgrading (via host.executeUpgrade(), which also does not pop the previous
 // instance from the Runtime instance stack, nor does it restore the remaining
 // gas).
-func (host *vmHost) executeSmartContractCall(
-	input *vmcommon.ContractCallInput,
-	metering arwen.MeteringContext,
-	runtime arwen.RuntimeContext,
-	output arwen.OutputContext,
-	withInitialGasDeduct bool,
-) error {
+func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
+	_, _, metering, output, runtime, _ := host.GetContexts()
+
 	if host.isInitFunctionBeingCalled() && !input.AllowInitFunction {
 		return arwen.ErrInitFuncCalledInRun
 	}
@@ -586,11 +582,9 @@ func (host *vmHost) executeSmartContractCall(
 		return err
 	}
 
-	if withInitialGasDeduct {
-		err = metering.DeductInitialGasForExecution(contract)
-		if err != nil {
-			return err
-		}
+	err = metering.DeductInitialGasForExecution(contract)
+	if err != nil {
+		return err
 	}
 
 	// Replace the current Wasmer instance of the Runtime with a new one; this
@@ -611,12 +605,6 @@ func (host *vmHost) executeSmartContractCall(
 	}
 
 	return nil
-}
-
-func (host *vmHost) execute(input *vmcommon.ContractCallInput) (uint64, error) {
-	_, _, metering, output, runtime, _ := host.GetContexts()
-
-	return 0, host.executeSmartContractCall(input, metering, runtime, output, true)
 }
 
 func (host *vmHost) callSCMethodIndirect() error {
@@ -732,10 +720,10 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, token
 		return vmOutput, esdtTransferInput.GasProvided, arwen.ErrExecutionFailed
 	}
 
-	gasConsumed, _ := math.SubUint64(esdtTransferInput.GasProvided, vmOutput.GasRemaining)
+	gasConsumed := math.SubUint64(esdtTransferInput.GasProvided, vmOutput.GasRemaining)
 	for _, outAcc := range vmOutput.OutputAccounts {
 		for _, transfer := range outAcc.OutputTransfers {
-			gasConsumed, _ = math.SubUint64(gasConsumed, transfer.GasLimit)
+			gasConsumed = math.SubUint64(gasConsumed, transfer.GasLimit)
 		}
 	}
 	if callType != vmcommon.AsynchronousCallBack {

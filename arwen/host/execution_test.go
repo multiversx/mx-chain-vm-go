@@ -1475,13 +1475,6 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
-func TestZeroEquality(t *testing.T) {
-	zero := big.NewInt(0)
-	one := big.NewInt(1)
-	zERO := big.NewInt(0).Sub(one, one)
-	require.Equal(t, zero, zERO)
-}
-
 // makeBytecodeWithLocals rewrites the bytecode of "answer" to change the
 // number of i64 locals it instantiates
 func makeBytecodeWithLocals(numLocals uint64) []byte {
