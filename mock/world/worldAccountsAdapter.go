@@ -121,26 +121,26 @@ func (m *MockAccountsAdapter) RootHash() ([]byte, error) {
 }
 
 // RecreateTrie -
-func (m *MockAccountsAdapter) RecreateTrie(rootHash []byte) error {
+func (m *MockAccountsAdapter) RecreateTrie(_ []byte) error {
 	return ErrTrieHandlingNotImplemented
 }
 
 // PruneTrie -
-func (m *MockAccountsAdapter) PruneTrie(rootHash []byte, identifier data.TriePruningIdentifier) {
+func (m *MockAccountsAdapter) PruneTrie(_ []byte, _ data.TriePruningIdentifier) {
 }
 
 // CancelPrune -
-func (m *MockAccountsAdapter) CancelPrune(rootHash []byte, identifier data.TriePruningIdentifier) {
+func (m *MockAccountsAdapter) CancelPrune(_ []byte, _ data.TriePruningIdentifier) {
 }
 
 // SnapshotState -
-func (m *MockAccountsAdapter) SnapshotState(rootHash []byte, ctx context.Context) {
+func (m *MockAccountsAdapter) SnapshotState(_ []byte, _ context.Context) {
 	snapshot := m.World.AcctMap.Clone()
 	m.Snapshots = append(m.Snapshots, snapshot)
 }
 
 // SetStateCheckpoint -
-func (m *MockAccountsAdapter) SetStateCheckpoint(rootHash []byte, ctx context.Context) {
+func (m *MockAccountsAdapter) SetStateCheckpoint(_ []byte, _ context.Context) {
 }
 
 // IsPruningEnabled -
@@ -149,12 +149,17 @@ func (m *MockAccountsAdapter) IsPruningEnabled() bool {
 }
 
 // GetAllLeaves -
-func (m *MockAccountsAdapter) GetAllLeaves(rootHash []byte, ctx context.Context) (chan core.KeyValueHolder, error) {
+func (m *MockAccountsAdapter) GetAllLeaves(_ []byte, _ context.Context) (chan core.KeyValueHolder, error) {
 	return nil, ErrTrieHandlingNotImplemented
 }
 
 // RecreateAllTries -
-func (m *MockAccountsAdapter) RecreateAllTries(rootHash []byte, ctx context.Context) (map[string]data.Trie, error) {
+func (m *MockAccountsAdapter) RecreateAllTries(_ []byte, _ context.Context) (map[string]data.Trie, error) {
+	return nil, ErrTrieHandlingNotImplemented
+}
+
+// GetTrie -
+func (m *MockAccountsAdapter) GetTrie(_ []byte) (data.Trie, error) {
 	return nil, ErrTrieHandlingNotImplemented
 }
 

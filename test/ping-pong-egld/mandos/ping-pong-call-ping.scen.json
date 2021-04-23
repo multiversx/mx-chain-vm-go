@@ -1,6 +1,6 @@
 {
     "name": "ping in order to deposit funds",
-    "gasSchedule": "v2",
+    "gasSchedule": "v3",
     "steps": [
         {
             "step": "externalSteps",

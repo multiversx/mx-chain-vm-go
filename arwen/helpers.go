@@ -7,7 +7,9 @@ import (
 	"path/filepath"
 	"unsafe"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/math"
+	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 )
 
 // Zero is the big integer 0
@@ -85,23 +87,6 @@ func InverseBytes(data []byte) []byte {
 	return invBytes
 }
 
-// WithFault returns true if the error is not nil, and uses the remaining gas if the execution has failed
-func WithFault(err error, context unsafe.Pointer, failExecution bool) bool {
-	if err == nil {
-		return false
-	}
-
-	if failExecution {
-		runtime := GetRuntimeContext(context)
-		metering := GetMeteringContext(context)
-
-		metering.UseGas(metering.GasLeft())
-		runtime.FailExecution(err)
-	}
-
-	return true
-}
-
 // GetSCCode returns the SC code from a given file
 func GetSCCode(fileName string) []byte {
 	code, _ := ioutil.ReadFile(filepath.Clean(fileName))
@@ -136,4 +121,63 @@ func IfNil(checker nilInterfaceChecker) bool {
 
 type nilInterfaceChecker interface {
 	IsInterfaceNil() bool
+}
+
+// GetVMHost returns the vm Context from the vm context map
+func GetVMHost(vmHostPtr unsafe.Pointer) VMHost {
+	instCtx := wasmer.IntoInstanceContext(vmHostPtr)
+	var ptr = *(*uintptr)(instCtx.Data())
+	return *(*VMHost)(unsafe.Pointer(ptr))
+}
+
+// GetBlockchainContext returns the blockchain context
+func GetBlockchainContext(vmHostPtr unsafe.Pointer) BlockchainContext {
+	return GetVMHost(vmHostPtr).Blockchain()
+}
+
+// GetRuntimeContext returns the runtime context
+func GetRuntimeContext(vmHostPtr unsafe.Pointer) RuntimeContext {
+	return GetVMHost(vmHostPtr).Runtime()
+}
+
+// GetCryptoContext returns the crypto context
+func GetCryptoContext(vmHostPtr unsafe.Pointer) crypto.VMCrypto {
+	return GetVMHost(vmHostPtr).Crypto()
+}
+
+// GetBigIntContext returns the big int context
+func GetBigIntContext(vmHostPtr unsafe.Pointer) BigIntContext {
+	return GetVMHost(vmHostPtr).BigInt()
+}
+
+// GetOutputContext returns the output context
+func GetOutputContext(vmHostPtr unsafe.Pointer) OutputContext {
+	return GetVMHost(vmHostPtr).Output()
+}
+
+// GetMeteringContext returns the metering context
+func GetMeteringContext(vmHostPtr unsafe.Pointer) MeteringContext {
+	return GetVMHost(vmHostPtr).Metering()
+}
+
+// GetStorageContext returns the storage context
+func GetStorageContext(vmHostPtr unsafe.Pointer) StorageContext {
+	return GetVMHost(vmHostPtr).Storage()
+}
+
+// WithFault returns true if the error is not nil, and uses the remaining gas if the execution has failed
+func WithFault(err error, vmHostPtr unsafe.Pointer, failExecution bool) bool {
+	if err == nil {
+		return false
+	}
+
+	if failExecution {
+		runtime := GetRuntimeContext(vmHostPtr)
+		metering := GetMeteringContext(vmHostPtr)
+
+		metering.UseGas(metering.GasLeft())
+		runtime.FailExecution(err)
+	}
+
+	return true
 }

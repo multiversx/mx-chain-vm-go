@@ -3,7 +3,7 @@ package wasmer
 // InstanceHandler defines the functionality of a Wasmer instance
 type InstanceHandler interface {
 	HasMemory() bool
-	SetContextData(data int)
+	SetContextData(data uintptr)
 	GetPointsUsed() uint64
 	SetPointsUsed(points uint64)
 	SetGasLimit(gasLimit uint64)
@@ -13,7 +13,7 @@ type InstanceHandler interface {
 	Clean()
 	GetExports() ExportsMap
 	GetSignature(functionName string) (*ExportedFunctionSignature, bool)
-	GetData() *int
+	GetData() uintptr
 	GetInstanceCtxMemory() MemoryHandler
 	GetMemory() MemoryHandler
 	IsFunctionImported(name string) bool

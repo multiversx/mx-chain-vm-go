@@ -1,6 +1,6 @@
 {
     "name": "storage clear test",
-    "gasSchedule": "v2",
+    "gasSchedule": "v3",
     "steps": [
         {
             "step": "setState",

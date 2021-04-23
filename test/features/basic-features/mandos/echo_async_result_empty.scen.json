@@ -1,6 +1,6 @@
 {
     "name": "echo_async_result_empty",
-    "gasSchedule": "v2",
+    "gasSchedule": "v3",
     "steps": [
         {
             "step": "setState",

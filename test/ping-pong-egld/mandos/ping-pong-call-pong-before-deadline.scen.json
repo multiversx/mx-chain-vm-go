@@ -1,6 +1,6 @@
 {
     "name": "trying withdraw the funds before the deadline has passed",
-    "gasSchedule": "v2",
+    "gasSchedule": "v3",
     "steps": [
         {
             "step": "externalSteps",
