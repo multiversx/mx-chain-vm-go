@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"math"
 	"math/big"
 	"testing"
 
@@ -18,8 +19,10 @@ import (
 
 var counterKey = []byte("COUNTER")
 var WASMLocalsLimit = uint64(4000)
+var maxUint8AsInt = int(math.MaxUint8)
 
 const (
+	get                     = "get"
 	increment               = "increment"
 	callRecursive           = "callRecursive"
 	parentCallsChild        = "parentCallsChild"
@@ -260,6 +263,96 @@ func TestExecution_ManyDeployments(t *testing.T) {
 		}
 		require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 	}
+}
+
+func TestExecution_MultipleArwens_OverlappingContractInstanceData(t *testing.T) {
+	code := GetTestSCCode("counter", "../../")
+
+	input := DefaultTestContractCallInput()
+	input.GasProvided = 1000000
+	input.Function = get
+
+	host1, instanceRecorder1 := defaultTestArwenForCallWithInstanceRecorderMock(t, code, nil)
+	runtimeContextMock := contextmock.NewRuntimeContextWrapper(&host1.runtimeContext)
+	runtimeContextMock.CleanWasmerInstanceFunc = func() {}
+	host1.runtimeContext = runtimeContextMock
+
+	for i := 0; i < 5; i++ {
+		vmOutput, err := host1.RunSmartContractCall(input)
+		require.Nil(t, err)
+		require.NotNil(t, vmOutput)
+	}
+
+	var host1InstancesData = make(map[interface{}]bool)
+	for _, instance := range instanceRecorder1.GetContractInstances(code) {
+		host1InstancesData[instance.GetData()] = true
+	}
+
+	host2, instanceRecorder2 := defaultTestArwenForCallWithInstanceRecorderMock(t, code, nil)
+	runtimeContextMock = contextmock.NewRuntimeContextWrapper(&host2.runtimeContext)
+	runtimeContextMock.CleanWasmerInstanceFunc = func() {}
+	runtimeContextMock.GetSCCodeFunc = func() ([]byte, error) {
+		return code, nil
+	}
+	host2.runtimeContext = runtimeContextMock
+
+	for i := 0; i < maxUint8AsInt+1; i++ {
+		vmOutput, err := host2.RunSmartContractCall(input)
+		require.Nil(t, err)
+		require.NotNil(t, vmOutput)
+	}
+
+	for _, instance := range instanceRecorder2.GetContractInstances(code) {
+		_, found := host1InstancesData[instance.GetData()]
+		require.False(t, found)
+	}
+}
+
+func TestExecution_MultipleArwens_CleanInstanceWhileOthersAreRunning(t *testing.T) {
+	code := GetTestSCCode("counter", "../../")
+
+	input := DefaultTestContractCallInput()
+	input.GasProvided = 1000000
+	input.Function = get
+
+	interHostsChan := make(chan string)
+	host1Chan := make(chan string)
+
+	host1, _ := defaultTestArwenForCall(t, code, nil)
+	runtimeContextMock := contextmock.NewRuntimeContextWrapper(&host1.runtimeContext)
+	runtimeContextMock.FunctionFunc = func() string {
+		interHostsChan <- "waitForHost2"
+		return runtimeContextMock.GetWrappedRuntimeContext().Function()
+	}
+	host1.runtimeContext = runtimeContextMock
+
+	var vmOutput1 *vmcommon.VMOutput
+	var err1 error
+	go func() {
+		vmOutput1, err1 = host1.RunSmartContractCall(input)
+		interHostsChan <- "finish"
+		host1Chan <- "finish"
+	}()
+
+	host2, _ := defaultTestArwenForCall(t, code, nil)
+	runtimeContextMock = contextmock.NewRuntimeContextWrapper(&host2.runtimeContext)
+	runtimeContextMock.FunctionFunc = func() string {
+		// wait to make sure host1 is running also
+		<-interHostsChan
+		// wait for host1 to finish
+		<-interHostsChan
+		return runtimeContextMock.GetWrappedRuntimeContext().Function()
+	}
+	host2.runtimeContext = runtimeContextMock
+
+	vmOutput2, err2 := host2.RunSmartContractCall(input)
+
+	<-host1Chan
+	require.Nil(t, err1)
+	require.NotNil(t, vmOutput1)
+
+	require.Nil(t, err2)
+	require.NotNil(t, vmOutput2)
 }
 
 func TestExecution_Deploy_DisallowFloatingPoint(t *testing.T) {

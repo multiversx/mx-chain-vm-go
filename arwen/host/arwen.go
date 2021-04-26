@@ -287,7 +287,6 @@ func (host *vmHost) Clean() {
 		return
 	}
 	host.runtimeContext.CleanWasmerInstance()
-	arwen.RemoveAllHostContexts()
 }
 
 // GetAPIMethods returns the EEI as a set of imports for Wasmer

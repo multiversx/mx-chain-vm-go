@@ -766,7 +766,7 @@ func getESDTTokenData(
 
 //export transferValue
 func transferValue(context unsafe.Pointer, destOffset int32, valueOffset int32, dataOffset int32, length int32) int32 {
-	host := arwen.GetVMContext(context)
+	host := arwen.GetVMHost(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
 	output := host.Output()
@@ -817,7 +817,7 @@ func transferValueExecute(
 	argumentsLengthOffset int32,
 	dataOffset int32,
 ) int32 {
-	host := arwen.GetVMContext(context)
+	host := arwen.GetVMHost(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
 	output := host.Output()
@@ -906,7 +906,7 @@ func transferESDT(
 	dataOffset int32,
 	length int32,
 ) int32 {
-	host := arwen.GetVMContext(context)
+	host := arwen.GetVMHost(context)
 	metering := host.Metering()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.TransferValue
@@ -952,7 +952,7 @@ func transferESDTNFTExecute(
 	argumentsLengthOffset int32,
 	dataOffset int32,
 ) int32 {
-	host := arwen.GetVMContext(context)
+	host := arwen.GetVMHost(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
 	output := host.Output()
@@ -1042,7 +1042,7 @@ func createAsyncCall(context unsafe.Pointer,
 	errorLength int32,
 	gas int64,
 ) {
-	host := arwen.GetVMContext(context)
+	host := arwen.GetVMHost(context)
 	runtime := host.Runtime()
 
 	// TODO consume gas
@@ -1097,7 +1097,7 @@ func setAsyncContextCallback(context unsafe.Pointer,
 	callback int32,
 	callbackLength int32,
 ) int32 {
-	host := arwen.GetVMContext(context)
+	host := arwen.GetVMHost(context)
 	runtime := host.Runtime()
 
 	// TODO consume gas
@@ -1135,7 +1135,7 @@ func upgradeContract(
 	argumentsLengthOffset int32,
 	dataOffset int32,
 ) {
-	host := arwen.GetVMContext(context)
+	host := arwen.GetVMHost(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
 
@@ -1214,7 +1214,7 @@ func upgradeContract(
 
 //export asyncCall
 func asyncCall(context unsafe.Pointer, destOffset int32, valueOffset int32, dataOffset int32, length int32) {
-	host := arwen.GetVMContext(context)
+	host := arwen.GetVMHost(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
 
@@ -1696,7 +1696,7 @@ func writeEventLog(
 	dataOffset int32,
 	dataLength int32) {
 
-	host := arwen.GetVMContext(context)
+	host := arwen.GetVMHost(context)
 	runtime := arwen.GetRuntimeContext(context)
 	output := arwen.GetOutputContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -1887,7 +1887,7 @@ func executeOnSameContext(
 	argumentsLengthOffset int32,
 	dataOffset int32,
 ) int32 {
-	host := arwen.GetVMContext(context)
+	host := arwen.GetVMHost(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
 
@@ -1953,7 +1953,7 @@ func doESDTTransferAndExecuteSynchronously(
 	args [][]byte,
 	gasLimit int64,
 ) int32 {
-	host := arwen.GetVMContext(context)
+	host := arwen.GetVMHost(context)
 	runtime := host.Runtime()
 	output := host.Output()
 	metering := host.Metering()
@@ -2054,7 +2054,7 @@ func detectSyncESDTTransfer(
 	functionOffset int32,
 	functionLength int32,
 ) (string, bool, error) {
-	host := arwen.GetVMContext(context)
+	host := arwen.GetVMHost(context)
 	runtime := host.Runtime()
 
 	if !host.IsESDTFunctionsEnabled() {
@@ -2081,7 +2081,7 @@ func getDestinationAndArguments(
 	addressOffset int32,
 	dataOffset int32,
 ) ([]byte, [][]byte, error) {
-	host := arwen.GetVMContext(context)
+	host := arwen.GetVMHost(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
 
@@ -2122,7 +2122,7 @@ func executeOnDestContext(
 	argumentsLengthOffset int32,
 	dataOffset int32,
 ) int32 {
-	host := arwen.GetVMContext(context)
+	host := arwen.GetVMHost(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
 
@@ -2188,7 +2188,7 @@ func executeOnDestContextByCaller(
 	argumentsLengthOffset int32,
 	dataOffset int32,
 ) int32 {
-	host := arwen.GetVMContext(context)
+	host := arwen.GetVMHost(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
 
@@ -2242,7 +2242,7 @@ func delegateExecution(
 	argumentsLengthOffset int32,
 	dataOffset int32,
 ) int32 {
-	host := arwen.GetVMContext(context)
+	host := arwen.GetVMHost(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
 
@@ -2292,7 +2292,7 @@ func executeReadOnly(
 	argumentsLengthOffset int32,
 	dataOffset int32,
 ) int32 {
-	host := arwen.GetVMContext(context)
+	host := arwen.GetVMHost(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
 
@@ -2347,7 +2347,7 @@ func createContract(
 	argumentsLengthOffset int32,
 	dataOffset int32,
 ) int32 {
-	host := arwen.GetVMContext(context)
+	host := arwen.GetVMHost(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
 
