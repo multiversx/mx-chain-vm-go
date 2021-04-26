@@ -212,7 +212,7 @@ func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 		[]byte("validateGetters"),
 	}
 
-	vmOutput, asyncInfo, _, err := host.ExecuteOnDestContext(input)
+	vmOutput, asyncInfo, err := host.ExecuteOnDestContext(input)
 	require.Nil(t, err)
 	require.NotNil(t, vmOutput)
 	require.Zero(t, len(asyncInfo.AsyncContextMap))

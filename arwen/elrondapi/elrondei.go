@@ -864,7 +864,7 @@ func transferValueExecute(
 
 	if host.AreInSameShard(send, dest) && contractCallInput != nil && host.Blockchain().IsSmartContract(dest) {
 		logEEI.Trace("eGLD pre-transfer execution begin")
-		_, _, _, err = host.ExecuteOnDestContext(contractCallInput)
+		_, _, err = host.ExecuteOnDestContext(contractCallInput)
 		if err != nil {
 			logEEI.Trace("eGLD pre-transfer execution failed", "error", err)
 			return 1
@@ -1011,7 +1011,7 @@ func transferESDTNFTExecute(
 	if host.AreInSameShard(sender, dest) && contractCallInput != nil && host.Blockchain().IsSmartContract(dest) {
 		contractCallInput.GasProvided = gasLimitForExec
 		logEEI.Trace("ESDT post-transfer execution begin")
-		_, _, _, err = host.ExecuteOnDestContext(contractCallInput)
+		_, _, err = host.ExecuteOnDestContext(contractCallInput)
 		if err != nil {
 			logEEI.Trace("ESDT post-transfer execution failed", "error", err)
 			_, _, err = host.ExecuteESDTTransfer(sender, dest, tokenIdentifier, uint64(nonce), big.NewInt(0).SetBytes(valueBytes), vmcommon.AsynchronousCallBack, true)
@@ -2034,7 +2034,7 @@ func doESDTTransferAndExecuteSynchronously(
 	if contractCallInput != nil && host.Blockchain().IsSmartContract(destination) {
 		contractCallInput.GasProvided = gasLimitForExec
 		logEEI.Trace("ESDT post-transfer execution begin")
-		_, _, _, err = host.ExecuteOnDestContext(contractCallInput)
+		_, _, err = host.ExecuteOnDestContext(contractCallInput)
 		if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 			logEEI.Trace("ESDT post-transfer execution failed", "error", err)
 			_, _, err = host.ExecuteESDTTransfer(sender, destination, tokenID, nonce, esdtValue, vmcommon.AsynchronousCallBack, true)
@@ -2167,11 +2167,10 @@ func executeOnDestContext(
 		return 1
 	}
 
-	_, _, gasUsedBeforeReset, err := host.ExecuteOnDestContext(contractCallInput)
+	_, _, err = host.ExecuteOnDestContext(contractCallInput)
 	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 		return 1
 	}
-	metering.UseGas(gasUsedBeforeReset)
 
 	return 0
 }
@@ -2223,7 +2222,7 @@ func executeOnDestContextByCaller(
 		return 1
 	}
 
-	_, _, _, err = host.ExecuteOnDestContext(contractCallInput)
+	_, _, err = host.ExecuteOnDestContext(contractCallInput)
 	if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 		return 1
 	}

@@ -244,7 +244,7 @@ func addForwarderMethodsToInstanceMock(instance *mock.InstanceMock, gasPerCall u
 			numCalls := big.NewInt(0).SetBytes(arguments[callIndex+2]).Uint64()
 
 			for i := uint64(0); i < numCalls; i++ {
-				_, _, _, err := host.ExecuteOnDestContext(input)
+				_, _, err := host.ExecuteOnDestContext(input)
 				require.Nil(t, err)
 			}
 		}

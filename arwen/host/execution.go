@@ -199,47 +199,55 @@ func copyTxHashesFromContext(copyEnabled bool, runtime arwen.RuntimeContext, inp
 
 // ExecuteOnDestContext pushes each context to the corresponding stack
 // and initializes new contexts for executing the contract call with the given input
-func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, asyncInfo *arwen.AsyncContextInfo, gasUsedBeforeReset uint64, err error) {
+func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, asyncInfo *arwen.AsyncContextInfo, err error) {
 	log.Trace("ExecuteOnDestContext", "caller", input.CallerAddr, "dest", input.RecipientAddr, "function", input.Function)
 
-	bigInt, _, metering, output, runtime, storage := host.GetContexts()
+	_, _, _, output, _, _ := host.GetContexts()
+
+	builtinFunctionExecuted := false
+	var builtinRevertInput *vmcommon.ContractCallInput
 
 	// TODO refactor/simplify this block
 	if host.IsBuiltinFunctionName(input.Function) {
 		postBuiltinInput, builtinOutput, builtinErr := host.callBuiltinFunction(input)
 		if builtinErr != nil {
+			log.Trace("ExecuteOnDestContext builtin function", "error", err)
 			vmOutput = output.CreateVMOutputInCaseOfError(builtinErr)
-			return vmOutput, nil, 0, builtinErr
+			return vmOutput, nil, builtinErr
 		}
 
+		builtinFunctionExecuted = true
 		vmOutput = builtinOutput
 		output.AddToActiveState(builtinOutput)
+		builtinRevertInput = input
 
 		if postBuiltinInput == nil {
 			if input.CallType != vmcommon.AsynchronousCallBack || input.CallValue.Cmp(arwen.Zero) == 0 {
 				err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue, false)
 				if err != nil {
+					host.RevertESDTTransfer(builtinRevertInput)
 					log.Trace("ExecuteOnDestContext transfer", "error", err)
-					vmOutput = output.CreateVMOutputInCaseOfError(builtinErr)
-					return vmOutput, nil, 0, builtinErr
+					vmOutput = output.CreateVMOutputInCaseOfError(err)
+					return vmOutput, nil, err
 				}
 			}
 
-			asyncInfo = runtime.GetAsyncContextInfo()
-			_, err = host.processAsyncInfo(asyncInfo)
 			return
 		}
 
-		originalInput := input
 		input = postBuiltinInput
-
-		defer func() {
-			if err != nil {
-				host.RevertESDTTransfer(originalInput)
-			}
-		}()
 	}
 
+	vmOutput, asyncInfo, err = host.executeOnDestContextNoBuiltinFunction(input)
+	if err != nil && builtinFunctionExecuted {
+		host.RevertESDTTransfer(builtinRevertInput)
+	}
+
+	return
+}
+
+func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, asyncInfo *arwen.AsyncContextInfo, err error) {
+	bigInt, _, metering, output, runtime, storage := host.GetContexts()
 	bigInt.PushState()
 	bigInt.InitState()
 
@@ -466,7 +474,7 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newC
 		AllowInitFunction: true,
 		VMInput:           input.VMInput,
 	}
-	_, _, _, err = host.ExecuteOnDestContext(initCallInput)
+	_, _, err = host.ExecuteOnDestContext(initCallInput)
 	if err != nil {
 		return
 	}
