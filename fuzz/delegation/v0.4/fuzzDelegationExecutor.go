@@ -8,11 +8,11 @@ import (
 	"strings"
 
 	am "github.com/ElrondNetwork/arwen-wasm-vm/arwenmandos"
-	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
-	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/fileresolver"
+	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/fileresolver"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
 	mjparse "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/parse"
 	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/write"
+	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
@@ -42,7 +42,7 @@ type fuzzDelegationExecutor struct {
 }
 
 func newFuzzDelegationExecutor(fileResolver fr.FileResolver) (*fuzzDelegationExecutor, error) {
-	arwenTestExecutor, err := am.NewArwenTestExecutor()
+	arwenTestExecutor, err := am.NewArwenTestExecutor("../../arwenmandos")
 	if err != nil {
 		return nil, err
 	}

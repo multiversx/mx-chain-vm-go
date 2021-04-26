@@ -1,0 +1,34 @@
+{
+    "name": "big dns test",
+    "gasSchedule": "dummy",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "01_dns_init.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "02_dns_init_check.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "03_register_name_ok.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "04_register_name_again.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "05_claim.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "06_register_other_name_same_shard.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "07_bogus_name.steps.json"
+        }
+    ]
+}

@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	am "github.com/ElrondNetwork/arwen-wasm-vm/arwenmandos"
-	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/fileresolver"
+	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/fileresolver"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
 	mjparse "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/parse"
 	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/write"
@@ -65,7 +65,7 @@ type fuzzDelegationExecutor struct {
 }
 
 func newFuzzDelegationExecutor(fileResolver fr.FileResolver) (*fuzzDelegationExecutor, error) {
-	arwenTestExecutor, err := am.NewArwenTestExecutor()
+	arwenTestExecutor, err := am.NewArwenTestExecutor("../../arwenmandos")
 	if err != nil {
 		return nil, err
 	}

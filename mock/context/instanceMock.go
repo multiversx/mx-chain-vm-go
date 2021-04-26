@@ -13,7 +13,7 @@ type InstanceMock struct {
 	Code            []byte
 	Exports         wasmer.ExportsMap
 	Points          uint64
-	Data            int
+	Data            uintptr
 	GasLimit        uint64
 	BreakpointValue uint64
 	Memory          wasmer.MemoryHandler
@@ -51,7 +51,7 @@ func (instance *InstanceMock) HasMemory() bool {
 }
 
 // SetContextData mocked method
-func (instance *InstanceMock) SetContextData(data int) {
+func (instance *InstanceMock) SetContextData(data uintptr) {
 	instance.Data = data
 }
 
@@ -109,8 +109,8 @@ func (instance *InstanceMock) GetSignature(functionName string) (*wasmer.Exporte
 }
 
 // GetData mocked method
-func (instance *InstanceMock) GetData() *int {
-	return &instance.Data
+func (instance *InstanceMock) GetData() uintptr {
+	return instance.Data
 }
 
 // GetInstanceCtxMemory mocked method

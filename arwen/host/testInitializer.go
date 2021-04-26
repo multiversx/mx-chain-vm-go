@@ -114,6 +114,15 @@ func defaultTestArwenForCall(tb testing.TB, code []byte, balance *big.Int) (*vmH
 	return host, stubBlockchainHook
 }
 
+func defaultTestArwenForCallWithInstanceRecorderMock(tb testing.TB, code []byte, balance *big.Int) (*vmHost, *contextmock.InstanceBuilderRecorderMock) {
+	// this uses a Blockchain Hook Stub that does not cache the compiled code
+	host, _ := defaultTestArwenForCall(tb, code, balance)
+
+	instanceBuilderRecorderMock := contextmock.NewInstanceBuilderRecorderMock()
+	host.Runtime().ReplaceInstanceBuilder(instanceBuilderRecorderMock)
+
+	return host, instanceBuilderRecorderMock
+}
 func defaultTestArwenForCallWithInstanceMocks(tb testing.TB) (*vmHost, *worldmock.MockWorld, *contextmock.InstanceBuilderMock) {
 	world := worldmock.NewMockWorld()
 	host := defaultTestArwen(tb, world)

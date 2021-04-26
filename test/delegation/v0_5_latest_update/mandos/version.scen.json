@@ -1,6 +1,6 @@
 {
     "name": "check version",
-    "gasSchedule": "v2",
+    "gasSchedule": "v3",
     "steps": [
         {
             "step": "setState",
