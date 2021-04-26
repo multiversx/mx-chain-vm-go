@@ -5,7 +5,8 @@ import (
 	oj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/orderedjson"
 )
 
-func accountsToOJ(accounts []*mj.Account) oj.OJsonObject {
+// AccountsToOJ converts a mandos-format account to an ordered JSON representation.
+func AccountsToOJ(accounts []*mj.Account) oj.OJsonObject {
 	acctsOJ := oj.NewMap()
 	for _, account := range accounts {
 		acctOJ := oj.NewMap()

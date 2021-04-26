@@ -46,7 +46,7 @@ func ScenarioToOrderedJSON(scenario *mj.Scenario) oj.OJsonObject {
 				stepOJ.Put("comment", stringToOJ(step.Comment))
 			}
 			if len(step.Accounts) > 0 {
-				stepOJ.Put("accounts", accountsToOJ(step.Accounts))
+				stepOJ.Put("accounts", AccountsToOJ(step.Accounts))
 			}
 			if len(step.NewAddressMocks) > 0 {
 				stepOJ.Put("newAddresses", newAddressMocksToOJ(step.NewAddressMocks))
