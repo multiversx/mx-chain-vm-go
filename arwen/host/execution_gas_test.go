@@ -7,6 +7,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
 )
 
@@ -168,11 +169,31 @@ func TestGasUsed_ThreeContracts_ExecuteOnDestCtx(t *testing.T) {
 	verify.Ok().GasRemaining(expectedGasRemaining)
 }
 
+func TestGasUsed_AsyncCall(t *testing.T) {
+	host, _, imb := defaultTestArwenForCallWithInstanceMocks(t)
+	createTestAsyncParentContract(t, host, imb)
+	createTestAsyncChildContract(t, host, imb)
+
+	input := DefaultTestContractCallInput()
+	input.RecipientAddr = parentAddress
+	input.Function = "performAsyncCall"
+	input.GasProvided = 116000
+	input.Arguments = [][]byte{{0}}
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+
+	expectedVMOutput := expectedVMOutputAsyncCall(nil, nil)
+	require.Equal(t, expectedVMOutput, vmOutput)
+}
+
 func createTestParentContract(t testing.TB, host *vmHost, imb *mock.InstanceBuilderMock) {
 	gasUsedByParent := uint64(400)
 	gasProvidedToChild := uint64(300)
 
-	parentInstance := imb.CreateAndStoreInstanceMock(t, host, parentAddress, 0)
+	parentInstance := imb.CreateAndStoreInstanceMock(t, host, parentAddress, 1000)
 	addDummyMethodsToInstanceMock(parentInstance, gasUsedByParent)
 	addForwarderMethodsToInstanceMock(parentInstance, gasUsedByParent, gasProvidedToChild)
 }

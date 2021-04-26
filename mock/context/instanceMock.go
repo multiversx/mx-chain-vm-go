@@ -37,9 +37,14 @@ func NewInstanceMock(code []byte) *InstanceMock {
 
 // AddMockMethod adds the provided function as a mocked method to the instance under the specified name.
 func (instance *InstanceMock) AddMockMethod(name string, method func()) {
+	instance.AddMockMethodWithError(name, method, nil)
+}
+
+// AddMockMethodWithError adds the provided function as a mocked method to the instance under the specified name and returns an error
+func (instance *InstanceMock) AddMockMethodWithError(name string, method func(), err error) {
 	wrappedMethod := func(...interface{}) (wasmer.Value, error) {
 		method()
-		return wasmer.Void(), nil
+		return wasmer.Void(), err
 	}
 
 	instance.Exports[name] = wrappedMethod
