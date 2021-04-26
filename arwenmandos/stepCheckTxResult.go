@@ -6,6 +6,7 @@ import (
 
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
 	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/write"
+	oj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/orderedjson"
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
@@ -107,4 +108,18 @@ func checkTxResults(
 	}
 
 	return nil
+}
+
+// JSONCheckBytesString formats a list of JSONCheckBytes for printing to console.
+// TODO: move somewhere else
+func checkBytesListPretty(jcbs []mj.JSONCheckBytes) string {
+	str := "["
+	for i, jcb := range jcbs {
+		if i > 0 {
+			str += ", "
+		}
+
+		str += "\"" + oj.JSONString(jcb.Original) + "\""
+	}
+	return str + "]"
 }

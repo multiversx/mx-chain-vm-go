@@ -199,47 +199,55 @@ func copyTxHashesFromContext(copyEnabled bool, runtime arwen.RuntimeContext, inp
 
 // ExecuteOnDestContext pushes each context to the corresponding stack
 // and initializes new contexts for executing the contract call with the given input
-func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, asyncInfo *arwen.AsyncContextInfo, gasUsedBeforeReset uint64, err error) {
+func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, asyncInfo *arwen.AsyncContextInfo, err error) {
 	log.Trace("ExecuteOnDestContext", "caller", input.CallerAddr, "dest", input.RecipientAddr, "function", input.Function)
 
-	bigInt, _, metering, output, runtime, storage := host.GetContexts()
+	_, _, _, output, _, _ := host.GetContexts()
+
+	builtinFunctionExecuted := false
+	var builtinRevertInput *vmcommon.ContractCallInput
 
 	// TODO refactor/simplify this block
 	if host.IsBuiltinFunctionName(input.Function) {
 		postBuiltinInput, builtinOutput, builtinErr := host.callBuiltinFunction(input)
 		if builtinErr != nil {
+			log.Trace("ExecuteOnDestContext builtin function", "error", err)
 			vmOutput = output.CreateVMOutputInCaseOfError(builtinErr)
-			return vmOutput, nil, 0, builtinErr
+			return vmOutput, nil, builtinErr
 		}
 
+		builtinFunctionExecuted = true
 		vmOutput = builtinOutput
 		output.AddToActiveState(builtinOutput)
+		builtinRevertInput = input
 
 		if postBuiltinInput == nil {
 			if input.CallType != vmcommon.AsynchronousCallBack || input.CallValue.Cmp(arwen.Zero) == 0 {
 				err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue, false)
 				if err != nil {
+					host.RevertESDTTransfer(builtinRevertInput)
 					log.Trace("ExecuteOnDestContext transfer", "error", err)
-					vmOutput = output.CreateVMOutputInCaseOfError(builtinErr)
-					return vmOutput, nil, 0, builtinErr
+					vmOutput = output.CreateVMOutputInCaseOfError(err)
+					return vmOutput, nil, err
 				}
 			}
 
-			asyncInfo = runtime.GetAsyncContextInfo()
-			_, err = host.processAsyncInfo(asyncInfo)
 			return
 		}
 
-		originalInput := input
 		input = postBuiltinInput
-
-		defer func() {
-			if err != nil {
-				host.RevertESDTTransfer(originalInput)
-			}
-		}()
 	}
 
+	vmOutput, asyncInfo, err = host.executeOnDestContextNoBuiltinFunction(input)
+	if err != nil && builtinFunctionExecuted {
+		host.RevertESDTTransfer(builtinRevertInput)
+	}
+
+	return
+}
+
+func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, asyncInfo *arwen.AsyncContextInfo, err error) {
+	bigInt, _, metering, output, runtime, storage := host.GetContexts()
 	bigInt.PushState()
 	bigInt.InitState()
 
@@ -274,7 +282,7 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 		}
 	}
 
-	_, err = host.execute(input)
+	err = host.execute(input)
 	if err != nil {
 		log.Trace("ExecuteOnDestContext execution", "error", err)
 		return
@@ -358,7 +366,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 		return
 	}
 
-	_, err = host.execute(input)
+	err = host.execute(input)
 	if err != nil {
 		return
 	}
@@ -466,7 +474,7 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newC
 		AllowInitFunction: true,
 		VMInput:           input.VMInput,
 	}
-	_, _, _, err = host.ExecuteOnDestContext(initCallInput)
+	_, _, err = host.ExecuteOnDestContext(initCallInput)
 	if err != nil {
 		return
 	}
@@ -547,27 +555,23 @@ func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) error {
 	return nil
 }
 
-// executeSmartContractCall executes an indirect call to a smart contract,
-// assuming there is an already-running Wasmer instance with another contract
-// that has requested the indirect call. This method creates a new Wasmer
-// instance and pushes the previous one onto the Runtime instance stack, but it
-// will not pop the previous instance back - that remains the responsibility of
-// the calling code. Also, this method does not restore the gas remaining after
-// the indirect call, it does not push the states of any Host Context onto
-// their respective stacks, nor does it pop any state stack. Handling the state
+// execute executes an indirect call to a smart contract, assuming there is an
+// already-running Wasmer instance of another contract that has requested the
+// indirect call. This method creates a new Wasmer instance and pushes the
+// previous one onto the Runtime instance stack, but it will not pop the
+// previous instance back - that remains the responsibility of the calling
+// code. Also, this method does not restore the gas remaining after the
+// indirect call, it does not push the states of any Host Context onto their
+// respective stacks, nor does it pop any state stack. Handling the state
 // stacks and the remaining gas are responsibilities of the calling code, which
 // must push and pop as required, before and after calling this method, and
 // handle the remaining gas. These principles also apply to indirect contract
 // upgrading (via host.executeUpgrade(), which also does not pop the previous
 // instance from the Runtime instance stack, nor does it restore the remaining
 // gas).
-func (host *vmHost) executeSmartContractCall(
-	input *vmcommon.ContractCallInput,
-	metering arwen.MeteringContext,
-	runtime arwen.RuntimeContext,
-	output arwen.OutputContext,
-	withInitialGasDeduct bool,
-) error {
+func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
+	_, _, metering, output, runtime, _ := host.GetContexts()
+
 	if host.isInitFunctionBeingCalled() && !input.AllowInitFunction {
 		return arwen.ErrInitFuncCalledInRun
 	}
@@ -586,11 +590,9 @@ func (host *vmHost) executeSmartContractCall(
 		return err
 	}
 
-	if withInitialGasDeduct {
-		err = metering.DeductInitialGasForExecution(contract)
-		if err != nil {
-			return err
-		}
+	err = metering.DeductInitialGasForExecution(contract)
+	if err != nil {
+		return err
 	}
 
 	// Replace the current Wasmer instance of the Runtime with a new one; this
@@ -611,12 +613,6 @@ func (host *vmHost) executeSmartContractCall(
 	}
 
 	return nil
-}
-
-func (host *vmHost) execute(input *vmcommon.ContractCallInput) (uint64, error) {
-	_, _, metering, output, runtime, _ := host.GetContexts()
-
-	return 0, host.executeSmartContractCall(input, metering, runtime, output, true)
 }
 
 func (host *vmHost) callSCMethodIndirect() error {
@@ -660,7 +656,7 @@ func (host *vmHost) RevertESDTTransfer(input *vmcommon.ContractCallInput) {
 			CallValue:      big.NewInt(0),
 			CallType:       vmcommon.AsynchronousCallBack,
 			GasPrice:       input.GasPrice,
-			GasProvided:    input.GasProvided,
+			GasProvided:    host.meteringContext.BlockGasLimit(),
 			GasLocked:      0,
 			OriginalTxHash: input.OriginalTxHash,
 			CurrentTxHash:  input.CurrentTxHash,
@@ -684,16 +680,20 @@ func (host *vmHost) RevertESDTTransfer(input *vmcommon.ContractCallInput) {
 	vmOutput, err := host.blockChainHook.ProcessBuiltInFunction(revertInput)
 	if err != nil {
 		log.Error("RevertESDTTransfer failed", "error", err)
+		host.meteringContext.UseGas(host.meteringContext.GasLeft())
+		host.runtimeContext.FailExecution(err)
 		return
 	}
 	if vmOutput != nil && vmOutput.ReturnCode != vmcommon.Ok {
 		log.Error("RevertESDTTransfer failed", "returnCode", vmOutput.ReturnCode, "returnMessage", vmOutput.ReturnMessage)
+		host.meteringContext.UseGas(host.meteringContext.GasLeft())
+		host.runtimeContext.FailExecution(errors.New(vmOutput.ReturnMessage))
 	}
 }
 
 // ExecuteESDTTransfer calls the process built in function with the given transfer for ESDT/ESDTNFT if nonce > 0
 // there are no NFTs with nonce == 0
-func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callType vmcommon.CallType) (*vmcommon.VMOutput, uint64, error) {
+func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callType vmcommon.CallType, isRevert bool) (*vmcommon.VMOutput, uint64, error) {
 	_, _, metering, _, runtime, _ := host.GetContexts()
 
 	esdtTransferInput := &vmcommon.ContractCallInput{
@@ -720,6 +720,10 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, token
 		esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, tokenIdentifier, value.Bytes())
 	}
 
+	if isRevert {
+		esdtTransferInput.GasProvided = metering.BlockGasLimit()
+	}
+
 	vmOutput, err := host.blockChainHook.ProcessBuiltInFunction(esdtTransferInput)
 	log.Trace("ESDT transfer", "sender", sender, "dest", destination)
 	log.Trace("ESDT transfer", "token", tokenIdentifier, "value", value)
@@ -732,13 +736,13 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, token
 		return vmOutput, esdtTransferInput.GasProvided, arwen.ErrExecutionFailed
 	}
 
-	gasConsumed, _ := math.SubUint64(esdtTransferInput.GasProvided, vmOutput.GasRemaining)
+	gasConsumed := math.SubUint64(esdtTransferInput.GasProvided, vmOutput.GasRemaining)
 	for _, outAcc := range vmOutput.OutputAccounts {
 		for _, transfer := range outAcc.OutputTransfers {
-			gasConsumed, _ = math.SubUint64(gasConsumed, transfer.GasLimit)
+			gasConsumed = math.SubUint64(gasConsumed, transfer.GasLimit)
 		}
 	}
-	if callType != vmcommon.AsynchronousCallBack {
+	if callType != vmcommon.AsynchronousCallBack && !isRevert {
 		if metering.GasLeft() < gasConsumed {
 			log.Trace("ESDT transfer", "error", arwen.ErrNotEnoughGas)
 			return vmOutput, esdtTransferInput.GasProvided, arwen.ErrNotEnoughGas

@@ -2,9 +2,9 @@ package worldmock
 
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/ElrondNetwork/elrond-go/data/state"
-	integrationTests "github.com/ElrondNetwork/elrond-go/integrationTests/mock"
 	"github.com/ElrondNetwork/elrond-go/marshal"
 	"github.com/ElrondNetwork/elrond-go/process"
 	"github.com/ElrondNetwork/elrond-go/process/smartContract/builtInFunctions"
@@ -13,8 +13,6 @@ import (
 // WorldMarshalizer is the global marshalizer to be used by the components of
 // the BuiltinFunctionsWrapper.
 var WorldMarshalizer = &marshal.GogoProtoMarshalizer{}
-
-var numDNSAddresses = uint8(0xFF)
 
 // BuiltinFunctionsWrapper manages and initializes a BuiltInFunctionContainer
 // along with its dependencies
@@ -35,7 +33,7 @@ func NewBuiltinFunctionsWrapper(
 	dnsMap := makeDNSAddresses(numDNSAddresses)
 
 	argsBuiltIn := builtInFunctions.ArgsCreateBuiltInFunctionContainer{
-		GasSchedule:      integrationTests.NewGasScheduleNotifierMock(gasMap),
+		GasSchedule:      mock.NewGasScheduleNotifierMock(gasMap),
 		MapDNSAddresses:  dnsMap,
 		Marshalizer:      WorldMarshalizer,
 		Accounts:         world.AccountsAdapter,
@@ -92,15 +90,4 @@ func (bf *BuiltinFunctionsWrapper) getAccountSharded(address []byte) state.UserA
 		return nil
 	}
 	return bf.World.AcctMap.GetAccount(address)
-}
-
-func makeDNSAddresses(numAddresses uint8) map[string]struct{} {
-	dnsMap := make(map[string]struct{}, numAddresses)
-	dnsAddressBase := []byte("dns____________________________")
-	for i := uint8(0); i < numAddresses; i++ {
-		dnsAddress := string(append(dnsAddressBase, i))
-		dnsMap[dnsAddress] = struct{}{}
-	}
-
-	return dnsMap
 }

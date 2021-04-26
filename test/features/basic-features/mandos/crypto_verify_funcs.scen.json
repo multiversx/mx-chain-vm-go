@@ -1,7 +1,7 @@
 {
     "name": "crypto",
     "comment": "does not currently work with mandos-rs, because the crypto functions are not yet mocked",
-    "gasSchedule": "v2",
+    "gasSchedule": "v3",
     "steps": [
         {
             "step": "setState",

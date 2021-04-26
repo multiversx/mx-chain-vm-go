@@ -25,6 +25,9 @@ func accountsToOJ(accounts []*mj.Account) oj.OJsonObject {
 		for _, st := range account.Storage {
 			storageOJ.Put(bytesFromStringToString(st.Key), bytesFromTreeToOJ(st.Value))
 		}
+		if len(account.Username.Value) > 0 {
+			acctOJ.Put("username", bytesFromStringToOJ(account.Username))
+		}
 		acctOJ.Put("storage", storageOJ)
 		acctOJ.Put("code", bytesFromStringToOJ(account.Code))
 		if len(account.Owner.Value) > 0 {
@@ -57,6 +60,9 @@ func checkAccountsToOJ(checkAccounts *mj.CheckAccounts) oj.OJsonObject {
 			acctOJ.Put("esdt", stringToOJ("*"))
 		} else {
 			appendCheckESDTToOJ(checkAccount.CheckESDTData, acctOJ)
+		}
+		if !checkAccount.Username.IsUnspecified() {
+			acctOJ.Put("username", checkBytesToOJ(checkAccount.Username))
 		}
 		if checkAccount.IgnoreStorage {
 			acctOJ.Put("storage", stringToOJ("*"))

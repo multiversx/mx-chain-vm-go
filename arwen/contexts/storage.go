@@ -133,9 +133,20 @@ func (context *storageContext) GetStorageFromAddress(address []byte, key []byte)
 		}
 	}
 
-	value := context.getStorageFromAddressUnmetered(address, key)
+	// If the requested key is protected by the Elrond node, the stored value
+	// could have been changed by a built-in function in the meantime, even if
+	// contracts themselves cannot change protected values. Values stored under
+	// protected keys must always be retrieved from the node, not from the cached
+	// StorageUpdates.
+	var value []byte
+	if context.isElrondReservedKey(key) {
+		value, _ = context.blockChainHook.GetStorageData(address, key)
+	} else {
+		value = context.getStorageFromAddressUnmetered(address, key)
+	}
 
-	gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(value)))
+	costPerByte := metering.GasSchedule().BaseOperationCost.DataCopyPerByte
+	gasToUse := math.MulUint64(costPerByte, uint64(len(value)))
 	metering.UseGas(gasToUse)
 
 	logStorage.Trace("get from address", "address", address, "key", key, "value", value)

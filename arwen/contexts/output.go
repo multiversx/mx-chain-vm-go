@@ -318,7 +318,7 @@ func (context *outputContext) TransferESDT(
 		callType = vmcommon.ESDTTransferAndExecute
 	}
 
-	vmOutput, gasConsumedByTransfer, err := context.host.ExecuteESDTTransfer(destination, sender, tokenIdentifier, nonce, value, callType)
+	vmOutput, gasConsumedByTransfer, err := context.host.ExecuteESDTTransfer(destination, sender, tokenIdentifier, nonce, value, callType, false)
 	if err != nil {
 		return 0, err
 	}

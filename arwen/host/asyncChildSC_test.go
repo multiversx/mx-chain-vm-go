@@ -20,7 +20,7 @@ func addAsyncChildMethodsToInstanceMock(instance *mock.InstanceMock, gasPerCall 
 
 	t := instance.T
 
-	asyncChildBehavior := func(behavior byte) {
+	handleBehaviorArgument := func(behavior byte) {
 		host := instance.Host
 		if behavior == 1 {
 			host.Runtime().SignalUserError("child error")
@@ -36,6 +36,9 @@ func addAsyncChildMethodsToInstanceMock(instance *mock.InstanceMock, gasPerCall 
 
 	instance.AddMockMethod("transferToThirdParty", func() {
 		host := instance.Host
+
+		host.Metering().UseGas(gasPerCall)
+
 		arguments := host.Runtime().Arguments()
 		outputContext := host.Output()
 
@@ -44,7 +47,7 @@ func addAsyncChildMethodsToInstanceMock(instance *mock.InstanceMock, gasPerCall 
 			return
 		}
 
-		asyncChildBehavior(arguments[1][0])
+		handleBehaviorArgument(arguments[1][0])
 
 		valueToTransfer := big.NewInt(0).SetBytes(arguments[0])
 		err := outputContext.Transfer(thirdPartyAddress, host.Runtime().GetSCAddress(), 0, 0, valueToTransfer, arguments[1], 0)

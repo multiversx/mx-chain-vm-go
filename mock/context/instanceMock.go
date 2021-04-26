@@ -1,6 +1,7 @@
 package mock
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -13,7 +14,7 @@ type InstanceMock struct {
 	Code            []byte
 	Exports         wasmer.ExportsMap
 	Points          uint64
-	Data            int
+	Data            uintptr
 	GasLimit        uint64
 	BreakpointValue uint64
 	Memory          wasmer.MemoryHandler
@@ -44,6 +45,9 @@ func (instance *InstanceMock) AddMockMethod(name string, method func()) {
 func (instance *InstanceMock) AddMockMethodWithError(name string, method func(), err error) {
 	wrappedMethod := func(...interface{}) (wasmer.Value, error) {
 		method()
+		if instance.BreakpointValue != uint64(arwen.BreakpointNone) && err != nil {
+			err = errors.New("brekapoint failed to call function")
+		}
 		return wasmer.Void(), err
 	}
 
@@ -56,7 +60,7 @@ func (instance *InstanceMock) HasMemory() bool {
 }
 
 // SetContextData mocked method
-func (instance *InstanceMock) SetContextData(data int) {
+func (instance *InstanceMock) SetContextData(data uintptr) {
 	instance.Data = data
 }
 
@@ -114,8 +118,8 @@ func (instance *InstanceMock) GetSignature(functionName string) (*wasmer.Exporte
 }
 
 // GetData mocked method
-func (instance *InstanceMock) GetData() *int {
-	return &instance.Data
+func (instance *InstanceMock) GetData() uintptr {
+	return instance.Data
 }
 
 // GetInstanceCtxMemory mocked method

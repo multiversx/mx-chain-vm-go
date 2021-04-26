@@ -174,8 +174,8 @@ func (context *meteringContext) updateSCGasUsed() {
 	gasUsedByOthers := context.getGasUsedByAllOtherAccounts(outputAccounts)
 
 	gasUsed := context.GasSpentByContract()
-	gasUsed, _ = math.SubUint64(gasUsed, gasTransferredByCurrentAccount)
-	gasUsed, _ = math.SubUint64(gasUsed, gasUsedByOthers)
+	gasUsed = math.SubUint64(gasUsed, gasTransferredByCurrentAccount)
+	gasUsed = math.SubUint64(gasUsed, gasUsedByOthers)
 
 	context.gasUsedByAccounts[string(currentAccountAddress)] = gasUsed
 }
@@ -197,9 +197,9 @@ func (context *meteringContext) TrackGasUsedByBuiltinFunction(err error, builtin
 
 	gasUsedByOthers := context.getGasUsedByAllOtherAccounts(outputAccounts)
 
-	gasUsed, _ := math.SubUint64(builtinInput.GasProvided, builtinOutput.GasRemaining)
-	gasUsed, _ = math.SubUint64(gasUsed, gasTransferredByCurrentAccount)
-	gasUsed, _ = math.SubUint64(gasUsed, gasUsedByOthers)
+	gasUsed := math.SubUint64(builtinInput.GasProvided, builtinOutput.GasRemaining)
+	gasUsed = math.SubUint64(gasUsed, gasTransferredByCurrentAccount)
+	gasUsed = math.SubUint64(gasUsed, gasUsedByOthers)
 
 	context.UseGas(gasUsed)
 
@@ -341,7 +341,7 @@ func (context *meteringContext) UseGas(gas uint64) {
 func (context *meteringContext) RestoreGas(gas uint64) {
 	gasUsed := context.host.Runtime().GetPointsUsed()
 	if gas <= gasUsed {
-		gasUsed, _ = math.SubUint64(gasUsed, gas)
+		gasUsed = math.SubUint64(gasUsed, gas)
 		context.host.Runtime().SetPointsUsed(gasUsed)
 	}
 }
@@ -383,7 +383,7 @@ func (context *meteringContext) GasSpentByContract() uint64 {
 // GasUsedForExecution returns the actual gas used for execution for the contract which needs to be restored
 func (context *meteringContext) GasUsedForExecution() uint64 {
 	gasUsed := context.GasSpentByContract()
-	gasUsed, _ = math.SubUint64(gasUsed, context.initialCost)
+	gasUsed = math.SubUint64(gasUsed, context.initialCost)
 	return gasUsed
 }
 

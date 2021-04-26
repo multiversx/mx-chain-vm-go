@@ -3,7 +3,6 @@ package host
 import (
 	"bytes"
 	"encoding/hex"
-	"errors"
 	"math/big"
 	"testing"
 
@@ -14,20 +13,21 @@ import (
 
 func createTestAsyncParentContract(t testing.TB, host *vmHost, imb *mock.InstanceBuilderMock) {
 	gasUsedByParent := uint64(400)
+	gasUsedByCallback := uint64(100)
 	gasProvidedToChild := uint64(300)
 
 	parentInstance := imb.CreateAndStoreInstanceMock(t, host, parentAddress, 1000)
 	addDummyMethodsToInstanceMock(parentInstance, gasUsedByParent)
-	addAsyncParentMethodsToInstanceMock(parentInstance, gasUsedByParent, gasProvidedToChild)
+	addAsyncParentMethodsToInstanceMock(parentInstance, gasUsedByParent, gasUsedByCallback, gasProvidedToChild)
 }
 
-func addAsyncParentMethodsToInstanceMock(instance *mock.InstanceMock, gasPerCall uint64, gasToForward uint64) {
+func addAsyncParentMethodsToInstanceMock(instance *mock.InstanceMock, gasPerCall uint64, gasPerCallback uint64, gasToForward uint64) {
 	input := DefaultTestContractCallInput()
 	input.GasProvided = gasToForward
 
 	t := instance.T
 
-	instance.AddMockMethodWithError("performAsyncCall", func() {
+	instance.AddMockMethod("performAsyncCall", func() {
 		host := instance.Host
 		host.Metering().UseGas(gasPerCall)
 
@@ -48,7 +48,7 @@ func addAsyncParentMethodsToInstanceMock(instance *mock.InstanceMock, gasPerCall
 
 		err := host.Runtime().ExecuteAsyncCall(childAddress, callData, value)
 		require.Nil(t, err)
-	}, errors.New("failed to call function"))
+	})
 
 	handleBehaviorArgument := func(behavior byte) {
 		host := instance.Host
@@ -93,6 +93,8 @@ func addAsyncParentMethodsToInstanceMock(instance *mock.InstanceMock, gasPerCall
 	instance.AddMockMethod("callBack", func() {
 		host := instance.Host
 		arguments := host.Runtime().Arguments()
+
+		host.Metering().UseGas(gasPerCallback)
 
 		if len(arguments) < 2 {
 			host.Runtime().SignalUserError("wrong num of arguments")

@@ -17,6 +17,7 @@ func (p *Parser) processCheckAccount(acctRaw oj.OJsonObject) (*mj.CheckAccount, 
 	acct := mj.CheckAccount{
 		Nonce:         mj.JSONCheckUint64Unspecified(),
 		Balance:       mj.JSONCheckBigIntUnspecified(),
+		Username:      mj.JSONCheckBytesUnspecified(),
 		IgnoreStorage: true,
 		Code:          mj.JSONCheckBytesUnspecified(),
 		Owner:         mj.JSONCheckBytesUnspecified(),
@@ -49,7 +50,7 @@ func (p *Parser) processCheckAccount(acctRaw oj.OJsonObject) (*mj.CheckAccount, 
 					return nil, errors.New("invalid ESDT map")
 				}
 				for _, esdtKvp := range esdtMap.OrderedKV {
-					tokenNameStr, err := p.ValueInterpreter.InterpretString(esdtKvp.Key)
+					tokenNameStr, err := p.ExprInterpreter.InterpretString(esdtKvp.Key)
 					if err != nil {
 						return nil, fmt.Errorf("invalid esdt token identifer: %w", err)
 					}
@@ -58,6 +59,11 @@ func (p *Parser) processCheckAccount(acctRaw oj.OJsonObject) (*mj.CheckAccount, 
 						return nil, fmt.Errorf("invalid esdt value: %w", err)
 					}
 				}
+			}
+		case "username":
+			acct.Username, err = p.parseCheckBytes(kvp.Value)
+			if err != nil {
+				return nil, fmt.Errorf("invalid account username: %w", err)
 			}
 		case "storage":
 			acct.IgnoreStorage = IsStar(kvp.Value)
@@ -68,7 +74,7 @@ func (p *Parser) processCheckAccount(acctRaw oj.OJsonObject) (*mj.CheckAccount, 
 					return nil, errors.New("invalid account storage")
 				}
 				for _, storageKvp := range storageMap.OrderedKV {
-					byteKey, err := p.ValueInterpreter.InterpretString(storageKvp.Key)
+					byteKey, err := p.ExprInterpreter.InterpretString(storageKvp.Key)
 					if err != nil {
 						return nil, fmt.Errorf("invalid account storage key: %w", err)
 					}

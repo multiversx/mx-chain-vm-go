@@ -5,6 +5,7 @@ import (
 	"fmt"
 	builtinMath "math"
 	"math/big"
+	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/math"
@@ -163,8 +164,8 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(codeHash []byte, gas
 
 	context.instance = newInstance
 
-	idContext := arwen.AddHostContext(context.host)
-	context.instance.SetContextData(idContext)
+	hostReference := uintptr(unsafe.Pointer(&context.host))
+	context.instance.SetContextData(hostReference)
 	context.verifyCode = false
 
 	logRuntime.Trace("new instance created", "code", "cached compilation")
@@ -200,8 +201,8 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 
 	context.saveCompiledCode(codeHash)
 
-	idContext := arwen.AddHostContext(context.host)
-	context.instance.SetContextData(idContext)
+	hostReference := uintptr(unsafe.Pointer(&context.host))
+	context.instance.SetContextData(hostReference)
 
 	if newCode {
 		err = context.VerifyContractCode()
@@ -266,7 +267,6 @@ func (context *runtimeContext) ResetWarmInstance() {
 		return
 	}
 
-	arwen.RemoveHostContext(*context.instance.GetData())
 	context.instance.Clean()
 
 	context.instance = nil
@@ -681,7 +681,6 @@ func (context *runtimeContext) CleanWasmerInstance() {
 		return
 	}
 
-	arwen.RemoveHostContext(*context.instance.GetData())
 	context.instance.Clean()
 	context.instance = nil
 

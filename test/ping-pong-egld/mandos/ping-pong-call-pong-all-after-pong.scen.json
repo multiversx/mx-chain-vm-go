@@ -1,6 +1,6 @@
 {
     "name": "call pong all in order to send the funds back to everyone after one user already got his funds back by calling pong himself",
-    "gasSchedule": "v2",
+    "gasSchedule": "v3",
     "steps": [
         {
             "step": "externalSteps",

@@ -12,14 +12,14 @@ import (
 // InstanceBuilderMock can be passed to RuntimeContext as an InstanceBuilder to
 // create mocked Wasmer instances.
 type InstanceBuilderMock struct {
-	InstanceMap map[string]wasmer.InstanceHandler
+	InstanceMap map[string]InstanceMock
 	World       *worldmock.MockWorld
 }
 
 // NewInstanceBuilderMock constructs a new InstanceBuilderMock
 func NewInstanceBuilderMock(world *worldmock.MockWorld) *InstanceBuilderMock {
 	return &InstanceBuilderMock{
-		InstanceMap: make(map[string]wasmer.InstanceHandler),
+		InstanceMap: make(map[string]InstanceMock),
 		World:       world,
 	}
 }
@@ -31,7 +31,7 @@ func (builder *InstanceBuilderMock) CreateAndStoreInstanceMock(t testing.TB, hos
 	instance.Address = code
 	instance.T = t
 	instance.Host = host
-	builder.InstanceMap[string(code)] = instance
+	builder.InstanceMap[string(code)] = *instance
 
 	account := builder.World.AcctMap.CreateAccount(code)
 	account.IsSmartContract = true
@@ -49,7 +49,7 @@ func (builder *InstanceBuilderMock) GetStoredInstance(code []byte, gasLimit uint
 	if ok {
 		instance.SetPointsUsed(0)
 		instance.SetGasLimit(gasLimit)
-		return instance, true
+		return &instance, true
 	}
 	return nil, false
 }
