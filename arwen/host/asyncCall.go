@@ -172,8 +172,6 @@ func (host *vmHost) executeSyncCallbackCall(
 		"func", callbackCallInput.Function,
 		"args", callbackCallInput.Arguments)
 
-	// used points should be reset before actually entering the callback execution
-	host.runtimeContext.SetPointsUsed(0)
 	callbackVMOutput, _, callBackErr := host.ExecuteOnDestContext(callbackCallInput)
 
 	if callbackVMOutput != nil {
