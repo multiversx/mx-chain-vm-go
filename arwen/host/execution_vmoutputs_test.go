@@ -928,6 +928,63 @@ func expectedVMOutputDestCtxByCallerSimpleTransfer(value int64) *vmcommon.VMOutp
 	return vmOutput
 }
 
+func expectedVMOutputAsyncCallWithConfig(testConfig *asyncCallTestConfig) *vmcommon.VMOutput {
+	vmOutput := MakeVMOutput()
+
+	parentAccount := AddNewOutputAccount(
+		vmOutput,
+		parentAddress,
+		parentAddress,
+		-10,
+		nil,
+	)
+	parentAccount.Balance = big.NewInt(testConfig.parentBalance)
+	parentAccount.GasUsed = testConfig.gasUsedByParent + testConfig.gasUsedByCallback
+	SetStorageUpdate(parentAccount, parentKeyA, parentDataA)
+	SetStorageUpdate(parentAccount, parentKeyB, parentDataB)
+	AddFinishData(vmOutput, parentFinishA)
+	AddFinishData(vmOutput, parentFinishB)
+
+	thirdPartyAccount := AddNewOutputAccount(
+		vmOutput,
+		parentAddress,
+		thirdPartyAddress,
+		testConfig.transferToThirdParty,
+		[]byte("hello"),
+	)
+	outTransfer := vmcommon.OutputTransfer{Data: []byte(" there"), Value: big.NewInt(3), SenderAddress: childAddress}
+	thirdPartyAccount.OutputTransfers = append(thirdPartyAccount.OutputTransfers, outTransfer)
+	thirdPartyAccount.BalanceDelta = big.NewInt(6)
+
+	childAccount := AddNewOutputAccount(
+		vmOutput,
+		childAddress,
+		childAddress,
+		0,
+		nil,
+	)
+	childAccount.Balance = big.NewInt(testConfig.childBalance)
+	childAccount.GasUsed = testConfig.gasUsedByChild
+	SetStorageUpdate(childAccount, childKey, childData)
+
+	_ = AddNewOutputAccount(
+		vmOutput,
+		childAddress,
+		vaultAddress,
+		testConfig.transferFromChildToVault,
+		[]byte{},
+	)
+
+	AddFinishData(vmOutput, []byte{0})
+	AddFinishData(vmOutput, []byte("thirdparty"))
+	AddFinishData(vmOutput, []byte("vault"))
+	AddFinishData(vmOutput, []byte{0})
+	AddFinishData(vmOutput, []byte("succ"))
+
+	vmOutput.GasRemaining = testConfig.gasProvided - testConfig.gasUsedByParent - testConfig.gasUsedByChild - testConfig.gasUsedByCallback
+	return vmOutput
+}
+
 func expectedVMOutputAsyncCall(_ []byte, _ []byte) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 

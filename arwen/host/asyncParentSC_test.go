@@ -3,6 +3,7 @@ package host
 import (
 	"bytes"
 	"encoding/hex"
+	"errors"
 	"math/big"
 	"testing"
 
@@ -11,25 +12,25 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func createTestAsyncParentContract(t testing.TB, host *vmHost, imb *mock.InstanceBuilderMock) {
-	gasUsedByParent := uint64(400)
-	gasUsedByCallback := uint64(100)
-	gasProvidedToChild := uint64(300)
-
-	parentInstance := imb.CreateAndStoreInstanceMock(t, host, parentAddress, 1000)
-	addDummyMethodsToInstanceMock(parentInstance, gasUsedByParent)
-	addAsyncParentMethodsToInstanceMock(parentInstance, gasUsedByParent, gasUsedByCallback, gasProvidedToChild)
+func createTestAsyncParentContract(t testing.TB, host *vmHost, imb *mock.InstanceBuilderMock, testConfig *asyncCallTestConfig) {
+	parentInstance := imb.CreateAndStoreInstanceMock(t, host, parentAddress, testConfig.parentBalance)
+	addAsyncParentMethodsToInstanceMock(parentInstance, testConfig)
 }
 
-func addAsyncParentMethodsToInstanceMock(instance *mock.InstanceMock, gasPerCall uint64, gasPerCallback uint64, gasToForward uint64) {
+func addAsyncParentMethodsToInstanceMock(instance *mock.InstanceMock, testConfig *asyncCallTestConfig) {
 	input := DefaultTestContractCallInput()
-	input.GasProvided = gasToForward
+	input.GasProvided = testConfig.gasProvidedToChild
 
 	t := instance.T
 
-	instance.AddMockMethod("performAsyncCall", func() {
+	instance.AddMockMethodWithError("performAsyncCall", func() {
 		host := instance.Host
-		host.Metering().UseGas(gasPerCall)
+		host.Metering().UseGas(testConfig.gasUsedByParent)
+
+		host.Storage().SetStorage(parentKeyA, parentDataA)
+		host.Storage().SetStorage(parentKeyB, parentDataB)
+		host.Output().Finish(parentFinishA)
+		host.Output().Finish(parentFinishB)
 
 		arguments := host.Runtime().Arguments()
 
@@ -37,18 +38,18 @@ func addAsyncParentMethodsToInstanceMock(instance *mock.InstanceMock, gasPerCall
 			// funcion to be called on child
 			"transferToThirdParty",
 			// value to send to third party
-			big.NewInt(3).Bytes(),
+			big.NewInt(testConfig.transferToThirdParty).Bytes(),
 			// data for child -> third party tx
 			[]byte(" there"),
 			// behavior param for child
 			[]byte{byte(big.NewInt(0).SetBytes(arguments[0]).Uint64() + '0')})
 
 		// amount to transfer from parent to child
-		value := big.NewInt(7).Bytes()
+		value := big.NewInt(testConfig.transferFromParentToChild).Bytes()
 
 		err := host.Runtime().ExecuteAsyncCall(childAddress, callData, value)
 		require.Nil(t, err)
-	})
+	}, errors.New("breakpoint / failed to call function"))
 
 	handleBehaviorArgument := func(behavior byte) {
 		host := instance.Host
@@ -66,15 +67,16 @@ func addAsyncParentMethodsToInstanceMock(instance *mock.InstanceMock, gasPerCall
 	}
 
 	mustTransferToVault := func(arguments [][]byte) bool {
+		vault := "vault"
 		numArgs := len(arguments)
 		if numArgs == 3 {
-			if string(arguments[2]) == "vault" {
+			if string(arguments[2]) == vault {
 				return false
 			}
 		}
 
 		if numArgs == 4 {
-			if string(arguments[3]) == "vault" {
+			if string(arguments[3]) == vault {
 				return false
 			}
 		}
@@ -94,7 +96,7 @@ func addAsyncParentMethodsToInstanceMock(instance *mock.InstanceMock, gasPerCall
 		host := instance.Host
 		arguments := host.Runtime().Arguments()
 
-		host.Metering().UseGas(gasPerCallback)
+		host.Metering().UseGas(testConfig.gasUsedByCallback)
 
 		if len(arguments) < 2 {
 			host.Runtime().SignalUserError("wrong num of arguments")

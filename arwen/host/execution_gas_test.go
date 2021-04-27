@@ -7,6 +7,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
 )
 
@@ -168,25 +169,58 @@ func TestGasUsed_ThreeContracts_ExecuteOnDestCtx(t *testing.T) {
 	verify.Ok().GasRemaining(expectedGasRemaining)
 }
 
+type asyncCallTestConfig struct {
+	gasProvided        uint64
+	gasUsedByParent    uint64
+	gasProvidedToChild uint64
+	gasUsedByChild     uint64
+	gasUsedByCallback  uint64
+	gasLock            uint64
+
+	transferToThirdParty      int64
+	transferFromParentToChild int64
+	transferFromChildToVault  int64
+
+	parentBalance int64
+	childBalance  int64
+}
+
 func TestGasUsed_AsyncCall(t *testing.T) {
 	host, _, imb := defaultTestArwenForCallWithInstanceMocks(t)
-	createTestAsyncParentContract(t, host, imb)
-	createTestAsyncChildContract(t, host, imb)
+
+	testConfig := &asyncCallTestConfig{
+		gasProvided:        116000,
+		gasUsedByParent:    400,
+		gasProvidedToChild: 300,
+		gasUsedByChild:     200,
+		gasUsedByCallback:  100,
+		gasLock:            150,
+
+		transferToThirdParty:      3,
+		transferFromParentToChild: 7,
+		transferFromChildToVault:  4,
+
+		parentBalance: 1000,
+		childBalance:  1000,
+	}
+
+	createTestAsyncParentContract(t, host, imb, testConfig)
+	createTestAsyncChildContract(t, host, imb, testConfig)
 	zeroCodeCosts(host)
-	zeroAsyncCosts(host)
+	asyncCosts(host, testConfig.gasLock)
 
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "performAsyncCall"
-	input.GasProvided = 116000
+	input.GasProvided = testConfig.gasProvided
 	input.Arguments = [][]byte{{0}}
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
 	require.NotNil(t, vmOutput)
-	//require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 
-	expectedVMOutput := expectedVMOutputAsyncCall(nil, nil)
+	expectedVMOutput := expectedVMOutputAsyncCallWithConfig(testConfig)
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
@@ -281,7 +315,7 @@ func zeroCodeCosts(host *vmHost) {
 	host.Metering().GasSchedule().BaseOperationCost.DataCopyPerByte = 0
 }
 
-func zeroAsyncCosts(host *vmHost) {
+func asyncCosts(host *vmHost, gasLock uint64) {
 	host.Metering().GasSchedule().ElrondAPICost.AsyncCallStep = 0
-	host.Metering().GasSchedule().ElrondAPICost.AsyncCallbackGasLock = 0 // TODO 150
+	host.Metering().GasSchedule().ElrondAPICost.AsyncCallbackGasLock = gasLock
 }

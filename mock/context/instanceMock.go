@@ -1,7 +1,6 @@
 package mock
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -45,9 +44,6 @@ func (instance *InstanceMock) AddMockMethod(name string, method func()) {
 func (instance *InstanceMock) AddMockMethodWithError(name string, method func(), err error) {
 	wrappedMethod := func(...interface{}) (wasmer.Value, error) {
 		method()
-		if instance.BreakpointValue != uint64(arwen.BreakpointNone) && err != nil {
-			err = errors.New("brekapoint failed to call function")
-		}
 		return wasmer.Void(), err
 	}
 
