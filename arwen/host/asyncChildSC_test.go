@@ -8,15 +8,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func createTestAsyncChildContract(t testing.TB, host *vmHost, imb *mock.InstanceBuilderMock) {
-	gasUsedByChild := uint64(200)
-
-	childInstance := imb.CreateAndStoreInstanceMock(t, host, childAddress, 0)
+func createTestAsyncChildContract(t testing.TB, host *vmHost, imb *mock.InstanceBuilderMock, testConfig *asyncCallTestConfig) {
+	childInstance := imb.CreateAndStoreInstanceMock(t, host, childAddress, testConfig.childBalance)
 	addDummyMethodsToInstanceMock(childInstance, gasUsedByChild)
-	addAsyncChildMethodsToInstanceMock(childInstance, gasUsedByChild)
+	addAsyncChildMethodsToInstanceMock(childInstance, testConfig)
 }
 
-func addAsyncChildMethodsToInstanceMock(instance *mock.InstanceMock, gasPerCall uint64) {
+func addAsyncChildMethodsToInstanceMock(instance *mock.InstanceMock, testConfig *asyncCallTestConfig) {
 
 	t := instance.T
 
@@ -37,7 +35,7 @@ func addAsyncChildMethodsToInstanceMock(instance *mock.InstanceMock, gasPerCall 
 	instance.AddMockMethod("transferToThirdParty", func() {
 		host := instance.Host
 
-		host.Metering().UseGas(gasPerCall)
+		host.Metering().UseGas(testConfig.gasUsedByChild)
 
 		arguments := host.Runtime().Arguments()
 		outputContext := host.Output()
@@ -47,14 +45,14 @@ func addAsyncChildMethodsToInstanceMock(instance *mock.InstanceMock, gasPerCall 
 			return
 		}
 
-		handleBehaviorArgument(arguments[1][0])
+		handleBehaviorArgument(arguments[2][0])
 
 		valueToTransfer := big.NewInt(0).SetBytes(arguments[0])
 		err := outputContext.Transfer(thirdPartyAddress, host.Runtime().GetSCAddress(), 0, 0, valueToTransfer, arguments[1], 0)
 		require.Nil(t, err)
 		outputContext.Finish([]byte("thirdparty"))
 
-		valueToTransfer = big.NewInt(4)
+		valueToTransfer = big.NewInt(testConfig.transferFromChildToVault)
 		err = outputContext.Transfer(vaultAddress, host.Runtime().GetSCAddress(), 0, 0, valueToTransfer, []byte{}, 0)
 		require.Nil(t, err)
 		outputContext.Finish([]byte("vault"))
