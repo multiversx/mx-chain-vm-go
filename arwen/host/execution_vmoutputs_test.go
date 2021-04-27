@@ -952,9 +952,11 @@ func expectedVMOutputAsyncCallWithConfig(testConfig *asyncCallTestConfig) *vmcom
 		testConfig.transferToThirdParty,
 		[]byte("hello"),
 	)
+
 	outTransfer := vmcommon.OutputTransfer{Data: []byte(" there"), Value: big.NewInt(testConfig.transferToThirdParty), SenderAddress: childAddress}
+
 	thirdPartyAccount.OutputTransfers = append(thirdPartyAccount.OutputTransfers, outTransfer)
-	thirdPartyAccount.BalanceDelta = big.NewInt(6)
+	thirdPartyAccount.BalanceDelta = big.NewInt(2 * testConfig.transferToThirdParty)
 
 	childAccount := AddNewOutputAccount(
 		vmOutput,
