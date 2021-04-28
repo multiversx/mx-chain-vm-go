@@ -71,7 +71,7 @@ func GetTestSCCodeModule(scName string, moduleName string, prefixToTestSCs strin
 // BuildSCModule invokes erdpy to build the contract into a WASM module
 func BuildSCModule(scName string, prefixToTestSCs string) {
 	pathToSCDir := prefixToTestSCs + "test/contracts/" + scName
-	out, err := exec.Command("erdpy", "contract", "build", pathToSCDir).Output()
+	out, err := exec.Command("erdpy", "contract", "build", "--no-optimization", pathToSCDir).Output()
 	if err != nil {
 		log.Error("error building contract", "err", err, "contract", pathToSCDir)
 		return
