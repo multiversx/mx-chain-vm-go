@@ -91,6 +91,33 @@ func (a *Account) SetTokenBalance(tokenKey []byte, balance *big.Int) error {
 	return a.SetTokenData(tokenKey, tokenData)
 }
 
+// GetTokenBalanceUint64 returns the ESDT balance of the account, specified by
+// the token key.
+func (a *Account) GetTokenBalanceUint64(tokenKey []byte) (uint64, error) {
+	tokenData, err := a.GetTokenData(tokenKey)
+	if err != nil {
+		return 0, err
+	}
+
+	return tokenData.Value.Uint64(), nil
+}
+
+// SetTokenBalanceUint64 sets the ESDT balance of the account, specified by the
+// token key.
+func (a *Account) SetTokenBalanceUint64(tokenKey []byte, balance uint64) error {
+	tokenData, err := a.GetTokenData(tokenKey)
+	if err != nil {
+		return err
+	}
+
+	if balance < 0 {
+		return data.ErrNegativeValue
+	}
+
+	tokenData.Value = big.NewInt(0).SetUint64(balance)
+	return a.SetTokenData(tokenKey, tokenData)
+}
+
 // GetTokenData gets the ESDT information related to a token from the storage of the account.
 func (a *Account) GetTokenData(tokenKey []byte) (*esdt.ESDigitalToken, error) {
 	esdtData := &esdt.ESDigitalToken{

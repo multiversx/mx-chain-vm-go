@@ -1,6 +1,9 @@
 package mock
 
 import (
+	"testing"
+
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
@@ -23,8 +26,11 @@ func NewInstanceBuilderMock(world *worldmock.MockWorld) *InstanceBuilderMock {
 
 // CreateAndStoreInstanceMock creates a new InstanceMock and registers it as a
 // smart contract account in the World, using `code` as the address of the account
-func (builder *InstanceBuilderMock) CreateAndStoreInstanceMock(code []byte, balance int64) *InstanceMock {
+func (builder *InstanceBuilderMock) CreateAndStoreInstanceMock(t testing.TB, host arwen.VMHost, code []byte, balance int64) *InstanceMock {
 	instance := NewInstanceMock(code)
+	instance.Address = code
+	instance.T = t
+	instance.Host = host
 	builder.InstanceMap[string(code)] = instance
 
 	account := builder.World.AcctMap.CreateAccount(code)

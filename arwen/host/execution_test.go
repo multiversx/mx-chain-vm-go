@@ -1066,7 +1066,7 @@ func TestExecution_ExecuteOnDestContext_GasRemaining(t *testing.T) {
 	}
 	childInput.GasProvided = 10000
 
-	childOutput, _, _, err := host.ExecuteOnDestContext(childInput)
+	childOutput, _, err := host.ExecuteOnDestContext(childInput)
 	require.Nil(t, err)
 	require.NotNil(t, childOutput)
 	require.Equal(t, uint64(7752), childOutput.GasRemaining)
@@ -1214,8 +1214,6 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 }
 
 func TestExecution_ExecuteOnSameContext_MultipleChildren(t *testing.T) {
-	t.Skip("needs gas forwarding fixes")
-
 	world := worldmock.NewMockWorld()
 	host := defaultTestArwen(t, world)
 
@@ -1401,10 +1399,7 @@ func TestExecution_AsyncCall(t *testing.T) {
 	require.NotNil(t, vmOutput)
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 
-	// TODO calculate expected remaining gas properly, instead of copying it from
-	// the actual vmOutput.
 	expectedVMOutput := expectedVMOutputAsyncCall(parentCode, childCode)
-	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
@@ -1434,10 +1429,7 @@ func TestExecution_AsyncCall_ChildFails(t *testing.T) {
 	require.NotNil(t, vmOutput)
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 
-	// TODO calculate expected remaining gas properly, instead of copying it from
-	// the actual vmOutput.
 	expectedVMOutput := expectedVMOutputAsyncCallChildFails(parentCode, childCode)
-	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
@@ -1463,10 +1455,7 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 	require.NotNil(t, vmOutput)
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 
-	// TODO calculate expected remaining gas properly, instead of copying it from
-	// the actual vmOutput.
 	expectedVMOutput := expectedVMOutputAsyncCallCallBackFails(parentCode, childCode)
-	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
@@ -1539,9 +1528,9 @@ func TestExecution_CreateNewContract_Fail(t *testing.T) {
 }
 
 func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
-	host, _, ibm := defaultTestArwenForCallWithInstanceMocks(t)
+	host, _, imb := defaultTestArwenForCallWithInstanceMocks(t)
 
-	parentInstance := ibm.CreateAndStoreInstanceMock(parentAddress, 1000)
+	parentInstance := imb.CreateAndStoreInstanceMock(t, host, parentAddress, 1000)
 	parentInstance.AddMockMethod("callChild", func() {
 		host.Output().Finish([]byte("parent returns this"))
 		host.Metering().UseGas(500)
@@ -1553,11 +1542,11 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 		childInput.CallValue = big.NewInt(4)
 		childInput.Function = "doSomething"
 		childInput.GasProvided = 1000
-		_, _, _, err = host.ExecuteOnDestContext(childInput)
+		_, _, err = host.ExecuteOnDestContext(childInput)
 		require.Nil(t, err)
 	})
 
-	childInstance := ibm.CreateAndStoreInstanceMock(childAddress, 0)
+	childInstance := imb.CreateAndStoreInstanceMock(t, host, childAddress, 0)
 	childInstance.AddMockMethod("doSomething", func() {
 		host.Output().Finish([]byte("child returns this"))
 		host.Metering().UseGas(100)
@@ -1577,77 +1566,6 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 	expectedVMOutput := expectedVMOutputMockedWasmerInstances()
 	expectedVMOutput.GasRemaining = 307
 	require.Equal(t, expectedVMOutput, vmOutput)
-}
-
-func TestExecution_GasUsed_SingleContract(t *testing.T) {
-	host, _, ibm := defaultTestArwenForCallWithInstanceMocks(t)
-	host.Metering().GasSchedule().BaseOperationCost.CompilePerByte = 0
-	host.Metering().GasSchedule().BaseOperationCost.AoTPreparePerByte = 0
-
-	gasProvided := uint64(1000)
-	gasUsedByParent := uint64(401)
-
-	parentInstance := ibm.CreateAndStoreInstanceMock(parentAddress, 0)
-	parentInstance.AddMockMethod("doSomething", func() {
-		host.Metering().UseGas(gasUsedByParent)
-	})
-
-	input := DefaultTestContractCallInput()
-	input.Function = "doSomething"
-	input.GasProvided = gasProvided
-
-	vmOutput, err := host.RunSmartContractCall(input)
-	require.Nil(t, err)
-	require.NotNil(t, vmOutput)
-	require.Equal(t, gasProvided-gasUsedByParent-1, vmOutput.GasRemaining)
-
-	parentAccount := vmOutput.OutputAccounts[string(parentAddress)]
-	require.Equal(t, gasUsedByParent+1, parentAccount.GasUsed)
-}
-
-func TestExecution_GasUsed_ExecuteOnSameCtx(t *testing.T) {
-	host, _, ibm := defaultTestArwenForCallWithInstanceMocks(t)
-	host.Metering().GasSchedule().BaseOperationCost.CompilePerByte = 1
-	host.Metering().GasSchedule().BaseOperationCost.AoTPreparePerByte = 1
-
-	gasProvided := uint64(1000)
-	contractCompilationCost := uint64(32)
-	gasUsedByParentExec := uint64(400)
-	gasUsedByChildExec := uint64(200)
-	gasUsedByParent := contractCompilationCost + gasUsedByParentExec + 1
-	gasUsedByChild := contractCompilationCost + gasUsedByChildExec
-
-	parentInstance := ibm.CreateAndStoreInstanceMock(parentAddress, 0)
-	parentInstance.AddMockMethod("function", func() {
-		host.Metering().UseGas(gasUsedByParentExec)
-		childInput := DefaultTestContractCallInput()
-		childInput.CallerAddr = parentAddress
-		childInput.RecipientAddr = childAddress
-		childInput.GasProvided = 300
-		_, err := host.ExecuteOnSameContext(childInput)
-		require.Nil(t, err)
-	})
-
-	childInstance := ibm.CreateAndStoreInstanceMock(childAddress, 0)
-	childInstance.AddMockMethod("function", func() {
-		host.Metering().UseGas(gasUsedByChildExec)
-	})
-
-	input := DefaultTestContractCallInput()
-	input.Function = "function"
-	input.GasProvided = gasProvided
-
-	expectedGasRemaining := gasProvided - gasUsedByParent - gasUsedByChild - 1
-	vmOutput, err := host.RunSmartContractCall(input)
-	require.Nil(t, err)
-	require.NotNil(t, vmOutput)
-	require.Equal(t, expectedGasRemaining, vmOutput.GasRemaining)
-
-	parentAccount := vmOutput.OutputAccounts[string(parentAddress)]
-	require.Equal(t, gasUsedByParent, parentAccount.GasUsed)
-
-	childAccount := vmOutput.OutputAccounts[string(childAddress)]
-	require.Equal(t, gasUsedByChild+1, childAccount.GasUsed)
 }
 
 // makeBytecodeWithLocals rewrites the bytecode of "answer" to change the

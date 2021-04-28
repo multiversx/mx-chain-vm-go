@@ -170,9 +170,9 @@ func expectedVMOutputSameCtxSimple(_ []byte, _ []byte) *vmcommon.VMOutput {
 		198,
 		nil,
 	)
-	childAccount.GasUsed = 3435 // TODO: double this when fixed
+	childAccount.GasUsed = 6870
 
-	executionCost := parentAccount.GasUsed + 2*childAccount.GasUsed
+	executionCost := parentAccount.GasUsed + childAccount.GasUsed
 	vmOutput.GasRemaining = gasProvided - executionCost
 
 	return vmOutput
@@ -478,7 +478,7 @@ func expectedVMOutputDestCtxBuiltinDoSomething(input *vmcommon.ContractCallInput
 		nil,
 	)
 	account.Balance = big.NewInt(1000)
-	account.BalanceDelta = big.NewInt(0)
+	account.BalanceDelta = big.NewInt(0).Sub(arwen.One, arwen.One)
 	account.GasUsed = 1992
 
 	AddFinishData(vmOutput, []byte("succ"))
@@ -939,7 +939,7 @@ func expectedVMOutputAsyncCall(_ []byte, _ []byte) *vmcommon.VMOutput {
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
-	parentAccount.GasUsed = 104753
+	parentAccount.GasUsed = 2687
 	SetStorageUpdate(parentAccount, parentKeyA, parentDataA)
 	SetStorageUpdate(parentAccount, parentKeyB, parentDataB)
 	AddFinishData(vmOutput, parentFinishA)
@@ -981,6 +981,7 @@ func expectedVMOutputAsyncCall(_ []byte, _ []byte) *vmcommon.VMOutput {
 	AddFinishData(vmOutput, []byte{0})
 	AddFinishData(vmOutput, []byte("succ"))
 
+	vmOutput.GasRemaining = 112017
 	return vmOutput
 }
 
@@ -1028,6 +1029,7 @@ func expectedVMOutputAsyncCallChildFails(_ []byte, _ []byte) *vmcommon.VMOutput 
 
 	AddFinishData(vmOutput, []byte("succ"))
 
+	vmOutput.GasRemaining = 996072
 	return vmOutput
 }
 
@@ -1087,7 +1089,7 @@ func expectedVMOutputAsyncCallCallBackFails(_ []byte, _ []byte) *vmcommon.VMOutp
 	AddFinishData(vmOutput, []byte("txhash"))
 
 	vmOutput.ReturnMessage = "callBack error"
-
+	vmOutput.GasRemaining = 1512
 	return vmOutput
 }
 

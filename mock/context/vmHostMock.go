@@ -114,8 +114,8 @@ func (host *VMHostMock) ExecuteOnSameContext(_ *vmcommon.ContractCallInput) (*ar
 }
 
 // ExecuteOnDestContext mocked method
-func (host *VMHostMock) ExecuteOnDestContext(_ *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *arwen.AsyncContextInfo, uint64, error) {
-	return nil, nil, 0, nil
+func (host *VMHostMock) ExecuteOnDestContext(_ *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *arwen.AsyncContextInfo, error) {
+	return nil, nil, nil
 }
 
 // InitState mocked method
