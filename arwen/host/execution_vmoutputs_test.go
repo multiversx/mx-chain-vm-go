@@ -1011,7 +1011,7 @@ func expectedVMOutputAsyncRecursiveCallWithConfig(testConfig *asyncCallRecursive
 	)
 	childAccount.Balance = big.NewInt(testConfig.childBalance)
 	childAccount.BalanceDelta = big.NewInt(testConfig.transferFromParentToChild)
-	childAccount.GasUsed = testConfig.gasUsedByChild +
+	childAccount.GasUsed = uint64(testConfig.recursiveChildCalls)*testConfig.gasUsedByChild +
 		uint64(testConfig.recursiveChildCalls-1)*testConfig.gasUsedByCallback
 
 	vmOutput.GasRemaining = testConfig.gasProvided -
