@@ -139,9 +139,12 @@ func (context *meteringContext) addToGasUsedByAccounts(gasUsed map[string]uint64
 
 func (context *meteringContext) UpdateGasStateOnSuccess(vmOutput *vmcommon.VMOutput) error {
 	context.updateSCGasUsed()
-	context.setGasUsedToOutputAccounts(vmOutput)
+	err := context.setGasUsedToOutputAccounts(vmOutput)
+	if err != nil {
+		return err
+	}
 
-	err := context.checkGasLegacy()
+	err = context.checkGasLegacy()
 	if err != nil {
 		return err
 	}
@@ -186,9 +189,8 @@ func (context *meteringContext) TrackGasUsedByBuiltinFunction(err error, builtin
 		return err
 	}
 
-	callerContractAddress := string(builtinInput.CallerAddr)
 	outputAccounts := builtinOutput.OutputAccounts
-	callerContractAccount, exists := outputAccounts[callerContractAddress]
+	callerContractAccount, exists := outputAccounts[string(builtinInput.CallerAddr)]
 
 	gasTransferredByCurrentAccount := uint64(0)
 	if exists {
@@ -255,7 +257,6 @@ func (context *meteringContext) getCurrentTotalUsedGas() uint64 {
 }
 
 func (context *meteringContext) getGasUsedByAllOtherAccounts(outputAccounts map[string]*vmcommon.OutputAccount) uint64 {
-
 	gasUsedAndTransferred := uint64(0)
 	currentAccountAddress := string(context.host.Runtime().GetSCAddress())
 	for address, account := range outputAccounts {
