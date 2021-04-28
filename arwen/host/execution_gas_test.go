@@ -189,11 +189,6 @@ type asyncCallTestConfig struct {
 	transferFromChildToVault int64
 }
 
-type asyncCallRecursiveTestConfig struct {
-	asyncCallBaseTestConfig
-	recursiveChildCalls int
-}
-
 func TestGasUsed_AsyncCall(t *testing.T) {
 	host, _, imb := defaultTestArwenForCallWithInstanceMocks(t)
 
@@ -236,29 +231,35 @@ func TestGasUsed_AsyncCall(t *testing.T) {
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
+type asyncCallRecursiveTestConfig struct {
+	asyncCallBaseTestConfig
+	recursiveChildCalls int
+}
+
 func TestGasUsed_AsyncCall_Recursive(t *testing.T) {
 	host, _, imb := defaultTestArwenForCallWithInstanceMocks(t)
 
+	baseConfig := &asyncCallBaseTestConfig{
+		gasProvided:        10000,
+		gasUsedByParent:    200,
+		gasProvidedToChild: 500,
+		gasUsedByChild:     100,
+		gasUsedByCallback:  100,
+		gasLock:            150,
+
+		transferFromParentToChild: 10,
+
+		parentBalance: 1000,
+		childBalance:  1000,
+	}
+
 	testConfig := &asyncCallRecursiveTestConfig{
-		asyncCallBaseTestConfig: asyncCallBaseTestConfig{
-			gasProvided:        10000,
-			gasUsedByParent:    200,
-			gasProvidedToChild: 500,
-			gasUsedByChild:     100,
-			gasUsedByCallback:  100,
-			gasLock:            150,
-
-			transferFromParentToChild: 10,
-
-			parentBalance: 1000,
-			childBalance:  1000,
-		},
-
-		recursiveChildCalls: 2,
+		asyncCallBaseTestConfig: *baseConfig,
+		recursiveChildCalls:     2,
 	}
 
 	createTestAsyncRecursiveParentContract(t, host, imb, testConfig)
-	createTestAsyncRecursiveChildContract(t, host, imb, testConfig)
+	createTestAsyncRecursiveChildContract(t, host, imb, baseConfig)
 	zeroCodeCosts(host)
 	asyncCosts(host, testConfig.gasLock)
 
@@ -266,7 +267,7 @@ func TestGasUsed_AsyncCall_Recursive(t *testing.T) {
 	input.RecipientAddr = parentAddress
 	input.Function = "forwardAsyncCall"
 	input.GasProvided = testConfig.gasProvided
-	input.Arguments = [][]byte{childAddress, []byte("recursiveAsyncCall"), big.NewInt(2).Bytes()}
+	input.Arguments = [][]byte{childAddress, []byte("recursiveAsyncCall"), big.NewInt(int64(testConfig.recursiveChildCalls)).Bytes()}
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
@@ -274,6 +275,53 @@ func TestGasUsed_AsyncCall_Recursive(t *testing.T) {
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 
 	expectedVMOutput := expectedVMOutputAsyncRecursiveCallWithConfig(testConfig)
+	require.Equal(t, expectedVMOutput, vmOutput)
+}
+
+type asyncCallMultiChildTestConfig struct {
+	asyncCallBaseTestConfig
+	childCalls int
+}
+
+func TestGasUsed_AsyncCall_MultiChild(t *testing.T) {
+	host, _, imb := defaultTestArwenForCallWithInstanceMocks(t)
+
+	baseConfig := &asyncCallBaseTestConfig{
+		gasProvided:        10000,
+		gasUsedByParent:    200,
+		gasProvidedToChild: 500,
+		gasUsedByChild:     100,
+		gasUsedByCallback:  100,
+		gasLock:            150,
+
+		transferFromParentToChild: 10,
+
+		parentBalance: 1000,
+		childBalance:  1000,
+	}
+
+	testConfig := &asyncCallMultiChildTestConfig{
+		asyncCallBaseTestConfig: *baseConfig,
+		childCalls:              2,
+	}
+
+	createTestAsyncMultiChildParentContract(t, host, imb, testConfig)
+	createTestAsyncRecursiveChildContract(t, host, imb, baseConfig)
+	zeroCodeCosts(host)
+	asyncCosts(host, testConfig.gasLock)
+
+	input := DefaultTestContractCallInput()
+	input.RecipientAddr = parentAddress
+	input.Function = "forwardAsyncCall"
+	input.GasProvided = testConfig.gasProvided
+	input.Arguments = [][]byte{childAddress, []byte("recursiveAsyncCall")}
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+
+	expectedVMOutput := expectedVMOutputAsyncMultiChildCallWithConfig(testConfig)
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 

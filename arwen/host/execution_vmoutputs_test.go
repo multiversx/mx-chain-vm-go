@@ -1020,6 +1020,36 @@ func expectedVMOutputAsyncRecursiveCallWithConfig(testConfig *asyncCallRecursive
 	return vmOutput
 }
 
+func expectedVMOutputAsyncMultiChildCallWithConfig(testConfig *asyncCallMultiChildTestConfig) *vmcommon.VMOutput {
+	vmOutput := MakeVMOutput()
+
+	parentAccount := AddNewOutputAccount(
+		vmOutput,
+		parentAddress,
+		parentAddress,
+		-10,
+		nil,
+	)
+	parentAccount.Balance = big.NewInt(testConfig.parentBalance)
+	parentAccount.GasUsed = testConfig.gasUsedByParent + testConfig.gasUsedByCallback
+
+	childAccount := AddNewOutputAccount(
+		vmOutput,
+		childAddress,
+		childAddress,
+		0,
+		nil,
+	)
+	childAccount.Balance = big.NewInt(testConfig.childBalance)
+	childAccount.BalanceDelta = big.NewInt(testConfig.transferFromParentToChild)
+	childAccount.GasUsed = uint64(testConfig.childCalls) * testConfig.gasUsedByChild
+
+	vmOutput.GasRemaining = testConfig.gasProvided -
+		parentAccount.GasUsed -
+		childAccount.GasUsed
+	return vmOutput
+}
+
 func expectedVMOutputAsyncCall(_ []byte, _ []byte) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 

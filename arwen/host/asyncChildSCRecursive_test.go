@@ -10,12 +10,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func createTestAsyncRecursiveChildContract(t testing.TB, host *vmHost, imb *mock.InstanceBuilderMock, testConfig *asyncCallRecursiveTestConfig) {
+func createTestAsyncRecursiveChildContract(t testing.TB, host *vmHost, imb *mock.InstanceBuilderMock, testConfig *asyncCallBaseTestConfig) {
 	childInstance := imb.CreateAndStoreInstanceMock(t, host, childAddress, testConfig.parentBalance)
 	addAsyncRecursiveChildMethodsToInstanceMock(childInstance, testConfig)
 }
 
-func addAsyncRecursiveChildMethodsToInstanceMock(instanceMock *mock.InstanceMock, testConfig *asyncCallRecursiveTestConfig) {
+func addAsyncRecursiveChildMethodsToInstanceMock(instanceMock *mock.InstanceMock, testConfig *asyncCallBaseTestConfig) {
 	input := DefaultTestContractCallInput()
 	input.GasProvided = testConfig.gasProvidedToChild
 
