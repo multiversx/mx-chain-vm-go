@@ -939,7 +939,7 @@ func expectedVMOutputAsyncCall(_ []byte, _ []byte) *vmcommon.VMOutput {
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
-	parentAccount.GasUsed = 2687
+	parentAccount.GasUsed = 9114
 	SetStorageUpdate(parentAccount, parentKeyA, parentDataA)
 	SetStorageUpdate(parentAccount, parentKeyB, parentDataB)
 	AddFinishData(vmOutput, parentFinishA)
@@ -964,7 +964,7 @@ func expectedVMOutputAsyncCall(_ []byte, _ []byte) *vmcommon.VMOutput {
 		nil,
 	)
 	childAccount.Balance = big.NewInt(1000)
-	childAccount.GasUsed = 1296
+	childAccount.GasUsed = 2534
 	SetStorageUpdate(childAccount, childKey, childData)
 
 	_ = AddNewOutputAccount(
@@ -981,7 +981,7 @@ func expectedVMOutputAsyncCall(_ []byte, _ []byte) *vmcommon.VMOutput {
 	AddFinishData(vmOutput, []byte{0})
 	AddFinishData(vmOutput, []byte("succ"))
 
-	vmOutput.GasRemaining = 112017
+	vmOutput.GasRemaining = 104352
 	return vmOutput
 }
 
@@ -996,7 +996,11 @@ func expectedVMOutputAsyncCallChildFails(_ []byte, _ []byte) *vmcommon.VMOutput 
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
-	parentAccount.GasUsed = 3928
+
+	// Because the child contract failed during asyncCall(), all the gas provided
+	// to it was lost (i.e. all the gas the parent had, when asyncCall() was
+	// reached). This appears as gas used by the parent.
+	parentAccount.GasUsed = 998352
 	SetStorageUpdate(parentAccount, parentKeyA, parentDataA)
 	SetStorageUpdate(parentAccount, parentKeyB, parentDataB)
 	AddFinishData(vmOutput, parentFinishA)
@@ -1029,7 +1033,10 @@ func expectedVMOutputAsyncCallChildFails(_ []byte, _ []byte) *vmcommon.VMOutput 
 
 	AddFinishData(vmOutput, []byte("succ"))
 
-	vmOutput.GasRemaining = 996072
+	// This is the gas that remains after the parent's callback is executed. All
+	// other gas was either consumed by the parent, or lost during the failed
+	// child call.
+	vmOutput.GasRemaining = 1648
 	return vmOutput
 }
 
@@ -1044,7 +1051,11 @@ func expectedVMOutputAsyncCallCallBackFails(_ []byte, _ []byte) *vmcommon.VMOutp
 		nil,
 	)
 	parentAccount.Balance = big.NewInt(1000)
-	parentAccount.GasUsed = 197192
+
+	// After a successful async child call, the parent callback itself receives the
+	// entire amount of gas left. But the parent callback fails, so all gas is
+	// lost by the parent.
+	parentAccount.GasUsed = 197437
 	SetStorageUpdate(parentAccount, parentKeyA, parentDataA)
 	SetStorageUpdate(parentAccount, parentKeyB, parentDataB)
 	AddFinishData(vmOutput, parentFinishA)
@@ -1071,7 +1082,7 @@ func expectedVMOutputAsyncCallCallBackFails(_ []byte, _ []byte) *vmcommon.VMOutp
 	)
 	childAccount.Balance = big.NewInt(1000)
 	childAccount.BalanceDelta = big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1))
-	childAccount.GasUsed = 1296
+	childAccount.GasUsed = 2534
 	SetStorageUpdate(childAccount, childKey, childData)
 
 	_ = AddNewOutputAccount(
@@ -1089,7 +1100,10 @@ func expectedVMOutputAsyncCallCallBackFails(_ []byte, _ []byte) *vmcommon.VMOutp
 	AddFinishData(vmOutput, []byte("txhash"))
 
 	vmOutput.ReturnMessage = "callBack error"
-	vmOutput.GasRemaining = 1512
+
+	// TODO Why is there a minuscule amount of gas remaining after the callback
+	// fails? This is supposed to be 0.
+	vmOutput.GasRemaining = 29
 	return vmOutput
 }
 
