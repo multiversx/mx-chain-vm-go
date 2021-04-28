@@ -83,6 +83,8 @@ type runtimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	VerifyContractCodeFunc func() error
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	GetInstanceFunc func() wasmer.InstanceHandler
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetInstanceExportsFunc func() wasmer.ExportsMap
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetInitFunctionFunc func() wasmer.ExportedFunctionCallback
@@ -270,6 +272,10 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *runtim
 
 	runtimeWrapper.VerifyContractCodeFunc = func() error {
 		return runtimeWrapper.runtimeContext.VerifyContractCode()
+	}
+
+	runtimeWrapper.GetInstanceFunc = func() wasmer.InstanceHandler {
+		return runtimeWrapper.runtimeContext.GetInstance()
 	}
 
 	runtimeWrapper.GetInstanceExportsFunc = func() wasmer.ExportsMap {
@@ -529,6 +535,11 @@ func (contextWrapper *runtimeContextWrapper) SetMaxInstanceCount(maxInstances ui
 // VerifyContractCode calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *runtimeContextWrapper) VerifyContractCode() error {
 	return contextWrapper.VerifyContractCodeFunc()
+}
+
+// GetInstance calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *runtimeContextWrapper) GetInstance() wasmer.InstanceHandler {
+	return contextWrapper.GetInstanceFunc()
 }
 
 // GetInstanceExports calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext

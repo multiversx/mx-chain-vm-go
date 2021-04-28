@@ -16,8 +16,9 @@ func createTestAsyncChildContract(t testing.TB, host *vmHost, imb *mock.Instance
 }
 
 func addAsyncChildMethodsToInstanceMock(instanceMock *mock.InstanceMock, testConfig *asyncCallTestConfig) {
-	instanceMock.AddMockMethod("transferToThirdParty", func(instance *mock.InstanceMock) {
-		host := instance.Host
+	instanceMock.AddMockMethod("transferToThirdParty", func() {
+		host := instanceMock.Host
+		instance := mock.GetMockInstance(host)
 		t := instance.T
 
 		host.Metering().UseGas(testConfig.gasUsedByChild)

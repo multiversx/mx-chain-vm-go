@@ -122,6 +122,7 @@ type RuntimeContext interface {
 	CleanWasmerInstance()
 	SetMaxInstanceCount(uint64)
 	VerifyContractCode() error
+	GetInstance() wasmer.InstanceHandler
 	GetInstanceExports() wasmer.ExportsMap
 	GetInitFunction() wasmer.ExportedFunctionCallback
 	GetFunctionToCall() (wasmer.ExportedFunctionCallback, error)

@@ -22,23 +22,9 @@ func addAsyncParentMethodsToInstanceMock(instanceMock *mock.InstanceMock, testCo
 	input := DefaultTestContractCallInput()
 	input.GasProvided = testConfig.gasProvidedToChild
 
-	instanceMock.AddMockMethodWithError("forwardAsyncCall", func(instance *mock.InstanceMock) {
-		host := instance.Host
-		t := instance.T
-		arguments := host.Runtime().Arguments()
-		destination := arguments[0]
-		function := string(arguments[1])
-		value := arguments[2]
-
-		callData := txDataBuilder.NewBuilder()
-		callData.Func(function)
-
-		err := host.Runtime().ExecuteAsyncCall(destination, callData.ToBytes(), value)
-		require.Nil(t, err)
-	}, errors.New("breakpoint / failed to call function"))
-
-	instanceMock.AddMockMethodWithError("performAsyncCall", func(instance *mock.InstanceMock) {
-		host := instance.Host
+	instanceMock.AddMockMethodWithError("performAsyncCall", func() {
+		host := instanceMock.Host
+		instance := mock.GetMockInstance(host)
 		t := instance.T
 		host.Metering().UseGas(testConfig.gasUsedByParent)
 
@@ -70,8 +56,9 @@ func addAsyncParentMethodsToInstanceMock(instanceMock *mock.InstanceMock, testCo
 		require.Nil(t, err)
 	}, errors.New("breakpoint / failed to call function"))
 
-	instanceMock.AddMockMethod("callBack", func(instance *mock.InstanceMock) {
-		host := instance.Host
+	instanceMock.AddMockMethod("callBack", func() {
+		host := instanceMock.Host
+		instance := mock.GetMockInstance(host)
 		t := instance.T
 		arguments := host.Runtime().Arguments()
 

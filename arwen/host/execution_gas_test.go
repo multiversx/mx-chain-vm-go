@@ -169,7 +169,7 @@ func TestGasUsed_ThreeContracts_ExecuteOnDestCtx(t *testing.T) {
 	verify.Ok().GasRemaining(expectedGasRemaining)
 }
 
-type asyncCallTestConfig struct {
+type asyncCallBaseTestConfig struct {
 	gasProvided        uint64
 	gasUsedByParent    uint64
 	gasProvidedToChild uint64
@@ -177,31 +177,43 @@ type asyncCallTestConfig struct {
 	gasUsedByCallback  uint64
 	gasLock            uint64
 
-	transferToThirdParty      int64
 	transferFromParentToChild int64
-	transferFromChildToVault  int64
 
 	parentBalance int64
 	childBalance  int64
+}
+
+type asyncCallTestConfig struct {
+	asyncCallBaseTestConfig
+	transferToThirdParty     int64
+	transferFromChildToVault int64
+}
+
+type asyncCallRecursiveTestConfig struct {
+	asyncCallBaseTestConfig
+	recursiveChildCalls int
 }
 
 func TestGasUsed_AsyncCall(t *testing.T) {
 	host, _, imb := defaultTestArwenForCallWithInstanceMocks(t)
 
 	testConfig := &asyncCallTestConfig{
-		gasProvided:        116000,
-		gasUsedByParent:    400,
-		gasProvidedToChild: 300,
-		gasUsedByChild:     200,
-		gasUsedByCallback:  100,
-		gasLock:            150,
+		asyncCallBaseTestConfig: asyncCallBaseTestConfig{
+			gasProvided:        116000,
+			gasUsedByParent:    400,
+			gasProvidedToChild: 300,
+			gasUsedByChild:     200,
+			gasUsedByCallback:  100,
+			gasLock:            150,
 
-		transferToThirdParty:      3,
-		transferFromParentToChild: 7,
-		transferFromChildToVault:  4,
+			transferFromParentToChild: 7,
 
-		parentBalance: 1000,
-		childBalance:  1000,
+			parentBalance: 1000,
+			childBalance:  1000,
+		},
+
+		transferToThirdParty:     3,
+		transferFromChildToVault: 4,
 	}
 
 	createTestAsyncParentContract(t, host, imb, testConfig)
@@ -221,6 +233,47 @@ func TestGasUsed_AsyncCall(t *testing.T) {
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 
 	expectedVMOutput := expectedVMOutputAsyncCallWithConfig(testConfig)
+	require.Equal(t, expectedVMOutput, vmOutput)
+}
+
+func TestGasUsed_AsyncCall_Recursive(t *testing.T) {
+	host, _, imb := defaultTestArwenForCallWithInstanceMocks(t)
+
+	testConfig := &asyncCallRecursiveTestConfig{
+		asyncCallBaseTestConfig: asyncCallBaseTestConfig{
+			gasProvided:        10000,
+			gasUsedByParent:    200,
+			gasProvidedToChild: 500,
+			gasUsedByChild:     100,
+			gasUsedByCallback:  100,
+			gasLock:            150,
+
+			transferFromParentToChild: 10,
+
+			parentBalance: 1000,
+			childBalance:  1000,
+		},
+
+		recursiveChildCalls: 2,
+	}
+
+	createTestAsyncRecursiveParentContract(t, host, imb, testConfig)
+	createTestAsyncRecursiveChildContract(t, host, imb, testConfig)
+	zeroCodeCosts(host)
+	asyncCosts(host, testConfig.gasLock)
+
+	input := DefaultTestContractCallInput()
+	input.RecipientAddr = parentAddress
+	input.Function = "forwardAsyncCall"
+	input.GasProvided = testConfig.gasProvided
+	input.Arguments = [][]byte{childAddress, []byte("recursiveAsyncCall"), big.NewInt(2).Bytes()}
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+
+	expectedVMOutput := expectedVMOutputAsyncRecursiveCallWithConfig(testConfig)
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
@@ -253,8 +306,8 @@ func createMockBuiltinFunctions(tb testing.TB, host *vmHost, world *worldmock.Mo
 }
 
 func addDummyMethodsToInstanceMock(instanceMock *mock.InstanceMock, gasPerCall uint64) {
-	instanceMock.AddMockMethod("wasteGas", func(instance *mock.InstanceMock) {
-		host := instance.Host
+	instanceMock.AddMockMethod("wasteGas", func() {
+		host := instanceMock.Host
 		host.Metering().UseGas(gasPerCall)
 	})
 }
@@ -263,8 +316,9 @@ func addForwarderMethodsToInstanceMock(instanceMock *mock.InstanceMock, gasPerCa
 	input := DefaultTestContractCallInput()
 	input.GasProvided = gasToForward
 
-	instanceMock.AddMockMethod("execOnSameCtx", func(instance *mock.InstanceMock) {
-		host := instance.Host
+	instanceMock.AddMockMethod("execOnSameCtx", func() {
+		host := instanceMock.Host
+		instance := mock.GetMockInstance(host)
 		t := instance.T
 		host.Metering().UseGas(gasPerCall)
 
@@ -280,8 +334,9 @@ func addForwarderMethodsToInstanceMock(instanceMock *mock.InstanceMock, gasPerCa
 		}
 	})
 
-	instanceMock.AddMockMethod("execOnDestCtx", func(instance *mock.InstanceMock) {
-		host := instance.Host
+	instanceMock.AddMockMethod("execOnDestCtx", func() {
+		host := instanceMock.Host
+		instance := mock.GetMockInstance(host)
 		t := instance.T
 		host.Metering().UseGas(gasPerCall)
 

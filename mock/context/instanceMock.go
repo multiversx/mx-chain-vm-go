@@ -36,14 +36,14 @@ func NewInstanceMock(code []byte) *InstanceMock {
 }
 
 // AddMockMethod adds the provided function as a mocked method to the instance under the specified name.
-func (instance *InstanceMock) AddMockMethod(name string, method func(instance *InstanceMock)) {
+func (instance *InstanceMock) AddMockMethod(name string, method func()) {
 	instance.AddMockMethodWithError(name, method, nil)
 }
 
 // AddMockMethodWithError adds the provided function as a mocked method to the instance under the specified name and returns an error
-func (instance *InstanceMock) AddMockMethodWithError(name string, method func(instance *InstanceMock), err error) {
+func (instance *InstanceMock) AddMockMethodWithError(name string, method func(), err error) {
 	wrappedMethod := func(...interface{}) (wasmer.Value, error) {
-		method(instance)
+		method()
 		return wasmer.Void(), err
 	}
 
@@ -132,4 +132,10 @@ func (instance *InstanceMock) GetMemory() wasmer.MemoryHandler {
 func (instance *InstanceMock) IsFunctionImported(name string) bool {
 	_, ok := instance.Exports[name]
 	return ok
+}
+
+// GetMockInstance gets the mock instance from the runtime of the provided host
+func GetMockInstance(host arwen.VMHost) *InstanceMock {
+	instance := host.Runtime().GetInstance().(*InstanceMock)
+	return instance
 }
