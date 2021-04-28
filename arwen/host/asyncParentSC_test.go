@@ -9,6 +9,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
+	"github.com/ElrondNetwork/elrond-go/testscommon/txDataBuilder"
 	"github.com/stretchr/testify/require"
 )
 
@@ -17,14 +18,28 @@ func createTestAsyncParentContract(t testing.TB, host *vmHost, imb *mock.Instanc
 	addAsyncParentMethodsToInstanceMock(parentInstance, testConfig)
 }
 
-func addAsyncParentMethodsToInstanceMock(instance *mock.InstanceMock, testConfig *asyncCallTestConfig) {
+func addAsyncParentMethodsToInstanceMock(instanceMock *mock.InstanceMock, testConfig *asyncCallTestConfig) {
 	input := DefaultTestContractCallInput()
 	input.GasProvided = testConfig.gasProvidedToChild
 
-	t := instance.T
-
-	instance.AddMockMethodWithError("performAsyncCall", func() {
+	instanceMock.AddMockMethodWithError("forwardAsyncCall", func(instance *mock.InstanceMock) {
 		host := instance.Host
+		t := instance.T
+		arguments := host.Runtime().Arguments()
+		destination := arguments[0]
+		function := string(arguments[1])
+		value := arguments[2]
+
+		callData := txDataBuilder.NewBuilder()
+		callData.Func(function)
+
+		err := host.Runtime().ExecuteAsyncCall(destination, callData.ToBytes(), value)
+		require.Nil(t, err)
+	}, errors.New("breakpoint / failed to call function"))
+
+	instanceMock.AddMockMethodWithError("performAsyncCall", func(instance *mock.InstanceMock) {
+		host := instance.Host
+		t := instance.T
 		host.Metering().UseGas(testConfig.gasUsedByParent)
 
 		host.Storage().SetStorage(parentKeyA, parentDataA)
@@ -38,72 +53,31 @@ func addAsyncParentMethodsToInstanceMock(instance *mock.InstanceMock, testConfig
 
 		arguments := host.Runtime().Arguments()
 
-		callData := argumentsToHexString(
-			// funcion to be called on child
-			"transferToThirdParty",
-			// value to send to third party
-			big.NewInt(testConfig.transferToThirdParty).Bytes(),
-			// data for child -> third party tx
-			[]byte(" there"),
-			// behavior param for child
-			[]byte{byte(big.NewInt(0).SetBytes(arguments[0]).Uint64())})
+		callData := txDataBuilder.NewBuilder()
+		// funcion to be called on child
+		callData.Func("transferToThirdParty")
+		// value to send to third party
+		callData.Int64(testConfig.transferToThirdParty)
+		// data for child -> third party tx
+		callData.Str(" there")
+		// behavior param for child
+		callData.Bytes(arguments[0])
 
 		// amount to transfer from parent to child
 		value := big.NewInt(testConfig.transferFromParentToChild).Bytes()
 
-		err = host.Runtime().ExecuteAsyncCall(childAddress, callData, value)
+		err = host.Runtime().ExecuteAsyncCall(childAddress, callData.ToBytes(), value)
 		require.Nil(t, err)
 	}, errors.New("breakpoint / failed to call function"))
 
-	handleBehaviorArgument := func(behavior byte) {
+	instanceMock.AddMockMethod("callBack", func(instance *mock.InstanceMock) {
 		host := instance.Host
-
-		if behavior == 3 {
-			host.Runtime().SignalUserError("callBack error")
-		}
-		if behavior == 4 {
-			for {
-				host.Output().Finish([]byte("loop"))
-			}
-		}
-
-		host.Output().Finish([]byte{behavior})
-	}
-
-	mustTransferToVault := func(arguments [][]byte) bool {
-		vault := "vault"
-		numArgs := len(arguments)
-		if numArgs == 3 {
-			if string(arguments[2]) == vault {
-				return false
-			}
-		}
-
-		if numArgs == 4 {
-			if string(arguments[3]) == vault {
-				return false
-			}
-		}
-
-		return true
-	}
-
-	handleTransferToVault := func(host arwen.VMHost, arguments [][]byte) {
-		if mustTransferToVault(arguments) {
-			valueToTransfer := big.NewInt(4)
-			err := host.Output().Transfer(vaultAddress, host.Runtime().GetSCAddress(), 0, 0, valueToTransfer, arguments[1], 0)
-			require.Nil(t, err)
-		}
-	}
-
-	instance.AddMockMethod("callBack", func() {
-		host := instance.Host
+		t := instance.T
 		arguments := host.Runtime().Arguments()
 
 		host.Metering().UseGas(testConfig.gasUsedByCallback)
 
 		if len(arguments) < 2 {
-			host.Runtime().SignalUserError("wrong num of arguments")
 			return
 		}
 
@@ -114,14 +88,56 @@ func addAsyncParentMethodsToInstanceMock(instance *mock.InstanceMock, testConfig
 			status = 1
 		}
 
-		handleBehaviorArgument(arguments[1][0])
-		handleTransferToVault(host, arguments)
+		handleParentBehaviorArgument(host, arguments[1][0])
+		err := handleTransferToVault(host, arguments)
+		require.Nil(t, err)
 
-		finishResult(status, host)
+		finishResult(host, status)
 	})
 }
 
-func finishResult(result int, host arwen.VMHost) {
+func handleParentBehaviorArgument(host arwen.VMHost, behavior byte) {
+	if behavior == 3 {
+		host.Runtime().SignalUserError("callBack error")
+	}
+	if behavior == 4 {
+		for {
+			host.Output().Finish([]byte("loop"))
+		}
+	}
+
+	host.Output().Finish([]byte{behavior})
+}
+
+func mustTransferToVault(arguments [][]byte) bool {
+	vault := "vault"
+	numArgs := len(arguments)
+	if numArgs == 3 {
+		if string(arguments[2]) == vault {
+			return false
+		}
+	}
+
+	if numArgs == 4 {
+		if string(arguments[3]) == vault {
+			return false
+		}
+	}
+
+	return true
+}
+
+func handleTransferToVault(host arwen.VMHost, arguments [][]byte) error {
+	err := error(nil)
+	if mustTransferToVault(arguments) {
+		valueToTransfer := big.NewInt(4)
+		err = host.Output().Transfer(vaultAddress, host.Runtime().GetSCAddress(), 0, 0, valueToTransfer, arguments[1], 0)
+	}
+
+	return err
+}
+
+func finishResult(host arwen.VMHost, result int) {
 	outputContext := host.Output()
 	if result == 0 {
 		outputContext.Finish([]byte("succ"))

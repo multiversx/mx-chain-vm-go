@@ -4,6 +4,7 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
 	"github.com/stretchr/testify/require"
 )
@@ -14,26 +15,10 @@ func createTestAsyncChildContract(t testing.TB, host *vmHost, imb *mock.Instance
 	addAsyncChildMethodsToInstanceMock(childInstance, testConfig)
 }
 
-func addAsyncChildMethodsToInstanceMock(instance *mock.InstanceMock, testConfig *asyncCallTestConfig) {
-
-	t := instance.T
-
-	handleBehaviorArgument := func(behavior byte) {
+func addAsyncChildMethodsToInstanceMock(instanceMock *mock.InstanceMock, testConfig *asyncCallTestConfig) {
+	instanceMock.AddMockMethod("transferToThirdParty", func(instance *mock.InstanceMock) {
 		host := instance.Host
-		if behavior == 1 {
-			host.Runtime().SignalUserError("child error")
-		}
-		if behavior == 2 {
-			for {
-				host.Output().Finish([]byte("loop"))
-			}
-		}
-
-		host.Output().Finish([]byte{behavior})
-	}
-
-	instance.AddMockMethod("transferToThirdParty", func() {
-		host := instance.Host
+		t := instance.T
 
 		host.Metering().UseGas(testConfig.gasUsedByChild)
 
@@ -45,18 +30,46 @@ func addAsyncChildMethodsToInstanceMock(instance *mock.InstanceMock, testConfig 
 			return
 		}
 
-		handleBehaviorArgument(arguments[2][0])
+		handleChildBehaviorArgument(host, arguments[2][0])
 
+		scAddress := host.Runtime().GetSCAddress()
 		valueToTransfer := big.NewInt(0).SetBytes(arguments[0])
-		err := outputContext.Transfer(thirdPartyAddress, host.Runtime().GetSCAddress(), 0, 0, valueToTransfer, arguments[1], 0)
+		err := outputContext.Transfer(
+			thirdPartyAddress,
+			scAddress,
+			0,
+			0,
+			valueToTransfer,
+			arguments[1],
+			0)
 		require.Nil(t, err)
 		outputContext.Finish([]byte("thirdparty"))
 
 		valueToTransfer = big.NewInt(testConfig.transferFromChildToVault)
-		err = outputContext.Transfer(vaultAddress, host.Runtime().GetSCAddress(), 0, 0, valueToTransfer, []byte{}, 0)
+		err = outputContext.Transfer(
+			vaultAddress,
+			scAddress,
+			0,
+			0,
+			valueToTransfer,
+			[]byte{},
+			0)
 		require.Nil(t, err)
 		outputContext.Finish([]byte("vault"))
 
 		host.Storage().SetStorage(childKey, childData)
 	})
+}
+
+func handleChildBehaviorArgument(host arwen.VMHost, behavior byte) {
+	if behavior == 1 {
+		host.Runtime().SignalUserError("child error")
+	}
+	if behavior == 2 {
+		for {
+			host.Output().Finish([]byte("loop"))
+		}
+	}
+
+	host.Output().Finish([]byte{behavior})
 }

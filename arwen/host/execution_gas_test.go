@@ -252,21 +252,20 @@ func createMockBuiltinFunctions(tb testing.TB, host *vmHost, world *worldmock.Mo
 	host.protocolBuiltinFunctions = world.BuiltinFuncs.GetBuiltinFunctionNames()
 }
 
-func addDummyMethodsToInstanceMock(instance *mock.InstanceMock, gasPerCall uint64) {
-	instance.AddMockMethod("wasteGas", func() {
+func addDummyMethodsToInstanceMock(instanceMock *mock.InstanceMock, gasPerCall uint64) {
+	instanceMock.AddMockMethod("wasteGas", func(instance *mock.InstanceMock) {
 		host := instance.Host
 		host.Metering().UseGas(gasPerCall)
 	})
 }
 
-func addForwarderMethodsToInstanceMock(instance *mock.InstanceMock, gasPerCall uint64, gasToForward uint64) {
+func addForwarderMethodsToInstanceMock(instanceMock *mock.InstanceMock, gasPerCall uint64, gasToForward uint64) {
 	input := DefaultTestContractCallInput()
 	input.GasProvided = gasToForward
 
-	t := instance.T
-
-	instance.AddMockMethod("execOnSameCtx", func() {
+	instanceMock.AddMockMethod("execOnSameCtx", func(instance *mock.InstanceMock) {
 		host := instance.Host
+		t := instance.T
 		host.Metering().UseGas(gasPerCall)
 
 		arguments := host.Runtime().Arguments()
@@ -281,8 +280,9 @@ func addForwarderMethodsToInstanceMock(instance *mock.InstanceMock, gasPerCall u
 		}
 	})
 
-	instance.AddMockMethod("execOnDestCtx", func() {
+	instanceMock.AddMockMethod("execOnDestCtx", func(instance *mock.InstanceMock) {
 		host := instance.Host
+		t := instance.T
 		host.Metering().UseGas(gasPerCall)
 
 		argsPerCall := 3
