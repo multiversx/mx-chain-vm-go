@@ -101,7 +101,9 @@
                     "address:user1",
                     "1000",
                     "address:user2",
-                    "2000"
+                    "2000",
+                    "address:user_with_wegld1",
+                    "90,000"
                 ],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"

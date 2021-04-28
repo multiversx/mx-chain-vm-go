@@ -153,7 +153,7 @@ func TestDistribution(t *testing.T) {
 }
 
 func TestDex_v0_1_singleTest(t *testing.T) {
-	runSingleTest(t, "distribution/v0_1/mandos", "unlock_assets_basic.scen.json")
+	runSingleTest(t, "distribution/v0_1/mandos", "add_liquidity_proxy.scen.json")
 }
 
 // func TestPromises(t *testing.T) {
