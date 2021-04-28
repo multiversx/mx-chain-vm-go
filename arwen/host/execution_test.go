@@ -11,6 +11,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
+	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/assert"
@@ -1531,7 +1532,7 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 	host, _, imb := defaultTestArwenForCallWithInstanceMocks(t)
 
 	parentInstance := imb.CreateAndStoreInstanceMock(t, host, parentAddress, 1000)
-	parentInstance.AddMockMethod("callChild", func() {
+	parentInstance.AddMockMethod("callChild", func(instance *mock.InstanceMock) {
 		host.Output().Finish([]byte("parent returns this"))
 		host.Metering().UseGas(500)
 		_, err := host.Storage().SetStorage([]byte("parent"), []byte("parent storage"))
@@ -1547,7 +1548,7 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 	})
 
 	childInstance := imb.CreateAndStoreInstanceMock(t, host, childAddress, 0)
-	childInstance.AddMockMethod("doSomething", func() {
+	childInstance.AddMockMethod("doSomething", func(instance *mock.InstanceMock) {
 		host.Output().Finish([]byte("child returns this"))
 		host.Metering().UseGas(100)
 		_, err := host.Storage().SetStorage([]byte("child"), []byte("child storage"))
