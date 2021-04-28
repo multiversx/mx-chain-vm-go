@@ -54,10 +54,12 @@ func (p *Parser) processCheckAccount(acctRaw oj.OJsonObject) (*mj.CheckAccount, 
 					if err != nil {
 						return nil, fmt.Errorf("invalid esdt token identifer: %w", err)
 					}
-					acct.CheckESDTData, err = p.processAppendCheckESDTData(tokenNameStr, esdtKvp.Value, acct.CheckESDTData)
+					tokenName := mj.NewJSONBytesFromString(tokenNameStr, esdtKvp.Key)
+					esdtItem, err := p.processCheckESDTData(tokenName, esdtKvp.Value)
 					if err != nil {
 						return nil, fmt.Errorf("invalid esdt value: %w", err)
 					}
+					acct.CheckESDTData = append(acct.CheckESDTData, esdtItem)
 				}
 			}
 		case "username":

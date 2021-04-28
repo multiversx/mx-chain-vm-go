@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"math/big"
+	"strconv"
 	"strings"
 
 	ei "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/expression/interpreter"
@@ -25,6 +26,8 @@ const (
 	// StrHint hints that value should be a string expression, e.g. a username, "str:..."
 	StrHint
 )
+
+const maxBytesInterpretedAsNumber = 15
 
 // ExprReconstructor is a component that attempts to convert raw bytes to a human-readable format.
 type ExprReconstructor struct{}
@@ -55,12 +58,19 @@ func unknownByteArrayPretty(bytes []byte) string {
 		return "[]"
 	}
 
+	// fully interpret as string
 	if canInterpretAsString(bytes) {
-		return fmt.Sprintf("0x%s (``%s)", hex.EncodeToString(bytes), string(bytes))
+		return fmt.Sprintf("0x%s (str:%s)", hex.EncodeToString(bytes), string(bytes))
 	}
 
-	asInt := big.NewInt(0).SetBytes(bytes)
-	return fmt.Sprintf("0x%s (%d)", hex.EncodeToString(bytes), asInt)
+	// interpret as number
+	if len(bytes) < maxBytesInterpretedAsNumber {
+		asInt := big.NewInt(0).SetBytes(bytes)
+		return fmt.Sprintf("0x%s (%d)", hex.EncodeToString(bytes), asInt)
+	}
+
+	// default interpret as string with escaped bytes
+	return fmt.Sprintf("0x%s (str:%s)", hex.EncodeToString(bytes), strconv.Quote(string(bytes)))
 }
 
 func addressPretty(value []byte) string {

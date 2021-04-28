@@ -5,7 +5,8 @@ import (
 	oj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/orderedjson"
 )
 
-func accountsToOJ(accounts []*mj.Account) oj.OJsonObject {
+// AccountsToOJ converts a mandos-format account to an ordered JSON representation.
+func AccountsToOJ(accounts []*mj.Account) oj.OJsonObject {
 	acctsOJ := oj.NewMap()
 	for _, account := range accounts {
 		acctOJ := oj.NewMap()
@@ -14,12 +15,8 @@ func accountsToOJ(accounts []*mj.Account) oj.OJsonObject {
 		}
 		acctOJ.Put("nonce", uint64ToOJ(account.Nonce))
 		acctOJ.Put("balance", bigIntToOJ(account.Balance))
-		appendESDTToOJ(account.ESDTData, acctOJ)
-		if len(account.ESDTRoles) > 0 {
-			acctOJ.Put("esdtRoles", esdtRolesToMapOJ(account.ESDTRoles))
-		}
-		if len(account.ESDTLastNonces) > 0 {
-			acctOJ.Put("esdtLastNonces", esdtLastNoncesToMapOJ(account.ESDTLastNonces))
+		if len(account.ESDTData) > 0 {
+			acctOJ.Put("esdt", esdtDataToOJ(account.ESDTData))
 		}
 		storageOJ := oj.NewMap()
 		for _, st := range account.Storage {
@@ -59,7 +56,9 @@ func checkAccountsToOJ(checkAccounts *mj.CheckAccounts) oj.OJsonObject {
 		if checkAccount.IgnoreESDT {
 			acctOJ.Put("esdt", stringToOJ("*"))
 		} else {
-			appendCheckESDTToOJ(checkAccount.CheckESDTData, acctOJ)
+			if len(checkAccount.CheckESDTData) > 0 {
+				acctOJ.Put("esdt", checkESDTDataToOJ(checkAccount.CheckESDTData))
+			}
 		}
 		if !checkAccount.Username.IsUnspecified() {
 			acctOJ.Put("username", checkBytesToOJ(checkAccount.Username))
