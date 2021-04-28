@@ -105,6 +105,8 @@ func (context *meteringContext) PopDiscard() {
 	context.stateStack = context.stateStack[:stateStackLen-1]
 }
 
+// PopMergeActiveState pops the state at the top of the internal stack and
+// merges it into the active state
 func (context *meteringContext) PopMergeActiveState() {
 	stateStackLen := len(context.stateStack)
 	if stateStackLen == 0 {
@@ -137,6 +139,7 @@ func (context *meteringContext) addToGasUsedByAccounts(gasUsed map[string]uint64
 	}
 }
 
+// UpdateGasStateOnSuccess performs final gas accounting after a successful execution.
 func (context *meteringContext) UpdateGasStateOnSuccess(vmOutput *vmcommon.VMOutput) error {
 	context.updateSCGasUsed()
 	err := context.setGasUsedToOutputAccounts(vmOutput)
@@ -157,6 +160,7 @@ func (context *meteringContext) UpdateGasStateOnSuccess(vmOutput *vmcommon.VMOut
 	return nil
 }
 
+// UpdateGasStateOnSuccess performs final gas accounting after a failed execution.
 func (context *meteringContext) UpdateGasStateOnFailure(vmOutput *vmcommon.VMOutput) {
 	runtime := context.host.Runtime()
 	output := context.host.Output()

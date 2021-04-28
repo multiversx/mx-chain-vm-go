@@ -38,11 +38,9 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 	// sender and destination shards.
 	if execMode == arwen.AsyncBuiltinFuncCrossShard {
 		vmOutput, err := host.executeSyncDestinationCall(asyncCallInfo)
-		if vmOutput != nil {
-			log.LogIfError(err, "async call failed: sync built-in", "error", err,
-				"retCode", vmOutput.ReturnCode,
-				"message", vmOutput.ReturnMessage)
-		}
+		log.LogIfError(err, "async call failed: sync built-in", "error", err,
+			"retCode", vmOutput.ReturnCode,
+			"message", vmOutput.ReturnMessage)
 		return err
 	}
 
@@ -136,14 +134,11 @@ func (host *vmHost) executeSyncDestinationCall(asyncCallInfo arwen.AsyncCallInfo
 		"args", destinationCallInput.Arguments)
 
 	destinationVMOutput, _, err := host.ExecuteOnDestContext(destinationCallInput)
-
-	if destinationVMOutput != nil {
-		log.Trace("async call: sync dest call",
-			"retCode", destinationVMOutput.ReturnCode,
-			"message", destinationVMOutput.ReturnMessage,
-			"data", destinationVMOutput.ReturnData,
-			"error", err)
-	}
+	log.Trace("async call: sync dest call",
+		"retCode", destinationVMOutput.ReturnCode,
+		"message", destinationVMOutput.ReturnMessage,
+		"data", destinationVMOutput.ReturnData,
+		"error", err)
 
 	return destinationVMOutput, err
 }
@@ -177,14 +172,11 @@ func (host *vmHost) executeSyncCallbackCall(
 	host.Metering().RestoreGas(asyncCallInfo.GetGasLocked())
 
 	callbackVMOutput, _, callBackErr := host.ExecuteOnDestContext(callbackCallInput)
-
-	if callbackVMOutput != nil {
-		log.Trace("async call: sync dest call",
-			"retCode", callbackVMOutput.ReturnCode,
-			"message", callbackVMOutput.ReturnMessage,
-			"data", callbackVMOutput.ReturnData,
-			"error", callBackErr)
-	}
+	log.Trace("async call: sync dest call",
+		"retCode", callbackVMOutput.ReturnCode,
+		"message", callbackVMOutput.ReturnMessage,
+		"data", callbackVMOutput.ReturnData,
+		"error", callBackErr)
 
 	return callbackVMOutput, callBackErr
 }

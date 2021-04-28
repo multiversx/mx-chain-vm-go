@@ -149,6 +149,7 @@ func (context *outputContext) GetOutputAccount(address []byte) (*vmcommon.Output
 	return account, accountIsNew
 }
 
+// GetOutputAccounts returns all the OutputAccounts in the current outputState.
 func (context *outputContext) GetOutputAccounts() map[string]*vmcommon.OutputAccount {
 	return context.outputState.OutputAccounts
 }
