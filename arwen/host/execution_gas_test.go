@@ -240,7 +240,7 @@ func TestGasUsed_AsyncCall_Recursive(t *testing.T) {
 	host, _, imb := defaultTestArwenForCallWithInstanceMocks(t)
 
 	baseConfig := &asyncCallBaseTestConfig{
-		gasProvided:        10000,
+		gasProvided:        1000,
 		gasUsedByParent:    200,
 		gasProvidedToChild: 500,
 		gasUsedByChild:     100,
@@ -287,7 +287,7 @@ func TestGasUsed_AsyncCall_MultiChild(t *testing.T) {
 	host, _, imb := defaultTestArwenForCallWithInstanceMocks(t)
 
 	baseConfig := &asyncCallBaseTestConfig{
-		gasProvided:        10000,
+		gasProvided:        1000,
 		gasUsedByParent:    200,
 		gasProvidedToChild: 500,
 		gasUsedByChild:     100,
