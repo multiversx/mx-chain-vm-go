@@ -22,7 +22,7 @@ func addAsyncParentMethodsToInstanceMock(instanceMock *mock.InstanceMock, testCo
 	input := DefaultTestContractCallInput()
 	input.GasProvided = testConfig.gasProvidedToChild
 
-	instanceMock.AddMockMethodWithError("performAsyncCall", func() *mock.InstanceMock {
+	instanceMock.AddMockMethod("performAsyncCall", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		t := instance.T
@@ -57,7 +57,7 @@ func addAsyncParentMethodsToInstanceMock(instanceMock *mock.InstanceMock, testCo
 
 		return instance
 
-	}, errors.New("breakpoint / failed to call function"))
+	})
 
 	instanceMock.AddMockMethod("callBack", func() *mock.InstanceMock {
 		host := instanceMock.Host

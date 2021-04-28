@@ -1,7 +1,6 @@
 package host
 
 import (
-	"errors"
 	"math/big"
 	"testing"
 
@@ -19,7 +18,7 @@ func addAsyncRecursiveChildMethodsToInstanceMock(instanceMock *mock.InstanceMock
 	input := DefaultTestContractCallInput()
 	input.GasProvided = testConfig.gasProvidedToChild
 
-	instanceMock.AddMockMethodWithError("recursiveAsyncCall", func() *mock.InstanceMock {
+	instanceMock.AddMockMethod("recursiveAsyncCall", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		t := instance.T
@@ -45,7 +44,7 @@ func addAsyncRecursiveChildMethodsToInstanceMock(instanceMock *mock.InstanceMock
 		require.Nil(t, err)
 
 		return instance
-	}, errors.New("breakpoint / failed to call function"))
+	})
 
 	instanceMock.AddMockMethod("callBack", func() *mock.InstanceMock {
 		host := instanceMock.Host
