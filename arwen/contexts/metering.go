@@ -105,6 +105,8 @@ func (context *meteringContext) PopDiscard() {
 	context.stateStack = context.stateStack[:stateStackLen-1]
 }
 
+// PopMergeActiveState pops the state at the top of the internal stack and
+// merges it into the active state
 func (context *meteringContext) PopMergeActiveState() {
 	stateStackLen := len(context.stateStack)
 	if stateStackLen == 0 {
@@ -137,11 +139,15 @@ func (context *meteringContext) addToGasUsedByAccounts(gasUsed map[string]uint64
 	}
 }
 
+// UpdateGasStateOnSuccess performs final gas accounting after a successful execution.
 func (context *meteringContext) UpdateGasStateOnSuccess(vmOutput *vmcommon.VMOutput) error {
 	context.updateSCGasUsed()
-	context.setGasUsedToOutputAccounts(vmOutput)
+	err := context.setGasUsedToOutputAccounts(vmOutput)
+	if err != nil {
+		return err
+	}
 
-	err := context.checkGasLegacy()
+	err = context.checkGasLegacy()
 	if err != nil {
 		return err
 	}
@@ -154,6 +160,7 @@ func (context *meteringContext) UpdateGasStateOnSuccess(vmOutput *vmcommon.VMOut
 	return nil
 }
 
+// UpdateGasStateOnSuccess performs final gas accounting after a failed execution.
 func (context *meteringContext) UpdateGasStateOnFailure(vmOutput *vmcommon.VMOutput) {
 	runtime := context.host.Runtime()
 	output := context.host.Output()
@@ -186,9 +193,8 @@ func (context *meteringContext) TrackGasUsedByBuiltinFunction(err error, builtin
 		return err
 	}
 
-	callerContractAddress := string(builtinInput.CallerAddr)
 	outputAccounts := builtinOutput.OutputAccounts
-	callerContractAccount, exists := outputAccounts[callerContractAddress]
+	callerContractAccount, exists := outputAccounts[string(builtinInput.CallerAddr)]
 
 	gasTransferredByCurrentAccount := uint64(0)
 	if exists {
@@ -255,7 +261,6 @@ func (context *meteringContext) getCurrentTotalUsedGas() uint64 {
 }
 
 func (context *meteringContext) getGasUsedByAllOtherAccounts(outputAccounts map[string]*vmcommon.OutputAccount) uint64 {
-
 	gasUsedAndTransferred := uint64(0)
 	currentAccountAddress := string(context.host.Runtime().GetSCAddress())
 	for address, account := range outputAccounts {
