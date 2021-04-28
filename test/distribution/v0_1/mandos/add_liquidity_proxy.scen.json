@@ -7,25 +7,22 @@
         },
         {
             "step": "scCall",
-            "txId": "2",
+            "txId": "12",
             "tx": {
                 "from": "address:user_with_wegld1",
                 "to": "address:dist_contract",
                 "value": "0",
-                "esdt": {
-                    "tokenIdentifier": "str:LKMEX-abcdef",
-                    "value": "10,000",
-                    "nonce": "2"
-                },
                 "function": "addLiquidityProxy",
                 "arguments": [
                     "address:pair_contract",
-                    "10,000",
-                    "10,000",
+                    "str:WEGLD-abcdef",
+                    "0",
                     "100",
+                    "str:LKMEX-abcdef",
+                    "2",
                     "100"
                 ],
-                "gasLimit": "200,000,000",
+                "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -38,7 +35,83 @@
             }
         },
         {
-            "step": "dumpState"
+            "step": "checkState",
+            "accounts": {
+                "address:user_with_wegld1": {
+                    "nonce": "4",
+                    "balance": "100,000,000",
+                    "esdt": {
+                        "str:LKMEX-abcdef": [
+                            {
+                                "nonce": "0x02",
+                                "value": "80,000"
+                            }
+                        ],
+                        "str:WEGLD-abcdef": "999,990,000",
+                        "str:WLPTOK-abcdef": [
+                            {
+                                "nonce": "0x01",
+                                "value": "9,000"
+                            }
+                        ]
+                    },
+                    "storage": {},
+                    "code": ""
+                },
+                "+": ""
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "2",
+            "tx": {
+                "from": "address:user_with_wegld1",
+                "to": "address:dist_contract",
+                "value": "0",
+                "function": "reclaimTemporaryFundsProxy",
+                "arguments": [
+                    "str:WEGLD-abcdef",
+                    "0",
+                    "str:LKMEX-abcdef",
+                    "2"
+                ],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "0",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "address:user_with_wegld1": {
+                    "nonce": "5",
+                    "balance": "100,000,000",
+                    "esdt": {
+                        "str:LKMEX-abcdef": [
+                            {
+                                "nonce": "0x02",
+                                "value": "80,000"
+                            }
+                        ],
+                        "str:WEGLD-abcdef": "999,990,000",
+                        "str:WLPTOK-abcdef": [
+                            {
+                                "nonce": "0x01",
+                                "value": "9,000"
+                            }
+                        ]
+                    },
+                    "storage": {},
+                    "code": ""
+                },
+                "+": ""
+            }
         }
     ]
 }

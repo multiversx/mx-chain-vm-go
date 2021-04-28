@@ -14,7 +14,6 @@
                 "value": "0",
                 "function": "reclaimTemporaryFundsProxy",
                 "arguments": [
-                    "address:pair_contract",
                     "str:WEGLD-abcdef",
                     "0",
                     "str:WEGLD-abcdef",
