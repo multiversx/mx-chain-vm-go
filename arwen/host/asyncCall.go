@@ -172,6 +172,10 @@ func (host *vmHost) executeSyncCallbackCall(
 		"func", callbackCallInput.Function,
 		"args", callbackCallInput.Arguments)
 
+	// Restore gas locked while still on the caller instance; otherwise, the
+	// locked gas will appear to have been used twice by the caller instance.
+	host.Metering().RestoreGas(asyncCallInfo.GetGasLocked())
+
 	callbackVMOutput, _, callBackErr := host.ExecuteOnDestContext(callbackCallInput)
 
 	if callbackVMOutput != nil {
