@@ -19,7 +19,7 @@ func addAsyncRecursiveChildMethodsToInstanceMock(instanceMock *mock.InstanceMock
 	input := DefaultTestContractCallInput()
 	input.GasProvided = testConfig.gasProvidedToChild
 
-	instanceMock.AddMockMethodWithError("recursiveAsyncCall", func() {
+	instanceMock.AddMockMethodWithError("recursiveAsyncCall", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		t := instance.T
@@ -30,7 +30,7 @@ func addAsyncRecursiveChildMethodsToInstanceMock(instanceMock *mock.InstanceMock
 		recursiveChildCalls := big.NewInt(0).SetBytes(arguments[0])
 		recursiveChildCalls.Sub(recursiveChildCalls, big.NewInt(1))
 		if recursiveChildCalls.Int64() == 0 {
-			return
+			return instance
 		}
 
 		destination := host.Runtime().GetSCAddress()
@@ -43,10 +43,14 @@ func addAsyncRecursiveChildMethodsToInstanceMock(instanceMock *mock.InstanceMock
 
 		err := host.Runtime().ExecuteAsyncCall(destination, callData.ToBytes(), value)
 		require.Nil(t, err)
+
+		return instance
 	}, errors.New("breakpoint / failed to call function"))
 
-	instanceMock.AddMockMethod("callBack", func() {
+	instanceMock.AddMockMethod("callBack", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		host.Metering().UseGas(testConfig.gasUsedByCallback)
+		instance := mock.GetMockInstance(host)
+		return instance
 	})
 }

@@ -973,7 +973,7 @@ func expectedVMOutputAsyncCallWithConfig(testConfig *asyncCallTestConfig) *vmcom
 		vmOutput,
 		childAddress,
 		vaultAddress,
-		testConfig.transferFromChildToVault,
+		testConfig.transferToVault,
 		[]byte{},
 	)
 
@@ -986,6 +986,127 @@ func expectedVMOutputAsyncCallWithConfig(testConfig *asyncCallTestConfig) *vmcom
 	vmOutput.GasRemaining = testConfig.gasProvided -
 		parentAccount.GasUsed -
 		childAccount.GasUsed
+	return vmOutput
+}
+
+func expectedVMOutputAsyncCallChildFailsWithConfig(testConfig *asyncCallTestConfig) *vmcommon.VMOutput {
+	vmOutput := MakeVMOutput()
+
+	parentAccount := AddNewOutputAccount(
+		vmOutput,
+		parentAddress,
+		parentAddress,
+		-7,
+		nil,
+	)
+	parentAccount.Balance = big.NewInt(testConfig.parentBalance)
+
+	// Because the child contract failed during asyncCall(), all the gas provided
+	// to it was lost (i.e. all the gas the parent had, when asyncCall() was
+	// reached). This appears as gas used by the parent.
+	parentAccount.GasUsed = testConfig.gasProvided - testConfig.gasLock + testConfig.gasUsedByCallback
+	SetStorageUpdate(parentAccount, parentKeyA, parentDataA)
+	SetStorageUpdate(parentAccount, parentKeyB, parentDataB)
+	AddFinishData(vmOutput, parentFinishA)
+	AddFinishData(vmOutput, parentFinishB)
+
+	_ = AddNewOutputAccount(
+		vmOutput,
+		parentAddress,
+		thirdPartyAddress,
+		testConfig.transferToThirdParty,
+		[]byte("hello"),
+	)
+
+	childAccount := AddNewOutputAccount(
+		vmOutput,
+		parentAddress,
+		childAddress,
+		0,
+		nil,
+	)
+	childAccount.Balance = big.NewInt(testConfig.childBalance)
+
+	_ = AddNewOutputAccount(
+		vmOutput,
+		parentAddress,
+		vaultAddress,
+		testConfig.transferToVault,
+		[]byte("child error"),
+	)
+
+	AddFinishData(vmOutput, []byte("succ"))
+
+	// This is the gas that remains after the parent's callback is executed. All
+	// other gas was either consumed by the parent, or lost during the failed
+	// child call.
+	vmOutput.GasRemaining = testConfig.gasProvided - parentAccount.GasUsed
+	return vmOutput
+}
+
+func expectedVMOutputAsyncCallCallBackFailsWithConfig(testConfig *asyncCallTestConfig) *vmcommon.VMOutput {
+	vmOutput := MakeVMOutput()
+
+	parentAccount := AddNewOutputAccount(
+		vmOutput,
+		parentAddress,
+		parentAddress,
+		-10,
+		nil,
+	)
+	parentAccount.Balance = big.NewInt(1000)
+
+	// After a successful async child call, the parent callback itself receives the
+	// entire amount of gas left. But the parent callback fails, so all gas is
+	// lost by the parent.
+	parentAccount.GasUsed = testConfig.gasProvided - testConfig.gasUsedByChild
+	SetStorageUpdate(parentAccount, parentKeyA, parentDataA)
+	SetStorageUpdate(parentAccount, parentKeyB, parentDataB)
+	AddFinishData(vmOutput, parentFinishA)
+	AddFinishData(vmOutput, parentFinishB)
+
+	_ = AddNewOutputAccount(
+		vmOutput,
+		parentAddress,
+		thirdPartyAddress,
+		3,
+		[]byte("hello"),
+	)
+	outTransfer2 := vmcommon.OutputTransfer{Value: big.NewInt(3), Data: []byte(" there"), SenderAddress: childAddress}
+	outAcc := vmOutput.OutputAccounts[string(thirdPartyAddress)]
+	outAcc.OutputTransfers = append(outAcc.OutputTransfers, outTransfer2)
+	outAcc.BalanceDelta = big.NewInt(6)
+
+	childAccount := AddNewOutputAccount(
+		vmOutput,
+		parentAddress,
+		childAddress,
+		0,
+		nil,
+	)
+	childAccount.Balance = big.NewInt(1000)
+	childAccount.BalanceDelta = big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1))
+	childAccount.GasUsed = testConfig.gasUsedByChild
+	SetStorageUpdate(childAccount, childKey, childData)
+
+	_ = AddNewOutputAccount(
+		vmOutput,
+		childAddress,
+		vaultAddress,
+		4,
+		[]byte{},
+	)
+
+	AddFinishData(vmOutput, []byte{3})
+	AddFinishData(vmOutput, []byte("thirdparty"))
+	AddFinishData(vmOutput, []byte("vault"))
+	AddFinishData(vmOutput, []byte("user error"))
+	AddFinishData(vmOutput, []byte("txhash"))
+
+	vmOutput.ReturnMessage = "callBack error"
+
+	// callback fails, all gas is lost
+	vmOutput.GasRemaining = 0
 	return vmOutput
 }
 

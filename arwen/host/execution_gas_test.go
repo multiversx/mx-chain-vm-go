@@ -185,8 +185,8 @@ type asyncCallBaseTestConfig struct {
 
 type asyncCallTestConfig struct {
 	asyncCallBaseTestConfig
-	transferToThirdParty     int64
-	transferFromChildToVault int64
+	transferToThirdParty int64
+	transferToVault      int64
 }
 
 func TestGasUsed_AsyncCall(t *testing.T) {
@@ -207,8 +207,8 @@ func TestGasUsed_AsyncCall(t *testing.T) {
 			childBalance:  1000,
 		},
 
-		transferToThirdParty:     3,
-		transferFromChildToVault: 4,
+		transferToThirdParty: 3,
+		transferToVault:      4,
 	}
 
 	createTestAsyncParentContract(t, host, imb, testConfig)
@@ -228,6 +228,91 @@ func TestGasUsed_AsyncCall(t *testing.T) {
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 
 	expectedVMOutput := expectedVMOutputAsyncCallWithConfig(testConfig)
+	require.Equal(t, expectedVMOutput, vmOutput)
+}
+
+func TestGasUsed_AsyncCall_ChildFails(t *testing.T) {
+	host, _, imb := defaultTestArwenForCallWithInstanceMocks(t)
+
+	testConfig := &asyncCallTestConfig{
+		asyncCallBaseTestConfig: asyncCallBaseTestConfig{
+			gasProvided:        116000,
+			gasUsedByParent:    400,
+			gasProvidedToChild: 300,
+			gasUsedByChild:     200,
+			gasUsedByCallback:  100,
+			gasLock:            150,
+
+			transferFromParentToChild: 7,
+
+			parentBalance: 1000,
+			childBalance:  1000,
+		},
+
+		transferToThirdParty: 3,
+		transferToVault:      4,
+	}
+
+	createTestAsyncParentContract(t, host, imb, testConfig)
+	createTestAsyncChildContract(t, host, imb, testConfig)
+	zeroCodeCosts(host)
+	asyncCosts(host, testConfig.gasLock)
+
+	input := DefaultTestContractCallInput()
+	input.RecipientAddr = parentAddress
+	input.Function = "performAsyncCall"
+	input.GasProvided = testConfig.gasProvided
+	input.Arguments = [][]byte{{1}}
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+
+	expectedVMOutput := expectedVMOutputAsyncCallChildFailsWithConfig(testConfig)
+	require.Equal(t, expectedVMOutput, vmOutput)
+}
+
+func TestGasUsed_AsyncCall_CallBackFails(t *testing.T) {
+	host, _, imb := defaultTestArwenForCallWithInstanceMocks(t)
+
+	testConfig := &asyncCallTestConfig{
+		asyncCallBaseTestConfig: asyncCallBaseTestConfig{
+			gasProvided:        116000,
+			gasUsedByParent:    400,
+			gasProvidedToChild: 300,
+			gasUsedByChild:     200,
+			gasUsedByCallback:  100,
+			gasLock:            150,
+
+			transferFromParentToChild: 7,
+
+			parentBalance: 1000,
+			childBalance:  1000,
+		},
+
+		transferToThirdParty: 3,
+		transferToVault:      4,
+	}
+
+	createTestAsyncParentContract(t, host, imb, testConfig)
+	createTestAsyncChildContract(t, host, imb, testConfig)
+	zeroCodeCosts(host)
+	asyncCosts(host, testConfig.gasLock)
+
+	input := DefaultTestContractCallInput()
+	input.RecipientAddr = parentAddress
+	input.Function = "performAsyncCall"
+	input.GasProvided = testConfig.gasProvided
+	input.Arguments = [][]byte{{0, 3}}
+	input.CurrentTxHash = []byte("txhash")
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+
+	expectedVMOutput := expectedVMOutputAsyncCallCallBackFailsWithConfig(testConfig)
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
@@ -354,9 +439,11 @@ func createMockBuiltinFunctions(tb testing.TB, host *vmHost, world *worldmock.Mo
 }
 
 func addDummyMethodsToInstanceMock(instanceMock *mock.InstanceMock, gasPerCall uint64) {
-	instanceMock.AddMockMethod("wasteGas", func() {
+	instanceMock.AddMockMethod("wasteGas", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		host.Metering().UseGas(gasPerCall)
+		instance := mock.GetMockInstance(host)
+		return instance
 	})
 }
 
@@ -364,7 +451,7 @@ func addForwarderMethodsToInstanceMock(instanceMock *mock.InstanceMock, gasPerCa
 	input := DefaultTestContractCallInput()
 	input.GasProvided = gasToForward
 
-	instanceMock.AddMockMethod("execOnSameCtx", func() {
+	instanceMock.AddMockMethod("execOnSameCtx", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		t := instance.T
@@ -380,9 +467,11 @@ func addForwarderMethodsToInstanceMock(instanceMock *mock.InstanceMock, gasPerCa
 			_, err := host.ExecuteOnSameContext(input)
 			require.Nil(t, err)
 		}
+
+		return instance
 	})
 
-	instanceMock.AddMockMethod("execOnDestCtx", func() {
+	instanceMock.AddMockMethod("execOnDestCtx", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		t := instance.T
@@ -392,7 +481,7 @@ func addForwarderMethodsToInstanceMock(instanceMock *mock.InstanceMock, gasPerCa
 		arguments := host.Runtime().Arguments()
 		if len(arguments)%argsPerCall != 0 {
 			host.Runtime().SignalUserError("need 3 arguments per individual call")
-			return
+			return instance
 		}
 
 		input.CallerAddr = instance.Address
@@ -407,6 +496,8 @@ func addForwarderMethodsToInstanceMock(instanceMock *mock.InstanceMock, gasPerCa
 				require.Nil(t, err)
 			}
 		}
+
+		return instance
 	})
 }
 
@@ -416,6 +507,7 @@ func zeroCodeCosts(host *vmHost) {
 	host.Metering().GasSchedule().BaseOperationCost.GetCode = 0
 	host.Metering().GasSchedule().BaseOperationCost.StorePerByte = 0
 	host.Metering().GasSchedule().BaseOperationCost.DataCopyPerByte = 0
+	host.Metering().GasSchedule().ElrondAPICost.SignalError = 0
 }
 
 func asyncCosts(host *vmHost, gasLock uint64) {

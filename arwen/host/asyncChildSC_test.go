@@ -1,6 +1,7 @@
 package host
 
 import (
+	"errors"
 	"math/big"
 	"testing"
 
@@ -16,7 +17,7 @@ func createTestAsyncChildContract(t testing.TB, host *vmHost, imb *mock.Instance
 }
 
 func addAsyncChildMethodsToInstanceMock(instanceMock *mock.InstanceMock, testConfig *asyncCallTestConfig) {
-	instanceMock.AddMockMethod("transferToThirdParty", func() {
+	instanceMock.AddMockMethod("transferToThirdParty", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		t := instance.T
@@ -28,14 +29,17 @@ func addAsyncChildMethodsToInstanceMock(instanceMock *mock.InstanceMock, testCon
 
 		if len(arguments) != 3 {
 			host.Runtime().SignalUserError("wrong num of arguments")
-			return
+			return instance
 		}
 
-		handleChildBehaviorArgument(host, arguments[2][0])
+		err := handleChildBehaviorArgument(host, big.NewInt(0).SetBytes(arguments[2]))
+		if err != nil {
+			return instance
+		}
 
 		scAddress := host.Runtime().GetSCAddress()
 		valueToTransfer := big.NewInt(0).SetBytes(arguments[0])
-		err := outputContext.Transfer(
+		err = outputContext.Transfer(
 			thirdPartyAddress,
 			scAddress,
 			0,
@@ -46,7 +50,7 @@ func addAsyncChildMethodsToInstanceMock(instanceMock *mock.InstanceMock, testCon
 		require.Nil(t, err)
 		outputContext.Finish([]byte("thirdparty"))
 
-		valueToTransfer = big.NewInt(testConfig.transferFromChildToVault)
+		valueToTransfer = big.NewInt(testConfig.transferToVault)
 		err = outputContext.Transfer(
 			vaultAddress,
 			scAddress,
@@ -59,18 +63,27 @@ func addAsyncChildMethodsToInstanceMock(instanceMock *mock.InstanceMock, testCon
 		outputContext.Finish([]byte("vault"))
 
 		host.Storage().SetStorage(childKey, childData)
+
+		return instance
 	})
 }
 
-func handleChildBehaviorArgument(host arwen.VMHost, behavior byte) {
-	if behavior == 1 {
+func handleChildBehaviorArgument(host arwen.VMHost, behavior *big.Int) error {
+	if behavior.Cmp(big.NewInt(1)) == 0 {
 		host.Runtime().SignalUserError("child error")
+		return errors.New("behavior / child error")
 	}
-	if behavior == 2 {
+	if behavior.Cmp(big.NewInt(2)) == 0 {
 		for {
 			host.Output().Finish([]byte("loop"))
 		}
 	}
 
-	host.Output().Finish([]byte{behavior})
+	behaviorBytes := behavior.Bytes()
+	if len(behaviorBytes) == 0 {
+		behaviorBytes = []byte{0}
+	}
+	host.Output().Finish(behaviorBytes)
+
+	return nil
 }

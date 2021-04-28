@@ -22,7 +22,7 @@ func addAsyncParentMethodsToInstanceMock(instanceMock *mock.InstanceMock, testCo
 	input := DefaultTestContractCallInput()
 	input.GasProvided = testConfig.gasProvidedToChild
 
-	instanceMock.AddMockMethodWithError("performAsyncCall", func() {
+	instanceMock.AddMockMethodWithError("performAsyncCall", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		t := instance.T
@@ -47,16 +47,19 @@ func addAsyncParentMethodsToInstanceMock(instanceMock *mock.InstanceMock, testCo
 		// data for child -> third party tx
 		callData.Str(" there")
 		// behavior param for child
-		callData.Bytes(arguments[0])
+		callData.Bytes(append(arguments[0]))
 
 		// amount to transfer from parent to child
 		value := big.NewInt(testConfig.transferFromParentToChild).Bytes()
 
 		err = host.Runtime().ExecuteAsyncCall(childAddress, callData.ToBytes(), value)
 		require.Nil(t, err)
+
+		return instance
+
 	}, errors.New("breakpoint / failed to call function"))
 
-	instanceMock.AddMockMethod("callBack", func() {
+	instanceMock.AddMockMethod("callBack", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		t := instance.T
@@ -65,7 +68,8 @@ func addAsyncParentMethodsToInstanceMock(instanceMock *mock.InstanceMock, testCo
 		host.Metering().UseGas(testConfig.gasUsedByCallback)
 
 		if len(arguments) < 2 {
-			return
+			host.Runtime().SignalUserError("wrong num of arguments")
+			return instance
 		}
 
 		loadedData := host.Storage().GetStorage(parentKeyB)
@@ -75,25 +79,39 @@ func addAsyncParentMethodsToInstanceMock(instanceMock *mock.InstanceMock, testCo
 			status = 1
 		}
 
-		handleParentBehaviorArgument(host, arguments[1][0])
+		if len(arguments) >= 4 {
+			err := handleParentBehaviorArgument(host, big.NewInt(0).SetBytes(arguments[1]))
+			if err != nil {
+				return instance
+			}
+		}
 		err := handleTransferToVault(host, arguments)
 		require.Nil(t, err)
 
 		finishResult(host, status)
+
+		return instance
 	})
 }
 
-func handleParentBehaviorArgument(host arwen.VMHost, behavior byte) {
-	if behavior == 3 {
+func handleParentBehaviorArgument(host arwen.VMHost, behavior *big.Int) error {
+	if behavior.Cmp(big.NewInt(3)) == 0 {
 		host.Runtime().SignalUserError("callBack error")
+		return errors.New("behavior / parent error")
 	}
-	if behavior == 4 {
+	if behavior.Cmp(big.NewInt(4)) == 0 {
 		for {
 			host.Output().Finish([]byte("loop"))
 		}
 	}
 
-	host.Output().Finish([]byte{behavior})
+	behaviorBytes := behavior.Bytes()
+	if len(behaviorBytes) == 0 {
+		behaviorBytes = []byte{0}
+	}
+	host.Output().Finish(behaviorBytes)
+
+	return nil
 }
 
 func mustTransferToVault(arguments [][]byte) bool {

@@ -19,7 +19,7 @@ func addAsyncRecursiveParentMethodsToInstanceMock(instanceMock *mock.InstanceMoc
 	input := DefaultTestContractCallInput()
 	input.GasProvided = testConfig.gasProvidedToChild
 
-	instanceMock.AddMockMethodWithError("forwardAsyncCall", func() {
+	instanceMock.AddMockMethodWithError("forwardAsyncCall", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		t := instance.T
@@ -42,10 +42,14 @@ func addAsyncRecursiveParentMethodsToInstanceMock(instanceMock *mock.InstanceMoc
 
 		err := host.Runtime().ExecuteAsyncCall(destination, callData.ToBytes(), value)
 		require.Nil(t, err)
+
+		return instance
 	}, errors.New("breakpoint / failed to call function"))
 
-	instanceMock.AddMockMethod("callBack", func() {
+	instanceMock.AddMockMethod("callBack", func() *mock.InstanceMock {
 		host := instanceMock.Host
+		instance := mock.GetMockInstance(host)
 		host.Metering().UseGas(testConfig.gasUsedByCallback)
+		return instance
 	})
 }
