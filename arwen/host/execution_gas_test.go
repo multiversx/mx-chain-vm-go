@@ -231,6 +231,64 @@ func TestGasUsed_AsyncCall(t *testing.T) {
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
+type asyncBuiltInCallTestConfig struct {
+	asyncCallBaseTestConfig
+	transferFromChildToParent int64
+}
+
+func TestGasUsed_AsyncCall_BuiltinCall(t *testing.T) {
+	host, world, imb := defaultTestArwenForCallWithInstanceMocks(t)
+
+	baseConfig := &asyncCallBaseTestConfig{
+		gasProvided:        1000,
+		gasUsedByParent:    200,
+		gasProvidedToChild: 500,
+		gasUsedByChild:     100,
+		gasUsedByCallback:  100,
+		gasLock:            150,
+
+		transferFromParentToChild: 10,
+
+		parentBalance: 1000,
+		childBalance:  1000,
+	}
+
+	testConfig := &asyncBuiltInCallTestConfig{
+		asyncCallBaseTestConfig:   *baseConfig,
+		transferFromChildToParent: 5,
+	}
+
+	createTestAsyncSimpleParentContract(t, host, imb, baseConfig)
+	createTestAsyncSimpleChildContract(t, host, imb, testConfig)
+	zeroCodeCosts(host)
+	asyncCosts(host, baseConfig.gasLock)
+
+	createMockBuiltinFunctions(t, host, world)
+
+	gasProvided := uint64(1000)
+	input := DefaultTestContractCallInput()
+	input.RecipientAddr = parentAddress
+	input.GasProvided = gasProvided
+	input.Function = "forwardAsyncCall"
+	input.Arguments = [][]byte{
+		childAddress,
+		[]byte("childFunction"),
+		[]byte("builtinClaim"),
+		arwen.One.Bytes(),
+	}
+
+	vmOutput, err := host.RunSmartContractCall(input)
+
+	verify := NewVMOutputVerifier(t, vmOutput, err)
+	verify.GasUsed(parentAddress, baseConfig.gasUsedByParent+baseConfig.gasUsedByCallback)
+	verify.GasUsed(childAddress, baseConfig.gasUsedByChild+gasUsedByBuiltinClaim)
+	verify.Ok().GasRemaining(baseConfig.gasProvided -
+		baseConfig.gasUsedByParent -
+		baseConfig.gasUsedByChild -
+		baseConfig.gasUsedByCallback -
+		gasUsedByBuiltinClaim)
+}
+
 func TestGasUsed_AsyncCall_ChildFails(t *testing.T) {
 	host, _, imb := defaultTestArwenForCallWithInstanceMocks(t)
 
@@ -322,6 +380,10 @@ type asyncCallRecursiveTestConfig struct {
 }
 
 func TestGasUsed_AsyncCall_Recursive(t *testing.T) {
+
+	// TODO no possible yet, reactivate when new async context is on
+	t.Skip()
+
 	host, _, imb := defaultTestArwenForCallWithInstanceMocks(t)
 
 	baseConfig := &asyncCallBaseTestConfig{
@@ -369,6 +431,10 @@ type asyncCallMultiChildTestConfig struct {
 }
 
 func TestGasUsed_AsyncCall_MultiChild(t *testing.T) {
+
+	// TODO no possible yet, reactivate when new async context is on
+	t.Skip()
+
 	host, _, imb := defaultTestArwenForCallWithInstanceMocks(t)
 
 	baseConfig := &asyncCallBaseTestConfig{
