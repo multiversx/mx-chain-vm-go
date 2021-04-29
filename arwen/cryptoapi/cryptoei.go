@@ -12,12 +12,19 @@ package cryptoapi
 // extern int32_t verifyBLS(void *context, int32_t keyOffset, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
 // extern int32_t verifyEd25519(void *context, int32_t keyOffset, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
 // extern int32_t verifySecp256k1(void *context, int32_t keyOffset, int32_t keyLength, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
+// extern void addEC( void *context, int32_t destination1, int32_t destination2, int32_t fieldOrder, int32_t basePointOrder, int32_t eqConstant, int32_t xBasePoint, int32_t yBasePoint, int32_t sizeOfField, int32_t fstPointX, int32_t fstPointY, int32_t sndPointX, int32_t sndPointY);
+// extern void doubleEC( void *context, int32_t destination1, int32_t destination2, int32_t fieldOrder, int32_t basePointOrder, int32_t eqConstant, int32_t xBasePoint, int32_t yBasePoint, int32_t sizeOfField, int32_t pointX, int32_t pointY);
+// extern int32_t isOnCurveEC( void *context, int32_t fieldOrder, int32_t basePointOrder, int32_t eqConstant, int32_t xBasePoint, int32_t yBasePoint, int32_t sizeOfField, int32_t pointX, int32_t pointY);
+// extern void scalarBaseMultEC ( void *context, int32_t destination1, int32_t destination2, int32_t fieldOrder, int32_t basePointOrder, int32_t eqConstant, int32_t xBasePoint, int32_t yBasePoint, int32_t sizeOfField, int32_t kOffset, int32_t length);
+// extern void scalarMultEC ( void *context, int32_t destination1, int32_t destination2, int32_t fieldOrder, int32_t basePointOrder, int32_t eqConstant, int32_t xBasePoint, int32_t yBasePoint, int32_t sizeOfField, int32_t pointX, int32_t pointY, int32_t kOffset, int32_t length);
 import "C"
 
 import (
+	"math/big"
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	elliptic_curve "github.com/ElrondNetwork/arwen-wasm-vm/crypto/elliptic_curves"
 	"github.com/ElrondNetwork/arwen-wasm-vm/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 )
@@ -63,7 +70,43 @@ func CryptoImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 		return nil, err
 	}
 
+	imports, err = imports.Append("addEC", addEC, C.addEC)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("doubleEC", doubleEC, C.doubleEC)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("isOnCurveEC", isOnCurveEC, C.isOnCurveEC)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("scalarBaseMultEC", scalarBaseMultEC, C.scalarBaseMultEC)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("scalarMultEC", scalarMultEC, C.scalarMultEC)
+	if err != nil {
+		return nil, err
+	}
+
 	return imports, nil
+}
+
+const maxBigIntByteLenForNormalCost = 32
+
+func useExtraGasForOperations(metering arwen.MeteringContext, values []*big.Int) {
+	for _, val := range values {
+		byteLen := val.BitLen() / 8
+		if byteLen > maxBigIntByteLenForNormalCost {
+			metering.UseGas(math.MulUint64(uint64(byteLen), metering.GasSchedule().BaseOperationCost.DataCopyPerByte))
+		}
+	}
 }
 
 //export sha256
@@ -286,4 +329,164 @@ func verifySecp256k1(
 	}
 
 	return 0
+}
+
+//export addEC
+func addEC(
+	context unsafe.Pointer,
+	destination1 int32,
+	destination2 int32,
+	fieldOrder int32,
+	basePointOrder int32,
+	eqConstant int32,
+	xBasePoint int32,
+	yBasePoint int32,
+	sizeOfField int32,
+	fstPointX int32,
+	fstPointY int32,
+	sndPointX int32,
+	sndPointY int32,
+) {
+	bigInt := arwen.GetBigIntContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := uint64(0)
+	metering.UseGas(gasToUse)
+
+	dest1, dest2, P := bigInt.GetThree(destination1, destination2, fieldOrder)
+	N, B, Gx := bigInt.GetThree(basePointOrder, eqConstant, xBasePoint)
+	Gy, x1, y1 := bigInt.GetThree(yBasePoint, fstPointX, fstPointY)
+	x2, y2 := bigInt.GetTwo(sndPointX, sndPointY)
+	useExtraGasForOperations(metering, []*big.Int{dest1, dest2, P, N, B, Gx, Gy, x1, y1, x2, y2})
+
+	dest1, dest2 = elliptic_curve.Add(P, N, B, Gx, Gy, int(sizeOfField), x1, y1, x2, y2)
+}
+
+//export doubleEC
+func doubleEC(
+	context unsafe.Pointer,
+	destination1 int32,
+	destination2 int32,
+	fieldOrder int32,
+	basePointOrder int32,
+	eqConstant int32,
+	xBasePoint int32,
+	yBasePoint int32,
+	sizeOfField int32,
+	pointX int32,
+	pointY int32,
+) {
+	bigInt := arwen.GetBigIntContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := uint64(0)
+	metering.UseGas(gasToUse)
+
+	dest1, dest2, P := bigInt.GetThree(destination1, destination2, fieldOrder)
+	N, B, Gx := bigInt.GetThree(basePointOrder, eqConstant, xBasePoint)
+	Gy, x1, y1 := bigInt.GetThree(yBasePoint, pointX, pointY)
+	useExtraGasForOperations(metering, []*big.Int{dest1, dest2, P, N, B, Gx, Gy, x1, y1})
+
+	dest1, dest2 = elliptic_curve.Double(P, N, B, Gx, Gy, int(sizeOfField), x1, y1)
+}
+
+//export isOnCurveEC
+func isOnCurveEC(
+	context unsafe.Pointer,
+	fieldOrder int32,
+	basePointOrder int32,
+	eqConstant int32,
+	xBasePoint int32,
+	yBasePoint int32,
+	sizeOfField int32,
+	pointX int32,
+	pointY int32,
+) int32 {
+	bigInt := arwen.GetBigIntContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := uint64(0)
+	metering.UseGas(gasToUse)
+
+	x, y, P := bigInt.GetThree(pointX, pointY, fieldOrder)
+	N, B, Gx := bigInt.GetThree(basePointOrder, eqConstant, xBasePoint)
+	Gy := bigInt.GetOne(yBasePoint)
+	useExtraGasForOperations(metering, []*big.Int{P, N, B, Gx, Gy, x, y})
+
+	if elliptic_curve.IsOnCurve(P, N, B, Gx, Gy, int(sizeOfField), x, y) {
+		return 1
+	}
+
+	return 0
+
+}
+
+//export scalarBaseMultEC
+func scalarBaseMultEC(
+	context unsafe.Pointer,
+	destination1 int32,
+	destination2 int32,
+	fieldOrder int32,
+	basePointOrder int32,
+	eqConstant int32,
+	xBasePoint int32,
+	yBasePoint int32,
+	sizeOfField int32,
+	kOffset int32,
+	length int32,
+) {
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+	bigInt := arwen.GetBigIntContext(context)
+
+	gasToUse := uint64(0)
+	metering.UseGas(gasToUse)
+
+	k, err := runtime.MemLoad(kOffset, length)
+	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return
+	}
+
+	dest1, dest2, P := bigInt.GetThree(destination1, destination2, fieldOrder)
+	N, B, Gx := bigInt.GetThree(basePointOrder, eqConstant, xBasePoint)
+	Gy := bigInt.GetOne(yBasePoint)
+	useExtraGasForOperations(metering, []*big.Int{dest1, dest2, P, N, B, Gx, Gy})
+
+	dest1, dest2 = elliptic_curve.ScalarBaseMult(P, N, B, Gx, Gy, int(sizeOfField), k)
+}
+
+//export scalarMultEC
+func scalarMultEC(
+	context unsafe.Pointer,
+	destination1 int32,
+	destination2 int32,
+	fieldOrder int32,
+	basePointOrder int32,
+	eqConstant int32,
+	xBasePoint int32,
+	yBasePoint int32,
+	sizeOfField int32,
+	pointX int32,
+	pointY int32,
+	kOffset int32,
+	length int32,
+) {
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+	bigInt := arwen.GetBigIntContext(context)
+
+	gasToUse := uint64(0)
+	metering.UseGas(gasToUse)
+
+	k, err := runtime.MemLoad(kOffset, length)
+	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return
+	}
+
+	dest1, dest2, P := bigInt.GetThree(destination1, destination2, fieldOrder)
+	N, B, Gx := bigInt.GetThree(basePointOrder, eqConstant, xBasePoint)
+	Gy, x, y := bigInt.GetThree(yBasePoint, pointX, pointY)
+	useExtraGasForOperations(metering, []*big.Int{dest1, dest2, P, N, B, Gx, Gy, x, y})
+
+	dest1, dest2 = elliptic_curve.ScalarMult(P, N, B, Gx, Gy, int(sizeOfField), x, y, k)
 }
