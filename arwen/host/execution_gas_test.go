@@ -258,8 +258,8 @@ func TestGasUsed_AsyncCall_BuiltinCall(t *testing.T) {
 		transferFromChildToParent: 5,
 	}
 
-	createTestAsyncSimpleParentContract(t, host, imb, baseConfig)
-	createTestAsyncSimpleChildContract(t, host, imb, testConfig)
+	createTestAsyncBuiltinParentContract(t, host, imb, baseConfig)
+	createTestAsyncBuiltinChildContract(t, host, imb, testConfig)
 	zeroCodeCosts(host)
 	asyncCosts(host, baseConfig.gasLock)
 
