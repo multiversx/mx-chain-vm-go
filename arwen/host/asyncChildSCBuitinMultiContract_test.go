@@ -9,12 +9,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func createTestAsyncBuiltinChildContract(t testing.TB, host *vmHost, imb *mock.InstanceBuilderMock, testConfig *asyncBuiltInCallTestConfig) {
+func createTestAsyncBuiltinC2CChildContract(t testing.TB, host *vmHost, imb *mock.InstanceBuilderMock, testConfig *asyncBuiltInCallTestConfig) {
 	childInstance := imb.CreateAndStoreInstanceMock(t, host, childAddress, testConfig.childBalance)
-	addAsyncBuiltinChildCallMethodsToInstanceMock(childInstance, testConfig)
+	addAsyncBuiltinMultiContractChildMethodsToInstanceMock(childInstance, testConfig)
 }
 
-func addAsyncBuiltinChildCallMethodsToInstanceMock(instanceMock *mock.InstanceMock, testConfig *asyncBuiltInCallTestConfig) {
+func addAsyncBuiltinMultiContractChildMethodsToInstanceMock(instanceMock *mock.InstanceMock, testConfig *asyncBuiltInCallTestConfig) {
 	input := DefaultTestContractCallInput()
 	input.GasProvided = testConfig.gasProvidedToChild
 

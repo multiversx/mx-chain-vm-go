@@ -9,12 +9,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func createTestAsyncBuiltinParentContract(t testing.TB, host *vmHost, imb *mock.InstanceBuilderMock, testConfig *asyncCallBaseTestConfig) {
+func createTestAsyncBuiltinC2CParentContract(t testing.TB, host *vmHost, imb *mock.InstanceBuilderMock, testConfig *asyncCallBaseTestConfig) {
 	parentInstance := imb.CreateAndStoreInstanceMock(t, host, parentAddress, testConfig.parentBalance)
-	addAsyncBuiltinParentMethodsToInstanceMock(parentInstance, testConfig)
+	addAsyncBuiltinMultiContractParentMethodsToInstanceMock(parentInstance, testConfig)
 }
 
-func addAsyncBuiltinParentMethodsToInstanceMock(instanceMock *mock.InstanceMock, testConfig *asyncCallBaseTestConfig) {
+func addAsyncBuiltinMultiContractParentMethodsToInstanceMock(instanceMock *mock.InstanceMock, testConfig *asyncCallBaseTestConfig) {
 	input := DefaultTestContractCallInput()
 	input.GasProvided = testConfig.gasProvidedToChild
 
@@ -29,8 +29,12 @@ func addAsyncBuiltinParentMethodsToInstanceMock(instanceMock *mock.InstanceMock,
 
 		host.Metering().UseGas(testConfig.gasUsedByParent)
 
+		destinationForBuildInCall := host.Runtime().GetSCAddress()
+
 		callData := txDataBuilder.NewBuilder()
 		callData.Func(function)
+		callData.Bytes(destinationForBuildInCall)
+		callData.Bytes(arguments[2])
 
 		err := host.Runtime().ExecuteAsyncCall(destination, callData.ToBytes(), value)
 		require.Nil(t, err)

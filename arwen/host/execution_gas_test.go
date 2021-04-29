@@ -231,11 +231,6 @@ func TestGasUsed_AsyncCall(t *testing.T) {
 	require.Equal(t, expectedVMOutput, vmOutput)
 }
 
-type asyncBuiltInCallTestConfig struct {
-	asyncCallBaseTestConfig
-	transferFromChildToParent int64
-}
-
 func TestGasUsed_AsyncCall_BuiltinCall(t *testing.T) {
 	host, world, imb := defaultTestArwenForCallWithInstanceMocks(t)
 
@@ -247,19 +242,15 @@ func TestGasUsed_AsyncCall_BuiltinCall(t *testing.T) {
 		gasUsedByCallback:  100,
 		gasLock:            150,
 
-		transferFromParentToChild: 10,
+		transferFromParentToChild: 0,
 
 		parentBalance: 1000,
 		childBalance:  1000,
 	}
 
-	testConfig := &asyncBuiltInCallTestConfig{
-		asyncCallBaseTestConfig:   *baseConfig,
-		transferFromChildToParent: 5,
-	}
+	world.AcctMap.CreateAccount(userAddress)
 
 	createTestAsyncBuiltinParentContract(t, host, imb, baseConfig)
-	createTestAsyncBuiltinChildContract(t, host, imb, testConfig)
 	zeroCodeCosts(host)
 	asyncCosts(host, baseConfig.gasLock)
 
@@ -271,22 +262,80 @@ func TestGasUsed_AsyncCall_BuiltinCall(t *testing.T) {
 	input.GasProvided = gasProvided
 	input.Function = "forwardAsyncCall"
 	input.Arguments = [][]byte{
-		childAddress,
-		[]byte("childFunction"),
+		userAddress,
 		[]byte("builtinClaim"),
-		arwen.One.Bytes(),
 	}
 
 	vmOutput, err := host.RunSmartContractCall(input)
 
 	verify := NewVMOutputVerifier(t, vmOutput, err)
-	verify.GasUsed(parentAddress, baseConfig.gasUsedByParent+baseConfig.gasUsedByCallback)
-	verify.GasUsed(childAddress, baseConfig.gasUsedByChild+gasUsedByBuiltinClaim)
-	verify.Ok().GasRemaining(baseConfig.gasProvided -
-		baseConfig.gasUsedByParent -
-		baseConfig.gasUsedByChild -
-		baseConfig.gasUsedByCallback -
-		gasUsedByBuiltinClaim)
+	expectedGasUsedByParent := baseConfig.gasUsedByParent + baseConfig.gasUsedByCallback + gasUsedByBuiltinClaim
+	verify.GasUsed(parentAddress, expectedGasUsedByParent)
+	expectedGasUsedByChild := baseConfig.gasUsedByChild
+	verify.GasUsed(childAddress, baseConfig.gasUsedByChild)
+	verify.Ok().GasRemaining(baseConfig.gasProvided - expectedGasUsedByParent - expectedGasUsedByChild)
+}
+
+type asyncBuiltInCallTestConfig struct {
+	asyncCallBaseTestConfig
+	transferFromChildToParent int64
+}
+
+func TestGasUsed_AsyncCall_BuiltinMultiContractCall(t *testing.T) {
+
+	// TODO no possible yet, reactivate when new async context is on
+	t.Skip()
+
+	host, world, imb := defaultTestArwenForCallWithInstanceMocks(t)
+
+	baseConfig := &asyncCallBaseTestConfig{
+		gasProvided:        1000,
+		gasUsedByParent:    200,
+		gasProvidedToChild: 500,
+		gasUsedByChild:     100,
+		gasUsedByCallback:  100,
+		gasLock:            150,
+
+		transferFromParentToChild: 0,
+
+		parentBalance: 1000,
+		childBalance:  1000,
+	}
+
+	testConfig := &asyncBuiltInCallTestConfig{
+		asyncCallBaseTestConfig:   *baseConfig,
+		transferFromChildToParent: 5,
+	}
+
+	world.AcctMap.CreateAccount(userAddress)
+
+	createTestAsyncBuiltinC2CParentContract(t, host, imb, baseConfig)
+	createTestAsyncBuiltinC2CChildContract(t, host, imb, testConfig)
+	zeroCodeCosts(host)
+	asyncCosts(host, baseConfig.gasLock)
+
+	createMockBuiltinFunctions(t, host, world)
+
+	gasProvided := uint64(1000)
+	input := DefaultTestContractCallInput()
+	input.RecipientAddr = parentAddress
+	input.GasProvided = gasProvided
+	input.Function = "forwardAsyncCall"
+	input.Arguments = [][]byte{
+		userAddress,
+		childAddress,
+		[]byte("childFunction"),
+		[]byte("builtinClaim"),
+	}
+
+	vmOutput, err := host.RunSmartContractCall(input)
+
+	verify := NewVMOutputVerifier(t, vmOutput, err)
+	expectedGasUsedByParent := baseConfig.gasUsedByParent + baseConfig.gasUsedByCallback
+	verify.GasUsed(parentAddress, expectedGasUsedByParent)
+	expectedGasUsedByChild := baseConfig.gasUsedByChild + gasUsedByBuiltinClaim
+	verify.GasUsed(childAddress, baseConfig.gasUsedByChild)
+	verify.Ok().GasRemaining(baseConfig.gasProvided - expectedGasUsedByParent - expectedGasUsedByChild)
 }
 
 func TestGasUsed_AsyncCall_ChildFails(t *testing.T) {
