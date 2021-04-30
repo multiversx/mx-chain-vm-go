@@ -1358,9 +1358,12 @@ func TestExecution_AsyncCall_GasLimitConsumed(t *testing.T) {
 	input.Arguments = [][]byte{{0}}
 
 	vmOutput, err := host.RunSmartContractCall(input)
-	require.Nil(t, err)
-	require.NotNil(t, vmOutput)
-	require.Zero(t, vmOutput.GasRemaining)
+
+	verify := NewVMOutputVerifier(t, vmOutput, err)
+
+	verify.
+		Ok().
+		GasRemaining(0)
 }
 
 func TestExecution_AsyncCall(t *testing.T) {
@@ -1397,12 +1400,31 @@ func TestExecution_AsyncCall(t *testing.T) {
 	input.Arguments = [][]byte{{0}}
 
 	vmOutput, err := host.RunSmartContractCall(input)
-	require.Nil(t, err)
-	require.NotNil(t, vmOutput)
-	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 
-	expectedVMOutput := expectedVMOutputAsyncCall(parentCode, childCode)
-	require.Equal(t, expectedVMOutput, vmOutput)
+	verify := NewVMOutputVerifier(t, vmOutput, err)
+
+	verify.
+		Ok().
+		GasUsed(parentAddress, 9114).
+		GasUsed(childAddress, 2534).
+		GasRemaining(104352).
+		Balance(parentAddress, 1000).
+		Balance(childAddress, 1000).
+		BalanceDelta(thirdPartyAddress, 6).
+		ReturnData(parentFinishA, parentFinishB, []byte{0}, []byte("thirdparty"), []byte("vault"), []byte{0}, []byte("succ")).
+		Storage(
+			storeEntry{parentAddress, parentKeyA, parentDataA},
+			storeEntry{parentAddress, parentKeyB, parentDataB},
+			storeEntry{childAddress, childKey, childData},
+		).
+		Transfers(
+			transferEntry{thirdPartyAddress,
+				vmcommon.OutputTransfer{Data: []byte("hello"), Value: big.NewInt(3), SenderAddress: parentAddress}},
+			transferEntry{thirdPartyAddress,
+				vmcommon.OutputTransfer{Data: []byte(" there"), Value: big.NewInt(3), SenderAddress: childAddress}},
+			transferEntry{vaultAddress,
+				vmcommon.OutputTransfer{Data: []byte{}, Value: big.NewInt(4), SenderAddress: childAddress}},
+		)
 }
 
 func TestExecution_AsyncCall_ChildFails(t *testing.T) {
@@ -1431,8 +1453,17 @@ func TestExecution_AsyncCall_ChildFails(t *testing.T) {
 	require.NotNil(t, vmOutput)
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 
-	expectedVMOutput := expectedVMOutputAsyncCallChildFails(parentCode, childCode)
-	require.Equal(t, expectedVMOutput, vmOutput)
+	verify := NewVMOutputVerifier(t, vmOutput, err)
+
+	verify.
+		Ok().
+		GasUsed(parentAddress, 998352).
+		GasRemaining(1648).
+		ReturnData(parentFinishA, parentFinishB, []byte("succ")).
+		Storage(
+			storeEntry{parentAddress, parentKeyA, parentDataA},
+			storeEntry{parentAddress, parentKeyB, parentDataB},
+		)
 }
 
 func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
@@ -1453,12 +1484,33 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 	input.CurrentTxHash = []byte("txhash")
 
 	vmOutput, err := host.RunSmartContractCall(input)
-	require.Nil(t, err)
-	require.NotNil(t, vmOutput)
-	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 
-	expectedVMOutput := expectedVMOutputAsyncCallCallBackFails(parentCode, childCode)
-	require.Equal(t, expectedVMOutput, vmOutput)
+	verify := NewVMOutputVerifier(t, vmOutput, err)
+
+	verify.
+		Ok().
+		ReturnMessage("callBack error").
+		GasUsed(parentAddress, 197437).
+		GasUsed(childAddress, 2534).
+		// TODO Why is there a minuscule amount of gas remaining after the callback
+		// fails? This is supposed to be 0.
+		GasRemaining(29).
+		BalanceDelta(thirdPartyAddress, 6).
+		BalanceDelta(childAddress, big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1)).Int64()).
+		ReturnData(parentFinishA, parentFinishB, []byte{3}, []byte("thirdparty"), []byte("vault"), []byte("user error"), []byte("txhash")).
+		Storage(
+			storeEntry{parentAddress, parentKeyA, parentDataA},
+			storeEntry{parentAddress, parentKeyB, parentDataB},
+			storeEntry{childAddress, childKey, childData},
+		).
+		Transfers(
+			transferEntry{thirdPartyAddress,
+				vmcommon.OutputTransfer{Data: []byte("hello"), Value: big.NewInt(3), SenderAddress: parentAddress}},
+			transferEntry{thirdPartyAddress,
+				vmcommon.OutputTransfer{Data: []byte(" there"), Value: big.NewInt(3), SenderAddress: childAddress}},
+			transferEntry{vaultAddress,
+				vmcommon.OutputTransfer{Data: []byte{}, Value: big.NewInt(4), SenderAddress: childAddress}},
+		)
 }
 
 func TestExecution_CreateNewContract_Success(t *testing.T) {
