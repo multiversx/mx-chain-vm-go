@@ -242,14 +242,29 @@ func TestGasUsed_AsyncCall(t *testing.T) {
 			setAsyncCosts(host, testConfig.gasLockCost)
 		},
 		assertResults: func(world *worldmock.MockWorld, verify *VMOutputVerifier) {
-			// TODO update verifier to allow other stuff in expectedVMOutputAsyncCallWithConfig(testConfig)
-			// + delete function + refactor old one
-			verify.RetCode(vmcommon.Ok)
 			gasUsedByParent := testConfig.gasUsedByParent + testConfig.gasUsedByCallback
-			verify.GasUsed(parentAddress, gasUsedByParent)
 			gasUsedByChild := testConfig.gasUsedByChild
-			verify.GasUsed(childAddress, gasUsedByChild)
-			verify.Ok().GasRemaining(testConfig.gasProvided - gasUsedByParent - gasUsedByChild)
+
+			verify.
+				Ok().
+				GasUsed(parentAddress, gasUsedByParent).
+				GasUsed(childAddress, gasUsedByChild).
+				GasRemaining(testConfig.gasProvided-gasUsedByParent-gasUsedByChild).
+				BalanceDelta(thirdPartyAddress, 2*testConfig.transferToThirdParty).
+				ReturnData(parentFinishA, parentFinishB, []byte{0}, []byte("thirdparty"), []byte("vault"), []byte{0}, []byte("succ")).
+				Storage(
+					storeEntry{parentAddress, parentKeyA, parentDataA},
+					storeEntry{parentAddress, parentKeyB, parentDataB},
+					storeEntry{childAddress, childKey, childData},
+				).
+				Transfers(
+					transferEntry{thirdPartyAddress,
+						vmcommon.OutputTransfer{Data: []byte("hello"), Value: big.NewInt(testConfig.transferToThirdParty), SenderAddress: parentAddress}},
+					transferEntry{thirdPartyAddress,
+						vmcommon.OutputTransfer{Data: []byte(" there"), Value: big.NewInt(testConfig.transferToThirdParty), SenderAddress: childAddress}},
+					transferEntry{vaultAddress,
+						vmcommon.OutputTransfer{Data: []byte{}, Value: big.NewInt(testConfig.transferToVault), SenderAddress: childAddress}},
+				)
 		},
 	})
 }
@@ -286,12 +301,13 @@ func TestGasUsed_AsyncCall_BuiltinCall(t *testing.T) {
 			setAsyncCosts(host, asyncBaseTestConfig.gasLockCost)
 		},
 		assertResults: func(world *worldmock.MockWorld, verify *VMOutputVerifier) {
-			verify.RetCode(vmcommon.Ok)
 			expectedGasUsedByParent := asyncBaseTestConfig.gasUsedByParent + asyncBaseTestConfig.gasUsedByCallback + gasUsedByBuiltinClaim
-			verify.GasUsed(parentAddress, expectedGasUsedByParent)
 			expectedGasUsedByChild := uint64(0) // all gas for builtin call is consummed on caller
-			verify.GasUsed(userAddress, asyncBaseTestConfig.gasUsedByChild)
-			verify.Ok().GasRemaining(asyncBaseTestConfig.gasProvided - expectedGasUsedByParent - expectedGasUsedByChild)
+			verify.
+				Ok().
+				GasUsed(parentAddress, expectedGasUsedByParent).
+				GasUsed(userAddress, asyncBaseTestConfig.gasUsedByChild).
+				GasRemaining(asyncBaseTestConfig.gasProvided - expectedGasUsedByParent - expectedGasUsedByChild)
 		},
 	})
 }

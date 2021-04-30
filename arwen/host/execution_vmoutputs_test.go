@@ -928,67 +928,6 @@ func expectedVMOutputDestCtxByCallerSimpleTransfer(value int64) *vmcommon.VMOutp
 	return vmOutput
 }
 
-func expectedVMOutputAsyncCallWithConfig(testConfig *asyncCallTestConfig) *vmcommon.VMOutput {
-	vmOutput := MakeVMOutput()
-
-	parentAccount := AddNewOutputAccount(
-		vmOutput,
-		parentAddress,
-		parentAddress,
-		-10,
-		nil,
-	)
-	parentAccount.Balance = big.NewInt(testConfig.parentBalance)
-	parentAccount.GasUsed = testConfig.gasUsedByParent + testConfig.gasUsedByCallback
-	SetStorageUpdate(parentAccount, parentKeyA, parentDataA)
-	SetStorageUpdate(parentAccount, parentKeyB, parentDataB)
-	AddFinishData(vmOutput, parentFinishA)
-	AddFinishData(vmOutput, parentFinishB)
-
-	thirdPartyAccount := AddNewOutputAccount(
-		vmOutput,
-		parentAddress,
-		thirdPartyAddress,
-		testConfig.transferToThirdParty,
-		[]byte("hello"),
-	)
-
-	outTransfer := vmcommon.OutputTransfer{Data: []byte(" there"), Value: big.NewInt(testConfig.transferToThirdParty), SenderAddress: childAddress}
-
-	thirdPartyAccount.OutputTransfers = append(thirdPartyAccount.OutputTransfers, outTransfer)
-	thirdPartyAccount.BalanceDelta = big.NewInt(2 * testConfig.transferToThirdParty)
-
-	childAccount := AddNewOutputAccount(
-		vmOutput,
-		childAddress,
-		childAddress,
-		0,
-		nil,
-	)
-	childAccount.Balance = big.NewInt(testConfig.childBalance)
-	childAccount.GasUsed = testConfig.gasUsedByChild
-	SetStorageUpdate(childAccount, childKey, childData)
-
-	_ = AddNewOutputAccount(
-		vmOutput,
-		childAddress,
-		vaultAddress,
-		testConfig.transferToVault,
-		[]byte{},
-	)
-
-	AddFinishData(vmOutput, []byte{0})
-	AddFinishData(vmOutput, []byte("thirdparty"))
-	AddFinishData(vmOutput, []byte("vault"))
-	AddFinishData(vmOutput, []byte{0})
-	AddFinishData(vmOutput, []byte("succ"))
-
-	vmOutput.GasRemaining = testConfig.gasProvided -
-		parentAccount.GasUsed -
-		childAccount.GasUsed
-	return vmOutput
-}
-
 func expectedVMOutputAsyncCallChildFailsWithConfig(testConfig *asyncCallTestConfig) *vmcommon.VMOutput {
 	vmOutput := MakeVMOutput()
 
