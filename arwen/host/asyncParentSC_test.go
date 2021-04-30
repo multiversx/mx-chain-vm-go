@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"math/big"
-	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
@@ -13,14 +12,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func createTestAsyncParentContract(t testing.TB, host *vmHost, imb *mock.InstanceBuilderMock, testConfig *asyncCallTestConfig) {
-	parentInstance := imb.CreateAndStoreInstanceMock(t, host, parentAddress, testConfig.parentBalance)
-	addAsyncParentMethodsToInstanceMock(parentInstance, testConfig)
-}
+func addAsyncParentMethodsToInstanceMock(instanceMock *mock.InstanceMock, config interface{}) {
 
-func addAsyncParentMethodsToInstanceMock(instanceMock *mock.InstanceMock, testConfig *asyncCallTestConfig) {
-	input := DefaultTestContractCallInput()
-	input.GasProvided = testConfig.gasProvidedToChild
+	testConfig := config.(*asyncCallTestConfig)
 
 	instanceMock.AddMockMethod("performAsyncCall", func() *mock.InstanceMock {
 		host := instanceMock.Host

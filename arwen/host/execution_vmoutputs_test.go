@@ -1004,7 +1004,7 @@ func expectedVMOutputAsyncCallChildFailsWithConfig(testConfig *asyncCallTestConf
 	// Because the child contract failed during asyncCall(), all the gas provided
 	// to it was lost (i.e. all the gas the parent had, when asyncCall() was
 	// reached). This appears as gas used by the parent.
-	parentAccount.GasUsed = testConfig.gasProvided - testConfig.gasLock + testConfig.gasUsedByCallback
+	parentAccount.GasUsed = testConfig.gasProvided - testConfig.gasLockCost + testConfig.gasUsedByCallback
 	SetStorageUpdate(parentAccount, parentKeyA, parentDataA)
 	SetStorageUpdate(parentAccount, parentKeyB, parentDataB)
 	AddFinishData(vmOutput, parentFinishA)

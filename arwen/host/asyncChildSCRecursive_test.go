@@ -2,21 +2,15 @@ package host
 
 import (
 	"math/big"
-	"testing"
 
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
 	"github.com/ElrondNetwork/elrond-go/testscommon/txDataBuilder"
 	"github.com/stretchr/testify/require"
 )
 
-func createTestAsyncRecursiveChildContract(t testing.TB, host *vmHost, imb *mock.InstanceBuilderMock, testConfig *asyncCallBaseTestConfig) {
-	childInstance := imb.CreateAndStoreInstanceMock(t, host, childAddress, testConfig.parentBalance)
-	addAsyncRecursiveChildMethodsToInstanceMock(childInstance, testConfig)
-}
+func addAsyncRecursiveChildMethodsToInstanceMock(instanceMock *mock.InstanceMock, config interface{}) {
 
-func addAsyncRecursiveChildMethodsToInstanceMock(instanceMock *mock.InstanceMock, testConfig *asyncCallBaseTestConfig) {
-	input := DefaultTestContractCallInput()
-	input.GasProvided = testConfig.gasProvidedToChild
+	testConfig := config.(*asyncCallBaseTestConfig)
 
 	instanceMock.AddMockMethod("recursiveAsyncCall", func() *mock.InstanceMock {
 		host := instanceMock.Host
@@ -46,10 +40,5 @@ func addAsyncRecursiveChildMethodsToInstanceMock(instanceMock *mock.InstanceMock
 		return instance
 	})
 
-	instanceMock.AddMockMethod("callBack", func() *mock.InstanceMock {
-		host := instanceMock.Host
-		host.Metering().UseGas(testConfig.gasUsedByCallback)
-		instance := mock.GetMockInstance(host)
-		return instance
-	})
+	instanceMock.AddMockMethod("callBack", simpleWasteGasMockMethod(instanceMock, testConfig.gasUsedByCallback))
 }

@@ -3,20 +3,16 @@ package host
 import (
 	"errors"
 	"math/big"
-	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
 	"github.com/stretchr/testify/require"
 )
 
-func createTestAsyncChildContract(t testing.TB, host *vmHost, imb *mock.InstanceBuilderMock, testConfig *asyncCallTestConfig) {
-	childInstance := imb.CreateAndStoreInstanceMock(t, host, childAddress, testConfig.childBalance)
-	addDummyMethodsToInstanceMock(childInstance, gasUsedByChild)
-	addAsyncChildMethodsToInstanceMock(childInstance, testConfig)
-}
+func addAsyncChildMethodsToInstanceMock(instanceMock *mock.InstanceMock, config interface{}) {
 
-func addAsyncChildMethodsToInstanceMock(instanceMock *mock.InstanceMock, testConfig *asyncCallTestConfig) {
+	testConfig := config.(*asyncCallTestConfig)
+
 	instanceMock.AddMockMethod("transferToThirdParty", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)

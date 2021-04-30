@@ -2,19 +2,16 @@ package host
 
 import (
 	"math/big"
-	"testing"
 
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
 	"github.com/ElrondNetwork/elrond-go/testscommon/txDataBuilder"
 	"github.com/stretchr/testify/require"
 )
 
-func createTestAsyncBuiltinParentContract(t testing.TB, host *vmHost, imb *mock.InstanceBuilderMock, testConfig *asyncCallBaseTestConfig) {
-	parentInstance := imb.CreateAndStoreInstanceMock(t, host, parentAddress, testConfig.parentBalance)
-	addAsyncBuiltinParentMethodsToInstanceMock(parentInstance, testConfig)
-}
+func addAsyncBuiltinParentMethodsToInstanceMock(instanceMock *mock.InstanceMock, config interface{}) {
 
-func addAsyncBuiltinParentMethodsToInstanceMock(instanceMock *mock.InstanceMock, testConfig *asyncCallBaseTestConfig) {
+	testConfig := config.(*asyncCallBaseTestConfig)
+
 	input := DefaultTestContractCallInput()
 	input.GasProvided = testConfig.gasProvidedToChild
 

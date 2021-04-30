@@ -2,21 +2,15 @@ package host
 
 import (
 	"math/big"
-	"testing"
 
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
 	"github.com/ElrondNetwork/elrond-go/testscommon/txDataBuilder"
 	"github.com/stretchr/testify/require"
 )
 
-func createTestAsyncBuiltinC2CParentContract(t testing.TB, host *vmHost, imb *mock.InstanceBuilderMock, testConfig *asyncCallBaseTestConfig) {
-	parentInstance := imb.CreateAndStoreInstanceMock(t, host, parentAddress, testConfig.parentBalance)
-	addAsyncBuiltinMultiContractParentMethodsToInstanceMock(parentInstance, testConfig)
-}
+func addAsyncBuiltinMultiContractParentMethodsToInstanceMock(instanceMock *mock.InstanceMock, config interface{}) {
 
-func addAsyncBuiltinMultiContractParentMethodsToInstanceMock(instanceMock *mock.InstanceMock, testConfig *asyncCallBaseTestConfig) {
-	input := DefaultTestContractCallInput()
-	input.GasProvided = testConfig.gasProvidedToChild
+	testConfig := config.(*asyncBuiltInCallTestConfig)
 
 	instanceMock.AddMockMethod("forwardAsyncCall", func() *mock.InstanceMock {
 		host := instanceMock.Host
@@ -42,10 +36,5 @@ func addAsyncBuiltinMultiContractParentMethodsToInstanceMock(instanceMock *mock.
 		return instance
 	})
 
-	instanceMock.AddMockMethod("callBack", func() *mock.InstanceMock {
-		host := instanceMock.Host
-		instance := mock.GetMockInstance(host)
-		host.Metering().UseGas(testConfig.gasUsedByCallback)
-		return instance
-	})
+	instanceMock.AddMockMethod("callBack", simpleWasteGasMockMethod(instanceMock, testConfig.gasUsedByCallback))
 }

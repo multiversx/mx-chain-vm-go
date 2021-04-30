@@ -42,9 +42,9 @@ func (builder *InstanceBuilderMock) CreateAndStoreInstanceMock(t testing.TB, hos
 	return instance
 }
 
-// GetStoredInstance retrieves and initializes a stored Wasmer instance, or
+// getNewCopyOfStoredInstance retrieves and initializes a stored Wasmer instance, or
 // nil if it doesn't exist
-func (builder *InstanceBuilderMock) GetStoredInstance(code []byte, gasLimit uint64) (wasmer.InstanceHandler, bool) {
+func (builder *InstanceBuilderMock) getNewCopyOfStoredInstance(code []byte, gasLimit uint64) (wasmer.InstanceHandler, bool) {
 	instance, ok := builder.InstanceMap[string(code)]
 	if ok {
 		instance.SetPointsUsed(0)
@@ -62,7 +62,7 @@ func (builder *InstanceBuilderMock) NewInstanceWithOptions(
 	options wasmer.CompilationOptions,
 ) (wasmer.InstanceHandler, error) {
 
-	instance, ok := builder.GetStoredInstance(contractCode, options.GasLimit)
+	instance, ok := builder.getNewCopyOfStoredInstance(contractCode, options.GasLimit)
 	if ok {
 		return instance, nil
 	}
@@ -76,7 +76,7 @@ func (builder *InstanceBuilderMock) NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
 	options wasmer.CompilationOptions,
 ) (wasmer.InstanceHandler, error) {
-	instance, ok := builder.GetStoredInstance(compiledCode, options.GasLimit)
+	instance, ok := builder.getNewCopyOfStoredInstance(compiledCode, options.GasLimit)
 	if ok {
 		return instance, nil
 	}

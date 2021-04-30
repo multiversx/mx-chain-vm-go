@@ -19,7 +19,7 @@ var gasUsedByBuiltinClaim = uint64(120)
 func TestGasUsed_SingleContract(t *testing.T) {
 	host, _, imb := defaultTestArwenForCallWithInstanceMocks(t)
 	createTestParentContract(t, host, imb)
-	zeroCodeCosts(host)
+	setZeroCodeCosts(host)
 
 	gasProvided := uint64(1000)
 	input := DefaultTestContractCallInput()
@@ -38,7 +38,7 @@ func TestGasUsed_SingleContract_BuiltinCall(t *testing.T) {
 	host, world, imb := defaultTestArwenForCallWithInstanceMocks(t)
 	createTestParentContract(t, host, imb)
 	createMockBuiltinFunctions(t, host, world)
-	zeroCodeCosts(host)
+	setZeroCodeCosts(host)
 
 	gasProvided := uint64(1000)
 	input := DefaultTestContractCallInput()
@@ -62,7 +62,7 @@ func TestGasUsed_TwoContracts_ExecuteOnSameCtx(t *testing.T) {
 	host, _, imb := defaultTestArwenForCallWithInstanceMocks(t)
 	createTestParentContract(t, host, imb)
 	createTestChildContract(t, host, imb)
-	zeroCodeCosts(host)
+	setZeroCodeCosts(host)
 
 	gasProvided := uint64(1000)
 	input := DefaultTestContractCallInput()
@@ -95,7 +95,7 @@ func TestGasUsed_TwoContracts_ExecuteOnDestCtx(t *testing.T) {
 	host, _, imb := defaultTestArwenForCallWithInstanceMocks(t)
 	createTestParentContract(t, host, imb)
 	createTestChildContract(t, host, imb)
-	zeroCodeCosts(host)
+	setZeroCodeCosts(host)
 
 	gasProvided := uint64(1000)
 	input := DefaultTestContractCallInput()
@@ -126,7 +126,7 @@ func TestGasUsed_TwoContracts_ExecuteOnDestCtx(t *testing.T) {
 
 func TestGasUsed_ThreeContracts_ExecuteOnDestCtx(t *testing.T) {
 	host, _, imb := defaultTestArwenForCallWithInstanceMocks(t)
-	zeroCodeCosts(host)
+	setZeroCodeCosts(host)
 
 	alphaAddress := MakeTestSCAddress("alpha")
 	betaAddress := MakeTestSCAddress("beta")
@@ -175,12 +175,26 @@ type asyncCallBaseTestConfig struct {
 	gasProvidedToChild uint64
 	gasUsedByChild     uint64
 	gasUsedByCallback  uint64
-	gasLock            uint64
+	gasLockCost        uint64
 
 	transferFromParentToChild int64
 
 	parentBalance int64
 	childBalance  int64
+}
+
+var asyncBaseTestConfig = asyncCallBaseTestConfig{
+	gasProvided:        116000,
+	gasUsedByParent:    400,
+	gasProvidedToChild: 300,
+	gasUsedByChild:     200,
+	gasUsedByCallback:  100,
+	gasLockCost:        150,
+
+	transferFromParentToChild: 7,
+
+	parentBalance: 1000,
+	childBalance:  1000,
 }
 
 type asyncCallTestConfig struct {
@@ -189,32 +203,29 @@ type asyncCallTestConfig struct {
 	transferToVault      int64
 }
 
+var asyncTestConfig = &asyncCallTestConfig{
+	asyncCallBaseTestConfig: asyncBaseTestConfig,
+	transferToThirdParty:    3,
+	transferToVault:         4,
+}
+
 func TestGasUsed_AsyncCall(t *testing.T) {
-	host, _, imb := defaultTestArwenForCallWithInstanceMocks(t)
 
-	testConfig := &asyncCallTestConfig{
-		asyncCallBaseTestConfig: asyncCallBaseTestConfig{
-			gasProvided:        116000,
-			gasUsedByParent:    400,
-			gasProvidedToChild: 300,
-			gasUsedByChild:     200,
-			gasUsedByCallback:  100,
-			gasLock:            150,
+	testConfig := asyncTestConfig
 
-			transferFromParentToChild: 7,
-
-			parentBalance: 1000,
-			childBalance:  1000,
-		},
-
-		transferToThirdParty: 3,
-		transferToVault:      4,
+	parentMockContract := &mockSmartContract{
+		address:     parentAddress,
+		balance:     testConfig.parentBalance,
+		config:      testConfig,
+		initMethods: &initFunctions{addAsyncParentMethodsToInstanceMock},
 	}
 
-	createTestAsyncParentContract(t, host, imb, testConfig)
-	createTestAsyncChildContract(t, host, imb, testConfig)
-	zeroCodeCosts(host)
-	asyncCosts(host, testConfig.gasLock)
+	childMockContract := &mockSmartContract{
+		address:     childAddress,
+		balance:     testConfig.childBalance,
+		config:      testConfig,
+		initMethods: &initFunctions{addAsyncChildMethodsToInstanceMock},
+	}
 
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
@@ -222,58 +233,67 @@ func TestGasUsed_AsyncCall(t *testing.T) {
 	input.GasProvided = testConfig.gasProvided
 	input.Arguments = [][]byte{{0}}
 
-	vmOutput, err := host.RunSmartContractCall(input)
-	require.Nil(t, err)
-	require.NotNil(t, vmOutput)
-	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
-
-	expectedVMOutput := expectedVMOutputAsyncCallWithConfig(testConfig)
-	require.Equal(t, expectedVMOutput, vmOutput)
+	runMockInstanceCallerTest(&mockInstancesTestTemplate{
+		t:         t,
+		contracts: &mockContracts{parentMockContract, childMockContract},
+		input:     input,
+		setup: func(host *vmHost, world *worldmock.MockWorld) {
+			setZeroCodeCosts(host)
+			setAsyncCosts(host, testConfig.gasLockCost)
+		},
+		assertResults: func(world *worldmock.MockWorld, verify *VMOutputVerifier) {
+			// TODO update verifier to allow other stuff in expectedVMOutputAsyncCallWithConfig(testConfig)
+			// + delete function + refactor old one
+			verify.RetCode(vmcommon.Ok)
+			gasUsedByParent := testConfig.gasUsedByParent + testConfig.gasUsedByCallback
+			verify.GasUsed(parentAddress, gasUsedByParent)
+			gasUsedByChild := testConfig.gasUsedByChild
+			verify.GasUsed(childAddress, gasUsedByChild)
+			verify.Ok().GasRemaining(testConfig.gasProvided - gasUsedByParent - gasUsedByChild)
+		},
+	})
 }
 
 func TestGasUsed_AsyncCall_BuiltinCall(t *testing.T) {
-	host, world, imb := defaultTestArwenForCallWithInstanceMocks(t)
 
-	baseConfig := &asyncCallBaseTestConfig{
-		gasProvided:        1000,
-		gasUsedByParent:    200,
-		gasProvidedToChild: 500,
-		gasUsedByChild:     100,
-		gasUsedByCallback:  100,
-		gasLock:            150,
+	testConfig := asyncBaseTestConfig
+	testConfig.gasProvided = 1000
 
-		transferFromParentToChild: 0,
-
-		parentBalance: 1000,
-		childBalance:  1000,
+	parentMockContract := &mockSmartContract{
+		address:     parentAddress,
+		balance:     asyncBaseTestConfig.parentBalance,
+		config:      &testConfig,
+		initMethods: &initFunctions{addAsyncBuiltinParentMethodsToInstanceMock},
 	}
 
-	world.AcctMap.CreateAccount(userAddress)
-
-	createTestAsyncBuiltinParentContract(t, host, imb, baseConfig)
-	zeroCodeCosts(host)
-	asyncCosts(host, baseConfig.gasLock)
-
-	createMockBuiltinFunctions(t, host, world)
-
-	gasProvided := uint64(1000)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
-	input.GasProvided = gasProvided
+	input.GasProvided = testConfig.gasProvided
 	input.Function = "forwardAsyncCall"
 	input.Arguments = [][]byte{
 		userAddress,
 		[]byte("builtinClaim"),
 	}
 
-	vmOutput, err := host.RunSmartContractCall(input)
-
-	verify := NewVMOutputVerifier(t, vmOutput, err)
-	expectedGasUsedByParent := baseConfig.gasUsedByParent + baseConfig.gasUsedByCallback + gasUsedByBuiltinClaim
-	verify.GasUsed(parentAddress, expectedGasUsedByParent)
-	expectedGasUsedByChild := baseConfig.gasUsedByChild
-	verify.GasUsed(childAddress, baseConfig.gasUsedByChild)
-	verify.Ok().GasRemaining(baseConfig.gasProvided - expectedGasUsedByParent - expectedGasUsedByChild)
+	runMockInstanceCallerTest(&mockInstancesTestTemplate{
+		t:         t,
+		contracts: &mockContracts{parentMockContract},
+		input:     input,
+		setup: func(host *vmHost, world *worldmock.MockWorld) {
+			world.AcctMap.CreateAccount(userAddress)
+			createMockBuiltinFunctions(t, host, world)
+			setZeroCodeCosts(host)
+			setAsyncCosts(host, asyncBaseTestConfig.gasLockCost)
+		},
+		assertResults: func(world *worldmock.MockWorld, verify *VMOutputVerifier) {
+			verify.RetCode(vmcommon.Ok)
+			expectedGasUsedByParent := asyncBaseTestConfig.gasUsedByParent + asyncBaseTestConfig.gasUsedByCallback + gasUsedByBuiltinClaim
+			verify.GasUsed(parentAddress, expectedGasUsedByParent)
+			expectedGasUsedByChild := uint64(0) // all gas for builtin call is consummed on caller
+			verify.GasUsed(userAddress, asyncBaseTestConfig.gasUsedByChild)
+			verify.Ok().GasRemaining(asyncBaseTestConfig.gasProvided - expectedGasUsedByParent - expectedGasUsedByChild)
+		},
+	})
 }
 
 type asyncBuiltInCallTestConfig struct {
@@ -286,40 +306,28 @@ func TestGasUsed_AsyncCall_BuiltinMultiContractCall(t *testing.T) {
 	// TODO no possible yet, reactivate when new async context is on
 	t.Skip()
 
-	host, world, imb := defaultTestArwenForCallWithInstanceMocks(t)
-
-	baseConfig := &asyncCallBaseTestConfig{
-		gasProvided:        1000,
-		gasUsedByParent:    200,
-		gasProvidedToChild: 500,
-		gasUsedByChild:     100,
-		gasUsedByCallback:  100,
-		gasLock:            150,
-
-		transferFromParentToChild: 0,
-
-		parentBalance: 1000,
-		childBalance:  1000,
-	}
-
 	testConfig := &asyncBuiltInCallTestConfig{
-		asyncCallBaseTestConfig:   *baseConfig,
+		asyncCallBaseTestConfig:   asyncBaseTestConfig,
 		transferFromChildToParent: 5,
 	}
 
-	world.AcctMap.CreateAccount(userAddress)
+	parentMockContract := &mockSmartContract{
+		address:     parentAddress,
+		balance:     testConfig.parentBalance,
+		config:      testConfig,
+		initMethods: &initFunctions{addAsyncBuiltinMultiContractParentMethodsToInstanceMock},
+	}
 
-	createTestAsyncBuiltinC2CParentContract(t, host, imb, baseConfig)
-	createTestAsyncBuiltinC2CChildContract(t, host, imb, testConfig)
-	zeroCodeCosts(host)
-	asyncCosts(host, baseConfig.gasLock)
+	childMockContract := &mockSmartContract{
+		address:     childAddress,
+		balance:     testConfig.childBalance,
+		config:      testConfig,
+		initMethods: &initFunctions{addAsyncBuiltinMultiContractChildMethodsToInstanceMock},
+	}
 
-	createMockBuiltinFunctions(t, host, world)
-
-	gasProvided := uint64(1000)
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
-	input.GasProvided = gasProvided
+	input.GasProvided = testConfig.gasProvided
 	input.Function = "forwardAsyncCall"
 	input.Arguments = [][]byte{
 		userAddress,
@@ -328,42 +336,44 @@ func TestGasUsed_AsyncCall_BuiltinMultiContractCall(t *testing.T) {
 		[]byte("builtinClaim"),
 	}
 
-	vmOutput, err := host.RunSmartContractCall(input)
-
-	verify := NewVMOutputVerifier(t, vmOutput, err)
-	expectedGasUsedByParent := baseConfig.gasUsedByParent + baseConfig.gasUsedByCallback
-	verify.GasUsed(parentAddress, expectedGasUsedByParent)
-	expectedGasUsedByChild := baseConfig.gasUsedByChild + gasUsedByBuiltinClaim
-	verify.GasUsed(childAddress, baseConfig.gasUsedByChild)
-	verify.Ok().GasRemaining(baseConfig.gasProvided - expectedGasUsedByParent - expectedGasUsedByChild)
+	runMockInstanceCallerTest(&mockInstancesTestTemplate{
+		t:         t,
+		contracts: &mockContracts{parentMockContract, childMockContract},
+		input:     input,
+		setup: func(host *vmHost, world *worldmock.MockWorld) {
+			world.AcctMap.CreateAccount(userAddress)
+			setZeroCodeCosts(host)
+			setAsyncCosts(host, testConfig.gasLockCost)
+			createMockBuiltinFunctions(t, host, world)
+		},
+		assertResults: func(world *worldmock.MockWorld, verify *VMOutputVerifier) {
+			verify.RetCode(vmcommon.Ok)
+			expectedGasUsedByParent := testConfig.gasUsedByParent + testConfig.gasUsedByCallback
+			verify.GasUsed(parentAddress, expectedGasUsedByParent)
+			expectedGasUsedByChild := testConfig.gasUsedByChild + gasUsedByBuiltinClaim
+			verify.GasUsed(childAddress, testConfig.gasUsedByChild)
+			verify.Ok().GasRemaining(testConfig.gasProvided - expectedGasUsedByParent - expectedGasUsedByChild)
+		},
+	})
 }
 
 func TestGasUsed_AsyncCall_ChildFails(t *testing.T) {
-	host, _, imb := defaultTestArwenForCallWithInstanceMocks(t)
 
-	testConfig := &asyncCallTestConfig{
-		asyncCallBaseTestConfig: asyncCallBaseTestConfig{
-			gasProvided:        116000,
-			gasUsedByParent:    400,
-			gasProvidedToChild: 300,
-			gasUsedByChild:     200,
-			gasUsedByCallback:  100,
-			gasLock:            150,
+	testConfig := asyncTestConfig
 
-			transferFromParentToChild: 7,
-
-			parentBalance: 1000,
-			childBalance:  1000,
-		},
-
-		transferToThirdParty: 3,
-		transferToVault:      4,
+	parentMockContract := &mockSmartContract{
+		address:     parentAddress,
+		balance:     testConfig.parentBalance,
+		config:      testConfig,
+		initMethods: &initFunctions{addAsyncParentMethodsToInstanceMock},
 	}
 
-	createTestAsyncParentContract(t, host, imb, testConfig)
-	createTestAsyncChildContract(t, host, imb, testConfig)
-	zeroCodeCosts(host)
-	asyncCosts(host, testConfig.gasLock)
+	childMockContract := &mockSmartContract{
+		address:     childAddress,
+		balance:     testConfig.childBalance,
+		config:      testConfig,
+		initMethods: &initFunctions{addAsyncChildMethodsToInstanceMock},
+	}
 
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
@@ -371,56 +381,68 @@ func TestGasUsed_AsyncCall_ChildFails(t *testing.T) {
 	input.GasProvided = testConfig.gasProvided
 	input.Arguments = [][]byte{{1}}
 
-	vmOutput, err := host.RunSmartContractCall(input)
-	require.Nil(t, err)
-	require.NotNil(t, vmOutput)
-	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
-
-	expectedVMOutput := expectedVMOutputAsyncCallChildFailsWithConfig(testConfig)
-	require.Equal(t, expectedVMOutput, vmOutput)
+	runMockInstanceCallerTest(&mockInstancesTestTemplate{
+		t:         t,
+		contracts: &mockContracts{parentMockContract, childMockContract},
+		input:     input,
+		setup: func(host *vmHost, world *worldmock.MockWorld) {
+			setZeroCodeCosts(host)
+			setAsyncCosts(host, testConfig.gasLockCost)
+		},
+		assertResults: func(world *worldmock.MockWorld, verify *VMOutputVerifier) {
+			// TODO complete with expectedVMOutputAsyncCallChildFailsWithConfig()
+			// + delete function + refactor old one
+			verify.RetCode(vmcommon.Ok)
+			expectedGasUsedByParent := testConfig.gasProvided - testConfig.gasLockCost + testConfig.gasUsedByCallback
+			verify.GasUsed(parentAddress, expectedGasUsedByParent)
+			verify.Ok().GasRemaining(testConfig.gasProvided - expectedGasUsedByParent)
+		},
+	})
 }
 
 func TestGasUsed_AsyncCall_CallBackFails(t *testing.T) {
-	host, _, imb := defaultTestArwenForCallWithInstanceMocks(t)
 
-	testConfig := &asyncCallTestConfig{
-		asyncCallBaseTestConfig: asyncCallBaseTestConfig{
-			gasProvided:        116000,
-			gasUsedByParent:    400,
-			gasProvidedToChild: 300,
-			gasUsedByChild:     200,
-			gasUsedByCallback:  100,
-			gasLock:            150,
+	testConfig := asyncTestConfig
 
-			transferFromParentToChild: 7,
-
-			parentBalance: 1000,
-			childBalance:  1000,
-		},
-
-		transferToThirdParty: 3,
-		transferToVault:      4,
+	parentMockContract := &mockSmartContract{
+		address:     parentAddress,
+		balance:     testConfig.parentBalance,
+		config:      testConfig,
+		initMethods: &initFunctions{addAsyncParentMethodsToInstanceMock},
 	}
 
-	createTestAsyncParentContract(t, host, imb, testConfig)
-	createTestAsyncChildContract(t, host, imb, testConfig)
-	zeroCodeCosts(host)
-	asyncCosts(host, testConfig.gasLock)
+	childMockContract := &mockSmartContract{
+		address:     childAddress,
+		balance:     testConfig.childBalance,
+		config:      testConfig,
+		initMethods: &initFunctions{addAsyncChildMethodsToInstanceMock},
+	}
 
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = "performAsyncCall"
 	input.GasProvided = testConfig.gasProvided
 	input.Arguments = [][]byte{{0, 3}}
-	input.CurrentTxHash = []byte("txhash")
 
-	vmOutput, err := host.RunSmartContractCall(input)
-	require.Nil(t, err)
-	require.NotNil(t, vmOutput)
-	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
-
-	expectedVMOutput := expectedVMOutputAsyncCallCallBackFailsWithConfig(testConfig)
-	require.Equal(t, expectedVMOutput, vmOutput)
+	runMockInstanceCallerTest(&mockInstancesTestTemplate{
+		t:         t,
+		contracts: &mockContracts{parentMockContract, childMockContract},
+		input:     input,
+		setup: func(host *vmHost, world *worldmock.MockWorld) {
+			setZeroCodeCosts(host)
+			setAsyncCosts(host, testConfig.gasLockCost)
+		},
+		assertResults: func(world *worldmock.MockWorld, verify *VMOutputVerifier) {
+			// TODO complete with expectedVMOutputAsyncCallCallBackFailsWithConfig()
+			// + delete function + refactor old one
+			verify.RetCode(vmcommon.Ok)
+			expectedGasUsedByParent := testConfig.gasProvided - testConfig.gasUsedByChild
+			verify.GasUsed(parentAddress, expectedGasUsedByParent)
+			expectedGasUsedByChild := testConfig.gasUsedByChild
+			verify.GasUsed(childAddress, expectedGasUsedByChild)
+			verify.Ok().GasRemaining(0)
+		},
+	})
 }
 
 type asyncCallRecursiveTestConfig struct {
@@ -430,34 +452,27 @@ type asyncCallRecursiveTestConfig struct {
 
 func TestGasUsed_AsyncCall_Recursive(t *testing.T) {
 
-	// TODO no possible yet, reactivate when new async context is on
+	// // TODO no possible yet, reactivate when new async context is on
 	t.Skip()
 
-	host, _, imb := defaultTestArwenForCallWithInstanceMocks(t)
-
-	baseConfig := &asyncCallBaseTestConfig{
-		gasProvided:        1000,
-		gasUsedByParent:    200,
-		gasProvidedToChild: 500,
-		gasUsedByChild:     100,
-		gasUsedByCallback:  100,
-		gasLock:            150,
-
-		transferFromParentToChild: 10,
-
-		parentBalance: 1000,
-		childBalance:  1000,
-	}
-
 	testConfig := &asyncCallRecursiveTestConfig{
-		asyncCallBaseTestConfig: *baseConfig,
+		asyncCallBaseTestConfig: *&asyncBaseTestConfig,
 		recursiveChildCalls:     2,
 	}
 
-	createTestAsyncRecursiveParentContract(t, host, imb, testConfig)
-	createTestAsyncRecursiveChildContract(t, host, imb, baseConfig)
-	zeroCodeCosts(host)
-	asyncCosts(host, testConfig.gasLock)
+	parentMockContract := &mockSmartContract{
+		address:     parentAddress,
+		balance:     testConfig.parentBalance,
+		config:      testConfig,
+		initMethods: &initFunctions{addAsyncRecursiveParentMethodsToInstanceMock},
+	}
+
+	childMockContract := &mockSmartContract{
+		address:     childAddress,
+		balance:     testConfig.childBalance,
+		config:      &testConfig.asyncCallBaseTestConfig,
+		initMethods: &initFunctions{addAsyncRecursiveChildMethodsToInstanceMock},
+	}
 
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
@@ -465,13 +480,26 @@ func TestGasUsed_AsyncCall_Recursive(t *testing.T) {
 	input.GasProvided = testConfig.gasProvided
 	input.Arguments = [][]byte{childAddress, []byte("recursiveAsyncCall"), big.NewInt(int64(testConfig.recursiveChildCalls)).Bytes()}
 
-	vmOutput, err := host.RunSmartContractCall(input)
-	require.Nil(t, err)
-	require.NotNil(t, vmOutput)
-	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
-
-	expectedVMOutput := expectedVMOutputAsyncRecursiveCallWithConfig(testConfig)
-	require.Equal(t, expectedVMOutput, vmOutput)
+	runMockInstanceCallerTest(&mockInstancesTestTemplate{
+		t:         t,
+		contracts: &mockContracts{parentMockContract, childMockContract},
+		input:     input,
+		setup: func(host *vmHost, world *worldmock.MockWorld) {
+			setZeroCodeCosts(host)
+			setAsyncCosts(host, testConfig.gasLockCost)
+		},
+		assertResults: func(world *worldmock.MockWorld, verify *VMOutputVerifier) {
+			// TODO complete with expectedVMOutputAsyncRecursiveCallWithConfig()
+			// + delete function + refactor old one
+			verify.RetCode(vmcommon.Ok)
+			expectedGasUsedByParent := testConfig.gasUsedByParent + testConfig.gasUsedByCallback
+			verify.GasUsed(parentAddress, expectedGasUsedByParent)
+			expectedGasUsedByChild := uint64(testConfig.recursiveChildCalls)*testConfig.gasUsedByChild +
+				uint64(testConfig.recursiveChildCalls-1)*testConfig.gasUsedByCallback
+			verify.GasUsed(childAddress, expectedGasUsedByChild)
+			verify.Ok().GasRemaining(testConfig.gasProvided - expectedGasUsedByParent - expectedGasUsedByChild)
+		},
+	})
 }
 
 type asyncCallMultiChildTestConfig struct {
@@ -484,31 +512,24 @@ func TestGasUsed_AsyncCall_MultiChild(t *testing.T) {
 	// TODO no possible yet, reactivate when new async context is on
 	t.Skip()
 
-	host, _, imb := defaultTestArwenForCallWithInstanceMocks(t)
-
-	baseConfig := &asyncCallBaseTestConfig{
-		gasProvided:        1000,
-		gasUsedByParent:    200,
-		gasProvidedToChild: 500,
-		gasUsedByChild:     100,
-		gasUsedByCallback:  100,
-		gasLock:            150,
-
-		transferFromParentToChild: 10,
-
-		parentBalance: 1000,
-		childBalance:  1000,
-	}
-
 	testConfig := &asyncCallMultiChildTestConfig{
-		asyncCallBaseTestConfig: *baseConfig,
+		asyncCallBaseTestConfig: *&asyncBaseTestConfig,
 		childCalls:              2,
 	}
 
-	createTestAsyncMultiChildParentContract(t, host, imb, testConfig)
-	createTestAsyncRecursiveChildContract(t, host, imb, baseConfig)
-	zeroCodeCosts(host)
-	asyncCosts(host, testConfig.gasLock)
+	parentMockContract := &mockSmartContract{
+		address:     parentAddress,
+		balance:     testConfig.parentBalance,
+		config:      testConfig,
+		initMethods: &initFunctions{addAsyncMultiChildParentMethodsToInstanceMock},
+	}
+
+	childMockContract := &mockSmartContract{
+		address:     childAddress,
+		balance:     testConfig.childBalance,
+		config:      &testConfig.asyncCallBaseTestConfig,
+		initMethods: &initFunctions{addAsyncRecursiveChildMethodsToInstanceMock},
+	}
 
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
@@ -516,13 +537,25 @@ func TestGasUsed_AsyncCall_MultiChild(t *testing.T) {
 	input.GasProvided = testConfig.gasProvided
 	input.Arguments = [][]byte{childAddress, []byte("recursiveAsyncCall")}
 
-	vmOutput, err := host.RunSmartContractCall(input)
-	require.Nil(t, err)
-	require.NotNil(t, vmOutput)
-	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
-
-	expectedVMOutput := expectedVMOutputAsyncMultiChildCallWithConfig(testConfig)
-	require.Equal(t, expectedVMOutput, vmOutput)
+	runMockInstanceCallerTest(&mockInstancesTestTemplate{
+		t:         t,
+		contracts: &mockContracts{parentMockContract, childMockContract},
+		input:     input,
+		setup: func(host *vmHost, world *worldmock.MockWorld) {
+			setZeroCodeCosts(host)
+			setAsyncCosts(host, testConfig.gasLockCost)
+		},
+		assertResults: func(world *worldmock.MockWorld, verify *VMOutputVerifier) {
+			// TODO complete with expectedVMOutputAsyncMultiChildCallWithConfig()
+			// + delete function + refactor old one
+			verify.RetCode(vmcommon.Ok)
+			expectedGasUsedByParent := testConfig.gasUsedByParent + testConfig.gasUsedByCallback
+			verify.GasUsed(parentAddress, expectedGasUsedByParent)
+			expectedGasUsedByChild := uint64(testConfig.childCalls) * testConfig.gasUsedByChild
+			verify.GasUsed(childAddress, expectedGasUsedByChild)
+			verify.Ok().GasRemaining(testConfig.gasProvided - expectedGasUsedByParent - expectedGasUsedByChild)
+		},
+	})
 }
 
 func createTestParentContract(t testing.TB, host *vmHost, imb *mock.InstanceBuilderMock) {
@@ -616,7 +649,7 @@ func addForwarderMethodsToInstanceMock(instanceMock *mock.InstanceMock, gasPerCa
 	})
 }
 
-func zeroCodeCosts(host *vmHost) {
+func setZeroCodeCosts(host *vmHost) {
 	host.Metering().GasSchedule().BaseOperationCost.CompilePerByte = 0
 	host.Metering().GasSchedule().BaseOperationCost.AoTPreparePerByte = 0
 	host.Metering().GasSchedule().BaseOperationCost.GetCode = 0
@@ -625,7 +658,7 @@ func zeroCodeCosts(host *vmHost) {
 	host.Metering().GasSchedule().ElrondAPICost.SignalError = 0
 }
 
-func asyncCosts(host *vmHost, gasLock uint64) {
+func setAsyncCosts(host *vmHost, gasLock uint64) {
 	host.Metering().GasSchedule().ElrondAPICost.AsyncCallStep = 0
 	host.Metering().GasSchedule().ElrondAPICost.AsyncCallbackGasLock = gasLock
 }
