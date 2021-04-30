@@ -1,0 +1,33 @@
+{
+    "name": "sc_distribution_rs",
+    "steps": [
+        {
+            "step": "setState",
+            "accounts": {
+                "address:farm_contract": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "esdtRoles": {
+                        "str:FARM-abcdef": [
+                            "ESDTRoleNFTCreate",
+                            "ESDTRoleNFTAddQuantity",
+                            "ESDTRoleNFTBurn"
+                        ],
+                        "str:LPTOK-abcdef": [
+                            "ESDTRoleLocalBurn"
+                        ]
+                    },
+                    "storage": {
+                        "str:farming_pool_token_id": "str:MEX-abcdef",
+                        "str:farm_token_id": "str:FARM-abcdef",
+                        "str:router_address": "address:owner",
+                        "str:state": "1",
+                        "str:owner": "address:owner",
+                        "str:farm_with_lp_tokens": "1"
+                    },
+                    "code": "file:../output/elrond_dex_farm.wasm"
+                }
+            }
+        }
+    ]
+}

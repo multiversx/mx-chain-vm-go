@@ -67,7 +67,8 @@
                 "arguments": [
                     "str:MEX-abcdef",
                     "str:LKMEX-abcdef",
-                    "str:WLPTOK-abcdef"
+                    "str:WLPTOK-abcdef",
+                    "str:WFARM-abcdef"
                 ],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
@@ -117,7 +118,8 @@
                     "storage": {
                         "str:distributed_token_id": "str:MEX-abcdef",
                         "str:locked_token_id": "str:LKMEX-abcdef",
-                        "str:wrapped_lp_token_id": "str:WLPTOK-abcdef"
+                        "str:wrapped_lp_token_id": "str:WLPTOK-abcdef",
+                        "str:wrapped_farm_token_id": "str:WFARM-abcdef"
                     },
                     "code": "file:../output/sc_distribution_rs.wasm"
                 },
@@ -144,12 +146,18 @@
                             "ESDTRoleNFTCreate",
                             "ESDTRoleNFTAddQuantity",
                             "ESDTRoleNFTBurn"
+                        ],
+                        "str:WFARM-abcdef": [
+                            "ESDTRoleNFTCreate",
+                            "ESDTRoleNFTAddQuantity",
+                            "ESDTRoleNFTBurn"
                         ]
                     },
                     "storage": {
                         "str:distributed_token_id": "str:MEX-abcdef",
                         "str:locked_token_id": "str:LKMEX-abcdef",
-                        "str:wrapped_lp_token_id": "str:WLPTOK-abcdef"
+                        "str:wrapped_lp_token_id": "str:WLPTOK-abcdef",
+                        "str:wrapped_farm_token_id": "str:WFARM-abcdef"
                     },
                     "code": "file:../output/sc_distribution_rs.wasm",
                     "owner": "address:owner"
