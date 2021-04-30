@@ -193,20 +193,7 @@ func (context *meteringContext) TrackGasUsedByBuiltinFunction(err error, builtin
 		return err
 	}
 
-	outputAccounts := builtinOutput.OutputAccounts
-	callerContractAccount, exists := outputAccounts[string(builtinInput.CallerAddr)]
-
-	gasTransferredByCurrentAccount := uint64(0)
-	if exists {
-		gasTransferredByCurrentAccount = context.getGasTransferredByAccount(callerContractAccount)
-	}
-
-	gasUsedByOthers := context.getGasUsedByAllOtherAccounts(outputAccounts)
-
 	gasUsed := math.SubUint64(builtinInput.GasProvided, builtinOutput.GasRemaining)
-	gasUsed = math.SubUint64(gasUsed, gasTransferredByCurrentAccount)
-	gasUsed = math.SubUint64(gasUsed, gasUsedByOthers)
-
 	context.UseGas(gasUsed)
 
 	return nil

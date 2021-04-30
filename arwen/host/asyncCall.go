@@ -172,7 +172,7 @@ func (host *vmHost) executeSyncCallbackCall(
 	host.Metering().RestoreGas(asyncCallInfo.GetGasLocked())
 
 	callbackVMOutput, _, callBackErr := host.ExecuteOnDestContext(callbackCallInput)
-	log.Trace("async call: sync dest call",
+	log.Trace("async call: sync callback call",
 		"retCode", callbackVMOutput.ReturnCode,
 		"message", callbackVMOutput.ReturnMessage,
 		"data", callbackVMOutput.ReturnData,
