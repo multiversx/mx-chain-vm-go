@@ -1,0 +1,64 @@
+{
+	"name": "exit farm",
+	"steps": [
+		{
+			"step": "externalSteps",
+			"path": "enter_farm.scen.json"
+		},
+		{
+			"step": "scCall",
+			"txId": "unstake",
+			"tx": {
+				"from": "address:user1",
+				"to": "address:farm_contract",
+				"value": "0",
+				"function": "claimRewards",
+				"esdt": {
+					"tokenIdentifier": "str:FARM-abcdef",
+					"value": "100,000",
+					"nonce": "2"
+				},
+				"arguments": [],
+				"gasLimit": "100,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": ["0x03"],
+				"status": "0",
+				"message": "",
+				"gas": "*",
+				"refund": "*"
+			}
+		},
+		{
+			"step": "checkState",
+			"accounts": {
+				"address:user1": {
+					"nonce": "11",
+					"balance": "1,000,000,000,000,000,000,000,000,000,000",
+					"esdt": {
+						"str:WEGLD-abcdef": "3000000000",
+						"str:ALC-abcdef": "3000000000",
+						"str:BLC-abcdef": "5000000000",
+						"str:LPTOK-abcdef": "1799999000",
+						"str:FARM-abcdef": [
+							{
+								"nonce": "0x01",
+								"value": "99,999,000"
+							},
+							{
+								"nonce": "0x02",
+								"value": "99,900,000"
+							},
+							{
+								"nonce": "0x03",
+								"value": "100,000"
+							}
+						]
+					}
+				},
+				"+": ""
+			}
+		}
+	]
+}
