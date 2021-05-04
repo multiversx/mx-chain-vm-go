@@ -81,7 +81,7 @@ func BuildSCModule(scName string, prefixToTestSCs string) {
 }
 
 // defaultTestArwenForDeployment creates an Arwen vmHost configured for testing deployments
-func defaultTestArwenForDeployment(t *testing.T, _ uint64, newAddress []byte) *vmHost {
+func defaultTestArwenForDeployment(t *testing.T, _ uint64, newAddress []byte) (*vmHost, *contextmock.BlockchainHookStub) {
 	stubBlockchainHook := &contextmock.BlockchainHookStub{}
 	stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
 		return &contextmock.StubAccount{
@@ -93,7 +93,7 @@ func defaultTestArwenForDeployment(t *testing.T, _ uint64, newAddress []byte) *v
 	}
 
 	host := defaultTestArwen(t, stubBlockchainHook)
-	return host
+	return host, stubBlockchainHook
 }
 
 func defaultTestArwenForCall(tb testing.TB, code []byte, balance *big.Int) (*vmHost, *contextmock.BlockchainHookStub) {
@@ -196,6 +196,40 @@ func defaultTestArwenForTwoSCs(
 	return host, stubBlockchainHook
 }
 
+func defaultTestArwenForContracts(
+	t *testing.T,
+	contracts []*instanceTestSmartContract,
+) (*vmHost, *contextmock.BlockchainHookStub) {
+
+	stubBlockchainHook := &contextmock.BlockchainHookStub{}
+
+	contractsMap := make(map[string]*contextmock.StubAccount)
+	codeMap := make(map[string]*[]byte)
+
+	for _, contract := range contracts {
+		contractsMap[string(contract.address)] = &contextmock.StubAccount{Address: contract.address, Balance: big.NewInt(contract.balance)}
+		codeMap[string(contract.address)] = &contract.code
+	}
+
+	stubBlockchainHook.GetUserAccountCalled = func(scAddress []byte) (vmcommon.UserAccountHandler, error) {
+		contract, found := contractsMap[string(scAddress)]
+		if found {
+			return contract, nil
+		}
+		return nil, errAccountNotFound
+	}
+	stubBlockchainHook.GetCodeCalled = func(account vmcommon.UserAccountHandler) []byte {
+		code, found := codeMap[string(account.AddressBytes())]
+		if found {
+			return *code
+		}
+		return nil
+	}
+
+	host := defaultTestArwen(t, stubBlockchainHook)
+	return host, stubBlockchainHook
+}
+
 func defaultTestArwenWithWorldMock(tb testing.TB) (*vmHost, *worldmock.MockWorld) {
 	world := worldmock.NewMockWorld()
 	host := defaultTestArwen(tb, world)
@@ -269,6 +303,94 @@ func DefaultTestContractCallInput() *vmcommon.ContractCallInput {
 		RecipientAddr: parentAddress,
 		Function:      "function",
 	}
+}
+
+type contractCallInputBuilder struct {
+	vmcommon.ContractCallInput
+}
+
+func createTestContractCallInputBuilder() *contractCallInputBuilder {
+	return &contractCallInputBuilder{
+		ContractCallInput: *DefaultTestContractCallInput(),
+	}
+}
+
+func (contractInput *contractCallInputBuilder) withRecipientAddr(address []byte) *contractCallInputBuilder {
+	contractInput.ContractCallInput.RecipientAddr = address
+	return contractInput
+}
+
+func (contractInput *contractCallInputBuilder) withGasProvided(gas uint64) *contractCallInputBuilder {
+	contractInput.ContractCallInput.VMInput.GasProvided = gas
+	return contractInput
+}
+
+func (contractInput *contractCallInputBuilder) withFunction(function string) *contractCallInputBuilder {
+	contractInput.ContractCallInput.Function = function
+	return contractInput
+}
+
+func (contractInput *contractCallInputBuilder) withArguments(arguments ...[]byte) *contractCallInputBuilder {
+	contractInput.ContractCallInput.VMInput.Arguments = arguments
+	return contractInput
+}
+
+func (contractInput *contractCallInputBuilder) withCurrentTxHash(txHash []byte) *contractCallInputBuilder {
+	contractInput.ContractCallInput.CurrentTxHash = txHash
+	return contractInput
+}
+
+func (contractInput *contractCallInputBuilder) withESDTValue(esdtValue *big.Int) *contractCallInputBuilder {
+	contractInput.ContractCallInput.ESDTValue = esdtValue
+	return contractInput
+}
+
+func (contractInput *contractCallInputBuilder) withESDTTokenName(esdtTokenName []byte) *contractCallInputBuilder {
+	contractInput.ContractCallInput.ESDTTokenName = esdtTokenName
+	return contractInput
+}
+
+func (contractInput *contractCallInputBuilder) build() *vmcommon.ContractCallInput {
+	return &contractInput.ContractCallInput
+}
+
+type contractCreateInputBuilder struct {
+	vmcommon.ContractCreateInput
+}
+
+func createTestContractCreateInputBuilder() *contractCreateInputBuilder {
+	return &contractCreateInputBuilder{
+		ContractCreateInput: *DefaultTestContractCreateInput(),
+	}
+}
+
+func (contractInput *contractCreateInputBuilder) withGasProvided(gas uint64) *contractCreateInputBuilder {
+	contractInput.ContractCreateInput.GasProvided = gas
+	return contractInput
+}
+
+func (contractInput *contractCreateInputBuilder) withContractCode(code []byte) *contractCreateInputBuilder {
+	contractInput.ContractCreateInput.ContractCode = code
+	return contractInput
+}
+
+func (contractInput *contractCreateInputBuilder) withCallerAddr(address []byte) *contractCreateInputBuilder {
+	contractInput.ContractCreateInput.CallerAddr = address
+	return contractInput
+}
+
+func (contractInput *contractCreateInputBuilder) withCallValue(callValue int64) *contractCreateInputBuilder {
+	contractInput.ContractCreateInput.CallValue = big.NewInt(callValue)
+	return contractInput
+}
+
+func (contractInput *contractCreateInputBuilder) withArguments(arguments ...[]byte) *contractCreateInputBuilder {
+	contractInput.ContractCreateInput.Arguments = arguments
+	return contractInput
+}
+
+func (contractInput *contractCreateInputBuilder) build() *vmcommon.ContractCreateInput {
+	return &contractInput.ContractCreateInput
 }
 
 // MakeVMOutput creates a vmcommon.VMOutput struct with default values

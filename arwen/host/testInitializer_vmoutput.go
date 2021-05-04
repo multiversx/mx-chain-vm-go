@@ -1,6 +1,7 @@
 package host
 
 import (
+	"math/big"
 	"testing"
 
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
@@ -26,11 +27,11 @@ func NewVMOutputVerifier(t testing.TB, vmOutput *vmcommon.VMOutput, err error) *
 
 // Ok verifies if return code is vmcommon.Ok
 func (v *VMOutputVerifier) Ok() *VMOutputVerifier {
-	return v.RetCode(vmcommon.Ok)
+	return v.ReturnCode(vmcommon.Ok)
 }
 
-// RetCode verifies if ReturnCode of output is the same as the provided one
-func (v *VMOutputVerifier) RetCode(code vmcommon.ReturnCode) *VMOutputVerifier {
+// ReturnCode verifies if ReturnCode of output is the same as the provided one
+func (v *VMOutputVerifier) ReturnCode(code vmcommon.ReturnCode) *VMOutputVerifier {
 	require.Equal(v.T, code, v.vmOutput.ReturnCode, "ReturnCode")
 	return v
 }
@@ -71,6 +72,7 @@ func (v *VMOutputVerifier) GasRemaining(gas uint64) *VMOutputVerifier {
 func (v *VMOutputVerifier) Balance(address []byte, balance int64) *VMOutputVerifier {
 	account := v.vmOutput.OutputAccounts[string(address)]
 	require.NotNil(v.T, account, "Balance")
+	require.NotNil(v.T, account.Balance, "Balance")
 	require.Equal(v.T, balance, account.Balance.Int64(), "Balance")
 	return v
 }
@@ -79,13 +81,46 @@ func (v *VMOutputVerifier) Balance(address []byte, balance int64) *VMOutputVerif
 func (v *VMOutputVerifier) BalanceDelta(address []byte, balanceDelta int64) *VMOutputVerifier {
 	account := v.vmOutput.OutputAccounts[string(address)]
 	require.NotNil(v.T, account, "BalanceDelta")
+	require.NotNil(v.T, account.BalanceDelta, "BalanceDelta")
 	require.Equal(v.T, balanceDelta, account.BalanceDelta.Int64(), "BalanceDelta")
+	return v
+}
+
+// Nonce verifies if Nonce of the specified account is the same as the provided one
+func (v *VMOutputVerifier) Nonce(address []byte, nonce uint64) *VMOutputVerifier {
+	account := v.vmOutput.OutputAccounts[string(address)]
+	require.NotNil(v.T, account, "Nonce")
+	require.Equal(v.T, nonce, account.Nonce, "Nonce")
+	return v
+}
+
+// Code verifies if Code of the specified account is the same as the provided one
+func (v *VMOutputVerifier) Code(address []byte, code []byte) *VMOutputVerifier {
+	account := v.vmOutput.OutputAccounts[string(address)]
+	require.NotNil(v.T, account, "Code")
+	require.Equal(v.T, code, account.Code, "Code")
+	return v
+}
+
+// CodeMetadata if CodeMetadata of the specified account is the same as the provided one
+func (v *VMOutputVerifier) CodeMetadata(address []byte, codeMetadata []byte) *VMOutputVerifier {
+	account := v.vmOutput.OutputAccounts[string(address)]
+	require.NotNil(v.T, account, "CodeMetadata")
+	require.Equal(v.T, codeMetadata, account.CodeMetadata, "CodeMetadata")
+	return v
+}
+
+// CodeDeployerAddress if CodeDeployerAddress of the specified account is the same as the provided one
+func (v *VMOutputVerifier) CodeDeployerAddress(address []byte, codeDeployerAddress []byte) *VMOutputVerifier {
+	account := v.vmOutput.OutputAccounts[string(address)]
+	require.NotNil(v.T, account, "CodeDeployerAddress")
+	require.Equal(v.T, codeDeployerAddress, account.CodeDeployerAddress, "CodeDeployerAddress")
 	return v
 }
 
 // ReturnData verifies if ReturnData is the same as the provided one
 func (v *VMOutputVerifier) ReturnData(returnData ...[]byte) *VMOutputVerifier {
-	require.Equal(v.T, len(returnData), len(v.vmOutput.ReturnData))
+	require.Equal(v.T, len(returnData), len(v.vmOutput.ReturnData), "ReturnData")
 	for idx := range v.vmOutput.ReturnData {
 		require.Equal(v.T, returnData[idx], v.vmOutput.ReturnData[idx], "ReturnData")
 	}
@@ -96,6 +131,20 @@ type storeEntry struct {
 	address []byte
 	key     []byte
 	value   []byte
+}
+
+func createStoreEntry(address []byte) *storeEntry {
+	return &storeEntry{address: address}
+}
+
+func (storeEntry *storeEntry) withKey(key []byte) *storeEntry {
+	storeEntry.key = key
+	return storeEntry
+}
+
+func (storeEntry *storeEntry) withValue(value []byte) storeEntry {
+	storeEntry.value = value
+	return *storeEntry
 }
 
 // Storage verifies if StorageUpdate(s) for the speficied accounts are the same as the provided ones
@@ -119,7 +168,9 @@ func (v *VMOutputVerifier) Storage(returnData ...storeEntry) *VMOutputVerifier {
 		for key, value := range accountStorageMap {
 			require.Equal(v.T, value, *outputAccount.StorageUpdates[key], "Storage")
 		}
+		delete(storage, string(outputAccount.Address))
 	}
+	require.Equal(v.T, 0, len(storage), "Storage")
 
 	return v
 }
@@ -127,6 +178,25 @@ func (v *VMOutputVerifier) Storage(returnData ...storeEntry) *VMOutputVerifier {
 type transferEntry struct {
 	address  []byte
 	transfer vmcommon.OutputTransfer
+}
+
+func createTransferEntry(address []byte) *transferEntry {
+	return &transferEntry{address: address}
+}
+
+func (transferEntry *transferEntry) withData(data []byte) *transferEntry {
+	transferEntry.transfer.Data = data
+	return transferEntry
+}
+
+func (transferEntry *transferEntry) withValue(value *big.Int) *transferEntry {
+	transferEntry.transfer.Value = value
+	return transferEntry
+}
+
+func (transferEntry *transferEntry) withSenderAddress(address []byte) transferEntry {
+	transferEntry.transfer.SenderAddress = address
+	return *transferEntry
 }
 
 // Transfers verifies if OutputTransfer(s) for the speficied accounts are the same as the provided ones
@@ -149,7 +219,9 @@ func (v *VMOutputVerifier) Transfers(transfers ...transferEntry) *VMOutputVerifi
 		for idx := range transfersForAccount {
 			require.Equal(v.T, transfersForAccount[idx], outputAccount.OutputTransfers[idx], "Transfers")
 		}
+		delete(transfersMap, string(outputAccount.Address))
 	}
+	require.Equal(v.T, 0, len(transfersMap), "Transfers")
 
 	return v
 }

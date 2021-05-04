@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	"github.com/ElrondNetwork/elrond-go/core"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
@@ -37,141 +38,155 @@ func TestExecution_ExecuteOnDestContext_ESDTTransferWithoutExecute(t *testing.T)
 	input.ESDTValue = big.NewInt(16)
 
 	vmOutput, err := host.RunSmartContractCall(input)
-	require.Nil(t, err)
 
-	require.NotNil(t, vmOutput)
-	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
-	require.Equal(t, "", vmOutput.ReturnMessage)
+	verify := NewVMOutputVerifier(t, vmOutput, err)
+	verify.
+		Ok()
 }
 
 func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_Claim(t *testing.T) {
-	code := GetTestSCCode("exec-dest-ctx-builtin", "../../")
-	scBalance := big.NewInt(1000)
-
-	host, stubBlockchainHook := defaultTestArwenForCall(t, code, scBalance)
-	stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
-	host.protocolBuiltinFunctions = getDummyBuiltinFunctionNames()
-
-	input := DefaultTestContractCallInput()
-	input.RecipientAddr = parentAddress
-
-	input.Function = "callBuiltinClaim"
-	input.GasProvided = 100000
-
-	vmOutput, err := host.RunSmartContractCall(input)
-	require.Nil(t, err)
-
-	require.NotNil(t, vmOutput)
-	expectedVMOutput := expectedVMOutputDestCtxBuiltinClaim(input, code)
-	require.Equal(t, expectedVMOutput, vmOutput)
+	parentGasUsed := uint64(1988)
+	runInstanceCallerTestBuilder(t).
+		withContracts(
+			createInstanceContract(parentAddress).
+				withCode(GetTestSCCode("exec-dest-ctx-builtin", "../../")).
+				withBalance(1000)).
+		withInput(createTestContractCallInputBuilder().
+			withRecipientAddr(parentAddress).
+			withGasProvided(gasProvided).
+			withFunction("callBuiltinClaim").
+			build()).
+		withSetup(func(host *vmHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
+			stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
+			host.protocolBuiltinFunctions = getDummyBuiltinFunctionNames()
+		}).
+		andAssertResults(func(host *vmHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *VMOutputVerifier) {
+			verify.
+				Ok().
+				BalanceDelta(parentAddress, 42).
+				GasUsed(parentAddress, parentGasUsed).
+				GasRemaining(gasProvided - parentGasUsed).
+				ReturnData([]byte("succ"))
+		})
 }
 
 func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_DoSomething(t *testing.T) {
-	code := GetTestSCCode("exec-dest-ctx-builtin", "../../")
-	scBalance := big.NewInt(1000)
-
-	host, stubBlockchainHook := defaultTestArwenForCall(t, code, scBalance)
-	stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
-	host.protocolBuiltinFunctions = getDummyBuiltinFunctionNames()
-
-	input := DefaultTestContractCallInput()
-	input.RecipientAddr = parentAddress
-
-	input.Function = "callBuiltinDoSomething"
-	input.GasProvided = 100000
-
-	vmOutput, err := host.RunSmartContractCall(input)
-	require.Nil(t, err)
-
-	require.NotNil(t, vmOutput)
-	expectedVMOutput := expectedVMOutputDestCtxBuiltinDoSomething(input, code)
-	require.Equal(t, expectedVMOutput, vmOutput)
+	parentGasUsed := uint64(1992)
+	runInstanceCallerTestBuilder(t).
+		withContracts(
+			createInstanceContract(parentAddress).
+				withCode(GetTestSCCode("exec-dest-ctx-builtin", "../../")).
+				withBalance(1000)).
+		withInput(createTestContractCallInputBuilder().
+			withRecipientAddr(parentAddress).
+			withGasProvided(gasProvided).
+			withFunction("callBuiltinDoSomething").
+			build()).
+		withSetup(func(host *vmHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
+			stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
+			host.protocolBuiltinFunctions = getDummyBuiltinFunctionNames()
+		}).
+		andAssertResults(func(host *vmHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *VMOutputVerifier) {
+			verify.
+				Ok().
+				Balance(parentAddress, 1000).
+				BalanceDelta(parentAddress, big.NewInt(0).Sub(arwen.One, arwen.One).Int64()).
+				GasUsed(parentAddress, parentGasUsed).
+				GasRemaining(gasProvided - parentGasUsed).
+				ReturnData([]byte("succ"))
+		})
 }
 
 func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_Nonexistent(t *testing.T) {
-	code := GetTestSCCode("exec-dest-ctx-builtin", "../../")
-	scBalance := big.NewInt(1000)
-
-	host, stubBlockchainHook := defaultTestArwenForCall(t, code, scBalance)
-	stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
-	host.protocolBuiltinFunctions = getDummyBuiltinFunctionNames()
-
-	input := DefaultTestContractCallInput()
-	input.RecipientAddr = parentAddress
-
-	input.Function = "callNonexistingBuiltin"
-	input.GasProvided = 100000
-
-	vmOutput, err := host.RunSmartContractCall(input)
-	require.Nil(t, err)
-
-	require.NotNil(t, vmOutput)
-	expectedVMOutput := expectedVMOutputDestCtxBuiltinNonexistent(input, code)
-	require.Equal(t, expectedVMOutput, vmOutput)
+	runInstanceCallerTestBuilder(t).
+		withContracts(
+			createInstanceContract(parentAddress).
+				withCode(GetTestSCCode("exec-dest-ctx-builtin", "../../")).
+				withBalance(1000)).
+		withInput(createTestContractCallInputBuilder().
+			withRecipientAddr(parentAddress).
+			withGasProvided(gasProvided).
+			withFunction("callNonexistingBuiltin").
+			build()).
+		withSetup(func(host *vmHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
+			stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
+			host.protocolBuiltinFunctions = getDummyBuiltinFunctionNames()
+		}).
+		andAssertResults(func(host *vmHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *VMOutputVerifier) {
+			verify.
+				ReturnCode(vmcommon.ExecutionFailed).
+				ReturnMessage(arwen.ErrFuncNotFound.Error()).
+				GasRemaining(0)
+		})
 }
 
 func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_Fail(t *testing.T) {
-	code := GetTestSCCode("exec-dest-ctx-builtin", "../../")
-	scBalance := big.NewInt(1000)
-
-	host, stubBlockchainHook := defaultTestArwenForCall(t, code, scBalance)
-	stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
-	host.protocolBuiltinFunctions = getDummyBuiltinFunctionNames()
-
-	input := DefaultTestContractCallInput()
-	input.RecipientAddr = parentAddress
-
-	input.Function = "callBuiltinFail"
-	input.GasProvided = 100000
-
-	vmOutput, err := host.RunSmartContractCall(input)
-	require.Nil(t, err)
-
-	require.NotNil(t, vmOutput)
-	expectedVMOutput := expectedVMOutputDestCtxBuiltinFail(input, code)
-	require.Equal(t, expectedVMOutput, vmOutput)
+	runInstanceCallerTestBuilder(t).
+		withContracts(
+			createInstanceContract(parentAddress).
+				withCode(GetTestSCCode("exec-dest-ctx-builtin", "../../")).
+				withBalance(1000)).
+		withInput(createTestContractCallInputBuilder().
+			withRecipientAddr(parentAddress).
+			withGasProvided(gasProvided).
+			withFunction("callBuiltinFail").
+			build()).
+		withSetup(func(host *vmHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
+			stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
+			host.protocolBuiltinFunctions = getDummyBuiltinFunctionNames()
+		}).
+		andAssertResults(func(host *vmHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *VMOutputVerifier) {
+			verify.
+				ReturnCode(vmcommon.ExecutionFailed).
+				ReturnMessage("whatdidyoudo").
+				GasRemaining(0)
+		})
 }
 
 func TestExecution_AsyncCall_MockBuiltinFails(t *testing.T) {
-	code := GetTestSCCode("async-call-builtin", "../../")
-	scBalance := big.NewInt(1000)
-
-	host, stubBlockchainHook := defaultTestArwenForCall(t, code, scBalance)
-	stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
-	host.protocolBuiltinFunctions = getDummyBuiltinFunctionNames()
-
-	input := DefaultTestContractCallInput()
-	input.RecipientAddr = parentAddress
-	input.Function = "performAsyncCallToBuiltin"
-	input.Arguments = [][]byte{{1}}
-	input.GasProvided = 1000000
-
-	vmOutput, err := host.RunSmartContractCall(input)
-	require.Nil(t, err)
-
-	require.NotNil(t, vmOutput)
-	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
-	require.Equal(t, [][]byte{[]byte("hello"), {10}}, vmOutput.ReturnData)
+	runInstanceCallerTestBuilder(t).
+		withContracts(
+			createInstanceContract(parentAddress).
+				withCode(GetTestSCCode("async-call-builtin", "../../")).
+				withBalance(1000)).
+		withInput(createTestContractCallInputBuilder().
+			withRecipientAddr(parentAddress).
+			withGasProvided(gasProvided).
+			withFunction("performAsyncCallToBuiltin").
+			withArguments([]byte{1}).
+			build()).
+		withSetup(func(host *vmHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
+			stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
+			host.protocolBuiltinFunctions = getDummyBuiltinFunctionNames()
+		}).
+		andAssertResults(func(host *vmHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *VMOutputVerifier) {
+			verify.
+				Ok().
+				ReturnData([]byte("hello"), []byte{10})
+		})
 }
 
 func TestESDT_GettersAPI(t *testing.T) {
-	code := GetTestSCCode("exchange", "../../")
-	scBalance := big.NewInt(1000)
-
-	host, _ := defaultTestArwenForCall(t, code, scBalance)
-
-	input := DefaultTestContractCallInput()
-	input.RecipientAddr = parentAddress
-	input.Function = "validateGetters"
-	input.GasProvided = 1000000
-	input.ESDTValue = big.NewInt(5)
-	input.ESDTTokenName = ESDTTestTokenName
-
-	vmOutput, err := host.RunSmartContractCall(input)
-	require.Nil(t, err)
-
-	require.NotNil(t, vmOutput)
-	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+	runInstanceCallerTestBuilder(t).
+		withContracts(
+			createInstanceContract(parentAddress).
+				withCode(GetTestSCCode("exchange", "../../")).
+				withBalance(1000)).
+		withInput(createTestContractCallInputBuilder().
+			withRecipientAddr(parentAddress).
+			withGasProvided(gasProvided).
+			withFunction("validateGetters").
+			withESDTValue(big.NewInt(5)).
+			withESDTTokenName(ESDTTestTokenName).
+			build()).
+		withSetup(func(host *vmHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
+			stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
+			host.protocolBuiltinFunctions = getDummyBuiltinFunctionNames()
+		}).
+		andAssertResults(func(host *vmHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *VMOutputVerifier) {
+			verify.
+				Ok()
+		})
 }
 
 func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
@@ -213,10 +228,11 @@ func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 	}
 
 	vmOutput, asyncInfo, err := host.ExecuteOnDestContext(input)
-	require.Nil(t, err)
-	require.NotNil(t, vmOutput)
+
+	verify := NewVMOutputVerifier(t, vmOutput, err)
+	verify.
+		Ok()
 	require.Zero(t, len(asyncInfo.AsyncContextMap))
-	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 	host.Clean()
 }
 
