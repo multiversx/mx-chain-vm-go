@@ -177,26 +177,24 @@ func (v *VMOutputVerifier) Storage(returnData ...storeEntry) *VMOutputVerifier {
 }
 
 type transferEntry struct {
-	address  []byte
-	transfer vmcommon.OutputTransfer
+	vmcommon.OutputTransfer
+	address []byte
 }
 
-func createTransferEntry(address []byte) *transferEntry {
-	return &transferEntry{address: address}
+func createTransferEntry(senderAddress []byte, receiverAddress []byte) *transferEntry {
+	return &transferEntry{
+		OutputTransfer: vmcommon.OutputTransfer{SenderAddress: senderAddress},
+		address:        receiverAddress,
+	}
 }
 
 func (transferEntry *transferEntry) withData(data []byte) *transferEntry {
-	transferEntry.transfer.Data = data
+	transferEntry.Data = data
 	return transferEntry
 }
 
-func (transferEntry *transferEntry) withValue(value *big.Int) *transferEntry {
-	transferEntry.transfer.Value = value
-	return transferEntry
-}
-
-func (transferEntry *transferEntry) withSenderAddress(address []byte) transferEntry {
-	transferEntry.transfer.SenderAddress = address
+func (transferEntry *transferEntry) withValue(value *big.Int) transferEntry {
+	transferEntry.Value = value
 	return *transferEntry
 }
 
@@ -211,7 +209,7 @@ func (v *VMOutputVerifier) Transfers(transfers ...transferEntry) *VMOutputVerifi
 		if !exists {
 			accountTransfers = make([]vmcommon.OutputTransfer, 0)
 		}
-		transfersMap[account] = append(accountTransfers, transferEntry.transfer)
+		transfersMap[account] = append(accountTransfers, transferEntry.OutputTransfer)
 	}
 
 	for _, outputAccount := range v.vmOutput.OutputAccounts {

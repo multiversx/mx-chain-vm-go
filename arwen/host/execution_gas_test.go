@@ -290,17 +290,15 @@ func TestGasUsed_AsyncCall(t *testing.T) {
 					createStoreEntry(childAddress).withKey(childKey).withValue(childData),
 				).
 				Transfers(
-					createTransferEntry(thirdPartyAddress).
+					createTransferEntry(parentAddress, thirdPartyAddress).
 						withData([]byte("hello")).
-						withValue(big.NewInt(testConfig.transferToThirdParty)).
-						withSenderAddress(parentAddress),
-					createTransferEntry(thirdPartyAddress).
+						withValue(big.NewInt(testConfig.transferToThirdParty)),
+					createTransferEntry(childAddress, thirdPartyAddress).
 						withData([]byte(" there")).
-						withValue(big.NewInt(testConfig.transferToThirdParty)).
-						withSenderAddress(childAddress),
-					createTransferEntry(vaultAddress).withData([]byte{}).
-						withValue(big.NewInt(testConfig.transferToVault)).
-						withSenderAddress(childAddress),
+						withValue(big.NewInt(testConfig.transferToThirdParty)),
+					createTransferEntry(childAddress, vaultAddress).
+						withData([]byte{}).
+						withValue(big.NewInt(testConfig.transferToVault)),
 				)
 		})
 }
@@ -432,14 +430,12 @@ func TestGasUsed_AsyncCall_ChildFails(t *testing.T) {
 					createStoreEntry(parentAddress).withKey(parentKeyB).withValue(parentDataB),
 				).
 				Transfers(
-					createTransferEntry(vaultAddress).
+					createTransferEntry(parentAddress, vaultAddress).
 						withData([]byte("child error")).
-						withValue(big.NewInt(testConfig.transferToVault)).
-						withSenderAddress(parentAddress),
-					createTransferEntry(thirdPartyAddress).
+						withValue(big.NewInt(testConfig.transferToVault)),
+					createTransferEntry(parentAddress, thirdPartyAddress).
 						withData([]byte("hello")).
-						withValue(big.NewInt(testConfig.transferToThirdParty)).
-						withSenderAddress(parentAddress),
+						withValue(big.NewInt(testConfig.transferToThirdParty)),
 				)
 		})
 }
@@ -489,18 +485,15 @@ func TestGasUsed_AsyncCall_CallBackFails(t *testing.T) {
 					createStoreEntry(childAddress).withKey(childKey).withValue(childData),
 				).
 				Transfers(
-					createTransferEntry(thirdPartyAddress).
+					createTransferEntry(parentAddress, thirdPartyAddress).
 						withData([]byte("hello")).
-						withValue(big.NewInt(testConfig.transferToThirdParty)).
-						withSenderAddress(parentAddress),
-					createTransferEntry(thirdPartyAddress).
+						withValue(big.NewInt(testConfig.transferToThirdParty)),
+					createTransferEntry(childAddress, thirdPartyAddress).
 						withData([]byte(" there")).
-						withValue(big.NewInt(testConfig.transferToThirdParty)).
-						withSenderAddress(childAddress),
-					createTransferEntry(vaultAddress).
+						withValue(big.NewInt(testConfig.transferToThirdParty)),
+					createTransferEntry(childAddress, vaultAddress).
 						withData([]byte{}).
-						withValue(big.NewInt(testConfig.transferToVault)).
-						withSenderAddress(childAddress),
+						withValue(big.NewInt(testConfig.transferToVault)),
 				)
 		})
 }
@@ -550,10 +543,9 @@ func TestGasUsed_AsyncCall_Recursive(t *testing.T) {
 				Ok().
 				BalanceDelta(parentAddress, -testConfig.transferFromParentToChild).
 				Transfers(
-					createTransferEntry(childAddress).
+					createTransferEntry(parentAddress, childAddress).
 						withData([]byte("hello")).
-						withValue(big.NewInt(testConfig.transferFromParentToChild)).
-						withSenderAddress(parentAddress),
+						withValue(big.NewInt(testConfig.transferFromParentToChild)),
 				).
 				GasUsed(parentAddress, expectedGasUsedByParent).
 				GasUsed(childAddress, expectedGasUsedByChild).
@@ -607,10 +599,9 @@ func TestGasUsed_AsyncCall_MultiChild(t *testing.T) {
 				BalanceDelta(parentAddress, -testConfig.transferFromParentToChild).
 				BalanceDelta(childAddress, testConfig.transferFromParentToChild).
 				Transfers(
-					createTransferEntry(childAddress).
+					createTransferEntry(parentAddress, childAddress).
 						withData([]byte("hello")).
-						withValue(big.NewInt(testConfig.transferFromParentToChild)).
-						withSenderAddress(parentAddress),
+						withValue(big.NewInt(testConfig.transferFromParentToChild)),
 				).
 				GasUsed(parentAddress, expectedGasUsedByParent).
 				GasUsed(childAddress, expectedGasUsedByChild).
