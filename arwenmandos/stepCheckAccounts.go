@@ -274,6 +274,49 @@ func checkTokenInstances(
 					expectedInstance.Balance.Original,
 					accountInstance.Value))
 			}
+			/*
+				if !bytes.Equal(expectedInstance.Name.Value, accountInstance.TokenMetaData.Name) {
+					errors = append(errors, fmt.Errorf("bad ESDT NFT Name. Account: %s. Token: %s. Nonce: %d. Want: %s. Have: %d",
+						accountAddress,
+						tokenName,
+						nonce,
+						expectedInstance.Name.Original,
+						accountInstance.TokenMetaData.Name))
+				}
+			*/
+			if !bytes.Equal(expectedInstance.Creator.Value, accountInstance.TokenMetaData.Creator) {
+				errors = append(errors, fmt.Errorf("bad ESDT NFT Creator. Account: %s. Token: %s. Nonce: %d. Want: %s. Have: %d",
+					accountAddress,
+					tokenName,
+					nonce,
+					expectedInstance.Creator.Original,
+					accountInstance.TokenMetaData.Creator))
+			}
+			if expectedInstance.Royalties.Value != uint64(accountInstance.TokenMetaData.Royalties) {
+				errors = append(errors, fmt.Errorf("bad ESDT NFT Royalties. Account: %s. Token: %s. Nonce: %d. Want: %s. Have: %d",
+					accountAddress,
+					tokenName,
+					nonce,
+					expectedInstance.Royalties.Original,
+					accountInstance.TokenMetaData.Royalties))
+			}
+			if !bytes.Equal(expectedInstance.Hash.Value, accountInstance.TokenMetaData.Hash) {
+				errors = append(errors, fmt.Errorf("bad ESDT NFT Hash. Account: %s. Token: %s. Nonce: %d. Want: %s. Have: %d",
+					accountAddress,
+					tokenName,
+					nonce,
+					expectedInstance.Hash.Original,
+					accountInstance.TokenMetaData.Hash))
+			}
+			// Only one URI supported, so this is fine (for now)
+			/*if !expectedInstance.Uri.Check(accountInstance.TokenMetaData.URIs[0]) {
+				errors = append(errors, fmt.Errorf("bad ESDT NFT Uri. Account: %s. Token: %s. Nonce: %d. Want: %s. Have: %d",
+					accountAddress,
+					tokenName,
+					nonce,
+					expectedInstance.Uri.Original,
+					accountInstance.TokenMetaData.URIs[0]))
+			}*/
 			if !bytes.Equal(expectedInstance.Attributes.Value, accountInstance.TokenMetaData.Attributes) {
 				errors = append(errors, fmt.Errorf("bad ESDT NFT attributes. Account: %s. Token: %s. Nonce: %d. Want: %s. Have: %d",
 					accountAddress,
@@ -283,7 +326,7 @@ func checkTokenInstances(
 					accountInstance.TokenMetaData.Attributes))
 			}
 
-			// TODO: check metadata/properties
+			// TODO: Check Properties
 		}
 	}
 

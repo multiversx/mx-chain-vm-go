@@ -89,7 +89,12 @@
                                 {
                                     "nonce": "2",
                                     "balance": "1",
-                                    "attributes": "0x808080"
+                                    "royalties": "0",
+                                    "hash": "str:nft-create-hash-----------------",
+                                    "attributes": "0x808080",
+                                    "uri": [
+                                        "str:nft-create-uri"
+                                    ]
                                 }
                             ],
                             "lastNonce": "2",

@@ -107,10 +107,35 @@ func (p *Parser) tryProcessCheckESDTInstanceField(kvp *oj.OJsonKeyValuePair, tar
 		if err != nil {
 			return false, fmt.Errorf("invalid ESDT balance: %w", err)
 		}
+	case "name":
+		targetInstance.Name, err = p.parseCheckBytes(kvp.Value)
+		if err != nil {
+			return false, fmt.Errorf("invalid ESDT NFT name: %w", err)
+		}
+	case "creator":
+		targetInstance.Creator, err = p.parseCheckBytes(kvp.Value)
+		if err != nil || len(targetInstance.Creator.Value) != 32 {
+			return false, fmt.Errorf("invalid ESDT NFT creator address: %w", err)
+		}
+	case "royalties":
+		targetInstance.Royalties, err = p.processCheckUint64(kvp.Value)
+		if err != nil || targetInstance.Royalties.Value > 10000 {
+			return false, fmt.Errorf("invalid ESDT NFT royalties: %w", err)
+		}
+	case "hash":
+		targetInstance.Hash, err = p.parseCheckBytes(kvp.Value)
+		if err != nil || len(targetInstance.Hash.Value) != 32 {
+			return false, fmt.Errorf("invalid ESDT NFT hash: %w", err)
+		}
+	case "uri":
+		targetInstance.Uri, err = p.parseCheckBytes(kvp.Value)
+		if err != nil {
+			return false, fmt.Errorf("invalid ESDT NFT URI: %w", err)
+		}
 	case "attributes":
 		targetInstance.Attributes, err = p.parseCheckBytes(kvp.Value)
 		if err != nil {
-			return false, fmt.Errorf("invalid ESDT attributes: %w", err)
+			return false, fmt.Errorf("invalid ESDT NFT attributes: %w", err)
 		}
 	default:
 		return false, nil
