@@ -280,12 +280,14 @@ func TestMeteringContext_GasUsed_NoStacking(t *testing.T) {
 }
 
 func TestMeteringContext_GasUsed_StackOneLevel(t *testing.T) {
-	t.Skip()
+	//t.Skip()
 	t.Parallel()
 
 	mockRuntime := &contextmock.RuntimeContextMock{}
+	mockOutput := &contextmock.OutputContextMock{}
 	host := &contextmock.VMHostMock{
 		RuntimeContext: mockRuntime,
+		OutputContext: mockOutput,
 	}
 
 	contractSize := uint64(1000)
@@ -293,24 +295,28 @@ func TestMeteringContext_GasUsed_StackOneLevel(t *testing.T) {
 	mockRuntime.SCCodeSize = contractSize
 	mockRuntime.SCAddress = []byte("parent")
 
+
 	mockRuntime.SetPointsUsed(0)
 	parentInput := &vmcommon.ContractCallInput{VMInput: vmcommon.VMInput{}}
 	mockRuntime.SetVMInput(&parentInput.VMInput)
 
 	metering, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000))
+	zeroCodeCosts(metering)
 
 	parentInput.GasProvided = 4000
 	metering.InitStateFromContractCallInput(&parentInput.VMInput)
-	require.Equal(t, uint64(4000), metering.initialGasProvided)
+	require.Equal(t, 4000, int(metering.initialGasProvided))
 
 	_ = metering.DeductInitialGasForExecution(contract)
-	require.Equal(t, uint64(2999), metering.GasLeft())
+
+	// metering.UpdateGasStateOnSuccess()
+	require.Equal(t, 3000, int(metering.GasLeft()))
 
 	metering.UseGas(400)
-	require.Equal(t, uint64(2599), metering.GasLeft())
+	require.Equal(t, 2600, int(metering.GasLeft()))
 
 	gasUsedByContract := metering.GasSpentByContract()
-	require.Equal(t, uint64(1401), gasUsedByContract)
+	require.Equal(t, 1400, int(gasUsedByContract))
 
 	// simulate executing another contract on top of the parent
 	childInput := &vmcommon.ContractCallInput{VMInput: vmcommon.VMInput{}}
@@ -325,34 +331,44 @@ func TestMeteringContext_GasUsed_StackOneLevel(t *testing.T) {
 	mockRuntime.SetVMInput(&childInput.VMInput)
 	metering.PushState()
 	metering.InitStateFromContractCallInput(&childInput.VMInput)
-	require.Equal(t, uint64(500), metering.initialGasProvided)
+	require.Equal(t, 500, int(metering.initialGasProvided))
 
 	_ = metering.DeductInitialGasForExecution(make([]byte, 100))
-	require.Equal(t, uint64(399), metering.GasLeft())
+	require.Equal(t, 400, int(metering.GasLeft()))
 
 	metering.UseGas(50)
 	gasRemaining := metering.GasLeft()
-	require.Equal(t, uint64(349), gasRemaining)
+	require.Equal(t, 350, int(gasRemaining))
 
 	gasUsedByContract = metering.GasSpentByContract()
-	require.Equal(t, uint64(151), gasUsedByContract)
+	require.Equal(t, 150, int(gasUsedByContract))
+
+	output, _ := mockOutput.GetOutputAccount(mockRuntime.SCAddress)
+	mockOutput.OutputStateMock = output
+	metering.UpdateGasStateOnSuccess(mockOutput.OutputStateMock)
 
 	// return to the parent
 	mockRuntime.SCAddress = []byte("parent")
-	metering.PopSetActiveState()
+	metering.PopMergeActiveState()
 	mockRuntime.SetPointsUsed(parentPointsBeforeStacking)
 	mockRuntime.SetVMInput(&parentInput.VMInput)
 
 	metering.RestoreGas(gasRemaining)
 	mockRuntime.IsContractOnStack = false
-	require.Equal(t, uint64(2448), metering.GasLeft())
+	require.Equal(t, 2450, int(metering.GasLeft()))
 
 	gasUsedByContract = metering.GasSpentByContract()
-	require.Equal(t, uint64(1401), gasUsedByContract)
+	require.Equal(t, 1400, int(gasUsedByContract))
 
 	metering.UseGas(50)
-	require.Equal(t, uint64(2398), metering.GasLeft())
+	require.Equal(t, 2400, int(metering.GasLeft()))
 
 	gasUsedByContract = metering.GasSpentByContract()
-	require.Equal(t, uint64(1451), gasUsedByContract)
+	require.Equal(t, 1450, int(gasUsedByContract))
+}
+
+func zeroCodeCosts(context *meteringContext) {
+	//context.GasSchedule().BaseOperationCost.CompilePerByte = 0
+	//context.GasSchedule().BaseOperationCost.AoTPreparePerByte = 0
+	context.GasSchedule().BaseOperationCost.GetCode = 0
 }
