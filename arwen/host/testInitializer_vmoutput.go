@@ -1,6 +1,7 @@
 package host
 
 import (
+	"fmt"
 	"math/big"
 	"testing"
 
@@ -58,7 +59,7 @@ func (v *VMOutputVerifier) Msg(message string) *VMOutputVerifier {
 func (v *VMOutputVerifier) GasUsed(address []byte, gas uint64) *VMOutputVerifier {
 	account := v.vmOutput.OutputAccounts[string(address)]
 	require.NotNil(v.T, account, "GasUsed")
-	require.Equal(v.T, int(gas), int(account.GasUsed), "GasUsed")
+	require.Equal(v.T, int(gas), int(account.GasUsed), fmt.Sprintf("GasUsed %v", address))
 	return v
 }
 
