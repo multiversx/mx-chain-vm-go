@@ -20,7 +20,7 @@ func (m *MockClaimBuiltin) ProcessBuiltinFunction(acntSnd, _ state.UserAccountHa
 		m.AmountToGive,
 		nil)
 
-	vmOutput.GasRemaining = vmInput.GasProvided - m.GasCost + vmInput.GasLocked
+	vmOutput.GasRemaining = vmInput.GasProvided - m.GasCost
 	return vmOutput, nil
 }
 

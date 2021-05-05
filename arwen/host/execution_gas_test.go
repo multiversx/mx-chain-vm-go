@@ -310,13 +310,13 @@ func TestGasUsed_AsyncCall_BuiltinCall(t *testing.T) {
 	testConfig := asyncBaseTestConfig
 	testConfig.gasProvided = 1000
 
-	expectedGasUsedByParent := asyncBaseTestConfig.gasUsedByParent + asyncBaseTestConfig.gasUsedByCallback + gasUsedByBuiltinClaim
+	expectedGasUsedByParent := testConfig.gasUsedByParent + testConfig.gasUsedByCallback + gasUsedByBuiltinClaim
 	expectedGasUsedByChild := uint64(0) // all gas for builtin call is consummed on caller
 
 	runMockInstanceCallerTestBuilder(t).
 		withContracts(
 			createMockContract(parentAddress).
-				withBalance(asyncBaseTestConfig.parentBalance).
+				withBalance(testConfig.parentBalance).
 				withConfig(&testConfig).
 				withMethods(addAsyncBuiltinParentMethodsToInstanceMock),
 		).
@@ -330,14 +330,14 @@ func TestGasUsed_AsyncCall_BuiltinCall(t *testing.T) {
 			world.AcctMap.CreateAccount(userAddress)
 			createMockBuiltinFunctions(t, host, world)
 			setZeroCodeCosts(host)
-			setAsyncCosts(host, asyncBaseTestConfig.gasLockCost)
+			setAsyncCosts(host, testConfig.gasLockCost)
 		}).
 		andAssertResults(func(world *worldmock.MockWorld, verify *VMOutputVerifier) {
 			verify.
 				Ok().
 				GasUsed(parentAddress, expectedGasUsedByParent).
-				GasUsed(userAddress, asyncBaseTestConfig.gasUsedByChild).
-				GasRemaining(asyncBaseTestConfig.gasProvided - expectedGasUsedByParent - expectedGasUsedByChild)
+				GasUsed(userAddress, 0).
+				GasRemaining(testConfig.gasProvided - expectedGasUsedByParent - expectedGasUsedByChild)
 		})
 }
 
