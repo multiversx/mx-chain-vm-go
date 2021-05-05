@@ -8,10 +8,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func addAsyncMultiChildParentMethodsToInstanceMock(instanceMock *mock.InstanceMock, config interface{}) {
-
+func forwardAsyncCallMultiChildMock(instanceMock *mock.InstanceMock, config interface{}) {
 	testConfig := config.(*asyncCallMultiChildTestConfig)
-
 	instanceMock.AddMockMethod("forwardAsyncCall", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
@@ -36,6 +34,9 @@ func addAsyncMultiChildParentMethodsToInstanceMock(instanceMock *mock.InstanceMo
 		return instance
 
 	})
+}
 
+func callBackMultiChildMock(instanceMock *mock.InstanceMock, config interface{}) {
+	testConfig := config.(*asyncCallMultiChildTestConfig)
 	instanceMock.AddMockMethod("callBack", simpleWasteGasMockMethod(instanceMock, testConfig.gasUsedByCallback))
 }

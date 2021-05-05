@@ -9,10 +9,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func addAsyncChildMethodsToInstanceMock(instanceMock *mock.InstanceMock, config interface{}) {
-
+func transferToThirdPartyAsyncChildMock(instanceMock *mock.InstanceMock, config interface{}) {
 	testConfig := config.(*asyncCallTestConfig)
-
 	instanceMock.AddMockMethod("transferToThirdParty", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)

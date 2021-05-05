@@ -12,10 +12,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func addAsyncParentMethodsToInstanceMock(instanceMock *mock.InstanceMock, config interface{}) {
-
+func performAsyncCallParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 	testConfig := config.(*asyncCallTestConfig)
-
 	instanceMock.AddMockMethod("performAsyncCall", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
@@ -52,7 +50,10 @@ func addAsyncParentMethodsToInstanceMock(instanceMock *mock.InstanceMock, config
 		return instance
 
 	})
+}
 
+func callBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
+	testConfig := config.(*asyncCallTestConfig)
 	instanceMock.AddMockMethod("callBack", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)

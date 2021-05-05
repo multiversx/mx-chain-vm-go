@@ -8,10 +8,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func addAsyncRecursiveParentMethodsToInstanceMock(instanceMock *mock.InstanceMock, config interface{}) {
-
+func forwardAsyncCallRecursiveParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 	testConfig := config.(*asyncCallRecursiveTestConfig)
-
 	instanceMock.AddMockMethod("forwardAsyncCall", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
@@ -38,6 +36,9 @@ func addAsyncRecursiveParentMethodsToInstanceMock(instanceMock *mock.InstanceMoc
 
 		return instance
 	})
+}
 
+func callBackRecursiveParentMock(instanceMock *mock.InstanceMock, config interface{}) {
+	testConfig := config.(*asyncCallRecursiveTestConfig)
 	instanceMock.AddMockMethod("callBack", simpleWasteGasMockMethod(instanceMock, testConfig.gasUsedByCallback))
 }

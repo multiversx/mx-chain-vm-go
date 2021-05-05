@@ -36,7 +36,7 @@ func TestGasUsed_SingleContract(t *testing.T) {
 			createMockContract(parentAddress).
 				withBalance(simpleGasTestConfig.parentBalance).
 				withConfig(simpleGasTestConfig).
-				withMethods(addMethodsToParentInstanceMock)).
+				withMethods(execOnSameCtxParentMock, execOnDestCtxParentMock, wasteGasParentMock)).
 		withInput(createTestContractCallInputBuilder().
 			withRecipientAddr(parentAddress).
 			withGasProvided(simpleGasTestConfig.gasProvided).
@@ -59,7 +59,7 @@ func TestGasUsed_SingleContract_BuiltinCall(t *testing.T) {
 			createMockContract(parentAddress).
 				withBalance(simpleGasTestConfig.parentBalance).
 				withConfig(simpleGasTestConfig).
-				withMethods(addMethodsToParentInstanceMock)).
+				withMethods(execOnSameCtxParentMock, execOnDestCtxParentMock, wasteGasParentMock)).
 		withInput(createTestContractCallInputBuilder().
 			withRecipientAddr(parentAddress).
 			withGasProvided(simpleGasTestConfig.gasProvided).
@@ -89,11 +89,11 @@ func TestGasUsed_TwoContracts_ExecuteOnSameCtx(t *testing.T) {
 				createMockContract(parentAddress).
 					withBalance(simpleGasTestConfig.parentBalance).
 					withConfig(simpleGasTestConfig).
-					withMethods(addMethodsToParentInstanceMock),
+					withMethods(execOnSameCtxParentMock, execOnDestCtxParentMock, wasteGasParentMock),
 				createMockContract(childAddress).
 					withBalance(simpleGasTestConfig.childBalance).
 					withConfig(simpleGasTestConfig).
-					withMethods(addMethodsToChildInstanceMock),
+					withMethods(wasteGasChildMock),
 			).
 			withInput(createTestContractCallInputBuilder().
 				withRecipientAddr(parentAddress).
@@ -127,11 +127,11 @@ func TestGasUsed_TwoContracts_ExecuteOnDestCtx(t *testing.T) {
 				createMockContract(parentAddress).
 					withBalance(simpleGasTestConfig.parentBalance).
 					withConfig(simpleGasTestConfig).
-					withMethods(addMethodsToParentInstanceMock),
+					withMethods(execOnSameCtxParentMock, execOnDestCtxParentMock, wasteGasParentMock),
 				createMockContract(childAddress).
 					withBalance(simpleGasTestConfig.childBalance).
 					withConfig(simpleGasTestConfig).
-					withMethods(addMethodsToChildInstanceMock),
+					withMethods(wasteGasChildMock),
 			).
 			withInput(createTestContractCallInputBuilder().
 				withRecipientAddr(parentAddress).
@@ -174,19 +174,19 @@ func TestGasUsed_ThreeContracts_ExecuteOnDestCtx(t *testing.T) {
 					gasProvidedToChild: alphaGasToForwardToReceivers,
 					gasProvided:        gasProvided,
 				}).
-				withMethods(addMethodsToParentInstanceMock),
+				withMethods(execOnSameCtxParentMock, execOnDestCtxParentMock, wasteGasParentMock),
 			createMockContract(betaAddress).
 				withBalance(0).
 				withConfig(directCallGasTestConfig{
 					gasUsedByChild: receiverCallGas,
 				}).
-				withMethods(addMethodsToChildInstanceMock),
+				withMethods(wasteGasChildMock),
 			createMockContract(gammaAddress).
 				withBalance(0).
 				withConfig(directCallGasTestConfig{
 					gasUsedByChild: receiverCallGas,
 				}).
-				withMethods(addMethodsToChildInstanceMock),
+				withMethods(wasteGasChildMock),
 		).
 		withInput(createTestContractCallInputBuilder().
 			withRecipientAddr(alphaAddress).
@@ -260,11 +260,11 @@ func TestGasUsed_AsyncCall(t *testing.T) {
 			createMockContract(parentAddress).
 				withBalance(testConfig.parentBalance).
 				withConfig(testConfig).
-				withMethods(addAsyncParentMethodsToInstanceMock),
+				withMethods(performAsyncCallParentMock, callBackParentMock),
 			createMockContract(childAddress).
 				withBalance(testConfig.childBalance).
 				withConfig(testConfig).
-				withMethods(addAsyncChildMethodsToInstanceMock),
+				withMethods(transferToThirdPartyAsyncChildMock),
 		).
 		withInput(createTestContractCallInputBuilder().
 			withRecipientAddr(parentAddress).
@@ -316,7 +316,7 @@ func TestGasUsed_AsyncCall_BuiltinCall(t *testing.T) {
 			createMockContract(parentAddress).
 				withBalance(testConfig.parentBalance).
 				withConfig(&testConfig).
-				withMethods(addAsyncBuiltinParentMethodsToInstanceMock),
+				withMethods(forwardAsyncCallParentBuiltinMock, callBackParentBuiltinMock),
 		).
 		withInput(createTestContractCallInputBuilder().
 			withRecipientAddr(parentAddress).
@@ -362,11 +362,11 @@ func TestGasUsed_AsyncCall_BuiltinMultiContractCall(t *testing.T) {
 			createMockContract(parentAddress).
 				withBalance(testConfig.parentBalance).
 				withConfig(testConfig).
-				withMethods(addAsyncBuiltinMultiContractParentMethodsToInstanceMock),
+				withMethods(forwardAsyncCallMultiContractParentMock, callBackMultiContractParentMock),
 			createMockContract(childAddress).
 				withBalance(testConfig.childBalance).
 				withConfig(testConfig).
-				withMethods(addAsyncBuiltinMultiContractChildMethodsToInstanceMock),
+				withMethods(recursiveAsyncCallRecursiveChildMock, callBackRecursiveChildMock),
 		).
 		withInput(createTestContractCallInputBuilder().
 			withRecipientAddr(parentAddress).
@@ -400,11 +400,11 @@ func TestGasUsed_AsyncCall_ChildFails(t *testing.T) {
 			createMockContract(parentAddress).
 				withBalance(testConfig.parentBalance).
 				withConfig(testConfig).
-				withMethods(addAsyncParentMethodsToInstanceMock),
+				withMethods(performAsyncCallParentMock, callBackParentMock),
 			createMockContract(childAddress).
 				withBalance(testConfig.childBalance).
 				withConfig(testConfig).
-				withMethods(addAsyncChildMethodsToInstanceMock),
+				withMethods(transferToThirdPartyAsyncChildMock),
 		).
 		withInput(createTestContractCallInputBuilder().
 			withRecipientAddr(parentAddress).
@@ -452,11 +452,11 @@ func TestGasUsed_AsyncCall_CallBackFails(t *testing.T) {
 			createMockContract(parentAddress).
 				withBalance(testConfig.parentBalance).
 				withConfig(testConfig).
-				withMethods(addAsyncParentMethodsToInstanceMock),
+				withMethods(performAsyncCallParentMock, callBackParentMock),
 			createMockContract(childAddress).
 				withBalance(testConfig.childBalance).
 				withConfig(testConfig).
-				withMethods(addAsyncChildMethodsToInstanceMock),
+				withMethods(transferToThirdPartyAsyncChildMock),
 		).
 		withInput(createTestContractCallInputBuilder().
 			withRecipientAddr(parentAddress).
@@ -522,11 +522,11 @@ func TestGasUsed_AsyncCall_Recursive(t *testing.T) {
 			createMockContract(parentAddress).
 				withBalance(testConfig.parentBalance).
 				withConfig(testConfig).
-				withMethods(addAsyncRecursiveParentMethodsToInstanceMock),
+				withMethods(forwardAsyncCallRecursiveParentMock, callBackRecursiveParentMock),
 			createMockContract(childAddress).
 				withBalance(testConfig.childBalance).
 				withConfig(&testConfig.asyncCallBaseTestConfig).
-				withMethods(addAsyncRecursiveChildMethodsToInstanceMock),
+				withMethods(recursiveAsyncCallRecursiveChildMock, callBackRecursiveChildMock),
 		).
 		withInput(createTestContractCallInputBuilder().
 			withRecipientAddr(parentAddress).
@@ -577,11 +577,11 @@ func TestGasUsed_AsyncCall_MultiChild(t *testing.T) {
 			createMockContract(parentAddress).
 				withBalance(testConfig.parentBalance).
 				withConfig(testConfig).
-				withMethods(addAsyncMultiChildParentMethodsToInstanceMock),
+				withMethods(forwardAsyncCallMultiChildMock, callBackMultiChildMock),
 			createMockContract(childAddress).
 				withBalance(testConfig.childBalance).
 				withConfig(&testConfig.asyncCallBaseTestConfig).
-				withMethods(addAsyncRecursiveChildMethodsToInstanceMock),
+				withMethods(recursiveAsyncCallRecursiveChildMock, callBackRecursiveChildMock),
 		).
 		withInput(createTestContractCallInputBuilder().
 			withRecipientAddr(parentAddress).
