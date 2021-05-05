@@ -274,6 +274,14 @@ func checkTokenInstances(
 					expectedInstance.Balance.Original,
 					accountInstance.Value))
 			}
+			if !bytes.Equal(expectedInstance.Attributes.Value, accountInstance.TokenMetaData.Attributes) {
+				errors = append(errors, fmt.Errorf("bad ESDT NFT attributes. Account: %s. Token: %s. Nonce: %d. Want: %s. Have: %d",
+					accountAddress,
+					tokenName,
+					nonce,
+					expectedInstance.Attributes.Original,
+					accountInstance.TokenMetaData.Attributes))
+			}
 
 			// TODO: check metadata/properties
 		}

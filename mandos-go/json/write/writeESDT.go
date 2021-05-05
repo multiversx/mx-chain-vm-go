@@ -75,6 +75,9 @@ func appendESDTInstanceToOJ(esdtInstance *mj.ESDTInstance, targetOj *oj.OJsonMap
 	if len(esdtInstance.Balance.Original) > 0 {
 		targetOj.Put("balance", bigIntToOJ(esdtInstance.Balance))
 	}
+	if len(esdtInstance.Attributes.Original) > 0 {
+		targetOj.Put("attributes", bytesFromStringToOJ(esdtInstance.Attributes))
+	}
 }
 
 func isCompactESDT(esdtItem *mj.ESDTData) bool {

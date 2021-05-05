@@ -53,6 +53,22 @@
                                 "ESDTRoleNFTBurn"
                             ],
                             "frozen": "false"
+                        },
+                        "str:6-NFTWithAttributes": {
+                            "instances": [
+                                {
+                                    "nonce": "1"
+                                },
+                                {
+                                    "nonce": "1",
+                                    "balance": "3"
+                                },
+                                {
+                                    "nonce": "2",
+                                    "balance": "5",
+                                    "attributes": "str:MyCustomAttributes"
+                                }
+                            ]
                         }
                     },
                     "username": "str:myusername.elrond",

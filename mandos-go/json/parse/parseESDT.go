@@ -107,6 +107,11 @@ func (p *Parser) tryProcessESDTInstanceField(kvp *oj.OJsonKeyValuePair, targetIn
 		if err != nil {
 			return false, fmt.Errorf("invalid ESDT balance: %w", err)
 		}
+	case "attributes":
+		targetInstance.Attributes, err = p.processStringAsByteArray(kvp.Value)
+		if err != nil {
+			return false, fmt.Errorf("invalid ESDT attributes: %w", err)
+		}
 	default:
 		return false, nil
 	}
