@@ -107,11 +107,6 @@ func (p *Parser) tryProcessCheckESDTInstanceField(kvp *oj.OJsonKeyValuePair, tar
 		if err != nil {
 			return false, fmt.Errorf("invalid ESDT balance: %w", err)
 		}
-	case "name":
-		targetInstance.Name, err = p.parseCheckBytes(kvp.Value)
-		if err != nil {
-			return false, fmt.Errorf("invalid ESDT NFT name: %w", err)
-		}
 	case "creator":
 		targetInstance.Creator, err = p.parseCheckBytes(kvp.Value)
 		if err != nil || len(targetInstance.Creator.Value) != 32 {

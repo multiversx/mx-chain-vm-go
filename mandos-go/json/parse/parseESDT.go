@@ -107,15 +107,6 @@ func (p *Parser) tryProcessESDTInstanceField(kvp *oj.OJsonKeyValuePair, targetIn
 		if err != nil {
 			return false, fmt.Errorf("invalid ESDT balance: %w", err)
 		}
-	/*
-		// TokenMetadata.Name is used as TokenIdentifier currently, so this will not work
-
-		case "name":
-			targetInstance.Name, err = p.processStringAsByteArray(kvp.Value)
-			if err != nil {
-				return false, fmt.Errorf("invalid ESDT NFT name: %w", err)
-			}
-	*/
 	case "creator":
 		targetInstance.Creator, err = p.processStringAsByteArray(kvp.Value)
 		if err != nil || len(targetInstance.Creator.Value) != 32 {

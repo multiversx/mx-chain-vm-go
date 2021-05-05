@@ -93,7 +93,6 @@
                                 {
                                     "nonce": "25",
                                     "balance": "1",
-                                    "name": "str: hi, I am NFT!",
                                     "creator": "address:other_creator_address",
                                     "royalties": "5000",
                                     "hash": "keccak256:str:other_nft_hash",

@@ -75,9 +75,6 @@ func appendESDTInstanceToOJ(esdtInstance *mj.ESDTInstance, targetOj *oj.OJsonMap
 	if len(esdtInstance.Balance.Original) > 0 {
 		targetOj.Put("balance", bigIntToOJ(esdtInstance.Balance))
 	}
-	if len(esdtInstance.Name.Original) > 0 {
-		targetOj.Put("name", bytesFromStringToOJ(esdtInstance.Name))
-	}
 	if len(esdtInstance.Creator.Original) > 0 {
 		targetOj.Put("creator", bytesFromStringToOJ(esdtInstance.Creator))
 	}

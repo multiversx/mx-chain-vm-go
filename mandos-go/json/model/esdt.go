@@ -11,7 +11,6 @@ type ESDTTxData struct {
 type ESDTInstance struct {
 	Nonce      JSONUint64
 	Balance    JSONBigInt
-	Name       JSONBytesFromString
 	Creator    JSONBytesFromString
 	Royalties  JSONUint64
 	Hash       JSONBytesFromString
@@ -32,7 +31,6 @@ type ESDTData struct {
 type CheckESDTInstance struct {
 	Nonce      JSONCheckUint64
 	Balance    JSONCheckBigInt
-	Name       JSONCheckBytes
 	Creator    JSONCheckBytes
 	Royalties  JSONCheckUint64
 	Hash       JSONCheckBytes

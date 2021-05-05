@@ -62,6 +62,9 @@
             }
         },
         {
+            "step": "dumpState"
+        },
+        {
             "step": "checkState",
             "accounts": {
                 "address:a_user": {
@@ -89,6 +92,7 @@
                                 {
                                     "nonce": "2",
                                     "balance": "1",
+                                    "creator": "sc:forwarder",
                                     "royalties": "0",
                                     "hash": "str:nft-create-hash-----------------",
                                     "attributes": "0x808080",

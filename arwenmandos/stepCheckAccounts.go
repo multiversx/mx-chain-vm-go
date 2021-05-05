@@ -274,16 +274,6 @@ func checkTokenInstances(
 					expectedInstance.Balance.Original,
 					accountInstance.Value))
 			}
-			/*
-				if !bytes.Equal(expectedInstance.Name.Value, accountInstance.TokenMetaData.Name) {
-					errors = append(errors, fmt.Errorf("bad ESDT NFT Name. Account: %s. Token: %s. Nonce: %d. Want: %s. Have: %d",
-						accountAddress,
-						tokenName,
-						nonce,
-						expectedInstance.Name.Original,
-						accountInstance.TokenMetaData.Name))
-				}
-			*/
 			if !bytes.Equal(expectedInstance.Creator.Value, accountInstance.TokenMetaData.Creator) {
 				errors = append(errors, fmt.Errorf("bad ESDT NFT Creator. Account: %s. Token: %s. Nonce: %d. Want: %s. Have: %d",
 					accountAddress,

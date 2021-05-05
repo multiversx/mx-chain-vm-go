@@ -61,9 +61,6 @@ func appendCheckESDTInstanceToOJ(esdtInstance *mj.CheckESDTInstance, targetOj *o
 	if len(esdtInstance.Balance.Original) > 0 {
 		targetOj.Put("balance", checkBigIntToOJ(esdtInstance.Balance))
 	}
-	if !esdtInstance.Name.Unspecified && len(esdtInstance.Name.Value) > 0 {
-		targetOj.Put("name", checkBytesToOJ(esdtInstance.Name))
-	}
 	if !esdtInstance.Creator.Unspecified && len(esdtInstance.Creator.Value) > 0 {
 		targetOj.Put("creator", checkBytesToOJ(esdtInstance.Creator))
 	}
