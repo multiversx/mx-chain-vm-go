@@ -29,7 +29,7 @@ func testToOJ(test *mj.Test) oj.OJsonObject {
 		testOJ.Put("checkGas", &ojFalse)
 	}
 
-	testOJ.Put("pre", accountsToOJ(test.Pre))
+	testOJ.Put("pre", AccountsToOJ(test.Pre))
 
 	var blockList []oj.OJsonObject
 	for _, block := range test.Blocks {
