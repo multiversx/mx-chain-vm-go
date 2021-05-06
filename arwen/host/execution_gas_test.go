@@ -237,9 +237,8 @@ func TestGasUsed_ThreeContracts_ExecuteOnDestCtx(t *testing.T) {
 }
 
 type asyncCallBaseTestConfig struct {
-	gasProvided     uint64
-	gasUsedByParent uint64
-	// gasProvidedToChild uint64
+	gasProvided       uint64
+	gasUsedByParent   uint64
 	gasUsedByChild    uint64
 	gasUsedByCallback uint64
 	gasLockCost       uint64
@@ -251,9 +250,8 @@ type asyncCallBaseTestConfig struct {
 }
 
 var asyncBaseTestConfig = asyncCallBaseTestConfig{
-	gasProvided:     116000,
-	gasUsedByParent: 400,
-	// gasProvidedToChild: 300,
+	gasProvided:       1000,
+	gasUsedByParent:   400,
 	gasUsedByChild:    200,
 	gasUsedByCallback: 100,
 	gasLockCost:       150,
