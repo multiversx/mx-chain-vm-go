@@ -62,9 +62,6 @@
             }
         },
         {
-            "step": "dumpState"
-        },
-        {
             "step": "checkState",
             "accounts": {
                 "address:a_user": {
