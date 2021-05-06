@@ -187,14 +187,29 @@ func (context *meteringContext) updateSCGasUsed() {
 	context.gasUsedByAccounts[string(currentAccountAddress)] = gasUsed
 }
 
-func (context *meteringContext) TrackGasUsedByBuiltinFunction(err error, builtinInput *vmcommon.ContractCallInput, builtinOutput *vmcommon.VMOutput) error {
+func (context *meteringContext) TrackGasUsedByBuiltinFunction(
+	err error,
+	builtinInput *vmcommon.ContractCallInput,
+	builtinOutput *vmcommon.VMOutput,
+	postBuiltinInput *vmcommon.ContractCallInput,
+) error {
 	if err != nil {
 		context.UseGas(builtinInput.GasProvided)
 		return err
 	}
 
 	gasUsed := math.SubUint64(builtinInput.GasProvided, builtinOutput.GasRemaining)
+
+	// If the builtin function indicated that there's a follow-up SC execution
+	// after itself, then it has reserved gas for the SC in postBuiltinInput.
+	// This gas must not be tracked as if it was used by the builtin function
+	// (i.e. used on the instance of the caller).
+	if postBuiltinInput != nil {
+		gasUsed = math.SubUint64(gasUsed, postBuiltinInput.GasProvided)
+	}
+
 	context.UseGas(gasUsed)
+	logMetering.Trace("gas used by builtin function", "gas", gasUsed)
 
 	return nil
 }
