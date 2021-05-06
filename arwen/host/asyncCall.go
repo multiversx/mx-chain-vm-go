@@ -48,6 +48,12 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 		// return but keep async call info
 		host.outputContext.PrependFinish(asyncCallInfo.Data)
 		log.Trace("esdt transfer on callback")
+
+		// The contract wants to send ESDT back to its original caller
+		// via a reversed async call. The reversed async call will not have a
+		// callback, therefore the gas locked for callback execution must be
+		// restored.
+		host.Metering().RestoreGas(asyncCallInfo.GetGasLocked())
 		return nil
 	}
 

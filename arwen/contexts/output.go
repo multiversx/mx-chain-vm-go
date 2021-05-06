@@ -501,7 +501,6 @@ func (context *outputContext) resolveReturnCodeFromError(err error) vmcommon.Ret
 
 // AddToActiveState merges the given vmOutput with the outputState.
 func (context *outputContext) AddToActiveState(rightOutput *vmcommon.VMOutput) {
-	rightOutput.GasRemaining = 0
 	if rightOutput.GasRefund != nil {
 		rightOutput.GasRefund.Add(rightOutput.GasRefund, context.outputState.GasRefund)
 	}
