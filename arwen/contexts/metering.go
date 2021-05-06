@@ -252,11 +252,9 @@ func (context *meteringContext) getCurrentTotalUsedGas() uint64 {
 
 	gasUsed := uint64(0)
 	for _, outputAccount := range outputAccounts {
+		gasTransferred := context.getGasTransferredByAccount(outputAccount)
 		gasUsed = math.AddUint64(gasUsed, outputAccount.GasUsed)
-		for _, outputTransfer := range outputAccount.OutputTransfers {
-			gasUsed = math.AddUint64(gasUsed, outputTransfer.GasLimit)
-			gasUsed = math.AddUint64(gasUsed, outputTransfer.GasLocked)
-		}
+		gasUsed = math.AddUint64(gasUsed, gasTransferred)
 	}
 
 	return gasUsed
