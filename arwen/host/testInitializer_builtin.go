@@ -1,32 +1,38 @@
 package host
 
 import (
+	"errors"
+
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/ElrondNetwork/elrond-go/data/state"
 	"github.com/ElrondNetwork/elrond-go/process"
 )
 
-type MockClaimBuiltin struct {
-	AmountToGive int64
-	GasCost      uint64
+type mockBuiltin struct {
+	processBuiltinFunction func(acntSnd, _ state.UserAccountHandler, vmInput *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
+	setNewGasConfig        func(_ *process.GasCost)
+	isInterfaceNil         func() bool
 }
 
-func (m *MockClaimBuiltin) ProcessBuiltinFunction(acntSnd, _ state.UserAccountHandler, vmInput *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
-	vmOutput := MakeVMOutput()
-	AddNewOutputAccount(
-		vmOutput,
-		nil,
-		acntSnd.AddressBytes(),
-		m.AmountToGive,
-		nil)
-
-	vmOutput.GasRemaining = vmInput.GasProvided - m.GasCost
-	return vmOutput, nil
+// ProcessBuiltInFunction - see BuiltinFunction.ProcessBuiltInFunction()
+func (m *mockBuiltin) ProcessBuiltinFunction(acntSnd, acntRcv state.UserAccountHandler, vmInput *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+	if m.processBuiltinFunction == nil {
+		return nil, errors.New("Undefined processBuiltinFunction")
+	}
+	return m.processBuiltinFunction(acntSnd, acntRcv, vmInput)
 }
 
-func (m *MockClaimBuiltin) SetNewGasConfig(_ *process.GasCost) {
+// SetNewGasConfig - see BuiltinFunction.SetNewGasConfig()
+func (m *mockBuiltin) SetNewGasConfig(gasCost *process.GasCost) {
+	if m.setNewGasConfig != nil {
+		m.setNewGasConfig(gasCost)
+	}
 }
 
-func (m *MockClaimBuiltin) IsInterfaceNil() bool {
-	return m == nil
+// IsInterfaceNil - see BuiltinFunction.IsInterfaceNil()
+func (m *mockBuiltin) IsInterfaceNil() bool {
+	if m.isInterfaceNil == nil {
+		return m == nil
+	}
+	return m.isInterfaceNil()
 }

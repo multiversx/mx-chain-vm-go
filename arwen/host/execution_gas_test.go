@@ -1,11 +1,14 @@
 package host
 
 import (
+	"errors"
 	"math/big"
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	"github.com/ElrondNetwork/elrond-go/data/state"
 	"github.com/stretchr/testify/require"
 )
 
@@ -75,6 +78,31 @@ func TestGasUsed_SingleContract_BuiltinCall(t *testing.T) {
 				Ok().
 				GasRemaining(simpleGasTestConfig.gasProvided-simpleGasTestConfig.gasUsedByParent-gasUsedByBuiltinClaim).
 				GasUsed(parentAddress, simpleGasTestConfig.gasUsedByParent+gasUsedByBuiltinClaim)
+		})
+}
+
+func TestGasUsed_SingleContract_BuiltinCallFail(t *testing.T) {
+	runMockInstanceCallerTestBuilder(t).
+		withContracts(
+			createMockContract(parentAddress).
+				withBalance(simpleGasTestConfig.parentBalance).
+				withConfig(simpleGasTestConfig).
+				withMethods(execOnDestCtxSingleCallParentMock)).
+		withInput(createTestContractCallInputBuilder().
+			withRecipientAddr(parentAddress).
+			withGasProvided(simpleGasTestConfig.gasProvided).
+			withFunction("execOnDestCtxSingleCall").
+			withArguments(parentAddress, []byte("builtinFail")).
+			build()).
+		withSetup(func(host *vmHost, world *worldmock.MockWorld) {
+			createMockBuiltinFunctions(t, host, world)
+			setZeroCodeCosts(host)
+		}).
+		andAssertResults(func(world *worldmock.MockWorld, verify *VMOutputVerifier) {
+			verify.
+				ReturnCode(vmcommon.ExecutionFailed).
+				ReturnMessage("whatdidyoudo").
+				GasRemaining(0)
 		})
 }
 
@@ -209,12 +237,12 @@ func TestGasUsed_ThreeContracts_ExecuteOnDestCtx(t *testing.T) {
 }
 
 type asyncCallBaseTestConfig struct {
-	gasProvided        uint64
-	gasUsedByParent    uint64
-	gasProvidedToChild uint64
-	gasUsedByChild     uint64
-	gasUsedByCallback  uint64
-	gasLockCost        uint64
+	gasProvided     uint64
+	gasUsedByParent uint64
+	// gasProvidedToChild uint64
+	gasUsedByChild    uint64
+	gasUsedByCallback uint64
+	gasLockCost       uint64
 
 	transferFromParentToChild int64
 
@@ -223,12 +251,12 @@ type asyncCallBaseTestConfig struct {
 }
 
 var asyncBaseTestConfig = asyncCallBaseTestConfig{
-	gasProvided:        116000,
-	gasUsedByParent:    400,
-	gasProvidedToChild: 300,
-	gasUsedByChild:     200,
-	gasUsedByCallback:  100,
-	gasLockCost:        150,
+	gasProvided:     116000,
+	gasUsedByParent: 400,
+	// gasProvidedToChild: 300,
+	gasUsedByChild:    200,
+	gasUsedByCallback: 100,
+	gasLockCost:       150,
 
 	transferFromParentToChild: 7,
 
@@ -251,6 +279,7 @@ var asyncTestConfig = &asyncCallTestConfig{
 func TestGasUsed_AsyncCall(t *testing.T) {
 
 	testConfig := asyncTestConfig
+	testConfig.gasProvided = 1000
 
 	gasUsedByParent := testConfig.gasUsedByParent + testConfig.gasUsedByCallback
 	gasUsedByChild := testConfig.gasUsedByChild
@@ -339,6 +368,45 @@ func TestGasUsed_AsyncCall_BuiltinCall(t *testing.T) {
 		})
 }
 
+func TestGasUsed_AsyncCall_BuiltinCallFail(t *testing.T) {
+
+	testConfig := asyncBaseTestConfig
+	testConfig.gasProvided = 1000
+
+	// all will be spent in case of failure
+	gasProvidedForBuiltinCall := testConfig.gasProvided - testConfig.gasUsedByParent - testConfig.gasLockCost
+
+	expectedGasUsedByParent := testConfig.gasUsedByParent + gasProvidedForBuiltinCall + testConfig.gasUsedByCallback
+	expectedGasUsedByChild := uint64(0) // all gas for builtin call is consummed on caller
+
+	runMockInstanceCallerTestBuilder(t).
+		withContracts(
+			createMockContract(parentAddress).
+				withBalance(testConfig.parentBalance).
+				withConfig(&testConfig).
+				withMethods(forwardAsyncCallParentBuiltinMock, callBackParentBuiltinMock),
+		).
+		withInput(createTestContractCallInputBuilder().
+			withRecipientAddr(parentAddress).
+			withGasProvided(testConfig.gasProvided).
+			withFunction("forwardAsyncCall").
+			withArguments(userAddress, []byte("builtinFail")).
+			build()).
+		withSetup(func(host *vmHost, world *worldmock.MockWorld) {
+			world.AcctMap.CreateAccount(userAddress)
+			createMockBuiltinFunctions(t, host, world)
+			setZeroCodeCosts(host)
+			setAsyncCosts(host, testConfig.gasLockCost)
+		}).
+		andAssertResults(func(world *worldmock.MockWorld, verify *VMOutputVerifier) {
+			verify.
+				Ok().
+				GasUsed(parentAddress, expectedGasUsedByParent).
+				GasUsed(userAddress, 0).
+				GasRemaining(testConfig.gasProvided - expectedGasUsedByParent - expectedGasUsedByChild)
+		})
+}
+
 type asyncBuiltInCallTestConfig struct {
 	asyncCallBaseTestConfig
 	transferFromChildToParent int64
@@ -392,6 +460,7 @@ func TestGasUsed_AsyncCall_BuiltinMultiContractCall(t *testing.T) {
 func TestGasUsed_AsyncCall_ChildFails(t *testing.T) {
 
 	testConfig := asyncTestConfig
+	testConfig.gasProvided = 1000
 
 	expectedGasUsedByParent := testConfig.gasProvided - testConfig.gasLockCost + testConfig.gasUsedByCallback
 
@@ -423,6 +492,7 @@ func TestGasUsed_AsyncCall_ChildFails(t *testing.T) {
 				BalanceDelta(parentAddress, -(testConfig.transferToThirdParty+testConfig.transferToVault)).
 				BalanceDelta(thirdPartyAddress, testConfig.transferToThirdParty).
 				GasUsed(parentAddress, expectedGasUsedByParent).
+				GasUsed(childAddress, 0).
 				GasRemaining(testConfig.gasProvided-expectedGasUsedByParent).
 				ReturnData(parentFinishA, parentFinishB, []byte("succ")).
 				Storage(
@@ -609,13 +679,39 @@ func TestGasUsed_AsyncCall_MultiChild(t *testing.T) {
 		})
 }
 
+type MockClaimBuiltin struct {
+	mockBuiltin
+	AmountToGive int64
+	GasCost      uint64
+}
+
 func createMockBuiltinFunctions(tb testing.TB, host *vmHost, world *worldmock.MockWorld) {
 	err := world.InitBuiltinFunctions(host.GetGasScheduleMap())
 	require.Nil(tb, err)
 
-	world.BuiltinFuncs.Container.Add("builtinClaim", &MockClaimBuiltin{
+	mockClaimBuiltin := &MockClaimBuiltin{
 		AmountToGive: 42,
 		GasCost:      gasUsedByBuiltinClaim,
+	}
+
+	world.BuiltinFuncs.Container.Add("builtinClaim", &mockBuiltin{
+		processBuiltinFunction: func(acntSnd, _ state.UserAccountHandler, vmInput *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+			vmOutput := MakeVMOutput()
+			AddNewOutputAccount(
+				vmOutput,
+				nil,
+				acntSnd.AddressBytes(),
+				mockClaimBuiltin.AmountToGive,
+				nil)
+			vmOutput.GasRemaining = vmInput.GasProvided - mockClaimBuiltin.GasCost
+			return vmOutput, nil
+		},
+	})
+
+	world.BuiltinFuncs.Container.Add("builtinFail", &mockBuiltin{
+		processBuiltinFunction: func(acntSnd, _ state.UserAccountHandler, vmInput *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+			return nil, errors.New("whatdidyoudo")
+		},
 	})
 
 	host.protocolBuiltinFunctions = world.BuiltinFuncs.GetBuiltinFunctionNames()
