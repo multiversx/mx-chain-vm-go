@@ -7,11 +7,13 @@
                 "address:pair_contract": {
                     "nonce": "0",
                     "balance": "0",
-                    "esdtRoles": {
-                        "str:LPTOK-abcdef": [
-                            "ESDTRoleLocalMint",
-                            "ESDTRoleLocalBurn"
-                        ]
+                    "esdt": {
+                        "str:LPTOK-abcdef": {
+                            "roles": [
+                                "ESDTRoleLocalMint",
+                                "ESDTRoleLocalBurn"
+                            ]
+                        }
                     },
                     "storage": {
                         "str:first_token_id": "str:WEGLD-abcdef",
@@ -23,7 +25,8 @@
                         "str:total_fee_precent": "300",
                         "str:special_fee_precent": "100"
                     },
-                    "code": "file:../output/elrond_dex_pair.wasm"
+                    "code": "file:../output/elrond_dex_pair.wasm",
+                    "owner": "address:owner"
                 }
             }
         }

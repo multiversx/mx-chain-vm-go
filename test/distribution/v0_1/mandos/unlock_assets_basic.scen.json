@@ -43,12 +43,14 @@
                     "nonce": "3",
                     "balance": "100,000,000",
                     "esdt": {
-                        "str:LKMEX-abcdef": [
-                            {
-                                "nonce": "0x03",
-                                "value": "900"
-                            }
-                        ],
+                        "str:LKMEX-abcdef": {
+                            "instances": [
+                                {
+                                    "nonce": "0x03",
+                                    "balance": "900"
+                                }
+                            ]
+                        },
                         "str:MEX-abcdef": "100"
                     }
                 },
@@ -93,12 +95,14 @@
                     "nonce": "4",
                     "balance": "100,000,000",
                     "esdt": {
-                        "str:LKMEX-abcdef": [
-                            {
-                                "nonce": "0x04",
-                                "value": "792"
-                            }
-                        ],
+                        "str:LKMEX-abcdef": {
+                            "instances": [
+                                {
+                                    "nonce": "0x04",
+                                    "balance": "792"
+                                }
+                            ]
+                        },
                         "str:MEX-abcdef": "208"
                     }
                 },
@@ -143,12 +147,14 @@
                     "nonce": "5",
                     "balance": "100,000,000",
                     "esdt": {
-                        "str:LKMEX-abcdef": [
-                            {
-                                "nonce": "0x05",
-                                "value": "96"
-                            }
-                        ],
+                        "str:LKMEX-abcdef": {
+                            "instances": [
+                                {
+                                    "nonce": "0x05",
+                                    "balance": "96"
+                                }
+                            ]
+                        },
                         "str:MEX-abcdef": "904"
                     }
                 },

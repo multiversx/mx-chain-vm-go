@@ -1,0 +1,121 @@
+{
+    "name": "deploy",
+    "gasSchedule": "dummy",
+    "steps": [
+        {
+            "step": "setState",
+            "accounts": {
+                "address:owner": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {}
+                }
+            },
+            "newAddresses": [
+                {
+                    "creatorAddress": "address:owner",
+                    "creatorNonce": "0",
+                    "newAddress": "sc:dex_rewards_lock"
+                }
+            ]
+        },
+        {
+            "step": "scDeploy",
+            "txId": "deploy",
+            "tx": {
+                "from": "address:owner",
+                "contractCode": "file:../output/sc-dex-rewards-lock.wasm",
+                "value": "0",
+                "arguments": [
+                    "str:MEX-123456",
+                    "5", "50",
+                    "10", "200"
+                ],
+                "gasLimit": "1,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "0",
+                "message": "",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "address:owner": {
+                    "nonce": "1",
+                    "balance": "0",
+                    "storage": {}
+                },
+                "sc:dex_rewards_lock": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {
+                        "str:distributed_token_id": "str:MEX-123456",
+
+                        "str:epochRewardsMap.node_links|u32:1": "u32:0|u32:2",
+                        "str:epochRewardsMap.node_links|u32:2": "u32:1|u32:0",
+                        "str:epochRewardsMap.value|u32:1": "5",
+                        "str:epochRewardsMap.value|u32:2": "10",
+                        "str:epochRewardsMap.node_id|5": "1",
+                        "str:epochRewardsMap.node_id|10": "2",
+                        "str:epochRewardsMap.mapped|5": "50",
+                        "str:epochRewardsMap.mapped|10": "200",
+                        "str:epochRewardsMap.info": "u32:2|u32:1|u32:2|u32:2"
+                    },
+                    "code": "file:../output/sc-dex-rewards-lock.wasm"
+                }
+            }
+        },
+        {
+            "step": "setState",
+            "comment": "Simulate SFT issue -> callback -> set roles",
+            "accounts": {
+                "address:owner": {
+                    "nonce": "1",
+                    "balance": "0",
+                    "storage": {}
+                },
+                "sc:dex_rewards_lock": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "esdt": {
+                        "str:MEX-123456": {
+                            "balance": "0",
+                            "roles": [
+                                "ESDTRoleLocalMint",
+                                "ESDTRoleLocalBurn"
+                            ]
+                        },
+                        "str:LOCKED-123456": {
+                            "balance": "0",
+                            "lastNonce": "1",
+                            "roles": [
+                                "ESDTRoleNFTCreate",
+                                "ESDTRoleNFTBurn",
+                                "ESDTRoleNFTAddQuantity"
+                            ]
+                        }
+                    },
+                    "storage": {
+                        "str:distributed_token_id": "str:MEX-123456",
+                        "str:locked_token_id": "str:LOCKED-123456",
+
+                        "str:epochRewardsMap.node_links|u32:1": "u32:0|u32:2",
+                        "str:epochRewardsMap.node_links|u32:2": "u32:1|u32:0",
+                        "str:epochRewardsMap.value|u32:1": "5",
+                        "str:epochRewardsMap.value|u32:2": "10",
+                        "str:epochRewardsMap.node_id|5": "1",
+                        "str:epochRewardsMap.node_id|10": "2",
+                        "str:epochRewardsMap.mapped|5": "50",
+                        "str:epochRewardsMap.mapped|10": "200",
+                        "str:epochRewardsMap.info": "u32:2|u32:1|u32:2|u32:2"
+                    },
+                    "code": "file:../output/sc-dex-rewards-lock.wasm"
+                }
+            }
+        }
+    ]
+}

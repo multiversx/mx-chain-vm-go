@@ -152,8 +152,12 @@ func TestDistribution(t *testing.T) {
 	runAllTestsInFolder(t, "distribution/v0_1")
 }
 
+func TestRewards(t *testing.T) {
+	runAllTestsInFolder(t, "sc-dex-rewards-lock/")
+}
+
 func TestDex_v0_1_singleTest(t *testing.T) {
-	runSingleTest(t, "distribution/v0_1/mandos", "enter_farm_proxy.scen.json")
+	runSingleTest(t, "distribution/v0_1/mandos", "add_liquidity_proxy.scen.json")
 }
 
 // func TestPromises(t *testing.T) {

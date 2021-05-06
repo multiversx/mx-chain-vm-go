@@ -1,0 +1,96 @@
+{
+    "name": "test view functions",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "init.scen.json"
+        },
+        {
+            "step": "scQuery",
+            "txId": "epoch_reward_5",
+            "tx": {
+                "to": "sc:dex_rewards_lock",
+                "function": "getRewardPercentageForEpochsWaited",
+                "arguments": [
+                    "5"
+                ]
+            },
+            "expect": {
+                "out": [ "50" ]
+            }
+        },
+        {
+            "step": "scQuery",
+            "txId": "epoch_reward_10",
+            "tx": {
+                "to": "sc:dex_rewards_lock",
+                "function": "getRewardPercentageForEpochsWaited",
+                "arguments": [
+                    "10"
+                ]
+            },
+            "expect": {
+                "out": [ "200" ]
+            }
+        },
+        {
+            "step": "scQuery",
+            "txId": "epoch_reward_invalid",
+            "tx": {
+                "to": "sc:dex_rewards_lock",
+                "function": "getRewardPercentageForEpochsWaited",
+                "arguments": [
+                    "500"
+                ]
+            },
+            "expect": {
+                "out": [ "0" ]
+            }
+        },
+        {
+            "step": "scQuery",
+            "txId": "calculate_interest_5",
+            "tx": {
+                "to": "sc:dex_rewards_lock",
+                "function": "calculateInterest",
+                "arguments": [
+                    "100",
+                    "5"
+                ]
+            },
+            "expect": {
+                "out": [ "50" ]
+            }
+        },
+        {
+            "step": "scQuery",
+            "txId": "calculate_interest_10",
+            "tx": {
+                "to": "sc:dex_rewards_lock",
+                "function": "calculateInterest",
+                "arguments": [
+                    "100",
+                    "10"
+                ]
+            },
+            "expect": {
+                "out": [ "200" ]
+            }
+        },
+        {
+            "step": "scQuery",
+            "txId": "calculate_interest_500",
+            "tx": {
+                "to": "sc:dex_rewards_lock",
+                "function": "calculateInterest",
+                "arguments": [
+                    "100",
+                    "500"
+                ]
+            },
+            "expect": {
+                "out": [ "200" ]
+            }
+        }
+    ]    
+}
