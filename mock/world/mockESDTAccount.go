@@ -261,7 +261,7 @@ func (a *Account) loadMockESDTDataInstance(tokenKey []byte) (string, *esdt.ESDig
 		}
 		tokenName = string(tokenNameFromKey)
 	} else {
-		nonceAsBytes := big.NewInt(int64(tokenInstance.TokenMetaData.Nonce)).Bytes()
+		nonceAsBytes := big.NewInt(0).SetUint64(tokenInstance.TokenMetaData.Nonce).Bytes()
 		tokenNameLen := len(tokenNameFromKey) - len(nonceAsBytes)
 
 		if !bytes.Equal(nonceAsBytes, tokenNameFromKey[tokenNameLen:]) {
