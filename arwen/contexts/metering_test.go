@@ -1,6 +1,7 @@
 package contexts
 
 import (
+	"github.com/ElrondNetwork/arwen-wasm-vm/math"
 	"math/big"
 	"testing"
 
@@ -302,6 +303,7 @@ func TestMeteringContext_GasUsed_StackOneLevel(t *testing.T) {
 	mockRuntime.SetVMInput(&parentInput.VMInput)
 
 	metering, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000))
+	host.MeteringContext = metering
 	zeroCodeCosts(metering)
 
 	parentInput.GasProvided = 4000
@@ -374,10 +376,10 @@ func TestMeteringContext_GasUsed_StackOneLevel(t *testing.T) {
 	gasUsed = output.outputState.OutputAccounts["child"].GasUsed
 	require.Equal(t, 150, int(gasUsed))
 
+	gasRemaining = math.SubUint64(parentInput.GasProvided, gasSpentByContract)
 	// calculate gas remaining
 
-	//gasRemaining := 0
-	//require.Equal(t, gasRemaining, 0)
+	require.Equal(t, int(gasRemaining), int(output.GetVMOutput().GasRemaining))
 }
 
 func zeroCodeCosts(context *meteringContext) {
