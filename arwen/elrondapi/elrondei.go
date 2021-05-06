@@ -715,9 +715,10 @@ func getESDTTokenData(
 	nameOffset int32,
 	attributesOffset int32,
 	creatorOffset int32,
-	royaltiesOffset int32,
+	royaltiesHandle int32,
 	urisOffset int32,
 ) int32 {
+	bigInt := arwen.GetBigIntContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -750,10 +751,10 @@ func getESDTTokenData(
 		if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 			return 0
 		}
-		err = runtime.MemStore(royaltiesOffset, big.NewInt(int64(esdtData.TokenMetaData.Royalties)).Bytes())
-		if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-			return 0
-		}
+
+		royalties := bigInt.GetOne(royaltiesHandle)
+		royalties.Set(big.NewInt(int64(esdtData.TokenMetaData.Royalties)))
+
 		if len(esdtData.TokenMetaData.URIs) > 0 {
 			err = runtime.MemStore(urisOffset, esdtData.TokenMetaData.URIs[0])
 			if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
