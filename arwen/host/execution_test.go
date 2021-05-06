@@ -1388,6 +1388,7 @@ func TestExecution_AsyncCall(t *testing.T) {
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using asyncCall().
 	host, _ := defaultTestArwenForTwoSCs(t, parentCode, childCode, nil, nil)
+
 	input := DefaultTestContractCallInput()
 	input.RecipientAddr = parentAddress
 	input.Function = parentPerformAsyncCall

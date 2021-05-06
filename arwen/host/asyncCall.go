@@ -38,11 +38,9 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 	// sender and destination shards.
 	if execMode == arwen.AsyncBuiltinFuncCrossShard {
 		vmOutput, err := host.executeSyncDestinationCall(asyncCallInfo)
-		if vmOutput != nil {
-			log.LogIfError(err, "async call failed: sync built-in", "error", err,
-				"retCode", vmOutput.ReturnCode,
-				"message", vmOutput.ReturnMessage)
-		}
+		log.LogIfError(err, "async call failed: sync built-in", "error", err,
+			"retCode", vmOutput.ReturnCode,
+			"message", vmOutput.ReturnMessage)
 		return err
 	}
 
@@ -50,6 +48,12 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 		// return but keep async call info
 		host.outputContext.PrependFinish(asyncCallInfo.Data)
 		log.Trace("esdt transfer on callback")
+
+		// The contract wants to send ESDT back to its original caller
+		// via a reversed async call. The reversed async call will not have a
+		// callback, therefore the gas locked for callback execution must be
+		// restored.
+		host.Metering().RestoreGas(asyncCallInfo.GetGasLocked())
 		return nil
 	}
 
@@ -136,14 +140,11 @@ func (host *vmHost) executeSyncDestinationCall(asyncCallInfo arwen.AsyncCallInfo
 		"args", destinationCallInput.Arguments)
 
 	destinationVMOutput, _, err := host.ExecuteOnDestContext(destinationCallInput)
-
-	if destinationVMOutput != nil {
-		log.Trace("async call: sync dest call",
-			"retCode", destinationVMOutput.ReturnCode,
-			"message", destinationVMOutput.ReturnMessage,
-			"data", destinationVMOutput.ReturnData,
-			"error", err)
-	}
+	log.Trace("async call: sync dest call",
+		"retCode", destinationVMOutput.ReturnCode,
+		"message", destinationVMOutput.ReturnMessage,
+		"data", destinationVMOutput.ReturnData,
+		"error", err)
 
 	return destinationVMOutput, err
 }
@@ -172,15 +173,16 @@ func (host *vmHost) executeSyncCallbackCall(
 		"func", callbackCallInput.Function,
 		"args", callbackCallInput.Arguments)
 
-	callbackVMOutput, _, callBackErr := host.ExecuteOnDestContext(callbackCallInput)
+	// Restore gas locked while still on the caller instance; otherwise, the
+	// locked gas will appear to have been used twice by the caller instance.
+	host.Metering().RestoreGas(asyncCallInfo.GetGasLocked())
 
-	if callbackVMOutput != nil {
-		log.Trace("async call: sync dest call",
-			"retCode", callbackVMOutput.ReturnCode,
-			"message", callbackVMOutput.ReturnMessage,
-			"data", callbackVMOutput.ReturnData,
-			"error", callBackErr)
-	}
+	callbackVMOutput, _, callBackErr := host.ExecuteOnDestContext(callbackCallInput)
+	log.Trace("async call: sync callback call",
+		"retCode", callbackVMOutput.ReturnCode,
+		"message", callbackVMOutput.ReturnMessage,
+		"data", callbackVMOutput.ReturnData,
+		"error", callBackErr)
 
 	return callbackVMOutput, callBackErr
 }

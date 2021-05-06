@@ -105,6 +105,8 @@ func (context *meteringContext) PopDiscard() {
 	context.stateStack = context.stateStack[:stateStackLen-1]
 }
 
+// PopMergeActiveState pops the state at the top of the internal stack and
+// merges it into the active state
 func (context *meteringContext) PopMergeActiveState() {
 	stateStackLen := len(context.stateStack)
 	if stateStackLen == 0 {
@@ -137,11 +139,15 @@ func (context *meteringContext) addToGasUsedByAccounts(gasUsed map[string]uint64
 	}
 }
 
+// UpdateGasStateOnSuccess performs final gas accounting after a successful execution.
 func (context *meteringContext) UpdateGasStateOnSuccess(vmOutput *vmcommon.VMOutput) error {
 	context.updateSCGasUsed()
-	context.setGasUsedToOutputAccounts(vmOutput)
+	err := context.setGasUsedToOutputAccounts(vmOutput)
+	if err != nil {
+		return err
+	}
 
-	err := context.checkGasLegacy()
+	err = context.checkGasLegacy()
 	if err != nil {
 		return err
 	}
@@ -154,6 +160,7 @@ func (context *meteringContext) UpdateGasStateOnSuccess(vmOutput *vmcommon.VMOut
 	return nil
 }
 
+// UpdateGasStateOnSuccess performs final gas accounting after a failed execution.
 func (context *meteringContext) UpdateGasStateOnFailure(vmOutput *vmcommon.VMOutput) {
 	runtime := context.host.Runtime()
 	output := context.host.Output()
@@ -180,28 +187,29 @@ func (context *meteringContext) updateSCGasUsed() {
 	context.gasUsedByAccounts[string(currentAccountAddress)] = gasUsed
 }
 
-func (context *meteringContext) TrackGasUsedByBuiltinFunction(err error, builtinInput *vmcommon.ContractCallInput, builtinOutput *vmcommon.VMOutput) error {
+func (context *meteringContext) TrackGasUsedByBuiltinFunction(
+	err error,
+	builtinInput *vmcommon.ContractCallInput,
+	builtinOutput *vmcommon.VMOutput,
+	postBuiltinInput *vmcommon.ContractCallInput,
+) error {
 	if err != nil {
 		context.UseGas(builtinInput.GasProvided)
 		return err
 	}
 
-	callerContractAddress := string(builtinInput.CallerAddr)
-	outputAccounts := builtinOutput.OutputAccounts
-	callerContractAccount, exists := outputAccounts[callerContractAddress]
+	gasUsed := math.SubUint64(builtinInput.GasProvided, builtinOutput.GasRemaining)
 
-	gasTransferredByCurrentAccount := uint64(0)
-	if exists {
-		gasTransferredByCurrentAccount = context.getGasTransferredByAccount(callerContractAccount)
+	// If the builtin function indicated that there's a follow-up SC execution
+	// after itself, then it has reserved gas for the SC in postBuiltinInput.
+	// This gas must not be tracked as if it was used by the builtin function
+	// (i.e. used on the instance of the caller).
+	if postBuiltinInput != nil {
+		gasUsed = math.SubUint64(gasUsed, postBuiltinInput.GasProvided)
 	}
 
-	gasUsedByOthers := context.getGasUsedByAllOtherAccounts(outputAccounts)
-
-	gasUsed := math.SubUint64(builtinInput.GasProvided, builtinOutput.GasRemaining)
-	gasUsed = math.SubUint64(gasUsed, gasTransferredByCurrentAccount)
-	gasUsed = math.SubUint64(gasUsed, gasUsedByOthers)
-
 	context.UseGas(gasUsed)
+	logMetering.Trace("gas used by builtin function", "gas", gasUsed)
 
 	return nil
 }
@@ -255,7 +263,6 @@ func (context *meteringContext) getCurrentTotalUsedGas() uint64 {
 }
 
 func (context *meteringContext) getGasUsedByAllOtherAccounts(outputAccounts map[string]*vmcommon.OutputAccount) uint64 {
-
 	gasUsedAndTransferred := uint64(0)
 	currentAccountAddress := string(context.host.Runtime().GetSCAddress())
 	for address, account := range outputAccounts {

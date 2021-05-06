@@ -149,6 +149,7 @@ func (context *outputContext) GetOutputAccount(address []byte) (*vmcommon.Output
 	return account, accountIsNew
 }
 
+// GetOutputAccounts returns all the OutputAccounts in the current outputState.
 func (context *outputContext) GetOutputAccounts() map[string]*vmcommon.OutputAccount {
 	return context.outputState.OutputAccounts
 }
@@ -412,17 +413,6 @@ func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 	return context.outputState
 }
 
-func (context *outputContext) isBuiltInExecution() bool {
-	if context.host.IsBuiltinFunctionName(context.host.Runtime().Function()) {
-		return true
-	}
-	if len(context.host.Runtime().GetVMInput().ESDTTokenName) > 0 {
-		return true
-	}
-
-	return false
-}
-
 // DeployCode sets the given code to a an account, and creates a new codeUpdates entry at the accounts address.
 func (context *outputContext) DeployCode(input arwen.CodeDeployInput) {
 	newSCAccount, _ := context.GetOutputAccount(input.ContractAddress)
@@ -511,7 +501,6 @@ func (context *outputContext) resolveReturnCodeFromError(err error) vmcommon.Ret
 
 // AddToActiveState merges the given vmOutput with the outputState.
 func (context *outputContext) AddToActiveState(rightOutput *vmcommon.VMOutput) {
-	rightOutput.GasRemaining = 0
 	if rightOutput.GasRefund != nil {
 		rightOutput.GasRefund.Add(rightOutput.GasRefund, context.outputState.GasRefund)
 	}
