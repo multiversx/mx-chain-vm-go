@@ -61,6 +61,21 @@ func appendCheckESDTInstanceToOJ(esdtInstance *mj.CheckESDTInstance, targetOj *o
 	if len(esdtInstance.Balance.Original) > 0 {
 		targetOj.Put("balance", checkBigIntToOJ(esdtInstance.Balance))
 	}
+	if !esdtInstance.Creator.Unspecified && len(esdtInstance.Creator.Value) > 0 {
+		targetOj.Put("creator", checkBytesToOJ(esdtInstance.Creator))
+	}
+	if !esdtInstance.Royalties.Unspecified && len(esdtInstance.Royalties.Original) > 0 {
+		targetOj.Put("royalties", checkUint64ToOJ(esdtInstance.Royalties))
+	}
+	if !esdtInstance.Hash.Unspecified && len(esdtInstance.Hash.Value) > 0 {
+		targetOj.Put("hash", checkBytesToOJ(esdtInstance.Hash))
+	}
+	if !esdtInstance.Uri.Unspecified && len(esdtInstance.Uri.Value) > 0 {
+		targetOj.Put("uri", checkBytesToOJ(esdtInstance.Creator))
+	}
+	if !esdtInstance.Attributes.Unspecified && len(esdtInstance.Attributes.Value) > 0 {
+		targetOj.Put("attributes", checkBytesToOJ(esdtInstance.Attributes))
+	}
 }
 
 func isCompactCheckESDT(esdtItem *mj.CheckESDTData) bool {

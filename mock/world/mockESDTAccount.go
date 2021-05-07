@@ -2,6 +2,7 @@ package worldmock
 
 import (
 	"bytes"
+	"errors"
 	"math/big"
 
 	"github.com/ElrondNetwork/elrond-go/core"
@@ -249,18 +250,25 @@ func (a *Account) loadMockESDTDataInstance(tokenKey []byte) (string, *esdt.ESDig
 		return "", nil, err
 	}
 
+	tokenNameFromKey := GetTokenNameFromKey(tokenKey)
+
 	var tokenName string
 	if tokenInstance.TokenMetaData == nil || tokenInstance.TokenMetaData.Nonce == 0 {
 		// ESDT, no nonce in the key
-		tokenNameFromKey := GetTokenNameFromKey(tokenKey)
 		tokenInstance.TokenMetaData = &esdt.MetaData{
 			Name:  tokenNameFromKey,
 			Nonce: 0,
 		}
 		tokenName = string(tokenNameFromKey)
 	} else {
-		// the key also contains the nonce, we take the token identifier from the metadata
-		tokenName = string(tokenInstance.TokenMetaData.Name)
+		nonceAsBytes := big.NewInt(0).SetUint64(tokenInstance.TokenMetaData.Nonce).Bytes()
+		tokenNameLen := len(tokenNameFromKey) - len(nonceAsBytes)
+
+		if !bytes.Equal(nonceAsBytes, tokenNameFromKey[tokenNameLen:]) {
+			return "", nil, errors.New("Invalid key for NFT (key does not end in nonce)")
+		}
+
+		tokenName = string(tokenNameFromKey[:tokenNameLen])
 	}
 
 	return tokenName, tokenInstance, nil
