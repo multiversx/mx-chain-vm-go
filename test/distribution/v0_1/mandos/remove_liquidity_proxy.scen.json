@@ -10,7 +10,7 @@
             "txId": "12",
             "tx": {
                 "from": "address:user_with_wegld1",
-                "to": "address:dist_contract",
+                "to": "address:proxy_dex_contract",
                 "value": "0",
                 "function": "removeLiquidityProxy",
                 "esdt": {
@@ -27,7 +27,11 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["0x4c50544f4b2d616263646566", "0x0000000c5745474c442d616263646566000000022328", "0x0000000a4d45582d616263646566000000022328"],
+                "out": [
+                    "0x4c50544f4b2d616263646566",
+                    "0x0000000c5745474c442d616263646566000000022328",
+                    "0x0000000a4d45582d616263646566000000022328"
+                ],
                 "status": "0",
                 "logs": [],
                 "gas": "*",
@@ -41,12 +45,14 @@
                     "nonce": "6",
                     "balance": "100,000,000",
                     "esdt": {
-                        "str:LKMEX-abcdef": [
-                            {
-                                "nonce": "0x02",
-                                "value": "89,000"
-                            }
-                        ],
+                        "str:LKMEX-abcdef": {
+                            "instances": [
+                                {
+                                    "nonce": "0x02",
+                                    "balance": "89,000"
+                                }
+                            ]
+                        },
                         "str:WEGLD-abcdef": "999,999,000"
                     },
                     "storage": {},
