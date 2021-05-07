@@ -86,7 +86,6 @@ func TestRustAsyncCalls(t *testing.T) {
 	runTestsInFolder(t, "features/async/mandos", []string{
 		"features/async/mandos/recursive_caller_esdt_2.scen.json",
 		"features/async/mandos/recursive_caller_esdt_x.scen.json",
-		"features/async/mandos/forwarder_send_twice_esdt.scen.json",
 	})
 }
 
