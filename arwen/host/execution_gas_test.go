@@ -15,12 +15,13 @@ import (
 var gasUsedByBuiltinClaim = uint64(120)
 
 type directCallGasTestConfig struct {
-	gasUsedByParent    uint64
-	gasUsedByChild     uint64
-	gasProvidedToChild uint64
-	gasProvided        uint64
-	parentBalance      int64
-	childBalance       int64
+	gasUsedByParent      uint64
+	gasUsedByChild       uint64
+	gasProvidedToChild   uint64
+	gasProvided          uint64
+	parentBalance        int64
+	childBalance         int64
+	ESDTTokensToTransfer uint64
 }
 
 var simpleGasTestConfig = directCallGasTestConfig{
@@ -233,6 +234,96 @@ func TestGasUsed_ThreeContracts_ExecuteOnDestCtx(t *testing.T) {
 				GasUsed(betaAddress, receiverCallGas).
 				GasUsed(gammaAddress, receiverCallGas).
 				GasRemaining(gasProvided - alphaCallGas - 2*receiverCallGas)
+		})
+}
+
+func TestGasUsed_ESTD_CallAfterBuiltinCall_Success(t *testing.T) {
+	var parentAccount *worldmock.Account
+	initialESDTTokenBalance := uint64(100)
+	esdtTransferGasCost := uint64(1)
+
+	testConfig := simpleGasTestConfig
+	testConfig.ESDTTokensToTransfer = 5
+
+	runMockInstanceCallerTestBuilder(t).
+		withContracts(
+			createMockContract(parentAddress).
+				withBalance(testConfig.parentBalance).
+				withConfig(testConfig).
+				withMethods(execESDTTransferAndCallParentMock),
+			createMockContract(childAddress).
+				withBalance(testConfig.childBalance).
+				withConfig(testConfig).
+				withMethods(wasteGasChildMock),
+		).
+		withInput(createTestContractCallInputBuilder().
+			withRecipientAddr(parentAddress).
+			withGasProvided(testConfig.gasProvided).
+			withFunction("execESDTTransferAndCall").
+			withArguments(childAddress, []byte("ESDTTransfer"), []byte("wasteGas")).
+			build()).
+		withSetup(func(host *vmHost, world *worldmock.MockWorld) {
+			parentAccount = world.AcctMap.GetAccount(parentAddress)
+			parentAccount.SetTokenBalanceUint64(ESDTTestTokenKey, initialESDTTokenBalance)
+			createMockBuiltinFunctions(t, host, world)
+			setZeroCodeCosts(host)
+		}).
+		andAssertResults(func(world *worldmock.MockWorld, verify *VMOutputVerifier) {
+			verify.
+				Ok().
+				GasUsed(parentAddress, testConfig.gasUsedByParent+esdtTransferGasCost).
+				GasUsed(childAddress, testConfig.gasUsedByChild).
+				GasRemaining(testConfig.gasProvided - esdtTransferGasCost - testConfig.gasUsedByParent - testConfig.gasUsedByChild)
+
+			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(ESDTTestTokenKey)
+			require.Equal(t, initialESDTTokenBalance-uint64(testConfig.ESDTTokensToTransfer), parentESDTBalance)
+
+			childAccount := world.AcctMap.GetAccount(childAddress)
+			childESDTBalance, _ := childAccount.GetTokenBalanceUint64(ESDTTestTokenKey)
+			require.Equal(t, uint64(testConfig.ESDTTokensToTransfer), childESDTBalance)
+		})
+}
+
+func TestGasUsed_ESTD_CallAfterBuiltinCall_Fail(t *testing.T) {
+	var parentAccount *worldmock.Account
+	initialESDTTokenBalance := uint64(100)
+
+	testConfig := simpleGasTestConfig
+
+	runMockInstanceCallerTestBuilder(t).
+		withContracts(
+			createMockContract(parentAddress).
+				withBalance(testConfig.parentBalance).
+				withConfig(testConfig).
+				withMethods(execESDTTransferAndCallParentMock),
+			createMockContract(childAddress).
+				withBalance(testConfig.childBalance).
+				withConfig(testConfig).
+				withMethods(failChildMock),
+		).
+		withInput(createTestContractCallInputBuilder().
+			withRecipientAddr(parentAddress).
+			withGasProvided(testConfig.gasProvided).
+			withFunction("execESDTTransferAndCall").
+			withArguments(childAddress, []byte("ESDTTransfer"), []byte("fail")).
+			build()).
+		withSetup(func(host *vmHost, world *worldmock.MockWorld) {
+			parentAccount = world.AcctMap.GetAccount(parentAddress)
+			parentAccount.SetTokenBalanceUint64(ESDTTestTokenKey, initialESDTTokenBalance)
+			createMockBuiltinFunctions(t, host, world)
+			setZeroCodeCosts(host)
+		}).
+		andAssertResults(func(world *worldmock.MockWorld, verify *VMOutputVerifier) {
+			verify.
+				ReturnCode(vmcommon.ExecutionFailed).
+				GasRemaining(0)
+
+			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(ESDTTestTokenKey)
+			require.Equal(t, initialESDTTokenBalance, parentESDTBalance)
+
+			childAccount := world.AcctMap.GetAccount(childAddress)
+			childESDTBalance, _ := childAccount.GetTokenBalanceUint64(ESDTTestTokenKey)
+			require.Equal(t, uint64(0), childESDTBalance)
 		})
 }
 

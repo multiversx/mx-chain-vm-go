@@ -96,11 +96,11 @@ func runTestWithMockMockInstances(callerTest *mockInstancesTestTemplate) {
 
 	host, world, imb := defaultTestArwenForCallWithInstanceMocks(callerTest.t)
 
-	callerTest.setup(host, world)
-
 	for _, mockSC := range *callerTest.contracts {
 		mockSC.initialize(callerTest.t, host, imb)
 	}
+
+	callerTest.setup(host, world)
 
 	vmOutput, err := host.RunSmartContractCall(callerTest.input)
 

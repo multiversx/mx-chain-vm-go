@@ -1,6 +1,7 @@
 package host
 
 import (
+	"errors"
 	"math/big"
 
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
@@ -10,6 +11,15 @@ import (
 func wasteGasChildMock(instanceMock *mock.InstanceMock, config interface{}) {
 	testConfig := config.(directCallGasTestConfig)
 	instanceMock.AddMockMethod("wasteGas", simpleWasteGasMockMethod(instanceMock, testConfig.gasUsedByChild))
+}
+
+func failChildMock(instanceMock *mock.InstanceMock, config interface{}) {
+	instanceMock.AddMockMethod("fail", func() *mock.InstanceMock {
+		host := instanceMock.Host
+		instance := mock.GetMockInstance(host)
+		host.Runtime().FailExecution(errors.New("forced fail"))
+		return instance
+	})
 }
 
 func execOnSameCtxParentMock(instanceMock *mock.InstanceMock, config interface{}) {

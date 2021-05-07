@@ -192,12 +192,14 @@ func TestESDT_GettersAPI(t *testing.T) {
 func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 	host, world := defaultTestArwenWithWorldMock(t)
 
+	initialESDTTokenBalance := uint64(1000)
+
 	// Deploy the "parent" contract, which will call the exchange; the actual
 	// code of the contract is not important, because the exchange will be called
 	// by the "parent" using a manual call to host.ExecuteOnDestContext().
 	dummyCode := GetTestSCCode("init-simple", "../../")
 	parentAccount := world.AcctMap.CreateSmartContractAccount(userAddress, parentAddress, dummyCode)
-	parentAccount.SetTokenBalanceUint64(ESDTTestTokenKey, 1000)
+	parentAccount.SetTokenBalanceUint64(ESDTTestTokenKey, initialESDTTokenBalance)
 
 	// Deploy the exchange contract, which will receive ESDT and verify that it
 	// can see the received token amount and token name.
@@ -232,7 +234,12 @@ func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 	verify := NewVMOutputVerifier(t, vmOutput, err)
 	verify.
 		Ok()
+
 	require.Zero(t, len(asyncInfo.AsyncContextMap))
+
+	parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(ESDTTestTokenKey)
+	require.Equal(t, initialESDTTokenBalance-uint64(esdtValue), parentESDTBalance)
+
 	host.Clean()
 }
 
