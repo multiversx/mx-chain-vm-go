@@ -15,16 +15,18 @@
 						"str:WEGLD-abcdef": "3,000,000,000",
 						"str:ALC-abcdef": "3,000,000,000",
 						"str:BLC-abcdef": "5,000,000,000",
-						"str:FARM-abcdef": [
-							{
-								"nonce": "0x01",
-								"value": "99,999,000"
-							},
-							{
-								"nonce": "0x02",
-								"value": "100,000,000"
-							}
-						],
+						"str:FARM-abcdef": {
+							"instances": [
+								{
+									"nonce": "0x01",
+									"balance": "99,999,000"
+								},
+								{
+									"nonce": "0x02",
+									"balance": "100,000,000"
+								}
+							]
+						},
 						"str:LPTOK-abcdef": "1,799,999,000"
 					}
 				},
@@ -66,16 +68,18 @@
 						"str:WEGLD-abcdef": "3,000,000,000",
 						"str:ALC-abcdef": "3,000,000,000",
 						"str:BLC-abcdef": "5,000,000,000",
-						"str:FARM-abcdef": [
-							{
-								"nonce": "0x01",
-								"value": "99,999,000"
-							},
-							{
-								"nonce": "0x02",
-								"value": "99,900,000"
-							}
-						],
+						"str:FARM-abcdef": {
+							"instances": [
+								{
+									"nonce": "0x01",
+									"balance": "99,999,000"
+								},
+								{
+									"nonce": "0x02",
+									"balance": "99,900,000"
+								}
+							]
+						},
 						"str:LPTOK-abcdef": "1,800,089,000"
 					}
 				},
@@ -123,16 +127,18 @@
 						"str:WEGLD-abcdef": "3,000,000,000",
 						"str:ALC-abcdef": "3,000,000,000",
 						"str:BLC-abcdef": "5,000,000,000",
-						"str:FARM-abcdef": [
-							{
-								"nonce": "0x01",
-								"value": "99,999,000"
-							},
-							{
-								"nonce": "0x02",
-								"value": "99,800,000"
-							}
-						],
+						"str:FARM-abcdef": {
+							"instances": [
+								{
+									"nonce": "0x01",
+									"balance": "99,999,000"
+								},
+								{
+									"nonce": "0x02",
+									"balance": "99,800,000"
+								}
+							]
+						},
 						"str:LPTOK-abcdef": "1,800,189,000"
 					}
 				},

@@ -41,20 +41,22 @@
 						"str:ALC-abcdef": "3000000000",
 						"str:BLC-abcdef": "5000000000",
 						"str:LPTOK-abcdef": "1799999000",
-						"str:FARM-abcdef": [
-							{
-								"nonce": "0x01",
-								"value": "99,999,000"
-							},
-							{
-								"nonce": "0x02",
-								"value": "99,900,000"
-							},
-							{
-								"nonce": "0x03",
-								"value": "100,000"
-							}
-						]
+						"str:FARM-abcdef": {
+							"instances": [
+								{
+									"nonce": "0x01",
+									"balance": "99,999,000"
+								},
+								{
+									"nonce": "0x02",
+									"balance": "99,900,000"
+								},
+								{
+									"nonce": "0x03",
+									"balance": "100,000"
+								}
+							]
+						}
 					}
 				},
 				"+": ""

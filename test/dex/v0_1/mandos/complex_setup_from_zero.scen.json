@@ -353,11 +353,13 @@
 				"address:webu_pair_contract": {
 					"nonce": "0",
 					"balance": "0",
-					"esdtRoles": {
-						"str:LPWEBU-abcdef": [
-							"ESDTRoleLocalMint",
-							"ESDTRoleLocalBurn"
-						]
+					"esdt": {
+						"str:LPWEBU-abcdef": {
+							"roles": [
+								"ESDTRoleLocalMint",
+								"ESDTRoleLocalBurn"
+							]
+						}
 					},
 					"storage": {
 						"str:first_token_id": "str:WEGLD-abcdef",
@@ -374,11 +376,13 @@
 				"address:weme_pair_contract": {
 					"nonce": "0",
 					"balance": "0",
-					"esdtRoles": {
-						"str:LPWEME-abcdef": [
-							"ESDTRoleLocalMint",
-							"ESDTRoleLocalBurn"
-						]
+					"esdt": {
+						"str:LPWEME-abcdef": {
+							"roles": [
+								"ESDTRoleLocalMint",
+								"ESDTRoleLocalBurn"
+							]
+						}
 					},
 					"storage": {
 						"str:first_token_id": "str:WEGLD-abcdef",
@@ -395,11 +399,13 @@
 				"address:mebu_pair_contract": {
 					"nonce": "0",
 					"balance": "0",
-					"esdtRoles": {
-						"str:LPMEBU-abcdef": [
-							"ESDTRoleLocalMint",
-							"ESDTRoleLocalBurn"
-						]
+					"esdt": {
+						"str:LPMEBU-abcdef": {
+							"roles": [
+								"ESDTRoleLocalMint",
+								"ESDTRoleLocalBurn"
+							]
+						}
 					},
 					"storage": {
 						"str:first_token_id": "str:MEX-abcdef",
@@ -416,12 +422,14 @@
 				"address:wegld_farm_contract": {
 					"nonce": "0",
 					"balance": "0",
-					"esdtRoles": {
-						"str:STWEGLD-abcdef": [
-							"ESDTRoleNFTCreate",
-							"ESDTRoleNFTAddQuantity",
-							"ESDTRoleNFTBurn"
-						]
+					"esdt": {
+						"str:STWEGLD-abcdef": {
+							"roles": [
+								"ESDTRoleNFTCreate",
+								"ESDTRoleNFTAddQuantity",
+								"ESDTRoleNFTBurn"
+							]
+						}
 					},
 					"storage": {
 						"str:farming_pool_token_id": "str:WEGLD-abcdef",
@@ -436,12 +444,14 @@
 				"address:mex_farm_contract": {
 					"nonce": "0",
 					"balance": "0",
-					"esdtRoles": {
-						"str:STMEX-abcdef": [
-							"ESDTRoleNFTCreate",
-							"ESDTRoleNFTAddQuantity",
-							"ESDTRoleNFTBurn"
-						]
+					"esdt": {
+						"str:STMEX-abcdef": {
+							"roles": [
+								"ESDTRoleNFTCreate",
+								"ESDTRoleNFTAddQuantity",
+								"ESDTRoleNFTBurn"
+							]
+						}
 					},
 					"storage": {
 						"str:farming_pool_token_id": "str:MEX-abcdef",
@@ -1196,7 +1206,7 @@
 					"str:MEX-abcdef",
 					"50,000"
 				],
-				"gasLimit": "30,000,000",
+				"gasLimit": "100,000,000",
 				"gasPrice": "0"
 			},
 			"expect": {
@@ -1280,7 +1290,7 @@
 					"str:WEGLD-abcdef",
 					"50,000"
 				],
-				"gasLimit": "30,000,000",
+				"gasLimit": "100,000,000",
 				"gasPrice": "0"
 			},
 			"expect": {
@@ -1364,7 +1374,7 @@
 					"str:BUSD-abcdef",
 					"50,000"
 				],
-				"gasLimit": "50,000,000",
+				"gasLimit": "100,000,000",
 				"gasPrice": "0"
 			},
 			"expect": {
@@ -1448,7 +1458,7 @@
 					"str:WEGLD-abcdef",
 					"50,000"
 				],
-				"gasLimit": "50,000,000",
+				"gasLimit": "100,000,000",
 				"gasPrice": "0"
 			},
 			"expect": {
@@ -1532,7 +1542,7 @@
 					"str:BUSD-abcdef",
 					"50,000"
 				],
-				"gasLimit": "50,000,000",
+				"gasLimit": "100,000,000",
 				"gasPrice": "0"
 			},
 			"expect": {
@@ -1616,7 +1626,7 @@
 					"str:MEX-abcdef",
 					"50,000"
 				],
-				"gasLimit": "50,000,000",
+				"gasLimit": "100,000,000",
 				"gasPrice": "0"
 			},
 			"expect": {
@@ -1700,7 +1710,7 @@
 					"str:MEX-abcdef",
 					"50,000"
 				],
-				"gasLimit": "50,000,000",
+				"gasLimit": "100,000,000",
 				"gasPrice": "0"
 			},
 			"expect": {
