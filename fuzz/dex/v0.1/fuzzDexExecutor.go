@@ -800,11 +800,13 @@ func (pfe *fuzzDexExecutor) doHackishStep(tokenA string, tokenB string, index in
 			"%s": {
 				"nonce": "0",
 				"balance": "0",
-				"esdtRoles": {
-					"str:%s": [
-						"ESDTRoleLocalMint",
-						"ESDTRoleLocalBurn"
-					]
+				"esdt": {
+					"str:%s": {
+						"roles":[
+							"ESDTRoleLocalMint",
+							"ESDTRoleLocalBurn"
+						]
+					}
 				},
 				"storage": {
 					"str:first_token_id": "str:%s",
@@ -839,18 +841,24 @@ func (pfe *fuzzDexExecutor) doHachishStepStaking() error {
 	esdt_role_string := ""
 	for i := 1; i <= ((pfe.numTokens + 1) * (pfe.numTokens + 2) / 2); i++ {
 		esdt_role_string += fmt.Sprintf(`
-					"str:%s": [
-						"ESDTRoleLocalBurn"
-					],`, pfe.lpTokenTicker(i))
+					"str:%s": {
+						"roles": [
+							"ESDTRoleLocalBurn"
+						]
+					},`, pfe.lpTokenTicker(i))
 	}
 	esdt_role_string += fmt.Sprintf(`
-					"str:%s": [
-						"ESDTRoleLocalBurn"
-					],`, pfe.wegldTokenId)
+					"str:%s": {
+						"roles": [
+							"ESDTRoleLocalBurn"
+						]
+					},`, pfe.wegldTokenId)
 	esdt_role_string += fmt.Sprintf(`
-					"str:%s": [
-						"ESDTRoleLocalBurn"
-					]`, pfe.mexTokenId)
+					"str:%s": {
+						"roles": [
+							"ESDTRoleLocalBurn"
+						]
+					}`, pfe.mexTokenId)
 
 	err := pfe.executeStep(fmt.Sprintf(`
 	{
@@ -860,12 +868,14 @@ func (pfe *fuzzDexExecutor) doHachishStepStaking() error {
 			"''%s": {
 				"nonce": "0",
 				"balance": "0",
-				"esdtRoles": {
-					"str:%s": [
-						"ESDTRoleNFTCreate",
-						"ESDTRoleNFTAddQuantity",
-						"ESDTRoleNFTBurn"
-					],%s
+				"esdt": {
+					"str:%s": {
+						"roles": [
+							"ESDTRoleNFTCreate",
+							"ESDTRoleNFTAddQuantity",
+							"ESDTRoleNFTBurn"
+						]
+					},%s
 				},
 				"storage": {
 					"str:farming_pool_token_id": "str:%s",
@@ -899,12 +909,14 @@ func (pfe *fuzzDexExecutor) doHachishStepStaking() error {
 			"''%s": {
 				"nonce": "0",
 				"balance": "0",
-				"esdtRoles": {
-					"str:%s": [
+				"esdt": {
+					"str:%s": {
+						"roles": [
 						"ESDTRoleNFTCreate",
 						"ESDTRoleNFTAddQuantity",
 						"ESDTRoleNFTBurn"
-					],%s
+						]
+					},%s
 				},
 				"storage": {
 					"str:farming_pool_token_id": "str:%s",

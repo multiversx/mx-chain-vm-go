@@ -51,7 +51,10 @@
 				"gasPrice": "0"
 			},
 			"expect": {
-				"out": [],
+				"out": [
+					"0x0000000c4c50544f4b2d61626364656600000003015f90",
+					"0x0000000c5745474c442d61626364656600000000"
+				],
 				"status": "0",
 				"message": "",
 				"gas": "*",
@@ -94,7 +97,7 @@
 		},
 		{
 			"step": "scCall",
-			"txId": "unstake",
+			"txId": "unstake2",
 			"tx": {
 				"from": "address:user1",
 				"to": "address:farm_contract",
@@ -110,7 +113,10 @@
 				"gasPrice": "0"
 			},
 			"expect": {
-				"out": [],
+				"out": [
+					"0x0000000c4c50544f4b2d616263646566000000030186a0",
+					"0x0000000c5745474c442d61626364656600000000"
+				],
 				"status": "0",
 				"message": "",
 				"gas": "*",
