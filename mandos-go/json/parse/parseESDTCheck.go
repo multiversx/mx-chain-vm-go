@@ -109,7 +109,7 @@ func (p *Parser) tryProcessCheckESDTInstanceField(kvp *oj.OJsonKeyValuePair, tar
 		}
 	case "creator":
 		targetInstance.Creator, err = p.parseCheckBytes(kvp.Value)
-		if err != nil || len(targetInstance.Creator.Value) != 32 {
+		if err != nil {
 			return false, fmt.Errorf("invalid ESDT NFT creator address: %w", err)
 		}
 	case "royalties":
@@ -119,7 +119,7 @@ func (p *Parser) tryProcessCheckESDTInstanceField(kvp *oj.OJsonKeyValuePair, tar
 		}
 	case "hash":
 		targetInstance.Hash, err = p.parseCheckBytes(kvp.Value)
-		if err != nil || len(targetInstance.Hash.Value) != 32 {
+		if err != nil {
 			return false, fmt.Errorf("invalid ESDT NFT hash: %w", err)
 		}
 	case "uri":
