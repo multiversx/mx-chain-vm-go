@@ -47,6 +47,30 @@
                         "str:WEGLD-abcdef": "1,000,000,000"
                     },
                     "code": ""
+                },
+                "address:user_with_wegld2": {
+                    "nonce": "0",
+                    "balance": "100,000,000",
+                    "esdt": {
+                        "str:WEGLD-abcdef": "1,000,000,000"
+                    },
+                    "code": ""
+                },
+                "address:user_with_mex1": {
+                    "nonce": "0",
+                    "balance": "100,000,000",
+                    "esdt": {
+                        "str:MEX-abcdef": "1,000,000,000"
+                    },
+                    "code": ""
+                },
+                "address:user_with_mex2": {
+                    "nonce": "0",
+                    "balance": "100,000,000",
+                    "esdt": {
+                        "str:MEX-abcdef": "1,000,000,000"
+                    },
+                    "code": ""
                 }
             },
             "newAddresses": [

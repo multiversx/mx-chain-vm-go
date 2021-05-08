@@ -6,6 +6,14 @@
             "path": "add_liquidity_proxy.scen.json"
         },
         {
+            "step": "externalSteps",
+            "path": "steps/swap_wegld.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "steps/swap_wegld.steps.json"
+        },
+        {
             "step": "scCall",
             "txId": "12",
             "tx": {
@@ -29,10 +37,10 @@
             "expect": {
                 "out": [
                     "0x4c50544f4b2d616263646566",
-                    "0x0000000c5745474c442d616263646566000000022328",
-                    "0x0000000a4d45582d616263646566000000022328",
-                    "0x0000000c5745474c442d616263646566000000022328",
-                    "0x0000000a4d45582d616263646566000000022328"
+                    "0x0000000c5745474c442d616263646566000000022a30",
+                    "0x0000000a4d45582d616263646566000000021d51",
+                    "0x0000000c5745474c442d616263646566000000022a30",
+                    "0x0000000a4d45582d616263646566000000021d51"
                 ],
                 "status": "0",
                 "logs": [],
@@ -51,11 +59,11 @@
                             "instances": [
                                 {
                                     "nonce": "0x02",
-                                    "balance": "89,000"
+                                    "balance": "87,505"
                                 }
                             ]
                         },
-                        "str:WEGLD-abcdef": "999,999,000"
+                        "str:WEGLD-abcdef": "1,000,000,800"
                     },
                     "storage": {},
                     "code": ""

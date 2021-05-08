@@ -134,11 +134,24 @@ func (a *Account) GetTokenData(tokenKey []byte) (*esdt.ESDigitalToken, error) {
 		return esdtData, nil
 	}
 
+	deleteLast := false
+	if len(esdtData.TokenMetaData.Name) > 0 {
+		if esdtData.TokenMetaData.Name[len(esdtData.TokenMetaData.Name)-1] < 10 {
+			deleteLast = true
+		}
+	}
+	name := esdtData.TokenMetaData.Name
+	if deleteLast {
+		name = name[:len(name)-1]
+	}
 	err = WorldMarshalizer.Unmarshal(esdtData, marshaledData)
 	if err != nil {
 		return nil, err
 	}
 
+	if esdtData.TokenMetaData != nil {
+		esdtData.TokenMetaData.Name = name
+	}
 	return esdtData, nil
 }
 

@@ -22,6 +22,7 @@
                         },
                         "str:MEX-abcdef": {
                             "roles": [
+                                "ESDTRoleLocalMint",
                                 "ESDTRoleLocalBurn"
                             ]
                         }
