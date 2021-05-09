@@ -97,7 +97,7 @@
             "tx": {
                 "from": "address:owner",
                 "value": "0",
-                "contractCode": "file:../output/sc_distribution_rs.wasm",
+                "contractCode": "file:../../output/sc_distribution_rs.wasm",
                 "arguments": [
                     "str:MEX-abcdef"
                 ],
@@ -117,7 +117,7 @@
             "txId": "deploy",
             "tx": {
                 "from": "address:owner",
-                "contractCode": "file:../output/sc-locked-rewards.wasm",
+                "contractCode": "file:../../output/sc-locked-rewards.wasm",
                 "value": "0",
                 "arguments": [
                     "str:MEX-abcdef",
@@ -140,11 +140,11 @@
             "tx": {
                 "from": "address:owner",
                 "value": "0",
-                "contractCode": "file:../output/sc-proxy-dex.wasm",
+                "contractCode": "file:../../output/sc-proxy-dex.wasm",
                 "arguments": [
                     "str:MEX-abcdef",
                     "0x0000000005F5E10000000000017D784000000000017D784000000000017D78400000000002625A0000000000004C4B4000000000004C4B40",
-                    "0x00000000042C1D8000000000042C1D800000000005F5E1000000000005F5E1000000000005F5E10000000000004C4B40"
+                    "0x00000000042C1D8000000000042C1D800000000005F5E1000000000005F5E1000000000005F5E10000000000004C4B4000000000004C4B40"
                 ],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
@@ -226,7 +226,7 @@
                         "str:distributed_token_id": "str:MEX-abcdef",
                         "str:locked_token_id": "str:LKMEX-abcdef"
                     },
-                    "code": "file:../output/sc_distribution_rs.wasm",
+                    "code": "file:../../output/sc_distribution_rs.wasm",
                     "owner": "address:owner"
                 },
                 "address:locked_rewards_contract": {
@@ -260,7 +260,7 @@
                         "str:epochRewardsMap.mapped|10": "200",
                         "str:epochRewardsMap.info": "u32:2|u32:1|u32:2|u32:2"
                     },
-                    "code": "file:../output/sc-locked-rewards.wasm",
+                    "code": "file:../../output/sc-locked-rewards.wasm",
                     "owner": "address:owner"
                 },
                 "address:proxy_dex_contract": {
@@ -303,7 +303,7 @@
                         }
                     },
                     "storage": {
-                        "str:proxy_farm_params": "0x00000000042c1d8000000000042c1d800000000005f5e1000000000005f5e1000000000005f5e10000000000004c4b40",
+                        "str:proxy_farm_params": "0x00000000042c1d8000000000042c1d800000000005f5e1000000000005f5e1000000000005f5e10000000000004c4b4000000000004C4B40",
                         "str:wrapped_lp_token_id": "str:WLPTOK-abcdef",
                         "str:wrapped_lp_token_nonce": "0",
                         "str:wrapped_farm_token_id": "str:WFARM-abcdef",
@@ -318,7 +318,7 @@
                         "str:accepted_locked_assets.value|u32:1": "str:LKMEX-abcdef",
                         "str:accepted_locked_assets.value|u32:2": "str:LKMEX2-abcdef"
                     },
-                    "code": "file:../output/sc-proxy-dex.wasm",
+                    "code": "file:../../output/sc-proxy-dex.wasm",
                     "owner": "address:owner"
                 }
             }

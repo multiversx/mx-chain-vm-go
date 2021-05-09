@@ -25,7 +25,7 @@
                         "str:total_fee_precent": "300",
                         "str:special_fee_precent": "100"
                     },
-                    "code": "file:../output/elrond_dex_pair.wasm",
+                    "code": "file:../../output/elrond_dex_pair.wasm",
                     "owner": "address:owner"
                 }
             }

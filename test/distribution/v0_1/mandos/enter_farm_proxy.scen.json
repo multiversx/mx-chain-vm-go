@@ -7,7 +7,7 @@
         },
         {
             "step": "externalSteps",
-            "path": "setup_farm_contract.scen.json"
+            "path": "steps/setup_farm_contract.steps.json"
         },
         {
             "step": "scCall",

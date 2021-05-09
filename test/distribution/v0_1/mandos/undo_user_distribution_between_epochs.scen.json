@@ -3,7 +3,7 @@
     "steps": [
         {
             "step": "externalSteps",
-            "path": "deploy.scen.json"
+            "path": "steps/deploy.steps.json"
         },
         {
             "step": "scCall",
