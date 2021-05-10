@@ -27,6 +27,10 @@ package elrondapi
 // extern void bigIntEDiv(void* context, int32_t destination, int32_t op1, int32_t op2);
 // extern void bigIntEMod(void* context, int32_t destination, int32_t op1, int32_t op2);
 //
+// extern void bigIntPow(void* context, int32_t destination, int32_t op1, int32_t op2);
+// extern int32_t bigIntLog2(void* context, int32_t op);
+// extern void bigIntSqrt(void* context, int32_t destination, int32_t op);
+//
 // extern void bigIntAbs(void* context, int32_t destination, int32_t op);
 // extern void bigIntNeg(void* context, int32_t destination, int32_t op);
 // extern int32_t bigIntSign(void* context, int32_t op);
@@ -146,6 +150,21 @@ func BigIntImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("bigIntEMod", bigIntEMod, C.bigIntEMod)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntSqrt", bigIntSqrt, C.bigIntSqrt)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntPow", bigIntPow, C.bigIntPow)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntLog2", bigIntLog2, C.bigIntLog2)
 	if err != nil {
 		return nil, err
 	}
@@ -698,6 +717,62 @@ func bigIntEMod(context unsafe.Pointer, destination, op1, op2 int32) {
 		return
 	}
 	dest.Mod(a, b) // Mod implements Euclidean division (unlike Go)
+}
+
+//export bigIntSqrt
+func bigIntSqrt(context unsafe.Pointer, destination, op int32) {
+	bigInt := arwen.GetBigIntContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
+	metering.UseGas(gasToUse)
+
+	dest, a := bigInt.GetTwo(destination, op)
+	useExtraGasForOperations(metering, []*big.Int{dest, a})
+	if a.Sign() < 0 {
+		runtime := arwen.GetRuntimeContext(context)
+		arwen.WithFault(arwen.ErrBadLowerBounds, context, runtime.BigIntAPIErrorShouldFailExecution())
+		return
+	}
+	dest.Sqrt(a)
+}
+
+//export bigIntPow
+func bigIntPow(context unsafe.Pointer, destination, op1, op2 int32) {
+	bigInt := arwen.GetBigIntContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
+	metering.UseGas(gasToUse)
+
+	dest, a, b := bigInt.GetThree(destination, op1, op2)
+	useExtraGasForOperations(metering, []*big.Int{dest, a, b})
+	if b.Sign() < 0 {
+		runtime := arwen.GetRuntimeContext(context)
+		arwen.WithFault(arwen.ErrBadLowerBounds, context, runtime.BigIntAPIErrorShouldFailExecution())
+		return
+	}
+
+	dest.Exp(a, b, nil)
+}
+
+//export bigIntLog2
+func bigIntLog2(context unsafe.Pointer, op1 int32) int32 {
+	bigInt := arwen.GetBigIntContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
+	metering.UseGas(gasToUse)
+
+	a := bigInt.GetOne(op1)
+	useExtraGasForOperations(metering, []*big.Int{a})
+	if a.Sign() < 0 {
+		runtime := arwen.GetRuntimeContext(context)
+		arwen.WithFault(arwen.ErrBadLowerBounds, context, runtime.BigIntAPIErrorShouldFailExecution())
+		return -1
+	}
+
+	return int32(a.BitLen() - 1)
 }
 
 //export bigIntAbs
