@@ -1,6 +1,6 @@
 {
     "language": "clang",
     "source_files": [
-        "/home/camil.bancioiu/Work/Elrond/arwen-wasm-vm/test/contracts/exec-dest-ctx-parent/exec-dest-ctx-parent.c"
+        "exec-dest-ctx-parent.c"
     ]
 }

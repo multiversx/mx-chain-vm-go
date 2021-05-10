@@ -1,6 +1,6 @@
 {
     "language": "clang",
     "source_files": [
-        "/home/camil.bancioiu/Work/Elrond/arwen-wasm-vm/test/contracts/async-call-child/async-call-child.c"
+        "async-call-child.c"
     ]
 }
