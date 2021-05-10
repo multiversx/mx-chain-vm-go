@@ -6,7 +6,6 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/math"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-go/core"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
@@ -135,20 +134,6 @@ func (context *outputContext) CensorVMOutput() {
 	logOutput.Trace("state content censored")
 }
 
-// ResetGas will set to 0 all gas used from output accounts, in order
-// to properly calculate the actual used gas of one smart contract when called in sync
-func (context *outputContext) ResetGas() {
-	for _, outAcc := range context.outputState.OutputAccounts {
-		outAcc.GasUsed = 0
-		for _, outTransfer := range outAcc.OutputTransfers {
-			outTransfer.GasLimit = 0
-			outTransfer.GasLocked = 0
-		}
-	}
-
-	logOutput.Trace("state gas reset")
-}
-
 // GetOutputAccount returns the output account present at the given address,
 // and a bool that is true if the account is new. If no output account is present at that address,
 // a new account will be created and added to the output accounts.
@@ -162,6 +147,11 @@ func (context *outputContext) GetOutputAccount(address []byte) (*vmcommon.Output
 	}
 
 	return account, accountIsNew
+}
+
+// GetOutputAccounts returns all the OutputAccounts in the current outputState.
+func (context *outputContext) GetOutputAccounts() map[string]*vmcommon.OutputAccount {
+	return context.outputState.OutputAccounts
 }
 
 // DeleteOutputAccount removes the given address from the output accounts and code updates
@@ -351,7 +341,6 @@ func (context *outputContext) TransferESDT(
 		}
 
 		if !sameShard {
-			context.host.Metering().ForwardGas(sender, destination, gasRemaining)
 			context.host.Metering().UseGas(gasRemaining)
 		}
 	}
@@ -409,89 +398,19 @@ func (context *outputContext) AddTxValueToAccount(address []byte, value *big.Int
 	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
 }
 
-// GetCurrentTotalUsedGas returns the current total used gas from the merged vm outputs
-func (context *outputContext) GetCurrentTotalUsedGas() (uint64, bool) {
-	gasUsed := uint64(0)
-	gasLockSentForward := false
-	for _, outputAccount := range context.outputState.OutputAccounts {
-		gasUsed = math.AddUint64(gasUsed, outputAccount.GasUsed)
-		for _, outputTransfer := range outputAccount.OutputTransfers {
-			gasUsed = math.AddUint64(gasUsed, outputTransfer.GasLimit)
-			gasUsed = math.AddUint64(gasUsed, outputTransfer.GasLocked)
-
-			if outputTransfer.GasLocked > 0 {
-				gasLockSentForward = true
-			}
-		}
-	}
-
-	return gasUsed, gasLockSentForward
-}
-
 // GetVMOutput updates the current VMOutput and returns it
 func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
-	runtime := context.host.Runtime()
+	context.removeNonUpdatedCode()
+
 	metering := context.host.Metering()
+	context.outputState.GasRemaining = metering.GasLeft()
 
-	remainedFromForwarded := uint64(0)
-	account, _ := context.GetOutputAccount(runtime.GetSCAddress())
-	if context.outputState.ReturnCode == vmcommon.Ok {
-		account.GasUsed, remainedFromForwarded = metering.GasUsedByContract()
-		context.outputState.GasRemaining = metering.GasLeft()
-
-		// backward compatibility
-		if !context.host.IsArwenV2Enabled() && account.GasUsed > metering.GetGasProvided() {
-			return context.CreateVMOutputInCaseOfError(arwen.ErrNotEnoughGas)
-		}
-	} else {
-		account.GasUsed = math.AddUint64(account.GasUsed, metering.GetGasProvided())
-	}
-
-	context.removeNonUpdatedCode(context.outputState)
-
-	err := context.checkGas(remainedFromForwarded)
+	err := metering.UpdateGasStateOnSuccess(context.outputState)
 	if err != nil {
 		return context.CreateVMOutputInCaseOfError(err)
 	}
 
 	return context.outputState
-}
-
-func (context *outputContext) isBuiltInExecution() bool {
-	if context.host.IsBuiltinFunctionName(context.host.Runtime().Function()) {
-		return true
-	}
-	if len(context.host.Runtime().GetVMInput().ESDTTokenName) > 0 {
-		return true
-	}
-
-	return false
-}
-
-func (context *outputContext) checkGas(remainedFromForwarded uint64) error {
-	if !context.host.IsArwenV2Enabled() {
-		return nil
-	}
-
-	previousGasUsed := context.host.Metering().GetPreviousTotalUsedGas()
-	gasUsed, gasLockSentForward := context.GetCurrentTotalUsedGas()
-	gasProvided := context.host.Metering().GetGasProvided()
-
-	wasBuiltInFuncWhichForwardedGas := gasLockSentForward && context.isBuiltInExecution()
-	if wasBuiltInFuncWhichForwardedGas {
-		gasProvided = math.AddUint64(gasProvided, context.host.Metering().GetGasLocked())
-	}
-
-	context.outputState.GasRemaining, remainedFromForwarded = math.SubUint64(context.outputState.GasRemaining, remainedFromForwarded)
-	totalGas := math.AddUint64(gasUsed, context.outputState.GasRemaining)
-	totalGas, _ = math.SubUint64(totalGas, remainedFromForwarded)
-	totalGas, _ = math.SubUint64(totalGas, previousGasUsed)
-	if totalGas > gasProvided {
-		logOutput.Error("gas usage mismatch", "total gas used", totalGas, "gas provided", gasProvided)
-		return arwen.ErrInputAndOutputGasDoesNotMatch
-	}
-
-	return nil
 }
 
 // DeployCode sets the given code to a an account, and creates a new codeUpdates entry at the accounts address.
@@ -528,11 +447,13 @@ func (context *outputContext) CreateVMOutputInCaseOfError(err error) *vmcommon.V
 		ReturnMessage: message,
 	}
 
+	context.host.Metering().UpdateGasStateOnFailure(vmOutput)
+
 	return vmOutput
 }
 
-func (context *outputContext) removeNonUpdatedCode(vmOutput *vmcommon.VMOutput) {
-	for address, account := range vmOutput.OutputAccounts {
+func (context *outputContext) removeNonUpdatedCode() {
+	for address, account := range context.outputState.OutputAccounts {
 		_, ok := context.codeUpdates[address]
 		if !ok {
 			account.Code = nil
@@ -580,7 +501,6 @@ func (context *outputContext) resolveReturnCodeFromError(err error) vmcommon.Ret
 
 // AddToActiveState merges the given vmOutput with the outputState.
 func (context *outputContext) AddToActiveState(rightOutput *vmcommon.VMOutput) {
-	rightOutput.GasRemaining = 0
 	if rightOutput.GasRefund != nil {
 		rightOutput.GasRefund.Add(rightOutput.GasRefund, context.outputState.GasRefund)
 	}
