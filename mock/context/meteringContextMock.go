@@ -82,7 +82,7 @@ func (m *MeteringContextMock) InitStateFromContractCallInput(_ *vmcommon.VMInput
 }
 
 // TrackGasUsedByBuiltinFunction mocked method
-func (context *MeteringContextMock) TrackGasUsedByBuiltinFunction(_ error, _ *vmcommon.ContractCallInput, _ *vmcommon.VMOutput, _ *vmcommon.ContractCallInput) {
+func (context *MeteringContextMock) TrackGasUsedByBuiltinFunction(_ *vmcommon.ContractCallInput, _ *vmcommon.VMOutput, _ *vmcommon.ContractCallInput) {
 }
 
 // GasUsedByContract mocked method
