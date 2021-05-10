@@ -751,13 +751,13 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmc
 
 	vmOutput, err := host.blockChainHook.ProcessBuiltInFunction(input)
 	if err != nil {
-		metering.TrackGasUsedByBuiltinFunction(err, input, vmOutput, nil)
+		metering.UseGas(input.GasProvided)
 		return nil, nil, err
 	}
 
 	newVMInput, err := host.isSCExecutionAfterBuiltInFunc(input, vmOutput)
 	if err != nil {
-		metering.TrackGasUsedByBuiltinFunction(err, input, vmOutput, nil)
+		metering.UseGas(input.GasProvided)
 		return nil, nil, err
 	}
 
@@ -767,7 +767,7 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmc
 		}
 	}
 
-	metering.TrackGasUsedByBuiltinFunction(err, input, vmOutput, newVMInput)
+	metering.TrackGasUsedByBuiltinFunction(input, vmOutput, newVMInput)
 
 	host.addESDTTransferToVMOutputSCIntraShardCall(input, vmOutput)
 
