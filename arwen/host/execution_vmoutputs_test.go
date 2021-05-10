@@ -456,7 +456,6 @@ func expectedVMOutputDestCtxBuiltinClaim(input *vmcommon.ContractCallInput, _ []
 		42,
 		nil,
 	)
-	account.Balance = big.NewInt(1000)
 	account.GasUsed = 1988
 
 	AddFinishData(vmOutput, []byte("succ"))
@@ -477,8 +476,7 @@ func expectedVMOutputDestCtxBuiltinDoSomething(input *vmcommon.ContractCallInput
 		0,
 		nil,
 	)
-	account.Balance = big.NewInt(1000)
-	account.BalanceDelta = big.NewInt(0).Sub(arwen.One, arwen.One)
+	account.BalanceDelta = big.NewInt(0)
 	account.GasUsed = 1992
 
 	AddFinishData(vmOutput, []byte("succ"))
