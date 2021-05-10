@@ -686,10 +686,9 @@ func TestExecution_ExecuteOnSameContext_Prepare(t *testing.T) {
 					createStoreEntry(parentAddress).withKey(parentKeyB).withValue(parentDataB),
 				).
 				Transfers(
-					createTransferEntry(parentTransferReceiver).
+					createTransferEntry(parentAddress, parentTransferReceiver).
 						withData(parentTransferData).
-						withValue(big.NewInt(parentTransferValue)).
-						withSenderAddress(parentAddress),
+						withValue(big.NewInt(parentTransferValue)),
 				)
 		})
 }
@@ -731,10 +730,9 @@ func TestExecution_ExecuteOnSameContext_Wrong(t *testing.T) {
 						createStoreEntry(childAddress).withKey(childKey).withValue(childData),
 					).
 					Transfers(
-						createTransferEntry(parentTransferReceiver).
+						createTransferEntry(parentAddress, parentTransferReceiver).
 							withData(parentTransferData).
-							withValue(big.NewInt(parentTransferValue)).
-							withSenderAddress(parentAddress),
+							withValue(big.NewInt(parentTransferValue)),
 					)
 			} else {
 				verify.
@@ -871,14 +869,12 @@ func TestExecution_ExecuteOnSameContext_Successful(t *testing.T) {
 					createStoreEntry(parentAddress).withKey(childKey).withValue(childData),
 				).
 				Transfers(
-					createTransferEntry(parentTransferReceiver).
+					createTransferEntry(parentAddress, parentTransferReceiver).
 						withData(parentTransferData).
-						withValue(big.NewInt(parentTransferValue)).
-						withSenderAddress(parentAddress),
-					createTransferEntry(childTransferReceiver).
+						withValue(big.NewInt(parentTransferValue)),
+					createTransferEntry(childAddress, childTransferReceiver).
 						withData([]byte("qwerty")).
-						withValue(big.NewInt(96)).
-						withSenderAddress(childAddress),
+						withValue(big.NewInt(96)),
 				)
 		})
 }
@@ -1263,10 +1259,9 @@ func TestExecution_ExecuteOnDestContext_Prepare(t *testing.T) {
 					createStoreEntry(parentAddress).withKey(parentKeyB).withValue(parentDataB),
 				).
 				Transfers(
-					createTransferEntry(parentTransferReceiver).
+					createTransferEntry(parentAddress, parentTransferReceiver).
 						withData(parentTransferData).
-						withValue(big.NewInt(parentTransferValue)).
-						withSenderAddress(parentAddress),
+						withValue(big.NewInt(parentTransferValue)),
 				)
 		})
 }
@@ -1312,14 +1307,12 @@ func TestExecution_ExecuteOnDestContext_Wrong(t *testing.T) {
 						createStoreEntry(parentAddress).withKey(childKey).withValue(childData),
 					).
 					Transfers(
-						createTransferEntry(childTransferReceiver).
+						createTransferEntry(childAddress, childTransferReceiver).
 							withData([]byte("qwerty")).
-							withValue(big.NewInt(96)).
-							withSenderAddress(childAddress),
-						createTransferEntry(parentTransferReceiver).
+							withValue(big.NewInt(96)),
+						createTransferEntry(parentAddress, parentTransferReceiver).
 							withData(parentTransferData).
-							withValue(big.NewInt(parentTransferValue)).
-							withSenderAddress(parentAddress),
+							withValue(big.NewInt(parentTransferValue)),
 					)
 			} else {
 				verify.
@@ -1445,14 +1438,12 @@ func TestExecution_ExecuteOnDestContext_Successful(t *testing.T) {
 					createStoreEntry(childAddress).withKey(childKey).withValue(childData),
 				).
 				Transfers(
-					createTransferEntry(childTransferReceiver).
+					createTransferEntry(childAddress, childTransferReceiver).
 						withData([]byte("Second sentence.")).
-						withValue(big.NewInt(childTransferValue)).
-						withSenderAddress(childAddress),
-					createTransferEntry(parentTransferReceiver).
+						withValue(big.NewInt(childTransferValue)),
+					createTransferEntry(parentAddress, parentTransferReceiver).
 						withData(parentTransferData).
-						withValue(big.NewInt(parentTransferValue)).
-						withSenderAddress(parentAddress),
+						withValue(big.NewInt(parentTransferValue)),
 				)
 		})
 }
@@ -1509,14 +1500,12 @@ func TestExecution_ExecuteOnDestContext_Successful_ChildReturns(t *testing.T) {
 					createStoreEntry(childAddress).withKey(childKey).withValue(childData),
 				).
 				Transfers(
-					createTransferEntry(childTransferReceiver).
+					createTransferEntry(childAddress, childTransferReceiver).
 						withData([]byte("Second sentence.")).
-						withValue(big.NewInt(childTransferValue)).
-						withSenderAddress(childAddress),
-					createTransferEntry(parentTransferReceiver).
+						withValue(big.NewInt(childTransferValue)),
+					createTransferEntry(parentAddress, parentTransferReceiver).
 						withData(parentTransferData).
-						withValue(big.NewInt(parentTransferValue)).
-						withSenderAddress(parentAddress),
+						withValue(big.NewInt(parentTransferValue)),
 				)
 		})
 }
@@ -1976,10 +1965,9 @@ func TestExecution_ExecuteOnDestContextByCaller_SimpleTransfer(t *testing.T) {
 				// other
 				ReturnData([]byte("sent"), []byte("child called")).
 				Transfers(
-					createTransferEntry(userAddress).
+					createTransferEntry(childAddress, userAddress).
 						withData([]byte{}).
-						withValue(big.NewInt(transferValue)).
-						withSenderAddress(childAddress),
+						withValue(big.NewInt(transferValue)),
 				)
 		})
 }
@@ -2089,18 +2077,15 @@ func TestExecution_AsyncCall(t *testing.T) {
 					createStoreEntry(childAddress).withKey(childKey).withValue(childData),
 				).
 				Transfers(
-					createTransferEntry(thirdPartyAddress).
+					createTransferEntry(parentAddress, thirdPartyAddress).
 						withData([]byte("hello")).
-						withValue(big.NewInt(3)).
-						withSenderAddress(parentAddress),
-					createTransferEntry(thirdPartyAddress).
+						withValue(big.NewInt(3)),
+					createTransferEntry(childAddress, thirdPartyAddress).
 						withData([]byte(" there")).
-						withValue(big.NewInt(3)).
-						withSenderAddress(childAddress),
-					createTransferEntry(vaultAddress).
+						withValue(big.NewInt(3)),
+					createTransferEntry(childAddress, vaultAddress).
 						withData([]byte{}).
-						withValue(big.NewInt(4)).
-						withSenderAddress(childAddress),
+						withValue(big.NewInt(4)),
 				)
 		})
 }
@@ -2189,18 +2174,15 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 					createStoreEntry(childAddress).withKey(childKey).withValue(childData),
 				).
 				Transfers(
-					createTransferEntry(thirdPartyAddress).
+					createTransferEntry(parentAddress, thirdPartyAddress).
 						withData([]byte("hello")).
-						withValue(big.NewInt(3)).
-						withSenderAddress(parentAddress),
-					createTransferEntry(thirdPartyAddress).
+						withValue(big.NewInt(3)),
+					createTransferEntry(childAddress, thirdPartyAddress).
 						withData([]byte(" there")).
-						withValue(big.NewInt(3)).
-						withSenderAddress(childAddress),
-					createTransferEntry(vaultAddress).
+						withValue(big.NewInt(3)),
+					createTransferEntry(childAddress, vaultAddress).
 						withData([]byte{}).
-						withValue(big.NewInt(4)).
-						withSenderAddress(childAddress),
+						withValue(big.NewInt(4)),
 				)
 		})
 }

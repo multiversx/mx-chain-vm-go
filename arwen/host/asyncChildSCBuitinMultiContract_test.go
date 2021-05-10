@@ -8,13 +8,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func addAsyncBuiltinMultiContractChildMethodsToInstanceMock(instanceMock *mock.InstanceMock, config interface{}) {
-
+func childFunctionAsyncChildMock(instanceMock *mock.InstanceMock, config interface{}) {
 	testConfig := config.(*asyncBuiltInCallTestConfig)
-
-	input := DefaultTestContractCallInput()
-	input.GasProvided = testConfig.gasProvidedToChild
-
 	instanceMock.AddMockMethod("childFunction", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
@@ -35,6 +30,9 @@ func addAsyncBuiltinMultiContractChildMethodsToInstanceMock(instanceMock *mock.I
 
 		return instance
 	})
+}
 
+func callBackAsyncChildMock(instanceMock *mock.InstanceMock, config interface{}) {
+	testConfig := config.(*asyncBuiltInCallTestConfig)
 	instanceMock.AddMockMethod("callBack", simpleWasteGasMockMethod(instanceMock, testConfig.gasUsedByCallback))
 }

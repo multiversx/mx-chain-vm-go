@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/big"
 	"testing"
+	"unicode"
 
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
@@ -58,8 +59,9 @@ func (v *VMOutputVerifier) Msg(message string) *VMOutputVerifier {
 // GasUsed verifies if GasUsed of the specified account is the same as the provided one
 func (v *VMOutputVerifier) GasUsed(address []byte, gas uint64) *VMOutputVerifier {
 	account := v.vmOutput.OutputAccounts[string(address)]
-	require.NotNil(v.T, account, "GasUsed")
-	require.Equal(v.T, int(gas), int(account.GasUsed), fmt.Sprintf("GasUsed %v", address))
+	errMsg := getErrorForAccount("GasUsed", address)
+	require.NotNil(v.T, account, errMsg)
+	require.Equal(v.T, int(gas), int(account.GasUsed), errMsg)
 	return v
 }
 
@@ -72,50 +74,56 @@ func (v *VMOutputVerifier) GasRemaining(gas uint64) *VMOutputVerifier {
 // Balance verifies if Balance of the specified account is the same as the provided one
 func (v *VMOutputVerifier) Balance(address []byte, balance int64) *VMOutputVerifier {
 	account := v.vmOutput.OutputAccounts[string(address)]
-	require.NotNil(v.T, account, "Balance")
-	require.NotNil(v.T, account.Balance, "Balance")
-	require.Equal(v.T, balance, account.Balance.Int64(), "Balance")
+	errMsg := getErrorForAccount("Balance", address)
+	require.NotNil(v.T, account, errMsg)
+	require.NotNil(v.T, account.Balance, errMsg)
+	require.Equal(v.T, balance, account.Balance.Int64(), errMsg)
 	return v
 }
 
 // BalanceDelta verifies if BalanceDelta of the specified account is the same as the provided one
 func (v *VMOutputVerifier) BalanceDelta(address []byte, balanceDelta int64) *VMOutputVerifier {
 	account := v.vmOutput.OutputAccounts[string(address)]
-	require.NotNil(v.T, account, "BalanceDelta")
-	require.NotNil(v.T, account.BalanceDelta, "BalanceDelta")
-	require.Equal(v.T, balanceDelta, account.BalanceDelta.Int64(), "BalanceDelta")
+	errMsg := getErrorForAccount("BalanceDelta", address)
+	require.NotNil(v.T, account, errMsg)
+	require.NotNil(v.T, account.BalanceDelta, errMsg)
+	require.Equal(v.T, balanceDelta, account.BalanceDelta.Int64(), errMsg)
 	return v
 }
 
 // Nonce verifies if Nonce of the specified account is the same as the provided one
 func (v *VMOutputVerifier) Nonce(address []byte, nonce uint64) *VMOutputVerifier {
 	account := v.vmOutput.OutputAccounts[string(address)]
-	require.NotNil(v.T, account, "Nonce")
-	require.Equal(v.T, nonce, account.Nonce, "Nonce")
+	errMsg := getErrorForAccount("Nonce", address)
+	require.NotNil(v.T, account, errMsg)
+	require.Equal(v.T, nonce, account.Nonce, errMsg)
 	return v
 }
 
 // Code verifies if Code of the specified account is the same as the provided one
 func (v *VMOutputVerifier) Code(address []byte, code []byte) *VMOutputVerifier {
 	account := v.vmOutput.OutputAccounts[string(address)]
-	require.NotNil(v.T, account, "Code")
-	require.Equal(v.T, code, account.Code, "Code")
+	errMsg := getErrorForAccount("Code", address)
+	require.NotNil(v.T, account, errMsg)
+	require.Equal(v.T, code, account.Code, errMsg)
 	return v
 }
 
 // CodeMetadata if CodeMetadata of the specified account is the same as the provided one
 func (v *VMOutputVerifier) CodeMetadata(address []byte, codeMetadata []byte) *VMOutputVerifier {
 	account := v.vmOutput.OutputAccounts[string(address)]
-	require.NotNil(v.T, account, "CodeMetadata")
-	require.Equal(v.T, codeMetadata, account.CodeMetadata, "CodeMetadata")
+	errMsg := getErrorForAccount("CodeMetadata", address)
+	require.NotNil(v.T, account, errMsg)
+	require.Equal(v.T, codeMetadata, account.CodeMetadata, errMsg)
 	return v
 }
 
 // CodeDeployerAddress if CodeDeployerAddress of the specified account is the same as the provided one
 func (v *VMOutputVerifier) CodeDeployerAddress(address []byte, codeDeployerAddress []byte) *VMOutputVerifier {
 	account := v.vmOutput.OutputAccounts[string(address)]
-	require.NotNil(v.T, account, "CodeDeployerAddress")
-	require.Equal(v.T, codeDeployerAddress, account.CodeDeployerAddress, "CodeDeployerAddress")
+	errMsg := getErrorForAccount("CodeDeployerAddress", address)
+	require.NotNil(v.T, account, errMsg)
+	require.Equal(v.T, codeDeployerAddress, account.CodeDeployerAddress, errMsg)
 	return v
 }
 
@@ -177,26 +185,24 @@ func (v *VMOutputVerifier) Storage(returnData ...storeEntry) *VMOutputVerifier {
 }
 
 type transferEntry struct {
-	address  []byte
-	transfer vmcommon.OutputTransfer
+	vmcommon.OutputTransfer
+	address []byte
 }
 
-func createTransferEntry(address []byte) *transferEntry {
-	return &transferEntry{address: address}
+func createTransferEntry(senderAddress []byte, receiverAddress []byte) *transferEntry {
+	return &transferEntry{
+		OutputTransfer: vmcommon.OutputTransfer{SenderAddress: senderAddress},
+		address:        receiverAddress,
+	}
 }
 
 func (transferEntry *transferEntry) withData(data []byte) *transferEntry {
-	transferEntry.transfer.Data = data
+	transferEntry.Data = data
 	return transferEntry
 }
 
-func (transferEntry *transferEntry) withValue(value *big.Int) *transferEntry {
-	transferEntry.transfer.Value = value
-	return transferEntry
-}
-
-func (transferEntry *transferEntry) withSenderAddress(address []byte) transferEntry {
-	transferEntry.transfer.SenderAddress = address
+func (transferEntry *transferEntry) withValue(value *big.Int) transferEntry {
+	transferEntry.Value = value
 	return *transferEntry
 }
 
@@ -211,7 +217,7 @@ func (v *VMOutputVerifier) Transfers(transfers ...transferEntry) *VMOutputVerifi
 		if !exists {
 			accountTransfers = make([]vmcommon.OutputTransfer, 0)
 		}
-		transfersMap[account] = append(accountTransfers, transferEntry.transfer)
+		transfersMap[account] = append(accountTransfers, transferEntry.OutputTransfer)
 	}
 
 	for _, outputAccount := range v.vmOutput.OutputAccounts {
@@ -225,4 +231,18 @@ func (v *VMOutputVerifier) Transfers(transfers ...transferEntry) *VMOutputVerifi
 	require.Equal(v.T, 0, len(transfersMap), "Transfers")
 
 	return v
+}
+
+func getErrorForAccount(field string, address []byte) string {
+	return fmt.Sprintf("%s %s", field, humanReadable(address))
+}
+
+func humanReadable(address []byte) string {
+	var result []byte
+	for _, c := range address {
+		if unicode.IsPrint(rune(c)) {
+			result = append(result, c)
+		}
+	}
+	return string(result)
 }

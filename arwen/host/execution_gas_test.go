@@ -1,23 +1,27 @@
 package host
 
 import (
+	"errors"
 	"math/big"
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	"github.com/ElrondNetwork/elrond-go/data/state"
 	"github.com/stretchr/testify/require"
 )
 
 var gasUsedByBuiltinClaim = uint64(120)
 
 type directCallGasTestConfig struct {
-	gasUsedByParent    uint64
-	gasUsedByChild     uint64
-	gasProvidedToChild uint64
-	gasProvided        uint64
-	parentBalance      int64
-	childBalance       int64
+	gasUsedByParent      uint64
+	gasUsedByChild       uint64
+	gasProvidedToChild   uint64
+	gasProvided          uint64
+	parentBalance        int64
+	childBalance         int64
+	ESDTTokensToTransfer uint64
 }
 
 var simpleGasTestConfig = directCallGasTestConfig{
@@ -36,7 +40,7 @@ func TestGasUsed_SingleContract(t *testing.T) {
 			createMockContract(parentAddress).
 				withBalance(simpleGasTestConfig.parentBalance).
 				withConfig(simpleGasTestConfig).
-				withMethods(addMethodsToParentInstanceMock)).
+				withMethods(execOnSameCtxParentMock, execOnDestCtxParentMock, wasteGasParentMock)).
 		withInput(createTestContractCallInputBuilder().
 			withRecipientAddr(parentAddress).
 			withGasProvided(simpleGasTestConfig.gasProvided).
@@ -59,7 +63,7 @@ func TestGasUsed_SingleContract_BuiltinCall(t *testing.T) {
 			createMockContract(parentAddress).
 				withBalance(simpleGasTestConfig.parentBalance).
 				withConfig(simpleGasTestConfig).
-				withMethods(addMethodsToParentInstanceMock)).
+				withMethods(execOnSameCtxParentMock, execOnDestCtxParentMock, wasteGasParentMock)).
 		withInput(createTestContractCallInputBuilder().
 			withRecipientAddr(parentAddress).
 			withGasProvided(simpleGasTestConfig.gasProvided).
@@ -78,6 +82,31 @@ func TestGasUsed_SingleContract_BuiltinCall(t *testing.T) {
 		})
 }
 
+func TestGasUsed_SingleContract_BuiltinCallFail(t *testing.T) {
+	runMockInstanceCallerTestBuilder(t).
+		withContracts(
+			createMockContract(parentAddress).
+				withBalance(simpleGasTestConfig.parentBalance).
+				withConfig(simpleGasTestConfig).
+				withMethods(execOnDestCtxSingleCallParentMock)).
+		withInput(createTestContractCallInputBuilder().
+			withRecipientAddr(parentAddress).
+			withGasProvided(simpleGasTestConfig.gasProvided).
+			withFunction("execOnDestCtxSingleCall").
+			withArguments(parentAddress, []byte("builtinFail")).
+			build()).
+		withSetup(func(host *vmHost, world *worldmock.MockWorld) {
+			createMockBuiltinFunctions(t, host, world)
+			setZeroCodeCosts(host)
+		}).
+		andAssertResults(func(world *worldmock.MockWorld, verify *VMOutputVerifier) {
+			verify.
+				ReturnCode(vmcommon.ExecutionFailed).
+				ReturnMessage("whatdidyoudo").
+				GasRemaining(0)
+		})
+}
+
 func TestGasUsed_TwoContracts_ExecuteOnSameCtx(t *testing.T) {
 
 	for numCalls := uint64(0); numCalls < 3; numCalls++ {
@@ -89,11 +118,11 @@ func TestGasUsed_TwoContracts_ExecuteOnSameCtx(t *testing.T) {
 				createMockContract(parentAddress).
 					withBalance(simpleGasTestConfig.parentBalance).
 					withConfig(simpleGasTestConfig).
-					withMethods(addMethodsToParentInstanceMock),
+					withMethods(execOnSameCtxParentMock, execOnDestCtxParentMock, wasteGasParentMock),
 				createMockContract(childAddress).
 					withBalance(simpleGasTestConfig.childBalance).
 					withConfig(simpleGasTestConfig).
-					withMethods(addMethodsToChildInstanceMock),
+					withMethods(wasteGasChildMock),
 			).
 			withInput(createTestContractCallInputBuilder().
 				withRecipientAddr(parentAddress).
@@ -127,11 +156,11 @@ func TestGasUsed_TwoContracts_ExecuteOnDestCtx(t *testing.T) {
 				createMockContract(parentAddress).
 					withBalance(simpleGasTestConfig.parentBalance).
 					withConfig(simpleGasTestConfig).
-					withMethods(addMethodsToParentInstanceMock),
+					withMethods(execOnSameCtxParentMock, execOnDestCtxParentMock, wasteGasParentMock),
 				createMockContract(childAddress).
 					withBalance(simpleGasTestConfig.childBalance).
 					withConfig(simpleGasTestConfig).
-					withMethods(addMethodsToChildInstanceMock),
+					withMethods(wasteGasChildMock),
 			).
 			withInput(createTestContractCallInputBuilder().
 				withRecipientAddr(parentAddress).
@@ -174,19 +203,19 @@ func TestGasUsed_ThreeContracts_ExecuteOnDestCtx(t *testing.T) {
 					gasProvidedToChild: alphaGasToForwardToReceivers,
 					gasProvided:        gasProvided,
 				}).
-				withMethods(addMethodsToParentInstanceMock),
+				withMethods(execOnSameCtxParentMock, execOnDestCtxParentMock, wasteGasParentMock),
 			createMockContract(betaAddress).
 				withBalance(0).
 				withConfig(directCallGasTestConfig{
 					gasUsedByChild: receiverCallGas,
 				}).
-				withMethods(addMethodsToChildInstanceMock),
+				withMethods(wasteGasChildMock),
 			createMockContract(gammaAddress).
 				withBalance(0).
 				withConfig(directCallGasTestConfig{
 					gasUsedByChild: receiverCallGas,
 				}).
-				withMethods(addMethodsToChildInstanceMock),
+				withMethods(wasteGasChildMock),
 		).
 		withInput(createTestContractCallInputBuilder().
 			withRecipientAddr(alphaAddress).
@@ -208,13 +237,102 @@ func TestGasUsed_ThreeContracts_ExecuteOnDestCtx(t *testing.T) {
 		})
 }
 
+func TestGasUsed_ESTD_CallAfterBuiltinCall_Success(t *testing.T) {
+	var parentAccount *worldmock.Account
+	initialESDTTokenBalance := uint64(100)
+	esdtTransferGasCost := uint64(1)
+
+	testConfig := simpleGasTestConfig
+	testConfig.ESDTTokensToTransfer = 5
+
+	runMockInstanceCallerTestBuilder(t).
+		withContracts(
+			createMockContract(parentAddress).
+				withBalance(testConfig.parentBalance).
+				withConfig(testConfig).
+				withMethods(execESDTTransferAndCallParentMock),
+			createMockContract(childAddress).
+				withBalance(testConfig.childBalance).
+				withConfig(testConfig).
+				withMethods(wasteGasChildMock),
+		).
+		withInput(createTestContractCallInputBuilder().
+			withRecipientAddr(parentAddress).
+			withGasProvided(testConfig.gasProvided).
+			withFunction("execESDTTransferAndCall").
+			withArguments(childAddress, []byte("ESDTTransfer"), []byte("wasteGas")).
+			build()).
+		withSetup(func(host *vmHost, world *worldmock.MockWorld) {
+			parentAccount = world.AcctMap.GetAccount(parentAddress)
+			parentAccount.SetTokenBalanceUint64(ESDTTestTokenKey, initialESDTTokenBalance)
+			createMockBuiltinFunctions(t, host, world)
+			setZeroCodeCosts(host)
+		}).
+		andAssertResults(func(world *worldmock.MockWorld, verify *VMOutputVerifier) {
+			verify.
+				Ok().
+				GasUsed(parentAddress, testConfig.gasUsedByParent+esdtTransferGasCost).
+				GasUsed(childAddress, testConfig.gasUsedByChild).
+				GasRemaining(testConfig.gasProvided - esdtTransferGasCost - testConfig.gasUsedByParent - testConfig.gasUsedByChild)
+
+			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(ESDTTestTokenKey)
+			require.Equal(t, initialESDTTokenBalance-uint64(testConfig.ESDTTokensToTransfer), parentESDTBalance)
+
+			childAccount := world.AcctMap.GetAccount(childAddress)
+			childESDTBalance, _ := childAccount.GetTokenBalanceUint64(ESDTTestTokenKey)
+			require.Equal(t, uint64(testConfig.ESDTTokensToTransfer), childESDTBalance)
+		})
+}
+
+func TestGasUsed_ESTD_CallAfterBuiltinCall_Fail(t *testing.T) {
+	var parentAccount *worldmock.Account
+	initialESDTTokenBalance := uint64(100)
+
+	testConfig := simpleGasTestConfig
+
+	runMockInstanceCallerTestBuilder(t).
+		withContracts(
+			createMockContract(parentAddress).
+				withBalance(testConfig.parentBalance).
+				withConfig(testConfig).
+				withMethods(execESDTTransferAndCallParentMock),
+			createMockContract(childAddress).
+				withBalance(testConfig.childBalance).
+				withConfig(testConfig).
+				withMethods(failChildMock),
+		).
+		withInput(createTestContractCallInputBuilder().
+			withRecipientAddr(parentAddress).
+			withGasProvided(testConfig.gasProvided).
+			withFunction("execESDTTransferAndCall").
+			withArguments(childAddress, []byte("ESDTTransfer"), []byte("fail")).
+			build()).
+		withSetup(func(host *vmHost, world *worldmock.MockWorld) {
+			parentAccount = world.AcctMap.GetAccount(parentAddress)
+			parentAccount.SetTokenBalanceUint64(ESDTTestTokenKey, initialESDTTokenBalance)
+			createMockBuiltinFunctions(t, host, world)
+			setZeroCodeCosts(host)
+		}).
+		andAssertResults(func(world *worldmock.MockWorld, verify *VMOutputVerifier) {
+			verify.
+				ReturnCode(vmcommon.ExecutionFailed).
+				GasRemaining(0)
+
+			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(ESDTTestTokenKey)
+			require.Equal(t, initialESDTTokenBalance, parentESDTBalance)
+
+			childAccount := world.AcctMap.GetAccount(childAddress)
+			childESDTBalance, _ := childAccount.GetTokenBalanceUint64(ESDTTestTokenKey)
+			require.Equal(t, uint64(0), childESDTBalance)
+		})
+}
+
 type asyncCallBaseTestConfig struct {
-	gasProvided        uint64
-	gasUsedByParent    uint64
-	gasProvidedToChild uint64
-	gasUsedByChild     uint64
-	gasUsedByCallback  uint64
-	gasLockCost        uint64
+	gasProvided       uint64
+	gasUsedByParent   uint64
+	gasUsedByChild    uint64
+	gasUsedByCallback uint64
+	gasLockCost       uint64
 
 	transferFromParentToChild int64
 
@@ -223,12 +341,11 @@ type asyncCallBaseTestConfig struct {
 }
 
 var asyncBaseTestConfig = asyncCallBaseTestConfig{
-	gasProvided:        116000,
-	gasUsedByParent:    400,
-	gasProvidedToChild: 300,
-	gasUsedByChild:     200,
-	gasUsedByCallback:  100,
-	gasLockCost:        150,
+	gasProvided:       1000,
+	gasUsedByParent:   400,
+	gasUsedByChild:    200,
+	gasUsedByCallback: 100,
+	gasLockCost:       150,
 
 	transferFromParentToChild: 7,
 
@@ -251,6 +368,7 @@ var asyncTestConfig = &asyncCallTestConfig{
 func TestGasUsed_AsyncCall(t *testing.T) {
 
 	testConfig := asyncTestConfig
+	testConfig.gasProvided = 1000
 
 	gasUsedByParent := testConfig.gasUsedByParent + testConfig.gasUsedByCallback
 	gasUsedByChild := testConfig.gasUsedByChild
@@ -260,11 +378,11 @@ func TestGasUsed_AsyncCall(t *testing.T) {
 			createMockContract(parentAddress).
 				withBalance(testConfig.parentBalance).
 				withConfig(testConfig).
-				withMethods(addAsyncParentMethodsToInstanceMock),
+				withMethods(performAsyncCallParentMock, callBackParentMock),
 			createMockContract(childAddress).
 				withBalance(testConfig.childBalance).
 				withConfig(testConfig).
-				withMethods(addAsyncChildMethodsToInstanceMock),
+				withMethods(transferToThirdPartyAsyncChildMock),
 		).
 		withInput(createTestContractCallInputBuilder().
 			withRecipientAddr(parentAddress).
@@ -290,17 +408,15 @@ func TestGasUsed_AsyncCall(t *testing.T) {
 					createStoreEntry(childAddress).withKey(childKey).withValue(childData),
 				).
 				Transfers(
-					createTransferEntry(thirdPartyAddress).
+					createTransferEntry(parentAddress, thirdPartyAddress).
 						withData([]byte("hello")).
-						withValue(big.NewInt(testConfig.transferToThirdParty)).
-						withSenderAddress(parentAddress),
-					createTransferEntry(thirdPartyAddress).
+						withValue(big.NewInt(testConfig.transferToThirdParty)),
+					createTransferEntry(childAddress, thirdPartyAddress).
 						withData([]byte(" there")).
-						withValue(big.NewInt(testConfig.transferToThirdParty)).
-						withSenderAddress(childAddress),
-					createTransferEntry(vaultAddress).withData([]byte{}).
-						withValue(big.NewInt(testConfig.transferToVault)).
-						withSenderAddress(childAddress),
+						withValue(big.NewInt(testConfig.transferToThirdParty)),
+					createTransferEntry(childAddress, vaultAddress).
+						withData([]byte{}).
+						withValue(big.NewInt(testConfig.transferToVault)),
 				)
 		})
 }
@@ -310,15 +426,15 @@ func TestGasUsed_AsyncCall_BuiltinCall(t *testing.T) {
 	testConfig := asyncBaseTestConfig
 	testConfig.gasProvided = 1000
 
-	expectedGasUsedByParent := asyncBaseTestConfig.gasUsedByParent + asyncBaseTestConfig.gasUsedByCallback + gasUsedByBuiltinClaim
+	expectedGasUsedByParent := testConfig.gasUsedByParent + testConfig.gasUsedByCallback + gasUsedByBuiltinClaim
 	expectedGasUsedByChild := uint64(0) // all gas for builtin call is consummed on caller
 
 	runMockInstanceCallerTestBuilder(t).
 		withContracts(
 			createMockContract(parentAddress).
-				withBalance(asyncBaseTestConfig.parentBalance).
+				withBalance(testConfig.parentBalance).
 				withConfig(&testConfig).
-				withMethods(addAsyncBuiltinParentMethodsToInstanceMock),
+				withMethods(forwardAsyncCallParentBuiltinMock, callBackParentBuiltinMock),
 		).
 		withInput(createTestContractCallInputBuilder().
 			withRecipientAddr(parentAddress).
@@ -330,14 +446,53 @@ func TestGasUsed_AsyncCall_BuiltinCall(t *testing.T) {
 			world.AcctMap.CreateAccount(userAddress)
 			createMockBuiltinFunctions(t, host, world)
 			setZeroCodeCosts(host)
-			setAsyncCosts(host, asyncBaseTestConfig.gasLockCost)
+			setAsyncCosts(host, testConfig.gasLockCost)
 		}).
 		andAssertResults(func(world *worldmock.MockWorld, verify *VMOutputVerifier) {
 			verify.
 				Ok().
 				GasUsed(parentAddress, expectedGasUsedByParent).
-				GasUsed(userAddress, asyncBaseTestConfig.gasUsedByChild).
-				GasRemaining(asyncBaseTestConfig.gasProvided - expectedGasUsedByParent - expectedGasUsedByChild)
+				GasUsed(userAddress, 0).
+				GasRemaining(testConfig.gasProvided - expectedGasUsedByParent - expectedGasUsedByChild)
+		})
+}
+
+func TestGasUsed_AsyncCall_BuiltinCallFail(t *testing.T) {
+
+	testConfig := asyncBaseTestConfig
+	testConfig.gasProvided = 1000
+
+	// all will be spent in case of failure
+	gasProvidedForBuiltinCall := testConfig.gasProvided - testConfig.gasUsedByParent - testConfig.gasLockCost
+
+	expectedGasUsedByParent := testConfig.gasUsedByParent + gasProvidedForBuiltinCall + testConfig.gasUsedByCallback
+	expectedGasUsedByChild := uint64(0) // all gas for builtin call is consummed on caller
+
+	runMockInstanceCallerTestBuilder(t).
+		withContracts(
+			createMockContract(parentAddress).
+				withBalance(testConfig.parentBalance).
+				withConfig(&testConfig).
+				withMethods(forwardAsyncCallParentBuiltinMock, callBackParentBuiltinMock),
+		).
+		withInput(createTestContractCallInputBuilder().
+			withRecipientAddr(parentAddress).
+			withGasProvided(testConfig.gasProvided).
+			withFunction("forwardAsyncCall").
+			withArguments(userAddress, []byte("builtinFail")).
+			build()).
+		withSetup(func(host *vmHost, world *worldmock.MockWorld) {
+			world.AcctMap.CreateAccount(userAddress)
+			createMockBuiltinFunctions(t, host, world)
+			setZeroCodeCosts(host)
+			setAsyncCosts(host, testConfig.gasLockCost)
+		}).
+		andAssertResults(func(world *worldmock.MockWorld, verify *VMOutputVerifier) {
+			verify.
+				Ok().
+				GasUsed(parentAddress, expectedGasUsedByParent).
+				GasUsed(userAddress, 0).
+				GasRemaining(testConfig.gasProvided - expectedGasUsedByParent - expectedGasUsedByChild)
 		})
 }
 
@@ -364,11 +519,11 @@ func TestGasUsed_AsyncCall_BuiltinMultiContractCall(t *testing.T) {
 			createMockContract(parentAddress).
 				withBalance(testConfig.parentBalance).
 				withConfig(testConfig).
-				withMethods(addAsyncBuiltinMultiContractParentMethodsToInstanceMock),
+				withMethods(forwardAsyncCallMultiContractParentMock, callBackMultiContractParentMock),
 			createMockContract(childAddress).
 				withBalance(testConfig.childBalance).
 				withConfig(testConfig).
-				withMethods(addAsyncBuiltinMultiContractChildMethodsToInstanceMock),
+				withMethods(recursiveAsyncCallRecursiveChildMock, callBackRecursiveChildMock),
 		).
 		withInput(createTestContractCallInputBuilder().
 			withRecipientAddr(parentAddress).
@@ -394,6 +549,7 @@ func TestGasUsed_AsyncCall_BuiltinMultiContractCall(t *testing.T) {
 func TestGasUsed_AsyncCall_ChildFails(t *testing.T) {
 
 	testConfig := asyncTestConfig
+	testConfig.gasProvided = 1000
 
 	expectedGasUsedByParent := testConfig.gasProvided - testConfig.gasLockCost + testConfig.gasUsedByCallback
 
@@ -402,11 +558,11 @@ func TestGasUsed_AsyncCall_ChildFails(t *testing.T) {
 			createMockContract(parentAddress).
 				withBalance(testConfig.parentBalance).
 				withConfig(testConfig).
-				withMethods(addAsyncParentMethodsToInstanceMock),
+				withMethods(performAsyncCallParentMock, callBackParentMock),
 			createMockContract(childAddress).
 				withBalance(testConfig.childBalance).
 				withConfig(testConfig).
-				withMethods(addAsyncChildMethodsToInstanceMock),
+				withMethods(transferToThirdPartyAsyncChildMock),
 		).
 		withInput(createTestContractCallInputBuilder().
 			withRecipientAddr(parentAddress).
@@ -425,6 +581,7 @@ func TestGasUsed_AsyncCall_ChildFails(t *testing.T) {
 				BalanceDelta(parentAddress, -(testConfig.transferToThirdParty+testConfig.transferToVault)).
 				BalanceDelta(thirdPartyAddress, testConfig.transferToThirdParty).
 				GasUsed(parentAddress, expectedGasUsedByParent).
+				GasUsed(childAddress, 0).
 				GasRemaining(testConfig.gasProvided-expectedGasUsedByParent).
 				ReturnData(parentFinishA, parentFinishB, []byte("succ")).
 				Storage(
@@ -432,14 +589,12 @@ func TestGasUsed_AsyncCall_ChildFails(t *testing.T) {
 					createStoreEntry(parentAddress).withKey(parentKeyB).withValue(parentDataB),
 				).
 				Transfers(
-					createTransferEntry(vaultAddress).
+					createTransferEntry(parentAddress, vaultAddress).
 						withData([]byte("child error")).
-						withValue(big.NewInt(testConfig.transferToVault)).
-						withSenderAddress(parentAddress),
-					createTransferEntry(thirdPartyAddress).
+						withValue(big.NewInt(testConfig.transferToVault)),
+					createTransferEntry(parentAddress, thirdPartyAddress).
 						withData([]byte("hello")).
-						withValue(big.NewInt(testConfig.transferToThirdParty)).
-						withSenderAddress(parentAddress),
+						withValue(big.NewInt(testConfig.transferToThirdParty)),
 				)
 		})
 }
@@ -456,11 +611,11 @@ func TestGasUsed_AsyncCall_CallBackFails(t *testing.T) {
 			createMockContract(parentAddress).
 				withBalance(testConfig.parentBalance).
 				withConfig(testConfig).
-				withMethods(addAsyncParentMethodsToInstanceMock),
+				withMethods(performAsyncCallParentMock, callBackParentMock),
 			createMockContract(childAddress).
 				withBalance(testConfig.childBalance).
 				withConfig(testConfig).
-				withMethods(addAsyncChildMethodsToInstanceMock),
+				withMethods(transferToThirdPartyAsyncChildMock),
 		).
 		withInput(createTestContractCallInputBuilder().
 			withRecipientAddr(parentAddress).
@@ -489,18 +644,15 @@ func TestGasUsed_AsyncCall_CallBackFails(t *testing.T) {
 					createStoreEntry(childAddress).withKey(childKey).withValue(childData),
 				).
 				Transfers(
-					createTransferEntry(thirdPartyAddress).
+					createTransferEntry(parentAddress, thirdPartyAddress).
 						withData([]byte("hello")).
-						withValue(big.NewInt(testConfig.transferToThirdParty)).
-						withSenderAddress(parentAddress),
-					createTransferEntry(thirdPartyAddress).
+						withValue(big.NewInt(testConfig.transferToThirdParty)),
+					createTransferEntry(childAddress, thirdPartyAddress).
 						withData([]byte(" there")).
-						withValue(big.NewInt(testConfig.transferToThirdParty)).
-						withSenderAddress(childAddress),
-					createTransferEntry(vaultAddress).
+						withValue(big.NewInt(testConfig.transferToThirdParty)),
+					createTransferEntry(childAddress, vaultAddress).
 						withData([]byte{}).
-						withValue(big.NewInt(testConfig.transferToVault)).
-						withSenderAddress(childAddress),
+						withValue(big.NewInt(testConfig.transferToVault)),
 				)
 		})
 }
@@ -529,11 +681,11 @@ func TestGasUsed_AsyncCall_Recursive(t *testing.T) {
 			createMockContract(parentAddress).
 				withBalance(testConfig.parentBalance).
 				withConfig(testConfig).
-				withMethods(addAsyncRecursiveParentMethodsToInstanceMock),
+				withMethods(forwardAsyncCallRecursiveParentMock, callBackRecursiveParentMock),
 			createMockContract(childAddress).
 				withBalance(testConfig.childBalance).
 				withConfig(&testConfig.asyncCallBaseTestConfig).
-				withMethods(addAsyncRecursiveChildMethodsToInstanceMock),
+				withMethods(recursiveAsyncCallRecursiveChildMock, callBackRecursiveChildMock),
 		).
 		withInput(createTestContractCallInputBuilder().
 			withRecipientAddr(parentAddress).
@@ -550,10 +702,9 @@ func TestGasUsed_AsyncCall_Recursive(t *testing.T) {
 				Ok().
 				BalanceDelta(parentAddress, -testConfig.transferFromParentToChild).
 				Transfers(
-					createTransferEntry(childAddress).
+					createTransferEntry(parentAddress, childAddress).
 						withData([]byte("hello")).
-						withValue(big.NewInt(testConfig.transferFromParentToChild)).
-						withSenderAddress(parentAddress),
+						withValue(big.NewInt(testConfig.transferFromParentToChild)),
 				).
 				GasUsed(parentAddress, expectedGasUsedByParent).
 				GasUsed(childAddress, expectedGasUsedByChild).
@@ -585,11 +736,11 @@ func TestGasUsed_AsyncCall_MultiChild(t *testing.T) {
 			createMockContract(parentAddress).
 				withBalance(testConfig.parentBalance).
 				withConfig(testConfig).
-				withMethods(addAsyncMultiChildParentMethodsToInstanceMock),
+				withMethods(forwardAsyncCallMultiChildMock, callBackMultiChildMock),
 			createMockContract(childAddress).
 				withBalance(testConfig.childBalance).
 				withConfig(&testConfig.asyncCallBaseTestConfig).
-				withMethods(addAsyncRecursiveChildMethodsToInstanceMock),
+				withMethods(recursiveAsyncCallRecursiveChildMock, callBackRecursiveChildMock),
 		).
 		withInput(createTestContractCallInputBuilder().
 			withRecipientAddr(parentAddress).
@@ -607,10 +758,9 @@ func TestGasUsed_AsyncCall_MultiChild(t *testing.T) {
 				BalanceDelta(parentAddress, -testConfig.transferFromParentToChild).
 				BalanceDelta(childAddress, testConfig.transferFromParentToChild).
 				Transfers(
-					createTransferEntry(childAddress).
+					createTransferEntry(parentAddress, childAddress).
 						withData([]byte("hello")).
-						withValue(big.NewInt(testConfig.transferFromParentToChild)).
-						withSenderAddress(parentAddress),
+						withValue(big.NewInt(testConfig.transferFromParentToChild)),
 				).
 				GasUsed(parentAddress, expectedGasUsedByParent).
 				GasUsed(childAddress, expectedGasUsedByChild).
@@ -618,13 +768,39 @@ func TestGasUsed_AsyncCall_MultiChild(t *testing.T) {
 		})
 }
 
+type MockClaimBuiltin struct {
+	mockBuiltin
+	AmountToGive int64
+	GasCost      uint64
+}
+
 func createMockBuiltinFunctions(tb testing.TB, host *vmHost, world *worldmock.MockWorld) {
 	err := world.InitBuiltinFunctions(host.GetGasScheduleMap())
 	require.Nil(tb, err)
 
-	world.BuiltinFuncs.Container.Add("builtinClaim", &MockClaimBuiltin{
+	mockClaimBuiltin := &MockClaimBuiltin{
 		AmountToGive: 42,
 		GasCost:      gasUsedByBuiltinClaim,
+	}
+
+	world.BuiltinFuncs.Container.Add("builtinClaim", &mockBuiltin{
+		processBuiltinFunction: func(acntSnd, _ state.UserAccountHandler, vmInput *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+			vmOutput := MakeVMOutput()
+			AddNewOutputAccount(
+				vmOutput,
+				nil,
+				acntSnd.AddressBytes(),
+				mockClaimBuiltin.AmountToGive,
+				nil)
+			vmOutput.GasRemaining = vmInput.GasProvided - mockClaimBuiltin.GasCost
+			return vmOutput, nil
+		},
+	})
+
+	world.BuiltinFuncs.Container.Add("builtinFail", &mockBuiltin{
+		processBuiltinFunction: func(acntSnd, _ state.UserAccountHandler, vmInput *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+			return nil, errors.New("whatdidyoudo")
+		},
 	})
 
 	host.protocolBuiltinFunctions = world.BuiltinFuncs.GetBuiltinFunctionNames()
