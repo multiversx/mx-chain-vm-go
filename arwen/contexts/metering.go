@@ -147,11 +147,6 @@ func (context *meteringContext) UpdateGasStateOnSuccess(vmOutput *vmcommon.VMOut
 		return err
 	}
 
-	err = context.checkGasLegacy()
-	if err != nil {
-		return err
-	}
-
 	err = context.checkGas(vmOutput)
 	if err != nil {
 		return err
@@ -192,10 +187,11 @@ func (context *meteringContext) TrackGasUsedByBuiltinFunction(
 	builtinInput *vmcommon.ContractCallInput,
 	builtinOutput *vmcommon.VMOutput,
 	postBuiltinInput *vmcommon.ContractCallInput,
-) error {
+) {
 	if err != nil {
 		context.UseGas(builtinInput.GasProvided)
-		return err
+		logMetering.Trace("gas used by failed builtin function exec", "gas", builtinInput.GasProvided)
+		return
 	}
 
 	gasUsed := math.SubUint64(builtinInput.GasProvided, builtinOutput.GasRemaining)
@@ -210,8 +206,6 @@ func (context *meteringContext) TrackGasUsedByBuiltinFunction(
 
 	context.UseGas(gasUsed)
 	logMetering.Trace("gas used by builtin function", "gas", gasUsed)
-
-	return nil
 }
 
 func (context *meteringContext) checkGas(vmOutput *vmcommon.VMOutput) error {
@@ -226,22 +220,6 @@ func (context *meteringContext) checkGas(vmOutput *vmcommon.VMOutput) error {
 	if totalGas != gasProvided {
 		logOutput.Error("gas usage mismatch", "total gas", totalGas, "gas provided", gasProvided)
 		return arwen.ErrInputAndOutputGasDoesNotMatch
-	}
-
-	return nil
-}
-
-func (context *meteringContext) checkGasLegacy() error {
-	if context.host.IsArwenV2Enabled() {
-		return nil
-	}
-
-	output := context.host.Output()
-	runtime := context.host.Runtime()
-
-	account, _ := output.GetOutputAccount(runtime.GetSCAddress())
-	if account.GasUsed > context.GetGasProvided() {
-		return arwen.ErrNotEnoughGas
 	}
 
 	return nil
