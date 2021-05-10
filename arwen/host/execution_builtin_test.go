@@ -89,7 +89,6 @@ func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_DoSomething(t *test
 		andAssertResults(func(host *vmHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *VMOutputVerifier) {
 			verify.
 				Ok().
-				Balance(parentAddress, 1000).
 				BalanceDelta(parentAddress, big.NewInt(0).Sub(arwen.One, arwen.One).Int64()).
 				GasUsed(parentAddress, parentGasUsed).
 				GasRemaining(gasProvided - parentGasUsed).
