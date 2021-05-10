@@ -182,18 +182,13 @@ func (context *meteringContext) updateSCGasUsed() {
 	context.gasUsedByAccounts[string(currentAccountAddress)] = gasUsed
 }
 
+// TrackGasUsedByBuiltinFunction computes the gas used by a builtin function
+// execution and consumes it on the current contract instance.
 func (context *meteringContext) TrackGasUsedByBuiltinFunction(
-	err error,
 	builtinInput *vmcommon.ContractCallInput,
 	builtinOutput *vmcommon.VMOutput,
 	postBuiltinInput *vmcommon.ContractCallInput,
 ) {
-	if err != nil {
-		context.UseGas(builtinInput.GasProvided)
-		logMetering.Trace("gas used by failed builtin function exec", "gas", builtinInput.GasProvided)
-		return
-	}
-
 	gasUsed := math.SubUint64(builtinInput.GasProvided, builtinOutput.GasRemaining)
 
 	// If the builtin function indicated that there's a follow-up SC execution
