@@ -33,10 +33,5 @@ func forwardAsyncCallParentBuiltinMock(instanceMock *mock.InstanceMock, config i
 
 func callBackParentBuiltinMock(instanceMock *mock.InstanceMock, config interface{}) {
 	testConfig := config.(*asyncCallBaseTestConfig)
-	instanceMock.AddMockMethod("callBack", func() *mock.InstanceMock {
-		host := instanceMock.Host
-		instance := mock.GetMockInstance(host)
-		host.Metering().UseGas(testConfig.gasUsedByCallback)
-		return instance
-	})
+	instanceMock.AddMockMethod("callBack", simpleWasteGasMockMethod(instanceMock, testConfig.gasUsedByCallback))
 }

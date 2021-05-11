@@ -19,7 +19,7 @@ func recursiveAsyncCallRecursiveChildMock(instanceMock *mock.InstanceMock, confi
 		host.Metering().UseGas(testConfig.gasUsedByChild)
 
 		recursiveChildCalls := big.NewInt(0).SetBytes(arguments[0]).Uint64()
-		recursiveChildCalls -= 1
+		recursiveChildCalls = recursiveChildCalls - 1
 		if recursiveChildCalls == 0 {
 			return instance
 		}
@@ -30,7 +30,7 @@ func recursiveAsyncCallRecursiveChildMock(instanceMock *mock.InstanceMock, confi
 
 		callData := txDataBuilder.NewBuilder()
 		callData.Func(function)
-		callData.BigInt(recursiveChildCalls)
+		callData.BigInt(big.NewInt(int64(recursiveChildCalls)))
 
 		err := host.Runtime().ExecuteAsyncCall(destination, callData.ToBytes(), value)
 		require.Nil(t, err)
