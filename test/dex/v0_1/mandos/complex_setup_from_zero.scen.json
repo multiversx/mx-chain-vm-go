@@ -209,7 +209,7 @@
 					"str:WEGLD-abcdef",
 					"str:BUSD-abcdef"
 				],
-				"gasLimit": "100,000,000",
+				"gasLimit": "200,000,000",
 				"gasPrice": "0"
 			},
 			"expect": {
@@ -259,7 +259,7 @@
 					"str:WEGLD-abcdef",
 					"str:MEX-abcdef"
 				],
-				"gasLimit": "100,000,000",
+				"gasLimit": "200,000,000",
 				"gasPrice": "0"
 			},
 			"expect": {
@@ -309,7 +309,7 @@
 					"str:MEX-abcdef",
 					"str:BUSD-abcdef"
 				],
-				"gasLimit": "100,000,000",
+				"gasLimit": "200,000,000",
 				"gasPrice": "0"
 			},
 			"expect": {
