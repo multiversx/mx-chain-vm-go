@@ -26,7 +26,13 @@ func transferToThirdPartyAsyncChildMock(instanceMock *mock.InstanceMock, config 
 			return instance
 		}
 
-		err := handleChildBehaviorArgument(host, big.NewInt(0).SetBytes(arguments[2]))
+		var behavior byte
+		if len(arguments[2]) != 0 {
+			behavior = arguments[2][0]
+		} else {
+			behavior = 0
+		}
+		err := handleChildBehaviorArgument(host, behavior)
 		if err != nil {
 			return instance
 		}
@@ -62,22 +68,16 @@ func transferToThirdPartyAsyncChildMock(instanceMock *mock.InstanceMock, config 
 	})
 }
 
-func handleChildBehaviorArgument(host arwen.VMHost, behavior *big.Int) error {
-	if behavior.Cmp(big.NewInt(1)) == 0 {
+func handleChildBehaviorArgument(host arwen.VMHost, behavior byte) error {
+	if behavior == 1 {
 		host.Runtime().SignalUserError("child error")
 		return errors.New("behavior / child error")
 	}
-	if behavior.Cmp(big.NewInt(2)) == 0 {
+	if behavior == 2 {
 		for {
 			host.Output().Finish([]byte("loop"))
 		}
 	}
-
-	behaviorBytes := behavior.Bytes()
-	if len(behaviorBytes) == 0 {
-		behaviorBytes = []byte{0}
-	}
-	host.Output().Finish(behaviorBytes)
-
+	host.Output().Finish([]byte{behavior})
 	return nil
 }

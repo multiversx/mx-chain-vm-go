@@ -621,7 +621,7 @@ func TestGasUsed_AsyncCall_CallBackFails(t *testing.T) {
 			withRecipientAddr(parentAddress).
 			withGasProvided(testConfig.gasProvided).
 			withFunction("performAsyncCall").
-			withArguments([]byte{0, 3}).
+			withArguments([]byte{3}).
 			withCurrentTxHash([]byte("txhash")).
 			build()).
 		withSetup(func(host *vmHost, world *worldmock.MockWorld) {
