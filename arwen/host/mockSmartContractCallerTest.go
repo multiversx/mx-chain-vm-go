@@ -89,10 +89,10 @@ func (callerTest *mockInstancesTestTemplate) withSetup(setup func(*vmHost, *worl
 
 func (callerTest *mockInstancesTestTemplate) andAssertResults(assertResults func(world *worldmock.MockWorld, verify *VMOutputVerifier)) {
 	callerTest.assertResults = assertResults
-	runTestWithMockMockInstances(callerTest)
+	callerTest.runTestWithMockMockInstances()
 }
 
-func runTestWithMockMockInstances(callerTest *mockInstancesTestTemplate) {
+func (callerTest *mockInstancesTestTemplate) runTestWithMockMockInstances() {
 
 	host, world, imb := defaultTestArwenForCallWithInstanceMocks(callerTest.t)
 
