@@ -35,7 +35,7 @@ var simpleGasTestConfig = directCallGasTestConfig{
 
 func TestGasUsed_SingleContract(t *testing.T) {
 
-	runMockInstanceCallerTestBuilder(t).
+	buildMockInstanceCallTest(t).
 		withContracts(
 			createMockContract(parentAddress).
 				withBalance(simpleGasTestConfig.parentBalance).
@@ -58,7 +58,7 @@ func TestGasUsed_SingleContract(t *testing.T) {
 }
 
 func TestGasUsed_SingleContract_BuiltinCall(t *testing.T) {
-	runMockInstanceCallerTestBuilder(t).
+	buildMockInstanceCallTest(t).
 		withContracts(
 			createMockContract(parentAddress).
 				withBalance(simpleGasTestConfig.parentBalance).
@@ -83,7 +83,7 @@ func TestGasUsed_SingleContract_BuiltinCall(t *testing.T) {
 }
 
 func TestGasUsed_SingleContract_BuiltinCallFail(t *testing.T) {
-	runMockInstanceCallerTestBuilder(t).
+	buildMockInstanceCallTest(t).
 		withContracts(
 			createMockContract(parentAddress).
 				withBalance(simpleGasTestConfig.parentBalance).
@@ -113,7 +113,7 @@ func TestGasUsed_TwoContracts_ExecuteOnSameCtx(t *testing.T) {
 		expectedGasRemaining := simpleGasTestConfig.gasProvided - simpleGasTestConfig.gasUsedByParent - simpleGasTestConfig.gasUsedByChild*numCalls
 		numCallsBytes := big.NewInt(0).SetUint64(numCalls).Bytes()
 
-		runMockInstanceCallerTestBuilder(t).
+		buildMockInstanceCallTest(t).
 			withContracts(
 				createMockContract(parentAddress).
 					withBalance(simpleGasTestConfig.parentBalance).
@@ -151,7 +151,7 @@ func TestGasUsed_TwoContracts_ExecuteOnDestCtx(t *testing.T) {
 		expectedGasRemaining := simpleGasTestConfig.gasProvided - simpleGasTestConfig.gasUsedByParent - simpleGasTestConfig.gasUsedByChild*numCalls
 		numCallsBytes := big.NewInt(0).SetUint64(numCalls).Bytes()
 
-		runMockInstanceCallerTestBuilder(t).
+		buildMockInstanceCallTest(t).
 			withContracts(
 				createMockContract(parentAddress).
 					withBalance(simpleGasTestConfig.parentBalance).
@@ -194,7 +194,7 @@ func TestGasUsed_ThreeContracts_ExecuteOnDestCtx(t *testing.T) {
 	alphaGasToForwardToReceivers := uint64(300)
 	receiverCallGas := uint64(200)
 
-	runMockInstanceCallerTestBuilder(t).
+	buildMockInstanceCallTest(t).
 		withContracts(
 			createMockContract(alphaAddress).
 				withBalance(0).
@@ -245,7 +245,7 @@ func TestGasUsed_ESTD_CallAfterBuiltinCall_Success(t *testing.T) {
 	testConfig := simpleGasTestConfig
 	testConfig.ESDTTokensToTransfer = 5
 
-	runMockInstanceCallerTestBuilder(t).
+	buildMockInstanceCallTest(t).
 		withContracts(
 			createMockContract(parentAddress).
 				withBalance(testConfig.parentBalance).
@@ -290,7 +290,7 @@ func TestGasUsed_ESTD_CallAfterBuiltinCall_Fail(t *testing.T) {
 
 	testConfig := simpleGasTestConfig
 
-	runMockInstanceCallerTestBuilder(t).
+	buildMockInstanceCallTest(t).
 		withContracts(
 			createMockContract(parentAddress).
 				withBalance(testConfig.parentBalance).
@@ -373,7 +373,7 @@ func TestGasUsed_AsyncCall(t *testing.T) {
 	gasUsedByParent := testConfig.gasUsedByParent + testConfig.gasUsedByCallback
 	gasUsedByChild := testConfig.gasUsedByChild
 
-	runMockInstanceCallerTestBuilder(t).
+	buildMockInstanceCallTest(t).
 		withContracts(
 			createMockContract(parentAddress).
 				withBalance(testConfig.parentBalance).
@@ -429,7 +429,7 @@ func TestGasUsed_AsyncCall_BuiltinCall(t *testing.T) {
 	expectedGasUsedByParent := testConfig.gasUsedByParent + testConfig.gasUsedByCallback + gasUsedByBuiltinClaim
 	expectedGasUsedByChild := uint64(0) // all gas for builtin call is consummed on caller
 
-	runMockInstanceCallerTestBuilder(t).
+	buildMockInstanceCallTest(t).
 		withContracts(
 			createMockContract(parentAddress).
 				withBalance(testConfig.parentBalance).
@@ -468,7 +468,7 @@ func TestGasUsed_AsyncCall_BuiltinCallFail(t *testing.T) {
 	expectedGasUsedByParent := testConfig.gasUsedByParent + gasProvidedForBuiltinCall + testConfig.gasUsedByCallback
 	expectedGasUsedByChild := uint64(0) // all gas for builtin call is consummed on caller
 
-	runMockInstanceCallerTestBuilder(t).
+	buildMockInstanceCallTest(t).
 		withContracts(
 			createMockContract(parentAddress).
 				withBalance(testConfig.parentBalance).
@@ -514,7 +514,7 @@ func TestGasUsed_AsyncCall_BuiltinMultiContractCall(t *testing.T) {
 	expectedGasUsedByParent := testConfig.gasUsedByParent + testConfig.gasUsedByCallback
 	expectedGasUsedByChild := testConfig.gasUsedByChild + gasUsedByBuiltinClaim
 
-	runMockInstanceCallerTestBuilder(t).
+	buildMockInstanceCallTest(t).
 		withContracts(
 			createMockContract(parentAddress).
 				withBalance(testConfig.parentBalance).
@@ -553,7 +553,7 @@ func TestGasUsed_AsyncCall_ChildFails(t *testing.T) {
 
 	expectedGasUsedByParent := testConfig.gasProvided - testConfig.gasLockCost + testConfig.gasUsedByCallback
 
-	runMockInstanceCallerTestBuilder(t).
+	buildMockInstanceCallTest(t).
 		withContracts(
 			createMockContract(parentAddress).
 				withBalance(testConfig.parentBalance).
@@ -606,7 +606,7 @@ func TestGasUsed_AsyncCall_CallBackFails(t *testing.T) {
 	expectedGasUsedByParent := testConfig.gasProvided - testConfig.gasUsedByChild
 	expectedGasUsedByChild := testConfig.gasUsedByChild
 
-	runMockInstanceCallerTestBuilder(t).
+	buildMockInstanceCallTest(t).
 		withContracts(
 			createMockContract(parentAddress).
 				withBalance(testConfig.parentBalance).
@@ -676,7 +676,7 @@ func TestGasUsed_AsyncCall_Recursive(t *testing.T) {
 	expectedGasUsedByChild := uint64(testConfig.recursiveChildCalls)*testConfig.gasUsedByChild +
 		uint64(testConfig.recursiveChildCalls-1)*testConfig.gasUsedByCallback
 
-	runMockInstanceCallerTestBuilder(t).
+	buildMockInstanceCallTest(t).
 		withContracts(
 			createMockContract(parentAddress).
 				withBalance(testConfig.parentBalance).
@@ -731,7 +731,7 @@ func TestGasUsed_AsyncCall_MultiChild(t *testing.T) {
 	expectedGasUsedByParent := testConfig.gasUsedByParent + testConfig.gasUsedByCallback
 	expectedGasUsedByChild := uint64(testConfig.childCalls) * testConfig.gasUsedByChild
 
-	runMockInstanceCallerTestBuilder(t).
+	buildMockInstanceCallTest(t).
 		withContracts(
 			createMockContract(parentAddress).
 				withBalance(testConfig.parentBalance).

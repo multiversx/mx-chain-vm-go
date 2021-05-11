@@ -42,7 +42,7 @@ func TestSCMem(t *testing.T) {
 		returnData = append(returnData, []byte{byte(c)})
 	}
 
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("misc", "../../"))).
@@ -67,7 +67,7 @@ func TestExecution_DeployNewAddressErr(t *testing.T) {
 		withContractCode([]byte("contract")).
 		build()
 
-	runInstanceCreatorTestBuilder(t).
+	buildInstanceCreatorTest(t).
 		withInput(input).
 		withSetup(func(host *vmHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
 			stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
@@ -89,7 +89,7 @@ func TestExecution_DeployNewAddressErr(t *testing.T) {
 }
 
 func TestExecution_DeployOutOfGas(t *testing.T) {
-	runInstanceCreatorTestBuilder(t).
+	buildInstanceCreatorTest(t).
 		withInput(createTestContractCreateInputBuilder().
 			withGasProvided(8).
 			build()).
@@ -102,7 +102,7 @@ func TestExecution_DeployOutOfGas(t *testing.T) {
 }
 
 func TestExecution_DeployNotWASM(t *testing.T) {
-	runInstanceCreatorTestBuilder(t).
+	buildInstanceCreatorTest(t).
 		withInput(createTestContractCreateInputBuilder().
 			withGasProvided(9).
 			withContractCode([]byte("not WASM")).
@@ -115,7 +115,7 @@ func TestExecution_DeployNotWASM(t *testing.T) {
 }
 
 func TestExecution_DeployWASM_WithoutMemory(t *testing.T) {
-	runInstanceCreatorTestBuilder(t).
+	buildInstanceCreatorTest(t).
 		withInput(createTestContractCreateInputBuilder().
 			withGasProvided(1000).
 			withContractCode(GetTestSCCode("memoryless", "../../")).
@@ -128,7 +128,7 @@ func TestExecution_DeployWASM_WithoutMemory(t *testing.T) {
 }
 
 func TestExecution_DeployWASM_WrongInit(t *testing.T) {
-	runInstanceCreatorTestBuilder(t).
+	buildInstanceCreatorTest(t).
 		withInput(createTestContractCreateInputBuilder().
 			withGasProvided(1000).
 			withContractCode(GetTestSCCode("init-wrong", "../../")).
@@ -141,7 +141,7 @@ func TestExecution_DeployWASM_WrongInit(t *testing.T) {
 }
 
 func TestExecution_DeployWASM_WrongMethods(t *testing.T) {
-	runInstanceCreatorTestBuilder(t).
+	buildInstanceCreatorTest(t).
 		withInput(createTestContractCreateInputBuilder().
 			withGasProvided(1000).
 			withContractCode(GetTestSCCode("signatures", "../../")).
@@ -160,7 +160,7 @@ func TestExecution_DeployWASM_Successful(t *testing.T) {
 		withCallValue(88).
 		withArguments([]byte{0}).
 		build()
-	runInstanceCreatorTestBuilder(t).
+	buildInstanceCreatorTest(t).
 		withInput(input).
 		withAddress(newAddress).
 		andAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *VMOutputVerifier) {
@@ -175,7 +175,7 @@ func TestExecution_DeployWASM_Successful(t *testing.T) {
 }
 
 func TestExecution_DeployWASM_Popcnt(t *testing.T) {
-	runInstanceCreatorTestBuilder(t).
+	buildInstanceCreatorTest(t).
 		withInput(createTestContractCreateInputBuilder().
 			withGasProvided(1000).
 			withCallValue(88).
@@ -191,7 +191,7 @@ func TestExecution_DeployWASM_Popcnt(t *testing.T) {
 }
 
 func TestExecution_DeployWASM_AtMaximumLocals(t *testing.T) {
-	runInstanceCreatorTestBuilder(t).
+	buildInstanceCreatorTest(t).
 		withInput(createTestContractCreateInputBuilder().
 			withGasProvided(1000).
 			withCallValue(88).
@@ -205,7 +205,7 @@ func TestExecution_DeployWASM_AtMaximumLocals(t *testing.T) {
 }
 
 func TestExecution_DeployWASM_MoreThanMaximumLocals(t *testing.T) {
-	runInstanceCreatorTestBuilder(t).
+	buildInstanceCreatorTest(t).
 		withInput(createTestContractCreateInputBuilder().
 			withGasProvided(1000).
 			withCallValue(88).
@@ -219,7 +219,7 @@ func TestExecution_DeployWASM_MoreThanMaximumLocals(t *testing.T) {
 }
 
 func TestExecution_DeployWASM_Init_Errors(t *testing.T) {
-	runInstanceCreatorTestBuilder(t).
+	buildInstanceCreatorTest(t).
 		withInput(createTestContractCreateInputBuilder().
 			withGasProvided(1000).
 			withCallValue(88).
@@ -234,7 +234,7 @@ func TestExecution_DeployWASM_Init_Errors(t *testing.T) {
 }
 
 func TestExecution_DeployWASM_Init_InfiniteLoop_Errors(t *testing.T) {
-	runInstanceCreatorTestBuilder(t).
+	buildInstanceCreatorTest(t).
 		withInput(createTestContractCreateInputBuilder().
 			withGasProvided(1000).
 			withCallValue(88).
@@ -257,7 +257,7 @@ func TestExecution_ManyDeployments(t *testing.T) {
 	numDeployments := 1000
 
 	for i := 0; i < numDeployments; i++ {
-		runInstanceCreatorTestBuilder(t).
+		buildInstanceCreatorTest(t).
 			withInput(createTestContractCreateInputBuilder().
 				withGasProvided(100000).
 				withCallValue(88).
@@ -373,7 +373,7 @@ func TestExecution_MultipleArwens_CleanInstanceWhileOthersAreRunning(t *testing.
 }
 
 func TestExecution_Deploy_DisallowFloatingPoint(t *testing.T) {
-	runInstanceCreatorTestBuilder(t).
+	buildInstanceCreatorTest(t).
 		withInput(createTestContractCreateInputBuilder().
 			withGasProvided(1000).
 			withCallValue(88).
@@ -389,7 +389,7 @@ func TestExecution_Deploy_DisallowFloatingPoint(t *testing.T) {
 
 func TestExecution_CallGetUserAccountErr(t *testing.T) {
 	errGetAccount := errors.New("get code error")
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withInput(createTestContractCallInputBuilder().
 			withGasProvided(100).
 			build()).
@@ -406,7 +406,7 @@ func TestExecution_CallGetUserAccountErr(t *testing.T) {
 }
 
 func TestExecution_NotEnoughGasForGetCode(t *testing.T) {
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withInput(createTestContractCallInputBuilder().
 			withGasProvided(0).
 			build()).
@@ -418,7 +418,7 @@ func TestExecution_NotEnoughGasForGetCode(t *testing.T) {
 }
 
 func TestExecution_CallOutOfGas(t *testing.T) {
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("counter", "../../"))).
@@ -433,7 +433,7 @@ func TestExecution_CallOutOfGas(t *testing.T) {
 }
 
 func TestExecution_CallWasmerError(t *testing.T) {
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode([]byte("not WASM"))).
@@ -448,7 +448,7 @@ func TestExecution_CallWasmerError(t *testing.T) {
 }
 
 func TestExecution_CallSCMethod_Init(t *testing.T) {
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("counter", "../../"))).
@@ -464,7 +464,7 @@ func TestExecution_CallSCMethod_Init(t *testing.T) {
 }
 
 func TestExecution_CallSCMethod_Callback(t *testing.T) {
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("counter", "../../"))).
@@ -480,7 +480,7 @@ func TestExecution_CallSCMethod_Callback(t *testing.T) {
 }
 
 func TestExecution_CallSCMethod_MissingFunction(t *testing.T) {
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("counter", "../../"))).
@@ -495,7 +495,7 @@ func TestExecution_CallSCMethod_MissingFunction(t *testing.T) {
 }
 
 func TestExecution_Call_Successful(t *testing.T) {
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("counter", "../../"))).
@@ -549,7 +549,7 @@ func callCustomSCAndGetGasUsed(t *testing.T, locals uint64) (uint64, *config.Gas
 	gasLimit := uint64(100000)
 	code := makeBytecodeWithLocals(locals)
 
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(code)).
@@ -592,7 +592,7 @@ func TestExecution_ExecuteOnSameContext_Simple(t *testing.T) {
 	returnData = append(returnData, []byte{})
 	returnData = append(returnData, []byte("parent"))
 
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("exec-same-ctx-simple-parent", "../../")).
@@ -623,7 +623,7 @@ func TestExecution_ExecuteOnSameContext_Simple(t *testing.T) {
 func TestExecution_Call_Breakpoints(t *testing.T) {
 	t.Parallel()
 
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("breakpoint", "../../"))).
@@ -641,7 +641,7 @@ func TestExecution_Call_Breakpoints(t *testing.T) {
 
 func TestExecution_Call_Breakpoints_UserError(t *testing.T) {
 	t.Parallel()
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("breakpoint", "../../"))).
@@ -660,7 +660,7 @@ func TestExecution_Call_Breakpoints_UserError(t *testing.T) {
 
 func TestExecution_ExecuteOnSameContext_Prepare(t *testing.T) {
 	expectedExecutionCost := uint64(138)
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("exec-same-ctx-parent", "../../")).
@@ -699,7 +699,7 @@ func TestExecution_ExecuteOnSameContext_Wrong(t *testing.T) {
 	gasLostOnFailure := uint64(50000)
 	finalCost := uint64(44)
 
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("exec-same-ctx-parent", "../../")).
@@ -766,7 +766,7 @@ func TestExecution_ExecuteOnSameContext_OutOfGas(t *testing.T) {
 	gasLostOnFailure := uint64(3500)
 	finalCost := uint64(54)
 
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("exec-same-ctx-parent", "../../")).
@@ -828,7 +828,7 @@ func TestExecution_ExecuteOnSameContext_Successful(t *testing.T) {
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using executeOnSameContext().
 
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("exec-same-ctx-parent", "../../")).
@@ -890,7 +890,7 @@ func TestExecution_ExecuteOnSameContext_Successful_BigInts(t *testing.T) {
 	executeAPICost := uint64(13)
 	finalCost := uint64(67)
 
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("exec-same-ctx-parent", "../../")).
@@ -961,7 +961,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct(t *testing.T) {
 	storeEntries = append(storeEntries, createStoreEntry(parentAddress).withKey(recursiveIterationCounterKey).withValue([]byte{byte(recursiveCalls + 1)}))
 	storeEntries = append(storeEntries, createStoreEntry(parentAddress).withKey(recursiveIterationBigCounterKey).withValue(big.NewInt(int64(recursiveCalls+1)).Bytes()))
 
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("exec-same-ctx-recursive", "../../")).
@@ -987,7 +987,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct(t *testing.T) {
 
 func TestExecution_ExecuteOnSameContext_Recursive_Direct_ErrMaxInstances(t *testing.T) {
 	recursiveCalls := byte(11)
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("exec-same-ctx-recursive", "../../")).
@@ -1078,7 +1078,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_Methods(t *testing.T) {
 
 	returnData = append(returnData, []byte("end recursive mutual calls"))
 
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("exec-same-ctx-recursive", "../../")).
@@ -1157,7 +1157,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs(t *testing.T) {
 	storeEntries = append(storeEntries, createStoreEntry(parentAddress).withKey(recursiveIterationCounterKey).withValue([]byte{byte(recursiveCalls + 1)}))
 	storeEntries = append(storeEntries, createStoreEntry(parentAddress).withKey(recursiveIterationBigCounterKey).withValue(big.NewInt(int64(recursiveCalls+1)).Bytes()))
 
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("exec-same-ctx-recursive-parent", "../../")).
@@ -1196,7 +1196,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 	// SC and pass some arguments using executeOnDestContext().
 	recursiveCalls := byte(5)
 
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("exec-same-ctx-recursive-parent", "../../")).
@@ -1233,7 +1233,7 @@ func TestExecution_ExecuteOnDestContext_Prepare(t *testing.T) {
 
 	expectedExecutionCost := uint64(138)
 
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("exec-dest-ctx-parent", "../../")).
@@ -1275,7 +1275,7 @@ func TestExecution_ExecuteOnDestContext_Wrong(t *testing.T) {
 	gasLostOnFailure := uint64(10000)
 	finalCost := uint64(44)
 
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("exec-dest-ctx-parent", "../../")).
@@ -1345,7 +1345,7 @@ func TestExecution_ExecuteOnDestContext_OutOfGas(t *testing.T) {
 	gasLostOnFailure := uint64(3500)
 	finalCost := uint64(54)
 
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("exec-dest-ctx-parent", "../../")).
@@ -1396,7 +1396,7 @@ func TestExecution_ExecuteOnDestContext_Successful(t *testing.T) {
 	finalCost := uint64(65)
 	childTransferValue := int64(12)
 
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("exec-dest-ctx-parent", "../../")).
@@ -1459,7 +1459,7 @@ func TestExecution_ExecuteOnDestContext_Successful_ChildReturns(t *testing.T) {
 	parentGasAfterExecuteAPI := uint64(273)
 	childTransferValue := int64(12)
 
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("exec-dest-ctx-parent", "../../")).
@@ -1582,7 +1582,7 @@ func TestExecution_ExecuteOnDestContext_Successful_BigInts(t *testing.T) {
 	childExecutionCost := uint64(101)
 	finalCost := uint64(68)
 
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("exec-dest-ctx-parent", "../../")).
@@ -1644,7 +1644,7 @@ func TestExecution_ExecuteOnDestContext_Recursive_Direct(t *testing.T) {
 		createStoreEntry(parentAddress).withKey(recursiveIterationCounterKey).withValue([]byte{byte(recursiveCalls + 1)}),
 		createStoreEntry(parentAddress).withKey(recursiveIterationBigCounterKey).withValue(big.NewInt(int64(1)).Bytes()))
 
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("exec-dest-ctx-recursive", "../../")).
@@ -1705,7 +1705,7 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_Methods(t *testing.T) {
 
 	returnData = append(returnData, []byte("end recursive mutual calls"))
 
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("exec-dest-ctx-recursive", "../../")).
@@ -1777,7 +1777,7 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs(t *testing.T) {
 		storeEntries = append(storeEntries, createStoreEntry(childAddress).withKey(recursiveIterationBigCounterKey).withValue(big.NewInt(int64(1)).Bytes()))
 	}
 
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("exec-dest-ctx-recursive-parent", "../../")).
@@ -1817,7 +1817,7 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 
 	recursiveCalls := byte(5)
 
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("exec-dest-ctx-recursive-parent", "../../")).
@@ -1937,7 +1937,7 @@ func TestExecution_ExecuteOnDestContextByCaller_SimpleTransfer(t *testing.T) {
 
 	transferValue := int64(42)
 
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCodeModule("exec-dest-ctx-by-caller/parent", "parent", "../../")).
@@ -1977,7 +1977,7 @@ func TestExecution_AsyncCall_GasLimitConsumed(t *testing.T) {
 	parentCode := GetTestSCCode("async-call-parent", "../../")
 	childCode := GetTestSCCode("async-call-child", "../../")
 
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(parentCode).
@@ -2046,7 +2046,7 @@ func TestExecution_AsyncCall(t *testing.T) {
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using asyncCall().
 
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("async-call-parent", "../../")).
@@ -2100,7 +2100,7 @@ func TestExecution_AsyncCall_ChildFails(t *testing.T) {
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using asyncCall().
 
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("async-call-parent", "../../")).
@@ -2140,7 +2140,7 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using asyncCall().
 
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("async-call-parent", "../../")).
@@ -2193,7 +2193,7 @@ func TestExecution_CreateNewContract_Success(t *testing.T) {
 	childAddress := []byte("newAddress")
 	l := len(childCode)
 
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("deployer", "../../")).
@@ -2241,7 +2241,7 @@ func TestExecution_CreateNewContract_Fail(t *testing.T) {
 	childCode := GetTestSCCode("init-correct", "../../")
 	l := len(childCode)
 
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("deployer", "../../")).
@@ -2275,7 +2275,7 @@ func TestExecution_CreateNewContract_Fail(t *testing.T) {
 
 func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 
-	runMockInstanceCallerTestBuilder(t).
+	buildMockInstanceCallTest(t).
 		withContracts(
 			createMockContract(parentAddress).
 				withBalance(1000).

@@ -46,7 +46,7 @@ func TestExecution_ExecuteOnDestContext_ESDTTransferWithoutExecute(t *testing.T)
 
 func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_Claim(t *testing.T) {
 	parentGasUsed := uint64(1988)
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("exec-dest-ctx-builtin", "../../")).
@@ -72,7 +72,7 @@ func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_Claim(t *testing.T)
 
 func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_DoSomething(t *testing.T) {
 	parentGasUsed := uint64(1992)
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("exec-dest-ctx-builtin", "../../")).
@@ -97,7 +97,7 @@ func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_DoSomething(t *test
 }
 
 func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_Nonexistent(t *testing.T) {
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("exec-dest-ctx-builtin", "../../")).
@@ -120,7 +120,7 @@ func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_Nonexistent(t *test
 }
 
 func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_Fail(t *testing.T) {
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("exec-dest-ctx-builtin", "../../")).
@@ -143,7 +143,7 @@ func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_Fail(t *testing.T) 
 }
 
 func TestExecution_AsyncCall_MockBuiltinFails(t *testing.T) {
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("async-call-builtin", "../../")).
@@ -166,7 +166,7 @@ func TestExecution_AsyncCall_MockBuiltinFails(t *testing.T) {
 }
 
 func TestESDT_GettersAPI(t *testing.T) {
-	runInstanceCallerTestBuilder(t).
+	buildInstanceCallTest(t).
 		withContracts(
 			createInstanceContract(parentAddress).
 				withCode(GetTestSCCode("exchange", "../../")).

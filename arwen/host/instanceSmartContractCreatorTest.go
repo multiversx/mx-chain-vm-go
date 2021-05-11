@@ -15,7 +15,7 @@ type testCreateTemplateConfig struct {
 	assertResults func(*contextmock.BlockchainHookStub, *VMOutputVerifier)
 }
 
-func runInstanceCreatorTestBuilder(t *testing.T) *testCreateTemplateConfig {
+func buildInstanceCreatorTest(t *testing.T) *testCreateTemplateConfig {
 	return &testCreateTemplateConfig{
 		t:     t,
 		setup: func(*vmHost, *contextmock.BlockchainHookStub) {},

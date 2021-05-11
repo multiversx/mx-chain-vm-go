@@ -62,7 +62,7 @@ type mockInstancesTestTemplate struct {
 	assertResults func(*worldmock.MockWorld, *VMOutputVerifier)
 }
 
-func runMockInstanceCallerTestBuilder(t *testing.T) *mockInstancesTestTemplate {
+func buildMockInstanceCallTest(t *testing.T) *mockInstancesTestTemplate {
 	return &mockInstancesTestTemplate{
 		testTemplateConfig: testTemplateConfig{
 			t:        t,
@@ -89,10 +89,10 @@ func (callerTest *mockInstancesTestTemplate) withSetup(setup func(*vmHost, *worl
 
 func (callerTest *mockInstancesTestTemplate) andAssertResults(assertResults func(world *worldmock.MockWorld, verify *VMOutputVerifier)) {
 	callerTest.assertResults = assertResults
-	callerTest.runTestWithMockMockInstances()
+	callerTest.runTest()
 }
 
-func (callerTest *mockInstancesTestTemplate) runTestWithMockMockInstances() {
+func (callerTest *mockInstancesTestTemplate) runTest() {
 
 	host, world, imb := defaultTestArwenForCallWithInstanceMocks(callerTest.t)
 

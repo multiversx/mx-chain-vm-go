@@ -42,7 +42,7 @@ type instancesTestTemplate struct {
 	assertResults func(*vmHost, *contextmock.BlockchainHookStub, *VMOutputVerifier)
 }
 
-func runInstanceCallerTestBuilder(t *testing.T) *instancesTestTemplate {
+func buildInstanceCallTest(t *testing.T) *instancesTestTemplate {
 	return &instancesTestTemplate{
 		testTemplateConfig: testTemplateConfig{
 			t:        t,
