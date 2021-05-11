@@ -25,8 +25,9 @@ func performAsyncCallParentMock(instanceMock *mock.InstanceMock, config interfac
 		host.Output().Finish(parentFinishA)
 		host.Output().Finish(parentFinishB)
 
-		err := host.Output().Transfer(thirdPartyAddress, host.Runtime().GetSCAddress(), 0, 0,
-			big.NewInt(testConfig.transferToThirdParty), []byte("hello"), 0)
+                scAddress := host.Runtime().GetSCAddress()
+                transferValue := big.NewInt(testConfig.transferToThirdParty) 
+		err := host.Output().Transfer(thirdPartyAddress, scAddress, 0, 0, transferValue, []byte("hello"), 0)
 		require.Nil(t, err)
 
 		arguments := host.Runtime().Arguments()
