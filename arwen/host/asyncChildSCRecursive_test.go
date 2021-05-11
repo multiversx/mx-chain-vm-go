@@ -18,9 +18,9 @@ func recursiveAsyncCallRecursiveChildMock(instanceMock *mock.InstanceMock, confi
 
 		host.Metering().UseGas(testConfig.gasUsedByChild)
 
-		recursiveChildCalls := big.NewInt(0).SetBytes(arguments[0])
-		recursiveChildCalls.Sub(recursiveChildCalls, big.NewInt(1))
-		if recursiveChildCalls.Int64() == 0 {
+		recursiveChildCalls := big.NewInt(0).SetBytes(arguments[0]).Uint64()
+		recursiveChildCalls -= 1
+		if recursiveChildCalls == 0 {
 			return instance
 		}
 
