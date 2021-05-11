@@ -25,7 +25,7 @@ func forwardAsyncCallMultiContractParentMock(instanceMock *mock.InstanceMock, co
 
 		callData := txDataBuilder.NewBuilder()
 		callData.Func(function)
-		callData.Bytes(destinationForBuildInCall)
+		callData.Bytes(destinationForBuiltInCall)
 		callData.Bytes(arguments[2])
 
 		err := host.Runtime().ExecuteAsyncCall(destination, callData.ToBytes(), value)
