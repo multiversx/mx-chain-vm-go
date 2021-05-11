@@ -19,7 +19,7 @@ type OutputContextStub struct {
 	ClearStateStackCalled             func()
 	CopyTopOfStackToActiveStateCalled func()
 	CensorVMOutputCalled              func()
-	ResetGasCalled                    func()
+	GetOutputAccountsCalled           func() map[string]*vmcommon.OutputAccount
 	GetOutputAccountCalled            func(address []byte) (*vmcommon.OutputAccount, bool)
 	DeleteOutputAccountCalled         func(address []byte)
 	WriteLogCalled                    func(address []byte, topics [][]byte, data []byte)
@@ -42,7 +42,6 @@ type OutputContextStub struct {
 	CreateVMOutputInCaseOfErrorCalled func(err error) *vmcommon.VMOutput
 	AddToActiveStateCalled            func(vmOutput *vmcommon.VMOutput)
 	TransferValueOnlyCalled           func(destination []byte, sender []byte, value *big.Int, checkPayable bool) error
-	GetCurrentTotalUsedGasCalled      func() (uint64, bool)
 }
 
 // AddToActiveState mocked method
@@ -108,11 +107,12 @@ func (o *OutputContextStub) CensorVMOutput() {
 	}
 }
 
-// ResetGas mocked method
-func (o *OutputContextStub) ResetGas() {
-	if o.ResetGasCalled != nil {
-		o.ResetGasCalled()
+// GetOutputAccounts mocked method
+func (o *OutputContextStub) GetOutputAccounts() map[string]*vmcommon.OutputAccount {
+	if o.GetOutputAccountsCalled != nil {
+		return o.GetOutputAccountsCalled()
 	}
+	return nil
 }
 
 // GetOutputAccount mocked method
@@ -272,12 +272,4 @@ func (o *OutputContextStub) CreateVMOutputInCaseOfError(err error) *vmcommon.VMO
 		return o.CreateVMOutputInCaseOfErrorCalled(err)
 	}
 	return nil
-}
-
-// GetCurrentTotalUsedGas mocked method
-func (o *OutputContextStub) GetCurrentTotalUsedGas() (uint64, bool) {
-	if o.GetCurrentTotalUsedGasCalled != nil {
-		return o.GetCurrentTotalUsedGasCalled()
-	}
-	return 0, false
 }
