@@ -21,7 +21,7 @@ func forwardAsyncCallMultiContractParentMock(instanceMock *mock.InstanceMock, co
 
 		host.Metering().UseGas(testConfig.gasUsedByParent)
 
-		destinationForBuildInCall := host.Runtime().GetSCAddress()
+		destinationForBuiltInCall := host.Runtime().GetSCAddress()
 
 		callData := txDataBuilder.NewBuilder()
 		callData.Func(function)
