@@ -14,3 +14,5 @@ require (
 	github.com/urfave/cli v1.22.5
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 )
+
+replace github.com/ElrondNetwork/arwen-wasm-vm => ./
