@@ -47,7 +47,10 @@
                             "instances": [
                                 {
                                     "nonce": "0x03",
-                                    "balance": "900"
+                                    "balance": "900",
+                                    "creator": "*",
+                                    "hash": "*",
+                                    "attributes": "*"
                                 }
                             ]
                         },
@@ -99,7 +102,10 @@
                             "instances": [
                                 {
                                     "nonce": "0x04",
-                                    "balance": "792"
+                                    "balance": "792",
+                                    "creator": "*",
+                                    "hash": "*",
+                                    "attributes": "*"
                                 }
                             ]
                         },
@@ -151,7 +157,10 @@
                             "instances": [
                                 {
                                     "nonce": "0x05",
-                                    "balance": "96"
+                                    "balance": "96",
+                                    "creator": "*",
+                                    "hash": "*",
+                                    "attributes": "*"
                                 }
                             ]
                         },

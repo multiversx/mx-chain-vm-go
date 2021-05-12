@@ -58,7 +58,10 @@
                             "instances": [
                                 {
                                     "nonce": "0x02",
-                                    "balance": "80,000"
+                                    "balance": "80,000",
+                                    "creator": "*",
+                                    "hash": "*",
+                                    "attributes": "*"
                                 }
                             ]
                         },
@@ -66,7 +69,10 @@
                             "instances": [
                                 {
                                     "nonce": "0x02",
-                                    "balance": "1,111"
+                                    "balance": "1,111",
+                                    "creator": "*",
+                                    "hash": "*",
+                                    "attributes": "*"
                                 }
                             ]
                         },
