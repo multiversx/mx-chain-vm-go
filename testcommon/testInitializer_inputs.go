@@ -77,9 +77,17 @@ func GetSCCode(fileName string) []byte {
 }
 
 // GetTestSCCode retrieves the bytecode of a WASM testing contract
-func GetTestSCCode(scName string, prefixToTestSCs string) []byte {
-	pathToSC := prefixToTestSCs + "test/contracts/" + scName + "/output/" + scName + ".wasm"
-	return GetSCCode(pathToSC)
+func GetTestSCCode(scName string, prefixToTestSCs ...string) []byte {
+	var searchedPaths []string
+	for _, prefixToTestSC := range prefixToTestSCs {
+		pathToSC := prefixToTestSC + "test/contracts/" + scName + "/output/" + scName + ".wasm"
+		searchedPaths = append(searchedPaths, pathToSC)
+		code, err := ioutil.ReadFile(filepath.Clean(pathToSC))
+		if err == nil {
+			return code
+		}
+	}
+	panic(fmt.Sprintf("GetSCCode(): %s", searchedPaths))
 }
 
 // GetTestSCCodeModule retrieves the bytecode of a WASM testing contract, given
