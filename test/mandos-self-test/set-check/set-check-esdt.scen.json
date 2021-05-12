@@ -1,6 +1,5 @@
 {
     "comment": "verifies that setState and checkState are consistent",
-    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "setState",

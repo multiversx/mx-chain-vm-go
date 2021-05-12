@@ -383,7 +383,8 @@
                                 "ESDTRoleNFTBurn"
                             ],
                             "frozen": "false"
-                        }
+                        },
+                        "+": ""
                     },
                     "username": "str:check.elrond",
                     "storage": {},
@@ -407,7 +408,9 @@
                                 "u64:0",
                                 "``field2elem3"
                             ]
-                        }
+                        },
+                        "str:anything-goes": "*",
+                        "+": ""
                     },
                     "code": "file:smart-contract.wasm",
                     "owner": "address:bob"

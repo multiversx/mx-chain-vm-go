@@ -16,7 +16,7 @@ func (p *Parser) processTxExpectedResult(blrRaw oj.OJsonObject) (*mj.Transaction
 
 	blr := mj.TransactionResult{
 		Status:          mj.JSONCheckBigIntUnspecified(),
-		Message:         mj.JSONCheckBytesUnspecified(),
+		Message:         mj.JSONCheckBytesEmpty(),
 		Gas:             mj.JSONCheckUint64Unspecified(),
 		Refund:          mj.JSONCheckBigIntUnspecified(),
 		LogsStar:        true,

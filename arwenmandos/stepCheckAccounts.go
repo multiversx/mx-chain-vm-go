@@ -2,14 +2,15 @@ package arwenmandos
 
 import (
 	"bytes"
-	"encoding/hex"
 	"fmt"
 	"math/big"
+	"strings"
 
 	er "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/expression/reconstructor"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
 	oj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/orderedjson"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
+	"github.com/ElrondNetwork/elrond-go/core"
 	"github.com/ElrondNetwork/elrond-go/data/esdt"
 )
 
@@ -23,7 +24,7 @@ func (ae *ArwenTestExecutor) ExecuteCheckStateStep(step *mj.CheckStateStep) erro
 }
 
 func (ae *ArwenTestExecutor) checkAccounts(checkAccounts *mj.CheckAccounts) error {
-	if !checkAccounts.OtherAccountsAllowed {
+	if !checkAccounts.MoreAccountsAllowed {
 		for worldAcctAddr := range ae.World.AcctMap {
 			postAcctMatch := mj.FindCheckAccount(checkAccounts.Accounts, []byte(worldAcctAddr))
 			if postAcctMatch == nil {
@@ -39,9 +40,7 @@ func (ae *ArwenTestExecutor) checkAccounts(checkAccounts *mj.CheckAccounts) erro
 		matchingAcct, isMatch := ae.World.AcctMap[string(expectedAcct.Address.Value)]
 		if !isMatch {
 			return fmt.Errorf("account %s expected but not found after running test",
-				ae.exprReconstructor.Reconstruct(
-					expectedAcct.Address.Value,
-					er.AddressHint))
+				expectedAcct.Address.Original)
 		}
 
 		if !bytes.Equal(matchingAcct.Address, expectedAcct.Address.Value) {
@@ -52,22 +51,22 @@ func (ae *ArwenTestExecutor) checkAccounts(checkAccounts *mj.CheckAccounts) erro
 		}
 
 		if !expectedAcct.Nonce.Check(matchingAcct.Nonce) {
-			return fmt.Errorf("bad account nonce. Account: %s. Want: \"%s\". Have: %d",
-				hex.EncodeToString(matchingAcct.Address),
+			return fmt.Errorf("bad account nonce. Account: %s. Want: \"%s\". Have: \"%d\"",
+				expectedAcct.Address.Original,
 				expectedAcct.Nonce.Original,
 				matchingAcct.Nonce)
 		}
 
 		if !expectedAcct.Balance.Check(matchingAcct.Balance) {
 			return fmt.Errorf("bad account balance. Account: %s. Want: \"%s\". Have: \"%s\"",
-				hex.EncodeToString(matchingAcct.Address),
+				expectedAcct.Address.Original,
 				expectedAcct.Balance.Original,
 				ae.exprReconstructor.ReconstructFromBigInt(matchingAcct.Balance))
 		}
 
 		if !expectedAcct.Username.Check(matchingAcct.Username) {
 			return fmt.Errorf("bad account username. Account: %s. Want: %s. Have: \"%s\"",
-				hex.EncodeToString(matchingAcct.Address),
+				expectedAcct.Address.Original,
 				oj.JSONString(expectedAcct.Username.Original),
 				ae.exprReconstructor.Reconstruct(
 					matchingAcct.Username,
@@ -75,17 +74,19 @@ func (ae *ArwenTestExecutor) checkAccounts(checkAccounts *mj.CheckAccounts) erro
 		}
 
 		if !expectedAcct.Code.Check(matchingAcct.Code) {
-			return fmt.Errorf("bad account code. Account: %s. Want: [%s]. Have: [%s]",
-				hex.EncodeToString(matchingAcct.Address),
-				expectedAcct.Code.Original,
-				string(matchingAcct.Code))
+			return fmt.Errorf("bad account code. Account: %s. Want: %s. Have: \"%s\"",
+				expectedAcct.Address.Original,
+				oj.JSONString(expectedAcct.Code.Original),
+				ae.exprReconstructor.Reconstruct(
+					matchingAcct.Code,
+					er.CodeHint))
 		}
 
 		// currently ignoring asyncCallData that is unspecified in the json
 		if !expectedAcct.AsyncCallData.IsUnspecified() &&
 			!expectedAcct.AsyncCallData.Check([]byte(matchingAcct.AsyncCallData)) {
 			return fmt.Errorf("bad async call data. Account: %s. Want: [%s]. Have: [%s]",
-				hex.EncodeToString(matchingAcct.Address),
+				expectedAcct.Address.Original,
 				expectedAcct.AsyncCallData.Original,
 				matchingAcct.AsyncCallData)
 		}
@@ -109,9 +110,9 @@ func (ae *ArwenTestExecutor) checkAccountStorage(expectedAcct *mj.CheckAccount, 
 		return nil
 	}
 
-	expectedStorage := make(map[string][]byte)
+	expectedStorage := make(map[string]mj.JSONCheckBytes)
 	for _, stkvp := range expectedAcct.CheckStorage {
-		expectedStorage[string(stkvp.Key.Value)] = stkvp.Value.Value
+		expectedStorage[string(stkvp.Key.Value)] = stkvp.CheckValue
 	}
 
 	allKeys := make(map[string]bool)
@@ -123,13 +124,29 @@ func (ae *ArwenTestExecutor) checkAccountStorage(expectedAcct *mj.CheckAccount, 
 	}
 	storageError := ""
 	for k := range allKeys {
-		want := expectedStorage[k]
+		// ignore all reserved "ELROND..." keys
+		if strings.HasPrefix(k, core.ElrondProtectedKeyPrefix) {
+			continue
+		}
+
+		want, specified := expectedStorage[k]
+		if !specified {
+			if expectedAcct.MoreStorageAllowed {
+				// if `"+": ""` was written in the test, any unspecified entries are allowed,
+				// which is equivalent to treating them all as "*".
+				want = mj.JSONCheckBytesStar()
+			} else {
+				// otherwise, by default, any unexpected storage key leads to a test failure
+				want = mj.JSONCheckBytesEmpty()
+			}
+		}
 		have := matchingAcct.StorageValue(k)
-		if !bytes.Equal(want, have) && !worldmock.IsESDTKey([]byte(k)) {
+
+		if !want.Check(have) {
 			storageError += fmt.Sprintf(
-				"\n  for key %s: Want: %s. Have: %s",
+				"\n  for key %s: Want: %s. Have: \"%s\"",
 				ae.exprReconstructor.Reconstruct([]byte(k), er.NoHint),
-				ae.exprReconstructor.Reconstruct(want, er.NoHint),
+				oj.JSONString(want.Original),
 				ae.exprReconstructor.Reconstruct(have, er.NoHint))
 		}
 	}
