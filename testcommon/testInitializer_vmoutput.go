@@ -1,4 +1,4 @@
-package host
+package testcommon
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ import (
 
 // VMOutputVerifier holds the output to be verified
 type VMOutputVerifier struct {
-	vmOutput *vmcommon.VMOutput
+	VmOutput *vmcommon.VMOutput
 	T        testing.TB
 }
 
@@ -22,7 +22,7 @@ func NewVMOutputVerifier(t testing.TB, vmOutput *vmcommon.VMOutput, err error) *
 	require.NotNil(t, vmOutput)
 
 	return &VMOutputVerifier{
-		vmOutput: vmOutput,
+		VmOutput: vmOutput,
 		T:        t,
 	}
 }
@@ -34,31 +34,31 @@ func (v *VMOutputVerifier) Ok() *VMOutputVerifier {
 
 // ReturnCode verifies if ReturnCode of output is the same as the provided one
 func (v *VMOutputVerifier) ReturnCode(code vmcommon.ReturnCode) *VMOutputVerifier {
-	require.Equal(v.T, code, v.vmOutput.ReturnCode, "ReturnCode")
+	require.Equal(v.T, code, v.VmOutput.ReturnCode, "ReturnCode")
 	return v
 }
 
 // ReturnMessage verifies if ReturnMessage of output is the same as the provided one
 func (v *VMOutputVerifier) ReturnMessage(message string) *VMOutputVerifier {
-	require.Equal(v.T, message, v.vmOutput.ReturnMessage, "ReturnMessage")
+	require.Equal(v.T, message, v.VmOutput.ReturnMessage, "ReturnMessage")
 	return v
 }
 
 // NoMsg verifies that ReturnMessage is empty
 func (v *VMOutputVerifier) NoMsg() *VMOutputVerifier {
-	require.Equal(v.T, "", v.vmOutput.ReturnMessage, "ReturnMessage")
+	require.Equal(v.T, "", v.VmOutput.ReturnMessage, "ReturnMessage")
 	return v
 }
 
 // Msg verifies if ReturnMessage of output is the same as the provided one
 func (v *VMOutputVerifier) Msg(message string) *VMOutputVerifier {
-	require.Equal(v.T, message, v.vmOutput.ReturnMessage, "ReturnMessage")
+	require.Equal(v.T, message, v.VmOutput.ReturnMessage, "ReturnMessage")
 	return v
 }
 
 // GasUsed verifies if GasUsed of the specified account is the same as the provided one
 func (v *VMOutputVerifier) GasUsed(address []byte, gas uint64) *VMOutputVerifier {
-	account := v.vmOutput.OutputAccounts[string(address)]
+	account := v.VmOutput.OutputAccounts[string(address)]
 	errMsg := getErrorForAccount("GasUsed", address)
 	require.NotNil(v.T, account, errMsg)
 	require.Equal(v.T, int(gas), int(account.GasUsed), errMsg)
@@ -67,13 +67,13 @@ func (v *VMOutputVerifier) GasUsed(address []byte, gas uint64) *VMOutputVerifier
 
 // GasRemaining verifies if GasRemaining of the specified account is the same as the provided one
 func (v *VMOutputVerifier) GasRemaining(gas uint64) *VMOutputVerifier {
-	require.Equal(v.T, int(gas), int(v.vmOutput.GasRemaining), "GasRemaining")
+	require.Equal(v.T, int(gas), int(v.VmOutput.GasRemaining), "GasRemaining")
 	return v
 }
 
 // Balance verifies if Balance of the specified account is the same as the provided one
 func (v *VMOutputVerifier) Balance(address []byte, balance int64) *VMOutputVerifier {
-	account := v.vmOutput.OutputAccounts[string(address)]
+	account := v.VmOutput.OutputAccounts[string(address)]
 	errMsg := getErrorForAccount("Balance", address)
 	require.NotNil(v.T, account, errMsg)
 	require.NotNil(v.T, account.Balance, errMsg)
@@ -83,7 +83,7 @@ func (v *VMOutputVerifier) Balance(address []byte, balance int64) *VMOutputVerif
 
 // BalanceDelta verifies if BalanceDelta of the specified account is the same as the provided one
 func (v *VMOutputVerifier) BalanceDelta(address []byte, balanceDelta int64) *VMOutputVerifier {
-	account := v.vmOutput.OutputAccounts[string(address)]
+	account := v.VmOutput.OutputAccounts[string(address)]
 	errMsg := getErrorForAccount("BalanceDelta", address)
 	require.NotNil(v.T, account, errMsg)
 	require.NotNil(v.T, account.BalanceDelta, errMsg)
@@ -93,7 +93,7 @@ func (v *VMOutputVerifier) BalanceDelta(address []byte, balanceDelta int64) *VMO
 
 // Nonce verifies if Nonce of the specified account is the same as the provided one
 func (v *VMOutputVerifier) Nonce(address []byte, nonce uint64) *VMOutputVerifier {
-	account := v.vmOutput.OutputAccounts[string(address)]
+	account := v.VmOutput.OutputAccounts[string(address)]
 	errMsg := getErrorForAccount("Nonce", address)
 	require.NotNil(v.T, account, errMsg)
 	require.Equal(v.T, nonce, account.Nonce, errMsg)
@@ -102,7 +102,7 @@ func (v *VMOutputVerifier) Nonce(address []byte, nonce uint64) *VMOutputVerifier
 
 // Code verifies if Code of the specified account is the same as the provided one
 func (v *VMOutputVerifier) Code(address []byte, code []byte) *VMOutputVerifier {
-	account := v.vmOutput.OutputAccounts[string(address)]
+	account := v.VmOutput.OutputAccounts[string(address)]
 	errMsg := getErrorForAccount("Code", address)
 	require.NotNil(v.T, account, errMsg)
 	require.Equal(v.T, code, account.Code, errMsg)
@@ -111,7 +111,7 @@ func (v *VMOutputVerifier) Code(address []byte, code []byte) *VMOutputVerifier {
 
 // CodeMetadata if CodeMetadata of the specified account is the same as the provided one
 func (v *VMOutputVerifier) CodeMetadata(address []byte, codeMetadata []byte) *VMOutputVerifier {
-	account := v.vmOutput.OutputAccounts[string(address)]
+	account := v.VmOutput.OutputAccounts[string(address)]
 	errMsg := getErrorForAccount("CodeMetadata", address)
 	require.NotNil(v.T, account, errMsg)
 	require.Equal(v.T, codeMetadata, account.CodeMetadata, errMsg)
@@ -120,7 +120,7 @@ func (v *VMOutputVerifier) CodeMetadata(address []byte, codeMetadata []byte) *VM
 
 // CodeDeployerAddress if CodeDeployerAddress of the specified account is the same as the provided one
 func (v *VMOutputVerifier) CodeDeployerAddress(address []byte, codeDeployerAddress []byte) *VMOutputVerifier {
-	account := v.vmOutput.OutputAccounts[string(address)]
+	account := v.VmOutput.OutputAccounts[string(address)]
 	errMsg := getErrorForAccount("CodeDeployerAddress", address)
 	require.NotNil(v.T, account, errMsg)
 	require.Equal(v.T, codeDeployerAddress, account.CodeDeployerAddress, errMsg)
@@ -129,35 +129,39 @@ func (v *VMOutputVerifier) CodeDeployerAddress(address []byte, codeDeployerAddre
 
 // ReturnData verifies if ReturnData is the same as the provided one
 func (v *VMOutputVerifier) ReturnData(returnData ...[]byte) *VMOutputVerifier {
-	require.Equal(v.T, len(returnData), len(v.vmOutput.ReturnData), "ReturnData")
-	for idx := range v.vmOutput.ReturnData {
-		require.Equal(v.T, returnData[idx], v.vmOutput.ReturnData[idx], "ReturnData")
+	require.Equal(v.T, len(returnData), len(v.VmOutput.ReturnData), "ReturnData")
+	for idx := range v.VmOutput.ReturnData {
+		require.Equal(v.T, returnData[idx], v.VmOutput.ReturnData[idx], "ReturnData")
 	}
 	return v
 }
 
-type storeEntry struct {
+// StoreEntry holds the data for a storage assertion
+type StoreEntry struct {
 	address []byte
 	key     []byte
 	value   []byte
 }
 
-func createStoreEntry(address []byte) *storeEntry {
-	return &storeEntry{address: address}
+// CreateStoreEntry creates the data for a storage assertion
+func CreateStoreEntry(address []byte) *StoreEntry {
+	return &StoreEntry{address: address}
 }
 
-func (storeEntry *storeEntry) withKey(key []byte) *storeEntry {
+// WithKey sets the key for a storage assertion
+func (storeEntry *StoreEntry) WithKey(key []byte) *StoreEntry {
 	storeEntry.key = key
 	return storeEntry
 }
 
-func (storeEntry *storeEntry) withValue(value []byte) storeEntry {
+// WithValue sets the value for a storage assertion
+func (storeEntry *StoreEntry) WithValue(value []byte) StoreEntry {
 	storeEntry.value = value
 	return *storeEntry
 }
 
 // Storage verifies if StorageUpdate(s) for the speficied accounts are the same as the provided ones
-func (v *VMOutputVerifier) Storage(returnData ...storeEntry) *VMOutputVerifier {
+func (v *VMOutputVerifier) Storage(returnData ...StoreEntry) *VMOutputVerifier {
 
 	storage := make(map[string]map[string]vmcommon.StorageUpdate)
 
@@ -171,7 +175,7 @@ func (v *VMOutputVerifier) Storage(returnData ...storeEntry) *VMOutputVerifier {
 		accountStorageMap[string(storeEntry.key)] = vmcommon.StorageUpdate{Offset: storeEntry.key, Data: storeEntry.value}
 	}
 
-	for _, outputAccount := range v.vmOutput.OutputAccounts {
+	for _, outputAccount := range v.VmOutput.OutputAccounts {
 		accountStorageMap := storage[string(outputAccount.Address)]
 		require.Equal(v.T, len(accountStorageMap), len(outputAccount.StorageUpdates), "Storage")
 		for key, value := range accountStorageMap {
@@ -184,30 +188,34 @@ func (v *VMOutputVerifier) Storage(returnData ...storeEntry) *VMOutputVerifier {
 	return v
 }
 
-type transferEntry struct {
+// TransferEntry holds the data for an output transfer assertion
+type TransferEntry struct {
 	vmcommon.OutputTransfer
 	address []byte
 }
 
-func createTransferEntry(senderAddress []byte, receiverAddress []byte) *transferEntry {
-	return &transferEntry{
+// CreateTransferEntry creates the data for an output transfer assertion
+func CreateTransferEntry(senderAddress []byte, receiverAddress []byte) *TransferEntry {
+	return &TransferEntry{
 		OutputTransfer: vmcommon.OutputTransfer{SenderAddress: senderAddress},
 		address:        receiverAddress,
 	}
 }
 
-func (transferEntry *transferEntry) withData(data []byte) *transferEntry {
+// WithData create sets the data for an output transfer assertion
+func (transferEntry *TransferEntry) WithData(data []byte) *TransferEntry {
 	transferEntry.Data = data
 	return transferEntry
 }
 
-func (transferEntry *transferEntry) withValue(value *big.Int) transferEntry {
+// WithValue create sets the value for an output transfer assertion
+func (transferEntry *TransferEntry) WithValue(value *big.Int) TransferEntry {
 	transferEntry.Value = value
 	return *transferEntry
 }
 
 // Transfers verifies if OutputTransfer(s) for the speficied accounts are the same as the provided ones
-func (v *VMOutputVerifier) Transfers(transfers ...transferEntry) *VMOutputVerifier {
+func (v *VMOutputVerifier) Transfers(transfers ...TransferEntry) *VMOutputVerifier {
 
 	transfersMap := make(map[string][]vmcommon.OutputTransfer)
 
@@ -220,7 +228,7 @@ func (v *VMOutputVerifier) Transfers(transfers ...transferEntry) *VMOutputVerifi
 		transfersMap[account] = append(accountTransfers, transferEntry.OutputTransfer)
 	}
 
-	for _, outputAccount := range v.vmOutput.OutputAccounts {
+	for _, outputAccount := range v.VmOutput.OutputAccounts {
 		transfersForAccount := transfersMap[string(outputAccount.Address)]
 		require.Equal(v.T, len(transfersForAccount), len(outputAccount.OutputTransfers), "Transfers")
 		for idx := range transfersForAccount {

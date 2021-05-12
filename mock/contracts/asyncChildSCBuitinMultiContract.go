@@ -1,26 +1,27 @@
-package host
+package contracts
 
 import (
 	"math/big"
 
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
+	test "github.com/ElrondNetwork/arwen-wasm-vm/testcommon"
 	"github.com/ElrondNetwork/elrond-go/testscommon/txDataBuilder"
 	"github.com/stretchr/testify/require"
 )
 
 func childFunctionAsyncChildMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(*asyncBuiltInCallTestConfig)
+	testConfig := config.(*AsyncBuiltInCallTestConfig)
 	instanceMock.AddMockMethod("childFunction", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		t := instance.T
 		arguments := host.Runtime().Arguments()
 
-		host.Metering().UseGas(testConfig.gasUsedByChild)
+		host.Metering().UseGas(testConfig.GasUsedByChild)
 
 		destination := arguments[0]
 		function := string(arguments[1])
-		value := big.NewInt(testConfig.transferFromChildToParent).Bytes()
+		value := big.NewInt(testConfig.TransferFromChildToParent).Bytes()
 
 		callData := txDataBuilder.NewBuilder()
 		callData.Func(function)
@@ -33,6 +34,6 @@ func childFunctionAsyncChildMock(instanceMock *mock.InstanceMock, config interfa
 }
 
 func callBackAsyncChildMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(*asyncBuiltInCallTestConfig)
-	instanceMock.AddMockMethod("callBack", simpleWasteGasMockMethod(instanceMock, testConfig.gasUsedByCallback))
+	testConfig := config.(*AsyncBuiltInCallTestConfig)
+	instanceMock.AddMockMethod("callBack", test.SimpleWasteGasMockMethod(instanceMock, testConfig.GasUsedByCallback))
 }

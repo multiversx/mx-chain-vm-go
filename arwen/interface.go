@@ -27,6 +27,7 @@ type CallArgsParser interface {
 
 // VMHost defines the functionality for working with the VM
 type VMHost interface {
+	vmcommon.VMExecutionHandler
 	Crypto() crypto.VMCrypto
 	Blockchain() BlockchainContext
 	Runtime() RuntimeContext
@@ -47,8 +48,15 @@ type VMHost interface {
 	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *AsyncContextInfo, error)
 	GetAPIMethods() *wasmer.Imports
 	GetProtocolBuiltinFunctions() vmcommon.FunctionNames
+	SetProtocolBuiltinFunctions(vmcommon.FunctionNames)
 	IsBuiltinFunctionName(functionName string) bool
 	AreInSameShard(leftAddress []byte, rightAddress []byte) bool
+
+	GetGasScheduleMap() config.GasScheduleMap
+	GetContexts() (BigIntContext, BlockchainContext, MeteringContext, OutputContext, RuntimeContext, StorageContext)
+	SetRuntimeContext(runtime RuntimeContext)
+
+	InitState()
 }
 
 // BlockchainContext defines the functionality needed for interacting with the blockchain context

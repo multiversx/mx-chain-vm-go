@@ -4,6 +4,7 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
@@ -32,8 +33,18 @@ type VMHostStub struct {
 	ExecuteOnDestContextCalled        func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *arwen.AsyncContextInfo, error)
 	GetAPIMethodsCalled               func() *wasmer.Imports
 	GetProtocolBuiltinFunctionsCalled func() vmcommon.FunctionNames
+	SetProtocolBuiltinFunctionsCalled func(vmcommon.FunctionNames)
 	IsBuiltinFunctionNameCalled       func(functionName string) bool
 	AreInSameShardCalled              func(left []byte, right []byte) bool
+
+	RunSmartContractCallCalled   func(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error)
+	RunSmartContractCreateCalled func(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error)
+	GetGasScheduleMapCalled      func() config.GasScheduleMap
+	GasScheduleChangeCalled      func(newGasSchedule config.GasScheduleMap)
+	IsInterfaceNilCalled         func() bool
+
+	SetRuntimeContextCalled func(runtime arwen.RuntimeContext)
+	GetContextsCalled       func() (arwen.BigIntContext, arwen.BlockchainContext, arwen.MeteringContext, arwen.OutputContext, arwen.RuntimeContext, arwen.StorageContext)
 }
 
 // InitState mocked method
@@ -208,10 +219,78 @@ func (vhs *VMHostStub) GetProtocolBuiltinFunctions() vmcommon.FunctionNames {
 	return make(vmcommon.FunctionNames)
 }
 
+// SetProtocolBuiltinFunctions mocked method
+func (vhs *VMHostStub) SetProtocolBuiltinFunctions(functionNames vmcommon.FunctionNames) {
+	if vhs.SetProtocolBuiltinFunctionsCalled != nil {
+		vhs.SetProtocolBuiltinFunctionsCalled(functionNames)
+	}
+}
+
 // IsBuiltinFunctionName mocked method
 func (vhs *VMHostStub) IsBuiltinFunctionName(functionName string) bool {
 	if vhs.IsBuiltinFunctionNameCalled != nil {
 		return vhs.IsBuiltinFunctionNameCalled(functionName)
 	}
 	return false
+}
+
+// GetGasScheduleMap returns the currently stored gas schedule
+func (vhs *VMHostStub) GetGasScheduleMap() config.GasScheduleMap {
+	if vhs.GetGasScheduleMapCalled != nil {
+		return vhs.GetGasScheduleMapCalled()
+	}
+	return nil
+}
+
+// RunSmartContractCall mocked method
+func (vhs *VMHostStub) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
+	if vhs.RunSmartContractCallCalled != nil {
+		return vhs.RunSmartContractCallCalled(input)
+	}
+	return nil, nil
+}
+
+// RunSmartContractCreate mocked method
+func (vhs *VMHostStub) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error) {
+	if vhs.RunSmartContractCreateCalled != nil {
+		return vhs.RunSmartContractCreateCalled(input)
+	}
+	return nil, nil
+}
+
+// GasScheduleChange mocked method
+func (vhs *VMHostStub) GasScheduleChange(newGasSchedule config.GasScheduleMap) {
+	if vhs.GasScheduleChangeCalled != nil {
+		vhs.GasScheduleChangeCalled(newGasSchedule)
+	}
+}
+
+// IsInterfaceNil mocked method
+func (vhs *VMHostStub) IsInterfaceNil() bool {
+	if vhs.IsInterfaceNilCalled != nil {
+		return vhs.IsInterfaceNilCalled()
+	}
+	return false
+}
+
+// GetContexts mocked method
+func (vhs *VMHostStub) GetContexts() (
+	arwen.BigIntContext,
+	arwen.BlockchainContext,
+	arwen.MeteringContext,
+	arwen.OutputContext,
+	arwen.RuntimeContext,
+	arwen.StorageContext,
+) {
+	if vhs.GetContextsCalled != nil {
+		return vhs.GetContextsCalled()
+	}
+	return nil, nil, nil, nil, nil, nil
+}
+
+// SetRuntimeContext mocked method
+func (vhs *VMHostStub) SetRuntimeContext(runtime arwen.RuntimeContext) {
+	if vhs.SetRuntimeContextCalled != nil {
+		vhs.SetRuntimeContextCalled(runtime)
+	}
 }

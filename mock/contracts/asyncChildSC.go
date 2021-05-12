@@ -1,4 +1,4 @@
-package host
+package contracts
 
 import (
 	"errors"
@@ -6,17 +6,19 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
+	test "github.com/ElrondNetwork/arwen-wasm-vm/testcommon"
 	"github.com/stretchr/testify/require"
 )
 
-func transferToThirdPartyAsyncChildMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(*asyncCallTestConfig)
+// TransferToThirdPartyAsyncChildMock is an exposed mock contract method
+func TransferToThirdPartyAsyncChildMock(instanceMock *mock.InstanceMock, config interface{}) {
+	testConfig := config.(*AsyncCallTestConfig)
 	instanceMock.AddMockMethod("transferToThirdParty", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		t := instance.T
 
-		host.Metering().UseGas(testConfig.gasUsedByChild)
+		host.Metering().UseGas(testConfig.GasUsedByChild)
 
 		arguments := host.Runtime().Arguments()
 		outputContext := host.Output()
@@ -40,7 +42,7 @@ func transferToThirdPartyAsyncChildMock(instanceMock *mock.InstanceMock, config 
 		scAddress := host.Runtime().GetSCAddress()
 		valueToTransfer := big.NewInt(0).SetBytes(arguments[0])
 		err = outputContext.Transfer(
-			thirdPartyAddress,
+			test.ThirdPartyAddress,
 			scAddress,
 			0,
 			0,
@@ -50,9 +52,9 @@ func transferToThirdPartyAsyncChildMock(instanceMock *mock.InstanceMock, config 
 		require.Nil(t, err)
 		outputContext.Finish([]byte("thirdparty"))
 
-		valueToTransfer = big.NewInt(testConfig.transferToVault)
+		valueToTransfer = big.NewInt(testConfig.TransferToVault)
 		err = outputContext.Transfer(
-			vaultAddress,
+			test.VaultAddress,
 			scAddress,
 			0,
 			0,
@@ -62,7 +64,7 @@ func transferToThirdPartyAsyncChildMock(instanceMock *mock.InstanceMock, config 
 		require.Nil(t, err)
 		outputContext.Finish([]byte("vault"))
 
-		host.Storage().SetStorage(childKey, childData)
+		host.Storage().SetStorage(test.ChildKey, test.ChildData)
 
 		return instance
 	})

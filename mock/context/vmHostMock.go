@@ -4,6 +4,7 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
@@ -144,7 +145,52 @@ func (host *VMHostMock) GetProtocolBuiltinFunctions() vmcommon.FunctionNames {
 	return make(vmcommon.FunctionNames)
 }
 
+// SetProtocolBuiltinFunctions sets the names of build-in functions, reserved by the protocol
+func (host *VMHostMock) SetProtocolBuiltinFunctions(functionNames vmcommon.FunctionNames) {
+}
+
 // IsBuiltinFunctionName mocked method
 func (host *VMHostMock) IsBuiltinFunctionName(_ string) bool {
 	return host.IsBuiltinFunc
+}
+
+// GetGasScheduleMap mocked method
+func (host *VMHostMock) GetGasScheduleMap() config.GasScheduleMap {
+	return make(config.GasScheduleMap)
+}
+
+// RunSmartContractCall mocked method
+func (host *VMHostMock) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
+	return nil, nil
+}
+
+// RunSmartContractCreate mocked method
+func (host *VMHostMock) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error) {
+	return nil, nil
+}
+
+// GasScheduleChange mocked method
+func (host *VMHostMock) GasScheduleChange(newGasSchedule config.GasScheduleMap) {
+}
+
+// IsInterfaceNil mocked method
+func (host *VMHostMock) IsInterfaceNil() bool {
+	return false
+}
+
+// GetContexts mocked method
+func (host *VMHostMock) GetContexts() (
+	arwen.BigIntContext,
+	arwen.BlockchainContext,
+	arwen.MeteringContext,
+	arwen.OutputContext,
+	arwen.RuntimeContext,
+	arwen.StorageContext,
+) {
+	return host.BigIntContext, host.BlockchainContext, host.MeteringContext, host.OutputContext, host.RuntimeContext, host.StorageContext
+}
+
+// SetRuntimeContext mocked method
+func (host *VMHostMock) SetRuntimeContext(runtime arwen.RuntimeContext) {
+	host.RuntimeContext = runtime
 }

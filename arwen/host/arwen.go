@@ -66,7 +66,7 @@ type vmHost struct {
 func NewArwenVM(
 	blockChainHook vmcommon.BlockchainHook,
 	hostParameters *arwen.VMHostParameters,
-) (*vmHost, error) {
+) (arwen.VMHost, error) {
 
 	cryptoHook := crypto.NewVMCrypto()
 	host := &vmHost{
@@ -299,6 +299,11 @@ func (host *vmHost) GetProtocolBuiltinFunctions() vmcommon.FunctionNames {
 	return host.protocolBuiltinFunctions
 }
 
+// SetProtocolBuiltinFunctions sets the names of build-in functions, reserved by the protocol
+func (host *vmHost) SetProtocolBuiltinFunctions(functionNames vmcommon.FunctionNames) {
+	host.protocolBuiltinFunctions = functionNames
+}
+
 // GasScheduleChange applies a new gas schedule to the host
 func (host *vmHost) GasScheduleChange(newGasSchedule config.GasScheduleMap) {
 	host.mutExecution.Lock()
@@ -417,4 +422,9 @@ func (host *vmHost) AreInSameShard(leftAddress []byte, rightAddress []byte) bool
 // IsInterfaceNil returns true if there is no value under the interface
 func (host *vmHost) IsInterfaceNil() bool {
 	return host == nil
+}
+
+// SetRuntimeContext mocked method
+func (host *vmHost) SetRuntimeContext(runtime arwen.RuntimeContext) {
+	host.runtimeContext = runtime
 }

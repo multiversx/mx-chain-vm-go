@@ -1,19 +1,22 @@
-package host
+package contracts
 
 import (
 	"errors"
 	"math/big"
 
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
+	test "github.com/ElrondNetwork/arwen-wasm-vm/testcommon"
 	"github.com/stretchr/testify/require"
 )
 
-func wasteGasChildMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(directCallGasTestConfig)
-	instanceMock.AddMockMethod("wasteGas", simpleWasteGasMockMethod(instanceMock, testConfig.gasUsedByChild))
+// WasteGasChildMock is an exposed mock contract method
+func WasteGasChildMock(instanceMock *mock.InstanceMock, config interface{}) {
+	testConfig := config.(DirectCallGasTestConfig)
+	instanceMock.AddMockMethod("wasteGas", test.SimpleWasteGasMockMethod(instanceMock, testConfig.GasUsedByChild))
 }
 
-func failChildMock(instanceMock *mock.InstanceMock, config interface{}) {
+// FailChildMock is an exposed mock contract method
+func FailChildMock(instanceMock *mock.InstanceMock, config interface{}) {
 	instanceMock.AddMockMethod("fail", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
@@ -22,13 +25,14 @@ func failChildMock(instanceMock *mock.InstanceMock, config interface{}) {
 	})
 }
 
-func execOnSameCtxParentMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(directCallGasTestConfig)
+// ExecOnSameCtxParentMock is an exposed mock contract method
+func ExecOnSameCtxParentMock(instanceMock *mock.InstanceMock, config interface{}) {
+	testConfig := config.(DirectCallGasTestConfig)
 	instanceMock.AddMockMethod("execOnSameCtx", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		t := instance.T
-		host.Metering().UseGas(testConfig.gasUsedByParent)
+		host.Metering().UseGas(testConfig.GasUsedByParent)
 
 		argsPerCall := 3
 		arguments := host.Runtime().Arguments()
@@ -37,8 +41,8 @@ func execOnSameCtxParentMock(instanceMock *mock.InstanceMock, config interface{}
 			return instance
 		}
 
-		input := DefaultTestContractCallInput()
-		input.GasProvided = testConfig.gasProvidedToChild
+		input := test.DefaultTestContractCallInput()
+		input.GasProvided = testConfig.GasProvidedToChild
 		input.CallerAddr = instance.Address
 
 		for callIndex := 0; callIndex < len(arguments); callIndex += argsPerCall {
@@ -56,13 +60,14 @@ func execOnSameCtxParentMock(instanceMock *mock.InstanceMock, config interface{}
 	})
 }
 
-func execOnDestCtxParentMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(directCallGasTestConfig)
+// ExecOnDestCtxParentMock is an exposed mock contract method
+func ExecOnDestCtxParentMock(instanceMock *mock.InstanceMock, config interface{}) {
+	testConfig := config.(DirectCallGasTestConfig)
 	instanceMock.AddMockMethod("execOnDestCtx", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		t := instance.T
-		host.Metering().UseGas(testConfig.gasUsedByParent)
+		host.Metering().UseGas(testConfig.GasUsedByParent)
 
 		argsPerCall := 3
 		arguments := host.Runtime().Arguments()
@@ -71,8 +76,8 @@ func execOnDestCtxParentMock(instanceMock *mock.InstanceMock, config interface{}
 			return instance
 		}
 
-		input := DefaultTestContractCallInput()
-		input.GasProvided = testConfig.gasProvidedToChild
+		input := test.DefaultTestContractCallInput()
+		input.GasProvided = testConfig.GasProvidedToChild
 		input.CallerAddr = instance.Address
 
 		for callIndex := 0; callIndex < len(arguments); callIndex += argsPerCall {
@@ -90,12 +95,13 @@ func execOnDestCtxParentMock(instanceMock *mock.InstanceMock, config interface{}
 	})
 }
 
-func execOnDestCtxSingleCallParentMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(directCallGasTestConfig)
+// ExecOnDestCtxSingleCallParentMock is an exposed mock contract method
+func ExecOnDestCtxSingleCallParentMock(instanceMock *mock.InstanceMock, config interface{}) {
+	testConfig := config.(DirectCallGasTestConfig)
 	instanceMock.AddMockMethod("execOnDestCtxSingleCall", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
-		host.Metering().UseGas(testConfig.gasUsedByParent)
+		host.Metering().UseGas(testConfig.GasUsedByParent)
 
 		arguments := host.Runtime().Arguments()
 		if len(arguments) != 2 {
@@ -103,8 +109,8 @@ func execOnDestCtxSingleCallParentMock(instanceMock *mock.InstanceMock, config i
 			return instance
 		}
 
-		input := DefaultTestContractCallInput()
-		input.GasProvided = testConfig.gasProvidedToChild
+		input := test.DefaultTestContractCallInput()
+		input.GasProvided = testConfig.GasProvidedToChild
 		input.CallerAddr = instance.Address
 
 		input.RecipientAddr = arguments[0]
@@ -119,7 +125,8 @@ func execOnDestCtxSingleCallParentMock(instanceMock *mock.InstanceMock, config i
 	})
 }
 
-func wasteGasParentMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(directCallGasTestConfig)
-	instanceMock.AddMockMethod("wasteGas", simpleWasteGasMockMethod(instanceMock, testConfig.gasUsedByParent))
+// WasteGasParentMock is an exposed mock contract method
+func WasteGasParentMock(instanceMock *mock.InstanceMock, config interface{}) {
+	testConfig := config.(DirectCallGasTestConfig)
+	instanceMock.AddMockMethod("wasteGas", test.SimpleWasteGasMockMethod(instanceMock, testConfig.GasUsedByParent))
 }

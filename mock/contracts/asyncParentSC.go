@@ -1,4 +1,4 @@
-package host
+package contracts
 
 import (
 	"bytes"
@@ -8,26 +8,28 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
+	test "github.com/ElrondNetwork/arwen-wasm-vm/testcommon"
 	"github.com/ElrondNetwork/elrond-go/testscommon/txDataBuilder"
 	"github.com/stretchr/testify/require"
 )
 
-func performAsyncCallParentMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(*asyncCallTestConfig)
+// PerformAsyncCallParentMock is an exposed mock contract method
+func PerformAsyncCallParentMock(instanceMock *mock.InstanceMock, config interface{}) {
+	testConfig := config.(*AsyncCallTestConfig)
 	instanceMock.AddMockMethod("performAsyncCall", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		t := instance.T
-		host.Metering().UseGas(testConfig.gasUsedByParent)
+		host.Metering().UseGas(testConfig.GasUsedByParent)
 
-		host.Storage().SetStorage(parentKeyA, parentDataA)
-		host.Storage().SetStorage(parentKeyB, parentDataB)
-		host.Output().Finish(parentFinishA)
-		host.Output().Finish(parentFinishB)
+		host.Storage().SetStorage(test.ParentKeyA, test.ParentDataA)
+		host.Storage().SetStorage(test.ParentKeyB, test.ParentDataB)
+		host.Output().Finish(test.ParentFinishA)
+		host.Output().Finish(test.ParentFinishB)
 
-                scAddress := host.Runtime().GetSCAddress()
-                transferValue := big.NewInt(testConfig.transferToThirdParty) 
-		err := host.Output().Transfer(thirdPartyAddress, scAddress, 0, 0, transferValue, []byte("hello"), 0)
+		scAddress := host.Runtime().GetSCAddress()
+		transferValue := big.NewInt(testConfig.TransferToThirdParty)
+		err := host.Output().Transfer(test.ThirdPartyAddress, scAddress, 0, 0, transferValue, []byte("hello"), 0)
 		require.Nil(t, err)
 
 		arguments := host.Runtime().Arguments()
@@ -36,16 +38,16 @@ func performAsyncCallParentMock(instanceMock *mock.InstanceMock, config interfac
 		// funcion to be called on child
 		callData.Func("transferToThirdParty")
 		// value to send to third party
-		callData.Int64(testConfig.transferToThirdParty)
+		callData.Int64(testConfig.TransferToThirdParty)
 		// data for child -> third party tx
 		callData.Str(" there")
 		// behavior param for child
 		callData.Bytes(append(arguments[0]))
 
 		// amount to transfer from parent to child
-		value := big.NewInt(testConfig.transferFromParentToChild).Bytes()
+		value := big.NewInt(testConfig.TransferFromParentToChild).Bytes()
 
-		err = host.Runtime().ExecuteAsyncCall(childAddress, callData.ToBytes(), value)
+		err = host.Runtime().ExecuteAsyncCall(test.ChildAddress, callData.ToBytes(), value)
 		require.Nil(t, err)
 
 		return instance
@@ -53,24 +55,25 @@ func performAsyncCallParentMock(instanceMock *mock.InstanceMock, config interfac
 	})
 }
 
-func callBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(*asyncCallTestConfig)
+// CallBackParentMock is an exposed mock contract method
+func CallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
+	testConfig := config.(*AsyncCallTestConfig)
 	instanceMock.AddMockMethod("callBack", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		t := instance.T
 		arguments := host.Runtime().Arguments()
 
-		host.Metering().UseGas(testConfig.gasUsedByCallback)
+		host.Metering().UseGas(testConfig.GasUsedByCallback)
 
 		if len(arguments) < 2 {
 			host.Runtime().SignalUserError("wrong num of arguments")
 			return instance
 		}
 
-		loadedData := host.Storage().GetStorage(parentKeyB)
+		loadedData := host.Storage().GetStorage(test.ParentKeyB)
 
-		status := bytes.Compare(loadedData, parentDataB)
+		status := bytes.Compare(loadedData, test.ParentDataB)
 		if status != 0 {
 			status = 1
 		}
@@ -132,7 +135,7 @@ func handleTransferToVault(host arwen.VMHost, arguments [][]byte) error {
 	err := error(nil)
 	if mustTransferToVault(arguments) {
 		valueToTransfer := big.NewInt(4)
-		err = host.Output().Transfer(vaultAddress, host.Runtime().GetSCAddress(), 0, 0, valueToTransfer, arguments[1], 0)
+		err = host.Output().Transfer(test.VaultAddress, host.Runtime().GetSCAddress(), 0, 0, valueToTransfer, arguments[1], 0)
 	}
 
 	return err

@@ -1,17 +1,19 @@
-package host
+package contracts
 
 import (
 	"math/big"
 
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
+	test "github.com/ElrondNetwork/arwen-wasm-vm/testcommon"
 )
 
-func execESDTTransferAndCallParentMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(directCallGasTestConfig)
+// ExecESDTTransferAndCallParentMock is an exposed mock contract method
+func ExecESDTTransferAndCallParentMock(instanceMock *mock.InstanceMock, config interface{}) {
+	testConfig := config.(DirectCallGasTestConfig)
 	instanceMock.AddMockMethod("execESDTTransferAndCall", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
-		host.Metering().UseGas(testConfig.gasUsedByParent)
+		host.Metering().UseGas(testConfig.GasUsedByParent)
 
 		arguments := host.Runtime().Arguments()
 		if len(arguments) != 3 {
@@ -19,11 +21,11 @@ func execESDTTransferAndCallParentMock(instanceMock *mock.InstanceMock, config i
 			return instance
 		}
 
-		input := DefaultTestContractCallInput()
+		input := test.DefaultTestContractCallInput()
 		input.CallerAddr = host.Runtime().GetSCAddress()
-		input.GasProvided = testConfig.gasProvidedToChild
+		input.GasProvided = testConfig.GasProvidedToChild
 		input.Arguments = [][]byte{
-			ESDTTestTokenName,
+			test.ESDTTestTokenName,
 			big.NewInt(int64(testConfig.ESDTTokensToTransfer)).Bytes(),
 			arguments[2],
 		}

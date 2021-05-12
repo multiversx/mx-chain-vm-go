@@ -1,22 +1,24 @@
-package host
+package contracts
 
 import (
 	"math/big"
 
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
+	test "github.com/ElrondNetwork/arwen-wasm-vm/testcommon"
 	"github.com/ElrondNetwork/elrond-go/testscommon/txDataBuilder"
 	"github.com/stretchr/testify/require"
 )
 
-func recursiveAsyncCallRecursiveChildMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(*asyncCallBaseTestConfig)
+// RecursiveAsyncCallRecursiveChildMock is an exposed mock contract method
+func RecursiveAsyncCallRecursiveChildMock(instanceMock *mock.InstanceMock, config interface{}) {
+	testConfig := config.(*AsyncCallBaseTestConfig)
 	instanceMock.AddMockMethod("recursiveAsyncCall", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		t := instance.T
 		arguments := host.Runtime().Arguments()
 
-		host.Metering().UseGas(testConfig.gasUsedByChild)
+		host.Metering().UseGas(testConfig.GasUsedByChild)
 
 		recursiveChildCalls := big.NewInt(0).SetBytes(arguments[0]).Uint64()
 		recursiveChildCalls = recursiveChildCalls - 1
@@ -26,7 +28,7 @@ func recursiveAsyncCallRecursiveChildMock(instanceMock *mock.InstanceMock, confi
 
 		destination := host.Runtime().GetSCAddress()
 		function := string("recursiveAsyncCall")
-		value := big.NewInt(testConfig.transferFromParentToChild).Bytes()
+		value := big.NewInt(testConfig.TransferFromParentToChild).Bytes()
 
 		callData := txDataBuilder.NewBuilder()
 		callData.Func(function)
@@ -39,7 +41,8 @@ func recursiveAsyncCallRecursiveChildMock(instanceMock *mock.InstanceMock, confi
 	})
 }
 
-func callBackRecursiveChildMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(*asyncCallBaseTestConfig)
-	instanceMock.AddMockMethod("callBack", simpleWasteGasMockMethod(instanceMock, testConfig.gasUsedByCallback))
+// CallBackRecursiveChildMock is an exposed mock contract method
+func CallBackRecursiveChildMock(instanceMock *mock.InstanceMock, config interface{}) {
+	testConfig := config.(*AsyncCallBaseTestConfig)
+	instanceMock.AddMockMethod("callBack", test.SimpleWasteGasMockMethod(instanceMock, testConfig.GasUsedByCallback))
 }

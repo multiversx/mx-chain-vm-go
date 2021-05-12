@@ -1,15 +1,17 @@
-package host
+package contracts
 
 import (
 	"math/big"
 
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
+	test "github.com/ElrondNetwork/arwen-wasm-vm/testcommon"
 	"github.com/ElrondNetwork/elrond-go/testscommon/txDataBuilder"
 	"github.com/stretchr/testify/require"
 )
 
-func forwardAsyncCallRecursiveParentMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(*asyncCallRecursiveTestConfig)
+// ForwardAsyncCallRecursiveParentMock is an exposed mock contract method
+func ForwardAsyncCallRecursiveParentMock(instanceMock *mock.InstanceMock, config interface{}) {
+	testConfig := config.(*AsyncCallRecursiveTestConfig)
 	instanceMock.AddMockMethod("forwardAsyncCall", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
@@ -17,9 +19,9 @@ func forwardAsyncCallRecursiveParentMock(instanceMock *mock.InstanceMock, config
 		arguments := host.Runtime().Arguments()
 		destination := arguments[0]
 		function := string(arguments[1])
-		value := big.NewInt(testConfig.transferFromParentToChild).Bytes()
+		value := big.NewInt(testConfig.TransferFromParentToChild).Bytes()
 
-		host.Metering().UseGas(testConfig.gasUsedByParent)
+		host.Metering().UseGas(testConfig.GasUsedByParent)
 
 		// only one child call by default
 		recursiveChildCalls := big.NewInt(1)
@@ -38,7 +40,8 @@ func forwardAsyncCallRecursiveParentMock(instanceMock *mock.InstanceMock, config
 	})
 }
 
-func callBackRecursiveParentMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(*asyncCallRecursiveTestConfig)
-	instanceMock.AddMockMethod("callBack", simpleWasteGasMockMethod(instanceMock, testConfig.gasUsedByCallback))
+// CallBackRecursiveParentMock is an exposed mock contract method
+func CallBackRecursiveParentMock(instanceMock *mock.InstanceMock, config interface{}) {
+	testConfig := config.(*AsyncCallRecursiveTestConfig)
+	instanceMock.AddMockMethod("callBack", test.SimpleWasteGasMockMethod(instanceMock, testConfig.GasUsedByCallback))
 }
