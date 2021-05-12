@@ -17,8 +17,8 @@ type JSONCheckBytes struct {
 	Unspecified bool
 }
 
-// JSONCheckBytesEmpty yields JSONCheckBytes that check that value is empty.
-func JSONCheckBytesEmpty() JSONCheckBytes {
+// JSONCheckBytesUnspecified yields JSONCheckBytes that check that value is empty.
+func JSONCheckBytesUnspecified() JSONCheckBytes {
 	return JSONCheckBytes{
 		Value:       []byte{},
 		IsStar:      false,

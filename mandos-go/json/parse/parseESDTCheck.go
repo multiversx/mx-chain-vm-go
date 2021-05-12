@@ -46,7 +46,15 @@ func (p *Parser) processCheckESDTDataMap(tokenName mj.JSONBytesFromString, esdtD
 		TokenIdentifier: tokenName,
 	}
 	// var err error
-	firstInstance := &mj.CheckESDTInstance{}
+	firstInstance := &mj.CheckESDTInstance{
+		Nonce:      mj.JSONCheckUint64Unspecified(),
+		Balance:    mj.JSONCheckBigIntUnspecified(),
+		Creator:    mj.JSONCheckBytesUnspecified(),
+		Royalties:  mj.JSONCheckUint64Unspecified(),
+		Hash:       mj.JSONCheckBytesUnspecified(),
+		Uri:        mj.JSONCheckBytesUnspecified(),
+		Attributes: mj.JSONCheckBytesUnspecified(),
+	}
 	firstInstanceLoaded := false
 	var explicitInstances []*mj.CheckESDTInstance
 
@@ -114,8 +122,11 @@ func (p *Parser) tryProcessCheckESDTInstanceField(kvp *oj.OJsonKeyValuePair, tar
 		}
 	case "royalties":
 		targetInstance.Royalties, err = p.processCheckUint64(kvp.Value)
-		if err != nil || targetInstance.Royalties.Value > 10000 {
+		if err != nil {
 			return false, fmt.Errorf("invalid ESDT NFT royalties: %w", err)
+		}
+		if targetInstance.Royalties.Value > 10000 {
+			return false, errors.New("invalid ESDT NFT royalties: value exceeds maximum allowed 10000")
 		}
 	case "hash":
 		targetInstance.Hash, err = p.parseCheckBytes(kvp.Value)
@@ -150,7 +161,7 @@ func (p *Parser) processCheckESDTInstances(esdtInstancesRaw oj.OJsonObject) ([]*
 			return nil, errors.New("JSON map expected as esdt instances list item")
 		}
 
-		instance := &mj.CheckESDTInstance{}
+		instance := mj.NewCheckESDTInstance()
 
 		for _, kvp := range instanceAsMap.OrderedKV {
 			instanceFieldLoaded, err := p.tryProcessCheckESDTInstanceField(kvp, instance)

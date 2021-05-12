@@ -137,7 +137,7 @@ func (ae *ArwenTestExecutor) checkAccountStorage(expectedAcct *mj.CheckAccount, 
 				want = mj.JSONCheckBytesStar()
 			} else {
 				// otherwise, by default, any unexpected storage key leads to a test failure
-				want = mj.JSONCheckBytesEmpty()
+				want = mj.JSONCheckBytesUnspecified()
 			}
 		}
 		have := matchingAcct.StorageValue(k)
@@ -198,13 +198,13 @@ func (ae *ArwenTestExecutor) checkAccountESDT(expectedAcct *mj.CheckAccount, mat
 				Roles:           nil,
 			}
 		} else {
-			errors = append(errors, checkTokenState(accountAddress, tokenName, expectedToken, accountToken)...)
+			errors = append(errors, ae.checkTokenState(accountAddress, tokenName, expectedToken, accountToken)...)
 		}
 	}
 
 	errorString := makeErrorString(errors)
 	if len(errorString) > 0 {
-		return fmt.Errorf("mismatch for account %s: %s", accountAddress, errorString)
+		return fmt.Errorf("mismatch for account \"%s\":%s", accountAddress, errorString)
 	}
 
 	return nil
@@ -220,7 +220,7 @@ func getExpectedTokens(expectedAcct *mj.CheckAccount) map[string]*mj.CheckESDTDa
 	return expectedTokens
 }
 
-func checkTokenState(
+func (ae *ArwenTestExecutor) checkTokenState(
 	accountAddress string,
 	tokenName string,
 	expectedToken *mj.CheckESDTData,
@@ -228,7 +228,7 @@ func checkTokenState(
 
 	var errors []error
 
-	errors = append(errors, checkTokenInstances(accountAddress, tokenName, expectedToken, accountToken)...)
+	errors = append(errors, ae.checkTokenInstances(accountAddress, tokenName, expectedToken, accountToken)...)
 
 	if !expectedToken.LastNonce.Check(accountToken.LastNonce) {
 		errors = append(errors, fmt.Errorf("bad account ESDT last nonce. Account: %s. Token: %s. Want: \"%s\". Have: %d",
@@ -243,7 +243,7 @@ func checkTokenState(
 	return errors
 }
 
-func checkTokenInstances(
+func (ae *ArwenTestExecutor) checkTokenInstances(
 	accountAddress string,
 	tokenName string,
 	expectedToken *mj.CheckESDTData,
@@ -284,56 +284,77 @@ func checkTokenInstances(
 			}
 		} else {
 			if !expectedInstance.Balance.Check(accountInstance.Value) {
-				errors = append(errors, fmt.Errorf("bad ESDT balance. Account: %s. Token: %s. Nonce: %d. Want: %s. Have: %d",
-					accountAddress,
+				errors = append(errors, fmt.Errorf(
+					"for token: %s, nonce: %d: Bad balance. Want: \"%s\". Have: \"%d\"",
 					tokenName,
 					nonce,
 					expectedInstance.Balance.Original,
 					accountInstance.Value))
 			}
-			if !expectedInstance.Creator.Check(accountInstance.TokenMetaData.Creator) {
-				errors = append(errors, fmt.Errorf("bad ESDT NFT Creator. Account: %s. Token: %s. Nonce: %d. Want: %s. Have: %d",
-					accountAddress,
+			if !expectedInstance.Creator.IsUnspecified() &&
+				!expectedInstance.Creator.Check(accountInstance.TokenMetaData.Creator) {
+				errors = append(errors, fmt.Errorf(
+					"for token: %s, nonce: %d: Bad creator. Want: %s. Have: \"%s\"",
 					tokenName,
 					nonce,
-					expectedInstance.Creator.Original,
-					accountInstance.TokenMetaData.Creator))
+					oj.JSONString(expectedInstance.Creator.Original),
+					ae.exprReconstructor.Reconstruct(
+						accountInstance.TokenMetaData.Creator,
+						er.AddressHint)))
 			}
-			if !expectedInstance.Royalties.Check(uint64(accountInstance.TokenMetaData.Royalties)) {
-				errors = append(errors, fmt.Errorf("bad ESDT NFT Royalties. Account: %s. Token: %s. Nonce: %d. Want: %s. Have: %d",
-					accountAddress,
+			if !expectedInstance.Royalties.IsUnspecified() &&
+				!expectedInstance.Royalties.Check(uint64(accountInstance.TokenMetaData.Royalties)) {
+				errors = append(errors, fmt.Errorf(
+					"for token: %s, nonce: %d: Bad royalties. Want: \"%s\". Have: \"%s\"",
 					tokenName,
 					nonce,
 					expectedInstance.Royalties.Original,
-					accountInstance.TokenMetaData.Royalties))
+					ae.exprReconstructor.ReconstructFromUint64(
+						uint64(accountInstance.TokenMetaData.Royalties))))
 			}
-			if !expectedInstance.Hash.Check(accountInstance.TokenMetaData.Hash) {
-				errors = append(errors, fmt.Errorf("bad ESDT NFT Hash. Account: %s. Token: %s. Nonce: %d. Want: %s. Have: %d",
-					accountAddress,
+			if !expectedInstance.Hash.IsUnspecified() &&
+				!expectedInstance.Hash.Check(accountInstance.TokenMetaData.Hash) {
+				errors = append(errors, fmt.Errorf(
+					"for token: %s, nonce: %d: Bad hash. Want: %s. Have: %s",
 					tokenName,
 					nonce,
-					expectedInstance.Hash.Original,
-					accountInstance.TokenMetaData.Hash))
+					oj.JSONString(expectedInstance.Hash.Original),
+					ae.exprReconstructor.Reconstruct(
+						accountInstance.TokenMetaData.Hash,
+						er.NoHint)))
 			}
-			// Only one URI supported, so this is fine (for now)
-			if len(accountInstance.TokenMetaData.URIs) > 0 && !expectedInstance.Uri.Check(accountInstance.TokenMetaData.URIs[0]) {
-				errors = append(errors, fmt.Errorf("bad ESDT NFT Uri. Account: %s. Token: %s. Nonce: %d. Want: %s. Have: %d",
-					accountAddress,
+			if len(accountInstance.TokenMetaData.URIs) > 1 {
+				errors = append(errors, fmt.Errorf(
+					"for token: %s, nonce: %d: More than one URI currently not supported",
+					tokenName,
+					nonce))
+			}
+			var actualUri []byte
+			if len(accountInstance.TokenMetaData.URIs) == 1 {
+				actualUri = accountInstance.TokenMetaData.URIs[0]
+			}
+			if !expectedInstance.Uri.IsUnspecified() &&
+				!expectedInstance.Uri.Check(actualUri) {
+				errors = append(errors, fmt.Errorf(
+					"for token: %s, nonce: %d: Bad URI. Want: %s. Have: \"%s\"",
 					tokenName,
 					nonce,
-					expectedInstance.Uri.Original,
-					accountInstance.TokenMetaData.URIs[0]))
+					oj.JSONString(expectedInstance.Uri.Original),
+					ae.exprReconstructor.Reconstruct(
+						actualUri,
+						er.StrHint)))
 			}
-			if !expectedInstance.Attributes.Check(accountInstance.TokenMetaData.Attributes) {
-				errors = append(errors, fmt.Errorf("bad ESDT NFT attributes. Account: %s. Token: %s. Nonce: %d. Want: %s. Have: %d",
-					accountAddress,
+			if !expectedInstance.Attributes.IsUnspecified() &&
+				!expectedInstance.Attributes.Check(accountInstance.TokenMetaData.Attributes) {
+				errors = append(errors, fmt.Errorf(
+					"for token: %s, nonce: %d: Bad attributes. Want: %s. Have: \"%s\"",
 					tokenName,
 					nonce,
-					expectedInstance.Attributes.Original,
-					accountInstance.TokenMetaData.Attributes))
+					oj.JSONString(expectedInstance.Attributes.Original),
+					ae.exprReconstructor.Reconstruct(
+						accountInstance.TokenMetaData.Attributes,
+						er.StrHint)))
 			}
-
-			// TODO: Check Properties
 		}
 	}
 
@@ -380,11 +401,8 @@ func checkTokenRoles(
 
 func makeErrorString(errors []error) string {
 	errorString := ""
-	for i, err := range errors {
-		errorString += err.Error()
-		if i < len(errors)-1 {
-			errorString += "\n"
-		}
+	for _, err := range errors {
+		errorString += "\n  " + err.Error()
 	}
 	return errorString
 }
