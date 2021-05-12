@@ -42,7 +42,7 @@ func main() {
 	}
 
 	// init
-	arwenmandosPath := filepath.Join(exeDir, "../arwenmandos")
+	arwenmandosPath := filepath.Join(exeDir, "../../arwenmandos")
 	executor, err := am.NewArwenTestExecutor(arwenmandosPath)
 	if err != nil {
 		panic("Could not instantiate Arwen VM")

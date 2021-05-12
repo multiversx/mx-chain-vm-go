@@ -14,7 +14,7 @@ func (p *Parser) parseAccountAddress(addrRaw string) (mj.JSONBytesFromString, er
 	}
 	addrBytes, err := p.ExprInterpreter.InterpretString(addrRaw)
 	if err == nil && len(addrBytes) != 32 {
-		return mj.JSONBytesFromString{}, errors.New("account addressis not 32 bytes in length")
+		return mj.JSONBytesFromString{}, errors.New("account address is not 32 bytes in length")
 	}
 	return mj.NewJSONBytesFromString(addrBytes, addrRaw), err
 }
