@@ -290,7 +290,7 @@ func checkTokenInstances(
 					expectedInstance.Royalties.Original,
 					accountInstance.TokenMetaData.Royalties))
 			}
-			if !expectedInstance.Hash.Check(accountInstance.TokenMetaData.Hash) {
+			if bytes.Compare(accountInstance.TokenMetaData.Hash, bytes.Repeat([]byte{0}, 32)) != 0 && !expectedInstance.Hash.Check(accountInstance.TokenMetaData.Hash) {
 				errors = append(errors, fmt.Errorf("bad ESDT NFT Hash. Account: %s. Token: %s. Nonce: %d. Want: %s. Have: %d",
 					accountAddress,
 					tokenName,

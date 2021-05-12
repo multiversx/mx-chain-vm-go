@@ -86,6 +86,52 @@
                     "code": ""
                 }
             }
+        },
+        {
+            "step": "setState",
+            "accounts": {
+                "address:the-address": {
+                    "nonce": "5",
+                    "balance": "150",
+                    "esdt": {
+                        "str:NFT-123456": {
+                            "instances": [
+                                {
+                                    "nonce": "1",
+                                    "balance": "1",
+                                    "creator": "address:the-address"
+                                }
+                            ]
+                        }
+                    },
+                    "username": "str:theusername.elrond",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "address:the-address": {
+                    "nonce": "5",
+                    "balance": "150",
+                    "esdt": {
+                        "str:NFT-123456": {
+                            "instances": [
+                                {
+                                    "nonce": "1",
+                                    "balance": "1",
+                                    "creator": "address:the-address"
+                                }
+                            ]
+                        }
+                    },
+                    "username": "str:theusername.elrond",
+                    "storage": {},
+                    "code": ""
+                }
+            }
         }
     ]
 }
