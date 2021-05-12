@@ -1,23 +1,48 @@
 package mandosjsonmodel
 
-// ESDTData models an account holding an ESDT token or a transaction sending and ESDT token
-type ESDTData struct {
+// ESDTTransfer models the transfer of tokens in a tx
+type ESDTTxData struct {
 	TokenIdentifier JSONBytesFromString
 	Nonce           JSONUint64
 	Value           JSONBigInt
+}
+
+// ESDTInstance models an instance of an NFT/SFT, with its own nonce
+type ESDTInstance struct {
+	Nonce      JSONUint64
+	Balance    JSONBigInt
+	Creator    JSONBytesFromString
+	Royalties  JSONUint64
+	Hash       JSONBytesFromString
+	Uri        JSONBytesFromTree
+	Attributes JSONBytesFromString
+}
+
+// ESDTData models an account holding an ESDT token
+type ESDTData struct {
+	TokenIdentifier JSONBytesFromString
+	Instances       []*ESDTInstance
+	LastNonce       JSONUint64
+	Roles           []string
 	Frozen          JSONUint64
+}
+
+// CheckESDTInstance checks an instance of an NFT/SFT, with its own nonce
+type CheckESDTInstance struct {
+	Nonce      JSONCheckUint64
+	Balance    JSONCheckBigInt
+	Creator    JSONCheckBytes
+	Royalties  JSONCheckUint64
+	Hash       JSONCheckBytes
+	Uri        JSONCheckBytes
+	Attributes JSONCheckBytes
 }
 
 // CheckESDTData checks the ESDT tokens held by an account
 type CheckESDTData struct {
 	TokenIdentifier JSONBytesFromString
-	Nonce           JSONCheckUint64
-	Value           JSONCheckBigInt
-	Frozen          JSONCheckUint64
-}
-
-// ESDTRoles specifies token role initializations
-type ESDTRoles struct {
-	TokenIdentifier JSONBytesFromString
+	Instances       []*CheckESDTInstance
+	LastNonce       JSONCheckUint64
 	Roles           []string
+	Frozen          JSONCheckUint64
 }

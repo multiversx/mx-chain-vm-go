@@ -63,7 +63,9 @@
                         "identifier": "str:accept_funds",
                         "topics": [
                             "str:REC-TOKEN",
-                            "1"
+                            "str:FungibleESDT",
+                            "1",
+                            "0"
                         ],
                         "data": ""
                     },
@@ -92,7 +94,9 @@
                         "identifier": "str:accept_funds",
                         "topics": [
                             "str:REC-TOKEN",
-                            "1"
+                            "str:FungibleESDT",
+                            "1",
+                            "0"
                         ],
                         "data": ""
                     },

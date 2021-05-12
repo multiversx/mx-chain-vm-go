@@ -62,7 +62,7 @@ type Transaction struct {
 	Type      TransactionType
 	Nonce     JSONUint64
 	Value     JSONBigInt
-	ESDTValue *ESDTData
+	ESDTValue *ESDTTxData
 	From      JSONBytesFromString
 	To        JSONBytesFromString
 	Function  string

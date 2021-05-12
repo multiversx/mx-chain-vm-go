@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
+	"math/big"
 
 	er "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/expression/reconstructor"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
 	oj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/orderedjson"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	"github.com/ElrondNetwork/elrond-go/data/esdt"
-	"github.com/ElrondNetwork/elrond-go/process/smartContract/builtInFunctions"
 )
 
 // ExecuteCheckStateStep executes a CheckStateStep defined by the current scenario.
@@ -147,22 +147,44 @@ func (ae *ArwenTestExecutor) checkAccountESDT(expectedAcct *mj.CheckAccount, mat
 
 	accountAddress := expectedAcct.Address.Original
 	expectedTokens := getExpectedTokens(expectedAcct)
-	accountTokens, err := matchingAcct.GetAllTokenData()
+	accountTokens, err := matchingAcct.GetFullMockESDTData()
 	if err != nil {
 		return err
 	}
 
-	err = detectUnexpectedTokens(expectedTokens, accountTokens)
-	if err != nil {
-		return fmt.Errorf("mismatch for account %s: %w", accountAddress, err)
+	allTokenNames := make(map[string]bool)
+	for tokenName := range expectedTokens {
+		allTokenNames[tokenName] = true
+	}
+	for tokenName := range accountTokens {
+		allTokenNames[tokenName] = true
+	}
+	var errors []error
+	for tokenName := range allTokenNames {
+		expectedToken := expectedTokens[tokenName]
+		accountToken := accountTokens[tokenName]
+		if expectedToken == nil {
+			expectedToken = &mj.CheckESDTData{
+				TokenIdentifier: mj.JSONBytesFromString{
+					Value:    []byte(tokenName),
+					Original: ae.exprReconstructor.Reconstruct([]byte(tokenName), er.StrHint),
+				},
+				Instances: nil,
+				LastNonce: mj.JSONCheckUint64{Value: 0, Original: ""},
+				Roles:     nil,
+			}
+		} else if accountToken == nil {
+			accountToken = &worldmock.MockESDTData{
+				TokenIdentifier: []byte(tokenName),
+				Instances:       nil,
+				LastNonce:       0,
+				Roles:           nil,
+			}
+		} else {
+			errors = append(errors, checkTokenState(accountAddress, tokenName, expectedToken, accountToken)...)
+		}
 	}
 
-	err = detectMissingTokens(expectedTokens, accountTokens)
-	if err != nil {
-		return fmt.Errorf("mismatch for account %s: %w", accountAddress, err)
-	}
-
-	errors := checkTokensState(expectedTokens, accountTokens)
 	errorString := makeErrorString(errors)
 	if len(errorString) > 0 {
 		return fmt.Errorf("mismatch for account %s: %s", accountAddress, errorString)
@@ -171,86 +193,172 @@ func (ae *ArwenTestExecutor) checkAccountESDT(expectedAcct *mj.CheckAccount, mat
 	return nil
 }
 
-func checkTokensState(
-	expectedTokens map[string]*mj.CheckESDTData,
-	accountTokens map[string]*esdt.ESDigitalToken,
-) []error {
-	errors := make([]error, 0)
-	for tokenName := range accountTokens {
-		expectedTokenData := expectedTokens[tokenName]
-		accountTokenData := accountTokens[tokenName]
-		err := checkTokenState(tokenName, expectedTokenData, accountTokenData)
-		if err != nil {
-			errors = append(errors, err)
+func getExpectedTokens(expectedAcct *mj.CheckAccount) map[string]*mj.CheckESDTData {
+	expectedTokens := make(map[string]*mj.CheckESDTData)
+	for _, expectedTokenData := range expectedAcct.CheckESDTData {
+		tokenName := expectedTokenData.TokenIdentifier.Value
+		expectedTokens[string(tokenName)] = expectedTokenData
+	}
+
+	return expectedTokens
+}
+
+func checkTokenState(
+	accountAddress string,
+	tokenName string,
+	expectedToken *mj.CheckESDTData,
+	accountToken *worldmock.MockESDTData) []error {
+
+	var errors []error
+
+	errors = append(errors, checkTokenInstances(accountAddress, tokenName, expectedToken, accountToken)...)
+
+	if !expectedToken.LastNonce.Check(accountToken.LastNonce) {
+		errors = append(errors, fmt.Errorf("bad account ESDT last nonce. Account: %s. Token: %s. Want: \"%s\". Have: %d",
+			accountAddress,
+			tokenName,
+			expectedToken.LastNonce.Original,
+			accountToken.LastNonce))
+	}
+
+	errors = append(errors, checkTokenRoles(accountAddress, tokenName, expectedToken, accountToken)...)
+
+	return errors
+}
+
+func checkTokenInstances(
+	accountAddress string,
+	tokenName string,
+	expectedToken *mj.CheckESDTData,
+	accountToken *worldmock.MockESDTData) []error {
+
+	var errors []error
+
+	allNonces := make(map[uint64]bool)
+	expectedInstances := make(map[uint64]*mj.CheckESDTInstance)
+	accountInstances := make(map[uint64]*esdt.ESDigitalToken)
+	for _, expectedInstance := range expectedToken.Instances {
+		nonce := expectedInstance.Nonce.Value
+		allNonces[nonce] = true
+		expectedInstances[nonce] = expectedInstance
+	}
+	for _, accountInstance := range accountToken.Instances {
+		nonce := accountInstance.TokenMetaData.Nonce
+		allNonces[nonce] = true
+		accountInstances[nonce] = accountInstance
+	}
+
+	for nonce := range allNonces {
+		expectedInstance := expectedInstances[nonce]
+		accountInstance := accountInstances[nonce]
+
+		if expectedInstance == nil {
+			expectedInstance = &mj.CheckESDTInstance{
+				Nonce:   mj.JSONCheckUint64{Value: nonce, Original: ""},
+				Balance: mj.JSONCheckBigInt{Value: big.NewInt(0), Original: ""},
+			}
+		} else if accountInstance == nil {
+			accountInstance = &esdt.ESDigitalToken{
+				Value: big.NewInt(0),
+				TokenMetaData: &esdt.MetaData{
+					Name:  []byte(tokenName),
+					Nonce: nonce,
+				},
+			}
+		} else {
+			if !expectedInstance.Balance.Check(accountInstance.Value) {
+				errors = append(errors, fmt.Errorf("bad ESDT balance. Account: %s. Token: %s. Nonce: %d. Want: %s. Have: %d",
+					accountAddress,
+					tokenName,
+					nonce,
+					expectedInstance.Balance.Original,
+					accountInstance.Value))
+			}
+			if !expectedInstance.Creator.Check(accountInstance.TokenMetaData.Creator) {
+				errors = append(errors, fmt.Errorf("bad ESDT NFT Creator. Account: %s. Token: %s. Nonce: %d. Want: %s. Have: %d",
+					accountAddress,
+					tokenName,
+					nonce,
+					expectedInstance.Creator.Original,
+					accountInstance.TokenMetaData.Creator))
+			}
+			if !expectedInstance.Royalties.Check(uint64(accountInstance.TokenMetaData.Royalties)) {
+				errors = append(errors, fmt.Errorf("bad ESDT NFT Royalties. Account: %s. Token: %s. Nonce: %d. Want: %s. Have: %d",
+					accountAddress,
+					tokenName,
+					nonce,
+					expectedInstance.Royalties.Original,
+					accountInstance.TokenMetaData.Royalties))
+			}
+			if !expectedInstance.Hash.Check(accountInstance.TokenMetaData.Hash) {
+				errors = append(errors, fmt.Errorf("bad ESDT NFT Hash. Account: %s. Token: %s. Nonce: %d. Want: %s. Have: %d",
+					accountAddress,
+					tokenName,
+					nonce,
+					expectedInstance.Hash.Original,
+					accountInstance.TokenMetaData.Hash))
+			}
+			// Only one URI supported, so this is fine (for now)
+			if len(accountInstance.TokenMetaData.URIs) > 0 && !expectedInstance.Uri.Check(accountInstance.TokenMetaData.URIs[0]) {
+				errors = append(errors, fmt.Errorf("bad ESDT NFT Uri. Account: %s. Token: %s. Nonce: %d. Want: %s. Have: %d",
+					accountAddress,
+					tokenName,
+					nonce,
+					expectedInstance.Uri.Original,
+					accountInstance.TokenMetaData.URIs[0]))
+			}
+			if !expectedInstance.Attributes.Check(accountInstance.TokenMetaData.Attributes) {
+				errors = append(errors, fmt.Errorf("bad ESDT NFT attributes. Account: %s. Token: %s. Nonce: %d. Want: %s. Have: %d",
+					accountAddress,
+					tokenName,
+					nonce,
+					expectedInstance.Attributes.Original,
+					accountInstance.TokenMetaData.Attributes))
+			}
+
+			// TODO: Check Properties
 		}
 	}
 
 	return errors
 }
 
-func getExpectedTokens(expectedAcct *mj.CheckAccount) map[string]*mj.CheckESDTData {
-	expectedTokens := make(map[string]*mj.CheckESDTData)
-	for _, expectedTokenData := range expectedAcct.CheckESDTData {
-		tokenName := expectedTokenData.TokenIdentifier.Value
-		tokenNonce := expectedTokenData.Nonce.Value
-		tokenKeyStr := string(worldmock.MakeTokenKey(tokenName, tokenNonce))
+func checkTokenRoles(
+	accountAddress string,
+	tokenName string,
+	expectedToken *mj.CheckESDTData,
+	accountToken *worldmock.MockESDTData) []error {
 
-		expectedTokens[tokenKeyStr] = expectedTokenData
+	var errors []error
+
+	allRoles := make(map[string]bool)
+	expectedRoles := make(map[string]bool)
+	accountRoles := make(map[string]bool)
+
+	for _, expectedRole := range expectedToken.Roles {
+		allRoles[expectedRole] = true
+		expectedRoles[expectedRole] = true
 	}
-
-	return expectedTokens
-}
-
-func detectUnexpectedTokens(
-	expectedTokens map[string]*mj.CheckESDTData,
-	accountTokens map[string]*esdt.ESDigitalToken,
-) error {
-	for tokenName, accountTokenData := range accountTokens {
-		_, isExpected := expectedTokens[tokenName]
-		if !isExpected && accountTokenData.Value.Sign() > 0 {
-			return fmt.Errorf("unexpected ESDT token `%s` found on the account", tokenName)
+	for _, accountRole := range accountToken.Roles {
+		allRoles[string(accountRole)] = true
+		accountRoles[string(accountRole)] = true
+	}
+	for role := range allRoles {
+		if !expectedRoles[role] {
+			errors = append(errors, fmt.Errorf("unexpected ESDT role. Account: %s. Token: %s. Role: %s",
+				accountAddress,
+				tokenName,
+				role))
+		}
+		if !accountRoles[role] {
+			errors = append(errors, fmt.Errorf("missing ESDT role. Account: %s. Token: %s. Role: %s",
+				accountAddress,
+				tokenName,
+				role))
 		}
 	}
 
-	return nil
-}
-
-func detectMissingTokens(
-	expectedTokens map[string]*mj.CheckESDTData,
-	accountTokens map[string]*esdt.ESDigitalToken,
-) error {
-	for tokenName, expectedTokenData := range expectedTokens {
-		_, isFound := accountTokens[tokenName]
-		if !isFound && expectedTokenData.Value.Value.Sign() > 0 {
-			return fmt.Errorf("missing ESDT token %ss", tokenName)
-		}
-	}
-
-	return nil
-}
-
-func checkTokenState(tokenName string, expectedTokenData *mj.CheckESDTData, accountTokenData *esdt.ESDigitalToken) error {
-	if expectedTokenData == nil {
-		if accountTokenData.Value.Sign() != 0 {
-			return fmt.Errorf("bad ESDT balance. Token %s: Want: %d. Have: %d",
-				tokenName, 0, accountTokenData.Value)
-		}
-
-		return nil
-	}
-
-	if !expectedTokenData.Value.Check(accountTokenData.Value) {
-		return fmt.Errorf("bad ESDT balance. Token %s: Want: %d. Have: %d",
-			tokenName, expectedTokenData.Value.Value, accountTokenData.Value)
-	}
-
-	metadataFromBytes := builtInFunctions.ESDTUserMetadataFromBytes(accountTokenData.Properties)
-	if !expectedTokenData.Frozen.CheckBool(metadataFromBytes.Frozen) {
-		return fmt.Errorf("bad ESDT frozen flag. Token %s: Want: %t. Have: %t",
-			tokenName, expectedTokenData.Frozen.Value > 0, metadataFromBytes.Frozen)
-	}
-
-	return nil
+	return errors
 }
 
 func makeErrorString(errors []error) string {

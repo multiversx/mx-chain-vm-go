@@ -60,7 +60,9 @@
                         "identifier": "str:accept_funds",
                         "topics": [
                             "str:EGLD",
-                            "1"
+                            "str:FungibleESDT",
+                            "1",
+                            "0"
                         ],
                         "data": ""
                     },

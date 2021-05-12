@@ -98,11 +98,11 @@ func (ae *ArwenTestExecutor) SetMandosGasSchedule(newGasSchedule mj.GasSchedule)
 	if ae.mandosGasScheduleLoaded {
 		return nil
 	}
-	ae.mandosGasScheduleLoaded = true
 	gasSchedule, err := ae.gasScheduleMapFromMandos(newGasSchedule)
 	if err != nil {
 		return err
 	}
+	ae.mandosGasScheduleLoaded = true
 	ae.vm.GasScheduleChange(gasSchedule)
 	return nil
 }

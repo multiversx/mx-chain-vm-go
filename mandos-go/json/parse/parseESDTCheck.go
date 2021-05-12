@@ -8,47 +8,31 @@ import (
 	oj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/orderedjson"
 )
 
-func (p *Parser) processAppendCheckESDTData(
-	tokenName []byte,
-	esdtDataRaw oj.OJsonObject,
-	output []*mj.CheckESDTData) ([]*mj.CheckESDTData, error) {
-
-	var err error
+func (p *Parser) processCheckESDTData(
+	tokenName mj.JSONBytesFromString,
+	esdtDataRaw oj.OJsonObject) (*mj.CheckESDTData, error) {
 
 	switch data := esdtDataRaw.(type) {
 	case *oj.OJsonString:
 		// simple string representing balance "400,000,000,000"
-		esdtData := mj.CheckESDTData{}
-		esdtData.TokenIdentifier = mj.NewJSONBytesFromString(tokenName, string(tokenName))
-		esdtData.Value, err = p.processCheckBigInt(esdtDataRaw, bigIntUnsignedBytes)
-		if err != nil {
-			return output, fmt.Errorf("invalid ESDT balance: %w", err)
+		esdtData := mj.CheckESDTData{
+			TokenIdentifier: tokenName,
 		}
-
-		output = append(output, &esdtData)
-		return output, nil
+		balance, err := p.processCheckBigInt(esdtDataRaw, bigIntUnsignedBytes)
+		if err != nil {
+			return nil, fmt.Errorf("invalid ESDT balance: %w", err)
+		}
+		esdtData.Instances = []*mj.CheckESDTInstance{
+			{
+				Nonce:   mj.JSONCheckUint64{Value: 0, Original: ""},
+				Balance: balance,
+			},
+		}
+		return &esdtData, nil
 	case *oj.OJsonMap:
-		esdtData, err := p.processCheckESDTDataMap(tokenName, data)
-		if err != nil {
-			return output, err
-		}
-		output = append(output, esdtData)
-		return output, nil
-	case *oj.OJsonList:
-		for _, item := range data.AsList() {
-			itemAsMap, isMap := item.(*oj.OJsonMap)
-			if !isMap {
-				return nil, errors.New("JSON map expected in ESDT list")
-			}
-			esdtData, err := p.processCheckESDTDataMap(tokenName, itemAsMap)
-			if err != nil {
-				return output, err
-			}
-			output = append(output, esdtData)
-		}
-		return output, nil
+		return p.processCheckESDTDataMap(tokenName, data)
 	default:
-		return output, errors.New("invalid JSON object for ESDT")
+		return nil, errors.New("invalid JSON object for ESDT")
 	}
 }
 
@@ -57,38 +41,130 @@ func (p *Parser) processAppendCheckESDTData(
 // 	"balance": "400,000,000,000",
 // 	"frozen": "true"
 // }
-func (p *Parser) processCheckESDTDataMap(tokenNameKey []byte, esdtDataMap *oj.OJsonMap) (*mj.CheckESDTData, error) {
+func (p *Parser) processCheckESDTDataMap(tokenName mj.JSONBytesFromString, esdtDataMap *oj.OJsonMap) (*mj.CheckESDTData, error) {
 	esdtData := mj.CheckESDTData{
-		TokenIdentifier: mj.NewJSONBytesFromString(tokenNameKey, ""),
+		TokenIdentifier: tokenName,
 	}
-	var err error
+	// var err error
+	firstInstance := &mj.CheckESDTInstance{}
+	firstInstanceLoaded := false
+	var explicitInstances []*mj.CheckESDTInstance
 
 	for _, kvp := range esdtDataMap.OrderedKV {
-		switch kvp.Key {
-		case "tokenIdentifier":
-			esdtData.TokenIdentifier, err = p.processStringAsByteArray(kvp.Value)
-			if err != nil {
-				return nil, fmt.Errorf("invalid ESDT token name: %w", err)
+		// it is allowed to load the instance directly, fields set to the first instance
+		instanceFieldLoaded, err := p.tryProcessCheckESDTInstanceField(kvp, firstInstance)
+		if err != nil {
+			return nil, fmt.Errorf("invalid account ESDT instance field: %w", err)
+		}
+		if instanceFieldLoaded {
+			firstInstanceLoaded = true
+		} else {
+			switch kvp.Key {
+			case "instances":
+				explicitInstances, err = p.processCheckESDTInstances(kvp.Value)
+				if err != nil {
+					return nil, fmt.Errorf("invalid account ESDT instances: %w", err)
+				}
+			case "lastNonce":
+				esdtData.LastNonce, err = p.processCheckUint64(kvp.Value)
+				if err != nil {
+					return nil, fmt.Errorf("invalid account ESDT lastNonce: %w", err)
+				}
+			case "roles":
+				esdtData.Roles, err = p.processStringList(kvp.Value)
+				if err != nil {
+					return nil, fmt.Errorf("invalid account ESDT roles: %w", err)
+				}
+			case "frozen":
+				esdtData.Frozen, err = p.processCheckUint64(kvp.Value)
+				if err != nil {
+					return nil, fmt.Errorf("invalid ESDT frozen flag: %w", err)
+				}
+			default:
+				return nil, fmt.Errorf("unknown ESDT data field: %s", kvp.Key)
 			}
-		case "nonce":
-			esdtData.Nonce, err = p.processCheckUint64(kvp.Value)
-			if err != nil {
-				return nil, errors.New("invalid account nonce")
-			}
-		case "value":
-			esdtData.Value, err = p.processCheckBigInt(kvp.Value, bigIntUnsignedBytes)
-			if err != nil {
-				return nil, fmt.Errorf("invalid ESDT balance: %w", err)
-			}
-		case "frozen":
-			esdtData.Frozen, err = p.processCheckUint64(kvp.Value)
-			if err != nil {
-				return nil, fmt.Errorf("invalid ESDT frozen flag: %w", err)
-			}
-		default:
-			return nil, fmt.Errorf("unknown ESDT data field: %s", kvp.Key)
 		}
 	}
 
+	if firstInstanceLoaded {
+		esdtData.Instances = []*mj.CheckESDTInstance{firstInstance}
+	}
+	esdtData.Instances = append(esdtData.Instances, explicitInstances...)
+
 	return &esdtData, nil
+}
+
+func (p *Parser) tryProcessCheckESDTInstanceField(kvp *oj.OJsonKeyValuePair, targetInstance *mj.CheckESDTInstance) (bool, error) {
+	var err error
+	switch kvp.Key {
+	case "nonce":
+		targetInstance.Nonce, err = p.processCheckUint64(kvp.Value)
+		if err != nil {
+			return false, fmt.Errorf("invalid account nonce: %w", err)
+		}
+	case "balance":
+		targetInstance.Balance, err = p.processCheckBigInt(kvp.Value, bigIntUnsignedBytes)
+		if err != nil {
+			return false, fmt.Errorf("invalid ESDT balance: %w", err)
+		}
+	case "creator":
+		targetInstance.Creator, err = p.parseCheckBytes(kvp.Value)
+		if err != nil {
+			return false, fmt.Errorf("invalid ESDT NFT creator address: %w", err)
+		}
+	case "royalties":
+		targetInstance.Royalties, err = p.processCheckUint64(kvp.Value)
+		if err != nil || targetInstance.Royalties.Value > 10000 {
+			return false, fmt.Errorf("invalid ESDT NFT royalties: %w", err)
+		}
+	case "hash":
+		targetInstance.Hash, err = p.parseCheckBytes(kvp.Value)
+		if err != nil {
+			return false, fmt.Errorf("invalid ESDT NFT hash: %w", err)
+		}
+	case "uri":
+		targetInstance.Uri, err = p.parseCheckBytes(kvp.Value)
+		if err != nil {
+			return false, fmt.Errorf("invalid ESDT NFT URI: %w", err)
+		}
+	case "attributes":
+		targetInstance.Attributes, err = p.parseCheckBytes(kvp.Value)
+		if err != nil {
+			return false, fmt.Errorf("invalid ESDT NFT attributes: %w", err)
+		}
+	default:
+		return false, nil
+	}
+	return true, nil
+}
+
+func (p *Parser) processCheckESDTInstances(esdtInstancesRaw oj.OJsonObject) ([]*mj.CheckESDTInstance, error) {
+	var instancesResult []*mj.CheckESDTInstance
+	esdtInstancesList, isList := esdtInstancesRaw.(*oj.OJsonList)
+	if !isList {
+		return nil, errors.New("esdt instances object is not a list")
+	}
+	for _, instanceItem := range esdtInstancesList.AsList() {
+		instanceAsMap, isMap := instanceItem.(*oj.OJsonMap)
+		if !isMap {
+			return nil, errors.New("JSON map expected as esdt instances list item")
+		}
+
+		instance := &mj.CheckESDTInstance{}
+
+		for _, kvp := range instanceAsMap.OrderedKV {
+			instanceFieldLoaded, err := p.tryProcessCheckESDTInstanceField(kvp, instance)
+			if err != nil {
+				return nil, fmt.Errorf("invalid account ESDT instance field in instances list: %w", err)
+			}
+			if !instanceFieldLoaded {
+				return nil, fmt.Errorf("invalid account ESDT instance field in instances list: `%s`", kvp.Key)
+			}
+		}
+
+		instancesResult = append(instancesResult, instance)
+
+	}
+
+	return instancesResult, nil
 }

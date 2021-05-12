@@ -45,43 +45,35 @@ func convertAccount(testAcct *mj.Account) (*worldmock.Account, error) {
 
 	for _, mandosESDTData := range testAcct.ESDTData {
 		tokenName := mandosESDTData.TokenIdentifier.Value
-		tokenValue := mandosESDTData.Value.Value
-		tokenNonce := mandosESDTData.Nonce.Value
 		isFrozen := mandosESDTData.Frozen.Value > 0
-		tokenKey := worldmock.MakeTokenKey(tokenName, tokenNonce)
-		tokenData := &esdt.ESDigitalToken{
-			Value:      tokenValue,
-			Type:       uint32(core.Fungible),
-			Properties: makeESDTUserMetadataBytes(isFrozen),
-			TokenMetaData: &esdt.MetaData{
-				Name:  tokenName,
-				Nonce: tokenNonce,
-			},
+		for _, instance := range mandosESDTData.Instances {
+			tokenNonce := instance.Nonce.Value
+			tokenKey := worldmock.MakeTokenKey(tokenName, tokenNonce)
+			tokenBalance := instance.Balance.Value
+			tokenData := &esdt.ESDigitalToken{
+				Value:      tokenBalance,
+				Type:       uint32(core.Fungible),
+				Properties: makeESDTUserMetadataBytes(isFrozen),
+				TokenMetaData: &esdt.MetaData{
+					Name:       tokenName,
+					Nonce:      tokenNonce,
+					Creator:    instance.Creator.Value,
+					Royalties:  uint32(instance.Royalties.Value),
+					Hash:       instance.Hash.Value,
+					URIs:       [][]byte{instance.Uri.Value},
+					Attributes: instance.Attributes.Value,
+				},
+			}
+			err := account.SetTokenData(tokenKey, tokenData)
+			if err != nil {
+				return nil, err
+			}
+			err = account.SetLastNonce(tokenName, mandosESDTData.LastNonce.Value)
+			if err != nil {
+				return nil, err
+			}
 		}
-		err := account.SetTokenData(tokenKey, tokenData)
-		if err != nil {
-			return nil, err
-		}
-
-	}
-
-	for _, mandosESDTRoles := range testAcct.ESDTRoles {
-		tokenName := mandosESDTRoles.TokenIdentifier.Value
-		tokenRolesAsStrings := mandosESDTRoles.Roles
-		err := account.SetTokenRolesAsStrings(tokenName, tokenRolesAsStrings)
-		if err != nil {
-			return nil, err
-		}
-
-	}
-
-	if len(testAcct.ESDTLastNonces) > 0 {
-		lastNonces := make(map[string]uint64)
-		for tokenName, jsonNonce := range testAcct.ESDTLastNonces {
-			lastNonces[tokenName] = jsonNonce.Value
-		}
-
-		err := account.SetLastNonces(lastNonces)
+		err := account.SetTokenRolesAsStrings(tokenName, mandosESDTData.Roles)
 		if err != nil {
 			return nil, err
 		}
@@ -157,7 +149,7 @@ func generateTxHash(txIndex string) []byte {
 	return txIndexBytes
 }
 
-func addESDTToVMInput(esdtData *mj.ESDTData, vmInput *vmcommon.VMInput) {
+func addESDTToVMInput(esdtData *mj.ESDTTxData, vmInput *vmcommon.VMInput) {
 	if esdtData != nil {
 		vmInput.ESDTTokenName = esdtData.TokenIdentifier.Value
 		vmInput.ESDTValue = esdtData.Value.Value

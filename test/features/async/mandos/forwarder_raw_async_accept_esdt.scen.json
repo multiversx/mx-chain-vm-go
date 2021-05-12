@@ -55,7 +55,9 @@
                         "identifier": "str:accept_funds",
                         "topics": [
                             "str:TEST-TOKEN",
-                            "1000"
+                            "str:FungibleESDT",
+                            "1000",
+                            "0"
                         ],
                         "data": ""
                     },

@@ -14,7 +14,7 @@ func (p *Parser) parseAccountAddress(addrRaw string) (mj.JSONBytesFromString, er
 	}
 	addrBytes, err := p.ExprInterpreter.InterpretString(addrRaw)
 	if err == nil && len(addrBytes) != 32 {
-		return mj.JSONBytesFromString{}, errors.New("account addressis not 32 bytes in length")
+		return mj.JSONBytesFromString{}, errors.New("account address is not 32 bytes in length")
 	}
 	return mj.NewJSONBytesFromString(addrBytes, addrRaw), err
 }
@@ -60,24 +60,12 @@ func (p *Parser) processAccount(acctRaw oj.OJsonObject) (*mj.Account, error) {
 				if err != nil {
 					return nil, fmt.Errorf("invalid esdt token identifer: %w", err)
 				}
-				acct.ESDTData, err = p.processAppendESDTData(tokenNameStr, esdtKvp.Value, acct.ESDTData)
+				tokenName := mj.NewJSONBytesFromString(tokenNameStr, esdtKvp.Key)
+				esdtItem, err := p.processESDTData(tokenName, esdtKvp.Value)
 				if err != nil {
 					return nil, fmt.Errorf("invalid esdt value: %w", err)
 				}
-			}
-		case "esdtRoles":
-			acct.ESDTRoles, err = p.processESDTRoles(kvp.Value)
-			if err != nil {
-				return nil, fmt.Errorf("invalid esdtRoles: %w", err)
-			}
-		case "esdtLastNonces":
-			esdtMap, esdtOk := kvp.Value.(*oj.OJsonMap)
-			if !esdtOk {
-				return nil, errors.New("invalid ESDT map for last nonces")
-			}
-			acct.ESDTLastNonces, err = p.processESDTLastNonces(esdtMap)
-			if err != nil {
-				return nil, fmt.Errorf("invalid esdtLastNonces: %w", err)
+				acct.ESDTData = append(acct.ESDTData, esdtItem)
 			}
 		case "username":
 			acct.Username, err = p.processStringAsByteArray(kvp.Value)
