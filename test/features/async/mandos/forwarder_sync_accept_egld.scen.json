@@ -39,7 +39,12 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [],
+                "out": [
+                    "str:EGLD",
+                    "str:FungibleESDT",
+                    "1000",
+                    "0"
+                ],
                 "status": "0",
                 "logs": [
                     {
@@ -47,7 +52,20 @@
                         "identifier": "str:accept_funds",
                         "topics": [
                             "str:EGLD",
-                            "1000"
+                            "str:FungibleESDT",
+                            "1000",
+                            "0"
+                        ],
+                        "data": ""
+                    },
+                    {
+                        "address": "sc:forwarder",
+                        "identifier": "str:accept_funds_sync_result",
+                        "topics": [
+                            "str:EGLD",
+                            "str:FungibleESDT",
+                            "1000",
+                            "0"
                         ],
                         "data": ""
                     }

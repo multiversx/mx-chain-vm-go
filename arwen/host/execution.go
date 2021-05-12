@@ -203,21 +203,23 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	log.Trace("ExecuteOnDestContext", "caller", input.CallerAddr, "dest", input.RecipientAddr, "function", input.Function)
 
 	builtinFunctionExecuted := false
-	originalInput := input
+	scExecutionInput := input
 
 	if host.IsBuiltinFunctionName(input.Function) {
 		builtinFunctionExecuted = true
-		input, vmOutput, err = host.handleBuiltinFunctionCall(input)
+		scExecutionInput, vmOutput, err = host.handleBuiltinFunctionCall(input)
 		if err != nil {
 			vmOutput = host.Output().CreateVMOutputInCaseOfError(err)
 			return
 		}
 	}
 
-	if input != nil {
-		vmOutput, asyncInfo, err = host.executeOnDestContextNoBuiltinFunction(input)
+	if scExecutionInput != nil {
+		vmOutput, asyncInfo, err = host.executeOnDestContextNoBuiltinFunction(scExecutionInput)
 		if err != nil && builtinFunctionExecuted {
-			host.RevertESDTTransfer(originalInput)
+			// If the SC execution failed and the original input contained an ESDT
+			// transfer, the transfer must be reverted.
+			host.RevertESDTTransfer(input)
 		}
 	}
 
@@ -233,17 +235,6 @@ func (host *vmHost) handleBuiltinFunctionCall(input *vmcommon.ContractCallInput)
 	}
 
 	output.AddToActiveState(builtinOutput)
-
-	if postBuiltinInput == nil {
-		if input.CallType != vmcommon.AsynchronousCallBack || input.CallValue.Cmp(arwen.Zero) == 0 {
-			err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue, false)
-			if err != nil {
-				host.RevertESDTTransfer(input)
-				log.Trace("ExecuteOnDestContext transfer", "error", err)
-				return nil, nil, err
-			}
-		}
-	}
 
 	return postBuiltinInput, builtinOutput, nil
 }
@@ -760,13 +751,13 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmc
 
 	vmOutput, err := host.blockChainHook.ProcessBuiltInFunction(input)
 	if err != nil {
-		err = metering.TrackGasUsedByBuiltinFunction(err, input, vmOutput, nil)
+		metering.UseGas(input.GasProvided)
 		return nil, nil, err
 	}
 
 	newVMInput, err := host.isSCExecutionAfterBuiltInFunc(input, vmOutput)
 	if err != nil {
-		err = metering.TrackGasUsedByBuiltinFunction(err, input, vmOutput, nil)
+		metering.UseGas(input.GasProvided)
 		return nil, nil, err
 	}
 
@@ -776,7 +767,7 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmc
 		}
 	}
 
-	err = metering.TrackGasUsedByBuiltinFunction(err, input, vmOutput, newVMInput)
+	metering.TrackGasUsedByBuiltinFunction(input, vmOutput, newVMInput)
 
 	host.addESDTTransferToVMOutputSCIntraShardCall(input, vmOutput)
 

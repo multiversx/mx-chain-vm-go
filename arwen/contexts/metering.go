@@ -147,11 +147,6 @@ func (context *meteringContext) UpdateGasStateOnSuccess(vmOutput *vmcommon.VMOut
 		return err
 	}
 
-	err = context.checkGasLegacy()
-	if err != nil {
-		return err
-	}
-
 	err = context.checkGas(vmOutput)
 	if err != nil {
 		return err
@@ -187,17 +182,13 @@ func (context *meteringContext) updateSCGasUsed() {
 	context.gasUsedByAccounts[string(currentAccountAddress)] = gasUsed
 }
 
+// TrackGasUsedByBuiltinFunction computes the gas used by a builtin function
+// execution and consumes it on the current contract instance.
 func (context *meteringContext) TrackGasUsedByBuiltinFunction(
-	err error,
 	builtinInput *vmcommon.ContractCallInput,
 	builtinOutput *vmcommon.VMOutput,
 	postBuiltinInput *vmcommon.ContractCallInput,
-) error {
-	if err != nil {
-		context.UseGas(builtinInput.GasProvided)
-		return err
-	}
-
+) {
 	gasUsed := math.SubUint64(builtinInput.GasProvided, builtinOutput.GasRemaining)
 
 	// If the builtin function indicated that there's a follow-up SC execution
@@ -210,8 +201,6 @@ func (context *meteringContext) TrackGasUsedByBuiltinFunction(
 
 	context.UseGas(gasUsed)
 	logMetering.Trace("gas used by builtin function", "gas", gasUsed)
-
-	return nil
 }
 
 func (context *meteringContext) checkGas(vmOutput *vmcommon.VMOutput) error {
@@ -231,32 +220,14 @@ func (context *meteringContext) checkGas(vmOutput *vmcommon.VMOutput) error {
 	return nil
 }
 
-func (context *meteringContext) checkGasLegacy() error {
-	if context.host.IsArwenV2Enabled() {
-		return nil
-	}
-
-	output := context.host.Output()
-	runtime := context.host.Runtime()
-
-	account, _ := output.GetOutputAccount(runtime.GetSCAddress())
-	if account.GasUsed > context.GetGasProvided() {
-		return arwen.ErrNotEnoughGas
-	}
-
-	return nil
-}
-
 func (context *meteringContext) getCurrentTotalUsedGas() uint64 {
 	outputAccounts := context.host.Output().GetOutputAccounts()
 
 	gasUsed := uint64(0)
 	for _, outputAccount := range outputAccounts {
+		gasTransferred := context.getGasTransferredByAccount(outputAccount)
 		gasUsed = math.AddUint64(gasUsed, outputAccount.GasUsed)
-		for _, outputTransfer := range outputAccount.OutputTransfers {
-			gasUsed = math.AddUint64(gasUsed, outputTransfer.GasLimit)
-			gasUsed = math.AddUint64(gasUsed, outputTransfer.GasLocked)
-		}
+		gasUsed = math.AddUint64(gasUsed, gasTransferred)
 	}
 
 	return gasUsed
