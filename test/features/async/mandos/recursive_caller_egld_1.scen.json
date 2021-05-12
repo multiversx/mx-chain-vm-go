@@ -93,7 +93,9 @@
                 "sc:vault": {
                     "nonce": "0",
                     "balance": "1",
-                    "storage": {},
+                    "storage": {
+                        "str:call_counts|nested:str:accept_funds": "1"
+                    },
                     "code": "file:../vault/output/vault.wasm"
                 },
                 "address:recursive-caller": {

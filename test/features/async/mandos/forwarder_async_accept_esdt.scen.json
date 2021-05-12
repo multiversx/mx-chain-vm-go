@@ -80,7 +80,9 @@
                 "sc:vault": {
                     "nonce": "0",
                     "balance": "0",
-                    "storage": {},
+                    "storage": {
+                        "str:call_counts|nested:str:accept_funds": "1"
+                    },
                     "esdt": {
                         "str:TEST-TOKEN": "1000"
                     },
