@@ -26,7 +26,6 @@ var simpleGasTestConfig = contracts.DirectCallGasTestConfig{
 }
 
 func TestGasUsed_SingleContract(t *testing.T) {
-
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
@@ -100,7 +99,6 @@ func TestGasUsed_SingleContract_BuiltinCallFail(t *testing.T) {
 }
 
 func TestGasUsed_TwoContracts_ExecuteOnSameCtx(t *testing.T) {
-
 	for numCalls := uint64(0); numCalls < 3; numCalls++ {
 		expectedGasRemaining := simpleGasTestConfig.GasProvided - simpleGasTestConfig.GasUsedByParent - simpleGasTestConfig.GasUsedByChild*numCalls
 		numCallsBytes := big.NewInt(0).SetUint64(numCalls).Bytes()
@@ -138,7 +136,6 @@ func TestGasUsed_TwoContracts_ExecuteOnSameCtx(t *testing.T) {
 }
 
 func TestGasUsed_TwoContracts_ExecuteOnDestCtx(t *testing.T) {
-
 	for numCalls := uint64(0); numCalls < 3; numCalls++ {
 		expectedGasRemaining := simpleGasTestConfig.GasProvided - simpleGasTestConfig.GasUsedByParent - simpleGasTestConfig.GasUsedByChild*numCalls
 		numCallsBytes := big.NewInt(0).SetUint64(numCalls).Bytes()
@@ -176,7 +173,6 @@ func TestGasUsed_TwoContracts_ExecuteOnDestCtx(t *testing.T) {
 }
 
 func TestGasUsed_ThreeContracts_ExecuteOnDestCtx(t *testing.T) {
-
 	alphaAddress := test.MakeTestSCAddress("alpha")
 	betaAddress := test.MakeTestSCAddress("beta")
 	gammaAddress := test.MakeTestSCAddress("gamma")
@@ -339,7 +335,6 @@ var asyncTestConfig = &contracts.AsyncCallTestConfig{
 }
 
 func TestGasUsed_AsyncCall(t *testing.T) {
-
 	testConfig := asyncTestConfig
 	testConfig.GasProvided = 1000
 
@@ -395,7 +390,6 @@ func TestGasUsed_AsyncCall(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCall_BuiltinCall(t *testing.T) {
-
 	testConfig := asyncBaseTestConfig
 	testConfig.GasProvided = 1000
 
@@ -431,7 +425,6 @@ func TestGasUsed_AsyncCall_BuiltinCall(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCall_BuiltinCallFail(t *testing.T) {
-
 	testConfig := asyncBaseTestConfig
 	testConfig.GasProvided = 1000
 
@@ -470,7 +463,6 @@ func TestGasUsed_AsyncCall_BuiltinCallFail(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCall_BuiltinMultiContractCall(t *testing.T) {
-
 	// TODO no possible yet, reactivate when new async context is merged
 	t.Skip()
 
@@ -515,7 +507,6 @@ func TestGasUsed_AsyncCall_BuiltinMultiContractCall(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCall_ChildFails(t *testing.T) {
-
 	testConfig := asyncTestConfig
 	testConfig.GasProvided = 1000
 
@@ -568,7 +559,6 @@ func TestGasUsed_AsyncCall_ChildFails(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCall_CallBackFails(t *testing.T) {
-
 	testConfig := asyncTestConfig
 
 	expectedGasUsedByParent := testConfig.GasProvided - testConfig.GasUsedByChild
@@ -626,7 +616,6 @@ func TestGasUsed_AsyncCall_CallBackFails(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCall_Recursive(t *testing.T) {
-
 	// TODO no possible yet, reactivate when new async context is merged
 	t.Skip()
 
@@ -677,7 +666,6 @@ func TestGasUsed_AsyncCall_Recursive(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCall_MultiChild(t *testing.T) {
-
 	// TODO no possible yet, reactivate when new async context is merged
 	t.Skip()
 

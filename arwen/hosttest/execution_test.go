@@ -33,7 +33,6 @@ const (
 )
 
 func TestSCMem(t *testing.T) {
-
 	testString := "this is some random string of bytes"
 	returnData := [][]byte{
 		[]byte(testString),
@@ -60,7 +59,6 @@ func TestSCMem(t *testing.T) {
 }
 
 func TestExecution_DeployNewAddressErr(t *testing.T) {
-
 	errNewAddress := errors.New("new address error")
 
 	input := test.CreateTestContractCreateInputBuilder().
@@ -547,7 +545,6 @@ func TestExecution_Call_GasConsumptionOnLocals(t *testing.T) {
 }
 
 func callCustomSCAndGetGasUsed(t *testing.T, locals uint64) (uint64, *config.GasCost) {
-
 	var gasSchedule *config.GasCost
 	var gasUsed uint64
 
@@ -576,7 +573,6 @@ func callCustomSCAndGetGasUsed(t *testing.T, locals uint64) (uint64, *config.Gas
 }
 
 func TestExecution_ExecuteOnSameContext_Simple(t *testing.T) {
-
 	parentGasUsed := uint64(521)
 	childGasUsed := uint64(6870)
 	executionCost := parentGasUsed + childGasUsed
@@ -749,7 +745,6 @@ func TestExecution_ExecuteOnSameContext_Wrong(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnSameContext_OutOfGas(t *testing.T) {
-
 	// Scenario:
 	// Parent sets data into the storage, finishes data and creates a bigint
 	// Parent calls executeOnSameContext, sending some value as well
@@ -811,7 +806,6 @@ func TestExecution_ExecuteOnSameContext_OutOfGas(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnSameContext_Successful(t *testing.T) {
-
 	executeAPICost := uint64(39)
 	childExecutionCost := uint64(437)
 	parentGasBeforeExecuteAPI := uint64(172)
@@ -885,7 +879,6 @@ func TestExecution_ExecuteOnSameContext_Successful(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnSameContext_Successful_BigInts(t *testing.T) {
-
 	// Call parentFunctionChildCall_BigInts() of the parent SC, which will call a
 	// method of the child SC that takes some big Int references as arguments and
 	// produce a new big Int out of the arguments.
@@ -1196,7 +1189,6 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs_OutOfGas(t *testing.T) {
-
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using executeOnDestContext().
 	recursiveCalls := byte(5)
@@ -1231,7 +1223,6 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 }
 
 func TestExecution_ExecuteOnDestContext_Prepare(t *testing.T) {
-
 	// Execute the parent SC method "parentFunctionPrepare", which sets storage,
 	// finish data and performs a transfer. This step validates the test to the
 	// actual call to ExecuteOnSameContext().
@@ -1391,7 +1382,6 @@ func TestExecution_ExecuteOnDestContext_OutOfGas(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnDestContext_Successful(t *testing.T) {
-
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using executeOnDestContext().
 
@@ -1454,7 +1444,6 @@ func TestExecution_ExecuteOnDestContext_Successful(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnDestContext_Successful_ChildReturns(t *testing.T) {
-
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using executeOnDestContext().
 
@@ -1575,7 +1564,6 @@ func TestExecution_ExecuteOnDestContext_GasRemaining(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnDestContext_Successful_BigInts(t *testing.T) {
-
 	// Call parentFunctionChildCall_BigInts() of the parent SC, which will call a
 	// method of the child SC that takes some big Int references as arguments and
 	// produce a new big Int out of the arguments.
@@ -1622,7 +1610,6 @@ func TestExecution_ExecuteOnDestContext_Successful_BigInts(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnDestContext_Recursive_Direct(t *testing.T) {
-
 	recursiveCalls := 6
 
 	var returnData [][]byte
@@ -1673,7 +1660,6 @@ func TestExecution_ExecuteOnDestContext_Recursive_Direct(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnDestContext_Recursive_Mutual_Methods(t *testing.T) {
-
 	recursiveCalls := 7
 
 	var returnData [][]byte
@@ -1976,7 +1962,6 @@ func TestExecution_ExecuteOnDestContextByCaller_SimpleTransfer(t *testing.T) {
 }
 
 func TestExecution_AsyncCall_GasLimitConsumed(t *testing.T) {
-
 	parentCode := test.GetTestSCCode("async-call-parent", "../../")
 	childCode := test.GetTestSCCode("async-call-child", "../../")
 
@@ -2191,7 +2176,6 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 }
 
 func TestExecution_CreateNewContract_Success(t *testing.T) {
-
 	childCode := test.GetTestSCCode("init-correct", "../../")
 	childAddress := []byte("newAddress")
 	l := len(childCode)
@@ -2240,7 +2224,6 @@ func TestExecution_CreateNewContract_Success(t *testing.T) {
 }
 
 func TestExecution_CreateNewContract_Fail(t *testing.T) {
-
 	childCode := test.GetTestSCCode("init-correct", "../../")
 	l := len(childCode)
 
@@ -2277,7 +2260,6 @@ func TestExecution_CreateNewContract_Fail(t *testing.T) {
 }
 
 func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
-
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).

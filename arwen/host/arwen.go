@@ -424,7 +424,7 @@ func (host *vmHost) IsInterfaceNil() bool {
 	return host == nil
 }
 
-// SetRuntimeContext mocked method
+// SetRuntimeContext sets the runtimeContext for this host, used in tests
 func (host *vmHost) SetRuntimeContext(runtime arwen.RuntimeContext) {
 	host.runtimeContext = runtime
 }

@@ -9,56 +9,10 @@ import (
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
-type testSmartContract struct {
-	address []byte
-	balance int64
-	config  interface{}
-}
-
 type testTemplateConfig struct {
 	t        *testing.T
 	input    *vmcommon.ContractCallInput
 	useMocks bool
-}
-
-// MockTestSmartContract represents the config data for the mock smart contract instance to be tested
-type MockTestSmartContract struct {
-	testSmartContract
-	initMethods []func(*mock.InstanceMock, interface{})
-}
-
-// CreateMockContract build a contract to be used in a test creted with BuildMockInstanceCallTest
-func CreateMockContract(address []byte) *MockTestSmartContract {
-	return &MockTestSmartContract{
-		testSmartContract: testSmartContract{
-			address: address,
-		},
-	}
-}
-
-// WithBalance provides the balance for the MockTestSmartContract
-func (mockSC *MockTestSmartContract) WithBalance(balance int64) *MockTestSmartContract {
-	mockSC.balance = balance
-	return mockSC
-}
-
-// WithConfig provides the config object for the MockTestSmartContract
-func (mockSC *MockTestSmartContract) WithConfig(config interface{}) *MockTestSmartContract {
-	mockSC.config = config
-	return mockSC
-}
-
-// WithMethods provides the methods for the MockTestSmartContract
-func (mockSC *MockTestSmartContract) WithMethods(initMethods ...func(*mock.InstanceMock, interface{})) MockTestSmartContract {
-	mockSC.initMethods = initMethods
-	return *mockSC
-}
-
-func (mockSC *MockTestSmartContract) initialize(t testing.TB, host arwen.VMHost, imb *mock.InstanceBuilderMock) {
-	instance := imb.CreateAndStoreInstanceMock(t, host, mockSC.address, mockSC.balance)
-	for _, initMethod := range mockSC.initMethods {
-		initMethod(instance, mockSC.config)
-	}
 }
 
 // MockInstancesTestTemplate holds the data to build a mock contract call test
