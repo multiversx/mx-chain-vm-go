@@ -145,6 +145,7 @@ type RuntimeContext interface {
 type BigIntContext interface {
 	StateStack
 
+	ConsumeGasForBigIntCopy(values ...*big.Int)
 	Put(value int64) int32
 	GetOne(id int32) *big.Int
 	GetTwo(id1, id2 int32) (*big.Int, *big.Int)

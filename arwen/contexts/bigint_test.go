@@ -5,13 +5,16 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
 	"github.com/stretchr/testify/require"
 )
 
 func TestNewBigInt(t *testing.T) {
 	t.Parallel()
 
-	bigIntContext, err := NewBigIntContext()
+	host := &contextmock.VMHostStub{}
+
+	bigIntContext, err := NewBigIntContext(host)
 
 	require.Nil(t, err)
 	require.False(t, bigIntContext.IsInterfaceNil())
@@ -23,9 +26,9 @@ func TestNewBigInt(t *testing.T) {
 
 func TestBigIntContext_InitPushPopState(t *testing.T) {
 	t.Parallel()
-
+	host := &contextmock.VMHostStub{}
 	value1, value2, value3 := int64(100), int64(200), int64(-42)
-	bigIntContext, _ := NewBigIntContext()
+	bigIntContext, _ := NewBigIntContext(host)
 	bigIntContext.InitState()
 
 	// Create 2 values on the active state
@@ -91,9 +94,10 @@ func TestBigIntContext_InitPushPopState(t *testing.T) {
 
 func TestBigIntContext_PutGet(t *testing.T) {
 	t.Parallel()
+	host := &contextmock.VMHostStub{}
 
 	value1, value2, value3 := int64(100), int64(200), int64(-42)
-	bigIntContext, _ := NewBigIntContext()
+	bigIntContext, _ := NewBigIntContext(host)
 
 	index1 := bigIntContext.Put(value1)
 	require.Equal(t, int32(0), index1)
@@ -128,8 +132,9 @@ func TestBigIntContext_PutGet(t *testing.T) {
 
 func TestBigIntContext_PopSetActiveStateIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	t.Parallel()
+	host := &contextmock.VMHostStub{}
 
-	bigIntContext, _ := NewBigIntContext()
+	bigIntContext, _ := NewBigIntContext(host)
 	bigIntContext.PopSetActiveState()
 
 	require.Equal(t, 0, len(bigIntContext.stateStack))
@@ -137,8 +142,9 @@ func TestBigIntContext_PopSetActiveStateIfStackIsEmptyShouldNotPanic(t *testing.
 
 func TestBigIntContext_PopDiscardIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	t.Parallel()
+	host := &contextmock.VMHostStub{}
 
-	bigIntContext, _ := NewBigIntContext()
+	bigIntContext, _ := NewBigIntContext(host)
 	bigIntContext.PopDiscard()
 
 	require.Equal(t, 0, len(bigIntContext.stateStack))

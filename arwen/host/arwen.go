@@ -145,7 +145,7 @@ func NewArwenVM(
 		return nil, err
 	}
 
-	host.bigIntContext, err = contexts.NewBigIntContext()
+	host.bigIntContext, err = contexts.NewBigIntContext(host)
 	if err != nil {
 		return nil, err
 	}

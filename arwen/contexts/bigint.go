@@ -2,18 +2,25 @@ package contexts
 
 import (
 	"math/big"
+
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/math"
 )
+
+const maxBigIntByteLenForNormalCost = 32
 
 type bigIntMap map[int32]*big.Int
 
 type bigIntContext struct {
+	host       arwen.VMHost
 	values     bigIntMap
 	stateStack []bigIntMap
 }
 
 // NewBigIntContext creates a new bigIntContext
-func NewBigIntContext() (*bigIntContext, error) {
+func NewBigIntContext(host arwen.VMHost) (*bigIntContext, error) {
 	context := &bigIntContext{
+		host:       host,
 		values:     make(bigIntMap),
 		stateStack: make([]bigIntMap, 0),
 	}
@@ -105,4 +112,15 @@ func (context *bigIntContext) GetThree(handle1 int32, handle2 int32, handle3 int
 // IsInterfaceNil returns true if there is no value under the interface
 func (context *bigIntContext) IsInterfaceNil() bool {
 	return context == nil
+}
+
+// ConsumeGasForBigIntCopy uses gas for Copy operations
+func (context *bigIntContext) ConsumeGasForBigIntCopy(values ...*big.Int) {
+	metering := context.host.Metering()
+	for _, val := range values {
+		byteLen := val.BitLen() / 8
+		if byteLen > maxBigIntByteLenForNormalCost {
+			metering.UseGas(math.MulUint64(uint64(byteLen), metering.GasSchedule().BaseOperationCost.DataCopyPerByte))
+		}
+	}
 }
