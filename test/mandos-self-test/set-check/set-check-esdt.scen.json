@@ -1,13 +1,10 @@
 {
     "comment": "verifies that setState and checkState are consistent",
-    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "setState",
             "accounts": {
                 "address:the-address": {
-                    "nonce": "5",
-                    "balance": "150",
                     "esdt": {
                         "str:NFT-123456": {
                             "instances": [
@@ -24,10 +21,7 @@
                                 }
                             ]
                         }
-                    },
-                    "username": "str:theusername.elrond",
-                    "storage": {},
-                    "code": ""
+                    }
                 }
             }
         },
@@ -35,8 +29,6 @@
             "step": "checkState",
             "accounts": {
                 "address:the-address": {
-                    "nonce": "5",
-                    "balance": "150",
                     "esdt": {
                         "str:NFT-123456": {
                             "instances": [
@@ -53,10 +45,7 @@
                                 }
                             ]
                         }
-                    },
-                    "username": "str:theusername.elrond",
-                    "storage": {},
-                    "code": ""
+                    }
                 }
             }
         },
@@ -64,8 +53,6 @@
             "step": "checkState",
             "accounts": {
                 "address:the-address": {
-                    "nonce": "5",
-                    "balance": "150",
                     "esdt": {
                         "str:NFT-123456": {
                             "instances": [
@@ -80,10 +67,24 @@
                                 }
                             ]
                         }
-                    },
-                    "username": "str:theusername.elrond",
-                    "storage": {},
-                    "code": ""
+                    }
+                }
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "address:the-address": {
+                    "esdt": {
+                        "str:NFT-123456": {
+                            "instances": [
+                                {
+                                    "nonce": "1",
+                                    "balance": "1"
+                                }
+                            ]
+                        }
+                    }
                 }
             }
         }

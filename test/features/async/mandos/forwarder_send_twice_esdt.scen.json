@@ -88,7 +88,9 @@
                     "esdt": {
                         "str:FWD-TOKEN": "2"
                     },
-                    "storage": {},
+                    "storage": {
+                        "str:call_counts|nested:str:accept_funds": "2"
+                    },
                     "code": "file:../vault/output/vault.wasm"
                 },
                 "sc:forwarder": {

@@ -130,7 +130,9 @@
                     "esdt": {
                         "str:REC-TOKEN": "1"
                     },
-                    "storage": {},
+                    "storage": {
+                        "str:call_counts|nested:str:accept_funds": "*"
+                    },
                     "code": "file:../vault/output/vault.wasm"
                 },
                 "address:recursive-caller": {

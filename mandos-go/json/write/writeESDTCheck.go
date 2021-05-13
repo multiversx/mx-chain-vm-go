@@ -5,10 +5,13 @@ import (
 	oj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/orderedjson"
 )
 
-func checkESDTDataToOJ(esdtItems []*mj.CheckESDTData) *oj.OJsonMap {
+func checkESDTDataToOJ(esdtItems []*mj.CheckESDTData, moreESDTTokensAllowed bool) *oj.OJsonMap {
 	esdtItemsOJ := oj.NewMap()
 	for _, esdtItem := range esdtItems {
 		esdtItemsOJ.Put(esdtItem.TokenIdentifier.Original, checkESDTItemToOJ(esdtItem))
+	}
+	if moreESDTTokensAllowed {
+		esdtItemsOJ.Put("+", stringToOJ(""))
 	}
 	return esdtItemsOJ
 }

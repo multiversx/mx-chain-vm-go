@@ -96,9 +96,11 @@
                 "sc:vault": {
                     "nonce": "0",
                     "balance": "0",
-                    "storage": {},
                     "esdt": {
                         "str:TEST-TOKEN": "1000"
+                    },
+                    "storage": {
+                        "str:call_counts|nested:str:accept_funds_echo_payment": "1"
                     },
                     "code": "file:../vault/output/vault.wasm"
                 },
