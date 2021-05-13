@@ -12,20 +12,19 @@ package cryptoapi
 // extern int32_t verifyBLS(void *context, int32_t keyOffset, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
 // extern int32_t verifyEd25519(void *context, int32_t keyOffset, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
 // extern int32_t verifySecp256k1(void *context, int32_t keyOffset, int32_t keyLength, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
-// extern void addEC( void *context, int32_t destination1, int32_t destination2, int32_t fieldOrder, int32_t basePointOrder, int32_t eqConstant, int32_t xBasePoint, int32_t yBasePoint, int32_t sizeOfField, int32_t fstPointX, int32_t fstPointY, int32_t sndPointX, int32_t sndPointY);
-// extern void doubleEC( void *context, int32_t destination1, int32_t destination2, int32_t fieldOrder, int32_t basePointOrder, int32_t eqConstant, int32_t xBasePoint, int32_t yBasePoint, int32_t sizeOfField, int32_t pointX, int32_t pointY);
-// extern int32_t isOnCurveEC( void *context, int32_t fieldOrder, int32_t basePointOrder, int32_t eqConstant, int32_t xBasePoint, int32_t yBasePoint, int32_t sizeOfField, int32_t pointX, int32_t pointY);
-// extern void scalarBaseMultEC ( void *context, int32_t destination1, int32_t destination2, int32_t fieldOrder, int32_t basePointOrder, int32_t eqConstant, int32_t xBasePoint, int32_t yBasePoint, int32_t sizeOfField, int32_t kOffset, int32_t length);
-// extern void scalarMultEC ( void *context, int32_t destination1, int32_t destination2, int32_t fieldOrder, int32_t basePointOrder, int32_t eqConstant, int32_t xBasePoint, int32_t yBasePoint, int32_t sizeOfField, int32_t pointX, int32_t pointY, int32_t kOffset, int32_t length);
-// extern int32_t marshalEC ( void *context, int32_t fieldOrder, int32_t basePointOrder, int32_t eqConstant, int32_t xBasePoint, int32_t yBasePoint, int32_t sizeOfField, int32_t xPairHandle, int32_t yPairHandle, int32_t resultOffest);
-// extern int32_t unmarshalEC ( void *context, int32_t xPairHandle, int32_t yPairHandle, int32_t fieldOrder, int32_t basePointOrder, int32_t eqConstant, int32_t xBasePoint, int32_t yBasePoint, int32_t sizeOfField, int32_t dataOffest, int32_t length);
-// extern int32_t marshalCompressedEC ( void *context, int32_t fieldOrder, int32_t basePointOrder, int32_t eqConstant, int32_t xBasePoint, int32_t yBasePoint, int32_t sizeOfField, int32_t xPairHandle, int32_t yPairHandle, int32_t resultOffest);
-// extern int32_t unmarshalCompressedEC ( void *context, int32_t xPairHandle, int32_t yPairHandle, int32_t fieldOrder, int32_t basePointOrder, int32_t eqConstant, int32_t xBasePoint, int32_t yBasePoint, int32_t sizeOfField, int32_t dataOffest, int32_t length);
-// extern int32_t generateKeyEC ( void *context, int32_t xPubKeyHandle, int32_t yPubKeyHandle, int32_t fieldOrder, int32_t basePointOrder, int32_t eqConstant, int32_t xBasePoint, int32_t yBasePoint, int32_t sizeOfField, int32_t resultOffset);
+// extern void addEC(void *context, int32_t destination1, int32_t destination2, int32_t fieldOrder, int32_t basePointOrder, int32_t eqConstant, int32_t xBasePoint, int32_t yBasePoint, int32_t sizeOfField, int32_t fstPointX, int32_t fstPointY, int32_t sndPointX, int32_t sndPointY);
+// extern void doubleEC(void *context, int32_t destination1, int32_t destination2, int32_t fieldOrder, int32_t basePointOrder, int32_t eqConstant, int32_t xBasePoint, int32_t yBasePoint, int32_t sizeOfField, int32_t pointX, int32_t pointY);
+// extern int32_t isOnCurveEC(void *context, int32_t fieldOrder, int32_t basePointOrder, int32_t eqConstant, int32_t xBasePoint, int32_t yBasePoint, int32_t sizeOfField, int32_t pointX, int32_t pointY);
+// extern void scalarBaseMultEC(void *context, int32_t destination1, int32_t destination2, int32_t fieldOrder, int32_t basePointOrder, int32_t eqConstant, int32_t xBasePoint, int32_t yBasePoint, int32_t sizeOfField, int32_t kOffset, int32_t length);
+// extern void scalarMultEC(void *context, int32_t destination1, int32_t destination2, int32_t fieldOrder, int32_t basePointOrder, int32_t eqConstant, int32_t xBasePoint, int32_t yBasePoint, int32_t sizeOfField, int32_t pointX, int32_t pointY, int32_t kOffset, int32_t length);
+// extern int32_t marshalEC(void *context, int32_t fieldOrder, int32_t basePointOrder, int32_t eqConstant, int32_t xBasePoint, int32_t yBasePoint, int32_t sizeOfField, int32_t xPairHandle, int32_t yPairHandle, int32_t resultOffest);
+// extern int32_t unmarshalEC(void *context, int32_t xPairHandle, int32_t yPairHandle, int32_t fieldOrder, int32_t basePointOrder, int32_t eqConstant, int32_t xBasePoint, int32_t yBasePoint, int32_t sizeOfField, int32_t dataOffest, int32_t length);
+// extern int32_t marshalCompressedEC(void *context, int32_t fieldOrder, int32_t basePointOrder, int32_t eqConstant, int32_t xBasePoint, int32_t yBasePoint, int32_t sizeOfField, int32_t xPairHandle, int32_t yPairHandle, int32_t resultOffest);
+// extern int32_t unmarshalCompressedEC(void *context, int32_t xPairHandle, int32_t yPairHandle, int32_t fieldOrder, int32_t basePointOrder, int32_t eqConstant, int32_t xBasePoint, int32_t yBasePoint, int32_t sizeOfField, int32_t dataOffest, int32_t length);
+// extern int32_t generateKeyEC(void *context, int32_t xPubKeyHandle, int32_t yPubKeyHandle, int32_t fieldOrder, int32_t basePointOrder, int32_t eqConstant, int32_t xBasePoint, int32_t yBasePoint, int32_t sizeOfField, int32_t resultOffset);
 import "C"
 
 import (
-	"math/big"
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -126,17 +125,6 @@ func CryptoImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	}
 
 	return imports, nil
-}
-
-const maxBigIntByteLenForNormalCost = 32
-
-func useExtraGasForOperations(metering arwen.MeteringContext, values []*big.Int) {
-	for _, val := range values {
-		byteLen := val.BitLen() / 8
-		if byteLen > maxBigIntByteLenForNormalCost {
-			metering.UseGas(math.MulUint64(uint64(byteLen), metering.GasSchedule().BaseOperationCost.DataCopyPerByte))
-		}
-	}
 }
 
 //export sha256
@@ -380,14 +368,14 @@ func addEC(
 	bigInt := arwen.GetBigIntContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	gasToUse := uint64(0)
+	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
 	metering.UseGas(gasToUse)
 
 	xResult, yResult, P := bigInt.GetThree(xResultHandle, yResultHandle, fieldOrder)
 	N, B, Gx := bigInt.GetThree(basePointOrder, eqConstant, xBasePoint)
 	Gy, x1, y1 := bigInt.GetThree(yBasePoint, fstPointX, fstPointY)
 	x2, y2 := bigInt.GetTwo(sndPointX, sndPointY)
-	useExtraGasForOperations(metering, []*big.Int{xResult, yResult, P, N, B, Gx, Gy, x1, y1, x2, y2})
+	bigInt.ConsumeGasForBigIntCopy(xResult, yResult, P, N, B, Gx, Gy, x1, y1, x2, y2)
 
 	xResult, yResult = elliptic_curve.Add(P, N, B, Gx, Gy, int(sizeOfField), x1, y1, x2, y2)
 }
@@ -409,13 +397,13 @@ func doubleEC(
 	bigInt := arwen.GetBigIntContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	gasToUse := uint64(0)
+	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
 	metering.UseGas(gasToUse)
 
 	xResult, yResult, P := bigInt.GetThree(xResultHandle, yResultHandle, fieldOrder)
 	N, B, Gx := bigInt.GetThree(basePointOrder, eqConstant, xBasePoint)
 	Gy, x, y := bigInt.GetThree(yBasePoint, pointX, pointY)
-	useExtraGasForOperations(metering, []*big.Int{xResult, yResult, P, N, B, Gx, Gy, x, y})
+	bigInt.ConsumeGasForBigIntCopy(xResult, yResult, P, N, B, Gx, Gy, x, y)
 
 	xResult, yResult = elliptic_curve.Double(P, N, B, Gx, Gy, int(sizeOfField), x, y)
 }
@@ -435,13 +423,13 @@ func isOnCurveEC(
 	bigInt := arwen.GetBigIntContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	gasToUse := uint64(0)
+	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
 	metering.UseGas(gasToUse)
 
 	x, y, P := bigInt.GetThree(pointX, pointY, fieldOrder)
 	N, B, Gx := bigInt.GetThree(basePointOrder, eqConstant, xBasePoint)
 	Gy := bigInt.GetOne(yBasePoint)
-	useExtraGasForOperations(metering, []*big.Int{P, N, B, Gx, Gy, x, y})
+	bigInt.ConsumeGasForBigIntCopy(P, N, B, Gx, Gy, x, y)
 
 	if elliptic_curve.IsOnCurve(P, N, B, Gx, Gy, int(sizeOfField), x, y) {
 		return 1
@@ -468,7 +456,7 @@ func scalarBaseMultEC(
 	metering := arwen.GetMeteringContext(context)
 	bigInt := arwen.GetBigIntContext(context)
 
-	gasToUse := uint64(0)
+	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
 	metering.UseGas(gasToUse)
 
 	k, err := runtime.MemLoad(kOffset, length)
@@ -479,7 +467,7 @@ func scalarBaseMultEC(
 	x, y, P := bigInt.GetThree(xResultHandle, yResultHandle, fieldOrder)
 	N, B, Gx := bigInt.GetThree(basePointOrder, eqConstant, xBasePoint)
 	Gy := bigInt.GetOne(yBasePoint)
-	useExtraGasForOperations(metering, []*big.Int{x, y, P, N, B, Gx, Gy})
+	bigInt.ConsumeGasForBigIntCopy(P, N, B, Gx, Gy, x, y)
 
 	x, y = elliptic_curve.ScalarBaseMult(P, N, B, Gx, Gy, int(sizeOfField), k)
 }
@@ -504,7 +492,7 @@ func scalarMultEC(
 	metering := arwen.GetMeteringContext(context)
 	bigInt := arwen.GetBigIntContext(context)
 
-	gasToUse := uint64(0)
+	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
 	metering.UseGas(gasToUse)
 
 	k, err := runtime.MemLoad(kOffset, length)
@@ -515,7 +503,7 @@ func scalarMultEC(
 	xResult, yResult, P := bigInt.GetThree(xResultHandle, yResultHandle, fieldOrder)
 	N, B, Gx := bigInt.GetThree(basePointOrder, eqConstant, xBasePoint)
 	Gy, x, y := bigInt.GetThree(yBasePoint, pointX, pointY)
-	useExtraGasForOperations(metering, []*big.Int{xResult, yResult, P, N, B, Gx, Gy, x, y})
+	bigInt.ConsumeGasForBigIntCopy(xResult, yResult, P, N, B, Gx, Gy, x, y)
 
 	xResult, yResult = elliptic_curve.ScalarMult(P, N, B, Gx, Gy, int(sizeOfField), x, y, k)
 }
@@ -537,13 +525,13 @@ func marshalEC(
 	metering := arwen.GetMeteringContext(context)
 	bigInt := arwen.GetBigIntContext(context)
 
-	gasToUse := uint64(0)
+	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
 	metering.UseGas(gasToUse)
 
 	x, y, P := bigInt.GetThree(pointX, pointY, fieldOrder)
 	N, B, Gx := bigInt.GetThree(basePointOrder, eqConstant, xBasePoint)
 	Gy := bigInt.GetOne(yBasePoint)
-	useExtraGasForOperations(metering, []*big.Int{P, N, B, Gx, Gy, x, y})
+	bigInt.ConsumeGasForBigIntCopy(P, N, B, Gx, Gy, x, y)
 
 	result := elliptic_curve.Marshal(P, N, B, Gx, Gy, int(sizeOfField), x, y)
 
@@ -572,13 +560,13 @@ func marshalCompressedEC(
 	metering := arwen.GetMeteringContext(context)
 	bigInt := arwen.GetBigIntContext(context)
 
-	gasToUse := uint64(0)
+	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
 	metering.UseGas(gasToUse)
 
 	x, y, P := bigInt.GetThree(pointX, pointY, fieldOrder)
 	N, B, Gx := bigInt.GetThree(basePointOrder, eqConstant, xBasePoint)
 	Gy := bigInt.GetOne(yBasePoint)
-	useExtraGasForOperations(metering, []*big.Int{P, N, B, Gx, Gy, x, y})
+	bigInt.ConsumeGasForBigIntCopy(P, N, B, Gx, Gy, x, y)
 
 	result := elliptic_curve.MarshalCompressed(P, N, B, Gx, Gy, int(sizeOfField), x, y)
 
@@ -608,7 +596,7 @@ func unmarshalEC(
 	metering := arwen.GetMeteringContext(context)
 	bigInt := arwen.GetBigIntContext(context)
 
-	gasToUse := uint64(0)
+	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
 	metering.UseGas(gasToUse)
 
 	data, err := runtime.MemLoad(dataOffset, length)
@@ -619,7 +607,7 @@ func unmarshalEC(
 	xPair, yPair, P := bigInt.GetThree(xPairHandle, yPairHandle, fieldOrder)
 	N, B, Gx := bigInt.GetThree(basePointOrder, eqConstant, xBasePoint)
 	Gy := bigInt.GetOne(yBasePoint)
-	useExtraGasForOperations(metering, []*big.Int{P, N, B, Gx, Gy, xPair, yPair})
+	bigInt.ConsumeGasForBigIntCopy(P, N, B, Gx, Gy, xPair, yPair)
 
 	xPair, yPair = elliptic_curve.Unmarshal(P, N, B, Gx, Gy, int(sizeOfField), data)
 
@@ -644,7 +632,7 @@ func unmarshalCompressedEC(
 	metering := arwen.GetMeteringContext(context)
 	bigInt := arwen.GetBigIntContext(context)
 
-	gasToUse := uint64(0)
+	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
 	metering.UseGas(gasToUse)
 
 	data, err := runtime.MemLoad(dataOffset, length)
@@ -655,7 +643,7 @@ func unmarshalCompressedEC(
 	xPair, yPair, P := bigInt.GetThree(xPairHandle, yPairHandle, fieldOrder)
 	N, B, Gx := bigInt.GetThree(basePointOrder, eqConstant, xBasePoint)
 	Gy := bigInt.GetOne(yBasePoint)
-	useExtraGasForOperations(metering, []*big.Int{P, N, B, Gx, Gy, xPair, yPair})
+	bigInt.ConsumeGasForBigIntCopy(P, N, B, Gx, Gy, xPair, yPair)
 
 	xPair, yPair = elliptic_curve.UnmarshalCompressed(P, N, B, Gx, Gy, int(sizeOfField), data)
 
@@ -679,13 +667,13 @@ func generateKeyEC(
 	metering := arwen.GetMeteringContext(context)
 	bigInt := arwen.GetBigIntContext(context)
 
-	gasToUse := uint64(0)
+	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
 	metering.UseGas(gasToUse)
 
 	xPubKey, yPubKey, P := bigInt.GetThree(xPubKeyHandle, yPubKeyHandle, fieldOrder)
 	N, B, Gx := bigInt.GetThree(basePointOrder, eqConstant, xBasePoint)
 	Gy := bigInt.GetOne(yBasePoint)
-	useExtraGasForOperations(metering, []*big.Int{P, N, B, Gx, Gy, xPubKey, yPubKey})
+	bigInt.ConsumeGasForBigIntCopy(P, N, B, Gx, Gy, xPubKey, yPubKey)
 
 	result, xPubKey, yPubKey, err := elliptic_curve.GenerateKey(P, N, N, Gx, Gy, int(sizeOfField))
 	if err != nil {
