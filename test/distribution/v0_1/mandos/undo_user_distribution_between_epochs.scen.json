@@ -9,7 +9,7 @@
             "step": "scCall",
             "tx": {
                 "from": "address:owner",
-                "to": "address:dist_contract",
+                "to": "sc:dist_contract",
                 "value": "0",
                 "function": "startGlobalOperation",
                 "arguments": [],
@@ -28,7 +28,7 @@
             "step": "scCall",
             "tx": {
                 "from": "address:owner",
-                "to": "address:dist_contract",
+                "to": "sc:dist_contract",
                 "value": "0",
                 "function": "setCommunityDistribution",
                 "arguments": [
@@ -50,7 +50,7 @@
             "step": "scCall",
             "tx": {
                 "from": "address:owner",
-                "to": "address:dist_contract",
+                "to": "sc:dist_contract",
                 "value": "0",
                 "function": "setPerUserDistributedAssets",
                 "arguments": [
@@ -79,7 +79,7 @@
             "step": "scCall",
             "tx": {
                 "from": "address:owner",
-                "to": "address:dist_contract",
+                "to": "sc:dist_contract",
                 "value": "0",
                 "function": "endGlobalOperation",
                 "arguments": [],
@@ -98,7 +98,7 @@
             "step": "scCall",
             "tx": {
                 "from": "address:owner",
-                "to": "address:dist_contract",
+                "to": "sc:dist_contract",
                 "value": "0",
                 "function": "startGlobalOperation",
                 "arguments": [],
@@ -117,7 +117,7 @@
             "step": "scCall",
             "tx": {
                 "from": "address:owner",
-                "to": "address:dist_contract",
+                "to": "sc:dist_contract",
                 "value": "0",
                 "function": "undoUserDistributedAssetsBetweenEpochs",
                 "arguments": [
@@ -139,7 +139,7 @@
             "step": "scCall",
             "tx": {
                 "from": "address:owner",
-                "to": "address:dist_contract",
+                "to": "sc:dist_contract",
                 "value": "0",
                 "function": "endGlobalOperation",
                 "arguments": [],
@@ -164,7 +164,7 @@
             "step": "scCall",
             "tx": {
                 "from": "address:user1",
-                "to": "address:dist_contract",
+                "to": "sc:dist_contract",
                 "value": "0",
                 "function": "claimAssets",
                 "arguments": [],

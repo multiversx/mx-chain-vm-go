@@ -16,7 +16,7 @@
             "txId": "2",
             "tx": {
                 "from": "address:user1",
-                "to": "address:dist_contract",
+                "to": "sc:dist_contract",
                 "value": "0",
                 "function": "unlockAssets",
                 "esdt": {
@@ -71,7 +71,7 @@
             "txId": "2",
             "tx": {
                 "from": "address:user1",
-                "to": "address:dist_contract",
+                "to": "sc:dist_contract",
                 "value": "0",
                 "function": "unlockAssets",
                 "esdt": {
@@ -126,7 +126,7 @@
             "txId": "2",
             "tx": {
                 "from": "address:user1",
-                "to": "address:dist_contract",
+                "to": "sc:dist_contract",
                 "value": "0",
                 "function": "unlockAssets",
                 "esdt": {
@@ -181,7 +181,7 @@
             "txId": "2",
             "tx": {
                 "from": "address:user1",
-                "to": "address:dist_contract",
+                "to": "sc:dist_contract",
                 "value": "0",
                 "function": "unlockAssets",
                 "esdt": {

@@ -10,7 +10,7 @@
             "txId": "14",
             "tx": {
                 "from": "address:owner",
-                "to": "address:farm_contract",
+                "to": "sc:farm_contract",
                 "value": "0",
                 "function": "setPerBlockRewardAmount",
                 "arguments": [
@@ -39,7 +39,7 @@
             "txId": "18",
             "tx": {
                 "from": "address:user_with_wegld1",
-                "to": "address:proxy_dex_contract",
+                "to": "sc:proxy_dex_contract",
                 "value": "0",
                 "function": "exitFarmProxy",
                 "esdt": {
@@ -48,7 +48,7 @@
                     "value": "7,000"
                 },
                 "arguments": [
-                    "address:farm_contract"
+                    "sc:farm_contract"
                 ],
                 "gasLimit": "1,000,000,000",
                 "gasPrice": "0"

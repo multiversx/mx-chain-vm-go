@@ -4,7 +4,7 @@
         {
             "step": "setState",
             "accounts": {
-                "address:farm_contract": {
+                "sc:farm_contract": {
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {

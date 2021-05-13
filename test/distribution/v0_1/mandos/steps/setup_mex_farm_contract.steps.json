@@ -4,7 +4,7 @@
         {
             "step": "setState",
             "accounts": {
-                "address:mex_farm_contract": {
+                "sc:mex_farm_contract": {
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
@@ -42,7 +42,7 @@
             "txId": "2",
             "tx": {
                 "from": "address:owner",
-                "to": "address:proxy_dex_contract",
+                "to": "sc:proxy_dex_contract",
                 "value": "0",
                 "function": "addAcceptedLockedAssetTokenId",
                 "arguments": [

@@ -10,7 +10,7 @@
             "txId": "2",
             "tx": {
                 "from": "address:owner",
-                "to": "address:dist_contract",
+                "to": "sc:dist_contract",
                 "value": "0",
                 "function": "startGlobalOperation",
                 "arguments": [],
@@ -30,7 +30,7 @@
             "txId": "2",
             "tx": {
                 "from": "address:owner",
-                "to": "address:dist_contract",
+                "to": "sc:dist_contract",
                 "value": "0",
                 "function": "setCommunityDistribution",
                 "arguments": [
@@ -53,7 +53,7 @@
             "txId": "2",
             "tx": {
                 "from": "address:owner",
-                "to": "address:dist_contract",
+                "to": "sc:dist_contract",
                 "value": "0",
                 "function": "setPerUserDistributedAssets",
                 "arguments": [
@@ -83,7 +83,7 @@
             "txId": "2",
             "tx": {
                 "from": "address:owner",
-                "to": "address:dist_contract",
+                "to": "sc:dist_contract",
                 "value": "0",
                 "function": "endGlobalOperation",
                 "arguments": [],
@@ -103,7 +103,7 @@
             "txId": "2",
             "tx": {
                 "from": "address:owner",
-                "to": "address:dist_contract",
+                "to": "sc:dist_contract",
                 "value": "0",
                 "function": "startGlobalOperation",
                 "arguments": [],
@@ -122,7 +122,7 @@
             "step": "scCall",
             "tx": {
                 "from": "address:owner",
-                "to": "address:dist_contract",
+                "to": "sc:dist_contract",
                 "value": "0",
                 "function": "clearUnclaimableAssets",
                 "arguments": [],
@@ -144,7 +144,7 @@
             "txId": "2",
             "tx": {
                 "from": "address:owner",
-                "to": "address:dist_contract",
+                "to": "sc:dist_contract",
                 "value": "0",
                 "function": "endGlobalOperation",
                 "arguments": [],

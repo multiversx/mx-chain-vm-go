@@ -77,17 +77,17 @@
                 {
                     "creatorAddress": "address:owner",
                     "creatorNonce": "0",
-                    "newAddress": "address:dist_contract"
+                    "newAddress": "sc:dist_contract"
                 },
                 {
                     "creatorAddress": "address:owner",
                     "creatorNonce": "1",
-                    "newAddress": "address:locked_asset_factory"
+                    "newAddress": "sc:locked_asset_factory"
                 },
                 {
                     "creatorAddress": "address:owner",
                     "creatorNonce": "2",
-                    "newAddress": "address:proxy_dex_contract"
+                    "newAddress": "sc:proxy_dex_contract"
                 }
             ]
         },
@@ -100,7 +100,7 @@
                 "contractCode": "file:../../output/sc_distribution_rs.wasm",
                 "arguments": [
                     "str:MEX-abcdef",
-                    "address:locked_asset_factory"
+                    "sc:locked_asset_factory"
                 ],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
@@ -163,7 +163,7 @@
             "txId": "2",
             "tx": {
                 "from": "address:owner",
-                "to": "address:proxy_dex_contract",
+                "to": "sc:proxy_dex_contract",
                 "value": "0",
                 "function": "addAcceptedLockedAssetTokenId",
                 "arguments": [
@@ -185,11 +185,11 @@
             "txId": "2",
             "tx": {
                 "from": "address:owner",
-                "to": "address:locked_asset_factory",
+                "to": "sc:locked_asset_factory",
                 "value": "0",
                 "function": "whitelist",
                 "arguments": [
-                    "address:dist_contract"
+                    "sc:dist_contract"
                 ],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
@@ -205,7 +205,7 @@
         {
             "step": "setState",
             "accounts": {
-                "address:dist_contract": {
+                "sc:dist_contract": {
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
@@ -226,12 +226,12 @@
                     "storage": {
                         "str:distributed_token_id": "str:MEX-abcdef",
                         "str:locked_token_id": "str:LKMEX-abcdef",
-                        "str:locked_asset_factory_address": "address:locked_asset_factory"
+                        "str:locked_asset_factory_address": "sc:locked_asset_factory"
                     },
                     "code": "file:../../output/sc_distribution_rs.wasm",
                     "owner": "address:owner"
                 },
-                "address:locked_asset_factory": {
+                "sc:locked_asset_factory": {
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
@@ -254,14 +254,14 @@
                         "str:locked_token_id": "str:LKMEX-abcdef",
                         "str:default_unlock_period": "0x000000000000001b32000000000000002c32",
                         "str:whitelist.info": "0x00000001000000010000000100000001",
-                        "0x77686974656c6973742e6e6f64655f6964646973745f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f": "1",
-                        "0x77686974656c6973742e6e6f64655f6c696e6b7300000001": "0",
-                        "0x77686974656c6973742e76616c756500000001": "address:dist_contract"
+                        "str:whitelist.node_id|sc:dist_contract": "1",
+                        "str:whitelist.node_links|u32:1": "0",
+                        "str:whitelist.value|u32:1": "sc:dist_contract"
                     },
                     "code": "file:../../output/sc-locked-asset-factory.wasm",
                     "owner": "address:owner"
                 },
-                "address:proxy_dex_contract": {
+                "sc:proxy_dex_contract": {
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
