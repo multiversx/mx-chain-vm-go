@@ -735,8 +735,13 @@ func bigIntPow(context unsafe.Pointer, destination, op1, op2 int32) {
 	metering.UseGas(gasToUse)
 
 	dest, a, b := bigInt.GetThree(destination, op1, op2)
-	gasUsedForDest := big.NewInt(0).Mul(b, big.NewInt(int64(a.BitLen())))
-	bigInt.ConsumeGasForBigIntCopy(gasUsedForDest, a, b)
+
+	//this calculates the length of the result in bytes
+	lengthOfResult := big.NewInt(0).Div(big.NewInt(0).Mul(b, big.NewInt(int64(a.BitLen()))), big.NewInt(8))
+
+	bigInt.ConsumeGasForThisBigIntNumberOfBytes(lengthOfResult)
+	bigInt.ConsumeGasForBigIntCopy(a, b)
+
 	if b.Sign() < 0 {
 		runtime := arwen.GetRuntimeContext(context)
 		arwen.WithFault(arwen.ErrBadLowerBounds, context, runtime.BigIntAPIErrorShouldFailExecution())

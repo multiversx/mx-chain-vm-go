@@ -405,7 +405,9 @@ func doubleEC(
 	Gy, x, y := bigInt.GetThree(yBasePoint, pointX, pointY)
 	bigInt.ConsumeGasForBigIntCopy(xResult, yResult, P, N, B, Gx, Gy, x, y)
 
-	xResult, yResult = elliptic_curve.Double(P, N, B, Gx, Gy, int(sizeOfField), x, y)
+	xResultDouble, yResultDouble := elliptic_curve.Double(P, N, B, Gx, Gy, int(sizeOfField), x, y)
+	xResult.Set(xResultDouble)
+	yResult.Set(yResultDouble)
 }
 
 //export isOnCurveEC
@@ -464,12 +466,14 @@ func scalarBaseMultEC(
 		return
 	}
 
-	x, y, P := bigInt.GetThree(xResultHandle, yResultHandle, fieldOrder)
+	xResult, yResult, P := bigInt.GetThree(xResultHandle, yResultHandle, fieldOrder)
 	N, B, Gx := bigInt.GetThree(basePointOrder, eqConstant, xBasePoint)
 	Gy := bigInt.GetOne(yBasePoint)
-	bigInt.ConsumeGasForBigIntCopy(P, N, B, Gx, Gy, x, y)
+	bigInt.ConsumeGasForBigIntCopy(P, N, B, Gx, Gy, xResult, yResult)
 
-	x, y = elliptic_curve.ScalarBaseMult(P, N, B, Gx, Gy, int(sizeOfField), k)
+	xResultSBM, yResultSBM := elliptic_curve.ScalarBaseMult(P, N, B, Gx, Gy, int(sizeOfField), k)
+	xResult.Set(xResultSBM)
+	yResult.Set(yResultSBM)
 }
 
 //export scalarMultEC
@@ -505,7 +509,9 @@ func scalarMultEC(
 	Gy, x, y := bigInt.GetThree(yBasePoint, pointX, pointY)
 	bigInt.ConsumeGasForBigIntCopy(xResult, yResult, P, N, B, Gx, Gy, x, y)
 
-	xResult, yResult = elliptic_curve.ScalarMult(P, N, B, Gx, Gy, int(sizeOfField), x, y, k)
+	xResultSM, yResultSM := elliptic_curve.ScalarMult(P, N, B, Gx, Gy, int(sizeOfField), x, y, k)
+	xResult.Set(xResultSM)
+	yResult.Set(yResultSM)
 }
 
 //export marshalEC
@@ -609,7 +615,9 @@ func unmarshalEC(
 	Gy := bigInt.GetOne(yBasePoint)
 	bigInt.ConsumeGasForBigIntCopy(P, N, B, Gx, Gy, xPair, yPair)
 
-	xPair, yPair = elliptic_curve.Unmarshal(P, N, B, Gx, Gy, int(sizeOfField), data)
+	xPairU, yPairU := elliptic_curve.Unmarshal(P, N, B, Gx, Gy, int(sizeOfField), data)
+	xPair.Set(xPairU)
+	yPair.Set(yPairU)
 
 	return 1
 }
@@ -645,7 +653,9 @@ func unmarshalCompressedEC(
 	Gy := bigInt.GetOne(yBasePoint)
 	bigInt.ConsumeGasForBigIntCopy(P, N, B, Gx, Gy, xPair, yPair)
 
-	xPair, yPair = elliptic_curve.UnmarshalCompressed(P, N, B, Gx, Gy, int(sizeOfField), data)
+	xPairUC, yPairUC := elliptic_curve.UnmarshalCompressed(P, N, B, Gx, Gy, int(sizeOfField), data)
+	xPair.Set(xPairUC)
+	yPair.Set(yPairUC)
 
 	return 1
 }
@@ -675,10 +685,12 @@ func generateKeyEC(
 	Gy := bigInt.GetOne(yBasePoint)
 	bigInt.ConsumeGasForBigIntCopy(P, N, B, Gx, Gy, xPubKey, yPubKey)
 
-	result, xPubKey, yPubKey, err := elliptic_curve.GenerateKey(P, N, N, Gx, Gy, int(sizeOfField))
+	result, xPubKeyGK, yPubKeyGK, err := elliptic_curve.GenerateKey(P, N, N, Gx, Gy, int(sizeOfField))
 	if err != nil {
 		return 0
 	}
+	xPubKey.Set(xPubKeyGK)
+	yPubKey.Set(yPubKeyGK)
 
 	err = runtime.MemStore(resultOffset, result)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
