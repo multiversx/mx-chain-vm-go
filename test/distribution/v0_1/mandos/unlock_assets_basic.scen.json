@@ -13,10 +13,10 @@
         },
         {
             "step": "scCall",
-            "txId": "2",
+            "txId": "12",
             "tx": {
                 "from": "address:user1",
-                "to": "sc:dist_contract",
+                "to": "sc:locked_asset_factory",
                 "value": "0",
                 "function": "unlockAssets",
                 "esdt": {
@@ -68,10 +68,10 @@
         },
         {
             "step": "scCall",
-            "txId": "2",
+            "txId": "13",
             "tx": {
                 "from": "address:user1",
-                "to": "sc:dist_contract",
+                "to": "sc:locked_asset_factory",
                 "value": "0",
                 "function": "unlockAssets",
                 "esdt": {
@@ -123,10 +123,10 @@
         },
         {
             "step": "scCall",
-            "txId": "2",
+            "txId": "14",
             "tx": {
                 "from": "address:user1",
-                "to": "sc:dist_contract",
+                "to": "sc:locked_asset_factory",
                 "value": "0",
                 "function": "unlockAssets",
                 "esdt": {
@@ -178,10 +178,10 @@
         },
         {
             "step": "scCall",
-            "txId": "2",
+            "txId": "15",
             "tx": {
                 "from": "address:user1",
-                "to": "sc:dist_contract",
+                "to": "sc:locked_asset_factory",
                 "value": "0",
                 "function": "unlockAssets",
                 "esdt": {
