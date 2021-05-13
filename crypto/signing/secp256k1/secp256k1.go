@@ -1,7 +1,7 @@
 package secp256k1
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1.3/crypto/signing"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto/signing"
 	"github.com/btcsuite/btcd/btcec"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
 )

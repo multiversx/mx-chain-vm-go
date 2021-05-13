@@ -1,8 +1,8 @@
 package worldmock
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1.3/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1.3/mock"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/ElrondNetwork/elrond-go/data/state"
 	"github.com/ElrondNetwork/elrond-go/marshal"

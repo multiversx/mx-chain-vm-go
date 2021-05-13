@@ -55,9 +55,9 @@ import (
 	"math/big"
 	"unsafe"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1.3/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1.3/math"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1.3/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/math"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 )
 

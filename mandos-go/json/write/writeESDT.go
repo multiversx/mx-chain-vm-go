@@ -1,8 +1,8 @@
 package mandosjsonwrite
 
 import (
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1.3/mandos-go/json/model"
-	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1.3/mandos-go/orderedjson"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/model"
+	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/orderedjson"
 )
 
 func esdtTxDataToOJ(esdtItem *mj.ESDTTxData) *oj.OJsonMap {

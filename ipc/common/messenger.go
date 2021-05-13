@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1.3/ipc/marshaling"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/ipc/marshaling"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 )
 

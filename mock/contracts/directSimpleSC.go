@@ -4,8 +4,8 @@ import (
 	"errors"
 	"math/big"
 
-	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1.3/mock/context"
-	test "github.com/ElrondNetwork/arwen-wasm-vm/v1.3/testcommon"
+	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
+	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
 	"github.com/stretchr/testify/require"
 )
 

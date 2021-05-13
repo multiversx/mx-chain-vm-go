@@ -6,9 +6,9 @@ import (
 	"errors"
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1.3/arwen"
-	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1.3/mock/context"
-	test "github.com/ElrondNetwork/arwen-wasm-vm/v1.3/testcommon"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
+	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
 	"github.com/ElrondNetwork/elrond-go/testscommon/txDataBuilder"
 	"github.com/stretchr/testify/require"
 )

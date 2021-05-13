@@ -3,9 +3,9 @@ package arwen
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1.3/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1.3/crypto"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1.3/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/ElrondNetwork/elrond-go/data/esdt"
 )

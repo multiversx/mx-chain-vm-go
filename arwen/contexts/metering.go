@@ -3,9 +3,9 @@ package contexts
 import (
 	"fmt"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1.3/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1.3/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1.3/math"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/math"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
