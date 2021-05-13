@@ -7,7 +7,7 @@ import (
 	"math"
 	"math/big"
 
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1.3/mandos-go/json/model"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 

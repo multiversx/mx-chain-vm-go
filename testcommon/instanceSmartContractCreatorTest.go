@@ -3,8 +3,8 @@ package testcommon
 import (
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1.3/arwen"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1.3/mock/context"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 

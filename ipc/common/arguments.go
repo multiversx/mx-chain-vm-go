@@ -3,8 +3,8 @@ package common
 import (
 	"os"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/marshaling"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1.3/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1.3/ipc/marshaling"
 )
 
 // ArwenArguments represents the initialization arguments required by Arwen, passed through the initialization pipe

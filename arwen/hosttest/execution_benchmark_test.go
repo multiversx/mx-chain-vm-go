@@ -6,10 +6,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
-	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/testcommon"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1.3/arwen"
+	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/v1.3/arwen/host"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1.3/mock/world"
+	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/v1.3/testcommon"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
 )

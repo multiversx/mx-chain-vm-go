@@ -1,10 +1,10 @@
 package arwendebug
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
-	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1.3/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1.3/arwen/host"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1.3/config"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1.3/mock/world"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 

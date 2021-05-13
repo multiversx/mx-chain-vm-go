@@ -145,7 +145,7 @@ def my_capitalize(input):
 
 def generate_repliers(args):
     print("package nodepart")
-    print("import \"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common\"")
+    print("import \"github.com/ElrondNetwork/arwen-wasm-vm/v1.3/ipc/common\"")
 
     for signature in signatures:
         call_go, output_args = get_call(signature)
@@ -194,7 +194,7 @@ package arwenpart
 import (
     "math/big"
 
-    "github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
+    "github.com/ElrondNetwork/arwen-wasm-vm/v1.3/ipc/common"
     "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 

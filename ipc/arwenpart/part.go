@@ -4,10 +4,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
-	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
-	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/marshaling"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1.3/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1.3/arwen/host"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1.3/ipc/common"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1.3/ipc/marshaling"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
