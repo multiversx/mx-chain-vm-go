@@ -231,7 +231,7 @@
                     "code": "file:../../output/sc_distribution_rs.wasm",
                     "owner": "address:owner"
                 },
-                "address:locked_assets_factory": {
+                "address:locked_asset_factory": {
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
