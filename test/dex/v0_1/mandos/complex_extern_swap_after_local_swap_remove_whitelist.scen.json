@@ -66,7 +66,7 @@
 					"str:MEX-abcdef",
 					"50,000"
 				],
-				"gasLimit": "100,000,000",
+				"gasLimit": "200,000,000",
 				"gasPrice": "0"
 			},
 			"expect": {
@@ -88,11 +88,11 @@
 					},
 					"storage": {
 						"0x6661726d696e675f706f6f6c5f746f6b656e5f6964": "0x5745474c442d616263646566",
-						"0x726f757465725f61646472657373": "0x726f757465725f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+						"0x726f757465725f61646472657373": "sc:router_contract",
 						"0x706169725f616464726573735f666f725f61636365707465645f6c705f746f6b656e2e6e6f64655f6c696e6b7300000001": "0x0000000000000002",
-						"str:pair_address_for_accepted_lp_token.mappedLPWEME-abcdef": "``weme_pair_contract______________",
+						"str:pair_address_for_accepted_lp_token.mappedLPWEME-abcdef": "sc:weme_pair_contract",
 						"str:pair_address_for_accepted_lp_token.node_idLPWEBU-abcdef": "1",
-						"str:pair_address_for_accepted_lp_token.mappedLPWEBU-abcdef": "``webu_pair_contract______________",
+						"str:pair_address_for_accepted_lp_token.mappedLPWEBU-abcdef": "sc:webu_pair_contract",
 						"str:pair_address_for_accepted_lp_token.info": "0x00000002000000010000000200000002",
 						"``pair_address_for_accepted_lp_token.node_idLPWEME-abcdef": "2",
 						"0x706169725f616464726573735f666f725f61636365707465645f6c705f746f6b656e2e76616c756500000002": "str:LPWEME-abcdef",
@@ -114,16 +114,16 @@
 					},
 					"storage": {
 						"``pair_address_for_accepted_lp_token.node_idLPMEBU-abcdef": "2",
-						"``pair_address_for_accepted_lp_token.mappedLPWEME-abcdef": "``weme_pair_contract______________",
+						"``pair_address_for_accepted_lp_token.mappedLPWEME-abcdef": "sc:weme_pair_contract",
 						"0x706169725f616464726573735f666f725f61636365707465645f6c705f746f6b656e2e6e6f64655f6c696e6b7300000001": "0x0000000000000002",
 						"0x706169725f616464726573735f666f725f61636365707465645f6c705f746f6b656e2e6e6f64655f6c696e6b7300000002": "0x0000000100000000",
 						"``pair_address_for_accepted_lp_token.info": "0x00000002000000010000000200000002",
 						"0x706169725f616464726573735f666f725f61636365707465645f6c705f746f6b656e2e76616c756500000001": "``LPWEME-abcdef",
-						"``pair_address_for_accepted_lp_token.mappedLPMEBU-abcdef": "``mebu_pair_contract______________",
+						"``pair_address_for_accepted_lp_token.mappedLPMEBU-abcdef": "sc:mebu_pair_contract",
 						"0x706169725f616464726573735f666f725f61636365707465645f6c705f746f6b656e2e76616c756500000002": "``LPMEBU-abcdef",
 						"``pair_address_for_accepted_lp_token.node_idLPWEME-abcdef": "1",
 						"0x6661726d5f746f6b656e5f6964": "0x53544d45582d616263646566",
-						"``router_address": "``router_contract_________________",
+						"``router_address": "sc:router_contract",
 						"0x7374617465": "0x01",
 						"str:owner": "address:owner",
 						"0x6661726d696e675f706f6f6c5f746f6b656e5f6964": "0x4d45582d616263646566",

@@ -148,6 +148,16 @@
 							"lastNonce": "1"
 						}
 					},
+					"storage": {
+						"str:farm_token_nonce": "1",
+						"str:total_supply": "100000000",
+						"str:farm_token_id": "str:FARM-abcdef",
+						"str:virtual_token_id": "str:WEGLD-abcdef",
+						"str:router_address": "sc:router_contract",
+						"str:owner": "address:owner",
+						"str:state": "1",
+						"str:farming_pool_token_id": "str:WEGLD-abcdef"
+					},
 					"code": "file:../output/elrond_dex_farm.wasm"
 				},
 				"+": ""

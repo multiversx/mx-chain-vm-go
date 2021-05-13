@@ -44,7 +44,7 @@
 					"storage": {
 						"``ELRONDroleesdtFARM-abcdef": "0x0a1145534454526f6c654e46544372656174650a1645534454526f6c654e46544164645175616e746974790a0f45534454526f6c654e46544275726e",
 						"str:pair_address_for_accepted_lp_token.info": "0x00000001000000010000000100000001",
-						"str:pair_address_for_accepted_lp_token.mappedLPTOK-abcdef": "``pair_contract___________________",
+						"str:pair_address_for_accepted_lp_token.mappedLPTOK-abcdef": "sc:pair_contract",
 						"str:pair_address_for_accepted_lp_token.node_idLPTOK-abcdef": "1",
 						"0x706169725f616464726573735f666f725f61636365707465645f6c705f746f6b656e2e76616c756500000001": "str:LPTOK-abcdef",
 						"0x706169725f616464726573735f666f725f61636365707465645f6c705f746f6b656e2e6e6f64655f6c696e6b7300000001": "0x0000000000000000",
