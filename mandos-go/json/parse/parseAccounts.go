@@ -25,7 +25,20 @@ func (p *Parser) processAccount(acctRaw oj.OJsonObject) (*mj.Account, error) {
 		return nil, errors.New("unmarshalled account object is not a map")
 	}
 
-	acct := mj.Account{}
+	acct := mj.Account{
+		Shard:           mj.JSONUint64Zero(),
+		IsSmartContract: false,
+		Comment:         "",
+		Nonce:           mj.JSONUint64Zero(),
+		Balance:         mj.JSONBigIntZero(),
+		Username:        mj.NewJSONBytesFromString(nil, ""),
+		Storage:         nil,
+		Code:            mj.NewJSONBytesFromString(nil, ""),
+		Owner:           mj.NewJSONBytesFromString(nil, ""),
+		AsyncCallData:   "",
+		ESDTData:        nil,
+	}
+
 	var err error
 
 	for _, kvp := range acctMap.OrderedKV {
