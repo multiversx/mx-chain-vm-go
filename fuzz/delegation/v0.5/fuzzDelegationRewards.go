@@ -16,12 +16,12 @@ func (pfe *fuzzDelegationExecutor) addRewards(amount *big.Int) error {
 		"step": "validatorReward",
 		"txId": "%d",
 		"tx": {
-			"to": "''%s",
+			"to": "%s",
 			"value": "%d"
 		}
 	}`,
 		pfe.nextTxIndex(),
-		string(pfe.delegationContractAddress),
+		pfe.delegationContractAddress,
 		amount,
 	))
 	pfe.log("reward: %d", amount)
@@ -43,8 +43,8 @@ func (pfe *fuzzDelegationExecutor) claimRewards(delegatorIndex int) error {
 		"step": "scCall",
 		"txId": "%d",
 		"tx": {
-			"from": "''%s",
-			"to": "''%s",
+			"from": "%s",
+			"to": "%s",
 			"value": "0",
 			"function": "claimRewards",
 			"arguments": [],
@@ -60,8 +60,8 @@ func (pfe *fuzzDelegationExecutor) claimRewards(delegatorIndex int) error {
 		}
 	}`,
 		pfe.nextTxIndex(),
-		string(pfe.delegatorAddress(delegatorIndex)),
-		string(pfe.delegationContractAddress),
+		pfe.delegatorAddress(delegatorIndex),
+		pfe.delegationContractAddress,
 	))
 	if err != nil {
 		return err
@@ -85,12 +85,12 @@ func (pfe *fuzzDelegationExecutor) getClaimableRewards(delegatorIndex int) (*big
 		"step": "scCall",
 		"txId": "%d",
 		"tx": {
-			"from": "''%s",
-			"to": "''%s",
+			"from": "%s",
+			"to": "%s",
 			"value": "0",
 			"function": "getClaimableRewards",
 			"arguments": [
-				"''%s"
+				"%s"
 			],
 			"gasLimit": "1,000,000",
 			"gasPrice": "0"
@@ -104,9 +104,9 @@ func (pfe *fuzzDelegationExecutor) getClaimableRewards(delegatorIndex int) (*big
 		}
 	}`,
 		pfe.nextTxIndex(),
-		string(pfe.delegatorAddress(delegatorIndex)),
-		string(pfe.delegationContractAddress),
-		string(pfe.delegatorAddress(delegatorIndex)),
+		pfe.delegatorAddress(delegatorIndex),
+		pfe.delegationContractAddress,
+		pfe.delegatorAddress(delegatorIndex),
 	))
 	if err != nil {
 		return nil, err
