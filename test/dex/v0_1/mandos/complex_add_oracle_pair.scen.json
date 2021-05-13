@@ -10,11 +10,11 @@
 			"txId": "swap-fixed-input",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:wegld_farm_contract",
+				"to": "sc:wegld_farm_contract",
 				"value": "0",
 				"function": "addAcceptedPairAddressAndLpToken",
 				"arguments": [
-					"address:mebu_pair_contract",
+					"sc:mebu_pair_contract",
 					"str:LPMEBU-abcdef"
 				],
 				"gasLimit": "60,000,000",
@@ -33,13 +33,13 @@
 			"txId": "swap-fixed-input",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:wegld_farm_contract",
+				"to": "sc:wegld_farm_contract",
 				"value": "0",
 				"function": "addTrustedPairAsOracle",
 				"arguments": [
 					"str:WEGLD-abcdef",
 					"str:BUSD-abcdef",
-					"address:webu_pair_contract"
+					"sc:webu_pair_contract"
 				],
 				"gasLimit": "60,000,000",
 				"gasPrice": "0"

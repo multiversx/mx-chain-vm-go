@@ -7,12 +7,12 @@
 				{
 					"creatorAddress": "address:owner",
 					"creatorNonce": "0",
-					"newAddress": "address:router_contract"
+					"newAddress": "sc:router_contract"
 				},
 				{
 					"creatorAddress": "address:owner",
 					"creatorNonce": "1",
-					"newAddress": "address:farm_contract"
+					"newAddress": "sc:farm_contract"
 				}
 			]
 		},
@@ -23,8 +23,7 @@
 				"from": "address:owner",
 				"value": "0",
 				"contractCode": "file:../../output/elrond_dex_router.wasm",
-				"arguments": [
-				],
+				"arguments": [],
 				"gasLimit": "100,000,000",
 				"gasPrice": "0"
 			},
@@ -45,7 +44,7 @@
 				"contractCode": "file:../../output/elrond_dex_farm.wasm",
 				"arguments": [
 					"str:WEGLD-abcdef",
-					"address:router_contract",
+					"sc:router_contract",
 					"0x01"
 				],
 				"gasLimit": "100,000,000",

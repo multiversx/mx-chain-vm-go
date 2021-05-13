@@ -10,7 +10,7 @@
 			"txId": "create-pair",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:router_contract",
+				"to": "sc:router_contract",
 				"value": "0",
 				"function": "createPair",
 				"arguments": [
@@ -32,7 +32,7 @@
 			"txId": "create-pair",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:router_contract",
+				"to": "sc:router_contract",
 				"value": "0",
 				"function": "createPair",
 				"arguments": [
@@ -54,7 +54,7 @@
 			"txId": "create-pair",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:router_contract",
+				"to": "sc:router_contract",
 				"value": "0",
 				"function": "createPair",
 				"arguments": [

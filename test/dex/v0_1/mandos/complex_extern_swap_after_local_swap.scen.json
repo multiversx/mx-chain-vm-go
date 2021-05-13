@@ -10,7 +10,7 @@
 			"txId": "swap-fixed-input",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:mebu_pair_contract",
+				"to": "sc:mebu_pair_contract",
 				"value": "0",
 				"function": "removeTrustedSwapPair",
 				"arguments": [
@@ -33,7 +33,7 @@
 			"txId": "swap-fixed-input",
 			"tx": {
 				"from": "address:user2",
-				"to": "address:mebu_pair_contract",
+				"to": "sc:mebu_pair_contract",
 				"value": "0",
 				"function": "swapTokensFixedInput",
 				"esdt": {
@@ -58,7 +58,7 @@
 		{
 			"step": "checkState",
 			"accounts": {
-				"address:wegld_farm_contract": {
+				"sc:wegld_farm_contract": {
 					"nonce": "0",
 					"balance": "",
 					"esdt": {
@@ -84,7 +84,7 @@
 					},
 					"code": "file:../output/elrond_dex_farm.wasm"
 				},
-				"address:mex_farm_contract": {
+				"sc:mex_farm_contract": {
 					"nonce": "0",
 					"balance": "",
 					"esdt": {

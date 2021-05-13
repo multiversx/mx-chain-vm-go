@@ -10,7 +10,7 @@
 			"txId": "get-pair",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:router_contract",
+				"to": "sc:router_contract",
 				"value": "0",
 				"function": "getPair",
 				"arguments": [
@@ -22,7 +22,7 @@
 			},
 			"expect": {
 				"out": [
-					"address:pair_contract"
+					"sc:pair_contract"
 				],
 				"status": "0",
 				"message": "",
@@ -35,7 +35,7 @@
 			"txId": "get-pair",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:router_contract",
+				"to": "sc:router_contract",
 				"value": "0",
 				"function": "getPair",
 				"arguments": [
@@ -47,7 +47,7 @@
 			},
 			"expect": {
 				"out": [
-					"address:pair_contract"
+					"sc:pair_contract"
 				],
 				"status": "0",
 				"message": "",

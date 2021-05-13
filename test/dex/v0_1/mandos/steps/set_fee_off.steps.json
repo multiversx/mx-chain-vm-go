@@ -6,12 +6,12 @@
 			"txId": "set-fee-off",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:router_contract",
+				"to": "sc:router_contract",
 				"value": "0",
 				"function": "setFeeOff",
 				"arguments": [
-					"address:pair_contract",
-					"address:farm_contract",
+					"sc:pair_contract",
+					"sc:farm_contract",
 					"str:WEGLD-abcdef"
 				],
 				"gasLimit": "100,000,000",
@@ -30,11 +30,11 @@
 			"txId": "remove-pair",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:farm_contract",
+				"to": "sc:farm_contract",
 				"value": "0",
 				"function": "removeAcceptedPairAddressAndLpToken",
 				"arguments": [
-					"address:pair_contract",
+					"sc:pair_contract",
 					"str:LPTOK-abcdef"
 				],
 				"gasLimit": "100,000,000",
@@ -53,16 +53,17 @@
 			"txId": "get-fee-state",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:pair_contract",
+				"to": "sc:pair_contract",
 				"value": "0",
 				"function": "getFeeState",
-				"arguments": [
-				],
+				"arguments": [],
 				"gasLimit": "100,000,000",
 				"gasPrice": "0"
 			},
 			"expect": {
-				"out": [""],
+				"out": [
+					""
+				],
 				"status": "0",
 				"message": "",
 				"gas": "*",

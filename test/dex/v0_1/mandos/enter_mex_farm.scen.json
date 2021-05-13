@@ -14,7 +14,7 @@
 			"txId": "enter farm",
 			"tx": {
 				"from": "address:user_with_mex",
-				"to": "address:mex_farm_contract",
+				"to": "sc:mex_farm_contract",
 				"value": "0",
 				"function": "enterFarm",
 				"esdt": {

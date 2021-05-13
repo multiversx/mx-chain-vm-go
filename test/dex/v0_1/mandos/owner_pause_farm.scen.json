@@ -18,7 +18,7 @@
 			"txId": "pause",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:farm_contract",
+				"to": "sc:farm_contract",
 				"value": "0",
 				"function": "pause",
 				"arguments": [],
@@ -38,7 +38,7 @@
 			"txId": "get-state",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:farm_contract",
+				"to": "sc:farm_contract",
 				"value": "0",
 				"function": "getState",
 				"arguments": [],
@@ -46,7 +46,9 @@
 				"gasPrice": "0"
 			},
 			"expect": {
-				"out": [""],
+				"out": [
+					""
+				],
 				"status": "0",
 				"message": "",
 				"gas": "*",

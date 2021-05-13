@@ -10,7 +10,7 @@
 			"txId": "unstake",
 			"tx": {
 				"from": "address:user1",
-				"to": "address:farm_contract",
+				"to": "sc:farm_contract",
 				"value": "0",
 				"function": "exitFarm",
 				"esdt": {
@@ -38,7 +38,7 @@
 			"txId": "get-virtual-reserves",
 			"tx": {
 				"from": "address:user1",
-				"to": "address:farm_contract",
+				"to": "sc:farm_contract",
 				"value": "0",
 				"function": "getVirtualReserves",
 				"arguments": [],
@@ -46,7 +46,9 @@
 				"gasPrice": "0"
 			},
 			"expect": {
-				"out": ["199,900,000"],
+				"out": [
+					"199,900,000"
+				],
 				"status": "",
 				"gas": "*",
 				"refund": "*"

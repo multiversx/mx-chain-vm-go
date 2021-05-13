@@ -10,7 +10,7 @@
 			"txId": "unstake",
 			"tx": {
 				"from": "address:user1",
-				"to": "address:farm_contract",
+				"to": "sc:farm_contract",
 				"value": "0",
 				"function": "claimRewards",
 				"esdt": {

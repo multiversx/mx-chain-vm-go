@@ -10,7 +10,7 @@
 			"txId": "reclaim-temporary-funds",
 			"tx": {
 				"from": "address:user1",
-				"to": "address:pair_contract",
+				"to": "sc:pair_contract",
 				"value": "0",
 				"function": "reclaimTemporaryFunds",
 				"arguments": [],
@@ -30,7 +30,7 @@
 			"txId": "getTemporaryFunds",
 			"tx": {
 				"from": "address:user1",
-				"to": "address:pair_contract",
+				"to": "sc:pair_contract",
 				"value": "0",
 				"function": "getTemporaryFunds",
 				"arguments": [

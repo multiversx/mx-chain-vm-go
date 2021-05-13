@@ -6,7 +6,7 @@
 			"txId": "start-pair-code-construct",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:router_contract",
+				"to": "sc:router_contract",
 				"value": "0",
 				"function": "startPairCodeConstruction",
 				"arguments": [],
@@ -25,7 +25,7 @@
 			"txId": "append-pair-code",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:router_contract",
+				"to": "sc:router_contract",
 				"value": "0",
 				"function": "appendPairCode",
 				"arguments": [
@@ -46,7 +46,7 @@
 			"txId": "end-pair-code-construct",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:router_contract",
+				"to": "sc:router_contract",
 				"value": "0",
 				"function": "endPairCodeConstruction",
 				"arguments": [],
@@ -65,7 +65,7 @@
 			"txId": "get-pair-code",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:router_contract",
+				"to": "sc:router_contract",
 				"value": "0",
 				"function": "getPairCode",
 				"arguments": [],

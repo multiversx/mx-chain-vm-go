@@ -6,7 +6,7 @@
 			"txId": "set-local-roles",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:farm_contract",
+				"to": "sc:farm_contract",
 				"value": "0",
 				"function": "setLocalRolesFarmToken",
 				"arguments": [],
@@ -26,7 +26,7 @@
 			"txId": "get-last-error-message",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:farm_contract",
+				"to": "sc:farm_contract",
 				"value": "0",
 				"function": "getLastErrorMessage",
 				"arguments": [],
@@ -34,7 +34,9 @@
 				"gasPrice": "0"
 			},
 			"expect": {
-				"out": [""],
+				"out": [
+					""
+				],
 				"status": "0",
 				"message": "",
 				"gas": "*",

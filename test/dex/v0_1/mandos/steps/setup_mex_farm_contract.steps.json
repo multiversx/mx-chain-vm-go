@@ -12,7 +12,7 @@
                     },
                     "storage": {}
                 },
-                "address:mex_farm_contract": {
+                "sc:mex_farm_contract": {
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {

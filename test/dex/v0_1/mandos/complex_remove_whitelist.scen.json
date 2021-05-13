@@ -10,11 +10,11 @@
 			"txId": "swap-fixed-input",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:webu_pair_contract",
+				"to": "sc:webu_pair_contract",
 				"value": "0",
 				"function": "removeWhitelist",
 				"arguments": [
-					"address:mebu_pair_contract"
+					"sc:mebu_pair_contract"
 				],
 				"gasLimit": "50,000,000",
 				"gasPrice": "0"
@@ -32,7 +32,7 @@
 			"txId": "swap-fixed-input",
 			"tx": {
 				"from": "address:user2",
-				"to": "address:mebu_pair_contract",
+				"to": "sc:mebu_pair_contract",
 				"value": "0",
 				"function": "swapTokensFixedInput",
 				"esdt": {
@@ -57,7 +57,7 @@
 		{
 			"step": "checkState",
 			"accounts": {
-				"address:wegld_farm_contract": {
+				"sc:wegld_farm_contract": {
 					"nonce": "0",
 					"balance": "",
 					"esdt": {
@@ -83,7 +83,7 @@
 					},
 					"code": "file:../output/elrond_dex_farm.wasm"
 				},
-				"address:mex_farm_contract": {
+				"sc:mex_farm_contract": {
 					"nonce": "0",
 					"balance": "",
 					"esdt": {

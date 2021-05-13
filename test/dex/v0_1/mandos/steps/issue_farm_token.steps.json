@@ -6,7 +6,7 @@
 			"txId": "issue-farm-token",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:farm_contract",
+				"to": "sc:farm_contract",
 				"value": "5,000,000,000,000,000,000",
 				"function": "issueFarmToken",
 				"arguments": [
@@ -29,7 +29,7 @@
 			"txId": "get-issued-lp-token",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:farm_contract",
+				"to": "sc:farm_contract",
 				"value": "0",
 				"function": "getFarmTokenId",
 				"arguments": [],
@@ -37,7 +37,9 @@
 				"gasPrice": "0"
 			},
 			"expect": {
-				"out": ["0x45474c44"],
+				"out": [
+					"0x45474c44"
+				],
 				"status": "0",
 				"message": "",
 				"gas": "*",

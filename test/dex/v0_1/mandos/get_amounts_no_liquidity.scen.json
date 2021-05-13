@@ -10,7 +10,7 @@
 			"txId": "get-pair",
 			"tx": {
 				"from": "address:user1",
-				"to": "address:pair_contract",
+				"to": "sc:pair_contract",
 				"value": "0",
 				"function": "getAmountOut",
 				"arguments": [
@@ -33,7 +33,7 @@
 			"txId": "get-amount-out1",
 			"tx": {
 				"from": "address:user1",
-				"to": "address:pair_contract",
+				"to": "sc:pair_contract",
 				"value": "0",
 				"function": "getAmountOut",
 				"arguments": [
@@ -56,7 +56,7 @@
 			"txId": "get-pair",
 			"tx": {
 				"from": "address:user1",
-				"to": "address:pair_contract",
+				"to": "sc:pair_contract",
 				"value": "0",
 				"function": "getAmountOut",
 				"arguments": [
@@ -79,7 +79,7 @@
 			"txId": "get-pair",
 			"tx": {
 				"from": "address:user1",
-				"to": "address:pair_contract",
+				"to": "sc:pair_contract",
 				"value": "0",
 				"function": "getAmountOut",
 				"arguments": [
@@ -102,7 +102,7 @@
 			"txId": "get-pair",
 			"tx": {
 				"from": "address:user1",
-				"to": "address:pair_contract",
+				"to": "sc:pair_contract",
 				"value": "0",
 				"function": "getAmountIn",
 				"arguments": [
@@ -125,7 +125,7 @@
 			"txId": "get-pair",
 			"tx": {
 				"from": "address:user1",
-				"to": "address:pair_contract",
+				"to": "sc:pair_contract",
 				"value": "0",
 				"function": "getAmountIn",
 				"arguments": [
@@ -148,7 +148,7 @@
 			"txId": "get-pair",
 			"tx": {
 				"from": "address:user1",
-				"to": "address:pair_contract",
+				"to": "sc:pair_contract",
 				"value": "0",
 				"function": "getAmountIn",
 				"arguments": [
@@ -171,7 +171,7 @@
 			"txId": "get-amount-out2",
 			"tx": {
 				"from": "address:user1",
-				"to": "address:pair_contract",
+				"to": "sc:pair_contract",
 				"value": "0",
 				"function": "getAmountIn",
 				"arguments": [
@@ -194,7 +194,7 @@
 			"txId": "get-pair",
 			"tx": {
 				"from": "address:user1",
-				"to": "address:pair_contract",
+				"to": "sc:pair_contract",
 				"value": "0",
 				"function": "getEquivalent",
 				"arguments": [
@@ -217,7 +217,7 @@
 			"txId": "get-pair",
 			"tx": {
 				"from": "address:user1",
-				"to": "address:pair_contract",
+				"to": "sc:pair_contract",
 				"value": "0",
 				"function": "getEquivalent",
 				"arguments": [
@@ -240,7 +240,7 @@
 			"txId": "get-pair",
 			"tx": {
 				"from": "address:user1",
-				"to": "address:pair_contract",
+				"to": "sc:pair_contract",
 				"value": "0",
 				"function": "getEquivalent",
 				"arguments": [
@@ -263,7 +263,7 @@
 			"txId": "get-pair",
 			"tx": {
 				"from": "address:user1",
-				"to": "address:pair_contract",
+				"to": "sc:pair_contract",
 				"value": "0",
 				"function": "getEquivalent",
 				"arguments": [
@@ -286,7 +286,7 @@
 			"txId": "get-pair",
 			"tx": {
 				"from": "address:user1",
-				"to": "address:pair_contract",
+				"to": "sc:pair_contract",
 				"value": "0",
 				"function": "getEquivalent",
 				"arguments": [

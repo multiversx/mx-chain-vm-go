@@ -10,7 +10,7 @@
 			"txId": "enter farm",
 			"tx": {
 				"from": "address:user1",
-				"to": "address:farm_contract",
+				"to": "sc:farm_contract",
 				"value": "0",
 				"function": "enterFarm",
 				"esdt": {
@@ -39,7 +39,7 @@
 			"txId": "get-virtual-reserves",
 			"tx": {
 				"from": "address:user1",
-				"to": "address:farm_contract",
+				"to": "sc:farm_contract",
 				"value": "0",
 				"function": "getVirtualReserves",
 				"arguments": [],
@@ -47,7 +47,9 @@
 				"gasPrice": "0"
 			},
 			"expect": {
-				"out": ["100,000,000"],
+				"out": [
+					"100,000,000"
+				],
 				"status": "",
 				"gas": "*",
 				"refund": "*"
@@ -58,7 +60,7 @@
 			"txId": "stake",
 			"tx": {
 				"from": "address:user1",
-				"to": "address:farm_contract",
+				"to": "sc:farm_contract",
 				"value": "0",
 				"function": "enterFarm",
 				"esdt": {
@@ -87,7 +89,7 @@
 			"txId": "get-virtual-reserves",
 			"tx": {
 				"from": "address:user1",
-				"to": "address:farm_contract",
+				"to": "sc:farm_contract",
 				"value": "0",
 				"function": "getVirtualReserves",
 				"arguments": [],
@@ -95,7 +97,9 @@
 				"gasPrice": "0"
 			},
 			"expect": {
-				"out": ["200,000,000"],
+				"out": [
+					"200,000,000"
+				],
 				"status": "",
 				"gas": "*",
 				"refund": "*"

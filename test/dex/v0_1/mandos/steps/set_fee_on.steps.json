@@ -6,12 +6,12 @@
 			"txId": "set-fee-on",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:router_contract",
+				"to": "sc:router_contract",
 				"value": "0",
 				"function": "setFeeOn",
 				"arguments": [
-					"address:pair_contract",
-					"address:farm_contract",
+					"sc:pair_contract",
+					"sc:farm_contract",
 					"str:WEGLD-abcdef"
 				],
 				"gasLimit": "100,000,000",
@@ -30,11 +30,11 @@
 			"txId": "add-pair",
 			"tx": {
 				"from": "address:owner",
-				"to": "address:farm_contract",
+				"to": "sc:farm_contract",
 				"value": "0",
 				"function": "addAcceptedPairAddressAndLpToken",
 				"arguments": [
-					"address:pair_contract",
+					"sc:pair_contract",
 					"str:LPTOK-abcdef"
 				],
 				"gasLimit": "100,000,000",
