@@ -1,6 +1,7 @@
 package contexts
 
 import (
+	basicMath "math"
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -116,11 +117,30 @@ func (context *bigIntContext) IsInterfaceNil() bool {
 
 // ConsumeGasForBigIntCopy uses gas for Copy operations
 func (context *bigIntContext) ConsumeGasForBigIntCopy(values ...*big.Int) {
-	metering := context.host.Metering()
 	for _, val := range values {
 		byteLen := val.BitLen() / 8
-		if byteLen > maxBigIntByteLenForNormalCost {
-			metering.UseGas(math.MulUint64(uint64(byteLen), metering.GasSchedule().BaseOperationCost.DataCopyPerByte))
-		}
+		context.ConsumeGasForThisIntNumberOfBytes(byteLen)
 	}
+}
+
+// ConsumeGasForThisIntNumberOfBytes uses gas for the number of bytes given.
+func (context *bigIntContext) ConsumeGasForThisIntNumberOfBytes(byteLen int) {
+	metering := context.host.Metering()
+	if byteLen > maxBigIntByteLenForNormalCost {
+		metering.UseGas(math.MulUint64(uint64(byteLen), metering.GasSchedule().BaseOperationCost.DataCopyPerByte))
+	}
+}
+
+// ConsumeGasForThisBigIntNumberOfBytes uses gas for the number of bytes given.
+func (context *bigIntContext) ConsumeGasForThisBigIntNumberOfBytes(byteLen *big.Int) {
+	metering := context.host.Metering()
+	DataCopyPerByte := metering.GasSchedule().BaseOperationCost.DataCopyPerByte
+
+	gasToUseBigInt := big.NewInt(0).Mul(byteLen, big.NewInt(int64(DataCopyPerByte)))
+	maxGasBigInt := big.NewInt(0).SetUint64(basicMath.MaxUint64)
+	gasToUse := uint64(basicMath.MaxUint64)
+	if gasToUseBigInt.Cmp(maxGasBigInt) < 0 {
+		gasToUse = gasToUseBigInt.Uint64()
+	}
+	metering.UseGas(gasToUse)
 }

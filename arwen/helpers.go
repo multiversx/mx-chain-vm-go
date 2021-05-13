@@ -10,7 +10,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
-	"github.com/ElrondNetwork/elrond-go-logger"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 )
 
 // Zero is the big integer 0
@@ -100,6 +100,7 @@ func GetSCCode(fileName string) []byte {
 // SetLoggingForTests configures the logger package with *:TRACE and enabled logger names
 func SetLoggingForTests() {
 	logger.SetLogLevel("*:TRACE")
+	logger.ToggleCorrelation(false)
 	logger.ToggleLoggerName(true)
 }
 
