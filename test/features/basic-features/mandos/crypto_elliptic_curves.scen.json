@@ -28,12 +28,12 @@
                 "function": "is_on_curve_ec",
                 "arguments": [
                     {
-                        "field_order" : "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000000000000000001",
-                        "base_point_order" : "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFF16A2E0B8F03E13DD29455C5C2A3D",
-                        "eq_constant" : "0xb4050a850c04b3abf54132565044b0b7d7bfd8ba270b39432355ffb4",
-                        "x_base_point" : "0xb70e0cbd6bb4bf7f321390b94a03c1d356c21122343280d6115c1d21",
-                        "y_base_point" : "0xbd376388b5f723fb4c22dfe6cd4375a05a07476444d5819985007e34",
-                        "size_of_field" : "224"
+                        "field1" : "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000000000000000001",
+                        "field2" : "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFF16A2E0B8F03E13DD29455C5C2A3D",
+                        "field3" : "0xb4050a850c04b3abf54132565044b0b7d7bfd8ba270b39432355ffb4",
+                        "field4" : "0xb70e0cbd6bb4bf7f321390b94a03c1d356c21122343280d6115c1d21",
+                        "field5" : "0xbd376388b5f723fb4c22dfe6cd4375a05a07476444d5819985007e34",
+                        "field6" : "224"
                     },
                     "0xb70e0cbd6bb4bf7f321390b94a03c1d356c21122343280d6115c1d21",
                     "0xbd376388b5f723fb4c22dfe6cd4375a05a07476444d5819985007e34"
@@ -61,12 +61,12 @@
                 "function": "is_on_curve_ec",
                 "arguments": [
                     {
-                        "field_order" : "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000000000000000001",
-                        "base_point_order" : "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFF16A2E0B8F03E13DD29455C5C2A3D",
-                        "eq_constant" : "0xb4050a850c04b3abf54132565044b0b7d7bfd8ba270b39432355ffb4",
-                        "x_base_point" : "0xb70e0cbd6bb4bf7f321390b94a03c1d356c21122343280d6115c1d21",
-                        "y_base_point" : "0xbd376388b5f723fb4c22dfe6cd4375a05a07476444d5819985007e34",
-                        "size_of_field" : "224"
+                        "field1" : "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000000000000000001",
+                        "field2" : "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFF16A2E0B8F03E13DD29455C5C2A3D",
+                        "field3" : "0xb4050a850c04b3abf54132565044b0b7d7bfd8ba270b39432355ffb4",
+                        "field4" : "0xb70e0cbd6bb4bf7f321390b94a03c1d356c21122343280d6115c1d21",
+                        "field5" : "0xbd376388b5f723fb4c22dfe6cd4375a05a07476444d5819985007e34",
+                        "field6" : "224"
                     },
                     "1",
                     "1"
@@ -94,12 +94,12 @@
                 "function": "marshal_ec",
                 "arguments": [
                     {
-                        "field_order" : "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000000000000000001",
-                        "base_point_order" : "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFF16A2E0B8F03E13DD29455C5C2A3D",
-                        "eq_constant" : "0xb4050a850c04b3abf54132565044b0b7d7bfd8ba270b39432355ffb4",
-                        "x_base_point" : "0xb70e0cbd6bb4bf7f321390b94a03c1d356c21122343280d6115c1d21",
-                        "y_base_point" : "0xbd376388b5f723fb4c22dfe6cd4375a05a07476444d5819985007e34",
-                        "size_of_field" : "224"
+                        "field1" : "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000000000000000001",
+                        "field2" : "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFF16A2E0B8F03E13DD29455C5C2A3D",
+                        "field3" : "0xb4050a850c04b3abf54132565044b0b7d7bfd8ba270b39432355ffb4",
+                        "field4" : "0xb70e0cbd6bb4bf7f321390b94a03c1d356c21122343280d6115c1d21",
+                        "field5" : "0xbd376388b5f723fb4c22dfe6cd4375a05a07476444d5819985007e34",
+                        "field6" : "224"
                     },
                     "1",
                     "1"
@@ -127,12 +127,12 @@
                 "function": "marshal_ec",
                 "arguments": [
                     {
-                        "field_order" : "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000000000000000001",
-                        "base_point_order" : "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFF16A2E0B8F03E13DD29455C5C2A3D",
-                        "eq_constant" : "0xb4050a850c04b3abf54132565044b0b7d7bfd8ba270b39432355ffb4",
-                        "x_base_point" : "0xb70e0cbd6bb4bf7f321390b94a03c1d356c21122343280d6115c1d21",
-                        "y_base_point" : "0xbd376388b5f723fb4c22dfe6cd4375a05a07476444d5819985007e34",
-                        "size_of_field" : "224"
+                        "field1" : "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000000000000000001",
+                        "field2" : "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFF16A2E0B8F03E13DD29455C5C2A3D",
+                        "field3" : "0xb4050a850c04b3abf54132565044b0b7d7bfd8ba270b39432355ffb4",
+                        "field4" : "0xb70e0cbd6bb4bf7f321390b94a03c1d356c21122343280d6115c1d21",
+                        "field5" : "0xbd376388b5f723fb4c22dfe6cd4375a05a07476444d5819985007e34",
+                        "field6" : "224"
                     },
                     "0xb70e0cbd6bb4bf7f321390b94a03c1d356c21122343280d6115c1d21",
                     "0xb70e0cbd6bb4bf7f321390b94a03c1d356c21122343280d6115c1d21"
@@ -160,12 +160,12 @@
                 "function": "marshal_compressed_ec",
                 "arguments": [
                     {
-                        "field_order" : "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000000000000000001",
-                        "base_point_order" : "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFF16A2E0B8F03E13DD29455C5C2A3D",
-                        "eq_constant" : "0xb4050a850c04b3abf54132565044b0b7d7bfd8ba270b39432355ffb4",
-                        "x_base_point" : "0xb70e0cbd6bb4bf7f321390b94a03c1d356c21122343280d6115c1d21",
-                        "y_base_point" : "0xbd376388b5f723fb4c22dfe6cd4375a05a07476444d5819985007e34",
-                        "size_of_field" : "224"
+                        "field1" : "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000000000000000001",
+                        "field2" : "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFF16A2E0B8F03E13DD29455C5C2A3D",
+                        "field3" : "0xb4050a850c04b3abf54132565044b0b7d7bfd8ba270b39432355ffb4",
+                        "field4" : "0xb70e0cbd6bb4bf7f321390b94a03c1d356c21122343280d6115c1d21",
+                        "field5" : "0xbd376388b5f723fb4c22dfe6cd4375a05a07476444d5819985007e34",
+                        "field6" : "224"
                     },
                     "0xb70e0cbd6bb4bf7f321390b94a03c1d356c21122343280d6115c1d21",
                     "0xb70e0cbd6bb4bf7f321390b94a03c1d356c21122343280d6115c1d21"
@@ -193,12 +193,12 @@
                 "function": "marshal_compressed_ec",
                 "arguments": [
                     {
-                        "field_order" : "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000000000000000001",
-                        "base_point_order" : "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFF16A2E0B8F03E13DD29455C5C2A3D",
-                        "eq_constant" : "0xb4050a850c04b3abf54132565044b0b7d7bfd8ba270b39432355ffb4",
-                        "x_base_point" : "0xb70e0cbd6bb4bf7f321390b94a03c1d356c21122343280d6115c1d21",
-                        "y_base_point" : "0xbd376388b5f723fb4c22dfe6cd4375a05a07476444d5819985007e34",
-                        "size_of_field" : "224"
+                        "field1" : "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000000000000000001",
+                        "field2" : "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFF16A2E0B8F03E13DD29455C5C2A3D",
+                        "field3" : "0xb4050a850c04b3abf54132565044b0b7d7bfd8ba270b39432355ffb4",
+                        "field4" : "0xb70e0cbd6bb4bf7f321390b94a03c1d356c21122343280d6115c1d21",
+                        "field5" : "0xbd376388b5f723fb4c22dfe6cd4375a05a07476444d5819985007e34",
+                        "field6" : "224"
                     },
                     "1",
                     "1"
