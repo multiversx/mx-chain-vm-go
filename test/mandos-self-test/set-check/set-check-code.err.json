@@ -4,7 +4,7 @@
         {
             "step": "setState",
             "accounts": {
-                "address:the-address": {
+                "sc:contract-address": {
                     "code": "file:set-check-esdt.scen.json"
                 }
             }
@@ -12,7 +12,7 @@
         {
             "step": "checkState",
             "accounts": {
-                "address:the-address": {
+                "sc:contract-address": {
                     "code": "file:set-check-code.scen.json"
                 }
             }

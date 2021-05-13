@@ -5,7 +5,22 @@
             "step": "setState",
             "comment": "any large(r) file will do, so we can get a more realistic case",
             "accounts": {
-                "address:the-address": {
+                "sc:contract-address": {
+                    "code": "file:set-check-esdt.scen.json"
+                }
+            },
+            "newAddresses": [
+                {
+                    "creatorAddress": "address:creator",
+                    "creatorNonce": "1234",
+                    "newAddress": "sc:should-be-sc-address"
+                }
+            ]
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "sc:contract-address": {
                     "code": "file:set-check-esdt.scen.json"
                 }
             }
@@ -13,15 +28,7 @@
         {
             "step": "checkState",
             "accounts": {
-                "address:the-address": {
-                    "code": "file:set-check-esdt.scen.json"
-                }
-            }
-        },
-        {
-            "step": "checkState",
-            "accounts": {
-                "address:the-address": {
+                "sc:contract-address": {
                     "code": "*"
                 }
             }
