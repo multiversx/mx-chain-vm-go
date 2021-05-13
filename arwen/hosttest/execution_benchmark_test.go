@@ -1,4 +1,4 @@
-package host
+package hosttest
 
 import (
 	"fmt"
@@ -7,7 +7,9 @@ import (
 	"time"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
+	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/testcommon"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
 )
@@ -67,7 +69,7 @@ func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int) {
 	verifyTransfers(tb, mockWorld, totalTokenSupply)
 }
 
-func deploy(tb testing.TB, totalTokenSupply *big.Int) (*vmHost, *worldmock.MockWorld) {
+func deploy(tb testing.TB, totalTokenSupply *big.Int) (arwen.VMHost, *worldmock.MockWorld) {
 	// Prepare the host
 	mockWorld := worldmock.NewMockWorld()
 	ownerAccount := &worldmock.Account{
@@ -82,11 +84,11 @@ func deploy(tb testing.TB, totalTokenSupply *big.Int) (*vmHost, *worldmock.MockW
 		NewAddress:     scAddress,
 	})
 
-	gasMap, err := LoadGasScheduleConfig("../../arwenmandos/gasSchedules/gasScheduleV2.toml")
+	gasMap, err := testcommon.LoadGasScheduleConfig("../../arwenmandos/gasSchedules/gasScheduleV2.toml")
 	require.Nil(tb, err)
 
-	host, err := NewArwenVM(mockWorld, &arwen.VMHostParameters{
-		VMType:                   defaultVMType,
+	host, err := arwenHost.NewArwenVM(mockWorld, &arwen.VMHostParameters{
+		VMType:                   testcommon.DefaultVMType,
 		BlockGasLimit:            uint64(1000),
 		GasSchedule:              gasMap,
 		ProtocolBuiltinFunctions: make(vmcommon.FunctionNames),
@@ -106,7 +108,7 @@ func deploy(tb testing.TB, totalTokenSupply *big.Int) (*vmHost, *worldmock.MockW
 			GasPrice:    0,
 			GasProvided: 0xFFFFFFFFFFFFFFFF,
 		},
-		ContractCode: GetTestSCCode("erc20", "../../"),
+		ContractCode: testcommon.GetTestSCCode("erc20", "../../"),
 	}
 
 	ownerAccount.Nonce++ // nonce increases before deploy
