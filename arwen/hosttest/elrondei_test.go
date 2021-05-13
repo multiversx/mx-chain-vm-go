@@ -1,21 +1,22 @@
-package host
+package hosttest
 
 import (
 	"math/big"
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/testcommon"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestElrondEI_CallValue(t *testing.T) {
-	code := GetTestSCCode("elrondei", "../../")
+	code := testcommon.GetTestSCCode("elrondei", "../../")
 
 	// 1-byte call value
-	host, _ := defaultTestArwenForCall(t, code, nil)
-	input := DefaultTestContractCallInput()
+	host, _ := testcommon.DefaultTestArwenForCall(t, code, nil)
+	input := testcommon.DefaultTestContractCallInput()
 	input.GasProvided = 100000
 	input.Function = "test_getCallValue_1byte"
 	input.CallValue = big.NewInt(64)
@@ -38,8 +39,8 @@ func TestElrondEI_CallValue(t *testing.T) {
 		data[2])
 
 	// 4-byte call value
-	host, _ = defaultTestArwenForCall(t, code, nil)
-	input = DefaultTestContractCallInput()
+	host, _ = testcommon.DefaultTestArwenForCall(t, code, nil)
+	input = testcommon.DefaultTestContractCallInput()
 	input.GasProvided = 100000
 	input.Function = "test_getCallValue_4bytes"
 	input.CallValue = big.NewInt(0).SetBytes([]byte{64, 12, 16, 99})
@@ -61,8 +62,8 @@ func TestElrondEI_CallValue(t *testing.T) {
 		data[2])
 
 	// BigInt call value
-	host, _ = defaultTestArwenForCall(t, code, nil)
-	input = DefaultTestContractCallInput()
+	host, _ = testcommon.DefaultTestArwenForCall(t, code, nil)
+	input = testcommon.DefaultTestContractCallInput()
 	input.GasProvided = 100000
 	input.Function = "test_getCallValue_bigInt_to_Bytes"
 	input.CallValue = big.NewInt(19*256 + 233)
@@ -88,9 +89,9 @@ func TestElrondEI_CallValue(t *testing.T) {
 }
 
 func TestElrondEI_int64getArgument(t *testing.T) {
-	code := GetTestSCCode("elrondei", "../../")
-	host, _ := defaultTestArwenForCall(t, code, nil)
-	input := DefaultTestContractCallInput()
+	code := testcommon.GetTestSCCode("elrondei", "../../")
+	host, _ := testcommon.DefaultTestArwenForCall(t, code, nil)
+	input := testcommon.DefaultTestContractCallInput()
 	input.GasProvided = 100000
 	input.Function = "test_int64getArgument"
 	input.Arguments = [][]byte{big.NewInt(12345).Bytes()}

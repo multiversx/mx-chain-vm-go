@@ -1,6 +1,7 @@
 package mock
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
@@ -36,10 +37,18 @@ func NewInstanceMock(code []byte) *InstanceMock {
 }
 
 // AddMockMethod adds the provided function as a mocked method to the instance under the specified name.
-func (instance *InstanceMock) AddMockMethod(name string, method func()) {
+func (instance *InstanceMock) AddMockMethod(name string, method func() *InstanceMock) {
+	instance.AddMockMethodWithError(name, method, nil)
+}
+
+// AddMockMethodWithError adds the provided function as a mocked method to the instance under the specified name and returns an error
+func (instance *InstanceMock) AddMockMethodWithError(name string, method func() *InstanceMock, err error) {
 	wrappedMethod := func(...interface{}) (wasmer.Value, error) {
-		method()
-		return wasmer.Void(), nil
+		instance := method()
+		if arwen.BreakpointValue(instance.GetBreakpointValue()) != arwen.BreakpointNone {
+			err = errors.New("breakpoint")
+		}
+		return wasmer.Void(), err
 	}
 
 	instance.Exports[name] = wrappedMethod
@@ -127,4 +136,10 @@ func (instance *InstanceMock) GetMemory() wasmer.MemoryHandler {
 func (instance *InstanceMock) IsFunctionImported(name string) bool {
 	_, ok := instance.Exports[name]
 	return ok
+}
+
+// GetMockInstance gets the mock instance from the runtime of the provided host
+func GetMockInstance(host arwen.VMHost) *InstanceMock {
+	instance := host.Runtime().GetInstance().(*InstanceMock)
+	return instance
 }
