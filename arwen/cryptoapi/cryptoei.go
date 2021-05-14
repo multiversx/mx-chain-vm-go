@@ -354,16 +354,16 @@ func addEC(
 	context unsafe.Pointer,
 	xResultHandle int32,
 	yResultHandle int32,
-	fieldOrder int32,
-	basePointOrder int32,
-	eqConstant int32,
-	xBasePoint int32,
-	yBasePoint int32,
+	fieldOrderHandle int32,
+	basePointOrderHandle int32,
+	eqConstantHandle int32,
+	xBasePointHandle int32,
+	yBasePointHandle int32,
 	sizeOfField int32,
-	fstPointX int32,
-	fstPointY int32,
-	sndPointX int32,
-	sndPointY int32,
+	fstPointXHandle int32,
+	fstPointYHandle int32,
+	sndPointXHandle int32,
+	sndPointYHandle int32,
 ) {
 	bigInt := arwen.GetBigIntContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -371,13 +371,15 @@ func addEC(
 	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
 	metering.UseGas(gasToUse)
 
-	xResult, yResult, P := bigInt.GetThree(xResultHandle, yResultHandle, fieldOrder)
-	N, B, Gx := bigInt.GetThree(basePointOrder, eqConstant, xBasePoint)
-	Gy, x1, y1 := bigInt.GetThree(yBasePoint, fstPointX, fstPointY)
-	x2, y2 := bigInt.GetTwo(sndPointX, sndPointY)
+	xResult, yResult, P := bigInt.GetThree(xResultHandle, yResultHandle, fieldOrderHandle)
+	N, B, Gx := bigInt.GetThree(basePointOrderHandle, eqConstantHandle, xBasePointHandle)
+	Gy, x1, y1 := bigInt.GetThree(yBasePointHandle, fstPointXHandle, fstPointYHandle)
+	x2, y2 := bigInt.GetTwo(sndPointXHandle, sndPointYHandle)
 	bigInt.ConsumeGasForBigIntCopy(xResult, yResult, P, N, B, Gx, Gy, x1, y1, x2, y2)
 
-	xResult, yResult = elliptic_curve.Add(P, N, B, Gx, Gy, int(sizeOfField), x1, y1, x2, y2)
+	xResultAdd, yResultAdd := elliptic_curve.Add(P, N, B, Gx, Gy, int(sizeOfField), x1, y1, x2, y2)
+	xResult.Set(xResultAdd)
+	yResult.Set(yResultAdd)
 }
 
 //export doubleEC
@@ -385,14 +387,14 @@ func doubleEC(
 	context unsafe.Pointer,
 	xResultHandle int32,
 	yResultHandle int32,
-	fieldOrder int32,
-	basePointOrder int32,
-	eqConstant int32,
-	xBasePoint int32,
-	yBasePoint int32,
+	fieldOrderHandle int32,
+	basePointOrderHandle int32,
+	eqConstantHandle int32,
+	xBasePointHandle int32,
+	yBasePointHandle int32,
 	sizeOfField int32,
-	pointX int32,
-	pointY int32,
+	pointXHandle int32,
+	pointYHandle int32,
 ) {
 	bigInt := arwen.GetBigIntContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -400,9 +402,9 @@ func doubleEC(
 	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
 	metering.UseGas(gasToUse)
 
-	xResult, yResult, P := bigInt.GetThree(xResultHandle, yResultHandle, fieldOrder)
-	N, B, Gx := bigInt.GetThree(basePointOrder, eqConstant, xBasePoint)
-	Gy, x, y := bigInt.GetThree(yBasePoint, pointX, pointY)
+	xResult, yResult, P := bigInt.GetThree(xResultHandle, yResultHandle, fieldOrderHandle)
+	N, B, Gx := bigInt.GetThree(basePointOrderHandle, eqConstantHandle, xBasePointHandle)
+	Gy, x, y := bigInt.GetThree(yBasePointHandle, pointXHandle, pointYHandle)
 	bigInt.ConsumeGasForBigIntCopy(xResult, yResult, P, N, B, Gx, Gy, x, y)
 
 	xResultDouble, yResultDouble := elliptic_curve.Double(P, N, B, Gx, Gy, int(sizeOfField), x, y)
@@ -413,14 +415,14 @@ func doubleEC(
 //export isOnCurveEC
 func isOnCurveEC(
 	context unsafe.Pointer,
-	fieldOrder int32,
-	basePointOrder int32,
-	eqConstant int32,
-	xBasePoint int32,
-	yBasePoint int32,
+	fieldOrderHandle int32,
+	basePointOrderHandle int32,
+	eqConstantHandle int32,
+	xBasePointHandle int32,
+	yBasePointHandle int32,
 	sizeOfField int32,
-	pointX int32,
-	pointY int32,
+	pointXHandle int32,
+	pointYHandle int32,
 ) int32 {
 	bigInt := arwen.GetBigIntContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -428,9 +430,9 @@ func isOnCurveEC(
 	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
 	metering.UseGas(gasToUse)
 
-	x, y, P := bigInt.GetThree(pointX, pointY, fieldOrder)
-	N, B, Gx := bigInt.GetThree(basePointOrder, eqConstant, xBasePoint)
-	Gy := bigInt.GetOne(yBasePoint)
+	x, y, P := bigInt.GetThree(pointXHandle, pointYHandle, fieldOrderHandle)
+	N, B, Gx := bigInt.GetThree(basePointOrderHandle, eqConstantHandle, xBasePointHandle)
+	Gy := bigInt.GetOne(yBasePointHandle)
 	bigInt.ConsumeGasForBigIntCopy(P, N, B, Gx, Gy, x, y)
 
 	if elliptic_curve.IsOnCurve(P, N, B, Gx, Gy, int(sizeOfField), x, y) {
@@ -445,11 +447,11 @@ func scalarBaseMultEC(
 	context unsafe.Pointer,
 	xResultHandle int32,
 	yResultHandle int32,
-	fieldOrder int32,
-	basePointOrder int32,
-	eqConstant int32,
-	xBasePoint int32,
-	yBasePoint int32,
+	fieldOrderHandle int32,
+	basePointOrderHandle int32,
+	eqConstantHandle int32,
+	xBasePointHandle int32,
+	yBasePointHandle int32,
 	sizeOfField int32,
 	kOffset int32,
 	length int32,
@@ -466,9 +468,9 @@ func scalarBaseMultEC(
 		return 1
 	}
 
-	xResult, yResult, P := bigInt.GetThree(xResultHandle, yResultHandle, fieldOrder)
-	N, B, Gx := bigInt.GetThree(basePointOrder, eqConstant, xBasePoint)
-	Gy := bigInt.GetOne(yBasePoint)
+	xResult, yResult, P := bigInt.GetThree(xResultHandle, yResultHandle, fieldOrderHandle)
+	N, B, Gx := bigInt.GetThree(basePointOrderHandle, eqConstantHandle, xBasePointHandle)
+	Gy := bigInt.GetOne(yBasePointHandle)
 	bigInt.ConsumeGasForBigIntCopy(P, N, B, Gx, Gy, xResult, yResult)
 
 	xResultSBM, yResultSBM := elliptic_curve.ScalarBaseMult(P, N, B, Gx, Gy, int(sizeOfField), k)
@@ -483,14 +485,14 @@ func scalarMultEC(
 	context unsafe.Pointer,
 	xResultHandle int32,
 	yResultHandle int32,
-	fieldOrder int32,
-	basePointOrder int32,
-	eqConstant int32,
-	xBasePoint int32,
-	yBasePoint int32,
+	fieldOrderHandle int32,
+	basePointOrderHandle int32,
+	eqConstantHandle int32,
+	xBasePointHandle int32,
+	yBasePointHandle int32,
 	sizeOfField int32,
-	pointX int32,
-	pointY int32,
+	pointXHandle int32,
+	pointYHandle int32,
 	kOffset int32,
 	length int32,
 ) int32 {
@@ -506,9 +508,9 @@ func scalarMultEC(
 		return 1
 	}
 
-	xResult, yResult, P := bigInt.GetThree(xResultHandle, yResultHandle, fieldOrder)
-	N, B, Gx := bigInt.GetThree(basePointOrder, eqConstant, xBasePoint)
-	Gy, x, y := bigInt.GetThree(yBasePoint, pointX, pointY)
+	xResult, yResult, P := bigInt.GetThree(xResultHandle, yResultHandle, fieldOrderHandle)
+	N, B, Gx := bigInt.GetThree(basePointOrderHandle, eqConstantHandle, xBasePointHandle)
+	Gy, x, y := bigInt.GetThree(yBasePointHandle, pointXHandle, pointYHandle)
 	bigInt.ConsumeGasForBigIntCopy(xResult, yResult, P, N, B, Gx, Gy, x, y)
 
 	xResultSM, yResultSM := elliptic_curve.ScalarMult(P, N, B, Gx, Gy, int(sizeOfField), x, y, k)
@@ -521,14 +523,14 @@ func scalarMultEC(
 //export marshalEC
 func marshalEC(
 	context unsafe.Pointer,
-	fieldOrder int32,
-	basePointOrder int32,
-	eqConstant int32,
-	xBasePoint int32,
-	yBasePoint int32,
+	fieldOrderHandle int32,
+	basePointOrderHandle int32,
+	eqConstantHandle int32,
+	xBasePointHandle int32,
+	yBasePointHandle int32,
 	sizeOfField int32,
-	pointX int32,
-	pointY int32,
+	pointXHandle int32,
+	pointYHandle int32,
 	resultOffset int32,
 ) int32 {
 	runtime := arwen.GetRuntimeContext(context)
@@ -538,9 +540,9 @@ func marshalEC(
 	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
 	metering.UseGas(gasToUse)
 
-	x, y, P := bigInt.GetThree(pointX, pointY, fieldOrder)
-	N, B, Gx := bigInt.GetThree(basePointOrder, eqConstant, xBasePoint)
-	Gy := bigInt.GetOne(yBasePoint)
+	x, y, P := bigInt.GetThree(pointXHandle, pointYHandle, fieldOrderHandle)
+	N, B, Gx := bigInt.GetThree(basePointOrderHandle, eqConstantHandle, xBasePointHandle)
+	Gy := bigInt.GetOne(yBasePointHandle)
 	bigInt.ConsumeGasForBigIntCopy(P, N, B, Gx, Gy, x, y)
 
 	result := elliptic_curve.Marshal(P, N, B, Gx, Gy, int(sizeOfField), x, y)
@@ -556,14 +558,14 @@ func marshalEC(
 //export marshalCompressedEC
 func marshalCompressedEC(
 	context unsafe.Pointer,
-	fieldOrder int32,
-	basePointOrder int32,
-	eqConstant int32,
-	xBasePoint int32,
-	yBasePoint int32,
+	fieldOrderHandle int32,
+	basePointOrderHandle int32,
+	eqConstantHandle int32,
+	xBasePointHandle int32,
+	yBasePointHandle int32,
 	sizeOfField int32,
-	pointX int32,
-	pointY int32,
+	pointXHandle int32,
+	pointYHandle int32,
 	resultOffset int32,
 ) int32 {
 	runtime := arwen.GetRuntimeContext(context)
@@ -573,9 +575,9 @@ func marshalCompressedEC(
 	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
 	metering.UseGas(gasToUse)
 
-	x, y, P := bigInt.GetThree(pointX, pointY, fieldOrder)
-	N, B, Gx := bigInt.GetThree(basePointOrder, eqConstant, xBasePoint)
-	Gy := bigInt.GetOne(yBasePoint)
+	x, y, P := bigInt.GetThree(pointXHandle, pointYHandle, fieldOrderHandle)
+	N, B, Gx := bigInt.GetThree(basePointOrderHandle, eqConstantHandle, xBasePointHandle)
+	Gy := bigInt.GetOne(yBasePointHandle)
 	bigInt.ConsumeGasForBigIntCopy(P, N, B, Gx, Gy, x, y)
 
 	result := elliptic_curve.MarshalCompressed(P, N, B, Gx, Gy, int(sizeOfField), x, y)
@@ -593,11 +595,11 @@ func unmarshalEC(
 	context unsafe.Pointer,
 	xPairHandle int32,
 	yPairHandle int32,
-	fieldOrder int32,
-	basePointOrder int32,
-	eqConstant int32,
-	xBasePoint int32,
-	yBasePoint int32,
+	fieldOrderHandle int32,
+	basePointOrderHandle int32,
+	eqConstantHandle int32,
+	xBasePointHandle int32,
+	yBasePointHandle int32,
 	sizeOfField int32,
 	dataOffset int32,
 	length int32,
@@ -614,9 +616,9 @@ func unmarshalEC(
 		return 1
 	}
 
-	xPair, yPair, P := bigInt.GetThree(xPairHandle, yPairHandle, fieldOrder)
-	N, B, Gx := bigInt.GetThree(basePointOrder, eqConstant, xBasePoint)
-	Gy := bigInt.GetOne(yBasePoint)
+	xPair, yPair, P := bigInt.GetThree(xPairHandle, yPairHandle, fieldOrderHandle)
+	N, B, Gx := bigInt.GetThree(basePointOrderHandle, eqConstantHandle, xBasePointHandle)
+	Gy := bigInt.GetOne(yBasePointHandle)
 	bigInt.ConsumeGasForBigIntCopy(P, N, B, Gx, Gy, xPair, yPair)
 
 	xPairU, yPairU := elliptic_curve.Unmarshal(P, N, B, Gx, Gy, int(sizeOfField), data)
@@ -631,11 +633,11 @@ func unmarshalCompressedEC(
 	context unsafe.Pointer,
 	xPairHandle int32,
 	yPairHandle int32,
-	fieldOrder int32,
-	basePointOrder int32,
-	eqConstant int32,
-	xBasePoint int32,
-	yBasePoint int32,
+	fieldOrderHandle int32,
+	basePointOrderHandle int32,
+	eqConstantHandle int32,
+	xBasePointHandle int32,
+	yBasePointHandle int32,
 	sizeOfField int32,
 	dataOffset int32,
 	length int32,
@@ -652,9 +654,9 @@ func unmarshalCompressedEC(
 		return int32(len(data))
 	}
 
-	xPair, yPair, P := bigInt.GetThree(xPairHandle, yPairHandle, fieldOrder)
-	N, B, Gx := bigInt.GetThree(basePointOrder, eqConstant, xBasePoint)
-	Gy := bigInt.GetOne(yBasePoint)
+	xPair, yPair, P := bigInt.GetThree(xPairHandle, yPairHandle, fieldOrderHandle)
+	N, B, Gx := bigInt.GetThree(basePointOrderHandle, eqConstantHandle, xBasePointHandle)
+	Gy := bigInt.GetOne(yBasePointHandle)
 	bigInt.ConsumeGasForBigIntCopy(P, N, B, Gx, Gy, xPair, yPair)
 
 	xPairUC, yPairUC := elliptic_curve.UnmarshalCompressed(P, N, B, Gx, Gy, int(sizeOfField), data)
@@ -669,11 +671,11 @@ func generateKeyEC(
 	context unsafe.Pointer,
 	xPubKeyHandle int32,
 	yPubKeyHandle int32,
-	fieldOrder int32,
-	basePointOrder int32,
-	eqConstant int32,
-	xBasePoint int32,
-	yBasePoint int32,
+	fieldOrderHandle int32,
+	basePointOrderHandle int32,
+	eqConstantHandle int32,
+	xBasePointHandle int32,
+	yBasePointHandle int32,
 	sizeOfField int32,
 	resultOffset int32,
 ) int32 {
@@ -684,9 +686,9 @@ func generateKeyEC(
 	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
 	metering.UseGas(gasToUse)
 
-	xPubKey, yPubKey, P := bigInt.GetThree(xPubKeyHandle, yPubKeyHandle, fieldOrder)
-	N, B, Gx := bigInt.GetThree(basePointOrder, eqConstant, xBasePoint)
-	Gy := bigInt.GetOne(yBasePoint)
+	xPubKey, yPubKey, P := bigInt.GetThree(xPubKeyHandle, yPubKeyHandle, fieldOrderHandle)
+	N, B, Gx := bigInt.GetThree(basePointOrderHandle, eqConstantHandle, xBasePointHandle)
+	Gy := bigInt.GetOne(yBasePointHandle)
 	bigInt.ConsumeGasForBigIntCopy(P, N, B, Gx, Gy, xPubKey, yPubKey)
 
 	result, xPubKeyGK, yPubKeyGK, err := elliptic_curve.GenerateKey(P, N, N, Gx, Gy, int(sizeOfField))
