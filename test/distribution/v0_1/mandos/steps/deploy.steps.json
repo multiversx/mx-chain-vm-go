@@ -284,6 +284,11 @@
                                 "ESDTRoleLocalMint",
                                 "ESDTRoleLocalBurn"
                             ]
+                        },
+                        "str:LKMEX-abcdef": {
+                            "roles": [
+                                "ESDTRoleNFTBurn"
+                            ]
                         }
                     },
                     "storage": {

@@ -52,7 +52,7 @@
 						"0x6665655f64657374696e6174696f6e2e6e6f64655f6c696e6b7300000001": "0x0000000000000000",
 						"str:special_fee_percent": "100",
 						"str:state": "1",
-						"0x726573657276650000000a414c432d616263646566": "1001001000",
+						"0x726573657276650000000a414c432d616263646566": "1000001000",
 						"str:first_token_id": "str:WEGLD-abcdef",
 						"str:lpTokenIdentifier": "str:LPTOK-abcdef",
 						"0x6665655f64657374696e6174696f6e2e76616c756500000001": "sc:farm_contract",
