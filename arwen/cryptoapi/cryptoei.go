@@ -15,8 +15,8 @@ package cryptoapi
 // extern void addEC(void *context, int32_t destination1, int32_t destination2, int32_t fieldOrder, int32_t basePointOrder, int32_t eqConstant, int32_t xBasePoint, int32_t yBasePoint, int32_t sizeOfField, int32_t fstPointX, int32_t fstPointY, int32_t sndPointX, int32_t sndPointY);
 // extern void doubleEC(void *context, int32_t destination1, int32_t destination2, int32_t fieldOrder, int32_t basePointOrder, int32_t eqConstant, int32_t xBasePoint, int32_t yBasePoint, int32_t sizeOfField, int32_t pointX, int32_t pointY);
 // extern int32_t isOnCurveEC(void *context, int32_t fieldOrder, int32_t basePointOrder, int32_t eqConstant, int32_t xBasePoint, int32_t yBasePoint, int32_t sizeOfField, int32_t pointX, int32_t pointY);
-// extern void scalarBaseMultEC(void *context, int32_t destination1, int32_t destination2, int32_t fieldOrder, int32_t basePointOrder, int32_t eqConstant, int32_t xBasePoint, int32_t yBasePoint, int32_t sizeOfField, int32_t kOffset, int32_t length);
-// extern void scalarMultEC(void *context, int32_t destination1, int32_t destination2, int32_t fieldOrder, int32_t basePointOrder, int32_t eqConstant, int32_t xBasePoint, int32_t yBasePoint, int32_t sizeOfField, int32_t pointX, int32_t pointY, int32_t kOffset, int32_t length);
+// extern int32_t scalarBaseMultEC(void *context, int32_t destination1, int32_t destination2, int32_t fieldOrder, int32_t basePointOrder, int32_t eqConstant, int32_t xBasePoint, int32_t yBasePoint, int32_t sizeOfField, int32_t kOffset, int32_t length);
+// extern int32_t scalarMultEC(void *context, int32_t destination1, int32_t destination2, int32_t fieldOrder, int32_t basePointOrder, int32_t eqConstant, int32_t xBasePoint, int32_t yBasePoint, int32_t sizeOfField, int32_t pointX, int32_t pointY, int32_t kOffset, int32_t length);
 // extern int32_t marshalEC(void *context, int32_t fieldOrder, int32_t basePointOrder, int32_t eqConstant, int32_t xBasePoint, int32_t yBasePoint, int32_t sizeOfField, int32_t xPairHandle, int32_t yPairHandle, int32_t resultOffest);
 // extern int32_t unmarshalEC(void *context, int32_t xPairHandle, int32_t yPairHandle, int32_t fieldOrder, int32_t basePointOrder, int32_t eqConstant, int32_t xBasePoint, int32_t yBasePoint, int32_t sizeOfField, int32_t dataOffest, int32_t length);
 // extern int32_t marshalCompressedEC(void *context, int32_t fieldOrder, int32_t basePointOrder, int32_t eqConstant, int32_t xBasePoint, int32_t yBasePoint, int32_t sizeOfField, int32_t xPairHandle, int32_t yPairHandle, int32_t resultOffest);
@@ -453,7 +453,7 @@ func scalarBaseMultEC(
 	sizeOfField int32,
 	kOffset int32,
 	length int32,
-) {
+) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	bigInt := arwen.GetBigIntContext(context)
@@ -463,7 +463,7 @@ func scalarBaseMultEC(
 
 	k, err := runtime.MemLoad(kOffset, length)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
-		return
+		return 1
 	}
 
 	xResult, yResult, P := bigInt.GetThree(xResultHandle, yResultHandle, fieldOrder)
@@ -474,6 +474,8 @@ func scalarBaseMultEC(
 	xResultSBM, yResultSBM := elliptic_curve.ScalarBaseMult(P, N, B, Gx, Gy, int(sizeOfField), k)
 	xResult.Set(xResultSBM)
 	yResult.Set(yResultSBM)
+
+	return 0
 }
 
 //export scalarMultEC
@@ -491,7 +493,7 @@ func scalarMultEC(
 	pointY int32,
 	kOffset int32,
 	length int32,
-) {
+) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	bigInt := arwen.GetBigIntContext(context)
@@ -501,7 +503,7 @@ func scalarMultEC(
 
 	k, err := runtime.MemLoad(kOffset, length)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
-		return
+		return 1
 	}
 
 	xResult, yResult, P := bigInt.GetThree(xResultHandle, yResultHandle, fieldOrder)
@@ -512,6 +514,8 @@ func scalarMultEC(
 	xResultSM, yResultSM := elliptic_curve.ScalarMult(P, N, B, Gx, Gy, int(sizeOfField), x, y, k)
 	xResult.Set(xResultSM)
 	yResult.Set(yResultSM)
+
+	return 0
 }
 
 //export marshalEC
@@ -543,10 +547,10 @@ func marshalEC(
 
 	err := runtime.MemStore(resultOffset, result)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
-		return 0
+		return int32(len(result))
 	}
 
-	return 1
+	return 0
 }
 
 //export marshalCompressedEC
@@ -578,10 +582,10 @@ func marshalCompressedEC(
 
 	err := runtime.MemStore(resultOffset, result)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
-		return 0
+		return int32(len(result))
 	}
 
-	return 1
+	return 0
 }
 
 //export unmarshalEC
@@ -607,7 +611,7 @@ func unmarshalEC(
 
 	data, err := runtime.MemLoad(dataOffset, length)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
-		return 0
+		return 1
 	}
 
 	xPair, yPair, P := bigInt.GetThree(xPairHandle, yPairHandle, fieldOrder)
@@ -619,7 +623,7 @@ func unmarshalEC(
 	xPair.Set(xPairU)
 	yPair.Set(yPairU)
 
-	return 1
+	return 0
 }
 
 //export unmarshalCompressedEC
@@ -645,7 +649,7 @@ func unmarshalCompressedEC(
 
 	data, err := runtime.MemLoad(dataOffset, length)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
-		return 0
+		return int32(len(data))
 	}
 
 	xPair, yPair, P := bigInt.GetThree(xPairHandle, yPairHandle, fieldOrder)
@@ -657,7 +661,7 @@ func unmarshalCompressedEC(
 	xPair.Set(xPairUC)
 	yPair.Set(yPairUC)
 
-	return 1
+	return 0
 }
 
 //export generateKeyEC
@@ -686,16 +690,17 @@ func generateKeyEC(
 	bigInt.ConsumeGasForBigIntCopy(P, N, B, Gx, Gy, xPubKey, yPubKey)
 
 	result, xPubKeyGK, yPubKeyGK, err := elliptic_curve.GenerateKey(P, N, N, Gx, Gy, int(sizeOfField))
-	if err != nil {
-		return 0
+	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return int32(len(result))
 	}
-	xPubKey.Set(xPubKeyGK)
-	yPubKey.Set(yPubKeyGK)
 
 	err = runtime.MemStore(resultOffset, result)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
-		return 0
+		return int32(len(result))
 	}
 
-	return 1
+	xPubKey.Set(xPubKeyGK)
+	yPubKey.Set(yPubKeyGK)
+
+	return 0
 }
