@@ -20,7 +20,7 @@
                     "10,000",
                     "100",
                     "str:LKMEX-abcdef",
-                    "2",
+                    "1",
                     "10,000",
                     "100"
                 ],
@@ -50,7 +50,7 @@
                         "str:LKMEX-abcdef": {
                             "instances": [
                                 {
-                                    "nonce": "0x02",
+                                    "nonce": "0x01",
                                     "balance": "80,000",
                                     "creator": "*",
                                     "hash": "*",
@@ -89,7 +89,7 @@
                     "str:WEGLD-abcdef",
                     "0",
                     "str:LKMEX-abcdef",
-                    "2"
+                    "1"
                 ],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
@@ -112,7 +112,7 @@
                         "str:LKMEX-abcdef": {
                             "instances": [
                                 {
-                                    "nonce": "0x02",
+                                    "nonce": "0x01",
                                     "balance": "80,000",
                                     "creator": "*",
                                     "hash": "*",

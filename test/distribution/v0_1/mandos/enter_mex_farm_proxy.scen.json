@@ -41,7 +41,7 @@
                 "function": "enterFarmProxy",
                 "esdt": {
                     "tokenIdentifier": "str:LKMEX-abcdef",
-                    "nonce": "0x02",
+                    "nonce": "0x01",
                     "value": "10,000"
                 },
                 "arguments": [
@@ -72,7 +72,7 @@
                         "str:LKMEX-abcdef": {
                             "instances": [
                                 {
-                                    "nonce": "0x02",
+                                    "nonce": "0x01",
                                     "balance": "80,000",
                                     "creator": "*",
                                     "hash": "*",

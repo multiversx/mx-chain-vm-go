@@ -68,7 +68,7 @@
                 "esdt": {
                     "tokenIdentifier": "str:LKMEX-abcdef",
                     "value": "10,000",
-                    "nonce": "0x02"
+                    "nonce": "0x01"
                 },
                 "arguments": [
                     "sc:pair_contract"
