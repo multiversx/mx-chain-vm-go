@@ -63,8 +63,18 @@ package elrondapi
 // extern int32_t		v1_3_setStorageLock(void *context, int32_t keyOffset, int32_t keyLength, long long lockTimestamp);
 // extern long long v1_3_getStorageLock(void *context, int32_t keyOffset, int32_t keyLength);
 // extern int32_t		v1_3_isStorageLocked(void *context, int32_t keyOffset, int32_t keyLength);
+// extern int32_t		v1_3_clearStorageLock(void *context, int32_t keyOffset, int32_t keyLength);
 //
 // extern long long v1_3_getBlockTimestamp(void *context);
+// extern long long v1_3_getBlockNonce(void *context);
+// extern long long v1_3_getBlockRound(void *context);
+// extern long long v1_3_getBlockEpoch(void *context);
+// extern void			v1_3_getBlockRandomSeed(void *context, int32_t resultOffset);
+// extern void			v1_3_getStateRootHash(void *context, int32_t resultOffset);
+//
+// extern long long v1_3_getPrevBlockTimestamp(void *context);
+// extern long long v1_3_getPrevBlockNonce(void *context);
+// extern long long v1_3_getPrevBlockRound(void *context);
 // extern long long v1_3_getPrevBlockEpoch(void *context);
 // extern void			v1_3_getPrevBlockRandomSeed(void *context, int32_t resultOffset);
 // extern void			v1_3_getOriginalTxHash(void *context, int32_t resultOffset);
@@ -95,62 +105,62 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 	imports := wasmer.NewImports()
 	imports = imports.Namespace("env")
 
-	imports, err := imports.Append("getSCAddress", getSCAddress, C.v1_3_getSCAddress)
+	imports, err := imports.Append("getSCAddress", v1_3_getSCAddress, C.v1_3_getSCAddress)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getOwnerAddress", getOwnerAddress, C.v1_3_getOwnerAddress)
+	imports, err = imports.Append("getOwnerAddress", v1_3_getOwnerAddress, C.v1_3_getOwnerAddress)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getShardOfAddress", getShardOfAddress, C.v1_3_getShardOfAddress)
+	imports, err = imports.Append("getShardOfAddress", v1_3_getShardOfAddress, C.v1_3_getShardOfAddress)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("isSmartContract", isSmartContract, C.v1_3_isSmartContract)
+	imports, err = imports.Append("isSmartContract", v1_3_isSmartContract, C.v1_3_isSmartContract)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getExternalBalance", getExternalBalance, C.v1_3_getExternalBalance)
+	imports, err = imports.Append("getExternalBalance", v1_3_getExternalBalance, C.v1_3_getExternalBalance)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getBlockHash", blockHash, C.v1_3_blockHash)
+	imports, err = imports.Append("getBlockHash", v1_3_blockHash, C.v1_3_blockHash)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("transferValue", transferValue, C.v1_3_transferValue)
+	imports, err = imports.Append("transferValue", v1_3_transferValue, C.v1_3_transferValue)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("transferESDTExecute", transferESDTExecute, C.v1_3_transferESDTExecute)
+	imports, err = imports.Append("transferESDTExecute", v1_3_transferESDTExecute, C.v1_3_transferESDTExecute)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("transferESDTNFTExecute", transferESDTNFTExecute, C.v1_3_transferESDTNFTExecute)
+	imports, err = imports.Append("transferESDTNFTExecute", v1_3_transferESDTNFTExecute, C.v1_3_transferESDTNFTExecute)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("transferESDT", transferESDT, C.v1_3_transferESDT)
+	imports, err = imports.Append("transferESDT", v1_3_transferESDT, C.v1_3_transferESDT)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("transferValueExecute", transferValueExecute, C.v1_3_transferValueExecute)
+	imports, err = imports.Append("transferValueExecute", v1_3_transferValueExecute, C.v1_3_transferValueExecute)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("asyncCall", asyncCall, C.v1_3_asyncCall)
+	imports, err = imports.Append("asyncCall", v1_3_asyncCall, C.v1_3_asyncCall)
 	if err != nil {
 		return nil, err
 	}
@@ -165,267 +175,267 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 	// 	return nil, err
 	// }
 
-	imports, err = imports.Append("getArgumentLength", getArgumentLength, C.v1_3_getArgumentLength)
+	imports, err = imports.Append("getArgumentLength", v1_3_getArgumentLength, C.v1_3_getArgumentLength)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getArgument", getArgument, C.v1_3_getArgument)
+	imports, err = imports.Append("getArgument", v1_3_getArgument, C.v1_3_getArgument)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getFunction", getFunction, C.v1_3_getFunction)
+	imports, err = imports.Append("getFunction", v1_3_getFunction, C.v1_3_getFunction)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getNumArguments", getNumArguments, C.v1_3_getNumArguments)
+	imports, err = imports.Append("getNumArguments", v1_3_getNumArguments, C.v1_3_getNumArguments)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("storageStore", storageStore, C.v1_3_storageStore)
+	imports, err = imports.Append("storageStore", v1_3_storageStore, C.v1_3_storageStore)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("storageLoadLength", storageLoadLength, C.v1_3_storageLoadLength)
+	imports, err = imports.Append("storageLoadLength", v1_3_storageLoadLength, C.v1_3_storageLoadLength)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("storageLoad", storageLoad, C.v1_3_storageLoad)
+	imports, err = imports.Append("storageLoad", v1_3_storageLoad, C.v1_3_storageLoad)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("storageLoadFromAddress", storageLoadFromAddress, C.v1_3_storageLoadFromAddress)
+	imports, err = imports.Append("storageLoadFromAddress", v1_3_storageLoadFromAddress, C.v1_3_storageLoadFromAddress)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getStorageLock", getStorageLock, C.v1_3_getStorageLock)
+	imports, err = imports.Append("getStorageLock", v1_3_getStorageLock, C.v1_3_getStorageLock)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("setStorageLock", setStorageLock, C.v1_3_setStorageLock)
+	imports, err = imports.Append("setStorageLock", v1_3_setStorageLock, C.v1_3_setStorageLock)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("isStorageLocked", isStorageLocked, C.v1_3_isStorageLocked)
+	imports, err = imports.Append("isStorageLocked", v1_3_isStorageLocked, C.v1_3_isStorageLocked)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("clearStorageLock", clearStorageLock, C.v1_3_clearStorageLock)
+	imports, err = imports.Append("clearStorageLock", v1_3_clearStorageLock, C.v1_3_clearStorageLock)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getCaller", getCaller, C.v1_3_getCaller)
+	imports, err = imports.Append("getCaller", v1_3_getCaller, C.v1_3_getCaller)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("checkNoPayment", checkNoPayment, C.v1_3_checkNoPayment)
+	imports, err = imports.Append("checkNoPayment", v1_3_checkNoPayment, C.v1_3_checkNoPayment)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getCallValue", callValue, C.v1_3_callValue)
+	imports, err = imports.Append("getCallValue", v1_3_callValue, C.v1_3_callValue)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getESDTValue", getESDTValue, C.v1_3_getESDTValue)
+	imports, err = imports.Append("getESDTValue", v1_3_getESDTValue, C.v1_3_getESDTValue)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getESDTTokenName", getESDTTokenName, C.v1_3_getESDTTokenName)
+	imports, err = imports.Append("getESDTTokenName", v1_3_getESDTTokenName, C.v1_3_getESDTTokenName)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getESDTTokenType", getESDTTokenType, C.v1_3_getESDTTokenType)
+	imports, err = imports.Append("getESDTTokenType", v1_3_getESDTTokenType, C.v1_3_getESDTTokenType)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getESDTTokenNonce", getESDTTokenNonce, C.v1_3_getESDTTokenNonce)
+	imports, err = imports.Append("getESDTTokenNonce", v1_3_getESDTTokenNonce, C.v1_3_getESDTTokenNonce)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getCurrentESDTNFTNonce", getCurrentESDTNFTNonce, C.v1_3_getCurrentESDTNFTNonce)
+	imports, err = imports.Append("getCurrentESDTNFTNonce", v1_3_getCurrentESDTNFTNonce, C.v1_3_getCurrentESDTNFTNonce)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getCallValueTokenName", getCallValueTokenName, C.v1_3_getCallValueTokenName)
+	imports, err = imports.Append("getCallValueTokenName", v1_3_getCallValueTokenName, C.v1_3_getCallValueTokenName)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("writeLog", writeLog, C.v1_3_writeLog)
+	imports, err = imports.Append("writeLog", v1_3_writeLog, C.v1_3_writeLog)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("writeEventLog", writeEventLog, C.v1_3_writeEventLog)
+	imports, err = imports.Append("writeEventLog", v1_3_writeEventLog, C.v1_3_writeEventLog)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("finish", returnData, C.v1_3_returnData)
+	imports, err = imports.Append("finish", v1_3_returnData, C.v1_3_returnData)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("signalError", signalError, C.v1_3_signalError)
+	imports, err = imports.Append("signalError", v1_3_signalError, C.v1_3_signalError)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getBlockTimestamp", getBlockTimestamp, C.v1_3_getBlockTimestamp)
+	imports, err = imports.Append("getBlockTimestamp", v1_3_getBlockTimestamp, C.v1_3_getBlockTimestamp)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getBlockNonce", getBlockNonce, C.v1_3_getBlockNonce)
+	imports, err = imports.Append("getBlockNonce", v1_3_getBlockNonce, C.v1_3_getBlockNonce)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getBlockRound", getBlockRound, C.v1_3_getBlockRound)
+	imports, err = imports.Append("getBlockRound", v1_3_getBlockRound, C.v1_3_getBlockRound)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getBlockEpoch", getBlockEpoch, C.v1_3_getBlockEpoch)
+	imports, err = imports.Append("getBlockEpoch", v1_3_getBlockEpoch, C.v1_3_getBlockEpoch)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getBlockRandomSeed", getBlockRandomSeed, C.v1_3_getBlockRandomSeed)
+	imports, err = imports.Append("getBlockRandomSeed", v1_3_getBlockRandomSeed, C.v1_3_getBlockRandomSeed)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getStateRootHash", getStateRootHash, C.v1_3_getStateRootHash)
+	imports, err = imports.Append("getStateRootHash", v1_3_getStateRootHash, C.v1_3_getStateRootHash)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getPrevBlockTimestamp", getPrevBlockTimestamp, C.v1_3_getPrevBlockTimestamp)
+	imports, err = imports.Append("getPrevBlockTimestamp", v1_3_getPrevBlockTimestamp, C.v1_3_getPrevBlockTimestamp)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getPrevBlockNonce", getPrevBlockNonce, C.v1_3_getPrevBlockNonce)
+	imports, err = imports.Append("getPrevBlockNonce", v1_3_getPrevBlockNonce, C.v1_3_getPrevBlockNonce)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getPrevBlockRound", getPrevBlockRound, C.v1_3_getPrevBlockRound)
+	imports, err = imports.Append("getPrevBlockRound", v1_3_getPrevBlockRound, C.v1_3_getPrevBlockRound)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getPrevBlockEpoch", getPrevBlockEpoch, C.v1_3_getPrevBlockEpoch)
+	imports, err = imports.Append("getPrevBlockEpoch", v1_3_getPrevBlockEpoch, C.v1_3_getPrevBlockEpoch)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getPrevBlockRandomSeed", getPrevBlockRandomSeed, C.v1_3_getPrevBlockRandomSeed)
+	imports, err = imports.Append("getPrevBlockRandomSeed", v1_3_getPrevBlockRandomSeed, C.v1_3_getPrevBlockRandomSeed)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getOriginalTxHash", getOriginalTxHash, C.v1_3_getOriginalTxHash)
+	imports, err = imports.Append("getOriginalTxHash", v1_3_getOriginalTxHash, C.v1_3_getOriginalTxHash)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getGasLeft", getGasLeft, C.v1_3_getGasLeft)
+	imports, err = imports.Append("getGasLeft", v1_3_getGasLeft, C.v1_3_getGasLeft)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("executeOnDestContext", executeOnDestContext, C.v1_3_executeOnDestContext)
+	imports, err = imports.Append("executeOnDestContext", v1_3_executeOnDestContext, C.v1_3_executeOnDestContext)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("executeOnDestContextByCaller", executeOnDestContextByCaller, C.v1_3_executeOnDestContextByCaller)
+	imports, err = imports.Append("executeOnDestContextByCaller", v1_3_executeOnDestContextByCaller, C.v1_3_executeOnDestContextByCaller)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("executeOnSameContext", executeOnSameContext, C.v1_3_executeOnSameContext)
+	imports, err = imports.Append("executeOnSameContext", v1_3_executeOnSameContext, C.v1_3_executeOnSameContext)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("delegateExecution", delegateExecution, C.v1_3_delegateExecution)
+	imports, err = imports.Append("delegateExecution", v1_3_delegateExecution, C.v1_3_delegateExecution)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("createContract", createContract, C.v1_3_createContract)
+	imports, err = imports.Append("createContract", v1_3_createContract, C.v1_3_createContract)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("upgradeContract", upgradeContract, C.v1_3_upgradeContract)
+	imports, err = imports.Append("upgradeContract", v1_3_upgradeContract, C.v1_3_upgradeContract)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("executeReadOnly", executeReadOnly, C.v1_3_executeReadOnly)
+	imports, err = imports.Append("executeReadOnly", v1_3_executeReadOnly, C.v1_3_executeReadOnly)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getNumReturnData", getNumReturnData, C.v1_3_getNumReturnData)
+	imports, err = imports.Append("getNumReturnData", v1_3_getNumReturnData, C.v1_3_getNumReturnData)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getReturnDataSize", getReturnDataSize, C.v1_3_getReturnDataSize)
+	imports, err = imports.Append("getReturnDataSize", v1_3_getReturnDataSize, C.v1_3_getReturnDataSize)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getReturnData", getReturnData, C.v1_3_getReturnData)
+	imports, err = imports.Append("getReturnData", v1_3_getReturnData, C.v1_3_getReturnData)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getESDTBalance", getESDTBalance, C.v1_3_getESDTBalance)
+	imports, err = imports.Append("getESDTBalance", v1_3_getESDTBalance, C.v1_3_getESDTBalance)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getESDTTokenData", getESDTTokenData, C.v1_3_getESDTTokenData)
+	imports, err = imports.Append("getESDTTokenData", v1_3_getESDTTokenData, C.v1_3_getESDTTokenData)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getESDTNFTNameLength", getESDTNFTNameLength, C.v1_3_getESDTNFTNameLength)
+	imports, err = imports.Append("getESDTNFTNameLength", v1_3_getESDTNFTNameLength, C.v1_3_getESDTNFTNameLength)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getESDTNFTAttributeLength", getESDTNFTAttributeLength, C.v1_3_getESDTNFTAttributeLength)
+	imports, err = imports.Append("getESDTNFTAttributeLength", v1_3_getESDTNFTAttributeLength, C.v1_3_getESDTNFTAttributeLength)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getESDTNFTURILength", getESDTNFTURILength, C.v1_3_getESDTNFTURILength)
+	imports, err = imports.Append("getESDTNFTURILength", v1_3_getESDTNFTURILength, C.v1_3_getESDTNFTURILength)
 	if err != nil {
 		return nil, err
 	}
@@ -434,7 +444,7 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 }
 
 //export v1_3_getGasLeft
-func getGasLeft(context unsafe.Pointer) int64 {
+func v1_3_getGasLeft(context unsafe.Pointer) int64 {
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetGasLeft
@@ -444,7 +454,7 @@ func getGasLeft(context unsafe.Pointer) int64 {
 }
 
 //export v1_3_getSCAddress
-func getSCAddress(context unsafe.Pointer, resultOffset int32) {
+func v1_3_getSCAddress(context unsafe.Pointer, resultOffset int32) {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -459,7 +469,7 @@ func getSCAddress(context unsafe.Pointer, resultOffset int32) {
 }
 
 //export v1_3_getOwnerAddress
-func getOwnerAddress(context unsafe.Pointer, resultOffset int32) {
+func v1_3_getOwnerAddress(context unsafe.Pointer, resultOffset int32) {
 	blockchain := arwen.GetBlockchainContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -479,7 +489,7 @@ func getOwnerAddress(context unsafe.Pointer, resultOffset int32) {
 }
 
 //export v1_3_getShardOfAddress
-func getShardOfAddress(context unsafe.Pointer, addressOffset int32) int32 {
+func v1_3_getShardOfAddress(context unsafe.Pointer, addressOffset int32) int32 {
 	blockchain := arwen.GetBlockchainContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -496,7 +506,7 @@ func getShardOfAddress(context unsafe.Pointer, addressOffset int32) int32 {
 }
 
 //export v1_3_isSmartContract
-func isSmartContract(context unsafe.Pointer, addressOffset int32) int32 {
+func v1_3_isSmartContract(context unsafe.Pointer, addressOffset int32) int32 {
 	blockchain := arwen.GetBlockchainContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -514,7 +524,7 @@ func isSmartContract(context unsafe.Pointer, addressOffset int32) int32 {
 }
 
 //export v1_3_signalError
-func signalError(context unsafe.Pointer, messageOffset int32, messageLength int32) {
+func v1_3_signalError(context unsafe.Pointer, messageOffset int32, messageLength int32) {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -529,7 +539,7 @@ func signalError(context unsafe.Pointer, messageOffset int32, messageLength int3
 }
 
 //export v1_3_getExternalBalance
-func getExternalBalance(context unsafe.Pointer, addressOffset int32, resultOffset int32) {
+func v1_3_getExternalBalance(context unsafe.Pointer, addressOffset int32, resultOffset int32) {
 	blockchain := arwen.GetBlockchainContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -551,7 +561,7 @@ func getExternalBalance(context unsafe.Pointer, addressOffset int32, resultOffse
 }
 
 //export v1_3_blockHash
-func blockHash(context unsafe.Pointer, nonce int64, resultOffset int32) int32 {
+func v1_3_blockHash(context unsafe.Pointer, nonce int64, resultOffset int32) int32 {
 	blockchain := arwen.GetBlockchainContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -607,7 +617,7 @@ func getESDTDataFromBlockchainHook(
 }
 
 //export v1_3_getESDTBalance
-func getESDTBalance(
+func v1_3_getESDTBalance(
 	context unsafe.Pointer,
 	addressOffset int32,
 	tokenIDOffset int32,
@@ -629,7 +639,7 @@ func getESDTBalance(
 }
 
 //export v1_3_getESDTNFTNameLength
-func getESDTNFTNameLength(
+func v1_3_getESDTNFTNameLength(
 	context unsafe.Pointer,
 	addressOffset int32,
 	tokenIDOffset int32,
@@ -649,7 +659,7 @@ func getESDTNFTNameLength(
 }
 
 //export v1_3_getESDTNFTAttributeLength
-func getESDTNFTAttributeLength(
+func v1_3_getESDTNFTAttributeLength(
 	context unsafe.Pointer,
 	addressOffset int32,
 	tokenIDOffset int32,
@@ -669,7 +679,7 @@ func getESDTNFTAttributeLength(
 }
 
 //export v1_3_getESDTNFTURILength
-func getESDTNFTURILength(
+func v1_3_getESDTNFTURILength(
 	context unsafe.Pointer,
 	addressOffset int32,
 	tokenIDOffset int32,
@@ -692,7 +702,7 @@ func getESDTNFTURILength(
 }
 
 //export v1_3_getESDTTokenData
-func getESDTTokenData(
+func v1_3_getESDTTokenData(
 	context unsafe.Pointer,
 	addressOffset int32,
 	tokenIDOffset int32,
@@ -754,7 +764,7 @@ func getESDTTokenData(
 }
 
 //export v1_3_transferValue
-func transferValue(context unsafe.Pointer, destOffset int32, valueOffset int32, dataOffset int32, length int32) int32 {
+func v1_3_transferValue(context unsafe.Pointer, destOffset int32, valueOffset int32, dataOffset int32, length int32) int32 {
 	host := arwen.GetVMHost(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
@@ -795,7 +805,7 @@ func transferValue(context unsafe.Pointer, destOffset int32, valueOffset int32, 
 }
 
 //export v1_3_transferValueExecute
-func transferValueExecute(
+func v1_3_transferValueExecute(
 	context unsafe.Pointer,
 	destOffset int32,
 	valueOffset int32,
@@ -885,7 +895,7 @@ func makeCrossShardCallFromInput(vmInput *vmcommon.ContractCallInput) string {
 }
 
 //export v1_3_transferESDT
-func transferESDT(
+func v1_3_transferESDT(
 	context unsafe.Pointer,
 	destOffset int32,
 	tokenIDOffset int32,
@@ -909,7 +919,7 @@ func transferESDT(
 }
 
 //export v1_3_transferESDTExecute
-func transferESDTExecute(
+func v1_3_transferESDTExecute(
 	context unsafe.Pointer,
 	destOffset int32,
 	tokenIDOffset int32,
@@ -922,12 +932,12 @@ func transferESDTExecute(
 	argumentsLengthOffset int32,
 	dataOffset int32,
 ) int32 {
-	return transferESDTNFTExecute(context, destOffset, tokenIDOffset, tokenIDLen, valueOffset, 0,
+	return v1_3_transferESDTNFTExecute(context, destOffset, tokenIDOffset, tokenIDLen, valueOffset, 0,
 		gasLimit, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 }
 
 //export v1_3_transferESDTNFTExecute
-func transferESDTNFTExecute(
+func v1_3_transferESDTNFTExecute(
 	context unsafe.Pointer,
 	destOffset int32,
 	tokenIDOffset int32,
@@ -1018,7 +1028,7 @@ func transferESDTNFTExecute(
 }
 
 //export v1_3_createAsyncCall
-func createAsyncCall(context unsafe.Pointer,
+func v1_3_createAsyncCall(context unsafe.Pointer,
 	asyncContextIdentifier int32,
 	identifierLength int32,
 	destOffset int32,
@@ -1080,7 +1090,7 @@ func createAsyncCall(context unsafe.Pointer,
 }
 
 //export v1_3_setAsyncContextCallback
-func setAsyncContextCallback(context unsafe.Pointer,
+func v1_3_setAsyncContextCallback(context unsafe.Pointer,
 	asyncContextIdentifier int32,
 	identifierLength int32,
 	callback int32,
@@ -1112,7 +1122,7 @@ func setAsyncContextCallback(context unsafe.Pointer,
 }
 
 //export v1_3_upgradeContract
-func upgradeContract(
+func v1_3_upgradeContract(
 	context unsafe.Pointer,
 	destOffset int32,
 	gasLimit int64,
@@ -1202,7 +1212,7 @@ func upgradeContract(
 }
 
 //export v1_3_asyncCall
-func asyncCall(context unsafe.Pointer, destOffset int32, valueOffset int32, dataOffset int32, length int32) {
+func v1_3_asyncCall(context unsafe.Pointer, destOffset int32, valueOffset int32, dataOffset int32, length int32) {
 	host := arwen.GetVMHost(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
@@ -1240,7 +1250,7 @@ func asyncCall(context unsafe.Pointer, destOffset int32, valueOffset int32, data
 }
 
 //export v1_3_getArgumentLength
-func getArgumentLength(context unsafe.Pointer, id int32) int32 {
+func v1_3_getArgumentLength(context unsafe.Pointer, id int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -1256,7 +1266,7 @@ func getArgumentLength(context unsafe.Pointer, id int32) int32 {
 }
 
 //export v1_3_getArgument
-func getArgument(context unsafe.Pointer, id int32, argOffset int32) int32 {
+func v1_3_getArgument(context unsafe.Pointer, id int32, argOffset int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -1277,7 +1287,7 @@ func getArgument(context unsafe.Pointer, id int32, argOffset int32) int32 {
 }
 
 //export v1_3_getFunction
-func getFunction(context unsafe.Pointer, functionOffset int32) int32 {
+func v1_3_getFunction(context unsafe.Pointer, functionOffset int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -1294,7 +1304,7 @@ func getFunction(context unsafe.Pointer, functionOffset int32) int32 {
 }
 
 //export v1_3_getNumArguments
-func getNumArguments(context unsafe.Pointer) int32 {
+func v1_3_getNumArguments(context unsafe.Pointer) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -1306,7 +1316,7 @@ func getNumArguments(context unsafe.Pointer) int32 {
 }
 
 //export v1_3_storageStore
-func storageStore(context unsafe.Pointer, keyOffset int32, keyLength int32, dataOffset int32, dataLength int32) int32 {
+func v1_3_storageStore(context unsafe.Pointer, keyOffset int32, keyLength int32, dataOffset int32, dataLength int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -1333,7 +1343,7 @@ func storageStore(context unsafe.Pointer, keyOffset int32, keyLength int32, data
 }
 
 //export v1_3_storageLoadLength
-func storageLoadLength(context unsafe.Pointer, keyOffset int32, keyLength int32) int32 {
+func v1_3_storageLoadLength(context unsafe.Pointer, keyOffset int32, keyLength int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -1352,7 +1362,7 @@ func storageLoadLength(context unsafe.Pointer, keyOffset int32, keyLength int32)
 }
 
 //export v1_3_storageLoadFromAddress
-func storageLoadFromAddress(context unsafe.Pointer, addressOffset int32, keyOffset int32, keyLength int32, dataOffset int32) int32 {
+func v1_3_storageLoadFromAddress(context unsafe.Pointer, addressOffset int32, keyOffset int32, keyLength int32, dataOffset int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -1381,7 +1391,7 @@ func storageLoadFromAddress(context unsafe.Pointer, addressOffset int32, keyOffs
 }
 
 //export v1_3_storageLoad
-func storageLoad(context unsafe.Pointer, keyOffset int32, keyLength int32, dataOffset int32) int32 {
+func v1_3_storageLoad(context unsafe.Pointer, keyOffset int32, keyLength int32, dataOffset int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -1405,7 +1415,7 @@ func storageLoad(context unsafe.Pointer, keyOffset int32, keyLength int32, dataO
 }
 
 //export v1_3_setStorageLock
-func setStorageLock(context unsafe.Pointer, keyOffset int32, keyLength int32, lockTimestamp int64) int32 {
+func v1_3_setStorageLock(context unsafe.Pointer, keyOffset int32, keyLength int32, lockTimestamp int64) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -1428,7 +1438,7 @@ func setStorageLock(context unsafe.Pointer, keyOffset int32, keyLength int32, lo
 }
 
 //export v1_3_getStorageLock
-func getStorageLock(context unsafe.Pointer, keyOffset int32, keyLength int32) int64 {
+func v1_3_getStorageLock(context unsafe.Pointer, keyOffset int32, keyLength int32) int64 {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	storage := arwen.GetStorageContext(context)
@@ -1449,13 +1459,13 @@ func getStorageLock(context unsafe.Pointer, keyOffset int32, keyLength int32) in
 }
 
 //export v1_3_isStorageLocked
-func isStorageLocked(context unsafe.Pointer, keyOffset int32, keyLength int32) int32 {
-	timeLock := getStorageLock(context, keyOffset, keyLength)
+func v1_3_isStorageLocked(context unsafe.Pointer, keyOffset int32, keyLength int32) int32 {
+	timeLock := v1_3_getStorageLock(context, keyOffset, keyLength)
 	if timeLock < 0 {
 		return -1
 	}
 
-	currentTimestamp := getBlockTimestamp(context)
+	currentTimestamp := v1_3_getBlockTimestamp(context)
 	if timeLock <= currentTimestamp {
 		return 0
 	}
@@ -1464,12 +1474,12 @@ func isStorageLocked(context unsafe.Pointer, keyOffset int32, keyLength int32) i
 }
 
 //export v1_3_clearStorageLock
-func clearStorageLock(context unsafe.Pointer, keyOffset int32, keyLength int32) int32 {
-	return setStorageLock(context, keyOffset, keyLength, 0)
+func v1_3_clearStorageLock(context unsafe.Pointer, keyOffset int32, keyLength int32) int32 {
+	return v1_3_setStorageLock(context, keyOffset, keyLength, 0)
 }
 
 //export v1_3_getCaller
-func getCaller(context unsafe.Pointer, resultOffset int32) {
+func v1_3_getCaller(context unsafe.Pointer, resultOffset int32) {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -1485,7 +1495,7 @@ func getCaller(context unsafe.Pointer, resultOffset int32) {
 }
 
 //export v1_3_checkNoPayment
-func checkNoPayment(context unsafe.Pointer) {
+func v1_3_checkNoPayment(context unsafe.Pointer) {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -1506,7 +1516,7 @@ func checkNoPayment(context unsafe.Pointer) {
 }
 
 //export v1_3_callValue
-func callValue(context unsafe.Pointer, resultOffset int32) int32 {
+func v1_3_callValue(context unsafe.Pointer, resultOffset int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -1525,7 +1535,7 @@ func callValue(context unsafe.Pointer, resultOffset int32) int32 {
 }
 
 //export v1_3_getESDTValue
-func getESDTValue(context unsafe.Pointer, resultOffset int32) int32 {
+func v1_3_getESDTValue(context unsafe.Pointer, resultOffset int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -1549,7 +1559,7 @@ func getESDTValue(context unsafe.Pointer, resultOffset int32) int32 {
 }
 
 //export v1_3_getESDTTokenName
-func getESDTTokenName(context unsafe.Pointer, resultOffset int32) int32 {
+func v1_3_getESDTTokenName(context unsafe.Pointer, resultOffset int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -1567,7 +1577,7 @@ func getESDTTokenName(context unsafe.Pointer, resultOffset int32) int32 {
 }
 
 //export v1_3_getESDTTokenNonce
-func getESDTTokenNonce(context unsafe.Pointer) int64 {
+func v1_3_getESDTTokenNonce(context unsafe.Pointer) int64 {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -1578,7 +1588,7 @@ func getESDTTokenNonce(context unsafe.Pointer) int64 {
 }
 
 //export v1_3_getCurrentESDTNFTNonce
-func getCurrentESDTNFTNonce(context unsafe.Pointer, addressOffset int32, tokenIDOffset int32, tokenIDLen int32) int64 {
+func v1_3_getCurrentESDTNFTNonce(context unsafe.Pointer, addressOffset int32, tokenIDOffset int32, tokenIDLen int32) int64 {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	storage := arwen.GetStorageContext(context)
@@ -1604,7 +1614,7 @@ func getCurrentESDTNFTNonce(context unsafe.Pointer, addressOffset int32, tokenID
 }
 
 //export v1_3_getESDTTokenType
-func getESDTTokenType(context unsafe.Pointer) int32 {
+func v1_3_getESDTTokenType(context unsafe.Pointer) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -1615,7 +1625,7 @@ func getESDTTokenType(context unsafe.Pointer) int32 {
 }
 
 //export v1_3_getCallValueTokenName
-func getCallValueTokenName(context unsafe.Pointer, callValueOffset int32, tokenNameOffset int32) int32 {
+func v1_3_getCallValueTokenName(context unsafe.Pointer, callValueOffset int32, tokenNameOffset int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -1645,7 +1655,7 @@ func getCallValueTokenName(context unsafe.Pointer, callValueOffset int32, tokenN
 }
 
 //export v1_3_writeLog
-func writeLog(context unsafe.Pointer, dataPointer int32, dataLength int32, topicPtr int32, numTopics int32) {
+func v1_3_writeLog(context unsafe.Pointer, dataPointer int32, dataLength int32, topicPtr int32, numTopics int32) {
 	// note: deprecated
 	runtime := arwen.GetRuntimeContext(context)
 	output := arwen.GetOutputContext(context)
@@ -1677,7 +1687,7 @@ func writeLog(context unsafe.Pointer, dataPointer int32, dataLength int32, topic
 }
 
 //export v1_3_writeEventLog
-func writeEventLog(
+func v1_3_writeEventLog(
 	context unsafe.Pointer,
 	numTopics int32,
 	topicLengthsOffset int32,
@@ -1716,7 +1726,7 @@ func writeEventLog(
 }
 
 //export v1_3_getBlockTimestamp
-func getBlockTimestamp(context unsafe.Pointer) int64 {
+func v1_3_getBlockTimestamp(context unsafe.Pointer) int64 {
 	blockchain := arwen.GetBlockchainContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -1727,7 +1737,7 @@ func getBlockTimestamp(context unsafe.Pointer) int64 {
 }
 
 //export v1_3_getBlockNonce
-func getBlockNonce(context unsafe.Pointer) int64 {
+func v1_3_getBlockNonce(context unsafe.Pointer) int64 {
 	blockchain := arwen.GetBlockchainContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -1738,7 +1748,7 @@ func getBlockNonce(context unsafe.Pointer) int64 {
 }
 
 //export v1_3_getBlockRound
-func getBlockRound(context unsafe.Pointer) int64 {
+func v1_3_getBlockRound(context unsafe.Pointer) int64 {
 	blockchain := arwen.GetBlockchainContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -1749,7 +1759,7 @@ func getBlockRound(context unsafe.Pointer) int64 {
 }
 
 //export v1_3_getBlockEpoch
-func getBlockEpoch(context unsafe.Pointer) int64 {
+func v1_3_getBlockEpoch(context unsafe.Pointer) int64 {
 	blockchain := arwen.GetBlockchainContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -1760,7 +1770,7 @@ func getBlockEpoch(context unsafe.Pointer) int64 {
 }
 
 //export v1_3_getBlockRandomSeed
-func getBlockRandomSeed(context unsafe.Pointer, pointer int32) {
+func v1_3_getBlockRandomSeed(context unsafe.Pointer, pointer int32) {
 	runtime := arwen.GetRuntimeContext(context)
 	blockchain := arwen.GetBlockchainContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -1774,7 +1784,7 @@ func getBlockRandomSeed(context unsafe.Pointer, pointer int32) {
 }
 
 //export v1_3_getStateRootHash
-func getStateRootHash(context unsafe.Pointer, pointer int32) {
+func v1_3_getStateRootHash(context unsafe.Pointer, pointer int32) {
 	runtime := arwen.GetRuntimeContext(context)
 	blockchain := arwen.GetBlockchainContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -1788,7 +1798,7 @@ func getStateRootHash(context unsafe.Pointer, pointer int32) {
 }
 
 //export v1_3_getPrevBlockTimestamp
-func getPrevBlockTimestamp(context unsafe.Pointer) int64 {
+func v1_3_getPrevBlockTimestamp(context unsafe.Pointer) int64 {
 	blockchain := arwen.GetBlockchainContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -1799,7 +1809,7 @@ func getPrevBlockTimestamp(context unsafe.Pointer) int64 {
 }
 
 //export v1_3_getPrevBlockNonce
-func getPrevBlockNonce(context unsafe.Pointer) int64 {
+func v1_3_getPrevBlockNonce(context unsafe.Pointer) int64 {
 	blockchain := arwen.GetBlockchainContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -1810,7 +1820,7 @@ func getPrevBlockNonce(context unsafe.Pointer) int64 {
 }
 
 //export v1_3_getPrevBlockRound
-func getPrevBlockRound(context unsafe.Pointer) int64 {
+func v1_3_getPrevBlockRound(context unsafe.Pointer) int64 {
 	blockchain := arwen.GetBlockchainContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -1821,7 +1831,7 @@ func getPrevBlockRound(context unsafe.Pointer) int64 {
 }
 
 //export v1_3_getPrevBlockEpoch
-func getPrevBlockEpoch(context unsafe.Pointer) int64 {
+func v1_3_getPrevBlockEpoch(context unsafe.Pointer) int64 {
 	blockchain := arwen.GetBlockchainContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -1832,7 +1842,7 @@ func getPrevBlockEpoch(context unsafe.Pointer) int64 {
 }
 
 //export v1_3_getPrevBlockRandomSeed
-func getPrevBlockRandomSeed(context unsafe.Pointer, pointer int32) {
+func v1_3_getPrevBlockRandomSeed(context unsafe.Pointer, pointer int32) {
 	runtime := arwen.GetRuntimeContext(context)
 	blockchain := arwen.GetBlockchainContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -1846,7 +1856,7 @@ func getPrevBlockRandomSeed(context unsafe.Pointer, pointer int32) {
 }
 
 //export v1_3_returnData
-func returnData(context unsafe.Pointer, pointer int32, length int32) {
+func v1_3_returnData(context unsafe.Pointer, pointer int32, length int32) {
 	runtime := arwen.GetRuntimeContext(context)
 	output := arwen.GetOutputContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -1865,7 +1875,7 @@ func returnData(context unsafe.Pointer, pointer int32, length int32) {
 }
 
 //export v1_3_executeOnSameContext
-func executeOnSameContext(
+func v1_3_executeOnSameContext(
 	context unsafe.Pointer,
 	gasLimit int64,
 	addressOffset int32,
@@ -1920,7 +1930,7 @@ func executeOnSameContext(
 }
 
 //export v1_3_executeOnDestContext
-func executeOnDestContext(
+func v1_3_executeOnDestContext(
 	context unsafe.Pointer,
 	gasLimit int64,
 	addressOffset int32,
@@ -1971,7 +1981,7 @@ func executeOnDestContext(
 }
 
 //export v1_3_executeOnDestContextByCaller
-func executeOnDestContextByCaller(
+func v1_3_executeOnDestContextByCaller(
 	context unsafe.Pointer,
 	gasLimit int64,
 	addressOffset int32,
@@ -2026,7 +2036,7 @@ func executeOnDestContextByCaller(
 }
 
 //export v1_3_delegateExecution
-func delegateExecution(
+func v1_3_delegateExecution(
 	context unsafe.Pointer,
 	gasLimit int64,
 	addressOffset int32,
@@ -2076,7 +2086,7 @@ func delegateExecution(
 }
 
 //export v1_3_executeReadOnly
-func executeReadOnly(
+func v1_3_executeReadOnly(
 	context unsafe.Pointer,
 	gasLimit int64,
 	addressOffset int32,
@@ -2129,7 +2139,7 @@ func executeReadOnly(
 }
 
 //export v1_3_createContract
-func createContract(
+func v1_3_createContract(
 	context unsafe.Pointer,
 	gasLimit int64,
 	valueOffset int32,
@@ -2204,7 +2214,7 @@ func createContract(
 }
 
 //export v1_3_getNumReturnData
-func getNumReturnData(context unsafe.Pointer) int32 {
+func v1_3_getNumReturnData(context unsafe.Pointer) int32 {
 	output := arwen.GetOutputContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -2216,7 +2226,7 @@ func getNumReturnData(context unsafe.Pointer) int32 {
 }
 
 //export v1_3_getReturnDataSize
-func getReturnDataSize(context unsafe.Pointer, resultID int32) int32 {
+func v1_3_getReturnDataSize(context unsafe.Pointer, resultID int32) int32 {
 	output := arwen.GetOutputContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -2232,7 +2242,7 @@ func getReturnDataSize(context unsafe.Pointer, resultID int32) int32 {
 }
 
 //export v1_3_getReturnData
-func getReturnData(context unsafe.Pointer, resultID int32, dataOffset int32) int32 {
+func v1_3_getReturnData(context unsafe.Pointer, resultID int32, dataOffset int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	output := arwen.GetOutputContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -2254,7 +2264,7 @@ func getReturnData(context unsafe.Pointer, resultID int32, dataOffset int32) int
 }
 
 //export v1_3_getOriginalTxHash
-func getOriginalTxHash(context unsafe.Pointer, dataOffset int32) {
+func v1_3_getOriginalTxHash(context unsafe.Pointer, dataOffset int32) {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
