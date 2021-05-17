@@ -12,6 +12,7 @@ import (
 	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/fileresolver"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
 	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
+	test "github.com/ElrondNetwork/arwen-wasm-vm/testcommon"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
@@ -76,15 +77,15 @@ func (ae *ArwenTestExecutor) GetVM() vmi.VMExecutionHandler {
 func (ae *ArwenTestExecutor) gasScheduleMapFromMandos(mandosGasSchedule mj.GasSchedule) (config.GasScheduleMap, error) {
 	switch mandosGasSchedule {
 	case mj.GasScheduleDefault:
-		return arwenHost.LoadGasScheduleConfig(filepath.Join(ae.arwenmandosPath, "gasSchedules/gasScheduleV3.toml"))
+		return test.LoadGasScheduleConfig(filepath.Join(ae.arwenmandosPath, "gasSchedules/gasScheduleV3.toml"))
 	case mj.GasScheduleDummy:
 		return config.MakeGasMapForTests(), nil
 	case mj.GasScheduleV1:
-		return arwenHost.LoadGasScheduleConfig(filepath.Join(ae.arwenmandosPath, "gasSchedules/gasScheduleV1.toml"))
+		return test.LoadGasScheduleConfig(filepath.Join(ae.arwenmandosPath, "gasSchedules/gasScheduleV1.toml"))
 	case mj.GasScheduleV2:
-		return arwenHost.LoadGasScheduleConfig(filepath.Join(ae.arwenmandosPath, "gasSchedules/gasScheduleV2.toml"))
+		return test.LoadGasScheduleConfig(filepath.Join(ae.arwenmandosPath, "gasSchedules/gasScheduleV2.toml"))
 	case mj.GasScheduleV3:
-		return arwenHost.LoadGasScheduleConfig(filepath.Join(ae.arwenmandosPath, "gasSchedules/gasScheduleV3.toml"))
+		return test.LoadGasScheduleConfig(filepath.Join(ae.arwenmandosPath, "gasSchedules/gasScheduleV3.toml"))
 	default:
 		return nil, fmt.Errorf("unknown mandos GasSchedule: %d", mandosGasSchedule)
 	}
@@ -97,11 +98,11 @@ func (ae *ArwenTestExecutor) SetMandosGasSchedule(newGasSchedule mj.GasSchedule)
 	if ae.mandosGasScheduleLoaded {
 		return nil
 	}
-	ae.mandosGasScheduleLoaded = true
 	gasSchedule, err := ae.gasScheduleMapFromMandos(newGasSchedule)
 	if err != nil {
 		return err
 	}
+	ae.mandosGasScheduleLoaded = true
 	ae.vm.GasScheduleChange(gasSchedule)
 	return nil
 }

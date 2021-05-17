@@ -55,8 +55,13 @@ func convertAccount(testAcct *mj.Account) (*worldmock.Account, error) {
 				Type:       uint32(core.Fungible),
 				Properties: makeESDTUserMetadataBytes(isFrozen),
 				TokenMetaData: &esdt.MetaData{
-					Name:  tokenName,
-					Nonce: tokenNonce,
+					Name:       tokenName,
+					Nonce:      tokenNonce,
+					Creator:    instance.Creator.Value,
+					Royalties:  uint32(instance.Royalties.Value),
+					Hash:       instance.Hash.Value,
+					URIs:       [][]byte{instance.Uri.Value},
+					Attributes: instance.Attributes.Value,
 				},
 			}
 			err := account.SetTokenData(tokenKey, tokenData)

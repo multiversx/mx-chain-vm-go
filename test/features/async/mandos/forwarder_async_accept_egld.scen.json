@@ -47,7 +47,9 @@
                         "identifier": "str:accept_funds",
                         "topics": [
                             "str:EGLD",
-                            "1000"
+                            "str:FungibleESDT",
+                            "1000",
+                            "0"
                         ],
                         "data": ""
                     }
@@ -68,7 +70,9 @@
                 "sc:vault": {
                     "nonce": "0",
                     "balance": "1000",
-                    "storage": {},
+                    "storage": {
+                        "str:call_counts|nested:str:accept_funds": "1"
+                    },
                     "code": "file:../vault/output/vault.wasm"
                 },
                 "sc:forwarder": {

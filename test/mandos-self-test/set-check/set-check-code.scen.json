@@ -1,0 +1,30 @@
+{
+    "comment": "verifies that setState and checkState are consistent",
+    "steps": [
+        {
+            "step": "setState",
+            "comment": "any large(r) file will do, so we can get a more realistic case",
+            "accounts": {
+                "address:the-address": {
+                    "code": "file:set-check-esdt.scen.json"
+                }
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "address:the-address": {
+                    "code": "file:set-check-esdt.scen.json"
+                }
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "address:the-address": {
+                    "code": "*"
+                }
+            }
+        }
+    ]
+}
