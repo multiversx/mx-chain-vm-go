@@ -242,7 +242,7 @@ func TestMeteringContext_AsyncCallGasLocking(t *testing.T) {
 
 	mockRuntime.VMInput.CallType = vmcommon.AsynchronousCallBack
 	mockRuntime.VMInput.GasLocked = gasToLock
-	require.Equal(t, gasToLock, meteringContext.GetGasLocked()) // ask about the use of this
+	require.Equal(t, gasToLock, meteringContext.GetGasLocked())
 
 	meteringContext.unlockGasIfAsyncCallback(&input.VMInput)
 	err = meteringContext.UseGasForAsyncStep()
@@ -406,7 +406,7 @@ func TestMeteringContext_UpdateGasStateOnFailure_StackOneLevel(t *testing.T) {
 	metering.UpdateGasStateOnFailure(output.outputState)
 
 	// return to the parent
-	metering.PopSetActiveState() // ask if it should be like this
+	metering.PopSetActiveState()
 	mockRuntime.SCAddress = []byte("parent")
 	mockRuntime.SetPointsUsed(parentPointsBeforeStacking)
 	mockRuntime.SetVMInput(&parentInput.VMInput)
@@ -448,42 +448,46 @@ func TestMeteringContext_TrackGasUsedByBuiltinFunction_GasRemaining(t *testing.T
 	t.Parallel()
 
 	mockRuntime := &contextmock.RuntimeContextMock{}
-	gasProvided := uint64(10000)
-	input := &vmcommon.ContractCallInput{
-		VMInput: vmcommon.VMInput{
-			GasProvided : gasProvided,
-		},
-		RecipientAddr : []byte("parent"),
-	}
-
-	input.GasProvided = gasProvided
-	contractSize := uint64(1000)
-	contract := make([]byte, contractSize)
-
-	mockRuntime.SetVMInput(&input.VMInput)
-	mockRuntime.SCCodeSize = contractSize
-	mockRuntime.SCAddress = input.RecipientAddr
-	mockRuntime.SetPointsUsed(0)
 
 	host := &contextmock.VMHostMock{
 		RuntimeContext: mockRuntime,
 	}
 
-	output, _ := NewOutputContext(host)
-	host.OutputContext = output
+	names := make(vmcommon.FunctionNames)
+	contractSize := uint64(1000)
+	mockRuntime.SCCodeSize = contractSize
+	mockRuntime.SCAddress = []byte("parent")
 
-	meteringContext, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000))
-	meteringContext.InitStateFromContractCallInput(&input.VMInput)
-	_ = meteringContext.DeductInitialGasForExecution(contract)
+	mockRuntime.SetPointsUsed(0)
+
+	input := &vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{},
+		Function:      "callBuiltinClaim",
+	}
+	mockRuntime.SetVMInput(&input.VMInput)
 
 	metering, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000))
 	host.MeteringContext = metering
 	zeroCodeCosts(metering)
 
-	metering.UseGas(400)
-	require.Equal(t, 2600, int(metering.GasLeft()))
+	input.GasProvided = 10000
+	metering.InitStateFromContractCallInput(&input.VMInput)
+	require.Equal(t, 10000, int(metering.GasLeft()))
 
+	var empty struct{}
+	names["builtinClaim"] = empty
+	host.SetProtocolBuiltinFunctions(names)
 
-	metering.TrackGasUsedByBuiltinFunction(input, output.GetVMOutput(), nil)
-	require.Equal(t, 0, int(output.GetVMOutput().GasRemaining))
+	vmOutput := &vmcommon.VMOutput{
+		GasRemaining:   5000,
+	}
+
+	postBuiltinInput := &vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			GasProvided:    300,
+		},
+	}
+
+	metering.TrackGasUsedByBuiltinFunction(input, vmOutput, postBuiltinInput)
+	require.Equal(t, 5300, int(metering.GasLeft()))
 }
