@@ -731,7 +731,9 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct(t *testing.T) {
 	expectedVMOutput := expectedVMOutputSameCtxRecursiveDirect(code, int(recursiveCalls))
 	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
-	require.Equal(t, int64(recursiveCalls+1), host.BigInt().GetOne(16).Int64())
+	value, _ := host.BigInt().GetOne(16)
+	intValue := value.Int64()
+	require.Equal(t, int64(recursiveCalls+1), intValue)
 }
 
 func TestExecution_ExecuteOnSameContext_Recursive_Direct_ErrMaxInstances(t *testing.T) {
@@ -757,10 +759,12 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct_ErrMaxInstances(t *test
 		expectedVMOutput := expectedVMOutputSameCtxRecursiveDirectErrMaxInstances(code, int(recursiveCalls))
 		expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 		require.Equal(t, expectedVMOutput, vmOutput)
-		require.Equal(t, int64(1), host.BigInt().GetOne(16).Int64())
+		value, _ := host.BigInt().GetOne(16)
+		intValue := value.Int64()
+		require.Equal(t, int64(1), intValue)
 	} else {
 		require.Equal(t, vmcommon.ExecutionFailed, vmOutput.ReturnCode)
-		require.Equal(t, arwen.ErrExecutionFailed.Error(), vmOutput.ReturnMessage)
+		require.Equal(t, arwen.ErrNoBigIntUnderThisHandle.Error(), vmOutput.ReturnMessage)
 		require.Zero(t, vmOutput.GasRemaining)
 	}
 }
@@ -809,7 +813,9 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_Methods(t *testing.T) {
 	expectedVMOutput := expectedVMOutputSameCtxRecursiveMutualMethods(code, int(recursiveCalls))
 	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
-	require.Equal(t, int64(recursiveCalls+1), host.BigInt().GetOne(16).Int64())
+	value, _ := host.BigInt().GetOne(16)
+	intValue := value.Int64()
+	require.Equal(t, int64(recursiveCalls+1), intValue)
 }
 
 func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs(t *testing.T) {
@@ -850,7 +856,9 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs(t *testing.T) {
 	expectedVMOutput := expectedVMOutputSameCtxRecursiveMutualSCs(parentCode, childCode, int(recursiveCalls))
 	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
-	require.Equal(t, int64(recursiveCalls+1), host.BigInt().GetOne(88).Int64())
+	value, _ := host.BigInt().GetOne(88)
+	intValue := value.Int64()
+	require.Equal(t, int64(recursiveCalls+1), intValue)
 }
 
 func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs_OutOfGas(t *testing.T) {
@@ -879,7 +887,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 		require.Equal(t, arwen.ErrNotEnoughGas.Error(), vmOutput.ReturnMessage)
 	} else {
 		require.Equal(t, vmcommon.ExecutionFailed, vmOutput.ReturnCode)
-		require.Equal(t, arwen.ErrExecutionFailed.Error(), vmOutput.ReturnMessage)
+		require.Equal(t, arwen.ErrNoBigIntUnderThisHandle.Error(), vmOutput.ReturnMessage)
 	}
 }
 
@@ -964,10 +972,12 @@ func TestExecution_ExecuteOnDestContext_OutOfGas(t *testing.T) {
 		require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 		expectedVMOutput := expectedVMOutputDestCtxOutOfGas(parentCode)
 		require.Equal(t, expectedVMOutput, vmOutput)
-		require.Equal(t, int64(42), host.BigInt().GetOne(12).Int64())
+		value, _ := host.BigInt().GetOne(12)
+		intValue := value.Int64()
+		require.Equal(t, int64(42), intValue)
 	} else {
 		require.Equal(t, vmcommon.ExecutionFailed, vmOutput.ReturnCode)
-		require.Equal(t, arwen.ErrNotEnoughGas.Error(), vmOutput.ReturnMessage)
+		require.Equal(t, arwen.ErrNoBigIntUnderThisHandle.Error(), vmOutput.ReturnMessage)
 		require.Zero(t, vmOutput.GasRemaining)
 	}
 }
@@ -1121,7 +1131,9 @@ func TestExecution_ExecuteOnDestContext_Recursive_Direct(t *testing.T) {
 	expectedVMOutput := expectedVMOutputDestCtxRecursiveDirect(code, int(recursiveCalls))
 	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
-	require.Equal(t, int64(1), host.BigInt().GetOne(16).Int64())
+	value, _ := host.BigInt().GetOne(16)
+	intValue := value.Int64()
+	require.Equal(t, int64(1), intValue)
 }
 
 func TestExecution_ExecuteOnDestContext_Recursive_Mutual_Methods(t *testing.T) {
@@ -1149,7 +1161,9 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_Methods(t *testing.T) {
 	expectedVMOutput := expectedVMOutputDestCtxRecursiveMutualMethods(code, int(recursiveCalls))
 	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
-	require.Equal(t, int64(0), host.BigInt().GetOne(16).Int64())
+	value, _ := host.BigInt().GetOne(16)
+	intValue := value.Int64()
+	require.Equal(t, int64(0), intValue)
 }
 
 func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs(t *testing.T) {
@@ -1179,7 +1193,9 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs(t *testing.T) {
 	expectedVMOutput := expectedVMOutputDestCtxRecursiveMutualSCs(parentCode, childCode, int(recursiveCalls))
 	expectedVMOutput.GasRemaining = vmOutput.GasRemaining
 	require.Equal(t, expectedVMOutput, vmOutput)
-	require.Equal(t, int64(1), host.BigInt().GetOne(88).Int64())
+	value, _ := host.BigInt().GetOne(88)
+	intValue := value.Int64()
+	require.Equal(t, int64(1), intValue)
 }
 
 func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs_OutOfGas(t *testing.T) {
@@ -1208,7 +1224,7 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 		require.Equal(t, arwen.ErrNotEnoughGas.Error(), vmOutput.ReturnMessage)
 	} else {
 		require.Equal(t, vmcommon.ExecutionFailed, vmOutput.ReturnCode)
-		require.Equal(t, arwen.ErrExecutionFailed.Error(), vmOutput.ReturnMessage)
+		require.Equal(t, arwen.ErrNoBigIntUnderThisHandle.Error(), vmOutput.ReturnMessage)
 		require.Zero(t, vmOutput.GasRemaining)
 	}
 }
