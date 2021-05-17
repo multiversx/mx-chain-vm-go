@@ -139,7 +139,7 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 		"tx": {
 			"from": "''%s",
 			"value": "0",
-			"contractCode": "file:elrond_dex_farm.wasm",
+			"contractCode": "file:elrond_dex_farm.deprecated.wasm",
 			"arguments": [
 				"str:%s",
 				"''%s",
@@ -172,7 +172,7 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 		"tx": {
 			"from": "''%s",
 			"value": "0",
-			"contractCode": "file:elrond_dex_farm.wasm",
+			"contractCode": "file:elrond_dex_farm.deprecated.wasm",
 			"arguments": [
 				"str:%s",
 				"''%s",
@@ -198,7 +198,7 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 	}
 
 	// setup pair code
-	fileBytes, err := ioutil.ReadFile("../../../test/dex/v0_1/output/elrond_dex_pair.wasm")
+	fileBytes, err := ioutil.ReadFile("../../../test/dex/v0_2/output/elrond_dex_pair.wasm")
 	if err != nil {
 		fmt.Print(err)
 	}

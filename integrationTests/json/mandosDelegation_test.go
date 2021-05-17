@@ -9,7 +9,7 @@ func TestDelegation_v0_2(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	runAllTestsInFolder(t, "delegation/v0_2")
+	runAllTestsInFolder(t, "delegation/v0_1")
 }
 
 func TestDelegation_v0_3(t *testing.T) {
@@ -17,8 +17,8 @@ func TestDelegation_v0_3(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	runTestsInFolder(t, "delegation/v0_3", []string{
-		"delegation/v0_3/test/integration/genesis/genesis.scen.json",
+	runTestsInFolder(t, "delegation/v0_1", []string{
+		"delegation/v0_1/test/integration/genesis/genesis.scen.json",
 	})
 }
 

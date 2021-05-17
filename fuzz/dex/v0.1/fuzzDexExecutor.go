@@ -818,7 +818,7 @@ func (pfe *fuzzDexExecutor) doHackishStep(tokenA string, tokenB string, index in
 					"str:special_fee_percent": "100",
 					"str:router_owner_address": "''%s"
 				},
-				"code": "file:../../../test/dex/v0_1/output/elrond_dex_pair.wasm"
+				"code": "file:../../../test/dex/v0_2/output/elrond_dex_pair.wasm"
 			}
 		}
 	}`,
@@ -885,7 +885,7 @@ func (pfe *fuzzDexExecutor) doHachishStepStaking() error {
 					"str:owner": "''%s",
 					"str:farm_with_lp_tokens": "1"
 				},
-				"code": "file:../../../test/dex/v0_1/output/elrond_dex_farm.wasm"
+				"code": "file:../../../test/dex/v0_2/output/elrond_dex_farm.deprecated.wasm"
 			}
 		}
 	}`,
@@ -926,7 +926,7 @@ func (pfe *fuzzDexExecutor) doHachishStepStaking() error {
 					"str:owner": "''%s",
 					"str:farm_with_lp_tokens": "1"
 				},
-				"code": "file:../../../test/dex/v0_1/output/elrond_dex_farm.wasm"
+				"code": "file:../../../test/dex/v0_2/output/elrond_dex_farm.deprecated.wasm"
 			}
 		}
 	}`,

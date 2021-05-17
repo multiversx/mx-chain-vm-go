@@ -27,13 +27,13 @@ func newExecutorWithPaths() *fuzzDexExecutor {
 	fileResolver := mc.NewDefaultFileResolver().
 		ReplacePath(
 			"elrond_dex_router.wasm",
-			filepath.Join(getTestRoot(), "dex/v0_1/output/elrond_dex_router.wasm")).
+			filepath.Join(getTestRoot(), "dex/v0_2/output/elrond_dex_router.wasm")).
 		ReplacePath(
 			"elrond_dex_pair.wasm",
-			filepath.Join(getTestRoot(), "dex/v0_1/output/elrond_dex_pair.wasm")).
+			filepath.Join(getTestRoot(), "dex/v0_2/output/elrond_dex_pair.wasm")).
 		ReplacePath(
-			"elrond_dex_farm.wasm",
-			filepath.Join(getTestRoot(), "dex/v0_1/output/elrond_dex_farm.wasm"))
+			"elrond_dex_farm.deprecated.wasm",
+			filepath.Join(getTestRoot(), "dex/v0_2/output/elrond_dex_farm.deprecated.wasm"))
 
 	pfe, err := newFuzzDexExecutor(fileResolver)
 	if err != nil {

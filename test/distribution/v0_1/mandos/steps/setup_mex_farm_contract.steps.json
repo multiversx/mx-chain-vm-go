@@ -23,40 +23,18 @@
                         }
                     },
                     "storage": {
-                        "str:farming_pool_token_id": "str:MEX-abcdef",
+                        "str:farming_token_id": "str:MEX-abcdef",
                         "str:farm_token_id": "str:FARM-abcdef",
+                        "str:reward_token_id": "str:MEX-abcdef",
                         "str:router_address": "address:owner",
                         "str:state": "1",
                         "str:owner": "address:owner",
-                        "str:farm_with_lp_tokens": "0",
                         "str:per_block_reward_amount": "5000",
                         "str:last_reward_block_nonce": "0"
                     },
                     "code": "file:../../output/elrond_dex_farm.wasm",
                     "owner": "address:owner"
                 }
-            }
-        },
-        {
-            "step": "scCall",
-            "txId": "2",
-            "tx": {
-                "from": "address:owner",
-                "to": "sc:proxy_dex_contract",
-                "value": "0",
-                "function": "addAcceptedLockedAssetTokenId",
-                "arguments": [
-                    "str:LKMEX-abcdef"
-                ],
-                "gasLimit": "100,000,000",
-                "gasPrice": "0"
-            },
-            "expect": {
-                "out": [],
-                "status": "",
-                "logs": [],
-                "gas": "*",
-                "refund": "*"
             }
         }
     ]

@@ -30,7 +30,7 @@ func newExecutorWithPaths() *fuzzDelegationExecutor {
 	fileResolver := mc.NewDefaultFileResolver().
 		ReplacePath(
 			"delegation.wasm",
-			filepath.Join(getTestRoot(), "delegation/v0_3/output/delegation.wasm")).
+			filepath.Join(getTestRoot(), "delegation/v0_1/output/delegation.wasm")).
 		ReplacePath(
 			"auction-mock.wasm",
 			filepath.Join(getTestRoot(), "delegation/auction-mock/output/auction-mock.wasm"))
