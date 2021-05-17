@@ -367,14 +367,19 @@ func addEC(
 ) {
 	bigInt := arwen.GetBigIntContext(context)
 	metering := arwen.GetMeteringContext(context)
+	runtime := arwen.GetRuntimeContext(context)
 
 	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
 	metering.UseGas(gasToUse)
 
-	xResult, yResult, P := bigInt.GetThree(xResultHandle, yResultHandle, fieldOrderHandle)
-	N, B, Gx := bigInt.GetThree(basePointOrderHandle, eqConstantHandle, xBasePointHandle)
-	Gy, x1, y1 := bigInt.GetThree(yBasePointHandle, fstPointXHandle, fstPointYHandle)
-	x2, y2 := bigInt.GetTwo(sndPointXHandle, sndPointYHandle)
+	xResult, yResult, P, err1 := bigInt.GetThree(xResultHandle, yResultHandle, fieldOrderHandle)
+	N, B, Gx, err2 := bigInt.GetThree(basePointOrderHandle, eqConstantHandle, xBasePointHandle)
+	Gy, x1, y1, err3 := bigInt.GetThree(yBasePointHandle, fstPointXHandle, fstPointYHandle)
+	x2, y2, err4 := bigInt.GetTwo(sndPointXHandle, sndPointYHandle)
+	if err1 != nil || err2 != nil || err3 != nil || err4 != nil {
+		arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return
+	}
 	bigInt.ConsumeGasForBigIntCopy(xResult, yResult, P, N, B, Gx, Gy, x1, y1, x2, y2)
 
 	xResultAdd, yResultAdd := elliptic_curve.Add(P, N, B, Gx, Gy, int(sizeOfField), x1, y1, x2, y2)
@@ -398,13 +403,18 @@ func doubleEC(
 ) {
 	bigInt := arwen.GetBigIntContext(context)
 	metering := arwen.GetMeteringContext(context)
+	runtime := arwen.GetRuntimeContext(context)
 
 	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
 	metering.UseGas(gasToUse)
 
-	xResult, yResult, P := bigInt.GetThree(xResultHandle, yResultHandle, fieldOrderHandle)
-	N, B, Gx := bigInt.GetThree(basePointOrderHandle, eqConstantHandle, xBasePointHandle)
-	Gy, x, y := bigInt.GetThree(yBasePointHandle, pointXHandle, pointYHandle)
+	xResult, yResult, P, err1 := bigInt.GetThree(xResultHandle, yResultHandle, fieldOrderHandle)
+	N, B, Gx, err2 := bigInt.GetThree(basePointOrderHandle, eqConstantHandle, xBasePointHandle)
+	Gy, x, y, err3 := bigInt.GetThree(yBasePointHandle, pointXHandle, pointYHandle)
+	if err1 != nil || err2 != nil || err3 != nil {
+		arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return
+	}
 	bigInt.ConsumeGasForBigIntCopy(xResult, yResult, P, N, B, Gx, Gy, x, y)
 
 	xResultDouble, yResultDouble := elliptic_curve.Double(P, N, B, Gx, Gy, int(sizeOfField), x, y)
@@ -426,13 +436,18 @@ func isOnCurveEC(
 ) int32 {
 	bigInt := arwen.GetBigIntContext(context)
 	metering := arwen.GetMeteringContext(context)
+	runtime := arwen.GetRuntimeContext(context)
 
 	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
 	metering.UseGas(gasToUse)
 
-	x, y, P := bigInt.GetThree(pointXHandle, pointYHandle, fieldOrderHandle)
-	N, B, Gx := bigInt.GetThree(basePointOrderHandle, eqConstantHandle, xBasePointHandle)
-	Gy := bigInt.GetOne(yBasePointHandle)
+	x, y, P, err1 := bigInt.GetThree(pointXHandle, pointYHandle, fieldOrderHandle)
+	N, B, Gx, err2 := bigInt.GetThree(basePointOrderHandle, eqConstantHandle, xBasePointHandle)
+	Gy, err3 := bigInt.GetOne(yBasePointHandle)
+	if err1 != nil || err2 != nil || err3 != nil {
+		arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return -1
+	}
 	bigInt.ConsumeGasForBigIntCopy(P, N, B, Gx, Gy, x, y)
 
 	if elliptic_curve.IsOnCurve(P, N, B, Gx, Gy, int(sizeOfField), x, y) {
@@ -468,9 +483,13 @@ func scalarBaseMultEC(
 		return 1
 	}
 
-	xResult, yResult, P := bigInt.GetThree(xResultHandle, yResultHandle, fieldOrderHandle)
-	N, B, Gx := bigInt.GetThree(basePointOrderHandle, eqConstantHandle, xBasePointHandle)
-	Gy := bigInt.GetOne(yBasePointHandle)
+	xResult, yResult, P, err1 := bigInt.GetThree(xResultHandle, yResultHandle, fieldOrderHandle)
+	N, B, Gx, err2 := bigInt.GetThree(basePointOrderHandle, eqConstantHandle, xBasePointHandle)
+	Gy, err3 := bigInt.GetOne(yBasePointHandle)
+	if err1 != nil || err2 != nil || err3 != nil {
+		arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return 1
+	}
 	bigInt.ConsumeGasForBigIntCopy(P, N, B, Gx, Gy, xResult, yResult)
 
 	xResultSBM, yResultSBM := elliptic_curve.ScalarBaseMult(P, N, B, Gx, Gy, int(sizeOfField), k)
@@ -508,9 +527,13 @@ func scalarMultEC(
 		return 1
 	}
 
-	xResult, yResult, P := bigInt.GetThree(xResultHandle, yResultHandle, fieldOrderHandle)
-	N, B, Gx := bigInt.GetThree(basePointOrderHandle, eqConstantHandle, xBasePointHandle)
-	Gy, x, y := bigInt.GetThree(yBasePointHandle, pointXHandle, pointYHandle)
+	xResult, yResult, P, err1 := bigInt.GetThree(xResultHandle, yResultHandle, fieldOrderHandle)
+	N, B, Gx, err2 := bigInt.GetThree(basePointOrderHandle, eqConstantHandle, xBasePointHandle)
+	Gy, x, y, err3 := bigInt.GetThree(yBasePointHandle, pointXHandle, pointYHandle)
+	if err1 != nil || err2 != nil || err3 != nil {
+		arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return 1
+	}
 	bigInt.ConsumeGasForBigIntCopy(xResult, yResult, P, N, B, Gx, Gy, x, y)
 
 	xResultSM, yResultSM := elliptic_curve.ScalarMult(P, N, B, Gx, Gy, int(sizeOfField), x, y, k)
@@ -540,9 +563,13 @@ func marshalEC(
 	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
 	metering.UseGas(gasToUse)
 
-	x, y, P := bigInt.GetThree(pointXHandle, pointYHandle, fieldOrderHandle)
-	N, B, Gx := bigInt.GetThree(basePointOrderHandle, eqConstantHandle, xBasePointHandle)
-	Gy := bigInt.GetOne(yBasePointHandle)
+	x, y, P, err1 := bigInt.GetThree(pointXHandle, pointYHandle, fieldOrderHandle)
+	N, B, Gx, err2 := bigInt.GetThree(basePointOrderHandle, eqConstantHandle, xBasePointHandle)
+	Gy, err3 := bigInt.GetOne(yBasePointHandle)
+	if err1 != nil || err2 != nil || err3 != nil {
+		arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return 1
+	}
 	bigInt.ConsumeGasForBigIntCopy(P, N, B, Gx, Gy, x, y)
 
 	result := elliptic_curve.Marshal(P, N, B, Gx, Gy, int(sizeOfField), x, y)
@@ -575,9 +602,13 @@ func marshalCompressedEC(
 	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
 	metering.UseGas(gasToUse)
 
-	x, y, P := bigInt.GetThree(pointXHandle, pointYHandle, fieldOrderHandle)
-	N, B, Gx := bigInt.GetThree(basePointOrderHandle, eqConstantHandle, xBasePointHandle)
-	Gy := bigInt.GetOne(yBasePointHandle)
+	x, y, P, err1 := bigInt.GetThree(pointXHandle, pointYHandle, fieldOrderHandle)
+	N, B, Gx, err2 := bigInt.GetThree(basePointOrderHandle, eqConstantHandle, xBasePointHandle)
+	Gy, err3 := bigInt.GetOne(yBasePointHandle)
+	if err1 != nil || err2 != nil || err3 != nil {
+		arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return 1
+	}
 	bigInt.ConsumeGasForBigIntCopy(P, N, B, Gx, Gy, x, y)
 
 	result := elliptic_curve.MarshalCompressed(P, N, B, Gx, Gy, int(sizeOfField), x, y)
@@ -616,9 +647,13 @@ func unmarshalEC(
 		return 1
 	}
 
-	xPair, yPair, P := bigInt.GetThree(xPairHandle, yPairHandle, fieldOrderHandle)
-	N, B, Gx := bigInt.GetThree(basePointOrderHandle, eqConstantHandle, xBasePointHandle)
-	Gy := bigInt.GetOne(yBasePointHandle)
+	xPair, yPair, P, err1 := bigInt.GetThree(xPairHandle, yPairHandle, fieldOrderHandle)
+	N, B, Gx, err2 := bigInt.GetThree(basePointOrderHandle, eqConstantHandle, xBasePointHandle)
+	Gy, err3 := bigInt.GetOne(yBasePointHandle)
+	if err1 != nil || err2 != nil || err3 != nil {
+		arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return 1
+	}
 	bigInt.ConsumeGasForBigIntCopy(P, N, B, Gx, Gy, xPair, yPair)
 
 	xPairU, yPairU := elliptic_curve.Unmarshal(P, N, B, Gx, Gy, int(sizeOfField), data)
@@ -654,9 +689,13 @@ func unmarshalCompressedEC(
 		return int32(len(data))
 	}
 
-	xPair, yPair, P := bigInt.GetThree(xPairHandle, yPairHandle, fieldOrderHandle)
-	N, B, Gx := bigInt.GetThree(basePointOrderHandle, eqConstantHandle, xBasePointHandle)
-	Gy := bigInt.GetOne(yBasePointHandle)
+	xPair, yPair, P, err1 := bigInt.GetThree(xPairHandle, yPairHandle, fieldOrderHandle)
+	N, B, Gx, err2 := bigInt.GetThree(basePointOrderHandle, eqConstantHandle, xBasePointHandle)
+	Gy, err3 := bigInt.GetOne(yBasePointHandle)
+	if err1 != nil || err2 != nil || err3 != nil {
+		arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return 1
+	}
 	bigInt.ConsumeGasForBigIntCopy(P, N, B, Gx, Gy, xPair, yPair)
 
 	xPairUC, yPairUC := elliptic_curve.UnmarshalCompressed(P, N, B, Gx, Gy, int(sizeOfField), data)
@@ -686,9 +725,13 @@ func generateKeyEC(
 	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
 	metering.UseGas(gasToUse)
 
-	xPubKey, yPubKey, P := bigInt.GetThree(xPubKeyHandle, yPubKeyHandle, fieldOrderHandle)
-	N, B, Gx := bigInt.GetThree(basePointOrderHandle, eqConstantHandle, xBasePointHandle)
-	Gy := bigInt.GetOne(yBasePointHandle)
+	xPubKey, yPubKey, P, err1 := bigInt.GetThree(xPubKeyHandle, yPubKeyHandle, fieldOrderHandle)
+	N, B, Gx, err2 := bigInt.GetThree(basePointOrderHandle, eqConstantHandle, xBasePointHandle)
+	Gy, err3 := bigInt.GetOne(yBasePointHandle)
+	if err1 != nil || err2 != nil || err3 != nil {
+		arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return 1
+	}
 	bigInt.ConsumeGasForBigIntCopy(P, N, B, Gx, Gy, xPubKey, yPubKey)
 
 	result, xPubKeyGK, yPubKeyGK, err := elliptic_curve.GenerateKey(P, N, N, Gx, Gy, int(sizeOfField))

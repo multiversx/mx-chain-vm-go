@@ -724,7 +724,10 @@ func getESDTTokenData(
 		return 0
 	}
 
-	value := bigInt.GetOne(valueHandle)
+	value, err := bigInt.GetOne(valueHandle)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 0
+	}
 	value.Set(esdtData.Value)
 
 	err = runtime.MemStore(propertiesOffset, esdtData.Properties)
@@ -750,7 +753,10 @@ func getESDTTokenData(
 			return 0
 		}
 
-		royalties := bigInt.GetOne(royaltiesHandle)
+		royalties, err := bigInt.GetOne(royaltiesHandle)
+		if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+			return 0
+		}
 		royalties.SetUint64(uint64(esdtData.TokenMetaData.Royalties))
 
 		if len(esdtData.TokenMetaData.URIs) > 0 {
