@@ -37,7 +37,7 @@
 		},
 		{
 			"step": "scDeploy",
-			"txId": "deploy-staking",
+			"txId": "deploy-staking22",
 			"tx": {
 				"from": "address:owner",
 				"value": "0",

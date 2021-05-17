@@ -57,9 +57,12 @@
 				"gasPrice": "0"
 			},
 			"expect": {
-				"out": [],
-				"status": "4",
-				"message": "str:Exit too soon",
+				"out": [
+					"0x0000000c4c50544f4b2d61626364656600000003015f90",
+					"0x0000000c5745474c442d61626364656600000000"
+				],
+				"status": "0",
+				"message": "*",
 				"gas": "*",
 				"refund": "*"
 			}
@@ -85,14 +88,14 @@
 								},
 								{
 									"nonce": "0x02",
-									"balance": "100,000,000",
+									"balance": "99,900,000",
 									"creator": "*",
 									"hash": "*",
 									"attributes": "*"
 								}
 							]
 						},
-						"str:LPTOK-abcdef": "1,799,999,000"
+						"str:LPTOK-abcdef": "1,800,089,000"
 					}
 				},
 				"+": ""
@@ -153,14 +156,14 @@
 								},
 								{
 									"nonce": "0x02",
-									"balance": "99,900,000",
+									"balance": "99,800,000",
 									"creator": "*",
 									"hash": "*",
 									"attributes": "*"
 								}
 							]
 						},
-						"str:LPTOK-abcdef": "1,800,099,000"
+						"str:LPTOK-abcdef": "1,800,189,000"
 					}
 				},
 				"+": ""

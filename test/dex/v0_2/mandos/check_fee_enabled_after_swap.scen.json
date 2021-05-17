@@ -48,7 +48,8 @@
 						"str:farm_token_id": "str:FARM-abcdef",
 						"str:router_address": "sc:router_contract",
 						"str:state": "1",
-						"str:owner": "address:owner"
+						"str:owner": "address:owner",
+						"str:actual_reserves": "199"
 					},
 					"code": "file:../output/elrond_dex_farm.wasm"
 				},

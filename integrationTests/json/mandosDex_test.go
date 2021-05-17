@@ -9,7 +9,7 @@ func TestDex_v0_1(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	runAllTestsInFolder(t, "dex/v0_2")
+	runAllTestsInFolder(t, "dex/v0_1")
 }
 
 func TestDex_v0_2(t *testing.T) {
@@ -17,5 +17,5 @@ func TestDex_v0_2(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	runAllTestsInFolder(t, "dex/v0_1")
+	runAllTestsInFolder(t, "dex/v0_2")
 }

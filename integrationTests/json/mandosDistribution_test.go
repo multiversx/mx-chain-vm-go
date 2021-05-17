@@ -9,5 +9,5 @@ func TestDistribution_v0_1(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	runAllTestsInFolder(t, "distribution/v0_2")
+	runAllTestsInFolder(t, "distribution/v0_1")
 }

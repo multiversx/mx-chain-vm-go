@@ -73,7 +73,7 @@
 			},
 			"expect": {
 				"out": [
-					"0"
+					"100,000,000"
 				],
 				"status": "",
 				"gas": "*",
@@ -149,13 +149,14 @@
 					},
 					"storage": {
 						"str:farm_token_nonce": "1",
-						"str:total_supply": "100000000",
 						"str:farm_token_id": "str:FARM-abcdef",
 						"str:router_address": "sc:router_contract",
 						"str:owner": "address:owner",
 						"str:state": "1",
 						"str:farming_token_id": "str:WEGLD-abcdef",
-						"str:reward_token_id": "str:WEGLD-abcdef"
+						"str:reward_token_id": "str:WEGLD-abcdef",
+						"str:farm_token_supply": "100,000,000",
+						"str:virtual_reserves": "100,000,000"
 					},
 					"code": "file:../output/elrond_dex_farm.wasm"
 				},
