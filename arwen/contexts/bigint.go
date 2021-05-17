@@ -91,23 +91,41 @@ func (context *bigIntContext) Put(value int64) int32 {
 	return newHandle
 }
 
-// GetOne returns the value at the given handle. If there is no value under that handle, it will return 0
-func (context *bigIntContext) GetOne(handle int32) *big.Int {
-	if _, ok := context.values[handle]; !ok {
-		context.values[handle] = big.NewInt(0)
+// GetOne returns the value at the given handle. If there is no value under that handle, it will return error
+func (context *bigIntContext) GetOne(handle int32) (*big.Int, error) {
+	value, ok := context.values[handle]
+
+	if !ok {
+		return nil, arwen.ErrNoBigIntUnderThisHandle
 	}
 
-	return context.values[handle]
+	return value, nil
 }
 
 // GetTwo returns the values at the given handles.
-func (context *bigIntContext) GetTwo(handle1 int32, handle2 int32) (*big.Int, *big.Int) {
-	return context.GetOne(handle1), context.GetOne(handle2)
+func (context *bigIntContext) GetTwo(handle1 int32, handle2 int32) (*big.Int, *big.Int, error) {
+	firstBigInt, err := context.GetOne(handle1)
+	if err != nil {
+		return nil, nil, err
+	}
+	secondBigInt, err := context.GetOne(handle2)
+	if err != nil {
+		return nil, nil, err
+	}
+	return firstBigInt, secondBigInt, nil
 }
 
 // GetThree returns the values at the given handles.
-func (context *bigIntContext) GetThree(handle1 int32, handle2 int32, handle3 int32) (*big.Int, *big.Int, *big.Int) {
-	return context.GetOne(handle1), context.GetOne(handle2), context.GetOne(handle3)
+func (context *bigIntContext) GetThree(handle1 int32, handle2 int32, handle3 int32) (*big.Int, *big.Int, *big.Int, error) {
+	firstBigInt, secondBigInt, err := context.GetTwo(handle1, handle2)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	thirdBigInt, err := context.GetOne(handle3)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	return firstBigInt, secondBigInt, thirdBigInt, nil
 }
 
 // IsInterfaceNil returns true if there is no value under the interface
@@ -131,7 +149,7 @@ func (context *bigIntContext) ConsumeGasForThisIntNumberOfBytes(byteLen int) {
 	}
 }
 
-// ConsumeGasForThisBigIntNumberOfBytes uses gas for the number of bytes given.
+// ConsumeGasForThisBigIntNumberOfBytes uses gas for the number of bytes given that are being copied.
 func (context *bigIntContext) ConsumeGasForThisBigIntNumberOfBytes(byteLen *big.Int) {
 	metering := context.host.Metering()
 	DataCopyPerByte := metering.GasSchedule().BaseOperationCost.DataCopyPerByte
