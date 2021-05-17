@@ -10,7 +10,7 @@
                     "esdt": {
                         "str:NFT-0001": {
                             "nonce": "1",
-                            "value": "0"
+                            "balance": "0"
                         }
                     },
                     "storage": {},
@@ -22,7 +22,7 @@
                     "esdt": {
                         "str:NFT-0001": {
                             "nonce": "1",
-                            "value": "1"
+                            "balance": "1"
                         }
                     },
                     "storage": {},
@@ -63,7 +63,7 @@
                     "esdt": {
                         "str:NFT-0001": {
                             "nonce": "1",
-                            "value": "1"
+                            "balance": "1"
                         }
                     },
                     "storage": {},
@@ -75,7 +75,7 @@
                     "esdt": {
                         "str:NFT-0001": {
                             "nonce": "1",
-                            "value": "0"
+                            "balance": "0"
                         }
                     },
                     "storage": {},
