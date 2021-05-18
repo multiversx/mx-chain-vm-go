@@ -678,6 +678,11 @@ func (context *runtimeContext) SetReadOnly(readOnly bool) {
 	context.readOnly = readOnly
 }
 
+// GetInstance returns the current wasmer instance
+func (context *runtimeContext) GetInstance() wasmer.InstanceHandler {
+	return context.instance
+}
+
 // GetInstanceExports returns the current wasmer instance exports.
 func (context *runtimeContext) GetInstanceExports() wasmer.ExportsMap {
 	return context.instance.GetExports()

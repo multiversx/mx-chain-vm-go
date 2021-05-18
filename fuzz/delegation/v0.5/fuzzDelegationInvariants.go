@@ -10,8 +10,8 @@ func (pfe *fuzzDelegationExecutor) validateOwnerStakeShare() error {
 		"step": "scCall",
 		"txId": "%d",
 		"tx": {
-			"from": "''%s",
-			"to": "''%s",
+			"from": "%s",
+			"to": "%s",
 			"value": "0",
 			"function": "validateOwnerStakeShare",
 			"arguments": [],
@@ -27,8 +27,8 @@ func (pfe *fuzzDelegationExecutor) validateOwnerStakeShare() error {
 		}
 	}`,
 		pfe.nextTxIndex(),
-		string(pfe.ownerAddress),
-		string(pfe.delegationContractAddress),
+		pfe.ownerAddress,
+		pfe.delegationContractAddress,
 	))
 	if err != nil {
 		return err
@@ -43,8 +43,8 @@ func (pfe *fuzzDelegationExecutor) validateDelegationCapInvariant() error {
 		"step": "scCall",
 		"txId": "%d",
 		"tx": {
-			"from": "''%s",
-			"to": "''%s",
+			"from": "%s",
+			"to": "%s",
 			"value": "0",
 			"function": "validateDelegationCapInvariant",
 			"arguments": [],
@@ -60,8 +60,8 @@ func (pfe *fuzzDelegationExecutor) validateDelegationCapInvariant() error {
 		}
 	}`,
 		pfe.nextTxIndex(),
-		string(pfe.ownerAddress),
-		string(pfe.delegationContractAddress),
+		pfe.ownerAddress,
+		pfe.delegationContractAddress,
 	))
 	if err != nil {
 		return err

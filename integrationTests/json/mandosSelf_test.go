@@ -13,6 +13,36 @@ func TestMandosSelfTest(t *testing.T) {
 	})
 }
 
+func TestMandoSetAccountAddressLengthErr1(t *testing.T) {
+	err := runSingleTest(t, "mandos-self-test/set-check", "set-account-addr-len.err1.json")
+	require.EqualError(t, err,
+		"error processing steps: cannot parse set state step: account address is not 32 bytes in length")
+}
+
+func TestMandoSetAccountAddressLengthErr2(t *testing.T) {
+	err := runSingleTest(t, "mandos-self-test/set-check", "set-account-addr-len.err2.json")
+	require.EqualError(t, err,
+		"error processing steps: error parsing new addresses: account address is not 32 bytes in length")
+}
+
+func TestMandoSetAccountSCAddressErr1(t *testing.T) {
+	err := runSingleTest(t, "mandos-self-test/set-check", "set-account-sc-addr.err1.json")
+	require.EqualError(t, err,
+		"\"setState\" step validation failed for account \"address:not-a-sc-address\": account has a smart contract address, but has no code: 0x6e6f742d612d73632d616464726573735f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f")
+}
+
+func TestMandoSetAccountSCAddressErr2(t *testing.T) {
+	err := runSingleTest(t, "mandos-self-test/set-check", "set-account-sc-addr.err2.json")
+	require.EqualError(t, err,
+		"\"setState\" step validation failed for account \"sc:should-be-sc\": account has code but not a smart contract address: 000000000000000073686f756c642d62652d73635f5f5f5f5f5f5f5f5f5f5f5f")
+}
+
+func TestMandoSetAccountSCAddressErr3(t *testing.T) {
+	err := runSingleTest(t, "mandos-self-test/set-check", "set-account-sc-addr.err3.json")
+	require.EqualError(t, err,
+		"address in \"setState\" \"newAddresses\" field should have SC format: address:not-a-sc-address")
+}
+
 func TestMandosCheckNonceErr(t *testing.T) {
 	err := runSingleTest(t, "mandos-self-test/set-check", "set-check-nonce.err.json")
 	require.EqualError(t, err,
@@ -34,7 +64,7 @@ func TestMandosCheckUsernameErr(t *testing.T) {
 func TestMandosCheckCodeErr(t *testing.T) {
 	err := runSingleTest(t, "mandos-self-test/set-check", "set-check-code.err.json")
 	require.EqualError(t, err,
-		"bad account code. Account: address:the-address. Want: \"file:set-check-code.scen.json\". Have: \"0x7b0a2020202022636f6d...\"")
+		"bad account code. Account: sc:contract-address. Want: \"file:set-check-code.scen.json\". Have: \"0x7b0a2020202022636f6d...\"")
 }
 
 func TestMandosCheckStorageErr1(t *testing.T) {

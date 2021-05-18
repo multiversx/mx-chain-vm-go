@@ -334,7 +334,7 @@
             "txId": "4",
             "comment": "system send out validator rewards",
             "tx": {
-                "to": "``delegation_contract___________s1",
+                "to": "sc:delegation",
                 "value": "555,000,000"
             }
         },

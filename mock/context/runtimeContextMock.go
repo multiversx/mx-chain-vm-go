@@ -226,6 +226,11 @@ func (r *RuntimeContextMock) SetReadOnly(readOnly bool) {
 	r.ReadOnlyFlag = readOnly
 }
 
+// GetInstance mocked method()
+func (r *RuntimeContextMock) GetInstance() wasmer.InstanceHandler {
+	return nil
+}
+
 // GetInstanceExports mocked method
 func (r *RuntimeContextMock) GetInstanceExports() wasmer.ExportsMap {
 	return nil
