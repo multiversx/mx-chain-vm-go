@@ -546,14 +546,14 @@ func scalarMultEC(
 //export marshalEC
 func marshalEC(
 	context unsafe.Pointer,
+	pointXHandle int32,
+	pointYHandle int32,
 	fieldOrderHandle int32,
 	basePointOrderHandle int32,
 	eqConstantHandle int32,
 	xBasePointHandle int32,
 	yBasePointHandle int32,
 	sizeOfField int32,
-	pointXHandle int32,
-	pointYHandle int32,
 	resultOffset int32,
 ) int32 {
 	runtime := arwen.GetRuntimeContext(context)
@@ -564,6 +564,10 @@ func marshalEC(
 	metering.UseGas(gasToUse)
 
 	x, y, P, err1 := bigInt.GetThree(pointXHandle, pointYHandle, fieldOrderHandle)
+	if x.BitLen() > int(sizeOfField) || y.BitLen() > int(sizeOfField) {
+		arwen.WithFault(arwen.ErrBufNotBigEnough, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return 1
+	}
 	N, B, Gx, err2 := bigInt.GetThree(basePointOrderHandle, eqConstantHandle, xBasePointHandle)
 	Gy, err3 := bigInt.GetOne(yBasePointHandle)
 	if err1 != nil || err2 != nil || err3 != nil {
@@ -585,14 +589,14 @@ func marshalEC(
 //export marshalCompressedEC
 func marshalCompressedEC(
 	context unsafe.Pointer,
+	pointXHandle int32,
+	pointYHandle int32,
 	fieldOrderHandle int32,
 	basePointOrderHandle int32,
 	eqConstantHandle int32,
 	xBasePointHandle int32,
 	yBasePointHandle int32,
 	sizeOfField int32,
-	pointXHandle int32,
-	pointYHandle int32,
 	resultOffset int32,
 ) int32 {
 	runtime := arwen.GetRuntimeContext(context)
@@ -603,6 +607,10 @@ func marshalCompressedEC(
 	metering.UseGas(gasToUse)
 
 	x, y, P, err1 := bigInt.GetThree(pointXHandle, pointYHandle, fieldOrderHandle)
+	if x.BitLen() > int(sizeOfField) || y.BitLen() > int(sizeOfField) {
+		arwen.WithFault(arwen.ErrBufNotBigEnough, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return 1
+	}
 	N, B, Gx, err2 := bigInt.GetThree(basePointOrderHandle, eqConstantHandle, xBasePointHandle)
 	Gy, err3 := bigInt.GetOne(yBasePointHandle)
 	if err1 != nil || err2 != nil || err3 != nil {

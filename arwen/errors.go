@@ -152,3 +152,6 @@ var ErrTransferValueOnESDTCall = errors.New("transfer value on esdt call")
 
 // ErrNoBigIntUnderThisHandle signals that there is no bigInt for the given handle
 var ErrNoBigIntUnderThisHandle = errors.New("no bigInt under the given handle")
+
+// ErrBufNotBigEnough signals that the buffer is too small for given values.
+var ErrBufNotBigEnough = errors.New("buffer is too small for given values")
