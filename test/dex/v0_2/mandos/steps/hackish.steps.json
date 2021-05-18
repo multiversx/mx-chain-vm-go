@@ -50,7 +50,11 @@
 						"str:farm_token_id": "str:FARM-abcdef",
 						"str:router_address": "sc:router_contract",
 						"str:state": "1",
-						"str:owner": "address:owner"
+						"str:owner": "address:owner",
+						"str:minimum_farming_epochs": "2",
+						"str:burn_tokens_gas_limit": "5,000,000",
+						"str:locked_rewards_liquidity_mulitplier": "2",
+						"str:penalty_percent": "10"
 					},
 					"code": "file:../../output/elrond_dex_farm.wasm"
 				}

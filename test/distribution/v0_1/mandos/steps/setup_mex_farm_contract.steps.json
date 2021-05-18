@@ -30,11 +30,38 @@
                         "str:state": "1",
                         "str:owner": "address:owner",
                         "str:per_block_reward_amount": "5000",
-                        "str:last_reward_block_nonce": "0"
+                        "str:last_reward_block_nonce": "0",
+                        "str:minimum_farming_epochs": "2",
+                        "str:burn_tokens_gas_limit": "5,000,000",
+                        "str:locked_rewards_liquidity_mulitplier": "2",
+                        "str:penalty_percent": "10",
+                        "str:locked_asset_factory_address": "sc:locked_asset_factory"
                     },
                     "code": "file:../../output/elrond_dex_farm.wasm",
                     "owner": "address:owner"
                 }
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "2",
+            "tx": {
+                "from": "address:owner",
+                "to": "sc:locked_asset_factory",
+                "value": "0",
+                "function": "whitelist",
+                "arguments": [
+                    "sc:mex_farm_contract"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
             }
         }
     ]

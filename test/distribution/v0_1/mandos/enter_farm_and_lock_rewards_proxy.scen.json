@@ -3,13 +3,32 @@
     "steps": [
         {
             "step": "externalSteps",
-            "path": "enter_mex_farm_proxy.scen.json"
+            "path": "add_liquidity_proxy.scen.json"
         },
         {
-            "step": "setState",
-            "currentBlockInfo": {
-                "blockEpoch": "10",
-                "blockNonce": "10"
+            "step": "externalSteps",
+            "path": "steps/setup_farm_contract.steps.json"
+        },
+        {
+            "step": "scCall",
+            "txId": "5",
+            "tx": {
+                "from": "address:owner",
+                "to": "sc:proxy_dex_contract",
+                "value": "0",
+                "function": "addFarmToIntermediate",
+                "arguments": [
+                    "sc:farm_contract"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "0",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
             }
         },
         {
@@ -19,24 +38,23 @@
                 "from": "address:user_with_wegld1",
                 "to": "sc:proxy_dex_contract",
                 "value": "0",
-                "function": "claimRewardsProxy",
+                "function": "enterFarmAndLockRewardsProxy",
                 "esdt": {
-                    "tokenIdentifier": "str:WFARM-abcdef",
+                    "tokenIdentifier": "str:WLPTOK-abcdef",
                     "nonce": "0x01",
-                    "value": "6,000"
+                    "value": "8,000"
                 },
                 "arguments": [
-                    "sc:mex_farm_contract"
+                    "sc:farm_contract"
                 ],
                 "gasLimit": "1,000,000,000",
                 "gasPrice": "0"
             },
             "expect": {
                 "out": [
-                    "0x02",
-                    "0x0000000b4641524d2d61626364656600000000000000020000000203e8",
-                    "0x0000000a4d45582d6162636465660000000000000000000000027530",
-                    "0x02"
+                    "0x01",
+                    "0x0000000b4641524d2d6162636465660000000000000001000000023a98",
+                    "0x01"
                 ],
                 "status": "0",
                 "logs": [],
@@ -48,7 +66,7 @@
             "step": "checkState",
             "accounts": {
                 "address:user_with_wegld1": {
-                    "nonce": "3",
+                    "nonce": "6",
                     "balance": "100,000,000",
                     "esdt": {
                         "str:LKMEX-abcdef": {
@@ -62,10 +80,11 @@
                                 }
                             ]
                         },
-                        "str:WFARM-abcdef": {
+                        "str:WEGLD-abcdef": "999,990,000",
+                        "str:WLPTOK-abcdef": {
                             "instances": [
                                 {
-                                    "nonce": "0x02",
+                                    "nonce": "0x01",
                                     "balance": "1,000",
                                     "creator": "*",
                                     "hash": "*",
@@ -73,7 +92,17 @@
                                 }
                             ]
                         },
-                        "str:MEX-abcdef": "30,000"
+                        "str:WFARM-abcdef": {
+                            "instances": [
+                                {
+                                    "nonce": "0x01",
+                                    "balance": "15,000",
+                                    "creator": "*",
+                                    "hash": "*",
+                                    "attributes": "*"
+                                }
+                            ]
+                        }
                     },
                     "storage": {},
                     "code": ""

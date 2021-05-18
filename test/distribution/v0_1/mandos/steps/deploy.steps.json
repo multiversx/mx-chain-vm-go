@@ -181,28 +181,6 @@
             }
         },
         {
-            "step": "scCall",
-            "txId": "2",
-            "tx": {
-                "from": "address:owner",
-                "to": "sc:locked_asset_factory",
-                "value": "0",
-                "function": "whitelist",
-                "arguments": [
-                    "sc:dist_contract"
-                ],
-                "gasLimit": "100,000,000",
-                "gasPrice": "0"
-            },
-            "expect": {
-                "out": [],
-                "status": "",
-                "logs": [],
-                "gas": "*",
-                "refund": "*"
-            }
-        },
-        {
             "step": "setState",
             "accounts": {
                 "sc:dist_contract": {
@@ -252,11 +230,7 @@
                     "storage": {
                         "str:distributed_token_id": "str:MEX-abcdef",
                         "str:locked_token_id": "str:LKMEX-abcdef",
-                        "str:default_unlock_period": "0x000000000000001b32000000000000002c32",
-                        "str:whitelist.info": "0x00000001000000010000000100000001",
-                        "str:whitelist.node_id|sc:dist_contract": "1",
-                        "str:whitelist.node_links|u32:1": "0",
-                        "str:whitelist.value|u32:1": "sc:dist_contract"
+                        "str:default_unlock_period": "0x000000000000001b32000000000000002c32"
                     },
                     "code": "file:../../output/sc-locked-asset-factory.wasm",
                     "owner": "address:owner"
@@ -310,6 +284,28 @@
                     "code": "file:../../output/sc-proxy-dex.wasm",
                     "owner": "address:owner"
                 }
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "2",
+            "tx": {
+                "from": "address:owner",
+                "to": "sc:locked_asset_factory",
+                "value": "0",
+                "function": "whitelist",
+                "arguments": [
+                    "sc:dist_contract"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
             }
         }
     ]

@@ -15,7 +15,7 @@
 				"function": "calculateRewardsForGivenPosition",
 				"arguments": [
 					"100,000,000",
-					"0x0000000405f5e1000000000405f5e1000000000000000000"
+					"0x0000000405f5e1000000000405f5e10000000000000000000000"
 				],
 				"gasLimit": "100,000,000",
 				"gasPrice": "0"
@@ -67,7 +67,7 @@
 				"function": "calculateRewardsForGivenPosition",
 				"arguments": [
 					"100,000,000",
-					"0x0000000405f5e1000000000405f5e1000000000000000000"
+					"0x0000000405f5e1000000000405f5e10000000000000000000000"
 				],
 				"gasLimit": "100,000,000",
 				"gasPrice": "0"

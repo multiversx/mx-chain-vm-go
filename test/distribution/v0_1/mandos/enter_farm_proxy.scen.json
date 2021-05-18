@@ -11,7 +11,7 @@
         },
         {
             "step": "scCall",
-            "txId": "2",
+            "txId": "5",
             "tx": {
                 "from": "address:owner",
                 "to": "sc:proxy_dex_contract",

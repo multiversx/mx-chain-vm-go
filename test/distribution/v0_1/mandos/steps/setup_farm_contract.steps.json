@@ -33,11 +33,38 @@
                         "str:reward_token_id": "str:MEX-abcdef",
                         "str:router_address": "address:owner",
                         "str:state": "1",
-                        "str:owner": "address:owner"
+                        "str:owner": "address:owner",
+                        "str:minimum_farming_epochs": "2",
+                        "str:burn_tokens_gas_limit": "5,000,000",
+                        "str:locked_rewards_liquidity_mulitplier": "2",
+                        "str:penalty_percent": "10",
+                        "str:locked_asset_factory_address": "sc:locked_asset_factory"
                     },
                     "code": "file:../../output/elrond_dex_farm.wasm",
                     "owner": "address:owner"
                 }
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "5",
+            "tx": {
+                "from": "address:owner",
+                "to": "sc:locked_asset_factory",
+                "value": "0",
+                "function": "whitelist",
+                "arguments": [
+                    "sc:farm_contract"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
             }
         }
     ]

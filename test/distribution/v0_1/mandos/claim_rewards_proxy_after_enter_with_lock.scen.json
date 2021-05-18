@@ -3,7 +3,7 @@
     "steps": [
         {
             "step": "externalSteps",
-            "path": "enter_farm_proxy.scen.json"
+            "path": "enter_farm_and_lock_rewards_proxy.scen.json"
         },
         {
             "step": "scCall",
