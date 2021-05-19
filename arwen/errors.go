@@ -155,3 +155,6 @@ var ErrNoBigIntUnderThisHandle = errors.New("no bigInt under the given handle")
 
 // ErrBufNotBigEnough signals that the buffer is too small for given values.
 var ErrBufNotBigEnough = errors.New("buffer is too small for given values")
+
+// ErrLengthsAreNotTheSame signals that lengths of the verified variables are not the same.
+var ErrLengthsAreNotTheSame = errors.New("lengths of variables are not the same")

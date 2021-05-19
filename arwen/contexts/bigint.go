@@ -1,6 +1,7 @@
 package contexts
 
 import (
+	"crypto/elliptic"
 	basicMath "math"
 	"math/big"
 
@@ -11,10 +12,12 @@ import (
 const maxBigIntByteLenForNormalCost = 32
 
 type bigIntMap map[int32]*big.Int
+type ellipticCurveMap map[int32]*elliptic.CurveParams
 
 type bigIntContext struct {
 	host       arwen.VMHost
 	values     bigIntMap
+	ecValues   ellipticCurveMap
 	stateStack []bigIntMap
 }
 
@@ -85,20 +88,26 @@ func (context *bigIntContext) Put(value int64) int32 {
 		}
 		newHandle++
 	}
-
 	context.values[newHandle] = big.NewInt(value)
-
 	return newHandle
+}
+
+// GetOneOrCreate returns the value at the given handle. If there is no value under that value, it will set a new on with value 0.
+func (context *bigIntContext) GetOneOrCreate(handle int32) *big.Int {
+	value, ok := context.values[handle]
+	if !ok {
+		value = big.NewInt(0)
+		context.values[handle] = value
+	}
+	return value
 }
 
 // GetOne returns the value at the given handle. If there is no value under that handle, it will return error
 func (context *bigIntContext) GetOne(handle int32) (*big.Int, error) {
 	value, ok := context.values[handle]
-
 	if !ok {
 		return nil, arwen.ErrNoBigIntUnderThisHandle
 	}
-
 	return value, nil
 }
 
@@ -161,4 +170,28 @@ func (context *bigIntContext) ConsumeGasForThisBigIntNumberOfBytes(byteLen *big.
 		gasToUse = gasToUseBigInt.Uint64()
 	}
 	metering.UseGas(gasToUse)
+}
+
+/// FUNCTIONS FOR ELLIPTIC CURVES
+
+// PutEllipticCurve adds the given elliptic curve to the current ecValues map and returns the handle
+func (context *bigIntContext) PutEllipticCurve(curve elliptic.CurveParams) int32 {
+	newHandle := int32(len(context.ecValues))
+	for {
+		if _, ok := context.ecValues[newHandle]; !ok {
+			break
+		}
+		newHandle++
+	}
+	context.ecValues[newHandle] = &elliptic.CurveParams{P: curve.P, N: curve.N, B: curve.B, Gx: curve.Gx, Gy: curve.Gy, BitSize: curve.BitSize, Name: "EC"}
+	return newHandle
+}
+
+func (context *bigIntContext) GetOneEllipticCurve(handle int32) *elliptic.CurveParams {
+	curve, ok := context.ecValues[handle]
+	if !ok {
+		curve = &elliptic.CurveParams{P: curve.P, N: curve.N, B: curve.B, Gx: curve.Gx, Gy: big.NewInt(0), BitSize: 0, Name: "EC"}
+		context.ecValues[handle] = curve
+	}
+	return curve
 }

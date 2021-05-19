@@ -977,7 +977,7 @@ func TestExecution_ExecuteOnDestContext_OutOfGas(t *testing.T) {
 		require.Equal(t, int64(42), intValue)
 	} else {
 		require.Equal(t, vmcommon.ExecutionFailed, vmOutput.ReturnCode)
-		require.Equal(t, arwen.ErrNoBigIntUnderThisHandle.Error(), vmOutput.ReturnMessage)
+		require.Equal(t, arwen.ErrNotEnoughGas.Error(), vmOutput.ReturnMessage)
 		require.Zero(t, vmOutput.GasRemaining)
 	}
 }

@@ -1,6 +1,7 @@
 package arwen
 
 import (
+	"crypto/elliptic"
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
@@ -149,9 +150,11 @@ type BigIntContext interface {
 	ConsumeGasForThisIntNumberOfBytes(byteLen int)
 	ConsumeGasForBigIntCopy(values ...*big.Int)
 	Put(value int64) int32
+	GetOneOrCreate(handle int32) *big.Int
 	GetOne(id int32) (*big.Int, error)
 	GetTwo(id1, id2 int32) (*big.Int, *big.Int, error)
 	GetThree(id1, id2, id3 int32) (*big.Int, *big.Int, *big.Int, error)
+	PutEllipticCurve(curve elliptic.CurveParams) int32
 }
 
 // OutputContext defines the functionality needed for interacting with the output context
