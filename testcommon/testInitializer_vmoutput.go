@@ -208,6 +208,24 @@ func (transferEntry *TransferEntry) WithData(data []byte) *TransferEntry {
 	return transferEntry
 }
 
+// WithGasLimit create sets the data for an output transfer assertion
+func (transferEntry *TransferEntry) WithGasLimit(gas uint64) *TransferEntry {
+	transferEntry.GasLimit = gas
+	return transferEntry
+}
+
+// WithGasLocked create sets the data for an output transfer assertion
+func (transferEntry *TransferEntry) WithGasLocked(gas uint64) *TransferEntry {
+	transferEntry.GasLocked = gas
+	return transferEntry
+}
+
+// WithCallType create sets the data for an output transfer assertion
+func (transferEntry *TransferEntry) WithCallType(callType vmcommon.CallType) *TransferEntry {
+	transferEntry.CallType = callType
+	return transferEntry
+}
+
 // WithValue create sets the value for an output transfer assertion
 func (transferEntry *TransferEntry) WithValue(value *big.Int) TransferEntry {
 	transferEntry.Value = value
@@ -216,9 +234,7 @@ func (transferEntry *TransferEntry) WithValue(value *big.Int) TransferEntry {
 
 // Transfers verifies if OutputTransfer(s) for the speficied accounts are the same as the provided ones
 func (v *VMOutputVerifier) Transfers(transfers ...TransferEntry) *VMOutputVerifier {
-
 	transfersMap := make(map[string][]vmcommon.OutputTransfer)
-
 	for _, transferEntry := range transfers {
 		account := string(transferEntry.address)
 		accountTransfers, exists := transfersMap[account]
@@ -230,27 +246,30 @@ func (v *VMOutputVerifier) Transfers(transfers ...TransferEntry) *VMOutputVerifi
 
 	for _, outputAccount := range v.VmOutput.OutputAccounts {
 		transfersForAccount := transfersMap[string(outputAccount.Address)]
-		require.Equal(v.T, len(transfersForAccount), len(outputAccount.OutputTransfers), "Transfers")
+		require.Equal(v.T, len(transfersForAccount), len(outputAccount.OutputTransfers), getErrorForAccount("Transfers to ", outputAccount.Address))
 		for idx := range transfersForAccount {
-			require.Equal(v.T, transfersForAccount[idx], outputAccount.OutputTransfers[idx], "Transfers")
+			require.Equal(v.T, transfersForAccount[idx], outputAccount.OutputTransfers[idx], getErrorForAccount("Transfers from / to ", outputAccount.OutputTransfers[idx].SenderAddress, outputAccount.Address))
 		}
 		delete(transfersMap, string(outputAccount.Address))
 	}
-	require.Equal(v.T, 0, len(transfersMap), "Transfers")
+	require.Equal(v.T, 0, len(transfersMap), "Transfers asserted, but not present in output")
 
 	return v
 }
 
-func getErrorForAccount(field string, address []byte) string {
-	return fmt.Sprintf("%s %s", field, humanReadable(address))
+func getErrorForAccount(field string, address ...[]byte) string {
+	return fmt.Sprintf("%s %s", field, humanReadable(address...))
 }
 
-func humanReadable(address []byte) string {
+func humanReadable(addresses ...[]byte) string {
 	var result []byte
-	for _, c := range address {
-		if unicode.IsPrint(rune(c)) {
-			result = append(result, c)
+	for _, address := range addresses {
+		for _, c := range address {
+			if unicode.IsPrint(rune(c)) {
+				result = append(result, c)
+			}
 		}
+		result = append(result, '|')
 	}
 	return string(result)
 }
