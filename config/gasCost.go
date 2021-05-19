@@ -99,6 +99,7 @@ type EthAPICost struct {
 }
 
 type BigIntAPICost struct {
+	EllipticCurveNew           uint64
 	BigIntNew                  uint64
 	BigIntUnsignedByteLength   uint64
 	BigIntSignedByteLength     uint64
