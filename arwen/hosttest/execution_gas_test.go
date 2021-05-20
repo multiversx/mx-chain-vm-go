@@ -391,21 +391,21 @@ func TestGasUsed_AsyncCall(t *testing.T) {
 		})
 }
 
-func TestGasUsed_AsyncCall_CrossShard(t *testing.T) {
+func TestGasUsed_AsyncCall_CrossShard_InitCall(t *testing.T) {
 	testConfig := asyncTestConfig
 	testConfig.GasProvided = 1000
 
 	gasUsedByParent := testConfig.GasUsedByParent
-	gasUsedByChild := testConfig.GasUsedByChild
-	gasForAsyncCall := testConfig.GasProvided - gasUsedByParent - testConfig.GasLockCost
 
-	asyncChildArg := []byte{0}
 	asyncCallData := txDataBuilder.NewBuilder()
 	asyncCallData.Func(contracts.AsyncChildFunction)
 	asyncCallData.Int64(testConfig.TransferToThirdParty)
 	asyncCallData.Str(contracts.AsyncChildData)
 	// behavior param for child
-	asyncCallData.Bytes(asyncChildArg)
+	asyncCallData.Bytes([]byte{0})
+	asyncChildArgs := asyncCallData.ToBytes()
+
+	gasForAsyncCall := testConfig.GasProvided - gasUsedByParent - testConfig.GasLockCost
 
 	parentContract := test.CreateMockContractOnShard(test.ParentAddress, 0).
 		WithBalance(testConfig.ParentBalance).
@@ -443,13 +443,20 @@ func TestGasUsed_AsyncCall_CrossShard(t *testing.T) {
 						WithData([]byte("hello")).
 						WithValue(big.NewInt(testConfig.TransferToThirdParty)),
 					test.CreateTransferEntry(test.ParentAddress, test.ChildAddress).
-						WithData(asyncCallData.ToBytes()).
+						WithData(asyncChildArgs).
 						WithGasLimit(gasForAsyncCall).
 						WithGasLocked(testConfig.GasLockCost).
 						WithCallType(vmcommon.AsynchronousCall).
 						WithValue(big.NewInt(testConfig.TransferFromParentToChild)),
 				)
 		})
+}
+
+func TestGasUsed_AsyncCall_CrossShard_ExecuteCall(t *testing.T) {
+	testConfig := asyncTestConfig
+	gasUsedByChild := testConfig.GasUsedByChild
+	gasUsedByParent := testConfig.GasUsedByParent
+	gasForAsyncCall := testConfig.GasProvided - gasUsedByParent - testConfig.GasLockCost
 
 	childAsyncReturnData := [][]byte{{0}, []byte("thirdparty"), []byte("vault")}
 
@@ -469,7 +476,7 @@ func TestGasUsed_AsyncCall_CrossShard(t *testing.T) {
 			WithArguments(
 				big.NewInt(testConfig.TransferToThirdParty).Bytes(),
 				[]byte(contracts.AsyncChildData),
-				asyncChildArg).
+				[]byte{0}).
 			WithCallType(vmcommon.AsynchronousCall).
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
@@ -498,10 +505,22 @@ func TestGasUsed_AsyncCall_CrossShard(t *testing.T) {
 						WithValue(big.NewInt(0)),
 				)
 		})
+}
 
-	/*
-		async cross shard callback child -> parent
-	*/
+func TestGasUsed_AsyncCall_CrossShard_CallBack(t *testing.T) {
+	testConfig := asyncTestConfig
+	testConfig.GasProvided = 1000
+
+	gasUsedByParent := testConfig.GasUsedByParent
+	gasUsedByChild := testConfig.GasUsedByChild
+	gasForAsyncCall := testConfig.GasProvided - gasUsedByParent - testConfig.GasLockCost
+
+	parentContract := test.CreateMockContractOnShard(test.ParentAddress, 0).
+		WithBalance(testConfig.ParentBalance).
+		WithConfig(testConfig).
+		WithMethods(contracts.PerformAsyncCallParentMock, contracts.CallBackParentMock)
+
+	// async cross shard callback child -> parent
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(parentContract).
 		WithInput(test.CreateTestContractCallInputBuilder().
@@ -515,7 +534,7 @@ func TestGasUsed_AsyncCall_CrossShard(t *testing.T) {
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			world.SelfShardID = 0
 			world.CurrentBlockInfo.BlockRound = 2
-                        // Mock the storage as if the parent was already executed
+			// Mock the storage as if the parent was already executed
 			accountHandler, _ := world.GetUserAccount(test.ParentAddress)
 			(accountHandler.(*worldmock.Account)).SaveKeyValue(test.ParentKeyA, test.ParentDataA)
 			(accountHandler.(*worldmock.Account)).SaveKeyValue(test.ParentKeyB, test.ParentDataB)
