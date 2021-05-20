@@ -28,6 +28,7 @@ type CallArgsParser interface {
 
 // VMHost defines the functionality for working with the VM
 type VMHost interface {
+	vmcommon.VMExecutionHandler
 	Crypto() crypto.VMCrypto
 	Blockchain() BlockchainContext
 	Runtime() RuntimeContext
@@ -48,8 +49,15 @@ type VMHost interface {
 	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *AsyncContextInfo, error)
 	GetAPIMethods() *wasmer.Imports
 	GetProtocolBuiltinFunctions() vmcommon.FunctionNames
+	SetProtocolBuiltinFunctions(vmcommon.FunctionNames)
 	IsBuiltinFunctionName(functionName string) bool
 	AreInSameShard(leftAddress []byte, rightAddress []byte) bool
+
+	GetGasScheduleMap() config.GasScheduleMap
+	GetContexts() (BigIntContext, BlockchainContext, MeteringContext, OutputContext, RuntimeContext, StorageContext)
+	SetRuntimeContext(runtime RuntimeContext)
+
+	InitState()
 }
 
 // BlockchainContext defines the functionality needed for interacting with the blockchain context
@@ -82,6 +90,8 @@ type BlockchainContext interface {
 	SaveCompiledCode(codeHash []byte, code []byte)
 	GetCompiledCode(codeHash []byte) (bool, []byte)
 	GetESDTToken(address []byte, tokenID []byte, nonce uint64) (*esdt.ESDigitalToken, error)
+	GetUserAccount(address []byte) (vmcommon.UserAccountHandler, error)
+	ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
 }
 
 // RuntimeContext defines the functionality needed for interacting with the runtime context
@@ -123,6 +133,7 @@ type RuntimeContext interface {
 	CleanWasmerInstance()
 	SetMaxInstanceCount(uint64)
 	VerifyContractCode() error
+	GetInstance() wasmer.InstanceHandler
 	GetInstanceExports() wasmer.ExportsMap
 	GetInitFunction() wasmer.ExportedFunctionCallback
 	GetFunctionToCall() (wasmer.ExportedFunctionCallback, error)

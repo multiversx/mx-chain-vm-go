@@ -38,6 +38,19 @@ type CheckESDTInstance struct {
 	Attributes JSONCheckBytes
 }
 
+// NewCheckESDTInstance creates an instance with all fields unspecified.
+func NewCheckESDTInstance() *CheckESDTInstance {
+	return &CheckESDTInstance{
+		Nonce:      JSONCheckUint64Unspecified(),
+		Balance:    JSONCheckBigIntUnspecified(),
+		Creator:    JSONCheckBytesUnspecified(),
+		Royalties:  JSONCheckUint64Unspecified(),
+		Hash:       JSONCheckBytesUnspecified(),
+		Uri:        JSONCheckBytesUnspecified(),
+		Attributes: JSONCheckBytesUnspecified(),
+	}
+}
+
 // CheckESDTData checks the ESDT tokens held by an account
 type CheckESDTData struct {
 	TokenIdentifier JSONBytesFromString

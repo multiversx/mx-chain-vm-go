@@ -7,9 +7,10 @@ import (
 )
 
 // making sure we implement all functions of RuntimeContext
-var _ arwen.RuntimeContext = (*runtimeContextWrapper)(nil)
+var _ arwen.RuntimeContext = (*RuntimeContextWrapper)(nil)
 
-type runtimeContextWrapper struct {
+// RuntimeContextWrapper a wrapper over a RuntimeContext that delegates to if if function is not redefined
+type RuntimeContextWrapper struct {
 	runtimeContext arwen.RuntimeContext
 
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
@@ -83,6 +84,8 @@ type runtimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	VerifyContractCodeFunc func() error
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	GetInstanceFunc func() wasmer.InstanceHandler
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetInstanceExportsFunc func() wasmer.ExportsMap
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetInitFunctionFunc func() wasmer.ExportedFunctionCallback
@@ -124,9 +127,9 @@ type runtimeContextWrapper struct {
 }
 
 // NewRuntimeContextWrapper builds a new runtimeContextWrapper that by default will delagate all calls to the provided RuntimeContext
-func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *runtimeContextWrapper {
+func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *RuntimeContextWrapper {
 
-	runtimeWrapper := &runtimeContextWrapper{runtimeContext: *inputRuntimeContext}
+	runtimeWrapper := &RuntimeContextWrapper{runtimeContext: *inputRuntimeContext}
 
 	/*
 		default implementations delegate to wrapped context
@@ -272,6 +275,10 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *runtim
 		return runtimeWrapper.runtimeContext.VerifyContractCode()
 	}
 
+	runtimeWrapper.GetInstanceFunc = func() wasmer.InstanceHandler {
+		return runtimeWrapper.runtimeContext.GetInstance()
+	}
+
 	runtimeWrapper.GetInstanceExportsFunc = func() wasmer.ExportsMap {
 		return runtimeWrapper.runtimeContext.GetInstanceExports()
 	}
@@ -352,276 +359,281 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *runtim
 }
 
 // GetWrappedRuntimeContext gets the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) GetWrappedRuntimeContext() arwen.RuntimeContext {
+func (contextWrapper *RuntimeContextWrapper) GetWrappedRuntimeContext() arwen.RuntimeContext {
 	return contextWrapper.runtimeContext
 }
 
 // InitStateFromContractCallInput calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) InitStateFromContractCallInput(input *vmcommon.ContractCallInput) {
+func (contextWrapper *RuntimeContextWrapper) InitStateFromContractCallInput(input *vmcommon.ContractCallInput) {
 	contextWrapper.InitStateFromContractCallInputFunc(input)
 }
 
 // SetCustomCallFunction calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) SetCustomCallFunction(callFunction string) {
+func (contextWrapper *RuntimeContextWrapper) SetCustomCallFunction(callFunction string) {
 	contextWrapper.SetCustomCallFunctionFunc(callFunction)
 }
 
 // GetVMInput calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) GetVMInput() *vmcommon.VMInput {
+func (contextWrapper *RuntimeContextWrapper) GetVMInput() *vmcommon.VMInput {
 	return contextWrapper.GetVMInputFunc()
 }
 
 // SetVMInput calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) SetVMInput(vmInput *vmcommon.VMInput) {
+func (contextWrapper *RuntimeContextWrapper) SetVMInput(vmInput *vmcommon.VMInput) {
 	contextWrapper.SetVMInputFunc(vmInput)
 }
 
 // GetSCAddress calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) GetSCAddress() []byte {
+func (contextWrapper *RuntimeContextWrapper) GetSCAddress() []byte {
 	return contextWrapper.GetSCAddressFunc()
 }
 
 // SetSCAddress calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) SetSCAddress(scAddress []byte) {
+func (contextWrapper *RuntimeContextWrapper) SetSCAddress(scAddress []byte) {
 	contextWrapper.SetSCAddressFunc(scAddress)
 }
 
 // GetSCCode calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) GetSCCode() ([]byte, error) {
+func (contextWrapper *RuntimeContextWrapper) GetSCCode() ([]byte, error) {
 	return contextWrapper.GetSCCodeFunc()
 }
 
 // GetSCCodeSize calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) GetSCCodeSize() uint64 {
+func (contextWrapper *RuntimeContextWrapper) GetSCCodeSize() uint64 {
 	return contextWrapper.GetSCCodeSizeFunc()
 }
 
 // GetVMType calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) GetVMType() []byte {
+func (contextWrapper *RuntimeContextWrapper) GetVMType() []byte {
 	return contextWrapper.GetVMTypeFunc()
 }
 
 // Function calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) Function() string {
+func (contextWrapper *RuntimeContextWrapper) Function() string {
 	return contextWrapper.FunctionFunc()
 }
 
 // Arguments calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) Arguments() [][]byte {
+func (contextWrapper *RuntimeContextWrapper) Arguments() [][]byte {
 	return contextWrapper.ArgumentsFunc()
 }
 
 // GetCurrentTxHash calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) GetCurrentTxHash() []byte {
+func (contextWrapper *RuntimeContextWrapper) GetCurrentTxHash() []byte {
 	return contextWrapper.GetCurrentTxHashFunc()
 }
 
 // GetOriginalTxHash calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) GetOriginalTxHash() []byte {
+func (contextWrapper *RuntimeContextWrapper) GetOriginalTxHash() []byte {
 	return contextWrapper.GetOriginalTxHashFunc()
 }
 
 // ExtractCodeUpgradeFromArgs calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) ExtractCodeUpgradeFromArgs() ([]byte, []byte, error) {
+func (contextWrapper *RuntimeContextWrapper) ExtractCodeUpgradeFromArgs() ([]byte, []byte, error) {
 	return contextWrapper.ExtractCodeUpgradeFromArgsFunc()
 }
 
 // SignalUserError calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) SignalUserError(message string) {
+func (contextWrapper *RuntimeContextWrapper) SignalUserError(message string) {
 	contextWrapper.SignalUserErrorFunc(message)
 }
 
 // FailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) FailExecution(err error) {
+func (contextWrapper *RuntimeContextWrapper) FailExecution(err error) {
 	contextWrapper.FailExecutionFunc(err)
 }
 
 // MustVerifyNextContractCode calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) MustVerifyNextContractCode() {
+func (contextWrapper *RuntimeContextWrapper) MustVerifyNextContractCode() {
 	contextWrapper.MustVerifyNextContractCodeFunc()
 }
 
 // SetRuntimeBreakpointValue calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) SetRuntimeBreakpointValue(value arwen.BreakpointValue) {
+func (contextWrapper *RuntimeContextWrapper) SetRuntimeBreakpointValue(value arwen.BreakpointValue) {
 	contextWrapper.SetRuntimeBreakpointValueFunc(value)
 }
 
 // GetRuntimeBreakpointValue calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) GetRuntimeBreakpointValue() arwen.BreakpointValue {
+func (contextWrapper *RuntimeContextWrapper) GetRuntimeBreakpointValue() arwen.BreakpointValue {
 	return contextWrapper.GetRuntimeBreakpointValueFunc()
 }
 
 // IsContractOnTheStack calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) IsContractOnTheStack(address []byte) bool {
+func (contextWrapper *RuntimeContextWrapper) IsContractOnTheStack(address []byte) bool {
 	return contextWrapper.IsContractOnTheStackFunc(address)
 }
 
 // GetAsyncCallInfo calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) GetAsyncCallInfo() *arwen.AsyncCallInfo {
+func (contextWrapper *RuntimeContextWrapper) GetAsyncCallInfo() *arwen.AsyncCallInfo {
 	return contextWrapper.GetAsyncCallInfoFunc()
 }
 
 // SetAsyncCallInfo calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) SetAsyncCallInfo(asyncCallInfo *arwen.AsyncCallInfo) {
+func (contextWrapper *RuntimeContextWrapper) SetAsyncCallInfo(asyncCallInfo *arwen.AsyncCallInfo) {
 	contextWrapper.SetAsyncCallInfoFunc(asyncCallInfo)
 }
 
 // AddAsyncContextCall calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) AddAsyncContextCall(contextIdentifier []byte, asyncCall *arwen.AsyncGeneratedCall) error {
+func (contextWrapper *RuntimeContextWrapper) AddAsyncContextCall(contextIdentifier []byte, asyncCall *arwen.AsyncGeneratedCall) error {
 	return contextWrapper.AddAsyncContextCallFunc(contextIdentifier, asyncCall)
 }
 
 // GetAsyncContextInfo calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) GetAsyncContextInfo() *arwen.AsyncContextInfo {
+func (contextWrapper *RuntimeContextWrapper) GetAsyncContextInfo() *arwen.AsyncContextInfo {
 	return contextWrapper.GetAsyncContextInfoFunc()
 }
 
 // GetAsyncContext calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) GetAsyncContext(contextIdentifier []byte) (*arwen.AsyncContext, error) {
+func (contextWrapper *RuntimeContextWrapper) GetAsyncContext(contextIdentifier []byte) (*arwen.AsyncContext, error) {
 	return contextWrapper.GetAsyncContextFunc(contextIdentifier)
 }
 
 // RunningInstancesCount calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) RunningInstancesCount() uint64 {
+func (contextWrapper *RuntimeContextWrapper) RunningInstancesCount() uint64 {
 	return contextWrapper.RunningInstancesCountFunc()
 }
 
 // IsFunctionImported calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) IsFunctionImported(name string) bool {
+func (contextWrapper *RuntimeContextWrapper) IsFunctionImported(name string) bool {
 	return contextWrapper.IsFunctionImportedFunc(name)
 }
 
 // IsWarmInstance calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) IsWarmInstance() bool {
+func (contextWrapper *RuntimeContextWrapper) IsWarmInstance() bool {
 	return contextWrapper.IsWarmInstanceFunc()
 }
 
 // ResetWarmInstance calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) ResetWarmInstance() {
+func (contextWrapper *RuntimeContextWrapper) ResetWarmInstance() {
 	contextWrapper.ResetWarmInstanceFunc()
 }
 
 // ReadOnly calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) ReadOnly() bool {
+func (contextWrapper *RuntimeContextWrapper) ReadOnly() bool {
 	return contextWrapper.ReadOnlyFunc()
 }
 
 // SetReadOnly calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) SetReadOnly(readOnly bool) {
+func (contextWrapper *RuntimeContextWrapper) SetReadOnly(readOnly bool) {
 	contextWrapper.SetReadOnlyFunc(readOnly)
 }
 
 // StartWasmerInstance calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) StartWasmerInstance(contract []byte, gasLimit uint64, newCode bool) error {
+func (contextWrapper *RuntimeContextWrapper) StartWasmerInstance(contract []byte, gasLimit uint64, newCode bool) error {
 	return contextWrapper.StartWasmerInstanceFunc(contract, gasLimit, newCode)
 }
 
 // CleanWasmerInstance calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) CleanWasmerInstance() {
+func (contextWrapper *RuntimeContextWrapper) CleanWasmerInstance() {
 	contextWrapper.CleanWasmerInstanceFunc()
 }
 
 // SetMaxInstanceCount calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) SetMaxInstanceCount(maxInstances uint64) {
+func (contextWrapper *RuntimeContextWrapper) SetMaxInstanceCount(maxInstances uint64) {
 	contextWrapper.SetMaxInstanceCountFunc(maxInstances)
 }
 
 // VerifyContractCode calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) VerifyContractCode() error {
+func (contextWrapper *RuntimeContextWrapper) VerifyContractCode() error {
 	return contextWrapper.VerifyContractCodeFunc()
 }
 
+// GetInstance calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) GetInstance() wasmer.InstanceHandler {
+	return contextWrapper.GetInstanceFunc()
+}
+
 // GetInstanceExports calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) GetInstanceExports() wasmer.ExportsMap {
+func (contextWrapper *RuntimeContextWrapper) GetInstanceExports() wasmer.ExportsMap {
 	return contextWrapper.GetInstanceExportsFunc()
 }
 
 // GetInitFunction calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) GetInitFunction() wasmer.ExportedFunctionCallback {
+func (contextWrapper *RuntimeContextWrapper) GetInitFunction() wasmer.ExportedFunctionCallback {
 	return contextWrapper.GetInitFunctionFunc()
 }
 
 // GetFunctionToCall calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) GetFunctionToCall() (wasmer.ExportedFunctionCallback, error) {
+func (contextWrapper *RuntimeContextWrapper) GetFunctionToCall() (wasmer.ExportedFunctionCallback, error) {
 	return contextWrapper.GetFunctionToCallFunc()
 }
 
 // GetPointsUsed calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) GetPointsUsed() uint64 {
+func (contextWrapper *RuntimeContextWrapper) GetPointsUsed() uint64 {
 	return contextWrapper.GetPointsUsedFunc()
 }
 
 // SetPointsUsed calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) SetPointsUsed(gasPoints uint64) {
+func (contextWrapper *RuntimeContextWrapper) SetPointsUsed(gasPoints uint64) {
 	contextWrapper.SetPointsUsedFunc(gasPoints)
 }
 
 // MemStore calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) MemStore(offset int32, data []byte) error {
+func (contextWrapper *RuntimeContextWrapper) MemStore(offset int32, data []byte) error {
 	return contextWrapper.MemStoreFunc(offset, data)
 }
 
 // MemLoad calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) MemLoad(offset int32, length int32) ([]byte, error) {
+func (contextWrapper *RuntimeContextWrapper) MemLoad(offset int32, length int32) ([]byte, error) {
 	return contextWrapper.MemLoadFunc(offset, length)
 }
 
 // MemLoadMultiple calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) MemLoadMultiple(offset int32, lengths []int32) ([][]byte, error) {
+func (contextWrapper *RuntimeContextWrapper) MemLoadMultiple(offset int32, lengths []int32) ([][]byte, error) {
 	return contextWrapper.MemLoadMultipleFunc(offset, lengths)
 }
 
 // ElrondAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) ElrondAPIErrorShouldFailExecution() bool {
+func (contextWrapper *RuntimeContextWrapper) ElrondAPIErrorShouldFailExecution() bool {
 	return contextWrapper.ElrondAPIErrorShouldFailExecutionFunc()
 }
 
 // ElrondSyncExecAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) ElrondSyncExecAPIErrorShouldFailExecution() bool {
+func (contextWrapper *RuntimeContextWrapper) ElrondSyncExecAPIErrorShouldFailExecution() bool {
 	return contextWrapper.ElrondSyncExecAPIErrorShouldFailExecutionFunc()
 }
 
 // CryptoAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) CryptoAPIErrorShouldFailExecution() bool {
+func (contextWrapper *RuntimeContextWrapper) CryptoAPIErrorShouldFailExecution() bool {
 	return contextWrapper.CryptoAPIErrorShouldFailExecutionFunc()
 }
 
 // BigIntAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) BigIntAPIErrorShouldFailExecution() bool {
+func (contextWrapper *RuntimeContextWrapper) BigIntAPIErrorShouldFailExecution() bool {
 	return contextWrapper.BigIntAPIErrorShouldFailExecutionFunc()
 }
 
 // ExecuteAsyncCall calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) ExecuteAsyncCall(address []byte, data []byte, value []byte) error {
+func (contextWrapper *RuntimeContextWrapper) ExecuteAsyncCall(address []byte, data []byte, value []byte) error {
 	return contextWrapper.ExecuteAsyncCallFunc(address, data, value)
 }
 
 // ReplaceInstanceBuilder calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) ReplaceInstanceBuilder(builder arwen.InstanceBuilder) {
+func (contextWrapper *RuntimeContextWrapper) ReplaceInstanceBuilder(builder arwen.InstanceBuilder) {
 	contextWrapper.ReplaceInstanceBuilderFunc(builder)
 }
 
 // InitState calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) InitState() {
+func (contextWrapper *RuntimeContextWrapper) InitState() {
 	contextWrapper.InitStateFunc()
 }
 
 // PushState calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) PushState() {
+func (contextWrapper *RuntimeContextWrapper) PushState() {
 	contextWrapper.PushStateFunc()
 }
 
 // PopSetActiveState calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) PopSetActiveState() {
+func (contextWrapper *RuntimeContextWrapper) PopSetActiveState() {
 	contextWrapper.PopSetActiveStateFunc()
 }
 
 // PopDiscard calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) PopDiscard() {
+func (contextWrapper *RuntimeContextWrapper) PopDiscard() {
 	contextWrapper.PopDiscardFunc()
 }
 
 // ClearStateStack calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *runtimeContextWrapper) ClearStateStack() {
+func (contextWrapper *RuntimeContextWrapper) ClearStateStack() {
 	contextWrapper.ClearStateStackFunc()
 }

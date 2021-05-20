@@ -334,7 +334,7 @@
             "txId": "4",
             "comment": "system send out validator rewards",
             "tx": {
-                "to": "``delegation_contract___________s1",
+                "to": "sc:delegation",
                 "value": "555,000,000"
             }
         },
@@ -383,7 +383,8 @@
                                 "ESDTRoleNFTBurn"
                             ],
                             "frozen": "false"
-                        }
+                        },
+                        "+": ""
                     },
                     "username": "str:check.elrond",
                     "storage": {},
@@ -407,7 +408,9 @@
                                 "u64:0",
                                 "``field2elem3"
                             ]
-                        }
+                        },
+                        "str:anything-goes": "*",
+                        "+": ""
                     },
                     "code": "file:smart-contract.wasm",
                     "owner": "address:bob"

@@ -29,9 +29,8 @@ type CatchFunction func(error)
 
 // vmHost implements HostContext interface.
 type vmHost struct {
-	blockChainHook vmcommon.BlockchainHook
-	cryptoHook     crypto.VMCrypto
-	mutExecution   sync.RWMutex
+	cryptoHook   crypto.VMCrypto
+	mutExecution sync.RWMutex
 
 	ethInput []byte
 
@@ -66,11 +65,10 @@ type vmHost struct {
 func NewArwenVM(
 	blockChainHook vmcommon.BlockchainHook,
 	hostParameters *arwen.VMHostParameters,
-) (*vmHost, error) {
+) (arwen.VMHost, error) {
 
 	cryptoHook := crypto.NewVMCrypto()
 	host := &vmHost{
-		blockChainHook:           blockChainHook,
 		cryptoHook:               cryptoHook,
 		meteringContext:          nil,
 		runtimeContext:           nil,
@@ -245,7 +243,7 @@ func (host *vmHost) GetContexts() (
 // InitState resets the contexts of the host and reconfigures its flags
 func (host *vmHost) InitState() {
 	host.initContexts()
-	currentEpoch := host.blockChainHook.CurrentEpoch()
+	currentEpoch := host.Blockchain().CurrentEpoch()
 	host.flagArwenV2.Toggle(currentEpoch >= host.arwenV2EnableEpoch)
 	log.Trace("arwenV2", "enabled", host.flagArwenV2.IsSet())
 
@@ -297,6 +295,11 @@ func (host *vmHost) GetAPIMethods() *wasmer.Imports {
 // GetProtocolBuiltinFunctions returns the names of the built-in functions, reserved by the protocol
 func (host *vmHost) GetProtocolBuiltinFunctions() vmcommon.FunctionNames {
 	return host.protocolBuiltinFunctions
+}
+
+// SetProtocolBuiltinFunctions sets the names of build-in functions, reserved by the protocol
+func (host *vmHost) SetProtocolBuiltinFunctions(functionNames vmcommon.FunctionNames) {
+	host.protocolBuiltinFunctions = functionNames
 }
 
 // GasScheduleChange applies a new gas schedule to the host
@@ -417,4 +420,9 @@ func (host *vmHost) AreInSameShard(leftAddress []byte, rightAddress []byte) bool
 // IsInterfaceNil returns true if there is no value under the interface
 func (host *vmHost) IsInterfaceNil() bool {
 	return host == nil
+}
+
+// SetRuntimeContext sets the runtimeContext for this host, used in tests
+func (host *vmHost) SetRuntimeContext(runtime arwen.RuntimeContext) {
+	host.runtimeContext = runtime
 }
