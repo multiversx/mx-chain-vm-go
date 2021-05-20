@@ -3,6 +3,7 @@ package dex
 import (
 	"errors"
 	"fmt"
+
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
@@ -26,15 +27,15 @@ func (pfe *fuzzDexExecutor) removeLiquidity(user string, tokenA string, tokenB s
 	rawEquivalent, errEquivalent := pfe.querySingleResultStringAddr(pfe.ownerAddress, pairHexStr,
 		"getEquivalent", fmt.Sprintf("\"str:%s\", \"%d\"", tokenA, 1000))
 
-	tokenABefore, err := pfe.getTokens([]byte(user), tokenA)
+	tokenABefore, err := pfe.getTokens(user, tokenA)
 	if err != nil {
 		return nil
 	}
-	tokenBBefore, err := pfe.getTokens([]byte(user), tokenB)
+	tokenBBefore, err := pfe.getTokens(user, tokenB)
 	if err != nil {
 		return nil
 	}
-	tokenLpBefore, err := pfe.getTokens([]byte(user), lpTokenStr)
+	tokenLpBefore, err := pfe.getTokens(user, lpTokenStr)
 	if err != nil {
 		return err
 	}
@@ -44,7 +45,7 @@ func (pfe *fuzzDexExecutor) removeLiquidity(user string, tokenA string, tokenB s
 		"step": "scCall",
 		"txId": "remove-liq",
 		"tx": {
-			"from": "''%s",
+			"from": "%s",
 			"to": "%s",
 			"value": "0",
 			"function": "removeLiquidity",
@@ -71,15 +72,15 @@ func (pfe *fuzzDexExecutor) removeLiquidity(user string, tokenA string, tokenB s
 		return errors.New("NULL Output")
 	}
 
-	tokenAAfter, err := pfe.getTokens([]byte(user), tokenA)
+	tokenAAfter, err := pfe.getTokens(user, tokenA)
 	if err != nil {
 		return nil
 	}
-	tokenBAfter, err := pfe.getTokens([]byte(user), tokenB)
+	tokenBAfter, err := pfe.getTokens(user, tokenB)
 	if err != nil {
 		return nil
 	}
-	tokenLpAfter, err := pfe.getTokens([]byte(user), lpTokenStr)
+	tokenLpAfter, err := pfe.getTokens(user, lpTokenStr)
 	if err != nil {
 		return err
 	}

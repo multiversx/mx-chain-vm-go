@@ -2,14 +2,15 @@ package dex
 
 import (
 	"flag"
-	fuzzutil "github.com/ElrondNetwork/arwen-wasm-vm/fuzz/util"
-	mc "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/controller"
-	"github.com/stretchr/testify/require"
 	"math/rand"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
+
+	fuzzutil "github.com/ElrondNetwork/arwen-wasm-vm/fuzz/util"
+	mc "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/controller"
+	"github.com/stretchr/testify/require"
 )
 
 var fuzz = flag.Bool("fuzz", false, "fuzz")
@@ -53,25 +54,25 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 
 	err := pfe.init(
 		&fuzzDexExecutorInitArgs{
-			wegldTokenId:				"WEGLD-abcdef",
-			mexTokenId:					"MEX-abcdef",
-			numUsers:					10,
-			numTokens:					3,
-			numEvents:					3000,
-			removeLiquidityProb:		0.05,
-			addLiquidityProb:			0.25,
-			swapProb:					0.35,
-			queryPairsProb:				0.05,
-			enterFarmProb:				0.20,
-			exitFarmProb:				0.085,
-			increaseEpochProb:			0.005,
-			removeLiquidityMaxValue:	1000000000,
-			addLiquidityMaxValue: 		1000000000,
-			swapMaxValue: 				10000000,
-			enterFarmMaxValue:			100000000,
-			exitFarmMaxValue:			100000000,
-			blockEpochIncrease: 		10,
-			tokensCheckFrequency:		999,
+			wegldTokenId:            "WEGLD-abcdef",
+			mexTokenId:              "MEX-abcdef",
+			numUsers:                10,
+			numTokens:               3,
+			numEvents:               3000,
+			removeLiquidityProb:     0.05,
+			addLiquidityProb:        0.25,
+			swapProb:                0.35,
+			queryPairsProb:          0.05,
+			enterFarmProb:           0.20,
+			exitFarmProb:            0.085,
+			increaseEpochProb:       0.005,
+			removeLiquidityMaxValue: 1000000000,
+			addLiquidityMaxValue:    1000000000,
+			swapMaxValue:            10000000,
+			enterFarmMaxValue:       100000000,
+			exitFarmMaxValue:        100000000,
+			blockEpochIncrease:      10,
+			tokensCheckFrequency:    999,
 		},
 	)
 	require.Nil(t, err)
@@ -90,30 +91,30 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 	require.Nil(t, err)
 
 	stats := eventsStatistics{
-		swapFixedInputHits:				0,
-		swapFixedInputMisses:			0,
-		swapFixedOutputHits:			0,
-		swapFixedOutputMisses:			0,
-		addLiquidityHits:				0,
-		addLiquidityMisses:				0,
-		addLiquidityPriceChecks:		0,
-		removeLiquidityHits:			0,
-		removeLiquidityMisses:			0,
-		removeLiquidityPriceChecks: 	0,
-		queryPairsHits:					0,
-		queryPairsMisses:				0,
-		enterFarmHits:	 				0,
-		enterFarmMisses:				0,
-		exitFarmHits:					0,
-		exitFarmMisses:					0,
-		exitFarmWithRewards:			0,
+		swapFixedInputHits:         0,
+		swapFixedInputMisses:       0,
+		swapFixedOutputHits:        0,
+		swapFixedOutputMisses:      0,
+		addLiquidityHits:           0,
+		addLiquidityMisses:         0,
+		addLiquidityPriceChecks:    0,
+		removeLiquidityHits:        0,
+		removeLiquidityMisses:      0,
+		removeLiquidityPriceChecks: 0,
+		queryPairsHits:             0,
+		queryPairsMisses:           0,
+		enterFarmHits:              0,
+		enterFarmMisses:            0,
+		exitFarmHits:               0,
+		exitFarmMisses:             0,
+		exitFarmWithRewards:        0,
 	}
 
 	re := fuzzutil.NewRandomEventProvider(r)
 	for stepIndex := 0; stepIndex < pfe.numEvents; stepIndex++ {
 		generateRandomEvent(t, pfe, r, re, &stats)
 
-		if stepIndex != 0 && stepIndex % pfe.tokensCheckFrequency == 0 {
+		if stepIndex != 0 && stepIndex%pfe.tokensCheckFrequency == 0 {
 			pfe.log("Current step index: %d", stepIndex)
 			err = pfe.checkTokens()
 			require.Nil(t, err)
@@ -138,25 +139,25 @@ func generateRandomEvent(
 	tokenA := ""
 	tokenB := ""
 
-	tokenAIndex := r.Intn(pfe.numTokens + 2) + 1
-	if tokenAIndex == pfe.numTokens + 2 {
+	tokenAIndex := r.Intn(pfe.numTokens+2) + 1
+	if tokenAIndex == pfe.numTokens+2 {
 		tokenA = pfe.wegldTokenId
-	} else if tokenAIndex == pfe.numTokens + 1 {
+	} else if tokenAIndex == pfe.numTokens+1 {
 		tokenA = pfe.mexTokenId
 	} else {
 		tokenA = pfe.tokenTicker(tokenAIndex)
 	}
-	tokenBIndex := r.Intn(pfe.numTokens + 2) + 1
-	if tokenBIndex == pfe.numTokens + 2 {
+	tokenBIndex := r.Intn(pfe.numTokens+2) + 1
+	if tokenBIndex == pfe.numTokens+2 {
 		tokenB = pfe.wegldTokenId
-	} else if tokenBIndex == pfe.numTokens + 1 {
+	} else if tokenBIndex == pfe.numTokens+1 {
 		tokenB = pfe.mexTokenId
 	} else {
 		tokenB = pfe.tokenTicker(tokenBIndex)
 	}
 
 	userId := r.Intn(pfe.numUsers) + 1
-	user := string(pfe.userAddress(userId))
+	user := pfe.userAddress(userId)
 
 	fromAtoB := r.Intn(2) != 0
 	if fromAtoB == false {
@@ -166,75 +167,75 @@ func generateRandomEvent(
 	}
 
 	switch {
-		//remove liquidity
-		case re.WithProbability(pfe.removeLiquidityProb):
+	//remove liquidity
+	case re.WithProbability(pfe.removeLiquidityProb):
 
-			seed := r.Intn(pfe.removeLiquidityMaxValue) + 1
-			amount := seed
-			amountAmin := seed / 100
-			amountBmin := seed / 100
+		seed := r.Intn(pfe.removeLiquidityMaxValue) + 1
+		amount := seed
+		amountAmin := seed / 100
+		amountBmin := seed / 100
 
-			err := pfe.removeLiquidity(user, tokenA, tokenB, amount, amountAmin, amountBmin, statistics)
+		err := pfe.removeLiquidity(user, tokenA, tokenB, amount, amountAmin, amountBmin, statistics)
+		require.Nil(t, err)
+
+	//add liquidity
+	case re.WithProbability(pfe.addLiquidityProb):
+
+		seed := r.Intn(pfe.addLiquidityMaxValue) + 1
+		amountA := seed
+		amountB := seed
+		amountAmin := seed / 100
+		amountBmin := seed / 100
+
+		err := pfe.addLiquidity(user, tokenA, tokenB, amountA, amountB, amountAmin, amountBmin, statistics)
+		require.Nil(t, err)
+
+	//swap
+	case re.WithProbability(pfe.swapProb):
+
+		fixedInput := false
+		amountA := 0
+		amountB := 0
+
+		fixedInput = r.Intn(2) != 0
+		seed := r.Intn(pfe.swapMaxValue) + 1
+		amountA = seed
+		amountB = seed / 100
+
+		if fixedInput {
+			err := pfe.swapFixedInput(user, tokenA, amountA, tokenB, amountB, statistics)
 			require.Nil(t, err)
-
-		//add liquidity
-		case re.WithProbability(pfe.addLiquidityProb):
-
-			seed := r.Intn(pfe.addLiquidityMaxValue) + 1
-			amountA := seed
-			amountB := seed
-			amountAmin := seed / 100
-			amountBmin := seed / 100
-
-			err := pfe.addLiquidity(user, tokenA, tokenB, amountA, amountB, amountAmin, amountBmin, statistics)
+		} else {
+			err := pfe.swapFixedOutput(user, tokenA, amountA, tokenB, amountB, statistics)
 			require.Nil(t, err)
+		}
 
-		//swap
-		case re.WithProbability(pfe.swapProb):
+	// pair views
+	case re.WithProbability(pfe.queryPairsProb):
 
-			fixedInput := false
-			amountA := 0
-			amountB := 0
+		err := pfe.checkPairViews(user, tokenA, tokenB, statistics)
+		require.Nil(t, err)
 
-			fixedInput = r.Intn(2) != 0
-			seed := r.Intn(pfe.swapMaxValue) + 1
-			amountA = seed
-			amountB = seed / 100
+	// enterFarm
+	case re.WithProbability(pfe.enterFarmProb):
 
-			if fixedInput {
-				err := pfe.swapFixedInput(user, tokenA, amountA, tokenB, amountB, statistics)
-				require.Nil(t, err)
-			} else {
-				err := pfe.swapFixedOutput(user, tokenA, amountA, tokenB, amountB, statistics)
-				require.Nil(t, err)
-			}
+		seed := r.Intn(pfe.enterFarmMaxValue) + 1
+		err := pfe.enterFarm(user, tokenA, "WEGLD-abcdef", seed, statistics)
+		require.Nil(t, err)
 
-		// pair views
-		case re.WithProbability(pfe.queryPairsProb):
+	// exitFarm
+	case re.WithProbability(pfe.exitFarmProb):
 
-			err := pfe.checkPairViews(user, tokenA, tokenB, statistics)
-			require.Nil(t, err)
+		seed := r.Intn(pfe.removeLiquidityMaxValue) + 1
 
-		// enterFarm
-		case re.WithProbability(pfe.enterFarmProb):
+		err := pfe.exitFarm(seed, statistics, r)
+		require.Nil(t, err)
 
-			seed := r.Intn(pfe.enterFarmMaxValue) + 1
-			err := pfe.enterFarm(user, tokenA, "WEGLD-abcdef", seed, statistics)
-			require.Nil(t, err)
+	// increase block epoch. required for unbond
+	case re.WithProbability(pfe.increaseEpochProb):
 
-		// exitFarm
-		case re.WithProbability(pfe.exitFarmProb):
-
-			seed := r.Intn(pfe.removeLiquidityMaxValue) + 1
-
-			err := pfe.exitFarm(seed, statistics, r)
-			require.Nil(t, err)
-
-		// increase block epoch. required for unbond
-		case re.WithProbability(pfe.increaseEpochProb):
-
-			err := pfe.increaseBlockEpoch(pfe.blockEpochIncrease)
-			require.Nil(t, err)
+		err := pfe.increaseBlockEpoch(pfe.blockEpochIncrease)
+		require.Nil(t, err)
 	default:
 	}
 }

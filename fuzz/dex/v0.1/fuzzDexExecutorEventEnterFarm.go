@@ -3,6 +3,7 @@ package dex
 import (
 	"errors"
 	"fmt"
+
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
@@ -26,8 +27,8 @@ func (pfe *fuzzDexExecutor) enterFarm(user string, tokenA string, tokenB string,
 		"step": "scCall",
 		"txId": "stake",
 		"tx": {
-			"from": "''%s",
-			"to": "''%s",
+			"from": "%s",
+			"to": "%s",
 			"value": "0",
 			"function": "enterFarm",
 			"esdt": {
@@ -54,13 +55,13 @@ func (pfe *fuzzDexExecutor) enterFarm(user string, tokenA string, tokenB string,
 
 		pfe.currentFarmTokenNonce += 1
 		nonce := pfe.currentFarmTokenNonce
-		bigint, errGet := pfe.getTokensWithNonce([]byte(user), "FARM-abcdef", nonce)
+		bigint, errGet := pfe.getTokensWithNonce(user, "FARM-abcdef", nonce)
 		if errGet != nil {
 			return errGet
 		}
 		pfe.farmers[nonce] = FarmerInfo{
-			user: user,
-			value: bigint.Int64(),
+			user:    user,
+			value:   bigint.Int64(),
 			lpToken: lpTokenStr,
 		}
 	} else {

@@ -3,9 +3,10 @@ package dex
 import (
 	"errors"
 	"fmt"
-	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"math/big"
 	"math/rand"
+
+	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 func (pfe *fuzzDexExecutor) exitFarm(amountMax int, statistics *eventsStatistics, rand *rand.Rand) error {
@@ -29,16 +30,15 @@ func (pfe *fuzzDexExecutor) exitFarm(amountMax int, statistics *eventsStatistics
 	}
 	lpToken := pfe.farmers[nonce].lpToken
 	pfe.farmers[nonce] = FarmerInfo{
-		value: amount - unstakeAmount,
-		user: user,
+		value:   amount - unstakeAmount,
+		user:    user,
 		lpToken: lpToken,
 	}
 
-	wegldBefore, err := pfe.getTokens([]byte(user), pfe.wegldTokenId)
+	wegldBefore, err := pfe.getTokens(user, pfe.wegldTokenId)
 	if err != nil {
 		return nil
 	}
-
 
 	reward, err := pfe.querySingleResult(pfe.ownerAddress, pfe.wegldFarmingAddress,
 		"calculateRewardsForGivenPosition", fmt.Sprintf(`"%d", "%d"`, nonce, unstakeAmount))
@@ -51,8 +51,8 @@ func (pfe *fuzzDexExecutor) exitFarm(amountMax int, statistics *eventsStatistics
 		"step": "scCall",
 		"txId": "stake",
 		"tx": {
-			"from": "''%s",
-			"to": "''%s",
+			"from": "%s",
+			"to": "%s",
 			"value": "0",
 			"function": "exitFarm",
 			"esdt": {
@@ -79,7 +79,7 @@ func (pfe *fuzzDexExecutor) exitFarm(amountMax int, statistics *eventsStatistics
 	if success {
 		statistics.exitFarmHits += 1
 
-		wegldAfter, err := pfe.getTokens([]byte(user), pfe.wegldTokenId)
+		wegldAfter, err := pfe.getTokens(user, pfe.wegldTokenId)
 		if err != nil {
 			return nil
 		}

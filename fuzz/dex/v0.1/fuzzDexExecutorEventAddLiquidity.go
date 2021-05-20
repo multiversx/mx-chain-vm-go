@@ -3,11 +3,12 @@ package dex
 import (
 	"errors"
 	"fmt"
+
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 func (pfe *fuzzDexExecutor) addLiquidity(user string, tokenA string, tokenB string, amountA int,
-	amountB int , amountAmin int, amountBmin int, statistics *eventsStatistics) error {
+	amountB int, amountAmin int, amountBmin int, statistics *eventsStatistics) error {
 
 	err, _, pairHexStr := pfe.getPair(tokenA, tokenB)
 	if err != nil {
@@ -26,15 +27,15 @@ func (pfe *fuzzDexExecutor) addLiquidity(user string, tokenA string, tokenB stri
 		return err
 	}
 
-	tokenABefore, err := pfe.getTokens([]byte(user), tokenA)
+	tokenABefore, err := pfe.getTokens(user, tokenA)
 	if err != nil {
 		return nil
 	}
-	tokenBBefore, err := pfe.getTokens([]byte(user), tokenB)
+	tokenBBefore, err := pfe.getTokens(user, tokenB)
 	if err != nil {
 		return nil
 	}
-	tokenLpBefore, err := pfe.getTokens([]byte(user), lpTokenStr)
+	tokenLpBefore, err := pfe.getTokens(user, lpTokenStr)
 	if err != nil {
 		return err
 	}
@@ -44,7 +45,7 @@ func (pfe *fuzzDexExecutor) addLiquidity(user string, tokenA string, tokenB stri
 		"step": "scCall",
 		"txId": "accept-esdt-payment",
 		"tx": {
-			"from": "''%s",
+			"from": "%s",
 			"to": "%s",
 			"value": "0",
 			"function": "acceptEsdtPayment",
@@ -79,7 +80,7 @@ func (pfe *fuzzDexExecutor) addLiquidity(user string, tokenA string, tokenB stri
 		"step": "scCall",
 		"txId": "accept-esdt-payment",
 		"tx": {
-			"from": "''%s",
+			"from": "%s",
 			"to": "%s",
 			"value": "0",
 			"function": "acceptEsdtPayment",
@@ -114,7 +115,7 @@ func (pfe *fuzzDexExecutor) addLiquidity(user string, tokenA string, tokenB stri
 		"step": "scCall",
 		"txId": "add-liquidity",
 		"tx": {
-			"from": "''%s",
+			"from": "%s",
 			"to": "%s",
 			"value": "0",
 			"function": "addLiquidity",
@@ -154,7 +155,7 @@ func (pfe *fuzzDexExecutor) addLiquidity(user string, tokenA string, tokenB stri
 		// New and old prices should be the same
 		if errEquivalent == nil && !(len(rawEquivalent) == 1 && len(rawEquivalent[0]) == 0) {
 			statistics.addLiquidityPriceChecks += 1
-			if  !equalMatrix(rawEquivalentAfter, rawEquivalent) {
+			if !equalMatrix(rawEquivalentAfter, rawEquivalent) {
 				return errors.New("PRICE CHANGED after add liquidity")
 			}
 		}
@@ -194,7 +195,7 @@ func (pfe *fuzzDexExecutor) addLiquidity(user string, tokenA string, tokenB stri
 		"step": "scCall",
 		"txId": "reclaim-temporary-funds",
 		"tx": {
-			"from": "''%s",
+			"from": "%s",
 			"to": "%s",
 			"value": "0",
 			"function": "reclaimTemporaryFunds",
@@ -217,15 +218,15 @@ func (pfe *fuzzDexExecutor) addLiquidity(user string, tokenA string, tokenB stri
 		return err
 	}
 
-	tokenAAfter, err := pfe.getTokens([]byte(user), tokenA)
+	tokenAAfter, err := pfe.getTokens(user, tokenA)
 	if err != nil {
 		return nil
 	}
-	tokenBAfter, err := pfe.getTokens([]byte(user), tokenB)
+	tokenBAfter, err := pfe.getTokens(user, tokenB)
 	if err != nil {
 		return nil
 	}
-	tokenLpAfter, err := pfe.getTokens([]byte(user), lpTokenStr)
+	tokenLpAfter, err := pfe.getTokens(user, lpTokenStr)
 	if err != nil {
 		return err
 	}

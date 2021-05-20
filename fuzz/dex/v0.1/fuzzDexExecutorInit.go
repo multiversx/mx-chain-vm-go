@@ -31,10 +31,10 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 
 	pfe.world.Clear()
 
-	pfe.ownerAddress = []byte("fuzz_owner_addr_______________s1")
-	pfe.routerAddress = []byte("fuzz_dex_router_addr__________s1")
-	pfe.wegldFarmingAddress = []byte("fuzz_dex_wegld_farming_addr___s1")
-	pfe.mexFarmingAddress = []byte("fuzz_dex_mex_farming_addr_____s1")
+	pfe.ownerAddress = "address:fuzz_owner"
+	pfe.routerAddress = "sc:fuzz_dex_outer"
+	pfe.wegldFarmingAddress = "sc:fuzz_dex_wegld_farming"
+	pfe.mexFarmingAddress = "sc:fuzz_ex_mex_farming"
 
 	// users
 	esdtString := pfe.fullOfEsdtWalletString()
@@ -43,7 +43,7 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 		{
 			"step": "setState",
 			"accounts": {
-				"''%s": {
+				"%s": {
 					"nonce": "0",
 					"balance": "0",
 					"storage": {},
@@ -54,7 +54,7 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 				}
 			}
 		}`,
-			string(pfe.userAddress(i)),
+			pfe.userAddress(i),
 			esdtString,
 		))
 		if err != nil {
@@ -66,7 +66,7 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 	{
 		"step": "setState",
 		"accounts": {
-			"''%s": {
+			"%s": {
 				"nonce": "0",
 				"balance": "1,000,000,000,000,000,000,000,000,000,000",
 				"storage": {},
@@ -75,29 +75,29 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 		},
 		"newAddresses": [
 			{
-				"creatorAddress": "''%s",
+				"creatorAddress": "%s",
 				"creatorNonce": "0",
-				"newAddress": "''%s"
+				"newAddress": "%s"
 			},
 			{
-				"creatorAddress": "''%s",
+				"creatorAddress": "%s",
 				"creatorNonce": "1",
-				"newAddress": "''%s"
+				"newAddress": "%s"
 			},
 			{
-				"creatorAddress": "''%s",
+				"creatorAddress": "%s",
 				"creatorNonce": "2",
-				"newAddress": "''%s"
+				"newAddress": "%s"
 			}
 		]
 	}`,
-		string(pfe.ownerAddress),
-		string(pfe.ownerAddress),
-		string(pfe.routerAddress),
-		string(pfe.ownerAddress),
-		string(pfe.wegldFarmingAddress),
-		string(pfe.ownerAddress),
-		string(pfe.mexFarmingAddress),
+		pfe.ownerAddress,
+		pfe.ownerAddress,
+		pfe.routerAddress,
+		pfe.ownerAddress,
+		pfe.wegldFarmingAddress,
+		pfe.ownerAddress,
+		pfe.mexFarmingAddress,
 	))
 	if err != nil {
 		return err
@@ -109,7 +109,7 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 		"step": "scDeploy",
 		"txId": "-router-deploy-",
 		"tx": {
-			"from": "''%s",
+			"from": "%s",
 			"value": "0",
 			"contractCode": "file:elrond_dex_router.wasm",
 			"arguments": [
@@ -125,7 +125,7 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 			"refund": "*"
 		}
 	}`,
-		string(pfe.ownerAddress),
+		pfe.ownerAddress,
 	))
 	if err != nil {
 		return err
@@ -137,12 +137,12 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 		"step": "scDeploy",
 		"txId": "-farm-deploy-",
 		"tx": {
-			"from": "''%s",
+			"from": "%s",
 			"value": "0",
 			"contractCode": "file:elrond_dex_farm.deprecated.wasm",
 			"arguments": [
 				"str:%s",
-				"''%s",
+				"%s",
 				"1"
 			],
 			"gasLimit": "1,000,000",
@@ -156,9 +156,9 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 			"refund": "*"
 		}
 	}`,
-		string(pfe.ownerAddress),
+		pfe.ownerAddress,
 		pfe.wegldTokenId,
-		string(pfe.routerAddress),
+		pfe.routerAddress,
 	))
 	if err != nil {
 		return err
@@ -170,12 +170,12 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 		"step": "scDeploy",
 		"txId": "-farm-deploy-",
 		"tx": {
-			"from": "''%s",
+			"from": "%s",
 			"value": "0",
 			"contractCode": "file:elrond_dex_farm.deprecated.wasm",
 			"arguments": [
 				"str:%s",
-				"''%s",
+				"%s",
 				"1"
 			],
 			"gasLimit": "1,000,000",
@@ -189,9 +189,9 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 			"refund": "*"
 		}
 	}`,
-		string(pfe.ownerAddress),
+		pfe.ownerAddress,
 		pfe.mexTokenId,
-		string(pfe.routerAddress),
+		pfe.routerAddress,
 	))
 	if err != nil {
 		return err
@@ -209,8 +209,8 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 		"step": "scCall",
 		"txId": "start-pair-code-construction",
 		"tx": {
-			"from": "''%s",
-			"to": "''%s",
+			"from": "%s",
+			"to": "%s",
 			"value": "0",
 			"function": "startPairCodeConstruction",
 			"arguments": [],
@@ -225,8 +225,8 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 			"refund": "*"
 		}
 	}`,
-		string(pfe.ownerAddress),
-		string(pfe.routerAddress),
+		pfe.ownerAddress,
+		pfe.routerAddress,
 	))
 
 	_, err = pfe.executeTxStep(fmt.Sprintf(`
@@ -234,8 +234,8 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 		"step": "scCall",
 		"txId": "append-pair-code",
 		"tx": {
-			"from": "''%s",
-			"to": "''%s",
+			"from": "%s",
+			"to": "%s",
 			"value": "0",
 			"function": "appendPairCode",
 			"arguments": [
@@ -252,8 +252,8 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 			"refund": "*"
 		}
 	}`,
-		string(pfe.ownerAddress),
-		string(pfe.routerAddress),
+		pfe.ownerAddress,
+		pfe.routerAddress,
 		pairCode,
 	))
 	if err != nil {
@@ -265,8 +265,8 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 		"step": "scCall",
 		"txId": "end-pair-code-construction",
 		"tx": {
-			"from": "''%s",
-			"to": "''%s",
+			"from": "%s",
+			"to": "%s",
 			"value": "0",
 			"function": "endPairCodeConstruction",
 			"arguments": [],
@@ -281,8 +281,8 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 			"refund": "*"
 		}
 	}`,
-		string(pfe.ownerAddress),
-		string(pfe.routerAddress),
+		pfe.ownerAddress,
+		pfe.routerAddress,
 	))
 	if err != nil {
 		return err
@@ -294,8 +294,8 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 		"step": "scCall",
 		"txId": "issue-stake-token",
 		"tx": {
-			"from": "''%s",
-			"to": "''%s",
+			"from": "%s",
+			"to": "%s",
 			"value": "5,000,000,000,000,000,000",
 			"function": "issueFarmToken",
 			"arguments": [
@@ -313,8 +313,8 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 			"refund": "*"
 		}
 	}`,
-		string(pfe.ownerAddress),
-		string(pfe.wegldFarmingAddress),
+		pfe.ownerAddress,
+		pfe.wegldFarmingAddress,
 	))
 	if err != nil {
 		return err
@@ -326,8 +326,8 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 		"step": "scCall",
 		"txId": "set-local-roles-staking",
 		"tx": {
-			"from": "''%s",
-			"to": "''%s",
+			"from": "%s",
+			"to": "%s",
 			"value": "0",
 			"function": "setLocalRolesFarmToken",
 			"arguments": [],
@@ -342,8 +342,8 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 			"refund": "*"
 		}
 	}`,
-		string(pfe.ownerAddress),
-		string(pfe.wegldFarmingAddress),
+		pfe.ownerAddress,
+		pfe.wegldFarmingAddress,
 	))
 	if err != nil {
 		return err

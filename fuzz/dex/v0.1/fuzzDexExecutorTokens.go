@@ -1,20 +1,30 @@
 package dex
 
 import (
+	"encoding/hex"
 	"errors"
 	"fmt"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	"math/big"
+
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 )
 
-func (pfe *fuzzDexExecutor) getTokensWithNonce(address []byte, toktik string, nonce int) (*big.Int, error) {
-	token := worldmock.MakeTokenKey([]byte(toktik), uint64(nonce))
-	return pfe.world.BuiltinFuncs.GetTokenBalance(address, token)
+func (pfe *fuzzDexExecutor) interpretExpr(expression string) []byte {
+	bytes, err := pfe.mandosParser.ExprInterpreter.InterpretString(expression)
+	if err != nil {
+		panic(err)
+	}
+	return bytes
 }
 
-func (pfe *fuzzDexExecutor) getTokens(address []byte, toktik string) (*big.Int, error) {
+func (pfe *fuzzDexExecutor) getTokensWithNonce(address string, toktik string, nonce int) (*big.Int, error) {
+	token := worldmock.MakeTokenKey([]byte(toktik), uint64(nonce))
+	return pfe.world.BuiltinFuncs.GetTokenBalance(pfe.interpretExpr(address), token)
+}
+
+func (pfe *fuzzDexExecutor) getTokens(address string, toktik string) (*big.Int, error) {
 	token := worldmock.MakeTokenKey([]byte(toktik), 0)
-	return pfe.world.BuiltinFuncs.GetTokenBalance(address, token)
+	return pfe.world.BuiltinFuncs.GetTokenBalance(pfe.interpretExpr(address), token)
 }
 
 func (pfe *fuzzDexExecutor) checkTokens() error {
@@ -34,7 +44,7 @@ func (pfe *fuzzDexExecutor) checkTokens() error {
 	return nil
 }
 
-func (pfe* fuzzDexExecutor) getSumForToken(tokenTicker string) (string, error) {
+func (pfe *fuzzDexExecutor) getSumForToken(tokenTicker string) (string, error) {
 	totalSum := big.NewInt(0)
 
 	for i := 1; i < pfe.numTokens; i++ {
@@ -47,7 +57,7 @@ func (pfe* fuzzDexExecutor) getSumForToken(tokenTicker string) (string, error) {
 				return "", err
 			}
 
-			result, err := pfe.getTokens([]byte(pairRawStr), tokenTicker)
+			result, err := pfe.getTokens(pairRawStr, tokenTicker)
 			if err != nil {
 				return "", err
 			}
@@ -64,8 +74,8 @@ func (pfe* fuzzDexExecutor) getSumForToken(tokenTicker string) (string, error) {
 		if err != nil {
 			return "", err
 		}
-
-		result, err := pfe.getTokens(rawResponse[0], tokenTicker)
+		pairAddress := hex.EncodeToString(rawResponse[0])
+		result, err := pfe.getTokens(pairAddress, tokenTicker)
 		if err != nil {
 			return "", err
 		}
@@ -81,8 +91,8 @@ func (pfe* fuzzDexExecutor) getSumForToken(tokenTicker string) (string, error) {
 		if err != nil {
 			return "", err
 		}
-
-		result, err := pfe.getTokens(rawResponse[0], tokenTicker)
+		pairAddress := hex.EncodeToString(rawResponse[0])
+		result, err := pfe.getTokens(pairAddress, tokenTicker)
 		if err != nil {
 			return "", err
 		}
@@ -97,8 +107,8 @@ func (pfe* fuzzDexExecutor) getSumForToken(tokenTicker string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
-	result, err := pfe.getTokens(rawResponse[0], tokenTicker)
+	pairAddress := hex.EncodeToString(rawResponse[0])
+	result, err := pfe.getTokens(pairAddress, tokenTicker)
 	if err != nil {
 		return "", err
 	}

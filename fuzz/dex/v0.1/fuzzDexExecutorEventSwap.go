@@ -3,8 +3,9 @@ package dex
 import (
 	"errors"
 	"fmt"
-	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"math/big"
+
+	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 func (pfe *fuzzDexExecutor) swapFixedInput(user string, tokenA string, amountA int, tokenB string,
@@ -18,11 +19,11 @@ func (pfe *fuzzDexExecutor) swapFixedInput(user string, tokenA string, amountA i
 		return nil
 	}
 
-	tokenABefore, err := pfe.getTokens([]byte(user), tokenA)
+	tokenABefore, err := pfe.getTokens(user, tokenA)
 	if err != nil {
 		return nil
 	}
-	tokenBBefore, err := pfe.getTokens([]byte(user), tokenB)
+	tokenBBefore, err := pfe.getTokens(user, tokenB)
 	if err != nil {
 		return nil
 	}
@@ -35,7 +36,7 @@ func (pfe *fuzzDexExecutor) swapFixedInput(user string, tokenA string, amountA i
 		"step": "scCall",
 		"txId": "swap-fixed-input",
 		"tx": {
-			"from": "''%s",
+			"from": "%s",
 			"to": "%s",
 			"value": "0",
 			"function": "swapTokensFixedInput",
@@ -62,11 +63,11 @@ func (pfe *fuzzDexExecutor) swapFixedInput(user string, tokenA string, amountA i
 		return errors.New("NULL output")
 	}
 
-	tokenAAfter, err := pfe.getTokens([]byte(user), tokenA)
+	tokenAAfter, err := pfe.getTokens(user, tokenA)
 	if err != nil {
 		return nil
 	}
-	tokenBAfter, err := pfe.getTokens([]byte(user), tokenB)
+	tokenBAfter, err := pfe.getTokens(user, tokenB)
 	if err != nil {
 		return nil
 	}
@@ -118,11 +119,11 @@ func (pfe *fuzzDexExecutor) swapFixedOutput(user string, tokenA string, amountA 
 		return nil
 	}
 
-	tokenABefore, err := pfe.getTokens([]byte(user), tokenA)
+	tokenABefore, err := pfe.getTokens(user, tokenA)
 	if err != nil {
 		return nil
 	}
-	tokenBBefore, err := pfe.getTokens([]byte(user), tokenB)
+	tokenBBefore, err := pfe.getTokens(user, tokenB)
 	if err != nil {
 		return nil
 	}
@@ -135,7 +136,7 @@ func (pfe *fuzzDexExecutor) swapFixedOutput(user string, tokenA string, amountA 
 		"step": "scCall",
 		"txId": "swap-fixed-input",
 		"tx": {
-			"from": "''%s",
+			"from": "%s",
 			"to": "%s",
 			"value": "0",
 			"function": "swapTokensFixedOutput",
@@ -162,11 +163,11 @@ func (pfe *fuzzDexExecutor) swapFixedOutput(user string, tokenA string, amountA 
 		return errors.New("NULL output")
 	}
 
-	tokenAAfter, err := pfe.getTokens([]byte(user), tokenA)
+	tokenAAfter, err := pfe.getTokens(user, tokenA)
 	if err != nil {
 		return nil
 	}
-	tokenBAfter, err := pfe.getTokens([]byte(user), tokenB)
+	tokenBAfter, err := pfe.getTokens(user, tokenB)
 	if err != nil {
 		return nil
 	}
