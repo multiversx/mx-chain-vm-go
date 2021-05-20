@@ -391,7 +391,7 @@ func TestGasUsed_AsyncCall(t *testing.T) {
 		})
 }
 
-func TestGasUsed_AsyncCallMultiShard(t *testing.T) {
+func TestGasUsed_AsyncCall_CrossShard(t *testing.T) {
 	testConfig := asyncTestConfig
 	testConfig.GasProvided = 1000
 
@@ -401,11 +401,8 @@ func TestGasUsed_AsyncCallMultiShard(t *testing.T) {
 
 	asyncChildArg := []byte{0}
 	asyncCallData := txDataBuilder.NewBuilder()
-	// funcion to be called on child
 	asyncCallData.Func(contracts.AsyncChildFunction)
-	// value to send to third party
 	asyncCallData.Int64(testConfig.TransferToThirdParty)
-	// data for child -> third party tx
 	asyncCallData.Str(contracts.AsyncChildData)
 	// behavior param for child
 	asyncCallData.Bytes(asyncChildArg)
@@ -415,7 +412,9 @@ func TestGasUsed_AsyncCallMultiShard(t *testing.T) {
 		WithConfig(testConfig).
 		WithMethods(contracts.PerformAsyncCallParentMock, contracts.CallBackParentMock)
 
-	// direct parent call
+	/*
+		direct parent call
+	*/
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(parentContract).
 		WithInput(test.CreateTestContractCallInputBuilder().
@@ -456,7 +455,9 @@ func TestGasUsed_AsyncCallMultiShard(t *testing.T) {
 
 	childAsyncReturnData := [][]byte{{0}, []byte("thirdparty"), []byte("vault")}
 
-	// async cross shard parent -> child
+	/*
+		async cross shard parent -> child
+	*/
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContractOnShard(test.ChildAddress, 1).
@@ -502,7 +503,9 @@ func TestGasUsed_AsyncCallMultiShard(t *testing.T) {
 				)
 		})
 
-	// async cross shard callback child -> parent
+	/*
+		async cross shard callback child -> parent
+	*/
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(parentContract).
 		WithInput(test.CreateTestContractCallInputBuilder().
