@@ -412,9 +412,7 @@ func TestGasUsed_AsyncCall_CrossShard(t *testing.T) {
 		WithConfig(testConfig).
 		WithMethods(contracts.PerformAsyncCallParentMock, contracts.CallBackParentMock)
 
-	/*
-		direct parent call
-	*/
+	// direct parent call
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(parentContract).
 		WithInput(test.CreateTestContractCallInputBuilder().
