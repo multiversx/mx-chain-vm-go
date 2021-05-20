@@ -453,9 +453,7 @@ func TestGasUsed_AsyncCall_CrossShard(t *testing.T) {
 
 	childAsyncReturnData := [][]byte{{0}, []byte("thirdparty"), []byte("vault")}
 
-	/*
-		async cross shard parent -> child
-	*/
+	// async cross-shard parent -> child
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContractOnShard(test.ChildAddress, 1).
