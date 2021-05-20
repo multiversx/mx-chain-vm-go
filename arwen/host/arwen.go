@@ -165,6 +165,7 @@ func NewArwenVM(
 	return host, nil
 }
 
+// GetVersion returns the Arwen version string
 func (host *vmHost) GetVersion() string {
 	return arwen.ArwenVersion
 }
