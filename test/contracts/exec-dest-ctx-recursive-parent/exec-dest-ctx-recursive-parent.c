@@ -23,6 +23,7 @@ void parentCallsChild() {
 
 	byte iteration = (byte) int64getArgument(0);
 
+    bigIntSetInt64(bigIntCounterID, 0);
 	storeIterationNumber(iteration, 'P');
 	finishIterationNumber(iteration, 'P');
 
