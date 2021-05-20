@@ -359,6 +359,12 @@ func (contractInput *ContractCallInputBuilder) WithRecipientAddr(address []byte)
 	return contractInput
 }
 
+// WithCallerAddr provides the caller address of ContractCallInputBuilder
+func (contractInput *ContractCallInputBuilder) WithCallerAddr(address []byte) *ContractCallInputBuilder {
+	contractInput.ContractCallInput.CallerAddr = address
+	return contractInput
+}
+
 // WithGasProvided provides the gas of ContractCallInputBuilder
 func (contractInput *ContractCallInputBuilder) WithGasProvided(gas uint64) *ContractCallInputBuilder {
 	contractInput.ContractCallInput.VMInput.GasProvided = gas
@@ -374,6 +380,12 @@ func (contractInput *ContractCallInputBuilder) WithFunction(function string) *Co
 // WithArguments provides the arguments to be called for ContractCallInputBuilder
 func (contractInput *ContractCallInputBuilder) WithArguments(arguments ...[]byte) *ContractCallInputBuilder {
 	contractInput.ContractCallInput.VMInput.Arguments = arguments
+	return contractInput
+}
+
+// WithCallType provides the arguments to be called for ContractCallInputBuilder
+func (contractInput *ContractCallInputBuilder) WithCallType(callType vmcommon.CallType) *ContractCallInputBuilder {
+	contractInput.ContractCallInput.VMInput.CallType = callType
 	return contractInput
 }
 
