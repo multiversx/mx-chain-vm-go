@@ -975,11 +975,11 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct(t *testing.T) {
 				Ok().
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, 0).
-				GasUsed(test.ParentAddress, 25424).
+				GasUsed(test.ParentAddress, 25868).
 				ReturnData(returnData...).
 				Storage(storeEntries...)
 
-			require.Equal(t, int64(recursiveCalls+1), host.BigInt().GetOne(16).Int64())
+			require.Equal(t, int64(recursiveCalls+1), host.BigInt().GetOneOrCreate(16).Int64())
 		})
 }
 
@@ -1011,7 +1011,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct_ErrMaxInstances(t *test
 							WithKey([]byte(fmt.Sprintf("Rkey%03d.........................", recursiveCalls))).
 							WithValue([]byte(fmt.Sprintf("Rvalue%03d", recursiveCalls))),
 					)
-				require.Equal(t, int64(1), host.BigInt().GetOne(16).Int64())
+				require.Equal(t, int64(1), host.BigInt().GetOneOrCreate(16).Int64())
 			} else {
 				verify.
 					ReturnCode(vmcommon.ExecutionFailed).
@@ -1092,11 +1092,11 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_Methods(t *testing.T) {
 				Ok().
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, (big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1))).Int64()).
-				GasUsed(test.ParentAddress, 29593).
+				GasUsed(test.ParentAddress, 30106).
 				ReturnData(returnData...).
 				Storage(storeEntries...)
 
-			require.Equal(t, int64(recursiveCalls+1), host.BigInt().GetOne(16).Int64())
+			require.Equal(t, int64(recursiveCalls+1), host.BigInt().GetOneOrCreate(16).Int64())
 		})
 }
 
@@ -1175,16 +1175,16 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs(t *testing.T) {
 				// test.ParentAddress
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, expectedParentBalanceDelta).
-				GasUsed(test.ParentAddress, 5426).
+				GasUsed(test.ParentAddress, 5552).
 				// test.ChildAddress
 				Balance(test.ChildAddress, 1000).
 				BalanceDelta(test.ChildAddress, expectedChildBalanceDelta).
-				GasUsed(test.ChildAddress, 3652).
+				GasUsed(test.ChildAddress, 3736).
 				// other
 				ReturnData(returnData...).
 				Storage(storeEntries...)
 
-			require.Equal(t, int64(recursiveCalls+1), host.BigInt().GetOne(88).Int64())
+			require.Equal(t, int64(recursiveCalls+1), host.BigInt().GetOneOrCreate(88).Int64())
 		})
 }
 
@@ -1371,7 +1371,7 @@ func TestExecution_ExecuteOnDestContext_OutOfGas(t *testing.T) {
 						test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
 						test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyB).WithValue(test.ParentDataB),
 					)
-				require.Equal(t, int64(42), host.BigInt().GetOne(12).Int64())
+				require.Equal(t, int64(42), host.BigInt().GetOneOrCreate(12).Int64())
 			} else {
 				verify.
 					ReturnCode(vmcommon.ExecutionFailed).
@@ -1651,11 +1651,11 @@ func TestExecution_ExecuteOnDestContext_Recursive_Direct(t *testing.T) {
 				Ok().
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1)).Int64()).
-				GasUsed(test.ParentAddress, 29670).
+				GasUsed(test.ParentAddress, 30202).
 				ReturnData(returnData...).
 				Storage(storeEntries...)
 
-			require.Equal(t, int64(1), host.BigInt().GetOne(16).Int64())
+			require.Equal(t, int64(1), host.BigInt().GetOneOrCreate(16).Int64())
 		})
 }
 
@@ -1711,11 +1711,11 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_Methods(t *testing.T) {
 				Ok().
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1)).Int64()).
-				GasUsed(test.ParentAddress, 38083).
+				GasUsed(test.ParentAddress, 38762).
 				ReturnData(returnData...).
 				Storage(storeEntries...)
 
-			require.Equal(t, int64(0), host.BigInt().GetOne(16).Int64())
+			require.Equal(t, int64(0), host.BigInt().GetOneOrCreate(16).Int64())
 		})
 }
 
@@ -1787,16 +1787,16 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs(t *testing.T) {
 				// test.ParentAddress
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, -balanceDelta).
-				GasUsed(test.ParentAddress, 7252).
+				GasUsed(test.ParentAddress, 7420).
 				// test.ChildAddress
 				Balance(test.ChildAddress, 1000).
 				BalanceDelta(test.ChildAddress, balanceDelta).
-				GasUsed(test.ChildAddress, 5464).
+				GasUsed(test.ChildAddress, 5590).
 				// others
 				ReturnData(returnData...).
 				Storage(storeEntries...)
 
-			require.Equal(t, int64(1), host.BigInt().GetOne(88).Int64())
+			require.Equal(t, int64(1), host.BigInt().GetOneOrCreate(88).Int64())
 		})
 }
 
