@@ -1,41 +1,28 @@
 package dex
 
 import (
-	"errors"
 	"fmt"
 )
 
-func (pfe *fuzzDexExecutor) checkPairViews(user string, tokenA string, tokenB string, stats *eventsStatistics) error {
-	err, _, pairHexStr := pfe.getPair(tokenA, tokenB)
-	if err != nil {
-		return err
-	}
+func (pfe *fuzzDexExecutor) checkPairViews(user string, swapPair SwapPair, stats *eventsStatistics) error {
 
-	if pairHexStr == "0x0000000000000000000000000000000000000000000000000000000000000000" && tokenA != tokenB {
-		return errors.New("NULL pair for different tokens")
-	}
+	outputAmountInA, errAmountInA := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,
+		"getAmountIn", fmt.Sprintf("\"str:%s\", \"%d\"", swapPair.firstToken, 1000))
 
-	if tokenA == tokenB {
-		return nil
-	}
+	outputAmountOutA, errAmountOutA := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,
+		"getAmountOut", fmt.Sprintf("\"str:%s\", \"%d\"", swapPair.firstToken, 1000))
 
-	outputAmountInA, errAmountInA := pfe.querySingleResultStringAddr(pfe.ownerAddress, pairHexStr,
-		"getAmountIn", fmt.Sprintf("\"str:%s\", \"%d\"", tokenA, 1000))
+	outputEquivalentOutA, errEquivalentA := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,
+		"getEquivalent", fmt.Sprintf("\"str:%s\", \"%d\"", swapPair.firstToken, 1000))
 
-	outputAmountOutA, errAmountOutA := pfe.querySingleResultStringAddr(pfe.ownerAddress, pairHexStr,
-		"getAmountOut", fmt.Sprintf("\"str:%s\", \"%d\"", tokenA, 1000))
+	outputAmountInB, errAmountInB := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,
+		"getAmountIn", fmt.Sprintf("\"str:%s\", \"%d\"", swapPair.secondToken, 1000))
 
-	outputEquivalentOutA, errEquivalentA := pfe.querySingleResultStringAddr(pfe.ownerAddress, pairHexStr,
-		"getEquivalent", fmt.Sprintf("\"str:%s\", \"%d\"", tokenA, 1000))
+	outputAmountOutB, errAmountOutB := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,
+		"getAmountOut", fmt.Sprintf("\"str:%s\", \"%d\"", swapPair.secondToken, 1000))
 
-	outputAmountInB, errAmountInB := pfe.querySingleResultStringAddr(pfe.ownerAddress, pairHexStr,
-		"getAmountIn", fmt.Sprintf("\"str:%s\", \"%d\"", tokenB, 1000))
-
-	outputAmountOutB, errAmountOutB := pfe.querySingleResultStringAddr(pfe.ownerAddress, pairHexStr,
-		"getAmountOut", fmt.Sprintf("\"str:%s\", \"%d\"", tokenB, 1000))
-
-	outputEquivalentOutB, errEquivalentB := pfe.querySingleResultStringAddr(pfe.ownerAddress, pairHexStr,
-		"getEquivalent", fmt.Sprintf("\"str:%s\", \"%d\"", tokenB, 1000))
+	outputEquivalentOutB, errEquivalentB := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,
+		"getEquivalent", fmt.Sprintf("\"str:%s\", \"%d\"", swapPair.secondToken, 1000))
 
 	if errAmountInA != nil || errAmountInB != nil || errAmountOutA != nil || errAmountOutB != nil ||
 		errEquivalentA != nil || errEquivalentB != nil {

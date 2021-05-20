@@ -7,35 +7,21 @@ import (
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
-func (pfe *fuzzDexExecutor) addLiquidity(user string, tokenA string, tokenB string, amountA int,
-	amountB int, amountAmin int, amountBmin int, statistics *eventsStatistics) error {
+func (pfe *fuzzDexExecutor) addLiquidity(user string, swapPair SwapPair, amountA int, amountB int,
+	amountAmin int, amountBmin int, statistics *eventsStatistics) error {
 
-	err, _, pairHexStr := pfe.getPair(tokenA, tokenB)
-	if err != nil {
-		return err
-	}
+	rawEquivalent, errEquivalent := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,
+		"getEquivalent", fmt.Sprintf("\"str:%s\", \"%d\"", swapPair.firstToken, 1000))
 
-	if tokenA == tokenB {
-		return nil
-	}
-
-	rawEquivalent, errEquivalent := pfe.querySingleResultStringAddr(pfe.ownerAddress, pairHexStr,
-		"getEquivalent", fmt.Sprintf("\"str:%s\", \"%d\"", tokenA, 1000))
-
-	err, lpTokenStr, _ := pfe.getLpTokenIdentifier(pairHexStr)
-	if err != nil {
-		return err
-	}
-
-	tokenABefore, err := pfe.getTokens(user, tokenA)
+	tokenABefore, err := pfe.getTokens(user, swapPair.firstToken)
 	if err != nil {
 		return nil
 	}
-	tokenBBefore, err := pfe.getTokens(user, tokenB)
+	tokenBBefore, err := pfe.getTokens(user, swapPair.secondToken)
 	if err != nil {
 		return nil
 	}
-	tokenLpBefore, err := pfe.getTokens(user, lpTokenStr)
+	tokenLpBefore, err := pfe.getTokens(user, swapPair.lpToken)
 	if err != nil {
 		return err
 	}
@@ -67,8 +53,8 @@ func (pfe *fuzzDexExecutor) addLiquidity(user string, tokenA string, tokenB stri
 		}
 	}`,
 		user,
-		pairHexStr,
-		tokenA,
+		swapPair.address,
+		swapPair.firstToken,
 		amountA,
 	))
 	if err != nil {
@@ -102,8 +88,8 @@ func (pfe *fuzzDexExecutor) addLiquidity(user string, tokenA string, tokenB stri
 		}
 	}`,
 		user,
-		pairHexStr,
-		tokenB,
+		swapPair.address,
+		swapPair.secondToken,
 		amountB,
 	))
 	if err != nil {
@@ -130,7 +116,7 @@ func (pfe *fuzzDexExecutor) addLiquidity(user string, tokenA string, tokenB stri
 		}
 	}`,
 		user,
-		pairHexStr,
+		swapPair.address,
 		amountA,
 		amountB,
 		amountAmin,
@@ -146,8 +132,8 @@ func (pfe *fuzzDexExecutor) addLiquidity(user string, tokenA string, tokenB stri
 		statistics.addLiquidityHits += 1
 
 		// Get New price
-		rawEquivalentAfter, errAfter := pfe.querySingleResultStringAddr(pfe.ownerAddress, pairHexStr,
-			"getEquivalent", fmt.Sprintf("\"str:%s\", \"%d\"", tokenA, 1000))
+		rawEquivalentAfter, errAfter := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,
+			"getEquivalent", fmt.Sprintf("\"str:%s\", \"%d\"", swapPair.firstToken, 1000))
 		if errAfter != nil {
 			return errAfter
 		}
@@ -161,7 +147,7 @@ func (pfe *fuzzDexExecutor) addLiquidity(user string, tokenA string, tokenB stri
 		}
 	} else {
 		statistics.addLiquidityMisses += 1
-		pfe.log("add liquidity %s -> %s", tokenA, tokenB)
+		pfe.log("add liquidity %s -> %s", swapPair.firstToken, swapPair.secondToken)
 		pfe.log("could not add because %s", output.ReturnMessage)
 
 		//In case we get these errors but values are !=0, its an error
@@ -190,43 +176,15 @@ func (pfe *fuzzDexExecutor) addLiquidity(user string, tokenA string, tokenB stri
 		// Other errors are fine
 	}
 
-	output, err = pfe.executeTxStep(fmt.Sprintf(`
-	{
-		"step": "scCall",
-		"txId": "reclaim-temporary-funds",
-		"tx": {
-			"from": "%s",
-			"to": "%s",
-			"value": "0",
-			"function": "reclaimTemporaryFunds",
-			"arguments": [],
-			"gasLimit": "100,000,000",
-			"gasPrice": "0"
-		},
-		"expect": {
-			"out": [],
-			"status": "0",
-			"message": "",
-			"gas": "*",
-			"refund": "*"
-		}
-	}`,
-		user,
-		pairHexStr,
-	))
-	if err != nil {
-		return err
-	}
-
-	tokenAAfter, err := pfe.getTokens(user, tokenA)
+	tokenAAfter, err := pfe.getTokens(user, swapPair.firstToken)
 	if err != nil {
 		return nil
 	}
-	tokenBAfter, err := pfe.getTokens(user, tokenB)
+	tokenBAfter, err := pfe.getTokens(user, swapPair.secondToken)
 	if err != nil {
 		return nil
 	}
-	tokenLpAfter, err := pfe.getTokens(user, lpTokenStr)
+	tokenLpAfter, err := pfe.getTokens(user, swapPair.lpToken)
 	if err != nil {
 		return err
 	}

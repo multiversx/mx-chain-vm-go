@@ -3,7 +3,6 @@ package dex
 import (
 	"errors"
 	"fmt"
-	"math/big"
 	"math/rand"
 
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
@@ -15,7 +14,7 @@ func (pfe *fuzzDexExecutor) exitFarm(amountMax int, statistics *eventsStatistics
 		return nil
 	}
 
-	nonce := rand.Intn(stakersLen)
+	nonce := rand.Intn(stakersLen) + 1
 	user := pfe.farmers[nonce].user
 	amount := pfe.farmers[nonce].value
 	if pfe.farmers[nonce].value == 0 {
@@ -28,22 +27,16 @@ func (pfe *fuzzDexExecutor) exitFarm(amountMax int, statistics *eventsStatistics
 	} else {
 		unstakeAmount = int64(amountMax)
 	}
-	lpToken := pfe.farmers[nonce].lpToken
+	farm := pfe.farmers[nonce].farm
 	pfe.farmers[nonce] = FarmerInfo{
 		value:   amount - unstakeAmount,
 		user:    user,
-		lpToken: lpToken,
+		farm: 	 farm,
 	}
 
 	wegldBefore, err := pfe.getTokens(user, pfe.wegldTokenId)
 	if err != nil {
 		return nil
-	}
-
-	reward, err := pfe.querySingleResult(pfe.ownerAddress, pfe.wegldFarmingAddress,
-		"calculateRewardsForGivenPosition", fmt.Sprintf(`"%d", "%d"`, nonce, unstakeAmount))
-	if err != nil {
-		return err
 	}
 
 	output, err := pfe.executeTxStep(fmt.Sprintf(`
@@ -66,8 +59,8 @@ func (pfe *fuzzDexExecutor) exitFarm(amountMax int, statistics *eventsStatistics
 		}
 	}`,
 		user,
-		pfe.wegldFarmingAddress,
-		"FARM-abcdef",
+		farm.address,
+		farm.farmToken,
 		unstakeAmount,
 		nonce,
 	))
@@ -90,9 +83,6 @@ func (pfe *fuzzDexExecutor) exitFarm(amountMax int, statistics *eventsStatistics
 			return errors.New("LOST wegld while unstake")
 		}
 
-		if wegldAfter.Cmp(big.NewInt(0).Add(wegldBefore, big.NewInt(0).SetBytes(reward[0]))) != 0 {
-			return errors.New("BAD reward received")
-		}
 	} else {
 		statistics.exitFarmMisses += 1
 		pfe.log("exitFarm")

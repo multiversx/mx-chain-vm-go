@@ -1,15 +1,18 @@
 package dex
 
 import (
-	"encoding/hex"
 	"fmt"
-	"io/ioutil"
 )
 
 func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 	pfe.wegldTokenId = args.wegldTokenId
 	pfe.mexTokenId = args.mexTokenId
-	pfe.numTokens = args.numTokens
+	pfe.busdTokenId = args.busdTokenId
+	pfe.wemeLpTokenId = args.wemeLpTokenId
+	pfe.webuLpTokenId = args.webuLpTokenId
+	pfe.wemeFarmTokenId = args.wemeFarmTokenId
+	pfe.webuFarmTokenId = args.webuFarmTokenId
+	pfe.mexFarmTokenId = args.mexFarmTokenId
 	pfe.numUsers = args.numUsers
 	pfe.numEvents = args.numEvents
 	pfe.removeLiquidityProb = args.removeLiquidityProb
@@ -18,7 +21,6 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 	pfe.queryPairsProb = args.queryPairsProb
 	pfe.enterFarmProb = args.enterFarmProb
 	pfe.exitFarmProb = args.exitFarmProb
-	pfe.unbondProb = args.unbondProb
 	pfe.increaseEpochProb = args.increaseEpochProb
 	pfe.removeLiquidityMaxValue = args.removeLiquidityMaxValue
 	pfe.addLiquidityMaxValue = args.addLiquidityMaxValue
@@ -26,15 +28,21 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 	pfe.enterFarmMaxValue = args.enterFarmMaxValue
 	pfe.exitFarmMaxValue = args.exitFarmMaxValue
 	pfe.blockEpochIncrease = args.blockEpochIncrease
-	pfe.tokensCheckFrequency = args.tokensCheckFrequency
 	pfe.farmers = make(map[int]FarmerInfo)
+	pfe.currentFarmTokenNonce = make(map[string]int)
 
 	pfe.world.Clear()
 
 	pfe.ownerAddress = "address:fuzz_owner"
-	pfe.routerAddress = "sc:fuzz_dex_outer"
-	pfe.wegldFarmingAddress = "sc:fuzz_dex_wegld_farming"
-	pfe.mexFarmingAddress = "sc:fuzz_ex_mex_farming"
+	pfe.wemeFarmAddress = "sc:fuzz_dex_weme_farm"
+	pfe.webuFarmAddress = "sc:fuzz_dex_webu_farm"
+	pfe.mexFarmAddress = "sc:fuzz_dex_mex_farm"
+	pfe.wemeSwapAddress = "sc:fuzz_dex_weme_swap"
+	pfe.webuSwapAddress = "sc:fuzz_dex_webu_swap"
+
+	pfe.currentFarmTokenNonce[pfe.wemeFarmTokenId] = 0
+	pfe.currentFarmTokenNonce[pfe.webuFarmTokenId] = 0
+	pfe.currentFarmTokenNonce[pfe.mexFarmTokenId] = 0
 
 	// users
 	esdtString := pfe.fullOfEsdtWalletString()
@@ -61,7 +69,6 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 			return err
 		}
 	}
-
 	err := pfe.executeStep(fmt.Sprintf(`
 	{
 		"step": "setState",
@@ -72,57 +79,6 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 				"storage": {},
 				"code": ""
 			}
-		},
-		"newAddresses": [
-			{
-				"creatorAddress": "%s",
-				"creatorNonce": "0",
-				"newAddress": "%s"
-			},
-			{
-				"creatorAddress": "%s",
-				"creatorNonce": "1",
-				"newAddress": "%s"
-			},
-			{
-				"creatorAddress": "%s",
-				"creatorNonce": "2",
-				"newAddress": "%s"
-			}
-		]
-	}`,
-		pfe.ownerAddress,
-		pfe.ownerAddress,
-		pfe.routerAddress,
-		pfe.ownerAddress,
-		pfe.wegldFarmingAddress,
-		pfe.ownerAddress,
-		pfe.mexFarmingAddress,
-	))
-	if err != nil {
-		return err
-	}
-
-	// deploy router
-	_, err = pfe.executeTxStep(fmt.Sprintf(`
-	{
-		"step": "scDeploy",
-		"txId": "-router-deploy-",
-		"tx": {
-			"from": "%s",
-			"value": "0",
-			"contractCode": "file:elrond_dex_router.wasm",
-			"arguments": [
-			],
-			"gasLimit": "1,000,000",
-			"gasPrice": "0"
-		},
-		"expect": {
-			"out": [],
-			"status": "",
-			"logs": [],
-			"gas": "*",
-			"refund": "*"
 		}
 	}`,
 		pfe.ownerAddress,
@@ -131,220 +87,50 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 		return err
 	}
 
-	// deploy wegld farming
-	_, err = pfe.executeTxStep(fmt.Sprintf(`
-	{
-		"step": "scDeploy",
-		"txId": "-farm-deploy-",
-		"tx": {
-			"from": "%s",
-			"value": "0",
-			"contractCode": "file:elrond_dex_farm.deprecated.wasm",
-			"arguments": [
-				"str:%s",
-				"%s",
-				"1"
-			],
-			"gasLimit": "1,000,000",
-			"gasPrice": "0"
-		},
-		"expect": {
-			"out": [],
-			"status": "",
-			"logs": [],
-			"gas": "*",
-			"refund": "*"
-		}
-	}`,
-		pfe.ownerAddress,
-		pfe.wegldTokenId,
-		pfe.routerAddress,
-	))
+	// swaps
+	err = pfe.setupPair(pfe.wemeSwapAddress, pfe.wegldTokenId, pfe.mexTokenId, pfe.wemeLpTokenId, pfe.ownerAddress, pfe.ownerAddress)
 	if err != nil {
 		return err
 	}
 
-	// deploy mex farming
-	_, err = pfe.executeTxStep(fmt.Sprintf(`
-	{
-		"step": "scDeploy",
-		"txId": "-farm-deploy-",
-		"tx": {
-			"from": "%s",
-			"value": "0",
-			"contractCode": "file:elrond_dex_farm.deprecated.wasm",
-			"arguments": [
-				"str:%s",
-				"%s",
-				"1"
-			],
-			"gasLimit": "1,000,000",
-			"gasPrice": "0"
-		},
-		"expect": {
-			"out": [],
-			"status": "",
-			"logs": [],
-			"gas": "*",
-			"refund": "*"
-		}
-	}`,
-		pfe.ownerAddress,
-		pfe.mexTokenId,
-		pfe.routerAddress,
-	))
+	err = pfe.setupPair(pfe.webuSwapAddress, pfe.wegldTokenId, pfe.busdTokenId, pfe.webuLpTokenId, pfe.ownerAddress, pfe.ownerAddress)
 	if err != nil {
 		return err
 	}
 
-	// setup pair code
-	fileBytes, err := ioutil.ReadFile("../../../test/dex/v0_2/output/elrond_dex_pair.wasm")
-	if err != nil {
-		fmt.Print(err)
-	}
-
-	pairCode := hex.EncodeToString(fileBytes)
-	_, err = pfe.executeTxStep(fmt.Sprintf(`
-	{
-		"step": "scCall",
-		"txId": "start-pair-code-construction",
-		"tx": {
-			"from": "%s",
-			"to": "%s",
-			"value": "0",
-			"function": "startPairCodeConstruction",
-			"arguments": [],
-			"gasLimit": "10,000,000",
-			"gasPrice": "0"
-		},
-		"expect": {
-			"out": [],
-			"status": "",
-			"logs": [],
-			"gas": "*",
-			"refund": "*"
-		}
-	}`,
-		pfe.ownerAddress,
-		pfe.routerAddress,
-	))
-
-	_, err = pfe.executeTxStep(fmt.Sprintf(`
-	{
-		"step": "scCall",
-		"txId": "append-pair-code",
-		"tx": {
-			"from": "%s",
-			"to": "%s",
-			"value": "0",
-			"function": "appendPairCode",
-			"arguments": [
-				"0x%s"
-			],
-			"gasLimit": "10,000,000",
-			"gasPrice": "0"
-		},
-		"expect": {
-			"out": [],
-			"status": "",
-			"logs": [],
-			"gas": "*",
-			"refund": "*"
-		}
-	}`,
-		pfe.ownerAddress,
-		pfe.routerAddress,
-		pairCode,
-	))
+	// farms
+	err = pfe.setupFarm(pfe.wemeFarmAddress, pfe.wemeFarmTokenId, pfe.wemeLpTokenId, pfe.mexTokenId, pfe.ownerAddress, pfe.ownerAddress)
 	if err != nil {
 		return err
 	}
 
-	_, err = pfe.executeTxStep(fmt.Sprintf(`
-	{
-		"step": "scCall",
-		"txId": "end-pair-code-construction",
-		"tx": {
-			"from": "%s",
-			"to": "%s",
-			"value": "0",
-			"function": "endPairCodeConstruction",
-			"arguments": [],
-			"gasLimit": "10,000,000",
-			"gasPrice": "0"
-		},
-		"expect": {
-			"out": [],
-			"status": "",
-			"logs": [],
-			"gas": "*",
-			"refund": "*"
-		}
-	}`,
-		pfe.ownerAddress,
-		pfe.routerAddress,
-	))
+	err = pfe.setupFarm(pfe.webuFarmAddress, pfe.webuFarmTokenId, pfe.webuLpTokenId, pfe.mexTokenId, pfe.ownerAddress, pfe.ownerAddress)
 	if err != nil {
 		return err
 	}
 
-	// issue stake token
-	_, err = pfe.executeTxStep(fmt.Sprintf(`
-	{
-		"step": "scCall",
-		"txId": "issue-stake-token",
-		"tx": {
-			"from": "%s",
-			"to": "%s",
-			"value": "5,000,000,000,000,000,000",
-			"function": "issueFarmToken",
-			"arguments": [
-				"0x53656d6946756e6769626c65",
-				"0x53454d4946554e47"
-			],
-			"gasLimit": "10,000,000",
-			"gasPrice": "0"
-		},
-		"expect": {
-			"out": [],
-			"status": "",
-			"logs": [],
-			"gas": "*",
-			"refund": "*"
-		}
-	}`,
-		pfe.ownerAddress,
-		pfe.wegldFarmingAddress,
-	))
+	err = pfe.setupFarm(pfe.mexFarmAddress, pfe.mexFarmTokenId, pfe.mexTokenId, pfe.mexTokenId, pfe.ownerAddress, pfe.ownerAddress)
 	if err != nil {
 		return err
 	}
 
-	// set local roles
-	_, err = pfe.executeTxStep(fmt.Sprintf(`
-	{
-		"step": "scCall",
-		"txId": "set-local-roles-staking",
-		"tx": {
-			"from": "%s",
-			"to": "%s",
-			"value": "0",
-			"function": "setLocalRolesFarmToken",
-			"arguments": [],
-			"gasLimit": "10,000,000",
-			"gasPrice": "0"
-		},
-		"expect": {
-			"out": [],
-			"status": "4",
-			"message": "*",
-			"gas": "*",
-			"refund": "*"
-		}
-	}`,
-		pfe.ownerAddress,
-		pfe.wegldFarmingAddress,
-	))
+	// configs
+	err = pfe.setFeeOn(pfe.wemeSwapAddress, pfe.wemeFarmAddress, pfe.mexTokenId, pfe.ownerAddress)
+	if err != nil {
+		return err
+	}
+
+	err = pfe.setFeeOn(pfe.webuSwapAddress, pfe.webuFarmAddress, pfe.mexTokenId, pfe.ownerAddress)
+	if err != nil {
+		return err
+	}
+
+	err = pfe.whitelist(pfe.ownerAddress, pfe.wemeSwapAddress, pfe.webuSwapAddress)
+	if err != nil {
+		return err
+	}
+
+	err = pfe.addTrustedSwapPair(pfe.ownerAddress, pfe.webuSwapAddress, pfe.wemeSwapAddress, pfe.wegldTokenId, pfe.mexTokenId)
 	if err != nil {
 		return err
 	}
@@ -352,3 +138,204 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 	pfe.log("init ok")
 	return nil
 }
+
+func (pfe *fuzzDexExecutor) setupPair(swapAddress, firstTokenId, secondTokenId,	lpTokenId, routerAddress, owner string) error {
+	return pfe.executeStep(fmt.Sprintf(`
+		{
+			"step": "setState",
+			"accounts": {
+				"%s": {
+					"nonce": "0",
+                    "balance": "0",
+                    "esdt": {
+                        "str:%s": {
+                            "roles": [
+                                "ESDTRoleLocalMint",
+                                "ESDTRoleLocalBurn"
+                            ]
+                        }
+                    },
+                    "storage": {
+                        "str:first_token_id": "str:%s",
+                        "str:second_token_id": "str:%s",
+                        "str:state": "1",
+                        "str:lpTokenIdentifier": "str:%s",
+                        "str:router_address": "%s",
+                        "str:router_owner_address": "%s",
+                        "str:total_fee_percent": "300",
+                        "str:special_fee_percent": "050"
+                    },
+                    "code": "file:elrond_dex_pair.wasm",
+                    "owner": "%s"
+				}
+			}
+		}`,
+		swapAddress,
+		lpTokenId,
+		firstTokenId,
+		secondTokenId,
+		lpTokenId,
+		routerAddress,
+		owner,
+		owner,
+	))
+}
+
+func (pfe *fuzzDexExecutor) setupFarm(farmAddress, farmTokenId, enterFarmTokenId, rewardTokenId, routerAddress, owner string) error {
+	return pfe.executeStep(fmt.Sprintf(`
+		{
+			"step": "setState",
+			"accounts": {
+				"%s": {
+					"nonce": "0",
+					"balance": "0",
+					"esdt": {
+						"str:%s": {
+							"roles": [
+								"ESDTRoleNFTCreate",
+								"ESDTRoleNFTAddQuantity",
+								"ESDTRoleNFTBurn"
+							]
+						},
+						"str:%s": {
+							"roles": [
+								"ESDTRoleLocalBurn"
+							]
+						},
+						"str:%s": {
+							"roles": [
+								"ESDTRoleLocalMint",
+								"ESDTRoleLocalBurn"
+							]
+						}
+					},
+					"storage": {
+						"str:farming_token_id": "str:%s",
+						"str:farm_token_id": "str:%s",
+						"str:reward_token_id": "str:%s",
+						"str:router_address": "%s",
+						"str:state": "1",
+						"str:owner": "%s",
+						"str:minimum_farming_epochs": "2",
+						"str:burn_tokens_gas_limit": "5,000,000",
+						"str:locked_rewards_liquidity_mulitplier": "2",
+						"str:penalty_percent": "10"
+					},
+					"code": "file:elrond_dex_farm.wasm",
+					"owner": "%s"
+				}
+			}
+		}`,
+		farmAddress,
+		farmTokenId,
+		enterFarmTokenId,
+		rewardTokenId,
+		enterFarmTokenId,
+		farmTokenId,
+		rewardTokenId,
+		routerAddress,
+		owner,
+		owner,
+	))
+}
+
+func (pfe *fuzzDexExecutor) setFeeOn(swapAddress, farmAddress, feeToken, ownerAddress string) error {
+	_, err := pfe.executeTxStep(fmt.Sprintf(`
+		{
+			"step": "scCall",
+			"txId": "set-fee-on",
+			"tx": {
+				"from": "%s",
+				"to": "%s",
+				"value": "0",
+				"function": "setFeeOn",
+				"arguments": [
+					"1",
+					"%s",
+					"str:%s"
+				],
+				"gasLimit": "10,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [],
+				"status": "",
+				"logs": [],
+				"gas": "*",
+				"refund": "*"
+			}
+		}`,
+		ownerAddress,
+		swapAddress,
+		farmAddress,
+		feeToken,
+	))
+	return err
+}
+
+func (pfe *fuzzDexExecutor) whitelist(ownerAddress, swapAddressToConfig, swapAddressToWhitelist string) error {
+	_, err := pfe.executeTxStep(fmt.Sprintf(`
+		{
+			"step": "scCall",
+			"txId": "whitelist",
+			"tx": {
+				"from": "%s",
+				"to": "%s",
+				"value": "0",
+				"function": "whitelist",
+				"arguments": [
+					"%s"
+				],
+				"gasLimit": "10,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [],
+				"status": "",
+				"logs": [],
+				"gas": "*",
+				"refund": "*"
+			}
+		}`,
+		ownerAddress,
+		swapAddressToConfig,
+		swapAddressToWhitelist,
+	))
+	return err
+}
+
+func (pfe *fuzzDexExecutor) addTrustedSwapPair(ownerAddress, swapAddressToConfig, swapAddressToAdd, firstTokenId, secondTokenId string) error {
+	_, err := pfe.executeTxStep(fmt.Sprintf(`
+		{
+			"step": "scCall",
+			"txId": "whitelist",
+			"tx": {
+				"from": "%s",
+				"to": "%s",
+				"value": "0",
+				"function": "addTrustedSwapPair",
+				"arguments": [
+					"%s",
+					"str:%s",
+					"str:%s"
+				],
+				"gasLimit": "10,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [],
+				"status": "",
+				"logs": [],
+				"gas": "*",
+				"refund": "*"
+			}
+		}`,
+		ownerAddress,
+		swapAddressToConfig,
+		swapAddressToAdd,
+		firstTokenId,
+		secondTokenId,
+	))
+	return err
+}
+

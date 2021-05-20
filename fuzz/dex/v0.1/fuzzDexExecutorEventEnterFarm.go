@@ -7,22 +7,9 @@ import (
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
-func (pfe *fuzzDexExecutor) enterFarm(user string, tokenA string, tokenB string, amount int, statistics *eventsStatistics) error {
-	err, _, pairHexStr := pfe.getPair(tokenA, tokenB)
-	if err != nil {
-		return err
-	}
+func (pfe *fuzzDexExecutor) enterFarm(user string, farm Farm, amount int, statistics *eventsStatistics) error {
 
-	if tokenA == tokenB {
-		return nil
-	}
-
-	err, lpTokenStr, lpTokenHexStr := pfe.getLpTokenIdentifier(pairHexStr)
-	if err != nil {
-		return err
-	}
-
-	output, err := pfe.executeTxStep(fmt.Sprintf(`
+	output, _ := pfe.executeTxStep(fmt.Sprintf(`
 	{
 		"step": "scCall",
 		"txId": "stake",
@@ -32,7 +19,7 @@ func (pfe *fuzzDexExecutor) enterFarm(user string, tokenA string, tokenB string,
 			"value": "0",
 			"function": "enterFarm",
 			"esdt": {
-				"tokenIdentifier": "%s",
+				"tokenIdentifier": "str:%s",
 				"value": "%d"
 			},
 			"arguments": [],
@@ -41,8 +28,8 @@ func (pfe *fuzzDexExecutor) enterFarm(user string, tokenA string, tokenB string,
 		}
 	}`,
 		user,
-		pfe.wegldFarmingAddress,
-		lpTokenHexStr,
+		farm.address,
+		farm.farmingToken,
 		amount,
 	))
 	if output == nil {
@@ -53,20 +40,20 @@ func (pfe *fuzzDexExecutor) enterFarm(user string, tokenA string, tokenB string,
 	if success {
 		statistics.enterFarmHits += 1
 
-		pfe.currentFarmTokenNonce += 1
-		nonce := pfe.currentFarmTokenNonce
-		bigint, errGet := pfe.getTokensWithNonce(user, "FARM-abcdef", nonce)
+		pfe.currentFarmTokenNonce[farm.address] += 1
+		nonce := pfe.currentFarmTokenNonce[farm.address]
+		bigint, errGet := pfe.getTokensWithNonce(user, farm.farmToken, nonce)
 		if errGet != nil {
 			return errGet
 		}
 		pfe.farmers[nonce] = FarmerInfo{
 			user:    user,
 			value:   bigint.Int64(),
-			lpToken: lpTokenStr,
+			farm: 	 farm,
 		}
 	} else {
 		statistics.enterFarmMisses += 1
-		pfe.log("stake %s -> %s", tokenA, tokenB)
+		pfe.log("stake %s", farm.farmingToken)
 		pfe.log("could enter farm add because %s", output.ReturnMessage)
 
 		if output.ReturnMessage == "insufficient funds" {

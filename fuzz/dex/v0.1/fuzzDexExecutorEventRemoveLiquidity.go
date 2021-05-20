@@ -7,35 +7,21 @@ import (
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
-func (pfe *fuzzDexExecutor) removeLiquidity(user string, tokenA string, tokenB string, amount int, amountAmin int,
+func (pfe *fuzzDexExecutor) removeLiquidity(user string, swapPair SwapPair, amount int, amountAmin int,
 	amountBmin int, statistics *eventsStatistics) error {
 
-	err, _, pairHexStr := pfe.getPair(tokenA, tokenB)
-	if err != nil {
-		return err
-	}
+	rawEquivalent, errEquivalent := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,
+		"getEquivalent", fmt.Sprintf("\"str:%s\", \"%d\"", swapPair.firstToken, 1000))
 
-	if tokenA == tokenB {
-		return nil
-	}
-
-	err, lpTokenStr, _ := pfe.getLpTokenIdentifier(pairHexStr)
-	if err != nil {
-		return err
-	}
-
-	rawEquivalent, errEquivalent := pfe.querySingleResultStringAddr(pfe.ownerAddress, pairHexStr,
-		"getEquivalent", fmt.Sprintf("\"str:%s\", \"%d\"", tokenA, 1000))
-
-	tokenABefore, err := pfe.getTokens(user, tokenA)
+	tokenABefore, err := pfe.getTokens(user, swapPair.firstToken)
 	if err != nil {
 		return nil
 	}
-	tokenBBefore, err := pfe.getTokens(user, tokenB)
+	tokenBBefore, err := pfe.getTokens(user, swapPair.secondToken)
 	if err != nil {
 		return nil
 	}
-	tokenLpBefore, err := pfe.getTokens(user, lpTokenStr)
+	tokenLpBefore, err := pfe.getTokens(user, swapPair.lpToken)
 	if err != nil {
 		return err
 	}
@@ -62,8 +48,8 @@ func (pfe *fuzzDexExecutor) removeLiquidity(user string, tokenA string, tokenB s
 		}
 	}`,
 		user,
-		pairHexStr,
-		lpTokenStr,
+		swapPair.address,
+		swapPair.lpToken,
 		amount,
 		amountAmin,
 		amountBmin,
@@ -72,15 +58,15 @@ func (pfe *fuzzDexExecutor) removeLiquidity(user string, tokenA string, tokenB s
 		return errors.New("NULL Output")
 	}
 
-	tokenAAfter, err := pfe.getTokens(user, tokenA)
+	tokenAAfter, err := pfe.getTokens(user, swapPair.firstToken)
 	if err != nil {
 		return nil
 	}
-	tokenBAfter, err := pfe.getTokens(user, tokenB)
+	tokenBAfter, err := pfe.getTokens(user, swapPair.secondToken)
 	if err != nil {
 		return nil
 	}
-	tokenLpAfter, err := pfe.getTokens(user, lpTokenStr)
+	tokenLpAfter, err := pfe.getTokens(user, swapPair.lpToken)
 	if err != nil {
 		return err
 	}
@@ -89,8 +75,8 @@ func (pfe *fuzzDexExecutor) removeLiquidity(user string, tokenA string, tokenB s
 	if success {
 		statistics.removeLiquidityHits += 1
 
-		rawOutput, erro := pfe.querySingleResultStringAddr(pfe.ownerAddress, pairHexStr,
-			"getEquivalent", fmt.Sprintf("\"str:%s\", \"%d\"", tokenA, 1000))
+		rawOutput, erro := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,
+			"getEquivalent", fmt.Sprintf("\"str:%s\", \"%d\"", swapPair.firstToken, 1000))
 
 		if tokenABefore.Cmp(tokenAAfter) > -1 ||
 			tokenBBefore.Cmp(tokenBAfter) > -1 ||
@@ -104,7 +90,7 @@ func (pfe *fuzzDexExecutor) removeLiquidity(user string, tokenA string, tokenB s
 			}
 		}
 	} else {
-		pfe.log("remove liquidity %s -> %s", tokenA, tokenB)
+		pfe.log("remove liquidity %s -> %s", swapPair.firstToken, swapPair.secondToken)
 		pfe.log("could not remove because %s", output.ReturnMessage)
 		statistics.removeLiquidityMisses += 1
 

@@ -8,28 +8,20 @@ import (
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
-func (pfe *fuzzDexExecutor) swapFixedInput(user string, tokenA string, amountA int, tokenB string,
+func (pfe *fuzzDexExecutor) swapFixedInput(user string, swapPair SwapPair, amountA int,
 	amountB int, statistics *eventsStatistics) error {
-	err, _, pairHexStr := pfe.getPair(tokenA, tokenB)
-	if err != nil {
-		return err
-	}
 
-	if tokenA == tokenB {
-		return nil
-	}
-
-	tokenABefore, err := pfe.getTokens(user, tokenA)
+	tokenABefore, err := pfe.getTokens(user, swapPair.firstToken)
 	if err != nil {
 		return nil
 	}
-	tokenBBefore, err := pfe.getTokens(user, tokenB)
+	tokenBBefore, err := pfe.getTokens(user, swapPair.secondToken)
 	if err != nil {
 		return nil
 	}
 
-	amoutOutRaw, amoutOutErr := pfe.querySingleResultStringAddr(pfe.ownerAddress, pairHexStr,
-		"getAmountOut", fmt.Sprintf("\"str:%s\", \"%d\"", tokenA, amountA))
+	amoutOutRaw, amoutOutErr := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,
+		"getAmountOut", fmt.Sprintf("\"str:%s\", \"%d\"", swapPair.firstToken, amountA))
 
 	output, err := pfe.executeTxStep(fmt.Sprintf(`
 	{
@@ -53,21 +45,21 @@ func (pfe *fuzzDexExecutor) swapFixedInput(user string, tokenA string, amountA i
 		}
 	}`,
 		user,
-		pairHexStr,
-		tokenA,
+		swapPair.address,
+		swapPair.firstToken,
 		amountA,
-		tokenB,
+		swapPair.secondToken,
 		amountB,
 	))
 	if output == nil {
 		return errors.New("NULL output")
 	}
 
-	tokenAAfter, err := pfe.getTokens(user, tokenA)
+	tokenAAfter, err := pfe.getTokens(user, swapPair.firstToken)
 	if err != nil {
 		return nil
 	}
-	tokenBAfter, err := pfe.getTokens(user, tokenB)
+	tokenBAfter, err := pfe.getTokens(user, swapPair.secondToken)
 	if err != nil {
 		return nil
 	}
@@ -87,7 +79,7 @@ func (pfe *fuzzDexExecutor) swapFixedInput(user string, tokenA string, amountA i
 		}
 	} else {
 		statistics.swapFixedInputMisses += 1
-		pfe.log("swapFixedInput %s -> %s", tokenA, tokenB)
+		pfe.log("swapFixedInput %s -> %s", swapPair.firstToken, swapPair.secondToken)
 		pfe.log("could not swap because %s", output.ReturnMessage)
 
 		if tokenAAfter.Cmp(tokenABefore) != 0 {
@@ -107,29 +99,20 @@ func (pfe *fuzzDexExecutor) swapFixedInput(user string, tokenA string, amountA i
 	return nil
 }
 
-func (pfe *fuzzDexExecutor) swapFixedOutput(user string, tokenA string, amountA int, tokenB string,
+func (pfe *fuzzDexExecutor) swapFixedOutput(user string, swapPair SwapPair, amountA int,
 	amountB int, statistics *eventsStatistics) error {
 
-	err, _, pairHexStr := pfe.getPair(tokenA, tokenB)
-	if err != nil {
-		return err
-	}
-
-	if tokenA == tokenB {
-		return nil
-	}
-
-	tokenABefore, err := pfe.getTokens(user, tokenA)
+	tokenABefore, err := pfe.getTokens(user, swapPair.firstToken)
 	if err != nil {
 		return nil
 	}
-	tokenBBefore, err := pfe.getTokens(user, tokenB)
+	tokenBBefore, err := pfe.getTokens(user, swapPair.secondToken)
 	if err != nil {
 		return nil
 	}
 
-	amountInRaw, amountInErr := pfe.querySingleResultStringAddr(pfe.ownerAddress, pairHexStr,
-		"getAmountIn", fmt.Sprintf("\"str:%s\", \"%d\"", tokenB, amountB))
+	amountInRaw, amountInErr := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,
+		"getAmountIn", fmt.Sprintf("\"str:%s\", \"%d\"", swapPair.secondToken, amountB))
 
 	output, err := pfe.executeTxStep(fmt.Sprintf(`
 	{
@@ -153,21 +136,21 @@ func (pfe *fuzzDexExecutor) swapFixedOutput(user string, tokenA string, amountA 
 		}
 	}`,
 		user,
-		pairHexStr,
-		tokenA,
+		swapPair.address,
+		swapPair.firstToken,
 		amountA,
-		tokenB,
+		swapPair.secondToken,
 		amountB,
 	))
 	if output == nil {
 		return errors.New("NULL output")
 	}
 
-	tokenAAfter, err := pfe.getTokens(user, tokenA)
+	tokenAAfter, err := pfe.getTokens(user, swapPair.firstToken)
 	if err != nil {
 		return nil
 	}
-	tokenBAfter, err := pfe.getTokens(user, tokenB)
+	tokenBAfter, err := pfe.getTokens(user, swapPair.secondToken)
 	if err != nil {
 		return nil
 	}
@@ -187,7 +170,7 @@ func (pfe *fuzzDexExecutor) swapFixedOutput(user string, tokenA string, amountA 
 		}
 	} else {
 		statistics.swapFixedOutputMisses += 1
-		pfe.log("swapFixedOutput %s -> %s", tokenA, tokenB)
+		pfe.log("swapFixedOutput %s -> %s", swapPair.firstToken, swapPair.secondToken)
 		pfe.log("could not swap because %s", output.ReturnMessage)
 
 		if tokenAAfter.Cmp(tokenABefore) != 0 {

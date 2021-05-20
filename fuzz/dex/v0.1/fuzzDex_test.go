@@ -33,8 +33,8 @@ func newExecutorWithPaths() *fuzzDexExecutor {
 			"elrond_dex_pair.wasm",
 			filepath.Join(getTestRoot(), "dex/v0_2/output/elrond_dex_pair.wasm")).
 		ReplacePath(
-			"elrond_dex_farm.deprecated.wasm",
-			filepath.Join(getTestRoot(), "dex/v0_2/output/elrond_dex_farm.deprecated.wasm"))
+			"elrond_dex_farm.wasm",
+			filepath.Join(getTestRoot(), "dex/v0_2/output/elrond_dex_farm.wasm"))
 
 	pfe, err := newFuzzDexExecutor(fileResolver)
 	if err != nil {
@@ -56,38 +56,29 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 		&fuzzDexExecutorInitArgs{
 			wegldTokenId:            "WEGLD-abcdef",
 			mexTokenId:              "MEX-abcdef",
+			busdTokenId:			 "BUSD-abcdef",
+			wemeLpTokenId:           "WEMELP-abcdef",
+			webuLpTokenId:           "WEBULP-abcdef",
+			wemeFarmTokenId:		 "WEMEFARM-abcdef",
+			webuFarmTokenId:		 "WEBUFARM-abcdef",
+			mexFarmTokenId: 		 "MEXFARM-abcdef",
 			numUsers:                10,
-			numTokens:               3,
-			numEvents:               3000,
+			numEvents:               1000,
 			removeLiquidityProb:     0.05,
-			addLiquidityProb:        0.25,
+			addLiquidityProb:        0.20,
 			swapProb:                0.35,
 			queryPairsProb:          0.05,
 			enterFarmProb:           0.20,
-			exitFarmProb:            0.085,
-			increaseEpochProb:       0.005,
+			exitFarmProb:            0.12,
+			increaseEpochProb:       0.02,
 			removeLiquidityMaxValue: 1000000000,
 			addLiquidityMaxValue:    1000000000,
 			swapMaxValue:            10000000,
 			enterFarmMaxValue:       100000000,
 			exitFarmMaxValue:        100000000,
 			blockEpochIncrease:      10,
-			tokensCheckFrequency:    999,
 		},
 	)
-	require.Nil(t, err)
-
-	// Creating Pairs is done by users; but we'll do it ourselves,
-	// since is not a matter of fuzzing (crashing or stuck funds).
-	// Testing about pair creation and lp token issuing is done via mandos.
-	err = pfe.createPairs()
-	require.Nil(t, err)
-
-	err = pfe.doHackishSteps()
-	require.Nil(t, err)
-
-	//Pais are created. Set fee on for each pair that has WEGLD-abcdef as a token.
-	err = pfe.setFeeOn()
 	require.Nil(t, err)
 
 	stats := eventsStatistics{
@@ -113,16 +104,7 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 	re := fuzzutil.NewRandomEventProvider(r)
 	for stepIndex := 0; stepIndex < pfe.numEvents; stepIndex++ {
 		generateRandomEvent(t, pfe, r, re, &stats)
-
-		if stepIndex != 0 && stepIndex%pfe.tokensCheckFrequency == 0 {
-			pfe.log("Current step index: %d", stepIndex)
-			err = pfe.checkTokens()
-			require.Nil(t, err)
-		}
 	}
-
-	err = pfe.checkTokens()
-	require.Nil(t, err)
 
 	printStatistics(&stats, pfe)
 }
@@ -136,99 +118,75 @@ func generateRandomEvent(
 ) {
 	re.Reset()
 
-	tokenA := ""
-	tokenB := ""
-
-	tokenAIndex := r.Intn(pfe.numTokens+2) + 1
-	if tokenAIndex == pfe.numTokens+2 {
-		tokenA = pfe.wegldTokenId
-	} else if tokenAIndex == pfe.numTokens+1 {
-		tokenA = pfe.mexTokenId
-	} else {
-		tokenA = pfe.tokenTicker(tokenAIndex)
-	}
-	tokenBIndex := r.Intn(pfe.numTokens+2) + 1
-	if tokenBIndex == pfe.numTokens+2 {
-		tokenB = pfe.wegldTokenId
-	} else if tokenBIndex == pfe.numTokens+1 {
-		tokenB = pfe.mexTokenId
-	} else {
-		tokenB = pfe.tokenTicker(tokenBIndex)
-	}
-
 	userId := r.Intn(pfe.numUsers) + 1
 	user := pfe.userAddress(userId)
-
-	fromAtoB := r.Intn(2) != 0
-	if fromAtoB == false {
-		aux := tokenA
-		tokenA = tokenB
-		tokenB = aux
-	}
 
 	switch {
 	//remove liquidity
 	case re.WithProbability(pfe.removeLiquidityProb):
 
+		swapPair := getRandomSwapPair(r, pfe)
 		seed := r.Intn(pfe.removeLiquidityMaxValue) + 1
 		amount := seed
 		amountAmin := seed / 100
 		amountBmin := seed / 100
 
-		err := pfe.removeLiquidity(user, tokenA, tokenB, amount, amountAmin, amountBmin, statistics)
+		err := pfe.removeLiquidity(user, swapPair, amount, amountAmin, amountBmin, statistics)
 		require.Nil(t, err)
 
 	//add liquidity
 	case re.WithProbability(pfe.addLiquidityProb):
 
+		swapPair := getRandomSwapPair(r, pfe)
 		seed := r.Intn(pfe.addLiquidityMaxValue) + 1
 		amountA := seed
 		amountB := seed
 		amountAmin := seed / 100
 		amountBmin := seed / 100
 
-		err := pfe.addLiquidity(user, tokenA, tokenB, amountA, amountB, amountAmin, amountBmin, statistics)
+		err := pfe.addLiquidity(user, swapPair, amountA, amountB, amountAmin, amountBmin, statistics)
 		require.Nil(t, err)
 
 	//swap
 	case re.WithProbability(pfe.swapProb):
 
+		swapPair := getRandomSwapPair(r, pfe)
 		fixedInput := false
 		amountA := 0
 		amountB := 0
-
 		fixedInput = r.Intn(2) != 0
 		seed := r.Intn(pfe.swapMaxValue) + 1
 		amountA = seed
 		amountB = seed / 100
 
 		if fixedInput {
-			err := pfe.swapFixedInput(user, tokenA, amountA, tokenB, amountB, statistics)
+			err := pfe.swapFixedInput(user, swapPair, amountA, amountB, statistics)
 			require.Nil(t, err)
 		} else {
-			err := pfe.swapFixedOutput(user, tokenA, amountA, tokenB, amountB, statistics)
+			err := pfe.swapFixedOutput(user, swapPair, amountA, amountB, statistics)
 			require.Nil(t, err)
 		}
 
 	// pair views
 	case re.WithProbability(pfe.queryPairsProb):
 
-		err := pfe.checkPairViews(user, tokenA, tokenB, statistics)
+		swapPair := getRandomSwapPair(r, pfe)
+		err := pfe.checkPairViews(user, swapPair, statistics)
 		require.Nil(t, err)
 
 	// enterFarm
 	case re.WithProbability(pfe.enterFarmProb):
 
-		seed := r.Intn(pfe.enterFarmMaxValue) + 1
-		err := pfe.enterFarm(user, tokenA, "WEGLD-abcdef", seed, statistics)
+		amount := r.Intn(pfe.enterFarmMaxValue) + 1
+		farm := getRandomFarm(r, pfe)
+		err := pfe.enterFarm(user, farm, amount, statistics)
 		require.Nil(t, err)
 
 	// exitFarm
 	case re.WithProbability(pfe.exitFarmProb):
 
-		seed := r.Intn(pfe.removeLiquidityMaxValue) + 1
-
-		err := pfe.exitFarm(seed, statistics, r)
+		amount := r.Intn(pfe.removeLiquidityMaxValue) + 1
+		err := pfe.exitFarm(amount, statistics, r)
 		require.Nil(t, err)
 
 	// increase block epoch. required for unbond
@@ -238,6 +196,49 @@ func generateRandomEvent(
 		require.Nil(t, err)
 	default:
 	}
+}
+
+func getRandomSwapPair(r *rand.Rand, pfe *fuzzDexExecutor) SwapPair {
+	seed := r.Intn(2)
+	randomPair := SwapPair{}
+
+	if seed == 0 {
+		randomPair.address = pfe.wemeSwapAddress
+		randomPair.lpToken = pfe.wemeLpTokenId
+		randomPair.firstToken = pfe.wegldTokenId
+		randomPair.secondToken = pfe.mexTokenId
+	} else {
+		randomPair.address = pfe.webuSwapAddress
+		randomPair.lpToken = pfe.webuLpTokenId
+		randomPair.firstToken = pfe.wegldTokenId
+		randomPair.secondToken = pfe.busdTokenId
+	}
+
+	return randomPair
+}
+
+func getRandomFarm(r *rand.Rand, pfe *fuzzDexExecutor) Farm {
+	seed := r.Intn(3)
+	randomFarm := Farm{}
+
+	if seed == 0 {
+		randomFarm.address = pfe.wemeFarmAddress
+		randomFarm.farmToken = pfe.wemeFarmTokenId
+		randomFarm.farmingToken = pfe.wemeLpTokenId
+		randomFarm.rewardToken = pfe.mexTokenId
+	} else if seed == 1 {
+		randomFarm.address = pfe.webuFarmAddress
+		randomFarm.farmToken = pfe.webuFarmTokenId
+		randomFarm.farmingToken = pfe.webuLpTokenId
+		randomFarm.rewardToken = pfe.mexTokenId
+	} else {
+		randomFarm.address = pfe.mexFarmAddress
+		randomFarm.farmToken = pfe.mexFarmTokenId
+		randomFarm.farmingToken = pfe.mexTokenId
+		randomFarm.rewardToken = pfe.mexTokenId
+	}
+
+	return randomFarm
 }
 
 func printStatistics(statistics *eventsStatistics, pfe *fuzzDexExecutor) {
