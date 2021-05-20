@@ -252,7 +252,7 @@ func (v *VMOutputVerifier) Transfers(transfers ...TransferEntry) *VMOutputVerifi
 		}
 		delete(transfersMap, string(outputAccount.Address))
 	}
-	require.Equal(v.T, 0, len(transfersMap), "Transfers asserted, but not present in output")
+	require.Equal(v.T, 0, len(transfersMap), "Transfers asserted, but not present in VMOutput")
 
 	return v
 }
