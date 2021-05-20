@@ -279,3 +279,13 @@ func (context *blockchainContext) SaveCompiledCode(codeHash []byte, code []byte)
 func (context *blockchainContext) GetCompiledCode(codeHash []byte) (bool, []byte) {
 	return context.blockChainHook.GetCompiledCode(codeHash)
 }
+
+// GetUserAccount returns a user account
+func (context *blockchainContext) GetUserAccount(address []byte) (vmcommon.UserAccountHandler, error) {
+	return context.blockChainHook.GetUserAccount(address)
+}
+
+// ProcessBuiltInFunction will process the builtIn function for the created input
+func (context *blockchainContext) ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+	return context.blockChainHook.ProcessBuiltInFunction(input)
+}

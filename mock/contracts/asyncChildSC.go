@@ -28,11 +28,9 @@ func TransferToThirdPartyAsyncChildMock(instanceMock *mock.InstanceMock, config 
 			return instance
 		}
 
-		var behavior byte
+		behavior := byte(0)
 		if len(arguments[2]) != 0 {
 			behavior = arguments[2][0]
-		} else {
-			behavior = 0
 		}
 		err := handleChildBehaviorArgument(host, behavior)
 		if err != nil {

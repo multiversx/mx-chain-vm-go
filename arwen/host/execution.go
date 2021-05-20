@@ -478,7 +478,7 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newC
 }
 
 func (host *vmHost) checkUpgradePermission(vmInput *vmcommon.ContractCallInput) error {
-	contract, err := host.blockChainHook.GetUserAccount(vmInput.RecipientAddr)
+	contract, err := host.Blockchain().GetUserAccount(vmInput.RecipientAddr)
 	if err != nil {
 		return err
 	}
@@ -670,7 +670,7 @@ func (host *vmHost) RevertESDTTransfer(input *vmcommon.ContractCallInput) {
 		revertInput.Arguments[numArgsForTransfer-1] = actualRecipient
 	}
 
-	vmOutput, err := host.blockChainHook.ProcessBuiltInFunction(revertInput)
+	vmOutput, err := host.Blockchain().ProcessBuiltInFunction(revertInput)
 	if err != nil {
 		log.Error("RevertESDTTransfer failed", "error", err)
 		host.meteringContext.UseGas(host.meteringContext.GasLeft())
@@ -717,7 +717,7 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, token
 		esdtTransferInput.GasProvided = metering.BlockGasLimit()
 	}
 
-	vmOutput, err := host.blockChainHook.ProcessBuiltInFunction(esdtTransferInput)
+	vmOutput, err := host.Blockchain().ProcessBuiltInFunction(esdtTransferInput)
 	log.Trace("ESDT transfer", "sender", sender, "dest", destination)
 	log.Trace("ESDT transfer", "token", tokenIdentifier, "value", value)
 	if err != nil {
@@ -749,7 +749,7 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, token
 func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmcommon.ContractCallInput, *vmcommon.VMOutput, error) {
 	metering := host.Metering()
 
-	vmOutput, err := host.blockChainHook.ProcessBuiltInFunction(input)
+	vmOutput, err := host.Blockchain().ProcessBuiltInFunction(input)
 	if err != nil {
 		metering.UseGas(input.GasProvided)
 		return nil, nil, err

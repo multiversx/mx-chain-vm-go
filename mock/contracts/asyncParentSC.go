@@ -13,6 +13,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var AsyncChildFunction = "transferToThirdParty"
+var AsyncChildData = " there"
+
 // PerformAsyncCallParentMock is an exposed mock contract method
 func PerformAsyncCallParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 	testConfig := config.(*AsyncCallTestConfig)
@@ -36,11 +39,11 @@ func PerformAsyncCallParentMock(instanceMock *mock.InstanceMock, config interfac
 
 		callData := txDataBuilder.NewBuilder()
 		// funcion to be called on child
-		callData.Func("transferToThirdParty")
+		callData.Func(AsyncChildFunction)
 		// value to send to third party
 		callData.Int64(testConfig.TransferToThirdParty)
 		// data for child -> third party tx
-		callData.Str(" there")
+		callData.Str(AsyncChildData)
 		// behavior param for child
 		callData.Bytes(append(arguments[0]))
 

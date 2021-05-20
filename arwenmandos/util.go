@@ -2,6 +2,7 @@ package arwenmandos
 
 import (
 	"errors"
+	"fmt"
 	"math/big"
 
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/model"
@@ -82,12 +83,34 @@ func convertAccount(testAcct *mj.Account) (*worldmock.Account, error) {
 	return account, nil
 }
 
+func validateSetStateAccount(mandosAccount *mj.Account, converted *worldmock.Account) error {
+	err := converted.Validate()
+	if err != nil {
+		return fmt.Errorf(
+			`"setState" step validation failed for account "%s": %w`,
+			mandosAccount.Address.Original,
+			err)
+	}
+	return nil
+}
+
 func makeESDTUserMetadataBytes(frozen bool) []byte {
 	metadata := &builtInFunctions.ESDTUserMetadata{
 		Frozen: frozen,
 	}
 
 	return metadata.ToBytes()
+}
+
+func validateNewAddressMocks(testNAMs []*mj.NewAddressMock) error {
+	for _, testNAM := range testNAMs {
+		if !worldmock.IsSmartContractAddress(testNAM.NewAddress.Value) {
+			return fmt.Errorf(
+				`address in "setState" "newAddresses" field should have SC format: %s`,
+				testNAM.NewAddress.Original)
+		}
+	}
+	return nil
 }
 
 func convertNewAddressMocks(testNAMs []*mj.NewAddressMock) []*worldmock.NewAddressMock {

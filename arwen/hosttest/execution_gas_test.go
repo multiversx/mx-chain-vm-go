@@ -1,6 +1,7 @@
 package hosttest
 
 import (
+	"encoding/hex"
 	"errors"
 	"math/big"
 	"testing"
@@ -11,6 +12,7 @@ import (
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/ElrondNetwork/elrond-go/data/state"
+	"github.com/ElrondNetwork/elrond-go/testscommon/txDataBuilder"
 	"github.com/stretchr/testify/require"
 )
 
@@ -26,7 +28,6 @@ var simpleGasTestConfig = contracts.DirectCallGasTestConfig{
 }
 
 func TestGasUsed_SingleContract(t *testing.T) {
-
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
@@ -100,7 +101,6 @@ func TestGasUsed_SingleContract_BuiltinCallFail(t *testing.T) {
 }
 
 func TestGasUsed_TwoContracts_ExecuteOnSameCtx(t *testing.T) {
-
 	for numCalls := uint64(0); numCalls < 3; numCalls++ {
 		expectedGasRemaining := simpleGasTestConfig.GasProvided - simpleGasTestConfig.GasUsedByParent - simpleGasTestConfig.GasUsedByChild*numCalls
 		numCallsBytes := big.NewInt(0).SetUint64(numCalls).Bytes()
@@ -138,7 +138,6 @@ func TestGasUsed_TwoContracts_ExecuteOnSameCtx(t *testing.T) {
 }
 
 func TestGasUsed_TwoContracts_ExecuteOnDestCtx(t *testing.T) {
-
 	for numCalls := uint64(0); numCalls < 3; numCalls++ {
 		expectedGasRemaining := simpleGasTestConfig.GasProvided - simpleGasTestConfig.GasUsedByParent - simpleGasTestConfig.GasUsedByChild*numCalls
 		numCallsBytes := big.NewInt(0).SetUint64(numCalls).Bytes()
@@ -176,7 +175,6 @@ func TestGasUsed_TwoContracts_ExecuteOnDestCtx(t *testing.T) {
 }
 
 func TestGasUsed_ThreeContracts_ExecuteOnDestCtx(t *testing.T) {
-
 	alphaAddress := test.MakeTestSCAddress("alpha")
 	betaAddress := test.MakeTestSCAddress("beta")
 	gammaAddress := test.MakeTestSCAddress("gamma")
@@ -339,7 +337,6 @@ var asyncTestConfig = &contracts.AsyncCallTestConfig{
 }
 
 func TestGasUsed_AsyncCall(t *testing.T) {
-
 	testConfig := asyncTestConfig
 	testConfig.GasProvided = 1000
 
@@ -394,8 +391,165 @@ func TestGasUsed_AsyncCall(t *testing.T) {
 		})
 }
 
-func TestGasUsed_AsyncCall_BuiltinCall(t *testing.T) {
+func TestGasUsed_AsyncCall_CrossShard_InitCall(t *testing.T) {
+	testConfig := asyncTestConfig
+	testConfig.GasProvided = 1000
 
+	gasUsedByParent := testConfig.GasUsedByParent
+
+	asyncCallData := txDataBuilder.NewBuilder()
+	asyncCallData.Func(contracts.AsyncChildFunction)
+	asyncCallData.Int64(testConfig.TransferToThirdParty)
+	asyncCallData.Str(contracts.AsyncChildData)
+	// behavior param for child
+	asyncCallData.Bytes([]byte{0})
+	asyncChildArgs := asyncCallData.ToBytes()
+
+	gasForAsyncCall := testConfig.GasProvided - gasUsedByParent - testConfig.GasLockCost
+
+	parentContract := test.CreateMockContractOnShard(test.ParentAddress, 0).
+		WithBalance(testConfig.ParentBalance).
+		WithConfig(testConfig).
+		WithMethods(contracts.PerformAsyncCallParentMock, contracts.CallBackParentMock)
+
+	// direct parent call
+	test.BuildMockInstanceCallTest(t).
+		WithContracts(parentContract).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithCallerAddr(test.UserAddress).
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("performAsyncCall").
+			WithArguments([]byte{0}).
+			Build()).
+		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+			world.SelfShardID = 0
+			world.CurrentBlockInfo.BlockRound = 0
+			setZeroCodeCosts(host)
+			setAsyncCosts(host, testConfig.GasLockCost)
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok().
+				GasUsed(test.ParentAddress, gasUsedByParent).
+				GasRemaining(0).
+				ReturnData(test.ParentFinishA, test.ParentFinishB).
+				Storage(
+					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
+					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyB).WithValue(test.ParentDataB),
+				).
+				Transfers(
+					test.CreateTransferEntry(test.ParentAddress, test.ThirdPartyAddress).
+						WithData([]byte("hello")).
+						WithValue(big.NewInt(testConfig.TransferToThirdParty)),
+					test.CreateTransferEntry(test.ParentAddress, test.ChildAddress).
+						WithData(asyncChildArgs).
+						WithGasLimit(gasForAsyncCall).
+						WithGasLocked(testConfig.GasLockCost).
+						WithCallType(vmcommon.AsynchronousCall).
+						WithValue(big.NewInt(testConfig.TransferFromParentToChild)),
+				)
+		})
+}
+
+func TestGasUsed_AsyncCall_CrossShard_ExecuteCall(t *testing.T) {
+	testConfig := asyncTestConfig
+	gasUsedByChild := testConfig.GasUsedByChild
+	gasUsedByParent := testConfig.GasUsedByParent
+	gasForAsyncCall := testConfig.GasProvided - gasUsedByParent - testConfig.GasLockCost
+
+	childAsyncReturnData := [][]byte{{0}, []byte("thirdparty"), []byte("vault")}
+
+	// async cross-shard parent -> child
+	test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContractOnShard(test.ChildAddress, 1).
+				WithBalance(testConfig.ChildBalance).
+				WithConfig(testConfig).
+				WithMethods(contracts.TransferToThirdPartyAsyncChildMock),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithCallerAddr(test.ParentAddress).
+			WithRecipientAddr(test.ChildAddress).
+			WithGasProvided(gasForAsyncCall).
+			WithFunction(contracts.AsyncChildFunction).
+			WithArguments(
+				big.NewInt(testConfig.TransferToThirdParty).Bytes(),
+				[]byte(contracts.AsyncChildData),
+				[]byte{0}).
+			WithCallType(vmcommon.AsynchronousCall).
+			Build()).
+		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+			world.SelfShardID = 1
+			world.CurrentBlockInfo.BlockRound = 1
+			setZeroCodeCosts(host)
+			setAsyncCosts(host, testConfig.GasLockCost)
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok().
+				GasUsed(test.ChildAddress, gasUsedByChild).
+				GasRemaining(0).
+				ReturnData(childAsyncReturnData...).
+				Transfers(
+					test.CreateTransferEntry(test.ChildAddress, test.ThirdPartyAddress).
+						WithData([]byte(contracts.AsyncChildData)).
+						WithValue(big.NewInt(testConfig.TransferToThirdParty)),
+					test.CreateTransferEntry(test.ChildAddress, test.VaultAddress).
+						WithData([]byte{}).
+						WithValue(big.NewInt(testConfig.TransferToVault)),
+					test.CreateTransferEntry(test.ChildAddress, test.ParentAddress).
+						WithData(computeReturnDataForCallback(vmcommon.Ok, childAsyncReturnData)).
+						WithGasLimit(gasForAsyncCall-gasUsedByChild).
+						WithCallType(vmcommon.AsynchronousCallBack).
+						WithValue(big.NewInt(0)),
+				)
+		})
+}
+
+func TestGasUsed_AsyncCall_CrossShard_CallBack(t *testing.T) {
+	testConfig := asyncTestConfig
+	testConfig.GasProvided = 1000
+
+	gasUsedByParent := testConfig.GasUsedByParent
+	gasUsedByChild := testConfig.GasUsedByChild
+	gasForAsyncCall := testConfig.GasProvided - gasUsedByParent - testConfig.GasLockCost
+
+	parentContract := test.CreateMockContractOnShard(test.ParentAddress, 0).
+		WithBalance(testConfig.ParentBalance).
+		WithConfig(testConfig).
+		WithMethods(contracts.PerformAsyncCallParentMock, contracts.CallBackParentMock)
+
+	// async cross shard callback child -> parent
+	test.BuildMockInstanceCallTest(t).
+		WithContracts(parentContract).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithCallerAddr(test.ChildAddress).
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(gasForAsyncCall-gasUsedByChild+asyncBaseTestConfig.GasLockCost).
+			WithFunction("callBack").
+			WithArguments([]byte{}, []byte{0}, []byte("thirdparty"), []byte("vault")).
+			WithCallType(vmcommon.AsynchronousCallBack).
+			Build()).
+		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+			world.SelfShardID = 0
+			world.CurrentBlockInfo.BlockRound = 2
+			// Mock the storage as if the parent was already executed
+			accountHandler, _ := world.GetUserAccount(test.ParentAddress)
+			(accountHandler.(*worldmock.Account)).SaveKeyValue(test.ParentKeyA, test.ParentDataA)
+			(accountHandler.(*worldmock.Account)).SaveKeyValue(test.ParentKeyB, test.ParentDataB)
+			setZeroCodeCosts(host)
+			setAsyncCosts(host, testConfig.GasLockCost)
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok().
+				GasRemaining(testConfig.GasProvided-gasUsedByParent-gasUsedByChild-asyncTestConfig.GasUsedByCallback).
+				ReturnData([]byte{0}, []byte("succ"))
+		})
+}
+
+func TestGasUsed_AsyncCall_BuiltinCall(t *testing.T) {
 	testConfig := asyncBaseTestConfig
 	testConfig.GasProvided = 1000
 
@@ -431,7 +585,6 @@ func TestGasUsed_AsyncCall_BuiltinCall(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCall_BuiltinCallFail(t *testing.T) {
-
 	testConfig := asyncBaseTestConfig
 	testConfig.GasProvided = 1000
 
@@ -470,7 +623,6 @@ func TestGasUsed_AsyncCall_BuiltinCallFail(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCall_BuiltinMultiContractCall(t *testing.T) {
-
 	// TODO no possible yet, reactivate when new async context is merged
 	t.Skip()
 
@@ -515,7 +667,6 @@ func TestGasUsed_AsyncCall_BuiltinMultiContractCall(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCall_ChildFails(t *testing.T) {
-
 	testConfig := asyncTestConfig
 	testConfig.GasProvided = 1000
 
@@ -568,7 +719,6 @@ func TestGasUsed_AsyncCall_ChildFails(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCall_CallBackFails(t *testing.T) {
-
 	testConfig := asyncTestConfig
 
 	expectedGasUsedByParent := testConfig.GasProvided - testConfig.GasUsedByChild
@@ -626,7 +776,6 @@ func TestGasUsed_AsyncCall_CallBackFails(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCall_Recursive(t *testing.T) {
-
 	// TODO no possible yet, reactivate when new async context is merged
 	t.Skip()
 
@@ -677,7 +826,6 @@ func TestGasUsed_AsyncCall_Recursive(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCall_MultiChild(t *testing.T) {
-
 	// TODO no possible yet, reactivate when new async context is merged
 	t.Skip()
 
@@ -776,4 +924,12 @@ func setZeroCodeCosts(host arwen.VMHost) {
 func setAsyncCosts(host arwen.VMHost, gasLock uint64) {
 	host.Metering().GasSchedule().ElrondAPICost.AsyncCallStep = 0
 	host.Metering().GasSchedule().ElrondAPICost.AsyncCallbackGasLock = gasLock
+}
+
+func computeReturnDataForCallback(returnCode vmcommon.ReturnCode, returnData [][]byte) []byte {
+	retData := []byte("@" + hex.EncodeToString([]byte(returnCode.String())))
+	for _, data := range returnData {
+		retData = append(retData, []byte("@"+hex.EncodeToString(data))...)
+	}
+	return retData
 }
