@@ -163,6 +163,11 @@ func NewArwenVM(
 	return host, nil
 }
 
+// GetVersion returns the Arwen version string
+func (host *vmHost) GetVersion() string {
+	return arwen.ArwenVersion
+}
+
 // Crypto returns the VMCrypto instance of the host
 func (host *vmHost) Crypto() crypto.VMCrypto {
 	return host.cryptoHook
