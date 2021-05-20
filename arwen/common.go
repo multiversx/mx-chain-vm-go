@@ -5,6 +5,8 @@ import (
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
+const ArwenVersion = "v1.2"
+
 // BreakpointValue encodes Wasmer runtime breakpoint types
 type BreakpointValue uint64
 
