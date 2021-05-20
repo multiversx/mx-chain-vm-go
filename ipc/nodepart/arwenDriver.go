@@ -211,7 +211,7 @@ func (driver *ArwenDriver) IsClosed() bool {
 }
 
 // GetVersion gets the Arwen version
-func (driver *ArwenDriver) GetVersion() (string, error) {
+func (driver *ArwenDriver) GetVersion() string {
 	driver.operationsMutex.Lock()
 	defer driver.operationsMutex.Unlock()
 
@@ -219,7 +219,8 @@ func (driver *ArwenDriver) GetVersion() (string, error) {
 
 	err := driver.RestartArwenIfNecessary()
 	if err != nil {
-		return "", common.WrapCriticalError(err)
+		log.Warn("GetVersion", "err", err)
+		return ""
 	}
 
 	request := common.NewMessageVersionRequest()
@@ -227,12 +228,12 @@ func (driver *ArwenDriver) GetVersion() (string, error) {
 	if err != nil {
 		log.Warn("GetVersion", "err", err)
 		_ = driver.Close()
-		return "", common.WrapCriticalError(err)
+		return ""
 	}
 
 	typedResponse := response.(*common.MessageVersionResponse)
 
-	return typedResponse.Version, nil
+	return typedResponse.Version
 }
 
 // GasScheduleChange sends a "gas change" request to Arwen and waits for the output

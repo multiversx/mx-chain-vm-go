@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/arwenpart"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
 	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/marshaling"
@@ -75,6 +76,7 @@ func doMain() (int, string) {
 
 	defer logsPart.StopLoop()
 
+	appVersion = arwen.ArwenVersion
 	part, err := arwenpart.NewArwenPart(
 		appVersion,
 		nodeToArwenFile,
