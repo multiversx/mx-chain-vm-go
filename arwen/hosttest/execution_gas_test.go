@@ -515,6 +515,7 @@ func TestGasUsed_AsyncCall_CrossShard(t *testing.T) {
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			world.SelfShardID = 0
 			world.CurrentBlockInfo.BlockRound = 2
+                        // Mock the storage as if the parent was already executed
 			accountHandler, _ := world.GetUserAccount(test.ParentAddress)
 			(accountHandler.(*worldmock.Account)).SaveKeyValue(test.ParentKeyA, test.ParentDataA)
 			(accountHandler.(*worldmock.Account)).SaveKeyValue(test.ParentKeyB, test.ParentDataB)
