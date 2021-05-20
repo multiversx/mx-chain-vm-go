@@ -22,13 +22,11 @@ void callRecursive() {
 	}
 
 	byte iteration = (byte) int64getArgument(0);
-
-  bigIntSetInt64(bigIntCounterID, 0);
-  finishIterationNumber(iteration, 'R');
-  storeIterationNumber(iteration, 'R');
-  incrementIterCounter(smallCounterKey);
-  incrementBigIntCounter(bigIntCounterID);
-
+    bigIntGetInt64(bigIntCounterID);
+    finishIterationNumber(iteration, 'R');
+    storeIterationNumber(iteration, 'R');
+    incrementIterCounter(smallCounterKey);
+    incrementBigIntCounter(bigIntCounterID);
   // Run next iteration.
   byte functionName[] = "callRecursive";
   if (iteration > 0) {
@@ -43,7 +41,6 @@ void callRecursive() {
         (byte*)argumentsLengths,
         arguments
     );
-
     finishResult(result);
   } else {
     bigIntStorageStoreUnsigned(bigIntCounterKey, 32, bigIntCounterID);
@@ -89,7 +86,7 @@ void callRecursiveMutualMethods() {
 void recursiveMethodA() {
 	byte iteration = (byte) int64getArgument(0);
 
-  bigIntSetInt64(bigIntCounterID,0);
+  bigIntGetInt64(bigIntCounterID);
   finishIterationNumber(iteration, 'A');
   storeIterationNumber(iteration, 'A');
   incrementIterCounter(smallCounterKey);
@@ -117,7 +114,7 @@ void recursiveMethodA() {
 void recursiveMethodB() {
 	byte iteration = (byte) int64getArgument(0);
 
-  bigIntSetInt64(bigIntCounterID,0);
+  bigIntGetInt64(bigIntCounterID);
   finishIterationNumber(iteration, 'B');
   storeIterationNumber(iteration, 'B');
   incrementIterCounter(smallCounterKey);

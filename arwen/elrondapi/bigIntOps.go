@@ -614,15 +614,11 @@ func bigIntIsInt64(context unsafe.Pointer, destinationHandle int32) int32 {
 func bigIntGetInt64(context unsafe.Pointer, destinationHandle int32) int64 {
 	bigInt := arwen.GetBigIntContext(context)
 	metering := arwen.GetMeteringContext(context)
-	runtime := arwen.GetRuntimeContext(context)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetInt64
 	metering.UseGas(gasToUse)
 
-	value, err := bigInt.GetOne(destinationHandle)
-	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
-		return -1
-	}
+	value := bigInt.GetOneOrCreate(destinationHandle)
 	return value.Int64()
 }
 
