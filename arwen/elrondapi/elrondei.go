@@ -952,7 +952,8 @@ func transferESDTNFTExecute(
 	dataOffset int32,
 ) int32 {
 	host := arwen.GetVMHost(context)
-	return TransferESDTNFTExecuteWithHost(host,
+	return TransferESDTNFTExecuteWithHost(
+		host,
 		destOffset,
 		tokenIDOffset,
 		tokenIDLen,
@@ -1003,6 +1004,7 @@ func TransferESDTNFTExecuteWithHost(
 		return 1
 	}
 
+	// TODO in the future move the code below in host (API functions should only parse arguments)
 	var contractCallInput *vmcommon.ContractCallInput
 	if functionLength > 0 {
 		contractCallInput, err = prepareIndirectContractCallInput(

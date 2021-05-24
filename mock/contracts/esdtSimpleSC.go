@@ -1,10 +1,8 @@
 package contracts
 
 import (
-	"encoding/binary"
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/elrondapi"
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/testcommon"
@@ -68,52 +66,14 @@ func ExecESDTTransferWithAPICall(instanceMock *mock.InstanceMock, config interfa
 		}
 		input.RecipientAddr = arguments[0]
 
-		runtime := host.Runtime()
-
-		recipientAddr := arguments[0]
-		offsetDest := int32(0)
-		runtime.MemStore(int32(offsetDest), recipientAddr)
-
-		offsetTokenID := offsetDest + int32(len(recipientAddr))
-		tokenLen := int32(len(test.ESDTTestTokenName))
-		runtime.MemStore(offsetTokenID, test.ESDTTestTokenName)
-
-		value := big.NewInt(int64(testConfig.ESDTTokensToTransfer)).Bytes()
-		offsetValue := offsetTokenID + tokenLen
-		valueLen := int32(arwen.BalanceLen)
-		value = arwen.PadBytesLeft(value, arwen.BalanceLen)
-		runtime.MemStore(int32(offsetValue), value)
-
-		functionName := arguments[1]
-		offsetFunction := offsetValue + valueLen
-		funcNameLen := int32(len(functionName))
-		runtime.MemStore(offsetFunction, functionName)
-
-		noOfArguments := 1
-		argumentsLengths := []uint32{uint32(len(arguments[2]))}
-
-		offsetArgumentsLength := offsetFunction + funcNameLen
-		argumentsLengthsAsBytes := make([]byte, noOfArguments*4)
-		binary.LittleEndian.PutUint32(argumentsLengthsAsBytes, argumentsLengths[0])
-		runtime.MemStore(int32(offsetArgumentsLength), argumentsLengthsAsBytes)
-
-		argumentsData := make([]byte, argumentsLengths[0])
-		copy(argumentsData, arguments[2])
-		offsetArgumentsData := offsetArgumentsLength + int32(len(argumentsLengthsAsBytes))
-		runtime.MemStore(offsetArgumentsData, argumentsData)
-
-		elrondapi.TransferESDTNFTExecuteWithHost(host,
-			offsetDest,
-			offsetTokenID,
-			tokenLen,
-			offsetValue,
-			0,
-			int64(testConfig.GasProvidedToChild),
-			offsetFunction,
-			funcNameLen,
-			1,
-			offsetArgumentsLength,
-			offsetArgumentsData)
+		elrondapi.TransferESDTNFTExecute(
+			host,
+			arguments[0],
+			test.ESDTTestTokenName,
+			testConfig.ESDTTokensToTransfer,
+			arguments[1],
+			[][]byte{arguments[2]},
+			testConfig.GasProvidedToChild)
 
 		return instance
 	})

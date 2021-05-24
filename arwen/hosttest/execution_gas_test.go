@@ -354,7 +354,7 @@ func TestGasUsed_ESTD_WithRevert(t *testing.T) {
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
 				ReturnCode(vmcommon.ExecutionFailed).
-				ReturnMessage("insufficient funds").
+				ReturnMessage("execution failed").
 				GasRemaining(0)
 		})
 }
