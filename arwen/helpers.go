@@ -10,7 +10,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
-	"github.com/ElrondNetwork/elrond-go-logger"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 )
 
 // Zero is the big integer 0
@@ -177,14 +177,18 @@ func GetStorageContext(vmHostPtr unsafe.Pointer) StorageContext {
 
 // WithFault returns true if the error is not nil, and uses the remaining gas if the execution has failed
 func WithFault(err error, vmHostPtr unsafe.Pointer, failExecution bool) bool {
+	runtime := GetVMHost(vmHostPtr)
+	return WithFaultWithHost(runtime, err, failExecution)
+}
+
+func WithFaultWithHost(host VMHost, err error, failExecution bool) bool {
 	if err == nil {
 		return false
 	}
 
 	if failExecution {
-		runtime := GetRuntimeContext(vmHostPtr)
-		metering := GetMeteringContext(vmHostPtr)
-
+		runtime := host.Runtime()
+		metering := host.Metering()
 		metering.UseGas(metering.GasLeft())
 		runtime.FailExecution(err)
 	}

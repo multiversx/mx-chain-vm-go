@@ -25,6 +25,34 @@ func FailChildMock(instanceMock *mock.InstanceMock, config interface{}) {
 	})
 }
 
+// FailChildAndBurnESDTMock is an exposed mock contract method
+func FailChildAndBurnESDTMock(instanceMock *mock.InstanceMock, config interface{}) {
+	instanceMock.AddMockMethod("failAndBurn", func() *mock.InstanceMock {
+		host := instanceMock.Host
+		instance := mock.GetMockInstance(host)
+
+		runtime := host.Runtime()
+
+		input := test.DefaultTestContractCallInput()
+		input.CallerAddr = runtime.GetSCAddress()
+		input.GasProvided = runtime.GetVMInput().GasProvided / 2
+		input.Arguments = [][]byte{
+			test.ESDTTestTokenName,
+			runtime.Arguments()[0],
+		}
+		input.RecipientAddr = host.Runtime().GetSCAddress()
+		input.Function = "ESDTLocalBurn"
+
+		_, _, err := host.ExecuteOnDestContext(input)
+		if err != nil {
+			host.Runtime().FailExecution(err)
+		}
+
+		host.Runtime().FailExecution(errors.New("forced fail"))
+		return instance
+	})
+}
+
 // ExecOnSameCtxParentMock is an exposed mock contract method
 func ExecOnSameCtxParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 	testConfig := config.(DirectCallGasTestConfig)

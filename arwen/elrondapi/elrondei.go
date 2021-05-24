@@ -952,6 +952,34 @@ func transferESDTNFTExecute(
 	dataOffset int32,
 ) int32 {
 	host := arwen.GetVMHost(context)
+	return TransferESDTNFTExecuteWithHost(host,
+		destOffset,
+		tokenIDOffset,
+		tokenIDLen,
+		valueOffset,
+		nonce,
+		gasLimit,
+		functionOffset,
+		functionLength,
+		numArguments,
+		argumentsLengthOffset,
+		dataOffset)
+}
+
+func TransferESDTNFTExecuteWithHost(
+	host arwen.VMHost,
+	destOffset int32,
+	tokenIDOffset int32,
+	tokenIDLen int32,
+	valueOffset int32,
+	nonce int64,
+	gasLimit int64,
+	functionOffset int32,
+	functionLength int32,
+	numArguments int32,
+	argumentsLengthOffset int32,
+	dataOffset int32,
+) int32 {
 	runtime := host.Runtime()
 	metering := host.Metering()
 	output := host.Output()
@@ -961,17 +989,17 @@ func transferESDTNFTExecute(
 
 	sender := runtime.GetSCAddress()
 	dest, err := runtime.MemLoad(destOffset, arwen.AddressLen)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultWithHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
 	valueBytes, err := runtime.MemLoad(valueOffset, arwen.BalanceLen)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultWithHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
 	tokenIdentifier, err := runtime.MemLoad(tokenIDOffset, tokenIDLen)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultWithHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -990,7 +1018,7 @@ func transferESDTNFTExecute(
 			dataOffset,
 			false,
 		)
-		if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
+		if arwen.WithFaultWithHost(host, err, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 			return 1
 		}
 
@@ -1003,7 +1031,7 @@ func transferESDTNFTExecute(
 	}
 
 	gasLimitForExec, err := output.TransferESDT(dest, sender, tokenIdentifier, uint64(nonce), big.NewInt(0).SetBytes(valueBytes), contractCallInput)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultWithHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -1016,7 +1044,7 @@ func transferESDTNFTExecute(
 			_, _, err = host.ExecuteESDTTransfer(sender, dest, tokenIdentifier, uint64(nonce), big.NewInt(0).SetBytes(valueBytes), vmcommon.AsynchronousCallBack, true)
 			if err != nil {
 				logEEI.Warn("ESDT revert failed - forced fail execution for context", "error", err)
-				_ = arwen.WithFault(err, context, true)
+				_ = arwen.WithFaultWithHost(host, err, true)
 			}
 			return 1
 		}
