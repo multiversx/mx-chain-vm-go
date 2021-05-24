@@ -38,27 +38,6 @@
 				"gas": "*",
 				"refund": "*"
 			}
-		},
-		{
-			"step": "scCall",
-			"txId": "get-virtual-reserves",
-			"tx": {
-				"from": "address:user1",
-				"to": "sc:farm_contract",
-				"value": "0",
-				"function": "getVirtualReserves",
-				"arguments": [],
-				"gasLimit": "100,000,000",
-				"gasPrice": "0"
-			},
-			"expect": {
-				"out": [
-					"199,900,000"
-				],
-				"status": "",
-				"gas": "*",
-				"refund": "*"
-			}
 		}
 	]
 }

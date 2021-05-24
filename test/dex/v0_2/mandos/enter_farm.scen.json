@@ -24,31 +24,10 @@
 			"expect": {
 				"out": [
 					"0x01",
-					"0x0000000b4641524d2d61626364656600000000000000010000000405f5dd18"
+					"0x0000000b4641524d2d61626364656600000000000000010000000405f5e100"
 				],
 				"status": "0",
 				"message": "",
-				"gas": "*",
-				"refund": "*"
-			}
-		},
-		{
-			"step": "scCall",
-			"txId": "get-virtual-reserves",
-			"tx": {
-				"from": "address:user1",
-				"to": "sc:farm_contract",
-				"value": "0",
-				"function": "getVirtualReserves",
-				"arguments": [],
-				"gasLimit": "100,000,000",
-				"gasPrice": "0"
-			},
-			"expect": {
-				"out": [
-					"100,000,000"
-				],
-				"status": "",
 				"gas": "*",
 				"refund": "*"
 			}
@@ -76,27 +55,6 @@
 				],
 				"status": "0",
 				"message": "",
-				"gas": "*",
-				"refund": "*"
-			}
-		},
-		{
-			"step": "scCall",
-			"txId": "get-virtual-reserves",
-			"tx": {
-				"from": "address:user1",
-				"to": "sc:farm_contract",
-				"value": "0",
-				"function": "getVirtualReserves",
-				"arguments": [],
-				"gasLimit": "100,000,000",
-				"gasPrice": "0"
-			},
-			"expect": {
-				"out": [
-					"200,000,000"
-				],
-				"status": "",
 				"gas": "*",
 				"refund": "*"
 			}

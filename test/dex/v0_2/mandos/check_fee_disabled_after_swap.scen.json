@@ -127,7 +127,9 @@
 						"str:owner": "address:owner",
 						"str:minimum_farming_epochs": "2",
 						"str:burn_tokens_gas_limit": "5,000,000",
-						"str:locked_rewards_liquidity_mulitplier": "2",
+						"str:mint_tokens_gas_limit": "5,000,000",
+						"str:locked_rewards_apr_multiplier": "2",
+						"str:division_safety_constant": "1000000000000",
 						"str:penalty_percent": "10"
 					},
 					"code": "file:../output/elrond_dex_farm.wasm"

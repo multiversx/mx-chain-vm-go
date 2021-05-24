@@ -41,8 +41,11 @@
                         "str:last_reward_block_nonce": "0",
                         "str:minimum_farming_epochs": "2",
                         "str:burn_tokens_gas_limit": "5,000,000",
-                        "str:locked_rewards_liquidity_mulitplier": "2",
-                        "str:penalty_percent": "10"
+                        "str:mint_tokens_gas_limit": "5,000,000",
+                        "str:locked_rewards_apr_multiplier": "2",
+                        "str:produce_rewards_enabled": "1",
+                        "str:penalty_percent": "10",
+                        "str:division_safety_constant": "1000000000000"
                     },
                     "code": "file:../../output/elrond_dex_farm.wasm",
                     "owner": "address:owner"

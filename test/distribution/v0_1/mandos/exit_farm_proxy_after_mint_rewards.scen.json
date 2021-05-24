@@ -28,6 +28,26 @@
             }
         },
         {
+            "step": "scCall",
+            "txId": "14",
+            "tx": {
+                "from": "address:owner",
+                "to": "sc:farm_contract",
+                "value": "0",
+                "function": "start_produce_rewards",
+                "arguments": [],
+                "gasLimit": "1,000,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "0",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
             "step": "setState",
             "currentBlockInfo": {
                 "blockEpoch": "10",

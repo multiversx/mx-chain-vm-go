@@ -46,7 +46,8 @@
 					"sc:router_contract",
 					"str:WEGLD-abcdef",
 					"str:LPTOK-abcdef",
-					"sc:router_contract"
+					"sc:router_contract",
+					"1000000000000"
 				],
 				"gasLimit": "100,000,000",
 				"gasPrice": "0"
