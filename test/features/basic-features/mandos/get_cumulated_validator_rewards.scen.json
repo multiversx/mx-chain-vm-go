@@ -5,7 +5,7 @@
         {
             "step": "setState",
             "accounts": {
-                "address:features_contract": {
+                "sc:basic-features": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {},
@@ -24,9 +24,9 @@
             "txId": "0",
             "tx": {
                 "from": "address:viewer",
-                "to": "address:features_contract",
+                "to": "sc:basic-features",
                 "value": "0",
-                "function": "storage_load_cumulated_validator_reward",
+                "function": "get_cumulated_validator_rewards",
                 "arguments": [],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
@@ -43,7 +43,7 @@
             "step": "validatorReward",
             "txId": "validatorReward-1",
             "tx": {
-                "to": "address:features_contract",
+                "to": "sc:basic-features",
                 "value": "100,000,000"
             }
         },
@@ -52,9 +52,9 @@
             "txId": "0",
             "tx": {
                 "from": "address:viewer",
-                "to": "address:features_contract",
+                "to": "sc:basic-features",
                 "value": "0",
-                "function": "storage_load_cumulated_validator_reward",
+                "function": "get_cumulated_validator_rewards",
                 "arguments": [],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
@@ -71,7 +71,7 @@
             "step": "validatorReward",
             "txId": "validatorReward-1",
             "tx": {
-                "to": "address:features_contract",
+                "to": "sc:basic-features",
                 "value": "300"
             }
         },
@@ -80,9 +80,9 @@
             "txId": "0",
             "tx": {
                 "from": "address:viewer",
-                "to": "address:features_contract",
+                "to": "sc:basic-features",
                 "value": "0",
-                "function": "storage_load_cumulated_validator_reward",
+                "function": "get_cumulated_validator_rewards",
                 "arguments": [],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"

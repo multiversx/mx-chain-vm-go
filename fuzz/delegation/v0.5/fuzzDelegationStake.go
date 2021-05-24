@@ -17,14 +17,14 @@ func (pfe *fuzzDelegationExecutor) stake(delegIndex int, amount *big.Int) error 
 		"step": "transfer",
 		"txId": "%d",
 		"tx": {
-			"from": "''%s",
-			"to": "''%s",
+			"from": "%s",
+			"to": "%s",
 			"value": "%d"
 		}
 	}`,
 		pfe.nextTxIndex(),
-		string(pfe.faucetAddress),
-		string(pfe.delegatorAddress(delegIndex)),
+		pfe.faucetAddress,
+		pfe.delegatorAddress(delegIndex),
 		amount,
 	))
 	if err != nil {
@@ -37,8 +37,8 @@ func (pfe *fuzzDelegationExecutor) stake(delegIndex int, amount *big.Int) error 
 		"step": "scCall",
 		"txId": "%d",
 		"tx": {
-			"from": "''%s",
-			"to": "''%s",
+			"from": "%s",
+			"to": "%s",
 			"value": "%d",
 			"function": "stake",
 			"arguments": [],
@@ -47,8 +47,8 @@ func (pfe *fuzzDelegationExecutor) stake(delegIndex int, amount *big.Int) error 
 		}
 	}`,
 		pfe.nextTxIndex(),
-		string(pfe.delegatorAddress(delegIndex)),
-		string(pfe.delegationContractAddress),
+		pfe.delegatorAddress(delegIndex),
+		pfe.delegationContractAddress,
 		amount,
 	))
 	pfe.log("stake, delegator: %d, amount: %d", delegIndex, amount)
@@ -62,8 +62,8 @@ func (pfe *fuzzDelegationExecutor) unStake(delegatorIndex int, stake *big.Int) e
 		"step": "scCall",
 		"txId": "%d",
 		"tx": {
-			"from": "''%s",
-			"to": "''%s",
+			"from": "%s",
+			"to": "%s",
 			"value": "0",
 			"function": "unStake",
 			"arguments": ["%d"],
@@ -72,8 +72,8 @@ func (pfe *fuzzDelegationExecutor) unStake(delegatorIndex int, stake *big.Int) e
 		}
 	}`,
 		pfe.nextTxIndex(),
-		string(pfe.delegatorAddress(delegatorIndex)),
-		string(pfe.delegationContractAddress),
+		pfe.delegatorAddress(delegatorIndex),
+		pfe.delegationContractAddress,
 		stake,
 	))
 	if err != nil {
@@ -104,8 +104,8 @@ func (pfe *fuzzDelegationExecutor) unBond(delegatorIndex int) error {
 		"step": "scCall",
 		"txId": "%d",
 		"tx": {
-			"from": "''%s",
-			"to": "''%s",
+			"from": "%s",
+			"to": "%s",
 			"value": "0",
 			"function": "unBond",
 			"arguments": [],
@@ -114,8 +114,8 @@ func (pfe *fuzzDelegationExecutor) unBond(delegatorIndex int) error {
 		}
 	}`,
 		pfe.nextTxIndex(),
-		string(pfe.delegatorAddress(delegatorIndex)),
-		string(pfe.delegationContractAddress),
+		pfe.delegatorAddress(delegatorIndex),
+		pfe.delegationContractAddress,
 	))
 	if err != nil {
 		return err
@@ -138,14 +138,14 @@ func (pfe *fuzzDelegationExecutor) unBond(delegatorIndex int) error {
 			"step": "transfer",
 			"txId": "%d",
 			"tx": {
-				"from": "''%s",
-				"to": "''%s",
+				"from": "%s",
+				"to": "%s",
 				"value": "%d"
 			}
 		}`,
 				pfe.nextTxIndex(),
-				string(pfe.delegatorAddress(delegatorIndex)),
-				string(pfe.withdrawTargetAddress),
+				pfe.delegatorAddress(delegatorIndex),
+				pfe.withdrawTargetAddress,
 				stakeWithdrawn,
 			))
 			if err != nil {
@@ -169,20 +169,20 @@ func (pfe *fuzzDelegationExecutor) getUserStakeOfType(delegatorIndex int, fundTy
 		"step": "scCall",
 		"txId": "%d",
 		"tx": {
-			"from": "''%s",
-			"to": "''%s",
+			"from": "%s",
+			"to": "%s",
 			"value": "0",
 			"function": "%s",
-			"arguments": ["''%s"],
+			"arguments": ["%s"],
 			"gasLimit": "100,000,000",
 			"gasPrice": "0"
 		}
 	}`,
 		pfe.nextTxIndex(),
-		string(pfe.delegatorAddress(delegatorIndex)),
-		string(pfe.delegationContractAddress),
+		pfe.delegatorAddress(delegatorIndex),
+		pfe.delegationContractAddress,
 		fundType,
-		string(pfe.delegatorAddress(delegatorIndex)),
+		pfe.delegatorAddress(delegatorIndex),
 	))
 	if err != nil {
 		return nil, err
@@ -202,19 +202,19 @@ func (pfe *fuzzDelegationExecutor) printUserStakeByType(delegatorIndex int) {
 		"step": "scCall",
 		"txId": "%d",
 		"tx": {
-			"from": "''%s",
-			"to": "''%s",
+			"from": "%s",
+			"to": "%s",
 			"value": "0",
 			"function": "getUserStakeByType",
-			"arguments": ["''%s"],
+			"arguments": ["%s"],
 			"gasLimit": "100,000,000",
 			"gasPrice": "0"
 		}
 	}`,
 		pfe.nextTxIndex(),
-		string(pfe.ownerAddress),
-		string(pfe.delegationContractAddress),
-		string(pfe.delegatorAddress(delegatorIndex)),
+		pfe.ownerAddress,
+		pfe.delegationContractAddress,
+		pfe.delegatorAddress(delegatorIndex),
 	))
 	if err != nil {
 		pfe.log("getUserStakeByType error")
@@ -231,8 +231,8 @@ func (pfe *fuzzDelegationExecutor) printTotalStakeByType() {
 		"step": "scCall",
 		"txId": "%d",
 		"tx": {
-			"from": "''%s",
-			"to": "''%s",
+			"from": "%s",
+			"to": "%s",
 			"value": "0",
 			"function": "getTotalStakeByType",
 			"arguments": [],
@@ -241,8 +241,8 @@ func (pfe *fuzzDelegationExecutor) printTotalStakeByType() {
 		}
 	}`,
 		pfe.nextTxIndex(),
-		string(pfe.ownerAddress),
-		string(pfe.delegationContractAddress),
+		pfe.ownerAddress,
+		pfe.delegationContractAddress,
 	))
 	if err != nil {
 		pfe.log("getTotalStakeByType error")

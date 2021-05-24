@@ -89,6 +89,8 @@ type BlockchainContext interface {
 	SaveCompiledCode(codeHash []byte, code []byte)
 	GetCompiledCode(codeHash []byte) (bool, []byte)
 	GetESDTToken(address []byte, tokenID []byte, nonce uint64) (*esdt.ESDigitalToken, error)
+	GetUserAccount(address []byte) (vmcommon.UserAccountHandler, error)
+	ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
 }
 
 // RuntimeContext defines the functionality needed for interacting with the runtime context
