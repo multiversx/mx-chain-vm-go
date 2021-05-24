@@ -282,7 +282,7 @@ func TestMeteringContext_GasUsed_NoStacking(t *testing.T) {
 	require.Equal(t, uint64(1401), gasUsedByContract)
 }
 
-func setUpStackOneLevel(t *testing.T, parentInput *vmcommon.ContractCallInput) (*meteringContext, *outputContext, *contextmock.RuntimeContextMock, uint64, *vmcommon.ContractCallInput) {
+func setUpStackOneLevel(t *testing.T, parentInput *vmcommon.ContractCallInput, childInput *vmcommon.ContractCallInput) (*contextmock.VMHostMock, *contextmock.RuntimeContextMock, uint64) {
 	t.Parallel()
 
 	mockRuntime := &contextmock.RuntimeContextMock{}
@@ -290,9 +290,6 @@ func setUpStackOneLevel(t *testing.T, parentInput *vmcommon.ContractCallInput) (
 	host := &contextmock.VMHostMock{
 		RuntimeContext: mockRuntime,
 	}
-
-	output, _ := NewOutputContext(host)
-	host.OutputContext = output
 
 	contractSize := uint64(1000)
 	contract := make([]byte, contractSize)
@@ -308,36 +305,36 @@ func setUpStackOneLevel(t *testing.T, parentInput *vmcommon.ContractCallInput) (
 	zeroCodeCosts(metering)
 
 	parentInput.GasProvided = 4000
-	metering.InitStateFromContractCallInput(&parentInput.VMInput)
-	require.Equal(t, 4000, int(metering.initialGasProvided))
+	host.MeteringContext.InitStateFromContractCallInput(&parentInput.VMInput)
+	_ = host.MeteringContext.DeductInitialGasForExecution(contract)
 
-	_ = metering.DeductInitialGasForExecution(contract)
+	parentPointsBeforeStacking := initStateFromChildGetParentPointsBeforeStacking(t, host, childInput)
+	return host, mockRuntime, parentPointsBeforeStacking
+}
 
-	require.Equal(t, 3000, int(metering.GasLeft()))
+func initStateFromChildGetParentPointsBeforeStacking(t *testing.T, host *contextmock.VMHostMock, childInput *vmcommon.ContractCallInput)(uint64){
 
-	metering.UseGas(400)
-	require.Equal(t, 2600, int(metering.GasLeft()))
+	require.Equal(t, 3000, int(host.MeteringContext.GasLeft()))
 
-	gasSpentByContract := metering.GasSpentByContract()
+	host.MeteringContext.UseGas(400)
+	require.Equal(t, 2600, int(host.MeteringContext.GasLeft()))
+
+	gasSpentByContract := host.MeteringContext.GasSpentByContract()
 	require.Equal(t, 1400, int(gasSpentByContract))
 
-	childInput := &vmcommon.ContractCallInput{VMInput: vmcommon.VMInput{}}
-	childInput.GasProvided = 500
-	childInput.CallerAddr = parentInput.RecipientAddr
-
-	metering.UseGas(childInput.GasProvided)
-	parentPointsBeforeStacking := mockRuntime.GetPointsUsed()
+	host.MeteringContext.UseGas(childInput.GasProvided)
+	parentPointsBeforeStacking := host.RuntimeContext.GetPointsUsed()
 	require.Equal(t, 900, int(parentPointsBeforeStacking))
-	require.Equal(t, 2100, int(metering.GasLeft()))
+	require.Equal(t, 2100, int(host.MeteringContext.GasLeft()))
 
-	mockRuntime.SCAddress = []byte("child")
-	mockRuntime.SetPointsUsed(0)
-	mockRuntime.SetVMInput(&childInput.VMInput)
-	metering.PushState()
-	metering.InitStateFromContractCallInput(&childInput.VMInput)
-	require.Equal(t, 500, int(metering.initialGasProvided))
+	host.RuntimeContext.SetSCAddress([]byte("child"))
+	host.RuntimeContext.SetPointsUsed(0)
+	host.RuntimeContext.SetVMInput(&childInput.VMInput)
+	host.MeteringContext.PushState()
+	host.MeteringContext.InitStateFromContractCallInput(&childInput.VMInput)
+	require.Equal(t, 500, int(host.MeteringContext.GetGasProvided()))
 
-	return metering, output, mockRuntime, parentPointsBeforeStacking, childInput
+	return parentPointsBeforeStacking
 }
 
 func TestMeteringContext_GasUsed_StackOneLevel(t *testing.T) {
@@ -346,9 +343,16 @@ func TestMeteringContext_GasUsed_StackOneLevel(t *testing.T) {
 		VMInput: vmcommon.VMInput{},
 	}
 
-	metering, output, mockRuntime, parentPointsBeforeStacking, _ := setUpStackOneLevel(t, parentInput)
+	childInput := &vmcommon.ContractCallInput{VMInput: vmcommon.VMInput{}}
+	childInput.GasProvided = 500
+	childInput.CallerAddr = parentInput.RecipientAddr
 
-	// child execution begins
+	host, mockRuntime, parentPointsBeforeStacking := setUpStackOneLevel(t, parentInput, childInput)
+
+	metering := host.MeteringContext
+	output, _ := NewOutputContext(host)
+	host.OutputContext = output
+
 	_ = metering.DeductInitialGasForExecution(make([]byte, 100))
 	require.Equal(t, 400, int(metering.GasLeft()))
 
@@ -391,7 +395,7 @@ func TestMeteringContext_GasUsed_StackOneLevel(t *testing.T) {
 	gasRemaining = math.SubUint64(parentInput.GasProvided, gasSpentByContract)
 	// calculate gas remaining
 
-	require.Equal(t, int(gasRemaining), int(output.GetVMOutput().GasRemaining))
+	require.Equal(t, int(gasRemaining), int(metering.GasLeft()))
 }
 
 func TestMeteringContext_UpdateGasStateOnFailure_StackOneLevel(t *testing.T) {
@@ -399,8 +403,16 @@ func TestMeteringContext_UpdateGasStateOnFailure_StackOneLevel(t *testing.T) {
 	parentInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{},
 	}
-	metering, output, mockRuntime, parentPointsBeforeStacking, _ := setUpStackOneLevel(t, parentInput)
-	// child execution begins
+
+	childInput := &vmcommon.ContractCallInput{VMInput: vmcommon.VMInput{}}
+	childInput.GasProvided = 500
+	childInput.CallerAddr = parentInput.RecipientAddr
+
+	host, mockRuntime, parentPointsBeforeStacking := setUpStackOneLevel(t, parentInput, childInput)
+
+	metering := host.MeteringContext
+	output, _ := NewOutputContext(host)
+	host.OutputContext = output
 
 	_ = metering.DeductInitialGasForExecution(make([]byte, 600))
 	require.Equal(t, 500, int(metering.GasLeft()))
@@ -441,7 +453,7 @@ func TestMeteringContext_UpdateGasStateOnFailure_StackOneLevel(t *testing.T) {
 	gasRemaining = math.SubUint64(parentInput.GasProvided, gasSpentByContract)
 	// calculate gas remaining
 
-	require.Equal(t, int(gasRemaining), int(output.GetVMOutput().GasRemaining))
+	require.Equal(t, int(gasRemaining), int(metering.GasLeft()))
 }
 
 func zeroCodeCosts(context *meteringContext) {
