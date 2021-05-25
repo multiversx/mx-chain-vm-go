@@ -979,7 +979,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct(t *testing.T) {
 				ReturnData(returnData...).
 				Storage(storeEntries...)
 
-			require.Equal(t, int64(recursiveCalls+1), host.BigInt().GetOneOrCreate(16).Int64())
+			require.Equal(t, int64(recursiveCalls+1), host.ManagedType().GetBigIntOrCreate(16).Int64())
 		})
 }
 
@@ -1011,7 +1011,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct_ErrMaxInstances(t *test
 							WithKey([]byte(fmt.Sprintf("Rkey%03d.........................", recursiveCalls))).
 							WithValue([]byte(fmt.Sprintf("Rvalue%03d", recursiveCalls))),
 					)
-				require.Equal(t, int64(1), host.BigInt().GetOneOrCreate(16).Int64())
+				require.Equal(t, int64(1), host.ManagedType().GetBigIntOrCreate(16).Int64())
 			} else {
 				verify.
 					ReturnCode(vmcommon.ExecutionFailed).
@@ -1096,7 +1096,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_Methods(t *testing.T) {
 				ReturnData(returnData...).
 				Storage(storeEntries...)
 
-			require.Equal(t, int64(recursiveCalls+1), host.BigInt().GetOneOrCreate(16).Int64())
+			require.Equal(t, int64(recursiveCalls+1), host.ManagedType().GetBigIntOrCreate(16).Int64())
 		})
 }
 
@@ -1184,7 +1184,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs(t *testing.T) {
 				ReturnData(returnData...).
 				Storage(storeEntries...)
 
-			require.Equal(t, int64(recursiveCalls+1), host.BigInt().GetOneOrCreate(88).Int64())
+			require.Equal(t, int64(recursiveCalls+1), host.ManagedType().GetBigIntOrCreate(88).Int64())
 		})
 }
 
@@ -1371,7 +1371,7 @@ func TestExecution_ExecuteOnDestContext_OutOfGas(t *testing.T) {
 						test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
 						test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyB).WithValue(test.ParentDataB),
 					)
-				require.Equal(t, int64(42), host.BigInt().GetOneOrCreate(12).Int64())
+				require.Equal(t, int64(42), host.ManagedType().GetBigIntOrCreate(12).Int64())
 			} else {
 				verify.
 					ReturnCode(vmcommon.ExecutionFailed).
@@ -1655,7 +1655,7 @@ func TestExecution_ExecuteOnDestContext_Recursive_Direct(t *testing.T) {
 				ReturnData(returnData...).
 				Storage(storeEntries...)
 
-			require.Equal(t, int64(1), host.BigInt().GetOneOrCreate(16).Int64())
+			require.Equal(t, int64(1), host.ManagedType().GetBigIntOrCreate(16).Int64())
 		})
 }
 
@@ -1715,7 +1715,7 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_Methods(t *testing.T) {
 				ReturnData(returnData...).
 				Storage(storeEntries...)
 
-			require.Equal(t, int64(0), host.BigInt().GetOneOrCreate(16).Int64())
+			require.Equal(t, int64(0), host.ManagedType().GetBigIntOrCreate(16).Int64())
 		})
 }
 
@@ -1796,7 +1796,7 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs(t *testing.T) {
 				ReturnData(returnData...).
 				Storage(storeEntries...)
 
-			require.Equal(t, int64(1), host.BigInt().GetOneOrCreate(88).Int64())
+			require.Equal(t, int64(1), host.ManagedType().GetBigIntOrCreate(88).Int64())
 		})
 }
 
