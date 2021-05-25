@@ -355,6 +355,8 @@ func TestGasUsed_ESTD_WithRevert(t *testing.T) {
 			verify.
 				ReturnCode(vmcommon.ExecutionFailed).
 				ReturnMessageContains("forced fail").
+				ReturnMessageContains("execution failed").
+				ReturnMessageContains("insufficient funds").
 				GasRemaining(0)
 		})
 }
