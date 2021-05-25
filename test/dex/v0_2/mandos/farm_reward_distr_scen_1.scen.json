@@ -60,7 +60,8 @@
 						"str:penalty_percent": "0",
 						"str:division_safety_constant": "1000000000000",
 						"str:per_block_reward_amount": "100",
-						"str:produce_rewards_enabled": "1"
+						"str:produce_rewards_enabled": "1",
+						"str:create_farm_tokens_gas_limit": "5000000"
 					},
 					"code": "file:../output/elrond_dex_farm.wasm",
 					"owner": "address:owner"

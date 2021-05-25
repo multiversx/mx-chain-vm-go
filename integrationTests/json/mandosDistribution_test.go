@@ -1,6 +1,7 @@
 package vmjsonintegrationtest
 
 import (
+	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"testing"
 )
 
@@ -17,5 +18,6 @@ func TestDistribution_v0_1_single(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	runSingleTest(t, "distribution/v0_1/mandos", "claim_rewards_proxy_after_enter_with_lock_after_mint_rewards.scen.json")
+	arwen.SetLoggingForTests()
+	runSingleTest(t, "distribution/v0_1/mandos", "add_liquidity_proxy.scen.json")
 }
