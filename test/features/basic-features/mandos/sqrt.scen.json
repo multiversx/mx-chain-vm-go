@@ -1,6 +1,6 @@
 {
     "name": "sqrt",
-    
+    "gasSchedule": "v3",
     "steps": [
         {
             "step": "setState",
