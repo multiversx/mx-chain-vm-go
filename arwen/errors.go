@@ -153,8 +153,11 @@ var ErrTransferValueOnESDTCall = errors.New("transfer value on esdt call")
 // ErrNoBigIntUnderThisHandle signals that there is no bigInt for the given handle
 var ErrNoBigIntUnderThisHandle = errors.New("no bigInt under the given handle")
 
-// ErrBufNotBigEnough signals that the buffer is too small for given values.
+// ErrBufNotBigEnough signals that the buffer is too small for given values
 var ErrBufNotBigEnough = errors.New("buffer is too small for given values")
 
-// ErrLengthsAreNotTheSame signals that lengths of the verified variables are not the same.
+// ErrLengthsAreNotTheSame signals that lengths of the verified variables are not the same
 var ErrLengthsAreNotTheSame = errors.New("lengths of variables are not the same")
+
+// ErrNoEllipticCurveUnderThisHandle singals that there is no elliptic curve for the given handle
+var ErrNoEllipticCurveUnderThisHandle = errors.New("no elliptic curve under the given handle")
