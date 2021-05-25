@@ -989,25 +989,25 @@ func TransferESDTNFTExecuteWithHost(
 	metering.UseGas(gasToUse)
 
 	sender := runtime.GetSCAddress()
-	dest, err := runtime.MemLoad(destOffset, arwen.AddressLen)
-	if arwen.WithFaultWithHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	dest, executeErr := runtime.MemLoad(destOffset, arwen.AddressLen)
+	if arwen.WithFaultWithHost(host, executeErr, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
-	valueBytes, err := runtime.MemLoad(valueOffset, arwen.BalanceLen)
-	if arwen.WithFaultWithHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	valueBytes, executeErr := runtime.MemLoad(valueOffset, arwen.BalanceLen)
+	if arwen.WithFaultWithHost(host, executeErr, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
-	tokenIdentifier, err := runtime.MemLoad(tokenIDOffset, tokenIDLen)
-	if arwen.WithFaultWithHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	tokenIdentifier, executeErr := runtime.MemLoad(tokenIDOffset, tokenIDLen)
+	if arwen.WithFaultWithHost(host, executeErr, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
 	// TODO in the future move the code below in host (API functions should only parse arguments)
 	var contractCallInput *vmcommon.ContractCallInput
 	if functionLength > 0 {
-		contractCallInput, err = prepareIndirectContractCallInput(
+		contractCallInput, executeErr = prepareIndirectContractCallInput(
 			host,
 			sender,
 			big.NewInt(0),
@@ -1020,7 +1020,7 @@ func TransferESDTNFTExecuteWithHost(
 			dataOffset,
 			false,
 		)
-		if arwen.WithFaultWithHost(host, err, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
+		if arwen.WithFaultWithHost(host, executeErr, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 			return 1
 		}
 
@@ -1032,21 +1032,21 @@ func TransferESDTNFTExecuteWithHost(
 		}
 	}
 
-	gasLimitForExec, err := output.TransferESDT(dest, sender, tokenIdentifier, uint64(nonce), big.NewInt(0).SetBytes(valueBytes), contractCallInput)
-	if arwen.WithFaultWithHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	gasLimitForExec, executeErr := output.TransferESDT(dest, sender, tokenIdentifier, uint64(nonce), big.NewInt(0).SetBytes(valueBytes), contractCallInput)
+	if arwen.WithFaultWithHost(host, executeErr, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
 	if host.AreInSameShard(sender, dest) && contractCallInput != nil && host.Blockchain().IsSmartContract(dest) {
 		contractCallInput.GasProvided = gasLimitForExec
 		logEEI.Trace("ESDT post-transfer execution begin")
-		_, _, err = host.ExecuteOnDestContext(contractCallInput)
-		if err != nil {
-			logEEI.Trace("ESDT post-transfer execution failed", "error", err)
-			_, _, err = host.ExecuteESDTTransfer(sender, dest, tokenIdentifier, uint64(nonce), big.NewInt(0).SetBytes(valueBytes), vmcommon.AsynchronousCallBack, true)
-			if err != nil {
-				logEEI.Warn("ESDT revert failed - forced fail execution for context", "error", err)
-				_ = arwen.WithFaultWithHost(host, err, true)
+		_, _, executeErr = host.ExecuteOnDestContext(contractCallInput)
+		if executeErr != nil {
+			logEEI.Trace("ESDT post-transfer execution failed", "error", executeErr)
+			_, _, revertErr := host.ExecuteESDTTransfer(sender, dest, tokenIdentifier, uint64(nonce), big.NewInt(0).SetBytes(valueBytes), vmcommon.AsynchronousCallBack, true)
+			if revertErr != nil {
+				logEEI.Warn("ESDT revert failed - forced fail execution for context", "error", executeErr)
+				_ = arwen.WithFaultWithHost(host, arwen.WrapError(executeErr).WrapWithError(revertErr), true)
 			}
 			return 1
 		}

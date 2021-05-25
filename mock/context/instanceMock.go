@@ -46,7 +46,7 @@ func (instance *InstanceMock) AddMockMethodWithError(name string, method func() 
 	wrappedMethod := func(...interface{}) (wasmer.Value, error) {
 		instance := method()
 		if arwen.BreakpointValue(instance.GetBreakpointValue()) != arwen.BreakpointNone {
-			err = errors.New("breakpoint")
+			err = errors.New(instance.Host.Output().GetVMOutput().ReturnMessage)
 		}
 		return wasmer.Void(), err
 	}
