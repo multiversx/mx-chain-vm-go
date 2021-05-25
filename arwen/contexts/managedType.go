@@ -166,7 +166,7 @@ func (context *managedTypeContext) PutBigInt(value int64) int32 {
 // ELLIPTIC CURVES
 
 // GetOneEllipticCurve returns the elliptic curve under the given handle. If there is no value under that handle, it will return error
-func (context *managedTypeContext) GetOneEllipticCurve(handle int32) (*elliptic.CurveParams, error) {
+func (context *managedTypeContext) GetEllipticCurve(handle int32) (*elliptic.CurveParams, error) {
 	curve, ok := context.ecValues[handle]
 	if !ok {
 		return nil, arwen.ErrNoEllipticCurveUnderThisHandle
