@@ -29,9 +29,8 @@ type CatchFunction func(error)
 
 // vmHost implements HostContext interface.
 type vmHost struct {
-	blockChainHook vmcommon.BlockchainHook
-	cryptoHook     crypto.VMCrypto
-	mutExecution   sync.RWMutex
+	cryptoHook   crypto.VMCrypto
+	mutExecution sync.RWMutex
 
 	ethInput []byte
 
@@ -70,7 +69,6 @@ func NewArwenVM(
 
 	cryptoHook := crypto.NewVMCrypto()
 	host := &vmHost{
-		blockChainHook:           blockChainHook,
 		cryptoHook:               cryptoHook,
 		meteringContext:          nil,
 		runtimeContext:           nil,
@@ -245,7 +243,7 @@ func (host *vmHost) GetContexts() (
 // InitState resets the contexts of the host and reconfigures its flags
 func (host *vmHost) InitState() {
 	host.initContexts()
-	currentEpoch := host.blockChainHook.CurrentEpoch()
+	currentEpoch := host.Blockchain().CurrentEpoch()
 	host.flagArwenV2.Toggle(currentEpoch >= host.arwenV2EnableEpoch)
 	log.Trace("arwenV2", "enabled", host.flagArwenV2.IsSet())
 
