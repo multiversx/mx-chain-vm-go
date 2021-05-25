@@ -156,9 +156,9 @@ func GetCryptoContext(vmHostPtr unsafe.Pointer) crypto.VMCrypto {
 	return GetVMHost(vmHostPtr).Crypto()
 }
 
-// GetBigIntContext returns the big int context
-func GetBigIntContext(vmHostPtr unsafe.Pointer) BigIntContext {
-	return GetVMHost(vmHostPtr).BigInt()
+// GetManagedTypeContext returns the big int context
+func GetManagedTypeContext(vmHostPtr unsafe.Pointer) ManagedTypeContext {
+	return GetVMHost(vmHostPtr).ManagedType()
 }
 
 // GetOutputContext returns the output context

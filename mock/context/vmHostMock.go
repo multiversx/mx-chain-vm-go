@@ -19,12 +19,12 @@ type VMHostMock struct {
 
 	EthInput []byte
 
-	BlockchainContext arwen.BlockchainContext
-	RuntimeContext    arwen.RuntimeContext
-	OutputContext     arwen.OutputContext
-	MeteringContext   arwen.MeteringContext
-	StorageContext    arwen.StorageContext
-	BigIntContext     arwen.BigIntContext
+	BlockchainContext  arwen.BlockchainContext
+	RuntimeContext     arwen.RuntimeContext
+	OutputContext      arwen.OutputContext
+	MeteringContext    arwen.MeteringContext
+	StorageContext     arwen.StorageContext
+	ManagedTypeContext arwen.ManagedTypeContext
 
 	SCAPIMethods  *wasmer.Imports
 	IsBuiltinFunc bool
@@ -61,8 +61,8 @@ func (host *VMHostMock) Storage() arwen.StorageContext {
 }
 
 // BigInt mocked method
-func (host *VMHostMock) BigInt() arwen.BigIntContext {
-	return host.BigIntContext
+func (host *VMHostMock) ManagedType() arwen.ManagedTypeContext {
+	return host.ManagedTypeContext
 }
 
 // IsArwenV2Enabled mocked method
@@ -180,14 +180,14 @@ func (host *VMHostMock) IsInterfaceNil() bool {
 
 // GetContexts mocked method
 func (host *VMHostMock) GetContexts() (
-	arwen.BigIntContext,
+	arwen.ManagedTypeContext,
 	arwen.BlockchainContext,
 	arwen.MeteringContext,
 	arwen.OutputContext,
 	arwen.RuntimeContext,
 	arwen.StorageContext,
 ) {
-	return host.BigIntContext, host.BlockchainContext, host.MeteringContext, host.OutputContext, host.RuntimeContext, host.StorageContext
+	return host.ManagedTypeContext, host.BlockchainContext, host.MeteringContext, host.OutputContext, host.RuntimeContext, host.StorageContext
 }
 
 // SetRuntimeContext mocked method

@@ -32,7 +32,7 @@ type VMHost interface {
 	Crypto() crypto.VMCrypto
 	Blockchain() BlockchainContext
 	Runtime() RuntimeContext
-	BigInt() BigIntContext
+	ManagedType() ManagedTypeContext
 	Output() OutputContext
 	Metering() MeteringContext
 	Storage() StorageContext
@@ -54,7 +54,7 @@ type VMHost interface {
 	AreInSameShard(leftAddress []byte, rightAddress []byte) bool
 
 	GetGasScheduleMap() config.GasScheduleMap
-	GetContexts() (BigIntContext, BlockchainContext, MeteringContext, OutputContext, RuntimeContext, StorageContext)
+	GetContexts() (ManagedTypeContext, BlockchainContext, MeteringContext, OutputContext, RuntimeContext, StorageContext)
 	SetRuntimeContext(runtime RuntimeContext)
 
 	InitState()
@@ -153,19 +153,18 @@ type RuntimeContext interface {
 	ReplaceInstanceBuilder(builder InstanceBuilder)
 }
 
-// BigIntContext defines the functionality needed for interacting with the big int context
-type BigIntContext interface {
+// ManagedTypeContext defines the functionality needed for interacting with the big int context
+type ManagedTypeContext interface {
 	StateStack
 
 	ConsumeGasForThisBigIntNumberOfBytes(byteLen *big.Int)
 	ConsumeGasForThisIntNumberOfBytes(byteLen int)
 	ConsumeGasForBigIntCopy(values ...*big.Int)
-	Put(value int64) int32
-	GetOneOrCreate(handle int32) *big.Int
-	GetOne(id int32) (*big.Int, error)
-	GetTwo(id1, id2 int32) (*big.Int, *big.Int, error)
-	GetThree(id1, id2, id3 int32) (*big.Int, *big.Int, *big.Int, error)
-	PutEllipticCurve(curve elliptic.CurveParams) int32
+	PutBigInt(value int64) int32
+	GetBigIntOrCreate(handle int32) *big.Int
+	GetBigInt(id int32) (*big.Int, error)
+	PutEllipticCurve(ec *elliptic.CurveParams) int32
+	GetEllipticCurve(handle int32) (*elliptic.CurveParams, error)
 }
 
 // OutputContext defines the functionality needed for interacting with the output context
