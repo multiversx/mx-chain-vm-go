@@ -34,12 +34,12 @@ type vmHost struct {
 
 	ethInput []byte
 
-	blockchainContext  arwen.BlockchainContext
-	runtimeContext     arwen.RuntimeContext
-	outputContext      arwen.OutputContext
-	meteringContext    arwen.MeteringContext
-	storageContext     arwen.StorageContext
-	managedTypeContext arwen.ManagedTypeContext
+	blockchainContext   arwen.BlockchainContext
+	runtimeContext      arwen.RuntimeContext
+	outputContext       arwen.OutputContext
+	meteringContext     arwen.MeteringContext
+	storageContext      arwen.StorageContext
+	managedTypesContext arwen.ManagedTypesContext
 
 	gasSchedule              config.GasScheduleMap
 	scAPIMethods             *wasmer.Imports
@@ -74,7 +74,7 @@ func NewArwenVM(
 		runtimeContext:           nil,
 		blockchainContext:        nil,
 		storageContext:           nil,
-		managedTypeContext:       nil,
+		managedTypesContext:      nil,
 		gasSchedule:              hostParameters.GasSchedule,
 		scAPIMethods:             nil,
 		protocolBuiltinFunctions: hostParameters.ProtocolBuiltinFunctions,
@@ -143,7 +143,7 @@ func NewArwenVM(
 		return nil, err
 	}
 
-	host.managedTypeContext, err = contexts.NewManagedTypeContext(host)
+	host.managedTypesContext, err = contexts.NewManagedTypesContext(host)
 	if err != nil {
 		return nil, err
 	}
@@ -194,8 +194,8 @@ func (host *vmHost) Storage() arwen.StorageContext {
 }
 
 // BigInt returns the BigIntContext instance of the host
-func (host *vmHost) ManagedType() arwen.ManagedTypeContext {
-	return host.managedTypeContext
+func (host *vmHost) ManagedTypes() arwen.ManagedTypesContext {
+	return host.managedTypesContext
 }
 
 // IsArwenV2Enabled returns whether the Arwen V2 mode is enabled
@@ -225,14 +225,14 @@ func (host *vmHost) IsESDTFunctionsEnabled() bool {
 
 // GetContexts returns the main contexts of the host
 func (host *vmHost) GetContexts() (
-	arwen.ManagedTypeContext,
+	arwen.ManagedTypesContext,
 	arwen.BlockchainContext,
 	arwen.MeteringContext,
 	arwen.OutputContext,
 	arwen.RuntimeContext,
 	arwen.StorageContext,
 ) {
-	return host.managedTypeContext,
+	return host.managedTypesContext,
 		host.blockchainContext,
 		host.meteringContext,
 		host.outputContext,
@@ -262,7 +262,7 @@ func (host *vmHost) InitState() {
 
 func (host *vmHost) initContexts() {
 	host.ClearContextStateStack()
-	host.managedTypeContext.InitState()
+	host.managedTypesContext.InitState()
 	host.outputContext.InitState()
 	host.meteringContext.InitState()
 	host.runtimeContext.InitState()
@@ -272,7 +272,7 @@ func (host *vmHost) initContexts() {
 
 // ClearContextStateStack cleans the state stacks of all the contexts of the host
 func (host *vmHost) ClearContextStateStack() {
-	host.managedTypeContext.ClearStateStack()
+	host.managedTypesContext.ClearStateStack()
 	host.outputContext.ClearStateStack()
 	host.meteringContext.ClearStateStack()
 	host.runtimeContext.ClearStateStack()

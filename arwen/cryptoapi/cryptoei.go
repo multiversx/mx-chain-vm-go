@@ -367,7 +367,7 @@ func addEC(
 	sndPointXHandle int32,
 	sndPointYHandle int32,
 ) {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 
@@ -406,7 +406,7 @@ func doubleEC(
 	pointXHandle int32,
 	pointYHandle int32,
 ) {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 
@@ -441,7 +441,7 @@ func isOnCurveEC(
 	pointXHandle int32,
 	pointYHandle int32,
 ) int32 {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 
@@ -480,7 +480,7 @@ func scalarBaseMultEC(
 ) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 
 	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
 	metering.UseGas(gasToUse)
@@ -524,7 +524,7 @@ func scalarMultEC(
 ) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 
 	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
 	metering.UseGas(gasToUse)
@@ -567,7 +567,7 @@ func marshalEC(
 ) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 
 	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
 	metering.UseGas(gasToUse)
@@ -608,7 +608,7 @@ func marshalCompressedEC(
 ) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 
 	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
 	metering.UseGas(gasToUse)
@@ -650,7 +650,7 @@ func unmarshalEC(
 ) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 
 	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
 	metering.UseGas(gasToUse)
@@ -692,7 +692,7 @@ func unmarshalCompressedEC(
 ) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 
 	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
 	metering.UseGas(gasToUse)
@@ -732,7 +732,7 @@ func generateKeyEC(
 ) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 
 	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
 	metering.UseGas(gasToUse)
@@ -768,7 +768,7 @@ func generateKeyEC(
 
 //export ellipticCurveNew
 func ellipticCurveNew(context unsafe.Pointer, fieldOrderHandle int32, basePointOrderHandle int32, eqConstantHandle int32, xBasePointHandle int32, yBasePointHandle int32, sizeOfField int32) int32 {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 

@@ -274,7 +274,7 @@ func BigIntImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 
 //export bigIntGetUnsignedArgument
 func bigIntGetUnsignedArgument(context unsafe.Pointer, id int32, destinationHandle int32) {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -293,7 +293,7 @@ func bigIntGetUnsignedArgument(context unsafe.Pointer, id int32, destinationHand
 
 //export bigIntGetSignedArgument
 func bigIntGetSignedArgument(context unsafe.Pointer, id int32, destinationHandle int32) {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -315,7 +315,7 @@ func bigIntGetSignedArgument(context unsafe.Pointer, id int32, destinationHandle
 
 //export bigIntStorageStoreUnsigned
 func bigIntStorageStoreUnsigned(context unsafe.Pointer, keyOffset int32, keyLength int32, sourceHandle int32) int32 {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -341,7 +341,7 @@ func bigIntStorageStoreUnsigned(context unsafe.Pointer, keyOffset int32, keyLeng
 
 //export bigIntStorageLoadUnsigned
 func bigIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, keyLength int32, destinationHandle int32) int32 {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -367,7 +367,7 @@ func bigIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, keyLengt
 
 //export bigIntGetCallValue
 func bigIntGetCallValue(context unsafe.Pointer, destinationHandle int32) {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -383,7 +383,7 @@ func bigIntGetCallValue(context unsafe.Pointer, destinationHandle int32) {
 
 //export bigIntGetESDTCallValue
 func bigIntGetESDTCallValue(context unsafe.Pointer, destinationHandle int32) {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -403,7 +403,7 @@ func bigIntGetESDTCallValue(context unsafe.Pointer, destinationHandle int32) {
 
 //export bigIntGetExternalBalance
 func bigIntGetExternalBalance(context unsafe.Pointer, addressOffset int32, resultHandle int32) {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	blockchain := arwen.GetBlockchainContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -424,7 +424,7 @@ func bigIntGetExternalBalance(context unsafe.Pointer, addressOffset int32, resul
 
 //export bigIntGetESDTExternalBalance
 func bigIntGetESDTExternalBalance(context unsafe.Pointer, addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64, resultHandle int32) {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -445,7 +445,7 @@ func bigIntGetESDTExternalBalance(context unsafe.Pointer, addressOffset int32, t
 
 //export bigIntNew
 func bigIntNew(context unsafe.Pointer, smallValue int64) int32 {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntNew
@@ -456,7 +456,7 @@ func bigIntNew(context unsafe.Pointer, smallValue int64) int32 {
 
 //export bigIntUnsignedByteLength
 func bigIntUnsignedByteLength(context unsafe.Pointer, referenceHandle int32) int32 {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 
@@ -474,7 +474,7 @@ func bigIntUnsignedByteLength(context unsafe.Pointer, referenceHandle int32) int
 
 //export bigIntSignedByteLength
 func bigIntSignedByteLength(context unsafe.Pointer, referenceHandle int32) int32 {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 
@@ -492,7 +492,7 @@ func bigIntSignedByteLength(context unsafe.Pointer, referenceHandle int32) int32
 
 //export bigIntGetUnsignedBytes
 func bigIntGetUnsignedBytes(context unsafe.Pointer, referenceHandle int32, byteOffset int32) int32 {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -518,7 +518,7 @@ func bigIntGetUnsignedBytes(context unsafe.Pointer, referenceHandle int32, byteO
 
 //export bigIntGetSignedBytes
 func bigIntGetSignedBytes(context unsafe.Pointer, referenceHandle int32, byteOffset int32) int32 {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -544,7 +544,7 @@ func bigIntGetSignedBytes(context unsafe.Pointer, referenceHandle int32, byteOff
 
 //export bigIntSetUnsignedBytes
 func bigIntSetUnsignedBytes(context unsafe.Pointer, destinationHandle int32, byteOffset int32, byteLength int32) {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -565,7 +565,7 @@ func bigIntSetUnsignedBytes(context unsafe.Pointer, destinationHandle int32, byt
 
 //export bigIntSetSignedBytes
 func bigIntSetSignedBytes(context unsafe.Pointer, destinationHandle int32, byteOffset int32, byteLength int32) {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -586,7 +586,7 @@ func bigIntSetSignedBytes(context unsafe.Pointer, destinationHandle int32, byteO
 
 //export bigIntIsInt64
 func bigIntIsInt64(context unsafe.Pointer, destinationHandle int32) int32 {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 
@@ -605,7 +605,7 @@ func bigIntIsInt64(context unsafe.Pointer, destinationHandle int32) int32 {
 
 //export bigIntGetInt64
 func bigIntGetInt64(context unsafe.Pointer, destinationHandle int32) int64 {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetInt64
@@ -617,7 +617,7 @@ func bigIntGetInt64(context unsafe.Pointer, destinationHandle int32) int64 {
 
 //export bigIntSetInt64
 func bigIntSetInt64(context unsafe.Pointer, destinationHandle int32, value int64) {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
@@ -629,7 +629,7 @@ func bigIntSetInt64(context unsafe.Pointer, destinationHandle int32, value int64
 
 //export bigIntAdd
 func bigIntAdd(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext((context))
 
@@ -649,7 +649,7 @@ func bigIntAdd(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle i
 
 //export bigIntSub
 func bigIntSub(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 
@@ -669,7 +669,7 @@ func bigIntSub(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle i
 
 //export bigIntMul
 func bigIntMul(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 
@@ -689,7 +689,7 @@ func bigIntMul(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle i
 
 //export bigIntTDiv
 func bigIntTDiv(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 
@@ -714,7 +714,7 @@ func bigIntTDiv(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle 
 
 //export bigIntTMod
 func bigIntTMod(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 
@@ -739,7 +739,7 @@ func bigIntTMod(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle 
 
 //export bigIntEDiv
 func bigIntEDiv(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 
@@ -764,7 +764,7 @@ func bigIntEDiv(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle 
 
 //export bigIntEMod
 func bigIntEMod(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 
@@ -789,7 +789,7 @@ func bigIntEMod(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle 
 
 //export bigIntSqrt
 func bigIntSqrt(context unsafe.Pointer, destinationHandle, opHandle int32) {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 
@@ -813,7 +813,7 @@ func bigIntSqrt(context unsafe.Pointer, destinationHandle, opHandle int32) {
 
 //export bigIntPow
 func bigIntPow(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 
@@ -845,7 +845,7 @@ func bigIntPow(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle i
 
 //export bigIntLog2
 func bigIntLog2(context unsafe.Pointer, op1Handle int32) int32 {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 
@@ -868,7 +868,7 @@ func bigIntLog2(context unsafe.Pointer, op1Handle int32) int32 {
 
 //export bigIntAbs
 func bigIntAbs(context unsafe.Pointer, destinationHandle, opHandle int32) {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 
@@ -887,7 +887,7 @@ func bigIntAbs(context unsafe.Pointer, destinationHandle, opHandle int32) {
 
 //export bigIntNeg
 func bigIntNeg(context unsafe.Pointer, destinationHandle, opHandle int32) {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 
@@ -906,7 +906,7 @@ func bigIntNeg(context unsafe.Pointer, destinationHandle, opHandle int32) {
 
 //export bigIntSign
 func bigIntSign(context unsafe.Pointer, opHandle int32) int32 {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 
@@ -923,7 +923,7 @@ func bigIntSign(context unsafe.Pointer, opHandle int32) int32 {
 
 //export bigIntCmp
 func bigIntCmp(context unsafe.Pointer, op1Handle, op2Handle int32) int32 {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 
@@ -942,7 +942,7 @@ func bigIntCmp(context unsafe.Pointer, op1Handle, op2Handle int32) int32 {
 
 //export bigIntNot
 func bigIntNot(context unsafe.Pointer, destinationHandle, opHandle int32) {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 
@@ -966,7 +966,7 @@ func bigIntNot(context unsafe.Pointer, destinationHandle, opHandle int32) {
 
 //export bigIntAnd
 func bigIntAnd(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 
@@ -991,7 +991,7 @@ func bigIntAnd(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle i
 
 //export bigIntOr
 func bigIntOr(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 
@@ -1016,7 +1016,7 @@ func bigIntOr(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle in
 
 //export bigIntXor
 func bigIntXor(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 
@@ -1041,7 +1041,7 @@ func bigIntXor(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle i
 
 //export bigIntShr
 func bigIntShr(context unsafe.Pointer, destinationHandle, opHandle, bits int32) {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 
@@ -1066,7 +1066,7 @@ func bigIntShr(context unsafe.Pointer, destinationHandle, opHandle, bits int32) 
 
 //export bigIntShl
 func bigIntShl(context unsafe.Pointer, destinationHandle, opHandle, bits int32) {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 
@@ -1091,7 +1091,7 @@ func bigIntShl(context unsafe.Pointer, destinationHandle, opHandle, bits int32) 
 
 //export bigIntFinishUnsigned
 func bigIntFinishUnsigned(context unsafe.Pointer, referenceHandle int32) {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	output := arwen.GetOutputContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -1112,7 +1112,7 @@ func bigIntFinishUnsigned(context unsafe.Pointer, referenceHandle int32) {
 
 //export bigIntFinishSigned
 func bigIntFinishSigned(context unsafe.Pointer, referenceHandle int32) {
-	managedType := arwen.GetManagedTypeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	output := arwen.GetOutputContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)

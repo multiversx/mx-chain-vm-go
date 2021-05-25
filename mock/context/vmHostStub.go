@@ -22,7 +22,7 @@ type VMHostStub struct {
 	CryptoCalled                      func() crypto.VMCrypto
 	BlockchainCalled                  func() arwen.BlockchainContext
 	RuntimeCalled                     func() arwen.RuntimeContext
-	ManagedTypeCalled                 func() arwen.ManagedTypeContext
+	ManagedTypesCalled                func() arwen.ManagedTypesContext
 	OutputCalled                      func() arwen.OutputContext
 	MeteringCalled                    func() arwen.MeteringContext
 	StorageCalled                     func() arwen.StorageContext
@@ -44,7 +44,7 @@ type VMHostStub struct {
 	IsInterfaceNilCalled         func() bool
 
 	SetRuntimeContextCalled func(runtime arwen.RuntimeContext)
-	GetContextsCalled       func() (arwen.ManagedTypeContext, arwen.BlockchainContext, arwen.MeteringContext, arwen.OutputContext, arwen.RuntimeContext, arwen.StorageContext)
+	GetContextsCalled       func() (arwen.ManagedTypesContext, arwen.BlockchainContext, arwen.MeteringContext, arwen.OutputContext, arwen.RuntimeContext, arwen.StorageContext)
 }
 
 // InitState mocked method
@@ -100,9 +100,9 @@ func (vhs *VMHostStub) Runtime() arwen.RuntimeContext {
 }
 
 // BigInt mocked method
-func (vhs *VMHostStub) ManagedType() arwen.ManagedTypeContext {
-	if vhs.ManagedTypeCalled != nil {
-		return vhs.ManagedTypeCalled()
+func (vhs *VMHostStub) ManagedTypes() arwen.ManagedTypesContext {
+	if vhs.ManagedTypesCalled != nil {
+		return vhs.ManagedTypesCalled()
 	}
 	return nil
 }
@@ -275,7 +275,7 @@ func (vhs *VMHostStub) IsInterfaceNil() bool {
 
 // GetContexts mocked method
 func (vhs *VMHostStub) GetContexts() (
-	arwen.ManagedTypeContext,
+	arwen.ManagedTypesContext,
 	arwen.BlockchainContext,
 	arwen.MeteringContext,
 	arwen.OutputContext,

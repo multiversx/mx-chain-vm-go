@@ -32,7 +32,7 @@ type VMHost interface {
 	Crypto() crypto.VMCrypto
 	Blockchain() BlockchainContext
 	Runtime() RuntimeContext
-	ManagedType() ManagedTypeContext
+	ManagedTypes() ManagedTypesContext
 	Output() OutputContext
 	Metering() MeteringContext
 	Storage() StorageContext
@@ -54,7 +54,7 @@ type VMHost interface {
 	AreInSameShard(leftAddress []byte, rightAddress []byte) bool
 
 	GetGasScheduleMap() config.GasScheduleMap
-	GetContexts() (ManagedTypeContext, BlockchainContext, MeteringContext, OutputContext, RuntimeContext, StorageContext)
+	GetContexts() (ManagedTypesContext, BlockchainContext, MeteringContext, OutputContext, RuntimeContext, StorageContext)
 	SetRuntimeContext(runtime RuntimeContext)
 
 	InitState()
@@ -153,8 +153,8 @@ type RuntimeContext interface {
 	ReplaceInstanceBuilder(builder InstanceBuilder)
 }
 
-// ManagedTypeContext defines the functionality needed for interacting with the big int context
-type ManagedTypeContext interface {
+// ManagedTypesContext defines the functionality needed for interacting with the big int context
+type ManagedTypesContext interface {
 	StateStack
 
 	ConsumeGasForThisBigIntNumberOfBytes(byteLen *big.Int)

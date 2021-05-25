@@ -14,7 +14,7 @@ const maxBigIntByteLenForNormalCost = 32
 type bigIntMap map[int32]*big.Int
 type ellipticCurveMap map[int32]*elliptic.CurveParams
 
-type managedTypeContext struct {
+type managedTypesContext struct {
 	host             arwen.VMHost
 	bigIntValues     bigIntMap
 	ecValues         ellipticCurveMap
@@ -23,8 +23,8 @@ type managedTypeContext struct {
 }
 
 // NewBigIntContext creates a new bigIntContext
-func NewManagedTypeContext(host arwen.VMHost) (*managedTypeContext, error) {
-	context := &managedTypeContext{
+func NewManagedTypesContext(host arwen.VMHost) (*managedTypesContext, error) {
+	context := &managedTypesContext{
 		host:             host,
 		bigIntValues:     make(bigIntMap),
 		ecValues:         make(ellipticCurveMap),
@@ -36,20 +36,20 @@ func NewManagedTypeContext(host arwen.VMHost) (*managedTypeContext, error) {
 }
 
 // InitState initializes the underlying values map
-func (context *managedTypeContext) InitState() {
+func (context *managedTypesContext) InitState() {
 	context.bigIntValues = make(bigIntMap)
 	context.ecValues = make(ellipticCurveMap)
 }
 
 // PushState appends the values map to the state stack
-func (context *managedTypeContext) PushState() {
+func (context *managedTypesContext) PushState() {
 	newBigIntState, newEcState := context.clone()
 	context.bigIntStateStack = append(context.bigIntStateStack, newBigIntState)
 	context.ecStateStack = append(context.ecStateStack, newEcState)
 }
 
 // PopSetActiveState removes the latest entry from the state stack and sets it as the current values map
-func (context *managedTypeContext) PopSetActiveState() {
+func (context *managedTypesContext) PopSetActiveState() {
 	bigIntStateStackLen := len(context.bigIntStateStack)
 	ecStateStackLen := len(context.ecStateStack)
 	if bigIntStateStackLen == 0 && ecStateStackLen == 0 {
@@ -65,7 +65,7 @@ func (context *managedTypeContext) PopSetActiveState() {
 }
 
 // PopDiscard removes the latest entry from the state stack
-func (context *managedTypeContext) PopDiscard() {
+func (context *managedTypesContext) PopDiscard() {
 	bigIntStateStackLen := len(context.bigIntStateStack)
 	ecStateStackLen := len(context.ecStateStack)
 	if bigIntStateStackLen == 0 && ecStateStackLen == 0 {
@@ -77,12 +77,12 @@ func (context *managedTypeContext) PopDiscard() {
 }
 
 // ClearStateStack initializes the state stack
-func (context *managedTypeContext) ClearStateStack() {
+func (context *managedTypesContext) ClearStateStack() {
 	context.bigIntStateStack = make([]bigIntMap, 0)
 	context.ecStateStack = make([]ellipticCurveMap, 0)
 }
 
-func (context *managedTypeContext) clone() (bigIntMap, ellipticCurveMap) {
+func (context *managedTypesContext) clone() (bigIntMap, ellipticCurveMap) {
 	newBigIntState := make(bigIntMap, len(context.bigIntValues))
 	newEcState := make(ellipticCurveMap, len(context.ecValues))
 	for bigIntHandle, bigInt := range context.bigIntValues {
@@ -95,12 +95,12 @@ func (context *managedTypeContext) clone() (bigIntMap, ellipticCurveMap) {
 }
 
 // IsInterfaceNil returns true if there is no value under the interface
-func (context *managedTypeContext) IsInterfaceNil() bool {
+func (context *managedTypesContext) IsInterfaceNil() bool {
 	return context == nil
 }
 
 // ConsumeGasForBigIntCopy uses gas for Copy operations
-func (context *managedTypeContext) ConsumeGasForBigIntCopy(values ...*big.Int) {
+func (context *managedTypesContext) ConsumeGasForBigIntCopy(values ...*big.Int) {
 	for _, val := range values {
 		byteLen := val.BitLen() / 8
 		context.ConsumeGasForThisIntNumberOfBytes(byteLen)
@@ -108,7 +108,7 @@ func (context *managedTypeContext) ConsumeGasForBigIntCopy(values ...*big.Int) {
 }
 
 // ConsumeGasForThisIntNumberOfBytes uses gas for the number of bytes given.
-func (context *managedTypeContext) ConsumeGasForThisIntNumberOfBytes(byteLen int) {
+func (context *managedTypesContext) ConsumeGasForThisIntNumberOfBytes(byteLen int) {
 	metering := context.host.Metering()
 	if byteLen > maxBigIntByteLenForNormalCost {
 		metering.UseGas(math.MulUint64(uint64(byteLen), metering.GasSchedule().BaseOperationCost.DataCopyPerByte))
@@ -116,7 +116,7 @@ func (context *managedTypeContext) ConsumeGasForThisIntNumberOfBytes(byteLen int
 }
 
 // ConsumeGasForThisBigIntNumberOfBytes uses gas for the number of bytes given that are being copied.
-func (context *managedTypeContext) ConsumeGasForThisBigIntNumberOfBytes(byteLen *big.Int) {
+func (context *managedTypesContext) ConsumeGasForThisBigIntNumberOfBytes(byteLen *big.Int) {
 	metering := context.host.Metering()
 	DataCopyPerByte := metering.GasSchedule().BaseOperationCost.DataCopyPerByte
 
@@ -132,7 +132,7 @@ func (context *managedTypeContext) ConsumeGasForThisBigIntNumberOfBytes(byteLen 
 // BIGINT
 
 // GetOneOrCreate returns the value at the given handle. If there is no value under that value, it will set a new on with value 0.
-func (context *managedTypeContext) GetBigIntOrCreate(handle int32) *big.Int {
+func (context *managedTypesContext) GetBigIntOrCreate(handle int32) *big.Int {
 	value, ok := context.bigIntValues[handle]
 	if !ok {
 		value = big.NewInt(0)
@@ -142,7 +142,7 @@ func (context *managedTypeContext) GetBigIntOrCreate(handle int32) *big.Int {
 }
 
 // GetOne returns the value at the given handle. If there is no value under that handle, it will return error
-func (context *managedTypeContext) GetBigInt(handle int32) (*big.Int, error) {
+func (context *managedTypesContext) GetBigInt(handle int32) (*big.Int, error) {
 	value, ok := context.bigIntValues[handle]
 	if !ok {
 		return nil, arwen.ErrNoBigIntUnderThisHandle
@@ -151,7 +151,7 @@ func (context *managedTypeContext) GetBigInt(handle int32) (*big.Int, error) {
 }
 
 // PutBigInt adds the given value to the current values map and returns the handle
-func (context *managedTypeContext) PutBigInt(value int64) int32 {
+func (context *managedTypesContext) PutBigInt(value int64) int32 {
 	newHandle := int32(len(context.bigIntValues))
 	for {
 		if _, ok := context.bigIntValues[newHandle]; !ok {
@@ -166,7 +166,7 @@ func (context *managedTypeContext) PutBigInt(value int64) int32 {
 // ELLIPTIC CURVES
 
 // GetOneEllipticCurve returns the elliptic curve under the given handle. If there is no value under that handle, it will return error
-func (context *managedTypeContext) GetEllipticCurve(handle int32) (*elliptic.CurveParams, error) {
+func (context *managedTypesContext) GetEllipticCurve(handle int32) (*elliptic.CurveParams, error) {
 	curve, ok := context.ecValues[handle]
 	if !ok {
 		return nil, arwen.ErrNoEllipticCurveUnderThisHandle
@@ -175,7 +175,7 @@ func (context *managedTypeContext) GetEllipticCurve(handle int32) (*elliptic.Cur
 }
 
 // PutEllipticCurve adds the given elliptic curve to the current ecValues map and returns the handle
-func (context *managedTypeContext) PutEllipticCurve(curve *elliptic.CurveParams) int32 {
+func (context *managedTypesContext) PutEllipticCurve(curve *elliptic.CurveParams) int32 {
 	newHandle := int32(len(context.ecValues))
 	for {
 		if _, ok := context.ecValues[newHandle]; !ok {
