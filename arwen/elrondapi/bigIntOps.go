@@ -53,11 +53,9 @@ package elrondapi
 // extern void bigIntGetESDTCallValue(void *context, int32_t destination);
 // extern void bigIntGetESDTExternalBalance(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce, int32_t result);
 // extern void bigIntGetExternalBalance(void *context, int32_t addressOffset, int32_t result);
-// extern int32_t ellipticCurveNew(void *context, int32_t fieldOrderHandle, int32_t basePointOrderHandle, int32_t eqConstantHandle, int32_t xBasePointHandle, int32_t yBasePointHandle, int32_t sizeOfField);
 import "C"
 
 import (
-	"crypto/elliptic"
 	"math/big"
 	"unsafe"
 
@@ -71,12 +69,7 @@ import (
 func BigIntImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	imports = imports.Namespace("env")
 
-	imports, err := imports.Append("ellipticCurveNew", ellipticCurveNew, C.ellipticCurveNew)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("bigIntNew", bigIntNew, C.bigIntNew)
+	imports, err := imports.Append("bigIntNew", bigIntNew, C.bigIntNew)
 	if err != nil {
 		return nil, err
 	}
@@ -1089,29 +1082,4 @@ func bigIntFinishSigned(context unsafe.Pointer, referenceHandle int32) {
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(len(bigInt2cBytes)))
 	metering.UseGas(gasToUse)
-}
-
-//export ellipticCurveNew
-func ellipticCurveNew(context unsafe.Pointer, fieldOrderHandle int32, basePointOrderHandle int32, eqConstantHandle int32, xBasePointHandle int32, yBasePointHandle int32, sizeOfField int32) int32 {
-	bigInt := arwen.GetBigIntContext(context)
-	metering := arwen.GetMeteringContext(context)
-	runtime := arwen.GetRuntimeContext(context)
-
-	gasToUse := metering.GasSchedule().BigIntAPICost.EllipticCurveNew
-	metering.UseGas(gasToUse)
-
-	P, N, B, err1 := bigInt.GetThree(fieldOrderHandle, basePointOrderHandle, eqConstantHandle)
-	Gx, Gy, err2 := bigInt.GetTwo(xBasePointHandle, yBasePointHandle)
-	if err1 != nil || err2 != nil {
-		arwen.WithFault(arwen.ErrLengthsAreNotTheSame, context, runtime.BigIntAPIErrorShouldFailExecution())
-		return -1
-	}
-	// should I verify? are the bigInt values topencoded?
-	// if P.BitLen() != int(sizeOfField) || N.BitLen() != int(sizeOfField) || B.BitLen() != int(sizeOfField) || Gx.BitLen() != int(sizeOfField) || Gy.BitLen() != int(sizeOfField) {
-	// 	arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.BigIntAPIErrorShouldFailExecution())
-	// 	return -1
-	// }
-	curve := elliptic.CurveParams{P: P, N: N, B: B, Gx: Gx, Gy: Gy, BitSize: int(sizeOfField), Name: "EC"}
-
-	return bigInt.PutEllipticCurve(curve)
 }
