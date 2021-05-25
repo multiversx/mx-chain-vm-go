@@ -12,8 +12,12 @@ func (host *vmHost) handleBreakpointIfAny(executionErr error) error {
 	runtime := host.Runtime()
 	breakpointValue := runtime.GetRuntimeBreakpointValue()
 	if breakpointValue != arwen.BreakpointNone {
-		wrappableErr := arwen.WrapError(executionErr)
-		executionErr = wrappableErr.WrapWithError(host.handleBreakpoint(breakpointValue))
+		if breakpointValue != arwen.BreakpointAsyncCall {
+			wrappableErr := arwen.WrapError(executionErr)
+			executionErr = wrappableErr.WrapWithError(host.handleBreakpoint(breakpointValue))
+		} else {
+			executionErr = host.handleBreakpoint(breakpointValue)
+		}
 	}
 
 	return executionErr

@@ -70,6 +70,11 @@ func (werr *wrappableError) GetLastError() error {
 func (werr *wrappableError) wrapWithErrorWithSkipLevels(err error, skipStackLevels int) *wrappableError {
 	newErrs := make([]errorWithLocation, len(werr.errsWithLocation))
 	copy(newErrs, werr.errsWithLocation)
+	if err == nil {
+		return &wrappableError{
+			errsWithLocation: newErrs,
+		}
+	}
 	return &wrappableError{
 		errsWithLocation: append(newErrs, createErrorWithLocation(err, skipStackLevels)),
 	}
