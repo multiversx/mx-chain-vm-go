@@ -1004,7 +1004,7 @@ func TransferESDTNFTExecuteWithHost(
 		return 1
 	}
 
-	// TODO in the future move the code below in host (API functions should only parse arguments)
+	// TODO in the future move the code below in some host service (API functions should only parse arguments)
 	var contractCallInput *vmcommon.ContractCallInput
 	if functionLength > 0 {
 		contractCallInput, executeErr = prepareIndirectContractCallInput(

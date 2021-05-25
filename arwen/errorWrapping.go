@@ -8,7 +8,7 @@ import (
 
 const skipLevels = 3
 
-// WrappableError - TODO
+// WrappableError - an interface that extends error and represents a multi-layer error
 type WrappableError interface {
 	error
 
@@ -35,6 +35,7 @@ func (werr *wrappableError) getTopErrorWithLocation() errorWithLocation {
 	return werr.errsWithLocation[len(werr.errsWithLocation)-1]
 }
 
+// WrapError constructs a WrappableError from an error
 func WrapError(err error) WrappableError {
 	errAsWrappable, ok := err.(WrappableError)
 	if ok {
@@ -45,23 +46,28 @@ func WrapError(err error) WrappableError {
 	}
 }
 
+// WrapWithMessage wrapes the target error with a new one, created using the input message
 func (werr *wrappableError) WrapWithMessage(errMessage string) WrappableError {
 	return werr.wrapWithErrorWithSkipLevels(errors.New(errMessage), skipLevels)
 }
 
+// WrapWithMessage wrapes the target error with a new one, without any message only a stack frame trace
 func (werr *wrappableError) WrapWithStackTrace() WrappableError {
 	return werr.wrapWithErrorWithSkipLevels(errors.New(""), skipLevels)
 }
 
+// WrapWithMessage wrapes the target error with the provided one
 func (werr *wrappableError) WrapWithError(err error) WrappableError {
 	return werr.wrapWithErrorWithSkipLevels(err, skipLevels)
 }
 
+// GetBaseError gets the core error
 func (werr *wrappableError) GetBaseError() error {
 	errors := werr.errsWithLocation
 	return errors[0].err
 }
 
+// GetBaseError gets the last wrapped error
 func (werr *wrappableError) GetLastError() error {
 	errors := werr.errsWithLocation
 	return errors[len(errors)-1].err
@@ -87,6 +93,7 @@ func createErrorWithLocation(err error, skipStackLevels int) errorWithLocation {
 	return errWithLocation
 }
 
+// Error - standard error function implementation for wrappable errors
 func (werr *wrappableError) Error() string {
 	strErr := ""
 	errors := werr.errsWithLocation
@@ -102,6 +109,7 @@ func (werr *wrappableError) Error() string {
 	return strErr
 }
 
+// Unwrap - standard error function implementation for wrappable errors
 func (werr *wrappableError) Unwrap() error {
 	wrappingErr := werr.unwrapWrapping()
 	if len(wrappingErr.errsWithLocation) == 1 {
@@ -120,6 +128,7 @@ func (werr *wrappableError) unwrapWrapping() *wrappableError {
 	}
 }
 
+// Is - standard error function implementation for wrappable errors
 func (werr *wrappableError) Is(target error) bool {
 	for _, err := range werr.errsWithLocation {
 		if errors.Is(err.err, target) {
