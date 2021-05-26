@@ -359,6 +359,12 @@ func (contractInput *ContractCallInputBuilder) WithRecipientAddr(address []byte)
 	return contractInput
 }
 
+// WithCallerAddr provides the caller address of ContractCallInputBuilder
+func (contractInput *ContractCallInputBuilder) WithCallerAddr(address []byte) *ContractCallInputBuilder {
+	contractInput.ContractCallInput.CallerAddr = address
+	return contractInput
+}
+
 // WithGasProvided provides the gas of ContractCallInputBuilder
 func (contractInput *ContractCallInputBuilder) WithGasProvided(gas uint64) *ContractCallInputBuilder {
 	contractInput.ContractCallInput.VMInput.GasProvided = gas
@@ -374,6 +380,12 @@ func (contractInput *ContractCallInputBuilder) WithFunction(function string) *Co
 // WithArguments provides the arguments to be called for ContractCallInputBuilder
 func (contractInput *ContractCallInputBuilder) WithArguments(arguments ...[]byte) *ContractCallInputBuilder {
 	contractInput.ContractCallInput.VMInput.Arguments = arguments
+	return contractInput
+}
+
+// WithCallType provides the arguments to be called for ContractCallInputBuilder
+func (contractInput *ContractCallInputBuilder) WithCallType(callType vmcommon.CallType) *ContractCallInputBuilder {
+	contractInput.ContractCallInput.VMInput.CallType = callType
 	return contractInput
 }
 
@@ -538,52 +550,15 @@ func OpenFile(relativePath string) (*os.File, error) {
 	return f, nil
 }
 
-// LoadTomlFileToMap opens and decodes a toml file as a map[string]interface{}
-func LoadTomlFileToMap(relativePath string) (map[string]interface{}, error) {
-	f, err := OpenFile(relativePath)
-	if err != nil {
-		return nil, err
-	}
-
-	fileinfo, err := f.Stat()
-	if err != nil {
-		fmt.Printf("cannot stat file: %s", err.Error())
-		return nil, err
-	}
-
-	filesize := fileinfo.Size()
-	buffer := make([]byte, filesize)
-
-	_, err = f.Read(buffer)
-	if err != nil {
-		fmt.Printf("cannot read from file: %s", err.Error())
-		return nil, err
-	}
-
-	defer func() {
-		err = f.Close()
-		if err != nil {
-			fmt.Printf("cannot close file: %s", err.Error())
-		}
-	}()
-
-	loadedTree, err := toml.Load(string(buffer))
+// LoadGasScheduleConfig parses and prepares a gas schedule read from file.
+func LoadGasScheduleConfig(fileContents string) (config.GasScheduleMap, error) {
+	loadedTree, err := toml.Load(fileContents)
 	if err != nil {
 		fmt.Printf("cannot interpret file contents as toml: %s", err.Error())
 		return nil, err
 	}
 
-	loadedMap := loadedTree.ToMap()
-
-	return loadedMap, nil
-}
-
-// LoadGasScheduleConfig parses and prepares a gas schedule read from file.
-func LoadGasScheduleConfig(filepath string) (config.GasScheduleMap, error) {
-	gasScheduleConfig, err := LoadTomlFileToMap(filepath)
-	if err != nil {
-		return nil, err
-	}
+	gasScheduleConfig := loadedTree.ToMap()
 
 	flattenedGasSchedule := make(config.GasScheduleMap)
 	for libType, costs := range gasScheduleConfig {

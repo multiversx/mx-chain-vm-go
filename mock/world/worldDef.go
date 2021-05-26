@@ -47,7 +47,7 @@ func NewMockWorld() *MockWorld {
 		AcctMap:           accountMap,
 		AccountsAdapter:   nil,
 		PreviousBlockInfo: nil,
-		CurrentBlockInfo:  nil,
+		CurrentBlockInfo:  &BlockInfo{},
 		Blockhashes:       nil,
 		NewAddressMocks:   nil,
 		CompiledCode:      make(map[string][]byte),

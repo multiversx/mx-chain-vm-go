@@ -32,6 +32,14 @@ const (
 	parentFunctionChildCall = "parentFunctionChildCall"
 )
 
+func init() {
+	test.ParentCompilationCostSameCtx = uint64(len(test.GetTestSCCode("exec-same-ctx-parent", "../../", "../../../")))
+	test.ChildCompilationCostSameCtx = uint64(len(test.GetTestSCCode("exec-same-ctx-child", "../../", "../../../")))
+
+	test.ParentCompilationCostDestCtx = uint64(len(test.GetTestSCCode("exec-dest-ctx-parent", "../../", "../../../")))
+	test.ChildCompilationCostDestCtx = uint64(len(test.GetTestSCCode("exec-dest-ctx-child", "../../", "../../../")))
+}
+
 func TestSCMem(t *testing.T) {
 	testString := "this is some random string of bytes"
 	returnData := [][]byte{
