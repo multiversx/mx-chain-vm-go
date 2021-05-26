@@ -23,6 +23,10 @@ package cryptoapi
 // extern int32_t unmarshalCompressedEC(void *context, int32_t xPairHandle, int32_t yPairHandle, int32_t ecHandle, int32_t dataOffest, int32_t length);
 // extern int32_t generateKeyEC(void *context, int32_t xPubKeyHandle, int32_t yPubKeyHandle, int32_t ecHandle, int32_t resultOffset);
 // extern int32_t ellipticCurveNew(void *context, int32_t fieldOrderHandle, int32_t basePointOrderHandle, int32_t eqConstantHandle, int32_t xBasePointHandle, int32_t yBasePointHandle, int32_t sizeOfField);
+// extern int32_t p224Ec(void *context);
+// extern int32_t p256Ec(void *context);
+// extern int32_t p384Ec(void *context);
+// extern int32_t p521Ec(void *context);
 import "C"
 
 import (
@@ -127,6 +131,11 @@ func CryptoImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("ellipticCurveNew", ellipticCurveNew, C.ellipticCurveNew)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("p224Ec", p224Ec, C.p224Ec)
 	if err != nil {
 		return nil, err
 	}
@@ -793,4 +802,52 @@ func ellipticCurveNew(context unsafe.Pointer, fieldOrderHandle int32, basePointO
 	curve := elliptic.CurveParams{P: P, N: N, B: B, Gx: Gx, Gy: Gy, BitSize: int(sizeOfField), Name: "EC"}
 
 	return managedType.PutEllipticCurve(&curve)
+}
+
+//export p224Ec
+func p224Ec(context unsafe.Pointer) int32 {
+	managedType := arwen.GetManagedTypesContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().BigIntAPICost.EllipticCurveNew
+	metering.UseGas(gasToUse)
+
+	curveParams := elliptic.P224().Params()
+	return managedType.PutEllipticCurve(curveParams)
+}
+
+//export p256Ec
+func p256Ec(context unsafe.Pointer) int32 {
+	managedType := arwen.GetManagedTypesContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().BigIntAPICost.EllipticCurveNew
+	metering.UseGas(gasToUse)
+
+	curveParams := elliptic.P256().Params()
+	return managedType.PutEllipticCurve(curveParams)
+}
+
+//export p384Ec
+func p384Ec(context unsafe.Pointer) int32 {
+	managedType := arwen.GetManagedTypesContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().BigIntAPICost.EllipticCurveNew
+	metering.UseGas(gasToUse)
+
+	curveParams := elliptic.P384().Params()
+	return managedType.PutEllipticCurve(curveParams)
+}
+
+//export p521Ec
+func p521Ec(context unsafe.Pointer) int32 {
+	managedType := arwen.GetManagedTypesContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().BigIntAPICost.EllipticCurveNew
+	metering.UseGas(gasToUse)
+
+	curveParams := elliptic.P521().Params()
+	return managedType.PutEllipticCurve(curveParams)
 }
