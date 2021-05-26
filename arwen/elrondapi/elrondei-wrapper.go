@@ -8,6 +8,7 @@ import (
 )
 
 // TransferESDTNFTExecute - exported wrapper over transferESDTNFTExecute
+// (this is used from unit tests)
 func TransferESDTNFTExecute(
 	host arwen.VMHost,
 	recipientAddr []byte,
