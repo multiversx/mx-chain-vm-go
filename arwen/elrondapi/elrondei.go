@@ -990,17 +990,17 @@ func TransferESDTNFTExecuteWithHost(
 
 	sender := runtime.GetSCAddress()
 	dest, executeErr := runtime.MemLoad(destOffset, arwen.AddressLen)
-	if arwen.WithFaultWithHost(host, executeErr, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, executeErr, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
 	valueBytes, executeErr := runtime.MemLoad(valueOffset, arwen.BalanceLen)
-	if arwen.WithFaultWithHost(host, executeErr, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, executeErr, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
 	tokenIdentifier, executeErr := runtime.MemLoad(tokenIDOffset, tokenIDLen)
-	if arwen.WithFaultWithHost(host, executeErr, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, executeErr, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -1020,7 +1020,7 @@ func TransferESDTNFTExecuteWithHost(
 			dataOffset,
 			false,
 		)
-		if arwen.WithFaultWithHost(host, executeErr, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
+		if arwen.WithFaultAndHost(host, executeErr, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 			return 1
 		}
 
@@ -1033,7 +1033,7 @@ func TransferESDTNFTExecuteWithHost(
 	}
 
 	gasLimitForExec, executeErr := output.TransferESDT(dest, sender, tokenIdentifier, uint64(nonce), big.NewInt(0).SetBytes(valueBytes), contractCallInput)
-	if arwen.WithFaultWithHost(host, executeErr, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, executeErr, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -1046,7 +1046,7 @@ func TransferESDTNFTExecuteWithHost(
 			_, _, revertErr := host.ExecuteESDTTransfer(sender, dest, tokenIdentifier, uint64(nonce), big.NewInt(0).SetBytes(valueBytes), vmcommon.AsynchronousCallBack, true)
 			if revertErr != nil {
 				logEEI.Warn("ESDT revert failed - forced fail execution for context", "error", executeErr)
-				_ = arwen.WithFaultWithHost(host, arwen.WrapError(executeErr).WrapWithError(revertErr), true)
+				_ = arwen.WithFaultAndHost(host, arwen.WrapError(executeErr).WrapWithError(revertErr), true)
 			}
 			return 1
 		}
