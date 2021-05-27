@@ -33,17 +33,17 @@ signatures = [
     HookSignature(name="GetBuiltinFunctionNames", input=[], output=[("result", "vmcommon.FunctionNames")], badReturn="nil"),
     HookSignature(name="GetAllState", input=[("address", "[]byte")], output=[("result", "map[string][]byte")], error=True),             
     HookSignature(name="GetUserAccount", input=[("address", "[]byte")], output=[("result", "vmcommon.UserAccountHandler")], error=True),             
-    HookSignature(name="GetCode", input=[("handler", "vmcommon.UserAccountHandler")], output=[("code", "[]byte")], badReturn="nil, nil"),
+    HookSignature(name="GetCode", input=[("handler", "vmcommon.UserAccountHandler")], output=[("code", "[]byte")], badReturn="nil"),
     HookSignature(name="GetShardOfAddress", input=[("address", "[]byte")], output=[("result", "uint32")], badReturn="0"),    
     HookSignature(name="IsSmartContract", input=[("address", "[]byte")], output=[("result", "bool")], badReturn="false"),
     HookSignature(name="IsPayable", input=[("address", "[]byte")], output=[("result", "bool")], error=True, badReturn="false"),
     HookSignature(name="SaveCompiledCode", input=[("codeHash", "[]byte"), ("code", "[]byte")], output=[], badReturn=""),
-    HookSignature(name="GetCompiledCode", input=[("codeHash", "[]byte")], output=[("found", "bool"), ("code", "[]byte")]),
-    HookSignature(name="ClearCompiledCodes", input=[], output=[]),
+    HookSignature(name="GetCompiledCode", input=[("codeHash", "[]byte")], output=[("found", "bool"), ("code", "[]byte")], badReturn="false, nil"),
+    HookSignature(name="ClearCompiledCodes", input=[], output=[], badReturn=""),
     HookSignature(name="GetESDTToken", input=[("address", "[]byte"), ("tokenID", "[]byte"), ("nonce", "uint64")], output=[("result", "*esdt.ESDigitalToken")], error=True),
     HookSignature(name="IsInterfaceNil", input=[], output=[("result", "bool")], badReturn="false"),
-    HookSignature(name="GetSnapshot", input=[], output=[("result", "int")]),
-    HookSignature(name="RevertToSnapshot", input=[("snapshot", "int")], output=[], error=True, badReturn="")
+    HookSignature(name="GetSnapshot", input=[], output=[("result", "int")], badReturn="0"),
+    HookSignature(name="RevertToSnapshot", input=[("snapshot", "int")], output=[], error=True)
 ]
 
 
@@ -211,7 +211,7 @@ def generate_gateway(args):
 package arwenpart
 
 import (
-    "math/big"
+    "github.com/ElrondNetwork/elrond-go/data/esdt"
 
     "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/ipc/common"
     "github.com/ElrondNetwork/elrond-go/core/vmcommon"
@@ -231,20 +231,25 @@ func NewBlockchainHookGateway(messenger *ArwenMessenger) *BlockchainHookGateway 
 """)
 
     for signature in signatures:
+        errorSeparator = f", " if signature.error and signature.output else ""
+        badReturn = f"{signature.badReturn} " if signature.output else ""
         func_go = f"""
         // {signature.name} forwards a message to the actual hook
         func (blockchain *BlockchainHookGateway) {signature.name}({get_ctor_args(signature.input)}) {get_output_args(signature)} {{
             request := common.NewMessageBlockchain{signature.name}Request({get_call_args(signature)})
             rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
             if err != nil {{
-                return {signature.badReturn}{", err" if signature.error else ""}
+                return {badReturn}{errorSeparator}{"err" if signature.error else ""}
             }}
 
             if rawResponse.GetKind() != common.Blockchain{signature.name}Response {{
-                return {signature.badReturn}{", common.ErrBadHookResponseFromNode" if signature.error else ""}
+                return {badReturn}{errorSeparator}{"common.ErrBadHookResponseFromNode" if signature.error else ""}
             }}
 
-            response := rawResponse.(*common.MessageBlockchain{signature.name}Response)
+            """ 
+        if signature.output :
+                func_go = func_go + f"response := rawResponse.(*common.MessageBlockchain{signature.name}Response) "
+        func_go = func_go + f"""
             {get_gateway_return(signature)}
         }}
         """
@@ -276,13 +281,22 @@ def get_output_args(signature):
 
 def get_gateway_return(signature):
     if not signature.output:
-        return f"return"
+        if not signature.error:
+            return f"return"
+        else:
+            return f"return err"
     result_field, _ = signature.output[0]
     result_field = my_capitalize(result_field)
 
+    return_args = []
+    for arg_name, _ in signature.output:
+        return_args.append("response." + my_capitalize(arg_name))
+    returnResult = ", ".join(return_args)        
+
     if signature.error:
-        return f"return response.{result_field}, response.GetError()"
-    return f"return response.{result_field}"
+        return f"return {returnResult}, response.GetError()"
+
+    return f"return {returnResult}"
 
 
 def generate_factory(args):
