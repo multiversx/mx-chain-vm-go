@@ -3,8 +3,8 @@ package testcommon
 import (
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
 )
 
 type testSmartContract struct {

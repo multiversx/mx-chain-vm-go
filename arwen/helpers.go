@@ -7,10 +7,10 @@ import (
 	"path/filepath"
 	"unsafe"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
-	"github.com/ElrondNetwork/arwen-wasm-vm/math"
-	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
-	"github.com/ElrondNetwork/elrond-go-logger"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/math"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 )
 
 // Zero is the big integer 0

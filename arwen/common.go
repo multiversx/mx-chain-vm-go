@@ -1,9 +1,11 @@
 package arwen
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
+
+const ArwenVersion = "v1.3"
 
 // BreakpointValue encodes Wasmer runtime breakpoint types
 type BreakpointValue uint64

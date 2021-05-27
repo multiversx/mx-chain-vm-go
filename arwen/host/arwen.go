@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/contexts"
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/cryptoapi"
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/elrondapi"
-	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
-	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen/contexts"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen/cryptoapi"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen/elrondapi"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-go/core/atomic"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
@@ -161,6 +161,11 @@ func NewArwenVM(
 	host.initContexts()
 
 	return host, nil
+}
+
+// GetVersion returns the Arwen version string
+func (host *vmHost) GetVersion() string {
+	return arwen.ArwenVersion
 }
 
 // Crypto returns the VMCrypto instance of the host
