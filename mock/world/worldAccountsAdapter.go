@@ -76,7 +76,7 @@ func (m *MockAccountsAdapter) Commit() ([]byte, error) {
 
 // JournalLen -
 func (m *MockAccountsAdapter) JournalLen() int {
-	return 1
+	return len(m.Snapshots)
 }
 
 // RevertToSnapshot -
