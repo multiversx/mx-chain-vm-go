@@ -10,7 +10,7 @@ type MessageBlockchainNewAddressRequest struct {
 	Message
 	CreatorAddress []byte
 	CreatorNonce   uint64
-	VMType         []byte
+	VmType         []byte
 }
 
 // NewMessageBlockchainNewAddressRequest creates a request message
@@ -19,7 +19,7 @@ func NewMessageBlockchainNewAddressRequest(creatorAddress []byte, creatorNonce u
 	message.Kind = BlockchainNewAddressRequest
 	message.CreatorAddress = creatorAddress
 	message.CreatorNonce = creatorNonce
-	message.VMType = vmType
+	message.VmType = vmType
 	return message
 }
 
@@ -41,15 +41,15 @@ func NewMessageBlockchainNewAddressResponse(result []byte, err error) *MessageBl
 // MessageBlockchainGetStorageDataRequest represents a request message
 type MessageBlockchainGetStorageDataRequest struct {
 	Message
-	Address []byte
-	Index   []byte
+	AccountAddress []byte
+	Index          []byte
 }
 
 // NewMessageBlockchainGetStorageDataRequest creates a request message
-func NewMessageBlockchainGetStorageDataRequest(address []byte, index []byte) *MessageBlockchainGetStorageDataRequest {
+func NewMessageBlockchainGetStorageDataRequest(accountAddress []byte, index []byte) *MessageBlockchainGetStorageDataRequest {
 	message := &MessageBlockchainGetStorageDataRequest{}
 	message.Kind = BlockchainGetStorageDataRequest
-	message.Address = address
+	message.AccountAddress = accountAddress
 	message.Index = index
 	return message
 }
@@ -395,66 +395,31 @@ func NewMessageBlockchainCurrentEpochResponse(result uint32) *MessageBlockchainC
 	return message
 }
 
-// MessageBlockchainProcessBuiltinFunctionRequest represents a request message
-type MessageBlockchainProcessBuiltinFunctionRequest struct {
+// MessageBlockchainProcessBuiltInFunctionRequest represents a request message
+type MessageBlockchainProcessBuiltInFunctionRequest struct {
 	Message
-	CallInput vmcommon.ContractCallInput
+	Input *vmcommon.ContractCallInput
 }
 
-// NewMessageBlockchainProcessBuiltinFunctionRequest creates a request message
-func NewMessageBlockchainProcessBuiltinFunctionRequest(callInput vmcommon.ContractCallInput) *MessageBlockchainProcessBuiltinFunctionRequest {
-	message := &MessageBlockchainProcessBuiltinFunctionRequest{}
-	message.Kind = BlockchainProcessBuiltinFunctionRequest
-	message.CallInput = callInput
-
+// NewMessageBlockchainProcessBuiltInFunctionRequest creates a request message
+func NewMessageBlockchainProcessBuiltInFunctionRequest(input *vmcommon.ContractCallInput) *MessageBlockchainProcessBuiltInFunctionRequest {
+	message := &MessageBlockchainProcessBuiltInFunctionRequest{}
+	message.Kind = BlockchainProcessBuiltInFunctionRequest
+	message.Input = input
 	return message
 }
 
-// MessageBlockchainProcessBuiltinFunctionResponse represents a response message
-type MessageBlockchainProcessBuiltinFunctionResponse struct {
+// MessageBlockchainProcessBuiltInFunctionResponse represents a response message
+type MessageBlockchainProcessBuiltInFunctionResponse struct {
 	Message
-	SerializableVMOutput *SerializableVMOutput
+	VmOutput *vmcommon.VMOutput
 }
 
-// NewMessageBlockchainProcessBuiltinFunctionResponse creates a response message
-func NewMessageBlockchainProcessBuiltinFunctionResponse(vmOutput *vmcommon.VMOutput, err error) *MessageBlockchainProcessBuiltinFunctionResponse {
-	message := &MessageBlockchainProcessBuiltinFunctionResponse{}
-	message.Kind = BlockchainProcessBuiltinFunctionResponse
-	message.SerializableVMOutput = NewSerializableVMOutput(vmOutput)
-	message.SetError(err)
-	return message
-}
-
-// MessageBlockchainGetESDTTokenRequest represents a request message
-type MessageBlockchainGetESDTTokenRequest struct {
-	Message
-	Address []byte
-	TokenID []byte
-	Nonce   uint64
-}
-
-// NewMessageBlockchainGetESDTTokenRequest creates a request message
-func NewMessageBlockchainGetESDTTokenRequest(address []byte, tokenID []byte, nonce uint64) *MessageBlockchainGetESDTTokenRequest {
-	message := &MessageBlockchainGetESDTTokenRequest{}
-	message.Kind = BlockchainGetESDTTokenRequest
-	message.Address = address
-	message.TokenID = tokenID
-	message.Nonce = nonce
-
-	return message
-}
-
-// MessageBlockchainGetESDTTokenResponse represents a response message
-type MessageBlockchainGetESDTTokenResponse struct {
-	Message
-	ESDTData *esdt.ESDigitalToken
-}
-
-// NewMessageBlockchainGetESDTTokenResponse creates a response message
-func NewMessageBlockchainGetESDTTokenResponse(esdtData *esdt.ESDigitalToken, err error) *MessageBlockchainGetESDTTokenResponse {
-	message := &MessageBlockchainGetESDTTokenResponse{}
-	message.Kind = BlockchainGetESDTTokenResponse
-	message.ESDTData = esdtData
+// NewMessageBlockchainProcessBuiltInFunctionResponse creates a response message
+func NewMessageBlockchainProcessBuiltInFunctionResponse(vmOutput *vmcommon.VMOutput, err error) *MessageBlockchainProcessBuiltInFunctionResponse {
+	message := &MessageBlockchainProcessBuiltInFunctionResponse{}
+	message.Kind = BlockchainProcessBuiltInFunctionResponse
+	message.VmOutput = vmOutput
 	message.SetError(err)
 	return message
 }
@@ -475,15 +440,14 @@ func NewMessageBlockchainGetBuiltinFunctionNamesRequest() *MessageBlockchainGetB
 // MessageBlockchainGetBuiltinFunctionNamesResponse represents a response message
 type MessageBlockchainGetBuiltinFunctionNamesResponse struct {
 	Message
-	FunctionNames vmcommon.FunctionNames
+	Result vmcommon.FunctionNames
 }
 
 // NewMessageBlockchainGetBuiltinFunctionNamesResponse creates a response message
-func NewMessageBlockchainGetBuiltinFunctionNamesResponse(functionNames vmcommon.FunctionNames) *MessageBlockchainGetBuiltinFunctionNamesResponse {
+func NewMessageBlockchainGetBuiltinFunctionNamesResponse(result vmcommon.FunctionNames) *MessageBlockchainGetBuiltinFunctionNamesResponse {
 	message := &MessageBlockchainGetBuiltinFunctionNamesResponse{}
 	message.Kind = BlockchainGetBuiltinFunctionNamesResponse
-	message.FunctionNames = functionNames
-
+	message.Result = result
 	return message
 }
 
@@ -504,14 +468,14 @@ func NewMessageBlockchainGetAllStateRequest(address []byte) *MessageBlockchainGe
 // MessageBlockchainGetAllStateResponse represents a response message
 type MessageBlockchainGetAllStateResponse struct {
 	Message
-	SerializableAllState *SerializableMapStringBytes
+	Result map[string][]byte
 }
 
 // NewMessageBlockchainGetAllStateResponse creates a response message
-func NewMessageBlockchainGetAllStateResponse(state map[string][]byte, err error) *MessageBlockchainGetAllStateResponse {
+func NewMessageBlockchainGetAllStateResponse(result map[string][]byte, err error) *MessageBlockchainGetAllStateResponse {
 	message := &MessageBlockchainGetAllStateResponse{}
 	message.Kind = BlockchainGetAllStateResponse
-	message.SerializableAllState = NewSerializableMapStringBytes(state)
+	message.Result = result
 	message.SetError(err)
 	return message
 }
@@ -533,29 +497,29 @@ func NewMessageBlockchainGetUserAccountRequest(address []byte) *MessageBlockchai
 // MessageBlockchainGetUserAccountResponse represents a response message
 type MessageBlockchainGetUserAccountResponse struct {
 	Message
-	Account *Account
+	Result vmcommon.UserAccountHandler
 }
 
 // NewMessageBlockchainGetUserAccountResponse creates a response message
-func NewMessageBlockchainGetUserAccountResponse(account *Account, err error) *MessageBlockchainGetUserAccountResponse {
+func NewMessageBlockchainGetUserAccountResponse(result vmcommon.UserAccountHandler, err error) *MessageBlockchainGetUserAccountResponse {
 	message := &MessageBlockchainGetUserAccountResponse{}
 	message.Kind = BlockchainGetUserAccountResponse
-	message.Account = account
+	message.Result = result
 	message.SetError(err)
 	return message
 }
 
-// NewMessageBlockchainGetCodeRequest represents a request message
+// MessageBlockchainGetCodeRequest represents a request message
 type MessageBlockchainGetCodeRequest struct {
 	Message
-	Account *Account
+	Handler vmcommon.UserAccountHandler
 }
 
 // NewMessageBlockchainGetCodeRequest creates a request message
-func NewMessageBlockchainGetCodeRequest(account *Account) *MessageBlockchainGetCodeRequest {
+func NewMessageBlockchainGetCodeRequest(handler vmcommon.UserAccountHandler) *MessageBlockchainGetCodeRequest {
 	message := &MessageBlockchainGetCodeRequest{}
 	message.Kind = BlockchainGetCodeRequest
-	message.Account = account
+	message.Handler = handler
 	return message
 }
 
@@ -590,14 +554,14 @@ func NewMessageBlockchainGetShardOfAddressRequest(address []byte) *MessageBlockc
 // MessageBlockchainGetShardOfAddressResponse represents a response message
 type MessageBlockchainGetShardOfAddressResponse struct {
 	Message
-	Shard uint32
+	Result uint32
 }
 
 // NewMessageBlockchainGetShardOfAddressResponse creates a response message
-func NewMessageBlockchainGetShardOfAddressResponse(shard uint32) *MessageBlockchainGetShardOfAddressResponse {
+func NewMessageBlockchainGetShardOfAddressResponse(result uint32) *MessageBlockchainGetShardOfAddressResponse {
 	message := &MessageBlockchainGetShardOfAddressResponse{}
 	message.Kind = BlockchainGetShardOfAddressResponse
-	message.Shard = shard
+	message.Result = result
 	return message
 }
 
@@ -683,6 +647,7 @@ type MessageBlockchainSaveCompiledCodeResponse struct {
 func NewMessageBlockchainSaveCompiledCodeResponse() *MessageBlockchainSaveCompiledCodeResponse {
 	message := &MessageBlockchainSaveCompiledCodeResponse{}
 	message.Kind = BlockchainSaveCompiledCodeResponse
+
 	return message
 }
 
@@ -708,10 +673,150 @@ type MessageBlockchainGetCompiledCodeResponse struct {
 }
 
 // NewMessageBlockchainGetCompiledCodeResponse creates a response message
-func NewMessageBlockchainGetCompiledCodeResponse(result bool, code []byte) *MessageBlockchainGetCompiledCodeResponse {
+func NewMessageBlockchainGetCompiledCodeResponse(found bool, code []byte) *MessageBlockchainGetCompiledCodeResponse {
 	message := &MessageBlockchainGetCompiledCodeResponse{}
 	message.Kind = BlockchainGetCompiledCodeResponse
-	message.Found = result
+	message.Found = found
 	message.Code = code
+	return message
+}
+
+// MessageBlockchainClearCompiledCodesRequest represents a request message
+type MessageBlockchainClearCompiledCodesRequest struct {
+	Message
+}
+
+// NewMessageBlockchainClearCompiledCodesRequest creates a request message
+func NewMessageBlockchainClearCompiledCodesRequest() *MessageBlockchainClearCompiledCodesRequest {
+	message := &MessageBlockchainClearCompiledCodesRequest{}
+	message.Kind = BlockchainClearCompiledCodesRequest
+
+	return message
+}
+
+// MessageBlockchainClearCompiledCodesResponse represents a response message
+type MessageBlockchainClearCompiledCodesResponse struct {
+	Message
+}
+
+// NewMessageBlockchainClearCompiledCodesResponse creates a response message
+func NewMessageBlockchainClearCompiledCodesResponse() *MessageBlockchainClearCompiledCodesResponse {
+	message := &MessageBlockchainClearCompiledCodesResponse{}
+	message.Kind = BlockchainClearCompiledCodesResponse
+
+	return message
+}
+
+// MessageBlockchainGetESDTTokenRequest represents a request message
+type MessageBlockchainGetESDTTokenRequest struct {
+	Message
+	Address []byte
+	TokenID []byte
+	Nonce   uint64
+}
+
+// NewMessageBlockchainGetESDTTokenRequest creates a request message
+func NewMessageBlockchainGetESDTTokenRequest(address []byte, tokenID []byte, nonce uint64) *MessageBlockchainGetESDTTokenRequest {
+	message := &MessageBlockchainGetESDTTokenRequest{}
+	message.Kind = BlockchainGetESDTTokenRequest
+	message.Address = address
+	message.TokenID = tokenID
+	message.Nonce = nonce
+	return message
+}
+
+// MessageBlockchainGetESDTTokenResponse represents a response message
+type MessageBlockchainGetESDTTokenResponse struct {
+	Message
+	Result *esdt.ESDigitalToken
+}
+
+// NewMessageBlockchainGetESDTTokenResponse creates a response message
+func NewMessageBlockchainGetESDTTokenResponse(result *esdt.ESDigitalToken, err error) *MessageBlockchainGetESDTTokenResponse {
+	message := &MessageBlockchainGetESDTTokenResponse{}
+	message.Kind = BlockchainGetESDTTokenResponse
+	message.Result = result
+	message.SetError(err)
+	return message
+}
+
+// MessageBlockchainIsInterfaceNilRequest represents a request message
+type MessageBlockchainIsInterfaceNilRequest struct {
+	Message
+}
+
+// NewMessageBlockchainIsInterfaceNilRequest creates a request message
+func NewMessageBlockchainIsInterfaceNilRequest() *MessageBlockchainIsInterfaceNilRequest {
+	message := &MessageBlockchainIsInterfaceNilRequest{}
+	message.Kind = BlockchainIsInterfaceNilRequest
+
+	return message
+}
+
+// MessageBlockchainIsInterfaceNilResponse represents a response message
+type MessageBlockchainIsInterfaceNilResponse struct {
+	Message
+	Result bool
+}
+
+// NewMessageBlockchainIsInterfaceNilResponse creates a response message
+func NewMessageBlockchainIsInterfaceNilResponse(result bool) *MessageBlockchainIsInterfaceNilResponse {
+	message := &MessageBlockchainIsInterfaceNilResponse{}
+	message.Kind = BlockchainIsInterfaceNilResponse
+	message.Result = result
+	return message
+}
+
+// MessageBlockchainGetSnapshotRequest represents a request message
+type MessageBlockchainGetSnapshotRequest struct {
+	Message
+}
+
+// NewMessageBlockchainGetSnapshotRequest creates a request message
+func NewMessageBlockchainGetSnapshotRequest() *MessageBlockchainGetSnapshotRequest {
+	message := &MessageBlockchainGetSnapshotRequest{}
+	message.Kind = BlockchainGetSnapshotRequest
+
+	return message
+}
+
+// MessageBlockchainGetSnapshotResponse represents a response message
+type MessageBlockchainGetSnapshotResponse struct {
+	Message
+	Result int
+}
+
+// NewMessageBlockchainGetSnapshotResponse creates a response message
+func NewMessageBlockchainGetSnapshotResponse(result int) *MessageBlockchainGetSnapshotResponse {
+	message := &MessageBlockchainGetSnapshotResponse{}
+	message.Kind = BlockchainGetSnapshotResponse
+	message.Result = result
+	return message
+}
+
+// MessageBlockchainRevertToSnapshotRequest represents a request message
+type MessageBlockchainRevertToSnapshotRequest struct {
+	Message
+	Snapshot int
+}
+
+// NewMessageBlockchainRevertToSnapshotRequest creates a request message
+func NewMessageBlockchainRevertToSnapshotRequest(snapshot int) *MessageBlockchainRevertToSnapshotRequest {
+	message := &MessageBlockchainRevertToSnapshotRequest{}
+	message.Kind = BlockchainRevertToSnapshotRequest
+	message.Snapshot = snapshot
+	return message
+}
+
+// MessageBlockchainRevertToSnapshotResponse represents a response message
+type MessageBlockchainRevertToSnapshotResponse struct {
+	Message
+}
+
+// NewMessageBlockchainRevertToSnapshotResponse creates a response message
+func NewMessageBlockchainRevertToSnapshotResponse(err error) *MessageBlockchainRevertToSnapshotResponse {
+	message := &MessageBlockchainRevertToSnapshotResponse{}
+	message.Kind = BlockchainRevertToSnapshotResponse
+	message.SetError(err)
 	return message
 }

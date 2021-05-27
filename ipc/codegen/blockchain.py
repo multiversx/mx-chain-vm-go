@@ -15,26 +15,35 @@ class HookSignature:
 
 
 signatures = [
-    HookSignature(name="AccountExists", input=[("address", "[]byte")], output=[("result", "bool")], error=True, badReturn="false"),
     HookSignature(name="NewAddress", input=[("creatorAddress", "[]byte"), ("creatorNonce", "uint64"), ("vmType", "[]byte")], output=[("result", "[]byte")], error=True),
-    HookSignature(name="GetBalance", input=[("address", "[]byte")], output=[("balance", "*big.Int")], error=True),
-    HookSignature(name="GetNonce", input=[("address", "[]byte")], output=[("nonce", "uint64")], error=True, badReturn="0"),
-    HookSignature(name="GetStorageData", input=[("address", "[]byte"), ("index", "[]byte")], output=[("data", "[]byte")], error=True),
-    HookSignature(name="IsCodeEmpty", input=[("address", "[]byte")], output=[("result", "bool")], error=True, badReturn="false"),
-    HookSignature(name="GetCode", input=[("address", "[]byte")], output=[("code", "[]byte")], error=True),
+    HookSignature(name="GetStorageData", input=[("accountAddress", "[]byte"), ("index", "[]byte")], output=[("data", "[]byte")], error=True),
     HookSignature(name="GetBlockhash", input=[("nonce", "uint64")], output=[("result", "[]byte")], error=True),
-
     HookSignature(name="LastNonce", input=[], output=[("result", "uint64")], badReturn="0"),
-    HookSignature(name="LastRound", input=[], output=[("result", "uint64")], badReturn="0"),
-    HookSignature(name="LastTimeStamp", input=[], output=[("result", "uint64")], badReturn="0"),
-    HookSignature(name="LastRandomSeed", input=[], output=[("result", "[]byte")], badReturn="nil"),
-    HookSignature(name="LastEpoch", input=[], output=[("result", "uint32")], badReturn="0"),
-    HookSignature(name="GetStateRootHash", input=[], output=[("result", "[]byte")], badReturn="nil"),
-    HookSignature(name="CurrentNonce", input=[], output=[("result", "uint64")], badReturn="0"),
+    HookSignature(name="LastRound", input=[], output=[("result", "uint64")], badReturn="0"),    
+    HookSignature(name="LastTimeStamp", input=[], output=[("result", "uint64")], badReturn="0"), 
+    HookSignature(name="LastRandomSeed", input=[], output=[("result", "[]byte")], badReturn="nil"), 
+    HookSignature(name="LastEpoch", input=[], output=[("result", "uint32")], badReturn="0"),   
+    HookSignature(name="GetStateRootHash", input=[], output=[("result", "[]byte")], badReturn="nil"), 
+    HookSignature(name="CurrentNonce", input=[], output=[("result", "uint64")], badReturn="0"),   
     HookSignature(name="CurrentRound", input=[], output=[("result", "uint64")], badReturn="0"),
-    HookSignature(name="CurrentTimeStamp", input=[], output=[("result", "uint64")], badReturn="0"),
-    HookSignature(name="CurrentRandomSeed", input=[], output=[("result", "[]byte")], badReturn="nil"),
-    HookSignature(name="CurrentEpoch", input=[], output=[("result", "uint32")], badReturn="0")
+    HookSignature(name="CurrentTimeStamp", input=[], output=[("result", "uint64")], badReturn="0"),  
+    HookSignature(name="CurrentRandomSeed", input=[], output=[("result", "[]byte")], badReturn="nil"), 
+    HookSignature(name="CurrentEpoch", input=[], output=[("result", "uint32")], badReturn="0"),
+    HookSignature(name="ProcessBuiltInFunction", input=[("input", "*vmcommon.ContractCallInput")], output=[("vmOutput", "*vmcommon.VMOutput")], error=True),
+    HookSignature(name="GetBuiltinFunctionNames", input=[], output=[("result", "vmcommon.FunctionNames")], badReturn="nil"),
+    HookSignature(name="GetAllState", input=[("address", "[]byte")], output=[("result", "map[string][]byte")], error=True),             
+    HookSignature(name="GetUserAccount", input=[("address", "[]byte")], output=[("result", "vmcommon.UserAccountHandler")], error=True),             
+    HookSignature(name="GetCode", input=[("handler", "vmcommon.UserAccountHandler")], output=[("code", "[]byte")], badReturn="nil, nil"),
+    HookSignature(name="GetShardOfAddress", input=[("address", "[]byte")], output=[("result", "uint32")], badReturn="0"),    
+    HookSignature(name="IsSmartContract", input=[("address", "[]byte")], output=[("result", "bool")], badReturn="false"),
+    HookSignature(name="IsPayable", input=[("address", "[]byte")], output=[("result", "bool")], error=True, badReturn="false"),
+    HookSignature(name="SaveCompiledCode", input=[("codeHash", "[]byte"), ("code", "[]byte")], output=[], badReturn=""),
+    HookSignature(name="GetCompiledCode", input=[("codeHash", "[]byte")], output=[("found", "bool"), ("code", "[]byte")]),
+    HookSignature(name="ClearCompiledCodes", input=[], output=[]),
+    HookSignature(name="GetESDTToken", input=[("address", "[]byte"), ("tokenID", "[]byte"), ("nonce", "uint64")], output=[("result", "*esdt.ESDigitalToken")], error=True),
+    HookSignature(name="IsInterfaceNil", input=[], output=[("result", "bool")], badReturn="false"),
+    HookSignature(name="GetSnapshot", input=[], output=[("result", "int")]),
+    HookSignature(name="RevertToSnapshot", input=[("snapshot", "int")], output=[], error=True, badReturn="")
 ]
 
 
@@ -145,7 +154,12 @@ def my_capitalize(input):
 
 def generate_repliers(args):
     print("package nodepart")
-    print("import \"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/ipc/common\"")
+    print("""
+    	import (
+	    \"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/ipc/common\"
+	    \"github.com/ElrondNetwork/elrond-go/data/esdt\"
+	)
+	""")
 
     for signature in signatures:
         call_go, output_args = get_call(signature)
@@ -177,11 +191,16 @@ def get_call(signature):
     output_args = ", ".join(output_args)
     call_args = ", ".join(call_args)
 
-    return f"{output_args} := part.blockchain.{signature.name}({call_args})", output_args
+    if signature.output:
+        return f"{output_args} := part.blockchain.{signature.name}({call_args})", output_args
+    elif signature.error:
+        return f"err := part.blockchain.{signature.name}({call_args})", output_args    
+    else:
+        return f"part.blockchain.{signature.name}({call_args})", output_args
 
 
 def generate_reply_slots(args):
-    print("part.Repliers = common.CreateReplySlots()")
+    print("part.Repliers = common.CreateReplySlots(part.noopReplier)")
 
     for signature in signatures:
         print(f"part.Repliers[common.Blockchain{signature.name}Request] = part.replyToBlockchain{signature.name}")
@@ -256,6 +275,8 @@ def get_output_args(signature):
 
 
 def get_gateway_return(signature):
+    if not signature.output:
+        return f"return"
     result_field, _ = signature.output[0]
     result_field = my_capitalize(result_field)
 
