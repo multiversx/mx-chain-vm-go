@@ -34,7 +34,7 @@ func (pfe *fuzzDexExecutor) exitFarm(amountMax int, statistics *eventsStatistics
 		farm: 	 farm,
 	}
 
-	wegldBefore, err := pfe.getTokens(user, pfe.wegldTokenId)
+	mexBefore, err := pfe.getTokens(user, pfe.mexTokenId)
 	if err != nil {
 		return nil
 	}
@@ -72,14 +72,14 @@ func (pfe *fuzzDexExecutor) exitFarm(amountMax int, statistics *eventsStatistics
 	if success {
 		statistics.exitFarmHits += 1
 
-		wegldAfter, err := pfe.getTokens(user, pfe.wegldTokenId)
+		mexAfter, err := pfe.getTokens(user, pfe.mexTokenId)
 		if err != nil {
 			return nil
 		}
 
-		if wegldAfter.Cmp(wegldBefore) == 1 {
+		if mexAfter.Cmp(mexBefore) == 1 {
 			statistics.exitFarmWithRewards += 1
-		} else if wegldAfter.Cmp(wegldBefore) == -1 {
+		} else if mexAfter.Cmp(mexBefore) == -1 {
 			return errors.New("LOST wegld while unstake")
 		}
 

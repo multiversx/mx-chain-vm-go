@@ -19,5 +19,5 @@ func TestDistribution_v0_1_single(t *testing.T) {
 	}
 
 	arwen.SetLoggingForTests()
-	runSingleTest(t, "distribution/v0_1/mandos", "add_liquidity_proxy.scen.json")
+	runSingleTest(t, "distribution/v0_1/mandos", "claim_mex_rewards_proxy_after_mint_rewards.scen.json")
 }

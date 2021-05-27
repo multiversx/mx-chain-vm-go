@@ -163,7 +163,11 @@ func (pfe *fuzzDexExecutor) setupPair(swapAddress, firstTokenId, secondTokenId,	
                         "str:router_address": "%s",
                         "str:router_owner_address": "%s",
                         "str:total_fee_percent": "300",
-                        "str:special_fee_percent": "050"
+                        "str:special_fee_percent": "050",
+						"str:burn_tokens_gas_limit": "500000",
+						"str:mint_tokens_gas_limit": "500000",
+						"str:send_fee_gas_limit": "25,000,000",
+						"str:extern_swap_gas_limit": "50,000,000"
                     },
                     "code": "file:elrond_dex_pair.wasm",
                     "owner": "%s"
@@ -218,7 +222,10 @@ func (pfe *fuzzDexExecutor) setupFarm(farmAddress, farmTokenId, enterFarmTokenId
 						"str:owner": "%s",
 						"str:minimum_farming_epochs": "2",
 						"str:burn_tokens_gas_limit": "5,000,000",
-						"str:locked_rewards_liquidity_mulitplier": "2",
+						"str:mint_tokens_gas_limit": "5,000,000",
+						"str:locked_rewards_apr_multiplier": "2",
+						"str:division_safety_constant": "1000000000000",
+						"str:create_farm_tokens_gas_limit": "5000000",
 						"str:penalty_percent": "10"
 					},
 					"code": "file:elrond_dex_farm.wasm",
