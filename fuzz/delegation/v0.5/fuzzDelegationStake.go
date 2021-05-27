@@ -99,6 +99,7 @@ func (pfe *fuzzDelegationExecutor) unBond(delegatorIndex int) error {
 		return err
 	}
 
+	// TODO: simulate incomplete unbonds with repeated calls with lower gas
 	output, err := pfe.executeTxStep(fmt.Sprintf(`
 	{
 		"step": "scCall",
@@ -109,7 +110,7 @@ func (pfe *fuzzDelegationExecutor) unBond(delegatorIndex int) error {
 			"value": "0",
 			"function": "unBond",
 			"arguments": [],
-			"gasLimit": "100,000,000",
+			"gasLimit": "500,000,000",
 			"gasPrice": "0"
 		}
 	}`,

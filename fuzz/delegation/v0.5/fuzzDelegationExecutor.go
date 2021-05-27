@@ -69,7 +69,8 @@ func newFuzzDelegationExecutor(fileResolver fr.FileResolver) (*fuzzDelegationExe
 	if err != nil {
 		return nil, err
 	}
-	arwenTestExecutor.SetMandosGasSchedule(mj.GasScheduleV2)
+	mandosGasSchedule := mj.GasScheduleV2
+	arwenTestExecutor.SetMandosGasSchedule(mandosGasSchedule)
 
 	parser := mjparse.NewParser(fileResolver)
 
@@ -84,7 +85,8 @@ func newFuzzDelegationExecutor(fileResolver fr.FileResolver) (*fuzzDelegationExe
 		totalStakeWithdrawn: big.NewInt(0),
 		totalRewards:        big.NewInt(0),
 		generatedScenario: &mj.Scenario{
-			Name: "fuzz generated",
+			Name:        "fuzz generated",
+			GasSchedule: mandosGasSchedule,
 		},
 	}, nil
 }
@@ -270,29 +272,21 @@ func (pfe *fuzzDelegationExecutor) simpleQuery(funcName string) (*big.Int, error
 func (pfe *fuzzDelegationExecutor) querySingleResult(funcName string, args string) (*big.Int, error) {
 	output, err := pfe.executeTxStep(fmt.Sprintf(`
 	{
-		"step": "scCall",
+		"step": "scQuery",
 		"txId": "%d",
 		"tx": {
-			"from": "%s",
 			"to": "%s",
-			"value": "0",
 			"function": "%s",
 			"arguments": [
 				%s
-			],
-			"gasLimit": "10,000,000",
-			"gasPrice": "0"
+			]
 		},
 		"expect": {
 			"out": [ "*" ],
-			"status": "",
-			"logs": [],
-			"gas": "*",
-			"refund": "*"
+			"status": ""
 		}
 	}`,
 		pfe.nextTxIndex(),
-		pfe.ownerAddress,
 		pfe.delegationContractAddress,
 		funcName,
 		args,
@@ -436,7 +430,7 @@ func (pfe *fuzzDelegationExecutor) isBootstrapMode() (bool, error) {
 			"value": "0",
 			"function": "isBootstrapMode",
 			"arguments": [],
-			"gasLimit": "100,000",
+			"gasLimit": "50,000,000",
 			"gasPrice": "0"
 		}
 	}`,
