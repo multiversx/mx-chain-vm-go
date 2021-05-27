@@ -265,10 +265,6 @@ func (pfe *fuzzDelegationExecutor) increaseBlockNonce(nonceDelta int) error {
 	return nil
 }
 
-func (pfe *fuzzDelegationExecutor) simpleQuery(funcName string) (*big.Int, error) {
-	return pfe.querySingleResult(funcName, "")
-}
-
 func (pfe *fuzzDelegationExecutor) querySingleResult(funcName string, args string) (*big.Int, error) {
 	output, err := pfe.executeTxStep(fmt.Sprintf(`
 	{
