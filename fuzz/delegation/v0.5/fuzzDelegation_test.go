@@ -60,7 +60,6 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 	} else {
 		seed = *seedFlag
 	}
-	// seed := int64(1617992497512090274) // to replay fuzzing scenario
 	pfe.log("Random seed: %d\n", seed)
 	r := rand.New(rand.NewSource(seed))
 	r.Seed(seed)
