@@ -3,16 +3,7 @@ package arwenmandos
 import (
 	"fmt"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
 	gasSchedules "github.com/ElrondNetwork/arwen-wasm-vm/arwenmandos/gasSchedules"
-	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	mc "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/controller"
-	er "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/expression/reconstructor"
-	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/fileresolver"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
-	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
-	test "github.com/ElrondNetwork/arwen-wasm-vm/testcommon"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen/host"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
