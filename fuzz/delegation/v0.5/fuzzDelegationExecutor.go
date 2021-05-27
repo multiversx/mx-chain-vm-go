@@ -65,7 +65,7 @@ type fuzzDelegationExecutor struct {
 }
 
 func newFuzzDelegationExecutor(fileResolver fr.FileResolver) (*fuzzDelegationExecutor, error) {
-	arwenTestExecutor, err := am.NewArwenTestExecutor("../../arwenmandos")
+	arwenTestExecutor, err := am.NewArwenTestExecutor()
 	if err != nil {
 		return nil, err
 	}

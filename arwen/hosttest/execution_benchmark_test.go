@@ -8,6 +8,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen/host"
+	gasSchedules "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwenmandos/gasSchedules"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
 	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
@@ -84,7 +85,7 @@ func deploy(tb testing.TB, totalTokenSupply *big.Int) (arwen.VMHost, *worldmock.
 		NewAddress:     scAddress,
 	})
 
-	gasMap, err := testcommon.LoadGasScheduleConfig("../../arwenmandos/gasSchedules/gasScheduleV2.toml")
+	gasMap, err := testcommon.LoadGasScheduleConfig(gasSchedules.GetV2())
 	require.Nil(tb, err)
 
 	host, err := arwenHost.NewArwenVM(mockWorld, &arwen.VMHostParameters{
