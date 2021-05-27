@@ -32,13 +32,15 @@ type fuzzDexExecutorInitArgs struct {
 	queryPairsProb          float32
 	enterFarmProb           float32
 	exitFarmProb            float32
-	increaseEpochProb       float32
+	claimRewardsProb		float32
+	increaseBlockNonceProb  float32
 	removeLiquidityMaxValue int
 	addLiquidityMaxValue    int
 	swapMaxValue            int
 	enterFarmMaxValue       int
 	exitFarmMaxValue        int
-	blockEpochIncrease      int
+	claimRewardsMaxValue	int
+	blockNonceIncrease      int
 }
 
 type SwapPair struct {
@@ -91,15 +93,15 @@ type fuzzDexExecutor struct {
 	queryPairsProb          float32
 	enterFarmProb           float32
 	exitFarmProb            float32
-	unbondProb              float32
-	increaseEpochProb       float32
+	claimRewardsProb        float32
+	increaseBlockNonceProb  float32
 	removeLiquidityMaxValue int
 	addLiquidityMaxValue    int
 	swapMaxValue            int
 	enterFarmMaxValue       int
 	exitFarmMaxValue        int
-	unbondMaxValue          int
-	blockEpochIncrease      int
+	claimRewardsMaxValue    int
+	blockNonceIncrease      int
 	tokensCheckFrequency    int
 	currentFarmTokenNonce   map[string]int
 	farmers                 map[int]FarmerInfo
@@ -130,6 +132,10 @@ type eventsStatistics struct {
 	exitFarmHits        int
 	exitFarmMisses      int
 	exitFarmWithRewards int
+
+	claimRewardsHits		int
+	claimRewardsMisses		int
+	claimRewardsWithRewards int
 }
 
 func newFuzzDexExecutor(fileResolver fr.FileResolver) (*fuzzDexExecutor, error) {
@@ -290,28 +296,28 @@ func (pfe *fuzzDexExecutor) querySingleResultStringAddr(from string, to string, 
 	return output.ReturnData, nil
 }
 
-func (pfe *fuzzDexExecutor) increaseBlockEpoch(epochDelta int) error {
-	currentBlockEpoch := uint32(0)
+func (pfe *fuzzDexExecutor) increaseBlockNonce(epochDelta int) error {
+	currentBlockNonce := uint64(0)
 	if pfe.world.CurrentBlockInfo != nil {
-		currentBlockEpoch = pfe.world.CurrentBlockInfo.BlockEpoch
+		currentBlockNonce = pfe.world.CurrentBlockInfo.BlockNonce
 	}
 
 	err := pfe.executeStep(fmt.Sprintf(`
 	{
 		"step": "setState",
-		"comment": "%d - increase block epoch",
+		"comment": "%d - increase block nonce",
 		"currentBlockInfo": {
-			"blockEpoch": "%d"
+			"blockNonce": "%d"
 		}
 	}`,
 		pfe.nextTxIndex(),
-		currentBlockEpoch+uint32(epochDelta),
+		currentBlockNonce+uint64(epochDelta),
 	))
 	if err != nil {
 		return err
 	}
 
-	pfe.log("block epoch: %d ---> %d", currentBlockEpoch, currentBlockEpoch+uint32(epochDelta))
+	pfe.log("block epoch: %d ---> %d", currentBlockNonce, currentBlockNonce+uint64(epochDelta))
 	return nil
 }
 

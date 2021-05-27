@@ -68,15 +68,17 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 			addLiquidityProb:        0.20,
 			swapProb:                0.35,
 			queryPairsProb:          0.05,
-			enterFarmProb:           0.20,
-			exitFarmProb:            0.12,
-			increaseEpochProb:       0.02,
+			enterFarmProb:           0.16,
+			exitFarmProb:            0.06,
+			claimRewardsProb:		 0.10,
+			increaseBlockNonceProb:  0.02,
 			removeLiquidityMaxValue: 1000000000,
 			addLiquidityMaxValue:    1000000000,
 			swapMaxValue:            10000000,
 			enterFarmMaxValue:       100000000,
 			exitFarmMaxValue:        100000000,
-			blockEpochIncrease:      10,
+			claimRewardsMaxValue: 	 100000000,
+			blockNonceIncrease:		 1,
 		},
 	)
 	require.Nil(t, err)
@@ -99,6 +101,9 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 		exitFarmHits:               0,
 		exitFarmMisses:             0,
 		exitFarmWithRewards:        0,
+		claimRewardsHits:			0,
+		claimRewardsMisses:			0,
+		claimRewardsWithRewards:	0,
 	}
 
 	re := fuzzutil.NewRandomEventProvider(r)
@@ -185,14 +190,21 @@ func generateRandomEvent(
 	// exitFarm
 	case re.WithProbability(pfe.exitFarmProb):
 
-		amount := r.Intn(pfe.removeLiquidityMaxValue) + 1
+		amount := r.Intn(pfe.exitFarmMaxValue) + 1
 		err := pfe.exitFarm(amount, statistics, r)
 		require.Nil(t, err)
 
-	// increase block epoch. required for unbond
-	case re.WithProbability(pfe.increaseEpochProb):
+	// claimRewards
+	case re.WithProbability(pfe.claimRewardsProb):
 
-		err := pfe.increaseBlockEpoch(pfe.blockEpochIncrease)
+		amount := r.Intn(pfe.claimRewardsMaxValue) + 1
+		err := pfe.claimRewards(amount, statistics, r)
+		require.Nil(t, err)
+
+	// increase block nonce. required for rewards
+	case re.WithProbability(pfe.increaseBlockNonceProb):
+
+		err := pfe.increaseBlockNonce(pfe.blockNonceIncrease)
 		require.Nil(t, err)
 	default:
 	}
@@ -266,5 +278,9 @@ func printStatistics(statistics *eventsStatistics, pfe *fuzzDexExecutor) {
 	pfe.log("\texitFarmHits				%d", statistics.exitFarmHits)
 	pfe.log("\texitFarmMisses				%d", statistics.exitFarmMisses)
 	pfe.log("\texitFarmWithRewards			%d", statistics.exitFarmWithRewards)
+	pfe.log("")
+	pfe.log("\tclaimRewardsHits			%d", statistics.claimRewardsHits)
+	pfe.log("\tclaimRewardsMisses			%d", statistics.claimRewardsMisses)
+	pfe.log("\tclaimRewardsWithRewards		%d", statistics.claimRewardsWithRewards)
 	pfe.log("")
 }

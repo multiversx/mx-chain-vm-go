@@ -21,13 +21,15 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 	pfe.queryPairsProb = args.queryPairsProb
 	pfe.enterFarmProb = args.enterFarmProb
 	pfe.exitFarmProb = args.exitFarmProb
-	pfe.increaseEpochProb = args.increaseEpochProb
+	pfe.claimRewardsProb = args.claimRewardsProb
+	pfe.increaseBlockNonceProb = args.increaseBlockNonceProb
 	pfe.removeLiquidityMaxValue = args.removeLiquidityMaxValue
 	pfe.addLiquidityMaxValue = args.addLiquidityMaxValue
 	pfe.swapMaxValue = args.swapMaxValue
 	pfe.enterFarmMaxValue = args.enterFarmMaxValue
 	pfe.exitFarmMaxValue = args.exitFarmMaxValue
-	pfe.blockEpochIncrease = args.blockEpochIncrease
+	pfe.claimRewardsMaxValue = args.claimRewardsMaxValue
+	pfe.blockNonceIncrease = args.blockNonceIncrease
 	pfe.farmers = make(map[int]FarmerInfo)
 	pfe.currentFarmTokenNonce = make(map[string]int)
 
