@@ -152,7 +152,7 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 
 	activeAndWithdrawn := big.NewInt(0).Add(withdrawnAtTheEnd, totalActiveStake)
 	require.True(t, activeAndWithdrawn.Cmp(pfe.totalStakeAdded) == 0,
-		"Stake added and withdrawn doesn't match. Staked: %d. Withdrawn: %d. Off by: %d",
+		"Stake added and withdrawn doesn't match. Staked: %d. Active+Withdrawn: %d. Off by: %d",
 		pfe.totalStakeAdded, activeAndWithdrawn,
 		big.NewInt(0).Sub(pfe.totalStakeAdded, activeAndWithdrawn))
 }

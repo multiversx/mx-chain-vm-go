@@ -67,7 +67,7 @@ func (pfe *fuzzDelegationExecutor) unStake(delegatorIndex int, stake *big.Int) e
 			"value": "0",
 			"function": "unStake",
 			"arguments": ["%d"],
-			"gasLimit": "100,000,000",
+			"gasLimit": "500,000,000",
 			"gasPrice": "0"
 		}
 	}`,
@@ -81,6 +81,8 @@ func (pfe *fuzzDelegationExecutor) unStake(delegatorIndex int, stake *big.Int) e
 	}
 	if output.ReturnCode == vmi.Ok {
 		pfe.log("unStake, delegator: %d", delegatorIndex)
+	} else if output.ReturnCode == vmi.OutOfGas {
+		panic(fmt.Sprintf("unStake, delegator: %d, out of gas, message: %s", delegatorIndex, output.ReturnMessage))
 	} else {
 		pfe.log("unStake, delegator: %d, fail, %s", delegatorIndex, output.ReturnMessage)
 	}
@@ -90,20 +92,16 @@ func (pfe *fuzzDelegationExecutor) unStake(delegatorIndex int, stake *big.Int) e
 }
 
 func (pfe *fuzzDelegationExecutor) unBond(delegatorIndex int) error {
-	deferredPaymentBefore, err := pfe.getUserStakeOfType(delegatorIndex, UserDeferredPayment)
+	unbondable, err := pfe.getUserStakeOfType(delegatorIndex, UserUnbondable)
 	if err != nil {
 		return err
 	}
-	withdrawOnly, err := pfe.getUserStakeOfType(delegatorIndex, UserWithdrawOnly)
-	if err != nil {
-		return err
-	}
-	deferredPaymentAfter := big.NewInt(0)
+	unbondedSum := big.NewInt(0)
 
 	callIndex := 0
-	for withdrawOnly.Sign() > 0 {
+	for unbondable.Sign() > 0 {
 		callIndex++
-		_, err := pfe.executeTxStep(fmt.Sprintf(`
+		output, err := pfe.executeTxStep(fmt.Sprintf(`
 		{
 			"step": "scCall",
 			"txId": "%d",
@@ -129,23 +127,28 @@ func (pfe *fuzzDelegationExecutor) unBond(delegatorIndex int) error {
 		if err != nil {
 			return err
 		}
-		withdrawOnly, err = pfe.getUserStakeOfType(delegatorIndex, UserWithdrawOnly)
+		unbondedSum = unbondedSum.Add(unbondedSum, big.NewInt(0).SetBytes(output.ReturnData[0]))
+		unbondable, err = pfe.getUserStakeOfType(delegatorIndex, UserUnbondable)
 		if err != nil {
 			return err
 		}
-		deferredPaymentAfter, err = pfe.getUserStakeOfType(delegatorIndex, UserDeferredPayment)
+		withdrawOnly, err := pfe.getUserStakeOfType(delegatorIndex, UserWithdrawOnly)
+		if err != nil {
+			return err
+		}
+		deferredPayment, err := pfe.getUserStakeOfType(delegatorIndex, UserDeferredPayment)
 		if err != nil {
 			return err
 		}
 
-		pfe.log("unBond, call #%d, delegator: %d, WithdrawOnly stake: %d. DeferredPayment: %d",
-			callIndex, delegatorIndex, withdrawOnly, deferredPaymentAfter)
+		pfe.log("unBond, call #%d, delegator: %d, Still unbondable: %d, WithdrawOnly stake: %d. DeferredPayment: %d",
+			callIndex, delegatorIndex, unbondable, withdrawOnly, deferredPayment)
 	}
 
-	deferredPaymentWithdrawn := big.NewInt(0).Sub(deferredPaymentBefore, deferredPaymentAfter)
-	stakeWithdrawn := big.NewInt(0).Add(deferredPaymentWithdrawn, withdrawOnly)
+	pfe.log("stake withdrawn %d", unbondedSum)
+	pfe.totalStakeWithdrawn.Add(pfe.totalStakeWithdrawn, unbondedSum)
 
-	if stakeWithdrawn.Cmp(big.NewInt(0)) > 0 {
+	if unbondedSum.Cmp(big.NewInt(0)) > 0 {
 		_, err = pfe.executeTxStep(fmt.Sprintf(`
 		{
 			"step": "transfer",
@@ -159,15 +162,12 @@ func (pfe *fuzzDelegationExecutor) unBond(delegatorIndex int) error {
 			pfe.nextTxIndex(),
 			pfe.delegatorAddress(delegatorIndex),
 			pfe.withdrawTargetAddress,
-			stakeWithdrawn,
+			unbondedSum,
 		))
 		if err != nil {
 			return err
 		}
 	}
-
-	pfe.log("stake withdrawn %d", stakeWithdrawn)
-	pfe.totalStakeWithdrawn.Add(pfe.totalStakeWithdrawn, stakeWithdrawn)
 
 	pfe.printUserStakeByType(delegatorIndex)
 	return nil

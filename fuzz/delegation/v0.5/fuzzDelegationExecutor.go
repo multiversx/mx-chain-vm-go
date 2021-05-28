@@ -25,6 +25,7 @@ const (
 	UserWaiting         = "getUserWaitingStake"
 	UserActive          = "getUserActiveStake"
 	UserDeferredPayment = "getUserDeferredPaymentStake"
+	UserUnbondable      = "getUnBondable"
 )
 
 type fuzzDelegationExecutorInitArgs struct {
@@ -69,7 +70,7 @@ func newFuzzDelegationExecutor(fileResolver fr.FileResolver) (*fuzzDelegationExe
 	if err != nil {
 		return nil, err
 	}
-	mandosGasSchedule := mj.GasScheduleV2
+	mandosGasSchedule := mj.GasScheduleV3
 	arwenTestExecutor.SetMandosGasSchedule(mandosGasSchedule)
 
 	parser := mjparse.NewParser(fileResolver)
@@ -240,12 +241,15 @@ func blsSignature(index int) string {
 		index)
 }
 
-func (pfe *fuzzDelegationExecutor) increaseBlockNonce(nonceDelta int) error {
+func (pfe *fuzzDelegationExecutor) getCurrentBlockNonce() uint64 {
 	curentBlockNonce := uint64(0)
 	if pfe.world.CurrentBlockInfo != nil {
 		curentBlockNonce = pfe.world.CurrentBlockInfo.BlockNonce
 	}
+	return curentBlockNonce
+}
 
+func (pfe *fuzzDelegationExecutor) setBlockNonce(oldNonce, newNonce uint64) error {
 	err := pfe.executeStep(fmt.Sprintf(`
 	{
 		"step": "setState",
@@ -255,14 +259,19 @@ func (pfe *fuzzDelegationExecutor) increaseBlockNonce(nonceDelta int) error {
 		}
 	}`,
 		pfe.nextTxIndex(),
-		curentBlockNonce+uint64(nonceDelta),
+		newNonce,
 	))
 	if err != nil {
 		return err
 	}
 
-	pfe.log("block nonce: %d ---> %d", curentBlockNonce, curentBlockNonce+uint64(nonceDelta))
+	pfe.log("block nonce: %d ---> %d", oldNonce, newNonce)
 	return nil
+}
+
+func (pfe *fuzzDelegationExecutor) increaseBlockNonce(nonceDelta int) error {
+	curentBlockNonce := pfe.getCurrentBlockNonce()
+	return pfe.setBlockNonce(curentBlockNonce, curentBlockNonce+uint64(nonceDelta))
 }
 
 func (pfe *fuzzDelegationExecutor) querySingleResult(funcName string, args string) (*big.Int, error) {
@@ -401,7 +410,7 @@ func (pfe *fuzzDelegationExecutor) continueGlobalOperation() error {
 		if err != nil {
 			return err
 		}
-		pfe.log("continue global operation %x", output.ReturnData[0])
+		pfe.log("continue global operation %s", string(output.ReturnData[0]))
 
 		if bytes.Equal(output.ReturnData[0], []byte("completed")) {
 			completed = true
