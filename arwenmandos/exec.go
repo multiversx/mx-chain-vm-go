@@ -3,9 +3,9 @@ package arwenmandos
 import (
 	"fmt"
 
-	gasSchedules "github.com/ElrondNetwork/arwen-wasm-vm/arwenmandos/gasSchedules"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen/host"
+	gasSchedules "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwenmandos/gasSchedules"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
 	mc "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/controller"
 	er "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/expression/reconstructor"

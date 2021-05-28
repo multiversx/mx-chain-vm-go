@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	gasSchedules "github.com/ElrondNetwork/arwen-wasm-vm/arwenmandos/gasSchedules"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen/host"
+	gasSchedules "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwenmandos/gasSchedules"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
 	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
