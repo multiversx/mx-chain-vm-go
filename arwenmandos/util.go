@@ -1,13 +1,11 @@
 package arwenmandos
 
 import (
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"math/big"
 
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
-	oj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/orderedjson"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	"github.com/ElrondNetwork/elrond-go/core"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
@@ -32,6 +30,7 @@ func convertAccount(testAcct *mj.Account) (*worldmock.Account, error) {
 		Balance:         big.NewInt(0).Set(testAcct.Balance.Value),
 		BalanceDelta:    big.NewInt(0),
 		DeveloperReward: big.NewInt(0),
+		Username:        testAcct.Username.Value,
 		Storage:         storage,
 		Code:            testAcct.Code.Value,
 		OwnerAddress:    testAcct.Owner.Value,
@@ -47,43 +46,35 @@ func convertAccount(testAcct *mj.Account) (*worldmock.Account, error) {
 
 	for _, mandosESDTData := range testAcct.ESDTData {
 		tokenName := mandosESDTData.TokenIdentifier.Value
-		tokenValue := mandosESDTData.Value.Value
-		tokenNonce := mandosESDTData.Nonce.Value
 		isFrozen := mandosESDTData.Frozen.Value > 0
-		tokenKey := worldmock.MakeTokenKey(tokenName, tokenNonce)
-		tokenData := &esdt.ESDigitalToken{
-			Value:      tokenValue,
-			Type:       uint32(core.Fungible),
-			Properties: makeESDTUserMetadataBytes(isFrozen),
-			TokenMetaData: &esdt.MetaData{
-				Name:  tokenName,
-				Nonce: tokenNonce,
-			},
+		for _, instance := range mandosESDTData.Instances {
+			tokenNonce := instance.Nonce.Value
+			tokenKey := worldmock.MakeTokenKey(tokenName, tokenNonce)
+			tokenBalance := instance.Balance.Value
+			tokenData := &esdt.ESDigitalToken{
+				Value:      tokenBalance,
+				Type:       uint32(core.Fungible),
+				Properties: makeESDTUserMetadataBytes(isFrozen),
+				TokenMetaData: &esdt.MetaData{
+					Name:       tokenName,
+					Nonce:      tokenNonce,
+					Creator:    instance.Creator.Value,
+					Royalties:  uint32(instance.Royalties.Value),
+					Hash:       instance.Hash.Value,
+					URIs:       [][]byte{instance.Uri.Value},
+					Attributes: instance.Attributes.Value,
+				},
+			}
+			err := account.SetTokenData(tokenKey, tokenData)
+			if err != nil {
+				return nil, err
+			}
+			err = account.SetLastNonce(tokenName, mandosESDTData.LastNonce.Value)
+			if err != nil {
+				return nil, err
+			}
 		}
-		err := account.SetTokenData(tokenKey, tokenData)
-		if err != nil {
-			return nil, err
-		}
-
-	}
-
-	for _, mandosESDTRoles := range testAcct.ESDTRoles {
-		tokenName := mandosESDTRoles.TokenIdentifier.Value
-		tokenRolesAsStrings := mandosESDTRoles.Roles
-		err := account.SetTokenRolesAsStrings(tokenName, tokenRolesAsStrings)
-		if err != nil {
-			return nil, err
-		}
-
-	}
-
-	if len(testAcct.ESDTLastNonces) > 0 {
-		lastNonces := make(map[string]uint64)
-		for tokenName, jsonNonce := range testAcct.ESDTLastNonces {
-			lastNonces[tokenName] = jsonNonce.Value
-		}
-
-		err := account.SetLastNonces(lastNonces)
+		err := account.SetTokenRolesAsStrings(tokenName, mandosESDTData.Roles)
 		if err != nil {
 			return nil, err
 		}
@@ -92,12 +83,34 @@ func convertAccount(testAcct *mj.Account) (*worldmock.Account, error) {
 	return account, nil
 }
 
+func validateSetStateAccount(mandosAccount *mj.Account, converted *worldmock.Account) error {
+	err := converted.Validate()
+	if err != nil {
+		return fmt.Errorf(
+			`"setState" step validation failed for account "%s": %w`,
+			mandosAccount.Address.Original,
+			err)
+	}
+	return nil
+}
+
 func makeESDTUserMetadataBytes(frozen bool) []byte {
 	metadata := &builtInFunctions.ESDTUserMetadata{
 		Frozen: frozen,
 	}
 
 	return metadata.ToBytes()
+}
+
+func validateNewAddressMocks(testNAMs []*mj.NewAddressMock) error {
+	for _, testNAM := range testNAMs {
+		if !worldmock.IsSmartContractAddress(testNAM.NewAddress.Value) {
+			return fmt.Errorf(
+				`address in "setState" "newAddresses" field should have SC format: %s`,
+				testNAM.NewAddress.Original)
+		}
+	}
+	return nil
 }
 
 func convertNewAddressMocks(testNAMs []*mj.NewAddressMock) []*worldmock.NewAddressMock {
@@ -148,35 +161,6 @@ func convertLogToTestFormat(outputLog *vmcommon.LogEntry) *mj.LogEntry {
 	return &testLog
 }
 
-func bigIntPretty(i *big.Int) string {
-	return fmt.Sprintf("0x%x (%d)", i, i)
-}
-
-func byteArrayPretty(bytes []byte) string {
-	if len(bytes) == 0 {
-		return "[]"
-	}
-
-	if canInterpretAsString(bytes) {
-		return fmt.Sprintf("0x%s (``%s)", hex.EncodeToString(bytes), string(bytes))
-	}
-
-	asInt := big.NewInt(0).SetBytes(bytes)
-	return fmt.Sprintf("0x%s (%d)", hex.EncodeToString(bytes), asInt)
-}
-
-func canInterpretAsString(bytes []byte) bool {
-	if len(bytes) == 0 {
-		return false
-	}
-	for _, b := range bytes {
-		if b < 32 || b > 126 {
-			return false
-		}
-	}
-	return true
-}
-
 func generateTxHash(txIndex string) []byte {
 	txIndexBytes := []byte(txIndex)
 	if len(txIndexBytes) > 32 {
@@ -188,20 +172,7 @@ func generateTxHash(txIndex string) []byte {
 	return txIndexBytes
 }
 
-// JSONCheckBytesString formats a list of JSONCheckBytes for printing to console.
-func checkBytesListPretty(jcbs []mj.JSONCheckBytes) string {
-	str := "["
-	for i, jcb := range jcbs {
-		if i > 0 {
-			str += ", "
-		}
-
-		str += "\"" + oj.JSONString(jcb.Original) + "\""
-	}
-	return str + "]"
-}
-
-func addESDTToVMInput(esdtData *mj.ESDTData, vmInput *vmcommon.VMInput) {
+func addESDTToVMInput(esdtData *mj.ESDTTxData, vmInput *vmcommon.VMInput) {
 	if esdtData != nil {
 		vmInput.ESDTTokenName = esdtData.TokenIdentifier.Value
 		vmInput.ESDTValue = esdtData.Value.Value

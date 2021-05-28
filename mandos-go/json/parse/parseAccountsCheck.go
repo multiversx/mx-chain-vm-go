@@ -15,12 +15,19 @@ func (p *Parser) processCheckAccount(acctRaw oj.OJsonObject) (*mj.CheckAccount, 
 	}
 
 	acct := mj.CheckAccount{
-		Nonce:         mj.JSONCheckUint64Unspecified(),
-		Balance:       mj.JSONCheckBigIntUnspecified(),
-		IgnoreStorage: true,
-		Code:          mj.JSONCheckBytesUnspecified(),
-		Owner:         mj.JSONCheckBytesUnspecified(),
-		AsyncCallData: mj.JSONCheckBytesUnspecified(),
+		Comment:               "",
+		Nonce:                 mj.JSONCheckUint64Unspecified(),
+		Balance:               mj.JSONCheckBigIntUnspecified(),
+		Username:              mj.JSONCheckBytesUnspecified(),
+		IgnoreStorage:         false,
+		MoreStorageAllowed:    false,
+		CheckStorage:          nil,
+		Code:                  mj.JSONCheckBytesUnspecified(),
+		Owner:                 mj.JSONCheckBytesUnspecified(),
+		AsyncCallData:         mj.JSONCheckBytesUnspecified(),
+		IgnoreESDT:            false,
+		MoreESDTTokensAllowed: false,
+		CheckESDTData:         nil,
 	}
 	var err error
 
@@ -49,38 +56,52 @@ func (p *Parser) processCheckAccount(acctRaw oj.OJsonObject) (*mj.CheckAccount, 
 					return nil, errors.New("invalid ESDT map")
 				}
 				for _, esdtKvp := range esdtMap.OrderedKV {
-					tokenNameStr, err := p.ValueInterpreter.InterpretString(esdtKvp.Key)
-					if err != nil {
-						return nil, fmt.Errorf("invalid esdt token identifer: %w", err)
-					}
-					acct.CheckESDTData, err = p.processAppendCheckESDTData(tokenNameStr, esdtKvp.Value, acct.CheckESDTData)
-					if err != nil {
-						return nil, fmt.Errorf("invalid esdt value: %w", err)
+					if esdtKvp.Key == "+" {
+						acct.MoreESDTTokensAllowed = true
+					} else {
+						tokenNameStr, err := p.ExprInterpreter.InterpretString(esdtKvp.Key)
+						if err != nil {
+							return nil, fmt.Errorf("invalid esdt token identifer: %w", err)
+						}
+						tokenName := mj.NewJSONBytesFromString(tokenNameStr, esdtKvp.Key)
+						esdtItem, err := p.processCheckESDTData(tokenName, esdtKvp.Value)
+						if err != nil {
+							return nil, fmt.Errorf("invalid esdt value: %w", err)
+						}
+						acct.CheckESDTData = append(acct.CheckESDTData, esdtItem)
 					}
 				}
+			}
+		case "username":
+			acct.Username, err = p.parseCheckBytes(kvp.Value)
+			if err != nil {
+				return nil, fmt.Errorf("invalid account username: %w", err)
 			}
 		case "storage":
 			acct.IgnoreStorage = IsStar(kvp.Value)
 			if !acct.IgnoreStorage {
-				// TODO: convert to a more permissive format
 				storageMap, storageOk := kvp.Value.(*oj.OJsonMap)
 				if !storageOk {
 					return nil, errors.New("invalid account storage")
 				}
 				for _, storageKvp := range storageMap.OrderedKV {
-					byteKey, err := p.ValueInterpreter.InterpretString(storageKvp.Key)
-					if err != nil {
-						return nil, fmt.Errorf("invalid account storage key: %w", err)
+					if storageKvp.Key == "+" {
+						acct.MoreStorageAllowed = true
+					} else {
+						byteKey, err := p.ExprInterpreter.InterpretString(storageKvp.Key)
+						if err != nil {
+							return nil, fmt.Errorf("invalid account storage key: %w", err)
+						}
+						byteVal, err := p.parseCheckBytes(storageKvp.Value)
+						if err != nil {
+							return nil, fmt.Errorf("invalid account storage value: %w", err)
+						}
+						stElem := mj.CheckStorageKeyValuePair{
+							Key:        mj.NewJSONBytesFromString(byteKey, storageKvp.Key),
+							CheckValue: byteVal,
+						}
+						acct.CheckStorage = append(acct.CheckStorage, &stElem)
 					}
-					byteVal, err := p.processSubTreeAsByteArray(storageKvp.Value)
-					if err != nil {
-						return nil, fmt.Errorf("invalid account storage value: %w", err)
-					}
-					stElem := mj.StorageKeyValuePair{
-						Key:   mj.NewJSONBytesFromString(byteKey, storageKvp.Key),
-						Value: byteVal,
-					}
-					acct.CheckStorage = append(acct.CheckStorage, &stElem)
 				}
 			}
 		case "code":
@@ -109,8 +130,8 @@ func (p *Parser) processCheckAccount(acctRaw oj.OJsonObject) (*mj.CheckAccount, 
 
 func (p *Parser) processCheckAccountMap(acctMapRaw oj.OJsonObject) (*mj.CheckAccounts, error) {
 	var checkAccounts = &mj.CheckAccounts{
-		OtherAccountsAllowed: false,
-		Accounts:             nil,
+		Accounts:            nil,
+		MoreAccountsAllowed: false,
 	}
 
 	preMap, isPreMap := acctMapRaw.(*oj.OJsonMap)
@@ -119,7 +140,7 @@ func (p *Parser) processCheckAccountMap(acctMapRaw oj.OJsonObject) (*mj.CheckAcc
 	}
 	for _, acctKVP := range preMap.OrderedKV {
 		if acctKVP.Key == "+" {
-			checkAccounts.OtherAccountsAllowed = true
+			checkAccounts.MoreAccountsAllowed = true
 		} else {
 			acct, acctErr := p.processCheckAccount(acctKVP.Value)
 			if acctErr != nil {

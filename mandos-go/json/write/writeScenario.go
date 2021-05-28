@@ -8,7 +8,7 @@ import (
 // ScenarioToJSONString converts a scenario object to its JSON representation.
 func ScenarioToJSONString(scenario *mj.Scenario) string {
 	jobj := ScenarioToOrderedJSON(scenario)
-	return oj.JSONString(jobj)
+	return oj.JSONString(jobj) + "\n"
 }
 
 // ScenarioToOrderedJSON converts a scenario object to an ordered JSON object.
@@ -46,7 +46,7 @@ func ScenarioToOrderedJSON(scenario *mj.Scenario) oj.OJsonObject {
 				stepOJ.Put("comment", stringToOJ(step.Comment))
 			}
 			if len(step.Accounts) > 0 {
-				stepOJ.Put("accounts", accountsToOJ(step.Accounts))
+				stepOJ.Put("accounts", AccountsToOJ(step.Accounts))
 			}
 			if len(step.NewAddressMocks) > 0 {
 				stepOJ.Put("newAddresses", newAddressMocksToOJ(step.NewAddressMocks))
@@ -103,7 +103,7 @@ func transactionToScenarioOJ(tx *mj.Transaction) oj.OJsonObject {
 		transactionOJ.Put("value", bigIntToOJ(tx.Value))
 	}
 	if tx.ESDTValue != nil {
-		esdtItemOJ := esdtToFullMapOJ(tx.ESDTValue)
+		esdtItemOJ := esdtTxDataToOJ(tx.ESDTValue)
 		transactionOJ.Put("esdt", esdtItemOJ)
 	}
 	if tx.Type.HasFunction() {
@@ -174,6 +174,8 @@ func gasScheduleToOJ(gasSchedule mj.GasSchedule) oj.OJsonObject {
 		return stringToOJ("v1")
 	case mj.GasScheduleV2:
 		return stringToOJ("v2")
+	case mj.GasScheduleV3:
+		return stringToOJ("v3")
 	default:
 		return stringToOJ("")
 	}

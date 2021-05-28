@@ -5,7 +5,8 @@ import (
 	oj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/orderedjson"
 )
 
-func accountsToOJ(accounts []*mj.Account) oj.OJsonObject {
+// AccountsToOJ converts a mandos-format account to an ordered JSON representation.
+func AccountsToOJ(accounts []*mj.Account) oj.OJsonObject {
 	acctsOJ := oj.NewMap()
 	for _, account := range accounts {
 		acctOJ := oj.NewMap()
@@ -14,16 +15,15 @@ func accountsToOJ(accounts []*mj.Account) oj.OJsonObject {
 		}
 		acctOJ.Put("nonce", uint64ToOJ(account.Nonce))
 		acctOJ.Put("balance", bigIntToOJ(account.Balance))
-		appendESDTToOJ(account.ESDTData, acctOJ)
-		if len(account.ESDTRoles) > 0 {
-			acctOJ.Put("esdtRoles", esdtRolesToMapOJ(account.ESDTRoles))
-		}
-		if len(account.ESDTLastNonces) > 0 {
-			acctOJ.Put("esdtLastNonces", esdtLastNoncesToMapOJ(account.ESDTLastNonces))
+		if len(account.ESDTData) > 0 {
+			acctOJ.Put("esdt", esdtDataToOJ(account.ESDTData))
 		}
 		storageOJ := oj.NewMap()
 		for _, st := range account.Storage {
 			storageOJ.Put(bytesFromStringToString(st.Key), bytesFromTreeToOJ(st.Value))
+		}
+		if len(account.Username.Value) > 0 {
+			acctOJ.Put("username", bytesFromStringToOJ(account.Username))
 		}
 		acctOJ.Put("storage", storageOJ)
 		acctOJ.Put("code", bytesFromStringToOJ(account.Code))
@@ -56,14 +56,23 @@ func checkAccountsToOJ(checkAccounts *mj.CheckAccounts) oj.OJsonObject {
 		if checkAccount.IgnoreESDT {
 			acctOJ.Put("esdt", stringToOJ("*"))
 		} else {
-			appendCheckESDTToOJ(checkAccount.CheckESDTData, acctOJ)
+			if len(checkAccount.CheckESDTData) > 0 {
+				acctOJ.Put("esdt", checkESDTDataToOJ(
+					checkAccount.CheckESDTData, checkAccount.MoreESDTTokensAllowed))
+			}
+		}
+		if !checkAccount.Username.IsUnspecified() {
+			acctOJ.Put("username", checkBytesToOJ(checkAccount.Username))
 		}
 		if checkAccount.IgnoreStorage {
 			acctOJ.Put("storage", stringToOJ("*"))
 		} else {
 			storageOJ := oj.NewMap()
 			for _, st := range checkAccount.CheckStorage {
-				storageOJ.Put(bytesFromStringToString(st.Key), bytesFromTreeToOJ(st.Value))
+				storageOJ.Put(bytesFromStringToString(st.Key), checkBytesToOJ(st.CheckValue))
+			}
+			if checkAccount.MoreStorageAllowed {
+				storageOJ.Put("+", stringToOJ(""))
 			}
 			acctOJ.Put("storage", storageOJ)
 		}
@@ -80,7 +89,7 @@ func checkAccountsToOJ(checkAccounts *mj.CheckAccounts) oj.OJsonObject {
 		acctsOJ.Put(bytesFromStringToString(checkAccount.Address), acctOJ)
 	}
 
-	if checkAccounts.OtherAccountsAllowed {
+	if checkAccounts.MoreAccountsAllowed {
 		acctsOJ.Put("+", stringToOJ(""))
 	}
 

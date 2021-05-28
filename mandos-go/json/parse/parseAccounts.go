@@ -12,9 +12,9 @@ func (p *Parser) parseAccountAddress(addrRaw string) (mj.JSONBytesFromString, er
 	if len(addrRaw) == 0 {
 		return mj.JSONBytesFromString{}, errors.New("missing account address")
 	}
-	addrBytes, err := p.ValueInterpreter.InterpretString(addrRaw)
+	addrBytes, err := p.ExprInterpreter.InterpretString(addrRaw)
 	if err == nil && len(addrBytes) != 32 {
-		return mj.JSONBytesFromString{}, errors.New("account addressis not 32 bytes in length")
+		return mj.JSONBytesFromString{}, errors.New("account address is not 32 bytes in length")
 	}
 	return mj.NewJSONBytesFromString(addrBytes, addrRaw), err
 }
@@ -25,7 +25,20 @@ func (p *Parser) processAccount(acctRaw oj.OJsonObject) (*mj.Account, error) {
 		return nil, errors.New("unmarshalled account object is not a map")
 	}
 
-	acct := mj.Account{}
+	acct := mj.Account{
+		Shard:           mj.JSONUint64Zero(),
+		IsSmartContract: false,
+		Comment:         "",
+		Nonce:           mj.JSONUint64Zero(),
+		Balance:         mj.JSONBigIntZero(),
+		Username:        mj.NewJSONBytesFromString(nil, ""),
+		Storage:         nil,
+		Code:            mj.NewJSONBytesFromString(nil, ""),
+		Owner:           mj.NewJSONBytesFromString(nil, ""),
+		AsyncCallData:   "",
+		ESDTData:        nil,
+	}
+
 	var err error
 
 	for _, kvp := range acctMap.OrderedKV {
@@ -56,28 +69,21 @@ func (p *Parser) processAccount(acctRaw oj.OJsonObject) (*mj.Account, error) {
 				return nil, errors.New("invalid ESDT map")
 			}
 			for _, esdtKvp := range esdtMap.OrderedKV {
-				tokenNameStr, err := p.ValueInterpreter.InterpretString(esdtKvp.Key)
+				tokenNameStr, err := p.ExprInterpreter.InterpretString(esdtKvp.Key)
 				if err != nil {
 					return nil, fmt.Errorf("invalid esdt token identifer: %w", err)
 				}
-				acct.ESDTData, err = p.processAppendESDTData(tokenNameStr, esdtKvp.Value, acct.ESDTData)
+				tokenName := mj.NewJSONBytesFromString(tokenNameStr, esdtKvp.Key)
+				esdtItem, err := p.processESDTData(tokenName, esdtKvp.Value)
 				if err != nil {
 					return nil, fmt.Errorf("invalid esdt value: %w", err)
 				}
+				acct.ESDTData = append(acct.ESDTData, esdtItem)
 			}
-		case "esdtRoles":
-			acct.ESDTRoles, err = p.processESDTRoles(kvp.Value)
+		case "username":
+			acct.Username, err = p.processStringAsByteArray(kvp.Value)
 			if err != nil {
-				return nil, fmt.Errorf("invalid esdtRoles: %w", err)
-			}
-		case "esdtLastNonces":
-			esdtMap, esdtOk := kvp.Value.(*oj.OJsonMap)
-			if !esdtOk {
-				return nil, errors.New("invalid ESDT map for last nonces")
-			}
-			acct.ESDTLastNonces, err = p.processESDTLastNonces(esdtMap)
-			if err != nil {
-				return nil, fmt.Errorf("invalid esdtLastNonces: %w", err)
+				return nil, fmt.Errorf("invalid account username: %w", err)
 			}
 		case "storage":
 			storageMap, storageOk := kvp.Value.(*oj.OJsonMap)
@@ -85,7 +91,7 @@ func (p *Parser) processAccount(acctRaw oj.OJsonObject) (*mj.Account, error) {
 				return nil, errors.New("invalid account storage")
 			}
 			for _, storageKvp := range storageMap.OrderedKV {
-				byteKey, err := p.ValueInterpreter.InterpretString(storageKvp.Key)
+				byteKey, err := p.ExprInterpreter.InterpretString(storageKvp.Key)
 				if err != nil {
 					return nil, fmt.Errorf("invalid account storage key: %w", err)
 				}

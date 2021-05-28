@@ -1,0 +1,56 @@
+{
+    "name": "dns check init",
+    "steps": [
+        {
+            "step": "setState",
+            "accounts": {
+                "address:viewer": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "check-version",
+            "tx": {
+                "from": "address:viewer",
+                "to": "sc:dns#00",
+                "value": "0",
+                "function": "version",
+                "arguments": [],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [ "''0.3.1" ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "check-owner",
+            "tx": {
+                "from": "address:viewer",
+                "to": "sc:dns#00",
+                "value": "0",
+                "function": "getContractOwner",
+                "arguments": [],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [ "address:dns_owner" ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        }
+    ]
+}

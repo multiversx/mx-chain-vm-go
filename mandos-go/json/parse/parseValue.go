@@ -50,7 +50,7 @@ func (p *Parser) processBigInt(obj oj.OJsonObject, format bigIntParseFormat) (mj
 }
 
 func (p *Parser) parseBigInt(strRaw string, format bigIntParseFormat) (*big.Int, error) {
-	bytes, err := p.ValueInterpreter.InterpretString(strRaw)
+	bytes, err := p.ExprInterpreter.InterpretString(strRaw)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +102,7 @@ func (p *Parser) processUint64(obj oj.OJsonObject) (mj.JSONUint64, error) {
 func (p *Parser) parseCheckBytes(obj oj.OJsonObject) (mj.JSONCheckBytes, error) {
 	if IsStar(obj) {
 		// "*" means any value, skip checking it
-		return mj.JSONCheckBytesExplicitStar(), nil
+		return mj.JSONCheckBytesStar(), nil
 	}
 
 	jb, err := p.processSubTreeAsByteArray(obj)
@@ -121,12 +121,12 @@ func (p *Parser) processStringAsByteArray(obj oj.OJsonObject) (mj.JSONBytesFromS
 	if err != nil {
 		return mj.JSONBytesFromString{}, err
 	}
-	result, err := p.ValueInterpreter.InterpretString(strVal)
+	result, err := p.ExprInterpreter.InterpretString(strVal)
 	return mj.NewJSONBytesFromString(result, strVal), err
 }
 
 func (p *Parser) processSubTreeAsByteArray(obj oj.OJsonObject) (mj.JSONBytesFromTree, error) {
-	value, err := p.ValueInterpreter.InterpretSubTree(obj)
+	value, err := p.ExprInterpreter.InterpretSubTree(obj)
 	return mj.JSONBytesFromTree{
 		Value:    value,
 		Original: obj,

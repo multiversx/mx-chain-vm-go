@@ -1,11 +1,8 @@
 package arwenmandos
 
 import (
-	"fmt"
-	"sort"
-
 	mc "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/controller"
-	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/fileresolver"
+	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/fileresolver"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
@@ -87,13 +84,17 @@ func (ae *ArwenTestExecutor) ExecuteSetStateStep(step *mj.SetStateStep) error {
 	}
 
 	// append accounts
-	for _, acct := range step.Accounts {
-		account, err := convertAccount(acct)
+	for _, mandosAccount := range step.Accounts {
+		worldAccount, err := convertAccount(mandosAccount)
+		if err != nil {
+			return err
+		}
+		err = validateSetStateAccount(mandosAccount, worldAccount)
 		if err != nil {
 			return err
 		}
 
-		ae.World.AcctMap.PutAccount(account)
+		ae.World.AcctMap.PutAccount(worldAccount)
 	}
 
 	// replace block info
@@ -102,6 +103,10 @@ func (ae *ArwenTestExecutor) ExecuteSetStateStep(step *mj.SetStateStep) error {
 	ae.World.Blockhashes = mj.JSONBytesFromStringValues(step.BlockHashes)
 
 	// append NewAddressMocks
+	err := validateNewAddressMocks(step.NewAddressMocks)
+	if err != nil {
+		return err
+	}
 	addressMocksToAdd := convertNewAddressMocks(step.NewAddressMocks)
 	ae.World.NewAddressMocks = append(ae.World.NewAddressMocks, addressMocksToAdd...)
 
@@ -129,33 +134,4 @@ func (ae *ArwenTestExecutor) ExecuteTxStep(step *mj.TxStep) (*vmi.VMOutput, erro
 	}
 
 	return output, nil
-}
-
-// DumpWorld prints the state of the MockWorld to stdout.
-func (ae *ArwenTestExecutor) DumpWorld() error {
-	fmt.Print("world state dump:\n")
-
-	for addr, account := range ae.World.AcctMap {
-		fmt.Printf("\t%s\n", byteArrayPretty([]byte(addr)))
-		fmt.Printf("\t\tnonce: %d\n", account.Nonce)
-		fmt.Printf("\t\tbalance: %d\n", account.Balance)
-
-		if len(account.Storage) > 0 {
-			var keys []string
-			for key := range account.Storage {
-				keys = append(keys, key)
-			}
-
-			fmt.Print("\t\tstorage:\n")
-			sort.Strings(keys)
-			for _, key := range keys {
-				value := account.Storage[key]
-				if len(value) > 0 {
-					fmt.Printf("\t\t\t%s => %s\n", byteArrayPretty([]byte(key)), byteArrayPretty(value))
-				}
-			}
-		}
-	}
-
-	return nil
 }

@@ -5,11 +5,14 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
+	gasSchedules "github.com/ElrondNetwork/arwen-wasm-vm/arwenmandos/gasSchedules"
 	"github.com/ElrondNetwork/arwen-wasm-vm/config"
 	mc "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/controller"
-	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/fileresolver"
+	er "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/expression/reconstructor"
+	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/fileresolver"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
 	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
+	test "github.com/ElrondNetwork/arwen-wasm-vm/testcommon"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
@@ -21,11 +24,12 @@ var TestVMType = []byte{0, 0}
 
 // ArwenTestExecutor parses, interprets and executes both .test.json tests and .scen.json scenarios with Arwen.
 type ArwenTestExecutor struct {
-	fileResolver            fr.FileResolver
 	World                   *worldhook.MockWorld
 	vm                      vmi.VMExecutionHandler
 	checkGas                bool
 	mandosGasScheduleLoaded bool
+	fileResolver            fr.FileResolver
+	exprReconstructor       er.ExprReconstructor
 }
 
 var _ mc.TestExecutor = (*ArwenTestExecutor)(nil)
@@ -54,11 +58,12 @@ func NewArwenTestExecutor() (*ArwenTestExecutor, error) {
 	}
 
 	return &ArwenTestExecutor{
-		fileResolver:            nil,
 		World:                   world,
 		vm:                      vm,
 		checkGas:                true,
 		mandosGasScheduleLoaded: false,
+		fileResolver:            nil,
+		exprReconstructor:       er.ExprReconstructor{},
 	}, nil
 }
 
@@ -67,16 +72,18 @@ func (ae *ArwenTestExecutor) GetVM() vmi.VMExecutionHandler {
 	return ae.vm
 }
 
-func gasScheduleMapFromMandos(mandosGasSchedule mj.GasSchedule) (config.GasScheduleMap, error) {
+func (ae *ArwenTestExecutor) gasScheduleMapFromMandos(mandosGasSchedule mj.GasSchedule) (config.GasScheduleMap, error) {
 	switch mandosGasSchedule {
 	case mj.GasScheduleDefault:
-		return arwenHost.LoadGasScheduleConfig("../../arwenmandos/gasSchedules/gasScheduleV2.toml")
+		return test.LoadGasScheduleConfig(gasSchedules.GetV3())
 	case mj.GasScheduleDummy:
 		return config.MakeGasMapForTests(), nil
 	case mj.GasScheduleV1:
-		return arwenHost.LoadGasScheduleConfig("../../arwenmandos/gasSchedules/gasScheduleV1.toml")
+		return test.LoadGasScheduleConfig(gasSchedules.GetV1())
 	case mj.GasScheduleV2:
-		return arwenHost.LoadGasScheduleConfig("../../arwenmandos/gasSchedules/gasScheduleV2.toml")
+		return test.LoadGasScheduleConfig(gasSchedules.GetV2())
+	case mj.GasScheduleV3:
+		return test.LoadGasScheduleConfig(gasSchedules.GetV3())
 	default:
 		return nil, fmt.Errorf("unknown mandos GasSchedule: %d", mandosGasSchedule)
 	}
@@ -89,11 +96,11 @@ func (ae *ArwenTestExecutor) SetMandosGasSchedule(newGasSchedule mj.GasSchedule)
 	if ae.mandosGasScheduleLoaded {
 		return nil
 	}
-	ae.mandosGasScheduleLoaded = true
-	gasSchedule, err := gasScheduleMapFromMandos(newGasSchedule)
+	gasSchedule, err := ae.gasScheduleMapFromMandos(newGasSchedule)
 	if err != nil {
 		return err
 	}
+	ae.mandosGasScheduleLoaded = true
 	ae.vm.GasScheduleChange(gasSchedule)
 	return nil
 }

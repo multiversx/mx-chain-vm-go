@@ -8,7 +8,7 @@ import (
 // TestToJSONString converts a test object to its JSON representation.
 func TestToJSONString(testTopLevel []*mj.Test) string {
 	jobj := TestToOrderedJSON(testTopLevel)
-	return oj.JSONString(jobj)
+	return oj.JSONString(jobj) + "\n"
 }
 
 // TestToOrderedJSON converts a test object to an ordered JSON object.
@@ -29,7 +29,7 @@ func testToOJ(test *mj.Test) oj.OJsonObject {
 		testOJ.Put("checkGas", &ojFalse)
 	}
 
-	testOJ.Put("pre", accountsToOJ(test.Pre))
+	testOJ.Put("pre", AccountsToOJ(test.Pre))
 
 	var blockList []oj.OJsonObject
 	for _, block := range test.Blocks {

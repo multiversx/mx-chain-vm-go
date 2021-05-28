@@ -1,7 +1,7 @@
 package mandoscontroller
 
 import (
-	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/fileresolver"
+	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/fileresolver"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
 	mjparse "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/parse"
 )
