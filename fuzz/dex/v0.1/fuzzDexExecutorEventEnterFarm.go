@@ -46,15 +46,22 @@ func (pfe *fuzzDexExecutor) enterFarm(user string, farm Farm, amount int, statis
 		if errGet != nil {
 			return errGet
 		}
+
+		rps, err := pfe.querySingleResult(user, farm.address, "getRewardPerShare", "")
+		if err != nil {
+			return err
+		}
+
 		pfe.farmers[nonce] = FarmerInfo{
 			user:    user,
 			value:   bigint.Int64(),
 			farm: 	 farm,
+			rps:     string(rps[0]),
 		}
 	} else {
 		statistics.enterFarmMisses += 1
 		pfe.log("stake %s", farm.farmingToken)
-		pfe.log("could enter farm add because %s", output.ReturnMessage)
+		pfe.log("could enter farm because %s", output.ReturnMessage)
 
 		if output.ReturnMessage == "insufficient funds" {
 			return errors.New(output.ReturnMessage)

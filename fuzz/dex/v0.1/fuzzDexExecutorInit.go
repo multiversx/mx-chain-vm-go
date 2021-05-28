@@ -205,6 +205,7 @@ func (pfe *fuzzDexExecutor) setupFarm(farmAddress, farmTokenId, enterFarmTokenId
 						},
 						"str:%s": {
 							"roles": [
+								"ESDTRoleLocalMint",
 								"ESDTRoleLocalBurn"
 							]
 						},
@@ -228,7 +229,9 @@ func (pfe *fuzzDexExecutor) setupFarm(farmAddress, farmTokenId, enterFarmTokenId
 						"str:locked_rewards_apr_multiplier": "2",
 						"str:division_safety_constant": "1000000000000",
 						"str:create_farm_tokens_gas_limit": "5000000",
-						"str:penalty_percent": "10"
+						"str:produce_rewards_enabled": "1",
+						"str:per_block_reward_amount": "10000000000000000",
+						"str:penalty_percent": "0"
 					},
 					"code": "file:elrond_dex_farm.wasm",
 					"owner": "%s"

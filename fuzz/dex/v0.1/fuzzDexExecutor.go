@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
-
 	am "github.com/ElrondNetwork/arwen-wasm-vm/arwenmandos"
 	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/fileresolver"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
@@ -13,6 +11,7 @@ import (
 	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/write"
 	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	"io/ioutil"
 )
 
 type fuzzDexExecutorInitArgs struct {
@@ -61,6 +60,7 @@ type FarmerInfo struct {
 	user    string
 	value   int64
 	farm 	Farm
+	rps		string
 }
 
 type fuzzDexExecutor struct {
@@ -317,7 +317,7 @@ func (pfe *fuzzDexExecutor) increaseBlockNonce(epochDelta int) error {
 		return err
 	}
 
-	pfe.log("block epoch: %d ---> %d", currentBlockNonce, currentBlockNonce+uint64(epochDelta))
+	//pfe.log("block epoch: %d ---> %d", currentBlockNonce, currentBlockNonce+uint64(epochDelta))
 	return nil
 }
 

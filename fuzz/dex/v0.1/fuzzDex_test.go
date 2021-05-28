@@ -63,21 +63,21 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 			webuFarmTokenId:		 "WEBUFARM-abcdef",
 			mexFarmTokenId: 		 "MEXFARM-abcdef",
 			numUsers:                10,
-			numEvents:               1000,
+			numEvents:               5000,
 			removeLiquidityProb:     0.05,
 			addLiquidityProb:        0.20,
-			swapProb:                0.35,
+			swapProb:                0.25,
 			queryPairsProb:          0.05,
-			enterFarmProb:           0.16,
+			enterFarmProb:           0.18,
 			exitFarmProb:            0.06,
-			claimRewardsProb:		 0.10,
-			increaseBlockNonceProb:  0.02,
+			claimRewardsProb:		 0.20,
+			increaseBlockNonceProb:  0.00,
 			removeLiquidityMaxValue: 1000000000,
 			addLiquidityMaxValue:    1000000000,
 			swapMaxValue:            10000000,
 			enterFarmMaxValue:       100000000,
 			exitFarmMaxValue:        100000000,
-			claimRewardsMaxValue: 	 100000000,
+			claimRewardsMaxValue: 	 10000000,
 			blockNonceIncrease:		 1,
 		},
 	)
@@ -109,6 +109,7 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 	re := fuzzutil.NewRandomEventProvider(r)
 	for stepIndex := 0; stepIndex < pfe.numEvents; stepIndex++ {
 		generateRandomEvent(t, pfe, r, re, &stats)
+		pfe.increaseBlockNonce(1)
 	}
 
 	printStatistics(&stats, pfe)
