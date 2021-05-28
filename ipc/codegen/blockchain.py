@@ -384,6 +384,8 @@ func init() {{
     messageCreators[ContractResponse] = createMessageContractResponse
     messageCreators[DiagnoseWaitRequest] = createMessageDiagnoseWaitRequest
     messageCreators[DiagnoseWaitResponse] = createMessageDiagnoseWaitResponse
+    messageCreators[VersionRequest] = createMessageVersionRequest
+	messageCreators[VersionResponse] = createMessageVersionResponse
 
     {assignments}
 }}
@@ -414,6 +416,14 @@ func createMessageDiagnoseWaitRequest() MessageHandler {{
 
 func createMessageDiagnoseWaitResponse() MessageHandler {{
     return &MessageDiagnoseWaitResponse{{}}
+}}
+
+func createMessageVersionRequest() MessageHandler {{
+	return &MessageVersionRequest{{}}
+}}
+
+func createMessageVersionResponse() MessageHandler {{
+	return &MessageVersionResponse{{}}
 }}
 
 func createUndefinedMessage() MessageHandler {{
