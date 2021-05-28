@@ -18,6 +18,7 @@ type VMHostStub struct {
 	PushStateCalled       func()
 	PopStateCalled        func()
 	ClearStateStackCalled func()
+	GetVersionCalled      func() string
 
 	CryptoCalled                      func() crypto.VMCrypto
 	BlockchainCalled                  func() arwen.BlockchainContext
@@ -45,6 +46,15 @@ type VMHostStub struct {
 
 	SetRuntimeContextCalled func(runtime arwen.RuntimeContext)
 	GetContextsCalled       func() (arwen.BigIntContext, arwen.BlockchainContext, arwen.MeteringContext, arwen.OutputContext, arwen.RuntimeContext, arwen.StorageContext)
+}
+
+// GetVersion mocked method
+func (vhs *VMHostStub) GetVersion() string {
+	if vhs.GetVersionCalled != nil {
+		return vhs.GetVersionCalled()
+	}
+
+	return "stub"
 }
 
 // InitState mocked method
