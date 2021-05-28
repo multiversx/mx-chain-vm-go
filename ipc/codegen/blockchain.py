@@ -33,7 +33,7 @@ signatures = [
     HookSignature(name="GetBuiltinFunctionNames", input=[], output=[("result", "vmcommon.FunctionNames")], badReturn="nil"),
     HookSignature(name="GetAllState", input=[("address", "[]byte")], output=[("result", "map[string][]byte")], error=True),             
     HookSignature(name="GetUserAccount", input=[("address", "[]byte")], output=[("result", "vmcommon.UserAccountHandler")], error=True),             
-    HookSignature(name="GetCode", input=[("handler", "vmcommon.UserAccountHandler")], output=[("code", "[]byte")], badReturn="nil"),
+    HookSignature(name="GetCode", input=[("account", "vmcommon.UserAccountHandler")], output=[("code", "[]byte")], badReturn="nil"),
     HookSignature(name="GetShardOfAddress", input=[("address", "[]byte")], output=[("result", "uint32")], badReturn="0"),    
     HookSignature(name="IsSmartContract", input=[("address", "[]byte")], output=[("result", "bool")], badReturn="false"),
     HookSignature(name="IsPayable", input=[("address", "[]byte")], output=[("result", "bool")], error=True, badReturn="false"),
@@ -46,6 +46,9 @@ signatures = [
     HookSignature(name="RevertToSnapshot", input=[("snapshot", "int")], output=[], error=True)
 ]
 
+interfaceTOImplementations = { 'vmcommon.UserAccountHandler' : 'common.Account' }
+fieldsOfTO = { 'common.Account': [ ('Nonce', None), ('Balance', None), ('CodeHash', None), ('RootHash', None), ('Address', 'AddressBytes'), ('DeveloperReward', None), 
+                                    ('OwnerAddress', None), ('UserName', None), ('CodeMetadata', None) ] }
 
 def main():
     parser = ArgumentParser()
@@ -75,7 +78,15 @@ def main():
 
 
 def generate_messages(args):
-    print("package common")
+    package = "common"
+    print("package " + package)
+
+    print("""
+        import (        
+        \"github.com/ElrondNetwork/elrond-go/core/vmcommon\"
+        \"github.com/ElrondNetwork/elrond-go/data/esdt\"
+        )
+	""")
 
     for signature in signatures:
         request_kind = f"Blockchain{signature.name}Request"
@@ -83,11 +94,11 @@ def generate_messages(args):
         // Message{request_kind} represents a request message
         type Message{request_kind} struct {{
             Message
-            {get_struct_fields_go(signature.input)}
+            {get_struct_fields_go(signature.input, package)}
         }}
 
         // NewMessage{request_kind} creates a request message
-        func NewMessage{request_kind}({get_ctor_args(signature.input)}) *Message{request_kind} {{
+        func NewMessage{request_kind}({get_ctor_args(signature.input, package)}) *Message{request_kind} {{
             message := &Message{request_kind}{{}}
             message.Kind = {request_kind}
             {get_field_assignments(signature.input)}
@@ -100,11 +111,11 @@ def generate_messages(args):
         // Message{response_kind} represents a response message
         type Message{response_kind} struct {{
             Message
-             {get_struct_fields_go(signature.output)}
+             {get_struct_fields_go(signature.output, package)}
         }}
 
         // NewMessage{response_kind} creates a response message
-        func NewMessage{response_kind}({get_ctor_args(signature.output, error=signature.error)}) *Message{response_kind} {{
+        func NewMessage{response_kind}({get_ctor_args(signature.output, package, error=signature.error)}) *Message{response_kind} {{
             message := &Message{response_kind}{{}}
             message.Kind = {response_kind}
             {get_field_assignments(signature.output, error=signature.error)}
@@ -116,18 +127,22 @@ def generate_messages(args):
         print(response_go)
 
 
-def get_struct_fields_go(input_output):
+def get_struct_fields_go(input_output, package):
     fields = []
     for arg_name, arg_type in input_output:
         field_name = my_capitalize(arg_name)
+        if arg_type in interfaceTOImplementations:
+            arg_type = "*" + interfaceTOImplementations[arg_type].replace(package + ".", '')
         fields.append(f"{field_name} {arg_type}")
 
     return "\n".join(fields)
 
 
-def get_ctor_args(input_output, error=False):
+def get_ctor_args(input_output, package, useInterfaces=False, error=False):
     args = []
-    for arg_name, arg_type in input_output:
+    for arg_name, arg_type in input_output:        
+        if not useInterfaces and (arg_type in interfaceTOImplementations):
+            arg_type = "*" + interfaceTOImplementations[arg_type].replace(package+".", '')
         args.append(f"{arg_name} {arg_type}")
 
     if error:
@@ -162,13 +177,13 @@ def generate_repliers(args):
 	""")
 
     for signature in signatures:
-        call_go, output_args = get_call(signature)
+        call_go, output_args, output_args_for_call = get_call(signature)
         typedRequest = f"typedRequest := request.(*common.MessageBlockchain{signature.name}Request)\n" if signature.input else ""
 
         func_go = f"""
         func (part *NodePart) replyToBlockchain{signature.name}(request common.MessageHandler) common.MessageHandler {{
             {typedRequest}{call_go}
-            response := common.NewMessageBlockchain{signature.name}Response({output_args})
+            response := common.NewMessageBlockchain{signature.name}Response({output_args_for_call})
             return response
         }}
         """
@@ -177,27 +192,33 @@ def generate_repliers(args):
 
 def get_call(signature):
     output_args = []
+    output_args_for_call = []
     call_args = []
 
-    for arg_name, _ in signature.output:
+    for arg_name, arg_type in signature.output:
+        if arg_type in interfaceTOImplementations:
+            output_args_for_call.append(generate_TOs_for_interface(arg_name, arg_type))
+        else:
+            output_args_for_call.append(arg_name)
         output_args.append(arg_name)
 
     if signature.error:
         output_args.append(f"err")
+        output_args_for_call.append(f"err")
 
     for arg_name, _ in signature.input:
         call_args.append(f"typedRequest.{my_capitalize(arg_name)}")
 
     output_args = ", ".join(output_args)
+    output_args_for_call = ", ".join(output_args_for_call)
     call_args = ", ".join(call_args)
 
     if signature.output:
-        return f"{output_args} := part.blockchain.{signature.name}({call_args})", output_args
+        return f"{output_args} := part.blockchain.{signature.name}({call_args})", output_args, output_args_for_call
     elif signature.error:
-        return f"err := part.blockchain.{signature.name}({call_args})", output_args    
+        return f"err := part.blockchain.{signature.name}({call_args})", output_args, output_args_for_call
     else:
-        return f"part.blockchain.{signature.name}({call_args})", output_args
-
+        return f"part.blockchain.{signature.name}({call_args})", output_args, output_args_for_call
 
 def generate_reply_slots(args):
     print("part.Repliers = common.CreateReplySlots(part.noopReplier)")
@@ -207,8 +228,9 @@ def generate_reply_slots(args):
 
 
 def generate_gateway(args):
+    package = "arwenpart"
+    print("package " + package)
     print("""
-package arwenpart
 
 import (
     "github.com/ElrondNetwork/elrond-go/data/esdt"
@@ -235,7 +257,8 @@ func NewBlockchainHookGateway(messenger *ArwenMessenger) *BlockchainHookGateway 
         badReturn = f"{signature.badReturn} " if signature.output else ""
         func_go = f"""
         // {signature.name} forwards a message to the actual hook
-        func (blockchain *BlockchainHookGateway) {signature.name}({get_ctor_args(signature.input)}) {get_output_args(signature)} {{
+        func (blockchain *BlockchainHookGateway) {signature.name}({get_ctor_args(signature.input, package, useInterfaces=True)}) {get_output_args(signature)} {{
+            {generate_TOs_for_interfaces_gateway(signature)}
             request := common.NewMessageBlockchain{signature.name}Request({get_call_args(signature)})
             rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
             if err != nil {{
@@ -256,11 +279,31 @@ func NewBlockchainHookGateway(messenger *ArwenMessenger) *BlockchainHookGateway 
 
         print(func_go)
 
+def generate_TOs_for_interfaces_gateway(signature):    
+    generatedCode = ""
+    for arg_name, arg_type in signature.input:
+        if arg_type in interfaceTOImplementations:            
+            buildCodeOfTO = "request" + my_capitalize(arg_name) + " := " + generate_TOs_for_interface(arg_name, arg_type)
+            generatedCode += "\n" + buildCodeOfTO
+
+    return generatedCode
+
+def generate_TOs_for_interface(arg_name, arg_type):
+    result = "&" + interfaceTOImplementations[arg_type] + "{\n"
+    for field, function in fieldsOfTO[interfaceTOImplementations[arg_type]]:
+        if function is None:
+            function = "Get" + field
+        result += f"{field}:{arg_name}.{function}(),\n"
+    result += "}"    
+    return result
 
 def get_call_args(signature):
     call_args = []
-    for arg_name, _ in signature.input:
-        call_args.append(arg_name)
+    for arg_name, arg_type in signature.input:
+        if arg_type in interfaceTOImplementations: 
+            call_args.append("request" + my_capitalize(arg_name))
+        else:
+            call_args.append(arg_name)
 
     return ", ".join(call_args)
 

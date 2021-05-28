@@ -114,13 +114,23 @@ func (part *NodePart) replyToBlockchainGetAllState(request common.MessageHandler
 func (part *NodePart) replyToBlockchainGetUserAccount(request common.MessageHandler) common.MessageHandler {
 	typedRequest := request.(*common.MessageBlockchainGetUserAccountRequest)
 	result, err := part.blockchain.GetUserAccount(typedRequest.Address)
-	response := common.NewMessageBlockchainGetUserAccountResponse(result, err)
+	response := common.NewMessageBlockchainGetUserAccountResponse(&common.Account{
+		Nonce:           result.GetNonce(),
+		Balance:         result.GetBalance(),
+		CodeHash:        result.GetCodeHash(),
+		RootHash:        result.GetRootHash(),
+		Address:         result.AddressBytes(),
+		DeveloperReward: result.GetDeveloperReward(),
+		OwnerAddress:    result.GetOwnerAddress(),
+		UserName:        result.GetUserName(),
+		CodeMetadata:    result.GetCodeMetadata(),
+	}, err)
 	return response
 }
 
 func (part *NodePart) replyToBlockchainGetCode(request common.MessageHandler) common.MessageHandler {
 	typedRequest := request.(*common.MessageBlockchainGetCodeRequest)
-	code := part.blockchain.GetCode(typedRequest.Handler)
+	code := part.blockchain.GetCode(typedRequest.Account)
 	response := common.NewMessageBlockchainGetCodeResponse(code)
 	return response
 }

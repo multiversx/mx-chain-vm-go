@@ -72,7 +72,6 @@ const (
 	VersionRequest
 	VersionResponse
 	UndefinedRequestOrResponse
-	LastKind
 	BlockchainClearCompiledCodesRequest
 	BlockchainClearCompiledCodesResponse
 	BlockchainGetSnapshotRequest
@@ -83,6 +82,7 @@ const (
 	BlockchainRevertToSnapshotResponse
 	BlockchainProcessBuiltInFunctionRequest
 	BlockchainProcessBuiltInFunctionResponse
+	LastKind
 )
 
 var messageKindNameByID = map[MessageKind]string{}

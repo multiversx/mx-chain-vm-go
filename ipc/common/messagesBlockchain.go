@@ -497,11 +497,11 @@ func NewMessageBlockchainGetUserAccountRequest(address []byte) *MessageBlockchai
 // MessageBlockchainGetUserAccountResponse represents a response message
 type MessageBlockchainGetUserAccountResponse struct {
 	Message
-	Result vmcommon.UserAccountHandler
+	Result *Account
 }
 
 // NewMessageBlockchainGetUserAccountResponse creates a response message
-func NewMessageBlockchainGetUserAccountResponse(result vmcommon.UserAccountHandler, err error) *MessageBlockchainGetUserAccountResponse {
+func NewMessageBlockchainGetUserAccountResponse(result *Account, err error) *MessageBlockchainGetUserAccountResponse {
 	message := &MessageBlockchainGetUserAccountResponse{}
 	message.Kind = BlockchainGetUserAccountResponse
 	message.Result = result
@@ -512,14 +512,14 @@ func NewMessageBlockchainGetUserAccountResponse(result vmcommon.UserAccountHandl
 // MessageBlockchainGetCodeRequest represents a request message
 type MessageBlockchainGetCodeRequest struct {
 	Message
-	Handler vmcommon.UserAccountHandler
+	Account *Account
 }
 
 // NewMessageBlockchainGetCodeRequest creates a request message
-func NewMessageBlockchainGetCodeRequest(handler vmcommon.UserAccountHandler) *MessageBlockchainGetCodeRequest {
+func NewMessageBlockchainGetCodeRequest(account *Account) *MessageBlockchainGetCodeRequest {
 	message := &MessageBlockchainGetCodeRequest{}
 	message.Kind = BlockchainGetCodeRequest
-	message.Handler = handler
+	message.Account = account
 	return message
 }
 
