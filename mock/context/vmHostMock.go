@@ -30,6 +30,11 @@ type VMHostMock struct {
 	IsBuiltinFunc bool
 }
 
+// GetVersion mocked method
+func (host *VMHostMock) GetVersion() string {
+	return "mock"
+}
+
 // Crypto mocked method
 func (host *VMHostMock) Crypto() crypto.VMCrypto {
 	return host.CryptoHook

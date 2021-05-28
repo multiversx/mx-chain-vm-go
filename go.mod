@@ -17,5 +17,5 @@ require (
 )
 
 replace github.com/ElrondNetwork/elrond-go v1.1.51 => /home/bogdan/Elrond/elrond-go
-
 replace github.com/ElrondNetwork/arwen-wasm-vm/v1_3 v1.3.2 => /home/bogdan/Elrond/arwen-wasm-vm
+

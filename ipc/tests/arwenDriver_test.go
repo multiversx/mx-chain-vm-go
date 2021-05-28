@@ -89,8 +89,7 @@ func TestArwenDriver_GetVersion(t *testing.T) {
 	// with `make test`
 	blockchain := &contextmock.BlockchainHookStub{}
 	driver := newDriver(t, blockchain)
-	version, err := driver.GetVersion()
-	require.Nil(t, err)
+	version := driver.GetVersion()
 	require.NotZero(t, len(version))
 	require.NotEqual(t, "undefined", version)
 }
