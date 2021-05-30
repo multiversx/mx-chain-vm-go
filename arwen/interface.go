@@ -61,6 +61,8 @@ type VMHost interface {
 
 // BlockchainContext defines the functionality needed for interacting with the blockchain context
 type BlockchainContext interface {
+	StateStack
+
 	NewAddress(creatorAddress []byte) ([]byte, error)
 	AccountExists(addr []byte) bool
 	GetBalance(addr []byte) []byte

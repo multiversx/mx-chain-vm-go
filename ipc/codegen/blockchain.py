@@ -46,9 +46,19 @@ signatures = [
     HookSignature(name="RevertToSnapshot", input=[("snapshot", "int")], output=[], error=True)
 ]
 
-interfaceTOImplementations = { 'vmcommon.UserAccountHandler' : 'common.Account' }
-fieldsOfTO = { 'common.Account': [ ('Nonce', None), ('Balance', None), ('CodeHash', None), ('RootHash', None), ('Address', 'AddressBytes'), ('DeveloperReward', None), 
-                                    ('OwnerAddress', None), ('UserName', None), ('CodeMetadata', None) ] }
+interfaceTOImplementations = { "vmcommon.UserAccountHandler" : "common.Account" }
+fieldsOfTO = { "common.Account": [ ("Nonce", None), ("Balance", None), ("CodeHash", None), ("RootHash", None), ("Address", "AddressBytes"), ("DeveloperReward", None), 
+                                    ("OwnerAddress", None), ("UserName", None), ("CodeMetadata", None) ] }
+
+class SerializableType:
+    def __init__(self, type, fromTypeConverterMethod, toTypeConverterFunction):
+        super().__init__()
+        self.type = type
+        self.fromTypeConverterMethod = fromTypeConverterMethod
+        self.toTypeConverterFunction = toTypeConverterFunction
+
+serializableTypes = { "map[string][]byte" :
+                        SerializableType(type="SerializableMapStringBytes", fromTypeConverterMethod="ConvertToMap", toTypeConverterFunction="NewSerializableMapStringBytes") }
 
 def main():
     parser = ArgumentParser()
@@ -133,6 +143,8 @@ def get_struct_fields_go(input_output, package):
         field_name = my_capitalize(arg_name)
         if arg_type in interfaceTOImplementations:
             arg_type = "*" + interfaceTOImplementations[arg_type].replace(package + ".", '')
+        if arg_type in serializableTypes:
+            arg_type = "*" + serializableTypes[arg_type].type
         fields.append(f"{field_name} {arg_type}")
 
     return "\n".join(fields)
@@ -155,6 +167,8 @@ def get_field_assignments(input_output, error=False):
     assignments = []
     for arg_name, arg_type in input_output:
         field_name = my_capitalize(arg_name)
+        if arg_type in serializableTypes:
+            arg_name = f"{serializableTypes[arg_type].toTypeConverterFunction}({arg_name})"
         assignments.append(f"message.{field_name} = {arg_name}")
 
     if error:
@@ -172,17 +186,25 @@ def generate_repliers(args):
     print("""
     	import (
 	    \"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/ipc/common\"
+        \"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen\"
 	    \"github.com/ElrondNetwork/elrond-go/data/esdt\"
 	)
 	""")
 
     for signature in signatures:
-        call_go, output_args, output_args_for_call = get_call(signature)
+        call_go, output_args_for_call, output_args_for_err, interface_results = get_call(signature)
         typedRequest = f"typedRequest := request.(*common.MessageBlockchain{signature.name}Request)\n" if signature.input else ""
+
+        errCode = f"""
+            if err != nil || arwen.IfNil(result) {{
+                return common.NewMessageBlockchain{signature.name}Response({output_args_for_err})
+            }}
+        """
 
         func_go = f"""
         func (part *NodePart) replyToBlockchain{signature.name}(request common.MessageHandler) common.MessageHandler {{
             {typedRequest}{call_go}
+            {errCode if interface_results else ""}
             response := common.NewMessageBlockchain{signature.name}Response({output_args_for_call})
             return response
         }}
@@ -191,34 +213,40 @@ def generate_repliers(args):
 
 
 def get_call(signature):
-    output_args = []
+    results = []
+    interface_results = []
     output_args_for_call = []
+    output_args_for_err = []
     call_args = []
 
     for arg_name, arg_type in signature.output:
         if arg_type in interfaceTOImplementations:
-            output_args_for_call.append(generate_TOs_for_interface(arg_name, arg_type))
+            output_args_for_call.append(generate_TO_for_interface(arg_name, arg_type))
+            interface_results.append(arg_name)
         else:
             output_args_for_call.append(arg_name)
-        output_args.append(arg_name)
+        results.append(arg_name)
+        output_args_for_err.append("nil")
 
     if signature.error:
-        output_args.append(f"err")
-        output_args_for_call.append(f"err")
+        results.append("err")
+        output_args_for_call.append("err")
+        output_args_for_err.append("err")
 
     for arg_name, _ in signature.input:
         call_args.append(f"typedRequest.{my_capitalize(arg_name)}")
 
-    output_args = ", ".join(output_args)
+    results = ", ".join(results)
     output_args_for_call = ", ".join(output_args_for_call)
+    output_args_for_err = ", ".join(output_args_for_err)
     call_args = ", ".join(call_args)
 
     if signature.output:
-        return f"{output_args} := part.blockchain.{signature.name}({call_args})", output_args, output_args_for_call
+        return f"{results} := part.blockchain.{signature.name}({call_args})", output_args_for_call, output_args_for_err, interface_results
     elif signature.error:
-        return f"err := part.blockchain.{signature.name}({call_args})", output_args, output_args_for_call
+        return f"err := part.blockchain.{signature.name}({call_args})", output_args_for_call, output_args_for_err, interface_results
     else:
-        return f"part.blockchain.{signature.name}({call_args})", output_args, output_args_for_call
+        return f"part.blockchain.{signature.name}({call_args})", output_args_for_call, output_args_for_err, interface_results
 
 def generate_reply_slots(args):
     print("part.Repliers = common.CreateReplySlots(part.noopReplier)")
@@ -283,12 +311,12 @@ def generate_TOs_for_interfaces_gateway(signature):
     generatedCode = ""
     for arg_name, arg_type in signature.input:
         if arg_type in interfaceTOImplementations:            
-            buildCodeOfTO = "request" + my_capitalize(arg_name) + " := " + generate_TOs_for_interface(arg_name, arg_type)
+            buildCodeOfTO = "request" + my_capitalize(arg_name) + " := " + generate_TO_for_interface(arg_name, arg_type)
             generatedCode += "\n" + buildCodeOfTO
 
     return generatedCode
 
-def generate_TOs_for_interface(arg_name, arg_type):
+def generate_TO_for_interface(arg_name, arg_type):
     result = "&" + interfaceTOImplementations[arg_type] + "{\n"
     for field, function in fieldsOfTO[interfaceTOImplementations[arg_type]]:
         if function is None:
@@ -332,8 +360,11 @@ def get_gateway_return(signature):
     result_field = my_capitalize(result_field)
 
     return_args = []
-    for arg_name, _ in signature.output:
-        return_args.append("response." + my_capitalize(arg_name))
+    for arg_name, arg_type in signature.output:
+        fromTypeConverterMethod = ""
+        if arg_type in serializableTypes:
+            fromTypeConverterMethod = f".{serializableTypes[arg_type].fromTypeConverterMethod}()"
+        return_args.append("response." + my_capitalize(arg_name) + fromTypeConverterMethod)
     returnResult = ", ".join(return_args)        
 
     if signature.error:

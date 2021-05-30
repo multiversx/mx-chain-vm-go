@@ -202,13 +202,15 @@ func copyTxHashesFromContext(copyEnabled bool, runtime arwen.RuntimeContext, inp
 func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, asyncInfo *arwen.AsyncContextInfo, err error) {
 	log.Trace("ExecuteOnDestContext", "caller", input.CallerAddr, "dest", input.RecipientAddr, "function", input.Function)
 
-	builtinFunctionExecuted := false
 	scExecutionInput := input
 
+	blockchain := host.Blockchain()
+	blockchain.PushState()
+
 	if host.IsBuiltinFunctionName(input.Function) {
-		builtinFunctionExecuted = true
 		scExecutionInput, vmOutput, err = host.handleBuiltinFunctionCall(input)
 		if err != nil {
+			blockchain.PopSetActiveState()
 			vmOutput = host.Output().CreateVMOutputInCaseOfError(err)
 			return
 		}
@@ -216,11 +218,12 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 
 	if scExecutionInput != nil {
 		vmOutput, asyncInfo, err = host.executeOnDestContextNoBuiltinFunction(scExecutionInput)
-		if err != nil && builtinFunctionExecuted {
-			// If the SC execution failed and the original input contained an ESDT
-			// transfer, the transfer must be reverted.
-			host.RevertESDTTransfer(input)
-		}
+	}
+
+	if err != nil {
+		blockchain.PopSetActiveState()
+	} else {
+		blockchain.PopDiscard()
 	}
 
 	return
@@ -334,7 +337,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 		return nil, arwen.ErrBuiltinCallOnSameContextDisallowed
 	}
 
-	bigInt, _, metering, output, runtime, _ := host.GetContexts()
+	bigInt, blockchain, metering, output, runtime, _ := host.GetContexts()
 
 	// Back up the states of the contexts (except Storage, which isn't affected
 	// by ExecuteOnSameContext())
@@ -347,6 +350,8 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 
 	metering.PushState()
 	metering.InitStateFromContractCallInput(&input.VMInput)
+
+	blockchain.PushState()
 
 	defer func() {
 		host.finishExecuteOnSameContext(err)
@@ -369,7 +374,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 }
 
 func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
-	bigInt, _, metering, output, runtime, _ := host.GetContexts()
+	bigInt, blockchain, metering, output, runtime, _ := host.GetContexts()
 
 	if output.ReturnCode() != vmcommon.Ok || executeErr != nil {
 		// Execution failed: restore contexts as if the execution didn't happen.
@@ -377,7 +382,7 @@ func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
 		metering.PopSetActiveState()
 		output.PopSetActiveState()
 		runtime.PopSetActiveState()
-
+		blockchain.PopSetActiveState()
 		return
 	}
 
@@ -389,6 +394,7 @@ func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
 	metering.PopMergeActiveState()
 	output.PopDiscard()
 	bigInt.PopDiscard()
+	blockchain.PopDiscard()
 	runtime.PopSetActiveState()
 
 	// Restore remaining gas to the caller (parent) Wasmer instance

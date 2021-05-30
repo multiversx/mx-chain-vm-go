@@ -305,7 +305,7 @@ func (blockchain *BlockchainHookGateway) GetAllState(address []byte) (map[string
 	}
 
 	response := rawResponse.(*common.MessageBlockchainGetAllStateResponse)
-	return response.Result, response.GetError()
+	return response.Result.ConvertToMap(), response.GetError()
 }
 
 // GetUserAccount forwards a message to the actual hook

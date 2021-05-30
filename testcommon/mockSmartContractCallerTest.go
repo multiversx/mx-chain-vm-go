@@ -67,6 +67,8 @@ func (callerTest *MockInstancesTestTemplate) runTest() {
 	}
 
 	callerTest.setup(host, world)
+	// create snapshot (normaly done by node)
+	world.CreateStateBackup()
 
 	vmOutput, err := host.RunSmartContractCall(callerTest.input)
 

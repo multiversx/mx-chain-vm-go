@@ -11,6 +11,7 @@ import (
 type blockchainContext struct {
 	host           arwen.VMHost
 	blockChainHook vmcommon.BlockchainHook
+	stateStack     []int
 }
 
 // NewBlockchainContext creates a new blockchainContext
@@ -288,4 +289,42 @@ func (context *blockchainContext) GetUserAccount(address []byte) (vmcommon.UserA
 // ProcessBuiltInFunction will process the builtIn function for the created input
 func (context *blockchainContext) ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	return context.blockChainHook.ProcessBuiltInFunction(input)
+}
+
+// InitState does nothing
+func (context *blockchainContext) InitState() {
+}
+
+// ClearStateStack clears the state stack from the current context.
+func (context *blockchainContext) ClearStateStack() {
+	context.stateStack = make([]int, 0)
+}
+
+// PushState appends the current snapshot to the state stack.
+func (context *blockchainContext) PushState() {
+	snapshot := context.blockChainHook.GetSnapshot()
+	context.stateStack = append(context.stateStack, snapshot)
+}
+
+// PopSetActiveState removes the latest entry from the state stack and reverts to that snapshot
+func (context *blockchainContext) PopSetActiveState() {
+	stateStackLen := len(context.stateStack)
+	if stateStackLen == 0 {
+		return
+	}
+
+	prevSnapshot := context.stateStack[stateStackLen-1]
+	context.blockChainHook.RevertToSnapshot(prevSnapshot)
+
+	context.stateStack = context.stateStack[:stateStackLen-1]
+}
+
+// PopDiscard removes the latest entry from the state stack
+func (context *blockchainContext) PopDiscard() {
+	stateStackLen := len(context.stateStack)
+	if stateStackLen == 0 {
+		return
+	}
+
+	context.stateStack = context.stateStack[:stateStackLen-1]
 }

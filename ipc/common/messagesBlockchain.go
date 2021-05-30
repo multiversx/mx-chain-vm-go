@@ -468,14 +468,14 @@ func NewMessageBlockchainGetAllStateRequest(address []byte) *MessageBlockchainGe
 // MessageBlockchainGetAllStateResponse represents a response message
 type MessageBlockchainGetAllStateResponse struct {
 	Message
-	Result map[string][]byte
+	Result *SerializableMapStringBytes
 }
 
 // NewMessageBlockchainGetAllStateResponse creates a response message
 func NewMessageBlockchainGetAllStateResponse(result map[string][]byte, err error) *MessageBlockchainGetAllStateResponse {
 	message := &MessageBlockchainGetAllStateResponse{}
 	message.Kind = BlockchainGetAllStateResponse
-	message.Result = result
+	message.Result = NewSerializableMapStringBytes(result)
 	message.SetError(err)
 	return message
 }
