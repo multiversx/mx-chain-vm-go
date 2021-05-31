@@ -450,3 +450,13 @@ func (blockchain *BlockchainHookGateway) ClearCompiledCodes() {
 func (blockchain *BlockchainHookGateway) IsInterfaceNil() bool {
 	return blockchain == nil
 }
+
+// GetSnapshot - not used in v1.2
+func (blockchain *BlockchainHookGateway) GetSnapshot() int {
+	return 0
+}
+
+// RevertToSnapshot - not used in v1.2
+func (blockchain *BlockchainHookGateway) RevertToSnapshot(snapshot int) error {
+	return nil
+}
