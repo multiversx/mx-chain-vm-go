@@ -122,3 +122,13 @@ func (b *MockWorld) SameShard(firstAddress []byte, secondAddress []byte) bool {
 func (b *MockWorld) CommunicationIdentifier(destShardID uint32) string {
 	return fmt.Sprintf("commID-dest-%d", destShardID)
 }
+
+// GetSnapshot -
+func (b *MockWorld) GetSnapshot() int {
+	return b.AccountsAdapter.JournalLen()
+}
+
+// RevertToSnapshot -
+func (b *MockWorld) RevertToSnapshot(snapshot int) error {
+	return b.AccountsAdapter.RevertToSnapshot(snapshot)
+}
