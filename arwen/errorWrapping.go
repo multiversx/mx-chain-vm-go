@@ -46,7 +46,7 @@ func WrapError(err error) WrappableError {
 	}
 }
 
-// WrapWithMessage wrapes the target error with a new one, created using the input message
+// WrapWithMessage wraps the target error with a new one, created using the input message
 func (werr *wrappableError) WrapWithMessage(errMessage string) WrappableError {
 	return werr.wrapWithErrorWithSkipLevels(errors.New(errMessage), skipLevels)
 }
