@@ -3,7 +3,7 @@ package contracts
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/elrondapi"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen/elrondapi"
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
 )
