@@ -51,12 +51,12 @@ func (werr *wrappableError) WrapWithMessage(errMessage string) WrappableError {
 	return werr.wrapWithErrorWithSkipLevels(errors.New(errMessage), skipLevels)
 }
 
-// WrapWithMessage wrapes the target error with a new one, without any message only a stack frame trace
+// WrapWithStackTrace wrapes the target error with a new one, without any message only a stack frame trace
 func (werr *wrappableError) WrapWithStackTrace() WrappableError {
 	return werr.wrapWithErrorWithSkipLevels(errors.New(""), skipLevels)
 }
 
-// WrapWithMessage wrapes the target error with the provided one
+// WrapWithError wrapes the target error with the provided one
 func (werr *wrappableError) WrapWithError(err error) WrappableError {
 	return werr.wrapWithErrorWithSkipLevels(err, skipLevels)
 }
@@ -67,7 +67,7 @@ func (werr *wrappableError) GetBaseError() error {
 	return errors[0].err
 }
 
-// GetBaseError gets the last wrapped error
+// GetLastError gets the last wrapped error
 func (werr *wrappableError) GetLastError() error {
 	errors := werr.errsWithLocation
 	return errors[len(errors)-1].err
