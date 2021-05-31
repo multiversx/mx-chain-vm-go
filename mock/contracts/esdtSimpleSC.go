@@ -68,7 +68,7 @@ func ExecESDTTransferWithAPICall(instanceMock *mock.InstanceMock, config interfa
 
 		elrondapi.TransferESDTNFTExecute(
 			host,
-			arguments[0],
+			input.RecipientAddr,
 			test.ESDTTestTokenName,
 			testConfig.ESDTTokensToTransfer,
 			arguments[1],
