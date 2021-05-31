@@ -6,62 +6,62 @@ package elrondapi
 // typedef unsigned char uint8_t;
 // typedef int int32_t;
 //
-// extern int32_t bigIntNew(void* context, long long smallValue);
+// extern int32_t		v1_3_bigIntNew(void* context, long long smallValue);
 //
-// extern int32_t bigIntUnsignedByteLength(void* context, int32_t reference);
-// extern int32_t bigIntSignedByteLength(void* context, int32_t reference);
-// extern int32_t bigIntGetUnsignedBytes(void* context, int32_t reference, int32_t byteOffset);
-// extern int32_t bigIntGetSignedBytes(void* context, int32_t reference, int32_t byteOffset);
-// extern void bigIntSetUnsignedBytes(void* context, int32_t destination, int32_t byteOffset, int32_t byteLength);
-// extern void bigIntSetSignedBytes(void* context, int32_t destination, int32_t byteOffset, int32_t byteLength);
+// extern int32_t		v1_3_bigIntUnsignedByteLength(void* context, int32_t reference);
+// extern int32_t		v1_3_bigIntSignedByteLength(void* context, int32_t reference);
+// extern int32_t		v1_3_bigIntGetUnsignedBytes(void* context, int32_t reference, int32_t byteOffset);
+// extern int32_t		v1_3_bigIntGetSignedBytes(void* context, int32_t reference, int32_t byteOffset);
+// extern void			v1_3_bigIntSetUnsignedBytes(void* context, int32_t destination, int32_t byteOffset, int32_t byteLength);
+// extern void			v1_3_bigIntSetSignedBytes(void* context, int32_t destination, int32_t byteOffset, int32_t byteLength);
 //
-// extern int32_t bigIntIsInt64(void* context, int32_t reference);
-// extern long long bigIntGetInt64(void* context, int32_t reference);
-// extern void bigIntSetInt64(void* context, int32_t destination, long long value);
+// extern int32_t		v1_3_bigIntIsInt64(void* context, int32_t reference);
+// extern long long		v1_3_bigIntGetInt64(void* context, int32_t reference);
+// extern void			v1_3_bigIntSetInt64(void* context, int32_t destination, long long value);
 //
-// extern void bigIntAdd(void* context, int32_t destination, int32_t op1, int32_t op2);
-// extern void bigIntSub(void* context, int32_t destination, int32_t op1, int32_t op2);
-// extern void bigIntMul(void* context, int32_t destination, int32_t op1, int32_t op2);
-// extern void bigIntTDiv(void* context, int32_t destination, int32_t op1, int32_t op2);
-// extern void bigIntTMod(void* context, int32_t destination, int32_t op1, int32_t op2);
-// extern void bigIntEDiv(void* context, int32_t destination, int32_t op1, int32_t op2);
-// extern void bigIntEMod(void* context, int32_t destination, int32_t op1, int32_t op2);
+// extern void			v1_3_bigIntAdd(void* context, int32_t destination, int32_t op1, int32_t op2);
+// extern void			v1_3_bigIntSub(void* context, int32_t destination, int32_t op1, int32_t op2);
+// extern void			v1_3_bigIntMul(void* context, int32_t destination, int32_t op1, int32_t op2);
+// extern void			v1_3_bigIntTDiv(void* context, int32_t destination, int32_t op1, int32_t op2);
+// extern void			v1_3_bigIntTMod(void* context, int32_t destination, int32_t op1, int32_t op2);
+// extern void			v1_3_bigIntEDiv(void* context, int32_t destination, int32_t op1, int32_t op2);
+// extern void			v1_3_bigIntEMod(void* context, int32_t destination, int32_t op1, int32_t op2);
 //
-// extern void bigIntPow(void* context, int32_t destination, int32_t op1, int32_t op2);
-// extern int32_t bigIntLog2(void* context, int32_t op);
-// extern void bigIntSqrt(void* context, int32_t destination, int32_t op);
+// extern void  		v1_3_bigIntPow(void* context, int32_t destination, int32_t op1, int32_t op2);
+// extern int32_t 		v1_3_bigIntLog2(void* context, int32_t op);
+// extern void 			v1_3_bigIntSqrt(void* context, int32_t destination, int32_t op);
 //
-// extern void bigIntAbs(void* context, int32_t destination, int32_t op);
-// extern void bigIntNeg(void* context, int32_t destination, int32_t op);
-// extern int32_t bigIntSign(void* context, int32_t op);
-// extern int32_t bigIntCmp(void* context, int32_t op1, int32_t op2);
+// extern void			v1_3_bigIntAbs(void* context, int32_t destination, int32_t op);
+// extern void			v1_3_bigIntNeg(void* context, int32_t destination, int32_t op);
+// extern int32_t		v1_3_bigIntSign(void* context, int32_t op);
+// extern int32_t		v1_3_bigIntCmp(void* context, int32_t op1, int32_t op2);
 //
-// extern void bigIntNot(void* context, int32_t destination, int32_t op);
-// extern void bigIntAnd(void* context, int32_t destination, int32_t op1, int32_t op2);
-// extern void bigIntOr(void* context, int32_t destination, int32_t op1, int32_t op2);
-// extern void bigIntXor(void* context, int32_t destination, int32_t op1, int32_t op2);
-// extern void bigIntShr(void* context, int32_t destination, int32_t op, int32_t bits);
-// extern void bigIntShl(void* context, int32_t destination, int32_t op, int32_t bits);
+// extern void			v1_3_bigIntNot(void* context, int32_t destination, int32_t op);
+// extern void			v1_3_bigIntAnd(void* context, int32_t destination, int32_t op1, int32_t op2);
+// extern void			v1_3_bigIntOr(void* context, int32_t destination, int32_t op1, int32_t op2);
+// extern void			v1_3_bigIntXor(void* context, int32_t destination, int32_t op1, int32_t op2);
+// extern void			v1_3_bigIntShr(void* context, int32_t destination, int32_t op, int32_t bits);
+// extern void			v1_3_bigIntShl(void* context, int32_t destination, int32_t op, int32_t bits);
 //
-// extern void bigIntFinishUnsigned(void* context, int32_t reference);
-// extern void bigIntFinishSigned(void* context, int32_t reference);
-// extern int32_t bigIntStorageStoreUnsigned(void *context, int32_t keyOffset, int32_t keyLength, int32_t source);
-// extern int32_t bigIntStorageLoadUnsigned(void *context, int32_t keyOffset, int32_t keyLength, int32_t destination);
-// extern void bigIntGetUnsignedArgument(void *context, int32_t id, int32_t destination);
-// extern void bigIntGetSignedArgument(void *context, int32_t id, int32_t destination);
-// extern void bigIntGetCallValue(void *context, int32_t destination);
-// extern void bigIntGetESDTCallValue(void *context, int32_t destination);
-// extern void bigIntGetESDTExternalBalance(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce, int32_t result);
-// extern void bigIntGetExternalBalance(void *context, int32_t addressOffset, int32_t result);
+// extern void			v1_3_bigIntFinishUnsigned(void* context, int32_t reference);
+// extern void			v1_3_bigIntFinishSigned(void* context, int32_t reference);
+// extern int32_t		v1_3_bigIntStorageStoreUnsigned(void *context, int32_t keyOffset, int32_t keyLength, int32_t source);
+// extern int32_t		v1_3_bigIntStorageLoadUnsigned(void *context, int32_t keyOffset, int32_t keyLength, int32_t destination);
+// extern void			v1_3_bigIntGetUnsignedArgument(void *context, int32_t id, int32_t destination);
+// extern void			v1_3_bigIntGetSignedArgument(void *context, int32_t id, int32_t destination);
+// extern void			v1_3_bigIntGetCallValue(void *context, int32_t destination);
+// extern void			v1_3_bigIntGetESDTCallValue(void *context, int32_t destination);
+// extern void			v1_3_bigIntGetESDTExternalBalance(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce, int32_t result);
+// extern void			v1_3_bigIntGetExternalBalance(void *context, int32_t addressOffset, int32_t result);
 import "C"
 
 import (
 	"math/big"
 	"unsafe"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/math"
-	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/math"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 )
 
@@ -69,202 +69,202 @@ import (
 func BigIntImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	imports = imports.Namespace("env")
 
-	imports, err := imports.Append("bigIntNew", bigIntNew, C.bigIntNew)
+	imports, err := imports.Append("bigIntNew", v1_3_bigIntNew, C.v1_3_bigIntNew)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntUnsignedByteLength", bigIntUnsignedByteLength, C.bigIntUnsignedByteLength)
+	imports, err = imports.Append("bigIntUnsignedByteLength", v1_3_bigIntUnsignedByteLength, C.v1_3_bigIntUnsignedByteLength)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntSignedByteLength", bigIntSignedByteLength, C.bigIntSignedByteLength)
+	imports, err = imports.Append("bigIntSignedByteLength", v1_3_bigIntSignedByteLength, C.v1_3_bigIntSignedByteLength)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntGetUnsignedBytes", bigIntGetUnsignedBytes, C.bigIntGetUnsignedBytes)
+	imports, err = imports.Append("bigIntGetUnsignedBytes", v1_3_bigIntGetUnsignedBytes, C.v1_3_bigIntGetUnsignedBytes)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntGetSignedBytes", bigIntGetSignedBytes, C.bigIntGetSignedBytes)
+	imports, err = imports.Append("bigIntGetSignedBytes", v1_3_bigIntGetSignedBytes, C.v1_3_bigIntGetSignedBytes)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntSetUnsignedBytes", bigIntSetUnsignedBytes, C.bigIntSetUnsignedBytes)
+	imports, err = imports.Append("bigIntSetUnsignedBytes", v1_3_bigIntSetUnsignedBytes, C.v1_3_bigIntSetUnsignedBytes)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntSetSignedBytes", bigIntSetSignedBytes, C.bigIntSetSignedBytes)
+	imports, err = imports.Append("bigIntSetSignedBytes", v1_3_bigIntSetSignedBytes, C.v1_3_bigIntSetSignedBytes)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntIsInt64", bigIntIsInt64, C.bigIntIsInt64)
+	imports, err = imports.Append("bigIntIsInt64", v1_3_bigIntIsInt64, C.v1_3_bigIntIsInt64)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntGetInt64", bigIntGetInt64, C.bigIntGetInt64)
+	imports, err = imports.Append("bigIntGetInt64", v1_3_bigIntGetInt64, C.v1_3_bigIntGetInt64)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntSetInt64", bigIntSetInt64, C.bigIntSetInt64)
+	imports, err = imports.Append("bigIntSetInt64", v1_3_bigIntSetInt64, C.v1_3_bigIntSetInt64)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntAdd", bigIntAdd, C.bigIntAdd)
+	imports, err = imports.Append("bigIntAdd", v1_3_bigIntAdd, C.v1_3_bigIntAdd)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntSub", bigIntSub, C.bigIntSub)
+	imports, err = imports.Append("bigIntSub", v1_3_bigIntSub, C.v1_3_bigIntSub)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntMul", bigIntMul, C.bigIntMul)
+	imports, err = imports.Append("bigIntMul", v1_3_bigIntMul, C.v1_3_bigIntMul)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntTDiv", bigIntTDiv, C.bigIntTDiv)
+	imports, err = imports.Append("bigIntTDiv", v1_3_bigIntTDiv, C.v1_3_bigIntTDiv)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntTMod", bigIntTMod, C.bigIntTMod)
+	imports, err = imports.Append("bigIntTMod", v1_3_bigIntTMod, C.v1_3_bigIntTMod)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntEDiv", bigIntEDiv, C.bigIntEDiv)
+	imports, err = imports.Append("bigIntEDiv", v1_3_bigIntEDiv, C.v1_3_bigIntEDiv)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntEMod", bigIntEMod, C.bigIntEMod)
+	imports, err = imports.Append("bigIntEMod", v1_3_bigIntEMod, C.v1_3_bigIntEMod)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntSqrt", bigIntSqrt, C.bigIntSqrt)
+	imports, err = imports.Append("bigIntSqrt", v1_3_bigIntSqrt, C.v1_3_bigIntSqrt)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntPow", bigIntPow, C.bigIntPow)
+	imports, err = imports.Append("bigIntPow", v1_3_bigIntPow, C.v1_3_bigIntPow)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntLog2", bigIntLog2, C.bigIntLog2)
+	imports, err = imports.Append("bigIntLog2", v1_3_bigIntLog2, C.v1_3_bigIntLog2)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntAbs", bigIntAbs, C.bigIntAbs)
+	imports, err = imports.Append("bigIntAbs", v1_3_bigIntAbs, C.v1_3_bigIntAbs)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntNeg", bigIntNeg, C.bigIntNeg)
+	imports, err = imports.Append("bigIntNeg", v1_3_bigIntNeg, C.v1_3_bigIntNeg)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntSign", bigIntSign, C.bigIntSign)
+	imports, err = imports.Append("bigIntSign", v1_3_bigIntSign, C.v1_3_bigIntSign)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntCmp", bigIntCmp, C.bigIntCmp)
+	imports, err = imports.Append("bigIntCmp", v1_3_bigIntCmp, C.v1_3_bigIntCmp)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntNot", bigIntNot, C.bigIntNot)
+	imports, err = imports.Append("bigIntNot", v1_3_bigIntNot, C.v1_3_bigIntNot)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntAnd", bigIntAnd, C.bigIntAnd)
+	imports, err = imports.Append("bigIntAnd", v1_3_bigIntAnd, C.v1_3_bigIntAnd)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntOr", bigIntOr, C.bigIntOr)
+	imports, err = imports.Append("bigIntOr", v1_3_bigIntOr, C.v1_3_bigIntOr)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntXor", bigIntXor, C.bigIntXor)
+	imports, err = imports.Append("bigIntXor", v1_3_bigIntXor, C.v1_3_bigIntXor)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntShr", bigIntShr, C.bigIntShr)
+	imports, err = imports.Append("bigIntShr", v1_3_bigIntShr, C.v1_3_bigIntShr)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntShl", bigIntShl, C.bigIntShl)
+	imports, err = imports.Append("bigIntShl", v1_3_bigIntShl, C.v1_3_bigIntShl)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntFinishUnsigned", bigIntFinishUnsigned, C.bigIntFinishUnsigned)
+	imports, err = imports.Append("bigIntFinishUnsigned", v1_3_bigIntFinishUnsigned, C.v1_3_bigIntFinishUnsigned)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntFinishSigned", bigIntFinishSigned, C.bigIntFinishSigned)
+	imports, err = imports.Append("bigIntFinishSigned", v1_3_bigIntFinishSigned, C.v1_3_bigIntFinishSigned)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntStorageStoreUnsigned", bigIntStorageStoreUnsigned, C.bigIntStorageStoreUnsigned)
+	imports, err = imports.Append("bigIntStorageStoreUnsigned", v1_3_bigIntStorageStoreUnsigned, C.v1_3_bigIntStorageStoreUnsigned)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntStorageLoadUnsigned", bigIntStorageLoadUnsigned, C.bigIntStorageLoadUnsigned)
+	imports, err = imports.Append("bigIntStorageLoadUnsigned", v1_3_bigIntStorageLoadUnsigned, C.v1_3_bigIntStorageLoadUnsigned)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntGetUnsignedArgument", bigIntGetUnsignedArgument, C.bigIntGetUnsignedArgument)
+	imports, err = imports.Append("bigIntGetUnsignedArgument", v1_3_bigIntGetUnsignedArgument, C.v1_3_bigIntGetUnsignedArgument)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntGetSignedArgument", bigIntGetSignedArgument, C.bigIntGetSignedArgument)
+	imports, err = imports.Append("bigIntGetSignedArgument", v1_3_bigIntGetSignedArgument, C.v1_3_bigIntGetSignedArgument)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntGetCallValue", bigIntGetCallValue, C.bigIntGetCallValue)
+	imports, err = imports.Append("bigIntGetCallValue", v1_3_bigIntGetCallValue, C.v1_3_bigIntGetCallValue)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntGetESDTCallValue", bigIntGetESDTCallValue, C.bigIntGetESDTCallValue)
+	imports, err = imports.Append("bigIntGetESDTCallValue", v1_3_bigIntGetESDTCallValue, C.v1_3_bigIntGetESDTCallValue)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntGetESDTExternalBalance", bigIntGetESDTExternalBalance, C.bigIntGetESDTExternalBalance)
+	imports, err = imports.Append("bigIntGetESDTExternalBalance", v1_3_bigIntGetESDTExternalBalance, C.v1_3_bigIntGetESDTExternalBalance)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntGetExternalBalance", bigIntGetExternalBalance, C.bigIntGetExternalBalance)
+	imports, err = imports.Append("bigIntGetExternalBalance", v1_3_bigIntGetExternalBalance, C.v1_3_bigIntGetExternalBalance)
 	if err != nil {
 		return nil, err
 	}
@@ -272,8 +272,8 @@ func BigIntImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	return imports, nil
 }
 
-//export bigIntGetUnsignedArgument
-func bigIntGetUnsignedArgument(context unsafe.Pointer, id int32, destinationHandle int32) {
+//export v1_3_bigIntGetUnsignedArgument
+func v1_3_bigIntGetUnsignedArgument(context unsafe.Pointer, id int32, destinationHandle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -291,8 +291,8 @@ func bigIntGetUnsignedArgument(context unsafe.Pointer, id int32, destinationHand
 	value.SetBytes(args[id])
 }
 
-//export bigIntGetSignedArgument
-func bigIntGetSignedArgument(context unsafe.Pointer, id int32, destinationHandle int32) {
+//export v1_3_bigIntGetSignedArgument
+func v1_3_bigIntGetSignedArgument(context unsafe.Pointer, id int32, destinationHandle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -313,8 +313,8 @@ func bigIntGetSignedArgument(context unsafe.Pointer, id int32, destinationHandle
 	twos.SetBytes(value, args[id])
 }
 
-//export bigIntStorageStoreUnsigned
-func bigIntStorageStoreUnsigned(context unsafe.Pointer, keyOffset int32, keyLength int32, sourceHandle int32) int32 {
+//export v1_3_bigIntStorageStoreUnsigned
+func v1_3_bigIntStorageStoreUnsigned(context unsafe.Pointer, keyOffset int32, keyLength int32, sourceHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
@@ -339,8 +339,8 @@ func bigIntStorageStoreUnsigned(context unsafe.Pointer, keyOffset int32, keyLeng
 	return int32(storageStatus)
 }
 
-//export bigIntStorageLoadUnsigned
-func bigIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, keyLength int32, destinationHandle int32) int32 {
+//export v1_3_bigIntStorageLoadUnsigned
+func v1_3_bigIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, keyLength int32, destinationHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
@@ -365,8 +365,8 @@ func bigIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, keyLengt
 	return int32(len(bytes))
 }
 
-//export bigIntGetCallValue
-func bigIntGetCallValue(context unsafe.Pointer, destinationHandle int32) {
+//export v1_3_bigIntGetCallValue
+func v1_3_bigIntGetCallValue(context unsafe.Pointer, destinationHandle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -381,8 +381,8 @@ func bigIntGetCallValue(context unsafe.Pointer, destinationHandle int32) {
 	value.Set(runtime.GetVMInput().CallValue)
 }
 
-//export bigIntGetESDTCallValue
-func bigIntGetESDTCallValue(context unsafe.Pointer, destinationHandle int32) {
+//export v1_3_bigIntGetESDTCallValue
+func v1_3_bigIntGetESDTCallValue(context unsafe.Pointer, destinationHandle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -401,8 +401,8 @@ func bigIntGetESDTCallValue(context unsafe.Pointer, destinationHandle int32) {
 	}
 }
 
-//export bigIntGetExternalBalance
-func bigIntGetExternalBalance(context unsafe.Pointer, addressOffset int32, resultHandle int32) {
+//export v1_3_bigIntGetExternalBalance
+func v1_3_bigIntGetExternalBalance(context unsafe.Pointer, addressOffset int32, resultHandle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	blockchain := arwen.GetBlockchainContext(context)
@@ -422,8 +422,8 @@ func bigIntGetExternalBalance(context unsafe.Pointer, addressOffset int32, resul
 	value.SetBytes(balance)
 }
 
-//export bigIntGetESDTExternalBalance
-func bigIntGetESDTExternalBalance(context unsafe.Pointer, addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64, resultHandle int32) {
+//export v1_3_bigIntGetESDTExternalBalance
+func v1_3_bigIntGetESDTExternalBalance(context unsafe.Pointer, addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64, resultHandle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -443,8 +443,8 @@ func bigIntGetESDTExternalBalance(context unsafe.Pointer, addressOffset int32, t
 	value.Set(esdtData.Value)
 }
 
-//export bigIntNew
-func bigIntNew(context unsafe.Pointer, smallValue int64) int32 {
+//export v1_3_bigIntNew
+func v1_3_bigIntNew(context unsafe.Pointer, smallValue int64) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -454,8 +454,8 @@ func bigIntNew(context unsafe.Pointer, smallValue int64) int32 {
 	return managedType.PutBigInt(smallValue)
 }
 
-//export bigIntUnsignedByteLength
-func bigIntUnsignedByteLength(context unsafe.Pointer, referenceHandle int32) int32 {
+//export v1_3_bigIntUnsignedByteLength
+func v1_3_bigIntUnsignedByteLength(context unsafe.Pointer, referenceHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -472,8 +472,8 @@ func bigIntUnsignedByteLength(context unsafe.Pointer, referenceHandle int32) int
 	return int32(len(bytes))
 }
 
-//export bigIntSignedByteLength
-func bigIntSignedByteLength(context unsafe.Pointer, referenceHandle int32) int32 {
+//export v1_3_bigIntSignedByteLength
+func v1_3_bigIntSignedByteLength(context unsafe.Pointer, referenceHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -490,8 +490,8 @@ func bigIntSignedByteLength(context unsafe.Pointer, referenceHandle int32) int32
 	return int32(len(bytes))
 }
 
-//export bigIntGetUnsignedBytes
-func bigIntGetUnsignedBytes(context unsafe.Pointer, referenceHandle int32, byteOffset int32) int32 {
+//export v1_3_bigIntGetUnsignedBytes
+func v1_3_bigIntGetUnsignedBytes(context unsafe.Pointer, referenceHandle int32, byteOffset int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -516,8 +516,8 @@ func bigIntGetUnsignedBytes(context unsafe.Pointer, referenceHandle int32, byteO
 	return int32(len(bytes))
 }
 
-//export bigIntGetSignedBytes
-func bigIntGetSignedBytes(context unsafe.Pointer, referenceHandle int32, byteOffset int32) int32 {
+//export v1_3_bigIntGetSignedBytes
+func v1_3_bigIntGetSignedBytes(context unsafe.Pointer, referenceHandle int32, byteOffset int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -542,8 +542,8 @@ func bigIntGetSignedBytes(context unsafe.Pointer, referenceHandle int32, byteOff
 	return int32(len(bytes))
 }
 
-//export bigIntSetUnsignedBytes
-func bigIntSetUnsignedBytes(context unsafe.Pointer, destinationHandle int32, byteOffset int32, byteLength int32) {
+//export v1_3_bigIntSetUnsignedBytes
+func v1_3_bigIntSetUnsignedBytes(context unsafe.Pointer, destinationHandle int32, byteOffset int32, byteLength int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -563,8 +563,8 @@ func bigIntSetUnsignedBytes(context unsafe.Pointer, destinationHandle int32, byt
 	metering.UseGas(gasToUse)
 }
 
-//export bigIntSetSignedBytes
-func bigIntSetSignedBytes(context unsafe.Pointer, destinationHandle int32, byteOffset int32, byteLength int32) {
+//export v1_3_bigIntSetSignedBytes
+func v1_3_bigIntSetSignedBytes(context unsafe.Pointer, destinationHandle int32, byteOffset int32, byteLength int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -584,8 +584,8 @@ func bigIntSetSignedBytes(context unsafe.Pointer, destinationHandle int32, byteO
 	metering.UseGas(gasToUse)
 }
 
-//export bigIntIsInt64
-func bigIntIsInt64(context unsafe.Pointer, destinationHandle int32) int32 {
+//export v1_3_bigIntIsInt64
+func v1_3_bigIntIsInt64(context unsafe.Pointer, destinationHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -603,8 +603,8 @@ func bigIntIsInt64(context unsafe.Pointer, destinationHandle int32) int32 {
 	return 0
 }
 
-//export bigIntGetInt64
-func bigIntGetInt64(context unsafe.Pointer, destinationHandle int32) int64 {
+//export v1_3_bigIntGetInt64
+func v1_3_bigIntGetInt64(context unsafe.Pointer, destinationHandle int32) int64 {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -615,8 +615,8 @@ func bigIntGetInt64(context unsafe.Pointer, destinationHandle int32) int64 {
 	return value.Int64()
 }
 
-//export bigIntSetInt64
-func bigIntSetInt64(context unsafe.Pointer, destinationHandle int32, value int64) {
+//export v1_3_bigIntSetInt64
+func v1_3_bigIntSetInt64(context unsafe.Pointer, destinationHandle int32, value int64) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -627,8 +627,8 @@ func bigIntSetInt64(context unsafe.Pointer, destinationHandle int32, value int64
 	dest.SetInt64(value)
 }
 
-//export bigIntAdd
-func bigIntAdd(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
+//export v1_3_bigIntAdd
+func v1_3_bigIntAdd(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext((context))
@@ -647,8 +647,8 @@ func bigIntAdd(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle i
 	dest.Add(a, b)
 }
 
-//export bigIntSub
-func bigIntSub(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
+//export v1_3_bigIntSub
+func v1_3_bigIntSub(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -667,8 +667,8 @@ func bigIntSub(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle i
 	dest.Sub(a, b)
 }
 
-//export bigIntMul
-func bigIntMul(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
+//export v1_3_bigIntMul
+func v1_3_bigIntMul(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -687,8 +687,8 @@ func bigIntMul(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle i
 	dest.Mul(a, b)
 }
 
-//export bigIntTDiv
-func bigIntTDiv(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
+//export v1_3_bigIntTDiv
+func v1_3_bigIntTDiv(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -712,8 +712,8 @@ func bigIntTDiv(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle 
 	dest.Quo(a, b) // Quo implements truncated division (like Go)
 }
 
-//export bigIntTMod
-func bigIntTMod(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
+//export v1_3_bigIntTMod
+func v1_3_bigIntTMod(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -737,8 +737,8 @@ func bigIntTMod(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle 
 	dest.Rem(a, b) // Rem implements truncated modulus (like Go)
 }
 
-//export bigIntEDiv
-func bigIntEDiv(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
+//export v1_3_bigIntEDiv
+func v1_3_bigIntEDiv(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -762,8 +762,8 @@ func bigIntEDiv(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle 
 	dest.Div(a, b) // Div implements Euclidean division (unlike Go)
 }
 
-//export bigIntEMod
-func bigIntEMod(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
+//export v1_3_bigIntEMod
+func v1_3_bigIntEMod(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -787,8 +787,8 @@ func bigIntEMod(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle 
 	dest.Mod(a, b) // Mod implements Euclidean division (unlike Go)
 }
 
-//export bigIntSqrt
-func bigIntSqrt(context unsafe.Pointer, destinationHandle, opHandle int32) {
+//export v1_3_bigIntSqrt
+func v1_3_bigIntSqrt(context unsafe.Pointer, destinationHandle, opHandle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -811,8 +811,8 @@ func bigIntSqrt(context unsafe.Pointer, destinationHandle, opHandle int32) {
 	dest.Sqrt(a)
 }
 
-//export bigIntPow
-func bigIntPow(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
+//export v1_3_bigIntPow
+func v1_3_bigIntPow(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -843,8 +843,8 @@ func bigIntPow(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle i
 	dest.Exp(a, b, nil)
 }
 
-//export bigIntLog2
-func bigIntLog2(context unsafe.Pointer, op1Handle int32) int32 {
+//export v1_3_bigIntLog2
+func v1_3_bigIntLog2(context unsafe.Pointer, op1Handle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -866,8 +866,8 @@ func bigIntLog2(context unsafe.Pointer, op1Handle int32) int32 {
 	return int32(a.BitLen() - 1)
 }
 
-//export bigIntAbs
-func bigIntAbs(context unsafe.Pointer, destinationHandle, opHandle int32) {
+//export v1_3_bigIntAbs
+func v1_3_bigIntAbs(context unsafe.Pointer, destinationHandle, opHandle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -885,8 +885,8 @@ func bigIntAbs(context unsafe.Pointer, destinationHandle, opHandle int32) {
 	dest.Abs(a)
 }
 
-//export bigIntNeg
-func bigIntNeg(context unsafe.Pointer, destinationHandle, opHandle int32) {
+//export v1_3_bigIntNeg
+func v1_3_bigIntNeg(context unsafe.Pointer, destinationHandle, opHandle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -904,8 +904,8 @@ func bigIntNeg(context unsafe.Pointer, destinationHandle, opHandle int32) {
 	dest.Neg(a)
 }
 
-//export bigIntSign
-func bigIntSign(context unsafe.Pointer, opHandle int32) int32 {
+//export v1_3_bigIntSign
+func v1_3_bigIntSign(context unsafe.Pointer, opHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -921,8 +921,8 @@ func bigIntSign(context unsafe.Pointer, opHandle int32) int32 {
 	return int32(a.Sign())
 }
 
-//export bigIntCmp
-func bigIntCmp(context unsafe.Pointer, op1Handle, op2Handle int32) int32 {
+//export v1_3_bigIntCmp
+func v1_3_bigIntCmp(context unsafe.Pointer, op1Handle, op2Handle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -940,8 +940,8 @@ func bigIntCmp(context unsafe.Pointer, op1Handle, op2Handle int32) int32 {
 	return int32(a.Cmp(b))
 }
 
-//export bigIntNot
-func bigIntNot(context unsafe.Pointer, destinationHandle, opHandle int32) {
+//export v1_3_bigIntNot
+func v1_3_bigIntNot(context unsafe.Pointer, destinationHandle, opHandle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -964,8 +964,8 @@ func bigIntNot(context unsafe.Pointer, destinationHandle, opHandle int32) {
 	dest.Not(a)
 }
 
-//export bigIntAnd
-func bigIntAnd(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
+//export v1_3_bigIntAnd
+func v1_3_bigIntAnd(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -989,8 +989,8 @@ func bigIntAnd(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle i
 	dest.And(a, b)
 }
 
-//export bigIntOr
-func bigIntOr(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
+//export v1_3_bigIntOr
+func v1_3_bigIntOr(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -1014,8 +1014,8 @@ func bigIntOr(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle in
 	dest.Or(a, b)
 }
 
-//export bigIntXor
-func bigIntXor(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
+//export v1_3_bigIntXor
+func v1_3_bigIntXor(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -1039,8 +1039,8 @@ func bigIntXor(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle i
 	dest.Xor(a, b)
 }
 
-//export bigIntShr
-func bigIntShr(context unsafe.Pointer, destinationHandle, opHandle, bits int32) {
+//export v1_3_bigIntShr
+func v1_3_bigIntShr(context unsafe.Pointer, destinationHandle, opHandle, bits int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -1064,8 +1064,8 @@ func bigIntShr(context unsafe.Pointer, destinationHandle, opHandle, bits int32) 
 	managedType.ConsumeGasForBigIntCopy(dest)
 }
 
-//export bigIntShl
-func bigIntShl(context unsafe.Pointer, destinationHandle, opHandle, bits int32) {
+//export v1_3_bigIntShl
+func v1_3_bigIntShl(context unsafe.Pointer, destinationHandle, opHandle, bits int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -1089,8 +1089,8 @@ func bigIntShl(context unsafe.Pointer, destinationHandle, opHandle, bits int32) 
 	managedType.ConsumeGasForBigIntCopy(dest)
 }
 
-//export bigIntFinishUnsigned
-func bigIntFinishUnsigned(context unsafe.Pointer, referenceHandle int32) {
+//export v1_3_bigIntFinishUnsigned
+func v1_3_bigIntFinishUnsigned(context unsafe.Pointer, referenceHandle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	output := arwen.GetOutputContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -1110,8 +1110,8 @@ func bigIntFinishUnsigned(context unsafe.Pointer, referenceHandle int32) {
 	metering.UseGas(gasToUse)
 }
 
-//export bigIntFinishSigned
-func bigIntFinishSigned(context unsafe.Pointer, referenceHandle int32) {
+//export v1_3_bigIntFinishSigned
+func v1_3_bigIntFinishSigned(context unsafe.Pointer, referenceHandle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	output := arwen.GetOutputContext(context)
 	metering := arwen.GetMeteringContext(context)

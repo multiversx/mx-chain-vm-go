@@ -6,29 +6,29 @@ package cryptoapi
 // typedef unsigned char uint8_t;
 // typedef int int32_t;
 //
-// extern int32_t sha256(void* context, int32_t dataOffset, int32_t length, int32_t resultOffset);
-// extern int32_t keccak256(void *context, int32_t dataOffset, int32_t length, int32_t resultOffset);
-// extern int32_t ripemd160(void *context, int32_t dataOffset, int32_t length, int32_t resultOffset);
-// extern int32_t verifyBLS(void *context, int32_t keyOffset, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
-// extern int32_t verifyEd25519(void *context, int32_t keyOffset, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
-// extern int32_t verifySecp256k1(void *context, int32_t keyOffset, int32_t keyLength, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
-// extern void addEC(void *context, int32_t destination1, int32_t destination2, int32_t ecHandle, int32_t fstPointX, int32_t fstPointY, int32_t sndPointX, int32_t sndPointY);
-// extern void doubleEC(void *context, int32_t destination1, int32_t destination2, int32_t ecHandle, int32_t pointX, int32_t pointY);
-// extern int32_t isOnCurveEC(void *context, int32_t ecHandle, int32_t pointX, int32_t pointY);
-// extern int32_t scalarBaseMultEC(void *context, int32_t destination1, int32_t destination2, int32_t ecHandle, int32_t kOffset, int32_t length);
-// extern int32_t scalarMultEC(void *context, int32_t destination1, int32_t destination2, int32_t ecHandle, int32_t pointX, int32_t pointY, int32_t kOffset, int32_t length);
-// extern int32_t marshalEC(void *context, int32_t ecHandle, int32_t xPairHandle, int32_t yPairHandle, int32_t resultOffest);
-// extern int32_t unmarshalEC(void *context, int32_t xPairHandle, int32_t yPairHandle, int32_t ecHandle, int32_t dataOffest, int32_t length);
-// extern int32_t marshalCompressedEC(void *context, int32_t ecHandle, int32_t xPairHandle, int32_t yPairHandle, int32_t resultOffest);
-// extern int32_t unmarshalCompressedEC(void *context, int32_t xPairHandle, int32_t yPairHandle, int32_t ecHandle, int32_t dataOffest, int32_t length);
-// extern int32_t generateKeyEC(void *context, int32_t xPubKeyHandle, int32_t yPubKeyHandle, int32_t ecHandle, int32_t resultOffset);
-// extern int32_t ellipticCurveNew(void *context, int32_t fieldOrderHandle, int32_t basePointOrderHandle, int32_t eqConstantHandle, int32_t xBasePointHandle, int32_t yBasePointHandle, int32_t sizeOfField);
-// extern int32_t p224Ec(void *context);
-// extern int32_t p256Ec(void *context);
-// extern int32_t p384Ec(void *context);
-// extern int32_t p521Ec(void *context);
-// extern int32_t getCurveLengthEC(void *context, int32_t ecHandle);
-// extern int32_t getPrivKeyLengthEC(void *context, int32_t ecHandle);
+// extern int32_t v1_3_sha256(void* context, int32_t dataOffset, int32_t length, int32_t resultOffset);
+// extern int32_t v1_3_keccak256(void *context, int32_t dataOffset, int32_t length, int32_t resultOffset);
+// extern int32_t v1_3_ripemd160(void *context, int32_t dataOffset, int32_t length, int32_t resultOffset);
+// extern int32_t v1_3_verifyBLS(void *context, int32_t keyOffset, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
+// extern int32_t v1_3_verifyEd25519(void *context, int32_t keyOffset, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
+// extern int32_t v1_3_verifySecp256k1(void *context, int32_t keyOffset, int32_t keyLength, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
+// extern void v1_3_addEC(void *context, int32_t destination1, int32_t destination2, int32_t ecHandle, int32_t fstPointX, int32_t fstPointY, int32_t sndPointX, int32_t sndPointY);
+// extern void v1_3_doubleEC(void *context, int32_t destination1, int32_t destination2, int32_t ecHandle, int32_t pointX, int32_t pointY);
+// extern int32_t v1_3_isOnCurveEC(void *context, int32_t ecHandle, int32_t pointX, int32_t pointY);
+// extern int32_t v1_3_scalarBaseMultEC(void *context, int32_t destination1, int32_t destination2, int32_t ecHandle, int32_t kOffset, int32_t length);
+// extern int32_t v1_3_scalarMultEC(void *context, int32_t destination1, int32_t destination2, int32_t ecHandle, int32_t pointX, int32_t pointY, int32_t kOffset, int32_t length);
+// extern int32_t v1_3_marshalEC(void *context, int32_t ecHandle, int32_t xPairHandle, int32_t yPairHandle, int32_t resultOffest);
+// extern int32_t v1_3_unmarshalEC(void *context, int32_t xPairHandle, int32_t yPairHandle, int32_t ecHandle, int32_t dataOffest, int32_t length);
+// extern int32_t v1_3_marshalCompressedEC(void *context, int32_t ecHandle, int32_t xPairHandle, int32_t yPairHandle, int32_t resultOffest);
+// extern int32_t v1_3_unmarshalCompressedEC(void *context, int32_t xPairHandle, int32_t yPairHandle, int32_t ecHandle, int32_t dataOffest, int32_t length);
+// extern int32_t v1_3_generateKeyEC(void *context, int32_t xPubKeyHandle, int32_t yPubKeyHandle, int32_t ecHandle, int32_t resultOffset);
+// extern int32_t v1_3_ellipticCurveNew(void *context, int32_t fieldOrderHandle, int32_t basePointOrderHandle, int32_t eqConstantHandle, int32_t xBasePointHandle, int32_t yBasePointHandle, int32_t sizeOfField);
+// extern int32_t v1_3_p224Ec(void *context);
+// extern int32_t v1_3_p256Ec(void *context);
+// extern int32_t v1_3_p384Ec(void *context);
+// extern int32_t v1_3_p521Ec(void *context);
+// extern int32_t v1_3_getCurveLengthEC(void *context, int32_t ecHandle);
+// extern int32_t v1_3_getPrivKeyLengthEC(void *context, int32_t ecHandle);
 import "C"
 
 import (
@@ -36,9 +36,9 @@ import (
 	"crypto/rand"
 	"unsafe"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/math"
-	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/math"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
 )
 
 const blsPublicKeyLength = 96
@@ -52,102 +52,102 @@ const secp256k1SignatureLength = 64
 // CryptoImports adds some crypto imports to the Wasmer Imports map
 func CryptoImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	imports = imports.Namespace("env")
-	imports, err := imports.Append("sha256", sha256, C.sha256)
+	imports, err := imports.Append("sha256", v1_3_sha256, C.v1_3_sha256)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("keccak256", keccak256, C.keccak256)
+	imports, err = imports.Append("keccak256", v1_3_keccak256, C.v1_3_keccak256)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("ripemd160", ripemd160, C.ripemd160)
+	imports, err = imports.Append("ripemd160", v1_3_ripemd160, C.v1_3_ripemd160)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("verifyBLS", verifyBLS, C.verifyBLS)
+	imports, err = imports.Append("verifyBLS", v1_3_verifyBLS, C.v1_3_verifyBLS)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("verifyEd25519", verifyEd25519, C.verifyEd25519)
+	imports, err = imports.Append("verifyEd25519", v1_3_verifyEd25519, C.v1_3_verifyEd25519)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("verifySecp256k1", verifySecp256k1, C.verifySecp256k1)
+	imports, err = imports.Append("verifySecp256k1", v1_3_verifySecp256k1, C.v1_3_verifySecp256k1)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("addEC", addEC, C.addEC)
+	imports, err = imports.Append("addEC", v1_3_addEC, C.v1_3_addEC)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("doubleEC", doubleEC, C.doubleEC)
+	imports, err = imports.Append("doubleEC", v1_3_doubleEC, C.v1_3_doubleEC)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("isOnCurveEC", isOnCurveEC, C.isOnCurveEC)
+	imports, err = imports.Append("isOnCurveEC", v1_3_isOnCurveEC, C.v1_3_isOnCurveEC)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("scalarBaseMultEC", scalarBaseMultEC, C.scalarBaseMultEC)
+	imports, err = imports.Append("scalarBaseMultEC", v1_3_scalarBaseMultEC, C.v1_3_scalarBaseMultEC)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("scalarMultEC", scalarMultEC, C.scalarMultEC)
+	imports, err = imports.Append("scalarMultEC", v1_3_scalarMultEC, C.v1_3_scalarMultEC)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("marshalEC", marshalEC, C.marshalEC)
+	imports, err = imports.Append("marshalEC", v1_3_marshalEC, C.v1_3_marshalEC)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("unmarshalEC", unmarshalEC, C.unmarshalEC)
+	imports, err = imports.Append("unmarshalEC", v1_3_unmarshalEC, C.v1_3_unmarshalEC)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("marshalCompressedEC", marshalCompressedEC, C.marshalCompressedEC)
+	imports, err = imports.Append("marshalCompressedEC", v1_3_marshalCompressedEC, C.v1_3_marshalCompressedEC)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("unmarshalCompressedEC", unmarshalCompressedEC, C.unmarshalCompressedEC)
+	imports, err = imports.Append("unmarshalCompressedEC", v1_3_unmarshalCompressedEC, C.v1_3_unmarshalCompressedEC)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("generateKeyEC", generateKeyEC, C.generateKeyEC)
+	imports, err = imports.Append("generateKeyEC", v1_3_generateKeyEC, C.v1_3_generateKeyEC)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("ellipticCurveNew", ellipticCurveNew, C.ellipticCurveNew)
+	imports, err = imports.Append("ellipticCurveNew", v1_3_ellipticCurveNew, C.v1_3_ellipticCurveNew)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("p224Ec", p224Ec, C.p224Ec)
+	imports, err = imports.Append("p224Ec", v1_3_p224Ec, C.v1_3_p224Ec)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getCurveLengthEC", getCurveLengthEC, C.getCurveLengthEC)
+	imports, err = imports.Append("getCurveLengthEC", v1_3_getCurveLengthEC, C.v1_3_getCurveLengthEC)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getPrivKeyLengthEC", getPrivKeyLengthEC, C.getPrivKeyLengthEC)
+	imports, err = imports.Append("getPrivKeyLengthEC", v1_3_getPrivKeyLengthEC, C.v1_3_getPrivKeyLengthEC)
 	if err != nil {
 		return nil, err
 	}
@@ -155,8 +155,8 @@ func CryptoImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	return imports, nil
 }
 
-//export sha256
-func sha256(context unsafe.Pointer, dataOffset int32, length int32, resultOffset int32) int32 {
+//export v1_3_sha256
+func v1_3_sha256(context unsafe.Pointer, dataOffset int32, length int32, resultOffset int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	crypto := arwen.GetCryptoContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -183,8 +183,8 @@ func sha256(context unsafe.Pointer, dataOffset int32, length int32, resultOffset
 	return 0
 }
 
-//export keccak256
-func keccak256(context unsafe.Pointer, dataOffset int32, length int32, resultOffset int32) int32 {
+//export v1_3_keccak256
+func v1_3_keccak256(context unsafe.Pointer, dataOffset int32, length int32, resultOffset int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	crypto := arwen.GetCryptoContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -211,8 +211,8 @@ func keccak256(context unsafe.Pointer, dataOffset int32, length int32, resultOff
 	return 0
 }
 
-//export ripemd160
-func ripemd160(context unsafe.Pointer, dataOffset int32, length int32, resultOffset int32) int32 {
+//export v1_3_ripemd160
+func v1_3_ripemd160(context unsafe.Pointer, dataOffset int32, length int32, resultOffset int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	crypto := arwen.GetCryptoContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -239,8 +239,8 @@ func ripemd160(context unsafe.Pointer, dataOffset int32, length int32, resultOff
 	return 0
 }
 
-//export verifyBLS
-func verifyBLS(
+//export v1_3_verifyBLS
+func v1_3_verifyBLS(
 	context unsafe.Pointer,
 	keyOffset int32,
 	messageOffset int32,
@@ -280,8 +280,8 @@ func verifyBLS(
 	return 0
 }
 
-//export verifyEd25519
-func verifyEd25519(
+//export v1_3_verifyEd25519
+func v1_3_verifyEd25519(
 	context unsafe.Pointer,
 	keyOffset int32,
 	messageOffset int32,
@@ -321,8 +321,8 @@ func verifyEd25519(
 	return 0
 }
 
-//export verifySecp256k1
-func verifySecp256k1(
+//export v1_3_verifySecp256k1
+func v1_3_verifySecp256k1(
 	context unsafe.Pointer,
 	keyOffset int32,
 	keyLength int32,
@@ -377,8 +377,8 @@ func verifySecp256k1(
 	return 0
 }
 
-//export addEC
-func addEC(
+//export v1_3_addEC
+func v1_3_addEC(
 	context unsafe.Pointer,
 	xResultHandle int32,
 	yResultHandle int32,
@@ -418,8 +418,8 @@ func addEC(
 	yResult.Set(yResultAdd)
 }
 
-//export doubleEC
-func doubleEC(
+//export v1_3_doubleEC
+func v1_3_doubleEC(
 	context unsafe.Pointer,
 	xResultHandle int32,
 	yResultHandle int32,
@@ -455,8 +455,8 @@ func doubleEC(
 	yResult.Set(yResultDouble)
 }
 
-//export isOnCurveEC
-func isOnCurveEC(
+//export v1_3_isOnCurveEC
+func v1_3_isOnCurveEC(
 	context unsafe.Pointer,
 	ecHandle int32,
 	pointXHandle int32,
@@ -490,8 +490,8 @@ func isOnCurveEC(
 	return 0
 }
 
-//export scalarBaseMultEC
-func scalarBaseMultEC(
+//export v1_3_scalarBaseMultEC
+func v1_3_scalarBaseMultEC(
 	context unsafe.Pointer,
 	xResultHandle int32,
 	yResultHandle int32,
@@ -532,8 +532,8 @@ func scalarBaseMultEC(
 	return 0
 }
 
-//export scalarMultEC
-func scalarMultEC(
+//export v1_3_scalarMultEC
+func v1_3_scalarMultEC(
 	context unsafe.Pointer,
 	xResultHandle int32,
 	yResultHandle int32,
@@ -578,8 +578,8 @@ func scalarMultEC(
 	return 0
 }
 
-//export marshalEC
-func marshalEC(
+//export v1_3_marshalEC
+func v1_3_marshalEC(
 	context unsafe.Pointer,
 	pointXHandle int32,
 	pointYHandle int32,
@@ -619,8 +619,8 @@ func marshalEC(
 	return 0
 }
 
-//export marshalCompressedEC
-func marshalCompressedEC(
+//export v1_3_marshalCompressedEC
+func v1_3_marshalCompressedEC(
 	context unsafe.Pointer,
 	pointXHandle int32,
 	pointYHandle int32,
@@ -660,8 +660,8 @@ func marshalCompressedEC(
 	return 0
 }
 
-//export unmarshalEC
-func unmarshalEC(
+//export v1_3_unmarshalEC
+func v1_3_unmarshalEC(
 	context unsafe.Pointer,
 	xPairHandle int32,
 	yPairHandle int32,
@@ -702,8 +702,8 @@ func unmarshalEC(
 	return 0
 }
 
-//export unmarshalCompressedEC
-func unmarshalCompressedEC(
+//export v1_3_unmarshalCompressedEC
+func v1_3_unmarshalCompressedEC(
 	context unsafe.Pointer,
 	xPairHandle int32,
 	yPairHandle int32,
@@ -743,8 +743,8 @@ func unmarshalCompressedEC(
 	return 0
 }
 
-//export generateKeyEC
-func generateKeyEC(
+//export v1_3_generateKeyEC
+func v1_3_generateKeyEC(
 	context unsafe.Pointer,
 	xPubKeyHandle int32,
 	yPubKeyHandle int32,
@@ -787,8 +787,8 @@ func generateKeyEC(
 	return 0
 }
 
-//export ellipticCurveNew
-func ellipticCurveNew(context unsafe.Pointer, fieldOrderHandle int32, basePointOrderHandle int32, eqConstantHandle int32, xBasePointHandle int32, yBasePointHandle int32, sizeOfField int32) int32 {
+//export v1_3_ellipticCurveNew
+func v1_3_ellipticCurveNew(context unsafe.Pointer, fieldOrderHandle int32, basePointOrderHandle int32, eqConstantHandle int32, xBasePointHandle int32, yBasePointHandle int32, sizeOfField int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -816,8 +816,8 @@ func ellipticCurveNew(context unsafe.Pointer, fieldOrderHandle int32, basePointO
 	return managedType.PutEllipticCurve(&curve)
 }
 
-//export p224Ec
-func p224Ec(context unsafe.Pointer) int32 {
+//export v1_3_p224Ec
+func v1_3_p224Ec(context unsafe.Pointer) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -828,8 +828,8 @@ func p224Ec(context unsafe.Pointer) int32 {
 	return managedType.PutEllipticCurve(curveParams)
 }
 
-//export p256Ec
-func p256Ec(context unsafe.Pointer) int32 {
+//export v1_3_p256Ec
+func v1_3_p256Ec(context unsafe.Pointer) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -840,8 +840,8 @@ func p256Ec(context unsafe.Pointer) int32 {
 	return managedType.PutEllipticCurve(curveParams)
 }
 
-//export p384Ec
-func p384Ec(context unsafe.Pointer) int32 {
+//export v1_3_p384Ec
+func v1_3_p384Ec(context unsafe.Pointer) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -852,8 +852,8 @@ func p384Ec(context unsafe.Pointer) int32 {
 	return managedType.PutEllipticCurve(curveParams)
 }
 
-//export p521Ec
-func p521Ec(context unsafe.Pointer) int32 {
+//export v1_3_p521Ec
+func v1_3_p521Ec(context unsafe.Pointer) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -864,8 +864,8 @@ func p521Ec(context unsafe.Pointer) int32 {
 	return managedType.PutEllipticCurve(curveParams)
 }
 
-//export getCurveLengthEC
-func getCurveLengthEC(context unsafe.Pointer, ecHandle int32) int32 {
+//export v1_3_getCurveLengthEC
+func v1_3_getCurveLengthEC(context unsafe.Pointer, ecHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -881,8 +881,8 @@ func getCurveLengthEC(context unsafe.Pointer, ecHandle int32) int32 {
 	return ecLength
 }
 
-//export getPrivKeyLengthEC
-func getPrivKeyLengthEC(context unsafe.Pointer, ecHandle int32) int32 {
+//export v1_3_getPrivKeyLengthEC
+func v1_3_getPrivKeyLengthEC(context unsafe.Pointer, ecHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)

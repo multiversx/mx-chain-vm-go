@@ -3,10 +3,10 @@ package mock
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
-	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
@@ -18,6 +18,7 @@ type VMHostStub struct {
 	PushStateCalled       func()
 	PopStateCalled        func()
 	ClearStateStackCalled func()
+	GetVersionCalled      func() string
 
 	CryptoCalled                      func() crypto.VMCrypto
 	BlockchainCalled                  func() arwen.BlockchainContext
@@ -45,6 +46,15 @@ type VMHostStub struct {
 
 	SetRuntimeContextCalled func(runtime arwen.RuntimeContext)
 	GetContextsCalled       func() (arwen.ManagedTypesContext, arwen.BlockchainContext, arwen.MeteringContext, arwen.OutputContext, arwen.RuntimeContext, arwen.StorageContext)
+}
+
+// GetVersion mocked method
+func (vhs *VMHostStub) GetVersion() string {
+	if vhs.GetVersionCalled != nil {
+		return vhs.GetVersionCalled()
+	}
+
+	return "stub"
 }
 
 // InitState mocked method
