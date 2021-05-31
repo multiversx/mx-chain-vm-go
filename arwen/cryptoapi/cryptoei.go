@@ -27,6 +27,8 @@ package cryptoapi
 // extern int32_t p256Ec(void *context);
 // extern int32_t p384Ec(void *context);
 // extern int32_t p521Ec(void *context);
+// extern int32_t getCurveLengthEC(void *context, int32_t ecHandle);
+// extern int32_t getPrivKeyLengthEC(void context, int32_t ecHandle);
 import "C"
 
 import (
@@ -136,6 +138,16 @@ func CryptoImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("p224Ec", p224Ec, C.p224Ec)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getCurveLengthEC", getCurveLengthEC, C.getCurveLengthEC)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getPrivKeyLengthEC", getPrivKeyLengthEC, C.getPrivKeyLengthEC)
 	if err != nil {
 		return nil, err
 	}
@@ -850,4 +862,38 @@ func p521Ec(context unsafe.Pointer) int32 {
 
 	curveParams := elliptic.P521().Params()
 	return managedType.PutEllipticCurve(curveParams)
+}
+
+//export getCurveLengthEC
+func getCurveLengthEC(context unsafe.Pointer, ecHandle int32) int32 {
+	managedType := arwen.GetManagedTypesContext(context)
+	metering := arwen.GetMeteringContext(context)
+	runtime := arwen.GetRuntimeContext(context)
+
+	gasToUse := metering.GasSchedule().BigIntAPICost.EllipticCurveNew / 5
+	metering.UseGas(gasToUse)
+
+	ecLength := managedType.GetEllipticCurveLength(ecHandle)
+	if ecLength == -1 {
+		arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.BigIntAPIErrorShouldFailExecution())
+	}
+
+	return ecLength
+}
+
+//export getPrivKeyLengthEC
+func getPrivKeyLengthEC(context unsafe.Pointer, ecHandle int32) int32 {
+	managedType := arwen.GetManagedTypesContext(context)
+	metering := arwen.GetMeteringContext(context)
+	runtime := arwen.GetRuntimeContext(context)
+
+	gasToUse := metering.GasSchedule().BigIntAPICost.EllipticCurveNew / 5
+	metering.UseGas(gasToUse)
+
+	privKeyLength := managedType.GetPrivateKeyLengthEC(ecHandle)
+	if privKeyLength == -1 {
+		arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.BigIntAPIErrorShouldFailExecution())
+	}
+
+	return privKeyLength
 }
