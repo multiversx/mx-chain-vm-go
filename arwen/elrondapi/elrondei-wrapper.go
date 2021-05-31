@@ -4,7 +4,7 @@ import (
 	"encoding/binary"
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 )
 
 // TransferESDTNFTExecute - exported wrapper over transferESDTNFTExecute
