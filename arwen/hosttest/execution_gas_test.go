@@ -6,10 +6,10 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/mock/contracts"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
-	test "github.com/ElrondNetwork/arwen-wasm-vm/testcommon"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
+	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
 	"github.com/ElrondNetwork/elrond-go/core"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/ElrondNetwork/elrond-go/data/state"

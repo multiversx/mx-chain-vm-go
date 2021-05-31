@@ -4,8 +4,8 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/elrondapi"
-	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
-	test "github.com/ElrondNetwork/arwen-wasm-vm/testcommon"
+	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
+	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
 )
 
 // ExecESDTTransferAndCallParentMock is an exposed mock contract method

@@ -1,7 +1,7 @@
 package contexts
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
 )
 
 type wasmerInstanceBuilder struct {
