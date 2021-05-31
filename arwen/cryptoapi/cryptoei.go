@@ -28,7 +28,7 @@ package cryptoapi
 // extern int32_t p384Ec(void *context);
 // extern int32_t p521Ec(void *context);
 // extern int32_t getCurveLengthEC(void *context, int32_t ecHandle);
-// extern int32_t getPrivKeyLengthEC(void context, int32_t ecHandle);
+// extern int32_t getPrivKeyLengthEC(void *context, int32_t ecHandle);
 import "C"
 
 import (
