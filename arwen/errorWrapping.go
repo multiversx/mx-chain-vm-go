@@ -56,7 +56,7 @@ func (werr *wrappableError) WrapWithStackTrace() WrappableError {
 	return werr.wrapWithErrorWithSkipLevels(errors.New(""), skipStackLevels+1)
 }
 
-// WrapWithError wrapsesdt the target error with the provided one
+// WrapWithError wraps the target error with the provided one
 func (werr *wrappableError) WrapWithError(err error) WrappableError {
 	return werr.wrapWithErrorWithSkipLevels(err, skipStackLevels+1)
 }
