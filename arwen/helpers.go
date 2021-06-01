@@ -181,6 +181,7 @@ func WithFault(err error, vmHostPtr unsafe.Pointer, failExecution bool) bool {
 	return WithFaultAndHost(runtime, err, failExecution)
 }
 
+// WithFaultAndHost fails the execution with the provided error
 func WithFaultAndHost(host VMHost, err error, failExecution bool) bool {
 	if err == nil {
 		return false

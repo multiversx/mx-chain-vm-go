@@ -63,7 +63,8 @@ func TransferESDTNFTExecuteWithTypes(
 		crtArgOffset += int32(argumentsLengths[idxArg])
 	}
 
-	return TransferESDTNFTExecuteWithHost(host,
+	return TransferESDTNFTExecuteWithHost(
+		host,
 		offsetDest,
 		offsetTokenID,
 		tokenLen,
