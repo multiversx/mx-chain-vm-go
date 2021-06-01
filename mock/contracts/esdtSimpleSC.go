@@ -8,8 +8,8 @@ import (
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
 )
 
-// ExecESDTTransferAndCallParentMock is an exposed mock contract method
-func ExecESDTTransferAndCallParentMock(instanceMock *mock.InstanceMock, config interface{}) {
+// ExecESDTTransferAndCallChild is an exposed mock contract method
+func ExecESDTTransferAndCallChild(instanceMock *mock.InstanceMock, config interface{}) {
 	testConfig := config.(DirectCallGasTestConfig)
 	instanceMock.AddMockMethod("execESDTTransferAndCall", func() *mock.InstanceMock {
 		host := instanceMock.Host

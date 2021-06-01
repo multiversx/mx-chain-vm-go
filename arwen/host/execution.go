@@ -631,65 +631,6 @@ func (host *vmHost) callSCMethodIndirect() error {
 	return err
 }
 
-// RevertESDTTransfer calls the ESDT/ESDTNFT transfer with reverted arguments
-func (host *vmHost) RevertESDTTransfer(input *vmcommon.ContractCallInput) {
-	isESDTTransfer := input.Function == core.BuiltInFunctionESDTTransfer || input.Function == core.BuiltInFunctionESDTNFTTransfer
-	if !isESDTTransfer {
-		return
-	}
-	if input.CallType == vmcommon.AsynchronousCallBack {
-		return
-	}
-	numArgsForTransfer := core.MinLenArgumentsESDTTransfer
-	if input.Function == core.BuiltInFunctionESDTNFTTransfer {
-		numArgsForTransfer = core.MinLenArgumentsESDTNFTTransfer
-	}
-	if len(input.Arguments) < numArgsForTransfer {
-		return
-	}
-
-	revertInput := &vmcommon.ContractCallInput{
-		VMInput: vmcommon.VMInput{
-			CallerAddr:     input.RecipientAddr,
-			Arguments:      make([][]byte, numArgsForTransfer),
-			CallValue:      big.NewInt(0),
-			CallType:       vmcommon.AsynchronousCallBack,
-			GasPrice:       input.GasPrice,
-			GasProvided:    host.meteringContext.BlockGasLimit(),
-			GasLocked:      0,
-			OriginalTxHash: input.OriginalTxHash,
-			CurrentTxHash:  input.CurrentTxHash,
-			ESDTValue:      big.NewInt(0),
-			ESDTTokenName:  nil,
-		},
-		RecipientAddr:     input.CallerAddr,
-		Function:          input.Function,
-		AllowInitFunction: false,
-	}
-	copy(revertInput.Arguments, input.Arguments)
-	if input.Function == core.BuiltInFunctionESDTNFTTransfer {
-		actualRecipient := input.CallerAddr
-		actualSender := input.Arguments[numArgsForTransfer-1]
-
-		revertInput.RecipientAddr = actualSender
-		revertInput.CallerAddr = actualSender
-		revertInput.Arguments[numArgsForTransfer-1] = actualRecipient
-	}
-
-	vmOutput, err := host.Blockchain().ProcessBuiltInFunction(revertInput)
-	if err != nil {
-		log.Error("RevertESDTTransfer failed", "error", err)
-		host.meteringContext.UseGas(host.meteringContext.GasLeft())
-		host.runtimeContext.FailExecution(err)
-		return
-	}
-	if vmOutput != nil && vmOutput.ReturnCode != vmcommon.Ok {
-		log.Error("RevertESDTTransfer failed", "returnCode", vmOutput.ReturnCode, "returnMessage", vmOutput.ReturnMessage)
-		host.meteringContext.UseGas(host.meteringContext.GasLeft())
-		host.runtimeContext.FailExecution(errors.New(vmOutput.ReturnMessage))
-	}
-}
-
 // ExecuteESDTTransfer calls the process built in function with the given transfer for ESDT/ESDTNFT if nonce > 0
 // there are no NFTs with nonce == 0
 func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callType vmcommon.CallType, isRevert bool) (*vmcommon.VMOutput, uint64, error) {

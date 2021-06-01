@@ -100,10 +100,6 @@ func (host *VMHostMock) AreInSameShard(_ []byte, _ []byte) bool {
 	return true
 }
 
-// RevertESDTTransfer mocked method
-func (host *VMHostMock) RevertESDTTransfer(_ *vmcommon.ContractCallInput) {
-}
-
 // ExecuteESDTTransfer mocked method
 func (host *VMHostMock) ExecuteESDTTransfer(_ []byte, _ []byte, _ []byte, _ uint64, _ *big.Int, _ vmcommon.CallType, _ bool) (*vmcommon.VMOutput, uint64, error) {
 	return nil, 0, nil

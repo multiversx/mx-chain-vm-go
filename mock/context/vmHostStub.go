@@ -27,7 +27,6 @@ type VMHostStub struct {
 	OutputCalled                      func() arwen.OutputContext
 	MeteringCalled                    func() arwen.MeteringContext
 	StorageCalled                     func() arwen.StorageContext
-	RevertESDTTransferCalled          func(input *vmcommon.ContractCallInput)
 	ExecuteESDTTransferCalled         func(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callType vmcommon.CallType, isRevert bool) (*vmcommon.VMOutput, uint64, error)
 	CreateNewContractCalled           func(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContextCalled        func(input *vmcommon.ContractCallInput) (*arwen.AsyncContextInfo, error)
@@ -164,13 +163,6 @@ func (vhs *VMHostStub) Storage() arwen.StorageContext {
 		return vhs.StorageCalled()
 	}
 	return nil
-}
-
-// RevertESDTTransfer mocked method
-func (vhs *VMHostStub) RevertESDTTransfer(input *vmcommon.ContractCallInput) {
-	if vhs.RevertESDTTransferCalled != nil {
-		vhs.RevertESDTTransferCalled(input)
-	}
 }
 
 // ExecuteESDTTransfer mocked method

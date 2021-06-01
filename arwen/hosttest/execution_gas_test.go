@@ -228,7 +228,7 @@ func TestGasUsed_ThreeContracts_ExecuteOnDestCtx(t *testing.T) {
 		})
 }
 
-func TestGasUsed_ESTD_CallAfterBuiltinCall_Success(t *testing.T) {
+func TestGasUsed_ESTDTransfer_ThenExecuteCall_Success(t *testing.T) {
 	var parentAccount *worldmock.Account
 	initialESDTTokenBalance := uint64(100)
 	esdtTransferGasCost := uint64(1)
@@ -241,7 +241,7 @@ func TestGasUsed_ESTD_CallAfterBuiltinCall_Success(t *testing.T) {
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithMethods(contracts.ExecESDTTransferAndCallParentMock),
+				WithMethods(contracts.ExecESDTTransferAndCallChild),
 			test.CreateMockContract(test.ChildAddress).
 				WithBalance(testConfig.ChildBalance).
 				WithConfig(testConfig).
@@ -275,50 +275,7 @@ func TestGasUsed_ESTD_CallAfterBuiltinCall_Success(t *testing.T) {
 		})
 }
 
-func TestGasUsed_ESTD_CallAfterBuiltinCall_Fail(t *testing.T) {
-	var parentAccount *worldmock.Account
-	initialESDTTokenBalance := uint64(100)
-
-	testConfig := simpleGasTestConfig
-
-	test.BuildMockInstanceCallTest(t).
-		WithContracts(
-			test.CreateMockContract(test.ParentAddress).
-				WithBalance(testConfig.ParentBalance).
-				WithConfig(testConfig).
-				WithMethods(contracts.ExecESDTTransferAndCallParentMock),
-			test.CreateMockContract(test.ChildAddress).
-				WithBalance(testConfig.ChildBalance).
-				WithConfig(testConfig).
-				WithMethods(contracts.FailChildMock),
-		).
-		WithInput(test.CreateTestContractCallInputBuilder().
-			WithRecipientAddr(test.ParentAddress).
-			WithGasProvided(testConfig.GasProvided).
-			WithFunction("execESDTTransferAndCall").
-			WithArguments(test.ChildAddress, []byte("ESDTTransfer"), []byte("fail")).
-			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
-			parentAccount = world.AcctMap.GetAccount(test.ParentAddress)
-			parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenKey, initialESDTTokenBalance)
-			createMockBuiltinFunctions(t, host, world)
-			setZeroCodeCosts(host)
-		}).
-		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.
-				ReturnCode(vmcommon.ExecutionFailed).
-				GasRemaining(0)
-
-			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
-			require.Equal(t, initialESDTTokenBalance, parentESDTBalance)
-
-			childAccount := world.AcctMap.GetAccount(test.ChildAddress)
-			childESDTBalance, _ := childAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
-			require.Equal(t, uint64(0), childESDTBalance)
-		})
-}
-
-func TestGasUsed_ESTD_FailAfterBuiltinCall(t *testing.T) {
+func TestGasUsed_ESTDTransfer_ThenExecuteCall_Fail(t *testing.T) {
 	var parentAccount *worldmock.Account
 	initialESDTTokenBalance := uint64(100)
 
@@ -330,7 +287,7 @@ func TestGasUsed_ESTD_FailAfterBuiltinCall(t *testing.T) {
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithMethods(contracts.ExecESDTTransferAndCallParentMock),
+				WithMethods(contracts.ExecESDTTransferAndCallChild),
 			test.CreateMockContract(test.ChildAddress).
 				WithBalance(testConfig.ChildBalance).
 				WithConfig(testConfig).
@@ -362,7 +319,51 @@ func TestGasUsed_ESTD_FailAfterBuiltinCall(t *testing.T) {
 		})
 }
 
-func TestGasUsed_ESTD_WithRevert(t *testing.T) {
+func TestGasUsed_ESTDTransferFailed(t *testing.T) {
+	var parentAccount *worldmock.Account
+	initialESDTTokenBalance := uint64(100)
+
+	testConfig := simpleGasTestConfig
+	testConfig.ESDTTokensToTransfer = 2 * initialESDTTokenBalance
+
+	test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithMethods(contracts.ExecESDTTransferAndCallChild),
+			test.CreateMockContract(test.ChildAddress).
+				WithBalance(testConfig.ChildBalance).
+				WithConfig(testConfig).
+				WithMethods(contracts.FailChildMock),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("execESDTTransferAndCall").
+			WithArguments(test.ChildAddress, []byte("ESDTTransfer"), []byte("fail")).
+			Build()).
+		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+			parentAccount = world.AcctMap.GetAccount(test.ParentAddress)
+			parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenKey, initialESDTTokenBalance)
+			createMockBuiltinFunctions(t, host, world)
+			setZeroCodeCosts(host)
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				ReturnCode(vmcommon.ExecutionFailed).
+				GasRemaining(0)
+
+			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
+			require.Equal(t, initialESDTTokenBalance, parentESDTBalance)
+
+			childAccount := world.AcctMap.GetAccount(test.ChildAddress)
+			childESDTBalance, _ := childAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
+			require.Equal(t, uint64(0), childESDTBalance)
+		})
+}
+
+func TestGasUsed_ESTDTransferFromParent_ChildBurnsAndThenFails(t *testing.T) {
 	var parentAccount *worldmock.Account
 	initialESDTTokenBalance := uint64(100)
 
@@ -400,7 +401,6 @@ func TestGasUsed_ESTD_WithRevert(t *testing.T) {
 				ReturnCode(vmcommon.ExecutionFailed).
 				ReturnMessageContains("forced fail").
 				ReturnMessageContains("execution failed").
-				ReturnMessageContains("insufficient funds").
 				GasRemaining(0)
 		})
 }
