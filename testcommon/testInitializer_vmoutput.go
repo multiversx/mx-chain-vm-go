@@ -44,6 +44,12 @@ func (v *VMOutputVerifier) ReturnMessage(message string) *VMOutputVerifier {
 	return v
 }
 
+// ReturnMessageContains verifies if ReturnMessage of output contains the provided one
+func (v *VMOutputVerifier) ReturnMessageContains(message string) *VMOutputVerifier {
+	require.Contains(v.T, v.VmOutput.ReturnMessage, message, "ReturnMessage")
+	return v
+}
+
 // NoMsg verifies that ReturnMessage is empty
 func (v *VMOutputVerifier) NoMsg() *VMOutputVerifier {
 	require.Equal(v.T, "", v.VmOutput.ReturnMessage, "ReturnMessage")
