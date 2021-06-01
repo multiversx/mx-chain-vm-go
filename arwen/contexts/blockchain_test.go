@@ -5,9 +5,9 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
 )

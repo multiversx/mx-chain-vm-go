@@ -6,10 +6,11 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/mock/contracts"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
-	test "github.com/ElrondNetwork/arwen-wasm-vm/testcommon"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/contracts"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
+	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
+	"github.com/ElrondNetwork/elrond-go/core"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/ElrondNetwork/elrond-go/data/state"
 	"github.com/ElrondNetwork/elrond-go/testscommon/txDataBuilder"
@@ -314,6 +315,49 @@ func TestGasUsed_ESTD_CallAfterBuiltinCall_Fail(t *testing.T) {
 			childAccount := world.AcctMap.GetAccount(test.ChildAddress)
 			childESDTBalance, _ := childAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
 			require.Equal(t, uint64(0), childESDTBalance)
+		})
+}
+
+func TestGasUsed_ESTD_WithRevert(t *testing.T) {
+	var parentAccount *worldmock.Account
+	initialESDTTokenBalance := uint64(100)
+
+	testConfig := simpleGasTestConfig
+	testConfig.ESDTTokensToTransfer = 10
+
+	test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithMethods(contracts.ExecESDTTransferWithAPICall),
+			test.CreateMockContract(test.ChildAddress).
+				WithBalance(testConfig.ChildBalance).
+				WithConfig(testConfig).
+				WithMethods(contracts.FailChildAndBurnESDTMock),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("execESDTTransferWithAPICall").
+			WithArguments(test.ChildAddress, []byte("failAndBurn"), big.NewInt(int64(testConfig.ESDTTokensToTransfer)).Bytes()).
+			Build()).
+		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+			parentAccount = world.AcctMap.GetAccount(test.ParentAddress)
+			parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenKey, initialESDTTokenBalance)
+			childAccount := world.AcctMap.GetAccount(test.ChildAddress)
+			childAccount.SetTokenBalanceUint64(test.ESDTTestTokenKey, 0)
+			childAccount.SetTokenRolesAsStrings(test.ESDTTestTokenName, []string{core.ESDTRoleLocalBurn})
+			createMockBuiltinFunctions(t, host, world)
+			setZeroCodeCosts(host)
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				ReturnCode(vmcommon.ExecutionFailed).
+				ReturnMessageContains("forced fail").
+				ReturnMessageContains("execution failed").
+				ReturnMessageContains("insufficient funds").
+				GasRemaining(0)
 		})
 }
 

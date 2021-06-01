@@ -7,8 +7,8 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
-	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/marshaling"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/ipc/common"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/ipc/marshaling"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-go-logger/pipes"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
@@ -211,7 +211,7 @@ func (driver *ArwenDriver) IsClosed() bool {
 }
 
 // GetVersion gets the Arwen version
-func (driver *ArwenDriver) GetVersion() (string, error) {
+func (driver *ArwenDriver) GetVersion() string {
 	driver.operationsMutex.Lock()
 	defer driver.operationsMutex.Unlock()
 
@@ -219,20 +219,21 @@ func (driver *ArwenDriver) GetVersion() (string, error) {
 
 	err := driver.RestartArwenIfNecessary()
 	if err != nil {
-		return "", common.WrapCriticalError(err)
+		log.Warn("GetVersion", "err", common.WrapCriticalError(err))
+		return ""
 	}
 
 	request := common.NewMessageVersionRequest()
 	response, err := driver.part.StartLoop(request)
 	if err != nil {
-		log.Warn("GetVersion", "err", err)
+		log.Warn("GetVersion", "err", common.WrapCriticalError(err))
 		_ = driver.Close()
-		return "", common.WrapCriticalError(err)
+		return ""
 	}
 
 	typedResponse := response.(*common.MessageVersionResponse)
 
-	return typedResponse.Version, nil
+	return typedResponse.Version
 }
 
 // GasScheduleChange sends a "gas change" request to Arwen and waits for the output

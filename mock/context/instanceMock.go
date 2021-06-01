@@ -4,8 +4,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
 )
 
 // InstanceMock is a mock for Wasmer instances; it allows creating mock smart
@@ -46,7 +46,13 @@ func (instance *InstanceMock) AddMockMethodWithError(name string, method func() 
 	wrappedMethod := func(...interface{}) (wasmer.Value, error) {
 		instance := method()
 		if arwen.BreakpointValue(instance.GetBreakpointValue()) != arwen.BreakpointNone {
-			err = errors.New("breakpoint")
+			var errMsg string
+			if arwen.BreakpointValue(instance.GetBreakpointValue()) == arwen.BreakpointAsyncCall {
+				errMsg = "breakpoint"
+			} else {
+				errMsg = instance.Host.Output().GetVMOutput().ReturnMessage
+			}
+			err = errors.New(errMsg)
 		}
 		return wasmer.Void(), err
 	}
