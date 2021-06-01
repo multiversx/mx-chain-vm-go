@@ -633,7 +633,7 @@ func (host *vmHost) callSCMethodIndirect() error {
 
 // ExecuteESDTTransfer calls the process built in function with the given transfer for ESDT/ESDTNFT if nonce > 0
 // there are no NFTs with nonce == 0
-func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callType vmcommon.CallType, isRevert bool) (*vmcommon.VMOutput, uint64, error) {
+func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callType vmcommon.CallType) (*vmcommon.VMOutput, uint64, error) {
 	_, _, metering, _, runtime, _ := host.GetContexts()
 
 	esdtTransferInput := &vmcommon.ContractCallInput{
@@ -660,10 +660,6 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, token
 		esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, tokenIdentifier, value.Bytes())
 	}
 
-	if isRevert {
-		esdtTransferInput.GasProvided = metering.BlockGasLimit()
-	}
-
 	vmOutput, err := host.Blockchain().ProcessBuiltInFunction(esdtTransferInput)
 	log.Trace("ESDT transfer", "sender", sender, "dest", destination)
 	log.Trace("ESDT transfer", "token", tokenIdentifier, "value", value)
@@ -682,7 +678,7 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, token
 			gasConsumed = math.SubUint64(gasConsumed, transfer.GasLimit)
 		}
 	}
-	if callType != vmcommon.AsynchronousCallBack && !isRevert {
+	if callType != vmcommon.AsynchronousCallBack {
 		if metering.GasLeft() < gasConsumed {
 			log.Trace("ESDT transfer", "error", arwen.ErrNotEnoughGas)
 			return vmOutput, esdtTransferInput.GasProvided, arwen.ErrNotEnoughGas
