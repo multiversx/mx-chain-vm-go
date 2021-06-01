@@ -3,7 +3,7 @@ module github.com/ElrondNetwork/arwen-wasm-vm/v1_3
 go 1.13
 
 require (
-	github.com/ElrondNetwork/arwen-wasm-vm v1.2.14
+	github.com/ElrondNetwork/arwen-wasm-vm/v1_3 v1.3.5
 	github.com/ElrondNetwork/big-int-util v0.1.0
 	github.com/ElrondNetwork/elrond-go v1.1.60-0.20210528095714-a120ac08c5a7
 	github.com/ElrondNetwork/elrond-go-logger v1.0.4
