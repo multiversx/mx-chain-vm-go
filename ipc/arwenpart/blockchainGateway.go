@@ -271,7 +271,7 @@ func (blockchain *BlockchainHookGateway) ProcessBuiltInFunction(input *vmcommon.
 	}
 
 	response := rawResponse.(*common.MessageBlockchainProcessBuiltInFunctionResponse)
-	return response.VmOutput, response.GetError()
+	return response.VmOutput.ConvertToVMOutput(), response.GetError()
 }
 
 // GetBuiltinFunctionNames forwards a message to the actual hook

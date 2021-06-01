@@ -57,8 +57,12 @@ class SerializableType:
         self.fromTypeConverterMethod = fromTypeConverterMethod
         self.toTypeConverterFunction = toTypeConverterFunction
 
-serializableTypes = { "map[string][]byte" :
-                        SerializableType(type="SerializableMapStringBytes", fromTypeConverterMethod="ConvertToMap", toTypeConverterFunction="NewSerializableMapStringBytes") }
+serializableTypes = {
+                        "map[string][]byte" :
+                        SerializableType(type="SerializableMapStringBytes", fromTypeConverterMethod="ConvertToMap", toTypeConverterFunction="NewSerializableMapStringBytes") ,
+                        "*vmcommon.VMOutput" :
+                        SerializableType(type="SerializableVMOutput", fromTypeConverterMethod="ConvertToVMOutput", toTypeConverterFunction="NewSerializableVMOutput") ,
+                    }
 
 def main():
     parser = ArgumentParser()

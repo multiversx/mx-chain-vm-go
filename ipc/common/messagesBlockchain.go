@@ -412,14 +412,14 @@ func NewMessageBlockchainProcessBuiltInFunctionRequest(input *vmcommon.ContractC
 // MessageBlockchainProcessBuiltInFunctionResponse represents a response message
 type MessageBlockchainProcessBuiltInFunctionResponse struct {
 	Message
-	VmOutput *vmcommon.VMOutput
+	VmOutput *SerializableVMOutput
 }
 
 // NewMessageBlockchainProcessBuiltInFunctionResponse creates a response message
 func NewMessageBlockchainProcessBuiltInFunctionResponse(vmOutput *vmcommon.VMOutput, err error) *MessageBlockchainProcessBuiltInFunctionResponse {
 	message := &MessageBlockchainProcessBuiltInFunctionResponse{}
 	message.Kind = BlockchainProcessBuiltInFunctionResponse
-	message.VmOutput = vmOutput
+	message.VmOutput = NewSerializableVMOutput(vmOutput)
 	message.SetError(err)
 	return message
 }
