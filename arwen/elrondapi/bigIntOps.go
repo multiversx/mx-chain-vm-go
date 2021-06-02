@@ -305,10 +305,7 @@ func v1_3_bigIntGetSignedArgument(context unsafe.Pointer, id int32, destinationH
 		return
 	}
 
-	value, err := managedType.GetBigInt(destinationHandle)
-	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
-		return
-	}
+	value := managedType.GetBigIntOrCreate(destinationHandle)
 
 	twos.SetBytes(value, args[id])
 }
