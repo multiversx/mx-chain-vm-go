@@ -476,8 +476,6 @@ func TestMeteringContext_UpdateGasStateOnFailure_StackOneLevel(t *testing.T) {
 }
 
 func zeroCodeCosts(context *meteringContext) {
-	//context.GasSchedule().BaseOperationCost.CompilePerByte = 0
-	//context.GasSchedule().BaseOperationCost.AoTPreparePerByte = 0
 	context.GasSchedule().BaseOperationCost.GetCode = 0
 }
 
