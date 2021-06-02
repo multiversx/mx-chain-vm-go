@@ -141,13 +141,26 @@ func (context *managedTypesContext) GetBigIntOrCreate(handle int32) *big.Int {
 	return value
 }
 
-// GetOne returns the value at the given handle. If there is no value under that handle, it will return error
+// GetBigInt returns the value at the given handle. If there is no value under that handle, it will return error
 func (context *managedTypesContext) GetBigInt(handle int32) (*big.Int, error) {
 	value, ok := context.bigIntValues[handle]
 	if !ok {
 		return nil, arwen.ErrNoBigIntUnderThisHandle
 	}
 	return value, nil
+}
+
+// GetTwoBigInt returns the values at the two given handles. If there is at least one missing value, it will return error
+func (context *managedTypesContext) GetTwoBigInt(handle1 int32, handle2 int32) (*big.Int, *big.Int, error) {
+	value1, ok := context.bigIntValues[handle1]
+	if !ok {
+		return nil, nil, arwen.ErrNoBigIntUnderThisHandle
+	}
+	value2, ok := context.bigIntValues[handle2]
+	if !ok {
+		return nil, nil, arwen.ErrNoBigIntUnderThisHandle
+	}
+	return value1, value2, nil
 }
 
 // PutBigInt adds the given value to the current values map and returns the handle
