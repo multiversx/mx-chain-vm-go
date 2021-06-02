@@ -116,7 +116,7 @@ func (pfe *fuzzDelegationExecutor) init(args *fuzzDelegationExecutorInitArgs) er
 				"%d",
 				"%d"
 			],
-			"gasLimit": "1,000,000",
+			"gasLimit": "50,000,000",
 			"gasPrice": "0"
 		},
 		"expect": {

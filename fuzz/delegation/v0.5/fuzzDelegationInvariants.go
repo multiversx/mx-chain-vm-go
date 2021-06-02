@@ -15,7 +15,7 @@ func (pfe *fuzzDelegationExecutor) validateOwnerStakeShare() error {
 			"value": "0",
 			"function": "validateOwnerStakeShare",
 			"arguments": [],
-			"gasLimit": "10,000,000",
+			"gasLimit": "50,000,000",
 			"gasPrice": "0"
 		},
 		"expect": {
@@ -48,7 +48,7 @@ func (pfe *fuzzDelegationExecutor) validateDelegationCapInvariant() error {
 			"value": "0",
 			"function": "validateDelegationCapInvariant",
 			"arguments": [],
-			"gasLimit": "10,000,000",
+			"gasLimit": "50,000,000",
 			"gasPrice": "0"
 		},
 		"expect": {

@@ -25,6 +25,7 @@ const (
 	UserWaiting         = "getUserWaitingStake"
 	UserActive          = "getUserActiveStake"
 	UserDeferredPayment = "getUserDeferredPaymentStake"
+	UserUnbondable      = "getUnBondable"
 )
 
 type fuzzDelegationExecutorInitArgs struct {
@@ -69,7 +70,8 @@ func newFuzzDelegationExecutor(fileResolver fr.FileResolver) (*fuzzDelegationExe
 	if err != nil {
 		return nil, err
 	}
-	arwenTestExecutor.SetMandosGasSchedule(mj.GasScheduleV2)
+	mandosGasSchedule := mj.GasScheduleV3
+	arwenTestExecutor.SetMandosGasSchedule(mandosGasSchedule)
 
 	parser := mjparse.NewParser(fileResolver)
 
@@ -84,7 +86,8 @@ func newFuzzDelegationExecutor(fileResolver fr.FileResolver) (*fuzzDelegationExe
 		totalStakeWithdrawn: big.NewInt(0),
 		totalRewards:        big.NewInt(0),
 		generatedScenario: &mj.Scenario{
-			Name: "fuzz generated",
+			Name:        "fuzz generated",
+			GasSchedule: mandosGasSchedule,
 		},
 	}, nil
 }
@@ -238,12 +241,15 @@ func blsSignature(index int) string {
 		index)
 }
 
-func (pfe *fuzzDelegationExecutor) increaseBlockNonce(nonceDelta int) error {
+func (pfe *fuzzDelegationExecutor) getCurrentBlockNonce() uint64 {
 	curentBlockNonce := uint64(0)
 	if pfe.world.CurrentBlockInfo != nil {
 		curentBlockNonce = pfe.world.CurrentBlockInfo.BlockNonce
 	}
+	return curentBlockNonce
+}
 
+func (pfe *fuzzDelegationExecutor) setBlockNonce(oldNonce, newNonce uint64) error {
 	err := pfe.executeStep(fmt.Sprintf(`
 	{
 		"step": "setState",
@@ -253,46 +259,39 @@ func (pfe *fuzzDelegationExecutor) increaseBlockNonce(nonceDelta int) error {
 		}
 	}`,
 		pfe.nextTxIndex(),
-		curentBlockNonce+uint64(nonceDelta),
+		newNonce,
 	))
 	if err != nil {
 		return err
 	}
 
-	pfe.log("block nonce: %d ---> %d", curentBlockNonce, curentBlockNonce+uint64(nonceDelta))
+	pfe.log("block nonce: %d ---> %d", oldNonce, newNonce)
 	return nil
 }
 
-func (pfe *fuzzDelegationExecutor) simpleQuery(funcName string) (*big.Int, error) {
-	return pfe.querySingleResult(funcName, "")
+func (pfe *fuzzDelegationExecutor) increaseBlockNonce(nonceDelta int) error {
+	curentBlockNonce := pfe.getCurrentBlockNonce()
+	return pfe.setBlockNonce(curentBlockNonce, curentBlockNonce+uint64(nonceDelta))
 }
 
 func (pfe *fuzzDelegationExecutor) querySingleResult(funcName string, args string) (*big.Int, error) {
 	output, err := pfe.executeTxStep(fmt.Sprintf(`
 	{
-		"step": "scCall",
+		"step": "scQuery",
 		"txId": "%d",
 		"tx": {
-			"from": "%s",
 			"to": "%s",
-			"value": "0",
 			"function": "%s",
 			"arguments": [
 				%s
-			],
-			"gasLimit": "10,000,000",
-			"gasPrice": "0"
+			]
 		},
 		"expect": {
 			"out": [ "*" ],
-			"status": "",
-			"logs": [],
-			"gas": "*",
-			"refund": "*"
+			"status": ""
 		}
 	}`,
 		pfe.nextTxIndex(),
-		pfe.ownerAddress,
 		pfe.delegationContractAddress,
 		funcName,
 		args,
@@ -411,7 +410,7 @@ func (pfe *fuzzDelegationExecutor) continueGlobalOperation() error {
 		if err != nil {
 			return err
 		}
-		pfe.log("continue global operation %x", output.ReturnData[0])
+		pfe.log("continue global operation %s", string(output.ReturnData[0]))
 
 		if bytes.Equal(output.ReturnData[0], []byte("completed")) {
 			completed = true
@@ -436,7 +435,7 @@ func (pfe *fuzzDelegationExecutor) isBootstrapMode() (bool, error) {
 			"value": "0",
 			"function": "isBootstrapMode",
 			"arguments": [],
-			"gasLimit": "100,000",
+			"gasLimit": "50,000,000",
 			"gasPrice": "0"
 		}
 	}`,
