@@ -412,7 +412,7 @@ func TestMeteringContext_GasUsed_StackOneLevel(t *testing.T) {
 	gasUsed = output.outputState.OutputAccounts["child"].GasUsed
 	require.Equal(t, childExecutionGas+childUsedGas, gasUsed)
 
-	gasRemaining, _ = math.SubUint64(parentInput.GasProvided, gasSpentByContract)
+	gasRemaining = math.SubUint64(parentInput.GasProvided, gasSpentByContract)
 	// calculate gas remaining
 
 	require.Equal(t, gasRemaining, metering.GasLeft())
@@ -469,7 +469,7 @@ func TestMeteringContext_UpdateGasStateOnFailure_StackOneLevel(t *testing.T) {
 	gasUsed = output.outputState.OutputAccounts["child"].GasUsed
 	require.Equal(t, childInput.GasProvided, gasUsed)
 
-	gasRemaining, _ = math.SubUint64(parentInput.GasProvided, gasSpentByContract)
+	gasRemaining = math.SubUint64(parentInput.GasProvided, gasSpentByContract)
 	// calculate gas remaining
 
 	require.Equal(t, int(gasRemaining), int(metering.GasLeft()))
