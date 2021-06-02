@@ -163,6 +163,7 @@ type ManagedTypesContext interface {
 	PutBigInt(value int64) int32
 	GetBigIntOrCreate(handle int32) *big.Int
 	GetBigInt(id int32) (*big.Int, error)
+	GetTwoBigInt(handle1 int32, handle2 int32) (*big.Int, *big.Int, error)
 	PutEllipticCurve(ec *elliptic.CurveParams) int32
 	GetEllipticCurve(handle int32) (*elliptic.CurveParams, error)
 	GetEllipticCurveLength(ecHandle int32) int32
