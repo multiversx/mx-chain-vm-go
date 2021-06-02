@@ -3,12 +3,12 @@ package tests
 import (
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
-	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/nodepart"
-	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/ipc/common"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/ipc/nodepart"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
@@ -89,8 +89,7 @@ func TestArwenDriver_GetVersion(t *testing.T) {
 	// with `make test`
 	blockchain := &contextmock.BlockchainHookStub{}
 	driver := newDriver(t, blockchain)
-	version, err := driver.GetVersion()
-	require.Nil(t, err)
+	version := driver.GetVersion()
 	require.NotZero(t, len(version))
 	require.NotEqual(t, "undefined", version)
 }

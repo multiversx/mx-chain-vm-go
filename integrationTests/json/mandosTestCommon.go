@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	am "github.com/ElrondNetwork/arwen-wasm-vm/arwenmandos"
-	mc "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/controller"
+	am "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwenmandos"
+	mc "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/controller"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/stretchr/testify/require"
 )
@@ -30,7 +30,7 @@ func runAllTestsInFolder(t *testing.T, folder string) {
 }
 
 func runTestsInFolder(t *testing.T, folder string, exclusions []string) {
-	executor, err := am.NewArwenTestExecutor("../../arwenmandos")
+	executor, err := am.NewArwenTestExecutor()
 	require.Nil(t, err)
 	runner := mc.NewScenarioRunner(
 		executor,
@@ -49,7 +49,7 @@ func runTestsInFolder(t *testing.T, folder string, exclusions []string) {
 }
 
 func runSingleTest(t *testing.T, folder string, filename string) error {
-	executor, err := am.NewArwenTestExecutor("../../arwenmandos")
+	executor, err := am.NewArwenTestExecutor()
 	require.Nil(t, err)
 	runner := mc.NewScenarioRunner(
 		executor,

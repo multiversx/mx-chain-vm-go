@@ -4,8 +4,8 @@ import (
 	"errors"
 	"math/big"
 
-	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
-	test "github.com/ElrondNetwork/arwen-wasm-vm/testcommon"
+	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
+	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
 	"github.com/stretchr/testify/require"
 )
 
@@ -20,6 +20,34 @@ func FailChildMock(instanceMock *mock.InstanceMock, config interface{}) {
 	instanceMock.AddMockMethod("fail", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
+		host.Runtime().FailExecution(errors.New("forced fail"))
+		return instance
+	})
+}
+
+// FailChildAndBurnESDTMock is an exposed mock contract method
+func FailChildAndBurnESDTMock(instanceMock *mock.InstanceMock, config interface{}) {
+	instanceMock.AddMockMethod("failAndBurn", func() *mock.InstanceMock {
+		host := instanceMock.Host
+		instance := mock.GetMockInstance(host)
+
+		runtime := host.Runtime()
+
+		input := test.DefaultTestContractCallInput()
+		input.CallerAddr = runtime.GetSCAddress()
+		input.GasProvided = runtime.GetVMInput().GasProvided / 2
+		input.Arguments = [][]byte{
+			test.ESDTTestTokenName,
+			runtime.Arguments()[0],
+		}
+		input.RecipientAddr = host.Runtime().GetSCAddress()
+		input.Function = "ESDTLocalBurn"
+
+		_, _, err := host.ExecuteOnDestContext(input)
+		if err != nil {
+			host.Runtime().FailExecution(err)
+		}
+
 		host.Runtime().FailExecution(errors.New("forced fail"))
 		return instance
 	})

@@ -8,12 +8,12 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
-	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
-	test "github.com/ElrondNetwork/arwen-wasm-vm/testcommon"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
+	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
+	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
 )
@@ -31,6 +31,14 @@ const (
 	parentPerformAsyncCall  = "parentPerformAsyncCall"
 	parentFunctionChildCall = "parentFunctionChildCall"
 )
+
+func init() {
+	test.ParentCompilationCostSameCtx = uint64(len(test.GetTestSCCode("exec-same-ctx-parent", "../../", "../../../")))
+	test.ChildCompilationCostSameCtx = uint64(len(test.GetTestSCCode("exec-same-ctx-child", "../../", "../../../")))
+
+	test.ParentCompilationCostDestCtx = uint64(len(test.GetTestSCCode("exec-dest-ctx-parent", "../../", "../../../")))
+	test.ChildCompilationCostDestCtx = uint64(len(test.GetTestSCCode("exec-dest-ctx-child", "../../", "../../../")))
+}
 
 func TestSCMem(t *testing.T) {
 	testString := "this is some random string of bytes"
@@ -799,7 +807,7 @@ func TestExecution_ExecuteOnSameContext_OutOfGas(t *testing.T) {
 			} else {
 				verify.
 					ReturnCode(vmcommon.ExecutionFailed).
-					ReturnMessage(arwen.ErrNotEnoughGas.Error()).
+					ReturnMessageContains(arwen.ErrNotEnoughGas.Error()).
 					GasRemaining(0)
 			}
 		})
@@ -1015,7 +1023,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct_ErrMaxInstances(t *test
 			} else {
 				verify.
 					ReturnCode(vmcommon.ExecutionFailed).
-					ReturnMessage(arwen.ErrExecutionFailed.Error()).
+					ReturnMessageContains(arwen.ErrExecutionFailed.Error()).
 					GasRemaining(0)
 			}
 		})
@@ -1211,12 +1219,12 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 			if host.Runtime().ElrondSyncExecAPIErrorShouldFailExecution() == false {
 				verify.
 					ReturnCode(vmcommon.OutOfGas).
-					ReturnMessage(arwen.ErrNotEnoughGas.Error()).
+					ReturnMessageContains(arwen.ErrNotEnoughGas.Error()).
 					GasRemaining(0)
 			} else {
 				verify.
 					ReturnCode(vmcommon.ExecutionFailed).
-					ReturnMessage(arwen.ErrExecutionFailed.Error()).
+					ReturnMessageContains(arwen.ErrExecutionFailed.Error()).
 					GasRemaining(0)
 			}
 		})
@@ -1375,7 +1383,7 @@ func TestExecution_ExecuteOnDestContext_OutOfGas(t *testing.T) {
 			} else {
 				verify.
 					ReturnCode(vmcommon.ExecutionFailed).
-					ReturnMessage(arwen.ErrNotEnoughGas.Error()).
+					ReturnMessageContains(arwen.ErrNotEnoughGas.Error()).
 					GasRemaining(0)
 			}
 		})
@@ -1829,7 +1837,7 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 			} else {
 				verify.
 					ReturnCode(vmcommon.ExecutionFailed).
-					ReturnMessage(arwen.ErrExecutionFailed.Error()).
+					ReturnMessageContains(arwen.ErrExecutionFailed.Error()).
 					GasRemaining(0)
 			}
 		})

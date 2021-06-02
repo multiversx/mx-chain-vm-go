@@ -3,8 +3,9 @@ package contracts
 import (
 	"math/big"
 
-	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
-	test "github.com/ElrondNetwork/arwen-wasm-vm/testcommon"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen/elrondapi"
+	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
+	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
 )
 
 // ExecESDTTransferAndCallParentMock is an exposed mock contract method
@@ -36,6 +37,46 @@ func ExecESDTTransferAndCallParentMock(instanceMock *mock.InstanceMock, config i
 		if err != nil {
 			host.Runtime().FailExecution(err)
 		}
+
+		return instance
+	})
+}
+
+// ExecESDTTransferWithAPICall is an exposed mock contract method
+func ExecESDTTransferWithAPICall(instanceMock *mock.InstanceMock, config interface{}) {
+	testConfig := config.(DirectCallGasTestConfig)
+	instanceMock.AddMockMethod("execESDTTransferWithAPICall", func() *mock.InstanceMock {
+		host := instanceMock.Host
+		instance := mock.GetMockInstance(host)
+		host.Metering().UseGas(testConfig.GasUsedByParent)
+
+		arguments := host.Runtime().Arguments()
+		if len(arguments) != 3 {
+			host.Runtime().SignalUserError("need 3 arguments")
+			return instance
+		}
+
+		input := test.DefaultTestContractCallInput()
+		input.CallerAddr = host.Runtime().GetSCAddress()
+		input.GasProvided = testConfig.GasProvidedToChild
+		input.Arguments = [][]byte{
+			test.ESDTTestTokenName,
+			big.NewInt(int64(testConfig.ESDTTokensToTransfer)).Bytes(),
+			arguments[2],
+		}
+		input.RecipientAddr = arguments[0]
+
+		functionName := arguments[1]
+		args := [][]byte{arguments[2]}
+
+		elrondapi.TransferESDTNFTExecuteWithTypes(
+			host,
+			input.RecipientAddr,
+			test.ESDTTestTokenName,
+			testConfig.ESDTTokensToTransfer,
+			functionName,
+			args,
+			testConfig.GasProvidedToChild)
 
 		return instance
 	})

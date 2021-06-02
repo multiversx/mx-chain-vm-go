@@ -2,17 +2,17 @@ package arwenmandos
 
 import (
 	"fmt"
-	"path/filepath"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
-	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	mc "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/controller"
-	er "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/expression/reconstructor"
-	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/fileresolver"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
-	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
-	test "github.com/ElrondNetwork/arwen-wasm-vm/testcommon"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen/host"
+	gasSchedules "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwenmandos/gasSchedules"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
+	mc "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/controller"
+	er "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/expression/reconstructor"
+	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/fileresolver"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/model"
+	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
+	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
@@ -27,7 +27,6 @@ type ArwenTestExecutor struct {
 	World                   *worldhook.MockWorld
 	vm                      vmi.VMExecutionHandler
 	checkGas                bool
-	arwenmandosPath         string
 	mandosGasScheduleLoaded bool
 	fileResolver            fr.FileResolver
 	exprReconstructor       er.ExprReconstructor
@@ -37,7 +36,7 @@ var _ mc.TestExecutor = (*ArwenTestExecutor)(nil)
 var _ mc.ScenarioExecutor = (*ArwenTestExecutor)(nil)
 
 // NewArwenTestExecutor prepares a new ArwenTestExecutor instance.
-func NewArwenTestExecutor(arwenmandosPath string) (*ArwenTestExecutor, error) {
+func NewArwenTestExecutor() (*ArwenTestExecutor, error) {
 	world := worldhook.NewMockWorld()
 
 	gasScheduleMap := config.MakeGasMapForTests()
@@ -62,7 +61,6 @@ func NewArwenTestExecutor(arwenmandosPath string) (*ArwenTestExecutor, error) {
 		World:                   world,
 		vm:                      vm,
 		checkGas:                true,
-		arwenmandosPath:         arwenmandosPath,
 		mandosGasScheduleLoaded: false,
 		fileResolver:            nil,
 		exprReconstructor:       er.ExprReconstructor{},
@@ -77,15 +75,15 @@ func (ae *ArwenTestExecutor) GetVM() vmi.VMExecutionHandler {
 func (ae *ArwenTestExecutor) gasScheduleMapFromMandos(mandosGasSchedule mj.GasSchedule) (config.GasScheduleMap, error) {
 	switch mandosGasSchedule {
 	case mj.GasScheduleDefault:
-		return test.LoadGasScheduleConfig(filepath.Join(ae.arwenmandosPath, "gasSchedules/gasScheduleV3.toml"))
+		return test.LoadGasScheduleConfig(gasSchedules.GetV3())
 	case mj.GasScheduleDummy:
 		return config.MakeGasMapForTests(), nil
 	case mj.GasScheduleV1:
-		return test.LoadGasScheduleConfig(filepath.Join(ae.arwenmandosPath, "gasSchedules/gasScheduleV1.toml"))
+		return test.LoadGasScheduleConfig(gasSchedules.GetV1())
 	case mj.GasScheduleV2:
-		return test.LoadGasScheduleConfig(filepath.Join(ae.arwenmandosPath, "gasSchedules/gasScheduleV2.toml"))
+		return test.LoadGasScheduleConfig(gasSchedules.GetV2())
 	case mj.GasScheduleV3:
-		return test.LoadGasScheduleConfig(filepath.Join(ae.arwenmandosPath, "gasSchedules/gasScheduleV3.toml"))
+		return test.LoadGasScheduleConfig(gasSchedules.GetV3())
 	default:
 		return nil, fmt.Errorf("unknown mandos GasSchedule: %d", mandosGasSchedule)
 	}

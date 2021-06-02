@@ -12,11 +12,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
-	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen/host"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/pelletier/go-toml"
@@ -550,52 +550,15 @@ func OpenFile(relativePath string) (*os.File, error) {
 	return f, nil
 }
 
-// LoadTomlFileToMap opens and decodes a toml file as a map[string]interface{}
-func LoadTomlFileToMap(relativePath string) (map[string]interface{}, error) {
-	f, err := OpenFile(relativePath)
-	if err != nil {
-		return nil, err
-	}
-
-	fileinfo, err := f.Stat()
-	if err != nil {
-		fmt.Printf("cannot stat file: %s", err.Error())
-		return nil, err
-	}
-
-	filesize := fileinfo.Size()
-	buffer := make([]byte, filesize)
-
-	_, err = f.Read(buffer)
-	if err != nil {
-		fmt.Printf("cannot read from file: %s", err.Error())
-		return nil, err
-	}
-
-	defer func() {
-		err = f.Close()
-		if err != nil {
-			fmt.Printf("cannot close file: %s", err.Error())
-		}
-	}()
-
-	loadedTree, err := toml.Load(string(buffer))
+// LoadGasScheduleConfig parses and prepares a gas schedule read from file.
+func LoadGasScheduleConfig(fileContents string) (config.GasScheduleMap, error) {
+	loadedTree, err := toml.Load(fileContents)
 	if err != nil {
 		fmt.Printf("cannot interpret file contents as toml: %s", err.Error())
 		return nil, err
 	}
 
-	loadedMap := loadedTree.ToMap()
-
-	return loadedMap, nil
-}
-
-// LoadGasScheduleConfig parses and prepares a gas schedule read from file.
-func LoadGasScheduleConfig(filepath string) (config.GasScheduleMap, error) {
-	gasScheduleConfig, err := LoadTomlFileToMap(filepath)
-	if err != nil {
-		return nil, err
-	}
+	gasScheduleConfig := loadedTree.ToMap()
 
 	flattenedGasSchedule := make(config.GasScheduleMap)
 	for libType, costs := range gasScheduleConfig {

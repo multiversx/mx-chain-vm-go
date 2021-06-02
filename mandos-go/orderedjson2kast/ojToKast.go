@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	oj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/orderedjson"
+	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/orderedjson"
 )
 
 func jsonToKastOrdered(j oj.OJsonObject) string {
