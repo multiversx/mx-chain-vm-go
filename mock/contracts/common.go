@@ -28,8 +28,10 @@ type AsyncCallBaseTestConfig struct {
 // AsyncCallTestConfig is configuration for async call tests
 type AsyncCallTestConfig struct {
 	AsyncCallBaseTestConfig
-	TransferToThirdParty int64
-	TransferToVault      int64
+	TransferToThirdParty         int64
+	TransferToVault              int64
+	ESDTTokensToTransfer         uint64
+	CallbackESDTTokensToTransfer uint64
 }
 
 // AsyncBuiltInCallTestConfig is configuration for async call tests of builtin functions
@@ -48,4 +50,19 @@ type AsyncCallRecursiveTestConfig struct {
 type AsyncCallMultiChildTestConfig struct {
 	AsyncCallBaseTestConfig
 	ChildCalls int
+}
+
+// GasTestConfig interface for gas tests configs
+type GasTestConfig interface {
+	GetGasUsedByChild() uint64
+}
+
+// GetGasUsedByChild - getter for GasUsedByChild
+func (config AsyncCallTestConfig) GetGasUsedByChild() uint64 {
+	return config.GasUsedByChild
+}
+
+// GetGasUsedByChild - getter for GasUsedByChild
+func (config DirectCallGasTestConfig) GetGasUsedByChild() uint64 {
+	return config.GasUsedByChild
 }

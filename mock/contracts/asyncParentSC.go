@@ -38,7 +38,7 @@ func PerformAsyncCallParentMock(instanceMock *mock.InstanceMock, config interfac
 		arguments := host.Runtime().Arguments()
 
 		callData := txDataBuilder.NewBuilder()
-		// funcion to be called on child
+		// function to be called on child
 		callData.Func(AsyncChildFunction)
 		// value to send to third party
 		callData.Int64(testConfig.TransferToThirdParty)
@@ -55,6 +55,25 @@ func PerformAsyncCallParentMock(instanceMock *mock.InstanceMock, config interfac
 
 		return instance
 
+	})
+}
+
+// SimpleCallbackMock is an exposed mock contract method
+func SimpleCallbackMock(instanceMock *mock.InstanceMock, config interface{}) {
+	testConfig := config.(*AsyncCallTestConfig)
+	instanceMock.AddMockMethod("callBack", func() *mock.InstanceMock {
+		host := instanceMock.Host
+		instance := mock.GetMockInstance(host)
+		arguments := host.Runtime().Arguments()
+
+		host.Metering().UseGas(testConfig.GasUsedByCallback)
+
+		if len(arguments) != 2 {
+			host.Runtime().SignalUserError("wrong num of arguments")
+			return instance
+		}
+
+		return instance
 	})
 }
 

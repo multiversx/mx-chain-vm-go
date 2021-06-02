@@ -472,19 +472,7 @@ func (blockchain *BlockchainHookGateway) GetESDTToken(address []byte, tokenID []
 
 // IsInterfaceNil forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) IsInterfaceNil() bool {
-
-	request := common.NewMessageBlockchainIsInterfaceNilRequest()
-	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
-	if err != nil {
-		return false
-	}
-
-	if rawResponse.GetKind() != common.BlockchainIsInterfaceNilResponse {
-		return false
-	}
-
-	response := rawResponse.(*common.MessageBlockchainIsInterfaceNilResponse)
-	return response.Result
+	return blockchain == nil
 }
 
 // GetSnapshot forwards a message to the actual hook
