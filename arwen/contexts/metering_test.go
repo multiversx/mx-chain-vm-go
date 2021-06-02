@@ -1,12 +1,12 @@
 package contexts
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/math"
 	"math/big"
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/math"
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
@@ -380,9 +380,9 @@ func TestMeteringContext_GasUsed_StackOneLevel(t *testing.T) {
 	require.Equal(t, childInput.GasProvided-childExecutionGas-childUsedGas, metering.GasLeft())
 
 	gasSpentByContract := metering.GasSpentByContract()
-	require.Equal(t, uint64(childExecutionGas)+childUsedGas, gasSpentByContract)
+	require.Equal(t, childExecutionGas+childUsedGas, gasSpentByContract)
 
-	metering.UpdateGasStateOnSuccess(output.outputState)
+	_ = metering.UpdateGasStateOnSuccess(output.outputState)
 
 	// return to the parent
 	metering.PopMergeActiveState()
@@ -404,7 +404,7 @@ func TestMeteringContext_GasUsed_StackOneLevel(t *testing.T) {
 	gasSpentByContract = metering.GasSpentByContract()
 	require.Equal(t, parentExecutionGas+parentUsedGas+childExecutionGas+childUsedGas, gasSpentByContract)
 
-	metering.UpdateGasStateOnSuccess(output.outputState)
+	_ = metering.UpdateGasStateOnSuccess(output.outputState)
 
 	gasUsed := output.outputState.OutputAccounts["parent"].GasUsed
 	require.Equal(t, parentExecutionGas+parentUsedGas, gasUsed)
