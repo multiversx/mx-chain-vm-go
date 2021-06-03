@@ -160,8 +160,28 @@ func WasteGasParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 	instanceMock.AddMockMethod("wasteGas", test.SimpleWasteGasMockMethod(instanceMock, testConfig.GasUsedByParent))
 }
 
+const (
+	esdtOnCallbackSuccess int = iota
+	esdtOnCallbackWrongNumOfArgs
+	esdtOnCallbackFail
+)
+
 // ESDTTransferToParentMock is an exposed mock contract method
 func ESDTTransferToParentMock(instanceMock *mock.InstanceMock, config interface{}) {
+	esdtTransferToParentMock(instanceMock, config, esdtOnCallbackSuccess)
+}
+
+// ESDTTransferToParentWrongESDTArgsNumberMock is an exposed mock contract method
+func ESDTTransferToParentWrongESDTArgsNumberMock(instanceMock *mock.InstanceMock, config interface{}) {
+	esdtTransferToParentMock(instanceMock, config, esdtOnCallbackWrongNumOfArgs)
+}
+
+// ESDTTransferToParentCallbackWillFail is an exposed mock contract method
+func ESDTTransferToParentCallbackWillFail(instanceMock *mock.InstanceMock, config interface{}) {
+	esdtTransferToParentMock(instanceMock, config, esdtOnCallbackFail)
+}
+
+func esdtTransferToParentMock(instanceMock *mock.InstanceMock, config interface{}, behavior int) {
 	testConfig := config.(*AsyncCallTestConfig)
 	instanceMock.AddMockMethod("transferESDTToParent", func() *mock.InstanceMock {
 		host := instanceMock.Host
@@ -171,8 +191,16 @@ func ESDTTransferToParentMock(instanceMock *mock.InstanceMock, config interface{
 		callData := txDataBuilder.NewBuilder()
 		callData.Func(string("ESDTTransfer"))
 		callData.Bytes(test.ESDTTestTokenName)
-		callData.Bytes(big.NewInt(int64(testConfig.ESDTTokensToTransfer)).Bytes())
-		callData.Bytes([]byte{})
+		callData.Bytes(big.NewInt(int64(testConfig.CallbackESDTTokensToTransfer)).Bytes())
+
+		switch behavior {
+		case esdtOnCallbackSuccess:
+			host.Output().Finish([]byte("success"))
+		case esdtOnCallbackWrongNumOfArgs:
+			callData.Bytes([]byte{})
+		case esdtOnCallbackFail:
+			host.Output().Finish([]byte("fail"))
+		}
 
 		value := big.NewInt(0).Bytes()
 
