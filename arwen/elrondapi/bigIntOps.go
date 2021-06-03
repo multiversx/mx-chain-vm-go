@@ -18,6 +18,7 @@ package elrondapi
 // extern int32_t		v1_3_bigIntIsInt64(void* context, int32_t reference);
 // extern long long		v1_3_bigIntGetInt64(void* context, int32_t reference);
 // extern void			v1_3_bigIntSetInt64(void* context, int32_t destination, long long value);
+// extern long long		v1_3_bigIntGetOrCreateInt64(void* context, int32_t reference);
 //
 // extern void			v1_3_bigIntAdd(void* context, int32_t destination, int32_t op1, int32_t op2);
 // extern void			v1_3_bigIntSub(void* context, int32_t destination, int32_t op1, int32_t op2);
@@ -110,6 +111,11 @@ func BigIntImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("bigIntGetInt64", v1_3_bigIntGetInt64, C.v1_3_bigIntGetInt64)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntGetOrCreateInt64", v1_3_bigIntGetOrCreateInt64, C.v1_3_bigIntGetOrCreateInt64)
 	if err != nil {
 		return nil, err
 	}
@@ -604,6 +610,18 @@ func v1_3_bigIntGetInt64(context unsafe.Pointer, destinationHandle int32) int64 
 	if err != nil {
 		arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.BigIntAPIErrorShouldFailExecution())
 	}
+	return value.Int64()
+}
+
+//export v1_3_bigIntGetOrCreateInt64
+func v1_3_bigIntGetOrCreateInt64(context unsafe.Pointer, destinationHandle int32) int64 {
+	managedType := arwen.GetManagedTypesContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetInt64
+	metering.UseGas(gasToUse)
+
+	value := managedType.GetBigIntOrCreate(destinationHandle)
 	return value.Int64()
 }
 
