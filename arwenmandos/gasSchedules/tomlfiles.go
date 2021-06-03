@@ -1,7 +1,7 @@
-package gasschedules 
+package gasschedules
 
 const (
-gasScheduleV1 = `[BuiltInCost]
+	gasScheduleV1 = `[BuiltInCost]
     ChangeOwnerAddress    = 5000000
     ClaimDeveloperRewards = 5000000
     SaveUserName          = 5000000
@@ -116,6 +116,7 @@ gasScheduleV1 = `[BuiltInCost]
     GetBlockTimeStamp   = 1000
 
 [BigIntAPICost]
+	EllipticCurveNew		 = 10000
     BigIntNew                = 100
     BigIntByteLength         = 100
     BigIntUnsignedByteLength = 100
@@ -615,7 +616,7 @@ gasScheduleV1 = `[BuiltInCost]
     LocalAllocate = 2
     LocalsUnmetered = 100
 `
-gasScheduleV2 = `[BuiltInCost]
+	gasScheduleV2 = `[BuiltInCost]
     ChangeOwnerAddress    = 5000000
     ClaimDeveloperRewards = 5000000
     SaveUserName          = 1000000
@@ -728,6 +729,7 @@ gasScheduleV2 = `[BuiltInCost]
     GetBlockTimeStamp   = 100000
 
 [BigIntAPICost]
+	EllipticCurveNew		 = 10000
     BigIntNew                = 2000
     BigIntByteLength         = 2000
     BigIntUnsignedByteLength = 2000
@@ -1227,7 +1229,7 @@ gasScheduleV2 = `[BuiltInCost]
     LocalAllocate = 2
     LocalsUnmetered = 100
 `
-gasScheduleV3 = `[BuiltInCost]
+	gasScheduleV3 = `[BuiltInCost]
     ChangeOwnerAddress    = 5000000
     ClaimDeveloperRewards = 5000000
     SaveUserName          = 1000000
@@ -1342,6 +1344,7 @@ gasScheduleV3 = `[BuiltInCost]
     GetBlockTimeStamp   = 100000
 
 [BigIntAPICost]
+	EllipticCurveNew		 = 10000
     BigIntNew                = 2000
     BigIntByteLength         = 2000
     BigIntUnsignedByteLength = 2000

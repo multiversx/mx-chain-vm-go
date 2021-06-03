@@ -82,6 +82,7 @@
     GetBlockTimeStamp   = 10
 
 [BigIntAPICost]
+    EllipticCurveNew           = 10
     BigIntNew                  = 10
 	BigIntUnsignedByteLength   = 10
 	BigIntSignedByteLength     = 10
