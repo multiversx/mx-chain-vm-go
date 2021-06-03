@@ -983,7 +983,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct(t *testing.T) {
 				Ok().
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, 0).
-				GasUsed(test.ParentAddress, 25868).
+				GasUsed(test.ParentAddress, 25916).
 				ReturnData(returnData...).
 				Storage(storeEntries...)
 
@@ -1100,7 +1100,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_Methods(t *testing.T) {
 				Ok().
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, (big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1))).Int64()).
-				GasUsed(test.ParentAddress, 30106).
+				GasUsed(test.ParentAddress, 30162).
 				ReturnData(returnData...).
 				Storage(storeEntries...)
 
@@ -1183,11 +1183,11 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs(t *testing.T) {
 				// test.ParentAddress
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, expectedParentBalanceDelta).
-				GasUsed(test.ParentAddress, 5552).
+				GasUsed(test.ParentAddress, 5576).
 				// test.ChildAddress
 				Balance(test.ChildAddress, 1000).
 				BalanceDelta(test.ChildAddress, expectedChildBalanceDelta).
-				GasUsed(test.ChildAddress, 3736).
+				GasUsed(test.ChildAddress, 3752).
 				// other
 				ReturnData(returnData...).
 				Storage(storeEntries...)
@@ -1252,7 +1252,7 @@ func TestExecution_ExecuteOnDestContext_Prepare(t *testing.T) {
 				Ok().
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, -test.ParentTransferValue).
-				GasUsed(test.ParentAddress, 4309).
+				GasUsed(test.ParentAddress, 4317).
 				BalanceDelta(test.ParentTransferReceiver, test.ParentTransferValue).
 				GasRemaining(test.GasProvided-
 					test.ParentCompilationCostDestCtx-
@@ -1419,11 +1419,11 @@ func TestExecution_ExecuteOnDestContext_Successful(t *testing.T) {
 				// test.ParentAddress
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, -141).
-				GasUsed(test.ParentAddress, 4444).
+				GasUsed(test.ParentAddress, 4452).
 				/// test.ChildAddress
 				Balance(test.ChildAddress, 1000).
 				BalanceDelta(test.ChildAddress, 99-childTransferValue).
-				GasUsed(test.ChildAddress, 2256).
+				GasUsed(test.ChildAddress, 2285).
 				// other
 				BalanceDelta(test.ChildTransferReceiver, childTransferValue).
 				GasRemaining(test.GasProvided-
@@ -1481,11 +1481,11 @@ func TestExecution_ExecuteOnDestContext_Successful_ChildReturns(t *testing.T) {
 				// test.ParentAddress
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, -141).
-				GasUsed(test.ParentAddress, 4652).
+				GasUsed(test.ParentAddress, 4660).
 				/// test.ChildAddress
 				Balance(test.ChildAddress, 1000).
 				BalanceDelta(test.ChildAddress, 99-childTransferValue).
-				GasUsed(test.ChildAddress, 2256).
+				GasUsed(test.ChildAddress, 2285).
 				// other
 				BalanceDelta(test.ChildTransferReceiver, childTransferValue).
 				GasRemaining(test.GasProvided-
@@ -1568,7 +1568,7 @@ func TestExecution_ExecuteOnDestContext_GasRemaining(t *testing.T) {
 	verify := test.NewVMOutputVerifier(t, childOutput, err)
 	verify.
 		Ok().
-		GasRemaining(7752)
+		GasRemaining(7723)
 }
 
 func TestExecution_ExecuteOnDestContext_Successful_BigInts(t *testing.T) {
@@ -1601,10 +1601,10 @@ func TestExecution_ExecuteOnDestContext_Successful_BigInts(t *testing.T) {
 				// test.ParentAddress
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, -99).
-				GasUsed(test.ParentAddress, 4366).
+				GasUsed(test.ParentAddress, 4374).
 				/// test.ChildAddress
 				BalanceDelta(test.ChildAddress, 99).
-				GasUsed(test.ChildAddress, 2265).
+				GasUsed(test.ChildAddress, 2294).
 				// other
 				GasRemaining(test.GasProvided-
 					test.ParentCompilationCostDestCtx-
@@ -1659,7 +1659,7 @@ func TestExecution_ExecuteOnDestContext_Recursive_Direct(t *testing.T) {
 				Ok().
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1)).Int64()).
-				GasUsed(test.ParentAddress, 30202).
+				GasUsed(test.ParentAddress, 30244).
 				ReturnData(returnData...).
 				Storage(storeEntries...)
 
@@ -1719,7 +1719,7 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_Methods(t *testing.T) {
 				Ok().
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1)).Int64()).
-				GasUsed(test.ParentAddress, 38762).
+				GasUsed(test.ParentAddress, 38816).
 				ReturnData(returnData...).
 				Storage(storeEntries...)
 
@@ -1795,11 +1795,11 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs(t *testing.T) {
 				// test.ParentAddress
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, -balanceDelta).
-				GasUsed(test.ParentAddress, 7420).
+				GasUsed(test.ParentAddress, 7452).
 				// test.ChildAddress
 				Balance(test.ChildAddress, 1000).
 				BalanceDelta(test.ChildAddress, balanceDelta).
-				GasUsed(test.ChildAddress, 5590).
+				GasUsed(test.ChildAddress, 5614).
 				// others
 				ReturnData(returnData...).
 				Storage(storeEntries...)
