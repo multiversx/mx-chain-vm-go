@@ -48,7 +48,7 @@ func (pfe *fuzzDelegationExecutor) claimRewards(delegatorIndex int) error {
 			"value": "0",
 			"function": "claimRewards",
 			"arguments": [],
-			"gasLimit": "1,000,000",
+			"gasLimit": "500,000,000",
 			"gasPrice": "0"
 		},
 		"expect": {
@@ -82,29 +82,21 @@ func (pfe *fuzzDelegationExecutor) claimRewards(delegatorIndex int) error {
 func (pfe *fuzzDelegationExecutor) getClaimableRewards(delegatorIndex int) (*big.Int, error) {
 	output, err := pfe.executeTxStep(fmt.Sprintf(`
 	{
-		"step": "scCall",
+		"step": "scQuery",
 		"txId": "%d",
 		"tx": {
-			"from": "%s",
 			"to": "%s",
-			"value": "0",
 			"function": "getClaimableRewards",
 			"arguments": [
 				"%s"
-			],
-			"gasLimit": "1,000,000",
-			"gasPrice": "0"
+			]
 		},
 		"expect": {
 			"out": [ "*" ],
-			"status": "",
-			"logs": "*",
-			"gas": "*",
-			"refund": "*"
+			"status": ""
 		}
 	}`,
 		pfe.nextTxIndex(),
-		pfe.delegatorAddress(delegatorIndex),
 		pfe.delegationContractAddress,
 		pfe.delegatorAddress(delegatorIndex),
 	))
