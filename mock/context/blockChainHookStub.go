@@ -243,11 +243,6 @@ func (b *BlockchainHookStub) GetCompiledCode(codeHash []byte) (bool, []byte) {
 func (b *BlockchainHookStub) ClearCompiledCodes() {
 }
 
-// IsInterfaceNil mocked method
-func (b *BlockchainHookStub) IsInterfaceNil() bool {
-	return b == nil
-}
-
 // GetSnapshot mocked method
 func (b *BlockchainHookStub) GetSnapshot() int {
 	if b.GetSnapshotCalled != nil {
@@ -262,4 +257,9 @@ func (b *BlockchainHookStub) RevertToSnapshot(snapshot int) error {
 		return b.RevertToSnapshotCalled(snapshot)
 	}
 	return nil
+}
+
+// IsInterfaceNil mocked method
+func (b *BlockchainHookStub) IsInterfaceNil() bool {
+	return b == nil
 }
