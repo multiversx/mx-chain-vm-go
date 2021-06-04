@@ -1207,7 +1207,6 @@ func TransferESDTNFTExecuteWithTypedArgs(
 		_, _, executeErr = host.ExecuteOnDestContext(contractCallInput)
 		if executeErr != nil {
 			logEEI.Trace("ESDT post-transfer execution failed", "error", executeErr)
-			_ = arwen.WithFaultAndHost(host, arwen.WrapError(executeErr).WrapWithError(executeErr), true)
 			return 1
 		}
 
