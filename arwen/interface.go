@@ -92,6 +92,8 @@ type BlockchainContext interface {
 	GetESDTToken(address []byte, tokenID []byte, nonce uint64) (*esdt.ESDigitalToken, error)
 	GetUserAccount(address []byte) (vmcommon.UserAccountHandler, error)
 	ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
+	GetSnapshot() int
+	RevertToSnapshot(snapshot int)
 }
 
 // RuntimeContext defines the functionality needed for interacting with the runtime context
