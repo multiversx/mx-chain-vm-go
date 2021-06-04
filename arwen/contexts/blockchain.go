@@ -328,3 +328,11 @@ func (context *blockchainContext) PopDiscard() {
 
 	context.stateStack = context.stateStack[:stateStackLen-1]
 }
+
+func (context *blockchainContext) GetSnapshot() int {
+	return context.blockChainHook.GetSnapshot()
+}
+
+func (context *blockchainContext) RevertToSnapshot(snapshot int) {
+	context.blockChainHook.RevertToSnapshot(snapshot)
+}

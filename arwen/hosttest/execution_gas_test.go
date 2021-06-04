@@ -398,10 +398,14 @@ func TestGasUsed_ESDTTransferFromParent_ChildBurnsAndThenFails(t *testing.T) {
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
-				ReturnCode(vmcommon.ExecutionFailed).
-				ReturnMessageContains("forced fail").
-				ReturnMessageContains("execution failed").
-				GasRemaining(0)
+				Ok()
+
+			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
+			require.Equal(t, initialESDTTokenBalance, parentESDTBalance)
+
+			childAccount := world.AcctMap.GetAccount(test.ChildAddress)
+			childESDTBalance, _ := childAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
+			require.Equal(t, uint64(0), childESDTBalance)
 		})
 }
 
