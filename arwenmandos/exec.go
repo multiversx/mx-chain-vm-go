@@ -12,7 +12,6 @@ import (
 	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/fileresolver"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/model"
 	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
-	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
@@ -75,15 +74,15 @@ func (ae *ArwenTestExecutor) GetVM() vmi.VMExecutionHandler {
 func (ae *ArwenTestExecutor) gasScheduleMapFromMandos(mandosGasSchedule mj.GasSchedule) (config.GasScheduleMap, error) {
 	switch mandosGasSchedule {
 	case mj.GasScheduleDefault:
-		return test.LoadGasScheduleConfig(gasSchedules.GetV3())
+		return gasSchedules.LoadGasScheduleConfig(gasSchedules.GetV3())
 	case mj.GasScheduleDummy:
 		return config.MakeGasMapForTests(), nil
 	case mj.GasScheduleV1:
-		return test.LoadGasScheduleConfig(gasSchedules.GetV1())
+		return gasSchedules.LoadGasScheduleConfig(gasSchedules.GetV1())
 	case mj.GasScheduleV2:
-		return test.LoadGasScheduleConfig(gasSchedules.GetV2())
+		return gasSchedules.LoadGasScheduleConfig(gasSchedules.GetV2())
 	case mj.GasScheduleV3:
-		return test.LoadGasScheduleConfig(gasSchedules.GetV3())
+		return gasSchedules.LoadGasScheduleConfig(gasSchedules.GetV3())
 	default:
 		return nil, fmt.Errorf("unknown mandos GasSchedule: %d", mandosGasSchedule)
 	}
