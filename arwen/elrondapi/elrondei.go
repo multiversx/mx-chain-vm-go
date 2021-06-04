@@ -921,6 +921,7 @@ func v1_3_transferValueExecute(
 	)
 }
 
+// TransferValueExecuteWithHost - transferValueExecute with host instead of pointer context
 func TransferValueExecuteWithHost(
 	host arwen.VMHost,
 	destOffset int32,
@@ -954,6 +955,7 @@ func TransferValueExecuteWithHost(
 	)
 }
 
+// TransferValueExecuteWithTypedArgs - transferValueExecute with args already read from memory
 func TransferValueExecuteWithTypedArgs(
 	host arwen.VMHost,
 	dest []byte,
@@ -2092,6 +2094,7 @@ func v1_3_executeOnSameContext(
 	)
 }
 
+// ExecuteOnSameContextWithHost - executeOnSameContext with host instead of pointer context
 func ExecuteOnSameContextWithHost(
 	host arwen.VMHost,
 	gasLimit int64,
@@ -2121,6 +2124,7 @@ func ExecuteOnSameContextWithHost(
 	)
 }
 
+// ExecuteOnSameContextWithTypedArgs - executeOnSameContext with args already read from memory
 func ExecuteOnSameContextWithTypedArgs(
 	host arwen.VMHost,
 	gasLimit int64,
@@ -2189,6 +2193,7 @@ func v1_3_executeOnDestContext(
 	)
 }
 
+// ExecuteOnDestContextWithHost - executeOnDestContext with host instead of pointer context
 func ExecuteOnDestContextWithHost(
 	host arwen.VMHost,
 	gasLimit int64,
@@ -2218,6 +2223,7 @@ func ExecuteOnDestContextWithHost(
 	)
 }
 
+// ExecuteOnDestContextWithTypedArgs - executeOnDestContext with args already read from memory
 func ExecuteOnDestContextWithTypedArgs(
 	host arwen.VMHost,
 	gasLimit int64,
@@ -2282,6 +2288,7 @@ func v1_3_executeOnDestContextByCaller(
 	)
 }
 
+// ExecuteOnDestContextByCallerWithHost - executeOnDestContextByCaller with host instead of pointer context
 func ExecuteOnDestContextByCallerWithHost(
 	host arwen.VMHost,
 	gasLimit int64,
@@ -2311,6 +2318,7 @@ func ExecuteOnDestContextByCallerWithHost(
 	)
 }
 
+// ExecuteOnDestContextByCallerWithTypedArgs - executeOnDestContextByCaller with args already read from memory
 func ExecuteOnDestContextByCallerWithTypedArgs(
 	host arwen.VMHost,
 	gasLimit int64,
@@ -2377,6 +2385,7 @@ func v1_3_delegateExecution(
 	)
 }
 
+// DelegateExecutionWithHost - delegateExecution with host instead of pointer context
 func DelegateExecutionWithHost(
 	host arwen.VMHost,
 	gasLimit int64,
@@ -2404,6 +2413,7 @@ func DelegateExecutionWithHost(
 	)
 }
 
+// DelegateExecutionWithTypedArgs - delegateExecution with args already read from memory
 func DelegateExecutionWithTypedArgs(
 	host arwen.VMHost,
 	gasLimit int64,
@@ -2470,6 +2480,7 @@ func v1_3_executeReadOnly(
 	)
 }
 
+// ExecuteReadOnlyWithHost - executeReadOnly with host instead of pointer context
 func ExecuteReadOnlyWithHost(
 	host arwen.VMHost,
 	gasLimit int64,
@@ -2497,6 +2508,7 @@ func ExecuteReadOnlyWithHost(
 	)
 }
 
+// ExecuteReadOnlyWithTypedArguments - executeReadOnly with args already read from memory
 func ExecuteReadOnlyWithTypedArguments(
 	host arwen.VMHost,
 	gasLimit int64,
