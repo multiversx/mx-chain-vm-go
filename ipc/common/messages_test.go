@@ -57,8 +57,8 @@ func TestMessageBlockchainProcessBuiltinFunctionResponse_IsConsistentlySerializa
 	// Non UTF-8 as output account keys
 	vmOutput.OutputAccounts[string([]byte{0, 129})] = &vmcommon.OutputAccount{Address: []byte{0, 129}}
 	vmOutput.OutputAccounts[string([]byte{0, 128})] = &vmcommon.OutputAccount{Address: []byte{0, 128}}
-	message := NewMessageBlockchainProcessBuiltinFunctionResponse(vmOutput, nil)
-	requireSerializationConsistency(t, message, &MessageBlockchainProcessBuiltinFunctionResponse{})
+	message := NewMessageBlockchainProcessBuiltInFunctionResponse(vmOutput, nil)
+	requireSerializationConsistency(t, message, &MessageBlockchainProcessBuiltInFunctionResponse{})
 }
 
 func TestMessageBlockchainGetAllStateResponse_IsConsistentlySerializable(t *testing.T) {

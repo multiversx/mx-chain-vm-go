@@ -39,6 +39,7 @@ func (builder *InstanceBuilderMock) CreateAndStoreInstanceMock(t testing.TB, hos
 	account.Code = code
 	account.CodeMetadata = []byte{0, vmcommon.MetadataPayable}
 	account.ShardID = shardID
+	account.MockWorld = builder.World
 
 	return instance
 }

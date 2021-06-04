@@ -71,6 +71,16 @@ const (
 	DiagnoseWaitResponse
 	VersionRequest
 	VersionResponse
+	BlockchainClearCompiledCodesRequest
+	BlockchainClearCompiledCodesResponse
+	BlockchainGetSnapshotRequest
+	BlockchainGetSnapshotResponse
+	BlockchainIsInterfaceNilRequest
+	BlockchainIsInterfaceNilResponse
+	BlockchainRevertToSnapshotRequest
+	BlockchainRevertToSnapshotResponse
+	BlockchainProcessBuiltInFunctionRequest
+	BlockchainProcessBuiltInFunctionResponse
 	UndefinedRequestOrResponse
 	LastKind
 )
@@ -140,6 +150,16 @@ func init() {
 	messageKindNameByID[DiagnoseWaitResponse] = "DiagnoseWaitResponse"
 	messageKindNameByID[VersionRequest] = "VersionRequest"
 	messageKindNameByID[VersionResponse] = "VersionResponse"
+	messageKindNameByID[BlockchainClearCompiledCodesRequest] = "BlockchainClearCompiledCodesRequest"
+	messageKindNameByID[BlockchainClearCompiledCodesResponse] = "BlockchainClearCompiledCodesResponse"
+	messageKindNameByID[BlockchainGetSnapshotRequest] = "BlockchainGetSnapshotRequest"
+	messageKindNameByID[BlockchainGetSnapshotResponse] = "BlockchainGetSnapshotResponse"
+	messageKindNameByID[BlockchainIsInterfaceNilRequest] = "BlockchainIsInterfaceNilRequest"
+	messageKindNameByID[BlockchainIsInterfaceNilResponse] = "BlockchainIsInterfaceNilResponse"
+	messageKindNameByID[BlockchainRevertToSnapshotRequest] = "BlockchainRevertToSnapshotRequest"
+	messageKindNameByID[BlockchainRevertToSnapshotResponse] = "BlockchainRevertToSnapshotResponse"
+	messageKindNameByID[BlockchainProcessBuiltInFunctionRequest] = "BlockchainProcessBuiltInFunctionRequest"
+	messageKindNameByID[BlockchainProcessBuiltInFunctionResponse] = "BlockchainProcessBuiltInFunctionResponse	"
 	messageKindNameByID[UndefinedRequestOrResponse] = "UndefinedRequestOrResponse"
 	messageKindNameByID[LastKind] = "LastKind"
 }

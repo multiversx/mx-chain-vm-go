@@ -1032,6 +1032,8 @@ func TransferESDTNFTExecuteWithHost(
 		}
 	}
 
+	snapshotBeforeTransfer := host.Blockchain().GetSnapshot()
+
 	gasLimitForExec, executeErr := output.TransferESDT(dest, sender, tokenIdentifier, uint64(nonce), big.NewInt(0).SetBytes(valueBytes), contractCallInput)
 	if arwen.WithFaultAndHost(host, executeErr, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
@@ -1043,11 +1045,7 @@ func TransferESDTNFTExecuteWithHost(
 		_, _, executeErr = host.ExecuteOnDestContext(contractCallInput)
 		if executeErr != nil {
 			logEEI.Trace("ESDT post-transfer execution failed", "error", executeErr)
-			_, _, revertErr := host.ExecuteESDTTransfer(sender, dest, tokenIdentifier, uint64(nonce), big.NewInt(0).SetBytes(valueBytes), vmcommon.AsynchronousCallBack, true)
-			if revertErr != nil {
-				logEEI.Warn("ESDT revert failed - forced fail execution for context", "error", executeErr)
-				_ = arwen.WithFaultAndHost(host, arwen.WrapError(executeErr).WrapWithError(revertErr), true)
-			}
+			host.Blockchain().RevertToSnapshot(snapshotBeforeTransfer)
 			return 1
 		}
 
