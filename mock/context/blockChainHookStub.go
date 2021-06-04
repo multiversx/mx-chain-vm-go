@@ -36,6 +36,8 @@ type BlockchainHookStub struct {
 	SaveCompiledCodeCalled        func(codeHash []byte, code []byte)
 	GetCodeCalled                 func(account vmcommon.UserAccountHandler) []byte
 	GetESDTTokenCalled            func(address []byte, tokenID []byte, nonce uint64) (*esdt.ESDigitalToken, error)
+	GetSnapshotCalled             func() int
+	RevertToSnapshotCalled        func(snapshot int) error
 }
 
 // NewAddress mocked method
@@ -239,6 +241,22 @@ func (b *BlockchainHookStub) GetCompiledCode(codeHash []byte) (bool, []byte) {
 
 // ClearCompiledCodes mocked method
 func (b *BlockchainHookStub) ClearCompiledCodes() {
+}
+
+// GetSnapshot mocked method
+func (b *BlockchainHookStub) GetSnapshot() int {
+	if b.GetSnapshotCalled != nil {
+		return b.GetSnapshotCalled()
+	}
+	return 1
+}
+
+// RevertToSnapshot mocked method
+func (b *BlockchainHookStub) RevertToSnapshot(snapshot int) error {
+	if b.RevertToSnapshotCalled != nil {
+		return b.RevertToSnapshotCalled(snapshot)
+	}
+	return nil
 }
 
 // IsInterfaceNil mocked method

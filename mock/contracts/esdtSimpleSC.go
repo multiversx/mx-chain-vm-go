@@ -6,10 +6,11 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen/elrondapi"
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
+	"github.com/ElrondNetwork/elrond-go/testscommon/txDataBuilder"
 )
 
-// ExecESDTTransferAndCallParentMock is an exposed mock contract method
-func ExecESDTTransferAndCallParentMock(instanceMock *mock.InstanceMock, config interface{}) {
+// ExecESDTTransferAndCallChild is an exposed mock contract method
+func ExecESDTTransferAndCallChild(instanceMock *mock.InstanceMock, config interface{}) {
 	testConfig := config.(DirectCallGasTestConfig)
 	instanceMock.AddMockMethod("execESDTTransferAndCall", func() *mock.InstanceMock {
 		host := instanceMock.Host
@@ -77,6 +78,44 @@ func ExecESDTTransferWithAPICall(instanceMock *mock.InstanceMock, config interfa
 			functionName,
 			args,
 			testConfig.GasProvidedToChild)
+
+		return instance
+	})
+}
+
+// ExecESDTTransferAndAsyncCallChild is an exposed mock contract method
+func ExecESDTTransferAndAsyncCallChild(instanceMock *mock.InstanceMock, config interface{}) {
+	testConfig := config.(*AsyncCallTestConfig)
+	instanceMock.AddMockMethod("execESDTTransferAndAsyncCall", func() *mock.InstanceMock {
+		host := instanceMock.Host
+		instance := mock.GetMockInstance(host)
+		host.Metering().UseGas(testConfig.GasUsedByParent)
+
+		arguments := host.Runtime().Arguments()
+		if len(arguments) != 3 {
+			host.Runtime().SignalUserError("need 3 arguments")
+			return instance
+		}
+
+		functionToCallOnChild := arguments[2]
+
+		receiver := arguments[0]
+		builtInFunction := arguments[1]
+
+		callData := txDataBuilder.NewBuilder()
+		// function to be called on child
+		callData.Func(string(builtInFunction))
+		callData.Bytes(test.ESDTTestTokenName)
+		callData.Bytes(big.NewInt(int64(testConfig.ESDTTokensToTransfer)).Bytes())
+		callData.Bytes(functionToCallOnChild)
+
+		value := big.NewInt(0).Bytes()
+
+		err := host.Runtime().ExecuteAsyncCall(receiver, callData.ToBytes(), value)
+
+		if err != nil {
+			host.Runtime().FailExecution(err)
+		}
 
 		return instance
 	})

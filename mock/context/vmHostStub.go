@@ -27,8 +27,7 @@ type VMHostStub struct {
 	OutputCalled                      func() arwen.OutputContext
 	MeteringCalled                    func() arwen.MeteringContext
 	StorageCalled                     func() arwen.StorageContext
-	RevertESDTTransferCalled          func(input *vmcommon.ContractCallInput)
-	ExecuteESDTTransferCalled         func(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callType vmcommon.CallType, isRevert bool) (*vmcommon.VMOutput, uint64, error)
+	ExecuteESDTTransferCalled         func(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callType vmcommon.CallType) (*vmcommon.VMOutput, uint64, error)
 	CreateNewContractCalled           func(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContextCalled        func(input *vmcommon.ContractCallInput) (*arwen.AsyncContextInfo, error)
 	ExecuteOnDestContextCalled        func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *arwen.AsyncContextInfo, error)
@@ -166,17 +165,10 @@ func (vhs *VMHostStub) Storage() arwen.StorageContext {
 	return nil
 }
 
-// RevertESDTTransfer mocked method
-func (vhs *VMHostStub) RevertESDTTransfer(input *vmcommon.ContractCallInput) {
-	if vhs.RevertESDTTransferCalled != nil {
-		vhs.RevertESDTTransferCalled(input)
-	}
-}
-
 // ExecuteESDTTransfer mocked method
-func (vhs *VMHostStub) ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callType vmcommon.CallType, isRevert bool) (*vmcommon.VMOutput, uint64, error) {
+func (vhs *VMHostStub) ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callType vmcommon.CallType) (*vmcommon.VMOutput, uint64, error) {
 	if vhs.ExecuteESDTTransferCalled != nil {
-		return vhs.ExecuteESDTTransferCalled(destination, sender, tokenIdentifier, nonce, value, callType, isRevert)
+		return vhs.ExecuteESDTTransferCalled(destination, sender, tokenIdentifier, nonce, value, callType)
 	}
 	return nil, 0, nil
 }

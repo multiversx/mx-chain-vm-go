@@ -85,6 +85,11 @@ func isESDTTransferOnReturnDataWithNoAdditionalData(destinationVMOutput *vmcommo
 		return false, "", nil
 	}
 
+	return isESDTTransferOnReturnDataFromFunctionAndArgs(functionName, args)
+}
+
+func isESDTTransferOnReturnDataFromFunctionAndArgs(functionName string, args [][]byte) (bool, string, [][]byte) {
+
 	if functionName == core.BuiltInFunctionESDTTransfer && len(args) == 2 {
 		return true, functionName, args
 	}
@@ -103,7 +108,7 @@ func (host *vmHost) determineAsyncCallExecutionMode(asyncCallInfo *arwen.AsyncCa
 	// If ArgParser cannot read the Data field, then this is neither a SC call,
 	// nor a built-in function call.
 	argParser := parsers.NewCallArgsParser()
-	functionName, _, err := argParser.ParseData(string(asyncCallInfo.Data))
+	functionName, args, err := argParser.ParseData(string(asyncCallInfo.Data))
 	if err != nil {
 		return arwen.AsyncUnknown, err
 	}
@@ -111,7 +116,7 @@ func (host *vmHost) determineAsyncCallExecutionMode(asyncCallInfo *arwen.AsyncCa
 	sameShard := host.AreInSameShard(runtime.GetSCAddress(), asyncCallInfo.Destination)
 	if host.IsBuiltinFunctionName(functionName) {
 		if sameShard {
-			isESDTTransfer := functionName == core.BuiltInFunctionESDTTransfer || functionName == core.BuiltInFunctionESDTNFTTransfer
+			isESDTTransfer, _, _ := isESDTTransferOnReturnDataFromFunctionAndArgs(functionName, args)
 			if isESDTTransfer && runtime.GetVMInput().CallType == vmcommon.AsynchronousCall &&
 				bytes.Equal(runtime.GetVMInput().CallerAddr, asyncCallInfo.Destination) {
 				return arwen.ESDTTransferOnCallBack, nil
