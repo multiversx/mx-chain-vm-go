@@ -329,10 +329,12 @@ func (context *blockchainContext) PopDiscard() {
 	context.stateStack = context.stateStack[:stateStackLen-1]
 }
 
+// GetSnapshot - gets the latest snapshot via blockchain hook
 func (context *blockchainContext) GetSnapshot() int {
 	return context.blockChainHook.GetSnapshot()
 }
 
+// RevertToSnapshot - reverts to the specified snapshot via blockchain hook
 func (context *blockchainContext) RevertToSnapshot(snapshot int) {
 	context.blockChainHook.RevertToSnapshot(snapshot)
 }
