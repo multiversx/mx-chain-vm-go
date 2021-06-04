@@ -15,4 +15,4 @@ require (
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 )
 
-replace github.com/ElrondNetwork/arwen-wasm-vm/v1_3 v1.3.5 => github.com/ElrondNetwork/arwen-wasm-vm v1.3.5
+replace github.com/ElrondNetwork/arwen-wasm-vm/v1_3 v1.3.6-test => github.com/ElrondNetwork/arwen-wasm-vm v1.3.6-test
