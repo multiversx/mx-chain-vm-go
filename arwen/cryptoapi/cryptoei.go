@@ -28,7 +28,7 @@ package cryptoapi
 // extern int32_t v1_3_p384Ec(void *context);
 // extern int32_t v1_3_p521Ec(void *context);
 // extern int32_t v1_3_getCurveLengthEC(void *context, int32_t ecHandle);
-// extern int32_t v1_3_getPrivKeyLengthEC(void *context, int32_t ecHandle);
+// extern int32_t v1_3_getCurveByteLengthEC(void *context, int32_t ecHandle);
 import "C"
 
 import (
@@ -147,7 +147,7 @@ func CryptoImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getPrivKeyLengthEC", v1_3_getPrivKeyLengthEC, C.v1_3_getPrivKeyLengthEC)
+	imports, err = imports.Append("getPrivKeyLengthEC", v1_3_getCurveByteLengthEC, C.v1_3_getCurveByteLengthEC)
 	if err != nil {
 		return nil, err
 	}
@@ -873,7 +873,7 @@ func v1_3_getCurveLengthEC(context unsafe.Pointer, ecHandle int32) int32 {
 	gasToUse := metering.GasSchedule().BigIntAPICost.EllipticCurveNew / 5
 	metering.UseGas(gasToUse)
 
-	ecLength := managedType.GetEllipticCurveLength(ecHandle)
+	ecLength := managedType.GetEllipticCurveSizeOfField(ecHandle)
 	if ecLength == -1 {
 		arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.BigIntAPIErrorShouldFailExecution())
 	}
@@ -881,8 +881,8 @@ func v1_3_getCurveLengthEC(context unsafe.Pointer, ecHandle int32) int32 {
 	return ecLength
 }
 
-//export v1_3_getPrivKeyLengthEC
-func v1_3_getPrivKeyLengthEC(context unsafe.Pointer, ecHandle int32) int32 {
+//export v1_3_getCurveByteLengthEC
+func v1_3_getCurveByteLengthEC(context unsafe.Pointer, ecHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -890,7 +890,7 @@ func v1_3_getPrivKeyLengthEC(context unsafe.Pointer, ecHandle int32) int32 {
 	gasToUse := metering.GasSchedule().BigIntAPICost.EllipticCurveNew / 5
 	metering.UseGas(gasToUse)
 
-	privKeyLength := managedType.GetPrivateKeyLengthEC(ecHandle)
+	privKeyLength := managedType.GetEllipticCurveByteLength(ecHandle)
 	if privKeyLength == -1 {
 		arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.BigIntAPIErrorShouldFailExecution())
 	}

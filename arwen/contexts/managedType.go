@@ -200,8 +200,8 @@ func (context *managedTypesContext) PutEllipticCurve(curve *elliptic.CurveParams
 	return newHandle
 }
 
-// GetEllipticCurveLength returns the length of the curve under the given handle.
-func (context *managedTypesContext) GetEllipticCurveLength(ecHandle int32) int32 {
+// GetEllipticCurveLength returns the size of field of the curve under the given handle.
+func (context *managedTypesContext) GetEllipticCurveSizeOfField(ecHandle int32) int32 {
 	curve, ok := context.ecValues[ecHandle]
 	if !ok {
 		return -1
@@ -209,8 +209,8 @@ func (context *managedTypesContext) GetEllipticCurveLength(ecHandle int32) int32
 	return int32(curve.BitSize)
 }
 
-// GetPrivateKeyLengthEC returns the length of the private key that will be generated.
-func (context *managedTypesContext) GetPrivateKeyLengthEC(ecHandle int32) int32 {
+// GetPrivateKeyLengthEC returns the length in bytes of the private key that will be generated.
+func (context *managedTypesContext) GetEllipticCurveByteLength(ecHandle int32) int32 {
 	curve, ok := context.ecValues[ecHandle]
 	if !ok {
 		return -1
