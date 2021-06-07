@@ -2267,6 +2267,25 @@ func TestExecution_CreateNewContract_Fail(t *testing.T) {
 		})
 }
 
+func TestExecution_CreateNewContract_IsSmartContract(t *testing.T) {
+	// childCode := test.GetTestSCCode("init-correct", "../../")
+	// childAddress := []byte("newAddress")
+	// l := len(childCode)
+
+	input := test.CreateTestContractCreateInputBuilder().
+		WithGasProvided(1000).
+		WithContractCode(test.GetTestSCCode("deployer-parent", "../../")).
+		//WithArguments()
+		Build()
+
+	test.BuildInstanceCreatorTest(t).
+		WithInput(input).
+		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.
+				Ok()
+		})
+}
+
 func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
