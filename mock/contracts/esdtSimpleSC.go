@@ -1,6 +1,7 @@
 package contracts
 
 import (
+	"fmt"
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen/elrondapi"
@@ -34,9 +35,9 @@ func ExecESDTTransferAndCallChild(instanceMock *mock.InstanceMock, config interf
 		input.RecipientAddr = arguments[0]
 		input.Function = string(arguments[1])
 
-		_, _, err := host.ExecuteOnDestContext(input)
-		if err != nil {
-			host.Runtime().FailExecution(err)
+		returnValue := ExecuteOnDestContextInMockContracts(host, input)
+		if returnValue != 0 {
+			host.Runtime().FailExecution(fmt.Errorf("Return value %d", returnValue))
 		}
 
 		return instance
@@ -70,14 +71,15 @@ func ExecESDTTransferWithAPICall(instanceMock *mock.InstanceMock, config interfa
 		functionName := arguments[1]
 		args := [][]byte{arguments[2]}
 
-		elrondapi.TransferESDTNFTExecuteWithTypes(
+		elrondapi.TransferESDTNFTExecuteWithTypedArgs(
 			host,
-			input.RecipientAddr,
+			big.NewInt(int64(testConfig.ESDTTokensToTransfer)),
 			test.ESDTTestTokenName,
-			testConfig.ESDTTokensToTransfer,
-			functionName,
-			args,
-			testConfig.GasProvidedToChild)
+			input.RecipientAddr,
+			0,
+			int64(testConfig.GasProvidedToChild),
+			[]byte(functionName),
+			args)
 
 		return instance
 	})

@@ -34,7 +34,7 @@ func TestGasUsed_SingleContract(t *testing.T) {
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(simpleGasTestConfig.ParentBalance).
 				WithConfig(simpleGasTestConfig).
-				WithMethods(contracts.ExecOnSameCtxParentMock, contracts.ExecOnDestCtxParentMock, contracts.WasteGasParentMock)).
+				WithMethods(contracts.WasteGasParentMock)).
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithRecipientAddr(test.ParentAddress).
 			WithGasProvided(simpleGasTestConfig.GasProvided).
@@ -57,7 +57,7 @@ func TestGasUsed_SingleContract_BuiltinCall(t *testing.T) {
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(simpleGasTestConfig.ParentBalance).
 				WithConfig(simpleGasTestConfig).
-				WithMethods(contracts.ExecOnSameCtxParentMock, contracts.ExecOnDestCtxParentMock, contracts.WasteGasParentMock)).
+				WithMethods(contracts.ExecOnDestCtxParentMock)).
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithRecipientAddr(test.ParentAddress).
 			WithGasProvided(simpleGasTestConfig.GasProvided).
@@ -96,7 +96,7 @@ func TestGasUsed_SingleContract_BuiltinCallFail(t *testing.T) {
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
 				ReturnCode(vmcommon.ExecutionFailed).
-				ReturnMessage("whatdidyoudo").
+				ReturnMessage("Return value 1").
 				GasRemaining(0)
 		})
 }
@@ -1280,6 +1280,8 @@ func setZeroCodeCosts(host arwen.VMHost) {
 	host.Metering().GasSchedule().BaseOperationCost.StorePerByte = 0
 	host.Metering().GasSchedule().BaseOperationCost.DataCopyPerByte = 0
 	host.Metering().GasSchedule().ElrondAPICost.SignalError = 0
+	host.Metering().GasSchedule().ElrondAPICost.ExecuteOnSameContext = 0
+	host.Metering().GasSchedule().ElrondAPICost.ExecuteOnDestContext = 0
 }
 
 func setAsyncCosts(host arwen.VMHost, gasLock uint64) {
