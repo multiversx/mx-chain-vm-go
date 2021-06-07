@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/ElrondNetwork/big-int-util v0.1.0
-	github.com/ElrondNetwork/elrond-go v1.2.1-0.20210531130414-6ceb2ade721d
+	github.com/ElrondNetwork/elrond-go v1.2.1-0.20210604162349-a8f4d93d68e6
 	github.com/ElrondNetwork/elrond-go-logger v1.0.4
 	github.com/btcsuite/btcd v0.21.0-beta
 	github.com/gin-gonic/gin v1.7.1
@@ -15,4 +15,4 @@ require (
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 )
 
-replace github.com/ElrondNetwork/arwen-wasm-vm/v1_3 v1.3.5 => github.com/ElrondNetwork/arwen-wasm-vm v1.3.5
+replace github.com/ElrondNetwork/arwen-wasm-vm/v1_3 v1.3.11 => github.com/ElrondNetwork/arwen-wasm-vm v1.3.11
