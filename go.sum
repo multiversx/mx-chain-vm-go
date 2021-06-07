@@ -26,7 +26,10 @@ github.com/ElrondNetwork/arwen-wasm-vm v1.2.0/go.mod h1:Io5YGUs48YNnXlyJYSBX6Evx
 github.com/ElrondNetwork/arwen-wasm-vm v1.2.7/go.mod h1:Q+ay1aQID+M4q/PWcE9Jmheojpu9nkmOuv1eSDmpBwE=
 github.com/ElrondNetwork/arwen-wasm-vm v1.2.17 h1:Vp/1WZog/hWiRO8vcgOwv/AN8S3UbtlUmRtIdGBgx3E=
 github.com/ElrondNetwork/arwen-wasm-vm v1.2.17/go.mod h1:Q+ay1aQID+M4q/PWcE9Jmheojpu9nkmOuv1eSDmpBwE=
+github.com/ElrondNetwork/arwen-wasm-vm v1.2.19 h1:j1aWov6w8sBR7Hce23RDKzjt9QZMmiSOdCNXCEB42jg=
+github.com/ElrondNetwork/arwen-wasm-vm v1.2.19/go.mod h1:Q+ay1aQID+M4q/PWcE9Jmheojpu9nkmOuv1eSDmpBwE=
 github.com/ElrondNetwork/arwen-wasm-vm v1.3.10/go.mod h1:/tzkgarvMpH87b6f+KGdWSlhUu+BuXpOCSSMxi/DOFY=
+github.com/ElrondNetwork/arwen-wasm-vm v1.3.13/go.mod h1:H0UZyYvhFovk8kMzzrXM5wb2QdZVe15742k79Q6toSc=
 github.com/ElrondNetwork/big-int-util v0.0.5/go.mod h1:96viBvoTXLjZOhEvE0D+QnAwg1IJLPAK6GVHMbC7Aw4=
 github.com/ElrondNetwork/big-int-util v0.1.0 h1:vTMoJ5azhVmr7jhpSD3JUjQdkdyXoEPVkOvhdw1RjV4=
 github.com/ElrondNetwork/big-int-util v0.1.0/go.mod h1:96viBvoTXLjZOhEvE0D+QnAwg1IJLPAK6GVHMbC7Aw4=
@@ -67,6 +70,8 @@ github.com/ElrondNetwork/elrond-go v1.1.51/go.mod h1:0gT8uLRXSqmKDrrn55aXTSca0XG
 github.com/ElrondNetwork/elrond-go v1.1.59-0.20210526130950-2a93e2e11c39/go.mod h1:0aZfahOLX4vO+1D6Ejx8XwOLTzd7pfcx94xzAOpt2bs=
 github.com/ElrondNetwork/elrond-go v1.2.1-0.20210604143306-6dba480772a5 h1:N/cengpl1q5E1Yf5u0ELofr1arXmakdMxds/RpjXy+E=
 github.com/ElrondNetwork/elrond-go v1.2.1-0.20210604143306-6dba480772a5/go.mod h1:c5cLwz9WhO2MNHIZIpWfOx9qD0TsRA5m2/4TTQBXa4M=
+github.com/ElrondNetwork/elrond-go v1.2.1-0.20210607101716-a4f4c671d19e h1:vCA1qgquRRwuFGbImgBIcSQANLexrItKnJN/AtoPDms=
+github.com/ElrondNetwork/elrond-go v1.2.1-0.20210607101716-a4f4c671d19e/go.mod h1:lYi2E70GPrIB1cl1N1CrDUi50D3+w8yzkMZOb3qg/Tk=
 github.com/ElrondNetwork/elrond-go-logger v1.0.2/go.mod h1:e5D+c97lKUfFdAzFX7rrI2Igl/z4Y0RkKYKWyzprTGk=
 github.com/ElrondNetwork/elrond-go-logger v1.0.4 h1:i5Yu4qyjTZDwvBY/ykbNpp2SP9jxwk/QTivRwSZSTAQ=
 github.com/ElrondNetwork/elrond-go-logger v1.0.4/go.mod h1:e5D+c97lKUfFdAzFX7rrI2Igl/z4Y0RkKYKWyzprTGk=
