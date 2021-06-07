@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/ElrondNetwork/big-int-util v0.1.0
-	github.com/ElrondNetwork/elrond-go v1.2.1-0.20210604162349-a8f4d93d68e6
+	github.com/ElrondNetwork/elrond-go v1.2.1-0.20210607101716-a4f4c671d19e
 	github.com/ElrondNetwork/elrond-go-logger v1.0.4
 	github.com/btcsuite/btcd v0.21.0-beta
 	github.com/gin-gonic/gin v1.7.1
