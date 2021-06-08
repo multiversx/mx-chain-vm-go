@@ -2270,21 +2270,36 @@ func TestExecution_CreateNewContract_Fail(t *testing.T) {
 
 func TestExecution_CreateNewContract_IsSmartContract(t *testing.T) {
 
-	parentAddress := testcommon.MakeTestSCAddress("alpha")
-
-	childAddress := testcommon.MakeTestSCAddress("beta")
 	childCode := test.GetTestSCCode("deployer-child", "../../")
 
+	ownerNonce := uint64(23)
+	parentAddress := testcommon.MakeTestSCAddress("newAddr_" + fmt.Sprint(24))
+	childAddress := testcommon.MakeTestSCAddress("newAddr_" + fmt.Sprint(25))
+
 	input := test.CreateTestContractCreateInputBuilder().
-		WithCallValue(10).
-		WithGasProvided(10_000).
+		WithCallValue(1000).
+		WithGasProvided(100_000).
 		WithContractCode(test.GetTestSCCode("deployer-parent", "../../")).
-		WithArguments(parentAddress, childAddress, childCode, big.NewInt(int64(len(childCode))).Bytes()).
+		WithArguments(parentAddress, childCode).
 		Build()
 
 	test.BuildInstanceCreatorTest(t).
 		WithInput(input).
-		WithAddress(parentAddress).
+		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
+			stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
+				strAddress := string(address)
+				if strAddress == string(childAddress) {
+					return nil, errors.New("not found")
+				}
+				return &contextmock.StubAccount{
+					Nonce: 24,
+				}, nil
+			}
+			stubBlockchainHook.NewAddressCalled = func(creatorAddress []byte, nonce uint64, vmType []byte) ([]byte, error) {
+				ownerNonce++
+				return testcommon.MakeTestSCAddress("newAddr_" + fmt.Sprint(ownerNonce)), nil
+			}
+		}).
 		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
 				Ok().

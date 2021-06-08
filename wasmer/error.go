@@ -2,7 +2,6 @@ package wasmer
 
 import (
 	"errors"
-	"fmt"
 	"unsafe"
 )
 
@@ -26,8 +25,6 @@ func GetLastError() (string, error) {
 	var errorMessagePointer = (*cChar)(unsafe.Pointer(&errorMessage[0]))
 
 	var errorResult = cWasmerLastErrorMessage(errorMessagePointer, errorLength)
-
-	fmt.Printf("%x\n", errorMessage)
 
 	if -1 == errorResult {
 		return "", errors.New("Cannot read last error")
