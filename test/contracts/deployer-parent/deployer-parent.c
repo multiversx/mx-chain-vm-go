@@ -28,12 +28,6 @@ void init() {
 	byte arguments[100];
 	int argsLen = SerializeBinaryArgs(&args, arguments);
 
-	// finish(parentAddress, sizeof(parentAddress));
-	// finish(childAddress, sizeof(childAddress));
-	// finish(childCode, codeSize);	
-	// int64finish(argsLen);
-	// int64finish(lastArg + 1);
-
 	int result = createContract(
 			50000,
 			deploymentValue,
