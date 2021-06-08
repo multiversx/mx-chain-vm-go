@@ -2272,9 +2272,10 @@ func TestExecution_CreateNewContract_IsSmartContract(t *testing.T) {
 
 	childCode := test.GetTestSCCode("deployer-child", "../../")
 
+	newAddr := "newAddr_"
 	ownerNonce := uint64(23)
-	parentAddress := testcommon.MakeTestSCAddress("newAddr_" + fmt.Sprint(24))
-	childAddress := testcommon.MakeTestSCAddress("newAddr_" + fmt.Sprint(25))
+	parentAddress := testcommon.MakeTestSCAddress(fmt.Sprintf("%s_%d", newAddr, 24))
+	childAddress := testcommon.MakeTestSCAddress(fmt.Sprintf("%s_%d", newAddr, 25))
 
 	input := test.CreateTestContractCreateInputBuilder().
 		WithCallValue(1000).
@@ -2297,7 +2298,7 @@ func TestExecution_CreateNewContract_IsSmartContract(t *testing.T) {
 			}
 			stubBlockchainHook.NewAddressCalled = func(creatorAddress []byte, nonce uint64, vmType []byte) ([]byte, error) {
 				ownerNonce++
-				return testcommon.MakeTestSCAddress("newAddr_" + fmt.Sprint(ownerNonce)), nil
+				return testcommon.MakeTestSCAddress(fmt.Sprintf("%s_%d", newAddr, ownerNonce)), nil
 			}
 		}).
 		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
