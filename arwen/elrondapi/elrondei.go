@@ -520,6 +520,13 @@ func v1_3_isSmartContract(context unsafe.Pointer, addressOffset int32) int32 {
 	}
 
 	isSmartContract := blockchain.IsSmartContract(address)
+
+	if !isSmartContract {
+		output := arwen.GetOutputContext(context)
+		outputAccounts := output.GetOutputAccounts()
+		_, isSmartContract = outputAccounts[string(address)]
+	}
+
 	return int32(arwen.BooleanToInt(isSmartContract))
 }
 

@@ -14,6 +14,7 @@ import (
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
+	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
 )
@@ -21,7 +22,7 @@ import (
 var counterKey = []byte("COUNTER")
 var WASMLocalsLimit = uint64(4000)
 var maxUint8AsInt = int(math.MaxUint8)
-var newAddress = []byte("new smartcontract")
+var newAddress = testcommon.MakeTestSCAddress("new smartcontract")
 
 const (
 	get                     = "get"
@@ -2268,21 +2269,26 @@ func TestExecution_CreateNewContract_Fail(t *testing.T) {
 }
 
 func TestExecution_CreateNewContract_IsSmartContract(t *testing.T) {
-	// childCode := test.GetTestSCCode("init-correct", "../../")
-	// childAddress := []byte("newAddress")
-	// l := len(childCode)
+
+	parentAddress := testcommon.MakeTestSCAddress("alpha")
+
+	childAddress := testcommon.MakeTestSCAddress("beta")
+	childCode := test.GetTestSCCode("deployer-child", "../../")
 
 	input := test.CreateTestContractCreateInputBuilder().
-		WithGasProvided(1000).
+		WithCallValue(10).
+		WithGasProvided(10_000).
 		WithContractCode(test.GetTestSCCode("deployer-parent", "../../")).
-		//WithArguments()
+		WithArguments(parentAddress, childAddress, childCode, big.NewInt(int64(len(childCode))).Bytes()).
 		Build()
 
 	test.BuildInstanceCreatorTest(t).
 		WithInput(input).
+		WithAddress(parentAddress).
 		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
-				Ok()
+				Ok().
+				ReturnData([]byte("succ")) /* returned from child contract init */
 		})
 }
 

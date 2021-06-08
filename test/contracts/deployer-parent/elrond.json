@@ -1,0 +1,7 @@
+{
+    "language": "clang",
+    "source_files": [
+        "deployer-parent.c",
+		"../elrond/args.c"
+    ]
+}
