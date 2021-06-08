@@ -518,7 +518,7 @@ func (context *runtimeContext) FailExecution(err error) {
 
 	var message string
 	if err != nil {
-		wrappedError, ok := (err.(arwen.WrappableError))
+		wrappedError, ok := err.(arwen.WrappableError)
 		if ok {
 			message = wrappedError.GetLastError().Error()
 		} else {
