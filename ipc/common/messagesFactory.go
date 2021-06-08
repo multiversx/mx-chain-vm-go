@@ -1,11 +1,5 @@
 package common
 
-import (
-	logger "github.com/ElrondNetwork/elrond-go-logger"
-)
-
-var logMessages = logger.GetOrCreate("arwen/messages")
-
 // CreateMessage creates a message given its kind
 func CreateMessage(kind MessageKind) MessageHandler {
 	kindIndex := uint32(kind)
@@ -16,7 +10,6 @@ func CreateMessage(kind MessageKind) MessageHandler {
 		return message
 	}
 
-	logMessages.Error("Creating undefined message", "kind", kind)
 	return createUndefinedMessage()
 }
 
@@ -34,8 +27,6 @@ func init() {
 	messageCreators[ContractDeployRequest] = createMessageContractDeployRequest
 	messageCreators[ContractCallRequest] = createMessageContractCallRequest
 	messageCreators[ContractResponse] = createMessageContractResponse
-	messageCreators[GasScheduleChangeRequest] = createMessageGasScheduleRequest
-	messageCreators[GasScheduleChangeResponse] = createMessageGasScheduleResponse
 	messageCreators[DiagnoseWaitRequest] = createMessageDiagnoseWaitRequest
 	messageCreators[DiagnoseWaitResponse] = createMessageDiagnoseWaitResponse
 	messageCreators[VersionRequest] = createMessageVersionRequest
@@ -69,10 +60,8 @@ func init() {
 	messageCreators[BlockchainCurrentRandomSeedResponse] = createMessageBlockchainCurrentRandomSeedResponse
 	messageCreators[BlockchainCurrentEpochRequest] = createMessageBlockchainCurrentEpochRequest
 	messageCreators[BlockchainCurrentEpochResponse] = createMessageBlockchainCurrentEpochResponse
-	messageCreators[BlockchainProcessBuiltinFunctionRequest] = createMessageBlockchainProcessBuiltinFunctionRequest
-	messageCreators[BlockchainProcessBuiltinFunctionResponse] = createMessageBlockchainProcessBuiltinFunctionResponse
-	messageCreators[BlockchainGetESDTTokenRequest] = createMessageBlockchainGetESDTTokenRequest
-	messageCreators[BlockchainGetESDTTokenResponse] = createMessageBlockchainGetESDTTokenResponse
+	messageCreators[BlockchainProcessBuiltInFunctionRequest] = createMessageBlockchainProcessBuiltInFunctionRequest
+	messageCreators[BlockchainProcessBuiltInFunctionResponse] = createMessageBlockchainProcessBuiltInFunctionResponse
 	messageCreators[BlockchainGetBuiltinFunctionNamesRequest] = createMessageBlockchainGetBuiltinFunctionNamesRequest
 	messageCreators[BlockchainGetBuiltinFunctionNamesResponse] = createMessageBlockchainGetBuiltinFunctionNamesResponse
 	messageCreators[BlockchainGetAllStateRequest] = createMessageBlockchainGetAllStateRequest
@@ -91,6 +80,17 @@ func init() {
 	messageCreators[BlockchainSaveCompiledCodeResponse] = createMessageBlockchainSaveCompiledCodeResponse
 	messageCreators[BlockchainGetCompiledCodeRequest] = createMessageBlockchainGetCompiledCodeRequest
 	messageCreators[BlockchainGetCompiledCodeResponse] = createMessageBlockchainGetCompiledCodeResponse
+	messageCreators[BlockchainClearCompiledCodesRequest] = createMessageBlockchainClearCompiledCodesRequest
+	messageCreators[BlockchainClearCompiledCodesResponse] = createMessageBlockchainClearCompiledCodesResponse
+	messageCreators[BlockchainGetESDTTokenRequest] = createMessageBlockchainGetESDTTokenRequest
+	messageCreators[BlockchainGetESDTTokenResponse] = createMessageBlockchainGetESDTTokenResponse
+	messageCreators[BlockchainIsInterfaceNilRequest] = createMessageBlockchainIsInterfaceNilRequest
+	messageCreators[BlockchainIsInterfaceNilResponse] = createMessageBlockchainIsInterfaceNilResponse
+	messageCreators[BlockchainGetSnapshotRequest] = createMessageBlockchainGetSnapshotRequest
+	messageCreators[BlockchainGetSnapshotResponse] = createMessageBlockchainGetSnapshotResponse
+	messageCreators[BlockchainRevertToSnapshotRequest] = createMessageBlockchainRevertToSnapshotRequest
+	messageCreators[BlockchainRevertToSnapshotResponse] = createMessageBlockchainRevertToSnapshotResponse
+
 }
 
 func createMessageInitialize() MessageHandler {
@@ -103,14 +103,6 @@ func createMessageStop() MessageHandler {
 
 func createMessageContractDeployRequest() MessageHandler {
 	return &MessageContractDeployRequest{}
-}
-
-func createMessageGasScheduleRequest() MessageHandler {
-	return &MessageGasScheduleChangeRequest{}
-}
-
-func createMessageGasScheduleResponse() MessageHandler {
-	return &Message{}
 }
 
 func createMessageContractCallRequest() MessageHandler {
@@ -136,6 +128,7 @@ func createMessageVersionRequest() MessageHandler {
 func createMessageVersionResponse() MessageHandler {
 	return &MessageVersionResponse{}
 }
+
 func createUndefinedMessage() MessageHandler {
 	return NewUndefinedMessage()
 }
@@ -252,20 +245,12 @@ func createMessageBlockchainCurrentEpochResponse() MessageHandler {
 	return &MessageBlockchainCurrentEpochResponse{}
 }
 
-func createMessageBlockchainProcessBuiltinFunctionRequest() MessageHandler {
-	return &MessageBlockchainProcessBuiltinFunctionRequest{}
+func createMessageBlockchainProcessBuiltInFunctionRequest() MessageHandler {
+	return &MessageBlockchainProcessBuiltInFunctionRequest{}
 }
 
-func createMessageBlockchainProcessBuiltinFunctionResponse() MessageHandler {
-	return &MessageBlockchainProcessBuiltinFunctionResponse{}
-}
-
-func createMessageBlockchainGetESDTTokenRequest() MessageHandler {
-	return &MessageBlockchainGetESDTTokenRequest{}
-}
-
-func createMessageBlockchainGetESDTTokenResponse() MessageHandler {
-	return &MessageBlockchainGetESDTTokenResponse{}
+func createMessageBlockchainProcessBuiltInFunctionResponse() MessageHandler {
+	return &MessageBlockchainProcessBuiltInFunctionResponse{}
 }
 
 func createMessageBlockchainGetBuiltinFunctionNamesRequest() MessageHandler {
@@ -338,4 +323,44 @@ func createMessageBlockchainGetCompiledCodeRequest() MessageHandler {
 
 func createMessageBlockchainGetCompiledCodeResponse() MessageHandler {
 	return &MessageBlockchainGetCompiledCodeResponse{}
+}
+
+func createMessageBlockchainClearCompiledCodesRequest() MessageHandler {
+	return &MessageBlockchainClearCompiledCodesRequest{}
+}
+
+func createMessageBlockchainClearCompiledCodesResponse() MessageHandler {
+	return &MessageBlockchainClearCompiledCodesResponse{}
+}
+
+func createMessageBlockchainGetESDTTokenRequest() MessageHandler {
+	return &MessageBlockchainGetESDTTokenRequest{}
+}
+
+func createMessageBlockchainGetESDTTokenResponse() MessageHandler {
+	return &MessageBlockchainGetESDTTokenResponse{}
+}
+
+func createMessageBlockchainIsInterfaceNilRequest() MessageHandler {
+	return &MessageBlockchainIsInterfaceNilRequest{}
+}
+
+func createMessageBlockchainIsInterfaceNilResponse() MessageHandler {
+	return &MessageBlockchainIsInterfaceNilResponse{}
+}
+
+func createMessageBlockchainGetSnapshotRequest() MessageHandler {
+	return &MessageBlockchainGetSnapshotRequest{}
+}
+
+func createMessageBlockchainGetSnapshotResponse() MessageHandler {
+	return &MessageBlockchainGetSnapshotResponse{}
+}
+
+func createMessageBlockchainRevertToSnapshotRequest() MessageHandler {
+	return &MessageBlockchainRevertToSnapshotRequest{}
+}
+
+func createMessageBlockchainRevertToSnapshotResponse() MessageHandler {
+	return &MessageBlockchainRevertToSnapshotResponse{}
 }

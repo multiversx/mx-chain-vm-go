@@ -2,17 +2,18 @@ package contracts
 
 import (
 	"errors"
+	"fmt"
 	"math/big"
 
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
-	"github.com/stretchr/testify/require"
+	"github.com/ElrondNetwork/elrond-go/testscommon/txDataBuilder"
 )
 
 // WasteGasChildMock is an exposed mock contract method
 func WasteGasChildMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(DirectCallGasTestConfig)
-	instanceMock.AddMockMethod("wasteGas", test.SimpleWasteGasMockMethod(instanceMock, testConfig.GasUsedByChild))
+	testConfig := config.(GasTestConfig)
+	instanceMock.AddMockMethod("wasteGas", test.SimpleWasteGasMockMethod(instanceMock, testConfig.GetGasUsedByChild()))
 }
 
 // FailChildMock is an exposed mock contract method
@@ -43,9 +44,9 @@ func FailChildAndBurnESDTMock(instanceMock *mock.InstanceMock, config interface{
 		input.RecipientAddr = host.Runtime().GetSCAddress()
 		input.Function = "ESDTLocalBurn"
 
-		_, _, err := host.ExecuteOnDestContext(input)
-		if err != nil {
-			host.Runtime().FailExecution(err)
+		returnValue := ExecuteOnDestContextInMockContracts(host, input)
+		if returnValue != 0 {
+			host.Runtime().FailExecution(fmt.Errorf("Return value %d", returnValue))
 		}
 
 		host.Runtime().FailExecution(errors.New("forced fail"))
@@ -59,7 +60,6 @@ func ExecOnSameCtxParentMock(instanceMock *mock.InstanceMock, config interface{}
 	instanceMock.AddMockMethod("execOnSameCtx", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
-		t := instance.T
 		host.Metering().UseGas(testConfig.GasUsedByParent)
 
 		argsPerCall := 3
@@ -79,8 +79,10 @@ func ExecOnSameCtxParentMock(instanceMock *mock.InstanceMock, config interface{}
 			numCalls := big.NewInt(0).SetBytes(arguments[callIndex+2]).Uint64()
 
 			for i := uint64(0); i < numCalls; i++ {
-				_, err := host.ExecuteOnSameContext(input)
-				require.Nil(t, err)
+				returnValue := ExecuteOnSameContextInMockContracts(host, input)
+				if returnValue != 0 {
+					host.Runtime().FailExecution(fmt.Errorf("Return value %d", returnValue))
+				}
 			}
 		}
 
@@ -94,7 +96,6 @@ func ExecOnDestCtxParentMock(instanceMock *mock.InstanceMock, config interface{}
 	instanceMock.AddMockMethod("execOnDestCtx", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
-		t := instance.T
 		host.Metering().UseGas(testConfig.GasUsedByParent)
 
 		argsPerCall := 3
@@ -114,8 +115,10 @@ func ExecOnDestCtxParentMock(instanceMock *mock.InstanceMock, config interface{}
 			numCalls := big.NewInt(0).SetBytes(arguments[callIndex+2]).Uint64()
 
 			for i := uint64(0); i < numCalls; i++ {
-				_, _, err := host.ExecuteOnDestContext(input)
-				require.Nil(t, err)
+				returnValue := ExecuteOnDestContextInMockContracts(host, input)
+				if returnValue != 0 {
+					host.Runtime().FailExecution(fmt.Errorf("Return value %d", returnValue))
+				}
 			}
 		}
 
@@ -144,9 +147,9 @@ func ExecOnDestCtxSingleCallParentMock(instanceMock *mock.InstanceMock, config i
 		input.RecipientAddr = arguments[0]
 		input.Function = string(arguments[1])
 
-		_, _, err := host.ExecuteOnDestContext(input)
-		if err != nil {
-			host.Runtime().FailExecution(err)
+		returnValue := ExecuteOnDestContextInMockContracts(host, input)
+		if returnValue != 0 {
+			host.Runtime().FailExecution(fmt.Errorf("Return value %d", returnValue))
 		}
 
 		return instance
@@ -157,4 +160,58 @@ func ExecOnDestCtxSingleCallParentMock(instanceMock *mock.InstanceMock, config i
 func WasteGasParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 	testConfig := config.(DirectCallGasTestConfig)
 	instanceMock.AddMockMethod("wasteGas", test.SimpleWasteGasMockMethod(instanceMock, testConfig.GasUsedByParent))
+}
+
+const (
+	esdtOnCallbackSuccess int = iota
+	esdtOnCallbackWrongNumOfArgs
+	esdtOnCallbackFail
+)
+
+// ESDTTransferToParentMock is an exposed mock contract method
+func ESDTTransferToParentMock(instanceMock *mock.InstanceMock, config interface{}) {
+	esdtTransferToParentMock(instanceMock, config, esdtOnCallbackSuccess)
+}
+
+// ESDTTransferToParentWrongESDTArgsNumberMock is an exposed mock contract method
+func ESDTTransferToParentWrongESDTArgsNumberMock(instanceMock *mock.InstanceMock, config interface{}) {
+	esdtTransferToParentMock(instanceMock, config, esdtOnCallbackWrongNumOfArgs)
+}
+
+// ESDTTransferToParentCallbackWillFail is an exposed mock contract method
+func ESDTTransferToParentCallbackWillFail(instanceMock *mock.InstanceMock, config interface{}) {
+	esdtTransferToParentMock(instanceMock, config, esdtOnCallbackFail)
+}
+
+func esdtTransferToParentMock(instanceMock *mock.InstanceMock, config interface{}, behavior int) {
+	testConfig := config.(*AsyncCallTestConfig)
+	instanceMock.AddMockMethod("transferESDTToParent", func() *mock.InstanceMock {
+		host := instanceMock.Host
+		instance := mock.GetMockInstance(host)
+		host.Metering().UseGas(testConfig.GasUsedByParent)
+
+		callData := txDataBuilder.NewBuilder()
+		callData.Func(string("ESDTTransfer"))
+		callData.Bytes(test.ESDTTestTokenName)
+		callData.Bytes(big.NewInt(int64(testConfig.CallbackESDTTokensToTransfer)).Bytes())
+
+		switch behavior {
+		case esdtOnCallbackSuccess:
+			host.Output().Finish([]byte("success"))
+		case esdtOnCallbackWrongNumOfArgs:
+			callData.Bytes([]byte{})
+		case esdtOnCallbackFail:
+			host.Output().Finish([]byte("fail"))
+		}
+
+		value := big.NewInt(0).Bytes()
+
+		err := host.Runtime().ExecuteAsyncCall(test.ParentAddress, callData.ToBytes(), value)
+
+		if err != nil {
+			host.Runtime().FailExecution(err)
+		}
+
+		return instance
+	})
 }

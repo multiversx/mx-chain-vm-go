@@ -42,8 +42,7 @@ type VMHost interface {
 	IsArwenV3Enabled() bool
 	IsESDTFunctionsEnabled() bool
 
-	ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callType vmcommon.CallType, isRevert bool) (*vmcommon.VMOutput, uint64, error)
-	RevertESDTTransfer(input *vmcommon.ContractCallInput)
+	ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callType vmcommon.CallType) (*vmcommon.VMOutput, uint64, error)
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*AsyncContextInfo, error)
 	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *AsyncContextInfo, error)
@@ -62,6 +61,8 @@ type VMHost interface {
 
 // BlockchainContext defines the functionality needed for interacting with the blockchain context
 type BlockchainContext interface {
+	StateStack
+
 	NewAddress(creatorAddress []byte) ([]byte, error)
 	AccountExists(addr []byte) bool
 	GetBalance(addr []byte) []byte
@@ -92,6 +93,8 @@ type BlockchainContext interface {
 	GetESDTToken(address []byte, tokenID []byte, nonce uint64) (*esdt.ESDigitalToken, error)
 	GetUserAccount(address []byte) (vmcommon.UserAccountHandler, error)
 	ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
+	GetSnapshot() int
+	RevertToSnapshot(snapshot int)
 }
 
 // RuntimeContext defines the functionality needed for interacting with the runtime context

@@ -49,8 +49,7 @@ func NewNodePart(
 	part.Repliers[common.BlockchainCurrentTimeStampRequest] = part.replyToBlockchainCurrentTimeStamp
 	part.Repliers[common.BlockchainCurrentRandomSeedRequest] = part.replyToBlockchainCurrentRandomSeed
 	part.Repliers[common.BlockchainCurrentEpochRequest] = part.replyToBlockchainCurrentEpoch
-	part.Repliers[common.BlockchainProcessBuiltinFunctionRequest] = part.replyToBlockchainProcessBuiltinFunction
-	part.Repliers[common.BlockchainGetESDTTokenRequest] = part.replyToBlockchainGetESDTToken
+	part.Repliers[common.BlockchainProcessBuiltInFunctionRequest] = part.replyToBlockchainProcessBuiltInFunction
 	part.Repliers[common.BlockchainGetBuiltinFunctionNamesRequest] = part.replyToBlockchainGetBuiltinFunctionNames
 	part.Repliers[common.BlockchainGetAllStateRequest] = part.replyToBlockchainGetAllState
 	part.Repliers[common.BlockchainGetUserAccountRequest] = part.replyToBlockchainGetUserAccount
@@ -60,6 +59,11 @@ func NewNodePart(
 	part.Repliers[common.BlockchainIsPayableRequest] = part.replyToBlockchainIsPayable
 	part.Repliers[common.BlockchainSaveCompiledCodeRequest] = part.replyToBlockchainSaveCompiledCode
 	part.Repliers[common.BlockchainGetCompiledCodeRequest] = part.replyToBlockchainGetCompiledCode
+	part.Repliers[common.BlockchainClearCompiledCodesRequest] = part.replyToBlockchainClearCompiledCodes
+	part.Repliers[common.BlockchainGetESDTTokenRequest] = part.replyToBlockchainGetESDTToken
+	part.Repliers[common.BlockchainIsInterfaceNilRequest] = part.replyToBlockchainIsInterfaceNil
+	part.Repliers[common.BlockchainGetSnapshotRequest] = part.replyToBlockchainGetSnapshot
+	part.Repliers[common.BlockchainRevertToSnapshotRequest] = part.replyToBlockchainRevertToSnapshot
 
 	return part, nil
 }

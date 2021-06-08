@@ -202,13 +202,15 @@ func copyTxHashesFromContext(copyEnabled bool, runtime arwen.RuntimeContext, inp
 func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, asyncInfo *arwen.AsyncContextInfo, err error) {
 	log.Trace("ExecuteOnDestContext", "caller", input.CallerAddr, "dest", input.RecipientAddr, "function", input.Function)
 
-	builtinFunctionExecuted := false
 	scExecutionInput := input
 
+	blockchain := host.Blockchain()
+	blockchain.PushState()
+
 	if host.IsBuiltinFunctionName(input.Function) {
-		builtinFunctionExecuted = true
 		scExecutionInput, vmOutput, err = host.handleBuiltinFunctionCall(input)
 		if err != nil {
+			blockchain.PopSetActiveState()
 			vmOutput = host.Output().CreateVMOutputInCaseOfError(err)
 			return
 		}
@@ -216,11 +218,12 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 
 	if scExecutionInput != nil {
 		vmOutput, asyncInfo, err = host.executeOnDestContextNoBuiltinFunction(scExecutionInput)
-		if err != nil && builtinFunctionExecuted {
-			// If the SC execution failed and the original input contained an ESDT
-			// transfer, the transfer must be reverted.
-			host.RevertESDTTransfer(input)
-		}
+	}
+
+	if err != nil {
+		blockchain.PopSetActiveState()
+	} else {
+		blockchain.PopDiscard()
 	}
 
 	return
@@ -334,7 +337,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 		return nil, arwen.ErrBuiltinCallOnSameContextDisallowed
 	}
 
-	bigInt, _, metering, output, runtime, _ := host.GetContexts()
+	bigInt, blockchain, metering, output, runtime, _ := host.GetContexts()
 
 	// Back up the states of the contexts (except Storage, which isn't affected
 	// by ExecuteOnSameContext())
@@ -347,6 +350,8 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 
 	metering.PushState()
 	metering.InitStateFromContractCallInput(&input.VMInput)
+
+	blockchain.PushState()
 
 	defer func() {
 		host.finishExecuteOnSameContext(err)
@@ -369,7 +374,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 }
 
 func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
-	bigInt, _, metering, output, runtime, _ := host.GetContexts()
+	bigInt, blockchain, metering, output, runtime, _ := host.GetContexts()
 
 	if output.ReturnCode() != vmcommon.Ok || executeErr != nil {
 		// Execution failed: restore contexts as if the execution didn't happen.
@@ -377,7 +382,7 @@ func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
 		metering.PopSetActiveState()
 		output.PopSetActiveState()
 		runtime.PopSetActiveState()
-
+		blockchain.PopSetActiveState()
 		return
 	}
 
@@ -389,6 +394,7 @@ func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
 	metering.PopMergeActiveState()
 	output.PopDiscard()
 	bigInt.PopDiscard()
+	blockchain.PopDiscard()
 	runtime.PopSetActiveState()
 
 	// Restore remaining gas to the caller (parent) Wasmer instance
@@ -625,68 +631,9 @@ func (host *vmHost) callSCMethodIndirect() error {
 	return err
 }
 
-// RevertESDTTransfer calls the ESDT/ESDTNFT transfer with reverted arguments
-func (host *vmHost) RevertESDTTransfer(input *vmcommon.ContractCallInput) {
-	isESDTTransfer := input.Function == core.BuiltInFunctionESDTTransfer || input.Function == core.BuiltInFunctionESDTNFTTransfer
-	if !isESDTTransfer {
-		return
-	}
-	if input.CallType == vmcommon.AsynchronousCallBack {
-		return
-	}
-	numArgsForTransfer := core.MinLenArgumentsESDTTransfer
-	if input.Function == core.BuiltInFunctionESDTNFTTransfer {
-		numArgsForTransfer = core.MinLenArgumentsESDTNFTTransfer
-	}
-	if len(input.Arguments) < numArgsForTransfer {
-		return
-	}
-
-	revertInput := &vmcommon.ContractCallInput{
-		VMInput: vmcommon.VMInput{
-			CallerAddr:     input.RecipientAddr,
-			Arguments:      make([][]byte, numArgsForTransfer),
-			CallValue:      big.NewInt(0),
-			CallType:       vmcommon.AsynchronousCallBack,
-			GasPrice:       input.GasPrice,
-			GasProvided:    host.meteringContext.BlockGasLimit(),
-			GasLocked:      0,
-			OriginalTxHash: input.OriginalTxHash,
-			CurrentTxHash:  input.CurrentTxHash,
-			ESDTValue:      big.NewInt(0),
-			ESDTTokenName:  nil,
-		},
-		RecipientAddr:     input.CallerAddr,
-		Function:          input.Function,
-		AllowInitFunction: false,
-	}
-	copy(revertInput.Arguments, input.Arguments)
-	if input.Function == core.BuiltInFunctionESDTNFTTransfer {
-		actualRecipient := input.CallerAddr
-		actualSender := input.Arguments[numArgsForTransfer-1]
-
-		revertInput.RecipientAddr = actualSender
-		revertInput.CallerAddr = actualSender
-		revertInput.Arguments[numArgsForTransfer-1] = actualRecipient
-	}
-
-	vmOutput, err := host.Blockchain().ProcessBuiltInFunction(revertInput)
-	if err != nil {
-		log.Error("RevertESDTTransfer failed", "error", err)
-		host.meteringContext.UseGas(host.meteringContext.GasLeft())
-		host.runtimeContext.FailExecution(err)
-		return
-	}
-	if vmOutput != nil && vmOutput.ReturnCode != vmcommon.Ok {
-		log.Error("RevertESDTTransfer failed", "returnCode", vmOutput.ReturnCode, "returnMessage", vmOutput.ReturnMessage)
-		host.meteringContext.UseGas(host.meteringContext.GasLeft())
-		host.runtimeContext.FailExecution(errors.New(vmOutput.ReturnMessage))
-	}
-}
-
 // ExecuteESDTTransfer calls the process built in function with the given transfer for ESDT/ESDTNFT if nonce > 0
 // there are no NFTs with nonce == 0
-func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callType vmcommon.CallType, isRevert bool) (*vmcommon.VMOutput, uint64, error) {
+func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callType vmcommon.CallType) (*vmcommon.VMOutput, uint64, error) {
 	_, _, metering, _, runtime, _ := host.GetContexts()
 
 	esdtTransferInput := &vmcommon.ContractCallInput{
@@ -713,10 +660,6 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, token
 		esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, tokenIdentifier, value.Bytes())
 	}
 
-	if isRevert {
-		esdtTransferInput.GasProvided = metering.BlockGasLimit()
-	}
-
 	vmOutput, err := host.Blockchain().ProcessBuiltInFunction(esdtTransferInput)
 	log.Trace("ESDT transfer", "sender", sender, "dest", destination)
 	log.Trace("ESDT transfer", "token", tokenIdentifier, "value", value)
@@ -735,7 +678,7 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, token
 			gasConsumed = math.SubUint64(gasConsumed, transfer.GasLimit)
 		}
 	}
-	if callType != vmcommon.AsynchronousCallBack && !isRevert {
+	if callType != vmcommon.AsynchronousCallBack {
 		if metering.GasLeft() < gasConsumed {
 			log.Trace("ESDT transfer", "error", arwen.ErrNotEnoughGas)
 			return vmOutput, esdtTransferInput.GasProvided, arwen.ErrNotEnoughGas
