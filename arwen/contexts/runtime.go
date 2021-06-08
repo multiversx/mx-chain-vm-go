@@ -531,7 +531,7 @@ func (context *runtimeContext) FailExecution(err error) {
 	context.host.Output().SetReturnMessage(message)
 	context.SetRuntimeBreakpointValue(arwen.BreakpointExecutionFailed)
 
-	logRuntime.Trace("execution failed", "message", message)
+	logRuntime.Trace("execution failed", "message", err.Error())
 }
 
 // SignalUserError sets the returnMessage, returnCode and runtimeBreakpoint according an user error.
