@@ -12,15 +12,15 @@ package cryptoapi
 // extern int32_t v1_3_verifyBLS(void *context, int32_t keyOffset, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
 // extern int32_t v1_3_verifyEd25519(void *context, int32_t keyOffset, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
 // extern int32_t v1_3_verifySecp256k1(void *context, int32_t keyOffset, int32_t keyLength, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
-// extern void v1_3_addEC(void *context, int32_t destination1, int32_t destination2, int32_t ecHandle, int32_t fstPointX, int32_t fstPointY, int32_t sndPointX, int32_t sndPointY);
-// extern void v1_3_doubleEC(void *context, int32_t destination1, int32_t destination2, int32_t ecHandle, int32_t pointX, int32_t pointY);
-// extern int32_t v1_3_isOnCurveEC(void *context, int32_t ecHandle, int32_t pointX, int32_t pointY);
-// extern int32_t v1_3_scalarBaseMultEC(void *context, int32_t destination1, int32_t destination2, int32_t ecHandle, int32_t kOffset, int32_t length);
-// extern int32_t v1_3_scalarMultEC(void *context, int32_t destination1, int32_t destination2, int32_t ecHandle, int32_t pointX, int32_t pointY, int32_t kOffset, int32_t length);
-// extern int32_t v1_3_marshalEC(void *context, int32_t ecHandle, int32_t xPairHandle, int32_t yPairHandle, int32_t resultOffest);
-// extern int32_t v1_3_unmarshalEC(void *context, int32_t xPairHandle, int32_t yPairHandle, int32_t ecHandle, int32_t dataOffest, int32_t length);
-// extern int32_t v1_3_marshalCompressedEC(void *context, int32_t ecHandle, int32_t xPairHandle, int32_t yPairHandle, int32_t resultOffest);
-// extern int32_t v1_3_unmarshalCompressedEC(void *context, int32_t xPairHandle, int32_t yPairHandle, int32_t ecHandle, int32_t dataOffest, int32_t length);
+// extern void v1_3_addEC(void *context, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t fstPointXHandle, int32_t fstPointYHandle, int32_t sndPointXHandle, int32_t sndPointYHandle);
+// extern void v1_3_doubleEC(void *context, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t pointXHandle, int32_t pointYHandle);
+// extern int32_t v1_3_isOnCurveEC(void *context, int32_t ecHandle, int32_t pointXHandle, int32_t pointYHandle);
+// extern int32_t v1_3_scalarBaseMultEC(void *context, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t dataOffset, int32_t length);
+// extern int32_t v1_3_scalarMultEC(void *context, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t pointXHandle, int32_t pointYHandle, int32_t dataOffset, int32_t length);
+// extern int32_t v1_3_marshalEC(void *context, int32_t xPairHandle, int32_t yPairHandle, int32_t ecHandle, int32_t resultOffset);
+// extern int32_t v1_3_unmarshalEC(void *context, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t dataOffset, int32_t length);
+// extern int32_t v1_3_marshalCompressedEC(void *context, int32_t xPairHandle, int32_t yPairHandle, int32_t ecHandle, int32_t resultOffset);
+// extern int32_t v1_3_unmarshalCompressedEC(void *context, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t dataOffset, int32_t length);
 // extern int32_t v1_3_generateKeyEC(void *context, int32_t xPubKeyHandle, int32_t yPubKeyHandle, int32_t ecHandle, int32_t resultOffset);
 // extern int32_t v1_3_ellipticCurveNew(void *context, int32_t fieldOrderHandle, int32_t basePointOrderHandle, int32_t eqConstantHandle, int32_t xBasePointHandle, int32_t yBasePointHandle, int32_t sizeOfField);
 // extern int32_t v1_3_p224Ec(void *context);
@@ -29,6 +29,7 @@ package cryptoapi
 // extern int32_t v1_3_p521Ec(void *context);
 // extern int32_t v1_3_getCurveLengthEC(void *context, int32_t ecHandle);
 // extern int32_t v1_3_getCurveByteLengthEC(void *context, int32_t ecHandle);
+// extern int32_t v1_3_ellipticCurveGetValues(void *context, int32_t ecHandle, int32_t fieldOrderHandle, int32_t basePointOrderHandle, int32_t eqConstantHandle, int32_t xBasePointHandle, int32_t yBasePointHandle);
 import "C"
 
 import (
@@ -142,16 +143,35 @@ func CryptoImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 		return nil, err
 	}
 
+	imports, err = imports.Append("p256Ec", v1_3_p256Ec, C.v1_3_p256Ec)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("p384Ec", v1_3_p384Ec, C.v1_3_p384Ec)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("p521Ec", v1_3_p521Ec, C.v1_3_p521Ec)
+	if err != nil {
+		return nil, err
+	}
+
 	imports, err = imports.Append("getCurveLengthEC", v1_3_getCurveLengthEC, C.v1_3_getCurveLengthEC)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getPrivKeyLengthEC", v1_3_getCurveByteLengthEC, C.v1_3_getCurveByteLengthEC)
+	imports, err = imports.Append("getCurveByteLengthEC", v1_3_getCurveByteLengthEC, C.v1_3_getCurveByteLengthEC)
 	if err != nil {
 		return nil, err
 	}
 
+	imports, err = imports.Append("ellipticCurveGetValues", v1_3_ellipticCurveGetValues, C.v1_3_ellipticCurveGetValues)
+	if err != nil {
+		return nil, err
+	}
 	return imports, nil
 }
 
@@ -401,13 +421,10 @@ func v1_3_addEC(
 		return
 	}
 
-	xResult, err1 := managedType.GetBigInt(xResultHandle)
-	yResult, err2 := managedType.GetBigInt(yResultHandle)
-	x1, err3 := managedType.GetBigInt(fstPointXHandle)
-	y1, err4 := managedType.GetBigInt(fstPointYHandle)
-	x2, err5 := managedType.GetBigInt(sndPointXHandle)
-	y2, err6 := managedType.GetBigInt(sndPointYHandle)
-	if err1 != nil || err2 != nil || err3 != nil || err4 != nil || err5 != nil || err6 != nil {
+	xResult, yResult, err1 := managedType.GetTwoBigInt(xResultHandle, yResultHandle)
+	x1, y1, err2 := managedType.GetTwoBigInt(fstPointXHandle, fstPointYHandle)
+	x2, y2, err3 := managedType.GetTwoBigInt(sndPointXHandle, sndPointYHandle)
+	if err1 != nil || err2 != nil || err3 != nil {
 		arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
@@ -440,11 +457,9 @@ func v1_3_doubleEC(
 		return
 	}
 
-	xResult, err1 := managedType.GetBigInt(xResultHandle)
-	yResult, err2 := managedType.GetBigInt(yResultHandle)
-	x, err3 := managedType.GetBigInt(pointXHandle)
-	y, err4 := managedType.GetBigInt(pointYHandle)
-	if err1 != nil || err2 != nil || err3 != nil || err4 != nil {
+	xResult, yResult, err1 := managedType.GetTwoBigInt(xResultHandle, yResultHandle)
+	x, y, err2 := managedType.GetTwoBigInt(pointXHandle, pointYHandle)
+	if err1 != nil || err2 != nil {
 		arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
 		return
 	}
@@ -475,9 +490,8 @@ func v1_3_isOnCurveEC(
 		return -1
 	}
 
-	x, err1 := managedType.GetBigInt(pointXHandle)
-	y, err2 := managedType.GetBigInt(pointYHandle)
-	if err1 != nil || err2 != nil {
+	x, y, err := managedType.GetTwoBigInt(pointXHandle, pointYHandle)
+	if err != nil {
 		arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
 		return -1
 	}
@@ -495,176 +509,6 @@ func v1_3_scalarBaseMultEC(
 	context unsafe.Pointer,
 	xResultHandle int32,
 	yResultHandle int32,
-	ecHandle int32,
-	kOffset int32,
-	length int32,
-) int32 {
-	runtime := arwen.GetRuntimeContext(context)
-	metering := arwen.GetMeteringContext(context)
-	managedType := arwen.GetManagedTypesContext(context)
-
-	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
-	metering.UseGas(gasToUse)
-
-	k, err := runtime.MemLoad(kOffset, length)
-	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
-		return 1
-	}
-
-	ec, err := managedType.GetEllipticCurve(ecHandle)
-	if err != nil {
-		arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
-		return 1
-	}
-
-	xResult, err1 := managedType.GetBigInt(xResultHandle)
-	yResult, err2 := managedType.GetBigInt(yResultHandle)
-	if err1 != nil || err2 != nil {
-		arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
-		return 1
-	}
-
-	managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, xResult, yResult)
-	xResultSBM, yResultSBM := ec.ScalarBaseMult(k)
-	xResult.Set(xResultSBM)
-	yResult.Set(yResultSBM)
-
-	return 0
-}
-
-//export v1_3_scalarMultEC
-func v1_3_scalarMultEC(
-	context unsafe.Pointer,
-	xResultHandle int32,
-	yResultHandle int32,
-	ecHandle int32,
-	pointXHandle int32,
-	pointYHandle int32,
-	kOffset int32,
-	length int32,
-) int32 {
-	runtime := arwen.GetRuntimeContext(context)
-	metering := arwen.GetMeteringContext(context)
-	managedType := arwen.GetManagedTypesContext(context)
-
-	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
-	metering.UseGas(gasToUse)
-
-	k, err := runtime.MemLoad(kOffset, length)
-	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
-		return 1
-	}
-
-	ec, err1 := managedType.GetEllipticCurve(ecHandle)
-	if err1 != nil {
-		arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
-		return 1
-	}
-
-	xResult, err1 := managedType.GetBigInt(xResultHandle)
-	yResult, err2 := managedType.GetBigInt(yResultHandle)
-	x, err3 := managedType.GetBigInt(pointXHandle)
-	y, err4 := managedType.GetBigInt(pointYHandle)
-	if err1 != nil || err2 != nil || err3 != nil || err4 != nil {
-		arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
-		return 1
-	}
-
-	managedType.ConsumeGasForBigIntCopy(xResult, yResult, ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
-	xResultSM, yResultSM := ec.ScalarMult(x, y, k)
-	xResult.Set(xResultSM)
-	yResult.Set(yResultSM)
-
-	return 0
-}
-
-//export v1_3_marshalEC
-func v1_3_marshalEC(
-	context unsafe.Pointer,
-	pointXHandle int32,
-	pointYHandle int32,
-	ecHandle int32,
-	resultOffset int32,
-) int32 {
-	runtime := arwen.GetRuntimeContext(context)
-	metering := arwen.GetMeteringContext(context)
-	managedType := arwen.GetManagedTypesContext(context)
-
-	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
-	metering.UseGas(gasToUse)
-
-	ec, err := managedType.GetEllipticCurve(ecHandle)
-	if err != nil {
-		arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
-		return 1
-	}
-
-	x, err1 := managedType.GetBigInt(pointXHandle)
-	y, err2 := managedType.GetBigInt(pointYHandle)
-	if err1 != nil || err2 != nil {
-		arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
-		return 1
-	}
-	if x.BitLen() > int(ec.BitSize) || y.BitLen() > int(ec.BitSize) {
-		arwen.WithFault(arwen.ErrBufNotBigEnough, context, runtime.CryptoAPIErrorShouldFailExecution())
-		return 1
-	}
-
-	managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
-	result := elliptic.Marshal(ec, x, y)
-	err = runtime.MemStore(resultOffset, result)
-	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
-		return int32(len(result))
-	}
-	return 0
-}
-
-//export v1_3_marshalCompressedEC
-func v1_3_marshalCompressedEC(
-	context unsafe.Pointer,
-	pointXHandle int32,
-	pointYHandle int32,
-	ecHandle int32,
-	resultOffset int32,
-) int32 {
-	runtime := arwen.GetRuntimeContext(context)
-	metering := arwen.GetMeteringContext(context)
-	managedType := arwen.GetManagedTypesContext(context)
-
-	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
-	metering.UseGas(gasToUse)
-
-	ec, err := managedType.GetEllipticCurve(ecHandle)
-	if err != nil {
-		arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
-		return 1
-	}
-
-	x, err1 := managedType.GetBigInt(pointXHandle)
-	y, err2 := managedType.GetBigInt(pointYHandle)
-	if err1 != nil || err2 != nil {
-		arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
-		return 1
-	}
-	if x.BitLen() > int(ec.BitSize) || y.BitLen() > int(ec.BitSize) {
-		arwen.WithFault(arwen.ErrBufNotBigEnough, context, runtime.CryptoAPIErrorShouldFailExecution())
-		return 1
-	}
-
-	managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
-	result := elliptic.MarshalCompressed(ec, x, y)
-	err = runtime.MemStore(resultOffset, result)
-	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
-		return int32(len(result))
-	}
-	return 0
-}
-
-//export v1_3_unmarshalEC
-func v1_3_unmarshalEC(
-	context unsafe.Pointer,
-	xPairHandle int32,
-	yPairHandle int32,
 	ecHandle int32,
 	dataOffset int32,
 	length int32,
@@ -687,17 +531,181 @@ func v1_3_unmarshalEC(
 		return 1
 	}
 
-	xPair, err1 := managedType.GetBigInt(xPairHandle)
-	yPair, err2 := managedType.GetBigInt(yPairHandle)
+	xResult, yResult, err := managedType.GetTwoBigInt(xResultHandle, yResultHandle)
+	if err != nil {
+		arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return 1
+	}
+
+	managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, xResult, yResult)
+	xResultSBM, yResultSBM := ec.ScalarBaseMult(data)
+	xResult.Set(xResultSBM)
+	yResult.Set(yResultSBM)
+
+	return 0
+}
+
+//export v1_3_scalarMultEC
+func v1_3_scalarMultEC(
+	context unsafe.Pointer,
+	xResultHandle int32,
+	yResultHandle int32,
+	ecHandle int32,
+	pointXHandle int32,
+	pointYHandle int32,
+	dataOffset int32,
+	length int32,
+) int32 {
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
+
+	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
+	metering.UseGas(gasToUse)
+
+	data, err := runtime.MemLoad(dataOffset, length)
+	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	ec, err1 := managedType.GetEllipticCurve(ecHandle)
+	if err1 != nil {
+		arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return 1
+	}
+
+	xResult, yResult, err1 := managedType.GetTwoBigInt(xResultHandle, yResultHandle)
+	x, y, err2 := managedType.GetTwoBigInt(pointXHandle, pointYHandle)
 	if err1 != nil || err2 != nil {
 		arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
 
-	managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, xPair, yPair)
-	xPairU, yPairU := elliptic.Unmarshal(ec, data)
-	xPair.Set(xPairU)
-	yPair.Set(yPairU)
+	managedType.ConsumeGasForBigIntCopy(xResult, yResult, ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
+	xResultSM, yResultSM := ec.ScalarMult(x, y, data)
+	xResult.Set(xResultSM)
+	yResult.Set(yResultSM)
+
+	return 0
+}
+
+//export v1_3_marshalEC
+func v1_3_marshalEC(
+	context unsafe.Pointer,
+	xPairHandle int32,
+	yPairHandle int32,
+	ecHandle int32,
+	resultOffset int32,
+) int32 {
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
+
+	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
+	metering.UseGas(gasToUse)
+
+	ec, err := managedType.GetEllipticCurve(ecHandle)
+	if err != nil {
+		arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return 1
+	}
+
+	x, y, err := managedType.GetTwoBigInt(xPairHandle, yPairHandle)
+	if err != nil {
+		arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return 1
+	}
+	if x.BitLen() > int(ec.BitSize) || y.BitLen() > int(ec.BitSize) {
+		arwen.WithFault(arwen.ErrBufNotBigEnough, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return 1
+	}
+
+	managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
+	result := elliptic.Marshal(ec, x, y)
+	err = runtime.MemStore(resultOffset, result)
+	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return int32(len(result))
+	}
+	return 0
+}
+
+//export v1_3_marshalCompressedEC
+func v1_3_marshalCompressedEC(
+	context unsafe.Pointer,
+	xPairHandle int32,
+	yPairHandle int32,
+	ecHandle int32,
+	resultOffset int32,
+) int32 {
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
+
+	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
+	metering.UseGas(gasToUse)
+
+	ec, err := managedType.GetEllipticCurve(ecHandle)
+	if err != nil {
+		arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return 1
+	}
+
+	x, y, err := managedType.GetTwoBigInt(xPairHandle, yPairHandle)
+	if err != nil {
+		arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return 1
+	}
+	if x.BitLen() > int(ec.BitSize) || y.BitLen() > int(ec.BitSize) {
+		arwen.WithFault(arwen.ErrBufNotBigEnough, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return 1
+	}
+
+	managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
+	result := elliptic.MarshalCompressed(ec, x, y)
+	err = runtime.MemStore(resultOffset, result)
+	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return int32(len(result))
+	}
+	return 0
+}
+
+//export v1_3_unmarshalEC
+func v1_3_unmarshalEC(
+	context unsafe.Pointer,
+	xResultHandle int32,
+	yResultHandle int32,
+	ecHandle int32,
+	dataOffset int32,
+	length int32,
+) int32 {
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
+
+	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
+	metering.UseGas(gasToUse)
+
+	data, err := runtime.MemLoad(dataOffset, length)
+	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	ec, err := managedType.GetEllipticCurve(ecHandle)
+	if err != nil {
+		arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return 1
+	}
+
+	xResult, yResult, err := managedType.GetTwoBigInt(xResultHandle, yResultHandle)
+	if err != nil {
+		arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return 1
+	}
+
+	managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, xResult, yResult)
+	xResultU, yResultU := elliptic.Unmarshal(ec, data)
+	xResult.Set(xResultU)
+	yResult.Set(yResultU)
 
 	return 0
 }
@@ -705,8 +713,8 @@ func v1_3_unmarshalEC(
 //export v1_3_unmarshalCompressedEC
 func v1_3_unmarshalCompressedEC(
 	context unsafe.Pointer,
-	xPairHandle int32,
-	yPairHandle int32,
+	xResultHandle int32,
+	yResultHandle int32,
 	ecHandle int32,
 	dataOffset int32,
 	length int32,
@@ -729,17 +737,16 @@ func v1_3_unmarshalCompressedEC(
 		return 1
 	}
 
-	xPair, err1 := managedType.GetBigInt(xPairHandle)
-	yPair, err2 := managedType.GetBigInt(yPairHandle)
-	if err1 != nil || err2 != nil {
+	xResult, yResult, err := managedType.GetTwoBigInt(xResultHandle, yResultHandle)
+	if err != nil {
 		arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
 
-	managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, xPair, yPair)
-	xPairUC, yPairUC := elliptic.UnmarshalCompressed(ec, data)
-	xPair.Set(xPairUC)
-	yPair.Set(yPairUC)
+	managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, xResult, yResult)
+	xResultUC, yResultUC := elliptic.UnmarshalCompressed(ec, data)
+	xResult.Set(xResultUC)
+	yResult.Set(yResultUC)
 	return 0
 }
 
@@ -764,9 +771,8 @@ func v1_3_generateKeyEC(
 		return 1
 	}
 
-	xPubKey, err1 := managedType.GetBigInt(xPubKeyHandle)
-	yPubKey, err2 := managedType.GetBigInt(yPubKeyHandle)
-	if err1 != nil || err2 != nil {
+	xPubKey, yPubKey, err := managedType.GetTwoBigInt(xPubKeyHandle, yPubKeyHandle)
+	if err != nil {
 		arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
@@ -796,12 +802,10 @@ func v1_3_ellipticCurveNew(context unsafe.Pointer, fieldOrderHandle int32, baseP
 	gasToUse := metering.GasSchedule().BigIntAPICost.EllipticCurveNew
 	metering.UseGas(gasToUse)
 
-	P, err1 := managedType.GetBigInt(fieldOrderHandle)
-	N, err2 := managedType.GetBigInt(basePointOrderHandle)
-	B, err3 := managedType.GetBigInt(eqConstantHandle)
-	Gx, err4 := managedType.GetBigInt(xBasePointHandle)
-	Gy, err5 := managedType.GetBigInt(yBasePointHandle)
-	if err1 != nil || err2 != nil || err3 != nil || err4 != nil || err5 != nil {
+	P, N, err1 := managedType.GetTwoBigInt(fieldOrderHandle, basePointOrderHandle)
+	B, Gx, err2 := managedType.GetTwoBigInt(eqConstantHandle, xBasePointHandle)
+	Gy, err3 := managedType.GetBigInt(yBasePointHandle)
+	if err1 != nil || err2 != nil || err3 != nil {
 		arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.BigIntAPIErrorShouldFailExecution())
 		return -1
 	}
@@ -890,10 +894,47 @@ func v1_3_getCurveByteLengthEC(context unsafe.Pointer, ecHandle int32) int32 {
 	gasToUse := metering.GasSchedule().BigIntAPICost.EllipticCurveNew / 5
 	metering.UseGas(gasToUse)
 
-	privKeyLength := managedType.GetEllipticCurveByteLength(ecHandle)
-	if privKeyLength == -1 {
+	byteLength := managedType.GetEllipticCurveByteLength(ecHandle)
+	if byteLength == -1 {
 		arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.BigIntAPIErrorShouldFailExecution())
 	}
 
-	return privKeyLength
+	return byteLength
+}
+
+//export v1_3_ellipticCurveGetValues
+func v1_3_ellipticCurveGetValues(context unsafe.Pointer, ecHandle int32, fieldOrderHandle int32, basePointOrderHandle int32, eqConstantHandle int32, xBasePointHandle int32, yBasePointHandle int32) int32 {
+	managedType := arwen.GetManagedTypesContext(context)
+	metering := arwen.GetMeteringContext(context)
+	runtime := arwen.GetRuntimeContext(context)
+
+	gasToUse := metering.GasSchedule().CryptoAPICost.SHA256
+	metering.UseGas(gasToUse)
+
+	ec, err := managedType.GetEllipticCurve(ecHandle)
+	if err != nil {
+		arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return -1
+	}
+	fieldOrder, basePointOrder, err := managedType.GetTwoBigInt(fieldOrderHandle, basePointOrderHandle)
+	if err != nil {
+		arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return -1
+	}
+	eqConstant, err := managedType.GetBigInt(eqConstantHandle)
+	if err != nil {
+		arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return -1
+	}
+	xBasePoint, yBasePoint, err := managedType.GetTwoBigInt(xBasePointHandle, yBasePointHandle)
+	if err != nil {
+		arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return -1
+	}
+	fieldOrder.Set(ec.P)
+	basePointOrder.Set(ec.N)
+	eqConstant.Set(ec.B)
+	xBasePoint.Set(ec.Gx)
+	yBasePoint.Set(ec.Gy)
+	return ecHandle
 }
