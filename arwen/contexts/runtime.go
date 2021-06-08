@@ -531,7 +531,7 @@ func (context *runtimeContext) FailExecution(err error) {
 	context.host.Output().SetReturnMessage(message)
 	context.SetRuntimeBreakpointValue(arwen.BreakpointExecutionFailed)
 
-	traceMessage := "execution failed"
+	traceMessage := message
 	if err != nil {
 		traceMessage = err.Error()
 	}
