@@ -807,7 +807,7 @@ func TestExecution_ExecuteOnSameContext_OutOfGas(t *testing.T) {
 			} else {
 				verify.
 					ReturnCode(vmcommon.ExecutionFailed).
-					ReturnMessageContains(arwen.ErrNotEnoughGas.Error()).
+					ReturnMessage(arwen.ErrNotEnoughGas.Error()).
 					GasRemaining(0)
 			}
 		})
@@ -1023,7 +1023,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct_ErrMaxInstances(t *test
 			} else {
 				verify.
 					ReturnCode(vmcommon.ExecutionFailed).
-					ReturnMessageContains(arwen.ErrExecutionFailed.Error()).
+					ReturnMessage(arwen.ErrExecutionFailed.Error()).
 					GasRemaining(0)
 			}
 		})
@@ -1219,12 +1219,12 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 			if host.Runtime().ElrondSyncExecAPIErrorShouldFailExecution() == false {
 				verify.
 					ReturnCode(vmcommon.OutOfGas).
-					ReturnMessageContains(arwen.ErrNotEnoughGas.Error()).
+					ReturnMessage(arwen.ErrNotEnoughGas.Error()).
 					GasRemaining(0)
 			} else {
 				verify.
 					ReturnCode(vmcommon.ExecutionFailed).
-					ReturnMessageContains(arwen.ErrExecutionFailed.Error()).
+					ReturnMessage(arwen.ErrExecutionFailed.Error()).
 					GasRemaining(0)
 			}
 		})
@@ -1383,7 +1383,7 @@ func TestExecution_ExecuteOnDestContext_OutOfGas(t *testing.T) {
 			} else {
 				verify.
 					ReturnCode(vmcommon.ExecutionFailed).
-					ReturnMessageContains(arwen.ErrNotEnoughGas.Error()).
+					ReturnMessage(arwen.ErrNotEnoughGas.Error()).
 					GasRemaining(0)
 			}
 		})
@@ -1837,7 +1837,7 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 			} else {
 				verify.
 					ReturnCode(vmcommon.ExecutionFailed).
-					ReturnMessageContains(arwen.ErrExecutionFailed.Error()).
+					ReturnMessage(arwen.ErrExecutionFailed.Error()).
 					GasRemaining(0)
 			}
 		})
