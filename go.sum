@@ -26,7 +26,7 @@ github.com/ElrondNetwork/arwen-wasm-vm v1.2.0/go.mod h1:Io5YGUs48YNnXlyJYSBX6Evx
 github.com/ElrondNetwork/arwen-wasm-vm v1.2.7/go.mod h1:Q+ay1aQID+M4q/PWcE9Jmheojpu9nkmOuv1eSDmpBwE=
 github.com/ElrondNetwork/arwen-wasm-vm v1.2.19 h1:j1aWov6w8sBR7Hce23RDKzjt9QZMmiSOdCNXCEB42jg=
 github.com/ElrondNetwork/arwen-wasm-vm v1.2.19/go.mod h1:Q+ay1aQID+M4q/PWcE9Jmheojpu9nkmOuv1eSDmpBwE=
-github.com/ElrondNetwork/arwen-wasm-vm v1.3.15/go.mod h1:zcrq866qW5H1XdB8IVa9RHWlf12kkdCvo3yHANu5VPk=
+github.com/ElrondNetwork/arwen-wasm-vm v1.3.16/go.mod h1:rLkewHY9/azMrdY4Kl5A7jGVKmI1BwCOauJcAr7eTZw=
 github.com/ElrondNetwork/big-int-util v0.0.5/go.mod h1:96viBvoTXLjZOhEvE0D+QnAwg1IJLPAK6GVHMbC7Aw4=
 github.com/ElrondNetwork/big-int-util v0.1.0 h1:vTMoJ5azhVmr7jhpSD3JUjQdkdyXoEPVkOvhdw1RjV4=
 github.com/ElrondNetwork/big-int-util v0.1.0/go.mod h1:96viBvoTXLjZOhEvE0D+QnAwg1IJLPAK6GVHMbC7Aw4=
@@ -65,8 +65,8 @@ github.com/ElrondNetwork/elrond-go v1.1.38-0.20210322140841-6a27c533e8a5/go.mod 
 github.com/ElrondNetwork/elrond-go v1.1.42/go.mod h1:mxhdRRV7PY+IHzznJ3MnX5/2YSMNxl2znD6f6Y8nuCM=
 github.com/ElrondNetwork/elrond-go v1.1.51/go.mod h1:0gT8uLRXSqmKDrrn55aXTSca0XGpg8aszx+Q5OPMNpY=
 github.com/ElrondNetwork/elrond-go v1.1.59-0.20210526130950-2a93e2e11c39/go.mod h1:0aZfahOLX4vO+1D6Ejx8XwOLTzd7pfcx94xzAOpt2bs=
-github.com/ElrondNetwork/elrond-go v1.1.61-0.20210608131809-224c0a434df6 h1:/rzcXXQ8bthi4bJpdpeEFrd1jeehqbZwRoLT0GfLqrU=
-github.com/ElrondNetwork/elrond-go v1.1.61-0.20210608131809-224c0a434df6/go.mod h1:b46WD2VIsrlWj8ncu0oQ6xWMNISff16dkH+/58wNtCE=
+github.com/ElrondNetwork/elrond-go v1.1.62-0.20210609185220-e530a1fd35b7 h1:zi3o6b4E109TgSMT7TXzAlpXgjAB5IXROJKB29gaBkU=
+github.com/ElrondNetwork/elrond-go v1.1.62-0.20210609185220-e530a1fd35b7/go.mod h1:SVbvBAYLO/+8sINl0gf6zjaNp9jROqekYrn2vUDYl8k=
 github.com/ElrondNetwork/elrond-go-logger v1.0.2/go.mod h1:e5D+c97lKUfFdAzFX7rrI2Igl/z4Y0RkKYKWyzprTGk=
 github.com/ElrondNetwork/elrond-go-logger v1.0.4 h1:i5Yu4qyjTZDwvBY/ykbNpp2SP9jxwk/QTivRwSZSTAQ=
 github.com/ElrondNetwork/elrond-go-logger v1.0.4/go.mod h1:e5D+c97lKUfFdAzFX7rrI2Igl/z4Y0RkKYKWyzprTGk=
@@ -84,7 +84,6 @@ github.com/aead/siphash v1.0.1/go.mod h1:Nywa3cDsYNNK3gaciGTWPwHt0wlpNV15vwmswBA
 github.com/anmitsu/go-shlex v0.0.0-20161002113705-648efa622239/go.mod h1:2FmKhYUyUczH0OGQWaF5ceTx0UBShxjsH6f8oGKYe2c=
 github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6/go.mod h1:grANhF5doyWs3UAsr3K4I6qtAmlQcZDesFNEHPZAzj8=
 github.com/beevik/ntp v0.2.0/go.mod h1:hIHWr+l3+/clUnF44zdK+CWW7fO8dR5cIylAQ76NRpg=
-github.com/beevik/ntp v0.3.0 h1:xzVrPrE4ziasFXgBVBZJDP0Wg/KpMwk2KHJ4Ba8GrDw=
 github.com/beevik/ntp v0.3.0/go.mod h1:hIHWr+l3+/clUnF44zdK+CWW7fO8dR5cIylAQ76NRpg=
 github.com/benbjohnson/clock v1.0.2/go.mod h1:bGMdMPoPVvcYyt1gHDf4J2KE153Yf9BuiUKYMaxlTDM=
 github.com/benbjohnson/clock v1.0.3/go.mod h1:bGMdMPoPVvcYyt1gHDf4J2KE153Yf9BuiUKYMaxlTDM=
