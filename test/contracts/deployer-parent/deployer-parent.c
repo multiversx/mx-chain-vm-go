@@ -40,7 +40,7 @@ void init() {
 			args.serialized);
 
 	int isChildContract = isSmartContract(childGeneratedAddress);
-	if (isSelfContract == 0) {
+	if (isChildContract == 0) {
 		byte message[] = "child not a contract";
 		signalError(message, sizeof(message) - 1);
 	}
