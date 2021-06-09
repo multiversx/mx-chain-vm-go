@@ -72,7 +72,7 @@ func (callerTest *MockInstancesTestTemplate) runTest() {
 
 	vmOutput, err := host.RunSmartContractCall(callerTest.input)
 
-	verify := NewVMOutputVerifier(callerTest.t, vmOutput, err)
+	verify := NewVMOutputVerifierWithAllErrors(callerTest.t, vmOutput, err, host.Runtime().GetAllErrors())
 	callerTest.assertResults(world, verify)
 }
 

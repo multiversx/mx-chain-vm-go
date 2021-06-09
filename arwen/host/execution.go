@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
@@ -16,7 +17,13 @@ import (
 
 func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput) *vmcommon.VMOutput {
 	host.InitState()
-	defer host.Clean()
+	defer func() {
+		errors := host.GetRuntimeErrors()
+		if errors != nil {
+			log.Trace(fmt.Sprintf("doRunSmartContractCreate full error list"), "error", errors)
+		}
+		host.Clean()
+	}()
 
 	_, blockchain, metering, output, runtime, storage := host.GetContexts()
 
@@ -86,7 +93,13 @@ func (host *vmHost) performCodeDeployment(input arwen.CodeDeployInput) (*vmcommo
 // doRunSmartContractUpgrade upgrades a contract directly
 func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput) *vmcommon.VMOutput {
 	host.InitState()
-	defer host.Clean()
+	defer func() {
+		errors := host.GetRuntimeErrors()
+		if errors != nil {
+			log.Trace(fmt.Sprintf("doRunSmartContractUpgrade full error list"), "error", errors)
+		}
+		host.Clean()
+	}()
 
 	_, _, metering, output, runtime, storage := host.GetContexts()
 
@@ -131,7 +144,13 @@ func (host *vmHost) checkGasForGetCode(input *vmcommon.ContractCallInput, meteri
 
 func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput) {
 	host.InitState()
-	defer host.Clean()
+	defer func() {
+		errors := host.GetRuntimeErrors()
+		if errors != nil {
+			log.Trace(fmt.Sprintf("doRunSmartContractCall full error list for %s", input.Function), "error", errors)
+		}
+		host.Clean()
+	}()
 
 	_, _, metering, output, runtime, storage := host.GetContexts()
 
@@ -211,6 +230,7 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 		scExecutionInput, vmOutput, err = host.handleBuiltinFunctionCall(input)
 		if err != nil {
 			blockchain.PopSetActiveState()
+			host.Runtime().AddError(err, input.Function)
 			vmOutput = host.Output().CreateVMOutputInCaseOfError(err)
 			return
 		}
@@ -354,6 +374,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 	blockchain.PushState()
 
 	defer func() {
+		runtime.AddError(err, input.Function)
 		host.finishExecuteOnSameContext(err)
 	}()
 

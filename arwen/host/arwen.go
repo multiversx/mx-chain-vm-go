@@ -431,3 +431,10 @@ func (host *vmHost) IsInterfaceNil() bool {
 func (host *vmHost) SetRuntimeContext(runtime arwen.RuntimeContext) {
 	host.runtimeContext = runtime
 }
+
+func (host *vmHost) GetRuntimeErrors() error {
+	if host.runtimeContext != nil {
+		return host.runtimeContext.GetAllErrors()
+	}
+	return nil
+}

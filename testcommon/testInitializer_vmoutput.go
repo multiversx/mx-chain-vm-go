@@ -6,24 +6,37 @@ import (
 	"testing"
 	"unicode"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
 )
 
 // VMOutputVerifier holds the output to be verified
 type VMOutputVerifier struct {
-	VmOutput *vmcommon.VMOutput
-	T        testing.TB
+	VmOutput  *vmcommon.VMOutput
+	AllErrors arwen.WrappableError
+	T         testing.TB
 }
 
 // NewVMOutputVerifier builds a new verifier
 func NewVMOutputVerifier(t testing.TB, vmOutput *vmcommon.VMOutput, err error) *VMOutputVerifier {
+	return NewVMOutputVerifierWithAllErrors(t, vmOutput, err, nil)
+}
+
+// NewVMOutputVerifierWithAllErrors builds a new verifier with all errors included
+func NewVMOutputVerifierWithAllErrors(t testing.TB, vmOutput *vmcommon.VMOutput, err error, allErrors error) *VMOutputVerifier {
 	require.Nil(t, err)
 	require.NotNil(t, vmOutput)
 
+	var allErrorsAsWrappable arwen.WrappableError
+	if allErrors != nil {
+		allErrorsAsWrappable = allErrors.(arwen.WrappableError)
+	}
+
 	return &VMOutputVerifier{
-		VmOutput: vmOutput,
-		T:        t,
+		VmOutput:  vmOutput,
+		AllErrors: allErrorsAsWrappable,
+		T:         t,
 	}
 }
 
@@ -50,15 +63,18 @@ func (v *VMOutputVerifier) ReturnMessageContains(message string) *VMOutputVerifi
 	return v
 }
 
-// NoMsg verifies that ReturnMessage is empty
-func (v *VMOutputVerifier) NoMsg() *VMOutputVerifier {
-	require.Equal(v.T, "", v.VmOutput.ReturnMessage, "ReturnMessage")
-	return v
-}
-
-// Msg verifies if ReturnMessage of output is the same as the provided one
-func (v *VMOutputVerifier) Msg(message string) *VMOutputVerifier {
-	require.Equal(v.T, message, v.VmOutput.ReturnMessage, "ReturnMessage")
+// HasRuntimeErrors verifies if the provided errors are present in the runtime context
+func (v *VMOutputVerifier) HasRuntimeErrors(messages ...string) *VMOutputVerifier {
+	for _, message := range messages {
+		errorFound := false
+		require.NotNil(v.T, v.AllErrors)
+		for _, error := range v.AllErrors.GetAllErrors() {
+			if error.Error() == message {
+				errorFound = true
+			}
+		}
+		require.True(v.T, errorFound, fmt.Sprintf("No error with message '%s' found", message))
+	}
 	return v
 }
 
