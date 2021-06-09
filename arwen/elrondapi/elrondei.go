@@ -510,7 +510,6 @@ func v1_3_isSmartContract(context unsafe.Pointer, addressOffset int32) int32 {
 	blockchain := arwen.GetBlockchainContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
-	// output := arwen.GetOutputContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.IsSmartContract
 	metering.UseGas(gasToUse)
