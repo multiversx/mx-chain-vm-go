@@ -2300,6 +2300,11 @@ func TestExecution_CreateNewContract_IsSmartContract(t *testing.T) {
 				ownerNonce++
 				return testcommon.MakeTestSCAddress(fmt.Sprintf("%s_%d", newAddr, ownerNonce)), nil
 			}
+			stubBlockchainHook.IsSmartContractCalled = func(address []byte) bool {
+				outputAccounts := host.Output().GetOutputAccounts()
+				_, isSmartContract := outputAccounts[string(address)]
+				return isSmartContract
+			}
 		}).
 		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.

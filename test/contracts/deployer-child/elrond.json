@@ -1,6 +1,6 @@
 {
     "language": "clang",
     "source_files": [
-        "/home/bogdan/Elrond/arwen-wasm-vm/test/contracts/deployer-child/deployer-child.c"
+        "deployer-child.c"
     ]
 }
