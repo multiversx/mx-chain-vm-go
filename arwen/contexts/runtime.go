@@ -920,15 +920,16 @@ func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 	return nil
 }
 
+// AddError adds an error to the global error list on runtime context
 func (context *runtimeContext) AddError(err error, otherInfo ...string) {
 	if err == nil {
 		return
 	}
 	if context.errors == nil {
 		context.errors = arwen.WrapError(err, otherInfo...)
-	} else {
-		context.errors = context.errors.WrapWithError(err, otherInfo...)
+		return
 	}
+	context.errors = context.errors.WrapWithError(err, otherInfo...)
 }
 
 func (context *runtimeContext) GetAllErrors() error {

@@ -95,15 +95,15 @@ func (werr *wrappableError) wrapWithErrorWithSkipLevels(err error, skipStackLeve
 		}
 	}
 
-	var errWithLocation []errorWithLocation
+	var errsWithLocation []errorWithLocation
 	inputWrappableError, ok := err.(*wrappableError)
 	if !ok {
-		errWithLocation = append(newErrs, createErrorWithLocation(err, skipStackLevels, otherInfo...))
+		errsWithLocation = append(newErrs, createErrorWithLocation(err, skipStackLevels, otherInfo...))
 	} else {
-		errWithLocation = append(newErrs, inputWrappableError.errsWithLocation...)
+		errsWithLocation = append(newErrs, inputWrappableError.errsWithLocation...)
 	}
 	return &wrappableError{
-		errsWithLocation: errWithLocation,
+		errsWithLocation: errsWithLocation,
 	}
 }
 
