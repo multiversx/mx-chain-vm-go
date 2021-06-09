@@ -39,5 +39,11 @@ void init() {
 			(byte*)args.lengthsAsI32,
 			args.serialized);
 
+	int isChildContract = isSmartContract(childGeneratedAddress);
+	if (isSelfContract == 0) {
+		byte message[] = "child not a contract";
+		signalError(message, sizeof(message) - 1);
+	}
+
 	finishResult(result);
 }
