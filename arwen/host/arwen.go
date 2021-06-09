@@ -431,3 +431,11 @@ func (host *vmHost) IsInterfaceNil() bool {
 func (host *vmHost) SetRuntimeContext(runtime arwen.RuntimeContext) {
 	host.runtimeContext = runtime
 }
+
+// GetRuntimeErrors obtains the cumultated error object after running the SC
+func (host *vmHost) GetRuntimeErrors() error {
+	if host.runtimeContext != nil {
+		return host.runtimeContext.GetAllErrors()
+	}
+	return nil
+}

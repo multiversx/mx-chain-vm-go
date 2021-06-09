@@ -45,6 +45,8 @@ type runtimeContext struct {
 	warmInstance        wasmer.InstanceHandler
 
 	instanceBuilder arwen.InstanceBuilder
+
+	errors arwen.WrappableError
 }
 
 // NewRuntimeContext creates a new runtimeContext
@@ -61,6 +63,7 @@ func NewRuntimeContext(host arwen.VMHost, vmType []byte, useWarmInstance bool) (
 		useWarmInstance:     useWarmInstance,
 		warmInstanceAddress: nil,
 		warmInstance:        nil,
+		errors:              nil,
 	}
 
 	context.instanceBuilder = &wasmerInstanceBuilder{}
@@ -80,6 +83,7 @@ func (context *runtimeContext) InitState() {
 	context.asyncContextInfo = &arwen.AsyncContextInfo{
 		AsyncContextMap: make(map[string]*arwen.AsyncContext),
 	}
+	context.errors = nil
 
 	logRuntime.Trace("init state")
 }
@@ -915,6 +919,22 @@ func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 
 	copy(memoryView[offset:requestedEnd], data)
 	return nil
+}
+
+// AddError adds an error to the global error list on runtime context
+func (context *runtimeContext) AddError(err error, otherInfo ...string) {
+	if err == nil {
+		return
+	}
+	if context.errors == nil {
+		context.errors = arwen.WrapError(err, otherInfo...)
+		return
+	}
+	context.errors = context.errors.WrapWithError(err, otherInfo...)
+}
+
+func (context *runtimeContext) GetAllErrors() error {
+	return context.errors
 }
 
 // SetWarmInstance overwrites the warm Wasmer instance with the provided one.
