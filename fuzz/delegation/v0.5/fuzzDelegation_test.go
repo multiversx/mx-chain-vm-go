@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var fuzz = flag.Bool("fuzz", true, "Enable fuzz test")
+var fuzz = flag.Bool("fuzz", false, "Enable fuzz test")
 
 var seedFlag = flag.Int64("seed", 0, "Random seed, use it to replay fuzz scenarios")
 
