@@ -34,7 +34,7 @@ func TestGasUsed_SingleContract(t *testing.T) {
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(simpleGasTestConfig.ParentBalance).
 				WithConfig(simpleGasTestConfig).
-				WithMethods(contracts.ExecOnSameCtxParentMock, contracts.ExecOnDestCtxParentMock, contracts.WasteGasParentMock)).
+				WithMethods(contracts.WasteGasParentMock)).
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithRecipientAddr(test.ParentAddress).
 			WithGasProvided(simpleGasTestConfig.GasProvided).
@@ -57,7 +57,7 @@ func TestGasUsed_SingleContract_BuiltinCall(t *testing.T) {
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(simpleGasTestConfig.ParentBalance).
 				WithConfig(simpleGasTestConfig).
-				WithMethods(contracts.ExecOnSameCtxParentMock, contracts.ExecOnDestCtxParentMock, contracts.WasteGasParentMock)).
+				WithMethods(contracts.ExecOnDestCtxParentMock)).
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithRecipientAddr(test.ParentAddress).
 			WithGasProvided(simpleGasTestConfig.GasProvided).
@@ -96,7 +96,8 @@ func TestGasUsed_SingleContract_BuiltinCallFail(t *testing.T) {
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
 				ReturnCode(vmcommon.ExecutionFailed).
-				ReturnMessage("whatdidyoudo").
+				ReturnMessage("Return value 1").
+				HasRuntimeErrors("whatdidyoudo").
 				GasRemaining(0)
 		})
 }
@@ -308,6 +309,7 @@ func TestGasUsed_ESDTTransfer_ThenExecuteCall_Fail(t *testing.T) {
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
 				ReturnCode(vmcommon.ExecutionFailed).
+				HasRuntimeErrors("forced fail").
 				GasRemaining(0)
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
@@ -352,6 +354,7 @@ func TestGasUsed_ESDTTransferFailed(t *testing.T) {
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
 				ReturnCode(vmcommon.ExecutionFailed).
+				HasRuntimeErrors("insufficient funds").
 				GasRemaining(0)
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
@@ -398,7 +401,8 @@ func TestGasUsed_ESDTTransferFromParent_ChildBurnsAndThenFails(t *testing.T) {
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
-				Ok()
+				Ok().
+				HasRuntimeErrors("forced fail")
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
 			require.Equal(t, initialESDTTokenBalance, parentESDTBalance)
@@ -709,6 +713,7 @@ func TestGasUsed_AsyncCall_BuiltinCallFail(t *testing.T) {
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
 				Ok().
+				HasRuntimeErrors("whatdidyoudo").
 				GasUsed(test.ParentAddress, expectedGasUsedByParent).
 				GasUsed(test.UserAddress, 0).
 				GasRemaining(testConfig.GasProvided - expectedGasUsedByParent - expectedGasUsedByChild)
@@ -790,6 +795,7 @@ func TestGasUsed_AsyncCall_ChildFails(t *testing.T) {
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
 				Ok().
+				HasRuntimeErrors("child error").
 				BalanceDelta(test.ParentAddress, -(testConfig.TransferToThirdParty+testConfig.TransferToVault)).
 				BalanceDelta(test.ThirdPartyAddress, testConfig.TransferToThirdParty).
 				GasUsed(test.ParentAddress, expectedGasUsedByParent).
@@ -843,6 +849,7 @@ func TestGasUsed_AsyncCall_CallBackFails(t *testing.T) {
 			verify.
 				Ok().
 				ReturnMessage("callBack error").
+				HasRuntimeErrors("callBack error").
 				BalanceDelta(test.ParentAddress, -(2*testConfig.TransferToThirdParty+testConfig.TransferToVault)).
 				BalanceDelta(test.ThirdPartyAddress, 2*testConfig.TransferToThirdParty).
 				GasUsed(test.ParentAddress, expectedGasUsedByParent).
@@ -1044,7 +1051,8 @@ func TestGasUsed_ESDTTransfer_ThenExecuteAsyncCall_ChildFails(t *testing.T) {
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
-				Ok()
+				Ok().
+				HasRuntimeErrors(arwen.ErrNotEnoughGas.Error())
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
 			require.Equal(t, initialESDTTokenBalance, parentESDTBalance)
@@ -1179,7 +1187,8 @@ func TestGasUsed_ESDTTransferWrongArgNumberForCallback(t *testing.T) {
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
-				Ok()
+				Ok().
+				HasRuntimeErrors("tokenize failed")
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
 			require.Equal(t, initialESDTTokenBalance-uint64(testConfig.ESDTTokensToTransfer), parentESDTBalance)
@@ -1224,7 +1233,8 @@ func TestGasUsed_ESDTTransfer_CallbackFail(t *testing.T) {
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
-				Ok()
+				Ok().
+				HasRuntimeErrors("wrong num of arguments")
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
 			require.Equal(t, initialESDTTokenBalance-uint64(testConfig.ESDTTokensToTransfer), parentESDTBalance)
@@ -1280,6 +1290,8 @@ func setZeroCodeCosts(host arwen.VMHost) {
 	host.Metering().GasSchedule().BaseOperationCost.StorePerByte = 0
 	host.Metering().GasSchedule().BaseOperationCost.DataCopyPerByte = 0
 	host.Metering().GasSchedule().ElrondAPICost.SignalError = 0
+	host.Metering().GasSchedule().ElrondAPICost.ExecuteOnSameContext = 0
+	host.Metering().GasSchedule().ElrondAPICost.ExecuteOnDestContext = 0
 }
 
 func setAsyncCosts(host arwen.VMHost, gasLock uint64) {

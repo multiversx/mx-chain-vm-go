@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"runtime"
+	"strings"
 )
 
 const skipStackLevels = 2
@@ -14,17 +15,19 @@ type WrappableError interface {
 
 	WrapWithMessage(errMessage string) WrappableError
 	WrapWithStackTrace() WrappableError
-	WrapWithError(err error) WrappableError
+	WrapWithError(err error, otherInfo ...string) WrappableError
 	GetBaseError() error
 	GetLastError() error
+	GetAllErrors() []error
 
 	Unwrap() error
 	Is(target error) bool
 }
 
 type errorWithLocation struct {
-	err      error
-	location string
+	err       error
+	location  string
+	otherInfo []string
 }
 
 type wrappableError struct {
@@ -36,13 +39,13 @@ func (werr *wrappableError) getTopErrorWithLocation() errorWithLocation {
 }
 
 // WrapError constructs a WrappableError from an error
-func WrapError(err error) WrappableError {
+func WrapError(err error, otherInfo ...string) WrappableError {
 	errAsWrappable, ok := err.(WrappableError)
 	if ok {
 		return errAsWrappable
 	}
 	return &wrappableError{
-		errsWithLocation: []errorWithLocation{createErrorWithLocation(err, skipStackLevels)},
+		errsWithLocation: []errorWithLocation{createErrorWithLocation(err, skipStackLevels, otherInfo...)},
 	}
 }
 
@@ -57,8 +60,8 @@ func (werr *wrappableError) WrapWithStackTrace() WrappableError {
 }
 
 // WrapWithError wraps the target error with the provided one
-func (werr *wrappableError) WrapWithError(err error) WrappableError {
-	return werr.wrapWithErrorWithSkipLevels(err, skipStackLevels+1)
+func (werr *wrappableError) WrapWithError(err error, otherInfo ...string) WrappableError {
+	return werr.wrapWithErrorWithSkipLevels(err, skipStackLevels+1, otherInfo...)
 }
 
 // GetBaseError gets the core error
@@ -73,7 +76,17 @@ func (werr *wrappableError) GetLastError() error {
 	return errors[len(errors)-1].err
 }
 
-func (werr *wrappableError) wrapWithErrorWithSkipLevels(err error, skipStackLevels int) *wrappableError {
+// GetAllErrors gets all the wrapped errors
+func (werr *wrappableError) GetAllErrors() []error {
+	errors := werr.errsWithLocation
+	allErrors := make([]error, 0)
+	for _, error := range errors {
+		allErrors = append(allErrors, error.err)
+	}
+	return allErrors
+}
+
+func (werr *wrappableError) wrapWithErrorWithSkipLevels(err error, skipStackLevels int, otherInfo ...string) *wrappableError {
 	newErrs := make([]errorWithLocation, len(werr.errsWithLocation))
 	copy(newErrs, werr.errsWithLocation)
 	if err == nil {
@@ -81,15 +94,23 @@ func (werr *wrappableError) wrapWithErrorWithSkipLevels(err error, skipStackLeve
 			errsWithLocation: newErrs,
 		}
 	}
+
+	var errsWithLocation []errorWithLocation
+	inputWrappableError, ok := err.(*wrappableError)
+	if !ok {
+		errsWithLocation = append(newErrs, createErrorWithLocation(err, skipStackLevels, otherInfo...))
+	} else {
+		errsWithLocation = append(newErrs, inputWrappableError.errsWithLocation...)
+	}
 	return &wrappableError{
-		errsWithLocation: append(newErrs, createErrorWithLocation(err, skipStackLevels)),
+		errsWithLocation: errsWithLocation,
 	}
 }
 
-func createErrorWithLocation(err error, skipStackLevels int) errorWithLocation {
+func createErrorWithLocation(err error, skipStackLevels int, otherInfo ...string) errorWithLocation {
 	_, file, line, _ := runtime.Caller(skipStackLevels)
 	locationLine := fmt.Sprintf("%s:%d", file, line)
-	errWithLocation := errorWithLocation{err: err, location: locationLine}
+	errWithLocation := errorWithLocation{err: err, location: locationLine, otherInfo: otherInfo}
 	return errWithLocation
 }
 
@@ -103,6 +124,9 @@ func (werr *wrappableError) Error() string {
 		suffix := ""
 		if errMsg != "" {
 			suffix = " [" + errMsg + "]"
+		}
+		if errWithLocation.otherInfo != nil {
+			suffix += " [" + strings.Join(errWithLocation.otherInfo, ",") + "]"
 		}
 		strErr += "\n\t" + errWithLocation.location + suffix
 	}

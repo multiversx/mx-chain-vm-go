@@ -45,6 +45,8 @@ type runtimeContext struct {
 	warmInstance        wasmer.InstanceHandler
 
 	instanceBuilder arwen.InstanceBuilder
+
+	errors arwen.WrappableError
 }
 
 // NewRuntimeContext creates a new runtimeContext
@@ -61,6 +63,7 @@ func NewRuntimeContext(host arwen.VMHost, vmType []byte, useWarmInstance bool) (
 		useWarmInstance:     useWarmInstance,
 		warmInstanceAddress: nil,
 		warmInstance:        nil,
+		errors:              nil,
 	}
 
 	context.instanceBuilder = &wasmerInstanceBuilder{}
@@ -80,6 +83,7 @@ func (context *runtimeContext) InitState() {
 	context.asyncContextInfo = &arwen.AsyncContextInfo{
 		AsyncContextMap: make(map[string]*arwen.AsyncContext),
 	}
+	context.errors = nil
 
 	logRuntime.Trace("init state")
 }
@@ -518,7 +522,12 @@ func (context *runtimeContext) FailExecution(err error) {
 
 	var message string
 	if err != nil {
-		message = err.Error()
+		wrappedError, ok := err.(arwen.WrappableError)
+		if ok {
+			message = wrappedError.GetLastError().Error()
+		} else {
+			message = err.Error()
+		}
 	} else {
 		message = "execution failed"
 	}
@@ -526,7 +535,11 @@ func (context *runtimeContext) FailExecution(err error) {
 	context.host.Output().SetReturnMessage(message)
 	context.SetRuntimeBreakpointValue(arwen.BreakpointExecutionFailed)
 
-	logRuntime.Trace("execution failed", "message", message)
+	traceMessage := message
+	if err != nil {
+		traceMessage = err.Error()
+	}
+	logRuntime.Trace("execution failed", "message", traceMessage)
 }
 
 // SignalUserError sets the returnMessage, returnCode and runtimeBreakpoint according an user error.
@@ -906,6 +919,22 @@ func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 
 	copy(memoryView[offset:requestedEnd], data)
 	return nil
+}
+
+// AddError adds an error to the global error list on runtime context
+func (context *runtimeContext) AddError(err error, otherInfo ...string) {
+	if err == nil {
+		return
+	}
+	if context.errors == nil {
+		context.errors = arwen.WrapError(err, otherInfo...)
+		return
+	}
+	context.errors = context.errors.WrapWithError(err, otherInfo...)
+}
+
+func (context *runtimeContext) GetAllErrors() error {
+	return context.errors
 }
 
 // SetWarmInstance overwrites the warm Wasmer instance with the provided one.

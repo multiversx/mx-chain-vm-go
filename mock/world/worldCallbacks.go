@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/ElrondNetwork/elrond-go/core"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/ElrondNetwork/elrond-go/data/esdt"
 )
@@ -241,7 +242,7 @@ func (b *MockWorld) GetShardOfAddress(address []byte) uint32 {
 func (b *MockWorld) IsSmartContract(address []byte) bool {
 	account := b.AcctMap.GetAccount(address)
 	if account == nil {
-		return false
+		return core.IsSmartContractAddress(address)
 	}
 
 	return account.IsSmartContract

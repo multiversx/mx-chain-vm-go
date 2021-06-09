@@ -150,6 +150,9 @@ type RuntimeContext interface {
 	BigIntAPIErrorShouldFailExecution() bool
 	ExecuteAsyncCall(address []byte, data []byte, value []byte) error
 
+	AddError(err error, otherInfo ...string)
+	GetAllErrors() error
+
 	// TODO remove after implementing proper mocking of Wasmer instances; this is
 	// used for tests only
 	ReplaceInstanceBuilder(builder InstanceBuilder)
