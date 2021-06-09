@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var fuzz = flag.Bool("fuzz", false, "Enable fuzz test")
+var fuzz = flag.Bool("fuzz", true, "Enable fuzz test")
 
 var seedFlag = flag.Int64("seed", 0, "Random seed, use it to replay fuzz scenarios")
 
@@ -166,6 +166,7 @@ func generateRandomEvent(
 ) {
 	maxStake := big.NewInt(0).Mul(pfe.stakePerNode, big.NewInt(2))
 	maxSystemReward := big.NewInt(1000000000)
+	maxDust := big.NewInt(0).Div(pfe.stakePerNode, big.NewInt(4))
 	maxServiceFee := 10000
 	re.Reset()
 
@@ -196,6 +197,7 @@ func generateRandomEvent(
 
 		pfe.checkInvariants(t)
 	case re.WithProbability(0.05):
+		// rewards
 		ok, err := pfe.isBootstrapMode()
 		require.Nil(t, err)
 
@@ -229,6 +231,7 @@ func generateRandomEvent(
 		err := pfe.unBond(delegatorIdx)
 		require.Nil(t, err)
 	case re.WithProbability(0.05):
+		// delegation cap
 		err := pfe.modifyDelegationCap(big.NewInt(0).Rand(r, maxDelegationCap))
 		require.Nil(t, err)
 
@@ -240,6 +243,7 @@ func generateRandomEvent(
 
 		pfe.checkInvariants(t)
 	case re.WithProbability(0.05):
+		// service fee
 		err := pfe.setServiceFee(r.Intn(maxServiceFee))
 		require.Nil(t, err)
 
@@ -249,6 +253,12 @@ func generateRandomEvent(
 		pfe.printServiceFeeAndDelegationCap(t)
 		pfe.printTotalStakeByType()
 
+		pfe.checkInvariants(t)
+	case re.WithProbability(0.01):
+		// dust
+		dustLimit := big.NewInt(0).Rand(r, maxDust)
+		err := pfe.dustCleanup(dustLimit)
+		require.Nil(t, err)
 		pfe.checkInvariants(t)
 	default:
 	}

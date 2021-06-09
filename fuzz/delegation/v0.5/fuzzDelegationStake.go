@@ -111,7 +111,7 @@ func (pfe *fuzzDelegationExecutor) unBond(delegatorIndex int) error {
 				"value": "0",
 				"function": "unBond",
 				"arguments": [],
-				"gasLimit": "80,000,000",
+				"gasLimit": "90,000,000",
 				"gasPrice": "0"
 			},
 			"expect": {

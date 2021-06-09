@@ -99,73 +99,35 @@
             }
         },
         {
-            "step": "scCall",
-            "txId": "check-stake-by-type-1",
+            "step": "scQuery",
+            "txId": "check-stake-by-type",
             "tx": {
-                "from": "address:someone",
                 "to": "sc:delegation",
-                "value": "0",
-                "function": "getUserStakeByType",
-                "arguments": [
-                    "address:delegator1"
-                ],
-                "gasLimit": "100,000,000",
-                "gasPrice": "0"
+                "function": "getAllUserStakeByType",
+                "arguments": []
             },
             "expect": {
                 "out": [
-                    "0", "100,000,000,000,000", "1,000,000,000","0","0"
+                    "address:node_address", "0", "0", "0", "0", "0",
+                    "address:delegator1", "0", "100,000,000,000,000", "1,000,000,000","0","0",
+                    "address:delegator2", "0", "200,000,000,000,000", "0","0","0"
                 ],
-                "status": "",
-                "logs": [],
-                "gas": "*",
-                "refund": "*"
+                "status": ""
             }
         },
         {
-            "step": "scCall",
-            "txId": "check-stake-by-type-2",
-            "tx": {
-                "from": "address:someone",
-                "to": "sc:delegation",
-                "value": "0",
-                "function": "getUserStakeByType",
-                "arguments": [
-                    "address:delegator2"
-                ],
-                "gasLimit": "100,000,000",
-                "gasPrice": "0"
-            },
-            "expect": {
-                "out": [
-                    "0", "200,000,000,000,000", "0","0","0"
-                ],
-                "status": "",
-                "logs": [],
-                "gas": "*",
-                "refund": "*"
-            }
-        },
-        {
-            "step": "scCall",
+            "step": "scQuery",
             "txId": "check-stake-by-type-total",
             "tx": {
-                "from": "address:someone",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getTotalStakeByType",
-                "arguments": [],
-                "gasLimit": "100,000,000",
-                "gasPrice": "0"
+                "arguments": []
             },
             "expect": {
                 "out": [
                    "0",  "300,000,000,000,000", "1,000,000,000", "0", "0"
                 ],
-                "status": "",
-                "logs": [],
-                "gas": "*",
-                "refund": "*"
+                "status": ""
             }
         }
     ]
