@@ -14,6 +14,7 @@ import (
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
+	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
 )
@@ -21,7 +22,7 @@ import (
 var counterKey = []byte("COUNTER")
 var WASMLocalsLimit = uint64(4000)
 var maxUint8AsInt = int(math.MaxUint8)
-var newAddress = []byte("new smartcontract")
+var newAddress = testcommon.MakeTestSCAddress("new smartcontract")
 
 const (
 	get                     = "get"
@@ -2269,6 +2270,51 @@ func TestExecution_CreateNewContract_Fail(t *testing.T) {
 				GasUsed(test.ParentAddress, 2885).
 				ReturnData([]byte{byte(l / 256), byte(l % 256)}, []byte("fail")).
 				Storage(test.CreateStoreEntry(test.ParentAddress).WithKey([]byte{'A'}).WithValue(childCode))
+		})
+}
+
+func TestExecution_CreateNewContract_IsSmartContract(t *testing.T) {
+
+	childCode := test.GetTestSCCode("deployer-child", "../../")
+
+	newAddr := "newAddr_"
+	ownerNonce := uint64(23)
+	parentAddress := testcommon.MakeTestSCAddress(fmt.Sprintf("%s_%d", newAddr, 24))
+	childAddress := testcommon.MakeTestSCAddress(fmt.Sprintf("%s_%d", newAddr, 25))
+
+	input := test.CreateTestContractCreateInputBuilder().
+		WithCallValue(1000).
+		WithGasProvided(100_000).
+		WithContractCode(test.GetTestSCCode("deployer-parent", "../../")).
+		WithArguments(parentAddress, childCode).
+		Build()
+
+	test.BuildInstanceCreatorTest(t).
+		WithInput(input).
+		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
+			stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
+				strAddress := string(address)
+				if strAddress == string(childAddress) {
+					return nil, errors.New("not found")
+				}
+				return &contextmock.StubAccount{
+					Nonce: 24,
+				}, nil
+			}
+			stubBlockchainHook.NewAddressCalled = func(creatorAddress []byte, nonce uint64, vmType []byte) ([]byte, error) {
+				ownerNonce++
+				return testcommon.MakeTestSCAddress(fmt.Sprintf("%s_%d", newAddr, ownerNonce)), nil
+			}
+			stubBlockchainHook.IsSmartContractCalled = func(address []byte) bool {
+				outputAccounts := host.Output().GetOutputAccounts()
+				_, isSmartContract := outputAccounts[string(address)]
+				return isSmartContract
+			}
+		}).
+		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.
+				Ok().
+				ReturnData([]byte("succ")) /* returned from child contract init */
 		})
 }
 
