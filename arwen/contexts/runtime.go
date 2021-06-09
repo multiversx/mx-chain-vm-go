@@ -83,6 +83,7 @@ func (context *runtimeContext) InitState() {
 	context.asyncContextInfo = &arwen.AsyncContextInfo{
 		AsyncContextMap: make(map[string]*arwen.AsyncContext),
 	}
+	context.errors = nil
 
 	logRuntime.Trace("init state")
 }
