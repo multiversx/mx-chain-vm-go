@@ -10,7 +10,7 @@ import (
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
-func checkTxResults(
+func (ae *ArwenTestExecutor) checkTxResults(
 	txIndex string,
 	blResult *mj.TransactionResult,
 	checkGas bool,
@@ -77,33 +77,33 @@ func checkTxResults(
 			return fmt.Errorf("bad log address. Tx %s. Want:\n%s\nGot:\n%s",
 				txIndex,
 				mjwrite.LogToString(testLog),
-				mjwrite.LogToString(convertLogToTestFormat(outLog)))
+				mjwrite.LogToString(ae.convertLogToTestFormat(outLog)))
 		}
 		if !testLog.Identifier.Check(outLog.Identifier) {
 			return fmt.Errorf("bad log identifier. Tx %s. Want:\n%s\nGot:\n%s",
 				txIndex,
 				mjwrite.LogToString(testLog),
-				mjwrite.LogToString(convertLogToTestFormat(outLog)))
+				mjwrite.LogToString(ae.convertLogToTestFormat(outLog)))
 		}
 		if len(outLog.Topics) != len(testLog.Topics) {
 			return fmt.Errorf("wrong number of log topics. Tx %s. Want:\n%s\nGot:\n%s",
 				txIndex,
 				mjwrite.LogToString(testLog),
-				mjwrite.LogToString(convertLogToTestFormat(outLog)))
+				mjwrite.LogToString(ae.convertLogToTestFormat(outLog)))
 		}
 		for ti := range outLog.Topics {
 			if !testLog.Topics[ti].Check(outLog.Topics[ti]) {
 				return fmt.Errorf("bad log topic. Tx %s. Want:\n%s\nGot:\n%s",
 					txIndex,
 					mjwrite.LogToString(testLog),
-					mjwrite.LogToString(convertLogToTestFormat(outLog)))
+					mjwrite.LogToString(ae.convertLogToTestFormat(outLog)))
 			}
 		}
 		if !testLog.Data.Check(outLog.Data) {
 			return fmt.Errorf("bad log data. Tx %s. Want:\n%s\nGot:\n%s",
 				txIndex,
 				mjwrite.LogToString(testLog),
-				mjwrite.LogToString(convertLogToTestFormat(outLog)))
+				mjwrite.LogToString(ae.convertLogToTestFormat(outLog)))
 		}
 	}
 
