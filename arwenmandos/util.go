@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/big"
 
+	er "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/expression/reconstructor"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/model"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
 	"github.com/ElrondNetwork/elrond-go/core"
@@ -147,15 +148,21 @@ func convertBlockInfo(testBlockInfo *mj.BlockInfo) *worldmock.BlockInfo {
 }
 
 // this is a small hack, so we can reuse mandos's JSON printing in error messages
-func convertLogToTestFormat(outputLog *vmcommon.LogEntry) *mj.LogEntry {
+func (ae *ArwenTestExecutor) convertLogToTestFormat(outputLog *vmcommon.LogEntry) *mj.LogEntry {
 	testLog := mj.LogEntry{
-		Address:    mj.JSONCheckBytesReconstructed(outputLog.Address),
-		Identifier: mj.JSONCheckBytesReconstructed(outputLog.Identifier),
-		Data:       mj.JSONCheckBytesReconstructed(outputLog.Data),
-		Topics:     make([]mj.JSONCheckBytes, len(outputLog.Topics)),
+		Address: mj.JSONCheckBytesReconstructed(
+			outputLog.Address,
+			ae.exprReconstructor.Reconstruct(outputLog.Address,
+				er.AddressHint)),
+		Identifier: mj.JSONCheckBytesReconstructed(
+			outputLog.Identifier,
+			ae.exprReconstructor.Reconstruct(outputLog.Identifier,
+				er.StrHint)),
+		Data:   mj.JSONCheckBytesReconstructed(outputLog.Data, ""),
+		Topics: make([]mj.JSONCheckBytes, len(outputLog.Topics)),
 	}
 	for i, topic := range outputLog.Topics {
-		testLog.Topics[i] = mj.JSONCheckBytesReconstructed(topic)
+		testLog.Topics[i] = mj.JSONCheckBytesReconstructed(topic, "")
 	}
 
 	return &testLog
