@@ -3,12 +3,12 @@ package tests
 import (
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
-	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/nodepart"
-	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/ipc/common"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/ipc/nodepart"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_2/mock/context"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_2/mock/world"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"

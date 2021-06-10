@@ -5,11 +5,11 @@ import (
 	"sort"
 	"strings"
 
-	er "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/expression/reconstructor"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
-	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/write"
-	oj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/orderedjson"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
+	er "github.com/ElrondNetwork/arwen-wasm-vm/v1_2/mandos-go/expression/reconstructor"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_2/mandos-go/json/model"
+	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/v1_2/mandos-go/json/write"
+	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_2/mandos-go/orderedjson"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_2/mock/world"
 	"github.com/ElrondNetwork/elrond-go/core"
 )
 

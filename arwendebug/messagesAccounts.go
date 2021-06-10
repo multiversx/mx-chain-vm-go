@@ -3,7 +3,7 @@ package arwendebug
 import (
 	"math/big"
 
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_2/mock/world"
 )
 
 // CreateAccountRequest is a CLI / REST request message

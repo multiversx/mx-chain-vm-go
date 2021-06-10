@@ -1,8 +1,8 @@
 package mock
 
 import (
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
-	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_2/mock/world"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/wasmer"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
