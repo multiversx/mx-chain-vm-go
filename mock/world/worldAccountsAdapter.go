@@ -163,6 +163,11 @@ func (m *MockAccountsAdapter) GetTrie(_ []byte) (data.Trie, error) {
 	return nil, ErrTrieHandlingNotImplemented
 }
 
+// Close -
+func (m *MockAccountsAdapter) Close() error {
+	return nil
+}
+
 // IsInterfaceNil -
 func (m *MockAccountsAdapter) IsInterfaceNil() bool {
 	return m == nil
