@@ -1,7 +1,6 @@
 package dex
 
 import (
-	"flag"
 	"math/rand"
 	"os"
 	"path/filepath"
@@ -13,28 +12,22 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var fuzz = flag.Bool("fuzz", false, "fuzz")
-
-func getTestRoot() string {
-	exePath, err := os.Getwd()
-	if err != nil {
-		panic(err)
-	}
-	arwenTestRoot := filepath.Join(exePath, "../../../test")
-	return arwenTestRoot
-}
-
 func newExecutorWithPaths() *fuzzDexExecutor {
+	pwd, err := os.Getwd()
+	if err != nil {
+		return nil
+	}
+
 	fileResolver := mc.NewDefaultFileResolver().
 		ReplacePath(
 			"elrond_dex_router.wasm",
-			filepath.Join(getTestRoot(), "dex/v0_2/output/elrond_dex_router.wasm")).
+			filepath.Join(pwd, "wasms/elrond_dex_router.wasm")).
 		ReplacePath(
 			"elrond_dex_pair.wasm",
-			filepath.Join(getTestRoot(), "dex/v0_2/output/elrond_dex_pair.wasm")).
+			filepath.Join(pwd, "wasms/elrond_dex_pair.wasm")).
 		ReplacePath(
 			"elrond_dex_farm.wasm",
-			filepath.Join(getTestRoot(), "dex/v0_2/output/elrond_dex_farm.wasm"))
+			filepath.Join(pwd, "wasms/elrond_dex_farm.wasm"))
 
 	pfe, err := newFuzzDexExecutor(fileResolver)
 	if err != nil {
@@ -43,8 +36,8 @@ func newExecutorWithPaths() *fuzzDexExecutor {
 	return pfe
 }
 
-func TestFuzzDelegation_v0_5(t *testing.T) {
-	//if !*fuzz {
+func TestFuzzDex_v0_1(t *testing.T) {
+	//if !*flag.Bool("fuzz", false, "fuzz") {
 	//	t.Skip("skipping test; only run with --fuzz argument")
 	//}
 
@@ -109,7 +102,8 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 	re := fuzzutil.NewRandomEventProvider(r)
 	for stepIndex := 0; stepIndex < pfe.numEvents; stepIndex++ {
 		generateRandomEvent(t, pfe, r, re, &stats)
-		pfe.increaseBlockNonce(1)
+		err := pfe.increaseBlockNonce(1)
+		require.Nil(t, err)
 	}
 
 	printStatistics(&stats, pfe)
