@@ -215,7 +215,6 @@ func (ae *ArwenTestExecutor) scCall(txIndex string, tx *mj.Transaction, gasLimit
 		return nil, fmt.Errorf("tx recipient (address: %s) is not a smart contract", hex.EncodeToString(tx.To.Value))
 	}
 	txHash := generateTxHash(txIndex)
-
 	vmInput := vmcommon.VMInput{
 		CallerAddr:     tx.From.Value,
 		Arguments:      mj.JSONBytesFromTreeValues(tx.Arguments),

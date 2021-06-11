@@ -47,9 +47,9 @@ func newExecutorWithPaths() *fuzzDelegationExecutor {
 }
 
 func TestFuzzDelegation_v0_5(t *testing.T) {
-	//if !*fuzz {
-	//	t.Skip("skipping test; only run with --fuzz argument")
-	//}
+	if !*fuzz {
+		t.Skip("skipping test; only run with --fuzz argument")
+	}
 
 	pfe := newExecutorWithPaths()
 	defer pfe.saveGeneratedScenario()
