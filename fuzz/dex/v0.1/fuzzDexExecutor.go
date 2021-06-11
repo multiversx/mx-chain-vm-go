@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	am "github.com/ElrondNetwork/arwen-wasm-vm/arwenmandos"
-	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/fileresolver"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
-	mjparse "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/parse"
-	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/write"
-	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
+	am "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwenmandos"
+	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/fileresolver"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/model"
+	mjparse "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/parse"
+	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/write"
+	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"io/ioutil"
 )
@@ -139,7 +139,7 @@ type eventsStatistics struct {
 }
 
 func newFuzzDexExecutor(fileResolver fr.FileResolver) (*fuzzDexExecutor, error) {
-	arwenTestExecutor, err := am.NewArwenTestExecutor("../../arwenmandos")
+	arwenTestExecutor, err := am.NewArwenTestExecutor()
 	if err != nil {
 		return nil, err
 	}
