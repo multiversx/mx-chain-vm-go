@@ -3,14 +3,15 @@ package testcommon
 import (
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
 )
 
 type testSmartContract struct {
 	address []byte
 	balance int64
 	config  interface{}
+	shardID uint32
 }
 
 // MockTestSmartContract represents the config data for the mock smart contract instance to be tested
@@ -21,9 +22,15 @@ type MockTestSmartContract struct {
 
 // CreateMockContract build a contract to be used in a test creted with BuildMockInstanceCallTest
 func CreateMockContract(address []byte) *MockTestSmartContract {
+	return CreateMockContractOnShard(address, 0)
+}
+
+// CreateMockContractOnShard build a contract to be used in a test creted with BuildMockInstanceCallTest
+func CreateMockContractOnShard(address []byte, shardID uint32) *MockTestSmartContract {
 	return &MockTestSmartContract{
 		testSmartContract: testSmartContract{
 			address: address,
+			shardID: shardID,
 		},
 	}
 }
@@ -47,7 +54,7 @@ func (mockSC *MockTestSmartContract) WithMethods(initMethods ...func(*mock.Insta
 }
 
 func (mockSC *MockTestSmartContract) initialize(t testing.TB, host arwen.VMHost, imb *mock.InstanceBuilderMock) {
-	instance := imb.CreateAndStoreInstanceMock(t, host, mockSC.address, mockSC.balance)
+	instance := imb.CreateAndStoreInstanceMock(t, host, mockSC.address, mockSC.shardID, mockSC.balance)
 	for _, initMethod := range mockSC.initMethods {
 		initMethod(instance, mockSC.config)
 	}

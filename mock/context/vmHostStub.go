@@ -3,10 +3,10 @@ package mock
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
-	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
@@ -18,6 +18,7 @@ type VMHostStub struct {
 	PushStateCalled       func()
 	PopStateCalled        func()
 	ClearStateStackCalled func()
+	GetVersionCalled      func() string
 
 	CryptoCalled                      func() crypto.VMCrypto
 	BlockchainCalled                  func() arwen.BlockchainContext
@@ -26,8 +27,7 @@ type VMHostStub struct {
 	OutputCalled                      func() arwen.OutputContext
 	MeteringCalled                    func() arwen.MeteringContext
 	StorageCalled                     func() arwen.StorageContext
-	RevertESDTTransferCalled          func(input *vmcommon.ContractCallInput)
-	ExecuteESDTTransferCalled         func(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callType vmcommon.CallType, isRevert bool) (*vmcommon.VMOutput, uint64, error)
+	ExecuteESDTTransferCalled         func(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callType vmcommon.CallType) (*vmcommon.VMOutput, uint64, error)
 	CreateNewContractCalled           func(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContextCalled        func(input *vmcommon.ContractCallInput) (*arwen.AsyncContextInfo, error)
 	ExecuteOnDestContextCalled        func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *arwen.AsyncContextInfo, error)
@@ -45,6 +45,15 @@ type VMHostStub struct {
 
 	SetRuntimeContextCalled func(runtime arwen.RuntimeContext)
 	GetContextsCalled       func() (arwen.BigIntContext, arwen.BlockchainContext, arwen.MeteringContext, arwen.OutputContext, arwen.RuntimeContext, arwen.StorageContext)
+}
+
+// GetVersion mocked method
+func (vhs *VMHostStub) GetVersion() string {
+	if vhs.GetVersionCalled != nil {
+		return vhs.GetVersionCalled()
+	}
+
+	return "stub"
 }
 
 // InitState mocked method
@@ -156,17 +165,10 @@ func (vhs *VMHostStub) Storage() arwen.StorageContext {
 	return nil
 }
 
-// RevertESDTTransfer mocked method
-func (vhs *VMHostStub) RevertESDTTransfer(input *vmcommon.ContractCallInput) {
-	if vhs.RevertESDTTransferCalled != nil {
-		vhs.RevertESDTTransferCalled(input)
-	}
-}
-
 // ExecuteESDTTransfer mocked method
-func (vhs *VMHostStub) ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callType vmcommon.CallType, isRevert bool) (*vmcommon.VMOutput, uint64, error) {
+func (vhs *VMHostStub) ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callType vmcommon.CallType) (*vmcommon.VMOutput, uint64, error) {
 	if vhs.ExecuteESDTTransferCalled != nil {
-		return vhs.ExecuteESDTTransferCalled(destination, sender, tokenIdentifier, nonce, value, callType, isRevert)
+		return vhs.ExecuteESDTTransferCalled(destination, sender, tokenIdentifier, nonce, value, callType)
 	}
 	return nil, 0, nil
 }

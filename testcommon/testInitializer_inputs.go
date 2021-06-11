@@ -12,14 +12,13 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
-	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen/host"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
-	"github.com/pelletier/go-toml"
 	"github.com/stretchr/testify/require"
 )
 
@@ -359,6 +358,12 @@ func (contractInput *ContractCallInputBuilder) WithRecipientAddr(address []byte)
 	return contractInput
 }
 
+// WithCallerAddr provides the caller address of ContractCallInputBuilder
+func (contractInput *ContractCallInputBuilder) WithCallerAddr(address []byte) *ContractCallInputBuilder {
+	contractInput.ContractCallInput.CallerAddr = address
+	return contractInput
+}
+
 // WithGasProvided provides the gas of ContractCallInputBuilder
 func (contractInput *ContractCallInputBuilder) WithGasProvided(gas uint64) *ContractCallInputBuilder {
 	contractInput.ContractCallInput.VMInput.GasProvided = gas
@@ -374,6 +379,12 @@ func (contractInput *ContractCallInputBuilder) WithFunction(function string) *Co
 // WithArguments provides the arguments to be called for ContractCallInputBuilder
 func (contractInput *ContractCallInputBuilder) WithArguments(arguments ...[]byte) *ContractCallInputBuilder {
 	contractInput.ContractCallInput.VMInput.Arguments = arguments
+	return contractInput
+}
+
+// WithCallType provides the arguments to be called for ContractCallInputBuilder
+func (contractInput *ContractCallInputBuilder) WithCallType(callType vmcommon.CallType) *ContractCallInputBuilder {
+	contractInput.ContractCallInput.VMInput.CallType = callType
 	return contractInput
 }
 
@@ -536,63 +547,4 @@ func OpenFile(relativePath string) (*os.File, error) {
 	}
 
 	return f, nil
-}
-
-// LoadTomlFileToMap opens and decodes a toml file as a map[string]interface{}
-func LoadTomlFileToMap(relativePath string) (map[string]interface{}, error) {
-	f, err := OpenFile(relativePath)
-	if err != nil {
-		return nil, err
-	}
-
-	fileinfo, err := f.Stat()
-	if err != nil {
-		fmt.Printf("cannot stat file: %s", err.Error())
-		return nil, err
-	}
-
-	filesize := fileinfo.Size()
-	buffer := make([]byte, filesize)
-
-	_, err = f.Read(buffer)
-	if err != nil {
-		fmt.Printf("cannot read from file: %s", err.Error())
-		return nil, err
-	}
-
-	defer func() {
-		err = f.Close()
-		if err != nil {
-			fmt.Printf("cannot close file: %s", err.Error())
-		}
-	}()
-
-	loadedTree, err := toml.Load(string(buffer))
-	if err != nil {
-		fmt.Printf("cannot interpret file contents as toml: %s", err.Error())
-		return nil, err
-	}
-
-	loadedMap := loadedTree.ToMap()
-
-	return loadedMap, nil
-}
-
-// LoadGasScheduleConfig parses and prepares a gas schedule read from file.
-func LoadGasScheduleConfig(filepath string) (config.GasScheduleMap, error) {
-	gasScheduleConfig, err := LoadTomlFileToMap(filepath)
-	if err != nil {
-		return nil, err
-	}
-
-	flattenedGasSchedule := make(config.GasScheduleMap)
-	for libType, costs := range gasScheduleConfig {
-		flattenedGasSchedule[libType] = make(map[string]uint64)
-		costsMap := costs.(map[string]interface{})
-		for operationName, cost := range costsMap {
-			flattenedGasSchedule[libType][operationName] = uint64(cost.(int64))
-		}
-	}
-
-	return flattenedGasSchedule, nil
 }

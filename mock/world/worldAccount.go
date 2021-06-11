@@ -5,7 +5,7 @@ import (
 	"errors"
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/crypto/hashing"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto/hashing"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/ElrondNetwork/elrond-go/data"
@@ -40,6 +40,7 @@ type Account struct {
 	DeveloperReward *big.Int
 	ShardID         uint32
 	IsSmartContract bool
+	MockWorld       *MockWorld
 }
 
 var storageDefaultValue = []byte{}
@@ -234,6 +235,9 @@ func (a *Account) RetrieveValue(key []byte) ([]byte, error) {
 // SaveKeyValue -
 func (a *Account) SaveKeyValue(key []byte, value []byte) error {
 	a.Storage[string(key)] = value
+	if a.MockWorld != nil {
+		a.MockWorld.CreateStateBackup()
+	}
 	return nil
 }
 
@@ -274,6 +278,7 @@ func (a *Account) Clone() *Account {
 		DeveloperReward: big.NewInt(0).Set(a.DeveloperReward),
 		ShardID:         a.ShardID,
 		IsSmartContract: a.IsSmartContract,
+		MockWorld:       a.MockWorld,
 	}
 }
 

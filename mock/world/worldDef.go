@@ -3,7 +3,7 @@ package worldmock
 import (
 	"fmt"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
 	"github.com/ElrondNetwork/elrond-go/data/state"
 )
 
@@ -47,7 +47,7 @@ func NewMockWorld() *MockWorld {
 		AcctMap:           accountMap,
 		AccountsAdapter:   nil,
 		PreviousBlockInfo: nil,
-		CurrentBlockInfo:  nil,
+		CurrentBlockInfo:  &BlockInfo{},
 		Blockhashes:       nil,
 		NewAddressMocks:   nil,
 		CompiledCode:      make(map[string][]byte),
@@ -121,4 +121,14 @@ func (b *MockWorld) SameShard(firstAddress []byte, secondAddress []byte) bool {
 // CommunicationIdentifier -
 func (b *MockWorld) CommunicationIdentifier(destShardID uint32) string {
 	return fmt.Sprintf("commID-dest-%d", destShardID)
+}
+
+// GetSnapshot -
+func (b *MockWorld) GetSnapshot() int {
+	return b.AccountsAdapter.JournalLen()
+}
+
+// RevertToSnapshot -
+func (b *MockWorld) RevertToSnapshot(snapshot int) error {
+	return b.AccountsAdapter.RevertToSnapshot(snapshot)
 }

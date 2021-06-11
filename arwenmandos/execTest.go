@@ -3,7 +3,7 @@ package arwenmandos
 import (
 	"fmt"
 
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/model"
 )
 
 // ExecuteTest executes an individual test.
@@ -34,7 +34,7 @@ func (ae *ArwenTestExecutor) ExecuteTest(test *mj.Test) error {
 			blResult := block.Results[txIndex]
 
 			// check results
-			err = checkTxResults(txName, blResult, test.CheckGas, output)
+			err = ae.checkTxResults(txName, blResult, test.CheckGas, output)
 			if err != nil {
 				return err
 			}

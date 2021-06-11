@@ -3,10 +3,10 @@ package mock
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
-	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
@@ -28,6 +28,11 @@ type VMHostMock struct {
 
 	SCAPIMethods  *wasmer.Imports
 	IsBuiltinFunc bool
+}
+
+// GetVersion mocked method
+func (host *VMHostMock) GetVersion() string {
+	return "mock"
 }
 
 // Crypto mocked method
@@ -95,12 +100,8 @@ func (host *VMHostMock) AreInSameShard(_ []byte, _ []byte) bool {
 	return true
 }
 
-// RevertESDTTransfer mocked method
-func (host *VMHostMock) RevertESDTTransfer(_ *vmcommon.ContractCallInput) {
-}
-
 // ExecuteESDTTransfer mocked method
-func (host *VMHostMock) ExecuteESDTTransfer(_ []byte, _ []byte, _ []byte, _ uint64, _ *big.Int, _ vmcommon.CallType, _ bool) (*vmcommon.VMOutput, uint64, error) {
+func (host *VMHostMock) ExecuteESDTTransfer(_ []byte, _ []byte, _ []byte, _ uint64, _ *big.Int, _ vmcommon.CallType) (*vmcommon.VMOutput, uint64, error) {
 	return nil, 0, nil
 }
 

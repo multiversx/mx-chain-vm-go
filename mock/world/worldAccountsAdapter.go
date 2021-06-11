@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 	"github.com/ElrondNetwork/elrond-go/core"
 	"github.com/ElrondNetwork/elrond-go/data"
 	"github.com/ElrondNetwork/elrond-go/data/state"
@@ -76,7 +76,7 @@ func (m *MockAccountsAdapter) Commit() ([]byte, error) {
 
 // JournalLen -
 func (m *MockAccountsAdapter) JournalLen() int {
-	return 1
+	return len(m.Snapshots) - 1
 }
 
 // RevertToSnapshot -

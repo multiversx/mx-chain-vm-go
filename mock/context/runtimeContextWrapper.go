@@ -1,8 +1,8 @@
 package mock
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
@@ -113,6 +113,10 @@ type RuntimeContextWrapper struct {
 	ExecuteAsyncCallFunc func(address []byte, data []byte, value []byte) error
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	ReplaceInstanceBuilderFunc func(builder arwen.InstanceBuilder)
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	AddErrorFunc func(err error, otherInfo ...string)
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	GetAllErrorsFunc func() error
 
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	InitStateFunc func()
@@ -333,6 +337,14 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *Runtim
 
 	runtimeWrapper.ReplaceInstanceBuilderFunc = func(builder arwen.InstanceBuilder) {
 		runtimeWrapper.runtimeContext.ReplaceInstanceBuilder(builder)
+	}
+
+	runtimeWrapper.AddErrorFunc = func(err error, otherInfo ...string) {
+		runtimeWrapper.runtimeContext.AddError(err, otherInfo...)
+	}
+
+	runtimeWrapper.GetAllErrorsFunc = func() error {
+		return runtimeWrapper.runtimeContext.GetAllErrors()
 	}
 
 	runtimeWrapper.InitStateFunc = func() {
@@ -611,6 +623,16 @@ func (contextWrapper *RuntimeContextWrapper) ExecuteAsyncCall(address []byte, da
 // ReplaceInstanceBuilder calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) ReplaceInstanceBuilder(builder arwen.InstanceBuilder) {
 	contextWrapper.ReplaceInstanceBuilderFunc(builder)
+}
+
+// AddError calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) AddError(err error, otherInfo ...string) {
+	contextWrapper.AddErrorFunc(err, otherInfo...)
+}
+
+// GetAllErrors calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) GetAllErrors() error {
+	return contextWrapper.GetAllErrorsFunc()
 }
 
 // InitState calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext

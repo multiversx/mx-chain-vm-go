@@ -1,8 +1,8 @@
 package mock
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
@@ -332,4 +332,13 @@ func (r *RuntimeContextMock) SetCustomCallFunction(_ string) {
 // IsFunctionImported mocked method
 func (r *RuntimeContextMock) IsFunctionImported(_ string) bool {
 	return true
+}
+
+// AddError mocked method
+func (r *RuntimeContextMock) AddError(err error, otherInfo ...string) {
+}
+
+// GetAllErrors mocked method
+func (r *RuntimeContextMock) GetAllErrors() error {
+	return nil
 }

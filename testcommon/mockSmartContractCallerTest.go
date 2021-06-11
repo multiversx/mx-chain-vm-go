@@ -3,9 +3,9 @@ package testcommon
 import (
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
@@ -67,10 +67,12 @@ func (callerTest *MockInstancesTestTemplate) runTest() {
 	}
 
 	callerTest.setup(host, world)
+	// create snapshot (normaly done by node)
+	world.CreateStateBackup()
 
 	vmOutput, err := host.RunSmartContractCall(callerTest.input)
 
-	verify := NewVMOutputVerifier(callerTest.t, vmOutput, err)
+	verify := NewVMOutputVerifierWithAllErrors(callerTest.t, vmOutput, err, host.Runtime().GetAllErrors())
 	callerTest.assertResults(world, verify)
 }
 

@@ -65,11 +65,3 @@ var VaultAddress = []byte("\x00\x00\x00\x00\x00\x00\x00\x00\x0f\x0fvaultAddress.
 
 // ThirdPartyAddress value exposed for test usage
 var ThirdPartyAddress = []byte("\x00\x00\x00\x00\x00\x00\x00\x00\x0f\x0fthirdPartyAddress.....")
-
-func init() {
-	ParentCompilationCostSameCtx = uint64(len(GetTestSCCode("exec-same-ctx-parent", "../../", "../../../")))
-	ChildCompilationCostSameCtx = uint64(len(GetTestSCCode("exec-same-ctx-child", "../../", "../../../")))
-
-	ParentCompilationCostDestCtx = uint64(len(GetTestSCCode("exec-dest-ctx-parent", "../../", "../../../")))
-	ChildCompilationCostDestCtx = uint64(len(GetTestSCCode("exec-dest-ctx-child", "../../", "../../../")))
-}

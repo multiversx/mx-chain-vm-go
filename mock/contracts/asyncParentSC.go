@@ -6,12 +6,15 @@ import (
 	"errors"
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
-	test "github.com/ElrondNetwork/arwen-wasm-vm/testcommon"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
+	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
 	"github.com/ElrondNetwork/elrond-go/testscommon/txDataBuilder"
 	"github.com/stretchr/testify/require"
 )
+
+var AsyncChildFunction = "transferToThirdParty"
+var AsyncChildData = " there"
 
 // PerformAsyncCallParentMock is an exposed mock contract method
 func PerformAsyncCallParentMock(instanceMock *mock.InstanceMock, config interface{}) {
@@ -35,12 +38,12 @@ func PerformAsyncCallParentMock(instanceMock *mock.InstanceMock, config interfac
 		arguments := host.Runtime().Arguments()
 
 		callData := txDataBuilder.NewBuilder()
-		// funcion to be called on child
-		callData.Func("transferToThirdParty")
+		// function to be called on child
+		callData.Func(AsyncChildFunction)
 		// value to send to third party
 		callData.Int64(testConfig.TransferToThirdParty)
 		// data for child -> third party tx
-		callData.Str(" there")
+		callData.Str(AsyncChildData)
 		// behavior param for child
 		callData.Bytes(append(arguments[0]))
 
@@ -52,6 +55,25 @@ func PerformAsyncCallParentMock(instanceMock *mock.InstanceMock, config interfac
 
 		return instance
 
+	})
+}
+
+// SimpleCallbackMock is an exposed mock contract method
+func SimpleCallbackMock(instanceMock *mock.InstanceMock, config interface{}) {
+	testConfig := config.(*AsyncCallTestConfig)
+	instanceMock.AddMockMethod("callBack", func() *mock.InstanceMock {
+		host := instanceMock.Host
+		instance := mock.GetMockInstance(host)
+		arguments := host.Runtime().Arguments()
+
+		host.Metering().UseGas(testConfig.GasUsedByCallback)
+
+		if string(arguments[1]) == "fail" {
+			host.Runtime().SignalUserError("wrong num of arguments")
+			return instance
+		}
+
+		return instance
 	})
 }
 

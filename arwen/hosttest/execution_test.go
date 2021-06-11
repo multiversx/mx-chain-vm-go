@@ -8,12 +8,13 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
-	mock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
-	test "github.com/ElrondNetwork/arwen-wasm-vm/testcommon"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
+	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
+	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
+	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
 )
@@ -21,7 +22,7 @@ import (
 var counterKey = []byte("COUNTER")
 var WASMLocalsLimit = uint64(4000)
 var maxUint8AsInt = int(math.MaxUint8)
-var newAddress = []byte("new smartcontract")
+var newAddress = testcommon.MakeTestSCAddress("new smartcontract")
 
 const (
 	get                     = "get"
@@ -31,6 +32,14 @@ const (
 	parentPerformAsyncCall  = "parentPerformAsyncCall"
 	parentFunctionChildCall = "parentFunctionChildCall"
 )
+
+func init() {
+	test.ParentCompilationCostSameCtx = uint64(len(test.GetTestSCCode("exec-same-ctx-parent", "../../", "../../../")))
+	test.ChildCompilationCostSameCtx = uint64(len(test.GetTestSCCode("exec-same-ctx-child", "../../", "../../../")))
+
+	test.ParentCompilationCostDestCtx = uint64(len(test.GetTestSCCode("exec-dest-ctx-parent", "../../", "../../../")))
+	test.ChildCompilationCostDestCtx = uint64(len(test.GetTestSCCode("exec-dest-ctx-child", "../../", "../../../")))
+}
 
 func TestSCMem(t *testing.T) {
 	testString := "this is some random string of bytes"
@@ -800,6 +809,7 @@ func TestExecution_ExecuteOnSameContext_OutOfGas(t *testing.T) {
 				verify.
 					ReturnCode(vmcommon.ExecutionFailed).
 					ReturnMessage(arwen.ErrNotEnoughGas.Error()).
+					HasRuntimeErrors(arwen.ErrNotEnoughGas.Error(), arwen.ErrExecutionFailed.Error()).
 					GasRemaining(0)
 			}
 		})
@@ -1016,6 +1026,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct_ErrMaxInstances(t *test
 				verify.
 					ReturnCode(vmcommon.ExecutionFailed).
 					ReturnMessage(arwen.ErrExecutionFailed.Error()).
+					HasRuntimeErrors(arwen.ErrMaxInstancesReached.Error(), arwen.ErrExecutionFailed.Error()).
 					GasRemaining(0)
 			}
 		})
@@ -1217,6 +1228,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 				verify.
 					ReturnCode(vmcommon.ExecutionFailed).
 					ReturnMessage(arwen.ErrExecutionFailed.Error()).
+					HasRuntimeErrors(arwen.ErrNotEnoughGas.Error(), arwen.ErrExecutionFailed.Error()).
 					GasRemaining(0)
 			}
 		})
@@ -1376,6 +1388,7 @@ func TestExecution_ExecuteOnDestContext_OutOfGas(t *testing.T) {
 				verify.
 					ReturnCode(vmcommon.ExecutionFailed).
 					ReturnMessage(arwen.ErrNotEnoughGas.Error()).
+					HasRuntimeErrors(arwen.ErrNotEnoughGas.Error(), arwen.ErrExecutionFailed.Error()).
 					GasRemaining(0)
 			}
 		})
@@ -1830,6 +1843,7 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 				verify.
 					ReturnCode(vmcommon.ExecutionFailed).
 					ReturnMessage(arwen.ErrExecutionFailed.Error()).
+					HasRuntimeErrors(arwen.ErrNotEnoughGas.Error(), arwen.ErrExecutionFailed.Error()).
 					GasRemaining(0)
 			}
 		})
@@ -2256,6 +2270,51 @@ func TestExecution_CreateNewContract_Fail(t *testing.T) {
 				GasUsed(test.ParentAddress, 2885).
 				ReturnData([]byte{byte(l / 256), byte(l % 256)}, []byte("fail")).
 				Storage(test.CreateStoreEntry(test.ParentAddress).WithKey([]byte{'A'}).WithValue(childCode))
+		})
+}
+
+func TestExecution_CreateNewContract_IsSmartContract(t *testing.T) {
+
+	childCode := test.GetTestSCCode("deployer-child", "../../")
+
+	newAddr := "newAddr_"
+	ownerNonce := uint64(23)
+	parentAddress := testcommon.MakeTestSCAddress(fmt.Sprintf("%s_%d", newAddr, 24))
+	childAddress := testcommon.MakeTestSCAddress(fmt.Sprintf("%s_%d", newAddr, 25))
+
+	input := test.CreateTestContractCreateInputBuilder().
+		WithCallValue(1000).
+		WithGasProvided(100_000).
+		WithContractCode(test.GetTestSCCode("deployer-parent", "../../")).
+		WithArguments(parentAddress, childCode).
+		Build()
+
+	test.BuildInstanceCreatorTest(t).
+		WithInput(input).
+		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
+			stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
+				strAddress := string(address)
+				if strAddress == string(childAddress) {
+					return nil, errors.New("not found")
+				}
+				return &contextmock.StubAccount{
+					Nonce: 24,
+				}, nil
+			}
+			stubBlockchainHook.NewAddressCalled = func(creatorAddress []byte, nonce uint64, vmType []byte) ([]byte, error) {
+				ownerNonce++
+				return testcommon.MakeTestSCAddress(fmt.Sprintf("%s_%d", newAddr, ownerNonce)), nil
+			}
+			stubBlockchainHook.IsSmartContractCalled = func(address []byte) bool {
+				outputAccounts := host.Output().GetOutputAccounts()
+				_, isSmartContract := outputAccounts[string(address)]
+				return isSmartContract
+			}
+		}).
+		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.
+				Ok().
+				ReturnData([]byte("succ")) /* returned from child contract init */
 		})
 }
 

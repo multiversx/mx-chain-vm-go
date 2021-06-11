@@ -3,9 +3,9 @@ package arwen
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
-	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/ElrondNetwork/elrond-go/data/esdt"
 )
@@ -41,8 +41,7 @@ type VMHost interface {
 	IsArwenV3Enabled() bool
 	IsESDTFunctionsEnabled() bool
 
-	ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callType vmcommon.CallType, isRevert bool) (*vmcommon.VMOutput, uint64, error)
-	RevertESDTTransfer(input *vmcommon.ContractCallInput)
+	ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callType vmcommon.CallType) (*vmcommon.VMOutput, uint64, error)
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*AsyncContextInfo, error)
 	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *AsyncContextInfo, error)
@@ -61,6 +60,8 @@ type VMHost interface {
 
 // BlockchainContext defines the functionality needed for interacting with the blockchain context
 type BlockchainContext interface {
+	StateStack
+
 	NewAddress(creatorAddress []byte) ([]byte, error)
 	AccountExists(addr []byte) bool
 	GetBalance(addr []byte) []byte
@@ -89,6 +90,10 @@ type BlockchainContext interface {
 	SaveCompiledCode(codeHash []byte, code []byte)
 	GetCompiledCode(codeHash []byte) (bool, []byte)
 	GetESDTToken(address []byte, tokenID []byte, nonce uint64) (*esdt.ESDigitalToken, error)
+	GetUserAccount(address []byte) (vmcommon.UserAccountHandler, error)
+	ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
+	GetSnapshot() int
+	RevertToSnapshot(snapshot int)
 }
 
 // RuntimeContext defines the functionality needed for interacting with the runtime context
@@ -144,6 +149,9 @@ type RuntimeContext interface {
 	CryptoAPIErrorShouldFailExecution() bool
 	BigIntAPIErrorShouldFailExecution() bool
 	ExecuteAsyncCall(address []byte, data []byte, value []byte) error
+
+	AddError(err error, otherInfo ...string)
+	GetAllErrors() error
 
 	// TODO remove after implementing proper mocking of Wasmer instances; this is
 	// used for tests only

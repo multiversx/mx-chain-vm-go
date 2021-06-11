@@ -5,7 +5,7 @@ import (
 	"errors"
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-go/core"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
@@ -319,7 +319,7 @@ func (context *outputContext) TransferESDT(
 		callType = vmcommon.ESDTTransferAndExecute
 	}
 
-	vmOutput, gasConsumedByTransfer, err := context.host.ExecuteESDTTransfer(destination, sender, tokenIdentifier, nonce, value, callType, false)
+	vmOutput, gasConsumedByTransfer, err := context.host.ExecuteESDTTransfer(destination, sender, tokenIdentifier, nonce, value, callType)
 	if err != nil {
 		return 0, err
 	}
@@ -427,6 +427,9 @@ func (context *outputContext) DeployCode(input arwen.CodeDeployInput) {
 // CreateVMOutputInCaseOfError creates a new vmOutput with the given error set as return message.
 func (context *outputContext) CreateVMOutputInCaseOfError(err error) *vmcommon.VMOutput {
 	var message string
+
+	runtime := context.host.Runtime()
+	runtime.AddError(err, runtime.Function())
 
 	if errors.Is(err, arwen.ErrSignalError) {
 		message = context.ReturnMessage()

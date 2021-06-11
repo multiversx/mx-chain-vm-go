@@ -3,8 +3,8 @@ package testcommon
 import (
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
@@ -92,6 +92,8 @@ func runTestWithInstances(callerTest *InstancesTestTemplate) {
 
 	vmOutput, err := host.RunSmartContractCall(callerTest.input)
 
-	verify := NewVMOutputVerifier(callerTest.t, vmOutput, err)
+	allErrors := host.Runtime().GetAllErrors()
+
+	verify := NewVMOutputVerifierWithAllErrors(callerTest.t, vmOutput, err, allErrors)
 	callerTest.assertResults(host, blockchainHookStub, verify)
 }

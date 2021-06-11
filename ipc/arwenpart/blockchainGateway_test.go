@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
-	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/marshaling"
-	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/nodepart"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/ipc/common"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/ipc/marshaling"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/ipc/nodepart"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
 )
@@ -26,13 +26,13 @@ func TestGateway_ProcessBuiltInFunction(t *testing.T) {
 	}
 
 	handleHookCall := func(request common.MessageHandler) common.MessageHandler {
-		require.Equal(t, "fooFunction", string(request.(*common.MessageBlockchainProcessBuiltinFunctionRequest).CallInput.Function))
-		require.Equal(t, "alice", string(request.(*common.MessageBlockchainProcessBuiltinFunctionRequest).CallInput.RecipientAddr))
+		require.Equal(t, "fooFunction", string(request.(*common.MessageBlockchainProcessBuiltInFunctionRequest).Input.Function))
+		require.Equal(t, "alice", string(request.(*common.MessageBlockchainProcessBuiltInFunctionRequest).Input.RecipientAddr))
 		vmOutput := &vmcommon.VMOutput{
 			ReturnCode: vmcommon.Ok,
 			ReturnData: [][]byte{{42}},
 		}
-		return common.NewMessageBlockchainProcessBuiltinFunctionResponse(vmOutput, nil)
+		return common.NewMessageBlockchainProcessBuiltInFunctionResponse(vmOutput, nil)
 	}
 
 	runHookScenario(t, callHook, handleHookCall)

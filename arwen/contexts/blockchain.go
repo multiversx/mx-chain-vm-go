@@ -3,7 +3,7 @@ package contexts
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/ElrondNetwork/elrond-go/data/esdt"
 )
@@ -11,6 +11,7 @@ import (
 type blockchainContext struct {
 	host           arwen.VMHost
 	blockChainHook vmcommon.BlockchainHook
+	stateStack     []int
 }
 
 // NewBlockchainContext creates a new blockchainContext
@@ -278,4 +279,62 @@ func (context *blockchainContext) SaveCompiledCode(codeHash []byte, code []byte)
 // GetCompiledCode returns the compiled code if it finds in the cache or storage
 func (context *blockchainContext) GetCompiledCode(codeHash []byte) (bool, []byte) {
 	return context.blockChainHook.GetCompiledCode(codeHash)
+}
+
+// GetUserAccount returns a user account
+func (context *blockchainContext) GetUserAccount(address []byte) (vmcommon.UserAccountHandler, error) {
+	return context.blockChainHook.GetUserAccount(address)
+}
+
+// ProcessBuiltInFunction will process the builtIn function for the created input
+func (context *blockchainContext) ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+	return context.blockChainHook.ProcessBuiltInFunction(input)
+}
+
+// InitState does nothing
+func (context *blockchainContext) InitState() {
+}
+
+// ClearStateStack clears the state stack from the current context.
+func (context *blockchainContext) ClearStateStack() {
+	context.stateStack = make([]int, 0)
+}
+
+// PushState appends the current snapshot to the state stack.
+func (context *blockchainContext) PushState() {
+	snapshot := context.blockChainHook.GetSnapshot()
+	context.stateStack = append(context.stateStack, snapshot)
+}
+
+// PopSetActiveState removes the latest entry from the state stack and reverts to that snapshot
+func (context *blockchainContext) PopSetActiveState() {
+	stateStackLen := len(context.stateStack)
+	if stateStackLen == 0 {
+		return
+	}
+
+	prevSnapshot := context.stateStack[stateStackLen-1]
+	context.blockChainHook.RevertToSnapshot(prevSnapshot)
+
+	context.stateStack = context.stateStack[:stateStackLen-1]
+}
+
+// PopDiscard removes the latest entry from the state stack
+func (context *blockchainContext) PopDiscard() {
+	stateStackLen := len(context.stateStack)
+	if stateStackLen == 0 {
+		return
+	}
+
+	context.stateStack = context.stateStack[:stateStackLen-1]
+}
+
+// GetSnapshot - gets the latest snapshot via blockchain hook
+func (context *blockchainContext) GetSnapshot() int {
+	return context.blockChainHook.GetSnapshot()
+}
+
+// RevertToSnapshot - reverts to the specified snapshot via blockchain hook
+func (context *blockchainContext) RevertToSnapshot(snapshot int) {
+	context.blockChainHook.RevertToSnapshot(snapshot)
 }
