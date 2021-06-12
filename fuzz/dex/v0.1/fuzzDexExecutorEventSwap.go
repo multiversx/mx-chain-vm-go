@@ -114,7 +114,7 @@ func (pfe *fuzzDexExecutor) swapFixedOutput(user string, swapPair SwapPair, amou
 	amountInRaw, amountInErr := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,
 		"getAmountIn", fmt.Sprintf("\"str:%s\", \"%d\"", swapPair.secondToken, amountB))
 
-	output, err := pfe.executeTxStep(fmt.Sprintf(`
+	output, errSwap := pfe.executeTxStep(fmt.Sprintf(`
 	{
 		"step": "scCall",
 		"txId": "swap-fixed-input",
@@ -131,7 +131,7 @@ func (pfe *fuzzDexExecutor) swapFixedOutput(user string, swapPair SwapPair, amou
 				"str:%s",
 				"%d"
 			],
-			"gasLimit": "100,000,000",
+			"gasLimit": "200,000,000",
 			"gasPrice": "0"
 		}
 	}`,
@@ -161,9 +161,13 @@ func (pfe *fuzzDexExecutor) swapFixedOutput(user string, swapPair SwapPair, amou
 
 		if amountInErr == nil {
 			//Check if tokens send vs received are correct
-			ceva := big.NewInt(0).SetBytes(amountInRaw[0])
-			diff := big.NewInt(0).Sub(tokenABefore, tokenAAfter)
-			Use(diff, ceva)
+			amountInRequested := big.NewInt(0).SetBytes(amountInRaw[0])
+			diffBeforeAfter := big.NewInt(0).Sub(tokenABefore, tokenAAfter)
+			diffAfterBefore := big.NewInt(0).Sub(tokenAAfter, tokenABefore)
+			sumDiffBeforeAfterInRequested := big.NewInt(0).Add(diffBeforeAfter, amountInRequested)
+			sumDiffAfterBeforeInRequested := big.NewInt(0).Add(diffAfterBefore, amountInRequested)
+			Use(amountInRequested, diffBeforeAfter, diffAfterBefore, sumDiffBeforeAfterInRequested, sumDiffAfterBeforeInRequested, errSwap)
+
 			if tokenAAfter.Cmp(big.NewInt(0).Sub(tokenABefore, big.NewInt(0).SetBytes(amountInRaw[0]))) != 0 {
 				return errors.New("SWAP fixed output wrong amount A")
 			}
