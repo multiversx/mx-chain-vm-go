@@ -23,9 +23,11 @@ type programmedCall struct {
 }
 
 type fuzzData struct {
-	mainCallerAddress string
-	numForwarders     int
-	programmedCalls   map[int][]*programmedCall
+	mainCallerAddress     string
+	numForwarders         int
+	programmedCalls       map[int][]*programmedCall
+	numFungibleTokens     int
+	numSemiFungibleTokens int
 }
 
 type fuzzExecutor struct {

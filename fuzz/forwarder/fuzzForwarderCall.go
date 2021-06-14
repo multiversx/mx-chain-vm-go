@@ -131,6 +131,7 @@ func (pfe *fuzzExecutor) getExpectedLogs(call *programmedCall, sb *strings.Build
 		call.nonce,
 		call.amount,
 	))
+	pfe.log("%d calls %d with token %s, nonce %d", call.fromIndex, call.toIndex, call.token, call.nonce)
 
 	nextCall := pfe.popCall(call.toIndex)
 	for nextCall != nil {

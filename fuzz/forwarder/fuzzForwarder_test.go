@@ -67,20 +67,16 @@ func TestFuzzForwarder(t *testing.T) {
 	require.Nil(t, err)
 
 	for stepIndex := 0; stepIndex < *iterationsFlag; stepIndex++ {
+		tokenName, nonce := pfe.randomTokenNameAndNonce(r)
 		fromIndex := r.Intn(pfe.data.numForwarders) + 1
-		toIndex := r.Intn(pfe.data.numForwarders) + 1
-		err = pfe.programCall(fromIndex, toIndex, "EGLD", 0, "1000")
+		toIndex := fromIndex
+		for nonce > 0 && toIndex == fromIndex {
+			toIndex = r.Intn(pfe.data.numForwarders) + 1
+		}
+		pfe.log("%d will call %d with token %s, nonce %d", fromIndex, toIndex, tokenName, nonce)
+		err = pfe.programCall(fromIndex, toIndex, tokenName, nonce, "10")
 		require.Nil(t, err)
 	}
-
-	// err = pfe.programCall(1, 1, "EGLD", 0, "1000")
-	// require.Nil(t, err)
-
-	// err = pfe.programCall(2, 3, "EGLD", 0, "1000")
-	// require.Nil(t, err)
-
-	// err = pfe.programCall(3, 4, "EGLD", 0, "1000")
-	// require.Nil(t, err)
 
 	err = pfe.executeCall(1)
 	require.Nil(t, err)
