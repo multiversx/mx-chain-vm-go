@@ -667,7 +667,7 @@ func TestGasUsed_AsyncCall_BuiltinCall(t *testing.T) {
 			WithArguments(test.UserAddress, []byte("builtinClaim")).
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
-			world.AcctMap.CreateAccount(test.UserAddress)
+			world.AcctMap.CreateAccount(test.UserAddress, world)
 			createMockBuiltinFunctions(t, host, world)
 			setZeroCodeCosts(host)
 			setAsyncCosts(host, testConfig.GasLockCost)
@@ -705,7 +705,7 @@ func TestGasUsed_AsyncCall_BuiltinCallFail(t *testing.T) {
 			WithArguments(test.UserAddress, []byte("builtinFail")).
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
-			world.AcctMap.CreateAccount(test.UserAddress)
+			world.AcctMap.CreateAccount(test.UserAddress, world)
 			createMockBuiltinFunctions(t, host, world)
 			setZeroCodeCosts(host)
 			setAsyncCosts(host, testConfig.GasLockCost)
@@ -750,7 +750,7 @@ func TestGasUsed_AsyncCall_BuiltinMultiContractCall(t *testing.T) {
 			WithArguments(test.UserAddress, test.ChildAddress, []byte("childFunction"), []byte("builtinClaim")).
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
-			world.AcctMap.CreateAccount(test.UserAddress)
+			world.AcctMap.CreateAccount(test.UserAddress, world)
 			setZeroCodeCosts(host)
 			setAsyncCosts(host, testConfig.GasLockCost)
 			createMockBuiltinFunctions(t, host, world)

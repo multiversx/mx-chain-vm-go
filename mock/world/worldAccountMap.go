@@ -18,7 +18,7 @@ func NewAccountMap() AccountMap {
 }
 
 // CreateAccount instantiates an empty account for the given address.
-func (am AccountMap) CreateAccount(address []byte) *Account {
+func (am AccountMap) CreateAccount(address []byte, world *MockWorld) *Account {
 	newAccount := &Account{
 		Exists:          true,
 		Address:         make([]byte, len(address)),
@@ -31,6 +31,7 @@ func (am AccountMap) CreateAccount(address []byte) *Account {
 		ShardID:         0,
 		IsSmartContract: false,
 		DeveloperReward: big.NewInt(0),
+		MockWorld:       world,
 	}
 	copy(newAccount.Address, address)
 	am.PutAccount(newAccount)
@@ -40,8 +41,8 @@ func (am AccountMap) CreateAccount(address []byte) *Account {
 
 // CreateSmartContractAccount instantiates an account for a smart contract with
 // the given address and WASM bytecode.
-func (am AccountMap) CreateSmartContractAccount(owner []byte, address []byte, code []byte) *Account {
-	newAccount := am.CreateAccount(address)
+func (am AccountMap) CreateSmartContractAccount(owner []byte, address []byte, code []byte, world *MockWorld) *Account {
+	newAccount := am.CreateAccount(address, world)
 	newAccount.Code = code
 	newAccount.IsSmartContract = true
 	newAccount.OwnerAddress = owner

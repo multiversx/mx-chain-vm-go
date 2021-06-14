@@ -9,6 +9,7 @@ func TestRustAdder(t *testing.T) {
 }
 
 func TestRustErc20(t *testing.T) {
+	// runSingleTest(t, "erc20-rust/mandos", "not_payable_esdt.scen.json")
 	runAllTestsInFolder(t, "erc20-rust/mandos")
 }
 
