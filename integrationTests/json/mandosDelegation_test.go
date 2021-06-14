@@ -9,7 +9,7 @@ func TestDelegation_v0_2(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	runAllTestsInFolder(t, "delegation/v0_2")
+	runSingleTest(t, "delegation/v0_3/test", "fuzz_gen.scen.json")
 }
 
 func TestDelegation_v0_3(t *testing.T) {

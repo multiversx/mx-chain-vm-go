@@ -1,0 +1,1561 @@
+{
+    "name": "fuzz generated",
+    "checkGas": false,
+    "gasSchedule": "default",
+    "steps": [
+        {
+            "step": "setState",
+            "accounts": {
+                "address:user000001": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "esdt": {
+                        "str:WEGLD-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:MEX-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:BUSD-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:WEMELP-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:WEBULP-abcdef": "1,000,000,000,000,000,000,000,000,000,000"
+                    },
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "setState",
+            "accounts": {
+                "address:user000002": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "esdt": {
+                        "str:WEGLD-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:MEX-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:BUSD-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:WEMELP-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:WEBULP-abcdef": "1,000,000,000,000,000,000,000,000,000,000"
+                    },
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "setState",
+            "accounts": {
+                "address:user000003": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "esdt": {
+                        "str:WEGLD-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:MEX-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:BUSD-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:WEMELP-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:WEBULP-abcdef": "1,000,000,000,000,000,000,000,000,000,000"
+                    },
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "setState",
+            "accounts": {
+                "address:user000004": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "esdt": {
+                        "str:WEGLD-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:MEX-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:BUSD-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:WEMELP-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:WEBULP-abcdef": "1,000,000,000,000,000,000,000,000,000,000"
+                    },
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "setState",
+            "accounts": {
+                "address:user000005": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "esdt": {
+                        "str:WEGLD-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:MEX-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:BUSD-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:WEMELP-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:WEBULP-abcdef": "1,000,000,000,000,000,000,000,000,000,000"
+                    },
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "setState",
+            "accounts": {
+                "address:user000006": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "esdt": {
+                        "str:WEGLD-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:MEX-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:BUSD-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:WEMELP-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:WEBULP-abcdef": "1,000,000,000,000,000,000,000,000,000,000"
+                    },
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "setState",
+            "accounts": {
+                "address:user000007": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "esdt": {
+                        "str:WEGLD-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:MEX-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:BUSD-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:WEMELP-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:WEBULP-abcdef": "1,000,000,000,000,000,000,000,000,000,000"
+                    },
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "setState",
+            "accounts": {
+                "address:user000008": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "esdt": {
+                        "str:WEGLD-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:MEX-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:BUSD-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:WEMELP-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:WEBULP-abcdef": "1,000,000,000,000,000,000,000,000,000,000"
+                    },
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "setState",
+            "accounts": {
+                "address:user000009": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "esdt": {
+                        "str:WEGLD-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:MEX-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:BUSD-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:WEMELP-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:WEBULP-abcdef": "1,000,000,000,000,000,000,000,000,000,000"
+                    },
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "setState",
+            "accounts": {
+                "address:user000010": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "esdt": {
+                        "str:WEGLD-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:MEX-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:BUSD-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:WEMELP-abcdef": "1,000,000,000,000,000,000,000,000,000,000",
+                        "str:WEBULP-abcdef": "1,000,000,000,000,000,000,000,000,000,000"
+                    },
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "setState",
+            "accounts": {
+                "address:fuzz_owner": {
+                    "nonce": "0",
+                    "balance": "1,000,000,000,000,000,000,000,000,000,000",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "setState",
+            "accounts": {
+                "sc:fuzz_dex_weme_swap": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "esdt": {
+                        "str:WEMELP-abcdef": {
+                            "instances": [],
+                            "roles": [
+                                "ESDTRoleLocalMint",
+                                "ESDTRoleLocalBurn"
+                            ]
+                        }
+                    },
+                    "storage": {
+                        "str:first_token_id": "str:WEGLD-abcdef",
+                        "str:second_token_id": "str:MEX-abcdef",
+                        "str:state": "1",
+                        "str:lpTokenIdentifier": "str:WEMELP-abcdef",
+                        "str:router_address": "address:fuzz_owner",
+                        "str:router_owner_address": "address:fuzz_owner",
+                        "str:total_fee_percent": "300",
+                        "str:special_fee_percent": "050",
+                        "str:burn_tokens_gas_limit": "500000",
+                        "str:mint_tokens_gas_limit": "500000",
+                        "str:send_fee_gas_limit": "25,000,000",
+                        "str:extern_swap_gas_limit": "50,000,000"
+                    },
+                    "code": "file:elrond_dex_pair.wasm",
+                    "owner": "address:fuzz_owner"
+                }
+            }
+        },
+        {
+            "step": "setState",
+            "accounts": {
+                "sc:fuzz_dex_webu_swap": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "esdt": {
+                        "str:WEBULP-abcdef": {
+                            "instances": [],
+                            "roles": [
+                                "ESDTRoleLocalMint",
+                                "ESDTRoleLocalBurn"
+                            ]
+                        }
+                    },
+                    "storage": {
+                        "str:first_token_id": "str:WEGLD-abcdef",
+                        "str:second_token_id": "str:BUSD-abcdef",
+                        "str:state": "1",
+                        "str:lpTokenIdentifier": "str:WEBULP-abcdef",
+                        "str:router_address": "address:fuzz_owner",
+                        "str:router_owner_address": "address:fuzz_owner",
+                        "str:total_fee_percent": "300",
+                        "str:special_fee_percent": "050",
+                        "str:burn_tokens_gas_limit": "500000",
+                        "str:mint_tokens_gas_limit": "500000",
+                        "str:send_fee_gas_limit": "25,000,000",
+                        "str:extern_swap_gas_limit": "50,000,000"
+                    },
+                    "code": "file:elrond_dex_pair.wasm",
+                    "owner": "address:fuzz_owner"
+                }
+            }
+        },
+        {
+            "step": "setState",
+            "accounts": {
+                "sc:fuzz_dex_weme_farm": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "esdt": {
+                        "str:WEMEFARM-abcdef": {
+                            "instances": [],
+                            "roles": [
+                                "ESDTRoleNFTCreate",
+                                "ESDTRoleNFTAddQuantity",
+                                "ESDTRoleNFTBurn"
+                            ]
+                        },
+                        "str:WEMELP-abcdef": {
+                            "instances": [],
+                            "roles": [
+                                "ESDTRoleLocalMint",
+                                "ESDTRoleLocalBurn"
+                            ]
+                        },
+                        "str:MEX-abcdef": {
+                            "instances": [],
+                            "roles": [
+                                "ESDTRoleLocalMint",
+                                "ESDTRoleLocalBurn"
+                            ]
+                        }
+                    },
+                    "storage": {
+                        "str:farming_token_id": "str:WEMELP-abcdef",
+                        "str:farm_token_id": "str:WEMEFARM-abcdef",
+                        "str:reward_token_id": "str:MEX-abcdef",
+                        "str:router_address": "address:fuzz_owner",
+                        "str:state": "1",
+                        "str:owner": "address:fuzz_owner",
+                        "str:minimum_farming_epochs": "2",
+                        "str:burn_tokens_gas_limit": "5,000,000",
+                        "str:mint_tokens_gas_limit": "5,000,000",
+                        "str:locked_rewards_apr_multiplier": "2",
+                        "str:division_safety_constant": "1000000000000",
+                        "str:create_farm_tokens_gas_limit": "5000000",
+                        "str:produce_rewards_enabled": "1",
+                        "str:per_block_reward_amount": "10000000000000000",
+                        "str:penalty_percent": "0"
+                    },
+                    "code": "file:elrond_dex_farm.wasm",
+                    "owner": "address:fuzz_owner"
+                }
+            }
+        },
+        {
+            "step": "setState",
+            "accounts": {
+                "sc:fuzz_dex_webu_farm": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "esdt": {
+                        "str:WEBUFARM-abcdef": {
+                            "instances": [],
+                            "roles": [
+                                "ESDTRoleNFTCreate",
+                                "ESDTRoleNFTAddQuantity",
+                                "ESDTRoleNFTBurn"
+                            ]
+                        },
+                        "str:WEBULP-abcdef": {
+                            "instances": [],
+                            "roles": [
+                                "ESDTRoleLocalMint",
+                                "ESDTRoleLocalBurn"
+                            ]
+                        },
+                        "str:MEX-abcdef": {
+                            "instances": [],
+                            "roles": [
+                                "ESDTRoleLocalMint",
+                                "ESDTRoleLocalBurn"
+                            ]
+                        }
+                    },
+                    "storage": {
+                        "str:farming_token_id": "str:WEBULP-abcdef",
+                        "str:farm_token_id": "str:WEBUFARM-abcdef",
+                        "str:reward_token_id": "str:MEX-abcdef",
+                        "str:router_address": "address:fuzz_owner",
+                        "str:state": "1",
+                        "str:owner": "address:fuzz_owner",
+                        "str:minimum_farming_epochs": "2",
+                        "str:burn_tokens_gas_limit": "5,000,000",
+                        "str:mint_tokens_gas_limit": "5,000,000",
+                        "str:locked_rewards_apr_multiplier": "2",
+                        "str:division_safety_constant": "1000000000000",
+                        "str:create_farm_tokens_gas_limit": "5000000",
+                        "str:produce_rewards_enabled": "1",
+                        "str:per_block_reward_amount": "10000000000000000",
+                        "str:penalty_percent": "0"
+                    },
+                    "code": "file:elrond_dex_farm.wasm",
+                    "owner": "address:fuzz_owner"
+                }
+            }
+        },
+        {
+            "step": "setState",
+            "accounts": {
+                "sc:fuzz_dex_mex_farm": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "esdt": {
+                        "str:MEXFARM-abcdef": {
+                            "instances": [],
+                            "roles": [
+                                "ESDTRoleNFTCreate",
+                                "ESDTRoleNFTAddQuantity",
+                                "ESDTRoleNFTBurn"
+                            ]
+                        },
+                        "str:MEX-abcdef": {
+                            "instances": [],
+                            "roles": [
+                                "ESDTRoleLocalMint",
+                                "ESDTRoleLocalBurn"
+                            ]
+                        }
+                    },
+                    "storage": {
+                        "str:farming_token_id": "str:MEX-abcdef",
+                        "str:farm_token_id": "str:MEXFARM-abcdef",
+                        "str:reward_token_id": "str:MEX-abcdef",
+                        "str:router_address": "address:fuzz_owner",
+                        "str:state": "1",
+                        "str:owner": "address:fuzz_owner",
+                        "str:minimum_farming_epochs": "2",
+                        "str:burn_tokens_gas_limit": "5,000,000",
+                        "str:mint_tokens_gas_limit": "5,000,000",
+                        "str:locked_rewards_apr_multiplier": "2",
+                        "str:division_safety_constant": "1000000000000",
+                        "str:create_farm_tokens_gas_limit": "5000000",
+                        "str:produce_rewards_enabled": "1",
+                        "str:per_block_reward_amount": "10000000000000000",
+                        "str:penalty_percent": "0"
+                    },
+                    "code": "file:elrond_dex_farm.wasm",
+                    "owner": "address:fuzz_owner"
+                }
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "set-fee-on",
+            "tx": {
+                "from": "address:fuzz_owner",
+                "to": "sc:fuzz_dex_weme_swap",
+                "value": "0",
+                "function": "setFeeOn",
+                "arguments": [
+                    "1",
+                    "sc:fuzz_dex_weme_farm",
+                    "str:MEX-abcdef"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "set-fee-on",
+            "tx": {
+                "from": "address:fuzz_owner",
+                "to": "sc:fuzz_dex_webu_swap",
+                "value": "0",
+                "function": "setFeeOn",
+                "arguments": [
+                    "1",
+                    "sc:fuzz_dex_webu_farm",
+                    "str:MEX-abcdef"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "whitelist",
+            "tx": {
+                "from": "address:fuzz_owner",
+                "to": "sc:fuzz_dex_weme_swap",
+                "value": "0",
+                "function": "whitelist",
+                "arguments": [
+                    "sc:fuzz_dex_webu_swap"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "whitelist",
+            "tx": {
+                "from": "address:fuzz_owner",
+                "to": "sc:fuzz_dex_webu_swap",
+                "value": "0",
+                "function": "addTrustedSwapPair",
+                "arguments": [
+                    "sc:fuzz_dex_weme_swap",
+                    "str:WEGLD-abcdef",
+                    "str:MEX-abcdef"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "getEquivalent",
+            "tx": {
+                "from": "address:fuzz_owner",
+                "to": "sc:fuzz_dex_webu_swap",
+                "value": "0",
+                "function": "getEquivalent",
+                "arguments": [
+                    "str:WEGLD-abcdef",
+                    "1000"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "accept-esdt-payment",
+            "tx": {
+                "from": "address:user000009",
+                "to": "sc:fuzz_dex_webu_swap",
+                "value": "0",
+                "esdt": {
+                    "tokenIdentifier": "str:WEGLD-abcdef",
+                    "value": "838773835"
+                },
+                "function": "acceptEsdtPayment",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "0",
+                "message": "",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "accept-esdt-payment",
+            "tx": {
+                "from": "address:user000009",
+                "to": "sc:fuzz_dex_webu_swap",
+                "value": "0",
+                "esdt": {
+                    "tokenIdentifier": "str:BUSD-abcdef",
+                    "value": "838773835"
+                },
+                "function": "acceptEsdtPayment",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "0",
+                "message": "",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "add-liquidity",
+            "tx": {
+                "from": "address:user000009",
+                "to": "sc:fuzz_dex_webu_swap",
+                "value": "0",
+                "function": "addLiquidity",
+                "arguments": [
+                    "838773835",
+                    "838773835",
+                    "8387738",
+                    "8387738"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "getEquivalent",
+            "tx": {
+                "from": "address:fuzz_owner",
+                "to": "sc:fuzz_dex_webu_swap",
+                "value": "0",
+                "function": "getEquivalent",
+                "arguments": [
+                    "str:WEGLD-abcdef",
+                    "1000"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "setState",
+            "comment": "1 - increase block nonce",
+            "currentBlockInfo": {
+                "blockNonce": "1"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "stake",
+            "tx": {
+                "from": "address:user000008",
+                "to": "sc:fuzz_dex_weme_farm",
+                "value": "0",
+                "esdt": {
+                    "tokenIdentifier": "str:WEMELP-abcdef",
+                    "value": "99689708"
+                },
+                "function": "enterFarm",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "getRewardPerShare",
+            "tx": {
+                "from": "address:user000008",
+                "to": "sc:fuzz_dex_weme_farm",
+                "value": "0",
+                "function": "getRewardPerShare",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "setState",
+            "comment": "2 - increase block nonce",
+            "currentBlockInfo": {
+                "blockNonce": "2"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "getEquivalent",
+            "tx": {
+                "from": "address:fuzz_owner",
+                "to": "sc:fuzz_dex_webu_swap",
+                "value": "0",
+                "function": "getEquivalent",
+                "arguments": [
+                    "str:WEGLD-abcdef",
+                    "1000"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "accept-esdt-payment",
+            "tx": {
+                "from": "address:user000007",
+                "to": "sc:fuzz_dex_webu_swap",
+                "value": "0",
+                "esdt": {
+                    "tokenIdentifier": "str:WEGLD-abcdef",
+                    "value": "864705272"
+                },
+                "function": "acceptEsdtPayment",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "0",
+                "message": "",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "accept-esdt-payment",
+            "tx": {
+                "from": "address:user000007",
+                "to": "sc:fuzz_dex_webu_swap",
+                "value": "0",
+                "esdt": {
+                    "tokenIdentifier": "str:BUSD-abcdef",
+                    "value": "864705272"
+                },
+                "function": "acceptEsdtPayment",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "0",
+                "message": "",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "add-liquidity",
+            "tx": {
+                "from": "address:user000007",
+                "to": "sc:fuzz_dex_webu_swap",
+                "value": "0",
+                "function": "addLiquidity",
+                "arguments": [
+                    "864705272",
+                    "864705272",
+                    "8647052",
+                    "8647052"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "getEquivalent",
+            "tx": {
+                "from": "address:fuzz_owner",
+                "to": "sc:fuzz_dex_webu_swap",
+                "value": "0",
+                "function": "getEquivalent",
+                "arguments": [
+                    "str:WEGLD-abcdef",
+                    "1000"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "setState",
+            "comment": "3 - increase block nonce",
+            "currentBlockInfo": {
+                "blockNonce": "3"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "getEquivalent",
+            "tx": {
+                "from": "address:fuzz_owner",
+                "to": "sc:fuzz_dex_weme_swap",
+                "value": "0",
+                "function": "getEquivalent",
+                "arguments": [
+                    "str:WEGLD-abcdef",
+                    "1000"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "remove-liq",
+            "tx": {
+                "from": "address:user000006",
+                "to": "sc:fuzz_dex_weme_swap",
+                "value": "0",
+                "esdt": {
+                    "tokenIdentifier": "str:WEMELP-abcdef",
+                    "value": "271630393"
+                },
+                "function": "removeLiquidity",
+                "arguments": [
+                    "2716303",
+                    "2716303"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "setState",
+            "comment": "4 - increase block nonce",
+            "currentBlockInfo": {
+                "blockNonce": "4"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "stake",
+            "tx": {
+                "from": "address:user000008",
+                "to": "sc:fuzz_dex_weme_farm",
+                "value": "0",
+                "esdt": {
+                    "tokenIdentifier": "str:WEMEFARM-abcdef",
+                    "nonce": "1",
+                    "value": "22728192"
+                },
+                "function": "exitFarm",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "setState",
+            "comment": "5 - increase block nonce",
+            "currentBlockInfo": {
+                "blockNonce": "5"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "claimRewards",
+            "tx": {
+                "from": "address:user000008",
+                "to": "sc:fuzz_dex_weme_farm",
+                "value": "0",
+                "esdt": {
+                    "tokenIdentifier": "str:WEMEFARM-abcdef",
+                    "nonce": "1",
+                    "value": "244101"
+                },
+                "function": "claimRewards",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "getRewardPerShare",
+            "tx": {
+                "from": "address:user000008",
+                "to": "sc:fuzz_dex_weme_farm",
+                "value": "0",
+                "function": "getRewardPerShare",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "setState",
+            "comment": "6 - increase block nonce",
+            "currentBlockInfo": {
+                "blockNonce": "6"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "getAmountOut",
+            "tx": {
+                "from": "address:fuzz_owner",
+                "to": "sc:fuzz_dex_weme_swap",
+                "value": "0",
+                "function": "getAmountOut",
+                "arguments": [
+                    "str:WEGLD-abcdef",
+                    "4625498"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "swap-fixed-input",
+            "tx": {
+                "from": "address:user000010",
+                "to": "sc:fuzz_dex_weme_swap",
+                "value": "0",
+                "esdt": {
+                    "tokenIdentifier": "str:WEGLD-abcdef",
+                    "value": "4625498"
+                },
+                "function": "swapTokensFixedInput",
+                "arguments": [
+                    "str:MEX-abcdef",
+                    "46254"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "setState",
+            "comment": "7 - increase block nonce",
+            "currentBlockInfo": {
+                "blockNonce": "7"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "stake",
+            "tx": {
+                "from": "address:user000010",
+                "to": "sc:fuzz_dex_webu_farm",
+                "value": "0",
+                "esdt": {
+                    "tokenIdentifier": "str:WEBULP-abcdef",
+                    "value": "21632172"
+                },
+                "function": "enterFarm",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "getRewardPerShare",
+            "tx": {
+                "from": "address:user000010",
+                "to": "sc:fuzz_dex_webu_farm",
+                "value": "0",
+                "function": "getRewardPerShare",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "setState",
+            "comment": "8 - increase block nonce",
+            "currentBlockInfo": {
+                "blockNonce": "8"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "claimRewards",
+            "tx": {
+                "from": "address:user000008",
+                "to": "sc:fuzz_dex_weme_farm",
+                "value": "0",
+                "esdt": {
+                    "tokenIdentifier": "str:WEMEFARM-abcdef",
+                    "nonce": "2",
+                    "value": "244101"
+                },
+                "function": "claimRewards",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "getRewardPerShare",
+            "tx": {
+                "from": "address:user000008",
+                "to": "sc:fuzz_dex_weme_farm",
+                "value": "0",
+                "function": "getRewardPerShare",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "setState",
+            "comment": "9 - increase block nonce",
+            "currentBlockInfo": {
+                "blockNonce": "9"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "getAmountIn",
+            "tx": {
+                "from": "address:fuzz_owner",
+                "to": "sc:fuzz_dex_weme_swap",
+                "value": "0",
+                "function": "getAmountIn",
+                "arguments": [
+                    "str:MEX-abcdef",
+                    "53809"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "swap-fixed-input",
+            "tx": {
+                "from": "address:user000008",
+                "to": "sc:fuzz_dex_weme_swap",
+                "value": "0",
+                "esdt": {
+                    "tokenIdentifier": "str:WEGLD-abcdef",
+                    "value": "5380952"
+                },
+                "function": "swapTokensFixedOutput",
+                "arguments": [
+                    "str:MEX-abcdef",
+                    "53809"
+                ],
+                "gasLimit": "200,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "setState",
+            "comment": "10 - increase block nonce",
+            "currentBlockInfo": {
+                "blockNonce": "10"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "claimRewards",
+            "tx": {
+                "from": "address:user000010",
+                "to": "sc:fuzz_dex_webu_farm",
+                "value": "0",
+                "esdt": {
+                    "tokenIdentifier": "str:WEBUFARM-abcdef",
+                    "nonce": "1",
+                    "value": "1427734"
+                },
+                "function": "claimRewards",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "getRewardPerShare",
+            "tx": {
+                "from": "address:user000010",
+                "to": "sc:fuzz_dex_webu_farm",
+                "value": "0",
+                "function": "getRewardPerShare",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "setState",
+            "comment": "11 - increase block nonce",
+            "currentBlockInfo": {
+                "blockNonce": "11"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "getAmountIn",
+            "tx": {
+                "from": "address:fuzz_owner",
+                "to": "sc:fuzz_dex_webu_swap",
+                "value": "0",
+                "function": "getAmountIn",
+                "arguments": [
+                    "str:WEGLD-abcdef",
+                    "1000"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "getAmountOut",
+            "tx": {
+                "from": "address:fuzz_owner",
+                "to": "sc:fuzz_dex_webu_swap",
+                "value": "0",
+                "function": "getAmountOut",
+                "arguments": [
+                    "str:WEGLD-abcdef",
+                    "1000"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "getEquivalent",
+            "tx": {
+                "from": "address:fuzz_owner",
+                "to": "sc:fuzz_dex_webu_swap",
+                "value": "0",
+                "function": "getEquivalent",
+                "arguments": [
+                    "str:WEGLD-abcdef",
+                    "1000"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "getAmountIn",
+            "tx": {
+                "from": "address:fuzz_owner",
+                "to": "sc:fuzz_dex_webu_swap",
+                "value": "0",
+                "function": "getAmountIn",
+                "arguments": [
+                    "str:BUSD-abcdef",
+                    "1000"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "getAmountOut",
+            "tx": {
+                "from": "address:fuzz_owner",
+                "to": "sc:fuzz_dex_webu_swap",
+                "value": "0",
+                "function": "getAmountOut",
+                "arguments": [
+                    "str:BUSD-abcdef",
+                    "1000"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "getEquivalent",
+            "tx": {
+                "from": "address:fuzz_owner",
+                "to": "sc:fuzz_dex_webu_swap",
+                "value": "0",
+                "function": "getEquivalent",
+                "arguments": [
+                    "str:BUSD-abcdef",
+                    "1000"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "setState",
+            "comment": "12 - increase block nonce",
+            "currentBlockInfo": {
+                "blockNonce": "12"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "getEquivalent",
+            "tx": {
+                "from": "address:fuzz_owner",
+                "to": "sc:fuzz_dex_webu_swap",
+                "value": "0",
+                "function": "getEquivalent",
+                "arguments": [
+                    "str:WEGLD-abcdef",
+                    "1000"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "accept-esdt-payment",
+            "tx": {
+                "from": "address:user000007",
+                "to": "sc:fuzz_dex_webu_swap",
+                "value": "0",
+                "esdt": {
+                    "tokenIdentifier": "str:WEGLD-abcdef",
+                    "value": "353896717"
+                },
+                "function": "acceptEsdtPayment",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "0",
+                "message": "",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "accept-esdt-payment",
+            "tx": {
+                "from": "address:user000007",
+                "to": "sc:fuzz_dex_webu_swap",
+                "value": "0",
+                "esdt": {
+                    "tokenIdentifier": "str:BUSD-abcdef",
+                    "value": "353896717"
+                },
+                "function": "acceptEsdtPayment",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "0",
+                "message": "",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "add-liquidity",
+            "tx": {
+                "from": "address:user000007",
+                "to": "sc:fuzz_dex_webu_swap",
+                "value": "0",
+                "function": "addLiquidity",
+                "arguments": [
+                    "353896717",
+                    "353896717",
+                    "3538967",
+                    "3538967"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "getEquivalent",
+            "tx": {
+                "from": "address:fuzz_owner",
+                "to": "sc:fuzz_dex_webu_swap",
+                "value": "0",
+                "function": "getEquivalent",
+                "arguments": [
+                    "str:WEGLD-abcdef",
+                    "1000"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "setState",
+            "comment": "13 - increase block nonce",
+            "currentBlockInfo": {
+                "blockNonce": "13"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "claimRewards",
+            "tx": {
+                "from": "address:user000008",
+                "to": "sc:fuzz_dex_weme_farm",
+                "value": "0",
+                "esdt": {
+                    "tokenIdentifier": "str:WEMEFARM-abcdef",
+                    "nonce": "3",
+                    "value": "244101"
+                },
+                "function": "claimRewards",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "getRewardPerShare",
+            "tx": {
+                "from": "address:user000008",
+                "to": "sc:fuzz_dex_weme_farm",
+                "value": "0",
+                "function": "getRewardPerShare",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "setState",
+            "comment": "14 - increase block nonce",
+            "currentBlockInfo": {
+                "blockNonce": "14"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "stake",
+            "tx": {
+                "from": "address:user000010",
+                "to": "sc:fuzz_dex_webu_farm",
+                "value": "0",
+                "esdt": {
+                    "tokenIdentifier": "str:WEBUFARM-abcdef",
+                    "nonce": "2",
+                    "value": "1427734"
+                },
+                "function": "exitFarm",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            }
+        },
+        {
+            "step": "setState",
+            "comment": "15 - increase block nonce",
+            "currentBlockInfo": {
+                "blockNonce": "15"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "getAmountIn",
+            "tx": {
+                "from": "address:fuzz_owner",
+                "to": "sc:fuzz_dex_webu_swap",
+                "value": "0",
+                "function": "getAmountIn",
+                "arguments": [
+                    "str:BUSD-abcdef",
+                    "90905"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "*"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "dumpState"
+        },
+        {
+            "step": "scCall",
+            "txId": "swap-fixed-input",
+            "tx": {
+                "from": "address:user000004",
+                "to": "sc:fuzz_dex_webu_swap",
+                "value": "0",
+                "esdt": {
+                    "tokenIdentifier": "str:WEGLD-abcdef",
+                    "value": "9090561"
+                },
+                "function": "swapTokensFixedOutput",
+                "arguments": [
+                    "str:BUSD-abcdef",
+                    "90905"
+                ],
+                "gasLimit": "200,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "0",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "dumpState"
+        }
+    ]
+}

@@ -1188,6 +1188,10 @@ func TransferESDTNFTExecuteWithTypedArgs(
 	metering.UseGas(gasToUse)
 
 	sender := runtime.GetSCAddress()
+	if runtime.Function() == "swapTokensFixedOutput" {
+		debug := 1
+		debug++
+	}
 
 	var contractCallInput *vmcommon.ContractCallInput
 	if function != nil {

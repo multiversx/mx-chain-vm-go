@@ -168,7 +168,7 @@ func (pfe *fuzzDexExecutor) setupPair(swapAddress, firstTokenId, secondTokenId,	
                         "str:special_fee_percent": "050",
 						"str:burn_tokens_gas_limit": "500000",
 						"str:mint_tokens_gas_limit": "500000",
-						"str:send_fee_gas_limit": "25,000,000",
+						"str:send_fee_gas_limit": "50,000,000",
 						"str:extern_swap_gas_limit": "50,000,000"
                     },
                     "code": "file:elrond_dex_pair.wasm",
@@ -266,7 +266,7 @@ func (pfe *fuzzDexExecutor) setFeeOn(swapAddress, farmAddress, feeToken, ownerAd
 					"%s",
 					"str:%s"
 				],
-				"gasLimit": "10,000,000",
+				"gasLimit": "100,000,000",
 				"gasPrice": "0"
 			},
 			"expect": {
@@ -298,7 +298,7 @@ func (pfe *fuzzDexExecutor) whitelist(ownerAddress, swapAddressToConfig, swapAdd
 				"arguments": [
 					"%s"
 				],
-				"gasLimit": "10,000,000",
+				"gasLimit": "100,000,000",
 				"gasPrice": "0"
 			},
 			"expect": {
@@ -331,7 +331,7 @@ func (pfe *fuzzDexExecutor) addTrustedSwapPair(ownerAddress, swapAddressToConfig
 					"str:%s",
 					"str:%s"
 				],
-				"gasLimit": "10,000,000",
+				"gasLimit": "100,000,000",
 				"gasPrice": "0"
 			},
 			"expect": {

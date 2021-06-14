@@ -235,7 +235,7 @@ func (pfe *fuzzDexExecutor) querySingleResult(from, to, funcName, args string) (
 			"arguments": [
 				%s
 			],
-			"gasLimit": "10,000,000",
+			"gasLimit": "100,000,000",
 			"gasPrice": "0"
 		},
 		"expect": {
@@ -272,7 +272,7 @@ func (pfe *fuzzDexExecutor) querySingleResultStringAddr(from string, to string, 
 			"arguments": [
 				%s
 			],
-			"gasLimit": "10,000,000",
+			"gasLimit": "100,000,000",
 			"gasPrice": "0"
 		},
 		"expect": {

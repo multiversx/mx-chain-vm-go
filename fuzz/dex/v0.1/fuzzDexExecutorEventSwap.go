@@ -40,7 +40,7 @@ func (pfe *fuzzDexExecutor) swapFixedInput(user string, swapPair SwapPair, amoun
 				"str:%s",
 				"%d"
 			],
-			"gasLimit": "100,000,000",
+			"gasLimit": "200,000,000",
 			"gasPrice": "0"
 		}
 	}`,

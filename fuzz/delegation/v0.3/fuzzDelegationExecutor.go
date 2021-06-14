@@ -159,7 +159,7 @@ func (pfe *fuzzDelegationExecutor) querySingleResult(funcName string, args strin
 			"arguments": [
 				%s
 			],
-			"gasLimit": "10,000,000",
+			"gasLimit": "100,000,000",
 			"gasPrice": "0"
 		},
 		"expect": {
