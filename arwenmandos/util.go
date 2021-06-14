@@ -7,6 +7,7 @@ import (
 
 	er "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/expression/reconstructor"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/model"
+	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/write"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
 	"github.com/ElrondNetwork/elrond-go/core"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
@@ -166,6 +167,11 @@ func (ae *ArwenTestExecutor) convertLogToTestFormat(outputLog *vmcommon.LogEntry
 	}
 
 	return &testLog
+}
+
+// LogToString converts a log to a readable string representation
+func (ae *ArwenTestExecutor) LogToString(outputLog *vmcommon.LogEntry) string {
+	return mjwrite.LogToString(ae.convertLogToTestFormat(outputLog))
 }
 
 func generateTxHash(txIndex string) []byte {
