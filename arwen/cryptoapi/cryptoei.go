@@ -28,7 +28,7 @@ package cryptoapi
 // extern int32_t v1_3_p384Ec(void *context);
 // extern int32_t v1_3_p521Ec(void *context);
 // extern int32_t v1_3_getCurveLengthEC(void *context, int32_t ecHandle);
-// extern int32_t v1_3_getCurveByteLengthEC(void *context, int32_t ecHandle);
+// extern int32_t v1_3_getPrivKeyByteLengthEC(void *context, int32_t ecHandle);
 // extern int32_t v1_3_ellipticCurveGetValues(void *context, int32_t ecHandle, int32_t fieldOrderHandle, int32_t basePointOrderHandle, int32_t eqConstantHandle, int32_t xBasePointHandle, int32_t yBasePointHandle);
 import "C"
 
@@ -163,7 +163,7 @@ func CryptoImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getCurveByteLengthEC", v1_3_getCurveByteLengthEC, C.v1_3_getCurveByteLengthEC)
+	imports, err = imports.Append("getPrivKeyByteLengthEC", v1_3_getPrivKeyByteLengthEC, C.v1_3_getPrivKeyByteLengthEC)
 	if err != nil {
 		return nil, err
 	}
@@ -428,9 +428,12 @@ func v1_3_addEC(
 		arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
+	if !ec.IsOnCurve(x1, y1) || !ec.IsOnCurve(x2, y2) {
+		arwen.WithFault(arwen.ErrPointNotOnCurve, context, runtime.CryptoAPIErrorShouldFailExecution())
+	}
 
 	managedType.ConsumeGasForBigIntCopy(xResult, yResult, ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x1, y1, x2, y2)
-	xResultAdd, yResultAdd := ec.Add(x1, x2, y1, y2)
+	xResultAdd, yResultAdd := ec.Add(x1, y1, x2, y2)
 	xResult.Set(xResultAdd)
 	yResult.Set(yResultAdd)
 }
@@ -463,6 +466,9 @@ func v1_3_doubleEC(
 		arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
 		return
 	}
+	if !ec.IsOnCurve(x, y) {
+		arwen.WithFault(arwen.ErrPointNotOnCurve, context, runtime.CryptoAPIErrorShouldFailExecution())
+	}
 
 	managedType.ConsumeGasForBigIntCopy(xResult, yResult, ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
 	xResultDouble, yResultDouble := ec.Double(x, y)
@@ -491,7 +497,7 @@ func v1_3_isOnCurveEC(
 	}
 
 	x, y, err := managedType.GetTwoBigInt(pointXHandle, pointYHandle)
-	if err != nil {
+	if err != nil || x == nil || y == nil {
 		arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
 		return -1
 	}
@@ -580,6 +586,9 @@ func v1_3_scalarMultEC(
 		arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
+	if !ec.IsOnCurve(x, y) {
+		arwen.WithFault(arwen.ErrPointNotOnCurve, context, runtime.CryptoAPIErrorShouldFailExecution())
+	}
 
 	managedType.ConsumeGasForBigIntCopy(xResult, yResult, ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
 	xResultSM, yResultSM := ec.ScalarMult(x, y, data)
@@ -615,8 +624,11 @@ func v1_3_marshalEC(
 		arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
+	if !ec.IsOnCurve(x, y) {
+		arwen.WithFault(arwen.ErrPointNotOnCurve, context, runtime.CryptoAPIErrorShouldFailExecution())
+	}
 	if x.BitLen() > int(ec.BitSize) || y.BitLen() > int(ec.BitSize) {
-		arwen.WithFault(arwen.ErrBufNotBigEnough, context, runtime.CryptoAPIErrorShouldFailExecution())
+		arwen.WithFault(arwen.ErrLengthOfBufferNotCorrect, context, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
 
@@ -651,12 +663,15 @@ func v1_3_marshalCompressedEC(
 	}
 
 	x, y, err := managedType.GetTwoBigInt(xPairHandle, yPairHandle)
-	if err != nil {
+	if err != nil || x == nil || y == nil {
 		arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
+	if !ec.IsOnCurve(x, y) {
+		arwen.WithFault(arwen.ErrPointNotOnCurve, context, runtime.CryptoAPIErrorShouldFailExecution())
+	}
 	if x.BitLen() > int(ec.BitSize) || y.BitLen() > int(ec.BitSize) {
-		arwen.WithFault(arwen.ErrBufNotBigEnough, context, runtime.CryptoAPIErrorShouldFailExecution())
+		arwen.WithFault(arwen.ErrLengthOfBufferNotCorrect, context, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
 
@@ -695,6 +710,11 @@ func v1_3_unmarshalEC(
 		arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
+	byteLen := (ec.BitSize + 7) / 8
+	if int(length) != 1+2*byteLen {
+		arwen.WithFault(arwen.ErrLengthOfBufferNotCorrect, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return 1
+	}
 
 	xResult, yResult, err := managedType.GetTwoBigInt(xResultHandle, yResultHandle)
 	if err != nil {
@@ -704,6 +724,10 @@ func v1_3_unmarshalEC(
 
 	managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, xResult, yResult)
 	xResultU, yResultU := elliptic.Unmarshal(ec, data)
+	if xResultU == nil || yResultU == nil || !ec.IsOnCurve(xResultU, yResultU) {
+		arwen.WithFault(arwen.ErrPointNotOnCurve, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return 1
+	}
 	xResult.Set(xResultU)
 	yResult.Set(yResultU)
 
@@ -736,6 +760,11 @@ func v1_3_unmarshalCompressedEC(
 		arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
+	byteLen := (ec.BitSize + 7) / 8
+	if int(length) != 1+byteLen {
+		arwen.WithFault(arwen.ErrLengthOfBufferNotCorrect, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return 1
+	}
 
 	xResult, yResult, err := managedType.GetTwoBigInt(xResultHandle, yResultHandle)
 	if err != nil {
@@ -745,6 +774,10 @@ func v1_3_unmarshalCompressedEC(
 
 	managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, xResult, yResult)
 	xResultUC, yResultUC := elliptic.UnmarshalCompressed(ec, data)
+	if xResultUC == nil || yResultUC == nil || !ec.IsOnCurve(xResultUC, yResultUC) {
+		arwen.WithFault(arwen.ErrPointNotOnCurve, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return 1
+	}
 	xResult.Set(xResultUC)
 	yResult.Set(yResultUC)
 	return 0
@@ -809,12 +842,9 @@ func v1_3_ellipticCurveNew(context unsafe.Pointer, fieldOrderHandle int32, baseP
 		arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.BigIntAPIErrorShouldFailExecution())
 		return -1
 	}
-	// TODO
-	// should I verify? are the bigInt values in this case topencoded?
-	// if P.BitLen() != int(sizeOfField) || N.BitLen() != int(sizeOfField) || B.BitLen() != int(sizeOfField) || Gx.BitLen() != int(sizeOfField) || Gy.BitLen() != int(sizeOfField) {
-	// 	arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.BigIntAPIErrorShouldFailExecution())
-	// 	return -1
-	// }
+	if sizeOfField < 0 {
+		arwen.WithFault(arwen.ErrBadLowerBounds, context, runtime.BigIntAPIErrorShouldFailExecution())
+	}
 	curve := elliptic.CurveParams{P: P, N: N, B: B, Gx: Gx, Gy: Gy, BitSize: int(sizeOfField), Name: "EC"}
 
 	return managedType.PutEllipticCurve(&curve)
@@ -885,8 +915,8 @@ func v1_3_getCurveLengthEC(context unsafe.Pointer, ecHandle int32) int32 {
 	return ecLength
 }
 
-//export v1_3_getCurveByteLengthEC
-func v1_3_getCurveByteLengthEC(context unsafe.Pointer, ecHandle int32) int32 {
+//export v1_3_getPrivKeyByteLengthEC
+func v1_3_getPrivKeyByteLengthEC(context unsafe.Pointer, ecHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -894,7 +924,7 @@ func v1_3_getCurveByteLengthEC(context unsafe.Pointer, ecHandle int32) int32 {
 	gasToUse := metering.GasSchedule().BigIntAPICost.EllipticCurveNew / 5
 	metering.UseGas(gasToUse)
 
-	byteLength := managedType.GetEllipticCurveByteLength(ecHandle)
+	byteLength := managedType.GetPrivateKeyByteLengthEC(ecHandle)
 	if byteLength == -1 {
 		arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.BigIntAPIErrorShouldFailExecution())
 	}
