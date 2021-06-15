@@ -235,9 +235,10 @@ func (a *Account) RetrieveValue(key []byte) ([]byte, error) {
 // SaveKeyValue -
 func (a *Account) SaveKeyValue(key []byte, value []byte) error {
 	a.Storage[string(key)] = value
-	if a.MockWorld != nil {
-		a.MockWorld.CreateStateBackup()
+	if a.MockWorld == nil {
+		return ErrNilWorldMock
 	}
+	a.MockWorld.CreateStateBackup()
 	return nil
 }
 
