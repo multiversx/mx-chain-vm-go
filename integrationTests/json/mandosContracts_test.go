@@ -2,9 +2,6 @@ package vmjsonintegrationtest
 
 import (
 	"testing"
-
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
-	"github.com/stretchr/testify/require"
 )
 
 func TestRustAdder(t *testing.T) {
@@ -12,7 +9,6 @@ func TestRustAdder(t *testing.T) {
 }
 
 func TestRustErc20(t *testing.T) {
-	// runSingleTest(t, "erc20-rust/mandos", "not_payable_esdt.scen.json")
 	runAllTestsInFolder(t, "erc20-rust/mandos")
 }
 
