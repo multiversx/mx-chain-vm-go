@@ -38,11 +38,11 @@ func JSONCheckBytesStar() JSONCheckBytes {
 }
 
 // JSONCheckBytesReconstructed creates a JSONCheckBytes without an original JSON source.
-func JSONCheckBytesReconstructed(value []byte) JSONCheckBytes {
+func JSONCheckBytesReconstructed(value []byte, originalString string) JSONCheckBytes {
 	return JSONCheckBytes{
 		Value:       value,
 		IsStar:      false,
-		Original:    &oj.OJsonString{Value: ""},
+		Original:    &oj.OJsonString{Value: originalString},
 		Unspecified: false,
 	}
 }

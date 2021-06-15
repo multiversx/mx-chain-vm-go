@@ -428,6 +428,9 @@ func (context *outputContext) DeployCode(input arwen.CodeDeployInput) {
 func (context *outputContext) CreateVMOutputInCaseOfError(err error) *vmcommon.VMOutput {
 	var message string
 
+	runtime := context.host.Runtime()
+	runtime.AddError(err, runtime.Function())
+
 	if errors.Is(err, arwen.ErrSignalError) {
 		message = context.ReturnMessage()
 	} else {

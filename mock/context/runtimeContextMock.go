@@ -333,3 +333,12 @@ func (r *RuntimeContextMock) SetCustomCallFunction(_ string) {
 func (r *RuntimeContextMock) IsFunctionImported(_ string) bool {
 	return true
 }
+
+// AddError mocked method
+func (r *RuntimeContextMock) AddError(err error, otherInfo ...string) {
+}
+
+// GetAllErrors mocked method
+func (r *RuntimeContextMock) GetAllErrors() error {
+	return nil
+}

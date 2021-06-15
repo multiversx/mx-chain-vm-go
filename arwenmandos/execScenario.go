@@ -85,7 +85,7 @@ func (ae *ArwenTestExecutor) ExecuteSetStateStep(step *mj.SetStateStep) error {
 
 	// append accounts
 	for _, mandosAccount := range step.Accounts {
-		worldAccount, err := convertAccount(mandosAccount)
+		worldAccount, err := convertAccount(mandosAccount, ae.World)
 		if err != nil {
 			return err
 		}
@@ -127,7 +127,7 @@ func (ae *ArwenTestExecutor) ExecuteTxStep(step *mj.TxStep) (*vmi.VMOutput, erro
 
 	// check results
 	if step.ExpectedResult != nil {
-		err = checkTxResults(step.TxIdent, step.ExpectedResult, ae.checkGas, output)
+		err = ae.checkTxResults(step.TxIdent, step.ExpectedResult, ae.checkGas, output)
 		if err != nil {
 			return nil, err
 		}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/big"
 
+	er "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/expression/reconstructor"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/model"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
 	"github.com/ElrondNetwork/elrond-go/core"
@@ -13,7 +14,7 @@ import (
 	"github.com/ElrondNetwork/elrond-go/process/smartContract/builtInFunctions"
 )
 
-func convertAccount(testAcct *mj.Account) (*worldmock.Account, error) {
+func convertAccount(testAcct *mj.Account, world *worldmock.MockWorld) (*worldmock.Account, error) {
 	storage := make(map[string][]byte)
 	for _, stkvp := range testAcct.Storage {
 		key := string(stkvp.Key.Value)
@@ -42,6 +43,7 @@ func convertAccount(testAcct *mj.Account) (*worldmock.Account, error) {
 			Upgradeable: true,
 			Readable:    true,
 		}).ToBytes(), // TODO: add explicit fields in mandos json
+		MockWorld: world,
 	}
 
 	for _, mandosESDTData := range testAcct.ESDTData {
@@ -147,15 +149,21 @@ func convertBlockInfo(testBlockInfo *mj.BlockInfo) *worldmock.BlockInfo {
 }
 
 // this is a small hack, so we can reuse mandos's JSON printing in error messages
-func convertLogToTestFormat(outputLog *vmcommon.LogEntry) *mj.LogEntry {
+func (ae *ArwenTestExecutor) convertLogToTestFormat(outputLog *vmcommon.LogEntry) *mj.LogEntry {
 	testLog := mj.LogEntry{
-		Address:    mj.JSONCheckBytesReconstructed(outputLog.Address),
-		Identifier: mj.JSONCheckBytesReconstructed(outputLog.Identifier),
-		Data:       mj.JSONCheckBytesReconstructed(outputLog.Data),
-		Topics:     make([]mj.JSONCheckBytes, len(outputLog.Topics)),
+		Address: mj.JSONCheckBytesReconstructed(
+			outputLog.Address,
+			ae.exprReconstructor.Reconstruct(outputLog.Address,
+				er.AddressHint)),
+		Identifier: mj.JSONCheckBytesReconstructed(
+			outputLog.Identifier,
+			ae.exprReconstructor.Reconstruct(outputLog.Identifier,
+				er.StrHint)),
+		Data:   mj.JSONCheckBytesReconstructed(outputLog.Data, ""),
+		Topics: make([]mj.JSONCheckBytes, len(outputLog.Topics)),
 	}
 	for i, topic := range outputLog.Topics {
-		testLog.Topics[i] = mj.JSONCheckBytesReconstructed(topic)
+		testLog.Topics[i] = mj.JSONCheckBytesReconstructed(topic, "")
 	}
 
 	return &testLog

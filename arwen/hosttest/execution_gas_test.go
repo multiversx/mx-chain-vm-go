@@ -97,6 +97,7 @@ func TestGasUsed_SingleContract_BuiltinCallFail(t *testing.T) {
 			verify.
 				ReturnCode(vmcommon.ExecutionFailed).
 				ReturnMessage("Return value 1").
+				HasRuntimeErrors("whatdidyoudo").
 				GasRemaining(0)
 		})
 }
@@ -352,6 +353,7 @@ func TestGasUsed_ESDTTransferFailed(t *testing.T) {
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
 				ReturnCode(vmcommon.ExecutionFailed).
+				HasRuntimeErrors("insufficient funds").
 				GasRemaining(0)
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
@@ -629,8 +631,8 @@ func TestGasUsed_AsyncCall_CrossShard_CallBack(t *testing.T) {
 			world.CurrentBlockInfo.BlockRound = 2
 			// Mock the storage as if the parent was already executed
 			accountHandler, _ := world.GetUserAccount(test.ParentAddress)
-			(accountHandler.(*worldmock.Account)).SaveKeyValue(test.ParentKeyA, test.ParentDataA)
-			(accountHandler.(*worldmock.Account)).SaveKeyValue(test.ParentKeyB, test.ParentDataB)
+			(accountHandler.(*worldmock.Account)).Storage[string(test.ParentKeyA)] = test.ParentDataA
+			(accountHandler.(*worldmock.Account)).Storage[string(test.ParentKeyB)] = test.ParentDataB
 			setZeroCodeCosts(host)
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
@@ -663,7 +665,7 @@ func TestGasUsed_AsyncCall_BuiltinCall(t *testing.T) {
 			WithArguments(test.UserAddress, []byte("builtinClaim")).
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
-			world.AcctMap.CreateAccount(test.UserAddress)
+			world.AcctMap.CreateAccount(test.UserAddress, world)
 			createMockBuiltinFunctions(t, host, world)
 			setZeroCodeCosts(host)
 			setAsyncCosts(host, testConfig.GasLockCost)
@@ -701,7 +703,7 @@ func TestGasUsed_AsyncCall_BuiltinCallFail(t *testing.T) {
 			WithArguments(test.UserAddress, []byte("builtinFail")).
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
-			world.AcctMap.CreateAccount(test.UserAddress)
+			world.AcctMap.CreateAccount(test.UserAddress, world)
 			createMockBuiltinFunctions(t, host, world)
 			setZeroCodeCosts(host)
 			setAsyncCosts(host, testConfig.GasLockCost)
@@ -709,6 +711,7 @@ func TestGasUsed_AsyncCall_BuiltinCallFail(t *testing.T) {
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
 				Ok().
+				HasRuntimeErrors("whatdidyoudo").
 				GasUsed(test.ParentAddress, expectedGasUsedByParent).
 				GasUsed(test.UserAddress, 0).
 				GasRemaining(testConfig.GasProvided - expectedGasUsedByParent - expectedGasUsedByChild)
@@ -745,7 +748,7 @@ func TestGasUsed_AsyncCall_BuiltinMultiContractCall(t *testing.T) {
 			WithArguments(test.UserAddress, test.ChildAddress, []byte("childFunction"), []byte("builtinClaim")).
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
-			world.AcctMap.CreateAccount(test.UserAddress)
+			world.AcctMap.CreateAccount(test.UserAddress, world)
 			setZeroCodeCosts(host)
 			setAsyncCosts(host, testConfig.GasLockCost)
 			createMockBuiltinFunctions(t, host, world)
@@ -1044,7 +1047,8 @@ func TestGasUsed_ESDTTransfer_ThenExecuteAsyncCall_ChildFails(t *testing.T) {
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
-				Ok()
+				Ok().
+				HasRuntimeErrors(arwen.ErrNotEnoughGas.Error())
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
 			require.Equal(t, initialESDTTokenBalance, parentESDTBalance)
@@ -1179,7 +1183,8 @@ func TestGasUsed_ESDTTransferWrongArgNumberForCallback(t *testing.T) {
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
-				Ok()
+				Ok().
+				HasRuntimeErrors("tokenize failed")
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
 			require.Equal(t, initialESDTTokenBalance-uint64(testConfig.ESDTTokensToTransfer), parentESDTBalance)

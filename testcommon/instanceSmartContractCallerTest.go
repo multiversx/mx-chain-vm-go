@@ -92,6 +92,8 @@ func runTestWithInstances(callerTest *InstancesTestTemplate) {
 
 	vmOutput, err := host.RunSmartContractCall(callerTest.input)
 
-	verify := NewVMOutputVerifier(callerTest.t, vmOutput, err)
+	allErrors := host.Runtime().GetAllErrors()
+
+	verify := NewVMOutputVerifierWithAllErrors(callerTest.t, vmOutput, err, allErrors)
 	callerTest.assertResults(host, blockchainHookStub, verify)
 }

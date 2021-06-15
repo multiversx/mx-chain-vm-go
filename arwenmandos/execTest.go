@@ -13,7 +13,7 @@ func (ae *ArwenTestExecutor) ExecuteTest(test *mj.Test) error {
 	ae.World.Blockhashes = mj.JSONBytesFromStringValues(test.BlockHashes)
 
 	for _, acct := range test.Pre {
-		account, err := convertAccount(acct)
+		account, err := convertAccount(acct, ae.World)
 		if err != nil {
 			return err
 		}
@@ -34,7 +34,7 @@ func (ae *ArwenTestExecutor) ExecuteTest(test *mj.Test) error {
 			blResult := block.Results[txIndex]
 
 			// check results
-			err = checkTxResults(txName, blResult, test.CheckGas, output)
+			err = ae.checkTxResults(txName, blResult, test.CheckGas, output)
 			if err != nil {
 				return err
 			}
