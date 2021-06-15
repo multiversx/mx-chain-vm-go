@@ -2,6 +2,9 @@ package vmjsonintegrationtest
 
 import (
 	"testing"
+
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	"github.com/stretchr/testify/require"
 )
 
 func TestRustAdder(t *testing.T) {

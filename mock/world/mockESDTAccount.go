@@ -149,8 +149,8 @@ func (a *Account) SetTokenData(tokenKey []byte, tokenData *esdt.ESDigitalToken) 
 	if err != nil {
 		return err
 	}
-
-	return a.DataTrieTracker().SaveKeyValue(tokenKey, marshaledData)
+	a.Storage[string(tokenKey)] = marshaledData
+	return nil
 }
 
 // SetTokenRoles sets the specified roles to the account, corresponding to the given tokenName.
@@ -165,7 +165,8 @@ func (a *Account) SetTokenRoles(tokenName []byte, roles [][]byte) error {
 		return err
 	}
 
-	return a.DataTrieTracker().SaveKeyValue(tokenRolesKey, marshaledData)
+	a.Storage[string(tokenRolesKey)] = marshaledData
+	return nil
 }
 
 // SetTokenRolesAsStrings sets the specified roles to the account, corresponding to the given tokenName.
@@ -182,7 +183,8 @@ func (a *Account) SetTokenRolesAsStrings(tokenName []byte, rolesAsStrings []stri
 func (a *Account) SetLastNonce(tokenName []byte, lastNonce uint64) error {
 	tokenNonceKey := MakeLastNonceKey(tokenName)
 	nonceBytes := big.NewInt(0).SetUint64(lastNonce).Bytes()
-	return a.DataTrieTracker().SaveKeyValue(tokenNonceKey, nonceBytes)
+	a.Storage[string(tokenNonceKey)] = nonceBytes
+	return nil
 }
 
 // SetLastNonces writes the last nonces of each specified ESDT into the storage.
