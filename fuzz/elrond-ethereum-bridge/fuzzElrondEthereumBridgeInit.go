@@ -1,14 +1,9 @@
 package elrond_ethereum_bridge
 
-import "math/big"
-
-type PriceAggregatorInitArgs struct {
-	paymentToken       string
-	oracleAddresses    []string
-	submissionCount    int
-	decimals           int
-	queryPaymentAmount *big.Int
-}
+import (
+	"fmt"
+	"math/big"
+)
 
 type MultisigInitArgs struct {
 	requiredStake *big.Int
@@ -26,4 +21,73 @@ type DeployChildContractsArgs struct {
 	wrappedEgldTokenId     string
 	wrappedEthTokenId      string
 	tokenWhitelist         []string
+}
+
+func (fe *fuzzExecutor) initData() error {
+	fe.data = &fuzzData{
+		actorAddresses: &ActorAddresses{
+			owner:             "address:owner",
+			boardMembers:      []string{},
+			users:             []string{},
+			multisig:          "sc:multisig",
+			priceAggregator:   "sc:price_aggregator",
+			egldEsdtSwap:      "sc:egld_esdt_swap",
+			esdtSafe:          "sc:esdt_safe",
+			ethereumFeePrepay: "sc:ethereum_fee_prepay",
+			multiTransferEsdt: "sc:multi_transfer_esdt",
+		},
+		tokenWhitelist:             []string{},
+		createdTransactionBatch:    []*Transaction{},
+		incomingTransactionBatchId: 0,
+		incomingTransactionBatch:   []*SimpleTransfer{},
+	}
+	fe.world.Clear()
+
+	return nil
+}
+
+func (fe *fuzzExecutor) setup(
+	multisigInitArgs *MultisigInitArgs,
+	deployChildContractsArgs *DeployChildContractsArgs) error {
+
+	err := fe.setupAggregator()
+	if err != nil {
+		return err
+	}
+
+	/*
+		err = fe.executeStep(fmt.Sprintf(`
+			{
+				"step": "setState",
+				"accounts": {
+					"%s": {
+						"nonce": "0",
+						"balance": "0",
+						"storage": {}
+					}
+				}
+			}`,
+			fe.data.actorAddresses.owner,
+		))
+		if err != nil {
+			return err
+		}
+	*/
+
+	return nil
+}
+
+func (fe *fuzzExecutor) setupAggregator() error {
+	err := fe.executeStep(fmt.Sprintf(`
+		{
+			"step": "externalSteps",
+			"path": "%s"
+		}`,
+		"/home/elrond/arwen-wasm-vm/test/elrond-ethereum-bridge/price-aggregator/mandos/oracle_submit.scen.json",
+	))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

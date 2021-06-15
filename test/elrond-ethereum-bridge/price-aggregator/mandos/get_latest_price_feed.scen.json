@@ -1,0 +1,31 @@
+{
+    "name": "get latest round data",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "oracle_submit.scen.json"
+        },
+        {
+            "step": "scQuery",
+            "tx": {
+                "to": "sc:price_aggregator",
+                "function": "latestPriceFeed",
+                "arguments": [
+                    "str:GWEI",
+                    "str:EGLD"
+                ]
+            },
+            "expect": {
+                "status": "0",
+                "message": "",
+                "out": [
+                    "1",
+                    "str:GWEI",
+                    "str:EGLD",
+                    "10",
+                    "0"
+                ]
+            }
+        }
+    ]
+}
