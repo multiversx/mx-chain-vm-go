@@ -317,19 +317,12 @@ func (pfe *fuzzDexExecutor) increaseBlockNonce(epochDelta int) error {
 		return err
 	}
 
-	//pfe.log("block epoch: %d ---> %d", currentBlockNonce, currentBlockNonce+uint64(epochDelta))
 	return nil
 }
 
 func (pfe *fuzzDexExecutor) nextTxIndex() int {
 	pfe.txIndex++
 	return pfe.txIndex
-}
-
-func Use(vals ...interface{}) {
-	for _, val := range vals {
-		_ = val
-	}
 }
 
 // This function allows equality with a += 1

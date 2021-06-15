@@ -6,33 +6,33 @@ import (
 
 func (pfe *fuzzDexExecutor) checkPairViews(user string, swapPair SwapPair, stats *eventsStatistics) error {
 
-	outputAmountInA, errAmountInA := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,
+	_, errAmountInA := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,
 		"getAmountIn", fmt.Sprintf("\"str:%s\", \"%d\"", swapPair.firstToken, 1000))
 
-	outputAmountOutA, errAmountOutA := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,
+	_, errAmountOutA := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,
 		"getAmountOut", fmt.Sprintf("\"str:%s\", \"%d\"", swapPair.firstToken, 1000))
 
-	outputEquivalentOutA, errEquivalentA := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,
+	_, errEquivalentA := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,
 		"getEquivalent", fmt.Sprintf("\"str:%s\", \"%d\"", swapPair.firstToken, 1000))
 
-	outputAmountInB, errAmountInB := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,
+	_, errAmountInB := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,
 		"getAmountIn", fmt.Sprintf("\"str:%s\", \"%d\"", swapPair.secondToken, 1000))
 
-	outputAmountOutB, errAmountOutB := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,
+	_, errAmountOutB := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,
 		"getAmountOut", fmt.Sprintf("\"str:%s\", \"%d\"", swapPair.secondToken, 1000))
 
-	outputEquivalentOutB, errEquivalentB := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,
+	_, errEquivalentB := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,
 		"getEquivalent", fmt.Sprintf("\"str:%s\", \"%d\"", swapPair.secondToken, 1000))
 
-	if errAmountInA != nil || errAmountInB != nil || errAmountOutA != nil || errAmountOutB != nil ||
+	if errAmountInA != nil || errAmountInB != nil ||
+		errAmountOutA != nil || errAmountOutB != nil ||
 		errEquivalentA != nil || errEquivalentB != nil {
-		pfe.log("some query returned errors")
 		stats.queryPairsMisses += 1
+
+		pfe.log("some queries returned errors")
 	} else {
 		stats.queryPairsHits += 1
 	}
-
-	Use(outputAmountInA, outputAmountInB, outputAmountOutA, outputAmountOutB, outputEquivalentOutA, outputEquivalentOutB)
 
 	return nil
 }

@@ -38,7 +38,7 @@ func (pfe *fuzzDexExecutor) exitFarm(amountMax int, statistics *eventsStatistics
 
 	mexBefore, err := pfe.getTokens(user, pfe.mexTokenId)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	output, err := pfe.executeTxStep(fmt.Sprintf(`
@@ -66,31 +66,37 @@ func (pfe *fuzzDexExecutor) exitFarm(amountMax int, statistics *eventsStatistics
 		unstakeAmount,
 		nonce,
 	))
-	if output == nil {
-		return errors.New("NULL Output")
-	}
 
-	success := output.ReturnCode == vmi.Ok
-	if success {
+	if err == nil && output.ReturnCode == vmi.Ok {
 		statistics.exitFarmHits += 1
 
 		mexAfter, err := pfe.getTokens(user, pfe.mexTokenId)
 		if err != nil {
-			return nil
+			return err
 		}
 
 		if mexAfter.Cmp(mexBefore) == 1 {
 			statistics.exitFarmWithRewards += 1
 		} else if mexAfter.Cmp(mexBefore) == -1 {
-			return errors.New("LOST wegld while unstake")
+			return errors.New("LOST mex while exiting farm")
 		}
 
 	} else {
 		statistics.exitFarmMisses += 1
+
+		if output == nil {
+			return errors.New("output is nil")
+		}
+
 		pfe.log("exitFarm")
 		pfe.log("could not exitFarm because %s", output.ReturnMessage)
 
-		if output.ReturnMessage == "insufficient funds" {
+		expectedErrors := map[string]bool{
+			"Exit too early for lock rewards option": true,
+		}
+
+		_, expected := expectedErrors[output.ReturnMessage]
+		if !expected {
 			return errors.New(output.ReturnMessage)
 		}
 	}

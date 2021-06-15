@@ -3,7 +3,6 @@ package dex
 import (
 	"errors"
 	"fmt"
-
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
@@ -15,11 +14,11 @@ func (pfe *fuzzDexExecutor) addLiquidity(user string, swapPair SwapPair, amountA
 
 	tokenABefore, err := pfe.getTokens(user, swapPair.firstToken)
 	if err != nil {
-		return nil
+		return err
 	}
 	tokenBBefore, err := pfe.getTokens(user, swapPair.secondToken)
 	if err != nil {
-		return nil
+		return err
 	}
 	tokenLpBefore, err := pfe.getTokens(user, swapPair.lpToken)
 	if err != nil {
@@ -122,84 +121,62 @@ func (pfe *fuzzDexExecutor) addLiquidity(user string, swapPair SwapPair, amountA
 		amountAmin,
 		amountBmin,
 	))
-	if output == nil {
-		return errors.New("NULL output")
-	}
 
-	success := output.ReturnCode == vmi.Ok
-	if success {
-		// Add liquidity is good
+	if err == nil && output.ReturnCode == vmi.Ok {
 		statistics.addLiquidityHits += 1
 
-		// Get New price
 		rawEquivalentAfter, errAfter := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,
 			"getEquivalent", fmt.Sprintf("\"str:%s\", \"%d\"", swapPair.firstToken, 1000))
 		if errAfter != nil {
 			return errAfter
 		}
 
-		// New and old prices should be the same
 		if errEquivalent == nil && !(len(rawEquivalent) == 1 && len(rawEquivalent[0]) == 0) {
 			statistics.addLiquidityPriceChecks += 1
 			if !equalMatrix(rawEquivalentAfter, rawEquivalent) {
 				return errors.New("PRICE CHANGED after add liquidity")
 			}
 		}
-	} else {
-		statistics.addLiquidityMisses += 1
-		pfe.log("add liquidity %s -> %s", swapPair.firstToken, swapPair.secondToken)
-		pfe.log("could not add because %s", output.ReturnMessage)
 
-		//In case we get these errors but values are !=0, its an error
-		if (output.ReturnMessage == "PAIR: INSSUFICIENT TOKEN A FUNDS SENT" ||
-			output.ReturnMessage == "PAIR: INSSUFICIENT TOKEN B FUNDS SENT" ||
-			output.ReturnMessage == "PAIR: NO AVAILABLE TOKEN A FUNDS" ||
-			output.ReturnMessage == "PAIR: NO AVAILABLE TOKEN B FUNDS") &&
-			(amountA > 0 && amountB > 0) {
-			return errors.New(output.ReturnMessage)
+		tokenAAfter, err := pfe.getTokens(user, swapPair.firstToken)
+		if err != nil {
+			return err
+		}
+		tokenBAfter, err := pfe.getTokens(user, swapPair.secondToken)
+		if err != nil {
+			return err
+		}
+		tokenLpAfter, err := pfe.getTokens(user, swapPair.lpToken)
+		if err != nil {
+			return err
 		}
 
-		if output.ReturnMessage == "Pair: FIRST TOKENS NEEDS TO BE GRATER THAN MINIMUM LIQUIDITY: 1000 * 1000e-18" &&
-			amountA > 1000 && amountB > 1000 {
-			return errors.New(output.ReturnMessage)
-		}
-
-		//No way we should receive this
-		if output.ReturnMessage == "K invariant failed" {
-			return errors.New(output.ReturnMessage)
-		}
-
-		if output.ReturnMessage == "insufficient funds" {
-			return errors.New(output.ReturnMessage)
-		}
-
-		// Other errors are fine
-	}
-
-	tokenAAfter, err := pfe.getTokens(user, swapPair.firstToken)
-	if err != nil {
-		return nil
-	}
-	tokenBAfter, err := pfe.getTokens(user, swapPair.secondToken)
-	if err != nil {
-		return nil
-	}
-	tokenLpAfter, err := pfe.getTokens(user, swapPair.lpToken)
-	if err != nil {
-		return err
-	}
-
-	if success {
 		if tokenABefore.Cmp(tokenAAfter) < 1 ||
 			tokenBBefore.Cmp(tokenBAfter) < 1 ||
 			tokenLpBefore.Cmp(tokenLpAfter) > -1 {
 			return errors.New("FAILED add liquidity balances on success")
 		}
 	} else {
-		if tokenABefore.Cmp(tokenAAfter) != 0 ||
-			tokenBBefore.Cmp(tokenBAfter) != 0 ||
-			tokenLpBefore.Cmp(tokenLpAfter) != 0 {
-			return errors.New("FAILED add liquidity balances on fail")
+		statistics.addLiquidityMisses += 1
+
+		if output == nil {
+			return errors.New("output is nil")
+		}
+
+		pfe.log("add liquidity %s -> %s", swapPair.firstToken, swapPair.secondToken)
+		pfe.log("could not add because %s", output.ReturnMessage)
+
+		expectedErrors := map[string]bool{
+			"Insufficient second token computed amount": true,
+			"Optimal amount greater than desired amount": true,
+			"Insufficient first token computed amount": true,
+			"First tokens needs to be greater than minimum liquidity": true,
+			"Insufficient liquidity minted": true,
+		}
+
+		_, expected := expectedErrors[output.ReturnMessage]
+		if !expected {
+			return errors.New(output.ReturnMessage)
 		}
 	}
 

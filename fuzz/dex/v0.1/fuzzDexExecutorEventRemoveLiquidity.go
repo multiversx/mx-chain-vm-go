@@ -3,7 +3,6 @@ package dex
 import (
 	"errors"
 	"fmt"
-
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
@@ -15,11 +14,11 @@ func (pfe *fuzzDexExecutor) removeLiquidity(user string, swapPair SwapPair, amou
 
 	tokenABefore, err := pfe.getTokens(user, swapPair.firstToken)
 	if err != nil {
-		return nil
+		return err
 	}
 	tokenBBefore, err := pfe.getTokens(user, swapPair.secondToken)
 	if err != nil {
-		return nil
+		return err
 	}
 	tokenLpBefore, err := pfe.getTokens(user, swapPair.lpToken)
 	if err != nil {
@@ -54,26 +53,22 @@ func (pfe *fuzzDexExecutor) removeLiquidity(user string, swapPair SwapPair, amou
 		amountAmin,
 		amountBmin,
 	))
-	if output == nil {
-		return errors.New("NULL Output")
-	}
 
-	tokenAAfter, err := pfe.getTokens(user, swapPair.firstToken)
-	if err != nil {
-		return nil
-	}
-	tokenBAfter, err := pfe.getTokens(user, swapPair.secondToken)
-	if err != nil {
-		return nil
-	}
-	tokenLpAfter, err := pfe.getTokens(user, swapPair.lpToken)
-	if err != nil {
-		return err
-	}
-
-	success := output.ReturnCode == vmi.Ok
-	if success {
+	if err == nil && output.ReturnCode == vmi.Ok {
 		statistics.removeLiquidityHits += 1
+
+		tokenAAfter, err := pfe.getTokens(user, swapPair.firstToken)
+		if err != nil {
+			return err
+		}
+		tokenBAfter, err := pfe.getTokens(user, swapPair.secondToken)
+		if err != nil {
+			return err
+		}
+		tokenLpAfter, err := pfe.getTokens(user, swapPair.lpToken)
+		if err != nil {
+			return err
+		}
 
 		rawOutput, erro := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,
 			"getEquivalent", fmt.Sprintf("\"str:%s\", \"%d\"", swapPair.firstToken, 1000))
@@ -90,16 +85,23 @@ func (pfe *fuzzDexExecutor) removeLiquidity(user string, swapPair SwapPair, amou
 			}
 		}
 	} else {
-		pfe.log("remove liquidity %s -> %s", swapPair.firstToken, swapPair.secondToken)
-		pfe.log("could not remove because %s", output.ReturnMessage)
 		statistics.removeLiquidityMisses += 1
 
-		if tokenABefore.Cmp(tokenAAfter) != 0 ||
-			tokenBBefore.Cmp(tokenBAfter) != 0 ||
-			tokenLpBefore.Cmp(tokenLpAfter) != 0 {
-			return errors.New("FAILED remove liquidity balances on success")
+		if output == nil {
+			return errors.New("output is nil")
 		}
-		if output.ReturnMessage == "insufficient funds" {
+
+		pfe.log("remove liquidity %s -> %s", swapPair.firstToken, swapPair.secondToken)
+		pfe.log("could not remove because %s", output.ReturnMessage)
+
+		expectedErrors := map[string]bool{
+			"Not enough LP token supply": true,
+			"Insufficient liquidity burned": true,
+			"Not enough reserve": true,
+		}
+
+		_, expected := expectedErrors[output.ReturnMessage]
+		if !expected {
 			return errors.New(output.ReturnMessage)
 		}
 	}

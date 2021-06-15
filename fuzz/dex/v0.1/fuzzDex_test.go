@@ -123,7 +123,6 @@ func generateRandomEvent(
 	user := pfe.userAddress(userId)
 
 	switch {
-	//remove liquidity
 	case re.WithProbability(pfe.removeLiquidityProb):
 
 		swapPair := getRandomSwapPair(r, pfe)
@@ -135,7 +134,6 @@ func generateRandomEvent(
 		err := pfe.removeLiquidity(user, swapPair, amount, amountAmin, amountBmin, statistics)
 		require.Nil(t, err)
 
-	//add liquidity
 	case re.WithProbability(pfe.addLiquidityProb):
 
 		swapPair := getRandomSwapPair(r, pfe)
@@ -148,7 +146,6 @@ func generateRandomEvent(
 		err := pfe.addLiquidity(user, swapPair, amountA, amountB, amountAmin, amountBmin, statistics)
 		require.Nil(t, err)
 
-	//swap
 	case re.WithProbability(pfe.swapProb):
 
 		swapPair := getRandomSwapPair(r, pfe)
@@ -168,14 +165,12 @@ func generateRandomEvent(
 			require.Nil(t, err)
 		}
 
-	// pair views
 	case re.WithProbability(pfe.queryPairsProb):
 
 		swapPair := getRandomSwapPair(r, pfe)
 		err := pfe.checkPairViews(user, swapPair, statistics)
 		require.Nil(t, err)
 
-	// enterFarm
 	case re.WithProbability(pfe.enterFarmProb):
 
 		amount := r.Intn(pfe.enterFarmMaxValue) + 1
@@ -183,21 +178,18 @@ func generateRandomEvent(
 		err := pfe.enterFarm(user, farm, amount, statistics)
 		require.Nil(t, err)
 
-	// exitFarm
 	case re.WithProbability(pfe.exitFarmProb):
 
 		amount := r.Intn(pfe.exitFarmMaxValue) + 1
 		err := pfe.exitFarm(amount, statistics, r)
 		require.Nil(t, err)
 
-	// claimRewards
 	case re.WithProbability(pfe.claimRewardsProb):
 
 		amount := r.Intn(pfe.claimRewardsMaxValue) + 1
 		err := pfe.claimRewards(amount, statistics, r)
 		require.Nil(t, err)
 
-	// increase block nonce. required for rewards
 	case re.WithProbability(pfe.increaseBlockNonceProb):
 
 		err := pfe.increaseBlockNonce(pfe.blockNonceIncrease)

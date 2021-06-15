@@ -4,8 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
-
-	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 func (pfe *fuzzDexExecutor) swapFixedInput(user string, swapPair SwapPair, amountA int,
@@ -13,11 +11,11 @@ func (pfe *fuzzDexExecutor) swapFixedInput(user string, swapPair SwapPair, amoun
 
 	tokenABefore, err := pfe.getTokens(user, swapPair.firstToken)
 	if err != nil {
-		return nil
+		return err
 	}
 	tokenBBefore, err := pfe.getTokens(user, swapPair.secondToken)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	amountOutRaw, amountOutErr := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,
@@ -51,25 +49,23 @@ func (pfe *fuzzDexExecutor) swapFixedInput(user string, swapPair SwapPair, amoun
 		swapPair.secondToken,
 		amountB,
 	))
-	if output == nil {
-		return errors.New("NULL output")
-	}
 
-	tokenAAfter, err := pfe.getTokens(user, swapPair.firstToken)
-	if err != nil {
-		return nil
-	}
-	tokenBAfter, err := pfe.getTokens(user, swapPair.secondToken)
-	if err != nil {
-		return nil
-	}
-
-	success := output.ReturnCode == vmi.Ok
-	if success {
+	if err == nil {
+		if output == nil {
+			return errors.New("output is nil")
+		}
 		statistics.swapFixedInputHits += 1
 
+		tokenAAfter, err := pfe.getTokens(user, swapPair.firstToken)
+		if err != nil {
+			return err
+		}
+		tokenBAfter, err := pfe.getTokens(user, swapPair.secondToken)
+		if err != nil {
+			return err
+		}
+
 		if amountOutErr == nil {
-			//Check if tokens send vs received are correct
 			if tokenAAfter.Cmp(big.NewInt(0).Sub(tokenABefore, big.NewInt(int64(amountA)))) != 0 {
 				return errors.New("SWAP fixed input wrong amount A")
 			}
@@ -79,21 +75,9 @@ func (pfe *fuzzDexExecutor) swapFixedInput(user string, swapPair SwapPair, amoun
 		}
 	} else {
 		statistics.swapFixedInputMisses += 1
+
 		pfe.log("swapFixedInput %s -> %s", swapPair.firstToken, swapPair.secondToken)
 		pfe.log("could not swap because %s", output.ReturnMessage)
-
-		if tokenAAfter.Cmp(tokenABefore) != 0 {
-			return errors.New("SWAP wrong amount A")
-		}
-		if tokenBAfter.Cmp(tokenBBefore) != 0 {
-			return errors.New("SWAP wrong amount B")
-		}
-		if output.ReturnMessage == "insufficient funds" {
-			return errors.New(output.ReturnMessage)
-		}
-		if output.ReturnMessage == "K invariant failed" {
-			return errors.New(output.ReturnMessage)
-		}
 	}
 
 	return nil
@@ -104,17 +88,17 @@ func (pfe *fuzzDexExecutor) swapFixedOutput(user string, swapPair SwapPair, amou
 
 	tokenABefore, err := pfe.getTokens(user, swapPair.firstToken)
 	if err != nil {
-		return nil
+		return err
 	}
 	tokenBBefore, err := pfe.getTokens(user, swapPair.secondToken)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	amountInRaw, amountInErr := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,
 		"getAmountIn", fmt.Sprintf("\"str:%s\", \"%d\"", swapPair.secondToken, amountB))
 
-	output, errSwap := pfe.executeTxStep(fmt.Sprintf(`
+	output, err := pfe.executeTxStep(fmt.Sprintf(`
 	{
 		"step": "scCall",
 		"txId": "swap-fixed-input",
@@ -142,54 +126,46 @@ func (pfe *fuzzDexExecutor) swapFixedOutput(user string, swapPair SwapPair, amou
 		swapPair.secondToken,
 		amountB,
 	))
-	if output == nil {
-		return errors.New("NULL output")
-	}
 
-	tokenAAfter, err := pfe.getTokens(user, swapPair.firstToken)
-	if err != nil {
-		return nil
-	}
-	tokenBAfter, err := pfe.getTokens(user, swapPair.secondToken)
-	if err != nil {
-		return nil
-	}
-
-	success := output.ReturnMessage == ""
-	if success {
+	if err == nil {
 		statistics.swapFixedOutputHits += 1
 
-		if amountInErr == nil {
-			//Check if tokens send vs received are correct
-			amountInRequested := big.NewInt(0).SetBytes(amountInRaw[0])
-			diffBeforeAfter := big.NewInt(0).Sub(tokenABefore, tokenAAfter)
-			diffAfterBefore := big.NewInt(0).Sub(tokenAAfter, tokenABefore)
-			sumDiffBeforeAfterInRequested := big.NewInt(0).Add(diffBeforeAfter, amountInRequested)
-			sumDiffAfterBeforeInRequested := big.NewInt(0).Add(diffAfterBefore, amountInRequested)
-			Use(amountInRequested, diffBeforeAfter, diffAfterBefore, sumDiffBeforeAfterInRequested, sumDiffAfterBeforeInRequested, errSwap)
+		tokenAAfter, err := pfe.getTokens(user, swapPair.firstToken)
+		if err != nil {
+			return err
+		}
+		tokenBAfter, err := pfe.getTokens(user, swapPair.secondToken)
+		if err != nil {
+			return err
+		}
 
+		if amountInErr == nil {
 			if tokenAAfter.Cmp(big.NewInt(0).Sub(tokenABefore, big.NewInt(0).SetBytes(amountInRaw[0]))) != 0 {
-				return errors.New("SWAP fixed output wrong amount A")
+				return errors.New("swap fixed output wrong amount A")
 			}
 			if tokenBAfter.Cmp(big.NewInt(0).Add(tokenBBefore, big.NewInt(int64(amountB)))) != 0 {
-				return errors.New("SWAP fixed output wrong amount B")
+				return errors.New("swap fixed output wrong amount B")
 			}
 		}
 	} else {
 		statistics.swapFixedOutputMisses += 1
+
+		if output == nil {
+			return errors.New("output is nil")
+		}
+
 		pfe.log("swapFixedOutput %s -> %s", swapPair.firstToken, swapPair.secondToken)
 		pfe.log("could not swap because %s", output.ReturnMessage)
 
-		if tokenAAfter.Cmp(tokenABefore) != 0 {
-			return errors.New("SWAP wrong amount A")
+		expectedErrors := map[string]bool{
+			"Insufficient reserve for token out": true,
+			"Computed amount out lesser than minimum amount out": true,
+			"Insufficient amount out reserve": true,
+			"Optimal value is zero": true,
 		}
-		if tokenBAfter.Cmp(tokenBBefore) != 0 {
-			return errors.New("SWAP wrong amount B")
-		}
-		if output.ReturnMessage == "insufficient funds" {
-			return errors.New(output.ReturnMessage)
-		}
-		if output.ReturnMessage == "K invariant failed" {
+
+		_, expected := expectedErrors[output.ReturnMessage]
+		if !expected {
 			return errors.New(output.ReturnMessage)
 		}
 	}
