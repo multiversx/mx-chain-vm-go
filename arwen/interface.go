@@ -170,7 +170,7 @@ type ManagedTypesContext interface {
 	PutEllipticCurve(ec *elliptic.CurveParams) int32
 	GetEllipticCurve(handle int32) (*elliptic.CurveParams, error)
 	GetEllipticCurveSizeOfField(ecHandle int32) int32
-	GetEllipticCurveByteLength(ecHandle int32) int32
+	GetPrivateKeyByteLengthEC(ecHandle int32) int32
 }
 
 // OutputContext defines the functionality needed for interacting with the output context

@@ -209,11 +209,11 @@ func (context *managedTypesContext) GetEllipticCurveSizeOfField(ecHandle int32) 
 	return int32(curve.BitSize)
 }
 
-// GetPrivateKeyLengthEC returns the length in bytes of the private key that will be generated.
-func (context *managedTypesContext) GetEllipticCurveByteLength(ecHandle int32) int32 {
+// GetPrivateKeyByteLengthEC returns the length in bytes of the private key that will be generated.
+func (context *managedTypesContext) GetPrivateKeyByteLengthEC(ecHandle int32) int32 {
 	curve, ok := context.ecValues[ecHandle]
 	if !ok {
 		return -1
 	}
-	return int32(len(curve.N.Bytes()))
+	return int32((curve.N.BitLen() + 7) / 8)
 }
