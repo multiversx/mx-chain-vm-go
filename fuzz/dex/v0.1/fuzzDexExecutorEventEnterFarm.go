@@ -32,8 +32,11 @@ func (pfe *fuzzDexExecutor) enterFarm(user string, farm Farm, amount int, statis
 		farm.farmingToken,
 		amount,
 	))
+	if err != nil {
+		return err
+	}
 
-	if err == nil && output.ReturnCode == vmi.Ok {
+	if output.ReturnCode == vmi.Ok {
 		statistics.enterFarmHits += 1
 
 		pfe.currentFarmTokenNonce[farm.address] += 1
@@ -56,10 +59,6 @@ func (pfe *fuzzDexExecutor) enterFarm(user string, farm Farm, amount int, statis
 		}
 	} else {
 		statistics.enterFarmMisses += 1
-
-		if output == nil {
-			return errors.New("output is nil")
-		}
 
 		pfe.log("stake %s", farm.farmingToken)
 		pfe.log("could enter farm because %s", output.ReturnMessage)

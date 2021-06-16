@@ -53,8 +53,11 @@ func (pfe *fuzzDexExecutor) removeLiquidity(user string, swapPair SwapPair, amou
 		amountAmin,
 		amountBmin,
 	))
+	if err != nil {
+		return err
+	}
 
-	if err == nil && output.ReturnCode == vmi.Ok {
+	if output.ReturnCode == vmi.Ok {
 		statistics.removeLiquidityHits += 1
 
 		tokenAAfter, err := pfe.getTokens(user, swapPair.firstToken)
@@ -86,10 +89,6 @@ func (pfe *fuzzDexExecutor) removeLiquidity(user string, swapPair SwapPair, amou
 		}
 	} else {
 		statistics.removeLiquidityMisses += 1
-
-		if output == nil {
-			return errors.New("output is nil")
-		}
 
 		pfe.log("remove liquidity %s -> %s", swapPair.firstToken, swapPair.secondToken)
 		pfe.log("could not remove because %s", output.ReturnMessage)

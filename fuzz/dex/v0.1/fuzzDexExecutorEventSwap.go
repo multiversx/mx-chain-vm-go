@@ -3,6 +3,7 @@ package dex
 import (
 	"errors"
 	"fmt"
+	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"math/big"
 )
 
@@ -49,8 +50,11 @@ func (pfe *fuzzDexExecutor) swapFixedInput(user string, swapPair SwapPair, amoun
 		swapPair.secondToken,
 		amountB,
 	))
+	if err != nil {
+		return err
+	}
 
-	if err == nil {
+	if output.ReturnCode == vmi.Ok {
 		if output == nil {
 			return errors.New("output is nil")
 		}
@@ -78,6 +82,18 @@ func (pfe *fuzzDexExecutor) swapFixedInput(user string, swapPair SwapPair, amoun
 
 		pfe.log("swapFixedInput %s -> %s", swapPair.firstToken, swapPair.secondToken)
 		pfe.log("could not swap because %s", output.ReturnMessage)
+
+		expectedErrors := map[string]bool{
+			"Insufficient reserve for token out": true,
+			"Computed amount out lesser than minimum amount out": true,
+			"Insufficient amount out reserve": true,
+			"Optimal value is zero": true,
+		}
+
+		_, expected := expectedErrors[output.ReturnMessage]
+		if !expected {
+			return errors.New(output.ReturnMessage)
+		}
 	}
 
 	return nil
@@ -126,8 +142,11 @@ func (pfe *fuzzDexExecutor) swapFixedOutput(user string, swapPair SwapPair, amou
 		swapPair.secondToken,
 		amountB,
 	))
+	if err != nil {
+		return err
+	}
 
-	if err == nil {
+	if output.ReturnCode == vmi.Ok {
 		statistics.swapFixedOutputHits += 1
 
 		tokenAAfter, err := pfe.getTokens(user, swapPair.firstToken)
@@ -149,10 +168,6 @@ func (pfe *fuzzDexExecutor) swapFixedOutput(user string, swapPair SwapPair, amou
 		}
 	} else {
 		statistics.swapFixedOutputMisses += 1
-
-		if output == nil {
-			return errors.New("output is nil")
-		}
 
 		pfe.log("swapFixedOutput %s -> %s", swapPair.firstToken, swapPair.secondToken)
 		pfe.log("could not swap because %s", output.ReturnMessage)

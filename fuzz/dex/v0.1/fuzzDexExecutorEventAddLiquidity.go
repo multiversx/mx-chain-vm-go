@@ -121,8 +121,11 @@ func (pfe *fuzzDexExecutor) addLiquidity(user string, swapPair SwapPair, amountA
 		amountAmin,
 		amountBmin,
 	))
+	if err != nil {
+		return err
+	}
 
-	if err == nil && output.ReturnCode == vmi.Ok {
+	if output.ReturnCode == vmi.Ok {
 		statistics.addLiquidityHits += 1
 
 		rawEquivalentAfter, errAfter := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,
@@ -158,10 +161,6 @@ func (pfe *fuzzDexExecutor) addLiquidity(user string, swapPair SwapPair, amountA
 		}
 	} else {
 		statistics.addLiquidityMisses += 1
-
-		if output == nil {
-			return errors.New("output is nil")
-		}
 
 		pfe.log("add liquidity %s -> %s", swapPair.firstToken, swapPair.secondToken)
 		pfe.log("could not add because %s", output.ReturnMessage)

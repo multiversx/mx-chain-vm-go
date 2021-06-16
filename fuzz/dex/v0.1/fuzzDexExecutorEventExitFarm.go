@@ -66,8 +66,11 @@ func (pfe *fuzzDexExecutor) exitFarm(amountMax int, statistics *eventsStatistics
 		unstakeAmount,
 		nonce,
 	))
+	if err != nil {
+		return err
+	}
 
-	if err == nil && output.ReturnCode == vmi.Ok {
+	if output.ReturnCode == vmi.Ok {
 		statistics.exitFarmHits += 1
 
 		mexAfter, err := pfe.getTokens(user, pfe.mexTokenId)
@@ -84,9 +87,6 @@ func (pfe *fuzzDexExecutor) exitFarm(amountMax int, statistics *eventsStatistics
 	} else {
 		statistics.exitFarmMisses += 1
 
-		if output == nil {
-			return errors.New("output is nil")
-		}
 
 		pfe.log("exitFarm")
 		pfe.log("could not exitFarm because %s", output.ReturnMessage)

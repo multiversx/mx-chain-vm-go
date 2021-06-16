@@ -68,8 +68,11 @@ func (pfe *fuzzDexExecutor) claimRewards(amountMax int, statistics *eventsStatis
 		claimAmount,
 		nonce,
 	))
+	if err != nil {
+		return err
+	}
 
-	if err == nil && output.ReturnCode == vmi.Ok {
+	if output.ReturnCode == vmi.Ok {
 		statistics.claimRewardsHits += 1
 
 		mexAfter, err := pfe.getTokens(user, pfe.mexTokenId)
@@ -112,10 +115,6 @@ func (pfe *fuzzDexExecutor) claimRewards(amountMax int, statistics *eventsStatis
 		}
 	} else {
 		statistics.claimRewardsMisses += 1
-
-		if output == nil {
-			return errors.New("output is nil")
-		}
 
 		pfe.log("could not claimRewards because %s", output.ReturnMessage)
 
