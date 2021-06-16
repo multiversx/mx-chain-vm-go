@@ -85,7 +85,7 @@ func (ae *ArwenTestExecutor) ExecuteSetStateStep(step *mj.SetStateStep) error {
 
 	// append accounts
 	for _, mandosAccount := range step.Accounts {
-		worldAccount, err := convertAccount(mandosAccount)
+		worldAccount, err := convertAccount(mandosAccount, ae.World)
 		if err != nil {
 			return err
 		}
