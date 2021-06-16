@@ -14,22 +14,6 @@ import (
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
-type programmedCall struct {
-	fromIndex int
-	toIndex   int
-	token     string
-	nonce     int
-	amount    string
-}
-
-type fuzzData struct {
-	mainCallerAddress     string
-	numForwarders         int
-	programmedCalls       map[int][]*programmedCall
-	numFungibleTokens     int
-	numSemiFungibleTokens int
-}
-
 type fuzzExecutor struct {
 	arwenTestExecutor *am.ArwenTestExecutor
 	world             *worldhook.MockWorld

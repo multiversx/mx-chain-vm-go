@@ -5,7 +5,11 @@ import (
 	"strings"
 )
 
-func (pfe *fuzzExecutor) programCall(fromIndex, toIndex int, token string, nonce int, amount string) error {
+func (pfe *fuzzExecutor) programCall(
+	call_type programmedCallType,
+	fromIndex, toIndex int,
+	token string, nonce int, amount string) error {
+
 	pfe.data.programmedCalls[fromIndex] = append(pfe.data.programmedCalls[fromIndex], &programmedCall{
 		fromIndex: fromIndex,
 		toIndex:   toIndex,
@@ -24,6 +28,7 @@ func (pfe *fuzzExecutor) programCall(fromIndex, toIndex int, token string, nonce
 			"value": "0",
 			"function": "add_programmed_call",
 			"arguments": [
+				"%d",
 				"%s",
 				"str:%s",
 				"%d",
@@ -40,6 +45,7 @@ func (pfe *fuzzExecutor) programCall(fromIndex, toIndex int, token string, nonce
 		pfe.nextTxIndex(),
 		pfe.data.mainCallerAddress,
 		pfe.forwarderAddress(fromIndex),
+		call_type,
 		pfe.forwarderAddress(toIndex),
 		token,
 		nonce,
@@ -61,7 +67,7 @@ func (pfe *fuzzExecutor) executeCall(toIndex int) error {
 		nonce:     0,
 		amount:    "0",
 	}
-	err := pfe.getExpectedLogs(initialCall, &sb)
+	err := pfe.getExpectedLogs(initialCall, 0, &sb)
 	if err != nil {
 		return err
 	}
@@ -75,8 +81,8 @@ func (pfe *fuzzExecutor) executeCall(toIndex int) error {
 			"to": "%s",
 			"value": "0",
 			"function": "forward_programmed_calls",
-			"arguments": [],
-			"gasLimit": "500,000,000",
+			"arguments": [ "0" ],
+			"gasLimit": "18,000,000,000,000,000,000",
 			"gasPrice": "0"
 		},
 		"expect": {
@@ -111,7 +117,10 @@ func (pfe *fuzzExecutor) popCall(forwarderIndex int) *programmedCall {
 	return result
 }
 
-func (pfe *fuzzExecutor) getExpectedLogs(call *programmedCall, sb *strings.Builder) error {
+func (pfe *fuzzExecutor) getExpectedLogs(call *programmedCall, call_depth int, sb *strings.Builder) error {
+	if call_depth > 10 {
+		return nil
+	}
 	if sb.Len() > 0 {
 		sb.WriteString(",")
 	}
@@ -131,11 +140,11 @@ func (pfe *fuzzExecutor) getExpectedLogs(call *programmedCall, sb *strings.Build
 		call.nonce,
 		call.amount,
 	))
-	pfe.log("%d calls %d with token %s, nonce %d", call.fromIndex, call.toIndex, call.token, call.nonce)
+	pfe.log("%d calls %d with token %s, nonce %d, depth: %d", call.fromIndex, call.toIndex, call.token, call.nonce, call_depth)
 
 	nextCall := pfe.popCall(call.toIndex)
 	for nextCall != nil {
-		pfe.getExpectedLogs(nextCall, sb)
+		pfe.getExpectedLogs(nextCall, call_depth+1, sb)
 		nextCall = pfe.popCall(call.toIndex)
 	}
 

@@ -11,14 +11,15 @@ import (
 
 	fuzzutil "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/fuzz/util"
 	mc "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/controller"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/stretchr/testify/require"
 )
 
-var fuzz = flag.Bool("fuzz", false, "Enable fuzz test")
+var fuzz = flag.Bool("fuzz", true, "Enable fuzz test")
 
 var seedFlag = flag.Int64("seed", 0, "Random seed, use it to replay fuzz scenarios")
 
-var iterationsFlag = flag.Int("iterations", 10, "Number of iterations")
+var iterationsFlag = flag.Int("iterations", 30, "Number of iterations")
 
 func getTestRoot() string {
 	exePath, err := os.Getwd()
@@ -43,6 +44,9 @@ func newExecutorWithPaths() *fuzzExecutor {
 }
 
 func TestFuzzForwarder(t *testing.T) {
+
+	_ = logger.SetLogLevel("*:TRACE")
+
 	if !*fuzz {
 		t.Skip("skipping test; only run with --fuzz argument")
 	}
@@ -74,7 +78,7 @@ func TestFuzzForwarder(t *testing.T) {
 			toIndex = r.Intn(pfe.data.numForwarders) + 1
 		}
 		pfe.log("%d will call %d with token %s, nonce %d", fromIndex, toIndex, tokenName, nonce)
-		err = pfe.programCall(fromIndex, toIndex, tokenName, nonce, "10")
+		err = pfe.programCall(syncCall, fromIndex, toIndex, tokenName, nonce, "10")
 		require.Nil(t, err)
 	}
 
