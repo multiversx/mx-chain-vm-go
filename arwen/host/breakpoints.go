@@ -17,7 +17,7 @@ func (host *vmHost) handleBreakpointIfAny(executionErr error) error {
 		return err
 	}
 
-	return executionErr
+	return arwen.ErrExecutionFailed
 }
 
 func (host *vmHost) handleBreakpoint(breakpointValue arwen.BreakpointValue) error {
