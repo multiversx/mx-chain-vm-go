@@ -178,7 +178,7 @@ func DefaultTestArwenForCallWithWorldMock(tb testing.TB, code []byte, balance *b
 
 	host.SetProtocolBuiltinFunctions(world.BuiltinFuncs.GetBuiltinFunctionNames())
 
-	parentAccount := world.AcctMap.CreateSmartContractAccount(UserAddress, ParentAddress, code)
+	parentAccount := world.AcctMap.CreateSmartContractAccount(UserAddress, ParentAddress, code, world)
 	parentAccount.Balance = balance
 
 	return host, world
@@ -309,7 +309,7 @@ func DefaultTestArwen(tb testing.TB, blockchain vmcommon.BlockchainHook) arwen.V
 // given MockWorld under a SC address built with the given identifier.
 func AddTestSmartContractToWorld(world *worldmock.MockWorld, identifier string, code []byte) *worldmock.Account {
 	address := MakeTestSCAddress(identifier)
-	return world.AcctMap.CreateSmartContractAccount(UserAddress, address, code)
+	return world.AcctMap.CreateSmartContractAccount(UserAddress, address, code, world)
 }
 
 // DefaultTestContractCreateInput creates a vmcommon.ContractCreateInput struct

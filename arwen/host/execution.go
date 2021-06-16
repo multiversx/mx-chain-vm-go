@@ -75,7 +75,7 @@ func (host *vmHost) performCodeDeployment(input arwen.CodeDeployInput) (*vmcommo
 
 	err = runtime.StartWasmerInstance(input.ContractCode, metering.GetGasForExecution(), true)
 	if err != nil {
-		log.Debug("performCodeDeployment/StartWasmerInstance", "err", err)
+		log.Trace("performCodeDeployment/StartWasmerInstance", "err", err)
 		return nil, arwen.ErrContractInvalid
 	}
 
@@ -558,7 +558,7 @@ func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) error {
 
 	err = runtime.StartWasmerInstance(codeDeployInput.ContractCode, metering.GetGasForExecution(), true)
 	if err != nil {
-		log.Debug("performCodeDeployment/StartWasmerInstance", "err", err)
+		log.Trace("performCodeDeployment/StartWasmerInstance", "err", err)
 		return arwen.ErrContractInvalid
 	}
 
