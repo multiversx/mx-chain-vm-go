@@ -51,7 +51,9 @@ package elrondapi
 // extern int32_t		v1_3_delegateExecution(void *context, long long gas, int32_t addressOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t		v1_3_executeReadOnly(void *context, long long gas, int32_t addressOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t		v1_3_createContract(void *context, long long gas, int32_t valueOffset, int32_t codeOffset, int32_t codeMetadataOffset, int32_t length, int32_t resultOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern int32_t		v1_3_deployFromSourceContract(void *context, long long gas, int32_t valueOffset, int32_t addressOffset, int32_t resultOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern void			v1_3_upgradeContract(void *context, int32_t dstOffset, long long gas, int32_t valueOffset, int32_t codeOffset, int32_t codeMetadataOffset, int32_t length, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern void			v1_3_upgradeFromSourceContract(void *context, int32_t dstOffset, long long gas, int32_t valueOffset, int32_t addressOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern void			v1_3_asyncCall(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
 // extern void			v1_3_createAsyncCall(void *context, int32_t identifierOffset, int32_t identifierLength, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length, int32_t successCallback, int32_t successLength, int32_t errorCallback, int32_t errorLength, long long gas);
 // extern int32_t		v1_3_setAsyncContextCallback(void *context, int32_t identifierOffset, int32_t identifierLength, int32_t callback, int32_t callbackLength);
@@ -390,7 +392,17 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 		return nil, err
 	}
 
+	imports, err = imports.Append("deployFromSourceContract", v1_3_deployFromSourceContract, C.v1_3_deployFromSourceContract)
+	if err != nil {
+		return nil, err
+	}
+
 	imports, err = imports.Append("upgradeContract", v1_3_upgradeContract, C.v1_3_upgradeContract)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("upgradeFromSourceContract", v1_3_upgradeFromSourceContract, C.v1_3_upgradeFromSourceContract)
 	if err != nil {
 		return nil, err
 	}
@@ -1412,6 +1424,141 @@ func v1_3_upgradeContract(
 
 	runtime.SetAsyncCallInfo(&arwen.AsyncCallInfo{
 		Destination: calledSCAddress,
+		Data:        []byte(finalData),
+		GasLimit:    uint64(gasLimit),
+		ValueBytes:  value,
+	})
+
+	// Instruct Wasmer to interrupt the execution of the caller SC.
+	runtime.SetRuntimeBreakpointValue(arwen.BreakpointAsyncCall)
+}
+
+//export v1_3_upgradeFromSourceContract
+func v1_3_upgradeFromSourceContract(
+	context unsafe.Pointer,
+	destOffset int32,
+	gasLimit int64,
+	valueOffset int32,
+	sourceContractAddressOffset int32,
+	numArguments int32,
+	argumentsLengthOffset int32,
+	dataOffset int32,
+) {
+	host := arwen.GetVMHost(context)
+	UpgradeFromSourceContractWithHost(
+		host,
+		destOffset,
+		gasLimit,
+		valueOffset,
+		sourceContractAddressOffset,
+		numArguments,
+		argumentsLengthOffset,
+		dataOffset,
+	)
+}
+
+func UpgradeFromSourceContractWithHost(
+	host arwen.VMHost,
+	destOffset int32,
+	gasLimit int64,
+	valueOffset int32,
+	sourceContractAddressOffset int32,
+	numArguments int32,
+	argumentsLengthOffset int32,
+	dataOffset int32,
+) {
+	runtime := host.Runtime()
+	metering := host.Metering()
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.CreateContract
+	metering.UseGas(gasToUse)
+
+	value, err := runtime.MemLoad(valueOffset, arwen.BalanceLen)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return
+	}
+
+	sourceContractAddress, err := runtime.MemLoad(sourceContractAddressOffset, arwen.AddressLen)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return
+	}
+
+	data, actualLen, err := getArgumentsFromMemory(
+		host,
+		numArguments,
+		argumentsLengthOffset,
+		dataOffset,
+	)
+
+	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(actualLen))
+	metering.UseGas(gasToUse)
+
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return
+	}
+
+	calledSCAddress, err := runtime.MemLoad(destOffset, arwen.AddressLen)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return
+	}
+
+	UpgradeFromSourceContractWithTypedArgs(
+		host,
+		sourceContractAddress,
+		calledSCAddress,
+		value,
+		data,
+		gasLimit,
+	)
+}
+
+func UpgradeFromSourceContractWithTypedArgs(
+	host arwen.VMHost,
+	sourceContractAddress []byte,
+	destCountracAddress []byte,
+	value []byte,
+	data [][]byte,
+	gasLimit int64,
+) {
+	runtime := host.Runtime()
+	metering := host.Metering()
+	blockchain := host.Blockchain()
+
+	code, err := blockchain.GetCode(sourceContractAddress)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return
+	}
+
+	contract, err := blockchain.GetUserAccount(sourceContractAddress)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return
+	}
+	codeMetadata := contract.GetCodeMetadata()
+
+	gasSchedule := metering.GasSchedule()
+	gasToUse := gasSchedule.ElrondAPICost.AsyncCallStep
+	metering.UseGas(gasToUse)
+
+	minAsyncCallCost := math.AddUint64(
+		math.MulUint64(2, gasSchedule.ElrondAPICost.AsyncCallStep),
+		gasSchedule.ElrondAPICost.AsyncCallbackGasLock)
+	if uint64(gasLimit) < minAsyncCallCost {
+		runtime.SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+		return
+	}
+
+	// Set up the async call as if it is not known whether the called SC
+	// is in the same shard with the caller or not. This will be later resolved
+	// in the handler for BreakpointAsyncCall.
+	codeEncoded := hex.EncodeToString(code)
+	codeMetadataEncoded := hex.EncodeToString(codeMetadata)
+	finalData := arwen.UpgradeFunctionName + "@" + codeEncoded + "@" + codeMetadataEncoded
+	for _, arg := range data {
+		finalData += "@" + string(arg)
+	}
+
+	runtime.SetAsyncCallInfo(&arwen.AsyncCallInfo{
+		Destination: destCountracAddress,
 		Data:        []byte(finalData),
 		GasLimit:    uint64(gasLimit),
 		ValueBytes:  value,
@@ -2642,6 +2789,127 @@ func v1_3_createContract(
 	}
 
 	return 0
+}
+
+//export v1_3_deployFromSourceContract
+func v1_3_deployFromSourceContract(
+	context unsafe.Pointer,
+	gasLimit int64,
+	valueOffset int32,
+	sourceContractAddressOffset int32,
+	resultAddressOffset int32,
+	numArguments int32,
+	argumentsLengthOffset int32,
+	dataOffset int32,
+) int32 {
+	host := arwen.GetVMHost(context)
+	return deployFromSourceContractWithHost(
+		host,
+		gasLimit,
+		valueOffset,
+		sourceContractAddressOffset,
+		resultAddressOffset,
+		numArguments,
+		argumentsLengthOffset,
+		dataOffset,
+	)
+}
+
+func deployFromSourceContractWithHost(
+	host arwen.VMHost,
+	gasLimit int64,
+	valueOffset int32,
+	sourceContractAddressOffset int32,
+	resultAddressOffset int32,
+	numArguments int32,
+	argumentsLengthOffset int32,
+	dataOffset int32,
+) int32 {
+	runtime := host.Runtime()
+	metering := host.Metering()
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.CreateContract
+	metering.UseGas(gasToUse)
+
+	value, err := runtime.MemLoad(valueOffset, arwen.BalanceLen)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	sourceContractAddress, err := runtime.MemLoad(sourceContractAddressOffset, arwen.AddressLen)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	data, actualLen, err := getArgumentsFromMemory(
+		host,
+		numArguments,
+		argumentsLengthOffset,
+		dataOffset,
+	)
+
+	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(actualLen))
+	metering.UseGas(gasToUse)
+
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	newAddress, err := deployFromSourceContractWithTypedArgs(
+		host,
+		sourceContractAddress,
+		big.NewInt(0).SetBytes(value),
+		data,
+		gasLimit,
+	)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	err = runtime.MemStore(resultAddressOffset, newAddress)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	return 0
+}
+
+func deployFromSourceContractWithTypedArgs(
+	host arwen.VMHost,
+	sourceContractAddress []byte,
+	value *big.Int,
+	data [][]byte,
+	gasLimit int64,
+) ([]byte, error) {
+	runtime := host.Runtime()
+	metering := host.Metering()
+	sender := runtime.GetSCAddress()
+
+	blockchain := host.Blockchain()
+	code, err := blockchain.GetCode(sourceContractAddress)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return nil, err
+	}
+
+	contract, err := blockchain.GetUserAccount(sourceContractAddress)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return nil, err
+	}
+	codeMetadata := contract.GetCodeMetadata()
+
+	contractCreate := &vmcommon.ContractCreateInput{
+		VMInput: vmcommon.VMInput{
+			CallerAddr:  sender,
+			Arguments:   data,
+			CallValue:   value,
+			GasPrice:    0,
+			GasProvided: metering.BoundGasLimit(gasLimit),
+		},
+		ContractCode:         code,
+		ContractCodeMetadata: codeMetadata,
+	}
+
+	return host.CreateNewContract(contractCreate)
 }
 
 //export v1_3_getNumReturnData
