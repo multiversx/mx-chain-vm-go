@@ -2,7 +2,6 @@ package worldmock
 
 import (
 	"bytes"
-	"context"
 	"errors"
 	"fmt"
 
@@ -134,13 +133,13 @@ func (m *MockAccountsAdapter) CancelPrune(_ []byte, _ data.TriePruningIdentifier
 }
 
 // SnapshotState -
-func (m *MockAccountsAdapter) SnapshotState(_ []byte, _ context.Context) {
+func (m *MockAccountsAdapter) SnapshotState(_ []byte) {
 	snapshot := m.World.AcctMap.Clone()
 	m.Snapshots = append(m.Snapshots, snapshot)
 }
 
 // SetStateCheckpoint -
-func (m *MockAccountsAdapter) SetStateCheckpoint(_ []byte, _ context.Context) {
+func (m *MockAccountsAdapter) SetStateCheckpoint(_ []byte) {
 }
 
 // IsPruningEnabled -
@@ -149,12 +148,12 @@ func (m *MockAccountsAdapter) IsPruningEnabled() bool {
 }
 
 // GetAllLeaves -
-func (m *MockAccountsAdapter) GetAllLeaves(_ []byte, _ context.Context) (chan core.KeyValueHolder, error) {
+func (m *MockAccountsAdapter) GetAllLeaves(_ []byte) (chan core.KeyValueHolder, error) {
 	return nil, ErrTrieHandlingNotImplemented
 }
 
 // RecreateAllTries -
-func (m *MockAccountsAdapter) RecreateAllTries(_ []byte, _ context.Context) (map[string]data.Trie, error) {
+func (m *MockAccountsAdapter) RecreateAllTries(_ []byte) (map[string]data.Trie, error) {
 	return nil, ErrTrieHandlingNotImplemented
 }
 
