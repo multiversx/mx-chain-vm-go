@@ -24,7 +24,6 @@
         {
             "step": "scCall",
             "txId": "change-owner",
-            "comment": "TODO: result should be the new owner, currently it is not",
             "tx": {
                 "from": "address:a_user",
                 "to": "sc:forwarder",
@@ -38,7 +37,7 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "*" ]
+                "out": [ "address:new_owner", "address:new_owner" ]
             }
         },
         {
