@@ -174,7 +174,7 @@ func (pfe *fuzzDexExecutor) swapFixedOutput(user string, swapPair SwapPair, amou
 
 		expectedErrors := map[string]bool{
 			"Insufficient reserve for token out": true,
-			"Computed amount out lesser than minimum amount out": true,
+			"Computed amount in greater than maximum amount in": true,
 			"Insufficient amount out reserve": true,
 			"Optimal value is zero": true,
 		}
