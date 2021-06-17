@@ -86,6 +86,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"strings"
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
@@ -1405,14 +1406,21 @@ func v1_3_upgradeContract(
 	// in the handler for BreakpointAsyncCall.
 	codeEncoded := hex.EncodeToString(code)
 	codeMetadataEncoded := hex.EncodeToString(codeMetadata)
-	finalData := arwen.UpgradeFunctionName + "@" + codeEncoded + "@" + codeMetadataEncoded
+	var finalData strings.Builder
+	finalData.WriteString(arwen.UpgradeFunctionName)
+	finalData.WriteString("@")
+	finalData.WriteString(codeEncoded)
+	finalData.WriteString("@")
+	finalData.WriteString(codeMetadataEncoded)
+
 	for _, arg := range data {
-		finalData += "@" + string(arg)
+		finalData.WriteString("@")
+		finalData.WriteString(hex.EncodeToString(arg))
 	}
 
 	runtime.SetAsyncCallInfo(&arwen.AsyncCallInfo{
 		Destination: calledSCAddress,
-		Data:        []byte(finalData),
+		Data:        []byte(finalData.String()),
 		GasLimit:    uint64(gasLimit),
 		ValueBytes:  value,
 	})
