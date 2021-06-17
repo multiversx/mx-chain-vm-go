@@ -213,7 +213,7 @@ func (context *meteringContext) checkGas(vmOutput *vmcommon.VMOutput) error {
 	gasProvided := context.GetGasProvided()
 
 	if totalGas != gasProvided {
-		logOutput.Error("gas usage mismatch", "total gas", totalGas, "gas provided", gasProvided)
+		logOutput.Trace("gas usage mismatch", "total gas", totalGas, "gas provided", gasProvided)
 		return arwen.ErrInputAndOutputGasDoesNotMatch
 	}
 
@@ -303,7 +303,7 @@ func (context *meteringContext) GasSchedule() *config.GasCost {
 func (context *meteringContext) SetGasSchedule(gasMap config.GasScheduleMap) {
 	gasSchedule, err := config.CreateGasConfig(gasMap)
 	if err != nil {
-		logMetering.Error("SetGasSchedule createGasConfig", "error", err)
+		logMetering.Trace("SetGasSchedule createGasConfig", "error", err)
 		return
 	}
 	context.gasSchedule = gasSchedule
