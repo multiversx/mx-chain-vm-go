@@ -117,7 +117,7 @@ func (context *runtimeContext) setWarmInstanceWhenNeeded(gasLimit uint64) bool {
 func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uint64, newCode bool) error {
 	if context.RunningInstancesCount() >= context.maxWasmerInstances {
 		context.instance = nil
-		logRuntime.Trace("create instance", "error", arwen.ErrMaxInstancesReached)
+		logRuntime.Error("create instance", "error", arwen.ErrMaxInstancesReached)
 		return arwen.ErrMaxInstancesReached
 	}
 
@@ -162,7 +162,7 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(codeHash []byte, gas
 	}
 	newInstance, err := context.instanceBuilder.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
 	if err != nil {
-		logRuntime.Trace("instance creation", "code", "cached compilation", "error", err)
+		logRuntime.Error("instance creation", "code", "cached compilation", "error", err)
 		return false
 	}
 
@@ -198,7 +198,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 		codeHash, err = context.host.Crypto().Sha256(contract)
 		if err != nil {
 			context.CleanWasmerInstance()
-			logRuntime.Trace("instance creation", "code", "bytecode", "error", err)
+			logRuntime.Error("instance creation", "code", "bytecode", "error", err)
 			return err
 		}
 	}
@@ -248,7 +248,7 @@ func (context *runtimeContext) GetSCCodeSize() uint64 {
 func (context *runtimeContext) saveCompiledCode(codeHash []byte) {
 	compiledCode, err := context.instance.Cache()
 	if err != nil {
-		logRuntime.Trace("getCompiledCode from instance", "error", err)
+		logRuntime.Error("getCompiledCode from instance", "error", err)
 		return
 	}
 
@@ -721,7 +721,7 @@ func (context *runtimeContext) GetFunctionToCall() (wasmer.ExportedFunctionCallb
 
 	if context.callFunction == arwen.CallbackFunctionName {
 		// TODO rewrite this condition, until the AsyncContext is merged
-		logRuntime.Trace("get function to call", "error", arwen.ErrNilCallbackFunction)
+		logRuntime.Error("get function to call", "error", arwen.ErrNilCallbackFunction)
 		return nil, arwen.ErrNilCallbackFunction
 	}
 
