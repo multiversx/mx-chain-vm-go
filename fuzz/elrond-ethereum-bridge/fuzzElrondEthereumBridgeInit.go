@@ -9,7 +9,7 @@ type MultisigInitArgs struct {
 	requiredStake *big.Int
 	slashAmount   *big.Int
 	quorum        int
-	boardMembers  []string
+	boardMembers  []Address
 }
 
 type DeployChildContractsArgs struct {
@@ -17,18 +17,16 @@ type DeployChildContractsArgs struct {
 	multiTransferEsdtCode  []byte
 	ethereumFeePrepayCode  []byte
 	esdtSafeCode           []byte
-	priceAggregatorAddress string
-	wrappedEgldTokenId     string
-	wrappedEthTokenId      string
-	tokenWhitelist         []string
+	priceAggregatorAddress Address
+	wrappedEgldTokenId     TokenIdentifier
+	wrappedEthTokenId      TokenIdentifier
+	tokenWhitelist         []TokenIdentifier
 }
 
 func (fe *fuzzExecutor) initData() error {
 	fe.data = &fuzzData{
 		actorAddresses: &ActorAddresses{
-			owner:             "address:owner",
-			boardMembers:      []string{},
-			users:             []string{},
+			accounts:          []Address{"address:owner"},
 			multisig:          "sc:multisig",
 			priceAggregator:   "sc:price_aggregator",
 			egldEsdtSwap:      "sc:egld_esdt_swap",
@@ -36,10 +34,11 @@ func (fe *fuzzExecutor) initData() error {
 			ethereumFeePrepay: "sc:ethereum_fee_prepay",
 			multiTransferEsdt: "sc:multi_transfer_esdt",
 		},
-		tokenWhitelist:             []string{},
-		createdTransactionBatch:    []*Transaction{},
-		incomingTransactionBatchId: 0,
-		incomingTransactionBatch:   []*SimpleTransfer{},
+		egldEsdtSwapState:      nil,
+		esdtSafeState:          nil,
+		ethereumFeePrepayState: nil,
+		multiTransferEsdtState: nil,
+		multisigState:          nil,
 	}
 	fe.world.Clear()
 

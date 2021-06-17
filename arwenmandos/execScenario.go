@@ -94,6 +94,14 @@ func (ae *ArwenTestExecutor) ExecuteSetStateStep(step *mj.SetStateStep) error {
 			return err
 		}
 
+		// For existing accounts, copy storage if no storage is specified
+		existingAccount := ae.World.AcctMap.GetAccount(worldAccount.Address)
+		if existingAccount != nil && len(worldAccount.Storage) == 0 {
+			for key, value := range existingAccount.Storage {
+				worldAccount.Storage[key] = value
+			}
+		}
+
 		ae.World.AcctMap.PutAccount(worldAccount)
 	}
 

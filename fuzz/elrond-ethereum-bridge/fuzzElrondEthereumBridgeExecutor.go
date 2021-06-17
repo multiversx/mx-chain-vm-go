@@ -15,11 +15,12 @@ import (
 )
 
 type fuzzData struct {
-	actorAddresses             *ActorAddresses
-	tokenWhitelist             []string
-	createdTransactionBatch    []*Transaction
-	incomingTransactionBatchId int
-	incomingTransactionBatch   []*SimpleTransfer
+	actorAddresses         *ActorAddresses
+	egldEsdtSwapState      *EgldEsdtSwapState
+	esdtSafeState          *EsdtSafeState
+	ethereumFeePrepayState *EthereumFeePrepayState
+	multiTransferEsdtState *MultiTransferEsdtState
+	multisigState          *MultisigState
 }
 
 type fuzzExecutor struct {
