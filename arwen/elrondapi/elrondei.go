@@ -86,7 +86,6 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
-	"strings"
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
@@ -97,6 +96,7 @@ import (
 	"github.com/ElrondNetwork/elrond-go/core/parsers"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/ElrondNetwork/elrond-go/data/esdt"
+	"github.com/ElrondNetwork/elrond-go/testscommon/txDataBuilder"
 )
 
 var logEEI = logger.GetOrCreate("arwen/eei")
@@ -1381,15 +1381,12 @@ func v1_3_upgradeContract(
 		return
 	}
 
-	gasSchedule := metering.GasSchedule()
-	gasToUse = gasSchedule.ElrondAPICost.AsyncCallStep
-	metering.UseGas(gasToUse)
-
 	calledSCAddress, err := runtime.MemLoad(destOffset, arwen.AddressLen)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
 
+	gasSchedule := metering.GasSchedule()
 	gasToUse = math.MulUint64(gasSchedule.BaseOperationCost.DataCopyPerByte, uint64(length))
 	metering.UseGas(gasToUse)
 
@@ -1403,30 +1400,20 @@ func v1_3_upgradeContract(
 
 	// Set up the async call as if it is not known whether the called SC
 	// is in the same shard with the caller or not. This will be later resolved
-	// in the handler for BreakpointAsyncCall.
-	codeEncoded := hex.EncodeToString(code)
-	codeMetadataEncoded := hex.EncodeToString(codeMetadata)
-	var finalData strings.Builder
-	finalData.WriteString(arwen.UpgradeFunctionName)
-	finalData.WriteString("@")
-	finalData.WriteString(codeEncoded)
-	finalData.WriteString("@")
-	finalData.WriteString(codeMetadataEncoded)
+	// by runtime.ExecuteAsyncCall().
+	callData := txDataBuilder.NewBuilder()
+	callData.Func(arwen.UpgradeFunctionName)
+	callData.Bytes(code).Bytes(codeMetadata)
 
 	for _, arg := range data {
-		finalData.WriteString("@")
-		finalData.WriteString(hex.EncodeToString(arg))
+		callData.Bytes(arg)
 	}
 
-	runtime.SetAsyncCallInfo(&arwen.AsyncCallInfo{
-		Destination: calledSCAddress,
-		Data:        []byte(finalData.String()),
-		GasLimit:    uint64(gasLimit),
-		ValueBytes:  value,
-	})
-
-	// Instruct Wasmer to interrupt the execution of the caller SC.
-	runtime.SetRuntimeBreakpointValue(arwen.BreakpointAsyncCall)
+	runtime.ExecuteAsyncCall(
+		calledSCAddress,
+		callData.ToBytes(),
+		value,
+	)
 }
 
 //export v1_3_asyncCall

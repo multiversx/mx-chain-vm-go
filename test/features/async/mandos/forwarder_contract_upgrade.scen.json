@@ -33,8 +33,7 @@
                 "function": "upgradeChildContract",
                 "arguments": [
                     "sc:child",
-                    "file:../forwarder/output/forwarder.wasm",
-                    "0x2a"
+                    "file:../forwarder/output/forwarder.wasm"
                 ],
                 "gasLimit": "500,000,000",
                 "gasPrice": "0"
@@ -42,9 +41,7 @@
             "expect": {
                 "status": "0",
                 "message": "",
-                "out": [
-                    "sc:child"
-                ],
+                "out": [],
                 "gas": "*",
                 "refund": "*"
             }
