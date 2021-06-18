@@ -180,31 +180,31 @@ func (pfe *fuzzDexExecutor) setupPair(swapAddress, firstTokenId, secondTokenId,	
 			"accounts": {
 				"%s": {
 					"nonce": "0",
-                    "balance": "0",
-                    "esdt": {
-                        "str:%s": {
-                            "roles": [
-                                "ESDTRoleLocalMint",
-                                "ESDTRoleLocalBurn"
-                            ]
-                        }
-                    },
-                    "storage": {
-                        "str:first_token_id": "str:%s",
-                        "str:second_token_id": "str:%s",
-                        "str:state": "1",
-                        "str:lpTokenIdentifier": "str:%s",
-                        "str:router_address": "%s",
-                        "str:router_owner_address": "%s",
-                        "str:total_fee_percent": "300",
-                        "str:special_fee_percent": "050",
+					"balance": "0",
+					"esdt": {
+						"str:%s": {
+							"roles": [
+								"ESDTRoleLocalMint",
+								"ESDTRoleLocalBurn"
+							]
+						}
+					},
+					"storage": {
+						"str:first_token_id": "str:%s",
+						"str:second_token_id": "str:%s",
+						"str:state": "1",
+						"str:lpTokenIdentifier": "str:%s",
+						"str:router_address": "%s",
+						"str:router_owner_address": "%s",
+						"str:total_fee_percent": "300",
+						"str:special_fee_percent": "050",
 						"str:burn_tokens_gas_limit": "500000",
 						"str:mint_tokens_gas_limit": "500000",
 						"str:send_fee_gas_limit": "25,000,000",
 						"str:extern_swap_gas_limit": "50,000,000"
-                    },
-                    "code": "file:elrond_dex_pair.wasm",
-                    "owner": "%s"
+					},
+					"code": "file:elrond_dex_pair.wasm",
+					"owner": "%s"
 				}
 			}
 		}`,

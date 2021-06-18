@@ -34,10 +34,10 @@ func (pfe *fuzzDexExecutor) claimRewards(r *rand.Rand, statistics *eventsStatist
 
 	farm := pfe.farmers[nonce].farm
 	pfe.farmers[nonce] = FarmerInfo{
-		value:   amount - claimAmount,
-		user:    user,
-		farm: 	 farm,
-		rps:	 string(rpsBefore),
+		value:	amount - claimAmount,
+		user:	user,
+		farm:	farm,
+		rps:	string(rpsBefore),
 	}
 
 	mexBefore, err := pfe.getTokens(user, pfe.mexTokenId)

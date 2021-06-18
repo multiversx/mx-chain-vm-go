@@ -49,52 +49,52 @@ func TestFuzzDex_v0_1(t *testing.T) {
 
 	err := pfe.init(
 		&fuzzDexExecutorInitArgs{
-			wegldTokenId:            "WEGLD-abcdef",
-			mexTokenId:              "MEX-abcdef",
-			busdTokenId:			 "BUSD-abcdef",
-			wemeLpTokenId:           "WEMELP-abcdef",
-			webuLpTokenId:           "WEBULP-abcdef",
-			wemeFarmTokenId:		 "WEMEFARM-abcdef",
-			webuFarmTokenId:		 "WEBUFARM-abcdef",
-			mexFarmTokenId: 		 "MEXFARM-abcdef",
-			numUsers:                10,
-			numEvents:               500,
-			removeLiquidityProb:     5,
-			addLiquidityProb:        20,
-			swapProb:                25,
-			queryPairsProb:          5,
-			enterFarmProb:           18,
-			exitFarmProb:            6,
-			claimRewardsProb:		 20,
-			removeLiquidityMaxValue: 1000000000,
-			addLiquidityMaxValue:    1000000000,
-			swapMaxValue:            10000000,
-			enterFarmMaxValue:       100000000,
-			exitFarmMaxValue:        100000000,
-			claimRewardsMaxValue: 	 10000000,
-			blockNonceIncrease:		 1,
+			wegldTokenId:				"WEGLD-abcdef",
+			mexTokenId:					"MEX-abcdef",
+			busdTokenId:				"BUSD-abcdef",
+			wemeLpTokenId:				"WEMELP-abcdef",
+			webuLpTokenId:				"WEBULP-abcdef",
+			wemeFarmTokenId:			"WEMEFARM-abcdef",
+			webuFarmTokenId:			"WEBUFARM-abcdef",
+			mexFarmTokenId: 			"MEXFARM-abcdef",
+			numUsers:					10,
+			numEvents:					500,
+			removeLiquidityProb:		5,
+			addLiquidityProb:			20,
+			swapProb:					25,
+			queryPairsProb:				5,
+			enterFarmProb:				18,
+			exitFarmProb:				6,
+			claimRewardsProb:			20,
+			removeLiquidityMaxValue:	1000000000,
+			addLiquidityMaxValue:		1000000000,
+			swapMaxValue:				10000000,
+			enterFarmMaxValue:			100000000,
+			exitFarmMaxValue:			100000000,
+			claimRewardsMaxValue:		10000000,
+			blockNonceIncrease:			1,
 		},
 	)
 	require.Nil(t, err)
 
 	stats := eventsStatistics{
-		swapFixedInputHits:         0,
-		swapFixedInputMisses:       0,
-		swapFixedOutputHits:        0,
-		swapFixedOutputMisses:      0,
-		addLiquidityHits:           0,
-		addLiquidityMisses:         0,
-		addLiquidityPriceChecks:    0,
-		removeLiquidityHits:        0,
-		removeLiquidityMisses:      0,
+		swapFixedInputHits:			0,
+		swapFixedInputMisses:		0,
+		swapFixedOutputHits:		0,
+		swapFixedOutputMisses:		0,
+		addLiquidityHits:			0,
+		addLiquidityMisses:			0,
+		addLiquidityPriceChecks:	0,
+		removeLiquidityHits:		0,
+		removeLiquidityMisses:		0,
 		removeLiquidityPriceChecks: 0,
-		queryPairsHits:             0,
-		queryPairsMisses:           0,
-		enterFarmHits:              0,
-		enterFarmMisses:            0,
-		exitFarmHits:               0,
-		exitFarmMisses:             0,
-		exitFarmWithRewards:        0,
+		queryPairsHits:				0,
+		queryPairsMisses:			0,
+		enterFarmHits:				0,
+		enterFarmMisses:			0,
+		exitFarmHits:				0,
+		exitFarmMisses:				0,
+		exitFarmWithRewards:		0,
 		claimRewardsHits:			0,
 		claimRewardsMisses:			0,
 		claimRewardsWithRewards:	0,
@@ -175,14 +175,14 @@ func weighted_random_choice(r *rand.Rand, choices map[string]int) (string, error
 func printStatistics(statistics *eventsStatistics, pfe *fuzzDexExecutor) {
 	pfe.log("\nStatistics:")
 	pfe.log("\tswapFixedInputHits			%d", statistics.swapFixedInputHits)
-	pfe.log("\tswapFixedInputMisses		%d", statistics.swapFixedInputMisses)
+	pfe.log("\tswapFixedInputMisses			%d", statistics.swapFixedInputMisses)
 	pfe.log("")
 	pfe.log("\tswapFixedOutputHits			%d", statistics.swapFixedOutputHits)
 	pfe.log("\tswapFixedOutputMissed		%d", statistics.swapFixedOutputMisses)
 	pfe.log("")
-	pfe.log("\taddLiquidityHits			%d", statistics.addLiquidityHits)
+	pfe.log("\taddLiquidityHits				%d", statistics.addLiquidityHits)
 	pfe.log("\taddLiquidityMisses			%d", statistics.addLiquidityMisses)
-	pfe.log("\taddLiquidityPriceChecks 	%d", statistics.addLiquidityPriceChecks)
+	pfe.log("\taddLiquidityPriceChecks 		%d", statistics.addLiquidityPriceChecks)
 	pfe.log("")
 	pfe.log("\tremoveLiquidityHits			%d", statistics.removeLiquidityHits)
 	pfe.log("\tremoveLiquidityMisses		%d", statistics.removeLiquidityMisses)
@@ -194,11 +194,11 @@ func printStatistics(statistics *eventsStatistics, pfe *fuzzDexExecutor) {
 	pfe.log("\tenterFarmHits				%d", statistics.enterFarmHits)
 	pfe.log("\tenterFarmMisses				%d", statistics.enterFarmMisses)
 	pfe.log("")
-	pfe.log("\texitFarmHits				%d", statistics.exitFarmHits)
+	pfe.log("\texitFarmHits					%d", statistics.exitFarmHits)
 	pfe.log("\texitFarmMisses				%d", statistics.exitFarmMisses)
 	pfe.log("\texitFarmWithRewards			%d", statistics.exitFarmWithRewards)
 	pfe.log("")
-	pfe.log("\tclaimRewardsHits			%d", statistics.claimRewardsHits)
+	pfe.log("\tclaimRewardsHits				%d", statistics.claimRewardsHits)
 	pfe.log("\tclaimRewardsMisses			%d", statistics.claimRewardsMisses)
 	pfe.log("\tclaimRewardsWithRewards		%d", statistics.claimRewardsWithRewards)
 	pfe.log("")
