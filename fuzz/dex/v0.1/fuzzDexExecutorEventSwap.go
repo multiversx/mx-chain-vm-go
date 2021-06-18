@@ -105,10 +105,10 @@ func (pfe *fuzzDexExecutor) swapFixedInput(user string, swapPair SwapPair, amoun
 		pfe.log("could not swap because %s", output.ReturnMessage)
 
 		expectedErrors := map[string]bool{
-			"Insufficient reserve for token out": true,
+			"Insufficient reserve for token out":                 true,
 			"Computed amount out lesser than minimum amount out": true,
-			"Insufficient amount out reserve": true,
-			"Optimal value is zero": true,
+			"Insufficient amount out reserve":                    true,
+			"Optimal value is zero":                              true,
 		}
 
 		_, expected := expectedErrors[output.ReturnMessage]
@@ -194,10 +194,10 @@ func (pfe *fuzzDexExecutor) swapFixedOutput(user string, swapPair SwapPair, amou
 		pfe.log("could not swap because %s", output.ReturnMessage)
 
 		expectedErrors := map[string]bool{
-			"Insufficient reserve for token out": true,
+			"Insufficient reserve for token out":                true,
 			"Computed amount in greater than maximum amount in": true,
-			"Insufficient amount out reserve": true,
-			"Optimal value is zero": true,
+			"Insufficient amount out reserve":                   true,
+			"Optimal value is zero":                             true,
 		}
 
 		_, expected := expectedErrors[output.ReturnMessage]

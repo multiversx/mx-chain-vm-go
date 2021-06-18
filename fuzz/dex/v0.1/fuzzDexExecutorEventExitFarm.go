@@ -32,10 +32,10 @@ func (pfe *fuzzDexExecutor) exitFarm(r *rand.Rand, statistics *eventsStatistics)
 	}
 	farm := pfe.farmers[nonce].farm
 	pfe.farmers[nonce] = FarmerInfo{
-		value:	amount - unstakeAmount,
-		user:	user,
-		farm:	farm,
-		rps:	rps,
+		value: amount - unstakeAmount,
+		user:  user,
+		farm:  farm,
+		rps:   rps,
 	}
 
 	mexBefore, err := pfe.getTokens(user, pfe.mexTokenId)
@@ -88,7 +88,6 @@ func (pfe *fuzzDexExecutor) exitFarm(r *rand.Rand, statistics *eventsStatistics)
 
 	} else {
 		statistics.exitFarmMisses += 1
-
 
 		pfe.log("exitFarm")
 		pfe.log("could not exitFarm because %s", output.ReturnMessage)

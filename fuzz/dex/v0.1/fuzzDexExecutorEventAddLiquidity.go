@@ -182,11 +182,11 @@ func (pfe *fuzzDexExecutor) addLiquidity(r *rand.Rand, statistics *eventsStatist
 		pfe.log("could not add because %s", output.ReturnMessage)
 
 		expectedErrors := map[string]bool{
-			"Insufficient second token computed amount": true,
-			"Optimal amount greater than desired amount": true,
-			"Insufficient first token computed amount": true,
+			"Insufficient second token computed amount":               true,
+			"Optimal amount greater than desired amount":              true,
+			"Insufficient first token computed amount":                true,
 			"First tokens needs to be greater than minimum liquidity": true,
-			"Insufficient liquidity minted": true,
+			"Insufficient liquidity minted":                           true,
 		}
 
 		_, expected := expectedErrors[output.ReturnMessage]

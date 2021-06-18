@@ -34,10 +34,10 @@ func (pfe *fuzzDexExecutor) claimRewards(r *rand.Rand, statistics *eventsStatist
 
 	farm := pfe.farmers[nonce].farm
 	pfe.farmers[nonce] = FarmerInfo{
-		value:	amount - claimAmount,
-		user:	user,
-		farm:	farm,
-		rps:	string(rpsBefore),
+		value: amount - claimAmount,
+		user:  user,
+		farm:  farm,
+		rps:   string(rpsBefore),
 	}
 
 	mexBefore, err := pfe.getTokens(user, pfe.mexTokenId)
@@ -110,10 +110,10 @@ func (pfe *fuzzDexExecutor) claimRewards(r *rand.Rand, statistics *eventsStatist
 		}
 
 		pfe.farmers[nonce] = FarmerInfo{
-			user:    user,
-			value:   bigint.Int64(),
-			farm: 	 farm,
-			rps:	 string(rpsAfter[0]),
+			user:  user,
+			value: bigint.Int64(),
+			farm:  farm,
+			rps:   string(rpsAfter[0]),
 		}
 	} else {
 		statistics.claimRewardsMisses += 1

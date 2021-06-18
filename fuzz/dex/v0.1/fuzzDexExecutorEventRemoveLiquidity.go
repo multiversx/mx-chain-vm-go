@@ -115,9 +115,9 @@ func (pfe *fuzzDexExecutor) removeLiquidity(r *rand.Rand, statistics *eventsStat
 		pfe.log("could not remove because %s", output.ReturnMessage)
 
 		expectedErrors := map[string]bool{
-			"Not enough LP token supply": true,
+			"Not enough LP token supply":    true,
 			"Insufficient liquidity burned": true,
-			"Not enough reserve": true,
+			"Not enough reserve":            true,
 		}
 
 		_, expected := expectedErrors[output.ReturnMessage]

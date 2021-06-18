@@ -14,115 +14,115 @@ import (
 )
 
 type fuzzDexExecutorInitArgs struct {
-	wegldTokenId			string
-	mexTokenId				string
-	busdTokenId				string
-	wemeLpTokenId			string
-	webuLpTokenId			string
-	wemeFarmTokenId			string
-	webuFarmTokenId			string
-	mexFarmTokenId			string
-	numUsers				int
-	numEvents				int
-	removeLiquidityProb		int
-	addLiquidityProb		int
-	swapProb				int
-	queryPairsProb			int
-	enterFarmProb			int
-	exitFarmProb			int
-	claimRewardsProb		int
+	wegldTokenId            string
+	mexTokenId              string
+	busdTokenId             string
+	wemeLpTokenId           string
+	webuLpTokenId           string
+	wemeFarmTokenId         string
+	webuFarmTokenId         string
+	mexFarmTokenId          string
+	numUsers                int
+	numEvents               int
+	removeLiquidityProb     int
+	addLiquidityProb        int
+	swapProb                int
+	queryPairsProb          int
+	enterFarmProb           int
+	exitFarmProb            int
+	claimRewardsProb        int
 	increaseBlockNonceProb  int
 	removeLiquidityMaxValue int
-	addLiquidityMaxValue	int
-	swapMaxValue			int
-	enterFarmMaxValue		int
-	exitFarmMaxValue		int
-	claimRewardsMaxValue	int
-	blockNonceIncrease		int
+	addLiquidityMaxValue    int
+	swapMaxValue            int
+	enterFarmMaxValue       int
+	exitFarmMaxValue        int
+	claimRewardsMaxValue    int
+	blockNonceIncrease      int
 }
 
 type SwapPair struct {
-	firstToken 	string
+	firstToken  string
 	secondToken string
-	lpToken		string
-	address		string
+	lpToken     string
+	address     string
 }
 
 type Farm struct {
 	farmingToken string
-	farmToken	 string
+	farmToken    string
 	rewardToken  string
-	address 	 string
+	address      string
 }
 
 type FarmerInfo struct {
-	user	string
-	value   int64
-	farm 	Farm
-	rps		string
+	user  string
+	value int64
+	farm  Farm
+	rps   string
 }
 
 type fuzzDexExecutor struct {
-	arwenTestExecutor	*am.ArwenTestExecutor
-	world				*worldhook.MockWorld
-	vm					vmi.VMExecutionHandler
-	mandosParser		mjparse.Parser
-	txIndex				int
+	arwenTestExecutor *am.ArwenTestExecutor
+	world             *worldhook.MockWorld
+	vm                vmi.VMExecutionHandler
+	mandosParser      mjparse.Parser
+	txIndex           int
 
-	wegldTokenId			string
-	mexTokenId				string
-	busdTokenId				string
-	wemeLpTokenId			string
-	webuLpTokenId			string
-	wemeFarmTokenId			string
-	webuFarmTokenId			string
-	mexFarmTokenId			string
-	ownerAddress			string
-	wemeFarmAddress			string
-	webuFarmAddress			string
-	mexFarmAddress			string
-	wemeSwapAddress			string
-	webuSwapAddress			string
-	numUsers				int
-	numTokens				int
-	numEvents				int
-	removeLiquidityProb		int
-	addLiquidityProb		int
-	swapProb				int
-	queryPairsProb			int
-	enterFarmProb			int
-	exitFarmProb			int
-	claimRewardsProb		int
+	wegldTokenId            string
+	mexTokenId              string
+	busdTokenId             string
+	wemeLpTokenId           string
+	webuLpTokenId           string
+	wemeFarmTokenId         string
+	webuFarmTokenId         string
+	mexFarmTokenId          string
+	ownerAddress            string
+	wemeFarmAddress         string
+	webuFarmAddress         string
+	mexFarmAddress          string
+	wemeSwapAddress         string
+	webuSwapAddress         string
+	numUsers                int
+	numTokens               int
+	numEvents               int
+	removeLiquidityProb     int
+	addLiquidityProb        int
+	swapProb                int
+	queryPairsProb          int
+	enterFarmProb           int
+	exitFarmProb            int
+	claimRewardsProb        int
 	increaseBlockNonceProb  int
 	removeLiquidityMaxValue int
-	addLiquidityMaxValue	int
-	swapMaxValue			int
-	enterFarmMaxValue		int
-	exitFarmMaxValue		int
-	claimRewardsMaxValue	int
-	blockNonceIncrease		int
-	tokensCheckFrequency	int
+	addLiquidityMaxValue    int
+	swapMaxValue            int
+	enterFarmMaxValue       int
+	exitFarmMaxValue        int
+	claimRewardsMaxValue    int
+	blockNonceIncrease      int
+	tokensCheckFrequency    int
 	currentFarmTokenNonce   map[string]int
-	farmers					map[int]FarmerInfo
-	generatedScenario		*mj.Scenario
-	farms					[3]Farm
-	swaps					[2]SwapPair
+	farmers                 map[int]FarmerInfo
+	generatedScenario       *mj.Scenario
+	farms                   [3]Farm
+	swaps                   [2]SwapPair
 }
 
 type eventsStatistics struct {
-	swapFixedInputHits   	int
-	swapFixedInputMisses 	int
+	swapFixedInputHits   int
+	swapFixedInputMisses int
 
-	swapFixedOutputHits   	int
-	swapFixedOutputMisses 	int
+	swapFixedOutputHits   int
+	swapFixedOutputMisses int
 
-	addLiquidityHits		int
-	addLiquidityMisses		int
+	addLiquidityHits        int
+	addLiquidityMisses      int
 	addLiquidityPriceChecks int
 
-	removeLiquidityHits			int
-	removeLiquidityMisses		int
-	removeLiquidityPriceChecks 	int
+	removeLiquidityHits        int
+	removeLiquidityMisses      int
+	removeLiquidityPriceChecks int
 
 	queryPairsHits   int
 	queryPairsMisses int
@@ -130,12 +130,12 @@ type eventsStatistics struct {
 	enterFarmHits   int
 	enterFarmMisses int
 
-	exitFarmHits		int
-	exitFarmMisses		int
+	exitFarmHits        int
+	exitFarmMisses      int
 	exitFarmWithRewards int
 
-	claimRewardsHits		int
-	claimRewardsMisses		int
+	claimRewardsHits        int
+	claimRewardsMisses      int
 	claimRewardsWithRewards int
 }
 
@@ -148,11 +148,11 @@ func newFuzzDexExecutor(fileResolver fr.FileResolver) (*fuzzDexExecutor, error) 
 	parser := mjparse.NewParser(fileResolver)
 
 	return &fuzzDexExecutor{
-		arwenTestExecutor:	arwenTestExecutor,
-		world:				arwenTestExecutor.World,
-		vm:					arwenTestExecutor.GetVM(),
-		mandosParser:		parser,
-		txIndex:			0,
+		arwenTestExecutor: arwenTestExecutor,
+		world:             arwenTestExecutor.World,
+		vm:                arwenTestExecutor.GetVM(),
+		mandosParser:      parser,
+		txIndex:           0,
 		generatedScenario: &mj.Scenario{
 			Name: "fuzz generated",
 		},
@@ -325,4 +325,3 @@ func (pfe *fuzzDexExecutor) nextTxIndex() int {
 	pfe.txIndex++
 	return pfe.txIndex
 }
-

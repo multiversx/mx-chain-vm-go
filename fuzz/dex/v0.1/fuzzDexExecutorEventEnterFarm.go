@@ -56,10 +56,10 @@ func (pfe *fuzzDexExecutor) enterFarm(r *rand.Rand, statistics *eventsStatistics
 		}
 
 		pfe.farmers[nonce] = FarmerInfo{
-			user:    user,
-			value:   bigint.Int64(),
-			farm: 	 farm,
-			rps:     string(rps[0]),
+			user:  user,
+			value: bigint.Int64(),
+			farm:  farm,
+			rps:   string(rps[0]),
 		}
 	} else {
 		statistics.enterFarmMisses += 1

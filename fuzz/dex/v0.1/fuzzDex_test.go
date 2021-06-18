@@ -49,55 +49,55 @@ func TestFuzzDex_v0_1(t *testing.T) {
 
 	err := pfe.init(
 		&fuzzDexExecutorInitArgs{
-			wegldTokenId:				"WEGLD-abcdef",
-			mexTokenId:					"MEX-abcdef",
-			busdTokenId:				"BUSD-abcdef",
-			wemeLpTokenId:				"WEMELP-abcdef",
-			webuLpTokenId:				"WEBULP-abcdef",
-			wemeFarmTokenId:			"WEMEFARM-abcdef",
-			webuFarmTokenId:			"WEBUFARM-abcdef",
-			mexFarmTokenId: 			"MEXFARM-abcdef",
-			numUsers:					10,
-			numEvents:					500,
-			removeLiquidityProb:		5,
-			addLiquidityProb:			20,
-			swapProb:					25,
-			queryPairsProb:				5,
-			enterFarmProb:				18,
-			exitFarmProb:				6,
-			claimRewardsProb:			20,
-			removeLiquidityMaxValue:	1000000000,
-			addLiquidityMaxValue:		1000000000,
-			swapMaxValue:				10000000,
-			enterFarmMaxValue:			100000000,
-			exitFarmMaxValue:			100000000,
-			claimRewardsMaxValue:		10000000,
-			blockNonceIncrease:			1,
+			wegldTokenId:            "WEGLD-abcdef",
+			mexTokenId:              "MEX-abcdef",
+			busdTokenId:             "BUSD-abcdef",
+			wemeLpTokenId:           "WEMELP-abcdef",
+			webuLpTokenId:           "WEBULP-abcdef",
+			wemeFarmTokenId:         "WEMEFARM-abcdef",
+			webuFarmTokenId:         "WEBUFARM-abcdef",
+			mexFarmTokenId:          "MEXFARM-abcdef",
+			numUsers:                10,
+			numEvents:               500,
+			removeLiquidityProb:     5,
+			addLiquidityProb:        20,
+			swapProb:                25,
+			queryPairsProb:          5,
+			enterFarmProb:           18,
+			exitFarmProb:            6,
+			claimRewardsProb:        20,
+			removeLiquidityMaxValue: 1000000000,
+			addLiquidityMaxValue:    1000000000,
+			swapMaxValue:            10000000,
+			enterFarmMaxValue:       100000000,
+			exitFarmMaxValue:        100000000,
+			claimRewardsMaxValue:    10000000,
+			blockNonceIncrease:      1,
 		},
 	)
 	require.Nil(t, err)
 
 	stats := eventsStatistics{
-		swapFixedInputHits:			0,
-		swapFixedInputMisses:		0,
-		swapFixedOutputHits:		0,
-		swapFixedOutputMisses:		0,
-		addLiquidityHits:			0,
-		addLiquidityMisses:			0,
-		addLiquidityPriceChecks:	0,
-		removeLiquidityHits:		0,
-		removeLiquidityMisses:		0,
+		swapFixedInputHits:         0,
+		swapFixedInputMisses:       0,
+		swapFixedOutputHits:        0,
+		swapFixedOutputMisses:      0,
+		addLiquidityHits:           0,
+		addLiquidityMisses:         0,
+		addLiquidityPriceChecks:    0,
+		removeLiquidityHits:        0,
+		removeLiquidityMisses:      0,
 		removeLiquidityPriceChecks: 0,
-		queryPairsHits:				0,
-		queryPairsMisses:			0,
-		enterFarmHits:				0,
-		enterFarmMisses:			0,
-		exitFarmHits:				0,
-		exitFarmMisses:				0,
-		exitFarmWithRewards:		0,
-		claimRewardsHits:			0,
-		claimRewardsMisses:			0,
-		claimRewardsWithRewards:	0,
+		queryPairsHits:             0,
+		queryPairsMisses:           0,
+		enterFarmHits:              0,
+		enterFarmMisses:            0,
+		exitFarmHits:               0,
+		exitFarmMisses:             0,
+		exitFarmWithRewards:        0,
+		claimRewardsHits:           0,
+		claimRewardsMisses:         0,
+		claimRewardsWithRewards:    0,
 	}
 
 	for stepIndex := 0; stepIndex < pfe.numEvents; stepIndex++ {
@@ -117,12 +117,12 @@ func generateRandomEvent(
 ) {
 	events := map[string]int{
 		"removeLiquidity": pfe.removeLiquidityProb,
-		"addLiquidity": pfe.addLiquidityProb,
-		"swap": pfe.swapProb,
-		"checkPairViews": pfe.queryPairsProb,
-		"enterFarm": pfe.enterFarmProb,
-		"exitFarm": pfe.exitFarmProb,
-		"claimRewards": pfe.claimRewardsProb,
+		"addLiquidity":    pfe.addLiquidityProb,
+		"swap":            pfe.swapProb,
+		"checkPairViews":  pfe.queryPairsProb,
+		"enterFarm":       pfe.enterFarmProb,
+		"exitFarm":        pfe.exitFarmProb,
+		"claimRewards":    pfe.claimRewardsProb,
 	}
 
 	event, err := weighted_random_choice(r, events)
@@ -156,7 +156,7 @@ func generateRandomEvent(
 func weighted_random_choice(r *rand.Rand, choices map[string]int) (string, error) {
 	sumOfWeight := 0
 	for _, v := range choices {
-		sumOfWeight = sumOfWeight +  v
+		sumOfWeight = sumOfWeight + v
 	}
 
 	pick := r.Intn(sumOfWeight)
