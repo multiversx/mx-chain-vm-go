@@ -50,7 +50,7 @@ func (pfe *fuzzExecutor) setUp() error {
 						%s
 					},
 					"storage": {},
-					"code": "file:forwarder.wasm"
+					"code": "file:../forwarder/output/forwarder.wasm"
 				}
 			}
 		}`,

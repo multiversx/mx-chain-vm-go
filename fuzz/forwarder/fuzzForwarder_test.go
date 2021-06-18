@@ -11,7 +11,6 @@ import (
 
 	fuzzutil "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/fuzz/util"
 	mc "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/controller"
-	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/stretchr/testify/require"
 )
 
@@ -33,7 +32,7 @@ func getTestRoot() string {
 func newExecutorWithPaths() *fuzzExecutor {
 	fileResolver := mc.NewDefaultFileResolver().
 		ReplacePath(
-			"forwarder.wasm",
+			"../forwarder/output/forwarder.wasm",
 			filepath.Join(getTestRoot(), "features/composability/forwarder/output/forwarder.wasm"))
 
 	pfe, err := newFuzzExecutor(fileResolver)
@@ -45,7 +44,7 @@ func newExecutorWithPaths() *fuzzExecutor {
 
 func TestFuzzForwarder(t *testing.T) {
 
-	_ = logger.SetLogLevel("*:TRACE")
+	// _ = logger.SetLogLevel("*:TRACE")
 
 	if !*fuzz {
 		t.Skip("skipping test; only run with --fuzz argument")
