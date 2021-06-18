@@ -1445,28 +1445,6 @@ func v1_3_upgradeFromSourceContract(
 	dataOffset int32,
 ) {
 	host := arwen.GetVMHost(context)
-	UpgradeFromSourceContractWithHost(
-		host,
-		destOffset,
-		gasLimit,
-		valueOffset,
-		sourceContractAddressOffset,
-		numArguments,
-		argumentsLengthOffset,
-		dataOffset,
-	)
-}
-
-func UpgradeFromSourceContractWithHost(
-	host arwen.VMHost,
-	destOffset int32,
-	gasLimit int64,
-	valueOffset int32,
-	sourceContractAddressOffset int32,
-	numArguments int32,
-	argumentsLengthOffset int32,
-	dataOffset int32,
-) {
 	runtime := host.Runtime()
 	metering := host.Metering()
 
@@ -1512,6 +1490,7 @@ func UpgradeFromSourceContractWithHost(
 	)
 }
 
+// UpgradeFromSourceContractWithTypedArgs - upgradeFromSourceContract with args already read from memory
 func UpgradeFromSourceContractWithTypedArgs(
 	host arwen.VMHost,
 	sourceContractAddress []byte,
@@ -2803,28 +2782,6 @@ func v1_3_deployFromSourceContract(
 	dataOffset int32,
 ) int32 {
 	host := arwen.GetVMHost(context)
-	return deployFromSourceContractWithHost(
-		host,
-		gasLimit,
-		valueOffset,
-		sourceContractAddressOffset,
-		resultAddressOffset,
-		numArguments,
-		argumentsLengthOffset,
-		dataOffset,
-	)
-}
-
-func deployFromSourceContractWithHost(
-	host arwen.VMHost,
-	gasLimit int64,
-	valueOffset int32,
-	sourceContractAddressOffset int32,
-	resultAddressOffset int32,
-	numArguments int32,
-	argumentsLengthOffset int32,
-	dataOffset int32,
-) int32 {
 	runtime := host.Runtime()
 	metering := host.Metering()
 
@@ -2855,7 +2812,7 @@ func deployFromSourceContractWithHost(
 		return 1
 	}
 
-	newAddress, err := deployFromSourceContractWithTypedArgs(
+	newAddress, err := DeployFromSourceContractWithTypedArgs(
 		host,
 		sourceContractAddress,
 		big.NewInt(0).SetBytes(value),
@@ -2874,7 +2831,8 @@ func deployFromSourceContractWithHost(
 	return 0
 }
 
-func deployFromSourceContractWithTypedArgs(
+// DeployFromSourceContractWithTypedArgs - deployFromSourceContract with args already read from memory
+func DeployFromSourceContractWithTypedArgs(
 	host arwen.VMHost,
 	sourceContractAddress []byte,
 	value *big.Int,
