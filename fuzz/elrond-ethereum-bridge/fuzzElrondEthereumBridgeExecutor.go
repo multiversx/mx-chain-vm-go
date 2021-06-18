@@ -34,7 +34,7 @@ type fuzzExecutor struct {
 }
 
 func newFuzzExecutor(fileResolver fr.FileResolver) (*fuzzExecutor, error) {
-	arwenTestExecutor, err := am.NewArwenTestExecutor()
+	arwenTestExecutor, err := am.NewArwenTestExecutorWithFileResolver(&fileResolver)
 	if err != nil {
 		return nil, err
 	}

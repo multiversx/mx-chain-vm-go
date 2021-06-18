@@ -82,7 +82,7 @@ func (fe *fuzzExecutor) setupAggregator() error {
 			"step": "externalSteps",
 			"path": "%s"
 		}`,
-		"/home/elrond/arwen-wasm-vm/test/elrond-ethereum-bridge/price-aggregator/mandos/oracle_submit.scen.json",
+		"../../test/elrond-ethereum-bridge/price-aggregator/mandos/oracle_submit.scen.json",
 	))
 	if err != nil {
 		return err

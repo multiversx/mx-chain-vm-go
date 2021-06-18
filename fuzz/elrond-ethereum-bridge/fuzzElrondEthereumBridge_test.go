@@ -61,6 +61,13 @@ func TestElrondEthereumBridge(t *testing.T) {
 	re := fuzzutil.NewRandomEventProvider(r)
 	re.Reset()
 
-	fe.initData()
-	fe.setupAggregator()
+	err := fe.initData()
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = fe.setup(nil, nil)
+	if err != nil {
+		t.Error(err)
+	}
 }
