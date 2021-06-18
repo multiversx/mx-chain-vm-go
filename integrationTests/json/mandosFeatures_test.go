@@ -37,12 +37,12 @@ func TestRustPayableFeaturesLatest(t *testing.T) {
 	runAllTestsInFolder(t, "features/payable-features/mandos")
 }
 
-func TestRustAsyncCalls(t *testing.T) {
+func TestRustComposability(t *testing.T) {
 	// TODO fix excluded tests and include them back
-	runTestsInFolder(t, "features/async/mandos", []string{
-		"features/async/mandos/recursive_caller_egld_2.scen.json",
-		"features/async/mandos/recursive_caller_esdt_2.scen.json",
-		"features/async/mandos/recursive_caller_esdt_x.scen.json",
+	runTestsInFolder(t, "features/composability/mandos", []string{
+		"features/composability/mandos/recursive_caller_egld_2.scen.json",
+		"features/composability/mandos/recursive_caller_esdt_2.scen.json",
+		"features/composability/mandos/recursive_caller_esdt_x.scen.json",
 	})
 }
 
