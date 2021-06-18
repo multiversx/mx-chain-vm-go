@@ -5,7 +5,28 @@ import (
 	"fmt"
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"math/big"
+	"math/rand"
 )
+
+func (pfe *fuzzDexExecutor) swap(r *rand.Rand, statistics *eventsStatistics) error {
+
+	user := pfe.userAddress(r.Intn(pfe.numUsers) + 1)
+	swapPair := pfe.swaps[r.Intn(len(pfe.swaps))]
+
+	fixedInput := false
+	amountA := 0
+	amountB := 0
+	fixedInput = r.Intn(2) != 0
+	seed := r.Intn(pfe.swapMaxValue) + 1
+	amountA = seed
+	amountB = seed / 100
+
+	if fixedInput {
+		return pfe.swapFixedInput(user, swapPair, amountA, amountB, statistics)
+	} else {
+		return pfe.swapFixedOutput(user, swapPair, amountA, amountB, statistics)
+	}
+}
 
 func (pfe *fuzzDexExecutor) swapFixedInput(user string, swapPair SwapPair, amountA int,
 	amountB int, statistics *eventsStatistics) error {

@@ -8,7 +8,9 @@ import (
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
-func (pfe *fuzzDexExecutor) exitFarm(amountMax int, statistics *eventsStatistics, rand *rand.Rand) error {
+func (pfe *fuzzDexExecutor) exitFarm(r *rand.Rand, statistics *eventsStatistics) error {
+	amountMax := r.Intn(pfe.exitFarmMaxValue) + 1
+
 	stakersLen := len(pfe.farmers)
 	if stakersLen == 0 {
 		return nil

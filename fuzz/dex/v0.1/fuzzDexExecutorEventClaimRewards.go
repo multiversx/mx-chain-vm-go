@@ -9,7 +9,9 @@ import (
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
-func (pfe *fuzzDexExecutor) claimRewards(amountMax int, statistics *eventsStatistics, rand *rand.Rand) error {
+func (pfe *fuzzDexExecutor) claimRewards(r *rand.Rand, statistics *eventsStatistics) error {
+	amountMax := r.Intn(pfe.claimRewardsMaxValue) + 1
+
 	stakersLen := len(pfe.farmers)
 	if stakersLen == 0 {
 		return nil

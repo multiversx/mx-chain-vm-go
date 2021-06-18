@@ -4,13 +4,25 @@ import (
 	"errors"
 	"fmt"
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	"math/big"
+	"math/rand"
 )
 
-func (pfe *fuzzDexExecutor) addLiquidity(user string, swapPair SwapPair, amountA int, amountB int,
-	amountAmin int, amountBmin int, statistics *eventsStatistics) error {
+func (pfe *fuzzDexExecutor) addLiquidity(r *rand.Rand, statistics *eventsStatistics) error {
+	user := pfe.userAddress(r.Intn(pfe.numUsers) + 1)
+	swapPair := pfe.swaps[r.Intn(len(pfe.swaps))]
 
-	rawEquivalent, errEquivalent := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,
+	seed := r.Intn(pfe.addLiquidityMaxValue) + 1
+	amountA := seed
+	amountB := seed
+	amountAmin := seed / 100
+	amountBmin := seed / 100
+
+	rawEquivalent, err := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,
 		"getEquivalent", fmt.Sprintf("\"str:%s\", \"%d\"", swapPair.firstToken, 1000))
+	if err != nil {
+		return err
+	}
 
 	tokenABefore, err := pfe.getTokens(user, swapPair.firstToken)
 	if err != nil {
@@ -128,15 +140,19 @@ func (pfe *fuzzDexExecutor) addLiquidity(user string, swapPair SwapPair, amountA
 	if output.ReturnCode == vmi.Ok {
 		statistics.addLiquidityHits += 1
 
-		rawEquivalentAfter, errAfter := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,
+		rawEquivalentAfter, err := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,
 			"getEquivalent", fmt.Sprintf("\"str:%s\", \"%d\"", swapPair.firstToken, 1000))
-		if errAfter != nil {
-			return errAfter
+		if err != nil {
+			return err
 		}
 
-		if errEquivalent == nil && !(len(rawEquivalent) == 1 && len(rawEquivalent[0]) == 0) {
+		before := big.NewInt(0).SetBytes(rawEquivalent[0])
+		if big.NewInt(0).Cmp(before) != 0 {
 			statistics.addLiquidityPriceChecks += 1
-			if !equalMatrix(rawEquivalentAfter, rawEquivalent) {
+			after := big.NewInt(0).SetBytes(rawEquivalentAfter[0])
+			difference := big.NewInt(0).Abs(big.NewInt(0).Sub(before, after))
+
+			if big.NewInt(1).Cmp(difference) == -1 {
 				return errors.New("PRICE CHANGED after add liquidity")
 			}
 		}

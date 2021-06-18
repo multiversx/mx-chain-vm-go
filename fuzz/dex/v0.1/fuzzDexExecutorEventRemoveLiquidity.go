@@ -4,13 +4,24 @@ import (
 	"errors"
 	"fmt"
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	"math/big"
+	"math/rand"
 )
 
-func (pfe *fuzzDexExecutor) removeLiquidity(user string, swapPair SwapPair, amount int, amountAmin int,
-	amountBmin int, statistics *eventsStatistics) error {
+func (pfe *fuzzDexExecutor) removeLiquidity(r *rand.Rand, statistics *eventsStatistics) error {
+	user := pfe.userAddress(r.Intn(pfe.numUsers) + 1)
+	swapPair := pfe.swaps[r.Intn(len(pfe.swaps))]
 
-	rawEquivalent, errEquivalent := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,
+	seed := r.Intn(pfe.removeLiquidityMaxValue) + 1
+	amount := seed
+	amountAmin := seed / 100
+	amountBmin := seed / 100
+
+	rawEquivalent, err := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,
 		"getEquivalent", fmt.Sprintf("\"str:%s\", \"%d\"", swapPair.firstToken, 1000))
+	if err != nil {
+		return err
+	}
 
 	tokenABefore, err := pfe.getTokens(user, swapPair.firstToken)
 	if err != nil {
@@ -73,18 +84,28 @@ func (pfe *fuzzDexExecutor) removeLiquidity(user string, swapPair SwapPair, amou
 			return err
 		}
 
-		rawOutput, erro := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,
+		rawOutput, err := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,
 			"getEquivalent", fmt.Sprintf("\"str:%s\", \"%d\"", swapPair.firstToken, 1000))
+		if err != nil {
+			return err
+		}
 
 		if tokenABefore.Cmp(tokenAAfter) > -1 ||
 			tokenBBefore.Cmp(tokenBAfter) > -1 ||
 			tokenLpBefore.Cmp(tokenLpAfter) < 1 {
 			return errors.New("FAILED remove liquidity balances on success")
 		}
-		if errEquivalent == nil && erro == nil && !(len(rawEquivalent) == 1 && len(rawEquivalent[0]) == 0) {
+
+		before := big.NewInt(0).SetBytes(rawEquivalent[0])
+		if big.NewInt(0).Cmp(before) != 0 {
 			statistics.removeLiquidityPriceChecks += 1
-			if !equalMatrix(rawEquivalent, rawOutput) {
-				return errors.New("PRICE CHANGED after success remove")
+
+			statistics.addLiquidityPriceChecks += 1
+			after := big.NewInt(0).SetBytes(rawOutput[0])
+			difference := big.NewInt(0).Abs(big.NewInt(0).Sub(before, after))
+
+			if big.NewInt(1).Cmp(difference) == -1 {
+				return errors.New("PRICE CHANGED after add liquidity")
 			}
 		}
 	} else {

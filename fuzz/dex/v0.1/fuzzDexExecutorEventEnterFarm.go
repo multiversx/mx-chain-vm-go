@@ -3,11 +3,15 @@ package dex
 import (
 	"errors"
 	"fmt"
+	"math/rand"
 
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
-func (pfe *fuzzDexExecutor) enterFarm(user string, farm Farm, amount int, statistics *eventsStatistics) error {
+func (pfe *fuzzDexExecutor) enterFarm(r *rand.Rand, statistics *eventsStatistics) error {
+	user := pfe.userAddress(r.Intn(pfe.numUsers) + 1)
+	amount := r.Intn(pfe.enterFarmMaxValue) + 1
+	farm := pfe.farms[r.Intn(len(pfe.farms))]
 
 	output, err := pfe.executeTxStep(fmt.Sprintf(`
 	{

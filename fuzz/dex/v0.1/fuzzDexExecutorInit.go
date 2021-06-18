@@ -46,6 +46,38 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 	pfe.currentFarmTokenNonce[pfe.webuFarmTokenId] = 0
 	pfe.currentFarmTokenNonce[pfe.mexFarmTokenId] = 0
 
+	pfe.farms[0] = Farm {
+		address: pfe.wemeFarmAddress,
+		farmToken: pfe.wemeFarmTokenId,
+		farmingToken: pfe.wemeLpTokenId,
+		rewardToken: pfe.mexTokenId,
+	}
+	pfe.farms[1] = Farm {
+		address: pfe.webuFarmAddress,
+		farmToken: pfe.webuFarmTokenId,
+		farmingToken: pfe.webuLpTokenId,
+		rewardToken: pfe.mexTokenId,
+	}
+	pfe.farms[2] = Farm {
+		address: pfe.mexFarmAddress,
+		farmToken: pfe.mexFarmTokenId,
+		farmingToken: pfe.mexTokenId,
+		rewardToken: pfe.mexTokenId,
+	}
+
+	pfe.swaps[0] = SwapPair {
+		address: pfe.wemeSwapAddress,
+		lpToken: pfe.wemeLpTokenId,
+		firstToken: pfe.wegldTokenId,
+		secondToken: pfe.mexTokenId,
+	}
+	pfe.swaps[1] = SwapPair {
+		address: pfe.webuSwapAddress,
+		lpToken: pfe.webuLpTokenId,
+		firstToken: pfe.wegldTokenId,
+		secondToken: pfe.busdTokenId,
+	}
+
 	// users
 	esdtString := pfe.fullOfEsdtWalletString()
 	for i := 1; i <= args.numUsers; i++ {

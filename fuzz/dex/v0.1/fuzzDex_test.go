@@ -1,14 +1,15 @@
 package dex
 
 import (
+	"errors"
 	"flag"
+	"github.com/stretchr/testify/assert"
 	"math/rand"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
 
-	fuzzutil "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/fuzz/util"
 	mc "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/controller"
 	"github.com/stretchr/testify/require"
 )
@@ -57,15 +58,14 @@ func TestFuzzDex_v0_1(t *testing.T) {
 			webuFarmTokenId:		 "WEBUFARM-abcdef",
 			mexFarmTokenId: 		 "MEXFARM-abcdef",
 			numUsers:                10,
-			numEvents:               5000,
-			removeLiquidityProb:     0.05,
-			addLiquidityProb:        0.20,
-			swapProb:                0.25,
-			queryPairsProb:          0.05,
-			enterFarmProb:           0.18,
-			exitFarmProb:            0.06,
-			claimRewardsProb:		 0.20,
-			increaseBlockNonceProb:  0.00,
+			numEvents:               500,
+			removeLiquidityProb:     5,
+			addLiquidityProb:        20,
+			swapProb:                25,
+			queryPairsProb:          5,
+			enterFarmProb:           18,
+			exitFarmProb:            6,
+			claimRewardsProb:		 20,
 			removeLiquidityMaxValue: 1000000000,
 			addLiquidityMaxValue:    1000000000,
 			swapMaxValue:            10000000,
@@ -100,9 +100,8 @@ func TestFuzzDex_v0_1(t *testing.T) {
 		claimRewardsWithRewards:	0,
 	}
 
-	re := fuzzutil.NewRandomEventProvider(r)
 	for stepIndex := 0; stepIndex < pfe.numEvents; stepIndex++ {
-		generateRandomEvent(t, pfe, r, re, &stats)
+		generateRandomEvent(t, pfe, r, &stats)
 		err := pfe.increaseBlockNonce(1)
 		require.Nil(t, err)
 	}
@@ -114,131 +113,63 @@ func generateRandomEvent(
 	t *testing.T,
 	pfe *fuzzDexExecutor,
 	r *rand.Rand,
-	re *fuzzutil.RandomEventProvider,
 	statistics *eventsStatistics,
 ) {
-	re.Reset()
+	events := map[string]int{
+		"removeLiquidity": pfe.removeLiquidityProb,
+		"addLiquidity": pfe.addLiquidityProb,
+		"swap": pfe.swapProb,
+		"checkPairViews": pfe.queryPairsProb,
+		"enterFarm": pfe.enterFarmProb,
+		"exitFarm": pfe.exitFarmProb,
+		"claimRewards": pfe.claimRewardsProb,
+	}
 
-	userId := r.Intn(pfe.numUsers) + 1
-	user := pfe.userAddress(userId)
+	event, err := weighted_random_choice(r, events)
+	assert.Nil(t, err)
 
-	switch {
-	case re.WithProbability(pfe.removeLiquidityProb):
+	switch event {
+	case "removeLiquidity":
+		err = pfe.removeLiquidity(r, statistics)
+		assert.Nil(t, err)
+	case "addLiquidity":
+		err = pfe.addLiquidity(r, statistics)
+		assert.Nil(t, err)
+	case "swap":
+		err = pfe.swap(r, statistics)
+		assert.Nil(t, err)
+	case "checkPairViews":
+		err = pfe.checkPairViews(r, statistics)
+		assert.Nil(t, err)
+	case "enterFarm":
+		err = pfe.enterFarm(r, statistics)
+		assert.Nil(t, err)
+	case "exitFarm":
+		err = pfe.exitFarm(r, statistics)
+		assert.Nil(t, err)
+	case "claimRewards":
+		err = pfe.claimRewards(r, statistics)
+		assert.Nil(t, err)
+	}
+}
 
-		swapPair := getRandomSwapPair(r, pfe)
-		seed := r.Intn(pfe.removeLiquidityMaxValue) + 1
-		amount := seed
-		amountAmin := seed / 100
-		amountBmin := seed / 100
+func weighted_random_choice(r *rand.Rand, choices map[string]int) (string, error) {
+	sumOfWeight := 0
+	for _, v := range choices {
+		sumOfWeight = sumOfWeight +  v
+	}
 
-		err := pfe.removeLiquidity(user, swapPair, amount, amountAmin, amountBmin, statistics)
-		require.Nil(t, err)
+	pick := r.Intn(sumOfWeight)
 
-	case re.WithProbability(pfe.addLiquidityProb):
-
-		swapPair := getRandomSwapPair(r, pfe)
-		seed := r.Intn(pfe.addLiquidityMaxValue) + 1
-		amountA := seed
-		amountB := seed
-		amountAmin := seed / 100
-		amountBmin := seed / 100
-
-		err := pfe.addLiquidity(user, swapPair, amountA, amountB, amountAmin, amountBmin, statistics)
-		require.Nil(t, err)
-
-	case re.WithProbability(pfe.swapProb):
-
-		swapPair := getRandomSwapPair(r, pfe)
-		fixedInput := false
-		amountA := 0
-		amountB := 0
-		fixedInput = r.Intn(2) != 0
-		seed := r.Intn(pfe.swapMaxValue) + 1
-		amountA = seed
-		amountB = seed / 100
-
-		if fixedInput {
-			err := pfe.swapFixedInput(user, swapPair, amountA, amountB, statistics)
-			require.Nil(t, err)
-		} else {
-			err := pfe.swapFixedOutput(user, swapPair, amountA, amountB, statistics)
-			require.Nil(t, err)
+	current := 0
+	for k, v := range choices {
+		current += v
+		if current > pick {
+			return k, nil
 		}
-
-	case re.WithProbability(pfe.queryPairsProb):
-
-		swapPair := getRandomSwapPair(r, pfe)
-		err := pfe.checkPairViews(user, swapPair, statistics)
-		require.Nil(t, err)
-
-	case re.WithProbability(pfe.enterFarmProb):
-
-		amount := r.Intn(pfe.enterFarmMaxValue) + 1
-		farm := getRandomFarm(r, pfe)
-		err := pfe.enterFarm(user, farm, amount, statistics)
-		require.Nil(t, err)
-
-	case re.WithProbability(pfe.exitFarmProb):
-
-		amount := r.Intn(pfe.exitFarmMaxValue) + 1
-		err := pfe.exitFarm(amount, statistics, r)
-		require.Nil(t, err)
-
-	case re.WithProbability(pfe.claimRewardsProb):
-
-		amount := r.Intn(pfe.claimRewardsMaxValue) + 1
-		err := pfe.claimRewards(amount, statistics, r)
-		require.Nil(t, err)
-
-	case re.WithProbability(pfe.increaseBlockNonceProb):
-
-		err := pfe.increaseBlockNonce(pfe.blockNonceIncrease)
-		require.Nil(t, err)
-	default:
-	}
-}
-
-func getRandomSwapPair(r *rand.Rand, pfe *fuzzDexExecutor) SwapPair {
-	seed := r.Intn(2)
-	randomPair := SwapPair{}
-
-	if seed == 0 {
-		randomPair.address = pfe.wemeSwapAddress
-		randomPair.lpToken = pfe.wemeLpTokenId
-		randomPair.firstToken = pfe.wegldTokenId
-		randomPair.secondToken = pfe.mexTokenId
-	} else {
-		randomPair.address = pfe.webuSwapAddress
-		randomPair.lpToken = pfe.webuLpTokenId
-		randomPair.firstToken = pfe.wegldTokenId
-		randomPair.secondToken = pfe.busdTokenId
 	}
 
-	return randomPair
-}
-
-func getRandomFarm(r *rand.Rand, pfe *fuzzDexExecutor) Farm {
-	seed := r.Intn(3)
-	randomFarm := Farm{}
-
-	if seed == 0 {
-		randomFarm.address = pfe.wemeFarmAddress
-		randomFarm.farmToken = pfe.wemeFarmTokenId
-		randomFarm.farmingToken = pfe.wemeLpTokenId
-		randomFarm.rewardToken = pfe.mexTokenId
-	} else if seed == 1 {
-		randomFarm.address = pfe.webuFarmAddress
-		randomFarm.farmToken = pfe.webuFarmTokenId
-		randomFarm.farmingToken = pfe.webuLpTokenId
-		randomFarm.rewardToken = pfe.mexTokenId
-	} else {
-		randomFarm.address = pfe.mexFarmAddress
-		randomFarm.farmToken = pfe.mexFarmTokenId
-		randomFarm.farmingToken = pfe.mexTokenId
-		randomFarm.rewardToken = pfe.mexTokenId
-	}
-
-	return randomFarm
+	return "", errors.New("no event")
 }
 
 func printStatistics(statistics *eventsStatistics, pfe *fuzzDexExecutor) {

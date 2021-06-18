@@ -1,7 +1,6 @@
 package dex
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	am "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwenmandos"
@@ -25,14 +24,14 @@ type fuzzDexExecutorInitArgs struct {
 	mexFarmTokenId			string
 	numUsers                int
 	numEvents               int
-	removeLiquidityProb     float32
-	addLiquidityProb        float32
-	swapProb                float32
-	queryPairsProb          float32
-	enterFarmProb           float32
-	exitFarmProb            float32
-	claimRewardsProb		float32
-	increaseBlockNonceProb  float32
+	removeLiquidityProb     int
+	addLiquidityProb        int
+	swapProb                int
+	queryPairsProb          int
+	enterFarmProb           int
+	exitFarmProb            int
+	claimRewardsProb		int
+	increaseBlockNonceProb  int
 	removeLiquidityMaxValue int
 	addLiquidityMaxValue    int
 	swapMaxValue            int
@@ -87,14 +86,14 @@ type fuzzDexExecutor struct {
 	numUsers                int
 	numTokens               int
 	numEvents               int
-	removeLiquidityProb     float32
-	addLiquidityProb        float32
-	swapProb                float32
-	queryPairsProb          float32
-	enterFarmProb           float32
-	exitFarmProb            float32
-	claimRewardsProb        float32
-	increaseBlockNonceProb  float32
+	removeLiquidityProb     int
+	addLiquidityProb        int
+	swapProb                int
+	queryPairsProb          int
+	enterFarmProb           int
+	exitFarmProb            int
+	claimRewardsProb        int
+	increaseBlockNonceProb  int
 	removeLiquidityMaxValue int
 	addLiquidityMaxValue    int
 	swapMaxValue            int
@@ -106,6 +105,8 @@ type fuzzDexExecutor struct {
 	currentFarmTokenNonce   map[string]int
 	farmers                 map[int]FarmerInfo
 	generatedScenario       *mj.Scenario
+	farms                   [3]Farm
+	swaps                   [2]SwapPair
 }
 
 type eventsStatistics struct {
@@ -325,31 +326,3 @@ func (pfe *fuzzDexExecutor) nextTxIndex() int {
 	return pfe.txIndex
 }
 
-// This function allows equality with a += 1
-func equalMatrix(left [][]byte, right [][]byte) bool {
-	if len(left) != len(right) {
-		return false
-	}
-
-	for i := 0; i < len(left); i++ {
-		if !bytes.Equal(left[i], right[i]) {
-			if i == len(left)-1 {
-				leftIncreased := make([]byte, len(left[i]))
-				copy(leftIncreased, left[i])
-				if len(leftIncreased) > 0 {
-					leftIncreased[len(leftIncreased)-1] += 1
-				}
-
-				rightIncreased := make([]byte, len(right[i]))
-				copy(rightIncreased, right[i])
-				if len(rightIncreased) > 0 {
-					rightIncreased[len(rightIncreased)-1] += 1
-				}
-
-				return bytes.Equal(leftIncreased, right[i]) || bytes.Equal(left[i], rightIncreased)
-			}
-		}
-	}
-
-	return true
-}

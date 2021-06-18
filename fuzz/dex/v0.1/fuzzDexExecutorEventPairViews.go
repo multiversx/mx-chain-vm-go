@@ -2,9 +2,11 @@ package dex
 
 import (
 	"fmt"
+	"math/rand"
 )
 
-func (pfe *fuzzDexExecutor) checkPairViews(user string, swapPair SwapPair, stats *eventsStatistics) error {
+func (pfe *fuzzDexExecutor) checkPairViews(r *rand.Rand, stats *eventsStatistics) error {
+	swapPair := pfe.swaps[r.Intn(len(pfe.swaps))]
 
 	_, errAmountInA := pfe.querySingleResultStringAddr(pfe.ownerAddress, swapPair.address,
 		"getAmountIn", fmt.Sprintf("\"str:%s\", \"%d\"", swapPair.firstToken, 1000))
