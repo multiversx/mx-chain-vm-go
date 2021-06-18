@@ -1,5 +1,5 @@
 {
-    "name": "message_sameShard_callback",
+    "name": "payment_otherShard",
     "gasSchedule": "v3",
     "steps": [
         {
@@ -17,13 +17,7 @@
                     "storage": {
                         "``other_contract": "sc:bob"
                     },
-                    "code": "file:../async-alice/output/async-alice.wasm"
-                },
-                "sc:bob": {
-                    "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": "file:../async-bob/output/async-bob.wasm"
+                    "code": "file:../proxy-test-first/output/proxy-test-first.wasm"
                 }
             }
         },
@@ -33,8 +27,8 @@
             "tx": {
                 "from": "address:a_user",
                 "to": "sc:alice",
-                "value": "0",
-                "function": "messageOtherContractWithCallback",
+                "value": "0x123400",
+                "function": "forwardToOtherContract",
                 "arguments": [],
                 "gasLimit": "0x1000000000000",
                 "gasPrice": "0x01"
@@ -52,7 +46,7 @@
             "accounts": {
                 "address:a_user": {
                     "nonce": "1",
-                    "balance": "0xfffffffffff00e8d4a51000",
+                    "balance": "0xfffffffffff00e8d492dc00",
                     "storage": {},
                     "code": ""
                 },
@@ -60,21 +54,16 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "``other_contract": "sc:bob",
-                        "``callback_info": "0x5555"
+                        "``other_contract": "sc:bob"
                     },
-                    "code": "file:../async-alice/output/async-alice.wasm"
+                    "code": "file:../proxy-test-first/output/proxy-test-first.wasm"
                 },
                 "sc:bob": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {
-                        "``message_me_1": "0x01",
-                        "``message_me_2": "0x02",
-                        "``message_me_3": "0x030303",
-                        "``message_me_4": "0xfefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefe"
-                    },
-                    "code": "file:../async-bob/output/async-bob.wasm"
+                    "balance": "0x123400",
+                    "storage": {},
+                    "code": "",
+                    "asyncCallData": "str:payMe@56"
                 }
             }
         }
