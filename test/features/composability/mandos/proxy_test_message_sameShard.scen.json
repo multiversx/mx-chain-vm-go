@@ -1,5 +1,5 @@
 {
-    "name": "payment_sameShard",
+    "name": "message_sameShard",
     "gasSchedule": "v3",
     "steps": [
         {
@@ -17,13 +17,13 @@
                     "storage": {
                         "``other_contract": "sc:bob"
                     },
-                    "code": "file:../async-alice/output/async-alice.wasm"
+                    "code": "file:../proxy-test-first/output/proxy-test-first.wasm"
                 },
                 "sc:bob": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {},
-                    "code": "file:../async-bob/output/async-bob.wasm"
+                    "code": "file:../proxy-test-second/output/proxy-test-second.wasm"
                 }
             }
         },
@@ -33,15 +33,15 @@
             "tx": {
                 "from": "address:a_user",
                 "to": "sc:alice",
-                "value": "0x123400",
-                "function": "forwardToOtherContract",
+                "value": "0",
+                "function": "messageOtherContract",
                 "arguments": [],
                 "gasLimit": "0x1000000000000",
                 "gasPrice": "0x01"
             },
             "expect": {
                 "out": [],
-                "status": "0",
+                "status": "",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"
@@ -52,7 +52,7 @@
             "accounts": {
                 "address:a_user": {
                     "nonce": "1",
-                    "balance": "0xfffffffffff00e8d492dc00",
+                    "balance": "0xfffffffffff00e8d4a51000",
                     "storage": {},
                     "code": ""
                 },
@@ -62,16 +62,18 @@
                     "storage": {
                         "``other_contract": "sc:bob"
                     },
-                    "code": "file:../async-alice/output/async-alice.wasm"
+                    "code": "file:../proxy-test-first/output/proxy-test-first.wasm"
                 },
                 "sc:bob": {
                     "nonce": "0",
-                    "balance": "0x123400",
+                    "balance": "0",
                     "storage": {
-                        "``pay_me_arg": "0x56",
-                        "``last_payment": "0x123400"
+                        "``message_me_1": "0x01",
+                        "``message_me_2": "0x02",
+                        "``message_me_3": "0x030303",
+                        "``message_me_4": "0xfefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefe"
                     },
-                    "code": "file:../async-bob/output/async-bob.wasm"
+                    "code": "file:../proxy-test-second/output/proxy-test-second.wasm"
                 }
             }
         }

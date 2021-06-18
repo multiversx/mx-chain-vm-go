@@ -1,5 +1,5 @@
 {
-    "name": "payment_otherShard_callback",
+    "name": "message_otherShard",
     "gasSchedule": "v3",
     "steps": [
         {
@@ -17,7 +17,7 @@
                     "storage": {
                         "``other_contract": "sc:bob"
                     },
-                    "code": "file:../async-alice/output/async-alice.wasm"
+                    "code": "file:../proxy-test-first/output/proxy-test-first.wasm"
                 }
             }
         },
@@ -27,8 +27,8 @@
             "tx": {
                 "from": "address:a_user",
                 "to": "sc:alice",
-                "value": "0x123400",
-                "function": "forwardToOtherContractWithCallback",
+                "value": "0",
+                "function": "messageOtherContract",
                 "arguments": [],
                 "gasLimit": "0x1000000000000",
                 "gasPrice": "0x01"
@@ -46,7 +46,7 @@
             "accounts": {
                 "address:a_user": {
                     "nonce": "1",
-                    "balance": "0xfffffffffff00e8d492dc00",
+                    "balance": "0xfffffffffff00e8d4a51000",
                     "storage": {},
                     "code": ""
                 },
@@ -54,17 +54,16 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "``other_contract": "sc:bob",
-                        "``1...............................": "``payCallback"
+                        "``other_contract": "sc:bob"
                     },
-                    "code": "file:../async-alice/output/async-alice.wasm"
+                    "code": "file:../proxy-test-first/output/proxy-test-first.wasm"
                 },
                 "sc:bob": {
                     "nonce": "0",
-                    "balance": "0x123400",
+                    "balance": "0",
                     "storage": {},
                     "code": "",
-                    "asyncCallData": "str:payMeWithResult@56"
+                    "asyncCallData": "str:messageMe@01@02@030303@fefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefe"
                 }
             }
         }
