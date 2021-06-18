@@ -34,7 +34,7 @@ func newExecutorWithPaths() *fuzzExecutor {
 	fileResolver := mc.NewDefaultFileResolver().
 		ReplacePath(
 			"forwarder.wasm",
-			filepath.Join(getTestRoot(), "features/async/forwarder/output/forwarder.wasm"))
+			filepath.Join(getTestRoot(), "features/composability/forwarder/output/forwarder.wasm"))
 
 	pfe, err := newFuzzExecutor(fileResolver)
 	if err != nil {

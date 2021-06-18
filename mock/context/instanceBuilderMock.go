@@ -6,7 +6,6 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
-	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 // InstanceBuilderMock can be passed to RuntimeContext as an InstanceBuilder to
@@ -33,13 +32,9 @@ func (builder *InstanceBuilderMock) CreateAndStoreInstanceMock(t testing.TB, hos
 	instance.Host = host
 	builder.InstanceMap[string(code)] = *instance
 
-	account := builder.World.AcctMap.CreateAccount(code)
-	account.IsSmartContract = true
+	account := builder.World.AcctMap.CreateSmartContractAccount(nil, code, code, builder.World)
 	account.SetBalance(balance)
-	account.Code = code
-	account.CodeMetadata = []byte{0, vmcommon.MetadataPayable}
 	account.ShardID = shardID
-	account.MockWorld = builder.World
 
 	return instance
 }

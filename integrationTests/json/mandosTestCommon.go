@@ -48,9 +48,12 @@ func runTestsInFolder(t *testing.T, folder string, exclusions []string) {
 	}
 }
 
-func runSingleTest(t *testing.T, folder string, filename string) error {
+func runSingleTestReturnError(folder string, filename string) error {
 	executor, err := am.NewArwenTestExecutor()
-	require.Nil(t, err)
+	if err != nil {
+		return err
+	}
+
 	runner := mc.NewScenarioRunner(
 		executor,
 		mc.NewDefaultFileResolver(),

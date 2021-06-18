@@ -1,5 +1,5 @@
 {
-    "name": "payment_otherShard",
+    "name": "payment_sameShard_callback",
     "gasSchedule": "v3",
     "steps": [
         {
@@ -17,7 +17,13 @@
                     "storage": {
                         "``other_contract": "sc:bob"
                     },
-                    "code": "file:../async-alice/output/async-alice.wasm"
+                    "code": "file:../proxy-test-first/output/proxy-test-first.wasm"
+                },
+                "sc:bob": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": "file:../proxy-test-second/output/proxy-test-second.wasm"
                 }
             }
         },
@@ -28,14 +34,16 @@
                 "from": "address:a_user",
                 "to": "sc:alice",
                 "value": "0x123400",
-                "function": "forwardToOtherContract",
+                "function": "forwardToOtherContractWithCallback",
                 "arguments": [],
                 "gasLimit": "0x1000000000000",
                 "gasPrice": "0x01"
             },
             "expect": {
-                "out": [],
-                "status": "",
+                "out": [
+                    "0x7777"
+                ],
+                "status": "0",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"
@@ -54,16 +62,19 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "``other_contract": "sc:bob"
+                        "``other_contract": "sc:bob",
+                        "``callback_info": "0x7777"
                     },
-                    "code": "file:../async-alice/output/async-alice.wasm"
+                    "code": "file:../proxy-test-first/output/proxy-test-first.wasm"
                 },
                 "sc:bob": {
                     "nonce": "0",
                     "balance": "0x123400",
-                    "storage": {},
-                    "code": "",
-                    "asyncCallData": "str:payMe@56"
+                    "storage": {
+                        "``pay_me_arg": "0x56",
+                        "``last_payment": "0x123400"
+                    },
+                    "code": "file:../proxy-test-second/output/proxy-test-second.wasm"
                 }
             }
         }

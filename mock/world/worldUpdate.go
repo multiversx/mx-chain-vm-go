@@ -68,7 +68,7 @@ func (b *MockWorld) UpdateAccounts(
 func (b *MockWorld) UpdateAccountFromOutputAccount(modAcct *vmcommon.OutputAccount) {
 	acct := b.AcctMap.GetAccount(modAcct.Address)
 	if acct == nil {
-		acct = b.AcctMap.CreateAccount(modAcct.Address)
+		acct = b.AcctMap.CreateAccount(modAcct.Address, b)
 		acct.OwnerAddress = modAcct.CodeDeployerAddress
 		b.AcctMap.PutAccount(acct)
 	}

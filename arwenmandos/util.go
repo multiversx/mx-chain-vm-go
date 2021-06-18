@@ -15,7 +15,7 @@ import (
 	"github.com/ElrondNetwork/elrond-go/process/smartContract/builtInFunctions"
 )
 
-func convertAccount(testAcct *mj.Account) (*worldmock.Account, error) {
+func convertAccount(testAcct *mj.Account, world *worldmock.MockWorld) (*worldmock.Account, error) {
 	storage := make(map[string][]byte)
 	for _, stkvp := range testAcct.Storage {
 		key := string(stkvp.Key.Value)
@@ -44,6 +44,7 @@ func convertAccount(testAcct *mj.Account) (*worldmock.Account, error) {
 			Upgradeable: true,
 			Readable:    true,
 		}).ToBytes(), // TODO: add explicit fields in mandos json
+		MockWorld: world,
 	}
 
 	for _, mandosESDTData := range testAcct.ESDTData {
