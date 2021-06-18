@@ -1402,30 +1402,7 @@ func v1_3_upgradeContract(
 	gasToUse = math.MulUint64(gasSchedule.BaseOperationCost.DataCopyPerByte, uint64(length))
 	metering.UseGas(gasToUse)
 
-	minAsyncCallCost := math.AddUint64(
-		math.MulUint64(2, gasSchedule.ElrondAPICost.AsyncCallStep),
-		gasSchedule.ElrondAPICost.AsyncCallbackGasLock)
-	if uint64(gasLimit) < minAsyncCallCost {
-		runtime.SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
-		return
-	}
-
-	// Set up the async call as if it is not known whether the called SC
-	// is in the same shard with the caller or not. This will be later resolved
-	// by runtime.ExecuteAsyncCall().
-	callData := txDataBuilder.NewBuilder()
-	callData.Func(arwen.UpgradeFunctionName)
-	callData.Bytes(code).Bytes(codeMetadata)
-
-	for _, arg := range data {
-		callData.Bytes(arg)
-	}
-
-	runtime.ExecuteAsyncCall(
-		calledSCAddress,
-		callData.ToBytes(),
-		value,
-	)
+	upgradeContract(host, calledSCAddress, code, codeMetadata, value, data, gasLimit)
 }
 
 //export v1_3_upgradeFromSourceContract
@@ -1489,13 +1466,12 @@ func v1_3_upgradeFromSourceContract(
 func UpgradeFromSourceContractWithTypedArgs(
 	host arwen.VMHost,
 	sourceContractAddress []byte,
-	destCountracAddress []byte,
+	destCountractAddress []byte,
 	value []byte,
 	data [][]byte,
 	gasLimit int64,
 ) {
 	runtime := host.Runtime()
-	metering := host.Metering()
 	blockchain := host.Blockchain()
 
 	code, err := blockchain.GetCode(sourceContractAddress)
@@ -1509,10 +1485,21 @@ func UpgradeFromSourceContractWithTypedArgs(
 	}
 	codeMetadata := contract.GetCodeMetadata()
 
-	gasSchedule := metering.GasSchedule()
-	gasToUse := gasSchedule.ElrondAPICost.AsyncCallStep
-	metering.UseGas(gasToUse)
+	upgradeContract(host, destCountractAddress, code, codeMetadata, value, data, gasLimit)
+}
 
+func upgradeContract(
+	host arwen.VMHost,
+	destCountractAddress []byte,
+	code []byte,
+	codeMetadata []byte,
+	value []byte,
+	data [][]byte,
+	gasLimit int64,
+) {
+	runtime := host.Runtime()
+	metering := host.Metering()
+	gasSchedule := metering.GasSchedule()
 	minAsyncCallCost := math.AddUint64(
 		math.MulUint64(2, gasSchedule.ElrondAPICost.AsyncCallStep),
 		gasSchedule.ElrondAPICost.AsyncCallbackGasLock)
@@ -1523,23 +1510,20 @@ func UpgradeFromSourceContractWithTypedArgs(
 
 	// Set up the async call as if it is not known whether the called SC
 	// is in the same shard with the caller or not. This will be later resolved
-	// in the handler for BreakpointAsyncCall.
-	codeEncoded := hex.EncodeToString(code)
-	codeMetadataEncoded := hex.EncodeToString(codeMetadata)
-	finalData := arwen.UpgradeFunctionName + "@" + codeEncoded + "@" + codeMetadataEncoded
+	// by runtime.ExecuteAsyncCall().
+	callData := txDataBuilder.NewBuilder()
+	callData.Func(arwen.UpgradeFunctionName)
+	callData.Bytes(code).Bytes(codeMetadata)
+
 	for _, arg := range data {
-		finalData += "@" + string(arg)
+		callData.Bytes(arg)
 	}
 
-	runtime.SetAsyncCallInfo(&arwen.AsyncCallInfo{
-		Destination: destCountracAddress,
-		Data:        []byte(finalData),
-		GasLimit:    uint64(gasLimit),
-		ValueBytes:  value,
-	})
-
-	// Instruct Wasmer to interrupt the execution of the caller SC.
-	runtime.SetRuntimeBreakpointValue(arwen.BreakpointAsyncCall)
+	runtime.ExecuteAsyncCall(
+		destCountractAddress,
+		callData.ToBytes(),
+		value,
+	)
 }
 
 //export v1_3_asyncCall
@@ -2740,19 +2724,9 @@ func v1_3_createContract(
 		return 1
 	}
 
-	contractCreate := &vmcommon.ContractCreateInput{
-		VMInput: vmcommon.VMInput{
-			CallerAddr:  sender,
-			Arguments:   data,
-			CallValue:   big.NewInt(0).SetBytes(value),
-			GasPrice:    0,
-			GasProvided: metering.BoundGasLimit(gasLimit),
-		},
-		ContractCode:         code,
-		ContractCodeMetadata: codeMetadata,
-	}
+	valueAsInt := big.NewInt(0).SetBytes(value)
+	newAddress, err := createContractCall(sender, data, valueAsInt, metering, gasLimit, code, codeMetadata, host, runtime)
 
-	newAddress, err := host.CreateNewContract(contractCreate)
 	if err != nil {
 		return 1
 	}
@@ -2814,12 +2788,13 @@ func v1_3_deployFromSourceContract(
 		data,
 		gasLimit,
 	)
-	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+
+	if err != nil {
 		return 1
 	}
 
 	err = runtime.MemStore(resultAddressOffset, newAddress)
-	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -2850,6 +2825,20 @@ func DeployFromSourceContractWithTypedArgs(
 	}
 	codeMetadata := contract.GetCodeMetadata()
 
+	return createContractCall(sender, data, value, metering, gasLimit, code, codeMetadata, host, runtime)
+}
+
+func createContractCall(
+	sender []byte,
+	data [][]byte,
+	value *big.Int,
+	metering arwen.MeteringContext,
+	gasLimit int64,
+	code []byte,
+	codeMetadata []byte,
+	host arwen.VMHost,
+	runtime arwen.RuntimeContext,
+) ([]byte, error) {
 	contractCreate := &vmcommon.ContractCreateInput{
 		VMInput: vmcommon.VMInput{
 			CallerAddr:  sender,
