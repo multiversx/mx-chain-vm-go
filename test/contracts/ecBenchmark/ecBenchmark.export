@@ -1,0 +1,4 @@
+init
+addEcTest
+doubleEcTest
+isOnCurveEcTest
