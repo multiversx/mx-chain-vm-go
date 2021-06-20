@@ -24,7 +24,7 @@ void init()
 {
 }
 
-void declarationsTest()
+void initialVariablesAndCallsTest()
 {
     int fieldOrderHandle = bigIntNew(0);
     int basePointOrderHandle = bigIntNew(0);
