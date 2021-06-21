@@ -5,6 +5,7 @@ package elrondapi
 // #include <stdlib.h>
 // typedef unsigned char uint8_t;
 // typedef int int32_t;
+// typedef unsigned int uint32_t;
 //
 // extern void			v1_3_getSCAddress(void *context, int32_t resultOffset);
 // extern void			v1_3_getOwnerAddress(void *context, int32_t resultOffset);
@@ -30,15 +31,15 @@ package elrondapi
 // extern int32_t		v1_3_callValue(void *context, int32_t resultOffset);
 // extern int32_t		v1_3_getESDTValue(void *context, int32_t resultOffset);
 // extern int32_t		v1_3_getESDTTokenName(void *context, int32_t resultOffset);
-// extern long long	v1_3_getESDTTokenNonce(void *context);
+// extern long long 		v1_3_getESDTTokenNonce(void *context);
 // extern int32_t		v1_3_getESDTTokenType(void *context);
-// extern long long v1_3_getCurrentESDTNFTNonce(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen);
+// extern long long 		v1_3_getCurrentESDTNFTNonce(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen);
 // extern int32_t		v1_3_getCallValueTokenName(void *context, int32_t callValueOffset, int32_t tokenNameOffset);
 // extern void			v1_3_writeLog(void *context, int32_t pointer, int32_t length, int32_t topicPtr, int32_t numTopics);
 // extern void			v1_3_writeEventLog(void *context, int32_t numTopics, int32_t topicLengthsOffset, int32_t topicOffset, int32_t dataOffset, int32_t dataLength);
 // extern void			v1_3_returnData(void* context, int32_t dataOffset, int32_t length);
 // extern void			v1_3_signalError(void* context, int32_t messageOffset, int32_t messageLength);
-// extern long long v1_3_getGasLeft(void *context);
+// extern long long 		v1_3_getGasLeft(void *context);
 // extern int32_t		v1_3_getESDTBalance(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce, int32_t resultOffset);
 // extern int32_t		v1_3_getESDTNFTNameLength(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce);
 // extern int32_t		v1_3_getESDTNFTAttributeLength(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce);
@@ -54,31 +55,33 @@ package elrondapi
 // extern int32_t		v1_3_deployFromSourceContract(void *context, long long gas, int32_t valueOffset, int32_t addressOffset, int32_t codeMetadataOffset, int32_t resultOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern void			v1_3_upgradeContract(void *context, int32_t dstOffset, long long gas, int32_t valueOffset, int32_t codeOffset, int32_t codeMetadataOffset, int32_t length, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern void			v1_3_upgradeFromSourceContract(void *context, int32_t dstOffset, long long gas, int32_t valueOffset, int32_t addressOffset, int32_t codeMetadataOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
-// extern void			v1_3_asyncCall(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
-// extern void			v1_3_createAsyncCall(void *context, int32_t identifierOffset, int32_t identifierLength, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length, int32_t successCallback, int32_t successLength, int32_t errorCallback, int32_t errorLength, long long gas);
+// extern void 			v1_3_asyncCall(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
+// extern void			v1_3_createAsyncCall(void *context, int32_t groupIDOffset, int32_t groupIDLength, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length, int32_t successCallback, int32_t successLength, int32_t errorCallback, int32_t errorLength, long long gas);
+// extern int32_t		v1_3_setAsyncGroupCallback(void *context, int32_t groupIDOffset, int32_t groupIDLength, int32_t callback, int32_t callbackLength, int32_t data, int32_t dataLength, int32_t gas);
 //
 // extern int32_t		v1_3_getNumReturnData(void *context);
 // extern int32_t		v1_3_getReturnDataSize(void *context, int32_t resultID);
 // extern int32_t		v1_3_getReturnData(void *context, int32_t resultID, int32_t dataOffset);
 //
-// extern int32_t		v1_3_setStorageLock(void *context, int32_t keyOffset, int32_t keyLength, long long lockTimestamp);
-// extern long long v1_3_getStorageLock(void *context, int32_t keyOffset, int32_t keyLength);
+// extern int32_t 		v1_3_setStorageLock(void *context, int32_t keyOffset, int32_t keyLength, long long lockTimestamp);
+// extern long long		v1_3_getStorageLock(void *context, int32_t keyOffset, int32_t keyLength);
 // extern int32_t		v1_3_isStorageLocked(void *context, int32_t keyOffset, int32_t keyLength);
 // extern int32_t		v1_3_clearStorageLock(void *context, int32_t keyOffset, int32_t keyLength);
 //
-// extern long long v1_3_getBlockTimestamp(void *context);
-// extern long long v1_3_getBlockNonce(void *context);
-// extern long long v1_3_getBlockRound(void *context);
-// extern long long v1_3_getBlockEpoch(void *context);
+// extern long long 		v1_3_getBlockTimestamp(void *context);
+// extern long long 		v1_3_getBlockNonce(void *context);
+// extern long long 		v1_3_getBlockRound(void *context);
+// extern long long 		v1_3_getBlockEpoch(void *context);
 // extern void			v1_3_getBlockRandomSeed(void *context, int32_t resultOffset);
 // extern void			v1_3_getStateRootHash(void *context, int32_t resultOffset);
 //
-// extern long long v1_3_getPrevBlockTimestamp(void *context);
-// extern long long v1_3_getPrevBlockNonce(void *context);
-// extern long long v1_3_getPrevBlockRound(void *context);
-// extern long long v1_3_getPrevBlockEpoch(void *context);
+// extern long long 		v1_3_getPrevBlockTimestamp(void *context);
+// extern long long 		v1_3_getPrevBlockNonce(void *context);
+// extern long long 		v1_3_getPrevBlockRound(void *context);
+// extern long long			v1_3_getPrevBlockEpoch(void *context);
 // extern void			v1_3_getPrevBlockRandomSeed(void *context, int32_t resultOffset);
 // extern void			v1_3_getOriginalTxHash(void *context, int32_t resultOffset);
+// extern void 			v1_3_getPrevTxHash(void *context, int32_t resultOffset);
 import "C"
 
 import (
@@ -1254,7 +1257,7 @@ func TransferESDTNFTExecuteWithTypedArgs(
 	return 0
 }
 
-//export createAsyncCall
+//export v1_3_createAsyncCall
 func v1_3_createAsyncCall(context unsafe.Pointer,
 	groupIDOffset int32,
 	groupIDLength int32,
@@ -1325,7 +1328,7 @@ func v1_3_createAsyncCall(context unsafe.Pointer,
 	}
 }
 
-//export setAsyncGroupCallback
+//export v1_3_setAsyncGroupCallback
 func v1_3_setAsyncGroupCallback(context unsafe.Pointer,
 	groupIDOffset int32,
 	groupIDLength int32,
@@ -1379,7 +1382,7 @@ func v1_3_setAsyncGroupCallback(context unsafe.Pointer,
 	return 0
 }
 
-//export asyncCall
+//export v1_3_asyncCall
 func v1_3_asyncCall(context unsafe.Pointer, destOffset int32, valueOffset int32, dataOffset int32, length int32) {
 	host := arwen.GetVMHost(context)
 	runtime := host.Runtime()
@@ -2986,6 +2989,18 @@ func v1_3_getOriginalTxHash(context unsafe.Pointer, dataOffset int32) {
 	metering.UseGas(gasToUse)
 
 	err := runtime.MemStore(dataOffset, runtime.GetOriginalTxHash())
+	_ = arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
+}
+
+//export v1_3_getPrevTxHash
+func v1_3_getPrevTxHash(context unsafe.Pointer, dataOffset int32) {
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.GetBlockHash
+	metering.UseGas(gasToUse)
+
+	err := runtime.MemStore(dataOffset, runtime.GetPrevTxHash())
 	_ = arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
 }
 
