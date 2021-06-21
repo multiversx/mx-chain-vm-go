@@ -62,6 +62,7 @@ int deployFromSourceContract(
 		long long gas,
 		byte *value,
 		byte *sourceContractAddress,
+		byte *codeMetadata,
 		byte *newAddress,
 		int numInitArgs,
 		byte *initArgLengths,
@@ -72,6 +73,7 @@ void upgradeFromSourceContract(
 		long long gas,
 		byte *value,
 		byte *sourceContractAddress,
+		byte *codeMetadata,
 		int numInitArgs,
 		byte *initArgLengths,
 		byte *initArgs);	

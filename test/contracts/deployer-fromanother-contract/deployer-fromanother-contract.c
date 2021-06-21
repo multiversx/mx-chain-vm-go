@@ -9,6 +9,8 @@ byte deploymentValue[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 byte arguments[0] = {};
 int argumentsLengths[0] = {};
 
+byte contractMetadata[2] = {3, 0};
+
 
 void deployCodeFromAnotherContract() {
 	getArgument(0, sourceContractAddress);
@@ -17,6 +19,7 @@ void deployCodeFromAnotherContract() {
 			2000,
 			deploymentValue,
 			sourceContractAddress,
+			contractMetadata,
 			newAddress,
 			0,
 			(byte*)argumentsLengths,

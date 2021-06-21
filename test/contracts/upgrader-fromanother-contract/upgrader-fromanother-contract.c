@@ -10,6 +10,7 @@ byte deploymentValue[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 byte arguments[0] = {};
 int argumentsLengths[0] = {};
 
+byte contractMetadata[2] = {3, 0};
 
 void upgradeCodeFromAnotherContract() {
 	getArgument(0, initialContractAddress);
@@ -20,6 +21,7 @@ void upgradeCodeFromAnotherContract() {
 			500000,
 			deploymentValue,
 			sourceContractAddress,
+			contractMetadata,
 			0,
 			(byte*)argumentsLengths,
 			arguments);			
