@@ -1,0 +1,136 @@
+{
+    "name": "unjail nodes scenario",
+    "gasSchedule": "v3",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "steps/init_accounts.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "steps/deploy.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "steps/add_nodes.steps.json"
+        }, 
+        {
+            "step": "externalSteps",
+            "path": "steps/stake_1.steps.json"
+        }, 
+        {
+            "step": "externalSteps",
+            "path": "steps/increase_cap.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "steps/activate_nodes.steps.json"
+        },
+        {
+            "step": "checkState",
+            "comment": "check that stake was sent",
+            "accounts": {
+                "sc:auction": {
+                    "nonce": "0",
+                    "balance": "300,000,000,000,000",
+                    "storage": "*",
+                    "code": "file:../../auction-mock/output/auction-mock.wasm"
+                },
+                "+":""
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "supply node address",
+            "tx": {
+                "from": "address:endless_sack_of_erd",
+                "to":  "address:node_address",
+                "value": "1,000,000,000"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "unJail inactive nodes",
+            "tx": {
+                "from":  "address:node_address",
+                "to": "sc:delegation",
+                "value": "1,000,000,000",
+                "function": "unJailNodes",
+                "arguments": [
+                    "''bls_key_1_______________________________________________________________________________________",
+                    "''bls_key_3_______________________________________________________________________________________"  
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "4",
+                "message": "''node must be active",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "unJail unknown nodes",
+            "tx": {
+                "from":  "address:node_address",
+                "to": "sc:delegation",
+                "value": "1,000,000,000",
+                "function": "unJailNodes",
+                "arguments": [
+                    "''bls_key_x_______________________________________________________________________________________",
+                    "''bls_key_3_______________________________________________________________________________________"  
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "4",
+                "message": "''unknown node provided",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "unJail nodes",
+            "tx": {
+                "from":  "address:node_address",
+                "to": "sc:delegation",
+                "value": "1,000,000,000",
+                "function": "unJailNodes",
+                "arguments": [
+                    "''bls_key_2_______________________________________________________________________________________",
+                    "''bls_key_3_______________________________________________________________________________________"  
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "comment": "check that stake was sent",
+            "accounts": {
+                "sc:auction": {
+                    "nonce": "0",
+                    "balance": "300,001,000,000,000",
+                    "storage": "*",
+                    "code": "file:../../auction-mock/output/auction-mock.wasm"
+                },
+                "+":""
+            }
+        }
+    ]
+}

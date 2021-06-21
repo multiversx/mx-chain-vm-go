@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/contexts"
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/cryptoapi"
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen/elrondapi"
-	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
-	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen/contexts"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen/cryptoapi"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen/elrondapi"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-go/core/atomic"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
@@ -18,6 +18,7 @@ import (
 
 var log = logger.GetOrCreate("arwen/host")
 
+// MaximumWasmerInstanceCount represents the maximum number of Wasmer instances that can be active at the same time
 var MaximumWasmerInstanceCount = uint64(10)
 
 // TryFunction corresponds to the try() part of a try / catch block
@@ -28,9 +29,8 @@ type CatchFunction func(error)
 
 // vmHost implements HostContext interface.
 type vmHost struct {
-	blockChainHook vmcommon.BlockchainHook
-	cryptoHook     crypto.VMCrypto
-	mutExecution   sync.RWMutex
+	cryptoHook   crypto.VMCrypto
+	mutExecution sync.RWMutex
 
 	ethInput []byte
 
@@ -41,6 +41,7 @@ type vmHost struct {
 	storageContext    arwen.StorageContext
 	bigIntContext     arwen.BigIntContext
 
+	gasSchedule              config.GasScheduleMap
 	scAPIMethods             *wasmer.Imports
 	protocolBuiltinFunctions vmcommon.FunctionNames
 
@@ -52,28 +53,36 @@ type vmHost struct {
 
 	dynGasLockEnableEpoch uint32
 	flagDynGasLock        atomic.Flag
+
+	arwenV3EnableEpoch uint32
+	flagArwenV3        atomic.Flag
+
+	eSDTFunctionsEnableEpoch uint32
+	flagESDTFunctions        atomic.Flag
 }
 
 // NewArwenVM creates a new Arwen vmHost
 func NewArwenVM(
 	blockChainHook vmcommon.BlockchainHook,
 	hostParameters *arwen.VMHostParameters,
-) (*vmHost, error) {
+) (arwen.VMHost, error) {
 
 	cryptoHook := crypto.NewVMCrypto()
 	host := &vmHost{
-		blockChainHook:           blockChainHook,
 		cryptoHook:               cryptoHook,
 		meteringContext:          nil,
 		runtimeContext:           nil,
 		blockchainContext:        nil,
 		storageContext:           nil,
 		bigIntContext:            nil,
+		gasSchedule:              hostParameters.GasSchedule,
 		scAPIMethods:             nil,
 		protocolBuiltinFunctions: hostParameters.ProtocolBuiltinFunctions,
 		arwenV2EnableEpoch:       hostParameters.ArwenV2EnableEpoch,
 		aotEnableEpoch:           hostParameters.AheadOfTimeEnableEpoch,
+		arwenV3EnableEpoch:       hostParameters.ArwenV3EnableEpoch,
 		dynGasLockEnableEpoch:    hostParameters.DynGasLockEnableEpoch,
+		eSDTFunctionsEnableEpoch: hostParameters.ArwenESDTFunctionsEnableEpoch,
 	}
 
 	var err error
@@ -139,7 +148,7 @@ func NewArwenVM(
 		return nil, err
 	}
 
-	gasCostConfig, err := config.CreateGasConfig(hostParameters.GasSchedule)
+	gasCostConfig, err := config.CreateGasConfig(host.gasSchedule)
 	if err != nil {
 		return nil, err
 	}
@@ -154,46 +163,72 @@ func NewArwenVM(
 	return host, nil
 }
 
+// GetVersion returns the Arwen version string
+func (host *vmHost) GetVersion() string {
+	return arwen.ArwenVersion
+}
+
+// Crypto returns the VMCrypto instance of the host
 func (host *vmHost) Crypto() crypto.VMCrypto {
 	return host.cryptoHook
 }
 
+// Blockchain returns the BlockchainContext instance of the host
 func (host *vmHost) Blockchain() arwen.BlockchainContext {
 	return host.blockchainContext
 }
 
+// Runtime returns the RuntimeContext instance of the host
 func (host *vmHost) Runtime() arwen.RuntimeContext {
 	return host.runtimeContext
 }
 
+// Output returns the OutputContext instance of the host
 func (host *vmHost) Output() arwen.OutputContext {
 	return host.outputContext
 }
 
+// Metering returns the MeteringContext instance of the host
 func (host *vmHost) Metering() arwen.MeteringContext {
 	return host.meteringContext
 }
 
+// Storage returns the StorageContext instance of the host
 func (host *vmHost) Storage() arwen.StorageContext {
 	return host.storageContext
 }
 
+// BigInt returns the BigIntContext instance of the host
 func (host *vmHost) BigInt() arwen.BigIntContext {
 	return host.bigIntContext
 }
 
+// IsArwenV2Enabled returns whether the Arwen V2 mode is enabled
 func (host *vmHost) IsArwenV2Enabled() bool {
 	return host.flagArwenV2.IsSet()
 }
 
+// IsArwenV3Enabled returns whether the V3 features are enabled
+func (host *vmHost) IsArwenV3Enabled() bool {
+	return host.flagArwenV3.IsSet()
+}
+
+// IsAheadOfTimeCompileEnabled returns whether ahead-of-time compilation is enabled
 func (host *vmHost) IsAheadOfTimeCompileEnabled() bool {
 	return host.flagAheadOfTime.IsSet()
 }
 
+// IsDynamicGasLockingEnabled returns whether dynamic gas locking mode is enabled
 func (host *vmHost) IsDynamicGasLockingEnabled() bool {
 	return host.flagDynGasLock.IsSet()
 }
 
+// IsESDTFunctionsEnabled returns whether ESDT functions are enabled
+func (host *vmHost) IsESDTFunctionsEnabled() bool {
+	return host.flagESDTFunctions.IsSet()
+}
+
+// GetContexts returns the main contexts of the host
 func (host *vmHost) GetContexts() (
 	arwen.BigIntContext,
 	arwen.BlockchainContext,
@@ -210,9 +245,10 @@ func (host *vmHost) GetContexts() (
 		host.storageContext
 }
 
+// InitState resets the contexts of the host and reconfigures its flags
 func (host *vmHost) InitState() {
 	host.initContexts()
-	currentEpoch := host.blockChainHook.CurrentEpoch()
+	currentEpoch := host.Blockchain().CurrentEpoch()
 	host.flagArwenV2.Toggle(currentEpoch >= host.arwenV2EnableEpoch)
 	log.Trace("arwenV2", "enabled", host.flagArwenV2.IsSet())
 
@@ -221,44 +257,62 @@ func (host *vmHost) InitState() {
 
 	host.flagDynGasLock.Toggle(currentEpoch >= host.dynGasLockEnableEpoch)
 	log.Trace("dynamic gas locking", "enabled", host.flagDynGasLock.IsSet())
+
+	host.flagArwenV3.Toggle(currentEpoch >= host.arwenV3EnableEpoch)
+	log.Trace("arwen v3 improvement", "enabled", host.flagArwenV3.IsSet())
+
+	host.flagESDTFunctions.Toggle(currentEpoch >= host.eSDTFunctionsEnableEpoch)
+	log.Trace("esdt functions", "enabled", host.flagESDTFunctions.IsSet())
 }
 
 func (host *vmHost) initContexts() {
 	host.ClearContextStateStack()
 	host.bigIntContext.InitState()
 	host.outputContext.InitState()
+	host.meteringContext.InitState()
 	host.runtimeContext.InitState()
 	host.storageContext.InitState()
 	host.ethInput = nil
 }
 
+// ClearContextStateStack cleans the state stacks of all the contexts of the host
 func (host *vmHost) ClearContextStateStack() {
 	host.bigIntContext.ClearStateStack()
 	host.outputContext.ClearStateStack()
+	host.meteringContext.ClearStateStack()
 	host.runtimeContext.ClearStateStack()
 	host.storageContext.ClearStateStack()
 }
 
+// Clean closes the currently running Wasmer instance
 func (host *vmHost) Clean() {
 	if host.runtimeContext.IsWarmInstance() {
 		return
 	}
 	host.runtimeContext.CleanWasmerInstance()
-	arwen.RemoveAllHostContexts()
 }
 
+// GetAPIMethods returns the EEI as a set of imports for Wasmer
 func (host *vmHost) GetAPIMethods() *wasmer.Imports {
 	return host.scAPIMethods
 }
 
+// GetProtocolBuiltinFunctions returns the names of the built-in functions, reserved by the protocol
 func (host *vmHost) GetProtocolBuiltinFunctions() vmcommon.FunctionNames {
 	return host.protocolBuiltinFunctions
 }
 
-func (host *vmHost) GasScheduleChange(newGasSchedule map[string]map[string]uint64) {
+// SetProtocolBuiltinFunctions sets the names of build-in functions, reserved by the protocol
+func (host *vmHost) SetProtocolBuiltinFunctions(functionNames vmcommon.FunctionNames) {
+	host.protocolBuiltinFunctions = functionNames
+}
+
+// GasScheduleChange applies a new gas schedule to the host
+func (host *vmHost) GasScheduleChange(newGasSchedule config.GasScheduleMap) {
 	host.mutExecution.Lock()
 	defer host.mutExecution.Unlock()
 
+	host.gasSchedule = newGasSchedule
 	gasCostConfig, err := config.CreateGasConfig(newGasSchedule)
 	if err != nil {
 		log.Error("cannot apply new gas config remained with old one")
@@ -271,6 +325,12 @@ func (host *vmHost) GasScheduleChange(newGasSchedule map[string]map[string]uint6
 	host.meteringContext.SetGasSchedule(newGasSchedule)
 }
 
+// GetGasScheduleMap returns the currently stored gas schedule
+func (host *vmHost) GetGasScheduleMap() config.GasScheduleMap {
+	return host.gasSchedule
+}
+
+// RunSmartContractCreate executes the deployment of a new contract
 func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error) {
 	host.mutExecution.RLock()
 	defer host.mutExecution.RUnlock()
@@ -294,6 +354,7 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 	return
 }
 
+// RunSmartContractCall executes the call of an existing contract
 func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
 	host.mutExecution.RLock()
 	defer host.mutExecution.RUnlock()
@@ -352,7 +413,29 @@ func (host *vmHost) hasRetriableExecutionError(vmOutput *vmcommon.VMOutput) bool
 	return vmOutput.ReturnMessage == "allocation error"
 }
 
+// AreInSameShard returns true if the provided addresses are part of the same shard
+func (host *vmHost) AreInSameShard(leftAddress []byte, rightAddress []byte) bool {
+	blockchain := host.Blockchain()
+	leftShard := blockchain.GetShardOfAddress(leftAddress)
+	rightShard := blockchain.GetShardOfAddress(rightAddress)
+
+	return leftShard == rightShard
+}
+
 // IsInterfaceNil returns true if there is no value under the interface
 func (host *vmHost) IsInterfaceNil() bool {
 	return host == nil
+}
+
+// SetRuntimeContext sets the runtimeContext for this host, used in tests
+func (host *vmHost) SetRuntimeContext(runtime arwen.RuntimeContext) {
+	host.runtimeContext = runtime
+}
+
+// GetRuntimeErrors obtains the cumultated error object after running the SC
+func (host *vmHost) GetRuntimeErrors() error {
+	if host.runtimeContext != nil {
+		return host.runtimeContext.GetAllErrors()
+	}
+	return nil
 }

@@ -1,5 +1,6 @@
 {
     "name": "genesis big scenario",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "externalSteps",
@@ -22,7 +23,7 @@
             "txId": "only delegator only stake",
             "tx": {
                 "from": "''delegator_1___________________s1",
-                "to": "''delegation_contract___________s1",
+                "to": "sc:delegation",
                 "value": "0",
                 "function": "stakeGenesis",
                 "arguments": [
@@ -47,7 +48,7 @@
             "step": "validatorReward",
             "txId": "validatorReward-1",
             "tx": {
-                "to": "''delegation_contract___________s1",
+                "to": "sc:delegation",
                 "value": "1"
             }
         },
@@ -56,7 +57,7 @@
             "txId": "delegator 1 claim 1",
             "tx": {
                 "from": "''delegator_1___________________s1",
-                "to": "''delegation_contract___________s1",
+                "to": "sc:delegation",
                 "value": "0",
                 "function": "claimRewards",
                 "arguments": [],
@@ -73,7 +74,7 @@
             "step": "validatorReward",
             "txId": "validatorReward-2",
             "tx": {
-                "to": "''delegation_contract___________s1",
+                "to": "sc:delegation",
                 "value": "1"
             }
         },
@@ -82,7 +83,7 @@
             "txId": "delegator 1 claim 2",
             "tx": {
                 "from": "''delegator_1___________________s1",
-                "to": "''delegation_contract___________s1",
+                "to": "sc:delegation",
                 "value": "0",
                 "function": "claimRewards",
                 "arguments": [],
@@ -100,7 +101,7 @@
             "txId": "owner gets fee",
             "tx": {
                 "from": "''node_address__________________s1",
-                "to": "''delegation_contract___________s1",
+                "to": "sc:delegation",
                 "value": "0",
                 "function": "claimRewards",
                 "arguments": [],
@@ -112,7 +113,7 @@
                 "status": "",
                 "logs": [
                     {
-                        "address": "''delegation_contract___________s1",
+                        "address": "sc:delegation",
                         "identifier": "0x000000000000000000000000000000000000000000000000000000000000000a",
                         "topics": [
                             "''node_address__________________s1"
@@ -126,13 +127,18 @@
             "step": "checkState",
             "comment": "delegator 1 gets another 1",
             "accounts": {
-                "''delegation_contract___________s1": {
-                    "balance": "1"
+                "sc:delegation": {
+                    "nonce": "*",
+                    "balance": "1",
+                    "storage": "*",
+                    "code": "*"
                 },
                 "''node_address__________________s1": {
+                    "nonce": "*",
                     "balance": "1"
                 },
                 "''delegator_1___________________s1": {
+                    "nonce": "*",
                     "balance": "0"
                 },
                 "+": ""

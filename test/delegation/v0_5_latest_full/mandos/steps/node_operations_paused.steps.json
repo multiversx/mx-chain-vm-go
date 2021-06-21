@@ -1,0 +1,98 @@
+{
+    "name": "node operations pause check",
+    "steps": [
+        {
+            "step": "scCall",
+            "txId": "stakeNodes paused",
+            "tx": {
+                "from": "address:node_address",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "stakeNodes",
+                "arguments": [
+                    "300,000,000,000,000",
+                    "''bls_key_2_______________________________________________________________________________________",
+                    "''bls_key_3_______________________________________________________________________________________",
+                    "''bls_key_6_______________________________________________________________________________________"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "4",
+                "message": "str:node operations are temporarily paused as checkpoint is reset",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "unStakeNodes paused",
+            "tx": {
+                "from": "address:node_address",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "unStakeNodes",
+                "arguments": [
+                    "''bls_key_2_______________________________________________________________________________________"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "4",
+                "message": "str:node operations are temporarily paused as checkpoint is reset",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "unBondNodes paused",
+            "tx": {
+                "from": "address:node_address",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "unBondNodes",
+                "arguments": [
+                    "''bls_key_2_______________________________________________________________________________________"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "4",
+                "message": "str:node operations are temporarily paused as checkpoint is reset",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "unBondAllPossibleNodes paused",
+            "tx": {
+                "from": "address:node_address",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "unBondAllPossibleNodes",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "4",
+                "message": "str:node operations are temporarily paused as checkpoint is reset",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        }
+    ]
+}

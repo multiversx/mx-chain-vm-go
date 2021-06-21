@@ -1,5 +1,6 @@
 package wasmer
 
+// #include <stdlib.h>
 import "C"
 import (
 	"fmt"
@@ -82,9 +83,9 @@ type Instance struct {
 	Signatures ExportSignaturesMap
 
 	// The exported memory of a WebAssembly instance.
-	Memory *Memory
+	Memory MemoryHandler
 
-	Data        *int
+	Data        *uintptr
 	DataPointer unsafe.Pointer
 
 	InstanceCtx InstanceContext
@@ -220,6 +221,7 @@ func NewInstanceFromCompiledCodeWithOptions(
 		c_instance_context := cWasmerInstanceContextGet(c_instance)
 		instance.InstanceCtx = IntoInstanceContextDirect(c_instance_context)
 	}
+
 	return instance, err
 }
 
@@ -229,7 +231,7 @@ func NewInstanceFromCompiledCodeWithOptions(
 // context can hold a pointer to any kind of data. It is important to
 // understand that this data is shared by all imported function, it's
 // global to the instance.
-func (instance *Instance) SetContextData(data int) {
+func (instance *Instance) SetContextData(data uintptr) {
 	instance.Data = &data
 	instance.DataPointer = unsafe.Pointer(instance.Data)
 	cWasmerInstanceContextDataSet(instance.instance, instance.DataPointer)
@@ -280,7 +282,39 @@ func (instance *Instance) Cache() ([]byte, error) {
 	}
 
 	goBytes := C.GoBytes(unsafe.Pointer(cacheBytes), C.int(cacheLen))
-	cacheBytes = nil
 
+	C.free(unsafe.Pointer(cacheBytes))
+	cacheBytes = nil
 	return goBytes, nil
+}
+
+// IsFunctionImported returns true if the instance imports the specified function
+func (instance *Instance) IsFunctionImported(name string) bool {
+	return cWasmerInstanceIsFunctionImported(instance.instance, name)
+}
+
+// GetExports returns the exports map for the current instance
+func (instance *Instance) GetExports() ExportsMap {
+	return instance.Exports
+}
+
+// GetSignature returns the signature for the given functionName
+func (instance *Instance) GetSignature(functionName string) (*ExportedFunctionSignature, bool) {
+	signature, ok := instance.Signatures[functionName]
+	return signature, ok
+}
+
+// GetData returns a pointer for the current instance's data
+func (instance *Instance) GetData() uintptr {
+	return *instance.Data
+}
+
+// GetInstanceCtxMemory returns the memory for the instance context
+func (instance *Instance) GetInstanceCtxMemory() MemoryHandler {
+	return instance.InstanceCtx.Memory()
+}
+
+// GetMemory returns the memory for the instance
+func (instance *Instance) GetMemory() MemoryHandler {
+	return instance.Memory
 }

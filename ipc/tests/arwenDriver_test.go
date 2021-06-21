@@ -3,11 +3,12 @@ package tests
 import (
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
-	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/nodepart"
-	"github.com/ElrondNetwork/arwen-wasm-vm/mock"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/ipc/common"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/ipc/nodepart"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
@@ -16,7 +17,7 @@ import (
 var arwenVirtualMachine = []byte{5, 0}
 
 func TestArwenDriver_DiagnoseWait(t *testing.T) {
-	blockchain := &mock.BlockchainHookStub{}
+	blockchain := &contextmock.BlockchainHookStub{}
 	driver := newDriver(t, blockchain)
 
 	err := driver.DiagnoseWait(100)
@@ -24,7 +25,7 @@ func TestArwenDriver_DiagnoseWait(t *testing.T) {
 }
 
 func TestArwenDriver_DiagnoseWaitWithTimeout(t *testing.T) {
-	blockchain := &mock.BlockchainHookStub{}
+	blockchain := &contextmock.BlockchainHookStub{}
 	driver := newDriver(t, blockchain)
 
 	err := driver.DiagnoseWait(5000)
@@ -37,11 +38,11 @@ func TestArwenDriver_RestartsIfStopped(t *testing.T) {
 	logger.ToggleLoggerName(true)
 	_ = logger.SetLogLevel("*:TRACE")
 
-	blockchain := &mock.BlockchainHookStub{}
+	blockchain := &contextmock.BlockchainHookStub{}
 	driver := newDriver(t, blockchain)
 
 	blockchain.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
-		return &mock.AccountMock{Code: bytecodeCounter}, nil
+		return &worldmock.Account{Code: bytecodeCounter}, nil
 	}
 
 	vmOutput, err := driver.RunSmartContractCreate(createDeployInput(bytecodeCounter))
@@ -63,7 +64,7 @@ func TestArwenDriver_RestartsIfStopped(t *testing.T) {
 }
 
 func BenchmarkArwenDriver_RestartsIfStopped(b *testing.B) {
-	blockchain := &mock.BlockchainHookStub{}
+	blockchain := &contextmock.BlockchainHookStub{}
 	driver := newDriver(b, blockchain)
 
 	for i := 0; i < b.N; i++ {
@@ -75,7 +76,7 @@ func BenchmarkArwenDriver_RestartsIfStopped(b *testing.B) {
 }
 
 func BenchmarkArwenDriver_RestartArwenIfNecessary(b *testing.B) {
-	blockchain := &mock.BlockchainHookStub{}
+	blockchain := &contextmock.BlockchainHookStub{}
 	driver := newDriver(b, blockchain)
 
 	for i := 0; i < b.N; i++ {
@@ -86,15 +87,14 @@ func BenchmarkArwenDriver_RestartArwenIfNecessary(b *testing.B) {
 func TestArwenDriver_GetVersion(t *testing.T) {
 	// This test requires `make arwen` before running, or must be run directly
 	// with `make test`
-	blockchain := &mock.BlockchainHookStub{}
+	blockchain := &contextmock.BlockchainHookStub{}
 	driver := newDriver(t, blockchain)
-	version, err := driver.GetVersion()
-	require.Nil(t, err)
+	version := driver.GetVersion()
 	require.NotZero(t, len(version))
 	require.NotEqual(t, "undefined", version)
 }
 
-func newDriver(tb testing.TB, blockchain *mock.BlockchainHookStub) *nodepart.ArwenDriver {
+func newDriver(tb testing.TB, blockchain *contextmock.BlockchainHookStub) *nodepart.ArwenDriver {
 	driver, err := nodepart.NewArwenDriver(
 		blockchain,
 		common.ArwenArguments{

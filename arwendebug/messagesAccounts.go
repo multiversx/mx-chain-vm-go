@@ -2,6 +2,8 @@ package arwendebug
 
 import (
 	"math/big"
+
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
 )
 
 // CreateAccountRequest is a CLI / REST request message
@@ -39,5 +41,5 @@ func (request *CreateAccountRequest) digest() error {
 
 // CreateAccountResponse is a CLI / REST response message
 type CreateAccountResponse struct {
-	Account *Account
+	Account *worldmock.Account
 }

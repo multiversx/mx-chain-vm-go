@@ -1,5 +1,5 @@
 {
-    "name": "unjail nodes scenario",
+    "gasSchedule": "v3",
     "steps": [
         {
             "step": "externalSteps",
@@ -14,13 +14,13 @@
             "txId": "change-quorum-propose",
             "tx": {
                 "from": "address:alice",
-                "to": "address:multisig",
+                "to": "sc:multisig",
                 "value": "0",
                 "function": "proposeChangeQuorum",
                 "arguments": [
                     "4"
                 ],
-                "gasLimit": "100,000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -36,11 +36,11 @@
             "txId": "change-quorum-sign-bob",
             "tx": {
                 "from": "address:bob",
-                "to": "address:multisig",
+                "to": "sc:multisig",
                 "value": "0",
                 "function": "sign",
                 "arguments": ["1"],
-                "gasLimit": "100,000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -56,11 +56,11 @@
             "txId": "change-quorum-perform",
             "tx": {
                 "from": "address:alice",
-                "to": "address:multisig",
+                "to": "sc:multisig",
                 "value": "0",
                 "function": "performAction",
                 "arguments": ["1"],
-                "gasLimit": "100,000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -77,11 +77,11 @@
             "txId": "getQuorum",
             "tx": {
                 "from": "address:owner",
-                "to": "address:multisig",
+                "to": "sc:multisig",
                 "value": "0",
                 "function": "getQuorum",
                 "arguments": [],
-                "gasLimit": "100,000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {

@@ -1,0 +1,76 @@
+{
+    "name": "change service fee scenario",
+    "gasSchedule": "v3",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "steps/init_accounts.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "steps/deploy.steps.json"
+        },
+        {
+            "step": "scCall",
+            "txId": "-getNumBlocksBeforeUnBond-",
+            "tx": {
+                "from": "address:node_address",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "getNumBlocksBeforeUnBond",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": ["60"],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "-setNumBlocksBeforeUnBond-",
+            "tx": {
+                "from": "address:node_address",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "setNumBlocksBeforeUnBond",
+                "arguments": [
+                    "15"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "-getNumBlocksBeforeUnBond-",
+            "tx": {
+                "from": "address:node_address",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "getNumBlocksBeforeUnBond",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": ["15"],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        }
+    ]
+}

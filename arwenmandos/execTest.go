@@ -3,7 +3,7 @@ package arwenmandos
 import (
 	"fmt"
 
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/model"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/model"
 )
 
 // ExecuteTest executes an individual test.
@@ -13,7 +13,12 @@ func (ae *ArwenTestExecutor) ExecuteTest(test *mj.Test) error {
 	ae.World.Blockhashes = mj.JSONBytesFromStringValues(test.BlockHashes)
 
 	for _, acct := range test.Pre {
-		ae.World.AcctMap.PutAccount(convertAccount(acct))
+		account, err := convertAccount(acct, ae.World)
+		if err != nil {
+			return err
+		}
+
+		ae.World.AcctMap.PutAccount(account)
 	}
 
 	for _, block := range test.Blocks {
@@ -29,12 +34,12 @@ func (ae *ArwenTestExecutor) ExecuteTest(test *mj.Test) error {
 			blResult := block.Results[txIndex]
 
 			// check results
-			err = checkTxResults(txName, blResult, test.CheckGas, output)
+			err = ae.checkTxResults(txName, blResult, test.CheckGas, output)
 			if err != nil {
 				return err
 			}
 		}
 	}
 
-	return checkAccounts(test.PostState, ae.World)
+	return ae.checkAccounts(test.PostState)
 }

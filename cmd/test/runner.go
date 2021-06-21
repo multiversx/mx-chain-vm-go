@@ -6,17 +6,13 @@ import (
 	"path/filepath"
 	"strings"
 
-	am "github.com/ElrondNetwork/arwen-wasm-vm/arwenmandos"
-	mc "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/controller"
+	am "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwenmandos"
+	mc "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/controller"
 )
 
-func resolveArgument(arg string) (string, bool, error) {
+func resolveArgument(exeDir string, arg string) (string, bool, error) {
 	fi, err := os.Stat(arg)
 	if os.IsNotExist(err) {
-		exeDir, err := os.Getwd()
-		if err != nil {
-			return "", false, err
-		}
 		arg = filepath.Join(exeDir, arg)
 		fmt.Println(arg)
 		fi, err = os.Stat(arg)
@@ -28,14 +24,21 @@ func resolveArgument(arg string) (string, bool, error) {
 }
 
 func main() {
+	// directory of this executable
+	exeDir, err := os.Getwd()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	// argument
 	if len(os.Args) != 2 {
 		panic("One argument expected - the path to the json test.")
 	}
-
-	jsonFilePath, isDir, err := resolveArgument(os.Args[1])
+	jsonFilePath, isDir, err := resolveArgument(exeDir, os.Args[1])
 	if err != nil {
 		fmt.Println(err)
-		return
+		os.Exit(1)
 	}
 
 	// init
@@ -75,5 +78,6 @@ func main() {
 		fmt.Println("SUCCESS")
 	} else {
 		fmt.Printf("ERROR: %s\n", err.Error())
+		os.Exit(1)
 	}
 }

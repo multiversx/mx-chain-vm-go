@@ -1,0 +1,320 @@
+{
+    "name": "continue global operation scenarios",
+    "gasSchedule": "v3",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "steps/init_accounts.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "steps/deploy.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "steps/add_nodes.steps.json"
+        }, 
+        {
+            "step": "externalSteps",
+            "path": "steps/stake_1.steps.json"
+        }, 
+        {
+            "step": "externalSteps",
+            "path": "steps/increase_cap.steps.json"
+        },
+        {
+            "step": "scCall",
+            "txId": "isBootstrapMode?",
+            "tx": {
+                "from": "address:node_address",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "isBootstrapMode",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": ["false"],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "continue global operation with no operation in progress",
+            "tx": {
+                "from": "address:node_address",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "continueGlobalOperation",
+                "arguments": [],
+                "gasLimit": "1,000,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": ["str:completed"],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "-get-service-fee-",
+            "tx": {
+                "from": "address:node_address",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "getServiceFee",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": ["5000"],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "-get-total-delegation-cap-",
+            "tx": {
+                "from": "address:node_address",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "getTotalDelegationCap",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": ["300,000,000,000,000"],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "-set-service-fee-out-of-gas-1",
+            "tx": {
+                "from": "address:node_address",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "setServiceFee",
+                "arguments": [
+                    "2000"
+                ],
+                "gasLimit": "90,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": ["str:interrupted"],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "-set-total-delegation-cap-",
+            "tx": {
+                "from": "address:node_address",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "modifyTotalDelegationCap",
+                "arguments": [
+                    "200,000,000,000,000"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "4",
+                "message": "''cannot modify total delegation cap when last is in progress",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "-set-service-fee-2",
+            "tx": {
+                "from": "address:node_address",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "setServiceFee",
+                "arguments": [
+                    "1000"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "4",
+                "message":"''global checkpoint is in progress",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "continue-out-of-gas",
+            "tx": {
+                "from": "address:node_address",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "continueGlobalOperation",
+                "arguments": [],
+                "gasLimit": "90,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": ["str:interrupted"],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "externalSteps",
+            "path": "steps/node_operations_paused.steps.json"
+        }, 
+        {
+            "step": "scCall",
+            "txId": "-get-service-fee-",
+            "tx": {
+                "from": "address:node_address",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "getServiceFee",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": ["5000"],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "continue",
+            "tx": {
+                "from": "address:node_address",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "continueGlobalOperation",
+                "arguments": [],
+                "gasLimit": "1,000,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": ["str:completed"],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "-get-service-fee-",
+            "tx": {
+                "from": "address:node_address",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "getServiceFee",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": ["2000"],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "-get-total-delegation-cap-",
+            "tx": {
+                "from": "address:node_address",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "getTotalDelegationCap",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": ["300,000,000,000,000"],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "-set-total-delegation-cap-",
+            "tx": {
+                "from": "address:node_address",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "modifyTotalDelegationCap",
+                "arguments": [
+                    "200,000,000,000,000"
+                ],
+                "gasLimit": "1,000,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": ["str:completed"],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "-get-total-delegation-cap-",
+            "tx": {
+                "from": "address:node_address",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "getTotalDelegationCap",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": ["200,000,000,000,000"],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        }
+    ]
+}

@@ -1,0 +1,150 @@
+{
+    "name": "test getters",
+    "gasSchedule": "v3",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "steps/init_accounts.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "steps/deploy.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "steps/add_nodes.steps.json"
+        }, 
+        {
+            "step": "externalSteps",
+            "path": "steps/stake_1.steps.json"
+        }, 
+        {
+            "step": "externalSteps",
+            "path": "steps/increase_cap.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "steps/add_funds_to_all_buckets.steps.json"
+        },
+        {
+            "step": "scCall",
+            "txId": "get-user-stake",
+            "tx": {
+                "from": "address:delegator2",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "getUserStake",
+                "arguments": ["address:delegator2"],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": ["200,003,000,000,000"],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "get-user-withdraw-only",
+            "tx": {
+                "from": "address:delegator2",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "getUserWithdrawOnlyStake",
+                "arguments": ["address:delegator2"],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": ["1,000,000,000"],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "get-user-waiting-stake",
+            "tx": {
+                "from": "address:delegator2",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "getUserWaitingStake",
+                "arguments": ["address:delegator2"],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": ["0"],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "get-user-active-stake",
+            "tx": {
+                "from": "address:delegator2",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "getUserActiveStake",
+                "arguments": ["address:delegator2"],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": ["199,997,000,000,000"],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "get-user-unstaked-stake",
+            "tx": {
+                "from": "address:delegator2",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "getUserUnstakedStake",
+                "arguments": ["address:delegator2"],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": ["2,000,000,000"],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "get-user-deferred-stake",
+            "tx": {
+                "from": "address:delegator2",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "getUserDeferredPaymentStake",
+                "arguments": ["address:delegator2"],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": ["3,000,000,000"],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        }
+    ]
+}

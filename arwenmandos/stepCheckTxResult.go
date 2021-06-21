@@ -1,16 +1,16 @@
 package arwenmandos
 
 import (
-	"bytes"
 	"fmt"
 	"math/big"
 
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/model"
-	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/write"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/model"
+	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/write"
+	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/orderedjson"
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
-func checkTxResults(
+func (ae *ArwenTestExecutor) checkTxResults(
 	txIndex string,
 	blResult *mj.TransactionResult,
 	checkGas bool,
@@ -50,7 +50,8 @@ func checkTxResults(
 	}
 
 	// check gas
-	if checkGas && !blResult.Gas.Check(output.GasRemaining) {
+	// unlike other checks, if unspecified the remaining gas check is ignored
+	if checkGas && !blResult.Gas.IsUnspecified() && !blResult.Gas.Check(output.GasRemaining) {
 		return fmt.Errorf("result gas mismatch. Tx %s. Want: %s. Got: %d (0x%x)",
 			txIndex,
 			blResult.Gas.Original,
@@ -59,7 +60,7 @@ func checkTxResults(
 	}
 
 	// "logs": "*" means any value is accepted, log check ignored
-	if blResult.IgnoreLogs {
+	if blResult.LogsStar {
 		return nil
 	}
 
@@ -72,39 +73,53 @@ func checkTxResults(
 	}
 	for i, outLog := range output.Logs {
 		testLog := blResult.Logs[i]
-		if !bytes.Equal(outLog.Address, testLog.Address.Value) {
+		if !testLog.Address.Check(outLog.Address) {
 			return fmt.Errorf("bad log address. Tx %s. Want:\n%s\nGot:\n%s",
 				txIndex,
 				mjwrite.LogToString(testLog),
-				mjwrite.LogToString(convertLogToTestFormat(outLog)))
+				mjwrite.LogToString(ae.convertLogToTestFormat(outLog)))
 		}
-		if !bytes.Equal(outLog.Identifier, testLog.Identifier.Value) {
+		if !testLog.Identifier.Check(outLog.Identifier) {
 			return fmt.Errorf("bad log identifier. Tx %s. Want:\n%s\nGot:\n%s",
 				txIndex,
 				mjwrite.LogToString(testLog),
-				mjwrite.LogToString(convertLogToTestFormat(outLog)))
+				mjwrite.LogToString(ae.convertLogToTestFormat(outLog)))
 		}
 		if len(outLog.Topics) != len(testLog.Topics) {
 			return fmt.Errorf("wrong number of log topics. Tx %s. Want:\n%s\nGot:\n%s",
 				txIndex,
 				mjwrite.LogToString(testLog),
-				mjwrite.LogToString(convertLogToTestFormat(outLog)))
+				mjwrite.LogToString(ae.convertLogToTestFormat(outLog)))
 		}
 		for ti := range outLog.Topics {
-			if !bytes.Equal(outLog.Topics[ti], testLog.Topics[ti].Value) {
+			if !testLog.Topics[ti].Check(outLog.Topics[ti]) {
 				return fmt.Errorf("bad log topic. Tx %s. Want:\n%s\nGot:\n%s",
 					txIndex,
 					mjwrite.LogToString(testLog),
-					mjwrite.LogToString(convertLogToTestFormat(outLog)))
+					mjwrite.LogToString(ae.convertLogToTestFormat(outLog)))
 			}
 		}
-		if big.NewInt(0).SetBytes(outLog.Data).Cmp(big.NewInt(0).SetBytes(testLog.Data.Value)) != 0 {
+		if !testLog.Data.Check(outLog.Data) {
 			return fmt.Errorf("bad log data. Tx %s. Want:\n%s\nGot:\n%s",
 				txIndex,
 				mjwrite.LogToString(testLog),
-				mjwrite.LogToString(convertLogToTestFormat(outLog)))
+				mjwrite.LogToString(ae.convertLogToTestFormat(outLog)))
 		}
 	}
 
 	return nil
+}
+
+// JSONCheckBytesString formats a list of JSONCheckBytes for printing to console.
+// TODO: move somewhere else
+func checkBytesListPretty(jcbs []mj.JSONCheckBytes) string {
+	str := "["
+	for i, jcb := range jcbs {
+		if i > 0 {
+			str += ", "
+		}
+
+		str += oj.JSONString(jcb.Original)
+	}
+	return str + "]"
 }

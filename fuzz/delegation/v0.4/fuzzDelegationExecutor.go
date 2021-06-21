@@ -7,18 +7,18 @@ import (
 	"math/big"
 	"strings"
 
-	am "github.com/ElrondNetwork/arwen-wasm-vm/arwenmandos"
-	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/test/mock-hook-blockchain"
-	fr "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/fileresolver"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/model"
-	mjparse "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/parse"
-	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/write"
+	am "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwenmandos"
+	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/fileresolver"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/model"
+	mjparse "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/parse"
+	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/write"
+	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 type fuzzDelegationExecutor struct {
 	arwenTestExecutor *am.ArwenTestExecutor
-	world             *worldhook.BlockchainHookMock
+	world             *worldhook.MockWorld
 	vm                vmi.VMExecutionHandler
 	mandosParser      mjparse.Parser
 	txIndex           int

@@ -1,0 +1,166 @@
+{
+    "name": "activate nodes",
+    "steps": [
+        {
+            "step": "scCall",
+            "txId": "activate",
+            "tx": {
+                "from": "address:node_address",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "stakeNodes",
+                "arguments": [
+                    "300,000,000,000,000",
+                    "''bls_key_2_______________________________________________________________________________________",
+                    "''bls_key_3_______________________________________________________________________________________",
+                    "''bls_key_6_______________________________________________________________________________________"
+                ],
+                "gasLimit": "120,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [
+                    {
+                        "address": "sc:delegation",
+                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000003",
+                        "topics": [],
+                        "data": "0x"
+                    }
+                ],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "check-node_state-4_1",
+            "tx": {
+                "from": "address:someone",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "getAllNodeStates",
+                "arguments": [],
+                "gasLimit": "120,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "''bls_key_1_______________________________________________________________________________________", "7",
+                    "''bls_key_2_______________________________________________________________________________________", "3",
+                    "''bls_key_3_______________________________________________________________________________________", "3",
+                    "''bls_key_4_______________________________________________________________________________________", "7",
+                    "''bls_key_5_______________________________________________________________________________________", "0",
+                    "''bls_key_6_______________________________________________________________________________________", "3",
+                    "''bls_key_7_______________________________________________________________________________________", "7"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "check-stake-by-type-1",
+            "tx": {
+                "from": "address:someone",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "getUserStakeByType",
+                "arguments": [
+                    "address:delegator1"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "0","0", "100,001,000,000,000", "0","0"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "check-stake-by-type-2",
+            "tx": {
+                "from": "address:someone",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "getUserStakeByType",
+                "arguments": [
+                    "address:delegator2"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "0", "1,000,000,000","199,999,000,000,000", "0","0"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "check-stake-by-type-total",
+            "tx": {
+                "from": "address:someone",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "getTotalStakeByType",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                   "0", "1,000,000,000", "300,000,000,000,000",  "0", "0"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "comment": "check that stake was sent",
+            "accounts": {
+                "sc:delegation": {
+                    "nonce": "*",
+                    "balance": "1,000,000,000",
+                    "storage": "*",
+                    "code": "file:../../output/delegation_latest_full.wasm"
+                },
+                "sc:auction": {
+                    "nonce": "0",
+                    "balance": "300,000,000,000,000",
+                    "storage": "*",
+                    "code": "file:../../../auction-mock/output/auction-mock.wasm"
+                },
+                "address:delegator1": {
+                    "nonce": "*",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                },
+                "address:delegator2": {
+                    "nonce": "*",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                },
+                "+": ""
+            }
+        }
+    ]
+}

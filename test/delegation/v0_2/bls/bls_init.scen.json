@@ -1,5 +1,6 @@
 {
     "name": "bls_init",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "setState",
@@ -10,7 +11,7 @@
                     "storage": {},
                     "code": ""
                 },
-                "''delegation_contract___________s1": {
+                "sc:delegation": {
                     "nonce": "0",
                     "balance": "10000400010",
                     "storage": {
@@ -46,7 +47,7 @@
             "txId": "1",
             "tx": {
                 "from": "''node_address__________________s1",
-                "to": "''delegation_contract___________s1",
+                "to": "sc:delegation",
                 "value": "0",
                 "function": "getBlsKeys",
                 "arguments": [],
@@ -66,7 +67,7 @@
             "txId": "2",
             "tx": {
                 "from": "''node_address__________________s1",
-                "to": "''delegation_contract___________s1",
+                "to": "sc:delegation",
                 "value": "0",
                 "function": "getNumBlsKeys",
                 "arguments": [],
@@ -92,7 +93,7 @@
                     "storage": {},
                     "code": ""
                 },
-                "''delegation_contract___________s1": {
+                "sc:delegation": {
                     "nonce": "0",
                     "balance": "10000400010",
                     "storage": {

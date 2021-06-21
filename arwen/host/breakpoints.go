@@ -1,7 +1,7 @@
 package host
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 )
 
 func (host *vmHost) handleBreakpointIfAny(executionErr error) error {
@@ -12,10 +12,13 @@ func (host *vmHost) handleBreakpointIfAny(executionErr error) error {
 	runtime := host.Runtime()
 	breakpointValue := runtime.GetRuntimeBreakpointValue()
 	if breakpointValue != arwen.BreakpointNone {
-		executionErr = host.handleBreakpoint(breakpointValue)
+		err := host.handleBreakpoint(breakpointValue)
+		runtime.AddError(err)
+		return err
 	}
 
-	return executionErr
+	log.Trace("wasmer execution error", "err", executionErr)
+	return arwen.ErrExecutionFailed
 }
 
 func (host *vmHost) handleBreakpoint(breakpointValue arwen.BreakpointValue) error {

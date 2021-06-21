@@ -1,5 +1,6 @@
 {
     "name": "transferFrom_CallerEqTo-MoreThanAllowanceLessThanBalance",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "setState",
@@ -10,7 +11,7 @@
                     "storage": {},
                     "code": ""
                 },
-                "``busd__________________________s1": {
+                "sc:erc20": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
@@ -18,7 +19,7 @@
                         "``balance|``coin_holder_1_________________sx": "0x2710",
                         "``total_supply": "0x2710"
                     },
-                    "code": "file:../output/simple-erc20.wasm"
+                    "code": "file:../output/erc20.wasm"
                 }
             }
         },
@@ -27,7 +28,7 @@
             "txId": "1",
             "tx": {
                 "from": "``account_1_____________________s1",
-                "to": "``busd__________________________s1",
+                "to": "sc:erc20",
                 "value": "0",
                 "function": "transferFrom",
                 "arguments": [
@@ -56,7 +57,7 @@
                     "storage": {},
                     "code": ""
                 },
-                "``busd__________________________s1": {
+                "sc:erc20": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
@@ -64,7 +65,7 @@
                         "``balance|``coin_holder_1_________________sx": "0x2710",
                         "``total_supply": "0x2710"
                     },
-                    "code": "file:../output/simple-erc20.wasm"
+                    "code": "file:../output/erc20.wasm"
                 }
             }
         }

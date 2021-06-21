@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	fuzzutil "github.com/ElrondNetwork/arwen-wasm-vm/fuzz/util"
-	mc "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/controller"
+	fuzzutil "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/fuzz/util"
+	mc "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/controller"
 	"github.com/stretchr/testify/require"
 )
 
@@ -67,7 +67,7 @@ func TestFuzzDelegation(t *testing.T) {
 	maxStake := big.NewInt(0).Mul(pfe.stakePerNode, big.NewInt(2))
 	maxSystemReward := big.NewInt(1000000000)
 
-	re := fuzzutil.NewRandomEventProvider()
+	re := fuzzutil.NewRandomEventProvider(r)
 	for stepIndex := 0; stepIndex < 500; stepIndex++ {
 		re.Reset()
 		switch {

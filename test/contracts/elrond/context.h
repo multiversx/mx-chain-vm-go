@@ -13,15 +13,77 @@ void getCaller(byte *callerAddress);
 int getFunction(byte *function);
 int getCallValue(byte *result);
 long long getGasLeft();
-void finish(byte *data, int length);
-void int64finish(long long value);
 void writeLog(byte *pointer, int length, byte *topicPtr, int numTopics);
 void asyncCall(byte *destination, byte *value, byte *data, int length);
 void signalError(byte *message, int length);
 
-int executeOnSameContext(long long gas, byte *address, byte *value, byte *function, int functionLength, int numArguments, byte *argumentsLengths, byte *arguments);
-int executeOnDestContext(long long gas, byte *address, byte *value, byte *function, int functionLength, int numArguments, byte *argumentsLengths, byte *arguments);
-int createContract(long long gas, byte *value, byte *code, byte *codeMetadata, int codeSize, byte *newAddress, int numInitArgs, byte *initArgLengths, byte *initArgs);
+int executeOnSameContext(
+		long long gas,
+		byte *address,
+		byte *value,
+		byte *function,
+		int functionLength,
+		int numArguments,
+		byte *argumentsLengths,
+		byte *arguments);
+
+int executeOnDestContext(
+		long long gas,
+		byte *address,
+		byte *value,
+		byte *function,
+		int functionLength,
+		int numArguments,
+		byte *argumentsLengths,
+		byte *arguments);
+
+int executeOnDestContextByCaller(
+		long long gas,
+		byte *address,
+		byte *value,
+		byte *function,
+		int functionLength,
+		int numArguments,
+		byte *argumentsLengths,
+		byte *arguments);
+
+int createContract(
+		long long gas,
+		byte *value,
+		byte *code,
+		byte *codeMetadata,
+		int codeSize,
+		byte *newAddress,
+		int numInitArgs,
+		byte *initArgLengths,
+		byte *initArgs);
+
+int deployFromSourceContract(
+		long long gas,
+		byte *value,
+		byte *sourceContractAddress,
+		byte *codeMetadata,
+		byte *newAddress,
+		int numInitArgs,
+		byte *initArgLengths,
+		byte *initArgs);	
+
+void upgradeFromSourceContract(
+		byte *destContractAddress,
+		long long gas,
+		byte *value,
+		byte *sourceContractAddress,
+		byte *codeMetadata,
+		int numInitArgs,
+		byte *initArgLengths,
+		byte *initArgs);	
+
+// Return-related functions
+void finish(byte *data, int length);
+void int64finish(long long value);
+int getNumReturnData();
+int getReturnDataSize(int index);
+int getReturnData(int index, byte *data);
 
 // Blockchain-related functions
 long long getBlockTimestamp();
@@ -44,10 +106,20 @@ int storageLoad(byte *key, int keyLength, byte *data);
 int int64storageStore(byte *key, int keyLength, long long value);
 long long int64storageLoad(byte *key, int keyLength);
 
-// Timelocks related functions
+// Timelocks-related functions
 int setStorageLock(byte *key, int keyLen, long long timeLock);
 long long getStorageLock(byte *key, int keyLen);
 int isStorageLocked(byte *key, int keyLen);
 int clearStorageLock(byte *key, int keyLen);
+
+// ESDT-related functions
+int getESDTTokenName(byte *name);
+int getESDTValue(byte *value);
+int getESDTBalance(
+		byte *address,
+		byte *tokenName,
+		int tokenNameLen,
+		long long nonce,
+		byte *result);
 
 #endif

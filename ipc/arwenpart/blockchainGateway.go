@@ -1,8 +1,9 @@
 package arwenpart
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/ipc/common"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	"github.com/ElrondNetwork/elrond-go/data/esdt"
 )
 
 var _ vmcommon.BlockchainHook = (*BlockchainHookGateway)(nil)
@@ -19,6 +20,7 @@ func NewBlockchainHookGateway(messenger *ArwenMessenger) *BlockchainHookGateway 
 
 // NewAddress forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) NewAddress(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error) {
+
 	request := common.NewMessageBlockchainNewAddressRequest(creatorAddress, creatorNonce, vmType)
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
 	if err != nil {
@@ -34,8 +36,9 @@ func (blockchain *BlockchainHookGateway) NewAddress(creatorAddress []byte, creat
 }
 
 // GetStorageData forwards a message to the actual hook
-func (blockchain *BlockchainHookGateway) GetStorageData(address []byte, index []byte) ([]byte, error) {
-	request := common.NewMessageBlockchainGetStorageDataRequest(address, index)
+func (blockchain *BlockchainHookGateway) GetStorageData(accountAddress []byte, index []byte) ([]byte, error) {
+
+	request := common.NewMessageBlockchainGetStorageDataRequest(accountAddress, index)
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
 	if err != nil {
 		return nil, err
@@ -51,6 +54,7 @@ func (blockchain *BlockchainHookGateway) GetStorageData(address []byte, index []
 
 // GetBlockhash forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) GetBlockhash(nonce uint64) ([]byte, error) {
+
 	request := common.NewMessageBlockchainGetBlockhashRequest(nonce)
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
 	if err != nil {
@@ -58,7 +62,6 @@ func (blockchain *BlockchainHookGateway) GetBlockhash(nonce uint64) ([]byte, err
 	}
 
 	if rawResponse.GetKind() != common.BlockchainGetBlockhashResponse {
-		log.Error("GetBlockhash", "err", common.ErrBadHookResponseFromNode)
 		return nil, common.ErrBadHookResponseFromNode
 	}
 
@@ -68,6 +71,7 @@ func (blockchain *BlockchainHookGateway) GetBlockhash(nonce uint64) ([]byte, err
 
 // LastNonce forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) LastNonce() uint64 {
+
 	request := common.NewMessageBlockchainLastNonceRequest()
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
 	if err != nil {
@@ -75,7 +79,6 @@ func (blockchain *BlockchainHookGateway) LastNonce() uint64 {
 	}
 
 	if rawResponse.GetKind() != common.BlockchainLastNonceResponse {
-		log.Error("LastNonce", "err", common.ErrBadHookResponseFromNode)
 		return 0
 	}
 
@@ -85,6 +88,7 @@ func (blockchain *BlockchainHookGateway) LastNonce() uint64 {
 
 // LastRound forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) LastRound() uint64 {
+
 	request := common.NewMessageBlockchainLastRoundRequest()
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
 	if err != nil {
@@ -92,7 +96,6 @@ func (blockchain *BlockchainHookGateway) LastRound() uint64 {
 	}
 
 	if rawResponse.GetKind() != common.BlockchainLastRoundResponse {
-		log.Error("LastRound", "err", common.ErrBadHookResponseFromNode)
 		return 0
 	}
 
@@ -102,6 +105,7 @@ func (blockchain *BlockchainHookGateway) LastRound() uint64 {
 
 // LastTimeStamp forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) LastTimeStamp() uint64 {
+
 	request := common.NewMessageBlockchainLastTimeStampRequest()
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
 	if err != nil {
@@ -109,7 +113,6 @@ func (blockchain *BlockchainHookGateway) LastTimeStamp() uint64 {
 	}
 
 	if rawResponse.GetKind() != common.BlockchainLastTimeStampResponse {
-		log.Error("LastTimeStamp", "err", common.ErrBadHookResponseFromNode)
 		return 0
 	}
 
@@ -119,6 +122,7 @@ func (blockchain *BlockchainHookGateway) LastTimeStamp() uint64 {
 
 // LastRandomSeed forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) LastRandomSeed() []byte {
+
 	request := common.NewMessageBlockchainLastRandomSeedRequest()
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
 	if err != nil {
@@ -126,7 +130,6 @@ func (blockchain *BlockchainHookGateway) LastRandomSeed() []byte {
 	}
 
 	if rawResponse.GetKind() != common.BlockchainLastRandomSeedResponse {
-		log.Error("LastRandomSeed", "err", common.ErrBadHookResponseFromNode)
 		return nil
 	}
 
@@ -136,6 +139,7 @@ func (blockchain *BlockchainHookGateway) LastRandomSeed() []byte {
 
 // LastEpoch forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) LastEpoch() uint32 {
+
 	request := common.NewMessageBlockchainLastEpochRequest()
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
 	if err != nil {
@@ -143,7 +147,6 @@ func (blockchain *BlockchainHookGateway) LastEpoch() uint32 {
 	}
 
 	if rawResponse.GetKind() != common.BlockchainLastEpochResponse {
-		log.Error("LastEpoch", "err", common.ErrBadHookResponseFromNode)
 		return 0
 	}
 
@@ -153,6 +156,7 @@ func (blockchain *BlockchainHookGateway) LastEpoch() uint32 {
 
 // GetStateRootHash forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) GetStateRootHash() []byte {
+
 	request := common.NewMessageBlockchainGetStateRootHashRequest()
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
 	if err != nil {
@@ -160,7 +164,6 @@ func (blockchain *BlockchainHookGateway) GetStateRootHash() []byte {
 	}
 
 	if rawResponse.GetKind() != common.BlockchainGetStateRootHashResponse {
-		log.Error("GetStateRootHash", "err", common.ErrBadHookResponseFromNode)
 		return nil
 	}
 
@@ -170,6 +173,7 @@ func (blockchain *BlockchainHookGateway) GetStateRootHash() []byte {
 
 // CurrentNonce forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) CurrentNonce() uint64 {
+
 	request := common.NewMessageBlockchainCurrentNonceRequest()
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
 	if err != nil {
@@ -177,7 +181,6 @@ func (blockchain *BlockchainHookGateway) CurrentNonce() uint64 {
 	}
 
 	if rawResponse.GetKind() != common.BlockchainCurrentNonceResponse {
-		log.Error("CurrentNonce", "err", common.ErrBadHookResponseFromNode)
 		return 0
 	}
 
@@ -187,6 +190,7 @@ func (blockchain *BlockchainHookGateway) CurrentNonce() uint64 {
 
 // CurrentRound forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) CurrentRound() uint64 {
+
 	request := common.NewMessageBlockchainCurrentRoundRequest()
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
 	if err != nil {
@@ -194,7 +198,6 @@ func (blockchain *BlockchainHookGateway) CurrentRound() uint64 {
 	}
 
 	if rawResponse.GetKind() != common.BlockchainCurrentRoundResponse {
-		log.Error("CurrentRound", "err", common.ErrBadHookResponseFromNode)
 		return 0
 	}
 
@@ -204,6 +207,7 @@ func (blockchain *BlockchainHookGateway) CurrentRound() uint64 {
 
 // CurrentTimeStamp forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) CurrentTimeStamp() uint64 {
+
 	request := common.NewMessageBlockchainCurrentTimeStampRequest()
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
 	if err != nil {
@@ -211,7 +215,6 @@ func (blockchain *BlockchainHookGateway) CurrentTimeStamp() uint64 {
 	}
 
 	if rawResponse.GetKind() != common.BlockchainCurrentTimeStampResponse {
-		log.Error("CurrentTimeStamp", "err", common.ErrBadHookResponseFromNode)
 		return 0
 	}
 
@@ -221,6 +224,7 @@ func (blockchain *BlockchainHookGateway) CurrentTimeStamp() uint64 {
 
 // CurrentRandomSeed forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) CurrentRandomSeed() []byte {
+
 	request := common.NewMessageBlockchainCurrentRandomSeedRequest()
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
 	if err != nil {
@@ -228,7 +232,6 @@ func (blockchain *BlockchainHookGateway) CurrentRandomSeed() []byte {
 	}
 
 	if rawResponse.GetKind() != common.BlockchainCurrentRandomSeedResponse {
-		log.Error("CurrentRandomSeed", "err", common.ErrBadHookResponseFromNode)
 		return nil
 	}
 
@@ -238,6 +241,7 @@ func (blockchain *BlockchainHookGateway) CurrentRandomSeed() []byte {
 
 // CurrentEpoch forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) CurrentEpoch() uint32 {
+
 	request := common.NewMessageBlockchainCurrentEpochRequest()
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
 	if err != nil {
@@ -245,7 +249,6 @@ func (blockchain *BlockchainHookGateway) CurrentEpoch() uint32 {
 	}
 
 	if rawResponse.GetKind() != common.BlockchainCurrentEpochResponse {
-		log.Error("CurrentEpoch", "err", common.ErrBadHookResponseFromNode)
 		return 0
 	}
 
@@ -255,38 +258,41 @@ func (blockchain *BlockchainHookGateway) CurrentEpoch() uint32 {
 
 // ProcessBuiltInFunction forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
-	request := common.NewMessageBlockchainProcessBuiltinFunctionRequest(*input)
+
+	request := common.NewMessageBlockchainProcessBuiltInFunctionRequest(input)
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
 	if err != nil {
 		return nil, err
 	}
 
-	if rawResponse.GetKind() != common.BlockchainProcessBuiltinFunctionResponse {
+	if rawResponse.GetKind() != common.BlockchainProcessBuiltInFunctionResponse {
 		return nil, common.ErrBadHookResponseFromNode
 	}
 
-	response := rawResponse.(*common.MessageBlockchainProcessBuiltinFunctionResponse)
-	return response.SerializableVMOutput.ConvertToVMOutput(), response.GetError()
+	response := rawResponse.(*common.MessageBlockchainProcessBuiltInFunctionResponse)
+	return response.VmOutput.ConvertToVMOutput(), response.GetError()
 }
 
 // GetBuiltinFunctionNames forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) GetBuiltinFunctionNames() vmcommon.FunctionNames {
+
 	request := common.NewMessageBlockchainGetBuiltinFunctionNamesRequest()
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
 	if err != nil {
-		return make(vmcommon.FunctionNames)
+		return nil
 	}
 
 	if rawResponse.GetKind() != common.BlockchainGetBuiltinFunctionNamesResponse {
-		return make(vmcommon.FunctionNames)
+		return nil
 	}
 
 	response := rawResponse.(*common.MessageBlockchainGetBuiltinFunctionNamesResponse)
-	return response.FunctionNames
+	return response.Result
 }
 
 // GetAllState forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) GetAllState(address []byte) (map[string][]byte, error) {
+
 	request := common.NewMessageBlockchainGetAllStateRequest(address)
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
 	if err != nil {
@@ -298,12 +304,12 @@ func (blockchain *BlockchainHookGateway) GetAllState(address []byte) (map[string
 	}
 
 	response := rawResponse.(*common.MessageBlockchainGetAllStateResponse)
-	return response.SerializableAllState.ConvertToMap(), response.GetError()
+	return response.Result.ConvertToMap(), response.GetError()
 }
 
 // GetUserAccount forwards a message to the actual hook
-// TODO: Perhaps cache GetUserAccount()? Since when it is called with address == contract address, the whole code is fetched.
 func (blockchain *BlockchainHookGateway) GetUserAccount(address []byte) (vmcommon.UserAccountHandler, error) {
+
 	request := common.NewMessageBlockchainGetUserAccountRequest(address)
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
 	if err != nil {
@@ -315,11 +321,40 @@ func (blockchain *BlockchainHookGateway) GetUserAccount(address []byte) (vmcommo
 	}
 
 	response := rawResponse.(*common.MessageBlockchainGetUserAccountResponse)
-	return response.Account, response.GetError()
+	return response.Result, response.GetError()
+}
+
+// GetCode forwards a message to the actual hook
+func (blockchain *BlockchainHookGateway) GetCode(account vmcommon.UserAccountHandler) []byte {
+
+	requestAccount := &common.Account{
+		Nonce:           account.GetNonce(),
+		Balance:         account.GetBalance(),
+		CodeHash:        account.GetCodeHash(),
+		RootHash:        account.GetRootHash(),
+		Address:         account.AddressBytes(),
+		DeveloperReward: account.GetDeveloperReward(),
+		OwnerAddress:    account.GetOwnerAddress(),
+		UserName:        account.GetUserName(),
+		CodeMetadata:    account.GetCodeMetadata(),
+	}
+	request := common.NewMessageBlockchainGetCodeRequest(requestAccount)
+	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if err != nil {
+		return nil
+	}
+
+	if rawResponse.GetKind() != common.BlockchainGetCodeResponse {
+		return nil
+	}
+
+	response := rawResponse.(*common.MessageBlockchainGetCodeResponse)
+	return response.Code
 }
 
 // GetShardOfAddress forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) GetShardOfAddress(address []byte) uint32 {
+
 	request := common.NewMessageBlockchainGetShardOfAddressRequest(address)
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
 	if err != nil {
@@ -327,16 +362,16 @@ func (blockchain *BlockchainHookGateway) GetShardOfAddress(address []byte) uint3
 	}
 
 	if rawResponse.GetKind() != common.BlockchainGetShardOfAddressResponse {
-		log.Error("GetShardOfAddress", "err", common.ErrBadHookResponseFromNode)
 		return 0
 	}
 
 	response := rawResponse.(*common.MessageBlockchainGetShardOfAddressResponse)
-	return response.Shard
+	return response.Result
 }
 
 // IsSmartContract forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) IsSmartContract(address []byte) bool {
+
 	request := common.NewMessageBlockchainIsSmartContractRequest(address)
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
 	if err != nil {
@@ -344,7 +379,6 @@ func (blockchain *BlockchainHookGateway) IsSmartContract(address []byte) bool {
 	}
 
 	if rawResponse.GetKind() != common.BlockchainIsSmartContractResponse {
-		log.Error("IsSmartContract", "err", common.ErrBadHookResponseFromNode)
 		return false
 	}
 
@@ -354,6 +388,7 @@ func (blockchain *BlockchainHookGateway) IsSmartContract(address []byte) bool {
 
 // IsPayable forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) IsPayable(address []byte) (bool, error) {
+
 	request := common.NewMessageBlockchainIsPayableRequest(address)
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
 	if err != nil {
@@ -370,6 +405,7 @@ func (blockchain *BlockchainHookGateway) IsPayable(address []byte) (bool, error)
 
 // SaveCompiledCode forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) SaveCompiledCode(codeHash []byte, code []byte) {
+
 	request := common.NewMessageBlockchainSaveCompiledCodeRequest(codeHash, code)
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
 	if err != nil {
@@ -377,12 +413,15 @@ func (blockchain *BlockchainHookGateway) SaveCompiledCode(codeHash []byte, code 
 	}
 
 	if rawResponse.GetKind() != common.BlockchainSaveCompiledCodeResponse {
-		log.Error("SaveCompiledCode", "err", common.ErrBadHookResponseFromNode)
+		return
 	}
+
+	return
 }
 
 // GetCompiledCode forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) GetCompiledCode(codeHash []byte) (bool, []byte) {
+
 	request := common.NewMessageBlockchainGetCompiledCodeRequest(codeHash)
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
 	if err != nil {
@@ -397,11 +436,73 @@ func (blockchain *BlockchainHookGateway) GetCompiledCode(codeHash []byte) (bool,
 	return response.Found, response.Code
 }
 
-// ClearCompiledCodes nothing to do - this needs to be called by nodepart only
+// ClearCompiledCodes forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) ClearCompiledCodes() {
+
+	request := common.NewMessageBlockchainClearCompiledCodesRequest()
+	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if err != nil {
+		return
+	}
+
+	if rawResponse.GetKind() != common.BlockchainClearCompiledCodesResponse {
+		return
+	}
+
+	return
 }
 
-// IsInterfaceNil returns true if underlying implementation is nil
+// GetESDTToken forwards a message to the actual hook
+func (blockchain *BlockchainHookGateway) GetESDTToken(address []byte, tokenID []byte, nonce uint64) (*esdt.ESDigitalToken, error) {
+
+	request := common.NewMessageBlockchainGetESDTTokenRequest(address, tokenID, nonce)
+	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if err != nil {
+		return nil, err
+	}
+
+	if rawResponse.GetKind() != common.BlockchainGetESDTTokenResponse {
+		return nil, common.ErrBadHookResponseFromNode
+	}
+
+	response := rawResponse.(*common.MessageBlockchainGetESDTTokenResponse)
+	return response.Result, response.GetError()
+}
+
+// IsInterfaceNil forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) IsInterfaceNil() bool {
 	return blockchain == nil
+}
+
+// GetSnapshot forwards a message to the actual hook
+func (blockchain *BlockchainHookGateway) GetSnapshot() int {
+
+	request := common.NewMessageBlockchainGetSnapshotRequest()
+	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if err != nil {
+		return 0
+	}
+
+	if rawResponse.GetKind() != common.BlockchainGetSnapshotResponse {
+		return 0
+	}
+
+	response := rawResponse.(*common.MessageBlockchainGetSnapshotResponse)
+	return response.Result
+}
+
+// RevertToSnapshot forwards a message to the actual hook
+func (blockchain *BlockchainHookGateway) RevertToSnapshot(snapshot int) error {
+
+	request := common.NewMessageBlockchainRevertToSnapshotRequest(snapshot)
+	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
+	if err != nil {
+		return err
+	}
+
+	if rawResponse.GetKind() != common.BlockchainRevertToSnapshotResponse {
+		return common.ErrBadHookResponseFromNode
+	}
+
+	return err
 }

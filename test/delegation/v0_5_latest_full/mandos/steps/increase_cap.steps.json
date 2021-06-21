@@ -1,0 +1,47 @@
+{
+    "name": "init",
+    "steps": [
+        {
+            "step": "scCall",
+            "txId": "increase-delegation-cap",
+            "tx": {
+                "from": "address:node_address",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "modifyTotalDelegationCap",
+                "arguments": [
+                    "300,000,000,000,000"
+                ],
+                "gasLimit": "90,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": ["str:interrupted"],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "continue",
+            "tx": {
+                "from": "address:node_address",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "continueGlobalOperation",
+                "arguments": [],
+                "gasLimit": "1,000,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": ["str:completed"],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        }
+    ]
+}

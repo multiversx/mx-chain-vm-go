@@ -10,12 +10,12 @@ import (
 	"strings"
 	"testing"
 
-	am "github.com/ElrondNetwork/arwen-wasm-vm/arwenmandos"
-	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/test/mock-hook-blockchain"
-	fr "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/fileresolver"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/model"
-	mjparse "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/parse"
-	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/json/write"
+	am "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwenmandos"
+	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/fileresolver"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/model"
+	mjparse "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/parse"
+	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/write"
+	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
 )
@@ -25,6 +25,7 @@ const (
 	UserWaiting         = "getUserWaitingStake"
 	UserActive          = "getUserActiveStake"
 	UserDeferredPayment = "getUserDeferredPaymentStake"
+	UserUnbondable      = "getUnBondable"
 )
 
 type fuzzDelegationExecutorInitArgs struct {
@@ -41,7 +42,7 @@ type fuzzDelegationExecutorInitArgs struct {
 
 type fuzzDelegationExecutor struct {
 	arwenTestExecutor *am.ArwenTestExecutor
-	world             *worldhook.BlockchainHookMock
+	world             *worldhook.MockWorld
 	vm                vmi.VMExecutionHandler
 	mandosParser      mjparse.Parser
 	txIndex           int
@@ -51,12 +52,12 @@ type fuzzDelegationExecutor struct {
 	numBlocksBeforeUnbond       int
 	numDelegators               int
 	stakePerNode                *big.Int
-	ownerAddress                []byte
-	delegationContractAddress   []byte
-	auctionMockAddress          []byte
-	faucetAddress               []byte
-	withdrawTargetAddress       []byte
-	stakePurchaseForwardAddress []byte
+	ownerAddress                string
+	delegationContractAddress   string
+	auctionMockAddress          string
+	faucetAddress               string
+	withdrawTargetAddress       string
+	stakePurchaseForwardAddress string
 	numNodes                    int
 	totalStakeAdded             *big.Int
 	totalStakeWithdrawn         *big.Int
@@ -69,6 +70,8 @@ func newFuzzDelegationExecutor(fileResolver fr.FileResolver) (*fuzzDelegationExe
 	if err != nil {
 		return nil, err
 	}
+	mandosGasSchedule := mj.GasScheduleV3
+	arwenTestExecutor.SetMandosGasSchedule(mandosGasSchedule)
 
 	parser := mjparse.NewParser(fileResolver)
 
@@ -83,7 +86,8 @@ func newFuzzDelegationExecutor(fileResolver fr.FileResolver) (*fuzzDelegationExe
 		totalStakeWithdrawn: big.NewInt(0),
 		totalRewards:        big.NewInt(0),
 		generatedScenario: &mj.Scenario{
-			Name: "fuzz generated",
+			Name:        "fuzz generated",
+			GasSchedule: mandosGasSchedule,
 		},
 	}, nil
 }
@@ -109,14 +113,6 @@ func (pfe *fuzzDelegationExecutor) saveGeneratedScenario() {
 	if err != nil {
 		fmt.Println(err)
 	}
-}
-
-func (pfe *fuzzDelegationExecutor) delegatorAddress(delegIndex int) []byte {
-	if delegIndex == 0 {
-		return pfe.ownerAddress
-	}
-
-	return []byte(fmt.Sprintf("delegator %5d               s1", delegIndex))
 }
 
 func (pfe *fuzzDelegationExecutor) executeTxStep(stepSnippet string) (*vmi.VMOutput, error) {
@@ -147,8 +143,8 @@ func (pfe *fuzzDelegationExecutor) addNodes(numNodesToAdd int) error {
 		"step": "scCall",
 		"txId": "%d",
 		"tx": {
-			"from": "''%s",
-			"to": "''%s",
+			"from": "%s",
+			"to": "%s",
 			"value": "0",
 			"function": "addNodes",
 			"arguments": [
@@ -166,8 +162,8 @@ func (pfe *fuzzDelegationExecutor) addNodes(numNodesToAdd int) error {
 		}
 	}`,
 		pfe.nextTxIndex(),
-		string(pfe.ownerAddress),
-		string(pfe.delegationContractAddress),
+		pfe.ownerAddress,
+		pfe.delegationContractAddress,
 		blsKeySignatureArgsString(pfe.numNodes, numNodesToAdd),
 	))
 	pfe.numNodes += numNodesToAdd
@@ -182,8 +178,8 @@ func (pfe *fuzzDelegationExecutor) removeNodes(numNodesToRemove int) error {
 		"step": "scCall",
 		"txId": "%d",
 		"tx": {
-			"from": "''%s",
-			"to": "''%s",
+			"from": "%s",
+			"to": "%s",
 			"value": "0",
 			"function": "removeNodes",
 			"arguments": [
@@ -194,8 +190,8 @@ func (pfe *fuzzDelegationExecutor) removeNodes(numNodesToRemove int) error {
 		}
 	}`,
 		pfe.nextTxIndex(),
-		string(pfe.ownerAddress),
-		string(pfe.delegationContractAddress),
+		pfe.ownerAddress,
+		pfe.delegationContractAddress,
 		blsKeysToBeRemoved(pfe.numNodes, numNodesToRemove),
 	))
 	if err != nil {
@@ -219,7 +215,7 @@ func blsKeysToBeRemoved(totalNumNodes, numKeysToBeRemoved int) string {
 	var blsKeys []string
 	for i := 0; i < numKeysToBeRemoved; i++ {
 		keyIndex := rand.Intn(totalNumNodes + 1)
-		blsKeys = append(blsKeys, "\"''"+blsKey(keyIndex)+"\"")
+		blsKeys = append(blsKeys, "\"str:"+blsKey(keyIndex)+"\"")
 	}
 	return strings.Join(blsKeys, ",")
 }
@@ -227,8 +223,8 @@ func blsKeysToBeRemoved(totalNumNodes, numKeysToBeRemoved int) string {
 func blsKeySignatureArgsString(startIndex, numNodes int) string {
 	var blsKeyArgs []string
 	for i := startIndex; i < startIndex+numNodes; i++ {
-		blsKeyArgs = append(blsKeyArgs, "\"''"+blsKey(i)+"\"")
-		blsKeyArgs = append(blsKeyArgs, "\"''"+blsSignature(i)+"\"")
+		blsKeyArgs = append(blsKeyArgs, "\"str:"+blsKey(i)+"\"")
+		blsKeyArgs = append(blsKeyArgs, "\"str:"+blsSignature(i)+"\"")
 	}
 	return strings.Join(blsKeyArgs, ",")
 }
@@ -241,16 +237,19 @@ func blsKey(index int) string {
 
 func blsSignature(index int) string {
 	return fmt.Sprintf(
-		"bls key signature %5d ........",
+		"bls key signature %5d ........................",
 		index)
 }
 
-func (pfe *fuzzDelegationExecutor) increaseBlockNonce(nonceDelta int) error {
+func (pfe *fuzzDelegationExecutor) getCurrentBlockNonce() uint64 {
 	curentBlockNonce := uint64(0)
 	if pfe.world.CurrentBlockInfo != nil {
 		curentBlockNonce = pfe.world.CurrentBlockInfo.BlockNonce
 	}
+	return curentBlockNonce
+}
 
+func (pfe *fuzzDelegationExecutor) setBlockNonce(oldNonce, newNonce uint64) error {
 	err := pfe.executeStep(fmt.Sprintf(`
 	{
 		"step": "setState",
@@ -260,47 +259,40 @@ func (pfe *fuzzDelegationExecutor) increaseBlockNonce(nonceDelta int) error {
 		}
 	}`,
 		pfe.nextTxIndex(),
-		curentBlockNonce+uint64(nonceDelta),
+		newNonce,
 	))
 	if err != nil {
 		return err
 	}
 
-	pfe.log("block nonce: %d ---> %d", curentBlockNonce, curentBlockNonce+uint64(nonceDelta))
+	pfe.log("block nonce: %d ---> %d", oldNonce, newNonce)
 	return nil
 }
 
-func (pfe *fuzzDelegationExecutor) simpleQuery(funcName string) (*big.Int, error) {
-	return pfe.querySingleResult(funcName, "")
+func (pfe *fuzzDelegationExecutor) increaseBlockNonce(nonceDelta int) error {
+	curentBlockNonce := pfe.getCurrentBlockNonce()
+	return pfe.setBlockNonce(curentBlockNonce, curentBlockNonce+uint64(nonceDelta))
 }
 
 func (pfe *fuzzDelegationExecutor) querySingleResult(funcName string, args string) (*big.Int, error) {
 	output, err := pfe.executeTxStep(fmt.Sprintf(`
 	{
-		"step": "scCall",
+		"step": "scQuery",
 		"txId": "%d",
 		"tx": {
-			"from": "''%s",
-			"to": "''%s",
-			"value": "0",
+			"to": "%s",
 			"function": "%s",
 			"arguments": [
 				%s
-			],
-			"gasLimit": "10,000,000",
-			"gasPrice": "0"
+			]
 		},
 		"expect": {
 			"out": [ "*" ],
-			"status": "",
-			"logs": [],
-			"gas": "*",
-			"refund": "*"
+			"status": ""
 		}
 	}`,
 		pfe.nextTxIndex(),
-		string(pfe.ownerAddress),
-		string(pfe.delegationContractAddress),
+		pfe.delegationContractAddress,
 		funcName,
 		args,
 	))
@@ -314,7 +306,7 @@ func (pfe *fuzzDelegationExecutor) querySingleResult(funcName string, args strin
 }
 
 func (pfe *fuzzDelegationExecutor) delegatorQuery(funcName string, delegatorIndex int) (*big.Int, error) {
-	delegatorAddr := fmt.Sprintf(`"''%s"`, string(pfe.delegatorAddress(delegatorIndex)))
+	delegatorAddr := fmt.Sprintf(`"str:%s"`, pfe.delegatorAddress(delegatorIndex))
 	return pfe.querySingleResult(funcName, delegatorAddr)
 }
 
@@ -330,18 +322,8 @@ func (pfe *fuzzDelegationExecutor) getAllDelegatorsBalance() *big.Int {
 
 func (pfe *fuzzDelegationExecutor) getDelegatorBalance(delegatorIndex int) *big.Int {
 	delegatorAddr := pfe.delegatorAddress(delegatorIndex)
-	acct := pfe.world.AcctMap.GetAccount(delegatorAddr)
+	acct := pfe.world.AcctMap.GetAccount(pfe.interpretExpr(delegatorAddr))
 
-	return acct.Balance
-}
-
-func (pfe *fuzzDelegationExecutor) getAuctionBalance() *big.Int {
-	acct := pfe.world.AcctMap.GetAccount(pfe.auctionMockAddress)
-	return acct.Balance
-}
-
-func (pfe *fuzzDelegationExecutor) getWithdrawTargetBalance() *big.Int {
-	acct := pfe.world.AcctMap.GetAccount(pfe.withdrawTargetAddress)
 	return acct.Balance
 }
 
@@ -351,8 +333,8 @@ func (pfe *fuzzDelegationExecutor) modifyDelegationCap(newCap *big.Int) error {
 		"step": "scCall",
 		"txId": "-modify-delegation-cap-",
 		"tx": {
-			"from": "''%s",
-			"to": "''%s",
+			"from": "%s",
+			"to": "%s",
 			"value": "0",
 			"function": "modifyTotalDelegationCap",
 			"arguments": ["%d"],
@@ -360,8 +342,8 @@ func (pfe *fuzzDelegationExecutor) modifyDelegationCap(newCap *big.Int) error {
 			"gasPrice": "0"
 		}
 	}`,
-		string(pfe.ownerAddress),
-		string(pfe.delegationContractAddress),
+		pfe.ownerAddress,
+		pfe.delegationContractAddress,
 		newCap,
 	))
 	if err != nil {
@@ -379,8 +361,8 @@ func (pfe *fuzzDelegationExecutor) setServiceFee(newServiceFee int) error {
 		"step": "scCall",
 		"txId": "-set-service-fee-",
 		"tx": {
-			"from": "''%s",
-			"to": "''%s",
+			"from": "%s",
+			"to": "%s",
 			"value": "0",
 			"function": "setServiceFee",
 			"arguments": ["%d"],
@@ -388,8 +370,8 @@ func (pfe *fuzzDelegationExecutor) setServiceFee(newServiceFee int) error {
 			"gasPrice": "0"
 		}
 	}`,
-		string(pfe.ownerAddress),
-		string(pfe.delegationContractAddress),
+		pfe.ownerAddress,
+		pfe.delegationContractAddress,
 		newServiceFee,
 	))
 	if err != nil {
@@ -402,41 +384,44 @@ func (pfe *fuzzDelegationExecutor) setServiceFee(newServiceFee int) error {
 }
 
 func (pfe *fuzzDelegationExecutor) continueGlobalOperation() error {
-	pfe.log("continue global operation")
-	output, err := pfe.executeTxStep(fmt.Sprintf(`
-	{
-		"step": "scCall",
-		"txId": "-continue-global-operation-",
-		"tx": {
-			"from": "''%s",
-			"to": "''%s",
-			"value": "0",
-			"function": "continueGlobalOperation",
-			"arguments": [],
-			"gasLimit": "100,000",
-			"gasPrice": "0"
-		}
-	}`,
-		string(pfe.ownerAddress),
-		string(pfe.delegationContractAddress),
-	))
-	if err != nil {
-		return err
-	}
-
-	if output.ReturnCode == vmi.OutOfGas {
-		err = pfe.continueGlobalOperation()
+	completed := false
+	for !completed {
+		output, err := pfe.executeTxStep(fmt.Sprintf(`
+		{
+			"step": "scCall",
+			"txId": "-continue-global-operation-",
+			"tx": {
+				"from": "%s",
+				"to": "%s",
+				"value": "0",
+				"function": "continueGlobalOperation",
+				"arguments": [],
+				"gasLimit": "200,000,000",
+				"gasPrice": "0"
+			},
+			"expect": {
+				"out": [ "*" ],
+				"refund": "*"
+			}
+		}`,
+			pfe.ownerAddress,
+			pfe.delegationContractAddress,
+		))
 		if err != nil {
 			return err
+		}
+		pfe.log("continue global operation %s", string(output.ReturnData[0]))
+
+		if bytes.Equal(output.ReturnData[0], []byte("completed")) {
+			completed = true
+		} else if bytes.Equal(output.ReturnData[0], []byte("interrupted")) {
+			completed = false
+		} else {
+			return fmt.Errorf("unexpected global operation status: %x", output.ReturnData[0])
 		}
 	}
 
 	return nil
-}
-
-func (pfe *fuzzDelegationExecutor) getContractBalance() *big.Int {
-	acct := pfe.world.AcctMap.GetAccount(pfe.delegationContractAddress)
-	return acct.Balance
 }
 
 func (pfe *fuzzDelegationExecutor) isBootstrapMode() (bool, error) {
@@ -445,17 +430,17 @@ func (pfe *fuzzDelegationExecutor) isBootstrapMode() (bool, error) {
 		"step": "scCall",
 		"txId": "-is-bootstrap-mode-",
 		"tx": {
-			"from": "''%s",
-			"to": "''%s",
+			"from": "%s",
+			"to": "%s",
 			"value": "0",
 			"function": "isBootstrapMode",
 			"arguments": [],
-			"gasLimit": "100,000",
+			"gasLimit": "50,000,000",
 			"gasPrice": "0"
 		}
 	}`,
-		string(pfe.ownerAddress),
-		string(pfe.delegationContractAddress),
+		pfe.ownerAddress,
+		pfe.delegationContractAddress,
 	))
 	if err != nil {
 		return false, err

@@ -1,7 +1,7 @@
 package secp256k1
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/crypto/signing"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto/signing"
 	"github.com/btcsuite/btcd/btcec"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
 )
@@ -13,7 +13,7 @@ func NewSecp256k1() *secp256k1 {
 	return &secp256k1{}
 }
 
-func (sec *secp256k1) VerifySecp256k1(key []byte,  msg []byte, sig []byte) error {
+func (sec *secp256k1) VerifySecp256k1(key []byte, msg []byte, sig []byte) error {
 	pubKey, err := btcec.ParsePubKey(key, btcec.S256())
 	if err != nil {
 		return err

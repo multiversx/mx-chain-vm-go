@@ -180,14 +180,14 @@ func (imports *Imports) Close() {
 // an imported context.
 type InstanceContext struct {
 	context *cWasmerInstanceContextT
-	memory  Memory
+	memory  MemoryHandler
 }
 
 // NewInstanceContext creates a new wasmer context given a cWasmerInstance and a memory
 func NewInstanceContext(ctx *cWasmerInstanceContextT, mem Memory) *InstanceContext {
 	return &InstanceContext{
 		context: ctx,
-		memory:  mem,
+		memory:  &mem,
 	}
 }
 
@@ -197,19 +197,19 @@ func IntoInstanceContext(instanceContext unsafe.Pointer) InstanceContext {
 	context := (*cWasmerInstanceContextT)(instanceContext)
 	memory := newMemory(cWasmerInstanceContextMemory(context))
 
-	return InstanceContext{context, memory}
+	return InstanceContext{context, &memory}
 }
 
 // IntoInstanceContextDirect retrieves the Wasmer instance context directly
 // from the Wasmer instance. This context can be stored as long as the instance itself.
 func IntoInstanceContextDirect(instanceContext *cWasmerInstanceContextT) InstanceContext {
 	memory := newMemory(cWasmerInstanceContextMemory(instanceContext))
-	return InstanceContext{instanceContext, memory}
+	return InstanceContext{instanceContext, &memory}
 }
 
 // Memory returns the current instance memory.
-func (instanceContext *InstanceContext) Memory() *Memory {
-	return &instanceContext.memory
+func (instanceContext *InstanceContext) Memory() MemoryHandler {
+	return instanceContext.memory
 }
 
 // Data returns the instance context data as an `unsafe.Pointer`. It's

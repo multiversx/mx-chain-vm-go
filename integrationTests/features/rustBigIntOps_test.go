@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	arwen "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/stretchr/testify/require"
@@ -23,7 +23,7 @@ func getTestRoot() string {
 }
 
 func getFeaturesContractPath() string {
-	return filepath.Join(getTestRoot(), "features/output/basic-features.wasm")
+	return filepath.Join(getTestRoot(), "features/basic-features/output/basic-features.wasm")
 }
 
 func unsignedInterpreter(bytes []byte) *big.Int {

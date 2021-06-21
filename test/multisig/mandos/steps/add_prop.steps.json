@@ -7,13 +7,13 @@
             "txId": "prop-add-1",
             "tx": {
                 "from": "address:alice",
-                "to": "address:multisig",
+                "to": "sc:multisig",
                 "value": "0",
                 "function": "proposeAddProposer",
                 "arguments": [
                     "address:paul"
                 ],
-                "gasLimit": "100,000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -29,11 +29,11 @@
             "txId": "prop-signers-1",
             "tx": {
                 "from": "address:owner",
-                "to": "address:multisig",
+                "to": "sc:multisig",
                 "value": "0",
                 "function": "getActionSigners",
                 "arguments": ["1"],
-                "gasLimit": "100,000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -52,11 +52,11 @@
             "comment": "should have no effect",
             "tx": {
                 "from": "address:alice",
-                "to": "address:multisig",
+                "to": "sc:multisig",
                 "value": "0",
                 "function": "sign",
                 "arguments": ["1"],
-                "gasLimit": "100,000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -72,11 +72,11 @@
             "txId": "prop-signers-2",
             "tx": {
                 "from": "address:owner",
-                "to": "address:multisig",
+                "to": "sc:multisig",
                 "value": "0",
                 "function": "getActionSigners",
                 "arguments": ["1"],
-                "gasLimit": "100,000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -94,11 +94,11 @@
             "txId": "prop-add-1-try-perform-insufficient-signatures",
             "tx": {
                 "from": "address:alice",
-                "to": "address:multisig",
+                "to": "sc:multisig",
                 "value": "0",
                 "function": "performAction",
                 "arguments": ["1"],
-                "gasLimit": "100,000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -115,11 +115,11 @@
             "txId": "prop-sign-bob",
             "tx": {
                 "from": "address:bob",
-                "to": "address:multisig",
+                "to": "sc:multisig",
                 "value": "0",
                 "function": "sign",
                 "arguments": ["1"],
-                "gasLimit": "100,000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -135,11 +135,11 @@
             "txId": "prop-signers-3",
             "tx": {
                 "from": "address:owner",
-                "to": "address:multisig",
+                "to": "sc:multisig",
                 "value": "0",
                 "function": "getActionSigners",
                 "arguments": ["1"],
-                "gasLimit": "100,000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -157,11 +157,11 @@
             "txId": "prop-signers-3-count",
             "tx": {
                 "from": "address:owner",
-                "to": "address:multisig",
+                "to": "sc:multisig",
                 "value": "0",
                 "function": "getActionSignerCount",
                 "arguments": ["1"],
-                "gasLimit": "100,000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -179,15 +179,37 @@
             "txId": "prop-add-1-perform",
             "tx": {
                 "from": "address:alice",
-                "to": "address:multisig",
+                "to": "sc:multisig",
                 "value": "0",
                 "function": "performAction",
                 "arguments": ["1"],
-                "gasLimit": "100,000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
                 "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "getAllProposers",
+            "tx": {
+                "from": "address:paul",
+                "to": "sc:multisig",
+                "value": "0",
+                "function": "getAllProposers",
+                "arguments": [],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "address:paul"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",

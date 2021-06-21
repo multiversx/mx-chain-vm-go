@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	fuzzutil "github.com/ElrondNetwork/arwen-wasm-vm/fuzz/util"
-	mc "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/controller"
+	fuzzutil "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/fuzz/util"
+	mc "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/controller"
 	"github.com/stretchr/testify/require"
 )
 
@@ -94,7 +94,7 @@ func TestFuzzDelegation_v0_4_0_genesis(t *testing.T) {
 
 	// after genesis
 	pfe.increaseBlockNonce(r.Intn(10000))
-	re := fuzzutil.NewRandomEventProvider()
+	re := fuzzutil.NewRandomEventProvider(r)
 
 	for stepIndex := 0; stepIndex < 500; stepIndex++ {
 		re.Reset()

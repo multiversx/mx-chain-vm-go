@@ -19,6 +19,8 @@ byte executeValue[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 u32 executeArgumentsLengths[] = {15, 16, 10};
 byte executeArgumentsData[] = "First sentence.Second sentence.Some text.";
 
+byte childReturn[100] = {0};
+
 byte wrongSC[] = "\0\0\0\0\0\0\0\0\x0F\x0F" "wrongSC...............";
 byte childSC[] = "\0\0\0\0\0\0\0\0\x0F\x0F" "childSC...............";
 
@@ -78,6 +80,59 @@ void parentFunctionChildCall() {
 	} else {
 		finishResult(1);
 	}
+}
+
+void parentFunctionChildCall_ReturnedData() {
+	parentFunctionPrepare();
+
+	int numReturnsParent = getNumReturnData();
+	if (numReturnsParent != 3) {
+		byte msg[] = "wrong number of returns before call";
+		signalError(msg, 35);
+	}
+
+	byte* childAddress = childSC;
+	byte functionName[] = "childFunction";
+	int result = executeOnDestContext(
+			200000,
+			childAddress,
+			executeValue,
+			functionName,
+			13,
+			3,
+			(byte*)executeArgumentsLengths,
+			executeArgumentsData
+	);
+
+	int numReturnsChild = getNumReturnData() - numReturnsParent;
+	if (numReturnsChild != 1) {
+		byte msg[] = "wrong number of returns after call";
+		signalError(msg, 34);
+	}
+
+	int childReturnIndex = numReturnsParent;
+
+	int childReturnSize = getReturnDataSize(childReturnIndex);
+	if (childReturnSize != 11) {
+		byte msg[] = "unexpected size of child return";
+		signalError(msg, 31);
+	}
+
+	int size = getReturnData(childReturnIndex, childReturn);
+	if (size != childReturnSize) {
+		byte msg[] = "return size mismatch";
+		signalError(msg, 20);
+	}
+
+	byte expectedChildReturn[] = "childFinish";
+	for (int i = 0; i < childReturnSize; i++) {
+		if (expectedChildReturn[i] != childReturn[i]) {
+			byte msg[] = "return data mismatch";
+			signalError(msg, 20);
+		}
+	}
+
+	finishResult(result);
 }
 
 void parentFunctionChildCall_BigInts() {

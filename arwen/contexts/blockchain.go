@@ -3,13 +3,15 @@ package contexts
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	"github.com/ElrondNetwork/elrond-go/data/esdt"
 )
 
 type blockchainContext struct {
 	host           arwen.VMHost
 	blockChainHook vmcommon.BlockchainHook
+	stateStack     []int
 }
 
 // NewBlockchainContext creates a new blockchainContext
@@ -35,7 +37,8 @@ func (context *blockchainContext) NewAddress(creatorAddress []byte) ([]byte, err
 		return nil, err
 	}
 
-	if nonce > 0 {
+	isIndirectDeployment := context.IsSmartContract(creatorAddress) && context.host.IsArwenV3Enabled()
+	if !isIndirectDeployment && nonce > 0 {
 		nonce--
 	}
 
@@ -91,12 +94,10 @@ func (context *blockchainContext) GetBalanceBigInt(address []byte) *big.Int {
 
 // GetNonce returns the nonce at which the account mapped to the given address is.
 func (context *blockchainContext) GetNonce(address []byte) (uint64, error) {
-	// TODO verify if Nonce is 0, which means the outputAccount was cached, but
-	// its Nonce not yet retrieved from the BlockchainHook; more generally,
-	// create a list of accounts that have been cached, but not yet fully updated
-	// from the BlockchainHook (they might have uninitialized Nonce and Balance).
 	outputAccount, isNew := context.host.Output().GetOutputAccount(address)
-	if !isNew {
+
+	readNonceFromBlockChain := isNew || (outputAccount.Nonce == 0 && context.host.IsArwenV3Enabled())
+	if !readNonceFromBlockChain {
 		return outputAccount.Nonce, nil
 	}
 
@@ -116,6 +117,11 @@ func (context *blockchainContext) IncreaseNonce(address []byte) {
 	nonce, _ := context.GetNonce(address)
 	outputAccount, _ := context.host.Output().GetOutputAccount(address)
 	outputAccount.Nonce = nonce + 1
+}
+
+// GetESDTToken returns the unmarshalled esdt token for the given address and nonce for NFTs
+func (context *blockchainContext) GetESDTToken(address []byte, tokenID []byte, nonce uint64) (*esdt.ESDigitalToken, error) {
+	return context.blockChainHook.GetESDTToken(address, tokenID, nonce)
 }
 
 // GetCodeHash returns the code hash that is set tho the given account
@@ -148,7 +154,7 @@ func (context *blockchainContext) GetCode(address []byte) ([]byte, error) {
 		return nil, arwen.ErrInvalidAccount
 	}
 
-	code := account.GetCode()
+	code := context.blockChainHook.GetCode(account)
 	if len(code) == 0 {
 		return nil, arwen.ErrContractNotFound
 	}
@@ -165,7 +171,7 @@ func (context *blockchainContext) GetCodeSize(address []byte) (int32, error) {
 		return 0, err
 	}
 
-	code := account.GetCode()
+	code := context.blockChainHook.GetCode(account)
 	result := int32(len(code))
 	return result, nil
 }
@@ -273,4 +279,62 @@ func (context *blockchainContext) SaveCompiledCode(codeHash []byte, code []byte)
 // GetCompiledCode returns the compiled code if it finds in the cache or storage
 func (context *blockchainContext) GetCompiledCode(codeHash []byte) (bool, []byte) {
 	return context.blockChainHook.GetCompiledCode(codeHash)
+}
+
+// GetUserAccount returns a user account
+func (context *blockchainContext) GetUserAccount(address []byte) (vmcommon.UserAccountHandler, error) {
+	return context.blockChainHook.GetUserAccount(address)
+}
+
+// ProcessBuiltInFunction will process the builtIn function for the created input
+func (context *blockchainContext) ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+	return context.blockChainHook.ProcessBuiltInFunction(input)
+}
+
+// InitState does nothing
+func (context *blockchainContext) InitState() {
+}
+
+// ClearStateStack clears the state stack from the current context.
+func (context *blockchainContext) ClearStateStack() {
+	context.stateStack = make([]int, 0)
+}
+
+// PushState appends the current snapshot to the state stack.
+func (context *blockchainContext) PushState() {
+	snapshot := context.blockChainHook.GetSnapshot()
+	context.stateStack = append(context.stateStack, snapshot)
+}
+
+// PopSetActiveState removes the latest entry from the state stack and reverts to that snapshot
+func (context *blockchainContext) PopSetActiveState() {
+	stateStackLen := len(context.stateStack)
+	if stateStackLen == 0 {
+		return
+	}
+
+	prevSnapshot := context.stateStack[stateStackLen-1]
+	context.blockChainHook.RevertToSnapshot(prevSnapshot)
+
+	context.stateStack = context.stateStack[:stateStackLen-1]
+}
+
+// PopDiscard removes the latest entry from the state stack
+func (context *blockchainContext) PopDiscard() {
+	stateStackLen := len(context.stateStack)
+	if stateStackLen == 0 {
+		return
+	}
+
+	context.stateStack = context.stateStack[:stateStackLen-1]
+}
+
+// GetSnapshot - gets the latest snapshot via blockchain hook
+func (context *blockchainContext) GetSnapshot() int {
+	return context.blockChainHook.GetSnapshot()
+}
+
+// RevertToSnapshot - reverts to the specified snapshot via blockchain hook
+func (context *blockchainContext) RevertToSnapshot(snapshot int) {
+	context.blockChainHook.RevertToSnapshot(snapshot)
 }

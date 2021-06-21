@@ -1,0 +1,291 @@
+{
+    "name": "unstake-4",
+    "comment":"unstake more than it is in active, but less or equal to the user total delegation",
+    "gasSchedule": "v3",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "steps/init_accounts.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "steps/deploy.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "steps/add_nodes.steps.json"
+        }, 
+        {
+            "step": "externalSteps",
+            "path": "steps/stake_1.steps.json"
+        }, 
+        {
+            "step": "externalSteps",
+            "path": "steps/increase_cap.steps.json"
+        },
+        {
+            "step": "scCall",
+            "txId": "user-unstake",
+            "tx": {
+                "from": "address:delegator2",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "unStake",
+                "arguments": ["200,000,000,000,000"],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scQuery",
+            "txId": "check-stake-by-type-1",
+            "tx": {
+                "to": "sc:delegation",
+                "function": "getUserStakeByType",
+                "arguments": [
+                    "address:delegator1"
+                ]
+            },
+            "expect": {
+                "out": [
+                    "0","0", "100,001,000,000,000", "0", "0"
+                ]
+            }
+        },
+        {
+            "step": "scQuery",
+            "txId": "check-stake-by-type-2",
+            "tx": {
+                "to": "sc:delegation",
+                "function": "getUserStakeByType",
+                "arguments": [
+                    "address:delegator2"
+                ]
+            },
+            "expect": {
+                "out": [
+                    "1,000,000,000", "0","0", "199,999,000,000,000","0"
+                ]
+            }
+        },
+        {
+            "step": "scQuery",
+            "txId": "check-stake-by-type-total",
+            "tx": {
+                "to": "sc:delegation",
+                "function": "getTotalStakeByType",
+                "arguments": []
+            },
+            "expect": {
+                "out": [
+                   "1,000,000,000", "0", "100,001,000,000,000",  "199,999,000,000,000", "0"
+                ]
+            }
+        },
+        {
+            "step": "scCall",
+            "comment": "test partial unbond first",
+            "txId": "partial-unBond-out-of-gas",
+            "tx": {
+                "from": "address:delegator2",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "unBond",
+                "arguments": [],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [ "0" ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scQuery",
+            "txId": "check-stake-by-type-3a",
+            "tx": {
+                "to": "sc:delegation",
+                "function": "getUserStakeByType",
+                "arguments": [
+                    "address:delegator2"
+                ]
+            },
+            "expect": {
+                "out": [
+                    "1,000,000,000", "0","0", "199,999,000,000,000","0"
+                ]
+            }
+        },
+        {
+            "step": "scCall",
+            "comment": "unbond after unbonding period over should work",
+            "txId": "unBond-ok",
+            "tx": {
+                "from": "address:delegator2",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "unBond",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [ "1,000,000,000" ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "check-stake-by-type-3b",
+            "tx": {
+                "from": "address:someone",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "getUserStakeByType",
+                "arguments": [
+                    "address:delegator2"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "0", "0","0", "199,999,000,000,000","0"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "address:delegator2": {
+                    "nonce": "*",
+                    "balance": "1,000,000,000",
+                    "storage": {},
+                    "code": "",
+                    "asyncCallData": "''delegation stake unbond"
+                },
+                "+": ""
+            }
+        },
+        {
+            "step": "transfer",
+            "txId": "supply owner",
+            "tx": {
+                "from": "address:endless_sack_of_erd",
+                "to": "address:node_address",
+                "value": "199,999,000,000,000"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "owner stake",
+            "tx": {
+                "from": "address:node_address",
+                "to": "sc:delegation",
+                "value": "199,999,000,000,000",
+                "function": "stake",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [
+                    {
+                        "address": "sc:delegation",
+                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000001",
+                        "topics": [
+                            "address:node_address"
+                        ],
+                        "data": "199,999,000,000,000"
+                    }
+                ],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "setState",
+            "comment": "block nonce for unbond, just in time",
+            "currentBlockInfo": {
+                "blockNonce": "61"
+            }
+        },
+        {
+            "step": "scCall",
+            "comment": "unbond after unbonding period over should work",
+            "txId": "unBond-more",
+            "tx": {
+                "from": "address:delegator2",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "unBond",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [ "199,999,000,000,000" ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "check-stake-by-type-4",
+            "tx": {
+                "from": "address:someone",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "getUserStakeByType",
+                "arguments": [
+                    "address:delegator2"
+                ],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "0", "0","0", "0","0"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "address:delegator2": {
+                    "nonce": "*",
+                    "balance": "200,000,000,000,000",
+                    "storage": {},
+                    "code": "",
+                    "asyncCallData": "''delegation stake unbond"
+                },
+                "+": ""
+            }
+        }
+    ]
+}

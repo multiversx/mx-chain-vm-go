@@ -1,0 +1,134 @@
+{
+    "name": "staking scenario",
+    "gasSchedule": "v3",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "steps/init_accounts.steps.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "steps/deploy.steps.json"
+        },
+        {
+            "step": "scCall",
+            "txId": "check auction addr",
+            "tx": {
+                "from": "address:node_address",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "getAuctionContractAddress",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [ "sc:auction" ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "getNumBlocksBeforeUnBond",
+            "tx": {
+                "from": "address:node_address",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "getNumBlocksBeforeUnBond",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [ "60" ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "check-fee",
+            "tx": {
+                "from": "address:node_address",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "getServiceFee",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [ "5000" ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },            
+        {
+            "step": "externalSteps",
+            "path": "steps/add_nodes.steps.json"
+        }, 
+        {
+            "step": "externalSteps",
+            "path": "steps/stake_1.steps.json"
+        },
+        {
+            "step": "scCall",
+            "txId": "check-total_stake",
+            "tx": {
+                "from": "address:someone",
+                "to": "sc:delegation",
+                "value": "0",
+                "function": "totalStake",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [ "300,001,000,000,000" ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scQuery",
+            "txId": "check-stake-by-type",
+            "tx": {
+                "to": "sc:delegation",
+                "function": "getAllUserStakeByType",
+                "arguments": []
+            },
+            "expect": {
+                "out": [
+                    "address:node_address", "0", "0", "0", "0", "0",
+                    "address:delegator1", "0", "100,000,000,000,000", "1,000,000,000","0","0",
+                    "address:delegator2", "0", "200,000,000,000,000", "0","0","0"
+                ],
+                "status": ""
+            }
+        },
+        {
+            "step": "scQuery",
+            "txId": "check-stake-by-type-total",
+            "tx": {
+                "to": "sc:delegation",
+                "function": "getTotalStakeByType",
+                "arguments": []
+            },
+            "expect": {
+                "out": [
+                   "0",  "300,000,000,000,000", "1,000,000,000", "0", "0"
+                ],
+                "status": ""
+            }
+        }
+    ]
+}

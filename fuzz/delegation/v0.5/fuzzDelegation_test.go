@@ -9,13 +9,17 @@ import (
 	"testing"
 	"time"
 
-	fuzzutil "github.com/ElrondNetwork/arwen-wasm-vm/fuzz/util"
-	mc "github.com/ElrondNetwork/arwen-wasm-vm/test/test-util/mandos/controller"
+	fuzzutil "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/fuzz/util"
+	mc "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/controller"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-var fuzz = flag.Bool("fuzz", false, "fuzz")
+var fuzz = flag.Bool("fuzz", false, "Enable fuzz test")
+
+var seedFlag = flag.Int64("seed", 0, "Random seed, use it to replay fuzz scenarios")
+
+var iterationsFlag = flag.Int("iterations", 1000, "Number of iterations")
 
 func getTestRoot() string {
 	exePath, err := os.Getwd()
@@ -30,7 +34,7 @@ func newExecutorWithPaths() *fuzzDelegationExecutor {
 	fileResolver := mc.NewDefaultFileResolver().
 		ReplacePath(
 			"delegation.wasm",
-			filepath.Join(getTestRoot(), "delegation/v0_5/output/delegation.wasm")).
+			filepath.Join(getTestRoot(), "delegation/v0_5_latest_full/output/delegation_latest_full.wasm")).
 		ReplacePath(
 			"auction-mock.wasm",
 			filepath.Join(getTestRoot(), "delegation/auction-mock/output/auction-mock.wasm"))
@@ -47,10 +51,18 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 		t.Skip("skipping test; only run with --fuzz argument")
 	}
 
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-
 	pfe := newExecutorWithPaths()
 	defer pfe.saveGeneratedScenario()
+
+	var seed int64
+	if *seedFlag == 0 {
+		seed = time.Now().UnixNano()
+	} else {
+		seed = *seedFlag
+	}
+	pfe.log("Random seed: %d\n", seed)
+	r := rand.New(rand.NewSource(seed))
+	r.Seed(seed)
 
 	stakePerNode := big.NewInt(1000000000)
 	numDelegators := 10
@@ -73,8 +85,8 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 	err = pfe.increaseBlockNonce(r.Intn(10000))
 	require.Nil(t, err)
 
-	re := fuzzutil.NewRandomEventProvider()
-	for stepIndex := 0; stepIndex < 1500; stepIndex++ {
+	re := fuzzutil.NewRandomEventProvider(r)
+	for stepIndex := 0; stepIndex < *iterationsFlag; stepIndex++ {
 		generateRandomEvent(t, pfe, r, re, maxDelegationCap)
 	}
 
@@ -140,7 +152,7 @@ func TestFuzzDelegation_v0_5(t *testing.T) {
 
 	activeAndWithdrawn := big.NewInt(0).Add(withdrawnAtTheEnd, totalActiveStake)
 	require.True(t, activeAndWithdrawn.Cmp(pfe.totalStakeAdded) == 0,
-		"Stake added and withdrawn doesn't match. Staked: %d. Withdrawn: %d. Off by: %d",
+		"Stake added and withdrawn doesn't match. Staked: %d. Active+Withdrawn: %d. Off by: %d",
 		pfe.totalStakeAdded, activeAndWithdrawn,
 		big.NewInt(0).Sub(pfe.totalStakeAdded, activeAndWithdrawn))
 }
@@ -154,6 +166,7 @@ func generateRandomEvent(
 ) {
 	maxStake := big.NewInt(0).Mul(pfe.stakePerNode, big.NewInt(2))
 	maxSystemReward := big.NewInt(1000000000)
+	maxDust := big.NewInt(0).Div(pfe.stakePerNode, big.NewInt(4))
 	maxServiceFee := 10000
 	re.Reset()
 
@@ -184,6 +197,7 @@ func generateRandomEvent(
 
 		pfe.checkInvariants(t)
 	case re.WithProbability(0.05):
+		// rewards
 		ok, err := pfe.isBootstrapMode()
 		require.Nil(t, err)
 
@@ -217,6 +231,7 @@ func generateRandomEvent(
 		err := pfe.unBond(delegatorIdx)
 		require.Nil(t, err)
 	case re.WithProbability(0.05):
+		// delegation cap
 		err := pfe.modifyDelegationCap(big.NewInt(0).Rand(r, maxDelegationCap))
 		require.Nil(t, err)
 
@@ -228,6 +243,7 @@ func generateRandomEvent(
 
 		pfe.checkInvariants(t)
 	case re.WithProbability(0.05):
+		// service fee
 		err := pfe.setServiceFee(r.Intn(maxServiceFee))
 		require.Nil(t, err)
 
@@ -237,6 +253,12 @@ func generateRandomEvent(
 		pfe.printServiceFeeAndDelegationCap(t)
 		pfe.printTotalStakeByType()
 
+		pfe.checkInvariants(t)
+	case re.WithProbability(0.01):
+		// dust
+		dustLimit := big.NewInt(0).Rand(r, maxDust)
+		err := pfe.dustCleanup(dustLimit)
+		require.Nil(t, err)
 		pfe.checkInvariants(t)
 	default:
 	}

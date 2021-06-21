@@ -3,12 +3,14 @@ package arwen
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
-	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	"github.com/ElrondNetwork/elrond-go/data/esdt"
 )
 
+// StateStack defines the functionality for working with a state stack
 type StateStack interface {
 	InitState()
 	PushState()
@@ -23,7 +25,9 @@ type CallArgsParser interface {
 	IsInterfaceNil() bool
 }
 
+// VMHost defines the functionality for working with the VM
 type VMHost interface {
+	vmcommon.VMExecutionHandler
 	Crypto() crypto.VMCrypto
 	Blockchain() BlockchainContext
 	Runtime() RuntimeContext
@@ -34,17 +38,30 @@ type VMHost interface {
 	IsArwenV2Enabled() bool
 	IsAheadOfTimeCompileEnabled() bool
 	IsDynamicGasLockingEnabled() bool
+	IsArwenV3Enabled() bool
+	IsESDTFunctionsEnabled() bool
 
+	ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callType vmcommon.CallType) (*vmcommon.VMOutput, uint64, error)
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*AsyncContextInfo, error)
 	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *AsyncContextInfo, error)
-	EthereumCallData() []byte
 	GetAPIMethods() *wasmer.Imports
 	GetProtocolBuiltinFunctions() vmcommon.FunctionNames
+	SetProtocolBuiltinFunctions(vmcommon.FunctionNames)
 	IsBuiltinFunctionName(functionName string) bool
+	AreInSameShard(leftAddress []byte, rightAddress []byte) bool
+
+	GetGasScheduleMap() config.GasScheduleMap
+	GetContexts() (BigIntContext, BlockchainContext, MeteringContext, OutputContext, RuntimeContext, StorageContext)
+	SetRuntimeContext(runtime RuntimeContext)
+
+	InitState()
 }
 
+// BlockchainContext defines the functionality needed for interacting with the blockchain context
 type BlockchainContext interface {
+	StateStack
+
 	NewAddress(creatorAddress []byte) ([]byte, error)
 	AccountExists(addr []byte) bool
 	GetBalance(addr []byte) []byte
@@ -72,8 +89,14 @@ type BlockchainContext interface {
 	IsPayable(address []byte) (bool, error)
 	SaveCompiledCode(codeHash []byte, code []byte)
 	GetCompiledCode(codeHash []byte) (bool, []byte)
+	GetESDTToken(address []byte, tokenID []byte, nonce uint64) (*esdt.ESDigitalToken, error)
+	GetUserAccount(address []byte) (vmcommon.UserAccountHandler, error)
+	ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
+	GetSnapshot() int
+	RevertToSnapshot(snapshot int)
 }
 
+// RuntimeContext defines the functionality needed for interacting with the runtime context
 type RuntimeContext interface {
 	StateStack
 
@@ -96,15 +119,14 @@ type RuntimeContext interface {
 	MustVerifyNextContractCode()
 	SetRuntimeBreakpointValue(value BreakpointValue)
 	GetRuntimeBreakpointValue() BreakpointValue
+	IsContractOnTheStack(address []byte) bool
 	GetAsyncCallInfo() *AsyncCallInfo
 	SetAsyncCallInfo(asyncCallInfo *AsyncCallInfo)
 	AddAsyncContextCall(contextIdentifier []byte, asyncCall *AsyncGeneratedCall) error
 	GetAsyncContextInfo() *AsyncContextInfo
 	GetAsyncContext(contextIdentifier []byte) (*AsyncContext, error)
-	PushInstance()
-	PopInstance()
 	RunningInstancesCount() uint64
-	ClearInstanceStack()
+	IsFunctionImported(name string) bool
 	IsWarmInstance() bool
 	ResetWarmInstance()
 	ReadOnly() bool
@@ -113,6 +135,7 @@ type RuntimeContext interface {
 	CleanWasmerInstance()
 	SetMaxInstanceCount(uint64)
 	VerifyContractCode() error
+	GetInstance() wasmer.InstanceHandler
 	GetInstanceExports() wasmer.ExportsMap
 	GetInitFunction() wasmer.ExportedFunctionCallback
 	GetFunctionToCall() (wasmer.ExportedFunctionCallback, error)
@@ -120,13 +143,22 @@ type RuntimeContext interface {
 	SetPointsUsed(gasPoints uint64)
 	MemStore(offset int32, data []byte) error
 	MemLoad(offset int32, length int32) ([]byte, error)
+	MemLoadMultiple(offset int32, lengths []int32) ([][]byte, error)
 	ElrondAPIErrorShouldFailExecution() bool
 	ElrondSyncExecAPIErrorShouldFailExecution() bool
 	CryptoAPIErrorShouldFailExecution() bool
 	BigIntAPIErrorShouldFailExecution() bool
 	ExecuteAsyncCall(address []byte, data []byte, value []byte) error
+
+	AddError(err error, otherInfo ...string)
+	GetAllErrors() error
+
+	// TODO remove after implementing proper mocking of Wasmer instances; this is
+	// used for tests only
+	ReplaceInstanceBuilder(builder InstanceBuilder)
 }
 
+// BigIntContext defines the functionality needed for interacting with the big int context
 type BigIntContext interface {
 	StateStack
 
@@ -136,18 +168,20 @@ type BigIntContext interface {
 	GetThree(id1, id2, id3 int32) (*big.Int, *big.Int, *big.Int)
 }
 
+// OutputContext defines the functionality needed for interacting with the output context
 type OutputContext interface {
 	StateStack
 	PopMergeActiveState()
 	CensorVMOutput()
-	ResetGas()
 	AddToActiveState(rightOutput *vmcommon.VMOutput)
 
 	GetOutputAccount(address []byte) (*vmcommon.OutputAccount, bool)
+	GetOutputAccounts() map[string]*vmcommon.OutputAccount
 	DeleteOutputAccount(address []byte)
 	WriteLog(address []byte, topics [][]byte, data []byte)
-	TransferValueOnly(destination []byte, sender []byte, value *big.Int) error
+	TransferValueOnly(destination []byte, sender []byte, value *big.Int, checkPayable bool) error
 	Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, input []byte, callType vmcommon.CallType) error
+	TransferESDT(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callInput *vmcommon.ContractCallInput) (uint64, error)
 	SelfDestruct(address []byte, beneficiary []byte)
 	GetRefund() uint64
 	SetRefund(refund uint64)
@@ -158,19 +192,30 @@ type OutputContext interface {
 	ReturnData() [][]byte
 	ClearReturnData()
 	Finish(data []byte)
+	PrependFinish(data []byte)
 	GetVMOutput() *vmcommon.VMOutput
 	AddTxValueToAccount(address []byte, value *big.Int)
 	DeployCode(input CodeDeployInput)
 	CreateVMOutputInCaseOfError(err error) *vmcommon.VMOutput
 }
 
+// MeteringContext defines the functionality needed for interacting with the metering context
 type MeteringContext interface {
+	StateStack
+	PopMergeActiveState()
+
+	InitStateFromContractCallInput(input *vmcommon.VMInput)
 	SetGasSchedule(gasMap config.GasScheduleMap)
 	GasSchedule() *config.GasCost
 	UseGas(gas uint64)
 	FreeGas(gas uint64)
 	RestoreGas(gas uint64)
 	GasLeft() uint64
+	GasUsedForExecution() uint64
+	GasSpentByContract() uint64
+	GetGasForExecution() uint64
+	GetGasProvided() uint64
+	GetSCPrepareInitialCost() uint64
 	BoundGasLimit(value int64) uint64
 	BlockGasLimit() uint64
 	DeductInitialGasForExecution(contract []byte) error
@@ -179,19 +224,30 @@ type MeteringContext interface {
 	ComputeGasLockedForAsync() uint64
 	UseGasForAsyncStep() error
 	UseGasBounded(gasToUse uint64) error
-	UnlockGasIfAsyncCallback()
 	GetGasLocked() uint64
+	UpdateGasStateOnSuccess(vmOutput *vmcommon.VMOutput) error
+	UpdateGasStateOnFailure(vmOutput *vmcommon.VMOutput)
+	TrackGasUsedByBuiltinFunction(builtinInput *vmcommon.ContractCallInput, builtinOutput *vmcommon.VMOutput, postBuiltinInput *vmcommon.ContractCallInput)
 }
 
+// StorageStatus defines the states the storage can be in
 type StorageStatus int
 
 const (
+	// StorageUnchanged signals that the storage was not changed
 	StorageUnchanged StorageStatus = iota
+
+	// StorageModified signals that the storage has been modified
 	StorageModified
+
+	// StorageAdded signals that something was added to storage
 	StorageAdded
+
+	// StorageDeleted signals that something was removed from storage
 	StorageDeleted
 )
 
+// StorageContext defines the functionality needed for interacting with the storage context
 type StorageContext interface {
 	StateStack
 
@@ -201,12 +257,20 @@ type StorageContext interface {
 	GetStorage(key []byte) []byte
 	GetStorageUnmetered(key []byte) []byte
 	SetStorage(key []byte, value []byte) (StorageStatus, error)
+	SetProtectedStorage(key []byte, value []byte) (StorageStatus, error)
 }
 
+// AsyncCallInfoHandler defines the functionality for working with AsyncCallInfo
 type AsyncCallInfoHandler interface {
 	GetDestination() []byte
 	GetData() []byte
 	GetGasLimit() uint64
 	GetGasLocked() uint64
 	GetValueBytes() []byte
+}
+
+// InstanceBuilder defines the functionality needed to create Wasmer instances
+type InstanceBuilder interface {
+	NewInstanceWithOptions(contractCode []byte, options wasmer.CompilationOptions) (wasmer.InstanceHandler, error)
+	NewInstanceFromCompiledCodeWithOptions(compiledCode []byte, options wasmer.CompilationOptions) (wasmer.InstanceHandler, error)
 }

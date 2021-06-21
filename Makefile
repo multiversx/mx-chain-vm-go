@@ -1,6 +1,6 @@
 .PHONY: test test-short build arwen arwendebug clean
 
-ARWEN_VERSION := $(shell git describe --tags --long --dirty)
+ARWEN_VERSION := $(shell git describe --tags --long --dirty --always)
 
 clean:
 	go clean -cache -testcache

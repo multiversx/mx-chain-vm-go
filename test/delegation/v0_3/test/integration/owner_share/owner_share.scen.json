@@ -1,5 +1,6 @@
 {
     "name": "check that owner share argument works",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "externalSteps",
@@ -34,7 +35,7 @@
             "txId": "check-owner_total_stake-3",
             "tx": {
                 "from": "''someone_______________________s1",
-                "to": "''delegation_contract___________s1",
+                "to": "sc:delegation",
                 "value": "0",
                 "function": "getUserStake",
                 "arguments": [
@@ -56,7 +57,7 @@
             "txId": "check-total_stake-3",
             "tx": {
                 "from": "''someone_______________________s1",
-                "to": "''delegation_contract___________s1",
+                "to": "sc:delegation",
                 "value": "0",
                 "function": "totalStake",
                 "arguments": [],

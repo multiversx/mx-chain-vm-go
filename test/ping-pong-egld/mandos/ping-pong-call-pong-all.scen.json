@@ -1,0 +1,20 @@
+{
+    "name": "call pong all in order to send the funds back to everyone",
+    "gasSchedule": "v3",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "ping-pong-call-ping-second-user.scen.json"
+        },
+        {
+            "step": "setState",
+            "currentBlockInfo": {
+                "blockTimestamp": "123,781"
+            }
+        },
+        {
+            "step": "externalSteps",
+            "path": "ping-pong-call-pong-all.steps.json"
+        }
+    ]
+}

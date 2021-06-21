@@ -1,5 +1,6 @@
 {
     "name": "transferFrom_AllDistinct-StillNoOverflow",
+    "gasSchedule": "dummy",
     "steps": [
         {
             "step": "setState",
@@ -10,7 +11,7 @@
                     "storage": {},
                     "code": ""
                 },
-                "``busd__________________________s1": {
+                "sc:erc20": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
@@ -19,7 +20,7 @@
                         "``balance|``account_2_____________________s1": "0x0a",
                         "``total_supply": "0x010000000000000000000000000000000000000000000000000000000000000000"
                     },
-                    "code": "file:../output/simple-erc20.wasm"
+                    "code": "file:../output/erc20.wasm"
                 }
             }
         },
@@ -28,7 +29,7 @@
             "txId": "1",
             "tx": {
                 "from": "``account_1_____________________s1",
-                "to": "``busd__________________________s1",
+                "to": "sc:erc20",
                 "value": "0",
                 "function": "transferFrom",
                 "arguments": [
@@ -44,8 +45,8 @@
                 "status": "",
                 "logs": [
                     {
-                        "address": "``busd__________________________s1",
-                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000001",
+                        "address": "sc:erc20",
+                        "identifier": "str:transfer",
                         "topics": [
                             "``coin_holder_1_________________sx",
                             "``account_2_____________________s1"
@@ -66,14 +67,14 @@
                     "storage": {},
                     "code": ""
                 },
-                "``busd__________________________s1": {
+                "sc:erc20": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
                         "``balance|``account_2_____________________s1": "0x010000000000000000000000000000000000000000000000000000000000000000",
                         "``total_supply": "0x010000000000000000000000000000000000000000000000000000000000000000"
                     },
-                    "code": "file:../output/simple-erc20.wasm"
+                    "code": "file:../output/erc20.wasm"
                 }
             }
         }
