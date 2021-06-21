@@ -2237,6 +2237,74 @@ func TestExecution_CreateNewContract_Success(t *testing.T) {
 		})
 }
 
+func TestExecution_DeployNewContractFromExistingCode_Success(t *testing.T) {
+	sourceAddress := testcommon.MakeTestSCAddress("sourceAddress")
+	sourceCode := test.GetTestSCCode("init-correct", "../../")
+	generatedNewAddress := []byte("newAddress")
+
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(sourceAddress).
+				WithCode(sourceCode).
+				WithBalance(1000),
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCode("deployer-fromanother-contract", "../../")).
+				WithBalance(1000),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithFunction("deployCodeFromAnotherContract").
+			WithArguments(sourceAddress).
+			WithGasProvided(1_000_000).
+			Build()).
+		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.
+				Ok().
+				Code(generatedNewAddress, sourceCode).
+				CodeMetadata(generatedNewAddress, testcommon.DefaultCodeMetadata).
+				ReturnData(
+					// returned by the new deployed contract from the existing source code
+					[]byte("init successful"),
+					// returned by the deployer contract
+					[]byte("succ"),
+				)
+		})
+}
+
+func TestExecution_UpgradeContractFromExistingCode_Success(t *testing.T) {
+	initialAddress := testcommon.MakeTestSCAddress("destAddress")
+	initialCode := test.GetTestSCCode("init-simple", "../../")
+	sourceAddress := testcommon.MakeTestSCAddress("sourceAddress")
+	sourceCode := test.GetTestSCCode("init-correct", "../../")
+
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(sourceAddress).
+				WithCode(sourceCode).
+				WithBalance(1000),
+			test.CreateInstanceContract(initialAddress).
+				WithCode(initialCode).
+				WithBalance(1000),
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCode("upgrader-fromanother-contract", "../../")).
+				WithBalance(1000),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithFunction("upgradeCodeFromAnotherContract").
+			WithArguments(initialAddress, sourceAddress).
+			WithGasProvided(1_000_000).
+			Build()).
+		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.
+				Ok().
+				ReturnData(
+					// returned by the replaced contract code
+					[]byte("init successful"),
+				)
+		})
+}
+
 func TestExecution_CreateNewContract_Fail(t *testing.T) {
 	childCode := test.GetTestSCCode("init-correct", "../../")
 	l := len(childCode)

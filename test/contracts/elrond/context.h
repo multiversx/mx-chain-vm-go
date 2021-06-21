@@ -58,6 +58,26 @@ int createContract(
 		byte *initArgLengths,
 		byte *initArgs);
 
+int deployFromSourceContract(
+		long long gas,
+		byte *value,
+		byte *sourceContractAddress,
+		byte *codeMetadata,
+		byte *newAddress,
+		int numInitArgs,
+		byte *initArgLengths,
+		byte *initArgs);	
+
+void upgradeFromSourceContract(
+		byte *destContractAddress,
+		long long gas,
+		byte *value,
+		byte *sourceContractAddress,
+		byte *codeMetadata,
+		int numInitArgs,
+		byte *initArgLengths,
+		byte *initArgs);	
+
 // Return-related functions
 void finish(byte *data, int length);
 void int64finish(long long value);
