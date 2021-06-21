@@ -39,3 +39,18 @@ func TestEgldEsdtSwap(t *testing.T) {
 func TestPingPongEgld(t *testing.T) {
 	runAllTestsInFolder(t, "ping-pong-egld")
 }
+
+func TestRustAttestation(t *testing.T) {
+	if testing.Short() {
+		t.Skip("not a short test")
+	}
+
+	runAllTestsInFolder(t, "attestation-rust")
+}
+
+func TestCAttestation(t *testing.T) {
+	if testing.Short() {
+		t.Skip("not a short test")
+	}
+	runAllTestsInFolder(t, "attestation-c")
+}

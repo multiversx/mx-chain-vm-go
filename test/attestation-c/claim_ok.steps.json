@@ -1,0 +1,50 @@
+{
+    "name": "claim ok",
+    "steps": [
+        {
+            "step": "scCall",
+            "txId": "claim-ok",
+            "tx": {
+                "from": "address:owner",
+                "to": "sc:contract",
+                "value": "0",
+                "function": "claim",
+                "arguments": [],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "address:owner": {
+                    "nonce": "2",
+                    "balance": "500,000",
+                    "storage": {},
+                    "code": ""
+                },
+                "sc:contract": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {
+                        "str:REGISTRATION_COST": "500,000",
+                        "str:MAX_NONCE_DIFF": "1000",
+                        "str:TOTAL_ATTESTATORS": "1",
+                        "str:ATTESTATOR|address:attester": "3",
+                        "str:LIST_ATTESTATOR|u64:0": "address:attester",
+                        "str:USER|0x6d2ff32e31b14e2edbdfe411d3873edc90d77bd0a3b5779355686ff82a171a8d": "u8:3|0x18805c46852ee738c3daba511a465c4b42cbe6306a9491b037b8194bc7d6c13b|address:acc1|address:attester|u64:50|u32:11|str:secret_data"
+                    },
+                    "code": "file:attestation.wasm"
+                },
+                "+": ""
+            }
+        }
+    ]
+}
