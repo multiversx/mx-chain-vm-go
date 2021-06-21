@@ -2,15 +2,16 @@ package worldmock
 
 import (
 	"bytes"
-	"context"
 	"errors"
 	"fmt"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 	"github.com/ElrondNetwork/elrond-go/core"
 	"github.com/ElrondNetwork/elrond-go/data"
 	"github.com/ElrondNetwork/elrond-go/data/state"
 )
+
+var _ state.AccountsAdapter = (*MockAccountsAdapter)(nil)
 
 // ErrTrieHandlingNotImplemented indicates that no trie-related operations are
 // currently implemented.
@@ -74,9 +75,14 @@ func (m *MockAccountsAdapter) Commit() ([]byte, error) {
 	return nil, nil
 }
 
+// Close -
+func (m *MockAccountsAdapter) Close() error {
+	return nil
+}
+
 // JournalLen -
 func (m *MockAccountsAdapter) JournalLen() int {
-	return 1
+	return len(m.Snapshots) - 1
 }
 
 // RevertToSnapshot -
@@ -134,13 +140,13 @@ func (m *MockAccountsAdapter) CancelPrune(_ []byte, _ data.TriePruningIdentifier
 }
 
 // SnapshotState -
-func (m *MockAccountsAdapter) SnapshotState(_ []byte, _ context.Context) {
+func (m *MockAccountsAdapter) SnapshotState(_ []byte) {
 	snapshot := m.World.AcctMap.Clone()
 	m.Snapshots = append(m.Snapshots, snapshot)
 }
 
 // SetStateCheckpoint -
-func (m *MockAccountsAdapter) SetStateCheckpoint(_ []byte, _ context.Context) {
+func (m *MockAccountsAdapter) SetStateCheckpoint(_ []byte) {
 }
 
 // IsPruningEnabled -
@@ -149,12 +155,12 @@ func (m *MockAccountsAdapter) IsPruningEnabled() bool {
 }
 
 // GetAllLeaves -
-func (m *MockAccountsAdapter) GetAllLeaves(_ []byte, _ context.Context) (chan core.KeyValueHolder, error) {
+func (m *MockAccountsAdapter) GetAllLeaves(_ []byte) (chan core.KeyValueHolder, error) {
 	return nil, ErrTrieHandlingNotImplemented
 }
 
 // RecreateAllTries -
-func (m *MockAccountsAdapter) RecreateAllTries(_ []byte, _ context.Context) (map[string]data.Trie, error) {
+func (m *MockAccountsAdapter) RecreateAllTries(_ []byte) (map[string]data.Trie, error) {
 	return nil, ErrTrieHandlingNotImplemented
 }
 
