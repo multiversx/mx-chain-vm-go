@@ -297,7 +297,7 @@ func TestExecution_MultipleArwens_OverlappingContractInstanceData(t *testing.T) 
 	input.Function = get
 
 	host1, instanceRecorder1 := test.DefaultTestArwenForCallWithInstanceRecorderMock(t, code, nil)
-	_, _, _, _, runtimeContext1, _ := host1.GetContexts()
+	_, _, _, _, runtimeContext1, _, _ := host1.GetContexts()
 	runtimeContextMock := contextmock.NewRuntimeContextWrapper(&runtimeContext1)
 	runtimeContextMock.CleanWasmerInstanceFunc = func() {}
 	host1.SetRuntimeContext(runtimeContextMock)
@@ -314,7 +314,7 @@ func TestExecution_MultipleArwens_OverlappingContractInstanceData(t *testing.T) 
 	}
 
 	host2, instanceRecorder2 := test.DefaultTestArwenForCallWithInstanceRecorderMock(t, code, nil)
-	_, _, _, _, runtimeContext2, _ := host2.GetContexts()
+	_, _, _, _, runtimeContext2, _, _ := host2.GetContexts()
 	runtimeContextMock = contextmock.NewRuntimeContextWrapper(&runtimeContext2)
 	runtimeContextMock.CleanWasmerInstanceFunc = func() {}
 	runtimeContextMock.GetSCCodeFunc = func() ([]byte, error) {
@@ -345,7 +345,7 @@ func TestExecution_MultipleArwens_CleanInstanceWhileOthersAreRunning(t *testing.
 	host1Chan := make(chan string)
 
 	host1, _ := test.DefaultTestArwenForCall(t, code, nil)
-	_, _, _, _, runtimeContext1, _ := host1.GetContexts()
+	_, _, _, _, runtimeContext1, _, _ := host1.GetContexts()
 	runtimeContextMock := contextmock.NewRuntimeContextWrapper(&runtimeContext1)
 	runtimeContextMock.FunctionFunc = func() string {
 		interHostsChan <- "waitForHost2"
@@ -362,7 +362,7 @@ func TestExecution_MultipleArwens_CleanInstanceWhileOthersAreRunning(t *testing.
 	}()
 
 	host2, _ := test.DefaultTestArwenForCall(t, code, nil)
-	_, _, _, _, runtimeContext2, _ := host2.GetContexts()
+	_, _, _, _, runtimeContext2, _, _ := host2.GetContexts()
 	runtimeContextMock = contextmock.NewRuntimeContextWrapper(&runtimeContext2)
 	runtimeContextMock.FunctionFunc = func() string {
 		// wait to make sure host1 is running also
@@ -1538,7 +1538,7 @@ func TestExecution_ExecuteOnDestContext_GasRemaining(t *testing.T) {
 	host, _ := test.DefaultTestArwenForTwoSCs(t, parentCode, childCode, nil, nil)
 	host.InitState()
 
-	_, _, metering, output, runtime, storage := host.GetContexts()
+	_, _, metering, output, runtime, _, storage := host.GetContexts()
 	runtime.InitStateFromContractCallInput(input)
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
 	storage.SetAddress(runtime.GetSCAddress())

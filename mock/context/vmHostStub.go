@@ -44,7 +44,7 @@ type VMHostStub struct {
 	IsInterfaceNilCalled         func() bool
 
 	SetRuntimeContextCalled func(runtime arwen.RuntimeContext)
-	GetContextsCalled       func() (arwen.BigIntContext, arwen.BlockchainContext, arwen.MeteringContext, arwen.OutputContext, arwen.RuntimeContext, arwen.StorageContext)
+	GetContextsCalled       func() (arwen.BigIntContext, arwen.BlockchainContext, arwen.MeteringContext, arwen.OutputContext, arwen.RuntimeContext, arwen.AsyncContext, arwen.StorageContext)
 
 	CallArgsParserCalled func() arwen.CallArgsParser
 	AsyncCalled          func() arwen.AsyncContext
@@ -285,12 +285,13 @@ func (vhs *VMHostStub) GetContexts() (
 	arwen.MeteringContext,
 	arwen.OutputContext,
 	arwen.RuntimeContext,
+	arwen.AsyncContext,
 	arwen.StorageContext,
 ) {
 	if vhs.GetContextsCalled != nil {
 		return vhs.GetContextsCalled()
 	}
-	return nil, nil, nil, nil, nil, nil
+	return nil, nil, nil, nil, nil, nil, nil
 }
 
 // SetRuntimeContext mocked method

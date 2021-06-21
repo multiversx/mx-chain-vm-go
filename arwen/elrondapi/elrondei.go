@@ -97,7 +97,6 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-go/core"
-	"github.com/ElrondNetwork/elrond-go/core/parsers"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 	"github.com/ElrondNetwork/elrond-go/data/esdt"
 	"github.com/ElrondNetwork/elrond-go/testscommon/txDataBuilder"
@@ -600,8 +599,7 @@ func v1_3_blockHash(context unsafe.Pointer, nonce int64, resultOffset int32) int
 }
 
 func isBuiltInCall(data string, host arwen.VMHost) bool {
-	argParser := parsers.NewCallArgsParser()
-	functionName, _, _ := argParser.ParseData(data)
+	functionName, _, _ := host.CallArgsParser().ParseData(data)
 	return host.IsBuiltinFunctionName(functionName)
 }
 

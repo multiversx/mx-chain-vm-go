@@ -25,7 +25,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 		host.Clean()
 	}()
 
-	_, blockchain, metering, output, runtime, storage := host.GetContexts()
+	_, blockchain, metering, output, runtime, _, storage := host.GetContexts()
 
 	address, err := blockchain.NewAddress(input.CallerAddr)
 	if err != nil {
@@ -63,7 +63,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 func (host *vmHost) performCodeDeployment(input arwen.CodeDeployInput) (*vmcommon.VMOutput, error) {
 	log.Trace("performCodeDeployment", "address", input.ContractAddress, "len(code)", len(input.ContractCode), "metadata", input.ContractCodeMetadata)
 
-	_, _, metering, output, runtime, _ := host.GetContexts()
+	_, _, metering, output, runtime, _, _ := host.GetContexts()
 
 	err := metering.DeductInitialGasForDirectDeployment(input)
 	if err != nil {
@@ -101,7 +101,7 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 		host.Clean()
 	}()
 
-	_, _, metering, output, runtime, storage := host.GetContexts()
+	_, _, metering, output, runtime, _, storage := host.GetContexts()
 
 	runtime.InitStateFromContractCallInput(input)
 	metering.InitStateFromContractCallInput(&input.VMInput)
@@ -152,7 +152,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 		host.Clean()
 	}()
 
-	_, _, metering, output, runtime, storage := host.GetContexts()
+	_, _, metering, output, runtime, _, storage := host.GetContexts()
 
 	runtime.InitStateFromContractCallInput(input)
 	metering.InitStateFromContractCallInput(&input.VMInput)
@@ -263,7 +263,7 @@ func (host *vmHost) handleBuiltinFunctionCall(input *vmcommon.ContractCallInput)
 }
 
 func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, asyncInfo *arwen.AsyncContextInfo, err error) {
-	bigInt, _, metering, output, runtime, storage := host.GetContexts()
+	bigInt, _, metering, output, runtime, _, storage := host.GetContexts()
 	bigInt.PushState()
 	bigInt.InitState()
 
@@ -310,7 +310,7 @@ func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.Contra
 }
 
 func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOutput {
-	bigInt, _, metering, output, runtime, storage := host.GetContexts()
+	bigInt, _, metering, output, runtime, _, storage := host.GetContexts()
 
 	var vmOutput *vmcommon.VMOutput
 	if executeErr != nil {
@@ -357,7 +357,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 		return nil, arwen.ErrBuiltinCallOnSameContextDisallowed
 	}
 
-	bigInt, blockchain, metering, output, runtime, _ := host.GetContexts()
+	bigInt, blockchain, metering, output, runtime, _, _ := host.GetContexts()
 
 	// Back up the states of the contexts (except Storage, which isn't affected
 	// by ExecuteOnSameContext())
@@ -395,7 +395,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 }
 
 func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
-	bigInt, blockchain, metering, output, runtime, _ := host.GetContexts()
+	bigInt, blockchain, metering, output, runtime, _, _ := host.GetContexts()
 
 	if output.ReturnCode() != vmcommon.Ok || executeErr != nil {
 		// Execution failed: restore contexts as if the execution didn't happen.
@@ -449,7 +449,7 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newC
 		}
 	}()
 
-	_, blockchain, metering, output, runtime, _ := host.GetContexts()
+	_, blockchain, metering, output, runtime, _, _ := host.GetContexts()
 
 	codeDeployInput := arwen.CodeDeployInput{
 		ContractCode:         input.ContractCode,
@@ -529,7 +529,7 @@ func (host *vmHost) checkUpgradePermission(vmInput *vmcommon.ContractCallInput) 
 // executeUpgrade upgrades a contract indirectly (from another contract). This
 // function follows the convention of executeSmartContractCall().
 func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) error {
-	_, _, metering, output, runtime, _ := host.GetContexts()
+	_, _, metering, output, runtime, _, _ := host.GetContexts()
 
 	err := host.checkUpgradePermission(input)
 	if err != nil {
@@ -590,7 +590,7 @@ func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) error {
 // instance from the Runtime instance stack, nor does it restore the remaining
 // gas).
 func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
-	_, _, metering, output, runtime, _ := host.GetContexts()
+	_, _, metering, output, runtime, _, _ := host.GetContexts()
 
 	if host.isInitFunctionBeingCalled() && !input.AllowInitFunction {
 		return arwen.ErrInitFuncCalledInRun
@@ -655,7 +655,7 @@ func (host *vmHost) callSCMethodIndirect() error {
 // ExecuteESDTTransfer calls the process built in function with the given transfer for ESDT/ESDTNFT if nonce > 0
 // there are no NFTs with nonce == 0
 func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callType vmcommon.CallType) (*vmcommon.VMOutput, uint64, error) {
-	_, _, metering, _, runtime, _ := host.GetContexts()
+	_, _, metering, _, runtime, _, _ := host.GetContexts()
 
 	esdtTransferInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{

@@ -21,6 +21,7 @@ type VMHostMock struct {
 
 	BlockchainContext arwen.BlockchainContext
 	RuntimeContext    arwen.RuntimeContext
+	AsyncContext      arwen.AsyncContext
 	OutputContext     arwen.OutputContext
 	MeteringContext   arwen.MeteringContext
 	StorageContext    arwen.StorageContext
@@ -186,9 +187,10 @@ func (host *VMHostMock) GetContexts() (
 	arwen.MeteringContext,
 	arwen.OutputContext,
 	arwen.RuntimeContext,
+	arwen.AsyncContext,
 	arwen.StorageContext,
 ) {
-	return host.BigIntContext, host.BlockchainContext, host.MeteringContext, host.OutputContext, host.RuntimeContext, host.StorageContext
+	return host.BigIntContext, host.BlockchainContext, host.MeteringContext, host.OutputContext, host.RuntimeContext, host.AsyncContext, host.StorageContext
 }
 
 // SetRuntimeContext mocked method

@@ -13,12 +13,14 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-go/core/atomic"
+	"github.com/ElrondNetwork/elrond-go/core/parsers"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 var log = logger.GetOrCreate("arwen/host")
 
-// MaximumWasmerInstanceCount represents the maximum number of Wasmer instances that can be active at the same time
+// MaximumWasmerInstanceCount specifies the maximum number of allowed Wasmer
+// instances on the InstanceStack of the RuntimeContext
 var MaximumWasmerInstanceCount = uint64(10)
 
 // TryFunction corresponds to the try() part of a try / catch block
@@ -75,6 +77,7 @@ func NewArwenVM(
 		cryptoHook:               cryptoHook,
 		meteringContext:          nil,
 		runtimeContext:           nil,
+		asyncContext:             nil,
 		blockchainContext:        nil,
 		storageContext:           nil,
 		bigIntContext:            nil,
@@ -86,6 +89,7 @@ func NewArwenVM(
 		arwenV3EnableEpoch:       hostParameters.ArwenV3EnableEpoch,
 		dynGasLockEnableEpoch:    hostParameters.DynGasLockEnableEpoch,
 		eSDTFunctionsEnableEpoch: hostParameters.ArwenESDTFunctionsEnableEpoch,
+		callArgsParser:           parsers.NewCallArgsParser(),
 	}
 
 	var err error
@@ -130,6 +134,8 @@ func NewArwenVM(
 	if err != nil {
 		return nil, err
 	}
+
+	host.asyncContext = contexts.NewAsyncContext(host)
 
 	host.meteringContext, err = contexts.NewMeteringContext(host, hostParameters.GasSchedule, hostParameters.BlockGasLimit)
 	if err != nil {
@@ -238,6 +244,7 @@ func (host *vmHost) GetContexts() (
 	arwen.MeteringContext,
 	arwen.OutputContext,
 	arwen.RuntimeContext,
+	arwen.AsyncContext,
 	arwen.StorageContext,
 ) {
 	return host.bigIntContext,
@@ -245,6 +252,7 @@ func (host *vmHost) GetContexts() (
 		host.meteringContext,
 		host.outputContext,
 		host.runtimeContext,
+		host.asyncContext,
 		host.storageContext
 }
 
@@ -274,7 +282,9 @@ func (host *vmHost) initContexts() {
 	host.outputContext.InitState()
 	host.meteringContext.InitState()
 	host.runtimeContext.InitState()
+	host.asyncContext.InitState()
 	host.storageContext.InitState()
+	host.blockchainContext.InitState()
 	host.ethInput = nil
 }
 
@@ -284,7 +294,9 @@ func (host *vmHost) ClearContextStateStack() {
 	host.outputContext.ClearStateStack()
 	host.meteringContext.ClearStateStack()
 	host.runtimeContext.ClearStateStack()
+	host.asyncContext.ClearStateStack()
 	host.storageContext.ClearStateStack()
+	host.blockchainContext.ClearStateStack()
 }
 
 // Clean closes the currently running Wasmer instance
