@@ -17,6 +17,8 @@ import (
 
 var fuzz = flag.Bool("fuzz", false, "Enable fuzz test")
 
+var seedFlag = flag.Int64("seed", 0, "Random seed, use it to replay fuzz scenarios")
+
 func newExecutorWithPaths() *fuzzDexExecutor {
 	pwd, err := os.Getwd()
 	if err != nil {
@@ -48,7 +50,16 @@ func TestFuzzDex_v0_1(t *testing.T) {
 
 	pfe := newExecutorWithPaths()
 	defer pfe.saveGeneratedScenario()
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+	var seed int64
+	if *seedFlag == 0 {
+		seed = time.Now().UnixNano()
+	} else {
+		seed = *seedFlag
+	}
+	pfe.log("Random seed: %d\n", seed)
+	r := rand.New(rand.NewSource(seed))
+	r.Seed(seed)
 
 	err := pfe.init(
 		&fuzzDexExecutorInitArgs{
