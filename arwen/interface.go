@@ -31,6 +31,7 @@ type VMHost interface {
 	Crypto() crypto.VMCrypto
 	Blockchain() BlockchainContext
 	Runtime() RuntimeContext
+	Async() AsyncContext
 	BigInt() BigIntContext
 	Output() OutputContext
 	Metering() MeteringContext
@@ -54,6 +55,8 @@ type VMHost interface {
 	GetGasScheduleMap() config.GasScheduleMap
 	GetContexts() (BigIntContext, BlockchainContext, MeteringContext, OutputContext, RuntimeContext, StorageContext)
 	SetRuntimeContext(runtime RuntimeContext)
+
+	CallArgsParser() CallArgsParser
 
 	InitState()
 }
@@ -82,7 +85,7 @@ type BlockchainContext interface {
 	GetCodeHash(addr []byte) []byte
 	GetCode(addr []byte) ([]byte, error)
 	GetCodeSize(addr []byte) (int32, error)
-	BlockHash(number int64) []byte
+	BlockHash(number uint64) []byte
 	GetOwnerAddress() ([]byte, error)
 	GetShardOfAddress(addr []byte) uint32
 	IsSmartContract(addr []byte) bool
@@ -124,7 +127,7 @@ type RuntimeContext interface {
 	SetAsyncCallInfo(asyncCallInfo *AsyncCallInfo)
 	AddAsyncContextCall(contextIdentifier []byte, asyncCall *AsyncGeneratedCall) error
 	GetAsyncContextInfo() *AsyncContextInfo
-	GetAsyncContext(contextIdentifier []byte) (*AsyncContext, error)
+	GetAsyncContext(contextIdentifier []byte) (*OldAsyncContext, error)
 	RunningInstancesCount() uint64
 	IsFunctionImported(name string) bool
 	IsWarmInstance() bool
@@ -152,6 +155,10 @@ type RuntimeContext interface {
 
 	AddError(err error, otherInfo ...string)
 	GetAllErrors() error
+
+	ValidateCallbackName(callbackName string) error
+	HasFunction(functionName string) bool
+	GetPrevTxHash() []byte
 
 	// TODO remove after implementing proper mocking of Wasmer instances; this is
 	// used for tests only
@@ -273,4 +280,28 @@ type AsyncCallInfoHandler interface {
 type InstanceBuilder interface {
 	NewInstanceWithOptions(contractCode []byte, options wasmer.CompilationOptions) (wasmer.InstanceHandler, error)
 	NewInstanceFromCompiledCodeWithOptions(compiledCode []byte, options wasmer.CompilationOptions) (wasmer.InstanceHandler, error)
+}
+
+type AsyncContext interface {
+	StateStack
+
+	InitStateFromInput(input *vmcommon.ContractCallInput)
+	HasPendingCallGroups() bool
+	IsComplete() bool
+	GetCallGroup(groupID string) (*AsyncCallGroup, bool)
+	SetGroupCallback(groupID string, callbackName string, data []byte, gas uint64) error
+	PostprocessCrossShardCallback() error
+	GetCallerAddress() []byte
+	GetReturnData() []byte
+	SetReturnData(data []byte)
+	GetGasPrice() uint64
+
+	Execute() error
+	RegisterAsyncCall(groupID string, call *AsyncCall) error
+	RegisterLegacyAsyncCall(address []byte, data []byte, value []byte) error
+	UpdateCurrentCallStatus() (*AsyncCall, error)
+
+	Load() error
+	Save() error
+	Delete() error
 }

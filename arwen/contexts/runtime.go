@@ -82,7 +82,7 @@ func (context *runtimeContext) InitState() {
 	context.readOnly = false
 	context.asyncCallInfo = nil
 	context.asyncContextInfo = &arwen.AsyncContextInfo{
-		AsyncContextMap: make(map[string]*arwen.AsyncContext),
+		AsyncContextMap: make(map[string]*arwen.OldAsyncContext),
 	}
 	context.errors = nil
 
@@ -298,7 +298,7 @@ func (context *runtimeContext) InitStateFromContractCallInput(input *vmcommon.Co
 	// Reset async map for initial state
 	context.asyncContextInfo = &arwen.AsyncContextInfo{
 		CallerAddr:      input.CallerAddr,
-		AsyncContextMap: make(map[string]*arwen.AsyncContext),
+		AsyncContextMap: make(map[string]*arwen.OldAsyncContext),
 	}
 
 	logRuntime.Trace("init state from call input",
@@ -787,7 +787,7 @@ func (context *runtimeContext) AddAsyncContextCall(contextIdentifier []byte, asy
 	_, ok := context.asyncContextInfo.AsyncContextMap[string(contextIdentifier)]
 	currentContextMap := context.asyncContextInfo.AsyncContextMap
 	if !ok {
-		currentContextMap[string(contextIdentifier)] = &arwen.AsyncContext{
+		currentContextMap[string(contextIdentifier)] = &arwen.OldAsyncContext{
 			AsyncCalls: make([]*arwen.AsyncGeneratedCall, 0),
 		}
 	}
@@ -804,7 +804,7 @@ func (context *runtimeContext) GetAsyncContextInfo() *arwen.AsyncContextInfo {
 }
 
 // GetAsyncContext returns the async context mapped to the given context identifier.
-func (context *runtimeContext) GetAsyncContext(contextIdentifier []byte) (*arwen.AsyncContext, error) {
+func (context *runtimeContext) GetAsyncContext(contextIdentifier []byte) (*arwen.OldAsyncContext, error) {
 	asyncContext, ok := context.asyncContextInfo.AsyncContextMap[string(contextIdentifier)]
 	if !ok {
 		return nil, arwen.ErrAsyncContextDoesNotExist
@@ -940,3 +940,32 @@ func (context *runtimeContext) GetAllErrors() error {
 // TODO remove after implementing proper mocking of Wasmer instances; this is
 // used for tests only
 // func (context *runtimeContext) SetWarmInstance(address []byte, instanc e
+
+// ValidateCallbackName verifies whether the provided function name may be used as AsyncCall callback
+func (context *runtimeContext) ValidateCallbackName(callbackName string) error {
+	err := context.validator.verifyValidFunctionName(callbackName)
+	if err != nil {
+		return arwen.ErrInvalidFunctionName
+	}
+	if callbackName == arwen.InitFunctionName {
+		return arwen.ErrInvalidFunctionName
+	}
+	if context.host.IsBuiltinFunctionName(callbackName) {
+		return arwen.ErrCannotUseBuiltinAsCallback
+	}
+	if !context.HasFunction(callbackName) {
+		return arwen.ErrFuncNotFound
+	}
+
+	return nil
+}
+
+func (context *runtimeContext) HasFunction(functionName string) bool {
+	_, ok := context.instance.GetExports()[functionName]
+	return ok
+}
+
+// GetPrevTxHash returns the hash of the previous transaction, in the case of async calls, as specified by the current VMInput.
+func (context *runtimeContext) GetPrevTxHash() []byte {
+	return context.vmInput.PrevTxHash
+}

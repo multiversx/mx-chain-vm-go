@@ -321,7 +321,7 @@ func (r *RuntimeContextMock) GetAsyncContextInfo() *arwen.AsyncContextInfo {
 }
 
 // GetAsyncContext mocked method
-func (r *RuntimeContextMock) GetAsyncContext(_ []byte) (*arwen.AsyncContext, error) {
+func (r *RuntimeContextMock) GetAsyncContext(_ []byte) (*arwen.OldAsyncContext, error) {
 	return nil, nil
 }
 
@@ -340,5 +340,20 @@ func (r *RuntimeContextMock) AddError(err error, otherInfo ...string) {
 
 // GetAllErrors mocked method
 func (r *RuntimeContextMock) GetAllErrors() error {
+	return nil
+}
+
+// ValidateCallbackName mocked method
+func (r *RuntimeContextMock) ValidateCallbackName(callbackName string) error {
+	return nil
+}
+
+// HasFunction mocked method
+func (r *RuntimeContextMock) HasFunction(functionName string) bool {
+	return false
+}
+
+// GetPrevTxHash mocked method
+func (r *RuntimeContextMock) GetPrevTxHash() []byte {
 	return nil
 }

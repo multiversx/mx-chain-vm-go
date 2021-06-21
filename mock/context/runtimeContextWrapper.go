@@ -62,7 +62,7 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetAsyncContextInfoFunc func() *arwen.AsyncContextInfo
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	GetAsyncContextFunc func(contextIdentifier []byte) (*arwen.AsyncContext, error)
+	GetAsyncContextFunc func(contextIdentifier []byte) (*arwen.OldAsyncContext, error)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	RunningInstancesCountFunc func() uint64
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
@@ -235,7 +235,7 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *Runtim
 		return runtimeWrapper.runtimeContext.GetAsyncContextInfo()
 	}
 
-	runtimeWrapper.GetAsyncContextFunc = func(contextIdentifier []byte) (*arwen.AsyncContext, error) {
+	runtimeWrapper.GetAsyncContextFunc = func(contextIdentifier []byte) (*arwen.OldAsyncContext, error) {
 		return runtimeWrapper.runtimeContext.GetAsyncContext(contextIdentifier)
 	}
 
@@ -496,7 +496,7 @@ func (contextWrapper *RuntimeContextWrapper) GetAsyncContextInfo() *arwen.AsyncC
 }
 
 // GetAsyncContext calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) GetAsyncContext(contextIdentifier []byte) (*arwen.AsyncContext, error) {
+func (contextWrapper *RuntimeContextWrapper) GetAsyncContext(contextIdentifier []byte) (*arwen.OldAsyncContext, error) {
 	return contextWrapper.GetAsyncContextFunc(contextIdentifier)
 }
 
@@ -658,4 +658,19 @@ func (contextWrapper *RuntimeContextWrapper) PopDiscard() {
 // ClearStateStack calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) ClearStateStack() {
 	contextWrapper.ClearStateStackFunc()
+}
+
+// ValidateCallbackName calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) ValidateCallbackName(callbackName string) error {
+	return contextWrapper.ValidateCallbackName(callbackName)
+}
+
+// HasFunction calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) HasFunction(functionName string) bool {
+	return contextWrapper.HasFunction(functionName)
+}
+
+// GetPrevTxHash calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) GetPrevTxHash() []byte {
+	return contextWrapper.GetPrevTxHash()
 }

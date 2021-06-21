@@ -14,65 +14,65 @@ import (
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
-func (host *vmHost) handleAsyncCallBreakpoint() error {
-	log.Trace("async call begin")
-	runtime := host.Runtime()
-	runtime.SetRuntimeBreakpointValue(arwen.BreakpointNone)
+// func (host *vmHost) handleAsyncCallBreakpoint() error {
+// 	log.Trace("async call begin")
+// 	runtime := host.Runtime()
+// 	runtime.SetRuntimeBreakpointValue(arwen.BreakpointNone)
 
-	asyncCallInfo := runtime.GetAsyncCallInfo()
-	execMode, err := host.determineAsyncCallExecutionMode(asyncCallInfo)
-	if err != nil {
-		log.Trace("async call failed", "error", err)
-		return err
-	}
+// 	asyncCallInfo := runtime.GetAsyncCallInfo()
+// 	execMode, err := host.determineAsyncCallExecutionMode(asyncCallInfo)
+// 	if err != nil {
+// 		log.Trace("async call failed", "error", err)
+// 		return err
+// 	}
 
-	log.Trace("async call", "execMode", execMode)
+// 	log.Trace("async call", "execMode", execMode)
 
-	if execMode == arwen.AsyncUnknown {
-		err = host.sendAsyncCallToDestination(asyncCallInfo)
-		if err != nil {
-			log.Trace("async call failed: send cross-shard", "error", err)
-		}
-		return err
-	}
+// 	if execMode == arwen.AsyncUnknown {
+// 		err = host.sendAsyncCallToDestination(asyncCallInfo)
+// 		if err != nil {
+// 			log.Trace("async call failed: send cross-shard", "error", err)
+// 		}
+// 		return err
+// 	}
 
-	// Cross-shard calls for built-in functions must be executed in both the
-	// sender and destination shards.
-	if execMode == arwen.AsyncBuiltinFuncCrossShard {
-		vmOutput, err := host.executeSyncDestinationCall(asyncCallInfo)
-		if vmOutput != nil && err != nil {
-			log.Trace("async call failed: sync built-in", "error", err,
-				"retCode", vmOutput.ReturnCode,
-				"message", vmOutput.ReturnMessage)
-		}
-		return err
-	}
+// 	// Cross-shard calls for built-in functions must be executed in both the
+// 	// sender and destination shards.
+// 	if execMode == arwen.AsyncBuiltinFuncCrossShard {
+// 		vmOutput, err := host.executeSyncDestinationCall(asyncCallInfo)
+// 		if vmOutput != nil && err != nil {
+// 			log.Trace("async call failed: sync built-in", "error", err,
+// 				"retCode", vmOutput.ReturnCode,
+// 				"message", vmOutput.ReturnMessage)
+// 		}
+// 		return err
+// 	}
 
-	if execMode == arwen.ESDTTransferOnCallBack {
-		// return but keep async call info
-		host.outputContext.PrependFinish(asyncCallInfo.Data)
-		log.Trace("esdt transfer on callback")
+// 	if execMode == arwen.ESDTTransferOnCallBack {
+// 		// return but keep async call info
+// 		host.outputContext.PrependFinish(asyncCallInfo.Data)
+// 		log.Trace("esdt transfer on callback")
 
-		// The contract wants to send ESDT back to its original caller
-		// via a reversed async call. The reversed async call will not have a
-		// callback, therefore the gas locked for callback execution must be
-		// restored.
-		host.Metering().RestoreGas(asyncCallInfo.GetGasLocked())
-		return nil
-	}
+// 		// The contract wants to send ESDT back to its original caller
+// 		// via a reversed async call. The reversed async call will not have a
+// 		// callback, therefore the gas locked for callback execution must be
+// 		// restored.
+// 		host.Metering().RestoreGas(asyncCallInfo.GetGasLocked())
+// 		return nil
+// 	}
 
-	// Start calling the destination SC, synchronously.
-	destinationVMOutput, destinationErr := host.executeSyncDestinationCall(asyncCallInfo)
+// 	// Start calling the destination SC, synchronously.
+// 	destinationVMOutput, destinationErr := host.executeSyncDestinationCall(asyncCallInfo)
 
-	callbackVMOutput, callBackErr := host.executeSyncCallbackCall(asyncCallInfo, destinationVMOutput, destinationErr)
+// 	callbackVMOutput, callBackErr := host.executeSyncCallbackCall(asyncCallInfo, destinationVMOutput, destinationErr)
 
-	err = host.processCallbackVMOutput(callbackVMOutput, callBackErr)
-	if err != nil {
-		return err
-	}
+// 	err = host.processCallbackVMOutput(callbackVMOutput, callBackErr)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func isESDTTransferOnReturnDataWithNoAdditionalData(destinationVMOutput *vmcommon.VMOutput) (bool, string, [][]byte) {
 	if len(destinationVMOutput.ReturnData) == 0 {
@@ -595,7 +595,7 @@ func (host *vmHost) saveCrossShardCalls(asyncInfo *arwen.AsyncContextInfo) error
 	crossMap := &arwen.AsyncContextInfo{
 		CallerAddr:      asyncInfo.CallerAddr,
 		ReturnData:      asyncInfo.ReturnData,
-		AsyncContextMap: make(map[string]*arwen.AsyncContext),
+		AsyncContextMap: make(map[string]*arwen.OldAsyncContext),
 	}
 
 	for contextIdentifier, asyncContext := range asyncInfo.AsyncContextMap {
@@ -603,7 +603,7 @@ func (host *vmHost) saveCrossShardCalls(asyncInfo *arwen.AsyncContextInfo) error
 			if !host.canExecuteSynchronously(asyncCall.Destination, asyncCall.Data) {
 				_, ok := crossMap.AsyncContextMap[contextIdentifier]
 				if !ok {
-					crossMap.AsyncContextMap[contextIdentifier] = &arwen.AsyncContext{
+					crossMap.AsyncContextMap[contextIdentifier] = &arwen.OldAsyncContext{
 						Callback:   asyncContext.Callback,
 						AsyncCalls: make([]*arwen.AsyncGeneratedCall, 0),
 					}
@@ -626,7 +626,7 @@ func (host *vmHost) getPendingAsyncCalls(asyncInfo *arwen.AsyncContextInfo) *arw
 	pendingMap := &arwen.AsyncContextInfo{
 		CallerAddr:      asyncInfo.CallerAddr,
 		ReturnData:      asyncInfo.ReturnData,
-		AsyncContextMap: make(map[string]*arwen.AsyncContext),
+		AsyncContextMap: make(map[string]*arwen.OldAsyncContext),
 	}
 
 	for contextIdentifier, asyncContext := range asyncInfo.AsyncContextMap {
@@ -637,7 +637,7 @@ func (host *vmHost) getPendingAsyncCalls(asyncInfo *arwen.AsyncContextInfo) *arw
 
 			_, ok := pendingMap.AsyncContextMap[contextIdentifier]
 			if !ok {
-				pendingMap.AsyncContextMap[contextIdentifier] = &arwen.AsyncContext{
+				pendingMap.AsyncContextMap[contextIdentifier] = &arwen.OldAsyncContext{
 					Callback:   asyncContext.Callback,
 					AsyncCalls: make([]*arwen.AsyncGeneratedCall, 0),
 				}

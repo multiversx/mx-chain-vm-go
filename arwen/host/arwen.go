@@ -36,6 +36,7 @@ type vmHost struct {
 
 	blockchainContext arwen.BlockchainContext
 	runtimeContext    arwen.RuntimeContext
+	asyncContext      arwen.AsyncContext
 	outputContext     arwen.OutputContext
 	meteringContext   arwen.MeteringContext
 	storageContext    arwen.StorageContext
@@ -59,6 +60,8 @@ type vmHost struct {
 
 	eSDTFunctionsEnableEpoch uint32
 	flagESDTFunctions        atomic.Flag
+
+	callArgsParser arwen.CallArgsParser
 }
 
 // NewArwenVM creates a new Arwen vmHost
@@ -438,4 +441,14 @@ func (host *vmHost) GetRuntimeErrors() error {
 		return host.runtimeContext.GetAllErrors()
 	}
 	return nil
+}
+
+// CallArgsParser returns the CallArgsParser instance of the host
+func (host *vmHost) CallArgsParser() arwen.CallArgsParser {
+	return host.callArgsParser
+}
+
+// Async returns the AsyncContext instance of the host
+func (host *vmHost) Async() arwen.AsyncContext {
+	return host.asyncContext
 }

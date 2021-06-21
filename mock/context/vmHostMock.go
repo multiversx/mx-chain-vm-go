@@ -195,3 +195,13 @@ func (host *VMHostMock) GetContexts() (
 func (host *VMHostMock) SetRuntimeContext(runtime arwen.RuntimeContext) {
 	host.RuntimeContext = runtime
 }
+
+// CallArgsParser mocked method
+func (host *VMHostMock) CallArgsParser() arwen.CallArgsParser {
+	return nil
+}
+
+// Async mocked method
+func (host *VMHostMock) Async() arwen.AsyncContext {
+	return nil
+}

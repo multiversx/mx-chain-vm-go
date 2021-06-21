@@ -831,60 +831,68 @@ func (host *vmHost) callInitFunction() error {
 
 func (host *vmHost) callSCMethod() error {
 	runtime := host.Runtime()
+	vmInput := runtime.GetVMInput()
+	async := host.Async()
+	callType := vmInput.CallType
 
-	log.Trace("call SC method")
-
-	// TODO host.verifyAllowedFunctionCall() performs some checks, but then the
-	// function itself is changed by host.getFunctionByCallType(). Order must be
-	// reversed, and `getFunctionByCallType()` must be decomposed into smaller functions.
-
-	err := host.verifyAllowedFunctionCall()
-	if err != nil {
-		log.Trace("call SC method failed", "error", err)
-		return err
-	}
-
-	callType := runtime.GetVMInput().CallType
-	function, err := host.getFunctionByCallType(callType)
-	if err != nil {
-		if callType == vmcommon.AsynchronousCallBack && errors.Is(err, arwen.ErrNilCallbackFunction) {
-			err = host.processCallbackStack()
+	if callType == vmcommon.AsynchronousCallBack {
+		async.Load()
+		asyncCall, err := async.UpdateCurrentCallStatus()
+		if err != nil {
+			err = async.PostprocessCrossShardCallback()
 			if err != nil {
 				log.Trace("call SC method failed", "error", err)
 			}
-
 			return err
 		}
-		log.Trace("call SC method failed", "error", err)
-		return err
+
+		runtime.SetCustomCallFunction(asyncCall.GetCallbackName())
 	}
 
-	_, err = function()
-	if err != nil {
-		err = host.handleBreakpointIfAny(err)
-	}
-	if err == nil {
-		err = host.checkFinalGasAfterExit()
-	}
-	if err != nil {
-		log.Trace("call SC method failed", "error", err)
-		return err
+	// TODO refactor this, and apply this condition in other places where a
+	// function is called
+	var err error
+	if runtime.Function() != "" {
+		err = host.verifyAllowedFunctionCall()
+		if err != nil {
+			log.Trace("call SC method failed", "error", err)
+			return err
+		}
+
+		function, err := runtime.GetFunctionToCall()
+		if err != nil {
+			log.Trace("call SC method failed", "error", err)
+			return err
+		}
+
+		_, err = function()
+		if err != nil {
+			err = host.handleBreakpointIfAny(err)
+		}
+		if err == nil {
+			err = host.checkFinalGasAfterExit()
+		}
+		if err != nil {
+			log.Trace("call SC method failed", "error", err)
+			return err
+		}
+
+		err = async.Execute()
+		if err != nil {
+			log.Trace("call SC method failed", "error", err)
+			return err
+		}
 	}
 
 	switch callType {
+	case vmcommon.DirectCall:
+		break
 	case vmcommon.AsynchronousCall:
-		pendingMap, paiErr := host.processAsyncInfo(runtime.GetAsyncContextInfo())
-		if paiErr != nil {
-			log.Trace("call SC method failed", "error", paiErr)
-			return paiErr
-		}
-		if len(pendingMap.AsyncContextMap) == 0 {
-			err = host.sendCallbackToCurrentCaller()
-		}
+		err = host.sendAsyncCallbackToCaller()
 	case vmcommon.AsynchronousCallBack:
-		err = host.processCallbackStack()
+		err = async.PostprocessCrossShardCallback()
 	default:
-		_, err = host.processAsyncInfo(runtime.GetAsyncContextInfo())
+		err = arwen.ErrUnknownCallType
 	}
 
 	if err != nil {

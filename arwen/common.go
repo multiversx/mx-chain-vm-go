@@ -31,9 +31,12 @@ const (
 type AsyncCallExecutionMode uint
 
 const (
+	// TODO matei-p remove this ?
 	// SyncCall indicates that the async call can be executed synchronously,
 	// with its corresponding callback
 	SyncCall AsyncCallExecutionMode = iota
+
+	SyncExecution AsyncCallExecutionMode = iota
 
 	// AsyncBuiltinFuncIntraShard indicates that the async call is an intra-shard built in function call
 	AsyncBuiltinFuncIntraShard
@@ -67,6 +70,10 @@ const AsyncDataPrefix = ProtectedStoragePrefix + "ASYNC"
 
 // AsyncCallStatus represents the different status an async call can have
 type AsyncCallStatus uint8
+
+// LegacyAsyncCallGroupID is the AsyncCallGroup identifier reserved for the
+// implementation of the legacy asyncCall() EEI function
+const LegacyAsyncCallGroupID = "LegacyAsync"
 
 const (
 	// AsyncCallPending is the status of an async call that awaits complete execution
@@ -169,9 +176,9 @@ type AsyncGeneratedCall struct {
 	ProvidedGas     uint64
 }
 
-// AsyncContext is a structure containing a group of async calls and a callback
+// OldAsyncContext is a structure containing a group of async calls and a callback
 //  that should be called when all these async calls are resolved
-type AsyncContext struct {
+type OldAsyncContext struct {
 	Callback   string
 	AsyncCalls []*AsyncGeneratedCall
 }
@@ -181,7 +188,7 @@ type AsyncContext struct {
 type AsyncContextInfo struct {
 	CallerAddr      []byte
 	ReturnData      []byte
-	AsyncContextMap map[string]*AsyncContext
+	AsyncContextMap map[string]*OldAsyncContext
 }
 
 // GetDestination returns the destination of an async call

@@ -45,6 +45,9 @@ type VMHostStub struct {
 
 	SetRuntimeContextCalled func(runtime arwen.RuntimeContext)
 	GetContextsCalled       func() (arwen.BigIntContext, arwen.BlockchainContext, arwen.MeteringContext, arwen.OutputContext, arwen.RuntimeContext, arwen.StorageContext)
+
+	CallArgsParserCalled func() arwen.CallArgsParser
+	AsyncCalled          func() arwen.AsyncContext
 }
 
 // GetVersion mocked method
@@ -295,4 +298,19 @@ func (vhs *VMHostStub) SetRuntimeContext(runtime arwen.RuntimeContext) {
 	if vhs.SetRuntimeContextCalled != nil {
 		vhs.SetRuntimeContextCalled(runtime)
 	}
+}
+
+// CallArgsParser mocked method
+func (vhs *VMHostStub) CallArgsParser() arwen.CallArgsParser {
+	if vhs.CallArgsParserCalled != nil {
+		return vhs.CallArgsParserCalled()
+	}
+	return nil
+}
+
+func (vhs *VMHostStub) Async() arwen.AsyncContext {
+	if vhs.AsyncCalled != nil {
+		return vhs.AsyncCalled()
+	}
+	return nil
 }

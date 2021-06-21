@@ -366,7 +366,7 @@ func TestBlockchainContext_BlockHash(t *testing.T) {
 	mockWorld.Err = nil
 
 	mockWorld.SetCurrentBlockHash([]byte("1234fa"))
-	hash = blockchainContext.BlockHash(-5)
+	hash = blockchainContext.BlockHash(3)
 	require.Nil(t, hash)
 
 	mockWorld.SetCurrentBlockHash([]byte("1234fb"))
