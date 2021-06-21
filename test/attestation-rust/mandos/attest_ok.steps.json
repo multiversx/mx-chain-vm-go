@@ -7,14 +7,14 @@
             "comment": "args are keccak256(keccak256(str:0123 456 789)), str:secret_data respectively",
             "tx": {
                 "from": "address:acc1",
-                "to": "address:contract",
+                "to": "sc:contract",
                 "value": "0",
                 "function": "attest",
                 "arguments": [
                     "0x6d2ff32e31b14e2edbdfe411d3873edc90d77bd0a3b5779355686ff82a171a8d",
                     "str:secret_data"
                 ],
-                "gasLimit": "100,000",
+                "gasLimit": "10,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -34,7 +34,7 @@
                     "storage": {},
                     "code": ""
                 },
-                "address:contract": {
+                "sc:contract": {
                     "nonce": "0",
                     "balance": "500,000",
                     "storage": {
