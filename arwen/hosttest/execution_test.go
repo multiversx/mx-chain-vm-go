@@ -2272,9 +2272,6 @@ func TestExecution_DeployNewContractFromExistingCode_Success(t *testing.T) {
 }
 
 func TestExecution_UpgradeContractFromExistingCode_Success(t *testing.T) {
-
-	arwen.SetLoggingForTests()
-
 	initialAddress := testcommon.MakeTestSCAddress("destAddress")
 	initialCode := test.GetTestSCCode("init-simple", "../../")
 	sourceAddress := testcommon.MakeTestSCAddress("sourceAddress")

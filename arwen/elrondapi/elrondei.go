@@ -1412,6 +1412,7 @@ func v1_3_upgradeFromSourceContract(
 	gasLimit int64,
 	valueOffset int32,
 	sourceContractAddressOffset int32,
+	codeMetadataOffset int32,
 	numArguments int32,
 	argumentsLengthOffset int32,
 	dataOffset int32,
@@ -1430,6 +1431,11 @@ func v1_3_upgradeFromSourceContract(
 
 	sourceContractAddress, err := runtime.MemLoad(sourceContractAddressOffset, arwen.AddressLen)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return
+	}
+
+	codeMetadata, err := runtime.MemLoad(codeMetadataOffset, arwen.CodeMetadataLen)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
 
@@ -1459,6 +1465,7 @@ func v1_3_upgradeFromSourceContract(
 		value,
 		data,
 		gasLimit,
+		codeMetadata,
 	)
 }
 
@@ -1466,10 +1473,11 @@ func v1_3_upgradeFromSourceContract(
 func UpgradeFromSourceContractWithTypedArgs(
 	host arwen.VMHost,
 	sourceContractAddress []byte,
-	destCountractAddress []byte,
+	destContractAddress []byte,
 	value []byte,
 	data [][]byte,
 	gasLimit int64,
+	codeMetadata []byte,
 ) {
 	runtime := host.Runtime()
 	blockchain := host.Blockchain()
@@ -1479,18 +1487,12 @@ func UpgradeFromSourceContractWithTypedArgs(
 		return
 	}
 
-	contract, err := blockchain.GetUserAccount(sourceContractAddress)
-	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return
-	}
-	codeMetadata := contract.GetCodeMetadata()
-
-	upgradeContract(host, destCountractAddress, code, codeMetadata, value, data, gasLimit)
+	upgradeContract(host, destContractAddress, code, codeMetadata, value, data, gasLimit)
 }
 
 func upgradeContract(
 	host arwen.VMHost,
-	destCountractAddress []byte,
+	destContractAddress []byte,
 	code []byte,
 	codeMetadata []byte,
 	value []byte,
@@ -1520,7 +1522,7 @@ func upgradeContract(
 	}
 
 	runtime.ExecuteAsyncCall(
-		destCountractAddress,
+		destContractAddress,
 		callData.ToBytes(),
 		value,
 	)
@@ -2725,7 +2727,7 @@ func v1_3_createContract(
 	}
 
 	valueAsInt := big.NewInt(0).SetBytes(value)
-	newAddress, err := createContractCall(sender, data, valueAsInt, metering, gasLimit, code, codeMetadata, host, runtime)
+	newAddress, err := createContract(sender, data, valueAsInt, metering, gasLimit, code, codeMetadata, host, runtime)
 
 	if err != nil {
 		return 1
@@ -2745,6 +2747,7 @@ func v1_3_deployFromSourceContract(
 	gasLimit int64,
 	valueOffset int32,
 	sourceContractAddressOffset int32,
+	codeMetadataOffset int32,
 	resultAddressOffset int32,
 	numArguments int32,
 	argumentsLengthOffset int32,
@@ -2767,6 +2770,11 @@ func v1_3_deployFromSourceContract(
 		return 1
 	}
 
+	codeMetadata, err := runtime.MemLoad(codeMetadataOffset, arwen.CodeMetadataLen)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
 	data, actualLen, err := getArgumentsFromMemory(
 		host,
 		numArguments,
@@ -2784,6 +2792,7 @@ func v1_3_deployFromSourceContract(
 	newAddress, err := DeployFromSourceContractWithTypedArgs(
 		host,
 		sourceContractAddress,
+		codeMetadata,
 		big.NewInt(0).SetBytes(value),
 		data,
 		gasLimit,
@@ -2805,6 +2814,7 @@ func v1_3_deployFromSourceContract(
 func DeployFromSourceContractWithTypedArgs(
 	host arwen.VMHost,
 	sourceContractAddress []byte,
+	codeMetadata []byte,
 	value *big.Int,
 	data [][]byte,
 	gasLimit int64,
@@ -2819,16 +2829,10 @@ func DeployFromSourceContractWithTypedArgs(
 		return nil, err
 	}
 
-	contract, err := blockchain.GetUserAccount(sourceContractAddress)
-	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return nil, err
-	}
-	codeMetadata := contract.GetCodeMetadata()
-
-	return createContractCall(sender, data, value, metering, gasLimit, code, codeMetadata, host, runtime)
+	return createContract(sender, data, value, metering, gasLimit, code, codeMetadata, host, runtime)
 }
 
-func createContractCall(
+func createContract(
 	sender []byte,
 	data [][]byte,
 	value *big.Int,
