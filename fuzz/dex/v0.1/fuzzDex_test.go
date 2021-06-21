@@ -1,18 +1,21 @@
 package dex
 
 import (
-	"errors"
 	"flag"
-	"github.com/stretchr/testify/assert"
 	"math/rand"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+
+	roulette "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/fuzz/weightedroulette"
 	mc "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/controller"
 	"github.com/stretchr/testify/require"
 )
+
+var fuzz = flag.Bool("fuzz", false, "Enable fuzz test")
 
 func newExecutorWithPaths() *fuzzDexExecutor {
 	pwd, err := os.Getwd()
@@ -39,7 +42,7 @@ func newExecutorWithPaths() *fuzzDexExecutor {
 }
 
 func TestFuzzDex_v0_1(t *testing.T) {
-	if !*flag.Bool("fuzz", false, "fuzz") {
+	if !*fuzz {
 		t.Skip("skipping test; only run with --fuzz argument")
 	}
 
@@ -115,61 +118,58 @@ func generateRandomEvent(
 	r *rand.Rand,
 	statistics *eventsStatistics,
 ) {
-	events := map[string]int{
-		"removeLiquidity": pfe.removeLiquidityProb,
-		"addLiquidity":    pfe.addLiquidityProb,
-		"swap":            pfe.swapProb,
-		"checkPairViews":  pfe.queryPairsProb,
-		"enterFarm":       pfe.enterFarmProb,
-		"exitFarm":        pfe.exitFarmProb,
-		"claimRewards":    pfe.claimRewardsProb,
-	}
-
-	event, err := weighted_random_choice(r, events)
-	assert.Nil(t, err)
-
-	switch event {
-	case "removeLiquidity":
-		err = pfe.removeLiquidity(r, statistics)
-		assert.Nil(t, err)
-	case "addLiquidity":
-		err = pfe.addLiquidity(r, statistics)
-		assert.Nil(t, err)
-	case "swap":
-		err = pfe.swap(r, statistics)
-		assert.Nil(t, err)
-	case "checkPairViews":
-		err = pfe.checkPairViews(r, statistics)
-		assert.Nil(t, err)
-	case "enterFarm":
-		err = pfe.enterFarm(r, statistics)
-		assert.Nil(t, err)
-	case "exitFarm":
-		err = pfe.exitFarm(r, statistics)
-		assert.Nil(t, err)
-	case "claimRewards":
-		err = pfe.claimRewards(r, statistics)
-		assert.Nil(t, err)
-	}
-}
-
-func weighted_random_choice(r *rand.Rand, choices map[string]int) (string, error) {
-	sumOfWeight := 0
-	for _, v := range choices {
-		sumOfWeight = sumOfWeight + v
-	}
-
-	pick := r.Intn(sumOfWeight)
-
-	current := 0
-	for k, v := range choices {
-		current += v
-		if current > pick {
-			return k, nil
-		}
-	}
-
-	return "", errors.New("no event")
+	roulette.RandomChoice(
+		r,
+		roulette.Outcome{
+			Weight: pfe.removeLiquidityProb,
+			Event: func() {
+				err := pfe.removeLiquidity(r, statistics)
+				assert.Nil(t, err)
+			},
+		},
+		roulette.Outcome{
+			Weight: pfe.addLiquidityProb,
+			Event: func() {
+				err := pfe.addLiquidity(r, statistics)
+				assert.Nil(t, err)
+			},
+		},
+		roulette.Outcome{
+			Weight: pfe.swapProb,
+			Event: func() {
+				err := pfe.swap(r, statistics)
+				assert.Nil(t, err)
+			},
+		},
+		roulette.Outcome{
+			Weight: pfe.queryPairsProb,
+			Event: func() {
+				err := pfe.checkPairViews(r, statistics)
+				assert.Nil(t, err)
+			},
+		},
+		roulette.Outcome{
+			Weight: pfe.enterFarmProb,
+			Event: func() {
+				err := pfe.enterFarm(r, statistics)
+				assert.Nil(t, err)
+			},
+		},
+		roulette.Outcome{
+			Weight: pfe.exitFarmProb,
+			Event: func() {
+				err := pfe.exitFarm(r, statistics)
+				assert.Nil(t, err)
+			},
+		},
+		roulette.Outcome{
+			Weight: pfe.claimRewardsProb,
+			Event: func() {
+				err := pfe.claimRewards(r, statistics)
+				assert.Nil(t, err)
+			},
+		},
+	)
 }
 
 func printStatistics(statistics *eventsStatistics, pfe *fuzzDexExecutor) {
