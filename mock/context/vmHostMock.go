@@ -112,13 +112,13 @@ func (host *VMHostMock) CreateNewContract(_ *vmcommon.ContractCreateInput) ([]by
 }
 
 // ExecuteOnSameContext mocked method
-func (host *VMHostMock) ExecuteOnSameContext(_ *vmcommon.ContractCallInput) (*arwen.AsyncContextInfo, error) {
-	return nil, nil
+func (host *VMHostMock) ExecuteOnSameContext(_ *vmcommon.ContractCallInput) error {
+	return nil
 }
 
 // ExecuteOnDestContext mocked method
-func (host *VMHostMock) ExecuteOnDestContext(_ *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *arwen.AsyncContextInfo, error) {
-	return nil, nil, nil
+func (host *VMHostMock) ExecuteOnDestContext(_ *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+	return nil, nil
 }
 
 // InitState mocked method

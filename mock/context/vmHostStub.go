@@ -29,8 +29,8 @@ type VMHostStub struct {
 	StorageCalled                     func() arwen.StorageContext
 	ExecuteESDTTransferCalled         func(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callType vmcommon.CallType) (*vmcommon.VMOutput, uint64, error)
 	CreateNewContractCalled           func(input *vmcommon.ContractCreateInput) ([]byte, error)
-	ExecuteOnSameContextCalled        func(input *vmcommon.ContractCallInput) (*arwen.AsyncContextInfo, error)
-	ExecuteOnDestContextCalled        func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *arwen.AsyncContextInfo, error)
+	ExecuteOnSameContextCalled        func(input *vmcommon.ContractCallInput) error
+	ExecuteOnDestContextCalled        func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
 	GetAPIMethodsCalled               func() *wasmer.Imports
 	GetProtocolBuiltinFunctionsCalled func() vmcommon.FunctionNames
 	SetProtocolBuiltinFunctionsCalled func(vmcommon.FunctionNames)
@@ -185,19 +185,19 @@ func (vhs *VMHostStub) CreateNewContract(input *vmcommon.ContractCreateInput) ([
 }
 
 // ExecuteOnSameContext mocked method
-func (vhs *VMHostStub) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*arwen.AsyncContextInfo, error) {
+func (vhs *VMHostStub) ExecuteOnSameContext(input *vmcommon.ContractCallInput) error {
 	if vhs.ExecuteOnSameContextCalled != nil {
 		return vhs.ExecuteOnSameContextCalled(input)
 	}
-	return nil, nil
+	return nil
 }
 
 // ExecuteOnDestContext mocked method
-func (vhs *VMHostStub) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *arwen.AsyncContextInfo, error) {
+func (vhs *VMHostStub) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	if vhs.ExecuteOnDestContextCalled != nil {
 		return vhs.ExecuteOnDestContextCalled(input)
 	}
-	return nil, nil, nil
+	return nil, nil
 }
 
 // AreInSameShard mocked method

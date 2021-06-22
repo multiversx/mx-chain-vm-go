@@ -1035,7 +1035,7 @@ func TransferValueExecuteWithTypedArgs(
 
 	if host.AreInSameShard(sender, dest) && contractCallInput != nil && host.Blockchain().IsSmartContract(dest) {
 		logEEI.Trace("eGLD pre-transfer execution begin")
-		_, _, err = host.ExecuteOnDestContext(contractCallInput)
+		_, err = host.ExecuteOnDestContext(contractCallInput)
 		if err != nil {
 			logEEI.Trace("eGLD pre-transfer execution failed", "error", err)
 			return 1
@@ -1242,7 +1242,7 @@ func TransferESDTNFTExecuteWithTypedArgs(
 	if host.AreInSameShard(sender, dest) && contractCallInput != nil && host.Blockchain().IsSmartContract(dest) {
 		contractCallInput.GasProvided = gasLimitForExec
 		logEEI.Trace("ESDT post-transfer execution begin")
-		_, _, executeErr = host.ExecuteOnDestContext(contractCallInput)
+		_, executeErr = host.ExecuteOnDestContext(contractCallInput)
 		if executeErr != nil {
 			logEEI.Trace("ESDT post-transfer execution failed", "error", executeErr)
 			host.Blockchain().RevertToSnapshot(snapshotBeforeTransfer)
@@ -2352,7 +2352,7 @@ func ExecuteOnSameContextWithTypedArgs(
 		return 1
 	}
 
-	_, err = host.ExecuteOnSameContext(contractCallInput)
+	err = host.ExecuteOnSameContext(contractCallInput)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -2447,7 +2447,7 @@ func ExecuteOnDestContextWithTypedArgs(
 		return 1
 	}
 
-	_, _, err = host.ExecuteOnDestContext(contractCallInput)
+	_, err = host.ExecuteOnDestContext(contractCallInput)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -2546,7 +2546,7 @@ func ExecuteOnDestContextByCallerWithTypedArgs(
 		return 1
 	}
 
-	_, _, err = host.ExecuteOnDestContext(contractCallInput)
+	_, err = host.ExecuteOnDestContext(contractCallInput)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -2641,7 +2641,7 @@ func DelegateExecutionWithTypedArgs(
 		return 1
 	}
 
-	_, err = host.ExecuteOnSameContext(contractCallInput)
+	err = host.ExecuteOnSameContext(contractCallInput)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -2737,7 +2737,7 @@ func ExecuteReadOnlyWithTypedArguments(
 	}
 
 	runtime.SetReadOnly(true)
-	_, err = host.ExecuteOnSameContext(contractCallInput)
+	err = host.ExecuteOnSameContext(contractCallInput)
 	runtime.SetReadOnly(false)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1

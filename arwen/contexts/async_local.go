@@ -47,7 +47,7 @@ func (context *asyncContext) executeSyncCall(asyncCall *arwen.AsyncCall) error {
 		return err
 	}
 
-	vmOutput, _, err := context.host.ExecuteOnDestContext(destinationCallInput)
+	vmOutput, err := context.host.ExecuteOnDestContext(destinationCallInput)
 
 	// The vmOutput instance returned by host.ExecuteOnDestContext() is never nil,
 	// by design. Using it without checking for err is safe here.
@@ -80,7 +80,7 @@ func (context *asyncContext) executeSyncCallback(
 	gasConsumedForExecution := context.computeGasUsedInExecutionBeforeReset(callbackInput)
 	// used points should be reset before actually entering the callback execution
 	runtime.SetPointsUsed(0)
-	callbackVMOutput, _, callBackErr := context.host.ExecuteOnDestContext(callbackInput)
+	callbackVMOutput, callBackErr := context.host.ExecuteOnDestContext(callbackInput)
 
 	execMode := asyncCall.ExecutionMode
 	noErrorOnCallback := callBackErr == nil && callbackVMOutput.ReturnCode == vmcommon.Ok
@@ -111,7 +111,7 @@ func (context *asyncContext) executeCallGroupCallback(group *arwen.AsyncCallGrou
 	}
 
 	input := context.createGroupCallbackInput(group)
-	vmOutput, _, err := context.host.ExecuteOnDestContext(input)
+	vmOutput, err := context.host.ExecuteOnDestContext(input)
 	context.finishSyncExecution(vmOutput, err)
 }
 
@@ -131,7 +131,7 @@ func (context *asyncContext) executeSyncHalfOfBuiltinFunction(asyncCall *arwen.A
 		return err
 	}
 
-	vmOutput, _, err := context.host.ExecuteOnDestContext(destinationCallInput)
+	vmOutput, err := context.host.ExecuteOnDestContext(destinationCallInput)
 	if err != nil {
 		return err
 	}
@@ -155,7 +155,7 @@ func (context *asyncContext) executeSyncHalfOfBuiltinFunction(asyncCall *arwen.A
 // synchronously, already assuming the original caller is in the same shard
 func (context *asyncContext) executeSyncContextCallback() {
 	callbackCallInput := context.createContextCallbackInput()
-	callbackVMOutput, _, callBackErr := context.host.ExecuteOnDestContext(callbackCallInput)
+	callbackVMOutput, callBackErr := context.host.ExecuteOnDestContext(callbackCallInput)
 	context.finishSyncExecution(callbackVMOutput, callBackErr)
 }
 
