@@ -11,7 +11,6 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/math"
 	"github.com/ElrondNetwork/elrond-go-logger/check"
 	"github.com/ElrondNetwork/elrond-go/core"
-	"github.com/ElrondNetwork/elrond-go/core/parsers"
 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
@@ -142,7 +141,7 @@ func (host *vmHost) checkGasForGetCode(input *vmcommon.ContractCallInput, meteri
 	return nil
 }
 
-func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput) {
+func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) *vmcommon.VMOutput {
 	host.InitState()
 	defer func() {
 		errors := host.GetRuntimeErrors()
@@ -152,9 +151,10 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 		host.Clean()
 	}()
 
-	_, _, metering, output, runtime, _, storage := host.GetContexts()
+	_, _, metering, output, runtime, async, storage := host.GetContexts()
 
 	runtime.InitStateFromContractCallInput(input)
+	async.InitStateFromInput(input)
 	metering.InitStateFromContractCallInput(&input.VMInput)
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
 	storage.SetAddress(runtime.GetSCAddress())
@@ -188,7 +188,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 		return output.CreateVMOutputInCaseOfError(err)
 	}
 
-	vmOutput = output.GetVMOutput()
+	vmOutput := output.GetVMOutput()
 
 	log.Trace("doRunSmartContractCall finished",
 		"retCode", vmOutput.ReturnCode,
@@ -196,7 +196,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 		"data", vmOutput.ReturnData)
 
 	runtime.CleanWasmerInstance()
-	return
+	return vmOutput
 }
 
 func copyTxHashesFromContext(copyEnabled bool, runtime arwen.RuntimeContext, input *vmcommon.ContractCallInput) {
@@ -216,28 +216,25 @@ func copyTxHashesFromContext(copyEnabled bool, runtime arwen.RuntimeContext, inp
 
 }
 
-// ExecuteOnDestContext pushes each context to the corresponding stack
-// and initializes new contexts for executing the contract call with the given input
-func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, asyncInfo *arwen.AsyncContextInfo, err error) {
-	log.Trace("ExecuteOnDestContext", "caller", input.CallerAddr, "dest", input.RecipientAddr, "function", input.Function)
-
+func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 	scExecutionInput := input
 
 	blockchain := host.Blockchain()
 	blockchain.PushState()
 
+	var err error
+
 	if host.IsBuiltinFunctionName(input.Function) {
-		scExecutionInput, vmOutput, err = host.handleBuiltinFunctionCall(input)
+		scExecutionInput, err = host.handleBuiltinFunctionCall(input)
 		if err != nil {
 			blockchain.PopSetActiveState()
 			host.Runtime().AddError(err, input.Function)
-			vmOutput = host.Output().CreateVMOutputInCaseOfError(err)
-			return
+			return err
 		}
 	}
 
 	if scExecutionInput != nil {
-		vmOutput, asyncInfo, err = host.executeOnDestContextNoBuiltinFunction(scExecutionInput)
+		err = host.executeSmartContractCall(scExecutionInput)
 	}
 
 	if err != nil {
@@ -246,24 +243,24 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 		blockchain.PopDiscard()
 	}
 
-	return
+	return err
 }
 
-func (host *vmHost) handleBuiltinFunctionCall(input *vmcommon.ContractCallInput) (*vmcommon.ContractCallInput, *vmcommon.VMOutput, error) {
+func (host *vmHost) handleBuiltinFunctionCall(input *vmcommon.ContractCallInput) (*vmcommon.ContractCallInput, error) {
 	output := host.Output()
 	postBuiltinInput, builtinOutput, err := host.callBuiltinFunction(input)
 	if err != nil {
 		log.Trace("ExecuteOnDestContext builtin function", "error", err)
-		return nil, nil, err
+		return nil, err
 	}
 
 	output.AddToActiveState(builtinOutput)
 
-	return postBuiltinInput, builtinOutput, nil
+	return postBuiltinInput, nil
 }
 
-func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, asyncInfo *arwen.AsyncContextInfo, err error) {
-	bigInt, _, metering, output, runtime, _, storage := host.GetContexts()
+func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
+	bigInt, _, metering, output, runtime, async, storage := host.GetContexts()
 	bigInt.PushState()
 	bigInt.InitState()
 
@@ -274,19 +271,16 @@ func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.Contra
 	runtime.PushState()
 	runtime.InitStateFromContractCallInput(input)
 
+	// TODO async.LoadOrInit(), not just Init; the contract invoked here likely has a
+	// persisted AsyncContext of its own.
+	async.PushState()
+	async.InitStateFromInput(input)
+
 	metering.PushState()
 	metering.InitStateFromContractCallInput(&input.VMInput)
 
 	storage.PushState()
 	storage.SetAddress(runtime.GetSCAddress())
-
-	defer func() {
-		vmOutput = host.finishExecuteOnDestContext(err)
-
-		if err == nil && vmOutput.ReturnCode != vmcommon.Ok {
-			err = arwen.ErrExecutionFailed
-		}
-	}()
 
 	// Perform a value transfer to the called SC. If the execution fails, this
 	// transfer will not persist.
@@ -301,16 +295,22 @@ func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.Contra
 	err = host.execute(input)
 	if err != nil {
 		log.Trace("ExecuteOnDestContext execution", "error", err)
+		runtime.AddError(err, input.Function)
+		vmOutput = host.finishExecuteOnDestContext(err)
+		if err == nil && vmOutput.ReturnCode != vmcommon.Ok {
+			err = arwen.ErrExecutionFailed
+		}
 		return
 	}
 
-	asyncInfo = runtime.GetAsyncContextInfo()
-	_, err = host.processAsyncInfo(asyncInfo)
-	return
+	err = async.Execute()
+	runtime.AddError(err, input.Function)
+	vmOutput = host.finishExecuteOnDestContext(err)
+	return vmOutput, err
 }
 
 func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOutput {
-	bigInt, _, metering, output, runtime, _, storage := host.GetContexts()
+	bigInt, _, metering, output, runtime, async, storage := host.GetContexts()
 
 	var vmOutput *vmcommon.VMOutput
 	if executeErr != nil {
@@ -340,6 +340,8 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 	// Return to the caller context completely
 	runtime.PopSetActiveState()
 
+	async.PopSetActiveState()
+
 	// Restore remaining gas to the caller Wasmer instance
 	metering.RestoreGas(vmOutput.GasRemaining)
 
@@ -350,17 +352,17 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 
 // ExecuteOnSameContext executes the contract call with the given input
 // on the same runtime context. Some other contexts are backed up.
-func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asyncInfo *arwen.AsyncContextInfo, err error) {
+func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (err error) {
 	log.Trace("ExecuteOnSameContext", "function", input.Function)
 
 	if host.IsBuiltinFunctionName(input.Function) {
-		return nil, arwen.ErrBuiltinCallOnSameContextDisallowed
+		return arwen.ErrBuiltinCallOnSameContextDisallowed
 	}
 
 	bigInt, blockchain, metering, output, runtime, _, _ := host.GetContexts()
 
-	// Back up the states of the contexts (except Storage, which isn't affected
-	// by ExecuteOnSameContext())
+	// Back up the states of the contexts (except Storage and Async, which aren't
+	// affected by ExecuteOnSameContext())
 	bigInt.PushState()
 	output.PushState()
 
@@ -373,11 +375,6 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 
 	blockchain.PushState()
 
-	defer func() {
-		runtime.AddError(err, input.Function)
-		host.finishExecuteOnSameContext(err)
-	}()
-
 	// Perform a value transfer to the called SC. If the execution fails, this
 	// transfer will not persist.
 	err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue, false)
@@ -387,11 +384,13 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 
 	err = host.execute(input)
 	if err != nil {
-		return
+		runtime.AddError(err, input.Function)
+		host.finishExecuteOnSameContext(err)
+		return err
 	}
 
-	asyncInfo = runtime.GetAsyncContextInfo()
-	return
+	host.finishExecuteOnSameContext(nil)
+	return nil
 }
 
 func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
@@ -494,7 +493,7 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newC
 		AllowInitFunction: true,
 		VMInput:           input.VMInput,
 	}
-	_, _, err = host.ExecuteOnDestContext(initCallInput)
+	_, err = host.ExecuteOnDestContext(initCallInput)
 	if err != nil {
 		return
 	}
@@ -575,7 +574,7 @@ func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) error {
 	return nil
 }
 
-// execute executes an indirect call to a smart contract, assuming there is an
+// executeSmartContractCall executes an indirect call to a smart contract, assuming there is an
 // already-running Wasmer instance of another contract that has requested the
 // indirect call. This method creates a new Wasmer instance and pushes the
 // previous one onto the Runtime instance stack, but it will not pop the
@@ -589,7 +588,7 @@ func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) error {
 // upgrading (via host.executeUpgrade(), which also does not pop the previous
 // instance from the Runtime instance stack, nor does it restore the remaining
 // gas).
-func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
+func (host *vmHost) executeSmartContractCall(input *vmcommon.ContractCallInput) error {
 	_, _, metering, output, runtime, _, _ := host.GetContexts()
 
 	if host.isInitFunctionBeingCalled() && !input.AllowInitFunction {
@@ -949,12 +948,15 @@ func (host *vmHost) isSCExecutionAfterBuiltInFunc(
 	callType := vmInput.CallType
 	scCallOutTransfer := outAcc.OutputTransfers[0]
 
-	argParser := parsers.NewCallArgsParser()
+	argParser := host.CallArgsParser()
 	function, arguments, err := argParser.ParseData(string(scCallOutTransfer.Data))
 	if err != nil {
 		return nil, err
 	}
 
+	// TODO CurrentTxHash might equal PrevTxHash, because Arwen does not generate
+	// SCRs between async steps; analyze and fix this (e.g. create dummy SCRs
+	// just for hashing, or hash the VMInput itself)
 	newVMInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallerAddr:     vmInput.CallerAddr,
@@ -966,6 +968,7 @@ func (host *vmHost) isSCExecutionAfterBuiltInFunc(
 			GasLocked:      scCallOutTransfer.GasLocked,
 			OriginalTxHash: vmInput.OriginalTxHash,
 			CurrentTxHash:  vmInput.CurrentTxHash,
+			PrevTxHash:     vmInput.PrevTxHash,
 		},
 		RecipientAddr:     recipient,
 		Function:          function,
