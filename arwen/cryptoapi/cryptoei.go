@@ -22,7 +22,6 @@ package cryptoapi
 // extern int32_t v1_3_marshalCompressedEC(void *context, int32_t xPairHandle, int32_t yPairHandle, int32_t ecHandle, int32_t resultOffset);
 // extern int32_t v1_3_unmarshalCompressedEC(void *context, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t dataOffset, int32_t length);
 // extern int32_t v1_3_generateKeyEC(void *context, int32_t xPubKeyHandle, int32_t yPubKeyHandle, int32_t ecHandle, int32_t resultOffset);
-// extern int32_t v1_3_ellipticCurveNew(void *context, int32_t fieldOrderHandle, int32_t basePointOrderHandle, int32_t eqConstantHandle, int32_t xBasePointHandle, int32_t yBasePointHandle, int32_t sizeOfField);
 // extern int32_t v1_3_p224Ec(void *context);
 // extern int32_t v1_3_p256Ec(void *context);
 // extern int32_t v1_3_p384Ec(void *context);
@@ -129,11 +128,6 @@ func CryptoImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("generateKeyEC", v1_3_generateKeyEC, C.v1_3_generateKeyEC)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("ellipticCurveNew", v1_3_ellipticCurveNew, C.v1_3_ellipticCurveNew)
 	if err != nil {
 		return nil, err
 	}
@@ -824,30 +818,6 @@ func v1_3_generateKeyEC(
 	xPubKey.Set(xPubKeyGK)
 	yPubKey.Set(yPubKeyGK)
 	return 0
-}
-
-//export v1_3_ellipticCurveNew
-func v1_3_ellipticCurveNew(context unsafe.Pointer, fieldOrderHandle int32, basePointOrderHandle int32, eqConstantHandle int32, xBasePointHandle int32, yBasePointHandle int32, sizeOfField int32) int32 {
-	managedType := arwen.GetManagedTypesContext(context)
-	metering := arwen.GetMeteringContext(context)
-	runtime := arwen.GetRuntimeContext(context)
-
-	gasToUse := metering.GasSchedule().BigIntAPICost.EllipticCurveNew
-	metering.UseGas(gasToUse)
-
-	P, N, err1 := managedType.GetTwoBigInt(fieldOrderHandle, basePointOrderHandle)
-	B, Gx, err2 := managedType.GetTwoBigInt(eqConstantHandle, xBasePointHandle)
-	Gy, err3 := managedType.GetBigInt(yBasePointHandle)
-	if err1 != nil || err2 != nil || err3 != nil {
-		arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.BigIntAPIErrorShouldFailExecution())
-		return -1
-	}
-	if sizeOfField < 0 {
-		arwen.WithFault(arwen.ErrBadLowerBounds, context, runtime.BigIntAPIErrorShouldFailExecution())
-	}
-	curve := elliptic.CurveParams{P: P, N: N, B: B, Gx: Gx, Gy: Gy, BitSize: int(sizeOfField), Name: "EC"}
-
-	return managedType.PutEllipticCurve(&curve)
 }
 
 //export v1_3_p224Ec
