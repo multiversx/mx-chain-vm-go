@@ -2,9 +2,6 @@ package elrond_ethereum_bridge
 
 import "math/big"
 
-type Address string
-type EthAddress string
-type TokenIdentifier string
 type TransactionStatus int
 
 const (
@@ -16,56 +13,58 @@ const (
 )
 
 type ActorAddresses struct {
-	accounts          []Address
-	multisig          Address
-	priceAggregator   Address
-	egldEsdtSwap      Address
-	esdtSafe          Address
-	ethereumFeePrepay Address
-	multiTransferEsdt Address
+	owner             string
+	relayers          []string
+	users             []string
+	multisig          string
+	priceAggregator   string
+	egldEsdtSwap      string
+	esdtSafe          string
+	ethereumFeePrepay string
+	multiTransferEsdt string
 }
 
 type Transaction struct {
 	blockNonce int
 	nonce      int
-	from       Address
-	to         EthAddress
-	tokenId    TokenIdentifier
+	from       string
+	to         string
+	tokenId    string
 	amount     *big.Int
 }
 
 type SimpleTransfer struct {
-	to      Address
-	tokenId TokenIdentifier
+	to      string
+	tokenId string
 	amount  *big.Int
 }
 
 type EgldEsdtSwapState struct {
-	wrappedEgldTokenId TokenIdentifier
+	wrappedEgldTokenId string
 	egldBalance        *big.Int
 }
 
 type EsdtSafeState struct {
-	tokenWhitelist []TokenIdentifier
+	tokenWhitelist []string
 	transactions   []*Transaction
 	txStatus       []TransactionStatus
-	balances       map[TokenIdentifier]*big.Int
+	balances       map[string]*big.Int
 }
 
 type EthereumFeePrepayState struct {
-	wrappedEthTokenId TokenIdentifier
-	deposits          map[Address]map[TokenIdentifier]*big.Int
+	wrappedEthTokenId string
+	deposits          map[string]map[string]*big.Int
 }
 
 type MultiTransferEsdtState struct {
-	tokenWhitelist []TokenIdentifier
+	tokenWhitelist []string
 }
 
 type MultisigState struct {
-	owner                   Address
-	boardMembers            []Address
+	owner                   string
+	boardMembers            []string
 	requiredStake           int
-	stakedAmounts           map[Address]*big.Int
+	stakedAmounts           map[string]*big.Int
 	quorum                  int
 	paused                  bool
 	currentTransactionBatch []*Transaction

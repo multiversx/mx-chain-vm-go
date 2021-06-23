@@ -2,6 +2,7 @@ package elrond_ethereum_bridge
 
 import (
 	"flag"
+	"math/big"
 	"math/rand"
 	"os"
 	"path/filepath"
@@ -23,7 +24,7 @@ func getTestRoot() string {
 	if err != nil {
 		panic(err)
 	}
-	arwenTestRoot := filepath.Join(exePath, "../../../test")
+	arwenTestRoot := filepath.Join(exePath, "../../test")
 	return arwenTestRoot
 }
 
@@ -31,7 +32,10 @@ func newExecutorWithPaths() *fuzzExecutor {
 	fileResolver := mc.NewDefaultFileResolver().
 		ReplacePath(
 			"price-aggregator.wasm",
-			filepath.Join(getTestRoot(), "elrond-ethereum-bridge/price-aggregator/price-aggregator.wasm"))
+			filepath.Join(getTestRoot(), "elrond-ethereum-bridge/price-aggregator/price-aggregator.wasm")).
+		ReplacePath(
+			"multisig.wasm",
+			filepath.Join(getTestRoot(), "elrond-ethereum-bridge/multisig/multisig.wasm"))
 
 	fe, err := newFuzzExecutor(fileResolver)
 	if err != nil {
@@ -66,7 +70,21 @@ func TestElrondEthereumBridge(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = fe.setup(nil, nil)
+	nrRelayers := 2
+	nrUsers := 2
+	initialBalance := big.NewInt(INIT_BALANCE)
+	err = fe.initAccounts(nrRelayers, nrUsers, initialBalance)
+	if err != nil {
+		t.Error(err)
+	}
+
+	multisigInitArgs := MultisigInitArgs{
+		requiredStake: big.NewInt(1000),
+		slashAmount:   big.NewInt(500),
+		quorum:        len(fe.data.actorAddresses.relayers) / 2,
+		boardMembers:  fe.data.actorAddresses.relayers,
+	}
+	err = fe.deployMultisig(&multisigInitArgs)
 	if err != nil {
 		t.Error(err)
 	}

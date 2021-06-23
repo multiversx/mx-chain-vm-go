@@ -19,7 +19,7 @@ type Action struct {
 }
 
 type SetCurrentTransactionBatchStatusActionData struct {
-	relayerRewardAddress   Address
+	relayerRewardAddress   string
 	transactionBatchStatus []TransactionStatus
 }
 
