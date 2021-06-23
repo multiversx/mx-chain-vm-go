@@ -29,7 +29,8 @@ func ForwardAsyncCallMultiChildMock(instanceMock *mock.InstanceMock, config inte
 			// recursiveChildCalls
 			callData.BigInt(big.NewInt(1))
 
-			err := host.Runtime().ExecuteAsyncCall(destination, callData.ToBytes(), value)
+			async := host.Async()
+			err := async.RegisterLegacyAsyncCall(destination, callData.ToBytes(), value)
 			require.Nil(t, err)
 		}
 

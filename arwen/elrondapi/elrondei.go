@@ -1419,7 +1419,7 @@ func v1_3_asyncCall(context unsafe.Pointer, destOffset int32, valueOffset int32,
 	}
 }
 
-// TODO matei-p is this gone for good?
+// TODO matei-p are there existing contracts using this method?
 //export v1_3_setAsyncContextCallback
 // func v1_3_setAsyncContextCallback(context unsafe.Pointer,
 // 	asyncContextIdentifier int32,
@@ -1629,7 +1629,8 @@ func upgradeContract(
 		callData.Bytes(arg)
 	}
 
-	runtime.ExecuteAsyncCall(
+	async := host.Async()
+	async.RegisterLegacyAsyncCall(
 		destContractAddress,
 		callData.ToBytes(),
 		value,

@@ -123,11 +123,6 @@ type RuntimeContext interface {
 	SetRuntimeBreakpointValue(value BreakpointValue)
 	GetRuntimeBreakpointValue() BreakpointValue
 	IsContractOnTheStack(address []byte) bool
-	GetAsyncCallInfo() *AsyncCallInfo
-	SetAsyncCallInfo(asyncCallInfo *AsyncCallInfo)
-	AddAsyncContextCall(contextIdentifier []byte, asyncCall *AsyncGeneratedCall) error
-	GetAsyncContextInfo() *AsyncContextInfo
-	GetAsyncContext(contextIdentifier []byte) (*OldAsyncContext, error)
 	RunningInstancesCount() uint64
 	IsFunctionImported(name string) bool
 	IsWarmInstance() bool
@@ -151,7 +146,6 @@ type RuntimeContext interface {
 	ElrondSyncExecAPIErrorShouldFailExecution() bool
 	CryptoAPIErrorShouldFailExecution() bool
 	BigIntAPIErrorShouldFailExecution() bool
-	ExecuteAsyncCall(address []byte, data []byte, value []byte) error
 
 	AddError(err error, otherInfo ...string)
 	GetAllErrors() error

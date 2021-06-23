@@ -50,7 +50,8 @@ func PerformAsyncCallParentMock(instanceMock *mock.InstanceMock, config interfac
 		// amount to transfer from parent to child
 		value := big.NewInt(testConfig.TransferFromParentToChild).Bytes()
 
-		err = host.Runtime().ExecuteAsyncCall(test.ChildAddress, callData.ToBytes(), value)
+		async := host.Async()
+		err = async.RegisterLegacyAsyncCall(test.ChildAddress, callData.ToBytes(), value)
 		require.Nil(t, err)
 
 		return instance

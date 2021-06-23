@@ -30,7 +30,8 @@ func ForwardAsyncCallMultiContractParentMock(instanceMock *mock.InstanceMock, co
 		callData.Bytes(destinationForBuiltInCall)
 		callData.Bytes(arguments[2])
 
-		err := host.Runtime().ExecuteAsyncCall(destination, callData.ToBytes(), value)
+		async := host.Async()
+		err := async.RegisterLegacyAsyncCall(destination, callData.ToBytes(), value)
 		require.Nil(t, err)
 
 		return instance

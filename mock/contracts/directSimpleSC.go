@@ -206,7 +206,8 @@ func esdtTransferToParentMock(instanceMock *mock.InstanceMock, config interface{
 
 		value := big.NewInt(0).Bytes()
 
-		err := host.Runtime().ExecuteAsyncCall(test.ParentAddress, callData.ToBytes(), value)
+		async := host.Async()
+		err := async.RegisterLegacyAsyncCall(test.ParentAddress, callData.ToBytes(), value)
 
 		if err != nil {
 			host.Runtime().FailExecution(err)

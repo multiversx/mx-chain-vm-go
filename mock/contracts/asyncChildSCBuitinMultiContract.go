@@ -26,7 +26,8 @@ func childFunctionAsyncChildMock(instanceMock *mock.InstanceMock, config interfa
 		callData := txDataBuilder.NewBuilder()
 		callData.Func(function)
 
-		err := host.Runtime().ExecuteAsyncCall(destination, callData.ToBytes(), value)
+		async := host.Async()
+		err := async.RegisterLegacyAsyncCall(destination, callData.ToBytes(), value)
 		require.Nil(t, err)
 
 		return instance

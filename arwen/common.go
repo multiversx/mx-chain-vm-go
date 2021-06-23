@@ -183,14 +183,6 @@ type OldAsyncContext struct {
 	AsyncCalls []*AsyncGeneratedCall
 }
 
-// AsyncContextInfo is the structure resulting after a smart contract call that has initiated
-// one or more async calls. It will
-type AsyncContextInfo struct {
-	CallerAddr      []byte
-	ReturnData      []byte
-	AsyncContextMap map[string]*OldAsyncContext
-}
-
 // GetDestination returns the destination of an async call
 func (ac *AsyncGeneratedCall) GetDestination() []byte {
 	return ac.Destination
