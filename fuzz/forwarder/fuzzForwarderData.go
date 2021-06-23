@@ -8,6 +8,19 @@ const (
 	transferExecute
 )
 
+func (ct programmedCallType) String() string {
+	switch ct {
+	case syncCall:
+		return "syncCall"
+	case asyncCall:
+		return "asyncCall"
+	case transferExecute:
+		return "transferExecute"
+	default:
+		panic("unknown programmedCallType")
+	}
+}
+
 type programmedCall struct {
 	callType  programmedCallType
 	fromIndex int
@@ -20,6 +33,7 @@ type programmedCall struct {
 type fuzzData struct {
 	mainCallerAddress     string
 	numForwarders         int
+	maxCallDepth          int
 	programmedCalls       map[int][]*programmedCall
 	numFungibleTokens     int
 	numSemiFungibleTokens int

@@ -164,7 +164,10 @@ func (ae *ArwenTestExecutor) convertLogToTestFormat(outputLog *vmcommon.LogEntry
 		Topics: make([]mj.JSONCheckBytes, len(outputLog.Topics)),
 	}
 	for i, topic := range outputLog.Topics {
-		testLog.Topics[i] = mj.JSONCheckBytesReconstructed(topic, "")
+		testLog.Topics[i] = mj.JSONCheckBytesReconstructed(
+			topic,
+			ae.exprReconstructor.Reconstruct(topic,
+				er.NoHint))
 	}
 
 	return &testLog

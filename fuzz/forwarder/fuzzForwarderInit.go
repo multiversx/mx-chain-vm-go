@@ -9,6 +9,7 @@ func (pfe *fuzzExecutor) initData() error {
 	pfe.data = &fuzzData{
 		mainCallerAddress:     "address:main_caller",
 		numForwarders:         5,
+		maxCallDepth:          9,
 		programmedCalls:       make(map[int][]*programmedCall),
 		numFungibleTokens:     3,
 		numSemiFungibleTokens: 3,

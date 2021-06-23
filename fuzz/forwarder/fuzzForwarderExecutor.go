@@ -90,34 +90,3 @@ func (pfe *fuzzExecutor) executeTxStep(stepSnippet string) (*vmi.VMOutput, error
 func (pfe *fuzzExecutor) log(info string, args ...interface{}) {
 	fmt.Printf(info+"\n", args...)
 }
-
-// func (pfe *fuzzExecutor) querySingleResult(funcName string, args string) (*big.Int, error) {
-// 	output, err := pfe.executeTxStep(fmt.Sprintf(`
-// 	{
-// 		"step": "scQuery",
-// 		"txId": "%d",
-// 		"tx": {
-// 			"to": "%s",
-// 			"function": "%s",
-// 			"arguments": [
-// 				%s
-// 			]
-// 		},
-// 		"expect": {
-// 			"out": [ "*" ],
-// 			"status": ""
-// 		}
-// 	}`,
-// 		pfe.nextTxIndex(),
-// 		pfe.delegationContractAddress,
-// 		funcName,
-// 		args,
-// 	))
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	result := big.NewInt(0).SetBytes(output.ReturnData[0])
-// 	pfe.log("query: %s -> %d", funcName, result)
-// 	return result, nil
-// }

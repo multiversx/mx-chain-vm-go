@@ -2,14 +2,12 @@ package fuzzForwarder
 
 import (
 	"flag"
-	"math/big"
 	"math/rand"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
 
-	fuzzutil "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/fuzz/util"
 	mc "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/controller"
 	"github.com/stretchr/testify/require"
 )
@@ -18,7 +16,7 @@ var fuzz = flag.Bool("fuzz", true, "Enable fuzz test")
 
 var seedFlag = flag.Int64("seed", 0, "Random seed, use it to replay fuzz scenarios")
 
-var iterationsFlag = flag.Int("iterations", 30, "Number of iterations")
+var iterationsFlag = flag.Int("iterations", 250, "Number of iterations")
 
 func getTestRoot() string {
 	exePath, err := os.Getwd()
@@ -44,8 +42,6 @@ func newExecutorWithPaths() *fuzzExecutor {
 
 func TestFuzzForwarder(t *testing.T) {
 
-	// _ = logger.SetLogLevel("*:TRACE")
-
 	if !*fuzz {
 		t.Skip("skipping test; only run with --fuzz argument")
 	}
@@ -70,38 +66,19 @@ func TestFuzzForwarder(t *testing.T) {
 	require.Nil(t, err)
 
 	for stepIndex := 0; stepIndex < *iterationsFlag; stepIndex++ {
+		callType := pfe.randomCallType(r)
 		tokenName, nonce := pfe.randomTokenNameAndNonce(r)
 		fromIndex := r.Intn(pfe.data.numForwarders) + 1
-		toIndex := fromIndex
-		for nonce > 0 && toIndex == fromIndex {
-			toIndex = r.Intn(pfe.data.numForwarders) + 1
+		toIndex := r.Intn(pfe.data.numForwarders) + 1
+		if nonce > 0 {
+			for toIndex == fromIndex {
+				toIndex = r.Intn(pfe.data.numForwarders) + 1
+			}
 		}
-		pfe.log("%d will call %d with token %s, nonce %d", fromIndex, toIndex, tokenName, nonce)
-		err = pfe.programCall(syncCall, fromIndex, toIndex, tokenName, nonce, "10")
+		err = pfe.programCall(callType, fromIndex, toIndex, tokenName, nonce, "10")
 		require.Nil(t, err)
 	}
 
-	err = pfe.executeCall(1)
+	err = pfe.executeCallCheckLogs(1)
 	require.Nil(t, err)
-}
-
-func generateRandomEvent(
-	t *testing.T,
-	pfe *fuzzExecutor,
-	r *rand.Rand,
-	re *fuzzutil.RandomEventProvider,
-	maxDelegationCap *big.Int,
-) {
-
-	re.Reset()
-
-	switch {
-	case re.WithProbability(0.9):
-		// increment block nonce
-		// err := pfe.increaseBlockNonce(r.Intn(1000))
-		// require.Nil(t, err)
-
-		// pfe.checkInvariants(t)
-	default:
-	}
 }

@@ -3,54 +3,40 @@ package fuzzForwarder
 import (
 	"fmt"
 	"strings"
+
+	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
-func (pfe *fuzzExecutor) programCall(
-	call_type programmedCallType,
-	fromIndex, toIndex int,
-	token string, nonce int, amount string) error {
+func (pfe *fuzzExecutor) executeCallPrintLogs(toIndex int) error {
+	el, _ := pfe.getAllExpectedLogs(toIndex)
+	fmt.Println(el)
+	output, err := pfe.executeCall(toIndex, "")
+	if err != nil {
+		return err
+	}
+	for _, log := range output.Logs {
+		fmt.Println(pfe.arwenTestExecutor.LogToString(log))
+	}
 
-	pfe.data.programmedCalls[fromIndex] = append(pfe.data.programmedCalls[fromIndex], &programmedCall{
-		fromIndex: fromIndex,
-		toIndex:   toIndex,
-		token:     token,
-		nonce:     nonce,
-		amount:    amount,
-	})
+	return nil
+}
 
-	_, err := pfe.executeTxStep(fmt.Sprintf(`
-	{
-		"step": "scCall",
-		"txId": "%d",
-		"tx": {
-			"from": "%s",
-			"to": "%s",
-			"value": "0",
-			"function": "add_programmed_call",
-			"arguments": [
-				"%d",
-				"%s",
-				"str:%s",
-				"%d",
-				"%s"
-			],
-			"gasLimit": "50,000,000",
-			"gasPrice": "0"
-		},
+func (pfe *fuzzExecutor) executeCallCheckLogs(toIndex int) error {
+	expectedLogs, err := pfe.getAllExpectedLogs(toIndex)
+	if err != nil {
+		return err
+	}
+	expectLogs := fmt.Sprintf(`,
 		"expect": {
 			"out": [],
-			"status": ""
+			"status": "",
+			"logs": [%s
+			]
 		}
-	}`,
-		pfe.nextTxIndex(),
-		pfe.data.mainCallerAddress,
-		pfe.forwarderAddress(fromIndex),
-		call_type,
-		pfe.forwarderAddress(toIndex),
-		token,
-		nonce,
-		amount,
-	))
+	`,
+		expectedLogs,
+	)
+	_, err = pfe.executeCall(toIndex, expectLogs)
 	if err != nil {
 		return err
 	}
@@ -58,21 +44,8 @@ func (pfe *fuzzExecutor) programCall(
 	return nil
 }
 
-func (pfe *fuzzExecutor) executeCall(toIndex int) error {
-	var sb strings.Builder
-	initialCall := &programmedCall{
-		fromIndex: -1,
-		toIndex:   toIndex,
-		token:     "EGLD",
-		nonce:     0,
-		amount:    "0",
-	}
-	err := pfe.getExpectedLogs(initialCall, 0, &sb)
-	if err != nil {
-		return err
-	}
-
-	_, err = pfe.executeTxStep(fmt.Sprintf(`
+func (pfe *fuzzExecutor) executeCall(toIndex int, mandosTxExpect string) (*vmi.VMOutput, error) {
+	return pfe.executeTxStep(fmt.Sprintf(`
 	{
 		"step": "scCall",
 		"txId": "%d",
@@ -81,31 +54,18 @@ func (pfe *fuzzExecutor) executeCall(toIndex int) error {
 			"to": "%s",
 			"value": "0",
 			"function": "forward_programmed_calls",
-			"arguments": [ "0" ],
-			"gasLimit": "18,000,000,000,000,000,000",
+			"arguments": [ "%d" ],
+			"gasLimit": "18,000,000,000,000,000",
 			"gasPrice": "0"
-		},
-		"expect": {
-			"out": [],
-			"status": "",
-			"logs": [
-				%s
-			]
 		}
+		%s
 	}`,
 		pfe.nextTxIndex(),
 		pfe.data.mainCallerAddress,
 		pfe.forwarderAddress(toIndex),
-		sb.String(),
+		pfe.data.maxCallDepth,
+		mandosTxExpect,
 	))
-	if err != nil {
-		return err
-	}
-	// for _, log := range output.Logs {
-	// 	fmt.Println(pfe.arwenTestExecutor.LogToString(log))
-	// }
-
-	return nil
 }
 
 func (pfe *fuzzExecutor) popCall(forwarderIndex int) *programmedCall {
@@ -117,34 +77,61 @@ func (pfe *fuzzExecutor) popCall(forwarderIndex int) *programmedCall {
 	return result
 }
 
-func (pfe *fuzzExecutor) getExpectedLogs(call *programmedCall, call_depth int, sb *strings.Builder) error {
-	if call_depth > 10 {
-		return nil
+func (pfe *fuzzExecutor) getAllExpectedLogs(toIndex int) (string, error) {
+	var sb strings.Builder
+	initialCall := &programmedCall{
+		fromIndex: -1,
+		toIndex:   toIndex,
+		token:     "EGLD",
+		nonce:     0,
+		amount:    "0",
 	}
+	err := pfe.getExpectedLogsForCall(initialCall, pfe.data.maxCallDepth, &sb)
+	if err != nil {
+		return "", err
+	}
+	return sb.String(), nil
+}
+
+func (pfe *fuzzExecutor) getExpectedLogsForCall(call *programmedCall, maxDepth int, sb *strings.Builder) error {
 	if sb.Len() > 0 {
 		sb.WriteString(",")
 	}
 	sb.WriteString(fmt.Sprintf(`
-	{
-		"address": "%s",
-		"identifier": "str:forward_programmed_calls",
-		"topics": [
-			"str:%s",
-			"%d",
-			"%s"
-		],
-		"data": ""
-	}`,
+				{
+					"address": "%s",
+					"identifier": "str:forward_programmed_calls",
+					"topics": [
+						"%s",
+						"str:%s",
+						"%d",
+						"%s"
+					],
+					"data": ""
+				}`,
 		pfe.forwarderAddress(call.toIndex),
+		pfe.forwarderAddress(call.fromIndex),
 		call.token,
 		call.nonce,
 		call.amount,
 	))
-	pfe.log("%d calls %d with token %s, nonce %d, depth: %d", call.fromIndex, call.toIndex, call.token, call.nonce, call_depth)
+	pfe.log("%d calls %d with token %s, nonce %d, max depth: %d, call type: %s",
+		call.fromIndex, call.toIndex, call.token, call.nonce, maxDepth, call.callType.String())
+
+	if maxDepth == 0 {
+		return nil
+	}
 
 	nextCall := pfe.popCall(call.toIndex)
 	for nextCall != nil {
-		pfe.getExpectedLogs(nextCall, call_depth+1, sb)
+		err := pfe.getExpectedLogsForCall(nextCall, maxDepth-1, sb)
+		if err != nil {
+			return err
+		}
+		if nextCall.callType == asyncCall {
+			return nil // exit early, just like the async call does
+		}
+
 		nextCall = pfe.popCall(call.toIndex)
 	}
 
