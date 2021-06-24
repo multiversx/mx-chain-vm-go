@@ -35,7 +35,19 @@ func newExecutorWithPaths() *fuzzExecutor {
 			filepath.Join(getTestRoot(), "elrond-ethereum-bridge/price-aggregator/price-aggregator.wasm")).
 		ReplacePath(
 			"multisig.wasm",
-			filepath.Join(getTestRoot(), "elrond-ethereum-bridge/multisig/multisig.wasm"))
+			filepath.Join(getTestRoot(), "elrond-ethereum-bridge/multisig/multisig.wasm")).
+		ReplacePath(
+			"egld-esdt-swap.wasm",
+			filepath.Join(getTestRoot(), "elrond-ethereum-bridge/egld-esdt-swap/egld-esdt-swap.wasm")).
+		ReplacePath(
+			"esdt-safe.wasm",
+			filepath.Join(getTestRoot(), "elrond-ethereum-bridge/esdt-safe/esdt-safe.wasm")).
+		ReplacePath(
+			"multi-transfer-esdt.wasm",
+			filepath.Join(getTestRoot(), "elrond-ethereum-bridge/multi-transfer-esdt/multi-transfer-esdt.wasm")).
+		ReplacePath(
+			"ethereum-fee-prepay.wasm",
+			filepath.Join(getTestRoot(), "elrond-ethereum-bridge/ethereum-fee-prepay/ethereum-fee-prepay.wasm"))
 
 	fe, err := newFuzzExecutor(fileResolver)
 	if err != nil {
@@ -70,6 +82,16 @@ func TestElrondEthereumBridge(t *testing.T) {
 		t.Error(err)
 	}
 
+	// TODO: Uncomment once aggregator is integrated
+	// The current version doesn't have relayer incentives and user fees
+
+	/*
+		err = fe.setupAggregator()
+		if err != nil {
+			t.Error(err)
+		}
+	*/
+
 	nrRelayers := 2
 	nrUsers := 2
 	initialBalance := big.NewInt(INIT_BALANCE)
@@ -85,6 +107,21 @@ func TestElrondEthereumBridge(t *testing.T) {
 		boardMembers:  fe.data.actorAddresses.relayers,
 	}
 	err = fe.deployMultisig(&multisigInitArgs)
+	if err != nil {
+		t.Error(err)
+	}
+
+	deployChildContractsArgs := DeployChildContractsArgs{
+		egldEsdtSwapCodePath:      "file:egld-esdt-swap.wasm",
+		multiTransferEsdtCodePath: "file:multi-transfer-esdt.wasm",
+		ethereumFeePrepayCodePath: "file:ethereum-fee-prepay.wasm",
+		esdtSafeCodePath:          "file:esdt-safe.wasm",
+		priceAggregatorAddress:    "sc:price-aggregator",
+		wrappedEgldTokenId:        "str:WEGLD-123456",
+		wrappedEthTokenId:         "str:WETH-abcdef",
+		tokenWhitelist:            []string{},
+	}
+	err = fe.deployChildContracts(&deployChildContractsArgs)
 	if err != nil {
 		t.Error(err)
 	}

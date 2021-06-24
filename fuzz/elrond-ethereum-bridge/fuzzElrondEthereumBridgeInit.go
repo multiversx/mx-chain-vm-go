@@ -18,14 +18,14 @@ type MultisigInitArgs struct {
 }
 
 type DeployChildContractsArgs struct {
-	egldEsdtSwapCode       []byte
-	multiTransferEsdtCode  []byte
-	ethereumFeePrepayCode  []byte
-	esdtSafeCode           []byte
-	priceAggregatorAddress string
-	wrappedEgldTokenId     string
-	wrappedEthTokenId      string
-	tokenWhitelist         []string
+	egldEsdtSwapCodePath      string
+	multiTransferEsdtCodePath string
+	ethereumFeePrepayCodePath string
+	esdtSafeCodePath          string
+	priceAggregatorAddress    string
+	wrappedEgldTokenId        string
+	wrappedEthTokenId         string
+	tokenWhitelist            []string
 }
 
 func (fe *fuzzExecutor) initData() error {
@@ -95,32 +95,38 @@ func (fe *fuzzExecutor) deployMultisig(multisigInitArgs *MultisigInitArgs) error
 	return nil
 }
 
-func (fe *fuzzExecutor) setupChildContracts(
+func (fe *fuzzExecutor) deployChildContracts(
 	deployChildContractsArgs *DeployChildContractsArgs) error {
 
-	err := fe.setupAggregator()
+	err := fe.createChildContractAddresses()
 	if err != nil {
 		return err
 	}
 
-	/*
-		err = fe.executeStep(fmt.Sprintf(`
-			{
-				"step": "setState",
-				"accounts": {
-					"%s": {
-						"nonce": "0",
-						"balance": "0",
-						"storage": {}
-					}
-				}
-			}`,
-			fe.data.actorAddresses.owner,
-		))
-		if err != nil {
-			return err
-		}
-	*/
+	scArgs := []string{
+		deployChildContractsArgs.egldEsdtSwapCodePath,
+		deployChildContractsArgs.multiTransferEsdtCodePath,
+		deployChildContractsArgs.ethereumFeePrepayCodePath,
+		deployChildContractsArgs.esdtSafeCodePath,
+		deployChildContractsArgs.priceAggregatorAddress,
+		deployChildContractsArgs.wrappedEgldTokenId,
+		deployChildContractsArgs.wrappedEthTokenId,
+	}
+	scArgs = append(scArgs, deployChildContractsArgs.tokenWhitelist...)
+
+	err = fe.performSmartContractCall(
+		fe.data.actorAddresses.owner,
+		fe.data.actorAddresses.multisig,
+		big.NewInt(0),
+		"deployChildContracts",
+		scArgs,
+		true,
+		"",
+		[]string{},
+	)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

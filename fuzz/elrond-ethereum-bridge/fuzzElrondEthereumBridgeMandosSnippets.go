@@ -6,6 +6,14 @@ import (
 	"strings"
 )
 
+const (
+	ARGUMENTS_MANDOS_FIELD_NAME = "arguments"
+	OUT_MANDOS_FIELD_NAME       = "out"
+
+	SUCCESS_STATUS_CODE = 0
+	FAIL_STATUS_CODE    = 4
+)
+
 func (fe *fuzzExecutor) createAccount(address string, balance *big.Int) error {
 	err := fe.executeStep(fmt.Sprintf(`
 	{
@@ -51,7 +59,7 @@ func (fe *fuzzExecutor) deployContract(deployerAddress string, scAddress string,
 		return err
 	}
 
-	deployArgs := constructArgumentsMandosField(initArguments...)
+	deployArgs := constructArrayMandosField(ARGUMENTS_MANDOS_FIELD_NAME, initArguments...)
 	deployMandosSnippet := `
 	{
 		"step": "scDeploy",
@@ -62,7 +70,7 @@ func (fe *fuzzExecutor) deployContract(deployerAddress string, scAddress string,
 			"value": "0",`
 	deployMandosSnippet += deployArgs
 	deployMandosSnippet += `,
-			"gasLimit": "200,000,000",
+			"gasLimit": "500,000,000",
 			"gasPrice": "0"
 		},
 		"expect": {
@@ -84,19 +92,118 @@ func (fe *fuzzExecutor) deployContract(deployerAddress string, scAddress string,
 	return nil
 }
 
-func constructArgumentsMandosField(arguments ...string) string {
+func (fe *fuzzExecutor) performSmartContractCall(caller string, scAddress string,
+	value *big.Int, scFunction string, arguments []string,
+	expectedSuccess bool, expectedMessage string, expectedOutData []string) error {
+
+	scCallArgs := constructArrayMandosField(ARGUMENTS_MANDOS_FIELD_NAME, arguments...)
+	scCallExpectedOut := constructArrayMandosField(OUT_MANDOS_FIELD_NAME, expectedOutData...)
+
+	var expectedStatusCode int
+	if expectedSuccess {
+		expectedStatusCode = SUCCESS_STATUS_CODE
+	} else {
+		expectedStatusCode = FAIL_STATUS_CODE
+	}
+
+	scCallMandosSnippet := `
+	{
+		"step": "scCall",
+		"txId": "%05d",
+		"tx": {
+			"from": "%s",
+			"to": "%s",
+			"value": "%s",
+			"function": "%s",`
+	scCallMandosSnippet += scCallArgs
+	scCallMandosSnippet += `,
+			"gasLimit": "500,000,000",
+			"gasPrice": "0"
+		},
+		"expect": {
+			"status": "%d",
+			"message": "%s",`
+	scCallMandosSnippet += scCallExpectedOut
+	scCallMandosSnippet += `,
+			"gas": "*",
+			"refund": "*"
+		}
+	}`
+
+	err := fe.executeStep(fmt.Sprintf(scCallMandosSnippet,
+		fe.nextTxIndex(),
+		caller,
+		scAddress,
+		value.String(),
+		scFunction,
+		expectedStatusCode,
+		expectedMessage,
+	))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (fe *fuzzExecutor) createChildContractAddresses() error {
+	err := fe.executeStep(fmt.Sprintf(`
+	{
+		"step": "setState",
+		"newAddresses": [
+			{
+				"creatorAddress": "%s",
+				"creatorNonce": "0",
+				"newAddress": "%s"
+			},
+			{
+				"creatorAddress": "%s",
+				"creatorNonce": "1",
+				"newAddress": "%s"
+			},
+			{
+				"creatorAddress": "%s",
+				"creatorNonce": "2",
+				"newAddress": "%s"
+			},
+			{
+				"creatorAddress": "%s",
+				"creatorNonce": "3",
+				"newAddress": "%s"
+			}
+		]
+	}`,
+		fe.data.actorAddresses.multisig,
+		fe.data.actorAddresses.egldEsdtSwap,
+		fe.data.actorAddresses.multisig,
+		fe.data.actorAddresses.multiTransferEsdt,
+		fe.data.actorAddresses.multisig,
+		fe.data.actorAddresses.ethereumFeePrepay,
+		fe.data.actorAddresses.multisig,
+		fe.data.actorAddresses.esdtSafe,
+	))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func constructArrayMandosField(mandosFieldName string, arguments ...string) string {
 	nrArguments := len(arguments)
 	if nrArguments == 0 {
-		return `"arguments": []`
+		return fmt.Sprintf(`"%s": []`, mandosFieldName)
 	}
 
 	// no comma after last one, so we do it separately
 	repeatedStringFormatSpecifier := strings.Repeat(`"%s", `, nrArguments-1)
 	repeatedStringFormatSpecifier += `"%s"`
 
-	mandosArgumentsSnippet := `"arguments": [ ` + repeatedStringFormatSpecifier + ` ]`
+	mandosArgumentsSnippet := `"%s": [ ` + repeatedStringFormatSpecifier + ` ]`
 
-	argsAsInterface := make([]interface{}, 0, nrArguments)
+	// first arg in the snippet is the field name
+	argsAsInterface := make([]interface{}, 0, nrArguments+1)
+	argsAsInterface = append(argsAsInterface, mandosFieldName)
 	for _, arg := range arguments {
 		argsAsInterface = append(argsAsInterface, arg)
 	}

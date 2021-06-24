@@ -40,3 +40,8 @@ func (pfe *fuzzExecutor) getEsdtBalance(address string, tokenId string) *big.Int
 	}
 	return balance
 }
+
+func (fe *fuzzExecutor) nextTxIndex() int {
+	fe.txIndex++
+	return fe.txIndex
+}
