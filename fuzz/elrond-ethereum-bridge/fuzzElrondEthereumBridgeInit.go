@@ -128,6 +128,17 @@ func (fe *fuzzExecutor) deployChildContracts(
 		return err
 	}
 
+	err = fe.performSmartContractCall(
+		fe.data.actorAddresses.owner,
+		fe.data.actorAddresses.multisig,
+		big.NewInt(0),
+		"finishSetup",
+		[]string{},
+		true,
+		"",
+		[]string{},
+	)
+
 	return nil
 }
 
