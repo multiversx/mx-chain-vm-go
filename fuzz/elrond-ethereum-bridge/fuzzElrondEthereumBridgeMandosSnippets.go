@@ -146,6 +146,65 @@ func (fe *fuzzExecutor) performSmartContractCall(caller string, scAddress string
 	return output.ReturnData, nil
 }
 
+func (fe *fuzzExecutor) performEsdtTransferSmartContractCall(caller string, scAddress string,
+	tokenId string, value *big.Int, scFunction string, arguments []string,
+	expectedSuccess bool, expectedMessage string, expectedOutData []string) ([][]byte, error) {
+
+	scCallArgs := constructArrayMandosField(ARGUMENTS_MANDOS_FIELD_NAME, arguments...)
+	scCallExpectedOut := constructArrayMandosField(OUT_MANDOS_FIELD_NAME, expectedOutData...)
+
+	var expectedStatusCode int
+	if expectedSuccess {
+		expectedStatusCode = SUCCESS_STATUS_CODE
+	} else {
+		expectedStatusCode = FAIL_STATUS_CODE
+	}
+
+	scCallMandosSnippet := `
+	{
+		"step": "scCall",
+		"txId": "%05d",
+		"tx": {
+			"from": "%s",
+			"to": "%s",
+			"value": "0",
+			"esdt": {
+				"tokenIdentifier": "%s",
+				"value": "%s"
+			},
+			"function": "%s",`
+	scCallMandosSnippet += scCallArgs
+	scCallMandosSnippet += `,
+			"gasLimit": "500,000,000",
+			"gasPrice": "0"
+		},
+		"expect": {
+			"status": "%d",
+			"message": "%s",`
+	scCallMandosSnippet += scCallExpectedOut
+	scCallMandosSnippet += `,
+			"gas": "*",
+			"refund": "*"
+		}
+	}`
+
+	output, err := fe.executeTxStep(fmt.Sprintf(scCallMandosSnippet,
+		fe.nextTxIndex(),
+		caller,
+		scAddress,
+		tokenId,
+		value.String(),
+		scFunction,
+		expectedStatusCode,
+		expectedMessage,
+	))
+	if err != nil {
+		return [][]byte{}, err
+	}
+
+	return output.ReturnData, nil
+}
+
 func (fe *fuzzExecutor) createChildContractAddresses() error {
 	err := fe.executeStep(fmt.Sprintf(`
 	{

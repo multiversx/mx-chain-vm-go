@@ -11,7 +11,7 @@ func (fe *fuzzExecutor) wrapEgld(userAddress string, amount *big.Int) error {
 	egldBalanceBefore := fe.getBalance(userAddress)
 	esdtBalanceBefore := fe.getEsdtBalance(userAddress, wrappedEgldTokenId)
 
-	fe.performSmartContractCall(
+	_, err := fe.performSmartContractCall(
 		userAddress,
 		fe.data.actorAddresses.egldEsdtSwap,
 		amount,
@@ -21,6 +21,9 @@ func (fe *fuzzExecutor) wrapEgld(userAddress string, amount *big.Int) error {
 		"",
 		[]string{},
 	)
+	if err != nil {
+		return err
+	}
 
 	actualEgldBalanceAfter := fe.getBalance(userAddress)
 	actualEsdtBalanceAfter := fe.getEsdtBalance(userAddress, wrappedEgldTokenId)
@@ -59,16 +62,20 @@ func (fe *fuzzExecutor) unwrapEgld(userAddress string, amount *big.Int) error {
 	egldBalanceBefore := fe.getBalance(userAddress)
 	esdtBalanceBefore := fe.getEsdtBalance(userAddress, wrappedEgldTokenId)
 
-	fe.performSmartContractCall(
+	_, err := fe.performEsdtTransferSmartContractCall(
 		userAddress,
 		fe.data.actorAddresses.egldEsdtSwap,
+		fe.data.wrappedEgldTokenId,
 		amount,
-		"ESDTTransfer",
-		[]string{wrappedEgldTokenId, amount.String(), "str:unwrapEgld"},
+		"unwrapEgld",
+		[]string{},
 		true,
 		"",
 		[]string{},
 	)
+	if err != nil {
+		return err
+	}
 
 	actualEgldBalanceAfter := fe.getBalance(userAddress)
 	actualEsdtBalanceAfter := fe.getEsdtBalance(userAddress, wrappedEgldTokenId)
