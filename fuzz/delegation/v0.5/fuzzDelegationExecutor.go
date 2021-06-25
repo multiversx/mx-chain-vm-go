@@ -16,7 +16,7 @@ import (
 	mjparse "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/parse"
 	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/write"
 	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
-	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
 

@@ -2,6 +2,8 @@ package common
 
 import (
 	"math/big"
+
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // Account holds the account info (is a substructure of an IPC message)
@@ -66,6 +68,38 @@ func (a *Account) GetOwnerAddress() []byte {
 // GetOwnerAddress gets the username
 func (a *Account) GetUserName() []byte {
 	return a.UserName
+}
+
+// DataTrieTracker -
+func (a *Account) DataTrieTracker() vmcommon.DataTrieTracker {
+	return nil
+}
+
+// AddToBalance -
+func (a *Account) AddToBalance(_ *big.Int) error {
+	return nil
+}
+
+// ClaimDeveloperRewards -
+func (a *Account) ClaimDeveloperRewards(_ []byte) (*big.Int, error) {
+	return big.NewInt(0), nil
+}
+
+// ChangeOwnerAddress -
+func (a *Account) ChangeOwnerAddress(_ []byte, _ []byte) error {
+	return nil
+}
+
+// SetOwnerAddress -
+func (a *Account) SetOwnerAddress(_ []byte) {
+}
+
+// SetUserName -
+func (a *Account) SetUserName(_ []byte) {
+}
+
+// IncreaseNonce -
+func (a *Account) IncreaseNonce(_ uint64) {
 }
 
 // IsInterfaceNil returns true if there is no value under the interface

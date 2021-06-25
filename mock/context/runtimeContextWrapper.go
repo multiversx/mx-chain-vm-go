@@ -3,7 +3,7 @@ package mock
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
-	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	"github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // making sure we implement all functions of RuntimeContext

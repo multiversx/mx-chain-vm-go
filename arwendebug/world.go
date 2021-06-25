@@ -7,7 +7,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen/host"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
-	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	"github.com/ElrondNetwork/elrond-vm-common"
 )
 
 type worldDataModel struct {

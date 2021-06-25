@@ -3,7 +3,7 @@ package dex
 import (
 	"errors"
 	"fmt"
-	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	"math/big"
 	"math/rand"
 )

@@ -2,7 +2,7 @@ package arwen
 
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
-	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	"github.com/ElrondNetwork/elrond-vm-common"
 )
 
 const ArwenVersion = "v1.3"

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"math/big"
 
-	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	"github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // UpdateBalance sets a new balance to an account

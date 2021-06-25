@@ -4,8 +4,8 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
-	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
-	"github.com/ElrondNetwork/elrond-go/data/esdt"
+	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
 )
 
 type blockchainContext struct {
@@ -314,7 +314,7 @@ func (context *blockchainContext) PopSetActiveState() {
 	}
 
 	prevSnapshot := context.stateStack[stateStackLen-1]
-	context.blockChainHook.RevertToSnapshot(prevSnapshot)
+	_ = context.blockChainHook.RevertToSnapshot(prevSnapshot)
 
 	context.stateStack = context.stateStack[:stateStackLen-1]
 }
@@ -336,5 +336,5 @@ func (context *blockchainContext) GetSnapshot() int {
 
 // RevertToSnapshot - reverts to the specified snapshot via blockchain hook
 func (context *blockchainContext) RevertToSnapshot(snapshot int) {
-	context.blockChainHook.RevertToSnapshot(snapshot)
+	_ = context.blockChainHook.RevertToSnapshot(snapshot)
 }

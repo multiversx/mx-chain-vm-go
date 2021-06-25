@@ -10,9 +10,8 @@ import (
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
-	"github.com/ElrondNetwork/elrond-go/core"
-	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
-	"github.com/ElrondNetwork/elrond-go/data/esdt"
+	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
 	"github.com/stretchr/testify/require"
 )
 
@@ -24,7 +23,7 @@ func TestExecution_ExecuteOnDestContext_ESDTTransferWithoutExecute(t *testing.T)
 	tokenKey := worldmock.MakeTokenKey(test.ESDTTestTokenName, 0)
 	err := world.BuiltinFuncs.SetTokenData(test.ParentAddress, tokenKey, &esdt.ESDigitalToken{
 		Value: big.NewInt(100),
-		Type:  uint32(core.Fungible),
+		Type:  uint32(vmcommon.Fungible),
 	})
 	require.Nil(t, err)
 
@@ -195,7 +194,7 @@ func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 	// by the "parent" using a manual call to host.ExecuteOnDestContext().
 	dummyCode := test.GetTestSCCode("init-simple", "../../")
 	parentAccount := world.AcctMap.CreateSmartContractAccount(test.UserAddress, test.ParentAddress, dummyCode, world)
-	parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenKey, initialESDTTokenBalance)
+	_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenKey, initialESDTTokenBalance)
 
 	// Deploy the exchange contract, which will receive ESDT and verify that it
 	// can see the received token amount and token name.
@@ -215,7 +214,7 @@ func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 	esdtValue := int64(5)
 	input.CallerAddr = test.ParentAddress
 	input.RecipientAddr = exchangeAddress
-	input.Function = core.BuiltInFunctionESDTTransfer
+	input.Function = vmcommon.BuiltInFunctionESDTTransfer
 	input.GasProvided = 10000
 	input.Arguments = [][]byte{
 		test.ESDTTestTokenName,
@@ -257,7 +256,7 @@ func dummyProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.V
 	if input.Function == "builtinFail" {
 		return nil, errors.New("whatdidyoudo")
 	}
-	if input.Function == core.BuiltInFunctionESDTTransfer {
+	if input.Function == vmcommon.BuiltInFunctionESDTTransfer {
 		vmOutput := &vmcommon.VMOutput{
 			GasRemaining: 0,
 		}
@@ -293,7 +292,7 @@ func getDummyBuiltinFunctionNames() vmcommon.FunctionNames {
 	names["builtinClaim"] = empty
 	names["builtinDoSomething"] = empty
 	names["builtinFail"] = empty
-	names[core.BuiltInFunctionESDTTransfer] = empty
+	names[vmcommon.BuiltInFunctionESDTTransfer] = empty
 
 	return names
 }
