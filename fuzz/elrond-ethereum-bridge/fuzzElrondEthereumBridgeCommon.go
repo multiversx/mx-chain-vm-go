@@ -39,35 +39,15 @@ type SimpleTransfer struct {
 	amount  *big.Int
 }
 
-type EgldEsdtSwapState struct {
-	wrappedEgldTokenId string
-	egldBalance        *big.Int
-}
-
-type EsdtSafeState struct {
-	tokenWhitelist []string
-	transactions   []*Transaction
-	txStatus       []TransactionStatus
-	balances       map[string]*big.Int
-}
-
-type EthereumFeePrepayState struct {
-	wrappedEthTokenId string
-	deposits          map[string]map[string]*big.Int
-}
-
-type MultiTransferEsdtState struct {
-	tokenWhitelist []string
-}
-
 type MultisigState struct {
-	owner                   string
-	boardMembers            []string
-	requiredStake           int
-	stakedAmounts           map[string]*big.Int
-	quorum                  int
-	paused                  bool
-	currentTransactionBatch []*Transaction
-	lastValidActionId       int
-	lastExecutedActionId    int
+	owner         string
+	boardMembers  []string
+	requiredStake int
+	quorum        int
+	actions       map[int]Action   // action ID -> action data
+	signatures    map[int][]string // action ID -> signer address list
+
+	allEsdtSafeTransactions         []*Transaction
+	currentEsdtSafeTransactionBatch []*Transaction
+	currentIncomingTransactionBatch []*SimpleTransfer
 }

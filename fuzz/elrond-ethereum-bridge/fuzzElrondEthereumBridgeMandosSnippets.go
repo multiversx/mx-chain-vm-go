@@ -94,7 +94,7 @@ func (fe *fuzzExecutor) deployContract(deployerAddress string, scAddress string,
 
 func (fe *fuzzExecutor) performSmartContractCall(caller string, scAddress string,
 	value *big.Int, scFunction string, arguments []string,
-	expectedSuccess bool, expectedMessage string, expectedOutData []string) error {
+	expectedSuccess bool, expectedMessage string, expectedOutData []string) ([][]byte, error) {
 
 	scCallArgs := constructArrayMandosField(ARGUMENTS_MANDOS_FIELD_NAME, arguments...)
 	scCallExpectedOut := constructArrayMandosField(OUT_MANDOS_FIELD_NAME, expectedOutData...)
@@ -130,7 +130,7 @@ func (fe *fuzzExecutor) performSmartContractCall(caller string, scAddress string
 		}
 	}`
 
-	err := fe.executeStep(fmt.Sprintf(scCallMandosSnippet,
+	output, err := fe.executeTxStep(fmt.Sprintf(scCallMandosSnippet,
 		fe.nextTxIndex(),
 		caller,
 		scAddress,
@@ -140,10 +140,10 @@ func (fe *fuzzExecutor) performSmartContractCall(caller string, scAddress string
 		expectedMessage,
 	))
 	if err != nil {
-		return err
+		return [][]byte{}, err
 	}
 
-	return nil
+	return output.ReturnData, nil
 }
 
 func (fe *fuzzExecutor) createChildContractAddresses() error {
@@ -209,4 +209,39 @@ func constructArrayMandosField(mandosFieldName string, arguments ...string) stri
 	}
 
 	return fmt.Sprintf(mandosArgumentsSnippet, argsAsInterface...)
+}
+
+func (fe *fuzzExecutor) setEsdtLocalRoles(scAddress string, tokenId string, scOwner string, scCodePath string) error {
+	err := fe.executeStep(fmt.Sprintf(`
+	{
+		"step": "setState",
+		"accounts": {
+			"%s": {
+				"nonce": "0",
+				"balance": "0",
+				"esdt": {
+					"%s": {
+						"balance": "0",
+						"roles": [
+							"ESDTRoleLocalMint",
+							"ESDTRoleLocalBurn"
+						]
+					}
+				},
+				"storage": {},
+				"owner": "%s",
+				"code": "%s"
+			}
+		}
+	}`,
+		scAddress,
+		tokenId,
+		scOwner,
+		scCodePath,
+	))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

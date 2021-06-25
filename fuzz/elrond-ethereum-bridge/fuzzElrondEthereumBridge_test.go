@@ -121,7 +121,7 @@ func TestElrondEthereumBridge(t *testing.T) {
 		wrappedEthTokenId:         "str:WETH-abcdef",
 		tokenWhitelist:            []string{},
 	}
-	err = fe.deployChildContracts(&deployChildContractsArgs)
+	err = fe.setupChildContracts(&deployChildContractsArgs)
 	if err != nil {
 		t.Error(err)
 	}

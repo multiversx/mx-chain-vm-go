@@ -41,11 +41,7 @@ func (fe *fuzzExecutor) initData() error {
 			ethereumFeePrepay: "sc:ethereum_fee_prepay",
 			multiTransferEsdt: "sc:multi_transfer_esdt",
 		},
-		egldEsdtSwapState:      nil,
-		esdtSafeState:          nil,
-		ethereumFeePrepayState: nil,
-		multiTransferEsdtState: nil,
-		multisigState:          nil,
+		multisigState: nil,
 	}
 	fe.world.Clear()
 
@@ -95,7 +91,7 @@ func (fe *fuzzExecutor) deployMultisig(multisigInitArgs *MultisigInitArgs) error
 	return nil
 }
 
-func (fe *fuzzExecutor) deployChildContracts(
+func (fe *fuzzExecutor) setupChildContracts(
 	deployChildContractsArgs *DeployChildContractsArgs) error {
 
 	err := fe.createChildContractAddresses()
@@ -114,7 +110,7 @@ func (fe *fuzzExecutor) deployChildContracts(
 	}
 	scArgs = append(scArgs, deployChildContractsArgs.tokenWhitelist...)
 
-	err = fe.performSmartContractCall(
+	_, err = fe.performSmartContractCall(
 		fe.data.actorAddresses.owner,
 		fe.data.actorAddresses.multisig,
 		big.NewInt(0),
@@ -128,7 +124,7 @@ func (fe *fuzzExecutor) deployChildContracts(
 		return err
 	}
 
-	err = fe.performSmartContractCall(
+	_, err = fe.performSmartContractCall(
 		fe.data.actorAddresses.owner,
 		fe.data.actorAddresses.multisig,
 		big.NewInt(0),
@@ -138,6 +134,90 @@ func (fe *fuzzExecutor) deployChildContracts(
 		"",
 		[]string{},
 	)
+	if err != nil {
+		return err
+	}
+
+	err = fe.setChildContractsInitialLocalRoles(deployChildContractsArgs)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (fe *fuzzExecutor) setChildContractsInitialLocalRoles(
+	deployChildContractsArgs *DeployChildContractsArgs) error {
+
+	// EgldEsdtSwap
+	err := fe.setEsdtLocalRoles(fe.data.actorAddresses.egldEsdtSwap,
+		deployChildContractsArgs.wrappedEgldTokenId,
+		fe.data.actorAddresses.owner,
+		deployChildContractsArgs.egldEsdtSwapCodePath,
+	)
+	if err != nil {
+		return err
+	}
+
+	// EsdtSafe
+	err = fe.setEsdtLocalRoles(fe.data.actorAddresses.esdtSafe,
+		deployChildContractsArgs.wrappedEgldTokenId,
+		fe.data.actorAddresses.owner,
+		deployChildContractsArgs.esdtSafeCodePath,
+	)
+	if err != nil {
+		return err
+	}
+
+	err = fe.setEsdtLocalRoles(fe.data.actorAddresses.esdtSafe,
+		deployChildContractsArgs.wrappedEthTokenId,
+		fe.data.actorAddresses.owner,
+		deployChildContractsArgs.esdtSafeCodePath,
+	)
+	if err != nil {
+		return err
+	}
+
+	for _, tokenId := range deployChildContractsArgs.tokenWhitelist {
+		err = fe.setEsdtLocalRoles(fe.data.actorAddresses.esdtSafe,
+			tokenId,
+			fe.data.actorAddresses.owner,
+			deployChildContractsArgs.esdtSafeCodePath,
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	// MultiTransferEsdt
+	err = fe.setEsdtLocalRoles(fe.data.actorAddresses.multiTransferEsdt,
+		deployChildContractsArgs.wrappedEgldTokenId,
+		fe.data.actorAddresses.owner,
+		deployChildContractsArgs.multiTransferEsdtCodePath,
+	)
+	if err != nil {
+		return err
+	}
+
+	err = fe.setEsdtLocalRoles(fe.data.actorAddresses.multiTransferEsdt,
+		deployChildContractsArgs.wrappedEthTokenId,
+		fe.data.actorAddresses.owner,
+		deployChildContractsArgs.multiTransferEsdtCodePath,
+	)
+	if err != nil {
+		return err
+	}
+
+	for _, tokenId := range deployChildContractsArgs.tokenWhitelist {
+		err = fe.setEsdtLocalRoles(fe.data.actorAddresses.multiTransferEsdt,
+			tokenId,
+			fe.data.actorAddresses.owner,
+			deployChildContractsArgs.multiTransferEsdtCodePath,
+		)
+		if err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
