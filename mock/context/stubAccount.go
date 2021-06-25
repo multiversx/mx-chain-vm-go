@@ -22,8 +22,8 @@ type StubAccount struct {
 	Err     error
 }
 
-// DataTrieTracker -
-func (a *StubAccount) DataTrieTracker() vmcommon.DataTrieTracker {
+// AccountDataHandler -
+func (a *StubAccount) AccountDataHandler() vmcommon.AccountDataHandler {
 	panic("implement me")
 }
 

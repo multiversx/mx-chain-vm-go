@@ -5,6 +5,8 @@ github.com/ElrondNetwork/elrond-go-logger v1.0.4 h1:i5Yu4qyjTZDwvBY/ykbNpp2SP9jx
 github.com/ElrondNetwork/elrond-go-logger v1.0.4/go.mod h1:e5D+c97lKUfFdAzFX7rrI2Igl/z4Y0RkKYKWyzprTGk=
 github.com/ElrondNetwork/elrond-vm-common v0.3.4-0.20210625120902-17b81c5c155c h1:LobbrxD1+I9K6hFYPPOTb8+tkCxTHrwRZE2IRBqSbYA=
 github.com/ElrondNetwork/elrond-vm-common v0.3.4-0.20210625120902-17b81c5c155c/go.mod h1:7hBvPplhnrputKHXcrO0oZEdws87Exatc3PMt3XAL/k=
+github.com/ElrondNetwork/elrond-vm-common v0.3.4-0.20210625150635-525789454b6f h1:GBDcINpMtd5wNJXiDhm7jQTWeyhWIdx/PhdvyBjwcVw=
+github.com/ElrondNetwork/elrond-vm-common v0.3.4-0.20210625150635-525789454b6f/go.mod h1:7hBvPplhnrputKHXcrO0oZEdws87Exatc3PMt3XAL/k=
 github.com/aead/siphash v1.0.1/go.mod h1:Nywa3cDsYNNK3gaciGTWPwHt0wlpNV15vwmswBAUSII=
 github.com/btcsuite/btcd v0.20.1-beta/go.mod h1:wVuoA8VJLEcwgqHBwHmzLRazpKxTv13Px/pDuV7OomQ=
 github.com/btcsuite/btcd v0.21.0-beta h1:At9hIZdJW0s9E/fAz28nrz6AmcNlSVucCH796ZteX1M=

@@ -70,8 +70,8 @@ func (a *Account) GetUserName() []byte {
 	return a.UserName
 }
 
-// DataTrieTracker -
-func (a *Account) DataTrieTracker() vmcommon.DataTrieTracker {
+// AccountDataHandler -
+func (a *Account) AccountDataHandler() vmcommon.AccountDataHandler {
 	return nil
 }
 
