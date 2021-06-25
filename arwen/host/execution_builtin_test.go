@@ -8,9 +8,8 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
-	"github.com/ElrondNetwork/elrond-go/core"
-	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
-	"github.com/ElrondNetwork/elrond-go/data/esdt"
+	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
 	"github.com/stretchr/testify/require"
 )
 
@@ -25,7 +24,7 @@ func TestExecution_ExecuteOnDestContext_ESDTTransferWithoutExecute(t *testing.T)
 	tokenKey := worldmock.MakeTokenKey(ESDTTestTokenName, 0)
 	err := world.BuiltinFuncs.SetTokenData(parentAddress, tokenKey, &esdt.ESDigitalToken{
 		Value: big.NewInt(100),
-		Type:  uint32(core.Fungible),
+		Type:  uint32(vmcommon.Fungible),
 	})
 	require.Nil(t, err)
 
@@ -188,7 +187,7 @@ func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 	require.Nil(t, err)
 
 	input.RecipientAddr = parentAddress
-	input.Function = core.BuiltInFunctionESDTTransfer
+	input.Function = vmcommon.BuiltInFunctionESDTTransfer
 	input.GasProvided = 1000000
 	input.Arguments = [][]byte{
 		ESDTTestTokenName,
@@ -232,7 +231,7 @@ func dummyProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.V
 	if input.Function == "builtinFail" {
 		return nil, errors.New("whatdidyoudo")
 	}
-	if input.Function == core.BuiltInFunctionESDTTransfer {
+	if input.Function == vmcommon.BuiltInFunctionESDTTransfer {
 		vmOutput := &vmcommon.VMOutput{
 			GasRemaining: 0,
 		}
@@ -268,7 +267,7 @@ func getDummyBuiltinFunctionNames() vmcommon.FunctionNames {
 	names["builtinClaim"] = empty
 	names["builtinDoSomething"] = empty
 	names["builtinFail"] = empty
-	names[core.BuiltInFunctionESDTTransfer] = empty
+	names[vmcommon.BuiltInFunctionESDTTransfer] = empty
 
 	return names
 }

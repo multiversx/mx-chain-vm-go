@@ -10,7 +10,7 @@ import (
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
 	oj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/orderedjson"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
-	"github.com/ElrondNetwork/elrond-go/data/esdt"
+	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
 )
 
 // ExecuteCheckStateStep executes a CheckStateStep defined by the current scenario.

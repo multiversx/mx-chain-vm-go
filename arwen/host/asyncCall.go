@@ -9,9 +9,8 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
-	"github.com/ElrondNetwork/elrond-go/core"
-	"github.com/ElrondNetwork/elrond-go/core/parsers"
-	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
 
 func (host *vmHost) handleAsyncCallBreakpoint() error {
@@ -80,11 +79,11 @@ func isESDTTransferOnReturnDataWithNoAdditionalData(destinationVMOutput *vmcommo
 		return false, "", nil
 	}
 
-	if functionName == core.BuiltInFunctionESDTTransfer && len(args) == 2 {
+	if functionName == vmcommon.BuiltInFunctionESDTTransfer && len(args) == 2 {
 		return true, functionName, args
 	}
 
-	if functionName == core.BuiltInFunctionESDTNFTTransfer && len(args) == 4 {
+	if functionName == vmcommon.BuiltInFunctionESDTNFTTransfer && len(args) == 4 {
 		return true, functionName, args
 	}
 
@@ -106,7 +105,7 @@ func (host *vmHost) determineAsyncCallExecutionMode(asyncCallInfo *arwen.AsyncCa
 	sameShard := host.AreInSameShard(runtime.GetSCAddress(), asyncCallInfo.Destination)
 	if host.IsBuiltinFunctionName(functionName) {
 		if sameShard {
-			isESDTTransfer := functionName == core.BuiltInFunctionESDTTransfer || functionName == core.BuiltInFunctionESDTNFTTransfer
+			isESDTTransfer := functionName == vmcommon.BuiltInFunctionESDTTransfer || functionName == vmcommon.BuiltInFunctionESDTNFTTransfer
 			if isESDTTransfer && runtime.GetVMInput().CallType == vmcommon.AsynchronousCall &&
 				bytes.Equal(runtime.GetVMInput().CallerAddr, asyncCallInfo.Destination) {
 				return arwen.ESDTTransferOnCallBack, nil
@@ -411,7 +410,7 @@ func (host *vmHost) createCallbackContractCallInput(
 		contractCallInput.Function = functionName
 		contractCallInput.Arguments = make([][]byte, 0, len(arguments))
 		contractCallInput.Arguments = append(contractCallInput.Arguments, esdtArgs[0], esdtArgs[1])
-		if functionName == core.BuiltInFunctionESDTNFTTransfer {
+		if functionName == vmcommon.BuiltInFunctionESDTNFTTransfer {
 			contractCallInput.Arguments = append(contractCallInput.Arguments, esdtArgs[2], esdtArgs[3])
 		}
 		contractCallInput.Arguments = append(contractCallInput.Arguments, []byte(callbackFunction))

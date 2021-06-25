@@ -2,12 +2,15 @@ package worldmock
 
 import (
 	"bytes"
+	"errors"
 	"math/big"
 
-	"github.com/ElrondNetwork/elrond-go/core"
-	"github.com/ElrondNetwork/elrond-go/data"
-	"github.com/ElrondNetwork/elrond-go/data/esdt"
+	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
 )
+
+// ErrNegativeValue signals that a negative value has been detected and it is not allowed
+var ErrNegativeValue = errors.New("negative value")
 
 // MakeTokenKey creates the storage key corresponding to the given tokenName.
 func MakeTokenKey(tokenName []byte, nonce uint64) []byte {
@@ -84,7 +87,7 @@ func (a *Account) SetTokenBalance(tokenKey []byte, balance *big.Int) error {
 	}
 
 	if balance.Sign() < 0 {
-		return data.ErrNegativeValue
+		return ErrNegativeValue
 	}
 
 	tokenData.Value = balance
@@ -95,7 +98,7 @@ func (a *Account) SetTokenBalance(tokenKey []byte, balance *big.Int) error {
 func (a *Account) GetTokenData(tokenKey []byte) (*esdt.ESDigitalToken, error) {
 	esdtData := &esdt.ESDigitalToken{
 		Value: big.NewInt(0),
-		Type:  uint32(core.Fungible),
+		Type:  uint32(vmcommon.Fungible),
 		TokenMetaData: &esdt.MetaData{
 			Name:  GetTokenNameFromKey(tokenKey),
 			Nonce: 0,

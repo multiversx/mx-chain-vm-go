@@ -4,7 +4,7 @@ import (
 	mc "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/controller"
 	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/fileresolver"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
-	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	vmi "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // Reset clears state/world.

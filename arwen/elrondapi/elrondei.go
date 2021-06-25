@@ -93,10 +93,9 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
-	"github.com/ElrondNetwork/elrond-go/core"
-	"github.com/ElrondNetwork/elrond-go/core/parsers"
-	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
-	"github.com/ElrondNetwork/elrond-go/data/esdt"
+	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
+	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
 
 var logEEI = logger.GetOrCreate("arwen/eei")
@@ -999,7 +998,7 @@ func transferESDTNFTExecute(
 		contractCallInput.ESDTTokenName = tokenIdentifier
 		contractCallInput.ESDTTokenNonce = uint64(nonce)
 		if nonce > 0 {
-			contractCallInput.ESDTTokenType = uint32(core.NonFungible)
+			contractCallInput.ESDTTokenType = uint32(vmcommon.NonFungible)
 		}
 	}
 
@@ -1607,7 +1606,7 @@ func getCurrentESDTNFTNonce(context unsafe.Pointer, addressOffset int32, tokenID
 		return 0
 	}
 
-	key := []byte(core.ElrondProtectedKeyPrefix + core.ESDTNFTLatestNonceIdentifier + string(tokenID))
+	key := []byte(vmcommon.ElrondProtectedKeyPrefix + vmcommon.ESDTNFTLatestNonceIdentifier + string(tokenID))
 	data := storage.GetStorageFromAddress(destination, key)
 
 	nonce := big.NewInt(0).SetBytes(data).Uint64()
@@ -1987,19 +1986,19 @@ func doESDTTransferAndExecuteSynchronously(
 	nonce := uint64(0)
 
 	switch function {
-	case core.BuiltInFunctionESDTTransfer:
-		if len(args) < core.MinLenArgumentsESDTTransfer {
+	case vmcommon.BuiltInFunctionESDTTransfer:
+		if len(args) < vmcommon.MinLenArgumentsESDTTransfer {
 			if arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 				return 1
 			}
 		}
 
 		esdtValue.SetBytes(args[1])
-		contractCallInput.ESDTTokenType = uint32(core.Fungible)
-		fillContractCallInputFromArgs(contractCallInput, args, core.MinLenArgumentsESDTTransfer)
+		contractCallInput.ESDTTokenType = uint32(vmcommon.Fungible)
+		fillContractCallInputFromArgs(contractCallInput, args, vmcommon.MinLenArgumentsESDTTransfer)
 
-	case core.BuiltInFunctionESDTNFTTransfer:
-		if len(args) < core.MinLenArgumentsESDTNFTTransfer {
+	case vmcommon.BuiltInFunctionESDTNFTTransfer:
+		if len(args) < vmcommon.MinLenArgumentsESDTNFTTransfer {
 			if arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 				return 1
 			}
@@ -2011,8 +2010,8 @@ func doESDTTransferAndExecuteSynchronously(
 				return 1
 			}
 		}
-		contractCallInput.ESDTTokenType = uint32(core.NonFungible)
-		fillContractCallInputFromArgs(contractCallInput, args, core.MinLenArgumentsESDTNFTTransfer)
+		contractCallInput.ESDTTokenType = uint32(vmcommon.NonFungible)
+		fillContractCallInputFromArgs(contractCallInput, args, vmcommon.MinLenArgumentsESDTNFTTransfer)
 
 	default:
 		if arwen.WithFault(arwen.ErrFuncNotFound, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
@@ -2066,8 +2065,8 @@ func detectSyncESDTTransfer(
 		return "", false, err
 	}
 
-	if string(function) == core.BuiltInFunctionESDTTransfer ||
-		string(function) == core.BuiltInFunctionESDTNFTTransfer {
+	if string(function) == vmcommon.BuiltInFunctionESDTTransfer ||
+		string(function) == vmcommon.BuiltInFunctionESDTNFTTransfer {
 		return string(function), true, nil
 	}
 

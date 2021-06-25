@@ -6,12 +6,8 @@ import (
 	"fmt"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/elrond-go/core"
-	"github.com/ElrondNetwork/elrond-go/data"
-	"github.com/ElrondNetwork/elrond-go/data/state"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
-
-var _ state.AccountsAdapter = (*MockAccountsAdapter)(nil)
 
 // ErrTrieHandlingNotImplemented indicates that no trie-related operations are
 // currently implemented.
@@ -33,7 +29,7 @@ func NewMockAccountsAdapter(world *MockWorld) *MockAccountsAdapter {
 }
 
 // GetExistingAccount -
-func (m *MockAccountsAdapter) GetExistingAccount(address []byte) (state.AccountHandler, error) {
+func (m *MockAccountsAdapter) GetExistingAccount(address []byte) (vmcommon.AccountHandler, error) {
 	account, exists := m.World.AcctMap[string(address)]
 	if !exists {
 		return nil, arwen.ErrInvalidAccount
@@ -43,12 +39,12 @@ func (m *MockAccountsAdapter) GetExistingAccount(address []byte) (state.AccountH
 }
 
 // LoadAccount -
-func (m *MockAccountsAdapter) LoadAccount(address []byte) (state.AccountHandler, error) {
+func (m *MockAccountsAdapter) LoadAccount(address []byte) (vmcommon.AccountHandler, error) {
 	return m.GetExistingAccount(address)
 }
 
 // SaveAccount -
-func (m *MockAccountsAdapter) SaveAccount(account state.AccountHandler) error {
+func (m *MockAccountsAdapter) SaveAccount(account vmcommon.AccountHandler) error {
 	mockAccount, ok := account.(*Account)
 	if !ok {
 		return errors.New("invalid account to save")
@@ -131,14 +127,6 @@ func (m *MockAccountsAdapter) RecreateTrie(_ []byte) error {
 	return ErrTrieHandlingNotImplemented
 }
 
-// PruneTrie -
-func (m *MockAccountsAdapter) PruneTrie(_ []byte, _ data.TriePruningIdentifier) {
-}
-
-// CancelPrune -
-func (m *MockAccountsAdapter) CancelPrune(_ []byte, _ data.TriePruningIdentifier) {
-}
-
 // SnapshotState -
 func (m *MockAccountsAdapter) SnapshotState(_ []byte) {
 	snapshot := m.World.AcctMap.Clone()
@@ -152,21 +140,6 @@ func (m *MockAccountsAdapter) SetStateCheckpoint(_ []byte) {
 // IsPruningEnabled -
 func (m *MockAccountsAdapter) IsPruningEnabled() bool {
 	return false
-}
-
-// GetAllLeaves -
-func (m *MockAccountsAdapter) GetAllLeaves(_ []byte) (chan core.KeyValueHolder, error) {
-	return nil, ErrTrieHandlingNotImplemented
-}
-
-// RecreateAllTries -
-func (m *MockAccountsAdapter) RecreateAllTries(_ []byte) (map[string]data.Trie, error) {
-	return nil, ErrTrieHandlingNotImplemented
-}
-
-// GetTrie -
-func (m *MockAccountsAdapter) GetTrie(_ []byte) (data.Trie, error) {
-	return nil, ErrTrieHandlingNotImplemented
 }
 
 // IsInterfaceNil -

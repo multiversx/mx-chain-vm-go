@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math/big"
 
-	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	vmi "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 func (pfe *fuzzDelegationExecutor) stake(delegIndex int, amount *big.Int) error {

@@ -2,6 +2,8 @@ package mock
 
 import (
 	"math/big"
+
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // StubAccount is used with the blockchain stub in arwen context tests.
@@ -66,6 +68,41 @@ func (a *StubAccount) GetOwnerAddress() []byte {
 // GetUserName -
 func (a *StubAccount) GetUserName() []byte {
 	return a.UserName
+}
+
+// DataTrieTracker -
+func (a *StubAccount) DataTrieTracker() vmcommon.DataTrieTracker {
+	panic("implement me")
+}
+
+// AddToBalance -
+func (a *StubAccount) AddToBalance(_ *big.Int) error {
+	panic("implement me")
+}
+
+// ClaimDeveloperRewards -
+func (a *StubAccount) ClaimDeveloperRewards(_ []byte) (*big.Int, error) {
+	panic("implement me")
+}
+
+// ChangeOwnerAddress -
+func (a *StubAccount) ChangeOwnerAddress(_ []byte, _ []byte) error {
+	panic("implement me")
+}
+
+// SetOwnerAddress -
+func (a *StubAccount) SetOwnerAddress(_ []byte) {
+	panic("implement me")
+}
+
+// SetUserName -
+func (a *StubAccount) SetUserName(_ []byte) {
+	panic("implement me")
+}
+
+// IncreaseNonce -
+func (a *StubAccount) IncreaseNonce(_ uint64) {
+	panic("implement me")
 }
 
 // IsInterfaceNil -
