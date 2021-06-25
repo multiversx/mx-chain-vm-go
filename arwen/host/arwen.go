@@ -10,6 +10,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen/elrondapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto/factory"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-vm-common"
@@ -67,7 +68,7 @@ func NewArwenVM(
 	hostParameters *arwen.VMHostParameters,
 ) (arwen.VMHost, error) {
 
-	cryptoHook := crypto.NewVMCrypto()
+	cryptoHook := factory.NewVMCrypto()
 	host := &vmHost{
 		cryptoHook:               cryptoHook,
 		meteringContext:          nil,
