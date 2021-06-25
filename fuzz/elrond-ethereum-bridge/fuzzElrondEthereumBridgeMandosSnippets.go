@@ -211,34 +211,9 @@ func constructArrayMandosField(mandosFieldName string, arguments ...string) stri
 	return fmt.Sprintf(mandosArgumentsSnippet, argsAsInterface...)
 }
 
-func (fe *fuzzExecutor) setEsdtLocalRoles(scAddress string, tokenId string, scOwner string, scCodePath string) error {
-	err := fe.executeStep(fmt.Sprintf(`
-	{
-		"step": "setState",
-		"accounts": {
-			"%s": {
-				"nonce": "0",
-				"balance": "0",
-				"esdt": {
-					"%s": {
-						"balance": "0",
-						"roles": [
-							"ESDTRoleLocalMint",
-							"ESDTRoleLocalBurn"
-						]
-					}
-				},
-				"storage": {},
-				"owner": "%s",
-				"code": "%s"
-			}
-		}
-	}`,
-		scAddress,
-		tokenId,
-		scOwner,
-		scCodePath,
-	))
+func (fe *fuzzExecutor) setEsdtLocalRoles(scAddress string, tokenId string) error {
+	acct := fe.world.AcctMap.GetAccount(fe.interpretExpr(scAddress))
+	err := acct.SetTokenRolesAsStrings(fe.interpretExpr(tokenId), []string{"ESDTRoleLocalMint", "ESDTRoleLocalBurn"})
 	if err != nil {
 		return err
 	}

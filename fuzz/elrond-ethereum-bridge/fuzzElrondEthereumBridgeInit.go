@@ -143,6 +143,8 @@ func (fe *fuzzExecutor) setupChildContracts(
 		return err
 	}
 
+	fe.data.wrappedEgldTokenId = deployChildContractsArgs.wrappedEgldTokenId
+
 	return nil
 }
 
@@ -150,39 +152,35 @@ func (fe *fuzzExecutor) setChildContractsInitialLocalRoles(
 	deployChildContractsArgs *DeployChildContractsArgs) error {
 
 	// EgldEsdtSwap
-	err := fe.setEsdtLocalRoles(fe.data.actorAddresses.egldEsdtSwap,
+	err := fe.setEsdtLocalRoles(
+		fe.data.actorAddresses.egldEsdtSwap,
 		deployChildContractsArgs.wrappedEgldTokenId,
-		fe.data.actorAddresses.owner,
-		deployChildContractsArgs.egldEsdtSwapCodePath,
 	)
 	if err != nil {
 		return err
 	}
 
 	// EsdtSafe
-	err = fe.setEsdtLocalRoles(fe.data.actorAddresses.esdtSafe,
+	err = fe.setEsdtLocalRoles(
+		fe.data.actorAddresses.esdtSafe,
 		deployChildContractsArgs.wrappedEgldTokenId,
-		fe.data.actorAddresses.owner,
-		deployChildContractsArgs.esdtSafeCodePath,
 	)
 	if err != nil {
 		return err
 	}
 
-	err = fe.setEsdtLocalRoles(fe.data.actorAddresses.esdtSafe,
+	err = fe.setEsdtLocalRoles(
+		fe.data.actorAddresses.esdtSafe,
 		deployChildContractsArgs.wrappedEthTokenId,
-		fe.data.actorAddresses.owner,
-		deployChildContractsArgs.esdtSafeCodePath,
 	)
 	if err != nil {
 		return err
 	}
 
 	for _, tokenId := range deployChildContractsArgs.tokenWhitelist {
-		err = fe.setEsdtLocalRoles(fe.data.actorAddresses.esdtSafe,
+		err = fe.setEsdtLocalRoles(
+			fe.data.actorAddresses.esdtSafe,
 			tokenId,
-			fe.data.actorAddresses.owner,
-			deployChildContractsArgs.esdtSafeCodePath,
 		)
 		if err != nil {
 			return err
@@ -190,29 +188,26 @@ func (fe *fuzzExecutor) setChildContractsInitialLocalRoles(
 	}
 
 	// MultiTransferEsdt
-	err = fe.setEsdtLocalRoles(fe.data.actorAddresses.multiTransferEsdt,
+	err = fe.setEsdtLocalRoles(
+		fe.data.actorAddresses.multiTransferEsdt,
 		deployChildContractsArgs.wrappedEgldTokenId,
-		fe.data.actorAddresses.owner,
-		deployChildContractsArgs.multiTransferEsdtCodePath,
 	)
 	if err != nil {
 		return err
 	}
 
-	err = fe.setEsdtLocalRoles(fe.data.actorAddresses.multiTransferEsdt,
+	err = fe.setEsdtLocalRoles(
+		fe.data.actorAddresses.multiTransferEsdt,
 		deployChildContractsArgs.wrappedEthTokenId,
-		fe.data.actorAddresses.owner,
-		deployChildContractsArgs.multiTransferEsdtCodePath,
 	)
 	if err != nil {
 		return err
 	}
 
 	for _, tokenId := range deployChildContractsArgs.tokenWhitelist {
-		err = fe.setEsdtLocalRoles(fe.data.actorAddresses.multiTransferEsdt,
+		err = fe.setEsdtLocalRoles(
+			fe.data.actorAddresses.multiTransferEsdt,
 			tokenId,
-			fe.data.actorAddresses.owner,
-			deployChildContractsArgs.multiTransferEsdtCodePath,
 		)
 		if err != nil {
 			return err

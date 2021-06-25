@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 
 	am "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwenmandos"
 	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/fileresolver"
@@ -28,6 +29,7 @@ type fuzzExecutor struct {
 	mandosParser      mjparse.Parser
 	txIndex           int
 	generatedScenario *mj.Scenario
+	randSource        rand.Rand
 	data              *fuzzData
 }
 

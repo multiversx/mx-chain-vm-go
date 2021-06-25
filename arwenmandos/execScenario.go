@@ -94,17 +94,6 @@ func (ae *ArwenTestExecutor) ExecuteSetStateStep(step *mj.SetStateStep) error {
 			return err
 		}
 
-		// For existing accounts, unspecified storage keys keep their value
-		// This makes it easier to modify storage with the "setState" step
-		existingAccount := ae.World.AcctMap.GetAccount(worldAccount.Address)
-		if existingAccount != nil {
-			for key, value := range existingAccount.Storage {
-				if worldAccount.Storage[key] == nil {
-					worldAccount.Storage[key] = value
-				}
-			}
-		}
-
 		ae.World.AcctMap.PutAccount(worldAccount)
 	}
 

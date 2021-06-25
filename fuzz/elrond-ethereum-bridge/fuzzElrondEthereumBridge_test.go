@@ -17,7 +17,7 @@ var fuzz = flag.Bool("fuzz", true, "Enable fuzz test")
 
 var seedFlag = flag.Int64("seed", 0, "Random seed, use it to replay fuzz scenarios")
 
-var iterationsFlag = flag.Int("iterations", 1000, "Number of iterations")
+var iterationsFlag = flag.Int("iterations", 10, "Number of iterations")
 
 func getTestRoot() string {
 	exePath, err := os.Getwd()
@@ -63,19 +63,6 @@ func TestElrondEthereumBridge(t *testing.T) {
 
 	fe := newExecutorWithPaths()
 	defer fe.saveGeneratedScenario()
-
-	var seed int64
-	if *seedFlag == 0 {
-		seed = time.Now().UnixNano()
-	} else {
-		seed = *seedFlag
-	}
-	fe.log("Random seed: %d\n", seed)
-	r := rand.New(rand.NewSource(seed))
-	r.Seed(seed)
-
-	re := fuzzutil.NewRandomEventProvider(r)
-	re.Reset()
 
 	err := fe.initData()
 	if err != nil {
@@ -124,5 +111,48 @@ func TestElrondEthereumBridge(t *testing.T) {
 	err = fe.setupChildContracts(&deployChildContractsArgs)
 	if err != nil {
 		t.Error(err)
+	}
+
+	var seed int64
+	if *seedFlag == 0 {
+		seed = time.Now().UnixNano()
+	} else {
+		seed = *seedFlag
+	}
+	fe.log("Random seed: %d\n", seed)
+	r := rand.New(rand.NewSource(seed))
+	r.Seed(seed)
+
+	fe.randSource = *r
+
+	re := fuzzutil.NewRandomEventProvider(r)
+	for stepIndex := 0; stepIndex < *iterationsFlag; stepIndex++ {
+		re.Reset()
+
+		switch {
+		case re.WithProbability(0.75):
+			userAcc := fe.getRandomUser()
+			wrapAmount := big.NewInt(int64(fe.randSource.Intn(100) + 1))
+
+			err = fe.wrapEgld(userAcc, wrapAmount)
+			if err != nil {
+				t.Error(err)
+			}
+		case re.WithProbability(0.25):
+			userAcc := fe.getRandomUser()
+			userWrappedEgldBalance := fe.getEsdtBalance(userAcc, string(fe.interpretExpr(fe.data.wrappedEgldTokenId)))
+
+			if userWrappedEgldBalance.Cmp(big.NewInt(0)) == 0 {
+				continue
+			}
+
+			unwrapAmount := big.NewInt(int64(fe.randSource.Intn(int(userWrappedEgldBalance.Int64())) + 1))
+
+			err = fe.wrapEgld(userAcc, unwrapAmount)
+			if err != nil {
+				t.Error(err)
+			}
+		default:
+		}
 	}
 }
