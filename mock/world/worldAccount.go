@@ -148,7 +148,7 @@ func (a *Account) SetRootHash(hash []byte) {
 }
 
 // DataTrieTracker -
-func (a *Account) DataTrieTracker() vmcommon.DataTrieTracker {
+func (a *Account) AccountDataHandler() vmcommon.AccountDataHandler {
 	return a
 }
 

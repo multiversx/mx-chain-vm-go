@@ -71,7 +71,7 @@ func (a *Account) GetUserName() []byte {
 }
 
 // DataTrieTracker -
-func (a *Account) DataTrieTracker() vmcommon.DataTrieTracker {
+func (a *Account) AccountDataHandler() vmcommon.AccountDataHandler {
 	return nil
 }
 

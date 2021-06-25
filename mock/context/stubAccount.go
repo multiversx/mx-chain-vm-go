@@ -71,7 +71,7 @@ func (a *StubAccount) GetUserName() []byte {
 }
 
 // DataTrieTracker -
-func (a *StubAccount) DataTrieTracker() vmcommon.DataTrieTracker {
+func (a *StubAccount) AccountDataHandler() vmcommon.AccountDataHandler {
 	panic("implement me")
 }
 
