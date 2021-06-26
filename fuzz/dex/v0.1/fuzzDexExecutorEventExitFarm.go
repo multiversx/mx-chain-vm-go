@@ -94,7 +94,7 @@ func (pfe *fuzzDexExecutor) exitFarm(r *rand.Rand, statistics *eventsStatistics)
 
 		expectedErrors := map[string]bool{
 			"Exit too early for lock rewards option": true,
-			"Farming token amount is zero": true,
+			"Farming token amount is zero":           true,
 		}
 
 		_, expected := expectedErrors[output.ReturnMessage]

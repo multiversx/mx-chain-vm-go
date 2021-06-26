@@ -94,7 +94,7 @@ func (pfe *fuzzDexExecutor) compoundRewards(r *rand.Rand, statistics *eventsStat
 
 		expectedErrors := map[string]bool{
 			"Farming token differ from reward token": true,
-			"Farming token amount is zero": true,
+			"Farming token amount is zero":           true,
 		}
 
 		_, expected := expectedErrors[output.ReturnMessage]

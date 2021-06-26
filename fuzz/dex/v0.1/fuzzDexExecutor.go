@@ -31,7 +31,7 @@ type fuzzDexExecutorInitArgs struct {
 	enterFarmProb           int
 	exitFarmProb            int
 	claimRewardsProb        int
-	compoundRewardsProb		int
+	compoundRewardsProb     int
 	increaseBlockNonceProb  int
 	removeLiquidityMaxValue int
 	addLiquidityMaxValue    int
@@ -94,7 +94,7 @@ type fuzzDexExecutor struct {
 	enterFarmProb           int
 	exitFarmProb            int
 	claimRewardsProb        int
-	compoundRewardsProb		int
+	compoundRewardsProb     int
 	increaseBlockNonceProb  int
 	removeLiquidityMaxValue int
 	addLiquidityMaxValue    int

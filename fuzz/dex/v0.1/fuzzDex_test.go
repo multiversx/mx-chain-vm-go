@@ -80,7 +80,7 @@ func TestFuzzDex_v0_1(t *testing.T) {
 			enterFarmProb:           18,
 			exitFarmProb:            6,
 			claimRewardsProb:        20,
-			compoundRewardsProb:	 10,
+			compoundRewardsProb:     10,
 			removeLiquidityMaxValue: 1000000000,
 			addLiquidityMaxValue:    1000000000,
 			swapMaxValue:            10000000,
