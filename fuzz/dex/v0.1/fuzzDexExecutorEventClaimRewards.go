@@ -118,9 +118,14 @@ func (pfe *fuzzDexExecutor) claimRewards(r *rand.Rand, statistics *eventsStatist
 	} else {
 		statistics.claimRewardsMisses += 1
 
-		pfe.log("could not claimRewards because %s", output.ReturnMessage)
+		expectedErrors := map[string]bool{
+			"Farming token amount is zero": true,
+		}
 
-		return errors.New(output.ReturnMessage)
+		_, expected := expectedErrors[output.ReturnMessage]
+		if !expected {
+			return errors.New(output.ReturnMessage)
+		}
 	}
 
 	return nil

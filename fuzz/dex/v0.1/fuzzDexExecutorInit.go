@@ -22,6 +22,7 @@ func (pfe *fuzzDexExecutor) init(args *fuzzDexExecutorInitArgs) error {
 	pfe.enterFarmProb = args.enterFarmProb
 	pfe.exitFarmProb = args.exitFarmProb
 	pfe.claimRewardsProb = args.claimRewardsProb
+	pfe.compoundRewardsProb = args.compoundRewardsProb
 	pfe.increaseBlockNonceProb = args.increaseBlockNonceProb
 	pfe.removeLiquidityMaxValue = args.removeLiquidityMaxValue
 	pfe.addLiquidityMaxValue = args.addLiquidityMaxValue

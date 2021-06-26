@@ -8,8 +8,8 @@ import (
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
-func (pfe *fuzzDexExecutor) exitFarm(r *rand.Rand, statistics *eventsStatistics) error {
-	amountMax := r.Intn(pfe.exitFarmMaxValue) + 1
+func (pfe *fuzzDexExecutor) compoundRewards(r *rand.Rand, statistics *eventsStatistics) error {
+	amountMax := r.Intn(pfe.claimRewardsMaxValue) + 1
 
 	stakersLen := len(pfe.farmers)
 	if stakersLen == 0 {
@@ -19,39 +19,35 @@ func (pfe *fuzzDexExecutor) exitFarm(r *rand.Rand, statistics *eventsStatistics)
 	nonce := rand.Intn(stakersLen) + 1
 	user := pfe.farmers[nonce].user
 	amount := pfe.farmers[nonce].value
-	rps := pfe.farmers[nonce].rps
+	rpsBefore := []byte(pfe.farmers[nonce].rps)
 	if pfe.farmers[nonce].value == 0 {
 		return nil
 	}
 
-	unstakeAmount := int64(amountMax)
+	claimAmount := int64(amountMax)
 	if int64(amountMax) > amount {
-		unstakeAmount = amount
+		claimAmount = amount
 	} else {
-		unstakeAmount = int64(amountMax)
-	}
-	farm := pfe.farmers[nonce].farm
-	pfe.farmers[nonce] = FarmerInfo{
-		value: amount - unstakeAmount,
-		user:  user,
-		farm:  farm,
-		rps:   rps,
+		claimAmount = int64(amountMax)
 	}
 
-	mexBefore, err := pfe.getTokens(user, pfe.mexTokenId)
-	if err != nil {
-		return err
+	farm := pfe.farmers[nonce].farm
+	pfe.farmers[nonce] = FarmerInfo{
+		value: amount - claimAmount,
+		user:  user,
+		farm:  farm,
+		rps:   string(rpsBefore),
 	}
 
 	output, err := pfe.executeTxStep(fmt.Sprintf(`
 	{
 		"step": "scCall",
-		"txId": "stake",
+		"txId": "claimRewards",
 		"tx": {
 			"from": "%s",
 			"to": "%s",
 			"value": "0",
-			"function": "exitFarm",
+			"function": "compoundRewards",
 			"esdt": {
 				"tokenIdentifier": "str:%s",
 				"value": "%d",
@@ -65,7 +61,7 @@ func (pfe *fuzzDexExecutor) exitFarm(r *rand.Rand, statistics *eventsStatistics)
 		user,
 		farm.address,
 		farm.farmToken,
-		unstakeAmount,
+		claimAmount,
 		nonce,
 	))
 	if err != nil {
@@ -73,27 +69,31 @@ func (pfe *fuzzDexExecutor) exitFarm(r *rand.Rand, statistics *eventsStatistics)
 	}
 
 	if output.ReturnCode == vmi.Ok {
-		statistics.exitFarmHits += 1
+		statistics.compoundRewardsHits += 1
 
-		mexAfter, err := pfe.getTokens(user, pfe.mexTokenId)
+		rpsAfter, err := pfe.querySingleResult(user, farm.address, "getRewardPerShare", "")
 		if err != nil {
 			return err
 		}
 
-		if mexAfter.Cmp(mexBefore) == 1 {
-			statistics.exitFarmWithRewards += 1
-		} else if mexAfter.Cmp(mexBefore) == -1 {
-			return errors.New("LOST mex while exiting farm")
+		pfe.currentFarmTokenNonce[farm.address] += 1
+		nonce := pfe.currentFarmTokenNonce[farm.address]
+		bigint, errGet := pfe.getTokensWithNonce(user, farm.farmToken, nonce)
+		if errGet != nil {
+			return errGet
 		}
 
+		pfe.farmers[nonce] = FarmerInfo{
+			user:  user,
+			value: bigint.Int64(),
+			farm:  farm,
+			rps:   string(rpsAfter[0]),
+		}
 	} else {
-		statistics.exitFarmMisses += 1
-
-		pfe.log("exitFarm")
-		pfe.log("could not exitFarm because %s", output.ReturnMessage)
+		statistics.compoundRewardsMisses += 1
 
 		expectedErrors := map[string]bool{
-			"Exit too early for lock rewards option": true,
+			"Farming token differ from reward token": true,
 			"Farming token amount is zero": true,
 		}
 

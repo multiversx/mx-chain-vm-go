@@ -44,9 +44,9 @@ func newExecutorWithPaths() *fuzzDexExecutor {
 }
 
 func TestFuzzDex_v0_1(t *testing.T) {
-	if !*fuzz {
-		t.Skip("skipping test; only run with --fuzz argument")
-	}
+	//if !*fuzz {
+	//	t.Skip("skipping test; only run with --fuzz argument")
+	//}
 
 	pfe := newExecutorWithPaths()
 	defer pfe.saveGeneratedScenario()
@@ -80,6 +80,7 @@ func TestFuzzDex_v0_1(t *testing.T) {
 			enterFarmProb:           18,
 			exitFarmProb:            6,
 			claimRewardsProb:        20,
+			compoundRewardsProb:	 10,
 			removeLiquidityMaxValue: 1000000000,
 			addLiquidityMaxValue:    1000000000,
 			swapMaxValue:            10000000,
@@ -180,6 +181,13 @@ func generateRandomEvent(
 				assert.Nil(t, err)
 			},
 		},
+		roulette.Outcome{
+			Weight: pfe.compoundRewardsProb,
+			Event: func() {
+				err := pfe.compoundRewards(r, statistics)
+				assert.Nil(t, err)
+			},
+		},
 	)
 }
 
@@ -212,5 +220,8 @@ func printStatistics(statistics *eventsStatistics, pfe *fuzzDexExecutor) {
 	pfe.log("\tclaimRewardsHits %d", statistics.claimRewardsHits)
 	pfe.log("\tclaimRewardsMisses %d", statistics.claimRewardsMisses)
 	pfe.log("\tclaimRewardsWithRewards %d", statistics.claimRewardsWithRewards)
+	pfe.log("")
+	pfe.log("\tcompoundRewardsHits %d", statistics.compoundRewardsHits)
+	pfe.log("\tcompoundRewardsMisses %d", statistics.compoundRewardsMisses)
 	pfe.log("")
 }
