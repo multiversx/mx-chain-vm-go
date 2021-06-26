@@ -44,9 +44,9 @@ func newExecutorWithPaths() *fuzzDexExecutor {
 }
 
 func TestFuzzDex_v0_1(t *testing.T) {
-	//if !*fuzz {
-	//	t.Skip("skipping test; only run with --fuzz argument")
-	//}
+	if !*fuzz {
+		t.Skip("skipping test; only run with --fuzz argument")
+	}
 
 	pfe := newExecutorWithPaths()
 	defer pfe.saveGeneratedScenario()
