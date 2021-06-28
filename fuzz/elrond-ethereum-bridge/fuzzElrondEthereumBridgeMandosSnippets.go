@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math/big"
 	"strings"
+
+	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 
 const (
@@ -93,18 +95,9 @@ func (fe *fuzzExecutor) deployContract(deployerAddress string, scAddress string,
 }
 
 func (fe *fuzzExecutor) performSmartContractCall(caller string, scAddress string,
-	value *big.Int, scFunction string, arguments []string,
-	expectedSuccess bool, expectedMessage string, expectedOutData []string) ([][]byte, error) {
+	value *big.Int, scFunction string, arguments []string) ([][]byte, error) {
 
 	scCallArgs := constructArrayMandosField(ARGUMENTS_MANDOS_FIELD_NAME, arguments...)
-	scCallExpectedOut := constructArrayMandosField(OUT_MANDOS_FIELD_NAME, expectedOutData...)
-
-	var expectedStatusCode int
-	if expectedSuccess {
-		expectedStatusCode = SUCCESS_STATUS_CODE
-	} else {
-		expectedStatusCode = FAIL_STATUS_CODE
-	}
 
 	scCallMandosSnippet := `
 	{
@@ -119,14 +112,6 @@ func (fe *fuzzExecutor) performSmartContractCall(caller string, scAddress string
 	scCallMandosSnippet += `,
 			"gasLimit": "500,000,000",
 			"gasPrice": "0"
-		},
-		"expect": {
-			"status": "%d",
-			"message": "%s",`
-	scCallMandosSnippet += scCallExpectedOut
-	scCallMandosSnippet += `,
-			"gas": "*",
-			"refund": "*"
 		}
 	}`
 
@@ -136,29 +121,23 @@ func (fe *fuzzExecutor) performSmartContractCall(caller string, scAddress string
 		scAddress,
 		value.String(),
 		scFunction,
-		expectedStatusCode,
-		expectedMessage,
 	))
 	if err != nil {
 		return [][]byte{}, err
 	}
 
-	return output.ReturnData, nil
+	var returnedError error = nil
+	if output.ReturnCode != vmcommon.Ok {
+		returnedError = fmt.Errorf(output.ReturnMessage)
+	}
+
+	return output.ReturnData, returnedError
 }
 
 func (fe *fuzzExecutor) performEsdtTransferSmartContractCall(caller string, scAddress string,
-	tokenId string, value *big.Int, scFunction string, arguments []string,
-	expectedSuccess bool, expectedMessage string, expectedOutData []string) ([][]byte, error) {
+	tokenId string, value *big.Int, scFunction string, arguments []string) ([][]byte, error) {
 
 	scCallArgs := constructArrayMandosField(ARGUMENTS_MANDOS_FIELD_NAME, arguments...)
-	scCallExpectedOut := constructArrayMandosField(OUT_MANDOS_FIELD_NAME, expectedOutData...)
-
-	var expectedStatusCode int
-	if expectedSuccess {
-		expectedStatusCode = SUCCESS_STATUS_CODE
-	} else {
-		expectedStatusCode = FAIL_STATUS_CODE
-	}
 
 	scCallMandosSnippet := `
 	{
@@ -177,14 +156,6 @@ func (fe *fuzzExecutor) performEsdtTransferSmartContractCall(caller string, scAd
 	scCallMandosSnippet += `,
 			"gasLimit": "500,000,000",
 			"gasPrice": "0"
-		},
-		"expect": {
-			"status": "%d",
-			"message": "%s",`
-	scCallMandosSnippet += scCallExpectedOut
-	scCallMandosSnippet += `,
-			"gas": "*",
-			"refund": "*"
 		}
 	}`
 
@@ -195,14 +166,17 @@ func (fe *fuzzExecutor) performEsdtTransferSmartContractCall(caller string, scAd
 		tokenId,
 		value.String(),
 		scFunction,
-		expectedStatusCode,
-		expectedMessage,
 	))
 	if err != nil {
 		return [][]byte{}, err
 	}
 
-	return output.ReturnData, nil
+	var returnedError error = nil
+	if output.ReturnCode != vmcommon.Ok {
+		returnedError = fmt.Errorf(output.ReturnMessage)
+	}
+
+	return output.ReturnData, returnedError
 }
 
 func (fe *fuzzExecutor) createChildContractAddresses() error {

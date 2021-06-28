@@ -57,22 +57,22 @@ func newFuzzExecutor(fileResolver fr.FileResolver) (*fuzzExecutor, error) {
 	}, nil
 }
 
-func (pfe *fuzzExecutor) executeStep(stepSnippet string) error {
-	step, err := pfe.mandosParser.ParseScenarioStep(stepSnippet)
+func (fe *fuzzExecutor) executeStep(stepSnippet string) error {
+	step, err := fe.mandosParser.ParseScenarioStep(stepSnippet)
 	if err != nil {
 		return err
 	}
 
-	pfe.addStep(step)
-	return pfe.arwenTestExecutor.ExecuteStep(step)
+	fe.addStep(step)
+	return fe.arwenTestExecutor.ExecuteStep(step)
 }
 
-func (pfe *fuzzExecutor) addStep(step mj.Step) {
-	pfe.generatedScenario.Steps = append(pfe.generatedScenario.Steps, step)
+func (fe *fuzzExecutor) addStep(step mj.Step) {
+	fe.generatedScenario.Steps = append(fe.generatedScenario.Steps, step)
 }
 
-func (pfe *fuzzExecutor) saveGeneratedScenario() {
-	serialized := mjwrite.ScenarioToJSONString(pfe.generatedScenario)
+func (fe *fuzzExecutor) saveGeneratedScenario() {
+	serialized := mjwrite.ScenarioToJSONString(fe.generatedScenario)
 
 	err := ioutil.WriteFile("fuzz_gen.scen.json", []byte(serialized), 0644)
 	if err != nil {
@@ -80,8 +80,8 @@ func (pfe *fuzzExecutor) saveGeneratedScenario() {
 	}
 }
 
-func (pfe *fuzzExecutor) executeTxStep(stepSnippet string) (*vmi.VMOutput, error) {
-	step, err := pfe.mandosParser.ParseScenarioStep(stepSnippet)
+func (fe *fuzzExecutor) executeTxStep(stepSnippet string) (*vmi.VMOutput, error) {
+	step, err := fe.mandosParser.ParseScenarioStep(stepSnippet)
 	if err != nil {
 		return nil, err
 	}
@@ -91,11 +91,11 @@ func (pfe *fuzzExecutor) executeTxStep(stepSnippet string) (*vmi.VMOutput, error
 		return nil, errors.New("tx step expected")
 	}
 
-	pfe.addStep(step)
+	fe.addStep(step)
 
-	return pfe.arwenTestExecutor.ExecuteTxStep(txStep)
+	return fe.arwenTestExecutor.ExecuteTxStep(txStep)
 }
 
-func (pfe *fuzzExecutor) log(info string, args ...interface{}) {
+func (fe *fuzzExecutor) log(info string, args ...interface{}) {
 	fmt.Printf(info+"\n", args...)
 }

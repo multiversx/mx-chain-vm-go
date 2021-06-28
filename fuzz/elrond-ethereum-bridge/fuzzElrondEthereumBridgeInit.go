@@ -88,6 +88,16 @@ func (fe *fuzzExecutor) deployMultisig(multisigInitArgs *MultisigInitArgs) error
 		return err
 	}
 
+	fe.data.multisigState = &MultisigState{
+		requiredStake:                   multisigInitArgs.requiredStake,
+		quorum:                          multisigInitArgs.quorum,
+		actions:                         make(map[int]Action),
+		signatures:                      make(map[int][]string),
+		allEsdtSafeTransactions:         []*Transaction{},
+		currentEsdtSafeBatchId:          0,
+		currentEsdtSafeTransactionBatch: []*Transaction{},
+	}
+
 	return nil
 }
 
@@ -116,9 +126,6 @@ func (fe *fuzzExecutor) setupChildContracts(
 		big.NewInt(0),
 		"deployChildContracts",
 		scArgs,
-		true,
-		"",
-		[]string{},
 	)
 	if err != nil {
 		return err
@@ -129,9 +136,6 @@ func (fe *fuzzExecutor) setupChildContracts(
 		fe.data.actorAddresses.multisig,
 		big.NewInt(0),
 		"finishSetup",
-		[]string{},
-		true,
-		"",
 		[]string{},
 	)
 	if err != nil {

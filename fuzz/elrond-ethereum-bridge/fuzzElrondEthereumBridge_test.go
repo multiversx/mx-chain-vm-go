@@ -17,7 +17,7 @@ var fuzz = flag.Bool("fuzz", true, "Enable fuzz test")
 
 var seedFlag = flag.Int64("seed", 0, "Random seed, use it to replay fuzz scenarios")
 
-var iterationsFlag = flag.Int("iterations", 100, "Number of iterations")
+var iterationsFlag = flag.Int("iterations", 50, "Number of iterations")
 
 func getTestRoot() string {
 	exePath, err := os.Getwd()
@@ -126,11 +126,11 @@ func TestElrondEthereumBridge(t *testing.T) {
 	fe.randSource = *r
 
 	re := fuzzutil.NewRandomEventProvider(r)
-	for stepIndex := 0; stepIndex < *iterationsFlag; stepIndex++ {
+	for stepIndex := 1; stepIndex <= *iterationsFlag; stepIndex++ {
 		re.Reset()
 
 		switch {
-		case re.WithProbability(0.75):
+		case re.WithProbability(0.5):
 			userAcc := fe.getRandomUser()
 			wrapAmount := big.NewInt(int64(fe.randSource.Intn(100) + 1))
 
@@ -138,12 +138,13 @@ func TestElrondEthereumBridge(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-		case re.WithProbability(0.10):
+		case re.WithProbability(0.1):
 			userAcc := fe.getRandomUser()
 			userWrappedEgldBalance := fe.getEsdtBalance(userAcc, fe.data.wrappedEgldTokenId)
 
+			// user has no wrapped eGLD
 			if userWrappedEgldBalance.Cmp(big.NewInt(0)) == 0 {
-				t.Log("No wrapped eGLD to unwrap")
+				stepIndex--
 				continue
 			}
 
@@ -153,16 +154,29 @@ func TestElrondEthereumBridge(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-		case re.WithProbability(0.15):
+		case re.WithProbability(0.3):
 			userAcc := fe.getRandomUser()
 			tokenId, amount, err := fe.generateValidRandomEsdtPayment(userAcc)
+
+			// user has no ESDT to send
 			if err != nil {
-				t.Log(err)
+				stepIndex--
 				continue
 			}
 
 			destAddress := fe.getEthAddress()
 			err = fe.createEsdtSafeTransaction(userAcc, tokenId, amount, destAddress)
+			if err != nil {
+				t.Error(err)
+			}
+		case re.WithProbability(0.1):
+			// must execute current transaction batch first, so this scCall would fail
+			if len(fe.data.multisigState.currentEsdtSafeTransactionBatch) > 0 {
+				stepIndex--
+				continue
+			}
+
+			err := fe.getNextTransactionBatch()
 			if err != nil {
 				t.Error(err)
 			}

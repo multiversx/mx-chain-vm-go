@@ -25,12 +25,9 @@ type ActorAddresses struct {
 }
 
 type Transaction struct {
-	blockNonce int
-	nonce      int
-	from       string
-	to         string
-	tokenId    string
-	amount     *big.Int
+	from    string
+	tokenId string
+	amount  *big.Int
 }
 
 type SimpleTransfer struct {
@@ -40,14 +37,13 @@ type SimpleTransfer struct {
 }
 
 type MultisigState struct {
-	owner         string
-	boardMembers  []string
-	requiredStake int
+	requiredStake *big.Int
 	quorum        int
 	actions       map[int]Action   // action ID -> action data
 	signatures    map[int][]string // action ID -> signer address list
 
-	allEsdtSafeTransactions         []*Transaction
+	allEsdtSafeTransactions []*Transaction
+
+	currentEsdtSafeBatchId          int
 	currentEsdtSafeTransactionBatch []*Transaction
-	currentIncomingTransactionBatch []*SimpleTransfer
 }

@@ -76,6 +76,11 @@ func (fe *fuzzExecutor) getRandomUser() string {
 	return fe.data.actorAddresses.users[index]
 }
 
+func (fe *fuzzExecutor) getRandomRelayer() string {
+	index := fe.randSource.Intn(len(fe.data.actorAddresses.relayers))
+	return fe.data.actorAddresses.relayers[index]
+}
+
 func (fe *fuzzExecutor) getEthAddress() string {
 	return "0x0102030405060708091011121314151617181920"
 }
