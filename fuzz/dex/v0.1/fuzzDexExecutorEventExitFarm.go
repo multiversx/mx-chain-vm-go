@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 
-	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	vmi "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 func (pfe *fuzzDexExecutor) exitFarm(r *rand.Rand, statistics *eventsStatistics) error {

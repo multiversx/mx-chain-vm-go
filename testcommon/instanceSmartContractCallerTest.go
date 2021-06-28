@@ -5,7 +5,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
-	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	"github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // InstanceTestSmartContract represents the config data for the smart contract instance to be tested

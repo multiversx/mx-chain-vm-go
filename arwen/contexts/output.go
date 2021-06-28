@@ -7,8 +7,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
-	"github.com/ElrondNetwork/elrond-go/core"
-	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	"github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var _ arwen.OutputContext = (*outputContext)(nil)
@@ -350,14 +349,14 @@ func (context *outputContext) TransferESDT(
 		Value:         big.NewInt(0),
 		GasLimit:      gasRemaining,
 		GasLocked:     0,
-		Data:          []byte(core.BuiltInFunctionESDTTransfer + "@" + hex.EncodeToString(tokenIdentifier) + "@" + hex.EncodeToString(value.Bytes())),
+		Data:          []byte(vmcommon.BuiltInFunctionESDTTransfer + "@" + hex.EncodeToString(tokenIdentifier) + "@" + hex.EncodeToString(value.Bytes())),
 		CallType:      vmcommon.DirectCall,
 		SenderAddress: sender,
 	}
 
 	if nonce > 0 {
 		nonceAsBytes := big.NewInt(0).SetUint64(nonce).Bytes()
-		outputTransfer.Data = []byte(core.BuiltInFunctionESDTNFTTransfer + "@" + hex.EncodeToString(tokenIdentifier) +
+		outputTransfer.Data = []byte(vmcommon.BuiltInFunctionESDTNFTTransfer + "@" + hex.EncodeToString(tokenIdentifier) +
 			"@" + hex.EncodeToString(nonceAsBytes) + "@" + hex.EncodeToString(value.Bytes()))
 		if sameShard {
 			outputTransfer.Data = append(outputTransfer.Data, []byte("@"+hex.EncodeToString(destination))...)
