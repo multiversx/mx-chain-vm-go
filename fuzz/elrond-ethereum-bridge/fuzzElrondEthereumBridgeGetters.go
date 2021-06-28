@@ -1,6 +1,7 @@
 package elrond_ethereum_bridge
 
 import (
+	"encoding/binary"
 	"fmt"
 	"math/big"
 )
@@ -83,4 +84,13 @@ func (fe *fuzzExecutor) getRandomRelayer() string {
 
 func (fe *fuzzExecutor) getEthAddress() string {
 	return "0x0102030405060708091011121314151617181920"
+}
+
+func (fe *fuzzExecutor) bytesToInt(bytes []byte) int {
+	intBytes := bytes
+	for len(intBytes) != 8 {
+		intBytes = append([]byte{0}, intBytes...)
+	}
+
+	return int(binary.BigEndian.Uint64(intBytes))
 }

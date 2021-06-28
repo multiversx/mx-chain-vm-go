@@ -154,7 +154,7 @@ func TestElrondEthereumBridge(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-		case re.WithProbability(0.3):
+		case re.WithProbability(0.25):
 			userAcc := fe.getRandomUser()
 			tokenId, amount, err := fe.generateValidRandomEsdtPayment(userAcc)
 
@@ -180,6 +180,41 @@ func TestElrondEthereumBridge(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
+		case re.WithProbability(0.05):
+			// must get batch first
+			if len(fe.data.multisigState.currentEsdtSafeTransactionBatch) == 0 {
+				stepIndex--
+				continue
+			}
+
+			statuses := []TransactionStatus{}
+			for i := 0; i < len(fe.data.multisigState.currentEsdtSafeTransactionBatch); i++ {
+				randNr := fe.randSource.Int31n(2)
+				if randNr == 0 {
+					statuses = append(statuses, Executed)
+				} else {
+					statuses = append(statuses, Rejected)
+				}
+			}
+
+			actionId, err := fe.proposeEsdtSafeSetCurrentTransactionBatchStatus(
+				fe.getRandomRelayer(),
+				fe.data.multisigState.currentEsdtSafeBatchId,
+				statuses...,
+			)
+			if err != nil {
+				t.Error(err)
+			}
+
+			err = fe.performAction(fe.getRandomRelayer(), actionId)
+			if err != nil {
+				t.Error(err)
+			}
+
+			fe.data.multisigState.currentEsdtSafeBatchId = 0
+			fe.data.multisigState.currentEsdtSafeTransactionBatch = []*Transaction{}
+
+			// TODO: Check before and after account balances, depending on TransactionStatus
 		default:
 		}
 	}

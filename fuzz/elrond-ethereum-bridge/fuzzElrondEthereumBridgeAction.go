@@ -20,7 +20,7 @@ type Action struct {
 
 type SetCurrentTransactionBatchStatusActionData struct {
 	relayerRewardAddress   string
-	esdt_safe_batch_id     int
+	esdtSafeBatchId        int
 	transactionBatchStatus []TransactionStatus
 }
 

@@ -1,9 +1,9 @@
 package elrond_ethereum_bridge
 
 import (
-	"encoding/binary"
 	"fmt"
 	"math/big"
+	"strconv"
 )
 
 func (fe *fuzzExecutor) createEsdtSafeTransaction(userAddress string,
@@ -66,13 +66,7 @@ func (fe *fuzzExecutor) getNextTransactionBatch() error {
 	// This is due to a limitation in the current executeOnDestContext implementation
 	// SCResults from child contracts propagate to the original caller
 
-	// append zeroes in front to fill 8 bytes (needed for Uint64 conversion)
-	batchIdBytes := output[1]
-	for len(batchIdBytes) != 8 {
-		batchIdBytes = append([]byte{0}, batchIdBytes...)
-	}
-
-	batchId := int(binary.BigEndian.Uint64(batchIdBytes))
+	batchId := fe.bytesToInt(output[1])
 	nrStructFields := 6
 	nrTransactionsInBatch := (len(output) - 2) / nrStructFields
 
@@ -88,4 +82,37 @@ func (fe *fuzzExecutor) getNextTransactionBatch() error {
 	}
 
 	return nil
+}
+
+func (fe *fuzzExecutor) proposeEsdtSafeSetCurrentTransactionBatchStatus(relayerAddress string,
+	esdtSafeBatchId int, statuses ...TransactionStatus) (int, error) {
+
+	args := []string{relayerAddress, strconv.Itoa(esdtSafeBatchId)}
+	for _, status := range statuses {
+		args = append(args, strconv.Itoa(int(status)))
+	}
+
+	output, err := fe.performSmartContractCall(
+		relayerAddress,
+		fe.data.actorAddresses.multisig,
+		big.NewInt(0),
+		"proposeEsdtSafeSetCurrentTransactionBatchStatus",
+		args,
+	)
+	if err != nil {
+		return 0, err
+	}
+
+	actionId := fe.bytesToInt(output[0])
+	fe.data.multisigState.actions[actionId] = Action{
+		actionType: ActionSetCurrentTransactionBatchStatus,
+		data: SetCurrentTransactionBatchStatusActionData{
+			relayerRewardAddress:   relayerAddress,
+			esdtSafeBatchId:        esdtSafeBatchId,
+			transactionBatchStatus: statuses,
+		},
+	}
+	fe.data.multisigState.signatures[actionId] = []string{relayerAddress}
+
+	return actionId, nil
 }
