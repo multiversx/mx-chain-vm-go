@@ -8,8 +8,7 @@ import (
 func (fe *fuzzExecutor) createEsdtSafeTransaction(userAddress string,
 	tokenId string, amount *big.Int, destEthAddress string) error {
 
-	tokenIdParsed := string(fe.interpretExpr(tokenId))
-	esdtBalanceBefore := fe.getEsdtBalance(userAddress, tokenIdParsed)
+	esdtBalanceBefore := fe.getEsdtBalance(userAddress, tokenId)
 
 	_, err := fe.performEsdtTransferSmartContractCall(
 		userAddress,
@@ -26,7 +25,7 @@ func (fe *fuzzExecutor) createEsdtSafeTransaction(userAddress string,
 		return err
 	}
 
-	actualEsdtBalanceAfter := fe.getEsdtBalance(userAddress, tokenIdParsed)
+	actualEsdtBalanceAfter := fe.getEsdtBalance(userAddress, tokenId)
 
 	expectedEsdtBalanceAfter := big.NewInt(0)
 	expectedEsdtBalanceAfter.Sub(esdtBalanceBefore, amount)

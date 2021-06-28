@@ -33,7 +33,7 @@ func (fe *fuzzExecutor) getBalance(address string) *big.Int {
 
 func (fe *fuzzExecutor) getEsdtBalance(address string, tokenId string) *big.Int {
 	acct := fe.world.AcctMap.GetAccount(fe.interpretExpr(address))
-	balance, err := acct.GetTokenBalanceByName(tokenId)
+	balance, err := acct.GetTokenBalanceByName(string(fe.interpretExpr(tokenId)))
 
 	if err != nil {
 		return big.NewInt(0)
@@ -50,10 +50,11 @@ func (fe *fuzzExecutor) generateValidRandomEsdtPayment(address string) (string, 
 
 	// map key order is not guaranteed, so this is "random"
 	for tokenId := range allEsdts {
-		balance := fe.getEsdtBalance(address, tokenId)
+		tokenIdMandosFormat := "str:" + tokenId
+		balance := fe.getEsdtBalance(address, tokenIdMandosFormat)
 		amount := fe.getRandomBigInt(balance)
 
-		return "str:" + tokenId, amount, nil
+		return tokenIdMandosFormat, amount, nil
 	}
 
 	return "", nil, fmt.Errorf("Account has no ESDT")

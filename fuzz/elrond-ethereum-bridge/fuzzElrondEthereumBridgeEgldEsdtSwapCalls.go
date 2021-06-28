@@ -6,10 +6,8 @@ import (
 )
 
 func (fe *fuzzExecutor) wrapEgld(userAddress string, amount *big.Int) error {
-	wrappedEgldTokenId := string(fe.interpretExpr(fe.data.wrappedEgldTokenId))
-
 	egldBalanceBefore := fe.getBalance(userAddress)
-	esdtBalanceBefore := fe.getEsdtBalance(userAddress, wrappedEgldTokenId)
+	esdtBalanceBefore := fe.getEsdtBalance(userAddress, fe.data.wrappedEgldTokenId)
 
 	_, err := fe.performSmartContractCall(
 		userAddress,
@@ -26,7 +24,7 @@ func (fe *fuzzExecutor) wrapEgld(userAddress string, amount *big.Int) error {
 	}
 
 	actualEgldBalanceAfter := fe.getBalance(userAddress)
-	actualEsdtBalanceAfter := fe.getEsdtBalance(userAddress, wrappedEgldTokenId)
+	actualEsdtBalanceAfter := fe.getEsdtBalance(userAddress, fe.data.wrappedEgldTokenId)
 
 	expectedEgldBalanceAfter := big.NewInt(0)
 	expectedEgldBalanceAfter.Sub(egldBalanceBefore, amount)
@@ -58,10 +56,8 @@ func (fe *fuzzExecutor) unwrapEgld(userAddress string, amount *big.Int) error {
 		expectedErrMessage = "str:Contract does not have enough funds"
 	}
 
-	wrappedEgldTokenId := string(fe.interpretExpr(fe.data.wrappedEgldTokenId))
-
 	egldBalanceBefore := fe.getBalance(userAddress)
-	esdtBalanceBefore := fe.getEsdtBalance(userAddress, wrappedEgldTokenId)
+	esdtBalanceBefore := fe.getEsdtBalance(userAddress, fe.data.wrappedEgldTokenId)
 
 	_, err := fe.performEsdtTransferSmartContractCall(
 		userAddress,
@@ -79,7 +75,7 @@ func (fe *fuzzExecutor) unwrapEgld(userAddress string, amount *big.Int) error {
 	}
 
 	actualEgldBalanceAfter := fe.getBalance(userAddress)
-	actualEsdtBalanceAfter := fe.getEsdtBalance(userAddress, wrappedEgldTokenId)
+	actualEsdtBalanceAfter := fe.getEsdtBalance(userAddress, fe.data.wrappedEgldTokenId)
 
 	expectedEgldBalanceAfter := big.NewInt(0)
 	expectedEgldBalanceAfter.Add(egldBalanceBefore, amount)

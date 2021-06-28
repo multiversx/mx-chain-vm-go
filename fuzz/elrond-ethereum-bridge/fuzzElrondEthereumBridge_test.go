@@ -140,14 +140,14 @@ func TestElrondEthereumBridge(t *testing.T) {
 			}
 		case re.WithProbability(0.10):
 			userAcc := fe.getRandomUser()
-			userWrappedEgldBalance := fe.getEsdtBalance(userAcc, string(fe.interpretExpr(fe.data.wrappedEgldTokenId)))
+			userWrappedEgldBalance := fe.getEsdtBalance(userAcc, fe.data.wrappedEgldTokenId)
 
 			if userWrappedEgldBalance.Cmp(big.NewInt(0)) == 0 {
 				t.Log("No wrapped eGLD to unwrap")
 				continue
 			}
 
-			unwrapAmount := big.NewInt(int64(fe.randSource.Intn(int(userWrappedEgldBalance.Int64())) + 1))
+			unwrapAmount := fe.getRandomBigInt(userWrappedEgldBalance)
 
 			err = fe.unwrapEgld(userAcc, unwrapAmount)
 			if err != nil {
