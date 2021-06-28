@@ -1,5 +1,7 @@
 package worldmock
 
+//TODO delete this when we have elrond-go-core
+
 import (
 	"errors"
 	"fmt"

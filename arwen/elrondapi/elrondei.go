@@ -1516,11 +1516,12 @@ func upgradeContract(
 		callData += "@" + hex.EncodeToString(arg)
 	}
 
-	_ = runtime.ExecuteAsyncCall(
+	err := runtime.ExecuteAsyncCall(
 		destContractAddress,
 		[]byte(callData),
 		value,
 	)
+	logEEI.Trace("upgradeContract", "error", err)
 }
 
 //export v1_3_asyncCall

@@ -4,9 +4,12 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
 )
+
+var log = logger.GetOrCreate("arwen/blockchainContext")
 
 type blockchainContext struct {
 	host           arwen.VMHost
@@ -314,7 +317,8 @@ func (context *blockchainContext) PopSetActiveState() {
 	}
 
 	prevSnapshot := context.stateStack[stateStackLen-1]
-	_ = context.blockChainHook.RevertToSnapshot(prevSnapshot)
+	err := context.blockChainHook.RevertToSnapshot(prevSnapshot)
+	log.LogIfError(err, "PopSetActiveState RevertToSnapshot", "error", err)
 
 	context.stateStack = context.stateStack[:stateStackLen-1]
 }

@@ -15,6 +15,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+//TODO package contains snake case named files, rename those.
+
 func TestExecution_ExecuteOnDestContext_ESDTTransferWithoutExecute(t *testing.T) {
 	code := test.GetTestSCCodeModule("exec-dest-ctx-esdt/basic", "basic", "../../")
 	scBalance := big.NewInt(1000)
