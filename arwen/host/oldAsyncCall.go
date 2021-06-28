@@ -1,4 +1,4 @@
-// package host
+package host
 
 // import (
 // 	"bytes"

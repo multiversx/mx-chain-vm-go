@@ -523,10 +523,8 @@ func (context *runtimeContext) FailExecution(err error) {
 	var message string
 	if err != nil {
 		message = err.Error()
-		context.AddError(err)
 	} else {
 		message = "execution failed"
-		context.AddError(errors.New(message))
 	}
 
 	context.host.Output().SetReturnMessage(message)

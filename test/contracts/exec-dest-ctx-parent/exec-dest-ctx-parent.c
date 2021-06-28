@@ -195,6 +195,8 @@ void parentFunctionChildCall_OutOfGas() {
 			0
 	);
 
+	// TODO matei-p REMOTE this line!!!
+	bigIntSetInt64(123, result);
 	storageStore(parentKeyB, 32, parentDataB, 11);
 	finishResult(result);
 }

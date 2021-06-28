@@ -620,6 +620,7 @@ func TestAsyncContext_ExecuteSyncCall_NoDynamicGasLocking_Simulation(t *testing.
 	// her.
 	arwen.AddNewOutputAccount(expectedOutput, Alice, 0, nil)
 
+	host.Output().GetOutputAccount(Alice) // TODO matei-p keep?
 	vmOutput := host.Output().GetVMOutput()
 	require.Equal(t, expectedOutput, vmOutput)
 }
@@ -684,6 +685,7 @@ func TestAsyncContext_ExecuteSyncCall_Successful(t *testing.T) {
 	// her.
 	arwen.AddNewOutputAccount(expectedOutput, Alice, 0, nil)
 
+	host.Output().GetOutputAccount(Alice) // TODO matei-p keep?
 	actualOutput := host.Output().GetVMOutput()
 	require.Equal(t, expectedOutput, actualOutput)
 }
@@ -806,6 +808,7 @@ func TestAsyncContext_FinishSyncExecution_NilError_NilVMOutput(t *testing.T) {
 	expectedOutput := arwen.MakeVMOutput()
 	arwen.AddNewOutputAccount(expectedOutput, Alice, 0, nil)
 
+	host.Output().GetOutputAccount(Alice) // TODO matei-p keep?
 	require.Equal(t, expectedOutput, host.Output().GetVMOutput())
 }
 
@@ -829,6 +832,7 @@ func TestAsyncContext_FinishSyncExecution_Error_NilVMOutput(t *testing.T) {
 	// her.
 	arwen.AddNewOutputAccount(expectedOutput, Alice, 0, nil)
 
+	host.Output().GetOutputAccount(Alice) // TODO matei-p keep?
 	require.Equal(t, expectedOutput, host.Output().GetVMOutput())
 }
 
@@ -855,6 +859,7 @@ func TestAsyncContext_FinishSyncExecution_ErrorAndVMOutput(t *testing.T) {
 	// her.
 	arwen.AddNewOutputAccount(expectedOutput, Alice, 0, nil)
 
+	host.Output().GetOutputAccount(Alice) // TODO matei-p keep?
 	require.Equal(t, expectedOutput, host.Output().GetVMOutput())
 }
 
