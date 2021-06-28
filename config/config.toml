@@ -120,8 +120,17 @@
 	BigIntGetExternalBalance   = 10
 
 [CryptoAPICost]
-    SHA256    = 10
-    Keccak256 = 10
+    SHA256                 = 10
+    Keccak256              = 10
+    AddECC                 = 10
+    DoubleECC              = 10
+    IsOnCurveECC           = 10
+    ScalarMultECC          = 10
+    MarshalECC             = 10
+    MarshalCompressedECC   = 10
+    UnmarshalECC           = 10
+    UnmarshalCompressedECC = 10
+    GenerateKeyECC         = 10
 
 [WASMOpcodeCost]
     Unreachable = 1

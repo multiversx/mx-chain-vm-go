@@ -158,12 +158,21 @@ const (
     BigIntGetExternalBalance    = 500
 
 [CryptoAPICost]
-    SHA256          = 600
-    Keccak256       = 600
-    Ripemd160       = 600
-    VerifyBLS       = 1000
-    VerifyEd25519   = 1000
-    VerifySecp256k1 = 1000
+    SHA256          	   = 600
+    Keccak256       	   = 600
+    Ripemd160       	   = 600
+    VerifyBLS       	   = 1000
+    VerifyEd25519   	   = 1000
+    VerifySecp256k1 	   = 1000
+	AddECC                 = 600
+    DoubleECC              = 600
+    IsOnCurveECC           = 600
+    ScalarMultECC          = 600
+    MarshalECC             = 600
+    MarshalCompressedECC   = 600
+    UnmarshalECC           = 600
+    UnmarshalCompressedECC = 600
+    GenerateKeyECC         = 600
 
 [WASMOpcodeCost]
     Unreachable = 1
@@ -771,12 +780,21 @@ const (
     BigIntGetExternalBalance    = 10000
 
 [CryptoAPICost]
-    SHA256          = 1000000
-    Keccak256       = 1000000
-    Ripemd160       = 1000000
-    VerifyBLS       = 5000000
-    VerifyEd25519   = 2000000
-    VerifySecp256k1 = 2000000
+    SHA256          	   = 1000000
+    Keccak256       	   = 1000000
+    Ripemd160       	   = 1000000
+    VerifyBLS       	   = 5000000
+    VerifyEd25519   	   = 2000000
+    VerifySecp256k1 	   = 2000000
+	AddECC                 = 1000000
+    DoubleECC              = 1000000
+    IsOnCurveECC           = 1000000
+    ScalarMultECC          = 1000000
+    MarshalECC             = 1000000
+    MarshalCompressedECC   = 1000000
+    UnmarshalECC           = 1000000
+    UnmarshalCompressedECC = 1000000
+    GenerateKeyECC         = 1000000
 
 [WASMOpcodeCost]
     Unreachable = 1
@@ -1386,12 +1404,21 @@ const (
     BigIntGetExternalBalance    = 10000
 
 [CryptoAPICost]
-    SHA256          = 1000000
-    Keccak256       = 1000000
-    Ripemd160       = 1000000
-    VerifyBLS       = 5000000
-    VerifyEd25519   = 2000000
-    VerifySecp256k1 = 2000000
+    SHA256          	   = 1000000
+    Keccak256       	   = 1000000
+    Ripemd160       	   = 1000000
+    VerifyBLS       	   = 5000000
+    VerifyEd25519   	   = 2000000
+    VerifySecp256k1 	   = 2000000
+	AddECC                 = 1000000
+    DoubleECC              = 1000000
+    IsOnCurveECC           = 1000000
+    ScalarMultECC          = 1000000
+    MarshalECC             = 1000000
+    MarshalCompressedECC   = 1000000
+    UnmarshalECC           = 1000000
+    UnmarshalCompressedECC = 1000000
+    GenerateKeyECC         = 1000000
 
 [WASMOpcodeCost]
     Unreachable = 1
