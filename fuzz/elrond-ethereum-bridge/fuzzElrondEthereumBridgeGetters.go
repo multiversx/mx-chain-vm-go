@@ -41,12 +41,40 @@ func (fe *fuzzExecutor) getEsdtBalance(address string, tokenId string) *big.Int 
 	return balance
 }
 
+func (fe *fuzzExecutor) generateValidRandomEsdtPayment(address string) (string, *big.Int, error) {
+	acc := fe.world.AcctMap.GetAccount(fe.interpretExpr(address))
+	allEsdts, err := acc.GetFullMockESDTData()
+	if err != nil {
+		return "", nil, err
+	}
+
+	// map key order is not guaranteed, so this is "random"
+	for tokenId := range allEsdts {
+		balance := fe.getEsdtBalance(address, tokenId)
+		amount := fe.getRandomBigInt(balance)
+
+		return "str:" + tokenId, amount, nil
+	}
+
+	return "", nil, fmt.Errorf("Account has no ESDT")
+}
+
 func (fe *fuzzExecutor) nextTxIndex() int {
 	fe.txIndex++
 	return fe.txIndex
 }
 
+// Do NOT use with bigInts that don't fit [0, max(int64))
+// maxValue is inclusive
+func (fe *fuzzExecutor) getRandomBigInt(maxValue *big.Int) *big.Int {
+	return big.NewInt(int64(fe.randSource.Intn(int(maxValue.Int64())) + 1))
+}
+
 func (fe *fuzzExecutor) getRandomUser() string {
 	index := fe.randSource.Intn(len(fe.data.actorAddresses.users))
 	return fe.data.actorAddresses.users[index]
+}
+
+func (fe *fuzzExecutor) getEthAddress() string {
+	return "0x0102030405060708091011121314151617181920"
 }

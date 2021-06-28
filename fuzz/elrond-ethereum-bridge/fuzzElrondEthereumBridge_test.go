@@ -130,7 +130,7 @@ func TestElrondEthereumBridge(t *testing.T) {
 		re.Reset()
 
 		switch {
-		case re.WithProbability(0.25):
+		case re.WithProbability(0.75):
 			userAcc := fe.getRandomUser()
 			wrapAmount := big.NewInt(int64(fe.randSource.Intn(100) + 1))
 
@@ -138,17 +138,31 @@ func TestElrondEthereumBridge(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-		case re.WithProbability(0.75):
+		case re.WithProbability(0.10):
 			userAcc := fe.getRandomUser()
 			userWrappedEgldBalance := fe.getEsdtBalance(userAcc, string(fe.interpretExpr(fe.data.wrappedEgldTokenId)))
 
 			if userWrappedEgldBalance.Cmp(big.NewInt(0)) == 0 {
+				t.Log("No wrapped eGLD to unwrap")
 				continue
 			}
 
 			unwrapAmount := big.NewInt(int64(fe.randSource.Intn(int(userWrappedEgldBalance.Int64())) + 1))
 
 			err = fe.unwrapEgld(userAcc, unwrapAmount)
+			if err != nil {
+				t.Error(err)
+			}
+		case re.WithProbability(0.15):
+			userAcc := fe.getRandomUser()
+			tokenId, amount, err := fe.generateValidRandomEsdtPayment(userAcc)
+			if err != nil {
+				t.Log(err)
+				continue
+			}
+
+			destAddress := fe.getEthAddress()
+			err = fe.createEsdtSafeTransaction(userAcc, tokenId, amount, destAddress)
 			if err != nil {
 				t.Error(err)
 			}

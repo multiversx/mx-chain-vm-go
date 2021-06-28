@@ -143,7 +143,11 @@ func (fe *fuzzExecutor) setupChildContracts(
 		return err
 	}
 
+	fullWhitelist := []string{deployChildContractsArgs.wrappedEgldTokenId, deployChildContractsArgs.wrappedEthTokenId}
+	fullWhitelist = append(fullWhitelist, deployChildContractsArgs.tokenWhitelist...)
+
 	fe.data.wrappedEgldTokenId = deployChildContractsArgs.wrappedEgldTokenId
+	fe.data.tokenWhitelist = fullWhitelist
 
 	return nil
 }

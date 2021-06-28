@@ -49,12 +49,13 @@ func (fe *fuzzExecutor) wrapEgld(userAddress string, amount *big.Int) error {
 }
 
 func (fe *fuzzExecutor) unwrapEgld(userAddress string, amount *big.Int) error {
+	success := true
+	expectedErrMessage := ""
+
 	scEgldBalance := fe.getBalance(fe.data.actorAddresses.egldEsdtSwap)
 	if scEgldBalance.Cmp(amount) < 0 {
-		return fmt.Errorf("EgldEsdtSwap does not have enough EGLD balance. Have: %s, Need: %s",
-			scEgldBalance.String(),
-			amount.String(),
-		)
+		success = false
+		expectedErrMessage = "str:Contract does not have enough funds"
 	}
 
 	wrappedEgldTokenId := string(fe.interpretExpr(fe.data.wrappedEgldTokenId))
@@ -69,8 +70,8 @@ func (fe *fuzzExecutor) unwrapEgld(userAddress string, amount *big.Int) error {
 		amount,
 		"unwrapEgld",
 		[]string{},
-		true,
-		"",
+		success,
+		expectedErrMessage,
 		[]string{},
 	)
 	if err != nil {
