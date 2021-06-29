@@ -17,7 +17,7 @@ var fuzz = flag.Bool("fuzz", true, "Enable fuzz test")
 
 var seedFlag = flag.Int64("seed", 0, "Random seed, use it to replay fuzz scenarios")
 
-var iterationsFlag = flag.Int("iterations", 50, "Number of iterations")
+var iterationsFlag = flag.Int("iterations", 100, "Number of iterations")
 
 func getTestRoot() string {
 	exePath, err := os.Getwd()
@@ -187,6 +187,7 @@ func TestElrondEthereumBridge(t *testing.T) {
 				continue
 			}
 
+			// generate random statuses for action
 			statuses := []TransactionStatus{}
 			for i := 0; i < len(fe.data.multisigState.currentEsdtSafeTransactionBatch); i++ {
 				randNr := fe.randSource.Int31n(2)
@@ -195,6 +196,14 @@ func TestElrondEthereumBridge(t *testing.T) {
 				} else {
 					statuses = append(statuses, Rejected)
 				}
+			}
+
+			expectedBalances, err := fe.GetExpectedBalancesAfterBridgeTransferToEthereum(
+				fe.data.multisigState.currentEsdtSafeTransactionBatch,
+				statuses,
+			)
+			if err != nil {
+				t.Error(err)
 			}
 
 			actionId, err := fe.proposeEsdtSafeSetCurrentTransactionBatchStatus(
@@ -214,7 +223,20 @@ func TestElrondEthereumBridge(t *testing.T) {
 			fe.data.multisigState.currentEsdtSafeBatchId = 0
 			fe.data.multisigState.currentEsdtSafeTransactionBatch = []*Transaction{}
 
-			// TODO: Check before and after account balances, depending on TransactionStatus
+			for address := range expectedBalances {
+				for tokenId := range expectedBalances[address] {
+					expectedBalance := expectedBalances[address][tokenId]
+					actualBalance := fe.getEsdtBalance(address, tokenId)
+
+					if expectedBalance.Cmp(actualBalance) != 0 {
+						t.Errorf("Expected and actual balances do not match. Address: %s. Expected %s. Actual: %s",
+							address,
+							expectedBalance.String(),
+							actualBalance.String(),
+						)
+					}
+				}
+			}
 		default:
 		}
 	}

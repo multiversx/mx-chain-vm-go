@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"math/big"
+	"strconv"
 )
 
 func (fe *fuzzExecutor) interpretExpr(expression string) []byte {
@@ -93,4 +94,73 @@ func (fe *fuzzExecutor) bytesToInt(bytes []byte) int {
 	}
 
 	return int(binary.BigEndian.Uint64(intBytes))
+}
+
+func (fe *fuzzExecutor) GetExpectedBalancesAfterBridgeTransferToEthereum(
+	transactions []*Transaction, statuses []TransactionStatus,
+) (map[string]map[string]*big.Int, error) {
+
+	if len(transactions) != len(statuses) {
+		return nil, fmt.Errorf("Transactions and status array lengths do not match")
+	}
+
+	esdtSafeAddress := fe.data.actorAddresses.esdtSafe
+
+	balances := make(map[string]map[string]*big.Int)
+	balances[esdtSafeAddress] = make(map[string]*big.Int)
+
+	for i, tx := range transactions {
+		status := statuses[i]
+		var userBalance *big.Int
+		var esdtSafeBalance *big.Int
+
+		// initialize each sub-map
+		if _, ok := balances[tx.from]; !ok {
+			balances[tx.from] = make(map[string]*big.Int)
+		}
+
+		// take entry from map if it already exists
+		// this ensures consistency in cases where a single account performs multiple transfers
+		if balance, ok := balances[tx.from][tx.tokenId]; ok {
+			userBalance = balance
+		} else {
+			userBalance = fe.getEsdtBalance(tx.from, tx.tokenId)
+		}
+
+		if balance, ok := balances[esdtSafeAddress][tx.tokenId]; ok {
+			esdtSafeBalance = balance
+		} else {
+			esdtSafeBalance = fe.getEsdtBalance(esdtSafeAddress, tx.tokenId)
+		}
+
+		// EsdtSafe SC either burns or returns the tokens, so balance decreases in both cases
+		esdtSafeNewBalance := big.NewInt(0)
+		esdtSafeNewBalance.Sub(esdtSafeBalance, tx.amount)
+		balances[esdtSafeAddress][tx.tokenId] = esdtSafeNewBalance
+
+		switch status {
+		case Executed:
+			// tokens are burned, so no change to user's balance
+			balances[tx.from][tx.tokenId] = userBalance
+		case Rejected:
+			// tokens are returned to the user
+			newUserBalance := big.NewInt(0)
+			newUserBalance.Add(userBalance, tx.amount)
+
+			balances[tx.from][tx.tokenId] = newUserBalance
+		default:
+			return nil, fmt.Errorf("Invalid status provided: %s", strconv.Itoa(int(status)))
+		}
+	}
+
+	return balances, nil
+}
+
+func (fe *fuzzExecutor) GetExpectedBalancesAfterBridgeTransferToElrond(
+	transfers []*SimpleTransfer, statuses []TransactionStatus,
+) map[string]map[string]*big.Int {
+
+	balances := make(map[string]map[string]*big.Int)
+
+	return balances
 }
