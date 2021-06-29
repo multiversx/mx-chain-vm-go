@@ -1,0 +1,71 @@
+{
+    "name": "register ok",
+    "steps": [
+        {
+            "step": "setState",
+            "accounts": {
+                "address:acc1": {
+                    "nonce": "0",
+                    "balance": "1,000,000",
+                    "storage": {},
+                    "code": ""
+                },
+                "address:attester": {
+                    "nonce": "0",
+                    "balance": "1,000,000",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "register-ok",
+            "comment": "arg is keccak256(keccak256(str:0123 456 789))",
+            "tx": {
+                "from": "address:acc1",
+                "to": "sc:contract",
+                "value": "500,000",
+                "function": "registerData",
+                "arguments": [
+                    "0x6d2ff32e31b14e2edbdfe411d3873edc90d77bd0a3b5779355686ff82a171a8d"
+                ],
+                "gasLimit": "80,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "comment": "u64:0 x 4 is to emulate a 256-bit zero address instead of writing 0x000...",
+            "accounts": {
+                "address:acc1": {
+                    "nonce": "1",
+                    "balance": "500,000",
+                    "storage": {},
+                    "code": ""
+                },
+                "sc:contract": {
+                    "nonce": "0",
+                    "balance": "500,000",
+                    "storage": {
+                        "str:REGISTRATION_COST": "500,000",
+                        "str:MAX_NONCE_DIFF": "1000",
+                        "str:TOTAL_ATTESTATORS": "1",
+                        "str:ATTESTATOR|address:attester": "3",
+                        "str:LIST_ATTESTATOR|u64:0": "address:attester",
+                        "str:USER|0x6d2ff32e31b14e2edbdfe411d3873edc90d77bd0a3b5779355686ff82a171a8d": "u8:1|u64:0|u64:0|u64:0|u64:0|address:acc1|address:attester|u64:0|u32:0"
+                    },
+                    "code": "file:attestation.wasm"
+                },
+                "+": ""
+            }
+        }
+    ]
+}

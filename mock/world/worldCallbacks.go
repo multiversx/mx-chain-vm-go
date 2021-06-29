@@ -7,9 +7,8 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ElrondNetwork/elrond-go/core"
-	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
-	"github.com/ElrondNetwork/elrond-go/data/esdt"
+	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
 )
 
 var _ vmcommon.BlockchainHook = (*MockWorld)(nil)
@@ -242,7 +241,7 @@ func (b *MockWorld) GetShardOfAddress(address []byte) uint32 {
 func (b *MockWorld) IsSmartContract(address []byte) bool {
 	account := b.AcctMap.GetAccount(address)
 	if account == nil {
-		return core.IsSmartContractAddress(address)
+		return vmcommon.IsSmartContractAddress(address)
 	}
 
 	return account.IsSmartContract

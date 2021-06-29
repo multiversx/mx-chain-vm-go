@@ -11,12 +11,11 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen/cryptoapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen/elrondapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto/factory"
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
-	"github.com/ElrondNetwork/elrond-go/core"
-	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	"github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
 
@@ -48,7 +47,7 @@ func InitializeArwenAndWasmer() *contextmock.VMHostMock {
 	host.MeteringContext = mockMetering
 	host.BlockchainContext, _ = NewBlockchainContext(host, worldmock.NewMockWorld())
 	host.OutputContext, _ = NewOutputContext(host)
-	host.CryptoHook = crypto.NewVMCrypto()
+	host.CryptoHook = factory.NewVMCrypto()
 	return host
 }
 
@@ -165,7 +164,7 @@ func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
 		CallValue:      big.NewInt(0),
 		ESDTValue:      big.NewInt(4242),
 		ESDTTokenName:  []byte("random_token"),
-		ESDTTokenType:  uint32(core.NonFungible),
+		ESDTTokenType:  uint32(vmcommon.NonFungible),
 		ESDTTokenNonce: 94,
 	}
 	callInput := &vmcommon.ContractCallInput{
@@ -184,7 +183,7 @@ func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
 	runtimeInput := runtimeContext.GetVMInput()
 	require.Zero(t, big.NewInt(4242).Cmp(runtimeInput.ESDTValue))
 	require.True(t, bytes.Equal([]byte("random_token"), runtimeInput.ESDTTokenName))
-	require.Equal(t, uint32(core.NonFungible), runtimeInput.ESDTTokenType)
+	require.Equal(t, uint32(vmcommon.NonFungible), runtimeInput.ESDTTokenType)
 	require.Equal(t, uint64(94), runtimeInput.ESDTTokenNonce)
 
 	vmInput2 := vmcommon.VMInput{

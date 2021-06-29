@@ -1,6 +1,7 @@
-package crypto
+package factory
 
 import (
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto/hashing"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto/signing/bls"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto/signing/ed25519"
@@ -8,12 +9,12 @@ import (
 )
 
 // NewVMCrypto returns a composite struct containing VMCrypto functionality implementations
-func NewVMCrypto() VMCrypto {
+func NewVMCrypto() crypto.VMCrypto {
 	return struct {
-		Hasher
-		Ed25519
-		BLS
-		Secp256k1
+		crypto.Hasher
+		crypto.Ed25519
+		crypto.BLS
+		crypto.Secp256k1
 	}{
 		Hasher:    hashing.NewHasher(),
 		Ed25519:   ed25519.NewEd25519Signer(),

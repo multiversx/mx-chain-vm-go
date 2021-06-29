@@ -96,10 +96,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
-	"github.com/ElrondNetwork/elrond-go/core"
-	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
-	"github.com/ElrondNetwork/elrond-go/data/esdt"
-	"github.com/ElrondNetwork/elrond-go/testscommon/txDataBuilder"
+	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
 )
 
 var logEEI = logger.GetOrCreate("arwen/eei")
@@ -1228,7 +1225,7 @@ func TransferESDTNFTExecuteWithTypedArgs(
 		contractCallInput.ESDTTokenName = esdtTokenName
 		contractCallInput.ESDTTokenNonce = uint64(nonce)
 		if nonce > 0 {
-			contractCallInput.ESDTTokenType = uint32(core.NonFungible)
+			contractCallInput.ESDTTokenType = uint32(vmcommon.NonFungible)
 		}
 	}
 
@@ -1621,20 +1618,18 @@ func upgradeContract(
 	// Set up the async call as if it is not known whether the called SC
 	// is in the same shard with the caller or not. This will be later resolved
 	// by runtime.ExecuteAsyncCall().
-	callData := txDataBuilder.NewBuilder()
-	callData.Func(arwen.UpgradeFunctionName)
-	callData.Bytes(code).Bytes(codeMetadata)
-
+	callData := arwen.UpgradeFunctionName + "@" + hex.EncodeToString(code) + "@" + hex.EncodeToString(codeMetadata)
 	for _, arg := range data {
-		callData.Bytes(arg)
+		callData += "@" + hex.EncodeToString(arg)
 	}
 
 	async := host.Async()
-	async.RegisterLegacyAsyncCall(
+	err := async.RegisterLegacyAsyncCall(
 		destContractAddress,
-		callData.ToBytes(),
+		[]byte(callData),
 		value,
 	)
+	logEEI.Trace("upgradeContract", "error", err)
 }
 
 //export v1_3_getArgumentLength
@@ -1994,7 +1989,7 @@ func v1_3_getCurrentESDTNFTNonce(context unsafe.Pointer, addressOffset int32, to
 		return 0
 	}
 
-	key := []byte(core.ElrondProtectedKeyPrefix + core.ESDTNFTLatestNonceIdentifier + string(tokenID))
+	key := []byte(vmcommon.ElrondProtectedKeyPrefix + vmcommon.ESDTNFTLatestNonceIdentifier + string(tokenID))
 	data := storage.GetStorageFromAddress(destination, key)
 
 	nonce := big.NewInt(0).SetBytes(data).Uint64()

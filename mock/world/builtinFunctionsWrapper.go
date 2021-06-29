@@ -2,25 +2,21 @@ package worldmock
 
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock"
-	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
-	"github.com/ElrondNetwork/elrond-go/data/state"
-	"github.com/ElrondNetwork/elrond-go/marshal"
-	"github.com/ElrondNetwork/elrond-go/process"
-	"github.com/ElrondNetwork/elrond-go/process/smartContract/builtInFunctions"
+	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 )
 
 // WorldMarshalizer is the global marshalizer to be used by the components of
 // the BuiltinFunctionsWrapper.
-var WorldMarshalizer = &marshal.GogoProtoMarshalizer{}
+var WorldMarshalizer = &GogoProtoMarshalizer{}
 
 // BuiltinFunctionsWrapper manages and initializes a BuiltInFunctionContainer
 // along with its dependencies
 type BuiltinFunctionsWrapper struct {
-	Container       process.BuiltInFunctionContainer
+	Container       vmcommon.BuiltInFunctionContainer
 	MapDNSAddresses map[string]struct{}
 	World           *MockWorld
-	Marshalizer     marshal.Marshalizer
+	Marshalizer     vmcommon.Marshalizer
 }
 
 // NewBuiltinFunctionsWrapper creates a new BuiltinFunctionsWrapper with
@@ -33,7 +29,7 @@ func NewBuiltinFunctionsWrapper(
 	dnsMap := makeDNSAddresses(numDNSAddresses)
 
 	argsBuiltIn := builtInFunctions.ArgsCreateBuiltInFunctionContainer{
-		GasSchedule:      mock.NewGasScheduleNotifierMock(gasMap),
+		GasMap:           gasMap,
 		MapDNSAddresses:  dnsMap,
 		Marshalizer:      WorldMarshalizer,
 		Accounts:         world.AccountsAdapter,
@@ -84,7 +80,7 @@ func (bf *BuiltinFunctionsWrapper) GetBuiltinFunctionNames() vmcommon.FunctionNa
 }
 
 // TODO change AccountMap to support this instead
-func (bf *BuiltinFunctionsWrapper) getAccountSharded(address []byte) state.UserAccountHandler {
+func (bf *BuiltinFunctionsWrapper) getAccountSharded(address []byte) vmcommon.UserAccountHandler {
 	accountShard := bf.World.ComputeId(address)
 	if accountShard != bf.World.SelfId() {
 		return nil
