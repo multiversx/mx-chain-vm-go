@@ -5,8 +5,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/math"
-	"github.com/ElrondNetwork/elrond-go/core"
-	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 func (context *asyncContext) executeSynchronousCalls() error {
@@ -289,7 +288,7 @@ func (context *asyncContext) createCallbackInput(
 	}
 
 	if isESDTOnCallBack {
-		contractCallInput.Function = core.BuiltInFunctionESDTTransfer
+		contractCallInput.Function = vmcommon.BuiltInFunctionESDTTransfer
 		contractCallInput.Arguments = make([][]byte, 0, len(arguments))
 		contractCallInput.Arguments = append(contractCallInput.Arguments, esdtArgs[0], esdtArgs[1])
 		contractCallInput.Arguments = append(contractCallInput.Arguments, []byte(callbackFunction))
@@ -369,7 +368,7 @@ func (context *asyncContext) isESDTTransferOnData(data []byte) (bool, [][]byte) 
 		return false, nil
 	}
 
-	return functionName == core.BuiltInFunctionESDTTransfer, args
+	return functionName == vmcommon.BuiltInFunctionESDTTransfer, args
 }
 
 func (context *asyncContext) computeCallValueFromVMOutput(destinationVMOutput *vmcommon.VMOutput) *big.Int {

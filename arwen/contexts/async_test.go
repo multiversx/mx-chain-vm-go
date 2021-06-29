@@ -7,11 +7,11 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto/factory"
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
-	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
 
@@ -49,7 +49,7 @@ func InitializeArwenAndWasmer_AsyncContext() (*contextmock.VMHostMock, *worldmoc
 	host.RuntimeContext = runtimeContext
 
 	host.OutputContext, _ = NewOutputContext(host)
-	host.CryptoHook = crypto.NewVMCrypto()
+	host.CryptoHook = factory.NewVMCrypto()
 	return host, world
 }
 

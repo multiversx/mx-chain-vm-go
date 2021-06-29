@@ -4,7 +4,7 @@ import (
 	"encoding/hex"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
-	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 func (host *vmHost) handleAsyncCallBreakpoint() error {

@@ -1,5 +1,7 @@
 package host
 
+// TODO matei-p remove this file!
+
 // import (
 // 	"bytes"
 // 	"encoding/hex"
@@ -9,9 +11,8 @@ package host
 // 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 // 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/math"
 // 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
-// 	"github.com/ElrondNetwork/elrond-go/core"
-// 	"github.com/ElrondNetwork/elrond-go/core/parsers"
-// 	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
+// 	"github.com/ElrondNetwork/elrond-vm-common"
+//	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 // )
 
 // // func (host *vmHost) handleAsyncCallBreakpoint() error {
