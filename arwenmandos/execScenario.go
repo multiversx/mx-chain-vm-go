@@ -4,7 +4,7 @@ import (
 	mc "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/controller"
 	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/fileresolver"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/model"
-	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	vmi "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // Reset clears state/world.
@@ -85,7 +85,7 @@ func (ae *ArwenTestExecutor) ExecuteSetStateStep(step *mj.SetStateStep) error {
 
 	// append accounts
 	for _, mandosAccount := range step.Accounts {
-		worldAccount, err := convertAccount(mandosAccount)
+		worldAccount, err := convertAccount(mandosAccount, ae.World)
 		if err != nil {
 			return err
 		}

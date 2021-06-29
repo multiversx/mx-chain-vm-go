@@ -7,9 +7,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto/hashing"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
-	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
-	"github.com/ElrondNetwork/elrond-go/data"
-	"github.com/ElrondNetwork/elrond-go/data/state"
+	"github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // ErrOperationNotPermitted indicates an operation rejected due to insufficient
@@ -18,9 +16,6 @@ var ErrOperationNotPermitted = errors.New("operation not permitted")
 
 // ErrInvalidAddressLength indicates an incorrect length given for an address.
 var ErrInvalidAddressLength = errors.New("invalid address length")
-
-var _ state.AccountHandler = (*Account)(nil)
-var _ state.DataTrieTracker = (*Account)(nil)
 
 // Account holds the account info
 type Account struct {
@@ -153,8 +148,8 @@ func (a *Account) SetRootHash(hash []byte) {
 	a.RootHash = hash
 }
 
-// DataTrieTracker -
-func (a *Account) DataTrieTracker() state.DataTrieTracker {
+// AccountDataHandler -
+func (a *Account) AccountDataHandler() vmcommon.AccountDataHandler {
 	return a
 }
 
@@ -235,18 +230,10 @@ func (a *Account) RetrieveValue(key []byte) ([]byte, error) {
 // SaveKeyValue -
 func (a *Account) SaveKeyValue(key []byte, value []byte) error {
 	a.Storage[string(key)] = value
-	if a.MockWorld != nil {
-		a.MockWorld.CreateStateBackup()
+	if a.MockWorld == nil {
+		return ErrNilWorldMock
 	}
-	return nil
-}
-
-// SetDataTrie -
-func (a *Account) SetDataTrie(tr data.Trie) {
-}
-
-// DataTrie -
-func (a *Account) DataTrie() data.Trie {
+	a.MockWorld.CreateStateBackup()
 	return nil
 }
 

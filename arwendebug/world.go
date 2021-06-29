@@ -1,11 +1,13 @@
 package arwendebug
 
 import (
+	"math/big"
+
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen/host"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
-	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	"github.com/ElrondNetwork/elrond-vm-common"
 )
 
 type worldDataModel struct {
@@ -121,17 +123,24 @@ func (w *world) createAccount(request CreateAccountRequest) *CreateAccountRespon
 	log.Trace("w.createAccount()", "request", prettyJson(request))
 
 	account := worldmock.Account{
-		Address: request.Address,
-		Nonce:   request.Nonce,
-		Balance: request.BalanceAsBigInt,
+		Address:         request.Address,
+		Nonce:           request.Nonce,
+		Balance:         request.BalanceAsBigInt,
+		BalanceDelta:    big.NewInt(0),
+		DeveloperReward: big.NewInt(0),
 	}
 	w.blockchainHook.AcctMap.PutAccount(&account)
 	return &CreateAccountResponse{Account: &account}
 }
 
 func (w *world) toDataModel() *worldDataModel {
+	accounts := w.blockchainHook.AcctMap.Clone()
+	for _, account := range accounts {
+		account.MockWorld = nil
+	}
+
 	return &worldDataModel{
 		ID:       w.id,
-		Accounts: w.blockchainHook.AcctMap,
+		Accounts: accounts,
 	}
 }

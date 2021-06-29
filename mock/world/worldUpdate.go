@@ -4,7 +4,7 @@ import (
 	"errors"
 	"math/big"
 
-	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	"github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // UpdateBalance sets a new balance to an account
@@ -68,7 +68,7 @@ func (b *MockWorld) UpdateAccounts(
 func (b *MockWorld) UpdateAccountFromOutputAccount(modAcct *vmcommon.OutputAccount) {
 	acct := b.AcctMap.GetAccount(modAcct.Address)
 	if acct == nil {
-		acct = b.AcctMap.CreateAccount(modAcct.Address)
+		acct = b.AcctMap.CreateAccount(modAcct.Address, b)
 		acct.OwnerAddress = modAcct.CodeDeployerAddress
 		b.AcctMap.PutAccount(acct)
 	}
@@ -100,7 +100,7 @@ func (b *MockWorld) UpdateAccountFromOutputAccount(modAcct *vmcommon.OutputAccou
 
 // CreateStateBackup -
 func (b *MockWorld) CreateStateBackup() {
-	b.AccountsAdapter.SnapshotState(nil, nil)
+	b.AccountsAdapter.(*MockAccountsAdapter).SnapshotState(nil, nil)
 }
 
 // CommitChanges -

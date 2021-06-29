@@ -18,7 +18,7 @@ import (
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
-	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	"github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
 
@@ -55,6 +55,9 @@ var ESDTTestTokenName = []byte("TT")
 
 // ESDTTestTokenKey is an exposed value to use in tests
 var ESDTTestTokenKey = worldmock.MakeTokenKey(ESDTTestTokenName, 0)
+
+// DefaultCodeMetadata is an exposed value to use in tests
+var DefaultCodeMetadata = []byte{3, 0}
 
 // MakeTestSCAddress generates a new smart contract address to be used for
 // testing based on the given identifier.
@@ -175,7 +178,7 @@ func DefaultTestArwenForCallWithWorldMock(tb testing.TB, code []byte, balance *b
 
 	host.SetProtocolBuiltinFunctions(world.BuiltinFuncs.GetBuiltinFunctionNames())
 
-	parentAccount := world.AcctMap.CreateSmartContractAccount(UserAddress, ParentAddress, code)
+	parentAccount := world.AcctMap.CreateSmartContractAccount(UserAddress, ParentAddress, code, world)
 	parentAccount.Balance = balance
 
 	return host, world
@@ -240,7 +243,12 @@ func defaultTestArwenForContracts(
 	codeMap := make(map[string]*[]byte)
 
 	for _, contract := range contracts {
-		contractsMap[string(contract.address)] = &contextmock.StubAccount{Address: contract.address, Balance: big.NewInt(contract.balance)}
+		contractsMap[string(contract.address)] = &contextmock.StubAccount{
+			Address:      contract.address,
+			Balance:      big.NewInt(contract.balance),
+			CodeMetadata: DefaultCodeMetadata,
+			OwnerAddress: ParentAddress,
+		}
 		codeMap[string(contract.address)] = &contract.code
 	}
 
@@ -301,7 +309,7 @@ func DefaultTestArwen(tb testing.TB, blockchain vmcommon.BlockchainHook) arwen.V
 // given MockWorld under a SC address built with the given identifier.
 func AddTestSmartContractToWorld(world *worldmock.MockWorld, identifier string, code []byte) *worldmock.Account {
 	address := MakeTestSCAddress(identifier)
-	return world.AcctMap.CreateSmartContractAccount(UserAddress, address, code)
+	return world.AcctMap.CreateSmartContractAccount(UserAddress, address, code, world)
 }
 
 // DefaultTestContractCreateInput creates a vmcommon.ContractCreateInput struct
