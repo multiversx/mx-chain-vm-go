@@ -18,7 +18,7 @@ var fuzz = flag.Bool("fuzz", true, "Enable fuzz test")
 
 var seedFlag = flag.Int64("seed", 0, "Random seed, use it to replay fuzz scenarios")
 
-var iterationsFlag = flag.Int("iterations", 100, "Number of iterations")
+var iterationsFlag = flag.Int("iterations", 1000, "Number of iterations")
 
 func getTestRoot() string {
 	exePath, err := os.Getwd()
