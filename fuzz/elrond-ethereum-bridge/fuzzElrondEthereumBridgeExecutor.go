@@ -28,6 +28,7 @@ type fuzzExecutor struct {
 	vm                vmi.VMExecutionHandler
 	mandosParser      mjparse.Parser
 	txIndex           int
+	ethereumBatchId   int
 	generatedScenario *mj.Scenario
 	randSource        rand.Rand
 	data              *fuzzData

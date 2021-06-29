@@ -62,9 +62,26 @@ func (fe *fuzzExecutor) generateValidRandomEsdtPayment(address string) (string, 
 	return "", nil, fmt.Errorf("Account has no ESDT")
 }
 
+func (fe *fuzzExecutor) generateValidBridgedEsdtPayment() *SimpleTransfer {
+	destAddress := fe.getRandomAccount()
+	tokenId := fe.getRandomTokenIdFromWhitelist()
+	amount := big.NewInt(fe.randSource.Int63n(1000) + 1)
+
+	return &SimpleTransfer{
+		to:      destAddress,
+		tokenId: tokenId,
+		amount:  amount,
+	}
+}
+
 func (fe *fuzzExecutor) nextTxIndex() int {
 	fe.txIndex++
 	return fe.txIndex
+}
+
+func (fe *fuzzExecutor) nextEthereumBatchId() int {
+	fe.ethereumBatchId++
+	return fe.ethereumBatchId
 }
 
 // Do NOT use with bigInts that don't fit [0, max(int64))
@@ -81,6 +98,22 @@ func (fe *fuzzExecutor) getRandomUser() string {
 func (fe *fuzzExecutor) getRandomRelayer() string {
 	index := fe.randSource.Intn(len(fe.data.actorAddresses.relayers))
 	return fe.data.actorAddresses.relayers[index]
+}
+
+// 75% user account, 25% SC account
+func (fe *fuzzExecutor) getRandomAccount() string {
+	randNr := fe.randSource.Float32()
+	if randNr < 0.75 {
+		return fe.getRandomUser()
+	} else {
+		// doesn't matter which SC address is returned
+		return fe.data.actorAddresses.esdtSafe
+	}
+}
+
+func (fe *fuzzExecutor) getRandomTokenIdFromWhitelist() string {
+	index := fe.randSource.Intn(len(fe.data.tokenWhitelist))
+	return fe.data.tokenWhitelist[index]
 }
 
 func (fe *fuzzExecutor) getEthAddress() string {
@@ -156,11 +189,34 @@ func (fe *fuzzExecutor) GetExpectedBalancesAfterBridgeTransferToEthereum(
 	return balances, nil
 }
 
-func (fe *fuzzExecutor) GetExpectedBalancesAfterBridgeTransferToElrond(
-	transfers []*SimpleTransfer, statuses []TransactionStatus,
+// statuses are only available after the action is executed
+// so we assume all of them executed successfuly and let the caller handle the error cases
+func (fe *fuzzExecutor) GetExpectedBalancesAfterBridgeTransferToElrond(transfers []*SimpleTransfer,
 ) map[string]map[string]*big.Int {
 
 	balances := make(map[string]map[string]*big.Int)
+
+	for _, transf := range transfers {
+		var userBalance *big.Int
+
+		// initialize each sub-map
+		if _, ok := balances[transf.to]; !ok {
+			balances[transf.to] = make(map[string]*big.Int)
+		}
+
+		// take entry from map if it already exists
+		// this ensures consistency in cases where a single account is the destination for multiple transfers
+		if balance, ok := balances[transf.to][transf.tokenId]; ok {
+			userBalance = balance
+		} else {
+			userBalance = fe.getEsdtBalance(transf.to, transf.tokenId)
+		}
+
+		newUserBalance := big.NewInt(0)
+		newUserBalance.Add(userBalance, transf.amount)
+
+		balances[transf.to][transf.tokenId] = newUserBalance
+	}
 
 	return balances
 }

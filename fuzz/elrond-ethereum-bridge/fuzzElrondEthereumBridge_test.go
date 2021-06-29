@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
 	"time"
 
@@ -138,7 +139,7 @@ func TestElrondEthereumBridge(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-		case re.WithProbability(0.1):
+		case re.WithProbability(0.05):
 			userAcc := fe.getRandomUser()
 			userWrappedEgldBalance := fe.getEsdtBalance(userAcc, fe.data.wrappedEgldTokenId)
 
@@ -149,6 +150,13 @@ func TestElrondEthereumBridge(t *testing.T) {
 			}
 
 			unwrapAmount := fe.getRandomBigInt(userWrappedEgldBalance)
+			scEgldBalance := fe.getBalance(fe.data.actorAddresses.egldEsdtSwap)
+
+			// EgldEsdtSwap does not have enough funds
+			if unwrapAmount.Cmp(scEgldBalance) > 0 {
+				stepIndex--
+				continue
+			}
 
 			err = fe.unwrapEgld(userAcc, unwrapAmount)
 			if err != nil {
@@ -215,7 +223,7 @@ func TestElrondEthereumBridge(t *testing.T) {
 				t.Error(err)
 			}
 
-			err = fe.performAction(fe.getRandomRelayer(), actionId)
+			_, err = fe.performAction(fe.getRandomRelayer(), actionId)
 			if err != nil {
 				t.Error(err)
 			}
@@ -223,6 +231,66 @@ func TestElrondEthereumBridge(t *testing.T) {
 			fe.data.multisigState.currentEsdtSafeBatchId = 0
 			fe.data.multisigState.currentEsdtSafeTransactionBatch = []*Transaction{}
 
+			for address := range expectedBalances {
+				for tokenId := range expectedBalances[address] {
+					expectedBalance := expectedBalances[address][tokenId]
+					actualBalance := fe.getEsdtBalance(address, tokenId)
+
+					if expectedBalance.Cmp(actualBalance) != 0 {
+						t.Errorf("Expected and actual balances do not match. Address: %s. Expected %s. Actual: %s",
+							address,
+							expectedBalance.String(),
+							actualBalance.String(),
+						)
+					}
+				}
+			}
+		case re.WithProbability(0.05):
+			nrTransfers := fe.randSource.Intn(10) + 1
+
+			var transfers []*SimpleTransfer
+			for i := 0; i < nrTransfers; i++ {
+				transfers = append(transfers, fe.generateValidBridgedEsdtPayment())
+			}
+
+			batchId := fe.nextEthereumBatchId()
+			expectedBalances := fe.GetExpectedBalancesAfterBridgeTransferToElrond(transfers)
+
+			actionId, err := fe.proposeMultiTransferEsdtBatch(
+				fe.getRandomRelayer(),
+				batchId,
+				transfers,
+			)
+			if err != nil {
+				t.Error(err)
+			}
+
+			output, err := fe.performAction(fe.getRandomRelayer(), actionId)
+			if err != nil {
+				t.Error(err)
+			}
+
+			// output contains the status for each transfer
+			for i := 0; i < nrTransfers; i++ {
+				status := TransactionStatus(fe.bytesToInt(output[i]))
+
+				switch status {
+				case Executed:
+					// no change needed
+				case Rejected:
+					// deduct balance from user for the specific transfer
+					transfer := transfers[i]
+
+					newUserBalance := big.NewInt(0)
+					newUserBalance.Sub(expectedBalances[transfer.to][transfer.tokenId], transfer.amount)
+
+					expectedBalances[transfer.to][transfer.tokenId] = newUserBalance
+				default:
+					t.Errorf("Invalid status parsed from output: %s", strconv.Itoa(int(status)))
+				}
+			}
+
+			// check to see if expected and actual balances match
 			for address := range expectedBalances {
 				for tokenId := range expectedBalances[address] {
 					expectedBalance := expectedBalances[address][tokenId]

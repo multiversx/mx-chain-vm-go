@@ -27,8 +27,8 @@ func (fe *fuzzExecutor) sign(relayerAddress string, actionId int) error {
 	return nil
 }
 
-func (fe *fuzzExecutor) performAction(relayerAddress string, actionId int) error {
-	_, err := fe.performSmartContractCall(
+func (fe *fuzzExecutor) performAction(relayerAddress string, actionId int) ([][]byte, error) {
+	output, err := fe.performSmartContractCall(
 		relayerAddress,
 		fe.data.actorAddresses.multisig,
 		big.NewInt(0),
@@ -36,13 +36,13 @@ func (fe *fuzzExecutor) performAction(relayerAddress string, actionId int) error
 		[]string{strconv.Itoa(actionId)},
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	delete(fe.data.multisigState.actions, actionId)
 	delete(fe.data.multisigState.signatures, actionId)
 
-	return nil
+	return output, nil
 }
 
 func (fe *fuzzExecutor) hasSignedAlready(relayerAddress string, actionId int) bool {
