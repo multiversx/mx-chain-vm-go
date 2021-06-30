@@ -153,13 +153,13 @@ func TestElrondEthereumBridge(t *testing.T) {
 			scEgldBalance := fe.getBalance(fe.data.actorAddresses.egldEsdtSwap)
 
 			// EgldEsdtSwap does not have enough funds
+			expectedError := ""
 			if unwrapAmount.Cmp(scEgldBalance) > 0 {
-				stepIndex--
-				continue
+				expectedError = "Contract does not have enough funds"
 			}
 
 			err = fe.unwrapEgld(userAcc, unwrapAmount)
-			if err != nil {
+			if err != nil && err.Error() != expectedError {
 				t.Error(err)
 			}
 		case re.WithProbability(0.25):
@@ -179,20 +179,20 @@ func TestElrondEthereumBridge(t *testing.T) {
 			}
 		case re.WithProbability(0.1):
 			// must execute current transaction batch first, so this scCall would fail
+			expectedError := ""
 			if len(fe.data.multisigState.currentEsdtSafeTransactionBatch) > 0 {
-				stepIndex--
-				continue
+				expectedError = "Must execute and set status for current tx batch first"
 			}
 
 			err := fe.getNextTransactionBatch()
-			if err != nil {
+			if err != nil && err.Error() != expectedError {
 				t.Error(err)
 			}
 		case re.WithProbability(0.05):
 			// must get batch first
+			expectedError := ""
 			if len(fe.data.multisigState.currentEsdtSafeTransactionBatch) == 0 {
-				stepIndex--
-				continue
+				expectedError = "There is no transaction to set status for"
 			}
 
 			// generate random statuses for action
@@ -220,7 +220,11 @@ func TestElrondEthereumBridge(t *testing.T) {
 				statuses...,
 			)
 			if err != nil {
-				t.Error(err)
+				if err.Error() != expectedError {
+					t.Error(err)
+				}
+
+				continue
 			}
 
 			_, err = fe.performAction(fe.getRandomRelayer(), actionId)
