@@ -54,3 +54,27 @@ func (fe *fuzzExecutor) hasSignedAlready(relayerAddress string, actionId int) bo
 
 	return false
 }
+
+func (fe *fuzzExecutor) getActionIdForSetCurrentTransactionBatchStatus(
+	esdtSafeBatchId int, statuses ...TransactionStatus) (int, error) {
+
+	args := []string{strconv.Itoa(esdtSafeBatchId)}
+	for _, status := range statuses {
+		args = append(args, strconv.Itoa(int(status)))
+	}
+
+	output, err := fe.performSmartContractCall(
+		fe.getRandomRelayer(),
+		fe.data.actorAddresses.multisig,
+		big.NewInt(0),
+		"getActionIdForSetCurrentTransactionBatchStatus",
+		args,
+	)
+	if err != nil {
+		return 0, err
+	}
+
+	actionId := fe.bytesToInt(output[0])
+
+	return actionId, nil
+}

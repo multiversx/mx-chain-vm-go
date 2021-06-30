@@ -20,6 +20,8 @@ var seedFlag = flag.Int64("seed", 0, "Random seed, use it to replay fuzz scenari
 
 var iterationsFlag = flag.Int("iterations", 1000, "Number of iterations")
 
+const EXECUTE_ACTION_PROBABILITY = 0.25
+
 func getTestRoot() string {
 	exePath, err := os.Getwd()
 	if err != nil {
@@ -131,7 +133,7 @@ func TestElrondEthereumBridge(t *testing.T) {
 		re.Reset()
 
 		switch {
-		case re.WithProbability(0.5):
+		case re.WithProbability(0.2):
 			userAcc := fe.getRandomUser()
 			wrapAmount := big.NewInt(int64(fe.randSource.Intn(100) + 1))
 
@@ -139,7 +141,7 @@ func TestElrondEthereumBridge(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-		case re.WithProbability(0.05):
+		case re.WithProbability(0.16):
 			userAcc := fe.getRandomUser()
 			userWrappedEgldBalance := fe.getEsdtBalance(userAcc, fe.data.wrappedEgldTokenId)
 
@@ -162,7 +164,7 @@ func TestElrondEthereumBridge(t *testing.T) {
 			if err != nil && err.Error() != expectedError {
 				t.Error(err)
 			}
-		case re.WithProbability(0.25):
+		case re.WithProbability(0.16):
 			userAcc := fe.getRandomUser()
 			tokenId, amount, err := fe.generateValidRandomEsdtPayment(userAcc)
 
@@ -177,7 +179,7 @@ func TestElrondEthereumBridge(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-		case re.WithProbability(0.1):
+		case re.WithProbability(0.16):
 			// must execute current transaction batch first, so this scCall would fail
 			expectedError := ""
 			if len(fe.data.multisigState.currentEsdtSafeTransactionBatch) > 0 {
@@ -188,7 +190,7 @@ func TestElrondEthereumBridge(t *testing.T) {
 			if err != nil && err.Error() != expectedError {
 				t.Error(err)
 			}
-		case re.WithProbability(0.05):
+		case re.WithProbability(0.16):
 			// must get batch first
 			expectedError := ""
 			if len(fe.data.multisigState.currentEsdtSafeTransactionBatch) == 0 {
@@ -214,16 +216,47 @@ func TestElrondEthereumBridge(t *testing.T) {
 				t.Error(err)
 			}
 
+			wasActionProposed := false
+			actionAlreadyProposedErrMsg := "Action already proposed"
 			actionId, err := fe.proposeEsdtSafeSetCurrentTransactionBatchStatus(
 				fe.getRandomRelayer(),
 				fe.data.multisigState.currentEsdtSafeBatchId,
 				statuses...,
 			)
-			if err != nil {
+
+			// in this case, we need to get the action ID by query
+			if err != nil && err.Error() == actionAlreadyProposedErrMsg {
+				actionId, err = fe.getActionIdForSetCurrentTransactionBatchStatus(
+					fe.data.multisigState.currentEsdtSafeBatchId,
+					statuses...,
+				)
+				if err != nil {
+					t.Error(err)
+
+					continue
+				}
+				if actionId == 0 {
+					t.Errorf("Action ID returned was 0 for EsdtSafe batchID %s",
+						strconv.Itoa(fe.data.multisigState.currentEsdtSafeBatchId))
+
+					continue
+				}
+
+				wasActionProposed = true
+
+			} else if err != nil {
+				// only signal error in test if the message is not the expected one
 				if err.Error() != expectedError {
 					t.Error(err)
 				}
 
+				continue
+			}
+
+			// To test multiple proposals, we only execute the proposed action with a probability
+			// of 25%, or if the exact action was proposed already
+			randNr := fe.randSource.Float32()
+			if !(wasActionProposed || randNr < EXECUTE_ACTION_PROBABILITY) {
 				continue
 			}
 
@@ -249,7 +282,7 @@ func TestElrondEthereumBridge(t *testing.T) {
 					}
 				}
 			}
-		case re.WithProbability(0.05):
+		case re.WithProbability(0.16):
 			nrTransfers := fe.randSource.Intn(10) + 1
 
 			var transfers []*SimpleTransfer
