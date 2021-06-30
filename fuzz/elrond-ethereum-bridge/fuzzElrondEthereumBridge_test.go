@@ -290,16 +290,55 @@ func TestElrondEthereumBridge(t *testing.T) {
 				transfers = append(transfers, fe.generateValidBridgedEsdtPayment())
 			}
 
-			batchId := fe.nextEthereumBatchId()
+			var batchId int
+			if fe.data.multisigState.currentEthereumBatchId != 0 {
+				batchId = fe.data.multisigState.currentEthereumBatchId
+			} else {
+				batchId = fe.nextEthereumBatchId()
+				fe.data.multisigState.currentEthereumBatchId = batchId
+			}
+
 			expectedBalances := fe.GetExpectedBalancesAfterBridgeTransferToElrond(transfers)
 
+			wasActionProposed := false
+			actionAlreadyProposedErrMsg := "This batch was already proposed"
 			actionId, err := fe.proposeMultiTransferEsdtBatch(
 				fe.getRandomRelayer(),
 				batchId,
 				transfers,
 			)
-			if err != nil {
+
+			// in this case, we need to get the action ID by query
+			if err != nil && err.Error() == actionAlreadyProposedErrMsg {
+				actionId, err = fe.getActionIdForTransferBatch(
+					fe.data.multisigState.currentEthereumBatchId,
+					transfers,
+				)
+				if err != nil {
+					t.Error(err)
+
+					continue
+				}
+				if actionId == 0 {
+					t.Errorf("Action ID returned was 0 for MultiTransferEsdt batchID %s",
+						strconv.Itoa(fe.data.multisigState.currentEthereumBatchId))
+
+					continue
+				}
+
+				wasActionProposed = true
+
+			} else if err != nil {
 				t.Error(err)
+
+				continue
+			}
+
+			// To test multiple proposals, we only execute the proposed action with a probability
+			// of 25%, or if the exact action was proposed already
+			randNr := fe.randSource.Float32()
+			if !(wasActionProposed || randNr < EXECUTE_ACTION_PROBABILITY) {
+				continue
 			}
 
 			output, err := fe.performAction(fe.getRandomRelayer(), actionId)
@@ -342,6 +381,9 @@ func TestElrondEthereumBridge(t *testing.T) {
 					}
 				}
 			}
+
+			fe.data.multisigState.currentEthereumBatchId = 0
+
 		default:
 		}
 	}

@@ -46,4 +46,6 @@ type MultisigState struct {
 
 	currentEsdtSafeBatchId          int
 	currentEsdtSafeTransactionBatch []*Transaction
+
+	currentEthereumBatchId int
 }

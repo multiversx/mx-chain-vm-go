@@ -78,3 +78,25 @@ func (fe *fuzzExecutor) getActionIdForSetCurrentTransactionBatchStatus(
 
 	return actionId, nil
 }
+
+func (fe *fuzzExecutor) getActionIdForTransferBatch(batchId int, transfers []*SimpleTransfer) (int, error) {
+	args := []string{strconv.Itoa(batchId)}
+	for _, transfer := range transfers {
+		args = append(args, transfer.to, transfer.tokenId, transfer.amount.String())
+	}
+
+	output, err := fe.performSmartContractCall(
+		fe.getRandomRelayer(),
+		fe.data.actorAddresses.multisig,
+		big.NewInt(0),
+		"getActionIdForTransferBatch",
+		args,
+	)
+	if err != nil {
+		return 0, err
+	}
+
+	actionId := fe.bytesToInt(output[0])
+
+	return actionId, nil
+}
