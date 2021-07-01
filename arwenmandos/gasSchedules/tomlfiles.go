@@ -116,7 +116,7 @@ const (
     GetBlockTimeStamp   = 1000
 
 [BigIntAPICost]
-	EllipticCurveNew		 = 10000
+	EllipticCurveNew		 = 500
     BigIntNew                = 100
     BigIntByteLength         = 100
     BigIntUnsignedByteLength = 100
