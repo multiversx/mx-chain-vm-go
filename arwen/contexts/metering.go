@@ -7,7 +7,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/math"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var logMetering = logger.GetOrCreate("arwen/metering")
@@ -147,10 +147,11 @@ func (context *meteringContext) UpdateGasStateOnSuccess(vmOutput *vmcommon.VMOut
 		return err
 	}
 
-	err = context.checkGas(vmOutput)
-	if err != nil {
-		return err
-	}
+	// TODO matei-p reactivate this!
+	// err = context.checkGas(vmOutput)
+	// if err != nil {
+	// 	return err
+	// }
 
 	return nil
 }

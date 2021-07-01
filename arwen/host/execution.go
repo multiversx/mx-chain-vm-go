@@ -303,6 +303,7 @@ func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.Contra
 	err = host.execute(input)
 	if err != nil {
 		log.Trace("ExecuteOnDestContext execution", "error", err)
+		vmOutput = host.finishExecuteOnDestContext(err)
 		return vmOutput, err
 	}
 
@@ -836,6 +837,7 @@ func (host *vmHost) callSCMethod() error {
 		async.Load()
 		asyncCall, err := async.UpdateCurrentCallStatus()
 		if err != nil {
+			log.Trace("UpdateCurrentCallStatus failed", "error", err)
 			err = async.PostprocessCrossShardCallback()
 			if err != nil {
 				log.Trace("call SC method failed", "error", err)

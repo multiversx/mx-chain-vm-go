@@ -147,8 +147,8 @@ func (context *asyncContext) GetCallGroup(groupID string) (*arwen.AsyncCallGroup
 	return nil, false
 }
 
-// addCallGroup adds the provided AsyncCallGroup to the AsyncContext, if it does not exist already.
-func (context *asyncContext) addCallGroup(group *arwen.AsyncCallGroup) error {
+// AddCallGroup adds the provided AsyncCallGroup to the AsyncContext, if it does not exist already.
+func (context *asyncContext) AddCallGroup(group *arwen.AsyncCallGroup) error {
 	_, exists := context.findGroupByID(group.Identifier)
 	if exists {
 		return arwen.ErrAsyncCallGroupExistsAlready
@@ -372,7 +372,7 @@ func (context *asyncContext) addAsyncCall(groupID string, call *arwen.AsyncCall)
 	group, ok := context.GetCallGroup(groupID)
 	if !ok {
 		group = arwen.NewAsyncCallGroup(groupID)
-		err := context.addCallGroup(group)
+		err := context.AddCallGroup(group)
 		if err != nil {
 			return err
 		}
@@ -551,7 +551,7 @@ func (context *asyncContext) Save() error {
 	runtime := context.host.Runtime()
 
 	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, runtime.GetPrevTxHash())
-	data, err := context.serialize()
+	data, err := context.Serialize()
 	if err != nil {
 		return err
 	}
@@ -710,7 +710,7 @@ func (context *asyncContext) sendContextCallbackToOriginalCaller() error {
 	return nil
 }
 
-func (context *asyncContext) serialize() ([]byte, error) {
+func (context *asyncContext) Serialize() ([]byte, error) {
 	serializableContext := context.toSerializable()
 	return json.Marshal(serializableContext)
 }

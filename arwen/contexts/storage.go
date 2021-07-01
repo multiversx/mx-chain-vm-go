@@ -8,7 +8,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/math"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-go-logger/check"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var logStorage = logger.GetOrCreate("arwen/storage")
@@ -208,10 +208,11 @@ func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.Stora
 		logStorage.Trace("storage set", "error", "cannot set storage in readonly mode")
 		return arwen.StorageUnchanged, nil
 	}
-	if context.isElrondReservedKey(key) {
-		logStorage.Trace("storage set", "error", arwen.ErrStoreElrondReservedKey, "key", key)
-		return arwen.StorageUnchanged, arwen.ErrStoreElrondReservedKey
-	}
+	// TODO matei-p uncomment this!!!
+	// if context.isElrondReservedKey(key) {
+	// 	logStorage.Trace("storage set", "error", arwen.ErrStoreElrondReservedKey, "key", key)
+	// 	return arwen.StorageUnchanged, arwen.ErrStoreElrondReservedKey
+	// }
 	if context.isArwenProtectedKey(key) && context.arwenStorageProtectionEnabled {
 		logStorage.Trace("storage set", "error", arwen.ErrCannotWriteProtectedKey, "key", key)
 		return arwen.StorageUnchanged, arwen.ErrCannotWriteProtectedKey

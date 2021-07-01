@@ -205,7 +205,7 @@ func TestAsyncContext_RegisterAsyncCall_ExistingGroup(t *testing.T) {
 	require.NotNil(t, async)
 	require.Equal(t, 0, len(async.asyncCallGroups))
 
-	err := async.addCallGroup(arwen.NewAsyncCallGroup("testGroup"))
+	err := async.AddCallGroup(arwen.NewAsyncCallGroup("testGroup"))
 	require.Nil(t, err)
 	require.Equal(t, 1, len(async.asyncCallGroups))
 	require.False(t, async.IsComplete())
