@@ -35,28 +35,35 @@ func PerformAsyncCallParentMock(instanceMock *mock.InstanceMock, config interfac
 		err := host.Output().Transfer(test.ThirdPartyAddress, scAddress, 0, 0, transferValue, []byte("hello"), 0)
 		require.Nil(t, err)
 
-		arguments := host.Runtime().Arguments()
-
-		callData := txDataBuilder.NewBuilder()
 		// function to be called on child
-		callData.Func(AsyncChildFunction)
 		// value to send to third party
-		callData.Int64(testConfig.TransferToThirdParty)
 		// data for child -> third party tx
-		callData.Str(AsyncChildData)
 		// behavior param for child
-		callData.Bytes(append(arguments[0]))
-
 		// amount to transfer from parent to child
-		value := big.NewInt(testConfig.TransferFromParentToChild).Bytes()
-
-		async := host.Async()
-		err = async.RegisterLegacyAsyncCall(test.ChildAddress, callData.ToBytes(), value)
+		err = RegisterAsyncCallToChild(host, testConfig, host.Runtime().Arguments())
 		require.Nil(t, err)
 
 		return instance
 
 	})
+}
+
+// RegisterAsyncCallToChild is resued also in some tests before async context serialization
+func RegisterAsyncCallToChild(host arwen.VMHost, testConfig *AsyncCallTestConfig, arguments [][]byte) error {
+	callData := txDataBuilder.NewBuilder()
+
+	callData.Func(AsyncChildFunction)
+
+	callData.Int64(testConfig.TransferToThirdParty)
+
+	callData.Str(AsyncChildData)
+
+	callData.Bytes(append(arguments[0]))
+
+	value := big.NewInt(testConfig.TransferFromParentToChild).Bytes()
+
+	async := host.Async()
+	return async.RegisterLegacyAsyncCall(test.ChildAddress, callData.ToBytes(), value)
 }
 
 // SimpleCallbackMock is an exposed mock contract method
