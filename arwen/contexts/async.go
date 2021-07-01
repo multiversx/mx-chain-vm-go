@@ -439,7 +439,7 @@ func (context *asyncContext) Execute() error {
 func (context *asyncContext) executeAsyncCall(asyncCall *arwen.AsyncCall) error {
 	// Cross-shard calls to built-in functions have two halves: an intra-shard
 	// half, followed by sending the call across shards.
-	if asyncCall.ExecutionMode == arwen.AsyncBuiltinFuncIntraShard {
+	if asyncCall.ExecutionMode == arwen.AsyncBuiltinFuncCrossShard {
 		err := context.executeSyncHalfOfBuiltinFunction(asyncCall)
 		if err != nil {
 			return err
@@ -623,6 +623,7 @@ func (context *asyncContext) determineExecutionMode(destination []byte, data []b
 
 			return arwen.AsyncBuiltinFuncIntraShard, nil
 		}
+
 		return arwen.AsyncBuiltinFuncCrossShard, nil
 	}
 
@@ -652,9 +653,6 @@ func (context *asyncContext) sendAsyncCallCrossShard(asyncCall *arwen.AsyncCall)
 		return err
 	}
 
-	// TODO matei-p, uncomment and update
-	// metering := host.Metering()
-	// metering.ForwardGas(runtime.GetSCAddress(), asyncCall.Destination, asyncCall.GetTotalGas())
 	return nil
 }
 

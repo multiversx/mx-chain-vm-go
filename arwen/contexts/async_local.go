@@ -69,7 +69,6 @@ func (context *asyncContext) executeSyncCallback(
 	destinationErr error,
 ) (*vmcommon.VMOutput, error) {
 	metering := context.host.Metering()
-	runtime := context.host.Runtime()
 
 	callbackInput, err := context.createCallbackInput(asyncCall, destinationVMOutput, destinationErr)
 	if err != nil {
@@ -77,8 +76,9 @@ func (context *asyncContext) executeSyncCallback(
 	}
 
 	gasConsumedForExecution := context.computeGasUsedInExecutionBeforeReset(callbackInput)
-	// used points should be reset before actually entering the callback execution
-	runtime.SetPointsUsed(0)
+	// Restore gas locked while still on the caller instance; otherwise, the
+	// locked gas will appear to have been used twice by the caller instance.
+	metering.RestoreGas(asyncCall.GetGasLocked())
 	callbackVMOutput, callBackErr := context.host.ExecuteOnDestContext(callbackInput)
 
 	execMode := asyncCall.ExecutionMode
