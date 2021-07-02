@@ -75,27 +75,12 @@ func (context *asyncContext) executeSyncCallback(
 		return nil, err
 	}
 
-	gasConsumedForExecution := context.computeGasUsedInExecutionBeforeReset(callbackInput)
 	// Restore gas locked while still on the caller instance; otherwise, the
 	// locked gas will appear to have been used twice by the caller instance.
 	metering.RestoreGas(asyncCall.GetGasLocked())
 	callbackVMOutput, callBackErr := context.host.ExecuteOnDestContext(callbackInput)
 
-	execMode := asyncCall.ExecutionMode
-	noErrorOnCallback := callBackErr == nil && callbackVMOutput.ReturnCode == vmcommon.Ok
-	noErrorOnAsyncCall := destinationErr == nil && destinationVMOutput.ReturnCode == vmcommon.Ok
-	if noErrorOnCallback && noErrorOnAsyncCall && execMode != arwen.AsyncBuiltinFuncIntraShard {
-		metering.UseGas(gasConsumedForExecution)
-	}
-
 	return callbackVMOutput, callBackErr
-}
-
-// TODO refactor this computation
-func (context *asyncContext) computeGasUsedInExecutionBeforeReset(vmInput *vmcommon.ContractCallInput) uint64 {
-	metering := context.host.Metering()
-	gasUsedForExecution := math.SubUint64(metering.GasUsedForExecution(), vmInput.GasLocked)
-	return gasUsedForExecution
 }
 
 // executeCallGroupCallback synchronously executes the designated callback of
