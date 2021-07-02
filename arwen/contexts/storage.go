@@ -191,8 +191,7 @@ func (context *storageContext) isArwenProtectedKey(key []byte) bool {
 
 func (context *storageContext) isElrondReservedKey(key []byte) bool {
 	prefixElrond := bytes.HasPrefix(key, context.elrondProtectedKeyPrefix)
-	prefixArwen := bytes.HasPrefix(key, []byte(arwen.AsyncDataPrefix))
-	return prefixElrond || prefixArwen
+	return prefixElrond
 }
 
 func (context *storageContext) SetProtectedStorage(key []byte, value []byte) (arwen.StorageStatus, error) {
@@ -208,11 +207,10 @@ func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.Stora
 		logStorage.Trace("storage set", "error", "cannot set storage in readonly mode")
 		return arwen.StorageUnchanged, nil
 	}
-	// TODO matei-p uncomment this!!!
-	// if context.isElrondReservedKey(key) {
-	// 	logStorage.Trace("storage set", "error", arwen.ErrStoreElrondReservedKey, "key", key)
-	// 	return arwen.StorageUnchanged, arwen.ErrStoreElrondReservedKey
-	// }
+	if context.isElrondReservedKey(key) {
+		logStorage.Trace("storage set", "error", arwen.ErrStoreElrondReservedKey, "key", key)
+		return arwen.StorageUnchanged, arwen.ErrStoreElrondReservedKey
+	}
 	if context.isArwenProtectedKey(key) && context.arwenStorageProtectionEnabled {
 		logStorage.Trace("storage set", "error", arwen.ErrCannotWriteProtectedKey, "key", key)
 		return arwen.StorageUnchanged, arwen.ErrCannotWriteProtectedKey
