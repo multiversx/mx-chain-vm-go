@@ -3,6 +3,7 @@ package contracts
 import (
 	"math/big"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
@@ -28,9 +29,19 @@ func ForwardAsyncCallMultiChildMock(instanceMock *mock.InstanceMock, config inte
 			callData.Func(function)
 			// recursiveChildCalls
 			callData.BigInt(big.NewInt(1))
+			// child will return this
+			callData.BigInt(big.NewInt(int64(childCall)))
 
 			async := host.Async()
-			err := async.RegisterLegacyAsyncCall(destination, callData.ToBytes(), value)
+			err := async.RegisterAsyncCall("myAsyncGroup", &arwen.AsyncCall{
+				Status:          arwen.AsyncCallPending,
+				Destination:     destination,
+				Data:            callData.ToBytes(),
+				ValueBytes:      value,
+				GasLimit:        uint64(100),
+				SuccessCallback: "callBack",
+				ErrorCallback:   "callBack",
+			})
 			require.Nil(t, err)
 		}
 

@@ -412,7 +412,7 @@ func TestGasUsed_ESDTTransferFromParent_ChildBurnsAndThenFails(t *testing.T) {
 }
 
 var asyncBaseTestConfig = contracts.AsyncCallBaseTestConfig{
-	GasProvided:       1000,
+	GasProvided:       2000,
 	GasUsedByParent:   400,
 	GasUsedByChild:    200,
 	GasUsedByCallback: 100,
@@ -642,6 +642,8 @@ func TestGasUsed_AsyncCall_CrossShard_CallBack(t *testing.T) {
 			setZeroCodeCosts(host)
 			setAsyncCosts(host, testConfig.GasLockCost)
 
+			// TODO factor this setup out if necessary for other tests
+
 			// created instance will be set on host and cached and reused by doRunSmartContractCall()
 			// this is necessary for gas usage metering of the Save() below
 			host.Runtime().StartWasmerInstance(test.ParentAddress, testConfig.GasUsedByParent, false)
@@ -730,6 +732,7 @@ func TestGasUsed_AsyncCall_BuiltinCallFail(t *testing.T) {
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			world.AcctMap.CreateAccount(test.UserAddress, world)
 			createMockBuiltinFunctions(t, host, world)
+			host.SetProtocolBuiltinFunctions(getDummyBuiltinFunctionNames())
 			setZeroCodeCosts(host)
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
@@ -900,12 +903,9 @@ func TestGasUsed_AsyncCall_CallBackFails(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCall_Recursive(t *testing.T) {
-	// TODO no possible yet, reactivate when new async context is merged
-	t.Skip()
-
 	testConfig := &contracts.AsyncCallRecursiveTestConfig{
 		AsyncCallBaseTestConfig: *&asyncBaseTestConfig,
-		RecursiveChildCalls:     2,
+		RecursiveChildCalls:     3,
 	}
 
 	expectedGasUsedByParent := testConfig.GasUsedByParent + testConfig.GasUsedByCallback
@@ -937,29 +937,22 @@ func TestGasUsed_AsyncCall_Recursive(t *testing.T) {
 			verify.
 				Ok().
 				BalanceDelta(test.ParentAddress, -testConfig.TransferFromParentToChild).
-				Transfers(
-					test.CreateTransferEntry(test.ParentAddress, test.ChildAddress).
-						WithData([]byte("hello")).
-						WithValue(big.NewInt(testConfig.TransferFromParentToChild)),
-				).
 				GasUsed(test.ParentAddress, expectedGasUsedByParent).
 				GasUsed(test.ChildAddress, expectedGasUsedByChild).
 				GasRemaining(testConfig.GasProvided-expectedGasUsedByParent-expectedGasUsedByChild).
-				BalanceDelta(test.ChildAddress, testConfig.TransferFromParentToChild)
+				BalanceDelta(test.ChildAddress, testConfig.TransferFromParentToChild).
+				ReturnData(big.NewInt(2).Bytes(), big.NewInt(1).Bytes(), big.NewInt(0).Bytes())
 		})
 }
 
 func TestGasUsed_AsyncCall_MultiChild(t *testing.T) {
-	// TODO no possible yet, reactivate when new async context is merged
-	t.Skip()
-
 	testConfig := &contracts.AsyncCallMultiChildTestConfig{
 		AsyncCallBaseTestConfig: *&asyncBaseTestConfig,
 		ChildCalls:              2,
 	}
 
-	expectedGasUsedByParent := testConfig.GasUsedByParent + testConfig.GasUsedByCallback
-	expectedGasUsedByChild := uint64(testConfig.ChildCalls) * testConfig.GasUsedByChild
+	// expectedGasUsedByParent := testConfig.GasUsedByParent + testConfig.GasUsedByCallback
+	// expectedGasUsedByChild := uint64(testConfig.ChildCalls) * testConfig.GasUsedByChild
 
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
@@ -985,16 +978,13 @@ func TestGasUsed_AsyncCall_MultiChild(t *testing.T) {
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
 				Ok().
-				BalanceDelta(test.ParentAddress, -testConfig.TransferFromParentToChild).
-				BalanceDelta(test.ChildAddress, testConfig.TransferFromParentToChild).
-				Transfers(
-					test.CreateTransferEntry(test.ParentAddress, test.ChildAddress).
-						WithData([]byte("hello")).
-						WithValue(big.NewInt(testConfig.TransferFromParentToChild)),
-				).
-				GasUsed(test.ParentAddress, expectedGasUsedByParent).
-				GasUsed(test.ChildAddress, expectedGasUsedByChild).
-				GasRemaining(testConfig.GasProvided - expectedGasUsedByParent - expectedGasUsedByChild)
+				BalanceDelta(test.ParentAddress, -2*testConfig.TransferFromParentToChild).
+				BalanceDelta(test.ChildAddress, 2*testConfig.TransferFromParentToChild).
+				// TODO matei-p enable gas checks
+				// GasUsed(test.ParentAddress, expectedGasUsedByParent).
+				// GasUsed(test.ChildAddress, expectedGasUsedByChild).
+				// GasRemaining(testConfig.GasProvided - expectedGasUsedByParent - expectedGasUsedByChild)
+				ReturnData(big.NewInt(0).Bytes(), big.NewInt(1).Bytes())
 		})
 }
 

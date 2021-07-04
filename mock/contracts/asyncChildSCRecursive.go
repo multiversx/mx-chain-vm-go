@@ -22,6 +22,11 @@ func RecursiveAsyncCallRecursiveChildMock(instanceMock *mock.InstanceMock, confi
 
 		recursiveChildCalls := big.NewInt(0).SetBytes(arguments[0]).Uint64()
 		recursiveChildCalls = recursiveChildCalls - 1
+		returnValue := big.NewInt(int64(recursiveChildCalls)).Bytes()
+		if len(arguments) == 2 {
+			returnValue = arguments[1]
+		}
+		host.Output().Finish(returnValue)
 		if recursiveChildCalls == 0 {
 			return instance
 		}

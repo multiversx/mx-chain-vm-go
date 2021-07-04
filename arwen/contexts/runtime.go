@@ -12,7 +12,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var logRuntime = logger.GetOrCreate("arwen/runtime")
@@ -517,14 +517,17 @@ func (context *runtimeContext) ExtractCodeUpgradeFromArgs() ([]byte, []byte, err
 
 // FailExecution informs Wasmer to immediately stop the execution of the contract
 // with BreakpointExecutionFailed and sets the corresponding VMOutput fields accordingly
+// FailExecution sets the returnMessage, returnCode and runtimeBreakpoint according to the given error.
 func (context *runtimeContext) FailExecution(err error) {
 	context.host.Output().SetReturnCode(vmcommon.ExecutionFailed)
 
 	var message string
 	if err != nil {
 		message = err.Error()
+		context.AddError(err)
 	} else {
 		message = "execution failed"
+		context.AddError(errors.New(message))
 	}
 
 	context.host.Output().SetReturnMessage(message)

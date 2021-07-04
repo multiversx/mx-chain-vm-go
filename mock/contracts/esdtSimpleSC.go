@@ -113,8 +113,7 @@ func ExecESDTTransferAndAsyncCallChild(instanceMock *mock.InstanceMock, config i
 
 		value := big.NewInt(0).Bytes()
 
-		async := host.Async()
-		err := async.RegisterLegacyAsyncCall(receiver, callData.ToBytes(), value)
+		err := host.Async().RegisterLegacyAsyncCall(receiver, callData.ToBytes(), value)
 
 		if err != nil {
 			host.Runtime().FailExecution(err)
