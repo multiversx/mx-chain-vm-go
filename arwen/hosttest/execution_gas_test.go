@@ -70,7 +70,8 @@ func TestGasUsed_SingleContract_BuiltinCall(t *testing.T) {
 			verify.
 				Ok().
 				GasRemaining(simpleGasTestConfig.GasProvided-simpleGasTestConfig.GasUsedByParent-gasUsedByBuiltinClaim).
-				GasUsed(test.ParentAddress, simpleGasTestConfig.GasUsedByParent+gasUsedByBuiltinClaim)
+				GasUsed(test.ParentAddress, simpleGasTestConfig.GasUsedByParent+gasUsedByBuiltinClaim).
+				BalanceDelta(test.ParentAddress, amountToGiveByBuiltinClaim)
 		})
 }
 
@@ -698,7 +699,8 @@ func TestGasUsed_AsyncCall_BuiltinCall(t *testing.T) {
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
-				Ok()
+				Ok().
+				BalanceDelta(test.ParentAddress, amountToGiveByBuiltinClaim-testConfig.TransferFromParentToChild)
 			// TODO matei-p uncomment these lines
 			// GasUsed(test.ParentAddress, expectedGasUsedByParent).
 			// GasUsed(test.UserAddress, 0).
@@ -746,17 +748,52 @@ func TestGasUsed_AsyncCall_BuiltinCallFail(t *testing.T) {
 		})
 }
 
-func TestGasUsed_AsyncCall_BuiltinMultiContractCall(t *testing.T) {
-	// TODO no possible yet, reactivate when new async context is merged
-	t.Skip()
+func TestGasUsed_AsyncCall_CrossShard_BuiltinCall(t *testing.T) {
+	testConfig := asyncBaseTestConfig
+	testConfig.GasProvided = 1000
 
+	// expectedGasUsedByParent := testConfig.GasUsedByParent + testConfig.GasUsedByCallback + gasUsedByBuiltinClaim
+	// expectedGasUsedByChild := uint64(0) // all gas for builtin call is consummed on caller
+
+	test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(&testConfig).
+				WithShardID(1).
+				WithMethods(contracts.ForwardAsyncCallParentBuiltinMock, contracts.CallBackParentBuiltinMock),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("forwardAsyncCall").
+			WithArguments(test.UserAddress, []byte("builtinClaim")).
+			Build()).
+		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+			world.AcctMap.CreateAccount(test.UserAddress, world)
+			createMockBuiltinFunctions(t, host, world)
+			setZeroCodeCosts(host)
+			setAsyncCosts(host, testConfig.GasLockCost)
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok().
+				BalanceDelta(test.ParentAddress, amountToGiveByBuiltinClaim-testConfig.TransferFromParentToChild)
+			// TODO matei-p uncomment these lines
+			// GasUsed(test.ParentAddress, expectedGasUsedByParent).
+			// GasUsed(test.UserAddress, 0).
+			// GasRemaining(testConfig.GasProvided - expectedGasUsedByParent - expectedGasUsedByChild)
+		})
+}
+
+func TestGasUsed_AsyncCall_BuiltinMultiContractChainCall(t *testing.T) {
 	testConfig := &contracts.AsyncBuiltInCallTestConfig{
 		AsyncCallBaseTestConfig:   asyncBaseTestConfig,
 		TransferFromChildToParent: 5,
 	}
 
-	expectedGasUsedByParent := testConfig.GasUsedByParent + testConfig.GasUsedByCallback
-	expectedGasUsedByChild := testConfig.GasUsedByChild + gasUsedByBuiltinClaim
+	// expectedGasUsedByParent := testConfig.GasUsedByParent + testConfig.GasUsedByCallback
+	// expectedGasUsedByChild := testConfig.GasUsedByChild + gasUsedByBuiltinClaim
 
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
@@ -767,13 +804,13 @@ func TestGasUsed_AsyncCall_BuiltinMultiContractCall(t *testing.T) {
 			test.CreateMockContract(test.ChildAddress).
 				WithBalance(testConfig.ChildBalance).
 				WithConfig(testConfig).
-				WithMethods(contracts.RecursiveAsyncCallRecursiveChildMock, contracts.CallBackRecursiveChildMock),
+				WithMethods(contracts.ForwardAsyncCallParentBuiltinMock, contracts.CallBackParentBuiltinMock),
 		).
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithRecipientAddr(test.ParentAddress).
 			WithGasProvided(testConfig.GasProvided).
 			WithFunction("forwardAsyncCall").
-			WithArguments(test.UserAddress, test.ChildAddress, []byte("childFunction"), []byte("builtinClaim")).
+			WithArguments(test.ChildAddress, []byte("forwardAsyncCall"), []byte("builtinClaim") /*, arwen.One.Bytes()*/).
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			world.AcctMap.CreateAccount(test.UserAddress, world)
@@ -783,10 +820,12 @@ func TestGasUsed_AsyncCall_BuiltinMultiContractCall(t *testing.T) {
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
-				Ok().
-				GasUsed(test.ParentAddress, expectedGasUsedByParent).
-				GasUsed(test.ChildAddress, testConfig.GasUsedByChild).
-				GasRemaining(testConfig.GasProvided - expectedGasUsedByParent - expectedGasUsedByChild)
+				Ok()
+			// TODO matei-p add asserts when in-shard builtin works
+			// TODO matei-p enable gas assertions
+			// GasUsed(test.ParentAddress, expectedGasUsedByParent).
+			// GasUsed(test.ChildAddress, testConfig.GasUsedByChild).
+			// GasRemaining(testConfig.GasProvided - expectedGasUsedByParent - expectedGasUsedByChild)
 		})
 }
 
@@ -1265,12 +1304,14 @@ type MockClaimBuiltin struct {
 	GasCost      uint64
 }
 
+var amountToGiveByBuiltinClaim = int64(42)
+
 func createMockBuiltinFunctions(tb testing.TB, host arwen.VMHost, world *worldmock.MockWorld) {
 	err := world.InitBuiltinFunctions(host.GetGasScheduleMap())
 	require.Nil(tb, err)
 
 	mockClaimBuiltin := &MockClaimBuiltin{
-		AmountToGive: 42,
+		AmountToGive: amountToGiveByBuiltinClaim,
 		GasCost:      gasUsedByBuiltinClaim,
 	}
 

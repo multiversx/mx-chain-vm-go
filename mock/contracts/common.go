@@ -3,7 +3,7 @@ package contracts
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen/elrondapi"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // DirectCallGasTestConfig is configuration for direct call tests
@@ -81,4 +81,20 @@ func ExecuteOnSameContextInMockContracts(host arwen.VMHost, input *vmcommon.Cont
 // ExecuteOnDestContextInMockContracts - calls the corresponding method in elrond api
 func ExecuteOnDestContextInMockContracts(host arwen.VMHost, input *vmcommon.ContractCallInput) int32 {
 	return elrondapi.ExecuteOnDestContextWithTypedArgs(host, int64(input.GasProvided), input.CallValue, []byte(input.Function), input.RecipientAddr, input.Arguments)
+}
+
+func GetTestConfig(config interface{}) *AsyncCallBaseTestConfig {
+	var testConfig *AsyncCallBaseTestConfig
+	switch config.(type) {
+	case *AsyncCallBaseTestConfig:
+		testConfig = config.(*AsyncCallBaseTestConfig)
+	case *AsyncBuiltInCallTestConfig:
+		fullConfig := config.(*AsyncBuiltInCallTestConfig)
+		testConfig = &AsyncCallBaseTestConfig{
+			GasUsedByChild:            fullConfig.GasUsedByChild,
+			TransferFromParentToChild: fullConfig.TransferFromParentToChild,
+			GasUsedByCallback:         fullConfig.GasUsedByCallback,
+		}
+	}
+	return testConfig
 }

@@ -41,6 +41,12 @@ func (mockSC *MockTestSmartContract) WithBalance(balance int64) *MockTestSmartCo
 	return mockSC
 }
 
+// WithShardID provides the shardID for the MockTestSmartContract
+func (mockSC *MockTestSmartContract) WithShardID(shardID uint32) *MockTestSmartContract {
+	mockSC.shardID = shardID
+	return mockSC
+}
+
 // WithConfig provides the config object for the MockTestSmartContract
 func (mockSC *MockTestSmartContract) WithConfig(config interface{}) *MockTestSmartContract {
 	mockSC.config = config
