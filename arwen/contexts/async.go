@@ -603,17 +603,16 @@ func (context *asyncContext) determineExecutionMode(destination []byte, data []b
 
 	// If ArgParser cannot read the Data field, then this is neither a SC call,
 	// nor a built-in function call.
-	functionName, _, err := context.host.CallArgsParser().ParseData(string(data))
+	functionName, args, err := context.host.CallArgsParser().ParseData(string(data))
 	if err != nil {
 		return arwen.AsyncUnknown, err
 	}
 
 	sameShard := context.host.AreInSameShard(runtime.GetSCAddress(), destination)
-
 	if context.host.IsBuiltinFunctionName(functionName) {
 		if sameShard {
 			vmInput := runtime.GetVMInput()
-			isESDTTransfer := functionName == vmcommon.BuiltInFunctionESDTTransfer
+			isESDTTransfer, _, _ := isESDTTransferOnReturnDataFromFunctionAndArgs(functionName, args)
 			isAsyncCall := vmInput.CallType == vmcommon.AsynchronousCall
 			isReturningCall := bytes.Equal(vmInput.CallerAddr, destination)
 

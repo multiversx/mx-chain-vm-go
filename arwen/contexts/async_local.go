@@ -5,6 +5,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/math"
+	"github.com/ElrondNetwork/elrond-go/core"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -158,7 +159,7 @@ func (context *asyncContext) finishSyncExecution(vmOutput *vmcommon.VMOutput, er
 		vmOutput = output.CreateVMOutputInCaseOfError(err)
 	}
 
-	// TODO Discuss whether consistency between in-shard and cross-shard results
+	// TODO Discuss consistency between in-shard and cross-shard results
 	// TODO of the callback, and how they're accessible to the caller / user.
 	// TODO Currently, a failed callback in-shard leaves the ReturnCode to
 	// TODO vmcommon.Ok, unless the following line is uncommented.
@@ -215,25 +216,19 @@ func (context *asyncContext) createCallbackInput(
 	runtime := context.host.Runtime()
 
 	// always provide return code as the first argument to callback function
-	// TODO backwards compatibility issues? these lines ensure that the first
-	// TODO argument of the callback is the return code of the destination call, even
-	// TODO when the return code is 0
-	retCodeBytes := big.NewInt(int64(vmOutput.ReturnCode)).Bytes()
-	if len(retCodeBytes) == 0 {
-		retCodeBytes = []byte{0}
+	arguments := [][]byte{
+		big.NewInt(int64(vmOutput.ReturnCode)).Bytes(),
 	}
-	arguments := [][]byte{retCodeBytes}
 
+	esdtFunction := ""
 	isESDTOnCallBack := false
 	esdtArgs := make([][]byte, 0)
 	if destinationErr == nil && vmOutput.ReturnCode == vmcommon.Ok {
 		// when execution went Ok, callBack arguments are:
 		// [0, result1, result2, ....]
+		isESDTOnCallBack, esdtFunction, esdtArgs = context.isESDTTransferOnReturnDataWithNoAdditionalData(vmOutput.ReturnData)
 		arguments = append(arguments, vmOutput.ReturnData...)
 
-		if len(vmOutput.ReturnData) > 0 {
-			isESDTOnCallBack, esdtArgs = context.isESDTTransferOnData(vmOutput.ReturnData[0])
-		}
 	} else {
 		// when execution returned error, callBack arguments are:
 		// [error code, error message]
@@ -273,20 +268,17 @@ func (context *asyncContext) createCallbackInput(
 	}
 
 	if isESDTOnCallBack {
-		contractCallInput.Function = vmcommon.BuiltInFunctionESDTTransfer
+		contractCallInput.Function = esdtFunction
 		contractCallInput.Arguments = make([][]byte, 0, len(arguments))
 		contractCallInput.Arguments = append(contractCallInput.Arguments, esdtArgs[0], esdtArgs[1])
+		if esdtFunction == core.BuiltInFunctionESDTNFTTransfer {
+			contractCallInput.Arguments = append(contractCallInput.Arguments, esdtArgs[2], esdtArgs[3])
+		}
 		contractCallInput.Arguments = append(contractCallInput.Arguments, []byte(callbackFunction))
 		contractCallInput.Arguments = append(contractCallInput.Arguments, big.NewInt(int64(vmOutput.ReturnCode)).Bytes())
 		if len(vmOutput.ReturnData) > 1 {
 			contractCallInput.Arguments = append(contractCallInput.Arguments, vmOutput.ReturnData[1:]...)
 		}
-		if len(esdtArgs) > 2 {
-			contractCallInput.Arguments = append(contractCallInput.Arguments, esdtArgs[2:]...)
-		}
-		contractCallInput.ESDTTokenName = esdtArgs[0]
-		contractCallInput.ESDTValue = big.NewInt(0).SetBytes(esdtArgs[1])
-		contractCallInput.CallValue = big.NewInt(0)
 	}
 
 	return contractCallInput, nil
@@ -336,24 +328,37 @@ func (context *asyncContext) createContextCallbackInput() *vmcommon.ContractCall
 		},
 		RecipientAddr: context.callerAddr,
 
-		// TODO Function is not actually necessary, because the original caller will decide the appropriate callback function
+		// TODO Function is not actually necessary, because the original caller
+		// will decide the appropriate callback function
 		Function: arwen.CallbackFunctionName,
 	}
 	return input
 }
 
-func (context *asyncContext) isESDTTransferOnData(data []byte) (bool, [][]byte) {
+func (context *asyncContext) isESDTTransferOnReturnDataWithNoAdditionalData(data [][]byte) (bool, string, [][]byte) {
+	if len(data) == 0 {
+		return false, "", nil
+	}
+
 	argParser := context.host.CallArgsParser()
-	functionName, args, err := argParser.ParseData(string(data))
+	functionName, args, err := argParser.ParseData(string(data[0]))
 	if err != nil {
-		return false, nil
+		return false, "", nil
 	}
 
-	if len(args) < 2 {
-		return false, nil
+	return isESDTTransferOnReturnDataFromFunctionAndArgs(functionName, args)
+}
+
+func isESDTTransferOnReturnDataFromFunctionAndArgs(functionName string, args [][]byte) (bool, string, [][]byte) {
+	if functionName == core.BuiltInFunctionESDTTransfer && len(args) == 2 {
+		return true, functionName, args
 	}
 
-	return functionName == vmcommon.BuiltInFunctionESDTTransfer, args
+	if functionName == core.BuiltInFunctionESDTNFTTransfer && len(args) == 4 {
+		return true, functionName, args
+	}
+
+	return false, functionName, args
 }
 
 func (context *asyncContext) computeCallValueFromVMOutput(destinationVMOutput *vmcommon.VMOutput) *big.Int {
