@@ -3,7 +3,9 @@ package dex
 import (
 	"errors"
 	"fmt"
+	"math/big"
 	"math/rand"
+	"strconv"
 
 	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
@@ -19,7 +21,6 @@ func (pfe *fuzzDexExecutor) claimRewards(r *rand.Rand, statistics *eventsStatist
 	nonce := rand.Intn(stakersLen) + 1
 	user := pfe.farmers[nonce].user
 	amount := pfe.farmers[nonce].value
-	rpsBefore := []byte(pfe.farmers[nonce].rps)
 	if pfe.farmers[nonce].value == 0 {
 		return nil
 	}
@@ -35,14 +36,24 @@ func (pfe *fuzzDexExecutor) claimRewards(r *rand.Rand, statistics *eventsStatist
 			value: amount - claimAmount,
 			user:  user,
 			farm:  farm,
-			rps:   string(rpsBefore),
 		}
 	}
 
 	mexBefore, err := pfe.getTokens(user, pfe.mexTokenId)
 	if err != nil {
-		return nil
+		return err
 	}
+
+	tokenData, err := pfe.getTokenData(user, farm.farmToken, nonce)
+	if err != nil {
+		return err
+	}
+
+	sizeByte := make([]byte, 4)
+	copy(sizeByte, tokenData.TokenMetaData.Attributes[0:4])
+	size, _ := strconv.Atoi(string(sizeByte))
+	rps := make([]byte, size)
+	copy(rps, tokenData.TokenMetaData.Attributes[4:(4+size)])
 
 	output, err := pfe.executeTxStep(fmt.Sprintf(`
 	{
@@ -89,13 +100,14 @@ func (pfe *fuzzDexExecutor) claimRewards(r *rand.Rand, statistics *eventsStatist
 		if mexAfter.Cmp(mexBefore) == 1 {
 			statistics.claimRewardsWithRewards += 1
 
-			//rpsDifference := big.NewInt(0).Sub(big.NewInt(0).SetBytes(rpsAfter[0]), big.NewInt(0).SetBytes(rpsBefore))
-			//shouldEarn := big.NewInt(0).Div(big.NewInt(0).Mul(big.NewInt(claimAmount), rpsDifference), big.NewInt(1000000000000))
-			//earned := big.NewInt(0).Sub(mexAfter, mexBefore)
-			//
-			//if earned.Cmp(shouldEarn) != 0 {
-			//	return errors.New("reward is not good")
-			//}
+			rpsAttrs := big.NewInt(0).SetBytes(rps)
+			rpsDifference := big.NewInt(0).Sub(big.NewInt(0).SetBytes(rpsAfter[0]), rpsAttrs)
+			shouldEarn := big.NewInt(0).Div(big.NewInt(0).Mul(big.NewInt(claimAmount), rpsDifference), big.NewInt(1000000000000))
+			earned := big.NewInt(0).Sub(mexAfter, mexBefore)
+
+			if rpsAttrs.Cmp(big.NewInt(0)) != 0 && earned.Cmp(shouldEarn) != 0 {
+				return errors.New("reward is not good")
+			}
 
 		} else if mexAfter.Cmp(mexBefore) == -1 {
 			return errors.New("LOST mex while claimRewards")
@@ -112,7 +124,6 @@ func (pfe *fuzzDexExecutor) claimRewards(r *rand.Rand, statistics *eventsStatist
 			user:  user,
 			value: bigint.Int64(),
 			farm:  farm,
-			rps:   string(rpsAfter[0]),
 		}
 	} else {
 		statistics.claimRewardsMisses += 1

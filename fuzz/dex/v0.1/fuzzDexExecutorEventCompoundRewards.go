@@ -19,7 +19,6 @@ func (pfe *fuzzDexExecutor) compoundRewards(r *rand.Rand, statistics *eventsStat
 	nonce := rand.Intn(stakersLen) + 1
 	user := pfe.farmers[nonce].user
 	amount := pfe.farmers[nonce].value
-	rpsBefore := []byte(pfe.farmers[nonce].rps)
 	if pfe.farmers[nonce].value == 0 {
 		return nil
 	}
@@ -35,7 +34,6 @@ func (pfe *fuzzDexExecutor) compoundRewards(r *rand.Rand, statistics *eventsStat
 			value: amount - claimAmount,
 			user:  user,
 			farm:  farm,
-			rps:   string(rpsBefore),
 		}
 	}
 
@@ -75,11 +73,6 @@ func (pfe *fuzzDexExecutor) compoundRewards(r *rand.Rand, statistics *eventsStat
 	if output.ReturnCode == vmi.Ok {
 		statistics.compoundRewardsHits += 1
 
-		rpsAfter, err := pfe.querySingleResult(user, farm.address, "getRewardPerShare", "")
-		if err != nil {
-			return err
-		}
-
 		pfe.currentFarmTokenNonce[farm.address] += 1
 		nonce := pfe.currentFarmTokenNonce[farm.address]
 		bigint, errGet := pfe.getTokensWithNonce(user, farm.farmToken, nonce)
@@ -91,7 +84,6 @@ func (pfe *fuzzDexExecutor) compoundRewards(r *rand.Rand, statistics *eventsStat
 			user:  user,
 			value: bigint.Int64(),
 			farm:  farm,
-			rps:   string(rpsAfter[0]),
 		}
 	} else {
 		statistics.compoundRewardsMisses += 1

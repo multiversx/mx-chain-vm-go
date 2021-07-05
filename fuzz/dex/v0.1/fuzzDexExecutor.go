@@ -62,7 +62,6 @@ type FarmerInfo struct {
 	user  string
 	value int64
 	farm  Farm
-	rps   string
 }
 
 type fuzzDexExecutor struct {

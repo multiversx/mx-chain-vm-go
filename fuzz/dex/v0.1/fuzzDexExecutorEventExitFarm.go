@@ -19,7 +19,6 @@ func (pfe *fuzzDexExecutor) exitFarm(r *rand.Rand, statistics *eventsStatistics)
 	nonce := rand.Intn(stakersLen) + 1
 	user := pfe.farmers[nonce].user
 	amount := pfe.farmers[nonce].value
-	rps := pfe.farmers[nonce].rps
 	if pfe.farmers[nonce].value == 0 {
 		return nil
 	}
@@ -35,7 +34,6 @@ func (pfe *fuzzDexExecutor) exitFarm(r *rand.Rand, statistics *eventsStatistics)
 			value: amount - unstakeAmount,
 			user:  user,
 			farm:  farm,
-			rps:   rps,
 		}
 	}
 

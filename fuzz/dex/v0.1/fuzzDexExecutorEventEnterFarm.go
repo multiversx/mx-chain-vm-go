@@ -12,7 +12,6 @@ func (pfe *fuzzDexExecutor) enterFarm(r *rand.Rand, statistics *eventsStatistics
 	amountMax := r.Intn(pfe.tokenDepositMaxValue) + 1
 	user := pfe.userAddress(r.Intn(pfe.numUsers) + 1)
 	amount := int64(r.Intn(pfe.enterFarmMaxValue) + 1)
-	rps := ""
 	farm := pfe.farms[r.Intn(len(pfe.farms))]
 
 	stakersLen := len(pfe.farmers)
@@ -23,7 +22,6 @@ func (pfe *fuzzDexExecutor) enterFarm(r *rand.Rand, statistics *eventsStatistics
 		if pfe.farmers[nonce].value != 0 {
 			user = pfe.farmers[nonce].user
 			amount = pfe.farmers[nonce].value
-			rps = pfe.farmers[nonce].rps
 			farm = pfe.farmers[nonce].farm
 
 			depositAmount := int64(amountMax)
@@ -36,7 +34,6 @@ func (pfe *fuzzDexExecutor) enterFarm(r *rand.Rand, statistics *eventsStatistics
 					value: amount - depositAmount,
 					user:  user,
 					farm:  farm,
-					rps:   rps,
 				}
 			}
 
@@ -108,16 +105,10 @@ func (pfe *fuzzDexExecutor) enterFarm(r *rand.Rand, statistics *eventsStatistics
 			return errGet
 		}
 
-		rps, err := pfe.querySingleResult(user, farm.address, "getRewardPerShare", "")
-		if err != nil {
-			return err
-		}
-
 		pfe.farmers[nonce] = FarmerInfo{
 			user:  user,
 			value: bigint.Int64(),
 			farm:  farm,
-			rps:   string(rps[0]),
 		}
 	} else {
 		statistics.enterFarmMisses += 1
