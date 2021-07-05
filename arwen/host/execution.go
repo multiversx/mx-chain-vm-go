@@ -10,17 +10,16 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/math"
 	"github.com/ElrondNetwork/elrond-go-logger/check"
-	"github.com/ElrondNetwork/elrond-go/core"
-	"github.com/ElrondNetwork/elrond-go/core/parsers"
-	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
 
 func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput) *vmcommon.VMOutput {
 	host.InitState()
 	defer func() {
-		errors := host.GetRuntimeErrors()
-		if errors != nil {
-			log.Trace(fmt.Sprintf("doRunSmartContractCreate full error list"), "error", errors)
+		errs := host.GetRuntimeErrors()
+		if errs != nil {
+			log.Trace(fmt.Sprintf("doRunSmartContractCreate full error list"), "error", errs)
 		}
 		host.Clean()
 	}()
@@ -94,9 +93,9 @@ func (host *vmHost) performCodeDeployment(input arwen.CodeDeployInput) (*vmcommo
 func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput) *vmcommon.VMOutput {
 	host.InitState()
 	defer func() {
-		errors := host.GetRuntimeErrors()
-		if errors != nil {
-			log.Trace(fmt.Sprintf("doRunSmartContractUpgrade full error list"), "error", errors)
+		errs := host.GetRuntimeErrors()
+		if errs != nil {
+			log.Trace(fmt.Sprintf("doRunSmartContractUpgrade full error list"), "error", errs)
 		}
 		host.Clean()
 	}()
@@ -145,9 +144,9 @@ func (host *vmHost) checkGasForGetCode(input *vmcommon.ContractCallInput, meteri
 func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput) {
 	host.InitState()
 	defer func() {
-		errors := host.GetRuntimeErrors()
-		if errors != nil {
-			log.Trace(fmt.Sprintf("doRunSmartContractCall full error list for %s", input.Function), "error", errors)
+		errs := host.GetRuntimeErrors()
+		if errs != nil {
+			log.Trace(fmt.Sprintf("doRunSmartContractCall full error list for %s", input.Function), "error", errs)
 		}
 		host.Clean()
 	}()
@@ -668,12 +667,12 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, token
 			GasLocked:   0,
 		},
 		RecipientAddr:     destination,
-		Function:          core.BuiltInFunctionESDTTransfer,
+		Function:          vmcommon.BuiltInFunctionESDTTransfer,
 		AllowInitFunction: false,
 	}
 
 	if nonce > 0 {
-		esdtTransferInput.Function = core.BuiltInFunctionESDTNFTTransfer
+		esdtTransferInput.Function = vmcommon.BuiltInFunctionESDTNFTTransfer
 		esdtTransferInput.RecipientAddr = esdtTransferInput.CallerAddr
 		nonceAsBytes := big.NewInt(0).SetUint64(nonce).Bytes()
 		esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, tokenIdentifier, nonceAsBytes, value.Bytes(), destination)
@@ -749,13 +748,13 @@ func (host *vmHost) addESDTTransferToVMOutputSCIntraShardCall(
 	if !host.AreInSameShard(input.RecipientAddr, input.CallerAddr) {
 		return
 	}
-	isESDTTransfer := input.Function == core.BuiltInFunctionESDTTransfer || input.Function == core.BuiltInFunctionESDTNFTTransfer
+	isESDTTransfer := input.Function == vmcommon.BuiltInFunctionESDTTransfer || input.Function == vmcommon.BuiltInFunctionESDTNFTTransfer
 	if !isESDTTransfer {
 		return
 	}
 
 	recipientAddr := input.RecipientAddr
-	if input.Function == core.BuiltInFunctionESDTNFTTransfer {
+	if input.Function == vmcommon.BuiltInFunctionESDTNFTTransfer {
 		if len(input.Arguments) != 4 {
 			return
 		}
@@ -920,7 +919,7 @@ func (host *vmHost) isSCExecutionAfterBuiltInFunc(
 		return nil, nil
 	}
 	recipient := vmInput.RecipientAddr
-	if vmInput.Function == core.BuiltInFunctionESDTNFTTransfer && bytes.Equal(vmInput.CallerAddr, vmInput.RecipientAddr) {
+	if vmInput.Function == vmcommon.BuiltInFunctionESDTNFTTransfer && bytes.Equal(vmInput.CallerAddr, vmInput.RecipientAddr) {
 		recipient = vmInput.Arguments[3]
 	}
 	if !host.AreInSameShard(vmInput.CallerAddr, recipient) {
@@ -970,7 +969,7 @@ func (host *vmHost) isSCExecutionAfterBuiltInFunc(
 }
 
 func fillWithESDTValue(fullVMInput *vmcommon.ContractCallInput, newVMInput *vmcommon.ContractCallInput) {
-	isESDTTransfer := fullVMInput.Function == core.BuiltInFunctionESDTTransfer || fullVMInput.Function == core.BuiltInFunctionESDTNFTTransfer
+	isESDTTransfer := fullVMInput.Function == vmcommon.BuiltInFunctionESDTTransfer || fullVMInput.Function == vmcommon.BuiltInFunctionESDTNFTTransfer
 	if !isESDTTransfer {
 		return
 	}
@@ -978,9 +977,9 @@ func fillWithESDTValue(fullVMInput *vmcommon.ContractCallInput, newVMInput *vmco
 	newVMInput.ESDTTokenName = fullVMInput.Arguments[0]
 	newVMInput.ESDTValue = big.NewInt(0).SetBytes(fullVMInput.Arguments[1])
 
-	if fullVMInput.Function == core.BuiltInFunctionESDTNFTTransfer {
+	if fullVMInput.Function == vmcommon.BuiltInFunctionESDTNFTTransfer {
 		newVMInput.ESDTTokenNonce = big.NewInt(0).SetBytes(fullVMInput.Arguments[1]).Uint64()
 		newVMInput.ESDTValue = big.NewInt(0).SetBytes(fullVMInput.Arguments[2])
-		newVMInput.ESDTTokenType = uint32(core.NonFungible)
+		newVMInput.ESDTTokenType = uint32(vmcommon.NonFungible)
 	}
 }

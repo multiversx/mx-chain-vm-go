@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
-	"github.com/ElrondNetwork/elrond-go/data/state"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // NewAddressMock allows tests to specify what new addresses to generate
@@ -27,7 +27,7 @@ type BlockInfo struct {
 type MockWorld struct {
 	SelfShardID                uint32
 	AcctMap                    AccountMap
-	AccountsAdapter            state.AccountsAdapter
+	AccountsAdapter            vmcommon.AccountsAdapter
 	PreviousBlockInfo          *BlockInfo
 	CurrentBlockInfo           *BlockInfo
 	Blockhashes                [][]byte

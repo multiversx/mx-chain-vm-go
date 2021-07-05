@@ -7,7 +7,7 @@ import (
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/model"
 	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/write"
 	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/orderedjson"
-	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	vmi "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 func (ae *ArwenTestExecutor) checkTxResults(

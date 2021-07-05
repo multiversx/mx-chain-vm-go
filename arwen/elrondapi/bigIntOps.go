@@ -551,14 +551,14 @@ func v1_3_bigIntSetSignedBytes(context unsafe.Pointer, destination int32, byteOf
 }
 
 //export v1_3_bigIntIsInt64
-func v1_3_bigIntIsInt64(context unsafe.Pointer, destination int32) int32 {
+func v1_3_bigIntIsInt64(context unsafe.Pointer, handle int32) int32 {
 	bigInt := arwen.GetBigIntContext(context)
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntIsInt64
 	metering.UseGas(gasToUse)
 
-	value := bigInt.GetOne(destination)
+	value := bigInt.GetOne(handle)
 	if value.IsInt64() {
 		return 1
 	}
@@ -566,14 +566,14 @@ func v1_3_bigIntIsInt64(context unsafe.Pointer, destination int32) int32 {
 }
 
 //export v1_3_bigIntGetInt64
-func v1_3_bigIntGetInt64(context unsafe.Pointer, destination int32) int64 {
+func v1_3_bigIntGetInt64(context unsafe.Pointer, handle int32) int64 {
 	bigInt := arwen.GetBigIntContext(context)
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetInt64
 	metering.UseGas(gasToUse)
 
-	value := bigInt.GetOne(destination)
+	value := bigInt.GetOne(handle)
 	return value.Int64()
 }
 

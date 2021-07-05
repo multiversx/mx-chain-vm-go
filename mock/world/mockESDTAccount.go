@@ -5,10 +5,12 @@ import (
 	"errors"
 	"math/big"
 
-	"github.com/ElrondNetwork/elrond-go/core"
-	"github.com/ElrondNetwork/elrond-go/data"
-	"github.com/ElrondNetwork/elrond-go/data/esdt"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
 )
+
+// ErrNegativeValue signals that a negative value has been detected and it is not allowed
+var ErrNegativeValue = errors.New("negative value")
 
 // MakeTokenKey creates the storage key corresponding to the given tokenName.
 func MakeTokenKey(tokenName []byte, nonce uint64) []byte {
@@ -85,7 +87,7 @@ func (a *Account) SetTokenBalance(tokenKey []byte, balance *big.Int) error {
 	}
 
 	if balance.Sign() < 0 {
-		return data.ErrNegativeValue
+		return ErrNegativeValue
 	}
 
 	tokenData.Value = balance
@@ -112,7 +114,7 @@ func (a *Account) SetTokenBalanceUint64(tokenKey []byte, balance uint64) error {
 	}
 
 	if balance < 0 {
-		return data.ErrNegativeValue
+		return ErrNegativeValue
 	}
 
 	tokenData.Value = big.NewInt(0).SetUint64(balance)
@@ -123,14 +125,14 @@ func (a *Account) SetTokenBalanceUint64(tokenKey []byte, balance uint64) error {
 func (a *Account) GetTokenData(tokenKey []byte) (*esdt.ESDigitalToken, error) {
 	esdtData := &esdt.ESDigitalToken{
 		Value: big.NewInt(0),
-		Type:  uint32(core.Fungible),
+		Type:  uint32(vmcommon.Fungible),
 		TokenMetaData: &esdt.MetaData{
 			Name:  GetTokenNameFromKey(tokenKey),
 			Nonce: 0,
 		},
 	}
 
-	marshaledData, err := a.DataTrieTracker().RetrieveValue(tokenKey)
+	marshaledData, err := a.AccountDataHandler().RetrieveValue(tokenKey)
 	if err != nil || len(marshaledData) == 0 {
 		return esdtData, nil
 	}
@@ -206,7 +208,7 @@ func (a *Account) GetTokenRoles(tokenName []byte) ([][]byte, error) {
 		Roles: make([][]byte, 0),
 	}
 
-	marshaledData, err := a.DataTrieTracker().RetrieveValue(tokenRolesKey)
+	marshaledData, err := a.AccountDataHandler().RetrieveValue(tokenRolesKey)
 	if err != nil || len(marshaledData) == 0 {
 		return tokenRolesData.Roles, nil
 	}
