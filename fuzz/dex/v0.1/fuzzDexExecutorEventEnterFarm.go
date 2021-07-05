@@ -9,9 +9,67 @@ import (
 )
 
 func (pfe *fuzzDexExecutor) enterFarm(r *rand.Rand, statistics *eventsStatistics) error {
+	amountMax := r.Intn(pfe.tokenDepositMaxValue) + 1
 	user := pfe.userAddress(r.Intn(pfe.numUsers) + 1)
-	amount := r.Intn(pfe.enterFarmMaxValue) + 1
+	amount := int64(r.Intn(pfe.enterFarmMaxValue) + 1)
+	rps := ""
 	farm := pfe.farms[r.Intn(len(pfe.farms))]
+
+	stakersLen := len(pfe.farmers)
+	if stakersLen == 0 || r.Intn(2) == 0 {
+	} else {
+		nonce := rand.Intn(stakersLen) + 1
+
+		if pfe.farmers[nonce].value != 0 {
+			user = pfe.farmers[nonce].user
+			amount = pfe.farmers[nonce].value
+			rps = pfe.farmers[nonce].rps
+			farm = pfe.farmers[nonce].farm
+
+			depositAmount := int64(amountMax)
+			if int64(amountMax) > amount {
+				depositAmount = amount
+				delete(pfe.farmers, nonce)
+			} else {
+				depositAmount = int64(amountMax)
+				pfe.farmers[nonce] = FarmerInfo{
+					value: amount - depositAmount,
+					user:  user,
+					farm:  farm,
+					rps:   rps,
+				}
+			}
+
+			_, err := pfe.executeTxStep(fmt.Sprintf(`
+	{
+		"step": "scCall",
+		"txId": "stake",
+		"tx": {
+			"from": "%s",
+			"to": "%s",
+			"value": "0",
+			"function": "depositFarmToken",
+			"esdt": {
+				"tokenIdentifier": "str:%s",
+				"value": "%d",
+				"nonce": "%d"
+			},
+			"arguments": [],
+			"gasLimit": "100,000,000",
+			"gasPrice": "0"
+		}
+	}`,
+				user,
+				farm.address,
+				farm.farmToken,
+				depositAmount,
+				nonce,
+			))
+			if err != nil {
+				return err
+			}
+		}
+	}
 
 	output, err := pfe.executeTxStep(fmt.Sprintf(`
 	{

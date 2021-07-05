@@ -24,18 +24,19 @@ func (pfe *fuzzDexExecutor) exitFarm(r *rand.Rand, statistics *eventsStatistics)
 		return nil
 	}
 
+	farm := pfe.farmers[nonce].farm
 	unstakeAmount := int64(amountMax)
 	if int64(amountMax) > amount {
 		unstakeAmount = amount
+		delete(pfe.farmers, nonce)
 	} else {
 		unstakeAmount = int64(amountMax)
-	}
-	farm := pfe.farmers[nonce].farm
-	pfe.farmers[nonce] = FarmerInfo{
-		value: amount - unstakeAmount,
-		user:  user,
-		farm:  farm,
-		rps:   rps,
+		pfe.farmers[nonce] = FarmerInfo{
+			value: amount - unstakeAmount,
+			user:  user,
+			farm:  farm,
+			rps:   rps,
+		}
 	}
 
 	mexBefore, err := pfe.getTokens(user, pfe.mexTokenId)

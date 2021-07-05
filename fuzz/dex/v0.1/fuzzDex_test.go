@@ -44,9 +44,9 @@ func newExecutorWithPaths() *fuzzDexExecutor {
 }
 
 func TestFuzzDex_v0_1(t *testing.T) {
-	if !*fuzz {
-		t.Skip("skipping test; only run with --fuzz argument")
-	}
+	//if !*fuzz {
+	//	t.Skip("skipping test; only run with --fuzz argument")
+	//}
 
 	pfe := newExecutorWithPaths()
 	defer pfe.saveGeneratedScenario()
@@ -86,7 +86,9 @@ func TestFuzzDex_v0_1(t *testing.T) {
 			swapMaxValue:            10000000,
 			enterFarmMaxValue:       100000000,
 			exitFarmMaxValue:        100000000,
-			claimRewardsMaxValue:    10000000,
+			claimRewardsMaxValue:    50000000,
+			compoundRewardsMaxValue: 50000000,
+			tokenDepositMaxValue:    50000000,
 			blockNonceIncrease:      1,
 		},
 	)

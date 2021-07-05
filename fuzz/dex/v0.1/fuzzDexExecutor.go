@@ -32,6 +32,8 @@ type fuzzDexExecutorInitArgs struct {
 	exitFarmProb            int
 	claimRewardsProb        int
 	compoundRewardsProb     int
+	compoundRewardsMaxValue int
+	tokenDepositMaxValue    int
 	increaseBlockNonceProb  int
 	removeLiquidityMaxValue int
 	addLiquidityMaxValue    int
@@ -102,6 +104,8 @@ type fuzzDexExecutor struct {
 	enterFarmMaxValue       int
 	exitFarmMaxValue        int
 	claimRewardsMaxValue    int
+	compoundRewardsMaxValue int
+	tokenDepositMaxValue    int
 	blockNonceIncrease      int
 	tokensCheckFrequency    int
 	currentFarmTokenNonce   map[string]int

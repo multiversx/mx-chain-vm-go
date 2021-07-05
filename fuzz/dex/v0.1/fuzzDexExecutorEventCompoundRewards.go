@@ -9,7 +9,7 @@ import (
 )
 
 func (pfe *fuzzDexExecutor) compoundRewards(r *rand.Rand, statistics *eventsStatistics) error {
-	amountMax := r.Intn(pfe.claimRewardsMaxValue) + 1
+	amountMax := r.Intn(pfe.compoundRewardsMaxValue) + 1
 
 	stakersLen := len(pfe.farmers)
 	if stakersLen == 0 {
@@ -24,19 +24,23 @@ func (pfe *fuzzDexExecutor) compoundRewards(r *rand.Rand, statistics *eventsStat
 		return nil
 	}
 
+	farm := pfe.farmers[nonce].farm
 	claimAmount := int64(amountMax)
 	if int64(amountMax) > amount {
 		claimAmount = amount
+		delete(pfe.farmers, nonce)
 	} else {
 		claimAmount = int64(amountMax)
+		pfe.farmers[nonce] = FarmerInfo{
+			value: amount - claimAmount,
+			user:  user,
+			farm:  farm,
+			rps:   string(rpsBefore),
+		}
 	}
 
-	farm := pfe.farmers[nonce].farm
-	pfe.farmers[nonce] = FarmerInfo{
-		value: amount - claimAmount,
-		user:  user,
-		farm:  farm,
-		rps:   string(rpsBefore),
+	if farm.farmingToken != farm.rewardToken {
+		return nil
 	}
 
 	output, err := pfe.executeTxStep(fmt.Sprintf(`
