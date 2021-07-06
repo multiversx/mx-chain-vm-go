@@ -7,7 +7,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var _ arwen.OutputContext = (*outputContext)(nil)
@@ -383,6 +383,7 @@ func (context *outputContext) TransferESDT(
 
 	destAcc.OutputTransfers = append(destAcc.OutputTransfers, outputTransfer)
 
+	context.outputState.Logs = append(context.outputState.Logs, vmOutput.Logs...)
 	return gasRemaining, nil
 }
 
