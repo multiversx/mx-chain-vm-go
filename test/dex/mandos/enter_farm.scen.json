@@ -53,6 +53,28 @@
 					"0x02",
 					"0x0000000b4641524d2d61626364656600000000000000020000000405f5e100"
 				],
+				"logs": [
+					{
+						"address": "sc:farm_contract",
+						"identifier": "str:ESDTNFTCreate",
+						"topics": [
+							"0x4641524d2d616263646566",
+							"0x02",
+							"0x080112050005f5e100224a08021a2000000000000000006661726d5f636f6e74726163745f5f5f5f5f5f5f5f5f5f5f32003a2200000000000000000000000001000000000405f5e100000000000000000405f5e100"
+						],
+						"data": ""
+					},
+					{
+						"address": "sc:farm_contract",
+						"identifier": "str:ESDTNFTTransfer",
+						"topics": [
+							"0x4641524d2d616263646566",
+							"0x02",
+							"0x75736572315f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f"
+						],
+						"data": ""
+					}
+				],
 				"status": "0",
 				"message": "",
 				"gas": "*",
