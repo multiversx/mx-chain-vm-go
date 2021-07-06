@@ -2,6 +2,7 @@ package contexts
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	builtinMath "math"
 	"math/big"
@@ -11,7 +12,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
-	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	"github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var logRuntime = logger.GetOrCreate("arwen/runtime")
@@ -523,8 +524,10 @@ func (context *runtimeContext) FailExecution(err error) {
 	var message string
 	if err != nil {
 		message = err.Error()
+		context.AddError(err)
 	} else {
 		message = "execution failed"
+		context.AddError(errors.New(message))
 	}
 
 	context.host.Output().SetReturnMessage(message)
@@ -542,6 +545,7 @@ func (context *runtimeContext) SignalUserError(message string) {
 	context.host.Output().SetReturnCode(vmcommon.UserError)
 	context.host.Output().SetReturnMessage(message)
 	context.SetRuntimeBreakpointValue(arwen.BreakpointSignalError)
+	context.AddError(errors.New(message))
 	logRuntime.Trace("user error signalled", "message", message)
 }
 

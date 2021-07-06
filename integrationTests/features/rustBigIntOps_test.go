@@ -9,7 +9,7 @@ import (
 
 	arwen "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
-	vmi "github.com/ElrondNetwork/elrond-go/core/vmcommon"
+	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
 

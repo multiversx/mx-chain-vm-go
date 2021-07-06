@@ -579,18 +579,27 @@ func v1_3_bigIntSetSignedBytes(context unsafe.Pointer, destinationHandle int32, 
 }
 
 //export v1_3_bigIntIsInt64
+<<<<<<< HEAD
 func v1_3_bigIntIsInt64(context unsafe.Pointer, destinationHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
+=======
+func v1_3_bigIntIsInt64(context unsafe.Pointer, handle int32) int32 {
+	bigInt := arwen.GetBigIntContext(context)
+>>>>>>> master
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntIsInt64
 	metering.UseGas(gasToUse)
 
+<<<<<<< HEAD
 	value, err := managedType.GetBigInt(destinationHandle)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return -1
 	}
+=======
+	value := bigInt.GetOne(handle)
+>>>>>>> master
 	if value.IsInt64() {
 		return 1
 	}

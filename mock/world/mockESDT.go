@@ -4,19 +4,18 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ElrondNetwork/elrond-go/core"
-	"github.com/ElrondNetwork/elrond-go/core/vmcommon"
-	"github.com/ElrondNetwork/elrond-go/data/esdt"
+	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
 )
 
 // ESDTTokenKeyPrefix is the prefix of storage keys belonging to ESDT tokens.
-var ESDTTokenKeyPrefix = []byte(core.ElrondProtectedKeyPrefix + core.ESDTKeyIdentifier)
+var ESDTTokenKeyPrefix = []byte(vmcommon.ElrondProtectedKeyPrefix + vmcommon.ESDTKeyIdentifier)
 
 // ESDTRoleKeyPrefix is the prefix of storage keys belonging to ESDT roles.
-var ESDTRoleKeyPrefix = []byte(core.ElrondProtectedKeyPrefix + core.ESDTRoleIdentifier + core.ESDTKeyIdentifier)
+var ESDTRoleKeyPrefix = []byte(vmcommon.ElrondProtectedKeyPrefix + vmcommon.ESDTRoleIdentifier + vmcommon.ESDTKeyIdentifier)
 
 // ESDTNonceKeyPrefix is the prefix of storage keys belonging to ESDT nonces.
-var ESDTNonceKeyPrefix = []byte(core.ElrondProtectedKeyPrefix + core.ESDTNFTLatestNonceIdentifier)
+var ESDTNonceKeyPrefix = []byte(vmcommon.ElrondProtectedKeyPrefix + vmcommon.ESDTNFTLatestNonceIdentifier)
 
 // GetTokenBalance returns the ESDT balance of an account for the given token
 // key (token keys are built from the token identifier using MakeTokenKey).
@@ -73,12 +72,12 @@ func (bf *BuiltinFunctionsWrapper) PerformDirectESDTTransfer(
 			GasLocked:   0,
 		},
 		RecipientAddr:     receiver,
-		Function:          core.BuiltInFunctionESDTTransfer,
+		Function:          vmcommon.BuiltInFunctionESDTTransfer,
 		AllowInitFunction: false,
 	}
 
 	if nonce > 0 {
-		esdtTransferInput.Function = core.BuiltInFunctionESDTNFTTransfer
+		esdtTransferInput.Function = vmcommon.BuiltInFunctionESDTNFTTransfer
 		esdtTransferInput.RecipientAddr = esdtTransferInput.CallerAddr
 		nonceAsBytes := big.NewInt(0).SetUint64(nonce).Bytes()
 		esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, token, nonceAsBytes, value.Bytes(), receiver)
