@@ -207,6 +207,7 @@ func (context *asyncContext) createContractCallInput(asyncCall *arwen.AsyncCall)
 	return contractCallInput, nil
 }
 
+// TODO function too large; refactor needed
 func (context *asyncContext) createCallbackInput(
 	asyncCall *arwen.AsyncCall,
 	vmOutput *vmcommon.VMOutput,
