@@ -38,7 +38,7 @@ func ForwardAsyncCallMultiChildMock(instanceMock *mock.InstanceMock, config inte
 				Destination:     destination,
 				Data:            callData.ToBytes(),
 				ValueBytes:      value,
-				GasLimit:        uint64(100),
+				GasLimit:        uint64(300),
 				SuccessCallback: "callBack",
 				ErrorCallback:   "callBack",
 			})

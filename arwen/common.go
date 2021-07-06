@@ -2,7 +2,7 @@ package arwen
 
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 const ArwenVersion = "v1.3"
@@ -31,11 +31,8 @@ const (
 type AsyncCallExecutionMode uint
 
 const (
-	// TODO matei-p remove this ?
-	// SyncCall indicates that the async call can be executed synchronously,
+	// SyncExecution indicates that the async call can be executed synchronously,
 	// with its corresponding callback
-	SyncCall AsyncCallExecutionMode = iota
-
 	SyncExecution AsyncCallExecutionMode = iota
 
 	// AsyncBuiltinFuncIntraShard indicates that the async call is an intra-shard built in function call

@@ -147,11 +147,10 @@ func (context *meteringContext) UpdateGasStateOnSuccess(vmOutput *vmcommon.VMOut
 		return err
 	}
 
-	// TODO matei-p reactivate this!
-	// err = context.checkGas(vmOutput)
-	// if err != nil {
-	// 	return err
-	// }
+	err = context.checkGas(vmOutput)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -404,8 +403,7 @@ func (context *meteringContext) UseGasForAsyncStep() error {
 // UseGasBounded consumes the specified amount of gas on the currently running
 // Wasmer instance, but returns an error if there is not enough gas left.
 func (context *meteringContext) UseGasBounded(gasToUse uint64) error {
-	// TODO matei-p , restore the original '<='
-	if context.GasLeft() < gasToUse {
+	if context.GasLeft() <= gasToUse {
 		return arwen.ErrNotEnoughGas
 	}
 	context.UseGas(gasToUse)
