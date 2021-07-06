@@ -11,7 +11,7 @@ import (
 func (context *asyncContext) executeSynchronousCalls() error {
 	for groupIndex, group := range context.asyncCallGroups {
 		for _, call := range group.AsyncCalls {
-			if call.ExecutionMode != arwen.SyncExecution {
+			if (call.ExecutionMode != arwen.SyncExecution) && (call.ExecutionMode != arwen.AsyncBuiltinFuncIntraShard) {
 				continue
 			}
 

@@ -436,8 +436,8 @@ func TestGasUsed_AsyncCall(t *testing.T) {
 	testConfig := asyncTestConfig
 	testConfig.GasProvided = 1000
 
-	// gasUsedByParent := testConfig.GasUsedByParent + testConfig.GasUsedByCallback
-	// gasUsedByChild := testConfig.GasUsedByChild
+	gasUsedByParent := testConfig.GasUsedByParent + testConfig.GasUsedByCallback
+	gasUsedByChild := testConfig.GasUsedByChild
 
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
@@ -463,10 +463,9 @@ func TestGasUsed_AsyncCall(t *testing.T) {
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
 				Ok().
-				// TODO matei-p re-enable gas assertions
-				// GasUsed(test.ParentAddress, gasUsedByParent).
-				// GasUsed(test.ChildAddress, gasUsedByChild).
-				// GasRemaining(testConfig.GasProvided-gasUsedByParent-gasUsedByChild).
+				GasUsed(test.ParentAddress, gasUsedByParent).
+				GasUsed(test.ChildAddress, gasUsedByChild).
+				GasRemaining(testConfig.GasProvided-gasUsedByParent-gasUsedByChild).
 				BalanceDelta(test.ThirdPartyAddress, 2*testConfig.TransferToThirdParty).
 				ReturnData(test.ParentFinishA, test.ParentFinishB, []byte{0}, []byte("thirdparty"), []byte("vault"), []byte{0}, []byte("succ")).
 				Storage(
@@ -665,8 +664,7 @@ func TestGasUsed_AsyncCall_CrossShard_CallBack(t *testing.T) {
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
 				Ok().
-				// TODO matei-p uncomment these lines
-				// GasRemaining(testConfig.GasProvided-gasUsedByParent-gasUsedByChild-asyncTestConfig.GasUsedByCallback).
+				GasRemaining(testConfig.GasProvided-gasUsedByParent-gasUsedByChild-asyncTestConfig.GasUsedByCallback).
 				ReturnData([]byte{0}, []byte("succ"))
 		})
 }
@@ -675,8 +673,8 @@ func TestGasUsed_AsyncCall_BuiltinCall(t *testing.T) {
 	testConfig := asyncBaseTestConfig
 	testConfig.GasProvided = 1000
 
-	// expectedGasUsedByParent := testConfig.GasUsedByParent + testConfig.GasUsedByCallback + gasUsedByBuiltinClaim
-	// expectedGasUsedByChild := uint64(0) // all gas for builtin call is consummed on caller
+	expectedGasUsedByParent := testConfig.GasUsedByParent + testConfig.GasUsedByCallback + gasUsedByBuiltinClaim
+	expectedGasUsedByChild := uint64(0) // all gas for builtin call is consummed on caller
 
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
@@ -700,11 +698,10 @@ func TestGasUsed_AsyncCall_BuiltinCall(t *testing.T) {
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
 				Ok().
-				BalanceDelta(test.ParentAddress, amountToGiveByBuiltinClaim-testConfig.TransferFromParentToChild)
-			// TODO matei-p uncomment these lines
-			// GasUsed(test.ParentAddress, expectedGasUsedByParent).
-			// GasUsed(test.UserAddress, 0).
-			// GasRemaining(testConfig.GasProvided - expectedGasUsedByParent - expectedGasUsedByChild)
+				BalanceDelta(test.ParentAddress, amountToGiveByBuiltinClaim-testConfig.TransferFromParentToChild).
+				GasUsed(test.ParentAddress, expectedGasUsedByParent).
+				GasUsed(test.UserAddress, 0).
+				GasRemaining(testConfig.GasProvided - expectedGasUsedByParent - expectedGasUsedByChild)
 		})
 }
 
@@ -833,7 +830,7 @@ func TestGasUsed_AsyncCall_ChildFails(t *testing.T) {
 	testConfig := asyncTestConfig
 	testConfig.GasProvided = 1000
 
-	// expectedGasUsedByParent := testConfig.GasProvided - testConfig.GasLockCost + testConfig.GasUsedByCallback
+	expectedGasUsedByParent := testConfig.GasProvided - testConfig.GasLockCost + testConfig.GasUsedByCallback
 
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
@@ -863,10 +860,9 @@ func TestGasUsed_AsyncCall_ChildFails(t *testing.T) {
 				HasRuntimeErrors("child error").
 				BalanceDelta(test.ParentAddress, -(testConfig.TransferToThirdParty+testConfig.TransferToVault)).
 				BalanceDelta(test.ThirdPartyAddress, testConfig.TransferToThirdParty).
-				// TODO matei-p enable gas checks
-				// GasUsed(test.ParentAddress, expectedGasUsedByParent).
-				// GasUsed(test.ChildAddress, 0).
-				// GasRemaining(testConfig.GasProvided-expectedGasUsedByParent).
+				GasUsed(test.ParentAddress, expectedGasUsedByParent).
+				GasUsed(test.ChildAddress, 0).
+				GasRemaining(testConfig.GasProvided-expectedGasUsedByParent).
 				ReturnData(test.ParentFinishA, test.ParentFinishB, []byte("succ")).
 				Storage(
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
@@ -990,8 +986,8 @@ func TestGasUsed_AsyncCall_MultiChild(t *testing.T) {
 		ChildCalls:              2,
 	}
 
-	// expectedGasUsedByParent := testConfig.GasUsedByParent + testConfig.GasUsedByCallback
-	// expectedGasUsedByChild := uint64(testConfig.ChildCalls) * testConfig.GasUsedByChild
+	expectedGasUsedByParent := testConfig.GasUsedByParent + 2*testConfig.GasUsedByCallback
+	expectedGasUsedByChild := uint64(testConfig.ChildCalls) * testConfig.GasUsedByChild
 
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
@@ -1019,10 +1015,9 @@ func TestGasUsed_AsyncCall_MultiChild(t *testing.T) {
 				Ok().
 				BalanceDelta(test.ParentAddress, -2*testConfig.TransferFromParentToChild).
 				BalanceDelta(test.ChildAddress, 2*testConfig.TransferFromParentToChild).
-				// TODO matei-p enable gas checks
-				// GasUsed(test.ParentAddress, expectedGasUsedByParent).
-				// GasUsed(test.ChildAddress, expectedGasUsedByChild).
-				// GasRemaining(testConfig.GasProvided - expectedGasUsedByParent - expectedGasUsedByChild)
+				GasUsed(test.ParentAddress, expectedGasUsedByParent).
+				GasUsed(test.ChildAddress, expectedGasUsedByChild).
+				GasRemaining(testConfig.GasProvided-expectedGasUsedByParent-expectedGasUsedByChild).
 				ReturnData(big.NewInt(0).Bytes(), big.NewInt(1).Bytes())
 		})
 }
@@ -1347,6 +1342,8 @@ func setZeroCodeCosts(host arwen.VMHost) {
 	host.Metering().GasSchedule().ElrondAPICost.SignalError = 0
 	host.Metering().GasSchedule().ElrondAPICost.ExecuteOnSameContext = 0
 	host.Metering().GasSchedule().ElrondAPICost.ExecuteOnDestContext = 0
+	host.Metering().GasSchedule().ElrondAPICost.StorageLoad = 0
+	host.Metering().GasSchedule().ElrondAPICost.StorageStore = 0
 }
 
 func setAsyncCosts(host arwen.VMHost, gasLock uint64) {
