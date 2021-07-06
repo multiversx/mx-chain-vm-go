@@ -1260,8 +1260,7 @@ func TestExecution_ExecuteOnDestContext_Prepare(t *testing.T) {
 				Ok().
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, -test.ParentTransferValue).
-				// TODO matei-p enable gas checks
-				// GasUsed(test.ParentAddress, 4309).
+				GasUsed(test.ParentAddress, 4309).
 				BalanceDelta(test.ParentTransferReceiver, test.ParentTransferValue).
 				GasRemaining(test.GasProvided-
 					test.ParentCompilationCostDestCtx-
@@ -1429,13 +1428,11 @@ func TestExecution_ExecuteOnDestContext_Successful(t *testing.T) {
 				// test.ParentAddress
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, -141).
-				// TODO matei-p enable gas checks
-				// GasUsed(test.ParentAddress, 4444).
+				GasUsed(test.ParentAddress, 4444).
 				/// test.ChildAddress
 				Balance(test.ChildAddress, 1000).
 				BalanceDelta(test.ChildAddress, 99-childTransferValue).
-				// TODO matei-p enable gas checks
-				// GasUsed(test.ChildAddress, 2256).
+				GasUsed(test.ChildAddress, 2250).
 				// other
 				BalanceDelta(test.ChildTransferReceiver, childTransferValue).
 				GasRemaining(test.GasProvided-
@@ -1493,13 +1490,11 @@ func TestExecution_ExecuteOnDestContext_Successful_ChildReturns(t *testing.T) {
 				// test.ParentAddress
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, -141).
-				// TODO matei-p enable gas checks
-				// GasUsed(test.ParentAddress, 4652).
+				GasUsed(test.ParentAddress, 4652).
 				/// test.ChildAddress
 				Balance(test.ChildAddress, 1000).
 				BalanceDelta(test.ChildAddress, 99-childTransferValue).
-				// TODO matei-p enable gas checks
-				//GasUsed(test.ChildAddress, 2256).
+				GasUsed(test.ChildAddress, 2250).
 				// other
 				BalanceDelta(test.ChildTransferReceiver, childTransferValue).
 				GasRemaining(test.GasProvided-
@@ -1581,9 +1576,8 @@ func TestExecution_ExecuteOnDestContext_GasRemaining(t *testing.T) {
 	childOutput, err := host.ExecuteOnDestContext(childInput)
 	verify := test.NewVMOutputVerifier(t, childOutput, err)
 	verify.
-		Ok()
-	// TODO matei-p enable gas checks
-	// GasRemaining(7752)
+		Ok().
+		GasRemaining(7758)
 }
 
 func TestExecution_ExecuteOnDestContext_Successful_BigInts(t *testing.T) {
@@ -1616,12 +1610,10 @@ func TestExecution_ExecuteOnDestContext_Successful_BigInts(t *testing.T) {
 				// test.ParentAddress
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, -99).
-				// TODO matei-p enable gas checks
-				// GasUsed(test.ParentAddress, 4366).
+				GasUsed(test.ParentAddress, 4366).
 				/// test.ChildAddress
 				BalanceDelta(test.ChildAddress, 99).
-				// TODO matei-p enable gas checks
-				// GasUsed(test.ChildAddress, 2265).
+				GasUsed(test.ChildAddress, 2259).
 				// other
 				GasRemaining(test.GasProvided-
 					test.ParentCompilationCostDestCtx-
