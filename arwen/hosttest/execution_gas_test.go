@@ -584,9 +584,8 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall(t *testing.T) {
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
 				Ok().
-				// TODO matei-p uncomment these lines
-				// GasUsed(test.ChildAddress, gasUsedByChild).
-				// GasRemaining(0).
+				GasUsed(test.ChildAddress, gasUsedByChild).
+				GasRemaining(1250).
 				ReturnData(childAsyncReturnData...).
 				Transfers(
 					test.CreateTransferEntry(test.ChildAddress, test.ThirdPartyAddress).
@@ -595,11 +594,11 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall(t *testing.T) {
 					test.CreateTransferEntry(test.ChildAddress, test.VaultAddress).
 						WithData([]byte{}).
 						WithValue(big.NewInt(testConfig.TransferToVault)),
-					test.CreateTransferEntry(test.ChildAddress, test.ParentAddress).
-						WithData(computeReturnDataForCallback(vmcommon.Ok, childAsyncReturnData)).
-						WithGasLimit(gasForAsyncCall-gasUsedByChild).
-						WithCallType(vmcommon.AsynchronousCallBack).
-						WithValue(big.NewInt(0)),
+					// test.CreateTransferEntry(test.ChildAddress, test.ParentAddress).
+					// 	WithData(computeReturnDataForCallback(vmcommon.Ok, childAsyncReturnData)).
+					// 	WithGasLimit(gasForAsyncCall-gasUsedByChild).
+					// 	WithCallType(vmcommon.AsynchronousCallBack).
+					// 	WithValue(big.NewInt(0)),
 				)
 		})
 }
