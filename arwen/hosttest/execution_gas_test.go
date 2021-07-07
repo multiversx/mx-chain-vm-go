@@ -748,8 +748,8 @@ func TestGasUsed_AsyncCall_CrossShard_BuiltinCall(t *testing.T) {
 	testConfig := asyncBaseTestConfig
 	testConfig.GasProvided = 1000
 
-	// expectedGasUsedByParent := testConfig.GasUsedByParent + testConfig.GasUsedByCallback + gasUsedByBuiltinClaim
-	// expectedGasUsedByChild := uint64(0) // all gas for builtin call is consummed on caller
+	expectedGasUsedByParent := testConfig.GasUsedByParent + testConfig.GasUsedByCallback + gasUsedByBuiltinClaim
+	expectedGasUsedByChild := uint64(0) // all gas for builtin call is consummed on caller
 
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
@@ -774,11 +774,11 @@ func TestGasUsed_AsyncCall_CrossShard_BuiltinCall(t *testing.T) {
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
 				Ok().
-				BalanceDelta(test.ParentAddress, amountToGiveByBuiltinClaim-testConfig.TransferFromParentToChild)
-			// TODO matei-p uncomment these lines
-			// GasUsed(test.ParentAddress, expectedGasUsedByParent).
-			// GasUsed(test.UserAddress, 0).
-			// GasRemaining(testConfig.GasProvided - expectedGasUsedByParent - expectedGasUsedByChild)
+				BalanceDelta(test.ParentAddress, amountToGiveByBuiltinClaim).
+				// TODO matei-p uncomment these lines
+				GasUsed(test.ParentAddress, expectedGasUsedByParent).
+				GasUsed(test.UserAddress, 0).
+				GasRemaining(testConfig.GasProvided - expectedGasUsedByParent - expectedGasUsedByChild)
 		})
 }
 
@@ -1312,7 +1312,7 @@ func createMockBuiltinFunctions(tb testing.TB, host arwen.VMHost, world *worldmo
 	world.BuiltinFuncs.Container.Add("builtinClaim", &test.MockBuiltin{
 		ProcessBuiltinFunctionCall: func(acntSnd, _ vmcommon.UserAccountHandler, vmInput *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 			vmOutput := test.MakeVMOutput()
-			test.AddNewOutputAccount(
+			test.AddNewOutputTransfer(
 				vmOutput,
 				nil,
 				acntSnd.AddressBytes(),
