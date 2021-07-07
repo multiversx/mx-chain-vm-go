@@ -11,7 +11,7 @@ func TestMandosSelfTest(t *testing.T) {
 	runTestsInFolder(t, "mandos-self-test", []string{
 		"mandos-self-test/builtin-func-esdt-transfer.scen.json",
 		"mandos-self-test/esdt-zero-balance-check-err.scen.json",
-		"mandos-self-test/esdt-non-zero-balance-check-err.scen copy.json",
+		"mandos-self-test/esdt-non-zero-balance-check-err.scen.json",
 	})
 }
 
@@ -126,7 +126,7 @@ func TestMandosEsdtZeroBalance(t *testing.T) {
 }
 
 func TestMandosEsdtNonZeroBalance(t *testing.T) {
-	err := runSingleTestReturnError("mandos-self-test", "esdt-non-zero-balance-check-err.scen copy.json")
+	err := runSingleTestReturnError("mandos-self-test", "esdt-non-zero-balance-check-err.scen.json")
 	require.EqualError(t, err,
 		`mismatch for account "address:B":
   for token: TOK-123, nonce: 0: Bad balance. Want: "100". Have: "0"`)
