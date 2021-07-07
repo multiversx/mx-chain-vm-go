@@ -37,12 +37,12 @@
         {
             "step": "scCall",
             "txId": "1",
-            "comment": "Attributes are Color(128, 128, 128)",
             "tx": {
                 "from": "address:a_user",
                 "to": "sc:forwarder",
-                "function": "nft_create",
+                "function": "create_and_send",
                 "arguments": [
+                    "address:a_user",
                     "str:NFT-0001",
                     "1",
                     "str:nft-create-name",
@@ -55,10 +55,53 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["2", "2"],
+                "out": ["2"],
                 "status": "0",
                 "gas": "*",
-                "refund": "*"
+                "refund": "*",
+                "logs": [
+                    {
+                      "address": "sc:forwarder",
+                      "identifier": "str:ESDTNFTCreate",
+                      "topics": [
+                        "str:NFT-0001",
+                        "2",
+                        "0x080112020001226c0802120f6e66742d6372656174652d6e616d651a200000000000000000666f727761726465725f5f5f5f5f5f5f5f5f5f5f5f5f5f5f2a206e66742d6372656174652d686173682d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d320e6e66742d6372656174652d7572693a03808080"
+                      ],
+                      "data": ""
+                    },
+                    {
+                      "address": "sc:forwarder",
+                      "identifier": "str:create",
+                      "topics": [
+                        "str:NFT-0001",
+                        "2",
+                        "1"
+                      ],
+                      "data": ""
+                    },
+                    {
+                      "address": "sc:forwarder",
+                      "identifier": "str:ESDTNFTTransfer",
+                      "topics": [
+                        "str:NFT-0001",
+                        "2",
+                        "address:a_user"
+                      ],
+                      "data": ""
+                    },
+                    {
+                      "address": "sc:forwarder",
+                      "identifier": "str:send",
+                      "topics": [
+                        "address:a_user",
+                        "str:NFT-0001",
+                        "2",
+                        "1"
+                      ],
+                      "data": ""
+                    }
+                ]
             }
         },
         {
@@ -70,6 +113,10 @@
                     "esdt": {
                         "str:NFT-0001": {
                             "nonce": "1",
+                            "balance": "1"
+                        },
+                        "str:NFT-0001": {
+                            "nonce": "2",
                             "balance": "1"
                         }
                     },
@@ -88,7 +135,7 @@
                                 },
                                 {
                                     "nonce": "2",
-                                    "balance": "1",
+                                    "balance": "0",
                                     "creator": "sc:forwarder",
                                     "royalties": "0",
                                     "hash": "str:nft-create-hash-----------------",

@@ -54,6 +54,16 @@
                 "status": "0",
                 "logs": [
                     {
+                      "address": "sc:forwarder",
+                      "identifier": "str:ESDTNFTTransfer",
+                      "topics": [
+                        "str:NFT-0001",
+                        "5",
+                        "sc:vault"
+                      ],
+                      "data": ""
+                    },
+                    {
                         "address": "sc:vault",
                         "identifier": "str:accept_funds",
                         "topics": [
@@ -63,6 +73,16 @@
                             "5"
                         ],
                         "data": ""
+                    },
+                    {
+                      "address": "sc:forwarder",
+                      "identifier": "str:ESDTNFTTransfer",
+                      "topics": [
+                        "str:NFT-0001",
+                        "5",
+                        "sc:vault"
+                      ],
+                      "data": ""
                     },
                     {
                         "address": "sc:vault",
