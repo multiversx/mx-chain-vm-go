@@ -2,8 +2,6 @@ package vmjsonintegrationtest
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/require"
 )
 
 func TestRustAdder(t *testing.T) {
@@ -28,11 +26,6 @@ func TestDnsContract(t *testing.T) {
 	}
 
 	runAllTestsInFolder(t, "dns")
-}
-
-func TestDexLogs(t *testing.T) {
-	err := runSingleTestReturnError("dex/mandos", "enter_farm.scen.json")
-	require.Nil(t, err)
 }
 
 func TestCrowdfundingEsdt(t *testing.T) {
