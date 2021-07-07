@@ -406,7 +406,12 @@ func v1_3_addEC(
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 
-	gasToUse := metering.GasSchedule().CryptoAPICost.AddECC
+	curveMultiplier := managedType.Get100xCurveGasCostMultiplier(ecHandle)
+	if curveMultiplier < 0 {
+		arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return
+	}
+	gasToUse := metering.GasSchedule().CryptoAPICost.AddECC * uint64(curveMultiplier) / 100
 	metering.UseGas(gasToUse)
 
 	ec, err1 := managedType.GetEllipticCurve(ecHandle)
@@ -445,7 +450,12 @@ func v1_3_doubleEC(
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 
-	gasToUse := metering.GasSchedule().CryptoAPICost.DoubleECC
+	curveMultiplier := managedType.Get100xCurveGasCostMultiplier(ecHandle)
+	if curveMultiplier < 0 {
+		arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return
+	}
+	gasToUse := metering.GasSchedule().CryptoAPICost.DoubleECC * uint64(curveMultiplier) / 100
 	metering.UseGas(gasToUse)
 
 	ec, err1 := managedType.GetEllipticCurve(ecHandle)
@@ -481,7 +491,12 @@ func v1_3_isOnCurveEC(
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 
-	gasToUse := metering.GasSchedule().CryptoAPICost.IsOnCurveECC
+	curveMultiplier := managedType.Get100xCurveGasCostMultiplier(ecHandle)
+	if curveMultiplier < 0 {
+		arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return 1
+	}
+	gasToUse := metering.GasSchedule().CryptoAPICost.IsOnCurveECC * uint64(curveMultiplier) / 100
 	metering.UseGas(gasToUse)
 
 	ec, err := managedType.GetEllipticCurve(ecHandle)
@@ -517,7 +532,18 @@ func v1_3_scalarBaseMultEC(
 	metering := arwen.GetMeteringContext(context)
 	managedType := arwen.GetManagedTypesContext(context)
 
-	gasToUse := metering.GasSchedule().CryptoAPICost.ScalarMultECC
+	if length < 0 {
+		arwen.WithFault(arwen.ErrNegativeLength, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return 1
+	}
+
+	curveMultiplier := managedType.GetScalarMult100xCurveGasCostMultiplier(ecHandle)
+	if curveMultiplier < 0 {
+		arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return 1
+	}
+	oneByteScalarGasCost := metering.GasSchedule().CryptoAPICost.ScalarMultECC * uint64(curveMultiplier) / 100
+	gasToUse := oneByteScalarGasCost + uint64(length)*oneByteScalarGasCost
 	metering.UseGas(gasToUse)
 
 	data, err := runtime.MemLoad(dataOffset, length)
@@ -560,7 +586,18 @@ func v1_3_scalarMultEC(
 	metering := arwen.GetMeteringContext(context)
 	managedType := arwen.GetManagedTypesContext(context)
 
-	gasToUse := metering.GasSchedule().CryptoAPICost.ScalarMultECC
+	if length < 0 {
+		arwen.WithFault(arwen.ErrNegativeLength, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return 1
+	}
+
+	curveMultiplier := managedType.GetScalarMult100xCurveGasCostMultiplier(ecHandle)
+	if curveMultiplier < 0 {
+		arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return 1
+	}
+	oneByteScalarGasCost := metering.GasSchedule().CryptoAPICost.ScalarMultECC * uint64(curveMultiplier) / 100
+	gasToUse := oneByteScalarGasCost + uint64(length)*oneByteScalarGasCost
 	metering.UseGas(gasToUse)
 
 	data, err := runtime.MemLoad(dataOffset, length)
@@ -604,7 +641,12 @@ func v1_3_marshalEC(
 	metering := arwen.GetMeteringContext(context)
 	managedType := arwen.GetManagedTypesContext(context)
 
-	gasToUse := metering.GasSchedule().CryptoAPICost.MarshalECC
+	curveMultiplier := managedType.Get100xCurveGasCostMultiplier(ecHandle)
+	if curveMultiplier < 0 {
+		arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return 1
+	}
+	gasToUse := metering.GasSchedule().CryptoAPICost.MarshalECC * uint64(curveMultiplier) / 100
 	metering.UseGas(gasToUse)
 
 	ec, err := managedType.GetEllipticCurve(ecHandle)
@@ -647,7 +689,12 @@ func v1_3_marshalCompressedEC(
 	metering := arwen.GetMeteringContext(context)
 	managedType := arwen.GetManagedTypesContext(context)
 
-	gasToUse := metering.GasSchedule().CryptoAPICost.MarshalCompressedECC
+	curveMultiplier := managedType.Get100xCurveGasCostMultiplier(ecHandle)
+	if curveMultiplier < 0 {
+		arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return 1
+	}
+	gasToUse := metering.GasSchedule().CryptoAPICost.MarshalCompressedECC * uint64(curveMultiplier) / 100
 	metering.UseGas(gasToUse)
 
 	ec, err := managedType.GetEllipticCurve(ecHandle)
@@ -691,7 +738,12 @@ func v1_3_unmarshalEC(
 	metering := arwen.GetMeteringContext(context)
 	managedType := arwen.GetManagedTypesContext(context)
 
-	gasToUse := metering.GasSchedule().CryptoAPICost.UnmarshalECC
+	curveMultiplier := managedType.Get100xCurveGasCostMultiplier(ecHandle)
+	if curveMultiplier < 0 {
+		arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return 1
+	}
+	gasToUse := metering.GasSchedule().CryptoAPICost.UnmarshalECC * uint64(curveMultiplier) / 100
 	metering.UseGas(gasToUse)
 
 	data, err := runtime.MemLoad(dataOffset, length)
@@ -789,7 +841,15 @@ func v1_3_generateKeyEC(
 	metering := arwen.GetMeteringContext(context)
 	managedType := arwen.GetManagedTypesContext(context)
 
-	gasToUse := metering.GasSchedule().CryptoAPICost.GenerateKeyECC
+	curveMultiplier := managedType.Get100xCurveGasCostMultiplier(ecHandle)
+	if curveMultiplier < 0 {
+		arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return 1
+	}
+	if curveMultiplier == 250 {
+		curveMultiplier = 500
+	}
+	gasToUse := metering.GasSchedule().CryptoAPICost.MarshalCompressedECC * uint64(curveMultiplier) / 100
 	metering.UseGas(gasToUse)
 
 	ec, err := managedType.GetEllipticCurve(ecHandle)
@@ -825,7 +885,7 @@ func v1_3_p224Ec(context unsafe.Pointer) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	gasToUse := metering.GasSchedule().BigIntAPICost.EllipticCurveNew
+	gasToUse := metering.GasSchedule().CryptoAPICost.EllipticCurveNew
 	metering.UseGas(gasToUse)
 
 	curveParams := elliptic.P224().Params()
@@ -837,7 +897,7 @@ func v1_3_p256Ec(context unsafe.Pointer) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	gasToUse := metering.GasSchedule().BigIntAPICost.EllipticCurveNew
+	gasToUse := metering.GasSchedule().CryptoAPICost.EllipticCurveNew
 	metering.UseGas(gasToUse)
 
 	curveParams := elliptic.P256().Params()
@@ -849,7 +909,7 @@ func v1_3_p384Ec(context unsafe.Pointer) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	gasToUse := metering.GasSchedule().BigIntAPICost.EllipticCurveNew
+	gasToUse := metering.GasSchedule().CryptoAPICost.EllipticCurveNew
 	metering.UseGas(gasToUse)
 
 	curveParams := elliptic.P384().Params()
@@ -861,7 +921,7 @@ func v1_3_p521Ec(context unsafe.Pointer) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	gasToUse := metering.GasSchedule().BigIntAPICost.EllipticCurveNew
+	gasToUse := metering.GasSchedule().CryptoAPICost.EllipticCurveNew
 	metering.UseGas(gasToUse)
 
 	curveParams := elliptic.P521().Params()

@@ -796,7 +796,7 @@ func v1_3_bigIntSqrt(context unsafe.Pointer, destinationHandle, opHandle int32) 
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSqrt
 	metering.UseGas(gasToUse)
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
@@ -820,7 +820,7 @@ func v1_3_bigIntPow(context unsafe.Pointer, destinationHandle, op1Handle, op2Han
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntPow
 	metering.UseGas(gasToUse)
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
@@ -851,7 +851,7 @@ func v1_3_bigIntLog2(context unsafe.Pointer, op1Handle int32) int32 {
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntLog
 	metering.UseGas(gasToUse)
 
 	a, err := managedType.GetBigInt(op1Handle)

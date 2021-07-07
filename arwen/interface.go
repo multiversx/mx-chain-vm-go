@@ -7,7 +7,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
 )
 
@@ -173,6 +173,9 @@ type ManagedTypesContext interface {
 	PutEllipticCurve(ec *elliptic.CurveParams) int32
 	GetEllipticCurve(handle int32) (*elliptic.CurveParams, error)
 	GetEllipticCurveSizeOfField(ecHandle int32) int32
+	Get100xCurveGasCostMultiplier(ecHandle int32) int32
+	GetScalarMult100xCurveGasCostMultiplier(ecHandle int32) int32
+	GetUCompressed100xCurveGasCostMultiplier(ecHandle int32) int32
 	GetPrivateKeyByteLengthEC(ecHandle int32) int32
 }
 
