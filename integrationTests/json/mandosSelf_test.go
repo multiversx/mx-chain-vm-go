@@ -10,6 +10,8 @@ import (
 func TestMandosSelfTest(t *testing.T) {
 	runTestsInFolder(t, "mandos-self-test", []string{
 		"mandos-self-test/builtin-func-esdt-transfer.scen.json",
+		"mandos-self-test/esdt-zero-balance-check-err.scen.json",
+		"mandos-self-test/esdt-non-zero-balance-check-err.scen copy.json",
 	})
 }
 
