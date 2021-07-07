@@ -10,7 +10,22 @@ import (
 )
 
 const maxBigIntByteLenForNormalCost = 32
+const p224CurveMultiplier = 100
+const p256CurveMultiplier = 135
+const p384CurveMultiplier = 200
+const p521CurveMultiplier = 250
 
+const p224CurveScalarMultMultiplier = 100
+const p256CurveScalarMultMultiplier = 110
+const p384CurveScalarMultMultiplier = 150
+const p521CurveScalarMultMultiplier = 190
+
+const p224CurveUnmarshalCompressedMultiplier = 2000
+const p256CurveUnmarshalCompressedMultiplier = 100
+const p384CurveUnmarshalCompressedMultiplier = 200
+const p521CurveUnmarshalCompressedMultiplier = 400
+
+type managedBufferMap map[int32][]byte
 type bigIntMap map[int32]*big.Int
 type ellipticCurveMap map[int32]*elliptic.CurveParams
 
@@ -207,6 +222,62 @@ func (context *managedTypesContext) GetEllipticCurveSizeOfField(ecHandle int32) 
 		return -1
 	}
 	return int32(curve.BitSize)
+}
+
+// Get100xCurveGasCostMultiplier returns (100*multiplier) to be used with the basic gasCost depending on which curve is used.
+func (context *managedTypesContext) Get100xCurveGasCostMultiplier(ecHandle int32) int32 {
+	sizeOfField := context.GetEllipticCurveSizeOfField(ecHandle)
+	if sizeOfField < 0 {
+		return -1
+	}
+	switch sizeOfField {
+	case 224:
+		return p224CurveMultiplier
+	case 256:
+		return p256CurveMultiplier
+	case 384:
+		return p384CurveMultiplier
+	case 521:
+		return p521CurveMultiplier
+	}
+	return -1
+}
+
+// GetScalarMult100xCurveGasCostMultiplier returns (100*multiplier) to be used with the basic gasCost within ScalarMult/ScalarBaseMult function depending on which curve is used.
+func (context *managedTypesContext) GetScalarMult100xCurveGasCostMultiplier(ecHandle int32) int32 {
+	sizeOfField := context.GetEllipticCurveSizeOfField(ecHandle)
+	if sizeOfField < 0 {
+		return -1
+	}
+	switch sizeOfField {
+	case 224:
+		return p224CurveScalarMultMultiplier
+	case 256:
+		return p256CurveScalarMultMultiplier
+	case 384:
+		return p384CurveScalarMultMultiplier
+	case 521:
+		return p521CurveScalarMultMultiplier
+	}
+	return -1
+}
+
+func (context *managedTypesContext) GetUCompressed100xCurveGasCostMultiplier(ecHandle int32) int32 {
+	sizeOfField := context.GetEllipticCurveSizeOfField(ecHandle)
+	if sizeOfField < 0 {
+		return -1
+	}
+	switch sizeOfField {
+	case 224:
+		return p224CurveUnmarshalCompressedMultiplier
+	case 256:
+		return p256CurveUnmarshalCompressedMultiplier
+	case 384:
+		return p384CurveUnmarshalCompressedMultiplier
+	case 521:
+		return p521CurveUnmarshalCompressedMultiplier
+	}
+	return -1
 }
 
 // GetPrivateKeyByteLengthEC returns the length in bytes of the private key that will be generated.

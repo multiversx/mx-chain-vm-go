@@ -33,7 +33,7 @@ func TestManagedTypesContext_InitPushPopState(t *testing.T) {
 	t.Parallel()
 	host := &contextmock.VMHostStub{}
 	value1, value2, value3 := int64(100), int64(200), int64(-42)
-	p224ec, p256ec, p384ec := elliptic.P224().Params(), elliptic.P256().Params(), elliptic.P384().Params()
+	p224ec, p256ec, p384ec, p521ec := elliptic.P224().Params(), elliptic.P256().Params(), elliptic.P384().Params(), elliptic.P521().Params()
 	managedTypesContext, _ := NewManagedTypesContext(host)
 	managedTypesContext.InitState()
 
@@ -62,6 +62,19 @@ func TestManagedTypesContext_InitPushPopState(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, p256ec, ec2)
 
+	p224NormalGasCostMultiplier := managedTypesContext.Get100xCurveGasCostMultiplier(ecIndex1)
+	require.Equal(t, int32(100), p224NormalGasCostMultiplier)
+	p256NormalGasCostMultiplier := managedTypesContext.Get100xCurveGasCostMultiplier(ecIndex2)
+	require.Equal(t, int32(135), p256NormalGasCostMultiplier)
+	p224ScalarMultGasCostMultiplier := managedTypesContext.GetScalarMult100xCurveGasCostMultiplier(ecIndex1)
+	require.Equal(t, int32(100), p224ScalarMultGasCostMultiplier)
+	p256ScalarMultGasCostMultiplier := managedTypesContext.GetScalarMult100xCurveGasCostMultiplier(ecIndex2)
+	require.Equal(t, int32(110), p256ScalarMultGasCostMultiplier)
+	p224UCompressedGasCostMultiplier := managedTypesContext.GetUCompressed100xCurveGasCostMultiplier(ecIndex1)
+	require.Equal(t, int32(2000), p224UCompressedGasCostMultiplier)
+	p256UCompressedGasCostMultiplier := managedTypesContext.GetUCompressed100xCurveGasCostMultiplier(ecIndex2)
+	require.Equal(t, int32(100), p256UCompressedGasCostMultiplier)
+
 	// Copy active state to stack, then clean it. The previous 2 values should not
 	// be accessible.
 	managedTypesContext.PushState()
@@ -82,6 +95,19 @@ func TestManagedTypesContext_InitPushPopState(t *testing.T) {
 	require.Nil(t, ec2)
 	require.Equal(t, arwen.ErrNoEllipticCurveUnderThisHandle, err)
 
+	p224NormalGasCostMultiplier = managedTypesContext.Get100xCurveGasCostMultiplier(ecIndex1)
+	require.Equal(t, int32(-1), p224NormalGasCostMultiplier)
+	p256NormalGasCostMultiplier = managedTypesContext.Get100xCurveGasCostMultiplier(ecIndex2)
+	require.Equal(t, int32(-1), p256NormalGasCostMultiplier)
+	p224ScalarMultGasCostMultiplier = managedTypesContext.GetScalarMult100xCurveGasCostMultiplier(ecIndex1)
+	require.Equal(t, int32(-1), p224ScalarMultGasCostMultiplier)
+	p256ScalarMultGasCostMultiplier = managedTypesContext.GetScalarMult100xCurveGasCostMultiplier(ecIndex2)
+	require.Equal(t, int32(-1), p256ScalarMultGasCostMultiplier)
+	p224UCompressedGasCostMultiplier = managedTypesContext.GetUCompressed100xCurveGasCostMultiplier(ecIndex1)
+	require.Equal(t, int32(-1), p224UCompressedGasCostMultiplier)
+	p256UCompressedGasCostMultiplier = managedTypesContext.GetUCompressed100xCurveGasCostMultiplier(ecIndex2)
+	require.Equal(t, int32(-1), p256UCompressedGasCostMultiplier)
+
 	// Add a value on the current active state
 	index3 := managedTypesContext.PutBigInt(value3)
 	require.Equal(t, int32(0), index3)
@@ -94,6 +120,13 @@ func TestManagedTypesContext_InitPushPopState(t *testing.T) {
 	ec3, err := managedTypesContext.GetEllipticCurve(ecIndex3)
 	require.Nil(t, err)
 	require.Equal(t, p384ec, ec3)
+
+	p384NormalGasCostMultiplier := managedTypesContext.Get100xCurveGasCostMultiplier(ecIndex3)
+	require.Equal(t, int32(200), p384NormalGasCostMultiplier)
+	p384ScalarMultGasCostMultiplier := managedTypesContext.GetScalarMult100xCurveGasCostMultiplier(ecIndex3)
+	require.Equal(t, int32(150), p384ScalarMultGasCostMultiplier)
+	p384UCompressedGasCostMultiplier := managedTypesContext.GetUCompressed100xCurveGasCostMultiplier(ecIndex3)
+	require.Equal(t, int32(200), p384UCompressedGasCostMultiplier)
 
 	// Copy active state to stack, then clean it. The previous 3 values should not
 	// be accessible.
@@ -128,12 +161,18 @@ func TestManagedTypesContext_InitPushPopState(t *testing.T) {
 	require.Equal(t, big.NewInt(value4), bigValue4)
 	require.Equal(t, nil, err)
 
-	p521ec := elliptic.P521().Params()
 	ecIndex4 := managedTypesContext.PutEllipticCurve(p521ec)
 	require.Equal(t, int32(0), ecIndex4)
 	ec4, err := managedTypesContext.GetEllipticCurve(ecIndex4)
 	require.Equal(t, p521ec, ec4)
 	require.Nil(t, err)
+
+	p521NormalGasCostMultiplier := managedTypesContext.Get100xCurveGasCostMultiplier(ecIndex4)
+	require.Equal(t, int32(250), p521NormalGasCostMultiplier)
+	p521ScalarMultGasCostMultiplier := managedTypesContext.GetScalarMult100xCurveGasCostMultiplier(ecIndex4)
+	require.Equal(t, int32(190), p521ScalarMultGasCostMultiplier)
+	p521UCompressedGasCostMultiplier := managedTypesContext.GetUCompressed100xCurveGasCostMultiplier(ecIndex4)
+	require.Equal(t, int32(400), p521UCompressedGasCostMultiplier)
 
 	// Discard the top of the stack, losing value3; value4 should still be
 	// accessible, since its in the active state.
