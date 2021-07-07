@@ -115,3 +115,17 @@ func TestMandosCheckESDTErr1(t *testing.T) {
 ]. Have: "str:www.cool_nft.com/my_nft.jpg"
   for token: NFT-123456, nonce: 1: Bad attributes. Want: "str:other_attributes". Have: "str:serialized_attributes"`)
 }
+
+func TestMandosEsdtZeroBalance(t *testing.T) {
+	err := runSingleTestReturnError("mandos-self-test", "esdt-zero-balance-check-err.scen.json")
+	require.EqualError(t, err,
+		`mismatch for account "address:A":
+  for token: TOK-123, nonce: 0: Bad balance. Want: "". Have: "150"`)
+}
+
+func TestMandosEsdtNonZeroBalance(t *testing.T) {
+	err := runSingleTestReturnError("mandos-self-test", "esdt-non-zero-balance-check-err.scen copy.json")
+	require.EqualError(t, err,
+		`mismatch for account "address:B":
+  for token: TOK-123, nonce: 0: Bad balance. Want: "100". Have: "0"`)
+}
