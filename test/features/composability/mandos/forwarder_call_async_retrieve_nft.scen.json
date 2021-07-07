@@ -62,6 +62,16 @@
                         "data": ""
                     },
                     {
+                        "address": "sc:vault",
+                        "identifier": "str:ESDTNFTTransfer",
+                        "topics": [
+                            "str:NFT-0001",
+                            "5",
+                            "sc:forwarder"
+                        ],
+                        "data": ""
+                    },
+                    {
                         "address": "sc:forwarder",
                         "identifier": "str:retrieve_funds_callback",
                         "topics": [
@@ -71,6 +81,7 @@
                         ],
                         "data": ""
                     }
+
                 ],
                 "gas": "*",
                 "refund": "*"
