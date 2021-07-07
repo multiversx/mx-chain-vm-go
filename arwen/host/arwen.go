@@ -13,7 +13,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto/factory"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/atomic"
 )
 
@@ -316,7 +316,7 @@ func (host *vmHost) GasScheduleChange(newGasSchedule config.GasScheduleMap) {
 	host.gasSchedule = newGasSchedule
 	gasCostConfig, err := config.CreateGasConfig(newGasSchedule)
 	if err != nil {
-		log.Error("cannot apply new gas config remained with old one")
+		log.Error("cannot apply new gas config", "err", err)
 		return
 	}
 
