@@ -793,7 +793,12 @@ func v1_3_unmarshalCompressedEC(
 	metering := arwen.GetMeteringContext(context)
 	managedType := arwen.GetManagedTypesContext(context)
 
-	gasToUse := metering.GasSchedule().CryptoAPICost.UnmarshalCompressedECC
+	curveMultiplier := managedType.GetUCompressed100xCurveGasCostMultiplier(ecHandle)
+	if curveMultiplier < 0 {
+		arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+		return 1
+	}
+	gasToUse := metering.GasSchedule().CryptoAPICost.UnmarshalCompressedECC * uint64(curveMultiplier) / 100
 	metering.UseGas(gasToUse)
 
 	data, err := runtime.MemLoad(dataOffset, length)
