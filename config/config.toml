@@ -82,7 +82,6 @@
     GetBlockTimeStamp   = 10
 
 [BigIntAPICost]
-    EllipticCurveNew           = 10
     BigIntNew                  = 10
 	BigIntUnsignedByteLength   = 10
 	BigIntSignedByteLength     = 10
@@ -96,6 +95,9 @@
 	BigIntAdd                  = 10
 	BigIntSub                  = 10
 	BigIntMul                  = 10
+    BigIntSqrt                 = 10
+    BigIntPow                  = 10
+    BigIntLog                  = 10
 	BigIntTDiv                 = 10
 	BigIntTMod                 = 10
 	BigIntEDiv                 = 10
@@ -122,6 +124,7 @@
 [CryptoAPICost]
     SHA256                 = 10
     Keccak256              = 10
+    EllipticCurveNew       = 10
     AddECC                 = 10
     DoubleECC              = 10
     IsOnCurveECC           = 10

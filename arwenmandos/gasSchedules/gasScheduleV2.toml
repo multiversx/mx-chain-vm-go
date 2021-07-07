@@ -111,7 +111,6 @@
     GetBlockTimeStamp   = 100000
 
 [BigIntAPICost]
-    EllipticCurveNew         = 10000
     BigIntNew                = 2000
     BigIntByteLength         = 2000
     BigIntUnsignedByteLength = 2000
@@ -159,15 +158,6 @@
     VerifyBLS              = 5000000
     VerifyEd25519          = 2000000
     VerifySecp256k1        = 2000000
-    AddECC                 = 1000000
-    DoubleECC              = 1000000
-    IsOnCurveECC           = 1000000
-    ScalarMultECC          = 1000000
-    MarshalECC             = 1000000
-    MarshalCompressedECC   = 1000000
-    UnmarshalECC           = 1000000
-    UnmarshalCompressedECC = 1000000
-    GenerateKeyECC         = 1000000
 
 [WASMOpcodeCost]
     Unreachable = 1

@@ -99,7 +99,6 @@ type EthAPICost struct {
 }
 
 type BigIntAPICost struct {
-	EllipticCurveNew           uint64
 	BigIntNew                  uint64
 	BigIntUnsignedByteLength   uint64
 	BigIntSignedByteLength     uint64
@@ -113,6 +112,9 @@ type BigIntAPICost struct {
 	BigIntAdd                  uint64
 	BigIntSub                  uint64
 	BigIntMul                  uint64
+	BigIntSqrt                 uint64
+	BigIntPow                  uint64
+	BigIntLog                  uint64
 	BigIntTDiv                 uint64
 	BigIntTMod                 uint64
 	BigIntEDiv                 uint64
@@ -144,6 +146,7 @@ type CryptoAPICost struct {
 	VerifyBLS              uint64
 	VerifyEd25519          uint64
 	VerifySecp256k1        uint64
+	EllipticCurveNew       uint64
 	AddECC                 uint64
 	DoubleECC              uint64
 	IsOnCurveECC           uint64
