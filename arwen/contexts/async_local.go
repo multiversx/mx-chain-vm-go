@@ -363,7 +363,7 @@ func isESDTTransferOnReturnDataFromFunctionAndArgs(functionName string, args [][
 }
 
 func (context *asyncContext) computeCallValueFromVMOutput(destinationVMOutput *vmcommon.VMOutput) *big.Int {
-	if !context.host.IsArwenV3Enabled() {
+	if len(destinationVMOutput.ReturnData) > 0 {
 		return big.NewInt(0)
 	}
 

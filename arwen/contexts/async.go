@@ -755,8 +755,6 @@ func computeDataLengthFromArguments(function string, arguments [][]byte) int {
 	// Calculate what length would the Data field have, were it of the
 	// form "callback@arg1hex@arg2hex...
 
-	// TODO breaking change below, if there has ever been an async call, otherwise ok
-	// TODO add condition on a host flag for an epoch
 	separator := uint64(1)
 	hexSize := uint64(2)
 	dataLength := uint64(len(function))
