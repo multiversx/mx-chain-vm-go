@@ -698,7 +698,7 @@ func TestGasUsed_AsyncCall_BuiltinCall(t *testing.T) {
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
 				Ok().
-				BalanceDelta(test.ParentAddress, amountToGiveByBuiltinClaim-testConfig.TransferFromParentToChild).
+				BalanceDelta(test.ParentAddress, amountToGiveByBuiltinClaim).
 				GasUsed(test.ParentAddress, expectedGasUsedByParent).
 				GasUsed(test.UserAddress, 0).
 				GasRemaining(testConfig.GasProvided - expectedGasUsedByParent - expectedGasUsedByChild)

@@ -403,7 +403,7 @@ func (context *meteringContext) UseGasForAsyncStep() error {
 // UseGasBounded consumes the specified amount of gas on the currently running
 // Wasmer instance, but returns an error if there is not enough gas left.
 func (context *meteringContext) UseGasBounded(gasToUse uint64) error {
-	if context.GasLeft() <= gasToUse {
+	if context.GasLeft() < gasToUse {
 		return arwen.ErrNotEnoughGas
 	}
 	context.UseGas(gasToUse)
