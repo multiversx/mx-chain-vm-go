@@ -223,16 +223,17 @@ func (context *asyncContext) createCallbackInput(
 	esdtFunction := ""
 	isESDTOnCallBack := false
 	esdtArgs := make([][]byte, 0)
+	returnWithError := false
 	if destinationErr == nil && vmOutput.ReturnCode == vmcommon.Ok {
 		// when execution went Ok, callBack arguments are:
 		// [0, result1, result2, ....]
 		isESDTOnCallBack, esdtFunction, esdtArgs = context.isESDTTransferOnReturnDataWithNoAdditionalData(vmOutput.ReturnData)
 		arguments = append(arguments, vmOutput.ReturnData...)
-
 	} else {
 		// when execution returned error, callBack arguments are:
 		// [error code, error message]
 		arguments = append(arguments, []byte(vmOutput.ReturnMessage))
+		returnWithError = true
 	}
 
 	callbackFunction := asyncCall.GetCallbackName()
@@ -252,16 +253,17 @@ func (context *asyncContext) createCallbackInput(
 	// Return to the sender SC, calling its specified callback method.
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
-			CallerAddr:     asyncCall.Destination,
-			Arguments:      arguments,
-			CallValue:      context.computeCallValueFromVMOutput(vmOutput),
-			CallType:       vmcommon.AsynchronousCallBack,
-			GasPrice:       runtime.GetVMInput().GasPrice,
-			GasProvided:    gasLimit,
-			GasLocked:      0,
-			CurrentTxHash:  runtime.GetCurrentTxHash(),
-			OriginalTxHash: runtime.GetOriginalTxHash(),
-			PrevTxHash:     runtime.GetPrevTxHash(),
+			CallerAddr:           asyncCall.Destination,
+			Arguments:            arguments,
+			CallValue:            context.computeCallValueFromVMOutput(vmOutput),
+			CallType:             vmcommon.AsynchronousCallBack,
+			GasPrice:             runtime.GetVMInput().GasPrice,
+			GasProvided:          gasLimit,
+			GasLocked:            0,
+			CurrentTxHash:        runtime.GetCurrentTxHash(),
+			OriginalTxHash:       runtime.GetOriginalTxHash(),
+			PrevTxHash:           runtime.GetPrevTxHash(),
+			ReturnCallAfterError: returnWithError,
 		},
 		RecipientAddr: runtime.GetSCAddress(),
 		Function:      callbackFunction,
