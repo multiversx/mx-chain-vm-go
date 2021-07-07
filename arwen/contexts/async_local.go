@@ -5,7 +5,6 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/math"
-	"github.com/ElrondNetwork/elrond-go/core"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -272,7 +271,7 @@ func (context *asyncContext) createCallbackInput(
 		contractCallInput.Function = esdtFunction
 		contractCallInput.Arguments = make([][]byte, 0, len(arguments))
 		contractCallInput.Arguments = append(contractCallInput.Arguments, esdtArgs[0], esdtArgs[1])
-		if esdtFunction == core.BuiltInFunctionESDTNFTTransfer {
+		if esdtFunction == vmcommon.BuiltInFunctionESDTNFTTransfer {
 			contractCallInput.Arguments = append(contractCallInput.Arguments, esdtArgs[2], esdtArgs[3])
 		}
 		contractCallInput.Arguments = append(contractCallInput.Arguments, []byte(callbackFunction))
@@ -351,11 +350,11 @@ func (context *asyncContext) isESDTTransferOnReturnDataWithNoAdditionalData(data
 }
 
 func isESDTTransferOnReturnDataFromFunctionAndArgs(functionName string, args [][]byte) (bool, string, [][]byte) {
-	if functionName == core.BuiltInFunctionESDTTransfer && len(args) == 2 {
+	if functionName == vmcommon.BuiltInFunctionESDTTransfer && len(args) == 2 {
 		return true, functionName, args
 	}
 
-	if functionName == core.BuiltInFunctionESDTNFTTransfer && len(args) == 4 {
+	if functionName == vmcommon.BuiltInFunctionESDTNFTTransfer && len(args) == 4 {
 		return true, functionName, args
 	}
 
