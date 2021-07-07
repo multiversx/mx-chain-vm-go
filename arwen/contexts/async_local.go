@@ -124,7 +124,7 @@ func (context *asyncContext) executeSyncHalfOfBuiltinFunction(asyncCall *arwen.A
 	// If the in-shard half of the built-in function call has failed, go no
 	// further and execute the error callback of this AsyncCall.
 	if vmOutput.ReturnCode != vmcommon.Ok {
-		asyncCall.UpdateStatus(vmOutput.ReturnCode)
+		asyncCall.Reject()
 		callbackVMOutput, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, err)
 		context.finishSyncExecution(callbackVMOutput, callbackErr)
 	}

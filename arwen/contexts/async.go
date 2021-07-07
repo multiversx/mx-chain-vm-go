@@ -345,6 +345,8 @@ func (context *asyncContext) RegisterLegacyAsyncCall(address []byte, data []byte
 	if err != nil {
 		return err
 	}
+	// TODO matei-p chould crash other use cases
+	metering.RestoreGas(gasLimit)
 
 	context.host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointAsyncCall)
 
@@ -441,15 +443,11 @@ func (context *asyncContext) executeAsyncCall(asyncCall *arwen.AsyncCall) error 
 	// half, followed by sending the call across shards.
 	if asyncCall.ExecutionMode == arwen.AsyncBuiltinFuncCrossShard {
 		err := context.executeSyncHalfOfBuiltinFunction(asyncCall)
-		if err != nil {
+		if err != nil || asyncCall.Status == arwen.AsyncCallRejected {
 			return err
 		}
 
-		// If the intra-shard half of the built-in function has failed, stop here
-		// and do not send the built-in call across shards.
-		if asyncCall.Status != arwen.AsyncCallPending {
-			return nil
-		}
+		return nil
 	}
 
 	return context.sendAsyncCallCrossShard(asyncCall)

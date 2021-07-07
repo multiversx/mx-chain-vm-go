@@ -91,6 +91,11 @@ func (ac *AsyncCall) UpdateStatus(returnCode vmcommon.ReturnCode) {
 	}
 }
 
+// Reject sets the rejected status for this async call
+func (ac *AsyncCall) Reject() {
+	ac.Status = AsyncCallRejected
+}
+
 // GetCallbackName returns the name of the callback to execute, depending on
 // the status of the async call
 func (ac *AsyncCall) GetCallbackName() string {
