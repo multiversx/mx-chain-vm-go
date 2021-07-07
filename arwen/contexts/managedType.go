@@ -122,7 +122,7 @@ func (context *managedTypesContext) ConsumeGasForBigIntCopy(values ...*big.Int) 
 	}
 }
 
-// ConsumeGasForThisIntNumberOfBytes uses gas for the number of bytes given.
+// ConsumeGasForThisIntNumberOfBytes uses gas for the number of bytes given
 func (context *managedTypesContext) ConsumeGasForThisIntNumberOfBytes(byteLen int) {
 	metering := context.host.Metering()
 	if byteLen > maxBigIntByteLenForNormalCost {
@@ -130,7 +130,7 @@ func (context *managedTypesContext) ConsumeGasForThisIntNumberOfBytes(byteLen in
 	}
 }
 
-// ConsumeGasForThisBigIntNumberOfBytes uses gas for the number of bytes given that are being copied.
+// ConsumeGasForThisBigIntNumberOfBytes uses gas for the number of bytes given that are being copied
 func (context *managedTypesContext) ConsumeGasForThisBigIntNumberOfBytes(byteLen *big.Int) {
 	metering := context.host.Metering()
 	DataCopyPerByte := metering.GasSchedule().BaseOperationCost.DataCopyPerByte
@@ -146,7 +146,7 @@ func (context *managedTypesContext) ConsumeGasForThisBigIntNumberOfBytes(byteLen
 
 // BIGINT
 
-// GetOneOrCreate returns the value at the given handle. If there is no value under that value, it will set a new on with value 0.
+// GetOneOrCreate returns the value at the given handle. If there is no value under that value, it will set a new on with value 0
 func (context *managedTypesContext) GetBigIntOrCreate(handle int32) *big.Int {
 	value, ok := context.bigIntValues[handle]
 	if !ok {
@@ -193,7 +193,7 @@ func (context *managedTypesContext) PutBigInt(value int64) int32 {
 
 // ELLIPTIC CURVES
 
-// GetOneEllipticCurve returns the elliptic curve under the given handle. If there is no value under that handle, it will return error
+// GetEllipticCurve returns the elliptic curve under the given handle. If there is no value under that handle, it will return error
 func (context *managedTypesContext) GetEllipticCurve(handle int32) (*elliptic.CurveParams, error) {
 	curve, ok := context.ecValues[handle]
 	if !ok {
@@ -215,7 +215,7 @@ func (context *managedTypesContext) PutEllipticCurve(curve *elliptic.CurveParams
 	return newHandle
 }
 
-// GetEllipticCurveLength returns the size of field of the curve under the given handle.
+// GetEllipticCurveSizeOfField returns the size of field of the curve under the given handle
 func (context *managedTypesContext) GetEllipticCurveSizeOfField(ecHandle int32) int32 {
 	curve, ok := context.ecValues[ecHandle]
 	if !ok {
@@ -224,7 +224,7 @@ func (context *managedTypesContext) GetEllipticCurveSizeOfField(ecHandle int32) 
 	return int32(curve.BitSize)
 }
 
-// Get100xCurveGasCostMultiplier returns (100*multiplier) to be used with the basic gasCost depending on which curve is used.
+// Get100xCurveGasCostMultiplier returns (100*multiplier) to be used with the basic gasCost depending on which curve is used
 func (context *managedTypesContext) Get100xCurveGasCostMultiplier(ecHandle int32) int32 {
 	sizeOfField := context.GetEllipticCurveSizeOfField(ecHandle)
 	if sizeOfField < 0 {
@@ -243,7 +243,7 @@ func (context *managedTypesContext) Get100xCurveGasCostMultiplier(ecHandle int32
 	return -1
 }
 
-// GetScalarMult100xCurveGasCostMultiplier returns (100*multiplier) to be used with the basic gasCost within ScalarMult/ScalarBaseMult function depending on which curve is used.
+// GetScalarMult100xCurveGasCostMultiplier returns (100*multiplier) to be used with the basic gasCost within ScalarMult/ScalarBaseMult function depending on which curve is used
 func (context *managedTypesContext) GetScalarMult100xCurveGasCostMultiplier(ecHandle int32) int32 {
 	sizeOfField := context.GetEllipticCurveSizeOfField(ecHandle)
 	if sizeOfField < 0 {
@@ -262,6 +262,7 @@ func (context *managedTypesContext) GetScalarMult100xCurveGasCostMultiplier(ecHa
 	return -1
 }
 
+// GetUCompressed100xCurveGasCostMultiplier returns (100*multiplier) to be used with the basic gasCost within UnmarshalCompressed function depending on which curve is used
 func (context *managedTypesContext) GetUCompressed100xCurveGasCostMultiplier(ecHandle int32) int32 {
 	sizeOfField := context.GetEllipticCurveSizeOfField(ecHandle)
 	if sizeOfField < 0 {
@@ -280,7 +281,7 @@ func (context *managedTypesContext) GetUCompressed100xCurveGasCostMultiplier(ecH
 	return -1
 }
 
-// GetPrivateKeyByteLengthEC returns the length in bytes of the private key that will be generated.
+// GetPrivateKeyByteLengthEC returns the length in bytes of the private key that will be generated
 func (context *managedTypesContext) GetPrivateKeyByteLengthEC(ecHandle int32) int32 {
 	curve, ok := context.ecValues[ecHandle]
 	if !ok {
