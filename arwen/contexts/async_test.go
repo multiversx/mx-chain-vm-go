@@ -628,7 +628,7 @@ func TestAsyncContext_ExecuteSyncCall_NoDynamicGasLocking_Simulation(t *testing.
 func TestAsyncContext_ExecuteSyncCall_Successful(t *testing.T) {
 	// Scenario 3
 	// Successful execution at destination, and successful callback execution;
-	// the AsyncCall contains suficient gas this time.
+	// the AsyncCall contains sufficient gas this time.
 	host, _, originalVMInput := InitializeArwenAndWasmer_AsyncContext_AliceAndBob()
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
 	async := NewAsyncContext(host)
@@ -770,6 +770,7 @@ func TestAsyncContext_CreateCallbackInput_DestinationCallFailed(t *testing.T) {
 	arwen.CopyTxHashes(expectedInput, originalVMInput)
 	expectedInput.GasProvided = expectedGasProvided
 	expectedInput.CallType = vmcommon.AsynchronousCallBack
+	expectedInput.ReturnCallAfterError = true
 	require.Equal(t, expectedInput, callbackInput)
 }
 
@@ -911,7 +912,7 @@ func defaultDestOutput_Ok() *vmcommon.VMOutput {
 
 func defaultCallbackInput_BobToAlice(originalVMInput *vmcommon.ContractCallInput) *vmcommon.ContractCallInput {
 	input := arwen.MakeContractCallInput(Bob, Alice, "successCallback", 0)
-	arwen.AddArgument(input, []byte{byte(vmcommon.Ok)})
+	arwen.AddArgument(input, big.NewInt(int64(vmcommon.Ok)).Bytes())
 	arwen.AddArgument(input, []byte("first"))
 	arwen.AddArgument(input, []byte("second"))
 	arwen.AddArgument(input, []byte{})
@@ -936,7 +937,7 @@ func defaultOutputDataLengthAsArgs(asyncCall *arwen.AsyncCall, vmOutput *vmcommo
 
 	dataLength := 0
 	if vmOutput.ReturnCode == vmcommon.Ok {
-		dataLength += len(asyncCall.SuccessCallback) + separator + returnCode
+		dataLength += len(asyncCall.SuccessCallback) + separator
 		for _, data := range vmOutput.ReturnData {
 			dataLength += separator
 			dataLength += len(data) * hexSize

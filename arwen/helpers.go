@@ -279,12 +279,13 @@ func SetStorageUpdateStrings(account *vmcommon.OutputAccount, key string, data s
 func MakeEmptyContractCallInput() *vmcommon.ContractCallInput {
 	return &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
-			CallerAddr:  nil,
-			Arguments:   make([][]byte, 0),
-			CallValue:   big.NewInt(0),
-			CallType:    vmcommon.DirectCall,
-			GasPrice:    1,
-			GasProvided: 0,
+			CallerAddr:           nil,
+			Arguments:            make([][]byte, 0),
+			CallValue:            big.NewInt(0),
+			CallType:             vmcommon.DirectCall,
+			GasPrice:             1,
+			GasProvided:          0,
+			ReturnCallAfterError: false,
 		},
 		RecipientAddr: nil,
 		Function:      "",
