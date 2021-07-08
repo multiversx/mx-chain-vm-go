@@ -84,17 +84,17 @@ func ExecuteOnDestContextInMockContracts(host arwen.VMHost, input *vmcommon.Cont
 }
 
 func GetTestConfig(config interface{}) *AsyncCallBaseTestConfig {
-	var testConfig *AsyncCallBaseTestConfig
+	var testConfig AsyncCallBaseTestConfig
 	switch config.(type) {
-	case *AsyncCallBaseTestConfig:
-		testConfig = config.(*AsyncCallBaseTestConfig)
-	case *AsyncBuiltInCallTestConfig:
-		fullConfig := config.(*AsyncBuiltInCallTestConfig)
-		testConfig = &AsyncCallBaseTestConfig{
+	case AsyncCallBaseTestConfig:
+		testConfig = config.(AsyncCallBaseTestConfig)
+	case AsyncBuiltInCallTestConfig:
+		fullConfig := config.(AsyncBuiltInCallTestConfig)
+		testConfig = AsyncCallBaseTestConfig{
 			GasUsedByChild:            fullConfig.GasUsedByChild,
 			TransferFromParentToChild: fullConfig.TransferFromParentToChild,
 			GasUsedByCallback:         fullConfig.GasUsedByCallback,
 		}
 	}
-	return testConfig
+	return &testConfig
 }

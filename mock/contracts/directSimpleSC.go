@@ -184,7 +184,7 @@ func ESDTTransferToParentCallbackWillFail(instanceMock *mock.InstanceMock, confi
 }
 
 func esdtTransferToParentMock(instanceMock *mock.InstanceMock, config interface{}, behavior int) {
-	testConfig := config.(*AsyncCallTestConfig)
+	testConfig := config.(AsyncCallTestConfig)
 	instanceMock.AddMockMethod("transferESDTToParent", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)

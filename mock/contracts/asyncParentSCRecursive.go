@@ -11,7 +11,7 @@ import (
 
 // ForwardAsyncCallRecursiveParentMock is an exposed mock contract method
 func ForwardAsyncCallRecursiveParentMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(*AsyncCallRecursiveTestConfig)
+	testConfig := config.(AsyncCallRecursiveTestConfig)
 	instanceMock.AddMockMethod("forwardAsyncCall", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
@@ -43,6 +43,6 @@ func ForwardAsyncCallRecursiveParentMock(instanceMock *mock.InstanceMock, config
 
 // CallBackRecursiveParentMock is an exposed mock contract method
 func CallBackRecursiveParentMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(*AsyncCallRecursiveTestConfig)
+	testConfig := config.(AsyncCallRecursiveTestConfig)
 	instanceMock.AddMockMethod("callBack", test.SimpleWasteGasMockMethod(instanceMock, testConfig.GasUsedByCallback))
 }

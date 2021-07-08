@@ -18,7 +18,7 @@ var AsyncChildData = " there"
 
 // PerformAsyncCallParentMock is an exposed mock contract method
 func PerformAsyncCallParentMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(*AsyncCallTestConfig)
+	testConfig := config.(AsyncCallTestConfig)
 	instanceMock.AddMockMethod("performAsyncCall", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
@@ -40,7 +40,7 @@ func PerformAsyncCallParentMock(instanceMock *mock.InstanceMock, config interfac
 		// data for child -> third party tx
 		// behavior param for child
 		// amount to transfer from parent to child
-		err = RegisterAsyncCallToChild(host, testConfig, host.Runtime().Arguments())
+		err = RegisterAsyncCallToChild(host, &testConfig, host.Runtime().Arguments())
 		require.Nil(t, err)
 
 		return instance
@@ -51,24 +51,19 @@ func PerformAsyncCallParentMock(instanceMock *mock.InstanceMock, config interfac
 // RegisterAsyncCallToChild is resued also in some tests before async context serialization
 func RegisterAsyncCallToChild(host arwen.VMHost, testConfig *AsyncCallTestConfig, arguments [][]byte) error {
 	callData := txDataBuilder.NewBuilder()
-
 	callData.Func(AsyncChildFunction)
-
 	callData.Int64(testConfig.TransferToThirdParty)
-
 	callData.Str(AsyncChildData)
-
 	callData.Bytes(append(arguments[0]))
 
 	value := big.NewInt(testConfig.TransferFromParentToChild).Bytes()
-
 	async := host.Async()
 	return async.RegisterLegacyAsyncCall(test.ChildAddress, callData.ToBytes(), value)
 }
 
 // SimpleCallbackMock is an exposed mock contract method
 func SimpleCallbackMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(*AsyncCallTestConfig)
+	testConfig := config.(AsyncCallTestConfig)
 	instanceMock.AddMockMethod("callBack", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
@@ -87,7 +82,7 @@ func SimpleCallbackMock(instanceMock *mock.InstanceMock, config interface{}) {
 
 // CallBackParentMock is an exposed mock contract method
 func CallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(*AsyncCallTestConfig)
+	testConfig := config.(AsyncCallTestConfig)
 	instanceMock.AddMockMethod("callBack", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)

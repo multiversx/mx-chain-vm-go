@@ -346,7 +346,7 @@ func (context *asyncContext) RegisterLegacyAsyncCall(address []byte, data []byte
 		return err
 	}
 	// TODO matei-p chould crash other use cases
-	metering.RestoreGas(gasLimit)
+	// metering.RestoreGas(gasLimit)
 
 	context.host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointAsyncCall)
 
@@ -693,14 +693,6 @@ func (context *asyncContext) sendContextCallbackToOriginalCaller() error {
 		runtime.FailExecution(err)
 		return err
 	}
-
-	// TODO matei-p, uncomment and update
-	/*
-		// TODO it is imperative to test gas forwarding here, before merging into master
-		gasLeft := metering.GasLeft()
-		metering.ForwardGas(runtime.GetSCAddress(), currentCall.CallerAddr, gasLeft)
-		metering.UseGas(gasLeft)
-	*/
 
 	return nil
 }
