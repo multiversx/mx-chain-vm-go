@@ -15,6 +15,7 @@ import (
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
 	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
@@ -336,9 +337,6 @@ func TestExecution_MultipleArwens_OverlappingContractInstanceData(t *testing.T) 
 
 func TestExecution_MultipleArwens_CleanInstanceWhileOthersAreRunning(t *testing.T) {
 
-	// TODO matei-p this should be removed
-	t.Skip()
-
 	code := test.GetTestSCCode("counter", "../../")
 
 	input := test.DefaultTestContractCallInput()
@@ -351,9 +349,9 @@ func TestExecution_MultipleArwens_CleanInstanceWhileOthersAreRunning(t *testing.
 	host1, _ := test.DefaultTestArwenForCall(t, code, nil)
 	_, _, _, _, runtimeContext1, _, _ := host1.GetContexts()
 	runtimeContextMock := contextmock.NewRuntimeContextWrapper(&runtimeContext1)
-	runtimeContextMock.FunctionFunc = func() string {
+	runtimeContextMock.GetFunctionToCallFunc = func() (wasmer.ExportedFunctionCallback, error) {
 		interHostsChan <- "waitForHost2"
-		return runtimeContextMock.GetWrappedRuntimeContext().Function()
+		return runtimeContextMock.GetWrappedRuntimeContext().GetFunctionToCall()
 	}
 	host1.SetRuntimeContext(runtimeContextMock)
 
@@ -368,12 +366,12 @@ func TestExecution_MultipleArwens_CleanInstanceWhileOthersAreRunning(t *testing.
 	host2, _ := test.DefaultTestArwenForCall(t, code, nil)
 	_, _, _, _, runtimeContext2, _, _ := host2.GetContexts()
 	runtimeContextMock = contextmock.NewRuntimeContextWrapper(&runtimeContext2)
-	runtimeContextMock.FunctionFunc = func() string {
+	runtimeContextMock.GetFunctionToCallFunc = func() (wasmer.ExportedFunctionCallback, error) {
 		// wait to make sure host1 is running also
 		<-interHostsChan
 		// wait for host1 to finish
 		<-interHostsChan
-		return runtimeContextMock.GetWrappedRuntimeContext().Function()
+		return runtimeContextMock.GetWrappedRuntimeContext().GetFunctionToCall()
 	}
 	host2.SetRuntimeContext(runtimeContextMock)
 
