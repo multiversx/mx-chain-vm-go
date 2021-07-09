@@ -43,7 +43,9 @@
                         "address": "sc:egld-esdt-swap",
                         "identifier": "str:ESDTTransfer",
                         "topics": [
-                            "str:WEGLD-abcdef", "500",  "address:user"
+                            "str:WEGLD-abcdef",
+                            "500",
+                            "address:user"
                         ],
                         "data": ""
                     },
