@@ -34,6 +34,7 @@ func NewBuiltinFunctionsWrapper(
 		Marshalizer:      WorldMarshalizer,
 		Accounts:         world.AccountsAdapter,
 		ShardCoordinator: world,
+		EpochNotifier:    &EpochNotifierStub{},
 	}
 
 	builtinFuncFactory, err := builtInFunctions.NewBuiltInFunctionsFactory(argsBuiltIn)

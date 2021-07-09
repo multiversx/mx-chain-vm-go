@@ -32,8 +32,9 @@ func TestExecution_ExecuteOnDestContext_ESDTTransferWithoutExecute(t *testing.T)
 	input := test.DefaultTestContractCallInput()
 	input.Function = "basic_transfer"
 	input.GasProvided = 100000
-	input.ESDTTokenName = test.ESDTTestTokenName
-	input.ESDTValue = big.NewInt(16)
+	input.ESDTTransfers = make([]*vmcommon.ESDTTransfer, 1)
+	input.ESDTTransfers[0].ESDTValue = big.NewInt(16)
+	input.ESDTTransfers[0].ESDTTokenName = test.ESDTTestTokenName
 
 	vmOutput, err := host.RunSmartContractCall(input)
 
