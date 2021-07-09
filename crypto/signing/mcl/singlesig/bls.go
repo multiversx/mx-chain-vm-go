@@ -1,8 +1,8 @@
 package singlesig
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
-	"github.com/ElrondNetwork/arwen-wasm-vm/crypto/signing/mcl"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/crypto"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/crypto/signing/mcl"
 	"github.com/ElrondNetwork/elrond-vm-common/check"
 	"github.com/herumi/bls-go-binary/bls"
 )

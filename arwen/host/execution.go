@@ -6,10 +6,10 @@ import (
 	"errors"
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/math"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/math"
 	"github.com/ElrondNetwork/elrond-go-logger/check"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
 

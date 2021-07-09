@@ -7,20 +7,19 @@ import (
 	"strings"
 	"testing"
 
-	arwen "github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/arwen/host"
-	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
-	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
-	"github.com/ElrondNetwork/elrond-vm-common"
-	vmi "github.com/ElrondNetwork/elrond-vm-common"
+	arwen "github.com/ElrondNetwork/arwen-wasm-vm/v1_2/arwen"
+	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/v1_2/arwen/host"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/config"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_2/mandos-go/json/model"
+	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/v1_2/mock/world"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
 
 type pureFunctionIO struct {
 	functionName    string
 	arguments       [][]byte
-	expectedStatus  vmi.ReturnCode
+	expectedStatus  vmcommon.ReturnCode
 	expectedMessage string
 	expectedResults [][]byte
 }
@@ -32,7 +31,7 @@ type logProgress func(testCaseIndex, testCaseCount int)
 
 type pureFunctionExecutor struct {
 	world           *worldhook.MockWorld
-	vm              vmi.VMExecutionHandler
+	vm              vmcommon.VMExecutionHandler
 	contractAddress []byte
 	userAddress     []byte
 }
@@ -84,11 +83,11 @@ func (pfe *pureFunctionExecutor) initAccounts(contractPath string) {
 	})
 }
 
-func (pfe *pureFunctionExecutor) scCall(testCase *pureFunctionIO) (*vmi.VMOutput, error) {
-	input := &vmi.ContractCallInput{
+func (pfe *pureFunctionExecutor) scCall(testCase *pureFunctionIO) (*vmcommon.VMOutput, error) {
+	input := &vmcommon.ContractCallInput{
 		RecipientAddr: pfe.contractAddress,
 		Function:      testCase.functionName,
-		VMInput: vmi.VMInput{
+		VMInput: vmcommon.VMInput{
 			CallerAddr:  pfe.userAddress,
 			Arguments:   testCase.arguments,
 			CallValue:   big.NewInt(0),
@@ -102,7 +101,7 @@ func (pfe *pureFunctionExecutor) scCall(testCase *pureFunctionIO) (*vmi.VMOutput
 
 func (pfe *pureFunctionExecutor) checkTxResults(
 	testCase *pureFunctionIO,
-	output *vmi.VMOutput,
+	output *vmcommon.VMOutput,
 	resultInterpreter resultInterpreter) error {
 
 	if output.ReturnCode != testCase.expectedStatus {

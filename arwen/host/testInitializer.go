@@ -12,11 +12,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/context"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/config"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_2/mock/context"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_2/mock/world"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/pelletier/go-toml"
 	"github.com/stretchr/testify/require"
 )

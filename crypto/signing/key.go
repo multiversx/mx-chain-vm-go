@@ -1,7 +1,7 @@
 package signing
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/crypto"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-vm-common/check"
 )

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/arwen"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var parentKeyA = []byte("parentKeyA......................")

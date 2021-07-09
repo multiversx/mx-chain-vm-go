@@ -5,9 +5,9 @@ import (
 	"os"
 	"testing"
 
-	fr "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/fileresolver"
-	mjparse "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/parse"
-	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/write"
+	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_2/mandos-go/fileresolver"
+	mjparse "github.com/ElrondNetwork/arwen-wasm-vm/v1_2/mandos-go/json/parse"
+	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/v1_2/mandos-go/json/write"
 	"github.com/stretchr/testify/require"
 )
 

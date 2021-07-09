@@ -4,9 +4,9 @@ import (
 	"errors"
 	"math/big"
 
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_2/mandos-go/json/model"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_2/mock/world"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
 )

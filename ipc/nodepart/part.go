@@ -5,9 +5,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
-	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/marshaling"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/ipc/common"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/ipc/marshaling"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // NodePart is the endpoint that implements the message loop on Node's side

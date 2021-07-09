@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"math/big"
 
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
-	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/write"
-	oj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/orderedjson"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_2/mandos-go/json/model"
+	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/v1_2/mandos-go/json/write"
+	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_2/mandos-go/orderedjson"
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 )
 

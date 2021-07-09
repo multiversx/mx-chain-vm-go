@@ -6,10 +6,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
-	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/marshaling"
-	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/nodepart"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/ipc/common"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/ipc/marshaling"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/ipc/nodepart"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
 

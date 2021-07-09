@@ -3,10 +3,10 @@ package arwen
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/crypto"
-	"github.com/ElrondNetwork/arwen-wasm-vm/wasmer"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/crypto"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/wasmer"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
 )
 

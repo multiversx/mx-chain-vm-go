@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/arwenpart"
-	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/common"
-	"github.com/ElrondNetwork/arwen-wasm-vm/ipc/marshaling"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/ipc/arwenpart"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/ipc/common"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/ipc/marshaling"
 	"github.com/ElrondNetwork/elrond-go-logger/pipes"
 )
 

@@ -3,11 +3,11 @@ package contexts
 import (
 	"bytes"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/math"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/math"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var logMetering = logger.GetOrCreate("arwen/metering")

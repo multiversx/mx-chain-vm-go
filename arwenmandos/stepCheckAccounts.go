@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"math/big"
 
-	er "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/expression/reconstructor"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/json/model"
-	oj "github.com/ElrondNetwork/arwen-wasm-vm/mandos-go/orderedjson"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/mock/world"
+	er "github.com/ElrondNetwork/arwen-wasm-vm/v1_2/mandos-go/expression/reconstructor"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_2/mandos-go/json/model"
+	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_2/mandos-go/orderedjson"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_2/mock/world"
 	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
 )
 
