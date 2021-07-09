@@ -5,7 +5,6 @@ import (
 
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
-	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
 	"github.com/stretchr/testify/require"
 )
 
@@ -15,19 +14,15 @@ func ForwardAsyncCallParentBuiltinMock(instanceMock *mock.InstanceMock, config i
 	instanceMock.AddMockMethod("forwardAsyncCall", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
-		t := instance.T
-		arguments := host.Runtime().Arguments()
-		destination := arguments[0]
-		function := string(arguments[1])
-		value := big.NewInt(testConfig.TransferFromParentToChild).Bytes()
-
 		host.Metering().UseGas(testConfig.GasUsedByParent)
 
-		callData := txDataBuilder.NewBuilder()
-		callData.Func(function)
+		arguments := host.Runtime().Arguments()
+		destination := arguments[0]
+		function := arguments[1]
+		value := big.NewInt(testConfig.TransferFromParentToChild).Bytes()
 
-		err := host.Async().RegisterLegacyAsyncCall(destination, callData.ToBytes(), value)
-		require.Nil(t, err)
+		err := host.Async().RegisterLegacyAsyncCall(destination, function, value)
+		require.Nil(instance.T, err)
 
 		return instance
 	})

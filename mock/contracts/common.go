@@ -88,13 +88,11 @@ func GetTestConfig(config interface{}) *AsyncCallBaseTestConfig {
 	switch config.(type) {
 	case AsyncCallBaseTestConfig:
 		testConfig = config.(AsyncCallBaseTestConfig)
+	case *AsyncCallBaseTestConfig:
+		testConfig = *config.(*AsyncCallBaseTestConfig)
 	case AsyncBuiltInCallTestConfig:
 		fullConfig := config.(AsyncBuiltInCallTestConfig)
-		testConfig = AsyncCallBaseTestConfig{
-			GasUsedByChild:            fullConfig.GasUsedByChild,
-			TransferFromParentToChild: fullConfig.TransferFromParentToChild,
-			GasUsedByCallback:         fullConfig.GasUsedByCallback,
-		}
+		testConfig = fullConfig.AsyncCallBaseTestConfig
 	}
 	return &testConfig
 }

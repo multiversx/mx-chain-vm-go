@@ -345,8 +345,6 @@ func (context *asyncContext) RegisterLegacyAsyncCall(address []byte, data []byte
 	if err != nil {
 		return err
 	}
-	// TODO matei-p chould crash other use cases
-	// metering.RestoreGas(gasLimit)
 
 	context.host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointAsyncCall)
 
