@@ -48,6 +48,16 @@
                 "status": "0",
                 "logs": [
                     {
+                        "address": "sc:forwarder",
+                        "identifier": "str:ESDTTransfer",
+                        "topics": [
+                            "str:FWD-TOKEN",
+                            "1",
+                            "sc:vault"
+                        ],
+                        "data": ""
+                    },
+                    {
                         "address": "sc:vault",
                         "identifier": "str:accept_funds",
                         "topics": [
@@ -55,6 +65,16 @@
                             "str:FungibleESDT",
                             "1",
                             "0"
+                        ],
+                        "data": ""
+                    },
+                    {
+                        "address": "sc:forwarder",
+                        "identifier": "str:ESDTTransfer",
+                        "topics": [
+                            "str:FWD-TOKEN",
+                            "1",
+                            "sc:vault"
                         ],
                         "data": ""
                     },
