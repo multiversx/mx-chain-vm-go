@@ -33,6 +33,7 @@ func TestExecution_ExecuteOnDestContext_ESDTTransferWithoutExecute(t *testing.T)
 	input.Function = "basic_transfer"
 	input.GasProvided = 100000
 	input.ESDTTransfers = make([]*vmcommon.ESDTTransfer, 1)
+	input.ESDTTransfers[0] = &vmcommon.ESDTTransfer{}
 	input.ESDTTransfers[0].ESDTValue = big.NewInt(16)
 	input.ESDTTransfers[0].ESDTTokenName = test.ESDTTestTokenName
 

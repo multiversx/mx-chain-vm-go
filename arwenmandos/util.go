@@ -182,6 +182,7 @@ func generateTxHash(txIndex string) []byte {
 func addESDTToVMInput(esdtData *mj.ESDTTxData, vmInput *vmcommon.VMInput) {
 	if esdtData != nil {
 		vmInput.ESDTTransfers = make([]*vmcommon.ESDTTransfer, 1)
+		vmInput.ESDTTransfers[0] = &vmcommon.ESDTTransfer{}
 		vmInput.ESDTTransfers[0].ESDTTokenName = esdtData.TokenIdentifier.Value
 		vmInput.ESDTTransfers[0].ESDTValue = esdtData.Value.Value
 		vmInput.ESDTTransfers[0].ESDTTokenNonce = esdtData.Nonce.Value

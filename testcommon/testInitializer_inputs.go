@@ -402,20 +402,23 @@ func (contractInput *ContractCallInputBuilder) WithCurrentTxHash(txHash []byte) 
 	return contractInput
 }
 
-// WithESDTValue provides the ESDTValue for ContractCallInputBuilder
-func (contractInput *ContractCallInputBuilder) WithESDTValue(esdtValue *big.Int) *ContractCallInputBuilder {
+func (contractInput *ContractCallInputBuilder) initESDTTransferIfNeeded() {
 	if len(contractInput.ESDTTransfers) == 0 {
 		contractInput.ESDTTransfers = make([]*vmcommon.ESDTTransfer, 1)
+		contractInput.ESDTTransfers[0] = &vmcommon.ESDTTransfer{}
 	}
+}
+
+// WithESDTValue provides the ESDTValue for ContractCallInputBuilder
+func (contractInput *ContractCallInputBuilder) WithESDTValue(esdtValue *big.Int) *ContractCallInputBuilder {
+	contractInput.initESDTTransferIfNeeded()
 	contractInput.ContractCallInput.ESDTTransfers[0].ESDTValue = esdtValue
 	return contractInput
 }
 
 // WithESDTTokenName provides the ESDTTokenName for ContractCallInputBuilder
 func (contractInput *ContractCallInputBuilder) WithESDTTokenName(esdtTokenName []byte) *ContractCallInputBuilder {
-	if len(contractInput.ESDTTransfers) == 0 {
-		contractInput.ESDTTransfers = make([]*vmcommon.ESDTTransfer, 1)
-	}
+	contractInput.initESDTTransferIfNeeded()
 	contractInput.ContractCallInput.ESDTTransfers[0].ESDTTokenName = esdtTokenName
 	return contractInput
 }
