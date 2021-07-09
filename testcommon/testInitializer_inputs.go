@@ -177,6 +177,8 @@ func DefaultTestArwenForCallWithWorldMock(tb testing.TB, code []byte, balance *b
 	err := world.InitBuiltinFunctions(host.GetGasScheduleMap())
 	require.Nil(tb, err)
 
+	host.SetBuiltInFunctionsContainer(world.BuiltinFuncs.Container)
+
 	parentAccount := world.AcctMap.CreateSmartContractAccount(UserAddress, ParentAddress, code, world)
 	parentAccount.Balance = balance
 
@@ -273,10 +275,24 @@ func defaultTestArwenForContracts(
 // DefaultTestArwenWithWorldMock creates a host configured with a mock world
 func DefaultTestArwenWithWorldMock(tb testing.TB) (arwen.VMHost, *worldmock.MockWorld) {
 	world := worldmock.NewMockWorld()
-	host := DefaultTestArwen(tb, world)
-
-	err := world.InitBuiltinFunctions(host.GetGasScheduleMap())
+	gasSchedule := customGasSchedule
+	if gasSchedule == nil {
+		gasSchedule = config.MakeGasMapForTests()
+	}
+	err := world.InitBuiltinFunctions(gasSchedule)
 	require.Nil(tb, err)
+
+	host, err := arwenHost.NewArwenVM(world, &arwen.VMHostParameters{
+		VMType:                   DefaultVMType,
+		BlockGasLimit:            uint64(1000),
+		GasSchedule:              gasSchedule,
+		BuiltInFuncContainer:     world.BuiltinFuncs.Container,
+		ElrondProtectedKeyPrefix: []byte("ELROND"),
+		UseWarmInstance:          false,
+		DynGasLockEnableEpoch:    0,
+	})
+	require.Nil(tb, err)
+	require.NotNil(tb, host)
 
 	return host, world
 }

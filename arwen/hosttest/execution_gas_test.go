@@ -1277,6 +1277,8 @@ func createMockBuiltinFunctions(tb testing.TB, host arwen.VMHost, world *worldmo
 			return nil, errors.New("whatdidyoudo")
 		},
 	})
+
+	host.SetBuiltInFunctionsContainer(world.BuiltinFuncs.Container)
 }
 
 func setZeroCodeCosts(host arwen.VMHost) {
