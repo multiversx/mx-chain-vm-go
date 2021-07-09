@@ -19,6 +19,7 @@ import (
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/stretchr/testify/require"
 )
 
@@ -176,8 +177,6 @@ func DefaultTestArwenForCallWithWorldMock(tb testing.TB, code []byte, balance *b
 	err := world.InitBuiltinFunctions(host.GetGasScheduleMap())
 	require.Nil(tb, err)
 
-	host.SetProtocolBuiltinFunctions(world.BuiltinFuncs.GetBuiltinFunctionNames())
-
 	parentAccount := world.AcctMap.CreateSmartContractAccount(UserAddress, ParentAddress, code, world)
 	parentAccount.Balance = balance
 
@@ -279,7 +278,6 @@ func DefaultTestArwenWithWorldMock(tb testing.TB) (arwen.VMHost, *worldmock.Mock
 	err := world.InitBuiltinFunctions(host.GetGasScheduleMap())
 	require.Nil(tb, err)
 
-	host.SetProtocolBuiltinFunctions(world.BuiltinFuncs.GetBuiltinFunctionNames())
 	return host, world
 }
 
@@ -294,7 +292,7 @@ func DefaultTestArwen(tb testing.TB, blockchain vmcommon.BlockchainHook) arwen.V
 		VMType:                   DefaultVMType,
 		BlockGasLimit:            uint64(1000),
 		GasSchedule:              gasSchedule,
-		ProtocolBuiltinFunctions: make(vmcommon.FunctionNames),
+		BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
 		UseWarmInstance:          false,
 		DynGasLockEnableEpoch:    0,

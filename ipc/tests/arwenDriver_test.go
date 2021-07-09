@@ -11,6 +11,7 @@ import (
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/stretchr/testify/require"
 )
 
@@ -103,6 +104,7 @@ func newDriver(tb testing.TB, blockchain *contextmock.BlockchainHookStub) *nodep
 				BlockGasLimit:            uint64(10000000),
 				GasSchedule:              config.MakeGasMapForTests(),
 				ElrondProtectedKeyPrefix: []byte("ELROND"),
+				BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
 			},
 		},
 		nodepart.Config{MaxLoopTime: 1000},

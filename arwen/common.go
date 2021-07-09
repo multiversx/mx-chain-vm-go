@@ -113,7 +113,7 @@ type VMHostParameters struct {
 	VMType                        []byte
 	BlockGasLimit                 uint64
 	GasSchedule                   config.GasScheduleMap
-	ProtocolBuiltinFunctions      vmcommon.FunctionNames
+	BuiltInFuncContainer          vmcommon.BuiltInFunctionContainer
 	ElrondProtectedKeyPrefix      []byte
 	ArwenV2EnableEpoch            uint32
 	AheadOfTimeEnableEpoch        uint32

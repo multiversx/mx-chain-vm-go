@@ -433,8 +433,12 @@ func (host *vmHost) isBuiltinFunctionBeingCalled() bool {
 
 // IsBuiltinFunctionName returns true if the given function name is the same as any protocol builtin function
 func (host *vmHost) IsBuiltinFunctionName(functionName string) bool {
-	_, ok := host.protocolBuiltinFunctions[functionName]
-	return ok
+	function, err := host.builtInFuncContainer.Get(functionName)
+	if err != nil {
+		return false
+	}
+
+	return function.IsActive()
 }
 
 // CreateNewContract creates a new contract indirectly (from another Smart Contract)

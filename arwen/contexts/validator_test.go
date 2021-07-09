@@ -5,20 +5,20 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen/mock"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/stretchr/testify/require"
 )
 
 func TestFunctionsGuard_isValidFunctionName(t *testing.T) {
 	imports := MakeAPIImports()
 
-	protocolBuiltinFunctions := vmcommon.FunctionNames{
-		"fromProtocolFoo": {},
-		"fromProtocolBar": {},
-	}
+	builtInFuncContainer := builtInFunctions.NewBuiltInFunctionContainer()
+	_ = builtInFuncContainer.Add("protocolFunctionFoo", &mock.BuiltInFunctionStub{})
+	_ = builtInFuncContainer.Add("protocolFunctionBar", &mock.BuiltInFunctionStub{})
 
-	validator := newWASMValidator(imports.Names(), protocolBuiltinFunctions)
+	validator := newWASMValidator(imports.Names(), builtInFuncContainer)
 
 	require.Nil(t, validator.verifyValidFunctionName("foo"))
 	require.Nil(t, validator.verifyValidFunctionName("_"))
@@ -30,8 +30,8 @@ func TestFunctionsGuard_isValidFunctionName(t *testing.T) {
 	require.NotNil(t, validator.verifyValidFunctionName("ș"))
 	require.NotNil(t, validator.verifyValidFunctionName("Ä"))
 
-	require.NotNil(t, validator.verifyValidFunctionName("fromProtocolFoo"))
-	require.NotNil(t, validator.verifyValidFunctionName("fromProtocolBar"))
+	require.NotNil(t, validator.verifyValidFunctionName("protocolFunctionFoo"))
+	require.NotNil(t, validator.verifyValidFunctionName("protocolFunctionBar"))
 
 	require.Nil(t, validator.verifyValidFunctionName(strings.Repeat("_", 255)))
 	require.NotNil(t, validator.verifyValidFunctionName(strings.Repeat("_", 256)))
@@ -45,7 +45,7 @@ func TestFunctionsGuard_Arity(t *testing.T) {
 	host := InitializeArwenAndWasmer()
 	imports := host.SCAPIMethods
 
-	validator := newWASMValidator(imports.Names(), make(vmcommon.FunctionNames))
+	validator := newWASMValidator(imports.Names(), builtInFunctions.NewBuiltInFunctionContainer())
 
 	gasLimit := uint64(100000000)
 	path := "./../../test/contracts/signatures/output/signatures.wasm"

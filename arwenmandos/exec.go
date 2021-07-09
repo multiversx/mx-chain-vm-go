@@ -49,7 +49,7 @@ func NewArwenTestExecutor() (*ArwenTestExecutor, error) {
 		VMType:                   TestVMType,
 		BlockGasLimit:            blockGasLimit,
 		GasSchedule:              gasScheduleMap,
-		ProtocolBuiltinFunctions: world.GetBuiltinFunctionNames(),
+		BuiltInFuncContainer:     world.BuiltinFuncs.Container,
 		ElrondProtectedKeyPrefix: []byte(ElrondProtectedKeyPrefix),
 	})
 	if err != nil {

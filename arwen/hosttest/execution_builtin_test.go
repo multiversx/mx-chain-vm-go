@@ -11,6 +11,7 @@ import (
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
 	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
 	"github.com/stretchr/testify/require"
 )
@@ -58,7 +59,7 @@ func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_Claim(t *testing.T)
 			Build()).
 		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
 			stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
-			host.SetProtocolBuiltinFunctions(getDummyBuiltinFunctionNames())
+			host.SetBuiltInFunctionsContainer(getDummyBuiltinFunctionsContainer())
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
@@ -84,7 +85,7 @@ func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_DoSomething(t *test
 			Build()).
 		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
 			stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
-			host.SetProtocolBuiltinFunctions(getDummyBuiltinFunctionNames())
+			host.SetBuiltInFunctionsContainer(getDummyBuiltinFunctionsContainer())
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
@@ -109,7 +110,7 @@ func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_Nonexistent(t *test
 			Build()).
 		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
 			stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
-			host.SetProtocolBuiltinFunctions(getDummyBuiltinFunctionNames())
+			host.SetBuiltInFunctionsContainer(getDummyBuiltinFunctionsContainer())
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
@@ -132,7 +133,7 @@ func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_Fail(t *testing.T) 
 			Build()).
 		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
 			stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
-			host.SetProtocolBuiltinFunctions(getDummyBuiltinFunctionNames())
+			host.SetBuiltInFunctionsContainer(getDummyBuiltinFunctionsContainer())
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
@@ -156,7 +157,7 @@ func TestExecution_AsyncCall_MockBuiltinFails(t *testing.T) {
 			Build()).
 		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
 			stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
-			host.SetProtocolBuiltinFunctions(getDummyBuiltinFunctionNames())
+			host.SetBuiltInFunctionsContainer(getDummyBuiltinFunctionsContainer())
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
@@ -180,7 +181,7 @@ func TestESDT_GettersAPI(t *testing.T) {
 			Build()).
 		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
 			stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
-			host.SetProtocolBuiltinFunctions(getDummyBuiltinFunctionNames())
+			host.SetBuiltInFunctionsContainer(getDummyBuiltinFunctionsContainer())
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
@@ -289,14 +290,12 @@ func dummyProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.V
 	return nil, arwen.ErrFuncNotFound
 }
 
-func getDummyBuiltinFunctionNames() vmcommon.FunctionNames {
-	names := make(vmcommon.FunctionNames)
+func getDummyBuiltinFunctionsContainer() vmcommon.BuiltInFunctionContainer {
+	builtInContainer := builtInFunctions.NewBuiltInFunctionContainer()
+	_ = builtInContainer.Add("builtinClaim", &test.MockBuiltin{})
+	_ = builtInContainer.Add("builtinDoSomething", &test.MockBuiltin{})
+	_ = builtInContainer.Add("builtinFail", &test.MockBuiltin{})
+	_ = builtInContainer.Add(vmcommon.BuiltInFunctionESDTTransfer, &test.MockBuiltin{})
 
-	var empty struct{}
-	names["builtinClaim"] = empty
-	names["builtinDoSomething"] = empty
-	names["builtinFail"] = empty
-	names[vmcommon.BuiltInFunctionESDTTransfer] = empty
-
-	return names
+	return builtInContainer
 }
