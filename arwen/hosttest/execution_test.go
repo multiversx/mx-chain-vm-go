@@ -2396,7 +2396,7 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(1000).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+				WithMethods(func(parentInstance *mock.InstanceMock, testConfig *testcommon.TestConfig) {
 					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
 						host := parentInstance.Host
 						host.Output().Finish([]byte("parent returns this"))
@@ -2416,7 +2416,7 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 				}),
 			test.CreateMockContract(test.ChildAddress).
 				WithBalance(0).
-				WithMethods(func(childInstance *mock.InstanceMock, config interface{}) {
+				WithMethods(func(childInstance *mock.InstanceMock, testConfig *testcommon.TestConfig) {
 					childInstance.AddMockMethod("doSomething", func() *mock.InstanceMock {
 						host := childInstance.Host
 						host.Output().Finish([]byte("child returns this"))

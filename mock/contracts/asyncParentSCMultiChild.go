@@ -11,8 +11,7 @@ import (
 )
 
 // ForwardAsyncCallMultiChildMock is an exposed mock contract method
-func ForwardAsyncCallMultiChildMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(AsyncCallMultiChildTestConfig)
+func ForwardAsyncCallMultiChildMock(instanceMock *mock.InstanceMock, testConfig *test.TestConfig) {
 	instanceMock.AddMockMethod("forwardAsyncCall", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
@@ -51,7 +50,6 @@ func ForwardAsyncCallMultiChildMock(instanceMock *mock.InstanceMock, config inte
 }
 
 // CallBackMultiChildMock is an exposed mock contract method
-func CallBackMultiChildMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(AsyncCallMultiChildTestConfig)
+func CallBackMultiChildMock(instanceMock *mock.InstanceMock, testConfig *test.TestConfig) {
 	instanceMock.AddMockMethod("callBack", test.SimpleWasteGasMockMethod(instanceMock, testConfig.GasUsedByCallback))
 }

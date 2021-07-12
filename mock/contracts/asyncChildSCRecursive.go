@@ -10,8 +10,7 @@ import (
 )
 
 // RecursiveAsyncCallRecursiveChildMock is an exposed mock contract method
-func RecursiveAsyncCallRecursiveChildMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := GetTestConfig(config)
+func RecursiveAsyncCallRecursiveChildMock(instanceMock *mock.InstanceMock, testConfig *test.TestConfig) {
 	instanceMock.AddMockMethod("recursiveAsyncCall", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
@@ -53,7 +52,6 @@ func RecursiveAsyncCallRecursiveChildMock(instanceMock *mock.InstanceMock, confi
 }
 
 // CallBackRecursiveChildMock is an exposed mock contract method
-func CallBackRecursiveChildMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := GetTestConfig(config)
+func CallBackRecursiveChildMock(instanceMock *mock.InstanceMock, testConfig *test.TestConfig) {
 	instanceMock.AddMockMethod("callBack", test.SimpleWasteGasMockMethod(instanceMock, testConfig.GasUsedByCallback))
 }
