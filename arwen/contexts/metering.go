@@ -189,7 +189,17 @@ func (context *meteringContext) TrackGasUsedByBuiltinFunction(
 	builtinOutput *vmcommon.VMOutput,
 	postBuiltinInput *vmcommon.ContractCallInput,
 ) {
-	if builtinInput.CallType == vmcommon.AsynchronousCall {
+	async := context.host.Async().(*asyncContext)
+	call, err := async.getCurrentCall()
+	if err != nil {
+		return
+	}
+
+	track := false
+	track = track || call.ExecutionMode == arwen.SyncExecution
+	track = track || call.ExecutionMode == arwen.AsyncBuiltinFuncIntraShard
+
+	if !track {
 		return
 	}
 
@@ -208,10 +218,6 @@ func (context *meteringContext) TrackGasUsedByBuiltinFunction(
 }
 
 func (context *meteringContext) checkGas(vmOutput *vmcommon.VMOutput) error {
-	if !context.host.IsArwenV2Enabled() {
-		return nil
-	}
-
 	gasUsed := context.getCurrentTotalUsedGas()
 	totalGas := math.AddUint64(gasUsed, vmOutput.GasRemaining)
 	gasProvided := context.GetGasProvided()

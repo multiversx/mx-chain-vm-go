@@ -11,7 +11,8 @@ import (
 func (context *asyncContext) executeSynchronousCalls() error {
 	for groupIndex, group := range context.asyncCallGroups {
 		for _, call := range group.AsyncCalls {
-			if (call.ExecutionMode != arwen.SyncExecution) && (call.ExecutionMode != arwen.AsyncBuiltinFuncIntraShard) {
+			remoteExecution := (call.ExecutionMode != arwen.SyncExecution) && (call.ExecutionMode != arwen.AsyncBuiltinFuncIntraShard)
+			if remoteExecution {
 				continue
 			}
 
@@ -290,6 +291,7 @@ func (context *asyncContext) createGroupCallbackInput(group *arwen.AsyncCallGrou
 	runtime := context.host.Runtime()
 	input := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
+			CallType:       vmcommon.AsynchronousCallBack,
 			CallerAddr:     context.callerAddr,
 			Arguments:      [][]byte{group.CallbackData},
 			CallValue:      big.NewInt(0),

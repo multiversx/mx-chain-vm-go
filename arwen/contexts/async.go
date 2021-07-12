@@ -261,9 +261,20 @@ func (context *asyncContext) UpdateCurrentCallStatus() (*arwen.AsyncCall, error)
 		return nil, arwen.ErrCannotInterpretCallbackArgs
 	}
 
+	call, err := context.getCurrentCall()
+	if err != nil {
+		return nil, err
+	}
+
 	// The first argument of the callback is the return code of the destination call
 	destReturnCode := big.NewInt(0).SetBytes(vmInput.Arguments[0]).Uint64()
+	call.UpdateStatus(vmcommon.ReturnCode(destReturnCode))
 
+	return call, nil
+}
+
+func (context *asyncContext) getCurrentCall() (*arwen.AsyncCall, error) {
+	vmInput := context.host.Runtime().GetVMInput()
 	groupID, index, err := context.findCall(vmInput.CallerAddr)
 	if err != nil {
 		return nil, err
@@ -271,8 +282,6 @@ func (context *asyncContext) UpdateCurrentCallStatus() (*arwen.AsyncCall, error)
 
 	group, _ := context.GetCallGroup(groupID)
 	call := group.AsyncCalls[index]
-	call.UpdateStatus(vmcommon.ReturnCode(destReturnCode))
-
 	return call, nil
 }
 
@@ -317,8 +326,11 @@ func (context *asyncContext) RegisterAsyncCall(groupID string, call *arwen.Async
 // call group and informs Wasmer to stop contract execution with
 // BreakpointAsyncCall (adding the AsyncCall consumes its gas entirely).
 func (context *asyncContext) RegisterLegacyAsyncCall(address []byte, data []byte, value []byte) error {
-	legacyGroupID := arwen.LegacyAsyncCallGroupID
+	if !context.canRegisterLegacyAsyncCall() {
+		return arwen.ErrLegacyAsyncCallInvalid
+	}
 
+	legacyGroupID := arwen.LegacyAsyncCallGroupID
 	_, exists := context.GetCallGroup(legacyGroupID)
 	if exists {
 		return arwen.ErrOnlyOneLegacyAsyncCallAllowed
@@ -349,6 +361,14 @@ func (context *asyncContext) RegisterLegacyAsyncCall(address []byte, data []byte
 	context.host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointAsyncCall)
 
 	return nil
+}
+
+func (context *asyncContext) canRegisterLegacyAsyncCall() bool {
+	vmInput := context.host.Runtime().GetVMInput()
+	noGroups := len(context.asyncCallGroups) == 0
+	notInCallback := vmInput.CallType != vmcommon.AsynchronousCallBack
+
+	return noGroups && notInCallback
 }
 
 // addAsyncCall adds the provided AsyncCall to the specified AsyncCallGroup
