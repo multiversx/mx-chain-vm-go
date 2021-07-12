@@ -662,7 +662,7 @@ func TestGasUsed_AsyncCall_CrossShard_CallBack(t *testing.T) {
 		})
 }
 
-func TestGasUsed_AsyncCall_BuiltinCall(t *testing.T) {
+func TestGasUsed_LegacyAsyncCall_InShard_BuiltinCall(t *testing.T) {
 	testConfig := makeTestConfig()
 	testConfig.GasProvided = 1000
 
@@ -698,7 +698,7 @@ func TestGasUsed_AsyncCall_BuiltinCall(t *testing.T) {
 		})
 }
 
-func TestGasUsed_AsyncCall_BuiltinCallFail(t *testing.T) {
+func TestGasUsed_LegacyAsyncCall_BuiltinCallFail(t *testing.T) {
 	testConfig := makeTestConfig()
 	testConfig.GasProvided = 1000
 
@@ -738,12 +738,11 @@ func TestGasUsed_AsyncCall_BuiltinCallFail(t *testing.T) {
 		})
 }
 
-func TestGasUsed_AsyncCall_CrossShard_BuiltinCall(t *testing.T) {
+func TestGasUsed_LegacyAsyncCall_CrossShard_BuiltinCall(t *testing.T) {
 	testConfig := makeTestConfig()
 	testConfig.GasProvided = 1000
 
-	expectedGasUsedByParent := testConfig.GasUsedByParent + testConfig.GasUsedByCallback + gasUsedByBuiltinClaim
-	expectedGasUsedByChild := uint64(0) // all gas for builtin call is consummed on caller
+	expectedGasUsedByParent := testConfig.GasProvided
 
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
@@ -751,7 +750,7 @@ func TestGasUsed_AsyncCall_CrossShard_BuiltinCall(t *testing.T) {
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
 				WithShardID(1).
-				WithMethods(contracts.ForwardAsyncCallParentBuiltinMock, contracts.CallBackParentBuiltinMock),
+				WithMethods(contracts.ForwardAsyncCallParentBuiltinMock),
 		).
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithRecipientAddr(test.ParentAddress).
@@ -771,8 +770,7 @@ func TestGasUsed_AsyncCall_CrossShard_BuiltinCall(t *testing.T) {
 				BalanceDelta(test.ParentAddress, amountToGiveByBuiltinClaim).
 				// TODO matei-p uncomment these lines
 				GasUsed(test.ParentAddress, expectedGasUsedByParent).
-				GasUsed(test.UserAddress, 0).
-				GasRemaining(testConfig.GasProvided - expectedGasUsedByParent - expectedGasUsedByChild)
+				GasRemaining(0)
 		})
 }
 

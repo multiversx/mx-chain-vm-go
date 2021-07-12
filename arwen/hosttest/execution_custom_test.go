@@ -9,10 +9,10 @@ import (
 func TestAsyncBuiltin(t *testing.T) {
 	log := logger.GetOrCreate("test")
 
-	TestGasUsed_AsyncCall_BuiltinCall(t)
+	TestGasUsed_LegacyAsyncCall_InShard_BuiltinCall(t)
 	log.Info("TestGasUsed_AsyncCall_BuiltinCall ok")
 
-	TestGasUsed_AsyncCall_CrossShard_BuiltinCall(t)
+	TestGasUsed_LegacyAsyncCall_CrossShard_BuiltinCall(t)
 	log.Info("TestGasUsed_AsyncCall_CrossShard_BuiltinCall ok")
 
 	TestGasUsed_ESDTTransferInCallback(t)
