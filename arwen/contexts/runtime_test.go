@@ -161,14 +161,17 @@ func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
 	runtimeContext, _ := NewRuntimeContext(host, vmType, false)
 
 	arguments := [][]byte{[]byte("argument 1"), []byte("argument 2")}
-	vmInput := vmcommon.VMInput{
-		CallerAddr:     []byte("caller"),
-		Arguments:      arguments,
-		CallValue:      big.NewInt(0),
+	esdtTransfer := &vmcommon.ESDTTransfer{
 		ESDTValue:      big.NewInt(4242),
 		ESDTTokenName:  []byte("random_token"),
 		ESDTTokenType:  uint32(vmcommon.NonFungible),
 		ESDTTokenNonce: 94,
+	}
+	vmInput := vmcommon.VMInput{
+		CallerAddr:    []byte("caller"),
+		Arguments:     arguments,
+		CallValue:     big.NewInt(0),
+		ESDTTransfers: []*vmcommon.ESDTTransfer{esdtTransfer},
 	}
 	callInput := &vmcommon.ContractCallInput{
 		VMInput:       vmInput,
@@ -184,10 +187,10 @@ func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
 	require.Equal(t, arguments, runtimeContext.Arguments())
 
 	runtimeInput := runtimeContext.GetVMInput()
-	require.Zero(t, big.NewInt(4242).Cmp(runtimeInput.ESDTValue))
-	require.True(t, bytes.Equal([]byte("random_token"), runtimeInput.ESDTTokenName))
-	require.Equal(t, uint32(vmcommon.NonFungible), runtimeInput.ESDTTokenType)
-	require.Equal(t, uint64(94), runtimeInput.ESDTTokenNonce)
+	require.Zero(t, big.NewInt(4242).Cmp(runtimeInput.ESDTTransfers[0].ESDTValue))
+	require.True(t, bytes.Equal([]byte("random_token"), runtimeInput.ESDTTransfers[0].ESDTTokenName))
+	require.Equal(t, uint32(vmcommon.NonFungible), runtimeInput.ESDTTransfers[0].ESDTTokenType)
+	require.Equal(t, uint64(94), runtimeInput.ESDTTransfers[0].ESDTTokenNonce)
 
 	vmInput2 := vmcommon.VMInput{
 		CallerAddr: []byte("caller2"),
@@ -239,10 +242,10 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 	runtimeContext.SetMaxInstanceCount(1)
 
 	vmInput := vmcommon.VMInput{
-		CallerAddr:  []byte("caller"),
-		GasProvided: 1000,
-		CallValue:   big.NewInt(0),
-		ESDTValue:   big.NewInt(0),
+		CallerAddr:    []byte("caller"),
+		GasProvided:   1000,
+		CallValue:     big.NewInt(0),
+		ESDTTransfers: make([]*vmcommon.ESDTTransfer, 0),
 	}
 
 	funcName := "test_func"

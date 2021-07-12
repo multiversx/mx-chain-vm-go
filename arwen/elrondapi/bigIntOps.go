@@ -375,10 +375,8 @@ func v1_2_bigIntGetESDTCallValue(context unsafe.Pointer, destination int32) {
 
 	value := bigInt.GetOne(destination)
 
-	esdtValue := runtime.GetVMInput().ESDTValue
-	if esdtValue != nil {
-		value.Set(esdtValue)
-	}
+	esdtTransfer := getFirstESDTTransferIfExist(runtime.GetVMInput())
+	value.Set(esdtTransfer.ESDTValue)
 }
 
 //export v1_2_bigIntGetExternalBalance

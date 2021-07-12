@@ -460,7 +460,7 @@ func (context *outputContext) isBuiltInExecution() bool {
 	if context.host.IsBuiltinFunctionName(context.host.Runtime().Function()) {
 		return true
 	}
-	if len(context.host.Runtime().GetVMInput().ESDTTokenName) > 0 {
+	if len(context.host.Runtime().GetVMInput().ESDTTransfers) > 0 {
 		return true
 	}
 

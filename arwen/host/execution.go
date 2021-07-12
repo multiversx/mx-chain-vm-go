@@ -670,8 +670,6 @@ func (host *vmHost) RevertESDTTransfer(input *vmcommon.ContractCallInput) {
 			GasLocked:      0,
 			OriginalTxHash: input.OriginalTxHash,
 			CurrentTxHash:  input.CurrentTxHash,
-			ESDTValue:      big.NewInt(0),
-			ESDTTokenName:  nil,
 		},
 		RecipientAddr:     input.CallerAddr,
 		Function:          input.Function,
@@ -1048,12 +1046,17 @@ func fillWithESDTValue(fullVMInput *vmcommon.ContractCallInput, newVMInput *vmco
 		return
 	}
 
-	newVMInput.ESDTTokenName = fullVMInput.Arguments[0]
-	newVMInput.ESDTValue = big.NewInt(0).SetBytes(fullVMInput.Arguments[1])
+	esdtTransfer := &vmcommon.ESDTTransfer{}
+
+	esdtTransfer.ESDTTokenName = fullVMInput.Arguments[0]
+	esdtTransfer.ESDTValue = big.NewInt(0).SetBytes(fullVMInput.Arguments[1])
 
 	if fullVMInput.Function == vmcommon.BuiltInFunctionESDTNFTTransfer {
-		newVMInput.ESDTTokenNonce = big.NewInt(0).SetBytes(fullVMInput.Arguments[1]).Uint64()
-		newVMInput.ESDTValue = big.NewInt(0).SetBytes(fullVMInput.Arguments[2])
-		newVMInput.ESDTTokenType = uint32(vmcommon.NonFungible)
+		esdtTransfer.ESDTTokenNonce = big.NewInt(0).SetBytes(fullVMInput.Arguments[1]).Uint64()
+		esdtTransfer.ESDTValue = big.NewInt(0).SetBytes(fullVMInput.Arguments[2])
+		esdtTransfer.ESDTTokenType = uint32(vmcommon.NonFungible)
 	}
+
+	newVMInput.ESDTTransfers = make([]*vmcommon.ESDTTransfer, 1)
+	newVMInput.ESDTTransfers[0] = esdtTransfer
 }

@@ -100,6 +100,16 @@ import (
 
 var logEEI = logger.GetOrCreate("arwen/eei")
 
+func getFirstESDTTransferIfExist(vmInput *vmcommon.VMInput) *vmcommon.ESDTTransfer {
+	esdtTransfers := vmInput.ESDTTransfers
+	if len(esdtTransfers) > 0 {
+		return esdtTransfers[0]
+	}
+	return &vmcommon.ESDTTransfer{
+		ESDTValue: big.NewInt(0),
+	}
+}
+
 // ElrondEIImports creates a new wasmer.Imports populated with the ElrondEI API methods
 func ElrondEIImports() (*wasmer.Imports, error) {
 	imports := wasmer.NewImports()
@@ -994,11 +1004,16 @@ func v1_2_transferESDTNFTExecute(
 			return 1
 		}
 
-		contractCallInput.ESDTValue = big.NewInt(0).SetBytes(valueBytes)
-		contractCallInput.ESDTTokenName = tokenIdentifier
-		contractCallInput.ESDTTokenNonce = uint64(nonce)
+		esdtTokenType := vmcommon.Fungible
 		if nonce > 0 {
-			contractCallInput.ESDTTokenType = uint32(vmcommon.NonFungible)
+			esdtTokenType = vmcommon.NonFungible
+		}
+		contractCallInput.ESDTTransfers = make([]*vmcommon.ESDTTransfer, 1)
+		contractCallInput.ESDTTransfers[0] = &vmcommon.ESDTTransfer{
+			ESDTValue:      big.NewInt(0).SetBytes(valueBytes),
+			ESDTTokenName:  tokenIdentifier,
+			ESDTTokenType:  uint32(esdtTokenType),
+			ESDTTokenNonce: uint64(nonce),
 		}
 	}
 
@@ -1508,7 +1523,7 @@ func v1_2_checkNoPayment(context unsafe.Pointer) {
 		arwen.WithFault(arwen.ErrNonPayableFunctionEgld, context, runtime.ElrondAPIErrorShouldFailExecution())
 		return
 	}
-	if vmInput.ESDTValue != nil && vmInput.ESDTValue.Sign() > 0 {
+	if len(vmInput.ESDTTransfers) > 0 {
 		runtime := arwen.GetRuntimeContext(context)
 		arwen.WithFault(arwen.ErrNonPayableFunctionEsdt, context, runtime.ElrondAPIErrorShouldFailExecution())
 		return
@@ -1544,9 +1559,9 @@ func v1_2_getESDTValue(context unsafe.Pointer, resultOffset int32) int32 {
 
 	var value []byte
 
-	esdtValue := runtime.GetVMInput().ESDTValue
-	if esdtValue != nil {
-		value = esdtValue.Bytes()
+	esdtTransfer := getFirstESDTTransferIfExist(runtime.GetVMInput())
+	if esdtTransfer.ESDTValue.Cmp(arwen.Zero) > 0 {
+		value = esdtTransfer.ESDTValue.Bytes()
 		value = arwen.PadBytesLeft(value, arwen.BalanceLen)
 	}
 
@@ -1566,7 +1581,8 @@ func v1_2_getESDTTokenName(context unsafe.Pointer, resultOffset int32) int32 {
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetCallValue
 	metering.UseGas(gasToUse)
 
-	tokenName := runtime.GetVMInput().ESDTTokenName
+	esdtTransfer := getFirstESDTTransferIfExist(runtime.GetVMInput())
+	tokenName := esdtTransfer.ESDTTokenName
 
 	err := runtime.MemStore(resultOffset, tokenName)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -1584,7 +1600,8 @@ func v1_2_getESDTTokenNonce(context unsafe.Pointer) int64 {
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetCallValue
 	metering.UseGas(gasToUse)
 
-	return int64(runtime.GetVMInput().ESDTTokenNonce)
+	esdtTransfer := getFirstESDTTransferIfExist(runtime.GetVMInput())
+	return int64(esdtTransfer.ESDTTokenNonce)
 }
 
 //export v1_2_getCurrentESDTNFTNonce
@@ -1621,7 +1638,8 @@ func v1_2_getESDTTokenType(context unsafe.Pointer) int32 {
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetCallValue
 	metering.UseGas(gasToUse)
 
-	return int32(runtime.GetVMInput().ESDTTokenType)
+	esdtTransfer := getFirstESDTTransferIfExist(runtime.GetVMInput())
+	return int32(esdtTransfer.ESDTTokenType)
 }
 
 //export v1_2_getCallValueTokenName
@@ -1634,10 +1652,12 @@ func v1_2_getCallValueTokenName(context unsafe.Pointer, callValueOffset int32, t
 
 	callValue := runtime.GetVMInput().CallValue.Bytes()
 	tokenName := make([]byte, 0)
-	if len(runtime.GetVMInput().ESDTTokenName) > 0 {
-		tokenName = make([]byte, 0, len(runtime.GetVMInput().ESDTTokenName))
-		copy(tokenName, runtime.GetVMInput().ESDTTokenName)
-		callValue = runtime.GetVMInput().ESDTValue.Bytes()
+	esdtTransfer := getFirstESDTTransferIfExist(runtime.GetVMInput())
+
+	if len(esdtTransfer.ESDTTokenName) > 0 {
+		tokenName = make([]byte, 0, len(esdtTransfer.ESDTTokenName))
+		copy(tokenName, esdtTransfer.ESDTTokenName)
+		callValue = esdtTransfer.ESDTValue.Bytes()
 	}
 	callValue = arwen.PadBytesLeft(callValue, arwen.BalanceLen)
 
@@ -1985,6 +2005,11 @@ func doESDTTransferAndExecuteSynchronously(
 	esdtValue := big.NewInt(0)
 	nonce := uint64(0)
 
+	contractCallInput.ESDTTransfers = make([]*vmcommon.ESDTTransfer, 1)
+	contractCallInput.ESDTTransfers[0] = &vmcommon.ESDTTransfer{
+		ESDTValue: big.NewInt(0),
+	}
+
 	switch function {
 	case vmcommon.BuiltInFunctionESDTTransfer:
 		if len(args) < vmcommon.MinLenArgumentsESDTTransfer {
@@ -1994,7 +2019,7 @@ func doESDTTransferAndExecuteSynchronously(
 		}
 
 		esdtValue.SetBytes(args[1])
-		contractCallInput.ESDTTokenType = uint32(vmcommon.Fungible)
+		contractCallInput.ESDTTransfers[0].ESDTTokenType = uint32(vmcommon.Fungible)
 		fillContractCallInputFromArgs(contractCallInput, args, vmcommon.MinLenArgumentsESDTTransfer)
 
 	case vmcommon.BuiltInFunctionESDTNFTTransfer:
@@ -2010,7 +2035,7 @@ func doESDTTransferAndExecuteSynchronously(
 				return 1
 			}
 		}
-		contractCallInput.ESDTTokenType = uint32(vmcommon.NonFungible)
+		contractCallInput.ESDTTransfers[0].ESDTTokenType = uint32(vmcommon.NonFungible)
 		fillContractCallInputFromArgs(contractCallInput, args, vmcommon.MinLenArgumentsESDTNFTTransfer)
 
 	default:
@@ -2019,9 +2044,9 @@ func doESDTTransferAndExecuteSynchronously(
 		}
 	}
 
-	contractCallInput.ESDTTokenName = tokenID
-	contractCallInput.ESDTValue = esdtValue
-	contractCallInput.ESDTTokenNonce = nonce
+	contractCallInput.ESDTTransfers[0].ESDTTokenName = tokenID
+	contractCallInput.ESDTTransfers[0].ESDTValue = esdtValue
+	contractCallInput.ESDTTransfers[0].ESDTTokenNonce = nonce
 	if len(contractCallInput.Function) == 0 {
 		contractCallInput = nil
 	}

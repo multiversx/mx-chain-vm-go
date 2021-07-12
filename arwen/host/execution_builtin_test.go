@@ -31,8 +31,10 @@ func TestExecution_ExecuteOnDestContext_ESDTTransferWithoutExecute(t *testing.T)
 	input := DefaultTestContractCallInput()
 	input.Function = "basic_transfer"
 	input.GasProvided = 100000
-	input.ESDTTokenName = ESDTTestTokenName
-	input.ESDTValue = big.NewInt(16)
+	input.ESDTTransfers = make([]*vmcommon.ESDTTransfer, 1)
+	input.ESDTTransfers[0] = &vmcommon.ESDTTransfer{}
+	input.ESDTTransfers[0].ESDTValue = big.NewInt(16)
+	input.ESDTTransfers[0].ESDTTokenName = ESDTTestTokenName
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)
@@ -162,8 +164,10 @@ func TestESDT_GettersAPI(t *testing.T) {
 	input.RecipientAddr = parentAddress
 	input.Function = "validateGetters"
 	input.GasProvided = 1000000
-	input.ESDTValue = big.NewInt(5)
-	input.ESDTTokenName = ESDTTestTokenName
+	input.ESDTTransfers = make([]*vmcommon.ESDTTransfer, 1)
+	input.ESDTTransfers[0] = &vmcommon.ESDTTransfer{}
+	input.ESDTTransfers[0].ESDTValue = big.NewInt(5)
+	input.ESDTTransfers[0].ESDTTokenName = ESDTTestTokenName
 
 	vmOutput, err := host.RunSmartContractCall(input)
 	require.Nil(t, err)

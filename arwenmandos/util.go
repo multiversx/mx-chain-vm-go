@@ -145,13 +145,15 @@ func generateTxHash(txIndex string) []byte {
 
 func addESDTToVMInput(esdtData *mj.ESDTTxData, vmInput *vmcommon.VMInput) {
 	if esdtData != nil {
-		vmInput.ESDTTokenName = esdtData.TokenIdentifier.Value
-		vmInput.ESDTValue = esdtData.Value.Value
-		vmInput.ESDTTokenNonce = esdtData.Nonce.Value
-		if vmInput.ESDTTokenNonce != 0 {
-			vmInput.ESDTTokenType = uint32(vmcommon.NonFungible)
+		vmInput.ESDTTransfers = make([]*vmcommon.ESDTTransfer, 1)
+		vmInput.ESDTTransfers[0] = &vmcommon.ESDTTransfer{}
+		vmInput.ESDTTransfers[0].ESDTTokenName = esdtData.TokenIdentifier.Value
+		vmInput.ESDTTransfers[0].ESDTValue = esdtData.Value.Value
+		vmInput.ESDTTransfers[0].ESDTTokenNonce = esdtData.Nonce.Value
+		if vmInput.ESDTTransfers[0].ESDTTokenNonce != 0 {
+			vmInput.ESDTTransfers[0].ESDTTokenType = uint32(vmcommon.NonFungible)
 		} else {
-			vmInput.ESDTTokenType = uint32(vmcommon.Fungible)
+			vmInput.ESDTTransfers[0].ESDTTokenType = uint32(vmcommon.Fungible)
 		}
 	}
 }
