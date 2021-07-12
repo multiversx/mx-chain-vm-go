@@ -49,6 +49,16 @@
                 "status": "0",
                 "logs": [
                     {
+                        "address": "sc:recursive-caller",
+                        "identifier": "str:ESDTTransfer",
+                        "topics": [
+                            "str:REC-TOKEN",
+                            "1",
+                            "sc:vault"
+                        ],
+                        "data": ""
+                    },
+                    {
                         "address": "address:recursive-caller",
                         "identifier": "str:recursive_send_funds",
                         "topics": [
