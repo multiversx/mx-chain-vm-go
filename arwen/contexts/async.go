@@ -188,6 +188,37 @@ func (context *asyncContext) SetGroupCallback(groupID string, callbackName strin
 	return nil
 }
 
+// SetContextCallback registers the name of the callback method to be called upon the completion of all the groups
+func (context *asyncContext) SetContextCallback(callbackName string, data []byte, gas uint64) error {
+
+	// hasIncompleteGroups := false
+	// for _, group := range context.asyncCallGroups {
+	// 	if !group.IsComplete() {
+	// 		hasIncompleteGroups = true
+	// 	}
+	// }
+
+	// if !hasIncompleteGroups {
+	// 	return ... some error
+	// }
+
+	err := context.host.Runtime().ValidateCallbackName(callbackName)
+	if err != nil {
+		return err
+	}
+
+	metering := context.host.Metering()
+	gasToLock := metering.ComputeGasLockedForAsync() + gas
+	err = metering.UseGasBounded(gasToLock)
+	if err != nil {
+		return err
+	}
+
+	context.gasRemaining = gas
+
+	return nil
+}
+
 func (context *asyncContext) deleteCallGroupByID(groupID string) {
 	index, ok := context.findGroupByID(groupID)
 	if !ok {
