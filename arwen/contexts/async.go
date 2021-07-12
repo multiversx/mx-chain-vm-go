@@ -690,7 +690,7 @@ func (context *asyncContext) sendAsyncCallCrossShard(asyncCall *arwen.AsyncCall)
 // the original caller by invoking its callback directly, or will dispatch a
 // cross-shard callback to it.
 func (context *asyncContext) executeContextCallback() error {
-	if !asyncContext.HasCallback() {
+	if !context.HasCallback() {
 		return nil
 	}
 
