@@ -944,7 +944,7 @@ func TestGasUsed_AsyncCall_Recursive(t *testing.T) {
 				WithMethods(contracts.ForwardAsyncCallRecursiveParentMock, contracts.CallBackRecursiveParentMock),
 			test.CreateMockContract(test.ChildAddress).
 				WithBalance(testConfig.ChildBalance).
-				WithConfig(&testConfig.AsyncCallBaseTestConfig).
+				WithConfig(testConfig).
 				WithMethods(contracts.RecursiveAsyncCallRecursiveChildMock, contracts.CallBackRecursiveChildMock),
 		).
 		WithInput(test.CreateTestContractCallInputBuilder().
@@ -970,10 +970,8 @@ func TestGasUsed_AsyncCall_Recursive(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCall_MultiChild(t *testing.T) {
-	testConfig := contracts.AsyncCallMultiChildTestConfig{
-		AsyncCallBaseTestConfig: makeAsyncCallBaseTestConfig(),
-		ChildCalls:              2,
-	}
+	testConfig := makeTestConfig()
+	testConfig.ChildCalls = 2
 
 	expectedGasUsedByParent := testConfig.GasUsedByParent + 2*testConfig.GasUsedByCallback
 	expectedGasUsedByChild := uint64(testConfig.ChildCalls) * testConfig.GasUsedByChild
@@ -986,7 +984,7 @@ func TestGasUsed_AsyncCall_MultiChild(t *testing.T) {
 				WithMethods(contracts.ForwardAsyncCallMultiChildMock, contracts.CallBackMultiChildMock),
 			test.CreateMockContract(test.ChildAddress).
 				WithBalance(testConfig.ChildBalance).
-				WithConfig(&testConfig.AsyncCallBaseTestConfig).
+				WithConfig(testConfig).
 				WithMethods(contracts.RecursiveAsyncCallRecursiveChildMock, contracts.CallBackRecursiveChildMock),
 		).
 		WithInput(test.CreateTestContractCallInputBuilder().

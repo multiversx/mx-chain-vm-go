@@ -9,8 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func childFunctionAsyncChildMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(*AsyncBuiltInCallTestConfig)
+func childFunctionAsyncChildMock(instanceMock *mock.InstanceMock, testConfig *test.TestConfig) {
 	instanceMock.AddMockMethod("childFunction", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
@@ -34,7 +33,6 @@ func childFunctionAsyncChildMock(instanceMock *mock.InstanceMock, config interfa
 	})
 }
 
-func callBackAsyncChildMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(*AsyncBuiltInCallTestConfig)
+func callBackAsyncChildMock(instanceMock *mock.InstanceMock, testConfig *test.TestConfig) {
 	instanceMock.AddMockMethod("callBack", test.SimpleWasteGasMockMethod(instanceMock, testConfig.GasUsedByCallback))
 }
