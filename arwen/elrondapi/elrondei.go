@@ -3024,6 +3024,7 @@ func prepareIndirectContractCallInput(
 			CallValue:   value,
 			GasPrice:    0,
 			GasProvided: metering.BoundGasLimit(gasLimit),
+			CallType:    vmcommon.DirectCall,
 		},
 		RecipientAddr: destination,
 		Function:      string(function),

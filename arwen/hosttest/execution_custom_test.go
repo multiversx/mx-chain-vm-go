@@ -7,6 +7,7 @@ import (
 )
 
 func TestAsyncBuiltin(t *testing.T) {
+	t.Skip()
 	log := logger.GetOrCreate("test")
 
 	TestGasUsed_LegacyAsyncCall_InShard_BuiltinCall(t)

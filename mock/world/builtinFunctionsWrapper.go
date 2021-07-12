@@ -63,11 +63,8 @@ func NewBuiltinFunctionsWrapper(
 // ProcessBuiltInFunction delegates the execution of a real builtin function to
 // the inner BuiltInFunctionContainer.
 func (bf *BuiltinFunctionsWrapper) ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
-	// TODO matei-p Is this necessary? cross shard checks are already made when this is called
-	// caller := bf.getAccountSharded(input.CallerAddr)
-	// recipient := bf.getAccountSharded(input.RecipientAddr)
-	caller := bf.World.AcctMap.GetAccount(input.CallerAddr)
-	recipient := bf.World.AcctMap.GetAccount(input.RecipientAddr)
+	caller := bf.getAccountSharded(input.CallerAddr)
+	recipient := bf.getAccountSharded(input.RecipientAddr)
 
 	function, err := bf.Container.Get(input.Function)
 	if err != nil {

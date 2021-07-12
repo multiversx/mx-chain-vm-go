@@ -742,7 +742,7 @@ func TestGasUsed_LegacyAsyncCall_CrossShard_BuiltinCall(t *testing.T) {
 	testConfig := makeTestConfig()
 	testConfig.GasProvided = 1000
 
-	expectedGasUsedByParent := testConfig.GasProvided
+	expectedGasUsedByParent := testConfig.GasUsedByParent + gasUsedByBuiltinClaim
 
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
@@ -756,9 +756,10 @@ func TestGasUsed_LegacyAsyncCall_CrossShard_BuiltinCall(t *testing.T) {
 			WithRecipientAddr(test.ParentAddress).
 			WithGasProvided(testConfig.GasProvided).
 			WithFunction("forwardAsyncCall").
-			WithArguments(test.UserAddress, []byte("builtinClaim")).
+			WithArguments(test.UserAddress, []byte("sendMessage")).
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+			world.SelfShardID = 1
 			world.AcctMap.CreateAccount(test.UserAddress, world)
 			createMockBuiltinFunctions(t, host, world)
 			setZeroCodeCosts(host)
@@ -767,10 +768,8 @@ func TestGasUsed_LegacyAsyncCall_CrossShard_BuiltinCall(t *testing.T) {
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
 				Ok().
-				BalanceDelta(test.ParentAddress, amountToGiveByBuiltinClaim).
-				// TODO matei-p uncomment these lines
-				GasUsed(test.ParentAddress, expectedGasUsedByParent).
-				GasRemaining(0)
+				GasRemaining(0).
+				GasUsed(test.ParentAddress, expectedGasUsedByParent)
 		})
 }
 
@@ -1312,6 +1311,30 @@ func createMockBuiltinFunctions(tb testing.TB, host arwen.VMHost, world *worldmo
 	world.BuiltinFuncs.Container.Add("builtinFail", &test.MockBuiltin{
 		ProcessBuiltinFunctionCall: func(acntSnd, _ vmcommon.UserAccountHandler, vmInput *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 			return nil, errors.New("whatdidyoudo")
+		},
+	})
+
+	world.BuiltinFuncs.Container.Add("sendMessage", &test.MockBuiltin{
+		ProcessBuiltinFunctionCall: func(acntSnd, acntRecv vmcommon.UserAccountHandler, vmInput *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+			vmOutput := test.MakeVMOutput()
+			if acntRecv != nil {
+				// acntSnd and acntRecv are in the same shard
+				test.AddFinishData(vmOutput, []byte("ok"))
+				vmOutput.GasRemaining = vmInput.GasProvided - 120
+				return vmOutput, nil
+			}
+
+			// acntSnd and acntRecv are in different shards
+			account := test.AddNewOutputTransfer(
+				vmOutput,
+				acntSnd.AddressBytes(),
+				vmInput.RecipientAddr,
+				0,
+				[]byte("message"),
+			)
+			account.OutputTransfers[0].GasLimit = vmInput.GasProvided - 120
+			vmOutput.GasRemaining = 0
+			return vmOutput, nil
 		},
 	})
 

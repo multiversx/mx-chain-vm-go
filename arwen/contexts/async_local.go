@@ -35,17 +35,17 @@ func (context *asyncContext) executeSynchronousCalls() error {
 }
 
 func (context *asyncContext) executeSyncCall(asyncCall *arwen.AsyncCall) error {
+	destinationCallInput, err := context.createContractCallInput(asyncCall)
+	if err != nil {
+		return err
+	}
+
 	// Briefly restore the AsyncCall GasLimit, after it was consumed in its
 	// entirety by addAsyncCall(); this is required, because ExecuteOnDestContext()
 	// must also consume the GasLimit in its entirety, before starting execution,
 	// but will restore any GasRemaining to the current instance.
 	metering := context.host.Metering()
 	metering.RestoreGas(asyncCall.GetGasLimit())
-
-	destinationCallInput, err := context.createContractCallInput(asyncCall)
-	if err != nil {
-		return err
-	}
 
 	vmOutput, err := context.host.ExecuteOnDestContext(destinationCallInput)
 
@@ -115,6 +115,13 @@ func (context *asyncContext) executeSyncHalfOfBuiltinFunction(asyncCall *arwen.A
 	if err != nil {
 		return err
 	}
+
+	// Briefly restore the AsyncCall GasLimit, after it was consumed in its
+	// entirety by addAsyncCall(); this is required, because ExecuteOnDestContext()
+	// must also consume the GasLimit in its entirety, before starting execution,
+	// but will restore any GasRemaining to the current instance.
+	metering := context.host.Metering()
+	metering.RestoreGas(asyncCall.GetGasLimit())
 
 	vmOutput, err := context.host.ExecuteOnDestContext(destinationCallInput)
 	if err != nil {
