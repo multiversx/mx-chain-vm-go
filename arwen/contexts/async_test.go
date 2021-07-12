@@ -570,7 +570,7 @@ func TestAsyncContext_ExecuteSyncCall_EarlyOutOfGas(t *testing.T) {
 	asyncCall := defaultAsyncCall_AliceToBob()
 	asyncCall.Data = []byte("function")
 	asyncCall.GasLimit = 1
-	err := async.executeSyncCall(asyncCall)
+	err := async.executeAsyncLocalCall(asyncCall)
 	require.True(t, errors.Is(err, arwen.ErrNotEnoughGas))
 }
 
@@ -592,7 +592,7 @@ func TestAsyncContext_ExecuteSyncCall_NoDynamicGasLocking_Simulation(t *testing.
 	}
 	host.EnqueueVMOutput(destOutput)
 
-	err := async.executeSyncCall(asyncCall)
+	err := async.executeAsyncLocalCall(asyncCall)
 	require.Nil(t, err)
 	require.Equal(t, arwen.AsyncCallResolved, asyncCall.Status)
 
@@ -662,7 +662,7 @@ func TestAsyncContext_ExecuteSyncCall_Successful(t *testing.T) {
 	host.EnqueueVMOutput(destOutput)
 	host.EnqueueVMOutput(callbackOutput)
 
-	err := async.executeSyncCall(asyncCall)
+	err := async.executeAsyncLocalCall(asyncCall)
 	require.Nil(t, err)
 	require.Equal(t, arwen.AsyncCallResolved, asyncCall.Status)
 
@@ -800,7 +800,7 @@ func TestAsyncContext_FinishSyncExecution_NilError_NilVMOutput(t *testing.T) {
 	host, _, originalVMInput := InitializeArwenAndWasmer_AsyncContext_AliceAndBob()
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
 	async := NewAsyncContext(host)
-	async.finishSyncExecution(nil, nil)
+	async.finishAsyncLocalExecution(nil, nil)
 
 	// The expectedOutput must also contain an OutputAccount corresponding to
 	// Alice, because of a call to host.Output().GetOutputAccount() in
@@ -819,7 +819,7 @@ func TestAsyncContext_FinishSyncExecution_Error_NilVMOutput(t *testing.T) {
 	async := NewAsyncContext(host)
 
 	syncExecErr := arwen.ErrNotEnoughGas
-	async.finishSyncExecution(nil, syncExecErr)
+	async.finishAsyncLocalExecution(nil, syncExecErr)
 
 	expectedOutput := arwen.MakeVMOutput()
 	expectedOutput.ReturnCode = vmcommon.Ok
@@ -846,7 +846,7 @@ func TestAsyncContext_FinishSyncExecution_ErrorAndVMOutput(t *testing.T) {
 	syncExecOutput.ReturnCode = vmcommon.UserError
 	syncExecOutput.ReturnMessage = "user made an error"
 	syncExecErr := arwen.ErrSignalError
-	async.finishSyncExecution(syncExecOutput, syncExecErr)
+	async.finishAsyncLocalExecution(syncExecOutput, syncExecErr)
 
 	expectedOutput := arwen.MakeVMOutput()
 	expectedOutput.ReturnCode = vmcommon.Ok

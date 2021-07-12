@@ -6,7 +6,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
 )
 
@@ -284,6 +284,8 @@ type AsyncContext interface {
 	IsComplete() bool
 	GetCallGroup(groupID string) (*AsyncCallGroup, bool)
 	SetGroupCallback(groupID string, callbackName string, data []byte, gas uint64) error
+	SetContextCallback(callbackName string, data []byte, gas uint64) error
+	HasCallback() bool
 	PostprocessCrossShardCallback() error
 	GetCallerAddress() []byte
 	GetReturnData() []byte
