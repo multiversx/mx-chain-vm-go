@@ -17,19 +17,27 @@ import (
 
 var gasUsedByBuiltinClaim = uint64(120)
 
-func makeSimpleGasTestConfig() contracts.DirectCallGasTestConfig {
-	return contracts.DirectCallGasTestConfig{
-		GasUsedByParent:    uint64(400),
-		GasUsedByChild:     uint64(200),
-		GasProvidedToChild: uint64(300),
-		GasProvided:        uint64(1000),
-		ParentBalance:      int64(1000),
-		ChildBalance:       int64(1000),
+func makeTestConfig() *test.TestConfig {
+	return &test.TestConfig{
+		GasProvided:        2000,
+		GasProvidedToChild: 300,
+		GasUsedByParent:    400,
+		GasUsedByChild:     200,
+		GasUsedByCallback:  100,
+		GasLockCost:        150,
+
+		TransferFromParentToChild: 7,
+
+		ParentBalance:        1000,
+		ChildBalance:         1000,
+		TransferToThirdParty: 3,
+		TransferToVault:      4,
+		ESDTTokensToTransfer: 0,
 	}
 }
 
 func TestGasUsed_SingleContract(t *testing.T) {
-	testConfig := makeSimpleGasTestConfig()
+	testConfig := makeTestConfig()
 
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
@@ -54,7 +62,7 @@ func TestGasUsed_SingleContract(t *testing.T) {
 }
 
 func TestGasUsed_SingleContract_BuiltinCall(t *testing.T) {
-	testConfig := makeSimpleGasTestConfig()
+	testConfig := makeTestConfig()
 
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
@@ -82,7 +90,7 @@ func TestGasUsed_SingleContract_BuiltinCall(t *testing.T) {
 }
 
 func TestGasUsed_SingleContract_BuiltinCallFail(t *testing.T) {
-	testConfig := makeSimpleGasTestConfig()
+	testConfig := makeTestConfig()
 
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
@@ -110,7 +118,7 @@ func TestGasUsed_SingleContract_BuiltinCallFail(t *testing.T) {
 }
 
 func TestGasUsed_TwoContracts_ExecuteOnSameCtx(t *testing.T) {
-	testConfig := makeSimpleGasTestConfig()
+	testConfig := makeTestConfig()
 
 	for numCalls := uint64(0); numCalls < 3; numCalls++ {
 		expectedGasRemaining := testConfig.GasProvided - testConfig.GasUsedByParent - testConfig.GasUsedByChild*numCalls
@@ -149,7 +157,7 @@ func TestGasUsed_TwoContracts_ExecuteOnSameCtx(t *testing.T) {
 }
 
 func TestGasUsed_TwoContracts_ExecuteOnDestCtx(t *testing.T) {
-	testConfig := makeSimpleGasTestConfig()
+	testConfig := makeTestConfig()
 
 	for numCalls := uint64(0); numCalls < 3; numCalls++ {
 		expectedGasRemaining := testConfig.GasProvided - testConfig.GasUsedByParent - testConfig.GasUsedByChild*numCalls
@@ -192,7 +200,7 @@ func TestGasUsed_ThreeContracts_ExecuteOnDestCtx(t *testing.T) {
 	betaAddress := test.MakeTestSCAddress("beta")
 	gammaAddress := test.MakeTestSCAddress("gamma")
 
-	testConfig := contracts.DirectCallGasTestConfig{
+	testConfig := &test.TestConfig{
 		GasUsedByParent:    uint64(400),
 		GasProvidedToChild: uint64(300),
 		GasProvided:        uint64(1000),
@@ -239,7 +247,7 @@ func TestGasUsed_ESDTTransfer_ThenExecuteCall_Success(t *testing.T) {
 	initialESDTTokenBalance := uint64(100)
 	esdtTransferGasCost := uint64(1)
 
-	testConfig := makeSimpleGasTestConfig()
+	testConfig := makeTestConfig()
 	testConfig.ESDTTokensToTransfer = 5
 
 	test.BuildMockInstanceCallTest(t).
@@ -285,7 +293,7 @@ func TestGasUsed_ESDTTransfer_ThenExecuteCall_Fail(t *testing.T) {
 	var parentAccount *worldmock.Account
 	initialESDTTokenBalance := uint64(100)
 
-	testConfig := makeSimpleGasTestConfig()
+	testConfig := makeTestConfig()
 	testConfig.ESDTTokensToTransfer = 5
 
 	test.BuildMockInstanceCallTest(t).
@@ -330,7 +338,7 @@ func TestGasUsed_ESDTTransferFailed(t *testing.T) {
 	var parentAccount *worldmock.Account
 	initialESDTTokenBalance := uint64(100)
 
-	testConfig := makeSimpleGasTestConfig()
+	testConfig := makeTestConfig()
 	testConfig.ESDTTokensToTransfer = 2 * initialESDTTokenBalance
 
 	test.BuildMockInstanceCallTest(t).
@@ -375,7 +383,7 @@ func TestGasUsed_ESDTTransferFromParent_ChildBurnsAndThenFails(t *testing.T) {
 	var parentAccount *worldmock.Account
 	initialESDTTokenBalance := uint64(100)
 
-	testConfig := makeSimpleGasTestConfig()
+	testConfig := makeTestConfig()
 	testConfig.ESDTTokensToTransfer = 10
 
 	test.BuildMockInstanceCallTest(t).
@@ -418,32 +426,8 @@ func TestGasUsed_ESDTTransferFromParent_ChildBurnsAndThenFails(t *testing.T) {
 		})
 }
 
-func makeAsyncCallBaseTestConfig() contracts.AsyncCallBaseTestConfig {
-	return contracts.AsyncCallBaseTestConfig{
-		GasProvided:       2000,
-		GasUsedByParent:   400,
-		GasUsedByChild:    200,
-		GasUsedByCallback: 100,
-		GasLockCost:       150,
-
-		TransferFromParentToChild: 7,
-
-		ParentBalance: 1000,
-		ChildBalance:  1000,
-	}
-}
-
-func makeAsyncCallTestConfig() contracts.AsyncCallTestConfig {
-	return contracts.AsyncCallTestConfig{
-		AsyncCallBaseTestConfig: makeAsyncCallBaseTestConfig(),
-		TransferToThirdParty:    3,
-		TransferToVault:         4,
-		ESDTTokensToTransfer:    0,
-	}
-}
-
 func TestGasUsed_AsyncCall(t *testing.T) {
-	testConfig := makeAsyncCallTestConfig()
+	testConfig := makeTestConfig()
 	testConfig.GasProvided = 1000
 
 	gasUsedByParent := testConfig.GasUsedByParent + testConfig.GasUsedByCallback
@@ -498,7 +482,7 @@ func TestGasUsed_AsyncCall(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCall_CrossShard_InitCall(t *testing.T) {
-	testConfig := makeAsyncCallTestConfig()
+	testConfig := makeTestConfig()
 	testConfig.GasProvided = 1000
 
 	gasUsedByParent := testConfig.GasUsedByParent
@@ -559,7 +543,7 @@ func TestGasUsed_AsyncCall_CrossShard_InitCall(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCall_CrossShard_ExecuteCall(t *testing.T) {
-	testConfig := makeAsyncCallTestConfig()
+	testConfig := makeTestConfig()
 	gasUsedByChild := testConfig.GasUsedByChild
 	gasUsedByParent := testConfig.GasUsedByParent
 	gasForAsyncCall := testConfig.GasProvided - gasUsedByParent - testConfig.GasLockCost
@@ -614,7 +598,7 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCall_CrossShard_CallBack(t *testing.T) {
-	testConfig := makeAsyncCallTestConfig()
+	testConfig := makeTestConfig()
 	testConfig.GasProvided = 1000
 
 	gasUsedByParent := testConfig.GasUsedByParent
@@ -661,7 +645,7 @@ func TestGasUsed_AsyncCall_CrossShard_CallBack(t *testing.T) {
 			fakeInput.GasProvided = 1000
 			host.Metering().InitStateFromContractCallInput(fakeInput)
 
-			contracts.RegisterAsyncCallToChild(host, &testConfig, arguments)
+			contracts.RegisterAsyncCallToChild(host, testConfig, arguments)
 			host.Async().Save()
 
 			for _, account := range host.Output().GetVMOutput().OutputAccounts {
@@ -679,7 +663,7 @@ func TestGasUsed_AsyncCall_CrossShard_CallBack(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCall_BuiltinCall(t *testing.T) {
-	testConfig := makeAsyncCallBaseTestConfig()
+	testConfig := makeTestConfig()
 	testConfig.GasProvided = 1000
 
 	expectedGasUsedByParent := testConfig.GasUsedByParent + testConfig.GasUsedByCallback + gasUsedByBuiltinClaim
@@ -689,7 +673,7 @@ func TestGasUsed_AsyncCall_BuiltinCall(t *testing.T) {
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
-				WithConfig(&testConfig).
+				WithConfig(testConfig).
 				WithMethods(contracts.ForwardAsyncCallParentBuiltinMock, contracts.CallBackParentBuiltinMock),
 		).
 		WithInput(test.CreateTestContractCallInputBuilder().
@@ -715,7 +699,7 @@ func TestGasUsed_AsyncCall_BuiltinCall(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCall_BuiltinCallFail(t *testing.T) {
-	testConfig := makeAsyncCallBaseTestConfig()
+	testConfig := makeTestConfig()
 	testConfig.GasProvided = 1000
 
 	// all will be spent in case of failure
@@ -728,7 +712,7 @@ func TestGasUsed_AsyncCall_BuiltinCallFail(t *testing.T) {
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
-				WithConfig(&testConfig).
+				WithConfig(testConfig).
 				WithMethods(contracts.ForwardAsyncCallParentBuiltinMock, contracts.CallBackParentBuiltinMock),
 		).
 		WithInput(test.CreateTestContractCallInputBuilder().
@@ -755,7 +739,7 @@ func TestGasUsed_AsyncCall_BuiltinCallFail(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCall_CrossShard_BuiltinCall(t *testing.T) {
-	testConfig := makeAsyncCallBaseTestConfig()
+	testConfig := makeTestConfig()
 	testConfig.GasProvided = 1000
 
 	expectedGasUsedByParent := testConfig.GasUsedByParent + testConfig.GasUsedByCallback + gasUsedByBuiltinClaim
@@ -765,7 +749,7 @@ func TestGasUsed_AsyncCall_CrossShard_BuiltinCall(t *testing.T) {
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
-				WithConfig(&testConfig).
+				WithConfig(testConfig).
 				WithShardID(1).
 				WithMethods(contracts.ForwardAsyncCallParentBuiltinMock, contracts.CallBackParentBuiltinMock),
 		).
@@ -793,10 +777,8 @@ func TestGasUsed_AsyncCall_CrossShard_BuiltinCall(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCall_BuiltinMultiContractChainCall(t *testing.T) {
-	testConfig := &contracts.AsyncBuiltInCallTestConfig{
-		AsyncCallBaseTestConfig:   makeAsyncCallBaseTestConfig(),
-		TransferFromChildToParent: 5,
-	}
+	testConfig := makeTestConfig()
+	testConfig.TransferFromChildToParent = 5
 
 	// expectedGasUsedByParent := testConfig.GasUsedByParent + testConfig.GasUsedByCallback
 	// expectedGasUsedByChild := testConfig.GasUsedByChild + gasUsedByBuiltinClaim
@@ -836,7 +818,7 @@ func TestGasUsed_AsyncCall_BuiltinMultiContractChainCall(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCall_ChildFails(t *testing.T) {
-	testConfig := makeAsyncCallTestConfig()
+	testConfig := makeTestConfig()
 	testConfig.GasProvided = 1000
 
 	expectedGasUsedByParent := testConfig.GasProvided - testConfig.GasLockCost + testConfig.GasUsedByCallback
@@ -889,7 +871,7 @@ func TestGasUsed_AsyncCall_ChildFails(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCall_CallBackFails(t *testing.T) {
-	testConfig := makeAsyncCallTestConfig()
+	testConfig := makeTestConfig()
 
 	expectedGasUsedByParent := testConfig.GasProvided - testConfig.GasUsedByChild
 	expectedGasUsedByChild := testConfig.GasUsedByChild
@@ -947,10 +929,8 @@ func TestGasUsed_AsyncCall_CallBackFails(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCall_Recursive(t *testing.T) {
-	testConfig := contracts.AsyncCallRecursiveTestConfig{
-		AsyncCallBaseTestConfig: makeAsyncCallBaseTestConfig(),
-		RecursiveChildCalls:     3,
-	}
+	testConfig := makeTestConfig()
+	testConfig.RecursiveChildCalls = 3
 
 	expectedGasUsedByParent := testConfig.GasUsedByParent + testConfig.GasUsedByCallback
 	expectedGasUsedByChild := uint64(testConfig.RecursiveChildCalls)*testConfig.GasUsedByChild +
@@ -1035,7 +1015,7 @@ func TestGasUsed_ESDTTransfer_ThenExecuteAsyncCall_Success(t *testing.T) {
 	var parentAccount *worldmock.Account
 	initialESDTTokenBalance := uint64(100)
 
-	testConfig := makeAsyncCallTestConfig()
+	testConfig := makeTestConfig()
 	testConfig.ESDTTokensToTransfer = 5
 
 	test.BuildMockInstanceCallTest(t).
@@ -1079,7 +1059,7 @@ func TestGasUsed_ESDTTransfer_ThenExecuteAsyncCall_ChildFails(t *testing.T) {
 	var parentAccount *worldmock.Account
 	initialESDTTokenBalance := uint64(100)
 
-	testConfig := makeAsyncCallTestConfig()
+	testConfig := makeTestConfig()
 	testConfig.ESDTTokensToTransfer = 5
 
 	test.BuildMockInstanceCallTest(t).
@@ -1124,7 +1104,7 @@ func TestGasUsed_ESDTTransfer_ThenExecuteAsyncCall_CallbackFails(t *testing.T) {
 	var parentAccount *worldmock.Account
 	initialESDTTokenBalance := uint64(100)
 
-	testConfig := makeAsyncCallTestConfig()
+	testConfig := makeTestConfig()
 	testConfig.ESDTTokensToTransfer = 5
 
 	test.BuildMockInstanceCallTest(t).
@@ -1169,7 +1149,7 @@ func TestGasUsed_ESDTTransferInCallback(t *testing.T) {
 	var parentAccount *worldmock.Account
 	initialESDTTokenBalance := uint64(100)
 
-	testConfig := makeAsyncCallTestConfig()
+	testConfig := makeTestConfig()
 	testConfig.ESDTTokensToTransfer = 5
 	testConfig.CallbackESDTTokensToTransfer = 2
 
@@ -1214,7 +1194,7 @@ func TestGasUsed_ESDTTransferWrongArgNumberForCallback(t *testing.T) {
 	var parentAccount *worldmock.Account
 	initialESDTTokenBalance := uint64(100)
 
-	testConfig := makeAsyncCallTestConfig()
+	testConfig := makeTestConfig()
 	testConfig.ESDTTokensToTransfer = 5
 	testConfig.CallbackESDTTokensToTransfer = 2
 
@@ -1260,7 +1240,7 @@ func TestGasUsed_ESDTTransfer_CallbackFail(t *testing.T) {
 	var parentAccount *worldmock.Account
 	initialESDTTokenBalance := uint64(100)
 
-	testConfig := makeAsyncCallTestConfig()
+	testConfig := makeTestConfig()
 	testConfig.ESDTTokensToTransfer = 5
 	testConfig.CallbackESDTTokensToTransfer = 2
 

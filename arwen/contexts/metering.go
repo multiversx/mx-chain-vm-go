@@ -189,6 +189,10 @@ func (context *meteringContext) TrackGasUsedByBuiltinFunction(
 	builtinOutput *vmcommon.VMOutput,
 	postBuiltinInput *vmcommon.ContractCallInput,
 ) {
+	if builtinInput.CallType == vmcommon.AsynchronousCall {
+		return
+	}
+
 	gasUsed := math.SubUint64(builtinInput.GasProvided, builtinOutput.GasRemaining)
 
 	// If the builtin function indicated that there's a follow-up SC execution
