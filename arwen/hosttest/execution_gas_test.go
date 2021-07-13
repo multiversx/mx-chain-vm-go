@@ -1266,7 +1266,8 @@ func TestGasUsed_ESDTTransfer_CallbackFail(t *testing.T) {
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
 				Ok().
-				HasRuntimeErrors("wrong num of arguments")
+				HasRuntimeErrors("callback failed intentionally").
+				Print()
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
 			require.Equal(t, initialESDTTokenBalance-uint64(testConfig.ESDTTokensToTransfer), parentESDTBalance)

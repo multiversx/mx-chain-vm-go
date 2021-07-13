@@ -58,20 +58,20 @@ func (context *meteringContext) PrintState() {
 	gasUsed := gasSpent
 	gasUsed = math.SubUint64(gasUsed, gasTransferred)
 	gasUsed = math.SubUint64(gasUsed, gasUsedByOthers)
-	log.Trace("metering state", "┌----------            sc", string(sc))
-	log.Trace("              ", "|        initial provided", context.initialGasProvided)
-	log.Trace("              ", "|            initial cost", context.initialCost)
-	log.Trace("              ", "|            gas for exec", context.gasForExecution)
-	log.Trace("              ", "|            instance gas", context.host.Runtime().GetPointsUsed())
-	log.Trace("              ", "|                gas left", context.GasLeft())
-	log.Trace("              ", "|         gas spent by sc", gasSpent)
-	log.Trace("              ", "|         gas transferred", gasTransferred)
-	log.Trace("              ", "|      gas used by others", gasUsedByOthers)
-	log.Trace("              ", "| adjusted gas used by sc", gasUsed)
+	logMetering.Trace("metering state", "┌----------            sc", string(sc))
+	logMetering.Trace("              ", "|        initial provided", context.initialGasProvided)
+	logMetering.Trace("              ", "|            initial cost", context.initialCost)
+	logMetering.Trace("              ", "|            gas for exec", context.gasForExecution)
+	logMetering.Trace("              ", "|            instance gas", context.host.Runtime().GetPointsUsed())
+	logMetering.Trace("              ", "|                gas left", context.GasLeft())
+	logMetering.Trace("              ", "|         gas spent by sc", gasSpent)
+	logMetering.Trace("              ", "|         gas transferred", gasTransferred)
+	logMetering.Trace("              ", "|      gas used by others", gasUsedByOthers)
+	logMetering.Trace("              ", "| adjusted gas used by sc", gasUsed)
 	for key, gas := range context.gasUsedByAccounts {
-		log.Trace("              ", "| gas per acct", gas, "key", string(key))
+		logMetering.Trace("              ", "| gas per acct", gas, "key", string(key))
 	}
-	log.Trace("              ", "└ stack size", len(context.stateStack))
+	logMetering.Trace("              ", "└ stack size", len(context.stateStack))
 
 }
 

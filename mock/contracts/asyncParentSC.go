@@ -70,7 +70,7 @@ func SimpleCallbackMock(instanceMock *mock.InstanceMock, testConfig *test.TestCo
 		host.Metering().UseGas(testConfig.GasUsedByCallback)
 
 		if string(arguments[1]) == "fail" {
-			host.Runtime().SignalUserError("wrong num of arguments")
+			host.Runtime().SignalUserError("callback failed intentionally")
 			return instance
 		}
 

@@ -13,7 +13,17 @@ func (context *asyncContext) executeAsyncLocalCalls() error {
 		for _, call := range group.AsyncCalls {
 			if call.ExecutionMode == arwen.ESDTTransferOnCallBack {
 				context.host.Output().PrependFinish(call.Data)
-				context.host.Metering().RestoreGas(call.GasLocked)
+
+				// TODO discuss: the contract has already paid the gas for GasLimit and
+				// GasLocked, as if the call were destined to another contract. Both
+				// GasLimit and GasLocked are restored in the case of
+				// ESDTTransferOnCallBack because:
+				// * GasLocked isn't needed, since no callback will be called
+				// * GasLimit cannot be paid here, because it's the *destination*
+				// contract that ends up paying the gas for the ESDTTransfer
+				// context.host.Metering().RestoreGas(call.GasLimit)
+				// context.host.Metering().RestoreGas(call.GasLocked)
+				call.UpdateStatus(vmcommon.Ok)
 				continue
 			}
 
