@@ -8,8 +8,8 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
-func (context *asyncContext) executeSynchronousCalls() error {
-	for groupIndex, group := range context.asyncCallGroups {
+func (context *asyncContext) executeAsyncLocalCalls() error {
+	for _, group := range context.asyncCallGroups {
 		for _, call := range group.AsyncCalls {
 			if call.ExecutionMode == arwen.ESDTTransferOnCallBack {
 				context.host.Output().PrependFinish(call.Data)
@@ -22,7 +22,7 @@ func (context *asyncContext) executeSynchronousCalls() error {
 				continue
 			}
 
-			err := context.executeSyncCall(call)
+			err := context.executeAsyncLocalCall(call)
 			if err != nil {
 				return err
 			}
@@ -34,13 +34,19 @@ func (context *asyncContext) executeSynchronousCalls() error {
 		// then the AsyncCallGroup can have its callback executed.
 		if group.IsComplete() {
 			context.executeCallGroupCallback(group)
-			context.deleteCallGroup(groupIndex)
 		}
 	}
+
+	context.DeleteCompletedGroups()
+
+	if !context.HasPendingCallGroups() {
+		context.executeContextCallback()
+	}
+
 	return nil
 }
 
-func (context *asyncContext) executeSyncCall(asyncCall *arwen.AsyncCall) error {
+func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) error {
 	destinationCallInput, err := context.createContractCallInput(asyncCall)
 	if err != nil {
 		return err
@@ -61,7 +67,7 @@ func (context *asyncContext) executeSyncCall(asyncCall *arwen.AsyncCall) error {
 
 	if asyncCall.HasCallback() {
 		callbackVMOutput, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, err)
-		context.finishSyncExecution(callbackVMOutput, callbackErr)
+		context.finishAsyncLocalExecution(callbackVMOutput, callbackErr)
 	}
 
 	// TODO accumulate remaining gas from the callback into the AsyncContext,
@@ -103,7 +109,7 @@ func (context *asyncContext) executeCallGroupCallback(group *arwen.AsyncCallGrou
 
 	input := context.createGroupCallbackInput(group)
 	vmOutput, err := context.host.ExecuteOnDestContext(input)
-	context.finishSyncExecution(vmOutput, err)
+	context.finishAsyncLocalExecution(vmOutput, err)
 }
 
 // executeSyncHalfOfBuiltinFunction will synchronously call the requested
@@ -139,7 +145,7 @@ func (context *asyncContext) executeSyncHalfOfBuiltinFunction(asyncCall *arwen.A
 	if vmOutput.ReturnCode != vmcommon.Ok {
 		asyncCall.Reject()
 		callbackVMOutput, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, err)
-		context.finishSyncExecution(callbackVMOutput, callbackErr)
+		context.finishAsyncLocalExecution(callbackVMOutput, callbackErr)
 	}
 
 	// The gas that remains after executing the in-shard half of the built-in
@@ -154,11 +160,11 @@ func (context *asyncContext) executeSyncHalfOfBuiltinFunction(asyncCall *arwen.A
 func (context *asyncContext) executeSyncContextCallback() {
 	callbackCallInput := context.createContextCallbackInput()
 	callbackVMOutput, callBackErr := context.host.ExecuteOnDestContext(callbackCallInput)
-	context.finishSyncExecution(callbackVMOutput, callBackErr)
+	context.finishAsyncLocalExecution(callbackVMOutput, callBackErr)
 }
 
-// TODO return values are never used by code that calls finishSyncExecution
-func (context *asyncContext) finishSyncExecution(vmOutput *vmcommon.VMOutput, err error) {
+// TODO return values are never used by code that calls finishAsyncLocalExecution
+func (context *asyncContext) finishAsyncLocalExecution(vmOutput *vmcommon.VMOutput, err error) {
 	if err == nil {
 		return
 	}
@@ -333,7 +339,7 @@ func (context *asyncContext) createContextCallbackInput() *vmcommon.ContractCall
 	// TODO ensure a new value for VMInput.CurrentTxHash
 	input := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
-			CallerAddr:     runtime.GetSCAddress(),
+			CallerAddr:     context.callerAddr,
 			Arguments:      arguments,
 			CallValue:      runtime.GetVMInput().CallValue,
 			CallType:       vmcommon.AsynchronousCallBack,
@@ -343,11 +349,8 @@ func (context *asyncContext) createContextCallbackInput() *vmcommon.ContractCall
 			OriginalTxHash: runtime.GetOriginalTxHash(),
 			PrevTxHash:     runtime.GetPrevTxHash(),
 		},
-		RecipientAddr: context.callerAddr,
-
-		// TODO Function is not actually necessary, because the original caller
-		// will decide the appropriate callback function
-		Function: arwen.CallbackFunctionName,
+		RecipientAddr: runtime.GetSCAddress(),
+		Function:      context.callback,
 	}
 	return input
 }

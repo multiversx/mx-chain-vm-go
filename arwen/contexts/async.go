@@ -17,6 +17,8 @@ type asyncContext struct {
 	stateStack []*asyncContext
 
 	callerAddr      []byte
+	callback        string
+	callbackData    []byte
 	gasPrice        uint64
 	gasRemaining    uint64
 	returnData      []byte
@@ -25,6 +27,8 @@ type asyncContext struct {
 
 type serializableAsyncContext struct {
 	CallerAddr      []byte
+	Callback        string
+	CallbackData    []byte
 	GasPrice        uint64
 	GasRemaining    uint64
 	ReturnData      []byte
@@ -37,6 +41,8 @@ func NewAsyncContext(host arwen.VMHost) *asyncContext {
 		host:            host,
 		stateStack:      nil,
 		callerAddr:      nil,
+		callback:        "",
+		callbackData:    nil,
 		gasPrice:        0,
 		gasRemaining:    0,
 		returnData:      nil,
@@ -67,6 +73,8 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 func (context *asyncContext) PushState() {
 	newState := &asyncContext{
 		callerAddr:      context.callerAddr,
+		callback:        context.callback,
+		callbackData:    context.callbackData,
 		gasPrice:        context.gasPrice,
 		gasRemaining:    context.gasRemaining,
 		returnData:      context.returnData,
@@ -103,6 +111,8 @@ func (context *asyncContext) PopSetActiveState() {
 	context.stateStack = context.stateStack[:stateStackLen-1]
 
 	context.callerAddr = prevState.callerAddr
+	context.callback = prevState.callback
+	context.callbackData = prevState.callbackData
 	context.gasPrice = prevState.gasPrice
 	context.gasRemaining = prevState.gasRemaining
 	context.returnData = prevState.returnData
@@ -184,6 +194,27 @@ func (context *asyncContext) SetGroupCallback(groupID string, callbackName strin
 	group.Callback = callbackName
 	group.GasLocked = gasToLock
 	group.CallbackData = data
+
+	return nil
+}
+
+// SetContextCallback registers the name of the callback method to be called upon the completion of all the groups
+func (context *asyncContext) SetContextCallback(callbackName string, data []byte, gas uint64) error {
+	err := context.host.Runtime().ValidateCallbackName(callbackName)
+	if err != nil {
+		return err
+	}
+
+	metering := context.host.Metering()
+	gasToLock := metering.ComputeGasLockedForAsync() + gas
+	err = metering.UseGasBounded(gasToLock)
+	if err != nil {
+		return err
+	}
+
+	context.gasRemaining = gasToLock
+	context.callback = callbackName
+	context.callbackData = data
 
 	return nil
 }
@@ -427,7 +458,7 @@ func (context *asyncContext) Execute() error {
 
 	// Step 1: execute all AsyncCalls that can be executed synchronously
 	// (includes smart contracts and built-in functions in the same shard)
-	err := context.executeSynchronousCalls()
+	err := context.executeAsyncLocalCalls()
 	if err != nil {
 		return err
 	}
@@ -545,6 +576,10 @@ func (context *asyncContext) PostprocessCrossShardCallback() error {
 	}
 
 	return context.executeContextCallback()
+}
+
+func (context *asyncContext) HasCallback() bool {
+	return context.callback != ""
 }
 
 // HasPendingCallGroups returns true if the AsyncContext still contains AsyncCallGroup.
@@ -675,12 +710,12 @@ func (context *asyncContext) sendAsyncCallCrossShard(asyncCall *arwen.AsyncCall)
 // the original caller by invoking its callback directly, or will dispatch a
 // cross-shard callback to it.
 func (context *asyncContext) executeContextCallback() error {
-	execMode, err := context.determineExecutionMode(context.callerAddr, context.returnData)
-	if err != nil {
-		return err
+	if !context.HasCallback() {
+		return nil
 	}
 
-	if execMode != arwen.SyncExecution {
+	sameShard := context.host.AreInSameShard(context.host.Runtime().GetSCAddress(), context.callerAddr)
+	if !sameShard {
 		return context.sendContextCallbackToOriginalCaller()
 	}
 
@@ -733,6 +768,8 @@ func (context *asyncContext) deserialize(data []byte) (*asyncContext, error) {
 func (context *asyncContext) toSerializable() *serializableAsyncContext {
 	return &serializableAsyncContext{
 		CallerAddr:      context.callerAddr,
+		Callback:        context.callback,
+		CallbackData:    context.callbackData,
 		GasPrice:        context.gasPrice,
 		GasRemaining:    context.gasRemaining,
 		ReturnData:      context.returnData,
@@ -745,6 +782,8 @@ func (context *asyncContext) fromSerializable(serializedContext *serializableAsy
 		host:            nil,
 		stateStack:      nil,
 		callerAddr:      serializedContext.CallerAddr,
+		callback:        serializedContext.Callback,
+		callbackData:    serializedContext.CallbackData,
 		gasPrice:        serializedContext.GasPrice,
 		gasRemaining:    serializedContext.GasRemaining,
 		returnData:      serializedContext.ReturnData,
@@ -775,4 +814,16 @@ func computeDataLengthFromArguments(function string, arguments [][]byte) int {
 	}
 
 	return int(dataLength)
+}
+
+// DeleteCompletedGroups removes all completed AsyncGroups
+func (context *asyncContext) DeleteCompletedGroups() {
+	remainingAsyncGroups := make([]*arwen.AsyncCallGroup, 0)
+	for _, asyncGroup := range context.asyncCallGroups {
+		if !asyncGroup.IsComplete() {
+			remainingAsyncGroups = append(remainingAsyncGroups, asyncGroup)
+		}
+	}
+
+	context.asyncCallGroups = remainingAsyncGroups
 }

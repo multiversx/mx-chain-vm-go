@@ -1277,6 +1277,57 @@ func TestGasUsed_ESDTTransfer_CallbackFail(t *testing.T) {
 		})
 }
 
+func TestGasUsed_AsyncCall_Groups(t *testing.T) {
+	testConfig := makeTestConfig()
+	testConfig.GasProvided = 10_000
+
+	// gasUsedByParent := testConfig.GasUsedByParent + testConfig.GasUsedByCallback
+	// gasUsedByChild := testConfig.GasUsedByChild
+
+	expectedReturnData := make([][]byte, 0)
+	for _, groupConfig := range contracts.AsyncGroupsConfig {
+		groupName := groupConfig[0]
+		for g := 1; g < len(groupConfig); g++ {
+			functionReturnData := groupConfig[g] + contracts.AsyncReturnDataSuffix
+			expectedReturnData = append(expectedReturnData, []byte(functionReturnData))
+			expectedReturnData = append(expectedReturnData, []byte(contracts.AsyncCallbackPrefix+functionReturnData))
+		}
+		expectedReturnData = append(expectedReturnData, []byte(contracts.AsyncCallbackPrefix+groupName+contracts.AsyncReturnDataSuffix))
+	}
+	expectedReturnData = append(expectedReturnData, []byte(contracts.AsyncContextCallbackFunction+contracts.AsyncReturnDataSuffix))
+
+	test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithMethods(contracts.ForwardAsyncCallMultiGroupsMock, contracts.CallBackMultiGroupsMock),
+			test.CreateMockContract(test.ChildAddress).
+				WithBalance(testConfig.ChildBalance).
+				WithConfig(testConfig).
+				WithMethods(contracts.ChildAsyncMultiGroupsMock),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("forwardMultiGroupAsyncCall").
+			WithArguments(test.ChildAddress).
+			Build()).
+		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+			setZeroCodeCosts(host)
+			setAsyncCosts(host, testConfig.GasLockCost)
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok().
+				// GasUsed(test.ParentAddress, gasUsedByParent).
+				// GasUsed(test.ChildAddress, gasUsedByChild).
+				// GasRemaining(testConfig.GasProvided-gasUsedByParent-gasUsedByChild).
+				// BalanceDelta(test.ThirdPartyAddress, 2*testConfig.TransferToThirdParty).
+				ReturnData(expectedReturnData...)
+		})
+}
+
 type MockClaimBuiltin struct {
 	test.MockBuiltin
 	AmountToGive int64

@@ -1417,38 +1417,38 @@ func v1_3_asyncCall(context unsafe.Pointer, destOffset int32, valueOffset int32,
 	}
 }
 
-// TODO matei-p are there existing contracts using this method?
 //export v1_3_setAsyncContextCallback
-// func v1_3_setAsyncContextCallback(context unsafe.Pointer,
-// 	asyncContextIdentifier int32,
-// 	identifierLength int32,
-// 	callback int32,
-// 	callbackLength int32,
-// ) int32 {
-// 	host := arwen.GetVMHost(context)
-// 	runtime := host.Runtime()
+func v1_3_setAsyncContextCallback(context unsafe.Pointer,
+	callback int32,
+	callbackLength int32,
+	data int32,
+	dataLength int32,
+	gas int32,
+) int32 {
+	host := arwen.GetVMHost(context)
+	runtime := host.Runtime()
 
-// 	// TODO consume gas
+	// TODO Create new API cost for this method
 
-// 	acIdentifier, err := runtime.MemLoad(asyncContextIdentifier, identifierLength)
-// 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-// 		return -1
-// 	}
+	asyncContext := host.Async()
 
-// 	asyncContext, err := runtime.GetAsyncContext(acIdentifier)
-// 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-// 		return -1
-// 	}
+	callbackNameBytes, err := runtime.MemLoad(callback, callbackLength)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return -1
+	}
 
-// 	callbackFunc, err := runtime.MemLoad(callback, callbackLength)
-// 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-// 		return -1
-// 	}
+	dataBytes, err := runtime.MemLoad(data, dataLength)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return -1
+	}
 
-// 	asyncContext.Callback = string(callbackFunc)
+	asyncContext.SetContextCallback(
+		string(callbackNameBytes),
+		dataBytes,
+		uint64(gas))
 
-// 	return 0
-// }
+	return 0
+}
 
 //export v1_3_upgradeContract
 func v1_3_upgradeContract(
