@@ -96,10 +96,9 @@ func ExecESDTTransferAndAsyncCallChild(instanceMock *mock.InstanceMock, testConf
 			return instance
 		}
 
-		functionToCallOnChild := arguments[2]
-
 		receiver := arguments[0]
 		builtInFunction := arguments[1]
+		functionToCallOnChild := arguments[2]
 
 		callData := txDataBuilder.NewBuilder()
 		// function to be called on child

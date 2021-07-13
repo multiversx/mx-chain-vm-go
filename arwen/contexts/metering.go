@@ -48,6 +48,33 @@ func NewMeteringContext(
 	return context, nil
 }
 
+func (context *meteringContext) PrintState() {
+	sc := context.host.Runtime().GetSCAddress()
+	scAccount, _ := context.host.Output().GetOutputAccount(sc)
+	outputAccounts := context.host.Output().GetOutputAccounts()
+	gasSpent := context.GasSpentByContract()
+	gasTransferred := context.getGasTransferredByAccount(scAccount)
+	gasUsedByOthers := context.getGasUsedByAllOtherAccounts(outputAccounts)
+	gasUsed := gasSpent
+	gasUsed = math.SubUint64(gasUsed, gasTransferred)
+	gasUsed = math.SubUint64(gasUsed, gasUsedByOthers)
+	log.Trace("metering state", "┌----------            sc", string(sc))
+	log.Trace("              ", "|        initial provided", context.initialGasProvided)
+	log.Trace("              ", "|            initial cost", context.initialCost)
+	log.Trace("              ", "|            gas for exec", context.gasForExecution)
+	log.Trace("              ", "|            instance gas", context.host.Runtime().GetPointsUsed())
+	log.Trace("              ", "|                gas left", context.GasLeft())
+	log.Trace("              ", "|         gas spent by sc", gasSpent)
+	log.Trace("              ", "|         gas transferred", gasTransferred)
+	log.Trace("              ", "|      gas used by others", gasUsedByOthers)
+	log.Trace("              ", "| adjusted gas used by sc", gasUsed)
+	for key, gas := range context.gasUsedByAccounts {
+		log.Trace("              ", "| gas per acct", gas, "key", string(key))
+	}
+	log.Trace("              ", "└ stack size", len(context.stateStack))
+
+}
+
 // InitState resets the internal state of the MeteringContext
 func (context *meteringContext) InitState() {
 	context.gasUsedByAccounts = make(map[string]uint64)
@@ -345,11 +372,7 @@ func (context *meteringContext) GasSpentByContract() uint64 {
 	runtime := context.host.Runtime()
 	executionGasUsed := runtime.GetPointsUsed()
 
-	gasSpent := uint64(0)
-	if context.host.IsArwenV2Enabled() {
-		gasSpent = context.initialCost
-	}
-
+	gasSpent := context.initialCost
 	gasSpent = math.AddUint64(gasSpent, executionGasUsed)
 
 	return gasSpent

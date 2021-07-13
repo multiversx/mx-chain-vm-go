@@ -11,6 +11,12 @@ import (
 func (context *asyncContext) executeSynchronousCalls() error {
 	for groupIndex, group := range context.asyncCallGroups {
 		for _, call := range group.AsyncCalls {
+			if call.ExecutionMode == arwen.ESDTTransferOnCallBack {
+				context.host.Output().PrependFinish(call.Data)
+				context.host.Metering().RestoreGas(call.GasLocked)
+				continue
+			}
+
 			remoteExecution := (call.ExecutionMode != arwen.SyncExecution) && (call.ExecutionMode != arwen.AsyncBuiltinFuncIntraShard)
 			if remoteExecution {
 				continue

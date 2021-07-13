@@ -182,7 +182,7 @@ func esdtTransferToParentMock(instanceMock *mock.InstanceMock, testConfig *test.
 	instanceMock.AddMockMethod("transferESDTToParent", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
-		host.Metering().UseGas(testConfig.GasUsedByParent)
+		host.Metering().UseGas(testConfig.GasUsedByChild)
 
 		callData := txDataBuilder.NewBuilder()
 		callData.Func(string("ESDTTransfer"))
