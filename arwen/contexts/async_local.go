@@ -9,10 +9,9 @@ import (
 )
 
 func (context *asyncContext) executeAsyncLocalCalls() error {
-	for group_index := range context.asyncCallGroups {
-		group := context.asyncCallGroups[group_index]
-		for call_index := range group.AsyncCalls {
-			call := group.AsyncCalls[call_index]
+	for groupIndex, group := range context.asyncCallGroups {
+		for callIndex := range group.AsyncCalls {
+			call := group.AsyncCalls[callIndex]
 			if call.ExecutionMode == arwen.ESDTTransferOnCallBack {
 				context.host.Output().PrependFinish(call.Data)
 
@@ -34,12 +33,13 @@ func (context *asyncContext) executeAsyncLocalCalls() error {
 				continue
 			}
 
-			err := context.executeAsyncLocalCall(call)
+			err := context.executeAsyncLocalCall(groupIndex, callIndex)
 			if err != nil {
 				return err
 			}
 		}
 
+		group = context.asyncCallGroups[groupIndex]
 		group.DeleteCompletedAsyncCalls()
 
 		// If all the AsyncCalls in the AsyncCallGroup were executed synchronously,
@@ -58,7 +58,12 @@ func (context *asyncContext) executeAsyncLocalCalls() error {
 	return nil
 }
 
-func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) error {
+func (context *asyncContext) executeAsyncLocalCall(groupIndex int, callIndex int) error {
+	asyncCall, err := context.getCallByIndex(groupIndex, callIndex)
+	if err != nil {
+		return err
+	}
+
 	destinationCallInput, err := context.createContractCallInput(asyncCall)
 	if err != nil {
 		return err
@@ -75,6 +80,11 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 
 	// The vmOutput instance returned by host.ExecuteOnDestContext() is never nil,
 	// by design. Using it without checking for err is safe here.
+	asyncCall, err = context.getCallByIndex(groupIndex, callIndex)
+	if err != nil {
+		return err
+	}
+
 	asyncCall.UpdateStatus(vmOutput.ReturnCode)
 
 	if asyncCall.HasCallback() {

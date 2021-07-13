@@ -827,3 +827,13 @@ func (context *asyncContext) DeleteCompletedGroups() {
 
 	context.asyncCallGroups = remainingAsyncGroups
 }
+
+func (context *asyncContext) getCallByIndex(groupIndex int, callIndex int) (*arwen.AsyncCall, error) {
+	if groupIndex > len(context.asyncCallGroups)-1 {
+		return nil, arwen.ErrAsyncCallGroupDoesNotExist
+	}
+	if callIndex > len(context.asyncCallGroups[groupIndex].AsyncCalls)-1 {
+		return nil, arwen.ErrAsyncCallNotFound
+	}
+	return context.asyncCallGroups[groupIndex].AsyncCalls[callIndex], nil
+}

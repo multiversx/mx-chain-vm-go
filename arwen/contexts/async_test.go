@@ -570,7 +570,8 @@ func TestAsyncContext_ExecuteSyncCall_EarlyOutOfGas(t *testing.T) {
 	asyncCall := defaultAsyncCall_AliceToBob()
 	asyncCall.Data = []byte("function")
 	asyncCall.GasLimit = 1
-	err := async.executeAsyncLocalCall(asyncCall)
+	async.addAsyncCall("group", asyncCall)
+	err := async.executeAsyncLocalCall(0, 0)
 	require.True(t, errors.Is(err, arwen.ErrNotEnoughGas))
 }
 
@@ -592,7 +593,8 @@ func TestAsyncContext_ExecuteSyncCall_NoDynamicGasLocking_Simulation(t *testing.
 	}
 	host.EnqueueVMOutput(destOutput)
 
-	err := async.executeAsyncLocalCall(asyncCall)
+	async.addAsyncCall("group", asyncCall)
+	err := async.executeAsyncLocalCall(0, 0)
 	require.Nil(t, err)
 	require.Equal(t, arwen.AsyncCallResolved, asyncCall.Status)
 
@@ -662,7 +664,8 @@ func TestAsyncContext_ExecuteSyncCall_Successful(t *testing.T) {
 	host.EnqueueVMOutput(destOutput)
 	host.EnqueueVMOutput(callbackOutput)
 
-	err := async.executeAsyncLocalCall(asyncCall)
+	async.addAsyncCall("group", asyncCall)
+	err := async.executeAsyncLocalCall(0, 0)
 	require.Nil(t, err)
 	require.Equal(t, arwen.AsyncCallResolved, asyncCall.Status)
 
