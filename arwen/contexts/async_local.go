@@ -9,8 +9,10 @@ import (
 )
 
 func (context *asyncContext) executeAsyncLocalCalls() error {
-	for _, group := range context.asyncCallGroups {
-		for _, call := range group.AsyncCalls {
+	for group_index := range context.asyncCallGroups {
+		group := context.asyncCallGroups[group_index]
+		for call_index := range group.AsyncCalls {
+			call := group.AsyncCalls[call_index]
 			if call.ExecutionMode == arwen.ESDTTransferOnCallBack {
 				context.host.Output().PrependFinish(call.Data)
 
