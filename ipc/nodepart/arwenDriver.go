@@ -56,6 +56,8 @@ func NewArwenDriver(
 	arwenArguments common.ArwenArguments,
 	config Config,
 ) (*ArwenDriver, error) {
+	//TODO: this does not work anymore - as it cannot unmarshal one of the host parameters / built in functions container
+
 	driver := &ArwenDriver{
 		blockchainHook:      blockchainHook,
 		arwenArguments:      arwenArguments,
