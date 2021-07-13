@@ -21,8 +21,8 @@ func (context *asyncContext) executeAsyncLocalCalls() error {
 				// * GasLocked isn't needed, since no callback will be called
 				// * GasLimit cannot be paid here, because it's the *destination*
 				// contract that ends up paying the gas for the ESDTTransfer
-				// context.host.Metering().RestoreGas(call.GasLimit)
-				// context.host.Metering().RestoreGas(call.GasLocked)
+				context.host.Metering().RestoreGas(call.GasLimit)
+				context.host.Metering().RestoreGas(call.GasLocked)
 				call.UpdateStatus(vmcommon.Ok)
 				continue
 			}
@@ -91,7 +91,6 @@ func (context *asyncContext) executeSyncCallback(
 	destinationVMOutput *vmcommon.VMOutput,
 	destinationErr error,
 ) (*vmcommon.VMOutput, error) {
-	metering := context.host.Metering()
 
 	callbackInput, err := context.createCallbackInput(asyncCall, destinationVMOutput, destinationErr)
 	if err != nil {
@@ -100,7 +99,7 @@ func (context *asyncContext) executeSyncCallback(
 
 	// Restore gas locked while still on the caller instance; otherwise, the
 	// locked gas will appear to have been used twice by the caller instance.
-	metering.RestoreGas(asyncCall.GetGasLocked())
+	context.host.Metering().RestoreGas(asyncCall.GetGasLocked())
 	callbackVMOutput, callBackErr := context.host.ExecuteOnDestContext(callbackInput)
 
 	return callbackVMOutput, callBackErr
