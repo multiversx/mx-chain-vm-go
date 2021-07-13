@@ -9,7 +9,7 @@ import (
 )
 
 func (context *asyncContext) executeAsyncLocalCalls() error {
-	for groupIndex, group := range context.asyncCallGroups {
+	for _, group := range context.asyncCallGroups {
 		for _, call := range group.AsyncCalls {
 			if (call.ExecutionMode != arwen.SyncExecution) && (call.ExecutionMode != arwen.AsyncBuiltinFuncIntraShard) {
 				continue
@@ -27,9 +27,10 @@ func (context *asyncContext) executeAsyncLocalCalls() error {
 		// then the AsyncCallGroup can have its callback executed.
 		if group.IsComplete() {
 			context.executeCallGroupCallback(group)
-			context.deleteCallGroup(groupIndex)
 		}
 	}
+
+	context.DeleteCompletedGroups()
 
 	if !context.HasPendingCallGroups() {
 		context.executeContextCallback()
@@ -323,7 +324,7 @@ func (context *asyncContext) createContextCallbackInput() *vmcommon.ContractCall
 	// TODO ensure a new value for VMInput.CurrentTxHash
 	input := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
-			CallerAddr:     runtime.GetSCAddress(),
+			CallerAddr:     context.callerAddr,
 			Arguments:      arguments,
 			CallValue:      runtime.GetVMInput().CallValue,
 			CallType:       vmcommon.AsynchronousCallBack,
@@ -333,7 +334,7 @@ func (context *asyncContext) createContextCallbackInput() *vmcommon.ContractCall
 			OriginalTxHash: runtime.GetOriginalTxHash(),
 			PrevTxHash:     runtime.GetPrevTxHash(),
 		},
-		RecipientAddr: context.callerAddr,
+		RecipientAddr: runtime.GetSCAddress(),
 		Function:      context.callback,
 	}
 	return input

@@ -694,12 +694,8 @@ func (context *asyncContext) executeContextCallback() error {
 		return nil
 	}
 
-	execMode, err := context.determineExecutionMode(context.callerAddr, context.returnData)
-	if err != nil {
-		return err
-	}
-
-	if execMode != arwen.SyncExecution {
+	sameShard := context.host.AreInSameShard(context.host.Runtime().GetSCAddress(), context.callerAddr)
+	if !sameShard {
 		return context.sendContextCallbackToOriginalCaller()
 	}
 
@@ -798,4 +794,16 @@ func computeDataLengthFromArguments(function string, arguments [][]byte) int {
 	}
 
 	return int(dataLength)
+}
+
+// DeleteCompletedGroups removes all completed AsyncGroups
+func (context *asyncContext) DeleteCompletedGroups() {
+	remainingAsyncGroups := make([]*arwen.AsyncCallGroup, 0)
+	for _, asyncGroup := range context.asyncCallGroups {
+		if !asyncGroup.IsComplete() {
+			remainingAsyncGroups = append(remainingAsyncGroups, asyncGroup)
+		}
+	}
+
+	context.asyncCallGroups = remainingAsyncGroups
 }
