@@ -488,7 +488,6 @@ func TestMeteringContext_TrackGasUsedByBuiltinFunction_GasRemaining(t *testing.T
 		RuntimeContext: mockRuntime,
 	}
 
-	names := make(vmcommon.FunctionNames)
 	contractSize := uint64(1000)
 	mockRuntime.SCCodeSize = contractSize
 	mockRuntime.SCAddress = []byte("parent")
@@ -508,10 +507,6 @@ func TestMeteringContext_TrackGasUsedByBuiltinFunction_GasRemaining(t *testing.T
 	input.GasProvided = 10000
 	metering.InitStateFromContractCallInput(&input.VMInput)
 	require.Equal(t, input.GasProvided, metering.GasLeft())
-
-	var empty struct{}
-	names["builtinClaim"] = empty
-	host.SetProtocolBuiltinFunctions(names)
 
 	vmOutput := &vmcommon.VMOutput{
 		GasRemaining: 5000,

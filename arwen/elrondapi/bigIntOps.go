@@ -374,11 +374,8 @@ func v1_3_bigIntGetESDTCallValue(context unsafe.Pointer, destination int32) {
 	metering.UseGas(gasToUse)
 
 	value := bigInt.GetOne(destination)
-
-	esdtValue := runtime.GetVMInput().ESDTValue
-	if esdtValue != nil {
-		value.Set(esdtValue)
-	}
+	esdtTransfer := getFirstESDTTransferIfExist(runtime.GetVMInput())
+	value.Set(esdtTransfer.ESDTValue)
 }
 
 //export v1_3_bigIntGetExternalBalance

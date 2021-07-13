@@ -433,8 +433,12 @@ func (host *vmHost) isBuiltinFunctionBeingCalled() bool {
 
 // IsBuiltinFunctionName returns true if the given function name is the same as any protocol builtin function
 func (host *vmHost) IsBuiltinFunctionName(functionName string) bool {
-	_, ok := host.protocolBuiltinFunctions[functionName]
-	return ok
+	function, err := host.builtInFuncContainer.Get(functionName)
+	if err != nil {
+		return false
+	}
+
+	return function.IsActive()
 }
 
 // CreateNewContract creates a new contract indirectly (from another Smart Contract)
@@ -974,12 +978,17 @@ func fillWithESDTValue(fullVMInput *vmcommon.ContractCallInput, newVMInput *vmco
 		return
 	}
 
-	newVMInput.ESDTTokenName = fullVMInput.Arguments[0]
-	newVMInput.ESDTValue = big.NewInt(0).SetBytes(fullVMInput.Arguments[1])
+	esdtTransfer := &vmcommon.ESDTTransfer{}
+
+	esdtTransfer.ESDTTokenName = fullVMInput.Arguments[0]
+	esdtTransfer.ESDTValue = big.NewInt(0).SetBytes(fullVMInput.Arguments[1])
 
 	if fullVMInput.Function == vmcommon.BuiltInFunctionESDTNFTTransfer {
-		newVMInput.ESDTTokenNonce = big.NewInt(0).SetBytes(fullVMInput.Arguments[1]).Uint64()
-		newVMInput.ESDTValue = big.NewInt(0).SetBytes(fullVMInput.Arguments[2])
-		newVMInput.ESDTTokenType = uint32(vmcommon.NonFungible)
+		esdtTransfer.ESDTTokenNonce = big.NewInt(0).SetBytes(fullVMInput.Arguments[1]).Uint64()
+		esdtTransfer.ESDTValue = big.NewInt(0).SetBytes(fullVMInput.Arguments[2])
+		esdtTransfer.ESDTTokenType = uint32(vmcommon.NonFungible)
 	}
+
+	newVMInput.ESDTTransfers = make([]*vmcommon.ESDTTransfer, 1)
+	newVMInput.ESDTTransfers[0] = esdtTransfer
 }

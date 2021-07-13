@@ -23,7 +23,7 @@ var appVersion = "undefined"
 func main() {
 	errCode, errMessage := doMain()
 	if errCode != common.ErrCodeSuccess {
-		fmt.Fprintln(os.Stderr, errMessage)
+		_, _ = fmt.Fprintln(os.Stderr, errMessage)
 		os.Exit(errCode)
 	}
 }

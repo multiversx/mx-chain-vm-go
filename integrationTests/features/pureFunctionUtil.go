@@ -12,8 +12,8 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/model"
 	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
-	"github.com/ElrondNetwork/elrond-vm-common"
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/stretchr/testify/require"
 )
 
@@ -46,7 +46,7 @@ func newPureFunctionExecutor() (*pureFunctionExecutor, error) {
 		VMType:                   testVMType,
 		BlockGasLimit:            blockGasLimit,
 		GasSchedule:              gasSchedule,
-		ProtocolBuiltinFunctions: make(vmcommon.FunctionNames),
+		BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
 	})
 	if err != nil {

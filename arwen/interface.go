@@ -46,8 +46,6 @@ type VMHost interface {
 	ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*AsyncContextInfo, error)
 	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *AsyncContextInfo, error)
 	GetAPIMethods() *wasmer.Imports
-	GetProtocolBuiltinFunctions() vmcommon.FunctionNames
-	SetProtocolBuiltinFunctions(vmcommon.FunctionNames)
 	IsBuiltinFunctionName(functionName string) bool
 	AreInSameShard(leftAddress []byte, rightAddress []byte) bool
 
@@ -55,6 +53,7 @@ type VMHost interface {
 	GetContexts() (BigIntContext, BlockchainContext, MeteringContext, OutputContext, RuntimeContext, StorageContext)
 	SetRuntimeContext(runtime RuntimeContext)
 
+	SetBuiltInFunctionsContainer(builtInFuncs vmcommon.BuiltInFunctionContainer)
 	InitState()
 }
 

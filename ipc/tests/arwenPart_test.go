@@ -14,6 +14,7 @@ import (
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
 	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -72,6 +73,7 @@ func doContractRequest(
 			BlockGasLimit:            uint64(10000000),
 			GasSchedule:              config.MakeGasMapForTests(),
 			ElrondProtectedKeyPrefix: []byte("ELROND"),
+			BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
 		}
 
 		part, err := arwenpart.NewArwenPart(
@@ -105,7 +107,7 @@ func doContractRequest(
 	return response, responseError
 }
 
-func createTestFiles(t *testing.T, tag string) testFiles {
+func createTestFiles(t *testing.T, _ string) testFiles {
 	files := testFiles{}
 
 	var err error
