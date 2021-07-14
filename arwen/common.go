@@ -114,6 +114,7 @@ type VMHostParameters struct {
 	BlockGasLimit                 uint64
 	GasSchedule                   config.GasScheduleMap
 	BuiltInFuncContainer          vmcommon.BuiltInFunctionContainer
+	ESDTTransferParser            vmcommon.ESDTTransferParser
 	ElrondProtectedKeyPrefix      []byte
 	ArwenV2EnableEpoch            uint32
 	AheadOfTimeEnableEpoch        uint32

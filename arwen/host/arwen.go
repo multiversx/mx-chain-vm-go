@@ -46,6 +46,7 @@ type vmHost struct {
 	gasSchedule          config.GasScheduleMap
 	scAPIMethods         *wasmer.Imports
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer
+	esdtTransferParser   vmcommon.ESDTTransferParser
 
 	arwenV2EnableEpoch uint32
 	flagArwenV2        atomic.Flag
@@ -85,6 +86,7 @@ func NewArwenVM(
 		dynGasLockEnableEpoch:    hostParameters.DynGasLockEnableEpoch,
 		eSDTFunctionsEnableEpoch: hostParameters.ArwenESDTFunctionsEnableEpoch,
 		builtInFuncContainer:     hostParameters.BuiltInFuncContainer,
+		esdtTransferParser:       hostParameters.ESDTTransferParser,
 	}
 
 	var err error

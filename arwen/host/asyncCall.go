@@ -73,7 +73,7 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 	return nil
 }
 
-func isESDTTransferOnReturnDataWithNoAdditionalData(destinationVMOutput *vmcommon.VMOutput) (bool, string, [][]byte) {
+func (host *vmHost) isESDTTransferOnReturnDataWithNoAdditionalData(destinationVMOutput *vmcommon.VMOutput) (bool, string, [][]byte) {
 	if len(destinationVMOutput.ReturnData) == 0 {
 		return false, "", nil
 	}
@@ -84,11 +84,10 @@ func isESDTTransferOnReturnDataWithNoAdditionalData(destinationVMOutput *vmcommo
 		return false, "", nil
 	}
 
-	return isESDTTransferOnReturnDataFromFunctionAndArgs(functionName, args)
+	return host.isESDTTransferOnReturnDataFromFunctionAndArgs(functionName, args)
 }
 
-func isESDTTransferOnReturnDataFromFunctionAndArgs(functionName string, args [][]byte) (bool, string, [][]byte) {
-
+func (host *vmHost) isESDTTransferOnReturnDataFromFunctionAndArgs(functionName string, args [][]byte) (bool, string, [][]byte) {
 	if functionName == vmcommon.BuiltInFunctionESDTTransfer && len(args) == 2 {
 		return true, functionName, args
 	}
@@ -115,7 +114,7 @@ func (host *vmHost) determineAsyncCallExecutionMode(asyncCallInfo *arwen.AsyncCa
 	sameShard := host.AreInSameShard(runtime.GetSCAddress(), asyncCallInfo.Destination)
 	if host.IsBuiltinFunctionName(functionName) {
 		if sameShard {
-			isESDTTransfer, _, _ := isESDTTransferOnReturnDataFromFunctionAndArgs(functionName, args)
+			isESDTTransfer, _, _ := host.isESDTTransferOnReturnDataFromFunctionAndArgs(functionName, args)
 			if isESDTTransfer && runtime.GetVMInput().CallType == vmcommon.AsynchronousCall &&
 				bytes.Equal(runtime.GetVMInput().CallerAddr, asyncCallInfo.Destination) {
 				return arwen.ESDTTransferOnCallBack, nil
@@ -367,7 +366,7 @@ func (host *vmHost) createCallbackContractCallInput(
 	if destinationErr == nil && destinationVMOutput.ReturnCode == vmcommon.Ok {
 		// when execution went Ok, callBack arguments are:
 		// [0, result1, result2, ....]
-		isESDTOnCallBack, functionName, esdtArgs = isESDTTransferOnReturnDataWithNoAdditionalData(destinationVMOutput)
+		isESDTOnCallBack, functionName, esdtArgs = host.isESDTTransferOnReturnDataWithNoAdditionalData(destinationVMOutput)
 		arguments = append(arguments, destinationVMOutput.ReturnData...)
 	} else {
 		// when execution returned error, callBack arguments are:
