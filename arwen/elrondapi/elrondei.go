@@ -108,7 +108,7 @@ var logEEI = logger.GetOrCreate("arwen/eei")
 
 func getESDTTransferFromInput(vmInput *vmcommon.VMInput, index int32) *vmcommon.ESDTTransfer {
 	esdtTransfers := vmInput.ESDTTransfers
-	if int32(len(esdtTransfers)) > index {
+	if int32(len(esdtTransfers))-1 < index {
 		return nil
 	}
 	return esdtTransfers[index]
