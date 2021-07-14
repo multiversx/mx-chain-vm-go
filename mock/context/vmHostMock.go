@@ -1,8 +1,6 @@
 package mock
 
 import (
-	"math/big"
-
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto"
@@ -101,7 +99,7 @@ func (host *VMHostMock) AreInSameShard(_ []byte, _ []byte) bool {
 }
 
 // ExecuteESDTTransfer mocked method
-func (host *VMHostMock) ExecuteESDTTransfer(_ []byte, _ []byte, _ []byte, _ uint64, _ *big.Int, _ vmcommon.CallType) (*vmcommon.VMOutput, uint64, error) {
+func (host *VMHostMock) ExecuteESDTTransfer(_ []byte, _ []byte, _ []*vmcommon.ESDTTransfer, _ vmcommon.CallType) (*vmcommon.VMOutput, uint64, error) {
 	return nil, 0, nil
 }
 

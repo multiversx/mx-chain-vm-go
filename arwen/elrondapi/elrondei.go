@@ -13,9 +13,9 @@ package elrondapi
 // extern void		v1_3_getExternalBalance(void *context, int32_t addressOffset, int32_t resultOffset);
 // extern int32_t	v1_3_blockHash(void *context, long long nonce, int32_t resultOffset);
 // extern int32_t	v1_3_transferValue(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
-// extern int32_t	v1_3_transferESDT(void *context, int32_t dstOffset, int32_t tokenIDOffset, int32_t tokenIdLen, int32_t valueOffset, long long gasLimit, int32_t dataOffset, int32_t length);
 // extern int32_t	v1_3_transferESDTExecute(void *context, int32_t dstOffset, int32_t tokenIDOffset, int32_t tokenIdLen, int32_t valueOffset, long long gasLimit, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t	v1_3_transferESDTNFTExecute(void *context, int32_t dstOffset, int32_t tokenIDOffset, int32_t tokenIdLen, int32_t valueOffset, long long nonce, long long gasLimit, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern int32_t	v1_3_multiTransferESDTNFTExecute(void *context, int32_t dstOffset, int32_t numTokenTransfers, int32_t tokenTransfersArgsLengthOffset, int32_t tokenTransferDataOffset, long long gasLimit, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t	v1_3_transferValueExecute(void *context, int32_t dstOffset, int32_t valueOffset, long long gasLimit, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t	v1_3_getArgumentLength(void *context, int32_t id);
 // extern int32_t	v1_3_getArgument(void *context, int32_t id, int32_t argOffset);
@@ -37,7 +37,7 @@ package elrondapi
 // extern int32_t	v1_3_getESDTTokenNameByIndex(void *context, int32_t resultOffset, int32_t index);
 // extern long long	v1_3_getESDTTokenNonceByIndex(void *context, int32_t index);
 // extern int32_t	v1_3_getESDTTokenTypeByIndex(void *context, int32_t index);
-// extern int32_t	v1_3_getCallValueTokenNamByIndexe(void *context, int32_t callValueOffset, int32_t tokenNameOffset, int32_t index);
+// extern int32_t	v1_3_getCallValueTokenNameByIndex(void *context, int32_t callValueOffset, int32_t tokenNameOffset, int32_t index);
 // extern long long v1_3_getCurrentESDTNFTNonce(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen);
 // extern void		v1_3_writeLog(void *context, int32_t pointer, int32_t length, int32_t topicPtr, int32_t numTopics);
 // extern void		v1_3_writeEventLog(void *context, int32_t numTopics, int32_t topicLengthsOffset, int32_t topicOffset, int32_t dataOffset, int32_t dataLength);
@@ -164,7 +164,7 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 		return nil, err
 	}
 
-	imports, err = imports.Append("transferESDT", v1_3_transferESDT, C.v1_3_transferESDT)
+	imports, err = imports.Append("multiTransferESDTNFTExecute", v1_3_multiTransferESDTNFTExecute, C.v1_3_multiTransferESDTNFTExecute)
 	if err != nil {
 		return nil, err
 	}
@@ -1097,30 +1097,6 @@ func makeCrossShardCallFromInput(vmInput *vmcommon.ContractCallInput) string {
 	return txData
 }
 
-//export v1_3_transferESDT
-func v1_3_transferESDT(
-	context unsafe.Pointer,
-	destOffset int32,
-	tokenIDOffset int32,
-	tokenIDLen int32,
-	valueOffset int32,
-	gasLimit int64,
-	dataOffset int32,
-	length int32,
-) int32 {
-	host := arwen.GetVMHost(context)
-	metering := host.Metering()
-
-	gasToUse := metering.GasSchedule().ElrondAPICost.TransferValue
-	metering.UseGas(gasToUse)
-
-	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(length))
-	metering.UseGas(gasToUse)
-	logEEI.Warn("transferESDT() is deprecated")
-	// this is only for backward compatibility - function deprecated
-	return 1
-}
-
 //export v1_3_transferESDTExecute
 func v1_3_transferESDTExecute(
 	context unsafe.Pointer,
@@ -1170,6 +1146,68 @@ func v1_3_transferESDTNFTExecute(
 		dataOffset)
 }
 
+//export v1_3_multiTransferESDTNFTExecute
+func v1_3_multiTransferESDTNFTExecute(
+	context unsafe.Pointer,
+	destOffset int32,
+	numTokenTransfers int32,
+	tokenTransfersArgsLengthOffset int32,
+	tokenTransferDataOffset int32,
+	gasLimit int64,
+	functionOffset int32,
+	functionLength int32,
+	numArguments int32,
+	argumentsLengthOffset int32,
+	dataOffset int32,
+) int32 {
+	host := arwen.GetVMHost(context)
+	runtime := host.Runtime()
+	metering := host.Metering()
+
+	callArgs, err := extractIndirectContractCallArgumentsWithoutValue(
+		host, destOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(callArgs.actualLen))
+	metering.UseGas(gasToUse)
+
+	transferArgs, actualLen, err := getArgumentsFromMemory(
+		host,
+		numTokenTransfers*parsers.ArgsPerTransfer,
+		tokenTransfersArgsLengthOffset,
+		tokenTransferDataOffset,
+	)
+
+	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(actualLen))
+	metering.UseGas(gasToUse)
+
+	transfers := make([]*vmcommon.ESDTTransfer, numTokenTransfers)
+	for i := int32(0); i < numTokenTransfers; i++ {
+		tokenStartIndex := i * parsers.ArgsPerTransfer
+		transfer := &vmcommon.ESDTTransfer{
+			ESDTTokenName:  transferArgs[tokenStartIndex],
+			ESDTTokenNonce: big.NewInt(0).SetBytes(transferArgs[tokenStartIndex+1]).Uint64(),
+			ESDTValue:      big.NewInt(0).SetBytes(transferArgs[tokenStartIndex+2]),
+			ESDTTokenType:  uint32(vmcommon.Fungible),
+		}
+		if transfer.ESDTTokenNonce > 0 {
+			transfer.ESDTTokenType = uint32(vmcommon.NonFungible)
+		}
+		transfers[i] = transfer
+	}
+
+	return TransferESDTNFTExecuteWithTypedArgs(
+		host,
+		callArgs.dest,
+		transfers,
+		gasLimit,
+		callArgs.function,
+		callArgs.args,
+	)
+}
+
 // TransferESDTNFTExecuteWithHost contains only memory reading of arguments
 func TransferESDTNFTExecuteWithHost(
 	host arwen.VMHost,
@@ -1202,12 +1240,19 @@ func TransferESDTNFTExecuteWithHost(
 	gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(callArgs.actualLen))
 	metering.UseGas(gasToUse)
 
+	transfer := &vmcommon.ESDTTransfer{
+		ESDTValue:      callArgs.value,
+		ESDTTokenName:  tokenIdentifier,
+		ESDTTokenNonce: uint64(nonce),
+		ESDTTokenType:  uint32(vmcommon.Fungible),
+	}
+	if nonce > 0 {
+		transfer.ESDTTokenType = uint32(vmcommon.NonFungible)
+	}
 	return TransferESDTNFTExecuteWithTypedArgs(
 		host,
-		callArgs.value,
-		tokenIdentifier,
 		callArgs.dest,
-		nonce,
+		[]*vmcommon.ESDTTransfer{transfer},
 		gasLimit,
 		callArgs.function,
 		callArgs.args,
@@ -1217,10 +1262,8 @@ func TransferESDTNFTExecuteWithHost(
 // TransferESDTNFTExecuteWithTypedArgs defines the actual transfer ESDT execute logic
 func TransferESDTNFTExecuteWithTypedArgs(
 	host arwen.VMHost,
-	esdtValue *big.Int,
-	esdtTokenName []byte,
 	dest []byte,
-	nonce int64,
+	transfers []*vmcommon.ESDTTransfer,
 	gasLimit int64,
 	function []byte,
 	data [][]byte,
@@ -1233,7 +1276,7 @@ func TransferESDTNFTExecuteWithTypedArgs(
 
 	output := host.Output()
 
-	gasToUse := metering.GasSchedule().ElrondAPICost.TransferValue
+	gasToUse := metering.GasSchedule().ElrondAPICost.TransferValue * uint64(len(transfers))
 	metering.UseGas(gasToUse)
 
 	sender := runtime.GetSCAddress()
@@ -1255,22 +1298,12 @@ func TransferESDTNFTExecuteWithTypedArgs(
 			return 1
 		}
 
-		esdtTokenType := vmcommon.Fungible
-		if nonce > 0 {
-			esdtTokenType = vmcommon.NonFungible
-		}
-		contractCallInput.ESDTTransfers = make([]*vmcommon.ESDTTransfer, 1)
-		contractCallInput.ESDTTransfers[0] = &vmcommon.ESDTTransfer{
-			ESDTValue:      esdtValue,
-			ESDTTokenName:  esdtTokenName,
-			ESDTTokenType:  uint32(esdtTokenType),
-			ESDTTokenNonce: uint64(nonce),
-		}
+		contractCallInput.ESDTTransfers = transfers
 	}
 
 	snapshotBeforeTransfer := host.Blockchain().GetSnapshot()
 
-	gasLimitForExec, executeErr := output.TransferESDT(dest, sender, esdtTokenName, uint64(nonce), esdtValue, contractCallInput)
+	gasLimitForExec, executeErr := output.TransferESDT(dest, sender, transfers, contractCallInput)
 	if arwen.WithFaultAndHost(host, executeErr, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -2920,7 +2953,7 @@ func createContract(
 	code []byte,
 	codeMetadata []byte,
 	host arwen.VMHost,
-	runtime arwen.RuntimeContext,
+	_ arwen.RuntimeContext,
 ) ([]byte, error) {
 	contractCreate := &vmcommon.ContractCreateInput{
 		VMInput: vmcommon.VMInput{
@@ -3007,7 +3040,7 @@ func prepareIndirectContractCallInput(
 	destination []byte,
 	function []byte,
 	data [][]byte,
-	gasToUse uint64,
+	_ uint64,
 	syncExecutionRequired bool,
 ) (*vmcommon.ContractCallInput, error) {
 	runtime := host.Runtime()

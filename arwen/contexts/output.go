@@ -305,11 +305,13 @@ func (context *outputContext) Transfer(destination []byte, sender []byte, gasLim
 func (context *outputContext) TransferESDT(
 	destination []byte,
 	sender []byte,
-	tokenIdentifier []byte,
-	nonce uint64,
-	value *big.Int,
+	transfers []*vmcommon.ESDTTransfer,
 	callInput *vmcommon.ContractCallInput,
 ) (uint64, error) {
+	if len(transfers) == 0 {
+		return 0, arwen.ErrTransferValueOnESDTCall
+	}
+
 	isSmartContract := context.host.Blockchain().IsSmartContract(destination)
 	sameShard := context.host.AreInSameShard(sender, destination)
 	callType := vmcommon.DirectCall
@@ -318,7 +320,7 @@ func (context *outputContext) TransferESDT(
 		callType = vmcommon.ESDTTransferAndExecute
 	}
 
-	vmOutput, gasConsumedByTransfer, err := context.host.ExecuteESDTTransfer(destination, sender, tokenIdentifier, nonce, value, callType)
+	vmOutput, gasConsumedByTransfer, err := context.host.ExecuteESDTTransfer(destination, sender, transfers, callType)
 	if err != nil {
 		return 0, err
 	}
@@ -349,25 +351,12 @@ func (context *outputContext) TransferESDT(
 		Value:         big.NewInt(0),
 		GasLimit:      gasRemaining,
 		GasLocked:     0,
-		Data:          []byte(vmcommon.BuiltInFunctionESDTTransfer + "@" + hex.EncodeToString(tokenIdentifier) + "@" + hex.EncodeToString(value.Bytes())),
+		Data:          []byte{},
 		CallType:      vmcommon.DirectCall,
 		SenderAddress: sender,
 	}
 
-	if nonce > 0 {
-		nonceAsBytes := big.NewInt(0).SetUint64(nonce).Bytes()
-		outputTransfer.Data = []byte(vmcommon.BuiltInFunctionESDTNFTTransfer + "@" + hex.EncodeToString(tokenIdentifier) +
-			"@" + hex.EncodeToString(nonceAsBytes) + "@" + hex.EncodeToString(value.Bytes()))
-		if sameShard {
-			outputTransfer.Data = append(outputTransfer.Data, []byte("@"+hex.EncodeToString(destination))...)
-		} else {
-			outTransfer, ok := vmOutput.OutputAccounts[string(destination)]
-			if ok && len(outTransfer.OutputTransfers) == 1 {
-				outputTransfer.Data = outTransfer.OutputTransfers[0].Data
-			}
-		}
-
-	}
+	outputTransfer.Data = context.getOutputTransferDataFromESDTTransfer(transfers, vmOutput, sameShard, destination)
 
 	if sameShard {
 		outputTransfer.GasLimit = 0
@@ -385,6 +374,47 @@ func (context *outputContext) TransferESDT(
 
 	context.outputState.Logs = append(context.outputState.Logs, vmOutput.Logs...)
 	return gasRemaining, nil
+}
+
+func (context *outputContext) getOutputTransferDataFromESDTTransfer(
+	transfers []*vmcommon.ESDTTransfer,
+	vmOutput *vmcommon.VMOutput,
+	sameShard bool,
+	destination []byte,
+) []byte {
+
+	if len(transfers) == 1 && transfers[0].ESDTTokenNonce == 0 {
+		return []byte(vmcommon.BuiltInFunctionESDTTransfer + "@" + hex.EncodeToString(transfers[0].ESDTTokenName) + "@" + hex.EncodeToString(transfers[0].ESDTValue.Bytes()))
+	}
+
+	if len(transfers) == 1 {
+		data := []byte(vmcommon.BuiltInFunctionESDTNFTTransfer + "@" + hex.EncodeToString(transfers[0].ESDTTokenName) +
+			"@" + hex.EncodeToString(big.NewInt(0).SetUint64(transfers[0].ESDTTokenNonce).Bytes()) + "@" + hex.EncodeToString(transfers[0].ESDTValue.Bytes()))
+		if sameShard {
+			data = append(data, []byte("@"+hex.EncodeToString(destination))...)
+			return data
+		}
+
+		outTransfer, ok := vmOutput.OutputAccounts[string(destination)]
+		if ok && len(outTransfer.OutputTransfers) == 1 {
+			data = outTransfer.OutputTransfers[0].Data
+		}
+		return data
+	}
+
+	if !sameShard {
+		outTransfer, ok := vmOutput.OutputAccounts[string(destination)]
+		if ok && len(outTransfer.OutputTransfers) == 1 {
+			return outTransfer.OutputTransfers[0].Data
+		}
+	}
+
+	data := vmcommon.BuiltInFunctionMultiESDTNFTTransfer + "@" + hex.EncodeToString(destination) + "@" + hex.EncodeToString(big.NewInt(int64(len(transfers))).Bytes())
+	for _, transfer := range transfers {
+		data += "@" + hex.EncodeToString(transfer.ESDTTokenName) + "@" + hex.EncodeToString(big.NewInt(0).SetUint64(transfer.ESDTTokenNonce).Bytes()) + "@" + hex.EncodeToString(transfer.ESDTValue.Bytes())
+	}
+
+	return []byte(data)
 }
 
 func (context *outputContext) hasSufficientBalance(address []byte, value *big.Int) bool {
