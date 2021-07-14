@@ -28,9 +28,9 @@ package elrondapi
 // extern void			v1_3_bigIntEDiv(void* context, int32_t destination, int32_t op1, int32_t op2);
 // extern void			v1_3_bigIntEMod(void* context, int32_t destination, int32_t op1, int32_t op2);
 //
-// extern void  		v1_3_bigIntPow(void* context, int32_t destination, int32_t op1, int32_t op2);
-// extern int32_t 		v1_3_bigIntLog2(void* context, int32_t op);
-// extern void 			v1_3_bigIntSqrt(void* context, int32_t destination, int32_t op);
+// extern void			v1_3_bigIntPow(void* context, int32_t destination, int32_t op1, int32_t op2);
+// extern int32_t		v1_3_bigIntLog2(void* context, int32_t op);
+// extern void			v1_3_bigIntSqrt(void* context, int32_t destination, int32_t op);
 //
 // extern void			v1_3_bigIntAbs(void* context, int32_t destination, int32_t op);
 // extern void			v1_3_bigIntNeg(void* context, int32_t destination, int32_t op);
