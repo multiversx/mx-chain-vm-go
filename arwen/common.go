@@ -27,6 +27,23 @@ const (
 	BreakpointOutOfGas
 )
 
+func (b BreakpointValue) String() string {
+	switch b {
+	case BreakpointNone:
+		return "BreakpointNone"
+	case BreakpointExecutionFailed:
+		return "BreakpointExecutionFailed"
+	case BreakpointAsyncCall:
+		return "BreakpointAsyncCall"
+	case BreakpointSignalError:
+		return "BreakpointSignalError"
+	case BreakpointOutOfGas:
+		return "BreakpointOutOfGas"
+	default:
+		return "unknown breakpoint"
+	}
+}
+
 // AsyncCallExecutionMode encodes the execution modes of an AsyncCall
 type AsyncCallExecutionMode uint
 

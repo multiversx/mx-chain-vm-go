@@ -47,17 +47,24 @@ func ForwardAsyncCallMultiGroupsMock(instanceMock *mock.InstanceMock, testConfig
 					Destination:     destination,
 					Data:            callData.ToBytes(),
 					ValueBytes:      value,
-					GasLimit:        uint64(300),
+					GasLimit:        testConfig.GasProvidedToChild,
 					SuccessCallback: AsyncCallbackPrefix + functionName,
 					ErrorCallback:   AsyncCallbackPrefix + functionName,
 				})
 				require.Nil(t, err)
 			}
 
-			async.SetGroupCallback(groupName, AsyncCallbackPrefix+groupName, nil, uint64(100))
+			async.SetGroupCallback(
+				groupName,
+				AsyncCallbackPrefix+groupName,
+				nil,
+				testConfig.GasProvidedToCallback)
 		}
 
-		async.SetContextCallback(AsyncContextCallbackFunction, nil, uint64(100))
+		async.SetContextCallback(
+			AsyncContextCallbackFunction,
+			nil,
+			testConfig.GasProvidedToCallback)
 
 		return instance
 

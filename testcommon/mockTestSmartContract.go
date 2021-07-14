@@ -9,12 +9,13 @@ import (
 
 // TestConfig is configuration for async call tests
 type TestConfig struct {
-	GasProvided        uint64
-	GasProvidedToChild uint64
-	GasUsedByParent    uint64
-	GasUsedByChild     uint64
-	GasUsedByCallback  uint64
-	GasLockCost        uint64
+	GasProvided           uint64
+	GasProvidedToChild    uint64
+	GasProvidedToCallback uint64
+	GasUsedByParent       uint64
+	GasUsedByChild        uint64
+	GasUsedByCallback     uint64
+	GasLockCost           uint64
 
 	ParentBalance int64
 	ChildBalance  int64

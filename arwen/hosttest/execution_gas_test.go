@@ -19,12 +19,13 @@ var gasUsedByBuiltinClaim = uint64(120)
 
 func makeTestConfig() *test.TestConfig {
 	return &test.TestConfig{
-		GasProvided:        2000,
-		GasProvidedToChild: 300,
-		GasUsedByParent:    400,
-		GasUsedByChild:     200,
-		GasUsedByCallback:  100,
-		GasLockCost:        150,
+		GasProvided:           2000,
+		GasProvidedToChild:    300,
+		GasProvidedToCallback: 50,
+		GasUsedByParent:       400,
+		GasUsedByChild:        200,
+		GasUsedByCallback:     100,
+		GasLockCost:           10,
 
 		TransferFromParentToChild: 7,
 
@@ -1321,10 +1322,6 @@ func TestGasUsed_AsyncCall_Groups(t *testing.T) {
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
 				Ok().
-				// GasUsed(test.ParentAddress, gasUsedByParent).
-				// GasUsed(test.ChildAddress, gasUsedByChild).
-				// GasRemaining(testConfig.GasProvided-gasUsedByParent-gasUsedByChild).
-				// BalanceDelta(test.ThirdPartyAddress, 2*testConfig.TransferToThirdParty).
 				ReturnData(expectedReturnData...)
 		})
 }

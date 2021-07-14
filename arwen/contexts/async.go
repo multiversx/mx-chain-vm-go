@@ -468,6 +468,8 @@ func (context *asyncContext) Execute() error {
 	//   destinations, whereby the cross-shard OutputAccount entries are generated
 	// * call host.sendAsyncCallCrossShard() for each pending AsyncCall, to
 	//   generate the corresponding cross-shard OutputAccount entries
+	// Note that all async calls below this point are pending by definition and
+	// must be persisted.
 	for _, group := range context.asyncCallGroups {
 		for _, call := range group.AsyncCalls {
 			err = context.executeAsyncCall(call)

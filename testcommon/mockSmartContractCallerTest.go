@@ -91,9 +91,15 @@ func SimpleWasteGasMockMethod(instanceMock *mock.InstanceMock, gas uint64) func(
 func WasteGasWithReturnDataMockMethod(instanceMock *mock.InstanceMock, gas uint64, returnData []byte) func() *mock.InstanceMock {
 	return func() *mock.InstanceMock {
 		host := instanceMock.Host
-		host.Metering().UseGas(gas)
-		host.Output().Finish(returnData)
 		instance := mock.GetMockInstance(host)
+
+		err := host.Metering().UseGasBounded(gas)
+		if err != nil {
+			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			return instance
+		}
+
+		host.Output().Finish(returnData)
 		return instance
 	}
 }
