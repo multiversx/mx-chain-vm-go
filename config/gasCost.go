@@ -3,12 +3,13 @@ package config
 import "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
 
 type GasCost struct {
-	BaseOperationCost BaseOperationCost
-	BigIntAPICost     BigIntAPICost
-	EthAPICost        EthAPICost
-	ElrondAPICost     ElrondAPICost
-	CryptoAPICost     CryptoAPICost
-	WASMOpcodeCost    WASMOpcodeCost
+	BaseOperationCost    BaseOperationCost
+	BigIntAPICost        BigIntAPICost
+	EthAPICost           EthAPICost
+	ElrondAPICost        ElrondAPICost
+	ManagedBufferAPICost ManagedBufferAPICost
+	CryptoAPICost        CryptoAPICost
+	WASMOpcodeCost       WASMOpcodeCost
 }
 
 type BaseOperationCost struct {
@@ -156,6 +157,22 @@ type CryptoAPICost struct {
 	UnmarshalECC           uint64
 	UnmarshalCompressedECC uint64
 	GenerateKeyECC         uint64
+}
+
+type ManagedBufferAPICost struct {
+	ManBufNew                uint64
+	ManBufNewFromBytes       uint64
+	ManBufSetBytes           uint64
+	ManBufGetLength          uint64
+	ManBufGetBytes           uint64
+	ManBufToBigIntUnsigned   uint64
+	ManBufToBigIntSigned     uint64
+	ManBufFromBigIntUnsigned uint64
+	ManBufFromBigIntSigned   uint64
+	ManBufStorageStore       uint64
+	ManBufStorageLoad        uint64
+	ManBufGetArgument        uint64
+	ManBufFinish             uint64
 }
 
 type WASMOpcodeCost struct {

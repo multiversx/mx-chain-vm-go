@@ -135,6 +135,21 @@
     UnmarshalCompressedECC = 10
     GenerateKeyECC         = 10
 
+[ManagedBufferAPICost]
+    ManBufNew                   = 10
+    ManBufNewFromBytes          = 10
+    ManBufSetBytes              = 10
+    ManBufGetLength             = 10
+    ManBufGetBytes              = 10
+    ManBufToBigIntUnsigned      = 10
+    ManBufToBigIntSigned        = 10
+    ManBufFromBigIntUnsigned    = 10
+    ManBufFromBigIntSigned      = 10
+    ManBufStorageStore          = 10
+    ManBufStorageLoad           = 10
+    ManBufGetArgument           = 10
+    ManBufFinish                = 10
+
 [WASMOpcodeCost]
     Unreachable = 1
     Nop = 1
