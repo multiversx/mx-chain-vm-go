@@ -390,7 +390,6 @@ func TestMeteringContext_GasUsed_StackOneLevel(t *testing.T) {
 	mockRuntime.SetVMInput(&parentInput.VMInput)
 
 	metering.RestoreGas(gasRemaining)
-	mockRuntime.IsContractOnStack = false
 	require.Equal(t, parentInput.GasProvided-parentExecutionGas-parentPointsBeforeStacking+gasRemaining, metering.GasLeft())
 
 	gasSpentByContract = metering.GasSpentByContract()
@@ -452,7 +451,6 @@ func TestMeteringContext_UpdateGasStateOnFailure_StackOneLevel(t *testing.T) {
 	mockRuntime.SetVMInput(&parentInput.VMInput)
 
 	metering.RestoreGas(gasRemaining)
-	mockRuntime.IsContractOnStack = false
 	require.Equal(t, parentInput.GasProvided-parentExecutionGas-parentPointsBeforeStacking+gasRemaining, metering.GasLeft())
 
 	gasSpentByContract = metering.GasSpentByContract()

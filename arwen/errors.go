@@ -113,6 +113,8 @@ var ErrBitwiseNegative = errors.New("bitwise operations only allowed on positive
 // ErrShiftNegative signals that an attempt to apply a bitwise shift operation on negative numbers has been made
 var ErrShiftNegative = errors.New("bitwise shift operations only allowed on positive integers and by a positive amount")
 
+var ErrAsyncContextUnmodifiableUnlessFirstSCOrFirstCallback = errors.New("AsyncContext can only be modified by the first contract instance with same address or first callback")
+
 var ErrAsyncCallGroupExistsAlready = errors.New("async call group exists already")
 
 var ErrAsyncCallGroupDoesNotExist = errors.New("async call group does not exist")

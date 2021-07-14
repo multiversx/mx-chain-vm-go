@@ -711,15 +711,17 @@ func (context *runtimeContext) CleanWasmerInstance() {
 	logRuntime.Trace("instance cleaned")
 }
 
-// IsContractOnTheStack iterates over the state stack to find whether the
-// provided SC address is already in execution, below the current instance.
-func (context *runtimeContext) IsContractOnTheStack(address []byte) bool {
+// CountSameContractInstancesOnStack returns the number of times the given contract
+// address appears in the state stack.
+func (context *runtimeContext) CountSameContractInstancesOnStack(address []byte) uint64 {
+	count := uint64(0)
 	for _, state := range context.stateStack {
 		if bytes.Equal(address, state.scAddress) {
-			return true
+			count += 1
 		}
 	}
-	return false
+
+	return count
 }
 
 // GetFunctionToCall returns the callable contract method to be executed, as exported by the Wasmer instance.

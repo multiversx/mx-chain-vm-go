@@ -3,38 +3,37 @@ package mock
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var _ arwen.RuntimeContext = (*RuntimeContextMock)(nil)
 
 // RuntimeContextMock is used in tests to check the RuntimeContextMock interface method calls
 type RuntimeContextMock struct {
-	Err                    error
-	VMInput                *vmcommon.VMInput
-	SCAddress              []byte
-	SCCode                 []byte
-	SCCodeSize             uint64
-	CallFunction           string
-	VMType                 []byte
-	IsContractOnStack      bool
-	ReadOnlyFlag           bool
-	VerifyCode             bool
-	CurrentBreakpointValue arwen.BreakpointValue
-	PointsUsed             uint64
-	InstanceCtxID          int
-	MemLoadResult          []byte
-	MemLoadMultipleResult  [][]byte
-	FailCryptoAPI          bool
-	FailElrondAPI          bool
-	FailElrondSyncExecAPI  bool
-	FailBigIntAPI          bool
-	DefaultAsyncCall       *arwen.AsyncCall
-	RunningInstances       uint64
-	CurrentTxHash          []byte
-	OriginalTxHash         []byte
-	PrevTxHash             []byte
-	HasFunctionResult      bool
+	Err                      error
+	VMInput                  *vmcommon.VMInput
+	SCAddress                []byte
+	SCCode                   []byte
+	SCCodeSize               uint64
+	CallFunction             string
+	VMType                   []byte
+	ReadOnlyFlag             bool
+	VerifyCode               bool
+	CurrentBreakpointValue   arwen.BreakpointValue
+	PointsUsed               uint64
+	SameContractOnStackCount uint64
+	MemLoadResult            []byte
+	MemLoadMultipleResult    [][]byte
+	FailCryptoAPI            bool
+	FailElrondAPI            bool
+	FailElrondSyncExecAPI    bool
+	FailBigIntAPI            bool
+	DefaultAsyncCall         *arwen.AsyncCall
+	RunningInstances         uint64
+	CurrentTxHash            []byte
+	OriginalTxHash           []byte
+	PrevTxHash               []byte
+	HasFunctionResult        bool
 }
 
 // InitState mocked method
@@ -126,9 +125,9 @@ func (r *RuntimeContextMock) SetVMInput(vmInput *vmcommon.VMInput) {
 	r.VMInput = vmInput
 }
 
-// IsContractOnTheStack mocked method
-func (r *RuntimeContextMock) IsContractOnTheStack(_ []byte) bool {
-	return r.IsContractOnStack
+// CountSameContractInstancesOnStack mocked method
+func (r *RuntimeContextMock) CountSameContractInstancesOnStack(address []byte) uint64 {
+	return r.SameContractOnStackCount
 }
 
 // GetSCAddress mocked method

@@ -69,6 +69,17 @@ func (ac *AsyncCall) GetValue() []byte {
 	return ac.ValueBytes
 }
 
+// IsLocal returns true if the async call allows for local execution
+func (ac *AsyncCall) IsLocal() bool {
+	return !ac.IsRemote()
+}
+
+// IsRemote returns true if the async call must be sent remotely
+func (ac *AsyncCall) IsRemote() bool {
+	remote := (ac.ExecutionMode == AsyncUnknown) || (ac.ExecutionMode == AsyncBuiltinFuncCrossShard)
+	return remote
+}
+
 // HasCallback returns true if there is a callback to execute, depending on the status of the async call
 func (ac *AsyncCall) HasCallback() bool {
 	callback := ac.GetCallbackName()

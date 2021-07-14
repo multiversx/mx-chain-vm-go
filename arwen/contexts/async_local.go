@@ -9,59 +9,48 @@ import (
 )
 
 func (context *asyncContext) executeAsyncLocalCalls() error {
-	for groupIndex, group := range context.asyncCallGroups {
-		for callIndex := range group.AsyncCalls {
-			call := group.AsyncCalls[callIndex]
-			if call.ExecutionMode == arwen.ESDTTransferOnCallBack {
-				context.host.Output().PrependFinish(call.Data)
-
-				// TODO discuss: the contract has already paid the gas for GasLimit and
-				// GasLocked, as if the call were destined to another contract. Both
-				// GasLimit and GasLocked are restored in the case of
-				// ESDTTransferOnCallBack because:
-				// * GasLocked isn't needed, since no callback will be called
-				// * GasLimit cannot be paid here, because it's the *destination*
-				// contract that ends up paying the gas for the ESDTTransfer
-				context.host.Metering().RestoreGas(call.GasLimit)
-				context.host.Metering().RestoreGas(call.GasLocked)
-				call.UpdateStatus(vmcommon.Ok)
-				continue
-			}
-
-			remoteExecution := (call.ExecutionMode != arwen.SyncExecution) && (call.ExecutionMode != arwen.AsyncBuiltinFuncIntraShard)
-			if remoteExecution {
-				continue
-			}
-
-			err := context.executeAsyncLocalCall(groupIndex, callIndex)
-			if err != nil {
-				return err
-			}
+	for {
+		call := context.getNextLocalAsyncCall()
+		if call == nil {
+			break
 		}
 
-		group = context.asyncCallGroups[groupIndex]
-		group.DeleteCompletedAsyncCalls()
-
-		// If all the AsyncCalls in the AsyncCallGroup were executed synchronously,
-		// then the AsyncCallGroup can have its callback executed.
-		if group.IsComplete() {
-			context.executeCallGroupCallback(group)
+		err := context.executeAsyncLocalCall(call)
+		if err != nil {
+			return err
 		}
-	}
 
-	context.DeleteCompletedGroups()
-
-	if !context.HasPendingCallGroups() {
-		context.executeContextCallback()
+		context.deleteCompletedAsyncCalls()
 	}
 
 	return nil
 }
 
-func (context *asyncContext) executeAsyncLocalCall(groupIndex int, callIndex int) error {
-	asyncCall, err := context.getCallByIndex(groupIndex, callIndex)
-	if err != nil {
-		return err
+func (context *asyncContext) executeCompletedGroupCallbacks() {
+	for _, group := range context.asyncCallGroups {
+		if group.IsComplete() {
+			context.executeCallGroupCallback(group)
+		}
+	}
+
+}
+
+func (context *asyncContext) getNextLocalAsyncCall() *arwen.AsyncCall {
+	for _, group := range context.asyncCallGroups {
+		for _, call := range group.AsyncCalls {
+			if call.IsLocal() {
+				return call
+			}
+		}
+	}
+
+	return nil
+}
+
+func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) error {
+	if asyncCall.ExecutionMode == arwen.ESDTTransferOnCallBack {
+		context.executeESDTTransferOnCallback(asyncCall)
+		return nil
 	}
 
 	destinationCallInput, err := context.createContractCallInput(asyncCall)
@@ -80,11 +69,6 @@ func (context *asyncContext) executeAsyncLocalCall(groupIndex int, callIndex int
 
 	// The vmOutput instance returned by host.ExecuteOnDestContext() is never nil,
 	// by design. Using it without checking for err is safe here.
-	asyncCall, err = context.getCallByIndex(groupIndex, callIndex)
-	if err != nil {
-		return err
-	}
-
 	asyncCall.UpdateStatus(vmOutput.ReturnCode)
 
 	if asyncCall.HasCallback() {
@@ -96,6 +80,21 @@ func (context *asyncContext) executeAsyncLocalCall(groupIndex int, callIndex int
 	// after fixing the bug caught by TestExecution_ExecuteOnDestContext_GasRemaining().
 
 	return nil
+}
+
+func (context *asyncContext) executeESDTTransferOnCallback(asyncCall *arwen.AsyncCall) {
+	context.host.Output().PrependFinish(asyncCall.Data)
+
+	// TODO discuss: the contract has already paid the gas for GasLimit and
+	// GasLocked, as if the call were destined to another contract. Both
+	// GasLimit and GasLocked are restored in the case of
+	// ESDTTransferOnCallBack because:
+	// * GasLocked isn't needed, since no callback will be called
+	// * GasLimit cannot be paid here, because it's the *destination*
+	// contract that ends up paying the gas for the ESDTTransfer
+	context.host.Metering().RestoreGas(asyncCall.GasLimit)
+	context.host.Metering().RestoreGas(asyncCall.GasLocked)
+	asyncCall.UpdateStatus(vmcommon.Ok)
 }
 
 func (context *asyncContext) executeSyncCallback(

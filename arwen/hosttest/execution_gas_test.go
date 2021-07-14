@@ -638,8 +638,11 @@ func TestGasUsed_AsyncCall_CrossShard_CallBack(t *testing.T) {
 
 			// TODO factor this setup out if necessary for other tests
 
-			// created instance will be set on host and cached and reused by doRunSmartContractCall()
-			// this is necessary for gas usage metering of the Save() below
+			// The instance started below will be cached on the InstanceMockBuilder and reused by doRunSmartContractCall().
+			// This is necessary for gas usage metering during Save() below.
+			// Note that the InstanceMockBuilder uses the address of the contract as
+			// if it were its bytecode, hence StartWasmerInstance() receives an
+			// address as its first argument.
 			host.Runtime().StartWasmerInstance(test.ParentAddress, testConfig.GasUsedByParent, false)
 
 			fakeInput := host.Runtime().GetVMInput()

@@ -3,7 +3,7 @@ package mock
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // making sure we implement all functions of RuntimeContext
@@ -52,9 +52,9 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetRuntimeBreakpointValueFunc func() arwen.BreakpointValue
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	IsContractOnTheStackFunc func(address []byte) bool
-	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	RunningInstancesCountFunc func() uint64
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	CountSameContractInstancesOnStackFunc func(address []byte) uint64
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	IsFunctionImportedFunc func(name string) bool
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
@@ -201,10 +201,6 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *Runtim
 
 	runtimeWrapper.GetRuntimeBreakpointValueFunc = func() arwen.BreakpointValue {
 		return runtimeWrapper.runtimeContext.GetRuntimeBreakpointValue()
-	}
-
-	runtimeWrapper.IsContractOnTheStackFunc = func(address []byte) bool {
-		return runtimeWrapper.runtimeContext.IsContractOnTheStack(address)
 	}
 
 	runtimeWrapper.RunningInstancesCountFunc = func() uint64 {
@@ -434,9 +430,9 @@ func (contextWrapper *RuntimeContextWrapper) GetRuntimeBreakpointValue() arwen.B
 	return contextWrapper.GetRuntimeBreakpointValueFunc()
 }
 
-// IsContractOnTheStack calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) IsContractOnTheStack(address []byte) bool {
-	return contextWrapper.IsContractOnTheStackFunc(address)
+// CountSameContractInstancesOnStack calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) CountSameContractInstancesOnStack(address []byte) uint64 {
+	return contextWrapper.CountSameContractInstancesOnStackFunc(address)
 }
 
 // RunningInstancesCount calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext

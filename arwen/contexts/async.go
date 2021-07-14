@@ -78,7 +78,7 @@ func (context *asyncContext) PushState() {
 		gasPrice:        context.gasPrice,
 		gasRemaining:    context.gasRemaining,
 		returnData:      context.returnData,
-		asyncCallGroups: context.cloneCallGroups(),
+		asyncCallGroups: context.asyncCallGroups,
 	}
 
 	context.stateStack = append(context.stateStack, newState)
@@ -404,7 +404,15 @@ func (context *asyncContext) canRegisterLegacyAsyncCall() bool {
 
 // addAsyncCall adds the provided AsyncCall to the specified AsyncCallGroup
 func (context *asyncContext) addAsyncCall(groupID string, call *arwen.AsyncCall) error {
+	runtime := context.host.Runtime()
 	metering := context.host.Metering()
+
+	// TODO add exception for the first callback instance of the same address,
+	// which must be allowed to modify the AsyncContext
+	scOccurrences := runtime.CountSameContractInstancesOnStack(runtime.GetSCAddress())
+	if scOccurrences > 0 {
+		return arwen.ErrAsyncContextUnmodifiableUnlessFirstSCOrFirstCallback
+	}
 
 	err := metering.UseGasBounded(call.GasLocked)
 	if err != nil {
@@ -463,13 +471,22 @@ func (context *asyncContext) Execute() error {
 		return err
 	}
 
+	// This call to deleteCompletedAsyncCall() is necessary to remove the
+	// AsyncCall that has been just before async.Execute() was called, within
+	// host.callSCMethod(). This happens when a cross-shard callback returns and
+	// finalizes an AsyncCall.
+	// TODO try to move this call somewhere else, where its intent is more obvious
+	context.deleteCompletedAsyncCalls()
+
+	context.executeCompletedGroupCallbacks()
+	context.deleteCompletedGroups()
+
 	// Step 2: in one combined step, do the following:
 	// * locally execute built-in functions with cross-shard
 	//   destinations, whereby the cross-shard OutputAccount entries are generated
 	// * call host.sendAsyncCallCrossShard() for each pending AsyncCall, to
 	//   generate the corresponding cross-shard OutputAccount entries
-	// Note that all async calls below this point are pending by definition and
-	// must be persisted.
+	// Note that all async calls below this point are pending by definition.
 	for _, group := range context.asyncCallGroups {
 		for _, call := range group.AsyncCalls {
 			err = context.executeAsyncCall(call)
@@ -480,6 +497,10 @@ func (context *asyncContext) Execute() error {
 	}
 
 	context.deleteCallGroupByID(arwen.LegacyAsyncCallGroupID)
+
+	if !context.HasPendingCallGroups() {
+		context.executeContextCallback()
+	}
 
 	err = context.Save()
 	if err != nil {
@@ -818,8 +839,8 @@ func computeDataLengthFromArguments(function string, arguments [][]byte) int {
 	return int(dataLength)
 }
 
-// DeleteCompletedGroups removes all completed AsyncGroups
-func (context *asyncContext) DeleteCompletedGroups() {
+// deleteCompletedGroups removes all completed AsyncGroups
+func (context *asyncContext) deleteCompletedGroups() {
 	remainingAsyncGroups := make([]*arwen.AsyncCallGroup, 0)
 	for _, asyncGroup := range context.asyncCallGroups {
 		if !asyncGroup.IsComplete() {
@@ -828,6 +849,12 @@ func (context *asyncContext) DeleteCompletedGroups() {
 	}
 
 	context.asyncCallGroups = remainingAsyncGroups
+}
+
+func (context *asyncContext) deleteCompletedAsyncCalls() {
+	for _, group := range context.asyncCallGroups {
+		group.DeleteCompletedAsyncCalls()
+	}
 }
 
 func (context *asyncContext) getCallByIndex(groupIndex int, callIndex int) (*arwen.AsyncCall, error) {
