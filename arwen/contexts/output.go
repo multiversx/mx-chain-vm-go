@@ -387,26 +387,18 @@ func (context *outputContext) getOutputTransferDataFromESDTTransfer(
 		return []byte(vmcommon.BuiltInFunctionESDTTransfer + "@" + hex.EncodeToString(transfers[0].ESDTTokenName) + "@" + hex.EncodeToString(transfers[0].ESDTValue.Bytes()))
 	}
 
-	if len(transfers) == 1 {
-		data := []byte(vmcommon.BuiltInFunctionESDTNFTTransfer + "@" + hex.EncodeToString(transfers[0].ESDTTokenName) +
-			"@" + hex.EncodeToString(big.NewInt(0).SetUint64(transfers[0].ESDTTokenNonce).Bytes()) + "@" + hex.EncodeToString(transfers[0].ESDTValue.Bytes()))
-		if sameShard {
-			data = append(data, []byte("@"+hex.EncodeToString(destination))...)
-			return data
-		}
-
-		outTransfer, ok := vmOutput.OutputAccounts[string(destination)]
-		if ok && len(outTransfer.OutputTransfers) == 1 {
-			data = outTransfer.OutputTransfers[0].Data
-		}
-		return data
-	}
-
 	if !sameShard {
 		outTransfer, ok := vmOutput.OutputAccounts[string(destination)]
 		if ok && len(outTransfer.OutputTransfers) == 1 {
 			return outTransfer.OutputTransfers[0].Data
 		}
+	}
+
+	if len(transfers) == 1 {
+		data := []byte(vmcommon.BuiltInFunctionESDTNFTTransfer + "@" + hex.EncodeToString(transfers[0].ESDTTokenName) +
+			"@" + hex.EncodeToString(big.NewInt(0).SetUint64(transfers[0].ESDTTokenNonce).Bytes()) + "@" + hex.EncodeToString(transfers[0].ESDTValue.Bytes()))
+		data = append(data, []byte("@"+hex.EncodeToString(destination))...)
+		return data
 	}
 
 	data := vmcommon.BuiltInFunctionMultiESDTNFTTransfer + "@" + hex.EncodeToString(destination) + "@" + hex.EncodeToString(big.NewInt(int64(len(transfers))).Bytes())

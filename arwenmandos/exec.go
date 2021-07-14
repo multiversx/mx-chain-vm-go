@@ -14,6 +14,7 @@ import (
 	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
 
 var log = logger.GetOrCreate("arwen/mandos")
@@ -45,12 +46,14 @@ func NewArwenTestExecutor() (*ArwenTestExecutor, error) {
 	}
 
 	blockGasLimit := uint64(10000000)
+	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldhook.WorldMarshalizer)
 	vm, err := arwenHost.NewArwenVM(world, &arwen.VMHostParameters{
 		VMType:                   TestVMType,
 		BlockGasLimit:            blockGasLimit,
 		GasSchedule:              gasScheduleMap,
 		BuiltInFuncContainer:     world.BuiltinFuncs.Container,
 		ElrondProtectedKeyPrefix: []byte(ElrondProtectedKeyPrefix),
+		ESDTTransferParser:       esdtTransferParser,
 	})
 	if err != nil {
 		return nil, err

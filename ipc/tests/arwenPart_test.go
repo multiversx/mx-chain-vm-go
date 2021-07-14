@@ -15,6 +15,7 @@ import (
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
 	"github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
+	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -68,12 +69,14 @@ func doContractRequest(
 	wg.Add(2)
 
 	go func() {
+		esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
 		vmHostParameters := &arwen.VMHostParameters{
 			VMType:                   []byte{5, 0},
 			BlockGasLimit:            uint64(10000000),
 			GasSchedule:              config.MakeGasMapForTests(),
 			ElrondProtectedKeyPrefix: []byte("ELROND"),
 			BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
+			ESDTTransferParser:       esdtTransferParser,
 		}
 
 		part, err := arwenpart.NewArwenPart(

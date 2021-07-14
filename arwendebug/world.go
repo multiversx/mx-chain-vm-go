@@ -9,6 +9,7 @@ import (
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
 	"github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
+	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
 
 type worldDataModel struct {
@@ -50,12 +51,14 @@ func newWorld(dataModel *worldDataModel) (*world, error) {
 }
 
 func getHostParameters() *arwen.VMHostParameters {
+	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
 	return &arwen.VMHostParameters{
 		VMType:                   []byte{5, 0},
 		BlockGasLimit:            uint64(10000000),
 		GasSchedule:              config.MakeGasMap(1, 1),
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
 		BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
+		ESDTTransferParser:       esdtTransferParser,
 	}
 }
 
