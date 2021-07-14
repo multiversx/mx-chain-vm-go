@@ -370,13 +370,11 @@ func TestManagedTypesContext_ManagedBuffersFunctionalities(t *testing.T) {
 	managedTypesContext, _ := NewManagedTypesContext(host)
 	bytes := []byte{2, 234, 64, 255}
 	emptyBuffer := make([]byte, 0)
-	successResult := int32(0)
-	failResult := int32(1)
 
 	// Calls for non-existent buffers
 	noBufHandle := int32(379)
 	isSuccess := managedTypesContext.SetBytesForThisManagedBuffer(noBufHandle, bytes)
-	require.Equal(t, failResult, isSuccess)
+	require.False(t, isSuccess)
 	byteArray, err := managedTypesContext.GetBytesForThisManagedBuffer(noBufHandle)
 	require.Nil(t, byteArray)
 	require.Equal(t, arwen.ErrNoManagedBufferUnderThisHandle, err)
@@ -389,7 +387,7 @@ func TestManagedTypesContext_ManagedBuffersFunctionalities(t *testing.T) {
 	lengthOfManBuf := managedTypesContext.GetLengthForThisManagedBuffer(noBufHandle)
 	require.Equal(t, int32(-1), lengthOfManBuf)
 	isSuccess = managedTypesContext.AppendBytesToThisManagedBuffer(noBufHandle, bytes)
-	require.Equal(t, failResult, isSuccess)
+	require.False(t, isSuccess)
 	newBuf, err = managedTypesContext.InsertSliceInManagedBuffer(noBufHandle, 0, bytes)
 	require.Nil(t, newBuf)
 	require.Equal(t, arwen.ErrNoManagedBufferUnderThisHandle, err)
@@ -401,7 +399,7 @@ func TestManagedTypesContext_ManagedBuffersFunctionalities(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, emptyBuffer, byteArray)
 	isSuccess = managedTypesContext.SetBytesForThisManagedBuffer(manBufHandle1, bytes)
-	require.Equal(t, successResult, isSuccess)
+	require.True(t, isSuccess)
 	manBufBytes, _ := managedTypesContext.GetBytesForThisManagedBuffer(manBufHandle1)
 	require.Equal(t, bytes, manBufBytes)
 	manBufHandle2 := managedTypesContext.NewManagedBufferFromBytes(bytes)
@@ -442,20 +440,20 @@ func TestManagedTypesContext_ManagedBuffersFunctionalities(t *testing.T) {
 
 	// Append, GetLength
 	isSuccess = managedTypesContext.AppendBytesToThisManagedBuffer(manBufHandle1, bytes)
-	require.Equal(t, successResult, isSuccess)
+	require.True(t, isSuccess)
 	lengthOfManBuf = managedTypesContext.GetLengthForThisManagedBuffer(manBufHandle1)
 	require.Equal(t, int32(4), lengthOfManBuf)
 	isSuccess = managedTypesContext.AppendBytesToThisManagedBuffer(manBufHandle1, bytes)
-	require.Equal(t, successResult, isSuccess)
+	require.True(t, isSuccess)
 	manBufBytes, _ = managedTypesContext.GetBytesForThisManagedBuffer(manBufHandle1)
 	require.Equal(t, append(bytes, bytes...), manBufBytes)
 	isSuccess = managedTypesContext.AppendBytesToThisManagedBuffer(manBufHandle1, emptyBuffer)
-	require.Equal(t, successResult, isSuccess)
+	require.True(t, isSuccess)
 	manBufBytes, _ = managedTypesContext.GetBytesForThisManagedBuffer(manBufHandle1)
 	require.Equal(t, append(bytes, bytes...), manBufBytes)
 
 	isSuccess = managedTypesContext.SetBytesForThisManagedBuffer(manBufHandle1, bytes)
-	require.Equal(t, successResult, isSuccess)
+	require.True(t, isSuccess)
 	manBufBytes, _ = managedTypesContext.GetBytesForThisManagedBuffer(manBufHandle1)
 	require.Equal(t, bytes, manBufBytes)
 

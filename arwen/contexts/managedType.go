@@ -326,13 +326,13 @@ func (context *managedTypesContext) NewManagedBufferFromBytes(bytes []byte) int3
 }
 
 // SetBytesForThisManagedBuffer sets the bytes given as value for the managed buffer. Returns 0 if success, 1 otherwise
-func (context *managedTypesContext) SetBytesForThisManagedBuffer(manBufHandle int32, bytes []byte) int32 {
+func (context *managedTypesContext) SetBytesForThisManagedBuffer(manBufHandle int32, bytes []byte) bool {
 	_, ok := context.managedTypesValues.manBufValues[manBufHandle]
 	if !ok {
-		return 1
+		return false
 	}
 	context.managedTypesValues.manBufValues[manBufHandle] = bytes
-	return 0
+	return true
 }
 
 // GetBytesForThisManagedBuffer returns the bytes for the managed buffer. Returns nil as value and error if buffer is non-existent
@@ -345,13 +345,13 @@ func (context *managedTypesContext) GetBytesForThisManagedBuffer(manBufHandle in
 }
 
 // AppendBytesToThisManagedBuffer appends the given bytes to the buffer at the end
-func (context *managedTypesContext) AppendBytesToThisManagedBuffer(manBufHandle int32, bytes []byte) int32 {
+func (context *managedTypesContext) AppendBytesToThisManagedBuffer(manBufHandle int32, bytes []byte) bool {
 	_, ok := context.managedTypesValues.manBufValues[manBufHandle]
 	if !ok {
-		return 1
+		return false
 	}
 	context.managedTypesValues.manBufValues[manBufHandle] = append(context.managedTypesValues.manBufValues[manBufHandle], bytes...)
-	return 0
+	return true
 }
 
 // GetLengthForThisManagedBuffer returns the length of the managed buffer
