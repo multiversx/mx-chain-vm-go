@@ -1,0 +1,184 @@
+{
+    "name": "reject transactions",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "create_elrond_to_ethereum_tx_batch.scen.json"
+        },
+        {
+            "step": "scCall",
+            "txId": "propose-set-tx-batch-rejected",
+            "tx": {
+                "from": "address:relayer1",
+                "to": "sc:multisig",
+                "value": "0",
+                "function": "proposeEsdtSafeSetCurrentTransactionBatchStatus",
+                "arguments": [
+                    "u32:1",
+                    "4", "4"
+                ],
+                "gasLimit": "40,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "0",
+                "message": "",
+                "out": [
+                    "1"
+                ],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "sc:multisig": {
+                    "nonce": "*",
+                    "balance": "*",
+                    "storage": {
+                        "str:action_data.item|u32:1": {
+                            "1-action_type": "u8:6",
+                            "2-batch_id": "u32:1",
+                            "3-tx_batch_status_len": "u32:2",
+                            "4-tx_batch_status_vec": "u8:4|u8:4"
+                        },
+                        "+": ""
+                    },
+                    "code": "*"
+                },
+                "+": {}
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "second-relayer-sign",
+            "tx": {
+                "from": "address:relayer2",
+                "to": "sc:multisig",
+                "value": "0",
+                "function": "sign",
+                "arguments": [
+                    "1"
+                ],
+                "gasLimit": "30,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "0",
+                "message": "",
+                "out": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "perform-action-set-tx-batch-rejected",
+            "tx": {
+                "from": "address:relayer1",
+                "to": "sc:multisig",
+                "value": "0",
+                "function": "performAction",
+                "arguments": [
+                    "1"
+                ],
+                "gasLimit": "75,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "0",
+                "message": "",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "comment": "the tokens are returned to the user (except the tx fees)",
+            "accounts": {
+                "address:user": {
+                    "nonce": "*",
+                    "balance": "0",
+                    "esdt": {
+                        "str:EGLD-123456": "500,000",
+                        "str:ETH-123456": "850,000"
+                    },
+                    "storage": {}
+                },
+                "sc:esdt_safe": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "esdt": {
+                        "str:EGLD-123456": {
+                            "balance": "1,500,000",
+                            "roles": [
+                                "ESDTRoleLocalBurn"
+                            ]
+                        },
+                        "str:ETH-123456": {
+                            "balance": "150,000",
+                            "roles": [
+                                "ESDTRoleLocalBurn"
+                            ]
+                        }
+                    },
+                    "storage": {                        
+                        "str:transactionStatus|address:user|u32:1": "",
+                        "str:transactionsByNonce|address:user|str:.item|u32:1": "",
+
+                        "str:transactionStatus|address:user|u32:2": "",
+                        "str:transactionsByNonce|address:user|str:.item|u32:2": "",
+
+                        "str:accumulatedTransactionFees|nested:str:EGLD-123456": "1,500,000",
+                        "str:accumulatedTransactionFees|nested:str:ETH-123456": "150,000",
+
+                        "+": ""
+                    },
+                    "code": "*"
+                },
+                "+": {}
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "owner-claim-fees",
+            "tx": {
+                "from": "address:owner",
+                "to": "sc:multisig",
+                "value": "0",
+                "function": "claimAccumulatedFees",
+                "arguments": [
+                    "address:owner"
+                ],
+                "gasLimit": "200,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "0",
+                "message": "",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "address:owner": {
+                    "nonce": "*",
+                    "balance": "0",
+                    "esdt": {
+                        "str:EGLD-123456": {
+                            "balance": "1,500,000"
+                        },
+                        "str:ETH-123456": {
+                            "balance": "150,000"
+                        }
+                    },
+                    "storage": {}
+                },
+                "+": {}
+            }
+        }
+    ]
+}

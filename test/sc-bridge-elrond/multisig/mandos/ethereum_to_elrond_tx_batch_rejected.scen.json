@@ -1,0 +1,114 @@
+{
+    "name": "create ethereum to elrond tx batch - rejected",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "setup.scen.json"
+        },
+        {
+            "step": "scCall",
+            "txId": "propose-transfer-to-smart-contract",
+            "tx": {
+                "from": "address:relayer1",
+                "to": "sc:multisig",
+                "value": "0",
+                "function": "proposeMultiTransferEsdtBatch",
+                "arguments": [
+                    "1",
+                    "sc:egld_esdt_swap", "str:EGLD-123456", "500,000",
+                    "sc:egld_esdt_swap", "str:ETH-123456", "500,000"
+                ],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "0",
+                "message": "",
+                "out": [
+                    "1"
+                ],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "sc:multisig": {
+                    "nonce": "*",
+                    "balance": "*",
+                    "storage": {
+                        "str:action_data.item|u32:1": {
+                            "1-action_type": "u8:7",
+                            "2-batch_id": "u64:1",
+                            "3-transfers_len": "u32:2",
+                            "4-transfers_vec": [
+                                {
+                                    "1-dest": "sc:egld_esdt_swap",
+                                    "2-token_id": "nested:str:EGLD-123456",
+                                    "3-amount": "biguint:500,000"
+                                },
+                                {
+                                    "1-dest": "sc:egld_esdt_swap",
+                                    "2-token_id": "nested:str:ETH-123456",
+                                    "3-amount": "biguint:500,000"
+                                }
+                            ]
+                        },
+                        "+": ""
+                    },
+                    "code": "*"
+                },
+                "+": {}
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "second-relayer-sign",
+            "tx": {
+                "from": "address:relayer2",
+                "to": "sc:multisig",
+                "value": "0",
+                "function": "sign",
+                "arguments": [
+                    "1"
+                ],
+                "gasLimit": "30,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "0",
+                "message": "",
+                "out": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "perform-action-transfer",
+            "comment": "output is duplicated due to execute_on_dest_context results being propagated to the initial caller",
+            "tx": {
+                "from": "address:relayer1",
+                "to": "sc:multisig",
+                "value": "0",
+                "function": "performAction",
+                "arguments": [
+                    "1"
+                ],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "0",
+                "message": "",
+                "out": [
+                    "4", "4",
+                    "4", "4"
+                ],
+                "gas": "*",
+                "refund": "*"
+            }
+        }
+    ]
+}

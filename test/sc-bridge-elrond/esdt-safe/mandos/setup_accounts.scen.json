@@ -1,0 +1,114 @@
+{
+    "name": "setup accounts",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "../../price-aggregator/mandos/get_latest_price_feed.scen.json"
+        },
+        {
+            "step": "setState",
+            "accounts": {
+                "address:owner": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {}
+                },
+                "address:user1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "esdt": {
+                        "str:BRIDGE-123456": "2,000,000"
+                    },
+                    "storage": {}
+                },
+                "address:user2": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "esdt": {
+                        "str:BRIDGE-123456": "2,000,000"
+                    },
+                    "storage": {}
+                }
+            },
+            "newAddresses": [
+                {
+                    "creatorAddress": "address:owner",
+                    "creatorNonce": "0",
+                    "newAddress": "sc:esdt_safe"
+                }
+            ]
+        },
+        {
+            "step": "scDeploy",
+            "txId": "deploy",
+            "tx": {
+                "from": "address:owner",
+                "contractCode": "file:../output/esdt-safe.wasm",
+                "value": "0",
+                "arguments": [
+                    "sc:price_aggregator",
+                    "150,000",
+                    "str:BRIDGE-123456"
+                ],
+                "gasLimit": "20,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "0",
+                "message": "",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "sc:esdt_safe": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {
+                        "str:feeEstimatorContractAddress": "sc:price_aggregator",
+                        "str:maxTxBatchSize": "10",
+                        "str:minBlockNonceDiff": "5",
+                        "str:ethTxGasLimit": "150,000",
+                        "str:tokenWhitelist.value|u32:1": "str:BRIDGE-123456",
+                        "+": ""
+                    },
+                    "code": "file:../output/esdt-safe.wasm"
+                },
+                "+": {}
+            }
+        },
+        {
+            "step": "setState",
+            "comment": "setting local burn role",
+            "accounts": {
+                "sc:esdt_safe": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "esdt": {
+                        "str:BRIDGE-123456": {
+                            "balance": "0",
+                            "roles": [
+                                "ESDTRoleLocalBurn"
+                            ]
+                        }
+                    },
+                    "storage": {
+                        "str:feeEstimatorContractAddress": "sc:price_aggregator",
+                        "str:maxTxBatchSize": "10",
+                        "str:minBlockNonceDiff": "5",
+                        "str:ethTxGasLimit": "150,000",
+                        "str:tokenWhitelist.value|u32:1": "str:BRIDGE-123456",
+
+                        "str:tokenWhitelist.info": "0x00000001000000010000000100000001",
+                        "str:tokenWhitelist.node_idBRIDGE-123456": "0x01",
+                        "str:tokenWhitelist.node_links|u32:1": "0x0000000000000000"
+                    },
+                    "code": "file:../output/esdt-safe.wasm",
+                    "owner": "address:owner"
+                }
+            }
+        }
+    ]
+}

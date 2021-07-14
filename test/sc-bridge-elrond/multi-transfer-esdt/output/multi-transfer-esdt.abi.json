@@ -1,0 +1,184 @@
+{
+    "name": "MultiTransferEsdt",
+    "constructor": {
+        "inputs": [
+            {
+                "name": "fee_estimator_contract_address",
+                "type": "Address"
+            },
+            {
+                "name": "eth_tx_gas_limit",
+                "type": "BigUint"
+            },
+            {
+                "name": "token_whitelist",
+                "type": "variadic<TokenIdentifier>",
+                "multi_arg": true
+            }
+        ],
+        "outputs": []
+    },
+    "endpoints": [
+        {
+            "name": "batchTransferEsdtToken",
+            "inputs": [
+                {
+                    "name": "transfers",
+                    "type": "variadic<tuple<Address,TokenIdentifier,BigUint>>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "variadic<TransactionStatus>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "setDefaultCostPerGwei",
+            "inputs": [
+                {
+                    "name": "token_id",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "default_gwei_cost",
+                    "type": "BigUint"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "setFeeEstimatorContractAddress",
+            "inputs": [
+                {
+                    "name": "new_address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "calculateRequiredFee",
+            "inputs": [
+                {
+                    "name": "token_id",
+                    "type": "TokenIdentifier"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getFeeEstimatorContractAddress",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "Address"
+                }
+            ]
+        },
+        {
+            "name": "getDefaultCostPerGwei",
+            "inputs": [
+                {
+                    "name": "token_id",
+                    "type": "TokenIdentifier"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getEthTxGasLimit",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Owner is a multisig SC, so we can't send directly to the owner or caller address here"
+            ],
+            "name": "claimAccumulatedFees",
+            "inputs": [
+                {
+                    "name": "dest_address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "addTokenToWhitelist",
+            "inputs": [
+                {
+                    "name": "token_id",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "opt_default_cost_per_gwei",
+                    "type": "optional<BigUint>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "removeTokenFromWhitelist",
+            "inputs": [
+                {
+                    "name": "token_id",
+                    "type": "TokenIdentifier"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "getAllKnownTokens",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "variadic<TokenIdentifier>",
+                    "multi_result": true
+                }
+            ]
+        }
+    ],
+    "types": {
+        "TransactionStatus": {
+            "type": "enum",
+            "variants": [
+                {
+                    "name": "None",
+                    "discriminant": 0
+                },
+                {
+                    "name": "Pending",
+                    "discriminant": 1
+                },
+                {
+                    "name": "InProgress",
+                    "discriminant": 2
+                },
+                {
+                    "name": "Executed",
+                    "discriminant": 3
+                },
+                {
+                    "name": "Rejected",
+                    "discriminant": 4
+                }
+            ]
+        }
+    }
+}

@@ -1,0 +1,67 @@
+{
+    "name": "execute transaction rejected",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "get_next_pending_tx.scen.json"
+        },
+        {
+            "step": "scCall",
+            "txId": "set-tx-status-rejected",
+            "tx": {
+                "from": "address:owner",
+                "to": "sc:esdt_safe",
+                "value": "0",
+                "function": "setTransactionBatchStatus",
+                "arguments": [
+                    "address:user1|u32:1|u8:4"
+                ],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "0",
+                "message": "",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "address:user1": {
+                    "nonce": "*",
+                    "balance": "0",
+                    "esdt": {
+                        "str:BridgeToken": "500,000"
+                    },
+                    "storage": {}
+                },
+                "sc:esdt_safe": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "esdt": {
+                        "str:BRIDGE-123456": {
+                            "balance": "1,500,000",
+                            "roles": [
+                                "ESDTRoleLocalBurn"
+                            ]
+                        }
+                    },
+                    "storage": {
+                        "str:pendingTransactionList.value|u32:1": "",
+                        
+                        "str:transactionStatus|address:user1|u32:1": "",
+                        "str:transactionsByNonce|address:user1|str:.item|u32:1": "",
+
+                        "str:accumulatedTransactionFees|nested:str:BRIDGE-123456": "1,500,000",
+
+                        "+": ""
+                    },
+                    "code": "file:../output/esdt-safe.wasm"
+                },
+                "+": {}
+            }
+        }
+    ]
+}

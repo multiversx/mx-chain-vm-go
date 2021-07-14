@@ -1,0 +1,47 @@
+{
+    "name": "get empty batch test - should return empty and not error",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "setup.scen.json"
+        },
+        {
+            "step": "scCall",
+            "txId": "get-with-sc-call",
+            "tx": {
+                "from": "address:user",
+                "to": "sc:multisig",
+                "value": "",
+                "function": "getCurrentTxBatch",
+                "arguments": [],
+                "gasLimit": "100,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "0",
+                "message": "",
+                "out": [
+                    "0x"
+                ],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scQuery",
+            "txId": "get-with-sc-query",
+            "tx": {
+                "to": "sc:multisig",
+                "function": "getCurrentTxBatch",
+                "arguments": []
+            },
+            "expect": {
+                "status": "0",
+                "message": "",
+                "out": [
+                    "0"
+                ]
+            }
+        }
+    ]
+}

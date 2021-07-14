@@ -1,0 +1,35 @@
+{
+    "name": "batch transfer both failed, trying to send to smart contract",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "setup_accounts.scen.json"
+        },
+        {
+            "step": "scCall",
+            "txId": "batch-transfer-both-failed",
+            "tx": {
+                "from": "address:owner",
+                "to": "sc:multi_transfer_esdt",
+                "value": "0",
+                "function": "batchTransferEsdtToken",
+                "arguments": [
+                    "sc:multi_transfer_esdt|nested:str:BRIDGE-123456|biguint:100,200",
+                    "sc:multi_transfer_esdt|nested:str:WRAPPED-123456|biguint:100,500"
+                ],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "0",
+                "message": "",
+                "out": [
+                    "4",
+                    "4"
+                ],
+                "gas": "*",
+                "refund": "*"
+            }
+        }
+    ]
+}

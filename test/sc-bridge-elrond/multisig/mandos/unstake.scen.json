@@ -1,0 +1,310 @@
+{
+    "name": "unstake test",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "setup.scen.json"
+        },
+        {
+            "step": "scCall",
+            "txId": "board-member-unstake",
+            "tx": {
+                "from": "address:relayer1",
+                "to": "sc:multisig",
+                "value": "0",
+                "function": "unstake",
+                "arguments": [
+                    "1000"
+                ],
+                "gasLimit": "30,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "4",
+                "message": "str:can't unstake, must keep minimum amount as insurance",
+                "out": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "change-quorum",
+            "comment": "must change quorum before attempting to remove user",
+            "tx": {
+                "from": "address:relayer1",
+                "to": "sc:multisig",
+                "value": "0",
+                "function": "proposeChangeQuorum",
+                "arguments": [
+                    "1"
+                ],
+                "gasLimit": "30,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "0",
+                "message": "",
+                "out": [
+                    "1"
+                ],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "first-relayer-sign",
+            "tx": {
+                "from": "address:relayer1",
+                "to": "sc:multisig",
+                "value": "0",
+                "function": "sign",
+                "arguments": [
+                    "1"
+                ],
+                "gasLimit": "30,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "0",
+                "message": "",
+                "out": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "second-relayer-sign",
+            "tx": {
+                "from": "address:relayer2",
+                "to": "sc:multisig",
+                "value": "0",
+                "function": "sign",
+                "arguments": [
+                    "1"
+                ],
+                "gasLimit": "30,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "0",
+                "message": "",
+                "out": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "execute-action-change-quorum",
+            "tx": {
+                "from": "address:relayer1",
+                "to": "sc:multisig",
+                "value": "0",
+                "function": "performAction",
+                "arguments": [
+                    "1"
+                ],
+                "gasLimit": "40,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "0",
+                "message": "",
+                "out": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "sc:multisig": {
+                    "nonce": "*",
+                    "balance": "*",
+                    "storage": {
+                        "str:quorum": "1",
+                        "+": ""
+                    },
+                    "code": "*"
+                },
+                "+": {}
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "propose-remove-user",
+            "tx": {
+                "from": "address:relayer2",
+                "to": "sc:multisig",
+                "value": "0",
+                "function": "proposeRemoveUser",
+                "arguments": [
+                    "address:relayer2"
+                ],
+                "gasLimit": "40,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "0",
+                "message": "",
+                "out": [
+                    "2"
+                ],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "second-relayer-sign-2",
+            "tx": {
+                "from": "address:relayer2",
+                "to": "sc:multisig",
+                "value": "0",
+                "function": "sign",
+                "arguments": [
+                    "2"
+                ],
+                "gasLimit": "30,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "0",
+                "message": "",
+                "out": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "execute-action-remove-user",
+            "tx": {
+                "from": "address:relayer2",
+                "to": "sc:multisig",
+                "value": "0",
+                "function": "performAction",
+                "arguments": [
+                    "2"
+                ],
+                "gasLimit": "40,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "0",
+                "message": "",
+                "out": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "sc:multisig": {
+                    "nonce": "*",
+                    "balance": "2000",
+                    "storage": {
+                        "str:quorum": "1",
+                        "str:user_role|u32:1": "2",
+                        "str:user_role|u32:2": "0",
+                        "+": ""
+                    },
+                    "code": "*"
+                },
+                "+": {}
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "unstake-too-much",
+            "tx": {
+                "from": "address:relayer2",
+                "to": "sc:multisig",
+                "value": "0",
+                "function": "unstake",
+                "arguments": [
+                    "1500"
+                ],
+                "gasLimit": "30,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "4",
+                "message": "str:can't unstake more than amount staked",
+                "out": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "unstake-ok",
+            "tx": {
+                "from": "address:relayer2",
+                "to": "sc:multisig",
+                "value": "0",
+                "function": "unstake",
+                "arguments": [
+                    "1000"
+                ],
+                "gasLimit": "30,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "0",
+                "message": "",
+                "out": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "address:relayer2": {
+                    "nonce": "*",
+                    "balance": "1000",
+                    "storage": {}
+                },
+                "sc:multisig": {
+                    "nonce": "*",
+                    "balance": "1000",
+                    "storage": {
+                        "str:quorum": "1",
+                        "str:user_role|u32:1": "2",
+                        "str:user_role|u32:2": "0",
+                        "+": ""
+                    },
+                    "code": "*"
+                },
+                "+": {}
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "try-propose-after-removed",
+            "tx": {
+                "from": "address:relayer2",
+                "to": "sc:multisig",
+                "value": "0",
+                "function": "proposeChangeQuorum",
+                "arguments": [
+                    "2"
+                ],
+                "gasLimit": "30,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "4",
+                "message": "str:only board members and proposers can propose",
+                "out": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        }
+    ]
+}

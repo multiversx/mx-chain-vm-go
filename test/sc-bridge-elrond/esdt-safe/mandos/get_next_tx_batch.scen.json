@@ -1,0 +1,98 @@
+{
+    "name": "get next tx batch",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "create_another_tx_ok.scen.json"
+        },
+        {
+            "step": "setState",
+            "currentBlockInfo": {
+                "blockNonce": "500"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "get-next-tx-batch",
+            "tx": {
+                "from": "address:owner",
+                "to": "sc:esdt_safe",
+                "value": "0",
+                "function": "getNextTransactionBatch",
+                "arguments": [],
+                "gasLimit": "30,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "0",
+                "message": "",
+                "out": [
+                    {
+                        "11-block_nonce": "u64:0",
+                        "12-nonce": "u32:1",
+                        "13-from": "address:user1",
+                        "14-to": "0x0102030405060708091011121314151617181920",
+                        "15-token_identifier": "nested:str:BRIDGE-123456",
+                        "16-amount": "biguint:400",
+
+                        "21-block_nonce": "u64:0",
+                        "22-nonce": "u32:1",
+                        "23-from": "address:user2",
+                        "24-to": "0x0102030405060708091011121314151617181920",
+                        "25-token_identifier": "nested:str:BRIDGE-123456",
+                        "26-amount": "biguint:900"
+                    }
+                ],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "sc:esdt_safe": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "esdt": {
+                        "str:BRIDGE-123456": {
+                            "balance": "3,001,300",
+                            "roles": [
+                                "ESDTRoleLocalBurn"
+                            ]
+                        }
+                    },
+                    "storage": {
+                        "str:pendingTransactionList.value|u32:1": "",
+                        "str:pendingTransactionList.value|u32:2": "",
+                        
+                        "str:transactionStatus|address:user1|u32:1": "2",
+                        "str:transactionsByNonce|address:user1|str:.item|u32:1": {
+                            "1-block_nonce": "u64:0",
+                            "2-nonce": "u32:1",
+                            "3-from": "address:user1",
+                            "4-to": "0x0102030405060708091011121314151617181920",
+                            "5-token_identifier": "nested:str:BRIDGE-123456",
+                            "6-amount": "biguint:400"
+                        },
+
+                        "str:transactionStatus|address:user2|u32:1": "2",
+                        "str:transactionsByNonce|address:user2|str:.item|u32:1": {
+                            "1-block_nonce": "u64:0",
+                            "2-nonce": "u32:1",
+                            "3-from": "address:user2",
+                            "4-to": "0x0102030405060708091011121314151617181920",
+                            "5-token_identifier": "nested:str:BRIDGE-123456",
+                            "6-amount": "biguint:900"
+                        },
+
+                        "str:accumulatedTransactionFees|nested:str:BRIDGE-123456": "3,000,000",
+
+                        "+": ""
+                    },
+                    "code": "file:../output/esdt-safe.wasm"
+                },
+                "+": {}
+            }
+        }
+    ]
+}

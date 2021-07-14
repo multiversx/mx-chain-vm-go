@@ -1,0 +1,83 @@
+{
+    "name": "get latest round data",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "oracle_submit.scen.json"
+        },
+        {
+            "step": "scQuery",
+            "tx": {
+                "to": "sc:price_aggregator",
+                "function": "latestPriceFeedOptional",
+                "arguments": [
+                    "str:GWEI",
+                    "str:BRIDGE"
+                ]
+            },
+            "expect": {
+                "status": "0",
+                "message": "",
+                "out": [
+                    "1",
+                    "str:GWEI",
+                    "str:BRIDGE",
+                    "10",
+                    "0"
+                ]
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "query-through-call-some",
+            "tx": {
+                "from": "address:oracle",
+                "to": "sc:price_aggregator",
+                "value": "0",
+                "function": "latestPriceFeedOptional",
+                "arguments": [
+                    "str:GWEI",
+                    "str:BRIDGE"
+                ],
+                "gasLimit": "40,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "1",
+                    "str:GWEI",
+                    "str:BRIDGE",
+                    "10",
+                    "0"
+                ],
+                "status": "0",
+                "message": "",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "query-through-call-none",
+            "tx": {
+                "from": "address:oracle",
+                "to": "sc:price_aggregator",
+                "value": "0",
+                "function": "latestPriceFeedOptional",
+                "arguments": [
+                    "str:RAND-TOKEN",
+                    "str:EGLD"
+                ],
+                "gasLimit": "40,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "0",
+                "message": "",
+                "gas": "*",
+                "refund": "*"
+            }
+        }
+    ]
+}

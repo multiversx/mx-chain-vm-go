@@ -1,0 +1,45 @@
+{
+    "name": "owner claim fees",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "batch_transfer_both_executed.scen.json"
+        },
+        {
+            "step": "scCall",
+            "txId": "owner-claim-fees",
+            "tx": {
+                "from": "address:owner",
+                "to": "sc:multi_transfer_esdt",
+                "value": "0",
+                "function": "claimAccumulatedFees",
+                "arguments": [
+                    "address:owner"
+                ],
+                "gasLimit": "30,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "0",
+                "message": "",
+                "out": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "address:owner": {
+                    "nonce": "*",
+                    "balance": "0",
+                    "esdt": {
+                        "str:BRIDGE-123456": "100,000"
+                    },
+                    "storage": {}
+                },
+                "+": {}
+            }
+        }
+    ]
+}

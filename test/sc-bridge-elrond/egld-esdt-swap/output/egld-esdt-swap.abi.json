@@ -1,0 +1,49 @@
+{
+    "name": "EgldEsdtSwap",
+    "constructor": {
+        "inputs": [
+            {
+                "name": "wrapped_egld_token_id",
+                "type": "TokenIdentifier"
+            }
+        ],
+        "outputs": []
+    },
+    "endpoints": [
+        {
+            "name": "wrapEgld",
+            "payableInTokens": [
+                "EGLD"
+            ],
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "unwrapEgld",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "getLockedEgldBalance",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getWrappedEgldTokenId",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "TokenIdentifier"
+                }
+            ]
+        }
+    ],
+    "types": {}
+}

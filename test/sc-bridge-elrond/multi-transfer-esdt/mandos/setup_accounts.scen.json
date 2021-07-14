@@ -1,0 +1,276 @@
+{
+    "name": "setup accounts",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "../../price-aggregator/mandos/get_latest_price_feed.scen.json"
+        },
+        {
+            "step": "setState",
+            "accounts": {
+                "address:owner": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {}
+                },
+                "address:user1": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {}
+                },
+                "address:user2": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {}
+                }
+            },
+            "newAddresses": [
+                {
+                    "creatorAddress": "address:owner",
+                    "creatorNonce": "0",
+                    "newAddress": "sc:multi_transfer_esdt"
+                }
+            ]
+        },
+        {
+            "step": "scDeploy",
+            "txId": "deploy",
+            "tx": {
+                "from": "address:owner",
+                "contractCode": "file:../output/multi-transfer-esdt.wasm",
+                "value": "0",
+                "arguments": [
+                    "sc:price_aggregator",
+                    "10,000"
+                ],
+                "gasLimit": "20,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "0",
+                "message": "",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "setState",
+            "comment": "setting local mint role",
+            "accounts": {
+                "sc:multi_transfer_esdt": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "esdt": {
+                        "str:BRIDGE-123456": {
+                            "balance": "0",
+                            "roles": [
+                                "ESDTRoleLocalMint"
+                            ]
+                        },
+                        "str:WRAPPED-123456": {
+                            "balance": "0",
+                            "roles": [
+                                "ESDTRoleLocalMint"
+                            ]
+                        }
+                    },
+                    "storage": {
+                        "str:feeEstimatorContractAddress": "sc:price_aggregator",
+                        "str:ethTxGasLimit": "10,000"
+                    },
+                    "code": "file:../output/multi-transfer-esdt.wasm",
+                    "owner": "address:owner"
+                }
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "add-first-token-to-whitelist",
+            "tx": {
+                "from": "address:owner",
+                "to": "sc:multi_transfer_esdt",
+                "value": "0",
+                "function": "addTokenToWhitelist",
+                "arguments": [
+                    "str:BRIDGE-123456"
+                ],
+                "gasLimit": "15,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "0",
+                "message": "",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "add-second-token-to-whitelist",
+            "tx": {
+                "from": "address:owner",
+                "to": "sc:multi_transfer_esdt",
+                "value": "0",
+                "function": "addTokenToWhitelist",
+                "arguments": [
+                    "str:WRAPPED-123456"
+                ],
+                "gasLimit": "15,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "0",
+                "message": "",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "address:owner": {
+                    "nonce": "3",
+                    "balance": "0",
+                    "storage": {}
+                },
+                "sc:multi_transfer_esdt": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "esdt": {
+                        "str:BRIDGE-123456": {
+                            "balance": "0",
+                            "roles": [
+                                "ESDTRoleLocalMint"
+                            ]
+                        },
+                        "str:WRAPPED-123456": {
+                            "balance": "0",
+                            "roles": [
+                                "ESDTRoleLocalMint"
+                            ]
+                        }
+                    },
+                    "storage": {
+                        "str:tokenWhitelist.value|u32:1": "str:BRIDGE-123456",
+                        "str:tokenWhitelist.value|u32:2": "str:WRAPPED-123456",
+                        "+": ""
+                    },
+                    "code": "file:../output/multi-transfer-esdt.wasm"
+                },
+                "+": {}
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "remove-second-token-from-whitelist",
+            "tx": {
+                "from": "address:owner",
+                "to": "sc:multi_transfer_esdt",
+                "value": "0",
+                "function": "removeTokenFromWhitelist",
+                "arguments": [
+                    "str:WRAPPED-123456"
+                ],
+                "gasLimit": "15,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "0",
+                "message": "",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "address:owner": {
+                    "nonce": "4",
+                    "balance": "0",
+                    "storage": {}
+                },
+                "sc:multi_transfer_esdt": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "esdt": {
+                        "str:BRIDGE-123456": {
+                            "balance": "0",
+                            "roles": [
+                                "ESDTRoleLocalMint"
+                            ]
+                        },
+                        "str:WRAPPED-123456": {
+                            "balance": "0",
+                            "roles": [
+                                "ESDTRoleLocalMint"
+                            ]
+                        }
+                    },
+                    "storage": {
+                        "str:tokenWhitelist.value|u32:1": "str:BRIDGE-123456",
+                        "str:tokenWhitelist.value|u32:2": "",
+                        "+": ""
+                    },
+                    "code": "file:../output/multi-transfer-esdt.wasm"
+                },
+                "+": {}
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "add-second-token-back-to-whitelist",
+            "tx": {
+                "from": "address:owner",
+                "to": "sc:multi_transfer_esdt",
+                "value": "0",
+                "function": "addTokenToWhitelist",
+                "arguments": [
+                    "str:WRAPPED-123456"
+                ],
+                "gasLimit": "15,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "0",
+                "message": "",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "address:owner": {
+                    "nonce": "5",
+                    "balance": "0",
+                    "storage": {}
+                },
+                "sc:multi_transfer_esdt": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "esdt": {
+                        "str:BRIDGE-123456": {
+                            "balance": "0",
+                            "roles": [
+                                "ESDTRoleLocalMint"
+                            ]
+                        },
+                        "str:WRAPPED-123456": {
+                            "balance": "0",
+                            "roles": [
+                                "ESDTRoleLocalMint"
+                            ]
+                        }
+                    },
+                    "storage": {
+                        "str:tokenWhitelist.value|u32:1": "str:BRIDGE-123456",
+                        "str:tokenWhitelist.value|u32:3": "str:WRAPPED-123456",
+                        "+": ""
+                    },
+                    "code": "file:../output/multi-transfer-esdt.wasm"
+                },
+                "+": {}
+            }
+        }
+    ]
+}

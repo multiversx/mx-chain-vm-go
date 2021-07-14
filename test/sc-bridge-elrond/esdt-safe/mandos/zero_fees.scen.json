@@ -1,0 +1,124 @@
+{
+    "name": "test zero fees, by setting fee estimator address to zero, and reading default from storage",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "setup_accounts.scen.json"
+        },
+        {
+            "step": "scCall",
+            "txId": "set-fee-estimator-address-to-address-zero",
+            "tx": {
+                "from": "address:owner",
+                "to": "sc:esdt_safe",
+                "value": "0",
+                "function": "setFeeEstimatorContractAddress",
+                "arguments": [
+                    "0x0000000000000000000000000000000000000000000000000000000000000000"
+                ],
+                "gasLimit": "30,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "0",
+                "message": "",
+                "out": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "sc:esdt_safe": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "esdt": {
+                        "str:BRIDGE-123456": {
+                            "balance": "0",
+                            "roles": [
+                                "ESDTRoleLocalBurn"
+                            ]
+                        }
+                    },
+                    "storage": {
+                        "str:feeEstimatorContractAddress": "0x0000000000000000000000000000000000000000000000000000000000000000",
+                        "+": ""
+                    },
+                    "code": "file:../output/esdt-safe.wasm"
+                },
+                "+": {}
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "create-transaction-ok-no-fees",
+            "tx": {
+                "from": "address:user1",
+                "to": "sc:esdt_safe",
+                "esdt": {
+                    "tokenIdentifier": "str:BRIDGE-123456",
+                    "value": "1,500,400"
+                },
+                "function": "createTransaction",
+                "arguments": [
+                    "0x0102030405060708091011121314151617181920"
+                ],
+                "gasLimit": "60,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "0",
+                "out": [],
+                "message": "",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "address:user1": {
+                    "nonce": "*",
+                    "balance": "0",
+                    "esdt": {
+                        "str:BRIDGE-123456": "499,600"
+                    },
+                    "storage": {}
+                },
+                "sc:esdt_safe": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "esdt": {
+                        "str:BRIDGE-123456": {
+                            "balance": "1,500,400",
+                            "roles": [
+                                "ESDTRoleLocalBurn"
+                            ]
+                        }
+                    },
+                    "storage": {
+                        "str:pendingTransactionList.value|u32:1": "address:user1|u32:1",
+                        
+                        "str:transactionStatus|address:user1|u32:1": "1",
+                        "str:transactionsByNonce|address:user1|str:.item|u32:1": {
+                            "1-block_nonce": "u64:0",
+                            "2-nonce": "u32:1",
+                            "3-from": "address:user1",
+                            "4-to": "0x0102030405060708091011121314151617181920",
+                            "5-token_identifier": "nested:str:BRIDGE-123456",
+                            "6-amount": "biguint:1,500,400"
+                        },
+                        
+                        "str:accumulatedTransactionFees|nested:str:BRIDGE-123456": "0",
+
+                        "+": ""
+                    },
+                    "code": "file:../output/esdt-safe.wasm"
+                },
+                "+": {}
+            }
+        }
+    ]
+}
+

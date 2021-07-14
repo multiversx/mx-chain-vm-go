@@ -1,0 +1,63 @@
+{
+    "name": "owner claim fees",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "execute_batch_one_success_one_rejected.scen.json"
+        },
+        {
+            "step": "scCall",
+            "txId": "owner-claim-fees",
+            "tx": {
+                "from": "address:owner",
+                "to": "sc:esdt_safe",
+                "value": "0",
+                "function": "claimAccumulatedFees",
+                "arguments": [
+                    "address:owner"
+                ],
+                "gasLimit": "30,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "0",
+                "message": "",
+                "out": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "address:owner": {
+                    "nonce": "*",
+                    "balance": "0",
+                    "esdt": {
+                        "str:BRIDGE-123456": "3,000,000"
+                    },
+                    "storage": {}
+                },
+                "sc:esdt_safe": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "esdt": {
+                        "str:BRIDGE-123456": {
+                            "balance": "0",
+                            "roles": [
+                                "ESDTRoleLocalBurn"
+                            ]
+                        }
+                    },
+                    "storage": {
+                        "str:accumulatedTransactionFees|nested:str:BRIDGE-123456": "0",
+
+                        "+": ""
+                    },
+                    "code": "file:../output/esdt-safe.wasm"
+                },
+                "+": {}
+            }
+        }
+    ]
+}
