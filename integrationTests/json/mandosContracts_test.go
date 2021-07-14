@@ -1,6 +1,7 @@
 package vmjsonintegrationtest
 
 import (
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -53,4 +54,9 @@ func TestCAttestation(t *testing.T) {
 		t.Skip("not a short test")
 	}
 	runAllTestsInFolder(t, "attestation-c")
+}
+
+func TestUpgradeBridge(t *testing.T) {
+	err := runSingleTestReturnError("sc-bridge-elrond/multisig/mandos/", "upgrade_child_sc.scen.json")
+	assert.Nil(t, err)
 }
