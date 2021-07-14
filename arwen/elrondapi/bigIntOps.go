@@ -47,6 +47,7 @@ package elrondapi
 // extern void			v1_3_bigIntGetSignedArgument(void *context, int32_t id, int32_t destination);
 // extern void			v1_3_bigIntGetCallValue(void *context, int32_t destination);
 // extern void			v1_3_bigIntGetESDTCallValue(void *context, int32_t destination);
+// extern void			v1_3_bigIntGetESDTCallValueByIndex(void *context, int32_t destination, int32_t index);
 // extern void			v1_3_bigIntGetESDTExternalBalance(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce, int32_t result);
 // extern void			v1_3_bigIntGetExternalBalance(void *context, int32_t addressOffset, int32_t result);
 import "C"
@@ -250,6 +251,8 @@ func BigIntImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 		return nil, err
 	}
 
+	imports, err = imports.Append("bigIntGetESDTCallValueByIndex", v1_3_bigIntGetESDTCallValueByIndex, C.v1_3_bigIntGetESDTCallValueByIndex)
+
 	return imports, nil
 }
 
@@ -366,6 +369,11 @@ func v1_3_bigIntGetCallValue(context unsafe.Pointer, destination int32) {
 
 //export v1_3_bigIntGetESDTCallValue
 func v1_3_bigIntGetESDTCallValue(context unsafe.Pointer, destination int32) {
+	v1_3_bigIntGetESDTCallValueByIndex(context, destination, 0)
+}
+
+//export v1_3_bigIntGetESDTCallValueByIndex
+func v1_3_bigIntGetESDTCallValueByIndex(context unsafe.Pointer, destination int32, index int32) {
 	bigInt := arwen.GetBigIntContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -374,8 +382,10 @@ func v1_3_bigIntGetESDTCallValue(context unsafe.Pointer, destination int32) {
 	metering.UseGas(gasToUse)
 
 	value := bigInt.GetOne(destination)
-	esdtTransfer := getFirstESDTTransferIfExist(runtime.GetVMInput())
-	value.Set(esdtTransfer.ESDTValue)
+	esdtTransfer := getESDTTransferFromInput(runtime.GetVMInput(), index)
+	if esdtTransfer != nil {
+		value.Set(esdtTransfer.ESDTValue)
+	}
 }
 
 //export v1_3_bigIntGetExternalBalance

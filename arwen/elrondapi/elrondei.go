@@ -6,80 +6,85 @@ package elrondapi
 // typedef unsigned char uint8_t;
 // typedef int int32_t;
 //
-// extern void			v1_3_getSCAddress(void *context, int32_t resultOffset);
-// extern void			v1_3_getOwnerAddress(void *context, int32_t resultOffset);
-// extern int32_t		v1_3_getShardOfAddress(void *context, int32_t addressOffset);
-// extern int32_t		v1_3_isSmartContract(void *context, int32_t addressOffset);
-// extern void			v1_3_getExternalBalance(void *context, int32_t addressOffset, int32_t resultOffset);
-// extern int32_t		v1_3_blockHash(void *context, long long nonce, int32_t resultOffset);
-// extern int32_t		v1_3_transferValue(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
-// extern int32_t		v1_3_transferESDT(void *context, int32_t dstOffset, int32_t tokenIDOffset, int32_t tokenIdLen, int32_t valueOffset, long long gasLimit, int32_t dataOffset, int32_t length);
-// extern int32_t		v1_3_transferESDTExecute(void *context, int32_t dstOffset, int32_t tokenIDOffset, int32_t tokenIdLen, int32_t valueOffset, long long gasLimit, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
-// extern int32_t		v1_3_transferESDTNFTExecute(void *context, int32_t dstOffset, int32_t tokenIDOffset, int32_t tokenIdLen, int32_t valueOffset, long long nonce, long long gasLimit, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
-// extern int32_t		v1_3_transferValueExecute(void *context, int32_t dstOffset, int32_t valueOffset, long long gasLimit, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
-// extern int32_t		v1_3_getArgumentLength(void *context, int32_t id);
-// extern int32_t		v1_3_getArgument(void *context, int32_t id, int32_t argOffset);
-// extern int32_t		v1_3_getFunction(void *context, int32_t functionOffset);
-// extern int32_t		v1_3_getNumArguments(void *context);
-// extern int32_t		v1_3_storageStore(void *context, int32_t keyOffset, int32_t keyLength , int32_t dataOffset, int32_t dataLength);
-// extern int32_t		v1_3_storageLoadLength(void *context, int32_t keyOffset, int32_t keyLength );
-// extern int32_t		v1_3_storageLoad(void *context, int32_t keyOffset, int32_t keyLength , int32_t dataOffset);
-// extern int32_t		v1_3_storageLoadFromAddress(void *context, int32_t addressOffset, int32_t keyOffset, int32_t keyLength , int32_t dataOffset);
-// extern void			v1_3_getCaller(void *context, int32_t resultOffset);
-// extern void			v1_3_checkNoPayment(void *context);
-// extern int32_t		v1_3_callValue(void *context, int32_t resultOffset);
-// extern int32_t		v1_3_getESDTValue(void *context, int32_t resultOffset);
-// extern int32_t		v1_3_getESDTTokenName(void *context, int32_t resultOffset);
+// extern void		v1_3_getSCAddress(void *context, int32_t resultOffset);
+// extern void		v1_3_getOwnerAddress(void *context, int32_t resultOffset);
+// extern int32_t	v1_3_getShardOfAddress(void *context, int32_t addressOffset);
+// extern int32_t	v1_3_isSmartContract(void *context, int32_t addressOffset);
+// extern void		v1_3_getExternalBalance(void *context, int32_t addressOffset, int32_t resultOffset);
+// extern int32_t	v1_3_blockHash(void *context, long long nonce, int32_t resultOffset);
+// extern int32_t	v1_3_transferValue(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
+// extern int32_t	v1_3_transferESDT(void *context, int32_t dstOffset, int32_t tokenIDOffset, int32_t tokenIdLen, int32_t valueOffset, long long gasLimit, int32_t dataOffset, int32_t length);
+// extern int32_t	v1_3_transferESDTExecute(void *context, int32_t dstOffset, int32_t tokenIDOffset, int32_t tokenIdLen, int32_t valueOffset, long long gasLimit, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern int32_t	v1_3_transferESDTNFTExecute(void *context, int32_t dstOffset, int32_t tokenIDOffset, int32_t tokenIdLen, int32_t valueOffset, long long nonce, long long gasLimit, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern int32_t	v1_3_transferValueExecute(void *context, int32_t dstOffset, int32_t valueOffset, long long gasLimit, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern int32_t	v1_3_getArgumentLength(void *context, int32_t id);
+// extern int32_t	v1_3_getArgument(void *context, int32_t id, int32_t argOffset);
+// extern int32_t	v1_3_getFunction(void *context, int32_t functionOffset);
+// extern int32_t	v1_3_getNumArguments(void *context);
+// extern int32_t	v1_3_storageStore(void *context, int32_t keyOffset, int32_t keyLength , int32_t dataOffset, int32_t dataLength);
+// extern int32_t	v1_3_storageLoadLength(void *context, int32_t keyOffset, int32_t keyLength );
+// extern int32_t	v1_3_storageLoad(void *context, int32_t keyOffset, int32_t keyLength , int32_t dataOffset);
+// extern int32_t	v1_3_storageLoadFromAddress(void *context, int32_t addressOffset, int32_t keyOffset, int32_t keyLength , int32_t dataOffset);
+// extern void		v1_3_getCaller(void *context, int32_t resultOffset);
+// extern void		v1_3_checkNoPayment(void *context);
+// extern int32_t	v1_3_callValue(void *context, int32_t resultOffset);
+// extern int32_t	v1_3_getESDTValue(void *context, int32_t resultOffset);
+// extern int32_t	v1_3_getESDTTokenName(void *context, int32_t resultOffset);
 // extern long long	v1_3_getESDTTokenNonce(void *context);
-// extern int32_t		v1_3_getESDTTokenType(void *context);
+// extern int32_t	v1_3_getESDTTokenType(void *context);
+// extern int32_t	v1_3_getCallValueTokenName(void *context, int32_t callValueOffset, int32_t tokenNameOffset);
+// extern int32_t	v1_3_getESDTValueByIndex(void *context, int32_t resultOffset, int32_t index);
+// extern int32_t	v1_3_getESDTTokenNameByIndex(void *context, int32_t resultOffset, int32_t index);
+// extern long long	v1_3_getESDTTokenNonceByIndex(void *context, int32_t index);
+// extern int32_t	v1_3_getESDTTokenTypeByIndex(void *context, int32_t index);
+// extern int32_t	v1_3_getCallValueTokenNamByIndexe(void *context, int32_t callValueOffset, int32_t tokenNameOffset, int32_t index);
 // extern long long v1_3_getCurrentESDTNFTNonce(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen);
-// extern int32_t		v1_3_getCallValueTokenName(void *context, int32_t callValueOffset, int32_t tokenNameOffset);
-// extern void			v1_3_writeLog(void *context, int32_t pointer, int32_t length, int32_t topicPtr, int32_t numTopics);
-// extern void			v1_3_writeEventLog(void *context, int32_t numTopics, int32_t topicLengthsOffset, int32_t topicOffset, int32_t dataOffset, int32_t dataLength);
-// extern void			v1_3_returnData(void* context, int32_t dataOffset, int32_t length);
-// extern void			v1_3_signalError(void* context, int32_t messageOffset, int32_t messageLength);
+// extern void		v1_3_writeLog(void *context, int32_t pointer, int32_t length, int32_t topicPtr, int32_t numTopics);
+// extern void		v1_3_writeEventLog(void *context, int32_t numTopics, int32_t topicLengthsOffset, int32_t topicOffset, int32_t dataOffset, int32_t dataLength);
+// extern void		v1_3_returnData(void* context, int32_t dataOffset, int32_t length);
+// extern void		v1_3_signalError(void* context, int32_t messageOffset, int32_t messageLength);
 // extern long long v1_3_getGasLeft(void *context);
-// extern int32_t		v1_3_getESDTBalance(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce, int32_t resultOffset);
-// extern int32_t		v1_3_getESDTNFTNameLength(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce);
-// extern int32_t		v1_3_getESDTNFTAttributeLength(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce);
-// extern int32_t		v1_3_getESDTNFTURILength(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce);
-// extern int32_t		v1_3_getESDTTokenData(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce, int32_t valueOffset, int32_t propertiesOffset, int32_t hashOffset, int32_t nameOffset, int32_t attributesOffset, int32_t creatorOffset, int32_t royaltiesOffset, int32_t urisOffset);
+// extern int32_t	v1_3_getESDTBalance(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce, int32_t resultOffset);
+// extern int32_t	v1_3_getESDTNFTNameLength(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce);
+// extern int32_t	v1_3_getESDTNFTAttributeLength(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce);
+// extern int32_t	v1_3_getESDTNFTURILength(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce);
+// extern int32_t	v1_3_getESDTTokenData(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce, int32_t valueOffset, int32_t propertiesOffset, int32_t hashOffset, int32_t nameOffset, int32_t attributesOffset, int32_t creatorOffset, int32_t royaltiesOffset, int32_t urisOffset);
 //
-// extern int32_t		v1_3_executeOnDestContext(void *context, long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
-// extern int32_t		v1_3_executeOnDestContextByCaller(void *context, long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
-// extern int32_t		v1_3_executeOnSameContext(void *context, long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
-// extern int32_t		v1_3_delegateExecution(void *context, long long gas, int32_t addressOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
-// extern int32_t		v1_3_executeReadOnly(void *context, long long gas, int32_t addressOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
-// extern int32_t		v1_3_createContract(void *context, long long gas, int32_t valueOffset, int32_t codeOffset, int32_t codeMetadataOffset, int32_t length, int32_t resultOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
-// extern int32_t		v1_3_deployFromSourceContract(void *context, long long gas, int32_t valueOffset, int32_t addressOffset, int32_t codeMetadataOffset, int32_t resultOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
-// extern void			v1_3_upgradeContract(void *context, int32_t dstOffset, long long gas, int32_t valueOffset, int32_t codeOffset, int32_t codeMetadataOffset, int32_t length, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
-// extern void			v1_3_upgradeFromSourceContract(void *context, int32_t dstOffset, long long gas, int32_t valueOffset, int32_t addressOffset, int32_t codeMetadataOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
-// extern void			v1_3_asyncCall(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
-// extern void			v1_3_createAsyncCall(void *context, int32_t identifierOffset, int32_t identifierLength, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length, int32_t successCallback, int32_t successLength, int32_t errorCallback, int32_t errorLength, long long gas);
-// extern int32_t		v1_3_setAsyncContextCallback(void *context, int32_t identifierOffset, int32_t identifierLength, int32_t callback, int32_t callbackLength);
+// extern int32_t	v1_3_executeOnDestContext(void *context, long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern int32_t	v1_3_executeOnDestContextByCaller(void *context, long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern int32_t	v1_3_executeOnSameContext(void *context, long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern int32_t	v1_3_delegateExecution(void *context, long long gas, int32_t addressOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern int32_t	v1_3_executeReadOnly(void *context, long long gas, int32_t addressOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern int32_t	v1_3_createContract(void *context, long long gas, int32_t valueOffset, int32_t codeOffset, int32_t codeMetadataOffset, int32_t length, int32_t resultOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern int32_t	v1_3_deployFromSourceContract(void *context, long long gas, int32_t valueOffset, int32_t addressOffset, int32_t codeMetadataOffset, int32_t resultOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern void		v1_3_upgradeContract(void *context, int32_t dstOffset, long long gas, int32_t valueOffset, int32_t codeOffset, int32_t codeMetadataOffset, int32_t length, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern void		v1_3_upgradeFromSourceContract(void *context, int32_t dstOffset, long long gas, int32_t valueOffset, int32_t addressOffset, int32_t codeMetadataOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern void		v1_3_asyncCall(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
+// extern void		v1_3_createAsyncCall(void *context, int32_t identifierOffset, int32_t identifierLength, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length, int32_t successCallback, int32_t successLength, int32_t errorCallback, int32_t errorLength, long long gas);
+// extern int32_t	v1_3_setAsyncContextCallback(void *context, int32_t identifierOffset, int32_t identifierLength, int32_t callback, int32_t callbackLength);
 //
-// extern int32_t		v1_3_getNumReturnData(void *context);
-// extern int32_t		v1_3_getReturnDataSize(void *context, int32_t resultID);
-// extern int32_t		v1_3_getReturnData(void *context, int32_t resultID, int32_t dataOffset);
+// extern int32_t	v1_3_getNumReturnData(void *context);
+// extern int32_t	v1_3_getReturnDataSize(void *context, int32_t resultID);
+// extern int32_t	v1_3_getReturnData(void *context, int32_t resultID, int32_t dataOffset);
 //
-// extern int32_t		v1_3_setStorageLock(void *context, int32_t keyOffset, int32_t keyLength, long long lockTimestamp);
+// extern int32_t	v1_3_setStorageLock(void *context, int32_t keyOffset, int32_t keyLength, long long lockTimestamp);
 // extern long long v1_3_getStorageLock(void *context, int32_t keyOffset, int32_t keyLength);
-// extern int32_t		v1_3_isStorageLocked(void *context, int32_t keyOffset, int32_t keyLength);
-// extern int32_t		v1_3_clearStorageLock(void *context, int32_t keyOffset, int32_t keyLength);
+// extern int32_t	v1_3_isStorageLocked(void *context, int32_t keyOffset, int32_t keyLength);
+// extern int32_t	v1_3_clearStorageLock(void *context, int32_t keyOffset, int32_t keyLength);
 //
 // extern long long v1_3_getBlockTimestamp(void *context);
 // extern long long v1_3_getBlockNonce(void *context);
 // extern long long v1_3_getBlockRound(void *context);
 // extern long long v1_3_getBlockEpoch(void *context);
-// extern void			v1_3_getBlockRandomSeed(void *context, int32_t resultOffset);
-// extern void			v1_3_getStateRootHash(void *context, int32_t resultOffset);
+// extern void		v1_3_getBlockRandomSeed(void *context, int32_t resultOffset);
+// extern void		v1_3_getStateRootHash(void *context, int32_t resultOffset);
 //
 // extern long long v1_3_getPrevBlockTimestamp(void *context);
 // extern long long v1_3_getPrevBlockNonce(void *context);
 // extern long long v1_3_getPrevBlockRound(void *context);
 // extern long long v1_3_getPrevBlockEpoch(void *context);
-// extern void			v1_3_getPrevBlockRandomSeed(void *context, int32_t resultOffset);
-// extern void			v1_3_getOriginalTxHash(void *context, int32_t resultOffset);
+// extern void		v1_3_getPrevBlockRandomSeed(void *context, int32_t resultOffset);
+// extern void		v1_3_getOriginalTxHash(void *context, int32_t resultOffset);
 import "C"
 
 import (
@@ -101,14 +106,12 @@ import (
 
 var logEEI = logger.GetOrCreate("arwen/eei")
 
-func getFirstESDTTransferIfExist(vmInput *vmcommon.VMInput) *vmcommon.ESDTTransfer {
+func getESDTTransferFromInput(vmInput *vmcommon.VMInput, index int32) *vmcommon.ESDTTransfer {
 	esdtTransfers := vmInput.ESDTTransfers
-	if len(esdtTransfers) > 0 {
-		return esdtTransfers[0]
+	if int32(len(esdtTransfers)) > index {
+		return nil
 	}
-	return &vmcommon.ESDTTransfer{
-		ESDTValue: big.NewInt(0),
-	}
+	return esdtTransfers[index]
 }
 
 // ElrondEIImports creates a new wasmer.Imports populated with the ElrondEI API methods
@@ -281,12 +284,37 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getCurrentESDTNFTNonce", v1_3_getCurrentESDTNFTNonce, C.v1_3_getCurrentESDTNFTNonce)
+	imports, err = imports.Append("getCallValueTokenName", v1_3_getCallValueTokenName, C.v1_3_getCallValueTokenName)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("getCallValueTokenName", v1_3_getCallValueTokenName, C.v1_3_getCallValueTokenName)
+	imports, err = imports.Append("getESDTValueByIndex", v1_3_getESDTValueByIndex, C.v1_3_getESDTValueByIndex)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getESDTTokenNameByIndex", v1_3_getESDTTokenNameByIndex, C.v1_3_getESDTTokenNameByIndex)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getESDTTokenTypeByIndex", v1_3_getESDTTokenTypeByIndex, C.v1_3_getESDTTokenTypeByIndex)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getESDTTokenNonceByIndex", v1_3_getESDTTokenNonceByIndex, C.v1_3_getESDTTokenNonceByIndex)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getCallValueTokenNameByIndex", v1_3_getCallValueTokenNameByIndex, C.v1_3_getCallValueTokenNameByIndex)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getCurrentESDTNFTNonce", v1_3_getCurrentESDTNFTNonce, C.v1_3_getCurrentESDTNFTNonce)
 	if err != nil {
 		return nil, err
 	}
@@ -1864,6 +1892,11 @@ func v1_3_callValue(context unsafe.Pointer, resultOffset int32) int32 {
 
 //export v1_3_getESDTValue
 func v1_3_getESDTValue(context unsafe.Pointer, resultOffset int32) int32 {
+	return v1_3_getESDTValueByIndex(context, resultOffset, 0)
+}
+
+//export v1_3_getESDTValueByIndex
+func v1_3_getESDTValueByIndex(context unsafe.Pointer, resultOffset int32, index int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -1872,8 +1905,8 @@ func v1_3_getESDTValue(context unsafe.Pointer, resultOffset int32) int32 {
 
 	var value []byte
 
-	esdtTransfer := getFirstESDTTransferIfExist(runtime.GetVMInput())
-	if esdtTransfer.ESDTValue.Cmp(arwen.Zero) > 0 {
+	esdtTransfer := getESDTTransferFromInput(runtime.GetVMInput(), index)
+	if esdtTransfer != nil && esdtTransfer.ESDTValue.Cmp(arwen.Zero) > 0 {
 		value = esdtTransfer.ESDTValue.Bytes()
 		value = arwen.PadBytesLeft(value, arwen.BalanceLen)
 	}
@@ -1888,14 +1921,22 @@ func v1_3_getESDTValue(context unsafe.Pointer, resultOffset int32) int32 {
 
 //export v1_3_getESDTTokenName
 func v1_3_getESDTTokenName(context unsafe.Pointer, resultOffset int32) int32 {
+	return v1_3_getESDTTokenNameByIndex(context, resultOffset, 0)
+}
+
+//export v1_3_getESDTTokenNameByIndex
+func v1_3_getESDTTokenNameByIndex(context unsafe.Pointer, resultOffset int32, index int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetCallValue
 	metering.UseGas(gasToUse)
 
-	esdtTransfer := getFirstESDTTransferIfExist(runtime.GetVMInput())
-	tokenName := esdtTransfer.ESDTTokenName
+	esdtTransfer := getESDTTransferFromInput(runtime.GetVMInput(), index)
+	var tokenName []byte
+	if esdtTransfer != nil {
+		tokenName = esdtTransfer.ESDTTokenName
+	}
 
 	err := runtime.MemStore(resultOffset, tokenName)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -1907,14 +1948,23 @@ func v1_3_getESDTTokenName(context unsafe.Pointer, resultOffset int32) int32 {
 
 //export v1_3_getESDTTokenNonce
 func v1_3_getESDTTokenNonce(context unsafe.Pointer) int64 {
+	return v1_3_getESDTTokenNonceByIndex(context, 0)
+}
+
+//export v1_3_getESDTTokenNonceByIndex
+func v1_3_getESDTTokenNonceByIndex(context unsafe.Pointer, index int32) int64 {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetCallValue
 	metering.UseGas(gasToUse)
 
-	esdtTransfer := getFirstESDTTransferIfExist(runtime.GetVMInput())
-	return int64(esdtTransfer.ESDTTokenNonce)
+	esdtTransfer := getESDTTransferFromInput(runtime.GetVMInput(), index)
+	nonce := uint64(0)
+	if esdtTransfer != nil {
+		nonce = esdtTransfer.ESDTTokenNonce
+	}
+	return int64(nonce)
 }
 
 //export v1_3_getCurrentESDTNFTNonce
@@ -1945,18 +1995,31 @@ func v1_3_getCurrentESDTNFTNonce(context unsafe.Pointer, addressOffset int32, to
 
 //export v1_3_getESDTTokenType
 func v1_3_getESDTTokenType(context unsafe.Pointer) int32 {
+	return v1_3_getESDTTokenTypeByIndex(context, 0)
+}
+
+//export v1_3_getESDTTokenTypeByIndex
+func v1_3_getESDTTokenTypeByIndex(context unsafe.Pointer, index int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetCallValue
 	metering.UseGas(gasToUse)
 
-	esdtTransfer := getFirstESDTTransferIfExist(runtime.GetVMInput())
-	return int32(esdtTransfer.ESDTTokenType)
+	esdtTransfer := getESDTTransferFromInput(runtime.GetVMInput(), index)
+	if esdtTransfer != nil {
+		return int32(esdtTransfer.ESDTTokenType)
+	}
+	return 0
 }
 
 //export v1_3_getCallValueTokenName
 func v1_3_getCallValueTokenName(context unsafe.Pointer, callValueOffset int32, tokenNameOffset int32) int32 {
+	return v1_3_getCallValueTokenNameByIndex(context, callValueOffset, tokenNameOffset, 0)
+}
+
+//export v1_3_getCallValueTokenNameByIndex
+func v1_3_getCallValueTokenNameByIndex(context unsafe.Pointer, callValueOffset int32, tokenNameOffset int32, index int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -1965,9 +2028,9 @@ func v1_3_getCallValueTokenName(context unsafe.Pointer, callValueOffset int32, t
 
 	callValue := runtime.GetVMInput().CallValue.Bytes()
 	tokenName := make([]byte, 0)
-	esdtTransfer := getFirstESDTTransferIfExist(runtime.GetVMInput())
+	esdtTransfer := getESDTTransferFromInput(runtime.GetVMInput(), index)
 
-	if len(esdtTransfer.ESDTTokenName) > 0 {
+	if esdtTransfer != nil {
 		tokenName = make([]byte, 0, len(esdtTransfer.ESDTTokenName))
 		copy(tokenName, esdtTransfer.ESDTTokenName)
 		callValue = esdtTransfer.ESDTValue.Bytes()
