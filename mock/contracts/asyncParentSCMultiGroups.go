@@ -5,6 +5,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
 	"github.com/stretchr/testify/require"
@@ -14,11 +15,6 @@ var AsyncGroupsConfig = [][]string{
 	{"reserveHousingGroup", "reserveMotel", "reserveHotel"},
 	{"reserveTravelGroup", "reserveTrain", "reserveCar", "reserveAirplane"},
 }
-
-var AsyncReturnDataSuffix = "_returnData"
-var AsyncCallbackPrefix = "callback_"
-
-var AsyncContextCallbackFunction = "contextCallback"
 
 // ForwardAsyncCallMultiGroupsMock is an exposed mock contract method
 func ForwardAsyncCallMultiGroupsMock(instanceMock *mock.InstanceMock, testConfig *test.TestConfig) {
@@ -40,7 +36,7 @@ func ForwardAsyncCallMultiGroupsMock(instanceMock *mock.InstanceMock, testConfig
 				functionName := groupConfig[g]
 				callData.Func(functionName)
 				// child will return this
-				callData.Str(functionName + AsyncReturnDataSuffix)
+				callData.Str(functionName + testcommon.AsyncReturnDataSuffix)
 
 				err := async.RegisterAsyncCall(groupName, &arwen.AsyncCall{
 					Status:          arwen.AsyncCallPending,
@@ -48,21 +44,21 @@ func ForwardAsyncCallMultiGroupsMock(instanceMock *mock.InstanceMock, testConfig
 					Data:            callData.ToBytes(),
 					ValueBytes:      value,
 					GasLimit:        testConfig.GasProvidedToChild,
-					SuccessCallback: AsyncCallbackPrefix + functionName,
-					ErrorCallback:   AsyncCallbackPrefix + functionName,
+					SuccessCallback: testcommon.AsyncCallbackPrefix + functionName,
+					ErrorCallback:   testcommon.AsyncCallbackPrefix + functionName,
 				})
 				require.Nil(t, err)
 			}
 
 			async.SetGroupCallback(
 				groupName,
-				AsyncCallbackPrefix+groupName,
+				testcommon.AsyncCallbackPrefix+groupName,
 				nil,
 				testConfig.GasProvidedToCallback)
 		}
 
 		async.SetContextCallback(
-			AsyncContextCallbackFunction,
+			testcommon.AsyncContextCallbackFunction,
 			nil,
 			testConfig.GasProvidedToCallback)
 
@@ -77,23 +73,23 @@ func CallBackMultiGroupsMock(instanceMock *mock.InstanceMock, testConfig *test.T
 		groupName := groupConfig[0]
 		for g := 1; g < len(groupConfig); g++ {
 			functionName := groupConfig[g]
-			instanceMock.AddMockMethod(AsyncCallbackPrefix+functionName,
+			instanceMock.AddMockMethod(testcommon.AsyncCallbackPrefix+functionName,
 				test.WasteGasWithReturnDataMockMethod(
 					instanceMock,
 					testConfig.GasUsedByCallback,
-					[]byte(AsyncCallbackPrefix+functionName+AsyncReturnDataSuffix)))
+					[]byte(testcommon.AsyncCallbackPrefix+functionName+testcommon.AsyncReturnDataSuffix)))
 		}
 
-		instanceMock.AddMockMethod(AsyncCallbackPrefix+groupName,
+		instanceMock.AddMockMethod(testcommon.AsyncCallbackPrefix+groupName,
 			test.WasteGasWithReturnDataMockMethod(
 				instanceMock,
 				testConfig.GasUsedByCallback,
-				[]byte(AsyncCallbackPrefix+groupName+AsyncReturnDataSuffix)))
+				[]byte(testcommon.AsyncCallbackPrefix+groupName+testcommon.AsyncReturnDataSuffix)))
 
-		instanceMock.AddMockMethod(AsyncContextCallbackFunction,
+		instanceMock.AddMockMethod(testcommon.AsyncContextCallbackFunction,
 			test.WasteGasWithReturnDataMockMethod(
 				instanceMock,
 				testConfig.GasUsedByCallback,
-				[]byte(AsyncContextCallbackFunction+AsyncReturnDataSuffix)))
+				[]byte(testcommon.AsyncContextCallbackFunction+testcommon.AsyncReturnDataSuffix)))
 	}
 }

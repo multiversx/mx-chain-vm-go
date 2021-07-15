@@ -43,6 +43,8 @@ type testSmartContract struct {
 type MockTestSmartContract struct {
 	testSmartContract
 	initMethods []func(*mock.InstanceMock, *TestConfig)
+	// used only for async tree call building
+	tempFunctionsList map[string]bool
 }
 
 // CreateMockContract build a contract to be used in a test creted with BuildMockInstanceCallTest
@@ -57,6 +59,7 @@ func CreateMockContractOnShard(address []byte, shardID uint32) *MockTestSmartCon
 			address: address,
 			shardID: shardID,
 		},
+		tempFunctionsList: make(map[string]bool, 0),
 	}
 }
 

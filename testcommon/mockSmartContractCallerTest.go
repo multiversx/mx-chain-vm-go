@@ -1,6 +1,7 @@
 package testcommon
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
@@ -91,6 +92,7 @@ func SimpleWasteGasMockMethod(instanceMock *mock.InstanceMock, gas uint64) func(
 func WasteGasWithReturnDataMockMethod(instanceMock *mock.InstanceMock, gas uint64, returnData []byte) func() *mock.InstanceMock {
 	return func() *mock.InstanceMock {
 		host := instanceMock.Host
+		fmt.Println("Executing " + host.Runtime().Function() + " on " + string(host.Runtime().GetSCAddress()))
 		instance := mock.GetMockInstance(host)
 
 		err := host.Metering().UseGasBounded(gas)

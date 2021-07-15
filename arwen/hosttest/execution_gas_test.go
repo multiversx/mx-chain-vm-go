@@ -1293,13 +1293,13 @@ func TestGasUsed_AsyncCall_Groups(t *testing.T) {
 	for _, groupConfig := range contracts.AsyncGroupsConfig {
 		groupName := groupConfig[0]
 		for g := 1; g < len(groupConfig); g++ {
-			functionReturnData := groupConfig[g] + contracts.AsyncReturnDataSuffix
+			functionReturnData := groupConfig[g] + test.AsyncReturnDataSuffix
 			expectedReturnData = append(expectedReturnData, []byte(functionReturnData))
-			expectedReturnData = append(expectedReturnData, []byte(contracts.AsyncCallbackPrefix+functionReturnData))
+			expectedReturnData = append(expectedReturnData, []byte(test.AsyncCallbackPrefix+functionReturnData))
 		}
-		expectedReturnData = append(expectedReturnData, []byte(contracts.AsyncCallbackPrefix+groupName+contracts.AsyncReturnDataSuffix))
+		expectedReturnData = append(expectedReturnData, []byte(test.AsyncCallbackPrefix+groupName+test.AsyncReturnDataSuffix))
 	}
-	expectedReturnData = append(expectedReturnData, []byte(contracts.AsyncContextCallbackFunction+contracts.AsyncReturnDataSuffix))
+	expectedReturnData = append(expectedReturnData, []byte(test.AsyncContextCallbackFunction+test.AsyncReturnDataSuffix))
 
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
@@ -1326,6 +1326,41 @@ func TestGasUsed_AsyncCall_Groups(t *testing.T) {
 			verify.
 				Ok().
 				ReturnData(expectedReturnData...)
+		})
+}
+
+func TestGasUsed_AsyncCall_CallTree(t *testing.T) {
+	testConfig := makeTestConfig()
+	testConfig.GasProvided = 100_000
+	testConfig.GasProvidedToChild = 10_000
+
+	callTree := test.CreateCallTree(test.BuildAsyncTestCall("sc1", "g", "f1", ""))
+	root := callTree.GetRoot()
+
+	ch1 := root.AddChild(test.BuildAsyncTestCall("sc1_2", "g", "f2", "cb2"))
+	ch2 := root.AddChild(test.BuildAsyncTestCall("sc1_3", "g", "f3", "cb3"))
+
+	ch1.AddChild(test.BuildAsyncTestCall("sc1_2_1", "g", "f4", "cb4"))
+	ch1.AddChild(test.BuildAsyncTestCall("sc1_2_2", "g", "f5", "cb5"))
+
+	ch2.AddChild(test.BuildAsyncTestCall("sc1_3_1", "g", "f6", "cb6"))
+
+	test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContractsFromAsyncTestCallTree(callTree, testConfig)...,
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr([]byte(root.GetAsyncTestCall().ContractAddress)).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction(root.GetAsyncTestCall().FunctionName).
+			Build()).
+		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+			setZeroCodeCosts(host)
+			setAsyncCosts(host, testConfig.GasLockCost)
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok()
 		})
 }
 
