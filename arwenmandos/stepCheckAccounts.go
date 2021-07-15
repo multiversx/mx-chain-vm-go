@@ -6,10 +6,10 @@ import (
 	"math/big"
 	"strings"
 
-	er "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/expression/reconstructor"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/model"
-	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/orderedjson"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
+	er "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/expression/reconstructor"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
+	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/orderedjson"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
 )
@@ -186,20 +186,20 @@ func (ae *ArwenTestExecutor) checkAccountESDT(expectedAcct *mj.CheckAccount, mat
 					Value:    []byte(tokenName),
 					Original: ae.exprReconstructor.Reconstruct([]byte(tokenName), er.StrHint),
 				},
-				Instances: nil,
+				Instances: []*mj.CheckESDTInstance{},
 				LastNonce: mj.JSONCheckUint64{Value: 0, Original: ""},
-				Roles:     nil,
+				Roles:     []string{},
 			}
 		} else if accountToken == nil {
 			accountToken = &worldmock.MockESDTData{
 				TokenIdentifier: []byte(tokenName),
-				Instances:       nil,
+				Instances:       []*esdt.ESDigitalToken{},
 				LastNonce:       0,
-				Roles:           nil,
+				Roles:           [][]byte{},
 			}
-		} else {
-			errors = append(errors, ae.checkTokenState(accountAddress, tokenName, expectedToken, accountToken)...)
 		}
+
+		errors = append(errors, ae.checkTokenState(accountAddress, tokenName, expectedToken, accountToken)...)
 	}
 
 	errorString := makeErrorString(errors)
@@ -282,80 +282,81 @@ func (ae *ArwenTestExecutor) checkTokenInstances(
 					Nonce: nonce,
 				},
 			}
-		} else {
-			if !expectedInstance.Balance.Check(accountInstance.Value) {
-				errors = append(errors, fmt.Errorf(
-					"for token: %s, nonce: %d: Bad balance. Want: \"%s\". Have: \"%d\"",
-					tokenName,
-					nonce,
-					expectedInstance.Balance.Original,
-					accountInstance.Value))
-			}
-			if !expectedInstance.Creator.IsUnspecified() &&
-				!expectedInstance.Creator.Check(accountInstance.TokenMetaData.Creator) {
-				errors = append(errors, fmt.Errorf(
-					"for token: %s, nonce: %d: Bad creator. Want: %s. Have: \"%s\"",
-					tokenName,
-					nonce,
-					oj.JSONString(expectedInstance.Creator.Original),
-					ae.exprReconstructor.Reconstruct(
-						accountInstance.TokenMetaData.Creator,
-						er.AddressHint)))
-			}
-			if !expectedInstance.Royalties.IsUnspecified() &&
-				!expectedInstance.Royalties.Check(uint64(accountInstance.TokenMetaData.Royalties)) {
-				errors = append(errors, fmt.Errorf(
-					"for token: %s, nonce: %d: Bad royalties. Want: \"%s\". Have: \"%s\"",
-					tokenName,
-					nonce,
-					expectedInstance.Royalties.Original,
-					ae.exprReconstructor.ReconstructFromUint64(
-						uint64(accountInstance.TokenMetaData.Royalties))))
-			}
-			if !expectedInstance.Hash.IsUnspecified() &&
-				!expectedInstance.Hash.Check(accountInstance.TokenMetaData.Hash) {
-				errors = append(errors, fmt.Errorf(
-					"for token: %s, nonce: %d: Bad hash. Want: %s. Have: %s",
-					tokenName,
-					nonce,
-					oj.JSONString(expectedInstance.Hash.Original),
-					ae.exprReconstructor.Reconstruct(
-						accountInstance.TokenMetaData.Hash,
-						er.NoHint)))
-			}
-			if len(accountInstance.TokenMetaData.URIs) > 1 {
-				errors = append(errors, fmt.Errorf(
-					"for token: %s, nonce: %d: More than one URI currently not supported",
-					tokenName,
-					nonce))
-			}
-			var actualUri []byte
-			if len(accountInstance.TokenMetaData.URIs) == 1 {
-				actualUri = accountInstance.TokenMetaData.URIs[0]
-			}
-			if !expectedInstance.Uri.IsUnspecified() &&
-				!expectedInstance.Uri.Check(actualUri) {
-				errors = append(errors, fmt.Errorf(
-					"for token: %s, nonce: %d: Bad URI. Want: %s. Have: \"%s\"",
-					tokenName,
-					nonce,
-					oj.JSONString(expectedInstance.Uri.Original),
-					ae.exprReconstructor.Reconstruct(
-						actualUri,
-						er.StrHint)))
-			}
-			if !expectedInstance.Attributes.IsUnspecified() &&
-				!expectedInstance.Attributes.Check(accountInstance.TokenMetaData.Attributes) {
-				errors = append(errors, fmt.Errorf(
-					"for token: %s, nonce: %d: Bad attributes. Want: %s. Have: \"%s\"",
-					tokenName,
-					nonce,
-					oj.JSONString(expectedInstance.Attributes.Original),
-					ae.exprReconstructor.Reconstruct(
-						accountInstance.TokenMetaData.Attributes,
-						er.StrHint)))
-			}
 		}
+
+		if !expectedInstance.Balance.Check(accountInstance.Value) {
+			errors = append(errors, fmt.Errorf(
+				"for token: %s, nonce: %d: Bad balance. Want: \"%s\". Have: \"%d\"",
+				tokenName,
+				nonce,
+				expectedInstance.Balance.Original,
+				accountInstance.Value))
+		}
+		if !expectedInstance.Creator.IsUnspecified() &&
+			!expectedInstance.Creator.Check(accountInstance.TokenMetaData.Creator) {
+			errors = append(errors, fmt.Errorf(
+				"for token: %s, nonce: %d: Bad creator. Want: %s. Have: \"%s\"",
+				tokenName,
+				nonce,
+				oj.JSONString(expectedInstance.Creator.Original),
+				ae.exprReconstructor.Reconstruct(
+					accountInstance.TokenMetaData.Creator,
+					er.AddressHint)))
+		}
+		if !expectedInstance.Royalties.IsUnspecified() &&
+			!expectedInstance.Royalties.Check(uint64(accountInstance.TokenMetaData.Royalties)) {
+			errors = append(errors, fmt.Errorf(
+				"for token: %s, nonce: %d: Bad royalties. Want: \"%s\". Have: \"%s\"",
+				tokenName,
+				nonce,
+				expectedInstance.Royalties.Original,
+				ae.exprReconstructor.ReconstructFromUint64(
+					uint64(accountInstance.TokenMetaData.Royalties))))
+		}
+		if !expectedInstance.Hash.IsUnspecified() &&
+			!expectedInstance.Hash.Check(accountInstance.TokenMetaData.Hash) {
+			errors = append(errors, fmt.Errorf(
+				"for token: %s, nonce: %d: Bad hash. Want: %s. Have: %s",
+				tokenName,
+				nonce,
+				oj.JSONString(expectedInstance.Hash.Original),
+				ae.exprReconstructor.Reconstruct(
+					accountInstance.TokenMetaData.Hash,
+					er.NoHint)))
+		}
+		if len(accountInstance.TokenMetaData.URIs) > 1 {
+			errors = append(errors, fmt.Errorf(
+				"for token: %s, nonce: %d: More than one URI currently not supported",
+				tokenName,
+				nonce))
+		}
+		var actualUri []byte
+		if len(accountInstance.TokenMetaData.URIs) == 1 {
+			actualUri = accountInstance.TokenMetaData.URIs[0]
+		}
+		if !expectedInstance.Uri.IsUnspecified() &&
+			!expectedInstance.Uri.Check(actualUri) {
+			errors = append(errors, fmt.Errorf(
+				"for token: %s, nonce: %d: Bad URI. Want: %s. Have: \"%s\"",
+				tokenName,
+				nonce,
+				oj.JSONString(expectedInstance.Uri.Original),
+				ae.exprReconstructor.Reconstruct(
+					actualUri,
+					er.StrHint)))
+		}
+		if !expectedInstance.Attributes.IsUnspecified() &&
+			!expectedInstance.Attributes.Check(accountInstance.TokenMetaData.Attributes) {
+			errors = append(errors, fmt.Errorf(
+				"for token: %s, nonce: %d: Bad attributes. Want: %s. Have: \"%s\"",
+				tokenName,
+				nonce,
+				oj.JSONString(expectedInstance.Attributes.Original),
+				ae.exprReconstructor.Reconstruct(
+					accountInstance.TokenMetaData.Attributes,
+					er.StrHint)))
+		}
+
 	}
 
 	return errors

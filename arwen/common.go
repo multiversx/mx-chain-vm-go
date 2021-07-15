@@ -1,11 +1,12 @@
 package arwen
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
 	"github.com/ElrondNetwork/elrond-vm-common"
 )
 
-const ArwenVersion = "v1.3"
+// ArwenVersion returns the current arwen version
+const ArwenVersion = "v1.4"
 
 // BreakpointValue encodes Wasmer runtime breakpoint types
 type BreakpointValue uint64
@@ -113,7 +114,8 @@ type VMHostParameters struct {
 	VMType                        []byte
 	BlockGasLimit                 uint64
 	GasSchedule                   config.GasScheduleMap
-	ProtocolBuiltinFunctions      vmcommon.FunctionNames
+	BuiltInFuncContainer          vmcommon.BuiltInFunctionContainer
+	ESDTTransferParser            vmcommon.ESDTTransferParser
 	ElrondProtectedKeyPrefix      []byte
 	ArwenV2EnableEpoch            uint32
 	AheadOfTimeEnableEpoch        uint32

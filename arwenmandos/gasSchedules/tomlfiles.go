@@ -116,7 +116,7 @@ const (
     GetBlockTimeStamp   = 1000
 
 [BigIntAPICost]
-	EllipticCurveNew		 = 500
+    EllipticCurveNew         = 500
     BigIntNew                = 100
     BigIntByteLength         = 100
     BigIntUnsignedByteLength = 100
@@ -133,7 +133,7 @@ const (
     BigIntAdd                = 100
     BigIntSub                = 100
     BigIntMul                = 600
-	BigIntSqrt               = 600
+    BigIntSqrt               = 600
     BigIntPow                = 600
     BigIntLog                = 600
     BigIntTDiv               = 100
@@ -161,13 +161,13 @@ const (
     BigIntGetExternalBalance    = 500
 
 [CryptoAPICost]
-    SHA256          	   = 600
-    Keccak256       	   = 600
-    Ripemd160       	   = 600
-    VerifyBLS       	   = 1000
-    VerifyEd25519   	   = 1000
-    VerifySecp256k1 	   = 1000
-	AddECC                 = 600
+    SHA256                 = 600
+    Keccak256              = 600
+    Ripemd160              = 600
+    VerifyBLS              = 1000
+    VerifyEd25519          = 1000
+    VerifySecp256k1        = 1000
+    AddECC                 = 600
     DoubleECC              = 600
     IsOnCurveECC           = 600
     ScalarMultECC          = 600
@@ -772,7 +772,7 @@ const (
     BigIntAdd                = 2000
     BigIntSub                = 2000
     BigIntMul                = 6000
-	BigIntSqrt               = 6000
+    BigIntSqrt               = 6000
     BigIntPow                = 6000
     BigIntLog                = 6000
     BigIntTDiv               = 6000
@@ -800,14 +800,14 @@ const (
     BigIntGetExternalBalance    = 10000
 
 [CryptoAPICost]
-    SHA256          	   = 1000000
-    Keccak256       	   = 1000000
-    Ripemd160       	   = 1000000
-    VerifyBLS       	   = 5000000
-    VerifyEd25519   	   = 2000000
-    VerifySecp256k1 	   = 2000000
-	EllipticCurveNew		 = 10000
-	AddECC                 = 1000000
+    SHA256                 = 1000000
+    Keccak256              = 1000000
+    Ripemd160              = 1000000
+    VerifyBLS              = 5000000
+    VerifyEd25519          = 2000000
+    VerifySecp256k1        = 2000000
+    EllipticCurveNew       = 10000
+    AddECC                 = 1000000
     DoubleECC              = 1000000
     IsOnCurveECC           = 1000000
     ScalarMultECC          = 1000000
@@ -1414,7 +1414,7 @@ const (
     BigIntAdd                = 2000
     BigIntSub                = 2000
     BigIntMul                = 6000
-	BigIntSqrt               = 6000
+    BigIntSqrt               = 6000
     BigIntPow                = 6000
     BigIntLog                = 6000
     BigIntTDiv               = 6000
@@ -1442,14 +1442,14 @@ const (
     BigIntGetExternalBalance    = 10000
 
 [CryptoAPICost]
-	EllipticCurveNew	   = 10000
-    SHA256          	   = 1000000
-    Keccak256       	   = 1000000
-    Ripemd160       	   = 1000000
-    VerifyBLS       	   = 5000000
-    VerifyEd25519   	   = 2000000
-    VerifySecp256k1 	   = 2000000
-	AddECC                 = 1000000
+    EllipticCurveNew       = 10000
+    SHA256                 = 1000000
+    Keccak256              = 1000000
+    Ripemd160              = 1000000
+    VerifyBLS              = 5000000
+    VerifyEd25519          = 2000000
+    VerifySecp256k1        = 2000000
+    AddECC                 = 1000000
     DoubleECC              = 1000000
     IsOnCurveECC           = 1000000
     ScalarMultECC          = 1000000

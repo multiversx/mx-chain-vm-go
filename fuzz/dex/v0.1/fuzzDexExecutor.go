@@ -3,12 +3,12 @@ package dex
 import (
 	"errors"
 	"fmt"
-	am "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwenmandos"
-	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/fileresolver"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/model"
-	mjparse "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/parse"
-	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/write"
-	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
+	am "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwenmandos"
+	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/fileresolver"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
+	mjparse "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/parse"
+	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/write"
+	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	"io/ioutil"
 )
