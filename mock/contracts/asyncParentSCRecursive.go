@@ -3,6 +3,7 @@ package contracts
 import (
 	"math/big"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
@@ -20,7 +21,11 @@ func ForwardAsyncCallRecursiveParentMock(instanceMock *mock.InstanceMock, testCo
 		function := string(arguments[1])
 		value := big.NewInt(testConfig.TransferFromParentToChild).Bytes()
 
-		host.Metering().UseGas(testConfig.GasUsedByParent)
+		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
+		if err != nil {
+			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			return instance
+		}
 
 		// only one child call by default
 		recursiveChildCalls := big.NewInt(1)
@@ -33,7 +38,7 @@ func ForwardAsyncCallRecursiveParentMock(instanceMock *mock.InstanceMock, testCo
 		callData.BigInt(recursiveChildCalls)
 
 		async := host.Async()
-		err := async.RegisterLegacyAsyncCall(destination, callData.ToBytes(), value)
+		err = async.RegisterLegacyAsyncCall(destination, callData.ToBytes(), value)
 		require.Nil(t, err)
 
 		return instance

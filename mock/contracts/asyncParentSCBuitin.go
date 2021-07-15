@@ -3,6 +3,7 @@ package contracts
 import (
 	"math/big"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
 	"github.com/stretchr/testify/require"
@@ -13,14 +14,18 @@ func ForwardAsyncCallParentBuiltinMock(instanceMock *mock.InstanceMock, testConf
 	instanceMock.AddMockMethod("forwardAsyncCall", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
-		host.Metering().UseGas(testConfig.GasUsedByParent)
+		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
+		if err != nil {
+			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			return instance
+		}
 
 		arguments := host.Runtime().Arguments()
 		destination := arguments[0]
 		function := arguments[1]
 		value := big.NewInt(testConfig.TransferFromParentToChild).Bytes()
 
-		err := host.Async().RegisterLegacyAsyncCall(destination, function, value)
+		err = host.Async().RegisterLegacyAsyncCall(destination, function, value)
 		require.Nil(instance.T, err)
 
 		return instance

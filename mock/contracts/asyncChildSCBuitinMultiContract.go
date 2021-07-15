@@ -3,6 +3,7 @@ package contracts
 import (
 	"math/big"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
@@ -16,7 +17,11 @@ func childFunctionAsyncChildMock(instanceMock *mock.InstanceMock, testConfig *te
 		t := instance.T
 		arguments := host.Runtime().Arguments()
 
-		host.Metering().UseGas(testConfig.GasUsedByChild)
+		err := host.Metering().UseGasBounded(testConfig.GasUsedByChild)
+		if err != nil {
+			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			return instance
+		}
 
 		destination := arguments[0]
 		function := string(arguments[1])
@@ -26,7 +31,7 @@ func childFunctionAsyncChildMock(instanceMock *mock.InstanceMock, testConfig *te
 		callData.Func(function)
 
 		async := host.Async()
-		err := async.RegisterLegacyAsyncCall(destination, callData.ToBytes(), value)
+		err = async.RegisterLegacyAsyncCall(destination, callData.ToBytes(), value)
 		require.Nil(t, err)
 
 		return instance

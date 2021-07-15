@@ -21,7 +21,11 @@ func ForwardAsyncCallMultiChildMock(instanceMock *mock.InstanceMock, testConfig 
 		function := string(arguments[1])
 		value := big.NewInt(testConfig.TransferFromParentToChild).Bytes()
 
-		host.Metering().UseGas(testConfig.GasUsedByParent)
+		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
+		if err != nil {
+			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			return instance
+		}
 
 		for childCall := 0; childCall < testConfig.ChildCalls; childCall++ {
 			callData := txDataBuilder.NewBuilder()

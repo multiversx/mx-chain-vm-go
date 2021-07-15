@@ -3,6 +3,7 @@ package contracts
 import (
 	"math/big"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
@@ -17,7 +18,11 @@ func RecursiveAsyncCallRecursiveChildMock(instanceMock *mock.InstanceMock, testC
 		t := instance.T
 		arguments := host.Runtime().Arguments()
 
-		host.Metering().UseGas(testConfig.GasUsedByChild)
+		err := host.Metering().UseGasBounded(testConfig.GasUsedByChild)
+		if err != nil {
+			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			return instance
+		}
 
 		var recursiveChildCalls uint64
 		if len(arguments) > 0 {
@@ -44,7 +49,7 @@ func RecursiveAsyncCallRecursiveChildMock(instanceMock *mock.InstanceMock, testC
 		callData.BigInt(big.NewInt(int64(recursiveChildCalls)))
 
 		async := host.Async()
-		err := async.RegisterLegacyAsyncCall(destination, callData.ToBytes(), value)
+		err = async.RegisterLegacyAsyncCall(destination, callData.ToBytes(), value)
 		require.Nil(t, err)
 
 		return instance
