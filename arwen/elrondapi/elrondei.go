@@ -1164,6 +1164,11 @@ func v1_4_multiTransferESDTNFTExecute(
 	runtime := host.Runtime()
 	metering := host.Metering()
 
+	if numTokenTransfers == 0 {
+		_ = arwen.WithFaultAndHost(host, arwen.ErrFailedTransfer, runtime.ElrondAPIErrorShouldFailExecution())
+		return 1
+	}
+
 	callArgs, err := extractIndirectContractCallArgumentsWithoutValue(
 		host, destOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {

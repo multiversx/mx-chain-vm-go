@@ -395,9 +395,11 @@ func (context *outputContext) getOutputTransferDataFromESDTTransfer(
 	}
 
 	if len(transfers) == 1 {
-		data := []byte(vmcommon.BuiltInFunctionESDTNFTTransfer + "@" + hex.EncodeToString(transfers[0].ESDTTokenName) +
-			"@" + hex.EncodeToString(big.NewInt(0).SetUint64(transfers[0].ESDTTokenNonce).Bytes()) + "@" + hex.EncodeToString(transfers[0].ESDTValue.Bytes()))
-		data = append(data, []byte("@"+hex.EncodeToString(destination))...)
+		data := []byte(vmcommon.BuiltInFunctionESDTNFTTransfer + "@" +
+			hex.EncodeToString(transfers[0].ESDTTokenName) + "@" +
+			hex.EncodeToString(big.NewInt(0).SetUint64(transfers[0].ESDTTokenNonce).Bytes()) + "@" +
+			hex.EncodeToString(transfers[0].ESDTValue.Bytes()) + "@" +
+			hex.EncodeToString(destination))
 		return data
 	}
 

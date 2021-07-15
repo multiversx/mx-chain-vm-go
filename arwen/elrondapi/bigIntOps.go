@@ -385,6 +385,8 @@ func v1_4_bigIntGetESDTCallValueByIndex(context unsafe.Pointer, destination int3
 	esdtTransfer := getESDTTransferFromInput(runtime.GetVMInput(), index)
 	if esdtTransfer != nil {
 		value.Set(esdtTransfer.ESDTValue)
+	} else {
+		value.Set(big.NewInt(0))
 	}
 }
 
