@@ -70,6 +70,19 @@ func NewArwenVM(
 	hostParameters *arwen.VMHostParameters,
 ) (arwen.VMHost, error) {
 
+	if check.IfNil(blockChainHook) {
+		return nil, arwen.ErrNilBlockChainHook
+	}
+	if hostParameters == nil {
+		return nil, arwen.ErrNilHostParameters
+	}
+	if check.IfNil(hostParameters.ESDTTransferParser) {
+		return nil, arwen.ErrNilESDTTransferParser
+	}
+	if check.IfNil(hostParameters.BuiltInFuncContainer) {
+		return nil, arwen.ErrNilBuiltInFunctionsContainer
+	}
+
 	cryptoHook := factory.NewVMCrypto()
 	host := &vmHost{
 		cryptoHook:               cryptoHook,
