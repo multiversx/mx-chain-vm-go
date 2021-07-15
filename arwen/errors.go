@@ -161,3 +161,15 @@ var ErrNoEllipticCurveUnderThisHandle = errors.New("no elliptic curve under the 
 
 // ErrPointNotOnCurve signals that the point to be used is not on curve
 var ErrPointNotOnCurve = errors.New("point is not on curve")
+
+// ErrNilHostParameters signals that nil host parameters was provided
+var ErrNilHostParameters = errors.New("nil host parameters")
+
+// ErrNilESDTTransferParser signals that nil esdt transfer parser was provided
+var ErrNilESDTTransferParser = errors.New("nil esdt transfer parser")
+
+// ErrNilBuiltInFunctionsContainer signals that nil built in functions container was provided
+var ErrNilBuiltInFunctionsContainer = errors.New("nil built in functions container")
+
+// ErrNilBlockChainHook signals that nil blockchain hook was provided
+var ErrNilBlockChainHook = errors.New("nil blockchain hook")

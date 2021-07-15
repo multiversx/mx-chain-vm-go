@@ -6,9 +6,9 @@ import (
 	"encoding/json"
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/math"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 	"github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
@@ -73,7 +73,10 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 	return nil
 }
 
-func isESDTTransferOnReturnDataWithNoAdditionalData(destinationVMOutput *vmcommon.VMOutput) (bool, string, [][]byte) {
+func (host *vmHost) isESDTTransferOnReturnDataWithNoAdditionalData(
+	sndAddr, dstAddr []byte,
+	destinationVMOutput *vmcommon.VMOutput,
+) (bool, string, [][]byte) {
 	if len(destinationVMOutput.ReturnData) == 0 {
 		return false, "", nil
 	}
@@ -84,20 +87,21 @@ func isESDTTransferOnReturnDataWithNoAdditionalData(destinationVMOutput *vmcommo
 		return false, "", nil
 	}
 
-	return isESDTTransferOnReturnDataFromFunctionAndArgs(functionName, args)
+	return host.isESDTTransferOnReturnDataFromFunctionAndArgs(sndAddr, dstAddr, functionName, args)
 }
 
-func isESDTTransferOnReturnDataFromFunctionAndArgs(functionName string, args [][]byte) (bool, string, [][]byte) {
-
-	if functionName == vmcommon.BuiltInFunctionESDTTransfer && len(args) == 2 {
-		return true, functionName, args
+func (host *vmHost) isESDTTransferOnReturnDataFromFunctionAndArgs(
+	sndAddr, dstAddr []byte,
+	functionName string,
+	args [][]byte,
+) (bool, string, [][]byte) {
+	parsedTransfer, err := host.esdtTransferParser.ParseESDTTransfers(sndAddr, dstAddr, functionName, args)
+	if err != nil {
+		return false, functionName, args
 	}
 
-	if functionName == vmcommon.BuiltInFunctionESDTNFTTransfer && len(args) == 4 {
-		return true, functionName, args
-	}
-
-	return false, functionName, args
+	isNoCallAfter := len(parsedTransfer.CallFunction) == 0
+	return isNoCallAfter, functionName, args
 }
 
 func (host *vmHost) determineAsyncCallExecutionMode(asyncCallInfo *arwen.AsyncCallInfo) (arwen.AsyncCallExecutionMode, error) {
@@ -115,7 +119,7 @@ func (host *vmHost) determineAsyncCallExecutionMode(asyncCallInfo *arwen.AsyncCa
 	sameShard := host.AreInSameShard(runtime.GetSCAddress(), asyncCallInfo.Destination)
 	if host.IsBuiltinFunctionName(functionName) {
 		if sameShard {
-			isESDTTransfer, _, _ := isESDTTransferOnReturnDataFromFunctionAndArgs(functionName, args)
+			isESDTTransfer, _, _ := host.isESDTTransferOnReturnDataFromFunctionAndArgs(runtime.GetSCAddress(), asyncCallInfo.Destination, functionName, args)
 			if isESDTTransfer && runtime.GetVMInput().CallType == vmcommon.AsynchronousCall &&
 				bytes.Equal(runtime.GetVMInput().CallerAddr, asyncCallInfo.Destination) {
 				return arwen.ESDTTransferOnCallBack, nil
@@ -363,15 +367,17 @@ func (host *vmHost) createCallbackContractCallInput(
 	arguments := [][]byte{
 		big.NewInt(int64(destinationVMOutput.ReturnCode)).Bytes(),
 	}
+	returnWithError := false
 	if destinationErr == nil && destinationVMOutput.ReturnCode == vmcommon.Ok {
 		// when execution went Ok, callBack arguments are:
 		// [0, result1, result2, ....]
-		isESDTOnCallBack, functionName, esdtArgs = isESDTTransferOnReturnDataWithNoAdditionalData(destinationVMOutput)
+		isESDTOnCallBack, functionName, esdtArgs = host.isESDTTransferOnReturnDataWithNoAdditionalData(callbackInitiator, runtime.GetSCAddress(), destinationVMOutput)
 		arguments = append(arguments, destinationVMOutput.ReturnData...)
 	} else {
 		// when execution returned error, callBack arguments are:
 		// [error code, error message]
 		arguments = append(arguments, []byte(destinationVMOutput.ReturnMessage))
+		returnWithError = true
 	}
 
 	gasLimit := destinationVMOutput.GasRemaining + asyncCallInfo.GetGasLocked()
@@ -388,14 +394,15 @@ func (host *vmHost) createCallbackContractCallInput(
 	// Return to the sender SC, calling its callback() method.
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
-			CallerAddr:     callbackInitiator,
-			Arguments:      arguments,
-			CallValue:      host.computeCallValueFromLastOutputTransfer(destinationVMOutput),
-			CallType:       vmcommon.AsynchronousCallBack,
-			GasPrice:       runtime.GetVMInput().GasPrice,
-			GasProvided:    gasLimit,
-			CurrentTxHash:  runtime.GetCurrentTxHash(),
-			OriginalTxHash: runtime.GetOriginalTxHash(),
+			CallerAddr:           callbackInitiator,
+			Arguments:            arguments,
+			CallValue:            host.computeCallValueFromLastOutputTransfer(destinationVMOutput),
+			CallType:             vmcommon.AsynchronousCallBack,
+			GasPrice:             runtime.GetVMInput().GasPrice,
+			GasProvided:          gasLimit,
+			CurrentTxHash:        runtime.GetCurrentTxHash(),
+			OriginalTxHash:       runtime.GetOriginalTxHash(),
+			ReturnCallAfterError: returnWithError,
 		},
 		RecipientAddr: runtime.GetSCAddress(),
 		Function:      callbackFunction,
@@ -404,10 +411,7 @@ func (host *vmHost) createCallbackContractCallInput(
 	if isESDTOnCallBack {
 		contractCallInput.Function = functionName
 		contractCallInput.Arguments = make([][]byte, 0, len(arguments))
-		contractCallInput.Arguments = append(contractCallInput.Arguments, esdtArgs[0], esdtArgs[1])
-		if functionName == vmcommon.BuiltInFunctionESDTNFTTransfer {
-			contractCallInput.Arguments = append(contractCallInput.Arguments, esdtArgs[2], esdtArgs[3])
-		}
+		contractCallInput.Arguments = append(contractCallInput.Arguments, esdtArgs...)
 		contractCallInput.Arguments = append(contractCallInput.Arguments, []byte(callbackFunction))
 		contractCallInput.Arguments = append(contractCallInput.Arguments, big.NewInt(int64(destinationVMOutput.ReturnCode)).Bytes())
 		if len(destinationVMOutput.ReturnData) > 1 {

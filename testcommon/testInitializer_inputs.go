@@ -12,13 +12,15 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
-	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen/host"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
-	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/host"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
+	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/stretchr/testify/require"
 )
 
@@ -176,7 +178,7 @@ func DefaultTestArwenForCallWithWorldMock(tb testing.TB, code []byte, balance *b
 	err := world.InitBuiltinFunctions(host.GetGasScheduleMap())
 	require.Nil(tb, err)
 
-	host.SetProtocolBuiltinFunctions(world.BuiltinFuncs.GetBuiltinFunctionNames())
+	host.SetBuiltInFunctionsContainer(world.BuiltinFuncs.Container)
 
 	parentAccount := world.AcctMap.CreateSmartContractAccount(UserAddress, ParentAddress, code, world)
 	parentAccount.Balance = balance
@@ -274,12 +276,27 @@ func defaultTestArwenForContracts(
 // DefaultTestArwenWithWorldMock creates a host configured with a mock world
 func DefaultTestArwenWithWorldMock(tb testing.TB) (arwen.VMHost, *worldmock.MockWorld) {
 	world := worldmock.NewMockWorld()
-	host := DefaultTestArwen(tb, world)
-
-	err := world.InitBuiltinFunctions(host.GetGasScheduleMap())
+	gasSchedule := customGasSchedule
+	if gasSchedule == nil {
+		gasSchedule = config.MakeGasMapForTests()
+	}
+	err := world.InitBuiltinFunctions(gasSchedule)
 	require.Nil(tb, err)
 
-	host.SetProtocolBuiltinFunctions(world.BuiltinFuncs.GetBuiltinFunctionNames())
+	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
+	host, err := arwenHost.NewArwenVM(world, &arwen.VMHostParameters{
+		VMType:                   DefaultVMType,
+		BlockGasLimit:            uint64(1000),
+		GasSchedule:              gasSchedule,
+		BuiltInFuncContainer:     world.BuiltinFuncs.Container,
+		ElrondProtectedKeyPrefix: []byte("ELROND"),
+		UseWarmInstance:          false,
+		DynGasLockEnableEpoch:    0,
+		ESDTTransferParser:       esdtTransferParser,
+	})
+	require.Nil(tb, err)
+	require.NotNil(tb, host)
+
 	return host, world
 }
 
@@ -290,14 +307,16 @@ func DefaultTestArwen(tb testing.TB, blockchain vmcommon.BlockchainHook) arwen.V
 		gasSchedule = config.MakeGasMapForTests()
 	}
 
+	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
 	host, err := arwenHost.NewArwenVM(blockchain, &arwen.VMHostParameters{
 		VMType:                   DefaultVMType,
 		BlockGasLimit:            uint64(1000),
 		GasSchedule:              gasSchedule,
-		ProtocolBuiltinFunctions: make(vmcommon.FunctionNames),
+		BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
 		UseWarmInstance:          false,
 		DynGasLockEnableEpoch:    0,
+		ESDTTransferParser:       esdtTransferParser,
 	})
 	require.Nil(tb, err)
 	require.NotNil(tb, host)
@@ -402,15 +421,24 @@ func (contractInput *ContractCallInputBuilder) WithCurrentTxHash(txHash []byte) 
 	return contractInput
 }
 
+func (contractInput *ContractCallInputBuilder) initESDTTransferIfNeeded() {
+	if len(contractInput.ESDTTransfers) == 0 {
+		contractInput.ESDTTransfers = make([]*vmcommon.ESDTTransfer, 1)
+		contractInput.ESDTTransfers[0] = &vmcommon.ESDTTransfer{}
+	}
+}
+
 // WithESDTValue provides the ESDTValue for ContractCallInputBuilder
 func (contractInput *ContractCallInputBuilder) WithESDTValue(esdtValue *big.Int) *ContractCallInputBuilder {
-	contractInput.ContractCallInput.ESDTValue = esdtValue
+	contractInput.initESDTTransferIfNeeded()
+	contractInput.ContractCallInput.ESDTTransfers[0].ESDTValue = esdtValue
 	return contractInput
 }
 
 // WithESDTTokenName provides the ESDTTokenName for ContractCallInputBuilder
 func (contractInput *ContractCallInputBuilder) WithESDTTokenName(esdtTokenName []byte) *ContractCallInputBuilder {
-	contractInput.ContractCallInput.ESDTTokenName = esdtTokenName
+	contractInput.initESDTTransferIfNeeded()
+	contractInput.ContractCallInput.ESDTTransfers[0].ESDTTokenName = esdtTokenName
 	return contractInput
 }
 

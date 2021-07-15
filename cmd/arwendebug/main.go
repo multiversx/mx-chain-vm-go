@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwendebug"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwendebug"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 )
 

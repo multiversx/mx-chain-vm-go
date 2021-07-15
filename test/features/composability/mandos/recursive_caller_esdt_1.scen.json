@@ -60,6 +60,16 @@
                         "data": "1"
                     },
                     {
+                        "address": "sc:recursive-caller",
+                        "identifier": "str:ESDTTransfer",
+                        "topics": [
+                            "str:REC-TOKEN",
+                            "1",
+                            "sc:vault"
+                        ],
+                        "data": ""
+                    },
+                    {
                         "address": "sc:vault",
                         "identifier": "str:accept_funds",
                         "topics": [
