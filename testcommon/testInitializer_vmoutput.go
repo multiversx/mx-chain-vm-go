@@ -1,6 +1,7 @@
 package testcommon
 
 import (
+	"bytes"
 	"fmt"
 	"math/big"
 	"testing"
@@ -175,11 +176,33 @@ func (v *VMOutputVerifier) CodeDeployerAddress(address []byte, codeDeployerAddre
 
 // ReturnData verifies if ReturnData is the same as the provided one
 func (v *VMOutputVerifier) ReturnData(returnData ...[]byte) *VMOutputVerifier {
-	require.Equal(v.T, len(returnData), len(v.VmOutput.ReturnData), "ReturnData")
+	require.Equal(v.T, len(returnData), len(v.VmOutput.ReturnData), "ReturnData length")
 	for idx := range v.VmOutput.ReturnData {
 		require.Equal(v.T, returnData[idx], v.VmOutput.ReturnData[idx], "ReturnData")
 	}
 	return v
+}
+
+// ReturnDataContains verifies that ReturnData contains the provided element
+func (v *VMOutputVerifier) ReturnDataContains(element []byte) *VMOutputVerifier {
+	require.True(v.T, v.isInReturnData(element), fmt.Sprintf("ReturnData does not contain '%s'", element))
+	return v
+}
+
+// ReturnDataDoesNotContain verifies that ReturnData does not contain the provided element
+func (v *VMOutputVerifier) ReturnDataDoesNotContain(element []byte) *VMOutputVerifier {
+	require.False(v.T, v.isInReturnData(element), fmt.Sprintf("ReturnData contains '%s'", element))
+	return v
+}
+
+func (v *VMOutputVerifier) isInReturnData(element []byte) bool {
+	for _, e := range v.VmOutput.ReturnData {
+		if bytes.Equal(e, element) {
+			return true
+		}
+	}
+
+	return false
 }
 
 // StoreEntry holds the data for a storage assertion
