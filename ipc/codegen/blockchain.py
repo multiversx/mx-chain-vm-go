@@ -189,8 +189,8 @@ def generate_repliers(args):
     print("package nodepart")
     print("""
     	import (
-	    \"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/ipc/common\"
-        \"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen\"
+	    \"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/ipc/common\"
+        \"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen\"
 	    \"github.com/ElrondNetwork/elrond-go/data/esdt\"
 	)
 	""")
@@ -267,7 +267,7 @@ def generate_gateway(args):
 import (
     "github.com/ElrondNetwork/elrond-go/data/esdt"
 
-    "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/ipc/common"
+    "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/ipc/common"
     "github.com/ElrondNetwork/elrond-go/core/vmcommon"
 )
 

@@ -3,7 +3,7 @@ package mcl
 import (
 	"runtime"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto"
 	"github.com/ElrondNetwork/elrond-vm-common/check"
 	"github.com/herumi/bls-go-binary/bls"
 )

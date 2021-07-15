@@ -1,7 +1,7 @@
 package arwenpart
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/ipc/common"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/ipc/common"
 	"github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
 )
