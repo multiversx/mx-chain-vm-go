@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen/elrondapi"
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
@@ -15,7 +16,11 @@ func ExecESDTTransferAndCallChild(instanceMock *mock.InstanceMock, testConfig *t
 	instanceMock.AddMockMethod("execESDTTransferAndCall", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
-		host.Metering().UseGas(testConfig.GasUsedByParent)
+		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
+		if err != nil {
+			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			return instance
+		}
 
 		arguments := host.Runtime().Arguments()
 		if len(arguments) != 3 {
@@ -48,7 +53,11 @@ func ExecESDTTransferWithAPICall(instanceMock *mock.InstanceMock, testConfig *te
 	instanceMock.AddMockMethod("execESDTTransferWithAPICall", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
-		host.Metering().UseGas(testConfig.GasUsedByParent)
+		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
+		if err != nil {
+			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			return instance
+		}
 
 		arguments := host.Runtime().Arguments()
 		if len(arguments) != 3 {
@@ -88,7 +97,11 @@ func ExecESDTTransferAndAsyncCallChild(instanceMock *mock.InstanceMock, testConf
 	instanceMock.AddMockMethod("execESDTTransferAndAsyncCall", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
-		host.Metering().UseGas(testConfig.GasUsedByParent)
+		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
+		if err != nil {
+			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			return instance
+		}
 
 		arguments := host.Runtime().Arguments()
 		if len(arguments) != 3 {
@@ -109,7 +122,7 @@ func ExecESDTTransferAndAsyncCallChild(instanceMock *mock.InstanceMock, testConf
 
 		value := big.NewInt(0).Bytes()
 
-		err := host.Async().RegisterLegacyAsyncCall(receiver, callData.ToBytes(), value)
+		err = host.Async().RegisterLegacyAsyncCall(receiver, callData.ToBytes(), value)
 
 		if err != nil {
 			host.Runtime().FailExecution(err)

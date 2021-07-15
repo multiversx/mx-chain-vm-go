@@ -30,7 +30,11 @@ func ForwardAsyncCallMultiGroupsMock(instanceMock *mock.InstanceMock, testConfig
 		destination := arguments[0]
 		value := big.NewInt(testConfig.TransferFromParentToChild).Bytes()
 
-		host.Metering().UseGas(testConfig.GasUsedByParent)
+		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
+		if err != nil {
+			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			return instance
+		}
 
 		async := host.Async()
 		for _, groupConfig := range AsyncGroupsConfig {
