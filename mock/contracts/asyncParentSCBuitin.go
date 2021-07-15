@@ -14,6 +14,7 @@ func ForwardAsyncCallParentBuiltinMock(instanceMock *mock.InstanceMock, testConf
 	instanceMock.AddMockMethod("forwardAsyncCall", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
+
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
 		if err != nil {
 			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)

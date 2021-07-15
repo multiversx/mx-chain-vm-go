@@ -5,7 +5,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
 )
 
@@ -314,7 +314,12 @@ func (context *blockchainContext) PopSetActiveState() {
 
 	prevSnapshot := context.stateStack[stateStackLen-1]
 	err := context.blockChainHook.RevertToSnapshot(prevSnapshot)
-	log.LogIfError(err, "PopSetActiveState RevertToSnapshot", "error", err)
+	log.LogIfError(
+		err,
+		"PopSetActiveState RevertToSnapshot error",
+		err,
+		"snapshot",
+		prevSnapshot)
 
 	context.stateStack = context.stateStack[:stateStackLen-1]
 }

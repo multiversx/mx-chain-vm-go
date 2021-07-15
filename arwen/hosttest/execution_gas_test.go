@@ -25,7 +25,7 @@ func makeTestConfig() *test.TestConfig {
 		GasUsedByParent:       400,
 		GasUsedByChild:        200,
 		GasUsedByCallback:     100,
-		GasLockCost:           10,
+		GasLockCost:           150,
 
 		TransferFromParentToChild: 7,
 
@@ -708,7 +708,6 @@ func TestGasUsed_LegacyAsyncCall_BuiltinCallFail(t *testing.T) {
 	gasProvidedForBuiltinCall := testConfig.GasProvided - testConfig.GasUsedByParent - testConfig.GasLockCost
 
 	expectedGasUsedByParent := testConfig.GasUsedByParent + gasProvidedForBuiltinCall + testConfig.GasUsedByCallback
-	expectedGasUsedByChild := uint64(0) // all gas for builtin call is consummed on caller
 
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
@@ -736,7 +735,7 @@ func TestGasUsed_LegacyAsyncCall_BuiltinCallFail(t *testing.T) {
 				HasRuntimeErrors("whatdidyoudo").
 				GasUsed(test.ParentAddress, expectedGasUsedByParent).
 				GasUsed(test.UserAddress, 0).
-				GasRemaining(testConfig.GasProvided - expectedGasUsedByParent - expectedGasUsedByChild)
+				GasRemaining(testConfig.GasProvided - expectedGasUsedByParent)
 		})
 }
 
@@ -1283,6 +1282,7 @@ func TestGasUsed_ESDTTransfer_CallbackFail(t *testing.T) {
 func TestGasUsed_AsyncCall_Groups(t *testing.T) {
 	testConfig := makeTestConfig()
 	testConfig.GasProvided = 10_000
+	testConfig.GasLockCost = 10
 
 	// gasUsedByParent := testConfig.GasUsedByParent + testConfig.GasUsedByCallback
 	// gasUsedByChild := testConfig.GasUsedByChild
@@ -1323,6 +1323,8 @@ func TestGasUsed_AsyncCall_Groups(t *testing.T) {
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
 				Ok().
+				Print().
+				ReturnDataDoesNotContain([]byte("out of gas")).
 				ReturnData(expectedReturnData...)
 		})
 }
