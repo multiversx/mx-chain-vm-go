@@ -22,10 +22,7 @@ package cryptoapi
 // extern int32_t v1_3_marshalCompressedEC(void *context, int32_t xPairHandle, int32_t yPairHandle, int32_t ecHandle, int32_t resultOffset);
 // extern int32_t v1_3_unmarshalCompressedEC(void *context, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t dataOffset, int32_t length);
 // extern int32_t v1_3_generateKeyEC(void *context, int32_t xPubKeyHandle, int32_t yPubKeyHandle, int32_t ecHandle, int32_t resultOffset);
-// extern int32_t v1_3_p224Ec(void *context);
-// extern int32_t v1_3_p256Ec(void *context);
-// extern int32_t v1_3_p384Ec(void *context);
-// extern int32_t v1_3_p521Ec(void *context);
+// extern int32_t v1_3_createEC(void *context, int32_t dataOffset, int32_t dataLength);
 // extern int32_t v1_3_getCurveLengthEC(void *context, int32_t ecHandle);
 // extern int32_t v1_3_getPrivKeyByteLengthEC(void *context, int32_t ecHandle);
 // extern int32_t v1_3_ellipticCurveGetValues(void *context, int32_t ecHandle, int32_t fieldOrderHandle, int32_t basePointOrderHandle, int32_t eqConstantHandle, int32_t xBasePointHandle, int32_t yBasePointHandle);
@@ -132,22 +129,7 @@ func CryptoImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 		return nil, err
 	}
 
-	imports, err = imports.Append("p224Ec", v1_3_p224Ec, C.v1_3_p224Ec)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("p256Ec", v1_3_p256Ec, C.v1_3_p256Ec)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("p384Ec", v1_3_p384Ec, C.v1_3_p384Ec)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("p521Ec", v1_3_p521Ec, C.v1_3_p521Ec)
+	imports, err = imports.Append("createEC", v1_3_createEC, C.v1_3_createEC)
 	if err != nil {
 		return nil, err
 	}
@@ -885,52 +867,43 @@ func v1_3_generateKeyEC(
 	return 0
 }
 
-//export v1_3_p224Ec
-func v1_3_p224Ec(context unsafe.Pointer) int32 {
+//export v1_3_createEC
+func v1_3_createEC(context unsafe.Pointer, dataOffset int32, dataLength int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
+	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().CryptoAPICost.EllipticCurveNew
 	metering.UseGas(gasToUse)
 
-	curveParams := elliptic.P224().Params()
-	return managedType.PutEllipticCurve(curveParams)
-}
-
-//export v1_3_p256Ec
-func v1_3_p256Ec(context unsafe.Pointer) int32 {
-	managedType := arwen.GetManagedTypesContext(context)
-	metering := arwen.GetMeteringContext(context)
-
-	gasToUse := metering.GasSchedule().CryptoAPICost.EllipticCurveNew
-	metering.UseGas(gasToUse)
-
-	curveParams := elliptic.P256().Params()
-	return managedType.PutEllipticCurve(curveParams)
-}
-
-//export v1_3_p384Ec
-func v1_3_p384Ec(context unsafe.Pointer) int32 {
-	managedType := arwen.GetManagedTypesContext(context)
-	metering := arwen.GetMeteringContext(context)
-
-	gasToUse := metering.GasSchedule().CryptoAPICost.EllipticCurveNew
-	metering.UseGas(gasToUse)
-
-	curveParams := elliptic.P384().Params()
-	return managedType.PutEllipticCurve(curveParams)
-}
-
-//export v1_3_p521Ec
-func v1_3_p521Ec(context unsafe.Pointer) int32 {
-	managedType := arwen.GetManagedTypesContext(context)
-	metering := arwen.GetMeteringContext(context)
-
-	gasToUse := metering.GasSchedule().CryptoAPICost.EllipticCurveNew
-	metering.UseGas(gasToUse)
-
-	curveParams := elliptic.P521().Params()
-	return managedType.PutEllipticCurve(curveParams)
+	data, err := runtime.MemLoad(dataOffset, dataLength)
+	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return -1
+	}
+	curveChoice := string(data[:])
+	switch curveChoice {
+	case "p224":
+		{
+			curveParams := elliptic.P224().Params()
+			return managedType.PutEllipticCurve(curveParams)
+		}
+	case "p256":
+		{
+			curveParams := elliptic.P256().Params()
+			return managedType.PutEllipticCurve(curveParams)
+		}
+	case "p384":
+		{
+			curveParams := elliptic.P384().Params()
+			return managedType.PutEllipticCurve(curveParams)
+		}
+	case "p521":
+		{
+			curveParams := elliptic.P521().Params()
+			return managedType.PutEllipticCurve(curveParams)
+		}
+	}
+	return -1
 }
 
 //export v1_3_getCurveLengthEC
