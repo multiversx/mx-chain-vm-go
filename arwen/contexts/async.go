@@ -407,11 +407,12 @@ func (context *asyncContext) addAsyncCall(groupID string, call *arwen.AsyncCall)
 	runtime := context.host.Runtime()
 	metering := context.host.Metering()
 
+	// TODO discuss
 	// TODO add exception for the first callback instance of the same address,
 	// which must be allowed to modify the AsyncContext
 	scOccurrences := runtime.CountSameContractInstancesOnStack(runtime.GetSCAddress())
 	if scOccurrences > 0 {
-		return arwen.ErrAsyncContextUnmodifiableUnlessFirstSCOrFirstCallback
+		// return arwen.ErrAsyncContextUnmodifiableUnlessFirstSCOrFirstCallback
 	}
 
 	err := metering.UseGasBounded(call.GasLocked)
