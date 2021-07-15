@@ -1329,30 +1329,40 @@ func TestGasUsed_AsyncCall_Groups(t *testing.T) {
 		})
 }
 
-func TestGasUsed_AsyncCall_CallTree(t *testing.T) {
+func TestGasUsed_AsyncCall_CallGraph(t *testing.T) {
 	testConfig := makeTestConfig()
 	testConfig.GasProvided = 100_000
 	testConfig.GasProvidedToChild = 10_000
 
-	callTree := test.CreateCallTree(test.BuildAsyncTestCall("sc1", "g", "f1", ""))
-	root := callTree.GetRoot()
+	callGraph := test.CreateTestCallGraph()
+	sc1f1 := callGraph.AddNode("sc1", "f1")
 
-	ch1 := root.AddChild(test.BuildAsyncTestCall("sc1_2", "g", "f2", "cb2"))
-	ch2 := root.AddChild(test.BuildAsyncTestCall("sc1_3", "g", "f3", "cb3"))
+	sc2f2 := callGraph.AddNode("sc2", "f2")
+	callGraph.AddEdge(sc1f1, sc2f2)
 
-	ch1.AddChild(test.BuildAsyncTestCall("sc1_2_1", "g", "f4", "cb4"))
-	ch1.AddChild(test.BuildAsyncTestCall("sc1_2_2", "g", "f5", "cb5"))
+	sc2f3 := callGraph.AddNode("sc2", "f3")
+	callGraph.AddAsyncEdge(sc1f1, sc2f3, "cb2", "gr1")
 
-	ch2.AddChild(test.BuildAsyncTestCall("sc1_3_1", "g", "f6", "cb6"))
+	sc3f4 := callGraph.AddNode("sc3", "f4")
+	callGraph.AddEdge(sc2f3, sc3f4)
+
+	callGraph.AddAsyncEdge(sc2f2, sc3f4, "cb3", "gr2")
+
+	sc1cb1 := callGraph.AddNode("sc1", "cb2")
+	sc4f5 := callGraph.AddNode("sc4", "f5")
+	callGraph.AddEdge(sc1cb1, sc4f5)
+
+	sc2cb3 := callGraph.AddNode("sc2", "cb3")
+	callGraph.AddEdge(sc2cb3, sc3f4)
 
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
-			test.CreateMockContractsFromAsyncTestCallTree(callTree, testConfig)...,
+			test.CreateMockContractsFromAsyncTestCallGraph(callGraph, testConfig)...,
 		).
 		WithInput(test.CreateTestContractCallInputBuilder().
-			WithRecipientAddr([]byte(root.GetAsyncTestCall().ContractAddress)).
+			WithRecipientAddr([]byte(sc1f1.GetAsyncCall().ContractAddress)).
 			WithGasProvided(testConfig.GasProvided).
-			WithFunction(root.GetAsyncTestCall().FunctionName).
+			WithFunction(sc1f1.GetAsyncCall().FunctionName).
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)

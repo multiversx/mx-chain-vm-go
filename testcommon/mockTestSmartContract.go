@@ -43,7 +43,7 @@ type testSmartContract struct {
 type MockTestSmartContract struct {
 	testSmartContract
 	initMethods []func(*mock.InstanceMock, *TestConfig)
-	// used only for async tree call building
+	// used only temporarly for call graph building
 	tempFunctionsList map[string]bool
 }
 
