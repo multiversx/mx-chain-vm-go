@@ -149,3 +149,15 @@ var ErrInputAndOutputGasDoesNotMatch = errors.New("input and output gas does not
 
 // ErrTransferValueOnESDTCall signals that balance transfer was given in esdt call
 var ErrTransferValueOnESDTCall = errors.New("transfer value on esdt call")
+
+// ErrNilHostParameters signals that nil host parameters was provided
+var ErrNilHostParameters = errors.New("nil host parameters")
+
+// ErrNilESDTTransferParser signals that nil esdt transfer parser was provided
+var ErrNilESDTTransferParser = errors.New("nil esdt transfer parser")
+
+// ErrNilBuiltInFunctionsContainer signals that nil built in functions container was provided
+var ErrNilBuiltInFunctionsContainer = errors.New("nil built in functions container")
+
+// ErrNilBlockChainHook signals that nil blockchain hook was provided
+var ErrNilBlockChainHook = errors.New("nil blockchain hook")

@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/math"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	"github.com/ElrondNetwork/elrond-go-logger/check"
 	"github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
@@ -656,8 +656,12 @@ func (host *vmHost) callSCMethodIndirect() error {
 }
 
 // ExecuteESDTTransfer calls the process built in function with the given transfer for ESDT/ESDTNFT if nonce > 0
-// there are no NFTs with nonce == 0
-func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callType vmcommon.CallType) (*vmcommon.VMOutput, uint64, error) {
+// there are no NFTs with nonce == 0, it will call multi transfer if multiple tokens are sent
+func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, callType vmcommon.CallType) (*vmcommon.VMOutput, uint64, error) {
+	if len(transfers) == 0 {
+		return nil, 0, arwen.ErrFailedTransfer
+	}
+
 	_, _, metering, _, runtime, _ := host.GetContexts()
 
 	esdtTransferInput := &vmcommon.ContractCallInput{
@@ -675,18 +679,30 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, token
 		AllowInitFunction: false,
 	}
 
-	if nonce > 0 {
-		esdtTransferInput.Function = vmcommon.BuiltInFunctionESDTNFTTransfer
-		esdtTransferInput.RecipientAddr = esdtTransferInput.CallerAddr
-		nonceAsBytes := big.NewInt(0).SetUint64(nonce).Bytes()
-		esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, tokenIdentifier, nonceAsBytes, value.Bytes(), destination)
+	if len(transfers) == 1 {
+		if transfers[0].ESDTTokenNonce > 0 {
+			esdtTransferInput.Function = vmcommon.BuiltInFunctionESDTNFTTransfer
+			esdtTransferInput.RecipientAddr = esdtTransferInput.CallerAddr
+			nonceAsBytes := big.NewInt(0).SetUint64(transfers[0].ESDTTokenNonce).Bytes()
+			esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, transfers[0].ESDTTokenName, nonceAsBytes, transfers[0].ESDTValue.Bytes(), destination)
+		} else {
+			esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, transfers[0].ESDTTokenName, transfers[0].ESDTValue.Bytes())
+		}
 	} else {
-		esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, tokenIdentifier, value.Bytes())
+		esdtTransferInput.Function = vmcommon.BuiltInFunctionMultiESDTNFTTransfer
+		esdtTransferInput.RecipientAddr = esdtTransferInput.CallerAddr
+		esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, destination, big.NewInt(int64(len(transfers))).Bytes())
+		for _, transfer := range transfers {
+			nonceAsBytes := big.NewInt(0).SetUint64(transfer.ESDTTokenNonce).Bytes()
+			esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, transfer.ESDTTokenName, nonceAsBytes, transfer.ESDTValue.Bytes())
+		}
 	}
 
 	vmOutput, err := host.Blockchain().ProcessBuiltInFunction(esdtTransferInput)
 	log.Trace("ESDT transfer", "sender", sender, "dest", destination)
-	log.Trace("ESDT transfer", "token", tokenIdentifier, "value", value)
+	for _, transfer := range transfers {
+		log.Trace("ESDT transfer", "token", transfer.ESDTTokenName, "nonce", transfer.ESDTTokenNonce, "value", transfer.ESDTValue)
+	}
 	if err != nil {
 		log.Trace("ESDT transfer", "error", err)
 		return vmOutput, esdtTransferInput.GasProvided, err
@@ -749,22 +765,17 @@ func (host *vmHost) addESDTTransferToVMOutputSCIntraShardCall(
 	if output.ReturnCode != vmcommon.Ok {
 		return
 	}
-	if !host.AreInSameShard(input.RecipientAddr, input.CallerAddr) {
-		return
-	}
-	isESDTTransfer := input.Function == vmcommon.BuiltInFunctionESDTTransfer || input.Function == vmcommon.BuiltInFunctionESDTNFTTransfer
-	if !isESDTTransfer {
+
+	parsedTransfer, err := host.esdtTransferParser.ParseESDTTransfers(input.CallerAddr, input.RecipientAddr, input.Function, input.Arguments)
+	if err != nil {
 		return
 	}
 
-	recipientAddr := input.RecipientAddr
-	if input.Function == vmcommon.BuiltInFunctionESDTNFTTransfer {
-		if len(input.Arguments) != 4 {
-			return
-		}
-		recipientAddr = input.Arguments[3]
+	if !host.AreInSameShard(input.CallerAddr, parsedTransfer.RcvAddr) {
+		return
 	}
-	addOutputTransferToVMOutput(input.Function, input.Arguments, input.CallerAddr, recipientAddr, input.CallType, output)
+
+	addOutputTransferToVMOutput(input.Function, input.Arguments, input.CallerAddr, parsedTransfer.RcvAddr, input.CallType, output)
 }
 
 func addOutputTransferToVMOutput(
@@ -922,18 +933,20 @@ func (host *vmHost) isSCExecutionAfterBuiltInFunc(
 	if vmOutput.ReturnCode != vmcommon.Ok {
 		return nil, nil
 	}
-	recipient := vmInput.RecipientAddr
-	if vmInput.Function == vmcommon.BuiltInFunctionESDTNFTTransfer && bytes.Equal(vmInput.CallerAddr, vmInput.RecipientAddr) {
-		recipient = vmInput.Arguments[3]
-	}
-	if !host.AreInSameShard(vmInput.CallerAddr, recipient) {
-		return nil, nil
-	}
-	if !host.Blockchain().IsSmartContract(recipient) {
+
+	parsedTransfer, err := host.esdtTransferParser.ParseESDTTransfers(vmInput.CallerAddr, vmInput.RecipientAddr, vmInput.Function, vmInput.Arguments)
+	if err != nil {
 		return nil, nil
 	}
 
-	outAcc, ok := vmOutput.OutputAccounts[string(recipient)]
+	if !host.AreInSameShard(vmInput.CallerAddr, parsedTransfer.RcvAddr) {
+		return nil, nil
+	}
+	if !host.Blockchain().IsSmartContract(parsedTransfer.RcvAddr) {
+		return nil, nil
+	}
+
+	outAcc, ok := vmOutput.OutputAccounts[string(parsedTransfer.RcvAddr)]
 	if !ok {
 		return nil, nil
 	}
@@ -962,33 +975,12 @@ func (host *vmHost) isSCExecutionAfterBuiltInFunc(
 			OriginalTxHash: vmInput.OriginalTxHash,
 			CurrentTxHash:  vmInput.CurrentTxHash,
 		},
-		RecipientAddr:     recipient,
+		RecipientAddr:     parsedTransfer.RcvAddr,
 		Function:          function,
 		AllowInitFunction: false,
 	}
 
-	fillWithESDTValue(vmInput, newVMInput)
+	newVMInput.ESDTTransfers = parsedTransfer.ESDTTransfers
 
 	return newVMInput, nil
-}
-
-func fillWithESDTValue(fullVMInput *vmcommon.ContractCallInput, newVMInput *vmcommon.ContractCallInput) {
-	isESDTTransfer := fullVMInput.Function == vmcommon.BuiltInFunctionESDTTransfer || fullVMInput.Function == vmcommon.BuiltInFunctionESDTNFTTransfer
-	if !isESDTTransfer {
-		return
-	}
-
-	esdtTransfer := &vmcommon.ESDTTransfer{}
-
-	esdtTransfer.ESDTTokenName = fullVMInput.Arguments[0]
-	esdtTransfer.ESDTValue = big.NewInt(0).SetBytes(fullVMInput.Arguments[1])
-
-	if fullVMInput.Function == vmcommon.BuiltInFunctionESDTNFTTransfer {
-		esdtTransfer.ESDTTokenNonce = big.NewInt(0).SetBytes(fullVMInput.Arguments[1]).Uint64()
-		esdtTransfer.ESDTValue = big.NewInt(0).SetBytes(fullVMInput.Arguments[2])
-		esdtTransfer.ESDTTokenType = uint32(vmcommon.NonFungible)
-	}
-
-	newVMInput.ESDTTransfers = make([]*vmcommon.ESDTTransfer, 1)
-	newVMInput.ESDTTransfers[0] = esdtTransfer
 }

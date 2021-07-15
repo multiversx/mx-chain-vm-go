@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen/contexts"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen/cryptoapi"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen/elrondapi"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto/factory"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/contexts"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/cryptoapi"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/elrondapi"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto/factory"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-go-logger/check"
 	"github.com/ElrondNetwork/elrond-vm-common"
@@ -46,6 +46,7 @@ type vmHost struct {
 	gasSchedule          config.GasScheduleMap
 	scAPIMethods         *wasmer.Imports
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer
+	esdtTransferParser   vmcommon.ESDTTransferParser
 
 	arwenV2EnableEpoch uint32
 	flagArwenV2        atomic.Flag
@@ -69,6 +70,19 @@ func NewArwenVM(
 	hostParameters *arwen.VMHostParameters,
 ) (arwen.VMHost, error) {
 
+	if check.IfNil(blockChainHook) {
+		return nil, arwen.ErrNilBlockChainHook
+	}
+	if hostParameters == nil {
+		return nil, arwen.ErrNilHostParameters
+	}
+	if check.IfNil(hostParameters.ESDTTransferParser) {
+		return nil, arwen.ErrNilESDTTransferParser
+	}
+	if check.IfNil(hostParameters.BuiltInFuncContainer) {
+		return nil, arwen.ErrNilBuiltInFunctionsContainer
+	}
+
 	cryptoHook := factory.NewVMCrypto()
 	host := &vmHost{
 		cryptoHook:               cryptoHook,
@@ -85,6 +99,7 @@ func NewArwenVM(
 		dynGasLockEnableEpoch:    hostParameters.DynGasLockEnableEpoch,
 		eSDTFunctionsEnableEpoch: hostParameters.ArwenESDTFunctionsEnableEpoch,
 		builtInFuncContainer:     hostParameters.BuiltInFuncContainer,
+		esdtTransferParser:       hostParameters.ESDTTransferParser,
 	}
 
 	var err error
